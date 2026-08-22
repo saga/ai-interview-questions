@@ -1,10 +1,12 @@
 import { Card, Typography, Radio, Checkbox, Input, Tag, Space, Badge } from 'antd';
 import type { AnswerValue, Question } from '../types';
+import { isChoice } from '../lib/quiz';
 
 const TYPE_LABEL: Record<Question['type'], string> = {
   single: '单选题',
   multiple: '多选题',
   essay: '问答题',
+  coding: '编程题',
 };
 
 const DIFF_COLOR: Record<string, string> = {
@@ -21,7 +23,7 @@ interface Props {
 }
 
 export default function QuestionCard({ index, question, value, onChange }: Props) {
-  const options = question.type !== 'essay' ? question.options : [];
+  const options = isChoice(question) ? question.options : [];
 
   return (
     <Card size="small" style={{ marginBottom: 16 }}>
@@ -30,13 +32,18 @@ export default function QuestionCard({ index, question, value, onChange }: Props
         <Tag color="blue">{TYPE_LABEL[question.type]}</Tag>
         <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
         <Tag>{question.category}</Tag>
+        {question.tags?.map((t) => (
+          <Tag key={t} color="cyan">
+            {t}
+          </Tag>
+        ))}
         {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
       </Space>
       <Typography.Paragraph strong style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>
         {question.question}
       </Typography.Paragraph>
 
-      {question.type === 'single' && (
+      {isChoice(question) && question.type === 'single' && (
         <Radio.Group
           value={(value as number[])[0]}
           onChange={(e) => onChange([e.target.value as number])}
@@ -44,7 +51,7 @@ export default function QuestionCard({ index, question, value, onChange }: Props
         />
       )}
 
-      {question.type === 'multiple' && (
+      {isChoice(question) && question.type === 'multiple' && (
         <Checkbox.Group
           value={value as number[]}
           onChange={(v) => onChange(v as number[])}
@@ -58,6 +65,16 @@ export default function QuestionCard({ index, question, value, onChange }: Props
           value={value as string}
           onChange={(e) => onChange(e.target.value)}
           placeholder="在此输入你的回答…"
+        />
+      )}
+
+      {question.type === 'coding' && (
+        <Input.TextArea
+          rows={8}
+          value={value as string}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={`在此输入${question.language ? ` ${question.language} ` : ' '}代码…`}
+          style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 }}
         />
       )}
     </Card>

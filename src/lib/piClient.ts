@@ -3,7 +3,7 @@ import type { CredentialStore } from '@earendil-works/pi-ai';
 import { openaiProvider } from '@earendil-works/pi-ai/providers/openai';
 import { anthropicProvider } from '@earendil-works/pi-ai/providers/anthropic';
 import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
-import type { ChoiceQuestion, EssayGrade, EssayQuestion, Question } from '../types';
+import type { ChoiceQuestion, EvaluationResult, OpenQuestion, Question, ScoringRubric } from '../types';
 
 export type ProviderId = 'openai' | 'anthropic' | 'openrouter';
 
@@ -81,9 +81,10 @@ const TRANSFORM_SYSTEM =
  * 失败时抛出错误，由调用方决定是否回退到原题。
  */
 export async function transformQuestion(q: Question, config: PiConfig): Promise<Question> {
-  if (q.type === 'essay') {
-    const eq = q as EssayQuestion;
-    const user = `原始问答题：
+  if (q.type === 'essay' || q.type === 'coding') {
+    const eq = q as OpenQuestion;
+    const variantKind = q.type === 'coding' ? '编程题' : '问答题';
+    const user = `原始${variantKind}：
 ${JSON.stringify(
   { question: eq.question, referenceAnswer: eq.referenceAnswer, explanation: eq.explanation },
   null,
@@ -140,15 +141,21 @@ ${JSON.stringify(
   };
 }
 
-/** 用 LLM 对问答题的回答进行评分与反馈。 */
-export async function gradeEssay(
-  q: EssayQuestion,
+/**
+ * 用 LLM 对开放题/编程题的回答做多维评分（Correctness / Depth / Communication）。
+ * 返回统一的 EvaluationResult；未作答时整体为 0。
+ */
+export async function evaluateOpenAnswer(
+  q: OpenQuestion,
   userAnswer: string,
   config: PiConfig,
-): Promise<EssayGrade> {
+  rubric: ScoringRubric,
+  extraCriteria?: string,
+): Promise<EvaluationResult> {
   const system =
-    '你是一位严格的 AI 技术面试官，负责评估候选人的问答题回答。基于参考答案给出客观评分与详细反馈。只输出 JSON。';
-  const user = `题目：${q.question}
+    '你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案给出多维评分与详细反馈。只输出 JSON，不要任何额外文字。';
+  const user = `题目（类型：${q.type}${q.language ? '，语言：' + q.language : ''}）：
+${q.question}
 
 参考答案：
 ${q.referenceAnswer}
@@ -156,17 +163,51 @@ ${q.referenceAnswer}
 候选人回答：
 ${userAnswer && userAnswer.trim() ? userAnswer : '（未作答）'}
 
+请按三个维度各给 0-100 整数分：
+- correctness：答案是否正确、是否命中核心要点
+- depth：深度与细节是否充分
+- communication：表达清晰度与结构
+
+评分侧重点（权重，仅供参考）：correctness ${rubric.correctness}、depth ${rubric.depth}、communication ${rubric.communication}
+${extraCriteria ? '额外评估要求：' + extraCriteria : ''}
+
 请输出 JSON，字段：
-- score: 0-100 的整数评分
+- correctness: 0-100 整数
+- depth: 0-100 整数
+- communication: 0-100 整数
+- overall: 0-100 整数（按上述权重综合三维；若未作答则整体为 0）
 - feedback: 总体反馈文字
-- strengths: 回答中的亮点（字符串数组）
-- missed: 回答中遗漏或错误的要点（字符串数组）`;
-  const out = extractJSON<EssayGrade>(await callLLM(config, system, user));
-  const score = Math.max(0, Math.min(100, Math.round(Number(out.score) || 0)));
+- strengths: 回答亮点（字符串数组）
+- gaps: 遗漏或错误的要点（字符串数组）`;
+
+  const out = extractJSON<{
+    correctness: number;
+    depth: number;
+    communication: number;
+    overall: number;
+    feedback: string;
+    strengths: string[];
+    gaps: string[];
+  }>(await callLLM(config, system, user));
+
+  const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  const correctness = clamp(out.correctness);
+  const depth = clamp(out.depth);
+  const communication = clamp(out.communication);
+  const noAnswer = !userAnswer || !userAnswer.trim();
+  const overall = noAnswer
+    ? 0
+    : typeof out.overall === 'number' && !Number.isNaN(out.overall)
+      ? clamp(out.overall)
+      : clamp(
+          correctness * rubric.correctness + depth * rubric.depth + communication * rubric.communication,
+        );
+
   return {
-    score,
-    feedback: out.feedback ?? '',
+    overall,
+    dimensions: { correctness, depth, communication },
     strengths: Array.isArray(out.strengths) ? out.strengths : [],
-    missed: Array.isArray(out.missed) ? out.missed : [],
+    gaps: Array.isArray(out.gaps) ? out.gaps : [],
+    feedback: out.feedback ?? '',
   };
 }

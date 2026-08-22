@@ -1,20 +1,38 @@
 import { Card, Typography, Tag, Progress, Space, Button, Collapse, List, Alert, Divider } from 'antd';
 import { ReloadOutlined, CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-import type { AnswerValue, ChoiceQuestion, EssayGrade, EssayQuestion, Question } from '../types';
-import { isChoiceCorrect } from '../lib/quiz';
+import type { AnswerValue, ChoiceQuestion, EvaluationResult, OpenQuestion, Question } from '../types';
+import { isChoice } from '../lib/quiz';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 interface Props {
   questions: Question[];
   answers: Record<string, AnswerValue>;
-  grades: Record<string, EssayGrade | null>;
+  grades: Record<string, EvaluationResult | null>;
   onRestart: () => void;
 }
 
 function letterList(idxs: number[]): string {
   if (!idxs || idxs.length === 0) return '（未作答）';
   return idxs.map((i) => LETTERS[i] ?? `#${i + 1}`).join('、');
+}
+
+function DimensionRates({ g }: { g: EvaluationResult }) {
+  const items: { label: string; v?: number }[] = [
+    { label: '正确性', v: g.dimensions.correctness },
+    { label: '深度', v: g.dimensions.depth },
+    { label: '表达', v: g.dimensions.communication },
+  ];
+  return (
+    <Space wrap size={[16, 4]}>
+      {items.map((it) => (
+        <span key={it.label}>
+          <Typography.Text type="secondary">{it.label}：</Typography.Text>
+          <Typography.Text strong>{it.v != null ? `${it.v}` : '—'}</Typography.Text>
+        </span>
+      ))}
+    </Space>
+  );
 }
 
 function ResultItem({
@@ -26,15 +44,14 @@ function ResultItem({
   index: number;
   q: Question;
   answer: AnswerValue;
-  grade?: EssayGrade | null;
+  grade?: EvaluationResult | null;
 }) {
-  let correct = false;
   let resultTag: React.ReactNode = null;
 
-  if (q.type !== 'essay') {
+  if (isChoice(q)) {
     const cq = q as ChoiceQuestion;
     const sel = (answer as number[]) ?? [];
-    correct = isChoiceCorrect(cq, sel);
+    const correct = grade?.dimensions.correctness === 100;
     resultTag = correct ? (
       <Tag color="success" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}>
         正确
@@ -44,17 +61,42 @@ function ResultItem({
         错误
       </Tag>
     );
+
+    return (
+      <List.Item>
+        <Card
+          size="small"
+          style={{ width: '100%' }}
+          title={`第 ${index + 1} 题 · ${q.category}`}
+          extra={resultTag}
+        >
+          <Typography.Paragraph strong style={{ whiteSpace: 'pre-wrap' }}>
+            {q.question}
+          </Typography.Paragraph>
+          <Typography.Text type="secondary">你的选择：</Typography.Text>
+          <Typography.Text>{letterList(sel)}</Typography.Text>
+          <br />
+          <Typography.Text type="secondary">正确答案：</Typography.Text>
+          <Typography.Text strong>{letterList(cq.answer)}</Typography.Text>
+          <Collapse
+            ghost
+            items={[{ key: 'd', label: '解析', children: <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph> }]}
+          />
+        </Card>
+      </List.Item>
+    );
+  }
+
+  // 开放 / 编程题
+  const oq = q as OpenQuestion;
+  if (grade) {
+    resultTag = (
+      <Tag color={grade.overall >= 80 ? 'success' : grade.overall >= 60 ? 'gold' : 'error'}>
+        得分 {grade.overall}/100
+      </Tag>
+    );
   } else {
-    if (grade) {
-      correct = grade.score >= 60;
-      resultTag = (
-        <Tag color={grade.score >= 80 ? 'success' : grade.score >= 60 ? 'gold' : 'error'}>
-          得分 {grade.score}/100
-        </Tag>
-      );
-    } else {
-      resultTag = <Tag color="default">未评分</Tag>;
-    }
+    resultTag = <Tag color="default">未评分</Tag>;
   }
 
   return (
@@ -64,62 +106,51 @@ function ResultItem({
           {q.question}
         </Typography.Paragraph>
 
-        {q.type !== 'essay' && (
-          <>
-            <Typography.Text type="secondary">你的选择：</Typography.Text>
-            <Typography.Text>{letterList((answer as number[]) ?? [])}</Typography.Text>
-            <br />
-            <Typography.Text type="secondary">正确答案：</Typography.Text>
-            <Typography.Text strong>{letterList((q as ChoiceQuestion).answer)}</Typography.Text>
-          </>
-        )}
-
-        {q.type === 'essay' && (
-          <>
-            <Typography.Text type="secondary">你的回答：</Typography.Text>
-            <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
-              {(answer as string) || '（未作答）'}
-            </Typography.Paragraph>
-            <Typography.Text type="secondary">参考答案：</Typography.Text>
-            <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
-              {(q as EssayQuestion).referenceAnswer}
-            </Typography.Paragraph>
-          </>
-        )}
+        <Typography.Text type="secondary">你的回答：</Typography.Text>
+        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}>
+          {(answer as string) || '（未作答）'}
+        </Typography.Paragraph>
+        <Typography.Text type="secondary">参考答案：</Typography.Text>
+        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}>
+          {oq.referenceAnswer}
+        </Typography.Paragraph>
 
         <Collapse
           ghost
           items={[
             {
               key: 'detail',
-              label: q.type === 'essay' && grade ? '解析 / AI 反馈' : '解析',
+              label: grade ? '解析 / AI 多维反馈' : '解析',
               children: (
                 <>
                   <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph>
-                  {q.type === 'essay' && grade && (
+                  {grade && (
                     <>
                       <Divider style={{ margin: '8px 0' }} />
-                      <Typography.Paragraph>AI 总体反馈：{grade.feedback}</Typography.Paragraph>
-                      {grade.strengths.length > 0 && (
-                        <div>
-                          <Typography.Text strong>亮点：</Typography.Text>
-                          <ul style={{ margin: '4px 0' }}>
-                            {grade.strengths.map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {grade.missed.length > 0 && (
-                        <div>
-                          <Typography.Text strong>遗漏/错误：</Typography.Text>
-                          <ul style={{ margin: '4px 0' }}>
-                            {grade.missed.map((m, i) => (
-                              <li key={i}>{m}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                      <DimensionRates g={grade} />
+                      <div style={{ marginTop: 8 }}>
+                        <Typography.Paragraph>AI 总体反馈：{grade.feedback}</Typography.Paragraph>
+                        {grade.strengths.length > 0 && (
+                          <div>
+                            <Typography.Text strong>亮点：</Typography.Text>
+                            <ul style={{ margin: '4px 0' }}>
+                              {grade.strengths.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {grade.gaps.length > 0 && (
+                          <div>
+                            <Typography.Text strong>遗漏/错误：</Typography.Text>
+                            <ul style={{ margin: '4px 0' }}>
+                              {grade.gaps.map((m, i) => (
+                                <li key={i}>{m}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
                 </>
@@ -137,18 +168,14 @@ export default function ResultPanel({ questions, answers, grades, onRestart }: P
   const total = questions.length;
 
   questions.forEach((q) => {
-    const a = answers[q.id];
-    if (q.type !== 'essay') {
-      if (a && isChoiceCorrect(q as ChoiceQuestion, a as number[])) earned += 1;
-    } else {
-      const g = grades[q.id];
-      if (g) earned += g.score / 100;
-    }
+    const g = grades[q.id];
+    earned += (g ? g.overall : 0) / 100;
   });
 
   const percent = total > 0 ? Math.round((earned / total) * 100) : 0;
-  const choiceCount = questions.filter((q) => q.type !== 'essay').length;
-  const essayCount = questions.length - choiceCount;
+  const choiceCount = questions.filter(isChoice).length;
+  const openCount = total - choiceCount;
+  const openGraded = questions.filter((q) => !isChoice(q) && grades[q.id]).length;
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto' }}>
@@ -159,27 +186,23 @@ export default function ResultPanel({ questions, answers, grades, onRestart }: P
         </Typography.Title>
         <Space wrap>
           <Tag>选择题 {choiceCount}</Tag>
-          <Tag>问答题 {essayCount}</Tag>
-          {essayCount > 0 && !Object.values(grades).some(Boolean) && (
-            <Tag color="default">问答题未评分</Tag>
-          )}
+          <Tag>开放/编程 {openCount}</Tag>
+          {openCount > 0 && openGraded === 0 && <Tag color="default">开放题未评分</Tag>}
         </Space>
       </Card>
 
-      {essayCount > 0 && !Object.values(grades).some(Boolean) && (
+      {openCount > 0 && openGraded === 0 && (
         <Alert
           type="info"
           showIcon
           style={{ marginBottom: 16 }}
-          message="问答题未自动评分：未启用 AI 功能或评分失败。可参考上方参考答案自评。"
+          message="开放/编程题未自动评分：未启用 AI 功能或评分失败。可参考上方参考答案自评。"
         />
       )}
 
       <List
         dataSource={questions}
-        renderItem={(q, i) => (
-          <ResultItem index={i} q={q} answer={answers[q.id]} grade={grades[q.id]} />
-        )}
+        renderItem={(q, i) => <ResultItem index={i} q={q} answer={answers[q.id]} grade={grades[q.id]} />}
       />
 
       <Button type="primary" icon={<ReloadOutlined />} block size="large" style={{ marginTop: 16 }} onClick={onRestart}>

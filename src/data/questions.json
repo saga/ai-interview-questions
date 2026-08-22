@@ -408,6 +408,28 @@
       ],
       "answer": [0, 1, 2],
       "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
+    },
+    {
+      "id": "code-01",
+      "category": "统计与数学",
+      "type": "coding",
+      "difficulty": "medium",
+      "language": "python",
+      "tags": ["numpy", "softmax", "数值稳定"],
+      "question": "用 Python（可借助 numpy）实现一个数值稳定的 softmax 函数，输入为一维 logits 数组，输出概率分布（和为 1）。",
+      "referenceAnswer": "import numpy as np\ndef softmax(x):\n    x = np.asarray(x, dtype=float)\n    z = x - np.max(x)          # 减去最大值，避免指数溢出\n    e = np.exp(z)\n    return e / e.sum()\n关键：先做 max 平移再 exp，保证数值稳定；输出归一化到和为 1。",
+      "explanation": "考察数值稳定性（减去最大值）与归一化；这是面试高频基础题。"
+    },
+    {
+      "id": "code-02",
+      "category": "机器学习基础",
+      "type": "coding",
+      "difficulty": "hard",
+      "language": "python",
+      "tags": ["梯度下降", "线性回归", "训练循环"],
+      "question": "不用任何机器学习框架，用纯 Python/numpy 实现一元线性回归的批量梯度下降：给定 x、y 数组与学习率 lr、迭代次数 iters，返回拟合的 (w, b) 并尽量简洁。",
+      "referenceAnswer": "import numpy as np\ndef linear_fit(x, y, lr=0.01, iters=1000):\n    x, y = np.asarray(x), np.asarray(y)\n    n = len(x); w, b = 0.0, 0.0\n    for _ in range(iters):\n        yhat = w * x + b\n        dw = (2/n) * np.sum((yhat - y) * x)\n        db = (2/n) * np.sum(yhat - y)\n        w -= lr * dw; b -= lr * db\n    return w, b\n关键：MSE 对 w、b 的梯度推导正确，并用向量化更新。",
+      "explanation": "考察梯度推导、训练循环与向量化实现，是评估编码基本功的好题。"
     }
   ]
 }
