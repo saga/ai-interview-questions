@@ -1,0 +1,413 @@
+{
+  "categories": [
+    "机器学习基础",
+    "深度学习",
+    "自然语言处理",
+    "大语言模型",
+    "计算机视觉",
+    "统计与数学",
+    "MLOps 与部署",
+    "安全与伦理"
+  ],
+  "questions": [
+    {
+      "id": "ml-01",
+      "category": "机器学习基础",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
+      "options": [
+        "训练集误差很低，但验证集误差很高",
+        "训练集和验证集误差都很高",
+        "训练集误差很高，验证集误差很低",
+        "模型在训练集上无法收敛"
+      ],
+      "answer": [0],
+      "explanation": "过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。"
+    },
+    {
+      "id": "ml-02",
+      "category": "机器学习基础",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "以下哪些方法可用于缓解过拟合？（多选）",
+      "options": [
+        "增加训练数据量",
+        "使用 L1/L2 正则化",
+        "减少模型参数量或降低复杂度",
+        "提高学习率"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "增加数据、正则化、简化模型都能缓解过拟合；提高学习率通常不利于稳定收敛，不是缓解过拟合的手段。"
+    },
+    {
+      "id": "ml-03",
+      "category": "机器学习基础",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "关于偏差（bias）与方差（variance）的权衡，下列说法正确的是？",
+      "options": [
+        "高偏差通常对应模型过于复杂",
+        "高方差通常对应模型过于简单",
+        "高偏差模型往往欠拟合，高方差模型往往过拟合",
+        "偏差和方差总是同时增大"
+      ],
+      "answer": [2],
+      "explanation": "偏差高代表模型假设空间不足（欠拟合），方差高代表对训练数据敏感（过拟合），二者通常存在权衡关系。"
+    },
+    {
+      "id": "ml-04",
+      "category": "机器学习基础",
+      "type": "essay",
+      "difficulty": "medium",
+      "question": "请解释交叉验证（cross-validation）的作用，并说明 k 折交叉验证的基本流程。",
+      "referenceAnswer": "交叉验证用于更稳健地评估模型在未知数据上的泛化能力，减少因单次训练/测试划分带来的随机性。k 折交叉验证将数据集平均分成 k 份，每次取其中 1 份作为验证集、其余 k-1 份作为训练集，重复 k 次后取各次指标的平均值作为最终评估。常见取值 k=5 或 10。",
+      "explanation": "重点考察对评估方法的理解：重复使用数据、降低评估方差、流程的轮转机制。"
+    },
+    {
+      "id": "dl-01",
+      "category": "深度学习",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
+      "options": [
+        "输出范围在 0 到 1 之间，便于概率解释",
+        "缓解梯度消失问题，计算简单",
+        "一定能保证模型收敛到全局最优",
+        "对输入做了归一化处理"
+      ],
+      "answer": [1],
+      "explanation": "ReLU 在正区间梯度恒为 1，缓解深层网络中的梯度消失，且计算只需阈值判断，速度快。它不保证全局最优。"
+    },
+    {
+      "id": "dl-02",
+      "category": "深度学习",
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "关于反向传播（backpropagation），下列说法正确的有哪些？（多选）",
+      "options": [
+        "它基于链式法则计算损失对各参数的梯度",
+        "仅在全连接网络中可用，卷积网络不能用",
+        "梯度用于沿损失下降方向更新参数",
+        "它属于有监督训练中的核心算法"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "反向传播基于链式法则，适用于任何可微计算图（含 CNN/RNN），用于计算梯度并更新参数；并非只限于全连接网络。"
+    },
+    {
+      "id": "dl-03",
+      "category": "深度学习",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "在训练深层神经网络时，批量归一化（Batch Normalization）的主要作用是？",
+      "options": [
+        "替代激活函数",
+        "减小内部协变量偏移，稳定并加速训练",
+        "彻底消除过拟合",
+        "降低模型参数量"
+      ],
+      "answer": [1],
+      "explanation": "BN 通过对每层输入做归一化，缓解内部协变量偏移，使训练更稳定、可使用更高学习率，从而加速收敛；它不能彻底消除过拟合。"
+    },
+    {
+      "id": "dl-04",
+      "category": "深度学习",
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
+      "referenceAnswer": "自注意力通过 Query、Key、Value 三组矩阵计算：先以 Q 与 K 的点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后做 softmax 得到注意力权重，再对 V 加权求和。多头注意力并行学习不同子空间的表示。相比 RNN，它可并行计算、无时序依赖，能直接建模任意距离的依赖关系，且训练更稳定、便于扩展规模。",
+      "explanation": "考察 QKV 计算流程、缩放点积、softmax 加权，以及并行性/长程依赖优势。"
+    },
+    {
+      "id": "nlp-01",
+      "category": "自然语言处理",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "在中文 NLP 中，与英文相比，分词（tokenization）通常需要额外处理的难点是？",
+      "options": [
+        "英文没有词边界",
+        "中文词与词之间没有天然空格分隔",
+        "中文没有语法",
+        "中文无法用向量表示"
+      ],
+      "answer": [1],
+      "explanation": "中文以字为基本单位、词间无空格，需要专门的分词算法；英文则天然以空格分词。"
+    },
+    {
+      "id": "nlp-02",
+      "category": "自然语言处理",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "词嵌入（word embedding）相比 one-hot 编码的优势包括？（多选）",
+      "options": [
+        "向量维度更低、更稠密",
+        "能刻画词与词之间的语义相似度",
+        "每个词都是独立正交的表示",
+        "可捕获上下文语义关系"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "词嵌入是低维稠密向量，能表达语义相似性与上下文关系；one-hot 才是高维稀疏且相互正交、无法表达语义。"
+    },
+    {
+      "id": "nlp-03",
+      "category": "自然语言处理",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "BERT 与 GPT 在预训练目标上的核心区别是？",
+      "options": [
+        "BERT 用语料重建，GPT 用对比学习",
+        "BERT 是双向编码器（MLM），GPT 是单向自回归（CLM）",
+        "BERT 只能做分类，GPT 只能做生成",
+        "二者预训练目标完全相同"
+      ],
+      "answer": [1],
+      "explanation": "BERT 通过掩码语言模型（MLM）实现双向上下文理解；GPT 采用自回归从左到右生成，是单向的。"
+    },
+    {
+      "id": "llm-01",
+      "category": "大语言模型",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "RLHF（基于人类反馈的强化学习）在大模型对齐中的主要目的是？",
+      "options": [
+        "降低模型参数量",
+        "让模型输出更符合人类偏好与指令",
+        "替代预训练阶段",
+        "提高模型的推理速度"
+      ],
+      "answer": [1],
+      "explanation": "RLHF 通过人类偏好反馈训练奖励模型并微调，使模型行为更符合人类期望与指令，是对齐阶段而非替代预训练。"
+    },
+    {
+      "id": "llm-02",
+      "category": "大语言模型",
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
+      "options": [
+        "指模型生成看似合理但事实错误或无依据的内容",
+        "可通过检索增强生成（RAG）在一定程度上缓解",
+        "只要模型足够大就一定能完全消除",
+        "与训练数据质量和解码策略都相关"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "幻觉是生成不实内容，RAG 引入外部知识可缓解，且与数据质量和采样策略相关；模型变大并不能完全消除幻觉。"
+    },
+    {
+      "id": "llm-03",
+      "category": "大语言模型",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "在 LLM 推理中，温度（temperature）参数主要影响？",
+      "options": [
+        "模型训练速度",
+        "输出分布的随机性/多样性",
+        "上下文窗口长度",
+        "词表大小"
+      ],
+      "answer": [1],
+      "explanation": "temperature 缩放 softmax 前的 logits，值越高输出越随机多样，值越低越确定集中。"
+    },
+    {
+      "id": "llm-04",
+      "category": "大语言模型",
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "什么是检索增强生成（RAG）？请描述其基本流程及相比单纯依赖模型参数的优势。",
+      "referenceAnswer": "RAG 在生成前先从外部知识库（如向量数据库）检索与问题相关的文档片段，将其作为上下文拼接到提示中，再由 LLM 生成答案。基本流程：问题向量化 → 向量检索 top-k 文档 → 拼接提示 → LLM 生成。优势在于：答案可溯源、能利用最新/私有知识、减少幻觉、无需为每个领域重训模型。",
+      "explanation": "考察检索-拼接-生成流程，以及可溯源、实时性、降幻觉、低成本等优势。"
+    },
+    {
+      "id": "cv-01",
+      "category": "计算机视觉",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "卷积神经网络（CNN）中，池化（pooling）层的主要作用是？",
+      "options": [
+        "增加特征图的空间尺寸",
+        "降低特征图分辨率、提供平移不变性、减少参数量",
+        "激活非线性",
+        "归一化像素值"
+      ],
+      "answer": [1],
+      "explanation": "池化（如 max/avg pooling）下采样特征图，降低分辨率、减少计算与参数，并提供一定平移不变性；激活由激活函数完成。"
+    },
+    {
+      "id": "cv-02",
+      "category": "计算机视觉",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "关于卷积中的“填充（padding）”与“步长（stride）”，下列说法正确的有哪些？（多选）",
+      "options": [
+        "padding 可在边缘补零以控制输出尺寸",
+        "增大 stride 会减小输出特征图尺寸",
+        "padding 一定会提升模型准确率",
+        "stride 为 1 通常表示滑窗逐像素移动"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "padding 控制输出尺寸、stride 控制滑窗步幅（越大输出越小），stride=1 表示逐位移；padding 不必然提升准确率。"
+    },
+    {
+      "id": "cv-03",
+      "category": "计算机视觉",
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "简述目标检测中 One-Stage（如 YOLO）与 Two-Stage（如 Faster R-CNN）方法的核心区别与各自优劣。",
+      "referenceAnswer": "Two-Stage 先生成候选区域（region proposal）再分类回归，精度通常更高但速度较慢；One-Stage 直接在特征图上一次性预测类别与边界框，速度更快、更适合实时场景，但小目标与密集场景精度可能略低。YOLO 属 One-Stage，Faster R-CNN 属 Two-Stage。",
+      "explanation": "考察候选区域两阶段 vs 端到端单阶段，以及精度/速度权衡。"
+    },
+    {
+      "id": "stat-01",
+      "category": "统计与数学",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "在二分类模型中，ROC 曲线下的面积（AUC）越大表示？",
+      "options": [
+        "模型越倾向于预测正类",
+        "模型整体区分正负类的能力越强",
+        "训练集误差越小",
+        "特征数量越多"
+      ],
+      "answer": [1],
+      "explanation": "AUC 衡量模型对不同类别的排序区分能力，越接近 1 区分能力越强；与预测倾向、特征数量无直接关系。"
+    },
+    {
+      "id": "stat-02",
+      "category": "统计与数学",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "关于梯度下降，下列说法正确的有哪些？（多选）",
+      "options": [
+        "批量梯度下降每次使用全部样本计算梯度",
+        "随机梯度下降（SGD）每次使用一个样本，噪声较大",
+        "学习率越大收敛一定越快越好",
+        "迷你批量（mini-batch）是二者的折中"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "BGD 用全量、SGD 用单样本且噪声大、mini-batch 折中；学习率过大反而可能不收敛，并非越大越好。"
+    },
+    {
+      "id": "stat-03",
+      "category": "统计与数学",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "在概率模型中，交叉熵（cross-entropy）损失常用于分类，其本质是？",
+      "options": [
+        "预测值与真实值差的平方",
+        "真实分布与预测分布之间 KL 散度的组成部分，衡量分布差异",
+        "样本数量的对数",
+        "模型参数的 L2 范数"
+      ],
+      "answer": [1],
+      "explanation": "交叉熵衡量两个概率分布的差异，最小化交叉熵等价于最小化 KL 散度（忽略与参数无关的常数项）。"
+    },
+    {
+      "id": "mlops-01",
+      "category": "MLOps 与部署",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "在模型上线部署时，使用模型量化（quantization）的主要目的通常是？",
+      "options": [
+        "提高模型准确率",
+        "降低模型体积与推理延迟，便于在资源受限设备上运行",
+        "增加训练数据",
+        "替代模型评估"
+      ],
+      "answer": [1],
+      "explanation": "量化将浮点权重转为低精度（如 INT8），减小体积、加速推理，代价通常是轻微精度损失，而非提升准确率。"
+    },
+    {
+      "id": "mlops-02",
+      "category": "MLOps 与部署",
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "关于模型监控与生产环境维护，以下合理的做法包括哪些？（多选）",
+      "options": [
+        "监控预测分布漂移（data drift）",
+        "建立模型版本管理与回滚机制",
+        "记录线上推理的输入输出用于复盘",
+        "上线后无需再关注，模型会一直有效"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "生产模型需监控数据漂移、做好版本管理与回滚、记录日志；模型会随数据分布变化而退化，不能上线即弃管。"
+    },
+    {
+      "id": "mlops-03",
+      "category": "MLOps 与部署",
+      "type": "essay",
+      "difficulty": "medium",
+      "question": "请说明什么是模型训练与推理的“离线/在线”服务模式，并各举一个适用场景。",
+      "referenceAnswer": "离线（batch）推理：周期性对批量数据集中计算，适合对时效性要求不高的场景，如每日用户画像更新。在线（实时）推理：请求到达时即时返回结果，适合对延迟敏感的场景，如搜索排序、实时推荐、对话机器人。二者在延迟、成本、架构上权衡不同。",
+      "explanation": "考察离线批处理与在线实时服务的区别及典型场景。"
+    },
+    {
+      "id": "eth-01",
+      "category": "安全与伦理",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "在 AI 应用中，训练数据包含个人隐私信息时，首要遵循的原则是？",
+      "options": [
+        "尽可能多收集以提升效果",
+        "在合规前提下最小化收集并进行脱敏/匿名化",
+        "默认公开所有数据",
+        "只用于内部实验无需处理"
+      ],
+      "answer": [1],
+      "explanation": "隐私保护要求在合规下最小化收集并脱敏/匿名化，遵循数据最小化与最小权限原则。"
+    },
+    {
+      "id": "eth-02",
+      "category": "安全与伦理",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "为减少机器学习模型中的偏见（bias）与歧视，可行的措施包括？（多选）",
+      "options": [
+        "审查并平衡训练数据的代表性",
+        "在评估中分群体检查公平性指标",
+        "完全依赖模型自动决策，不加人工复核",
+        "对模型决策保持可解释与可审计"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "减少偏见需平衡数据、分群评估公平性、保持可解释可审计；完全自动化不加复核反而可能放大风险。"
+    },
+    {
+      "id": "eth-03",
+      "category": "安全与伦理",
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "在部署面向公众的大模型对话产品时，应采取哪些安全与对齐措施来降低滥用与有害输出风险？",
+      "referenceAnswer": "可采取：输入/输出内容审核与敏感词过滤；系统提示与护栏（guardrails）约束行为边界；RLHF 与红队测试提升对齐；速率限制与身份认证防滥用；对高风险能力（如代码执行、外部调用）做权限隔离；建立反馈与人工复核通道以及事故响应机制。核心是在能力开放与风险控制之间取得平衡。",
+      "explanation": "考察审核、护栏、对齐、防滥用、权限隔离、反馈闭环等多层防护思路。"
+    },
+    {
+      "id": "ml-05",
+      "category": "机器学习基础",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "精确率（Precision）与召回率（Recall）分别关注的是？",
+      "options": [
+        "Precision 关注预测为正的中有多少真的为正；Recall 关注真实为正的有多少被找出",
+        "两者完全相同",
+        "Precision 关注负类，Recall 关注正类",
+        "Precision 越高 Recall 一定越高"
+      ],
+      "answer": [0],
+      "explanation": "Precision = TP/(TP+FP) 衡量预测为正的准确度；Recall = TP/(TP+FN) 衡量对正类的覆盖程度，二者通常存在权衡。"
+    },
+    {
+      "id": "dl-05",
+      "category": "深度学习",
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
+      "options": [
+        "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
+        "推理时通常关闭 Dropout 或使用期望缩放",
+        "它可以作为正则化手段缓解过拟合",
+        "它一定会使模型收敛更快"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
+    }
+  ]
+}
