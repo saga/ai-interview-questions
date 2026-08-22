@@ -1,18 +1,21 @@
 {
   "categories": [
-    "机器学习基础",
-    "深度学习",
-    "自然语言处理",
-    "大语言模型",
-    "计算机视觉",
-    "统计与数学",
-    "MLOps 与部署",
-    "安全与伦理"
+    "machine-learning",
+    "deep-learning",
+    "nlp",
+    "llm",
+    "computer-vision",
+    "statistics",
+    "mlops",
+    "safety-ethics",
+    "agentic-ai"
   ],
   "questions": [
     {
       "id": "ml-01",
-      "category": "机器学习基础",
+      "category": "machine-learning",
+      "topic": "overfitting",
+      "tags": ["overfitting", "evaluation", "generalization"],
       "type": "single",
       "difficulty": "easy",
       "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
@@ -23,11 +26,14 @@
         "模型在训练集上无法收敛"
       ],
       "answer": [0],
-      "explanation": "过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。"
+      "explanation": "过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。",
+      "reference": { "concept": "过拟合是模型在训练集上过度拟合噪声，泛化能力下降。" }
     },
     {
       "id": "ml-02",
-      "category": "机器学习基础",
+      "category": "machine-learning",
+      "topic": "regularization",
+      "tags": ["regularization", "overfitting", "l1", "l2"],
       "type": "multiple",
       "difficulty": "medium",
       "question": "以下哪些方法可用于缓解过拟合？（多选）",
@@ -42,7 +48,9 @@
     },
     {
       "id": "ml-03",
-      "category": "机器学习基础",
+      "category": "machine-learning",
+      "topic": "bias-variance",
+      "tags": ["bias", "variance", "tradeoff"],
       "type": "single",
       "difficulty": "medium",
       "question": "关于偏差（bias）与方差（variance）的权衡，下列说法正确的是？",
@@ -57,16 +65,38 @@
     },
     {
       "id": "ml-04",
-      "category": "机器学习基础",
+      "category": "machine-learning",
+      "topic": "cross-validation",
+      "tags": ["evaluation", "cross-validation"],
       "type": "essay",
       "difficulty": "medium",
       "question": "请解释交叉验证（cross-validation）的作用，并说明 k 折交叉验证的基本流程。",
       "referenceAnswer": "交叉验证用于更稳健地评估模型在未知数据上的泛化能力，减少因单次训练/测试划分带来的随机性。k 折交叉验证将数据集平均分成 k 份，每次取其中 1 份作为验证集、其余 k-1 份作为训练集，重复 k 次后取各次指标的平均值作为最终评估。常见取值 k=5 或 10。",
-      "explanation": "重点考察对评估方法的理解：重复使用数据、降低评估方差、流程的轮转机制。"
+      "explanation": "重点考察对评估方法的理解：重复使用数据、降低评估方差、流程的轮转机制。",
+      "reference": { "concept": "交叉验证通过多次复用数据，降低单次划分带来的评估方差。" }
+    },
+    {
+      "id": "ml-05",
+      "category": "machine-learning",
+      "topic": "precision-recall",
+      "tags": ["metrics", "precision", "recall"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "精确率（Precision）与召回率（Recall）分别关注的是？",
+      "options": [
+        "Precision 关注预测为正的中有多少真的为正；Recall 关注真实为正的有多少被找出",
+        "两者完全相同",
+        "Precision 关注负类，Recall 关注正类",
+        "Precision 越高 Recall 一定越高"
+      ],
+      "answer": [0],
+      "explanation": "Precision = TP/(TP+FP) 衡量预测为正的准确度；Recall = TP/(TP+FN) 衡量对正类的覆盖程度，二者通常存在权衡。"
     },
     {
       "id": "dl-01",
-      "category": "深度学习",
+      "category": "deep-learning",
+      "topic": "activation",
+      "tags": ["relu", "activation", "gradient"],
       "type": "single",
       "difficulty": "medium",
       "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
@@ -81,7 +111,9 @@
     },
     {
       "id": "dl-02",
-      "category": "深度学习",
+      "category": "deep-learning",
+      "topic": "backprop",
+      "tags": ["backprop", "gradient", "training"],
       "type": "multiple",
       "difficulty": "hard",
       "question": "关于反向传播（backpropagation），下列说法正确的有哪些？（多选）",
@@ -96,7 +128,9 @@
     },
     {
       "id": "dl-03",
-      "category": "深度学习",
+      "category": "deep-learning",
+      "topic": "batch-norm",
+      "tags": ["batch-normalization", "training", "stability"],
       "type": "single",
       "difficulty": "hard",
       "question": "在训练深层神经网络时，批量归一化（Batch Normalization）的主要作用是？",
@@ -111,16 +145,38 @@
     },
     {
       "id": "dl-04",
-      "category": "深度学习",
+      "category": "deep-learning",
+      "topic": "self-attention",
+      "tags": ["transformer", "attention", "rnn"],
       "type": "essay",
       "difficulty": "hard",
       "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
       "referenceAnswer": "自注意力通过 Query、Key、Value 三组矩阵计算：先以 Q 与 K 的点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后做 softmax 得到注意力权重，再对 V 加权求和。多头注意力并行学习不同子空间的表示。相比 RNN，它可并行计算、无时序依赖，能直接建模任意距离的依赖关系，且训练更稳定、便于扩展规模。",
-      "explanation": "考察 QKV 计算流程、缩放点积、softmax 加权，以及并行性/长程依赖优势。"
+      "explanation": "考察 QKV 计算流程、缩放点积、softmax 加权，以及并行性/长程依赖优势。",
+      "reference": { "concept": "自注意力用 QKV 计算 token 间加权表示，可并行建模长程依赖。" }
+    },
+    {
+      "id": "dl-05",
+      "category": "deep-learning",
+      "topic": "dropout",
+      "tags": ["dropout", "regularization"],
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
+      "options": [
+        "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
+        "推理时通常关闭 Dropout 或使用期望缩放",
+        "它可以作为正则化手段缓解过拟合",
+        "它一定会使模型收敛更快"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
     },
     {
       "id": "nlp-01",
-      "category": "自然语言处理",
+      "category": "nlp",
+      "topic": "tokenization",
+      "tags": ["tokenization", "chinese-nlp"],
       "type": "single",
       "difficulty": "easy",
       "question": "在中文 NLP 中，与英文相比，分词（tokenization）通常需要额外处理的难点是？",
@@ -135,7 +191,9 @@
     },
     {
       "id": "nlp-02",
-      "category": "自然语言处理",
+      "category": "nlp",
+      "topic": "word-embedding",
+      "tags": ["embedding", "representation"],
       "type": "multiple",
       "difficulty": "medium",
       "question": "词嵌入（word embedding）相比 one-hot 编码的优势包括？（多选）",
@@ -150,7 +208,9 @@
     },
     {
       "id": "nlp-03",
-      "category": "自然语言处理",
+      "category": "nlp",
+      "topic": "pretraining",
+      "tags": ["bert", "gpt", "pretraining"],
       "type": "single",
       "difficulty": "medium",
       "question": "BERT 与 GPT 在预训练目标上的核心区别是？",
@@ -165,7 +225,9 @@
     },
     {
       "id": "llm-01",
-      "category": "大语言模型",
+      "category": "llm",
+      "topic": "rlhf",
+      "tags": ["rlhf", "alignment"],
       "type": "single",
       "difficulty": "medium",
       "question": "RLHF（基于人类反馈的强化学习）在大模型对齐中的主要目的是？",
@@ -180,7 +242,9 @@
     },
     {
       "id": "llm-02",
-      "category": "大语言模型",
+      "category": "llm",
+      "topic": "hallucination",
+      "tags": ["hallucination", "rag", "safety"],
       "type": "multiple",
       "difficulty": "hard",
       "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
@@ -195,7 +259,9 @@
     },
     {
       "id": "llm-03",
-      "category": "大语言模型",
+      "category": "llm",
+      "topic": "sampling",
+      "tags": ["temperature", "decoding", "inference"],
       "type": "single",
       "difficulty": "hard",
       "question": "在 LLM 推理中，温度（temperature）参数主要影响？",
@@ -210,16 +276,25 @@
     },
     {
       "id": "llm-04",
-      "category": "大语言模型",
+      "category": "llm",
+      "topic": "rag",
+      "tags": ["rag", "retrieval", "hallucination"],
       "type": "essay",
       "difficulty": "hard",
       "question": "什么是检索增强生成（RAG）？请描述其基本流程及相比单纯依赖模型参数的优势。",
       "referenceAnswer": "RAG 在生成前先从外部知识库（如向量数据库）检索与问题相关的文档片段，将其作为上下文拼接到提示中，再由 LLM 生成答案。基本流程：问题向量化 → 向量检索 top-k 文档 → 拼接提示 → LLM 生成。优势在于：答案可溯源、能利用最新/私有知识、减少幻觉、无需为每个领域重训模型。",
-      "explanation": "考察检索-拼接-生成流程，以及可溯源、实时性、降幻觉、低成本等优势。"
+      "explanation": "考察检索-拼接-生成流程，以及可溯源、实时性、降幻觉、低成本等优势。",
+      "reference": { "concept": "RAG 在生成前检索外部知识作为上下文，提升可溯源性与时效性、降低幻觉。" },
+      "rubric": {
+        "required": ["检索-拼接-生成 基本流程", "可溯源/降幻觉/时效性等优势"],
+        "dimensions": { "correctness": 0.4, "completeness": 0.25, "architecture": 0.15, "communication": 0.2 }
+      }
     },
     {
       "id": "cv-01",
-      "category": "计算机视觉",
+      "category": "computer-vision",
+      "topic": "pooling",
+      "tags": ["cnn", "pooling"],
       "type": "single",
       "difficulty": "medium",
       "question": "卷积神经网络（CNN）中，池化（pooling）层的主要作用是？",
@@ -234,7 +309,9 @@
     },
     {
       "id": "cv-02",
-      "category": "计算机视觉",
+      "category": "computer-vision",
+      "topic": "conv-params",
+      "tags": ["cnn", "padding", "stride"],
       "type": "multiple",
       "difficulty": "medium",
       "question": "关于卷积中的“填充（padding）”与“步长（stride）”，下列说法正确的有哪些？（多选）",
@@ -249,16 +326,21 @@
     },
     {
       "id": "cv-03",
-      "category": "计算机视觉",
+      "category": "computer-vision",
+      "topic": "object-detection",
+      "tags": ["detection", "yolo", "faster-rcnn"],
       "type": "essay",
       "difficulty": "hard",
       "question": "简述目标检测中 One-Stage（如 YOLO）与 Two-Stage（如 Faster R-CNN）方法的核心区别与各自优劣。",
       "referenceAnswer": "Two-Stage 先生成候选区域（region proposal）再分类回归，精度通常更高但速度较慢；One-Stage 直接在特征图上一次性预测类别与边界框，速度更快、更适合实时场景，但小目标与密集场景精度可能略低。YOLO 属 One-Stage，Faster R-CNN 属 Two-Stage。",
-      "explanation": "考察候选区域两阶段 vs 端到端单阶段，以及精度/速度权衡。"
+      "explanation": "考察候选区域两阶段 vs 端到端单阶段，以及精度/速度权衡。",
+      "reference": { "concept": "Two-Stage 先提候选区再分类，精度高速度慢；One-Stage 端到端，速度快精度略低。" }
     },
     {
       "id": "stat-01",
-      "category": "统计与数学",
+      "category": "statistics",
+      "topic": "auc",
+      "tags": ["metrics", "auc", "roc"],
       "type": "single",
       "difficulty": "easy",
       "question": "在二分类模型中，ROC 曲线下的面积（AUC）越大表示？",
@@ -273,7 +355,9 @@
     },
     {
       "id": "stat-02",
-      "category": "统计与数学",
+      "category": "statistics",
+      "topic": "gradient-descent",
+      "tags": ["optimization", "sgd", "mini-batch"],
       "type": "multiple",
       "difficulty": "medium",
       "question": "关于梯度下降，下列说法正确的有哪些？（多选）",
@@ -288,7 +372,9 @@
     },
     {
       "id": "stat-03",
-      "category": "统计与数学",
+      "category": "statistics",
+      "topic": "cross-entropy",
+      "tags": ["loss", "cross-entropy", "classification"],
       "type": "single",
       "difficulty": "hard",
       "question": "在概率模型中，交叉熵（cross-entropy）损失常用于分类，其本质是？",
@@ -303,7 +389,9 @@
     },
     {
       "id": "mlops-01",
-      "category": "MLOps 与部署",
+      "category": "mlops",
+      "topic": "quantization",
+      "tags": ["quantization", "deployment", "inference"],
       "type": "single",
       "difficulty": "medium",
       "question": "在模型上线部署时，使用模型量化（quantization）的主要目的通常是？",
@@ -318,7 +406,9 @@
     },
     {
       "id": "mlops-02",
-      "category": "MLOps 与部署",
+      "category": "mlops",
+      "topic": "monitoring",
+      "tags": ["monitoring", "drift", "versioning"],
       "type": "multiple",
       "difficulty": "hard",
       "question": "关于模型监控与生产环境维护，以下合理的做法包括哪些？（多选）",
@@ -333,16 +423,21 @@
     },
     {
       "id": "mlops-03",
-      "category": "MLOps 与部署",
+      "category": "mlops",
+      "topic": "inference-modes",
+      "tags": ["batch", "online", "serving"],
       "type": "essay",
       "difficulty": "medium",
       "question": "请说明什么是模型训练与推理的“离线/在线”服务模式，并各举一个适用场景。",
       "referenceAnswer": "离线（batch）推理：周期性对批量数据集中计算，适合对时效性要求不高的场景，如每日用户画像更新。在线（实时）推理：请求到达时即时返回结果，适合对延迟敏感的场景，如搜索排序、实时推荐、对话机器人。二者在延迟、成本、架构上权衡不同。",
-      "explanation": "考察离线批处理与在线实时服务的区别及典型场景。"
+      "explanation": "考察离线批处理与在线实时服务的区别及典型场景。",
+      "reference": { "concept": "离线批处理适合非实时；在线推理适合低延迟场景。" }
     },
     {
       "id": "eth-01",
-      "category": "安全与伦理",
+      "category": "safety-ethics",
+      "topic": "privacy",
+      "tags": ["privacy", "compliance", "data-minimization"],
       "type": "single",
       "difficulty": "easy",
       "question": "在 AI 应用中，训练数据包含个人隐私信息时，首要遵循的原则是？",
@@ -357,7 +452,9 @@
     },
     {
       "id": "eth-02",
-      "category": "安全与伦理",
+      "category": "safety-ethics",
+      "topic": "fairness",
+      "tags": ["bias", "fairness", "audit"],
       "type": "multiple",
       "difficulty": "medium",
       "question": "为减少机器学习模型中的偏见（bias）与歧视，可行的措施包括？（多选）",
@@ -372,64 +469,212 @@
     },
     {
       "id": "eth-03",
-      "category": "安全与伦理",
+      "category": "safety-ethics",
+      "topic": "safety-alignment",
+      "tags": ["safety", "alignment", "guardrails"],
       "type": "essay",
       "difficulty": "hard",
       "question": "在部署面向公众的大模型对话产品时，应采取哪些安全与对齐措施来降低滥用与有害输出风险？",
       "referenceAnswer": "可采取：输入/输出内容审核与敏感词过滤；系统提示与护栏（guardrails）约束行为边界；RLHF 与红队测试提升对齐；速率限制与身份认证防滥用；对高风险能力（如代码执行、外部调用）做权限隔离；建立反馈与人工复核通道以及事故响应机制。核心是在能力开放与风险控制之间取得平衡。",
-      "explanation": "考察审核、护栏、对齐、防滥用、权限隔离、反馈闭环等多层防护思路。"
-    },
-    {
-      "id": "ml-05",
-      "category": "机器学习基础",
-      "type": "single",
-      "difficulty": "medium",
-      "question": "精确率（Precision）与召回率（Recall）分别关注的是？",
-      "options": [
-        "Precision 关注预测为正的中有多少真的为正；Recall 关注真实为正的有多少被找出",
-        "两者完全相同",
-        "Precision 关注负类，Recall 关注正类",
-        "Precision 越高 Recall 一定越高"
-      ],
-      "answer": [0],
-      "explanation": "Precision = TP/(TP+FP) 衡量预测为正的准确度；Recall = TP/(TP+FN) 衡量对正类的覆盖程度，二者通常存在权衡。"
-    },
-    {
-      "id": "dl-05",
-      "category": "深度学习",
-      "type": "multiple",
-      "difficulty": "medium",
-      "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
-      "options": [
-        "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
-        "推理时通常关闭 Dropout 或使用期望缩放",
-        "它可以作为正则化手段缓解过拟合",
-        "它一定会使模型收敛更快"
-      ],
-      "answer": [0, 1, 2],
-      "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
+      "explanation": "考察审核、护栏、对齐、防滥用、权限隔离、反馈闭环等多层防护思路。",
+      "reference": { "concept": "多层防护：审核、护栏、对齐、防滥用、权限隔离、反馈闭环。" }
     },
     {
       "id": "code-01",
-      "category": "统计与数学",
+      "category": "statistics",
+      "topic": "softmax",
+      "tags": ["numpy", "softmax", "numerical-stability"],
       "type": "coding",
       "difficulty": "medium",
       "language": "python",
-      "tags": ["numpy", "softmax", "数值稳定"],
       "question": "用 Python（可借助 numpy）实现一个数值稳定的 softmax 函数，输入为一维 logits 数组，输出概率分布（和为 1）。",
       "referenceAnswer": "import numpy as np\ndef softmax(x):\n    x = np.asarray(x, dtype=float)\n    z = x - np.max(x)          # 减去最大值，避免指数溢出\n    e = np.exp(z)\n    return e / e.sum()\n关键：先做 max 平移再 exp，保证数值稳定；输出归一化到和为 1。",
-      "explanation": "考察数值稳定性（减去最大值）与归一化；这是面试高频基础题。"
+      "explanation": "考察数值稳定性（减去最大值）与归一化；这是面试高频基础题。",
+      "reference": { "concept": "softmax 减去最大值再做指数，避免溢出。" }
     },
     {
       "id": "code-02",
-      "category": "机器学习基础",
+      "category": "machine-learning",
+      "topic": "linear-regression",
+      "tags": ["gradient-descent", "linear-regression", "training-loop"],
       "type": "coding",
       "difficulty": "hard",
       "language": "python",
-      "tags": ["梯度下降", "线性回归", "训练循环"],
       "question": "不用任何机器学习框架，用纯 Python/numpy 实现一元线性回归的批量梯度下降：给定 x、y 数组与学习率 lr、迭代次数 iters，返回拟合的 (w, b) 并尽量简洁。",
       "referenceAnswer": "import numpy as np\ndef linear_fit(x, y, lr=0.01, iters=1000):\n    x, y = np.asarray(x), np.asarray(y)\n    n = len(x); w, b = 0.0, 0.0\n    for _ in range(iters):\n        yhat = w * x + b\n        dw = (2/n) * np.sum((yhat - y) * x)\n        db = (2/n) * np.sum(yhat - y)\n        w -= lr * dw; b -= lr * db\n    return w, b\n关键：MSE 对 w、b 的梯度推导正确，并用向量化更新。",
-      "explanation": "考察梯度推导、训练循环与向量化实现，是评估编码基本功的好题。"
+      "explanation": "考察梯度推导、训练循环与向量化实现，是评估编码基本功的好题。",
+      "reference": { "concept": "MSE 对 w/b 的闭式梯度 + 向量化更新。" }
+    },
+
+    {
+      "id": "agentic-01",
+      "category": "agentic-ai",
+      "topic": "agent-fundamentals",
+      "tags": ["agent", "loop", "react"],
+      "type": "single",
+      "difficulty": "easy",
+      "question": "一个典型的 AI Agent（智能体）最核心的运行时循环是？",
+      "options": [
+        "感知（Perceive）→ 推理（Reason）→ 行动（Act）的循环",
+        "仅做模型训练与离线推理",
+        "数据清洗 → 标注 → 入库",
+        "模型蒸馏 → 量化 → 部署"
+      ],
+      "answer": [0],
+      "explanation": "Agent 以“感知-推理-行动”闭环与环境交互，并据反馈持续调整，这是区别于一次性推理的关键。",
+      "reference": { "concept": "Agent 的核心是感知-推理-行动的闭环循环。" }
+    },
+    {
+      "id": "agentic-02",
+      "category": "agentic-ai",
+      "topic": "tool-calling",
+      "tags": ["tool-calling", "schema", "function"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "在 LLM 的 Tool / Function Calling 中，工具 schema（如 JSON Schema）的主要作用是？",
+      "options": [
+        "约束模型只能输出固定模板文本",
+        "描述工具的名称、参数与类型，使模型能生成可被程序安全解析与调用的结构化调用",
+        "替代模型的系统提示",
+        "仅用于前端展示工具列表"
+      ],
+      "answer": [1],
+      "explanation": "工具 schema 让模型知道有哪些能力、参数如何填，从而输出可被代码校验并执行的结构化 tool_call，是 Agent 调用外部能力的基石。",
+      "reference": { "concept": "工具 schema 描述名称/参数/类型，使模型产出可安全解析的结构化调用。" }
+    },
+    {
+      "id": "agentic-03",
+      "category": "agentic-ai",
+      "topic": "agent-components",
+      "tags": ["planning", "memory", "tools"],
+      "type": "multiple",
+      "difficulty": "medium",
+      "question": "下列哪些是典型 AI Agent 的核心组件？（多选）",
+      "options": [
+        "Planning（规划/任务分解）",
+        "Memory（记忆，短期与长期）",
+        "Tools（工具调用）",
+        "Loss 函数（损失函数）"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "Agent 通常包含规划、记忆、工具调用等模块；Loss 函数是训练期概念，不是运行时 Agent 组件。"
+    },
+    {
+      "id": "agentic-04",
+      "category": "agentic-ai",
+      "topic": "react",
+      "tags": ["react", "reasoning", "acting"],
+      "type": "single",
+      "difficulty": "hard",
+      "question": "ReAct（Reasoning + Acting）框架的核心思想是什么？",
+      "options": [
+        "仅用链式提示把多个问题串起来",
+        "交替进行推理（Thought）与行动（Act），并观察（Observation）结果，将推理与工具使用交织推进",
+        "训练一个专用分类器决定下一步动作",
+        "把多个模型集成以提升准确率"
+      ],
+      "answer": [1],
+      "explanation": "ReAct 让模型在每一步先思考再行动、再观察环境反馈，形成推理与行动的螺旋，从而更好地处理多步任务。",
+      "reference": { "concept": "ReAct 将 Thought/Act/Observation 交织，推理与工具使用协同推进。" }
+    },
+    {
+      "id": "agentic-05",
+      "category": "agentic-ai",
+      "topic": "memory",
+      "tags": ["memory", "context", "retrieval"],
+      "type": "essay",
+      "difficulty": "medium",
+      "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
+      "referenceAnswer": "短期记忆通常指当前会话/任务的上下文窗口，保存最近的对话、中间步骤与工具结果，支撑即时推理；长期记忆则是跨会话持久化的知识库（如向量数据库、文件、数据库），用于积累经验、个性化与检索历史。二者配合：短期保证连贯，长期提供可复用的背景。实现上长期记忆常借助嵌入检索（RAG）按需召回。",
+      "explanation": "考察短期/长期记忆的区分、作用与典型实现（如向量检索）。",
+      "reference": { "concept": "短期记忆=当前上下文；长期记忆=跨会话持久知识，常借 RAG 召回。" },
+      "rubric": {
+        "required": ["短期记忆的定义与作用", "长期记忆的定义与作用", "二者如何配合（如 RAG 召回）"],
+        "dimensions": { "correctness": 0.35, "completeness": 0.25, "architecture": 0.2, "communication": 0.2 }
+      }
+    },
+    {
+      "id": "agentic-06",
+      "category": "agentic-ai",
+      "topic": "multi-agent",
+      "tags": ["multi-agent", "collaboration", "orchestration"],
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "关于 Multi-Agent（多智能体）协作，下列说法正确的有哪些？（多选）",
+      "options": [
+        "通过角色分工（如规划者/执行者/评审者）可提升复杂任务表现",
+        "通信开销与一致性维护是主要工程挑战",
+        "多智能体在任何任务上都一定优于单个智能体",
+        "可借助共享消息总线或黑板（blackboard）进行交互"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "多智能体通过分工与协作常能处理更复杂任务，但带来通信/一致性成本，并非总是优于单体；交互常用消息总线或黑板机制。"
+    },
+    {
+      "id": "agentic-07",
+      "category": "agentic-ai",
+      "topic": "system-design",
+      "tags": ["design", "rag", "planning", "report"],
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "请设计一个 Agentic 系统来完成“根据用户自然语言需求，自动检索资料并生成一份结构化报告”的任务，描述其核心组件与执行流程。",
+      "referenceAnswer": "核心组件：1) Planner（规划器）将需求拆解为子问题与时间线；2) Retriever（检索器）基于子问题从向量库/搜索 API 取资料；3) Tool 层（浏览器/数据库/文件读写）执行动作；4) Writer（撰写器）汇总成结构化报告；5) Memory 保存中间结果与用户偏好；6) Critic/Reviewer 做质量自检。流程：理解需求 → 规划子任务 → 循环（检索→工具执行→观察→修正）→ 草稿 → 评审 → 终稿。需加入失败重试、来源引用与长度控制。",
+      "explanation": "考察端到端 Agent 系统设计：规划、检索、工具、记忆、评审与流程编排。",
+      "reference": { "concept": "Agent 系统=规划+检索+工具+记忆+撰写+评审的闭环。" },
+      "rubric": {
+        "required": ["规划器 Planner", "检索器 Retriever", "工具层 Tool", "记忆 Memory", "评审 Critic", "失败重试与来源引用"],
+        "dimensions": { "correctness": 0.25, "completeness": 0.25, "architecture": 0.35, "communication": 0.15 }
+      }
+    },
+    {
+      "id": "agentic-08",
+      "category": "agentic-ai",
+      "topic": "tool-calling",
+      "tags": ["tool-calling", "dispatch", "python"],
+      "type": "coding",
+      "difficulty": "medium",
+      "language": "python",
+      "question": "实现一个简单的 tool-calling 分发器：给定 tools 列表（每个含 name 与 callable），以及模型返回的 tool_call（含 name 与 args 字典），调用对应函数并返回结果。",
+      "referenceAnswer": "def dispatch(tools, tool_call):\n    # tools: [{\"name\": str, \"fn\": callable}, ...]\n    table = {t[\"name\"]: t[\"fn\"] for t in tools}\n    name = tool_call[\"name\"]\n    args = tool_call.get(\"args\", {})\n    if name not in table:\n        return {\"error\": f\"unknown tool: {name}\"}\n    try:\n        return {\"result\": table[name](**args)}\n    except Exception as e:\n        return {\"error\": str(e)}\n要点：按 name 查表、用 **args 解包、对未知工具与异常做兜底。",
+      "explanation": "考察工具分发、参数解包与异常处理，是 Agent 执行层的基本功。",
+      "reference": { "concept": "按 name 查表分发，解包 args，兜底未知工具与异常。" },
+      "rubric": {
+        "required": ["按 name 查表分发", "用 **args 解包参数", "对未知工具与异常做兜底"],
+        "dimensions": { "correctness": 0.4, "completeness": 0.2, "architecture": 0.25, "communication": 0.15 }
+      }
+    },
+    {
+      "id": "agentic-09",
+      "category": "agentic-ai",
+      "topic": "reflection",
+      "tags": ["reflection", "self-critique"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "在 Agent 设计中，“Reflection（自我反思）”的主要作用是？",
+      "options": [
+        "让模型生成更多随机样本",
+        "让 Agent 回顾自身输出或轨迹，发现错误并自我修正，从而提升质量",
+        "替代规划阶段",
+        "压缩上下文以节省 token"
+      ],
+      "answer": [1],
+      "explanation": "Reflection 让 Agent 对自身中间结果或最终产物进行复盘与批评，再迭代改进，是提升复杂任务可靠性的常用手段。"
+    },
+    {
+      "id": "agentic-10",
+      "category": "agentic-ai",
+      "topic": "evaluation",
+      "tags": ["evaluation", "reliability", "failure-modes"],
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "如何评估一个 AI Agent 的可靠性？请讨论常见的失败模式与对应的缓解措施。",
+      "referenceAnswer": "评估维度：任务成功率、轨迹有效率、工具调用准确率、对异常/边界输入的鲁棒性、以及人工评审质量。常见失败模式：1) 规划偏差——任务分解错误，可用少量示例与约束缓解；2) 工具误用——参数错误或选错工具，靠 schema 校验与重试；3) 幻觉/事实错误——引入检索与引用；4) 循环/卡死——设步数上限与超时；5) 上下文溢出——摘要压缩与记忆裁剪。缓解总体靠评测集、轨迹回放、护栏与人工兜底。",
+      "explanation": "考察评估维度、失败模式识别与工程缓解手段的系统性思考。",
+      "reference": { "concept": "可靠性评估=成功率/鲁棒性/工具准确率；缓解靠校验、重试、护栏、评测集。" },
+      "rubric": {
+        "required": ["评估维度（成功率/鲁棒性/工具准确率）", "至少两种失败模式", "对应缓解措施"],
+        "dimensions": { "correctness": 0.3, "completeness": 0.3, "architecture": 0.2, "communication": 0.2 }
+      }
     }
   ]
 }

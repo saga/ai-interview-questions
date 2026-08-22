@@ -1,3 +1,5 @@
+// 纯逻辑：抽题与选择题判分。不依赖 React、不依赖任何 LLM/网络。
+
 import type { AnswerValue, ChoiceQuestion, OpenQuestion, Question } from '../types';
 
 /** 从题池中随机抽取 count 道（Fisher–Yates 洗牌）。 */
@@ -18,7 +20,7 @@ export function isOpen(q: Question): q is OpenQuestion {
   return q.type === 'essay' || q.type === 'coding';
 }
 
-/** 选择题是否正确：选中集合与正确答案集合完全一致。 */
+/** 选择题是否正确：选中集合与正确答案集合完全一致（顺序无关）。 */
 export function isChoiceCorrect(q: ChoiceQuestion, selected: number[]): boolean {
   const a = [...q.answer].sort((x, y) => x - y).join(',');
   const s = [...selected].sort((x, y) => x - y).join(',');

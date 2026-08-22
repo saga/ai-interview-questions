@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Card, Slider, Select, Switch, Button, Typography, Space, Divider, Alert, Segmented } from 'antd';
 import { ThunderboltOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import type { Difficulty, InterviewDefinition, QuestionType } from '../types';
-import type { PiConfig } from '../lib/piClient';
-import { isConfigValid } from '../lib/piClient';
+import type { PiConfig } from '../types';
+import { isConfigValid } from '../ai/provider';
+import { categoryLabel } from '../domain/categories';
 
 interface Props {
   categories: string[];
@@ -25,6 +26,9 @@ const DIFF_OPTIONS: { label: string; value: Difficulty }[] = [
   { label: '困难', value: 'hard' },
 ];
 
+// 四维评分默认权重（和为 1）：正确性 / 完整性 / 架构 / 表达
+const DEFAULT_RUBRIC = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };
+
 export default function SetupPanel({ categories, config, onStart, onOpenSettings }: Props) {
   const [count, setCount] = useState(10);
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
@@ -42,7 +46,7 @@ export default function SetupPanel({ categories, config, onStart, onOpenSettings
       questionTypes: types,
       count,
       useAI,
-      scoringRubric: { correctness: 0.5, depth: 0.3, communication: 0.2 },
+      scoringRubric: DEFAULT_RUBRIC,
     });
   };
 
@@ -56,7 +60,14 @@ export default function SetupPanel({ categories, config, onStart, onOpenSettings
       </Typography.Paragraph>
 
       <Divider>题目数量</Divider>
-      <Slider min={5} max={30} step={1} value={count} onChange={setCount} marks={{ 5: '5', 10: '10', 20: '20', 30: '30' }} />
+      <Slider
+        min={5}
+        max={30}
+        step={1}
+        value={count}
+        onChange={setCount}
+        marks={{ 5: '5', 10: '10', 20: '20', 30: '30' }}
+      />
       <Typography.Text type="secondary">当前：{count} 题</Typography.Text>
 
       <Divider>类别（留空表示全部）</Divider>
@@ -67,7 +78,7 @@ export default function SetupPanel({ categories, config, onStart, onOpenSettings
         placeholder="不选则涵盖所有类别"
         value={selectedCats}
         onChange={setSelectedCats}
-        options={categories.map((c) => ({ label: c, value: c }))}
+        options={categories.map((c) => ({ label: categoryLabel(c), value: c }))}
       />
 
       <Divider>难度（留空表示不限）</Divider>
@@ -99,7 +110,7 @@ export default function SetupPanel({ categories, config, onStart, onOpenSettings
         <Switch checked={useAI} onChange={setUseAI} disabled={!configReady} />
       </Space>
       <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginTop: 8 }}>
-        开放题评分权重：正确性 50% · 深度 30% · 表达 20%
+        开放题评分权重：正确性 40% · 完整性 20% · 架构 20% · 表达 20%
       </Typography.Paragraph>
 
       {useAI && !configReady && (

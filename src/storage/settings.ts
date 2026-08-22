@@ -1,4 +1,4 @@
-import type { PiConfig } from './piClient';
+import type { PiConfig } from '../types';
 
 const KEY = 'ai-interview-trainer.config';
 

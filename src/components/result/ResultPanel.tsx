@@ -1,7 +1,9 @@
 import { Card, Typography, Tag, Progress, Space, Button, Collapse, List, Alert, Divider } from 'antd';
 import { ReloadOutlined, CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-import type { AnswerValue, ChoiceQuestion, EvaluationResult, OpenQuestion, Question } from '../types';
-import { isChoice } from '../lib/quiz';
+import type { AnswerValue, ChoiceQuestion, EvaluationResult, OpenQuestion, Question } from '../../types';
+import { isChoice } from '../../domain/quiz';
+import { DIMENSION_LABELS, EVAL_DIMENSIONS } from '../../types';
+import { categoryLabel } from '../../domain/categories';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
@@ -18,17 +20,12 @@ function letterList(idxs: number[]): string {
 }
 
 function DimensionRates({ g }: { g: EvaluationResult }) {
-  const items: { label: string; v?: number }[] = [
-    { label: '正确性', v: g.dimensions.correctness },
-    { label: '深度', v: g.dimensions.depth },
-    { label: '表达', v: g.dimensions.communication },
-  ];
   return (
     <Space wrap size={[16, 4]}>
-      {items.map((it) => (
-        <span key={it.label}>
-          <Typography.Text type="secondary">{it.label}：</Typography.Text>
-          <Typography.Text strong>{it.v != null ? `${it.v}` : '—'}</Typography.Text>
+      {EVAL_DIMENSIONS.map((dim) => (
+        <span key={dim}>
+          <Typography.Text type="secondary">{DIMENSION_LABELS[dim]}：</Typography.Text>
+          <Typography.Text strong>{g.dimensions[dim]}</Typography.Text>
         </span>
       ))}
     </Space>
@@ -67,7 +64,7 @@ function ResultItem({
         <Card
           size="small"
           style={{ width: '100%' }}
-          title={`第 ${index + 1} 题 · ${q.category}`}
+          title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}`}
           extra={resultTag}
         >
           <Typography.Paragraph strong style={{ whiteSpace: 'pre-wrap' }}>
@@ -80,7 +77,9 @@ function ResultItem({
           <Typography.Text strong>{letterList(cq.answer)}</Typography.Text>
           <Collapse
             ghost
-            items={[{ key: 'd', label: '解析', children: <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph> }]}
+            items={[
+              { key: 'd', label: '解析', children: <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph> },
+            ]}
           />
         </Card>
       </List.Item>
@@ -101,17 +100,26 @@ function ResultItem({
 
   return (
     <List.Item>
-      <Card size="small" style={{ width: '100%' }} title={`第 ${index + 1} 题 · ${q.category}`} extra={resultTag}>
+      <Card
+        size="small"
+        style={{ width: '100%' }}
+        title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}`}
+        extra={resultTag}
+      >
         <Typography.Paragraph strong style={{ whiteSpace: 'pre-wrap' }}>
           {q.question}
         </Typography.Paragraph>
 
         <Typography.Text type="secondary">你的回答：</Typography.Text>
-        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}>
+        <Typography.Paragraph
+          style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}
+        >
           {(answer as string) || '（未作答）'}
         </Typography.Paragraph>
         <Typography.Text type="secondary">参考答案：</Typography.Text>
-        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}>
+        <Typography.Paragraph
+          style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}
+        >
           {oq.referenceAnswer}
         </Typography.Paragraph>
 

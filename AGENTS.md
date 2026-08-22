@@ -16,5 +16,6 @@
 - 纯逻辑（抽题、判分、题型判定、评分聚合、变体变换的 JSON 解析等）**必须有测试覆盖**，不要只靠 `npm run build` 过关。
 - 测试框架用 **Vitest**（与 Vite 同生态，零额外配置成本）。新增逻辑时在同目录放 `*.test.ts`。
 - 测试要断言"正确"而不仅是"不崩"：边界值、空输入、乱序答案、LLM 返回残缺 JSON 的兜底都要覆盖。
-- 涉及 LLM 的用例用 mock（`vi.mock('@earendil-works/pi-ai')` 或注入假 config），**不要**在单测里真发网络请求。
+- 涉及 LLM 的用例一律 mock，**不要**在单测里真发网络请求：`pi-ai` 一次性调用可注入假 config；`pi-agent-core` 的 Agent 则注入 mock `streamFn`（按 `start → text_delta → done` 事件协议产出，见 `src/ai/interviewAgent.test.ts`）。
 - 提交前跑 `npm run test`（若未配置则先 `npm i -D vitest` 并建立脚本）。
+

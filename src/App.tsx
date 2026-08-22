@@ -10,15 +10,15 @@ import type {
   Question,
   QuestionBank,
 } from './types';
-import { emptyAnswer } from './lib/quiz';
+import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession } from './lib/interviewEngine';
-import { isConfigValid } from './lib/piClient';
-import type { PiConfig } from './lib/piClient';
-import { loadConfig, saveConfig } from './lib/storage';
-import SettingsModal from './components/SettingsModal';
+import { isConfigValid } from './ai/provider';
+import type { PiConfig } from './types';
+import { loadConfig, saveConfig } from './storage/settings';
+import SettingsModal from './components/settings/SettingsModal';
 import SetupPanel from './components/SetupPanel';
-import QuestionCard from './components/QuestionCard';
-import ResultPanel from './components/ResultPanel';
+import QuestionCard from './components/quiz/QuestionCard';
+import ResultPanel from './components/result/ResultPanel';
 
 const bank = bankData as unknown as QuestionBank;
 

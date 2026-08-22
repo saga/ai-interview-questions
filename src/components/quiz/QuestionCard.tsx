@@ -1,6 +1,7 @@
 import { Card, Typography, Radio, Checkbox, Input, Tag, Space, Badge } from 'antd';
-import type { AnswerValue, Question } from '../types';
-import { isChoice } from '../lib/quiz';
+import type { AnswerValue, Question } from '../../types';
+import { isChoice } from '../../domain/quiz';
+import { categoryLabel } from '../../domain/categories';
 
 const TYPE_LABEL: Record<Question['type'], string> = {
   single: '单选题',
@@ -31,7 +32,7 @@ export default function QuestionCard({ index, question, value, onChange }: Props
         <Badge count={index + 1} showZero color="#1677ff" />
         <Tag color="blue">{TYPE_LABEL[question.type]}</Tag>
         <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
-        <Tag>{question.category}</Tag>
+        <Tag>{categoryLabel(question.category)}</Tag>
         {question.tags?.map((t) => (
           <Tag key={t} color="cyan">
             {t}

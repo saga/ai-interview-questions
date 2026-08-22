@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Modal, Form, Select, Input, Alert, Space } from 'antd';
-import type { PiConfig, ProviderId } from '../lib/piClient';
+import type { PiConfig, ProviderId } from '../../types';
 
 const PROVIDER_OPTIONS: { label: string; value: ProviderId }[] = [
   { label: 'OpenRouter（推荐，CORS 友好，模型多）', value: 'openrouter' },
@@ -52,12 +52,20 @@ export default function SettingsModal({ open, config, onClose, onSave }: Props) 
   };
 
   return (
-    <Modal title="LLM 设置" open={open} onOk={handleOk} onCancel={onClose} okText="保存" cancelText="取消" destroyOnClose>
+    <Modal
+      title="LLM 设置"
+      open={open}
+      onOk={handleOk}
+      onCancel={onClose}
+      okText="保存"
+      cancelText="取消"
+      destroyOnClose
+    >
       <Alert
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
-        message="密钥仅保存在本机浏览器（localStorage），不会上传到任何服务器。浏览器直连大模型 API 可能受 CORS 限制，OpenRouter 通常最友好。"
+        message="密钥仅保存在本机浏览器（localStorage），不会上传到任何服务器。本架构是 local-first 的隐私友好设计；但请注意：浏览器侧密钥并非安全机密（受 XSS / 恶意扩展威胁），请勿使用高权限生产密钥。"
       />
       <Form form={form} layout="vertical" initialValues={config}>
         <Form.Item name="provider" label="服务商" rules={[{ required: true }]}>
