@@ -3,9 +3,6 @@
 
 import { createModels } from '@earendil-works/pi-ai';
 import type { Context, CredentialStore, Model, ProviderId, UserMessage } from '@earendil-works/pi-ai';
-import { openaiProvider } from '@earendil-works/pi-ai/providers/openai';
-import { anthropicProvider } from '@earendil-works/pi-ai/providers/anthropic';
-import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
 import { deepseekProvider } from '@earendil-works/pi-ai/providers/deepseek';
 import { buildLocalProvider } from './local';
 import type { ProviderEntry } from '../types';
@@ -29,11 +26,8 @@ export function buildModels(config: ProviderEntry): ModelsClient {
   const models = createModels({
     credentials: createCredentialStore(config.apiKey, config.id),
   });
-  if (config.id === 'openai') models.setProvider(openaiProvider());
-  else if (config.id === 'anthropic') models.setProvider(anthropicProvider());
-  else if (config.id === 'deepseek') models.setProvider(deepseekProvider());
-  else if (config.id === 'local') models.setProvider(buildLocalProvider(config));
-  else models.setProvider(openrouterProvider());
+  if (config.id === 'deepseek') models.setProvider(deepseekProvider());
+  else models.setProvider(buildLocalProvider(config));
   return models;
 }
 

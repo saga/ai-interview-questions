@@ -1,5 +1,5 @@
 {
-  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页保存后自动写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。旧单选形态 { provider, ... } 会在读取时自动迁移为单元素链。",
+  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎收敛为 chrome / local / deepseek（ADR-025）。",
 
   "example-1-chrome优先-云端兜底": {
     "providers": [
@@ -30,20 +30,20 @@
         "baseUrl": "http://127.0.0.1:8888/v1"
       },
       {
-        "id": "openrouter",
+        "id": "deepseek",
         "enabled": true,
-        "model": "openai/gpt-4o-mini",
-        "apiKey": "sk-or-xxxxxxxx",
+        "model": "deepseek-v4-flash",
+        "apiKey": "sk-xxxxxxxxxxxxxxxx",
         "baseUrl": ""
       }
     ]
   },
 
   "$字段说明": {
-    "providers[].id": "'chrome' | 'local' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek'",
-    "providers[].enabled": "停用的引擎保留配置但不参与降级链",
-    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；cloud 见设置页下拉",
-    "providers[].apiKey": "云端必填；local 可选（部分服务需要）；chrome 不适用",
+    "providers[].id": "'chrome' | 'local' | 'deepseek'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
+    "providers[].enabled": "停用的引擎保留配置但不参与降级链；停用引擎允许配置不完整",
+    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-v4-flash",
+    "providers[].apiKey": "deepseek 必填；local 可选（部分服务需要）；chrome 不适用",
     "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等"
   }
 }

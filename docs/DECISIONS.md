@@ -2,6 +2,31 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-025 · 引擎收敛为 chrome/local/deepseek + 设置页改为 config.json 编辑器
+
+- 状态：已采纳 · 2026-08-23
+- 背景：ADR-023 的降级链支持六种引擎，但设置面板逐引擎表单（每引擎一张卡：
+  启用开关/模型下拉/API Key 输入/上下移按钮）交互繁琐；且 OpenAI / Anthropic /
+  OpenRouter 三家云端直连在浏览器侧受 CORS 限制、模型目录需随服务商维护，
+  实际使用率低——用户真正在用的是 Chrome 内置、本地 Unsloth 与 DeepSeek。
+- 决策：
+  - **引擎收敛**：`ProviderId` 收敛为 `'chrome' | 'local' | 'deepseek'`。
+    pi.ts 删除 openai/anthropic/openrouter 三家 provider 装配与 pi-ai 对应导入；
+    SettingsPanel 删除 MODEL_OPTIONS 预设模型表。不做向后兼容：历史 localStorage
+    配置中的已下线 id 由 sanitizeEntry 静默丢弃（key 不变）。
+  - **设置页改为直接编辑 config.json**：Monaco JSON 编辑器（懒加载 CodeEditor）
+    展示并编辑完整 `AIConfig`，providers 数组顺序即降级链优先级；
+    「恢复默认」一键填入 DEFAULT_CONFIG 模板。
+  - **保存校验收口到纯函数**：`storage/settings.parseConfigJSON(text)` 整体解析 +
+    逐项清洗（id 白名单、同引擎去重、启用引擎字段完整性），任何一处不合法整体拒绝，
+    错误信息定位到 `providers[i]`；通过后返回规范化配置再走 onSave → saveConfig。
+    loadConfig 的读取清洗逻辑保持不变（防御性兜底）。
+- 取舍：放弃逐字段表单的引导性，换取配置的全部能力（批量改、复制粘贴、
+  版本化存档）与零维护成本的引擎元数据；JSON 编辑器有 schema 级校验兜底，
+  错误可定位，不依赖用户熟悉格式。
+- 验证：测试 168 例中本变更相关全过（+13：parseConfigJSON 合法链/停用容忍/
+  九类整体拒绝/错误定位、下线引擎丢弃）；typecheck/build 通过。
+
 ## ADR-024 · 同题双形态：LLM 题型变换（选择 ⇄ 开放）+ 组卷配额规划
 
 - 状态：已采纳 · 2026-08-23

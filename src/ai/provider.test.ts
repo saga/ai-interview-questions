@@ -62,9 +62,9 @@ describe('isEntryValid（按引擎区分校验）', () => {
   });
 
   it('云端引擎必须有 apiKey 与 model', () => {
-    expect(isEntryValid({ id: 'openrouter', enabled: true, model: 'openai/gpt-4o-mini', apiKey: '' })).toBe(false);
-    expect(isEntryValid({ id: 'openrouter', enabled: true, model: '', apiKey: 'sk-x' })).toBe(false);
-    expect(isEntryValid({ id: 'openrouter', enabled: true, model: 'openai/gpt-4o-mini', apiKey: 'sk-x' })).toBe(true);
+    expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '' })).toBe(false);
+    expect(isEntryValid({ id: 'deepseek', enabled: true, model: '', apiKey: 'sk-x' })).toBe(false);
+    expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' })).toBe(true);
   });
 
   it('缺 id 或整个对象时无效', () => {
@@ -97,9 +97,9 @@ describe('createLLMProvider（工厂分派）', () => {
   });
 
   it('单云端引擎直接返回 PiAIProvider，name 携带引擎 id', () => {
-    const p = createLLMProvider({ providers: [{ id: 'openrouter', enabled: true, model: 'openai/gpt-4o-mini', apiKey: 'sk-x' }] });
+    const p = createLLMProvider({ providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' }] });
     expect(p).toBeInstanceOf(PiAIProvider);
-    expect(p?.name).toBe('pi-ai(openrouter)');
+    expect(p?.name).toBe('pi-ai(deepseek)');
   });
 
   it('本地 OpenAI 兼容服务也走 PiAIProvider（buildModels 内部路由，ADR-022）', () => {
@@ -111,13 +111,13 @@ describe('createLLMProvider（工厂分派）', () => {
     const p = createLLMProvider({
       providers: [
         entry({ id: 'chrome', model: '', apiKey: '' }),
-        entry({ id: 'openrouter', model: 'openai/gpt-4o-mini', apiKey: 'sk-x' }),
+        entry({ model: 'deepseek-v4-flash', apiKey: 'sk-x' }),
         entry({ enabled: false }), // 停用，不进链
         entry({ id: 'local', model: '' }), // 非法，被剔除
       ],
     });
     expect(p).toBeInstanceOf(FallbackProvider);
-    expect(p?.name).toBe('chrome → pi-ai(openrouter)');
+    expect(p?.name).toBe('chrome → pi-ai(deepseek)');
   });
 
   it('无效配置返回 null（上层退化为原题/不评分）', () => {

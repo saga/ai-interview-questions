@@ -58,7 +58,7 @@ function def(useAI: boolean): InterviewDefinition {
 }
 
 describe('evaluateAnswer 的 useAI 门控（ADR-020）', () => {
-  const config = { providers: [{ id: 'openrouter', enabled: true, model: 'm', apiKey: 'k', baseUrl: '' }] } as const;
+  const config = { providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k', baseUrl: '' }] } as const;
 
   it('useAI=false 时开放题不调用 LLM，返回 null', async () => {
     const g = await evaluateAnswer(openQ, '我的回答', def(false), { providers: [...config.providers] });

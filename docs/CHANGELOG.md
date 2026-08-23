@@ -2,6 +2,22 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 设置页改为 config.json 编辑器，引擎收敛为 chrome/local/deepseek（ADR-025）
+
+- **引擎收敛**：`ProviderId` 从六种收敛为 `chrome | local | deepseek`；删除 OpenAI /
+  Anthropic / OpenRouter 三家云端直连（CORS 受限、维护成本高）。pi.ts 删除对应
+  provider 装配与导入；不做向后兼容——历史配置中的已下线 id 由 sanitizeEntry 静默丢弃。
+- **设置交互重做**：SettingsPanel 从「添加引擎 → 逐卡片填表 → 排序」改为 Monaco JSON
+  编辑器直接编辑完整 `AIConfig`（懒加载，不进主包）；「恢复默认」一键填模板；
+  chrome 内置 AI 可用性状态保留展示。
+- **校验收口**：新增纯函数 `storage/settings.parseConfigJSON`（id 白名单、同引擎去重、
+  启用引擎字段完整性、至少一个可用引擎），错误定位到 `providers[i]`，整体拒绝不半保存；
+  `stringifyConfig` 统一两空格缩进序列化。
+- 文档同步：`docs/config.example.json` 示例与字段说明更新为三引擎形态。
+- 测试：settings/provider/interviewEngine 用例改用 deepseek；新增 parseConfigJSON
+  覆盖（合法链清洗、停用容忍、九类整体拒绝、错误信息定位、下线引擎丢弃）。
+  typecheck/build 通过。
+
 ## 2026-08-23 · 题型变换可审计：溯源字段 + 持久化审计日志（ADR-024）
 
 - **题目溯源**：`QuestionBase` 新增可选 `transformedFrom` 字段——变换成功的题目记录原题型，
