@@ -1,7 +1,11 @@
-import { Card, Typography, Radio, Checkbox, Input, Tag, Space, Badge } from 'antd';
+import { Card, Radio, Checkbox, Input, Tag, Space, Badge } from 'antd';
+import { Suspense, lazy } from 'react';
 import type { AnswerValue, Question } from '../../types';
 import { isChoice } from '../../domain/quiz';
 import { categoryLabel } from '../../domain/categories';
+import RichText from '../common/RichText';
+
+const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
 
 const TYPE_LABEL: Record<Question['type'], string> = {
   single: '单选题',
@@ -40,9 +44,9 @@ export default function QuestionCard({ index, question, value, onChange }: Props
         ))}
         {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
       </Space>
-      <Typography.Paragraph strong style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>
-        {question.question}
-      </Typography.Paragraph>
+      <div style={{ marginBottom: 8 }}>
+        <RichText text={question.question} strong />
+      </div>
 
       {isChoice(question) && question.type === 'single' && (
         <Radio.Group
@@ -70,13 +74,24 @@ export default function QuestionCard({ index, question, value, onChange }: Props
       )}
 
       {question.type === 'coding' && (
-        <Input.TextArea
-          rows={8}
-          value={value as string}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={`在此输入${question.language ? ` ${question.language} ` : ' '}代码…`}
-          style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 }}
-        />
+        <Suspense
+          fallback={
+            <Input.TextArea
+              rows={8}
+              disabled
+              value={value as string}
+              placeholder="代码编辑器加载中…"
+              style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 }}
+            />
+          }
+        >
+          <LazyCodeEditor
+            value={(value as string) ?? ''}
+            onChange={(v) => onChange(v)}
+            language={question.language}
+            height={320}
+          />
+        </Suspense>
       )}
     </Card>
   );

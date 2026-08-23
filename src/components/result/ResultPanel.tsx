@@ -1,4 +1,5 @@
 import { Card, Typography, Tag, Progress, Space, Button, Collapse, List, Alert, Divider } from 'antd';
+import { Suspense, lazy } from 'react';
 import {
   ReloadOutlined,
   CheckCircleTwoTone,
@@ -13,6 +14,12 @@ import { isChoice } from '../../domain/quiz';
 import { DIMENSION_LABELS, EVAL_DIMENSIONS } from '../../types';
 import { categoryLabel } from '../../domain/categories';
 import { recommendationText } from '../../domain/learner';
+import RichText from '../common/RichText';
+import CodeBlock from '../common/CodeBlock';
+
+const LazyCodeDiff = lazy(() =>
+  import('../common/CodeEditor').then((m) => ({ default: m.CodeDiff })),
+);
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
@@ -104,9 +111,7 @@ function ResultItem({
           title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}`}
           extra={resultTag}
         >
-          <Typography.Paragraph strong style={{ whiteSpace: 'pre-wrap' }}>
-            {q.question}
-          </Typography.Paragraph>
+          <RichText text={q.question} strong />
           <Typography.Text type="secondary">你的选择：</Typography.Text>
           <Typography.Text>{letterList(sel)}</Typography.Text>
           <br />
@@ -143,22 +148,43 @@ function ResultItem({
         title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}`}
         extra={resultTag}
       >
-        <Typography.Paragraph strong style={{ whiteSpace: 'pre-wrap' }}>
-          {q.question}
-        </Typography.Paragraph>
+        <RichText text={q.question} strong />
 
         <Typography.Text type="secondary">你的回答：</Typography.Text>
-        <Typography.Paragraph
-          style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}
-        >
-          {(answer as string) || '（未作答）'}
-        </Typography.Paragraph>
+        {oq.type === 'coding' && (answer as string)?.trim() ? (
+          <CodeBlock code={answer as string} language={oq.language} />
+        ) : (
+          <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+            {(answer as string) || '（未作答）'}
+          </Typography.Paragraph>
+        )}
         <Typography.Text type="secondary">参考答案：</Typography.Text>
-        <Typography.Paragraph
-          style={{ whiteSpace: 'pre-wrap', fontFamily: oq.type === 'coding' ? 'ui-monospace, monospace' : undefined }}
-        >
-          {oq.referenceAnswer}
-        </Typography.Paragraph>
+        {oq.type === 'coding' ? (
+          <CodeBlock code={oq.referenceAnswer} language={oq.language} />
+        ) : (
+          <RichText text={oq.referenceAnswer} />
+        )}
+
+        {oq.type === 'coding' && (answer as string)?.trim() && (
+          <Collapse
+            ghost
+            items={[
+              {
+                key: 'diff',
+                label: '代码对比（你的代码 vs 参考答案）',
+                children: (
+                  <Suspense fallback={<div style={{ height: 360 }}>对比视图加载中…</div>}>
+                    <LazyCodeDiff
+                      original={oq.referenceAnswer}
+                      modified={answer as string}
+                      language={oq.language}
+                    />
+                  </Suspense>
+                ),
+              },
+            ]}
+          />
+        )}
 
         <Collapse
           ghost
@@ -168,7 +194,10 @@ function ResultItem({
               label: grade ? '解析 / AI 多维反馈' : '解析',
               children: (
                 <>
-                  <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph>
+                  <Typography.Paragraph type="secondary">解析：</Typography.Paragraph>
+                  <div style={{ marginBottom: 8 }}>
+                    <RichText text={q.explanation} />
+                  </div>
                   {grade && (
                     <>
                       <Divider style={{ margin: '8px 0' }} />
