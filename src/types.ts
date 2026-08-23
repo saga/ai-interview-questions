@@ -18,6 +18,11 @@ interface QuestionBase {
   /** 该题是否由 LLM 变体生成（仅展示用） */
   aiGenerated?: boolean;
   /**
+   * 题型变换溯源（ADR-024）：该题由 LLM 从其他题型变换而来时记录原题型。
+   * id 保持原题不变，此字段表达"形态换过"，供会话复盘与质量审核。
+   */
+  transformedFrom?: QuestionType;
+  /**
    * 该题专属评分量表（可选）。
    * - required：必须覆盖的要点（命中情况计入 completeness）
    * - dimensions：四维权重覆盖（未给的维度沿用 InterviewDefinition.scoringRubric）
@@ -167,6 +172,22 @@ export interface LLMProvider {
  * 不感知具体底层（ADR-021）。
  */
 export type CompleteFn = (system: string, user: string) => Promise<string>;
+
+/** 题型变换审计记录（持久化于 localStorage，供质量审核与成功率统计；ADR-024）。 */
+export interface TransformAuditRecord {
+  questionId: string;
+  topic: string;
+  /** 原题型 → 请求目标 → 实际落地题型（多选降级单选时 target ≠ result） */
+  from: QuestionType;
+  target: QuestionType;
+  result: QuestionType;
+  /** 执行变换的引擎名（FallbackProvider 的链首名） */
+  provider: string;
+  ok: boolean;
+  /** ok=false 时的失败原因（错误消息摘要） */
+  error?: string;
+  at: number;
+}
 
 // ───────────────────────────────────────────────────────────
 // Learner Memory（结构化学习信号，非对话记录）

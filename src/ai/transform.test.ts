@@ -53,6 +53,7 @@ describe('transformToOpen：选择 → 开放', () => {
     const r = (await transformQuestionWith(choiceQ, 'essay', complete)) as OpenQuestion;
     expect(r.type).toBe('essay');
     expect(r.id).toBe('q-1');
+    expect(r.transformedFrom).toBe('single'); // 溯源字段：形态来自单选题
     expect(r.question).toBe('请解释为什么 Agent 需要分层记忆设计？');
     expect(r.referenceAnswer).toBe(composeOpenReference(choiceQ));
     expect(r.referenceAnswer).toContain('上下文窗口内的对话状态'); // 正确选项原文进参考答案
@@ -98,6 +99,7 @@ describe('transformToChoice：开放 → 选择（LLM 产出完整选择题，�
     const r = (await transformQuestionWith(openQ, 'single', async () => singlePayload, () => 0.1)) as ChoiceQuestion;
     expect(r.type).toBe('single');
     expect(r.id).toBe('q-2');
+    expect(r.transformedFrom).toBe('essay'); // 溯源字段：形态来自开放题
     expect(r.options).toHaveLength(4);
     expect([...new Set(r.options)]).toHaveLength(4); // 无重复
     expect(r.answer).toHaveLength(1);

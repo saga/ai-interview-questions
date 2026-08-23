@@ -2,6 +2,17 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 题型变换可审计：溯源字段 + 持久化审计日志（ADR-024）
+
+- **题目溯源**：`QuestionBase` 新增可选 `transformedFrom` 字段——变换成功的题目记录原题型，
+  随会话流转，复盘时可识别"这题是换过形态的"（id 本就不变）。
+- **审计日志（storage/transformAudit.ts）**：引擎每次变换尝试（成功与失败）都写入
+  localStorage 新 key `ai-interview-trainer.transform-audit`
+  （questionId/topic/from/target/result/provider/ok/error/at），append-only、上限 200 条；
+  存储不可用或内容损坏时静默降级，不影响主流程。用途：审核 LLM 变换质量、统计成功率。
+- 失败也记录：error 存错误消息摘要，配合 ok=false 可定位坏输出模式。
+- 测试 154 例全过（+9：审计模块往返/裁剪/容错、引擎接线成败两路）；typecheck/build 通过。
+
 ## 2026-08-23 · 题型变换分工修订：内容交 LLM，结构交代码（ADR-024 二轮评审）
 
 - **开放→选择改为 LLM 产出完整选择题**：prompt 携带题目与参考答案，LLM 直接给出

@@ -16,6 +16,7 @@ import { isChoice, planComposition } from '../domain/quiz';
 import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
+import { appendTransformRecord } from '../storage/transformAudit';
 import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/adaptive';
 
 /**
@@ -45,8 +46,8 @@ export async function buildSession(
 }
 
 /**
- * 执行组卷计划中的题型变换：变换成功原位替换（id 保持原题，溯源见日志），
- * 失败/无 provider 时保留原题型。
+ * 执行组卷计划中的题型变换：变换成功原位替换（id 保持原题，transformedFrom 记录来源），
+ * 失败/无 provider 时保留原题型。每次尝试（成败）都写入持久化审计日志供质量审核。
  */
 async function applyTransforms(
   plan: ReturnType<typeof planComposition>,
@@ -65,8 +66,27 @@ async function applyTransforms(
         const transformed = await provider.transformQuestion(t.question, t.target);
         const i = result.indexOf(t.question);
         if (i !== -1) result[i] = transformed;
+        appendTransformRecord({
+          questionId: t.question.id,
+          topic: t.question.topic,
+          from: t.question.type,
+          target: t.target,
+          result: transformed.type,
+          provider: provider.name,
+          ok: true,
+        });
       } catch (err) {
         console.warn(`题型变换失败(${t.question.id})，保留原题型：`, err);
+        appendTransformRecord({
+          questionId: t.question.id,
+          topic: t.question.topic,
+          from: t.question.type,
+          target: t.target,
+          result: t.question.type,
+          provider: provider.name,
+          ok: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }),
   );

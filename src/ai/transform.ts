@@ -161,6 +161,8 @@ export async function transformQuestionWith(
     transformed = q;
   }
   if (transformed !== q) {
+    // 溯源：id 保持原题，transformedFrom 记录形态来源（供复盘与质量审核）
+    transformed = { ...transformed, transformedFrom: q.type };
     console.info(`[题型变换] 题目 ${q.id}（${q.topic}）: ${q.type} → ${transformed.type}`);
   }
   return transformed;

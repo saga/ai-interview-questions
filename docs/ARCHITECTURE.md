@@ -36,6 +36,7 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
 storage/       本地持久化
   settings.ts    LLM 配置（localStorage）
   learner.ts     LearnerProfile / SessionRecord（localStorage v1 key）
+  transformAudit.ts 题型变换审计日志（append-only，上限 200 条，ADR-024）
 
 application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
@@ -230,6 +231,10 @@ Canonical Question ──→ LLM（只输出 question / explanation）
   历史上"LLM 重排选项导致 answer 索引错位"的事故类已被结构设计消灭。
 - 变换后题目保留原题 id（learner memory evidence 对齐），映射只在日志记录、UI 不展示；
   结果显式构造目标形态字段，不残留来源题型专属字段。
+- **变换可审计（ADR-024）**：题目自带 `transformedFrom` 字段（形态来源，随会话流转）；
+  每次尝试成败都写入 `storage/transformAudit.ts` 审计日志
+  （localStorage key `ai-interview-trainer.transform-audit`：questionId / from / target /
+  result / provider / ok / error / at，上限 200 条）——供事后审核 LLM 变换质量与成功率统计。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 
