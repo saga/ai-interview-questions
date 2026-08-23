@@ -2,6 +2,22 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · AI Fundamentals 基础层题库（51 题，总 175 题）
+
+- **题库**：新增 `ai-fund-001..051` 与类目 `ai-fundamentals`，补齐工程题库之下的原理层——
+  Transformer/Attention（含 scaled dot-product 选择题）、Tokenization/BPE、Embedding vs hidden state、
+  Pre-training/Scaling Law、Post-training 链路（SFT loss masking → RLHF reward model → DPO 隐式 reward）、
+  Fine-tuning/LoRA（rank 取舍、LoRA vs RAG 定位）、推理解码（temperature/top-k/top-p/prefill-decode/KV Cache）、
+  Context Window、RAG 基础（chunking/hybrid/reranker/相似度≠相关性）、Evaluation（judge 偏差/数据集设计/offline-online）、
+  Hallucination 成因与边界；末尾 5 道综合 Scenario/Debugging 题（模型选型、FAQ 接入、RAG 排查、
+  延迟定位、Agent 成功率）延续工程判断定位。
+- **知识图谱**：新增 12 条 prerequisite 边形成"基础→进阶→工程应用"链：
+  tokenization → transformer → pretraining → sft → {dpo, fine-tuning → lora}；
+  transformer → inference-optimization → {kv-cache, context-window}；
+  word-embedding/context-window → rag → reranking。topic 尽量复用既有节点，
+  新增节点仅 transformer/sft/dpo/fine-tuning/scaling-law/context-window/reranking/rope/alignment/model-selection。
+- **类目登记**：`domain/categories.ts` 增加 `ai-fundamentals` 中文标签。
+
 ## 2026-08-23 · AI Engineering 工程判断题库扩充（24 题，总 124 题）
 
 - **题库**：新增 `ai-eng-001..024`，主干为工程判断而非知识点——workflow-vs-agent、

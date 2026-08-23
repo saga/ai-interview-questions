@@ -12,6 +12,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   'safety-ethics': '安全与伦理',
   'agentic-ai': 'Agentic AI',
   'ai-engineering': 'AI Engineering',
+  'ai-fundamentals': 'AI Fundamentals',
 };
 
 export function categoryLabel(slug: string): string {
