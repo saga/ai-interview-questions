@@ -1,5 +1,7 @@
 import type { AIConfig, ProviderEntry, ProviderId } from '../types';
 import { isEntryValid } from '../ai/provider';
+import { aiConfigSchema } from '../schemas/ai-config';
+import { formatSchemaErrorMessage } from '../schemas/errors';
 
 const KEY = 'ai-interview-trainer.config';
 const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai'];
@@ -67,6 +69,7 @@ export function stringifyConfig(c: AIConfig): string {
 /**
  * 校验并清洗「config.json 编辑器」提交的文本（纯函数，便于测试）。
  * 通过后返回规范化配置；任何一处不合法都整体拒绝，并给出可定位的错误信息。
+ * 分层：Zod 负责形状校验，domain 负责业务不变量（去重 / isEntryValid / 至少一可用）。
  */
 export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | { ok: false; error: string } {
   let parsed: unknown;
@@ -75,26 +78,38 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
   } catch (e) {
     return { ok: false, error: `JSON 解析失败：${e instanceof Error ? e.message : String(e)}` };
   }
-  const root = parsed as Record<string, unknown> | null;
-  if (!root || typeof root !== 'object' || Array.isArray(root) || !Array.isArray(root.providers)) {
-    return { ok: false, error: '顶层结构必须是 { "providers": [ ... ] }（引擎按数组顺序组成降级链）' };
+
+  // ── Zod 形状校验（数据长什么样） ──
+  const shapeResult = aiConfigSchema.safeParse(parsed);
+  if (!shapeResult.success) {
+    // 顶层 providers 缺失 / 类型错误给出更友好的提示，保持原有文案兼容
+    const root = parsed as Record<string, unknown> | null;
+    if (!root || typeof root !== 'object' || Array.isArray(root) || !Array.isArray((root as Record<string, unknown>).providers)) {
+      return { ok: false, error: '顶层结构必须是 { "providers": [ ... ] }（引擎按数组顺序组成降级链）' };
+    }
+    return {
+      ok: false,
+      error: `配置结构错误：\n${formatSchemaErrorMessage(shapeResult.error)}`,
+    };
   }
 
+  // Zod 已填入默认值并完成类型清洗，再做一次 sanitize 归一（accountId 空字符串剔除等）
+  const normalized = shapeResult.data;
   const entries: ProviderEntry[] = [];
   const seen = new Set<ProviderId>();
-  for (let i = 0; i < root.providers.length; i++) {
-    const raw = root.providers[i];
-    const id = (raw as Record<string, unknown> | null)?.id;
-    if (!PROVIDER_IDS.includes(id as ProviderId)) {
-      return { ok: false, error: `providers[${i}].id "${String(id)}" 非法，可选：${PROVIDER_IDS.join(' / ')}` };
-    }
-    if (seen.has(id as ProviderId)) {
-      return { ok: false, error: `providers[${i}] 的 id "${String(id)}" 重复：同一引擎只能出现一次` };
-    }
-    seen.add(id as ProviderId);
 
-    const entry = sanitizeEntry(raw);
-    if (!entry) return { ok: false, error: `providers[${i}] 结构非法（需要 id / enabled / model / apiKey / baseUrl 字段）` };
+  for (let i = 0; i < normalized.providers.length; i++) {
+    const rawEntry = normalized.providers[i] as unknown as Record<string, unknown>;
+    // 利用 sanitizeEntry 做最终归一（保留其对 accountId 的清洗语义）
+    const entry = sanitizeEntry(rawEntry);
+    if (!entry) {
+      return { ok: false, error: `providers[${i}] 结构非法（需要 id / enabled / model / apiKey / baseUrl 字段）` };
+    }
+    if (seen.has(entry.id)) {
+      return { ok: false, error: `providers[${i}] 的 id "${String(entry.id)}" 重复：同一引擎只能出现一次` };
+    }
+    seen.add(entry.id);
+
     if (entry.enabled && !isEntryValid(entry)) {
       const hint =
         entry.id === 'local'
@@ -110,6 +125,6 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
   if (!entries.some((p) => p.enabled && isEntryValid(p))) {
     return { ok: false, error: '至少需要一个启用且配置完整的引擎' };
   }
-  // generateOpenQuestions 缺省/非法值一律视为 false（与默认值一致）
-  return { ok: true, config: { providers: entries, generateOpenQuestions: root.generateOpenQuestions === true } };
+  // generateOpenQuestions 已由 Zod 默认 false，无需额外处理
+  return { ok: true, config: { providers: entries, generateOpenQuestions: normalized.generateOpenQuestions } };
 }

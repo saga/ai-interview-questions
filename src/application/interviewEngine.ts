@@ -19,6 +19,8 @@ import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
 import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/adaptive';
+import { interviewDefinitionSchema } from '../schemas/interview';
+import { formatSchemaErrorMessage } from '../schemas/errors';
 
 /** 自适应模式无组卷配额：开放形态按此概率随机分配（与普通会话的 7:3 体验一致）。 */
 const ADAPTIVE_OPEN_PROBABILITY = 0.3;
@@ -42,23 +44,32 @@ function effectiveFormats(def: InterviewDefinition, config?: AIConfig): FormatId
  * （adaptive 模式只出第一题，后续由 nextAdaptiveStep 决定）；
  * 若启用 AI，则为每题生成变体——校验通过后落地到会话快照，失败则回退原题。
  */
+function assertValidDefinition(def: InterviewDefinition): InterviewDefinition {
+  const result = interviewDefinitionSchema.safeParse(def);
+  if (!result.success) {
+    throw new Error(formatSchemaErrorMessage(result.error, 'InterviewDefinition 校验失败'));
+  }
+  return result.data;
+}
+
 export async function buildSession(
   bank: QuestionBank,
   def: InterviewDefinition,
   config?: AIConfig,
 ): Promise<InterviewSession> {
-  const formats = effectiveFormats(def, config);
+  const validDef = assertValidDefinition(def);
+  const formats = effectiveFormats(validDef, config);
   let pool = bank.questions;
-  if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
-  if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
+  if (validDef.categories.length > 0) pool = pool.filter((q) => validDef.categories.includes(q.category));
+  if (validDef.difficulties.length > 0) pool = pool.filter((q) => validDef.difficulties.includes(q.difficulty));
   // 形态过滤：题目具备至少一种允许形态即入池；完全无可用形态的题剔除
   pool = pool.filter((q) => availableFormats(q, formats).length > 0);
 
-  const count = def.adaptive ? 1 : def.count;
-  const plan = planComposition(pool, count, def.topicPriorities, formats, Math.random);
-  const provider = def.useAI ? createLLMProvider(config) : null;
+  const count = validDef.adaptive ? 1 : validDef.count;
+  const plan = planComposition(pool, count, validDef.topicPriorities, formats, Math.random);
+  const provider = validDef.useAI ? createLLMProvider(config) : null;
   const questions = await Promise.all(plan.map((sq) => finalizeQuestion(sq, provider)));
-  return { definition: def, questions, startedAt: Date.now() };
+  return { definition: validDef, questions, startedAt: Date.now() };
 }
 
 /** 为会话实例生成并校验 LLM 变体；无 provider / 校验失败 / 调用失败时一律回退原题。

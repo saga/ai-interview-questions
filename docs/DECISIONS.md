@@ -2,6 +2,22 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-033 · 引入 Zod 4 作为数据边界校验层（分阶段迁移，不一次性全面 Zod 化）
+
+- 状态：已采纳 · 2026-08-24
+- 背景：题库是 source of truth，但此前只有 `data/bank.test.ts` 的业务不变量校验，没有 runtime 的形状校验——`JSON → TypeScript interface → 业务代码直接使用`，`JSON.parse` 只能证明是 JSON，不能证明是合法的 Question/Knowledge/AIConfig。LLM 输出与 localStorage 同属不可信边界，同样缺少结构化校验；`parseConfigJSON` 与 `sanitizeEntry` 的手写 `typeof / Array.isArray` 校验散落且需持续维护。
+- 决策：
+  - **分阶段迁移，不一次性重写**：Phase 0 安装 `zod@4.4.3`（与 pi-ai 共享，`strict: true` 已开启）→ Phase 1 Question（核心 source of truth，最易验证）→ Phase 2 Knowledge/ConceptGraph → Phase 3 AIConfig（接管 `parseConfigJSON` 的形状校验）→ Phase 4 Evaluation（LLM 输出）→ Phase 5 localStorage 持久化与业务 invariant 的最终收口。当前 PR 完成 Phase 1-4 的增量落地。
+  - **目录收口**：新增 `src/schemas/` 为唯一契约出处（`common`/`question`/`knowledge`/`conceptGraph`/`ai-config`/`evaluation`/`interview`/`errors`/`index`），`data/` 只存数据，不放 schema；`schemas` 不依赖 `domain`，`domain` 也不依赖 `schemas`，仅在装配边界消费校验结果。
+  - **职责切分**：`Zod 负责“数据长什么样”`（类型/枚举/必填/数组长度等形状），`domain 负责“数据之间是否合理”`（单选题恰好一个答案、多选题至少两个答案且无重复、topic 必须有知识点支撑、前置不能成环、provider 去重与 `isEntryValid` 完整性等）。校验分两层，前者 fail-fast 于加载期，后者由 `domain/*.test.ts` 与 `data/bank.test.ts` 保障。
+  - **形状即类型**：`export type Question = z.infer<typeof questionSchema>`，同一份定义同时产生运行时校验与静态类型；增量期 `src/types.ts` 仍保留以兼容存量引用，最终可收敛为 `z.infer` 单一来源，不维护两套。
+  - **边界收口**：`data/questionBank.ts` / `data/knowledgeMap.ts` / `domain/conceptGraph.ts` 在 eager 合并后逐条 `safeParse`（失败抛错定位到 `文件[下标]` 与 `path → message`）；`storage/settings.ts` 的 `parseConfigJSON` 先走 `aiConfigSchema.safeParse` 再走去重与 `isEntryValid` 等不变量（`generateOpenQuestions` 的缺省/非法值仍按 `=== true` 语义视为 false）；`ai/evaluate.ts` 的 `parseEvaluation` 在 `extractJSON` 后走 `llmEvaluationRawSchema.safeParse`，再 `clamp + aggregateOverall`（`overall` 仍由 domain 聚合，Zod 不碰分数）。
+  - **错误定位**：`schemas/errors.ts` 统一 `formatSchemaError`（`a.b[0].c → message` 的 bracket 记法），不在 UI 直接抛 `ZodError`。
+  - **不做的事**：不在 Zod `.refine()` 里写图算法/DAG/toposort、跨表 `knowledge.has(topic)`、迁移逻辑；`sanitize`（如 `accountId` 空字符串剔除、`baseUrl` 归一）与 `Zod transform` 分开；`z.toJSONSchema` 与 Monaco/LLM structured output 复用待后续阶段；`LearnerProfile / SessionRecord` 的版本化持久化 schema 待 Phase 5。
+- 理由：以最小风险获得最大收益的 runtime contract——Question 是最易验证迁移正确性的起点；Zod 4 的 `discriminatedUnion`、`infer`、`toJSONSchema` 与 `TypeScript strict` 完全契合现有 `Vite + React` 架构；分层后 `domain` 保持纯函数与可测性，Zod 不渗透业务。
+- 验证：新增 `src/schemas/*.test.ts`（question/knowledge/conceptGraph/evaluation/ai-config，形状正/反/边界用例）；存量 `data/bank.test.ts` 的业务不变量校验保留；`questionBank` 315 题与 `knowledge` 64 节点、`conceptGraph` 118 边全量通过 Zod；`parseConfigJSON` 存量 13 例用例全过（形状错误改由 Zod 产出，路径记法保持 `providers[0].id`）；`229` 测试全过，`typecheck`/`build` 通过。
+- 后续：`LearnerProfile / SessionRecord` 的 `version: literal(1)` + migration、`Monaco` 的 `z.toJSONSchema(aiConfigSchema)` 自动补全、`fast-check` 与 Zod 互补的 domain invariant 随机化测试。
+
 ## ADR-032 · 题库建设两速分离：覆盖矩阵先行，复用 > 变体 > 生成
 
 - 状态：已采纳 · 2026-08-23

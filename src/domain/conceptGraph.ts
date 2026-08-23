@@ -13,6 +13,8 @@
 
 import { Graph, alg } from '@dagrejs/graphlib';
 import graphData from '../data/conceptGraph.json';
+import { conceptGraphSchema } from '../schemas/conceptGraph';
+import { formatSchemaErrorMessage } from '../schemas/errors';
 
 export type EdgeType =
   | 'prerequisite' // from 是 to 的前置（DAG，基础 → 进阶）
@@ -28,7 +30,11 @@ export interface ConceptGraph {
   edges: ConceptEdge[];
 }
 
-export const conceptGraph: ConceptGraph = graphData as unknown as ConceptGraph;
+const parsedGraph = conceptGraphSchema.safeParse(graphData);
+if (!parsedGraph.success) {
+  throw new Error(formatSchemaErrorMessage(parsedGraph.error, 'conceptGraph.json 形状校验失败'));
+}
+export const conceptGraph: ConceptGraph = parsedGraph.data as unknown as ConceptGraph;
 
 /** 无向语义的边类型。 */
 const UNDIRECTED_TYPES: EdgeType[] = ['related'];

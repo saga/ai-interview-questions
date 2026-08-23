@@ -5,6 +5,7 @@ import type { AIConfig } from '../../types';
 import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
 import { DEFAULT_LOCAL_BASE_URL } from '../../ai/local';
 import { DEFAULT_CONFIG, parseConfigJSON, stringifyConfig } from '../../storage/settings';
+import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
 
@@ -39,6 +40,35 @@ export default function SettingsPanel({ config, onSave }: Props) {
     });
     return () => {
       alive = false;
+    };
+  }, []);
+
+  // Monaco JSON Schema：由 Zod 单一来源派生，提供校验/补全/悬停（z.toJSONSchema）
+  useEffect(() => {
+    let cancelled = false;
+    import('monaco-editor').then((monaco) => {
+      if (cancelled) return;
+      const schema = getAIConfigJsonSchema() as Record<string, unknown>;
+      // monaco 的 json 语言服务在首次加载 json worker 后生效；此处配置全局诊断
+      const jsonDefaults = (monaco.languages as unknown as { json?: { jsonDefaults?: { setDiagnosticsOptions: (opts: unknown) => void } } }).json
+        ?.jsonDefaults;
+      if (jsonDefaults) {
+        jsonDefaults.setDiagnosticsOptions({
+          validate: true,
+          allowComments: false,
+          schemas: [
+            {
+              uri: 'http://ai-interview-trainer/ai-config.json',
+              // fileMatch 匹配 Monaco 模型的 uri；CodeEditor 未指定 uri 时默认为内存模型，'*' 可覆盖
+              fileMatch: ['*'],
+              schema,
+            },
+          ],
+        });
+      }
+    });
+    return () => {
+      cancelled = true;
     };
   }, []);
 

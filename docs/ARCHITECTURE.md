@@ -11,6 +11,18 @@
 ## 分层
 
 ```
+schemas/       数据契约层（Zod 4）：runtime validation + TypeScript 类型推导（单源）
+  common.ts      共享枚举（difficulty / providerId / angle 等，`export type X = z.infer<typeof xSchema>`）
+  question.ts    Question 形状（Zod 负责“长什么样”，domain 负责“是否合理”）
+  knowledge.ts   KnowledgeNode 形状
+  conceptGraph.ts ConceptGraph 形状（只验结构，DAG 仍由 domain 校验）
+  ai-config.ts   AIConfig 形状（校验结构，业务不变量由 isEntryValid / 去重等保障）
+  evaluation.ts  LLM 输出形状（只验 JSON 形状，overall 仍由 domain 聚合）
+  types.ts       兼容 re-export 层（`types.ts` 不再手写 `interface Question`，全部 `export type X = z.infer` 自 schemas，行为契约 `LLMProvider` 等除外）
+  errors.ts      统一 ZodError → path/message 格式化（bracket 记法 providers[0].id）
+  questionBank / knowledgeMap / conceptGraph 的加载期校验均在此层完成；
+  详见「数据契约与运行时校验」小节（ADR-033）
+
 domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单测覆盖）
   categories.ts  类目 slug → 中文标签
   knowledge.ts   知识点层查询：knowledgeById / requiredPointsFor（评分要点回退）
@@ -45,9 +57,9 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
                      + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
 
-storage/       本地持久化
-  settings.ts    LLM 配置（localStorage）
-  learner.ts     LearnerProfile / SessionRecord（localStorage v1 key）
+storage/       本地持久化（localStorage 为不可信边界，一律经 Zod 校验）
+  settings.ts    LLM 配置（localStorage，`aiConfigSchema` 形状 + `isEntryValid`/去重等不变量）
+  learner.ts     LearnerProfile / SessionRecord（localStorage `learner.v1`，`learnerProfileSchema` + `persistedLearnerSchema: {version:1,data}` 版本化包装，兼容旧直接存储）
 
 application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
@@ -72,15 +84,15 @@ components/
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
                        slug 类目 + topic/tags + 可选 rubric + angle（主考察角度，
-                       覆盖矩阵用，ADR-032；存量 248 题已全量标注）；全部同时携带
+                       覆盖矩阵用，ADR-032；存量 315 题已全量标注）；全部同时携带
                        choice 与 open 双形态（ADR-027），其中 173 题的选择形态带
                        场景化专属题干 cf.question（ADR-028，工程决策/安全治理/
                        生产运维类）；ai-fundamentals（基础原理）→ agentic-ai /
                        ai-engineering（工程判断）按能力维度组织）
-data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不建索引/数据库层，
-                       规模需要时再加动态 import + 构建期 question-index）
+data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状校验；刻意不建索引/数据库层，
+                       规模需要时再加动态 import + 构建期 question-index；失败时抛错并定位到 文件[下标]）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
-                         prerequisite 构成基础→进阶 DAG）
+                         prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<area>.json，×7 领域：
                         dl-fundamentals / llm-architecture / training / inference /
                         rag / agentic-ai / system-design；transformer 与 moe 已并入
@@ -92,7 +104,7 @@ data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<
                         追问与 gap 分析素材）/ angles（definition→mechanism→calculation→
                         tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
                         支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
-data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并，同 questionBank 模式）
+data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并 + Zod 形状校验，同 questionBank 模式）
 scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：fs 直读
                         questions/ 与 knowledge/ JSON（不走 import.meta.glob），
                         调 domain/coverage 纯函数输出矩阵与补题建议。Node 24+ 原生
@@ -103,10 +115,12 @@ scripts/question-blueprint.ts  蓝图 CLI（npm run question:blueprint -- N）�
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
-依赖方向：`components → application(interviewEngine) → domain + ai`；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库。
+依赖方向：`components → application(interviewEngine) → domain + ai`；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库；`schemas` 不依赖 domain（纯数据契约），`domain` 也不依赖 `schemas`——仅在装配边界（questionBank / knowledgeMap / conceptGraph / settings / evaluate）消费校验结果，内部逻辑不感知 Zod。
 
 **ai → domain 的边界约定**：`ai` 只允许依赖 domain 的**纯计算函数**（`evaluation.aggregateOverall`、`provider.mergeQuestionRubric`、variant 校验等），
 不得依赖业务流程模块（`learner` / `adaptive` / `quiz`）——AI 层只负责"生成/评价语言内容"，不理解产品业务流。
+
+**schemas → domain 的边界约定（ADR-033）**：Zod 只回答“数据长什么样”（类型/枚举/必填/数组长度），domain 回答“数据之间是否合理”（单选题恰好一个答案、前置不能成环、topic 必须有知识点支撑、provider 去重与完整性等）。校验分两层：`schemas/*.ts` 做形状，`domain/*.test.ts` 与 `data/bank.test.ts` 做不变量；前者 fail-fast 于加载期，后者保障业务语义。
 
 ## 核心数据流（主架构）
 
@@ -327,6 +341,40 @@ Canonical Question ──→ LLM（只输出 question / explanation）
 - `dimensions`：该题的四维权重覆盖（未给的维度沿用全局 `InterviewDefinition.scoringRubric`），在 `PiAIProvider.evaluateOpenAnswer` 里合并。
 - **知识点回退（ADR-029）**：题目未自带 `rubric.required` 时，`mergeQuestionRubric` 回退到该题 topic 对应知识节点（`data/knowledge/`）的 `required`——评分锚点的默认来源是知识点层而非逐题手写。
 
+## 数据契约与运行时校验（Zod 边界层，ADR-033）
+
+Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。目录 `src/schemas/` 集中定义所有对外/不可信输入的形状；验证发生在边界，内部拿到的是已信任对象。
+
+```
+                         External / Untrusted
+                                │
+             ┌──────────────────┼─────────────────┐
+             │                  │                 │
+          JSON data          LLM output       localStorage
+             │                  │                 │
+             ▼                  ▼                 ▼
+          Zod parse          Zod parse         Zod parse
+             │                  │                 │
+             └──────────────────┼─────────────────┘
+                                ▼
+                         Trusted objects
+                                │
+                                ▼
+                         Domain / Engine
+                                │
+                                ▼
+                         Business invariants
+```
+
+- **职责切分**：Zod 校验 `type/difficulty/options 是否为数组/question 是否为 string`；domain 校验 `单选题恰好一个答案 / topic 必须存在于 knowledge / prerequisite 不能成环`。前者在 `schemas/*.ts`，后者在 `domain/*` 与 `data/bank.test.ts`。
+- **类型即 schema**：`export type Question = z.infer<typeof questionSchema>`，运行时与静态类型由同一份定义产生，避免两套类型漂移。当前为增量迁移阶段，`src/types.ts` 仍保留以兼容存量引用，后续可收敛为 `z.infer` 单一来源。
+- **装配期 fail-fast**：`data/questionBank.ts`、`data/knowledgeMap.ts`、`domain/conceptGraph.ts` 在 `import.meta.glob` eager 合并后逐条 `safeParse`，失败直接抛错并定位到 `文件[下标]` 与 `path → message`（bracket 记法如 `providers[0].id`），不在用户进入某 topic 时才暴露坏数据。
+- **AIConfig**：`storage/settings.ts` 的 `parseConfigJSON` 先走 `aiConfigSchema.safeParse` 做形状校验（provider id 白名单、数组结构），再走 domain 不变量（同引擎去重、`isEntryValid` 完整性、`至少一个可用引擎`、`generateOpenQuestions` 非 true 视为 false 的清洗语义）。`loadConfig` 的历史 `provider → providers` 迁移与静默丢弃逻辑保留于 storage 层。
+- **LLM 输出**：`ai/evaluate.ts` 的 `parseEvaluation` 在 `extractJSON` 之后走 `llmEvaluationRawSchema.safeParse`，形状合法才进入 `clamp + aggregateOverall`；`overall` 仍由 `domain/evaluation` 聚合，LLM 不拥有分数。`schemas/jsonSchema.ts` 的 `z.toJSONSchema(aiConfigSchema)` 已接入 `SettingsPanel` 的 Monaco 校验（自动补全/悬停/枚举提示），后续可复用同一份契约做 LLM structured output。
+- **持久化**：`storage/learner.ts` 的 `LearnerProfile / SessionRecord / QuestionResult` 由 `schemas/learner.ts` 定义（`topicStats`/`evidence`/`questionResults` 全约束），`persistedLearnerSchema = { version: literal(1), data: learnerProfile }` 版本化包装；`loadLearner` 兼容旧直接存储形态（无 `version`）与新 `version:1` 形态，`saveLearner` 一律写入版本化结构，损坏数据回退空画像。Migration 仍属 storage/domain 逻辑，不塞进 Zod。
+- **错误呈现**：`schemas/errors.ts` 的 `formatSchemaError` 将 ZodError 扁平为 `{ path, message }`，path 按 `a.b[0].c` 记法，便于维护大量 JSON 题库时定位；`questionBank/knowledgeMap/conceptGraph/settings` 统一使用该格式化。
+- **演进**：`schemas/` 已覆盖 question / knowledge / conceptGraph / ai-config / evaluation / interview / learner / session；后续仅需为 `InterviewSession` 等运行时会话补充可选的回放校验，不再新增大范围 schema。
+
 ## 技术栈注意点
 
 - **antd 为 6.x**：`Divider` 仅支持 `horizontal / vertical`，无 `orientation` 左右。
@@ -350,11 +398,12 @@ Canonical Question ──→ LLM（只输出 question / explanation）
   为 choice 而非空会话；缺省/非法值按 false 清洗。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；
   Cloudflare 额外经 credential.env 注入 `CLOUDFLARE_ACCOUNT_ID`（其 auth 协议要求 Token + Account ID 双字段）。
-- **设置页 = config.json 编辑器（ADR-025/026）**：引擎为
+- **设置页 = config.json 编辑器（ADR-025/026，ADR-033 增强）**：引擎为
   `chrome / local / deepseek / openrouter / google / cloudflare-workers-ai` 六种（ADR-026 扩容），
-  设置面板不再逐引擎表单，而是 Monaco JSON 编辑器直接编辑配置；保存时
-  `parseConfigJSON`（storage/settings.ts，纯函数有测试）整体校验并清洗，
+  设置面板 Monaco JSON 编辑器直接编辑配置，`z.toJSONSchema(aiConfigSchema)` 注入 `monaco.languages.json` 诊断（enum 提示、hover、实时校验）；保存时
+  `parseConfigJSON`（storage/settings.ts，纯函数有测试，形状校验由 Zod 接管）整体校验并清洗，
   错误信息定位到 `providers[i]`。历史配置中的已下线引擎 id 由 loadConfig/sanitizeEntry 静默丢弃。
+- **Zod 4（ADR-033）**：`strict: true` 已开启，`zod@4.4.3` 与 pi-ai 共享；`schemas/` 为唯一契约出处，`z.toJSONSchema` 已用于 Monaco（`schemas/jsonSchema.ts`），并可复用为 LLM structured output 的 JSON Schema；`allowImportingTsExtensions` 对 `schemas` 导入不产生影响（仅 `domain/coverage` 等 CLI 直跑路径需要 `.ts` 扩展名）。
 - **浏览器直连 LLM 受 CORS 限制**：实测 CORS 友好的云端为 DeepSeek / OpenRouter /
   Google Generative Language API / Cloudflare API（ADR-026）；OpenAI、Anthropic 直连仍不可用，
   有需求走本地 OpenAI 兼容网关（id=local 指向代理地址）。

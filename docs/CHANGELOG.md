@@ -2,6 +2,31 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-24 · Zod 类型单源收口 + InterviewDefinition 边界校验（ADR-033 收口）
+
+- **类型单源**：`src/types.ts` 删除全部手写 `interface Question / KnowledgeNode / ProviderEntry / AIConfig / EvaluationResult / LearnerProfile ...`，改为 `export type X = z.infer<typeof xSchema>` re-export 自 `schemas/*`（`Difficulty/ProviderId/FormatId/...` 亦自 `schemas/common` 推导）；`ChoiceFormat/OpenFormat` 改为 `NonNullable<Question['formats'][...]>` 保持与 schema 同步；`types.ts` 仅保留行为契约 `LLMProvider/CompleteFn/QuestionBank/QuestionBlueprint` 等。
+- **边界校验**：`application/interviewEngine.ts:32 assertValidDefinition` 新增 `interviewDefinitionSchema.safeParse` + `formatSchemaErrorMessage`，`buildSession` 入口即校验（`count/ title/ scoringRubric` 等形状），失败早抛；`types` 收口后 `typecheck/build` 仍通过，无调用方需改。
+- 238 测试全过，`typecheck`/`build` 通过。
+
+## 2026-08-24 · Zod 边界层收口：持久化版本化 + Monaco JSON Schema（ADR-033 Phase 5-6）
+
+- **持久化**：新增 `schemas/learner.ts`（`topicStats`/`questionResult`/`sessionRecord`/`learnerProfile`）与 `schemas/session.ts`（`sessionQuestion`/`interviewSession`），`persistedLearnerSchema = { version: literal(1), data: learnerProfile }` 版本化包装；`storage/learner.ts` 的 `loadLearner` 兼容旧直接存储与新版本化写入，`saveLearner` 一律写入 `version:1`，Zod 形状校验后回退空画像（localStorage 为不可信边界）。新增 `schemas/learner.test.ts` 9 例（含新/旧形态兼容与非法回退）。
+- **Monaco**：新增 `schemas/jsonSchema.ts`（`z.toJSONSchema(aiConfigSchema, {target:'draft-7'})` 单一来源派生），`components/settings/SettingsPanel.tsx` 挂载 `monaco.languages.json.jsonDefaults.setDiagnosticsOptions` 注入 AIConfig JSON Schema（枚举提示/hover/实时校验）；后续可复用为 LLM structured output。
+- **统一边界**：`schemas/errors.ts` 的 bracket 记法与 `questionBank/knowledgeMap/conceptGraph/settings/evaluate` 的校验路径已统一；`schemas/index.ts` 导出完整契约集（common/question/knowledge/conceptGraph/ai-config/evaluation/interview/learner/session）。
+- 238 测试全过，`typecheck`/`build` 通过。
+
+## 2026-08-24 · 引入 Zod 4 边界校验层：分阶段接管形状校验（ADR-033 Phase 1-4）
+
+- **新增依赖**：`zod@4.4.3`（与 `@earendil-works/pi-ai` 共享，去重），`strict: true` 已满足官方要求；`src/schemas/` 为新增契约层（`common`/`question`/`knowledge`/`conceptGraph`/`ai-config`/`evaluation`/`interview`/`errors`/`index`），`data/` 不放 schema。
+- **职责切分落地**：`Zod 负责形状`（类型/枚举/必填/数组长度），`domain 负责 invariants`（单选题索引合法性、topic 支撑、前置 DAG、provider 去重与完整性等）。`formatSchemaError` 统一 `path → message`（`providers[0].id` bracket 记法）。
+- **接管边界**：
+  - `data/questionBank.ts` / `data/knowledgeMap.ts` / `domain/conceptGraph.ts`：eager 合并后逐条 `safeParse`，失败抛错定位到 `文件[下标]`（315 题 / 64 节点 / 118 边全量通过）。
+  - `storage/settings.ts`：`parseConfigJSON` 先走 `aiConfigSchema.safeParse`（形状），再走去重/`isEntryValid`/`至少一可用`等不变量；`generateOpenQuestions` 非 `true` 视为 `false` 的清洗语义不变（对字符串等非法值容错）。
+  - `ai/evaluate.ts`：`parseEvaluation` 在 `extractJSON` 后走 `llmEvaluationRawSchema.safeParse`，再 `clamp + aggregateOverall`（`overall` 仍由 domain 聚合）。
+- **测试**：新增 `src/schemas/*.test.ts`（question 13 例 / knowledge 6 例 / conceptGraph 4 例 / evaluation 6 例 / ai-config 6 例，覆盖正/反/边界）；存量 `data/bank.test.ts` 的业务不变量校验保留；本变更涉及 `settings.test.ts` 对 `generateOpenQuestions` 非法值与 `providers[0].id` 定位的回归均通过。
+- **文档**：`ARCHITECTURE.md` 新增分层 `schemas/` 与「数据契约与运行时校验」小节及依赖方向说明；`DECISIONS.md` 新增 ADR-033（分阶段迁移、目录、职责切分、演进路径）；本条 CHANGELOG。
+- 229 测试全过，`typecheck`/`build` 通过。
+
 ## 2026-08-24 · Taxonomy 收敛：knowledge 七领域 + questions 八类目（数据契约变更）
 
 - **knowledge/ 8→7**：`transformer.json` 与 `moe.json` 并入 `llm-architecture.json`

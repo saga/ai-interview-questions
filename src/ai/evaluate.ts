@@ -6,6 +6,7 @@ import { extractJSON } from './pi';
 import { aggregateOverall } from '../domain/evaluation';
 import type { CompleteFn, EvaluationResult, OpenFormat, Question, ScoringRubric } from '../types';
 import { EVAL_DIMENSIONS } from '../types';
+import { llmEvaluationRawSchema } from '../schemas/evaluation';
 
 const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;
 
@@ -59,6 +60,7 @@ ${opts.extraCriteria ? '额外评估要求：' + opts.extraCriteria : ''}
 /**
  * 从 LLM 文本输出解析出结构化评估结果。纯函数，便于测试。
  * 综合分不采纳 LLM 输出——固定由 domain/aggregateOverall 计算（Domain 拥有分数）。
+ * 边界：Zod 校验 LLM 形状（数据长什么样），domain clamp/聚合负责业务不变量。
  */
 export function parseEvaluation(raw: string, open: OpenFormat, rubric: ScoringRubric): EvaluationResult {
   const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
@@ -76,15 +78,9 @@ export function parseEvaluation(raw: string, open: OpenFormat, rubric: ScoringRu
       referenceAnswer: open.referenceAnswer,
     };
   }
-  const out = extractJSON<{
-    correctness?: number;
-    completeness?: number;
-    architecture?: number;
-    communication?: number;
-    feedback?: string;
-    strengths?: string[];
-    gaps?: string[];
-  }>(raw);
+  const json = extractJSON<unknown>(raw);
+  const validated = llmEvaluationRawSchema.safeParse(json);
+  const out = validated.success ? validated.data : {};
 
   const dimensions = {
     correctness: clamp(out.correctness ?? 0),
