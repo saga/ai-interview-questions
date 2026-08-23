@@ -1,10 +1,13 @@
 import { Card, Typography, Progress, Tag, List, Empty, Button, Space } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, ThunderboltOutlined, ApartmentOutlined } from '@ant-design/icons';
 import type { LearnerProfile } from '../../types';
+import type { CoverageReport, TopicSuggestion } from '../../domain/conceptGraph';
 
 interface Props {
   profile: LearnerProfile;
   onGoTrain: () => void;
+  coverage: CoverageReport;
+  suggestions: TopicSuggestion[];
 }
 
 function fmtDate(ts: number): string {
@@ -38,7 +41,7 @@ function masteryColor(m: number): string {
   return '#ff4d4f';
 }
 
-export default function ProgressPage({ profile, onGoTrain }: Props) {
+export default function ProgressPage({ profile, onGoTrain, coverage, suggestions }: Props) {
   const { sessions, topicStats, overallScore } = profile;
 
   if (sessions.length === 0) {
@@ -96,6 +99,30 @@ export default function ProgressPage({ profile, onGoTrain }: Props) {
         ))}
       </Card>
 
+      <Card size="small" style={{ marginBottom: 16 }} title={<span><ApartmentOutlined /> 知识覆盖面</span>}>
+        {coverage.categories.map((c) => (
+          <div key={c.category} style={{ marginBottom: 8 }}>
+            <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+              <Typography.Text>{c.category}</Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                覆盖 {c.attempted}/{c.totalTopics} 主题 · 掌握 {c.mastered}
+              </Typography.Text>
+            </Space>
+            <Progress
+              percent={Math.round((c.attempted / c.totalTopics) * 100)}
+              strokeColor={c.mastered >= c.totalTopics ? '#52c41a' : undefined}
+              size="small"
+              format={(p) => `${p}%`}
+            />
+          </div>
+        ))}
+        <Typography.Paragraph type="secondary" style={{ fontSize: 12, margin: '8px 0 0' }}>
+          共 {coverage.unattemptedCount} 个主题未接触
+          {coverage.blockedCount > 0 && `，其中 ${coverage.blockedCount} 个主题的前置知识尚未掌握`}
+          。
+        </Typography.Paragraph>
+      </Card>
+
       <Card size="small" style={{ marginBottom: 16 }} title="最近趋势">
         <TrendSparkline scores={recentScores} />
         <List
@@ -116,6 +143,26 @@ export default function ProgressPage({ profile, onGoTrain }: Props) {
           )}
         />
       </Card>
+
+      {suggestions.length > 0 && (
+        <Card size="small" style={{ marginBottom: 16 }} title="建议下一步">
+          <List
+            size="small"
+            dataSource={suggestions}
+            renderItem={(s) => (
+              <List.Item style={{ padding: '4px 0' }}>
+                <Space wrap>
+                  <Tag color={coverage.weakTopics.includes(s.topic) ? 'orange' : 'geekblue'}>{s.topic}</Tag>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>{s.reason}</Typography.Text>
+                </Space>
+              </List.Item>
+            )}
+          />
+          <Button type="primary" ghost block style={{ marginTop: 8 }} onClick={onGoTrain}>
+            按建议训练
+          </Button>
+        </Card>
+      )}
 
       {needsAttention.length > 0 && (
         <Card size="small" title="需要关注">

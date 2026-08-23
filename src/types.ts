@@ -112,6 +112,8 @@ export interface InterviewDefinition {
   questionTypes: QuestionType[]; // 允许的题目类型
   count: number;
   useAI: boolean; // 是否启用 LLM 变体出题与开放题评分
+  /** 自适应模式：逐题作答，下一题由上一题表现 + 概念图迁移策略决定（见 domain/adaptive） */
+  adaptive?: boolean;
   scoringRubric: ScoringRubric;
   timeLimitSec?: number;
   followUpStrategy?: string; // 预留：Agentic 追问扩展

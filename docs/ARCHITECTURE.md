@@ -37,6 +37,7 @@ components/
   common/CodeBlock.tsx     只读代码高亮（Shiki，单例 highlighter + CSS 行号）
   common/RichText.tsx      文本段落 + 围栏代码块混合渲染
   common/CodeEditor.tsx    Monaco 编辑器（CodeEditor 作答 / CodeDiff 对比，懒加载）
+  quiz/AdaptiveQuiz.tsx    自适应模式逐题视图（提交即评分 → 策略选下一题）
   home/TrainingHome.tsx         训练入口（继续/快速/自定义，隐藏系统内部配置）
   quiz/QuestionCard.tsx         单题作答卡片
   result/ResultPanel.tsx        成绩 + 对比上次 + 强弱项 + AI 建议 + 继续训练
@@ -46,10 +47,39 @@ components/
 
 data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；100 题，
                        其中 agentic-ai 按 Scenario/Debugging/Trade-off/开放题等能力维度组织）
+data/conceptGraph.json  概念图边（topic 级 related/prerequisites，节点来自题库 topic）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
 依赖方向：`components → lib(interviewEngine) → domain + ai`；`ai → domain`（评分聚合复用）；`domain` 不依赖 React、不 import 任何 LLM 库。
+
+## 自适应面试引擎 + 知识覆盖面（ADR-017）
+
+核心思想：**下一道题不是随机抽的，而是一次决策**。题库只是素材库，面试由 Interview State 驱动。
+
+```
+作答信号 AnswerSignal (topic/score/difficulty)
+        ↓ domain/adaptive.decideStrategy()
+迁移策略 Strategy
+  ├─ deep-dive   纵向深挖：同主题更高难度继续问
+  ├─ gap-probe   薄弱补查：降难度 → 回退前置主题 → 同主题兜底
+  ├─ broaden     横向扩展：切换概念图 related 主题
+  └─ move-on     新方向：排除刚答主题，薄弱画像优先
+        ↓ domain/adaptive.pickNextAdaptive()（纯函数，rng 可注入）
+下一题 → 引擎 nextAdaptiveStep() 过滤已问 + LLM 变体 → 追加进会话
+```
+
+- **模式开关**：`InterviewDefinition.adaptive`。开启后 `buildSession` 只组第一题；UI 走 `AdaptiveQuiz`
+  逐题视图——提交即评分（选择题确定性判分 / 开放题 LLM），随后引擎选下一题追加。
+- **知识图谱**：`domain/conceptGraph.ts` 维护 topic 级边（related 横向 / prerequisites 纵向），
+  节点直接复用题库 `topic` 字段，无需给每道题加 concepts。
+- **覆盖面地图**：`computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
+  前置全掌握的未学主题进入 readyToLearn，否则计入 blocked（"先补前置"）。
+  ProgressPage 展示类目覆盖条 + `suggestNextTopics()` 学习建议。
+- **教练推荐升级**：`buildCoachDefinition` 的 topicPriorities 经
+  `expandWithPrerequisites()` 沿前置链展开（先补地基再攻难点）。
+- **边界**：策略决策当前为确定性规则（可测、可解释）；Contradiction Probe 与 LLM 策略 Agent
+  （每轮输出 candidate_state + next_strategy JSON）是后续演进方向，届时 LLM 只决定策略、仍从结构化题池选题。
 
 ## 代码展示与编辑（Shiki 只读 / Monaco 可编辑）
 

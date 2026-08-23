@@ -18,10 +18,11 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
   const start = () => {
     onStart(
       buildCoachDefinition(profile, {
-        title: '模拟面试',
+        title: '自适应模拟面试',
         count: 10,
         timeLimitSec: 30 * 60,
         mode: 'interview',
+        adaptive: true,
       }),
     );
   };
@@ -37,21 +38,23 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
             <CommentOutlined style={{ fontSize: 28, color: '#722ed1' }} />
             <div>
               <Typography.Text strong style={{ fontSize: 15 }}>
-                AI 面试官
+                自适应 AI 面试官
               </Typography.Text>
               <br />
-              <Typography.Text type="secondary">30 分钟 · 10 道题 · 根据你的薄弱项出题</Typography.Text>
+              <Typography.Text type="secondary">
+                30 分钟 · 10 道题 · 根据你的表现逐题调整：答得好换方向扩展，答不好深入补弱
+              </Typography.Text>
             </div>
           </Space>
           <Space wrap>
             <Tag icon={<ClockCircleOutlined />} color="purple">
               限时 30 分钟，到点自动交卷
             </Tag>
-            <Tag color="geekblue">含选择题 / 问答 / 编程</Tag>
+            <Tag color="geekblue">逐题评分 + 自适应出题</Tag>
           </Space>
           <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
-            首版为限时综合题组（与训练共用引擎与评分）；追问式对话面试（follow-up loop）将基于
-            pi-agent-core 的 Agent 陆续接入。
+            出题策略由概念图驱动：纵向深挖（同主题追问）、薄弱补查（回退前置知识）、横向扩展（切换相关主题）、
+            新方向（保证覆盖面）。追问式对话面试（follow-up loop）将基于 pi-agent-core 后续接入。
           </Typography.Paragraph>
           {!configReady && (
             <Alert

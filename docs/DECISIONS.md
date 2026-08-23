@@ -2,6 +2,27 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-017 · 自适应面试引擎（迁移策略 + 概念图 + 覆盖面地图）
+
+- 状态：已采纳 · 2026-08-23
+- 背景：原流程"一次性随机组卷 → 全部答完再评分"无法模拟真实面试的追问与方向调整；用户需要
+  "根据上一题表现深入（deep dive）或换方向（broaden）"，以及知识覆盖面/薄弱地图。
+- 决策：
+  - **下一题 = 决策而非抽取**：`domain/adaptive.ts` 定义 4 种迁移策略（deep-dive / gap-probe /
+    broaden / move-on），由上一题 AnswerSignal（topic/score/difficulty）+ 概念图邻居可用性决定；
+    纯函数、rng 可注入、全单测。
+  - **知识图谱做在 topic 层**：`data/conceptGraph.json` 只存边（related/prerequisites），节点复用
+    题库 topic 字段——避免给每道题维护 concepts 元数据。
+  - **逐题模式**：`InterviewDefinition.adaptive` 开关；buildSession 只组第一题，UI 走 AdaptiveQuiz，
+    提交即评分（选择题即时判分 / 开放题 LLM），引擎 `nextAdaptiveStep` 追加下一题；提前结束随时可用。
+  - **覆盖面**：`computeCoverage` 按类目统计练过/掌握比例，前置全掌握的未学主题标记 readyToLearn；
+    ProgressPage 展示覆盖条与学习建议；教练推荐经 `expandWithPrerequisites` 先补前置。
+  - **LLM 的角色边界**：当前策略为确定性规则；未来 LLM 策略 Agent 只输出策略 JSON（candidate_state +
+    next_strategy），仍从结构化题池选题——不让 LLM 凭空出题。
+- 理由：题目本身不构成护城河，"作答信号 → 策略 → 选题 → 画像 → 推荐"闭环才是；确定性规则先行保证
+  可靠性与可解释性，LLM 只在其真正增值处（策略叙述、追问生成）介入。
+- 后续：Contradiction Probe（跨题矛盾检测）依赖逐题证据留存，随 LLM 策略 Agent 一并设计。
+
 ## ADR-016 · 代码展示与编辑分离（Shiki 只读 / Monaco 可编辑）
 
 - 状态：已采纳 · 2026-08-23

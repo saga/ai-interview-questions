@@ -2,6 +2,19 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 自适应面试引擎 + 知识覆盖面（ADR-017）
+
+- **自适应逐题模式**（`InterviewDefinition.adaptive`）：
+  - `domain/adaptive.ts`：4 种迁移策略——纵向深挖 / 薄弱补查（降难度→退前置→同主题兜底）/ 横向扩展（概念图 related）/ 新方向；纯函数 + rng 注入 + 单测。
+  - 引擎：`buildSession` 自适应时只组第一题；新增 `nextAdaptiveStep`（过滤已问 → 策略选题 → LLM 变体）；`pickQuestions/pickPrioritized` 支持 rng 注入。
+  - UI：新增 `quiz/AdaptiveQuiz` 逐题视图（显示出题策略标签、提交即评分、可提前结束）；模拟面试页默认开启自适应；App 状态机支持逐题评分循环（grades 已实时填充时 doSubmit 跳过批量评估）。
+- **知识图谱与覆盖面**：
+  - 新增 `data/conceptGraph.json` + `domain/conceptGraph.ts`：topic 级 related/prerequisites 边；节点复用题库 topic，不给每题加元数据。
+  - `computeCoverage`：按类目统计练过/掌握比例，识别 readyToLearn（前置已齐备）vs blocked（先补前置）。
+  - ProgressPage 新增「知识覆盖面」卡片与「建议下一步」（薄弱优先 + 可学新主题及原因）。
+  - 教练推荐升级：topicPriorities 经 `expandWithPrerequisites` 沿前置链展开（先补地基再攻难点）。
+- 测试：新增 adaptive（6 例）+ conceptGraph（7 例），共 **70 例全过**；typecheck/build 通过。
+
 ## 2026-08-23 · Agentic AI 题库按能力维度扩充（46 题，总 100 题）
 
 - 按能力维度重组 agentic-ai 题库（40 → 60 题），新增 topic 维度而非机械堆概念题：

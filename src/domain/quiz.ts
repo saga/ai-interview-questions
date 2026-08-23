@@ -2,11 +2,11 @@
 
 import type { AnswerValue, ChoiceQuestion, OpenQuestion, Question } from '../types';
 
-/** 从题池中随机抽取 count 道（Fisher–Yates 洗牌）。 */
-export function pickQuestions(pool: Question[], count: number): Question[] {
+/** 从题池中随机抽取 count 道（Fisher–Yates 洗牌；rng 可注入便于测试）。 */
+export function pickQuestions(pool: Question[], count: number, rng: () => number = Math.random): Question[] {
   const shuffled = [...pool];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, Math.min(count, shuffled.length));
@@ -35,13 +35,18 @@ export function emptyAnswer(q: Question): AnswerValue {
  * 按主题优先级抽题（Training Coach 用）：先把 priority 主题的题抽满，再用剩余题补齐。
  * 保证薄弱主题（如 'tool-calling'）优先进入本次训练，其余主题作为补充。
  */
-export function pickPrioritized(pool: Question[], priorities: string[], count: number): Question[] {
+export function pickPrioritized(
+  pool: Question[],
+  priorities: string[],
+  count: number,
+  rng: () => number = Math.random,
+): Question[] {
   const pri = priorities.filter(Boolean);
-  if (pri.length === 0) return pickQuestions(pool, count);
+  if (pri.length === 0) return pickQuestions(pool, count, rng);
   const weak = pool.filter((q) => pri.includes(q.topic));
   const rest = pool.filter((q) => !pri.includes(q.topic));
-  const pickedWeak = pickQuestions(weak, Math.min(count, weak.length));
+  const pickedWeak = pickQuestions(weak, Math.min(count, weak.length), rng);
   const remaining = count - pickedWeak.length;
-  const pickedRest = remaining > 0 ? pickQuestions(rest, remaining) : [];
+  const pickedRest = remaining > 0 ? pickQuestions(rest, remaining, rng) : [];
   return [...pickedWeak, ...pickedRest];
 }

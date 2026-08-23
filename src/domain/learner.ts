@@ -14,6 +14,7 @@ import type {
 } from '../types';
 import { isChoice } from './quiz';
 import { DEFAULT_RUBRIC } from './evaluation';
+import { conceptGraph, expandWithPrerequisites } from './conceptGraph';
 
 const SESSION_CAP = 50;
 const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/下滑"
@@ -159,6 +160,7 @@ export function buildCoachDefinition(
     questionTypes?: InterviewDefinition['questionTypes'];
     mode?: SessionRecord['mode'];
     rubric?: ScoringRubric;
+    adaptive?: boolean;
   } = {},
 ): InterviewDefinition {
   return {
@@ -170,8 +172,10 @@ export function buildCoachDefinition(
     useAI: opts.useAI ?? true,
     scoringRubric: opts.rubric ?? DEFAULT_RUBRIC,
     timeLimitSec: opts.timeLimitSec,
-    topicPriorities: recommendWeakTopics(profile, 3),
+    // 沿概念图前置链展开薄弱主题：先补地基（未掌握的前置）再攻难点
+    topicPriorities: expandWithPrerequisites(recommendWeakTopics(profile, 3), profile, conceptGraph),
     mode: opts.mode ?? 'coach',
+    adaptive: opts.adaptive,
   };
 }
 

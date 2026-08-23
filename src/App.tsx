@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Layout, Typography, Button, Space, Spin, App as AntdApp, Progress, Tag, Menu } from 'antd';
+import { Layout, Typography, Button, Space, Spin, App as AntdApp, Progress, Tag, Menu, Alert } from 'antd';
 import {
   SettingOutlined,
   ThunderboltOutlined,
@@ -19,7 +19,9 @@ import type {
   QuestionBank,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
-import { buildSession, evaluateSession } from './lib/interviewEngine';
+import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './lib/interviewEngine';
+import { conceptGraph, collectTopicRefs, computeCoverage, suggestNextTopics } from './domain/conceptGraph';
+import type { AnswerSignal, Strategy } from './domain/adaptive';
 import { isConfigValid } from './ai/provider';
 import { loadConfig, saveConfig } from './storage/settings';
 import { loadLearner, saveLearner } from './storage/learner';
@@ -29,12 +31,19 @@ import TrainingHome from './components/home/TrainingHome';
 import ProgressPage from './components/progress/ProgressPage';
 import InterviewPage from './components/interview/InterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
+import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
 
 const bank = bankData as unknown as QuestionBank;
 
 type Page = 'train' | 'progress' | 'interview' | 'settings';
 type Phase = 'home' | 'quiz' | 'result';
+
+/** 作答非空判定（选择题至少选一项，开放题至少有内容）。 */
+function hasAnswerValue(v?: AnswerValue): boolean {
+  if (v == null) return false;
+  return typeof v === 'string' ? v.trim().length > 0 : v.length > 0;
+}
 
 const NAV_ITEMS = [
   { key: 'train', icon: <ThunderboltOutlined />, label: '训练' },
@@ -61,6 +70,8 @@ export default function App() {
   const [busy, setBusy] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [prevOverall, setPrevOverall] = useState<number | null>(null);
+  /** 自适应模式：每题的出题策略（与 questions 顺序对应） */
+  const [strategies, setStrategies] = useState<(Strategy | undefined)[]>([]);
 
   // 用 ref 保存最新状态，供倒计时自动交卷 / 异步回调读取，避免闭包过期
   const answersRef = useRef(answers);
@@ -71,6 +82,10 @@ export default function App() {
   configRef.current = config;
   const profileRef = useRef(profile);
   profileRef.current = profile;
+  const gradesRef = useRef(grades);
+  gradesRef.current = grades;
+  /** 自适应模式：按顺序累积的作答信号，供下一题决策使用 */
+  const signalsRef = useRef<AnswerSignal[]>([]);
 
   const questions = session?.questions ?? [];
   const configReady = isConfigValid(config);
@@ -91,6 +106,8 @@ export default function App() {
 
   const handleStart = async (def: InterviewDefinition) => {
     setBusy(def.useAI ? '正在用 LLM 生成变体题目…' : '正在组卷…');
+    signalsRef.current = [];
+    setStrategies([]);
     try {
       const s = await buildSession(bank, def, configRef.current);
       const init: Record<string, AnswerValue> = {};
@@ -109,11 +126,51 @@ export default function App() {
     }
   };
 
+  /** 自适应模式：当前已评分题数 = 游标（题目按顺序追加、按顺序作答）。 */
+  const adaptiveCursor = session?.definition.adaptive ? Object.keys(grades).length : 0;
+
+  /**
+   * 自适应模式的核心循环：评分当前题 → 记录作答信号 →
+   * 由概念图迁移策略（deep-dive / gap-probe / broaden / move-on）选出下一题。
+   */
+  const handleAdaptiveNext = async () => {
+    const s = sessionRef.current;
+    if (!s || !s.definition.adaptive) return;
+    const idx = Object.keys(gradesRef.current).length;
+    const q = s.questions[idx];
+    if (!q || idx >= s.definition.count) return;
+
+    setBusy('正在评分…');
+    try {
+      const g = await evaluateAnswer(q, answersRef.current[q.id], s.definition, configRef.current);
+      const nextGrades = { ...gradesRef.current, [q.id]: g };
+      gradesRef.current = nextGrades;
+      setGrades(nextGrades);
+      signalsRef.current = [
+        ...signalsRef.current,
+        { topic: q.topic, score: g?.overall ?? 0, difficulty: q.difficulty },
+      ];
+
+      if (s.questions.length < s.definition.count) {
+        setBusy('正在根据你的表现选择下一题…');
+        const step = await nextAdaptiveStep(bank, s, signalsRef.current, configRef.current);
+        if (step) {
+          setSession({ ...s, questions: [...s.questions, step.question] });
+          setStrategies((prev) => [...prev, step.strategy]);
+          setAnswers((prev) => ({ ...prev, [step.question.id]: emptyAnswer(step.question) }));
+        }
+      }
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const doSubmit = useCallback(async () => {
     const s = sessionRef.current;
     if (!s) return;
     const cfg = configRef.current;
-    const g = await evaluateSession(s, answersRef.current, cfg);
+    // 自适应模式逐题评过，无需再批量评估
+    const g = s.definition.adaptive ? gradesRef.current : await evaluateSession(s, answersRef.current, cfg);
     setGrades(g);
     // 先算时长再入库（duration 在记录时即确定）
     durationRef.current = Math.round((Date.now() - startedAtRef.current) / 1000);
@@ -150,6 +207,8 @@ export default function App() {
     setGrades({});
     setRemaining(null);
     setPrevOverall(null);
+    setStrategies([]);
+    signalsRef.current = [];
     setPhase('home');
     setPage('train');
   };
@@ -231,7 +290,12 @@ export default function App() {
         )}
 
         {phase === 'home' && page === 'progress' && (
-          <ProgressPage profile={profile} onGoTrain={() => setPage('train')} />
+          <ProgressPage
+            profile={profile}
+            onGoTrain={() => setPage('train')}
+            coverage={computeCoverage(collectTopicRefs(bank.questions), profile, conceptGraph)}
+            suggestions={suggestNextTopics(collectTopicRefs(bank.questions), profile, conceptGraph)}
+          />
         )}
 
         {phase === 'home' && page === 'interview' && (
@@ -247,7 +311,40 @@ export default function App() {
           <SettingsPanel config={config} onSave={handleSaveConfig} />
         )}
 
-        {phase === 'quiz' && (
+        {phase === 'quiz' && session?.definition.adaptive && questions[adaptiveCursor] && (
+          <div style={{ maxWidth: 820, margin: '0 auto' }}>
+            <AdaptiveQuiz
+              question={questions[adaptiveCursor]}
+              index={adaptiveCursor}
+              total={session.definition.count}
+              value={answers[questions[adaptiveCursor].id] ?? emptyAnswer(questions[adaptiveCursor])}
+              strategy={strategies[adaptiveCursor]}
+              evaluating={busy != null}
+              hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].id])}
+              onChange={(v) => handleAnswerChange(questions[adaptiveCursor].id, v)}
+              onSubmitNext={() => void handleAdaptiveNext()}
+              onFinish={() => void doSubmit()}
+            />
+          </div>
+        )}
+
+        {phase === 'quiz' && session?.definition.adaptive && !questions[adaptiveCursor] && (
+          <div style={{ maxWidth: 820, margin: '0 auto' }}>
+            <Alert
+              type="success"
+              showIcon
+              message={`已完成 ${questions.length} 道自适应题目`}
+              description="每题均已实时评分。点击下方按钮查看完整结果与薄弱项分析。"
+              action={
+                <Button type="primary" onClick={() => void doSubmit()}>
+                  查看训练结果
+                </Button>
+              }
+            />
+          </div>
+        )}
+
+        {phase === 'quiz' && !(session?.definition.adaptive && questions[adaptiveCursor]) && !(session?.definition.adaptive && !questions[adaptiveCursor]) && (
           <div>
             <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
               <Tag color="blue">共 {questions.length} 题</Tag>
