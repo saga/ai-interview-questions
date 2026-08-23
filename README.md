@@ -8,7 +8,7 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（四页：训练 / 进�
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions.json`，9 类别，四类题型），LLM 变体出题（保持知识点不变）
+- 题库驱动（`src/data/questions/`，11 类别，四类题型），LLM 变体出题（保持知识点不变）
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
@@ -39,7 +39,7 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
 
 ## 扩展题库
 
-编辑 `src/data/questions.json`（无需改代码）：
+题库按类目拆分为 `src/data/questions/<category>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应类目文件；新增类目：建同名 JSON 文件并在 `src/domain/categories.ts` 登记中文标签：
 
 ```json
 {

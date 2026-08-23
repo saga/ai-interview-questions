@@ -47,9 +47,12 @@ components/
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
   settings/SettingsPanel.tsx    AI 设置（provider / model / API Key）
 
-data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；175 题，
+data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
+                       slug 类目 + topic/tags/reference + 可选 rubric；175 题，
                        ai-fundamentals（基础原理）→ agentic-ai / ai-engineering（工程判断）按
                        Scenario/Debugging/Trade-off 等能力维度组织）
+data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不建索引/数据库层，
+                       规模需要时再加动态 import + 构建期 question-index）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
@@ -196,7 +199,7 @@ Canonical Question ──→ LLM（只输出 question / explanation）
 
 综合分 `overall` = Σ(dim × weight)，**只**由 `domain/evaluation.aggregateOverall` 计算——LLM 只输出四维 dimensions，不拥有最终分数（ADR-019）。选择题四维同取 100/0。
 
-**题目级 rubric（可选）**：`questions.json` 里每题可带 `rubric`：
+**题目级 rubric（可选）**：`questions/<category>.json` 里每题可带 `rubric`：
 
 ```json
 "rubric": {

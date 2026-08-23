@@ -7,7 +7,7 @@ import {
   CommentOutlined,
   CheckCircleFilled,
 } from '@ant-design/icons';
-import bankData from './data/questions.json';
+import { questionBank as bank } from './data/questionBank';
 import type {
   AnswerValue,
   EvaluationResult,
@@ -16,7 +16,6 @@ import type {
   LearnerProfile,
   PiConfig,
   Question,
-  QuestionBank,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './application/interviewEngine';
@@ -33,8 +32,6 @@ import InterviewPage from './components/interview/InterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
 import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
-
-const bank = bankData as unknown as QuestionBank;
 
 type Page = 'train' | 'progress' | 'interview' | 'settings';
 type Phase = 'home' | 'quiz' | 'result';

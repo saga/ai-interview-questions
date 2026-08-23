@@ -2,6 +2,24 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 题库拆分为按类目文件（数据布局变更，显式说明）
+
+- **拆分**：`data/questions.json`（175 题单文件）→ `data/questions/<category>.json` ×11
+  （agentic-ai 71 / ai-fundamentals 51 / ai-engineering 13 / 其余 ML 基础类共 40）。
+  每题字段 schema 不变——变的只是文件布局；新增题目直接追加到对应类目文件，
+  新增类目 = 新建同名 JSON + `domain/categories.ts` 登记标签。
+  （按 AGENTS 约定显式说明：这属于对外已发布的 JSON 题库结构变更。）
+- **装配**：新增 `data/questionBank.ts`，`import.meta.glob('./questions/*.json', { eager: true })`
+  启动时合并为 QuestionBank 单例；App.tsx 改从该模块取题库。
+  **刻意不建** question-index / SQLite / IndexedDB / Repository 层——题库是静态 content source，
+  运行时只是 filter/pick；等规模（bundle/加载）真成为问题时再加动态 import + 构建期索引。
+  Learner Memory 边界不变：静态内容在 questions/*.json，用户状态仍在 localStorage。
+- **数据完整性测试化**：原靠人工核对的事项固化为 `data/bank.test.ts`（7 例）——
+  id 唯一、类目与 categories 吻合、选择题 answer 索引合法、开放题 referenceAnswer 非空、
+  difficulty/type/topic 枚举与非空校验、rubric 维度键与权重和 ≤1、conceptGraph 边两端 topic 均有题目支撑。
+  相当于把"build script 校验清单"放进 Vitest，暂不引入独立构建脚本。
+- 测试 79 例全过；typecheck/build 通过（rolldown 提示可进一步 dynamic import 切包，暂不需要）。
+
 ## 2026-08-23 · AI Fundamentals 基础层题库（51 题，总 175 题）
 
 - **题库**：新增 `ai-fund-001..051` 与类目 `ai-fundamentals`，补齐工程题库之下的原理层——

@@ -1,0 +1,1466 @@
+[
+  {
+    "id": "ai-fund-001",
+    "category": "ai-fundamentals",
+    "topic": "transformer",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "transformer",
+      "rnn",
+      "parallelism",
+      "attention"
+    ],
+    "question": "为什么 Transformer 相比 RNN 更适合大规模训练？请从计算并行性和长距离依赖两个角度解释。",
+    "referenceAnswer": "Transformer 在训练时可以并行处理整个 sequence，而 RNN 必须按时间步顺序计算；Self-Attention 可以直接建立任意两个 token 之间的依赖，路径长度为 O(1)，相比 RNN 的逐步传播更容易建模长距离依赖。",
+    "explanation": "并行性来自整段序列同时计算（RNN 必须串行），长距离依赖来自 attention 的 O(1) 依赖路径（RNN 需逐步传播）。",
+    "rubric": {
+      "required": [
+        "训练并行性",
+        "O(1) 依赖路径",
+        "RNN 顺序计算瓶颈"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-002",
+    "category": "ai-fundamentals",
+    "topic": "self-attention",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "attention",
+      "qkv",
+      "transformer"
+    ],
+    "question": "请解释 Self-Attention 中 Query、Key、Value 分别代表什么，以及 Attention 最终是如何计算出来的。",
+    "referenceAnswer": "输入经过不同线性投影得到 Q、K、V；Q 与 K 计算相似度得到 attention scores，通常除以 sqrt(d_k) 后进行 softmax，再使用得到的权重对 V 加权求和。公式为 softmax(QK^T/sqrt(d_k))V。",
+    "explanation": "Q/K/V 来自三组线性投影；Q·K 打相似度 → 缩放 → softmax 归一化 → 对 V 加权求和。",
+    "rubric": {
+      "required": [
+        "QKV 线性投影",
+        "相似度打分",
+        "softmax 归一化",
+        "加权求和公式"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-003",
+    "category": "ai-fundamentals",
+    "topic": "attention",
+    "type": "single",
+    "difficulty": "medium",
+    "tags": [
+      "attention",
+      "softmax",
+      "numerical-stability"
+    ],
+    "question": "Scaled Dot-Product Attention 中为什么要除以 sqrt(d_k)？",
+    "options": [
+      "减少 KV Cache 的内存占用",
+      "避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域",
+      "降低 Transformer 的参数量",
+      "让 Attention 可以支持更长的 Context"
+    ],
+    "answer": [
+      1
+    ],
+    "referenceAnswer": "当 d_k 较大时，QK^T 的方差会随维度增长，导致 softmax 输入过大、梯度变小。除以 sqrt(d_k) 可以稳定数值尺度。",
+    "explanation": "dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。",
+    "rubric": {
+      "required": [
+        "方差随维度增长",
+        "softmax 饱和与梯度"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-004",
+    "category": "ai-fundamentals",
+    "topic": "self-attention",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "multi-head",
+      "attention",
+      "representation"
+    ],
+    "question": "Multi-Head Attention 为什么需要多个 Head？单个 Attention 不够吗？",
+    "referenceAnswer": "多个 Head 让模型在不同的表示子空间中学习不同类型的关系：有的 head 关注局部语法关系，有的关注长距离语义关联或位置模式。单头 attention 只能输出一种加权平均，容易把不同类型的信息混在一起；多头机制在保持计算量近似不变的情况下提升了表达能力。",
+    "explanation": "多头 = 多个表示子空间并行建模不同关系（语法/语义/位置等），单头只有一种混合视角；代价近似不变而表达能力更强。",
+    "rubric": {
+      "required": [
+        "不同表示子空间",
+        "不同类型关系",
+        "单头的加权平均局限"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-005",
+    "category": "ai-fundamentals",
+    "topic": "transformer",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "position-encoding",
+      "transformer",
+      "RoPE"
+    ],
+    "question": "Transformer 为什么需要 Position Encoding？常见的位置信息注入方式有哪些？",
+    "referenceAnswer": "Self-Attention 本身对 token 顺序不敏感——打乱输入顺序，attention 输出只是相应置换，模型无法区分词序。因此需要额外注入位置信息。常见方案包括绝对位置编码（正弦/可学习）、相对位置编码，以及现代 LLM 广泛使用的 RoPE（旋转位置编码）。",
+    "explanation": "Attention 是排列等变的，天然不含顺序信息；需通过绝对/相对/RoPE 等编码显式注入位置。",
+    "rubric": {
+      "required": [
+        "attention 与顺序无关",
+        "需要显式位置注入",
+        "绝对/相对/RoPE"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-006",
+    "category": "ai-fundamentals",
+    "topic": "rope",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "RoPE",
+      "position-encoding",
+      "long-context"
+    ],
+    "question": "RoPE（Rotary Position Embedding）解决了什么问题？为什么它在现代 LLM 中被广泛使用？",
+    "referenceAnswer": "RoPE 通过对 Q/K 做旋转变换把相对位置关系注入 attention 计算：两个 token 的 attention 分数只取决于它们的相对距离。它不需要在 context 里附加额外参数，外推到更长序列时也更稳定，配合 NTK/YaRN 等缩放策略可以较方便地扩展 context window，因此在现代开源 LLM 中被广泛采用。",
+    "explanation": "RoPE 把位置编码为 Q/K 的旋转，使 attention 只依赖相对位置；无附加参数、利于长上下文外推，是主流选择。",
+    "rubric": {
+      "required": [
+        "作用于 Q/K",
+        "相对位置关系",
+        "长上下文外推优势"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-007",
+    "category": "ai-fundamentals",
+    "topic": "tokenization",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "tokenization",
+      "subword",
+      "vocabulary"
+    ],
+    "question": "为什么 LLM 不直接以“单词”作为最小 token 单位？",
+    "referenceAnswer": "以单词为单位会导致 vocabulary 极其庞大，且无法处理未登录词、拼写变体和丰富的形态变化（时态、复数、派生）；跨语言场景下问题更严重。子词切分在词汇表大小和序列长度之间取得平衡：常见词保持完整，罕见词拆成更小的单元，token 效率更高。",
+    "explanation": "词级 token 词表爆炸 + OOV + 形态变化无法处理；子词在词表大小与序列长度间折中。",
+    "rubric": {
+      "required": [
+        "vocabulary 规模",
+        "未登录词/OOV",
+        "形态变化",
+        "多语言与效率权衡"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-008",
+    "category": "ai-fundamentals",
+    "topic": "bpe-tokenization",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "BPE",
+      "WordPiece",
+      "subword"
+    ],
+    "question": "BPE / WordPiece 这类子词切分算法的基本思想是什么？",
+    "referenceAnswer": "从字符等较小的初始单元出发，统计语料中相邻单元对的频率，反复把高频组合合并为新 token，直到达到目标词表大小。高频词最终会被整体保留，低频词则被拆成多个子词。WordPiece 与 BPE 思想类似，区别主要在合并打分方式（互信息式而非纯频率）。",
+    "explanation": "核心是频率驱动的迭代合并：小单元起步，高频 pair 逐步合并成子词，词表大小可控且能覆盖未见词。",
+    "rubric": {
+      "required": [
+        "从字符等小单元起步",
+        "按频率迭代合并",
+        "高频成词/低频拆分",
+        "词表大小可控"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-009",
+    "category": "ai-fundamentals",
+    "topic": "tokenization",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "tokens",
+      "cost",
+      "latency"
+    ],
+    "question": "Token 数量为什么直接影响 LLM 的使用成本和延迟？中文、代码、JSON 的 token 效率有什么差异？",
+    "referenceAnswer": "LLM 按 token 计费和处理：prompt tokens 决定 prefill 计算量与输入成本，输出 tokens 决定 decode 步数与输出成本；context 越长，attention 和 KV cache 的开销越大。不同文本的 token efficiency 不同：英文自然语言通常一个 token 对应约 0.75 个词，而中文可能一字多 token，代码和 JSON 有大量符号与重复结构，token 密度高但语义密度低，同样的信息往往消耗更多 token。",
+    "explanation": "计费与计算都按 token 走：prefill 成本 ∝ 输入 token，decode 步数 ∝ 输出 token；中文/代码/JSON 的 token 效率通常低于英文自然语言。",
+    "rubric": {
+      "required": [
+        "按 token 计费",
+        "prefill/decode 与 token 数的关系",
+        "不同文本 token 效率差异"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-010",
+    "category": "ai-fundamentals",
+    "topic": "word-embedding",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "embedding",
+      "hidden-state",
+      "retrieval"
+    ],
+    "question": "Embedding 模型输出的向量和大语言模型的 hidden state 有什么区别？各自的用途是什么？",
+    "referenceAnswer": "Embedding 是把整段文本映射到一个固定的语义空间向量，目标是让语义相近的文本距离接近，用于检索、聚类、相似度比较；通常是双向编码器或专门训练的表示模型，不用于生成。Hidden state 是生成式 LLM 在处理上下文过程中的内部表示，服务于下一个 token 预测，没有针对语义空间的度量约束，不能直接当作检索向量用。两者的训练目标和用途不同，不能互换。",
+    "explanation": "Embedding = 面向语义度量的固定向量（检索/聚类用）；hidden state = 生成模型内部服务于 next-token 预测的中间表示，无度量约束。",
+    "rubric": {
+      "required": [
+        "语义空间度量",
+        "next-token 预测服务",
+        "模型用途不可互换"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-011",
+    "category": "ai-fundamentals",
+    "topic": "pretraining",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "pre-training",
+      "causal-lm",
+      "cross-entropy"
+    ],
+    "question": "从训练目标的角度解释一个现代 Decoder-only LLM 的 Pre-training 在做什么。",
+    "referenceAnswer": "典型 Decoder-only LLM 使用 causal language modeling：给定前面的 token 序列，预测下一个 token，训练损失是预测分布与真实 next token 之间的 cross-entropy。通过在海量文本上重复这个任务，模型学到语言规律、世界知识以及一定程度的推理和模式表示。",
+    "explanation": "Pre-training 目标 = causal LM：看前文猜下一 token，cross-entropy 监督；海量数据下涌现出语言/知识/推理能力。",
+    "rubric": {
+      "required": [
+        "next-token prediction",
+        "causal mask",
+        "cross-entropy loss"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-012",
+    "category": "ai-fundamentals",
+    "topic": "pretraining",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "pre-training",
+      "fine-tuning"
+    ],
+    "question": "Pre-training 和 Fine-tuning 的核心区别是什么？",
+    "referenceAnswer": "Pre-training 从随机初始化开始，在大规模通用语料上以自监督目标学习通用表示与能力，成本极高；Fine-tuning 从 pretrained model 出发，用相对小的任务/领域数据调整模型行为或补足领域能力，成本低得多。两者在数据规模、训练目标、起点和成本上都不同。",
+    "explanation": "数据：通用大规模 vs 任务领域中小规模；起点：随机初始化 vs pretrained 权重；目标：学通用能力 vs 调行为；成本相差数量级。",
+    "rubric": {
+      "required": [
+        "数据规模与来源",
+        "训练目标",
+        "初始化起点",
+        "成本差异"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-013",
+    "category": "ai-fundamentals",
+    "topic": "pretraining",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "pre-training",
+      "data-scaling",
+      "diversity"
+    ],
+    "question": "为什么 Pre-training 需要如此大量的训练数据？",
+    "referenceAnswer": "原因包括：参数量大，需要足够多的梯度信号才能充分训练而不严重过拟合；知识覆盖要求广，世界知识与语言现象分散在大量文本中；数据多样性决定泛化能力，单一来源会带来偏置；scaling laws 表明在 compute 预算内 data 应与 model size 同步增长才能达到最优配比。但数据收益也存在 diminishing returns，质量比单纯的量更重要。",
+    "explanation": "大参数量需要充足信号、知识覆盖面靠数据广度、多样性支撑泛化、scaling law 要求 data/compute 配比；同时存在边际递减，质量优先。",
+    "rubric": {
+      "required": [
+        "参数规模与过拟合",
+        "知识覆盖",
+        "多样性/泛化",
+        "diminishing returns"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-014",
+    "category": "ai-fundamentals",
+    "topic": "scaling-law",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "scaling-law",
+      "compute",
+      "loss"
+    ],
+    "question": "什么是 Scaling Law？为什么“模型越大”并不意味着效果可以无限提升？",
+    "referenceAnswer": "Scaling law 描述模型参数量、训练数据量、计算量与 loss / downstream performance 之间的经验幂律关系：在一定范围内，按可预测的方式增加这些要素，loss 会平滑下降。但它同时说明资源之间存在最优配比（如 Chinchilla 结论：给定 compute，model size 与 data 应均衡增长），单方面放大模型而数据不足会欠训练；且收益是对数级的，loss 下降不等于下游能力线性提升，数据质量与分布也会成为瓶颈。",
+    "explanation": "Scaling law = 参数/数据/compute 与 loss 的经验幂律；存在最优配比、收益对数级递减，单纯堆参数会欠训练且下游提升非线性。",
+    "rubric": {
+      "required": [
+        "幂律关系",
+        "最优配比",
+        "边际收益递减",
+        "数据质量约束"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-015",
+    "category": "ai-fundamentals",
+    "topic": "scaling-law",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "scaling-law",
+      "trade-off",
+      "data-quality"
+    ],
+    "question": "如果训练数据增加 10 倍，模型效果一定会增加 10 倍吗？你会如何分析这个问题？",
+    "referenceAnswer": "不会。Scaling law 表明 loss 随数据量呈幂律下降，收益是对数级而非线性的，存在明显的 diminishing returns。实际收益还取决于：新增数据是否带来新信息（重复/低质数据收益趋近于零）、当前模型是否已经欠训练或过训练（compute 配比）、以及任务本身的上限。工程上应结合 scaling law 预测曲线、数据去重与质量过滤来判断投入是否值得。",
+    "explanation": "幂律 + 边际递减 → 收益远小于线性；还受数据新颖性/质量、compute 配比和任务上限约束。",
+    "rubric": {
+      "required": [
+        "diminishing returns",
+        "数据质量/重复",
+        "compute 配比",
+        "非线性收益"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-016",
+    "category": "ai-fundamentals",
+    "topic": "sft",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "post-training",
+      "alignment"
+    ],
+    "question": "什么是 Post-training？它解决 Pre-training 解决不了的问题吗？",
+    "referenceAnswer": "Post-training 指 pre-training 之后的所有训练阶段，典型流程是 SFT → Preference Optimization（RLHF/DPO）→ 面向生产的行为对齐。Pre-training 让模型具备语言与知识能力，但产出的是一个“续写器”，不会稳定地遵循指令、拒绝有害请求或按期望格式回答。Post-training 把这些已有能力塑造成用户期望的使用方式——可以说 pre-training 让模型“会”，post-training 让模型“按照人希望的方式使用这些能力”。",
+    "explanation": "Post-training = SFT + 偏好优化 + 对齐；解决的是行为塑造（遵循指令、格式、安全性），而非能力获取。",
+    "rubric": {
+      "required": [
+        "SFT + preference optimization 流程",
+        "行为对齐目标",
+        "pretrain 产出的局限"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-017",
+    "category": "ai-fundamentals",
+    "topic": "sft",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "SFT",
+      "instruction-tuning"
+    ],
+    "question": "SFT（Supervised Fine-Tuning）是什么？它是如何改变模型行为的？",
+    "referenceAnswer": "SFT 用人工编写或审核的 instruction-response 对做监督学习：输入 prompt，目标是最小化与 desired response 之间的 next-token cross-entropy。模型由此学会遵循指令、按特定格式与风格回答、执行对话等行为。它本质上是让模型模仿示范数据中的行为模式，因此数据质量和覆盖面直接决定效果。",
+    "explanation": "SFT = prompt → desired response 的监督学习（对 response 做 next-token loss），让模型学会模仿示范行为。",
+    "rubric": {
+      "required": [
+        "instruction-response 数据",
+        "监督 next-token loss",
+        "模仿示范行为"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-018",
+    "category": "ai-fundamentals",
+    "topic": "sft",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "loss-masking",
+      "instruction-tuning",
+      "pre-training"
+    ],
+    "question": "Pre-training 和 SFT 在 loss 计算上有什么区别？为什么要这样设计？",
+    "referenceAnswer": "Pre-training 通常对所有目标 token 计算 loss，因为整个序列都是学习对象；instruction tuning 一般只对 assistant response 部分计算 loss，把 prompt/system 部分 mask 掉。原因是训练目标是“学会怎么回答”，而不是“复述用户的提问”——如果把 prompt 也纳入 loss，模型会把容量浪费在学习模仿用户输入上，还可能弱化对 response 质量的优化。",
+    "explanation": "Pretrain 对全序列算 loss；SFT 只对 assistant 回复算 loss、mask 掉 prompt——避免容量浪费在学习复述提问上。",
+    "rubric": {
+      "required": [
+        "response-only loss",
+        "prompt masking",
+        "训练目标差异"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-019",
+    "category": "ai-fundamentals",
+    "topic": "rlhf",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "RLHF",
+      "reward-model",
+      "preference"
+    ],
+    "question": "RLHF 为什么需要一个单独的 Reward Model，而不是直接用人类反馈做强化学习？",
+    "referenceAnswer": "人类偏好信号稀疏且昂贵，不可能在线上每生成一个 response 都请人实时打分。Reward Model 先用批量收集的人类偏好数据（对同一 prompt 的多个回答做排序/对比）训练出一个可自动打分的代理，之后 RL 优化（如 PPO）用它作为可无限采样的奖励信号。RM 把“人类觉得哪个更好”压缩成一个可优化的标量函数，是连接人类偏好与 RL 优化的桥梁。",
+    "explanation": "人类反馈太贵太稀疏，无法在线逐条提供；先离线训练 RM 学会打偏好分，再用它作为 RL 的可采样奖励信号。",
+    "rubric": {
+      "required": [
+        "人类偏好数据收集",
+        "RM 作为奖励代理",
+        "RL 用 RM 优化策略"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-020",
+    "category": "ai-fundamentals",
+    "topic": "dpo",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "DPO",
+      "preference-optimization",
+      "RLHF"
+    ],
+    "question": "DPO 为什么不需要显式的 Reward Model？相比 RLHF/PPO 它在工程上有什么优势？",
+    "referenceAnswer": "DPO 直接在偏好对（chosen/rejected）上优化策略：通过数学推导可以把原本“训练 RM 再做 RL”的目标转化为一个对 policy 的直接分类式损失，隐含的 reward 就是策略与参考模型的 log-probability 差。工程上它避免了 RL 训练的不稳定性、省去了 RM 训练与维护，也不需要在训练中同时跑四个模型（policy/ref/reward/value），实现和调参都简单得多；代价是对偏好数据质量和分布更敏感，复杂 reward 信号的表达能力不如完整 RLHF。",
+    "explanation": "DPO 把 RM+RL 目标重写为偏好对上的直接损失（隐式 reward = 与参考模型的 logprob 差）；免去 RL 不稳定性与多模型并跑，工程简单。",
+    "rubric": {
+      "required": [
+        "chosen/rejected 偏好对",
+        "隐式 reward",
+        "免 RM/免 RL",
+        "与 RLHF 的取舍"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-021",
+    "category": "ai-fundamentals",
+    "topic": "sft",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "SFT",
+      "RLHF",
+      "DPO",
+      "trade-off"
+    ],
+    "question": "SFT、RLHF、DPO 分别适合解决什么问题？如果一个团队只能选一个阶段投入，你建议怎么选？",
+    "referenceAnswer": "三者层次不同：SFT 学习示范行为，适合教格式、风格、任务流程，见效最快；DPO 学习偏好，适合在已有可用行为上做“更好的回答优先于较差的回答”这类优化；RLHF 更适合有复杂、可建模 reward 信号的场景（如数学正确性、安全边界），但工程复杂度和成本最高。一般建议：SFT 是地基必须做；在此基础上多数产品用 DPO 就能获得足够的偏好对齐收益；只有当偏好难以用静态偏好对表达、需要过程级 reward 时才值得上完整 RLHF。",
+    "explanation": "SFT 教示范行为（地基）、DPO 学偏好（性价比高）、RLHF 做复杂 reward 驱动的优化（成本高）；按需分层投入。",
+    "rubric": {
+      "required": [
+        "SFT=示范行为",
+        "DPO=偏好",
+        "RLHF=复杂 reward",
+        "投入优先级判断"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-022",
+    "category": "ai-fundamentals",
+    "topic": "fine-tuning",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "fine-tuning",
+      "PEFT",
+      "cost"
+    ],
+    "question": "为什么不直接 Fine-tune 大模型的全部参数？",
+    "referenceAnswer": "全参数微调的成本很高：除了模型权重本身，还需要存 optimizer states（如 Adam 的一二阶矩）和梯度，显存需求可达权重的数倍；训练时间长、多卡基础设施贵；频繁全量更新也更容易灾难性遗忘通用能力，且每个下游任务都要保存一份完整模型副本，存储与版本管理成本高。PEFT 方法（LoRA 等）用极小的可训练参数量获得接近的效果，是绝大多数场景更合理的选择。",
+    "explanation": "全参微调 = 权重+梯度+optimizer states 的显存倍增、训练贵、易灾难性遗忘、每任务一份副本；PEFT 是更优默认解。",
+    "rubric": {
+      "required": [
+        "optimizer states/显存",
+        "训练成本",
+        "灾难性遗忘",
+        "多任务副本成本"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-023",
+    "category": "ai-fundamentals",
+    "topic": "lora",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "LoRA",
+      "low-rank",
+      "PEFT"
+    ],
+    "question": "LoRA 为什么可以用很低的成本完成 Fine-tuning？请解释它的核心假设。",
+    "referenceAnswer": "LoRA 的核心假设是：微调引起的权重变化 ΔW 具有低秩结构，可以近似分解为两个小矩阵的乘积 BA。训练时冻结原权重 W，只训练低秩矩阵 A/B，可训练参数量下降几个数量级，optimizer states 与梯度的显存占用随之大幅减少；推理前可以把 BA 合并回 W（或用可插拔 adapter 服务多任务），不增加推理延迟。",
+    "explanation": "ΔW ≈ BA 低秩分解：冻结 W 只训 A/B → 参数/显存降几个数量级；产物小、可合并回原权重零推理开销。",
+    "rubric": {
+      "required": [
+        "低秩假设 ΔW≈BA",
+        "冻结原权重",
+        "可训练参数/显存下降",
+        "可合并回 W"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-024",
+    "category": "ai-fundamentals",
+    "topic": "lora",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "LoRA",
+      "rank",
+      "trade-off"
+    ],
+    "question": "LoRA 的 rank 是不是越大越好？你会如何为一个任务选择 rank？",
+    "referenceAnswer": "不是。rank 增大意味着可训练参数增多：显存与训练成本上升，小数据集上更容易过拟合；而且当任务需要的更新本来就是低秩时，超过必要 rank 后收益迅速递减。选择时应从任务的“新知识量”出发：风格/格式类适配低 rank 即可，涉及较多新领域知识或与预训练分布差异大的任务才需要更高 rank，并结合验证集表现和过拟合信号来定，而不是盲目调大。",
+    "explanation": "rank ↑ = 参数/显存/过拟合风险 ↑，超出任务所需秩后收益递减；按任务所需“更新复杂度”选 rank 并用验证集校准。",
+    "rubric": {
+      "required": [
+        "并非越大越好",
+        "过拟合风险",
+        "任务复杂度匹配",
+        "diminishing returns"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-025",
+    "category": "ai-fundamentals",
+    "topic": "lora",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "LoRA",
+      "RAG",
+      "rag-vs-finetuning",
+      "trade-off"
+    ],
+    "question": "LoRA 和 RAG 解决的是同一个问题吗？公司要把内部知识库接入模型，应该优先选哪个？",
+    "referenceAnswer": "不是同一个问题。RAG 改变的是模型看到的信息：运行时检索相关文档放进 context，知识可以随时更新、可溯源、易于审计；LoRA 改变的是模型参数与行为：适合教格式、风格、领域话术和任务流程，但把事实“训进”参数既难更新又难追溯。内部知识库应优先 RAG——知识频繁变化且需要引用出处；只有在 RAG 之上仍存在输出风格、术语或任务格式问题时，再考虑用 LoRA 补充行为层面的适配。",
+    "explanation": "RAG 改变模型看到的上下文（知识新鲜、可溯源），LoRA 改变模型行为（格式/风格）；知识库优先 RAG，行为问题再叠加 LoRA。",
+    "rubric": {
+      "required": [
+        "信息 vs 参数的本质区别",
+        "知识库优先 RAG 及理由",
+        "LoRA 适用场景"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-026",
+    "category": "ai-fundamentals",
+    "topic": "sampling",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "temperature",
+      "decoding",
+      "sampling"
+    ],
+    "question": "LLM 推理中的 Temperature 参数是什么？它如何影响输出？",
+    "referenceAnswer": "Temperature 作用于 logits 的 softmax：除以 T 后再归一化。T<1 使分布更尖锐，高概率 token 更容易被选中，输出更确定但更多样性下降；T>1 使分布更平坦，输出更多样但也更容易出现低质量内容；T→0 趋近于贪心解码。它不改变模型认为哪些 token 可能，只改变采样时的分布形状。",
+    "explanation": "Temperature 缩放 logits 后 softmax：低温尖锐保守、高温平坦多样；只改采样分布形状，不改模型本身的概率评估。",
+    "rubric": {
+      "required": [
+        "softmax 缩放机制",
+        "低温确定性/高温多样性",
+        "不改变模型分布本身"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-027",
+    "category": "ai-fundamentals",
+    "topic": "sampling",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "temperature",
+      "determinism",
+      "production"
+    ],
+    "question": "把 Temperature 设为 0，模型输出一定是确定性的吗？为什么这在生产系统中很重要？",
+    "referenceAnswer": "不一定。Temperature=0 只是让采样趋近贪心解码，实际仍可能受到以下影响：provider 端的实现细节（batch 内并发计算的非结合浮点误差）、MoE 路由与分布式 reduce 的数值抖动、top-p/top-k 等其他采样参数仍然生效、模型或服务端版本升级。生产系统不应假设 temperature=0 可复现，需要回归基线的场景应该固定 model version 并接受一定的输出波动，用评测集而非单例比对来衡量变化。",
+    "explanation": "temp=0 ≠ 保证确定：浮点非结合/MoE 抖动/top-p 等参数仍在/服务端版本变化都会引入波动；生产要以评测集而非逐字比对做回归。",
+    "rubric": {
+      "required": [
+        "不一定确定",
+        "实现层不确定性来源",
+        "top-p/top-k 等其他参数",
+        "生产回归的正确姿势"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-028",
+    "category": "ai-fundamentals",
+    "topic": "sampling",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "top-k",
+      "top-p",
+      "decoding"
+    ],
+    "question": "Top-k 和 Top-p（nucleus sampling）有什么区别？各自适合什么场景？",
+    "referenceAnswer": "Top-k 只保留概率最高的 k 个 token 重新归一化后采样，候选集大小固定；Top-p 保留累积概率达到 p 的最小集合，候选集大小随分布形状动态变化——分布尖锐时候选少，平坦时候选多。因此 top-p 通常更自适应，是通用生成的常用默认；top-k 行为更可预测，常与 top-p 组合用来截断长尾。两者都用于在保证质量的前提下保留采样多样性。",
+    "explanation": "top-k 固定候选数，top-p 固定累计概率（候选数自适应分布形状）；实践中常组合截断长尾、兼顾多样性与质量。",
+    "rubric": {
+      "required": [
+        "top-k 固定 k",
+        "top-p 动态候选集",
+        "自适应差异",
+        "组合使用"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-029",
+    "category": "ai-fundamentals",
+    "topic": "inference-optimization",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "prefill",
+      "decode",
+      "inference"
+    ],
+    "question": "为什么 LLM 推理通常分成 Prefill 和 Decode 两个阶段？两个阶段各自的性能特征是什么？",
+    "referenceAnswer": "Prefill 阶段一次性并行处理整个 prompt，计算所有 token 的 K/V 并写入 KV Cache，是计算密集型，吞吐高，耗时主要由 prompt 长度和算力决定；Decode 阶段每步只生成一个 token，但要读取全部历史 K/V 并访问权重，是访存密集型（memory-bound），速度由显存带宽和输出 token 数决定。两阶段瓶颈不同，所以调度、批处理和优化策略也不同，这也是 TTFT 与 TPOT 分别被度量的原因。",
+    "explanation": "Prefill 并行处理 prompt、compute-bound，决定 TTFT;Decode 逐 token 生成、memory-bound，决定 TPOT;瓶颈不同故优化策略不同。",
+    "rubric": {
+      "required": [
+        "prefill 并行/compute-bound",
+        "decode 逐步/memory-bound",
+        "TTFT 与 TPOT",
+        "KV Cache 写入与读取"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-030",
+    "category": "ai-fundamentals",
+    "topic": "kv-cache",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "KV-Cache",
+      "memory",
+      "inference"
+    ],
+    "question": "KV Cache 解决了什么问题？它为什么会占用大量 GPU 内存？",
+    "referenceAnswer": "没有 KV Cache 的话，每生成一个 token 都要对之前所有 token 重算一遍 K/V，decode 复杂度随序列长度平方增长。KV Cache 把已计算的 K/V 缓存下来，每步只算新 token 的 K/V，把复杂度降回线性。代价是缓存大小与 batch size × 层数 × 序列长度 × hidden size × KV 头数成正比，长上下文和高并发下会膨胀到数十 GB，成为 GPU 显存的主要消耗之一——这也是 GQA、量化 KV cache、PagedAttention 等技术要解决的问题。",
+    "explanation": "KV Cache 免去逐步重算历史 K/V（平方→线性），但体积随 batch×layers×seq_len×heads 线性膨胀，长上下文下成为显存大头。",
+    "rubric": {
+      "required": [
+        "避免重复计算",
+        "平方→线性",
+        "显存占用构成",
+        "GQA/量化等缓解手段"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-031",
+    "category": "ai-fundamentals",
+    "topic": "context-window",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "context-window",
+      "limit"
+    ],
+    "question": "Context Window 是什么？它由什么决定，超出会发生什么？",
+    "referenceAnswer": "Context Window 是模型一次推理能处理的最大 token 数，涵盖 system prompt、对话历史、检索内容和输出，由模型架构的位置编码设计与训练配置决定。超出限制时 API 通常直接报错，部分框架会静默截断历史——后者更危险，可能导致关键信息丢失而没有任何提示。注意 context window 是输入+输出共享的总预算，而不是单纯的“能读多少”。",
+    "explanation": "Context window = 单次推理的最大 token 总预算(输入+输出共享)；超限会报错或被静默截断，后者是隐蔽故障源。",
+    "rubric": {
+      "required": [
+        "最大 token 总预算",
+        "输入输出共享",
+        "超限报错或静默截断"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-032",
+    "category": "ai-fundamentals",
+    "topic": "context-window",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "context-window",
+      "trade-off",
+      "lost-in-the-middle"
+    ],
+    "question": "Context Window 越大越好吗？请从成本、延迟和质量三个角度分析。",
+    "referenceAnswer": "不是。成本上，费用与 KV cache 显存占用都随 context 长度线性甚至超线性增长；延迟上，prefill 时间与 attention 计算随长度显著上升；质量上，注意力并未均匀覆盖全部 context——存在 lost-in-the-middle 现象，中段信息利用率低于首尾，无关内容还会稀释注意力、引入噪声。工程实践应该是按需填充 context：检索相关内容、裁剪历史，而不是因为窗口大就往里塞。",
+    "explanation": "大窗口 = 成本/显存↑、prefill 延迟↑、lost-in-the-middle 与噪声稀释注意力；窗口大小≠有效利用，按需填充才是正解。",
+    "rubric": {
+      "required": [
+        "成本与显存",
+        "prefill 延迟",
+        "lost-in-the-middle",
+        "噪声/相关性"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-033",
+    "category": "ai-fundamentals",
+    "topic": "context-window",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "RAG",
+      "long-context",
+      "context-window"
+    ],
+    "question": "既然模型支持 1M token context，为什么把整个知识库塞进 context 并不是一个好的 RAG 方案？",
+    "referenceAnswer": "全部塞入意味着每次请求都要为整个知识库支付 token 成本和 prefill 延迟，且 KV cache 显存随长度暴涨；同时大量无关文本会稀释注意力（lost-in-the-middle），答案质量反而下降；知识库更新后也没有增量机制，任何一条变更都要重新处理全文。正确的做法仍然是检索先行：只取最相关的少量内容进入 context，用检索精度换取成本、延迟和质量。",
+    "explanation": "全量塞入 = 成本/延迟/显存随库容走 + 注意力被噪声稀释 + 无增量更新；检索先行、按相关性裁剪才是可行架构。",
+    "rubric": {
+      "required": [
+        "成本/延迟随库容增长",
+        "注意力稀释",
+        "无增量更新",
+        "检索先行替代"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-034",
+    "category": "ai-fundamentals",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "RAG",
+      "hallucination",
+      "grounding"
+    ],
+    "question": "RAG 为什么能够降低 Hallucination？它的作用机制是什么？",
+    "referenceAnswer": "RAG 把相关证据直接放进 context，让模型的回答基于提供的材料进行条件生成，而不是仅凭参数里的记忆自由发挥——这相当于给 next-token 预测加上了 grounding。配合要求模型引用来源、只在证据范围内作答的 prompt 约束，可以显著减少编造。但它只是降低了概率，并不能消除幻觉：检索失败、证据被误读时幻觉依然会出现。",
+    "explanation": "RAG 提供外部证据做条件生成（grounding），把回答锚定在材料上从而降低编造概率；是缓解不是消除。",
+    "rubric": {
+      "required": [
+        "条件生成/grounding",
+        "参数记忆 vs 上下文证据",
+        "降低而非消除"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-035",
+    "category": "ai-fundamentals",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "chunking",
+      "RAG",
+      "retrieval"
+    ],
+    "question": "Chunk size 为什么会影响 RAG 效果？chunk 过大或过小分别有什么问题？",
+    "referenceAnswer": "Chunk size 同时影响检索和生成两端。过大：单个 chunk 包含多个主题，embedding 向量语义被稀释，检索精度下降；进入 context 后也包含大量无关内容，占用 token 并引入噪声。过小：语义单元被切碎，孤立 chunk 缺少上下文，即使被召回也无法支撑完整回答；同时检索次数和索引规模上升。理想做法是按文档结构和语义边界切分，配合 overlap 或父子 chunk（小块检索、大块喂给模型）等策略。",
+    "explanation": "过大 → embedding 语义稀释 + context 噪声；过小 → 语义破碎、召回了也答不全；按语义边界切分并用 overlap/parent-child 平衡。",
+    "rubric": {
+      "required": [
+        "过大：语义稀释+噪声",
+        "过小：语义破碎",
+        "检索与生成的双重影响",
+        "结构化/overlap 策略"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-036",
+    "category": "ai-fundamentals",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "vector-search",
+      "keyword-search",
+      "BM25"
+    ],
+    "question": "Vector Search 和 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
+    "referenceAnswer": "Vector search 把 query 和文档映射成语义向量，按余弦等距离检索，擅长同义改写、跨语言和模糊语义匹配，但对精确符号（型号、错误码、专有名词）不敏感，且依赖 embedding 模型的领域适应性；Keyword search 按词面匹配，擅长精确实体、编号、代码标识符的查找，对 OOV 词鲁棒、无需模型，但无法理解同义表达。两者的失败模式互补，这是 hybrid search 存在的理由。",
+    "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
+    "rubric": {
+      "required": [
+        "语义 vs 词面",
+        "各自强项",
+        "互补失败模式"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-037",
+    "category": "ai-fundamentals",
+    "topic": "reranking",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "hybrid-search",
+      "reranking",
+      "reliability"
+    ],
+    "question": "Hybrid Search 为什么通常比单独使用 Vector Search 更可靠？通常会怎么组合？",
+    "referenceAnswer": "Hybrid search 并行使用向量检索和关键词检索，两路的失败模式互补：语义改写的 query 由向量路兜住，精确实体/编号由关键词路兜住，任一路失效时另一路仍可能召回正确文档，整体 recall 更稳。常见组合方式是双路召回后在候选并集上用 RRF（Reciprocal Rank Fusion）融合排序，或接一个 cross-encoder reranker 统一重排，最后取 top-k 进入生成阶段。",
+    "explanation": "双路失败模式互补 → recall 更稳；典型做法：双路召回 → RRF 融合或 cross-encoder 重排 → top-k 进生成。",
+    "rubric": {
+      "required": [
+        "失败模式互补",
+        "recall 提升",
+        "RRF/rerank 融合方式"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-038",
+    "category": "ai-fundamentals",
+    "topic": "reranking",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "reranker",
+      "cross-encoder",
+      "precision"
+    ],
+    "question": "在 RAG 流程中，Reranker 解决的是什么问题？为什么有了向量检索还需要它？",
+    "referenceAnswer": "向量检索用的 bi-encoder 为了吞吐把 query 和文档独立编码，精度有限，只能保证“大致相关”的粗排结果。Reranker（通常是 cross-encoder）把 query 和每个候选放在一起做深度交互打分，精度更高但算得慢，所以放在召回之后对少量候选精排。它解决的核心问题是 precision：让最终进入 context 的 top-k 尽量都是真正相关的内容，减少噪声、节省 token。",
+    "explanation": "bi-encoder 快但粗（独立编码），cross-encoder 准但慢（联合编码）→ 召回后对少量候选精排，提升进入 context 的 precision。",
+    "rubric": {
+      "required": [
+        "bi-encoder vs cross-encoder",
+        "粗排→精排分工",
+        "precision 提升"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-039",
+    "category": "ai-fundamentals",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "embedding",
+      "semantic-similarity",
+      "relevance"
+    ],
+    "question": "一段文档与 query 的 Embedding 相似度很高，是否意味着它能回答这个问题？为什么？",
+    "referenceAnswer": "不一定。Embedding 相似度衡量的是语义空间中的距离接近，不是问答相关性：同话题但不包含答案的内容（背景介绍 vs 具体数字）、表述相似的相反结论、模板化的相似段落都可能拿到高分。相似度是必要线索而非充分条件，这正是 reranker、答案覆盖性校验和 faithfulness 评测存在的意义——最终要验证的是“这段内容是否真的支持答案”，而不是“它听起来像不像”。",
+    "explanation": "semantic similarity ≠ answer relevance：同话题无答案、相反结论都可能高分；需要 rerank 与 faithfulness 校验兜底。",
+    "rubric": {
+      "required": [
+        "相似度语义定义",
+        "高分但不相关的情形",
+        "需要下游校验"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-040",
+    "category": "ai-fundamentals",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "evaluation",
+      "non-determinism"
+    ],
+    "question": "为什么 LLM 应用的 Evaluation 比传统软件测试困难？",
+    "referenceAnswer": "传统测试的输入对应确定的期望输出，断言可以精确到相等；LLM 的输出是一个分布——同一输入有多种合法表述，正确性是程度问题而非布尔值。此外还有：标准因任务而异（事实性、风格、完整性互相冲突），很多维度没有唯一 ground truth，模型与服务端版本会造成隐性漂移，长链路系统（RAG/Agent）的失败可能发生在任意一层。因此 evaluation 需要从 exact-match 转向评分量表、参考对比、LLM judge 与分层指标的组合。",
+    "explanation": "输出是分布而非确定值：无唯一正确答案、多维标准、版本漂移、多层链路失败点；评测范式从断言转向量表+judge+分层指标。",
+    "rubric": {
+      "required": [
+        "输出分布 vs 确定输出",
+        "无唯一 ground truth",
+        "版本漂移",
+        "评测范式转变"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-041",
+    "category": "ai-fundamentals",
+    "topic": "llm-as-judge",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "LLM-as-a-Judge",
+      "bias",
+      "trade-off"
+    ],
+    "question": "LLM-as-a-Judge 作为评测手段有哪些已知的问题？你会如何缓解？",
+    "referenceAnswer": "已知偏差包括：position bias（偏向特定位置的答案）、verbosity bias（偏爱更长回答）、self-bias（偏爱自己模型的输出风格）、判分不一致（同一样本多次打分波动）、以及与人类判断的相关性有限，尤其在高难度或专业领域。缓解手段：交换候选顺序取平均、控制长度变量、给出明确 rubric 与 few-shot 校准样例、定期用人工标注子集校验 judge 的一致性和相关性，重要决策不以单一 judge 分数为准。",
+    "explanation": "judge 有 position/verbosity/self bias 与打分波动，且与人工相关性有限；用顺序交换、rubric 校准、人工抽检对齐来缓解。",
+    "rubric": {
+      "required": [
+        "至少两类已知偏差",
+        "打分不一致",
+        "与人工判断相关性",
+        "校准/缓解手段"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-042",
+    "category": "ai-fundamentals",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "evaluation-dataset",
+      "edge-case",
+      "regression"
+    ],
+    "question": "如何为一个上线中的 LLM Application 设计 Evaluation Dataset？请说明数据构成与持续维护机制。",
+    "referenceAnswer": "数据构成应分层覆盖：正常 case（代表性主流程）、边界 case（极长/极短输入、多语言、格式异常）、对抗 case（注入、诱导越权、误导性前提）、回归 case（线上真实 badcase 固化）、以及生产抽样（保持与真实流量分布一致）。每条尽量带参考答案或评分要点。维护机制：版本化管理数据集、每次 prompt/model/pipeline 变更跑全量回归、定期从线上日志补充新的失败样本、监控数据集自身的覆盖盲区。关键是把它当成产品资产而非一次性交付物。",
+    "explanation": "分层构成：正常/边界/对抗/回归/生产抽样 + 参考答案；版本化 + 变更触发回归 + 线上 badcase 持续回流，作为长期资产运营。",
+    "rubric": {
+      "required": [
+        "分层构成",
+        "参考答案/评分要点",
+        "回归机制",
+        "线上样本回流"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-043",
+    "category": "ai-fundamentals",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "offline-evaluation",
+      "online-evaluation"
+    ],
+    "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
+    "referenceAnswer": "Offline evaluation 在发布前的固定数据集上进行，可重复、可对比、成本低，回答“在这个数据分布上系统表现如何”，但它无法覆盖真实流量的长尾分布和真实使用环境。Online evaluation 在真实流量上度量，如 A/B 测试、用户反馈、任务完成率，回答“对真实用户是否更好”，能暴露 offline 发现不了的问题（延迟、长尾、滥用），但周期长、成本高、有实验风险。两者互补：offline 做快速迭代守门，online 做最终验证。",
+    "explanation": "Offline = 固定集上可重复对比（守门快迭代，覆盖不了真实分布）；Online = 真实流量验证（可信但慢且贵）；二者互补缺一不可。",
+    "rubric": {
+      "required": [
+        "可控可重复 vs 真实分布",
+        "各自的盲区",
+        "互补定位"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-044",
+    "category": "ai-fundamentals",
+    "topic": "hallucination",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "hallucination",
+      "next-token",
+      "grounding"
+    ],
+    "question": "LLM 为什么会产生 Hallucination？请从训练目标和生成机制层面解释，而不是只说“模型不知道答案”。",
+    "referenceAnswer": "根本原因是训练目标：模型被优化去预测“统计上最合理的下一个 token”，而不是“真实的陈述”。当知识缺失或问题超出训练分布时，模型依然会生成语言上流畅、格式上合理的延续——看起来自信，实则缺乏依据。具体机制还包括：参数化知识的存储本身有损且不稳定；训练数据中的错误与虚构内容；解码阶段的随机采样；缺乏对自身不确定性的可靠感知（校准不足）；以及 RLHF 可能奖励“自信完整的回答”而非“承认不知道”。所以幻觉是这套范式的结构性产物，只能缓解不能根除。",
+    "explanation": "幻觉源于 next-token 目标与“真实性”不对齐：流畅 ≠ 正确；叠加有损知识存储、数据噪声、采样随机性、不确定性与 RLHF 偏好激励。",
+    "rubric": {
+      "required": [
+        "next-token 目标与真实性脱节",
+        "有损参数化知识",
+        "校准缺失",
+        "RLHF 激励偏差"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-045",
+    "category": "ai-fundamentals",
+    "topic": "hallucination",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "RAG",
+      "hallucination",
+      "trade-off"
+    ],
+    "question": "RAG 能彻底解决 Hallucination 吗？如果不能，幻觉还会从哪些环节漏进来？",
+    "referenceAnswer": "不能。RAG 只解决了 grounding 的输入侧，幻觉仍可从多处漏入：检索失败（没召回正确文档，模型退回参数记忆自由发挥）；context 构造失败（正确文档在但被淹没或截断）；解读失败（模型误读、过度推断或忽略证据中的限定条件）；生成失败（即使证据充分，采样仍可能产生与 context 矛盾的表述）。此外查询本身模糊、知识库过期也会间接引发。因此 RAG 之外还需要 citation 校验、faithfulness 评测和拒答机制配合。",
+    "explanation": "RAG 只管输入侧 grounding；检索失败/context 淹没/误读证据/生成本身矛盾都会漏幻觉，需 citation+faithfulness+拒答配套。",
+    "rubric": {
+      "required": [
+        "明确回答不能",
+        "检索/构造/解读/生成各环节漏洞",
+        "配套校验机制"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-046",
+    "category": "ai-fundamentals",
+    "topic": "alignment",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "capability",
+      "reliability",
+      "production"
+    ],
+    "question": "为什么“这个模型很聪明”（benchmark 表现好）不代表它适合某个具体的生产任务？",
+    "referenceAnswer": "Benchmark 衡量的是 capability，而生产任务还要求一系列不同的属性：可靠性（错误率是否低到业务可接受、失败模式是否可预期）、可控性（能否通过 prompt/schema/guardrails 约束行为）、成本效率（单位任务的成本是否划算）、延迟与并发能力、以及数据合规。一个通用能力更强的模型可能在你的窄任务上不如小模型稳定，也可能贵得无法规模化。正确思路是以任务为中心定义指标，用真实流量样本评测候选模型，而不是拿通用榜单排名做选型。",
+    "explanation": "capability ≠ reliability ≠ controllability ≠ cost/latency；选型应以任务指标 + 真实流量评测为准，而非通用榜单。",
+    "rubric": {
+      "required": [
+        "capability 与生产属性的区分",
+        "可靠性/可控性/成本至少两项",
+        "任务中心评测方法"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-047",
+    "category": "ai-fundamentals",
+    "topic": "model-selection",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "model-selection",
+      "trade-off",
+      "deployment"
+    ],
+    "question": "一个 7B 模型和一个 70B 模型摆在面前，你会如何为业务做选型？请说明决策依据。",
+    "referenceAnswer": "应从任务出发反向推导：先用评测集确认 70B 相对 7B 在目标任务上的准确率增益有多大——如果 7B 已接近任务上限，大模型没有意义。然后核算代价：70B 的显存需求（多卡部署）、单位 token 成本、延迟与并发吞吐都显著更高。还要考虑部署形态（自建 vs API）、数据合规约束、以及混合策略的可能：简单请求路由给小模型、困难请求升级到大模型，往往比二选一更优。结论应来自“准确率增益 × 业务价值 vs 成本/延迟增量”的量化权衡，而非直觉。",
+    "explanation": "选型依据 = 任务准确率增益 × 业务价值 vs 显存/成本/延迟/并发增量；必要时用模型路由混合部署，而非直觉二选一。",
+    "rubric": {
+      "required": [
+        "任务增益先行",
+        "成本/显存/延迟/并发权衡",
+        "部署与合规约束",
+        "模型路由混合策略"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-048",
+    "category": "ai-fundamentals",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "scenario",
+      "RAG",
+      "fine-tuning",
+      "pre-training"
+    ],
+    "question": "公司希望模型掌握 10 万条内部 FAQ。你会选择继续 Pre-training、Fine-tuning 还是 RAG？请说明理由和实施路径。",
+    "referenceAnswer": "优先 RAG。10 万条 FAQ 是典型的可检索知识：内容会持续更新、答案需要引用出处、且要求可审计——这三点恰好是 RAG 的强项，也是重新 pre-training 完全不适合的原因（成本天文数字、无法增量更新、知识不可溯源）。Fine-tune 是否要做取决于另一个问题：FAQ 的回答是否需要特殊的行为/格式/术语风格。推荐路径：先把 FAQ 建成高质量检索库（清洗、结构化、chunk、hybrid 检索 + reranker）；上线后若发现回答风格、格式或拒答行为不达标，再用 SFT/LoRA 做行为层适配。",
+    "explanation": "FAQ = 会更新、需溯源的可检索知识 → RAG 优先；pretrain 不可能，FT 仅在行为/格式不达标时作为补充（LoRA+SFT）。",
+    "rubric": {
+      "required": [
+        "优先 RAG 及理由",
+        "排除 pre-training 的理由",
+        "FT 的适用判断",
+        "实施路径"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-049",
+    "category": "ai-fundamentals",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "debugging",
+      "RAG",
+      "observability"
+    ],
+    "question": "一个 RAG 系统 Recall 很高，但最终回答质量很差。请描述你的排查思路。",
+    "referenceAnswer": "沿流水线逐层定位，先建立分层 trace：query rewrite 是否改变了原意 → 检索虽然 recall 高但正确 chunk 排在第几（MRR/nDCG，而非只看 recall@k）→ reranker 是否把正确内容挤出 top-k → context construction 是否截断、丢失元数据或引入噪声 → prompt 组织是否让模型清楚该基于哪些材料作答 → generation 是否忠实使用了证据（faithfulness）。用带标准答案的评测集对每一层单独打分，找到掉分最大的那一层优先修复，而不是凭感觉全局调优。",
+    "explanation": "recall 高 ≠ 排名靠前 ≠ 进了 context ≠ 被正确使用；分层评测 rewrite/ranking/rerank/context/generation 各段指标，修掉分最大的环节。",
+    "rubric": {
+      "required": [
+        "分层 trace 思路",
+        "ranking 深于 recall",
+        "context/prompt 检查",
+        "faithfulness 验证",
+        "定位后针对性修复"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-050",
+    "category": "ai-fundamentals",
+    "topic": "latency",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "debugging",
+      "latency",
+      "observability"
+    ],
+    "question": "线上 LLM API 的 P50 延迟从 1 秒突然涨到 8 秒。你会如何定位原因？",
+    "referenceAnswer": "先把总延迟拆成可观测的分段：排队时间（provider 限流/容量紧张时常表现为 queue time 暴涨）、网络传输、TTFT（受 prefill 长度和首字生成影响）、decode 速度（TPOT）× 输出 token 数。对比延迟构成的变化方向：queue 上涨指向 provider 容量或限流；TTFT 上涨检查 prompt 是否变长（上游功能改动、context 泄漏）、是否触发了长 prefill；TPOT 变慢可能是 provider 降级到拥堵实例或换了部署；输出 token 数暴增则查上游是否改了 prompt 导致冗长输出。同时核对变更清单（prompt/模型版本/参数/上游功能）与 provider status，用分段指标而非总时长来归因。",
+    "explanation": "总延迟 = queue + network + TTFT(prefill) + TPOT×output_tokens;按分段变化方向归因：排队→容量限流、TTFT→prompt 变长、TPOT→实例降级、token 数→上游 prompt 改动。",
+    "rubric": {
+      "required": [
+        "延迟分段拆解",
+        "TTFT 与 TPOT 区分",
+        "queue/provider 容量",
+        "变更清单核对"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-fund-051",
+    "category": "ai-fundamentals",
+    "topic": "agent-system-design",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "agent",
+      "reliability",
+      "architecture"
+    ],
+    "question": "一个 Agent 系统单步都很聪明，但端到端任务成功率只有 70%。你会从哪些方面系统性提高成功率？",
+    "referenceAnswer": "先做失败归因：把失败 case 分类——工具调用错误、规划偏离、状态丢失、循环不终止、还是最后一步生成失误——不同根因对策完全不同。系统性手段包括：把高频成功路径固化成确定性 workflow，只把真正需要语义判断的部分留给 Agent 自由度；提高工具可靠性（schema 清晰、参数校验、失败重试与 fallback）；引入结构化状态避免上下文丢失；加 termination budget 与循环检测；对关键输出加 validation/guardrails，失败时可回退或重试；建立端到端成功率评测集持续回归。核心思想是多步系统的成功率是各环节可靠性的乘积，要用工程手段减少步数和自由度，而不是寄望于换更强的模型。",
+    "explanation": "成功率是各环节可靠性的乘积：先失败归因分类，再固化 workflow、加固工具/状态/termination、加 validation 与 guardrails、建端到端回归评测。",
+    "rubric": {
+      "required": [
+        "失败归因分类",
+        "workflow 固化高频路径",
+        "工具/状态/终止机制加固",
+        "validation/guardrails",
+        "端到端评测回归"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  }
+]

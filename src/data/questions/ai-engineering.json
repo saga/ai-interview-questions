@@ -1,0 +1,393 @@
+[
+  {
+    "id": "ai-eng-012",
+    "category": "ai-engineering",
+    "topic": "context-engineering",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "context",
+      "prompt",
+      "latency",
+      "debugging"
+    ],
+    "question": "一个 Agent 运行 20 轮之后，context 已经达到 200K tokens。此时模型速度变慢，成本上升，回答质量也开始下降。你会如何处理？",
+    "referenceAnswer": "应该把完整对话历史与真正需要的状态区分开。可以进行历史压缩、摘要、删除已经完成的 tool results、提取结构化状态，并把长期信息放入独立 memory。对于每轮请求，只保留当前任务真正需要的上下文，而不是无限累积 transcript。",
+    "explanation": "区分完整历史与任务状态：压缩摘要、裁剪已完成 tool results、提取结构化状态、长期信息放入独立 memory。",
+    "rubric": {
+      "required": [
+        "context compression",
+        "结构化状态",
+        "tool result pruning",
+        "memory"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-013",
+    "category": "ai-engineering",
+    "topic": "context-engineering",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "context",
+      "RAG",
+      "long-context",
+      "trade-off"
+    ],
+    "question": "一个模型支持 1M token context。你的 RAG 系统可以把检索得到的 100 个 chunk 全部放进去。为什么仍然不应该简单地把所有 chunk 都塞进 context？",
+    "referenceAnswer": "更大的 context 并不意味着所有信息都能被同等有效地利用。无关信息会增加成本、延迟和干扰，并可能让真正重要的信息更难被模型关注。应该通过 retrieval、reranking、deduplication 和 context compression 选择真正相关的信息。",
+    "explanation": "长上下文不等于有效利用；无关 chunk 带来成本、延迟与噪声，应 rerank/dedup/compress 后再进入 context。",
+    "rubric": {
+      "required": [
+        "context cost",
+        "noise",
+        "relevance",
+        "reranking/compression"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-014",
+    "category": "ai-engineering",
+    "topic": "memory",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "memory",
+      "context",
+      "agent"
+    ],
+    "question": "一个 AI Coding Assistant 需要记住用户的 coding preferences、项目约定和过去的对话。你会如何区分 conversation history、working memory 和 long-term memory？哪些信息应该进入长期记忆？",
+    "referenceAnswer": "Conversation history 是当前或近期对话原文；working memory 保存当前任务需要的结构化状态；long-term memory 保存跨任务仍然有价值且相对稳定的信息，例如用户明确表达的偏好和项目约定。临时错误、一次性的工具结果和不确定推断通常不应该直接写入长期记忆。",
+    "explanation": "三层区分：对话原文 / 当前任务工作状态 / 跨任务稳定的长期记忆；只把明确且稳定的信息写入长期。",
+    "rubric": {
+      "required": [
+        "conversation history",
+        "working memory",
+        "long-term memory",
+        "稳定信息"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-015",
+    "category": "ai-engineering",
+    "topic": "memory",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "memory",
+      "hallucination",
+      "data-quality",
+      "debugging"
+    ],
+    "question": "一个 Agent 的长期 memory 中保存了大量模型自己推断出来的信息。几个月后，Agent 经常根据错误 memory 做出错误决策。你会如何解决这个问题？",
+    "referenceAnswer": "应该降低模型自动写入长期 memory 的权限，并区分用户明确提供的信息、工具验证的信息和模型推断的信息。memory 应该有来源、时间和置信度等元数据，并允许过期、更新或删除。对于关键事实应优先重新从权威数据源验证，而不是盲目信任 memory。",
+    "explanation": "给 memory 加来源/时间/置信度元数据，区分事实与推断，允许过期删除，关键事实重新从权威源验证。",
+    "rubric": {
+      "required": [
+        "memory provenance",
+        "模型推断与事实区分",
+        "验证",
+        "更新或过期"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-016",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "RAG",
+      "retrieval",
+      "reranking",
+      "debugging"
+    ],
+    "question": "一个 RAG 系统的 retrieval recall@10 达到 95%，但是最终回答准确率只有 70%。正确答案经常出现在 Top-10 中。你会如何判断问题究竟出在 retrieval、reranking、context construction 还是 generation？",
+    "referenceAnswer": "不能只看 recall@10。应该分别评估正确 chunk 的排名、reranker 后的位置、最终送入 LLM 的 context，以及模型是否使用了正确证据。可以建立分层 evaluation：retrieval recall、MRR/nDCG、context precision、answer faithfulness 和最终 task success，从而定位具体阶段。",
+    "explanation": "recall@10 只覆盖检索一层；需对 ranking、context 构建、generation 分层评测才能定位具体瓶颈阶段。",
+    "rubric": {
+      "required": [
+        "分层评估",
+        "ranking",
+        "context",
+        "generation"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-017",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "RAG",
+      "chunking",
+      "retrieval",
+      "trade-off"
+    ],
+    "question": "你需要为企业 ESG 报告建立 RAG 系统。PDF 中同时包含长文本、表格、脚注、多级标题和图表。你会选择固定长度 chunk、semantic chunk，还是基于文档结构进行 chunking？为什么？",
+    "referenceAnswer": "更适合优先利用文档结构，例如章节、标题、段落和表格边界，再结合 token 长度进行必要切分。固定 chunk 简单但可能破坏语义结构；纯 semantic chunk 更复杂且不一定适合表格和报告结构。实际系统通常需要针对不同内容类型采用不同策略。",
+    "explanation": "结构化文档优先按章节/标题/表格边界切分，再结合 token 长度；不同内容类型采用不同 chunking 策略。",
+    "rubric": {
+      "required": [
+        "文档结构",
+        "chunk size",
+        "语义完整性",
+        "不同内容类型"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-018",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "evaluation",
+      "LLM-as-a-Judge",
+      "RAG"
+    ],
+    "question": "你负责一个企业 RAG 系统，希望上线前证明系统质量。你会如何设计 offline evaluation？请说明 evaluation dataset、retrieval metrics、answer metrics 和 LLM-as-a-Judge 各自解决什么问题。",
+    "referenceAnswer": "首先需要建立覆盖真实用户场景的 evaluation dataset，并尽可能提供 ground truth 或 reference evidence。retrieval 可以评估 recall、MRR 或 nDCG；answer 可以评估 correctness、faithfulness、completeness 等；LLM-as-a-Judge 可以辅助评估开放式答案，但应该进行 judge calibration，并结合人工评估和确定性指标。",
+    "explanation": "offline evaluation 四件套：覆盖真实场景的数据集、retrieval 指标、answer 指标、LLM judge（需校准并结合人工）。",
+    "rubric": {
+      "required": [
+        "evaluation dataset",
+        "retrieval metrics",
+        "answer metrics",
+        "LLM judge",
+        "人工或校准"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-019",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "evaluation",
+      "production",
+      "observability",
+      "debugging"
+    ],
+    "question": "一个 AI 产品 offline evaluation 的 answer accuracy 是 92%，但上线后用户满意度只有 70%。你会优先调查哪些问题？",
+    "referenceAnswer": "首先确认 offline dataset 是否代表真实用户分布。然后检查线上输入、任务类型、长尾问题、latency、tool failure、retrieval failure 和答案可用性。还需要区分 correctness 与用户体验，因为一个 technically correct 但过长、过慢或没有执行用户真正任务的回答仍可能导致低满意度。",
+    "explanation": "先查离线数据分布与真实流量差异，再看长尾、延迟、可靠性，以及“正确但不好用”的体验差距。",
+    "rubric": {
+      "required": [
+        "evaluation dataset distribution",
+        "线上长尾",
+        "latency/reliability",
+        "用户任务完成"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-020",
+    "category": "ai-engineering",
+    "topic": "structured-output",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "structured-output",
+      "JSON",
+      "reliability",
+      "trade-off"
+    ],
+    "question": "你需要让 LLM 输出固定结构的 JSON。仅仅在 prompt 中写“请返回 JSON”有哪些风险？你会如何提高结构化输出的可靠性？",
+    "referenceAnswer": "单纯 prompt 约束无法保证格式正确，模型可能输出 markdown、缺失字段或类型错误。可以使用 provider 支持的 structured output、JSON schema 或 function/tool calling，并在客户端进行 schema validation。对于失败结果应该有有限重试或安全 fallback。",
+    "explanation": "仅靠 prompt 约束格式不可靠；应使用 provider 结构化输出/JSON schema + 客户端校验 + 有限重试与安全 fallback。",
+    "rubric": {
+      "required": [
+        "schema",
+        "validation",
+        "structured output",
+        "fallback"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-021",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "reliability",
+      "LLM",
+      "production"
+    ],
+    "question": "一个 AI 服务依赖第三方 LLM API。线上偶尔出现 timeout、429、5xx 和 malformed JSON。你会设计哪些 reliability mechanisms？",
+    "referenceAnswer": "应该区分不同错误处理：timeout 可以有限重试或 fallback；429 需要 backoff 和 rate limiting；5xx 可以有限重试并切换 provider 或模型；malformed JSON 需要 schema validation 和有限修复/重试。同时应设置整体 request budget、超时、fallback 和 observability，避免 Agent 或重试逻辑无限扩大成本。",
+    "explanation": "按错误类型分别处理：timeout 重试、429 backoff、5xx 限次重试+降级、malformed JSON 校验修复；整体设预算与可观测性。",
+    "rubric": {
+      "required": [
+        "timeout",
+        "rate limit",
+        "retry/backoff",
+        "fallback",
+        "validation"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-022",
+    "category": "ai-engineering",
+    "topic": "latency",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "latency",
+      "agent",
+      "production",
+      "debugging"
+    ],
+    "question": "一个 Agent 请求平均需要 18 秒。一次请求包含 3 次 LLM 调用、2 次 retrieval 和 2 次 tool call。你会如何分析和优化 latency？",
+    "referenceAnswer": "首先建立每个阶段的 latency breakdown 和 trace，区分串行和并行调用。可以合并不必要的 LLM 调用、并行执行独立工具和 retrieval、减少 context、选择更快模型，并设置合理的 timeout。不能只通过更换模型解决问题，因为串行调用次数和上下文大小可能是主要瓶颈。",
+    "explanation": "先做分阶段 latency trace 并区分串并行；合并调用、并行执行独立步骤、缩 context、设合理 timeout。",
+    "rubric": {
+      "required": [
+        "latency breakdown",
+        "串并行",
+        "减少 LLM calls",
+        "context"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-023",
+    "category": "ai-engineering",
+    "topic": "cost",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "cost",
+      "model-routing",
+      "context",
+      "trade-off"
+    ],
+    "question": "一个 Agent 平均每次请求消耗 50K tokens，日请求量从 10K 增长到 1M。你会从哪些层面控制成本？请按优先级说明。",
+    "referenceAnswer": "首先分析 token 消耗来源，减少无效 context 和 tool results；然后考虑 prompt/context caching、减少不必要的 Agent iterations、模型路由和更小模型处理简单任务。还可以对 retrieval、tool call 和整体任务设置 budget。成本优化应该结合质量指标，而不是单纯追求最低 token 数。",
+    "explanation": "优先级：削减无效 context → caching → 减少 iterations → model routing；成本优化必须结合质量指标一起看。",
+    "rubric": {
+      "required": [
+        "context reduction",
+        "model routing",
+        "caching",
+        "iteration budget"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eng-024",
+    "category": "ai-engineering",
+    "topic": "agent-system-design",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "system-design",
+      "agent",
+      "RAG",
+      "tool-calling",
+      "evaluation"
+    ],
+    "question": "设计一个 Research Agent。用户输入“分析某家公司最近三个季度的 AI 业务表现，并与主要竞争对手比较”。系统需要搜索网页、读取财报、查询金融数据、提取指标、计算同比变化，并生成带引用的分析报告。请说明整体架构、Agent 如何使用 tools、哪些步骤应该使用确定性 workflow，以及你会如何评估系统质量。",
+    "referenceAnswer": "应该采用 Workflow + Agent 的混合架构，而不是让一个 Agent 完全自由执行。确定性的数据获取、解析、指标计算和结果校验可以使用 workflow；Agent 负责根据任务选择信息源、决定搜索方向和处理需要语义判断的步骤。系统需要有结构化 research state、tool routing、citation provenance、budget 和 termination mechanism。评估应覆盖 retrieval、数据抽取、计算正确性、citation grounding、最终答案质量以及任务完成率。",
+    "explanation": "Research Agent 用 Workflow+Agent 混合架构：确定性步骤走 workflow，语义判断交给 Agent；配套结构化 state、tool routing、citation、budget/termination 与分层评估。",
+    "rubric": {
+      "required": [
+        "Workflow + Agent",
+        "tool routing",
+        "structured state",
+        "citation",
+        "evaluation"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  }
+]

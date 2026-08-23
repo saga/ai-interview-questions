@@ -1,0 +1,97 @@
+[
+  {
+    "id": "nlp-01",
+    "category": "nlp",
+    "topic": "tokenization",
+    "tags": [
+      "tokenization",
+      "chinese-nlp"
+    ],
+    "type": "single",
+    "difficulty": "easy",
+    "question": "在中文 NLP 中，与英文相比，分词（tokenization）通常需要额外处理的难点是？",
+    "options": [
+      "英文没有词边界",
+      "中文词与词之间没有天然空格分隔",
+      "中文没有语法",
+      "中文无法用向量表示"
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": "中文以字为基本单位、词间无空格，需要专门的分词算法；英文则天然以空格分词。"
+  },
+  {
+    "id": "nlp-02",
+    "category": "nlp",
+    "topic": "word-embedding",
+    "tags": [
+      "embedding",
+      "representation"
+    ],
+    "type": "multiple",
+    "difficulty": "medium",
+    "question": "词嵌入（word embedding）相比 one-hot 编码的优势包括？（多选）",
+    "options": [
+      "向量维度更低、更稠密",
+      "能刻画词与词之间的语义相似度",
+      "每个词都是独立正交的表示",
+      "可捕获上下文语义关系"
+    ],
+    "answer": [
+      0,
+      1,
+      3
+    ],
+    "explanation": "词嵌入是低维稠密向量，能表达语义相似性与上下文关系；one-hot 才是高维稀疏且相互正交、无法表达语义。"
+  },
+  {
+    "id": "nlp-03",
+    "category": "nlp",
+    "topic": "pretraining",
+    "tags": [
+      "bert",
+      "gpt",
+      "pretraining"
+    ],
+    "type": "single",
+    "difficulty": "medium",
+    "question": "BERT 与 GPT 在预训练目标上的核心区别是？",
+    "options": [
+      "BERT 用语料重建，GPT 用对比学习",
+      "BERT 是双向编码器（MLM），GPT 是单向自回归（CLM）",
+      "BERT 只能做分类，GPT 只能做生成",
+      "二者预训练目标完全相同"
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": "BERT 通过掩码语言模型（MLM）实现双向上下文理解；GPT 采用自回归从左到右生成，是单向的。"
+  },
+  {
+    "id": "nlp-04",
+    "category": "nlp",
+    "topic": "bpe-tokenization",
+    "tags": [
+      "tokenizer",
+      "bpe",
+      "subword"
+    ],
+    "type": "single",
+    "difficulty": "medium",
+    "question": "LLM 常无法正确回答“strawberry 中有几个 r”，其根本原因主要与什么有关？",
+    "options": [
+      "模型参数量不够大，记不住单词拼写",
+      "子词分词（如 BPE）：模型看到的是 token 而非字符，一个 token 内的字母顺序与数量信息未被显式编码",
+      "训练数据中没有包含 strawberry 这个词",
+      "注意力机制无法处理英文单词"
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": "BPE 等子词分词把 strawberry 切成少数几个 token，模型在 embedding 层面看到的是 token ID 而非逐字符序列，字符级计数需要“越界”推理。这是理解 tokenizer 重要性的经典案例——很多看似奇怪的模型行为根源都在分词。",
+    "reference": {
+      "concept": "BPE 以子词为最小单元，token 内的字符结构对模型不透明。"
+    }
+  }
+]

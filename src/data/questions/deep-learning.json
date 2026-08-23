@@ -1,0 +1,142 @@
+[
+  {
+    "id": "dl-01",
+    "category": "deep-learning",
+    "topic": "activation",
+    "tags": [
+      "relu",
+      "activation",
+      "gradient"
+    ],
+    "type": "single",
+    "difficulty": "medium",
+    "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
+    "options": [
+      "输出范围在 0 到 1 之间，便于概率解释",
+      "缓解梯度消失问题，计算简单",
+      "一定能保证模型收敛到全局最优",
+      "对输入做了归一化处理"
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": "ReLU 在正区间梯度恒为 1，缓解深层网络中的梯度消失，且计算只需阈值判断，速度快。它不保证全局最优。"
+  },
+  {
+    "id": "dl-02",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "backprop",
+      "gradient",
+      "training"
+    ],
+    "type": "multiple",
+    "difficulty": "hard",
+    "question": "关于反向传播（backpropagation），下列说法正确的有哪些？（多选）",
+    "options": [
+      "它基于链式法则计算损失对各参数的梯度",
+      "仅在全连接网络中可用，卷积网络不能用",
+      "梯度用于沿损失下降方向更新参数",
+      "它属于有监督训练中的核心算法"
+    ],
+    "answer": [
+      0,
+      2,
+      3
+    ],
+    "explanation": "反向传播基于链式法则，适用于任何可微计算图（含 CNN/RNN），用于计算梯度并更新参数；并非只限于全连接网络。"
+  },
+  {
+    "id": "dl-03",
+    "category": "deep-learning",
+    "topic": "batch-norm",
+    "tags": [
+      "batch-normalization",
+      "training",
+      "stability"
+    ],
+    "type": "single",
+    "difficulty": "hard",
+    "question": "在训练深层神经网络时，批量归一化（Batch Normalization）的主要作用是？",
+    "options": [
+      "替代激活函数",
+      "减小内部协变量偏移，稳定并加速训练",
+      "彻底消除过拟合",
+      "降低模型参数量"
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": "BN 通过对每层输入做归一化，缓解内部协变量偏移，使训练更稳定、可使用更高学习率，从而加速收敛；它不能彻底消除过拟合。"
+  },
+  {
+    "id": "dl-04",
+    "category": "deep-learning",
+    "topic": "self-attention",
+    "tags": [
+      "transformer",
+      "attention",
+      "rnn"
+    ],
+    "type": "essay",
+    "difficulty": "hard",
+    "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
+    "referenceAnswer": "自注意力通过 Query、Key、Value 三组矩阵计算：先以 Q 与 K 的点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后做 softmax 得到注意力权重，再对 V 加权求和。多头注意力并行学习不同子空间的表示。相比 RNN，它可并行计算、无时序依赖，能直接建模任意距离的依赖关系，且训练更稳定、便于扩展规模。",
+    "explanation": "考察 QKV 计算流程、缩放点积、softmax 加权，以及并行性/长程依赖优势。",
+    "reference": {
+      "concept": "自注意力用 QKV 计算 token 间加权表示，可并行建模长程依赖。"
+    }
+  },
+  {
+    "id": "dl-05",
+    "category": "deep-learning",
+    "topic": "dropout",
+    "tags": [
+      "dropout",
+      "regularization"
+    ],
+    "type": "multiple",
+    "difficulty": "medium",
+    "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
+    "options": [
+      "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
+      "推理时通常关闭 Dropout 或使用期望缩放",
+      "它可以作为正则化手段缓解过拟合",
+      "它一定会使模型收敛更快"
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
+  },
+  {
+    "id": "dl-06",
+    "category": "deep-learning",
+    "topic": "gqa",
+    "tags": [
+      "attention",
+      "gqa",
+      "mqa",
+      "kv-cache"
+    ],
+    "type": "single",
+    "difficulty": "hard",
+    "question": "Llama 3、Mistral 等模型采用分组查询注意力（GQA）而非标准多头注意力（MHA），主要原因是？",
+    "options": [
+      "GQA 能提升模型在基准测试上的准确率",
+      "GQA 让多个 Query 头共享少量 KV 头，显著缩小 KV cache，且质量损失极小",
+      "GQA 减少了注意力层的参数量从而降低训练成本",
+      "GQA 支持比 MHA 更长的上下文窗口上限"
+    ],
+    "answer": [
+      1
+    ],
+    "explanation": "推理瓶颈主要在 KV cache 而非计算：GQA 在 MHA（每 Q 头独立 K/V）与 MQA（全部共享 1 组 K/V）之间折中，KV 头数按组缩减，缓存体积成倍下降而效果几乎无损。它不直接提升准确率，也不改变上下文长度上限。",
+    "reference": {
+      "concept": "GQA 用少量 KV 头服务多个 Query 头，缩小 KV cache，是显存与质量的折中。"
+    }
+  }
+]
