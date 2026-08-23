@@ -179,7 +179,9 @@ export function sessionFromQuiz(
       format,
       score: g?.overall ?? 0,
       correct: format === 'choice' ? (g?.dimensions.correctness ?? 0) === 100 : undefined,
-      gaps: g?.gaps ?? [],
+      // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps；
+      // gaps 仅来自开放题的 LLM 评估，避免把"答案不正确"当真实薄弱要点写进 Learner Memory。
+      gaps: format === 'choice' ? [] : (g?.gaps ?? []),
     };
   });
   const overall =

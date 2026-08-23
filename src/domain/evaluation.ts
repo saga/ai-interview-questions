@@ -40,7 +40,8 @@ export function gradeChoice(cf: ChoiceFormat, selected: number[], rubric: Scorin
     overall: aggregateOverall(dimensions, rubric),
     dimensions,
     strengths: correct ? ['选择正确'] : [],
-    gaps: correct ? [] : ['答案不正确，请参见解析'],
+    // 选择题判定性打分，不知道用户漏了哪个知识点，不伪造 gap（避免污染 Learner Memory）。
+    gaps: [],
     feedback: correct ? '回答正确。' : '回答错误。',
   };
 }

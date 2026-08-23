@@ -179,6 +179,57 @@ describe('sessionFromQuiz', () => {
     expect(rec.durationSec).toBe(300);
     expect(rec.mode).toBe('quick');
   });
+
+  it('选择题答对：correct=true 且不写 gaps', () => {
+    const grades = {
+      c1: { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, strengths: ['选择正确'], gaps: [], feedback: '' },
+    } as never;
+    const rec = sessionFromQuiz(
+      { questions: [choiceA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
+      grades,
+      300,
+    );
+    expect(rec.questionResults[0].correct).toBe(true);
+    expect(rec.questionResults[0].gaps).toEqual([]);
+  });
+
+  it('选择题答错：correct=false 且丢弃判分假 gap，不污染 Learner Memory', () => {
+    const grades = {
+      c1: { overall: 0, dimensions: { correctness: 0, completeness: 0, architecture: 0, communication: 0 }, strengths: [], gaps: ['答案不正确，请参见解析'], feedback: '' },
+    } as never;
+    const rec = sessionFromQuiz(
+      { questions: [choiceA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
+      grades,
+      300,
+    );
+    expect(rec.questionResults[0].correct).toBe(false);
+    expect(rec.questionResults[0].gaps).toEqual([]);
+  });
+
+  it('开放题：gaps 原样保留（用于 Learner Memory 的薄弱要点）', () => {
+    const grades = {
+      o1: { overall: 60, dimensions: { correctness: 60, completeness: 60, architecture: 60, communication: 60 }, strengths: [], gaps: ['没有解释 KV cache 对 decode latency 的影响'], feedback: '' },
+    } as never;
+    const rec = sessionFromQuiz(
+      { questions: [openA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
+      grades,
+      300,
+    );
+    expect(rec.questionResults[0].gaps).toEqual(['没有解释 KV cache 对 decode latency 的影响']);
+  });
+
+  it('全链路：错误选择题不会让假 gap 进入 Learner Profile', () => {
+    const grades = {
+      c1: { overall: 0, dimensions: { correctness: 0, completeness: 0, architecture: 0, communication: 0 }, strengths: [], gaps: ['答案不正确，请参见解析'], feedback: '' },
+    } as never;
+    const rec = sessionFromQuiz(
+      { questions: [choiceA], startedAt: Date.now(), definition: { title: 't', mode: 'quick' } },
+      grades,
+      300,
+    );
+    const profile = updateLearner(emptyProfile(), rec);
+    expect(JSON.stringify(profile)).not.toContain('答案不正确，请参见解析');
+  });
 });
 
 describe('pickPrioritized', () => {

@@ -69,7 +69,7 @@ describe('gradeChoice', () => {
     const g = gradeChoice(cq, [1], rubric);
     expect(g.overall).toBe(0);
     expect(g.dimensions.communication).toBe(0);
-    expect(g.gaps.length).toBeGreaterThan(0);
+    expect(g.gaps).toEqual([]); // 选择题不伪造 gap（避免污染 Learner Memory）
   });
 
   it('未作答（空数组）按错误处理', () => {
