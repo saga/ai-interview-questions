@@ -1462,5 +1462,318 @@
         "communication": 0.1
       }
     }
+  },
+  {
+    "id": "ai-transformer-003",
+    "category": "ai-fundamentals",
+    "topic": "attention",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "attention",
+      "long-context",
+      "debugging"
+    ],
+    "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
+    "referenceAnswer": "可以从几个层面分析：位置编码的外推能力（训练时未见过的长度上 RoPE/绝对编码是否失效）；注意力分散——长序列中相关 token 的注意力权重被稀释（lost-in-the-middle）；数值问题——长序列下 softmax/logits 的数值尺度漂移；以及实现层面的上下文截断或滑窗是否悄悄丢掉了关键信息。定位方法是用可控长度的诊断集（同一任务只变长度）分别测首/中/尾信息利用率，区分“能力边界”还是“信息被截断”。",
+    "explanation": "长文本退化通常源于位置编码外推失效、注意力稀释（lost-in-the-middle）、数值漂移或隐性截断；用变长诊断集分层定位。",
+    "rubric": {
+      "required": [
+        "位置编码外推",
+        "注意力稀释/lost-in-the-middle",
+        "隐性截断检查",
+        "变长诊断方法"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-transformer-006",
+    "category": "ai-fundamentals",
+    "topic": "kv-cache",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "kv-cache",
+      "inference",
+      "memory",
+      "debugging"
+    ],
+    "question": "一个 LLM 服务的 GPU 显存随并发请求增加迅速耗尽，即使模型本身可以放入显存。你会如何判断是不是 KV Cache 导致的？有哪些优化方向？",
+    "referenceAnswer": "判断方法：估算理论 KV Cache 占用（batch × layers × seq_len × kv_heads × head_dim × 2 × dtype 大小），与显存监控中的非权重占用对比；观察显存增长是否与并发数和序列长度成正比；用单请求压测排除碎片等其他因素。优化方向：GQA/MQA 减少 KV 头数；KV Cache 量化（FP8/INT8）；PagedAttention 消除预留浪费；限制 max seq len 与抢占/驱逐策略；前缀缓存复用公共 system prompt；必要时降低并发上限换取稳定性。",
+    "explanation": "KV Cache 占用 ∝ 并发×层数×长度×KV头数；先按公式对账再优化：GQA/MQA、量化、PagedAttention、限长限并发、前缀复用。",
+    "rubric": {
+      "required": [
+        "占用公式估算",
+        "与监控对账定位",
+        "GQA/量化/PagedAttention 至少两项",
+        "限流与前缀复用"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-transformer-007",
+    "category": "ai-fundamentals",
+    "topic": "tokenization",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "tokenization",
+      "llm"
+    ],
+    "question": "Tokenizer 在 LLM 中起什么作用？为什么同一段文本在不同模型中的 token 数量可能不同？",
+    "referenceAnswer": "Tokenizer 是文本与模型词表序列之间的双向转换层：输入侧把文本切成 token id，输出侧把 id 还原为文本。每家模型的 tokenizer 由各自语料独立训练（BPE 等算法的合并结果不同），词表大小、切分粒度、对中文/代码的覆盖都不同，所以同一段文本的 token 数量会不一样。这直接影响成本和有效上下文容量——迁移模型时不能沿用旧的 token 预算假设。",
+    "explanation": "Tokenizer 负责文本 ↔ token id 双向转换；各家用自己的语料训练词表，切分粒度不同导致 token 数不同，进而影响成本与上下文预算。",
+    "rubric": {
+      "required": [
+        "文本与 token id 的转换层",
+        "各自语料训练词表",
+        "对成本/上下文预算的影响"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-pretraining-002",
+    "category": "ai-fundamentals",
+    "topic": "pretraining",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "pre-training",
+      "causal-lm"
+    ],
+    "question": "为什么大语言模型通常使用 next-token prediction 作为预训练目标？这种看似简单的训练方式为什么能学到语言、知识甚至一定程度的推理能力？",
+    "referenceAnswer": "因为要把下一个 token 预测得足够好，模型被迫理解生成该 token 所需的一切隐含结构：语法与搭配是表层，事实知识决定专有名词后的内容，而很多文本（代码、数学、推理链条）要求模型隐式学会状态跟踪和多步推导才能续写正确。海量数据把这个单一目标变成了对世界知识的压缩建模——预测越准，意味着压缩越好，泛化表示越强。它还有工程优势：目标无需人工标注、可无限扩展、损失天然适配并行训练。",
+    "explanation": "预测下一 token 需要隐式掌握语法/事实/推理链——好预测等价于好的压缩建模；且免标注、可扩展、易并行。",
+    "rubric": {
+      "required": [
+        "预测蕴含理解",
+        "压缩即学习视角",
+        "免标注可扩展的工程优势"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-pretraining-003",
+    "category": "ai-fundamentals",
+    "topic": "training-data",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "pre-training",
+      "data-engineering",
+      "data-quality"
+    ],
+    "question": "你负责构建一个 10T token 的预训练数据集，来源包括网页、代码、书籍和论坛。你会设计哪些数据清洗、去重、质量过滤和数据混合策略？",
+    "referenceAnswer": "清洗：去 HTML 样板/广告、语言识别与过滤、长度与符号比例启发式、乱码与编码修复。去重：URL/哈希级精确去重，再加 MinHash/SimHash 等模糊去重消除转载模板文——重复数据浪费算力且加剧记忆。质量过滤：用轻量分类器打分（教育性/流畅度）、基于规则的质量信号（标点、大小写、结构完整性），必要时用参考模型困惑度过滤离群文档。混合配比：按 domain 设定目标比例（网页/代码/书籍/论坛），配合 epoch 策略——高质量数据可以多轮、低质数据少轮；配比影响下游能力（如代码占比影响推理），需要用小模型做消融实验验证后再放大。",
+    "explanation": "流水线四件事：清洗（样板/乱码）、两级去重（精确+模糊）、质量过滤（分类器+启发式+困惑度）、按 domain 配比并小规模消融验证。",
+    "rubric": {
+      "required": [
+        "清洗手段",
+        "精确+模糊去重",
+        "质量过滤机制",
+        "domain 配比与消融验证"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-pretraining-004",
+    "category": "ai-fundamentals",
+    "topic": "training-data",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "pre-training",
+      "data-quality",
+      "trade-off"
+    ],
+    "question": "预训练数据应该尽可能多，还是优先保证质量？如果高质量数据只有低质量数据的 10%，你会如何做数据配比？",
+    "referenceAnswer": "两者不是对立项：低质数据过多会拖累所有能力的下限，但高质量数据太少又会导致覆盖不足。实践做法是分域处理——高质量数据（书、代码、百科）允许多个 epoch 重复使用，低质网页数据单 epoch 使用以提供广度和多样性；并用数据清理提升中间层（如网页中筛选出高信号子集）。最终配比不靠直觉，而是用固定 compute 的小规模代理实验扫配比，看验证 loss 和下游探针，再外推到全量。",
+    "explanation": "质量决定上限、数量决定广度：高质量多 epoch、低质单 epoch 提供覆盖；配比用小规模消融实验确定而非拍脑袋。",
+    "rubric": {
+      "required": [
+        "质量与数量的不同作用",
+        "高质量多 epoch 策略",
+        "代理实验确定配比"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-pretraining-006",
+    "category": "ai-fundamentals",
+    "topic": "distributed-training",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "pre-training",
+      "parallelism"
+    ],
+    "question": "一个模型需要 256 张 GPU 进行预训练。你会如何组合 Data Parallel、Tensor Parallel 和 Pipeline Parallel？它们分别解决什么问题？",
+    "referenceAnswer": "三者解决不同的瓶颈：Data Parallel 把 batch 切到多机复制模型上，解决吞吐扩展，但前提是单卡放得下模型；Tensor Parallel 把单个矩阵乘切开到多卡（NVLink 域内），解决单层放不下和计算墙，通信频繁适合高速互联；Pipeline Parallel 把层分段流水，解决跨机带宽低的问题，代价是 bubble 和调度复杂度。典型 256 卡配置是 3D 并行组合：节点内 TP（NVLink）× 节点间 PP（IB 网络）× 全局 DP 扩吞吐，同时用 ZeRO/FSDP 思路切分 optimizer states 降低显存冗余。选择依据：先看模型能否单卡/单机放下，再看网络拓扑的通信代价。",
+    "explanation": "DP 扩吞吐、TP 解单层放不下（需高带宽域）、PP 解跨机带宽（有 bubble）;生产上是 TP×PP×DP 三维组合，按模型大小与拓扑取舍。",
+    "rubric": {
+      "required": [
+        "三种并行各自解决的瓶颈",
+        "TP 需要高带宽互联",
+        "PP bubble 代价",
+        "三维组合与 ZeRO/FSDP"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-pretraining-007",
+    "category": "ai-fundamentals",
+    "topic": "training-stability",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "pre-training",
+      "debugging"
+    ],
+    "question": "预训练过程中 loss 突然升高并出现 NaN。你会按照什么顺序排查？",
+    "referenceAnswer": "按时间倒查与由宽到窄排查：先定位首次异常的 step，回看该 step 附近的数据批次（脏数据 spikes 是最常见原因，可用 perplexity 离群检测预筛）；检查梯度范数曲线——爆炸则确认 gradient clipping 是否生效、clipping 阈值是否合理；检查数值精度问题——FP16 下溢/溢出、loss scale 是否震荡，考虑 BF16 或调整 loss scaling；检查学习率 warmup/schedule 与超参变更记录；排除硬件故障——某卡 ECC 报错或静默损坏会产生规律性异常，用日志定位具体 rank；恢复策略是从最近的 checkpoint 回退，跳过问题数据或修正超参后重启，而不是带病继续。",
+    "explanation": "排查顺序：定位首个异常 step → 数据批次（脏数据最常见）→ 梯度范数/clipping → 数值精度（FP16/BF16/loss scale）→ 学习率变更 → 硬件故障；恢复靠 checkpoint 回退。",
+    "rubric": {
+      "required": [
+        "定位异常 step",
+        "脏数据排查",
+        "梯度/数值精度检查",
+        "checkpoint 回退恢复"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-posttraining-003",
+    "category": "ai-fundamentals",
+    "topic": "sft",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "sft",
+      "data-quality",
+      "post-training"
+    ],
+    "question": "你有 100 万条用户对话数据，但只有 5 万条经过人工审核。你会如何构建 SFT 数据集？为什么不能直接把 100 万条全部拿来训练？",
+    "referenceAnswer": "SFT 对数据质量极其敏感——“垃圾进垃圾出”在行为学习中会被直接放大：未审核的用户对话里混有错误示范、有毒内容、隐私信息和用户自身的错误认知，直接训练会让模型系统性模仿这些坏模式，还可能记住用户 PII。构建思路：以审核过的 5 万条为核心种子集；对其余数据做分级清洗——脱敏、毒性/质量分类器过滤、规则筛掉超短/超长/无意义样本，再用强模型辅助标注或改写后抽样人审，逐步扩充可信集；保留分布多样性（任务类型/难度/领域配比），而不是单纯堆数量。经验上几万条高质量多样本往往优于百万条噪声数据。",
+    "explanation": "未审核数据混有错误示范/毒性与隐私风险，SFT 会直接放大；用审核种子集 + 分级清洗 + 辅助标注逐步扩容，质量与多样性优先于数量。",
+    "rubric": {
+      "required": [
+        "直接训练的风险（错误模式/隐私）",
+        "种子集+分级扩充流程",
+        "脱敏与安全过滤",
+        "多样性与配比意识"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-posttraining-006",
+    "category": "ai-fundamentals",
+    "topic": "alignment",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "sft",
+      "catastrophic-forgetting",
+      "trade-off"
+    ],
+    "question": "一个模型经过 SFT 后指令遵循能力明显提高，但原本的知识问答能力下降。你会如何分析和解决这个问题？",
+    "referenceAnswer": "这是典型的灾难性遗忘/能力对齐税：小规模 SFT 数据分布窄，梯度更新把通用能力对应的参数推向了新任务的解空间。分析上先量化——用原有能力基准测试确认下降幅度与涉及的能力面，排除评测格式变化导致的假下降。解决方案按代价排序：混合通用数据进行 replay（SFT 数据中掺入指令遵循之外的通用问答数据）；降低学习率、减少 epoch、用 LoRA 等参数高效方法限制更新范围；检查数据本身是否过窄或答案风格过于模板化；必要时在 preference optimization 阶段用 KL 约束拉回参考模型分布。根本原则是把 SFT 当作“行为微调”而非“重学”，控制更新幅度。",
+    "explanation": "窄分布小数据 SFT 会挤占通用能力（灾难性遗忘）；对策：通用数据 replay、小学习率/LoRA 限幅、KL 约束，并把 SFT 定位为行为微调。",
+    "rubric": {
+      "required": [
+        "灾难性遗忘成因",
+        "先量化确认真下降",
+        "replay/限幅/KL 至少两项对策",
+        "数据分布反思"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-finetuning-003",
+    "category": "ai-fundamentals",
+    "topic": "fine-tuning",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "fine-tuning",
+      "prompt",
+      "decision"
+    ],
+    "question": "你需要让一个通用 LLM 学会公司内部的固定回答风格。你会优先选择 Prompt Engineering、RAG 还是 Fine-tuning？请说明决策依据和实施顺序。",
+    "referenceAnswer": "固定回答风格本质是行为约束，决策依据是“约束的复杂度与稳定性要求”：先用 Prompt Engineering——风格指南写进 system prompt 加 few-shot 示例，成本低、当天可上线，多数风格需求到此为止。如果风格规则太多导致 prompt 膨胀、或模型在长对话中漂移、或需要稳定到每次输出都符合模板，再升级到 LoRA 微调——用几百到几千条符合风格的样本做行为定型。RAG 在这个场景不对口：它注入的是知识不是行为，除非风格指南本身需要按客户/场景动态检索。实施顺序永远是 Prompt → （必要时）Fine-tune，因为前者迭代周期以小时计，后者以天计且有遗忘风险。",
+    "explanation": "风格=行为约束：Prompt+few-shot 先行，不稳定或漂移时才 LoRA 定型；RAG 只对口“动态检索风格指南”这类边缘情况。",
+    "rubric": {
+      "required": [
+        "Prompt 优先及理由",
+        "升级 Fine-tune 的触发条件",
+        "RAG 场景不对口的辨析",
+        "迭代成本对比"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
   }
 ]

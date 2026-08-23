@@ -2,6 +2,25 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 工程题第三批：去重后收编 26 题（总 201 题）
+
+- **新增**（`ai-fundamentals` +11 / `ai-engineering` +10 / `agentic-ai` +5）：
+  attention 长文本退化排查、KV Cache OOM 定位与优化、tokenizer 跨模型差异、
+  next-token 为何有效、10T 预训练数据工程、数据配比质量 vs 数量、DP/TP/PP 选型、
+  loss NaN 排查、SFT 数据分级清洗、SFT 灾难性遗忘、风格需求 Prompt/RAG/FT 决策、
+  TTFT 升高 decode 不变排查、continuous batching、量化方案取舍、RAG 时效性边界、
+  Agent 评测设计、70% 准确率分段归因、双 Agent 成功率/成本权衡、model routing、
+  降级阶梯、Agent trace 五要素、tool calling 本质、retry 分层放置、工具权限与确认门、
+  MCP vs Function Calling、客服 RAG/Workflow/Agent 决策。
+  新 topic 仅 training-data / distributed-training / training-stability / observability，
+  其余复用既有节点；conceptGraph 增 pretraining → {training-data, distributed-training, training-stability}。
+- **刻意去重 20 题**（对方批次与现有题库重复）：Transformer vs RNN、QKV、位置编码/RoPE、
+  KV Cache 原理、scaling law、pretrain/posttrain 分工、SFT 定义、RLHF reward model、DPO、
+  LoRA 原理与 rank、RAG vs FT 知识库、prefill/decode、chunking 重设计、hybrid search、
+  reranker、"recall 高回答差"排查、300 tools routing、agent loop 循环、Plan-and-Execute 取舍、
+  cost 优化与 retry/backoff（已由 ai-eng-021/023 覆盖）——按 AGENTS 原则不留重复题。
+- 测试 79 例全过；typecheck/build 通过。
+
 ## 2026-08-23 · 题库拆分为按类目文件（数据布局变更，显式说明）
 
 - **拆分**：`data/questions.json`（175 题单文件）→ `data/questions/<category>.json` ×11

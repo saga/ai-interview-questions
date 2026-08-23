@@ -2022,5 +2022,148 @@
         "communication": 0.1
       }
     }
+  },
+  {
+    "id": "ai-tool-001",
+    "category": "agentic-ai",
+    "topic": "tool-calling",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "tool-calling"
+    ],
+    "question": "LLM 的 Tool Calling 和普通文本生成有什么本质区别？",
+    "referenceAnswer": "普通文本生成是单向的：模型输出文本后任务结束，输出只影响人。Tool Calling 是一个结构化的交互协议：模型输出的不是给人看的内容，而是符合 schema 的结构化调用意图（工具名+参数），由外部执行环境真正执行并把结果回传给模型继续推理。本质区别有三点：输出从“内容”变成“对世界的操作请求”；引入了模型之外的状态与副作用（真实系统被改变）；形成了生成→执行→观察→再生成的循环。因此 tool calling 带来了文本生成没有的新问题：参数可靠性、错误处理、幂等性和安全控制。",
+    "explanation": "文本生成输出内容；tool calling 输出结构化调用意图、由外部执行并回传观察，形成闭环——副作用带来参数可靠性/错误处理/安全等新问题。",
+    "rubric": {
+      "required": [
+        "结构化调用意图 vs 内容",
+        "外部执行与副作用",
+        "生成-执行-观察循环"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-tool-003",
+    "category": "agentic-ai",
+    "topic": "tool-calling",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "tool-calling",
+      "reliability",
+      "retry"
+    ],
+    "question": "Agent 调用外部 API 经常 timeout。Retry 应该放在哪一层：模型、Agent Loop、Tool Executor 还是基础设施层？为什么？",
+    "referenceAnswer": "分层各司其职，而不是放单处：瞬时网络类错误（timeout/连接抖动）由 Tool Executor 或基础设施层处理——指数退避有限重试，模型根本不该感知；语义类失败（参数不合法、业务拒绝）不能盲目重试，应把结构化错误信息返回给 Agent Loop，让模型修正参数或换路径——这是只有模型层能做的“智能重试”。关键约束：重试必须考虑副作用与幂等性——timeout 不代表没执行成功，非幂等操作（下单、发邮件）重试可能造成重复动作，需要 idempotency key 或先查询状态再决定。整体还要有 budget 上限，防止 executor 重试 × loop 重试相乘导致成本爆炸。",
+    "explanation": "网络瞬断 → Executor/基础设施退避重试；参数/业务错误 → 结构化错误回流 Agent Loop 让模型改道;timeout ≠ 未执行，非幂等操作要 idempotency key，全局设预算防重试相乘。",
+    "rubric": {
+      "required": [
+        "按错误类型分层重试",
+        "语义错误回流模型",
+        "幂等性与副作用",
+        "重试预算上限"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-tool-004",
+    "category": "agentic-ai",
+    "topic": "agent-guardrails",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "tool-calling",
+      "security",
+      "authorization"
+    ],
+    "question": "一个 Agent 可以调用发送邮件、删除数据和查询数据库的工具。你会如何设计工具权限和高风险操作的确认机制？",
+    "referenceAnswer": "按风险等级分级授权：查询类默认允许（最小权限、只读凭证）；外发类（邮件）限制收件域/频率并要求模板合规校验；破坏类（删除）默认禁止自动执行。高风险操作的机制：人工确认门（human-in-the-loop，展示将执行的完整参数让人审批）；dry-run 预览——先返回影响范围（将删多少行、发给谁）再确认；软删除优先，物理删除走独立审批流；凭证最小化——Agent 拿到的 token 只有其当前任务所需 scope；审计日志完整记录谁在何时批准了什么。还要防注入链路：工具参数可能被间接 prompt injection 污染，所以权限判断必须在服务端基于会话身份做，而不是相信模型输出里的“用户已同意”。",
+    "explanation": "风险分级 + 确认门 + dry-run 预览 + 软删除 + 最小 scope 凭证 + 审计日志；权限判定在服务端做，防注入伪造“已同意”。",
+    "rubric": {
+      "required": [
+        "风险分级授权",
+        "human-in-the-loop/dry-run",
+        "最小权限凭证",
+        "服务端鉴权防注入",
+        "审计日志"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-tool-005",
+    "category": "agentic-ai",
+    "topic": "mcp",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "mcp",
+      "tool-calling"
+    ],
+    "question": "MCP 解决的主要问题是什么？它和 Function Calling 是什么关系？",
+    "referenceAnswer": "Function Calling 是模型厂商提供的模型能力——模型按 schema 输出调用意图，但工具的定义、发现、执行和鉴权都由每个应用自己实现，M×N 集成成本高。MCP 是应用层的开放协议：标准化 server 如何向 client 暴露 tools/resources/prompts，统一发现、调用与上下文交换方式，让一个工具实现可以被任意兼容客户端复用。两者是互补而非竞争：MCP 负责工具侧的标准化接入与分发，最终“选择哪个工具、如何填参”仍依赖模型的 function calling 能力。它也不解决工具质量本身——schema 歧义、tool selection 准确率这些问题依然要靠工程设计。",
+    "explanation": "Function Calling = 模型输出调用意图的能力；MCP = 工具暴露/发现/调用的标准协议。互补：MCP 管接入标准化，填参与选择仍靠模型能力。",
+    "rubric": {
+      "required": [
+        "FC 是模型能力",
+        "MCP 是集成协议",
+        "互补关系",
+        "不解决 selection/schema 质量"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-agent-001",
+    "category": "agentic-ai",
+    "topic": "workflow-vs-agent",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "agent",
+      "rag",
+      "workflow",
+      "decision"
+    ],
+    "question": "一个客服系统主要回答企业知识库中的固定问题，偶尔需要查询订单状态。你会设计成纯 RAG、Workflow 还是 Agent？为什么？",
+    "referenceAnswer": "推荐 Workflow 编排 + RAG 节点 + 受限工具调用的混合架构，而非自由 Agent。理由：FAQ 回答是高频确定性场景，RAG pipeline（检索→rerank→生成→引用）本身就是固定流程，用显式编排保证稳定性与可观测；订单查询是低频、边界清晰的单个能力，注册为一个受控工具即可，不需要让模型自主规划多步行动。判断依据是任务的可预测性：当绝大多数请求能映射到少数已知流程时，Agent 的运行时自由度只会带来不可预测性和更高成本；只有当请求形态高度多样、无法预先枚举流程时，才值得为灵活性付出 Agent 的复杂度代价。可以保留一个轻量 intent 分流（可用小模型），把请求路由到对应 workflow 分支。",
+    "explanation": "高频 FAQ 走固定 RAG 流程、低频查单注册成受控工具，Workflow 显式编排兜底；自由度只在流程无法枚举时才值得买。",
+    "rubric": {
+      "required": [
+        "混合架构结论",
+        "按可预测性分配自由度",
+        "RAG 作为 workflow 节点",
+        "工具化低频能力"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
   }
 ]

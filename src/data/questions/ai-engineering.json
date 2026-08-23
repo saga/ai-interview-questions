@@ -389,5 +389,290 @@
         "communication": 0.1
       }
     }
+  },
+  {
+    "id": "ai-inference-003",
+    "category": "ai-engineering",
+    "topic": "latency",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "inference",
+      "ttft",
+      "debugging"
+    ],
+    "question": "线上 LLM 服务 TTFT 从 500ms 上升到 3s，但生成速度基本没有变化。你会重点排查哪些环节？",
+    "referenceAnswer": "TTFT 变慢而 decode 速度不变，说明瓶颈在首 token 之前而非逐 token 生成。重点排查：排队等待——并发上涨或上游重试风暴导致请求在队列积压（看服务端 queue time 指标）；Prefill 输入变长——上游改动使 prompt/context 膨胀（如检索结果变多、历史未裁剪），prefill 是 compute-bound，对输入长度敏感而 decode 不受影响；批处理调度变化——continuous batching 配置或优先级策略调整让新请求等待当前 batch；缓存失效——prefix cache 命中率下降导致公共前缀重复计算；provider 侧容量降级或路由到了更远的区域。用分段 trace 对比变更前后即可快速二分定位。",
+    "explanation": "TTFT↑ 而 decode 不变 ⇒ 瓶颈在首 token 前：排队、prefill 输入膨胀、batching 调度、prefix cache 失效或 provider 容量，分段 trace 二分。",
+    "rubric": {
+      "required": [
+        "queue time",
+        "prefill 输入变长",
+        "batching/调度",
+        "prefix cache 命中率"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-inference-004",
+    "category": "ai-engineering",
+    "topic": "inference-optimization",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "inference",
+      "continuous-batching"
+    ],
+    "question": "为什么 LLM serving 通常需要 Continuous Batching？它和传统 Web 服务中的请求批处理有什么本质区别？",
+    "referenceAnswer": "LLM 生成长度差异极大且 decode 阶段是访存密集型——单请求 decode 时 GPU 利用率很低，必须靠批量并发填满带宽。传统静态 batching 要凑齐一批、等整批最长的那条生成完才能释放，短请求被长请求拖住，GPU 大量空转。Continuous Batching 在每个 decode step 后做调度：已完成的请求立即退出，排队的新请求立即插入空位，迭代级别地动态组 batch，从而大幅提高吞吐并降低平均延迟。本质区别在于：Web 批处理是一次性的请求级分组，而 continuous batching 是生成过程内部的步级调度，且要管理每个请求各自的 KV Cache 生命周期。",
+    "explanation": "decode 访存密集需批量填充 GPU;静态 batch 等最长的、短请求被拖死；continuous batching 按 decode step 动态进出队，吞吐/延迟双赢。",
+    "rubric": {
+      "required": [
+        "decode 低 GPU 利用率背景",
+        "静态 batching 的队头阻塞",
+        "step 级动态调度",
+        "KV Cache 生命周期管理"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-inference-005",
+    "category": "ai-engineering",
+    "topic": "quantization",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "inference",
+      "quantization",
+      "trade-off"
+    ],
+    "question": "一个 70B 模型无法部署到现有 GPU 集群。你会考虑哪些量化方案？量化可能带来哪些质量和性能上的损失？",
+    "referenceAnswer": "方案按侵入性排序：权重-only 量化（GPTQ/AWQ，INT8/INT4）把显存降到约 1/2 到 1/4，70B 可进单机多卡甚至更少卡，推理时反量化计算，兼容性最好；FP8 前向量化（部分硬件原生支持）几乎无损且快；GGUF 类格式适合端侧。还可以配合 GQA 已有的 KV Cache 量化进一步省显存。质量风险：INT4 下困惑度上升、精细语义区分和数学/代码能力可能退化，长尾任务受损比平均指标明显；个别层对量化敏感需要混合精度保留。性能收益：显存省 → 可更大 batch/更长 context，带宽压力小反而常提速；但反量化开销和 kernel 效率可能吃掉部分收益，需实测吞吐与延迟而非只看理论。决策应基于目标任务评测集对比量化前后的质量-成本曲线。",
+    "explanation": "权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径；省显存常带来吞吐红利，但 INT4 有质量退化且长尾任务敏感，须用业务评测集实测权衡。",
+    "rubric": {
+      "required": [
+        "主流量化方案至少两种",
+        "显存与吞吐收益",
+        "质量损失与敏感层",
+        "业务评测集驱动决策"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-rag-001",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "rag"
+    ],
+    "question": "RAG 为什么能够解决 LLM 知识过时的问题？它解决不了哪些问题？",
+    "referenceAnswer": "LLM 的参数化知识冻结在训练截止时刻，而 RAG 把知识外置成可随时更新的索引库：文档更新只需重建索引，不用重新训练模型，回答时实时检索最新内容进入 context。它解决不了的是：检索不到就答不好（索引质量、query 与文档表述不一致）；模型对检索内容的理解仍受限于自身能力（复杂推理、跨文档综合可能出错）；权限与合规需要在检索层另行实现；以及幻觉只能缓解——证据缺失或误读时依然会编造。",
+    "explanation": "RAG 把知识从冻结参数外置为可更新索引，解决时效性；但检索质量、模型理解力、权限合规和残余幻觉都不在它的射程内。",
+    "rubric": {
+      "required": [
+        "参数化知识冻结 vs 外置索引",
+        "更新即重建索引",
+        "至少两类未解决问题"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eval-001",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "evaluation",
+      "agent"
+    ],
+    "question": "为什么传统单元测试不足以测试一个 LLM Agent？你会如何设计 Agent Evaluation？",
+    "referenceAnswer": "单元测试假设确定性函数与精确断言，而 Agent 的执行路径不确定（工具调用顺序、中间步骤都可能变化），输出是多候选合法解，且成功与否取决于任务完成而非代码返回值。Agent Evaluation 需要多层设计：最终指标是端到端任务成功率（在可判定的任务集上自动校验终态）；过程指标包括工具调用正确性、步骤数/成本、是否有害操作；轨迹评估检查中间状态是否合理（可用 LLM judge 辅助但需校准）；还要覆盖回归集（线上 badcase 固化）、鲁棒性场景（工具失败、干扰信息）和安全场景。核心转变是从“断言输出”到“度量任务完成 + 过程可观测”。",
+    "explanation": "Agent 非确定、多路径、成败看任务完成——评测要从断言转向：端到端成功率 + 过程/轨迹指标 + 回归与安全场景分层。",
+    "rubric": {
+      "required": [
+        "不确定性导致断言失效",
+        "端到端任务成功率",
+        "过程/轨迹指标",
+        "回归与安全场景"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eval-002",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "evaluation",
+      "debugging",
+      "agent"
+    ],
+    "question": "一个 Agent 的最终答案准确率只有 70%。你如何判断问题来自模型能力、Prompt、Tool Calling、Retrieval 还是 Agent Planning？",
+    "referenceAnswer": "关键是把端到端黑盒拆成可单独归因的分段评测：给每类失败打标签（错在哪个环节），方法是逐层替换/固定变量——固定检索与工具、只换更强模型，若显著提升则是模型能力问题；固定模型、只改 prompt 结构/示例，看规划与格式错误是否减少；单独评测 retrieval 组件（召回与排名指标）和工具调用的参数合法率、成功率；对 planning 用轨迹回放检查步骤顺序与死循环。再交叉统计：哪类任务/哪个工具的失败聚集，就能指向根因。注意避免单变量结论污染——组件替换时要控制其余部分不变，且每个分段都要有自己的评测集。",
+    "explanation": "归因靠分段评测 + 变量控制：逐层替换模型/prompt/检索/工具并打失败标签，交叉统计失败聚集点即根因方向。",
+    "rubric": {
+      "required": [
+        "失败环节打标签",
+        "单变量替换实验",
+        "组件级独立评测集",
+        "交叉统计定位根因"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eval-004",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "agent",
+      "evaluation",
+      "cost",
+      "latency"
+    ],
+    "question": "Agent A 成功率 80% 但平均调用 12 次工具；Agent B 成功率 76% 但只用 4 次。你会选哪个？还需要哪些信息才能做出负责任的决策？",
+    "referenceAnswer": "不能只凭这两个数字选。需要补充：单位成本与延迟（12 次调用意味着约 3 倍的 token/耗时/费用，还有更高的级联失败概率）；失败的代价结构——B 的 24% 失败是可以重试/人工兜底，还是直接造成用户损失？A 多出的 4 个百分点是否集中在高价值场景？效率口径——每次成功的期望成本（成本/成功率）才是真实单价；方差与尾部（p95 步数、最坏情况循环）。一般而言若失败可兜底、成本敏感，B 的性价比更高；若任务价值高且失败不可逆，A 值得溢价。正确姿势是把两个 Agent 放在同一评测集上补齐 成本/成功率、p95 延迟、失败代价分布 再决策。",
+    "explanation": "决策要看期望成本/成功、失败代价结构与尾部行为，而非裸成功率；12 次调用≈3 倍成本与更多级联失败面。",
+    "rubric": {
+      "required": [
+        "成本/成功率期望口径",
+        "失败代价与可兜底性",
+        "延迟与尾部指标",
+        "按场景价值的取舍逻辑"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-engineering-001",
+    "category": "ai-engineering",
+    "topic": "routing",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "model-routing",
+      "cost",
+      "latency"
+    ],
+    "question": "一个系统同时接入 GPT、Claude 和开源模型。你会根据哪些因素设计 Model Routing？",
+    "referenceAnswer": "路由维度包括：任务难度与类型（简单改写/抽取走小模型或开源模型，复杂推理走旗舰模型）；质量要求（用分级评测集标定各模型在各任务档位的表现）；成本与延迟预算（按请求优先级分配）；能力特异性（长上下文、特定语言、代码能力、function calling 可靠性差异）；合规与数据敏感级别（某些数据只能进私有化开源模型）；可用性健康度（结合熔断把请求导向健康 provider）。实现上从规则路由起步（按任务类型/intent 分类器分流），积累数据后可升级为基于置信度或学习的动态路由；关键配套是每条路由分支都有独立评测与灰度开关，避免路由层成为新的黑盒。",
+    "explanation": "路由 = 任务难度×质量要求×成本延迟×能力特异性×合规×健康度的多维分流；规则起步、数据成熟后动态化，分支需独立评测与灰度。",
+    "rubric": {
+      "required": [
+        "任务难度分级",
+        "成本/延迟预算",
+        "能力与合规差异",
+        "健康度与灰度配套"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-engineering-002",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "reliability",
+      "fallback"
+    ],
+    "question": "主模型 API 出现故障时，系统应该如何自动降级？除了切换备用模型，你还可以采用哪些降级策略？",
+    "referenceAnswer": "降级是一个阶梯而非单点切换：检测层靠健康探测与熔断器（连续失败/延迟超标即触发）；响应阶梯包括——切换备用 provider 或更小的本地模型；启用缓存的相似问题答案（语义缓存）；功能降级——关闭可选能力（不做摘要/不改写、缩短输出、退化为检索直接返回原文段落加免责说明）；异步化——把非紧急请求转入队列延后处理；预设模板兜底（客服场景的标准话术）；最后是明确告知用户服务受限而非硬报错。配套要求：每次降级打标记并可观测（用户看到的是哪一级产物）、降级演练常态化、恢复后渐进放量。原则是预先定义每一级的质量含义，而不是故障现场临时决定。",
+    "explanation": "降级阶梯：备用模型 → 语义缓存 → 功能裁剪/直返原文 → 异步队列 → 模板兜底 → 明示受限；熔断触发、降级可观测、定期演练。",
+    "rubric": {
+      "required": [
+        "熔断/健康检测触发",
+        "至少三级降级阶梯",
+        "降级标记与可观测",
+        "演练与渐进恢复"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-engineering-003",
+    "category": "ai-engineering",
+    "topic": "observability",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "observability",
+      "tracing",
+      "agent"
+    ],
+    "question": "一个 Agent 线上出现错误回答，你需要哪些 Trace 信息才能判断问题发生在哪一步？",
+    "referenceAnswer": "一次请求需要一条贯穿的 trace（统一 request/session id 关联）：完整输入（原始 query、拼装后的最终 prompt 及其版本号）；检索细节（命中的 chunk 内容、来源、分数、是否被截断）；每次 LLM 调用的模型版本、参数、原始输出与 token 用量；每次工具调用的名称、入参、返回值、耗时与错误；Agent 决策点（选择了什么策略/为何终止）；以及最终输出的评分或用户反馈。有了这些才能回答“模型看到了什么、做了什么、为什么这么做”，把错误定位到检索、生成还是执行层。注意脱敏与采样存储成本的平衡——全量存贵，可全量存摘要+错误与抽样子集存全文。",
+    "explanation": "Trace 五要素：最终 prompt+版本、检索命中与分数、每次 LLM 调用出入参、工具调用明细、决策点与反馈；用统一 id 串联并平衡脱敏与存储。",
+    "rubric": {
+      "required": [
+        "统一关联 id",
+        "prompt 版本与最终内容",
+        "检索/工具/LLM 调用明细",
+        "脱敏与采样存储权衡"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
   }
 ]

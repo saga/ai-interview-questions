@@ -48,7 +48,7 @@ components/
   settings/SettingsPanel.tsx    AI 设置（provider / model / API Key）
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
-                       slug 类目 + topic/tags/reference + 可选 rubric；175 题，
+                       slug 类目 + topic/tags/reference + 可选 rubric；201 题，
                        ai-fundamentals（基础原理）→ agentic-ai / ai-engineering（工程判断）按
                        Scenario/Debugging/Trade-off 等能力维度组织）
 data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不建索引/数据库层，
