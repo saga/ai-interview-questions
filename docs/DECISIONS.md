@@ -2,6 +2,34 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-030 · 概念层级统一 + 图/学习状态分离 + mastery 降级为启发式
+
+- 状态：已采纳 · 2026-08-23
+- 背景：架构评审指出三处边界问题——①"Question 是知识对象"与 ADR-029
+  "知识点是一等公民、题目只是 View"术语冲突；②conceptGraph.ts 持有 WEAK_* 阈值、
+  isMastered/isAttempted 与 expandWithPrerequisites，把"知识关系"和"学习状态"
+  混在一个模块；③`mastery = avgScore/100` 被表述为掌握度定义而非简化启发式。
+- 决策：
+  - **概念层级统一**：Knowledge 是学习对象（一等公民），Question 是知识点的
+    assessment view（可评估表达），SessionQuestion 是一次训练实例。未来 explanation /
+    flashcard / follow-up / scenario 等都是 knowledge 的其他 view，不往 Question 上堆职责。
+  - **图只回答关系**：conceptGraph.ts 收敛为 prerequisite / related / closure / topo；
+    WEAK_* 阈值、isMastered/isAttempted、expandWithPrerequisites（推荐策略）、
+    TopicRef/collectTopicRefs（coverage 边界工具）全部迁入 learner.ts——
+    "图回答知识间是什么关系，learner 回答用户掌握得怎么样"。graphlib 数据结构
+    不外泄，对外只有 topic 字符串。
+  - **mastery 是当前启发式**：avgScore/100 无法区分"先会后忘"与"渐入佳境"；
+    语义分工明确为 mastery=当前启发式、trend=近期信号、attempts=置信度、
+    evidence=溯源。**不升级 Bayesian/ELO/IRT**，除非现有信号被证明不够用。
+  - **同时固化为不变量**：SessionQuestion 快照不变量（session 保存"当时看到的
+    内容"，题库修改不影响历史）；LLMProvider 接口边界固定为语言增强
+    （generateVariant/evaluateOpenAnswer），永不扩展 recommendNextQuestion/
+    buildLearningPlan 等策略接口；`useAI` 保持单开关（拆分 enableVariants/
+    enableEvaluation 推迟到出现真实需求）。
+- 理由：四句话原则——Knowledge 是中心、InterviewEngine 掌管流程、Domain 决策
+  LLM 增强、Learner Memory 驱动下一次训练。当前规模下不需要任何"大架构"
+  （数据库 / Agent loop / Repository 层 / 图抽象都明确不做）。
+
 ## ADR-029 · 知识点层一等公民化：Knowledge Map 数据层 + 题目即 View
 
 - 状态：已采纳 · 2026-08-23

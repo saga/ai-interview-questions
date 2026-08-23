@@ -3,11 +3,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCoachDefinition,
+  collectTopicRefs,
   computeCoverage,
   emptyProfile,
   recommendWeakTopics,
   recommendationText,
   sessionFromQuiz,
+  expandWithPrerequisites,
   suggestNextTopics,
   updateLearner,
 } from './learner';
@@ -262,5 +264,34 @@ describe('覆盖面与学习建议（学习策略，图查询在 conceptGraph）
     expect(suggestions.map((s) => s.topic)).toContain('react');
     // 基础主题（rag 无前置）应排在 react 之前或并列可学——至少都在建议里且理由是前置已具备
     for (const s of suggestions) expect(s.reason).toBe('前置知识已具备，适合开始学习');
+  });
+});
+
+describe('掌握度策略与题库边界（自 conceptGraph 迁入，ADR-030）', () => {
+  it('collectTopicRefs 去重并保留首次出现的 category', () => {
+    const refs = collectTopicRefs([
+      { category: 'a', topic: 't1' },
+      { category: 'a', topic: 't1' },
+      { category: 'b', topic: 't2' },
+    ]);
+    expect(refs).toHaveLength(2);
+    expect(refs.map((r) => r.topic).sort()).toEqual(['t1', 't2']);
+  });
+
+  it('expandWithPrerequisites：沿前置链展开且跳过已掌握主题、去重、有上限', () => {
+    const profile = profileWith({
+      'agent-fundamentals': { attempts: 2, avgScore: 40 },
+      'tool-calling': { attempts: 2, avgScore: 95 },
+    });
+    const expanded = expandWithPrerequisites(['react'], profile);
+    expect(expanded).toContain('react');
+    expect(expanded).toContain('agent-fundamentals'); // 未掌握的前置被纳入
+    expect(expanded).not.toContain('tool-calling'); // 已掌握的前置被跳过
+
+    // 无关主题原样保留
+    expect(expandWithPrerequisites(['totally-unknown'], profile)).toEqual(['totally-unknown']);
+
+    // 环引用不会死循环（result 上限 + seen 去重保护）
+    expect(expandWithPrerequisites(['agent-fundamentals'], profile).length).toBeLessThanOrEqual(10);
   });
 });

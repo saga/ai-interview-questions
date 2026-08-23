@@ -1,4 +1,5 @@
-// 纯逻辑：知识图谱（Knowledge Graph）。
+// 纯逻辑：知识图谱（Knowledge Graph）。只回答"知识之间是什么关系"，
+// 不持有任何学习状态与掌握度策略（那些在 learner.ts，见 ADR-030）。
 // 数据形态：有向边列表，两类关系：
 //   prerequisite  基础 → 进阶（加载期 isAcyclic 校验的 DAG）
 //   related       一般相关（无向语义，遍历层双向展开）
@@ -7,10 +8,10 @@
 //   - prerequisite 子图的 DAG 校验（isAcyclic/findCycles，数据错误在加载期暴露）
 //   - 拓扑排序（topsort）给出"基础→进阶"学习顺序
 // 图是模块级单例（数据来自 data/conceptGraph.json），公开 API 不再要求传 graph 参数。
+// graphlib 的数据结构不向其他 domain 模块泄漏——对外只有 topic 字符串数组/序号。
 // 不依赖 React / LLM / 网络。
 
 import { Graph, alg } from '@dagrejs/graphlib';
-import type { LearnerProfile } from '../types';
 import graphData from '../data/conceptGraph.json';
 
 export type EdgeType =
@@ -28,10 +29,6 @@ export interface ConceptGraph {
 }
 
 export const conceptGraph: ConceptGraph = graphData as unknown as ConceptGraph;
-
-/** 薄弱判定阈值：掌握度 <0.85 且均分 <85 视为未掌握（learner 与 coverage 共用）。 */
-export const WEAK_MASTERY = 0.85;
-export const WEAK_AVG = 85;
 
 /** 无向语义的边类型。 */
 const UNDIRECTED_TYPES: EdgeType[] = ['related'];
@@ -93,51 +90,7 @@ export function relatedOf(topic: string): string[] {
   return [...result];
 }
 
-function isMastered(profile: LearnerProfile, topic: string): boolean {
-  const s = profile.topicStats[topic];
-  return Boolean(s && s.attempts > 0 && (s.mastery >= WEAK_MASTERY || s.avgScore >= WEAK_AVG));
-}
-
-function isAttempted(profile: LearnerProfile, topic: string): boolean {
-  return Boolean(profile.topicStats[topic] && profile.topicStats[topic].attempts > 0);
-}
-
-/** 掌握判定（learner 的 coverage/建议策略复用；阈值 WEAK_* 单一出处在此）。 */
-export { isMastered, isAttempted };
-
 /** 主题在 prerequisite DAG 拓扑序中的位置（越靠前越基础）；不在依赖图中返回 Infinity。 */
 export function topoRankOf(topic: string): number {
   return topoRank.get(topic) ?? Infinity;
-}
-
-/** 题库中出现过的全部 (category, topic) 组合（去重）。 */
-export interface TopicRef {
-  category: string;
-  topic: string;
-}
-
-export function collectTopicRefs(questions: TopicRef[]): TopicRef[] {
-  const seen = new Map<string, TopicRef>();
-  for (const q of questions) {
-    if (!seen.has(q.topic)) seen.set(q.topic, { category: q.category, topic: q.topic });
-  }
-  return [...seen.values()];
-}
-
-/**
- * 把教练推荐的主题沿前置闭包展开：薄弱主题的全部未掌握前置都纳入抽题优先级，
- * 实现"先补地基再攻难点"。
- */
-export function expandWithPrerequisites(priorities: string[], profile: LearnerProfile): string[] {
-  const result: string[] = [];
-  const seen = new Set<string>();
-  const queue = [...priorities];
-  while (queue.length > 0 && result.length < 10) {
-    const topic = queue.shift() as string;
-    if (seen.has(topic)) continue;
-    seen.add(topic);
-    if (!isMastered(profile, topic)) result.push(topic);
-    queue.push(...prerequisiteClosure(topic).slice(0, 3));
-  }
-  return result;
 }

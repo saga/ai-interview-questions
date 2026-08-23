@@ -15,12 +15,18 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
   categories.ts  类目 slug → 中文标签
   knowledge.ts   知识点层查询：knowledgeById / requiredPointsFor（评分要点回退）
                  / knowledgeCoverage（P0 覆盖率与题库建设 gap 路线图）
+  conceptGraph.ts 知识关系图（prerequisite/related/closure/topo）——只回答
+                 "知识之间是什么关系"，不持有任何学习状态与掌握度策略（ADR-030）；
+                 graphlib 数据结构不外泄，对外只有 topic 字符串
   quiz.ts        抽题（Fisher–Yates）、availableFormats、pickPrioritized（薄弱主题优先）
                  / planComposition（抽题 + 形态配额：开放 ≈ floor(count*0.3)，ADR-027）
   evaluation.ts  评分聚合（rubric 权重）、选择题确定性判分、DEFAULT_RUBRIC
   variant.ts     变体校验（validateVariant）+ 落地（applyVariant）
   learner.ts     Learner Memory：updateLearner / sessionFromQuiz / recommendWeakTopics
-                 / buildCoachDefinition / recommendationText（Training Coach 数据核心）
+                 / buildCoachDefinition / recommendationText（Training Coach 数据核心）；
+                 掌握度策略也在此（ADR-030）：WEAK_* 阈值、isMastered/isAttempted、
+                 coverage、expandWithPrerequisites——mastery=avgScore/100 是当前简化
+                 启发式而非能力度量，trend/attempts/evidence 各自承担信号语义
 
 ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI；
                多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
@@ -83,6 +89,45 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
 
 **ai → domain 的边界约定**：`ai` 只允许依赖 domain 的**纯计算函数**（`evaluation.aggregateOverall`、`provider.mergeQuestionRubric`、variant 校验等），
 不得依赖业务流程模块（`learner` / `adaptive` / `quiz`）——AI 层只负责"生成/评价语言内容"，不理解产品业务流。
+
+## 核心数据流（主架构）
+
+产品核心只有这一条闭环，其余（LLM Provider / ConceptGraph / Knowledge 元数据 / Storage / UI）都是支撑：
+
+```
+Question Bank（知识点的 assessment views）
+      │
+      ▼
+Knowledge（学习对象，一等公民）
+      │
+      ▼
+Interview Definition ──────┐
+      │                    │ <── 上一次的 Recommendation（Learner Memory 驱动）
+      ▼                    │
+Interview Engine           │
+      │                    │
+      ▼                    │
+Session（SessionQuestion 快照，不变量：保存"当时看到的内容"，
+      │                     题库后续修改不影响历史回放）
+      ▼
+Answer → Evaluation → Learner Signal
+      │
+      ▼
+Learner Profile
+      │
+      └──► Recommendation ─┘
+```
+
+四条核心原则：
+
+1. **Knowledge 是中心，Question 是 View。** 一个知识点可派生 MCQ / 开放题 /
+   计算题 / 场景题 / System Design / 追问等多种 view；扩展时新增 view 类型，
+   不往 Question 上堆职责。
+2. **InterviewEngine 掌管业务流程。** 出题、判分路由、自适应推进都在引擎。
+3. **Domain 决策，LLM 只增强。** LLMProvider 是 one-shot 语言增强接口
+   （generateVariant / evaluateOpenAnswer），永不扩展为推荐/规划/学习者分析类接口。
+4. **Learner Memory 驱动下一次训练。** 掌握度启发式 + 薄弱项推荐构成闭环；
+   图只回答关系，learner 回答掌握状态（ADR-030）。
 
 ## 自适应面试引擎 + 知识覆盖面（ADR-017）
 

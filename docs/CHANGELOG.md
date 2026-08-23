@@ -2,6 +2,25 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 边界收紧：概念层级统一 + 图/学习状态分离 + mastery 语义修正（ADR-030）
+
+- **概念层级统一**：Knowledge（学习对象，一等公民）→ Question（知识点的
+  assessment view）→ SessionQuestion（一次训练实例）。types.ts 注释全面改用
+  该术语；后续 explanation/flashcard/follow-up 等都是 knowledge 的其他 view。
+- **conceptGraph 只管关系**：WEAK_* 阈值、isMastered/isAttempted、
+  expandWithPrerequisites、TopicRef/collectTopicRefs 从 conceptGraph.ts 迁入
+  learner.ts——图回答"知识间是什么关系"，learner 回答"用户掌握得怎么样"；
+  graphlib 数据结构不外泄。App.tsx / 测试导入同步更新（掌握策略测试移入
+  learner.test.ts，conceptGraph.test.ts 回归纯图测试并补 topoRankOf 用例）。
+- **mastery 明确为启发式**：avgScore/100 不再表述为掌握度定义；语义分工
+  mastery=当前启发式 / trend=近期信号 / attempts=置信度 / evidence=溯源，
+  不升级 Bayesian/ELO/IRT。
+- **固化不变量**：SessionQuestion 快照不变量（session 保存"当时看到的内容"）、
+  LLMProvider 接口边界固定为 one-shot 语言增强（永不扩展推荐/规划类接口）、
+  `useAI` 保持单开关。ARCHITECTURE.md 新增「核心数据流（主架构）」小节
+  （题库→训练→评估→学习信号→推荐闭环 + 四条核心原则）。
+- 167 测试全过，typecheck/build 通过。
+
 ## 2026-08-23 · 知识点层一等公民化：Knowledge Map 数据层（ADR-029）
 
 - **数据层新增**：`data/knowledge/<area>.json` ×8 领域（深度学习基础 / Transformer /

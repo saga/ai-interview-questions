@@ -1,5 +1,7 @@
 // 纯逻辑：Learner Memory（Training Coach 的数据核心）。
 // 只做"结构化学习信号"的聚合（分数 / 弱项 / 掌握度 / 趋势 / 建议），不存对话原文（ADR-015）。
+// 职责边界（ADR-030）：图（conceptGraph）只回答知识间关系；这里回答"用户掌握得怎么样"
+// ——掌握判定阈值、coverage、推荐展开等学习策略全部收拢在本模块。
 // 不依赖 React / LLM / 网络，全部可单测。
 
 import type {
@@ -13,19 +15,63 @@ import type {
   Trend,
 } from '../types';
 import { DEFAULT_RUBRIC } from './evaluation';
-import {
-  expandWithPrerequisites,
-  isAttempted,
-  isMastered,
-  prerequisiteClosure,
-  topoRankOf,
-  WEAK_AVG,
-  WEAK_MASTERY,
-  type TopicRef,
-} from './conceptGraph';
+import { prerequisiteClosure, topoRankOf } from './conceptGraph';
 
 const SESSION_CAP = 50;
 const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/下滑"
+
+// ── 掌握度启发式（mastery heuristic，ADR-030） ───────────────
+// mastery = avgScore/100 只是当前简化启发式，不是学习能力的真实度量——
+// 平均分无法区分"先会后忘"与"渐入佳境"。语义分工：mastery=当前启发式、
+// trend=近期表现信号、attempts=置信度信号、evidence=溯源。
+// 不引入 Bayesian/ELO/IRT；升级评分模型的前提是现有信号被证明不够用。
+
+/** 薄弱判定阈值：掌握度 <0.85 且均分 <85 视为未掌握（learner 内单一出处）。 */
+export const WEAK_MASTERY = 0.85;
+export const WEAK_AVG = 85;
+
+function isMastered(profile: LearnerProfile, topic: string): boolean {
+  const s = profile.topicStats[topic];
+  return Boolean(s && s.attempts > 0 && (s.mastery >= WEAK_MASTERY || s.avgScore >= WEAK_AVG));
+}
+
+function isAttempted(profile: LearnerProfile, topic: string): boolean {
+  return Boolean(profile.topicStats[topic] && profile.topicStats[topic].attempts > 0);
+}
+
+// ── 题库 → Learner 的边界工具 ───────────────────────────────
+
+/** 题库中出现过的全部 (category, topic) 组合（去重）。 */
+export interface TopicRef {
+  category: string;
+  topic: string;
+}
+
+export function collectTopicRefs(questions: TopicRef[]): TopicRef[] {
+  const seen = new Map<string, TopicRef>();
+  for (const q of questions) {
+    if (!seen.has(q.topic)) seen.set(q.topic, { category: q.category, topic: q.topic });
+  }
+  return [...seen.values()];
+}
+
+/**
+ * 把教练推荐的主题沿前置闭包展开：薄弱主题的全部未掌握前置都纳入抽题优先级，
+ * 实现"先补地基再攻难点"。（图关系来自 conceptGraph；跳过已掌握是学习策略，归本模块。）
+ */
+export function expandWithPrerequisites(priorities: string[], profile: LearnerProfile): string[] {
+  const result: string[] = [];
+  const seen = new Set<string>();
+  const queue = [...priorities];
+  while (queue.length > 0 && result.length < 10) {
+    const topic = queue.shift() as string;
+    if (seen.has(topic)) continue;
+    seen.add(topic);
+    if (!isMastered(profile, topic)) result.push(topic);
+    queue.push(...prerequisiteClosure(topic).slice(0, 3));
+  }
+  return result;
+}
 
 export function emptyProfile(): LearnerProfile {
   return {

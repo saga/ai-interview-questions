@@ -25,7 +25,7 @@ export interface OpenFormat {
 }
 
 /**
- * 题库知识对象：内容（题干）+ 元数据 + 可用形态集合。
+ * 题库对象：知识点的一种 assessment view（内容 + 元数据 + 可用形态集合）。
  * 同一道题可同时携带 choice / open 两种形态，会话按需选用，id 保持稳定（ADR-027）。
  */
 export interface Question {
@@ -60,8 +60,9 @@ export interface Question {
 export type AnswerValue = number[] | string;
 
 /**
- * 会话中的题目实例：question 是题库对象的会话内快照（LLM 变体只改副本，不回写题库），
- * format 决定这次怎么问——同一道题本次出选择、下次出开放，题库完全不动。
+ * 一次训练实例。**快照不变量**：question 是题库对象的会话内快照——session 保存
+ * "当时看到的内容"，题库后续修改（Question v1→v2、LLM 变体只改副本）不影响历史
+ * session 的回放与复盘。这是明确不变量，不是实现细节。
  */
 export interface SessionQuestion {
   question: Question;
@@ -104,6 +105,13 @@ export type QuestionAngle =
   | 'tradeoff'
   | 'scenario'
   | 'system-design';
+
+/**
+ * 概念层级（ADR-030）：Knowledge 是学习对象（一等公民），
+ * Question 是知识点的 assessment view（一种可评估表达），
+ * SessionQuestion 是一次训练实例。未来 explanation / flashcard / follow-up /
+ * scenario 等都是 knowledge 的其他 view——扩展时新增 view 类型，不往 Question 上堆职责。
+ */
 
 /**
  * 知识点：修饰成面试题的全部素材都在节点上——
@@ -178,7 +186,9 @@ export interface InterviewDefinition {
   /** 允许的呈现形态；空数组表示不限（按题目可用形态分配） */
   formats: FormatId[];
   count: number;
-  useAI: boolean; // 是否启用 LLM 变体出题与开放题评分
+  // 有意保持的单开关（ADR-030）：同时门控变体出题与开放题评分。二者语义不同
+  // （改题 vs 判分），但当前没有分开配置的真实需求；出现时再拆 enableVariants/enableEvaluation。
+  useAI: boolean;
   /** 自适应模式：逐题作答，下一题由上一题表现 + 概念图迁移策略决定（见 domain/adaptive） */
   adaptive?: boolean;
   scoringRubric: ScoringRubric;
@@ -220,7 +230,12 @@ export interface AIConfig {
 }
 
 /** LLM Provider 抽象：应用只依赖此接口。实现各自持有绑定的 ProviderEntry，
- *  多引擎组合与降级由 FallbackProvider 统一编排（见 ai/provider.ts）。 */
+ *  多引擎组合与降级由 FallbackProvider 统一编排（见 ai/provider.ts）。
+ *
+ *  接口边界（固定，ADR-030）：LLM 只做语言增强——重写题干 / 评估作答。
+ *  不扩展 recommendNextQuestion / buildLearningPlan / analyzeLearner 之类的策略接口：
+ *  domain 决策、LLM 增强——一旦让 LLM 触及学习策略，业务流就会被 prompt 接管。
+ *  LLM 永远不感知 LearnerProfile / InterviewSession / adaptive strategy。 */
 export interface LLMProvider {
   readonly name: string;
   generateVariant(question: Question): Promise<GeneratedVariant>;
@@ -256,8 +271,10 @@ export interface TopicStats {
   lastScore: number;
   trend: Trend;
   /**
-   * 0-1 掌握度 = avgScore/100（ADR-019 简化公式）；
-   * 置信度由 attempts 字段本身表达，不做加权。
+   * 0-1 掌握度 = avgScore/100——**当前简化启发式，不是学习能力的真实度量**
+   * （ADR-030）：平均分无法区分"先会后忘"与"渐入佳境"。语义分工：
+   * mastery=当前启发式、trend=近期表现信号、attempts=置信度信号、
+   * commonWeaknesses/evidence=溯源。不引入 Bayesian/ELO/IRT。
    */
   mastery: number;
   /** 高频遗漏/错误要点（来自开放题评估的 gaps） */

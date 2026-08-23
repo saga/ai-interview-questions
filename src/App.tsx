@@ -18,7 +18,7 @@ import type {
 } from './types';
 import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './application/interviewEngine';
-import { collectTopicRefs } from './domain/conceptGraph';
+import { collectTopicRefs } from './domain/learner';
 import { computeCoverage, suggestNextTopics } from './domain/learner';
 import type { AnswerSignal, Strategy } from './domain/adaptive';
 import { isConfigValid } from './ai/provider';
