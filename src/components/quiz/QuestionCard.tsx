@@ -1,18 +1,10 @@
 import { Card, Radio, Checkbox, Input, Tag, Space, Badge } from 'antd';
 import { Suspense, lazy } from 'react';
-import type { AnswerValue, Question } from '../../types';
-import { isChoice } from '../../domain/quiz';
+import type { AnswerValue, FormatId, Question } from '../../types';
 import { categoryLabel } from '../../domain/categories';
 import RichText from '../common/RichText';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
-
-const TYPE_LABEL: Record<Question['type'], string> = {
-  single: '单选题',
-  multiple: '多选题',
-  essay: '问答题',
-  coding: '编程题',
-};
 
 const DIFF_COLOR: Record<string, string> = {
   easy: 'green',
@@ -23,18 +15,29 @@ const DIFF_COLOR: Record<string, string> = {
 interface Props {
   index: number;
   question: Question;
+  /** 本次会话的呈现形态（同一道题可出选择也可出开放） */
+  format: FormatId;
   value: AnswerValue;
   onChange: (v: AnswerValue) => void;
 }
 
-export default function QuestionCard({ index, question, value, onChange }: Props) {
-  const options = isChoice(question) ? question.options : [];
+export default function QuestionCard({ index, question, format, value, onChange }: Props) {
+  const cf = question.formats.choice;
+  const of = question.formats.open;
+  const typeLabel =
+    format === 'choice'
+      ? cf?.type === 'multiple'
+        ? '多选题'
+        : '单选题'
+      : of?.language
+        ? `编程题 · ${of.language}`
+        : '问答题';
 
   return (
     <Card size="small" style={{ marginBottom: 16 }}>
       <Space wrap style={{ marginBottom: 8 }}>
         <Badge count={index + 1} showZero color="#1677ff" />
-        <Tag color="blue">{TYPE_LABEL[question.type]}</Tag>
+        <Tag color="blue">{typeLabel}</Tag>
         <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
         <Tag>{categoryLabel(question.category)}</Tag>
         {question.tags?.map((t) => (
@@ -48,38 +51,38 @@ export default function QuestionCard({ index, question, value, onChange }: Props
         <RichText text={question.question} strong />
       </div>
 
-      {isChoice(question) && question.type === 'single' && (
+      {format === 'choice' && cf?.type === 'single' && (
         <Radio.Group
           value={(value as number[])[0]}
           onChange={(e) => onChange([e.target.value as number])}
-          options={options.map((o, i) => ({ label: o, value: i }))}
+          options={cf.options.map((o, i) => ({ label: o, value: i }))}
         />
       )}
 
-      {isChoice(question) && question.type === 'multiple' && (
+      {format === 'choice' && cf?.type === 'multiple' && (
         <Checkbox.Group
-          value={value as number[]}
+          value={(value as number[]) ?? []}
           onChange={(v) => onChange(v as number[])}
-          options={options.map((o, i) => ({ label: o, value: i }))}
+          options={cf.options.map((o, i) => ({ label: o, value: i }))}
         />
       )}
 
-      {question.type === 'essay' && (
+      {format === 'open' && !of?.language && (
         <Input.TextArea
           rows={4}
-          value={value as string}
+          value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="在此输入你的回答…"
         />
       )}
 
-      {question.type === 'coding' && (
+      {format === 'open' && of?.language && (
         <Suspense
           fallback={
             <Input.TextArea
               rows={8}
               disabled
-              value={value as string}
+              value={(value as string) ?? ''}
               placeholder="代码编辑器加载中…"
               style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 }}
             />
@@ -88,7 +91,7 @@ export default function QuestionCard({ index, question, value, onChange }: Props
           <LazyCodeEditor
             value={(value as string) ?? ''}
             onChange={(v) => onChange(v)}
-            language={question.language}
+            language={of.language}
             height={320}
           />
         </Suspense>

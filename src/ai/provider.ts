@@ -9,15 +9,13 @@ import type {
   EvaluationResult,
   GeneratedVariant,
   LLMProvider,
-  OpenQuestion,
+  OpenFormat,
   ProviderEntry,
   Question,
-  QuestionType,
   ScoringRubric,
 } from '../types';
 import { generateVariant } from './variant';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
-import { transformQuestionWith } from './transform';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
 
@@ -74,18 +72,15 @@ export class PiAIProvider implements LLMProvider {
     return generateVariant(q, (system, user) => callLLM(this.entry, system, user));
   }
 
-  transformQuestion(question: Question, target: QuestionType): Promise<Question> {
-    return transformQuestionWith(question, target, (system, user) => callLLM(this.entry, system, user));
-  }
-
   async evaluateOpenAnswer(
-    q: OpenQuestion,
+    q: Question,
+    open: OpenFormat,
     userAnswer: string,
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
-    return evalOpen(q, userAnswer, (system, user) => callLLM(this.entry, system, user), effectiveRubric, extraCriteria, requiredPoints);
+    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user), effectiveRubric, extraCriteria, requiredPoints);
   }
 }
 
@@ -97,18 +92,15 @@ export class ChromeAIProvider implements LLMProvider {
     return generateVariant(q, chromeComplete);
   }
 
-  transformQuestion(question: Question, target: QuestionType): Promise<Question> {
-    return transformQuestionWith(question, target, chromeComplete);
-  }
-
   async evaluateOpenAnswer(
-    q: OpenQuestion,
+    q: Question,
+    open: OpenFormat,
     userAnswer: string,
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
-    return evalOpen(q, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints);
+    return evalOpen(q, open, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints);
   }
 }
 
@@ -137,17 +129,14 @@ export class FallbackProvider implements LLMProvider {
     return this.run((p) => p.generateVariant(q));
   }
 
-  transformQuestion(question: Question, target: QuestionType): Promise<Question> {
-    return this.run((p) => p.transformQuestion(question, target));
-  }
-
   evaluateOpenAnswer(
-    q: OpenQuestion,
+    q: Question,
+    open: OpenFormat,
     userAnswer: string,
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
-    return this.run((p) => p.evaluateOpenAnswer(q, userAnswer, rubric, extraCriteria));
+    return this.run((p) => p.evaluateOpenAnswer(q, open, userAnswer, rubric, extraCriteria));
   }
 }
 

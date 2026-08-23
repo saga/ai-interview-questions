@@ -20,17 +20,15 @@ import {
   PlayCircleOutlined,
   HistoryOutlined,
 } from '@ant-design/icons';
-import type { Difficulty, InterviewDefinition, LearnerProfile, QuestionType } from '../../types';
+import type { Difficulty, FormatId, InterviewDefinition, LearnerProfile } from '../../types';
 import type { AIConfig } from '../../types';
 import { isConfigValid } from '../../ai/provider';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 import { categoryLabel } from '../../domain/categories';
 
-const TYPE_OPTIONS: { label: string; value: QuestionType }[] = [
-  { label: '单选', value: 'single' },
-  { label: '多选', value: 'multiple' },
-  { label: '问答', value: 'essay' },
-  { label: '编程', value: 'coding' },
+const FORMAT_OPTIONS: { label: string; value: FormatId }[] = [
+  { label: '选择（单选/多选）', value: 'choice' },
+  { label: '开放问答 / 编程', value: 'open' },
 ];
 
 const DIFF_OPTIONS: { label: string; value: Difficulty }[] = [
@@ -65,7 +63,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
   const [count, setCount] = useState(10);
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
   const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
-  const [types, setTypes] = useState<QuestionType[]>(['single', 'multiple', 'essay', 'coding']);
+  const [formats, setFormats] = useState<FormatId[]>(['choice', 'open']);
   const [useAI, setUseAI] = useState(true);
 
   const startCustom = () => {
@@ -73,7 +71,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
       title: '自定义训练',
       categories: selectedCats,
       difficulties,
-      questionTypes: types,
+      formats,
       count,
       useAI,
       scoringRubric: { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 },
@@ -176,7 +174,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
           items={[
             {
               key: 'custom',
-              label: '自定义训练（主题 / 难度 / 题型 / 题数）',
+              label: '自定义训练（主题 / 难度 / 形态 / 题数）',
               children: (
                 <div>
                   <Divider style={{ margin: '4px 0' }}>类别（留空表示全部）</Divider>
@@ -195,14 +193,14 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
                     value={difficulties.length === 0 ? 'all' : (difficulties[0] as string)}
                     onChange={(v) => setDifficulties(v === 'all' ? [] : [v as Difficulty])}
                   />
-                  <Divider>题型</Divider>
+                  <Divider>呈现形态</Divider>
                   <Select
                     mode="multiple"
                     style={{ width: '100%' }}
-                    placeholder="选择允许的题型"
-                    value={types}
-                    onChange={(v) => setTypes(v as QuestionType[])}
-                    options={TYPE_OPTIONS}
+                    placeholder="选择允许的形态"
+                    value={formats}
+                    onChange={(v) => setFormats(v as FormatId[])}
+                    options={FORMAT_OPTIONS}
                   />
                   <Divider>题数</Divider>
                   <Slider min={5} max={30} step={1} value={count} onChange={setCount} />

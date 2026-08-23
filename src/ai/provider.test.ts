@@ -12,22 +12,23 @@ import {
   isEntryValid,
   mergeQuestionRubric,
 } from './provider';
-import type { AIConfig, LLMProvider, OpenQuestion, ProviderEntry, ScoringRubric } from '../types';
+import type { AIConfig, LLMProvider, OpenFormat, ProviderEntry, Question, ScoringRubric } from '../types';
 
 const GLOBAL: ScoringRubric = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };
 
-function q(rubric?: OpenQuestion['rubric']): OpenQuestion {
+const OPEN_FMT: OpenFormat = { referenceAnswer: 'a' };
+
+function q(rubric?: Question['rubric']): Question {
   return {
     id: 'q1',
     category: 'agentic-ai',
     topic: 'memory',
     tags: [],
     difficulty: 'medium',
-    type: 'essay',
     question: 'q',
-    referenceAnswer: 'a',
     explanation: '',
     rubric,
+    formats: {},
   };
 }
 
@@ -198,7 +199,7 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
         throw new Error('boom-b');
       }),
     ]);
-    await expect(chain.evaluateOpenAnswer(q(), 'ans', GLOBAL)).rejects.toThrow('boom-b');
+    await expect(chain.evaluateOpenAnswer(q(), OPEN_FMT, 'ans', GLOBAL)).rejects.toThrow('boom-b');
   });
 
   it('空链调用抛错', async () => {
@@ -213,14 +214,14 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
       }),
       fake('b', async () => ({ overall: 90 })),
     ]);
-    await expect(chain.evaluateOpenAnswer(q(), 'ans', GLOBAL)).resolves.toEqual({ overall: 90 });
+    await expect(chain.evaluateOpenAnswer(q(), OPEN_FMT, 'ans', GLOBAL)).resolves.toEqual({ overall: 90 });
   });
 });
 
 describe('ChromeAIProvider（走注入的 chromeComplete，签名接线正确）', () => {
   it('evaluateOpenAnswer 复用同一套评分编排；未作答短路不触达 LLM', async () => {
     const p = new ChromeAIProvider();
-    const result = await p.evaluateOpenAnswer(q(), '', GLOBAL);
+    const result = await p.evaluateOpenAnswer(q(), OPEN_FMT, '', GLOBAL);
     expect(result.overall).toBe(0);
     expect(result.feedback).toBe('未作答。');
   });

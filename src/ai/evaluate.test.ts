@@ -3,36 +3,39 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildEvalUser, parseEvaluation } from './evaluate';
-import type { OpenQuestion, ScoringRubric } from '../types';
+import type { OpenFormat, Question, ScoringRubric } from '../types';
 
 const RUBRIC: ScoringRubric = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };
 
-const q: OpenQuestion = {
+const q: Question = {
   id: 'q1',
   category: 'agentic-ai',
   topic: 'memory',
   tags: [],
   difficulty: 'medium',
-  type: 'essay',
   question: '什么是 Agent 记忆？',
-  referenceAnswer: '短期=上下文；长期=持久化知识库。',
   explanation: '',
+  formats: {},
+};
+
+const open: OpenFormat = {
+  referenceAnswer: '短期=上下文；长期=持久化知识库。',
 };
 
 describe('buildEvalUser', () => {
   it('包含题目、参考答案与候选人回答', () => {
-    const s = buildEvalUser(q, '我的回答', { rubric: RUBRIC });
+    const s = buildEvalUser(q, open, '我的回答', { rubric: RUBRIC });
     expect(s).toContain('什么是 Agent 记忆？');
     expect(s).toContain('短期=上下文');
     expect(s).toContain('我的回答');
   });
 
   it('未作答时以（未作答）占位', () => {
-    expect(buildEvalUser(q, '')).toContain('（未作答）');
+    expect(buildEvalUser(q, open, '')).toContain('（未作答）');
   });
 
   it('required 要点注入提示词', () => {
-    const s = buildEvalUser(q, 'a', { requiredPoints: ['短期记忆', '长期记忆'] });
+    const s = buildEvalUser(q, open, 'a', { requiredPoints: ['短期记忆', '长期记忆'] });
     expect(s).toContain('- 短期记忆');
     expect(s).toContain('- 长期记忆');
   });
@@ -50,7 +53,7 @@ describe('parseEvaluation', () => {
       strengths: ['要点全'],
       gaps: ['缺例子'],
     });
-    const r = parseEvaluation(raw, q, RUBRIC);
+    const r = parseEvaluation(raw, open, RUBRIC);
     expect(r.dimensions).toEqual({ correctness: 90, completeness: 80, architecture: 70, communication: 60 });
     expect(r.overall).toBe(90 * 0.4 + 80 * 0.2 + 70 * 0.2 + 60 * 0.2); // = 78
     expect(r.overall).not.toBe(99);
@@ -60,10 +63,10 @@ describe('parseEvaluation', () => {
   });
 
   it('空输入 → 全零分 + 未作答反馈', () => {
-    const r = parseEvaluation('', q, RUBRIC);
+    const r = parseEvaluation('', open, RUBRIC);
     expect(r.overall).toBe(0);
     expect(r.feedback).toBe('未作答。');
-    expect(r.referenceAnswer).toBe(q.referenceAnswer);
+    expect(r.referenceAnswer).toBe(open.referenceAnswer);
   });
 
   it('残缺 JSON → 缺失维度按 0 分兜底', () => {

@@ -9,8 +9,7 @@ import {
   PlayCircleOutlined,
   BulbOutlined,
 } from '@ant-design/icons';
-import type { AnswerValue, ChoiceQuestion, EvaluationResult, LearnerProfile, OpenQuestion, Question } from '../../types';
-import { isChoice } from '../../domain/quiz';
+import type { AnswerValue, EvaluationResult, LearnerProfile, SessionQuestion } from '../../types';
 import { DIMENSION_LABELS, EVAL_DIMENSIONS } from '../../types';
 import { categoryLabel } from '../../domain/categories';
 import { recommendationText } from '../../domain/learner';
@@ -24,7 +23,7 @@ const LazyCodeDiff = lazy(() =>
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 interface Props {
-  questions: Question[];
+  questions: SessionQuestion[];
   answers: Record<string, AnswerValue>;
   grades: Record<string, EvaluationResult | null>;
   profile: LearnerProfile;
@@ -54,19 +53,19 @@ function DimensionRates({ g }: { g: EvaluationResult }) {
 
 /** 从评估结果聚合"亮点 / 待加强"清单（唯一去重，最多各 5 条）。 */
 function collectSignals(
-  questions: Question[],
+  questions: SessionQuestion[],
   grades: Record<string, EvaluationResult | null>,
 ): { strengths: string[]; weaknesses: string[] } {
   const strengths: string[] = [];
   const weaknesses: string[] = [];
-  for (const q of questions) {
-    const g = grades[q.id];
+  for (const sq of questions) {
+    const g = grades[sq.question.id];
     if (!g) continue;
-    if (isChoice(q)) {
+    if (sq.format === 'choice') {
       if (g.dimensions.correctness === 100) {
-        strengths.push(`${categoryLabel(q.category)} · ${q.topic}：回答正确`);
+        strengths.push(`${categoryLabel(sq.question.category)} · ${sq.question.topic}：回答正确`);
       } else {
-        weaknesses.push(`${q.topic}：概念或判断有误（见解析）`);
+        weaknesses.push(`${sq.question.topic}：概念或判断有误（见解析）`);
       }
     } else {
       for (const s of g.strengths) if (s && !strengths.includes(s)) strengths.push(s);
@@ -78,22 +77,22 @@ function collectSignals(
 
 function ResultItem({
   index,
-  q,
+  sq,
   answer,
   grade,
 }: {
   index: number;
-  q: Question;
+  sq: SessionQuestion;
   answer: AnswerValue;
   grade?: EvaluationResult | null;
 }) {
-  let resultTag: React.ReactNode = null;
+  const q = sq.question;
 
-  if (isChoice(q)) {
-    const cq = q as ChoiceQuestion;
-    const sel = (answer as number[]) ?? [];
+  if (sq.format === 'choice') {
+    const cf = q.formats.choice!;
+    const sel = ((answer as number[]) ?? []).slice().sort((a, b) => a - b);
     const correct = grade?.dimensions.correctness === 100;
-    resultTag = correct ? (
+    const resultTag = correct ? (
       <Tag color="success" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}>
         正确
       </Tag>
@@ -108,7 +107,7 @@ function ResultItem({
         <Card
           size="small"
           style={{ width: '100%' }}
-          title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}`}
+          title={`第 ${index + 1} 题 · ${categoryLabel(q.category)} · ${cf.type === 'multiple' ? '多选' : '单选'}`}
           extra={resultTag}
         >
           <RichText text={q.question} strong />
@@ -116,7 +115,7 @@ function ResultItem({
           <Typography.Text>{letterList(sel)}</Typography.Text>
           <br />
           <Typography.Text type="secondary">正确答案：</Typography.Text>
-          <Typography.Text strong>{letterList(cq.answer)}</Typography.Text>
+          <Typography.Text strong>{letterList([...cf.answer].sort((a, b) => a - b))}</Typography.Text>
           <Collapse
             ghost
             items={[
@@ -128,10 +127,10 @@ function ResultItem({
     );
   }
 
-  // 开放 / 编程题
-  const oq = q as OpenQuestion;
+  // 开放 / 编程形态
+  const of = q.formats.open!;
   if (grade) {
-    resultTag = (
+    var resultTag = (
       <Tag color={grade.overall >= 80 ? 'success' : grade.overall >= 60 ? 'gold' : 'error'}>
         得分 {grade.overall}/100
       </Tag>
@@ -145,27 +144,27 @@ function ResultItem({
       <Card
         size="small"
         style={{ width: '100%' }}
-        title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}`}
+        title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}${of.language ? ` · 编程（${of.language}）` : ''}`}
         extra={resultTag}
       >
         <RichText text={q.question} strong />
 
         <Typography.Text type="secondary">你的回答：</Typography.Text>
-        {oq.type === 'coding' && (answer as string)?.trim() ? (
-          <CodeBlock code={answer as string} language={oq.language} />
+        {of.language && (answer as string)?.trim() ? (
+          <CodeBlock code={answer as string} language={of.language} />
         ) : (
           <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
             {(answer as string) || '（未作答）'}
           </Typography.Paragraph>
         )}
         <Typography.Text type="secondary">参考答案：</Typography.Text>
-        {oq.type === 'coding' ? (
-          <CodeBlock code={oq.referenceAnswer} language={oq.language} />
+        {of.language ? (
+          <CodeBlock code={of.referenceAnswer} language={of.language} />
         ) : (
-          <RichText text={oq.referenceAnswer} />
+          <RichText text={of.referenceAnswer} />
         )}
 
-        {oq.type === 'coding' && (answer as string)?.trim() && (
+        {of.language && (answer as string)?.trim() && (
           <Collapse
             ghost
             items={[
@@ -175,9 +174,9 @@ function ResultItem({
                 children: (
                   <Suspense fallback={<div style={{ height: 360 }}>对比视图加载中…</div>}>
                     <LazyCodeDiff
-                      original={oq.referenceAnswer}
+                      original={of.referenceAnswer}
                       modified={answer as string}
-                      language={oq.language}
+                      language={of.language}
                     />
                   </Suspense>
                 ),
@@ -241,15 +240,15 @@ export default function ResultPanel({ questions, answers, grades, profile, prevO
   let earned = 0;
   const total = questions.length;
 
-  questions.forEach((q) => {
-    const g = grades[q.id];
+  questions.forEach((sq) => {
+    const g = grades[sq.question.id];
     earned += (g ? g.overall : 0) / 100;
   });
 
   const percent = total > 0 ? Math.round((earned / total) * 100) : 0;
-  const choiceCount = questions.filter(isChoice).length;
+  const choiceCount = questions.filter((sq) => sq.format === 'choice').length;
   const openCount = total - choiceCount;
-  const openGraded = questions.filter((q) => !isChoice(q) && grades[q.id]).length;
+  const openGraded = questions.filter((sq) => sq.format !== 'choice' && grades[sq.question.id]).length;
 
   const { strengths, weaknesses } = collectSignals(questions, grades);
   const delta = prevOverall == null ? null : percent - prevOverall;
@@ -323,7 +322,7 @@ export default function ResultPanel({ questions, answers, grades, profile, prevO
 
       <List
         dataSource={questions}
-        renderItem={(q, i) => <ResultItem index={i} q={q} answer={answers[q.id]} grade={grades[q.id]} />}
+        renderItem={(sq, i) => <ResultItem index={i} sq={sq} answer={answers[sq.question.id]} grade={grades[sq.question.id]} />}
       />
 
       <Space style={{ width: '100%', marginTop: 16 }} direction="vertical">

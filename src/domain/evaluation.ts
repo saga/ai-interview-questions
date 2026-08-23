@@ -1,7 +1,7 @@
 // 纯逻辑：评分聚合与确定性判分。不依赖 React / LLM。
 
 import type {
-  ChoiceQuestion,
+  ChoiceFormat,
   EvaluationDimension,
   EvaluationResult,
   ScoringRubric,
@@ -27,8 +27,8 @@ export function aggregateOverall(
 }
 
 /** 选择题确定性判分：正确则四维全 100，否则全 0。 */
-export function gradeChoice(q: ChoiceQuestion, selected: number[], rubric: ScoringRubric): EvaluationResult {
-  const correct = isChoiceCorrect(q, selected);
+export function gradeChoice(cf: ChoiceFormat, selected: number[], rubric: ScoringRubric): EvaluationResult {
+  const correct = isChoiceCorrect(cf, selected);
   const v = correct ? 100 : 0;
   const dimensions: Record<EvaluationDimension, number> = {
     correctness: v,

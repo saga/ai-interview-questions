@@ -39,18 +39,30 @@ const REFS = [
   { category: 'llm', topic: 'rag' },
 ];
 
-const choiceA: ChoiceQuestion = {
-  id: 'c1', category: 'machine-learning', topic: 'regularization', tags: [], difficulty: 'easy',
-  type: 'single', question: 'q', options: ['a', 'b'], answer: [0], explanation: 'e',
-};
-const choiceB: ChoiceQuestion = {
-  id: 'c2', category: 'agentic-ai', topic: 'tool-calling', tags: [], difficulty: 'medium',
-  type: 'single', question: 'q', options: ['a', 'b'], answer: [1], explanation: 'e',
-};
-const openA: OpenQuestion = {
-  id: 'o1', category: 'agentic-ai', topic: 'tool-calling', tags: [], difficulty: 'hard',
-  type: 'essay', question: 'q', referenceAnswer: 'a', explanation: 'e',
-};
+const choiceA = {
+  question: {
+    id: 'c1', category: 'machine-learning', topic: 'regularization', tags: [], difficulty: 'easy' as const,
+    question: 'q', explanation: 'e',
+    formats: { choice: { type: 'single' as const, options: ['a', 'b'], answer: [0] } },
+  },
+  format: 'choice' as const,
+} satisfies SessionQuestion;
+const choiceB = {
+  question: {
+    id: 'c2', category: 'agentic-ai', topic: 'tool-calling', tags: [], difficulty: 'medium' as const,
+    question: 'q', explanation: 'e',
+    formats: { choice: { type: 'single' as const, options: ['a', 'b'], answer: [1] } },
+  },
+  format: 'choice' as const,
+} satisfies SessionQuestion;
+const openA = {
+  question: {
+    id: 'o1', category: 'agentic-ai', topic: 'tool-calling', tags: [], difficulty: 'hard' as const,
+    question: 'q', explanation: 'e',
+    formats: { open: { referenceAnswer: 'a' } },
+  },
+  format: 'open' as const,
+} satisfies SessionQuestion;
 
 function session(overall: number, results: QuestionResult[], title = 't'): SessionRecord {
   return {
@@ -63,7 +75,7 @@ function session(overall: number, results: QuestionResult[], title = 't'): Sessi
 }
 
 function result(topic: string, score: number, gaps: string[] = [], correct?: boolean): QuestionResult {
-  return { questionId: 'x', category: 'c', topic, type: 'essay', score, gaps, correct };
+  return { questionId: 'x', category: 'c', topic, format: 'open' as const, score, gaps, correct };
 }
 
 describe('updateLearner', () => {
@@ -170,9 +182,9 @@ describe('sessionFromQuiz', () => {
 describe('pickPrioritized', () => {
   it('薄弱主题的题优先被抽中，剩余由其他题补齐', () => {
     const pool: Question[] = [
-      { ...choiceA }, { ...choiceB }, { ...openA },
-      { ...choiceA, id: 'r1', topic: 'random-1' },
-      { ...choiceA, id: 'r2', topic: 'random-2' },
+      { ...choiceA.question }, { ...choiceB.question }, { ...openA.question },
+      { ...choiceA.question, id: 'r1', topic: 'random-1' },
+      { ...choiceA.question, id: 'r2', topic: 'random-2' },
     ];
     const picked = pickPrioritized(pool, ['tool-calling'], 3);
     const weak = picked.filter((q) => q.topic === 'tool-calling');
@@ -181,14 +193,14 @@ describe('pickPrioritized', () => {
   });
 
   it('count 超过题池时返回全部且不重复', () => {
-    const pool: Question[] = [{ ...choiceA }, { ...choiceB }];
+    const pool: Question[] = [{ ...choiceA.question }, { ...choiceB.question }];
     const picked = pickPrioritized(pool, ['tool-calling'], 5);
     expect(picked.length).toBe(2);
     expect(new Set(picked.map((q) => q.id)).size).toBe(2);
   });
 
   it('无 priority 时退化为纯随机', () => {
-    const pool: Question[] = [{ ...choiceA }, { ...choiceB }];
+    const pool: Question[] = [{ ...choiceA.question }, { ...choiceB.question }];
     const picked = pickPrioritized(pool, [], 2);
     expect(picked.length).toBe(2);
   });

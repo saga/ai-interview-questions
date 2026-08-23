@@ -15,7 +15,6 @@ import type {
   InterviewSession,
   LearnerProfile,
   AIConfig,
-  Question,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './application/interviewEngine';
@@ -89,7 +88,7 @@ export default function App() {
   const configReady = isConfigValid(config);
 
   const answeredCount = useMemo(
-    () => questions.filter((q) => hasAnswerValue(answers[q.id])).length,
+    () => questions.filter((sq) => hasAnswerValue(answers[sq.question.id])).length,
     [questions, answers],
   );
 
@@ -106,8 +105,8 @@ export default function App() {
     try {
       const s = await buildSession(bank, def, configRef.current);
       const init: Record<string, AnswerValue> = {};
-      s.questions.forEach((q) => {
-        init[q.id] = emptyAnswer(q);
+      s.questions.forEach((sq) => {
+        init[sq.question.id] = emptyAnswer(sq);
       });
       setSession(s);
       setAnswers(init);
@@ -132,18 +131,18 @@ export default function App() {
     const s = sessionRef.current;
     if (!s || !s.definition.adaptive) return;
     const idx = Object.keys(gradesRef.current).length;
-    const q = s.questions[idx];
-    if (!q || idx >= s.definition.count) return;
+    const sq = s.questions[idx];
+    if (!sq || idx >= s.definition.count) return;
 
     setBusy('正在评分…');
     try {
-      const g = await evaluateAnswer(q, answersRef.current[q.id], s.definition, configRef.current);
-      const nextGrades = { ...gradesRef.current, [q.id]: g };
+      const g = await evaluateAnswer(sq, answersRef.current[sq.question.id], s.definition, configRef.current);
+      const nextGrades = { ...gradesRef.current, [sq.question.id]: g };
       gradesRef.current = nextGrades;
       setGrades(nextGrades);
       signalsRef.current = [
         ...signalsRef.current,
-        { topic: q.topic, score: g?.overall ?? 0, difficulty: q.difficulty },
+        { topic: sq.question.topic, score: g?.overall ?? 0, difficulty: sq.question.difficulty },
       ];
 
       if (s.questions.length < s.definition.count) {
@@ -152,7 +151,7 @@ export default function App() {
         if (step) {
           setSession({ ...s, questions: [...s.questions, step.question] });
           setStrategies((prev) => [...prev, step.strategy]);
-          setAnswers((prev) => ({ ...prev, [step.question.id]: emptyAnswer(step.question) }));
+          setAnswers((prev) => ({ ...prev, [step.question.question.id]: emptyAnswer(step.question) }));
         }
       }
     } finally {
@@ -165,17 +164,17 @@ export default function App() {
     const s = sessionRef.current;
     if (!s?.definition.adaptive) return doSubmit();
     const idx = Object.keys(gradesRef.current).length;
-    const q = s.questions[idx];
-    if (!q) return doSubmit();
+    const sq = s.questions[idx];
+    if (!sq) return doSubmit();
     setBusy('正在评分…');
     try {
-      const g = await evaluateAnswer(q, answersRef.current[q.id], s.definition, configRef.current);
-      const nextGrades = { ...gradesRef.current, [q.id]: g };
+      const g = await evaluateAnswer(sq, answersRef.current[sq.question.id], s.definition, configRef.current);
+      const nextGrades = { ...gradesRef.current, [sq.question.id]: g };
       gradesRef.current = nextGrades;
       setGrades(nextGrades);
       signalsRef.current = [
         ...signalsRef.current,
-        { topic: q.topic, score: g?.overall ?? 0, difficulty: q.difficulty },
+        { topic: sq.question.topic, score: g?.overall ?? 0, difficulty: sq.question.difficulty },
       ];
     } finally {
       setBusy(null);
@@ -327,14 +326,17 @@ export default function App() {
         {phase === 'quiz' && session?.definition.adaptive && questions[adaptiveCursor] && (
           <div style={{ maxWidth: 820, margin: '0 auto' }}>
             <AdaptiveQuiz
-              question={questions[adaptiveCursor]}
+              sq={questions[adaptiveCursor]}
               index={adaptiveCursor}
               total={session.definition.count}
-              value={answers[questions[adaptiveCursor].id] ?? emptyAnswer(questions[adaptiveCursor])}
+              value={
+                answers[questions[adaptiveCursor].question.id] ??
+                emptyAnswer(questions[adaptiveCursor])
+              }
               strategy={strategies[adaptiveCursor]}
               evaluating={busy != null}
-              hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].id])}
-              onChange={(v) => handleAnswerChange(questions[adaptiveCursor].id, v)}
+              hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].question.id])}
+              onChange={(v) => handleAnswerChange(questions[adaptiveCursor].question.id, v)}
               onSubmitNext={() => void handleAdaptiveNext()}
               onFinish={() => void handleFinishEarly()}
             />
@@ -371,13 +373,14 @@ export default function App() {
               />
               <Button onClick={handleRestart}>退出</Button>
             </Space>
-            {questions.map((q: Question, i) => (
+            {questions.map((sq, i) => (
               <QuestionCard
-                key={q.id}
+                key={`${sq.question.id}-${i}`}
                 index={i}
-                question={q}
-                value={answers[q.id] ?? emptyAnswer(q)}
-                onChange={(v) => handleAnswerChange(q.id, v)}
+                question={sq.question}
+                format={sq.format}
+                value={answers[sq.question.id] ?? emptyAnswer(sq)}
+                onChange={(v) => handleAnswerChange(sq.question.id, v)}
               />
             ))}
             <Button type="primary" size="large" block onClick={doSubmit}>

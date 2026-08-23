@@ -1,9 +1,11 @@
-// 纯逻辑：抽题与选择题判分。不依赖 React、不依赖任何 LLM/网络。
+// 纯逻辑：抽题与形态分配、选择题判分。不依赖 React、不依赖任何 LLM/网络。
+// ADR-027：Question 是知识对象（可同时携带 choice/open 两种形态），
+// 组卷 = 抽题 + 为每道题分配本次呈现形态；同一道题本次出选择、下次可出开放。
 
-import type { AnswerValue, ChoiceQuestion, OpenQuestion, Question } from '../types';
+import type { AnswerValue, ChoiceFormat, FormatId, Question, SessionQuestion } from '../types';
 
-/** 开放题（essay/coding）占比上限：单选/多选为主的训练体验，
- *  问答/编程题数量不超过总题量的三成（约 7:3；想收紧到 8:2 改 0.2 即可）。 */
+/** 开放形态占比上限：单选/多选为主的训练体验，
+ *  开放题数量不超过总题量的三成（约 7:3；想收紧到 8:2 改 0.2 即可）。 */
 export const MAX_OPEN_RATIO = 0.3;
 
 function shuffle<T>(arr: T[], rng: () => number): T[] {
@@ -20,23 +22,28 @@ export function pickQuestions(pool: Question[], count: number, rng: () => number
   return shuffle(pool, rng).slice(0, Math.min(count, pool.length));
 }
 
-export function isChoice(q: Question): q is ChoiceQuestion {
-  return q.type === 'single' || q.type === 'multiple';
-}
-
-export function isOpen(q: Question): q is OpenQuestion {
-  return q.type === 'essay' || q.type === 'coding';
+/** 题目的可用形态；allowedFormats 为空数组表示不限。 */
+export function availableFormats(q: Question, allowedFormats?: FormatId[]): FormatId[] {
+  const f: FormatId[] = [];
+  if (q.formats.choice && (!allowedFormats || allowedFormats.length === 0 || allowedFormats.includes('choice'))) {
+    f.push('choice');
+  }
+  if (q.formats.open && (!allowedFormats || allowedFormats.length === 0 || allowedFormats.includes('open'))) {
+    f.push('open');
+  }
+  return f;
 }
 
 /** 选择题是否正确：选中集合与正确答案集合完全一致（顺序无关）。 */
-export function isChoiceCorrect(q: ChoiceQuestion, selected: number[]): boolean {
-  const a = [...q.answer].sort((x, y) => x - y).join(',');
+export function isChoiceCorrect(cf: ChoiceFormat, selected: number[]): boolean {
+  const a = [...cf.answer].sort((x, y) => x - y).join(',');
   const s = [...selected].sort((x, y) => x - y).join(',');
   return a === s;
 }
 
-export function emptyAnswer(q: Question): AnswerValue {
-  return isChoice(q) ? [] : '';
+/** 会话实例的空白作答：选择形态存空数组，开放形态存空串。 */
+export function emptyAnswer(sq: SessionQuestion): AnswerValue {
+  return sq.format === 'choice' ? [] : '';
 }
 
 /**
@@ -59,80 +66,66 @@ export function pickPrioritized(
   return [...pickedWeak, ...pickedRest];
 }
 
-/** 开放题变换为选择题时，多选形态的占比（其余为单选；参考答案句数不足时自动回退单选）。 */
-export const MULTIPLE_TRANSFORM_SHARE = 0.35;
-
-/** 待 LLM 题型变换的题目（同一题换一种形态出现，id 保持原题）。 */
-export interface PendingTransform {
-  question: Question;
-  /** 目标题型：开放→'single'/'multiple'，选择→'essay' */
-  target: 'single' | 'multiple' | 'essay';
-}
-
-export interface CompositionPlan {
-  picked: Question[];
-  /** 配额无法用换题满足时，交给 LLM 做题型变换的槽位（useAI 关闭时为空） */
-  transforms: PendingTransform[];
-}
-
 /**
- * 组卷规划：抽题 + 题型配比（单选/多选为主，开放题 ≈ floor(count*MAX_OPEN_RATIO)）。
- * - 超额/缺额优先与候选池中未抽中的题**原位交换**（从尾部动，保住前部薄弱主题优先题）；
- * - 候选池没有所需题型时：
- *   - allowTransform=true → 记为 PendingTransform，由引擎交给 LLM 变换形态（总数不变）；
- *   - allowTransform=false → 超额部分直接裁掉（缺额不补），保持纯本地行为。
- * - 整个题池只有一种题型时跳过配比（显式单题型训练不受影响）。
+ * 组卷规划：抽题 + 形态配额（开放形态 ≈ floor(count*MAX_OPEN_RATIO)，其余出选择）。
+ * - 先按主题优先级/随机抽出题目；
+ * - 每道题按其可用形态 ∩ def.formats 分配本次形态：默认优先 choice，再由配额把尾部翻转为 open；
+ *   只有 open 形态的题保持 open——超额时优先与候选池未抽中的双形态题原位换题，无题可换则裁掉；
+ * - 整个候选池只有一种可用形态时跳过配比。
  */
 export function planComposition(
   pool: Question[],
   count: number,
   priorities: string[] | undefined,
+  allowedFormats: FormatId[],
   rng: () => number = Math.random,
-  allowTransform = false,
-): CompositionPlan {
+): SessionQuestion[] {
   const rawPicked =
     priorities && priorities.length > 0 ? pickPrioritized(pool, priorities, count, rng) : pickQuestions(pool, count, rng);
-  if (rawPicked.length === 0) return { picked: [], transforms: [] };
-  // 题池本身只有一种题型（或用户显式过滤成单题型）：配比无意义
-  const poolHasChoice = pool.some(isChoice);
-  const poolHasOpen = pool.some(isOpen);
-  if (!(poolHasChoice && poolHasOpen)) return { picked: rawPicked, transforms: [] };
+  if (rawPicked.length === 0) return [];
+
+  // 初始分配：能出选择就出选择
+  const result: SessionQuestion[] = rawPicked.map((question) => ({
+    question,
+    format: availableFormats(question, allowedFormats).includes('choice') ? 'choice' : 'open',
+  }));
+  // 候选池里存在两种可用形态才有配比意义（或存在可翻转的双形态题）
+  const canChoice = pool.some((q) => availableFormats(q, allowedFormats).includes('choice'));
+  const canOpen = pool.some((q) => availableFormats(q, allowedFormats).includes('open'));
+  if (!(canChoice && canOpen)) return result;
 
   const maxOpen = Math.max(0, Math.floor(count * MAX_OPEN_RATIO));
   const pickedIds = new Set(rawPicked.map((q) => q.id));
-  const spareChoices = shuffle(pool.filter((q) => isChoice(q) && !pickedIds.has(q.id)), rng);
-  const spareOpens = shuffle(pool.filter((q) => isOpen(q) && !pickedIds.has(q.id)), rng);
+  let openCount = result.filter((sq) => sq.format === 'open').length;
 
-  const result = [...rawPicked];
-  let openCount = result.filter(isOpen).length;
-  const transforms: PendingTransform[] = [];
-
-  // 超额开放题：尾部向前，先换选择题，无题可换则标记变换（单/多选按占比随机）或裁掉
+  // 超额开放形态：尾部向前，先把双形态题翻回 choice，无题可翻则与池中未抽中的双形态题原位交换，再不行裁掉
   for (let i = result.length - 1; i >= 0 && openCount > maxOpen; i--) {
-    if (!isOpen(result[i])) continue;
-    if (spareChoices.length > 0) {
-      result[i] = spareChoices.pop() as Question;
-    } else if (allowTransform) {
-      transforms.push({ question: result[i], target: rng() < MULTIPLE_TRANSFORM_SHARE ? 'multiple' : 'single' });
+    const sq = result[i];
+    if (sq.format !== 'open') continue;
+    const formats = availableFormats(sq.question, allowedFormats);
+    if (formats.includes('choice')) {
+      sq.format = 'choice';
     } else {
-      result.splice(i, 1);
+      const spare = pool.find((q) => !pickedIds.has(q.id) && availableFormats(q, allowedFormats).includes('choice'));
+      if (spare) {
+        pickedIds.add(spare.id);
+        result[i] = { question: spare, format: 'choice' };
+      } else {
+        result.splice(i, 1);
+      }
     }
     openCount--;
   }
 
-  // 缺额开放题：尾部向前的选择题换成候选池的开放题；无题可换则标记变换
+  // 缺额开放形态：尾部向前的双形态题翻转为 open，凑到配额即止
   for (let i = result.length - 1; i >= 0 && openCount < maxOpen; i--) {
-    if (!isChoice(result[i])) continue;
-    if (spareOpens.length > 0) {
-      result[i] = spareOpens.pop() as Question;
+    const sq = result[i];
+    if (sq.format !== 'choice') continue;
+    if (availableFormats(sq.question, allowedFormats).includes('open')) {
+      sq.format = 'open';
       openCount++;
-    } else if (allowTransform && !transforms.some((t) => t.question === result[i])) {
-      transforms.push({ question: result[i], target: 'essay' });
-      openCount++;
-    } else {
-      break;
     }
   }
 
-  return { picked: result, transforms };
+  return result;
 }

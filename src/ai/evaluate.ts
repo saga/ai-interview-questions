@@ -4,7 +4,7 @@
 
 import { extractJSON } from './pi';
 import { aggregateOverall } from '../domain/evaluation';
-import type { CompleteFn, EvaluationResult, OpenQuestion, ScoringRubric } from '../types';
+import type { CompleteFn, EvaluationResult, OpenFormat, Question, ScoringRubric } from '../types';
 import { EVAL_DIMENSIONS } from '../types';
 
 const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;
@@ -26,13 +26,13 @@ const DEFAULT_RUBRIC: ScoringRubric = {
 };
 
 /** 构建发给 LLM 的用户消息（题目 + 参考答案 + 回答 + 评分量表）。纯函数，便于测试。 */
-export function buildEvalUser(q: OpenQuestion, answer: string, opts: EvalOptions = {}): string {
+export function buildEvalUser(q: Question, open: OpenFormat, answer: string, opts: EvalOptions = {}): string {
   const noAnswer = !answer || !answer.trim();
-  return `题目（类型：${q.type}${q.language ? '，语言：' + q.language : ''}）：
+  return `题目（开放题${open.language ? '，语言：' + open.language : ''}）：
 ${q.question}
 ${q.reference?.concept ? '\n概念提示：\n' + q.reference.concept + '\n' : ''}
 参考答案：
-${q.referenceAnswer}
+${open.referenceAnswer}
 
 候选人回答：
 ${noAnswer ? '（未作答）' : answer}
@@ -60,7 +60,7 @@ ${opts.extraCriteria ? '额外评估要求：' + opts.extraCriteria : ''}
  * 从 LLM 文本输出解析出结构化评估结果。纯函数，便于测试。
  * 综合分不采纳 LLM 输出——固定由 domain/aggregateOverall 计算（Domain 拥有分数）。
  */
-export function parseEvaluation(raw: string, q: OpenQuestion, rubric: ScoringRubric): EvaluationResult {
+export function parseEvaluation(raw: string, open: OpenFormat, rubric: ScoringRubric): EvaluationResult {
   const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
   const zero = EVAL_DIMENSIONS.reduce(
     (acc, d) => ({ ...acc, [d]: 0 }),
@@ -73,7 +73,7 @@ export function parseEvaluation(raw: string, q: OpenQuestion, rubric: ScoringRub
       strengths: [],
       gaps: [],
       feedback: '未作答。',
-      referenceAnswer: q.referenceAnswer,
+      referenceAnswer: open.referenceAnswer,
     };
   }
   const out = extractJSON<{
@@ -99,13 +99,14 @@ export function parseEvaluation(raw: string, q: OpenQuestion, rubric: ScoringRub
     strengths: Array.isArray(out.strengths) ? out.strengths : [],
     gaps: Array.isArray(out.gaps) ? out.gaps : [],
     feedback: out.feedback ?? '',
-    referenceAnswer: q.referenceAnswer,
+    referenceAnswer: open.referenceAnswer,
   };
 }
 
 /** 一次性评估开放/编程题（无流式、无状态；complete 由 provider 注入，对话式追问属 Mock Interview 未来能力）。 */
 export async function evaluateOpenAnswer(
-  q: OpenQuestion,
+  q: Question,
+  open: OpenFormat,
   userAnswer: string,
   complete: CompleteFn,
   rubric: ScoringRubric,
@@ -113,11 +114,11 @@ export async function evaluateOpenAnswer(
   requiredPoints?: string[],
 ): Promise<EvaluationResult> {
   if (!userAnswer || !userAnswer.trim()) {
-    return parseEvaluation('', q, rubric);
+    return parseEvaluation('', open, rubric);
   }
   const raw = await complete(
     EVAL_SYSTEM,
-    buildEvalUser(q, userAnswer, { rubric, extraCriteria, requiredPoints }),
+    buildEvalUser(q, open, userAnswer, { rubric, extraCriteria, requiredPoints }),
   );
-  return parseEvaluation(raw, q, rubric);
+  return parseEvaluation(raw, open, rubric);
 }

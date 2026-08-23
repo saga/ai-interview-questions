@@ -1,11 +1,29 @@
 // 全局类型定义。domain / ai / storage 各层都从这里取类型，组件也只依赖此文件。
 
-export type QuestionType = 'single' | 'multiple' | 'essay' | 'coding';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type ProviderId = 'chrome' | 'local' | 'deepseek' | 'openrouter' | 'google' | 'cloudflare-workers-ai';
 
-/** 题库是 source of truth；LLM 只是增强层，不改变这些字段的权威语义。 */
-interface QuestionBase {
+/** 呈现形态：Question 是知识对象，SessionQuestion 决定本次以哪种形态提问（ADR-027）。 */
+export type FormatId = 'choice' | 'open';
+
+/** 选择形态的作答与判分数据。answer 指向 options 下标；single 长度 1，multiple ≥1。 */
+export interface ChoiceFormat {
+  type: 'single' | 'multiple';
+  options: string[];
+  answer: number[];
+}
+
+/** 开放/编程形态：参考答案 + 语言（仅展示用）。 */
+export interface OpenFormat {
+  referenceAnswer: string;
+  language?: string;
+}
+
+/**
+ * 题库知识对象：内容（题干）+ 元数据 + 可用形态集合。
+ * 同一道题可同时携带 choice / open 两种形态，会话按需选用，id 保持稳定（ADR-027）。
+ */
+export interface Question {
   id: string;
   category: string; // slug，如 'machine-learning' / 'agentic-ai'，显示层用 categoryLabel 映射
   topic: string; // 细分主题，如 'regularization' / 'tool-calling'
@@ -15,13 +33,6 @@ interface QuestionBase {
   explanation: string;
   /** 概念说明，供变体与复盘使用（开放题尤其有用） */
   reference?: { concept?: string };
-  /** 该题是否由 LLM 变体生成（仅展示用） */
-  aiGenerated?: boolean;
-  /**
-   * 题型变换溯源（ADR-024）：该题由 LLM 从其他题型变换而来时记录原题型。
-   * id 保持原题不变，此字段表达"形态换过"，供会话复盘与质量审核。
-   */
-  transformedFrom?: QuestionType;
   /**
    * 该题专属评分量表（可选）。
    * - required：必须覆盖的要点（命中情况计入 completeness）
@@ -31,31 +42,32 @@ interface QuestionBase {
     required?: string[];
     dimensions?: Partial<Record<EvaluationDimension, number>>;
   };
-}
-
-export interface ChoiceQuestion extends QuestionBase {
-  type: 'single' | 'multiple';
-  options: string[];
-  /** 正确选项索引数组（指向 options 顺序）；single 长度 1，multiple >=1 */
-  answer: number[];
-}
-
-export interface OpenQuestion extends QuestionBase {
-  type: 'essay' | 'coding';
-  referenceAnswer: string;
-  /** 编程题语言，如 python / sql，仅展示用 */
-  language?: string;
-}
-
-export type Question = ChoiceQuestion | OpenQuestion;
-
-export interface QuestionBank {
-  categories: string[]; // slug 列表
-  questions: Question[];
+  /** 该题是否由 LLM 变体生成（仅展示用） */
+  aiGenerated?: boolean;
+  /** 该题可用的呈现形态；至少一种。组卷按可用形态分配，不做运行时变换。 */
+  formats: {
+    choice?: ChoiceFormat;
+    open?: OpenFormat;
+  };
 }
 
 /** 答题状态：选择题存选中的索引数组，开放题存文本 */
 export type AnswerValue = number[] | string;
+
+/**
+ * 会话中的题目实例：question 是题库对象的会话内快照（LLM 变体只改副本，不回写题库），
+ * format 决定这次怎么问——同一道题本次出选择、下次出开放，题库完全不动。
+ */
+export interface SessionQuestion {
+  question: Question;
+  format: FormatId;
+}
+
+/** 题库：source of truth；LLM 只是增强层。 */
+export interface QuestionBank {
+  categories: string[]; // slug 列表
+  questions: Question[];
+}
 
 // ───────────────────────────────────────────────────────────
 // Interview Engine：声明式定义 + 会话 + 多维评分
@@ -110,7 +122,8 @@ export interface InterviewDefinition {
   topic?: string;
   categories: string[]; // 类别过滤（slug），空数组表示全部
   difficulties: Difficulty[]; // 难度过滤，空数组表示不限
-  questionTypes: QuestionType[]; // 允许的题目类型
+  /** 允许的呈现形态；空数组表示不限（按题目可用形态分配） */
+  formats: FormatId[];
   count: number;
   useAI: boolean; // 是否启用 LLM 变体出题与开放题评分
   /** 自适应模式：逐题作答，下一题由上一题表现 + 概念图迁移策略决定（见 domain/adaptive） */
@@ -124,10 +137,10 @@ export interface InterviewDefinition {
   mode?: 'quick' | 'custom' | 'coach' | 'interview';
 }
 
-/** 由 Definition 构建出的具体会话 */
+/** 由 Definition 构建出的具体会话：questions 是带形态标记的会话实例（新在前不加，顺序即出题序） */
 export interface InterviewSession {
   definition: InterviewDefinition;
-  questions: Question[];
+  questions: SessionQuestion[];
   startedAt: number;
 }
 
@@ -158,10 +171,10 @@ export interface AIConfig {
 export interface LLMProvider {
   readonly name: string;
   generateVariant(question: Question): Promise<GeneratedVariant>;
-  /** 题型变换：同一题在 选择题⇄开放题 间换形态（id 不变，答案 key 由代码从原题权威字段合成） */
-  transformQuestion(question: Question, target: QuestionType): Promise<Question>;
+  /** 开放题评估：open 为该题的开放形态数据（参考答案/语言） */
   evaluateOpenAnswer(
-    question: OpenQuestion,
+    question: Question,
+    open: OpenFormat,
     userAnswer: string,
     rubric: ScoringRubric,
     extraCriteria?: string,
@@ -174,22 +187,6 @@ export interface LLMProvider {
  * 不感知具体底层（ADR-021）。
  */
 export type CompleteFn = (system: string, user: string) => Promise<string>;
-
-/** 题型变换审计记录（持久化于 localStorage，供质量审核与成功率统计；ADR-024）。 */
-export interface TransformAuditRecord {
-  questionId: string;
-  topic: string;
-  /** 原题型 → 请求目标 → 实际落地题型（多选降级单选时 target ≠ result） */
-  from: QuestionType;
-  target: QuestionType;
-  result: QuestionType;
-  /** 执行变换的引擎名（FallbackProvider 的链首名） */
-  provider: string;
-  ok: boolean;
-  /** ok=false 时的失败原因（错误消息摘要） */
-  error?: string;
-  at: number;
-}
 
 // ───────────────────────────────────────────────────────────
 // Learner Memory（结构化学习信号，非对话记录）
@@ -225,7 +222,8 @@ export interface QuestionResult {
   questionId: string;
   category: string;
   topic: string;
-  type: QuestionType;
+  /** 本次作答采用的呈现形态 */
+  format: FormatId;
   score: number; // 0-100
   /** 选择题是否答对（开放题无此字段） */
   correct?: boolean;

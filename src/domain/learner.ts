@@ -6,13 +6,12 @@ import type {
   EvaluationResult,
   InterviewDefinition,
   LearnerProfile,
-  Question,
   QuestionResult,
   ScoringRubric,
+  SessionQuestion,
   SessionRecord,
   Trend,
 } from '../types';
-import { isChoice } from './quiz';
 import { DEFAULT_RUBRIC } from './evaluation';
 import {
   expandWithPrerequisites,
@@ -121,19 +120,19 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
 
 /** 由一次已评分的训练会话构造 SessionRecord（纯函数；答案只影响判分结果，不在此读取）。 */
 export function sessionFromQuiz(
-  session: { questions: Question[]; startedAt: number; definition?: { title?: string; mode?: SessionRecord['mode'] } },
+  session: { questions: SessionQuestion[]; startedAt: number; definition?: { title?: string; mode?: SessionRecord['mode'] } },
   grades: Record<string, EvaluationResult | null>,
   durationSec?: number,
 ): SessionRecord {
-  const results: QuestionResult[] = session.questions.map((q) => {
+  const results: QuestionResult[] = session.questions.map(({ question: q, format }) => {
     const g = grades[q.id];
     return {
       questionId: q.id,
       category: q.category,
       topic: q.topic,
-      type: q.type,
+      format,
       score: g?.overall ?? 0,
-      correct: isChoice(q) ? (g?.dimensions.correctness ?? 0) === 100 : undefined,
+      correct: format === 'choice' ? (g?.dimensions.correctness ?? 0) === 100 : undefined,
       gaps: g?.gaps ?? [],
     };
   });
@@ -276,7 +275,7 @@ export function buildCoachDefinition(
     count?: number;
     timeLimitSec?: number;
     useAI?: boolean;
-    questionTypes?: InterviewDefinition['questionTypes'];
+    formats?: InterviewDefinition['formats'];
     mode?: SessionRecord['mode'];
     rubric?: ScoringRubric;
     adaptive?: boolean;
@@ -286,7 +285,7 @@ export function buildCoachDefinition(
     title: opts.title ?? '推荐训练',
     categories: [],
     difficulties: [],
-    questionTypes: opts.questionTypes ?? ['single', 'multiple', 'essay', 'coding'],
+    formats: opts.formats ?? ['choice', 'open'],
     count: opts.count ?? 10,
     useAI: opts.useAI ?? true,
     scoringRubric: opts.rubric ?? DEFAULT_RUBRIC,

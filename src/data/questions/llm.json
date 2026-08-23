@@ -7,19 +7,26 @@
       "rlhf",
       "alignment"
     ],
-    "type": "single",
     "difficulty": "medium",
     "question": "RLHF（基于人类反馈的强化学习）在大模型对齐中的主要目的是？",
-    "options": [
-      "降低模型参数量",
-      "让模型输出更符合人类偏好与指令",
-      "替代预训练阶段",
-      "提高模型的推理速度"
-    ],
-    "answer": [
-      1
-    ],
-    "explanation": "RLHF 通过人类偏好反馈训练奖励模型并微调，使模型行为更符合人类期望与指令，是对齐阶段而非替代预训练。"
+    "explanation": "RLHF 通过人类偏好反馈训练奖励模型并微调，使模型行为更符合人类期望与指令，是对齐阶段而非替代预训练。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "降低模型参数量",
+          "让模型输出更符合人类偏好与指令",
+          "替代预训练阶段",
+          "提高模型的推理速度"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：让模型输出更符合人类偏好与指令。\n\n解析：RLHF 通过人类偏好反馈训练奖励模型并微调，使模型行为更符合人类期望与指令，是对齐阶段而非替代预训练。"
+      }
+    }
   },
   {
     "id": "llm-02",
@@ -30,21 +37,28 @@
       "rag",
       "safety"
     ],
-    "type": "multiple",
     "difficulty": "hard",
     "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
-    "options": [
-      "指模型生成看似合理但事实错误或无依据的内容",
-      "可通过检索增强生成（RAG）在一定程度上缓解",
-      "只要模型足够大就一定能完全消除",
-      "与训练数据质量和解码策略都相关"
-    ],
-    "answer": [
-      0,
-      1,
-      3
-    ],
-    "explanation": "幻觉是生成不实内容，RAG 引入外部知识可缓解，且与数据质量和采样策略相关；模型变大并不能完全消除幻觉。"
+    "explanation": "幻觉是生成不实内容，RAG 引入外部知识可缓解，且与数据质量和采样策略相关；模型变大并不能完全消除幻觉。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "指模型生成看似合理但事实错误或无依据的内容",
+          "可通过检索增强生成（RAG）在一定程度上缓解",
+          "只要模型足够大就一定能完全消除",
+          "与训练数据质量和解码策略都相关"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：指模型生成看似合理但事实错误或无依据的内容；可通过检索增强生成（RAG）在一定程度上缓解；与训练数据质量和解码策略都相关。\n\n解析：幻觉是生成不实内容，RAG 引入外部知识可缓解，且与数据质量和采样策略相关；模型变大并不能完全消除幻觉。"
+      }
+    }
   },
   {
     "id": "llm-03",
@@ -55,19 +69,26 @@
       "decoding",
       "inference"
     ],
-    "type": "single",
     "difficulty": "hard",
     "question": "在 LLM 推理中，温度（temperature）参数主要影响？",
-    "options": [
-      "模型训练速度",
-      "输出分布的随机性/多样性",
-      "上下文窗口长度",
-      "词表大小"
-    ],
-    "answer": [
-      1
-    ],
-    "explanation": "temperature 缩放 softmax 前的 logits，值越高输出越随机多样，值越低越确定集中。"
+    "explanation": "temperature 缩放 softmax 前的 logits，值越高输出越随机多样，值越低越确定集中。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "模型训练速度",
+          "输出分布的随机性/多样性",
+          "上下文窗口长度",
+          "词表大小"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：输出分布的随机性/多样性。\n\n解析：temperature 缩放 softmax 前的 logits，值越高输出越随机多样，值越低越确定集中。"
+      }
+    }
   },
   {
     "id": "llm-04",
@@ -78,10 +99,8 @@
       "retrieval",
       "hallucination"
     ],
-    "type": "essay",
     "difficulty": "hard",
     "question": "什么是检索增强生成（RAG）？请描述其基本流程及相比单纯依赖模型参数的优势。",
-    "referenceAnswer": "RAG 在生成前先从外部知识库（如向量数据库）检索与问题相关的文档片段，将其作为上下文拼接到提示中，再由 LLM 生成答案。基本流程：问题向量化 → 向量检索 top-k 文档 → 拼接提示 → LLM 生成。优势在于：答案可溯源、能利用最新/私有知识、减少幻觉、无需为每个领域重训模型。",
     "explanation": "考察检索-拼接-生成流程，以及可溯源、实时性、降幻觉、低成本等优势。",
     "reference": {
       "concept": "RAG 在生成前检索外部知识作为上下文，提升可溯源性与时效性、降低幻觉。"
@@ -97,6 +116,23 @@
         "architecture": 0.15,
         "communication": 0.2
       }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "RAG 在生成前先从外部知识库（如向量数据库）检索与问题相关的文档片段，将其作为上下文拼接到提示中，再由 LLM 生成答案。基本流程：问题向量化 → 向量检索 top-k 文档 → 拼接提示 → LLM 生成。优势在于：答案可溯源、能利用最新/私有知识、减少幻觉、无需为每个领域重训模型。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "RAG 通过梯度更新把外部文档写入模型权重，使模型在推理时自动记住最新知识而无需检索",
+          "RAG 用微调过的领域模型直接作答，检索结果只用于训练阶段而不进入推理时的提示",
+          "RAG 把整个知识库压缩成一条固定摘要放入系统提示，检索环节只做关键词精确匹配",
+          "RAG 先将问题向量化并从外部知识库检索 top-k 相关片段，拼接进提示后由 LLM 生成，答案可溯源且能利用最新知识"
+        ],
+        "answer": [
+          3
+        ]
+      }
     }
   },
   {
@@ -108,21 +144,28 @@
       "inference",
       "attention"
     ],
-    "type": "single",
     "difficulty": "hard",
     "question": "在 LLM 自回归推理中，KV 缓存（KV cache）的核心作用是？",
-    "options": [
-      "缓存模型权重以减少显存占用",
-      "缓存历史 token 的 Key/Value 张量，使每步只需计算新 token 的 Q，把整体复杂度从 O(n²) 降为每步 O(n)",
-      "压缩上下文窗口以支持更长输入",
-      "替代 softmax 加速注意力计算"
-    ],
-    "answer": [
-      1
-    ],
     "explanation": "自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。",
     "reference": {
       "concept": "KV cache 复用历史 K/V 张量，解码从二次降为线性，但本身是显存瓶颈。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "缓存模型权重以减少显存占用",
+          "缓存历史 token 的 Key/Value 张量，使每步只需计算新 token 的 Q，把整体复杂度从 O(n²) 降为每步 O(n)",
+          "压缩上下文窗口以支持更长输入",
+          "替代 softmax 加速注意力计算"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：缓存历史 token 的 Key/Value 张量，使每步只需计算新 token 的 Q，把整体复杂度从 O(n²) 降为每步 O(n)。\n\n解析：自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。"
+      }
     }
   },
   {
@@ -134,21 +177,28 @@
       "mixture-of-experts",
       "serving"
     ],
-    "type": "single",
     "difficulty": "hard",
     "question": "某 MoE 模型参数量为 671B 总参 / 37B 激活参数（如 DeepSeek-V3）。这两个数字分别决定了什么？",
-    "options": [
-      "总参决定显存占用，激活参数决定每 token 计算量与延迟",
-      "总参决定延迟，激活参数决定显存占用",
-      "二者都只影响训练速度，与推理无关",
-      "总参与激活参数都必须常驻 GPU 才能推理"
-    ],
-    "answer": [
-      0
-    ],
     "explanation": "MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。",
     "reference": {
       "concept": "MoE：总参决定显存，激活参数决定计算/延迟；省算力不省显存。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "总参决定显存占用，激活参数决定每 token 计算量与延迟",
+          "总参决定延迟，激活参数决定显存占用",
+          "二者都只影响训练速度，与推理无关",
+          "总参与激活参数都必须常驻 GPU 才能推理"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：总参决定显存占用，激活参数决定每 token 计算量与延迟。\n\n解析：MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。"
+      }
     }
   },
   {
@@ -161,24 +211,31 @@
       "speculative-decoding",
       "gqa"
     ],
-    "type": "multiple",
     "difficulty": "hard",
     "question": "LLM 解码阶段通常是访存受限（memory-bandwidth-bound）。下列哪些手段能有效降低单 token 延迟？（多选）",
-    "options": [
-      "对权重做 INT4/FP8 量化，减少每步需读取的字节数",
-      "用 GQA/MQA 减少 KV 头数，缩小 KV cache",
-      "增大批量（batch），把权重读取摊到更多请求上",
-      "使用投机解码（speculative decoding），一次前向验证多个草稿 token"
-    ],
-    "answer": [
-      0,
-      1,
-      2,
-      3
-    ],
     "explanation": "解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。",
     "reference": {
       "concept": "解码是带宽瓶颈：量化、GQA、大批量、投机解码都通过减少/摊薄字节读取提速。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对权重做 INT4/FP8 量化，减少每步需读取的字节数",
+          "用 GQA/MQA 减少 KV 头数，缩小 KV cache",
+          "增大批量（batch），把权重读取摊到更多请求上",
+          "使用投机解码（speculative decoding），一次前向验证多个草稿 token"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：对权重做 INT4/FP8 量化，减少每步需读取的字节数；用 GQA/MQA 减少 KV 头数，缩小 KV cache；增大批量（batch），把权重读取摊到更多请求上；使用投机解码（speculative decoding），一次前向验证多个草稿 token。\n\n解析：解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。"
+      }
     }
   },
   {
@@ -191,21 +248,28 @@
       "fine-tuning",
       "peft"
     ],
-    "type": "single",
     "difficulty": "medium",
     "question": "LoRA 高效微调的核心思想是？",
-    "options": [
-      "冻结基座权重，只训练注入的低秩分解矩阵 ΔW = B·A（r ≪ d），大幅减少可训练参数",
-      "对所有权重做 4-bit 量化后全量训练",
-      "把训练数据压缩成提示词前缀拼进上下文",
-      "用强化学习替代监督微调更新全部参数"
-    ],
-    "answer": [
-      0
-    ],
     "explanation": "LoRA 冻结预训练权重 W₀，为每个目标矩阵学习低秩旁路 A(d×r)、B(r×k)，可训练参数减少百倍以上，单卡即可微调 7B+ 模型，适配器小且可热插拔。QLoRA 在此基础上再把冻结的基座权重量化为 4-bit。其有效性的假设是微调所需的权重更新具有低内在秩。",
     "reference": {
       "concept": "LoRA = 冻结基座 + 低秩旁路 ΔW=BA，可训练参数缩减 100~1000 倍。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "冻结基座权重，只训练注入的低秩分解矩阵 ΔW = B·A（r ≪ d），大幅减少可训练参数",
+          "对所有权重做 4-bit 量化后全量训练",
+          "把训练数据压缩成提示词前缀拼进上下文",
+          "用强化学习替代监督微调更新全部参数"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：冻结基座权重，只训练注入的低秩分解矩阵 ΔW = B·A（r ≪ d），大幅减少可训练参数。\n\n解析：LoRA 冻结预训练权重 W₀，为每个目标矩阵学习低秩旁路 A(d×r)、B(r×k)，可训练参数减少百倍以上，单卡即可微调 7B+ 模型，适配器小且可热插拔。QLoRA 在此基础上再把冻结的基座权重量化为 4-bit。其有效性的假设是微调所需的权重更新具有低内在秩。"
+      }
     }
   },
   {
@@ -218,10 +282,8 @@
       "prompting",
       "tradeoff"
     ],
-    "type": "essay",
     "difficulty": "hard",
     "question": "面对一个企业知识问答需求（知识频繁更新、需要溯源、数据涉密不能出内网），你会选择提示工程、RAG 还是微调？请说明决策依据与组合方案。",
-    "referenceAnswer": "首选 RAG + 提示工程：知识频繁更新适合外挂检索而非改参数（微调无法实时更新且易遗忘）；答案需溯源，RAG 可附引用；数据不出内网可用本地部署的 embedding 与 LLM。微调适用于改变行为/风格/格式或领域语言建模，而不是注入易变事实——事实性内容放参数里既难更新又难审计。组合方案：基座模型（必要时轻量 LoRA 微调对齐领域术语与输出格式）+ RAG 注入动态知识 + 提示工程约束引用与拒答（检索不到相关内容时明确说不知道）。还需配套评估：faithfulness/groundedness 指标与引用校验。",
     "explanation": "考察三者边界：RAG 管“知识”，微调管“行为”，提示工程管“约束”；以及可溯源、时效性、私有化部署等工程权衡。",
     "reference": {
       "concept": "RAG 解决知识时效与溯源，微调改变行为风格，提示工程做约束；三者常组合。"
@@ -238,6 +300,23 @@
         "architecture": 0.25,
         "communication": 0.15
       }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "首选 RAG + 提示工程：知识频繁更新适合外挂检索而非改参数（微调无法实时更新且易遗忘）；答案需溯源，RAG 可附引用；数据不出内网可用本地部署的 embedding 与 LLM。微调适用于改变行为/风格/格式或领域语言建模，而不是注入易变事实——事实性内容放参数里既难更新又难审计。组合方案：基座模型（必要时轻量 LoRA 微调对齐领域术语与输出格式）+ RAG 注入动态知识 + 提示工程约束引用与拒答（检索不到相关内容时明确说不知道）。还需配套评估：faithfulness/groundedness 指标与引用校验。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "应对基座做全量微调把企业知识固化进参数——事实更新只需重新训练即可即时生效",
+          "应首选 RAG 配合提示工程：知识随检索库更新、答案可附引用溯源，涉密数据不出内网可用本地化部署满足",
+          "三种方案中微调最适合注入频繁变化的事实知识，因为它比外挂检索更易审计与更新",
+          "应只用提示工程不接任何外部知识，让模型凭参数内记忆作答以保证零幻觉"
+        ],
+        "answer": [
+          1
+        ]
+      }
     }
   },
   {
@@ -250,23 +329,30 @@
       "chunking",
       "evaluation"
     ],
-    "type": "multiple",
     "difficulty": "hard",
     "question": "要把一个 naive RAG 升级为生产级检索管线，以下哪些做法是合理且常见的？（多选）",
-    "options": [
-      "混合检索：BM25 关键词检索与稠密向量检索并用，兼顾精确匹配与语义匹配",
-      "引入重排序（cross-encoder reranker）对初筛结果精细排序",
-      "根据文档结构设计分块策略，平衡块大小的召回精度与语义完整性",
-      "向量检索能完全消除幻觉，无需再做忠实度校验"
-    ],
-    "answer": [
-      0,
-      1,
-      2
-    ],
     "explanation": "生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。",
     "reference": {
       "concept": "生产级 RAG：混合检索 + 重排 + 合理分块 + 忠实度评估，不是简单“塞进向量库”。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "混合检索：BM25 关键词检索与稠密向量检索并用，兼顾精确匹配与语义匹配",
+          "引入重排序（cross-encoder reranker）对初筛结果精细排序",
+          "根据文档结构设计分块策略，平衡块大小的召回精度与语义完整性",
+          "向量检索能完全消除幻觉，无需再做忠实度校验"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：混合检索：BM25 关键词检索与稠密向量检索并用，兼顾精确匹配与语义匹配；引入重排序（cross-encoder reranker）对初筛结果精细排序；根据文档结构设计分块策略，平衡块大小的召回精度与语义完整性。\n\n解析：生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。"
+      }
     }
   },
   {
@@ -278,11 +364,8 @@
       "scaled-dot-product",
       "attention"
     ],
-    "type": "coding",
     "difficulty": "hard",
-    "language": "python",
     "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
-    "referenceAnswer": "import numpy as np\ndef attention(Q, K, V):\n    d_k = Q.shape[-1]\n    scores = Q @ K.T / np.sqrt(d_k)   # 缩放点积\n    scores = scores - scores.max(axis=-1, keepdims=True)  # 数值稳定\n    w = np.exp(scores)\n    w = w / w.sum(axis=-1, keepdims=True)\n    return w @ V\n要点：除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和；softmax 前 max 平移保证数值稳定。",
     "explanation": "面试高频手写题：考察注意力公式 QKᵀ/√d → softmax → ×V，以及数值稳定处理。",
     "reference": {
       "concept": "scaled dot-product attention：QKᵀ/√d_k 经 softmax 后对 V 加权求和。"
@@ -298,6 +381,24 @@
         "completeness": 0.2,
         "architecture": 0.25,
         "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "import numpy as np\ndef attention(Q, K, V):\n    d_k = Q.shape[-1]\n    scores = Q @ K.T / np.sqrt(d_k)   # 缩放点积\n    scores = scores - scores.max(axis=-1, keepdims=True)  # 数值稳定\n    w = np.exp(scores)\n    w = w / w.sum(axis=-1, keepdims=True)\n    return w @ V\n要点：除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和；softmax 前 max 平移保证数值稳定。",
+        "language": "python"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "实现时应把 QKᵀ 除以序列长度 n 而非 sqrt(d_k)，softmax 可直接对 exp 结果归一化、无需减最大值",
+          "实现时应先对 V 做指数归一化，再把 softmax 权重施加到 QKᵀ 上，缩放因子取 log(d_k)",
+          "实现时应计算 QKᵀ 并除以 sqrt(d_k) 缩放，softmax 前减去每行最大值保证数值稳定，最后用权重矩阵乘 V 输出",
+          "实现时应省略缩放步骤直接 softmax(QKᵀ)，并用减去最小值的方式保证数值稳定"
+        ],
+        "answer": [
+          2
+        ]
       }
     }
   }

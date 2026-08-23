@@ -13,8 +13,8 @@
 ```
 domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单测覆盖）
   categories.ts  类目 slug → 中文标签
-  quiz.ts        抽题（Fisher–Yates）、题型判定、pickPrioritized（薄弱主题优先）
-                 / planComposition（组卷配比 7:3 + 题型变换规划，ADR-024）
+  quiz.ts        抽题（Fisher–Yates）、availableFormats、pickPrioritized（薄弱主题优先）
+                 / planComposition（抽题 + 形态配额：开放 ≈ floor(count*0.3)，ADR-027）
   evaluation.ts  评分聚合（rubric 权重）、选择题确定性判分、DEFAULT_RUBRIC
   variant.ts     变体校验（validateVariant）+ 落地（applyVariant）
   learner.ts     Learner Memory：updateLearner / sessionFromQuiz / recommendWeakTopics
@@ -27,16 +27,13 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
    chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
    variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
-   transform.ts      题型变换（选择 ⇄ 开放，ADR-024：LLM 只出题干/干扰项，
-                     答案 key 由代码从原题权威字段合成；id 保持原题、日志溯源）
-   evaluate.ts       开放题评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
+   evaluate.ts       开放形态评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
                      + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
 
 storage/       本地持久化
   settings.ts    LLM 配置（localStorage）
   learner.ts     LearnerProfile / SessionRecord（localStorage v1 key）
-  transformAudit.ts 题型变换审计日志（append-only，上限 200 条，ADR-024）
 
 application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
@@ -59,9 +56,9 @@ components/
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
-                       slug 类目 + topic/tags/reference + 可选 rubric；237 题，
-                       ai-fundamentals（基础原理）→ agentic-ai / ai-engineering（工程判断）按
-                       Scenario/Debugging/Trade-off 等能力维度组织）
+                       slug 类目 + topic/tags + 可选 rubric；237 题全部同时携带
+                       choice 与 open 双形态（ADR-027），ai-fundamentals（基础原理）→
+                       agentic-ai / ai-engineering（工程判断）按能力维度组织）
 data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不建索引/数据库层，
                        规模需要时再加动态 import + 构建期 question-index）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
@@ -128,21 +125,28 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ## Interview Engine
 
 ```
-InterviewDefinition  (声明式：categories / difficulties / questionTypes
+数据模型（ADR-027）：Question 是**知识对象**（题干/解析/formats 不变），
+SessionQuestion 是**会话实例**（同一道题本次以哪种形态呈现）。组卷 = 抽题 + 分配形态。
+
+```
+InterviewDefinition  (声明式：categories / difficulties / formats('choice'|'open')
                        / count / useAI / scoringRubric / timeLimitSec / evaluationCriteria)
         │
         ↓  interviewEngine.buildSession()
-   过滤题池 → planComposition（抽题 + 题型配比 7:3，缺题型时 LLM 变换，ADR-024）
-   → applyTransforms（原位替换、失败回退）→ finalizeQuestion（LLM 变体，失败回退原题）
-   InterviewSession  (抽中的题目 + 用户答案 + 评分)
+   过滤题池（具备任一允许形态即入池）
+   → planComposition（抽题 + 形态配额：开放 ≈ floor(count*0.3)，超额与池内未抽中
+     的可选择题原位换题，无题可换则裁剪；整池单形态时跳过配比）
+   → finalizeQuestion（LLM 变体快照，失败回退原题）
+   InterviewSession.questions: SessionQuestion[] (question 快照 + format + 用户答案 + 评分)
         │
         ↓  evaluateAnswer() / evaluateSession()
    EvaluationResult  (overall 0-100 + 四维 dimensions + strengths/gaps/feedback)
 ```
 
-- 选择题：`gradeChoice` 确定性判分（选中集合 == 正确答案集合）。
-- 开放/编程题：走 `LLMProvider.evaluateOpenAnswer`，`useAI=false` 或无有效 provider 时返回 null
-  （UI 提示未评分）——useAI 开关同时门控变体出题与开放题评分。
+- 选择形态：`gradeChoice(cf, selected)` 确定性判分（选中集合 == 正确答案集合，顺序无关）。
+- 开放形态：走 `LLMProvider.evaluateOpenAnswer(question, open, answer)`，
+  `useAI=false` 或无有效 provider 时返回 null（UI 提示未评分）——useAI 开关同时门控变体出题与开放形态评分。
+- 自适应模式无组卷配额：双形态可用时按 p(open)=0.3 加权随机分配，体验与普通会话的 7:3 一致。
 - 题目级 `rubric.required` 会注入评分提示、`rubric.dimensions` 覆盖全局权重
   （合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
 
@@ -203,39 +207,23 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 
 ## LLM 变体安全（关键）
 
-安全模型（ADR-019 / ADR-024）：**LLM 只允许重写题干与解析（及题型变换时的干扰项），
-答案数据结构上就不在它的输出契约里**——不靠校验兜底，靠收窄权限杜绝"选项重排导致
-answer 索引错位"这类事故：
+安全模型（ADR-019）：**LLM 只允许重写题干与解析，答案数据结构上就不在它的输出契约里**——
+不靠校验兜底，靠收窄权限杜绝"选项重排导致 answer 索引错位"这类事故：
 
 ```
 Canonical Question ──→ LLM（只输出 question / explanation）
         │                     ↓ validateVariant（唯一硬校验：题干非空）
         │                通过 → applyVariant：只替换题干/解析，
-        │                      options、answer、referenceAnswer 原样保留
-        └──────────────── 失败 → 保留原题
-
-题型变换（ADR-024，同一 id 换形态；分工 = 内容交 LLM、结构交代码）：
-  选择→开放：prompt 只含题干与主题——options/answer 不进 prompt；
-             referenceAnswer = 代码合成（概念 + 解析 + 正确选项原文）
-  开放→选择：prompt 含题目+参考答案；LLM 出完整选择题
-    （题干/全部选项/正确项序号）；代码校验后洗牌并按文本匹配重算
-    answer 索引——索引错位结构上不可能；输出不合法回退原题；
-    多选只得到 1 个正确项时降级单选
-  open→coding 刻意不支持（需可执行参考答案，未来单独设计）
-```
+        │                      formats（options/answer/referenceAnswer）原样保留
+        └──────────────── 失败 → 保留原题（会话持有的是快照副本，题库对象永不被写）
 ```
 
 要点：
-- 常规变体中选择题的 options/answer 永远来自原题——LLM 不接触选项顺序。
-- 题型变换（开放→选择）中 LLM 决定**内容**（哪些说法正确、干扰项怎么写），
-  代码决定**结构**（洗牌、answer 索引按文本匹配重算、格式校验、失败回退原题）。
-  历史上"LLM 重排选项导致 answer 索引错位"的事故类已被结构设计消灭。
-- 变换后题目保留原题 id（learner memory evidence 对齐），映射只在日志记录、UI 不展示；
-  结果显式构造目标形态字段，不残留来源题型专属字段。
-- **变换可审计（ADR-024）**：题目自带 `transformedFrom` 字段（形态来源，随会话流转）；
-  每次尝试成败都写入 `storage/transformAudit.ts` 审计日志
-  （localStorage key `ai-interview-trainer.transform-audit`：questionId / from / target /
-  result / provider / ok / error / at，上限 200 条）——供事后审核 LLM 变换质量与成功率统计。
+- 变体中选择题的 options/answer 与开放题的 referenceAnswer 永远来自原题——LLM 不接触任何答案数据。
+- ADR-027 起「选择 ⇄ 开放」不再是运行时 LLM 变换：两种形态的内容都在题库静态维护
+  （一次性迁移补齐，见 CHANGELOG 2026-08-23），运行期只做确定性分配，无额外 LLM 成本与审计负担。
+- 原 ADR-024 的 transform 管线（ai/transform.ts、transformAudit 审计日志、
+  transformedFrom 字段）已整体删除。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 

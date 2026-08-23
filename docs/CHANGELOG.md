@@ -2,6 +2,25 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 题目与呈现形态分离：双形态进题库，删除运行时题型变换（ADR-027）
+
+- **数据模型重构**：`Question` 收敛为单一知识对象 + `formats: {choice?, open?}`；
+  新增 `SessionQuestion = { question, format }` 会话实例；`QuestionType` 四值枚举
+  （single/multiple/essay/coding）删除，改为 `FormatId = 'choice' | 'open'`；
+  `InterviewDefinition.questionTypes` → `formats`。
+- **题库迁移**：237 题全部同时具备 choice/open 双形态——48 道原选择题的 open 形态
+  由代码推导（正确项要点+解析）；189 道 essay/coding 的 choice 形态由并行 LLM 生成
+  并经脚本校验注入（统一 single 型）。契约固化在 `src/data/bank.test.ts`。
+- **运行时变换管线整体删除**：ai/transform.ts、storage/transformAudit.ts（含测试与
+  localStorage key）、LLMProvider.transformQuestion、applyTransforms、transformedFrom
+  字段。LLM 职责只剩变体重写题干与开放形态评分。
+- **组卷简化**：planComposition 返回 SessionQuestion[]，配额 7:3 语义不变
+  （超额翻转/换题/裁剪，缺额尾部翻转）；自适应模式双形态可用时 p(open)=0.3 随机分配。
+- **UI 跟随**：TrainingHome 自定义训练改选呈现形态；QuestionCard 按 sq.format 渲染
+  （radio/checkbox vs textarea/Monaco）；ResultPanel 按形态展示判分或 AI 反馈。
+- 测试：157 例全过；typecheck/build 通过。
+
+
 ## 2026-08-23 · 云端引擎扩容：恢复 OpenRouter + 新增 Gemini / Cloudflare（ADR-026）
 
 - **引擎白名单扩为六种**：`chrome | local | deepseek | openrouter | google | cloudflare-workers-ai`。

@@ -2,6 +2,52 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-027 · 题目与形态分离：双形态进题库，删除运行时题型变换（取代 ADR-024）
+
+- 状态：已采纳 · 2026-08-23 · **取代 ADR-024**
+- 背景：ADR-024 把「同一道题出选择还是开放」交给运行时 LLM 变换，代价是每次组卷
+  额外 N 次 LLM 调用（成本/延迟/输出质量波动）加一整套校验与审计配套
+  （transform.ts / transformAudit / transformedFrom / PendingTransform）。
+  而题库规模是固定的——缺的只是**内容**，完全可以离线补齐后静态维护。
+  应用户决策：「针对这些题目，一次性补充需要的 open 格式内容」。
+- 决策：
+  - **数据模型**：`Question` 收敛为单一知识对象
+    `{ id, category, topic, tags, difficulty, question, explanation, rubric?,
+       formats: { choice?: ChoiceFormat, open?: OpenFormat } }`；
+    新增会话实例 `SessionQuestion = { question, format }`。
+    「本次以哪种形态呈现」由组卷决定，题库对象不可变；ChoiceQuestion/OpenQuestion
+    联合类型与 QuestionType 四值枚举删除。
+  - **题库一次性迁移**：全部 237 题同时具备 choice 与 open 双形态——
+    原 180 essay + 9 coding 的 open 形态天然具备；
+    原 48 道选择题的 open 形态由代码推导（正确项要点 + 解析合成 referenceAnswer）；
+    189 道 essay/coding 的 choice 形态由并行 LLM 生成（题干 + 4 选项 + 正确项，
+    统一 single 型），经合并脚本校验注入。迁移脚本为一次性工具，完成后删除，
+    契约校验固化在 `data/bank.test.ts`。
+  - **删除运行时变换管线**：ai/transform.ts(+test)、storage/transformAudit.ts(+test)、
+    `LLMProvider.transformQuestion`、引擎 applyTransforms、题目 transformedFrom 字段、
+    localStorage `transform-audit` key 全部移除。LLM 职责回归两件事：变体重写题干、
+    开放形态评分。
+  - **组卷简化**：`planComposition` 直接返回 `SessionQuestion[]`；配额语义不变
+    （开放 ≈ floor(count*MAX_OPEN_RATIO=0.3)）：超额开放题先翻回 choice（若该题具备）、
+    再与池内未抽中的可选择题原位换题、无题可换则裁剪；缺额时尾部双形态题翻转为 open。
+    整池只有一种可用形态时跳过配比。自适应模式不套配额，双形态可用时按
+    p(open)=0.3 加权随机。
+  - **接口更名**：`InterviewDefinition.questionTypes` → `formats: FormatId[]`
+    （'choice' | 'open'），过滤语义变为「题目具备任一允许形态即入池」。
+  - **用户数据契约变更（显式声明）**：questions/*.json 由扁平
+    `type/options/answer/referenceAnswer/language` 变为嵌套 `formats.{choice,open}`，
+    属破坏性结构升级；localStorage 配置与 learner key 不变，历史学习记录不受影响。
+- 理由：形态内容静态化后，组卷路径零 LLM 成本、行为完全确定性、可测；
+  审计机制的唯一存在理由（审核变换质量）随之消失。ADR-024 的核心洞见
+  （「内容交 LLM、结构交代码」）保留在离线生成环节：生成的选择题仍经脚本校验
+  （选项去重、answer 越界、single 恰一正确项）后才入库。
+- 取舍：题库体积上升（约 +4200 行 JSON）；新增一道题需同时维护两种形态内容
+  （bank.test.ts 强制校验，不会漏）。未来若要"AI 现场出新形态"，应做成
+  离线生成 + 校验入库的工具流，而不是运行时变换。
+- 验证：测试 157 例全过（bank.test 改为双形态契约校验；quiz/engine 测试重写为
+  SessionQuestion 语义；transform/transformAudit 用例随实现删除）；
+  typecheck/build 通过。
+
 ## ADR-026 · 云端引擎扩容：恢复 OpenRouter，新增 Gemini 与 Cloudflare Workers AI
 
 - 状态：已采纳 · 2026-08-23
@@ -54,7 +100,7 @@
 
 ## ADR-024 · 同题双形态：LLM 题型变换（选择 ⇄ 开放）+ 组卷配额规划
 
-- 状态：已采纳 · 2026-08-23
+- 状态：**已被 ADR-027 取代（运行时变换删除，形态内容静态化进题库）** · 2026-08-23
 - 背景：题库开放题占比高，组卷需要"单选/多选为主"（7:3，ADR-023 后续产品规则
   `MAX_OPEN_RATIO=0.3`）。仅靠换题/裁题时，候选池缺对应题型会导致缩卷或开放题不足；
   既然 LLM 能力已接入，同一道题完全可以两种形态出现。
