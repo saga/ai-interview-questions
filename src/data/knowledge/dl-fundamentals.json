@@ -1,0 +1,192 @@
+[
+  {
+    "id": "backprop",
+    "name": "反向传播",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "链式法则沿计算图反向逐层求梯度：先前向算出 loss，再反向把上游梯度乘以各层局部导数，得到每个参数的偏导数。",
+    "required": [
+      "先 forward 构建计算图，再 backward 沿图逐层相乘局部导数",
+      "梯度是 loss 对参数的偏导数（方向与幅度），不是\"误差\"本身"
+    ],
+    "misconceptions": [
+      "以为推理阶段也需要反向传播——它只服务于参数更新",
+      "把梯度与误差信号混为一谈"
+    ],
+    "angles": [
+      "definition",
+      "mechanism"
+    ]
+  },
+  {
+    "id": "gradient-descent",
+    "name": "梯度下降与优化器",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "沿负梯度方向迭代更新参数；GD/SGD/mini-batch 的差别只在每步用多少样本估计这个梯度。",
+    "required": [
+      "学习率是步长：太大震荡发散、太小收敛慢",
+      "mini-batch 是主流：噪声小到稳定、批量又对算力友好"
+    ],
+    "misconceptions": [
+      "认为学习率越大收敛越快",
+      "把自适应优化器（Adam 族）当万能解，忽视其与 weight decay 的耦合问题"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation",
+      "scenario"
+    ]
+  },
+  {
+    "id": "cross-entropy",
+    "name": "交叉熵损失",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "分类与语言建模的标准损失：衡量预测分布与目标分布的差异；next-token prediction 本质是词表上的交叉熵。",
+    "required": [
+      "softmax + 交叉熵配合使用：loss = -log(正确类的预测概率)",
+      "perplexity = exp(平均交叉熵)，两者同源可直接换算"
+    ],
+    "misconceptions": [
+      "把交叉熵当对称的距离度量",
+      "认为回归任务也默认用交叉熵"
+    ],
+    "angles": [
+      "definition",
+      "calculation"
+    ]
+  },
+  {
+    "id": "softmax",
+    "name": "Softmax 与数值稳定",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "把 logits 归一化为和为 1 的分布；实现必须减去最大值抑制 exp 上溢，温度缩放 logits 控制分布锐度。",
+    "required": [
+      "softmax 前减最大值只改变数值稳定性，不改变输出分布",
+      "温度越低分布越尖（解码越确定），越高越平（越多样）"
+    ],
+    "misconceptions": [
+      "以为减最大值会改变概率输出",
+      "混淆采样温度与 top-p 截断的作用层次"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation"
+    ]
+  },
+  {
+    "id": "batch-norm",
+    "name": "BatchNorm / LayerNorm / RMSNorm",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "BN 跨 batch 维度统计归一化，训练/推理行为不同；LN/RMSNorm 逐样本沿特征维归一化、与 batch 无关——这是 Transformer 选后者的根本原因。",
+    "required": [
+      "BN 统计跨样本且推理用滑动平均；LN/RMSNorm 逐样本、无 train/test 差异",
+      "RMSNorm 去掉均值中心化与 bias，更省计算且效果相当，是现代 LLM 默认"
+    ],
+    "misconceptions": [
+      "以为 BN 推理时仍用当前批统计量",
+      "把归一化层仅当\"数值好看\"的手段，忽视其对训练稳定性的作用"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "dropout",
+    "name": "Dropout",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "训练时随机置零部分激活迫使网络不依赖个别通路，是结构化正则；推理时确定性关闭。",
+    "required": [
+      "只在训练期生效，推理关闭",
+      "与 L2 动机相似但机制不同：结构层面扰动 vs 损失惩罚项"
+    ],
+    "misconceptions": [
+      "推理时也保留随机丢弃导致结果不可复现",
+      "认为 dropout 率越大越好"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "regularization",
+    "name": "正则化（L1/L2/Weight Decay）",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "约束模型复杂度以缩小泛化差距的手段族：L1/L2、weight decay、dropout、早停、数据增强。",
+    "required": [
+      "L1 倾向稀疏解，L2 平滑收缩权重",
+      "weight decay 与 L2 在标准 SGD 下等价，在 AdamW 中解耦实现后才真正生效"
+    ],
+    "misconceptions": [
+      "认为 weight decay 与 L2 在任何优化器下都完全等价",
+      "把加大正则强度当作提升训练指标的手段"
+    ],
+    "angles": [
+      "tradeoff",
+      "definition"
+    ]
+  },
+  {
+    "id": "overfitting",
+    "name": "过拟合与欠拟合",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "过拟合=训练好验证差（记住了噪声），欠拟合=两者都差（容量不足）；诊断靠学习曲线，处置方向完全不同。",
+    "required": [
+      "train/validation 差距大→过拟合；两者都高→欠拟合",
+      "对策分叉：前者加数据/加正则/降容量，后者增容量/延长训练/改特征"
+    ],
+    "misconceptions": [
+      "训练 loss 低就断定过拟合而不看验证集",
+      "以为堆数据能解决欠拟合"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "activation",
+    "name": "激活函数与非线性",
+    "area": "dl-fundamentals",
+    "priority": "P1",
+    "summary": "没有非线性激活，多层网络等价于单层线性变换；ReLU/GELU/SwiGLU 的差异在零点行为、梯度通路与计算成本。",
+    "required": [
+      "非线性的作用是打破多层线性叠加的坍缩",
+      "ReLU 死区问题催生 GELU/SiLU 等平滑变体，LLM 的 FFN 普遍采用门控线性单元"
+    ],
+    "misconceptions": [
+      "认为是层数而非非线性带来表达能力跃迁",
+      "忽视饱和型激活（sigmoid/tanh）在深网络中的梯度消失风险"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "residual-connections",
+    "name": "残差连接与 Residual Stream",
+    "area": "dl-fundamentals",
+    "priority": "P0",
+    "summary": "y = x + F(x) 让每层只学增量修正：恒等路径为信号与梯度提供高速公路，是深层网络可训练性的基石。",
+    "required": [
+      "梯度经恒等路径无衰减回传，缓解深层优化困难",
+      "残差流是信息主干、层输出是增量修正——mHC / Attention Residuals 都围绕这条主干改进"
+    ],
+    "misconceptions": [
+      "认为残差只解决梯度消失、与信息传递无关",
+      "以为加了残差就能无限加深而无需其他配套设计"
+    ],
+    "angles": [
+      "mechanism"
+    ]
+  }
+]

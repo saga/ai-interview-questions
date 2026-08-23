@@ -1,0 +1,41 @@
+[
+  {
+    "id": "moe",
+    "name": "MoE 混合专家",
+    "area": "moe",
+    "priority": "P0",
+    "summary": "Router 为每个 token 选 Top-K 个专家，只有被选中者的参数参与计算：总参决定显存、激活参数决定 FLOPs 与延迟——省算力不省显存。",
+    "required": [
+      "总参数量与激活参数量分别约束显存与计算/延迟",
+      "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
+    ],
+    "misconceptions": [
+      "按激活参数估算显存需求",
+      "认为 MoE 的收益与硬件通信无关（all-to-all 常成为瓶颈）"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "calculation"
+    ]
+  },
+  {
+    "id": "latent-moe",
+    "name": "LatentMoE 低维专家计算",
+    "area": "moe",
+    "priority": "P1",
+    "summary": "借鉴 MLA 低秩思想：先把表示投影到低维 latent space 再执行专家线性变换、最后还原；专家参数/FLOPs 随 latent 维度缩放，代价是表征带宽瓶颈。",
+    "required": [
+      "压缩位置在专家层两端（down-proj 进、up-proj 出），省的是矩阵乘法规模而非路由",
+      "latent 维度是容量旋钮：压缩比越高信息瓶颈越紧"
+    ],
+    "misconceptions": [
+      "以为省的是 router 开销或专家数量",
+      "认为压得越低越好而忽视质量回退风险"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  }
+]

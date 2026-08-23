@@ -1,0 +1,116 @@
+[
+  {
+    "id": "inference-optimization",
+    "name": "推理优化总览",
+    "area": "inference",
+    "priority": "P0",
+    "summary": "先判断 compute-bound 还是 memory-bound 再对症下药：prefill 偏计算、decode 偏带宽；量化/并行/投机解码/缓存各治一种病。",
+    "required": [
+      "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
+      "优化手段与瓶颈的对应关系，而非手段的罗列"
+    ],
+    "misconceptions": [
+      "用一套优化方案通吃所有 workload",
+      "以为 GPU 利用率低就一定是算力不够（常是访存或调度问题）"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "inference-modes",
+    "name": "Prefill 与 Decode",
+    "area": "inference",
+    "priority": "P0",
+    "summary": "Prefill 一次处理全部输入（compute-bound，决定 TTFT），Decode 逐 token 生成（memory-bound，每步读全部权重与 KV cache，决定 TPOT）；两者需要不同的调度与优化策略。",
+    "required": [
+      "两阶段的瓶颈差异及对应指标 TTFT/TPOT",
+      "chunked prefill 等技术正是为了协调两阶段对资源的争用"
+    ],
+    "misconceptions": [
+      "把平均延迟当唯一指标而忽视两阶段的独立优化空间",
+      "认为 KV cache 小会等比例加快 prefill（prefill 由权重读取与 FFN/QKV 计算主导）"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "latency",
+    "name": "延迟指标（TTFT/TPOT/E2E）",
+    "area": "inference",
+    "priority": "P0",
+    "summary": "TTFT 首字延迟由 prefill 与排队决定，TPOT 每 token 延迟由 decode 决定，端到端 = TTFT + 输出长度 × TPOT；SLO 应分指标定义。",
+    "required": [
+      "E2E ≈ TTFT + N_out × TPOT，流式场景用户体感主要看 TTFT",
+      "批大小提升吞吐但抬高 TPOT——吞吐与延迟是显式权衡"
+    ],
+    "misconceptions": [
+      "只报 tokens/sec 而不区分首 token 与后续 token",
+      "以为换更快的卡能同时解决排队与解码两类延迟"
+    ],
+    "angles": [
+      "calculation",
+      "scenario"
+    ]
+  },
+  {
+    "id": "quantization",
+    "name": "量化",
+    "area": "inference",
+    "priority": "P0",
+    "summary": "以更低数值精度存储/计算权重与激活：weight-only（INT4/AWQ/GPTQ）省显存与带宽，W8A8 连激活一起量化提计算效率；KV cache 量化单独治理长上下文。",
+    "required": [
+      "weight-only vs weight+activation 的适用场景差异",
+      "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
+    ],
+    "misconceptions": [
+      "以为 INT4 的延迟必然是 FP16 的四分之一",
+      "忽视量化对长尾能力的非均匀损伤，需按任务评估"
+    ],
+    "angles": [
+      "tradeoff",
+      "scenario"
+    ]
+  },
+  {
+    "id": "caching",
+    "name": "Prefix Cache 与请求复用",
+    "area": "inference",
+    "priority": "P0",
+    "summary": "相同前缀（system prompt / few-shot / 多轮历史）的 KV 可跨请求复用：省掉重复 prefill，TTFT 大幅下降；命中率取决于前缀设计。",
+    "required": [
+      "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
+      "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
+    ],
+    "misconceptions": [
+      "以为语义相似即可复用（必须是精确前缀）",
+      "忽视多租户下的缓存隔离与安全边界"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "inference-capacity",
+    "name": "并发容量规划",
+    "area": "inference",
+    "priority": "P0",
+    "summary": "总显存 ≈ 权重 + 单请求 KV × 平均上下文 × 并发数；Agent 类 workload 上下文单调增长使 KV 成为第一约束，容量应从 SLO 反推而非拍脑袋。",
+    "required": [
+      "容量公式三要素：权重常驻、KV/token × 上下文 × 并发、激活与碎片余量",
+      "KV 效率（GQA/MLA/量化）直接换算为并发容量或成本"
+    ],
+    "misconceptions": [
+      "用 benchmark 吞吐数字直接外推生产容量",
+      "忽视长尾请求（超长上下文）挤占资源导致的级联超时"
+    ],
+    "angles": [
+      "calculation",
+      "system-design"
+    ]
+  }
+]

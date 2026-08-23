@@ -1,0 +1,156 @@
+[
+  {
+    "id": "kv-cache",
+    "name": "KV Cache",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "缓存历史 token 的 K/V 使每步只算新 token 的投影，把解码从重算全史降为增量；代价是显存占用随 上下文×并发 线性增长，是长上下文服务的主要瓶颈。",
+    "required": [
+      "单 token 占用 = 2(K和V) × 层数 × KV头数 × head_dim × 每元素字节数",
+      "缓存规模 ∝ 序列长度且随并发数相乘——容量规划的一阶变量"
+    ],
+    "misconceptions": [
+      "以为缓存与 Query 头数有关（Query 不进缓存）",
+      "只算单请求显存而忘记乘并发路数"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation",
+      "scenario"
+    ]
+  },
+  {
+    "id": "gqa",
+    "name": "GQA / MQA / MHA",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "MHA 每个 Q 头独享 K/V；MQA 全部共享一组；GQA 分组共享居中。KV cache 按 KV 头数缩放，GQA 以极小质量损失换来数倍到数十倍的缓存压缩。",
+    "required": [
+      "压缩倍数 = MHA 头数 ÷ KV 头数，质量影响介于两者之间",
+      "对 decode 的收益最大（缓存读取是带宽瓶颈），prefill 收益相对小"
+    ],
+    "misconceptions": [
+      "认为减少 KV 头会等比例削弱注意力表达（Q 头数不变）",
+      "混淆 GQA 与 MLA 的机制层次"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff",
+      "calculation"
+    ]
+  },
+  {
+    "id": "hybrid-attention",
+    "name": "混合注意力（SWA + Global）",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "多数层用滑动窗口注意力获得有界计算与有界缓存，少数全局层维持长距离信息通路；两层优化与 GQA 相乘进一步压低长上下文成本。",
+    "required": [
+      "SWA 层复杂度 O(N·w)、缓存上界固定为窗口 w 而非序列长度 N",
+      "代价：局部层无法一步看到窗口外信息，长程推理依赖全局层中转"
+    ],
+    "misconceptions": [
+      "以为混合注意力可以完全消除长上下文成本增长",
+      "忽略全局层占比对长程任务质量的直接影响"
+    ],
+    "angles": [
+      "tradeoff",
+      "mechanism"
+    ]
+  },
+  {
+    "id": "positional-encoding",
+    "name": "位置编码策略",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "自注意力本身置换等变，必须注入位置信息：正弦/可学习/RoPE/ALiBi/NoPE 各自在相对性、外推性与实现成本上取舍。NoPE 依赖因果掩码的不对称性隐式编码位置。",
+    "required": [
+      "为什么需要位置信息（置换等变性）与各类方案的核心差异",
+      "NoPE 的可行性来源与风险：顺序建模可靠性与长度外推需专门验证"
+    ],
+    "misconceptions": [
+      "认为没有显式位置编码的模型必然学不到顺序",
+      "混淆绝对位置与相对位置的表示能力边界"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "rope",
+    "name": "RoPE 旋转位置编码",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "用频率不同的旋转矩阵作用于 Q/K，使内积只依赖相对位置；配合 scaling（线性/NTK-aware 等）外推更长上下文。",
+    "required": [
+      "RoPE 只作用于 Q/K 不作用于 V，天然表达相对位置",
+      "超出训练长度时性能衰减催生 RoPE scaling / NTK-aware 插值"
+    ],
+    "misconceptions": [
+      "以为 RoPE 直接加在 embedding 上",
+      "认为支持 128k 窗口就等于 128k 内处处有效（有效上下文问题）"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation"
+    ]
+  },
+  {
+    "id": "context-window",
+    "name": "上下文窗口",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "名义窗口是架构上限，有效上下文是在窗口内模型仍能可靠检索与推理的范围；两者都受 KV cache 成本约束。",
+    "required": [
+      "名义窗口 ≠ 有效上下文：long-context degradation 是普遍现象",
+      "上下文每翻倍，KV cache 与 prefill 计算同步显著上涨"
+    ],
+    "misconceptions": [
+      "把\"支持 1M\"理解为\"1M 内任意位置都能用好\"",
+      "忽视多轮对话历史累积对成本的非线性影响"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sampling",
+    "name": "解码采样策略",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "temperature/top-p/top-k 在训练好的分布上控制生成的确定性与多样性；结构化输出与抽取类任务需要低温+受约束解码。",
+    "required": [
+      "温度缩放 logits → softmax 分布锐度；top-p 按累积概率截断候选集",
+      "greedy/低温不保证全局最优，只保证逐步确定性"
+    ],
+    "misconceptions": [
+      "以为调低温度能消除幻觉（它只降低随机性）",
+      "混淆 top-p 与 top-k 的截断依据"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "hallucination",
+    "name": "幻觉",
+    "area": "llm-architecture",
+    "priority": "P0",
+    "summary": "模型生成看似合理但无依据内容的现象：源于 next-token 目标、数据噪声与知识边界；RAG/引用/校验可缓解但不能根除。",
+    "required": [
+      "幻觉是生成范式的固有属性而非 bug，只能工程化压降",
+      "缓解组合拳：检索增强 + 引用溯源 + 温度控制 + 事实校验链路"
+    ],
+    "misconceptions": [
+      "以为更大的模型必然更少幻觉",
+      "把调低采样温度当作唯一防线"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff"
+    ]
+  }
+]

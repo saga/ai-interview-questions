@@ -18,11 +18,11 @@ const GLOBAL: ScoringRubric = { correctness: 0.4, completeness: 0.2, architectur
 
 const OPEN_FMT: OpenFormat = { referenceAnswer: 'a' };
 
-function q(rubric?: Question['rubric']): Question {
+function q(rubric?: Question['rubric'], topic = 'memory'): Question {
   return {
     id: 'q1',
     category: 'agentic-ai',
-    topic: 'memory',
+    topic,
     tags: [],
     difficulty: 'medium',
     question: 'q',
@@ -37,8 +37,16 @@ function entry(partial: Partial<ProviderEntry>): ProviderEntry {
 }
 
 describe('mergeQuestionRubric', () => {
-  it('无题目级 rubric 时原样返回全局权重', () => {
-    expect(mergeQuestionRubric(q(), GLOBAL)).toEqual({ rubric: GLOBAL, requiredPoints: undefined });
+  it('无题目级 rubric 且 topic 无知识点节点时返回全局权重（required 为 undefined）', () => {
+    expect(mergeQuestionRubric(q(undefined, 'linear-regression'), GLOBAL)).toEqual({
+      rubric: GLOBAL,
+      requiredPoints: undefined,
+    });
+  });
+
+  it('无题目级 rubric 时回退到知识点节点的 required（ADR-029）', () => {
+    const { requiredPoints } = mergeQuestionRubric(q(), GLOBAL);
+    expect(requiredPoints?.length ?? 0).toBeGreaterThan(0);
   });
 
   it('dimensions 只覆盖给出的维度，其余沿用全局', () => {
@@ -46,7 +54,7 @@ describe('mergeQuestionRubric', () => {
     expect(rubric).toEqual({ correctness: 0.4, completeness: 0.2, architecture: 0.5, communication: 0.2 });
   });
 
-  it('required 要点被透传（注入评分提示）', () => {
+  it('题目自带 rubric.required 优先于知识点要点', () => {
     const { requiredPoints } = mergeQuestionRubric(q({ required: ['短期记忆', '长期记忆'] }), GLOBAL);
     expect(requiredPoints).toEqual(['短期记忆', '长期记忆']);
   });

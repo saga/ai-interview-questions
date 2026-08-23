@@ -1,0 +1,154 @@
+[
+  {
+    "id": "system-design",
+    "name": "LLM 服务系统设计",
+    "area": "system-design",
+    "priority": "P0",
+    "summary": "从 SLO（延迟分位数/并发/成本上限）反推技术选型：模型规格、量化等级、批调度、缓存策略、降级链路都是可调旋钮，设计即权衡。",
+    "required": [
+      "先定 SLO 再做容量测算与选型，而不是反过来",
+      "降级链路与过载保护是生产设计的必选项"
+    ],
+    "misconceptions": [
+      "从\"用哪个最强模型\"开始倒推需求",
+      "把 P50 当 SLO 而忽视长尾 P99 的用户体验"
+    ],
+    "angles": [
+      "system-design",
+      "scenario"
+    ]
+  },
+  {
+    "id": "model-selection",
+    "name": "模型选型",
+    "area": "system-design",
+    "priority": "P0",
+    "summary": "按任务难度分布、延迟预算、并发与成本约束选模型：小模型+路由、大模型兜底的分层服务常优于单一旗舰；benchmark 只作初筛。",
+    "required": [
+      "选型五维：quality/latency/memory/concurrency/cost，缺一不可",
+      "自建评测集 > 公开 benchmark：分布匹配才有参考价值"
+    ],
+    "misconceptions": [
+      "以公开榜单名次代替自有场景实测",
+      "忽视部署形态差异（Dense/MoE、KV 效率）对实际成本的支配作用"
+    ],
+    "angles": [
+      "tradeoff",
+      "system-design"
+    ]
+  },
+  {
+    "id": "cost",
+    "name": "推理成本工程",
+    "area": "system-design",
+    "priority": "P0",
+    "summary": "单请求成本 = 输入/输出 token 计费或 GPU 时摊销；缓存命中、上下文裁剪、模型路由、批量调度是四个主要降本杠杆。",
+    "required": [
+      "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
+      "降本手段的优先级：先省 token、再提命中、后换模型"
+    ],
+    "misconceptions": [
+      "只盯单价不看总调用量的乘数效应",
+      "以为换更便宜的模型一定省钱（重试率与返工可能吃掉差价）"
+    ],
+    "angles": [
+      "calculation",
+      "scenario"
+    ]
+  },
+  {
+    "id": "reliability",
+    "name": "LLM 应用可靠性",
+    "area": "system-design",
+    "priority": "P0",
+    "summary": "超时/限流/重试/降级/熔断在非确定性输出面前同样适用且更必要；可靠性设计要覆盖上游 API 故障与质量回退两类失败。",
+    "required": [
+      "幂等与重试预算：LLM 调用昂贵且不保证一致",
+      "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
+    ],
+    "misconceptions": [
+      "无限重试放大故障（重试风暴）",
+      "把可用性等同于\"API 返回 200\"而不管输出质量是否达标"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "evaluation",
+    "name": "LLM 评估体系",
+    "area": "system-design",
+    "priority": "P0",
+    "summary": "离线评测集 + 在线 A/B + LLM-as-judge 三层结合；评估集要覆盖长尾与对抗样本，judge 需要与人工标注校准。",
+    "required": [
+      "没有固定评估集就没有可迭代的优化",
+      "LLM-as-judge 的偏差（位置/长度偏好）需要校准实验"
+    ],
+    "misconceptions": [
+      "用 vibe check 代替系统评估",
+      "评估集一成不变导致过拟合到旧用例"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "observability",
+    "name": "生产可观测性",
+    "area": "system-design",
+    "priority": "P1",
+    "summary": "对 token 用量、延迟分位数、错误率、质量抽检做结构化埋点追踪；trace 要能还原一次请求的完整链路（prompt 版本/检索结果/工具调用）。",
+    "required": [
+      "trace 粒度覆盖多步链路而非只记最终输入输出",
+      "质量监控需要抽样人审或 judge 自动化，纯技术指标不够"
+    ],
+    "misconceptions": [
+      "只监控基础设施指标（QPS/CPU）而无业务质量指标",
+      "日志里存全量 prompt 却无法按会话串联排查"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "structured-output",
+    "name": "结构化输出",
+    "area": "system-design",
+    "priority": "P1",
+    "summary": "JSON Schema 约束 + 受约束解码保证机器可读输出；schema 设计本身影响生成质量，校验失败要有重试与降级策略。",
+    "required": [
+      "受约束解码在采样层强制合法 JSON，比提示词恳求可靠",
+      "schema 越复杂越易触发截断/低质填充，需要防御性设计"
+    ],
+    "misconceptions": [
+      "以为加一句\"请输出 JSON\"就稳定",
+      "不做 schema 校验直接解析用户侧数据"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "safety-alignment",
+    "name": "安全对齐落地",
+    "area": "system-design",
+    "priority": "P1",
+    "summary": "把对齐要求工程化为输入过滤、输出审查、权限控制与红队回归集；安全是产品属性而非一次性合规检查。",
+    "required": [
+      "分类器+规则+模型自律的多层防御组合",
+      "红队用例纳入 CI 回归，防止迭代破坏安全表现"
+    ],
+    "misconceptions": [
+      "认为基座模型自带对齐就不需要应用层防护",
+      "安全规则写死不可配置，无法按业务风险分级"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff"
+    ]
+  }
+]

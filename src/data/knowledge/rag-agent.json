@@ -1,0 +1,268 @@
+[
+  {
+    "id": "word-embedding",
+    "name": "词向量与语义表示",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "把文本映射到向量空间使语义相似度可计算；embedding 模型与 LLM 是两类模型，检索质量取决于表示空间与领域匹配度。",
+    "required": [
+      "cosine similarity 度量方向而非距离，需与归一化方式配套理解",
+      "embedding 模型的训练目标决定它\"擅长什么相似性\""
+    ],
+    "misconceptions": [
+      "以为任意 embedding 模型开箱即用适配所有领域",
+      "混淆生成式 token 表示与检索式句向量"
+    ],
+    "angles": [
+      "definition",
+      "mechanism"
+    ]
+  },
+  {
+    "id": "vector-db",
+    "name": "向量数据库与 ANN 检索",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "以 HNSW/IVF 等近似最近邻索引在亿级向量中毫秒级召回 top-k：用召回率换速度与内存，参数（ef/M/nprobe）显式控制这个权衡。",
+    "required": [
+      "ANN 是精度-性能的权衡而非精确搜索",
+      "索引类型与参数影响 recall@k，必须用真实查询分布评估"
+    ],
+    "misconceptions": [
+      "以为向量库返回的是\"最相似\"（实际是近似）结果",
+      "忽视过滤条件与向量检索混合时的执行顺序问题"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "rag",
+    "name": "RAG 检索增强生成",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "先检索相关片段再让 LLM 基于证据作答：为知识时效性与私有知识提供不改参数的外挂通道，并支持引用溯源。",
+    "required": [
+      "RAG 解决知识问题而非理解问题：答案质量受检索质量上限制约",
+      "引用与溯源是可信度的工程保障"
+    ],
+    "misconceptions": [
+      "以为接了 RAG 幻觉就消失（错误检索仍会误导）",
+      "把 RAG 当黑盒中间件而不评估召回质量"
+    ],
+    "angles": [
+      "definition",
+      "scenario"
+    ]
+  },
+  {
+    "id": "rag-pipeline",
+    "name": "RAG 流水线与 Chunking",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "解析→切分→向量化→检索→重排→生成的全链路工程；chunk 大小/边界/重叠直接决定召回粒度与答案完整性。",
+    "required": [
+      "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
+      "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
+    ],
+    "misconceptions": [
+      "按固定字符数机械切分而忽视文档结构",
+      "只看最终答案好坏、不做分环节诊断"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "reranking",
+    "name": "重排（Reranker）",
+    "area": "rag-agent",
+    "priority": "P1",
+    "summary": "用交叉编码器对初筛候选精细打分重排：双塔检索负责快、cross-encoder 负责准，两级结构是质量-成本的标准折中。",
+    "required": [
+      "bi-encoder 可离线建索引、cross-encoder 必须在线逐对计算——分工由此而来",
+      "rerank 收益依赖初筛召回率：漏召的文档排不回来"
+    ],
+    "misconceptions": [
+      "以为 rerank 能弥补召回阶段的遗漏",
+      "忽视 rerank 引入的额外延迟预算"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "rag-vs-finetuning",
+    "name": "RAG vs 微调选型",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "知识频繁更新/需溯源 → RAG；行为风格/格式/领域能力 → 微调；两者正交可组合。决策依据是变化频率、可追溯要求与数据量。",
+    "required": [
+      "\"知识外挂化（RAG）、行为内生化（微调）\"的分界逻辑",
+      "组合方案：微调定格式与方法论，RAG 供实时事实"
+    ],
+    "misconceptions": [
+      "用微调灌入频繁变化的知识库",
+      "以为二者是非此即彼的单选题"
+    ],
+    "angles": [
+      "tradeoff",
+      "scenario"
+    ]
+  },
+  {
+    "id": "agent-fundamentals",
+    "name": "Agent 基础",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "Agent = LLM + 工具 + 状态 + 循环：模型负责决策，系统负责执行与约束；可靠性与成本由工程护栏而非模型能力单独决定。",
+    "required": [
+      "Agent 与普通 LLM 应用的区别：自主决策循环 + 外部副作用",
+      "不确定性管理：步数上限、权限分级、人工确认门"
+    ],
+    "misconceptions": [
+      "把 prompt 包装一次就称为 Agent（无循环无状态无工具）",
+      "认为换更强模型就能解决 Agent 的系统性失败"
+    ],
+    "angles": [
+      "definition",
+      "scenario"
+    ]
+  },
+  {
+    "id": "agent-loop",
+    "name": "Agent 执行循环",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "感知→决策→行动→观察的循环驱动任务推进；终止条件、最大步数与重复检测是防失控的最小护栏集。",
+    "required": [
+      "循环三要素：状态更新、工具调用、终止判定",
+      "无限循环/振荡调用的检测与熔断设计"
+    ],
+    "misconceptions": [
+      "只设最大步数而无重复模式检测",
+      "把单次工具失败当作整体失败立即中止（缺少重试/降级策略）"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "tool-calling",
+    "name": "工具调用",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "以 JSON Schema 描述工具接口，模型输出结构化调用、系统执行后回填观察；schema 质量、幂等性与错误回传决定调用可靠性。",
+    "required": [
+      "function calling 是结构化输出生成而非魔法 API 访问",
+      "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
+    ],
+    "misconceptions": [
+      "以为模型真的\"执行\"了函数（执行方始终是你的系统）",
+      "工具描述含糊导致选择错误却不迭代 schema"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "memory",
+    "name": "Agent 记忆",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "上下文窗口是工作记忆、外部存储是长期记忆：摘要压缩、关键状态持久化、按需检索三者构成记忆工程的基本盘。",
+    "required": [
+      "context 与 memory 的边界：窗口内 vs 需要外挂检索的状态",
+      "长程任务的记忆写入策略比读取策略更常被忽视"
+    ],
+    "misconceptions": [
+      "把全部历史塞进上下文当记忆（成本与注意力稀释双杀）",
+      "以为记忆=存下来即可，忽视检索时机与相关性"
+    ],
+    "angles": [
+      "tradeoff",
+      "scenario"
+    ]
+  },
+  {
+    "id": "context-engineering",
+    "name": "上下文工程",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "围绕有限窗口的内容编排学科：什么进上下文、以何种顺序与形式、何时压缩丢弃——直接影响答案质量与成本。",
+    "required": [
+      "上下文是稀缺资源，需要像内存一样做分配与淘汰",
+      "压缩（摘要）与截断的信息损失特性不同，适用场景不同"
+    ],
+    "misconceptions": [
+      "认为上下文窗口够大就不需要上下文管理",
+      "把 system prompt 当唯一可控变量"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "agent-guardrails",
+    "name": "Agent 护栏",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "迭代上限、重复检测、高危操作确认、沙箱隔离、成本硬顶：生产级 Agent 的系统性风险必须靠工程护栏约束，不能指望模型自律。",
+    "required": [
+      "失控代价是真金白银与数据破坏：护栏要在路径上而非提示里",
+      "权限分层：只读默认放开、写操作确认、不可逆操作双人/人工"
+    ],
+    "misconceptions": [
+      "在 system prompt 里写\"请谨慎\"就当作有护栏",
+      "护栏只在上线前配置一次而非随风险持续校准"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "prompt-injection",
+    "name": "提示注入",
+    "area": "rag-agent",
+    "priority": "P0",
+    "summary": "恶意指令藏在外部内容（网页/文档/工具结果）中劫持模型行为；防御靠权限隔离、内容标记与最小信任，而非提示词恳求。",
+    "required": [
+      "间接注入是最常见形态：被检索内容成为攻击面",
+      "纵深防御：输入标记、输出审查、权限隔离、高危确认"
+    ],
+    "misconceptions": [
+      "以为在 prompt 里声明\"忽略指令\"就能免疫",
+      "把注入只当内容安全问题、低估其与工具权限结合的破坏力"
+    ],
+    "angles": [
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "multi-agent",
+    "name": "多智能体系统",
+    "area": "rag-agent",
+    "priority": "P1",
+    "summary": "多 Agent 分工协作换取专业化与并行度，代价是通信开销、误差传播与调试复杂度的上升；是否拆分应基于任务拓扑而非潮流。",
+    "required": [
+      "单 Agent 够用时不要拆多 Agent：通信与一致性是真成本",
+      "消息契约与共享状态的设计是多 Agent 成败的关键"
+    ],
+    "misconceptions": [
+      "把多 Agent 当复杂度万金油",
+      "忽视级联延迟：串行多 Agent 的墙钟时间可能不可接受"
+    ],
+    "angles": [
+      "tradeoff",
+      "scenario"
+    ]
+  }
+]

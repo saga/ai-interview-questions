@@ -75,6 +75,54 @@ export interface QuestionBank {
 }
 
 // ───────────────────────────────────────────────────────────
+// Knowledge Map：知识点层。知识点是一等公民，题目只是它的一个 View。
+// 节点 id 即题目 topic slug——与题库、conceptGraph、Learner Memory 共用同一 join key。
+// ───────────────────────────────────────────────────────────
+
+/** 知识领域（题库 category 是能力维度，area 是知识维度，两者正交）。 */
+export type KnowledgeArea =
+  | 'dl-fundamentals'
+  | 'transformer'
+  | 'llm-architecture'
+  | 'moe'
+  | 'training'
+  | 'inference'
+  | 'rag-agent'
+  | 'system-design';
+
+export type KnowledgePriority = 'P0' | 'P1' | 'P2';
+
+/**
+ * 出题角度 = 难度梯度的编码化：
+ * definition（是什么）→ mechanism（为什么）→ calculation（算得清）→
+ * tradeoff（怎么权衡）→ scenario（工程情境）→ system-design（系统设计）。
+ */
+export type QuestionAngle =
+  | 'definition'
+  | 'mechanism'
+  | 'calculation'
+  | 'tradeoff'
+  | 'scenario'
+  | 'system-design';
+
+/**
+ * 知识点：修饰成面试题的全部素材都在节点上——
+ * summary 给变体出题与复盘锚点，required 注入评分，
+ * misconceptions 做干扰项/追问/gap 分析，angles 决定从哪个深度发问。
+ */
+export interface KnowledgeNode {
+  /** = 题目 topic slug；必须有至少一道题目支撑（无悬空节点，测试强制） */
+  id: string;
+  name: string;
+  area: KnowledgeArea;
+  priority: KnowledgePriority;
+  summary: string;
+  required: string[];
+  misconceptions: string[];
+  angles: QuestionAngle[];
+}
+
+// ───────────────────────────────────────────────────────────
 // Interview Engine：声明式定义 + 会话 + 多维评分
 // ───────────────────────────────────────────────────────────
 

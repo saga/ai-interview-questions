@@ -2,6 +2,31 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-029 · 知识点层一等公民化：Knowledge Map 数据层 + 题目即 View
+
+- 状态：已采纳 · 2026-08-23
+- 背景：题库此前以「题目」为最小组织单位，topic 只是题目上的一个字符串标签；
+  出面试题需要的修饰素材（机制说明、评分要点、常见误区、出题角度）散落在
+  各题的 explanation / rubric / referenceAnswer 里，同一 topic 无法沉淀复用，
+  也无法回答"P0 知识点覆盖了多少、还缺哪些题"。
+- 决策：
+  - **新增 `data/knowledge/<area>.json` 知识点层**（×8 领域），节点 schema =
+    `{ id, name, area, priority, summary, required, misconceptions, angles }`；
+  - `id = 题目 topic slug`：与题目、conceptGraph、Learner Memory 共用同一 join key，
+    不引入第二套标识体系；节点必须有至少一道题目支撑（无悬空节点，测试强制，
+    与 conceptGraph.test 同规则）；
+  - **四类修饰素材**编码出题策略：`summary`（变体重写与复盘锚点）、`required`
+    （评分必须要点，`mergeQuestionRubric` 在题目未自带 rubric.required 时回退注入）、
+    `misconceptions`（干扰项设计/追问/gap 分析素材）、`angles`（definition → mechanism →
+    calculation → tradeoff → scenario → system-design 的难度梯度）；
+  - `domain/knowledge.ts` 提供查询与覆盖分析（`knowledgeCoverage` 输出 P0 覆盖率
+    与 gap 路线图），纯函数 + 单测，UI 接入后续按需做。
+- 理由：把"知识点 → 面试题"从手工一次性劳动变成数据驱动的组合——同一知识点可以
+  按不同角度 × 场景生成多道 View 题；评分锚点有了默认来源；题库建设从"凭感觉补题"
+  变成"按 gap 补题"。模型名称可以是题目的 context，但知识点才是答案的依据。
+- 后续路径：变体提示词注入 misconceptions 做干扰项改写、按 angles 自动选题配比、
+  ProgressPage 按 area 聚合展示——均只需消费现有节点数据，无需再动数据契约。
+
 ## ADR-028 · 选择形态场景化：ChoiceFormat 独立题干字段 + 选择性内容升级
 
 - 状态：已采纳 · 2026-08-23

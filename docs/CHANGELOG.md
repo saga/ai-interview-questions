@@ -2,6 +2,25 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 知识点层一等公民化：Knowledge Map 数据层（ADR-029）
+
+- **数据层新增**：`data/knowledge/<area>.json` ×8 领域（深度学习基础 / Transformer /
+  LLM 架构 / MoE / 训练与后训练 / 推理与服务 / RAG 与 Agent / AI 系统设计），
+  64 个知识节点（P0×52），全部挂靠现有题目 topic——id 即 topic slug，
+  与题库 / conceptGraph / Learner Memory 同一 join key。
+- **节点 schema**：`{ id, name, area, priority, summary, required, misconceptions, angles }`。
+  四类修饰素材编码"知识点 → 面试题"的组合策略：summary 做变体与复盘锚点；
+  required 做评分必须要点；misconceptions 做干扰项/追问/gap 分析；
+  angles 编码难度梯度（definition→mechanism→calculation→tradeoff→scenario→system-design）。
+- **评分链路接线**：`mergeQuestionRubric` 在题目未自带 `rubric.required` 时回退到
+  知识点节点的 required——所有开放题的评分提示从此都有知识点要点兜底。
+- **覆盖分析**：`domain/knowledge.ts` 的 `knowledgeCoverage` 输出 P0 覆盖率与
+  gap 路线图（当前 64 节点全部有题目支撑）。
+- **测试**：新增 domain/knowledge.test.ts（结构合法性、无悬空节点、回退语义、
+  覆盖统计）；provider.test.ts 更新回退用例。166 测试全过，typecheck/build 通过。
+- **文档**：ARCHITECTURE.md 分层与评分 Rubric 小节同步；DECISIONS.md 新增 ADR-029
+  （含后续路径：变体注入 misconceptions / 按 angles 配比选题 / 进度页按 area 聚合）。
+
 ## 2026-08-23 · 新增前沿架构推理题 6 题：机制/取舍/归因为主，模型知识仅作 context
 
 - **出题原则延续**：架构事实写进题干（down/up projection、无位置编码、多层聚合等），

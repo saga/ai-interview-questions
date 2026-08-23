@@ -18,6 +18,7 @@ import { generateVariant } from './variant';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
+import { requiredPointsFor } from '../domain/knowledge';
 
 /** 单个引擎通道的校验按 id 区分：
  *  - chrome：浏览器内置模型，无需 apiKey/model；
@@ -44,7 +45,8 @@ export function isConfigValid(c?: AIConfig): boolean {
 /**
  * 合并题目级 rubric 与全局 rubric（纯函数，便于测试）：
  * - dimensions：该题权重覆盖全局对应维度
- * - required：必须覆盖的要点，注入评分提示
+ * - required：必须覆盖的要点，注入评分提示；
+ *   题目未自带时回退到知识点节点的 required（知识点层是评分锚点的默认来源，ADR-029）
  */
 export function mergeQuestionRubric(
   q: Question,
@@ -52,7 +54,7 @@ export function mergeQuestionRubric(
 ): { rubric: ScoringRubric; requiredPoints?: string[] } {
   return {
     rubric: { ...globalRubric, ...(q.rubric?.dimensions ?? {}) },
-    requiredPoints: q.rubric?.required,
+    requiredPoints: requiredPointsFor(q),
   };
 }
 

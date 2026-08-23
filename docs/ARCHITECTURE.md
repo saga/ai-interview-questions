@@ -13,6 +13,8 @@
 ```
 domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单测覆盖）
   categories.ts  类目 slug → 中文标签
+  knowledge.ts   知识点层查询：knowledgeById / requiredPointsFor（评分要点回退）
+                 / knowledgeCoverage（P0 覆盖率与题库建设 gap 路线图）
   quiz.ts        抽题（Fisher–Yates）、availableFormats、pickPrioritized（薄弱主题优先）
                  / planComposition（抽题 + 形态配额：开放 ≈ floor(count*0.3)，ADR-027）
   evaluation.ts  评分聚合（rubric 权重）、选择题确定性判分、DEFAULT_RUBRIC
@@ -65,6 +67,15 @@ data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不�
                        规模需要时再加动态 import + 构建期 question-index）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG）
+data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<area>.json，×8 领域）。
+                        知识点是一等公民、题目只是它的 View：节点 id = topic slug
+                        （与题目 / conceptGraph / Learner Memory 同一 join key），携带四类
+                        "修饰素材"——summary（变体与复盘锚点）/ required（评分必须要点，
+                        题目未自带 rubric.required 时回退注入）/ misconceptions（干扰项、
+                        追问与 gap 分析素材）/ angles（definition→mechanism→calculation→
+                        tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
+                        支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
+data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并，同 questionBank 模式）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
@@ -251,6 +262,7 @@ Canonical Question ──→ LLM（只输出 question / explanation）
 
 - `required`：必须覆盖的要点，注入评分提示，命中情况计入 completeness。
 - `dimensions`：该题的四维权重覆盖（未给的维度沿用全局 `InterviewDefinition.scoringRubric`），在 `PiAIProvider.evaluateOpenAnswer` 里合并。
+- **知识点回退（ADR-029）**：题目未自带 `rubric.required` 时，`mergeQuestionRubric` 回退到该题 topic 对应知识节点（`data/knowledge/`）的 `required`——评分锚点的默认来源是知识点层而非逐题手写。
 
 ## 技术栈注意点
 
