@@ -12,10 +12,12 @@ import type {
   OpenQuestion,
   ProviderEntry,
   Question,
+  QuestionType,
   ScoringRubric,
 } from '../types';
 import { generateVariant } from './variant';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
+import { transformQuestionWith } from './transform';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
 
@@ -66,6 +68,10 @@ export class PiAIProvider implements LLMProvider {
     return generateVariant(q, (system, user) => callLLM(this.entry, system, user));
   }
 
+  transformQuestion(question: Question, target: QuestionType): Promise<Question> {
+    return transformQuestionWith(question, target, (system, user) => callLLM(this.entry, system, user));
+  }
+
   async evaluateOpenAnswer(
     q: OpenQuestion,
     userAnswer: string,
@@ -83,6 +89,10 @@ export class ChromeAIProvider implements LLMProvider {
 
   async generateVariant(q: Question): Promise<GeneratedVariant> {
     return generateVariant(q, chromeComplete);
+  }
+
+  transformQuestion(question: Question, target: QuestionType): Promise<Question> {
+    return transformQuestionWith(question, target, chromeComplete);
   }
 
   async evaluateOpenAnswer(
@@ -119,6 +129,10 @@ export class FallbackProvider implements LLMProvider {
 
   generateVariant(q: Question): Promise<GeneratedVariant> {
     return this.run((p) => p.generateVariant(q));
+  }
+
+  transformQuestion(question: Question, target: QuestionType): Promise<Question> {
+    return this.run((p) => p.transformQuestion(question, target));
   }
 
   evaluateOpenAnswer(

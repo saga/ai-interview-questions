@@ -12,7 +12,7 @@ import type {
   Question,
   QuestionBank,
 } from '../types';
-import { pickPrioritized, pickQuestions, isChoice } from '../domain/quiz';
+import { isChoice, planComposition } from '../domain/quiz';
 import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
@@ -33,16 +33,44 @@ export async function buildSession(
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   if (def.questionTypes.length > 0) pool = pool.filter((q) => def.questionTypes.includes(q.type));
 
-  // 薄弱主题优先（Training Coach），否则纯随机；adaptive 模式只组第一题
+  // 薄弱主题优先（Training Coach），否则纯随机；adaptive 模式只出第一题，后续由 nextAdaptiveStep 决定
   const count = def.adaptive ? 1 : def.count;
-  const picked =
-    def.topicPriorities && def.topicPriorities.length > 0
-      ? pickPrioritized(pool, def.topicPriorities, count)
-      : pickQuestions(pool, count);
+  // 题型配比：单选/多选为主，开放题 ≈ 7:3；候选池缺题型时由 LLM 变换形态（useAI 开启时）
+  const plan = planComposition(pool, count, def.topicPriorities, Math.random, def.useAI && !def.adaptive);
   const provider = def.useAI ? createLLMProvider(config) : null;
+  const picked = await applyTransforms(plan, provider);
 
   const questions = await Promise.all(picked.map((q) => finalizeQuestion(q, provider)));
   return { definition: def, questions, startedAt: Date.now() };
+}
+
+/**
+ * 执行组卷计划中的题型变换：变换成功原位替换（id 保持原题，溯源见日志），
+ * 失败/无 provider 时保留原题型。
+ */
+async function applyTransforms(
+  plan: ReturnType<typeof planComposition>,
+  provider: LLMProvider | null,
+): Promise<Question[]> {
+  const { picked, transforms } = plan;
+  if (transforms.length === 0) return picked;
+  if (!provider) {
+    console.warn(`跳过 ${transforms.length} 道题的题型变换（AI 未启用）`);
+    return picked;
+  }
+  const result = [...picked];
+  await Promise.all(
+    transforms.map(async (t) => {
+      try {
+        const transformed = await provider.transformQuestion(t.question, t.target);
+        const i = result.indexOf(t.question);
+        if (i !== -1) result[i] = transformed;
+      } catch (err) {
+        console.warn(`题型变换失败(${t.question.id})，保留原题型：`, err);
+      }
+    }),
+  );
+  return result;
 }
 
 /** 为题目生成并校验 LLM 变体；无 provider / 校验失败 / 调用失败时一律回退原题。 */

@@ -14,6 +14,7 @@
 domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单测覆盖）
   categories.ts  类目 slug → 中文标签
   quiz.ts        抽题（Fisher–Yates）、题型判定、pickPrioritized（薄弱主题优先）
+                 / planComposition（组卷配比 7:3 + 题型变换规划，ADR-024）
   evaluation.ts  评分聚合（rubric 权重）、选择题确定性判分、DEFAULT_RUBRIC
   variant.ts     变体校验（validateVariant）+ 落地（applyVariant）
   learner.ts     Learner Memory：updateLearner / sessionFromQuiz / recommendWeakTopics
@@ -26,6 +27,8 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
    chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
    variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
+   transform.ts      题型变换（选择 ⇄ 开放，ADR-024：LLM 只出题干/干扰项，
+                     答案 key 由代码从原题权威字段合成；id 保持原题、日志溯源）
    evaluate.ts       开放题评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
                      + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
@@ -127,6 +130,8 @@ InterviewDefinition  (声明式：categories / difficulties / questionTypes
                        / count / useAI / scoringRubric / timeLimitSec / evaluationCriteria)
         │
         ↓  interviewEngine.buildSession()
+   过滤题池 → planComposition（抽题 + 题型配比 7:3，缺题型时 LLM 变换，ADR-024）
+   → applyTransforms（原位替换、失败回退）→ finalizeQuestion（LLM 变体，失败回退原题）
    InterviewSession  (抽中的题目 + 用户答案 + 评分)
         │
         ↓  evaluateAnswer() / evaluateSession()
@@ -196,22 +201,29 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 
 ## LLM 变体安全（关键）
 
-安全模型（ADR-019）：**LLM 只允许重写题干与解析，答案数据结构上就不在它的输出契约里**——
-不靠校验兜底，靠收窄权限杜绝"选项重排导致 answer 索引错位"这类事故：
+安全模型（ADR-019 / ADR-024）：**LLM 只允许重写题干与解析（及题型变换时的干扰项），
+答案数据结构上就不在它的输出契约里**——不靠校验兜底，靠收窄权限杜绝"选项重排导致
+answer 索引错位"这类事故：
 
 ```
-Canonical Question ──→ LLM（只输出 question / explanation）
+Canonical Question ──→ LLM（只输出 question / explanation / 干扰项）
         │                     ↓ validateVariant（唯一硬校验：题干非空）
         │                通过 → applyVariant：只替换题干/解析，
         │                      options、answer、referenceAnswer 原样保留
         └──────────────── 失败 → 保留原题
+
+题型变换（ADR-024，同一 id 换形态）：
+  选择→开放：referenceAnswer = 代码合成（概念 + 解析 + 正确选项原文）
+  开放→选择（单选/多选）：正确选项 = referenceAnswer 成句片段提取
+    （单选取首句；多选取前 2-3 句、不足回退单选）；LLM 只给干扰项；
+    代码洗牌并定位 answer 索引——LLM 不知道正确项在哪
 ```
 
 要点：
-- 选择题的 options/answer 永远来自原题——LLM 不接触选项顺序，索引错位不可能发生。
-- 开放题的 `referenceAnswer` 永远来自原题。
-- 变体只含重写后的题干/解析（`GeneratedVariant`），不含任何答案数据与溯源元数据；
-  是否变体成功由题目上的 `aiGenerated` 标记表达。
+- 常规变体中选择题的 options/answer 永远来自原题——LLM 不接触选项顺序。
+- 题型变换是唯一例外：options 里会出现 LLM 干扰项，但**正确选项文本与 answer 索引**
+  仍由代码从原题权威字段合成；干扰项与正确表述重复/可用数不足时直接回退原题。
+- 变换后题目保留原题 id（learner memory evidence 对齐），映射只在日志记录、UI 不展示。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 

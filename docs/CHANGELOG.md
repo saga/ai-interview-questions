@@ -2,6 +2,28 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 题型变换支持多选（开放 → single/multiple）
+
+- **多选变换**：`transformToChoice` 支持目标 'multiple'——正确选项由代码从参考答案的
+  多个成句片段提取（每句一个权威"正确说法"，取前 2-3 个），LLM 仍只出题干与干扰项；
+  answer 为洗牌后全部正确项索引。参考答案句数不足 2 时自动回退单选。
+- **组卷规划**：开放→选择的变换槽位按 `MULTIPLE_TRANSFORM_SHARE=0.35` 随机分配单/多选
+  （domain/quiz.ts，rng 可注入）。判分/作答 UI 原生支持 multiple，无需改动。
+- 测试 142 例全过（+2：多选 answer 对齐、句数不足回退）；typecheck/build 通过。
+
+## 2026-08-23 · 组卷题型配比 7:3 + 同题双形态 LLM 题型变换（ADR-024）
+
+- **配比规则**：`MAX_OPEN_RATIO=0.3`——单选/多选为主，开放题（问答/编程）不超过总题量三成。
+  `balanceQuestionTypes` 升级为 `planComposition`：抽题后先与候选池原位交换补齐配比，
+  候选池缺题型时由 LLM 把题目变换成所需形态（useAI 开启时），关闭 AI 则退化为裁题。
+- **题型变换（ai/transform.ts）**：选择→开放时 referenceAnswer 由代码合成（概念+解析+正确选项原文）；
+  开放→选择时正确选项从参考答案首句提取、LLM 只出 3 个干扰项、代码洗牌定位 answer——
+  LLM 不拥有答案 key，ADR-019 安全模型保持成立。
+- **id 溯源**：变换后题目保留原题 id，映射只在日志记录（`[题型变换] id: from → to`），UI 不展示。
+- **接口**：LLMProvider 新增 `transformQuestion`；FallbackProvider 自动获得降级语义；
+  引擎在变体生成前执行变换，失败逐题回退原题型。自适应模式不套配比、不变换。
+- 测试 140 例全过（+11）；typecheck/build 通过。
+
 ## 2026-08-23 · 多引擎降级链：单选 provider 改为 AIConfig.providers（ADR-023）
 
 - **配置形态**：`PiConfig` 更名 `AIConfig`，`{ provider, model, apiKey, baseUrl? }`

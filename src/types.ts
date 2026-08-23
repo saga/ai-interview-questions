@@ -151,6 +151,8 @@ export interface AIConfig {
 export interface LLMProvider {
   readonly name: string;
   generateVariant(question: Question): Promise<GeneratedVariant>;
+  /** 题型变换：同一题在 选择题⇄开放题 间换形态（id 不变，答案 key 由代码从原题权威字段合成） */
+  transformQuestion(question: Question, target: QuestionType): Promise<Question>;
   evaluateOpenAnswer(
     question: OpenQuestion,
     userAnswer: string,
