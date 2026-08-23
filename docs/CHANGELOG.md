@@ -2,6 +2,22 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 架构评审落地：conceptGraph 职责收敛 + ai→domain 边界成文
+
+- **职责拆分（评审唯一代码变更）**：`computeCoverage` / `suggestNextTopics` 从
+  `domain/conceptGraph.ts` 移入 `domain/learner.ts`（连同 CoverageReport/TopicSuggestion 类型）。
+  边界自此清晰：conceptGraph 只回答"知识之间是什么关系"（closure/related/expandWithPrerequisites/
+  topoRankOf），learner 回答"根据用户状态现在学得如何、该学什么"。掌握判定 isMastered/isAttempted
+  与 WEAK_* 阈值仍留在 conceptGraph 单一出处（expandWithPrerequisites 也依赖），以导出函数供 learner 复用，
+  不产生反向依赖。相关测试随迁 learner.test.ts 并补 1 例拓扑序建议用例；App.tsx / ProgressPage 导入更新。
+- **边界成文（无代码改动）**：ARCHITECTURE 明确 `ai → domain` 只允许依赖纯计算函数
+  （aggregateOverall / mergeQuestionRubric 等），禁止依赖 learner/adaptive/quiz 业务流模块；
+  同时记录两条"不做"决策：application 保持 interviewEngine 单入口不拆 service；
+  `useAI` 维持单一开关（MVP 一键关闭所有 AI），待出现"关变体留评分"的真实需求再拆。
+  GeneratedVariant 维持无溯源元数据——LLM 输出不带 metadata 是对的；
+  未来若需展示溯源，在应用侧构造 QuestionInstance（sourceQuestionId/aiGenerated）而非污染 LLM 输出契约。
+- 测试 80 例全过；typecheck/build 通过。
+
 ## 2026-08-23 · 第四批：LLMOps / Safety / System Design / Coding 实践题（去重后收 36 题，总 237 题）
 
 - **新增**（`ai-engineering` +28 / `agentic-ai` +2 / `ai-fundamentals` +6）：

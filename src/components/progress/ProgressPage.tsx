@@ -1,7 +1,7 @@
 import { Card, Typography, Progress, Tag, List, Empty, Button, Space } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, ThunderboltOutlined, ApartmentOutlined } from '@ant-design/icons';
 import type { LearnerProfile } from '../../types';
-import type { CoverageReport, TopicSuggestion } from '../../domain/conceptGraph';
+import type { CoverageReport, TopicSuggestion } from '../../domain/learner';
 
 interface Props {
   profile: LearnerProfile;

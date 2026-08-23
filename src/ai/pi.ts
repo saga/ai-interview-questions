@@ -6,6 +6,7 @@ import type { Context, CredentialStore, Model, ProviderId, UserMessage } from '@
 import { openaiProvider } from '@earendil-works/pi-ai/providers/openai';
 import { anthropicProvider } from '@earendil-works/pi-ai/providers/anthropic';
 import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
+import { deepseekProvider } from '@earendil-works/pi-ai/providers/deepseek';
 import type { PiConfig } from '../types';
 
 /** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。 */
@@ -27,6 +28,7 @@ export function buildModels(config: PiConfig): ModelsClient {
   });
   if (config.provider === 'openai') models.setProvider(openaiProvider());
   else if (config.provider === 'anthropic') models.setProvider(anthropicProvider());
+  else if (config.provider === 'deepseek') models.setProvider(deepseekProvider());
   else models.setProvider(openrouterProvider());
   return models;
 }

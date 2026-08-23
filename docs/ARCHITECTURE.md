@@ -60,6 +60,9 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
 
 依赖方向：`components → application(interviewEngine) → domain + ai`；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库。
 
+**ai → domain 的边界约定**：`ai` 只允许依赖 domain 的**纯计算函数**（`evaluation.aggregateOverall`、`provider.mergeQuestionRubric`、variant 校验等），
+不得依赖业务流程模块（`learner` / `adaptive` / `quiz`）——AI 层只负责"生成/评价语言内容"，不理解产品业务流。
+
 ## 自适应面试引擎 + 知识覆盖面（ADR-017）
 
 核心思想：**下一道题不是随机抽的，而是一次决策**。题库只是素材库，面试由 Interview State 驱动。
@@ -82,12 +85,13 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
   `@dagrejs/graphlib`（限定在 conceptGraph 模块内，不外溢为架构核心）。图数据只有两类有向边：
   `prerequisite`（基础→进阶 DAG，加载期 `isAcyclic` 校验、`topsort` 学习顺序、闭包上溯）
   与 `related`（无向语义，双向遍历）。边复用题库 `topic` 字段；图是模块级单例，
-  公开 API（prerequisiteClosure / relatedOf / computeCoverage / suggestNextTopics /
-  expandWithPrerequisites）不要求传 graph 参数。薄弱阈值 `WEAK_MASTERY/WEAK_AVG`
-  在 conceptGraph 定义、learner 复用（单一出处）。
-- **覆盖面地图**：`computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
+  公开 API（prerequisiteClosure / relatedOf / expandWithPrerequisites / topoRankOf）不要求传 graph 参数。
+  职责边界：conceptGraph 只回答"知识之间是什么关系"；掌握判定 isMastered/isAttempted
+  与薄弱阈值 WEAK_* 也定义在此（单一出处），但**学习策略**（coverage / 建议下一学什么）
+  归 `domain/learner.ts`。
+- **覆盖面地图**：`learner.computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
   blocked 判定沿前置闭包上溯（根因未掌握则高级主题被标记为"先补前置"）。
-  ProgressPage 展示类目覆盖条 + `suggestNextTopics()` 学习建议。
+  ProgressPage 展示类目覆盖条 + `learner.suggestNextTopics()` 学习建议。
 - **证据链**：`TopicStats.evidence`（questionId/score/at，最近 10 条）让掌握度可回溯到具体作答，
   而非裸分数；updateLearner 每次会话追加。
 - **教练推荐升级**：`buildCoachDefinition` 的 topicPriorities 经

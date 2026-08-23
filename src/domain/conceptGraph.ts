@@ -102,6 +102,14 @@ function isAttempted(profile: LearnerProfile, topic: string): boolean {
   return Boolean(profile.topicStats[topic] && profile.topicStats[topic].attempts > 0);
 }
 
+/** 掌握判定（learner 的 coverage/建议策略复用；阈值 WEAK_* 单一出处在此）。 */
+export { isMastered, isAttempted };
+
+/** 主题在 prerequisite DAG 拓扑序中的位置（越靠前越基础）；不在依赖图中返回 Infinity。 */
+export function topoRankOf(topic: string): number {
+  return topoRank.get(topic) ?? Infinity;
+}
+
 /** 题库中出现过的全部 (category, topic) 组合（去重）。 */
 export interface TopicRef {
   category: string;
@@ -114,111 +122,6 @@ export function collectTopicRefs(questions: TopicRef[]): TopicRef[] {
     if (!seen.has(q.topic)) seen.set(q.topic, { category: q.category, topic: q.topic });
   }
   return [...seen.values()];
-}
-
-export interface CategoryCoverage {
-  category: string;
-  totalTopics: number;
-  attempted: number;
-  mastered: number;
-}
-
-export interface CoverageReport {
-  categories: CategoryCoverage[];
-  /** 练过但未达掌握阈值的 topic（薄弱项） */
-  weakTopics: string[];
-  unattemptedCount: number;
-  /** 未练过、且前置闭包全部掌握的 topic——"现在就可以学" */
-  readyToLearn: string[];
-  /** 未练过、且存在未掌握前置的 topic——"先补前置" */
-  blockedCount: number;
-}
-
-/** 知识覆盖面：按类目聚合练习/掌握比例；blocked 判定使用前置闭包（DAG 上溯）。 */
-export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile): CoverageReport {
-  const byCategory = new Map<string, TopicRef[]>();
-  for (const t of topicRefs) {
-    const arr = byCategory.get(t.category) ?? [];
-    arr.push(t);
-    byCategory.set(t.category, arr);
-  }
-
-  const categories: CategoryCoverage[] = [...byCategory.entries()]
-    .map(([category, refs]) => ({
-      category,
-      totalTopics: refs.length,
-      attempted: refs.filter((t) => isAttempted(profile, t.topic)).length,
-      mastered: refs.filter((t) => isMastered(profile, t.topic)).length,
-    }))
-    .sort((a, b) => b.totalTopics - a.totalTopics);
-
-  const weakTopics = topicRefs
-    .map((t) => t.topic)
-    .filter((topic) => isAttempted(profile, topic) && !isMastered(profile, topic));
-
-  const readyToLearn: string[] = [];
-  let blockedCount = 0;
-  for (const t of topicRefs) {
-    if (isAttempted(profile, t.topic)) continue;
-    const closure = prerequisiteClosure(t.topic);
-    if (closure.length === 0 || closure.every((p) => isMastered(profile, p))) {
-      readyToLearn.push(t.topic);
-    } else {
-      blockedCount += 1;
-    }
-  }
-
-  return {
-    categories,
-    weakTopics,
-    unattemptedCount: topicRefs.length - topicRefs.filter((t) => isAttempted(profile, t.topic)).length,
-    readyToLearn,
-    blockedCount,
-  };
-}
-
-export interface TopicSuggestion {
-  topic: string;
-  reason: string;
-}
-
-/**
- * 学习路径建议：
- * 1) 练过但薄弱的 topic（按掌握度升序）——"继续加强"；
- * 2) 前置闭包已掌握的未学 topic——"可以开始学"，按拓扑序（基础优先）排列。
- */
-export function suggestNextTopics(
-  topicRefs: TopicRef[],
-  profile: LearnerProfile,
-  limit = 5,
-): TopicSuggestion[] {
-  const suggestions: TopicSuggestion[] = [];
-
-  const weak = topicRefs
-    .filter((t) => isAttempted(profile, t.topic) && !isMastered(profile, t.topic))
-    .sort((a, b) => (profile.topicStats[a.topic]?.mastery ?? 1) - (profile.topicStats[b.topic]?.mastery ?? 1));
-  for (const t of weak) {
-    const s = profile.topicStats[t.topic];
-    suggestions.push({
-      topic: t.topic,
-      reason: `已练 ${s.attempts} 次、均分 ${s.avgScore}，尚未达到掌握线`,
-    });
-  }
-
-  if (suggestions.length < limit) {
-    const ready = topicRefs
-      .filter((t) => !isAttempted(profile, t.topic))
-      .filter((t) => {
-        const closure = prerequisiteClosure(t.topic);
-        return closure.length === 0 || closure.every((p) => isMastered(profile, p));
-      })
-      .sort((a, b) => (topoRank.get(a.topic) ?? Infinity) - (topoRank.get(b.topic) ?? Infinity));
-    for (const t of ready) {
-      suggestions.push({ topic: t.topic, reason: '前置知识已具备，适合开始学习' });
-    }
-  }
-
-  return suggestions.slice(0, limit);
 }
 
 /**

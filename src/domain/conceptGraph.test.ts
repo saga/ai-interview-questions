@@ -3,11 +3,9 @@ import type { LearnerProfile } from '../types';
 import { emptyProfile } from './learner';
 import {
   collectTopicRefs,
-  computeCoverage,
   expandWithPrerequisites,
   prerequisiteClosure,
   relatedOf,
-  suggestNextTopics,
   type TopicRef,
 } from './conceptGraph';
 
@@ -58,50 +56,6 @@ describe('conceptGraph', () => {
     ]);
     expect(refs).toHaveLength(2);
     expect(refs.map((r) => r.topic).sort()).toEqual(['t1', 't2']);
-  });
-
-  it('computeCoverage：分类统计 attempted/mastered 与未学计数', () => {
-    const profile = profileWith({
-      'agent-fundamentals': { attempts: 3, avgScore: 90 },
-      'tool-calling': { attempts: 2, avgScore: 60 },
-    });
-    const report = computeCoverage(REFS, profile);
-
-    const agentic = report.categories.find((c) => c.category === 'agentic-ai');
-    expect(agentic).toBeDefined();
-    expect(agentic!.totalTopics).toBe(4);
-    expect(agentic!.attempted).toBe(2);
-    expect(agentic!.mastered).toBe(1); // agent-fundamentals 90 分达标
-    expect(report.weakTopics).toContain('tool-calling');
-    expect(report.unattemptedCount).toBe(3); // react / multi-agent / rag
-  });
-
-  it('computeCoverage：前置全掌握的未学主题进入 readyToLearn，否则计入 blockedCount', () => {
-    // react 的前置闭包 = agent-fundamentals / tool-calling / agent-components / workflow-vs-agent
-    const allMastered = profileWith({
-      'agent-fundamentals': { attempts: 2, avgScore: 92 },
-      'tool-calling': { attempts: 2, avgScore: 95 },
-      'agent-components': { attempts: 2, avgScore: 93 },
-      'workflow-vs-agent': { attempts: 2, avgScore: 91 },
-    });
-    const reportReady = computeCoverage(REFS, allMastered);
-    expect(reportReady.readyToLearn).toContain('react');
-
-    const prereqWeak = profileWith({ 'agent-fundamentals': { attempts: 2, avgScore: 50 } });
-    const reportBlocked = computeCoverage(REFS, prereqWeak);
-    expect(reportBlocked.readyToLearn).not.toContain('react');
-    expect(reportBlocked.blockedCount).toBeGreaterThan(0);
-  });
-
-  it('suggestNextTopics：薄弱主题优先（按掌握度升序），再补可学的未学主题', () => {
-    const profile = profileWith({
-      'tool-calling': { attempts: 4, avgScore: 55 },
-      'agent-fundamentals': { attempts: 3, avgScore: 75 },
-      'rag': { attempts: 5, avgScore: 95 },
-    });
-    const suggestions = suggestNextTopics(REFS, profile, 3);
-    expect(suggestions[0].topic).toBe('tool-calling'); // 掌握度最低
-    expect(suggestions.map((s) => s.topic)).not.toContain('rag'); // 已掌握不推荐
   });
 
   it('expandWithPrerequisites：沿前置链展开且跳过已掌握主题、去重、有上限', () => {

@@ -5,6 +5,7 @@ const PROVIDER_OPTIONS: { label: string; value: ProviderId }[] = [
   { label: 'OpenRouter（推荐，CORS 友好，模型多）', value: 'openrouter' },
   { label: 'OpenAI', value: 'openai' },
   { label: 'Anthropic', value: 'anthropic' },
+  { label: 'DeepSeek', value: 'deepseek' },
 ];
 
 export const MODEL_OPTIONS: Record<ProviderId, { label: string; value: string }[]> = {
@@ -25,6 +26,7 @@ export const MODEL_OPTIONS: Record<ProviderId, { label: string; value: string }[
     { label: 'Claude 3.5 Sonnet', value: 'claude-3-5-sonnet' },
     { label: 'Claude 3.5 Haiku', value: 'claude-3-5-haiku' },
   ],
+  deepseek: [{ label: 'DeepSeek V4 Flash', value: 'deepseek-v4-flash' }],
 };
 
 interface Props {

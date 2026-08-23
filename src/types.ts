@@ -2,7 +2,7 @@
 
 export type QuestionType = 'single' | 'multiple' | 'essay' | 'coding';
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type ProviderId = 'openai' | 'anthropic' | 'openrouter';
+export type ProviderId = 'openai' | 'anthropic' | 'openrouter' | 'deepseek';
 
 /** 题库是 source of truth；LLM 只是增强层，不改变这些字段的权威语义。 */
 interface QuestionBase {

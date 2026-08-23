@@ -14,7 +14,16 @@ import type {
 } from '../types';
 import { isChoice } from './quiz';
 import { DEFAULT_RUBRIC } from './evaluation';
-import { expandWithPrerequisites, WEAK_AVG, WEAK_MASTERY } from './conceptGraph';
+import {
+  expandWithPrerequisites,
+  isAttempted,
+  isMastered,
+  prerequisiteClosure,
+  topoRankOf,
+  WEAK_AVG,
+  WEAK_MASTERY,
+  type TopicRef,
+} from './conceptGraph';
 
 const SESSION_CAP = 50;
 const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/下滑"
@@ -148,6 +157,115 @@ export function recommendWeakTopics(profile: LearnerProfile, limit = 3): string[
     .sort((a, b) => a[1].mastery - b[1].mastery || b[1].lastSeen - a[1].lastSeen)
     .slice(0, limit)
     .map(([topic]) => topic);
+}
+
+export interface CategoryCoverage {
+  category: string;
+  totalTopics: number;
+  attempted: number;
+  mastered: number;
+}
+
+export interface CoverageReport {
+  categories: CategoryCoverage[];
+  /** 练过但未达掌握阈值的 topic（薄弱项） */
+  weakTopics: string[];
+  unattemptedCount: number;
+  /** 未练过、且前置闭包全部掌握的 topic——"现在就可以学" */
+  readyToLearn: string[];
+  /** 未练过、且存在未掌握前置的 topic——"先补前置" */
+  blockedCount: number;
+}
+
+/**
+ * 知识覆盖面（学习策略，非图操作）：按类目聚合练习/掌握比例；
+ * blocked 判定沿前置闭包上溯——根因未掌握则高级主题被标记为"先补前置"。
+ * 图关系查询在 conceptGraph；这里回答"根据用户状态，现在学得如何"。
+ */
+export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile): CoverageReport {
+  const byCategory = new Map<string, TopicRef[]>();
+  for (const t of topicRefs) {
+    const arr = byCategory.get(t.category) ?? [];
+    arr.push(t);
+    byCategory.set(t.category, arr);
+  }
+
+  const categories: CategoryCoverage[] = [...byCategory.entries()]
+    .map(([category, refs]) => ({
+      category,
+      totalTopics: refs.length,
+      attempted: refs.filter((t) => isAttempted(profile, t.topic)).length,
+      mastered: refs.filter((t) => isMastered(profile, t.topic)).length,
+    }))
+    .sort((a, b) => b.totalTopics - a.totalTopics);
+
+  const weakTopics = topicRefs
+    .map((t) => t.topic)
+    .filter((topic) => isAttempted(profile, topic) && !isMastered(profile, topic));
+
+  const readyToLearn: string[] = [];
+  let blockedCount = 0;
+  for (const t of topicRefs) {
+    if (isAttempted(profile, t.topic)) continue;
+    const closure = prerequisiteClosure(t.topic);
+    if (closure.length === 0 || closure.every((p) => isMastered(profile, p))) {
+      readyToLearn.push(t.topic);
+    } else {
+      blockedCount += 1;
+    }
+  }
+
+  return {
+    categories,
+    weakTopics,
+    unattemptedCount: topicRefs.length - topicRefs.filter((t) => isAttempted(profile, t.topic)).length,
+    readyToLearn,
+    blockedCount,
+  };
+}
+
+export interface TopicSuggestion {
+  topic: string;
+  reason: string;
+}
+
+/**
+ * 学习路径建议（学习策略）：
+ * 1) 练过但薄弱的 topic（按掌握度升序）——"继续加强"；
+ * 2) 前置闭包已掌握的未学 topic——"可以开始学"，按拓扑序（基础优先）排列。
+ */
+export function suggestNextTopics(
+  topicRefs: TopicRef[],
+  profile: LearnerProfile,
+  limit = 5,
+): TopicSuggestion[] {
+  const suggestions: TopicSuggestion[] = [];
+
+  const weak = topicRefs
+    .filter((t) => isAttempted(profile, t.topic) && !isMastered(profile, t.topic))
+    .sort((a, b) => (profile.topicStats[a.topic]?.mastery ?? 1) - (profile.topicStats[b.topic]?.mastery ?? 1));
+  for (const t of weak) {
+    const s = profile.topicStats[t.topic];
+    suggestions.push({
+      topic: t.topic,
+      reason: `已练 ${s.attempts} 次、均分 ${s.avgScore}，尚未达到掌握线`,
+    });
+  }
+
+  if (suggestions.length < limit) {
+    const ready = topicRefs
+      .filter((t) => !isAttempted(profile, t.topic))
+      .filter((t) => {
+        const closure = prerequisiteClosure(t.topic);
+        return closure.length === 0 || closure.every((p) => isMastered(profile, p));
+      })
+      .sort((a, b) => topoRankOf(a.topic) - topoRankOf(b.topic));
+    for (const t of ready) {
+      suggestions.push({ topic: t.topic, reason: '前置知识已具备，适合开始学习' });
+    }
+  }
+
+  return suggestions.slice(0, limit);
 }
 
 /** 构造"教练推荐"的 InterviewDefinition：薄弱主题优先，其余按默认配置。 */
