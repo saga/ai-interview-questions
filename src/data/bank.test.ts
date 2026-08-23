@@ -46,6 +46,9 @@ describe('题库数据完整性', () => {
       }
       if (cf.type === 'single') expect(cf.answer, q.id).toHaveLength(1);
       if (cf.type === 'multiple') expect(new Set(cf.answer).size, q.id).toBe(cf.answer.length);
+      if (cf.question !== undefined) {
+        expect(cf.question.trim().length, `${q.id} choice 场景题干为空`).toBeGreaterThan(0);
+      }
     }
   });
 

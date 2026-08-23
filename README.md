@@ -52,6 +52,7 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
   "formats": {                      // 双形态（ADR-027）：至少一种，建议两种都给
     "choice": {
       "type": "single",             // single | multiple
+      "question": "可选：选择形态专属场景题干…",  // 工程情境类题建议提供
       "options": ["A", "B", "C", "D"],
       "answer": [0]                 // 正确选项索引数组（multiple 可多个）
     },

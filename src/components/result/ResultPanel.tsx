@@ -92,6 +92,8 @@ function ResultItem({
     const cf = q.formats.choice!;
     const sel = ((answer as number[]) ?? []).slice().sort((a, b) => a - b);
     const correct = grade?.dimensions.correctness === 100;
+    // 选择形态可携带场景化专属题干（cf.question），未给则与开放形态共用共享题干
+    const stem = cf.question ?? q.question;
     const resultTag = correct ? (
       <Tag color="success" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}>
         正确
@@ -110,7 +112,7 @@ function ResultItem({
           title={`第 ${index + 1} 题 · ${categoryLabel(q.category)} · ${cf.type === 'multiple' ? '多选' : '单选'}`}
           extra={resultTag}
         >
-          <RichText text={q.question} strong />
+          <RichText text={stem} strong />
           <Typography.Text type="secondary">你的选择：</Typography.Text>
           <Typography.Text>{letterList(sel)}</Typography.Text>
           <br />

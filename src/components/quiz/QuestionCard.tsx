@@ -24,6 +24,8 @@ interface Props {
 export default function QuestionCard({ index, question, format, value, onChange }: Props) {
   const cf = question.formats.choice;
   const of = question.formats.open;
+  // 选择形态可携带场景化专属题干（cf.question），未给则与开放形态共用共享题干
+  const stem = (format === 'choice' ? cf?.question : undefined) ?? question.question;
   const typeLabel =
     format === 'choice'
       ? cf?.type === 'multiple'
@@ -48,7 +50,7 @@ export default function QuestionCard({ index, question, format, value, onChange 
         {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
       </Space>
       <div style={{ marginBottom: 8 }}>
-        <RichText text={question.question} strong />
+        <RichText text={stem} strong />
       </div>
 
       {format === 'choice' && cf?.type === 'single' && (

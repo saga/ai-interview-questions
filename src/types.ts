@@ -6,11 +6,16 @@ export type ProviderId = 'chrome' | 'local' | 'deepseek' | 'openrouter' | 'googl
 /** 呈现形态：Question 是知识对象，SessionQuestion 决定本次以哪种形态提问（ADR-027）。 */
 export type FormatId = 'choice' | 'open';
 
-/** 选择形态的作答与判分数据。answer 指向 options 下标；single 长度 1，multiple ≥1。 */
+/**
+ * 选择形态的作答与判分数据。answer 指向 options 下标；single 长度 1，multiple ≥1。
+ * question 为可选的形态专属场景题干（情境描述 + 明确问法）：给出时选择形态用它提问，
+ * 共享题干保持面向开放形态；未给则两种形态共用共享题干。
+ */
 export interface ChoiceFormat {
   type: 'single' | 'multiple';
   options: string[];
   answer: number[];
+  question?: string;
 }
 
 /** 开放/编程形态：参考答案 + 语言（仅展示用）。 */

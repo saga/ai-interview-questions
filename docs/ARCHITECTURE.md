@@ -57,8 +57,10 @@ components/
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
                        slug 类目 + topic/tags + 可选 rubric；237 题全部同时携带
-                       choice 与 open 双形态（ADR-027），ai-fundamentals（基础原理）→
-                       agentic-ai / ai-engineering（工程判断）按能力维度组织）
+                       choice 与 open 双形态（ADR-027），其中 173 题的选择形态带
+                       场景化专属题干 cf.question（ADR-028，工程决策/安全治理/
+                       生产运维类）；ai-fundamentals（基础原理）→ agentic-ai /
+                       ai-engineering（工程判断）按能力维度组织）
 data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不建索引/数据库层，
                        规模需要时再加动态 import + 构建期 question-index）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
