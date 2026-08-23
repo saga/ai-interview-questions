@@ -1,7 +1,9 @@
 // 题型变换：同一道题在 选择题 ⇄ 开放题 之间换形态（ADR-024）。
-// 安全模型延续 ADR-019：LLM 只产出题干（与开放→选择时的干扰项），
-// 正确选项文本 / 参考答案 一律由代码从原题权威字段（explanation、referenceAnswer、正确 options）
-// 合成——LLM 不拥有答案 key，"正确项索引错位"在结构上不可能发生。
+// 分工（2026-08-23 修订）：**内容交给 LLM，结构交给代码**。
+// - 开放→选择：LLM 拿到题目与参考答案，直接产出完整选择题（题干、全部选项、正确项标注）；
+// - 选择→开放：LLM 只重写题干，referenceAnswer 由代码从权威字段合成；
+// - 代码负责结构完整性：校验输出格式、洗牌并按文本匹配重算 answer 索引——
+//   "正确项索引错位"这类历史事故在结构上不可能发生；输出不合法即回退原题。
 // 变换后的题目保留原题 id（溯源），只在日志中记录映射关系，不在 UI 展示。
 
 import type { ChoiceQuestion, OpenQuestion, Question, QuestionType } from '../types';
@@ -13,39 +15,6 @@ export function composeOpenReference(q: ChoiceQuestion): string {
   const correct = q.answer.map((i) => q.options[i]).filter(Boolean);
   const answerLine = `正确说法：${correct.join('；')}`;
   return [q.reference?.concept, q.explanation, answerLine].filter(Boolean).join('\n');
-}
-
-/** 从开放题参考答案提取"唯一正确表述"（首个足够长的成句片段，作为变换后选择题的正确选项）。 */
-export function deriveCorrectStatement(q: OpenQuestion): string {
-  const s =
-    q.referenceAnswer
-      .split(/(?<=[。！？!?\n])/)
-      .map((p) => p.trim())
-      .find((p) => p.length >= 8)
-      ?.slice(0, 120)
-      .trim() ?? '';
-  if (!s) throw new Error(`题目 ${q.id} 的 referenceAnswer 无法提取正确表述`);
-  return s;
-}
-
-/**
- * 提取多个正确表述（用于变换成多选题）：参考答案按句切分，
- * 每个足够长的片段都是一个权威"正确说法"，去重后取前 3 个。
- */
-export function deriveCorrectStatements(q: OpenQuestion, min = 2): string[] {
-  const list = [
-    ...new Set(
-      q.referenceAnswer
-        .split(/(?<=[。！？!?\n])/)
-        .map((p) => p.trim())
-        .filter((p) => p.length >= 8)
-        .map((p) => p.slice(0, 120)),
-    ),
-  ];
-  if (list.length < min) {
-    throw new Error(`题目 ${q.id} 的 referenceAnswer 只能提取出 ${list.length} 个正确表述（需 ≥${min}）`);
-  }
-  return list.slice(0, 3);
 }
 
 function shuffle<T>(arr: T[], rng: () => number): T[] {
@@ -88,10 +57,10 @@ async function transformToOpen(q: Question, complete: CompleteFn): Promise<OpenQ
 }
 
 /**
- * 开放 → 选择（单选或多选）：
- * - 正确选项文本一律由代码从 referenceAnswer 的成句片段提取（权威字段合成）；
- * - LLM 只出题干与 3 个干扰项；干扰项与任何正确表述相同/重复时被剔除；
- * - 多选要求参考答案能提取出 ≥2 个正确表述，不足时回退为单选（保证配额槽位不落空）。
+ * 开放 → 选择（单选或多选）：LLM 依据题目与参考答案产出完整选择题内容，
+ * 代码只保结构完整——选项去重、数量/越界校验、洗牌后按文本匹配重算 answer 索引。
+ * 多选请求但 LLM 只标了 1 个正确项时降级为单选（槽位不落空）；
+ * 输出不合法即抛错，由调用方回退原题。
  */
 async function transformToChoice(
   q: Question,
@@ -101,46 +70,50 @@ async function transformToChoice(
 ): Promise<ChoiceQuestion> {
   const oq = q as OpenQuestion;
   const isMulti = target === 'multiple';
-
-  let corrects: string[];
-  let actualType: 'single' | 'multiple' = target;
-  if (isMulti) {
-    try {
-      corrects = deriveCorrectStatements(oq);
-    } catch (err) {
-      console.warn(`题目 ${oq.id} 参考答案不足以出多选题，回退单选：`, err);
-      corrects = [deriveCorrectStatement(oq)];
-      actualType = 'single';
-    }
-  } else {
-    corrects = [deriveCorrectStatement(oq)];
-  }
-
   const system = isMulti
-    ? '你是资深面试官。把一道开放题改写成多选题：给出改写后的题干（"以下关于…的说法，正确的有哪些？（多选）"类句式），' +
-      '并给出 3 个似是而非但明确错误的干扰表述。不得泄露参考答案原文。\n' +
-      '严格输出 JSON：{"question":"题干","distractors":["错误表述1","错误表述2","错误表述3"]}'
-    : '你是资深面试官。把一道开放题改写成单选题：给出改写后的题干（"以下关于…的说法，正确的是？"类句式），' +
-      '并给出 3 个似是而非但明确错误的干扰表述。不得泄露参考答案原文。\n' +
-      '严格输出 JSON：{"question":"题干","distractors":["错误表述1","错误表述2","错误表述3"]}';
-  const raw = await complete(system, `【题目】${oq.question}\n【考察主题】${oq.topic}`);
-  const parsed = extractJSON<{ question?: unknown; distractors?: unknown }>(raw);
+    ? '你是资深面试官。把一道开放题改写成多选题：给出改写后的题干（"以下关于…的说法，正确的有哪些？（多选）"类句式）、' +
+      '4-5 个选项，并标注其中说法正确的 2-3 个选项序号。正确项各自独立成立，干扰项似是而非但明确错误。\n' +
+      '严格输出 JSON：{"question":"题干","options":["选项1","选项2","选项3","选项4"],"correct":[0,2]}'
+    : '你是资深面试官。把一道开放题改写成单选题：给出改写后的题干（"以下关于…的说法，正确的是？"类句式）、' +
+      '4 个选项，并标注唯一正确选项的序号。干扰项似是而非但明确错误。\n' +
+      '严格输出 JSON：{"question":"题干","options":["选项1","选项2","选项3","选项4"],"correct":[1]}';
+  const raw = await complete(
+    system,
+    `【题目】${oq.question}\n【参考答案】${oq.referenceAnswer}\n【考察主题】${oq.topic}`,
+  );
+  const parsed = extractJSON<{ question?: unknown; options?: unknown; correct?: unknown }>(raw);
   if (typeof parsed.question !== 'string' || !parsed.question.trim()) {
     throw new Error('题型变换输出缺少有效题干');
   }
-  const correctSet = new Set(corrects);
-  const distractors = [
-    ...new Set(
-      ((Array.isArray(parsed.distractors) ? parsed.distractors : []) as unknown[])
-        .filter((d): d is string => typeof d === 'string')
-        .map((d) => d.trim())
-        .filter((d) => d.length > 0 && d.length <= 200 && !correctSet.has(d)),
-    ),
+  const rawOptions = ((Array.isArray(parsed.options) ? parsed.options : []) as unknown[])
+    .filter((o): o is string => typeof o === 'string')
+    .map((o) => o.trim())
+    .filter((o) => o.length > 0 && o.length <= 200);
+  // 先按 LLM 原始数组解析正确项文本（避免去重导致序号位移），再去重
+  const correctIdx = ((Array.isArray(parsed.correct) ? parsed.correct : []) as unknown[]).filter(
+    (i): i is number => Number.isInteger(i),
+  );
+  const correctTexts = [
+    ...new Set(correctIdx.map((i) => rawOptions[i]).filter((t): t is string => typeof t === 'string')),
   ];
-  if (distractors.length < 2) throw new Error('可用干扰项不足（去重后需 ≥2 个且不与正确表述相同）');
-  const options = shuffle([...corrects, ...distractors.slice(0, 3)], rng);
-  const answer = options
-    .map((o, i) => (correctSet.has(o) ? i : -1))
+  if (!isMulti && correctTexts.length !== 1) {
+    throw new Error('题型变换输出的正确项数量不对（单选需恰好 1 个）');
+  }
+  let actualType: 'single' | 'multiple' = target;
+  if (isMulti && correctTexts.length < 2) {
+    console.warn(`题目 ${oq.id} 多选变换只得到 ${correctTexts.length} 个正确项，降级为单选`);
+    actualType = 'single';
+  }
+  const options = [...new Set(rawOptions)];
+  if (options.length < 3 || options.length > 6) {
+    throw new Error(`题型变换输出的选项数量不对（去重后 ${options.length} 个）`);
+  }
+  if (actualType === 'multiple' && options.length < 4) {
+    throw new Error('多选题去重后选项不足 4 个');
+  }
+  const shuffled = shuffle(options, rng);
+  const answer = shuffled
+    .map((o, i) => (correctTexts.includes(o) ? i : -1))
     .filter((i) => i >= 0)
     .sort((a, b) => a - b);
   // 显式构造目标形态字段，杜绝开放题专属字段（referenceAnswer/language）残留
@@ -152,7 +125,7 @@ async function transformToChoice(
     difficulty: oq.difficulty,
     type: actualType,
     question: parsed.question.trim(),
-    options,
+    options: shuffled,
     answer,
     explanation: oq.explanation,
     aiGenerated: true,

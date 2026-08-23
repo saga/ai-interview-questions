@@ -13,17 +13,15 @@
     priorities, rng, allowTransform)`，返回 `{ picked, transforms }`。超额/缺额开放题先与
     候选池原位交换（尾部动刀，保住前部薄弱主题优先题）；候选池缺题型时
     allowTransform=true 记为 `PendingTransform` 交给 LLM 变换，false 维持纯本地裁剪。
-  - **安全模型延伸（不破坏 ADR-019）**：`ai/transform.ts` 中 LLM 只产出题干与干扰项；
-    - 选择→开放：**options/answer/reference 不进入 prompt**（LLM 根本不知道正确选项是什么，
-      prompt 只含题干与主题）；`referenceAnswer` 由代码合成 = 概念说明 + 解析 + 正确选项原文；
-    - 开放→选择（单选或多选）：正确选项文本由代码从 referenceAnswer 的成句片段提取
-      （单选取首句；多选取前 2-3 句，不足 2 句自动回退单选），LLM 只给 3 个干扰项，
-      代码洗牌并定位 answer 索引——"正确项索引错位"结构上不可能；干扰项去重、长度过滤、
-      与任何正确表述相同者剔除，可用数 <2 即抛错回退。
-    组卷规划中开放→选择的变换按 `MULTIPLE_TRANSFORM_SHARE=0.35` 随机分配单/多选形态。
-    已知边界（产品约束，非 bug）：干扰项只做精确去重，无法保证"语义错误"——
-    宁可偶尔转换失败回退原题，也不为凑数接受可疑选项；
-    `deriveCorrectStatement(s)` 依赖参考答案的成句质量，天然不稳定但对 MVP 可接受。
+  - **分工修订（2026-08-23 二轮评审，应用户决策）**：**内容交给 LLM，结构交给代码**。
+    - 开放→选择（单选或多选）：prompt 直接携带题目与参考答案，LLM 产出完整选择题
+      （题干、全部选项、正确项序号标注）；不再做"代码切分参考答案合成正确项"的启发式
+      （实测覆盖率 187/189，且语义质量受限——分号衔接的并列论点/有序步骤无法可靠拆分）。
+      代价是接受"LLM 标注的正确项可能语义存疑"，由 explanation/rubric 兜底。
+    - 代码保结构完整：输出格式校验、选项去重、数量/越界校验；**洗牌后按文本匹配重算
+      answer 索引**——"正确项索引错位"这类历史事故结构上不可能发生；
+      输出不合法即抛错回退原题；多选请求只得到 1 个正确项时降级单选。
+    - 选择→开放不变：prompt 只含题干与主题，referenceAnswer 由代码从权威字段合成。
   - **id 溯源**：变换后题目保留原题 id（learner memory evidence / 会话 answers map 天然对齐），
     映射关系只在 console 日志记录（`[题型变换] <id>: <from> → <to>`），UI 不展示。
   - **接线**：`LLMProvider.transformQuestion(question, target)` 新接口方法，
@@ -34,8 +32,8 @@
   自适应模式逐题出题不套配比、不做变换；useAI 关闭时完全走纯本地逻辑。
   变换结果一律显式构造目标形态字段，杜绝来源题型专属字段残留。
 - 验证：测试 145 例全过（+16：planComposition 超额/缺额/单题型池/变换标记、
-  transform 单选/多选双向 happy path 与非法输出回退、answer 索引对齐断言、
-  prompt 不含 options/answer 的边界断言、coding 目标 no-op）；typecheck/build 通过。
+  transform 单选/多选 happy path 与洗牌后文本匹配索引断言、非法输出回退、
+  prompt 边界断言、coding 目标 no-op、字段卫生）；typecheck/build 通过。
 
 ## ADR-023 · 多引擎降级链（AIConfig.providers 取代单选 provider）
 

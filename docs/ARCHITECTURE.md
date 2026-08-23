@@ -206,29 +206,28 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 answer 索引错位"这类事故：
 
 ```
-Canonical Question ──→ LLM（只输出 question / explanation / 干扰项）
+Canonical Question ──→ LLM（只输出 question / explanation）
         │                     ↓ validateVariant（唯一硬校验：题干非空）
         │                通过 → applyVariant：只替换题干/解析，
         │                      options、answer、referenceAnswer 原样保留
         └──────────────── 失败 → 保留原题
 
-题型变换（ADR-024，同一 id 换形态）：
-  选择→开放：prompt 只含题干与主题——options/answer 不进 prompt，
-             LLM 根本不知道正确选项；referenceAnswer = 代码合成
-             （概念 + 解析 + 正确选项原文）
-  开放→选择（单选/多选）：正确选项 = referenceAnswer 成句片段提取
-    （单选取首句；多选取前 2-3 句、不足回退单选）；LLM 只给干扰项；
-    代码洗牌并定位 answer 索引——LLM 不知道正确项在哪
+题型变换（ADR-024，同一 id 换形态；分工 = 内容交 LLM、结构交代码）：
+  选择→开放：prompt 只含题干与主题——options/answer 不进 prompt；
+             referenceAnswer = 代码合成（概念 + 解析 + 正确选项原文）
+  开放→选择：prompt 含题目+参考答案；LLM 出完整选择题
+    （题干/全部选项/正确项序号）；代码校验后洗牌并按文本匹配重算
+    answer 索引——索引错位结构上不可能；输出不合法回退原题；
+    多选只得到 1 个正确项时降级单选
   open→coding 刻意不支持（需可执行参考答案，未来单独设计）
 ```
 ```
 
 要点：
 - 常规变体中选择题的 options/answer 永远来自原题——LLM 不接触选项顺序。
-- 题型变换是唯一例外：options 里会出现 LLM 干扰项，但**正确选项文本与 answer 索引**
-  仍由代码从原题权威字段合成；干扰项与正确表述重复/可用数不足时直接回退原题。
-  安全边界是"LLM 可以创造错误答案，但不能创造正确答案"——结构安全而非语义安全
-  （无法排除语义上"其实也对"的干扰项，宁可转换失败也不凑数）。
+- 题型变换（开放→选择）中 LLM 决定**内容**（哪些说法正确、干扰项怎么写），
+  代码决定**结构**（洗牌、answer 索引按文本匹配重算、格式校验、失败回退原题）。
+  历史上"LLM 重排选项导致 answer 索引错位"的事故类已被结构设计消灭。
 - 变换后题目保留原题 id（learner memory evidence 对齐），映射只在日志记录、UI 不展示；
   结果显式构造目标形态字段，不残留来源题型专属字段。
 
