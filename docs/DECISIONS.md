@@ -2,6 +2,29 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-021 · 引入 Chrome Built-in AI Provider（本地 Prompt API 双底层）
+
+- 状态：已采纳 · 2026-08-23
+- 背景：产品定位是 local-first 的个人 AI 面试教练（ADR-015），但目前唯一 LLM 底层是 pi-ai 云端直连，
+  必须有 API Key、答案要发第三方。Chrome 的 Prompt API 提供浏览器内置本地模型（免密钥、低延迟、
+  数据不出设备），与定位高度契合；且 LLMProvider 抽象（ADR-007）本就为可替换底层而设。
+- 决策：
+  - **新增 `ai/chrome.ts` + `ChromeAIProvider`**：工厂按 `config.provider` 分派；
+    `ProviderId` 增加 `'chrome'`。不引入 polyfill——运行时能力检测
+    （`LanguageModel.availability()`）决定可用性，不支持则上层现有 catch 兜底降级。
+  - **解耦复用，不做平行实现**：`variant.ts` / `evaluate.ts` 改为接受注入的
+    `CompleteFn(system, user)`；prompt 构建 / JSON 解析 / 评分兜底只有一份，
+    两个 provider 各自只提供 complete 实现。避免同一套提示词逻辑出现两份漂移拷贝。
+  - **配置语义按引擎区分**：chrome 无需 apiKey/model（isConfigValid 分支）；
+    localStorage 配置结构不变（用户数据契约不动）。设置页 chrome 时隐藏密钥项，
+    用 availability 展示模型状态（available/downloadable/downloading/unavailable）。
+  - **不做的事**：不用 Chrome AI 替换云端 provider（内置模型并非所有环境可用）；
+    不引入 polyfill；不在 UI 之外暴露引擎技术细节。
+- 理由：最小改动路径——domain / interviewEngine / 题库零改动，只是给已有抽象加一个实现；
+  同时把"prompt 编排"与"底层调用"解耦，未来再加任何底层（如 WebLLM）也只是新增一个 CompleteFn。
+- 验证：测试 98 例全过（chrome 封装 mock LanguageModel、变体注入、工厂分派/校验）；
+  typecheck/build 通过。
+
 ## ADR-020 · 架构评审修复批次：接线断线功能 + 死代码清理
 
 - 状态：已采纳 · 2026-08-23

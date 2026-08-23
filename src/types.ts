@@ -2,7 +2,7 @@
 
 export type QuestionType = 'single' | 'multiple' | 'essay' | 'coding';
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type ProviderId = 'openai' | 'anthropic' | 'openrouter' | 'deepseek';
+export type ProviderId = 'chrome' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek';
 
 /** 题库是 source of truth；LLM 只是增强层，不改变这些字段的权威语义。 */
 interface QuestionBase {
@@ -139,12 +139,20 @@ export interface LLMProvider {
   ): Promise<EvaluationResult>;
 }
 
-/** LLM 连接配置（浏览器内使用，存于 localStorage） */
+/** LLM 连接配置（浏览器内使用，存于 localStorage）。
+ *  provider='chrome' 时 model/apiKey 无意义，存空字符串即可（校验按 provider 区分）。 */
 export interface PiConfig {
   provider: ProviderId;
   model: string;
   apiKey: string;
 }
+
+/**
+ * 一次性文本补全函数：LLMProvider 的底层注入点。
+ * pi-ai 与 Chrome Prompt API 各自实现此签名，variant / evaluate 只依赖它，
+ * 不感知具体底层（ADR-021）。
+ */
+export type CompleteFn = (system: string, user: string) => Promise<string>;
 
 // ───────────────────────────────────────────────────────────
 // Learner Memory（结构化学习信号，非对话记录）

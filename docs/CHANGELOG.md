@@ -2,6 +2,20 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 新增 Chrome Built-in AI Provider（本地模型，免密钥）
+
+- **双底层 LLMProvider（ADR-021）**：新增 `ai/chrome.ts`（Chrome Prompt API 封装：
+  chromeAvailability 能力检测 + chromeComplete 一次性补全）与 `ChromeAIProvider`；
+  工厂按 `config.provider==='chrome'` 分派。本地推理无需 API Key、答案不出设备，
+  与 local-first 产品定位契合；不做 polyfill，不支持的环境由能力检测降级。
+- **解耦复用而非平行实现**：`variant.ts` / `evaluate.ts` 改为接受注入的
+  `CompleteFn(system, user)`（types.ts 新增），prompt 构建、extractJSON、四维解析兜底
+  只有一份——PiAIProvider 注入 pi-ai 的 callLLM，ChromeAIProvider 注入 chromeComplete。
+- **配置语义按引擎区分**：`isConfigValid` 对 chrome 只要求 provider 存在（apiKey/model 存空串，
+  localStorage 契约不变）；SettingsPanel 改为「AI 引擎」选择，chrome 时隐藏 model/apiKey 项，
+  并用 availability 展示本地模型状态（available/downloadable/downloading/unavailable）。
+- 测试 98 例全过（+18：chrome 封装 8、变体注入 3、工厂分派/校验 7 等）；typecheck/build 通过。
+
 ## 2026-08-23 · 架构评审落地：conceptGraph 职责收敛 + ai→domain 边界成文
 
 - **职责拆分（评审唯一代码变更）**：`computeCoverage` / `suggestNextTopics` 从

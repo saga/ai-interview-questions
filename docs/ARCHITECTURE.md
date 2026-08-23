@@ -20,10 +20,11 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
                  / buildCoachDefinition / recommendationText（Training Coach 数据核心）
 
 ai/            LLM 适配层，应用只依赖 LLMProvider 接口
-  pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON / 密钥注入）
-  variant.ts        变体生成（one-shot 重写题干；options/answer 不归 LLM 管）
-  evaluate.ts       开放题评分（one-shot 四维评分；overall 由 domain 聚合）
-  provider.ts       LLMProvider 工厂 + isConfigValid + PiAIProvider（委托上面两者）
+   pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON / 密钥注入）
+   chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete，ADR-021）
+   variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
+   evaluate.ts       开放题评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
+   provider.ts       LLMProvider 工厂 + isConfigValid + PiAIProvider / ChromeAIProvider
 
 storage/       本地持久化
   settings.ts    LLM 配置（localStorage）
@@ -45,7 +46,8 @@ components/
   result/ResultPanel.tsx        成绩 + 对比上次 + 强弱项 + AI 建议 + 继续训练
   progress/ProgressPage.tsx     掌握度条 + 趋势折线 + 需要关注 + 最近训练
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
-  settings/SettingsPanel.tsx    AI 设置（provider / model / API Key）
+  settings/SettingsPanel.tsx    AI 引擎设置（本地 Chrome AI / 云端 provider + model + API Key，
+                                 chrome 时隐藏密钥项并展示模型可用性）
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
                        slug 类目 + topic/tags/reference + 可选 rubric；237 题，
@@ -133,19 +135,27 @@ InterviewDefinition  (声明式：categories / difficulties / questionTypes
 - 题目级 `rubric.required` 会注入评分提示、`rubric.dimensions` 覆盖全局权重
   （合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
 
-## LLM 能力边界（ADR-019）
+## LLM 能力边界（ADR-019 / ADR-021）
 
 一句话：**Domain 决策是核心，LLM 只是插件；pi-agent-core 只在"需要连续对话"的场景回归。**
 
 ```
-Quiz / 训练流程 ──→ ai/pi.ts（pi-ai one-shot）
-                      ├── ai/variant.ts    变体 = 只重写题干
-                      └── ai/evaluate.ts   开放题评分 = 四维 dimensions
-                                ↓ overall 由 domain/aggregateOverall 计算
+Quiz / 训练流程 ──→ LLMProvider（工厂按配置分派）
+                      ├── PiAIProvider     → ai/pi.ts（pi-ai one-shot，云端，需 API Key）
+                      │     ├── ai/variant.ts    变体 = 只重写题干
+                      │     └── ai/evaluate.ts   开放题评分 = 四维 dimensions
+                      │           ↓ overall 由 domain/aggregateOverall 计算
+                      └── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
+                            复用同一套 variant/evaluate 编排（CompleteFn 注入）
 对话式模拟面试   ──→ （未来）pi-agent-core，仅此场景引入 Agent
 ```
 
 - 当前所有 LLM 调用都是 one-shot 结构化生成，无状态、无事件流；`interviewAgent.ts` 与 pi-agent-core 依赖已删除。
+- **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
+  pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
+  `provider==='chrome'` 时无需 apiKey/model（isConfigValid 按引擎区分）；运行时模型不可用会抛错，
+  由 interviewEngine 现有 catch 兜底降级（原题 / 不评分），不做 polyfill。
+  设置页用 `chromeAvailability()` 展示本地模型状态（available/downloadable/downloading/unavailable）。
 - 回归条件：真正实现"面试官追问 → 候选人回答 → 继续追问"的多轮对话时，才重新引入 Agent 层；
   在那之前不保留任何死代码占位。
 
@@ -218,6 +228,10 @@ Canonical Question ──→ LLM（只输出 question / explanation）
 ## 技术栈注意点
 
 - **antd 为 6.x**：`Divider` 仅支持 `horizontal / vertical`，无 `orientation` 左右。
+- **Chrome Built-in AI（Prompt API）**：仅较新 Chrome 提供，无跨浏览器保证；运行时用
+  `(globalThis as any).LanguageModel?.availability()` 能力检测（API 缺失/异常一律视为 unavailable），
+  不引入 polyfill。每次调用新建 session 并 destroy（one-shot 无状态）；system prompt 走
+  `initialPrompts`。模型 downloadable 状态下首次 create 可能触发下载。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；provider id 为 `openai / anthropic / openrouter`。
 - **浏览器直连 LLM 受 CORS 限制**：默认推荐 **OpenRouter**；OpenAI/Anthropic 直连可能失败，需自配代理。
 - **pi-ai 对浏览器友好**：库内部对 `globalThis.process` 与 `node:fs` 做了守卫/懒加载，打包时 `node:fs` 外部化为警告，属预期且不崩。

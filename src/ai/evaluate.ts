@@ -2,9 +2,9 @@
 // 分数所有权（ADR-019）：LLM 只输出四维 dimensions + 反馈；综合分 overall
 // 一律由 domain 的 aggregateOverall 按权重计算——LLM 不拥有最终分数。
 
-import { callLLM, extractJSON } from './pi';
+import { extractJSON } from './pi';
 import { aggregateOverall } from '../domain/evaluation';
-import type { EvaluationResult, OpenQuestion, ScoringRubric } from '../types';
+import type { CompleteFn, EvaluationResult, OpenQuestion, ScoringRubric } from '../types';
 import { EVAL_DIMENSIONS } from '../types';
 
 const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;
@@ -103,11 +103,11 @@ export function parseEvaluation(raw: string, q: OpenQuestion, rubric: ScoringRub
   };
 }
 
-/** 一次性评估开放/编程题（无流式、无状态；对话式追问属 Mock Interview 未来能力）。 */
+/** 一次性评估开放/编程题（无流式、无状态；complete 由 provider 注入，对话式追问属 Mock Interview 未来能力）。 */
 export async function evaluateOpenAnswer(
   q: OpenQuestion,
   userAnswer: string,
-  config: import('../types').PiConfig,
+  complete: CompleteFn,
   rubric: ScoringRubric,
   extraCriteria?: string,
   requiredPoints?: string[],
@@ -115,8 +115,7 @@ export async function evaluateOpenAnswer(
   if (!userAnswer || !userAnswer.trim()) {
     return parseEvaluation('', q, rubric);
   }
-  const raw = await callLLM(
-    config,
+  const raw = await complete(
     EVAL_SYSTEM,
     buildEvalUser(q, userAnswer, { rubric, extraCriteria, requiredPoints }),
   );
