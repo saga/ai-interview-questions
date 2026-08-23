@@ -9,7 +9,13 @@
 import type { Difficulty, LearnerProfile } from '../types';
 import type { Question } from '../types';
 import { pickPrioritized, pickQuestions } from './quiz';
-import { prerequisitesOf, relatedOf, type ConceptGraph } from './conceptGraph';
+import {
+  childrenOf,
+  interviewTargetsOf,
+  prerequisiteClosure,
+  relatedOf,
+  type ConceptGraph,
+} from './conceptGraph';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -93,13 +99,13 @@ export function pickNextAdaptive(
       break;
     }
     case 'gap-probe': {
-      // 先降难度（同主题更简单的题），再退到未掌握的前置主题
+      // 先降难度（同主题更简单的题），再沿前置闭包回退（近的前置优先）
       const easier = sameTopicPool
         .filter((q) => !difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(a.difficulty) - DIFF_ORDER.indexOf(b.difficulty));
       if (easier[0]) return { question: easier[0], strategy: 'gap-probe' };
 
-      const pres = prerequisitesOf(graph, last.topic);
+      const pres = prerequisiteClosure(graph, last.topic);
       const preQ = pickFromTopics(pool, pres, rng);
       if (preQ) return { question: preQ, strategy: 'gap-probe' };
 
@@ -109,11 +115,18 @@ export function pickNextAdaptive(
       break;
     }
     case 'deep-dive': {
-      // 同主题优先更高难度
+      // 1) 同主题更高难度；2) 图中声明的 deep_dive 追问目标；3) 子概念
       const harder = sameTopicPool
         .filter((q) => difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(b.difficulty) - DIFF_ORDER.indexOf(a.difficulty));
       if (harder[0]) return { question: harder[0], strategy: 'deep-dive' };
+
+      const diveTargets = [
+        ...interviewTargetsOf(graph, last.topic, 'deep_dive'),
+        ...childrenOf(graph, last.topic),
+      ];
+      const diveQ = pickFromTopics(pool, diveTargets, rng);
+      if (diveQ) return { question: diveQ, strategy: 'deep-dive' };
       break;
     }
     default:

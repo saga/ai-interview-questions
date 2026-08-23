@@ -92,11 +92,11 @@ describe('pickNextAdaptive', () => {
     expect(r1!.strategy).toBe('gap-probe');
     expect(r1!.question.difficulty).toBe('easy');
 
-    // 无前置可退时：同主题任意剩余题兜底
+    // 无更简单题时沿前置闭包回退：tool-calling 的前置是 agent-fundamentals
     const poolNoEasy = POOL.filter((x) => x.id !== 'tc-easy' && x.id !== 'mcp-1');
     const rFb = pickNextAdaptive(poolNoEasy, [sig('tool-calling', 30, 'medium')], conceptGraph, undefined, rngSeq([0]));
     expect(rFb!.strategy).toBe('gap-probe');
-    expect(rFb!.question.topic).toBe('tool-calling');
+    expect(rFb!.question.topic).toBe('agent-fundamentals');
 
     // 前置主题存在时退到前置（react 的前置 = agent-fundamentals / tool-calling）
     const r2 = pickNextAdaptive(poolNoEasy, [sig('react', 30, 'hard')], conceptGraph, undefined, rngSeq([0, 0]));

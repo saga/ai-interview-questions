@@ -89,6 +89,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
       trend,
       mastery,
       commonWeaknesses: aggregateGaps(prev?.commonWeaknesses, results),
+      evidence: [...(prev?.evidence ?? []), ...results.map((r) => ({ questionId: r.questionId, score: r.score, at: s.startedAt }))].slice(-10),
       lastSeen: s.startedAt,
     };
   }

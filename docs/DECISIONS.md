@@ -2,6 +2,28 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-018 · 知识图谱正规化（typed nodes + typed edges + 前置 DAG + evidence）
+
+- 状态：已采纳 · 2026-08-23（演进 ADR-017 的概念图）
+- 背景：首版图只有 `related` / `prerequisites` 两种无类型列表，无法回答"是什么关系、谁是子概念、
+  哪个更基础、答好后该往哪追问"；且双向边重复、前置不成 DAG、掌握度是无证据的裸分数。
+- 决策：
+  - **typed nodes**：每个 topic 标注 nodeType（concept/architecture/pattern/technique/problem/
+    tradeoff/decision/metric），domain 直接复用题库 category，不为节点重复存域。
+  - **typed directed edges**：10 种关系（prerequisite / part_of / extends / alternative / tradeoff /
+    contrasts / related_to / technique + 面试迁移 deep_dive / challenge）。每对主题只存一条有向边，
+    无向语义（related 族）由遍历层双向展开。
+  - **prerequisite 是有向 DAG**：方向统一"基础 → 进阶"，`prerequisiteClosure` 支持传递闭包——
+    高级主题的前置未掌握时，gap-probe 与覆盖面判定沿闭包回退到根因。
+  - **evidence 落库**：`TopicStats.evidence`（questionId/score/at，最近 10 条）让掌握度可回溯到
+    具体作答；localStorage v1 结构为附加可选字段，向后兼容。
+  - **自适应选题消费新图**：deep-dive 优先级 = 同主题更高难度 → 图声明的 deep_dive 目标 → 子概念；
+    gap-probe 沿前置闭包回退；broaden 用无向语义族。
+- 理由：题目本身不稀缺，**关系与证据才是评估引擎的地基**。渐进式正规化（不推倒题库、不改题型）
+  让后续 per-dimension mastery 与 Contradiction Probe 有处可挂。
+- 后续：题目级 `dimension` 标注（definition/mechanism/failure-mode/tradeoff...）→ 候选人模型升级为
+  concept × skill 维度矩阵；LLM 策略 Agent 读图输出策略 JSON。
+
 ## ADR-017 · 自适应面试引擎（迁移策略 + 概念图 + 覆盖面地图）
 
 - 状态：已采纳 · 2026-08-23

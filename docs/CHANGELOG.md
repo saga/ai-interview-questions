@@ -2,6 +2,22 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 知识图谱正规化（ADR-018：typed nodes/edges + DAG + evidence）
+
+- **图数据重构**（`data/conceptGraph.json`）：
+  - `related`/`prerequisites` 两个无类型列表 → `nodeTypes`（8 种节点类型）+ `edges`
+    （10 种有向关系：prerequisite/part_of/extends/alternative/tradeoff/contrasts/related_to/technique
+    + 面试迁移 deep_dive/challenge）；每对主题单条有向边，无向语义由遍历层双向展开。
+  - prerequisite 统一为"基础→进阶"有向 DAG（如 agent-fundamentals → tool-calling → react → plan-and-execute）。
+- **领域层升级**（`domain/conceptGraph.ts`）：`prerequisiteClosure`（传递闭包）、`childrenOf`、
+  `interviewTargetsOf`、`nodeTypeOf`；coverage 的 blocked 判定改用闭包上溯；
+  `expandWithPrerequisites` 沿闭包展开。
+- **自适应选题消费新图**：deep-dive = 同主题更高难度 → 图声明的 deep_dive 目标 → 子概念；
+  gap-probe 沿前置闭包回退到根因。
+- **证据链**：`TopicStats.evidence`（questionId/score/at，最近 10 条），updateLearner 追加，
+  掌握度可回溯到具体作答；localStorage v1 附加可选字段，向后兼容。
+- 测试 70 例全过（含按新 DAG 更新的 gap-probe 断言）；typecheck/build 通过。
+
 ## 2026-08-23 · 自适应面试引擎 + 知识覆盖面（ADR-017）
 
 - **自适应逐题模式**（`InterviewDefinition.adaptive`）：

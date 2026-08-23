@@ -171,6 +171,11 @@ export interface TopicStats {
   mastery: number;
   /** 高频遗漏/错误要点（来自开放题评估的 gaps） */
   commonWeaknesses: string[];
+  /**
+   * 支撑该掌握度的作答证据（最近 N 条，新在后）：
+   * 让"掌握度"可回溯到具体题目，而不是一个裸分数。
+   */
+  evidence?: Array<{ questionId: string; score: number; at: number }>;
   lastSeen: number;
 }
 

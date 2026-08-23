@@ -47,7 +47,7 @@ components/
 
 data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；100 题，
                        其中 agentic-ai 按 Scenario/Debugging/Trade-off/开放题等能力维度组织）
-data/conceptGraph.json  概念图边（topic 级 related/prerequisites，节点来自题库 topic）
+data/conceptGraph.json  知识图谱（typed nodes + 10 类有向边；prerequisite 构成基础→进阶 DAG）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
@@ -71,13 +71,18 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
 
 - **模式开关**：`InterviewDefinition.adaptive`。开启后 `buildSession` 只组第一题；UI 走 `AdaptiveQuiz`
   逐题视图——提交即评分（选择题确定性判分 / 开放题 LLM），随后引擎选下一题追加。
-- **知识图谱**：`domain/conceptGraph.ts` 维护 topic 级边（related 横向 / prerequisites 纵向），
-  节点直接复用题库 `topic` 字段，无需给每道题加 concepts。
+- **知识图谱**：`domain/conceptGraph.ts` + `data/conceptGraph.json`。节点带类型
+  （concept/architecture/pattern/technique/problem/tradeoff/decision/metric），边带类型与方向
+  （prerequisite/part_of/extends/alternative/tradeoff/contrasts/related_to/technique +
+  面试迁移 deep_dive/challenge）；prerequisite 是"基础→进阶"DAG，`prerequisiteClosure` 做传递闭包。
+  节点复用题库 `topic` 字段，domain 复用 category。
 - **覆盖面地图**：`computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
-  前置全掌握的未学主题进入 readyToLearn，否则计入 blocked（"先补前置"）。
+  blocked 判定沿前置闭包上溯（根因未掌握则高级主题被标记为"先补前置"）。
   ProgressPage 展示类目覆盖条 + `suggestNextTopics()` 学习建议。
+- **证据链**：`TopicStats.evidence`（questionId/score/at，最近 10 条）让掌握度可回溯到具体作答，
+  而非裸分数；updateLearner 每次会话追加。
 - **教练推荐升级**：`buildCoachDefinition` 的 topicPriorities 经
-  `expandWithPrerequisites()` 沿前置链展开（先补地基再攻难点）。
+  `expandWithPrerequisites()` 沿前置闭包展开（先补地基再攻难点）。
 - **边界**：策略决策当前为确定性规则（可测、可解释）；Contradiction Probe 与 LLM 策略 Agent
   （每轮输出 candidate_state + next_strategy JSON）是后续演进方向，届时 LLM 只决定策略、仍从结构化题池选题。
 
