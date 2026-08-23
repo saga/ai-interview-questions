@@ -2,6 +2,17 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · Agentic AI 题库按能力维度扩充（46 题，总 100 题）
+
+- 按能力维度重组 agentic-ai 题库（40 → 60 题），新增 topic 维度而非机械堆概念题：
+  - **Scenario / System Design**（agentic-15~24）：知识库 Agent、GitHub 仓库问答、Research Agent、ESG 数据抽取、SQL 分析 Agent、金融多源研究、工具路由、长任务 checkpoint/resume、Multi-Agent 研究系统、企业级 Agent Platform。
+  - **Debugging**（agentic-25~34）：重复调用、选错工具、非确定失败、context pollution、成功率回归定位、延迟放大、双重付款幂等、多 Agent 环路、表面正确检测、lab-to-prod 落差。全部 essay + rubric，主打 LLM 评分场景。
+  - **Trade-off**（agentic-35~44）：Memory 存储选型、强/弱模型级联、Planner 确定性、Tool 候选集收窄、Multi-Agent 过度设计、trajectory 存储策略、RAG 放置位置、大窗口 vs Memory、system prompt 自改、CoT 展示策略。考察 senior/staff 级权衡论证。
+  - **高级开放题**（agentic-45~52）：无标准答案，评分维度侧重 architecture + communication。
+  - **客观题补充**（agentic-53~60）：从概念清单挑现有题库未覆盖的 8 题（workflow vs Agent、State 设计、Reflection vs retry、记忆≠历史、成本硬边界、注入危害差值、judge 三偏差、评估 vs 单测）转 single/multiple，保自动判分覆盖。
+- **schema 不变**：expected_concepts 由 `rubric.required` 承担；新增评分维度（trade_off/practicality）需动四维评分引擎与 UI，作为独立变更另行决策（ADR 待补）。
+- 校验：JSON 结构校验通过；54 例测试全过；typecheck 通过。
+
 ## 2026-08-23 · 题库扩充 + 代码展示/编辑组件（Shiki / Monaco）
 
 - **题库 40 → 54 题**（基于 2026 面试趋势调研），全部复用现有 schema、不新增题型：
