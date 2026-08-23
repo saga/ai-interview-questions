@@ -2165,5 +2165,63 @@
         "communication": 0.1
       }
     }
+  },
+  {
+    "id": "ai-agent-006",
+    "category": "agentic-ai",
+    "topic": "plan-and-execute",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "agent",
+      "planning",
+      "debugging"
+    ],
+    "question": "一个 Agent 经常生成错误的执行计划，但每个 Tool 单独执行都没有问题。你会如何定位这是 Planning 问题而不是 Tool 问题？",
+    "referenceAnswer": "用轨迹回放做分层归因：收集失败 case 的完整执行轨迹，把每一步拆成“决策”和“执行”两部分分别判定——该步骤选择的工具+参数是否是当时状态下的合理动作（决策质量），工具返回是否符合预期（执行质量）。若工具单测全部通过、失败 case 中工具也都正确执行了“被要求的动作”，错误就出在上游计划：具体表现为步骤顺序错误、遗漏依赖前置步骤、对工具能力假设错误（让工具做它做不了的事）、或没有根据观察更新计划。再交叉统计：把失败按计划结构聚类，看是否集中在特定任务形态；用同一批工具组合跑人工编写的标准计划做对照——标准计划能成功则确证 planning 是短板。修复方向也相应不同：planning 问题靠更好的任务分解提示、plan 校验器或 plan-and-execute 结构化约束，而不是继续调工具。",
+    "explanation": "归因方法 = 轨迹逐步拆分“决策 vs 执行”+ 人工标准计划对照实验；工具全对而计划结构性出错即 planning 短板，修复手段完全不同。",
+    "rubric": {
+      "required": [
+        "轨迹分层归因方法",
+        "对照实验设计",
+        "planning 错误的具体表现",
+        "与 tool 修复方向的区分"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-agent-009",
+    "category": "agentic-ai",
+    "topic": "mcp",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "mcp",
+      "tool-calling",
+      "architecture"
+    ],
+    "question": "一个企业已有 50 个内部 API，希望多个 AI Agent 复用这些能力。你会直接为每个 Agent 实现 Function Calling，还是引入 MCP？如何判断？",
+    "referenceAnswer": "核心判断变量是“消费方数量 × 演进速度”。直接 Function Calling 的隐形成本：每个 Agent 应用各自维护 50 个工具的定义、鉴权、错误处理和版本适配——3 个 Agent 就是 150 份重复胶水代码，API 一改全线跟进。MCP 把这层收敛成 M+N：每个 API 封装一次 MCP server（统一 schema、鉴权、限流、审计），Agent 作为标准 client 接入。判断标准：如果只有一两个 Agent、工具集稳定且高度定制，直连更简单，别为协议而协议；如果 Agent 数量会增长、多个团队都要消费这些 API、或者需要统一的权限/审计/计量层，MCP 的前期投入很快回本。迁移上可以渐进：先挑高频稳定的 10 个 API 做成 MCP server 验证运维成本，再决定全面推广。",
+    "explanation": "本质是 M×N → M+N 的集成成本问题；消费方少且稳定就直连，多消费方+快演进+需要统一治理则 MCP,可先小范围试点验证。",
+    "rubric": {
+      "required": [
+        "M×N vs M+N 成本模型",
+        "判断维度（消费方数/演进/治理）",
+        "小 Agent 场景下不引入的克制",
+        "渐进迁移路径"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
   }
 ]

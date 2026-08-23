@@ -2,6 +2,29 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 第四批：LLMOps / Safety / System Design / Coding 实践题（去重后收 36 题，总 237 题）
+
+- **新增**（`ai-engineering` +28 / `agentic-ai` +2 / `ai-fundamentals` +6）：
+  foundation model 范式、logits 链路、cross-attention、FlashAttention、MoE 工程复杂度、蒸馏设计；
+  few-shot 取舍、prompt 消融瘦身、prompt 版本化、CoT 成本归因；
+  embedding 迁移双索引、换模型 Recall 暴跌定位、短 query 优化、向量库降本、检索升级阶梯；
+  planning vs tool 归因、MCP 引入决策；FT 反例清单、LoRA 效果差三因诊断；
+  response cache、semantic cache、RPM/TPM 双限流、provider 切换防风暴；
+  prompt 变更验证、LLM 回归测试 CI 化；guardrails 前后置分工、PII 防护、间接注入纵深防御;
+  Coding Agent / AI API Platform / Agent-vs-RAG 架构决策三道系统设计题；
+  以及首批 5 道 coding 实践题（retry backoff、cosine、recursive chunker、tool handler、context manager）。
+  新 topic 仅 foundation-model / flash-attention / distillation / prompt-engineering / vector-db / caching，
+  其余复用（privacy/prompt-injection/agent-guardrails/system-design/context-engineering 等既有节点）；
+  conceptGraph 增 attention → flash-attention、pretraining → distillation。
+- **刻意去重约 24 题**：temperature/top-k-p（ai-fund-026/028）、GQA（dl-06）、alignment tax（ai-posttraining-006）、
+  JSON 输出失败（ai-eng-020）、固定步骤 workflow（ai-eng-001）、无限循环检测（ai-eng-011）、
+  200 tools routing（ai-eng-006）、量化原理与 70B 上 80GB（ai-inference-005）、judge 可靠性（ai-fund-041）、
+  中间指标（ai-eval-001）、幻觉治理（ai-fund-045）、reproducibility trace（ai-engineering-003）、
+  routing 信号与降级阶梯（ai-engineering-001/002）、文档 QA 系统设计（agentic-15）、
+  跨 session memory 设计（ai-eng-014）、高相似低相关（ai-fund-039）等——均有现成题目覆盖。
+- **coding 题型首次入库**：`type: coding` + `language: typescript`，referenceAnswer 存参考实现，
+  复用现有 OpenQuestion 渲染与评分链路，未改任何 schema。
+
 ## 2026-08-23 · 工程题第三批：去重后收编 26 题（总 201 题）
 
 - **新增**（`ai-fundamentals` +11 / `ai-engineering` +10 / `agentic-ai` +5）：

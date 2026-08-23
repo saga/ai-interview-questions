@@ -1775,5 +1775,174 @@
         "communication": 0.1
       }
     }
+  },
+  {
+    "id": "ai-foundation-001",
+    "category": "ai-fundamentals",
+    "topic": "foundation-model",
+    "type": "essay",
+    "difficulty": "easy",
+    "tags": [
+      "foundation-model",
+      "llm"
+    ],
+    "question": "什么是 Foundation Model？为什么它的出现改变了传统 AI 应用的开发方式？",
+    "referenceAnswer": "Foundation Model 是在海量数据上自监督预训练出的通用大模型，通过适配（prompt/fine-tune）可以覆盖大量下游任务。它改变开发范式的核心在于：传统 AI 是一个任务训练一个模型（收集标注数据→训练→部署），而 Foundation Model 把范式反转为“一个模型适配无数任务”——开发从“训练”变成“适配”，标注数据需求大幅下降，原型周期从月降到天；同时能力以涌现方式随规模提升。代价是应用必须接受模型的非确定性、幻觉与成本结构，这催生了 AI Engineering 这门围绕约束与可靠性展开的学科。",
+    "explanation": "Foundation Model = 预训练通用模型 + 任务适配；范式从“一任务一模型”翻转为“一模型多任务”，开发的中心从训练转向约束与集成。",
+    "rubric": {
+      "required": [
+        "预训练+适配的定义",
+        "范式反转",
+        "带来的新问题（不确定性/成本）"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-logits-001",
+    "category": "ai-fundamentals",
+    "topic": "sampling",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "logits",
+      "generation"
+    ],
+    "question": "LLM 的 logits 是什么？它和最终生成的 token 有什么关系？",
+    "referenceAnswer": "Logits 是模型最后一层对词表中每个 token 输出的未归一化分数（维度等于词表大小）。生成路径是：logits → （可选温度缩放/top-k/top-p 截断）→ softmax 归一化为概率分布 → 按该分布采样或取 argmax 得到下一个 token。理解 logits 的意义在于：所有解码控制手段都作用在这一层——temperature 缩放的是 logits、top-k/p 截断的是 logits 排序后的候选集、logit bias 直接改写特定 token 的分数。API 若返回 logprobs，就可以用它做置信度估计、路由决策和分类任务的校准。",
+    "explanation": "Logits = 词表上的未归一化分数；温度/top-k/top-p/logit bias 全部作用于这一层，再经 softmax 采样出 token；logprobs 可用于置信度类工程。",
+    "rubric": {
+      "required": [
+        "未归一化分数定义",
+        "到 token 的完整链路",
+        "解码参数作用位置",
+        "logprobs 工程用途"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-xattn-001",
+    "category": "ai-fundamentals",
+    "topic": "attention",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "attention",
+      "cross-attention",
+      "encoder-decoder"
+    ],
+    "question": "Self-Attention 和 Cross-Attention 有什么区别？为什么 Encoder-Decoder 模型需要 Cross-Attention？",
+    "referenceAnswer": "Self-Attention 的 Q、K、V 来自同一个序列，让序列内部 token 互相交换信息；Cross-Attention 的 Q 来自一个序列（如解码器当前状态），K、V 来自另一个序列（如编码器输出），实现跨序列的信息读取。Encoder-Decoder 架构中，编码器把输入压缩成表示序列，解码器生成时必须“回头看”输入——Cross-Attention 正是这个通道：每个生成步用当前解码状态作 Q 去查询输入表示。现代 Decoder-only LLM 没有独立编码器，“看输入”退化为因果 self-attention 对整个 context 的处理，因此不再有显式 cross-attention；但在多模态（如图文对齐）和语音识别等场景它仍是核心组件。",
+    "explanation": "Self-attention 序列内交互（QKV 同源）；cross-attention 跨序列读取（Q 一方、KV 另一方），是 encoder-decoder 的信息桥梁；decoder-only 用因果 self-attention 替代。",
+    "rubric": {
+      "required": [
+        "Q/KV 来源差异",
+        "encoder-decoder 信息通道角色",
+        "decoder-only 为何不需要"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-flashattn-001",
+    "category": "ai-fundamentals",
+    "topic": "flash-attention",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "attention",
+      "flash-attention",
+      "inference"
+    ],
+    "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在不改变 Attention 数学结果的情况下提升性能？",
+    "referenceAnswer": "标准 attention 实现要把 N×N 的注意力矩阵完整写入 GPU 显存再读回参与后续计算，长序列下这块中间结果的读写（memory traffic）成为瓶颈，且显存占用 O(N²)。FlashAttention 通过分块计算解决：把 Q/K/V 切成小块在 SRAM（片上高速缓存）中完成“矩阵乘→softmax 归一化→加权求和”的整链路，用 online softmax 技巧在块间增量维护归一化统计量，全程不物化完整的注意力矩阵。数学结果不变——只是把同一套公式的计算顺序重排并合并了访存——但显存从 O(N²) 降为 O(N)，速度因减少 HBM 往返显著提升，使长上下文训练与推理变得实际可行。",
+    "explanation": "优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵；公式不变、IO 大减。",
+    "rubric": {
+      "required": [
+        "O(N²) 中间矩阵访存瓶颈",
+        "分块计算+SRAM 驻留",
+        "online softmax 等价性",
+        "显存 O(N) 收益"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-moe-tradeoff-001",
+    "category": "ai-fundamentals",
+    "topic": "moe",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "moe",
+      "architecture",
+      "scalability"
+    ],
+    "question": "MoE 模型为什么可以拥有很大的总参数量，同时保持相对较低的每 token 计算量？它会引入哪些工程复杂度？",
+    "referenceAnswer": "MoE 把 Transformer 的 FFN 层替换成多个专家子网络加一个路由器，每个 token 只被路由到 top-k 个专家（如 DeepSeek-V3：671B 总参、37B 激活）。总参数决定知识容量（专家可以各自学到不同领域模式），激活参数决定每 token 的 FLOPs——两者解耦，所以能“容量大、推理便宜”。工程复杂度包括：显存并不能省——所有专家都要驻留显存；负载不均——热门专家被打爆、冷门闲置，需要 auxiliary loss 或路由策略做负载均衡；训练不稳定——路由不可导、专家容易塌缩；部署复杂——expert parallelism 成为新的并行维度，batch 内 token 要按专家重新分发（all-to-all 通信）；微调也更棘手（容易过拟合到少数专家）。",
+    "explanation": "MoE 解耦“总参=容量”与“激活=计算”；代价是全量显存驻留、负载均衡、路由训练不稳、all-to-all 通信与专家并行等系统工程成本。",
+    "rubric": {
+      "required": [
+        "稀疏激活解耦容量与计算",
+        "显存仍需容纳全部专家",
+        "负载均衡与训练不稳定",
+        "专家并行/通信复杂度"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-distill-001",
+    "category": "ai-fundamentals",
+    "topic": "distillation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "distillation",
+      "model-optimization"
+    ],
+    "question": "一个 70B 模型效果很好，但线上延迟和成本无法接受。你考虑通过 Knowledge Distillation 得到一个 7B 学生模型。你会如何设计蒸馏过程？",
+    "referenceAnswer": "设计要点：数据——用线上真实 query 分布构建无标注任务集，让学生在“真实会遇到的问题”上学习，而不是通用基准；教师信号——优先蒸馏 soft targets（教师输出的 token 分布/logprobs）而非仅硬标签，软分布包含暗样本间的相似度信息；也可以只做 response distillation（SFT 式模仿教师生成的答案），成本低且无需教师内部 logits（闭源 API 场景唯一可行）。流程：先用教师在任务集上批量生成高质量问答对 → 清洗过滤 → 以 SFT/白盒蒸馏训练学生 → 在业务评测集上对比教师与学生，找出能力缺口补充针对性数据迭代。配套判断：先试更小的现成模型 + 量化是否已够用，蒸馏是有数据与训练能力的团队才值得投入的方案。",
+    "explanation": "蒸馏三要素：真实分布的任务数据、soft target（或闭源场景的 response 蒸馏）、评测驱动的迭代补缺；动手前先验证“小模型+量化”是否已够。",
+    "rubric": {
+      "required": [
+        "任务数据来自真实分布",
+        "soft vs response 蒸馏取舍",
+        "评测对比迭代闭环",
+        "先考虑更便宜的替代"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
   }
 ]

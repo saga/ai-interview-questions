@@ -674,5 +674,823 @@
         "communication": 0.1
       }
     }
+  },
+  {
+    "id": "ai-prompt-002",
+    "category": "ai-engineering",
+    "topic": "prompt-engineering",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "prompt",
+      "few-shot"
+    ],
+    "question": "什么时候应该使用 Zero-shot，什么时候应该加入 Few-shot Examples？Few-shot 一定会提升效果吗？",
+    "referenceAnswer": "Zero-shot 适合任务描述可以讲清楚、模型预训练中已充分见过的任务（摘要、翻译、常规分类）；Few-shot 适合输出格式/风格难以用语言精确描述、或任务与通用分布差异大的场景——示例是最精确的规格说明。但 Few-shot 不保证提升：示例会强烈锚定输出（模型可能机械模仿示例的措辞甚至错误）；示例选择有偏差会把模型带偏；示例占用 token 提高成本延迟；对足够强的模型和清晰任务，加示例可能毫无收益甚至干扰。正确做法是用评测集做对照实验决定，而不是默认堆示例。",
+    "explanation": "Few-shot 的本质是“用示例当规格说明书”——格式/风格难描述时最有价值；但它带来锚定、偏差和 token 成本，是否使用应由评测对照决定。",
+    "rubric": {
+      "required": [
+        "zero/few-shot 适用分界",
+        "示例=精确规格",
+        "锚定与偏差风险",
+        "评测驱动决策"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-prompt-004",
+    "category": "ai-engineering",
+    "topic": "prompt-engineering",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "prompt",
+      "cost",
+      "latency"
+    ],
+    "question": "一个生产 Prompt 从 2K tokens 增长到了 8K tokens，准确率只提高了 1%，但成本和延迟明显增加。你会如何优化？",
+    "referenceAnswer": "先做归因分析：把 8K prompt 拆成区块（指令、few-shot 示例、上下文、历史），逐块消融——每次移除一块跑评测集，找出真正贡献那 1% 的最小组合。经验上大量增长来自累积的补丁式规则（“不要做 X”越叠越多）、冗余示例和失效的历史约束。优化手段：合并冲突与重复指令；用结构化格式替代散文降低解析负担；裁剪到贡献边际最大的示例；把稳定不变的部分挪到 prefix 以利用 provider 的 prompt caching（成本折扣且 TTFT 更低）；对长文档类内容改走检索按需注入。同时建立 prompt 变更必须过评测集的流程，防止再次无意识膨胀。目标不是最短 prompt，而是每 token 的边际收益。",
+    "explanation": "逐块消融找到贡献 1% 的最小集合；清理累积补丁、结构化改写、prefix caching、按需检索；建立变更评测门禁防再度膨胀。",
+    "rubric": {
+      "required": [
+        "消融归因方法",
+        "识别膨胀来源",
+        "caching/检索等结构性优化",
+        "变更门禁"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-prompt-005",
+    "category": "ai-engineering",
+    "topic": "prompt-engineering",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "prompt",
+      "versioning",
+      "llmops"
+    ],
+    "question": "一个生产 LLM 应用有 20 个 Prompt，开发团队经常修改 Prompt 但没有任何版本管理。你会如何设计 Prompt Versioning？",
+    "referenceAnswer": "核心原则是把 Prompt 当代码资产而非字符串常量。设计：统一存储与命名（按用途注册），每个 prompt 有版本号、作者、变更说明；支持模板变量与多模型变体；变更流程——修改必须附带在固定评测集上的前后对比结果，通过评审后发布，生产环境引用版本号而不是最新版；可观测——日志记录每次请求实际使用的 prompt 版本，使线上问题能回溯到具体版本；灰度能力——新版本先切小流量对比业务指标再全量。可选引入 prompt management 工具或自建简单表+SDK。最小可行版本：Git 管理 + 版本号写入 trace + 变更必附评测报告，就能解决 80% 的问题。",
+    "explanation": "Prompt 即代码：集中注册+版本化+变更评测门禁+trace 记录实际版本+灰度放量；最小实现 Git+版本日志即可起步。",
+    "rubric": {
+      "required": [
+        "资产化管理思想",
+        "变更附评测对比",
+        "trace 关联版本",
+        "灰度机制",
+        "最小可行方案"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-prompt-006",
+    "category": "ai-engineering",
+    "topic": "prompt-engineering",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "reasoning",
+      "cot",
+      "cost"
+    ],
+    "question": "加入 Chain-of-Thought Prompt 后，一个推理任务的准确率没有提升，但 token 消耗增加了 3 倍。你会如何判断是否应该继续使用 CoT？",
+    "referenceAnswer": "先验证 CoT 是否真的没起作用：分析错误类型分布——如果失败集中在知识缺失或检索错误，推理链再长也无济于事，CoT 只对计算/多步推导类错误有效；再检查 CoT 输出质量——模型写出的推理链是真实推导还是事后合理化（post-hoc rationalization），后者只是表演。然后做成本收益判断：该任务的错误代价多大？如果错误可通过下游校验兜住，3 倍成本买不到准确率就是纯亏损；若换更便宜模型+CoT 能追平贵模型的零样本表现，反而是降本路径。替代方案：只在困难请求启用 CoT（路由分流）、限制思考长度、或换成原生 reasoning 模型并控制 reasoning budget。结论应基于错误归因而非平均指标。",
+    "explanation": "先归因错误类型（CoT 只救推理类错误）并甄别表演式推理，再做成本收益与替代方案比较（条件启用/换小模型+CoT/reasoning budget）。",
+    "rubric": {
+      "required": [
+        "错误类型归因先行",
+        "表演式推理识别",
+        "错误代价与成本收益权衡",
+        "条件启用等替代方案"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-rag-007",
+    "category": "ai-engineering",
+    "topic": "vector-db",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "embedding",
+      "migration",
+      "vector-db"
+    ],
+    "question": "生产环境已经存储了 1000 万条 1536 维 embedding，现在准备切换到 3072 维 embedding。你会如何进行迁移，避免线上搜索中断？",
+    "referenceAnswer": "关键约束：新旧 embedding 空间不兼容，混存必然导致检索错乱，所以迁移本质是双索引并行 + 原子切换。步骤：新建 3072 维 collection 批量重建（全量重嵌入 1000 万条文档，注意 API 成本与限流，通常离线跑数天）；期间旧索引照常服务线上；用抽样评测集对比新旧索引的召回质量，达标后进入灰度——按流量比例把读请求切到新索引并监控检索指标；确认稳定后旧索引保留一段时间作为回滚兜底，最后下线释放资源。细节坑：query 侧与 document 侧必须同模型同版本；切换点要保证写入路径已完成双写，否则切流后新索引缺数据；元数据与 ID 映射保持一致以便结果可比。",
+    "explanation": "新旧向量空间不兼容 ⇒ 双索引并行 + 评测达标 + 灰度切流 + 保留回滚；注意重嵌入成本、双写完成点与 query/doc 同版本。",
+    "rubric": {
+      "required": [
+        "空间不兼容的前提认知",
+        "并行索引与灰度切换",
+        "重嵌入成本与限流",
+        "回滚与双写一致性"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-rag-008",
+    "category": "ai-engineering",
+    "topic": "vector-db",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "embedding",
+      "rag",
+      "debugging"
+    ],
+    "question": "更换 Embedding Model 后，RAG 系统的 Recall 从 92% 降到 65%。你会如何定位问题？",
+    "referenceAnswer": "第一嫌疑是空间不一致：query 与 document 是否有一侧仍用旧模型编码（最常见的灾难）——新旧向量在同一空间里余弦相似度完全无意义，65% 可能全是巧合命中。逐一排查：确认库内全部向量的模型版本元数据，是否有未重嵌的存量数据；确认 query 编码服务已更新且没有缓存旧向量（语义缓存里的旧 embedding 也是污染源）；确认预处理链路一致（截断长度、检索前缀指令、归一化方式）；排除距离度量配置错误（cosine 被改成内积等）。定位方法：构造小型金标集分别测“query 新 vs doc 新”“query 旧 vs doc 新”等组合，快速锁定哪一侧编码错了。修复即全量重嵌并对齐两侧版本，之后把 embedding 模型版本纳入数据血缘管理防止复发。",
+    "explanation": "Recall 暴跌首查空间一致性：一侧旧模型、缓存污染、预处理差异、度量配置；用新旧组合的金标集矩阵快速二分出错误侧。",
+    "rubric": {
+      "required": [
+        "双侧同模型前提",
+        "存量/缓存污染排查",
+        "预处理与度量配置",
+        "组合矩阵定位法"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-rag-009",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "rag",
+      "retrieval",
+      "query"
+    ],
+    "question": "你的 Vector Search 对长问题效果很好，但对 “ESG scope 3？”、“DPO？” 这类短 Query 效果很差。你会如何优化？",
+    "referenceAnswer": "短查询的问题是信息太少：几个缩写词的 embedding 无法与完整文档段落形成有效匹配。优化手段：Query Expansion / Rewriting——用 LLM 把短查询扩写成完整问题（“ESG scope 3 是什么，包含哪些排放范围”），这是最直接的方案；缩写词典——维护领域缩写到标准术语的映射表，确定性展开；Hybrid search——短查询往往是精确实体查找，BM25 对关键词命中的稳定性优于纯向量；文档侧配合生成 FAQ 型摘要或同义表述，提高与短问句的匹配面。工程上先用错误样本分析确认失败模式确实是查询信息不足，再上对应手段，并用短查询专项评测集回归。",
+    "explanation": "短 query = 信息不足导致向量失配；LLM 扩写 + 缩写词典 + BM25 补充 + 文档侧 FAQ 化，配专项评测集验证。",
+    "rubric": {
+      "required": [
+        "信息不足的失败机理",
+        "query 扩写",
+        "缩写词典/BM25 至少一项",
+        "专项评测回归"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-rag-010",
+    "category": "ai-engineering",
+    "topic": "vector-db",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "vector-db",
+      "embedding",
+      "cost"
+    ],
+    "question": "一个 Vector Database 已存储 1 亿条 embedding，内存成本越来越高。你有哪些降低成本的办法？会牺牲什么？",
+    "referenceAnswer": "主要手段及代价：量化压缩——PQ（乘积量化）或 scalar quantization（FP32→INT8），内存可降数倍到数十倍，代价是召回率损失，需要实测 recall-vs-compression 曲线找平衡点；磁盘索引（DiskANN 类）——大部分向量放 SSD、只留热点在内存，成本低一个数量级，代价是查询延迟上升；索引结构调优——HNSW 的 M/ef 参数下调省内存但牺牲召回；数据治理——去重、过期数据淘汰、低价值文档降采样，这往往是最被忽略的一手；降维或换更小维度的 embedding 模型（配合迁移成本评估）。策略上先做数据治理（免费），再调索引参数（低成本），最后才动量化/磁盘架构（需重新验证质量）。",
+    "explanation": "省钱阶梯：数据治理 → 索引参数调优 → PQ/INT8 量化 → 磁盘索引；每一级都在用召回率或延迟换内存，须以评测曲线定取舍。",
+    "rubric": {
+      "required": [
+        "量化及其召回代价",
+        "磁盘索引的延迟代价",
+        "数据治理优先",
+        "评测驱动的取舍"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-rag-012",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "embedding",
+      "fine-tuning",
+      "reranking"
+    ],
+    "question": "通用 Embedding Model 在你的金融领域检索效果只有 75%。你会优先更换模型、Fine-tune Embedding Model，还是增加 Reranker？为什么？",
+    "referenceAnswer": "按投入产出比排序：第一步先换更强的通用/领域模型——零训练成本，半天就能用评测集 A/B 出结论；第二步加 Reranker——cross-encoder 对召回结果精排，通常能把端到端质量拉高一截，同样不需要训练 embedding 模型，代价是延迟与算力；两步之后若仍不达标，才考虑 Fine-tune embedding（用领域内 query-positive 对做对比学习）——收益上限最高但要求标注数据、训练与运维能力，且从此背上模型维护责任。决策前先做错误分析：如果是术语同义问题（“市盈率”vs“PE”），换模型/reranker 就够；如果是细粒度语义区分（相似财务指标间辨析），fine-tune 的必要性才真正上升。",
+    "explanation": "升级阶梯：换模型（零训练）→ 加 reranker（零训练换延迟）→ FT embedding（高上限高成本）；由错误分析决定走到哪一级。",
+    "rubric": {
+      "required": [
+        "阶梯式投入顺序及理由",
+        "错误分析驱动",
+        "FT embedding 的成本前提",
+        "reranker 的延迟代价"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-ft-005",
+    "category": "ai-engineering",
+    "topic": "fine-tuning",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "fine-tuning",
+      "rag",
+      "prompt"
+    ],
+    "question": "什么情况下 Fine-tuning 是错误的解决方案？请至少举出两个应该优先使用 RAG 或 Prompt Engineering 的场景。",
+    "referenceAnswer": "典型误判场景：其一，知识频繁更新——把产品文档/内部知识 fine-tune 进参数，每次更新都要重训，且无法溯源，RAG 用索引更新分钟级解决（信息问题不等于参数问题）；其二，Prompt 没调好就上微调——很多“效果差”其实是指令不清、缺少示例或格式约束不足，prompt 迭代以小时计而 fine-tune 以天计且有遗忘风险；其三，缺乏高质量训练数据时强行微调，只会把噪声学进去；其四，期望用微调消除幻觉——幻觉根源在生成机制，SFT 反而可能强化自信的错误。判断准则：先问“这是行为问题还是知识问题、prompt 是否已经做到位、有没有持续的高质量训练数据”，三个都过关才轮到 fine-tuning。",
+    "explanation": "FT 的误用清单：知识频繁更新（→RAG）、prompt 未调优（→先迭代 prompt）、缺高质量数据、指望治幻觉；用“行为还是知识”之问做初筛。",
+    "rubric": {
+      "required": [
+        "至少两个反例场景",
+        "知识与行为的区分",
+        "prompt 先行的迭代成本逻辑",
+        "判断准则总结"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-ft-006",
+    "category": "ai-engineering",
+    "topic": "lora",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "lora",
+      "fine-tuning",
+      "debugging"
+    ],
+    "question": "LoRA Fine-tune 后训练集表现很好，但真实用户数据效果很差。你会如何判断是过拟合、数据分布问题还是 LoRA 配置问题？",
+    "referenceAnswer": "三者的信号不同，用实验区分：过拟合——训练 loss 持续下降而验证集早早回升，模型复述训练样本的措辞；对策是早停、降 epoch、加正则。数据分布问题——验证集（同为训练分布）表现好但真实流量差，说明训练数据和用户真实输入存在覆盖缺口（领域、措辞、难度）；做法是对线上 badcase 分类，对照训练数据统计找盲区，补充真实分布数据重训。LoRA 配置问题——rank 过高小数据下记忆化、过低欠拟合（训练集也一般）、学习率过大破坏原有能力；做 rank/lr 小网格消融，观察验证曲线形态区分。诊断顺序：先看训练/验证曲线定过拟合，再用真实流量分层评测定分布缺口，最后才动超参——多数 case 根因在数据不在超参。",
+    "explanation": "曲线形态定过拟合、真实流量分层评测定分布缺口、网格消融定配置；诊断顺序很重要——先数据后超参。",
+    "rubric": {
+      "required": [
+        "三种问题的判别信号",
+        "训练/验证曲线分析",
+        "真实流量分层对照",
+        "先数据后超参的顺序"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-ops-001",
+    "category": "ai-engineering",
+    "topic": "caching",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "llmops",
+      "cache",
+      "cost"
+    ],
+    "question": "你的 LLM 应用存在大量重复 Query，API 成本很高。你会如何设计 LLM Response Cache？哪些请求不适合缓存？",
+    "referenceAnswer": "设计要点：缓存键——不能只用原始字符串，要规范化（大小写/空白归一）后哈希，并把影响输出的所有变量纳入 key（prompt 版本、模型、温度等参数），否则会命中错误版本的响应；失效策略——与 prompt 版本和知识时效绑定，prompt 一改相关缓存整体失效；个性化与权限——含用户私有上下文的响应绝不能进共享缓存。不适合缓存的请求：带强个人上下文的对话、实时性数据（行情/库存）、随机性是特性的场景（创意发散）、合规敏感输出（结果可能随政策变化）、以及有副作用的调用。配套：命中率监控、缓存层灰度开关。语义缓存（按相似度命中）是另一个方案，风险更高需单独评估阈值。",
+    "explanation": "Key = 归一化 query + 全部影响输出的变量；私有上下文、实时数据、创意发散、副作用调用都不该进缓存；版本绑定失效策略。",
+    "rubric": {
+      "required": [
+        "缓存键构成完整性",
+        "失效与版本绑定",
+        "不可缓存场景至少三类",
+        "命中监控与开关"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-ops-002",
+    "category": "ai-engineering",
+    "topic": "caching",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "semantic-cache",
+      "embeddings",
+      "llmops"
+    ],
+    "question": "“What is ESG?” 和 “Can you explain ESG?” 语义相似但字符串不同。如何设计 Semantic Cache？它有什么风险？",
+    "referenceAnswer": "设计：query 经 embedding 编码后在向量库检索历史 query，相似度超过阈值直接返回缓存答案，未命中则正常调用并回填。核心难点是风险：语义相近不等于可复用答案——“ESG 报告 2023 年收入是多少”和“2024 年是多少”高度相似但答案完全不同；阈值两难——高了命中率低失去意义，低了开始返回张冠李戴的答案且用户很难察觉；上下文丢失——相同 query 在不同对话历史下应有不同回答。缓解措施：只对事实型、无状态、答案稳定的 query 启用；按意图/domain 分区缓存；阈值结合业务容忍度实测校准；命中附加“来自缓存”标记便于追踪；时效敏感内容设 TTL。适合客服 FAQ 类高频重复场景，不适合开放对话。",
+    "explanation": "Embedding 相似度 + 阈值直返历史答案；最大风险是“相似不等于同答”的错误命中且难以察觉——限定事实型无状态 query、分区校准阈值、TTL 兜底。",
+    "rubric": {
+      "required": [
+        "工作机制",
+        "相似不等于可复用的核心风险",
+        "阈值两难与校准",
+        "适用边界"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-ops-003",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "rate-limit",
+      "llmops"
+    ],
+    "question": "LLM Provider 对你的 API 设置了 RPM 和 TPM 双重限制。你的系统如何同时控制 Request Rate 和 Token Rate？",
+    "referenceAnswer": "两个维度分开计量、协同调度：Request 层用令牌桶限 RPM；Token 层要在请求发出前预估消耗（input tokens 可精确计算，output tokens 按任务类型估均值加 p95 上限），用分布式令牌桶控 TPM——预算不足时请求排队等下一个窗口。工程要点：多实例部署时限流器必须集中式（Redis 等），各实例本地限速总和必超限；按优先级排队——限流触发时优先保障交互式请求，批处理让路降速；监听 429 响应的 retry-after 动态调整速率；多 provider 场景把配额管理做成独立模块，与路由/fallback 协同。目标是既不浪费配额也不触发硬限。",
+    "explanation": "RPM 用经典限流器、TPM 要先预估 token 再扣预算，集中式计量；优先级排队 + 429 反馈调节 + 多实例共享配额是关键工程点。",
+    "rubric": {
+      "required": [
+        "双维度分别计量",
+        "output token 预估",
+        "集中式限流器",
+        "优先级队列与 429 反馈"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-ops-004",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "fallback",
+      "reliability",
+      "llmops"
+    ],
+    "question": "Primary LLM Provider 故障时系统自动切换备用 Provider。如何保证切换过程中不会导致大量重复请求和成本失控？",
+    "referenceAnswer": "故障切换最容易引发三种事故：重试风暴（客户端+网关+应用三层重试相乘）、双写放大（主备都收到请求都计费）、备用 provider 配额被打爆产生二次故障。防护设计：熔断器统一收敛重试决策——主 provider 熔断打开后才切流，避免半死状态下反复探测；请求幂等化——为每个业务请求分配唯一 id，切换层去重，保证一次业务操作最多一次有效计费调用；切换限速——对新 provider 渐进放量（1%→10%→100%）而非瞬时全量，其 TPM 配额提前申请并压测；全局预算护栏——故障期间额外成本设硬顶，超限自动降级为更便宜的兜底模式；恢复同样渐进——主 provider 回来后先探活再逐步回流，防止来回横跳。",
+    "explanation": "三大事故点：重试相乘、双写计费、备库被打爆；对策 = 熔断统一决策 + 幂等 id 去重 + 渐进放量 + 成本硬顶 + 渐进回流。",
+    "rubric": {
+      "required": [
+        "重试风暴成因",
+        "幂等与去重",
+        "渐进切换与配额预案",
+        "成本硬顶护栏"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eval-005",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "medium",
+    "tags": [
+      "evaluation",
+      "prompt"
+    ],
+    "question": "一个 Prompt 修改后，人工感觉效果更好，但线上业务指标没有变化。你会如何设计 Evaluation 来验证这个修改是否真的有效？",
+    "referenceAnswer": "先警惕两类陷阱：“感觉更好”往往是个体样本的印象（可能只是变长了、语气更好），而业务指标不动可能因为指标太粗——转化率受太多因素干扰，微小改进被噪声淹没。验证设计：离线层面——固定评测集上做新旧 prompt 的 A/B 对比，不只看总分，按错误类型/场景分层看哪里变了；引入盲评（人工不知道输出来自哪个版本）与成对比较代替绝对打分，提高人评一致性。在线层面——若离线确有提升而业务指标不动，检查改动影响的流量占比（可能只改善 5% 的边缘 case）、指标滞后性、是否被其他因素抵消；必要时加大流量或延长实验周期，或改用更贴近改动的中间指标（如某类工单处理时长）。结论：感觉不是证据，分层评测 + 盲评为准绳。",
+    "explanation": "感觉不等于证据：离线固定集分层对比 + 盲评/成对比较去除偏好；在线检查影响流量占比与指标噪声，选更贴近改动的中间指标。",
+    "rubric": {
+      "required": [
+        "印象偏差识别",
+        "分层离线对比",
+        "盲评/成对比较方法",
+        "在线指标的噪声与占比分析"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-eval-007",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "evaluation",
+      "regression",
+      "testing"
+    ],
+    "question": "你修改了 Agent Prompt，但无法保证所有历史场景仍然正常。如何建立 LLM Regression Test？",
+    "referenceAnswer": "把回归测试建立在三层资产上：测试集——持续沉淀历史场景：线上 badcase 固化为用例（最重要的一类）、各功能主路径样例、边界与安全场景；每条用例带判定标准（可程序化校验的终态、关键要点 checklist 或参考答案）。执行机制——任何影响行为的变更（prompt/模型版本/工具定义/RAG 配置）都触发全量回归；判定确定性规则优先，开放部分用校准过的 LLM judge 辅助；结果与基线 diff 而非只看绝对分——重点报告哪些用例从过变挂。治理——测试集本身版本化、定期从线上新增样本防止陈旧、明确准入门槛（核心场景零失败才能发布）。工程上接进 CI，让行为回归像单元测试一样成为合并门禁，而不是上线后的惊喜排查。",
+    "explanation": "回归 = badcase 沉淀的场景库 + 变更触发的自动化执行 + 与基线的 diff 报告；接入 CI 成为合并门禁，用例库持续版本化补给。",
+    "rubric": {
+      "required": [
+        "badcase 固化机制",
+        "变更触发全量回归",
+        "基线 diff 判定方式",
+        "CI 门禁化"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-security-002",
+    "category": "ai-engineering",
+    "topic": "agent-guardrails",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "guardrails",
+      "security"
+    ],
+    "question": "如何设计一个 LLM Application 的 Input Guardrail 和 Output Guardrail？哪些检查应该在 LLM 之前完成，哪些应该在 LLM 之后完成？",
+    "referenceAnswer": "Input guardrail（LLM 之前）：注入检测（攻击模式分类器/启发式规则）、敏感信息扫描（PII/密钥先脱敏再放行）、主题与权限过滤（该用户不允许的话题直接拒绝，还省一次调用）、长度格式校验、频控。这些检查廉价且确定性高，能在恶意输入到达模型前拦截。Output guardrail（LLM 之后）：事实性/引用校验（RAG 场景验证答案 grounded 于检索内容）、毒性合规审查、PII 泄露扫描、schema 校验、越权内容检测。设计原则：确定性规则尽量前置（快且便宜），需要语义理解的判断放输出侧；两层都要低延迟、fail-safe（宁可拒绝不放行高危内容）；guardrail 自身的误杀率要监控并提供申诉通道。",
+    "explanation": "前置拦输入（注入/PII/权限，便宜确定），后置审输出（grounding/合规/schema，需语义理解）；两层低延迟、fail-safe、误杀率监控。",
+    "rubric": {
+      "required": [
+        "前后置分工逻辑",
+        "input 检查清单至少三项",
+        "output 检查清单至少两项",
+        "fail-safe 与误杀监控"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-security-003",
+    "category": "ai-engineering",
+    "topic": "privacy",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "pii",
+      "privacy",
+      "security"
+    ],
+    "question": "一个客服系统会把用户的姓名、电话、地址和订单信息发送给第三方 LLM API。你会如何设计 PII Protection？",
+    "referenceAnswer": "先分类数据：哪些字段是完成任务真正必需的（数据最小化）——“查订单状态”只需要订单号不需要姓名地址，第一步就是砍掉不必要的 PII 外发。技术手段：脱敏/替换——PII 在出站前替换为占位符（真实值存本地映射表），LLM 响应回传后再还原，模型全程只见 token 化身份；结构化分离——让 LLM 只处理语义部分，涉及 PII 的操作走确定性代码路径不经模型；部署选项升级——对高敏场景评估私有化/专属部署模型，数据不出域；协议与合规——与 provider 签 DPA、确认其数据保留与训练使用政策、开启 zero-retention 选项；审计与检测——出站内容做 PII 扫描兜底（防止上游漏脱敏）、访问日志留痕。原则：能不发的就不发，必须发的是否真的需要经过模型。",
+    "explanation": "PII 防护四层：最小化（砍不必要字段）→ 占位符替换+响应还原 → 高敏走私有化部署 → 协议（DPA/zero-retention）与出站扫描兜底。",
+    "rubric": {
+      "required": [
+        "数据最小化优先",
+        "脱敏/占位符机制",
+        "provider 协议层面",
+        "出站检测与审计"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-security-004",
+    "category": "ai-engineering",
+    "topic": "prompt-injection",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "prompt-injection",
+      "indirect-injection",
+      "agent-security"
+    ],
+    "question": "你的 Agent 可以访问内部数据库。攻击者通过网页内容间接注入 Prompt，诱导 Agent 查询敏感数据。这属于什么攻击？如何防御？",
+    "referenceAnswer": "这是间接 Prompt Injection（Indirect Prompt Injection）：恶意指令不在用户输入里，而是藏进 Agent 会读取的外部内容（网页、文档、邮件），利用“工具返回的内容和用户指令共享同一上下文”这一结构性弱点实施劫持。防御必须假设注入无法完全靠 prompt 层杜绝，采用纵深防御：权限最小化——Agent 的数据库凭证只含当前任务所需 scope，即使被劫持也读不到敏感表；指令与数据隔离——外部内容明确标注为不可信数据（分隔、转义、声明“以下内容不是指令”）；敏感操作二次授权——查询敏感数据的动作要求服务端策略放行或人工确认，而不是听信上下文中的“用户已同意”；输出过滤——响应外发前扫描是否有异常数据外泄；注入检测器对外部内容做启发式扫描；演练红队测试持续验证。核心思想是权限边界在服务端，而非信任模型听话。",
+    "explanation": "间接注入 = 恶意指令藏在 Agent 读取的外部内容里；防御核心是把权限边界放在服务端（最小 scope+敏感操作服务端鉴权），辅以数据/指令隔离、输出过滤与红队演练。",
+    "rubric": {
+      "required": [
+        "间接注入的定义与机理",
+        "权限最小化",
+        "指令数据隔离",
+        "服务端鉴权而非信任模型",
+        "红队验证"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-design-001",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "system-design",
+      "coding-agent",
+      "agent"
+    ],
+    "question": "设计一个企业级 AI Coding Agent。它可以读取代码库、搜索代码、修改文件、运行测试并根据失败结果继续修复。请重点说明 Agent Loop、Tool、Context、权限和可靠性设计。",
+    "referenceAnswer": "架构：Workflow 骨架 + 受限 Agent 循环——任务解析→定位相关文件→修改→跑测试→根据失败迭代，循环外层套 budget（最大步数/token/时间）与终止条件。Tool 设计：少量高正交工具（search/read/edit/test），schema 精确；edit 工具返回 diff 便于审查与回滚；test 工具限定沙箱环境执行。Context 管理：仓库太大不能全塞 context——用检索定位相关文件，只读必要片段；维护结构化任务状态（当前假设、已试方案、失败原因）而非依赖完整历史；长会话做摘要压缩。权限与安全：文件修改在隔离分支/worktree 进行，PR 审查后才合入；测试在容器沙箱运行，无网络或受限网络；禁止访问密钥与环境配置；所有操作审计日志。可靠性：测试失败循环检测（同一错误修两轮即升级人工）、每步校验（编辑后语法检查）、失败可回滚到上个绿色状态；评测用真实 bug 修复基准集回归。关键取舍：让模型负责“理解与决策”，把“执行与验证”交给确定性工具。",
+    "explanation": "骨架 = workflow 化的修复循环 + budget/终止;工具高正交带 diff;context 靠检索+结构化状态;安全 = 沙箱+分支隔离+审计;可靠 = 循环检测与可回滚。",
+    "rubric": {
+      "required": [
+        "Agent Loop 与终止预算",
+        "工具设计与沙箱",
+        "Context 检索策略",
+        "权限/分支隔离",
+        "循环检测与回滚"
+      ],
+      "dimensions": {
+        "correctness": 0.25,
+        "completeness": 0.3,
+        "architecture": 0.35,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-design-004",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "system-design",
+      "llmops",
+      "model-routing"
+    ],
+    "question": "设计一个 AI API Platform，同时支持多个 LLM Provider。系统需要处理成本、Latency、Rate Limit、Fallback、Model Routing 和 Observability。请说明核心架构。",
+    "referenceAnswer": "核心是一个统一的 Gateway 层，业务方只面向抽象 API：请求接入 → 路由决策 → 配额检查 → provider adapter 执行 → 响应归一化。各子系统：Model Routing——按任务类型/难度分级、成本延迟预算、合规约束选择 provider，规则起步数据成熟后动态化；Rate Limiting——集中式配额管理，RPM/TPM 双维计量，多实例共享状态；Fallback——健康探测+熔断器驱动主备切换，幂等 id 去重防重试风暴，切换渐进放量并设成本硬顶；Caching——精确缓存+可选语义缓存，版本绑定失效；Observability——统一 trace（prompt 版本、provider、token 用量、分段延迟），成本按团队/功能分账，质量抽检回流评测集；响应归一化——不同 provider 的消息格式/工具调用协议/错误码映射成统一契约，模型版本元数据随响应透传。演进建议：先做好 adapter+trace+fallback 三件套（解决可用性与可观测），路由和缓存等有流量数据后再上。",
+    "explanation": "统一 Gateway 抽象多 provider:路由/配额/熔断降级/缓存/归一化/trace 六大件;先落地 adapter+fallback+observability,路由缓存靠数据驱动后置。",
+    "rubric": {
+      "required": [
+        "Gateway 统一抽象",
+        "路由与配额机制",
+        "熔断降级与幂等",
+        "归一化契约",
+        "trace 与成本分账"
+      ],
+      "dimensions": {
+        "correctness": 0.25,
+        "completeness": 0.3,
+        "architecture": 0.35,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-design-005",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "type": "essay",
+    "difficulty": "hard",
+    "tags": [
+      "system-design",
+      "agent",
+      "rag",
+      "trade-off"
+    ],
+    "question": "一个复杂 Agent 方案比简单 RAG 的 Benchmark 高 15%，但维护成本和延迟都是 RAG 的 5 倍。作为架构师，你会如何决定最终采用哪种方案？",
+    "referenceAnswer": "先把“15%”翻译成业务语言：benchmark 提升不等于业务提升——用真实流量样本重测两个方案，看差距在哪些场景成立（可能集中在长尾复杂 case，而它们占比 5%）。再算全成本：5 倍维护成本包括工程人力、故障面扩大、评测复杂度、以及 Agent 特有的运维风险（循环、失控成本）；5 倍延迟对用户体验的影响要按场景评估。然后问三个问题：高出的能力是否是核心价值所系（错一个答案的业务代价多大）？RAG 的失败模式是否有便宜的兜底（人工升级通道）？团队能否长期养得起 Agent 的评测与运维体系？常见结论是混合路线：90% 流量走 RAG 快速便宜地满足，识别出的复杂请求升级到 Agent 处理——拿到大部分质量收益而只承担小部分流量上的高成本。决策原则是用期望价值（质量收益×场景占比−全拥有成本）比较，而不是 benchmark 分数。",
+    "explanation": "决策框架：benchmark 差距用真实分布重测并按场景占比折算，对照 5 倍的全拥有成本与延迟代价；混合架构（RAG 主干+复杂 case 升级 Agent）常是最优解。",
+    "rubric": {
+      "required": [
+        "benchmark 与业务的转换",
+        "全拥有成本核算",
+        "失败代价与兜底分析",
+        "混合方案意识"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-code-001",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "type": "coding",
+    "language": "typescript",
+    "difficulty": "medium",
+    "tags": [
+      "coding",
+      "retry",
+      "reliability"
+    ],
+    "question": "请实现一个调用 LLM API 的 retry 函数：支持 exponential backoff，只对 429 和 5xx 重试，并设置最大重试次数。",
+    "referenceAnswer": "interface RetryOptions {\n  maxRetries?: number;\n  baseDelayMs?: number;\n  maxDelayMs?: number;\n}\n\nconst RETRYABLE = new Set([429, 500, 502, 503, 504]);\n\nclass ApiError extends Error {\n  constructor(public status: number, public retryAfterMs?: number) {\n    super(`HTTP ${status}`);\n  }\n}\n\nexport async function callWithRetry<T>(\n  fn: () => Promise<T>,\n  opts: RetryOptions = {},\n): Promise<T> {\n  const { maxRetries = 3, baseDelayMs = 500, maxDelayMs = 8000 } = opts;\n  for (let attempt = 0; ; attempt++) {\n    try {\n      return await fn();\n    } catch (err) {\n      const e = err as ApiError;\n      const retryable = e instanceof ApiError && RETRYABLE.has(e.status);\n      if (!retryable || attempt >= maxRetries) throw err;\n      // 优先尊重服务端 retry-after；否则指数退避 + jitter 防惊群\n      const delay = Math.min(\n        e.retryAfterMs ?? baseDelayMs * 2 ** attempt,\n        maxDelayMs,\n      );\n      await new Promise((r) => setTimeout(r, delay + Math.random() * 250));\n    }\n  }\n}",
+    "explanation": "要点：只对 429/5xx 重试（4xx 参数错误重试无意义）；指数退避封顶 + jitter；尊重 retry-after；非幂等调用方需自行保证安全。",
+    "rubric": {
+      "required": [
+        "错误分类过滤",
+        "指数退避实现",
+        "jitter 或 retry-after",
+        "最大次数与最终抛错"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-code-002",
+    "category": "ai-engineering",
+    "topic": "word-embedding",
+    "type": "coding",
+    "language": "typescript",
+    "difficulty": "easy",
+    "tags": [
+      "coding",
+      "embeddings",
+      "vector"
+    ],
+    "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
+    "referenceAnswer": "export function cosineSimilarity(a: number[], b: number[]): number {\n  if (a.length !== b.length) throw new Error('dimension mismatch');\n  let dot = 0, normA = 0, normB = 0;\n  for (let i = 0; i < a.length; i++) {\n    dot += a[i] * b[i];\n    normA += a[i] * a[i];\n    normB += b[i] * b[i];\n  }\n  const denom = Math.sqrt(normA) * Math.sqrt(normB);\n  return denom === 0 ? 0 : dot / denom;\n}\n// 单次遍历同时算点积与范数；零向量防御除零。\n\n为什么用 cosine：它度量方向而非幅度——embedding 的模长常受文本长度/词频影响，cosine 消除了幅度的干扰，只比较语义方向的接近程度；取值 [-1,1] 有明确语义且尺度稳定。当所有向量都已 L2 归一化时，cosine 相似度等价于点积，此时可直接用内积换取计算速度（很多向量库的 IP 度量就是这个原理）。",
+    "explanation": "单遍累加点积与两个范数、除零防御;cosine 只看方向不看幅度,消除长度偏差;归一化后等价于内积。",
+    "rubric": {
+      "required": [
+        "正确实现含除零防御",
+        "方向 vs 幅度的解释",
+        "归一化后与内积等价"
+      ],
+      "dimensions": {
+        "correctness": 0.45,
+        "completeness": 0.25,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-code-003",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "type": "coding",
+    "language": "typescript",
+    "difficulty": "medium",
+    "tags": [
+      "coding",
+      "rag",
+      "chunking"
+    ],
+    "question": "请实现一个简单的 Recursive Text Chunker：支持 chunkSize 和 overlap，并避免在单词中间切断文本。",
+    "referenceAnswer": "interface ChunkOptions {\n  chunkSize: number;   // 目标字符上限\n  overlap: number;     // 相邻块重叠字符数\n}\n\nexport function chunkText(text: string, opts: ChunkOptions): string[] {\n  const { chunkSize, overlap } = opts;\n  if (overlap >= chunkSize) throw new Error('overlap must be < chunkSize');\n  const chunks: string[] = [];\n  let start = 0;\n  while (start < text.length) {\n    let end = Math.min(start + chunkSize, text.length);\n    if (end < text.length) {\n      // 在窗口内找最后一个断句边界，避免切断单词/句子\n      const window = text.slice(start, end);\n      const boundary = Math.max(\n        window.lastIndexOf(' '),\n        window.lastIndexOf('\\\\n'),\n        window.lastIndexOf('.'),\n      );\n      if (boundary > chunkSize * 0.5) end = start + boundary + 1;\n    }\n    chunks.push(text.slice(start, end).trim());\n    if (end >= text.length) break;\n    start = Math.max(end - overlap, start + 1); // 防 zero-progress 死循环\n  }\n  return chunks.filter(Boolean);\n}\n\n关键点：优先在自然边界切分（句子>空格）；边界太靠前时接受硬切避免无限膨胀；start 回退量受 overlap 约束但必须保证前进，否则死循环；生产版还应支持按段落预切分、token 计数代替字符数。",
+    "explanation": "滑动窗口 + 边界回退（句号/换行/空格）+ 防死循环的前进保证;生产化方向是段落预切分与 token 计数。",
+    "rubric": {
+      "required": [
+        "窗口滑动与 overlap 正确性",
+        "边界回退逻辑",
+        "zero-progress 防御",
+        "参数校验"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-code-004",
+    "category": "ai-engineering",
+    "topic": "tool-calling",
+    "type": "coding",
+    "language": "typescript",
+    "difficulty": "hard",
+    "tags": [
+      "coding",
+      "tool-calling",
+      "agent"
+    ],
+    "question": "请实现一个简单的 Tool Calling Handler：解析模型返回的 tool call，根据 tool name 找到对应函数，执行函数并将结果重新加入 conversation。",
+    "referenceAnswer": "type ToolFn = (args: Record<string, unknown>) => Promise<unknown>;\n\ninterface ToolCall { name: string; arguments: string; }\n\nclass ToolHandler {\n  private registry = new Map<string, ToolFn>();\n\n  register(name: string, fn: ToolFn, schema: object): void {\n    this.registry.set(name, fn);\n  }\n\n  async execute(call: ToolCall): Promise<string> {\n    const tool = this.registry.get(call.name);\n    if (!tool) return this.errorResult(call.name, `unknown tool: ${call.name}`);\n    try {\n      const args = JSON.parse(call.arguments || '{}');   // 模型输出必须当不可信输入\n      const result = await tool(args);\n      return JSON.stringify({ ok: true, data: result });\n    } catch (err) {\n      // 解析失败/执行失败都结构化返回给模型，让它有机会修正而不是崩溃\n      return this.errorResult(call.name, err instanceof Error ? err.message : 'unknown');\n    }\n  }\n\n  private errorResult(name: string, message: string): string {\n    return JSON.stringify({ ok: false, tool: name, error: message });\n  }\n\n  async runAll(calls: ToolCall[]): Promise<Array<{ role: 'tool'; content: string }>> {\n    // 多个独立调用可并发；结果以 tool role 消息回填 conversation\n    const results = await Promise.all(calls.map((c) => this.execute(c)));\n    return results.map((content) => ({ role: 'tool' as const, content }));\n  }\n}\n\n设计要点：模型输出的 arguments 是不可信 JSON，必须 parse+校验而非直接信任；错误要结构化回传给模型形成修正闭环；未知工具名优雅降级；独立工具并发执行；超时控制生产上还应加 per-tool timeout 与幂等保护。",
+    "explanation": "注册表分发 + arguments 当不可信 JSON 校验 + 错误结构化回传给模型修正 + 并发执行;生产补 timeout/幂等/鉴权。",
+    "rubric": {
+      "required": [
+        "注册表分发",
+        "JSON.parse 容错处理",
+        "错误结构化回传",
+        "tool role 回填 conversation"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    }
+  },
+  {
+    "id": "ai-code-005",
+    "category": "ai-engineering",
+    "topic": "context-engineering",
+    "type": "coding",
+    "language": "typescript",
+    "difficulty": "hard",
+    "tags": [
+      "coding",
+      "context",
+      "memory"
+    ],
+    "question": "请设计一个 Context Manager：当 conversation 超过 token budget 时，保留 system prompt、最近 N 轮消息，并对更早消息进行 summary。",
+    "referenceAnswer": "interface Message { role: 'user' | 'assistant'; content: string; tokens: number; }\n\ninterface Turn { user: Message; assistant?: Message; }  // 按轮组织便于摘要\n\nclass ContextManager {\n  private turns: Turn[] = [];\n  private summary: string | null = null;\n\n  constructor(\n    private systemPrompt: string,\n    private budgetTokens: number,\n    private recentTurns: number,\n    private summarize: (text: string) => Promise<string>,  // 注入 LLM\n  ) {}\n\n  async buildContext(): Promise<Array<{ role: string; content: string }>> {\n    const system = [{ role: 'system', content: this.systemPrompt }];\n    const sysTokens = this.approxTokens(this.systemPrompt);\n    const recent = this.turns.slice(-this.recentTurns);\n    let older = this.turns.slice(0, -this.recentTurns);\n\n    let total = sysTokens + this.turnTokens(recent) + (this.summary ? this.approxTokens(this.summary) : 0);\n\n    // 预算仍不够时：从最旧开始把更多轮次并入摘要区\n    while (total > this.budgetTokens && this.turns.length > 0 && older.length < this.turns.length - 1) {\n      older.push(this.turns[this.turns.length - older.length - 2]);\n      total = sysTokens + this.turnTokens(recent) + this.turnTokens(older) + (this.summary ? this.approxTokens(this.summary) : 0);\n    }\n\n    if (older.length > 0) {\n      const raw = older.map((t) => `User: ${t.user.content}\\\\nAssistant: ${t.assistant?.content ?? ''}`).join('\\\\n\\\\n');\n      this.summary = [this.summary, await this.summarize(raw)].filter(Boolean).join('\\\\n');  // 增量合并旧摘要\n    }\n\n    const msgs: Array<{ role: string; content: string }> = [...system];\n    if (this.summary) msgs.push({ role: 'system', content: `此前对话摘要：${this.summary}` });\n    for (const t of recent) {\n      msgs.push({ role: 'user', content: t.user.content });\n      if (t.assistant) msgs.push({ role: 'assistant', content: t.assistant.content });\n    }\n    return msgs;\n  }\n\n  private turnTokens(turns: Turn[]): number {\n    return turns.reduce((s, t) => s + t.user.tokens + (t.assistant?.tokens ?? 0), 0);\n  }\n  private approxTokens(s: string): number { return Math.ceil(s.length / 4); }\n}\n\n设计要点：system 永远保留且不参与压缩；摘要增量合并（旧摘要+新入档内容一起总结）避免信息反复丢失；summarize 作为注入函数便于 mock 测试；生产版应记录“被压缩”标记保证可观测，并对摘要丢失的关键事实（如用户偏好）走显式 memory 而非指望摘要保留。",
+    "explanation": "三层装配：system 恒定 + 旧轮次滚动摘要（增量合并）+ 近 N 轮原文；预算不足时扩大摘要区;summarize 可注入,memory 类关键信息不应依赖摘要。",
+    "rubric": {
+      "required": [
+        "system 保留与分区装配",
+        "摘要触发与预算计算",
+        "近 N 轮保护",
+        "增量摘要合并",
+        "依赖注入可测性"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    }
   }
 ]
