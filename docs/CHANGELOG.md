@@ -2,6 +2,18 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 题型变换安全边界收紧（ADR-024 评审修订）
+
+- **选择→开放不再把 options 给 LLM**：prompt 只含题干与主题，LLM 根本不知道正确选项是什么
+  （此前靠 prompt 指令"不要透露答案"，现在结构上就不可能泄漏）。
+- **coding 目标不再被 essay 变换器冒充**：open→coding 未设计，`transformQuestionWith`
+  收到 coding 直接原样返回并告警，未来单独实现。
+- **字段卫生**：变换结果显式构造目标形态字段（不再 spread+Omit+cast），
+  选择题形态不残留 referenceAnswer/language，开放题形态不残留 options/answer。
+- 安全模型定位明确：**结构安全**（answer 不由 LLM 产生）而非**语义安全**
+  （干扰项只做精确去重，语义上"其实也对"的干扰项无法排除——宁可转换失败回退原题）。
+- 测试 145 例全过（+3：prompt 边界断言、coding no-op、字段卫生）；typecheck/build 通过。
+
 ## 2026-08-23 · 题型变换支持多选（开放 → single/multiple）
 
 - **多选变换**：`transformToChoice` 支持目标 'multiple'——正确选项由代码从参考答案的

@@ -156,6 +156,49 @@ describe('transformToChoice：开放 → 选择（单选 / 多选）', () => {
   it('非法 JSON 抛错（extractJSON 兜底失败路径）', async () => {
     await expect(transformQuestionWith(openQ, 'single', async () => '完全不是 JSON')).rejects.toThrow();
   });
+
+  it('变换结果不残留来源题型专属字段（字段卫生）', async () => {
+    const toOpen = (await transformQuestionWith(choiceQ, 'essay', async () => '{"question":"为什么需要记忆分层？"}')) as OpenQuestion;
+    expect(toOpen.referenceAnswer.length).toBeGreaterThan(0);
+    expect('options' in toOpen).toBe(false);
+    expect('answer' in toOpen).toBe(false);
+
+    const toChoice = (await transformQuestionWith(openQ, 'multiple', async () => multiPayload, () => 0.3)) as ChoiceQuestion;
+    expect('referenceAnswer' in toChoice).toBe(false);
+    expect('language' in toChoice).toBe(false);
+  });
+});
+
+describe('安全边界：LLM 不接触答案数据', () => {
+  it('选择→开放时 prompt 只含题干与主题，不含 options/answer/referenceAnswer', async () => {
+    let seenSystem = '';
+    let seenUser = '';
+    await transformQuestionWith(choiceQ, 'essay', async (system, user) => {
+      seenSystem = system;
+      seenUser = user;
+      return '{"question":"改写后的开放题"}';
+    });
+    for (const opt of choiceQ.options) expect(seenUser).not.toContain(opt);
+    expect(seenUser).not.toContain(choiceQ.explanation);
+    expect(seenUser).toContain(choiceQ.question);
+    expect(seenUser).toContain(choiceQ.topic);
+    // referenceAnswer 由代码合成自权威字段，不经 LLM
+    expect(composeOpenReference(choiceQ)).toContain(choiceQ.options[choiceQ.answer[0]]);
+    void seenSystem;
+  });
+
+  it('coding 目标不被支持：原样返回且不调用 LLM（不冒充编程题）', async () => {
+    let called = 0;
+    const complete = async () => {
+      called++;
+      return '{}';
+    };
+    const r = await transformQuestionWith(openQ, 'coding', complete);
+    const rc = await transformQuestionWith(choiceQ, 'coding', complete);
+    expect(r).toBe(openQ);
+    expect(rc).toBe(choiceQ);
+    expect(called).toBe(0);
+  });
 });
 
 describe('变换后题目可继续走变体管线（结构兼容）', () => {

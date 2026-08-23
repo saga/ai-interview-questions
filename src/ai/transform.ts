@@ -57,18 +57,20 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
   return a;
 }
 
-/** 选择 → 开放：LLM 只重写题干，referenceAnswer 由代码合成。 */
+/**
+ * 选择 → 开放：LLM 只重写题干。
+ * 安全边界贯彻 ADR-019：options/answer/reference **不进入 prompt**——
+ * LLM 根本不知道正确选项是什么，只依据题干与主题改写。
+ */
 async function transformToOpen(q: Question, complete: CompleteFn): Promise<OpenQuestion> {
   const cq = q as ChoiceQuestion;
   const system =
     '你是资深面试官。把一道选择题改写成考察同一知识点的开放式简答题：不出现任何选项，' +
-    '引导应聘者解释原理、对比方案或分析场景。只输出 JSON：{"question":"改写后的题干"}。不要透露正确答案。';
-  const raw = await complete(
-    system,
-    `【题目】${cq.question}\n【选项】\n${cq.options.map((o, i) => `${i}. ${o}`).join('\n')}`,
-  );
+    '引导应聘者解释原理、对比方案或分析场景。只输出 JSON：{"question":"改写后的题干"}。';
+  const raw = await complete(system, `【题目】${cq.question}\n【考察主题】${cq.topic}`);
   const stem = extractJSON<{ question?: unknown }>(raw).question;
   if (typeof stem !== 'string' || !stem.trim()) throw new Error('题型变换输出缺少有效题干');
+  // 显式构造目标形态字段，杜绝选择题专属字段（options/answer）残留
   return {
     id: cq.id,
     category: cq.category,
@@ -141,18 +143,20 @@ async function transformToChoice(
     .map((o, i) => (correctSet.has(o) ? i : -1))
     .filter((i) => i >= 0)
     .sort((a, b) => a - b);
-  // 参考答案等开放题专属字段不带入选择题形态
-  const { referenceAnswer: _ra, language: _lang, ...base } = oq;
-  void _ra;
-  void _lang;
+  // 显式构造目标形态字段，杜绝开放题专属字段（referenceAnswer/language）残留
   return {
-    ...(base as Omit<typeof oq, 'referenceAnswer' | 'language'>),
+    id: oq.id,
+    category: oq.category,
+    topic: oq.topic,
+    tags: oq.tags,
+    difficulty: oq.difficulty,
     type: actualType,
     question: parsed.question.trim(),
     options,
     answer,
     explanation: oq.explanation,
     aiGenerated: true,
+    rubric: oq.rubric,
   };
 }
 
@@ -161,6 +165,11 @@ type CompleteFn = (system: string, user: string) => Promise<string>;
 /**
  * 执行题型变换；已是目标题型时原样返回，LLM 输出不合法时抛错（调用方回退原题）。
  * 成功后在日志记录 id 与形态映射（不做 UI 展示）。
+ *
+ * 支持的目标：essay（选择→开放）、single / multiple（开放→选择）。
+ * coding 刻意不支持：编程题需要可执行的参考答案与判分契约，开放题变换器不冒充它；
+ * 未来真正设计 open→coding 时应单独实现。
+ *
  * @param rng 注入洗牌随机源（默认 Math.random），测试可固定
  */
 export async function transformQuestionWith(
@@ -170,10 +179,13 @@ export async function transformQuestionWith(
   rng: () => number = Math.random,
 ): Promise<Question> {
   let transformed: Question;
-  if (target === 'essay' || target === 'coding') {
+  if (target === 'essay') {
     transformed = isOpen(q) ? q : await transformToOpen(q, complete);
-  } else {
+  } else if (target === 'single' || target === 'multiple') {
     transformed = isChoice(q) ? q : await transformToChoice(q, target, complete, rng);
+  } else {
+    console.warn(`题型变换不支持目标 ${target}（题目 ${q.id}），保持原题型`);
+    transformed = q;
   }
   if (transformed !== q) {
     console.info(`[题型变换] 题目 ${q.id}（${q.topic}）: ${q.type} → ${transformed.type}`);

@@ -213,17 +213,24 @@ Canonical Question ──→ LLM（只输出 question / explanation / 干扰项�
         └──────────────── 失败 → 保留原题
 
 题型变换（ADR-024，同一 id 换形态）：
-  选择→开放：referenceAnswer = 代码合成（概念 + 解析 + 正确选项原文）
+  选择→开放：prompt 只含题干与主题——options/answer 不进 prompt，
+             LLM 根本不知道正确选项；referenceAnswer = 代码合成
+             （概念 + 解析 + 正确选项原文）
   开放→选择（单选/多选）：正确选项 = referenceAnswer 成句片段提取
     （单选取首句；多选取前 2-3 句、不足回退单选）；LLM 只给干扰项；
     代码洗牌并定位 answer 索引——LLM 不知道正确项在哪
+  open→coding 刻意不支持（需可执行参考答案，未来单独设计）
+```
 ```
 
 要点：
 - 常规变体中选择题的 options/answer 永远来自原题——LLM 不接触选项顺序。
 - 题型变换是唯一例外：options 里会出现 LLM 干扰项，但**正确选项文本与 answer 索引**
   仍由代码从原题权威字段合成；干扰项与正确表述重复/可用数不足时直接回退原题。
-- 变换后题目保留原题 id（learner memory evidence 对齐），映射只在日志记录、UI 不展示。
+  安全边界是"LLM 可以创造错误答案，但不能创造正确答案"——结构安全而非语义安全
+  （无法排除语义上"其实也对"的干扰项，宁可转换失败也不凑数）。
+- 变换后题目保留原题 id（learner memory evidence 对齐），映射只在日志记录、UI 不展示；
+  结果显式构造目标形态字段，不残留来源题型专属字段。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 
