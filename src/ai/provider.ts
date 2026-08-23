@@ -1,6 +1,6 @@
 // AI 适配层：应用只依赖 LLMProvider 接口（见 types.ts）。这里是工厂、配置校验与具体实现。
-// 分层（ADR-019）：Quiz 域的 LLM 能力全部走 one-shot（variant / evaluate），
-// 底层由 CompleteFn 注入——pi-ai（云端）或 Chrome Prompt API（本地，ADR-021）。
+// 只有两种实现：ChromeAIProvider（浏览器内置，ADR-021）与 PiAIProvider（pi-ai one-shot，
+// 覆盖云端与本地 OpenAI 兼容服务，后者由 buildModels 路由到自定义 provider，ADR-022）。
 // pi-agent-core 仅在未来"对话式模拟面试"回归时引入（当前已移除）。
 
 import type {
@@ -17,10 +17,14 @@ import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
 
-/** 配置校验按 provider 区分：chrome 用浏览器内置模型，无需 apiKey/model。 */
+/** 配置校验按 provider 区分：
+ *  - chrome：浏览器内置模型，无需 apiKey/model；
+ *  - local：OpenAI 兼容本地服务，需要 model id，apiKey 可选（baseUrl 空则用默认地址）；
+ *  - 云端：必须有 apiKey 与 model。 */
 export function isConfigValid(c: PiConfig): boolean {
   if (!c || !c.provider) return false;
   if (c.provider === 'chrome') return true;
+  if (c.provider === 'local') return Boolean(c.model && c.model.trim().length > 0);
   return Boolean(c.apiKey && c.apiKey.trim().length > 0 && c.model);
 }
 
@@ -83,7 +87,10 @@ export class ChromeAIProvider implements LLMProvider {
   }
 }
 
-/** 由配置构造 LLMProvider；配置无效返回 null（上层据此退化为原题/不评分）。 */
+/** 由配置构造 LLMProvider；配置无效返回 null（上层据此退化为原题/不评分）。
+ *  只有两种实现：chrome（浏览器内置）与其余全部走 pi-ai——
+ *  本地 OpenAI 兼容服务由 buildModels 内部路由到自定义 provider（ADR-022），
+ *  对上层而言与云端无差别。 */
 export function createLLMProvider(config?: PiConfig): LLMProvider | null {
   if (!config || !isConfigValid(config)) return null;
   return config.provider === 'chrome' ? new ChromeAIProvider() : new PiAIProvider();

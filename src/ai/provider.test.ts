@@ -69,6 +69,12 @@ describe('createLLMProvider', () => {
     expect(p?.name).toBe('pi-ai');
   });
 
+  it('本地 OpenAI 兼容服务也走 PiAIProvider（buildModels 内部路由，ADR-022）', () => {
+    const p = createLLMProvider({ provider: 'local', model: 'unsloth/Qwen3-8B', apiKey: '' });
+    expect(p).toBeInstanceOf(PiAIProvider);
+    expect(p?.name).toBe('pi-ai');
+  });
+
   it('无效配置返回 null（上层退化为原题/不评分）', () => {
     expect(createLLMProvider({ provider: 'openai', model: '', apiKey: '' })).toBeNull();
     expect(createLLMProvider(undefined)).toBeNull();

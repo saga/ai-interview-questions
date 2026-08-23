@@ -7,12 +7,15 @@ import { openaiProvider } from '@earendil-works/pi-ai/providers/openai';
 import { anthropicProvider } from '@earendil-works/pi-ai/providers/anthropic';
 import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
 import { deepseekProvider } from '@earendil-works/pi-ai/providers/deepseek';
+import { buildLocalProvider } from './local';
 import type { PiConfig } from '../types';
 
-/** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。 */
+/** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。
+ *  空 key 返回 undefined，交给 provider 自身的 auth.resolve 兜底（如 local 的占位符）。 */
 function createCredentialStore(apiKey: string, providerId: string): CredentialStore {
   return {
-    read: async (pid) => (pid === providerId ? { type: 'api_key', key: apiKey } : undefined),
+    read: async (pid) =>
+      pid === providerId && apiKey.trim() ? { type: 'api_key', key: apiKey } : undefined,
     list: async () => [],
     modify: async () => undefined,
     delete: async () => undefined,
@@ -29,6 +32,7 @@ export function buildModels(config: PiConfig): ModelsClient {
   if (config.provider === 'openai') models.setProvider(openaiProvider());
   else if (config.provider === 'anthropic') models.setProvider(anthropicProvider());
   else if (config.provider === 'deepseek') models.setProvider(deepseekProvider());
+  else if (config.provider === 'local') models.setProvider(buildLocalProvider(config));
   else models.setProvider(openrouterProvider());
   return models;
 }
@@ -47,7 +51,8 @@ export async function callLLM(config: PiConfig, system: string, user: string): P
   }
   const message: UserMessage = { role: 'user', content: user, timestamp: Date.now() };
   const context: Context = { systemPrompt: system, messages: [message] };
-  const res = await models.complete(model, context, { apiKey: config.apiKey });
+  // 空 apiKey 不显式传入，让 provider 的 auth.resolve 兜底（local 用占位符）
+  const res = await models.complete(model, context, config.apiKey.trim() ? { apiKey: config.apiKey } : {});
   const textBlock = (res.content ?? []).find((b) => b.type === 'text');
   return (textBlock && 'text' in textBlock ? textBlock.text : '') ?? '';
 }

@@ -19,12 +19,14 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
   learner.ts     Learner Memory：updateLearner / sessionFromQuiz / recommendWeakTopics
                  / buildCoachDefinition / recommendationText（Training Coach 数据核心）
 
-ai/            LLM 适配层，应用只依赖 LLMProvider 接口
-   pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON / 密钥注入）
+ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI）
+   pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON；local 在此路由到
+                     createProvider 注册的自定义 provider，ADR-022）
    chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete，ADR-021）
+   local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
    variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
    evaluate.ts       开放题评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
-   provider.ts       LLMProvider 工厂 + isConfigValid + PiAIProvider / ChromeAIProvider
+   provider.ts       LLMProvider 工厂 + isConfigValid + ChromeAIProvider / PiAIProvider
 
 storage/       本地持久化
   settings.ts    LLM 配置（localStorage）
@@ -140,13 +142,15 @@ InterviewDefinition  (声明式：categories / difficulties / questionTypes
 一句话：**Domain 决策是核心，LLM 只是插件；pi-agent-core 只在"需要连续对话"的场景回归。**
 
 ```
-Quiz / 训练流程 ──→ LLMProvider（工厂按配置分派）
-                      ├── PiAIProvider     → ai/pi.ts（pi-ai one-shot，云端，需 API Key）
-                      │     ├── ai/variant.ts    变体 = 只重写题干
-                      │     └── ai/evaluate.ts   开放题评分 = 四维 dimensions
-                      │           ↓ overall 由 domain/aggregateOverall 计算
-                      └── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
-                            复用同一套 variant/evaluate 编排（CompleteFn 注入）
+Quiz / 训练流程 ──→ LLMProvider（工厂按配置分派，实现仅两套）
+                      ├── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
+                      └── PiAIProvider     → ai/pi.ts（pi-ai one-shot，统一入口）
+                            ├── 云端：openai / anthropic / openrouter / deepseek
+                            ├── 本地 OpenAI 兼容服务（ADR-022）：buildModels 路由到
+                            │   ai/local.ts 的 createProvider 注册（默认 Unsloth 8888/v1）
+                            ├── ai/variant.ts    变体 = 只重写题干
+                            └── ai/evaluate.ts   开放题评分 = 四维 dimensions
+                                  ↓ overall 由 domain/aggregateOverall 计算
 对话式模拟面试   ──→ （未来）pi-agent-core，仅此场景引入 Agent
 ```
 
@@ -232,6 +236,14 @@ Canonical Question ──→ LLM（只输出 question / explanation）
   `(globalThis as any).LanguageModel?.availability()` 能力检测（API 缺失/异常一律视为 unavailable），
   不引入 polyfill。每次调用新建 session 并 destroy（one-shot 无状态）；system prompt 走
   `initialPrompts`。模型 downloadable 状态下首次 create 可能触发下载。
+- **本地 OpenAI 兼容服务（ADR-022）**：走 pi-ai `createProvider`（SDK 原生自定义 provider 路径，
+  models.json 加载器属 coding-agent CLI 不在 SDK 内）；compat 关闭 developer role /
+  reasoning_effort。浏览器直连 localhost 仍受 CORS 限制，本地服务需允许跨域。
+  踩坑：openai-completions 是 SSE 流式（mock 测试须回 event-stream）；pi-ai 把传输错误
+  吞成 stopReason='error'（callLLM 返回空文本，上层 parse 兜底）；空 apiKey 不能以
+  complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
+- **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认 `{ provider: 'deepseek',
+  model: 'deepseek-v4-flash' }`；示例配置见 `docs/config.example.json`。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；provider id 为 `openai / anthropic / openrouter`。
 - **浏览器直连 LLM 受 CORS 限制**：默认推荐 **OpenRouter**；OpenAI/Anthropic 直连可能失败，需自配代理。
 - **pi-ai 对浏览器友好**：库内部对 `globalThis.process` 与 `node:fs` 做了守卫/懒加载，打包时 `node:fs` 外部化为警告，属预期且不崩。

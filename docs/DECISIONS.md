@@ -2,6 +2,36 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-022 · 本地 OpenAI 兼容服务支持（复用 pi-ai createProvider）+ 实现收敛为两套
+
+- 状态：已采纳 · 2026-08-23
+- 背景：用户使用 Unsloth Studio 等本地推理服务（默认 `http://127.0.0.1:8888/v1`，
+  OpenAI 兼容协议）。曾考虑手写 fetch 直连，后确认 **pi-ai SDK 原生支持自定义 provider**
+  （README「Custom Providers」：`createProvider` + `api/openai-completions.lazy`，
+  与官方 models.json 自定义 provider 同一条路径）。
+- 决策：
+  - **不手写 HTTP**：models.json 式"配置即用"的加载器属于 `@earendil-works/pi-coding-agent`
+    （CLI 包），不在 SDK 内；SDK 的原生方式就是 `createProvider` 注册——`ai/local.ts`
+    的 ~50 行（Model 定义 / auth.resolve / compat 开关）是 SDK 契约的最小必要集，非重复造轮子。
+  - **compat 关闭 developer role 与 reasoning_effort**：多数本地服务器
+    （Unsloth / Ollama / vLLM / llama.cpp）不认这些字段（见 pi models 文档）。
+  - **免密钥语义**：CredentialStore 对空 key 返回 undefined（不再返回空串 credential），
+    callLLM 空 key 时不显式传 apiKey 选项——让 provider 的 auth.resolve 兜底为占位符；
+    否则空串会覆盖解析结果导致请求根本发不出。
+  - **实现收敛为两套**：删除独立的 LocalProvider 类——local 在 buildModels 层路由到
+    pi-ai 自定义 provider，对上层与云端无差别。LLMProvider 只有
+    ChromeAIProvider（ADR-021）与 PiAIProvider 两个实现。
+  - **默认云端引擎改为 DeepSeek**（provider='deepseek'，model='deepseek-v4-flash'）；
+    localStorage 契约不变，仅新增可选 baseUrl 字段。
+  - 新增 `docs/config.example.json` 示例配置（chrome / local / cloud 三种形态）。
+- 理由：本地推理与产品 local-first 定位一致且零成本；复用 pi-ai 让 prompt 编排、流式、
+  错误处理全部继承既有链路（callLLM 一处入口），未来换协议只动 buildModels。
+- 踩坑记录：① openai-completions 走 SSE 流式，测试 mock 必须回 event-stream 格式；
+  ② pi-ai 把传输错误吞成 stopReason='error' 的消息，callLLM 返回空文本由上层 parse 兜底，
+  不抛异常；③ 空 apiKey 必须避免以选项形式显式传入 complete()。
+- 验证：测试 105 例全过（local provider 构建 / SSE mock 端到端 / 工厂分派）；
+  typecheck/build 通过。
+
 ## ADR-021 · 引入 Chrome Built-in AI Provider（本地 Prompt API 双底层）
 
 - 状态：已采纳 · 2026-08-23

@@ -2,7 +2,7 @@
 
 export type QuestionType = 'single' | 'multiple' | 'essay' | 'coding';
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type ProviderId = 'chrome' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek';
+export type ProviderId = 'chrome' | 'local' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek';
 
 /** 题库是 source of truth；LLM 只是增强层，不改变这些字段的权威语义。 */
 interface QuestionBase {
@@ -140,11 +140,15 @@ export interface LLMProvider {
 }
 
 /** LLM 连接配置（浏览器内使用，存于 localStorage）。
- *  provider='chrome' 时 model/apiKey 无意义，存空字符串即可（校验按 provider 区分）。 */
+ *  provider='chrome' 时 model/apiKey 无意义，存空字符串即可（校验按 provider 区分）。
+ *  provider='local' 时 baseUrl 指向 OpenAI 兼容服务（默认 Unsloth：127.0.0.1:8888/v1），
+ *  apiKey 可选；其余字段向后兼容，旧数据缺 baseUrl 由 loadConfig 兜底。 */
 export interface PiConfig {
   provider: ProviderId;
   model: string;
   apiKey: string;
+  /** 仅 provider='local' 使用：OpenAI 兼容服务地址 */
+  baseUrl?: string;
 }
 
 /**

@@ -2,9 +2,11 @@ import { Form, Select, Input, Alert, Button, Card, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import type { PiConfig, ProviderId } from '../../types';
 import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
+import { DEFAULT_LOCAL_BASE_URL } from '../../ai/local';
 
 const PROVIDER_OPTIONS: { label: string; value: ProviderId }[] = [
   { label: '本地 AI（Chrome 内置，推荐，无需密钥）', value: 'chrome' },
+  { label: '本地 API（OpenAI 兼容，如 Unsloth / vLLM / Ollama）', value: 'local' },
   { label: 'OpenRouter（CORS 友好，模型多）', value: 'openrouter' },
   { label: 'OpenAI', value: 'openai' },
   { label: 'Anthropic', value: 'anthropic' },
@@ -44,6 +46,7 @@ export const MODEL_OPTIONS: Record<ProviderId, { label: string; value: string }[
   ],
   deepseek: [{ label: 'DeepSeek V4 Flash', value: 'deepseek-v4-flash' }],
   chrome: [], // 本地内置模型，无模型 ID 可选
+  local: [], // 本地 API 模型由服务端决定，自由输入（如 unsloth/Qwen3-VL-8B-Instruct）
 };
 
 interface Props {
@@ -55,6 +58,7 @@ export default function SettingsPanel({ config, onSave }: Props) {
   const [form] = Form.useForm<PiConfig>();
   const provider = Form.useWatch('provider', form) ?? config.provider;
   const isChrome = provider === 'chrome';
+  const isLocal = provider === 'local';
   const [availability, setAvailability] = useState<ChromeAvailability | null>(null);
 
   useEffect(() => {
@@ -70,7 +74,12 @@ export default function SettingsPanel({ config, onSave }: Props) {
 
   const handleSave = async () => {
     const values = await form.validateFields();
-    onSave({ ...values, model: values.model ?? '', apiKey: values.apiKey ?? '' });
+    onSave({
+      ...values,
+      model: values.model ?? '',
+      apiKey: values.apiKey ?? '',
+      baseUrl: values.baseUrl?.trim() ?? '',
+    });
   };
 
   return (
@@ -84,6 +93,13 @@ export default function SettingsPanel({ config, onSave }: Props) {
           showIcon
           style={{ marginBottom: 16 }}
           message={availability ? AVAILABILITY_TEXT[availability].message : '正在检测本地模型可用性…'}
+        />
+      ) : isLocal ? (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message="直连本机运行的 OpenAI 兼容服务（默认 Unsloth Studio：127.0.0.1:8888/v1）。推理与数据全部留在本机，无需 API Key；请确认服务已启动并允许浏览器跨域（CORS）访问。"
         />
       ) : (
         <Alert
@@ -104,7 +120,7 @@ export default function SettingsPanel({ config, onSave }: Props) {
             }}
           />
         </Form.Item>
-        {!isChrome && (
+        {!isChrome && !isLocal && (
           <>
             <Form.Item name="model" label="模型" rules={[{ required: true }]}>
               <Select
@@ -118,8 +134,18 @@ export default function SettingsPanel({ config, onSave }: Props) {
             </Form.Item>
           </>
         )}
+        {isLocal && (
+          <>
+            <Form.Item name="model" label="模型 ID" rules={[{ required: true, message: '请填写模型 ID' }]}>
+              <Input placeholder="如 unsloth/Qwen3-VL-8B-Instruct（以本地服务的 /v1/models 为准）" />
+            </Form.Item>
+            <Form.Item name="baseUrl" label="服务地址">
+              <Input placeholder={DEFAULT_LOCAL_BASE_URL} />
+            </Form.Item>
+          </>
+        )}
       </Form>
-      {!isChrome && (
+      {!isChrome && !isLocal && (
         <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
           浏览器直连受 CORS 限制：优先推荐 OpenRouter；OpenAI / Anthropic 直连失败时请改用 OpenRouter 或自配代理。
         </Typography.Paragraph>

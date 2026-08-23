@@ -1,0 +1,31 @@
+{
+  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页保存后自动写入）。以下三种引擎形态取其一直接使用；字段 baseUrl 仅 provider=local 时有意义，其余场景留空字符串即可。",
+
+  "example-1-chrome-本地内置": {
+    "provider": "chrome",
+    "model": "",
+    "apiKey": "",
+    "baseUrl": ""
+  },
+
+  "example-2-local-本地OpenAI兼容服务(默认Unsloth)": {
+    "provider": "local",
+    "model": "unsloth/gemma-4-E4B-it-qat-GGUF",
+    "apiKey": "",
+    "baseUrl": "http://127.0.0.1:8888/v1"
+  },
+
+  "example-3-cloud-云端(默认DeepSeek)": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash",
+    "apiKey": "sk-xxxxxxxxxxxxxxxx",
+    "baseUrl": ""
+  },
+
+  "$字段说明": {
+    "provider": "'chrome' | 'local' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek'",
+    "model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；cloud 见设置页下拉",
+    "apiKey": "云端必填；local 可选（部分服务需要）；chrome 不适用",
+    "baseUrl": "仅 local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等"
+  }
+}

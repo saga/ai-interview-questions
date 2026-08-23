@@ -8,15 +8,16 @@ export function loadConfig(): PiConfig {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<PiConfig>;
       return {
-        provider: parsed.provider ?? 'openrouter',
-        model: parsed.model ?? 'openai/gpt-4o-mini',
+        provider: parsed.provider ?? 'deepseek',
+        model: parsed.model ?? 'deepseek-v4-flash',
         apiKey: parsed.apiKey ?? '',
+        baseUrl: parsed.baseUrl ?? '',
       };
     }
   } catch {
     /* ignore */
   }
-  return { provider: 'openrouter', model: 'openai/gpt-4o-mini', apiKey: '' };
+  return { provider: 'deepseek', model: 'deepseek-v4-flash', apiKey: '', baseUrl: '' };
 }
 
 export function saveConfig(c: PiConfig): void {

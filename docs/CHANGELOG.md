@@ -2,6 +2,21 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 本地 OpenAI 兼容服务支持（Unsloth 默认）+ 实现收敛为两套 + 默认引擎改 DeepSeek
+
+- **local 引擎（ADR-022）**：`ProviderId` 增加 `'local'`（OpenAI 兼容协议，默认
+  `http://127.0.0.1:8888/v1` 即 Unsloth Studio）。**复用 pi-ai 原生 `createProvider`**
+  （README Custom Providers 路径）而非手写 fetch——models.json 式配置加载属 coding-agent
+  CLI，不在 SDK 内；`ai/local.ts` 仅 ~50 行 Model 定义/auth/compat。
+- **实现收敛为两套**：删除独立 LocalProvider 类，local 在 `buildModels` 层路由进 pi-ai，
+  对上层与云端无差别。LLMProvider 实现只剩 ChromeAIProvider 与 PiAIProvider。
+- **免密钥修复**：CredentialStore 空 key 返回 undefined、callLLM 空 key 不显式传 apiKey 选项
+  （空串会覆盖 auth 解析导致请求发不出）；compat 关闭 developer role / reasoning_effort。
+- **默认引擎改 DeepSeek**（deepseek-v4-flash）；新增 `docs/config.example.json`
+  （chrome / local / cloud 三种示例形态）；SettingsPanel local 形态展示 baseUrl 输入与
+  自由输入模型 ID、隐藏密钥项。
+- 测试 105 例全过（+7：local provider 构建、SSE mock 端到端、工厂分派）；typecheck/build 通过。
+
 ## 2026-08-23 · 新增 Chrome Built-in AI Provider（本地模型，免密钥）
 
 - **双底层 LLMProvider（ADR-021）**：新增 `ai/chrome.ts`（Chrome Prompt API 封装：
