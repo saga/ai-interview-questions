@@ -2,6 +2,23 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 新增 LLM 推理架构推理链 5 题：从机制到 Agent 容量规划
+
+- **出题原则**：模型名称只作 context、不作 prerequisite——题干给足架构事实
+  （头数/层数/head_dim/精度），考察"能否推导设计与后果"，不考"是否读过某篇文章"。
+- **题目链（机制 → 定量 → 取舍 → 系统 → 选型）**：
+  - `llm-12`（gqa）：32 Query 头 / 2 KV 头为何缩小 16× KV cache——Query 头不进缓存公式；
+  - `llm-13`（kv-cache）：定量计算单 token KV cache（2×48×2×128×2B ≈ 48 KiB）与
+    10k token 会话总量，干扰项对应三类典型误算（漏 K/V 因子 / 误用 Query 头 / 误用精度）；
+  - `llm-14`（hybrid-attention）：75% SWA + 25% 全局 GQA 的收益与代价
+    （有界缓存 + 信息高速公路 vs 局部层看不远）；
+  - `agentic-61`（inference-capacity）：Agent workload 下 KV 效率为何比 benchmark 重要
+    （KV ∝ 上下文 × 并发），并显式考察"哪些瓶颈不会消失"（prefill 计算/权重带宽/质量）；
+  - `ai-eng-025`（system-design）：Dense+GQA vs MoE vs 小模型 MHA 的五维选型权衡
+    （MoE 省算力不省显存、MHA 缓存最大、SLO 反推资源预算）。
+- **conceptGraph**：新增 topic `hybrid-attention` / `inference-capacity` 及 3 条 related 边，
+  接入薄弱项推荐；157 测试全过，typecheck/build 通过。
+
 ## 2026-08-23 · 选择形态场景化升级：173 题换装情境题干 + 干扰项强化（ADR-028）
 
 - **选择性改造（非全量）**：参考 AWS 认证考试风格样例，仅对适合场景化的题

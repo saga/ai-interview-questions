@@ -3338,5 +3338,54 @@
         "question": "一家银行的 AI 团队维护五十个内部 API（账户、风控、征信查询等），计划让信贷、客服、合规三条业务线的多个 Agent 复用这批能力；API 分属不同团队且仍在快速演进，行内还要求工具调用具备统一的鉴权与审计口径。架构师就“直连 Function Calling 还是引入 MCP”应给出的判断依据是？"
       }
     }
+  },
+  {
+    "id": "agentic-61",
+    "category": "agentic-ai",
+    "topic": "inference-capacity",
+    "tags": [
+      "kv-cache",
+      "concurrency",
+      "capacity-planning",
+      "agent-serving"
+    ],
+    "difficulty": "hard",
+    "question": "你的团队自托管 LLM 给多轮工具调用 Agent 使用：每次会话从较长的 system prompt 开始，工具结果使上下文持续增长到数万 token，且需同时服务上百个并发会话。在这种 workload 下，为什么\"单 token KV cache 更小\"往往比 benchmark 分数更值得作为选型依据？哪些性能瓶颈不会因此消失？",
+    "explanation": "Agent 上下文随多轮工具调用单调增长，KV cache ∝ 上下文长度，总占用还要乘并发路数——低 KV/token 直接换来更高并发或更长可用上下文，这是吞吐与成本的硬约束。但 KV 优化不改善 prefill 计算（首 token 延迟主要由权重读取/QKV 投影/FFN 主导）、decode 权重带宽、kernel 效率，也不提升模型质量本身。",
+    "reference": {
+      "concept": "Agent serving：总 KV cache ≈ 每 token 开销 × 上下文长度 × 并发数；KV 效率决定并发容量上限，但不解决 prefill/质量瓶颈。"
+    },
+    "rubric": {
+      "required": [
+        "KV cache 随上下文线性增长，Agent 多轮工具调用使上下文持续膨胀",
+        "总显存压力 = 单 token KV × 上下文长度 × 并发会话数",
+        "低 KV/token 换来更高并发容量或更长上下文，即更低的单位服务成本",
+        "指出不会消失的瓶颈：prefill 计算与首 token 延迟、权重读取带宽、kernel/调度效率、模型能力边界"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.25,
+        "architecture": 0.25,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "同样显存下能承载更高并发或更长上下文：decode 阶段 KV cache 随上下文线性增长并乘上并发路数，常是容量的第一约束",
+          "Prefill 吞吐同步成倍提升：KV cache 变小意味着首 token 延迟等比例下降",
+          "模型对工具参数的选择准确率会随之提升，任务成功率更有保障",
+          "可以取消上下文截断/摘要等管理策略，因为显存不再是约束"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "选型评审：两个候选模型 benchmark 分数接近、层数与 hidden size 相近，候选 A 的单 token KV cache 只有候选 B 的 1/16。你的 Agent 平台需要在上百路并发会话下保持稳定延迟。选择 A 最直接、可稳妥预期的收益是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：KV cache ∝ 上下文长度且 Agent 上下文持续增长；总占用 = 每 token × 长度 × 并发数；低 KV/token → 同显存更高并发/更长上下文/更低单位成本；但 prefill 计算、权重读取带宽、kernel 效率与模型质量不会被 KV 优化改善。\n\n解析：Agent workload 的特殊性在于上下文不是静态问答而是单调增长的轨迹（system prompt → tool call → tool result → …），KV cache 随之线性膨胀；上百个并发 session 再把这个数字放大两个数量级。此时 KV/token 是并发容量的硬上限：例如单 token 48KiB、10k 上下文时每路约 0.47GB，20GB 富余显存只能撑约 40 路；换成 1/16 的开销即可支撑数百路。benchmark 分数无法反映这一约束。反过来，KV 优化帮不上忙的地方同样要认清：prefill 仍要对全部输入做完整前向计算（首 token 延迟由层数、hidden size、kernel 效率主导）；decode 每步仍要读全部权重；批调度、采样、工具往返延迟照旧；模型会不会选对工具更是与缓存无关的能力问题。"
+      }
+    }
   }
 ]

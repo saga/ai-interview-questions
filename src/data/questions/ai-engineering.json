@@ -2344,5 +2344,55 @@
         "question": "一款客户成功 Copilot 支持长达数周的单会话，历史消息不断累积导致请求 token 远超预算、费用与响应延迟双双失控。工程师为此实现了一个 Context Manager，在超限时对历史做摘要压缩。架构评审时，应确认它符合哪种装配策略？"
       }
     }
+  },
+  {
+    "id": "ai-eng-025",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "tags": [
+      "model-selection",
+      "dense-vs-moe",
+      "kv-cache",
+      "capacity-planning",
+      "tradeoff"
+    ],
+    "difficulty": "hard",
+    "question": "固定预算下为高并发 Agent 推理服务选基座，公开评测显示三者质量接近：A＝30B Dense、GQA（2 KV 头）；B＝30B 总参 MoE（每 token 激活约 3B）、8 KV 头；C＝14B Dense、标准 MHA。请从 latency、memory、concurrency、quality、cost 五个维度给出定量化的权衡分析。",
+    "explanation": "三种结构各有明确的资源画像：A 的 KV cache 最小（KV 头数决定）、并发容量最高，decode 质量受限于激活的全部 30B 参数；B decode FLOPs 低（激活 3B）但专家权重须全部常驻显存——MoE 省算力不省显存；C 权重最小、加载最轻，但 MHA 的 KV cache 最大，高并发长上下文下最先撞显存墙。正确方法是从 SLO（目标延迟、并发路数、上下文长度）出发定量测算，而不是比参数量或 benchmark。",
+    "reference": {
+      "concept": "选型框架：SLO 反推资源预算 → 逐项测算权重显存/KV 显存/decode FLOPs → 实测校验质量底线；Dense+GQA/MoE/MHA 的资源画像完全不同。"
+    },
+    "rubric": {
+      "required": [
+        "MoE：总参决定显存（专家权重全量常驻），激活参数决定每 token FLOPs 与 decode 延迟",
+        "MHA：KV 头数等于 Query 头数，单 token KV cache 最大，高并发长上下文下成为容量瓶颈",
+        "Dense+GQA：KV cache 由 KV 头数控制，本例中三者最小",
+        "结论应从目标并发 × 上下文长度 × 显存预算的定量测算反推，而非单看参数量或 benchmark 分数"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先定 SLO 再逐项测算：A 的 KV cache 最小、并发容量最高；B decode FLOPs 低但专家权重须全量常驻显存；C 权重最轻但 MHA 缓存最大、高并发下最先撞显存墙；最后实测校验质量底线",
+          "B 的总参数量与 A 相同（都是 30B），所以两者的显存占用与可承载并发基本一致，主要差异只在训练成本",
+          "C 参数量最小，必然延迟最低、成本最低，无需测算可直接选定",
+          "三者公开评测分数接近说明部署特性也接近，任选其一即可，差异只是吞吐上的微小不同"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "基础设施评审会上，三位工程师分别主张选 A/B/C，争论聚焦在\"谁的显存账算得对\"。下列哪种分析框架是最合理的决策方式？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：MoE 总参定显存、激活参定延迟；MHA 缓存最大；Dense+GQA 缓存最小；应从并发 × 上下文 × 显存预算反推。\n\n解析：A（30B Dense + 2 KV 头）：权重约 60GB（BF16），KV cache 由 KV 头数控制、本例最小，同等显存下并发容量最高；代价是每个 token 都要走完全部 30B 参数的计算。B（30B MoE、激活 3B、8 KV 头）：decode FLOPs 约为 A 的十分之一，token 延迟潜力更好；但所有专家都可能被路由到，30B 权重须全量常驻显存，且路由不均会造成批量效率波动；KV cache 介于 A/C 之间（8 头 vs 2 头 vs 32 头）。C（14B Dense MHA）：权重约 28GB 最轻、启动与多实例部署最灵活，但 KV 头数 = Query 头数，单 token 缓存最大——高并发 × 长上下文场景最先撞显存墙，除非上下文短或并发低。决策路径：先明确 SLO（p99 首 token 延迟、并发路数、典型上下文长度、质量底线）→ 分别测算 权重显存 + KV 显存 × 并发 与 decode FLOPs → 小流量实测验证质量，而不是拿 benchmark 或参数量一刀切。"
+      }
+    }
   }
 ]

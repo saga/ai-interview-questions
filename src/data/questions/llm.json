@@ -413,5 +413,111 @@
         ]
       }
     }
+  },
+  {
+    "id": "llm-12",
+    "category": "llm",
+    "topic": "gqa",
+    "tags": [
+      "gqa",
+      "kv-cache",
+      "mha",
+      "attention"
+    ],
+    "difficulty": "medium",
+    "question": "某模型的架构说明写着：32 个 Query 头、仅 2 个 KV 头（GQA）、head_dim=128。相比每个 Q 头独享 K/V 的标准 MHA（32 个 KV 头），为什么它的单 token KV cache 能缩小约 16 倍？",
+    "explanation": "KV cache 按 token × 层 × KV 头存储：每层每 token 缓存 num_kv_heads × head_dim 的 K 与 V，Query 头从不进入缓存。GQA 让 32 个 Query 头分组共享这 2 组 K/V，缓存规模由 KV 头数决定，因此是 32÷2=16 倍的压缩，而注意力表达力基本保留。",
+    "reference": {
+      "concept": "KV cache/token ∝ 层数 × KV头数 × head_dim × 字节数；GQA 缩的是 KV 头数，Query 头数不进缓存公式。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "归因错了：Query 头从不进入缓存；A 的优势在于 GQA 让 32 个 Query 头共享 2 组 K/V，缓存由 KV 头数决定，恰为 B 的 1/16",
+          "报告正确：KV cache 与 Query 头数成正比，从 32 个 Query 头降到 2 个正是 16 倍压缩的直接来源",
+          "两者缓存相同：GQA 只在训练阶段生效，推理时 A 与 B 的 KV cache 形态和体积完全一致",
+          "A 的优势来自对 K/V 做了低秩压缩投影，把每个头的 128 维压到 8 维再存入缓存，与头数无关"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "你在评审同事的模型选型报告：候选 A 是 30B Dense、32 Query 头 / 2 KV 头（GQA）；候选 B 参数量相同但是标准 MHA、32 个 KV 头。报告中写道：\"A 的显存优势来自它把 Query 头砍到了 2 个\"。对这句话的正确评价是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：单 token 单层的 KV cache = 2（K 和 V）× num_kv_heads × head_dim × 每元素字节数；GQA 多个 Query 头共享一组 K/V；压缩倍数 = 32÷2 = 16。\n\n解析：MHA 中 num_kv_heads = num_query_heads = 32，K/V 都要各存一份；GQA 把 KV 头降到 2，32 个 Query 头仍各自照常计算注意力，只是分组去读取这 2 组共享的 K/V——Query 张量本身从不被缓存。因此缓存缩小 16 倍而模型表达力基本无损。极端情况是 MQA 全部共享 1 组 KV 头（32× 压缩）。常见误解是把\"Query 头变少\"当成省显存的原因：减少 Query 头只降低注意力计算量，不影响缓存体积。"
+      }
+    }
+  },
+  {
+    "id": "llm-13",
+    "category": "llm",
+    "topic": "kv-cache",
+    "tags": [
+      "kv-cache",
+      "gqa",
+      "memory-footprint",
+      "capacity-planning"
+    ],
+    "difficulty": "hard",
+    "question": "某模型架构说明给出：30B Dense Transformer、48 层、32 Query 头 / 2 KV 头（GQA）、head_dim=128，KV cache 以 BF16 存储（每元素 2 字节）。忽略框架开销，单个 token 占用的 KV cache 约是多少？一个 10k token 的会话呢？",
+    "explanation": "公式：KV cache/token = 2（K 和 V）× 层数 48 × KV 头数 2 × head_dim 128 × 2 字节 ≈ 49KB ≈ 48 KiB。10k token 会话约 49152×10000 ≈ 0.47 GB。推论：一张减去权重后剩约 20GB 显存的 80GB 卡，大约只能同时服务 40 路这样的会话——这就是为什么 KV 头数是容量规划的一阶参数。",
+    "reference": {
+      "concept": "KV cache/token = 2 × N_layers × N_kv_heads × head_dim × bytes；会话总量 = 单 token × 序列长度，并发场景再乘并发路数。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 24 KiB / token；10k 会话约 0.23 GB",
+          "约 48 KiB / token；10k 会话约 0.47 GB",
+          "约 768 KiB / token；10k 会话约 7.5 GB",
+          "约 1.5 MiB / token；10k 会话约 15 GB"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "你负责为一个 coding Agent 服务做显存规划：会话上下文普遍达到 10k token，部署目标是单张 80GB GPU（模型权重约占 60GB），需要先算清单路 KV cache 预算才能估算可承载的并发路数。按上述架构配置，正确的估算是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：KV cache/token = 2 × 48 × 2 × 128 × 2B = 49,152 B ≈ 48 KiB；10k token 会话 ≈ 0.47 GB。\n\n解析：逐项代入公式 2（K 和 V 两份）× N_layers(48) × N_kv_heads(2) × head_dim(128) × 每元素字节数(BF16 为 2)。注意三个易错点：①漏乘 K/V 因子 2 会得到 24 KiB；②误用 32 个 Query 头会得到 768 KiB——缓存只看 KV 头数；③误按 FP32 计算会翻倍。工程含义：80GB 卡去掉 60GB 权重剩约 20GB，0.47GB/路 → 约 40 路并发；若换成标准 MHA（32 KV 头）则单路 7.5GB，同卡只能跑 2 路左右。量化 KV cache（如 FP8）可再线性减半。"
+      }
+    }
+  },
+  {
+    "id": "llm-14",
+    "category": "llm",
+    "topic": "hybrid-attention",
+    "tags": [
+      "swa",
+      "sliding-window-attention",
+      "long-context",
+      "hybrid-attention",
+      "gqa"
+    ],
+    "difficulty": "hard",
+    "question": "一个面向长上下文（131k token）的模型将约 75% 的 Transformer 层设为滑动窗口注意力（SWA），其余 25% 使用全局注意力的 GQA 层。相比所有层都用全局注意力，这种混合设计最直接的收益是什么？",
+    "explanation": "SWA 层只在固定窗口内计算注意力：复杂度从 O(n²) 降为 O(n·w)，且窗口外的旧 token KV 可直接淘汰，该层缓存上界固定为窗口大小 w 而非序列长度 n。少量全局层负责建立跨全序列的信息通路。代价是局部层无法一步看到窗口外信息，长程依赖依赖全局层中转。",
+    "reference": {
+      "concept": "混合注意力：多数层 SWA 提供有界计算与有界缓存，少数全局层维持长程信息流；与 GQA 的头数缩减相乘进一步压缩 KV cache。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "KV Cache 可以完全消除，推理从此不再受上下文长度限制",
+          "大部分层只需在固定窗口内做注意力、窗口外的旧 KV 可直接淘汰，显著降低长上下文的注意力计算量与 KV 显存峰值，同时少量全局层仍提供跨全序列的信息通路",
+          "所有层的每个 token 都能直接关注完整历史，长程建模能力完全不受影响",
+          "注意力相关参数量随全局层数等比下降，模型整体缩小到原来的四分之一左右"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "团队要自训一个 131k 上下文的模型，有人提议模仿业内做法：75% 层用 SWA、25% 层保留全局 GQA，以压低长上下文成本。关于该设计的收益与代价，下列说法正确的是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：SWA 层复杂度 O(n·w)、KV 缓存有界（只需保留窗口内 w 个 token）；全局层负责长距离信息通路；收益=计算+显存双降，代价=局部层不能直接看全史。\n\n解析：若窗口 w=1024、上下文 n=131k，SWA 层的注意力计算从 O(n²) 降到 O(n·w)，其 KV cache 上界固定为 O(w) 而非 O(n)——75% 的层的缓存不再随上下文线性增长，再乘上 GQA 的 KV 头缩减，两层优化相乘。少量全局层像\"信息高速公路\"，让深层网络仍能整合任意远处的信息（Gemma 等模型即此设计）。trade-off：token 无法在局部层内一步关注窗口外内容，长程推理质量依赖全局层的数量与分布；纯检索类超长程任务上可能弱于全全局注意力。"
+      }
+    }
   }
 ]
