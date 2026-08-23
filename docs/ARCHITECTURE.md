@@ -31,8 +31,12 @@ storage/       本地持久化
 
 lib/
   interviewEngine.ts  编排：buildSession / evaluateAnswer / evaluateSession
+  codeFence.ts        ``` 围栏切分（纯逻辑 + 单测，容错未闭合围栏）
 
 components/
+  common/CodeBlock.tsx     只读代码高亮（Shiki，单例 highlighter + CSS 行号）
+  common/RichText.tsx      文本段落 + 围栏代码块混合渲染
+  common/CodeEditor.tsx    Monaco 编辑器（CodeEditor 作答 / CodeDiff 对比，懒加载）
   home/TrainingHome.tsx         训练入口（继续/快速/自定义，隐藏系统内部配置）
   quiz/QuestionCard.tsx         单题作答卡片
   result/ResultPanel.tsx        成绩 + 对比上次 + 强弱项 + AI 建议 + 继续训练
@@ -40,11 +44,26 @@ components/
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
   settings/SettingsPanel.tsx    AI 设置（provider / model / API Key）
 
-data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric）
+data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；54 题）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
 依赖方向：`components → lib(interviewEngine) → domain + ai`；`ai → domain`（评分聚合复用）；`domain` 不依赖 React、不 import 任何 LLM 库。
+
+## 代码展示与编辑（Shiki 只读 / Monaco 可编辑）
+
+边界（刻意分开，不要混用）：
+
+| 场景 | 组件 | 实现 |
+| --- | --- | --- |
+| 题干/解析中的代码片段、参考答案 | `common/CodeBlock` | Shiki 只读高亮 + 行号 |
+| 含 ``` 围栏的富文本 | `common/RichText` | `lib/codeFence` 切分后分段渲染 |
+| 编程题作答 | `common/CodeEditor` | Monaco Editor（懒加载 chunk，gzip ≈325KB） |
+| 用户代码 vs 参考答案对比 | `common/CodeEditor.CodeDiff` | Monaco DiffEditor（Collapse 展开才挂载） |
+
+- **Shiki**：`createHighlighter` 单例按需注册语言（python/js/ts/sql/json/bash）；未知语言回退 `text`；高亮就绪前先渲染转义纯文本兜底。
+- **Monaco**：本地打包（`loader.config({ monaco })`），不依赖 CDN；worker 用 Vite `?worker` 打包（editor/json/ts）。整块懒加载，只在出现编程题时下载。
+- **演进预留**：Phase 3（代码执行/沙箱/测试用例/AI Code Review）在 CodeDiff 基础上扩展。
 
 ## Interview Engine
 
@@ -157,5 +176,7 @@ Canonical Question ──┬──→ LLM ──→ GeneratedVariant
 - **pi-ai 对浏览器友好**：库内部对 `globalThis.process` 与 `node:fs` 做了守卫/懒加载，打包时 `node:fs` 外部化为警告，属预期且不崩。
 - **pi-agent-core 浏览器构建**：其 dist 顶层 import `node:crypto/fs/os/path/readline/url`，Vite 会 externalize 成警告；只要运行时只用 `Agent`（不调用 harness 的文件/Shell 能力）就不会崩。主 chunk 约 1.26 MB / 369 kB gzip，比引入前大但可接受；provider 代码是懒加载 chunk，不进主包。
 - **Agent 层测试**：mock `streamFn` 需按 pi-ai 事件协议产出 `start → text_delta → done`（`done` 要带完整 `AssistantMessage`，否则流不结束、`waitForIdle` 挂起）。见 `src/ai/interviewAgent.test.ts`。
+- **monaco-editor 0.56 exports map 对深层导入是坏的**：`monaco-editor/esm/vs/**` 深层导入在 Node 与 rolldown 下均 `ERR_MODULE_NOT_FOUND`（`./*.js → ./esm/vs/*.js` 的 star 替换路径错误），`resolve.alias` 也救不了。解法：worker 用相对路径 `../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js?worker` 绕过包解析；主库走 `import * as monaco from 'monaco-editor'`（`.` 入口正常）。
+- **Shiki grammar 懒加载**：语法文件是独立 chunk，渲染对应语言时才下载；主包只含核心引擎。
 - **构建**：`npm run build` 用 `tsc -b && vite build`，开启 `noUnusedLocals`，未使用 import/变量直接报错；`*.test.ts` 已从 tsc 排除，由 Vitest 处理。
 - **密钥定位**：local-first 隐私友好，但浏览器侧密钥**不是安全机密**（受 XSS / 扩展威胁），勿用高权限生产密钥。
