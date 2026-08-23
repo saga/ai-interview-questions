@@ -10,6 +10,7 @@
       "attention"
     ],
     "difficulty": "easy",
+    "angle": "mechanism",
     "question": "为什么 Transformer 相比 RNN 更适合大规模训练？请从计算并行性和长距离依赖两个角度解释。",
     "explanation": "并行性来自整段序列同时计算（RNN 必须串行），长距离依赖来自 attention 的 O(1) 依赖路径（RNN 需逐步传播）。",
     "rubric": {
@@ -53,6 +54,7 @@
       "transformer"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "请解释 Self-Attention 中 Query、Key、Value 分别代表什么，以及 Attention 最终是如何计算出来的。",
     "explanation": "Q/K/V 来自三组线性投影；Q·K 打相似度 → 缩放 → softmax 归一化 → 对 V 加权求和。",
     "rubric": {
@@ -97,6 +99,7 @@
       "numerical-stability"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "Scaled Dot-Product Attention 中为什么要除以 sqrt(d_k)？",
     "explanation": "dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。",
     "rubric": {
@@ -139,6 +142,7 @@
       "representation"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "Multi-Head Attention 为什么需要多个 Head？单个 Attention 不够吗？",
     "explanation": "多头 = 多个表示子空间并行建模不同关系（语法/语义/位置等），单头只有一种混合视角；代价近似不变而表达能力更强。",
     "rubric": {
@@ -182,6 +186,7 @@
       "RoPE"
     ],
     "difficulty": "easy",
+    "angle": "mechanism",
     "question": "Transformer 为什么需要 Position Encoding？常见的位置信息注入方式有哪些？",
     "explanation": "Attention 是排列等变的，天然不含顺序信息；需通过绝对/相对/RoPE 等编码显式注入位置。",
     "rubric": {
@@ -225,6 +230,7 @@
       "long-context"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "RoPE（Rotary Position Embedding）解决了什么问题？为什么它在现代 LLM 中被广泛使用？",
     "explanation": "RoPE 把位置编码为 Q/K 的旋转，使 attention 只依赖相对位置；无附加参数、利于长上下文外推，是主流选择。",
     "rubric": {
@@ -268,6 +274,7 @@
       "vocabulary"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "为什么 LLM 不直接以“单词”作为最小 token 单位？",
     "explanation": "词级 token 词表爆炸 + OOV + 形态变化无法处理；子词在词表大小与序列长度间折中。",
     "rubric": {
@@ -312,6 +319,7 @@
       "subword"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "BPE / WordPiece 这类子词切分算法的基本思想是什么？",
     "explanation": "核心是频率驱动的迭代合并：小单元起步，高频 pair 逐步合并成子词，词表大小可控且能覆盖未见词。",
     "rubric": {
@@ -356,6 +364,7 @@
       "latency"
     ],
     "difficulty": "easy",
+    "angle": "mechanism",
     "question": "Token 数量为什么直接影响 LLM 的使用成本和延迟？中文、代码、JSON 的 token 效率有什么差异？",
     "explanation": "计费与计算都按 token 走：prefill 成本 ∝ 输入 token，decode 步数 ∝ 输出 token；中文/代码/JSON 的 token 效率通常低于英文自然语言。",
     "rubric": {
@@ -400,6 +409,7 @@
       "retrieval"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Embedding 模型输出的向量和大语言模型的 hidden state 有什么区别？各自的用途是什么？",
     "explanation": "Embedding = 面向语义度量的固定向量（检索/聚类用）；hidden state = 生成模型内部服务于 next-token 预测的中间表示，无度量约束。",
     "rubric": {
@@ -444,6 +454,7 @@
       "cross-entropy"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "从训练目标的角度解释一个现代 Decoder-only LLM 的 Pre-training 在做什么。",
     "explanation": "Pre-training 目标 = causal LM：看前文猜下一 token，cross-entropy 监督；海量数据下涌现出语言/知识/推理能力。",
     "rubric": {
@@ -486,6 +497,7 @@
       "fine-tuning"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "Pre-training 和 Fine-tuning 的核心区别是什么？",
     "explanation": "数据：通用大规模 vs 任务领域中小规模；起点：随机初始化 vs pretrained 权重；目标：学通用能力 vs 调行为；成本相差数量级。",
     "rubric": {
@@ -530,6 +542,7 @@
       "diversity"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "为什么 Pre-training 需要如此大量的训练数据？",
     "explanation": "大参数量需要充足信号、知识覆盖面靠数据广度、多样性支撑泛化、scaling law 要求 data/compute 配比；同时存在边际递减，质量优先。",
     "rubric": {
@@ -574,6 +587,7 @@
       "loss"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "什么是 Scaling Law？为什么“模型越大”并不意味着效果可以无限提升？",
     "explanation": "Scaling law = 参数/数据/compute 与 loss 的经验幂律；存在最优配比、收益对数级递减，单纯堆参数会欠训练且下游提升非线性。",
     "rubric": {
@@ -618,6 +632,7 @@
       "data-quality"
     ],
     "difficulty": "medium",
+    "angle": "calculation",
     "question": "如果训练数据增加 10 倍，模型效果一定会增加 10 倍吗？你会如何分析这个问题？",
     "explanation": "幂律 + 边际递减 → 收益远小于线性；还受数据新颖性/质量、compute 配比和任务上限约束。",
     "rubric": {
@@ -662,6 +677,7 @@
       "alignment"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "什么是 Post-training？它解决 Pre-training 解决不了的问题吗？",
     "explanation": "Post-training = SFT + 偏好优化 + 对齐；解决的是行为塑造（遵循指令、格式、安全性），而非能力获取。",
     "rubric": {
@@ -704,6 +720,7 @@
       "instruction-tuning"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "SFT（Supervised Fine-Tuning）是什么？它是如何改变模型行为的？",
     "explanation": "SFT = prompt → desired response 的监督学习（对 response 做 next-token loss），让模型学会模仿示范行为。",
     "rubric": {
@@ -747,6 +764,7 @@
       "pre-training"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "Pre-training 和 SFT 在 loss 计算上有什么区别？为什么要这样设计？",
     "explanation": "Pretrain 对全序列算 loss；SFT 只对 assistant 回复算 loss、mask 掉 prompt——避免容量浪费在学习复述提问上。",
     "rubric": {
@@ -791,6 +809,7 @@
       "preference"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "RLHF 为什么需要一个单独的 Reward Model，而不是直接用人类反馈做强化学习？",
     "explanation": "人类反馈太贵太稀疏，无法在线逐条提供；先离线训练 RM 学会打偏好分，再用它作为 RL 的可采样奖励信号。",
     "rubric": {
@@ -834,6 +853,7 @@
       "RLHF"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "DPO 为什么不需要显式的 Reward Model？相比 RLHF/PPO 它在工程上有什么优势？",
     "explanation": "DPO 把 RM+RL 目标重写为偏好对上的直接损失（隐式 reward = 与参考模型的 logprob 差）；免去 RL 不稳定性与多模型并跑，工程简单。",
     "rubric": {
@@ -879,6 +899,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "SFT、RLHF、DPO 分别适合解决什么问题？如果一个团队只能选一个阶段投入，你建议怎么选？",
     "explanation": "SFT 教示范行为（地基）、DPO 学偏好（性价比高）、RLHF 做复杂 reward 驱动的优化（成本高）；按需分层投入。",
     "rubric": {
@@ -926,6 +947,7 @@
       "cost"
     ],
     "difficulty": "easy",
+    "angle": "mechanism",
     "question": "为什么不直接 Fine-tune 大模型的全部参数？",
     "explanation": "全参微调 = 权重+梯度+optimizer states 的显存倍增、训练贵、易灾难性遗忘、每任务一份副本；PEFT 是更优默认解。",
     "rubric": {
@@ -974,6 +996,7 @@
       "PEFT"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "LoRA 为什么可以用很低的成本完成 Fine-tuning？请解释它的核心假设。",
     "explanation": "ΔW ≈ BA 低秩分解：冻结 W 只训 A/B → 参数/显存降几个数量级；产物小、可合并回原权重零推理开销。",
     "rubric": {
@@ -1018,6 +1041,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "LoRA 的 rank 是不是越大越好？你会如何为一个任务选择 rank？",
     "explanation": "rank ↑ = 参数/显存/过拟合风险 ↑，超出任务所需秩后收益递减；按任务所需“更新复杂度”选 rank 并用验证集校准。",
     "rubric": {
@@ -1064,6 +1088,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "LoRA 和 RAG 解决的是同一个问题吗？公司要把内部知识库接入模型，应该优先选哪个？",
     "explanation": "RAG 改变模型看到的上下文（知识新鲜、可溯源），LoRA 改变模型行为（格式/风格）；知识库优先 RAG，行为问题再叠加 LoRA。",
     "rubric": {
@@ -1108,6 +1133,7 @@
       "sampling"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "LLM 推理中的 Temperature 参数是什么？它如何影响输出？",
     "explanation": "Temperature 缩放 logits 后 softmax：低温尖锐保守、高温平坦多样；只改采样分布形状，不改模型本身的概率评估。",
     "rubric": {
@@ -1151,6 +1177,7 @@
       "production"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "把 Temperature 设为 0，模型输出一定是确定性的吗？为什么这在生产系统中很重要？",
     "explanation": "temp=0 ≠ 保证确定：浮点非结合/MoE 抖动/top-p 等参数仍在/服务端版本变化都会引入波动；生产要以评测集而非逐字比对做回归。",
     "rubric": {
@@ -1197,6 +1224,7 @@
       "decoding"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Top-k 和 Top-p（nucleus sampling）有什么区别？各自适合什么场景？",
     "explanation": "top-k 固定候选数，top-p 固定累计概率（候选数自适应分布形状）；实践中常组合截断长尾、兼顾多样性与质量。",
     "rubric": {
@@ -1241,6 +1269,7 @@
       "inference"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "为什么 LLM 推理通常分成 Prefill 和 Decode 两个阶段？两个阶段各自的性能特征是什么？",
     "explanation": "Prefill 并行处理 prompt、compute-bound，决定 TTFT;Decode 逐 token 生成、memory-bound，决定 TPOT;瓶颈不同故优化策略不同。",
     "rubric": {
@@ -1286,6 +1315,7 @@
       "inference"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "KV Cache 解决了什么问题？它为什么会占用大量 GPU 内存？",
     "explanation": "KV Cache 免去逐步重算历史 K/V（平方→线性），但体积随 batch×layers×seq_len×heads 线性膨胀，长上下文下成为显存大头。",
     "rubric": {
@@ -1330,6 +1360,7 @@
       "limit"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "Context Window 是什么？它由什么决定，超出会发生什么？",
     "explanation": "Context window = 单次推理的最大 token 总预算(输入+输出共享)；超限会报错或被静默截断，后者是隐蔽故障源。",
     "rubric": {
@@ -1374,6 +1405,7 @@
       "lost-in-the-middle"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Context Window 越大越好吗？请从成本、延迟和质量三个角度分析。",
     "explanation": "大窗口 = 成本/显存↑、prefill 延迟↑、lost-in-the-middle 与噪声稀释注意力；窗口大小≠有效利用，按需填充才是正解。",
     "rubric": {
@@ -1422,6 +1454,7 @@
       "context-window"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "既然模型支持 1M token context，为什么把整个知识库塞进 context 并不是一个好的 RAG 方案？",
     "explanation": "全量塞入 = 成本/延迟/显存随库容走 + 注意力被噪声稀释 + 无增量更新；检索先行、按相关性裁剪才是可行架构。",
     "rubric": {
@@ -1467,6 +1500,7 @@
       "grounding"
     ],
     "difficulty": "easy",
+    "angle": "mechanism",
     "question": "RAG 为什么能够降低 Hallucination？它的作用机制是什么？",
     "explanation": "RAG 提供外部证据做条件生成（grounding），把回答锚定在材料上从而降低编造概率；是缓解不是消除。",
     "rubric": {
@@ -1512,6 +1546,7 @@
       "retrieval"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "Chunk size 为什么会影响 RAG 效果？chunk 过大或过小分别有什么问题？",
     "explanation": "过大 → embedding 语义稀释 + context 噪声；过小 → 语义破碎、召回了也答不全；按语义边界切分并用 overlap/parent-child 平衡。",
     "rubric": {
@@ -1559,6 +1594,7 @@
       "BM25"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Vector Search 和 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
     "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
     "rubric": {
@@ -1602,6 +1638,7 @@
       "reliability"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "Hybrid Search 为什么通常比单独使用 Vector Search 更可靠？通常会怎么组合？",
     "explanation": "双路失败模式互补 → recall 更稳；典型做法：双路召回 → RRF 融合或 cross-encoder 重排 → top-k 进生成。",
     "rubric": {
@@ -1646,6 +1683,7 @@
       "precision"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "在 RAG 流程中，Reranker 解决的是什么问题？为什么有了向量检索还需要它？",
     "explanation": "bi-encoder 快但粗（独立编码），cross-encoder 准但慢（联合编码）→ 召回后对少量候选精排，提升进入 context 的 precision。",
     "rubric": {
@@ -1690,6 +1728,7 @@
       "relevance"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "一段文档与 query 的 Embedding 相似度很高，是否意味着它能回答这个问题？为什么？",
     "explanation": "semantic similarity ≠ answer relevance：同话题无答案、相反结论都可能高分；需要 rerank 与 faithfulness 校验兜底。",
     "rubric": {
@@ -1733,6 +1772,7 @@
       "non-determinism"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "为什么 LLM 应用的 Evaluation 比传统软件测试困难？",
     "explanation": "输出是分布而非确定值：无唯一正确答案、多维标准、版本漂移、多层链路失败点；评测范式从断言转向量表+judge+分层指标。",
     "rubric": {
@@ -1777,6 +1817,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "LLM-as-a-Judge 作为评测手段有哪些已知的问题？你会如何缓解？",
     "explanation": "judge 有 position/verbosity/self bias 与打分波动，且与人工相关性有限；用顺序交换、rubric 校准、人工抽检对齐来缓解。",
     "rubric": {
@@ -1825,6 +1866,7 @@
       "regression"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "如何为一个上线中的 LLM Application 设计 Evaluation Dataset？请说明数据构成与持续维护机制。",
     "explanation": "分层构成：正常/边界/对抗/回归/生产抽样 + 参考答案；版本化 + 变更触发回归 + 线上 badcase 持续回流，作为长期资产运营。",
     "rubric": {
@@ -1872,6 +1914,7 @@
       "online-evaluation"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
     "explanation": "Offline = 固定集上可重复对比（守门快迭代，覆盖不了真实分布）；Online = 真实流量验证（可信但慢且贵）；二者互补缺一不可。",
     "rubric": {
@@ -1915,6 +1958,7 @@
       "grounding"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "LLM 为什么会产生 Hallucination？请从训练目标和生成机制层面解释，而不是只说“模型不知道答案”。",
     "explanation": "幻觉源于 next-token 目标与“真实性”不对齐：流畅 ≠ 正确；叠加有损知识存储、数据噪声、采样随机性、不确定性与 RLHF 偏好激励。",
     "rubric": {
@@ -1959,6 +2003,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "RAG 能彻底解决 Hallucination 吗？如果不能，幻觉还会从哪些环节漏进来？",
     "explanation": "RAG 只管输入侧 grounding；检索失败/context 淹没/误读证据/生成本身矛盾都会漏幻觉，需 citation+faithfulness+拒答配套。",
     "rubric": {
@@ -2006,6 +2051,7 @@
       "production"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "为什么“这个模型很聪明”（benchmark 表现好）不代表它适合某个具体的生产任务？",
     "explanation": "capability ≠ reliability ≠ controllability ≠ cost/latency；选型应以任务指标 + 真实流量评测为准，而非通用榜单。",
     "rubric": {
@@ -2050,6 +2096,7 @@
       "deployment"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个 7B 模型和一个 70B 模型摆在面前，你会如何为业务做选型？请说明决策依据。",
     "explanation": "选型依据 = 任务准确率增益 × 业务价值 vs 显存/成本/延迟/并发增量；必要时用模型路由混合部署，而非直觉二选一。",
     "rubric": {
@@ -2096,6 +2143,7 @@
       "pre-training"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "公司希望模型掌握 10 万条内部 FAQ。你会选择继续 Pre-training、Fine-tuning 还是 RAG？请说明理由和实施路径。",
     "explanation": "FAQ = 会更新、需溯源的可检索知识 → RAG 优先；pretrain 不可能，FT 仅在行为/格式不达标时作为补充（LoRA+SFT）。",
     "rubric": {
@@ -2141,6 +2189,7 @@
       "observability"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 RAG 系统 Recall 很高，但最终回答质量很差。请描述你的排查思路。",
     "explanation": "recall 高 ≠ 排名靠前 ≠ 进了 context ≠ 被正确使用；分层评测 rewrite/ranking/rerank/context/generation 各段指标，修掉分最大的环节。",
     "rubric": {
@@ -2187,6 +2236,7 @@
       "observability"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "线上 LLM API 的 P50 延迟从 1 秒突然涨到 8 秒。你会如何定位原因？",
     "explanation": "总延迟 = queue + network + TTFT(prefill) + TPOT×output_tokens;按分段变化方向归因：排队→容量限流、TTFT→prompt 变长、TPOT→实例降级、token 数→上游 prompt 改动。",
     "rubric": {
@@ -2232,6 +2282,7 @@
       "architecture"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 Agent 系统单步都很聪明，但端到端任务成功率只有 70%。你会从哪些方面系统性提高成功率？",
     "explanation": "成功率是各环节可靠性的乘积：先失败归因分类，再固化 workflow、加固工具/状态/termination、加 validation 与 guardrails、建端到端回归评测。",
     "rubric": {
@@ -2281,6 +2332,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
     "explanation": "长文本退化通常源于位置编码外推失效、注意力稀释（lost-in-the-middle）、数值漂移或隐性截断；用变长诊断集分层定位。",
     "rubric": {
@@ -2330,6 +2382,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 LLM 服务的 GPU 显存随并发请求增加迅速耗尽，即使模型本身可以放入显存。你会如何判断是不是 KV Cache 导致的？有哪些优化方向？",
     "explanation": "KV Cache 占用 ∝ 并发×层数×长度×KV头数；先按公式对账再优化：GQA/MQA、量化、PagedAttention、限长限并发、前缀复用。",
     "rubric": {
@@ -2375,6 +2428,7 @@
       "llm"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "Tokenizer 在 LLM 中起什么作用？为什么同一段文本在不同模型中的 token 数量可能不同？",
     "explanation": "Tokenizer 负责文本 ↔ token id 双向转换；各家用自己的语料训练词表，切分粒度不同导致 token 数不同，进而影响成本与上下文预算。",
     "rubric": {
@@ -2417,6 +2471,7 @@
       "causal-lm"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "为什么大语言模型通常使用 next-token prediction 作为预训练目标？这种看似简单的训练方式为什么能学到语言、知识甚至一定程度的推理能力？",
     "explanation": "预测下一 token 需要隐式掌握语法/事实/推理链——好预测等价于好的压缩建模；且免标注、可扩展、易并行。",
     "rubric": {
@@ -2460,6 +2515,7 @@
       "data-quality"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "你负责构建一个 10T token 的预训练数据集，来源包括网页、代码、书籍和论坛。你会设计哪些数据清洗、去重、质量过滤和数据混合策略？",
     "explanation": "流水线四件事：清洗（样板/乱码）、两级去重（精确+模糊）、质量过滤（分类器+启发式+困惑度）、按 domain 配比并小规模消融验证。",
     "rubric": {
@@ -2508,6 +2564,7 @@
       "trade-off"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "预训练数据应该尽可能多，还是优先保证质量？如果高质量数据只有低质量数据的 10%，你会如何做数据配比？",
     "explanation": "质量决定上限、数量决定广度：高质量多 epoch、低质单 epoch 提供覆盖；配比用小规模消融实验确定而非拍脑袋。",
     "rubric": {
@@ -2551,6 +2608,7 @@
       "parallelism"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个模型需要 256 张 GPU 进行预训练。你会如何组合 Data Parallel、Tensor Parallel 和 Pipeline Parallel？它们分别解决什么问题？",
     "explanation": "DP 扩吞吐、TP 解单层放不下（需高带宽域）、PP 解跨机带宽（有 bubble）;生产上是 TP×PP×DP 三维组合，按模型大小与拓扑取舍。",
     "rubric": {
@@ -2595,6 +2653,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "预训练过程中 loss 突然升高并出现 NaN。你会按照什么顺序排查？",
     "explanation": "排查顺序：定位首个异常 step → 数据批次（脏数据最常见）→ 梯度范数/clipping → 数值精度（FP16/BF16/loss scale）→ 学习率变更 → 硬件故障；恢复靠 checkpoint 回退。",
     "rubric": {
@@ -2640,6 +2699,7 @@
       "post-training"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "你有 100 万条用户对话数据，但只有 5 万条经过人工审核。你会如何构建 SFT 数据集？为什么不能直接把 100 万条全部拿来训练？",
     "explanation": "未审核数据混有错误示范/毒性与隐私风险，SFT 会直接放大；用审核种子集 + 分级清洗 + 辅助标注逐步扩容，质量与多样性优先于数量。",
     "rubric": {
@@ -2686,6 +2746,7 @@
       "trade-off"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个模型经过 SFT 后指令遵循能力明显提高，但原本的知识问答能力下降。你会如何分析和解决这个问题？",
     "explanation": "窄分布小数据 SFT 会挤占通用能力（灾难性遗忘）；对策：通用数据 replay、小学习率/LoRA 限幅、KL 约束，并把 SFT 定位为行为微调。",
     "rubric": {
@@ -2731,6 +2792,7 @@
       "decision"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "你需要让一个通用 LLM 学会公司内部的固定回答风格。你会优先选择 Prompt Engineering、RAG 还是 Fine-tuning？请说明决策依据和实施顺序。",
     "explanation": "风格=行为约束：Prompt+few-shot 先行，不稳定或漂移时才 LoRA 定型；RAG 只对口“动态检索风格指南”这类边缘情况。",
     "rubric": {
@@ -2775,6 +2837,7 @@
       "llm"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "什么是 Foundation Model？为什么它的出现改变了传统 AI 应用的开发方式？",
     "explanation": "Foundation Model = 预训练通用模型 + 任务适配；范式从“一任务一模型”翻转为“一模型多任务”，开发的中心从训练转向约束与集成。",
     "rubric": {
@@ -2817,6 +2880,7 @@
       "generation"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "LLM 的 logits 是什么？它和最终生成的 token 有什么关系？",
     "explanation": "Logits = 词表上的未归一化分数；温度/top-k/top-p/logit bias 全部作用于这一层，再经 softmax 采样出 token；logprobs 可用于置信度类工程。",
     "rubric": {
@@ -2861,6 +2925,7 @@
       "encoder-decoder"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Self-Attention 和 Cross-Attention 有什么区别？为什么 Encoder-Decoder 模型需要 Cross-Attention？",
     "explanation": "Self-attention 序列内交互（QKV 同源）；cross-attention 跨序列读取（Q 一方、KV 另一方），是 encoder-decoder 的信息桥梁；decoder-only 用因果 self-attention 替代。",
     "rubric": {
@@ -2904,6 +2969,7 @@
       "inference"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在不改变 Attention 数学结果的情况下提升性能？",
     "explanation": "优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵；公式不变、IO 大减。",
     "rubric": {
@@ -2948,6 +3014,7 @@
       "scalability"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "MoE 模型为什么可以拥有很大的总参数量，同时保持相对较低的每 token 计算量？它会引入哪些工程复杂度？",
     "explanation": "MoE 解耦“总参=容量”与“激活=计算”；代价是全量显存驻留、负载均衡、路由训练不稳、all-to-all 通信与专家并行等系统工程成本。",
     "rubric": {
@@ -2991,6 +3058,7 @@
       "model-optimization"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 70B 模型效果很好，但线上延迟和成本无法接受。你考虑通过 Knowledge Distillation 得到一个 7B 学生模型。你会如何设计蒸馏过程？",
     "explanation": "蒸馏三要素：真实分布的任务数据、soft target（或闭源场景的 response 蒸馏）、评测驱动的迭代补缺；动手前先验证“小模型+量化”是否已够。",
     "rubric": {

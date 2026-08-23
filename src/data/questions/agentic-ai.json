@@ -9,6 +9,7 @@
       "tool-standardization"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "MCP（Model Context Protocol）这类协议要解决的核心问题是？",
     "explanation": "没有统一协议时，M 个应用接入 N 个工具需要 M×N 套定制集成；MCP 把工具能力发现、调用、资源访问标准化为通用协议（类似“AI 应用的 USB-C”），工具方实现一次即可被所有支持该协议的客户端使用。它不改变采样机制，也不替代参数描述本身。",
     "reference": {
@@ -42,6 +43,7 @@
       "permissions"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "为防止 Agent 在执行中失控（无限循环、误用高危操作），下列哪些是有效的工程护栏？（多选）",
     "explanation": "生产级 Agent 必须有循环护栏（步数上限 + 重复检测）、高危操作的确认/最小权限、沙箱与限流；仅依赖模型自身对齐不足以防范系统性风险，失控的代价是真金白银与数据破坏。",
     "reference": {
@@ -79,6 +81,7 @@
       "architecture-patterns"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "对比 ReAct 与 Plan-and-Execute 两种 Agent 架构模式：各自的执行流程是什么？分别适合什么任务场景？",
     "explanation": "考察两种主流编排模式的理解与权衡：逐步反应式 vs 先规划后执行的适用边界。",
     "reference": {
@@ -125,6 +128,7 @@
       "cost"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个长任务 Agent 运行数百步后上下文接近溢出，最合理的处理方式是？",
     "explanation": "长程 Agent 的标准做法是上下文工程：将旧轨迹摘要化，持久化关键状态（目标、已完成步骤、重要结果），按需检索细节。全量丢弃会丢失进度，无限窗口则成本与注意力稀释都不可行。",
     "reference": {
@@ -159,6 +163,7 @@
       "enterprise"
     ],
     "difficulty": "medium",
+    "angle": "system-design",
     "question": "设计一个“公司内部知识库 Agent”：可以搜索内部文档并回答员工问题。请给出核心组件、检索设计与防幻觉措施。",
     "explanation": "考察企业知识场景的系统设计：检索质量、权限、溯源与拒答机制。",
     "reference": {
@@ -207,6 +212,7 @@
       "repo"
     ],
     "difficulty": "medium",
+    "angle": "system-design",
     "question": "设计一个能读取 GitHub Repository 并回答架构问题的 Agent。仓库可能有几千个文件，如何保证回答有据可依？",
     "explanation": "考察代码库规模下的检索设计：符号索引 + 多跳检索 + 文件级引用。",
     "rubric": {
@@ -252,6 +258,7 @@
       "pdf"
     ],
     "difficulty": "medium",
+    "angle": "system-design",
     "question": "设计一个 Research Agent：可以搜索互联网、读取网页/PDF 并生成带引用的研究报告。请描述其循环流程与质量控制。",
     "explanation": "考察研究型 Agent 的规划-检索-验证-撰写闭环与预算控制。",
     "rubric": {
@@ -297,6 +304,7 @@
       "structured-output"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个 ESG Research Agent：从几十份 ESG PDF 报告中提取碳排放等指标并生成横向对比结论。难点在数字准确性与口径不一致，怎么处理？",
     "explanation": "考察高准确性数据抽取场景：结构化输出、口径归一、抽取与计算分离、可审计。",
     "rubric": {
@@ -342,6 +350,7 @@
       "analytics"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个分析 SQL Server 数据并生成分析报告的 Agent。如何保证生成的 SQL 安全、正确？",
     "explanation": "考察 text-to-sql Agent 的安全（只读/白名单）、正确性闭环（校验+自修复）与审计。",
     "rubric": {
@@ -387,6 +396,7 @@
       "tools"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个 Financial Research Agent：可调用市场行情、新闻和公司财报三类数据源。多源数据的时效性与冲突如何处理？",
     "explanation": "考察多源异构数据的优先级、冲突呈现与金融场景合规意识。",
     "rubric": {
@@ -432,6 +442,7 @@
       "tools"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个能自主判断“该搜网页、查数据库还是调内部 API”的路由 Agent。决策依据是什么？如何避免路由错误？",
     "explanation": "考察工具路由的决策信号、不确定性兜底与持续改进机制。",
     "rubric": {
@@ -478,6 +489,7 @@
       "state"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个任务可能持续数小时甚至数天的 Agent：期间可以暂停和恢复。持久化什么、何时落盘、恢复时如何自洽？",
     "explanation": "考察长时间任务的 checkpoint/resume：状态机建模、落盘时机、幂等重放与过期重规划。",
     "rubric": {
@@ -524,6 +536,7 @@
       "writer"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个 Multi-Agent 研究系统：Planner、Researcher、Critic、Writer 四角色。如何划分职责、传递信息并避免互相扯皮？",
     "explanation": "考察多角色分工、结构化消息协议与收敛机制（防无限打回）。",
     "rubric": {
@@ -569,6 +582,7 @@
       "observability"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个企业级 Agent Platform：让上千个业务 Agent 复用 Tool、Memory、Evaluation 与 Observability。平台层与业务层的边界怎么划？",
     "explanation": "考察平台化思维：机制与策略分离、契约化解耦、多租户与治理。",
     "rubric": {
@@ -614,6 +628,7 @@
       "repetition"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 经常重复执行同一个 Tool（参数几乎一样）。可能的原因是什么？你会如何定位与修复？",
     "explanation": "考察从轨迹定位重复调用的根因（上下文可见性 vs 判定失败）与护栏修复。",
     "rubric": {
@@ -658,6 +673,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "Agent 明明拥有正确的 Tool，却经常选择错误的 Tool。你会怎么系统地分析这个问题？",
     "explanation": "考察系统性归因：错误分桶、描述工程、路由评测集与候选集收窄。",
     "rubric": {
@@ -703,6 +719,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "Agent 第一次运行成功，第二次同样输入却失败了。你会优先检查哪些 State 与环境因素？",
     "explanation": "考察非确定性排查：随机性/外部漂移/状态污染三分法与录制回放。",
     "rubric": {
@@ -748,6 +765,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "Agent 在长任务中表现越来越差（“越来越迷糊”），但模型本身能力没有变化。可能是什么问题？如何解决？",
     "explanation": "考察 context pollution / lost-in-the-middle 的识别与上下文卫生治理。",
     "rubric": {
@@ -793,6 +811,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "线上 Agent 成功率从 85% 掉到 60%，但模型版本没有任何变化。你会如何定位？请给出系统的排查框架。",
     "explanation": "考察系统化排查框架：切片分流、上游变更、trace 聚类与回归防线。",
     "rubric": {
@@ -838,6 +857,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "某个 Tool API 平均延迟从 200ms 涨到 3s，Agent 的端到端延迟却涨了约 10 倍。为什么放大效应这么明显？",
     "explanation": "考察延迟放大机制（串行 loop/重试/同步等待）与对应的工程缓解。",
     "rubric": {
@@ -883,6 +903,7 @@
       "idempotency-key"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "一个能执行付款的 Agent 偶尔会重复付款两次。你会如何从架构层面彻底解决？",
     "explanation": "考察副作用安全的架构化：幂等键、确认门、状态机、对账，而非依赖提示词。",
     "rubric": {
@@ -931,6 +952,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "Multi-Agent 系统中两个 Agent 开始互相调用、来回踢皮球。如何检测和阻止？",
     "explanation": "考察多 Agent 环路：调用图检测、拓扑预防、预算熔断与仲裁机制。",
     "rubric": {
@@ -976,6 +998,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "Agent 的最终答案看起来正确，但实际上引用的是错误的数据。这类“表面正确”的问题如何被发现？",
     "explanation": "考察表面正确问题的检测：claim-level 引用核对、埋雷测试与分离式指标。",
     "rubric": {
@@ -1021,6 +1044,7 @@
       "distribution-shift"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 在测试环境表现很好，上线后成功率大幅下降。你会从哪些维度排查这种“实验室到生产”的落差？",
     "explanation": "考察 lab-to-prod 落差的系统性归因与影子流量/灰度方法论。",
     "rubric": {
@@ -1067,6 +1091,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 的记忆应该用 Vector DB、SQL 还是普通 KV Store？请给出你的选型框架，而不是单一答案。",
     "explanation": "考察按查询语义选型的框架思维与组合方案，拒绝银弹答案。",
     "rubric": {
@@ -1112,6 +1137,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 应该用一个强模型贯穿始终，还是多个弱模型协作？给出决策依据。",
     "explanation": "考察级联路由的成本-错误权衡与误差累积风险。",
     "rubric": {
@@ -1157,6 +1183,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 的 Planner 应该由 LLM 动态规划，还是用确定性 workflow 写死？各自的适用边界在哪？",
     "explanation": "考察规划方式的适用边界与“确定性骨架 + LLM 决策点”混合模式。",
     "rubric": {
@@ -1201,6 +1228,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 的可用 Tool 应该完全交给 LLM 自由选择，还是由代码按任务阶段限定候选集？为什么？",
     "explanation": "考察最小权限与选择质量的理由，以及收窄过度带来的灵活性代价。",
     "rubric": {
@@ -1246,6 +1274,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "什么情况下 Multi-Agent 是过度设计？你会用什么信号来判断该退回单体 Agent？",
     "explanation": "考察以基线对比判断架构复杂度是否值得，反对为分工而分工。",
     "rubric": {
@@ -1292,6 +1321,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
     "explanation": "考察存储与消费分离的思想，以及隐私合规与保留策略。",
     "rubric": {
@@ -1338,6 +1368,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "RAG 应该放在 Agent 外部（前置管线）还是作为 Agent 内部的一个 Tool？两者各适合什么场景？",
     "explanation": "考察 RAG 放置位置的适用边界与“效果大头在检索质量”的认知。",
     "rubric": {
@@ -1383,6 +1414,7 @@
       "tradeoff"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "既然上下文窗口已经很大（百万级 token），Agent 还需要独立的 Memory 机制吗？为什么？",
     "explanation": "考察大窗口与 Memory 的互补关系：经济性、注意力质量、跨会话生命周期。",
     "rubric": {
@@ -1428,6 +1460,7 @@
       "safety"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "Agent 是否应该被允许修改自己的 system prompt？请从能力与风险两方面论证，并给出你认为合理的折中方案。",
     "explanation": "考察自指修改的风险（固化放大、持久化注入、约束逃逸）与受控折中。",
     "rubric": {
@@ -1473,6 +1506,7 @@
       "transparency"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "Agent 的“思考过程”（中间推理、工具调用细节）应该被保存、展示给用户，还是完全隐藏？请给出分场景的策略。",
     "explanation": "考察保存/展示/隐藏的分层策略：信任与误解的权衡、“策展透明度”概念。",
     "rubric": {
@@ -1518,6 +1552,7 @@
       "philosophy"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "如果一个任务 90% 的情况都能用固定 workflow 完成，为什么还要用 Agent？请为“剩下 10%”辩护，或者论证不该用。",
     "explanation": "开放式：考察对 Agent 必要性的辩证论证与分层架构直觉。",
     "rubric": {
@@ -1562,6 +1597,7 @@
       "philosophy"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 的自主性越高越好吗？请论述自主性与可控性之间的张力，并给出你设计中确定自主性水平的框架。",
     "explanation": "开放式：考察自主性定价思维与渐进放权机制。",
     "rubric": {
@@ -1606,6 +1642,7 @@
       "philosophy"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个成功率 95%、平均成本 $0.20 的 Agent，和一个成功率 85%、成本 $0.01 的 Agent，哪个更好？请给出你的评估框架。",
     "explanation": "开放式：考察期望成本框架与级联共存方案，拒绝脱离业务谈好坏。",
     "rubric": {
@@ -1651,6 +1688,7 @@
       "code-execution"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "如果一个 Agent 能够自己修改代码并运行测试，你认为最大的风险是什么？你会设置什么防护？",
     "explanation": "开放式：考察 reward hacking 本质与“验证权与修改权分离”的核心防护思想。",
     "rubric": {
@@ -1696,6 +1734,7 @@
       "philosophy"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "Agent 应该相信自己的 Memory 吗？记忆里的内容可能是过时的、错误的，甚至是被投毒的。请给出你的信任模型。",
     "explanation": "开放式：考察带元数据的信任分级、冲突以观察为准、写入侧投毒防御。",
     "rubric": {
@@ -1741,6 +1780,7 @@
       "philosophy"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "如果用户给出的任务本身是错误的或不合理的（比如要求分析一个不存在的报表），Agent 应该执行还是质疑用户？如何设计这个判断？",
     "explanation": "开放式：考察验证式澄清的三分法与前置合理性校验的设计。",
     "rubric": {
@@ -1789,6 +1829,7 @@
       "systems"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个 Agent 系统的“智能”究竟来自哪里：Model、Tools、Memory 还是 Environment？请给出你的排序与论证。",
     "explanation": "开放式：考察系统性归因（反馈质量>模型本身）与“智能是涌现属性”的观点。",
     "rubric": {
@@ -1833,6 +1874,7 @@
       "future"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "你认为未来 Agent Runtime 最重要的基础设施是什么？可以选：身份与权限体系、支付与结算、可验证的执行环境、统一记忆协议、评测基础设施……请选一到两项并深入论证。",
     "explanation": "开放式：考察对信任/责任基础设施的深层理解，论证质量优先于结论。",
     "rubric": {
@@ -1875,6 +1917,7 @@
       "when-not-to-use"
     ],
     "difficulty": "easy",
+    "angle": "tradeoff",
     "question": "以下哪种场景最不应该使用 Agent，而应该使用传统固定 workflow？",
     "explanation": "流程固定且高合规的场景，workflow 更可靠、可测、可审计且便宜；Agent 的灵活性在此反而是风险。Agent 适合开放、动态、分支不可预知的任务。",
     "reference": {
@@ -1908,6 +1951,7 @@
       "context"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "关于 Agent 的 State 设计，下列说法正确的有哪些？（多选）",
     "explanation": "State 应精炼、结构化：目标 + 进度 + 关键结论。全量原文堆入会造成 context pollution、成本膨胀与注意力稀释；大内容应外置存储、按需检索。",
     "reference": {
@@ -1943,6 +1987,7 @@
       "difference"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Reflection / Self-Critique 与普通 retry 的本质区别是？",
     "explanation": "Retry 重复同样的过程期望不同结果；Reflection 引入了新的信息（对失败的归因与批评），改变了下一次尝试的输入，这才是它有效的原因。",
     "reference": {
@@ -1975,6 +2020,7 @@
       "conversation-history"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "为什么 Agent 的 Memory 不应该简单等同于 Conversation History？",
     "explanation": "逐字历史是记忆的原料而非记忆本身：大量寒暄、重复与失败尝试会稀释关键信号。有效的 Memory 需要提炼（摘要/结构化/向量化），支持按相关性召回而非按时间全量回放。",
     "reference": {
@@ -2008,6 +2054,7 @@
       "guardrails"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "为了限制 Agent 的最大执行成本、防止失控，下列哪些是可以设置的硬性边界？（多选）",
     "explanation": "步数/调用数、token/费用预算、时间上限三层硬边界缺一不可；停止与否不能只依赖模型自觉——失控的直接后果是真金白银。还应配合重复检测与异常告警。",
     "reference": {
@@ -2045,6 +2092,7 @@
       "side-effects"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "Prompt Injection 对 Agent 的危害远大于对普通 Chatbot 的原因是什么？",
     "explanation": "危险差值 = 指令执行权 × 现实副作用。Agent 拥有工具执行能力，被注入的指令可以从“说说而已”变成“真的做了”；因此防护重心是权限隔离、输入内容隔离与高危操作确认门，而不只是提示词防御。",
     "reference": {
@@ -2080,6 +2128,7 @@
       "judge"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "使用 LLM-as-a-Judge 评估 Agent 输出时，下列关于偏差与缓解的说法正确的有哪些？（多选）",
     "explanation": "位置/冗长/自我偏好是三大经典 judge bias，分别对应交换顺序、rubric 锚定、异构 judge+人工校准等缓解。温度 0 只消除采样随机性，不消除系统性偏好。",
     "reference": {
@@ -2117,6 +2166,7 @@
       "non-determinism"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "Agent Evaluation 与传统 API 单元测试的核心区别是什么？",
     "explanation": "非确定性与路径多样性使得精确断言失效：评估对象变为最终结果质量（LLM judge / 规则校验）+ 中间轨迹合理性，并通过评测集统计成功率、按版本回归，而非单次 pass/fail。",
     "reference": {
@@ -2151,6 +2201,7 @@
       "react"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "一个典型的 AI Agent（智能体）最核心的运行时循环是？",
     "explanation": "Agent 以“感知-推理-行动”闭环与环境交互，并据反馈持续调整，这是区别于一次性推理的关键。",
     "reference": {
@@ -2184,6 +2235,7 @@
       "function"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "在 LLM 的 Tool / Function Calling 中，工具 schema（如 JSON Schema）的主要作用是？",
     "explanation": "工具 schema 让模型知道有哪些能力、参数如何填，从而输出可被代码校验并执行的结构化 tool_call，是 Agent 调用外部能力的基石。",
     "reference": {
@@ -2217,6 +2269,7 @@
       "tools"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "下列哪些是典型 AI Agent 的核心组件？（多选）",
     "explanation": "Agent 通常包含规划、记忆、工具调用等模块；Loss 函数是训练期概念，不是运行时 Agent 组件。",
     "formats": {
@@ -2249,6 +2302,7 @@
       "acting"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "ReAct（Reasoning + Acting）框架的核心思想是什么？",
     "explanation": "ReAct 让模型在每一步先思考再行动、再观察环境反馈，形成推理与行动的螺旋，从而更好地处理多步任务。",
     "reference": {
@@ -2282,6 +2336,7 @@
       "retrieval"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
     "explanation": "考察短期/长期记忆的区分、作用与典型实现（如向量检索）。",
     "reference": {
@@ -2328,6 +2383,7 @@
       "orchestration"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "关于 Multi-Agent（多智能体）协作，下列说法正确的有哪些？（多选）",
     "explanation": "多智能体通过分工与协作常能处理更复杂任务，但带来通信/一致性成本，并非总是优于单体；交互常用消息总线或黑板机制。",
     "formats": {
@@ -2361,6 +2417,7 @@
       "report"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "请设计一个 Agentic 系统来完成“根据用户自然语言需求，自动检索资料并生成一份结构化报告”的任务，描述其核心组件与执行流程。",
     "explanation": "考察端到端 Agent 系统设计：规划、检索、工具、记忆、评审与流程编排。",
     "reference": {
@@ -2411,6 +2468,7 @@
       "python"
     ],
     "difficulty": "medium",
+    "angle": "calculation",
     "question": "实现一个简单的 tool-calling 分发器：给定 tools 列表（每个含 name 与 callable），以及模型返回的 tool_call（含 name 与 args 字典），调用对应函数并返回结果。",
     "explanation": "考察工具分发、参数解包与异常处理，是 Agent 执行层的基本功。",
     "reference": {
@@ -2458,6 +2516,7 @@
       "self-critique"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "在 Agent 设计中，“Reflection（自我反思）”的主要作用是？",
     "explanation": "Reflection 让 Agent 对自身中间结果或最终产物进行复盘与批评，再迭代改进，是提升复杂任务可靠性的常用手段。",
     "formats": {
@@ -2488,6 +2547,7 @@
       "failure-modes"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "如何评估一个 AI Agent 的可靠性？请讨论常见的失败模式与对应的缓解措施。",
     "explanation": "考察评估维度、失败模式识别与工程缓解手段的系统性思考。",
     "reference": {
@@ -2536,6 +2596,7 @@
       "scenario"
     ],
     "difficulty": "easy",
+    "angle": "tradeoff",
     "question": "一个系统需要依次执行“读取 PDF → 提取文本 → 清洗文本 → 写入数据库 → 生成摘要”，每一步的输入和输出都已经确定，没有运行时决策。你会把它设计成 Agent，还是普通 Workflow？为什么？",
     "explanation": "流程步骤与顺序固定、无运行时决策时应选确定性 workflow；Agent 的自由度在此只会带来不可预测性、成本与调试负担。",
     "rubric": {
@@ -2580,6 +2641,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "一个客服系统有 20 个固定步骤，其中 3 个步骤需要根据用户意图选择不同分支。你会把整个系统做成 Agent，还是 Workflow + LLM 决策节点？为什么？",
     "explanation": "大多数步骤确定时保持显式编排，只在需要语义判断的分叉点引入 LLM 决策节点，兼顾可靠性与灵活性。",
     "rubric": {
@@ -2623,6 +2685,7 @@
       "architecture"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "如果让你从零设计一个最小可用的 AI Agent，你认为至少需要哪些核心组件？请说明每个组件的职责。",
     "explanation": "最小 Agent = LLM 推理 + 工具调用 + 状态/上下文 + 执行循环 + 终止条件；规划、记忆、反思按需再加。",
     "rubric": {
@@ -2669,6 +2732,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 有 20 个 tools。线上发现 tool selection accuracy 只有 75%，而且经常在多个功能相似的 tool 之间选错。你会如何定位和解决这个问题？",
     "explanation": "先定位错误是否集中在相似工具间，检查 name/description/schema 歧义，再通过分组、routing、减少暴露和选择评测集改进。",
     "rubric": {
@@ -2715,6 +2779,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "为什么 Agent 的 tool schema 不应该无限详细？如果一个 tool 的参数有 30 个字段，你会考虑如何重新设计？",
     "explanation": "schema 过大增加上下文成本与参数选择错误率；应精简参数、拆分工具、用默认值或上下文补齐。",
     "rubric": {
@@ -2759,6 +2824,7 @@
       "scalability"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "一个企业 Agent 最终拥有 300 个 tools。把 300 个 tools 全部放进每次 LLM 请求的 tool definitions 中，会产生哪些问题？你会设计什么样的 tool routing 方案？",
     "explanation": "全量注入几百个工具会推高 token 成本并降低选择准确率；应做分层/动态 tool routing，只暴露相关工具子集。",
     "rubric": {
@@ -2804,6 +2870,7 @@
       "tool-calling"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "请解释 ReAct 类 Agent 的基本思想。它与一个只调用一次 LLM 然后执行工具的系统有什么本质区别？",
     "explanation": "ReAct = reasoning-action-observation 循环，可根据观察动态调整后续行动；一次性调用无法适应中间结果。",
     "rubric": {
@@ -2849,6 +2916,7 @@
       "trade-off"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "什么时候应该采用 Plan-and-Execute，而不是让 Agent 每一步都重新决定下一步？这种架构有什么代价？",
     "explanation": "任务可先形成稳定多步计划时 Plan-and-Execute 减少重复规划、提高可观察性；代价是计划可能过时需重规划。",
     "rubric": {
@@ -2895,6 +2963,7 @@
       "trade-off"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "很多 Agent 架构会增加 Reflection 或 Self-Critique 步骤。为什么 Reflection 不一定能提高 Agent 的可靠性？什么时候它反而可能只是增加成本？",
     "explanation": "Reflection 由同一模型生成，可能重复原错误且不提供新信息；有确定性验证手段时优先外部反馈而非自我批评。",
     "rubric": {
@@ -2940,6 +3009,7 @@
       "agent"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "一个 Agent 已经可以调用 REST API。为什么一个团队仍然可能选择 MCP？MCP 解决的主要问题是什么，而不是什么？",
     "explanation": "MCP 解决工具/资源/提示的标准化连接与互操作问题，不是 REST 的替代品，也不自动解决 tool selection 与推理。",
     "rubric": {
@@ -2986,6 +3056,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Research Agent 经常出现 search → analyze → search → analyze 的无限循环。没有任何异常，但 Agent 无法结束任务。你会如何设计 termination mechanism？",
     "explanation": "终止机制需要迭代/token 预算、明确的完成条件、重复调用检测以及显式失败状态，而不是无限重试。",
     "rubric": {
@@ -3029,6 +3100,7 @@
       "tool-calling"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "LLM 的 Tool Calling 和普通文本生成有什么本质区别？",
     "explanation": "文本生成输出内容；tool calling 输出结构化调用意图、由外部执行并回传观察，形成闭环——副作用带来参数可靠性/错误处理/安全等新问题。",
     "rubric": {
@@ -3073,6 +3145,7 @@
       "retry"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "Agent 调用外部 API 经常 timeout。Retry 应该放在哪一层：模型、Agent Loop、Tool Executor 还是基础设施层？为什么？",
     "explanation": "网络瞬断 → Executor/基础设施退避重试；参数/业务错误 → 结构化错误回流 Agent Loop 让模型改道;timeout ≠ 未执行，非幂等操作要 idempotency key，全局设预算防重试相乘。",
     "rubric": {
@@ -3121,6 +3194,7 @@
       "authorization"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 Agent 可以调用发送邮件、删除数据和查询数据库的工具。你会如何设计工具权限和高风险操作的确认机制？",
     "explanation": "风险分级 + 确认门 + dry-run 预览 + 软删除 + 最小 scope 凭证 + 审计日志；权限判定在服务端做，防注入伪造“已同意”。",
     "rubric": {
@@ -3169,6 +3243,7 @@
       "tool-calling"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "MCP 解决的主要问题是什么？它和 Function Calling 是什么关系？",
     "explanation": "Function Calling = 模型输出调用意图的能力；MCP = 工具暴露/发现/调用的标准协议。互补：MCP 管接入标准化，填参与选择仍靠模型能力。",
     "rubric": {
@@ -3214,6 +3289,7 @@
       "decision"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "一个客服系统主要回答企业知识库中的固定问题，偶尔需要查询订单状态。你会设计成纯 RAG、Workflow 还是 Agent？为什么？",
     "explanation": "高频 FAQ 走固定 RAG 流程、低频查单注册成受控工具，Workflow 显式编排兜底；自由度只在流程无法枚举时才值得买。",
     "rubric": {
@@ -3259,6 +3335,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 Agent 经常生成错误的执行计划，但每个 Tool 单独执行都没有问题。你会如何定位这是 Planning 问题而不是 Tool 问题？",
     "explanation": "归因方法 = 轨迹逐步拆分“决策 vs 执行”+ 人工标准计划对照实验；工具全对而计划结构性出错即 planning 短板，修复手段完全不同。",
     "rubric": {
@@ -3304,6 +3381,7 @@
       "architecture"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个企业已有 50 个内部 API，希望多个 AI Agent 复用这些能力。你会直接为每个 Agent 实现 Function Calling，还是引入 MCP？如何判断？",
     "explanation": "本质是 M×N → M+N 的集成成本问题；消费方少且稳定就直连，多消费方+快演进+需要统一治理则 MCP,可先小范围试点验证。",
     "rubric": {
@@ -3350,6 +3428,7 @@
       "agent-serving"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "你的团队自托管 LLM 给多轮工具调用 Agent 使用：每次会话从较长的 system prompt 开始，工具结果使上下文持续增长到数万 token，且需同时服务上百个并发会话。在这种 workload 下，为什么\"单 token KV cache 更小\"往往比 benchmark 分数更值得作为选型依据？哪些性能瓶颈不会因此消失？",
     "explanation": "Agent 上下文随多轮工具调用单调增长，KV cache ∝ 上下文长度，总占用还要乘并发路数——低 KV/token 直接换来更高并发或更长可用上下文，这是吞吐与成本的硬约束。但 KV 优化不改善 prefill 计算（首 token 延迟主要由权重读取/QKV 投影/FFN 主导）、decode 权重带宽、kernel 效率，也不提升模型质量本身。",
     "reference": {

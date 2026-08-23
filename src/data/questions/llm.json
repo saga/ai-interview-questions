@@ -8,6 +8,7 @@
       "alignment"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "RLHF（基于人类反馈的强化学习）在大模型对齐中的主要目的是？",
     "explanation": "RLHF 通过人类偏好反馈训练奖励模型并微调，使模型行为更符合人类期望与指令，是对齐阶段而非替代预训练。",
     "formats": {
@@ -39,6 +40,7 @@
       "safety"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
     "explanation": "幻觉是生成不实内容，RAG 引入外部知识可缓解，且与数据质量和采样策略相关；模型变大并不能完全消除幻觉。",
     "formats": {
@@ -73,6 +75,7 @@
       "inference"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "在 LLM 推理中，温度（temperature）参数主要影响？",
     "explanation": "temperature 缩放 softmax 前的 logits，值越高输出越随机多样，值越低越确定集中。",
     "formats": {
@@ -104,6 +107,7 @@
       "hallucination"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "什么是检索增强生成（RAG）？请描述其基本流程及相比单纯依赖模型参数的优势。",
     "explanation": "考察检索-拼接-生成流程，以及可溯源、实时性、降幻觉、低成本等优势。",
     "reference": {
@@ -150,6 +154,7 @@
       "attention"
     ],
     "difficulty": "hard",
+    "angle": "definition",
     "question": "在 LLM 自回归推理中，KV 缓存（KV cache）的核心作用是？",
     "explanation": "自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。",
     "reference": {
@@ -184,6 +189,7 @@
       "serving"
     ],
     "difficulty": "hard",
+    "angle": "calculation",
     "question": "某 MoE 模型参数量为 671B 总参 / 37B 激活参数（如 DeepSeek-V3）。这两个数字分别决定了什么？",
     "explanation": "MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。",
     "reference": {
@@ -219,6 +225,7 @@
       "gqa"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "LLM 解码阶段通常是访存受限（memory-bandwidth-bound）。下列哪些手段能有效降低单 token 延迟？（多选）",
     "explanation": "解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。",
     "reference": {
@@ -257,6 +264,7 @@
       "peft"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "LoRA 高效微调的核心思想是？",
     "explanation": "LoRA 冻结预训练权重 W₀，为每个目标矩阵学习低秩旁路 A(d×r)、B(r×k)，可训练参数减少百倍以上，单卡即可微调 7B+ 模型，适配器小且可热插拔。QLoRA 在此基础上再把冻结的基座权重量化为 4-bit。其有效性的假设是微调所需的权重更新具有低内在秩。",
     "reference": {
@@ -292,6 +300,7 @@
       "tradeoff"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "面对一个企业知识问答需求（知识频繁更新、需要溯源、数据涉密不能出内网），你会选择提示工程、RAG 还是微调？请说明决策依据与组合方案。",
     "explanation": "考察三者边界：RAG 管“知识”，微调管“行为”，提示工程管“约束”；以及可溯源、时效性、私有化部署等工程权衡。",
     "reference": {
@@ -340,6 +349,7 @@
       "evaluation"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "要把一个 naive RAG 升级为生产级检索管线，以下哪些做法是合理且常见的？（多选）",
     "explanation": "生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。",
     "reference": {
@@ -377,6 +387,7 @@
       "attention"
     ],
     "difficulty": "hard",
+    "angle": "calculation",
     "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
     "explanation": "面试高频手写题：考察注意力公式 QKᵀ/√d → softmax → ×V，以及数值稳定处理。",
     "reference": {
@@ -425,6 +436,7 @@
       "attention"
     ],
     "difficulty": "medium",
+    "angle": "calculation",
     "question": "某模型的架构说明写着：32 个 Query 头、仅 2 个 KV 头（GQA）、head_dim=128。相比每个 Q 头独享 K/V 的标准 MHA（32 个 KV 头），为什么它的单 token KV cache 能缩小约 16 倍？",
     "explanation": "KV cache 按 token × 层 × KV 头存储：每层每 token 缓存 num_kv_heads × head_dim 的 K 与 V，Query 头从不进入缓存。GQA 让 32 个 Query 头分组共享这 2 组 K/V，缓存规模由 KV 头数决定，因此是 32÷2=16 倍的压缩，而注意力表达力基本保留。",
     "reference": {
@@ -460,6 +472,7 @@
       "capacity-planning"
     ],
     "difficulty": "hard",
+    "angle": "calculation",
     "question": "某模型架构说明给出：30B Dense Transformer、48 层、32 Query 头 / 2 KV 头（GQA）、head_dim=128，KV cache 以 BF16 存储（每元素 2 字节）。忽略框架开销，单个 token 占用的 KV cache 约是多少？一个 10k token 的会话呢？",
     "explanation": "公式：KV cache/token = 2（K 和 V）× 层数 48 × KV 头数 2 × head_dim 128 × 2 字节 ≈ 49KB ≈ 48 KiB。10k token 会话约 49152×10000 ≈ 0.47 GB。推论：一张减去权重后剩约 20GB 显存的 80GB 卡，大约只能同时服务 40 路这样的会话——这就是为什么 KV 头数是容量规划的一阶参数。",
     "reference": {
@@ -496,6 +509,7 @@
       "gqa"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个面向长上下文（131k token）的模型将约 75% 的 Transformer 层设为滑动窗口注意力（SWA），其余 25% 使用全局注意力的 GQA 层。相比所有层都用全局注意力，这种混合设计最直接的收益是什么？",
     "explanation": "SWA 层只在固定窗口内计算注意力：复杂度从 O(n²) 降为 O(n·w)，且窗口外的旧 token KV 可直接淘汰，该层缓存上界固定为窗口大小 w 而非序列长度 n。少量全局层负责建立跨全序列的信息通路。代价是局部层无法一步看到窗口外信息，长程依赖依赖全局层中转。",
     "reference": {
@@ -531,6 +545,7 @@
       "inference-efficiency"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "某模型的架构说明描述其 LatentMoE 设计：先把 hidden representation 经 down projection 映射到低维 latent space，在其中执行专家（MoE）计算，再经 up projection 还原回原维度。基于这一机制，为什么它可能降低推理成本？",
     "explanation": "压缩发生在专家线性层：MoE 专家的大矩阵原本作用于完整 hidden size，LatentMoE 让它们在低维 latent 空间执行，参数量与 FLOPs 随 latent 维度而非 hidden size 缩放；两次投影本身是 d_model×d_latent 的瘦矩阵，开销远小于被替换的原层。代价是 latent 成为信息瓶颈，质量对压缩比敏感。",
     "reference": {
@@ -566,6 +581,7 @@
       "capacity-planning"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "如果把 LatentMoE 的 latent 维度压得非常低，最可能带来什么后果？",
     "explanation": "压缩比上升 → 计算/参数继续下降，但 latent 成为更紧的信息瓶颈：专家只能看到低维投影后的输入，路由区分度与专家容量同时受损，质量回退风险随压缩比单调上升。它是典型的 compute/memory 与 representation bandwidth 的交换，不存在免费的极限压缩。",
     "reference": {
@@ -602,6 +618,7 @@
       "causal-mask"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "某 frontier LLM 的架构说明写明：完全未使用显式位置编码（没有 RoPE，也没有绝对位置嵌入），即 NoPE 设计。相比传统 RoPE 模型，这种架构最需要解决或验证的核心问题是什么？",
     "explanation": "去掉显式位置编码后，顺序信息只能隐式地来自因果掩码的不对称性（每个位置能看到的前缀长度不同）与数据统计规律。模型必须自己学到可靠的顺序建模，最大风险在长度泛化：超出训练长度后，隐式位置信号是否仍然成立需要专门验证。",
     "reference": {
@@ -638,6 +655,7 @@
       "gradient-flow"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "某架构说明提到两类改善深层 Transformer 信息流动的设计：mHC 把单一 residual stream 拓宽为数条并行通路；Attention Residuals 把此前若干层的输出经类注意力的加权聚合后注入当前层。关于两者的说法正确的有哪些？（多选）",
     "explanation": "两者解决的是同一个深层网络问题——信息与梯度的跨层传递，但路径结构不同：mHC 是静态拓宽残差通路，Attention Residuals 是按内容动态聚合历史层输出。后者引入额外 attention 计算与激活占用，属于以计算换表达能力的结构性改进，不应计入推理效率优化。",
     "reference": {
@@ -675,6 +693,7 @@
       "design-motivation"
     ],
     "difficulty": "medium",
+    "angle": "definition",
     "question": "现代 LLM 的组件替换各有不同的首要动机。下列四项设计中，哪一项的首要设计目标不是 inference efficiency？",
     "explanation": "MLA（K/V 低秩 latent 投影）直接缩小 KV cache；KDA（门控 delta 线性注意力）把长上下文注意力成本降为近似线性；LatentMoE 在低维空间执行专家计算以降低 FLOPs——三者都是冲着推理效率去的。Attention Residuals 聚合历史多层输出，增加计算以改善深层信号传播与表达能力，首要回报在质量而非效率。",
     "reference": {

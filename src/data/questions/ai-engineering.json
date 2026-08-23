@@ -10,6 +10,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 运行 20 轮之后，context 已经达到 200K tokens。此时模型速度变慢，成本上升，回答质量也开始下降。你会如何处理？",
     "explanation": "区分完整历史与任务状态：压缩摘要、裁剪已完成 tool results、提取结构化状态、长期信息放入独立 memory。",
     "rubric": {
@@ -56,6 +57,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "mechanism",
     "question": "一个模型支持 1M token context。你的 RAG 系统可以把检索得到的 100 个 chunk 全部放进去。为什么仍然不应该简单地把所有 chunk 都塞进 context？",
     "explanation": "长上下文不等于有效利用；无关 chunk 带来成本、延迟与噪声，应 rerank/dedup/compress 后再进入 context。",
     "rubric": {
@@ -101,6 +103,7 @@
       "agent"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "一个 AI Coding Assistant 需要记住用户的 coding preferences、项目约定和过去的对话。你会如何区分 conversation history、working memory 和 long-term memory？哪些信息应该进入长期记忆？",
     "explanation": "三层区分：对话原文 / 当前任务工作状态 / 跨任务稳定的长期记忆；只把明确且稳定的信息写入长期。",
     "rubric": {
@@ -147,6 +150,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 Agent 的长期 memory 中保存了大量模型自己推断出来的信息。几个月后，Agent 经常根据错误 memory 做出错误决策。你会如何解决这个问题？",
     "explanation": "给 memory 加来源/时间/置信度元数据，区分事实与推断，允许过期删除，关键事实重新从权威源验证。",
     "rubric": {
@@ -195,6 +199,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 RAG 系统的 retrieval recall@10 达到 95%，但是最终回答准确率只有 70%。正确答案经常出现在 Top-10 中。你会如何判断问题究竟出在 retrieval、reranking、context construction 还是 generation？",
     "explanation": "recall@10 只覆盖检索一层；需对 ranking、context 构建、generation 分层评测才能定位具体瓶颈阶段。",
     "rubric": {
@@ -241,6 +246,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "你需要为企业 ESG 报告建立 RAG 系统。PDF 中同时包含长文本、表格、脚注、多级标题和图表。你会选择固定长度 chunk、semantic chunk，还是基于文档结构进行 chunking？为什么？",
     "explanation": "结构化文档优先按章节/标题/表格边界切分，再结合 token 长度；不同内容类型采用不同 chunking 策略。",
     "rubric": {
@@ -286,6 +292,7 @@
       "RAG"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "你负责一个企业 RAG 系统，希望上线前证明系统质量。你会如何设计 offline evaluation？请说明 evaluation dataset、retrieval metrics、answer metrics 和 LLM-as-a-Judge 各自解决什么问题。",
     "explanation": "offline evaluation 四件套：覆盖真实场景的数据集、retrieval 指标、answer 指标、LLM judge（需校准并结合人工）。",
     "rubric": {
@@ -335,6 +342,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 AI 产品 offline evaluation 的 answer accuracy 是 92%，但上线后用户满意度只有 70%。你会优先调查哪些问题？",
     "explanation": "先查离线数据分布与真实流量差异，再看长尾、延迟、可靠性，以及“正确但不好用”的体验差距。",
     "rubric": {
@@ -384,6 +392,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "你需要让 LLM 输出固定结构的 JSON。仅仅在 prompt 中写“请返回 JSON”有哪些风险？你会如何提高结构化输出的可靠性？",
     "explanation": "仅靠 prompt 约束格式不可靠；应使用 provider 结构化输出/JSON schema + 客户端校验 + 有限重试与安全 fallback。",
     "rubric": {
@@ -431,6 +440,7 @@
       "production"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 AI 服务依赖第三方 LLM API。线上偶尔出现 timeout、429、5xx 和 malformed JSON。你会设计哪些 reliability mechanisms？",
     "explanation": "按错误类型分别处理：timeout 重试、429 backoff、5xx 限次重试+降级、malformed JSON 校验修复；整体设预算与可观测性。",
     "rubric": {
@@ -481,6 +491,7 @@
       "debugging"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 请求平均需要 18 秒。一次请求包含 3 次 LLM 调用、2 次 retrieval 和 2 次 tool call。你会如何分析和优化 latency？",
     "explanation": "先做分阶段 latency trace 并区分串并行；合并调用、并行执行独立步骤、缩 context、设合理 timeout。",
     "rubric": {
@@ -527,6 +538,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 平均每次请求消耗 50K tokens，日请求量从 10K 增长到 1M。你会从哪些层面控制成本？请按优先级说明。",
     "explanation": "优先级：削减无效 context → caching → 减少 iterations → model routing；成本优化必须结合质量指标一起看。",
     "rubric": {
@@ -577,6 +589,7 @@
       "evaluation"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个 Research Agent。用户输入“分析某家公司最近三个季度的 AI 业务表现，并与主要竞争对手比较”。系统需要搜索网页、读取财报、查询金融数据、提取指标、计算同比变化，并生成带引用的分析报告。请说明整体架构、Agent 如何使用 tools、哪些步骤应该使用确定性 workflow，以及你会如何评估系统质量。",
     "explanation": "Research Agent 用 Workflow+Agent 混合架构：确定性步骤走 workflow，语义判断交给 Agent；配套结构化 state、tool routing、citation、budget/termination 与分层评估。",
     "rubric": {
@@ -623,6 +636,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "线上 LLM 服务 TTFT 从 500ms 上升到 3s，但生成速度基本没有变化。你会重点排查哪些环节？",
     "explanation": "TTFT↑ 而 decode 不变 ⇒ 瓶颈在首 token 前：排队、prefill 输入膨胀、batching 调度、prefix cache 失效或 provider 容量，分段 trace 二分。",
     "rubric": {
@@ -667,6 +681,7 @@
       "continuous-batching"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "为什么 LLM serving 通常需要 Continuous Batching？它和传统 Web 服务中的请求批处理有什么本质区别？",
     "explanation": "decode 访存密集需批量填充 GPU;静态 batch 等最长的、短请求被拖死；continuous batching 按 decode step 动态进出队，吞吐/延迟双赢。",
     "rubric": {
@@ -712,6 +727,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 70B 模型无法部署到现有 GPU 集群。你会考虑哪些量化方案？量化可能带来哪些质量和性能上的损失？",
     "explanation": "权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径；省显存常带来吞吐红利，但 INT4 有质量退化且长尾任务敏感，须用业务评测集实测权衡。",
     "rubric": {
@@ -755,6 +771,7 @@
       "rag"
     ],
     "difficulty": "easy",
+    "angle": "definition",
     "question": "RAG 为什么能够解决 LLM 知识过时的问题？它解决不了哪些问题？",
     "explanation": "RAG 把知识从冻结参数外置为可更新索引，解决时效性；但检索质量、模型理解力、权限合规和残余幻觉都不在它的射程内。",
     "rubric": {
@@ -797,6 +814,7 @@
       "agent"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "为什么传统单元测试不足以测试一个 LLM Agent？你会如何设计 Agent Evaluation？",
     "explanation": "Agent 非确定、多路径、成败看任务完成——评测要从断言转向：端到端成功率 + 过程/轨迹指标 + 回归与安全场景分层。",
     "rubric": {
@@ -842,6 +860,7 @@
       "agent"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个 Agent 的最终答案准确率只有 70%。你如何判断问题来自模型能力、Prompt、Tool Calling、Retrieval 还是 Agent Planning？",
     "explanation": "归因靠分段评测 + 变量控制：逐层替换模型/prompt/检索/工具并打失败标签，交叉统计失败聚集点即根因方向。",
     "rubric": {
@@ -888,6 +907,7 @@
       "latency"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "Agent A 成功率 80% 但平均调用 12 次工具；Agent B 成功率 76% 但只用 4 次。你会选哪个？还需要哪些信息才能做出负责任的决策？",
     "explanation": "决策要看期望成本/成功、失败代价结构与尾部行为，而非裸成功率；12 次调用≈3 倍成本与更多级联失败面。",
     "rubric": {
@@ -936,6 +956,7 @@
       "latency"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "一个系统同时接入 GPT、Claude 和开源模型。你会根据哪些因素设计 Model Routing？",
     "explanation": "路由 = 任务难度×质量要求×成本延迟×能力特异性×合规×健康度的多维分流；规则起步、数据成熟后动态化，分支需独立评测与灰度。",
     "rubric": {
@@ -980,6 +1001,7 @@
       "fallback"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "主模型 API 出现故障时，系统应该如何自动降级？除了切换备用模型，你还可以采用哪些降级策略？",
     "explanation": "降级阶梯：备用模型 → 语义缓存 → 功能裁剪/直返原文 → 异步队列 → 模板兜底 → 明示受限；熔断触发、降级可观测、定期演练。",
     "rubric": {
@@ -1028,6 +1050,7 @@
       "agent"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Agent 线上出现错误回答，你需要哪些 Trace 信息才能判断问题发生在哪一步？",
     "explanation": "Trace 五要素：最终 prompt+版本、检索命中与分数、每次 LLM 调用出入参、工具调用明细、决策点与反馈；用统一 id 串联并平衡脱敏与存储。",
     "rubric": {
@@ -1072,6 +1095,7 @@
       "few-shot"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "什么时候应该使用 Zero-shot，什么时候应该加入 Few-shot Examples？Few-shot 一定会提升效果吗？",
     "explanation": "Few-shot 的本质是“用示例当规格说明书”——格式/风格难描述时最有价值；但它带来锚定、偏差和 token 成本，是否使用应由评测对照决定。",
     "rubric": {
@@ -1117,6 +1141,7 @@
       "latency"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "一个生产 Prompt 从 2K tokens 增长到了 8K tokens，准确率只提高了 1%，但成本和延迟明显增加。你会如何优化？",
     "explanation": "逐块消融找到贡献 1% 的最小集合；清理累积补丁、结构化改写、prefix caching、按需检索；建立变更评测门禁防再度膨胀。",
     "rubric": {
@@ -1162,6 +1187,7 @@
       "llmops"
     ],
     "difficulty": "medium",
+    "angle": "system-design",
     "question": "一个生产 LLM 应用有 20 个 Prompt，开发团队经常修改 Prompt 但没有任何版本管理。你会如何设计 Prompt Versioning？",
     "explanation": "Prompt 即代码：集中注册+版本化+变更评测门禁+trace 记录实际版本+灰度放量；最小实现 Git+版本日志即可起步。",
     "rubric": {
@@ -1208,6 +1234,7 @@
       "cost"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "加入 Chain-of-Thought Prompt 后，一个推理任务的准确率没有提升，但 token 消耗增加了 3 倍。你会如何判断是否应该继续使用 CoT？",
     "explanation": "先归因错误类型（CoT 只救推理类错误）并甄别表演式推理，再做成本收益与替代方案比较（条件启用/换小模型+CoT/reasoning budget）。",
     "rubric": {
@@ -1253,6 +1280,7 @@
       "vector-db"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "生产环境已经存储了 1000 万条 1536 维 embedding，现在准备切换到 3072 维 embedding。你会如何进行迁移，避免线上搜索中断？",
     "explanation": "新旧向量空间不兼容 ⇒ 双索引并行 + 评测达标 + 灰度切流 + 保留回滚；注意重嵌入成本、双写完成点与 query/doc 同版本。",
     "rubric": {
@@ -1298,6 +1326,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "更换 Embedding Model 后，RAG 系统的 Recall 从 92% 降到 65%。你会如何定位问题？",
     "explanation": "Recall 暴跌首查空间一致性：一侧旧模型、缓存污染、预处理差异、度量配置；用新旧组合的金标集矩阵快速二分出错误侧。",
     "rubric": {
@@ -1343,6 +1372,7 @@
       "query"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "你的 Vector Search 对长问题效果很好，但对 “ESG scope 3？”、“DPO？” 这类短 Query 效果很差。你会如何优化？",
     "explanation": "短 query = 信息不足导致向量失配；LLM 扩写 + 缩写词典 + BM25 补充 + 文档侧 FAQ 化，配专项评测集验证。",
     "rubric": {
@@ -1390,6 +1420,7 @@
       "cost"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个 Vector Database 已存储 1 亿条 embedding，内存成本越来越高。你有哪些降低成本的办法？会牺牲什么？",
     "explanation": "省钱阶梯：数据治理 → 索引参数调优 → PQ/INT8 量化 → 磁盘索引；每一级都在用召回率或延迟换内存，须以评测曲线定取舍。",
     "rubric": {
@@ -1435,6 +1466,7 @@
       "reranking"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "通用 Embedding Model 在你的金融领域检索效果只有 75%。你会优先更换模型、Fine-tune Embedding Model，还是增加 Reranker？为什么？",
     "explanation": "升级阶梯：换模型（零训练）→ 加 reranker（零训练换延迟）→ FT embedding（高上限高成本）；由错误分析决定走到哪一级。",
     "rubric": {
@@ -1480,6 +1512,7 @@
       "prompt"
     ],
     "difficulty": "medium",
+    "angle": "tradeoff",
     "question": "什么情况下 Fine-tuning 是错误的解决方案？请至少举出两个应该优先使用 RAG 或 Prompt Engineering 的场景。",
     "explanation": "FT 的误用清单：知识频繁更新（→RAG）、prompt 未调优（→先迭代 prompt）、缺高质量数据、指望治幻觉；用“行为还是知识”之问做初筛。",
     "rubric": {
@@ -1527,6 +1560,7 @@
       "debugging"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "LoRA Fine-tune 后训练集表现很好，但真实用户数据效果很差。你会如何判断是过拟合、数据分布问题还是 LoRA 配置问题？",
     "explanation": "曲线形态定过拟合、真实流量分层评测定分布缺口、网格消融定配置；诊断顺序很重要——先数据后超参。",
     "rubric": {
@@ -1572,6 +1606,7 @@
       "cost"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "你的 LLM 应用存在大量重复 Query，API 成本很高。你会如何设计 LLM Response Cache？哪些请求不适合缓存？",
     "explanation": "Key = 归一化 query + 全部影响输出的变量；私有上下文、实时数据、创意发散、副作用调用都不该进缓存；版本绑定失效策略。",
     "rubric": {
@@ -1617,6 +1652,7 @@
       "llmops"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "“What is ESG?” 和 “Can you explain ESG?” 语义相似但字符串不同。如何设计 Semantic Cache？它有什么风险？",
     "explanation": "Embedding 相似度 + 阈值直返历史答案；最大风险是“相似不等于同答”的错误命中且难以察觉——限定事实型无状态 query、分区校准阈值、TTL 兜底。",
     "rubric": {
@@ -1663,6 +1699,7 @@
       "llmops"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "LLM Provider 对你的 API 设置了 RPM 和 TPM 双重限制。你的系统如何同时控制 Request Rate 和 Token Rate？",
     "explanation": "RPM 用经典限流器、TPM 要先预估 token 再扣预算，集中式计量；优先级排队 + 429 反馈调节 + 多实例共享配额是关键工程点。",
     "rubric": {
@@ -1710,6 +1747,7 @@
       "llmops"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "Primary LLM Provider 故障时系统自动切换备用 Provider。如何保证切换过程中不会导致大量重复请求和成本失控？",
     "explanation": "三大事故点：重试相乘、双写计费、备库被打爆；对策 = 熔断统一决策 + 幂等 id 去重 + 渐进放量 + 成本硬顶 + 渐进回流。",
     "rubric": {
@@ -1757,6 +1795,7 @@
       "prompt"
     ],
     "difficulty": "medium",
+    "angle": "scenario",
     "question": "一个 Prompt 修改后，人工感觉效果更好，但线上业务指标没有变化。你会如何设计 Evaluation 来验证这个修改是否真的有效？",
     "explanation": "感觉不等于证据：离线固定集分层对比 + 盲评/成对比较去除偏好；在线检查影响流量占比与指标噪声，选更贴近改动的中间指标。",
     "rubric": {
@@ -1802,6 +1841,7 @@
       "testing"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "你修改了 Agent Prompt，但无法保证所有历史场景仍然正常。如何建立 LLM Regression Test？",
     "explanation": "回归 = badcase 沉淀的场景库 + 变更触发的自动化执行 + 与基线的 diff 报告；接入 CI 成为合并门禁，用例库持续版本化补给。",
     "rubric": {
@@ -1849,6 +1889,7 @@
       "security"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "如何设计一个 LLM Application 的 Input Guardrail 和 Output Guardrail？哪些检查应该在 LLM 之前完成，哪些应该在 LLM 之后完成？",
     "explanation": "前置拦输入（注入/PII/权限，便宜确定），后置审输出（grounding/合规/schema，需语义理解）；两层低延迟、fail-safe、误杀率监控。",
     "rubric": {
@@ -1894,6 +1935,7 @@
       "security"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "一个客服系统会把用户的姓名、电话、地址和订单信息发送给第三方 LLM API。你会如何设计 PII Protection？",
     "explanation": "PII 防护四层：最小化（砍不必要字段）→ 占位符替换+响应还原 → 高敏走私有化部署 → 协议（DPA/zero-retention）与出站扫描兜底。",
     "rubric": {
@@ -1942,6 +1984,7 @@
       "agent-security"
     ],
     "difficulty": "hard",
+    "angle": "scenario",
     "question": "你的 Agent 可以访问内部数据库。攻击者通过网页内容间接注入 Prompt，诱导 Agent 查询敏感数据。这属于什么攻击？如何防御？",
     "explanation": "间接注入 = 恶意指令藏在 Agent 读取的外部内容里；防御核心是把权限边界放在服务端（最小 scope+敏感操作服务端鉴权），辅以数据/指令隔离、输出过滤与红队演练。",
     "rubric": {
@@ -1988,6 +2031,7 @@
       "agent"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个企业级 AI Coding Agent。它可以读取代码库、搜索代码、修改文件、运行测试并根据失败结果继续修复。请重点说明 Agent Loop、Tool、Context、权限和可靠性设计。",
     "explanation": "骨架 = workflow 化的修复循环 + budget/终止;工具高正交带 diff;context 靠检索+结构化状态;安全 = 沙箱+分支隔离+审计;可靠 = 循环检测与可回滚。",
     "rubric": {
@@ -2034,6 +2078,7 @@
       "model-routing"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "设计一个 AI API Platform，同时支持多个 LLM Provider。系统需要处理成本、Latency、Rate Limit、Fallback、Model Routing 和 Observability。请说明核心架构。",
     "explanation": "统一 Gateway 抽象多 provider:路由/配额/熔断降级/缓存/归一化/trace 六大件;先落地 adapter+fallback+observability,路由缓存靠数据驱动后置。",
     "rubric": {
@@ -2081,6 +2126,7 @@
       "trade-off"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "一个复杂 Agent 方案比简单 RAG 的 Benchmark 高 15%，但维护成本和延迟都是 RAG 的 5 倍。作为架构师，你会如何决定最终采用哪种方案？",
     "explanation": "决策框架：benchmark 差距用真实分布重测并按场景占比折算，对照 5 倍的全拥有成本与延迟代价；混合架构（RAG 主干+复杂 case 升级 Agent）常是最优解。",
     "rubric": {
@@ -2126,6 +2172,7 @@
       "reliability"
     ],
     "difficulty": "medium",
+    "angle": "calculation",
     "question": "请实现一个调用 LLM API 的 retry 函数：支持 exponential backoff，只对 429 和 5xx 重试，并设置最大重试次数。",
     "explanation": "要点：只对 429/5xx 重试（4xx 参数错误重试无意义）；指数退避封顶 + jitter；尊重 retry-after；非幂等调用方需自行保证安全。",
     "rubric": {
@@ -2172,6 +2219,7 @@
       "vector"
     ],
     "difficulty": "easy",
+    "angle": "calculation",
     "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
     "explanation": "单遍累加点积与两个范数、除零防御;cosine 只看方向不看幅度,消除长度偏差;归一化后等价于内积。",
     "rubric": {
@@ -2216,6 +2264,7 @@
       "chunking"
     ],
     "difficulty": "medium",
+    "angle": "calculation",
     "question": "请实现一个简单的 Recursive Text Chunker：支持 chunkSize 和 overlap，并避免在单词中间切断文本。",
     "explanation": "滑动窗口 + 边界回退（句号/换行/空格）+ 防死循环的前进保证;生产化方向是段落预切分与 token 计数。",
     "rubric": {
@@ -2262,6 +2311,7 @@
       "agent"
     ],
     "difficulty": "hard",
+    "angle": "calculation",
     "question": "请实现一个简单的 Tool Calling Handler：解析模型返回的 tool call，根据 tool name 找到对应函数，执行函数并将结果重新加入 conversation。",
     "explanation": "注册表分发 + arguments 当不可信 JSON 校验 + 错误结构化回传给模型修正 + 并发执行;生产补 timeout/幂等/鉴权。",
     "rubric": {
@@ -2308,6 +2358,7 @@
       "memory"
     ],
     "difficulty": "hard",
+    "angle": "system-design",
     "question": "请设计一个 Context Manager：当 conversation 超过 token budget 时，保留 system prompt、最近 N 轮消息，并对更早消息进行 summary。",
     "explanation": "三层装配：system 恒定 + 旧轮次滚动摘要（增量合并）+ 近 N 轮原文；预算不足时扩大摘要区;summarize 可注入,memory 类关键信息不应依赖摘要。",
     "rubric": {
@@ -2357,6 +2408,7 @@
       "tradeoff"
     ],
     "difficulty": "hard",
+    "angle": "tradeoff",
     "question": "固定预算下为高并发 Agent 推理服务选基座，公开评测显示三者质量接近：A＝30B Dense、GQA（2 KV 头）；B＝30B 总参 MoE（每 token 激活约 3B）、8 KV 头；C＝14B Dense、标准 MHA。请从 latency、memory、concurrency、quality、cost 五个维度给出定量化的权衡分析。",
     "explanation": "三种结构各有明确的资源画像：A 的 KV cache 最小（KV 头数决定）、并发容量最高，decode 质量受限于激活的全部 30B 参数；B decode FLOPs 低（激活 3B）但专家权重须全部常驻显存——MoE 省算力不省显存；C 权重最小、加载最轻，但 MHA 的 KV cache 最大，高并发长上下文下最先撞显存墙。正确方法是从 SLO（目标延迟、并发路数、上下文长度）出发定量测算，而不是比参数量或 benchmark。",
     "reference": {
@@ -2406,6 +2458,7 @@
       "agent-serving"
     ],
     "difficulty": "hard",
+    "angle": "mechanism",
     "question": "你要把一个采用 MLA + LatentMoE + 线性注意力局部层 + Attention Residuals + NoPE 的 frontier 模型部署为高并发 Agent 推理服务，正在做容量规划与技术尽调。关于各项架构改动对 serving 的影响，下列归因正确的有哪些？（多选）",
     "explanation": "容量规划看一阶资源变量：MLA 与 LatentMoE 直接改写每 token 显存/FLOPs 画像（KV cache 字节数、专家计算量），是 serving 成本的主项；线性注意力局部层降低长上下文计算；Attention Residuals 反向增加计算与激活占用、回报在质量，应计为成本项；NoPE 只是去掉了很小的位置编码开销，既不会显著提吞吐也不影响 cache 规模。",
     "reference": {

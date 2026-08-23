@@ -46,6 +46,12 @@ describe('知识点层数据完整性', () => {
       expect(topics.has(n.id), `知识点 ${n.id} 缺少任何题目支撑`).toBe(true);
     }
   });
+
+  it('题目 angle 标注合法：取值在六角度白名单内（ADR-032）', () => {
+    for (const q of questionBank.questions) {
+      if (q.angle !== undefined) expect(ANGLES, `${q.id} angle=${q.angle}`).toContain(q.angle);
+    }
+  });
 });
 
 describe('knowledgeById / requiredPointsFor', () => {

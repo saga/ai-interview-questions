@@ -1,0 +1,791 @@
+[
+  {
+    "topic": "agent-fundamentals",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用Agent 基础定位并解决问题",
+    "expectedConcepts": [
+      "Agent 与普通 LLM 应用的区别：自主决策循环 + 外部副作用",
+      "不确定性管理：步数上限、权限分级、人工确认门"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "agentic-01"
+    ]
+  },
+  {
+    "topic": "agent-guardrails",
+    "angle": "system-design",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否以Agent 护栏为核心设计端到端系统方案",
+    "expectedConcepts": [
+      "失控代价是真金白银与数据破坏：护栏要在路径上而非提示里",
+      "权限分层：只读默认放开、写操作确认、不可逆操作双人/人工"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "agentic-12",
+      "ai-security-002",
+      "ai-tool-004"
+    ]
+  },
+  {
+    "topic": "agent-loop",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解Agent 执行循环的内在机制与成因",
+    "expectedConcepts": [
+      "循环三要素：状态更新、工具调用、终止判定",
+      "无限循环/振荡调用的检测与熔断设计"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-eng-011"
+    ]
+  },
+  {
+    "topic": "attention",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡多头注意力相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "多头 = 在多个子空间并行做注意力后融合，头数与 head_dim 此消彼长（总维度通常固定）",
+      "cross-attention 的 Q 来自一个序列、K/V 来自另一个序列，是 encoder-decoder 与多模态的桥"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-transformer-003",
+      "llm-11",
+      "ai-fund-003",
+      "ai-xattn-001"
+    ]
+  },
+  {
+    "topic": "backprop",
+    "angle": "definition",
+    "difficulty": "easy",
+    "format": "choice",
+    "purpose": "检验学习者能否准确解释反向传播的核心概念与适用边界",
+    "expectedConcepts": [
+      "先 forward 构建计算图，再 backward 沿图逐层相乘局部导数",
+      "梯度是 loss 对参数的偏导数（方向与幅度），不是\"误差\"本身"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "dl-02"
+    ]
+  },
+  {
+    "topic": "batch-norm",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡BatchNorm / LayerNorm / RMSNorm相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "BN 统计跨样本且推理用滑动平均；LN/RMSNorm 逐样本、无 train/test 差异",
+      "RMSNorm 去掉均值中心化与 bias，更省计算且效果相当，是现代 LLM 默认"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "dl-03"
+    ]
+  },
+  {
+    "topic": "caching",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解Prefix Cache 与请求复用的内在机制与成因",
+    "expectedConcepts": [
+      "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
+      "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-ops-001",
+      "ai-ops-002"
+    ]
+  },
+  {
+    "topic": "context-window",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用上下文窗口定位并解决问题",
+    "expectedConcepts": [
+      "名义窗口 ≠ 有效上下文：long-context degradation 是普遍现象",
+      "上下文每翻倍，KV cache 与 prefill 计算同步显著上涨"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-032",
+      "ai-fund-033",
+      "ai-fund-031"
+    ]
+  },
+  {
+    "topic": "cost",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕推理成本工程完成定量计算与数值推理",
+    "expectedConcepts": [
+      "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
+      "降本手段的优先级：先省 token、再提命中、后换模型"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-eng-023"
+    ]
+  },
+  {
+    "topic": "cross-entropy",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕交叉熵损失完成定量计算与数值推理",
+    "expectedConcepts": [
+      "softmax + 交叉熵配合使用：loss = -log(正确类的预测概率)",
+      "perplexity = exp(平均交叉熵)，两者同源可直接换算"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "stat-03"
+    ]
+  },
+  {
+    "topic": "dpo",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡DPO 直接偏好优化相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "DPO 把 RLHF 的目标重写为偏好对上的分类式损失，无需在线采样",
+      "与 PPO 系的取舍：简单稳定 vs 优化自由度"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-020"
+    ]
+  },
+  {
+    "topic": "dropout",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡Dropout相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "只在训练期生效，推理关闭",
+      "与 L2 动机相似但机制不同：结构层面扰动 vs 损失惩罚项"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "dl-05"
+    ]
+  },
+  {
+    "topic": "gqa",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡GQA / MQA / MHA相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "压缩倍数 = MHA 头数 ÷ KV 头数，质量影响介于两者之间",
+      "对 decode 的收益最大（缓存读取是带宽瓶颈），prefill 收益相对小"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "llm-12",
+      "dl-06"
+    ]
+  },
+  {
+    "topic": "gradient-descent",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕梯度下降与优化器完成定量计算与数值推理",
+    "expectedConcepts": [
+      "学习率是步长：太大震荡发散、太小收敛慢",
+      "mini-batch 是主流：噪声小到稳定、批量又对算力友好"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "stat-02"
+    ]
+  },
+  {
+    "topic": "gradient-descent",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用梯度下降与优化器定位并解决问题",
+    "expectedConcepts": [
+      "学习率是步长：太大震荡发散、太小收敛慢",
+      "mini-batch 是主流：噪声小到稳定、批量又对算力友好"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "stat-02"
+    ]
+  },
+  {
+    "topic": "hallucination",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡幻觉相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "幻觉是生成范式的固有属性而非 bug，只能工程化压降",
+      "缓解组合拳：检索增强 + 引用溯源 + 温度控制 + 事实校验链路"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-044",
+      "ai-fund-045",
+      "llm-02"
+    ]
+  },
+  {
+    "topic": "hallucination",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用幻觉定位并解决问题",
+    "expectedConcepts": [
+      "幻觉是生成范式的固有属性而非 bug，只能工程化压降",
+      "缓解组合拳：检索增强 + 引用溯源 + 温度控制 + 事实校验链路"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-044",
+      "ai-fund-045",
+      "llm-02"
+    ]
+  },
+  {
+    "topic": "hybrid-attention",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解混合注意力（SWA + Global）的内在机制与成因",
+    "expectedConcepts": [
+      "SWA 层复杂度 O(N·w)、缓存上界固定为窗口 w 而非序列长度 N",
+      "代价：局部层无法一步看到窗口外信息，长程推理依赖全局层中转"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "llm-14"
+    ]
+  },
+  {
+    "topic": "inference-capacity",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕并发容量规划完成定量计算与数值推理",
+    "expectedConcepts": [
+      "容量公式三要素：权重常驻、KV/token × 上下文 × 并发、激活与碎片余量",
+      "KV 效率（GQA/MLA/量化）直接换算为并发容量或成本"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "agentic-61"
+    ]
+  },
+  {
+    "topic": "inference-capacity",
+    "angle": "system-design",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否以并发容量规划为核心设计端到端系统方案",
+    "expectedConcepts": [
+      "容量公式三要素：权重常驻、KV/token × 上下文 × 并发、激活与碎片余量",
+      "KV 效率（GQA/MLA/量化）直接换算为并发容量或成本"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "agentic-61"
+    ]
+  },
+  {
+    "topic": "inference-modes",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解Prefill 与 Decode的内在机制与成因",
+    "expectedConcepts": [
+      "两阶段的瓶颈差异及对应指标 TTFT/TPOT",
+      "chunked prefill 等技术正是为了协调两阶段对资源的争用"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "mlops-03"
+    ]
+  },
+  {
+    "topic": "inference-modes",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡Prefill 与 Decode相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "两阶段的瓶颈差异及对应指标 TTFT/TPOT",
+      "chunked prefill 等技术正是为了协调两阶段对资源的争用"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "mlops-03"
+    ]
+  },
+  {
+    "topic": "inference-optimization",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用推理优化总览定位并解决问题",
+    "expectedConcepts": [
+      "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
+      "优化手段与瓶颈的对应关系，而非手段的罗列"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-029",
+      "ai-inference-004",
+      "llm-07",
+      "llm-19"
+    ]
+  },
+  {
+    "topic": "latency",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕延迟指标（TTFT/TPOT/E2E）完成定量计算与数值推理",
+    "expectedConcepts": [
+      "E2E ≈ TTFT + N_out × TPOT，流式场景用户体感主要看 TTFT",
+      "批大小提升吞吐但抬高 TPOT——吞吐与延迟是显式权衡"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-eng-022",
+      "ai-fund-050",
+      "ai-inference-003"
+    ]
+  },
+  {
+    "topic": "memory",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡Agent 记忆相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "context 与 memory 的边界：窗口内 vs 需要外挂检索的状态",
+      "长程任务的记忆写入策略比读取策略更常被忽视"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-eng-015",
+      "agentic-56",
+      "ai-eng-014",
+      "agentic-05"
+    ]
+  },
+  {
+    "topic": "model-selection",
+    "angle": "system-design",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否以模型选型为核心设计端到端系统方案",
+    "expectedConcepts": [
+      "选型五维：quality/latency/memory/concurrency/cost，缺一不可",
+      "自建评测集 > 公开 benchmark：分布匹配才有参考价值"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-047"
+    ]
+  },
+  {
+    "topic": "moe",
+    "angle": "definition",
+    "difficulty": "easy",
+    "format": "choice",
+    "purpose": "检验学习者能否准确解释MoE 混合专家的核心概念与适用边界",
+    "expectedConcepts": [
+      "总参数量与激活参数量分别约束显存与计算/延迟",
+      "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-moe-tradeoff-001",
+      "llm-06"
+    ]
+  },
+  {
+    "topic": "overfitting",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡过拟合与欠拟合相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "train/validation 差距大→过拟合；两者都高→欠拟合",
+      "对策分叉：前者加数据/加正则/降容量，后者增容量/延长训练/改特征"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ml-01"
+    ]
+  },
+  {
+    "topic": "overfitting",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用过拟合与欠拟合定位并解决问题",
+    "expectedConcepts": [
+      "train/validation 差距大→过拟合；两者都高→欠拟合",
+      "对策分叉：前者加数据/加正则/降容量，后者增容量/延长训练/改特征"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ml-01"
+    ]
+  },
+  {
+    "topic": "positional-encoding",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡位置编码策略相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "为什么需要位置信息（置换等变性）与各类方案的核心差异",
+      "NoPE 的可行性来源与风险：顺序建模可靠性与长度外推需专门验证"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "llm-17"
+    ]
+  },
+  {
+    "topic": "pretraining",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡预训练相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "目标是无监督地学分布，产出的是 base model 而非 assistant",
+      "数据混合（代码/多语言/网页）与去重质量比单纯 token 数更关键"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-013",
+      "ai-pretraining-002",
+      "ai-fund-011",
+      "ai-fund-012",
+      "nlp-03"
+    ]
+  },
+  {
+    "topic": "prompt-injection",
+    "angle": "system-design",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否以提示注入为核心设计端到端系统方案",
+    "expectedConcepts": [
+      "间接注入是最常见形态：被检索内容成为攻击面",
+      "纵深防御：输入标记、输出审查、权限隔离、高危确认"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-security-004",
+      "agentic-58"
+    ]
+  },
+  {
+    "topic": "quantization",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡量化相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "weight-only vs weight+activation 的适用场景差异",
+      "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-inference-005",
+      "mlops-01"
+    ]
+  },
+  {
+    "topic": "rag-pipeline",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用RAG 流水线与 Chunking定位并解决问题",
+    "expectedConcepts": [
+      "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
+      "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "llm-10"
+    ]
+  },
+  {
+    "topic": "rag-pipeline",
+    "angle": "system-design",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否以RAG 流水线与 Chunking为核心设计端到端系统方案",
+    "expectedConcepts": [
+      "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
+      "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "llm-10"
+    ]
+  },
+  {
+    "topic": "rag-vs-finetuning",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用RAG vs 微调选型定位并解决问题",
+    "expectedConcepts": [
+      "\"知识外挂化（RAG）、行为内生化（微调）\"的分界逻辑",
+      "组合方案：微调定格式与方法论，RAG 供实时事实"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "llm-09"
+    ]
+  },
+  {
+    "topic": "regularization",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡正则化（L1/L2/Weight Decay）相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "L1 倾向稀疏解，L2 平滑收缩权重",
+      "weight decay 与 L2 在标准 SGD 下等价，在 AdamW 中解耦实现后才真正生效"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ml-02"
+    ]
+  },
+  {
+    "topic": "rlhf",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡RLHF相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
+      "reward hacking 是核心风险：奖励模型只是代理指标"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-019",
+      "llm-01"
+    ]
+  },
+  {
+    "topic": "rope",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕RoPE 旋转位置编码完成定量计算与数值推理",
+    "expectedConcepts": [
+      "RoPE 只作用于 Q/K 不作用于 V，天然表达相对位置",
+      "超出训练长度时性能衰减催生 RoPE scaling / NTK-aware 插值"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-006"
+    ]
+  },
+  {
+    "topic": "sampling",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用解码采样策略定位并解决问题",
+    "expectedConcepts": [
+      "温度缩放 logits → softmax 分布锐度；top-p 按累积概率截断候选集",
+      "greedy/低温不保证全局最优，只保证逐步确定性"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-027",
+      "ai-fund-026",
+      "ai-fund-028",
+      "ai-logits-001",
+      "llm-03"
+    ]
+  },
+  {
+    "topic": "scaling-law",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡Scaling Law 与算力最优相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "三个变量（N/D/C）的权衡关系与 compute-optimal 含义",
+      "推理感知的 scaling：为部署经济性偏离 Chinchilla 比例是有意为之"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-015",
+      "ai-fund-014"
+    ]
+  },
+  {
+    "topic": "self-attention",
+    "angle": "calculation",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者能否围绕自注意力机制完成定量计算与数值推理",
+    "expectedConcepts": [
+      "Q/K/V 的角色：查询、检索地址、被聚合的内容",
+      "复杂度 O(N²·d)：平方项来自所有位置两两计算注意力，这是长上下文成本的根源"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-002",
+      "ai-fund-004",
+      "dl-04"
+    ]
+  },
+  {
+    "topic": "softmax",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解Softmax 与数值稳定的内在机制与成因",
+    "expectedConcepts": [
+      "softmax 前减最大值只改变数值稳定性，不改变输出分布",
+      "温度越低分布越尖（解码越确定），越高越平（越多样）"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "code-01"
+    ]
+  },
+  {
+    "topic": "system-design",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用LLM 服务系统设计定位并解决问题",
+    "expectedConcepts": [
+      "先定 SLO 再做容量测算与选型，而不是反过来",
+      "降级链路与过载保护是生产设计的必选项"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "agentic-07",
+      "agentic-15",
+      "agentic-16",
+      "agentic-17",
+      "agentic-20",
+      "ai-design-001",
+      "ai-design-004",
+      "ai-design-005",
+      "ai-eng-025",
+      "ai-eng-026"
+    ]
+  },
+  {
+    "topic": "tokenization",
+    "angle": "scenario",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否在工程情境中运用分词与 BPE定位并解决问题",
+    "expectedConcepts": [
+      "BPE 从字符开始迭代合并高频对，词表大小是显式超参",
+      "\"一个中文字 ≈ 一个英文单词\"的 token 换算误区；数字/缩进切分会影响推理质量"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-009",
+      "ai-fund-007",
+      "ai-transformer-007",
+      "nlp-01"
+    ]
+  },
+  {
+    "topic": "transformer",
+    "angle": "definition",
+    "difficulty": "easy",
+    "format": "choice",
+    "purpose": "检验学习者能否准确解释Transformer 总体架构的核心概念与适用边界",
+    "expectedConcepts": [
+      "encoder-only 偏理解、decoder-only 偏生成、encoder-decoder 做序列转换",
+      "causal mask 使 decoder-only 训练时每个位置都产生监督信号，天然匹配 next-token 目标"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-001",
+      "ai-fund-005"
+    ]
+  },
+  {
+    "topic": "transformer",
+    "angle": "tradeoff",
+    "difficulty": "hard",
+    "format": "open",
+    "purpose": "检验学习者能否权衡Transformer 总体架构相关方案的代价、收益与适用条件",
+    "expectedConcepts": [
+      "encoder-only 偏理解、decoder-only 偏生成、encoder-decoder 做序列转换",
+      "causal mask 使 decoder-only 训练时每个位置都产生监督信号，天然匹配 next-token 目标"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-fund-001",
+      "ai-fund-005"
+    ]
+  },
+  {
+    "topic": "vector-db",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解向量数据库与 ANN 检索的内在机制与成因",
+    "expectedConcepts": [
+      "ANN 是精度-性能的权衡而非精确搜索",
+      "索引类型与参数影响 recall@k，必须用真实查询分布评估"
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-rag-010",
+      "ai-rag-007",
+      "ai-rag-008"
+    ]
+  },
+  {
+    "topic": "word-embedding",
+    "angle": "mechanism",
+    "difficulty": "medium",
+    "format": "choice",
+    "purpose": "检验学习者是否理解词向量与语义表示的内在机制与成因",
+    "expectedConcepts": [
+      "cosine similarity 度量方向而非距离，需与归一化方式配套理解",
+      "embedding 模型的训练目标决定它\"擅长什么相似性\""
+    ],
+    "priority": "P0",
+    "variantCandidateIds": [
+      "ai-code-002",
+      "ai-fund-010",
+      "nlp-02"
+    ]
+  }
+]

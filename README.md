@@ -22,6 +22,7 @@ npm run build              # 类型检查 + 生产构建（tsc -b && vite build�
 npm run preview            # 预览构建产物
 npm run test               # Vitest 单元测试（见 AGENTS.md 原则 2）
 npm run question:coverage  # 题库覆盖矩阵（topic × angle）+ 补题建议清单（ADR-032）
+npm run question:blueprint # 把缺口格输出为题目蓝图 JSON（含变体候选），如 -- 10
 ```
 
 ## 文档

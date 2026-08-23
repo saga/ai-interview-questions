@@ -2,6 +2,38 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 蓝图层落地：缺口 → QuestionBlueprint → 变体候选 / 成题校验（管线 ③）
+
+- **QuestionBlueprint 类型**（types.ts）：topic × angle × difficulty × format +
+  purpose（考察目的一句话）+ expectedConcepts（评分要点候选）。把 LLM/作者的
+  任务从"自己决定考什么"收窄为"按蓝图写题"。
+- **domain/blueprint.ts 纯函数**：`blueprintFromSuggestion`（缺口格→蓝图，
+  purpose 来自角度模板，expectedConcepts 取知识节点 required；游离 topic 返回
+  null 不进管线）；`variantCandidates`（同主题近角度题作变体基底，按角度梯度
+  距离升序——落实 复用>变体>生成 的"变体"步）；`validateAgainstBlueprint`
+  （成题一致性静态校验：topic/angle/difficulty/形态，内容质量留给后续 Validator）。
+- **CLI**：`npm run question:blueprint -- N` 输出前 N 个缺口的蓝图 JSON（附变体
+  候选 id），作为人工出题或受约束生成的结构化输入。
+- **踩坑**：Node 原生 TS 直跑要求所有运行时导入带 .ts 扩展名——domain 内模块
+  互相导入也必须写 `./coverage.ts`（tsc 靠 allowImportingTsExtensions 放行），
+  已记入 ARCHITECTURE 技术栈注意点。
+- 195 测试全过（新增 blueprint 单测 10 例），build 通过。
+
+## 2026-08-23 · 存量题库 angle 全量打标：覆盖矩阵产出真实缺口清单
+
+- **打标**：248 题全部补上 `angle`（逐题人工判定，按 types.ts 梯度定义：
+  definition 是什么 / mechanism 为什么 / calculation 算得清 / tradeoff 权衡 /
+  scenario 工程情境 / system-design 系统设计；"请实现 X"→calculation，
+  "线上问题排查"→scenario，"A vs B 选型"→tradeoff）。数据完整性测试新增
+  angle 白名单校验。
+- **矩阵结果**：期望格 131 · 覆盖 69 · **缺口 62**（P0 49 + P1 13）——这是
+  下一步补题的执行清单（`npm run question:coverage` 随时可查）；未标注题归零。
+- **游离题决策**：79 题 topic 未挂靠知识图谱（老 CV/NLP/经典 ML 与 ADR-029
+  之前的 agentic topic）。决策：**不为存量游离 topic 自动扩图**——它们运行时
+  照常可用，后续按 Derived Knowledge candidate 流程（训练信号暴露需求 →
+  人工确认）逐个挂靠或划出范围（ADR-032 补充）。
+- 文档：ARCHITECTURE 数据契约描述同步。185 测试全过，build 通过。
+
 ## 2026-08-23 · 题库覆盖矩阵 + question:coverage CLI（ADR-032）
 
 - **覆盖矩阵**：`domain/coverage.ts` 纯函数——topic × angle 计数矩阵、补题建议

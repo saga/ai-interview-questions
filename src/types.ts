@@ -163,6 +163,25 @@ export interface EvaluationResult {
   referenceAnswer?: string;
 }
 
+/**
+ * 题目蓝图（ADR-032 慢速生产管线）：覆盖缺口格的受约束表达——
+ * 先定考察目标（考什么、多难、什么形态、为什么考），作者（人或 LLM）只负责按目标写题；
+ * 写完后用 domain/blueprint 的 validateAgainstBlueprint 校验一致性，防止跑题。
+ */
+export interface QuestionBlueprint {
+  /** 目标知识点（= 题目 topic slug） */
+  topic: string;
+  /** 主考察角度（= 成题后的 Question.angle） */
+  angle: QuestionAngle;
+  difficulty: Difficulty;
+  /** 目标呈现形态（成题后必须具备该形态） */
+  format: FormatId;
+  /** 考察目的：一句话说明这道题要区分什么样的人 */
+  purpose: string;
+  /** 期望作答覆盖的概念（来自知识节点 required，评分要点候选） */
+  expectedConcepts: string[];
+}
+
 /** 评分权重，四维建议和为 1 */
 export interface ScoringRubric {
   correctness: number;
