@@ -1,9 +1,18 @@
 import { Card, Typography, Tag, Progress, Space, Button, Collapse, List, Alert, Divider } from 'antd';
-import { ReloadOutlined, CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-import type { AnswerValue, ChoiceQuestion, EvaluationResult, OpenQuestion, Question } from '../../types';
+import {
+  ReloadOutlined,
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  PlayCircleOutlined,
+  BulbOutlined,
+} from '@ant-design/icons';
+import type { AnswerValue, ChoiceQuestion, EvaluationResult, LearnerProfile, OpenQuestion, Question } from '../../types';
 import { isChoice } from '../../domain/quiz';
 import { DIMENSION_LABELS, EVAL_DIMENSIONS } from '../../types';
 import { categoryLabel } from '../../domain/categories';
+import { recommendationText } from '../../domain/learner';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
@@ -11,6 +20,10 @@ interface Props {
   questions: Question[];
   answers: Record<string, AnswerValue>;
   grades: Record<string, EvaluationResult | null>;
+  profile: LearnerProfile;
+  /** 上一次会话的 overall（用于对比），无则 null */
+  prevOverall: number | null;
+  onContinue: () => void;
   onRestart: () => void;
 }
 
@@ -30,6 +43,30 @@ function DimensionRates({ g }: { g: EvaluationResult }) {
       ))}
     </Space>
   );
+}
+
+/** 从评估结果聚合"亮点 / 待加强"清单（唯一去重，最多各 5 条）。 */
+function collectSignals(
+  questions: Question[],
+  grades: Record<string, EvaluationResult | null>,
+): { strengths: string[]; weaknesses: string[] } {
+  const strengths: string[] = [];
+  const weaknesses: string[] = [];
+  for (const q of questions) {
+    const g = grades[q.id];
+    if (!g) continue;
+    if (isChoice(q)) {
+      if (g.dimensions.correctness === 100) {
+        strengths.push(`${categoryLabel(q.category)} · ${q.topic}：回答正确`);
+      } else {
+        weaknesses.push(`${q.topic}：概念或判断有误（见解析）`);
+      }
+    } else {
+      for (const s of g.strengths) if (s && !strengths.includes(s)) strengths.push(s);
+      for (const m of g.gaps) if (m && !weaknesses.includes(m)) weaknesses.push(m);
+    }
+  }
+  return { strengths: strengths.slice(0, 5), weaknesses: weaknesses.slice(0, 5) };
 }
 
 function ResultItem({
@@ -171,7 +208,7 @@ function ResultItem({
   );
 }
 
-export default function ResultPanel({ questions, answers, grades, onRestart }: Props) {
+export default function ResultPanel({ questions, answers, grades, profile, prevOverall, onContinue, onRestart }: Props) {
   let earned = 0;
   const total = questions.length;
 
@@ -185,6 +222,9 @@ export default function ResultPanel({ questions, answers, grades, onRestart }: P
   const openCount = total - choiceCount;
   const openGraded = questions.filter((q) => !isChoice(q) && grades[q.id]).length;
 
+  const { strengths, weaknesses } = collectSignals(questions, grades);
+  const delta = prevOverall == null ? null : percent - prevOverall;
+
   return (
     <div style={{ maxWidth: 820, margin: '0 auto' }}>
       <Card style={{ marginBottom: 16, textAlign: 'center' }}>
@@ -193,6 +233,12 @@ export default function ResultPanel({ questions, answers, grades, onRestart }: P
           {earned.toFixed(1)} / {total} 分
         </Typography.Title>
         <Space wrap>
+          {delta != null && (
+            <Tag color={delta >= 0 ? 'success' : 'error'} icon={delta >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}>
+              比上次 {delta >= 0 ? '+' : ''}
+              {delta}
+            </Tag>
+          )}
           <Tag>选择题 {choiceCount}</Tag>
           <Tag>开放/编程 {openCount}</Tag>
           {openCount > 0 && openGraded === 0 && <Tag color="default">开放题未评分</Tag>}
@@ -208,14 +254,57 @@ export default function ResultPanel({ questions, answers, grades, onRestart }: P
         />
       )}
 
+      {(strengths.length > 0 || weaknesses.length > 0) && (
+        <Card size="small" style={{ marginBottom: 16 }}>
+          {strengths.length > 0 && (
+            <div style={{ marginBottom: weaknesses.length > 0 ? 12 : 0 }}>
+              <Typography.Text strong style={{ color: '#52c41a' }}>
+                ✓ 表现不错
+              </Typography.Text>
+              <ul style={{ margin: '4px 0' }}>
+                {strengths.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {weaknesses.length > 0 && (
+            <div>
+              <Typography.Text strong style={{ color: '#fa541c' }}>
+                △ 需要加强
+              </Typography.Text>
+              <ul style={{ margin: '4px 0' }}>
+                {weaknesses.map((m, i) => (
+                  <li key={i}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Card>
+      )}
+
+      <Alert
+        type="info"
+        showIcon
+        icon={<BulbOutlined />}
+        style={{ marginBottom: 16 }}
+        message="AI 训练建议"
+        description={recommendationText(profile)}
+      />
+
       <List
         dataSource={questions}
         renderItem={(q, i) => <ResultItem index={i} q={q} answer={answers[q.id]} grade={grades[q.id]} />}
       />
 
-      <Button type="primary" icon={<ReloadOutlined />} block size="large" style={{ marginTop: 16 }} onClick={onRestart}>
-        再来一组
-      </Button>
+      <Space style={{ width: '100%', marginTop: 16 }} direction="vertical">
+        <Button type="primary" size="large" block icon={<PlayCircleOutlined />} onClick={onContinue}>
+          按薄弱项继续训练
+        </Button>
+        <Button size="large" block icon={<ReloadOutlined />} onClick={onRestart}>
+          再来一组
+        </Button>
+      </Space>
     </div>
   );
 }

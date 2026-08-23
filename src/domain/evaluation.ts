@@ -8,6 +8,14 @@ import type {
 } from '../types';
 import { EVAL_DIMENSIONS } from '../types';
 
+/** 默认四维权重（和为 1）：正确性 / 完整性 / 架构 / 表达 */
+export const DEFAULT_RUBRIC: ScoringRubric = {
+  correctness: 0.4,
+  completeness: 0.2,
+  architecture: 0.2,
+  communication: 0.2,
+};
+
 /** 按 rubric 权重把四维分数聚合成综合分（0-100）。 */
 export function aggregateOverall(
   dimensions: Record<EvaluationDimension, number>,

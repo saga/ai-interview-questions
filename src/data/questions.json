@@ -173,6 +173,24 @@
       "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
     },
     {
+      "id": "dl-06",
+      "category": "deep-learning",
+      "topic": "gqa",
+      "tags": ["attention", "gqa", "mqa", "kv-cache"],
+      "type": "single",
+      "difficulty": "hard",
+      "question": "Llama 3、Mistral 等模型采用分组查询注意力（GQA）而非标准多头注意力（MHA），主要原因是？",
+      "options": [
+        "GQA 能提升模型在基准测试上的准确率",
+        "GQA 让多个 Query 头共享少量 KV 头，显著缩小 KV cache，且质量损失极小",
+        "GQA 减少了注意力层的参数量从而降低训练成本",
+        "GQA 支持比 MHA 更长的上下文窗口上限"
+      ],
+      "answer": [1],
+      "explanation": "推理瓶颈主要在 KV cache 而非计算：GQA 在 MHA（每 Q 头独立 K/V）与 MQA（全部共享 1 组 K/V）之间折中，KV 头数按组缩减，缓存体积成倍下降而效果几乎无损。它不直接提升准确率，也不改变上下文长度上限。",
+      "reference": { "concept": "GQA 用少量 KV 头服务多个 Query 头，缩小 KV cache，是显存与质量的折中。" }
+    },
+    {
       "id": "nlp-01",
       "category": "nlp",
       "topic": "tokenization",
@@ -222,6 +240,24 @@
       ],
       "answer": [1],
       "explanation": "BERT 通过掩码语言模型（MLM）实现双向上下文理解；GPT 采用自回归从左到右生成，是单向的。"
+    },
+    {
+      "id": "nlp-04",
+      "category": "nlp",
+      "topic": "bpe-tokenization",
+      "tags": ["tokenizer", "bpe", "subword"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "LLM 常无法正确回答“strawberry 中有几个 r”，其根本原因主要与什么有关？",
+      "options": [
+        "模型参数量不够大，记不住单词拼写",
+        "子词分词（如 BPE）：模型看到的是 token 而非字符，一个 token 内的字母顺序与数量信息未被显式编码",
+        "训练数据中没有包含 strawberry 这个词",
+        "注意力机制无法处理英文单词"
+      ],
+      "answer": [1],
+      "explanation": "BPE 等子词分词把 strawberry 切成少数几个 token，模型在 embedding 层面看到的是 token ID 而非逐字符序列，字符级计数需要“越界”推理。这是理解 tokenizer 重要性的经典案例——很多看似奇怪的模型行为根源都在分词。",
+      "reference": { "concept": "BPE 以子词为最小单元，token 内的字符结构对模型不透明。" }
     },
     {
       "id": "llm-01",
@@ -288,6 +324,129 @@
       "rubric": {
         "required": ["检索-拼接-生成 基本流程", "可溯源/降幻觉/时效性等优势"],
         "dimensions": { "correctness": 0.4, "completeness": 0.25, "architecture": 0.15, "communication": 0.2 }
+      }
+    },
+    {
+      "id": "llm-05",
+      "category": "llm",
+      "topic": "kv-cache",
+      "tags": ["kv-cache", "inference", "attention"],
+      "type": "single",
+      "difficulty": "hard",
+      "question": "在 LLM 自回归推理中，KV 缓存（KV cache）的核心作用是？",
+      "options": [
+        "缓存模型权重以减少显存占用",
+        "缓存历史 token 的 Key/Value 张量，使每步只需计算新 token 的 Q，把整体复杂度从 O(n²) 降为每步 O(n)",
+        "压缩上下文窗口以支持更长输入",
+        "替代 softmax 加速注意力计算"
+      ],
+      "answer": [1],
+      "explanation": "自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。",
+      "reference": { "concept": "KV cache 复用历史 K/V 张量，解码从二次降为线性，但本身是显存瓶颈。" }
+    },
+    {
+      "id": "llm-06",
+      "category": "llm",
+      "topic": "moe",
+      "tags": ["moe", "mixture-of-experts", "serving"],
+      "type": "single",
+      "difficulty": "hard",
+      "question": "某 MoE 模型参数量为 671B 总参 / 37B 激活参数（如 DeepSeek-V3）。这两个数字分别决定了什么？",
+      "options": [
+        "总参决定显存占用，激活参数决定每 token 计算量与延迟",
+        "总参决定延迟，激活参数决定显存占用",
+        "二者都只影响训练速度，与推理无关",
+        "总参与激活参数都必须常驻 GPU 才能推理"
+      ],
+      "answer": [0],
+      "explanation": "MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。",
+      "reference": { "concept": "MoE：总参决定显存，激活参数决定计算/延迟；省算力不省显存。" }
+    },
+    {
+      "id": "llm-07",
+      "category": "llm",
+      "topic": "inference-optimization",
+      "tags": ["decoding", "quantization", "speculative-decoding", "gqa"],
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "LLM 解码阶段通常是访存受限（memory-bandwidth-bound）。下列哪些手段能有效降低单 token 延迟？（多选）",
+      "options": [
+        "对权重做 INT4/FP8 量化，减少每步需读取的字节数",
+        "用 GQA/MQA 减少 KV 头数，缩小 KV cache",
+        "增大批量（batch），把权重读取摊到更多请求上",
+        "使用投机解码（speculative decoding），一次前向验证多个草稿 token"
+      ],
+      "answer": [0, 1, 2, 3],
+      "explanation": "解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。",
+      "reference": { "concept": "解码是带宽瓶颈：量化、GQA、大批量、投机解码都通过减少/摊薄字节读取提速。" }
+    },
+    {
+      "id": "llm-08",
+      "category": "llm",
+      "topic": "lora",
+      "tags": ["lora", "qlora", "fine-tuning", "peft"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "LoRA 高效微调的核心思想是？",
+      "options": [
+        "冻结基座权重，只训练注入的低秩分解矩阵 ΔW = B·A（r ≪ d），大幅减少可训练参数",
+        "对所有权重做 4-bit 量化后全量训练",
+        "把训练数据压缩成提示词前缀拼进上下文",
+        "用强化学习替代监督微调更新全部参数"
+      ],
+      "answer": [0],
+      "explanation": "LoRA 冻结预训练权重 W₀，为每个目标矩阵学习低秩旁路 A(d×r)、B(r×k)，可训练参数减少百倍以上，单卡即可微调 7B+ 模型，适配器小且可热插拔。QLoRA 在此基础上再把冻结的基座权重量化为 4-bit。其有效性的假设是微调所需的权重更新具有低内在秩。",
+      "reference": { "concept": "LoRA = 冻结基座 + 低秩旁路 ΔW=BA，可训练参数缩减 100~1000 倍。" }
+    },
+    {
+      "id": "llm-09",
+      "category": "llm",
+      "topic": "rag-vs-finetuning",
+      "tags": ["rag", "fine-tuning", "prompting", "tradeoff"],
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "面对一个企业知识问答需求（知识频繁更新、需要溯源、数据涉密不能出内网），你会选择提示工程、RAG 还是微调？请说明决策依据与组合方案。",
+      "referenceAnswer": "首选 RAG + 提示工程：知识频繁更新适合外挂检索而非改参数（微调无法实时更新且易遗忘）；答案需溯源，RAG 可附引用；数据不出内网可用本地部署的 embedding 与 LLM。微调适用于改变行为/风格/格式或领域语言建模，而不是注入易变事实——事实性内容放参数里既难更新又难审计。组合方案：基座模型（必要时轻量 LoRA 微调对齐领域术语与输出格式）+ RAG 注入动态知识 + 提示工程约束引用与拒答（检索不到相关内容时明确说不知道）。还需配套评估：faithfulness/groundedness 指标与引用校验。",
+      "explanation": "考察三者边界：RAG 管“知识”，微调管“行为”，提示工程管“约束”；以及可溯源、时效性、私有化部署等工程权衡。",
+      "reference": { "concept": "RAG 解决知识时效与溯源，微调改变行为风格，提示工程做约束；三者常组合。" },
+      "rubric": {
+        "required": ["选择 RAG 的理由（时效性/溯源/私有化）", "微调的适用边界（行为而非事实）", "组合方案与评估手段"],
+        "dimensions": { "correctness": 0.35, "completeness": 0.25, "architecture": 0.25, "communication": 0.15 }
+      }
+    },
+    {
+      "id": "llm-10",
+      "category": "llm",
+      "topic": "rag-pipeline",
+      "tags": ["hybrid-search", "rerank", "chunking", "evaluation"],
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "要把一个 naive RAG 升级为生产级检索管线，以下哪些做法是合理且常见的？（多选）",
+      "options": [
+        "混合检索：BM25 关键词检索与稠密向量检索并用，兼顾精确匹配与语义匹配",
+        "引入重排序（cross-encoder reranker）对初筛结果精细排序",
+        "根据文档结构设计分块策略，平衡块大小的召回精度与语义完整性",
+        "向量检索能完全消除幻觉，无需再做忠实度校验"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。",
+      "reference": { "concept": "生产级 RAG：混合检索 + 重排 + 合理分块 + 忠实度评估，不是简单“塞进向量库”。" }
+    },
+    {
+      "id": "llm-11",
+      "category": "llm",
+      "topic": "attention",
+      "tags": ["numpy", "scaled-dot-product", "attention"],
+      "type": "coding",
+      "difficulty": "hard",
+      "language": "python",
+      "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
+      "referenceAnswer": "import numpy as np\ndef attention(Q, K, V):\n    d_k = Q.shape[-1]\n    scores = Q @ K.T / np.sqrt(d_k)   # 缩放点积\n    scores = scores - scores.max(axis=-1, keepdims=True)  # 数值稳定\n    w = np.exp(scores)\n    w = w / w.sum(axis=-1, keepdims=True)\n    return w @ V\n要点：除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和；softmax 前 max 平移保证数值稳定。",
+      "explanation": "面试高频手写题：考察注意力公式 QKᵀ/√d → softmax → ×V，以及数值稳定处理。",
+      "reference": { "concept": "scaled dot-product attention：QKᵀ/√d_k 经 softmax 后对 V 加权求和。" },
+      "rubric": {
+        "required": ["sqrt(d_k) 缩放", "softmax 数值稳定处理", "对 V 加权求和"],
+        "dimensions": { "correctness": 0.4, "completeness": 0.2, "architecture": 0.25, "communication": 0.15 }
       }
     },
     {
@@ -478,6 +637,76 @@
       "referenceAnswer": "可采取：输入/输出内容审核与敏感词过滤；系统提示与护栏（guardrails）约束行为边界；RLHF 与红队测试提升对齐；速率限制与身份认证防滥用；对高风险能力（如代码执行、外部调用）做权限隔离；建立反馈与人工复核通道以及事故响应机制。核心是在能力开放与风险控制之间取得平衡。",
       "explanation": "考察审核、护栏、对齐、防滥用、权限隔离、反馈闭环等多层防护思路。",
       "reference": { "concept": "多层防护：审核、护栏、对齐、防滥用、权限隔离、反馈闭环。" }
+    },
+    {
+      "id": "agentic-11",
+      "category": "agentic-ai",
+      "topic": "mcp",
+      "tags": ["mcp", "protocol", "tool-standardization"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "MCP（Model Context Protocol）这类协议要解决的核心问题是？",
+      "options": [
+        "提高模型推理的采样速度",
+        "以标准协议连接模型与外部工具/数据源，避免每个应用为每套工具重复写私有集成（M×N 问题变 M+N）",
+        "替代 JSON Schema 描述工具参数",
+        "压缩上下文窗口以降低 token 成本"
+      ],
+      "answer": [1],
+      "explanation": "没有统一协议时，M 个应用接入 N 个工具需要 M×N 套定制集成；MCP 把工具能力发现、调用、资源访问标准化为通用协议（类似“AI 应用的 USB-C”），工具方实现一次即可被所有支持该协议的客户端使用。它不改变采样机制，也不替代参数描述本身。",
+      "reference": { "concept": "MCP 标准化模型↔工具/数据源的连接，把 M×N 集成降为 M+N。" }
+    },
+    {
+      "id": "agentic-12",
+      "category": "agentic-ai",
+      "topic": "agent-guardrails",
+      "tags": ["guardrails", "loop-guard", "permissions"],
+      "type": "multiple",
+      "difficulty": "hard",
+      "question": "为防止 Agent 在执行中失控（无限循环、误用高危操作），下列哪些是有效的工程护栏？（多选）",
+      "options": [
+        "设置最大迭代步数/超时，并检测重复的相同工具调用",
+        "对不可逆操作（删除、支付）要求人工确认或权限隔离",
+        "在沙箱中执行代码类动作并做速率限制",
+        "完全放开权限让模型自主判断，信任其内建安全对齐"
+      ],
+      "answer": [0, 1, 2],
+      "explanation": "生产级 Agent 必须有循环护栏（步数上限 + 重复检测）、高危操作的确认/最小权限、沙箱与限流；仅依赖模型自身对齐不足以防范系统性风险，失控的代价是真金白银与数据破坏。",
+      "reference": { "concept": "Agent 护栏：迭代上限、重复检测、权限隔离、人工确认、沙箱限流。" }
+    },
+    {
+      "id": "agentic-13",
+      "category": "agentic-ai",
+      "topic": "plan-and-execute",
+      "tags": ["planning", "react", "architecture-patterns"],
+      "type": "essay",
+      "difficulty": "hard",
+      "question": "对比 ReAct 与 Plan-and-Execute 两种 Agent 架构模式：各自的执行流程是什么？分别适合什么任务场景？",
+      "referenceAnswer": "ReAct：思考与行动逐步交织——每轮生成 Thought → Action → Observation，根据环境反馈即时决定下一步。优点是对意外情况适应性强、单步上下文小；缺点是缺乏全局视野，容易在长任务上绕路或丢失目标。Plan-and-Execute：先一次性生成完整多步计划，再顺序执行各步，必要时在失败处重规划（replan）。优点是有全局结构、适合可预先分解的长任务、中间步骤可并行；缺点是计划可能过时，对动态变化的环境需要额外重规划成本。选型依据：环境是否可预测、任务长度、反馈延迟。实践中常混合——先粗计划再在局部用 ReAct 式探索。",
+      "explanation": "考察两种主流编排模式的理解与权衡：逐步反应式 vs 先规划后执行的适用边界。",
+      "reference": { "concept": "ReAct 逐步交织推理与行动；Plan-and-Execute 先出全局计划再执行+重规划。" },
+      "rubric": {
+        "required": ["两种模式的执行流程", "各自优缺点与适用场景", "混合/重规划的实践考量"],
+        "dimensions": { "correctness": 0.35, "completeness": 0.25, "architecture": 0.25, "communication": 0.15 }
+      }
+    },
+    {
+      "id": "agentic-14",
+      "category": "agentic-ai",
+      "topic": "context-engineering",
+      "tags": ["context-window", "compaction", "cost"],
+      "type": "single",
+      "difficulty": "medium",
+      "question": "一个长任务 Agent 运行数百步后上下文接近溢出，最合理的处理方式是？",
+      "options": [
+        "丢弃全部历史，从零开始重跑任务",
+        "对历史轨迹做摘要压缩（compaction），保留关键状态与结论，裁剪冗余中间输出",
+        "把上下文窗口调到无限大",
+        "让模型同时输出所有可能的下一步以节省轮次"
+      ],
+      "answer": [1],
+      "explanation": "长程 Agent 的标准做法是上下文工程：将旧轨迹摘要化，持久化关键状态（目标、已完成步骤、重要结果），按需检索细节。全量丢弃会丢失进度，无限窗口则成本与注意力稀释都不可行。",
+      "reference": { "concept": "上下文压缩：摘要旧轨迹 + 保留关键状态 + 按需检索。" }
     },
     {
       "id": "code-01",

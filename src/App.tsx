@@ -1,28 +1,47 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Layout, Typography, Button, Space, Spin, App as AntdApp, Progress, Tag } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
+import { Layout, Typography, Button, Space, Spin, App as AntdApp, Progress, Tag, Menu } from 'antd';
+import {
+  SettingOutlined,
+  ThunderboltOutlined,
+  BarChartOutlined,
+  CommentOutlined,
+  CheckCircleFilled,
+} from '@ant-design/icons';
 import bankData from './data/questions.json';
 import type {
   AnswerValue,
   EvaluationResult,
   InterviewDefinition,
   InterviewSession,
+  LearnerProfile,
+  PiConfig,
   Question,
   QuestionBank,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession } from './lib/interviewEngine';
 import { isConfigValid } from './ai/provider';
-import type { PiConfig } from './types';
 import { loadConfig, saveConfig } from './storage/settings';
-import SettingsModal from './components/settings/SettingsModal';
-import SetupPanel from './components/SetupPanel';
+import { loadLearner, saveLearner } from './storage/learner';
+import { buildCoachDefinition, sessionFromQuiz, updateLearner } from './domain/learner';
+import SettingsPanel from './components/settings/SettingsPanel';
+import TrainingHome from './components/home/TrainingHome';
+import ProgressPage from './components/progress/ProgressPage';
+import InterviewPage from './components/interview/InterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
 import ResultPanel from './components/result/ResultPanel';
 
 const bank = bankData as unknown as QuestionBank;
 
-type Phase = 'setup' | 'quiz' | 'result';
+type Page = 'train' | 'progress' | 'interview' | 'settings';
+type Phase = 'home' | 'quiz' | 'result';
+
+const NAV_ITEMS = [
+  { key: 'train', icon: <ThunderboltOutlined />, label: '训练' },
+  { key: 'progress', icon: <BarChartOutlined />, label: '进度' },
+  { key: 'interview', icon: <CommentOutlined />, label: '面试' },
+  { key: 'settings', icon: <SettingOutlined />, label: '设置' },
+];
 
 function fmt(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -33,23 +52,28 @@ function fmt(sec: number): string {
 export default function App() {
   const { message } = AntdApp.useApp();
   const [config, setConfig] = useState<PiConfig>(() => loadConfig());
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [phase, setPhase] = useState<Phase>('setup');
+  const [profile, setProfile] = useState<LearnerProfile>(() => loadLearner());
+  const [page, setPage] = useState<Page>('train');
+  const [phase, setPhase] = useState<Phase>('home');
   const [session, setSession] = useState<InterviewSession | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [grades, setGrades] = useState<Record<string, EvaluationResult | null>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [prevOverall, setPrevOverall] = useState<number | null>(null);
 
-  // 用 ref 保存最新状态，供倒计时自动交卷读取，避免闭包过期
+  // 用 ref 保存最新状态，供倒计时自动交卷 / 异步回调读取，避免闭包过期
   const answersRef = useRef(answers);
   answersRef.current = answers;
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const configRef = useRef(config);
   configRef.current = config;
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
 
   const questions = session?.questions ?? [];
+  const configReady = isConfigValid(config);
 
   const answeredCount = useMemo(() => {
     return questions.filter((q) => {
@@ -68,7 +92,7 @@ export default function App() {
   const handleStart = async (def: InterviewDefinition) => {
     setBusy(def.useAI ? '正在用 LLM 生成变体题目…' : '正在组卷…');
     try {
-      const s = await buildSession(bank, def, config);
+      const s = await buildSession(bank, def, configRef.current);
       const init: Record<string, AnswerValue> = {};
       s.questions.forEach((q) => {
         init[q.id] = emptyAnswer(q);
@@ -88,24 +112,36 @@ export default function App() {
   const doSubmit = useCallback(async () => {
     const s = sessionRef.current;
     if (!s) return;
-    const openQs = s.questions.filter((q) => q.type === 'essay' || q.type === 'coding');
-    if (openQs.length > 0 && isConfigValid(configRef.current)) {
-      setBusy('正在用 LLM 评分开放题…');
-      try {
-        const g = await evaluateSession(s, answersRef.current, configRef.current);
-        setGrades(g);
-      } finally {
-        setBusy(null);
-      }
-    } else {
-      const g = await evaluateSession(s, answersRef.current, configRef.current);
-      setGrades(g);
-    }
+    const cfg = configRef.current;
+    const g = await evaluateSession(s, answersRef.current, cfg);
+    setGrades(g);
+    // 先算时长再入库（duration 在记录时即确定）
+    durationRef.current = Math.round((Date.now() - startedAtRef.current) / 1000);
+    const prev = profileRef.current.sessions[0]?.overall ?? null;
+    const rec = sessionFromQuiz(s, g, durationRef.current);
+    const next = updateLearner(profileRef.current, rec);
+    saveLearner(next);
+    setProfile(next);
+    setPrevOverall(prev);
     setPhase('result');
   }, []);
 
+  const durationRef = useRef<number | undefined>(undefined);
+  const startedAtRef = useRef(0);
+  // 进入作答阶段时记录起始时间
+  useEffect(() => {
+    if (phase === 'quiz' && session) {
+      startedAtRef.current = Date.now();
+    }
+  }, [phase, session]);
+
   const handleAnswerChange = (id: string, v: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [id]: v }));
+  };
+
+  const handleContinue = () => {
+    const def = buildCoachDefinition(profileRef.current, { title: '继续训练' });
+    void handleStart(def);
   };
 
   const handleRestart = () => {
@@ -113,7 +149,9 @@ export default function App() {
     setAnswers({});
     setGrades({});
     setRemaining(null);
-    setPhase('setup');
+    setPrevOverall(null);
+    setPhase('home');
+    setPage('train');
   };
 
   // 倒计时：仅在有 timeLimitSec 且处于 quiz 阶段时运行
@@ -146,10 +184,11 @@ export default function App() {
           justifyContent: 'space-between',
           background: '#fff',
           borderBottom: '1px solid #f0f0f0',
+          paddingInline: 24,
         }}
       >
         <Typography.Title level={4} style={{ margin: 0 }}>
-          🧠 AI 面试题训练器
+          🧠 AI 面试训练器
         </Typography.Title>
         <Space>
           {remaining != null && (
@@ -157,20 +196,55 @@ export default function App() {
               剩余 {fmt(remaining)}
             </Tag>
           )}
-          <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)}>
-            LLM 设置
-          </Button>
+          {phase === 'home' && (
+            <Button
+              type={configReady ? 'text' : 'primary'}
+              size="small"
+              icon={configReady ? <CheckCircleFilled style={{ color: '#52c41a' }} /> : <SettingOutlined />}
+              onClick={() => setPage('settings')}
+            >
+              {configReady ? 'AI ✓' : 'AI 未配置'}
+            </Button>
+          )}
         </Space>
       </Layout.Header>
 
+      {phase === 'home' && (
+        <Menu
+          mode="horizontal"
+          selectedKeys={[page]}
+          items={NAV_ITEMS}
+          onClick={(e) => setPage(e.key as Page)}
+          style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
+        />
+      )}
+
       <Layout.Content style={{ padding: 24, maxWidth: 980, margin: '0 auto', width: '100%' }}>
-        {phase === 'setup' && (
-          <SetupPanel
+        {phase === 'home' && page === 'train' && (
+          <TrainingHome
             categories={bank.categories}
             config={config}
+            profile={profile}
             onStart={handleStart}
-            onOpenSettings={() => setSettingsOpen(true)}
+            onGoSettings={() => setPage('settings')}
           />
+        )}
+
+        {phase === 'home' && page === 'progress' && (
+          <ProgressPage profile={profile} onGoTrain={() => setPage('train')} />
+        )}
+
+        {phase === 'home' && page === 'interview' && (
+          <InterviewPage
+            config={config}
+            profile={profile}
+            onStart={handleStart}
+            onGoSettings={() => setPage('settings')}
+          />
+        )}
+
+        {phase === 'home' && page === 'settings' && (
+          <SettingsPanel config={config} onSave={handleSaveConfig} />
         )}
 
         {phase === 'quiz' && (
@@ -207,17 +281,13 @@ export default function App() {
             questions={questions}
             answers={answers}
             grades={grades}
+            profile={profile}
+            prevOverall={prevOverall}
+            onContinue={handleContinue}
             onRestart={handleRestart}
           />
         )}
       </Layout.Content>
-
-      <SettingsModal
-        open={settingsOpen}
-        config={config}
-        onClose={() => setSettingsOpen(false)}
-        onSave={handleSaveConfig}
-      />
 
       {busy && (
         <div

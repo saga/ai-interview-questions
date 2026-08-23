@@ -2,7 +2,9 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连，用户密钥存 `localStorage`，无独立后端。
+单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`。LLM 能力通过 `@earendil-works/pi-ai` 与 `@earendil-works/pi-agent-core` 在**浏览器内**直连，用户密钥存 `localStorage`，无独立后端。
+
+**产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
 **核心原则**：题库是 source of truth，LLM 是 enhancement layer（不是题库本身）。变体的答案 key 永远来自原题，LLM 只改表达。
 
@@ -11,9 +13,11 @@
 ```
 domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单测覆盖）
   categories.ts  类目 slug → 中文标签
-  quiz.ts        抽题（Fisher–Yates）、题型判定
-  evaluation.ts  评分聚合（rubric 权重）、选择题确定性判分
+  quiz.ts        抽题（Fisher–Yates）、题型判定、pickPrioritized（薄弱主题优先）
+  evaluation.ts  评分聚合（rubric 权重）、选择题确定性判分、DEFAULT_RUBRIC
   variant.ts     变体校验（validateVariant）+ 落地（applyVariant）
+  learner.ts     Learner Memory：updateLearner / sessionFromQuiz / recommendWeakTopics
+                 / buildCoachDefinition / recommendationText（Training Coach 数据核心）
 
 ai/            LLM 适配层，应用只依赖 LLMProvider 接口
   models.ts          pi-ai 底层封装（buildModels / callLLM / extractJSON / 密钥注入）
@@ -23,18 +27,21 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口
 
 storage/       本地持久化
   settings.ts    LLM 配置（localStorage）
+  learner.ts     LearnerProfile / SessionRecord（localStorage v1 key）
 
 lib/
   interviewEngine.ts  编排：buildSession / evaluateAnswer / evaluateSession
 
 components/
-  SetupPanel.tsx              训练配置（生成 InterviewDefinition）
-  quiz/QuestionCard.tsx       单题作答卡片
-  result/ResultPanel.tsx      成绩与多维解析
-  settings/SettingsModal.tsx  LLM 设置弹窗
+  home/TrainingHome.tsx         训练入口（继续/快速/自定义，隐藏系统内部配置）
+  quiz/QuestionCard.tsx         单题作答卡片
+  result/ResultPanel.tsx        成绩 + 对比上次 + 强弱项 + AI 建议 + 继续训练
+  progress/ProgressPage.tsx     掌握度条 + 趋势折线 + 需要关注 + 最近训练
+  interview/InterviewPage.tsx   30 分钟限时模拟面试入口
+  settings/SettingsPanel.tsx    AI 设置（provider / model / API Key）
 
 data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric）
-types.ts              全局类型（含 LLMProvider 接口）
+types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
 依赖方向：`components → lib(interviewEngine) → domain + ai`；`ai → domain`（评分聚合复用）；`domain` 不依赖 React、不 import 任何 LLM 库。
@@ -75,7 +82,29 @@ React UI ──┬──→ Quiz Domain（抽题/判分/进度/会话，纯 TS�
 
 - **变体不走 Agent**：one-shot 结构化生成用 `variantGenerator.ts`（pi-ai），不需要状态与事件流。
 - **依赖注入便于测试**：`InterviewAgent` 构造时注入 `(model, streamFn)`；测试用 mock `streamFn`（按 `start → text_delta → done` 事件协议）驱动**真实 Agent**，不发网络请求（见 `src/ai/interviewAgent.test.ts`）。
-- **浏览器 bundle 结论**：pi-agent-core 不静态 import `pi-ai/compat`（旧 issue #6851 的场景已不存在），provider 代码被 pi-ai 拆成按需懒加载 chunk；其自身引用的 `node:fs/crypto/...` 在浏览器构建中 externalize 成警告，运行时只用 `Agent`（不触 harness），不崩。代价是主 chunk 变大（约 1.26 MB / 369 kB gzip），local-first 工具可接受。
+- **浏览器 bundle 结论**：pi-agent-core 不静态 import `pi-ai/compat`（旧 issue #6851 的场景已不存在），provider 代码被 pi-ai 拆成按需懒加载 chunk；其自身引用的 `node:fs/crypto/...` 在浏览器构建中 externalize 成警告，运行时只用 `Agent`（不触 harness），不崩。代价是主 chunk 变大（约 1.3 MB / 380 kB gzip），local-first 工具可接受。
+
+## Training Coach / Learner Memory
+
+产品核心 loop（ADR-015）：`训练 → 评估 → 结构化学习信号 → Learner Profile → 推荐下一次训练`。
+
+```
+Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
+                    ↓
+          SessionRecord（单题分数 + gaps + correct）
+                    ↓
+        domain/learner.updateLearner()   ← 纯函数，可单测
+                    ↓
+     LearnerProfile（topicStats: avgScore/mastery/trend/commonWeaknesses + 最近50条会话）
+                    ↓
+  buildCoachDefinition() → topicPriorities → pickPrioritized() → 下一次训练
+```
+
+- **记忆是"结构化信号"而非对话原文**：不把用户历史回答塞给 LLM；Coach 只看压缩画像（如 `tool-calling: weak`）。
+- **掌握度**：`mastery = avgScore/100 × 置信度因子`（尝试 <5 次时压低，≥5 次收敛到真实水平）；`trend` 由"上次得分 vs 历史均分"判定（±2 分阈值）。
+- **薄弱主题推荐**：`mastery < 0.85 且 avgScore < 85` 的主题按掌握度升序取前 3，写入 `InterviewDefinition.topicPriorities`；`buildSession` 用 `pickPrioritized` 保证薄弱主题的题优先进入训练。
+- **持久化**：`storage/learner.ts`（localStorage `learner.v1`）；MVP 足够，数据量大（对话/流式结果）再迁 IndexedDB。
+- **边界**：推荐逻辑当前为确定性规则（纯函数、可测）；未来"教练叙事 / 追问面试"可接 `pi-agent-core`，但 Agent 只读压缩画像，不读全文。
 
 ## LLM 变体安全（关键）
 

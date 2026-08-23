@@ -116,6 +116,10 @@ export interface InterviewDefinition {
   timeLimitSec?: number;
   followUpStrategy?: string; // 预留：Agentic 追问扩展
   evaluationCriteria?: string; // 给 LLM 的额外评估要求
+  /** 薄弱主题优先（slug 列表，来自 Learner Profile）；buildSession 会优先抽取这些主题的题 */
+  topicPriorities?: string[];
+  /** 训练模式标记（写入 SessionRecord） */
+  mode?: 'quick' | 'custom' | 'coach' | 'interview';
 }
 
 /** 由 Definition 构建出的具体会话 */
@@ -145,4 +149,66 @@ export interface PiConfig {
   provider: ProviderId;
   model: string;
   apiKey: string;
+}
+
+// ───────────────────────────────────────────────────────────
+// Learner Memory（结构化学习信号，非对话记录）
+// ───────────────────────────────────────────────────────────
+
+export type Trend = 'improving' | 'declining' | 'flat';
+
+/** 单个主题（topic slug）的长期表现。 */
+export interface TopicStats {
+  attempts: number;
+  /** 历史平均分 0-100 */
+  avgScore: number;
+  /** 最近一次得分 0-100 */
+  lastScore: number;
+  trend: Trend;
+  /** 0-1，随尝试次数收敛的置信度加权掌握度 */
+  mastery: number;
+  /** 高频遗漏/错误要点（来自开放题评估的 gaps） */
+  commonWeaknesses: string[];
+  lastSeen: number;
+}
+
+/** 单题结果（写入 Learner Memory 的最小粒度）。 */
+export interface QuestionResult {
+  questionId: string;
+  category: string;
+  topic: string;
+  type: QuestionType;
+  score: number; // 0-100
+  /** 选择题是否答对（开放题无此字段） */
+  correct?: boolean;
+  /** 开放题的遗漏/错误要点 */
+  gaps: string[];
+}
+
+/** 一次训练会话记录。 */
+export interface SessionRecord {
+  id: string;
+  startedAt: number;
+  durationSec?: number;
+  mode?: 'quick' | 'custom' | 'coach' | 'interview';
+  title: string;
+  questionResults: QuestionResult[];
+  /** 会话整体得分 0-100（各题 average） */
+  overall: number;
+}
+
+/**
+ * Learner Profile：用户的长期学习画像。核心原则（ADR-015）——
+ * 只存"结构化学习信号"（分数/弱项/掌握度），不存对话原文，避免把整段历史塞给 LLM。
+ */
+export interface LearnerProfile {
+  totalSessions: number;
+  totalQuestions: number;
+  /** 最近若干次会话平均分 0-100 */
+  overallScore: number;
+  /** topic slug → 长期表现 */
+  topicStats: Record<string, TopicStats>;
+  /** 最近会话（新在前），上限 50 条 */
+  sessions: SessionRecord[];
+  updatedAt: number;
 }

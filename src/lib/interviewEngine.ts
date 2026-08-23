@@ -11,7 +11,7 @@ import type {
   Question,
   QuestionBank,
 } from '../types';
-import { pickQuestions, isChoice } from '../domain/quiz';
+import { pickPrioritized, pickQuestions, isChoice } from '../domain/quiz';
 import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
@@ -31,7 +31,11 @@ export async function buildSession(
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   if (def.questionTypes.length > 0) pool = pool.filter((q) => def.questionTypes.includes(q.type));
 
-  const picked = pickQuestions(pool, def.count);
+  // 薄弱主题优先（Training Coach），否则纯随机
+  const picked =
+    def.topicPriorities && def.topicPriorities.length > 0
+      ? pickPrioritized(pool, def.topicPriorities, def.count)
+      : pickQuestions(pool, def.count);
   const provider = def.useAI ? createLLMProvider(config) : null;
   const variants: Record<string, GeneratedVariant> = {};
 

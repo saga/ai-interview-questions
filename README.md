@@ -1,14 +1,18 @@
 # AI 面试题训练器
 
-Vite + React 18 + TypeScript + Ant Design 单页应用。从题库随机抽题（默认 10 道，含单选/多选/问答/编程），集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体、[`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi/tree/main/packages/agent) 做开放题 Agent 评分。内部采用 Interview Engine 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult`）。
+**会记住你的训练表现，并根据薄弱项动态调整下一次训练的 AI 面试教练。**
+
+Vite + React 18 + TypeScript + Ant Design 单页应用（四页：训练 / 进度 / 面试 / 设置）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体、[`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi/tree/main/packages/agent) 做开放题 Agent 评分。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
 
 ## 功能
 
-- 题库驱动（`src/data/questions.json`，9 类别，四类题型）
-- LLM 变体出题（重新措辞 + 打乱选项 + 重算答案，保持知识点不变）
+- 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
+- **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
+- 题库驱动（`src/data/questions.json`，9 类别，四类题型），LLM 变体出题（保持知识点不变）
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
-- 可选倒计时，到点自动交卷
-- 多服务商 OpenAI / Anthropic / OpenRouter，密钥仅存浏览器 `localStorage`
+- 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
+- 模拟面试（30 分钟限时题组；追问式对话面试后续接入）
+- 多服务商 OpenAI / Anthropic / OpenRouter，密钥仅存浏览器 `localStorage`（「设置」页配置）
 
 ## 常用命令
 
@@ -29,7 +33,7 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
 
 ## 配置 LLM（可选但推荐）
 
-点右上角「LLM 设置」→ 选服务商（**OpenRouter** 对浏览器直连最友好）→ 选/填模型 ID → 填 API Key（仅存本机 `localStorage`）。
+进入「设置」页 → 选服务商（**OpenRouter** 对浏览器直连最友好）→ 选/填模型 ID → 填 API Key（仅存本机 `localStorage`）。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
 
 > **local-first 隐私架构，但浏览器侧密钥并非安全机密**：密钥不上传任何服务器，但受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。浏览器直连受 CORS 限制，OpenAI/Anthropic 直连失败优先换 OpenRouter 或配代理。未配密钥也能用题库原题（开放题不评分）。
 

@@ -30,3 +30,18 @@ export function isChoiceCorrect(q: ChoiceQuestion, selected: number[]): boolean 
 export function emptyAnswer(q: Question): AnswerValue {
   return isChoice(q) ? [] : '';
 }
+
+/**
+ * 按主题优先级抽题（Training Coach 用）：先把 priority 主题的题抽满，再用剩余题补齐。
+ * 保证薄弱主题（如 'tool-calling'）优先进入本次训练，其余主题作为补充。
+ */
+export function pickPrioritized(pool: Question[], priorities: string[], count: number): Question[] {
+  const pri = priorities.filter(Boolean);
+  if (pri.length === 0) return pickQuestions(pool, count);
+  const weak = pool.filter((q) => pri.includes(q.topic));
+  const rest = pool.filter((q) => !pri.includes(q.topic));
+  const pickedWeak = pickQuestions(weak, Math.min(count, weak.length));
+  const remaining = count - pickedWeak.length;
+  const pickedRest = remaining > 0 ? pickQuestions(rest, remaining) : [];
+  return [...pickedWeak, ...pickedRest];
+}
