@@ -26,3 +26,6 @@
 - 涉及 LLM 的用例一律 mock，**不要**在单测里真发网络请求：`pi-ai` 一次性调用可注入假 config（见 `src/ai/evaluate.test.ts` 的纯函数测法）。
 - 提交前跑 `npm run test`（若未配置则先 `npm i -D vitest` 并建立脚本）。
 
+###
+
+- 目录回答“这是哪个能力领域？”；topic 回答“具体考什么？”；tags 回答“它还和什么有关？”

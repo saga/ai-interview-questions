@@ -4008,5 +4008,648 @@
         "referenceAnswer": "正确答案：B。\n\n要点：①阈值是纯策略参数，不触碰任何基础设施性能——A/C/D 都是把策略误配的症状安到了错误的机制上：检索延迟与分类器能力、拒答行为都不受该阈值影响。②这个参数的真实杠杆是\"人工团队负载 ↔ 自动解决率\"的跷跷板：0.9 的阈值本质上是宣布\"AI 只处理百分百确定的场景\"，等于放弃了自动化的主要收益。③调优方法论：转人工率当 SLI（设目标带宽）、bad case 双向复盘（该转没转的 vs 不该转转了的）、按意图差异化阈值（法律/退款类天然更高）、阈值变更走灰度。这与 eval 门禁的 block-rate 治理（5-12% 区间）是同一种工程哲学：门槛参数永远是运营变量而非一次性配置。"
       }
     }
+  },
+  {
+    "id": "ai-fund-010",
+    "category": "ai-engineering",
+    "topic": "word-embedding",
+    "tags": [
+      "embedding",
+      "hidden-state",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "Embedding 模型输出的向量和大语言模型的 hidden state 有什么区别？各自的用途是什么？",
+    "explanation": "Embedding = 面向语义度量的固定向量（检索/聚类用）；hidden state = 生成模型内部服务于 next-token 预测的中间表示，无度量约束。",
+    "rubric": {
+      "required": [
+        "语义空间度量",
+        "next-token 预测服务",
+        "模型用途不可互换"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Embedding 是把整段文本映射到一个固定的语义空间向量，目标是让语义相近的文本距离接近，用于检索、聚类、相似度比较；通常是双向编码器或专门训练的表示模型，不用于生成。Hidden state 是生成式 LLM 在处理上下文过程中的内部表示，服务于下一个 token 预测，没有针对语义空间的度量约束，不能直接当作检索向量用。两者的训练目标和用途不同，不能互换。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "可行：hidden state 同样是高维语义向量，且维度通常更高、信息更丰富，检索效果只会更好",
+          "不合适：hidden state 服务于 next-token 预测、未施加语义相似度的度量约束，不能直接当检索向量用；语义检索应改用专门的 embedding 模型",
+          "不合适：hidden state 的维度太低，需要先用算法把维度扩大之后才能存入向量数据库",
+          "可行：只要推理时把 temperature 设为 0，hidden state 就成为确定的语义表示，天然满足检索的度量要求"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "一家电商平台要上线\"相似投诉聚合\"功能，需要对百万条商品评论做语义检索。为节省开发成本，实习生肖提议直接复用公司已部署的 LLM：把每条评论喂给模型，取最后一层 hidden state 存入向量库作为检索向量。团队负责人觉得不妥但一时说不清原因。从两类向量的设计目标出发评价该方案，下列说法最准确的是？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-034",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "RAG",
+      "hallucination",
+      "grounding"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "RAG 为什么能够降低 Hallucination？它的作用机制是什么？",
+    "explanation": "RAG 提供外部证据做条件生成（grounding），把回答锚定在材料上从而降低编造概率；是缓解不是消除。",
+    "rubric": {
+      "required": [
+        "条件生成/grounding",
+        "参数记忆 vs 上下文证据",
+        "降低而非消除"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "RAG 把相关证据直接放进 context，让模型的回答基于提供的材料进行条件生成，而不是仅凭参数里的记忆自由发挥——这相当于给 next-token 预测加上了 grounding。配合要求模型引用来源、只在证据范围内作答的 prompt 约束，可以显著减少编造。但它只是降低了概率，并不能消除幻觉：检索失败、证据被误读时幻觉依然会出现。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "RAG 的机制是把检索到的证据放入 context 供条件生成（grounding），只能显著降低编造概率，并不能把幻觉彻底清零",
+          "残留错误与机制相符：检索未命中或证据相似易误读时幻觉依然会出现，应辅以引用来源标注等约束，并据此定位坏例改进检索",
+          "说明 RAG 部署配置有误，只要检索参数调对，RAG 可以做到零幻觉，无需其他防线",
+          "应弃用 RAG，改为把诊疗指南全部微调进模型参数，知识固化到权重中即可根除幻觉"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "一家医疗信息公司在患者热线试点基于内部诊疗指南知识库的 RAG 问答助手。一个月后复盘：编造性回答明显减少，但仍偶发推荐指南中不存在的用药方案，个别回答混淆了名称相近的两种药品剂量。管理层追问\"上了 RAG 为什么还会错\"。下列哪些判断是正确的？（请选择两个选项）"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-035",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "chunking",
+      "RAG",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Chunk size 为什么会影响 RAG 效果？chunk 过大或过小分别有什么问题？",
+    "explanation": "过大 → embedding 语义稀释 + context 噪声；过小 → 语义破碎、召回了也答不全；按语义边界切分并用 overlap/parent-child 平衡。",
+    "rubric": {
+      "required": [
+        "过大：语义稀释+噪声",
+        "过小：语义破碎",
+        "检索与生成的双重影响",
+        "结构化/overlap 策略"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Chunk size 同时影响检索和生成两端。过大：单个 chunk 包含多个主题，embedding 向量语义被稀释，检索精度下降；进入 context 后也包含大量无关内容，占用 token 并引入噪声。过小：语义单元被切碎，孤立 chunk 缺少上下文，即使被召回也无法支撑完整回答；同时检索次数和索引规模上升。理想做法是按文档结构和语义边界切分，配合 overlap 或父子 chunk（小块检索、大块喂给模型）等策略。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "chunk 越大检索越精准，因为更大的块包含的信息更全面，应尽量放大切分粒度",
+          "过大的 chunk 会混入多个主题，embedding 向量的语义被稀释导致检索不准，进入 context 后还会引入无关噪声",
+          "chunk 切分粒度只影响向量库的存储体积，对检索精度与回答完整性没有实质影响",
+          "过小的 chunk 会把语义单元切碎，孤立片段缺少上下文，即使被召回也无法支撑完整的回答",
+          "把所有 chunk 统一切成更短的碎片，就能同时解决检索精度和回答完整性两个问题"
+        ],
+        "answer": [
+          1,
+          3
+        ],
+        "question": "一家 SaaS 公司为客户成功团队上线了基于内部产品文档的知识库问答系统。工程师为图省事，把全部手册按固定 2000 字等长切块建立向量索引。上线后反馈两极分化：询问某个参数的精确定义时，检索经常命中不相关段落；询问跨小节的完整操作流程时，回答又总是缺失关键步骤。关于 chunk 切分粒度对 RAG 效果的影响，以下判断正确的有哪些？（请选择以下两个选项）"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-036",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "vector-search",
+      "keyword-search",
+      "BM25"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "Vector Search 和 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
+    "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
+    "rubric": {
+      "required": [
+        "语义 vs 词面",
+        "各自强项",
+        "互补失败模式"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Vector search 把 query 和文档映射成语义向量，按余弦等距离检索，擅长同义改写、跨语言和模糊语义匹配，但对精确符号（型号、错误码、专有名词）不敏感，且依赖 embedding 模型的领域适应性；Keyword search 按词面匹配，擅长精确实体、编号、代码标识符的查找，对 OOV 词鲁棒、无需模型，但无法理解同义表达。两者的失败模式互补，这是 hybrid search 存在的理由。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "Vector Search 把 query 和文档映射为语义向量做距离检索，擅长同义改写与模糊语义匹配，但对型号、错误码等精确符号不敏感",
+          "Keyword Search 通过语义向量计算相似度，因此能匹配到不含查询原词的文档",
+          "Vector Search 依赖对实体和编号的词面精确匹配，因此在查错误码时比 Keyword Search 更可靠",
+          "两者本质都是词面匹配，区别只在于是否引入神经网络模型来加速索引构建"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-037",
+    "category": "ai-engineering",
+    "topic": "reranking",
+    "tags": [
+      "hybrid-search",
+      "reranking",
+      "reliability"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Hybrid Search 为什么通常比单独使用 Vector Search 更可靠？通常会怎么组合？",
+    "explanation": "双路失败模式互补 → recall 更稳；典型做法：双路召回 → RRF 融合或 cross-encoder 重排 → top-k 进生成。",
+    "rubric": {
+      "required": [
+        "失败模式互补",
+        "recall 提升",
+        "RRF/rerank 融合方式"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Hybrid search 并行使用向量检索和关键词检索，两路的失败模式互补：语义改写的 query 由向量路兜住，精确实体/编号由关键词路兜住，任一路失效时另一路仍可能召回正确文档，整体 recall 更稳。常见组合方式是双路召回后在候选并集上用 RRF（Reciprocal Rank Fusion）融合排序，或接一个 cross-encoder reranker 统一重排，最后取 top-k 进入生成阶段。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "整体替换为纯关键词检索，彻底摆脱对 embedding 模型的依赖，从根源解决精确符号匹配问题",
+          "在用户查询后自动追加大量同义词扩展词再做向量检索，以覆盖编号、型号一类的表达",
+          "改造为混合检索：并行保留向量路与关键词路，利用两路互补的失败模式稳住召回，并用 RRF 融合或 cross-encoder 重排统一排序",
+          "要求用户提问前手动选择“语义搜索”或“精确匹配”模式，把两类查询分流处理"
+        ],
+        "answer": [
+          2
+        ],
+        "question": "某企业的研发知识助手采用纯向量检索，日常自然语言提问效果不错。但运维同事反馈：查询“ERR_50217 错误码含义”或精确产品型号时几乎总是召回失败。团队希望在不破坏现有语义查询体验的前提下修复该问题，并能接受少量额外的检索开销。最合适的改造方案是什么？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-038",
+    "category": "ai-engineering",
+    "topic": "reranking",
+    "tags": [
+      "reranker",
+      "cross-encoder",
+      "precision"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 RAG 流程中，Reranker 解决的是什么问题？为什么有了向量检索还需要它？",
+    "explanation": "bi-encoder 快但粗（独立编码），cross-encoder 准但慢（联合编码）→ 召回后对少量候选精排，提升进入 context 的 precision。",
+    "rubric": {
+      "required": [
+        "bi-encoder vs cross-encoder",
+        "粗排→精排分工",
+        "precision 提升"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "向量检索用的 bi-encoder 为了吞吐把 query 和文档独立编码，精度有限，只能保证“大致相关”的粗排结果。Reranker（通常是 cross-encoder）把 query 和每个候选放在一起做深度交互打分，精度更高但算得慢，所以放在召回之后对少量候选精排。它解决的核心问题是 precision：让最终进入 context 的 top-k 尽量都是真正相关的内容，减少噪声、节省 token。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "把 top-k 从 10 扩大到 30，塞入更多候选内容让模型在生成时自行甄别取舍",
+          "在召回之后增加 cross-encoder 重排环节，对少量候选做联合编码精排，让真正相关的段落占据 top-k 再进入 context",
+          "针对本领域从头训练一个专用 embedding 模型，重建全量索引以提升向量检索本身的精度",
+          "先让模型为每个候选段落生成内容摘要，再把摘要拼接进 prompt 以节省 token 开销"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "面向法务的合同问答系统直接把向量检索返回的 top-10 段落拼进 prompt。评测发现：进入 context 的段落里相当一部分只是话题相关却不含答案，既浪费 token 又干扰模型作答；业务方要求提升回答依据的准确性，并明确表示可以接受检索阶段增加几十毫秒的额外延迟。该如何调整检索流水线？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-039",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "embedding",
+      "semantic-similarity",
+      "relevance"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "一段文档与 query 的 Embedding 相似度很高，是否意味着它能回答这个问题？为什么？",
+    "explanation": "semantic similarity ≠ answer relevance：同话题无答案、相反结论都可能高分；需要 rerank 与 faithfulness 校验兜底。",
+    "rubric": {
+      "required": [
+        "相似度语义定义",
+        "高分但不相关的情形",
+        "需要下游校验"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "不一定。Embedding 相似度衡量的是语义空间中的距离接近，不是问答相关性：同话题但不包含答案的内容（背景介绍 vs 具体数字）、表述相似的相反结论、模板化的相似段落都可能拿到高分。相似度是必要线索而非充分条件，这正是 reranker、答案覆盖性校验和 faithfulness 评测存在的意义——最终要验证的是“这段内容是否真的支持答案”，而不是“它听起来像不像”。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "结论成立：相似度这么高仍然答错，只可能是生成模型的问题，换更大的模型是唯一出路",
+          "问题出在相似度阈值设置过低，只要把阈值提高到 0.95 以上，这类错误就会消失",
+          "embedding 模型版本过旧导致分数虚高，应立即更换最新 embedding 模型并重建全量索引",
+          "高分只代表语义接近而非真能回答：同话题但不含答案的背景材料、甚至结论相反的相似段落都可能得高分，检索通过不等于内容支持答案"
+        ],
+        "answer": [
+          3
+        ],
+        "question": "客服 RAG 助手上线两周后收到不少“答非所据”的投诉。排查时团队发现这些 badcase 的检索相似度分数普遍在 0.88 以上，据此得出“检索没问题，是大模型能力不足”的结论，准备申请预算更换更大的模型。作为评审者，你认为对这个现象最合理的解释是什么？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-040",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "tags": [
+      "evaluation",
+      "non-determinism"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为什么 LLM 应用的 Evaluation 比传统软件测试困难？",
+    "explanation": "输出是分布而非确定值：无唯一正确答案、多维标准、版本漂移、多层链路失败点；评测范式从断言转向量表+judge+分层指标。",
+    "rubric": {
+      "required": [
+        "输出分布 vs 确定输出",
+        "无唯一 ground truth",
+        "版本漂移",
+        "评测范式转变"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "传统测试的输入对应确定的期望输出，断言可以精确到相等；LLM 的输出是一个分布——同一输入有多种合法表述，正确性是程度问题而非布尔值。此外还有：标准因任务而异（事实性、风格、完整性互相冲突），很多维度没有唯一 ground truth，模型与服务端版本会造成隐性漂移，长链路系统（RAG/Agent）的失败可能发生在任意一层。因此 evaluation 需要从 exact-match 转向评分量表、参考对比、LLM judge 与分层指标的组合。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为 LLM 应用的代码结构更复杂，单元测试覆盖率难以达标，所以评测必须依赖人工代码评审",
+          "LLM 的输出是一个分布，同一输入有多种合法表述、正确性是程度而非布尔值，很多维度没有唯一 ground truth，精确断言式的测试不再适用",
+          "评测集必须与训练数据分布完全一致，否则测出的结果无法代表模型真实能力",
+          "LLM 推理结果是完全确定可复现的，bug 一旦出现必然稳定复现，因此要比传统软件执行更严格的容错标准"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-042",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "tags": [
+      "evaluation-dataset",
+      "edge-case",
+      "regression"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "如何为一个上线中的 LLM Application 设计 Evaluation Dataset？请说明数据构成与持续维护机制。",
+    "explanation": "分层构成：正常/边界/对抗/回归/生产抽样 + 参考答案；版本化 + 变更触发回归 + 线上 badcase 持续回流，作为长期资产运营。",
+    "rubric": {
+      "required": [
+        "分层构成",
+        "参考答案/评分要点",
+        "回归机制",
+        "线上样本回流"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "数据构成应分层覆盖：正常 case（代表性主流程）、边界 case（极长/极短输入、多语言、格式异常）、对抗 case（注入、诱导越权、误导性前提）、回归 case（线上真实 badcase 固化）、以及生产抽样（保持与真实流量分布一致）。每条尽量带参考答案或评分要点。维护机制：版本化管理数据集、每次 prompt/model/pipeline 变更跑全量回归、定期从线上日志补充新的失败样本、监控数据集自身的覆盖盲区。关键是把它当成产品资产而非一次性交付物。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "评测集建成后立即冻结不再修改，以保证不同版本之间的指标绝对可比",
+          "分层覆盖正常主流程、边界输入（超长极短、多语言、格式异常）与对抗样本（注入、误导性前提），每条尽量附参考答案或评分要点",
+          "将线上真实失败案例固化为回归 case，并持续从生产日志抽样补充，保持与真实流量分布一致",
+          "对评测集做版本化管理，每次 prompt、模型或流水线变更都触发全量回归评测",
+          "用程序自动生成百万级样本追求规模，数据量越大覆盖越全，无需人工筛选"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "某在线教育公司的 AI 答疑助手即将正式上线，prompt 与底层模型预计每月迭代多次。此前团队仅靠 20 条手写用例做验收，内测期间被超长题目、诱导性提问和历史 badcase 反复打脸。负责人要求建立一套能长期维护、支撑快速迭代的评测体系。以下做法正确的有哪些？（请选择以下三个选项）"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-043",
+    "category": "ai-engineering",
+    "topic": "evaluation",
+    "tags": [
+      "offline-evaluation",
+      "online-evaluation"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
+    "explanation": "Offline = 固定集上可重复对比（守门快迭代，覆盖不了真实分布）；Online = 真实流量验证（可信但慢且贵）；二者互补缺一不可。",
+    "rubric": {
+      "required": [
+        "可控可重复 vs 真实分布",
+        "各自的盲区",
+        "互补定位"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Offline evaluation 在发布前的固定数据集上进行，可重复、可对比、成本低，回答“在这个数据分布上系统表现如何”，但它无法覆盖真实流量的长尾分布和真实使用环境。Online evaluation 在真实流量上度量，如 A/B 测试、用户反馈、任务完成率，回答“对真实用户是否更好”，能暴露 offline 发现不了的问题（延迟、长尾、滥用），但周期长、成本高、有实验风险。两者互补：offline 做快速迭代守门，online 做最终验证。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "Offline Evaluation 直接度量真实流量，因此比在线 A/B 测试更能代表用户的真实体验",
+          "Online Evaluation 适用于发布前的验证，Offline Evaluation 适用于上线后的监控，两者不能结合使用",
+          "只要 Offline 指标全部通过即可保证上线安全，Online Evaluation 属于可有可无的补充环节",
+          "Offline 在固定数据集上可重复可对比、成本低，适合迭代守门但覆盖不了真实流量长尾；Online 用真实流量验证效果可信但周期长成本高，两者互补"
+        ],
+        "answer": [
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-047",
+    "category": "ai-engineering",
+    "topic": "model-selection",
+    "tags": [
+      "model-selection",
+      "trade-off",
+      "deployment"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "一个 7B 模型和一个 70B 模型摆在面前，你会如何为业务做选型？请说明决策依据。",
+    "explanation": "选型依据 = 任务准确率增益 × 业务价值 vs 显存/成本/延迟/并发增量；必要时用模型路由混合部署，而非直觉二选一。",
+    "rubric": {
+      "required": [
+        "任务增益先行",
+        "成本/显存/延迟/并发权衡",
+        "部署与合规约束",
+        "模型路由混合策略"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "应从任务出发反向推导：先用评测集确认 70B 相对 7B 在目标任务上的准确率增益有多大——如果 7B 已接近任务上限，大模型没有意义。然后核算代价：70B 的显存需求（多卡部署）、单位 token 成本、延迟与并发吞吐都显著更高。还要考虑部署形态（自建 vs API）、数据合规约束、以及混合策略的可能：简单请求路由给小模型、困难请求升级到大模型，往往比二选一更优。结论应来自“准确率增益 × 业务价值 vs 成本/延迟增量”的量化权衡，而非直觉。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "一律选旗舰模型：参数更大必然带来更高的业务收益，成本与延迟差异可以忽略",
+          "一律选 7B 模型：小模型响应更快，准确率差距总能靠 prompt 工程弥补到位",
+          "先用评测集确认旗舰模型在该任务上相对 7B 的准确率增益，再权衡成本、延迟与并发增量；必要时简单请求路由给小模型、困难请求升级到大模型",
+          "按每百万 token 报价更低者选择：推理成本是决定业务价值的唯一因素"
+        ],
+        "answer": [
+          2
+        ],
+        "question": "一家创业公司要为工单自动分类与回复草拟功能选择模型：自部署的 7B 开源模型，或调用参数量大得多的商用旗舰模型 API。系统日均处理数百万请求，对单次响应延迟敏感且预算有限。作为技术负责人，你应该如何决策？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-048",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "scenario",
+      "RAG",
+      "fine-tuning",
+      "pre-training"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "公司希望模型掌握 10 万条内部 FAQ。你会选择继续 Pre-training、Fine-tuning 还是 RAG？请说明理由和实施路径。",
+    "explanation": "FAQ = 会更新、需溯源的可检索知识 → RAG 优先；pretrain 不可能，FT 仅在行为/格式不达标时作为补充（LoRA+SFT）。",
+    "rubric": {
+      "required": [
+        "优先 RAG 及理由",
+        "排除 pre-training 的理由",
+        "FT 的适用判断",
+        "实施路径"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "优先 RAG。10 万条 FAQ 是典型的可检索知识：内容会持续更新、答案需要引用出处、且要求可审计——这三点恰好是 RAG 的强项，也是重新 pre-training 完全不适合的原因（成本天文数字、无法增量更新、知识不可溯源）。Fine-tune 是否要做取决于另一个问题：FAQ 的回答是否需要特殊的行为/格式/术语风格。推荐路径：先把 FAQ 建成高质量检索库（清洗、结构化、chunk、hybrid 检索 + reranker）；上线后若发现回答风格、格式或拒答行为不达标，再用 SFT/LoRA 做行为层适配。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "优先 RAG：FAQ 需要持续更新、引用出处且可审计，正是检索方案的强项而预训练无法增量更新；先建成高质量检索库，风格格式不达标再用 LoRA 做行为层适配",
+          "优先继续 Pre-training：把 FAQ 训进参数掌握最牢固，后续知识更新只需再做一轮预训练即可同步生效",
+          "优先 Fine-tuning 把十万条 FAQ 写入权重：存进参数的知识永远不会过时，并且天然支持逐条引用溯源",
+          "三种方案效果等价，按团队成员的技术栈熟悉程度任选其一即可，不必考虑更新频率与审计要求"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "某制造企业希望模型掌握十万条持续更新的内部设备维护 FAQ，合规部门同时要求每条回答都能附上出处以便审计。团队内部对继续 Pre-training、Fine-tuning 还是搭建 RAG 争论不休。作为架构师，你应该给出什么建议？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-049",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "debugging",
+      "RAG",
+      "observability"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个 RAG 系统 Recall 很高，但最终回答质量很差。请描述你的排查思路。",
+    "explanation": "recall 高 ≠ 排名靠前 ≠ 进了 context ≠ 被正确使用；分层评测 rewrite/ranking/rerank/context/generation 各段指标，修掉分最大的环节。",
+    "rubric": {
+      "required": [
+        "分层 trace 思路",
+        "ranking 深于 recall",
+        "context/prompt 检查",
+        "faithfulness 验证",
+        "定位后针对性修复"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.3,
+        "architecture": 0.3,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "沿流水线逐层定位，先建立分层 trace：query rewrite 是否改变了原意 → 检索虽然 recall 高但正确 chunk 排在第几（MRR/nDCG，而非只看 recall@k）→ reranker 是否把正确内容挤出 top-k → context construction 是否截断、丢失元数据或引入噪声 → prompt 组织是否让模型清楚该基于哪些材料作答 → generation 是否忠实使用了证据（faithfulness）。用带标准答案的评测集对每一层单独打分，找到掉分最大的那一层优先修复，而不是凭感觉全局调优。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "recall 高说明检索环节没有问题，问题一定出在生成模型本身，换更大的模型即可解决",
+          "recall 高证明不了排名靠前，应把检索 k 值直接提高到 100 并把全部结果塞入 context，确保正确内容一定进入模型视野",
+          "建立分层 trace：检查 query 改写是否改变原意、正确文档的实际排名（MRR/nDCG 而非只看 recall）、重排是否挤出正确内容、context 构造是否截断或引入噪声、生成是否忠实使用了证据，修复掉分最大的环节",
+          "跳过中间环节直接做全局调优，同时调整所有模块的超参数直到端到端指标上升为止"
+        ],
+        "answer": [
+          2
+        ],
+        "question": "电商售后 RAG 助手的离线评测显示检索 recall@20 达到 0.95，但用户满意度持续走低，大量反馈“明明库里有正确资料，回答却不对”。平台一周内先后调整过 query 改写模块和重排阈值。以下排查思路哪个是正确的？"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-041",
+    "category": "ai-engineering",
+    "topic": "llm-as-judge",
+    "tags": [
+      "LLM-as-a-Judge",
+      "bias",
+      "trade-off"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "LLM-as-a-Judge 作为评测手段有哪些已知的问题？你会如何缓解？",
+    "explanation": "judge 有 position/verbosity/self bias 与打分波动，且与人工相关性有限；用顺序交换、rubric 校准、人工抽检对齐来缓解。",
+    "rubric": {
+      "required": [
+        "至少两类已知偏差",
+        "打分不一致",
+        "与人工判断相关性",
+        "校准/缓解手段"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.3,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "已知偏差包括：position bias（偏向特定位置的答案）、verbosity bias（偏爱更长回答）、self-bias（偏爱自己模型的输出风格）、判分不一致（同一样本多次打分波动）、以及与人类判断的相关性有限，尤其在高难度或专业领域。缓解手段：交换候选顺序取平均、控制长度变量、给出明确 rubric 与 few-shot 校准样例、定期用人工标注子集校验 judge 的一致性和相关性，重要决策不以单一 judge 分数为准。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "交换候选回答的呈现顺序多次评分后汇总，消除位置偏好，并在评分标准中显式控制长度变量",
+          "让被评测的模型自己兼任 judge，凭借其对领域的深入理解保证打分口径一致",
+          "给 judge 提供明确的评分 rubric 和少量校准样例，统一各维度的打分口径",
+          "只要平均分高于上一版本就判定可发布，无需引入任何人工环节",
+          "定期抽取子集做人工标注，校验 judge 与人类判断的一致性，重要决策不以单一 judge 分数为依据"
+        ],
+        "answer": [
+          0,
+          2,
+          4
+        ],
+        "question": "一个二十人团队用 LLM-as-a-Judge 为智能写作助手的每次 prompt 或模型变更做回归评分。运行一个月后发现：同一批样本两次评测的分数明显波动；judge 几乎总给更长的回答打高分；业务负责人因此质疑评测结论的可信度。团队应该采取哪些措施改进评测方案？（请选择以下三个选项）"
+      }
+    }
   }
 ]

@@ -16,9 +16,15 @@
 - **ai-engineering 保持不拆**：题量大（96 题、35 topic）是定位使然；边界靠
   "category 主领域 / topic 具体考点 / tags 交叉领域" 三层约束，掌握度本就按
   topic 统计，category 只承担展示分组与组卷过滤。
+- **ai-fundamentals 退役（同日追加）**：68 题中 50 题按知识域迁入 `llm`、13 题
+  （rag/reranking/vector-db/evaluation/model-selection）迁入 `ai-engineering`
+  （RAG 实现属 AI Engineering 边界），5 个游离题归入最近类目后删除该文件——
+  它是 taxonomy 收敛前遗留的杂烩桶，topic 与 llm/training 域高度重叠。
+  questions/ 最终 **7 类目**：llm(83) / agentic-ai(82) / ai-engineering(109) /
+  deep-learning(18) / machine-learning(10) / safety-ethics(9) / mlops(3)。
 - **数据契约说明**：对外题库 JSON 的 category 枚举收敛（nlp / computer-vision /
-  statistics 不再出现），已发布题库的消费方需同步；localStorage 学习档案按
-  topic 记账，不受影响。
+  statistics / ai-fundamentals 不再出现），已发布题库的消费方需同步；localStorage
+  学习档案按 topic 记账，不受影响。
 - 195 测试全过，build 通过；覆盖矩阵缺口 33、未挂靠题 87→83（随 nlp/cv 游离
   topic 移出）。
 
