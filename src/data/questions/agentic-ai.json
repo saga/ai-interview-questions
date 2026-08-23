@@ -3466,5 +3466,107 @@
         "referenceAnswer": "正确答案要点：KV cache ∝ 上下文长度且 Agent 上下文持续增长；总占用 = 每 token × 长度 × 并发数；低 KV/token → 同显存更高并发/更长上下文/更低单位成本；但 prefill 计算、权重读取带宽、kernel 效率与模型质量不会被 KV 优化改善。\n\n解析：Agent workload 的特殊性在于上下文不是静态问答而是单调增长的轨迹（system prompt → tool call → tool result → …），KV cache 随之线性膨胀；上百个并发 session 再把这个数字放大两个数量级。此时 KV/token 是并发容量的硬上限：例如单 token 48KiB、10k 上下文时每路约 0.47GB，20GB 富余显存只能撑约 40 路；换成 1/16 的开销即可支撑数百路。benchmark 分数无法反映这一约束。反过来，KV 优化帮不上忙的地方同样要认清：prefill 仍要对全部输入做完整前向计算（首 token 延迟由层数、hidden size、kernel 效率主导）；decode 每步仍要读全部权重；批调度、采样、工具往返延迟照旧；模型会不会选对工具更是与缓存无关的能力问题。"
       }
     }
+  },
+  {
+    "id": "agentic-62",
+    "category": "agentic-ai",
+    "topic": "agent-loop",
+    "tags": [
+      "react",
+      "thought-action-observation",
+      "loop-guard"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "ReAct 模式让 Agent 以 Thought → Action → Observation 循环执行任务。请解释该循环的运作机制、四种典型失败模式及对应的工程护栏。",
+    "explanation": "循环机制：Thought（模型推理当前状态与下一步）→ Action（选择工具并给参）→ Observation（工具结果写回上下文）直至得出最终答案或触顶。失败模式与护栏：①死循环重复同一动作——最大迭代数+重复动作检测；②选错工具——清晰的工具描述与示例；③参数错误——严格 Schema 校验+可读的错误信息回传；④成本失控——Token 用量追踪与硬上限。复杂任务可用显式状态机（flow engineering）替代自由循环。",
+    "reference": {
+      "concept": "ReAct=推理与行动交替的自由循环；四大败因（死循环/错工具/错参数/成本失控）各配迭代上限、工具描述、Schema 校验、用量硬顶。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "ReAct 中 Action 必须由开发者预先编排好顺序，模型只负责填参数",
+          "Observation 直接进入模型权重进行微调，从而记住工具返回结果",
+          "Thought 阶段推理状态、Action 选择工具并传参、Observation 将结果写回上下文循环往复；护栏针对四大失败模式：最大迭代数与重复动作检测防死循环、清晰的工具描述与示例防选错工具、严格参数校验与友好报错防参数错误、Token/调用次数硬上限防成本失控",
+          "ReAct 要求每一步都必须人工确认后才能执行下一步"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：①机制：控制流由模型在运行时决定——Thought 输出对状态的推理与计划，Action 以结构化形式调用工具，Observation 作为新证据并入上下文驱动下一轮 Thought，直到模型判定任务完成或触及上限。A 描述的是 workflow/chain 而非 ReAct；B 混淆了上下文与权重——Observation 只是追加进 prompt 的文本，不参与参数更新；D 是 human-in-the-loop 增强，不是 ReAct 的定义属性。②失败模式是面试高频追问：死循环（同一 (tool,args) 反复出现）→ 设 max_iterations 并做轨迹图环检测；错工具 → 工具名动宾结构、描述带示例；错参数 → Pydantic/JSON Schema 校验并把校验错误以可读文本回传给模型自我修正；成本失控 → 每任务 Token 预算与熔断。③延伸：对确定性要求高的流程，把 ReAct 收进显式状态机（flow engineering），LLM 只在状态内部决策，不做状态转移。"
+      }
+    }
+  },
+  {
+    "id": "agentic-63",
+    "category": "agentic-ai",
+    "topic": "multi-agent",
+    "tags": [
+      "orchestration-patterns",
+      "manager-worker",
+      "when-not-to-use"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "关于多智能体（Multi-Agent）系统的架构模式与适用边界，下列说法正确的是？",
+    "explanation": "四种主流拓扑各有适配场景：Hierarchical（Manager 分解派发）适合可分解复杂任务但 Manager 易成瓶颈；Pipeline 顺序交接适合阶段化处理但无并行；Peer-to-peer 协作自然但协调复杂；Critic/Verifier 一个生成一个挑刺能有效提质。启用多智能体的前提是任务天然分解、各子任务需要不同工具/专长、或批判模式确有增益；单一 Agent 加好工具就能搞定时应坚决用单 Agent——协调开销、调试复杂度与多倍 LLM 成本是真实代价。",
+    "reference": {
+      "concept": "Multi-agent 拓扑按任务形态选：层级/流水线/P2P/Critic；启用判据=任务可分解+异质能力需求；单 Agent 够用时协调开销就是负资产。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "多智能体系统一定优于单智能体，因为更多的 LLM 意味着更高的智能",
+          "无论任务类型如何，Manager-Worker 模式都是默认最优的多智能体架构",
+          "架构模式应匹配任务形态：层级式适合可分解任务的分派汇总（注意 Manager 瓶颈）、流水线适合阶段加工、Critic/Verifier 用对抗审查提质量；启用的前提是任务天然可分解且子任务需要不同工具或专长——单 Agent 加合适工具能解决时应坚持单 Agent，因为协调开销、调试复杂度与多倍调用成本是真代价",
+          "多智能体间共享同一个上下文窗口是标准做法，可以最大化信息透明"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：①先问\"要不要\"再问\"怎么组\"：多 Agent 的正当理由是任务跨域（调研→写作→审核）、各阶段需要不同工具集、需要生成-批判对抗提质、或子任务可并行降延迟；反之单 Agent + 工具能完成却强行拆分，只会得到更高的延迟、成本与调试地狱。②四种拓扑的坑：Hierarchical 的 Manager 既做分解又做汇总容易过载，需要限制其扇出与上下文；Pipeline 无并行且上游错误向下游传播；P2P 需要明确的通信协议否则迅速失控；Critic 模式要注意 Critic 不能与 Generator 共享盲区（最好异构模型）。③通信机制三选：共享状态（简单但有竞态）、消息传递（结构化但开销大）、Orchestrator 中介（最好调试）。D 是反模式——共享整个上下文既爆 Token 又互相污染。"
+      }
+    }
+  },
+  {
+    "id": "agentic-64",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "conversation-memory",
+      "summarization",
+      "hierarchical-memory"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "长对话应用中上下文窗口终会耗尽。对比滑动窗口、摘要压缩、分层摘要与检索式记忆四种对话历史管理策略的取舍，应该怎么选？",
+    "explanation": "滑动窗口（保留最近 N 条）：零成本实现但早期信息直接丢失，只适合短会话。摘要压缩：超阈值时把旧消息总结、近况保真，用户体验接近\"好记性\"且成本可控，是多数聊天应用的默认解。分层摘要：近期全文/中期段落摘要/远期一行摘要，粒度换成本，适合超长程任务。检索式记忆：全部历史外置存储，按当前查询相关性取回，扩展性最好但引入检索延迟与相关性风险，等于给对话史做 RAG。默认推荐摘要压缩，超长会话演进到分层或检索式。",
+    "reference": {
+      "concept": "对话记忆四档：滑窗（丢信息）/摘要压缩（默认解）/分层摘要（粒度换成本）/检索式记忆（可扩展但引入 RAG 复杂度），按会话长度与信息价值演进。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "上下文窗口已经很大（1M tokens），任何形式的记忆管理都没有必要",
+          "滑动窗口是最安全的策略，因为它永远不会丢失任何重要信息",
+          "四种策略是成本-信息保真度的连续谱：滑窗实现最简但早期信息丢失；摘要压缩（旧消息总结+近期保真）是多数应用的默认选择；分层摘要用粒度梯度进一步压成本；检索式记忆把全部历史外置并按相关性取回，扩展性最强但等于给对话史引入了一套 RAG 的复杂度——按会话长度与历史信息的复用价值逐级演进",
+          "检索式记忆应该始终作为默认选项，因为它技术上最先进"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：①选型的两个轴：会话会拖多长 × 早期信息未来被引用的概率。短会话（<窗口一半）什么都不用做；中等长度用摘要压缩——阈值触发（如 >6K token）时把旧消息喂给模型总结成结构化 digest，替换原始消息并保留最近若干条原文；超长任务（跨天 agent 工作）用分层：L1 近期原文、L2 中期段落级摘要、L3 远期事实清单。②检索式记忆的本质是把对话史当作另一个 RAG 语料库：全量外置存储 + 按当前话题向量检索相关历史片段注入上下文——优点是不丢任何信息且成本随相关片段而非全史增长，代价是要维护嵌入、索引、相关性调优这一整套管线，还有\"检索不到该想起的事\"的新失败模式。③A 忽略了成本（每轮都付全量 token 钱）与注意力稀释（lost in the middle）；B 恰恰是最容易丢关键信息的（最早的偏好、约束往往最先滑出窗口）。"
+      }
+    }
   }
 ]
