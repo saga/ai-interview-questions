@@ -519,5 +519,184 @@
         "referenceAnswer": "正确答案要点：SWA 层复杂度 O(n·w)、KV 缓存有界（只需保留窗口内 w 个 token）；全局层负责长距离信息通路；收益=计算+显存双降，代价=局部层不能直接看全史。\n\n解析：若窗口 w=1024、上下文 n=131k，SWA 层的注意力计算从 O(n²) 降到 O(n·w)，其 KV cache 上界固定为 O(w) 而非 O(n)——75% 的层的缓存不再随上下文线性增长，再乘上 GQA 的 KV 头缩减，两层优化相乘。少量全局层像\"信息高速公路\"，让深层网络仍能整合任意远处的信息（Gemma 等模型即此设计）。trade-off：token 无法在局部层内一步关注窗口外内容，长程推理质量依赖全局层的数量与分布；纯检索类超长程任务上可能弱于全全局注意力。"
       }
     }
+  },
+  {
+    "id": "llm-15",
+    "category": "llm",
+    "topic": "latent-moe",
+    "tags": [
+      "latent-moe",
+      "moe",
+      "low-rank",
+      "inference-efficiency"
+    ],
+    "difficulty": "medium",
+    "question": "某模型的架构说明描述其 LatentMoE 设计：先把 hidden representation 经 down projection 映射到低维 latent space，在其中执行专家（MoE）计算，再经 up projection 还原回原维度。基于这一机制，为什么它可能降低推理成本？",
+    "explanation": "压缩发生在专家线性层：MoE 专家的大矩阵原本作用于完整 hidden size，LatentMoE 让它们在低维 latent 空间执行，参数量与 FLOPs 随 latent 维度而非 hidden size 缩放；两次投影本身是 d_model×d_latent 的瘦矩阵，开销远小于被替换的原层。代价是 latent 成为信息瓶颈，质量对压缩比敏感。",
+    "reference": {
+      "concept": "LatentMoE：down-projection → 低维专家计算 → up-projection；省的是专家线性层的参数与 FLOPs（随 latent 维度缩放），牺牲的是表征带宽。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "专家内部的大型线性变换被搬到低维 latent space 中执行：专家参数量与 FLOPs 随 latent 维度而非 hidden size 缩放，两次投影本身远小于被替换的原层",
+          "它减少了专家数量并简化了 router 结构，token 路由的开销随之大幅下降",
+          "它把 token-level 路由改成了 sequence-level 路由，每个序列只需激活一次专家网络",
+          "它用 latent attention 替代了全部专家 FFN，使 MoE 层不再需要维护任何专家权重"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "团队技术分享会上有人问：\"LatentMoE 到底省在哪里？是不是就是路由做得更省了？\"下列解释中最准确的是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：压缩位置在专家线性层两端（down-proj 进、up-proj 出）；专家大矩阵在低维空间执行，参数/FLOPs 随 latent 维度缩放；代价是信息瓶颈。\n\n解析：标准 MoE 中每个专家的 gate/up/down 矩阵都作用于完整 hidden size d_model；LatentMoE 借鉴 MLA 的低秩思想，先用一个 d_model×d_latent 的瘦矩阵把表示压到 latent（d_latent ≪ d_model），专家计算在低维进行后再还原。专家 FLOPs 与参数从 O(d_model×d_ff) 降为约 O(d_latent×d_ff)+O(d_model×d_latent)，压缩比高时收益显著。要能说清三点：①省的不是路由，而是专家本体的矩阵乘法；②投影本身开销小但非零；③latent 维度是显式的容量旋钮——压得越狠越省，但表征瓶颈越紧，这是它与普通剪枝的本质区别。"
+      }
+    }
+  },
+  {
+    "id": "llm-16",
+    "category": "llm",
+    "topic": "latent-moe",
+    "tags": [
+      "latent-moe",
+      "tradeoff",
+      "representation-bottleneck",
+      "capacity-planning"
+    ],
+    "difficulty": "hard",
+    "question": "如果把 LatentMoE 的 latent 维度压得非常低，最可能带来什么后果？",
+    "explanation": "压缩比上升 → 计算/参数继续下降，但 latent 成为更紧的信息瓶颈：专家只能看到低维投影后的输入，路由区分度与专家容量同时受损，质量回退风险随压缩比单调上升。它是典型的 compute/memory 与 representation bandwidth 的交换，不存在免费的极限压缩。",
+    "reference": {
+      "concept": "latent 维度是容量旋钮：compression ratio ↑ → FLOPs/显存 ↓ 但 representation bottleneck ↑；KV cache 不受影响。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "专家计算与参数进一步下降，但 latent 成为更紧的信息瓶颈：专家看到的输入表征变弱、路由区分度下降，质量回退风险随压缩比上升",
+          "KV cache 会同比例缩小，长上下文场景的显存成本同步受益",
+          "只要相应增加专家数量就能完全弥补维度下降损失的容量，质量可以保持不变",
+          "由于低维空间的损失面更平滑，训练收敛速度会稳定提升"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "团队提议把现有 LatentMoE 的 latent 维度再砍掉 80%，以进一步压低单 token 成本。你作为架构评审，最应该指出的核心风险是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：FLOPs/显存进一步下降；latent 成为信息瓶颈（专家输入表征变弱、路由区分度下降）；质量对压缩比敏感，需实验标定拐点。\n\n解析：latent 维度是 LatentMoE 唯一的容量旋钮，压低它的影响链路是：①收益侧——专家矩阵乘法与参数量按比例缩小，单 token 成本继续下降；②代价侧——所有 token 都要先挤过同一根细管子，专家能区分的特征变少，router 在低维空间里也更难把不同类型的 token 分开；③后果——预训练损失可能只轻微上浮，但在分布外任务或长尾能力上出现不成比例的回退。评审时还应指出两个常见误区：LatentMoE 压缩的是 FFN 路径，KV cache 一点不变；加专家数量补不回单个专家的输入带宽损失。正确做法是用消融实验找质量-成本曲线的拐点，而不是拍脑袋定压缩比。"
+      }
+    }
+  },
+  {
+    "id": "llm-17",
+    "category": "llm",
+    "topic": "positional-encoding",
+    "tags": [
+      "nope",
+      "rope",
+      "positional-encoding",
+      "long-context",
+      "causal-mask"
+    ],
+    "difficulty": "hard",
+    "question": "某 frontier LLM 的架构说明写明：完全未使用显式位置编码（没有 RoPE，也没有绝对位置嵌入），即 NoPE 设计。相比传统 RoPE 模型，这种架构最需要解决或验证的核心问题是什么？",
+    "explanation": "去掉显式位置编码后，顺序信息只能隐式地来自因果掩码的不对称性（每个位置能看到的前缀长度不同）与数据统计规律。模型必须自己学到可靠的顺序建模，最大风险在长度泛化：超出训练长度后，隐式位置信号是否仍然成立需要专门验证。",
+    "reference": {
+      "concept": "NoPE：位置信息隐式来源于因果掩码不对称性；核心风险是 order 建模的可靠性（尤其长上下文泛化），需实验验证而非默认成立。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "位置信息只能由因果掩码的不对称性与数据分布隐式提供，必须验证模型确实学到了可靠的顺序建模——尤其在超出训练长度时是否仍然成立",
+          "缺少 RoPE 的旋转因子后注意力得分失去缩放项，需要另行引入归一化手段来稳定 softmax",
+          "位置信息缺失导致历史 K/V 无法复用，KV cache 机制失效，必须逐 token 重算全部历史",
+          "embedding 层失去位置输入后无法初始化，必须保留至少一层绝对位置嵌入作为兜底"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "你在评估一个新开源模型能否用于代码补全等强顺序敏感的任务。它的架构说明写着 \"NoPE: no positional encoding used\"。基于 Transformer 原理（而非该模型的宣传材料），你最应该关注的问题是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：因果掩码打破置换对称性提供隐式位置信号；需用扰动实验/探针/长度外推验证顺序建模可靠性；局部注意力结构会改变这一权衡。\n\n解析：①原理层面——纯双向自注意力对 token 顺序是置换等变的，但因果掩码让位置 i 只能看到 i 个前缀，不同深度的可用上下文本身就是一种位置信号，因此 NoPE 并非必然失败（小型模型已有实证）；②验证方法——a) 扰动实验：打乱输入 token 顺序或替换为乱序文本，观察困惑度/任务指标退化幅度；b) 探针：在中间层隐藏态上线性探测位置 ID，看位置信息是否真的被编码；c) 长度外推：构造超过训练长度的顺序敏感任务（长文档检索、代码缩进结构），检验隐式信号是否随距离衰减。③结构交互——若模型大量使用滑动窗口等局部注意力，相对距离分布被窗口截断，隐式顺序更容易学；反之全局长程依赖下 NoPE 的风险更高。④工程结论——顺序敏感场景（代码、表格、长文档）应要求厂商或自查提供上述证据，而不是默认位置建模没问题。"
+      }
+    }
+  },
+  {
+    "id": "llm-18",
+    "category": "llm",
+    "topic": "residual-connections",
+    "tags": [
+      "residual-stream",
+      "mhc",
+      "attention-residuals",
+      "deep-transformer",
+      "gradient-flow"
+    ],
+    "difficulty": "hard",
+    "question": "某架构说明提到两类改善深层 Transformer 信息流动的设计：mHC 把单一 residual stream 拓宽为数条并行通路；Attention Residuals 把此前若干层的输出经类注意力的加权聚合后注入当前层。关于两者的说法正确的有哪些？（多选）",
+    "explanation": "两者解决的是同一个深层网络问题——信息与梯度的跨层传递，但路径结构不同：mHC 是静态拓宽残差通路，Attention Residuals 是按内容动态聚合历史层输出。后者引入额外 attention 计算与激活占用，属于以计算换表达能力的结构性改进，不应计入推理效率优化。",
+    "reference": {
+      "concept": "mHC：静态拓宽 residual pathways；Attention Residuals：动态加权聚合多层输出。同目标（深层信号传递）、异结构，后者以额外计算换表达能力。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "两者针对的都是深层网络的信息与梯度跨层传递问题，但路径结构不同：mHC 静态拓宽通路，Attention Residuals 按内容动态聚合历史层输出",
+          "Attention Residuals 引入了额外的 attention 计算，属于以计算换取表达能力的结构性改进，不应归类为推理效率优化",
+          "mHC 的多条通路在数学上等价于直接堆叠更多层数，两者可以互相替代",
+          "两者的首要收益都是缩小 KV cache，因此常被用作长上下文的显存优化手段"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "评审会上两位工程师争论：\"这两个设计不就是一回事吗，都是让残差连接多几条路？\"下列哪些说法可以作为专业回应？（请选择以下两个选项）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：共同目标是深层信号/梯度传递；mHC=静态多条并行残差通路，Attention Residuals=对历史层输出的内容感知加权聚合；后者有额外计算成本、属于质量导向改进。\n\n解析：深层 Transformer 的核心困难是信息与梯度要穿越几十上百个层，单一 residual stream 是唯一的高速公路，容易拥堵也容易被单层破坏。两条技术路线：①mHC 把一条 stream 拓宽成多条并行通路，每条通路可独立携带不同粒度的信号，层间读写时跨通路组合——静态结构、推理开销小；②Attention Residuals 则让当前层像做注意力一样回看此前若干层的输出并加权聚合——动态、内容感知，能跳过有害层，但每次都要付出额外 attention 计算与激活内存。判断的关键：前者基本不影响计算画像，后者明确增加计算量换取表达/优化能力，把它算进 inference optimization 清单是分类错误。"
+      }
+    }
+  },
+  {
+    "id": "llm-19",
+    "category": "llm",
+    "topic": "inference-optimization",
+    "tags": [
+      "mla",
+      "kda",
+      "latent-moe",
+      "attention-residuals",
+      "design-motivation"
+    ],
+    "difficulty": "medium",
+    "question": "现代 LLM 的组件替换各有不同的首要动机。下列四项设计中，哪一项的首要设计目标不是 inference efficiency？",
+    "explanation": "MLA（K/V 低秩 latent 投影）直接缩小 KV cache；KDA（门控 delta 线性注意力）把长上下文注意力成本降为近似线性；LatentMoE 在低维空间执行专家计算以降低 FLOPs——三者都是冲着推理效率去的。Attention Residuals 聚合历史多层输出，增加计算以改善深层信号传播与表达能力，首要回报在质量而非效率。",
+    "reference": {
+      "concept": "组件动机分类：MLA/KDA/LatentMoE → 效率（cache/计算量）；Attention Residuals → 质量（深层信息流）。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "MLA：将 K/V 投影到共享的低秩 latent 空间，各 Query 头从 latent 表示中读取信息",
+          "KDA：以带门控的增量状态更新形式重写注意力，替代部分 Softmax 注意力层",
+          "LatentMoE：将专家的输入输出投影到低维 latent 空间后再执行专家计算",
+          "Attention Residuals：对前若干层的输出做加权聚合，将聚合结果注入当前层的残差流"
+        ],
+        "answer": [
+          3
+        ],
+        "question": "你在整理一份\"LLM 架构改动动机图谱\"，需要区分哪些改动是为了跑得更省、哪些是为了学得更好。上述四项设计中，首要设计目标不是 inference efficiency 的是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：MLA 缩 KV cache、KDA 降低长上下文注意力复杂度、LatentMoE 降低专家 FLOPs——三者首要目标是推理效率；Attention Residuals 以额外计算换深层信号传播与表达能力，首要目标是质量。\n\n解析：判断依据是\"改动直接优化的资源或指标\"：MLA 改变 KV cache 的字节画像，直接影响并发容量与显存账单；KDA 用线性状态更新替代二次方注意力矩阵，长上下文 prefill/decode 成本显著下降；LatentMoE 压专家矩阵乘法的规模。而 Attention Residuals 反向——它在标准前向之外追加聚合计算，动机是缓解深层网络的信号衰减、提升模型上限，属于 quality-driven 的结构投资。注意这不是说它不能带来间接收益（例如更快收敛、更少层数达到同等质量），但\"首要设计目标\"的归属应以机制的直接作用对象为准。"
+      }
+    }
   }
 ]

@@ -2,6 +2,31 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 新增前沿架构推理题 6 题：机制/取舍/归因为主，模型知识仅作 context
+
+- **出题原则延续**：架构事实写进题干（down/up projection、无位置编码、多层聚合等），
+  候选人负责推导"为什么这么设计、对 serving 意味着什么"；干扰项全部做到
+  "技术上听起来合理"，不再使用"完全消除""必然提升"类一眼假选项。
+- **难度梯度（Knowledge → Mechanism → Trade-off → System reasoning）**：
+  - `llm-15`（latent-moe）：LatentMoE 为何降本——压缩位置在专家线性层，
+    参数/FLOPs 随 latent 维度缩放，省的不是路由；
+  - `llm-16`（latent-moe）：latent 维度压得过低的后果——信息瓶颈、路由区分度下降、
+    质量回退；明确 KV cache 不受影响、加专家补不回输入带宽；
+  - `llm-17`（positional-encoding）：NoPE 推理题——隐式位置信号来自因果掩码不对称性，
+    核心风险是顺序建模可靠性（尤其长度外推）；开放形态考"如何验证 NoPE 模型
+    确实学到了 token order"（扰动实验/探针/长度外推），适配 MCQ→Open 转换机制；
+  - `llm-18`（residual-connections）：mHC vs Attention Residuals 多选——同一问题
+    （深层信号传递）、异结构（静态拓宽通路 vs 动态内容聚合）；含正确项
+    "Attention Residuals 以额外计算换表达能力，不属于推理效率优化"；
+  - `llm-19`（inference-optimization）：动机分类修正版——题干改为"首要设计目标不是
+    inference efficiency"，四个选项只给机制描述不报答案（MLA/KDA/LatentMoE=效率，
+    Attention Residuals=质量）；
+  - `ai-eng-026`（system-design）：serving 归因尽调——MLA/LatentMoE/线性注意力是
+    成本一阶变量，Attention Residuals 是质量投资的成本项，NoPE 近似中性但引入
+    顺序建模风险。
+- **conceptGraph**：新增 topic `latent-moe` / `positional-encoding` / `residual-connections`
+  及 5 条边（moe→latent-moe 前置等）；157 测试全过，typecheck/build 通过。
+
 ## 2026-08-23 · 新增 LLM 推理架构推理链 5 题：从机制到 Agent 容量规划
 
 - **出题原则**：模型名称只作 context、不作 prerequisite——题干给足架构事实

@@ -2394,5 +2394,55 @@
         "referenceAnswer": "正确答案要点：MoE 总参定显存、激活参定延迟；MHA 缓存最大；Dense+GQA 缓存最小；应从并发 × 上下文 × 显存预算反推。\n\n解析：A（30B Dense + 2 KV 头）：权重约 60GB（BF16），KV cache 由 KV 头数控制、本例最小，同等显存下并发容量最高；代价是每个 token 都要走完全部 30B 参数的计算。B（30B MoE、激活 3B、8 KV 头）：decode FLOPs 约为 A 的十分之一，token 延迟潜力更好；但所有专家都可能被路由到，30B 权重须全量常驻显存，且路由不均会造成批量效率波动；KV cache 介于 A/C 之间（8 头 vs 2 头 vs 32 头）。C（14B Dense MHA）：权重约 28GB 最轻、启动与多实例部署最灵活，但 KV 头数 = Query 头数，单 token 缓存最大——高并发 × 长上下文场景最先撞显存墙，除非上下文短或并发低。决策路径：先明确 SLO（p99 首 token 延迟、并发路数、典型上下文长度、质量底线）→ 分别测算 权重显存 + KV 显存 × 并发 与 decode FLOPs → 小流量实测验证质量，而不是拿 benchmark 或参数量一刀切。"
       }
     }
+  },
+  {
+    "id": "ai-eng-026",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "tags": [
+      "capacity-planning",
+      "serving-cost",
+      "architecture-attribution",
+      "agent-serving"
+    ],
+    "difficulty": "hard",
+    "question": "你要把一个采用 MLA + LatentMoE + 线性注意力局部层 + Attention Residuals + NoPE 的 frontier 模型部署为高并发 Agent 推理服务，正在做容量规划与技术尽调。关于各项架构改动对 serving 的影响，下列归因正确的有哪些？（多选）",
+    "explanation": "容量规划看一阶资源变量：MLA 与 LatentMoE 直接改写每 token 显存/FLOPs 画像（KV cache 字节数、专家计算量），是 serving 成本的主项；线性注意力局部层降低长上下文计算；Attention Residuals 反向增加计算与激活占用、回报在质量，应计为成本项；NoPE 只是去掉了很小的位置编码开销，既不会显著提吞吐也不影响 cache 规模。",
+    "reference": {
+      "concept": "架构→serving 归因：MLA/LatentMoE/线性注意力=成本主项；Attention Residuals=质量投资的成本项；NoPE=近似中性。"
+    },
+    "rubric": {
+      "required": [
+        "MLA 与 LatentMoE 直接改变每 token 显存与 FLOPs 画像，是 serving cost 的一阶变量",
+        "线性注意力局部层主要降低长上下文的注意力计算成本",
+        "Attention Residuals 增加计算与激活占用、回报在质量，容量规划时应计为成本项",
+        "NoPE 对 serving 成本近似中性，其风险在顺序建模可靠性而非性能"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.25,
+        "architecture": 0.25,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MLA 与 LatentMoE 直接改写每 token 的显存与 FLOPs 画像（KV cache 字节、专家计算量），是 serving 成本测算的一阶变量",
+          "NoPE 移除位置编码显著减少了逐 token 计算量，会成为吞吐提升的主要来源",
+          "Attention Residuals 会增加少量计算与激活占用，主要回报在模型质量，容量规划时应计为成本项",
+          "只要单 token 开销足够低，上下文长度和并发数就不再约束部署规模"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "question": "向上汇报容量方案时，你需要把架构特性正确映射到资源账单。上述归因哪些站得住脚？（请选择以下两个选项）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：MLA/LatentMoE=显存与 FLOPs 主项；线性注意力=长上下文计算主项；Attention Residuals=质量导向的成本项；NoPE≈中性但引入顺序建模风险。\n\n解析：尽调的正确框架是把每个架构改动映射到 资源账单（权重显存、KV cache/token、prefill FLOPs、decode FLOPs）或 质量账本（能力上限、失败模式）：①MLA 决定 KV cache 字节数 → 并发容量的第一约束项；②LatentMoE 决定 MoE 层计算与参数 → 单 token decode 成本；③线性注意力局部层决定上下文长度增长时成本的斜率；④Attention Residuals 在上述每一项上都是净增成本，买的是深层网络的质量与可训练性——汇报时应作为\"为质量支付的计算税\"列支；⑤NoPE 几乎不动资源账单，真正要做的是验证顺序敏感任务（代码/表格）的表现与长度外推行为。常见错误归因：把 NoPE 当性能优化、把 Attention Residuals 当效率优化、以为单 token 开销低就解除了并发×上下文的乘法约束。"
+      }
+    }
   }
 ]
