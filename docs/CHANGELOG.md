@@ -2,6 +2,14 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 知识图谱迁移到 @dagrejs/graphlib
+
+- 引入 `@dagrejs/graphlib`（自带 TS 类型）承接图的存储与算法，`domain/conceptGraph.ts` 手写遍历逻辑下线：
+  - **加载期 DAG 校验**：prerequisite 子图用 `alg.isAcyclic` / `alg.findCycles` 校验，数据有环直接抛错（fail-fast），不再依赖运行时 seen 集合兜底。
+  - **拓扑排序**：`alg.topsort` 给出"基础→进阶"学习顺序，suggestNextTopics 的可学新主题按拓扑序排列（此前按闭包长度近似）。
+  - 邻接查询改用 `predecessors()`；公开 API 签名不变，adaptive/coverage/coach 调用方零改动。
+- 测试 72 例全过（新增闭包传递性、nodeTypeOf 用例）；typecheck/build 通过。
+
 ## 2026-08-23 · 知识图谱正规化（ADR-018：typed nodes/edges + DAG + evidence）
 
 - **图数据重构**（`data/conceptGraph.json`）：

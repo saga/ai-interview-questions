@@ -71,10 +71,11 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
 
 - **模式开关**：`InterviewDefinition.adaptive`。开启后 `buildSession` 只组第一题；UI 走 `AdaptiveQuiz`
   逐题视图——提交即评分（选择题确定性判分 / 开放题 LLM），随后引擎选下一题追加。
-- **知识图谱**：`domain/conceptGraph.ts` + `data/conceptGraph.json`。节点带类型
-  （concept/architecture/pattern/technique/problem/tradeoff/decision/metric），边带类型与方向
-  （prerequisite/part_of/extends/alternative/tradeoff/contrasts/related_to/technique +
-  面试迁移 deep_dive/challenge）；prerequisite 是"基础→进阶"DAG，`prerequisiteClosure` 做传递闭包。
+- **知识图谱**：`domain/conceptGraph.ts` + `data/conceptGraph.json`，图操作委托
+  `@dagrejs/graphlib`。节点带类型（concept/architecture/pattern/technique/problem/tradeoff/decision/metric），
+  边带类型与方向（prerequisite/part_of/extends/alternative/tradeoff/contrasts/related_to/technique +
+  面试迁移 deep_dive/challenge）；prerequisite 是"基础→进阶"DAG——加载期 `isAcyclic` 校验（有环即抛错），
+  `topsort` 提供学习顺序，`prerequisiteClosure` 做传递闭包。
   节点复用题库 `topic` 字段，domain 复用 category。
 - **覆盖面地图**：`computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
   blocked 判定沿前置闭包上溯（根因未掌握则高级主题被标记为"先补前置"）。

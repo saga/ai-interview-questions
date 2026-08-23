@@ -2,10 +2,13 @@
 // 数据形态：typed nodes（concept/architecture/technique/problem/tradeoff/...）
 //          + typed directed edges（prerequisite / part_of / extends / alternative /
 //            tradeoff / contrasts / related_to / technique / deep_dive / challenge）。
-// prerequisite 边构成有向 DAG，方向统一为"基础 → 进阶"，支持传递闭包：
-// 高级主题的前置未掌握时，系统知道该先补哪里。
+// 图的存储、遍历与算法委托给 @dagrejs/graphlib：
+//   - 邻接查询 outEdges/inEdges/nodeEdges/predecessors
+//   - prerequisite 子图的 DAG 校验（isAcyclic/findCycles，数据错误在加载期暴露）
+//   - 拓扑排序（topsort）给出"基础→进阶"学习顺序
 // 不依赖 React / LLM / 网络。
 
+import { Graph, alg } from '@dagrejs/graphlib';
 import type { LearnerProfile } from '../types';
 import graphData from '../data/conceptGraph.json';
 
@@ -50,29 +53,52 @@ const WEAK_AVG = 85;
 /** 无向语义的边类型：broaden / 覆盖面按"相关"处理。 */
 const UNDIRECTED_TYPES: EdgeType[] = ['related_to', 'alternative', 'tradeoff', 'contrasts', 'extends'];
 
-function outgoing(g: ConceptGraph, topic: string, type?: EdgeType): ConceptEdge[] {
-  return g.edges.filter((e) => e.from === topic && (!type || e.type === type));
+// ── graphlib 实例（模块级单例） ─────────────────────────────
+
+const g = new Graph({ directed: true });
+for (const id of Object.keys(conceptGraph.nodeTypes)) g.setNode(id);
+for (const e of conceptGraph.edges) {
+  g.setNode(e.from);
+  g.setNode(e.to);
+  g.setEdge(e.from, e.to, e.type);
 }
-function incoming(g: ConceptGraph, topic: string, type?: EdgeType): ConceptEdge[] {
-  return g.edges.filter((e) => e.to === topic && (!type || e.type === type));
+
+/** prerequisite 子图（基础→进阶的学习依赖 DAG）。 */
+const prerequisiteDag = (() => {
+  const dag = new Graph({ directed: true });
+  for (const { v, w } of g.edges()) {
+    if (g.edge(v, w) === 'prerequisite') dag.setEdge(v, w);
+  }
+  return dag;
+})();
+
+if (!alg.isAcyclic(prerequisiteDag)) {
+  throw new Error(`conceptGraph: prerequisite 边存在环，请修正数据：${JSON.stringify(alg.findCycles(prerequisiteDag))}`);
 }
+
+/** 全部前置关系的拓扑序（基础在前）；不在依赖关系中的节点排在最后。 */
+const topoRank = new Map<string, number>(
+  alg.topsort(prerequisiteDag).map((id, i) => [id, i]),
+);
+
+// ── 遍历 API（公开接口与上一版保持兼容） ────────────────────
 
 /** 直接前置（进阶主题的基础）。 */
-export function prerequisitesOf(g: ConceptGraph, topic: string): string[] {
-  return incoming(g, topic, 'prerequisite').map((e) => e.from);
+export function prerequisitesOf(_graph: ConceptGraph, topic: string): string[] {
+  return (prerequisiteDag.predecessors(topic) ?? []) as string[];
 }
 
-/** 前置传递闭包（沿 DAG 上溯，含自身去重；环由 seen 保护）。 */
-export function prerequisiteClosure(g: ConceptGraph, topic: string): string[] {
+/** 前置传递闭包（沿 DAG 上溯，BFS 近者在前；环已由加载期校验排除）。 */
+export function prerequisiteClosure(_graph: ConceptGraph, topic: string): string[] {
   const out: string[] = [];
   const seen = new Set<string>([topic]);
-  const queue = [...prerequisitesOf(g, topic)];
+  const queue = [...(prerequisiteDag.predecessors(topic) ?? [])];
   while (queue.length > 0) {
     const t = queue.shift() as string;
     if (seen.has(t)) continue;
     seen.add(t);
     out.push(t);
-    queue.push(...prerequisitesOf(g, t));
+    queue.push(...(prerequisiteDag.predecessors(t) ?? []));
   }
   return out;
 }
@@ -81,32 +107,34 @@ export function prerequisiteClosure(g: ConceptGraph, topic: string): string[] {
  * 横向扩展候选（broaden）：无向语义边的对端。
  * 返回与 topic "相关"的主题集合——含直接相关、替代方案、权衡决策、扩展物。
  */
-export function relatedOf(g: ConceptGraph, topic: string): string[] {
+export function relatedOf(graph: ConceptGraph, topic: string): string[] {
   const result = new Set<string>();
-  for (const e of g.edges) {
-    if (UNDIRECTED_TYPES.includes(e.type)) {
-      if (e.from === topic) result.add(e.to);
-      else if (e.to === topic) result.add(e.from);
-    }
+  for (const e of graph.edges) {
+    if (!UNDIRECTED_TYPES.includes(e.type)) continue;
+    if (e.from === topic) result.add(e.to);
+    else if (e.to === topic) result.add(e.from);
   }
   return [...result];
 }
 
 /** 面试迁移目标：deep_dive / challenge 边声明的追问对象。 */
-export function interviewTargetsOf(g: ConceptGraph, topic: string, type: 'deep_dive' | 'challenge'): string[] {
-  return outgoing(g, topic, type).map((e) => e.to);
+export function interviewTargetsOf(
+  graph: ConceptGraph,
+  topic: string,
+  type: 'deep_dive' | 'challenge',
+): string[] {
+  return graph.edges.filter((e) => e.from === topic && e.type === type).map((e) => e.to);
 }
 
 /** 子概念（part_of 的子节点 + extends 的被扩展者），供 deep-dive 兜底。 */
-export function childrenOf(g: ConceptGraph, topic: string): string[] {
-  return [
-    ...incoming(g, topic, 'part_of').map((e) => e.from),
-    ...incoming(g, topic, 'extends').map((e) => e.from),
-  ];
+export function childrenOf(graph: ConceptGraph, topic: string): string[] {
+  return graph.edges
+    .filter((e) => e.to === topic && ['part_of', 'extends'].includes(e.type))
+    .map((e) => e.from);
 }
 
-export function nodeTypeOf(g: ConceptGraph, topic: string): NodeType | undefined {
-  return g.nodeTypes[topic];
+export function nodeTypeOf(graph: ConceptGraph, topic: string): NodeType | undefined {
+  return graph.nodeTypes[topic];
 }
 
 function isMastered(profile: LearnerProfile, topic: string): boolean {
@@ -151,7 +179,8 @@ export interface CoverageReport {
 }
 
 /** 知识覆盖面：按类目聚合练习/掌握比例；blocked 判定使用前置闭包（DAG 上溯）。 */
-export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile, g: ConceptGraph): CoverageReport {
+export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile, graph: ConceptGraph): CoverageReport {
+  void graph;
   const byCategory = new Map<string, TopicRef[]>();
   for (const t of topicRefs) {
     const arr = byCategory.get(t.category) ?? [];
@@ -176,7 +205,7 @@ export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile, 
   let blockedCount = 0;
   for (const t of topicRefs) {
     if (isAttempted(profile, t.topic)) continue;
-    const closure = prerequisiteClosure(g, t.topic);
+    const closure = prerequisiteClosure(graph, t.topic);
     if (closure.length === 0 || closure.every((p) => isMastered(profile, p))) {
       readyToLearn.push(t.topic);
     } else {
@@ -201,12 +230,12 @@ export interface TopicSuggestion {
 /**
  * 学习路径建议：
  * 1) 练过但薄弱的 topic（按掌握度升序）——"继续加强"；
- * 2) 前置闭包已掌握的未学 topic——"可以开始学"。
+ * 2) 前置闭包已掌握的未学 topic——"可以开始学"，按拓扑序（基础优先）排列。
  */
 export function suggestNextTopics(
   topicRefs: TopicRef[],
   profile: LearnerProfile,
-  g: ConceptGraph,
+  graph: ConceptGraph,
   limit = 5,
 ): TopicSuggestion[] {
   const suggestions: TopicSuggestion[] = [];
@@ -226,10 +255,10 @@ export function suggestNextTopics(
     const ready = topicRefs
       .filter((t) => !isAttempted(profile, t.topic))
       .filter((t) => {
-        const closure = prerequisiteClosure(g, t.topic);
+        const closure = prerequisiteClosure(graph, t.topic);
         return closure.length === 0 || closure.every((p) => isMastered(profile, p));
       })
-      .sort((a, b) => prerequisiteClosure(g, a.topic).length - prerequisiteClosure(g, b.topic).length);
+      .sort((a, b) => (topoRank.get(a.topic) ?? Infinity) - (topoRank.get(b.topic) ?? Infinity));
     for (const t of ready) {
       suggestions.push({ topic: t.topic, reason: '前置知识已具备，适合开始学习' });
     }
@@ -242,7 +271,7 @@ export function suggestNextTopics(
  * 把教练推荐的主题沿前置闭包展开：薄弱主题的全部未掌握前置都纳入抽题优先级，
  * 实现"先补地基再攻难点"。
  */
-export function expandWithPrerequisites(priorities: string[], profile: LearnerProfile, g: ConceptGraph): string[] {
+export function expandWithPrerequisites(priorities: string[], profile: LearnerProfile, graph: ConceptGraph): string[] {
   const result: string[] = [];
   const seen = new Set<string>();
   const queue = [...priorities];
@@ -251,7 +280,7 @@ export function expandWithPrerequisites(priorities: string[], profile: LearnerPr
     if (seen.has(topic)) continue;
     seen.add(topic);
     if (!isMastered(profile, topic)) result.push(topic);
-    queue.push(...prerequisiteClosure(g, topic).slice(0, 3));
+    queue.push(...prerequisiteClosure(graph, topic).slice(0, 3));
   }
   return result;
 }

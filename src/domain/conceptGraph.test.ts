@@ -6,6 +6,8 @@ import {
   computeCoverage,
   conceptGraph,
   expandWithPrerequisites,
+  nodeTypeOf,
+  prerequisiteClosure,
   prerequisitesOf,
   relatedOf,
   suggestNextTopics,
@@ -42,6 +44,19 @@ describe('conceptGraph', () => {
     expect(prerequisitesOf(conceptGraph, 'react')).toContain('agent-fundamentals');
     expect(relatedOf(conceptGraph, 'nonexistent-topic')).toEqual([]);
     expect(prerequisitesOf(conceptGraph, 'nonexistent-topic')).toEqual([]);
+  });
+
+  it('前置闭包：沿 DAG 传递上溯（tradeoff-planner ← react ← 基础）', () => {
+    const closure = prerequisiteClosure(conceptGraph, 'tradeoff-planner');
+    expect(closure).toContain('react'); // 直接前置
+    expect(closure).toContain('agent-fundamentals'); // 经 react 传递
+    expect(closure).not.toContain('tradeoff-planner'); // 不含自身
+  });
+
+  it('nodeTypeOf 返回节点的类型标注', () => {
+    expect(nodeTypeOf(conceptGraph, 'rag')).toBe('concept');
+    expect(nodeTypeOf(conceptGraph, 'llm-as-judge')).toBe('technique');
+    expect(nodeTypeOf(conceptGraph, 'unknown-x')).toBeUndefined();
   });
 
   it('collectTopicRefs 去重并保留首次出现的 category', () => {
