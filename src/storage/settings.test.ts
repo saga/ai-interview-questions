@@ -66,6 +66,7 @@ describe('loadConfig', () => {
     });
     expect(loadConfig()).toEqual({
       providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' }],
+      generateOpenQuestions: false,
     });
   });
 
@@ -77,7 +78,10 @@ describe('loadConfig', () => {
         { id: 'anthropic', enabled: false, model: 'claude-3-5-sonnet', apiKey: 'sk-b' },
       ],
     });
-    expect(loadConfig()).toEqual({ providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }] });
+    expect(loadConfig()).toEqual({
+      providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
+      generateOpenQuestions: false,
+    });
 
     store['ai-interview-trainer.config'] = JSON.stringify({
       providers: [{ id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x' }],
@@ -86,6 +90,7 @@ describe('loadConfig', () => {
       providers: [
         { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x', baseUrl: '' },
       ],
+      generateOpenQuestions: false,
     });
   });
 
@@ -113,6 +118,21 @@ describe('loadConfig', () => {
   });
 });
 
+describe('loadConfig（generateOpenQuestions）', () => {
+  it('字段缺省视为 false，显式 true 保留', () => {
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
+    });
+    expect(loadConfig().generateOpenQuestions).toBe(false);
+
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
+      generateOpenQuestions: true,
+    });
+    expect(loadConfig().generateOpenQuestions).toBe(true);
+  });
+});
+
 describe('saveConfig / loadConfig 往返', () => {
   it('保存后原样读回', () => {
     const c: AIConfig = {
@@ -120,6 +140,7 @@ describe('saveConfig / loadConfig 往返', () => {
         { id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' },
         { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
       ],
+      generateOpenQuestions: true,
     };
     saveConfig(c);
     expect(loadConfig()).toEqual(c);
@@ -128,7 +149,10 @@ describe('saveConfig / loadConfig 往返', () => {
 
 describe('stringifyConfig', () => {
   it('输出两空格缩进 JSON，且可被 parseConfigJSON 原样读回', () => {
-    const c: AIConfig = { providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }] };
+    const c: AIConfig = {
+      providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
+      generateOpenQuestions: true,
+    };
     const text = stringifyConfig(c);
     expect(text).toBe(JSON.stringify(c, null, 2));
     expect(parseConfigJSON(text)).toEqual({ ok: true, config: c });
@@ -149,8 +173,24 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
           { id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' },
           { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
         ],
+        generateOpenQuestions: false,
       },
     });
+  });
+
+  it('generateOpenQuestions：显式 true 保留，缺省/非法值视为 false', () => {
+    const base = { providers: [VALID_ENTRY] };
+    const on = parseConfigJSON(JSON.stringify({ ...base, generateOpenQuestions: true }));
+    expect(on).toEqual({
+      ok: true,
+      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true },
+    });
+    for (const bad of [undefined, 'yes', 1, null]) {
+      const raw = bad === undefined ? base : { ...base, generateOpenQuestions: bad };
+      const res = parseConfigJSON(JSON.stringify(raw));
+      expect(res.ok).toBe(true);
+      if (res.ok) expect(res.config.generateOpenQuestions).toBe(false);
+    }
   });
 
   it('停用的引擎允许配置不完整（保留其配置）', () => {
@@ -182,6 +222,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
             accountId: '023e105f',
           },
         ],
+        generateOpenQuestions: false,
       },
     });
     const bad = parseConfigJSON(JSON.stringify({ providers: [CF] }));

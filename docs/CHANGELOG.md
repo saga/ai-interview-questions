@@ -2,6 +2,19 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 新增全局配置 `generateOpenQuestions`（默认关闭，ADR-031）
+
+- **配置项**：`AIConfig` 新增布尔字段 `generateOpenQuestions`，默认 **false**——
+  不生成开放题；设置页 config.json 中改为 true 可恢复开放题（组卷配额 ≈30%）。
+- **门控收口**：interviewEngine 新增 `effectiveFormats` 单点实现——关闭时从允许
+  形态剔除 open：纯开放题不入池、双形态题一律出选择、自适应模式随机开放分配
+  恒为 choice；定义只选 open 时退化为 choice 而非空会话。
+- **清洗语义**：loadConfig / parseConfigJSON 对缺省或非法值一律按 false 处理，
+  历史 localStorage 配置无需迁移即获得新默认行为。
+- **文档**：SettingsPanel 提示文案与 docs/config.example.json 字段说明同步；
+  测试新增 settings 清洗用例与引擎门控用例（含自适应模式）。175 测试全过，
+  typecheck/build 通过。
+
 ## 2026-08-23 · 边界收紧：概念层级统一 + 图/学习状态分离 + mastery 语义修正（ADR-030）
 
 - **概念层级统一**：Knowledge（学习对象，一等公民）→ Question（知识点的

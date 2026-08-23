@@ -6,6 +6,7 @@ const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'ope
 
 export const DEFAULT_CONFIG: AIConfig = {
   providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '', baseUrl: '' }],
+  generateOpenQuestions: false,
 };
 
 /** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。
@@ -34,9 +35,11 @@ export function loadConfig(): AIConfig {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
+      // 历史存储无此字段：缺省视为关闭（与默认值一致，ADR-031）
+      const generateOpenQuestions = parsed.generateOpenQuestions === true;
       if (!Array.isArray(parsed.providers) && parsed.provider) {
         const entry = sanitizeEntry({ ...parsed, id: parsed.provider, enabled: true });
-        if (entry) return { providers: [entry] };
+        if (entry) return { providers: [entry], generateOpenQuestions };
       }
       if (Array.isArray(parsed.providers)) {
         const providers = parsed.providers
@@ -44,7 +47,7 @@ export function loadConfig(): AIConfig {
           .filter((e): e is ProviderEntry => e !== null)
           // 同一引擎只保留首个出现，避免降级链语义混乱
           .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i);
-        if (providers.length > 0) return { providers };
+        if (providers.length > 0) return { providers, generateOpenQuestions };
       }
     }
   } catch {
@@ -107,5 +110,6 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
   if (!entries.some((p) => p.enabled && isEntryValid(p))) {
     return { ok: false, error: '至少需要一个启用且配置完整的引擎' };
   }
-  return { ok: true, config: { providers: entries } };
+  // generateOpenQuestions 缺省/非法值一律视为 false（与默认值一致）
+  return { ok: true, config: { providers: entries, generateOpenQuestions: root.generateOpenQuestions === true } };
 }

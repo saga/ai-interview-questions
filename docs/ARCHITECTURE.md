@@ -60,7 +60,8 @@ components/
   progress/ProgressPage.tsx     掌握度条 + 趋势折线 + 需要关注 + 最近训练
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
   settings/SettingsPanel.tsx    AI 引擎设置（Monaco JSON 编辑器直接编辑 config.json：
-                                 providers 数组顺序即降级链优先级；保存时整体校验，
+                                 providers 数组顺序即降级链优先级；generateOpenQuestions
+                                 门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
@@ -323,9 +324,13 @@ Canonical Question ──→ LLM（只输出 question / explanation）
   吞成 stopReason='error'（callLLM 返回空文本，上层 parse 兜底）；空 apiKey 不能以
   complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
 - **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认降级链
-  `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }] }`；旧单选形态
-  （`{ provider, ... }`）由 loadConfig 自动迁移（key 不变，ADR-023）；
+  `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }], generateOpenQuestions: false }`；
+  旧单选形态（`{ provider, ... }`）由 loadConfig 自动迁移（key 不变，ADR-023）；
   示例配置见 `docs/config.example.json`。
+- **开放题生成门控（ADR-031）**：`AIConfig.generateOpenQuestions` 默认 false——
+  interviewEngine 的 `effectiveFormats` 从允许形态剔除 open（纯开放题不入池、
+  双形态题一律出选择、自适应随机开放分配恒为 choice），定义只选 open 时退化
+  为 choice 而非空会话；缺省/非法值按 false 清洗。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；
   Cloudflare 额外经 credential.env 注入 `CLOUDFLARE_ACCOUNT_ID`（其 auth 协议要求 Token + Account ID 双字段）。
 - **设置页 = config.json 编辑器（ADR-025/026）**：引擎为

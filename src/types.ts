@@ -227,6 +227,9 @@ export interface ProviderEntry {
  *  典型用法：chrome / local 等免费弱模型排前，云端强模型殿后兜底。 */
 export interface AIConfig {
   providers: ProviderEntry[];
+  /** 是否生成开放题（组卷配额与自适应模式的开放形态分配都受此门控，ADR-031）；
+   *  关闭时纯开放题不入池、双形态题一律出选择。默认 false。 */
+  generateOpenQuestions: boolean;
 }
 
 /** LLM Provider 抽象：应用只依赖此接口。实现各自持有绑定的 ProviderEntry，

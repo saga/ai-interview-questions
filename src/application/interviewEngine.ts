@@ -6,6 +6,7 @@ import type {
   AIConfig,
   AnswerValue,
   EvaluationResult,
+  FormatId,
   InterviewDefinition,
   InterviewSession,
   LearnerProfile,
@@ -23,6 +24,19 @@ import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/ad
 const ADAPTIVE_OPEN_PROBABILITY = 0.3;
 
 /**
+ * 本次会话实际允许的呈现形态（ADR-031）：config.generateOpenQuestions 关闭
+ * （含 config 未传）时剔除 open——纯开放题因此不入池，双形态题一律出选择。
+ * 返回值永远是具体的非空列表：定义未选形态视为不限（choice+open）；
+ * 定义只选了 open 而全局关闭时退化为 choice，避免出现空会话。
+ */
+function effectiveFormats(def: InterviewDefinition, config?: AIConfig): FormatId[] {
+  const base: FormatId[] = def.formats.length > 0 ? def.formats : ['choice', 'open'];
+  if (config?.generateOpenQuestions) return base;
+  const filtered = base.filter((f) => f !== 'open');
+  return filtered.length > 0 ? filtered : ['choice'];
+}
+
+/**
  * 由声明式 Definition 构建一次具体会话：
  * 先按 类别 / 难度 / 形态 过滤题池（题目保留任一允许形态即可），再组卷分配本次形态
  * （adaptive 模式只出第一题，后续由 nextAdaptiveStep 决定）；
@@ -33,14 +47,15 @@ export async function buildSession(
   def: InterviewDefinition,
   config?: AIConfig,
 ): Promise<InterviewSession> {
+  const formats = effectiveFormats(def, config);
   let pool = bank.questions;
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   // 形态过滤：题目具备至少一种允许形态即入池；完全无可用形态的题剔除
-  pool = pool.filter((q) => availableFormats(q, def.formats).length > 0);
+  pool = pool.filter((q) => availableFormats(q, formats).length > 0);
 
   const count = def.adaptive ? 1 : def.count;
-  const plan = planComposition(pool, count, def.topicPriorities, def.formats, Math.random);
+  const plan = planComposition(pool, count, def.topicPriorities, formats, Math.random);
   const provider = def.useAI ? createLLMProvider(config) : null;
   const questions = await Promise.all(plan.map((sq) => finalizeQuestion(sq, provider)));
   return { definition: def, questions, startedAt: Date.now() };
@@ -77,20 +92,22 @@ export async function nextAdaptiveStep(
   config?: AIConfig,
 ): Promise<{ question: SessionQuestion; strategy: Strategy } | null> {
   const def = session.definition;
+  const formats = effectiveFormats(def, config);
   let pool = bank.questions;
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
-  pool = pool.filter((q) => availableFormats(q, def.formats).length > 0);
+  pool = pool.filter((q) => availableFormats(q, formats).length > 0);
   const asked = new Set(session.questions.map((sq) => sq.question.id));
   pool = pool.filter((q) => !asked.has(q.id));
 
   const picked = pickNextAdaptive(pool, signals, profile);
   if (!picked || session.questions.length >= def.count) return null;
 
-  // 自适应模式无组卷配额：按开放形态概率随机分配（与普通会话的 7:3 体验一致）
-  const formats = availableFormats(picked.question, def.formats);
+  // 自适应模式无组卷配额：按开放形态概率随机分配（与普通会话的 7:3 体验一致）；
+  // generateOpenQuestions 关闭时 formats 不含 open，wantOpen 恒为 false
+  const avail = availableFormats(picked.question, formats);
   const wantOpen =
-    formats.includes('open') && (!formats.includes('choice') || Math.random() < ADAPTIVE_OPEN_PROBABILITY);
+    avail.includes('open') && (!avail.includes('choice') || Math.random() < ADAPTIVE_OPEN_PROBABILITY);
   const target: SessionQuestion = { question: picked.question, format: wantOpen ? 'open' : 'choice' };
 
   const provider = def.useAI ? createLLMProvider(config) : null;

@@ -38,7 +38,7 @@ vi.mock('../ai/provider', () => ({
       : null,
 }));
 
-const { buildSession, evaluateAnswer, evaluateSession } = await import('./interviewEngine');
+const { buildSession, evaluateAnswer, evaluateSession, nextAdaptiveStep } = await import('./interviewEngine');
 
 const openQ: Question = {
   id: 'o1',
@@ -75,17 +75,20 @@ function def(useAI: boolean, formats: InterviewDefinition['formats'] = ['open'])
 }
 
 describe('evaluateAnswer 的 useAI 门控（ADR-020）', () => {
-  const config = { providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }] } as const;
+  const config = {
+    providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
+    generateOpenQuestions: true,
+  } as const;
   const sq = { question: openQ, format: 'open' as const };
 
   it('useAI=false 时开放形态不调用 LLM，返回 null', async () => {
-    const g = await evaluateAnswer(sq, '我的回答', def(false), { providers: [...config.providers] });
+    const g = await evaluateAnswer(sq, '我的回答', def(false), { ...config });
     expect(g).toBeNull();
     expect(evaluateOpenAnswer).not.toHaveBeenCalled();
   });
 
   it('useAI=true 且配置有效时走 LLM 评分', async () => {
-    const g = await evaluateAnswer(sq, '我的回答', def(true), { providers: [...config.providers] });
+    const g = await evaluateAnswer(sq, '我的回答', def(true), { ...config });
     expect(g).toEqual(sentinel);
     expect(evaluateOpenAnswer).toHaveBeenCalledTimes(1);
     expect(evaluateOpenAnswer).toHaveBeenCalledWith(openQ, openQ.formats.open, '我的回答', expect.anything(), undefined);
@@ -132,7 +135,10 @@ describe('buildSession 组卷与变体处理', () => {
   // 题池两种形态都有，planComposition 才会做配比调整（domain/quiz.ts）；
   // count=4 → 开放配额 1：唯一纯开放题 o1 恰好占满配额，四道题全部保留。
   const bank = { categories: ['agentic-ai'], questions: [openQ, choiceQ, dualQ('d1'), dualQ('d2')] };
-  const cfg = { providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }] };
+  const cfg = {
+    providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
+    generateOpenQuestions: true,
+  };
 
   it('按 def.formats 过滤题池：只允许 choice 时纯开放题不入卷', async () => {
     const session = await buildSession(bank, { ...def(true, ['choice']), count: 4 }, cfg);
@@ -190,5 +196,62 @@ describe('buildSession 组卷与变体处理', () => {
     expect(grades.d1?.overall).toBe(0); // 多选只选一个 → 错
     expect(grades.d2?.overall).toBe(0); // 错选
     expect(grades.o1).toEqual(sentinel);
+  });
+});
+
+describe('generateOpenQuestions 门控（ADR-031）', () => {
+  const baseCfg = { providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }] };
+  const dualBank = { categories: [], questions: [dualQ('d1'), dualQ('d2'), { ...openQ }] };
+
+  it('关闭（默认）时不生成开放题：纯开放题不入卷，双形态题一律出选择', async () => {
+    const session = await buildSession(dualBank, { ...def(true, ['choice', 'open']), count: 3 }, baseCfg);
+    expect(session.questions.map((sq) => sq.question.id)).not.toContain('o1');
+    expect(session.questions).toHaveLength(2); // 纯开放题被剔除
+    expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
+  });
+
+  it('config 未传同样视为关闭（默认值 false）', async () => {
+    const session = await buildSession(dualBank, { ...def(true, []), count: 3 });
+    expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
+  });
+
+  it('定义只选了 open 而全局关闭时退化为 choice（不产生空会话）', async () => {
+    const session = await buildSession(dualBank, { ...def(true, ['open']), count: 3 }, baseCfg);
+    expect(session.questions.length).toBeGreaterThan(0);
+    expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
+  });
+
+  it('开启时恢复组卷配额：纯开放题入卷并占满开放配额', async () => {
+    const bank = { categories: [], questions: [dualQ('d1'), dualQ('d2'), { ...openQ }, { ...choiceQ }] };
+    const session = await buildSession(bank, { ...def(true, ['choice', 'open']), count: 4 }, {
+      ...baseCfg,
+      generateOpenQuestions: true,
+    });
+    expect(session.questions).toHaveLength(4);
+    expect(session.questions.find((sq) => sq.question.id === 'o1')?.format).toBe('open');
+  });
+
+  it('自适应模式：关闭时下一步不出开放形态', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0); // 开着也必然命中开放，这里验证门控优先
+    const bank = { categories: [], questions: [dualQ('d1'), dualQ('d2')] };
+    const first = await buildSession(bank, { ...def(true, ['choice', 'open']), count: 2, adaptive: true }, baseCfg);
+    const step = await nextAdaptiveStep(bank, first, []);
+    expect(step).not.toBeNull();
+    expect(step!.question.format).toBe('choice');
+    randomSpy.mockRestore();
+  });
+
+  it('自适应模式：开启且随机命中时分配开放形态', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.01);
+    const bank = { categories: [], questions: [dualQ('d1'), dualQ('d2')] };
+    const first = await buildSession(
+      bank,
+      { ...def(true, ['choice', 'open']), count: 2, adaptive: true },
+      { ...baseCfg, generateOpenQuestions: true },
+    );
+    const step = await nextAdaptiveStep(bank, first, [], undefined, { ...baseCfg, generateOpenQuestions: true });
+    expect(step).not.toBeNull();
+    expect(step!.question.format).toBe('open');
+    randomSpy.mockRestore();
   });
 });

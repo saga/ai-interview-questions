@@ -79,6 +79,8 @@ export default function SettingsPanel({ config, onSave }: Props) {
                 <code>cloudflare-workers-ai</code> —— Cloudflare Workers AI，需 API Token + Account ID。
               </li>
             </ul>
+            布尔字段 <code>generateOpenQuestions</code> 控制是否生成开放题（默认 false：纯开放题不入卷，
+            双形态题一律出选择；改为 true 恢复开放题）。
             配置仅保存在本机浏览器（localStorage），不会上传；但浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。
           </>
         }
