@@ -2,11 +2,11 @@ import { Card, Typography, Button, Tag, Space, Alert } from 'antd';
 import { CommentOutlined, PlayCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import type { InterviewDefinition, LearnerProfile } from '../../types';
 import { isConfigValid } from '../../ai/provider';
-import type { PiConfig } from '../../types';
+import type { AIConfig } from '../../types';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 
 interface Props {
-  config: PiConfig;
+  config: AIConfig;
   profile: LearnerProfile;
   onStart: (def: InterviewDefinition) => void;
   onGoSettings: () => void;

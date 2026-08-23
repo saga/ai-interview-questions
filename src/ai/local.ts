@@ -6,7 +6,7 @@ import { createProvider } from '@earendil-works/pi-ai';
 import type { Provider } from '@earendil-works/pi-ai';
 import type { Model } from '@earendil-works/pi-ai';
 import { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy';
-import type { PiConfig } from '../types';
+import type { ProviderEntry } from '../types';
 
 export const DEFAULT_LOCAL_BASE_URL = 'http://127.0.0.1:8888/v1';
 
@@ -21,7 +21,7 @@ export function normalizeBaseUrl(raw?: string): string {
  * compat 关闭 developer role 与 reasoning_effort——多数本地推理服务器
  * （Unsloth / Ollama / vLLM / llama.cpp）不认这些字段（见 pi models 文档）。
  */
-export function buildLocalProvider(config: PiConfig): Provider<'openai-completions'> {
+export function buildLocalProvider(config: ProviderEntry): Provider<'openai-completions'> {
   const baseUrl = normalizeBaseUrl(config.baseUrl);
   const model: Model<'openai-completions'> = {
     id: config.model,

@@ -12,8 +12,7 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（四页：训练 / 进�
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
-- 多服务商 OpenAI / Anthropic / OpenRouter，密钥仅存浏览器 `localStorage`（「设置」页配置）
-
+- 多引擎降级链：Chrome 内置模型 / 本地 Unsloth / 云端服务商可同时启用并排定优先级，失败自动降级到下一个（ADR-023）；密钥仅存浏览器 `localStorage`（「设置」页配置）
 ## 常用命令
 
 ```bash
@@ -33,7 +32,7 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
 
 ## 配置 LLM（可选但推荐）
 
-进入「设置」页 → 选服务商（**OpenRouter** 对浏览器直连最友好）→ 选/填模型 ID → 填 API Key（仅存本机 `localStorage`）。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
+进入「设置」页 → 「添加引擎」（**OpenRouter** 对浏览器直连最友好）→ 选/填模型 ID → 填 API Key（仅存本机 `localStorage`）。可添加多个引擎并用卡片上的箭头排定优先级：调用时从上到下依次尝试，失败自动切换到下一个——推荐把免费的本地引擎（Chrome 内置 / Unsloth）放前面，云端强模型殿后兜底。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
 
 > **local-first 隐私架构，但浏览器侧密钥并非安全机密**：密钥不上传任何服务器，但受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。浏览器直连受 CORS 限制，OpenAI/Anthropic 直连失败优先换 OpenRouter 或配代理。未配密钥也能用题库原题（开放题不评分）。
 

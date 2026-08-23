@@ -21,7 +21,7 @@ import {
   HistoryOutlined,
 } from '@ant-design/icons';
 import type { Difficulty, InterviewDefinition, LearnerProfile, QuestionType } from '../../types';
-import type { PiConfig } from '../../types';
+import type { AIConfig } from '../../types';
 import { isConfigValid } from '../../ai/provider';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 import { categoryLabel } from '../../domain/categories';
@@ -41,7 +41,7 @@ const DIFF_OPTIONS: { label: string; value: Difficulty }[] = [
 
 interface Props {
   categories: string[];
-  config: PiConfig;
+  config: AIConfig;
   profile: LearnerProfile;
   onStart: (def: InterviewDefinition) => void;
   onGoSettings: () => void;

@@ -126,29 +126,37 @@ export interface InterviewSession {
   startedAt: number;
 }
 
-/** LLM Provider 抽象：应用只依赖此接口，pi-ai 仅是其中一种实现。 */
+/** 单个引擎通道的连接配置——AI 引擎降级链中的一环（ADR-023）。 */
+export interface ProviderEntry {
+  id: ProviderId;
+  /** 关闭的引擎不参与降级链，但保留其配置 */
+  enabled: boolean;
+  /** id='chrome' 时无意义，存空字符串即可（校验按引擎区分） */
+  model: string;
+  /** 云端必填；local 可选；chrome 不适用 */
+  apiKey: string;
+  /** 仅 id='local' 使用：OpenAI 兼容服务地址（默认 Unsloth：127.0.0.1:8888/v1） */
+  baseUrl?: string;
+}
+
+/** AI 引擎配置（浏览器内使用，存于 localStorage）。
+ *  providers 是有序降级链：调用时按顺序尝试，失败自动切换到下一个（ADR-023）。
+ *  典型用法：chrome / local 等免费弱模型排前，云端强模型殿后兜底。 */
+export interface AIConfig {
+  providers: ProviderEntry[];
+}
+
+/** LLM Provider 抽象：应用只依赖此接口。实现各自持有绑定的 ProviderEntry，
+ *  多引擎组合与降级由 FallbackProvider 统一编排（见 ai/provider.ts）。 */
 export interface LLMProvider {
   readonly name: string;
-  generateVariant(question: Question, config: PiConfig): Promise<GeneratedVariant>;
+  generateVariant(question: Question): Promise<GeneratedVariant>;
   evaluateOpenAnswer(
     question: OpenQuestion,
     userAnswer: string,
-    config: PiConfig,
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult>;
-}
-
-/** LLM 连接配置（浏览器内使用，存于 localStorage）。
- *  provider='chrome' 时 model/apiKey 无意义，存空字符串即可（校验按 provider 区分）。
- *  provider='local' 时 baseUrl 指向 OpenAI 兼容服务（默认 Unsloth：127.0.0.1:8888/v1），
- *  apiKey 可选；其余字段向后兼容，旧数据缺 baseUrl 由 loadConfig 兜底。 */
-export interface PiConfig {
-  provider: ProviderId;
-  model: string;
-  apiKey: string;
-  /** 仅 provider='local' 使用：OpenAI 兼容服务地址 */
-  baseUrl?: string;
 }
 
 /**

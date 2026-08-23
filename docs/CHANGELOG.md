@@ -2,6 +2,23 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 多引擎降级链：单选 provider 改为 AIConfig.providers（ADR-023）
+
+- **配置形态**：`PiConfig` 更名 `AIConfig`，`{ provider, model, apiKey, baseUrl? }`
+  → `{ providers: ProviderEntry[] }`（每项 `{ id, enabled, model, apiKey, baseUrl? }`），
+  数组顺序即优先级。弱模型（chrome 内置 / 本地 Unsloth）可与云端强模型同时启用。
+- **降级语义（FallbackProvider）**：调用按顺序尝试，失败/不可用自动切换下一引擎，
+  全部失败才抛错（上层 catch 兜底退化为原题/不评分）。chrome 不可用、本地服务未启动、
+  云端限流等场景都自然落入此机制。
+- **接口瘦身**：`LLMProvider.generateVariant/evaluateOpenAnswer` 去掉 config 参数，
+  实现类构造时绑定 `ProviderEntry`；多引擎编排收口到 `createLLMProvider` 工厂，
+  interviewEngine 不再逐层透传 config。校验拆为 `isEntryValid` + `isConfigValid`。
+- **存储迁移**：localStorage key 不变；loadConfig 把旧单选形态迁移为单元素链，
+  新形态逐项清洗（id 白名单 / 去重 / 字段兜底）。默认配置 DeepSeek 单通道不变。
+- **设置页重做**：多卡片列表（启用开关 + 条件字段 + 排序/增删），卡片顺序即降级顺序；
+  顶部说明降级链语义。`docs/config.example.json` 同步为新形态。
+- 测试 123 例全过（+18：降级链语义、配置清洗与旧形态迁移）；typecheck/build 通过。
+
 ## 2026-08-23 · 本地 OpenAI 兼容服务支持（Unsloth 默认）+ 实现收敛为两套 + 默认引擎改 DeepSeek
 
 - **local 引擎（ADR-022）**：`ProviderId` 增加 `'local'`（OpenAI 兼容协议，默认

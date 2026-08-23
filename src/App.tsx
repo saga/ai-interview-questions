@@ -14,7 +14,7 @@ import type {
   InterviewDefinition,
   InterviewSession,
   LearnerProfile,
-  PiConfig,
+  AIConfig,
   Question,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
@@ -58,7 +58,7 @@ function fmt(sec: number): string {
 
 export default function App() {
   const { message } = AntdApp.useApp();
-  const [config, setConfig] = useState<PiConfig>(() => loadConfig());
+  const [config, setConfig] = useState<AIConfig>(() => loadConfig());
   const [profile, setProfile] = useState<LearnerProfile>(() => loadLearner());
   const [page, setPage] = useState<Page>('train');
   const [phase, setPhase] = useState<Phase>('home');
@@ -93,7 +93,7 @@ export default function App() {
     [questions, answers],
   );
 
-  const handleSaveConfig = (c: PiConfig) => {
+  const handleSaveConfig = (c: AIConfig) => {
     setConfig(c);
     saveConfig(c);
     message.success('设置已保存');

@@ -8,7 +8,8 @@ const sentinel = { overall: 88, dimensions: { correctness: 88, completeness: 88,
 const evaluateOpenAnswer = vi.fn(async () => sentinel);
 
 vi.mock('../ai/provider', () => ({
-  createLLMProvider: () => ({ name: 'mock', generateVariant: vi.fn(), evaluateOpenAnswer }),
+  createLLMProvider: (config?: unknown) =>
+    config ? { name: 'mock', generateVariant: vi.fn(), evaluateOpenAnswer } : null,
 }));
 
 const { evaluateAnswer } = await import('./interviewEngine');
@@ -31,18 +32,16 @@ function def(useAI: boolean): InterviewDefinition {
 }
 
 describe('evaluateAnswer 的 useAI 门控（ADR-020）', () => {
+  const config = { providers: [{ id: 'openrouter', enabled: true, model: 'm', apiKey: 'k', baseUrl: '' }] } as const;
+
   it('useAI=false 时开放题不调用 LLM，返回 null', async () => {
-    const g = await evaluateAnswer(openQ, '我的回答', def(false), {
-      provider: 'openrouter', model: 'm', apiKey: 'k',
-    });
+    const g = await evaluateAnswer(openQ, '我的回答', def(false), { providers: [...config.providers] });
     expect(g).toBeNull();
     expect(evaluateOpenAnswer).not.toHaveBeenCalled();
   });
 
   it('useAI=true 且配置有效时走 LLM 评分', async () => {
-    const g = await evaluateAnswer(openQ, '我的回答', def(true), {
-      provider: 'openrouter', model: 'm', apiKey: 'k',
-    });
+    const g = await evaluateAnswer(openQ, '我的回答', def(true), { providers: [...config.providers] });
     expect(g).toEqual(sentinel);
     expect(evaluateOpenAnswer).toHaveBeenCalledTimes(1);
   });

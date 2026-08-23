@@ -1,10 +1,18 @@
-// 纯逻辑测试：题目级 rubric 与全局 rubric 的合并 + 工厂分派 + 配置校验。
+// 纯逻辑测试：题目级 rubric 与全局 rubric 的合并 + 多引擎降级链 + 配置校验。
 // ADR-013 / ARCHITECTURE「评分 Rubric」：required 注入提示词，dimensions 覆盖全局权重。
-// ADR-021：provider==='chrome' 时无需 apiKey/model，工厂分派到 ChromeAIProvider。
+// ADR-023：多引擎降级链——按配置顺序尝试，失败自动切换下一个。
 
-import { describe, expect, it } from 'vitest';
-import { ChromeAIProvider, PiAIProvider, createLLMProvider, isConfigValid, mergeQuestionRubric } from './provider';
-import type { OpenQuestion, PiConfig, ScoringRubric } from '../types';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  ChromeAIProvider,
+  FallbackProvider,
+  PiAIProvider,
+  createLLMProvider,
+  isConfigValid,
+  isEntryValid,
+  mergeQuestionRubric,
+} from './provider';
+import type { AIConfig, LLMProvider, OpenQuestion, ProviderEntry, ScoringRubric } from '../types';
 
 const GLOBAL: ScoringRubric = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };
 
@@ -23,6 +31,10 @@ function q(rubric?: OpenQuestion['rubric']): OpenQuestion {
   };
 }
 
+function entry(partial: Partial<ProviderEntry>): ProviderEntry {
+  return { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '', ...partial };
+}
+
 describe('mergeQuestionRubric', () => {
   it('无题目级 rubric 时原样返回全局权重', () => {
     expect(mergeQuestionRubric(q(), GLOBAL)).toEqual({ rubric: GLOBAL, requiredPoints: undefined });
@@ -39,52 +51,151 @@ describe('mergeQuestionRubric', () => {
   });
 });
 
-describe('isConfigValid', () => {
+describe('isEntryValid（按引擎区分校验）', () => {
   it('chrome 引擎无需 apiKey/model 即有效', () => {
-    expect(isConfigValid({ provider: 'chrome', model: '', apiKey: '' })).toBe(true);
+    expect(isEntryValid(entry({ id: 'chrome', model: '', apiKey: '' }))).toBe(true);
+  });
+
+  it('local 只要求 model id，apiKey 可选', () => {
+    expect(isEntryValid(entry({ id: 'local', model: '', apiKey: '' }))).toBe(false);
+    expect(isEntryValid(entry({ id: 'local', model: 'unsloth/Qwen3-8B', apiKey: '' }))).toBe(true);
   });
 
   it('云端引擎必须有 apiKey 与 model', () => {
-    expect(isConfigValid({ provider: 'openrouter', model: 'openai/gpt-4o-mini', apiKey: '' })).toBe(false);
-    expect(isConfigValid({ provider: 'openrouter', model: '', apiKey: 'sk-x' })).toBe(false);
-    expect(isConfigValid({ provider: 'openrouter', model: 'openai/gpt-4o-mini', apiKey: 'sk-x' })).toBe(true);
+    expect(isEntryValid({ id: 'openrouter', enabled: true, model: 'openai/gpt-4o-mini', apiKey: '' })).toBe(false);
+    expect(isEntryValid({ id: 'openrouter', enabled: true, model: '', apiKey: 'sk-x' })).toBe(false);
+    expect(isEntryValid({ id: 'openrouter', enabled: true, model: 'openai/gpt-4o-mini', apiKey: 'sk-x' })).toBe(true);
   });
 
-  it('缺配置对象或 provider 时无效', () => {
-    expect(isConfigValid(undefined as unknown as PiConfig)).toBe(false);
-    expect(isConfigValid({ provider: '' , model: '', apiKey: '' } as unknown as PiConfig)).toBe(false);
+  it('缺 id 或整个对象时无效', () => {
+    expect(isEntryValid(undefined as unknown as ProviderEntry)).toBe(false);
+    expect(isEntryValid(entry({ id: '' as ProviderEntry['id'] }))).toBe(false);
   });
 });
 
-describe('createLLMProvider', () => {
-  it('chrome 配置分派到 ChromeAIProvider', () => {
-    const p = createLLMProvider({ provider: 'chrome', model: '', apiKey: '' });
+describe('isConfigValid（至少一个启用且合法的引擎）', () => {
+  it('空链/全停用/全非法 → 无效', () => {
+    expect(isConfigValid({ providers: [] })).toBe(false);
+    expect(isConfigValid({ providers: [entry({ enabled: false })] })).toBe(false);
+    expect(isConfigValid(undefined)).toBe(false);
+  });
+
+  it('存在启用且合法的引擎即有效（其余可停用）', () => {
+    expect(
+      isConfigValid({
+        providers: [entry({ enabled: false }), entry({ id: 'chrome', model: '', apiKey: '' })],
+      }),
+    ).toBe(true);
+  });
+});
+
+describe('createLLMProvider（工厂分派）', () => {
+  it('单 chrome 引擎直接返回 ChromeAIProvider', () => {
+    const p = createLLMProvider({ providers: [entry({ id: 'chrome', model: '', apiKey: '' })] });
     expect(p).toBeInstanceOf(ChromeAIProvider);
     expect(p?.name).toBe('chrome');
   });
 
-  it('云端配置分派到 PiAIProvider', () => {
-    const p = createLLMProvider({ provider: 'openrouter', model: 'openai/gpt-4o-mini', apiKey: 'sk-x' });
+  it('单云端引擎直接返回 PiAIProvider，name 携带引擎 id', () => {
+    const p = createLLMProvider({ providers: [{ id: 'openrouter', enabled: true, model: 'openai/gpt-4o-mini', apiKey: 'sk-x' }] });
     expect(p).toBeInstanceOf(PiAIProvider);
-    expect(p?.name).toBe('pi-ai');
+    expect(p?.name).toBe('pi-ai(openrouter)');
   });
 
   it('本地 OpenAI 兼容服务也走 PiAIProvider（buildModels 内部路由，ADR-022）', () => {
-    const p = createLLMProvider({ provider: 'local', model: 'unsloth/Qwen3-8B', apiKey: '' });
+    const p = createLLMProvider({ providers: [entry({ id: 'local', model: 'unsloth/Qwen3-8B' })] });
     expect(p).toBeInstanceOf(PiAIProvider);
-    expect(p?.name).toBe('pi-ai');
+  });
+
+  it('多引擎返回降级链，只包含启用且合法的通道', () => {
+    const p = createLLMProvider({
+      providers: [
+        entry({ id: 'chrome', model: '', apiKey: '' }),
+        entry({ id: 'openrouter', model: 'openai/gpt-4o-mini', apiKey: 'sk-x' }),
+        entry({ enabled: false }), // 停用，不进链
+        entry({ id: 'local', model: '' }), // 非法，被剔除
+      ],
+    });
+    expect(p).toBeInstanceOf(FallbackProvider);
+    expect(p?.name).toBe('chrome → pi-ai(openrouter)');
   });
 
   it('无效配置返回 null（上层退化为原题/不评分）', () => {
-    expect(createLLMProvider({ provider: 'openai', model: '', apiKey: '' })).toBeNull();
+    expect(createLLMProvider({ providers: [] })).toBeNull();
     expect(createLLMProvider(undefined)).toBeNull();
   });
+});
 
-  it('ChromeAIProvider.evaluateOpenAnswer 复用同一套评分编排（走注入的 chromeComplete）', async () => {
-    // 不 mock 底层：空回答短路路径不触达 LLM，验证签名/合并逻辑接线正确
+describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
+  function fake(name: string, impl: () => Promise<unknown>): LLMProvider {
+    return {
+      name,
+      generateVariant: impl as LLMProvider['generateVariant'],
+      evaluateOpenAnswer: impl as LLMProvider['evaluateOpenAnswer'],
+    };
+  }
+
+  it('首个成功时不触达后续引擎', async () => {
+    const second = vi.fn(async () => 'second');
+    const chain = new FallbackProvider([fake('a', async () => 'first'), fake('b', second)]);
+    await expect(chain.generateVariant(q())).resolves.toBe('first');
+    expect(second).not.toHaveBeenCalled();
+  });
+
+  it('失败按顺序降级，最终返回首个成功结果', async () => {
+    const chain = new FallbackProvider([
+      fake('a', async () => {
+        throw new Error('boom-a');
+      }),
+      fake('b', async () => {
+        throw new Error('boom-b');
+      }),
+      fake('c', async () => 'ok'),
+    ]);
+    await expect(chain.generateVariant(q())).resolves.toBe('ok');
+    expect(chain.name).toBe('a → b → c');
+  });
+
+  it('全部失败时抛出最后一个错误（不吞异常）', async () => {
+    const chain = new FallbackProvider([
+      fake('a', async () => {
+        throw new Error('boom-a');
+      }),
+      fake('b', async () => {
+        throw new Error('boom-b');
+      }),
+    ]);
+    await expect(chain.evaluateOpenAnswer(q(), 'ans', GLOBAL)).rejects.toThrow('boom-b');
+  });
+
+  it('空链调用抛错', async () => {
+    const chain = new FallbackProvider([]);
+    await expect(chain.generateVariant(q())).rejects.toThrow('所有已启用的 AI 引擎均不可用');
+  });
+
+  it('evaluateOpenAnswer 同样享受降级语义', async () => {
+    const chain = new FallbackProvider([
+      fake('a', async () => {
+        throw new Error('down');
+      }),
+      fake('b', async () => ({ overall: 90 })),
+    ]);
+    await expect(chain.evaluateOpenAnswer(q(), 'ans', GLOBAL)).resolves.toEqual({ overall: 90 });
+  });
+});
+
+describe('ChromeAIProvider（走注入的 chromeComplete，签名接线正确）', () => {
+  it('evaluateOpenAnswer 复用同一套评分编排；未作答短路不触达 LLM', async () => {
     const p = new ChromeAIProvider();
-    const result = await p.evaluateOpenAnswer(q(), '', { provider: 'chrome', model: '', apiKey: '' }, GLOBAL);
+    const result = await p.evaluateOpenAnswer(q(), '', GLOBAL);
     expect(result.overall).toBe(0);
     expect(result.feedback).toBe('未作答。');
+  });
+});
+
+describe('config 形状类型守卫', () => {
+  it('AIConfig 由 providers 数组构成', () => {
+    const c: AIConfig = { providers: [entry({})] };
+    expect(Array.isArray(c.providers)).toBe(true);
   });
 });

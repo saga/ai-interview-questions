@@ -2,6 +2,34 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-023 · 多引擎降级链（AIConfig.providers 取代单选 provider）
+
+- 状态：已采纳 · 2026-08-23
+- 背景：原配置是全局单选（`PiConfig.provider` 单枚举值 + 设置页单 Select），
+  所有 LLM 任务共用一个引擎。但 chrome 内置模型 / 本地 Unsloth 能力较弱，
+  用户实际想"弱模型优先、失败自动落到云端强模型"——单选形态表达不了这种协作。
+- 决策：
+  - **配置改为有序降级链**：`PiConfig` 更名 `AIConfig`，结构变为
+    `{ providers: ProviderEntry[] }`；每个 `ProviderEntry = { id, enabled, model, apiKey, baseUrl? }`。
+    调用时按数组顺序尝试，某引擎调用失败/不可用自动切换到下一个（`FallbackProvider`），
+    全部失败才向外抛错（由上层现有 catch 兜底退化为原题/不评分）。典型排布：
+    chrome → local → 云端。
+  - **LLMProvider 接口瘦身**：去掉 `config` 参数——各实现类在构造时绑定自己的
+    `ProviderEntry`，多引擎编排收口到 `createLLMProvider` 工厂（单通道直接返回实现，
+    多通道返回 FallbackProvider），interviewEngine 不再向每次调用透传 config。
+  - **localStorage key 不变**（`ai-interview-trainer.config`，用户数据契约），
+    `loadConfig` 内做旧单选形态迁移：`{provider,...}` → 单元素链；
+    新形态逐项清洗（id 白名单、去重保首个、字段兜底）。
+  - 校验拆两层：`isEntryValid`（单通道按引擎区分）与 `isConfigValid`
+    （至少一个启用且合法的通道）。
+  - 设置页改为多卡片列表：每引擎一张卡（启用开关 + 条件字段 + 上移/下移/删除），
+    卡片顺序即降级顺序。
+- 理由：降级链把"省 token 的本地优先"与"云端兜底保证可用性"统一成一个机制，
+  不需要任务级路由的复杂度；接口瘦身后 LLMProvider 与配置解耦，未来加任务级分派
+  只需在工厂层扩展。
+- 验证：测试 123 例全过（+18：isEntryValid/isConfigValid 拆分、FallbackProvider
+  成功短路/逐级降级/全败抛错/空链、loadConfig 迁移清洗往返）；typecheck/build 通过。
+
 ## ADR-022 · 本地 OpenAI 兼容服务支持（复用 pi-ai createProvider）+ 实现收敛为两套
 
 - 状态：已采纳 · 2026-08-23

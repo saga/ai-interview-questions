@@ -19,14 +19,16 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
   learner.ts     Learner Memory：updateLearner / sessionFromQuiz / recommendWeakTopics
                  / buildCoachDefinition / recommendationText（Training Coach 数据核心）
 
-ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI）
+ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI；
+               多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
    pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON；local 在此路由到
                      createProvider 注册的自定义 provider，ADR-022）
    chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
    variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
    evaluate.ts       开放题评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
-   provider.ts       LLMProvider 工厂 + isConfigValid + ChromeAIProvider / PiAIProvider
+   provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
+                     + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
 
 storage/       本地持久化
   settings.ts    LLM 配置（localStorage）
@@ -48,8 +50,8 @@ components/
   result/ResultPanel.tsx        成绩 + 对比上次 + 强弱项 + AI 建议 + 继续训练
   progress/ProgressPage.tsx     掌握度条 + 趋势折线 + 需要关注 + 最近训练
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
-  settings/SettingsPanel.tsx    AI 引擎设置（本地 Chrome AI / 云端 provider + model + API Key，
-                                 chrome 时隐藏密钥项并展示模型可用性）
+   settings/SettingsPanel.tsx    AI 引擎设置（多引擎降级链：每引擎一卡——启用开关 + 条件字段，
+                                 卡片顺序即优先级；chrome 卡展示模型可用性，ADR-023）
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
                        slug 类目 + topic/tags/reference + 可选 rubric；237 题，
@@ -137,29 +139,36 @@ InterviewDefinition  (声明式：categories / difficulties / questionTypes
 - 题目级 `rubric.required` 会注入评分提示、`rubric.dimensions` 覆盖全局权重
   （合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
 
-## LLM 能力边界（ADR-019 / ADR-021）
+## LLM 能力边界（ADR-019 / ADR-021 / ADR-023）
 
 一句话：**Domain 决策是核心，LLM 只是插件；pi-agent-core 只在"需要连续对话"的场景回归。**
 
 ```
-Quiz / 训练流程 ──→ LLMProvider（工厂按配置分派，实现仅两套）
-                      ├── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
-                      └── PiAIProvider     → ai/pi.ts（pi-ai one-shot，统一入口）
-                            ├── 云端：openai / anthropic / openrouter / deepseek
-                            ├── 本地 OpenAI 兼容服务（ADR-022）：buildModels 路由到
-                            │   ai/local.ts 的 createProvider 注册（默认 Unsloth 8888/v1）
-                            ├── ai/variant.ts    变体 = 只重写题干
-                            └── ai/evaluate.ts   开放题评分 = 四维 dimensions
-                                  ↓ overall 由 domain/aggregateOverall 计算
+Quiz / 训练流程 ──→ createLLMProvider(AIConfig)：启用且合法的引擎按配置顺序串成链（ADR-023）
+                       │   单通道 → 直接返回实现；多通道 → FallbackProvider
+                       │   （调用失败/引擎不可用自动切换下一引擎，全败才抛错由上层兜底）
+                       ├── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
+                       └── PiAIProvider(entry) → ai/pi.ts（pi-ai one-shot，统一入口）
+                             ├── 云端：openai / anthropic / openrouter / deepseek
+                             ├── 本地 OpenAI 兼容服务（ADR-022）：buildModels 路由到
+                             │   ai/local.ts 的 createProvider 注册（默认 Unsloth 8888/v1）
+                             ├── ai/variant.ts    变体 = 只重写题干
+                             └── ai/evaluate.ts   开放题评分 = 四维 dimensions
+                                   ↓ overall 由 domain/aggregateOverall 计算
 对话式模拟面试   ──→ （未来）pi-agent-core，仅此场景引入 Agent
 ```
 
 - 当前所有 LLM 调用都是 one-shot 结构化生成，无状态、无事件流；`interviewAgent.ts` 与 pi-agent-core 依赖已删除。
 - **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
   pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
-  `provider==='chrome'` 时无需 apiKey/model（isConfigValid 按引擎区分）；运行时模型不可用会抛错，
-  由 interviewEngine 现有 catch 兜底降级（原题 / 不评分），不做 polyfill。
-  设置页用 `chromeAvailability()` 展示本地模型状态（available/downloadable/downloading/unavailable）。
+  chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，
+  在降级链中表现为"切换到下一引擎"，链尾才由 interviewEngine 现有 catch 兜底
+  （原题 / 不评分），不做 polyfill。设置页用 `chromeAvailability()` 展示本地模型状态
+  （available/downloadable/downloading/unavailable）。
+- **多引擎降级链（ADR-023）**：`AIConfig.providers` 是有序数组，典型排布
+  chrome → local → 云端强模型——免费本地模型优先，失败自动落到云端兜底。
+  LLMProvider 接口不携带 config：实现类构造时绑定自己的 ProviderEntry，
+  interviewEngine 只向工厂传一次 AIConfig。
 - 回归条件：真正实现"面试官追问 → 候选人回答 → 继续追问"的多轮对话时，才重新引入 Agent 层；
   在那之前不保留任何死代码占位。
 
@@ -242,8 +251,10 @@ Canonical Question ──→ LLM（只输出 question / explanation）
   踩坑：openai-completions 是 SSE 流式（mock 测试须回 event-stream）；pi-ai 把传输错误
   吞成 stopReason='error'（callLLM 返回空文本，上层 parse 兜底）；空 apiKey 不能以
   complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
-- **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认 `{ provider: 'deepseek',
-  model: 'deepseek-v4-flash' }`；示例配置见 `docs/config.example.json`。
+- **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认降级链
+  `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }] }`；旧单选形态
+  （`{ provider, ... }`）由 loadConfig 自动迁移（key 不变，ADR-023）；
+  示例配置见 `docs/config.example.json`。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；provider id 为 `openai / anthropic / openrouter`。
 - **浏览器直连 LLM 受 CORS 限制**：默认推荐 **OpenRouter**；OpenAI/Anthropic 直连可能失败，需自配代理。
 - **pi-ai 对浏览器友好**：库内部对 `globalThis.process` 与 `node:fs` 做了守卫/懒加载，打包时 `node:fs` 外部化为警告，属预期且不崩。

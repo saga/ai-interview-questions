@@ -1,31 +1,49 @@
 {
-  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页保存后自动写入）。以下三种引擎形态取其一直接使用；字段 baseUrl 仅 provider=local 时有意义，其余场景留空字符串即可。",
+  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页保存后自动写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。旧单选形态 { provider, ... } 会在读取时自动迁移为单元素链。",
 
-  "example-1-chrome-本地内置": {
-    "provider": "chrome",
-    "model": "",
-    "apiKey": "",
-    "baseUrl": ""
+  "example-1-chrome优先-云端兜底": {
+    "providers": [
+      {
+        "id": "chrome",
+        "enabled": true,
+        "model": "",
+        "apiKey": "",
+        "baseUrl": ""
+      },
+      {
+        "id": "deepseek",
+        "enabled": true,
+        "model": "deepseek-v4-flash",
+        "apiKey": "sk-xxxxxxxxxxxxxxxx",
+        "baseUrl": ""
+      }
+    ]
   },
 
-  "example-2-local-本地OpenAI兼容服务(默认Unsloth)": {
-    "provider": "local",
-    "model": "unsloth/gemma-4-E4B-it-qat-GGUF",
-    "apiKey": "",
-    "baseUrl": "http://127.0.0.1:8888/v1"
-  },
-
-  "example-3-cloud-云端(默认DeepSeek)": {
-    "provider": "deepseek",
-    "model": "deepseek-v4-flash",
-    "apiKey": "sk-xxxxxxxxxxxxxxxx",
-    "baseUrl": ""
+  "example-2-local-Unsloth加云端兜底": {
+    "providers": [
+      {
+        "id": "local",
+        "enabled": true,
+        "model": "unsloth/gemma-4-E4B-it-qat-GGUF",
+        "apiKey": "",
+        "baseUrl": "http://127.0.0.1:8888/v1"
+      },
+      {
+        "id": "openrouter",
+        "enabled": true,
+        "model": "openai/gpt-4o-mini",
+        "apiKey": "sk-or-xxxxxxxx",
+        "baseUrl": ""
+      }
+    ]
   },
 
   "$字段说明": {
-    "provider": "'chrome' | 'local' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek'",
-    "model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；cloud 见设置页下拉",
-    "apiKey": "云端必填；local 可选（部分服务需要）；chrome 不适用",
-    "baseUrl": "仅 local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等"
+    "providers[].id": "'chrome' | 'local' | 'openai' | 'anthropic' | 'openrouter' | 'deepseek'",
+    "providers[].enabled": "停用的引擎保留配置但不参与降级链",
+    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；cloud 见设置页下拉",
+    "providers[].apiKey": "云端必填；local 可选（部分服务需要）；chrome 不适用",
+    "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等"
   }
 }

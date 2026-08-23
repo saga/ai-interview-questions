@@ -5,9 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createModels } from '@earendil-works/pi-ai';
 import { buildLocalProvider, DEFAULT_LOCAL_BASE_URL, normalizeBaseUrl } from './local';
 import { callLLM } from './pi';
-import type { PiConfig } from '../types';
+import type { ProviderEntry } from '../types';
 
-const CFG: PiConfig = { provider: 'local', model: 'unsloth/Qwen3-8B', apiKey: '', baseUrl: '' };
+const CFG: ProviderEntry = { id: 'local', enabled: true, model: 'unsloth/Qwen3-8B', apiKey: '', baseUrl: '' };
 
 /** pi-ai 的 openai-completions 走 SSE 流式，mock 必须返回 event-stream。 */
 function sseBody(text: string): string {

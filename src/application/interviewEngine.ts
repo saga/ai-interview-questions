@@ -3,11 +3,12 @@
 
 import type {
   AnswerValue,
+  AIConfig,
   EvaluationResult,
   InterviewDefinition,
   InterviewSession,
   LearnerProfile,
-  PiConfig,
+  LLMProvider,
   Question,
   QuestionBank,
 } from '../types';
@@ -25,7 +26,7 @@ import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/ad
 export async function buildSession(
   bank: QuestionBank,
   def: InterviewDefinition,
-  config?: PiConfig,
+  config?: AIConfig,
 ): Promise<InterviewSession> {
   let pool = bank.questions;
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
@@ -40,19 +41,15 @@ export async function buildSession(
       : pickQuestions(pool, count);
   const provider = def.useAI ? createLLMProvider(config) : null;
 
-  const questions = await finalizeQuestions(picked, provider, config);
+  const questions = await Promise.all(picked.map((q) => finalizeQuestion(q, provider)));
   return { definition: def, questions, startedAt: Date.now() };
 }
 
 /** 为题目生成并校验 LLM 变体；无 provider / 校验失败 / 调用失败时一律回退原题。 */
-async function finalizeQuestion(
-  q: Question,
-  provider: ReturnType<typeof createLLMProvider>,
-  config?: PiConfig,
-): Promise<Question> {
-  if (!provider || !config) return q;
+async function finalizeQuestion(q: Question, provider: LLMProvider | null): Promise<Question> {
+  if (!provider) return q;
   try {
-    const v = await provider.generateVariant(q, config);
+    const v = await provider.generateVariant(q);
     const check = validateVariant(q, v);
     if (!check.ok) {
       console.warn(`变体校验失败(${q.id})，回退原题：${check.reason}`);
@@ -65,14 +62,6 @@ async function finalizeQuestion(
   }
 }
 
-async function finalizeQuestions(
-  picked: Question[],
-  provider: ReturnType<typeof createLLMProvider>,
-  config?: PiConfig,
-): Promise<Question[]> {
-  return Promise.all(picked.map((q) => finalizeQuestion(q, provider, config)));
-}
-
 /**
  * 自适应模式的下一步：根据已答题的作答信号（主题/得分/难度），
  * 由概念图与迁移策略选出下一题（含变体处理）；题池耗尽返回 null。
@@ -83,7 +72,7 @@ export async function nextAdaptiveStep(
   session: InterviewSession,
   signals: AnswerSignal[],
   profile?: LearnerProfile,
-  config?: PiConfig,
+  config?: AIConfig,
 ): Promise<{ question: Question; strategy: Strategy } | null> {
   const def = session.definition;
   let pool = bank.questions;
@@ -97,7 +86,7 @@ export async function nextAdaptiveStep(
   if (!picked || session.questions.length >= def.count) return null;
 
   const provider = def.useAI ? createLLMProvider(config) : null;
-  const question = await finalizeQuestion(picked.question, provider, config);
+  const question = await finalizeQuestion(picked.question, provider);
   return { question, strategy: picked.strategy };
 }
 
@@ -109,16 +98,16 @@ export async function evaluateAnswer(
   q: Question,
   answer: AnswerValue | undefined,
   def: InterviewDefinition,
-  config?: PiConfig,
+  config?: AIConfig,
 ): Promise<EvaluationResult | null> {
   if (isChoice(q)) {
     return gradeChoice(q, (answer as number[]) ?? [], def.scoringRubric);
   }
   if (!def.useAI) return null;
   const provider = createLLMProvider(config);
-  if (!provider || !config) return null;
+  if (!provider) return null;
   return provider
-    .evaluateOpenAnswer(q, (answer as string) ?? '', config, def.scoringRubric, def.evaluationCriteria)
+    .evaluateOpenAnswer(q, (answer as string) ?? '', def.scoringRubric, def.evaluationCriteria)
     .catch((err) => {
       console.warn('评分失败：', err);
       return null;
@@ -129,7 +118,7 @@ export async function evaluateAnswer(
 export async function evaluateSession(
   session: InterviewSession,
   answers: Record<string, AnswerValue>,
-  config?: PiConfig,
+  config?: AIConfig,
 ): Promise<Record<string, EvaluationResult | null>> {
   const results: Record<string, EvaluationResult | null> = {};
   await Promise.all(
