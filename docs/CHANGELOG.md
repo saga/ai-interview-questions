@@ -2,6 +2,26 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-24 · Taxonomy 收敛：knowledge 七领域 + questions 八类目（数据契约变更）
+
+- **knowledge/ 8→7**：`transformer.json` 与 `moe.json` 并入 `llm-architecture.json`
+  （架构类知识点同属一棵树）；`rag-agent.json` 拆为 `rag.json`（检索/grounding 域）
+  与 `agentic-ai.json`（自主决策/tool use/loop 域）——RAG 与 Agent 是不同知识树，
+  不应共用一个文件。节点 id（= topic slug）不变，题目/Learner Memory/conceptGraph
+  的 join key 零迁移。
+- **questions/ 11→8**：`statistics.json`（4 题）并入 `machine-learning.json` 并改写
+  category（gradient-descent 等 P0 节点的唯一题目支撑随之保留）；`nlp.json` 与
+  `computer-vision.json` 移出题库——产品定位为 AI/LLM/Agent Engineer 面试，传统
+  NLP/CV 为 optional domain，内容留存于 git 历史。categories.ts 同步删除三个 slug。
+- **ai-engineering 保持不拆**：题量大（96 题、35 topic）是定位使然；边界靠
+  "category 主领域 / topic 具体考点 / tags 交叉领域" 三层约束，掌握度本就按
+  topic 统计，category 只承担展示分组与组卷过滤。
+- **数据契约说明**：对外题库 JSON 的 category 枚举收敛（nlp / computer-vision /
+  statistics 不再出现），已发布题库的消费方需同步；localStorage 学习档案按
+  topic 记账，不受影响。
+- 195 测试全过，build 通过；覆盖矩阵缺口 33、未挂靠题 87→83（随 nlp/cv 游离
+  topic 移出）。
+
 ## 2026-08-23 · 蓝图层落地：缺口 → QuestionBlueprint → 变体候选 / 成题校验（管线 ③）
 
 - **QuestionBlueprint 类型**（types.ts）：topic × angle × difficulty × format +

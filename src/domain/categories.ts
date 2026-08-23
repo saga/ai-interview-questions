@@ -4,10 +4,7 @@
 export const CATEGORY_LABELS: Record<string, string> = {
   'machine-learning': '机器学习基础',
   'deep-learning': '深度学习',
-  nlp: '自然语言处理',
   llm: '大语言模型',
-  'computer-vision': '计算机视觉',
-  statistics: '统计与数学',
   mlops: 'MLOps 与部署',
   'safety-ethics': '安全与伦理',
   'agentic-ai': 'Agentic AI',

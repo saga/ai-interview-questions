@@ -81,7 +81,10 @@ data/questionBank.ts  题库装配（import.meta.glob eager 合并；刻意不�
                        规模需要时再加动态 import + 构建期 question-index）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG）
-data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<area>.json，×8 领域）。
+data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<area>.json，×7 领域：
+                        dl-fundamentals / llm-architecture / training / inference /
+                        rag / agentic-ai / system-design；transformer 与 moe 已并入
+                        llm-architecture，rag-agent 已拆为 rag 与 agentic-ai）。
                         知识点是一等公民、题目只是它的 View：节点 id = topic slug
                         （与题目 / conceptGraph / Learner Memory 同一 join key），携带四类
                         "修饰素材"——summary（变体与复盘锚点）/ required（评分必须要点，

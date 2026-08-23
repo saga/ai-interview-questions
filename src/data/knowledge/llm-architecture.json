@@ -152,5 +152,139 @@
       "scenario",
       "tradeoff"
     ]
+  },
+  {
+    "id": "transformer",
+    "name": "Transformer 总体架构",
+    "area": "transformer",
+    "priority": "P0",
+    "summary": "自注意力 + FFN + 残差 + 归一化的堆叠；相比 RNN 全并行、长程依赖一步可达。Decoder-only 因训练目标简单、KV cache 友好成为 LLM 主流形态。",
+    "required": [
+      "encoder-only 偏理解、decoder-only 偏生成、encoder-decoder 做序列转换",
+      "causal mask 使 decoder-only 训练时每个位置都产生监督信号，天然匹配 next-token 目标"
+    ],
+    "misconceptions": [
+      "认为 decoder-only 胜出只是效果\"全面碾压\"，说不出工程原因",
+      "混淆 causal mask 与 padding mask 的作用对象"
+    ],
+    "angles": [
+      "definition",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "self-attention",
+    "name": "自注意力机制",
+    "area": "transformer",
+    "priority": "P0",
+    "summary": "Q·Kᵀ/√d 经 softmax 得权重后对 V 加权求和：每个位置动态地从全序列聚合信息；√d 缩放防止 logits 过大使 softmax 饱和。",
+    "required": [
+      "Q/K/V 的角色：查询、检索地址、被聚合的内容",
+      "复杂度 O(N²·d)：平方项来自所有位置两两计算注意力，这是长上下文成本的根源"
+    ],
+    "misconceptions": [
+      "说不清为什么要除以 √d（logits 方向随 d_k 增大方差膨胀）",
+      "把注意力热力图当成因果性证据"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation"
+    ]
+  },
+  {
+    "id": "attention",
+    "name": "多头注意力",
+    "area": "transformer",
+    "priority": "P0",
+    "summary": "多组独立投影在子空间各自算注意力再拼接：不同头可关注不同位置与关系模式，表达力高于单头大维度。",
+    "required": [
+      "多头 = 在多个子空间并行做注意力后融合，头数与 head_dim 此消彼长（总维度通常固定）",
+      "cross-attention 的 Q 来自一个序列、K/V 来自另一个序列，是 encoder-decoder 与多模态的桥"
+    ],
+    "misconceptions": [
+      "认为头越多越好、无视总维度约束下的权衡",
+      "混淆 self-attention 与 cross-attention 的信息来源"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "flash-attention",
+    "name": "FlashAttention",
+    "area": "transformer",
+    "priority": "P1",
+    "summary": "IO 感知的精确注意力实现：分块计算 + online softmax，把 HBM 读写从 O(N²) 降到线性，省显存且不改变数学结果。",
+    "required": [
+      "输出与标准 attention 完全一致——它是实现优化而非近似算法",
+      "收益来自减少 HBM 往返（把中间 N×N 矩阵留在 SRAM），不是减少 FLOPs"
+    ],
+    "misconceptions": [
+      "把它归为\"近似/稀疏注意力\"一类",
+      "以为它降低的是计算量而不是显存带宽压力"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "tokenization",
+    "name": "分词与 BPE",
+    "area": "transformer",
+    "priority": "P0",
+    "summary": "BPE 等子词算法把文本切成统计驱动的 token 序列；token 边界直接影响成本计费、上下文占用与非英语/代码场景的表现。",
+    "required": [
+      "BPE 从字符开始迭代合并高频对，词表大小是显式超参",
+      "\"一个中文字 ≈ 一个英文单词\"的 token 换算误区；数字/缩进切分会影响推理质量"
+    ],
+    "misconceptions": [
+      "按空格/单词理解模型输入单位",
+      "认为 tokenizer 无关紧要——它决定同等语义消耗多少上下文与费用"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "moe",
+    "name": "MoE 混合专家",
+    "area": "moe",
+    "priority": "P0",
+    "summary": "Router 为每个 token 选 Top-K 个专家，只有被选中者的参数参与计算：总参决定显存、激活参数决定 FLOPs 与延迟——省算力不省显存。",
+    "required": [
+      "总参数量与激活参数量分别约束显存与计算/延迟",
+      "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
+    ],
+    "misconceptions": [
+      "按激活参数估算显存需求",
+      "认为 MoE 的收益与硬件通信无关（all-to-all 常成为瓶颈）"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "calculation"
+    ]
+  },
+  {
+    "id": "latent-moe",
+    "name": "LatentMoE 低维专家计算",
+    "area": "moe",
+    "priority": "P1",
+    "summary": "借鉴 MLA 低秩思想：先把表示投影到低维 latent space 再执行专家线性变换、最后还原；专家参数/FLOPs 随 latent 维度缩放，代价是表征带宽瓶颈。",
+    "required": [
+      "压缩位置在专家层两端（down-proj 进、up-proj 出），省的是矩阵乘法规模而非路由",
+      "latent 维度是容量旋钮：压缩比越高信息瓶颈越紧"
+    ],
+    "misconceptions": [
+      "以为省的是 router 开销或专家数量",
+      "认为压得越低越好而忽视质量回退风险"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
   }
 ]
