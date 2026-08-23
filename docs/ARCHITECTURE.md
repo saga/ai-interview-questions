@@ -47,8 +47,8 @@ components/
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
   settings/SettingsPanel.tsx    AI 设置（provider / model / API Key）
 
-data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；100 题，
-                       其中 agentic-ai 按 Scenario/Debugging/Trade-off/开放题等能力维度组织）
+data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；124 题，
+                       agentic-ai / ai-engineering 按 Scenario/Debugging/Trade-off/开放题等能力维度组织）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）

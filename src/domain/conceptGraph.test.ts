@@ -77,8 +77,13 @@ describe('conceptGraph', () => {
   });
 
   it('computeCoverage：前置全掌握的未学主题进入 readyToLearn，否则计入 blockedCount', () => {
-    // react 的前置 = agent-fundamentals + tool-calling
-    const allMastered = profileWith({ 'agent-fundamentals': { attempts: 2, avgScore: 92 }, 'tool-calling': { attempts: 2, avgScore: 95 } });
+    // react 的前置闭包 = agent-fundamentals / tool-calling / agent-components / workflow-vs-agent
+    const allMastered = profileWith({
+      'agent-fundamentals': { attempts: 2, avgScore: 92 },
+      'tool-calling': { attempts: 2, avgScore: 95 },
+      'agent-components': { attempts: 2, avgScore: 93 },
+      'workflow-vs-agent': { attempts: 2, avgScore: 91 },
+    });
     const reportReady = computeCoverage(REFS, allMastered);
     expect(reportReady.readyToLearn).toContain('react');
 

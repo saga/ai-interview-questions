@@ -11,6 +11,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   mlops: 'MLOps 与部署',
   'safety-ethics': '安全与伦理',
   'agentic-ai': 'Agentic AI',
+  'ai-engineering': 'AI Engineering',
 };
 
 export function categoryLabel(slug: string): string {

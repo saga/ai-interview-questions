@@ -2,6 +2,22 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · AI Engineering 工程判断题库扩充（24 题，总 124 题）
+
+- **题库**：新增 `ai-eng-001..024`，主干为工程判断而非知识点——workflow-vs-agent、
+  agent-components、tool-calling/tool-routing、react/plan-and-execute/reflection、mcp、
+  agent-loop（agentic-ai）；context-engineering、memory、rag、evaluation、structured-output、
+  reliability、latency、cost、agent-system-design（新类目 `ai-engineering`）。
+  题型刻意混入 trade-off 与 debugging 场景，让 Learner Memory 能区分"知道概念"与"能设计/debug 系统"。
+  全部落到现有 schema：开放题统一 `type: essay`（场景风味保留在 tags），difficulty 映射为 easy/medium/hard，
+  每题带 rubric.required + 四维 dimensions。
+- **知识图谱**：新增 11 条 prerequisite 边，形成两条主线
+  （workflow-vs-agent → agent-components → tool-calling → tool-routing；
+  react → plan-and-execute → reflection）及 agent-system-design 汇聚点（← tool-calling / rag / evaluation）、
+  structured-output → reliability、latency → cost。
+  未采纳 `context-engineering → memory`：与既有边 `memory → context-engineering` 方向相反，
+  双向共存会触发加载期 isAcyclic 报错，保留原方向。
+
 ## 2026-08-23 · 架构评审修复批次（ADR-020：接线 + 删除）
 
 - **功能接线（此前文档承诺但代码未生效）**：
