@@ -196,5 +196,428 @@
         "referenceAnswer": "正确答案要点：GQA 让多个 Query 头共享少量 KV 头，显著缩小 KV cache，且质量损失极小。\n\n解析：推理瓶颈主要在 KV cache 而非计算：GQA 在 MHA（每 Q 头独立 K/V）与 MQA（全部共享 1 组 K/V）之间折中，KV 头数按组缩减，缓存体积成倍下降而效果几乎无损。它不直接提升准确率，也不改变上下文长度上限。"
       }
     }
+  },
+  {
+    "id": "dl-07",
+    "category": "deep-learning",
+    "topic": "cross-entropy",
+    "tags": [
+      "lm-loss",
+      "sampling-estimation",
+      "streaming-training",
+      "linearity"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "LLM 预训练无法像常规单标签分类那样预先统计完整目标分布 p，训练语料是以采样形式流式送入模型的。为使损失函数 L(p, q) 具备转换为采样估计形式（即 L(p,q) = E_{i~p}[S(q,i)]）的能力，损失函数必须满足的数学约束是？",
+    "explanation": "流式训练中真实分布 p 无法预先统计全貌，只有当 L(p,q) 关于 p 为线性函数时，才能将求和项 Σ_i p_i·S(q,i) 转变为基于样本采样 i~p 的期望估计 E_{i~p}[S(q,i)]。诸如 Total Variation 等非线性度量因采样时涉及未知的 p_i 分母而无法改造成采样形式。",
+    "reference": {
+      "concept": "损失对目标分布 p 线性 ⇒ Σ p_i S(q,i) 可改写为期望 E_{i~p}，这是流式预训练可用的充要约束；TV 等非线性度量不满足。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
+          "L(p, q) 关于目标分布 p 必须满足线性（Linear）约束",
+          "L(p, q) 在 p = q 处的二阶导数矩阵必须正定",
+          "预测概率分布 q 必须采用 Softmax 函数进行归一化"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：流式训练时真实分布 p 只能通过逐样本 i~p 体现。L 必须关于 p 线性（形如 Σ_i p_i·S(q,i)）才能把求和改写成采样期望 E_{i~p}[S(q,i)]，用单样本（或 minibatch）无偏估计损失与梯度。凸性/二阶正定是关于 q 的性质、Softmax 只是激活选择，都与能否采样化无关；Total Variation 等对 p 非线性的度量在采样形式中会出现未知分母 p_i，无法落地。"
+      }
+    }
+  },
+  {
+    "id": "dl-08",
+    "category": "deep-learning",
+    "topic": "cross-entropy",
+    "tags": [
+      "proper-scoring-rule",
+      "concavity",
+      "entropy"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "根据恰当评分规则（Proper Scoring Rules），固定预测分布 q 时，L(p,q) 作为 p 的函数是一个超平面，且满足 L(p,q) ≥ H(p)，其中 H(p) ≜ L(p,p)。这意味着超平面 L(p,q) 始终在超曲面 H(p) 的上方且在 p=q 处相切。由此可推导出最小损失函数 H(p) 在数学上必须满足什么性质？",
+    "explanation": "切平面总在曲面 H(p) 的上方，即满足 H(p) ≤ H(q) + (p−q)·∇_q H(q)，这正好符合凹函数的代数与几何定义。因此，选择任意关于 p 的凹函数 H(p) 均可构造出一个合法的恰当评分函数。",
+    "reference": {
+      "concept": "恰当评分规则 ⇔ H(p)=L(p,p) 是凹函数：支撑超平面恒在曲面上方并在 p=q 相切；任意凹 H 都能反构一个合法评分函数。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "H(p) 必须是关于 p 的凹函数（Concave Function）",
+          "H(p) 必须是关于 p 的凸函数（Convex Function）",
+          "H(p) 的 Hessian 矩阵特征值必须全部大于零",
+          "H(p) 必须满足 L1 范数守恒"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n要点：L(p,q) ≥ H(p) 且在 p=q 处相切，等价于 H(p) ≤ H(q) + (p−q)·∇_q H(q)——每个点处的切平面都在曲面之上，这正是凹函数的定义（注意方向：凸函数是切平面在曲面下方）。因此构造评分函数的自由度就是选一个关于 p 的凹函数 H(p)：取负熵得到交叉熵，取 Tsallis 熵得到 Tsallis 评分，取 −‖·‖² 得到 Brier 评分。B/C 描述的是凸性特征，方向相反。"
+      }
+    }
+  },
+  {
+    "id": "dl-09",
+    "category": "deep-learning",
+    "topic": "cross-entropy",
+    "tags": [
+      "log-score",
+      "uniqueness",
+      "local-scoring-rule"
+    ],
+    "difficulty": "hard",
+    "angle": "definition",
+    "question": "在所有满足恰当评分规则的损失函数中，若对评分函数 S(q,i) 额外施加一个特殊限制条件，交叉熵（对数评分 −log q_i）将成为唯一的数学选择。该限制条件是？",
+    "explanation": "若要求 S(q,i) 仅与目标类别自身的预测概率 q_i 相关（S(q,i) = S(q_i)），代入通用评分公式可导出微分方程 q_i·S′(q_i) = −c，求解该微分方程可唯一得到 S(q_i) = −c·log q_i（对数评分/交叉熵）。其余评分（如 Brier、Tsallis、球面评分等）均显式依赖于分布中其他类别的概率范数或求和项。",
+    "reference": {
+      "concept": "局部性约束 S(q,i)=S(q_i) + 恰当性 ⇒ 微分方程 q_i S′(q_i) = −c ⇒ 唯一解为对数评分（交叉熵）。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "评分函数 S(q,i) 关于未归一化 Logits z 必须是处处二次可微的",
+          "评分函数 S(q,i) 仅依赖于目标类别 i 本身的预测概率 q_i，即 S(q,i) = S(q_i)",
+          "损失函数必须保证最优解 q* = p 处梯度绝对值大于零",
+          "激活函数必须满足稀疏性约束（Sparse Representation）"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：该条件称为局部性（local scoring rule）：惩罚只看目标类别自己的预测概率 q_i。把它代入恰当评分规则的通用形式，可得微分方程 q_i·S′(q_i) = −c，其唯一解是 S(q_i) = −c·log q_i——交叉熵因此不是众多选项之一，而是\"局部评分\"这一额外约束下的唯一解。Brier、Tsallis、球面评分都要对全分布做求和或范数运算，依赖其他类别的概率，不满足局部性。可微性与稀疏性都不是导出唯一性的条件。"
+      }
+    }
+  },
+  {
+    "id": "dl-10",
+    "category": "deep-learning",
+    "topic": "softmax",
+    "tags": [
+      "brier-score",
+      "gradient-saturation",
+      "convexity",
+      "noise-robustness"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在采用 Softmax 作为激活函数 q = Softmax(z) 时，比较交叉熵损失与 Brier 评分（平方损失 ‖q − e_i‖²）对未归一化 Logits z 的梯度和优化特性，以下说法正确的有？（多选）",
+    "explanation": "交叉熵在 Softmax 下的梯度极度简洁（q − e_i），距离目标越远梯度越大，不存在饱和困境。Brier 评分在 Softmax 下含有 Jacobi 矩阵算子 (diag(q) − qqᵀ)，当概率处于非目标类别的端点（自信错误）时算子趋近于零，陷入饱和困境。Softmax 下交叉熵对 z 是凸的，拥有唯一极小值；Brier 评分对 z 是非凸的。Brier 评分在训练前中期由于模型大部分预测不准且可能自信错误，学习效率极低；后期因自动跳过极难/噪声样本，展现出抗噪声特性。",
+    "reference": {
+      "concept": "CE 梯度 q−e_i 无饱和且对 z 凸；Brier 含 (diag(q)−qqᵀ) 因子在自信错误时梯度消失、对 z 非凸，但后期天然抗噪。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "交叉熵对 z 的梯度为 ∇_z S(q,i) = q − e_i，当且仅当 q = e_i 时梯度为零，不存在因\"自信地预测错误\"而导致的梯度消失",
+          "Brier 评分梯度中包含变换矩阵 (diag(q) − qqᵀ)，当模型\"自信地预测错误\"（如 q = e_j ≠ e_i）时该矩阵趋近于零，会导致梯度消失（陷入饱和困境）",
+          "在 Softmax 激活下，交叉熵关于 Logits z 是凸函数，而 Brier 评分关于 z 是非凸函数",
+          "Brier 评分在训练初期学习效率极高，但在训练后期容易过拟合噪声样本",
+          "交叉熵更适合作为预训练的主损失函数，而 Brier 评分因其在\"自信错误\"时梯度小的特性，后期可能具备更好的抗噪声能力"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、E。\n\n要点：①CE 经 Softmax 反传后梯度恰为 q − e_i，误差越大梯度越大，永不饱和，且 CE 对 z 凸、有唯一极小（A、C）；②Brier 梯度带 Jacobi 算子 diag(q) − qqᵀ，概率推向错误端点时该矩阵趋于零矩阵，自信错误反而梯度消失（B）；③由此推演出分工：CE 学习效率高适合做主损失，Brier 前期学得慢但后期会自动\"跳过\"极难或噪声样本，呈现抗噪潜力（E）。D 把特性说反了——Brier 初期学习效率低而非极高，后期抗噪而非过拟合噪声。"
+      }
+    }
+  },
+  {
+    "id": "dl-11",
+    "category": "deep-learning",
+    "topic": "softmax",
+    "tags": [
+      "fenchel-young",
+      "legendre-fenchel-conjugate",
+      "activation-design"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "为了摆脱 Softmax 的束缚，可以通过指定\"干净梯度\"条件 ∇_z S(q,i) = q − e_i 反推对应的\"最优\"激活函数 q = σ(z)。在 Fenchel-Young Losses 框架下，关于标量函数 Φ(z) = max_{p∈Δ^{n−1}} [p·z + H(p)] 的说法正确的有？（多选）",
+    "explanation": "根据 Fenchel-Young Losses 理论，Φ(z) 即凸函数 −H(p) 的凸共轭，满足 Φ(z) = S(q,i) + z_i，预测分布 q = ∇_z Φ(z) = argmax_p [p·z + H(p)]。负熵 H(p) 的凸共轭为 Log-Sum-Exp，其梯度正是 Softmax——这解释了为何\"交叉熵 + Softmax\"是天然配套的组合。任何凹 H 导出的激活都能保证干净梯度，但不一定有线性解析解（Tsallis/Rényi 系含截断算子或隐式阈值方程）。",
+    "reference": {
+      "concept": "Fenchel-Young：Φ = (−H)* 凸共轭，q = ∇Φ(z)，Φ(z) = S(q,i) + z_i；H=负熵 ⇒ LogSumExp ⇒ Softmax。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Φ(z) 是凸函数 −H(p) 在概率单纯形 Δ^{n−1} 上的凸共轭（Legendre-Fenchel Conjugate）",
+          "最优概率分布 q 可以直接通过对标量函数求梯度获得，即 q = ∇_z Φ(z)",
+          "当 H(p) = −Σ_i p_i log p_i（负熵）时，推导出的配套激活函数正是 Softmax 函数",
+          "Φ(z) 满足关系式 Φ(z) = S(q,i) + z_i",
+          "任何凹函数 H(p) 导出的激活函数 q = σ(z) 都能保证关于 Logits z 具有线性解析解"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D。\n\n要点：Fenchel-Young 框架把\"选激活 + 选损失\"统一成\"选一个凹函数 H\"：①Φ(z) = max_p [p·z + H(p)] 正是凸函数 −H(p) 的 Legendre-Fenchel 凸共轭（A）；②最优分布由梯度给出 q = ∇_z Φ(z)（B），且满足恒等式 Φ(z) = S(q,i) + z_i（D），从而自动保证干净梯度 ∇_z S = q − e_i；③取 H 为负熵时，凸共轭是 Log-Sum-Exp，其梯度恰为 Softmax（C）——这就是\"交叉熵 + Softmax 天然配套\"的数学根源。E 错误：一般凹 H（如 Tsallis/Rényi 族）导出的激活含截断算子 [·]₊ 或需要隐式求解归一化阈值 λ，并非都有线性解析解。"
+      }
+    }
+  },
+  {
+    "id": "dl-12",
+    "category": "deep-learning",
+    "topic": "softmax",
+    "tags": [
+      "tsallis",
+      "entmax",
+      "sparsemax",
+      "sparse-activation"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "利用 Tsallis 评分 H(q) = (1 − Σ_i q_i^α)/(α − 1)（α > 0）推导其配套的最优激活函数，可得到 q_i = [( (α−1)/α )(z_i − λ)]₊^{1/(α−1)}。下列关于参数 α 影响的说法中，正确的是？",
+    "explanation": "当 α > 1 时，指数 1/(α−1) > 0，截断算子 [·]₊ 将低于门槛的 Logits 直接截断为 0，从而生成稀疏分布（Entmax-α），α=2 即 Sparsemax。当 α < 1 时指数为负数，截断不生效（零的负数幂无意义），得到的是稠密分布。当 α → 1 时，激活函数按极限退化为标准的 Softmax 分布。对于 α = 2（Sparsemax）和 α = 1.5（Entmax-1.5），拉格朗日乘子 λ 存在比二分法更高效的精确求解算法。",
+    "reference": {
+      "concept": "Tsallis 族激活：α>1 截断生效⇒稀疏（α=2 为 Sparsemax）；α<1 稠密；α→1 极限退化为 Softmax；α∈{2,1.5} 有精确闭式算法。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "当 α > 1 时，截断算子 [·]₊ 生效，能够生成稀疏概率分布（如 α=2 对应 Sparsemax）",
+          "当 α < 1 时，截断算子生成比 Softmax 更稀疏的概率分布",
+          "当 α → 1 时，激活函数退化为 Uniform 均匀分布",
+          "对于 α = 2 和 α = 1.5 的情况，不存在精确闭式解，必须完全依赖二分法求解拉格朗日乘子 λ"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n要点：Tsallis 配套激活 q_i = [((α−1)/α)(z_i − λ)]₊^{1/(α−1)} 中，α 控制稀疏性：①α > 1 时指数为正，[·]₊ 把低于阈值 λ 的分量直接置零，输出稀疏分布——α=2 就是 Sparsemax（分段线性），α=1.5 是 Entmax-1.5；②α < 1 时指数为负，零的负幂无意义，截断失效，结果是稠密分布而非更稀疏；③α → 1 时按极限恢复标准 Softmax，而不是 Uniform；④α=2 与 α=1.5 存在精确的多面体投影/排序算法求 λ，无需纯靠二分法。"
+      }
+    }
+  },
+  {
+    "id": "dl-13",
+    "category": "deep-learning",
+    "topic": "vae",
+    "tags": [
+      "intractable-posterior",
+      "bayes-rule",
+      "variational-inference"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "VAE 中真实的后验分布 p(z|x) 是\"不可直接计算/采样的（Intractable）\"，其根本数学原因是？",
+    "explanation": "根据贝叶斯定理 p(z|x) = p(x|z)p(z)/p(x)，求分母 p(x) 需要对所有可能隐向量 z 边缘化求解积分 ∫p(x|z)p(z)dz。在大维度隐空间中该全空间积分在计算上不可行（Intractable），因此 VAE 引入编码器拟合变分后验 q(z|x) ≈ N(μ, σ²) 来绕过该积分。",
+    "reference": {
+      "concept": "后验不可积的根因：贝叶斯分母 p(x)=∫p(x|z)p(z)dz 是全隐空间高维积分，无法解析/数值求解，故用变分分布 q(z|x) 近似绕开。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐空间维度过高导致求解协方差矩阵逆矩阵时超内存",
+          "贝叶斯公式中的分母（数据边际概率）p(x) = ∫p(x|z)p(z)dz 需要在全隐空间做全积分，高维连续空间下无法计算",
+          "隐变量先验 p(z) 无法假设为多元高斯分布 N(0, I)",
+          "解码器概率分布 p(x|z) 包含非线性激活函数，无法写出解析式"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：p(z|x) = p(x|z)p(z)/p(x)，问题出在分母 p(x)=∫p(x|z)p(z)dz——它要对整个连续高维隐空间做边缘化积分，既无解析解也难以数值计算，这就是 Intractable 的确切含义。VAE 的应对：不直接算后验，而是用编码器输出 q(z|x)≈N(μ,σ²) 做变分近似，把问题转化为优化 ELBO。A 的矩阵求逆、C 的先验形式（N(0,I) 恰恰是标准假设）、D 的解码器解析性都不是根因。"
+      }
+    }
+  },
+  {
+    "id": "dl-14",
+    "category": "deep-learning",
+    "topic": "vae",
+    "tags": [
+      "elbo",
+      "evidence-lower-bound",
+      "kl-decomposition"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "在 VAE 推导数据对数边际似然 log p(x) 的过程中，正确表示其与证据下界（ELBO）及 KL 散度关系的公式是？",
+    "explanation": "经过概率展开与积分变换，log p(x) 拆解为：log p(x) = ( E_{q(z|x)}[log p(x|z)] − D_KL(q(z|x) ∥ p(z)) ) + D_KL(q(z|x) ∥ p(z|x))。括号内第一部分即为 ELBO，第二部分为编码器变分分布 q(z|x) 与真实后验 p(z|x) 之间的 KL 散度。由于 KL 散度恒有 D_KL ≥ 0，因此 log p(x) ≥ ELBO。",
+    "reference": {
+      "concept": "恒等式 log p(x) = ELBO + D_KL(q(z|x)∥p(z|x))；KL≥0 ⇒ ELBO 是下界；ELBO 本身 = 重构项 − KL(q∥p(z))。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "log p(x) = ELBO − D_KL(q(z|x) ∥ p(z|x))",
+          "log p(x) = ELBO + D_KL(q(z|x) ∥ p(z|x))",
+          "log p(x) = ELBO + D_KL(p(z|x) ∥ q(z|x))",
+          "log p(x) = ELBO − D_KL(q(z|x) ∥ p(z))"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：核心恒等式 log p(x) = ELBO + D_KL(q(z|x)∥p(z|x))，其中 ELBO = E_{q(z|x)}[log p(x|z)] − D_KL(q(z|x)∥p(z))（重构项减去与先验的 KL）。由 D_KL ≥ 0 得 log p(x) ≥ ELBO，故称证据下界；且当且仅当 q 与真实后验重合时取等号。注意两个 KL 方向与位置不能混：与真实后验的 KL 在等式右侧（衡量近似误差），与先验 p(z) 的 KL 在 ELBO 内部（充当正则项）。D 项符号与对象都不对。"
+      }
+    }
+  },
+  {
+    "id": "dl-15",
+    "category": "deep-learning",
+    "topic": "vae",
+    "tags": [
+      "gaussian-likelihood",
+      "mse-equivalence",
+      "reconstruction-loss"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "VAE 训练目标中的重构项 E_{q(z|x)}[log p(x|z)] 在数学推导上可等价于最小化均方误差（MSE），这一结论建立在以下哪个关键假设之上？",
+    "explanation": "当假设 p(x|z) 为均值为 x̂（解码器预测图）的高斯分布时，其概率密度对数形式展开包含 −(x − x̂)²/(2σ²)。在方差 σ 视为常数的情况下，最大化该对数似然在数值优化方向上完全等价于最小化 MSE 损失函数 (x − x̂)²。",
+    "reference": {
+      "concept": "重构项=MSE 的前提：p(x|z) 取方差固定、均值 x̂ 的高斯似然 ⇒ log 似然展开出 −(x−x̂)²/(2σ²)，常数系数不影响优化方向。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐变量先验 p(z) 服从标准多元高斯分布 N(0, I)",
+          "编码器近似分布 q(z|x) 为完全独立的不相干分布",
+          "解码器的似然概率分布 p(x|z) 服从方差固定、均值为解码器输出 x̂ 的多元高斯分布",
+          "编码器输出的方差 σ² 恒等于 1"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：MSE 等价性来自对解码器似然的假设而非先验或编码器：令 p(x|z) = N(x̂, σ²I) 且 σ 视为常数，则 log p(x|z) 展开后含 −(x−x̂)²/(2σ²) 项，去掉常数系数后最大化对数似然 ⇔ 最小化 MSE。若换成立伯努利似然则对应交叉熵/BCE 重构损失——重构损失形态完全由似然假设决定。A 是 KL 正则项可写成闭式的来源，与本问无关。"
+      }
+    }
+  },
+  {
+    "id": "dl-16",
+    "category": "deep-learning",
+    "topic": "vae",
+    "tags": [
+      "reparameterization-trick",
+      "gradient-flow",
+      "sampling"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于 VAE 中\"重参数化技巧（Reparameterization Trick）\"的理解，下列说法正确的有？（多选）",
+    "explanation": "重参数化技巧并未消除随机性，随机性依然由外部节点 ε ~ N(0, I) 提供。它的本质是将带参数的随机采样过程转换为\"确定的可导函数运算（μ + σ·ε）+ 无参数的独立外部随机输入（ε）\"，使反向传播路径畅通。",
+    "reference": {
+      "concept": "重参数化 z = μ + σ⊙ε：采样节点不可导阻断计算图 ⇒ 把随机性外移到无参 ε，梯度经确定性变换流回 μ、σ。随机性并未消失。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "解决的核心难题是直接从概率分布中采样节点是不可导的，阻断了反向传播计算图",
+          "将隐向量表达重构为 z = μ + σ ⊙ ε，其中 ε ~ N(0, I)",
+          "该技巧完全消除了隐空间中的概率随机性，使其退化为确定的数值映射",
+          "该变换使得梯度可以顺畅地通过链式法则传递给编码器预测的均值 μ 与方差 σ"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n要点：直接从 N(μ,σ²) 采样的节点对 μ、σ 不可导，反向传播在此断裂（A）。重参数化把采样改写为 z = μ + σ⊙ε，随机源 ε~N(0,I) 成为无参数的外部输入（B）；于是从损失到 μ、σ 的路径全是确定性的可导运算，梯度经链式法则顺畅回传到编码器（D）。C 错误：随机性没有被消除，只是被移出了可导路径之外——模型仍是生成式随机映射，这正是 VAE 区别于 AE 的关键。"
+      }
+    }
+  },
+  {
+    "id": "dl-17",
+    "category": "deep-learning",
+    "topic": "vae",
+    "tags": [
+      "elbo-tug-of-war",
+      "posterior-collapse",
+      "latent-space-regularization"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在 VAE 的损失函数优化中，关于重构项与 KL 散度正则化项（D_KL(q(z|x) ∥ p(z))）的作用与关系，下列说法正确的有？（多选）",
+    "explanation": "若移除 KL 项，编码器映射点会失去聚拢约束，隐空间出现大量无定义空隙（退化为 Vanilla AE）。KL 项强制隐空间分布逼近 N(0, I)，使推理阶段可直接从标准高斯采样生成新数据。重构项促使隐向量保持不同输入之间的区别度与细节还原度。两者相互对抗平衡：KL 权重过大时后验崩溃，生成模糊。",
+    "reference": {
+      "concept": "重构项保区分度 ↔ KL 项压向 N(0,I) 保生成连续性；KL 过强 ⇒ 后验崩溃、图像模糊；无 KL ⇒ 退化为 AE、隐空间有空洞。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "若移除 KL 项，编码器映射点会趋向于确定性点，隐空间出现大量无定义空隙（退化为 Vanilla AE）",
+          "KL 项强制隐空间分布逼近 N(0, I)，使得在推理阶段可以直接从标准高斯分布采样生成新数据",
+          "重构项促使隐向量保持不同输入图片之间的区别度与细节还原度",
+          "KL 散度权重设置得越大，解码器生成的图像细节越丰富、越清晰"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n要点：两项是相互制约的博弈关系。重构项要求隐向量携带足够信息区分不同输入、还原细节（C）；KL 正则项把聚合后验整体拉向 N(0,I)，保证隐空间连续且\"空洞处\"也有定义，从而推理时直接从标准高斯采样就能生成合理样本（B）。去掉 KL 就退回 Vanilla AE：隐空间布满无定义空隙、不能随机采样生成（A）。D 把方向说反了——KL 权重过大时编码器忽略输入、所有后验塌缩到先验（Posterior Collapse），解码器只会输出模糊图像；细节清晰恰恰需要相对更小的 KL 权重。"
+      }
+    }
+  },
+  {
+    "id": "dl-18",
+    "category": "deep-learning",
+    "topic": "vae",
+    "tags": [
+      "inference-pipeline",
+      "cvae",
+      "conditional-generation"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "训练完成后的 VAE 推理过程及条件变分自编码器（CVAE）扩展中，下列说法错误的是？",
+    "explanation": "生成\"全新\"图像（Inference）时不需要真实图片作为输入，也不使用编码器。只需从已知先验分布 N(0, I) 中直接随机采样隐向量 z 并输入解码器即可。选项 D 描述的是图像\"重构/重建\"或训练阶段的流程。",
+    "reference": {
+      "concept": "纯生成阶段只用解码器：z ~ N(0,I) 直接喂 Decoder；Encoder 只在训练/重构时使用。CVAE 在训练与推理两端都拼接条件向量。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在无条件 VAE 纯生成图像阶段，完全不需要使用编码器（Encoder）网络",
+          "推理生成时，从先验分布 p(z) = N(0, I) 中随机采样 z，直接喂给解码器即可生成图像",
+          "在 CVAE 中，为了受控地生成特定类别图像，需要在训练和推理时将条件向量拼接给编码器和解码器",
+          "推理阶段必须先将真实图片输入编码器得到 μ 和 σ，再进行重参数化采样 z 才能生成新图片"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：D（说法错误的选项）。\n\n要点：训练与推理的网络结构不同——推理（无条件生成新图）只需要解码器：从先验 N(0,I) 直接采样 z 送入 Decoder 即可（A、B 正确），不需要真实图片，也不需要 Encoder；\"先过 Encoder 求 μ、σ 再重参数化\"是训练或图像重建的流程，不是全新样本的生成流程。CVAE 中条件向量（如类别标签）需同时注入两端：训练时拼给 Encoder 与 Decoder 对齐条件语义，推理时拼给 Decoder 实现受控生成（C 正确）。"
+      }
+    }
   }
 ]

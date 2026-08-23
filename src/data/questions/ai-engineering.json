@@ -2497,5 +2497,218 @@
         "referenceAnswer": "正确答案要点：MLA/LatentMoE=显存与 FLOPs 主项；线性注意力=长上下文计算主项；Attention Residuals=质量导向的成本项；NoPE≈中性但引入顺序建模风险。\n\n解析：尽调的正确框架是把每个架构改动映射到 资源账单（权重显存、KV cache/token、prefill FLOPs、decode FLOPs）或 质量账本（能力上限、失败模式）：①MLA 决定 KV cache 字节数 → 并发容量的第一约束项；②LatentMoE 决定 MoE 层计算与参数 → 单 token decode 成本；③线性注意力局部层决定上下文长度增长时成本的斜率；④Attention Residuals 在上述每一项上都是净增成本，买的是深层网络的质量与可训练性——汇报时应作为\"为质量支付的计算税\"列支；⑤NoPE 几乎不动资源账单，真正要做的是验证顺序敏感任务（代码/表格）的表现与长度外推行为。常见错误归因：把 NoPE 当性能优化、把 Attention Residuals 当效率优化、以为单 token 开销低就解除了并发×上下文的乘法约束。"
       }
     }
+  },
+  {
+    "id": "ai-eng-027",
+    "category": "ai-engineering",
+    "topic": "caching",
+    "tags": [
+      "prefix-caching",
+      "prompt-layout",
+      "ttft",
+      "kv-cache"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在长上下文 LLM 架构中，为了最大化利用 Provider 的 Prefix Caching 机制降低 Token 计费与首帧延迟（TTFT），提示词（Prompt）结构的构建规范是怎样的？原理是什么？",
+    "explanation": "Prefix Caching 仅在请求的前缀字符与历史请求完全一致时才能命中。将静态语料置于 Prompt 头部，变动的 Question 置于尾部，可确保多轮不同提问共享相同的前缀缓存。若将提问置于头部，每次提问变动都会破坏前缀匹配，导致 100% Cache Miss。",
+    "reference": {
+      "concept": "Prefix Cache 按从首字符起的连续完全匹配命中 ⇒ 静态语料前置、动态提问后置；顺序错了就是 100% miss。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将静态文档语料（Corpus）置于最前，动态提问（Question）置于最后；原理是 Prefix Caching 严格按从首字符开始的连续完全匹配来识别缓存",
+          "将动态提问（Question）置于最前，静态文档语料（Corpus）置于最后；原理是注意力机制对 Prompt 头部赋予最高权重",
+          "将语料与提问混合输入，通过设置 <cache> 标签标记语义关键块；原理是 LLM 自动识别跨请求的向量语义相似度",
+          "提示词顺序无影响，只要单个 Request 的总 Token 数保持不变，网关即会自动触发 KV Cache 命中"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n要点：Prefix Caching 的命中条件苛刻——必须从 Prompt 第一个字符开始连续完全一致，任何中间位置的变动都会使其后的所有 Token 缓存失效，与\"语义相似\"无关、与总 Token 数无关。因此布局铁律：静态不变的内容（系统指令、文档语料）全部前置，每次请求唯一变化的部分（用户提问）放到最末尾。这样多轮不同提问共享同一长前缀缓存，缓存部分计费可降一个数量级（如 $3.00/1M → $0.30/1M），TTFT 也因跳过重复 prefill 大幅下降。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-028",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "tags": [
+      "reasoning-model",
+      "max-completion-tokens",
+      "finish-reason-length",
+      "silent-failure"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在集成具备显式思考过程的推理模型时，系统偶发出现 API 状态码 200 OK，但返回文本（content）为空，且诊断字段显示 finish_reason == \"length\"。该现象的根本原因与解决方法是？",
+    "explanation": "推理模型的生成预算（Completion Budget）涵盖了内部 Thinking Tokens 和最终的 Answer Tokens。当限制过紧且面对复杂归纳问题时，模型会在思考阶段耗尽所有输出配额，导致没有剩余 Token 渲染最终回答，抛出 finish_reason = length 且内容为空，但 API 仍返回 200。",
+    "reference": {
+      "concept": "思考 Token 与最终回答共享 max_completion_tokens 预算；配额被思维链吃光 ⇒ 200 OK + 空 content + finish_reason=length 的静默失败。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "输入 Context Window 溢出，需减少输入的 Context 长度",
+          "max_completion_tokens 参数设置过小；思考 Token 与最终回答共享输出 Token 预算，模型在思维链阶段即耗尽了配额",
+          "向量数据库检索到的文本块包含非法字符，触发了模型安全拦截机制",
+          "网络传输超时导致 Response 丢失，需要增加 Client 端 HTTP Timeout 门限"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：推理模型的 max_completion_tokens 是\"思考 + 回答\"的总预算，思维链对用户不可见但照常计费占额。预算给得太紧时，模型可能在思考阶段就花光配额，最终回答一个字都没渲染——HTTP 层面一切正常（200），只有 finish_reason=length 和空 content 暴露问题，属于典型的静默失败。工程对策：为推理模型预留充足的 completion 预算；监控 finish_reason 分布并对 length+空内容告警重试。Context 溢出会直接报错而非空返回，安全拦截有独立标识，HTTP 超时则连响应都拿不到——均与本现象特征不符。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-029",
+    "category": "ai-engineering",
+    "topic": "latency",
+    "tags": [
+      "thinking-tokens",
+      "autoregressive-decode",
+      "prefill-cache",
+      "long-context"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "实测表明，在约 12 万 Tokens 的全量语料下运行全局归纳类提问（如\"统计全语料提及频次最高的工具\"），即便 Prefix Cache 达到了 100% 命中，长上下文方案的端到端延迟仍高达 200 秒以上。以下关于该延迟瓶颈的分析，正确的有？（多选）",
+    "explanation": "Prefix Cache 完全命中意味着 Prefill 阶段的上下文计算时间几乎被消除。由于 LLM 的解码生成是串行的，复杂大上下文触发了数千甚至上万个内部 Thinking Tokens 的生成，正是这些 Thinking Tokens 的自回归串行解码过程构成了数百秒延迟的主要瓶颈。",
+    "reference": {
+      "concept": "Cache 只省 Prefill；Decode 是逐 token 串行的，大上下文诱发海量 Thinking Tokens，串行解码才是数百秒延迟的主因。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KV Cache 读取吞吐量不足，造成 Prefill 阶段极长延迟",
+          "主要延迟消耗在模型为了进行跨文档推导与汇总而生成的思维链自回归串行解码过程上",
+          "输入上下文越庞大，推理模型倾向于生成更多数量的思考 Token 来梳理逻辑，导致整体解码输出时间成倍增长",
+          "Cache 命中仅削减 Prefill 阶段的计算与延迟，无法消除解码生成阶段的串行耗时"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C、D。\n\n要点：延迟要分两段归因——Prefill（读上下文）与 Decode（逐 token 生成）。Prefix Cache 100% 命中已把 Prefill 几乎降为零（所以 A 错误），剩下的时间全花在 Decode：全局归纳类任务促使推理模型生成成千上万的 Thinking Tokens 来梳理跨文档逻辑（B），且上下文越大思考链条往往越长（C）；Decode 本质是自回归串行过程，每个 token 都要等上一个生成完，Cache 对这段毫无帮助（D）。结论：长上下文 + 推理模型的延迟瓶颈在串行解码的思考链，而不是读缓存的吞吐。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-030",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "tags": [
+      "rag-vs-long-context",
+      "completeness",
+      "corpus-wide-query",
+      "cost-model"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "某企业知识库包含约 12 万 Tokens 文本。架构师在评估\"全量长上下文直连（Long-Context）\"与\"传统 RAG 架构\"时，以下关于二者 Trade-off 的判断，正确的是？",
+    "explanation": "长上下文方案在响应时间（通常需数分钟）和高并发总成本上均劣于 RAG——随着查询量 N 增加，N × 长上下文成本爆发式增长。而对\"全局统计/全语料汇总\"类问题，固定 Top-K 的 RAG 存在天然信息缺失，长上下文直连在容量许可范围内能达到接近 100% 的召回与回答完整度。",
+    "reference": {
+      "concept": "RAG vs 长上下文的翻转点在查询并发 N：全局汇总类问题 RAG 天然缺信息而长上下文近满完整度；低频选长上下文、高频选 RAG。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "由于长上下文具备 Prefix Cache 优惠，在任何高并发生产场景下，长上下文方案的总成本都低于 RAG",
+          "对\"全局统计/全语料汇总（Corpus-wide）\"类问题，固定 Top-K 的 RAG 存在天然信息缺失，而长上下文在小/中型语料下可实现接近 100% 的完整度（Completeness）",
+          "对实时性要求高的交互式应用，长上下文方案优于 RAG，因为省去了向量检索的耗时",
+          "在高频查询场景下，长上下文方案具备极大的成本优势"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：两种架构各有压倒性场景。质量维度：\"统计全语料\"类问题的答案分散在整个知识库，固定 Top-K 检索天然漏召，Completeness 掉到 0；而 12 万 Tokens 在长上下文容量内可全量喂入，完整度接近 100%。成本维度：总成本 ≈ 单次成本 × 并发查询量 N——低频查询时长上下文（配合 Prefix Cache）便宜省事；N 一大，每请求都背全量 Token 的长上下文方案费用爆炸，RAG 只检索少量 chunks 反而呈数量级优势（故 A、D 反了）。延迟维度：长上下文 + 思考链动辄数分钟，交互式应用不可接受（C 错）。选型公式：低频/全局分析用长上下文，高频/点查用 RAG，或两者混合。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-031",
+    "category": "ai-engineering",
+    "topic": "agent-guardrails",
+    "tags": [
+      "groundedness",
+      "completeness",
+      "negative-constraint",
+      "refusal"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在长文本问答测试中，当面对全语料覆盖问题（如\"汇总全部 33 篇文章中引用的 GitHub 仓库\"）时，RAG 仅召回了 5 个 Chunks。测试结果显示 RAG 的 Completeness（完整度）得分仅为 0，但 Groundedness（依据度/无幻觉）得分依然维持满分。导致这一现象的关键因素包括？（多选）",
+    "explanation": "RAG 在 Chunk 不足时能维持高 Groundedness（零幻觉）且 Completeness 为 0，完全归功于 Prompt 中强加的拒绝猜测约束，使模型能够明确意识到上下文缺失并选择拒绝回答，从而保证了无幻觉生成。",
+    "reference": {
+      "concept": "召回不全时 Groundedness 满分靠 System Prompt 负向约束（只按给定文本答、缺失就明说）⇒ 模型承认切片不足并拒答，宁缺勿编。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模型自主推断出向量数据库召回不全，并自动提高了注意力机制对外部知识的惩罚权重",
+          "System Prompt 中硬性包含了负向约束：\"仅基于提供的文本回答；若文本不包含答案，请明确说明而非猜测\"",
+          "模型在意识到检索片段不足以回答全局问题时，主动回复\"仅有部分切片，无法回答全量，拒绝猜测\"",
+          "向量检索的 Embedding 模型自动过滤掉了可能导致幻觉的不确定切片"
+        ],
+        "answer": [
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C。\n\n要点：零幻觉 + 零完整度的组合，机制上是\"约束驱动的诚实拒答\"：System Prompt 里写死的负向约束（仅基于提供文本回答、缺失就明说不要猜，B）让模型在发现 5 个切片撑不起全量汇总时选择明确拒绝而非脑补（C）——于是没有编造任何仓库，Groundedness 满分；但答案确实没覆盖 33 篇文章的内容，Completeness 为 0。A、D 都是机制误解：LLM 不会调整\"注意力惩罚权重\"，Embedding 检索也没有\"过滤不确定切片\"的能力——召回不足是 Top-K 检索的固有局限，防幻觉靠的是应用层的 Prompt 护栏，不是模型或检索组件的自发行为。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-032",
+    "category": "ai-engineering",
+    "topic": "reliability",
+    "tags": [
+      "daily-quota",
+      "rate-limit",
+      "pre-allocation",
+      "max-completion-tokens"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在长上下文 API（如 120k+ Input Tokens/Request）的实际生产调用中，以下关于 API 每日配额（Daily Token Quota）与 Rate Limit 扣减逻辑的说法，正确的是？",
+    "explanation": "API 网关在接收到请求时，为了防止超额生成，通常会将 Input Tokens + max_completion_tokens 作为该请求的临时占用额度进行预扣。如果将 max_completion_tokens 盲目调大（如设为 16k），会极大地消耗 Daily Quota，导致少量并发即可把每日配额冲爆，即便实际生成的 Token 远远低于该上限。",
+    "reference": {
+      "concept": "配额按 Input + max_completion_tokens 预扣而非实际生成；盲目调大上限 ⇒ 少量并发就打爆 Daily Quota。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Daily Token Quota 仅在请求完成时，根据实际生成的 Output Tokens 加上 Input Tokens 实施精准扣减",
+          "请求发送时，网关通常会按照设定的 max_completion_tokens 上限预扣额度；若设置过高，即使实际生成极少，也会导致 Daily Quota 提前耗尽",
+          "Prefix Cache 触发后，不仅能降低费用，还会按比例归还已消耗的 Daily Input Token Quota",
+          "长上下文 API 的主要限制在于每 Token 费用，Daily Quota 配额通常极其宽裕，无需在架构设计中考虑"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：网关无法预知模型会生成多少 Token，只能在受理请求时按最坏情况预扣：占用额度 = Input Tokens + max_completion_tokens，完成后多退少补（多数平台不退）。工程后果是把 max_completion_tokens 当\"保险丝\"盲目调大（如 16k）——每个请求预扣 136k+，少量并发就把每日配额冲爆，而实际可能只生成了几百 Token。对策：按真实需要设置输出上限、监控配额水位、必要时拆分请求。Prefix Cache 只影响计费单价不影响配额扣减逻辑（C 错）；长上下文场景下 Daily Quota 恰恰是最先撞上的墙之一（D 错）。"
+      }
+    }
   }
 ]
