@@ -20,7 +20,7 @@ import type {
 } from './types';
 import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './application/interviewEngine';
-import { conceptGraph, collectTopicRefs, computeCoverage, suggestNextTopics } from './domain/conceptGraph';
+import { collectTopicRefs, computeCoverage, suggestNextTopics } from './domain/conceptGraph';
 import type { AnswerSignal, Strategy } from './domain/adaptive';
 import { isConfigValid } from './ai/provider';
 import { loadConfig, saveConfig } from './storage/settings';
@@ -90,13 +90,10 @@ export default function App() {
   const questions = session?.questions ?? [];
   const configReady = isConfigValid(config);
 
-  const answeredCount = useMemo(() => {
-    return questions.filter((q) => {
-      const a = answers[q.id];
-      if (q.type === 'essay' || q.type === 'coding') return Boolean(a && (a as string).trim());
-      return Array.isArray(a) && a.length > 0;
-    }).length;
-  }, [questions, answers]);
+  const answeredCount = useMemo(
+    () => questions.filter((q) => hasAnswerValue(answers[q.id])).length,
+    [questions, answers],
+  );
 
   const handleSaveConfig = (c: PiConfig) => {
     setConfig(c);
@@ -153,7 +150,7 @@ export default function App() {
 
       if (s.questions.length < s.definition.count) {
         setBusy('正在根据你的表现选择下一题…');
-        const step = await nextAdaptiveStep(bank, s, signalsRef.current, configRef.current);
+        const step = await nextAdaptiveStep(bank, s, signalsRef.current, profileRef.current, configRef.current);
         if (step) {
           setSession({ ...s, questions: [...s.questions, step.question] });
           setStrategies((prev) => [...prev, step.strategy]);
@@ -165,32 +162,46 @@ export default function App() {
     }
   };
 
+  /** 提前结束：当前题若尚未评分，先评一次再入账，避免未评分题以 0 分污染学习记录。 */
+  const handleFinishEarly = async () => {
+    const s = sessionRef.current;
+    if (!s?.definition.adaptive) return doSubmit();
+    const idx = Object.keys(gradesRef.current).length;
+    const q = s.questions[idx];
+    if (!q) return doSubmit();
+    setBusy('正在评分…');
+    try {
+      const g = await evaluateAnswer(q, answersRef.current[q.id], s.definition, configRef.current);
+      const nextGrades = { ...gradesRef.current, [q.id]: g };
+      gradesRef.current = nextGrades;
+      setGrades(nextGrades);
+      signalsRef.current = [
+        ...signalsRef.current,
+        { topic: q.topic, score: g?.overall ?? 0, difficulty: q.difficulty },
+      ];
+    } finally {
+      setBusy(null);
+    }
+    doSubmit();
+  };
+
   const doSubmit = useCallback(async () => {
     const s = sessionRef.current;
     if (!s) return;
     const cfg = configRef.current;
-    // 自适应模式逐题评过，无需再批量评估
+    // 自适应模式逐题评过（含提前结束时的当前题），无需再批量评估
     const g = s.definition.adaptive ? gradesRef.current : await evaluateSession(s, answersRef.current, cfg);
     setGrades(g);
-    // 先算时长再入库（duration 在记录时即确定）
-    durationRef.current = Math.round((Date.now() - startedAtRef.current) / 1000);
+    // 时长从会话创建（startedAt）起算——自适应模式下追加题目不会改变 startedAt
+    const durationSec = Math.round((Date.now() - s.startedAt) / 1000);
     const prev = profileRef.current.sessions[0]?.overall ?? null;
-    const rec = sessionFromQuiz(s, g, durationRef.current);
+    const rec = sessionFromQuiz(s, g, durationSec);
     const next = updateLearner(profileRef.current, rec);
     saveLearner(next);
     setProfile(next);
     setPrevOverall(prev);
     setPhase('result');
   }, []);
-
-  const durationRef = useRef<number | undefined>(undefined);
-  const startedAtRef = useRef(0);
-  // 进入作答阶段时记录起始时间
-  useEffect(() => {
-    if (phase === 'quiz' && session) {
-      startedAtRef.current = Date.now();
-    }
-  }, [phase, session]);
 
   const handleAnswerChange = (id: string, v: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [id]: v }));
@@ -213,17 +224,21 @@ export default function App() {
     setPage('train');
   };
 
-  // 倒计时：仅在有 timeLimitSec 且处于 quiz 阶段时运行
+  // 倒计时：截止点锚定在会话创建时间（session.startedAt）。
+  // 自适应模式追加题目会生成新的 session 对象，但 startedAt 不变——
+  // 因此依赖它而非 session 本身，避免每次换题把剩余时间重置回满额。
+  const timeLimitSec = session?.definition.timeLimitSec;
+  const sessionStartedAt = session?.startedAt;
   useEffect(() => {
-    if (phase !== 'quiz' || !session?.definition.timeLimitSec) {
+    if (phase !== 'quiz' || !timeLimitSec || !sessionStartedAt) {
       setRemaining(null);
       return;
     }
-    const limit = session.definition.timeLimitSec;
-    const start = Date.now();
-    setRemaining(limit);
+    const deadline = sessionStartedAt + timeLimitSec * 1000;
+    const tick = () => Math.max(0, Math.round((deadline - Date.now()) / 1000));
+    setRemaining(tick());
     const id = setInterval(() => {
-      const left = Math.max(0, Math.round((limit - (Date.now() - start)) / 1000));
+      const left = tick();
       setRemaining(left);
       if (left <= 0) {
         clearInterval(id);
@@ -232,7 +247,7 @@ export default function App() {
       }
     }, 1000);
     return () => clearInterval(id);
-  }, [phase, session, doSubmit, message]);
+  }, [phase, timeLimitSec, sessionStartedAt, doSubmit, message]);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -293,8 +308,8 @@ export default function App() {
           <ProgressPage
             profile={profile}
             onGoTrain={() => setPage('train')}
-            coverage={computeCoverage(collectTopicRefs(bank.questions), profile, conceptGraph)}
-            suggestions={suggestNextTopics(collectTopicRefs(bank.questions), profile, conceptGraph)}
+            coverage={computeCoverage(collectTopicRefs(bank.questions), profile)}
+            suggestions={suggestNextTopics(collectTopicRefs(bank.questions), profile)}
           />
         )}
 
@@ -323,7 +338,7 @@ export default function App() {
               hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].id])}
               onChange={(v) => handleAnswerChange(questions[adaptiveCursor].id, v)}
               onSubmitNext={() => void handleAdaptiveNext()}
-              onFinish={() => void doSubmit()}
+              onFinish={() => void handleFinishEarly()}
             />
           </div>
         )}

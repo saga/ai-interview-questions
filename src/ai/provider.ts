@@ -19,6 +19,21 @@ export function isConfigValid(c: PiConfig): boolean {
 }
 
 /**
+ * 合并题目级 rubric 与全局 rubric（纯函数，便于测试）：
+ * - dimensions：该题权重覆盖全局对应维度
+ * - required：必须覆盖的要点，注入评分提示
+ */
+export function mergeQuestionRubric(
+  q: Question,
+  globalRubric: ScoringRubric,
+): { rubric: ScoringRubric; requiredPoints?: string[] } {
+  return {
+    rubric: { ...globalRubric, ...(q.rubric?.dimensions ?? {}) },
+    requiredPoints: q.rubric?.required,
+  };
+}
+
+/**
  * pi-ai 的具体实现。
  * - 变体：one-shot 重写题干（options/answer 不归 LLM 管，见 domain/variant.ts）。
  * - 开放/编程题评分：one-shot 四维评分，综合分由 domain 聚合（LLM 不拥有分数）。
@@ -37,9 +52,8 @@ export class PiAIProvider implements LLMProvider {
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
-    // 该题专属 rubric.dimensions 覆盖全局权重；required 要点作为 completeness 提示。
-    const effectiveRubric: ScoringRubric = { ...rubric, ...(q.rubric?.dimensions ?? {}) };
-    return evalOpen(q, userAnswer, config, effectiveRubric, extraCriteria);
+    const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
+    return evalOpen(q, userAnswer, config, effectiveRubric, extraCriteria, requiredPoints);
   }
 }
 

@@ -110,10 +110,15 @@ export async function evaluateOpenAnswer(
   config: import('../types').PiConfig,
   rubric: ScoringRubric,
   extraCriteria?: string,
+  requiredPoints?: string[],
 ): Promise<EvaluationResult> {
   if (!userAnswer || !userAnswer.trim()) {
     return parseEvaluation('', q, rubric);
   }
-  const raw = await callLLM(config, EVAL_SYSTEM, buildEvalUser(q, userAnswer, { rubric, extraCriteria }));
+  const raw = await callLLM(
+    config,
+    EVAL_SYSTEM,
+    buildEvalUser(q, userAnswer, { rubric, extraCriteria, requiredPoints }),
+  );
   return parseEvaluation(raw, q, rubric);
 }

@@ -7,6 +7,7 @@ import type {
   ScoringRubric,
 } from '../types';
 import { EVAL_DIMENSIONS } from '../types';
+import { isChoiceCorrect } from './quiz';
 
 /** 默认四维权重（和为 1）：正确性 / 完整性 / 架构 / 表达 */
 export const DEFAULT_RUBRIC: ScoringRubric = {
@@ -42,10 +43,4 @@ export function gradeChoice(q: ChoiceQuestion, selected: number[], rubric: Scori
     gaps: correct ? [] : ['答案不正确，请参见解析'],
     feedback: correct ? '回答正确。' : '回答错误。',
   };
-}
-
-function isChoiceCorrect(q: ChoiceQuestion, selected: number[]): boolean {
-  const a = [...q.answer].sort((x, y) => x - y).join(',');
-  const s = [...selected].sort((x, y) => x - y).join(',');
-  return a === s;
 }

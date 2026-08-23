@@ -2,6 +2,29 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 架构评审修复批次（ADR-020：接线 + 删除）
+
+- **功能接线（此前文档承诺但代码未生效）**：
+  - `rubric.required` 注入评分提示：新增 `ai/provider.mergeQuestionRubric` 纯函数统一合并
+    题目级 dimensions/required——此前 46 道带 required 的题全部未生效。
+  - `useAI` 门控开放题评分：`evaluateAnswer` 增加 useAI 检查，关闭 AI 不再偷发 LLM 请求。
+- **Bug 修复**：
+  - 自适应限时模式倒计时/训练时长重置：截止点锚定 `session.startedAt`（换题不再重置计时）。
+  - 自适应 move-on 薄弱优先断线：`nextAdaptiveStep` 接入 profile，兜底改用
+    `recommendWeakTopics`（此前误用全部练过主题且生产路径未传）。
+  - AdaptiveQuiz「提前结束」先对当前题评分再入账，不再以 0 分污染学习画像。
+  - SettingsPanel 切换服务商时重置模型（避免跨服务商非法组合）；删除环境变量误导文案。
+- **死代码清理（AGENTS 原则 2）**：
+  - 删除 `nodeTypes`/`NodeType`/`nodeTypeOf`/`prerequisitesOf` 及 JSON 中 nodeTypes 字段
+    （生产零引用；ADR-019「覆盖面展示仍用」的理由不成立）。
+  - 删除 `InterviewSession.variants` 与 GeneratedVariant 溯源字段、`followUpStrategy` 预留字段。
+  - conceptGraph 公开 API 无参化（去掉被忽略的 graph 参数）；薄弱阈值收敛到单一出处；
+    isChoiceCorrect 去重；pi.ts 收敛 `as never` 为正式类型。
+- **口径一致**：README 移除 pi-agent-core 表述（ADR-019 遗漏）；模拟面试页未配置 AI 也允许开始；
+  过期注释清理（mastery 公式 / 边类型清单 / variantGenerator 等）。
+- 测试 72 例全过（新增 provider rubric 合并、engine useAI 门控、adaptive 薄弱优先）；
+  typecheck/build 通过。
+
 ## 2026-08-23 · 架构收敛（ADR-019：减法清单执行）
 
 - **移除 pi-agent-core**：开放题评分改走 `ai/evaluate.ts`（pi-ai one-shot）；删除 `interviewAgent.ts`

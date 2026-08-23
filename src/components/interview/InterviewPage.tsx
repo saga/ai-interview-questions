@@ -60,7 +60,7 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
             <Alert
               type="warning"
               showIcon
-              message="AI 未配置，开放题将不自动评分"
+              message="AI 未配置：选择题照常判分，开放题不自动评分"
               action={
                 <Button size="small" onClick={onGoSettings}>
                   去设置
@@ -68,14 +68,7 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
               }
             />
           )}
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlayCircleOutlined />}
-            block
-            disabled={!configReady}
-            onClick={start}
-          >
+          <Button type="primary" size="large" icon={<PlayCircleOutlined />} block onClick={start}>
             开始模拟面试
           </Button>
         </Space>

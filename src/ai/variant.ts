@@ -13,7 +13,7 @@ interface RawVariant {
   explanation?: string;
 }
 
-/** 生成变体；返回结构含 sourceQuestionId / generatedBy 便于调试与审计。 */
+/** 生成变体；只输出重写后的题干与解析（答案数据不进入 LLM 输出契约）。 */
 export async function generateVariant(q: Question, config: PiConfig): Promise<GeneratedVariant> {
   const kind = q.type === 'coding' ? '编程题' : q.type === 'essay' ? '问答题' : '选择题';
   const user = `原始${kind}：
@@ -28,7 +28,5 @@ ${JSON.stringify({ question: q.question, explanation: q.explanation }, null, 2)}
   return {
     question: out.question ?? q.question,
     explanation: out.explanation,
-    sourceQuestionId: q.id,
-    generatedBy: { provider: config.provider, model: config.model },
   };
 }

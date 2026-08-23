@@ -9,7 +9,8 @@
 import type { Difficulty, LearnerProfile } from '../types';
 import type { Question } from '../types';
 import { pickPrioritized, pickQuestions } from './quiz';
-import { prerequisiteClosure, relatedOf, type ConceptGraph } from './conceptGraph';
+import { prerequisiteClosure, relatedOf } from './conceptGraph';
+import { recommendWeakTopics } from './learner';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -67,7 +68,6 @@ function pickFromTopics(pool: Question[], topics: string[], rng: () => number): 
 export function pickNextAdaptive(
   pool: Question[],
   signals: AnswerSignal[],
-  graph: ConceptGraph,
   profile?: LearnerProfile,
   rng: () => number = Math.random,
 ): { question: Question; strategy: Strategy } | null {
@@ -76,7 +76,7 @@ export function pickNextAdaptive(
   const first = signals.length === 0;
   const last = signals[signals.length - 1];
   const sameTopicPool = first ? [] : pool.filter((q) => q.topic === last.topic);
-  const relatedTopics = first ? [] : relatedOf(graph, last.topic);
+  const relatedTopics = first ? [] : relatedOf(last.topic);
   const relatedPool = first ? [] : pool.filter((q) => relatedTopics.includes(q.topic));
 
   const strategy = first
@@ -99,7 +99,7 @@ export function pickNextAdaptive(
         .sort((a, b) => DIFF_ORDER.indexOf(a.difficulty) - DIFF_ORDER.indexOf(b.difficulty));
       if (easier[0]) return { question: easier[0], strategy: 'gap-probe' };
 
-      const pres = prerequisiteClosure(graph, last.topic);
+      const pres = prerequisiteClosure(last.topic);
       const preQ = pickFromTopics(pool, pres, rng);
       if (preQ) return { question: preQ, strategy: 'gap-probe' };
 
@@ -123,9 +123,8 @@ export function pickNextAdaptive(
   // move-on 及一切策略的最终兜底：排除刚答的主题，优先薄弱项
   const rest = pool.filter((q) => q.topic !== (first ? '' : last.topic));
   const target = rest.length > 0 ? rest : pool;
+  const weakTopics = profile ? recommendWeakTopics(profile, 5) : [];
   const picked =
-    profile && Object.keys(profile.topicStats).length > 0
-      ? pickPrioritized(target, Object.keys(profile.topicStats), 1, rng)[0]
-      : undefined;
+    weakTopics.length > 0 ? pickPrioritized(target, weakTopics, 1, rng)[0] : undefined;
   return { question: picked ?? pickQuestions(target, 1, rng)[0], strategy: 'move-on' };
 }

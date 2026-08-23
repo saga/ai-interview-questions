@@ -2,9 +2,37 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
-## ADR-019 · 架构收敛（减法）：LLM 是插件，Domain 拥有分数与决策
+## ADR-020 · 架构评审修复批次：接线断线功能 + 死代码清理
 
 - 状态：已采纳 · 2026-08-23
+- 背景：全量代码/文档评审发现三类问题——文档承诺的功能未接线、已设计机制在生产路径断线、
+  ADR-019 减法后的注释与死代码残留。
+- 决策：
+  - **rubric.required 接线**：`ai/provider.mergeQuestionRubric`（纯函数）统一合并题目级
+    dimensions/required，required 注入评分提示——此前 46 道题的 required 全部失效。
+  - **useAI 门控评分**：`evaluateAnswer` 对开放题增加 `def.useAI` 检查；关闭 AI 的自定义训练
+    不再偷发 LLM 请求。变体出题原本就受 useAI 门控，现两处行为一致。
+  - **自适应计时锚定**：倒计时截止点锚定 `session.startedAt`（自适应追加题目不改变它），
+    修复"每次换题重置 30 分钟倒计时"与 durationSec 失真。
+  - **adaptive 薄弱优先接通**：`nextAdaptiveStep` 增加 profile 参数并传入 `pickNextAdaptive`；
+    move-on 兜底改用 `recommendWeakTopics`（此前误用全部练过主题，且生产路径根本没传 profile）。
+  - **提前结束先评分**：AdaptiveQuiz 提前结束时对当前未评题先评一次再入账，不再以 0 分污染画像。
+  - **删除 nodeTypes**：NodeType/nodeTypeOf 及 JSON 中 nodeTypes 字段全删（生产零引用，
+    ADR-019"覆盖面展示仍用"的理由不成立）；conceptGraph 公开 API 无参化（去掉被忽略的 graph 参数）；
+    prerequisitesOf 一并删除（仅测试引用）。
+  - **删除 variants 审计字段**：`InterviewSession.variants` 与 GeneratedVariant 的
+    sourceQuestionId/generatedBy 无任何消费者；是否变体成功由题目 `aiGenerated` 标记表达。
+  - **杂项**：删除 `followUpStrategy` 预留字段；isChoiceCorrect 去重（evaluation 复用 quiz 导出）；
+   薄弱阈值 WEAK_MASTERY/WEAK_AVG 收敛到 conceptGraph 单一出处；SettingsPanel 切换 provider
+    重置 model、删除环境变量误导文案；模拟面试页未配置 AI 也允许开始（口径与首页一致）；
+    pi.ts callLLM 收敛 `as never` 为正式类型。
+- 理由：当前不缺架构能力，缺的是把已有机制接通；本批次全部是"接线 + 删除"，不引入新抽象。
+- 验证：测试 72 例全过（新增 provider rubric 合并、engine useAI 门控、adaptive 薄弱优先共 9 例）；
+  typecheck/build 通过。
+
+## ADR-019 · 架构收敛（减法）：LLM 是插件，Domain 拥有分数与决策
+
+- 状态：已采纳 · 2026-08-23（其中「nodeTypes 保留」一项已被 ADR-020 推翻删除）
 - 背景：MVP 阶段同时存在 Interview Engine、Adaptive Strategy、Concept Graph、pi-agent-core 四套机制，
   接近"小型 learning platform"；且存在三处安全隐患/职责模糊（变体可改 options/answer、开放题校验过弱、
   LLM 可直出 overall）。
@@ -29,7 +57,7 @@
 
 ## ADR-018 · 知识图谱正规化（typed nodes + typed edges + 前置 DAG + evidence）
 
-- 状态：已采纳 · 2026-08-23（演进 ADR-017 的概念图）
+- 状态：部分取代 · 2026-08-23（typed nodes 被 ADR-020 删除，仅存 prerequisite/related 两类边）
 - 背景：首版图只有 `related` / `prerequisites` 两种无类型列表，无法回答"是什么关系、谁是子概念、
   哪个更基础、答好后该往哪追问"；且双向边重复、前置不成 DAG、掌握度是无证据的裸分数。
 - 决策：
@@ -96,7 +124,7 @@
 
 ## ADR-014 · Vitest 测试基建（落实 AGENTS 原则 2）
 
-- 状态：已采纳 · 2026-08-23
+- 状态：已采纳 · 2026-08-23（其中 Agent 集成测试部分随 ADR-019 移除）
 - 背景：AGENTS.md 原则 2 要求"纯逻辑必须测"，但此前一直没有测试框架，`npm run test` 不存在。
 - 决策：引入 **Vitest**（`npm run test` = `vitest run`，`vitest.config.ts` 独立于 vite.config，纯 node 环境）；`*.test.ts` 与被测代码同目录，并从 `tsconfig.app.json` 排除（不参与生产构建类型检查）。已覆盖：抽题/判分/评分聚合/变体校验（domain）+ 提示词构建/评估解析（ai 纯函数）+ **真实 pi-agent-core Agent + mock streamFn** 的集成测试（不发网络）。
 - 理由：domain 与 ai 纯函数是确定性高风险区；Agent 集成测试验证事件流协议（`start→text_delta→done`），防止升级 pi-agent-core 时静默破坏。
@@ -111,7 +139,7 @@
 
 ## ADR-012 · pi-agent-core 只做 "LLM Agent 层"，不接管 Quiz Engine
 
-- 状态：已采纳 · 2026-08-23
+- 状态：已被 ADR-019 取代（pi-agent-core 整体移除）· 2026-08-23
 - 背景：评估 `@earendil-works/pi-agent-core`（0.84.2，stateful + tool execution + event streaming）时，需界定其职责边界，避免把整个 Quiz Engine Agent 化。
 - 决策：
   - **Quiz Domain 完全自写**（抽题/随机化/判分/进度/会话/结果），与 Agent 无关。

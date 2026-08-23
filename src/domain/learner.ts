@@ -14,7 +14,7 @@ import type {
 } from '../types';
 import { isChoice } from './quiz';
 import { DEFAULT_RUBRIC } from './evaluation';
-import { conceptGraph, expandWithPrerequisites } from './conceptGraph';
+import { expandWithPrerequisites, WEAK_AVG, WEAK_MASTERY } from './conceptGraph';
 
 const SESSION_CAP = 50;
 const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/下滑"
@@ -50,7 +50,7 @@ function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): s
 /**
  * 把新会话并入 Learner Profile，返回新画像（不可变更新）。
  * - 每个 topic 独立聚合：attempts / avgScore / lastScore / trend / mastery / commonWeaknesses / lastSeen
- * - mastery = avg/100 × 置信度因子（尝试次数越多越接近真实水平）
+ * - mastery = avgScore/100（ADR-019 简化公式）；置信度由 attempts 字段本身表达，不做加权
  * - 会话列表新在前，上限 SESSION_CAP；overallScore = 最近 10 次会话均值
  */
 export function updateLearner(profile: LearnerProfile, s: SessionRecord): LearnerProfile {
@@ -80,6 +80,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
       : 'flat';
     // 掌握度 = 均分/100，简单直接（ADR-019）；置信度由 attempts 字段本身表达，不做加权公式
     const mastery = Math.round(clamp01(newAvg / 100) * 100) / 100;
+
 
     topicStats[topic] = {
       attempts,
@@ -140,10 +141,10 @@ export function sessionFromQuiz(
   };
 }
 
-/** 按掌握度升序取最薄弱的前 limit 个主题（仅统计练过的；均分高或掌握度高的不推荐）。 */
+/** 按掌握度升序取最薄弱的前 limit 个主题（仅统计练过的；达到掌握阈值的不推荐）。 */
 export function recommendWeakTopics(profile: LearnerProfile, limit = 3): string[] {
   return Object.entries(profile.topicStats)
-    .filter(([, s]) => s.attempts > 0 && s.mastery < 0.85 && s.avgScore < 85)
+    .filter(([, s]) => s.attempts > 0 && s.mastery < WEAK_MASTERY && s.avgScore < WEAK_AVG)
     .sort((a, b) => a[1].mastery - b[1].mastery || b[1].lastSeen - a[1].lastSeen)
     .slice(0, limit)
     .map(([topic]) => topic);
@@ -173,7 +174,7 @@ export function buildCoachDefinition(
     scoringRubric: opts.rubric ?? DEFAULT_RUBRIC,
     timeLimitSec: opts.timeLimitSec,
     // 沿概念图前置链展开薄弱主题：先补地基（未掌握的前置）再攻难点
-    topicPriorities: expandWithPrerequisites(recommendWeakTopics(profile, 3), profile, conceptGraph),
+    topicPriorities: expandWithPrerequisites(recommendWeakTopics(profile, 3), profile),
     mode: opts.mode ?? 'coach',
     adaptive: opts.adaptive,
   };

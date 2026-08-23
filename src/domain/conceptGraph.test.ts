@@ -4,11 +4,8 @@ import { emptyProfile } from './learner';
 import {
   collectTopicRefs,
   computeCoverage,
-  conceptGraph,
   expandWithPrerequisites,
-  nodeTypeOf,
   prerequisiteClosure,
-  prerequisitesOf,
   relatedOf,
   suggestNextTopics,
   type TopicRef,
@@ -40,23 +37,17 @@ const REFS: TopicRef[] = [
 
 describe('conceptGraph', () => {
   it('边查询：存在的 key 返回列表，缺失返回空数组', () => {
-    expect(relatedOf(conceptGraph, 'tool-calling')).toContain('mcp');
-    expect(prerequisitesOf(conceptGraph, 'react')).toContain('agent-fundamentals');
-    expect(relatedOf(conceptGraph, 'nonexistent-topic')).toEqual([]);
-    expect(prerequisitesOf(conceptGraph, 'nonexistent-topic')).toEqual([]);
+    expect(relatedOf('tool-calling')).toContain('mcp');
+    expect(relatedOf('nonexistent-topic')).toEqual([]);
+    expect(prerequisiteClosure('react')).toContain('agent-fundamentals');
+    expect(prerequisiteClosure('nonexistent-topic')).toEqual([]);
   });
 
   it('前置闭包：沿 DAG 传递上溯（tradeoff-planner ← react ← 基础）', () => {
-    const closure = prerequisiteClosure(conceptGraph, 'tradeoff-planner');
+    const closure = prerequisiteClosure('tradeoff-planner');
     expect(closure).toContain('react'); // 直接前置
     expect(closure).toContain('agent-fundamentals'); // 经 react 传递
     expect(closure).not.toContain('tradeoff-planner'); // 不含自身
-  });
-
-  it('nodeTypeOf 返回节点的类型标注', () => {
-    expect(nodeTypeOf(conceptGraph, 'rag')).toBe('concept');
-    expect(nodeTypeOf(conceptGraph, 'llm-as-judge')).toBe('technique');
-    expect(nodeTypeOf(conceptGraph, 'unknown-x')).toBeUndefined();
   });
 
   it('collectTopicRefs 去重并保留首次出现的 category', () => {
@@ -74,7 +65,7 @@ describe('conceptGraph', () => {
       'agent-fundamentals': { attempts: 3, avgScore: 90 },
       'tool-calling': { attempts: 2, avgScore: 60 },
     });
-    const report = computeCoverage(REFS, profile, conceptGraph);
+    const report = computeCoverage(REFS, profile);
 
     const agentic = report.categories.find((c) => c.category === 'agentic-ai');
     expect(agentic).toBeDefined();
@@ -88,11 +79,11 @@ describe('conceptGraph', () => {
   it('computeCoverage：前置全掌握的未学主题进入 readyToLearn，否则计入 blockedCount', () => {
     // react 的前置 = agent-fundamentals + tool-calling
     const allMastered = profileWith({ 'agent-fundamentals': { attempts: 2, avgScore: 92 }, 'tool-calling': { attempts: 2, avgScore: 95 } });
-    const reportReady = computeCoverage(REFS, allMastered, conceptGraph);
+    const reportReady = computeCoverage(REFS, allMastered);
     expect(reportReady.readyToLearn).toContain('react');
 
     const prereqWeak = profileWith({ 'agent-fundamentals': { attempts: 2, avgScore: 50 } });
-    const reportBlocked = computeCoverage(REFS, prereqWeak, conceptGraph);
+    const reportBlocked = computeCoverage(REFS, prereqWeak);
     expect(reportBlocked.readyToLearn).not.toContain('react');
     expect(reportBlocked.blockedCount).toBeGreaterThan(0);
   });
@@ -103,7 +94,7 @@ describe('conceptGraph', () => {
       'agent-fundamentals': { attempts: 3, avgScore: 75 },
       'rag': { attempts: 5, avgScore: 95 },
     });
-    const suggestions = suggestNextTopics(REFS, profile, conceptGraph, 3);
+    const suggestions = suggestNextTopics(REFS, profile, 3);
     expect(suggestions[0].topic).toBe('tool-calling'); // 掌握度最低
     expect(suggestions.map((s) => s.topic)).not.toContain('rag'); // 已掌握不推荐
   });
@@ -113,15 +104,15 @@ describe('conceptGraph', () => {
       'agent-fundamentals': { attempts: 2, avgScore: 40 },
       'tool-calling': { attempts: 2, avgScore: 95 },
     });
-    const expanded = expandWithPrerequisites(['react'], profile, conceptGraph);
+    const expanded = expandWithPrerequisites(['react'], profile);
     expect(expanded).toContain('react');
     expect(expanded).toContain('agent-fundamentals'); // 未掌握的前置被纳入
     expect(expanded).not.toContain('tool-calling'); // 已掌握的前置被跳过
 
     // 无关主题原样保留
-    expect(expandWithPrerequisites(['totally-unknown'], profile, conceptGraph)).toEqual(['totally-unknown']);
+    expect(expandWithPrerequisites(['totally-unknown'], profile)).toEqual(['totally-unknown']);
 
     // 环引用不会死循环（result 上限 + seen 去重保护）
-    expect(expandWithPrerequisites(['agent-fundamentals'], profile, conceptGraph).length).toBeLessThanOrEqual(10);
+    expect(expandWithPrerequisites(['agent-fundamentals'], profile).length).toBeLessThanOrEqual(10);
   });
 });

@@ -49,7 +49,7 @@ components/
 
 data/questions.json   题库（用户数据契约，slug 类目 + topic/tags/reference + 可选 rubric；100 题，
                        其中 agentic-ai 按 Scenario/Debugging/Trade-off/开放题等能力维度组织）
-data/conceptGraph.json  知识图谱（typed nodes + 两类有向边 prerequisite/related；
+data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG）
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
@@ -75,10 +75,12 @@ types.ts              全局类型（含 LLMProvider / LearnerProfile）
 - **模式开关**：`InterviewDefinition.adaptive`。开启后 `buildSession` 只组第一题；UI 走 `AdaptiveQuiz`
   逐题视图——提交即评分（选择题确定性判分 / 开放题 LLM），随后引擎选下一题追加。
 - **知识图谱**：`domain/conceptGraph.ts` + `data/conceptGraph.json`，图操作委托
-  `@dagrejs/graphlib`（限定在 conceptGraph 模块内，不外溢为架构核心）。节点带类型
-  （concept/architecture/pattern/technique/problem/tradeoff/decision/metric），边只有两类：
+  `@dagrejs/graphlib`（限定在 conceptGraph 模块内，不外溢为架构核心）。图数据只有两类有向边：
   `prerequisite`（基础→进阶 DAG，加载期 `isAcyclic` 校验、`topsort` 学习顺序、闭包上溯）
-  与 `related`（无向语义，双向遍历）。节点复用题库 `topic` 字段，domain 复用 category。
+  与 `related`（无向语义，双向遍历）。边复用题库 `topic` 字段；图是模块级单例，
+  公开 API（prerequisiteClosure / relatedOf / computeCoverage / suggestNextTopics /
+  expandWithPrerequisites）不要求传 graph 参数。薄弱阈值 `WEAK_MASTERY/WEAK_AVG`
+  在 conceptGraph 定义、learner 复用（单一出处）。
 - **覆盖面地图**：`computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
   blocked 判定沿前置闭包上溯（根因未掌握则高级主题被标记为"先补前置"）。
   ProgressPage 展示类目覆盖条 + `suggestNextTopics()` 学习建议。
@@ -111,14 +113,17 @@ InterviewDefinition  (声明式：categories / difficulties / questionTypes
                        / count / useAI / scoringRubric / timeLimitSec / evaluationCriteria)
         │
         ↓  interviewEngine.buildSession()
-   InterviewSession  (抽中的题目 + 变体记录 + 用户答案 + 评分)
+   InterviewSession  (抽中的题目 + 用户答案 + 评分)
         │
         ↓  evaluateAnswer() / evaluateSession()
    EvaluationResult  (overall 0-100 + 四维 dimensions + strengths/gaps/feedback)
 ```
 
 - 选择题：`gradeChoice` 确定性判分（选中集合 == 正确答案集合）。
-- 开放/编程题：走 `LLMProvider.evaluateOpenAnswer`，无 provider 时返回 null（UI 提示未评分）。
+- 开放/编程题：走 `LLMProvider.evaluateOpenAnswer`，`useAI=false` 或无有效 provider 时返回 null
+  （UI 提示未评分）——useAI 开关同时门控变体出题与开放题评分。
+- 题目级 `rubric.required` 会注入评分提示、`rubric.dimensions` 覆盖全局权重
+  （合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
 
 ## LLM 能力边界（ADR-019）
 
@@ -174,7 +179,8 @@ Canonical Question ──→ LLM（只输出 question / explanation）
 要点：
 - 选择题的 options/answer 永远来自原题——LLM 不接触选项顺序，索引错位不可能发生。
 - 开放题的 `referenceAnswer` 永远来自原题。
-- `GeneratedVariant` 记录 `sourceQuestionId` 与 `generatedBy` 便于调试。
+- 变体只含重写后的题干/解析（`GeneratedVariant`），不含任何答案数据与溯源元数据；
+  是否变体成功由题目上的 `aiGenerated` 标记表达。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 

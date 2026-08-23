@@ -1,4 +1,4 @@
-import { Form, Select, Input, Alert, Button, Card, Typography, Space } from 'antd';
+import { Form, Select, Input, Alert, Button, Card, Typography } from 'antd';
 import type { PiConfig, ProviderId } from '../../types';
 
 const PROVIDER_OPTIONS: { label: string; value: ProviderId }[] = [
@@ -54,7 +54,14 @@ export default function SettingsPanel({ config, onSave }: Props) {
       />
       <Form form={form} layout="vertical" initialValues={config}>
         <Form.Item name="provider" label="服务商" rules={[{ required: true }]}>
-          <Select options={PROVIDER_OPTIONS} />
+          <Select
+            options={PROVIDER_OPTIONS}
+            onChange={(p) => {
+              // 切换服务商时重置模型，避免保存出跨服务商的非法组合
+              const first = MODEL_OPTIONS[p as ProviderId]?.[0]?.value;
+              if (first) form.setFieldValue('model', first);
+            }}
+          />
         </Form.Item>
         <Form.Item name="model" label="模型" rules={[{ required: true }]}>
           <Select
@@ -67,10 +74,9 @@ export default function SettingsPanel({ config, onSave }: Props) {
           <Input.Password placeholder="sk-... / 你的服务商密钥" />
         </Form.Item>
       </Form>
-      <Space direction="vertical" size={4} style={{ fontSize: 12, color: '#888' }}>
-        <span>OpenAI：环境变量 OPENAI_API_KEY 同理；此处密钥优先于环境变量。</span>
-        <span>Anthropic：支持 ANTHROPIC_API_KEY 或 OAuth Token。</span>
-      </Space>
+      <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
+        浏览器直连受 CORS 限制：优先推荐 OpenRouter；OpenAI / Anthropic 直连失败时请改用 OpenRouter 或自配代理。
+      </Typography.Paragraph>
       <Button type="primary" block style={{ marginTop: 16 }} onClick={handleSave}>
         保存设置
       </Button>

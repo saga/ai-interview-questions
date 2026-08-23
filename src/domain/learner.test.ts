@@ -59,10 +59,9 @@ describe('updateLearner', () => {
     expect(p.topicStats['rag'].trend).toBe('declining');
   });
 
-  it('mastery 在 [0,1]，且尝试次数多时收敛到 avg/100', () => {
+  it('mastery = avgScore/100，落在 [0,1]', () => {
     const p = updateLearner(emptyProfile(), session(70, Array.from({ length: 5 }, () => result('rag', 70))));
-    expect(p.topicStats['rag'].mastery).toBeGreaterThan(0.6);
-    expect(p.topicStats['rag'].mastery).toBeLessThanOrEqual(0.7);
+    expect(p.topicStats['rag'].mastery).toBe(0.7);
   });
 
   it('commonWeaknesses 按出现频率取前 3', () => {

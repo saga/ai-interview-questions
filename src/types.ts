@@ -95,8 +95,6 @@ export interface ScoringRubric {
 export interface GeneratedVariant {
   question: string;
   explanation?: string;
-  sourceQuestionId: string;
-  generatedBy: { provider: string; model: string };
 }
 
 /**
@@ -114,7 +112,6 @@ export interface InterviewDefinition {
   adaptive?: boolean;
   scoringRubric: ScoringRubric;
   timeLimitSec?: number;
-  followUpStrategy?: string; // 预留：Agentic 追问扩展
   evaluationCriteria?: string; // 给 LLM 的额外评估要求
   /** 薄弱主题优先（slug 列表，来自 Learner Profile）；buildSession 会优先抽取这些主题的题 */
   topicPriorities?: string[];
@@ -127,8 +124,6 @@ export interface InterviewSession {
   definition: InterviewDefinition;
   questions: Question[];
   startedAt: number;
-  /** 题 id → LLM 变体（调试/审计用，UI 不强制消费） */
-  variants?: Record<string, GeneratedVariant>;
 }
 
 /** LLM Provider 抽象：应用只依赖此接口，pi-ai 仅是其中一种实现。 */
@@ -165,7 +160,10 @@ export interface TopicStats {
   /** 最近一次得分 0-100 */
   lastScore: number;
   trend: Trend;
-  /** 0-1，随尝试次数收敛的置信度加权掌握度 */
+  /**
+   * 0-1 掌握度 = avgScore/100（ADR-019 简化公式）；
+   * 置信度由 attempts 字段本身表达，不做加权。
+   */
   mastery: number;
   /** 高频遗漏/错误要点（来自开放题评估的 gaps） */
   commonWeaknesses: string[];

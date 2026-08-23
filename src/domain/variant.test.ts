@@ -33,8 +33,6 @@ const oq: OpenQuestion = {
 function variant(partial: Partial<GeneratedVariant> = {}): GeneratedVariant {
   return {
     question: 'v',
-    sourceQuestionId: 'x',
-    generatedBy: { provider: 'openai', model: 'm' },
     ...partial,
   };
 }
@@ -60,7 +58,7 @@ describe('applyVariant', () => {
   });
 
   it('开放题：referenceAnswer 永远保留原题的值（LLM 不改写答案）', () => {
-    const r = applyVariant(oq, variant({ sourceQuestionId: 'y' })) as OpenQuestion;
+    const r = applyVariant(oq, variant()) as OpenQuestion;
     expect(r.referenceAnswer).toBe('REF-ANSWER');
     expect(r.question).toBe('v');
     expect(r.aiGenerated).toBe(true);

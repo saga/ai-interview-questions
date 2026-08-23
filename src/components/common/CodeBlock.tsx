@@ -20,7 +20,7 @@ interface Props {
   showLineNumbers?: boolean;
 }
 
-/** 只读代码块：Shiki 语法高亮 + CSS 行号。编辑场景请勿使用（后续 Coding Interview 用 Monaco）。 */
+/** 只读代码块：Shiki 语法高亮 + CSS 行号。可编辑场景用 CodeEditor（Monaco）。 */
 export default function CodeBlock({ code, language, showLineNumbers = true }: Props) {
   const [html, setHtml] = useState('');
 

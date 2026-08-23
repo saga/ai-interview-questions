@@ -4,9 +4,9 @@
 import type {
   AnswerValue,
   EvaluationResult,
-  GeneratedVariant,
   InterviewDefinition,
   InterviewSession,
+  LearnerProfile,
   PiConfig,
   Question,
   QuestionBank,
@@ -16,7 +16,6 @@ import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
 import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/adaptive';
-import { conceptGraph } from '../domain/conceptGraph';
 
 /**
  * 由声明式 Definition 构建一次具体会话：
@@ -41,33 +40,28 @@ export async function buildSession(
       : pickQuestions(pool, count);
   const provider = def.useAI ? createLLMProvider(config) : null;
 
-  const { questions, variants } = await finalizeQuestions(picked, provider, config);
-  return {
-    definition: def,
-    questions,
-    startedAt: Date.now(),
-    variants: Object.keys(variants).length > 0 ? variants : undefined,
-  };
+  const questions = await finalizeQuestions(picked, provider, config);
+  return { definition: def, questions, startedAt: Date.now() };
 }
 
-/** 为题目生成并校验 LLM 变体（无 provider / 失败时回退原题）。 */
+/** 为题目生成并校验 LLM 变体；无 provider / 校验失败 / 调用失败时一律回退原题。 */
 async function finalizeQuestion(
   q: Question,
   provider: ReturnType<typeof createLLMProvider>,
   config?: PiConfig,
-): Promise<{ question: Question; variant?: GeneratedVariant }> {
-  if (!provider || !config) return { question: q };
+): Promise<Question> {
+  if (!provider || !config) return q;
   try {
     const v = await provider.generateVariant(q, config);
     const check = validateVariant(q, v);
     if (!check.ok) {
       console.warn(`变体校验失败(${q.id})，回退原题：${check.reason}`);
-      return { question: q };
+      return q;
     }
-    return { question: applyVariant(q, v), variant: v };
+    return applyVariant(q, v);
   } catch (err) {
     console.warn(`变体生成失败(${q.id})，回退原题：`, err);
-    return { question: q };
+    return q;
   }
 }
 
@@ -75,21 +69,20 @@ async function finalizeQuestions(
   picked: Question[],
   provider: ReturnType<typeof createLLMProvider>,
   config?: PiConfig,
-): Promise<{ questions: Question[]; variants: Record<string, GeneratedVariant> }> {
-  const results = await Promise.all(picked.map((q) => finalizeQuestion(q, provider, config)));
-  const variants: Record<string, GeneratedVariant> = {};
-  for (const r of results) if (r.variant) variants[r.variant.sourceQuestionId] = r.variant;
-  return { questions: results.map((r) => r.question), variants };
+): Promise<Question[]> {
+  return Promise.all(picked.map((q) => finalizeQuestion(q, provider, config)));
 }
 
 /**
  * 自适应模式的下一步：根据已答题的作答信号（主题/得分/难度），
  * 由概念图与迁移策略选出下一题（含变体处理）；题池耗尽返回 null。
+ * @param profile 学习画像（move-on 兜底时优先薄弱主题）
  */
 export async function nextAdaptiveStep(
   bank: QuestionBank,
   session: InterviewSession,
   signals: AnswerSignal[],
+  profile?: LearnerProfile,
   config?: PiConfig,
 ): Promise<{ question: Question; strategy: Strategy } | null> {
   const def = session.definition;
@@ -100,15 +93,18 @@ export async function nextAdaptiveStep(
   const asked = new Set(session.questions.map((q) => q.id));
   pool = pool.filter((q) => !asked.has(q.id));
 
-  const picked = pickNextAdaptive(pool, signals, conceptGraph);
+  const picked = pickNextAdaptive(pool, signals, profile);
   if (!picked || session.questions.length >= def.count) return null;
 
   const provider = def.useAI ? createLLMProvider(config) : null;
-  const { question } = await finalizeQuestion(picked.question, provider, config);
+  const question = await finalizeQuestion(picked.question, provider, config);
   return { question, strategy: picked.strategy };
 }
 
-/** 评估单题：选择题确定性判分；开放/编程题走 LLM（无 provider 则返回 null）。 */
+/**
+ * 评估单题：选择题确定性判分；
+ * 开放/编程题仅在 useAI 开启且有有效 provider 时走 LLM（否则返回 null，UI 提示未评分）。
+ */
 export async function evaluateAnswer(
   q: Question,
   answer: AnswerValue | undefined,
@@ -118,6 +114,7 @@ export async function evaluateAnswer(
   if (isChoice(q)) {
     return gradeChoice(q, (answer as number[]) ?? [], def.scoringRubric);
   }
+  if (!def.useAI) return null;
   const provider = createLLMProvider(config);
   if (!provider || !config) return null;
   return provider

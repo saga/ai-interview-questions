@@ -1,166 +1,414 @@
 {
-  "nodeTypes": {
-    "agent-fundamentals": "concept",
-    "agent-components": "concept",
-    "workflow-vs-agent": "decision",
-    "tool-calling": "technology",
-    "mcp": "technology",
-    "routing": "technique",
-    "react": "pattern",
-    "plan-and-execute": "pattern",
-    "reflection": "pattern",
-    "memory": "concept",
-    "context-engineering": "technique",
-    "agent-state": "concept",
-    "checkpoint-resume": "pattern",
-    "idempotency": "pattern",
-    "multi-agent": "concept",
-    "agent-platform": "architecture",
-    "system-design": "architecture",
-    "sql-agent": "architecture",
-    "data-extraction": "technique",
-    "agent-debugging": "problem",
-    "cost-control": "problem",
-    "prompt-injection": "problem",
-    "agent-guardrails": "technique",
-    "evaluation": "metric",
-    "agent-evaluation": "technique",
-    "llm-as-judge": "technique",
-    "open-advanced": "concept",
-    "tradeoff-memory": "tradeoff",
-    "tradeoff-multi-agent": "tradeoff",
-    "tradeoff-tools": "tradeoff",
-    "tradeoff-planner": "tradeoff",
-    "tradeoff-model-selection": "tradeoff",
-    "tradeoff-trajectory": "tradeoff",
-    "tradeoff-rag-placement": "tradeoff",
-    "tradeoff-context-memory": "tradeoff",
-    "tradeoff-self-modification": "tradeoff",
-    "tradeoff-transparency": "tradeoff",
-    "overfitting": "problem",
-    "regularization": "technique",
-    "bias-variance": "concept",
-    "cross-validation": "technique",
-    "precision-recall": "metric",
-    "auc": "metric",
-    "gradient-descent": "technique",
-    "linear-regression": "concept",
-    "softmax": "concept",
-    "cross-entropy": "metric",
-    "activation": "technique",
-    "backprop": "technique",
-    "batch-norm": "technique",
-    "dropout": "technique",
-    "self-attention": "technique",
-    "gqa": "technique",
-    "attention": "technique",
-    "pooling": "technique",
-    "conv-params": "technique",
-    "object-detection": "concept",
-    "tokenization": "technique",
-    "bpe-tokenization": "technique",
-    "word-embedding": "technique",
-    "pretraining": "concept",
-    "rlhf": "technique",
-    "hallucination": "problem",
-    "sampling": "technique",
-    "rag": "concept",
-    "rag-pipeline": "architecture",
-    "rag-vs-finetuning": "decision",
-    "kv-cache": "technology",
-    "moe": "architecture",
-    "inference-optimization": "technique",
-    "lora": "technique",
-    "quantization": "technique",
-    "monitoring": "technique",
-    "inference-modes": "architecture",
-    "privacy": "concept",
-    "fairness": "concept",
-    "safety-alignment": "technique"
-  },
   "edges": [
-    { "from": "agent-fundamentals", "to": "tool-calling", "type": "prerequisite" },
-    { "from": "agent-fundamentals", "to": "react", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "react", "type": "prerequisite" },
-    { "from": "react", "to": "plan-and-execute", "type": "prerequisite" },
-    { "from": "agent-fundamentals", "to": "multi-agent", "type": "prerequisite" },
-    { "from": "agent-components", "to": "multi-agent", "type": "prerequisite" },
-    { "from": "multi-agent", "to": "agent-platform", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "agent-platform", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "routing", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "idempotency", "type": "prerequisite" },
-    { "from": "agent-state", "to": "checkpoint-resume", "type": "prerequisite" },
-    { "from": "memory", "to": "context-engineering", "type": "prerequisite" },
-    { "from": "agent-fundamentals", "to": "agent-debugging", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "agent-debugging", "type": "prerequisite" },
-    { "from": "evaluation", "to": "agent-evaluation", "type": "prerequisite" },
-    { "from": "evaluation", "to": "llm-as-judge", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "sql-agent", "type": "prerequisite" },
-    { "from": "rag-pipeline", "to": "data-extraction", "type": "prerequisite" },
-    { "from": "agent-fundamentals", "to": "cost-control", "type": "prerequisite" },
-    { "from": "agent-guardrails", "to": "prompt-injection", "type": "prerequisite" },
-    { "from": "memory", "to": "tradeoff-memory", "type": "prerequisite" },
-    { "from": "multi-agent", "to": "tradeoff-multi-agent", "type": "prerequisite" },
-    { "from": "tool-calling", "to": "tradeoff-tools", "type": "prerequisite" },
-    { "from": "react", "to": "tradeoff-planner", "type": "prerequisite" },
-    { "from": "workflow-vs-agent", "to": "tradeoff-planner", "type": "prerequisite" },
-    { "from": "agent-state", "to": "tradeoff-trajectory", "type": "prerequisite" },
-    { "from": "evaluation", "to": "tradeoff-trajectory", "type": "prerequisite" },
-    { "from": "rag", "to": "tradeoff-rag-placement", "type": "prerequisite" },
-    { "from": "context-engineering", "to": "tradeoff-context-memory", "type": "prerequisite" },
-    { "from": "agent-guardrails", "to": "tradeoff-self-modification", "type": "prerequisite" },
-    { "from": "reflection", "to": "tradeoff-transparency", "type": "prerequisite" },
-    { "from": "self-attention", "to": "attention", "type": "prerequisite" },
-    { "from": "self-attention", "to": "gqa", "type": "prerequisite" },
-    { "from": "backprop", "to": "batch-norm", "type": "prerequisite" },
-    { "from": "overfitting", "to": "dropout", "type": "prerequisite" },
-    { "from": "overfitting", "to": "bias-variance", "type": "prerequisite" },
-    { "from": "tokenization", "to": "bpe-tokenization", "type": "prerequisite" },
-    { "from": "multi-agent", "to": "open-advanced", "type": "prerequisite" },
-    { "from": "agent-guardrails", "to": "open-advanced", "type": "prerequisite" },
-
-    { "from": "rag-pipeline", "to": "rag", "type": "related" },
-    { "from": "agent-components", "to": "agent-fundamentals", "type": "related" },
-    { "from": "prompt-injection", "to": "agent-guardrails", "type": "related" },
-    { "from": "idempotency", "to": "agent-guardrails", "type": "related" },
-    { "from": "llm-as-judge", "to": "agent-evaluation", "type": "related" },
-    { "from": "mcp", "to": "tool-calling", "type": "related" },
-    { "from": "plan-and-execute", "to": "react", "type": "related" },
-    { "from": "rag-vs-finetuning", "to": "rag", "type": "related" },
-    { "from": "rag-vs-finetuning", "to": "lora", "type": "related" },
-    { "from": "workflow-vs-agent", "to": "react", "type": "related" },
-    { "from": "tradeoff-context-memory", "to": "kv-cache", "type": "related" },
-    { "from": "tradeoff-memory", "to": "memory", "type": "related" },
-    { "from": "tradeoff-multi-agent", "to": "multi-agent", "type": "related" },
-    { "from": "tradeoff-tools", "to": "tool-calling", "type": "related" },
-    { "from": "tradeoff-planner", "to": "plan-and-execute", "type": "related" },
-    { "from": "tradeoff-model-selection", "to": "cost-control", "type": "related" },
-    { "from": "tradeoff-trajectory", "to": "agent-state", "type": "related" },
-    { "from": "tradeoff-rag-placement", "to": "rag-pipeline", "type": "related" },
-    { "from": "tradeoff-self-modification", "to": "agent-guardrails", "type": "related" },
-    { "from": "tradeoff-transparency", "to": "reflection", "type": "related" },
-    { "from": "rag", "to": "hallucination", "type": "related" },
-    { "from": "rag", "to": "word-embedding", "type": "related" },
-    { "from": "rag-pipeline", "to": "hallucination", "type": "related" },
-    { "from": "sampling", "to": "hallucination", "type": "related" },
-    { "from": "lora", "to": "pretraining", "type": "related" },
-    { "from": "kv-cache", "to": "inference-optimization", "type": "related" },
-    { "from": "gqa", "to": "kv-cache", "type": "related" },
-    { "from": "moe", "to": "inference-optimization", "type": "related" },
-    { "from": "quantization", "to": "inference-optimization", "type": "related" },
-    { "from": "cross-validation", "to": "auc", "type": "related" },
-    { "from": "cross-validation", "to": "precision-recall", "type": "related" },
-    { "from": "gradient-descent", "to": "linear-regression", "type": "related" },
-    { "from": "cross-entropy", "to": "gradient-descent", "type": "related" },
-    { "from": "dropout", "to": "regularization", "type": "related" },
-    { "from": "regularization", "to": "overfitting", "type": "related" },
-    { "from": "batch-norm", "to": "activation", "type": "related" },
-    { "from": "agent-debugging", "to": "monitoring", "type": "related" },
-    { "from": "agent-debugging", "to": "agent-evaluation", "type": "related" },
-    { "from": "monitoring", "to": "agent-evaluation", "type": "related" },
-    { "from": "cost-control", "to": "inference-optimization", "type": "related" },
-    { "from": "prompt-injection", "to": "privacy", "type": "related" },
-    { "from": "system-design", "to": "agent-platform", "type": "related" },
-    { "from": "system-design", "to": "routing", "type": "related" }
+    {
+      "from": "agent-fundamentals",
+      "to": "tool-calling",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-fundamentals",
+      "to": "react",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "react",
+      "type": "prerequisite"
+    },
+    {
+      "from": "react",
+      "to": "plan-and-execute",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-fundamentals",
+      "to": "multi-agent",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-components",
+      "to": "multi-agent",
+      "type": "prerequisite"
+    },
+    {
+      "from": "multi-agent",
+      "to": "agent-platform",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "agent-platform",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "routing",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "idempotency",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-state",
+      "to": "checkpoint-resume",
+      "type": "prerequisite"
+    },
+    {
+      "from": "memory",
+      "to": "context-engineering",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-fundamentals",
+      "to": "agent-debugging",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "agent-debugging",
+      "type": "prerequisite"
+    },
+    {
+      "from": "evaluation",
+      "to": "agent-evaluation",
+      "type": "prerequisite"
+    },
+    {
+      "from": "evaluation",
+      "to": "llm-as-judge",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "sql-agent",
+      "type": "prerequisite"
+    },
+    {
+      "from": "rag-pipeline",
+      "to": "data-extraction",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-fundamentals",
+      "to": "cost-control",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-guardrails",
+      "to": "prompt-injection",
+      "type": "prerequisite"
+    },
+    {
+      "from": "memory",
+      "to": "tradeoff-memory",
+      "type": "prerequisite"
+    },
+    {
+      "from": "multi-agent",
+      "to": "tradeoff-multi-agent",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tool-calling",
+      "to": "tradeoff-tools",
+      "type": "prerequisite"
+    },
+    {
+      "from": "react",
+      "to": "tradeoff-planner",
+      "type": "prerequisite"
+    },
+    {
+      "from": "workflow-vs-agent",
+      "to": "tradeoff-planner",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-state",
+      "to": "tradeoff-trajectory",
+      "type": "prerequisite"
+    },
+    {
+      "from": "evaluation",
+      "to": "tradeoff-trajectory",
+      "type": "prerequisite"
+    },
+    {
+      "from": "rag",
+      "to": "tradeoff-rag-placement",
+      "type": "prerequisite"
+    },
+    {
+      "from": "context-engineering",
+      "to": "tradeoff-context-memory",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-guardrails",
+      "to": "tradeoff-self-modification",
+      "type": "prerequisite"
+    },
+    {
+      "from": "reflection",
+      "to": "tradeoff-transparency",
+      "type": "prerequisite"
+    },
+    {
+      "from": "self-attention",
+      "to": "attention",
+      "type": "prerequisite"
+    },
+    {
+      "from": "self-attention",
+      "to": "gqa",
+      "type": "prerequisite"
+    },
+    {
+      "from": "backprop",
+      "to": "batch-norm",
+      "type": "prerequisite"
+    },
+    {
+      "from": "overfitting",
+      "to": "dropout",
+      "type": "prerequisite"
+    },
+    {
+      "from": "overfitting",
+      "to": "bias-variance",
+      "type": "prerequisite"
+    },
+    {
+      "from": "tokenization",
+      "to": "bpe-tokenization",
+      "type": "prerequisite"
+    },
+    {
+      "from": "multi-agent",
+      "to": "open-advanced",
+      "type": "prerequisite"
+    },
+    {
+      "from": "agent-guardrails",
+      "to": "open-advanced",
+      "type": "prerequisite"
+    },
+    {
+      "from": "rag-pipeline",
+      "to": "rag",
+      "type": "related"
+    },
+    {
+      "from": "agent-components",
+      "to": "agent-fundamentals",
+      "type": "related"
+    },
+    {
+      "from": "prompt-injection",
+      "to": "agent-guardrails",
+      "type": "related"
+    },
+    {
+      "from": "idempotency",
+      "to": "agent-guardrails",
+      "type": "related"
+    },
+    {
+      "from": "llm-as-judge",
+      "to": "agent-evaluation",
+      "type": "related"
+    },
+    {
+      "from": "mcp",
+      "to": "tool-calling",
+      "type": "related"
+    },
+    {
+      "from": "plan-and-execute",
+      "to": "react",
+      "type": "related"
+    },
+    {
+      "from": "rag-vs-finetuning",
+      "to": "rag",
+      "type": "related"
+    },
+    {
+      "from": "rag-vs-finetuning",
+      "to": "lora",
+      "type": "related"
+    },
+    {
+      "from": "workflow-vs-agent",
+      "to": "react",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-context-memory",
+      "to": "kv-cache",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-memory",
+      "to": "memory",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-multi-agent",
+      "to": "multi-agent",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-tools",
+      "to": "tool-calling",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-planner",
+      "to": "plan-and-execute",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-model-selection",
+      "to": "cost-control",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-trajectory",
+      "to": "agent-state",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-rag-placement",
+      "to": "rag-pipeline",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-self-modification",
+      "to": "agent-guardrails",
+      "type": "related"
+    },
+    {
+      "from": "tradeoff-transparency",
+      "to": "reflection",
+      "type": "related"
+    },
+    {
+      "from": "rag",
+      "to": "hallucination",
+      "type": "related"
+    },
+    {
+      "from": "rag",
+      "to": "word-embedding",
+      "type": "related"
+    },
+    {
+      "from": "rag-pipeline",
+      "to": "hallucination",
+      "type": "related"
+    },
+    {
+      "from": "sampling",
+      "to": "hallucination",
+      "type": "related"
+    },
+    {
+      "from": "lora",
+      "to": "pretraining",
+      "type": "related"
+    },
+    {
+      "from": "kv-cache",
+      "to": "inference-optimization",
+      "type": "related"
+    },
+    {
+      "from": "gqa",
+      "to": "kv-cache",
+      "type": "related"
+    },
+    {
+      "from": "moe",
+      "to": "inference-optimization",
+      "type": "related"
+    },
+    {
+      "from": "quantization",
+      "to": "inference-optimization",
+      "type": "related"
+    },
+    {
+      "from": "cross-validation",
+      "to": "auc",
+      "type": "related"
+    },
+    {
+      "from": "cross-validation",
+      "to": "precision-recall",
+      "type": "related"
+    },
+    {
+      "from": "gradient-descent",
+      "to": "linear-regression",
+      "type": "related"
+    },
+    {
+      "from": "cross-entropy",
+      "to": "gradient-descent",
+      "type": "related"
+    },
+    {
+      "from": "dropout",
+      "to": "regularization",
+      "type": "related"
+    },
+    {
+      "from": "regularization",
+      "to": "overfitting",
+      "type": "related"
+    },
+    {
+      "from": "batch-norm",
+      "to": "activation",
+      "type": "related"
+    },
+    {
+      "from": "agent-debugging",
+      "to": "monitoring",
+      "type": "related"
+    },
+    {
+      "from": "agent-debugging",
+      "to": "agent-evaluation",
+      "type": "related"
+    },
+    {
+      "from": "monitoring",
+      "to": "agent-evaluation",
+      "type": "related"
+    },
+    {
+      "from": "cost-control",
+      "to": "inference-optimization",
+      "type": "related"
+    },
+    {
+      "from": "prompt-injection",
+      "to": "privacy",
+      "type": "related"
+    },
+    {
+      "from": "system-design",
+      "to": "agent-platform",
+      "type": "related"
+    },
+    {
+      "from": "system-design",
+      "to": "routing",
+      "type": "related"
+    }
   ]
 }
