@@ -67,6 +67,21 @@ describe('isEntryValid（按引擎区分校验）', () => {
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' })).toBe(true);
   });
 
+  it('openrouter / google 与其他云端同一校验规则（apiKey + model）', () => {
+    expect(isEntryValid(entry({ id: 'openrouter', model: '', apiKey: 'sk-or' }))).toBe(false);
+    expect(isEntryValid(entry({ id: 'openrouter', model: 'anthropic/claude-haiku-4.5', apiKey: '' }))).toBe(false);
+    expect(isEntryValid(entry({ id: 'openrouter', model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or' }))).toBe(true);
+    expect(isEntryValid(entry({ id: 'google', model: 'gemini-2.5-flash', apiKey: 'AIza-x' }))).toBe(true);
+  });
+
+  it('cloudflare 需要 apiKey + model + accountId 三者齐全', () => {
+    const cf = { id: 'cloudflare-workers-ai' as const, enabled: true };
+    expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'tok', accountId: '' })).toBe(false);
+    expect(isEntryValid({ ...cf, model: '', apiKey: 'tok', accountId: 'acc' })).toBe(false);
+    expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: '', accountId: 'acc' })).toBe(false);
+    expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'tok', accountId: 'acc' })).toBe(true);
+  });
+
   it('缺 id 或整个对象时无效', () => {
     expect(isEntryValid(undefined as unknown as ProviderEntry)).toBe(false);
     expect(isEntryValid(entry({ id: '' as ProviderEntry['id'] }))).toBe(false);
@@ -105,6 +120,24 @@ describe('createLLMProvider（工厂分派）', () => {
   it('本地 OpenAI 兼容服务也走 PiAIProvider（buildModels 内部路由，ADR-022）', () => {
     const p = createLLMProvider({ providers: [entry({ id: 'local', model: 'unsloth/Qwen3-8B' })] });
     expect(p).toBeInstanceOf(PiAIProvider);
+  });
+
+  it('google / cloudflare 等新云端引擎同样走 PiAIProvider 并可组成降级链', () => {
+    const p = createLLMProvider({
+      providers: [
+        entry({ id: 'google', model: 'gemini-2.5-flash', apiKey: 'AIza-x' }),
+        {
+          id: 'cloudflare-workers-ai',
+          enabled: true,
+          model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+          apiKey: 'tok',
+          accountId: 'acc',
+        },
+        entry({ id: 'openrouter', model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or' }),
+      ],
+    });
+    expect(p).toBeInstanceOf(FallbackProvider);
+    expect(p?.name).toBe('pi-ai(google) → pi-ai(cloudflare-workers-ai) → pi-ai(openrouter)');
   });
 
   it('多引擎返回降级链，只包含启用且合法的通道', () => {

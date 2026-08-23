@@ -4,15 +4,29 @@
 import { createModels } from '@earendil-works/pi-ai';
 import type { Context, CredentialStore, Model, ProviderId, UserMessage } from '@earendil-works/pi-ai';
 import { deepseekProvider } from '@earendil-works/pi-ai/providers/deepseek';
+import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
+import { googleProvider } from '@earendil-works/pi-ai/providers/google';
+import { cloudflareWorkersAIProvider } from '@earendil-works/pi-ai/providers/cloudflare-workers-ai';
 import { buildLocalProvider } from './local';
 import type { ProviderEntry } from '../types';
 
 /** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。
- *  空 key 返回 undefined，交给 provider 自身的 auth.resolve 兜底（如 local 的占位符）。 */
-function createCredentialStore(apiKey: string, providerId: string): CredentialStore {
+ *  空 key 返回 undefined，交给 provider 自身的 auth.resolve 兜底（如 local 的占位符）。
+ *  Cloudflare 额外经 credential.env 注入 Account ID（其 auth 协议要求 key + accountId 双字段）。 */
+function createCredentialStore(entry: ProviderEntry): CredentialStore {
+  const apiKey = entry.apiKey.trim();
   return {
-    read: async (pid) =>
-      pid === providerId && apiKey.trim() ? { type: 'api_key', key: apiKey } : undefined,
+    read: async (pid) => {
+      if (pid !== entry.id || !apiKey) return undefined;
+      if (entry.id === 'cloudflare-workers-ai') {
+        return {
+          type: 'api_key',
+          key: apiKey,
+          env: { CLOUDFLARE_ACCOUNT_ID: (entry.accountId ?? '').trim() },
+        };
+      }
+      return { type: 'api_key', key: apiKey };
+    },
     list: async () => [],
     modify: async () => undefined,
     delete: async () => undefined,
@@ -23,10 +37,11 @@ export type ModelsClient = ReturnType<typeof createModels>;
 
 /** 构建 pi-ai Models 实例，并按引擎 id 装配对应 provider 实现。 */
 export function buildModels(config: ProviderEntry): ModelsClient {
-  const models = createModels({
-    credentials: createCredentialStore(config.apiKey, config.id),
-  });
+  const models = createModels({ credentials: createCredentialStore(config) });
   if (config.id === 'deepseek') models.setProvider(deepseekProvider());
+  else if (config.id === 'openrouter') models.setProvider(openrouterProvider());
+  else if (config.id === 'google') models.setProvider(googleProvider());
+  else if (config.id === 'cloudflare-workers-ai') models.setProvider(cloudflareWorkersAIProvider());
   else models.setProvider(buildLocalProvider(config));
   return models;
 }

@@ -2,6 +2,20 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 云端引擎扩容：恢复 OpenRouter + 新增 Gemini / Cloudflare（ADR-026）
+
+- **引擎白名单扩为六种**：`chrome | local | deepseek | openrouter | google | cloudflare-workers-ai`。
+  pi.ts 恢复 openrouterProvider 装配并新增 google / cloudflareWorkersAI 装配，
+  模型目录直接用 pi-ai 内置 catalog（应用零维护）。
+- **Cloudflare 双字段凭证**：`ProviderEntry` 新增可选 `accountId`；CredentialStore
+  经 credential.env 注入 `CLOUDFLARE_ACCOUNT_ID`。isEntryValid 对 cloudflare 要求
+  model/apiKey/accountId 三者齐全；parseConfigJSON 错误提示相应区分。
+- **示例配置补全**：docs/config.example.json 新增多云端降级链示例
+  （Gemini → Cloudflare → OpenRouter → DeepSeek 停用占位）与 accountId 字段说明。
+- 测试：settings/provider 用例更新（openrouter 从「已下线被丢弃」改为正常保留；
+  新增 accountId 清洗、cloudflare 校验与新云端组链断言）。typecheck/build 通过。
+  注：transformAudit 上限测试失败为本变更前已存在问题（MAX_RECORDS 改 300 未同步用例），与本变更无关。
+
 ## 2026-08-23 · 设置页改为 config.json 编辑器，引擎收敛为 chrome/local/deepseek（ADR-025）
 
 - **引擎收敛**：`ProviderId` 从六种收敛为 `chrome | local | deepseek`；删除 OpenAI /

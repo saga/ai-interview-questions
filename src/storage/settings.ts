@@ -2,13 +2,14 @@ import type { AIConfig, ProviderEntry, ProviderId } from '../types';
 import { isEntryValid } from '../ai/provider';
 
 const KEY = 'ai-interview-trainer.config';
-const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek'];
+const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai'];
 
 export const DEFAULT_CONFIG: AIConfig = {
   providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '', baseUrl: '' }],
 };
 
-/** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。 */
+/** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。
+ *  accountId 仅 cloudflare 使用：非空才保留，避免其他引擎的配置出现空噪音字段。 */
 export function sanitizeEntry(raw: unknown): ProviderEntry | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
@@ -19,6 +20,7 @@ export function sanitizeEntry(raw: unknown): ProviderEntry | null {
     model: typeof r.model === 'string' ? r.model : '',
     apiKey: typeof r.apiKey === 'string' ? r.apiKey : '',
     baseUrl: typeof r.baseUrl === 'string' ? r.baseUrl : '',
+    ...(typeof r.accountId === 'string' && r.accountId.trim() ? { accountId: r.accountId } : {}),
   };
 }
 
@@ -94,7 +96,9 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
       const hint =
         entry.id === 'local'
           ? '本地 API 引擎必须填写模型 ID'
-          : '云端引擎必须同时填写模型与 API Key';
+          : entry.id === 'cloudflare-workers-ai'
+            ? 'Cloudflare 引擎必须填写模型、API Token 与 Account ID'
+            : '云端引擎必须同时填写模型与 API Key';
       return { ok: false, error: `providers[${i}]（${entry.id}）已启用但配置不完整：${hint}` };
     }
     entries.push(entry);

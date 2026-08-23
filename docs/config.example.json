@@ -1,5 +1,5 @@
 {
-  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎收敛为 chrome / local / deepseek（ADR-025）。",
+  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎：chrome / local / deepseek / openrouter / google / cloudflare-workers-ai（ADR-026）。",
 
   "example-1-chrome优先-云端兜底": {
     "providers": [
@@ -39,11 +39,46 @@
     ]
   },
 
+  "example-3-多云端降级链-gemini加cloudflare加openrouter兜底": {
+    "providers": [
+      {
+        "id": "google",
+        "enabled": true,
+        "model": "gemini-2.5-flash",
+        "apiKey": "AIzaxxxxxxxxxxxxxxxx",
+        "baseUrl": ""
+      },
+      {
+        "id": "cloudflare-workers-ai",
+        "enabled": true,
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "apiKey": "cloudflare-api-token-xxxx",
+        "baseUrl": "",
+        "accountId": "023e105f4ecef8ad9ca31a8372d0c353"
+      },
+      {
+        "id": "openrouter",
+        "enabled": true,
+        "model": "anthropic/claude-haiku-4.5",
+        "apiKey": "sk-or-v1-xxxxxxxxxxxxxxxx",
+        "baseUrl": ""
+      },
+      {
+        "id": "deepseek",
+        "enabled": false,
+        "model": "deepseek-v4-pro",
+        "apiKey": "sk-xxxxxxxxxxxxxxxx",
+        "baseUrl": ""
+      }
+    ]
+  },
+
   "$字段说明": {
-    "providers[].id": "'chrome' | 'local' | 'deepseek'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
+    "providers[].id": "'chrome' | 'local' | 'deepseek' | 'openrouter' | 'google' | 'cloudflare-workers-ai'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
     "providers[].enabled": "停用的引擎保留配置但不参与降级链；停用引擎允许配置不完整",
-    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-v4-flash",
-    "providers[].apiKey": "deepseek 必填；local 可选（部分服务需要）；chrome 不适用",
-    "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等"
+    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-v4-flash；openrouter 填聚合平台的全名（如 anthropic/claude-haiku-4.5）；google 填 Gemini 模型（如 gemini-2.5-flash）；cloudflare 填 @cf/ 前缀模型（如 @cf/meta/llama-3.3-70b-instruct-fp8-fast）",
+    "providers[].apiKey": "云端引擎必填（deepseek/openrouter/google 为 API Key，cloudflare 为 API Token）；local 可选（部分服务需要）；chrome 不适用",
+    "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等",
+    "providers[].accountId": "仅 id='cloudflare-workers-ai' 使用：Cloudflare Account ID（仪表盘右侧可查），API Token 之外必填；其他引擎不需要此字段"
   }
 }

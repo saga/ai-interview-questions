@@ -156,7 +156,7 @@ Quiz / 训练流程 ──→ createLLMProvider(AIConfig)：启用且合法的�
                        │   （调用失败/引擎不可用自动切换下一引擎，全败才抛错由上层兜底）
                        ├── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
                        └── PiAIProvider(entry) → ai/pi.ts（pi-ai one-shot，统一入口）
-                             ├── 云端：deepseek
+                             ├── 云端：deepseek / openrouter / google(Gemini) / cloudflare-workers-ai
                              ├── 本地 OpenAI 兼容服务（ADR-022）：buildModels 路由到
                              │   ai/local.ts 的 createProvider 注册（默认 Unsloth 8888/v1）
                              ├── ai/variant.ts    变体 = 只重写题干
@@ -279,13 +279,16 @@ Canonical Question ──→ LLM（只输出 question / explanation）
   `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }] }`；旧单选形态
   （`{ provider, ... }`）由 loadConfig 自动迁移（key 不变，ADR-023）；
   示例配置见 `docs/config.example.json`。
-- **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；provider id 为 `deepseek`。
-- **设置页 = config.json 编辑器（ADR-025）**：引擎收敛为 `chrome / local / deepseek` 三种，
+- **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；
+  Cloudflare 额外经 credential.env 注入 `CLOUDFLARE_ACCOUNT_ID`（其 auth 协议要求 Token + Account ID 双字段）。
+- **设置页 = config.json 编辑器（ADR-025/026）**：引擎为
+  `chrome / local / deepseek / openrouter / google / cloudflare-workers-ai` 六种（ADR-026 扩容），
   设置面板不再逐引擎表单，而是 Monaco JSON 编辑器直接编辑配置；保存时
   `parseConfigJSON`（storage/settings.ts，纯函数有测试）整体校验并清洗，
   错误信息定位到 `providers[i]`。历史配置中的已下线引擎 id 由 loadConfig/sanitizeEntry 静默丢弃。
-- **浏览器直连 LLM 受 CORS 限制**：云端直连仅保留 DeepSeek（实测 CORS 友好）；
-  其他服务商需求建议走本地 OpenAI 兼容网关（id=local 指向代理地址）。
+- **浏览器直连 LLM 受 CORS 限制**：实测 CORS 友好的云端为 DeepSeek / OpenRouter /
+  Google Generative Language API / Cloudflare API（ADR-026）；OpenAI、Anthropic 直连仍不可用，
+  有需求走本地 OpenAI 兼容网关（id=local 指向代理地址）。
 - **pi-ai 对浏览器友好**：库内部对 `globalThis.process` 与 `node:fs` 做了守卫/懒加载，打包时 `node:fs` 外部化为警告，属预期且不崩。
 - **pi-agent-core 已移除**（ADR-019）：当前无 Agent 依赖；对话式面试回归时再引入（届时注意其 dist 顶层 import `node:crypto/fs/...` 会被 externalize 成警告，只用 Agent 不触 harness 则不崩）。
 - **monaco-editor 0.56 exports map 对深层导入是坏的**：`monaco-editor/esm/vs/**` 深层导入在 Node 与 rolldown 下均 `ERR_MODULE_NOT_FOUND`（`./*.js → ./esm/vs/*.js` 的 star 替换路径错误），`resolve.alias` 也救不了。解法：worker 用相对路径 `../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js?worker` 绕过包解析；主库走 `import * as monaco from 'monaco-editor'`（`.` 入口正常）。

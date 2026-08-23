@@ -32,7 +32,7 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
 
 ## 配置 LLM（可选但推荐）
 
-进入「设置」页，直接在 JSON 编辑器里编辑引擎配置（示例见 `docs/config.example.json`）：`providers` 数组顺序即降级链优先级——调用时从上到下依次尝试，失败自动切换到下一个。可用引擎：`chrome`（浏览器内置 AI，免密钥）、`local`（本机 OpenAI 兼容服务如 Unsloth/vLLM/Ollama，免密钥）、`deepseek`（云端，需 API Key）。推荐把免费的本地引擎放前面、云端强模型殿后兜底；保存时自动校验格式。密钥仅存本机 `localStorage`。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
+进入「设置」页，直接在 JSON 编辑器里编辑引擎配置（示例见 `docs/config.example.json`）：`providers` 数组顺序即降级链优先级——调用时从上到下依次尝试，失败自动切换到下一个。可用引擎：`chrome`（浏览器内置 AI，免密钥）、`local`（本机 OpenAI 兼容服务如 Unsloth/vLLM/Ollama，免密钥）、`deepseek` / `openrouter` / `google`（Gemini，云端直连，需 API Key）、`cloudflare-workers-ai`（需 API Token + Account ID）。推荐把免费的本地引擎放前面、云端强模型殿后兜底；保存时自动校验格式。密钥仅存本机 `localStorage`。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
 
 > **local-first 隐私架构，但浏览器侧密钥并非安全机密**：密钥不上传任何服务器，但受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。未配密钥也能用题库原题（开放题不评分）。
 

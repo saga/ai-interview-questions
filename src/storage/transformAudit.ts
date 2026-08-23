@@ -5,7 +5,7 @@
 import type { TransformAuditRecord } from '../types';
 
 const KEY = 'ai-interview-trainer.transform-audit';
-const MAX_RECORDS = 300;
+export const MAX_RECORDS = 300;
 
 /** 逐字段清洗历史记录；结构不合法返回 null（丢弃）。 */
 function sanitize(raw: unknown): TransformAuditRecord | null {

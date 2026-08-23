@@ -1,7 +1,7 @@
 // 题型变换审计日志测试：append-only、上限裁剪、损坏存储兜底（localStorage mock，参照 settings.test.ts）。
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { appendTransformRecord, loadTransformRecords } from './transformAudit';
+import { appendTransformRecord, loadTransformRecords, MAX_RECORDS } from './transformAudit';
 import type { TransformAuditRecord } from '../types';
 
 let store: Record<string, string>;
@@ -42,12 +42,12 @@ describe('appendTransformRecord / loadTransformRecords', () => {
     expect(loadTransformRecords().map((r) => r.questionId)).toEqual(['q-1', 'q-2']);
   });
 
-  it('超过上限时裁剪保留最近 200 条', () => {
-    for (let i = 0; i < 205; i++) appendTransformRecord(rec(`q-${i}`));
+  it('超过上限时裁剪保留最近 MAX_RECORDS 条', () => {
+    for (let i = 0; i < MAX_RECORDS + 5; i++) appendTransformRecord(rec(`q-${i}`));
     const all = loadTransformRecords();
-    expect(all).toHaveLength(200);
+    expect(all).toHaveLength(MAX_RECORDS);
     expect(all[0].questionId).toBe('q-5');
-    expect(all[199].questionId).toBe('q-204');
+    expect(all[MAX_RECORDS - 1].questionId).toBe(`q-${MAX_RECORDS + 4}`);
   });
 
   it('失败记录带 error 摘要', () => {

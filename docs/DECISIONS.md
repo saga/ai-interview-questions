@@ -2,6 +2,31 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-026 · 云端引擎扩容：恢复 OpenRouter，新增 Gemini 与 Cloudflare Workers AI
+
+- 状态：已采纳 · 2026-08-23
+- 背景：ADR-025 曾以「CORS 受限、维护成本高」为由把云端直连收敛到 DeepSeek 一家；
+  用户实际需要多家云端组成降级链（单家配额/区域可用性波动时自动切换），
+  且 pi-ai 已内置 openrouter / google / cloudflare-workers-ai 三家 provider，
+  装配成本与 ADR-025 时代的自维护模型目录不可同日而语。
+- 决策：
+  - **恢复 `openrouter`、新增 `google`（Gemini）、`cloudflare-workers-ai`**：
+    ProviderId 六值全量回到白名单（settings.PROVIDER_IDS），pi.ts 按 id 装配对应
+    pi-ai provider；模型目录由 pi-ai 内置 catalog 提供，应用零维护。
+  - **Cloudflare 需要 Account ID**：其 auth 协议要求 API Token + Account ID 双字段，
+    `ProviderEntry` 新增可选 `accountId`（sanitizeEntry 仅在非空字符串时保留，
+    其他引擎不产生噪音字段）；CredentialStore 经 credential.env 注入
+    `CLOUDFLARE_ACCOUNT_ID`，不依赖浏览器环境变量。
+  - **校验按引擎区分**：cloudflare 启用时 model/apiKey/accountId 三者必填，
+    其余云端仍为 apiKey+model 两项；parseConfigJSON 错误提示区分文案。
+  - 不做向后兼容的原则不变：openai / anthropic 直连仍不在白名单，
+    历史配置中的这两个 id 继续被静默丢弃；openrouter 恢复后重新被接受。
+- 取舍：ADR-025 的 CORS 论据对 OpenRouter / Google / Cloudflare 实测不成立
+  （三家的 API 均允许浏览器跨域调用），真正的硬限制只剩 OpenAI / Anthropic SDK 直连；
+  引擎元数据全部来自 pi-ai catalog，「随服务商维护」的成本担忧随之消失。
+- 验证：settings/provider 用例更新并新增（accountId 清洗与校验、cloudflare 缺失整体拒绝、
+  新云端组链 name 断言）；typecheck/build 通过。
+
 ## ADR-025 · 引擎收敛为 chrome/local/deepseek + 设置页改为 config.json 编辑器
 
 - 状态：已采纳 · 2026-08-23

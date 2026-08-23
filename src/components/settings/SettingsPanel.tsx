@@ -73,7 +73,10 @@ export default function SettingsPanel({ config, onSave }: Props) {
                 <code>local</code> —— 本机 OpenAI 兼容服务（默认 {DEFAULT_LOCAL_BASE_URL}），无需密钥；
               </li>
               <li>
-                <code>deepseek</code> —— DeepSeek 云端，需 API Key。
+                <code>deepseek</code> / <code>openrouter</code> / <code>google</code>（Gemini）—— 云端直连，需 API Key；
+              </li>
+              <li>
+                <code>cloudflare-workers-ai</code> —— Cloudflare Workers AI，需 API Token + Account ID。
               </li>
             </ul>
             配置仅保存在本机浏览器（localStorage），不会上传；但浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。

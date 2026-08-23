@@ -2,7 +2,7 @@
 
 export type QuestionType = 'single' | 'multiple' | 'essay' | 'coding';
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type ProviderId = 'chrome' | 'local' | 'deepseek';
+export type ProviderId = 'chrome' | 'local' | 'deepseek' | 'openrouter' | 'google' | 'cloudflare-workers-ai';
 
 /** 题库是 source of truth；LLM 只是增强层，不改变这些字段的权威语义。 */
 interface QuestionBase {
@@ -142,6 +142,8 @@ export interface ProviderEntry {
   apiKey: string;
   /** 仅 id='local' 使用：OpenAI 兼容服务地址（默认 Unsloth：127.0.0.1:8888/v1） */
   baseUrl?: string;
+  /** 仅 id='cloudflare-workers-ai' 使用：Cloudflare Account ID（API Token 之外还需账户标识） */
+  accountId?: string;
 }
 
 /** AI 引擎配置（浏览器内使用，存于 localStorage）。
