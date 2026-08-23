@@ -2,6 +2,31 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-032 · 题库建设两速分离：覆盖矩阵先行，复用 > 变体 > 生成
+
+- 状态：已采纳 · 2026-08-23
+- 背景：题库补什么此前只回答到"哪个知识点还没有题"（knowledgeCoverage 的二元
+  判断）。实际缺口是二维的：**知识点 × 考察角度**——"MoE 有 18 道题但 tradeoff
+  角度是 0"这类结论得不出来；且若直接上"LLM 自动生成题目"，容易绕开已有资产、
+  让 LLM 既定考点又自证正确。
+- 决策：
+  - **两速分离**：慢速管线（Knowledge → Coverage → Blueprint → Search →
+    Variant/Generate → Validate → 入库）与快速运行时（Learner State → Selection
+    Policy → QuestionBank）彻底分开；运行时**永不现场生成并直接使用题目**。
+  - **覆盖矩阵先行**：`domain/coverage.ts` 纯函数输出 topic × angle 计数矩阵 +
+    补题建议（P0 优先），`npm run question:coverage` 随时可查。Question 新增可选
+    `angle` 字段（数据契约增量，向后兼容读取）；未标注的题单列 untagged，
+    不与真缺口混淆——先给存量题打标，再谈补题。
+  - **补题顺序固定为 复用 > 变体 > 生成**：只有矩阵证明某格无题时才进入
+    Blueprint（受约束的考察目标）→ LLM 生成 → 独立 Validator 校验 → candidate
+    状态 → 人工确认入库；出题（Generator）与选题（Selector）职责不混。
+  - **CLI 不走打包路径**：脚本 fs 直读 data JSON + 调纯函数（Node 24 原生 TS），
+    与浏览器 import.meta.glob 装配解耦，保证离线可跑、无构建依赖。
+- 理由：覆盖度量是零风险增量却直接决定后续生成质量——没有矩阵，Blueprint 没有
+  输入；没有 Blueprint，LLM 出题退化为"自己决定考什么"。先把 ①知识 schema（已有）
+  ②矩阵 ③CLI 落地，④⑤（Blueprint/Generator/Validator）等真实训练数据暴露出
+  高价值缺口后再建。
+
 ## ADR-031 · 开放题生成由全局配置门控，默认关闭
 
 - 状态：已采纳 · 2026-08-23

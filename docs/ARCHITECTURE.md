@@ -27,6 +27,8 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
                  掌握度策略也在此（ADR-030）：WEAK_* 阈值、isMastered/isAttempted、
                  coverage、expandWithPrerequisites——mastery=avgScore/100 是当前简化
                  启发式而非能力度量，trend/attempts/evidence 各自承担信号语义
+  coverage.ts    题库覆盖矩阵（topic × angle）+ 补题建议 + 报告格式化（纯函数，
+                 题目/知识点由调用方注入，浏览器与 CLI 共用；ADR-032 慢速生产管线度量端）
 
 ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI；
                多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
@@ -65,7 +67,8 @@ components/
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
 data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
-                       slug 类目 + topic/tags + 可选 rubric；237 题全部同时携带
+                       slug 类目 + topic/tags + 可选 rubric + 可选 angle（主考察角度，
+                       覆盖矩阵用，ADR-032）；237 题全部同时携带
                        choice 与 open 双形态（ADR-027），其中 173 题的选择形态带
                        场景化专属题干 cf.question（ADR-028，工程决策/安全治理/
                        生产运维类）；ai-fundamentals（基础原理）→ agentic-ai /
@@ -83,6 +86,10 @@ data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<
                         tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
                         支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
 data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并，同 questionBank 模式）
+scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：fs 直读
+                        questions/ 与 knowledge/ JSON（不走 import.meta.glob），
+                        调 domain/coverage 纯函数输出矩阵与补题建议。Node 24+ 原生
+                        运行 TS，无需构建；相对导入必须带 .ts 扩展名
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 

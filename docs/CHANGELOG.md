@@ -2,6 +2,23 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 题库覆盖矩阵 + question:coverage CLI（ADR-032）
+
+- **覆盖矩阵**：`domain/coverage.ts` 纯函数——topic × angle 计数矩阵、补题建议
+  （P0 优先 + 角度梯度序 + 难度/形态启发式）、文本报告格式化；题目/知识点由
+  调用方注入，浏览器与 CLI 共用同一实现。
+- **数据契约增量**：Question 新增可选 `angle` 字段（主考察角度，六值白名单），
+  向后兼容读取；未标注题单列 untagged，不与缺口混淆。当前真实题库：237 题中
+  169 题未标注、79 题 topic 未挂靠知识点（老 CV/NLP/ML 题与 ADR-029 之前的
+  agentic topic）——下一步先打标与挂靠，再谈补题。
+- **CLI**：`npm run question:coverage`（scripts/question-coverage.ts）fs 直读
+  data JSON 调纯函数，Node 24 原生 TS 运行，不走 Vite 打包路径；相对导入带
+  .ts 扩展名（allowImportingTsExtensions）。scripts/ 纳入 tsconfig.node.json
+  类型检查，显式固定 @types/node devDependency。
+- **文档**：README 扩展题库小节说明 angle 标注；ARCHITECTURE 目录树与技术栈
+  注意点同步；DECISIONS 新增 ADR-032（两速分离：慢速生产 / 快速运行时，
+  复用 > 变体 > 生成的补题顺序）。184 测试全过，typecheck/build 通过。
+
 ## 2026-08-23 · 新增全局配置 `generateOpenQuestions`（默认关闭，ADR-031）
 
 - **配置项**：`AIConfig` 新增布尔字段 `generateOpenQuestions`，默认 **false**——

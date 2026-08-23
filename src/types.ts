@@ -49,6 +49,11 @@ export interface Question {
   };
   /** 该题是否由 LLM 变体生成（仅展示用） */
   aiGenerated?: boolean;
+  /**
+   * 主考察角度（可选标注，题库数据契约的增量字段，ADR-032）：
+   * 覆盖矩阵按 topic × angle 统计缺口；未标注的题不计入矩阵（报告单列 untagged）。
+   */
+  angle?: QuestionAngle;
   /** 该题可用的呈现形态；至少一种。组卷按可用形态分配，不做运行时变换。 */
   formats: {
     choice?: ChoiceFormat;

@@ -17,10 +17,11 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（四页：训练 / 进�
 
 ```bash
 npm install
-npm run dev        # 本地开发，http://localhost:5173
-npm run build      # 类型检查 + 生产构建（tsc -b && vite build）
-npm run preview    # 预览构建产物
-npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
+npm run dev                # 本地开发，http://localhost:5173
+npm run build              # 类型检查 + 生产构建（tsc -b && vite build）
+npm run preview            # 预览构建产物
+npm run test               # Vitest 单元测试（见 AGENTS.md 原则 2）
+npm run question:coverage  # 题库覆盖矩阵（topic × angle）+ 补题建议清单（ADR-032）
 ```
 
 ## 文档
@@ -38,7 +39,9 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
 
 ## 扩展题库
 
-题库按类目拆分为 `src/data/questions/<category>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应类目文件；新增类目：建同名 JSON 文件并在 `src/domain/categories.ts` 登记中文标签：
+题库按类目拆分为 `src/data/questions/<category>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应类目文件；新增类目：建同名 JSON 文件并在 `src/domain/categories.ts` 登记中文标签。
+
+补题前先跑 `npm run question:coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。给题目加 `"angle"` 字段（可选，取值 `definition / mechanism / calculation / tradeoff / scenario / system-design`）即可计入矩阵；未标注的题不计入，报告会单列数量：
 
 ```json
 {
@@ -47,6 +50,7 @@ npm run test       # Vitest 单元测试（见 AGENTS.md 原则 2）
   "topic": "regularization",        // 细分主题
   "tags": ["可选", "标签"],
   "difficulty": "easy",             // easy | medium | hard
+  "angle": "tradeoff",              // 可选：主考察角度（覆盖矩阵用）
   "question": "题干…",
   "explanation": "解析…",
   "formats": {                      // 双形态（ADR-027）：至少一种，建议两种都给
