@@ -19,7 +19,7 @@ import type {
   QuestionBank,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
-import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './lib/interviewEngine';
+import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './application/interviewEngine';
 import { conceptGraph, collectTopicRefs, computeCoverage, suggestNextTopics } from './domain/conceptGraph';
 import type { AnswerSignal, Strategy } from './domain/adaptive';
 import { isConfigValid } from './ai/provider';

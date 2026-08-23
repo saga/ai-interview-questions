@@ -54,7 +54,7 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
           </Space>
           <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
             出题策略由概念图驱动：纵向深挖（同主题追问）、薄弱补查（回退前置知识）、横向扩展（切换相关主题）、
-            新方向（保证覆盖面）。追问式对话面试（follow-up loop）将基于 pi-agent-core 后续接入。
+            新方向（保证覆盖面）。追问式对话面试属未来能力，当前为逐题自适应。
           </Typography.Paragraph>
           {!configReady && (
             <Alert

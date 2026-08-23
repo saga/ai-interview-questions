@@ -2,6 +2,21 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-23 · 架构收敛（ADR-019：减法清单执行）
+
+- **移除 pi-agent-core**：开放题评分改走 `ai/evaluate.ts`（pi-ai one-shot）；删除 `interviewAgent.ts`
+  及其测试与 npm 依赖。对话式 Agent 仅在"对话式模拟面试"落地时回归（Future/Experimental）。
+- **ai 层重组**：models.ts → `pi.ts`；variantGenerator.ts → `variant.ts`；新增 `evaluate.ts`；
+  `lib/interviewEngine.ts` → `application/interviewEngine.ts`（应用服务层）。
+- **变体安全收窄**：LLM 只重写题干/解析——GeneratedVariant 不再含 options/answer 字段，
+  applyVariant 原样保留原题答案数据；提示词不再要求 LLM 重排选项、重算索引。
+- **分数所有权**：LLM 只输出四维 dimensions；overall 一律由 domain/aggregateOverall 计算
+  （parseEvaluation 忽略 LLM 直出总分）。
+- **图边砍到两类**：10 种关系 → prerequisite + related；删除 childrenOf/interviewTargetsOf，
+  adaptive 的 deep-dive 简化为"同主题更高难度"；graphlib 限定在 conceptGraph 模块内。
+- **mastery 简化**：`avgScore/100`，去掉置信度加权公式。
+- 测试 66 例全过；typecheck/build 通过。AGENTS.md / ARCHITECTURE / ADR 同步更新。
+
 ## 2026-08-23 · 知识图谱迁移到 @dagrejs/graphlib
 
 - 引入 `@dagrejs/graphlib`（自带 TS 类型）承接图的存储与算法，`domain/conceptGraph.ts` 手写遍历逻辑下线：

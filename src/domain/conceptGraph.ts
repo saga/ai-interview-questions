@@ -24,15 +24,7 @@ export type NodeType =
 
 export type EdgeType =
   | 'prerequisite' // from 是 to 的前置（DAG，基础 → 进阶）
-  | 'part_of' // from 是 to 的子概念
-  | 'extends' // from 扩展/强化了 to
-  | 'alternative' // from 与 to 是可互相替代的方案
-  | 'tradeoff' // from 是围绕 to 的权衡决策
-  | 'contrasts' // from 与 to 形成对照/对立
-  | 'related_to' // 一般相关（无向语义，双向可遍历）
-  | 'technique' // from 是解决 to 的技术手段
-  | 'deep_dive' // 面试迁移：from 答得好时纵向追问 to
-  | 'challenge'; // 面试迁移：挑战/质疑型追问
+  | 'related'; // 一般相关（无向语义，双向可遍历）
 
 export interface ConceptEdge {
   from: string;
@@ -50,8 +42,8 @@ export const conceptGraph: ConceptGraph = graphData as unknown as ConceptGraph;
 const WEAK_MASTERY = 0.85;
 const WEAK_AVG = 85;
 
-/** 无向语义的边类型：broaden / 覆盖面按"相关"处理。 */
-const UNDIRECTED_TYPES: EdgeType[] = ['related_to', 'alternative', 'tradeoff', 'contrasts', 'extends'];
+/** 无向语义的边类型。 */
+const UNDIRECTED_TYPES: EdgeType[] = ['related'];
 
 // ── graphlib 实例（模块级单例） ─────────────────────────────
 
@@ -104,8 +96,7 @@ export function prerequisiteClosure(_graph: ConceptGraph, topic: string): string
 }
 
 /**
- * 横向扩展候选（broaden）：无向语义边的对端。
- * 返回与 topic "相关"的主题集合——含直接相关、替代方案、权衡决策、扩展物。
+ * 横向扩展候选（broaden）：related 边的双端（双向遍历）。
  */
 export function relatedOf(graph: ConceptGraph, topic: string): string[] {
   const result = new Set<string>();
@@ -115,22 +106,6 @@ export function relatedOf(graph: ConceptGraph, topic: string): string[] {
     else if (e.to === topic) result.add(e.from);
   }
   return [...result];
-}
-
-/** 面试迁移目标：deep_dive / challenge 边声明的追问对象。 */
-export function interviewTargetsOf(
-  graph: ConceptGraph,
-  topic: string,
-  type: 'deep_dive' | 'challenge',
-): string[] {
-  return graph.edges.filter((e) => e.from === topic && e.type === type).map((e) => e.to);
-}
-
-/** 子概念（part_of 的子节点 + extends 的被扩展者），供 deep-dive 兜底。 */
-export function childrenOf(graph: ConceptGraph, topic: string): string[] {
-  return graph.edges
-    .filter((e) => e.to === topic && ['part_of', 'extends'].includes(e.type))
-    .map((e) => e.from);
 }
 
 export function nodeTypeOf(graph: ConceptGraph, topic: string): NodeType | undefined {

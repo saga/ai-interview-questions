@@ -78,9 +78,8 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
           ? 'declining'
           : 'flat'
       : 'flat';
-    // 置信度因子：尝试 <5 次时压低掌握度，>=5 次后收敛到 avg/100
-    const confidence = attempts >= 5 ? 1 : attempts / 5 + 0.5;
-    const mastery = Math.round(clamp01(newAvg / 100) * confidence * 100) / 100;
+    // 掌握度 = 均分/100，简单直接（ADR-019）；置信度由 attempts 字段本身表达，不做加权公式
+    const mastery = Math.round(clamp01(newAvg / 100) * 100) / 100;
 
     topicStats[topic] = {
       attempts,

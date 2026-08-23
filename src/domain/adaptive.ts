@@ -9,13 +9,7 @@
 import type { Difficulty, LearnerProfile } from '../types';
 import type { Question } from '../types';
 import { pickPrioritized, pickQuestions } from './quiz';
-import {
-  childrenOf,
-  interviewTargetsOf,
-  prerequisiteClosure,
-  relatedOf,
-  type ConceptGraph,
-} from './conceptGraph';
+import { prerequisiteClosure, relatedOf, type ConceptGraph } from './conceptGraph';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -115,18 +109,11 @@ export function pickNextAdaptive(
       break;
     }
     case 'deep-dive': {
-      // 1) 同主题更高难度；2) 图中声明的 deep_dive 追问目标；3) 子概念
+      // 同主题更高难度优先；没有更难题则交回 move-on 兜底
       const harder = sameTopicPool
         .filter((q) => difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(b.difficulty) - DIFF_ORDER.indexOf(a.difficulty));
       if (harder[0]) return { question: harder[0], strategy: 'deep-dive' };
-
-      const diveTargets = [
-        ...interviewTargetsOf(graph, last.topic, 'deep_dive'),
-        ...childrenOf(graph, last.topic),
-      ];
-      const diveQ = pickFromTopics(pool, diveTargets, rng);
-      if (diveQ) return { question: diveQ, strategy: 'deep-dive' };
       break;
     }
     default:

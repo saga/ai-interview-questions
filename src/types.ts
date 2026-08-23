@@ -89,13 +89,11 @@ export interface ScoringRubric {
 }
 
 /**
- * LLM 生成的题目变体。answer key 必须来自原题（见 domain/variant.validateVariant），
- * 这里仅记录来源与生成者，便于调试与审计。
+ * LLM 生成的题目变体。安全模型（ADR-019）：LLM 只允许重写题干与解析，
+ * 选择题的 options/answer、开放题的 referenceAnswer 一律来自原题（applyVariant 保证）。
  */
 export interface GeneratedVariant {
   question: string;
-  options?: string[]; // 选择题变体选项（长度须与原题一致）
-  answer: number[]; // 指向"变体 options"的索引，须经验证
   explanation?: string;
   sourceQuestionId: string;
   generatedBy: { provider: string; model: string };

@@ -2,6 +2,31 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-019 · 架构收敛（减法）：LLM 是插件，Domain 拥有分数与决策
+
+- 状态：已采纳 · 2026-08-23
+- 背景：MVP 阶段同时存在 Interview Engine、Adaptive Strategy、Concept Graph、pi-agent-core 四套机制，
+  接近"小型 learning platform"；且存在三处安全隐患/职责模糊（变体可改 options/answer、开放题校验过弱、
+  LLM 可直出 overall）。
+- 决策：
+  - **pi-agent-core 移除**：当前所有 LLM 调用都是 one-shot 结构化生成，不需要 Agent。开放题评分改走
+    `ai/evaluate.ts`（pi-ai one-shot）；`interviewAgent.ts` 及其测试删除，依赖从 package.json 移除。
+    回归条件 = 真正实现对话式模拟面试（Future/Experimental，届时不留死代码占位）。
+  - **变体安全收窄**：LLM 只允许重写题干与解析；选择题 options/answer、开放题 referenceAnswer 在
+    applyVariant 中原样保留——索引错位事故在结构上不可能发生，validateVariant 退化为"题干非空"。
+  - **分数所有权**：LLM 只输出四维 dimensions + 反馈；overall 一律由 `domain/aggregateOverall` 按权重计算，
+    忽略 LLM 直出的任何总分。Domain 拥有最终分数。
+  - **图边砍到两类**：10 种关系收敛为 `prerequisite`（DAG）+ `related`（无向）；deep_dive/challenge/
+    part_of/tradeoff 等类型删除。nodeTypes 保留（覆盖面展示仍用）。graphlib 保留但限定在 conceptGraph 模块内。
+  - **mastery 简化**：`mastery = avgScore/100`，置信度由 attempts 表达，不做加权公式。
+  - **分层归位**：`lib/interviewEngine.ts` → `application/interviewEngine.ts`（应用服务层，非 utils 垃圾桶）；
+    ai 层文件重命名为 pi / variant / evaluate / provider。
+  - **保留不动**：Evidence 链（差异化价值）、localStorage（数据量小）、确定性自适应策略（不引入 LLM 策略 Agent）、
+    全局+题目两级 rubric（不再加 category/difficulty/model 维度的 rubric）。
+- 理由：下一步决定产品好坏的是题库质量、推荐效果与 LLM 评分质量，而不是架构能力；
+  收敛后每一层职责单一、边界清晰，为上述三者让路。
+- 后续重点：题库质量、Learner Memory 推荐效果、LLM 评分质量。
+
 ## ADR-018 · 知识图谱正规化（typed nodes + typed edges + 前置 DAG + evidence）
 
 - 状态：已采纳 · 2026-08-23（演进 ADR-017 的概念图）

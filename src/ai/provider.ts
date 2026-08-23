@@ -1,5 +1,6 @@
 // AI 适配层：应用只依赖 LLMProvider 接口（见 types.ts）。这里是工厂、配置校验与具体实现。
-// 未来要换掉 pi-ai / pi-agent-core，只需新增一个实现 LLMProvider 的类，上层（engine / UI）无需改动。
+// 分层（ADR-019）：Quiz 域的 LLM 能力全部走 pi-ai one-shot（variant / evaluate）；
+// pi-agent-core 仅在未来"对话式模拟面试"回归时引入（当前已移除）。
 
 import type {
   EvaluationResult,
@@ -10,8 +11,8 @@ import type {
   Question,
   ScoringRubric,
 } from '../types';
-import { generateVariant } from './variantGenerator';
-import { createInterviewAgent } from './interviewAgent';
+import { generateVariant } from './variant';
+import { evaluateOpenAnswer as evalOpen } from './evaluate';
 
 export function isConfigValid(c: PiConfig): boolean {
   return Boolean(c && c.apiKey && c.apiKey.trim().length > 0 && c.model && c.provider);
@@ -19,9 +20,8 @@ export function isConfigValid(c: PiConfig): boolean {
 
 /**
  * pi-ai 的具体实现。
- * - 变体：走 pi-ai one-shot（variantGenerator）。
- * - 开放/编程题评分：走 pi-agent-core 的 InterviewAgent（stateful / 可扩展追问）。
- * 两者边界清晰：Quiz Domain 与 Agent Runtime 解耦。
+ * - 变体：one-shot 重写题干（options/answer 不归 LLM 管，见 domain/variant.ts）。
+ * - 开放/编程题评分：one-shot 四维评分，综合分由 domain 聚合（LLM 不拥有分数）。
  */
 export class PiAIProvider implements LLMProvider {
   readonly name = 'pi-ai';
@@ -39,12 +39,7 @@ export class PiAIProvider implements LLMProvider {
   ): Promise<EvaluationResult> {
     // 该题专属 rubric.dimensions 覆盖全局权重；required 要点作为 completeness 提示。
     const effectiveRubric: ScoringRubric = { ...rubric, ...(q.rubric?.dimensions ?? {}) };
-    const agent = createInterviewAgent(config);
-    return agent.evaluate(q, userAnswer, {
-      rubric: effectiveRubric,
-      requiredPoints: q.rubric?.required,
-      extraCriteria,
-    });
+    return evalOpen(q, userAnswer, config, effectiveRubric, extraCriteria);
   }
 }
 
