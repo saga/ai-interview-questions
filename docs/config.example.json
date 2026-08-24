@@ -1,5 +1,53 @@
 {
-  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎：chrome / local / deepseek / openrouter / google / cloudflare-workers-ai（ADR-026）。generateOpenQuestions 控制是否生成开放题（默认 false，ADR-031）。",
+  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎：chrome / local / deepseek / openrouter / google / cloudflare-workers-ai（ADR-026）。generateOpenQuestions 控制是否生成开放题（默认 false，ADR-031）。注意：baseUrl 仅 id=local 使用；google / cloudflare 的地址由底层 pi-ai 内置（cloudflare 用 accountId + model 拼装），填 baseUrl 无效，故下方示例对其留空。",
+
+  "example-0-完整引擎清单-仅chrome与local启用": {
+    "providers": [
+      {
+        "id": "chrome",
+        "enabled": true,
+        "model": "",
+        "apiKey": "",
+        "baseUrl": ""
+      },
+      {
+        "id": "local",
+        "enabled": true,
+        "model": "unsloth/gemma-4-E4B-it-qat-GGUF",
+        "apiKey": "",
+        "baseUrl": "http://127.0.0.1:8888/v1"
+      },
+      {
+        "id": "deepseek",
+        "enabled": false,
+        "model": "deepseek-v4-flash",
+        "apiKey": "",
+        "baseUrl": ""
+      },
+      {
+        "id": "openrouter",
+        "enabled": false,
+        "model": "anthropic/claude-haiku-4.5",
+        "apiKey": "",
+        "baseUrl": ""
+      },
+      {
+        "id": "google",
+        "enabled": false,
+        "model": "gemini-2.0-flash",
+        "apiKey": "",
+        "baseUrl": ""
+      },
+      {
+        "id": "cloudflare-workers-ai",
+        "enabled": false,
+        "model": "",
+        "apiKey": "",
+        "accountId": "",
+        "baseUrl": "https://api.cloudflare.com/client/v4"
+      }
+    ]
+  },
 
   "example-1-chrome优先-云端兜底": {
     "providers": [
