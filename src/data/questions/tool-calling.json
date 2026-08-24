@@ -103,6 +103,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\nMCP等标准协议将工具封装为可发现、可鉴权的微服务，经受控RPC注入上下文，解耦且安全。A硬编码难维护，C Root高危，D原始二进制增解析负担。"
       }
+    },
+    "rubric": {
+      "required": [
+        "function calling 是结构化输出生成而非魔法 API 访问",
+        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
+      ]
     }
   },
   {
@@ -137,6 +143,12 @@
       "open": {
         "referenceAnswer": "正确答案要点：描述工具的名称、参数与类型，使模型能生成可被程序安全解析与调用的结构化调用。\n\n解析：工具 schema 让模型知道有哪些能力、参数如何填，从而输出可被代码校验并执行的结构化 tool_call，是 Agent 调用外部能力的基石。"
       }
+    },
+    "rubric": {
+      "required": [
+        "function calling 是结构化输出生成而非魔法 API 访问",
+        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
+      ]
     }
   },
   {
@@ -246,7 +258,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "设计一个能自主判断“该搜网页、查数据库还是调内部 API”的路由 Agent。决策依据是什么？如何避免路由错误？",
-    "explanation": "考察工具路由的决策信号、不确定性兜底与持续改进机制。",
+    "explanation": "考察路由决策信号与容错设计。依据数据特性选通道（公开常识→网页；结构化业务→数据库；事务操作→API），置信度低时询问用户或并行尝试比较。关键是把'为什么选这个通道'显式化以便调试；路由错误样本应回流评测集持续修正工具描述。",
     "rubric": {
       "required": [
         "路由决策依据（数据特性/时效/权限）",
@@ -683,6 +695,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n\n要点：违反的是最小权限原则，对应 OWASP LLM 的 Excessive Agency——Agent 被赋予了超出任务所需的执行能力（任意 Shell）。正确做法：①工具能力原子化，只暴露固定语义的高阶 API（如 query_logs、rotate_log），不提供通用命令执行入口；②为工具设置指令白名单与参数 Schema 校验；③必须在严格隔离的降权沙箱（如 ephemeral container、无网络出站、只挂载必要目录）中运行；④破坏性操作引入人机确认。HTML 转义、API 限频、第三方插件审计各自对应其他风险类目，都不是本案根因。"
       }
+    },
+    "rubric": {
+      "required": [
+        "function calling 是结构化输出生成而非魔法 API 访问",
+        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
+      ]
     }
   },
   {
@@ -719,6 +737,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n延迟发现（Deferred Discovery）将工具集视为可检索索引：Prompt常驻仅基础工具与tool_search，扩展能力按需搜索加载，Context体积与注意力干扰最小。A仍全量膨胀，Cache仅摊平Prefill不减输入Token与注意力噪声；C压缩丢参数语义致调用幻觉；D无Schema盲猜必致参数错误。"
       }
+    },
+    "rubric": {
+      "required": [
+        "function calling 是结构化输出生成而非魔法 API 访问",
+        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
+      ]
     }
   }
 ]
