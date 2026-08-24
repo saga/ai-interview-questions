@@ -1,0 +1,182 @@
+// 工具层测试（Phase 1）：断言 AgentTool 薄包装正确委托现有 domain / learner / evaluation，
+// 并复用上一轮修复的「选择题 gap 不污染」契约——选择题评分返回 gaps: []（绝不伪造 gap）。
+
+import { describe, it, expect, vi } from 'vitest';
+import type { EvaluationResult, LLMProvider, Question } from '../types';
+import { emptyProfile } from '../domain/learner';
+import { createAgentTools } from './tools';
+import { createAgentSession } from './types';
+import type { AgentToolDeps } from './tools';
+
+function makeChoiceQuestion(): Question {
+  return {
+    id: 'q-choice-1',
+    category: 'transformer',
+    topic: 'attention',
+    tags: [],
+    difficulty: 'easy',
+    question: 'Transformer 中 multi-head attention 的作用？',
+    explanation: '多头并行捕捉不同子空间关系。',
+    formats: {
+      choice: {
+        type: 'single',
+        options: ['并行捕捉不同子空间表示', '减少参数量', '加速推理'],
+        answer: [0],
+      },
+    },
+  };
+}
+
+function makeOpenQuestion(): Question {
+  return {
+    id: 'q-open-1',
+    category: 'rag-agent',
+    topic: 'rag',
+    tags: [],
+    difficulty: 'medium',
+    question: 'RAG 与 fine-tuning 的区别？',
+    explanation: 'RAG 注入外部知识，fine-tuning 更新参数。',
+    formats: {
+      open: {
+        referenceAnswer: 'RAG 检索外部知识，fine-tuning 更新模型参数。',
+      },
+    },
+  };
+}
+
+function fakeOpenResult(overall = 50): EvaluationResult {
+  return {
+    overall,
+    dimensions: { correctness: overall, completeness: overall, architecture: overall, communication: overall },
+    strengths: ['答到要点'],
+    gaps: ['未展开推理成本'],
+    feedback: '基本正确。',
+  };
+}
+
+function makeProvider(): LLMProvider & { evaluateOpenAnswer: ReturnType<typeof vi.fn> } {
+  return {
+    name: 'fake',
+    generateVariant: vi.fn(async () => ({ question: 'x' })),
+    evaluateOpenAnswer: vi.fn(async () => fakeOpenResult(50)),
+  };
+}
+
+function deps(bank: Question[], profile = emptyProfile()): AgentToolDeps {
+  return {
+    bank,
+    profile,
+    provider: makeProvider(),
+    session: createAgentSession(),
+  };
+}
+
+describe('createAgentTools', () => {
+  it('searchQuestions 按主题筛选并返回精简摘要', async () => {
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    const r = await search.execute('call', { topic: 'attention', limit: 5 });
+    const items = r.details as { id: string; topic: string }[];
+    expect(items).toHaveLength(1);
+    expect(items[0].id).toBe('q-choice-1');
+    expect(items[0].topic).toBe('attention');
+  });
+
+  it('getQuestion 选中题目并写入会话 currentQuestion', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const tools = createAgentTools(d);
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'q-choice-1' });
+    expect(d.session.currentQuestion?.question.id).toBe('q-choice-1');
+    expect(d.session.currentQuestion?.format).toBe('choice');
+    expect((r.details as { id: string }).id).toBe('q-choice-1');
+  });
+
+  it('getQuestion 找不到题目时优雅返回而非崩溃', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const tools = createAgentTools(d);
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'nope' });
+    expect((r.details as { error: string }).error).toBe('not_found');
+    expect(d.session.currentQuestion).toBeNull();
+  });
+
+  it('evaluateAnswer（选择题正确）返回 100 分且 gaps 为空（不伪造 gap）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
+    d.session.answers['q-choice-1'] = [0]; // 选中正确答案
+    const tools = createAgentTools(d);
+    const evalTool = tools.find((t) => t.name === 'evaluateAnswer')!;
+    const r = await evalTool.execute('call', {});
+    const result = r.details as EvaluationResult;
+    expect(result.overall).toBe(100);
+    expect(result.gaps).toEqual([]);
+    expect(d.session.evaluations['q-choice-1']?.overall).toBe(100);
+  });
+
+  it('evaluateAnswer（选择题错误）返回 0 分且 gaps 仍为空', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
+    d.session.answers['q-choice-1'] = [1]; // 选错
+    const tools = createAgentTools(d);
+    const evalTool = tools.find((t) => t.name === 'evaluateAnswer')!;
+    const r = await evalTool.execute('call', {});
+    const result = r.details as EvaluationResult;
+    expect(result.overall).toBe(0);
+    // 关键契约：选择题判分不知道用户漏了哪个知识点，绝不放假 gap 污染 Learner Memory
+    expect(result.gaps).toEqual([]);
+  });
+
+  it('evaluateAnswer（开放题）委托 LLMProvider 并返回其结果', async () => {
+    const provider = makeProvider();
+    const d = deps([makeOpenQuestion()], emptyProfile());
+    d.provider = provider;
+    d.session.currentQuestion = { question: makeOpenQuestion(), format: 'open' };
+    d.session.answers['q-open-1'] = 'RAG 检索外部知识来回答。';
+    const tools = createAgentTools(d);
+    const evalTool = tools.find((t) => t.name === 'evaluateAnswer')!;
+    const r = await evalTool.execute('call', {});
+    const result = r.details as EvaluationResult;
+    expect(result.overall).toBe(50);
+    expect(provider.evaluateOpenAnswer).toHaveBeenCalledTimes(1);
+  });
+
+  it('getUserWeaknesses 读取 profile 的薄弱主题', async () => {
+    const profile = emptyProfile();
+    profile.topicStats['attention'] = {
+      attempts: 3,
+      avgScore: 40,
+      lastScore: 40,
+      trend: 'flat',
+      mastery: 0.4,
+      commonWeaknesses: ['未理解 QKV'],
+      evidence: [],
+      lastSeen: Date.now(),
+    };
+    const d = deps([makeChoiceQuestion()], profile);
+    const tools = createAgentTools(d);
+    const weak = tools.find((t) => t.name === 'getUserWeaknesses')!;
+    const r = await weak.execute('call', {});
+    const details = r.details as { weakTopics: string[] };
+    expect(details.weakTopics).toContain('attention');
+  });
+
+  it('finishInterview 置状态为 finished 并返回摘要', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.evaluations['q-choice-1'] = {
+      overall: 80,
+      dimensions: { correctness: 80, completeness: 80, architecture: 80, communication: 80 },
+      strengths: [],
+      gaps: [],
+      feedback: '',
+    };
+    const tools = createAgentTools(d);
+    const finish = tools.find((t) => t.name === 'finishInterview')!;
+    const r = await finish.execute('call', {});
+    expect(d.session.status).toBe('finished');
+    const summary = r.details as { questionsAsked: number; overall: number };
+    expect(summary.questionsAsked).toBe(1);
+    expect(summary.overall).toBe(80);
+  });
+});
