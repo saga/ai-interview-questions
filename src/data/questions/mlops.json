@@ -294,5 +294,117 @@
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：先执行后记日志，无效命令不入AOF，省去预校验。\n- B：内存执行与磁盘追加解耦，写请求P99不受同步盘I/O拖累。\n- D：always每命令fsync，追加需等待盘确认，仍会阻塞主线程。\n- C 错误：先内存后日志窗口期崩溃即丢数据，非RPO=0，需fsync策略权衡。"
       }
     }
+  },
+  {
+    "id": "git-reset-01",
+    "category": "mlops",
+    "topic": "git",
+    "tags": [
+      "git",
+      "reset",
+      "head",
+      "index",
+      "working-directory"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Git 版本控制体系由 HEAD 指针、Index（暂存区/Staging Area）和 Working Directory（工作区）三部分共同维护。关于不同模式下的 git reset 对这三个区域的作用机制，下列说法正确的有？（多选）",
+    "explanation": "--soft仅移HEAD、--mixed移HEAD+重置Index、--hard三区同步丢弃、D的soft/mixed区别相反。",
+    "reference": {
+      "concept": "reset三档：soft移HEAD、mixed+清暂存、hard全清。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "git reset --soft HEAD~1 仅移动 HEAD 指针，Index 和 Working Directory 均维持原状，适合撤销最近一次 Commit 并重新整理暂存内容",
+          "git reset --mixed HEAD~1（默认模式）会移动 HEAD 指针并重置 Index（取消暂存），但保留 Working Directory 中所有已修改的文件内容",
+          "git reset --hard HEAD~1 会同步移动 HEAD 指针、重置 Index 并清空 Working Directory 中目标提交之后的所有修改，未提交的本地改动将直接丢失且难以恢复",
+          "git reset --soft 与 git reset --mixed 的关键区别在于：前者把撤销提交的变更放回工作区且处于 Unstaged 状态，后者则把变更保留在 Index 暂存区中"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- --soft：仅HEAD，Index/Workdir不变。\n- --mixed：HEAD+Index重置，Workdir保留。\n- --hard：三区同步回退，未提交改动丢失。\n- D 错误：描述相反，soft留暂存，mixed回工作区。"
+      }
+    }
+  },
+  {
+    "id": "net-napt-01",
+    "category": "mlops",
+    "topic": "system-design",
+    "tags": [
+      "napt",
+      "nat",
+      "ip-masquerading",
+      "translation-table",
+      "port-forwarding"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在局域网（LAN）共享单公网 IPv4 地址访问互联网的场景中，路由器通常采用基于端口的网络地址转换（NAPT / IP Masquerading）。在出站与入站的数据包处理流程中，下列说法正确的有？（多选）",
+    "explanation": "出站改源IP+分配端口入表、入站需匹配表项状态化、未映射外部主动连接被拦截、B称仅凭目标IP可路由错误。",
+    "reference": {
+      "concept": "NAPT状态化端口映射，出站改源入表，入站查表回送。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当局域网内部设备向公网发起 TCP 连接时，NAPT 设备会将数据包的源私有 IP 修改为公网 IP，并动态分配新的源端口写进映射表",
+          "当公网服务器响应数据包返回时，NAPT 设备仅凭目标 IP 地址即可将其正确路由至内部发起连接的具体内网设备",
+          "NAT 转换表（Translation Table）是状态化的（Stateful），仅当入站数据包的“目标 IP + 目标端口”能匹配映射表中已建立的活跃条目时才会被转发",
+          "在未配置静态端口映射（Port Forwarding）或 UPnP 的情况下，公网外部主机主动向内网私有 IP 发起的未邀 TCP 连接将被 NAT 设备默认拦截或丢弃"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。\n\n- A：出站改源IP/端口并建表。\n- C：状态化查表，仅命中表项的入站才转发。\n- D：无映射的外部主动连接被丢弃。\n- B 错误：需IP+端口查表，仅IP无法区分多内网设备。"
+      }
+    }
+  },
+  {
+    "id": "git-recovery-01",
+    "category": "mlops",
+    "topic": "git",
+    "tags": [
+      "git",
+      "reflog",
+      "hard-reset",
+      "object-database",
+      "recovery"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "某开发者在本地工作区修改了若干代码，未执行 git add 暂存，也未执行 git commit 提交。随后该开发者误操作执行了 git reset --hard HEAD~1。针对此场景的代码挽救可行性与底层原理，下列结论最准确的是？",
+    "explanation": "已提交可reflog找回，未暂存未提交因未入对象库无法Git恢复。",
+    "reference": {
+      "concept": "Git持久化以对象库为准，未 add/commit不入库不可恢复。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "可通过 git reflog 找到重置前的提交 Hash，执行 git reset --hard <hash> 恢复包括未提交修改在内的所有代码",
+          "只要执行过 git reset --hard，Git 对象库（Object Database）会立即清空，已提交和未提交的代码均永久无法找回",
+          "已 Commit 过的历史提交可通过 git reflog 配合检出找回；但未暂存且未提交的本地工作区改动因从未写入 Git 对象库，无法通过 Git 工具直接恢复",
+          "git reset --hard 操作破坏了 .git 目录索引，必须重新 git init 才能恢复仓库正常功能"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n已提交对象已入对象库，reflog可找回；未add/commit的改动仅在工作区，未入对象库，hard重置后丢失不可Git恢复。A称连未提交一并恢复误，B称对象库清空误，D称需重init误。"
+      }
+    }
   }
 ]

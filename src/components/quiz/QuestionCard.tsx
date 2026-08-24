@@ -1,4 +1,4 @@
-import { Card, Radio, Checkbox, Input, Tag, Space, Badge } from 'antd';
+import { Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography } from 'antd';
 import { Suspense, lazy } from 'react';
 import type { AnswerValue, FormatId, Question } from '../../types';
 import { categoryLabel } from '../../domain/categories';
@@ -37,7 +37,7 @@ export default function QuestionCard({ index, question, format, value, onChange 
 
   return (
     <Card size="small" style={{ marginBottom: 16 }}>
-      <Space wrap style={{ marginBottom: 12 }}>
+      <Space wrap style={{ marginBottom: 14 }}>
         <Badge count={index + 1} showZero color="#1677ff" />
         <Tag color="blue">{typeLabel}</Tag>
         <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
@@ -49,7 +49,7 @@ export default function QuestionCard({ index, question, format, value, onChange 
         ))}
         {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
       </Space>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 18 }}>
         <RichText text={stem} strong />
       </div>
 
@@ -59,10 +59,12 @@ export default function QuestionCard({ index, question, format, value, onChange 
           onChange={(e) => onChange([e.target.value as number])}
           style={{ width: '100%' }}
         >
-          <Space direction="vertical" size={10} style={{ width: '100%' }}>
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
             {cf.options.map((o, i) => (
               <Radio key={i} value={i}>
-                {o}
+                  <Typography.Text style={{ lineHeight: 1.8 }}>
+                          {o}
+                  </Typography.Text> 
               </Radio>
             ))}
           </Space>
@@ -75,10 +77,12 @@ export default function QuestionCard({ index, question, format, value, onChange 
           onChange={(v) => onChange(v as number[])}
           style={{ width: '100%' }}
         >
-          <Space direction="vertical" size={10} style={{ width: '100%' }}>
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
             {cf.options.map((o, i) => (
               <Checkbox key={i} value={i}>
-                {o}
+                  <Typography.Text style={{ lineHeight: 1.8 }}>
+                          {o}
+                  </Typography.Text> 
               </Checkbox>
             ))}
           </Space>

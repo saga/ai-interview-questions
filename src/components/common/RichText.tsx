@@ -17,7 +17,7 @@ export default function RichText({ text, strong }: Props) {
             <CodeBlock code={seg.content} language={seg.language} />
           </div>
         ) : (
-          <Typography.Paragraph key={i} strong={strong} style={{ whiteSpace: 'pre-wrap' }}>
+          <Typography.Paragraph key={i} strong={strong} style={{ whiteSpace: 'pre-wrap', lineHeight: 2 }}>
             {seg.content}
           </Typography.Paragraph>
         ),

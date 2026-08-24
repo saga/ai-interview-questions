@@ -3812,5 +3812,82 @@
         "referenceAnswer": "正确答案：B。\n\n可验证奖励以单元测试、数学答案等规则作精确反馈，适合客观可校验任务（RLVR/GRPO）；同理心/语气/安全等主观维度无法规则化，仍需人类偏好学习。二者按任务可验证性分工，A的全替代、C的偏好优于可验证、D的仅SFT可用均误判。"
       }
     }
+  },
+  {
+    "id": "gqa-swa-01",
+    "category": "llm",
+    "topic": "gqa",
+    "tags": [
+      "gqa",
+      "kv-cache",
+      "swa",
+      "memory-bandwidth",
+      "long-context",
+      "layer-sharing"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 Transformer Decoder 架构大语言模型自回归推理（Generation 阶段）中，KV Cache 的内存占用常成为端侧或高并发场景下的主要瓶颈。关于 Grouped-Query Attention (GQA) 与传统 Multi-Head Attention (MHA) 在改善该瓶颈上的机制与权衡，下列说法正确的有？（多选）",
+    "explanation": "GQA共享KV降低显存带宽、线性增长斜率可叠加SWA/跨层共享；C称权重量化错误。",
+    "reference": {
+      "concept": "GQA共享KV降带宽与显存，斜率可叠加SWA。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "GQA 通过让多个 Query 头共享同一组 Key-Value 头，直接降低了存储与传输 KV Cache 所需的显存占用与内存带宽需求",
+          "在长上下文生成场景下，KV Cache 占用的显存随上下文长度呈线性增长，GQA 能够在不改变线性增长关系的前提下显著降低增长斜率",
+          "GQA 主要通过将模型静态权重参数（Weights）从 16-bit 浮点数压缩为 4-bit 整数来降低运行显存",
+          "在端侧硬件受限场景下，可将 GQA 与滑动窗口注意力（Sliding Window Attention）或跨层 KV 共享（Layer Sharing）叠加使用，进一步控制 KV Cache 增长上限"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：GQA多Q共享同KV，KV头数与缓存成比例下降。\n- B：KV∝N·层·KV头·head_dim，GQA降斜率不改线性本质。\n- D：SWA有界窗口+跨层共享与GQA正交叠加。\n- C 错误：GQA优化KV Cache，非权重INT4量化。"
+      }
+    }
+  },
+  {
+    "id": "chinchilla-overtrain-01",
+    "category": "llm",
+    "topic": "scaling-law",
+    "tags": [
+      "chinchilla",
+      "scaling-law",
+      "overtraining",
+      "inference-economics",
+      "serving-cost"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "根据 DeepMind 提出的 Chinchilla Scaling Law，在给定的训练 Compute 预算下，模型参数量与训练 Token 数的 Compute-Optimal 比例约为 1:20。然而，现代轻量级端侧模型（如 3B 参数模型）通常会使用数万亿（Trillions）Token 进行过度训练（Overtraining）。关于这一工程决策的经济与技术考量，下列说法正确的有？（多选）",
+    "explanation": "Chinchilla仅优化预训练Loss未计推理、Serving为长期Recurring远超预训练、小模型过度训练以一次预训练换低Serving成本、D称消除推理限制错误。",
+    "reference": {
+      "concept": "Chinchilla最优为训练最优，过度训练为推理经济性。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Chinchilla Optimal 仅以“在固定预训练算力预算下最小化训练 Loss”为优化目标，未将上线后按请求计费的推理（Inference）成本纳入目标函数",
+          "对于高频调用的生产级应用，模型的 Serving 成本属于按请求累加的长期 Recurring Cost，规模化后远超一次性的 Pretraining Cost",
+          "对小参数模型进行过度训练，是以增加一次性 Pretraining Cost 为代价，换取更小模型在推理部署时的高精度与低延迟/低 Serving 成本",
+          "过度训练可以完全消除小模型在长链条多步推理（Multi-step reasoning）与分布外泛化（Out-of-distribution）上的性能限制"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Chinchilla目标为训练Loss最优，不含推理。\n- B：Serving随请求线性累加，长期超预训练。\n- C：Overtraining以多算力换小模型推理经济性。\n- D 错误：过度训练不消解小模型在复杂推理与OOD上的固有容量瓶颈。"
+      }
+    }
   }
 ]

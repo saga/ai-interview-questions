@@ -3919,5 +3919,796 @@
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：MCP为工具/上下文调用层，无状态、宿主路由。\n- B：A2A为Agent协作层，Agent Card作发现与能力声明。\n- C：A2A支持Input-Required暂停并回抛上下文，实现多轮协商。\n- D 错误：MCP为单调调用，无Agent自主状态机与流式协商，封装为Tool无法替代A2A。"
       }
     }
+  },
+  {
+    "id": "agent-chain-01",
+    "category": "agentic-ai",
+    "topic": "agent-loop",
+    "tags": [
+      "compounding-error",
+      "reliability",
+      "scaffolding",
+      "guardrails",
+      "long-chain"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在一个基于大语言模型（LLM）的自主 Agent 系统中，某个复杂任务被拆解为连续执行的 20 个依赖前一步输出的决策步骤。假设模型在每一步做出正确决策的概率固定为 95%。下列关于该系统可靠性及工程应对策略的说法中，正确的有哪些？（多选）",
+    "explanation": "0.95^20≈35.8%指数衰减、高单步≠长链稳定、合并Prompt扩窗不治传递、需确定性骨架+校验截断。",
+    "reference": {
+      "concept": "链式复合误差指数衰减，需截断校验。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在无外部干预的情况下，该系统顺利完成整个任务且不发生任何错误的总体概率约为 35.8%（即 0.95^20）",
+          "随着调用链条变长，系统的整体可靠性呈指数级衰减，单步的高准确率并不等同于长流程的稳定性",
+          "解决链式衰减的最佳方案是将 20 步的提示词合并为一次模型调用并无限扩大上下文窗口，从而彻底消除步骤间的传递误差",
+          "在工程实践中，可以通过引入确定性代码骨架（Deterministic Scaffolding）、中间状态校验与 Guardrails 来截断链式误差传递"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：独立正确率连乘 0.95^20≈35.8%。\n- B：长链可靠性指数级衰减。\n- D：确定性骨架+中间校验截断传递。\n- C 错误：单次大Prompt无法消除依赖误差，且无限上下文不现实，校验仍需。"
+      }
+    }
+  },
+  {
+    "id": "agent-control-01",
+    "category": "agentic-ai",
+    "topic": "agent-loop",
+    "tags": [
+      "control-flow",
+      "deterministic",
+      "escape-hatch",
+      "state-machine",
+      "json"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在生产环境 AI Agent 的控制流（Control Flow）设计中，完全由 LLM 自主掌控循环逻辑容易带来死循环、成本失控和行为不可预测等风险。为了构建高可靠的生产级 Agent 系统，下列哪些控制流设计原则是正确的？（多选）",
+    "explanation": "主控由代码状态机掌控、需硬性逃生、结构化输出可解析、D称高风险不需审批错误。",
+    "reference": {
+      "concept": "确定性主控+逃生+结构化输出，人机协作保高风险。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "主控流程应由确定性的传统代码（如状态机、条件分支）掌控，模型仅在需要非结构化推理或开放式决策的关键节点被调用",
+          "所有的 Agent 循环必须设置明确的硬性终止机制（Escape Hatch），例如最大迭代次数上限、超时时间（Timeout）以及确定性的完成条件判定",
+          "模型每次决策的输出应尽可能要求为结构化数据（如 JSON），以便外层确定性代码能够精确解析并驱动下游逻辑",
+          "为了实现完全自动化，Agent 在执行数据库删改、资金转账等高风险敏感操作前不应暂停等待人工审批（Human-in-the-loop）"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：代码主控，LLM仅决策点。\n- B：必设逃生：次数/超时/完成判定。\n- C：结构化输出可精确解析驱动。\n- D 错误：高风险操作需人机审批，不可为自动化弃守。"
+      }
+    }
+  },
+  {
+    "id": "agent-stateless-01",
+    "category": "agentic-ai",
+    "topic": "system-design",
+    "tags": [
+      "stateless",
+      "stateful-storage",
+      "crash-recovery",
+      "horizontal-scaling",
+      "ground-truth"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "生产级 AI Agent 架构通常强调将大语言模型（LLM）保持为“无状态（Stateless）”，而将系统真实状态（State）保存在外部应用存储中，每次模型调用时由应用动态重建上下文。关于这种解耦架构设计的优势，下列哪些说法是正确的？（多选）",
+    "explanation": "支持崩溃恢复与暂停重启、保Ground Truth同步、使服务无状态水平扩展、D称模型上下文更可靠错误。",
+    "reference": {
+      "concept": "无状态模型+有状态存储解耦：可恢复、同步、水平扩展。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "允许 Agent 任务在长时间运行或遭遇系统崩溃后，通过加载持久化的序列化状态实现无损恢复（Crash Recovery）与暂停重启（Pause & Resume）",
+          "确保外部真实数据（Ground Truth，如数据库最新记录）与模型看到的上下文视图保持同步，防止模型基于陈旧状态做出错误决策",
+          "无状态的模型调用使应用服务实例能够无状态地部署在负载均衡器后，实现多实例对并发请求的水平扩展（Horizontal Scaling）",
+          "将状态保存在模型自身的上下文窗口中比保存在外部数据库更可靠，因为模型能够自动保证长周期下数据一致性"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：外置持久化状态可重建上下文，实现恢复与暂停。\n- B：每次重建拉取最新Ground Truth，防过期决策。\n- C：无状态易水平扩展。\n- D 错误：模型上下文易丢失/幻觉，不保一致性。"
+      }
+    }
+  },
+  {
+    "id": "agent-context-01",
+    "category": "agentic-ai",
+    "topic": "context-engineering",
+    "tags": [
+      "context-engineering",
+      "pruning",
+      "prompt-governance",
+      "tool-schema",
+      "relevance"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 Agent 的上下文工程（Context Engineering）实践中，关于上下文窗口（Context Window）与工具（Tools）的管理，下列哪些说法是正确的？（多选）",
+    "explanation": "非越多越好需剪枝、Prompt是代码资产需版本化、工具描述清晰降误选、D挂数百工具错误。",
+    "reference": {
+      "concept": "上下文剪枝+Prompt治理+清晰Tool Schema。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "传入上下文窗口的信息并非越多越好；填充大量低相关性材料会导致模型推理准确率下降，因此主动剪枝（Pruning）保持相关性至关重要",
+          "Prompt 属于应用的核心代码资产，应由应用系统自身掌控与版本控制，而不是隐藏在第三方框架内部自动生成",
+          "工具（Tool）的名称与 Schema 描述是给 LLM 阅读的接口定义，准确清晰的描述能显著降低模型误选工具或填充错误参数的概率",
+          "为避免模型无法应对复杂场景，单 Agent 应尽可能挂载数百个候选工具，完全由模型自行检索和匹配"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：低相关材料稀释注意力致准确率降。\n- B：Prompt需版本化可审计。\n- C：清晰Schema降误选误参。\n- D 错误：数百工具致选择噪声与上下文膨胀，应按需加载。"
+      }
+    }
+  },
+  {
+    "id": "agent-multi-01",
+    "category": "agentic-ai",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "orchestrator-worker",
+      "peer-to-peer",
+      "failure-surface",
+      "cost-latency"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在处理复杂多步骤业务时，关于单 Agent 与多 Agent（Multi-Agent）架构以及 Orchestrator-Worker 模式的工程权衡，下列哪些说法是正确的？（多选）",
+    "explanation": "点对点自由通信易冲突、Orchestrator集中分发短Worker减冲突、单职责缩小故障面、多Agent增Token与延迟。",
+    "reference": {
+      "concept": "Orchestrator集中调度优于点对点，窄域Worker提可测性，代价为成本延迟。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "多个平级 Agent 之间直接进行点对点（Peer-to-Peer）自由通信的架构，容易因各个子 Agent 的独立决策冲突而导致整体系统行为不可控",
+          "由单一中央协调者（Orchestrator）掌控全局上下文并分发任务给短生命周期（Short-lived）、单一职责的 Worker Agent，能有效减少 Agent 间的决策冲突",
+          "将复杂任务拆解为多个单一职责（Narrow Scope）的小型 Agent，能够缩小单个 Agent 的故障表面（Failure Surface），提升可测试性与排查效率",
+          "多 Agent 架构在提升复杂推理解决能力的同时，通常会显著增加 Token 消耗量与系统响应延迟"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：点对点无中心协调易冲突失控。\n- B：Orchestrator集中上下文与分发，Worker短命窄域。\n- C：窄域缩小故障面与测试复杂度。\n- D：多Agent以Token与延迟换能力，需权衡。"
+      }
+    }
+  },
+  {
+    "id": "agent-bitter-01",
+    "category": "agentic-ai",
+    "topic": "system-design",
+    "tags": [
+      "bitter-lesson",
+      "scaffolding",
+      "general-method",
+      "guardrails",
+      "evolution"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "AI 领域的“苦涩教训”（The Bitter Lesson）指出：随着计算力的提升，通用方法（如搜索与学习）最终会超越基于人类经验手工设计的复杂逻辑。在设计 AI Agent 架构时，面对模型能力的不断进化，下列哪种工程态度与权衡最为准确？",
+    "explanation": "特化Prompt补丁会冗余，但窗口限制、数据一致性、安全停机等基本工程仍需Scaffolding长期保障。",
+    "reference": {
+      "concept": "通用能力超越手工逻辑，但基础工程保障长期必要。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "鉴于未来模型能力会大幅提升，当前建立的一切确定性控制流、状态管理和安全 Guardrails 都是无用功，应立即停止编写任何 Scaffolding",
+          "虽然模型能力的提升会使某些针对模型当前缺陷设计的特化 Prompt 补丁变得冗余，但上下文窗口限制、业务真实数据一致性保障以及安全停机机制等基本工程问题依然需要 Scaffolding 长期保障",
+          "Bitter Lesson 证明了未来 Agent 应当彻底取消人机协作（Human-in-the-loop），全权交由 LLM 自主决策",
+          "只要模型能力足够强，多步骤 Agent 调用的复合误差（Compounding Error）就会彻底降低为零，不再需要外部中间校验"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n模型进化使特化补丁过时，但窗口、状态一致性、安全等工程本质约束不随模型变强消失，需长期Scaffolding。A全弃、C去人机、D零误差均过度演绎。"
+      }
+    }
+  },
+  {
+    "id": "agent-mem-layer-01",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "memory-layer",
+      "working-memory",
+      "semantic-memory",
+      "transactional-memory",
+      "reliability"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在构建生产级 AI Agent 架构时，内存层（Memory Layer）通常划分为短期工作内存（Short-term Working Memory）、长期语义内存（Long-term Semantic Memory）与事务状态内存（Transactional Memory / State）。针对不同内存层的架构职责与权衡，下列说法正确的有？（多选）",
+    "explanation": "短期Scratchpad随会话销毁、长期向量/图谱无ACID、事务不可交LLM隐式、外置持久化可恢复重试。",
+    "reference": {
+      "concept": "三层内存分工：工作随会话、语义跨会话无ACID、事务外置持久化。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "短期工作内存主要维护当前任务的 Prompt 上下文与推演过程（Scratchpad），生命周期通常随单次任务会话结束而销毁",
+          "长期语义内存通常基于向量数据库或知识图谱实现，用于跨会话检索领域知识与历史偏好，但不提供关系型数据库的强一致性（ACID）保障",
+          "事务状态内存应完全交由 LLM 上下文（Context Window）隐式维护，无需引入外部持久化状态机或数据库",
+          "在执行长流程多步工具调用时，若系统在中间环节宕机崩溃，依赖持久化的事务状态可使 Agent 恢复后从失败节点重试，避免重新触发已产生侧效应的外部 API"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：工作内存为单次会话的Prompt+Scratchpad，会话结束即销毁。\n- B：长期语义内存为向量/图谱检索，跨会话但最终一致性，无ACID。\n- D：事务状态外置持久化，崩溃后可断点重试，避免重复副作用。\n- C 错误：事务状态需外部状态机/DB显式维护，隐式交上下文不可靠。"
+      }
+    }
+  },
+  {
+    "id": "agent-react-guard-01",
+    "category": "agentic-ai",
+    "topic": "agent-loop",
+    "tags": [
+      "react",
+      "guardrails",
+      "human-in-the-loop",
+      "observability",
+      "cost-control"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 AI Agent 系统运行环境（Agent Runtime）的 ReAct（Reasoning + Acting）循环中，模型通过“思考-决策-执行工具-观察结果-反思”不断推进任务。为满足生产环境的可控性、安全与成本预算要求，下列架构设计合理的有？（多选）",
+    "explanation": "Guardrails拦截校验、强副作用Human-in-the-loop、Observation需裁切、需追踪Token与深度防死循环。",
+    "reference": {
+      "concept": "ReAct需拦截校验+人工确认+观测裁切+成本熔断。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "安全 Guardrails 应作为工具调用的拦截器注入 Runtime，在 LLM 发出工具指令后、实际执行 API 前完成参数 Schema 校验与鉴权",
+          "针对具有强副作用的工具（如删除数据、发起支付），应在 ReAct 循环中引入 Human-in-the-loop 机制，将循环挂起待人工确认后再继续执行",
+          "为了给模型提供完整信息，Observation 阶段应将外部 API 返回的所有原始大文本或完整 HTML 响应不加裁切地拼接入下一轮 Prompt",
+          "观测与成本控制模块需动态追踪 Token 消耗与 ReAct 循环递归深度，在检测到死循环或死锁（Looping/Deadlock）时触发强行截断与降级处理"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：Guardrails为工具前置拦截，做Schema与鉴权。\n- B：强副作用需挂起人工确认。\n- D：需追踪Token/深度，触发熔断。\n- C 错误：原始大文本需裁切/摘要，否则上下文膨胀与注意力稀释。"
+      }
+    }
+  },
+  {
+    "id": "agent-tool-mcp-01",
+    "category": "agentic-ai",
+    "topic": "tool-calling",
+    "tags": [
+      "tool-layer",
+      "mcp",
+      "rpc",
+      "decoupling",
+      "security"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "在 AI Agent 的工具层（Tool Layer）扩展架构设计中，若需要支持 Agent 动态接入数十种跨语言、分布式部署的第三方服务（如身份认证、数据库查询、审计日志），同时保证系统解耦与受控安全，下列方案中最符合工程最佳实践的是？",
+    "explanation": "硬编码Prompt、Root权限、原始二进制均反模式；MCP标准化微服务+受控RPC为最佳。",
+    "reference": {
+      "concept": "工具层解耦：MCP标准化+RPC发现，非硬编码/Root。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将所有第三方 API 的具体调用代码硬编码写入 Prompt 的 System Message 中，让 LLM 直接使用底层 HTTP 库拼装请求",
+          "采用统一的上下文与工具通信标准协议（如 MCP / Model Context Protocol），将工具能力封装为标准化微服务，通过受控 RPC/JSON-RPC 完成工具发现与上下文注入",
+          "给 Agent 赋予宿主机 Root 权限，让 Agent 在运行时根据需要自主通过 Bash 命令行安装 SDK 并执行脚本",
+          "强制所有工具仅返回原始二进制数据流，由 LLM 的 Tokenizer 进行直接二次解码"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\nMCP等标准协议将工具封装为可发现、可鉴权的微服务，经受控RPC注入上下文，解耦且安全。A硬编码难维护，C Root高危，D原始二进制增解析负担。"
+      }
+    }
+  },
+  {
+    "id": "guard-input-mask-01",
+    "category": "agentic-ai",
+    "topic": "prompt-injection",
+    "tags": [
+      "guardrails",
+      "data-masking",
+      "zdr",
+      "trust-boundary",
+      "privacy"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在企业级 AI Agent 架构设计中，安全团队通常要求在 Prompt 注入前对敏感数据进行脱敏（Data Masking）。然而在实际落地中，盲目对所有输入开启字段或模式匹配脱敏可能会破坏 Agent 的业务能力。关于输入护栏（Input Guardrails）中的数据隐私与推理能力权衡，以下说法正确的有哪些？（多选）",
+    "explanation": "脱敏剥离上下文致失败、ZDR合约保隐私不损上下文、私有部署+ZDR优于全局脱敏、D称脱敏替代输出校验错误。",
+    "reference": {
+      "concept": "输入护栏权衡：脱敏损推理，ZDR保上下文，私有边界优于全局脱敏。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数据脱敏（Masking）可能剥离模型推理所需的关键上下文信息，导致关联分析或相似度匹配任务失败",
+          "零数据保留协议（Zero Data Retention, ZDR）由 LLM 供应商通过合规合约保证不存储、不训练输入数据，能在保留完整上下文的同时满足数据隐私合规",
+          "对于高敏感业务，将模型部署在企业私有安全边界（Trust Boundary）内部并配合 ZDR，通常比全局开启数据脱敏更适合上下文依赖度高的复杂推理场景",
+          "只要开启了模式匹配脱敏（如替换 SSN 或手机号），即可完全替代输出护栏（Output Guardrails）对工具调用合法性的校验"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：脱敏移除关键实体致关联/相似度任务失效。\n- B：ZDR以合约保不存储不训练，上下文完整。\n- C：私有边界+ZDR在保合规同时保推理。\n- D 错误：输入脱敏不替输出工具校验，二者正交。"
+      }
+    }
+  },
+  {
+    "id": "code-vs-llm-01",
+    "category": "agentic-ai",
+    "topic": "system-design",
+    "tags": [
+      "deterministic-code",
+      "probabilistic-llm",
+      "hybrid-reasoning",
+      "latency",
+      "scaffolding"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "某团队构建了一个订单处理 Agent。针对“查询订单 -> 获取物流状态 -> 返回跟踪信息”这一步骤固定的业务流程，开发人员最初将其完全交给 LLM 的 ReAct 推理循环执行。在生产环境中，该设计引发了端到端延迟高和偶发性步骤调错的问题。针对确定性业务逻辑与概率性 LLM 推理的架构设计，以下分析正确的有哪些？（多选）",
+    "explanation": "固定流应代码控制、LLM逐轮致延迟与调错、LLM价值在意图与非结构化、混合以代码设边界。",
+    "reference": {
+      "concept": "确定性流归代码，LLM归意图与模糊决策，混合设边界。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "能够用流程图/状态机确切描述的固定业务流，应优先采用确定性代码（如 TypeScript 脚本）控制，而非依赖 LLM 逐步推理",
+          "将确定性逻辑交由 LLM 逐步决定，不仅会引入多轮 HTTP/模型 API 往返延迟，还会增加模型产生非确定性调优错误的概率",
+          "LLM 的核心价值在于自然语言意图理解、非结构化文本处理与模糊决策，而非替代确定性工作流引擎",
+          "最优的企业级 Agent 架构是“混合推理”（Hybrid Reasoning）：利用确定性代码设置硬性流转边界与工具执行序列，由 LLM 处理需要灵活适应的上下文节点"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：固定流代码化最稳低延迟。\n- B：LLM逐轮增往返与非确定性。\n- C：LLM长于意图与非结构化。\n- D：混合以代码定边界、LLM处柔性。"
+      }
+    }
+  },
+  {
+    "id": "token-rightsize-01",
+    "category": "agentic-ai",
+    "topic": "context-engineering",
+    "tags": [
+      "token-right-sizing",
+      "context-engineering",
+      "ttft",
+      "attention-dilution",
+      "api-design"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在 Agent 工具调用设计中，某 Backend 服务 API get_orders() 默认返回包含完整用户历史、支付明细、商品长文本描述的原始 JSON，大小约为 100K Tokens。开发者直接将该原始返回值注入 LLM 的上下文窗口中。这种设计会导致哪些系统性后果？（多选）",
+    "explanation": "增TTFT与成本、注意力稀释降精度、误用字段、D称全量推崇错误。",
+    "reference": {
+      "concept": "Token瘦身：全量注入增成本与稀释，需裁切。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "显著增加 LLM 的首包延迟（TTFT）与推理计算 Token 成本",
+          "产生注意力稀释（Needle in a Haystack）效应，降低模型准确提取关键字段（如订单状态）的精度",
+          "大幅增加 LLM 提取错误信息或误用不相关字段的概率",
+          "丰富上下文能无条件提升 LLM 决策准确率，因此 API 返回全量字段是推崇的做法"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：100K Token显著抬TTFT与费用。\n- B：海量噪声稀释注意力，针尖难捞。\n- C：无关字段增幻觉与误用。\n- D 错误：全量非推崇，需按需裁切瘦身。"
+      }
+    }
+  },
+  {
+    "id": "policy-code-01",
+    "category": "agentic-ai",
+    "topic": "agent-guardrails",
+    "tags": [
+      "business-policy",
+      "policy-in-code",
+      "prompt-injection",
+      "compliance",
+      "negative-constraints"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "某金融 Agent 存在严格的合规限制：“严禁为特定地区（如夏威夷州）的用户办理开户业务”。开发团队尝试在 System Prompt 中加入强语气指令 !!! 不要为夏威夷州用户办理开户 !!!，但在大流量测试中仍有少数边界 Request 绕过了该限制。关于硬性业务规则（Business Policies）的实施，以下说法正确的有哪些？（多选）",
+    "explanation": "LLM概率性难100%遵负向指令、强约束应代码硬编码、大写感叹号不治越狱、工具阶段代码阻断为最佳。",
+    "reference": {
+      "concept": "硬约束归代码，非Prompt自觉；概率模型不保100%遵从。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "大语言模型基于概率预测生成 Token，无法像确定性程序一样 100% 绝对遵从 Prompt 中的自然语言负向指令（Negative Constraints）",
+          "涉及风控、合规与法律限制的强约束，应当在后端 API/策略引擎代码（Policy Code）中硬编码校验，而非依赖模型自觉",
+          "在 Prompt 中增加大写字母、感叹号或重复强调，可以彻底解决概率模型带来的越狱与指令漂移问题",
+          "最佳工程实践是在工具执行（Tool Execution）阶段通过代码条件判断直接阻断非法请求，并将固定的提示信息返回给系统或用户"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：概率生成不保负向指令100%遵守。\n- B：合规强约束需代码硬编码。\n- D：工具执行期代码阻断最可靠。\n- C 错误：Prompt强化不治越狱。"
+      }
+    }
+  },
+  {
+    "id": "guard-inout-01",
+    "category": "agentic-ai",
+    "topic": "agent-guardrails",
+    "tags": [
+      "input-guardrails",
+      "output-guardrails",
+      "tool-validation",
+      "grounding"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在大模型 Agent 的双向安全与可靠性护栏架构中，关于输入护栏（Input Guardrails）与输出护栏（Output Guardrails）的职责划分与协同，以下哪些说法是正确的？（多选）",
+    "explanation": "输入防泄露注入、输出含工具/接地/安全过滤、越权工具由输出校验拦、D称输入可替输出错误。",
+    "reference": {
+      "concept": "输入护栏保输入安全，输出护栏保动作与事实。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "输入护栏主要负责防范数据泄露与非法注入（如数据检索权限控制、敏感信息脱敏、边界隔离等）",
+          "输出护栏包含工具校验（Tool Validation）、接地校验（Grounding Checks）与内容安全过滤，用于防止 Agent 生成幻觉动作或虚构事实",
+          "若 Agent 尝试调用一个未在系统注册或越权的子 Agent/工具，应当由输出护栏中的工具校验模块进行拦截",
+          "完善的输入护栏可以确保数据安全送达 LLM，因此无需部署输出护栏即可防范模型生成有毒内容或错误 API 参数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：输入护栏：权限、脱敏、隔离。\n- B：输出护栏：工具/接地/安全。\n- C：未注册越权由输出工具校验拦。\n- D 错误：输入不保输出安全，需双向护栏。"
+      }
+    }
+  },
+  {
+    "id": "feedback-triage-01",
+    "category": "agentic-ai",
+    "topic": "system-design",
+    "tags": [
+      "feedback-loop",
+      "triage",
+      "data-quality",
+      "rag",
+      "trace"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在一个上线运行的客服 Agent 运维中，日志监控发现 Agent 对某类常见技术问题的解答存在事实性错误。深入调阅 Trace 日志后确认：LLM 完美遵从了 Prompt 提示，完全基于检索（RAG）到的内部文档生成了回答，但该内部知识库文档内容本身已过期。在 Agent 反馈循环（Feedback Loop）归因中，该问题属于哪一类，应如何修复？",
+    "explanation": "非逻辑/覆盖度/语气问题，属数据质量，应路由至知识库所有者更新源文档。",
+    "reference": {
+      "concept": "归因分类：逻辑/覆盖度/数据质量/语气，过期文档属数据质量。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "属于逻辑错误（Logic Error）：修改 Agent 的 ReAct 推理 Prompt 或重构工具指令",
+          "属于覆盖度缺失（Coverage Gap）：扩展 Agent 的工具集并配置人工转接兜底",
+          "属于数据质量问题（Data Quality）：将异常路由至知识库/数据所有者，更新或下架底层源文档",
+          "属于语气对齐问题（Tone Alignment）：在 System Prompt 中增加严格事实性对齐指令"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\nTrace显示推理与检索均正确，根因在源文档过期，属数据质量。应路由至数据所有者更新/下架，而非改Prompt、扩工具或调语气。"
+      }
+    }
+  },
+  {
+    "id": "mem-longctx-01",
+    "category": "agentic-ai",
+    "topic": "context-window",
+    "tags": [
+      "context-window",
+      "long-context",
+      "cost",
+      "ttft",
+      "lost-in-the-middle"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在构建 AI Agent 系统时，一种直观做法是每次 API 调用都将全部历史对话拼接到 Context Window 中。但在长期运行的 Agent 中，这种做法存在显著的工程瓶颈。关于单纯依赖扩大 Context Window 来维护记忆带来的隐患，下列说法正确的是？（多选）",
+    "explanation": "Token计费与处理线性增、TTFT随上下文增、长文本Attention Lost-in-the-Middle、D称扩窗根治错误。",
+    "reference": {
+      "concept": "长上下文三瓶颈：成本、延迟、注意力衰减。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每次调用的 Token 计费与处理开销随历史记录增加而线性增长，显著推高推理成本",
+          "首字延迟（TTFT）与上下文处理时间随 Context 变大而增长，导致响应变慢",
+          "模型在长文本下的 Attention 分布会产生“Lost-in-the-Middle”现象，即放在 Prompt 中间的关键信息更容易被忽视",
+          "增大 Context Window 从根本上解决了信息检索问题，使 Agent 无需外部数据库也能准确定位任意历史细节"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：全量拼接致Token线性膨胀，成本陡增。\n- B：Prefill耗时与上下文成正比，TTFT恶化。\n- C：长上下文中间信息关注度显著下降。\n- D 错误：扩窗不治检索与注意力瓶颈，仍需外置记忆。"
+      }
+    }
+  },
+  {
+    "id": "mem-cog-01",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "working-memory",
+      "episodic-memory",
+      "semantic-memory",
+      "procedural-memory",
+      "cognitive"
+    ],
+    "difficulty": "hard",
+    "angle": "definition",
+    "question": "AI Agent 的记忆架构通常借鉴认知科学，将其划分为不同功能的记忆类型。现有一个智能编程/运维 Agent，在其运行过程中记录了以下数据：1. 当前正在针对某堆栈报错及对应代码段进行 Debug 分析；2. 记录“三天前与用户排查了 CI/CD 流程报错，并修改了部署脚本”；3. 记录“用户团队在生产环境采用 GitHub Actions 部署，且偏好使用 Python”；4. 记录“在生成代码 Review 总结时，用户要求固定采用三段式结构”。关于上述数据与 Agent 记忆类型的对应关系，下列分析正确的是？（多选）",
+    "explanation": "1工作记忆随任务清、2情境带时戳、3语义持久事实、4程序固化范式。",
+    "reference": {
+      "concept": "四类记忆：Working/Episodic/Semantic/Procedural分工。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数据 1 属于 Working Memory（工作记忆），仅驻留于当前任务的 Context Window 中，任务结束即被清空",
+          "数据 2 属于 Episodic Memory（情境记忆），是带有时间戳和特定交互事件背景的事件记录",
+          "数据 3 属于 Semantic Memory（语义记忆），是从多次交互中抽象出的独立于特定对话的持久事实与知识",
+          "数据 4 属于 Procedural Memory（程序记忆），固化了 Agent 针对特定任务或工作流的行为范式与偏好规则"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- 1 Working：当前任务上下文，瞬时。\n- 2 Episodic：带时空背景的事件。\n- 3 Semantic：去背景化的持久事实。\n- 4 Procedural：工作流偏好与范式。"
+      }
+    }
+  },
+  {
+    "id": "mem-hierarchy-01",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "memory-hierarchy",
+      "paging",
+      "promotion",
+      "demotion",
+      "context-window",
+      "long-term-store"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "生产环境中的 AI Agent 架构常借鉴操作系统（OS）在 RAM 与 Disk 之间进行页面调度（Paging）的思想，设计分层记忆架构（包含 Context Window、Session Memory、Long-term Store、Cold Archive）。关于信息在该分层体系中的动态流转与调配机制，下列描述最准确的是？",
+    "explanation": "新消息到达时从Long-term Store检索提升至Context，A全量直写、C无损降级、D Window成本低容量大均误。",
+    "reference": {
+      "concept": "分层记忆：检索提升、会话结束压缩降级。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "所有历史交互在产生时直接同时写入 Long-term Store 与 Context Window，无需进行冷热分层",
+          "当新的用户消息到达时，系统从底层的 Long-term Store 检索相关的持久事实，并将其“提升（Promote）”装载回 Context Window 中",
+          "Session 结束时，Context Window 中的原始 Token 必须无损降级写入 Cold Archive，严禁进行压缩或总结",
+          "Context Window 处于最高层，其 Token 访问成本最低且存储容量最大"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n分层如OS分页：热层Context小而快，冷层Store大而慢。新消息时检索提升相关事实入Context；会话结束时压缩降级至Cold。A全量直写、C无损、D Window容量大均误。"
+      }
+    }
+  },
+  {
+    "id": "mem-retrieval-01",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "retrieval",
+      "relevance",
+      "recency",
+      "lost-in-the-middle",
+      "context-placement"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 Agent 的检索层（Retrieval Tier）中，系统需要在每轮交互前决定哪些存储信息应该被召回并填充到 Context Window 中。针对检索策略的设计与上下文摆放，下列说法正确的是？（多选）",
+    "explanation": "过度相关致过时吸引、过度时效丢久远约束、首尾摆放抗Lost-in-Middle、D称LLM可完全忽略干扰错误。",
+    "reference": {
+      "concept": "检索权衡相关与时效，布局抗中间丢失。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检索策略若过度偏向语义相关性（Relevance），可能导致 Agent 持续被高相似度但已经过时的历史信息所吸引",
+          "检索策略若过度偏向时效性（Recency），可能会丢弃早先对话中非常关键但时间较久的约束条件",
+          "针对“Lost-in-the-Middle”现象，组装 Context Window 时将检索出的最重要上下文放置在 Prompt 的开头或结尾，有助于提升模型关注度",
+          "只要记忆数据库检索召回了信息，哪怕召回内容无关或陈旧，LLM 也能凭借推理能力自动识别并完全忽略干扰"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：高相似过时信息成干扰。\n- B：时效偏置丢久远关键约束。\n- C：首尾布局抗中间丢失。\n- D 错误：LLM不完全免疫干扰，需检索侧精排。"
+      }
+    }
+  },
+  {
+    "id": "mem-risk-01",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "summarization",
+      "lossy-compression",
+      "staleness",
+      "memory-poisoning",
+      "safety"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "为了节省 Context Window 开销，Agent 架构常引入“摘要压缩（Summarization）”与“长期记忆持久化”。然而这些机制在工程落地中会引入副作用与安全风险。下列关于其副作用的分析正确的是？（多选）",
+    "explanation": "摘要有损丢精确细节、缺失效致陈旧事实高置信、持久层可被毒化持续污染、D称可明确识别错误。",
+    "reference": {
+      "concept": "摘要有损、过时失效、毒化持续污染。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "摘要压缩属于有损压缩（Lossy Compression），容易导致具体的日期、精确名称或具体承诺被平滑抹去，仅保留泛化主题",
+          "当用户先前记录的事实（如“我是素食主义者”）在现实中发生改变时，缺乏自动失效/淘汰机制的长期记忆库仍会高置信度地向模型提供过时事实",
+          "长期存储层（Long-term Store）可能遭遇“记忆毒化（Memory Poisoning）”，即恶意指令被注入持久化数据库后，会在后续检索中持续污染 Prompt",
+          "经过有损压缩后的记忆在被模型调用时，模型能够明确识别丢失的精确细节并主动向用户确认"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：摘要平滑丢日期/名称/承诺。\n- B：无失效致陈旧高置信。\n- C：毒化指令持久化后持续污染。\n- D 错误：模型无法自知压缩丢失，需外置校验与失效机制。"
+      }
+    }
+  },
+  {
+    "id": "mem-stateless-01",
+    "category": "agentic-ai",
+    "topic": "memory",
+    "tags": [
+      "stateless",
+      "hidden-states",
+      "kv-cache",
+      "agent-platform",
+      "state-management"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "在开发 Agent 产品时，用户往往感觉“模型记住了昨天的对话”。从 Transformer 模型底层的 API 合约与系统架构的角度来看，这种记忆连续性的本质是？",
+    "explanation": "LLM无状态，每轮全新空白，连续性由平台状态管理与检索组装实现。",
+    "reference": {
+      "concept": "LLM无状态，连续性由平台外置记忆实现。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "商业 LLM API 在服务端默认保留了跨请求的模型隐层状态（Hidden States）及 Key-Value Cache",
+          "LLM 本身是无状态的（Stateless），每一轮 API 调用都基于全新空白状态；连续性完全由外围 Agent 平台系统通过状态管理、记忆检索与 Prompt 动态组装工程来实现",
+          "LLM 在 Fine-tuning / Continual Pre-training 过程中实时将用户的对话记录更新到了模型权重参数中",
+          "只要 Prompt 长度不超过模型宣称的最大 Context Limit，LLM 就能在无外部数据库辅助的情况下自动跨 Session 持久化所有状态"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\nLLM API为无状态，隐层与KV不跨请求保留，权重亦不实时更新；连续性由平台的状态存储、检索与Prompt组装实现。"
+      }
+    }
   }
 ]

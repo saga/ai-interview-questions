@@ -5899,5 +5899,161 @@
         "referenceAnswer": "正确答案：D。\n\n- A：自建可按负载定制延迟与吞吐权衡。\n- B：专用高可用可提SLA至4个9+。\n- C：规模化摊薄硬件与研发，单价下降。\n- D 错误：TCO有规模拐点，小流量下API更经济，无关于规模均优不成立。"
       }
     }
+  },
+  {
+    "id": "quant-ptq-qat-01",
+    "category": "ai-engineering",
+    "topic": "quantization",
+    "tags": [
+      "quantization",
+      "ptq",
+      "qat",
+      "int4",
+      "memory-bandwidth",
+      "edge"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在将大语言模型部署至内存受限设备（如手机、边缘设备或高并发服务节点）时，权重量化（Quantization）是核心压缩技术。关于训练后量化（PTQ）与量化感知训练（QAT）的技术特性及工程权衡，下列说法正确的有？（多选）",
+    "explanation": "PTQ免训练但低比特易退化、QAT引入噪声适应精度好、量化降显存带宽为内存密集型优化、与GQA可叠加。",
+    "reference": {
+      "concept": "PTQ低成本易退化，QAT噪声适应，量化为内存优化可叠加KV优化。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PTQ（Post-Training Quantization）无需重新训练模型，实施成本低，但在极低比特（如 INT4）下更容易引发明显的模型精度衰退",
+          "QAT（Quantization-Aware Training）在训练或微调阶段引入量化噪声模拟，使权重适应低精度表示，因此在低比特下通常比 PTQ 表现出更好的精度保持度",
+          "量化主要降低模型权重的显存/内存占用，并提高显存带宽利用效率，属于内存密集型推理优化的重要手段",
+          "参数量化与注意力机制的 KV Cache 结构优化（如 GQA）属于不同层面的技术，在实际部署中无法同时使用"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：PTQ免训练，快但INT4易掉点。\n- B：QAT模拟量化噪声，权重适配低精度。\n- C：量化为内存带宽优化。\n- D 错误：量化与GQA正交，可同时叠加。"
+      }
+    }
+  },
+  {
+    "id": "spec-decode-02",
+    "category": "ai-engineering",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "draft-model",
+      "verification",
+      "tokenizer",
+      "parallel"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "投机解码（Speculative Decoding）是一种提升大语言模型推理吞吐与降低延迟的系统设计模式，通常包含一个小规模草稿模型（Draft Model）和一个大规模验证模型（Target Model）。关于 Speculative Decoding 的工作原理与工程特性，下列说法正确的有？（多选）",
+    "explanation": "草稿低延迟串行候选、验证单次并行校验、拒绝回退重采样保分布等价、需Tokenizer兼容。",
+    "reference": {
+      "concept": "草稿串行+验证并行，分布等价，Tokenizer需对齐。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "草稿模型通常推理延迟极低，负责以自回归方式快速串行生成若干候选 Token 序列",
+          "验证模型利用 Transformer 能够在单次前向传播（Forward Pass）中并行处理多个 Token 的特性，批量校验草稿模型生成的候选 Token",
+          "当草稿模型生成的某个 Token 被验证模型拒绝时，系统会回退并由验证模型重新采样，采样概率分布在数学上可被证明严格等价于仅使用大模型直接生成",
+          "Speculative Decoding 能够在保持大模型输出质量的同时达到接近小模型的生成延迟，但前提是草稿模型与验证模型的分词器（Tokenizer）必须完全兼容或映射对齐"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Draft小模型快，串行产候选。\n- B：Target一次前向并行校验。\n- C：拒绝时按残差分布重采样，保分布等价。\n- D：Tokenizer不一致致Token边界错位，必须对齐。"
+      }
+    }
+  },
+  {
+    "id": "hybrid-routing-01",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "tags": [
+      "hybrid-architecture",
+      "routing",
+      "guardrails",
+      "slm",
+      "llm",
+      "escalation"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在生产环境中编排大语言模型（LLM）与小语言模型（SLM）时，通常采用混合架构（Hybrid Architecture）。常见的编排模式包括动态路由（Routing）、安全栅栏（Guardrails）与草稿验证（Drafting）。关于混合模型系统的架构设计与工程权衡，下列说法正确的有？（多选）",
+    "explanation": "动态路由轻Classifier分级、Guardrails前后置过滤降LLM消耗、非集中数据中心+误判致质量降与重试开销。",
+    "reference": {
+      "concept": "混合架构：分级路由+前后置Guardrails，权衡误判。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "动态路由（Dynamic Routing）模式中，通常由轻量级 Classifier 评估请求难度，简单请求直接由 SLM 处理，仅将高难度请求升级（Escalate）至 LLM，其逻辑类似于分布式系统中的分级缓存",
+          "安全栅栏（Guardrail）模式中，可由专门的 SLM 在前置阶段过滤输入敏感词/判定意图，并在后置阶段校验输出格式与安全性，降低 LLM 不必要的算力消耗",
+          "混合模型系统的最终目标是将所有计算集中在数据中心，避免端侧算力的参与",
+          "路由策略的核心考量之一是控制误判率：若将超出 SLM 能力范围的复杂任务误判给 SLM，可能导致回答质量下降或引发额外的重试延迟（Escalation Overhead）"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：轻Classifier分难度，分级缓存思想。\n- B：SLM作前后置Guardrail，省LLM算力。\n- D：误判致质量降与重试开销，需阈值调优。\n- C 错误：混合目标含端侧/边缘协同，非集中数据中心。"
+      }
+    }
+  },
+  {
+    "id": "slm-rag-ceiling-01",
+    "category": "ai-engineering",
+    "topic": "rag",
+    "tags": [
+      "slm",
+      "knowledge-ceiling",
+      "parametric-memory",
+      "rag",
+      "reranking",
+      "synthetic-data"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "由于参数量限制，小语言模型（SLM）存在隐式事实记忆容量受限的“知识天花板”（Knowledge Ceiling）。关于克服小模型知识天花板的架构设计与技术权衡，下列说法正确的有？（多选）",
+    "explanation": "参数为参数化记忆、小则知识少、RAG非参数化注入、SLM对噪声更敏感需剪裁重排、合成数据不消参数限制。",
+    "reference": {
+      "concept": "参数化记忆天花板需RAG外挂，小模型更需重排。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模型参数充当参数化记忆（Parametric Memory），缩小参数量必然会降低模型隐式存储的宽泛世界知识与偏门事实总量",
+          "针对事实性问答场景，通过引入 RAG（检索增强生成）机制将非参数化知识注入上下文，是避免无限扩大模型参数量的重要架构解法",
+          "在 RAG 架构中，小模型通常对检索上下文中的噪声和不相关信息更加敏感，因此相比大模型更依赖高质量的 Context 剪裁与重排序（Reranking）",
+          "借助高质量合成数据（Synthetic Data）训练，可以彻底取消小模型的参数量限制，使其无限量记忆所有互联网事实"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：参数即记忆，减参降知识容量。\n- B：RAG外挂非参数化知识，避免无限扩参。\n- C：小模型抗噪弱，更需精排剪裁。\n- D 错误：合成数据提效不消参数天花板，容量仍受限。"
+      }
+    }
   }
 ]
