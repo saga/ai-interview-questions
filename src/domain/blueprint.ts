@@ -9,11 +9,15 @@ import { ANGLE_ORDER, type CoverageSuggestion } from './coverage.ts';
 /** 缺口格 → 考察目的的默认措辞。模板只是起点：人工可在蓝图上改写 purpose。 */
 export const ANGLE_PURPOSE_TEMPLATES: Record<QuestionAngle, (name: string) => string> = {
   definition: (name) => `检验学习者能否准确解释${name}的核心概念与适用边界`,
+  fundamental: (name) => `检验学习者是否掌握${name}的基本原理与基础概念`,
   mechanism: (name) => `检验学习者是否理解${name}的内在机制与成因`,
+  comparison: (name) => `检验学习者能否对比${name}与其他方案的异同与取舍`,
   calculation: (name) => `检验学习者能否围绕${name}完成定量计算与数值推理`,
   tradeoff: (name) => `检验学习者能否权衡${name}相关方案的代价、收益与适用条件`,
   scenario: (name) => `检验学习者能否在工程情境中运用${name}定位并解决问题`,
+  debugging: (name) => `检验学习者能否诊断并定位${name}相关的故障与异常`,
   'system-design': (name) => `检验学习者能否以${name}为核心设计端到端系统方案`,
+  design: (name) => `检验学习者能否基于${name}设计或改进具体系统/机制`,
 };
 
 /**

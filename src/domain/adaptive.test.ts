@@ -1,19 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import type { LearnerProfile, Question } from '../types';
+import type { LearnerProfile, Question, QuestionAngle } from '../types';
 import { decideStrategy, pickNextAdaptive, type AnswerSignal } from './adaptive';
+import { emptyProfile } from './learner';
 
-function q(id: string, topic: string, difficulty: Question['difficulty'] = 'medium', type: Question['type'] = 'single'): Question {
+function q(id: string, topic: string, difficulty: Question['difficulty'] = 'medium', angle?: QuestionAngle): Question {
   return {
     id,
     category: 'agentic-ai',
     topic,
     tags: [],
-    type,
+    subtopic: undefined,
     difficulty,
+    angle,
     question: `Q ${id}`,
-    options: ['a', 'b'],
-    answer: [0],
     explanation: '',
+    formats: {
+      choice: { type: 'single', options: ['a', 'b'], answer: [0] },
+      open: { referenceAnswer: 'x' },
+    },
   };
 }
 
@@ -126,6 +130,18 @@ describe('pickNextAdaptive', () => {
     const r = pickNextAdaptive(POOL, [sig('nonexistent-topic', 95, 'medium')], profile, rngSeq([0]));
     expect(r!.strategy).toBe('move-on');
     expect(r!.question.topic).toBe('idempotency'); // 薄弱项优先，而非已掌握的 agent-fundamentals
+  });
+
+  it('角度感知：同一 concept 下优先选证据最少的 angle', () => {
+    // transformer 的 mechanism 已被充分练习，debugging 从未考察
+    const profile = emptyProfile();
+    profile.angleCoverage = {
+      'transformer|mechanism': { attempts: 3, avgScore: 92, lastScore: 92, lastAskedAt: 0 },
+    };
+    const pool = [q('t-mech', 'transformer', 'easy', 'mechanism'), q('t-dbg', 'transformer', 'hard', 'debugging')];
+    const r = pickNextAdaptive(pool, [], profile, rngSeq([0]));
+    expect(r!.question.id).toBe('t-dbg'); // debugging 证据最少 → 优先
+    expect(r!.question.angle).toBe('debugging');
   });
 
   it('空池返回 null', () => {

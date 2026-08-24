@@ -725,13 +725,12 @@
     "tags": [
       "rlvr",
       "reasoning-model",
-      "deepseek-r1",
       "reward-design"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
-    "question": "在针对大语言模型进行 RLVR（可验证奖励强化学习）训练以构建推理模型（Reasoning Model）时，关于中间推理轨迹（Reasoning Trace）与奖励信号的设计，以下说法正确的是？",
-    "explanation": "DeepSeek-R1 论文表明，尝试在训练中利用中间推理轨迹并没有带来显著帮助，最终模型仅依靠最终答案正确性（R_accuracy）和规则格式奖励（R_format）即可自发学会链式思考与自我纠错。<think> 标记仅作为区分推理过程与最终答案的分隔符，并不直接赋予模型推理能力。",
+    "question": "在针对大语言模型进行 RLVR（可验证奖励强化学习）训练以构建推理模型时，关于中间推理轨迹与奖励信号的设计，以下说法正确的是？",
+    "explanation": "可验证奖励 RL 表明，利用中间推理轨迹并未带来显著帮助，最终奖励只由最终答案正确性加规则格式奖励构成，链式思考为结果奖励下自发涌现。",
     "reference": {
       "concept": "RLVR 只奖励可验证的最终结果与格式，中间推理轨迹不进入奖励函数；Aha Moment 是结果奖励下自发涌现的行为。"
     },
@@ -740,7 +739,7 @@
         "type": "single",
         "options": [
           "训练时必须引入过程奖励模型（PRM）对每一步推理轨迹进行打分，否则模型无法学习到自我纠错（Aha Moment）",
-          "根据 Controlling Reasoning Effort in LLMs 中 DeepSeek-R1 的实验结论，在 RL 阶段将中间推理轨迹纳入奖励函数能显著提升模型泛化性能",
+          "根据 Controlling Reasoning Effort in LLMs 中 可验证奖励模型 的实验结论，在 RL 阶段将中间推理轨迹纳入奖励函数能显著提升模型泛化性能",
           "RLVR 主要依赖可验证领域（如数学、代码）的最终结果正确性奖励（R_accuracy）与格式约束奖励（R_format），中间推理轨迹本身不直接参与梯度更新的奖励计算",
           "<think> 与 </think> 标记是赋予模型\"逻辑推理能力\"的核心权重开关，移除该标记会导致模型推理性能大幅下降"
         ],
@@ -759,25 +758,25 @@
     "topic": "sft",
     "tags": [
       "hybrid-reasoning",
-      "qwen3",
       "thinking-mode",
-      "tokenizer"
+      "sft",
+      "inference-control"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
-    "question": "在 Qwen3 等支持动态开启或关闭思考过程（Thinking Mode）的混合推理模型中，系统在训练与推理端如何实现这一开关？",
-    "explanation": "Controlling Reasoning Effort in LLMs 指出，Qwen3 在训练阶段通过 SFT 加入了 Thinking Mode Fusion（同时包含生成 reasoning trace 和直接生成 answer 的样本）；在推理阶段，enable_thinking=False 是一种硬开关，Tokenizer 会直接在 Assistant 输出开头填入空 <think></think>，使模型后续直接生成最终答案。",
+    "question": "在支持动态开启或关闭思考过程（Thinking Mode）的混合推理模型中，系统在训练与推理端如何实现这一开关？",
+    "explanation": "在训练阶段通过 SFT 加入 Thinking Mode Fusion（同时包含生成推理轨迹和直接生成答案的样本）；在推理阶段，关闭思考是一种硬开关，需在分词与模板层显式控制，例如在助手回复起点插入空思考标签以跳过推理。",
     "reference": {
-      "concept": "混合推理 = SFT 数据里混入带/不带思考的样本 + 推理时用空 <think></think> 前缀硬关闭思考，而非切换模型或注意力 Mask。"
+      "concept": "混合推理开关：训练期融合样本，推理期硬控。"
     },
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "仅在推理阶段通过系统提示词（System Prompt）进行软引导，无需在 SFT 或 RL 阶段进行特殊的数据混合训练",
-          "在 SFT 阶段引入\"Thinking Mode Fusion\"，提供 /think 与 /no_think 样本；推理阶段若要硬关闭思考，Tokenizer 在助手回复起点强行插入空标签 <think></think>",
-          "通过在 Transformer 内部针对逻辑推理注意力头（Attention Heads）设置动态 Mask，在线截断推理链路",
-          "开启与关闭思考模式需要切换并加载不同参数规模的模型权重（如切换 Luna 或 Sol 引擎）"
+          "仅在推理阶段通过系统提示词进行软引导，无需在 SFT 或 RL 阶段进行特殊的数据混合训练",
+          "在 SFT 阶段引入多模态/多深度样本融合，推理阶段若要硬关闭思考，则在分词模板层强行插入空思考标签以跳过",
+          "在 RL 阶段通过增加采样温度来控制思考深度，温度越高思考越深",
+          "通过在模型权重中增加额外的思考门控层来实现开关"
         ],
         "answer": [
           1
@@ -794,25 +793,25 @@
     "topic": "rlhf",
     "tags": [
       "reasoning-effort",
-      "gpt-oss",
+      "rl",
       "reward-shaping",
-      "token-penalty"
+      "sft"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "要实现在 Post-training 阶段让单个模型支持低、中、高（Low / Medium / High）等多档 Reasoning Effort 调控，以下哪种方案最符合工业界（如 gpt-oss / Inkling）的主流工程实现？",
-    "explanation": "主流的 Effort 调控机制是：在系统提示词中声明 Effort 等级，并在 RL 阶段设置受 Effort 调控的 Token 惩罚函数（例如 R(e) = R_task − λ(e)·N_tokens，低 Effort 给予更高 Token 惩罚），或者在 SFT 阶段通过标注数据让模型建立 Effort 标签与回复长度/深度的映射。解码超参、模型剪枝、采样分支数都无法控制推理深度。",
+    "question": "要实现在 Post-training 阶段让单个模型支持低、中、高等多档 Reasoning Effort 调控，以下哪种方案最符合工业界主流工程实现？",
+    "explanation": "主流机制是在系统提示中声明 Effort 等级，并在 RL 阶段设置与 Effort 绑定的 Token 惩罚函数，或在 SFT 阶段通过多档推理深度样本建立 Effort 标签与长度的映射。",
     "reference": {
-      "concept": "Effort 分档 = 输入注入 Effort 标记 + RL 阶段按档位调 Token 惩罚系数（低档惩罚更高）/ SFT 配对不同深度的目标响应。"
+      "concept": "多档 Effort：Prompt 标记 + RL Token 惩罚或 SFT 配对。"
     },
     "formats": {
       "choice": {
         "type": "single",
         "options": [
           "仅在生成解码阶段动态调整 Temperature、Top-P 和 Repetition Penalty 参数",
-          "在输入端的 System Prompt 中注入 Effort 标记，并在 RL 阶段引入与 Effort 绑定的 Token 惩罚系数 λ(e)，或在 SFT 阶段配对不同推理深度的目标响应",
-          "针对不同 Effort 动态裁减 Transformer 的 Layer 数量或 Attention Head 数量（Model Pruning）",
-          "仅在多路采样（Self-Consistency）阶段调整并行采样的候选分支数量"
+          "在输入端的 System Prompt 中注入 Effort 标记，并在 RL 阶段引入与 Effort 绑定的 Token 惩罚系数，或在 SFT 阶段配对不同推理深度的目标响应",
+          "通过模型剪枝将同一模型裁剪为三个不同参数量的子模型分别对应低中高",
+          "在推理时增加采样分支数（采样更多候选）来提升 Effort"
         ],
         "answer": [
           1
@@ -864,16 +863,16 @@
     "topic": "activation",
     "tags": [
       "swiglu",
-      "situ-glu",
       "softcap",
-      "numerical-stability"
+      "numerical-stability",
+      "moe"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "在大型语言模型的训练中，传统 SwiGLU 激活函数经常因权重同向对齐产生极值膨胀。根据简单谈谈K3的MoE和Attention的技术方案，K3 是如何解决这一极值问题的？",
-    "explanation": "SwiGLU 中门控与线性分支同向对齐时会引发 O(‖x‖⁴) 级别的异常值。K3 将 SiLU 替换为 SiTU（SiTU(x;β) = softcap(x;β)·σ(x)），并对门控与线性分支均引入 Softcap 形成 SiTU-GLU。相较于 Hard Clip，softcap(β·tanh(x/β)) 能在约束数值界限的同时保留更好的梯度连续性。",
+    "question": "在 MoE 架构中，传统 SwiGLU 激活因门控与线性分支同向对齐易产生极值膨胀。如何通过平滑截断（Softcap）设计缓解该数值不稳定性？",
+    "explanation": "SwiGLU 中门控与线性分支同向对齐会引发 O(‖x‖⁴) 极值。通用做法是将 SiLU 替换为带 Softcap 的 SiTU（softcap(x)=β·tanh(x/β)），并对门控与线性分支均施加平滑截断。相比 Hard Clip，Softcap 在约束数值界限的同时保留梯度连续性。",
     "reference": {
-      "concept": "SiTU-GLU = SiLU→SiTU + 门控与线性分支双侧 softcap 平滑截断；比 Hard Clip 多保留梯度连续性，压制 O(‖x‖⁴) 极值。"
+      "concept": "SiTU-GLU 以 Softcap 平滑截断缓解 SwiGLU 极值。"
     },
     "formats": {
       "choice": {
@@ -898,14 +897,15 @@
     "category": "llm",
     "topic": "latent-moe",
     "tags": [
-      "rmsnorm-placement",
-      "stable-latent-moe",
+      "rmsnorm",
+      "latent-moe",
+      "stability",
       "ablation"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
-    "question": "LatentMoE 在维度变换流程（d → d/2 → D → d/2 → d）中存在 4 个连续矩阵连乘，极易引发训练不稳定。K3（Stable LatentMoE）通过消融实验验证，保留哪一处关键位置的 RMSNorm 即可达成训练稳定与模型效果的双重收益？",
-    "explanation": "遵循最小改动原则，消融实验表明仅在升维投影之前（即最后一个 d/2 → d 的输入位置）加入 RMSNorm 作用最为本质。该 Norm 不仅能防止多层矩阵连乘带来的梯度震荡，还能隐式平衡 Routed Expert 与 Shared Expert 的比例，提升部分 Benchmark 表现。",
+    "question": "LatentMoE 在维度变换流程（d → d/2 → D → d/2 → d）中存在 4 个连续矩阵连乘，极易引发训练不稳定。消融实验表明，保留哪一处关键位置的 RMSNorm 即可达成训练稳定？",
+    "explanation": "遵循最小改动，消融表明仅在升维投影之前（最后一个 d/2 → d 的输入位置）加入 RMSNorm 作用最本质，可防止多层矩阵连乘的梯度震荡并隐式平衡 Routed/Shared Expert 比例。",
     "reference": {
       "concept": "Stable LatentMoE 只需在升维投影前（d/2 → d 的输入处）加 RMSNorm：稳定矩阵连乘 + 隐式平衡 Routed/Shared Expert。"
     },
@@ -933,14 +933,14 @@
     "topic": "moe",
     "tags": [
       "load-balancing",
-      "quantile-balancing",
-      "signsgd",
+      "quantile",
+      "moe",
       "distributed-training"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "在总 Expert 数量大幅增加（如从 448 选 8 扩展至 896 选 16）时，基于 SignSGD 的负载均衡表现变差。K3 采用 Quantile Balancing (QB) 方案，如何解决计算全局分位数时通信开销过大的问题？",
-    "explanation": "局部求分位数再平均在超大规模场景下不够准确，而全量收集通信开销过高。QB 利用分 bin 近似（直方图估计），将分数值压缩到 0～1 后划分约 1000 个 bin。由于直方图分布具备可加性，系统可以跨节点、跨梯度累积聚合直方图，以极低通信量精准估计全局近似分位数。",
+    "question": "在超大规模 MoE（从数百专家 Top-8 扩展至近千专家 Top-16）时，基于 SignSGD 的负载均衡在计算全局分位数时通信开销过大。如何以极低通信量实现全局近似分位数的精准估计？",
+    "explanation": "局部求分位数再平均在超大规模下不够准确，全量收集通信过高。通用做法是将分数量化为 0～1 直方图（约 1000 bins），利用分布可加性跨节点聚合直方图，以极低通信精准估计全局近似分位数。",
     "reference": {
       "concept": "QB 用直方图可加性替代全量排序：分数压到 [0,1] 分 ~1000 bin，跨节点聚合直方图即可低成本估全局分位数。"
     },
@@ -970,12 +970,12 @@
       "mla",
       "mtp",
       "speculative-decoding",
-      "compute-bandwidth-tradeoff"
+      "tradeoff"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
-    "question": "关于 MLA 在 Decoding 阶段与 MTP（Multi-Token Prediction / 推测解码）结合时的表现，下列说法正确的是？",
-    "explanation": "MLA 在 Decoding 阶段本质上是 head_dims=512+ 的 MQA，算力消耗已被提前占用；而 MTP 依赖于\"以计算换速度\"，因此 MLA 结合 MTP 时算力瓶颈更为明显。但考虑到 KV Cache 压缩率与 Prefill 效率，MLA 在综合性价比上依然表现优异，因此 K3 仍选择保留 MLA。",
+    "question": "关于类 MLA 的低秩 KV 压缩在 Decoding 阶段与推测解码（MTP / Speculative Decoding）结合时的表现，下列说法正确的是？",
+    "explanation": "类 MLA 在 Decoding 本质是 head_dims=512+ 的 MQA，算力已被提前占用；而 MTP 依赖“以计算换速度”，二者结合时算力瓶颈更明显。但考虑到 KV Cache 压缩率与 Prefill 效率，MLA 在综合性价比上依然优异。",
     "reference": {
       "concept": "Decoding 时 MLA ≈ head_dims=512+ 的 MQA，算力已打满，与 MTP 的\"以计算换速度\"相冲；但 KV Cache 压缩与 Prefill 效率仍使 MLA 综合性价比最优。"
     },
@@ -1003,14 +1003,14 @@
     "topic": "positional-encoding",
     "tags": [
       "nope",
-      "kda",
-      "deltanet",
-      "path"
+      "rope",
+      "delta",
+      "position-encoding"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "K3 在保持 MLA 结构的前提下移除了旋转位置编码（RoPE）变成 NoPE，且模型依然具备良好的位置感知能力。其根本机制是什么？",
-    "explanation": "理论推导表明，正交情形下的 PaTH 位置编码可以等价写成对 Q, K 施加 DeltaNet。由于 KDA（Kimi Linear）是更一般的 DeltaNet，在\"KDA + MLA\"混合架构中，KDA 隐式提供了类似 RoPE / PaTH 的位置编码作用，因此 MLA 模块无需显式加入 RoPE 即可维持位置感知。",
+    "question": "在保持低秩 KV 压缩结构的前提下移除旋转位置编码（RoPE）变成 NoPE，且模型依然具备良好的位置感知能力，其根本机制是什么？",
+    "explanation": "理论推导表明，正交情形下的类 PaTH 位置编码可等价为对 Q/K 施加广义 DeltaNet。混合线性注意力作为更一般的 DeltaNet，隐式提供了类似 RoPE/PaTH 的位置编码作用，因此无需显式 RoPE 即可维持位置感知。",
     "reference": {
       "concept": "NoPE 可行的根因：正交 PaTH ≡ 对 Q/K 施加 DeltaNet，而 KDA 是广义 DeltaNet——混合架构中 KDA 隐式承担了位置编码职能。"
     },
@@ -1018,8 +1018,8 @@
       "choice": {
         "type": "single",
         "options": [
-          "K3 依赖绝对位置编码与 RoPE 的拼接机制",
-          "KDA（Kimi Linear）作为广义 DeltaNet，与 MLA 混合时隐式提供了类似于 PaTH 的广义 RoPE 位置编码效果",
+          "依赖绝对位置编码与 RoPE 的拼接机制",
+          "线性注意力作为广义 DeltaNet，隐式提供了类似 PaTH 的位置编码效果",
           "混合专家 (MoE) 模块能够显式推导出 Token 在序列中的绝对索引",
           "Standard Softmax Attention 本身即具备对无位置编码序列的全序表达能力"
         ],
@@ -1039,13 +1039,13 @@
     "tags": [
       "muon",
       "per-head",
-      "attention-heads",
-      "engineering-correctness"
+      "attention",
+      "optimization"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
-    "question": "K3 训练优化器采用了 Moonlight 版 Muon，但在 Attention 权重的更新策略上改为了 Per-Head 形式。这一改动的主要考量是？",
-    "explanation": "文中指出 Per-Head Muon 在收敛效果和 Loss 上并没有明显优势或劣势。采用 Per-Head 形式的核心原因是物理与工程逻辑上的正确性：每个 Attention Head 在语义和功能上是相对独立的，不应当将不同 Head 的权重更新耦合在同一个全局大矩阵中计算。",
+    "question": "训练优化器采用 Muon，但在 Attention 权重的更新策略上改用 Per-Head 形式，这一改动的主要考量是？",
+    "explanation": "Per-Head Muon 在收敛与 Loss 上无显著优劣，核心是工程正确性：每个 Attention Head 语义相对独立，不应将不同 Head 的权重更新耦合在同一全局大矩阵中计算。",
     "reference": {
       "concept": "Per-Head Muon：Loss 上无明显增益，采纳理由是结构正确性——各 Attention Head 语义独立，更新不应耦合进同一全局矩阵。"
     },

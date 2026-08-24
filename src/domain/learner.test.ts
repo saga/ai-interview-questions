@@ -6,12 +6,14 @@ import {
   collectTopicRefs,
   computeCoverage,
   emptyProfile,
+  getAngleStat,
   recommendWeakTopics,
   recommendationText,
   sessionFromQuiz,
   expandWithPrerequisites,
   suggestNextTopics,
   updateLearner,
+  weakAnglesOf,
 } from './learner';
 import { pickPrioritized } from './quiz';
 import type { LearnerProfile } from '../types';
@@ -90,6 +92,22 @@ describe('updateLearner', () => {
     expect(s.lastSeen).toBeGreaterThan(0);
     expect(p.totalSessions).toBe(1);
     expect(p.totalQuestions).toBe(2);
+  });
+
+  it('聚合 angleCoverage：按 topic|angle 累计逐角度证据', () => {
+    const results: QuestionResult[] = [
+      { questionId: 'q1', category: 'c', topic: 'transformer', format: 'open', angle: 'mechanism', score: 90, gaps: [] },
+      { questionId: 'q2', category: 'c', topic: 'transformer', format: 'open', angle: 'mechanism', score: 70, gaps: [] },
+      { questionId: 'q3', category: 'c', topic: 'transformer', format: 'open', angle: 'debugging', score: 40, gaps: [] },
+    ];
+    const p = updateLearner(emptyProfile(), session(66, results));
+    expect(p.angleCoverage!['transformer|mechanism'].attempts).toBe(2);
+    expect(p.angleCoverage!['transformer|mechanism'].avgScore).toBe(80);
+    expect(p.angleCoverage!['transformer|debugging'].attempts).toBe(1);
+    expect(p.angleCoverage!['transformer|debugging'].avgScore).toBe(40);
+    // 未标注角度的题不污染逐角度证据
+    const noAngle = updateLearner(emptyProfile(), session(50, [result('transformer', 50)]));
+    expect(noAngle.angleCoverage).toEqual({});
   });
 
   it('trend：上次明显高于均分 → improving，反之 declining', () => {
@@ -344,5 +362,32 @@ describe('掌握度策略与题库边界（自 conceptGraph 迁入，ADR-030）'
 
     // 环引用不会死循环（result 上限 + seen 去重保护）
     expect(expandWithPrerequisites(['agent-fundamentals'], profile).length).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('Concept×Angle 弱角判定', () => {
+  it('getAngleStat 返回 (topic,angle) 证据；未练过为 undefined', () => {
+    const p = updateLearner(
+      emptyProfile(),
+      session(70, [
+        { questionId: 'a', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', score: 90, gaps: [] },
+        { questionId: 'b', category: 'c', topic: 'kv-cache', format: 'open', angle: 'tradeoff', score: 50, gaps: [] },
+      ]),
+    );
+    expect(getAngleStat(p, 'kv-cache', 'mechanism')?.avgScore).toBe(90);
+    expect(getAngleStat(p, 'kv-cache', 'debugging')).toBeUndefined();
+  });
+
+  it('weakAnglesOf 优先返回未练与低分角度，已掌握不列入', () => {
+    const p = updateLearner(emptyProfile(), session(66, [
+      { questionId: 'a', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', score: 90, gaps: [] },
+      { questionId: 'b', category: 'c', topic: 'kv-cache', format: 'open', angle: 'tradeoff', score: 50, gaps: [] },
+    ]));
+    const weak = weakAnglesOf(p, 'kv-cache', ['mechanism', 'tradeoff', 'debugging', 'scenario']);
+    expect(weak).toContain('debugging');
+    expect(weak).toContain('scenario');
+    expect(weak).toContain('tradeoff');
+    expect(weak).not.toContain('mechanism'); // 已掌握的不列入
+    expect(weak.indexOf('debugging')).toBeLessThan(weak.indexOf('tradeoff')); // 未练排在低分前
   });
 });

@@ -30,6 +30,7 @@ export const questionSchema = z
     id: z.string().min(1),
     category: z.string().min(1),
     topic: z.string().min(1),
+    subtopic: z.string().optional(),
     tags: z.array(z.string()).default([]),
     difficulty: difficultySchema,
     angle: questionAngleSchema.optional(),

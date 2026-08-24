@@ -764,48 +764,6 @@
     }
   },
   {
-    "id": "ai-rag-001",
-    "category": "ai-engineering",
-    "topic": "rag",
-    "tags": [
-      "rag"
-    ],
-    "difficulty": "easy",
-    "angle": "definition",
-    "question": "RAG 为什么能够解决 LLM 知识过时的问题？它解决不了哪些问题？",
-    "explanation": "RAG 把知识从冻结参数外置为可更新索引，解决时效性；但检索质量、模型理解力、权限合规和残余幻觉都不在它的射程内。",
-    "rubric": {
-      "required": [
-        "参数化知识冻结 vs 外置索引",
-        "更新即重建索引",
-        "至少两类未解决问题"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
-    "formats": {
-      "open": {
-        "referenceAnswer": "LLM 的参数化知识冻结在训练截止时刻，而 RAG 把知识外置成可随时更新的索引库：文档更新只需重建索引，不用重新训练模型，回答时实时检索最新内容进入 context。它解决不了的是：检索不到就答不好（索引质量、query 与文档表述不一致）；模型对检索内容的理解仍受限于自身能力（复杂推理、跨文档综合可能出错）；权限与合规需要在检索层另行实现；以及幻觉只能缓解——证据缺失或误读时依然会编造。"
-      },
-      "choice": {
-        "type": "single",
-        "options": [
-          "RAG 通过微调把最新文档写入模型参数，使模型的内部知识保持实时同步更新。",
-          "RAG 能保证模型不再产生任何幻觉，因为检索到的证据天然排除了编造的可能。",
-          "LLM 的参数化知识冻结在训练截止时刻，RAG 把知识外置为可随时更新的索引库，文档更新只需重建索引而无需重训模型，回答时实时检索最新内容进入 context。",
-          "RAG 同时解决了权限合规与复杂跨文档推理问题，无需在检索层另行实现。"
-        ],
-        "answer": [
-          2
-        ]
-      }
-    }
-  },
-  {
     "id": "ai-eval-001",
     "category": "ai-engineering",
     "topic": "evaluation",
@@ -4658,26 +4616,26 @@
     "topic": "caching",
     "tags": [
       "inference",
-      "paged-attention",
-      "radix-attention",
       "kv-cache",
+      "paged-attention",
+      "prefix-cache",
       "vram"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "在大型语言模型（LLM）的高并发服务化部署中，显存（VRAM）利用效率是吞吐量的核心瓶颈。关于 vLLM 的 PagedAttention 机制与 SGLang 的 RadixAttention 机制的技术实现与场景权衡，下列说法正确的有？（多选）",
-    "explanation": "PagedAttention借OS分页治碎片化；RadixAttention用基数树跨请求复用Prefix；两者TTFT收益在Agent多轮场景显著；D称PagedAttention不能跨请求共享错误（物理块可共享）。",
+    "question": "在 LLM 高并发服务化部署中，显存（VRAM）碎片与前缀重复计算是吞吐瓶颈。关于分页式 KV Cache（借鉴 OS 分页）与前缀树（Radix Tree）复用机制的原理与权衡，下列说法正确的有？（多选）",
+    "explanation": "分页式将逻辑连续 KV 切为固定物理 Block 解决碎片；前缀树按 Token 序列做前缀匹配跨请求复用；二者在多轮 Agent 场景均显著降 TTFT；D 称分页不能跨请求共享错误（物理块可共享）。",
     "reference": {
-      "concept": "PagedAttention=分页治碎片；RadixAttention=基树跨请求Prefix复用；TTFT=避免重复Prefill。"
+      "concept": "分页治碎片；前缀树跨请求复用；TTFT=避免重复 Prefill。"
     },
     "formats": {
       "choice": {
         "type": "multiple",
         "options": [
-          "PagedAttention 借鉴了操作系统的虚拟内存分页思想，将连续的 KV Cache 切分为固定大小的物理 Block，解决了传统预分配模式下的显存碎片化问题",
-          "RadixAttention 采用 Radix Tree 数据结构对 KV Cache 进行层级化管理，能够跨请求高效匹配并复用重叠的前缀（Prefix） Token KV 缓存",
-          "在复杂 Agent 系统或多轮对话场景中，SGLang 的 RadixAttention 相较于未开启 Prefix 缓存的系统能显著降低首字延迟（TTFT），因为其避免了重复 Prompt 前缀的 Prefill 计算",
-          "PagedAttention 只能在单次 Request 的生成过程中动态分配物理块，无法支持不同 Request 之间的 KV Cache 块共享"
+          "分页式 KV Cache 借鉴 OS 虚拟内存分页，将逻辑连续的 KV 切为固定大小物理 Block，按需分配以消除预分配导致的显存碎片",
+          "前缀树复用对 KV Cache 按 Token 序列做基数树管理，跨请求高效匹配重叠前缀并复用其 KV",
+          "在多轮对话/Agent 场景中，开启前缀复用的系统相较未开启能显著降低首字延迟（TTFT），因避免重复前缀的 Prefill",
+          "分页式机制只能在单次请求内动态分配物理块，无法支持跨请求的 KV 块共享"
         ],
         "answer": [
           0,
@@ -6280,6 +6238,272 @@
       },
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：高密度流致Context爆满，需流式裁减。\n- B：200ms双向流强依赖网络。\n- C：延迟预算限前台参量。\n- D 错误：工具调用经后台异步，非彻底放弃。"
+      }
+    }
+  },
+  {
+    "id": "agent-cost-01",
+    "category": "ai-engineering",
+    "topic": "cost",
+    "tags": [
+      "agent-loop",
+      "context-inflation",
+      "token-cost",
+      "stateless"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "某系统架构师在评估 LLM Agent 系统的 API 调用成本时发现，在处理多步骤复杂任务时，Agent 产生的 Token 消耗量远超单次 Chatbot 对话。关于 Agent 运行机制对 Token 消费的影响，下列说法正确的有？（多选）",
+    "explanation": "LLM无状态致每轮重发递增Context、超线性累积、高频消除自然制约、D称本地更新隐状态错误。",
+    "reference": {
+      "concept": "Agent Context膨胀致Token超线性累积。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LLM API 本身是无状态的，Agent 在多轮循环中必须在每次请求时重新发送完整的历史上下文（包含系统指令、工具 Schema、历史工具调用与返回结果等），导致上下文随着轮次单调递增",
+          "Agent 系统的总 Token 消耗量通常随循环轮次呈现超线性的累积增长，即使单次工具调用的增量输入不大，后续步骤的 Input Token 成本也会急剧攀升",
+          "与人类用户受限于输入速度和阅读能力的交互节奏不同，Agent 系统在无人干预下可以以 API 允许的最大速率高频发起请求，消除了交互频次的“自然制约”",
+          "Agent 每次执行工具后，可以通过本地存储直接更新 LLM 的内部隐状态（Hidden States），从而避免在后续请求中重复传入历史上下文"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：无状态需重发全量上下文单调递增。\n- B：历史累积致超线性增长。\n- C：无人干预高频消除自然制约。\n- D 错误：隐状态不持久化，需重传。"
+      }
+    }
+  },
+  {
+    "id": "agent-routing-01",
+    "category": "ai-engineering",
+    "topic": "model-selection",
+    "tags": [
+      "routing",
+      "signal-based",
+      "predictive",
+      "classifier",
+      "latency"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在构建 LLM 动态路由系统（Model Router）以降低 API 成本时，通常有两种决策策略：一种是“基于已有信号路由”（Signal-based Routing），另一种是“基于请求文本预测路由”（Predictive Routing）。关于这两种路由策略的工程权衡，下列说法正确的有？（多选）",
+    "explanation": "已知信号为静态查表极低延迟、预测需分类器增延迟与维护成本、准确率依赖上游信号可靠性。",
+    "reference": {
+      "concept": "已知信号低延迟可预测，预测需分类器增成本。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基于已知信号路由（如系统上游明确标记当前请求为 Planning、Code Edit 或 Commit Summary 等模式）通常是一个静态查表过程，运行延迟极低且结果可预测",
+          "基于预测的路由（Predictive Router）可以在缺少上游任务分类信号时，直接根据输入 Prompt 的文本特征预测任务难度并分发给性价比最高的模型",
+          "基于预测的路由由于引入了额外的分类器（Classifier），不仅增加了请求延时，还需要持续维护分类模型以适应底层 LLM 价格与性能的迭代",
+          "基于已知信号路由的准确率完全取决于上游传入信号的可靠性，如果任务模式划分过粗，可能会将复杂的子任务误判为简单任务并路由至弱模型"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：已知信号为查表，低延迟。\n- B：预测按文本特征分难度。\n- C：额外分类器增延迟与维护。\n- D：信号粗致误判弱模型。"
+      }
+    }
+  },
+  {
+    "id": "agent-cot-switch-01",
+    "category": "ai-engineering",
+    "topic": "model-selection",
+    "tags": [
+      "cot",
+      "model-family",
+      "reasoning",
+      "context-loss",
+      "heterogeneous"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "某 AI Coding Agent 系统采用动态路由机制，在同一任务的不同步骤中根据模式（如从“架构设计”切换到“代码重构”）在不同的模型族（如 Anthropic Claude 系列、OpenAI GPT 系列、DeepSeek 系列）之间进行模型切换。系统发现在某些切换后，Agent 的下一步表现出现了意外的推理解断。关于这一现象的技术原因与工程影响，下列说法正确的有？（多选）",
+    "explanation": "异构推理格式不兼容致丢思维链、丢失上下文但可基于工具历史继续、D称JSON可无损共享错误。",
+    "reference": {
+      "concept": "跨族CoT格式不兼容致上下文裁剪。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同供应商的推理模型（Reasoning Models）生成的内部思维链（Internal Thinking / Reasoning Tokens）格式与结构存在差异，异构模型之间无法直接解析对方的思维链",
+          "当在异构模型族之间切换时，系统通常需要丢弃上一个模型产生的中间思维链数据，这会导致 Agent 失去部分建立好的推理上下文",
+          "异构模型切换时丢失思维链虽然可能导致后续单步质量轻微下降，但 Agent 依然可以基于保留的基础工具调用历史与返回结果继续执行",
+          "只要统一使用 JSON 格式封装 Context，不同模型族之间就可以无损共享并解析彼此生成的思维链推理过程"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Thinking格式分供应商差异。\n- B：切换需丢弃致上下文损失。\n- C：仍可凭工具历史继续。\n- D 错误：格式不兼容非JSON封装可解。"
+      }
+    }
+  },
+  {
+    "id": "agent-cache-routing-01",
+    "category": "ai-engineering",
+    "topic": "caching",
+    "tags": [
+      "prompt-caching",
+      "routing",
+      "hit-rate",
+      "cost",
+      "supplement"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在大型 Agent 系统的成本优化实践中，团队开启了 API 供应商的 Prompt Caching（前缀缓存）功能，并且在某些高频场景下达到了 80% 以上的缓存重用率（Cache Hit Rate）。然而，系统的月度 API 总账单依然居高不下。关于 Prompt Caching 的局限性及与 Smart Routing（智能路由）的关系，下列分析正确的有？（多选）",
+    "explanation": "缓存仅降前缀单价、未命中增量仍巨、前沿模型基数大、Caching与Routing互补维度不同、D称80%必优于路由错误。",
+    "reference": {
+      "concept": "Caching降单价，Routing配算力，互补。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Prompt Caching 仅降低了被缓存的前缀输入 Token 的单价，但在高并发/高频 Agent 场景下，每次请求中无法被缓存的增量上下文（如新工具输出、递增历史）累积量依然巨大",
+          "如果所有请求默认都发送给最昂贵的 Frontier Model（前沿大模型），即使缓存命中率极高，剩余未命中部分的 Token 绝对单价和高频请求总量仍会导致巨大的成本基数",
+          "Prompt Caching 解决的是“重复 Context 的传输单价问题”，而 Smart Routing 解决的是“请求难度与模型算力/价格的匹配问题”，二者作用于成本控制的不同维度，应配合使用",
+          "只要 Prompt Caching 的命中率超过 80%，在任意场景下其降本效果都必然显著优于将简单任务路由至廉价模型（Small/Economical Models）"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：增量上下文累积仍巨。\n- B：前沿模型基数大，高频仍贵。\n- C：Caching与Routing互补。\n- D 错误：高命中不一定优于路由。"
+      }
+    }
+  },
+  {
+    "id": "agent-gateway-01",
+    "category": "ai-engineering",
+    "topic": "system-design",
+    "tags": [
+      "gateway",
+      "unified-api",
+      "decoupling",
+      "security",
+      "multi-provider"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "某企业级 AI 架构团队准备引入统一的 LLM 模型接入网关（Unified LLM Gateway）来管理多供应商（如 OpenAI, Anthropic, 自建开源模型等）的 LLM 调用。关于该 Gateway 在系统架构中的核心职责与设计价值，下列说法正确的有？（多选）",
+    "explanation": "网关统一标准格式屏蔽协议、解耦适配与路由可配置、直联秘钥管理提安全、D称编译为字节码消除语义偏差错误。",
+    "reference": {
+      "concept": "网关：统一协议+解耦路由+安全隔离。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Gateway 提供统一的标准 API 请求/响应格式，屏蔽各模型供应商不同的接口协议与数据结构，降低上游业务代码的对接成本",
+          "Gateway 将“接口协议适配”与“模型路由决策”解耦，使底层模型的替换或路由策略调整可以通过配置动态生效，无需修改客户端代码",
+          "Gateway 可以实现企业自有供应商账号的直联与秘钥管理，避免上游应用硬编码 API Key，提高系统安全性与成本核算粒度",
+          "Gateway 会自动将上游所有复杂自然语言 Prompt 编译成统一的模型字节码（Bytecode），从而消除不同模型在语义理解上的偏差"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：统一格式降对接成本。\n- B：解耦可配置。\n- C：直联秘钥提安全与核算。\n- D 错误：不编译字节码，不消语义偏差。"
+      }
+    }
+  },
+  {
+    "id": "agent-observability-01",
+    "category": "ai-engineering",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "cost-attribution",
+      "token",
+      "request-count",
+      "context-length"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
+    "explanation": "成本驱动为Token尤其长Context、需Token粒度按Task聚合、长上下文低频远超高频短上下文、D称仅监控输出错误。",
+    "reference": {
+      "concept": "成本归因为Token浓度，非请求次数。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LLM API 的成本核心驱动因素是单次请求的 Token 数量（尤其是由长 Context 导致的 Input Token），而非单纯的 API 调用次数",
+          "成本监控指标必须深入到 Token 粒度，记录每次请求的 Input/Output Token 数，并结合任务类型（Task Type）和功能标签进行聚合分析",
+          "调用频次低但单次运行时间长、上下文极大的 Agent 任务（如全库代码规划或长文档分析），其 Token 消耗量可能远超高频但短上下文的交互任务（如拼写检查）",
+          "为了准确评估成本，只要监控输出 Token（Output Tokens）的数量即可，因为各大供应商的 Output Token 单价比 Input Token 更高，决定了绝大部分账单金额"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Token量为核心。\n- B：需Token粒度聚合。\n- C：长上下文低频超高频短上下文。\n- D 错误：Input长上下文亦主导，不能仅看Output。"
+      }
+    }
+  },
+  {
+    "id": "agent-jevons-01",
+    "category": "ai-engineering",
+    "topic": "cost",
+    "tags": [
+      "jevons-paradox",
+      "budget",
+      "cost-optimization",
+      "governance",
+      "routing"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "某团队通过引入廉价模型路由和 Prompt 优化，成功将单次 Agent 任务的平均 Token 成本降低了 60%。然而在结算时发现，团队的月度 LLM 账单总额不仅没有下降，反而上升了 20%。关于这一工程与经济现象的分析及应对策略，下列说法正确的有？（多选）",
+    "explanation": "单价降致反弹用量暴涨、需全局预算上限、目标为预算内价值最大化、D称路由失效切回单模型错误。",
+    "reference": {
+      "concept": "Jevons反弹：单价降致总量涨，需预算治理。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单次请求成本下降会导致“反弹效应”（Jevons 悖论）：原先因太贵而受限的使用场景（如对所有 Git Commit 进行自动 Code Review）变得可行，从而触发了远超以往的总调用量",
+          "仅靠降低单次调用单价无法保证总预算不超标，必须在架构和管理层面设定固定的全局/团队月度预算上限（Monthly Budget Cap）",
+          "成本优化的工程目标不应仅仅追求“降低单次 API 调用的绝对价格”，而应追求“在固定预算约束内提供最大化的有效业务价值”",
+          "这一现象说明模型路由技术完全失效，团队应当强制所有业务重新切回单一前沿模型（Frontier Model）以抑制调用量"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Jevons反弹致总量涨。\n- B：需预算上限。\n- C：目标为预算内价值最大。\n- D 错误：非路由失效，不应回退。"
       }
     }
   }

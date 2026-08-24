@@ -5,9 +5,11 @@
 // 不依赖 React / LLM / 网络，全部可单测。
 
 import type {
+  AngleStat,
   EvaluationResult,
   InterviewDefinition,
   LearnerProfile,
+  QuestionAngle,
   QuestionResult,
   ScoringRubric,
   SessionQuestion,
@@ -73,12 +75,18 @@ export function expandWithPrerequisites(priorities: string[], profile: LearnerPr
   return result;
 }
 
+/** Concept×Angle 证据的 key：`${topic}|${angle}`。 */
+export function angleKey(topic: string, angle: QuestionAngle): string {
+  return `${topic}|${angle}`;
+}
+
 export function emptyProfile(): LearnerProfile {
   return {
     totalSessions: 0,
     totalQuestions: 0,
     overallScore: 0,
     topicStats: {},
+    angleCoverage: {},
     sessions: [],
     updatedAt: 0,
   };
@@ -109,11 +117,29 @@ function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): s
  */
 export function updateLearner(profile: LearnerProfile, s: SessionRecord): LearnerProfile {
   const topicStats = { ...profile.topicStats };
+  const angleCoverage = { ...(profile.angleCoverage ?? {}) };
   const byTopic = new Map<string, QuestionResult[]>();
   for (const r of s.questionResults) {
     const arr = byTopic.get(r.topic) ?? [];
     arr.push(r);
     byTopic.set(r.topic, arr);
+  }
+
+  // Concept×Angle 逐角度证据：与 topic 聚合并行，key = topic|angle
+  for (const r of s.questionResults) {
+    if (!r.angle) continue;
+    const key = angleKey(r.topic, r.angle);
+    const prev = angleCoverage[key];
+    const attempts = (prev?.attempts ?? 0) + 1;
+    const avgScore = prev
+      ? Math.round(((prev.avgScore * prev.attempts + r.score) / attempts) * 10) / 10
+      : Math.round(r.score * 10) / 10;
+    angleCoverage[key] = {
+      attempts,
+      avgScore,
+      lastScore: r.score,
+      lastAskedAt: s.startedAt,
+    };
   }
 
   for (const [topic, results] of byTopic) {
@@ -159,6 +185,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
     totalQuestions: profile.totalQuestions + s.questionResults.length,
     overallScore,
     topicStats,
+    angleCoverage,
     sessions,
     updatedAt: s.startedAt,
   };
@@ -177,6 +204,7 @@ export function sessionFromQuiz(
       category: q.category,
       topic: q.topic,
       format,
+      angle: q.angle ?? undefined,
       score: g?.overall ?? 0,
       correct: format === 'choice' ? (g?.dimensions.correctness ?? 0) === 100 : undefined,
       // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps；
@@ -211,6 +239,37 @@ export interface CategoryCoverage {
   totalTopics: number;
   attempted: number;
   mastered: number;
+}
+
+/** 取某个 (topic, angle) 的逐角度证据；未练过返回 undefined。 */
+export function getAngleStat(profile: LearnerProfile, topic: string, angle: QuestionAngle): AngleStat | undefined {
+  return profile.angleCoverage?.[angleKey(topic, angle)];
+}
+
+/** 该 (topic, angle) 是否已有作答证据。 */
+export function isAngleAttempted(profile: LearnerProfile, topic: string, angle: QuestionAngle): boolean {
+  const s = getAngleStat(profile, topic, angle);
+  return Boolean(s && s.attempts > 0);
+}
+
+/**
+ * 给定某 concept（topic）与其期望考察角度，返回"证据最薄弱"的角度优先级列表：
+ * - 未练过的角度排最前（attempts=0）；
+ * - 已练但均分低于掌握线的角度其次（按均分升序）；
+ * - 已充分掌握的角度不入列。
+ * 用于"弱 concept → 缺证据 angle"的自适应追问（你提案 section 6/10 的核心）。
+ */
+export function weakAnglesOf(profile: LearnerProfile, topic: string, expected: QuestionAngle[]): QuestionAngle[] {
+  const scored = expected.map((angle) => {
+    const stat = getAngleStat(profile, topic, angle);
+    if (!stat || stat.attempts === 0) return { angle, rank: 0, score: 0 };
+    if (stat.avgScore < WEAK_AVG) return { angle, rank: 1, score: stat.avgScore };
+    return { angle, rank: 2, score: stat.avgScore };
+  });
+  return scored
+    .filter((x) => x.rank < 2)
+    .sort((a, b) => a.rank - b.rank || a.score - b.score)
+    .map((x) => x.angle);
 }
 
 export interface CoverageReport {

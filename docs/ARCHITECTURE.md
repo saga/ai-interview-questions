@@ -288,6 +288,10 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
      LearnerProfile（topicStats: avgScore/mastery/trend/commonWeaknesses + 最近50条会话）
                     ↓
   buildCoachDefinition() → topicPriorities → pickPrioritized() → 下一次训练
+
+> 角度级证据（ADR-037）：`LearnerProfile.angleCoverage` 额外按 `topic|angle` 累计
+> （attempts/avgScore/lastScore/lastAskedAt），与 topic×angle 覆盖矩阵（`coverage.ts`）形成双向闭环；
+> `weakAnglesOf()` 给出某 concept 下证据最薄弱的角度，`pickNextAdaptive` 据此优先追问缺证据角度。
 ```
 
 - **记忆是"结构化信号"而非对话原文**：不把用户历史回答塞给 LLM；Coach 只看压缩画像（如 `tool-calling: weak`）。

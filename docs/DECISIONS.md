@@ -2,6 +2,20 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-037 · 学习者画像引入 Concept×Angle 逐角度证据，补 subtopic 字段与角度词表
+
+- 状态：已采纳 · 2026-08-25
+- 背景：原 `LearnerProfile.topicStats` 仅按 topic 聚合（attempts/avgScore/mastery），自适应选题 `pickNextAdaptive` 只能做"弱 topic → 任意题"，无法表达"某 concept 基本知识掌握好、但 debugging/design 角度缺证据"。这与"围绕一个 concept 从多个角度考察"的题库设计目标（topic×angle 覆盖矩阵 `coverage.ts` 已存在）脱节——生产端已能发现角度缺口，但学习端不会反向据此追问。
+- 决策：
+  - **逐角度证据**：`LearnerProfile` 新增可选 `angleCoverage: Record<topic|angle, AngleStat>`（`attempts/avgScore/lastScore/lastAskedAt`）；`updateLearner` 在聚合 topic 的同时并行按 `angleKey(topic,angle)` 累计；`QuestionResult` 新增可选 `angle`（经 `sessionFromQuiz` 从 `Question.angle` 透传），无角度标注的题不污染该表。
+  - **弱角判定**：新增 `weakAnglesOf(profile, topic, expectedAngles)`——未练角度排最前、低分角度其次、已掌握不入列，作为"弱 concept → 缺证据 angle"的查询原语。
+  - **角度词表扩展**：`questionAngleSchema` 由 6 个扩到 10 个，补 `fundamental / comparison / debugging / design`（与既有 `definition / system-design` 并存，保留历史数据不迁移）；`coverage.ANGLE_ORDER`、`ANGLE_SUGGESTIONS`、`blueprint.ANGLE_PURPOSE_TEMPLATES` 同步补齐，保证覆盖矩阵与蓝图语义完整。
+  - **subtopic 字段**：`Question` 新增可选 `subtopic`（`schemas/question.ts`），`QuestionCard` 以 `geekblue` 标签展示；作为 concept→subtopic→angle 三级分类的中间层，本期仅作分类/展示，暂不进入学习证据聚合（避免 over-design）。
+  - **自适应接角度感知**：`pickNextAdaptive` 新增 `angleEvidence`/`pickLeastCovered`——在 deep-dive/gap-probe 收窄后的候选集与 move-on 最终兜底中，均优先选 (topic,angle) 证据最少的题；move-on 对弱 topic 加权，实现"弱 concept → 缺证据 angle"的追问。
+- 理由：最小改造即把"角度覆盖"从纯生产端度量升级为双向闭环，且不动既有的 topic 级 mastery / 推荐 / 覆盖报告；与 ADR-034 的 Agent 运行时天然互补——Agent 后续可直接消费 `angleCoverage` 决定下一题的 concept×angle。
+- 不做的事：不引入 subtopic 级别的独立学习证据（过设计）；不把历史 `definition/system-design` 重命名为 `fundamental/design`（避免数据迁移）；不强行给所有 concept 补齐 10 个角度（仍由知识节点 `angles` 声明期望角度）。
+- 验证：`npm run test` 270 passed（新增 learner 2 例 angleCoverage 聚合 + weakAnglesOf、adaptive 2 例角度感知选题）；`typecheck`/`build` 全绿；`src/domain/learner.test.ts`、`src/domain/adaptive.test.ts` 覆盖。
+
 ## ADR-036 · 变体生成从字段白名单转向 Knowledge Contract 语义不变量（取代 ADR-019 变体约束）
 
 - 状态：已采纳 · 2026-08-24

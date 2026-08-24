@@ -15,11 +15,15 @@ export const formatIdSchema = z.enum(['choice', 'open']);
 
 export const questionAngleSchema = z.enum([
   'definition',
+  'fundamental',
   'mechanism',
+  'comparison',
   'calculation',
   'tradeoff',
   'scenario',
+  'debugging',
   'system-design',
+  'design',
 ]);
 
 export const knowledgeAreaSchema = z.enum([

@@ -15,21 +15,29 @@ import type {
 /** 角度固定排序（难度梯度序），报告与建议都按此序展示。 */
 export const ANGLE_ORDER: QuestionAngle[] = [
   'definition',
+  'fundamental',
   'mechanism',
+  'comparison',
   'calculation',
   'tradeoff',
   'scenario',
+  'debugging',
   'system-design',
+  'design',
 ];
 
 /** 各角度的建议补题形态（启发式：定义/机制/计算适合选择，权衡/情境/系统设计适合开放）。 */
 export const ANGLE_SUGGESTIONS: Record<QuestionAngle, { difficulty: Difficulty; format: FormatId }> = {
   definition: { difficulty: 'easy', format: 'choice' },
+  fundamental: { difficulty: 'easy', format: 'choice' },
   mechanism: { difficulty: 'medium', format: 'choice' },
+  comparison: { difficulty: 'hard', format: 'open' },
   calculation: { difficulty: 'medium', format: 'choice' },
   tradeoff: { difficulty: 'hard', format: 'open' },
   scenario: { difficulty: 'hard', format: 'open' },
+  debugging: { difficulty: 'hard', format: 'open' },
   'system-design': { difficulty: 'hard', format: 'open' },
+  design: { difficulty: 'hard', format: 'open' },
 };
 
 const PRIORITY_ORDER: KnowledgePriority[] = ['P0', 'P1', 'P2'];

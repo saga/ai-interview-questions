@@ -6,11 +6,10 @@
 //   move-on    移动到未覆盖方向
 // 不依赖 React / LLM / 网络。
 
-import type { Difficulty, LearnerProfile } from '../types';
-import type { Question } from '../types';
-import { pickPrioritized, pickQuestions } from './quiz';
+import type { Difficulty, LearnerProfile, Question } from '../types';
+import { pickQuestions } from './quiz';
 import { prerequisiteClosure, relatedOf } from './conceptGraph';
-import { recommendWeakTopics } from './learner';
+import { angleKey, recommendWeakTopics } from './learner';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -59,6 +58,25 @@ function pickFromTopics(pool: Question[], topics: string[], rng: () => number): 
 }
 
 /**
+ * (topic, angle) 的累计作答次数——即"该概念该角度"的证据量。
+ * 未标注角度或画像缺失视为 0（= 最该被考察），实现"弱 concept → 缺证据 angle"。
+ */
+function angleEvidence(q: Question, profile: LearnerProfile | undefined): number {
+  if (!profile || !q.angle) return 0;
+  const stat = profile.angleCoverage?.[angleKey(q.topic, q.angle)];
+  return stat ? stat.attempts : 0;
+}
+
+/** 在候选集中优先选 (topic, angle) 证据最少的题（证据相同则随机）。 */
+function pickLeastCovered(pool: Question[], profile: LearnerProfile | undefined, rng: () => number): Question | null {
+  if (pool.length === 0) return null;
+  const evs = pool.map((q) => angleEvidence(q, profile));
+  const min = Math.min(...evs);
+  const least = pool.filter((_, i) => evs[i] === min);
+  return pickQuestions(least, 1, rng)[0] ?? null;
+}
+
+/**
  * 自适应选下一题：
  * @param pool 候选题池（调用方需已排除已问过的题）
  * @param signals 已答题的作答信号（按顺序）
@@ -97,14 +115,14 @@ export function pickNextAdaptive(
       const easier = sameTopicPool
         .filter((q) => !difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(a.difficulty) - DIFF_ORDER.indexOf(b.difficulty));
-      if (easier[0]) return { question: easier[0], strategy: 'gap-probe' };
+      if (easier[0]) return { question: pickLeastCovered(easier, profile, rng)!, strategy: 'gap-probe' };
 
       const pres = prerequisiteClosure(last.topic);
       const preQ = pickFromTopics(pool, pres, rng);
       if (preQ) return { question: preQ, strategy: 'gap-probe' };
 
-      // 前置也问不了 → 同主题任意剩余题兜底
-      const fallback = pickQuestions(sameTopicPool, 1, rng)[0];
+      // 前置也问不了 → 同主题任意剩余题兜底（仍优先缺证据角度）
+      const fallback = pickLeastCovered(sameTopicPool, profile, rng);
       if (fallback) return { question: fallback, strategy: 'gap-probe' };
       break;
     }
@@ -113,18 +131,23 @@ export function pickNextAdaptive(
       const harder = sameTopicPool
         .filter((q) => difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(b.difficulty) - DIFF_ORDER.indexOf(a.difficulty));
-      if (harder[0]) return { question: harder[0], strategy: 'deep-dive' };
+      if (harder[0]) return { question: pickLeastCovered(harder, profile, rng)!, strategy: 'deep-dive' };
       break;
     }
     default:
       break;
   }
 
-  // move-on 及一切策略的最终兜底：排除刚答的主题，优先薄弱项
+  // move-on 及一切策略的最终兜底：排除刚答的主题，优先薄弱项，且按 (topic,angle) 证据升序挑最缺考察的
   const rest = pool.filter((q) => q.topic !== (first ? '' : last.topic));
   const target = rest.length > 0 ? rest : pool;
   const weakTopics = profile ? recommendWeakTopics(profile, 5) : [];
-  const picked =
-    weakTopics.length > 0 ? pickPrioritized(target, weakTopics, 1, rng)[0] : undefined;
-  return { question: picked ?? pickQuestions(target, 1, rng)[0], strategy: 'move-on' };
+  const scored = target.map((q) => ({
+    q,
+    // 弱 concept 加权（减分 = 更优先），再叠加 (topic,angle) 证据量——证据越少越该被问
+    ev: angleEvidence(q, profile) + (weakTopics.includes(q.topic) ? -0.6 : 0),
+  }));
+  const minEv = Math.min(...scored.map((s) => s.ev));
+  const least = scored.filter((s) => s.ev === minEv).map((s) => s.q);
+  return { question: pickQuestions(least, 1, rng)[0], strategy: 'move-on' };
 }

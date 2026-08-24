@@ -13,7 +13,7 @@ import type { KnowledgeNode as KnowledgeNodeT } from './schemas/knowledge';
 import type { InterviewDefinition as InterviewDefinitionT, ScoringRubric as ScoringRubricT } from './schemas/interview';
 import type { EvaluationResult as EvaluationResultT } from './schemas/evaluation';
 import type { ProviderEntry as ProviderEntryT, AIConfig as AIConfigT } from './schemas/ai-config';
-import type { TopicStats as TopicStatsT, QuestionResult as QuestionResultT, SessionRecord as SessionRecordT, LearnerProfile as LearnerProfileT, Trend as TrendT } from './schemas/learner';
+import type { TopicStats as TopicStatsT, QuestionResult as QuestionResultT, SessionRecord as SessionRecordT, LearnerProfile as LearnerProfileT, AngleStat as AngleStatT, Trend as TrendT } from './schemas/learner';
 import type { SessionQuestion as SessionQuestionT, InterviewSession as InterviewSessionT } from './schemas/session';
 
 // ── 基础枚举（re-export 单源类型，运行时值与 schemas/common 保持一致） ──
@@ -35,6 +35,7 @@ export type EvaluationResult = EvaluationResultT;
 export type ScoringRubric = ScoringRubricT;
 export type InterviewDefinition = InterviewDefinitionT;
 export type TopicStats = TopicStatsT;
+export type AngleStat = AngleStatT;
 export type QuestionResult = QuestionResultT;
 export type SessionRecord = SessionRecordT;
 export type LearnerProfile = LearnerProfileT;

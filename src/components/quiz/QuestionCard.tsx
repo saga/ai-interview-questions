@@ -40,6 +40,7 @@ export default function QuestionCard({ index, question, format, value, onChange 
       <Space wrap style={{ marginBottom: 14 }}>
         <Badge count={index + 1} showZero color="#1677ff" />
         <Tag color="blue">{typeLabel}</Tag>
+        {question.subtopic && <Tag color="geekblue">{question.subtopic}</Tag>}
         <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
         <Tag>{categoryLabel(question.category)}</Tag>
         {question.tags?.map((t) => (
