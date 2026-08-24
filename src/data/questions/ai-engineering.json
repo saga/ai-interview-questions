@@ -4651,5 +4651,343 @@
         "question": "一个二十人团队用 LLM-as-a-Judge 为智能写作助手的每次 prompt 或模型变更做回归评分。运行一个月后发现：同一批样本两次评测的分数明显波动；judge 几乎总给更长的回答打高分；业务负责人因此质疑评测结论的可信度。团队应该采取哪些措施改进评测方案？（请选择以下三个选项）"
       }
     }
+  },
+  {
+    "id": "ai-infra-001",
+    "category": "ai-engineering",
+    "topic": "caching",
+    "tags": [
+      "inference",
+      "paged-attention",
+      "radix-attention",
+      "kv-cache",
+      "vram"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在大型语言模型（LLM）的高并发服务化部署中，显存（VRAM）利用效率是吞吐量的核心瓶颈。关于 vLLM 的 PagedAttention 机制与 SGLang 的 RadixAttention 机制的技术实现与场景权衡，下列说法正确的有？（多选）",
+    "explanation": "PagedAttention借OS分页治碎片化；RadixAttention用基数树跨请求复用Prefix；两者TTFT收益在Agent多轮场景显著；D称PagedAttention不能跨请求共享错误（物理块可共享）。",
+    "reference": {
+      "concept": "PagedAttention=分页治碎片；RadixAttention=基树跨请求Prefix复用；TTFT=避免重复Prefill。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PagedAttention 借鉴了操作系统的虚拟内存分页思想，将连续的 KV Cache 切分为固定大小的物理 Block，解决了传统预分配模式下的显存碎片化问题",
+          "RadixAttention 采用 Radix Tree 数据结构对 KV Cache 进行层级化管理，能够跨请求高效匹配并复用重叠的前缀（Prefix） Token KV 缓存",
+          "在复杂 Agent 系统或多轮对话场景中，SGLang 的 RadixAttention 相较于未开启 Prefix 缓存的系统能显著降低首字延迟（TTFT），因为其避免了重复 Prompt 前缀的 Prefill 计算",
+          "PagedAttention 只能在单次 Request 的生成过程中动态分配物理块，无法支持不同 Request 之间的 KV Cache 块共享"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：PagedAttention将逻辑连续的KV切为固定物理Block，按需分配，彻底解决预分配导致的外部碎片与内部浪费。\n- B：RadixAttention用基数树按token序列做前缀匹配，共享节点即共享KV，命中即跳过Prefill。\n- C：在Agent多步工具调用/多轮对话中，重叠system prompt与历史Prefix大量复用，TTFT显著下降。\n- D 错误：PagedAttention的物理块机制本身支持跨请求共享（多个逻辑页映射同一物理块），vLLM的Prefix缓存与共享均基于此。"
+      }
+    }
+  },
+  {
+    "id": "ai-infra-002",
+    "category": "ai-engineering",
+    "topic": "inference-optimization",
+    "tags": [
+      "inference",
+      "continuous-batching",
+      "scheduling",
+      "throughput",
+      "bubble"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "传统的 LLM 推理批处理（Batching）受限于批次内不同序列生成长度不一的问题，导致 GPU 在等待最长序列完成时出现严重的算力空闲（Bubble）。连续批处理（Continuous Batching）技术解决该问题的核心机制是？",
+    "explanation": "Continuous Batching在Iteration/Step粒度调度，每Step结束点动态插入新请求/移出已完成请求，消除等待气泡。",
+    "reference": {
+      "concept": "Continuous Batching= Iteration级动态调度，破除Request级Batch的队头阻塞。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将输入文本打碎为固定长度的 Chunk，在 Tensor 并行维度上切分计算",
+          "在 Iteration（Token 生成 Step）粒度上进行调度，当某个 Request 生成结束或新 Request 到达时，在每个 Step 结束点动态插入或移出序列",
+          "强制所有 Request 的 Output Token 数量保持一致，不足部分使用 Padding Token 填充",
+          "将 Prompt Prefill 阶段与 Token Decode 阶段完全拆分到不同的 GPU 物理节点上独立运行"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n传统Request级Batch必须等批次内最长序列完成才释放整批，造成Bubble。Continuous Batching把调度粒度细化到单个Token生成Iteration（Step）——每步前检查：已完成的Request立即移出、排队的新Request立即填充空位，GPU始终满载。A是Chunked Prefill/Tensor并行，C是朴素静态Batch的Padding浪费，D是Prefill/Decode分离架构（PD分离），与Continuous Batching正交。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-01",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "rag",
+      "vector-rag",
+      "global-query",
+      "long-context",
+      "graph-rag"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在基于海量技术文档（如数百份故障复盘报告）构建 RAG 系统时，针对全局聚合类问题（如“所有复盘报告中，出现频率最高的根本原因是什么？”），传统的基于向量相似度的检索（Vector RAG）效果通常较差。即使将 LLM 的上下文窗口扩大至 64k 甚至更大并将更多文档放入 Prompt，也无法根本解决该问题。关于这一现象的原因及机制，下列哪些说法是正确的？（多选）",
+    "explanation": "向量检索匹配词汇/语义近似块，无法捕捉跨文档分布式统计特征；全局答案分散无单块可定位；扩窗口不解决召回偏置；D称点查也必然落后于图谱过度泛化。",
+    "reference": {
+      "concept": "全局查询失效：向量检索的局部语义匹配 vs 分布式统计；上下文扩容不补召回缺陷。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "向量相似度检索本质上依赖查询语句与文档 Chunk 之间的语义匹配，倾向于召回包含“频繁”、“重复”等相同词汇的文本片段，而非文本分布背后的全局统计特征",
+          "全局聚合类问题的答案通常以分布式（Distributional）形态分散在整个语料库中，不存在单一或少数几个可直接被向量距离精确定位的文本块",
+          "仅扩大 Context Window 只能让模型接收更多文本，但若前端检索阶段召回的内容缺乏全局代表性，模型仍会在无关或偏置的信息上进行表面推理",
+          "向量检索的根本缺陷在于 Embedding 模型无法表达实体与实体之间的结构化关联，因此即使是回答具体的点状问题（Local Query）也必然落后于知识图谱"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：向量检索优化的是query与chunk的余弦/点积近似，命中含相同关键词的片段，而非跨文档的频度分布。\n- B：全局统计答案分散于数百份报告，无单块可承载“出现频率最高”这类聚合结果，Top-k召回天然失效。\n- C：长上下文只是放大输入带宽，若召回本身偏置，模型仅在偏置子集上推理，无法涌现全局统计。\n- D 错误：点状问题（实体属性、单文档事实）向量检索常足够高效，结构化关联是图谱对全局/多跳的优势，不意味点查必然落后。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-02",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "graph-rag",
+      "indexing",
+      "entity-merging",
+      "cost",
+      "community-report"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在一个典型的 GraphRAG 系统构建流程中，系统需要对原始文档进行切片（Text Units）、抽取实体与关系、合并重名实体描述、生成社区报告（Community Reports）并对相关内容进行向量化存储。在整个索引构建（Indexing）阶段，通常消耗计算资源和 LLM Token 最多（占总索引成本约 75% 左右）的步骤是？",
+    "explanation": "成本瓶颈在跨块重名实体与关系的合并及描述压缩重写，需大量LLM调用；切片/图计算/Embedding占比低。",
+    "reference": {
+      "concept": "GraphRAG索引成本分布：实体合并描述重写占约75%。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "原始文档的文本切片（Chunking）与词性标注",
+          "跨文本块的重名实体与关系的合并（Merge）以及描述信息的压缩重写",
+          "图层次化聚类算法（如 Leiden 算法）的图拓扑计算",
+          "社区报告（Community Reports）及文本块的向量 Embedding 批量生成"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\nGraphRAG索引管线中，实体/关系抽取后需跨数百Text Units消歧同名实体、合并多源描述并用LLM重写压缩为单一实体画像，该步骤触发的LLM调用量与Token量占索引总成本约75%。A仅为规则切分，C为纯图算法计算，D为批量Embedding，均远低于LLM生成成本。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-03",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "graph-rag",
+      "leiden",
+      "community-detection",
+      "hierarchy",
+      "latency",
+      "comprehensiveness"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "GraphRAG 在构建知识图谱后，会使用层次化社区检测算法（如 Leiden 算法）将实体图划分为多层社区（Community Hierarchy），并为每个社区生成摘要报告（Community Report）。层级 0（Level 0）代表最宏观的社区划分，而随着层级深入（如 Level 2、Level 3），社区数量增加且覆盖范围更精细。在配置全局查询（Global Search）所使用的社区报告层级时，关于工程权衡的说法，哪些是正确的？（多选）",
+    "explanation": "深层级社区更细致、详尽度更高但报告数剧增致Token/延迟飙升；Level0宏观省成本但易漏细节；D称层级查询时动态生成错误。",
+    "reference": {
+      "concept": "社区层级权衡：粒度细→详尽度↑但成本/延迟↑；宏观→省成本但漏细节。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "选择更深（较小社区粒度）的层级，社区报告包含的细节更丰富，生成的回答在详尽度（Comprehensiveness）上通常表现更好",
+          "选择更深（较小社区粒度）的层级，由于需要处理和汇总的社区报告数量剧增，查询时的 LLM Token 消耗和端到端延迟（Latency）会显著上升",
+          "选择最宏观的层级（如 Level 0），虽然查询成本最低、响应速度最快，但可能遗漏具体子领域的关键细节特征",
+          "社区报告的粒度层级是在查询阶段由 LLM 根据问题动态自动生成的，因此不会影响索引阶段的构建成本和查询时的报告选择"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：深层级=小社区，报告更聚焦子主题，Map阶段覆盖更全，回答更详尽。\n- B：社区数随层级指数增长，需并行处理的报告份数与Token/延迟同比例上升。\n- C：Level0宏观社区数少、成本低，但摘要高度压缩，子领域特征易被泛化淹没。\n- D 错误：层级与报告均在索引期由Leiden聚类+LLM离线生成，查询期仅选择既有层级，层级选择直接影响索引成本与查询成本。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-04",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "graph-rag",
+      "local-search",
+      "global-search",
+      "map-reduce",
+      "context-window"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "GraphRAG 针对不同类型的查询提供了局部检索（Local Search）和全局检索（Global Search）两种不同的执行路径。假设系统已建立完整的知识图谱与分层社区报告，关于这两种检索模式的底层执行逻辑，下列哪些描述是正确的？（多选）",
+    "explanation": "Local从匹配实体向外扩展收集块/报告/邻居/关系/断言并排序填Context；Global不做实时图遍历而用社区报告做Map-Reduce并行打分汇总；D称Local需全图扫描错误。",
+    "reference": {
+      "concept": "Local=实体为锚点图扩展+排序；Global=社区报告Map-Reduce并行汇总。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Local Search 从与查询最匹配的实体节点开始，在图上向外扩展收集关联的文本块、社区报告、邻居实体、关系及断言（Claims），并将其统一排序筛选后填入单个 Context Window 中",
+          "Global Search 并不在查询时刻对实体图进行实时图遍历（Graph Traversal），而是直接利用预先生成的社区报告（Community Reports）进行 Map-Reduce 式的并行处理与汇总",
+          "Global Search 的 Map 阶段将分批且打乱顺序的社区报告并行提交给 LLM 评估并输出打分的中间答案，Reduce 阶段则挑选高分中间点合成最终回答",
+          "Local Search 在查询时必须扫描全图所有的实体和关系节点，因此其 Token 消耗和查询时延远高于 Global Search"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Local Search以向量检索命中的实体为锚点，k跳扩展关联的Text Units、社区报告、邻居实体、关系与Claims，排序截断后单Context推理。\n- B：Global Search面向全局统计，跳过图遍历，直接消费离线社区报告。\n- C：Map阶段分批(shuffle)并行让LLM对每批社区报告生成中间回答并打分，Reduce阶段择优融合。\n- D 错误：Local仅扩展邻域子图，扫描范围与成本远小于需处理全量社区报告的Global。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-05",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "lazy-graphrag",
+      "graph-rag",
+      "indexing-cost",
+      "query-latency",
+      "tradeoff"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "为了解决完整 GraphRAG 在文档频繁更新时索引构建成本过高、更新代价大的问题，业界提出了 LazyGraphRAG 等优化方案（通过传统 NLP 抽出实体词或将部分 LLM 计算推迟到查询时）。关于 LazyGraphRAG 与标准 GraphRAG 的对比及工程权衡，下列哪些说法是正确的？（多选）",
+    "explanation": "Lazy大幅削减索引期LLM调用降成本近向量RAG、推迟计算致查询期延迟/Token上升、标准GraphRAG的报告可作人类资产、D称取消向量索引错误。",
+    "reference": {
+      "concept": "LazyGraphRAG=索引期省99% LLM，查询期偿还；标准报告可独立复用。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LazyGraphRAG 在索引阶段尽量避免或大幅减少 LLM 调用，从而将索引构建成本降低至接近传统向量 RAG 的水平",
+          "LazyGraphRAG 将大量的抽取、推理与总结计算推迟到查询阶段（Query Time），在保证全局问题回答质量的同时，代价是查询时的延迟或 Token 支出可能增加",
+          "标准 GraphRAG 在索引阶段预先生成的实体描述和社区摘要报告，除了用于 QA 外，还可以作为独立的人类可读资产供团队直接阅览和分享",
+          "LazyGraphRAG 彻底取消了向量索引，仅依靠全局图计算来响应所有的点状局部查询（Local Queries）"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Lazy用传统NLP/规则抽实体词，索引期几乎不调LLM，成本接近向量RAG。\n- B：省下的抽取/合并/总结在查询期按需用LLM补做，保质量但牺牲查询延迟与Token。\n- C：标准路径的实体画像与社区报告本身即结构化知识资产，可独立于QA被复用。\n- D 错误：Lazy仍保留向量索引以服务高效点查，并非纯图计算。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-06",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "graph-rag",
+      "evaluation",
+      "comprehensiveness",
+      "faithfulness",
+      "hallucination"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "在评估 GraphRAG 与传统 Vector RAG 的实际表现时，研发团队常对其性能指标产生误解。根据实验评估结果，GraphRAG 相较于传统向量 RAG 最显著且被证实的优势在于？",
+    "explanation": "实证优势在全局问题的完整性/多样性/佐证覆盖，而非单点忠实度消除幻觉、也非索引更快或可替代SQL。",
+    "reference": {
+      "concept": "GraphRAG优势=全局完整性与多样性，非忠实度/成本/数值计算。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "极大地提高了生成内容中每一个单点事实（Individual Claim）的绝对忠实度/准确度（Faithfulness），完全消除了幻觉",
+          "显著降低了索引构建的计算资源消耗与查询端到端延迟",
+          "在全局性问题上表现出更高的回答完整性（Comprehensiveness）、多样性（Diversity）以及更完备的佐证材料来源（Supporting Sources）",
+          "能够完全替代传统 SQL 数据库对精确数值进行复杂的实时统计与计算"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n实验表明GraphRAG在全局统计型问题上显著提升回答的完整性、视角多样性与支撑来源的覆盖度，这正是图+社区报告对分布式信息的综合能力。A错误：单点事实忠实度未被证实大幅超越，幻觉仍可能发生；B相反：图索引成本与Global的Map-Reduce延迟均高于向量RAG；D错误：图谱不擅长精确数值聚合，应由SQL/代码执行承担。"
+      }
+    }
+  },
+  {
+    "id": "graphrag-07",
+    "category": "ai-engineering",
+    "topic": "graph-rag",
+    "tags": [
+      "agentic-rag",
+      "routing",
+      "retrieval-strategy",
+      "latency",
+      "debuggability"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "由于没有单一的检索策略（如 Vector RAG、GraphRAG Global Search、SQL 查询）能完美胜任所有类型的用户提问，现代系统架构引入了 Agentic RAG（基于 Agent 的动态路由检索）。关于 Agentic RAG 的工作机制及其引入的工程权衡，下列哪些说法是正确的？（多选）",
+    "explanation": "四项均正确：LLM驱动路由按问题特征选路径、路由可分层复合、引入前置LLM致延迟/成本上升、误路由致质量雪崩且难排查。",
+    "reference": {
+      "concept": "Agentic RAG=LLM分类路由+多层组合；代价=延迟/成本/误判难排。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Agentic RAG 在检索前增加一层由 LLM 驱动的查询分类与路由机制，依据问题特征自动选择最合适的检索路径（如点状问答走向量检索，全局分析走 GraphRAG）",
+          "路由选择可以在多个抽象层级上发生，例如顶层由 Composite Retriever 选择查询哪个索引，子层由 Auto-router 选择具体检索算法",
+          "引入 Agentic 路由会增加检索前置的 LLM 调用，导致整体查询时延（Latency）和 Token 成本上升",
+          "如果前置路由模块发生误判（例如将全局分析问题错判为简单向量检索），会导致后续检索结果质量严重下降，且这种失效模式相较于固定静态路由更难排查调试"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：核心是query分类→策略选择，点查与全局分析走不同索引。\n- B：路由可嵌套——顶层选索引族，子层选算法变体。\n- C：每查询多一次LLM路由调用，延迟与Token线性增加。\n- D：路由为单点失效放大器，错判导致召回域错配，且动态路径使复现与归因比静态路由更困难，需路由评估集与回退策略。"
+      }
+    }
   }
 ]

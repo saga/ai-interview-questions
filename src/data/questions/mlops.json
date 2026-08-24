@@ -100,5 +100,121 @@
         "question": "某电商平台的算法团队正在规划两类业务的推理架构：一是每天凌晨基于前一日全量行为数据刷新数千万用户的兴趣画像，时效性要求不高；二是搜索结果排序必须在用户发起请求后几十毫秒内返回，否则转化率明显下滑。对于这两类业务的服务模式划分，以下哪种规划最合理？"
       }
     }
+  },
+  {
+    "id": "mlops-04",
+    "category": "mlops",
+    "topic": "system-design",
+    "tags": [
+      "kafka",
+      "rabbitmq",
+      "middleware",
+      "routing",
+      "retention"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "某分布式系统需要设计一套消息传输架构，包含两个子系统：系统 A 需要高吞吐量接入海量用户行为日志，并支持多个下游服务根据 Offset 重新读取并回放历史数据；系统 B 涉及复杂订单状态机分发，要求根据灵活的 Routing Key 将任务路由至不同队列，并在 Consumer ACK 后立即清理。关于 Kafka（日志型）与 RabbitMQ（队列型）的选型与架构特性，下列说法正确的有？（多选）",
+    "explanation": "A日志回放选Kafka（Append Log+Retention）；B复杂路由+ACK即删选RabbitMQ（Exchange/Binding）；D的Push/Pull描述相反。",
+    "reference": {
+      "concept": "Kafka=日志存储+Retention控生命周期+Pull；RabbitMQ=Exchange路由+ACK即删+Push。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "系统 A 应优先选择 Kafka，因为 Kafka 将消息追加存储于 Partition 的磁盘日志中，消息的删除取决于 Retention 保留策略，而非 Consumer 是否已读取",
+          "系统 A 若选择简单的单队列 RabbitMQ 架构，多个独立 Consumer 组无法在同一条队列上各自自由回溯并重复读取历史消息，因为消息被消费确认后即被清理",
+          "系统 B 应优先选择 RabbitMQ，利用其 Exchange（Direct/Topic/Fanout）与 Binding Key 机制可实现灵活的复杂路由与任务队列拆分",
+          "在 Kafka 中，Consumer 是通过服务端 Push 模式接收消息；而在 RabbitMQ 中，Consumer 只能通过 Pull 模式轮询获取消息"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Kafka以Partition Append-only Log落盘，生命周期由Retention（时间/大小）决定，与消费进度解耦，天生适合日志流+回放。\n- B：RabbitMQ队列在ACK后即删，单队列无法让多独立消费者各自回溯。\n- C：RabbitMQ的Exchange+Binding提供Direct/Topic/Fanout灵活路由，适合订单状态机分发。\n- D 错误：Kafka是Pull（Consumer主动拉取并管理Offset），RabbitMQ主要是Push（Broker推送给Consumer），描述相反。"
+      }
+    }
+  },
+  {
+    "id": "mlops-05",
+    "category": "mlops",
+    "topic": "system-design",
+    "tags": [
+      "kafka",
+      "storage",
+      "offset",
+      "sequential-append",
+      "rebalance",
+      "zero-copy"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 Kafka 分布式消息集群中，为了实现高吞吐量的顺序读写与可靠消费，其底层存储与 Consumer Offset 管理机制进行了专门设计。下列关于 Kafka 核心机制的描述，正确的有？（多选）",
+    "explanation": "四项均正确：Offset可回溯、有序性限单Partition、顺序追加+PageCache+ZeroCopy、Rebalance后从提交Offset续拉。",
+    "reference": {
+      "concept": "Kafka：Offset自管理回溯、单Partition有序、顺序追加+零拷贝、Rebalance续消费。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Kafka 允许 Consumer 自行管理并更新提交的 Offset，因此 Consumer 可以随时调整 Offset 指针回溯并重播过去的消息",
+          "Kafka 仅保证单个 Partition 内部的消息全局有序，无法直接保证跨多个 Partition 之间的绝对消息顺序",
+          "Kafka 生产者将数据写入 Partition 时采用的是磁盘顺序追加（Sequential Append Log），配合 Page Cache 与 Zero-Copy（零拷贝）技术提升传输性能",
+          "当 Consumer Group 中的某个 Consumer 实例发生宕机时，Rebalance 机制会将分区重新分配给其他实例，新实例从该分区最后一次成功提交的 Offset 位置继续拉取消息"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Consumer可自主提交/重置Offset，实现任意回溯重播。\n- B：有序性保证仅在Partition内有效，跨Partition不保证全局序。\n- C：顺序追加避免随机IO，Page Cache与sendfile零拷贝减少内核态拷贝与上下文切换。\n- D：Group Rebalance重新分配Partition，继承已提交Offset，保证至少一次消费连续性。"
+      }
+    }
+  },
+  {
+    "id": "mlops-06",
+    "category": "mlops",
+    "topic": "git",
+    "tags": [
+      "git",
+      "stash",
+      "working-directory",
+      "staging-area",
+      "untracked"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "开发人员在分支开发过程中，工作区（Working Directory）和暂存区（Staging Area）存在未提交的修改。此时需要紧急切换到 hotfix 分支修复线上 Bug。关于使用 git stash 及其相关命令处理代码状态的行为，下列说法正确的有？（多选）",
+    "explanation": "默认stash存已追踪文件的工作区+暂存区并恢复HEAD；apply不删栈、pop删栈；未追踪文件需-u。",
+    "reference": {
+      "concept": "git stash栈：默认不含untracked；apply留栈、pop移栈；-u含未追踪。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "执行默认的 git stash 会将已追踪文件的工作区和暂存区未提交修改保存到一个栈结构中，并将工作区恢复至与 HEAD 一致的状态",
+          "执行 git stash apply 会将栈顶的暂存变更应用到当前分支，同时会自动将该条 stash 记录从栈列表中删除",
+          "执行 git stash pop 会尝试应用栈顶的 stash 变更；在没有代码冲突的情况下，它会将该 stash 记录从栈列表中移除",
+          "若存在未追踪文件（Untracked Files），直接执行默认的 git stash 不会保存这些文件，必须显式附加 -u 或 --include-untracked 参数"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。\n\n- A：默认git stash对已追踪（tracked）文件的working directory与index的修改做栈保存，工作区回到HEAD干净态。\n- D：未追踪文件不被默认包含，需-u/--include-untracked。\n- C：pop=apply+drop，无冲突则出栈；有冲突则保留。\n- B 错误：apply仅应用不删除，删除的是drop/pop，混淆二者会导致栈垃圾堆积或误删。"
+      }
+    }
   }
 ]
