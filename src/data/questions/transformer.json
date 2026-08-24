@@ -1,0 +1,443 @@
+[
+  {
+    "id": "ai-flashattn-001",
+    "category": "transformer",
+    "topic": "flash-attention",
+    "tags": [
+      "attention",
+      "flash-attention",
+      "inference"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在不改变 Attention 数学结果的情况下提升性能？",
+    "explanation": "优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵；公式不变、IO 大减。",
+    "rubric": {
+      "required": [
+        "O(N²) 中间矩阵访存瓶颈",
+        "分块计算+SRAM 驻留",
+        "online softmax 等价性",
+        "显存 O(N) 收益"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "标准 attention 实现要把 N×N 的注意力矩阵完整写入 GPU 显存再读回参与后续计算，长序列下这块中间结果的读写（memory traffic）成为瓶颈，且显存占用 O(N²)。FlashAttention 通过分块计算解决：把 Q/K/V 切成小块在 SRAM（片上高速缓存）中完成“矩阵乘→softmax 归一化→加权求和”的整链路，用 online softmax 技巧在块间增量维护归一化统计量，全程不物化完整的注意力矩阵。数学结果不变——只是把同一套公式的计算顺序重排并合并了访存——但显存从 O(N²) 降为 O(N)，速度因减少 HBM 往返显著提升，使长上下文训练与推理变得实际可行。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "它优化 N×N 注意力矩阵写入读回 HBM 的访存瓶颈：Q/K/V 分块驻留 SRAM 完成乘法、softmax 与加权求和，online softmax 增量维护统计量，数学结果不变而显存从 O(N²) 降为 O(N)",
+          "它通过对注意力矩阵做低秩近似来大幅削减浮点计算量，代价是一定程度的精度损失",
+          "它通过剪枝不重要的 token 缩短有效上下文，牺牲部分长序列信息换取计算加速",
+          "它把 softmax 替换为线性注意力形式，取消了归一化步骤从而节省显存占用"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-001",
+    "category": "transformer",
+    "topic": "transformer",
+    "tags": [
+      "transformer",
+      "rnn",
+      "parallelism",
+      "attention"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "为什么 Transformer 相比 RNN 更适合大规模训练？请从计算并行性和长距离依赖两个角度解释。",
+    "explanation": "并行性来自整段序列同时计算（RNN 必须串行），长距离依赖来自 attention 的 O(1) 依赖路径（RNN 需逐步传播）。",
+    "rubric": {
+      "required": [
+        "训练并行性",
+        "O(1) 依赖路径",
+        "RNN 顺序计算瓶颈"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Transformer 在训练时可以并行处理整个 sequence，而 RNN 必须按时间步顺序计算；Self-Attention 可以直接建立任意两个 token 之间的依赖，路径长度为 O(1)，相比 RNN 的逐步传播更容易建模长距离依赖。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "RNN 通过门控机制天然支持整段并行计算，而 Transformer 必须按时间步串行处理序列",
+          "Transformer 的优势主要来自更大的参数量，与计算方式和依赖建模路径无关",
+          "训练时 Transformer 可并行处理整个序列，Self-Attention 使任意两 token 的依赖路径长度为 O(1)",
+          "Attention 的依赖路径长度为 O(n)，长距离依赖仍需像 RNN 一样逐步传播才能建立"
+        ],
+        "answer": [
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-002",
+    "category": "transformer",
+    "topic": "self-attention",
+    "tags": [
+      "attention",
+      "qkv",
+      "transformer"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "请解释 Self-Attention 中 Query、Key、Value 分别代表什么，以及 Attention 最终是如何计算出来的。",
+    "explanation": "Q/K/V 来自三组线性投影；Q·K 打相似度 → 缩放 → softmax 归一化 → 对 V 加权求和。",
+    "rubric": {
+      "required": [
+        "QKV 线性投影",
+        "相似度打分",
+        "softmax 归一化",
+        "加权求和公式"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "输入经过不同线性投影得到 Q、K、V；Q 与 K 计算相似度得到 attention scores，通常除以 sqrt(d_k) 后进行 softmax，再使用得到的权重对 V 加权求和。公式为 softmax(QK^T/sqrt(d_k))V。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "Q、K、V 由输入经三组不同的线性投影得到，attention 输出为 softmax(QK^T/sqrt(d_k))V，即用归一化权重对 V 加权求和",
+          "Q、K、V 是同一个矩阵的三份复制，attention 直接对原始输入序列做加权平均",
+          "Q 与 V 的点积经 sigmoid 归一化得到权重，再用该权重对 K 加权求和",
+          "Q 与 K 计算相似度后不做缩放直接取最大值索引，输出为对应的 V 向量"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-003",
+    "category": "transformer",
+    "topic": "attention",
+    "tags": [
+      "attention",
+      "softmax",
+      "numerical-stability"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Scaled Dot-Product Attention 中为什么要除以 sqrt(d_k)？",
+    "explanation": "dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。",
+    "rubric": {
+      "required": [
+        "方差随维度增长",
+        "softmax 饱和与梯度"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "减少 KV Cache 的内存占用",
+          "避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域",
+          "降低 Transformer 的参数量",
+          "让 Attention 可以支持更长的 Context"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域。\n\n解析：dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。"
+      }
+    }
+  },
+  {
+    "id": "ai-fund-004",
+    "category": "transformer",
+    "topic": "self-attention",
+    "tags": [
+      "multi-head",
+      "attention",
+      "representation"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Multi-Head Attention 为什么需要多个 Head？单个 Attention 不够吗？",
+    "explanation": "多头 = 多个表示子空间并行建模不同关系（语法/语义/位置等），单头只有一种混合视角；代价近似不变而表达能力更强。",
+    "rubric": {
+      "required": [
+        "不同表示子空间",
+        "不同类型关系",
+        "单头的加权平均局限"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "多个 Head 让模型在不同的表示子空间中学习不同类型的关系：有的 head 关注局部语法关系，有的关注长距离语义关联或位置模式。单头 attention 只能输出一种加权平均，容易把不同类型的信息混在一起；多头机制在保持计算量近似不变的情况下提升了表达能力。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "多头通过把总参数量增加数倍来换取表达能力，计算成本随 Head 数成比例上升",
+          "多个 Head 在不同的表示子空间中学习不同类型的关系，弥补单头只能输出一种加权平均的局限",
+          "每个 Head 负责处理序列中互不重叠的一段，各段输出拼接后构成完整表示",
+          "多头机制的作用是抑制过拟合，Head 数量越多模型的泛化能力单调提升"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-005",
+    "category": "transformer",
+    "topic": "transformer",
+    "tags": [
+      "position-encoding",
+      "transformer",
+      "RoPE"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "Transformer 为什么需要 Position Encoding？常见的位置信息注入方式有哪些？",
+    "explanation": "Attention 是排列等变的，天然不含顺序信息；需通过绝对/相对/RoPE 等编码显式注入位置。",
+    "rubric": {
+      "required": [
+        "attention 与顺序无关",
+        "需要显式位置注入",
+        "绝对/相对/RoPE"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Self-Attention 本身对 token 顺序不敏感——打乱输入顺序，attention 输出只是相应置换，模型无法区分词序。因此需要额外注入位置信息。常见方案包括绝对位置编码（正弦/可学习）、相对位置编码，以及现代 LLM 广泛使用的 RoPE（旋转位置编码）。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "Attention 通过因果掩码自动感知词序，因此不需要任何额外的位置信息",
+          "位置信息由前馈网络层隐式提供，位置编码只是锦上添花的可选优化",
+          "词嵌入本身就携带顺序信息，打乱输入顺序不会改变 attention 的输出结果",
+          "Self-Attention 对输入顺序不敏感，需要绝对位置编码、相对位置编码或 RoPE 等方式显式注入位置信息"
+        ],
+        "answer": [
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-transformer-003",
+    "category": "transformer",
+    "topic": "attention",
+    "tags": [
+      "attention",
+      "long-context",
+      "debugging"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
+    "explanation": "长文本退化通常源于位置编码外推失效、注意力稀释（lost-in-the-middle）、数值漂移或隐性截断；用变长诊断集分层定位。",
+    "rubric": {
+      "required": [
+        "位置编码外推",
+        "注意力稀释/lost-in-the-middle",
+        "隐性截断检查",
+        "变长诊断方法"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "可以从几个层面分析：位置编码的外推能力（训练时未见过的长度上 RoPE/绝对编码是否失效）；注意力分散——长序列中相关 token 的注意力权重被稀释（lost-in-the-middle）；数值问题——长序列下 softmax/logits 的数值尺度漂移；以及实现层面的上下文截断或滑窗是否悄悄丢掉了关键信息。定位方法是用可控长度的诊断集（同一任务只变长度）分别测首/中/尾信息利用率，区分“能力边界”还是“信息被截断”。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "说明注意力公式在长序列下存在数学错误，应把 scaled dot-product attention 替换为普通点积",
+          "位置编码在超出训练长度时外推失效，可能导致长文本上的整体性能退化",
+          "注意力被大量 token 稀释造成 lost-in-the-middle，中段信息的利用率低于首尾",
+          "主要原因是预训练语料总量不够，把训练数据翻倍后长文本效果就会自动追平短文本",
+          "应检查实现层是否存在隐性截断或滑窗丢信息，并用同一任务只变长度的诊断集分别测首/中/尾信息利用率来定位"
+        ],
+        "answer": [
+          1,
+          2,
+          4
+        ],
+        "question": "一个合同审阅助手处理短文本表现出色，但输入整份长合同时回答质量明显下降，且涉及中段条款的问题出错率最高。工程上已排除网络与算力因素。从模型与实现层面分析，以下判断正确的有哪些？（请选择以下三个选项）"
+      }
+    }
+  },
+  {
+    "id": "ai-xattn-001",
+    "category": "transformer",
+    "topic": "attention",
+    "tags": [
+      "attention",
+      "cross-attention",
+      "encoder-decoder"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "Self-Attention 和 Cross-Attention 有什么区别？为什么 Encoder-Decoder 模型需要 Cross-Attention？",
+    "explanation": "Self-attention 序列内交互（QKV 同源）；cross-attention 跨序列读取（Q 一方、KV 另一方），是 encoder-decoder 的信息桥梁；decoder-only 用因果 self-attention 替代。",
+    "rubric": {
+      "required": [
+        "Q/KV 来源差异",
+        "encoder-decoder 信息通道角色",
+        "decoder-only 为何不需要"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Self-Attention 的 Q、K、V 来自同一个序列，让序列内部 token 互相交换信息；Cross-Attention 的 Q 来自一个序列（如解码器当前状态），K、V 来自另一个序列（如编码器输出），实现跨序列的信息读取。Encoder-Decoder 架构中，编码器把输入压缩成表示序列，解码器生成时必须“回头看”输入——Cross-Attention 正是这个通道：每个生成步用当前解码状态作 Q 去查询输入表示。现代 Decoder-only LLM 没有独立编码器，“看输入”退化为因果 self-attention 对整个 context 的处理，因此不再有显式 cross-attention；但在多模态（如图文对齐）和语音识别等场景它仍是核心组件。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "Self-Attention 与 Cross-Attention 的 Q/K/V 来源相同，区别只在注意力头的数量设置",
+          "Cross-Attention 的 Q/K/V 同样来自同一序列，目的是增强 encoder 内部的表征交互深度",
+          "Encoder-Decoder 模型并不需要 Cross-Attention，信息传递靠把 encoder 输出拼接进 decoder 输入完成",
+          "Self-Attention 的 Q/K/V 来自同一序列实现序列内交互，Cross-Attention 的 Q 来自一方、K/V 来自另一方充当 encoder-decoder 信息桥梁，Decoder-only 模型则以因果 self-attention 取代之"
+        ],
+        "answer": [
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "dl-04",
+    "category": "transformer",
+    "topic": "self-attention",
+    "tags": [
+      "transformer",
+      "attention",
+      "rnn"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
+    "explanation": "考察 QKV 计算流程、缩放点积、softmax 加权，以及并行性/长程依赖优势。",
+    "reference": {
+      "concept": "自注意力用 QKV 计算 token 间加权表示，可并行建模长程依赖。"
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "自注意力通过 Query、Key、Value 三组矩阵计算：先以 Q 与 K 的点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后做 softmax 得到注意力权重，再对 V 加权求和。多头注意力并行学习不同子空间的表示。相比 RNN，它可并行计算、无时序依赖，能直接建模任意距离的依赖关系，且训练更稳定、便于扩展规模。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "以 Q、K 点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后经 softmax 得到权重，再对 V 加权求和，各位置可并行计算",
+          "以 Q、K 的逐元素相乘衡量相关性，结果不经任何归一化直接作为权重对 V 加权求和",
+          "先对 V 做 softmax 归一化得到分布，再用它对 Q、K 加权，且必须沿时间步顺序串行计算",
+          "用 Q 与 K 之间的余弦相似度构造权重矩阵，sqrt(d_k) 的作用是把序列长度归一到 0 到 1 之间"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "llm-11",
+    "category": "transformer",
+    "topic": "attention",
+    "tags": [
+      "numpy",
+      "scaled-dot-product",
+      "attention"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
+    "explanation": "面试高频手写题：考察注意力公式 QKᵀ/√d → softmax → ×V，以及数值稳定处理。",
+    "reference": {
+      "concept": "scaled dot-product attention：QKᵀ/√d_k 经 softmax 后对 V 加权求和。"
+    },
+    "rubric": {
+      "required": [
+        "sqrt(d_k) 缩放",
+        "softmax 数值稳定处理",
+        "对 V 加权求和"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.2,
+        "architecture": 0.25,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "import numpy as np\ndef attention(Q, K, V):\n    d_k = Q.shape[-1]\n    scores = Q @ K.T / np.sqrt(d_k)   # 缩放点积\n    scores = scores - scores.max(axis=-1, keepdims=True)  # 数值稳定\n    w = np.exp(scores)\n    w = w / w.sum(axis=-1, keepdims=True)\n    return w @ V\n要点：除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和；softmax 前 max 平移保证数值稳定。",
+        "language": "python"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "实现时应把 QKᵀ 除以序列长度 n 而非 sqrt(d_k)，softmax 可直接对 exp 结果归一化、无需减最大值",
+          "实现时应先对 V 做指数归一化，再把 softmax 权重施加到 QKᵀ 上，缩放因子取 log(d_k)",
+          "实现时应计算 QKᵀ 并除以 sqrt(d_k) 缩放，softmax 前减去每行最大值保证数值稳定，最后用权重矩阵乘 V 输出",
+          "实现时应省略缩放步骤直接 softmax(QKᵀ)，并用减去最小值的方式保证数值稳定"
+        ],
+        "answer": [
+          2
+        ]
+      }
+    }
+  }
+]

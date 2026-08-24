@@ -1,0 +1,434 @@
+[
+  {
+    "id": "agent-multi-01",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "orchestrator-worker",
+      "peer-to-peer",
+      "failure-surface",
+      "cost-latency"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在处理复杂多步骤业务时，关于单 Agent 与多 Agent（Multi-Agent）架构以及 Orchestrator-Worker 模式的工程权衡，下列哪些说法是正确的？（多选）",
+    "explanation": "点对点自由通信易冲突、Orchestrator集中分发短Worker减冲突、单职责缩小故障面、多Agent增Token与延迟。",
+    "reference": {
+      "concept": "Orchestrator集中调度优于点对点，窄域Worker提可测性，代价为成本延迟。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "多个平级 Agent 之间直接进行点对点（Peer-to-Peer）自由通信的架构，容易因各个子 Agent 的独立决策冲突而导致整体系统行为不可控",
+          "由单一中央协调者（Orchestrator）掌控全局上下文并分发任务给短生命周期（Short-lived）、单一职责的 Worker Agent，能有效减少 Agent 间的决策冲突",
+          "将复杂任务拆解为多个单一职责（Narrow Scope）的小型 Agent，能够缩小单个 Agent 的故障表面（Failure Surface），提升可测试性与排查效率",
+          "多 Agent 架构在提升复杂推理解决能力的同时，通常会显著增加 Token 消耗量与系统响应延迟"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：点对点无中心协调易冲突失控。\n- B：Orchestrator集中上下文与分发，Worker短命窄域。\n- C：窄域缩小故障面与测试复杂度。\n- D：多Agent以Token与延迟换能力，需权衡。"
+      }
+    }
+  },
+  {
+    "id": "agent-proto-01",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "mcp",
+      "a2a",
+      "agent-protocol",
+      "tool-calling",
+      "state-machine"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在大模型 Agent 系统架构设计中，为了实现能力解耦与模块化，通常会将“Agent 与外部工具/API 的交互协议”和“Agent 与 Agent 之间的协同/授权协议”进行分层（例如 MCP 与 A2A 协议）。关于这两类协议的设计定位与工作机制，下列说法正确的有？（多选）",
+    "explanation": "MCP单向工具调用由宿主路由、A2A自主委托+Agent Card发现、可Input-Required回抛、D称MCP替代A2A错误。",
+    "reference": {
+      "concept": "MCP=工具调用；A2A=Agent委托+发现+状态回抛；不可互替。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MCP（Model Context Protocol）侧重于 Agent 与工具/上下文服务之间的单向或无状态调用，由宿主应用/Client 负责格式化和路由请求并交由 Server 执行",
+          "A2A（Agent-to-Agent）侧重于具备自主推理能力的 Agent 之间的任务委托与协作，支持通过 Agent Card/Manifest 进行服务发现与元数据暴露",
+          "在 A2A 协作过程中，若被委托的子 Agent 发现任务需要补充额外上下文或交互输入，可以进入暂停状态（Input-Required state）并将控制权/上下文回抛给上游 Agent",
+          "MCP 协议完全可以替代 A2A 协议，因为将其他 Agent 简单封装为一个带 Schema 的 MCP Tool 就能完美实现跨 Agent 的异步流式协商与复杂状态机同步"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：MCP为工具/上下文调用层，无状态、宿主路由。\n- B：A2A为Agent协作层，Agent Card作发现与能力声明。\n- C：A2A支持Input-Required暂停并回抛上下文，实现多轮协商。\n- D 错误：MCP为单调调用，无Agent自主状态机与流式协商，封装为Tool无法替代A2A。"
+      }
+    }
+  },
+  {
+    "id": "agentic-06",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "collaboration",
+      "orchestration"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "关于 Multi-Agent（多智能体）协作，下列说法正确的有哪些？（多选）",
+    "explanation": "多智能体通过分工与协作常能处理更复杂任务，但带来通信/一致性成本，并非总是优于单体；交互常用消息总线或黑板机制。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通过角色分工（如规划者/执行者/评审者）可提升复杂任务表现",
+          "通信开销与一致性维护是主要工程挑战",
+          "多智能体在任何任务上都一定优于单个智能体",
+          "可借助共享消息总线或黑板（blackboard）进行交互"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：通过角色分工（如规划者/执行者/评审者）可提升复杂任务表现；通信开销与一致性维护是主要工程挑战；可借助共享消息总线或黑板（blackboard）进行交互。\n\n解析：多智能体通过分工与协作常能处理更复杂任务，但带来通信/一致性成本，并非总是优于单体；交互常用消息总线或黑板机制。"
+      }
+    }
+  },
+  {
+    "id": "agentic-23",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "planner",
+      "critic",
+      "writer"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "设计一个 Multi-Agent 研究系统：Planner、Researcher、Critic、Writer 四角色。如何划分职责、传递信息并避免互相扯皮？",
+    "explanation": "考察多角色分工、结构化消息协议与收敛机制（防无限打回）。",
+    "rubric": {
+      "required": [
+        "四角色清晰分工与信息边界",
+        "结构化共享状态而非自由对话",
+        "阶段准入标准",
+        "打回次数上限/升级机制"
+      ],
+      "dimensions": {
+        "correctness": 0.2,
+        "completeness": 0.25,
+        "architecture": 0.4,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "职责：Planner 拆解研究问题为子问题清单并分配；Researcher 并行检索并产出带引用的事实卡片；Critic 审核卡片的证据强度与覆盖度，提出补充检索需求；Writer 仅基于通过审核的事实卡片成稿，不得引入外部事实。通信：通过共享黑板（结构化任务/事实/评审状态）而非自由对话，消息带 schema；每轮有明确的准入标准（如 Critic 通过率）决定推进还是打回。防扯皮：限制打回次数（超过则升级人工或接受并标注不确定性），全局协调者持有终止权与预算。全程轨迹落盘便于复盘。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "四个角色之间应以自由对话形式充分讨论，讨论轮数越多观点碰撞越充分、成稿质量越高。",
+          "允许 Writer 在成稿时补充自己已知的外部知识，以保证文章的可读性与信息完整性。",
+          "Critic 对稿件不满意时可以无限次打回重做，直到所有角色对最终版本达成一致为止。",
+          "四角色通过共享黑板交换结构化的任务与评审状态而非自由对话；Writer 只能基于通过 Critic 审核的事实卡片成稿；同一稿件打回超过次数上限就升级人工处理。"
+        ],
+        "answer": [
+          3
+        ],
+        "question": "一家内容公司搭建四角色 Multi-Agent 写作系统：Planner 定大纲、Researcher 收集资料、Critic 审核事实、Writer 成稿。试运行暴露两个问题：角色间自由对话经常越聊越偏、几十轮收不了尾；成稿里偶尔冒出 Researcher 根本没找到过的“事实”。主编要求明确协作协议与收敛机制。以下哪种设计正确？"
+      }
+    }
+  },
+  {
+    "id": "agentic-32",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "deadlock",
+      "cycle-detection",
+      "debugging"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "Multi-Agent 系统中两个 Agent 开始互相调用、来回踢皮球。如何检测和阻止？",
+    "explanation": "考察多 Agent 环路：调用图检测、拓扑预防、预算熔断与仲裁机制。",
+    "rubric": {
+      "required": [
+        "环检测/往返计数",
+        "单向层级拓扑预防",
+        "上限熔断与升级路径",
+        "案例回流评测集"
+      ],
+      "dimensions": {
+        "correctness": 0.25,
+        "completeness": 0.25,
+        "architecture": 0.35,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "检测：在编排层维护调用图，识别环（A→B→A）或消息对数异常增长；监控指标如“同一任务的消息往返次数”“双方都在等待对方的状态”。阻止：① 结构性预防——禁止环状调用拓扑，规定单向层级（协调者→工作者，工作者只能回报不能反向派活）；② 运行时护栏——往返计数上限、全局步数/预算熔断，超限升级人工或终止并输出当前进展；③ 语义护栏——检测到“任务被原样退回”时强制引入仲裁者角色或要求退回必须附带增量信息。事后：把死循环案例加入回归评测集。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "在两个 Agent 之间建立双向对等的通信拓扑，让它们可以互相派活以提高灵活性；消息量持续增长说明协作正在推进。",
+          "结构上禁止环状调用拓扑、规定单向层级（工作者只能回报不能反向派活）；运行时再配往返计数上限与预算熔断，超限升级人工或终止。",
+          "死循环只能靠运维人员盯着日志人工发现并重启进程，编排层无法自动检测环路。",
+          "给双方 Agent 的回复加上更客气的措辞约束，它们就不会再把任务踢回给对方。"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "一个多 Agent 客诉处理系统中，“责任判定 Agent”与“补偿方案 Agent”开始互相调用：前者说额度问题要问后者，后者说判定不清要退回前者，来回十几轮仍无结果，还烧掉大量 token。平台需要既能在结构上预防环路，也能在运行时自动止损。以下哪种方案正确？"
+      }
+    }
+  },
+  {
+    "id": "agentic-39",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "overengineering",
+      "simplicity",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "什么情况下 Multi-Agent 是过度设计？你会用什么信号来判断该退回单体 Agent？",
+    "explanation": "考察以基线对比判断架构复杂度是否值得，反对为分工而分工。",
+    "rubric": {
+      "required": [
+        "至少三个过度设计信号",
+        "与单体基线的实证对比",
+        "Multi-Agent 的合理引入时机",
+        "从简到繁的演进原则"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.25,
+        "architecture": 0.3,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "过度设计的信号：任务其实能放进单个上下文一次完成；角色之间只是转发消息而没有真正的独立视角或并行收益；协调成本（消息协议、状态同步、调试难度）超过分工收益；失败率反而因接口增多而上升；团队没有能力维护分布式调试。判断方法：对比基线——同一个任务用精心设计的单体 + 好 prompt 跑一遍，若成功率相当，Multi-Agent 就是负资产。合理引入 Multi-Agent 的时机：任务确实需要并行、需要独立验证视角（生成者/批评者利益分离）、或子任务需要截然不同的工具与权限域。原则：从单体开始，出现明确的扩展瓶颈再加角色。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "角色数量越多系统越智能，Multi-Agent 不存在过度设计的问题。",
+          "判断标准是代码行数，单体实现超过一定行数就必须拆分为 Multi-Agent。",
+          "协调开销是否超过分工收益难以度量，因此不应与单体基线做实证对比。",
+          "当任务放进单个上下文即可完成、角色间只是转发消息而无独立视角或并行收益、协调成本超过分工收益时就是过度设计；应先用精心设计的单体跑基线对比，成功率相当则退回单体。"
+        ],
+        "answer": [
+          3
+        ],
+        "question": "某团队的周报生成系统被设计成五个 Agent 协作：信息收集员、数据核算员、初稿写手、润色师、审核官。运行三个月后发现延迟是单体方案的五倍、token 成本是八倍，成功率却持平。CTO 怀疑这是过度设计，要求给出判断信号与处置建议。以下哪个说法正确？"
+      }
+    }
+  },
+  {
+    "id": "agentic-63",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "orchestration-patterns",
+      "manager-worker",
+      "when-not-to-use"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "关于多智能体（Multi-Agent）系统的架构模式与适用边界，下列说法正确的是？",
+    "explanation": "四种主流拓扑各有适配场景：Hierarchical（Manager 分解派发）适合可分解复杂任务但 Manager 易成瓶颈；Pipeline 顺序交接适合阶段化处理但无并行；Peer-to-peer 协作自然但协调复杂；Critic/Verifier 一个生成一个挑刺能有效提质。启用多智能体的前提是任务天然分解、各子任务需要不同工具/专长、或批判模式确有增益；单一 Agent 加好工具就能搞定时应坚决用单 Agent——协调开销、调试复杂度与多倍 LLM 成本是真实代价。",
+    "reference": {
+      "concept": "Multi-agent 拓扑按任务形态选：层级/流水线/P2P/Critic；启用判据=任务可分解+异质能力需求；单 Agent 够用时协调开销就是负资产。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "多智能体系统一定优于单智能体，因为更多的 LLM 意味着更高的智能",
+          "无论任务类型如何，Manager-Worker 模式都是默认最优的多智能体架构",
+          "架构模式应匹配任务形态：层级式适合可分解任务的分派汇总（注意 Manager 瓶颈）、流水线适合阶段加工、Critic/Verifier 用对抗审查提质量；启用的前提是任务天然可分解且子任务需要不同工具或专长——单 Agent 加合适工具能解决时应坚持单 Agent，因为协调开销、调试复杂度与多倍调用成本是真代价",
+          "多智能体间共享同一个上下文窗口是标准做法，可以最大化信息透明"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：①先问\"要不要\"再问\"怎么组\"：多 Agent 的正当理由是任务跨域（调研→写作→审核）、各阶段需要不同工具集、需要生成-批判对抗提质、或子任务可并行降延迟；反之单 Agent + 工具能完成却强行拆分，只会得到更高的延迟、成本与调试地狱。②四种拓扑的坑：Hierarchical 的 Manager 既做分解又做汇总容易过载，需要限制其扇出与上下文；Pipeline 无并行且上游错误向下游传播；P2P 需要明确的通信协议否则迅速失控；Critic 模式要注意 Critic 不能与 Generator 共享盲区（最好异构模型）。③通信机制三选：共享状态（简单但有竞态）、消息传递（结构化但开销大）、Orchestrator 中介（最好调试）。D 是反模式——共享整个上下文既爆 Token 又互相污染。"
+      }
+    }
+  },
+  {
+    "id": "agentic-65",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "graph-topology",
+      "relationship-density",
+      "edge-utilization"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "在由 8 个 Agent 构成的无自环有向通信网络中，系统架构师配置了 22 条单向通信链路（静态配置边）。在一次协同任务运行中，实际仅有 15 条链路产生了消息交互（行为边）。关于该网络的拓扑指标与运行特征，以下分析正确的是？",
+    "explanation": "无自环有向图最大边数 = N(N-1)=56（非 28，后者为无向图公式 N(N-1)/2）；静态配置关系密度 = 22/56≈39.3%；动态边利用率 = 实际行为边/配置边 =15/22≈68.2%，度量配置连通性 vs 行为连通性的差异。",
+    "reference": {
+      "concept": "有向图关系密度 D=E/N(N-1) 与行为边利用率 = 活跃边/配置边；最大边数与无向图差一倍。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "该无自环有向图的最大可能边数为 28，因此静态配置关系密度约为 78.6%",
+          "该网络的静态配置关系密度（Relationship Density）约为 39.3%，动态边利用率（Edge Utilization）约为 68.2%",
+          "配置关系密度直接决定了消息的实际流动路径，增加配置边必然等比例增加动态行为边",
+          "边利用率等于配置关系密度乘以节点总数，是衡量无向图连通度的静态几何指标"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n计算要点：\n- 无自环有向图最大边数 = N*(N-1)=8*7=56（选项A误用无向图公式 N(N-1)/2=28）。\n- 静态配置关系密度 D = E_config / N(N-1) =22/56≈39.3%。\n- 动态边利用率 = E_active / E_config =15/22≈68.2%，是行为连通性指标而非静态几何指标。\n\n启示：D 度量“能连多少”，利用率度量“实际用了多少”；两者分离，增加配置边不必然等比例增加行为边（后续题目验证边际递减）。"
+      }
+    }
+  },
+  {
+    "id": "agentic-66",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "er-random-graph",
+      "benchmark",
+      "control-variable",
+      "topology"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "在评估 Agent 协同网络的通信密度对系统性能的影响时，传统做法若直接对比链式（Chain）、星型（Star）与全连接（Mesh）结构，会导致“拓扑中心性/结构形状”与“边数量（关系密度）”两个混淆变量同时变化。为了在固定节点数（如 N=8）前提下严格隔离并独立评估“关系密度”这一单一变量，以下哪些实验设计是合理的？（多选）",
+    "explanation": "需固定 N、隔离关系密度单一变量：ER随机图均匀采样+剔除不连通样本（A）、锁定随机种子保证可复现（B）、单向梯度扫边数（D）均正确；C 扩充节点改变了 N，破坏控制变量。",
+    "reference": {
+      "concept": "多Agent拓扑Benchmark的单变量隔离：固定N的ER随机图 + 可复现种子 + 密度梯度扫描；Chain/Star/Mesh混淆结构与密度。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保持节点数不变，通过 Erdős–Rényi 随机图模型均匀采样生成边，并强制剔除不连通的样本",
+          "锁定全局随机种子（Random Seed），保证同一密度配置下的图拓扑生成与消息路由算法完全可复现",
+          "随着关系密度的增加，同步按比例扩充 Agent 节点数量，以保持全局平均度数（Average Degree）恒定",
+          "在控制 Agent 节点数与任务场景完全一致的前提下，单向梯度递增边数量（如从 20% 密度 sweep 至 100%）"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：ER随机图在固定N下均匀采样边，剔除不连通样本，只让“边数量/密度”成为自变量，隔离中心性混淆。\n- B：锁定随机种子保证比特级可复现，属工程基准必备。\n- D：控制N与任务不变，单调增加边数做密度sweep，是典型的单变量扫描。\n- C 错误：同步扩充N引入第二变量（规模），且平均度数恒定掩盖了密度效应，违背控制变量原则。"
+      }
+    }
+  },
+  {
+    "id": "agentic-67",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "deterministic-policy",
+      "tf-idf",
+      "benchmark",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在构建 Agent 系统架构评估测试集（Benchmark）时，为了消除大语言模型（LLM）API 调用带来的高成本、网络延迟及随机波动，架构师采用确定性规则策略（如基于 TF-IDF 提炼并共享未重复的最新事实）代替真实 LLM。关于这种评估设计的工程权衡（Trade-offs），以下说法正确的有？（多选）",
+    "explanation": "确定性规则实现100%可审计/比特级复现、零API开销（A），能准确评估拓扑几何与链路利用率等结构性指标（B），但丢失LLM推理噪声/指令偏差/幻觉（D）；C称可无缝推广至生产是过度承诺。",
+    "reference": {
+      "concept": "确定性策略评估拓扑：完全可复现与零成本 vs 缺少真实LLM随机性与推理噪声的权衡。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "能够实现 100% 可审计和比特级（Bit-for-bit）完全可复现，且测试运行零 API 开销",
+          "能够准确评估拓扑几何分布、消息路由规则及网络链路利用率等纯结构性与工程性能指标",
+          "其测试结论可以无缝推广至所有生产环境，因为真实 LLM 在复杂拓扑中的行为模式与确定性规则完全一致",
+          "无法捕捉真实 LLM 面对复杂上下文时的推理噪声、指令遵循偏差及幻觉生成对网络通信的影响"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：确定性 TF-IDF规则无随机性、可审计复现、零成本。\n- B：拓扑几何、路由规则、边利用率等结构性指标与模型智能无关，仍可准确测量。\n- D：代价是丢失真实LLM的推理噪声、指令偏差、幻觉对通信的扰动，属于外部效度损失。\n- C 错误：结构性结论外推需谨慎，真实LLM的上下文敏感行为与规则策略不一致，不能无缝推广。"
+      }
+    }
+  },
+  {
+    "id": "agentic-69",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "graph-topology",
+      "diminishing-returns",
+      "edge-utilization",
+      "redundancy"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在固定 Agent 数量（N=8）和特定协作任务的实验中，当通信网络的静态配置关系密度从 20%（11 条边）提升至 100%（56 条边）时，实测信息恢复率始终保持在 92%~98% 之间，而实际活跃边数仅从 10.7 条增加至 26.4 条，边利用率从 97.3% 单调下降至 47.1%。关于这一现象的架构归因与工程启示，以下理解正确的有？（多选）",
+    "explanation": "配置连通≠行为连通（A）；新增边边际递减、冗余边增多（B）；稀疏网利用率高则承载近满、冗余不足（C）；D把特定任务结论无条件泛化至所有场景错误。",
+    "reference": {
+      "concept": "配置连通性与行为连通性的离散边际递减：盲目全连接导致边利用率单调下降与冗余配置。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "配置连通性（Configured Connectivity）不等于行为连通性（Behavioral Connectivity），盲目增加链路并不意味着实际信息流动量会同比例增加",
+          "随着配置边数量的增加，新增通信链路的边际效用递减，高密度拓扑中存在大量从未或极少被使用的“冗余配置边”",
+          "20% 密度的稀疏网络在其边利用率接近 100% 时已基本达到通信承载上限，缺乏应对突发流量的拓扑冗余",
+          "该结果证明在任何 Agent 场景下，将拓扑简化为 20% 密度的稀疏网格均能获得与全连接完全相同的业务收益"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：静态可连≠实际活跃，图中实测活跃边仅随配置边亚线性增长（11→56 配置仅带来 10.7→26.4 活跃）。\n- B：边际递减明确，利用率 97.3%→47.1% 单调下降，新增边多为冗余。\n- C：稀疏网高利用率意味着无冗余缓冲，突发流量下易饱和。\n- D 错误：该结论受任务复杂度（17事实、35消息预算）、确定性策略等约束，不能无缝推广到所有Agent场景的通用稀疏化主张。"
+      }
+    }
+  }
+]

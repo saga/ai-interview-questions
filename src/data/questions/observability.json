@@ -1,0 +1,258 @@
+[
+  {
+    "id": "agent-observability-01",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "cost-attribution",
+      "token",
+      "request-count",
+      "context-length"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
+    "explanation": "成本驱动为Token尤其长Context、需Token粒度按Task聚合、长上下文低频远超高频短上下文、D称仅监控输出错误。",
+    "reference": {
+      "concept": "成本归因为Token浓度，非请求次数。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LLM API 的成本核心驱动因素是单次请求的 Token 数量（尤其是由长 Context 导致的 Input Token），而非单纯的 API 调用次数",
+          "成本监控指标必须深入到 Token 粒度，记录每次请求的 Input/Output Token 数，并结合任务类型（Task Type）和功能标签进行聚合分析",
+          "调用频次低但单次运行时间长、上下文极大的 Agent 任务（如全库代码规划或长文档分析），其 Token 消耗量可能远超高频但短上下文的交互任务（如拼写检查）",
+          "为了准确评估成本，只要监控输出 Token（Output Tokens）的数量即可，因为各大供应商的 Output Token 单价比 Input Token 更高，决定了绝大部分账单金额"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Token量为核心。\n- B：需Token粒度聚合。\n- C：长上下文低频超高频短上下文。\n- D 错误：Input长上下文亦主导，不能仅看Output。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-043",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "tracing",
+      "quality-metrics",
+      "llm-observability"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "为 LLM 应用设计可观测性体系时，与传统 Web 服务相比需要额外覆盖哪些维度？请说明日志/指标/追踪三层各自的关键内容，以及为什么\"又快又稳\"的系统仍可能是失败的。",
+    "explanation": "LLM 特有增量：日志需含 prompt/completion（或哈希）、检索到的 chunks 及得分、模型版本与参数；指标除常规 p95/错误率外必须有 Token 用量与成本、缓存命中率、以及抽样的质量分（LLM-as-judge 忠实度等）；追踪要还原一次请求的完整链路（检索→重排→生成→工具调用）。核心洞察：LLM 系统的失败多数不是宕机而是静默的质量退化——快且可用但答案错了就是失败，因此质量指标是一等公民。",
+    "reference": {
+      "concept": "LLM 可观测 = 传统三层 + 质量 维度：prompt/检索过程入日志、Token 成本与抽样质量分入指标、端到端链路 trace；质量退化是静默失败，必须主动度量。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "与传统服务的可观测性完全一样，加上 Token 计数即可",
+          "只需要监控延迟和错误率，质量由用户反馈自然暴露",
+          "在传统三层之上增加质量维度：日志记录 prompt/响应、检索 chunks 与得分、模型版本；指标增加 Token 用量/成本、缓存命中率和抽样 LLM-as-judge 质量分并配告警阈值；trace 能还原检索→重排→生成→工具调用的完整决策链路——因为 LLM 故障多为静默质量退化而非宕机，质量指标必须是一等公民",
+          "把所有请求的完整 prompt 明文永久存储以便追溯，无需考虑脱敏"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：①三层各自的增量——日志：request ID 关联、模型与参数、token 计数、TTFT，RAG 场景额外记录召回 chunks 与分数（否则检索质量问题无法复盘），隐私敏感场景存哈希；指标：p50/p95/p99、错误率之外，必须有实时成本（按请求/日累计）与告警（成本突增 2x、p95 超 SLA、错误率 >5%、质量分跌破阈值），外加缓存命中率；追踪：一次请求从 query 进来到响应出去的每一步（embed→检索→rerank→LLM→后处理），瓶颈定位与坏例归因全靠它。②\"为什么快和稳不够\"：模型供应商静默更新、知识库过期、prompt 改动都可能让答案质量悄然下滑而所有 SLO 依旧绿灯——所以要用固定 golden queries 定时回归 + 抽样 judge 评分把质量变成可告警的信号。D 忽视隐私合规，正确做法是脱敏/哈希+分级保留策略。"
+      }
+    }
+  },
+  {
+    "id": "ai-engineering-003",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "tracing",
+      "agent"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "一个 Agent 线上出现错误回答，你需要哪些 Trace 信息才能判断问题发生在哪一步？",
+    "explanation": "Trace 五要素：最终 prompt+版本、检索命中与分数、每次 LLM 调用出入参、工具调用明细、决策点与反馈；用统一 id 串联并平衡脱敏与存储。",
+    "rubric": {
+      "required": [
+        "统一关联 id",
+        "prompt 版本与最终内容",
+        "检索/工具/LLM 调用明细",
+        "脱敏与采样存储权衡"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.35,
+        "architecture": 0.25,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "一次请求需要一条贯穿的 trace（统一 request/session id 关联）：完整输入（原始 query、拼装后的最终 prompt 及其版本号）；检索细节（命中的 chunk 内容、来源、分数、是否被截断）；每次 LLM 调用的模型版本、参数、原始输出与 token 用量；每次工具调用的名称、入参、返回值、耗时与错误；Agent 决策点（选择了什么策略/为何终止）；以及最终输出的评分或用户反馈。有了这些才能回答“模型看到了什么、做了什么、为什么这么做”，把错误定位到检索、生成还是执行层。注意脱敏与采样存储成本的平衡——全量存贵，可全量存摘要+错误与抽样子集存全文。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "继续只记录最终的用户可见回答，中间调用过程属于性能损耗，不应采集和存储。",
+          "只需记录每次调用的耗时数字即可满足排障需求，prompt 内容与工具返回值可以直接丢弃以规避合规风险。",
+          "在故障发生后由当事用户手动补充描述当时情形，系统本身维持现状、无需预先埋点。",
+          "以统一的 request/session id 串联完整链路并采集：原始输入与拼装后的最终 prompt 及其版本号、检索命中的 chunk 内容与相似度分数及来源文档、每次 LLM 调用的出入参、工具调用的名称参数与返回值、Agent 的关键决策点；敏感字段脱敏存储并遵守 30 天保留期。"
+        ],
+        "answer": [
+          3
+        ],
+        "question": "一家银行的内部制度问答 Agent 向合规官给出了错误的监管口径，事故复盘会上却发现：现行日志只保存了最终回答文本，无法还原当时的检索内容和模型输入，问题出在哪一步无从判断。合规同时要求含敏感内容的日志最多保留 30 天并做脱敏。重建 trace 时应采集哪些信息？"
+      }
+    }
+  },
+  {
+    "id": "mlops-02",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "monitoring",
+      "drift",
+      "versioning"
+    ],
+    "difficulty": "hard",
+    "angle": "definition",
+    "question": "关于模型监控与生产环境维护，以下合理的做法包括哪些？（多选）",
+    "explanation": "生产模型需监控数据漂移、做好版本管理与回滚、记录日志；模型会随数据分布变化而退化，不能上线即弃管。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "监控线上输入特征与预测分布的漂移（data drift），设置阈值告警以及时发现模型退化",
+          "建立模型版本管理与回滚机制，出现质量问题时可快速恢复到已验证的旧版本",
+          "记录线上推理的输入与输出日志，用于事后复盘、问题定位与再训练样本回流",
+          "把监控范围限定在服务器 CPU 与 GPU 利用率等基础设施指标上，模型预测分布无需关注",
+          "模型通过离线评估上线后即视为长期有效，运维重心应转向新模型的开发迭代"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一家消费金融公司的风控模型上线半年后，审批通过率悄然上升、坏账预警增多，但因为缺少线上记录，团队既说不清输入分布何时开始变化，也无法快速退回到上一个表现良好的版本。管理层要求重建生产运维机制，避免模型「上线即弃管」。以下哪些措施应当纳入？（请选择以下三个选项）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：监控预测分布漂移（data drift）；建立模型版本管理与回滚机制；记录线上推理的输入输出用于复盘。\n\n解析：生产模型需监控数据漂移、做好版本管理与回滚、记录日志；模型会随数据分布变化而退化，不能上线即弃管。"
+      }
+    }
+  },
+  {
+    "id": "o11y-collector-01",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "opentelemetry",
+      "collector",
+      "observability",
+      "tracing",
+      "batching"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "在微服务分布式链路追踪与可观测性（Observability）架构中，引入 OpenTelemetry Collector 作为中间件层，而不是让各微服务直接将 Trace、Log 和 Metric 写入后端存储（如 ElasticSearch、Jaeger 等），其核心工程考量包括：（多选）",
+    "explanation": "下沉批重试压缩采样、多路由透明、统一格式拆三流水线、D自动修正时钟错误。",
+    "reference": {
+      "concept": "OTel Collector：下沉处理+解耦存储+统一流水线，非时钟修正。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "降低微服务本身的 CPU 和内存开销，将数据的批处理（Batching）、重试（Retry）、压缩（Compression）和采样（Sampling）逻辑从业务进程下沉至 Collector",
+          "消除微服务与特定存储/可视化后端的强耦合，使底层存储设施的更换或多投递（Multi-routing）对业务代码完全透明",
+          "统一不同语言 SDK 的 telemetry 数据格式，并在 Collector 内部将流式数据解耦拆分为 Trace、Log、Metric 三条流水线进行针对性预处理",
+          "OpenTelemetry Collector 能够自动修正由于微服务时钟不同步导致的 Trace Span 依赖关系颠倒问题，无需依靠 NTP 等时钟同步机制"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：重处理下沉，业务进程轻量。\n- B：Collector为中继，存储多路由与更换对业务透明。\n- C：统一OTLP并分三流水线预处理。\n- D 错误：时钟漂移需NTP等保障，Collector不自动修正因果颠倒。"
+      }
+    }
+  },
+  {
+    "id": "obs-05",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "trace",
+      "sampling",
+      "cost"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 LLM 可观测性体系中，对全量 Trace 进行采样（Sampling）时，为什么需要采用“头采样（Head Sampling）+ 尾采样（Tail Sampling）”结合的策略，而非仅头采样？",
+    "explanation": "头采样在入口决定是否记录，可能漏掉长尾异常；尾采样可在完整链路结束后基于错误、延迟等信号决定保留，实现异常全量保留与正常采样率控制的平衡。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "头采样可能漏掉长尾异常，尾采样可在链路结束后基于错误/延迟信号决定保留，实现异常全量保留与正常高采样率控制的平衡",
+          "头采样已足够，尾采样会显著增加存储成本且无额外价值",
+          "尾采样可完全替代头采样，因为它无需在入口做决定",
+          "采样策略对 LLM 可观测性无影响，应全量存储所有 Trace"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "头采样漏异常，尾采样基于结果信号保留异常，实现平衡。"
+      }
+    }
+  },
+  {
+    "id": "obs-06",
+    "category": "observability",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "metrics",
+      "quality",
+      "human-eval"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在 LLM 应用中，仅监控 Token 消耗与延迟等技术指标，是否足以评估业务质量？还需补充哪些质量维度的可观测性？",
+    "explanation": "技术指标无法反映回答是否正确、有用、安全；需补充基于黄金集的离线评估、在线 LLM-as-Judge 与人工抽检的质量指标。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "需补充基于黄金集的离线评估，衡量回答正确性与召回",
+          "需引入 LLM-as-Judge 或人工抽检，评估回答的有用性与安全性",
+          "仅监控 Token 与延迟已足够，质量可通过用户投诉被动发现",
+          "质量指标无需与技术指标关联，可独立监控"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需离线评估与在线质量抽检，技术指标不等于业务质量。"
+      }
+    }
+  }
+]

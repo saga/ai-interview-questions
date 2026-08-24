@@ -1,0 +1,217 @@
+[
+  {
+    "id": "ai-code-002",
+    "category": "embeddings",
+    "topic": "word-embedding",
+    "tags": [
+      "coding",
+      "embeddings",
+      "vector"
+    ],
+    "difficulty": "easy",
+    "angle": "calculation",
+    "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
+    "explanation": "单遍累加点积与两个范数、除零防御;cosine 只看方向不看幅度,消除长度偏差;归一化后等价于内积。",
+    "rubric": {
+      "required": [
+        "正确实现含除零防御",
+        "方向 vs 幅度的解释",
+        "归一化后与内积等价"
+      ],
+      "dimensions": {
+        "correctness": 0.45,
+        "completeness": 0.25,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "export function cosineSimilarity(a: number[], b: number[]): number {\n  if (a.length !== b.length) throw new Error('dimension mismatch');\n  let dot = 0, normA = 0, normB = 0;\n  for (let i = 0; i < a.length; i++) {\n    dot += a[i] * b[i];\n    normA += a[i] * a[i];\n    normB += b[i] * b[i];\n  }\n  const denom = Math.sqrt(normA) * Math.sqrt(normB);\n  return denom === 0 ? 0 : dot / denom;\n}\n// 单次遍历同时算点积与范数；零向量防御除零。\n\n为什么用 cosine：它度量方向而非幅度——embedding 的模长常受文本长度/词频影响，cosine 消除了幅度的干扰，只比较语义方向的接近程度；取值 [-1,1] 有明确语义且尺度稳定。当所有向量都已 L2 归一化时，cosine 相似度等价于点积，此时可直接用内积换取计算速度（很多向量库的 IP 度量就是这个原理）。",
+        "language": "typescript"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "cosine 度量方向而非幅度，能消除文本长度与词频造成的模长干扰；向量 L2 归一化后与点积等价；实现上单遍累加点积与两个范数，并对零向量做除零防御。",
+          "cosine 度量的是向量间的欧氏距离，模长越大代表语义越强，计算前应放大向量幅度以增强语义区分度。",
+          "cosine 的取值范围是 [0, ∞)，数值越大表示方向差异越大，因此常用于检测语义相互对立的文本对。",
+          "cosine 必须先把向量减去均值居中再计算，且归一化后它与点积不再有任何关系，这正是它比内积更精确的原因。"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-fund-010",
+    "category": "embeddings",
+    "topic": "word-embedding",
+    "tags": [
+      "embedding",
+      "hidden-state",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "Embedding 模型输出的向量和大语言模型的 hidden state 有什么区别？各自的用途是什么？",
+    "explanation": "Embedding = 面向语义度量的固定向量（检索/聚类用）；hidden state = 生成模型内部服务于 next-token 预测的中间表示，无度量约束。",
+    "rubric": {
+      "required": [
+        "语义空间度量",
+        "next-token 预测服务",
+        "模型用途不可互换"
+      ],
+      "dimensions": {
+        "correctness": 0.4,
+        "completeness": 0.3,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Embedding 是把整段文本映射到一个固定的语义空间向量，目标是让语义相近的文本距离接近，用于检索、聚类、相似度比较；通常是双向编码器或专门训练的表示模型，不用于生成。Hidden state 是生成式 LLM 在处理上下文过程中的内部表示，服务于下一个 token 预测，没有针对语义空间的度量约束，不能直接当作检索向量用。两者的训练目标和用途不同，不能互换。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "可行：hidden state 同样是高维语义向量，且维度通常更高、信息更丰富，检索效果只会更好",
+          "不合适：hidden state 服务于 next-token 预测、未施加语义相似度的度量约束，不能直接当检索向量用；语义检索应改用专门的 embedding 模型",
+          "不合适：hidden state 的维度太低，需要先用算法把维度扩大之后才能存入向量数据库",
+          "可行：只要推理时把 temperature 设为 0，hidden state 就成为确定的语义表示，天然满足检索的度量要求"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "一家电商平台要上线\"相似投诉聚合\"功能，需要对百万条商品评论做语义检索。为节省开发成本，实习生肖提议直接复用公司已部署的 LLM：把每条评论喂给模型，取最后一层 hidden state 存入向量库作为检索向量。团队负责人觉得不妥但一时说不清原因。从两类向量的设计目标出发评价该方案，下列说法最准确的是？"
+      }
+    }
+  },
+  {
+    "id": "emb-03",
+    "category": "embeddings",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "cosine",
+      "normalization"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在用余弦相似度度量文本嵌入相似性时，为什么通常需要对向量进行 L2 归一化？未归一化时相似度会受什么因素干扰？",
+    "explanation": "余弦相似度度量方向而非长度，L2 归一化消除模长干扰，使相似度仅反映语义方向；未归一化时，向量长度（受文本长度、词频影响）会扭曲相似度。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "归一化消除向量模长干扰，使相似度仅反映方向；未归一化时长文本或高频词的长向量会虚高相似度",
+          "归一化是为了将向量压缩到 0-1 区间以便存储，与相似度计算无关",
+          "余弦相似度本身已自动归一化，无需显式 L2 归一化",
+          "归一化会丢失语义信息，因此检索时应避免归一化"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "余弦关注方向，未归一化时模长干扰；L2 归一化后点积即余弦。"
+      }
+    }
+  },
+  {
+    "id": "emb-04",
+    "category": "embeddings",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "domain-adaptation",
+      "fine-tuning"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "一个通用多语言嵌入模型在金融研报检索中效果仅 75% 召回，而经过金融语料微调的专用嵌入模型达到 88%。关于嵌入模型的领域适配，下列说法正确的有？（多选）",
+    "explanation": "通用模型在专业术语上区分度不足，领域微调可提升，但需评估通用能力退化。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通用嵌入模型在专业领域可能因术语与语义漂移导致区分度不足",
+          "在领域标注数据上微调嵌入模型可显著提升领域召回",
+          "微调嵌入模型时无需评估通用能力退化，可直接替换线上模型",
+          "领域适配仅需增加向量维度即可解决，无需微调"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "通用泛化有限，微调可提领域召回，但需评估退化。"
+      }
+    }
+  },
+  {
+    "id": "emb-05",
+    "category": "embeddings",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "chunking",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在 RAG 中，将长文档切成 512 token 的 chunk 并对每个 chunk 单独嵌入，与对整篇文档做单一嵌入相比，检索效果有何权衡？",
+    "explanation": "长文档单嵌入稀释局部语义，小 chunk 提升局部召回但可能丢失跨 chunk 上下文，需重叠与重排弥补。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "长文档单嵌入会稀释局部语义，小 chunk 提升局部召回但需重叠与重排来弥补跨 chunk 丢失",
+          "长文档单嵌入效果一定优于小 chunk",
+          "小 chunk 越多检索越慢，应始终用整文档嵌入",
+          "chunk 大小对检索无影响"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "小 chunk 提升局部召回，长文档单嵌入稀释；需重叠与重排平衡。"
+      }
+    }
+  },
+  {
+    "id": "emb-06",
+    "category": "embeddings",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "hnsw",
+      "ann"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在向量检索中，HNSW 与精确最近邻（Brute-force）搜索相比，核心权衡是什么？",
+    "explanation": "HNSW 以近似召回换速度，通过 ef/M 参数权衡召回与延迟。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "HNSW 用召回率换速度，通过 efSearch/M 参数权衡召回与延迟，而精确搜索召回 100% 但延迟随库规模线性增长",
+          "HNSW 与精确搜索在召回率与速度上完全一致",
+          "HNSW 召回率必然高于精确搜索",
+          "精确搜索比 HNSW 更省内存"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "HNSW 近似检索以召回换速度，需调参权衡。"
+      }
+    }
+  }
+]

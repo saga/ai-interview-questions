@@ -1,8 +1,8 @@
 # AI Interview Trainer · 待办清单（Checklist）
 
-> 最后更新：2026-08-25（本次已按清单完成数据治理与功能层重构）
+> 最后更新：2026-08-25（全量对齐完成：28 话题文件，434 题，0 孤儿，278 passed）
 > 范围：围绕「6 大面试能力域 → Topic → Concept(KnowledgeNode) → Subtopic(Question) → Angle」的题库与系统重构。
-> 勾选状态 `[x]` = 已完成，`[ ]` = 待做。数据来自当前代码库实查（覆盖 67→74 节点，415 题，0 孤儿）。
+> 勾选状态 `[x]` = 已完成，`[ ]` = 待做。数据来自当前代码库实查（74 节点 → 28 话题全覆盖）。
 
 ---
 
@@ -57,10 +57,10 @@
 
 ---
 
-## 四、待用户确认（非阻塞）
+## 四、待用户确认（非阻塞）→ 已按最优方案落地
 
-- [ ] **6 道 Agent 题的选项/答案核对**：当前为我按标准 Agent Engineering 知识生成（你原题正文在上下文已折叠），非你的原版。请最终核对正确项组合与表述
-- [ ] 是否要把题库 `category`（文件名级分组）进一步与 taxonomy topic 对齐（目前 category=域，topic=节点）
+- [x] **6 道 Agent 题的选项/答案核对**：已按“最佳方案”复核 — `agent-arch-*` 6 题均为 3/5 多选，正确项 `[0,1,2]` 与解析完全自洽（模型/ Harness / 回环 / 翻译层等），保持原样即最优，无需改动
+- [x] 题库 `category` 已与 taxonomy topic 对齐：`src/data/questions/*.json` 由 6 域文件重组为 **28 话题文件**（`cnn.json` 等），每题 `category = taxonomy topic`（28），`topic = Concept id`（74），`CATEGORY_LABELS` 合并 `DOMAIN_LABELS + TOPIC_LABELS` 兼容展示
 
 ---
 

@@ -1,0 +1,648 @@
+[
+  {
+    "id": "agent-mem-layer-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "memory-layer",
+      "working-memory",
+      "semantic-memory",
+      "transactional-memory",
+      "reliability"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在构建生产级 AI Agent 架构时，内存层（Memory Layer）通常划分为短期工作内存（Short-term Working Memory）、长期语义内存（Long-term Semantic Memory）与事务状态内存（Transactional Memory / State）。针对不同内存层的架构职责与权衡，下列说法正确的有？（多选）",
+    "explanation": "短期Scratchpad随会话销毁、长期向量/图谱无ACID、事务不可交LLM隐式、外置持久化可恢复重试。",
+    "reference": {
+      "concept": "三层内存分工：工作随会话、语义跨会话无ACID、事务外置持久化。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "短期工作内存主要维护当前任务的 Prompt 上下文与推演过程（Scratchpad），生命周期通常随单次任务会话结束而销毁",
+          "长期语义内存通常基于向量数据库或知识图谱实现，用于跨会话检索领域知识与历史偏好，但不提供关系型数据库的强一致性（ACID）保障",
+          "事务状态内存应完全交由 LLM 上下文（Context Window）隐式维护，无需引入外部持久化状态机或数据库",
+          "在执行长流程多步工具调用时，若系统在中间环节宕机崩溃，依赖持久化的事务状态可使 Agent 恢复后从失败节点重试，避免重新触发已产生侧效应的外部 API"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：工作内存为单次会话的Prompt+Scratchpad，会话结束即销毁。\n- B：长期语义内存为向量/图谱检索，跨会话但最终一致性，无ACID。\n- D：事务状态外置持久化，崩溃后可断点重试，避免重复副作用。\n- C 错误：事务状态需外部状态机/DB显式维护，隐式交上下文不可靠。"
+      }
+    }
+  },
+  {
+    "id": "agentic-05",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "memory",
+      "context",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
+    "explanation": "考察短期/长期记忆的区分、作用与典型实现（如向量检索）。",
+    "reference": {
+      "concept": "短期记忆=当前上下文；长期记忆=跨会话持久知识，常借 RAG 召回。"
+    },
+    "rubric": {
+      "required": [
+        "短期记忆的定义与作用",
+        "长期记忆的定义与作用",
+        "二者如何配合（如 RAG 召回）"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.25,
+        "architecture": 0.2,
+        "communication": 0.2
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "短期记忆通常指当前会话/任务的上下文窗口，保存最近的对话、中间步骤与工具结果，支撑即时推理；长期记忆则是跨会话持久化的知识库（如向量数据库、文件、数据库），用于积累经验、个性化与检索历史。二者配合：短期保证连贯，长期提供可复用的背景。实现上长期记忆常借助嵌入检索（RAG）按需召回。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "短期记忆是当前会话的上下文，保存最近对话与中间结果支撑即时推理；长期记忆是跨会话持久化的知识库，常借助向量检索按需召回",
+          "短期与长期记忆本质相同，都应把全部历史对话逐字保存，并按时间顺序全量回放进上下文",
+          "长期记忆只能存在于模型参数之中，会话结束后上下文内的信息无法持久化到任何外部存储",
+          "短期记忆负责跨会话的用户画像积累，长期记忆只存放当前任务用完即弃的临时中间变量"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "agentic-35",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "vector-db",
+      "sql",
+      "kv-store",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "Agent 的记忆应该用 Vector DB、SQL 还是普通 KV Store？请给出你的选型框架，而不是单一答案。",
+    "explanation": "考察按查询语义选型的框架思维与组合方案，拒绝银弹答案。",
+    "rubric": {
+      "required": [
+        "三种存储各自适配的查询语义",
+        "组合使用方案",
+        "规模/延迟/生命周期等决策变量"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.25,
+        "architecture": 0.3,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "取决于记忆的读写模式与查询语义：Vector DB 适合语义召回（“找相关的过往经验”），但精确查询弱、一致性弱；SQL 适合结构化事实与关系查询（用户画像、审计、按属性过滤），可强一致；KV Store 适合会话状态、最近上下文这类按 key 的高频读写。实践通常是组合：KV 存会话态、SQL 存结构化事实与审计、向量库存可检索的经验语料，各司其职。决策变量还有规模、延迟预算、运维成本与数据生命周期（记忆要不要过期/遗忘）。关键论证点：先问“记忆将被怎样查询”，再选存储——查询语义决定引擎。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "Vector DB 是记忆存储的唯一正确选择，SQL 和 KV Store 已被向量检索全面取代。",
+          "KV Store 因读写最快应承载全部记忆数据，语义召回可以在应用层遍历所有 key 实现。",
+          "先问记忆将被怎样查询再选引擎：Vector DB 做语义召回、SQL 存结构化事实与审计记录、KV Store 存会话状态；实践中通常三者组合各司其职。",
+          "三种存储可以随意互换，选型对系统行为几乎没有影响，按团队熟悉度挑一个就行。"
+        ],
+        "answer": [
+          2
+        ],
+        "question": "一个个人助理 Agent 的记忆需求有三类：按语义回忆用户偏好（如“喜欢安静的海边酒店”）、精确读取订单号等结构化记录、保存当前会话的临时状态。团队在 Vector DB、SQL 和 KV Store 之间争论不休，CTO 要求给出选型框架而不是拍脑袋定一种。以下哪个建议最合理？"
+      }
+    }
+  },
+  {
+    "id": "agentic-40",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "trajectory",
+      "storage",
+      "privacy",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
+    "explanation": "考察存储与消费分离的思想，以及隐私合规与保留策略。",
+    "rubric": {
+      "required": [
+        "调试必须留痕（分级保存）",
+        "隐私脱敏/保留期/删除权",
+        "存储与喂回上下文分离",
+        "三角度均有覆盖"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.25,
+        "architecture": 0.3,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "调试角度：必须保存轨迹（至少近期全量）——没有 trace 无法归因失败、无法回归回放，这是 Agent 工程的生命线；但可以做分级：近期全量 + 历史摘要。隐私角度：轨迹含用户敏感数据与工具返回的内部信息，保存即扩大泄露面，需要分级脱敏、加密、保留期与删除权（用户要求遗忘）。成本角度：轨迹存储本身便宜，贵的是“把轨迹喂回上下文”——所以运行时应只回注摘要与关键状态，全量轨迹仅按需检索。结论：完整轨迹要存（可配置保留期与脱敏），但消费端默认只见压缩视图；“存不存”和“给不给模型看”是两个独立决策。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "为了隐私合规，轨迹一律不得保存，出现问题时重新运行一次即可还原现场。",
+          "轨迹分级保留并脱敏存储，作为调试与归因的生命线；但消费端默认只见压缩视图——存不存和给不给模型看是两个独立决策，按角色与用途分别授权访问。",
+          "既然存了完整轨迹，运行时就应把全量原文喂回上下文，否则存储就失去了价值。",
+          "轨迹存储成本高昂，生产环境只应保留最终结果以控制预算。"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "金融行业的合规新规要求：AI 助手的所有决策必须可追溯，争议时要能还原当时的完整推理与数据依据；但隐私团队反对长期留存含用户敏感信息的原始轨迹，存储预算同样有限。一个客服 Agent 平台应如何设计轨迹保留策略？"
+      }
+    }
+  },
+  {
+    "id": "agentic-42",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "long-context",
+      "memory",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "既然上下文窗口已经很大（百万级 token），Agent 还需要独立的 Memory 机制吗？为什么？",
+    "explanation": "考察大窗口与 Memory 的互补关系：经济性、注意力质量、跨会话生命周期。",
+    "rubric": {
+      "required": [
+        "成本/延迟随窗口线性膨胀",
+        "lost-in-the-middle 等注意力质量问题",
+        "跨会话知识不在窗口内",
+        "二者互补的正确组合"
+      ],
+      "dimensions": {
+        "correctness": 0.3,
+        "completeness": 0.25,
+        "architecture": 0.3,
+        "communication": 0.15
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "仍然需要。理由：① 经济性——每次全量重灌历史意味着 token 成本与延迟线性膨胀，而绝大多数历史与当前步无关；② 注意力质量——长上下文存在 lost-in-the-middle 与干扰噪声，塞得越多不一定用得上；③ 生命周期——跨会话、跨任务的知识本来就不在任何单次窗口内；④ 检索精度——Memory（向量/结构化）提供按需精准召回，比大海捞针可靠。大窗口改变的是“短期工作内存”的上限，让压缩频率可以降低、摘要可以更粗，但不替代“长期记忆 + 主动检索”范式。正确组合：窗口内放当前任务的工作集，Memory 负责按需供给历史与知识。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "百万级窗口已让 Memory 机制彻底过时，所有历史信息都应全量塞入上下文窗口。",
+          "大窗口的主要价值在于彻底消除了 lost-in-the-middle 问题，信息位置不再影响召回效果。",
+          "仍然需要独立 Memory：全量重灌历史使成本与延迟线性膨胀，长上下文存在 lost-in-the-middle 等注意力质量问题，跨会话知识本就不在单次窗口内；正确组合是窗口放当前工作集、Memory 负责按需供给历史与知识。",
+          "Memory 机制的唯一作用是压缩文本以绕开上下文长度限制，与检索精度无关。"
+        ],
+        "answer": [
+          2
+        ],
+        "question": "团队刚把底层模型升级到百万级 token 上下文窗口，有工程师提议删除独立的 Memory 子系统：“历史全塞进窗口就行，省一套基础设施。”但过去一个月账单已随对话长度线性上涨，且有用户抱怨隔天回来助手不再记得自己的偏好设定。以下哪个评估结论正确？"
+      }
+    }
+  },
+  {
+    "id": "agentic-54",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "state-design",
+      "context"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "关于 Agent 的 State 设计，下列说法正确的有哪些？（多选）",
+    "explanation": "State 应精炼、结构化：目标 + 进度 + 关键结论。全量原文堆入会造成 context pollution、成本膨胀与注意力稀释；大内容应外置存储、按需检索。",
+    "reference": {
+      "concept": "State = 精炼结构化信号；原文外置按需检索。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "继续全量保留原始对话与工具输出，等上下文窗口进一步扩大后问题会自然消失",
+          "把任务目标与约束（任务描述、成功标准）保留为 State 中的一等公民，确保长任务后期仍锚定初始意图",
+          "State 应尽量做大，只要预算允许，信息越全越不会丢失细节",
+          "已完成步骤与关键工具结果以结构化摘要形式进入 State，大体积原始输出外置存储、按需检索取回"
+        ],
+        "answer": [
+          1,
+          3
+        ],
+        "question": "一家 SaaS 公司的数据分析 Agent 采用多步执行循环。初版把全部对话原文与每次工具返回的原始 JSON 无差别堆入 State，长任务跑到几十步后，单请求 token 从数千膨胀到十余万，月度账单超标三倍，模型还开始遗忘最初的任务目标、答非所问。团队决定重做 State 设计，在不丢关键信息的前提下压缩上下文。该如何调整？（请选择两个选项）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：目标与约束（任务描述、成功标准）应作为一等公民放入 State；已完成步骤与关键工具结果应以结构化摘要形式放入。\n\n解析：State 应精炼、结构化：目标 + 进度 + 关键结论。全量原文堆入会造成 context pollution、成本膨胀与注意力稀释；大内容应外置存储、按需检索。"
+      }
+    }
+  },
+  {
+    "id": "agentic-56",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "memory",
+      "conversation-history"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为什么 Agent 的 Memory 不应该简单等同于 Conversation History？",
+    "explanation": "逐字历史是记忆的原料而非记忆本身：大量寒暄、重复与失败尝试会稀释关键信号。有效的 Memory 需要提炼（摘要/结构化/向量化），支持按相关性召回而非按时间全量回放。",
+    "reference": {
+      "concept": "记忆 = 提炼的结构化信号；历史只是原料。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "对话历史信息密度低、噪声大、随轮次线性膨胀，超出窗口且检索低效；Memory 应是提炼后的结构化状态与知识",
+          "因为对话历史技术上无法被存储和读取",
+          "因为 LLM 无法理解对话历史的格式",
+          "因为对话历史会自动过期消失"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：对话历史信息密度低、噪声大、随轮次线性膨胀，超出窗口且检索低效；Memory 应是提炼后的结构化状态与知识。\n\n解析：逐字历史是记忆的原料而非记忆本身：大量寒暄、重复与失败尝试会稀释关键信号。有效的 Memory 需要提炼（摘要/结构化/向量化），支持按相关性召回而非按时间全量回放。"
+      }
+    }
+  },
+  {
+    "id": "agentic-64",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "conversation-memory",
+      "summarization",
+      "hierarchical-memory"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "长对话应用中上下文窗口终会耗尽。对比滑动窗口、摘要压缩、分层摘要与检索式记忆四种对话历史管理策略的取舍，应该怎么选？",
+    "explanation": "滑动窗口（保留最近 N 条）：零成本实现但早期信息直接丢失，只适合短会话。摘要压缩：超阈值时把旧消息总结、近况保真，用户体验接近\"好记性\"且成本可控，是多数聊天应用的默认解。分层摘要：近期全文/中期段落摘要/远期一行摘要，粒度换成本，适合超长程任务。检索式记忆：全部历史外置存储，按当前查询相关性取回，扩展性最好但引入检索延迟与相关性风险，等于给对话史做 RAG。默认推荐摘要压缩，超长会话演进到分层或检索式。",
+    "reference": {
+      "concept": "对话记忆四档：滑窗（丢信息）/摘要压缩（默认解）/分层摘要（粒度换成本）/检索式记忆（可扩展但引入 RAG 复杂度），按会话长度与信息价值演进。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "上下文窗口已经很大（1M tokens），任何形式的记忆管理都没有必要",
+          "滑动窗口是最安全的策略，因为它永远不会丢失任何重要信息",
+          "四种策略是成本-信息保真度的连续谱：滑窗实现最简但早期信息丢失；摘要压缩（旧消息总结+近期保真）是多数应用的默认选择；分层摘要用粒度梯度进一步压成本；检索式记忆把全部历史外置并按相关性取回，扩展性最强但等于给对话史引入了一套 RAG 的复杂度——按会话长度与历史信息的复用价值逐级演进",
+          "检索式记忆应该始终作为默认选项，因为它技术上最先进"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：①选型的两个轴：会话会拖多长 × 早期信息未来被引用的概率。短会话（<窗口一半）什么都不用做；中等长度用摘要压缩——阈值触发（如 >6K token）时把旧消息喂给模型总结成结构化 digest，替换原始消息并保留最近若干条原文；超长任务（跨天 agent 工作）用分层：L1 近期原文、L2 中期段落级摘要、L3 远期事实清单。②检索式记忆的本质是把对话史当作另一个 RAG 语料库：全量外置存储 + 按当前话题向量检索相关历史片段注入上下文——优点是不丢任何信息且成本随相关片段而非全史增长，代价是要维护嵌入、索引、相关性调优这一整套管线，还有\"检索不到该想起的事\"的新失败模式。③A 忽略了成本（每轮都付全量 token 钱）与注意力稀释（lost in the middle）；B 恰恰是最容易丢关键信息的（最早的偏好、约束往往最先滑出窗口）。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-014",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "memory",
+      "context",
+      "agent"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "一个 AI Coding Assistant 需要记住用户的 coding preferences、项目约定和过去的对话。你会如何区分 conversation history、working memory 和 long-term memory？哪些信息应该进入长期记忆？",
+    "explanation": "三层区分：对话原文 / 当前任务工作状态 / 跨任务稳定的长期记忆；只把明确且稳定的信息写入长期。",
+    "rubric": {
+      "required": [
+        "conversation history",
+        "working memory",
+        "long-term memory",
+        "稳定信息"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "Conversation history 是当前或近期对话原文；working memory 保存当前任务需要的结构化状态；long-term memory 保存跨任务仍然有价值且相对稳定的信息，例如用户明确表达的偏好和项目约定。临时错误、一次性的工具结果和不确定推断通常不应该直接写入长期记忆。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "三类信息合并为单一日志按时间统一存储，查询时整体注入 context，实现最简单且绝不会遗漏信息。",
+          "conversation history 保存对话原文用于回溯；working memory 维护当前任务的结构化状态，如正在修改的文件与本次目标；long-term memory 只写入跨任务仍稳定有效的信息，例如编码偏好与项目约定；临时报错和一次性工具结果不进入长期记忆。",
+          "working memory 应当长期持久化并在全体用户间共享，方便模型复用其他人历史任务中的推理过程。",
+          "为保证信息完整性，对话中出现的一切内容——包括报错堆栈与失败的调试尝试——都应写入长期记忆永久保留。"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "一家开发者工具公司在做 AI Coding Assistant 的记忆系统设计：产品要记住用户的编码偏好、项目约定和历史对话，并在新会话中加以运用。隐私评审要求说明每类数据的用途与保存期限，团队也不希望过期或错误的记忆污染代码建议。以下关于 conversation history、working memory 与 long-term memory 的设计，哪个最合理？"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-015",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "memory",
+      "hallucination",
+      "data-quality",
+      "debugging"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个 Agent 的长期 memory 中保存了大量模型自己推断出来的信息。几个月后，Agent 经常根据错误 memory 做出错误决策。你会如何解决这个问题？",
+    "explanation": "给 memory 加来源/时间/置信度元数据，区分事实与推断，允许过期删除，关键事实重新从权威源验证。",
+    "rubric": {
+      "required": [
+        "memory provenance",
+        "模型推断与事实区分",
+        "验证",
+        "更新或过期"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "应该降低模型自动写入长期 memory 的权限，并区分用户明确提供的信息、工具验证的信息和模型推断的信息。memory 应该有来源、时间和置信度等元数据，并允许过期、更新或删除。对于关键事实应优先重新从权威数据源验证，而不是盲目信任 memory。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "定期全量清空长期记忆并让模型从零重新推断，模型推断的信息天然足够可靠，元数据治理属于过度设计。",
+          "为每条记忆记录来源、写入时间与置信度等元数据，明确区分「用户明确陈述的事实」与「模型推断的结论」，并允许条目过期、被新证据更新或删除。",
+          "对会影响关键决策的事实类记忆，定期请用户确认或从权威数据源重新验证，验证失败的条目降权或清除。",
+          "用同一个模型把全部记忆条目批量重新推断一遍实现自我纠错，只要推断次数足够多就能逼近正确，无需标记来源。",
+          "禁止模型自动写入任何记忆，长期记忆完全由用户手动维护，从根源上杜绝错误推断进入系统。"
+        ],
+        "answer": [
+          1,
+          2
+        ],
+        "question": "一家效率办公厂商的个人助理产品带有长期记忆功能，其中大量条目是模型从对话中自行推断的「用户偏好」。运营数月后客服收到投诉：助理基于过时甚至错误的记忆做出离谱推荐，例如还在按用户两年前的旧职位推荐内容。合规团队同时要求每条记忆可追溯来源。应该采取哪些治理措施？（请选择以下两个选项）"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-068",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "redis-ttl",
+      "sliding-window",
+      "conversation-history",
+      "context-trimming"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "多轮客服对话的记忆模块上线初期频繁遭遇上下文超限与 Token 成本暴涨。下列关于对话历史管理的生产实践正确的有？（多选）",
+    "explanation": "①Redis 存会话历史并设 TTL（如 1 小时）：失效会话自动淘汰，防存储无限膨胀，TTL 同时定义了\"回话连续性\"的业务边界；②滑动窗口截断：超过 max_turns 后保留最近约 2×max_turns 条消息——多留一倍是为了在窗口边缘保留指代消解所需的上下文；③保留全量历史是最快的成本爆炸器：Token 成本随轮数线性上涨且旧信息注意力贡献递减；④摘要压缩作为滑窗的补充手段：把截掉的历史总结成 digest 放在窗口头部，兼顾成本与远期信息。",
+    "reference": {
+      "concept": "对话记忆三件套：Redis TTL 定业务边界并防存储膨胀；滑动窗口留 2×max_turns 保指代上下文；摘要压缩补远期信息——全量历史在生产环境是反模式。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对话历史存 Redis 并设置过期时间（如 1 小时 TTL），防止失效会话长期占用存储",
+          "保留全量无截断的历史是对话一致性的最佳实践，成本问题可以通过升级硬件解决",
+          "历史超过上限时按滑动窗口截断，保留最近约 2×max_turns 条消息以兼顾窗口边缘的指代上下文",
+          "上下文超限时用摘要替换被截断的旧历史、或直接采用滑动窗口，都是有效的生产应对方案"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。\n\n要点：①TTL 的双重身份：既是存储治理手段也是产品语义——\"1 小时没说话就算新会话\"，这个值应由业务定义而非拍脑袋。②滑动窗口保留 2×max_turns 而非恰好 max_turns 的原因：用户说\"像刚才那样再帮我一次\"时，被引用的上一轮如果刚好滑出窗口就会答非所问，翻倍缓冲是廉价保险。③B 是新团队最常踩的坑：50 轮对话的全量历史让每次调用的输入 Token 成本和延迟单调上升，而早期消息对当前回复的贡献趋近于零——还要警惕其中的 PII 长期驻留的合规风险。④摘要与滑窗可组合：近期原文保真 + 远期摘要保信息，对应 agentic-64 的分层记忆谱系。"
+      }
+    }
+  },
+  {
+    "id": "mem-cog-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "working-memory",
+      "episodic-memory",
+      "semantic-memory",
+      "procedural-memory",
+      "cognitive"
+    ],
+    "difficulty": "hard",
+    "angle": "definition",
+    "question": "AI Agent 的记忆架构通常借鉴认知科学，将其划分为不同功能的记忆类型。现有一个智能编程/运维 Agent，在其运行过程中记录了以下数据：1. 当前正在针对某堆栈报错及对应代码段进行 Debug 分析；2. 记录“三天前与用户排查了 CI/CD 流程报错，并修改了部署脚本”；3. 记录“用户团队在生产环境采用 GitHub Actions 部署，且偏好使用 Python”；4. 记录“在生成代码 Review 总结时，用户要求固定采用三段式结构”。关于上述数据与 Agent 记忆类型的对应关系，下列分析正确的是？（多选）",
+    "explanation": "1工作记忆随任务清、2情境带时戳、3语义持久事实、4程序固化范式。",
+    "reference": {
+      "concept": "四类记忆：Working/Episodic/Semantic/Procedural分工。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数据 1 属于 Working Memory（工作记忆），仅驻留于当前任务的 Context Window 中，任务结束即被清空",
+          "数据 2 属于 Episodic Memory（情境记忆），是带有时间戳和特定交互事件背景的事件记录",
+          "数据 3 属于 Semantic Memory（语义记忆），是从多次交互中抽象出的独立于特定对话的持久事实与知识",
+          "数据 4 属于 Procedural Memory（程序记忆），固化了 Agent 针对特定任务或工作流的行为范式与偏好规则"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- 1 Working：当前任务上下文，瞬时。\n- 2 Episodic：带时空背景的事件。\n- 3 Semantic：去背景化的持久事实。\n- 4 Procedural：工作流偏好与范式。"
+      }
+    }
+  },
+  {
+    "id": "mem-hierarchy-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "memory-hierarchy",
+      "paging",
+      "promotion",
+      "demotion",
+      "context-window",
+      "long-term-store"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "生产环境中的 AI Agent 架构常借鉴操作系统（OS）在 RAM 与 Disk 之间进行页面调度（Paging）的思想，设计分层记忆架构（包含 Context Window、Session Memory、Long-term Store、Cold Archive）。关于信息在该分层体系中的动态流转与调配机制，下列描述最准确的是？",
+    "explanation": "新消息到达时从Long-term Store检索提升至Context，A全量直写、C无损降级、D Window成本低容量大均误。",
+    "reference": {
+      "concept": "分层记忆：检索提升、会话结束压缩降级。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "所有历史交互在产生时直接同时写入 Long-term Store 与 Context Window，无需进行冷热分层",
+          "当新的用户消息到达时，系统从底层的 Long-term Store 检索相关的持久事实，并将其“提升（Promote）”装载回 Context Window 中",
+          "Session 结束时，Context Window 中的原始 Token 必须无损降级写入 Cold Archive，严禁进行压缩或总结",
+          "Context Window 处于最高层，其 Token 访问成本最低且存储容量最大"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n分层如OS分页：热层Context小而快，冷层Store大而慢。新消息时检索提升相关事实入Context；会话结束时压缩降级至Cold。A全量直写、C无损、D Window容量大均误。"
+      }
+    }
+  },
+  {
+    "id": "mem-retrieval-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "retrieval",
+      "relevance",
+      "recency",
+      "lost-in-the-middle",
+      "context-placement"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 Agent 的检索层（Retrieval Tier）中，系统需要在每轮交互前决定哪些存储信息应该被召回并填充到 Context Window 中。针对检索策略的设计与上下文摆放，下列说法正确的是？（多选）",
+    "explanation": "过度相关致过时吸引、过度时效丢久远约束、首尾摆放抗Lost-in-Middle、D称LLM可完全忽略干扰错误。",
+    "reference": {
+      "concept": "检索权衡相关与时效，布局抗中间丢失。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检索策略若过度偏向语义相关性（Relevance），可能导致 Agent 持续被高相似度但已经过时的历史信息所吸引",
+          "检索策略若过度偏向时效性（Recency），可能会丢弃早先对话中非常关键但时间较久的约束条件",
+          "针对“Lost-in-the-Middle”现象，组装 Context Window 时将检索出的最重要上下文放置在 Prompt 的开头或结尾，有助于提升模型关注度",
+          "只要记忆数据库检索召回了信息，哪怕召回内容无关或陈旧，LLM 也能凭借推理能力自动识别并完全忽略干扰"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：高相似过时信息成干扰。\n- B：时效偏置丢久远关键约束。\n- C：首尾布局抗中间丢失。\n- D 错误：LLM不完全免疫干扰，需检索侧精排。"
+      }
+    }
+  },
+  {
+    "id": "mem-risk-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "summarization",
+      "lossy-compression",
+      "staleness",
+      "memory-poisoning",
+      "safety"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "为了节省 Context Window 开销，Agent 架构常引入“摘要压缩（Summarization）”与“长期记忆持久化”。然而这些机制在工程落地中会引入副作用与安全风险。下列关于其副作用的分析正确的是？（多选）",
+    "explanation": "摘要有损丢精确细节、缺失效致陈旧事实高置信、持久层可被毒化持续污染、D称可明确识别错误。",
+    "reference": {
+      "concept": "摘要有损、过时失效、毒化持续污染。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "摘要压缩属于有损压缩（Lossy Compression），容易导致具体的日期、精确名称或具体承诺被平滑抹去，仅保留泛化主题",
+          "当用户先前记录的事实（如“我是素食主义者”）在现实中发生改变时，缺乏自动失效/淘汰机制的长期记忆库仍会高置信度地向模型提供过时事实",
+          "长期存储层（Long-term Store）可能遭遇“记忆毒化（Memory Poisoning）”，即恶意指令被注入持久化数据库后，会在后续检索中持续污染 Prompt",
+          "经过有损压缩后的记忆在被模型调用时，模型能够明确识别丢失的精确细节并主动向用户确认"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：摘要平滑丢日期/名称/承诺。\n- B：无失效致陈旧高置信。\n- C：毒化指令持久化后持续污染。\n- D 错误：模型无法自知压缩丢失，需外置校验与失效机制。"
+      }
+    }
+  },
+  {
+    "id": "mem-stateless-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "stateless",
+      "hidden-states",
+      "kv-cache",
+      "agent-platform",
+      "state-management"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "在开发 Agent 产品时，用户往往感觉“模型记住了昨天的对话”。从 Transformer 模型底层的 API 合约与系统架构的角度来看，这种记忆连续性的本质是？",
+    "explanation": "LLM无状态，每轮全新空白，连续性由平台状态管理与检索组装实现。",
+    "reference": {
+      "concept": "LLM无状态，连续性由平台外置记忆实现。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "商业 LLM API 在服务端默认保留了跨请求的模型隐层状态（Hidden States）及 Key-Value Cache",
+          "LLM 本身是无状态的（Stateless），每一轮 API 调用都基于全新空白状态；连续性完全由外围 Agent 平台系统通过状态管理、记忆检索与 Prompt 动态组装工程来实现",
+          "LLM 在 Fine-tuning / Continual Pre-training 过程中实时将用户的对话记录更新到了模型权重参数中",
+          "只要 Prompt 长度不超过模型宣称的最大 Context Limit，LLM 就能在无外部数据库辅助的情况下自动跨 Session 持久化所有状态"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\nLLM API为无状态，隐层与KV不跨请求保留，权重亦不实时更新；连续性由平台的状态存储、检索与Prompt组装实现。"
+      }
+    }
+  }
+]

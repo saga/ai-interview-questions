@@ -1,0 +1,266 @@
+[
+  {
+    "id": "agent-cost-01",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "agent-loop",
+      "context-inflation",
+      "token-cost",
+      "stateless"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "某系统架构师在评估 LLM Agent 系统的 API 调用成本时发现，在处理多步骤复杂任务时，Agent 产生的 Token 消耗量远超单次 Chatbot 对话。关于 Agent 运行机制对 Token 消费的影响，下列说法正确的有？（多选）",
+    "explanation": "LLM无状态致每轮重发递增Context、超线性累积、高频消除自然制约、D称本地更新隐状态错误。",
+    "reference": {
+      "concept": "Agent Context膨胀致Token超线性累积。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LLM API 本身是无状态的，Agent 在多轮循环中必须在每次请求时重新发送完整的历史上下文（包含系统指令、工具 Schema、历史工具调用与返回结果等），导致上下文随着轮次单调递增",
+          "Agent 系统的总 Token 消耗量通常随循环轮次呈现超线性的累积增长，即使单次工具调用的增量输入不大，后续步骤的 Input Token 成本也会急剧攀升",
+          "与人类用户受限于输入速度和阅读能力的交互节奏不同，Agent 系统在无人干预下可以以 API 允许的最大速率高频发起请求，消除了交互频次的“自然制约”",
+          "Agent 每次执行工具后，可以通过本地存储直接更新 LLM 的内部隐状态（Hidden States），从而避免在后续请求中重复传入历史上下文"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：无状态需重发全量上下文单调递增。\n- B：历史累积致超线性增长。\n- C：无人干预高频消除自然制约。\n- D 错误：隐状态不持久化，需重传。"
+      }
+    }
+  },
+  {
+    "id": "agent-jevons-01",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "jevons-paradox",
+      "budget",
+      "cost-optimization",
+      "governance",
+      "routing"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "某团队通过引入廉价模型路由和 Prompt 优化，成功将单次 Agent 任务的平均 Token 成本降低了 60%。然而在结算时发现，团队的月度 LLM 账单总额不仅没有下降，反而上升了 20%。关于这一工程与经济现象的分析及应对策略，下列说法正确的有？（多选）",
+    "explanation": "单价降致反弹用量暴涨、需全局预算上限、目标为预算内价值最大化、D称路由失效切回单模型错误。",
+    "reference": {
+      "concept": "Jevons反弹：单价降致总量涨，需预算治理。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单次请求成本下降会导致“反弹效应”（Jevons 悖论）：原先因太贵而受限的使用场景（如对所有 Git Commit 进行自动 Code Review）变得可行，从而触发了远超以往的总调用量",
+          "仅靠降低单次调用单价无法保证总预算不超标，必须在架构和管理层面设定固定的全局/团队月度预算上限（Monthly Budget Cap）",
+          "成本优化的工程目标不应仅仅追求“降低单次 API 调用的绝对价格”，而应追求“在固定预算约束内提供最大化的有效业务价值”",
+          "这一现象说明模型路由技术完全失效，团队应当强制所有业务重新切回单一前沿模型（Frontier Model）以抑制调用量"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：Jevons反弹致总量涨。\n- B：需预算上限。\n- C：目标为预算内价值最大。\n- D 错误：非路由失效，不应回退。"
+      }
+    }
+  },
+  {
+    "id": "agentic-57",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "budget",
+      "limits",
+      "guardrails"
+    ],
+    "difficulty": "hard",
+    "angle": "definition",
+    "question": "为了限制 Agent 的最大执行成本、防止失控，下列哪些是可以设置的硬性边界？（多选）",
+    "explanation": "步数/调用数、token/费用预算、时间上限三层硬边界缺一不可；停止与否不能只依赖模型自觉——失控的直接后果是真金白银。还应配合重复检测与异常告警。",
+    "reference": {
+      "concept": "执行边界三板斧：步数、预算、时限，外加熔断与告警。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "设定最大步数与最大 tool call 次数上限，达到即强制终止任务",
+          "通过系统提示词叮嘱模型注意节约资源，并在合适的时机自行停止",
+          "设定 token 预算与累计费用上限，超限自动熔断",
+          "更换更强的旗舰模型，能力更强后自然不会陷入循环",
+          "设定单任务总执行时间的 wall-clock 上限，超时强制结束并触发告警"
+        ],
+        "answer": [
+          0,
+          2,
+          4
+        ],
+        "question": "一家跨境电商的运营团队部署了一个可自主联网检索并调用内部 API 的选品研究 Agent，夜间无人值守批量运行。上月某任务陷入“搜索—分析—再搜索”的循环达六小时，产生数万次模型调用与可观的 API 费用，直到早班工程师手动杀掉进程。管理层要求任何情况下都必须存在不可绕过的硬性止损边界，而不能依赖模型自觉。应该设置哪些边界？（请选择三个选项）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：最大步数 / 最大 tool call 次数；token 预算与累计费用上限，超限熔断；总执行时间上限（wall-clock timeout）。\n\n解析：步数/调用数、token/费用预算、时间上限三层硬边界缺一不可；停止与否不能只依赖模型自觉——失控的直接后果是真金白银。还应配合重复检测与异常告警。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-023",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "cost",
+      "model-routing",
+      "context",
+      "trade-off"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "一个 Agent 平均每次请求消耗 50K tokens，日请求量从 10K 增长到 1M。你会从哪些层面控制成本？请按优先级说明。",
+    "explanation": "优先级：削减无效 context → caching → 减少 iterations → model routing；成本优化必须结合质量指标一起看。",
+    "rubric": {
+      "required": [
+        "context reduction",
+        "model routing",
+        "caching",
+        "iteration budget"
+      ],
+      "dimensions": {
+        "correctness": 0.35,
+        "completeness": 0.35,
+        "architecture": 0.2,
+        "communication": 0.1
+      }
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "首先分析 token 消耗来源，减少无效 context 和 tool results；然后考虑 prompt/context caching、减少不必要的 Agent iterations、模型路由和更小模型处理简单任务。还可以对 retrieval、tool call 和整体任务设置 budget。成本优化应该结合质量指标，而不是单纯追求最低 token 数。"
+      },
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "优先分析 50K token 的消耗构成，砍掉重复注入的无效 context、冗长的 tool results 和无人消费的中间输出。",
+          "第一优先级是把全部流量切到最小最便宜的模型，质量损失等接到用户投诉后再逐一弥补。",
+          "引入 prompt/context caching 复用稳定前缀（系统提示与公共规范文档），并审查 Agent 循环逻辑，减少不必要的迭代轮数与重复工具调用。",
+          "token 开销与架构无关，通过与供应商商务谈判压低单价即可从根本上消化百倍的增长。",
+          "按任务难度做模型分级路由：简单变更用小模型、复杂审查才升级到旗舰模型，并全程对照质量指标验证降本没有伤及核心体验。"
+        ],
+        "answer": [
+          0,
+          2,
+          4
+        ],
+        "question": "一家代码托管平台的 AI Code Review Agent 平均每次请求消耗 50K tokens，大头是每次迭代都重复注入的全量文件内容和冗长工具返回。日请求量半年内将从 1 万涨到 100 万，财务部门要求单均成本下降 60%，同时答案采纳率不得低于现有基线。应该采取哪些措施？（请选择以下三个选项）"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-036",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "semantic-cache",
+      "break-even",
+      "hit-rate"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "某 LLM 应用单次调用成本 $0.01，日均 20,000 次请求。计划引入语义缓存：嵌入相似度超过阈值即返回缓存答案。已知缓存查询本身有成本，且预计命中率约 30%。以下估算与判断正确的是？",
+    "explanation": "30% 命中意味着每天省 6,000 次 LLM 调用 = $60；但要扣除缓存查询（一次嵌入 + 相似度检索）的成本与存储费用，净节省略低于 $60/天。此外相似度阈值是核心旋钮：太松（如 0.85）会把不同意图误判为命中而返回错误缓存，太严（如 0.98）命中率趋近于零；个性化或时效性问题必须在 cache key 中加入用户/时间维度甚至禁止缓存。",
+    "reference": {
+      "concept": "语义缓存收益 = 命中率×调用量×单价 − 缓存查询与存储成本；阈值松紧决定\"错误命中 vs 低命中\"的两难，时效/个性化内容需进 key 或禁缓存。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "每天可净省 20000 × 30% × $0.01 = $60，且无需考虑其他成本",
+          "毛节省约 $60/天，需再扣掉每次缓存查询的嵌入+检索成本和存储费用；同时阈值设置是两难：过松会错误命中返回不相关答案，过严则命中率过低失去意义；时效性与个性化内容要把时间/用户维度纳入 cache key 甚至禁用缓存",
+          "只要相似度超过 0.5 就可以放心返回缓存，命中率越高越好",
+          "语义缓存的收益主要来自降低 TTFT，对总成本几乎没有影响"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：①账要算全：毛节省 = 20,000 × 30% × $0.01 = $60/天，但每次缓存查询自身有一次 embedding + 向量检索的开销（虽远小于 LLM 调用），加上缓存存储与失效管理成本，净节省低于 $60；量级判断依然成立（日均万级请求才值得做）。②阈值是灵魂旋钮：起点建议 ~0.95，用命中率与用户投诉两个指标回调——0.85 级别的宽松会制造\"看起来像就当是\"的错误命中，直接伤信任。③三类内容要特殊处理：个性化查询（\"我的余额\"）cache key 必须绑定 user_id；时效性查询（价格/库存）设短 TTL；个性化实时类干脆禁缓存。缓存失效还要联动知识库更新（按来源文档 ID 打标签做定向失效）。"
+      }
+    }
+  },
+  {
+    "id": "ai-eng-058",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "scale-economics",
+      "explanation-cache",
+      "cache-hit-rate-sla"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "5000 万用户的流媒体平台要为每条推荐附加 LLM 生成的解释：日活 500 万 × 每人 10+ 组推荐意味着每天数亿次潜在调用。请设计成本可控的解释服务架构，并推导缓存命中率与 200ms p95 延迟目标之间的量化关系。",
+    "explanation": "架构原则：传统 ML 负责排序（embedding 召回 + cross-encoder 精排，单用户日成本低至 $0.001 量级），LLM 只做最末端的解释生成。缓存按 (source_content, target_content, reason_type) 三元组建 key——同一条\"因为 Inception 推荐 Tenet\"的理由对成千上万用户复用，预热后命中率可达 85-95%。延迟联动：命中路径 ~70ms 远低于 200ms p95；未命中路径一次 LLM 调用 ~450-500ms 会击穿 SLA——所以必须保证命中率 ≥95%（p95 用户几乎全走命中路径），未命中的新生成异步化补进缓存而非同步等待；新内容对的解释离线预生成。",
+    "reference": {
+      "concept": "解释服务 = 排序不用 LLM + (源,目标,理由类型) 三元组缓存；SLA 数学：未命中路径 ~500ms 击穿 200ms p95 ⇒ 命中率必须 ≥95%，miss 异步回填。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接为每次推荐实时调用 LLM 生成解释，按 $0.005/次成本约 $25K/天，可以接受",
+          "排序交给 embedding 召回 + cross-encoder 精排（LLM 不参与排序）；解释按 (源内容, 目标内容, 理由类型) 三元组缓存跨用户复用；由于缓存未命中路径（~500ms）会击穿 200ms p95，命中率必须做到 ≥95%——新解释异步预生成回填缓存，同步路径永远只读缓存",
+          "用最大的旗舰模型生成更高质量的解释，减少用户重复请求来省成本",
+          "把解释长度限制到 5 个 token 以内来压缩 LLM 成本"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：①规模账先算清：5M 日活 × 10 组 × 每组若干条 = 数亿次/天，哪怕 $0.001/次也是每天数十万美元——所以 LLM 绝不能进排序路径（embedding 查找 $0.00001、ANN $0.0001、rerank $0.001，便宜三个数量级）。②缓存的正确粒度是内容对而非用户：解释的理由绑定于\"从 A 推荐 B 的原因类别\"，天然跨用户共享，热门内容对预热后命中率轻松上 90%。③命中率与 SLA 的硬耦合是本题核心：混合延迟 ≈ hit_rate×70ms + (1−hit_rate)×500ms，要 p95 ≤200ms 就要求第 95 百分位的请求落在命中路径上，即命中率 ≥95%；做不到就异步化——同步返回占位或次优解释，后台生成后写缓存供下个请求命中。④A 的账漏算了倍数关系且没算延迟违约；C 方向反了，更强模型只会更贵；D 牺牲产品价值省小钱，属于错误的优化目标。"
+      }
+    }
+  },
+  {
+    "id": "cost-02",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "cost",
+      "performance",
+      "caching",
+      "routing"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 LLM 服务中，成本与性能（延迟/吞吐）常存在权衡。关于通过缓存与路由优化成本同时保障性能的策略，下列说法正确的有？（多选）",
+    "explanation": "前缀缓存命中可大幅降延迟与成本，路由将简单请求分流至小模型，复杂请求保留大模型，二者结合可在成本与性能间取得平衡。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对高频重复的 System Prompt 与上下文开启前缀缓存，可显著降低首字延迟并节省重复计算成本",
+          "通过模型路由将简单请求分流至小模型，复杂请求保留给大模型，可在保障质量的同时降低平均成本",
+          "成本优化必然导致性能下降，二者无法兼顾",
+          "缓存与路由会增加系统复杂度，因此在任何场景下都不应使用"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "缓存与路由可在成本与性能间取得平衡，非必然对立。"
+      }
+    }
+  }
+]

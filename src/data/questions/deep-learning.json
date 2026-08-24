@@ -1,0 +1,752 @@
+[
+  {
+    "id": "code-01",
+    "category": "deep-learning",
+    "topic": "softmax",
+    "tags": [
+      "numpy",
+      "softmax",
+      "numerical-stability"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "用 Python（可借助 numpy）实现一个数值稳定的 softmax 函数，输入为一维 logits 数组，输出概率分布（和为 1）。",
+    "explanation": "考察数值稳定性（减去最大值）与归一化；这是面试高频基础题。",
+    "reference": {
+      "concept": "softmax 减去最大值再做指数，避免溢出。"
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "import numpy as np\ndef softmax(x):\n    x = np.asarray(x, dtype=float)\n    z = x - np.max(x)          # 减去最大值，避免指数溢出\n    e = np.exp(z)\n    return e / e.sum()\n关键：先做 max 平移再 exp，保证数值稳定；输出归一化到和为 1。",
+        "language": "python"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "数值稳定的关键是先把 logits 减去其最大值再做指数运算，最后将 exp 结果除以总和使输出概率之和为 1",
+          "数值稳定的关键是对 logits 取绝对值后再做指数运算，并把输出整体缩放到 0 到 255 区间内",
+          "数值稳定的关键是先用 sigmoid 把每个元素压到 0 到 1，再用 L2 范数代替求和做归一化",
+          "数值稳定的关键是在取指数之前给每个 logits 统一加上一个很大的常数，防止负数参与运算导致溢出"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "code-02",
+    "category": "deep-learning",
+    "topic": "gradient-descent",
+    "tags": [
+      "gradient-descent",
+      "linear-regression",
+      "training-loop"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "不用任何机器学习框架，用纯 Python/numpy 实现一元线性回归的批量梯度下降：给定 x、y 数组与学习率 lr、迭代次数 iters，返回拟合的 (w, b) 并尽量简洁。",
+    "explanation": "考察梯度推导、训练循环与向量化实现，是评估编码基本功的好题。",
+    "reference": {
+      "concept": "MSE 对 w/b 的闭式梯度 + 向量化更新。"
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "import numpy as np\ndef linear_fit(x, y, lr=0.01, iters=1000):\n    x, y = np.asarray(x), np.asarray(y)\n    n = len(x); w, b = 0.0, 0.0\n    for _ in range(iters):\n        yhat = w * x + b\n        dw = (2/n) * np.sum((yhat - y) * x)\n        db = (2/n) * np.sum(yhat - y)\n        w -= lr * dw; b -= lr * db\n    return w, b\n关键：MSE 对 w、b 的梯度推导正确，并用向量化更新。",
+        "language": "python"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "梯度应取 dw=Σ(ŷ−y)/x、db=n·Σ(ŷ−y)，因为损失采用的是未除以样本数的平方误差形式",
+          "正确做法是每轮随机抽取单个样本计算梯度并据此更新，批量计算反而会破坏收敛性",
+          "实现时应在迭代中逐步放大学习率，并把偏置 b 固定为样本均值不再参与更新",
+          "关键在于推导 MSE 对 w、b 的梯度 dw=(2/n)Σ(ŷ−y)x、db=(2/n)Σ(ŷ−y)，并用向量化方式执行参数更新迭代"
+        ],
+        "answer": [
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "dl-01",
+    "category": "deep-learning",
+    "topic": "activation",
+    "tags": [
+      "relu",
+      "activation",
+      "gradient"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
+    "explanation": "ReLU 在正区间梯度恒为 1，缓解深层网络中的梯度消失，且计算只需阈值判断，速度快。它不保证全局最优。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "输出范围在 0 到 1 之间，便于概率解释",
+          "缓解梯度消失问题，计算简单",
+          "一定能保证模型收敛到全局最优",
+          "对输入做了归一化处理"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：缓解梯度消失问题，计算简单。\n\n解析：ReLU 在正区间梯度恒为 1，缓解深层网络中的梯度消失，且计算只需阈值判断，速度快。它不保证全局最优。"
+      }
+    }
+  },
+  {
+    "id": "dl-02",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "backprop",
+      "gradient",
+      "training"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "关于反向传播（backpropagation），下列说法正确的有哪些？（多选）",
+    "explanation": "反向传播基于链式法则，适用于任何可微计算图（含 CNN/RNN），用于计算梯度并更新参数；并非只限于全连接网络。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "它基于链式法则计算损失对各参数的梯度",
+          "仅在全连接网络中可用，卷积网络不能用",
+          "梯度用于沿损失下降方向更新参数",
+          "它属于有监督训练中的核心算法"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：它基于链式法则计算损失对各参数的梯度；梯度用于沿损失下降方向更新参数；它属于有监督训练中的核心算法。\n\n解析：反向传播基于链式法则，适用于任何可微计算图（含 CNN/RNN），用于计算梯度并更新参数；并非只限于全连接网络。"
+      }
+    }
+  },
+  {
+    "id": "dl-03",
+    "category": "deep-learning",
+    "topic": "batch-norm",
+    "tags": [
+      "batch-normalization",
+      "training",
+      "stability"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在训练深层神经网络时，批量归一化（Batch Normalization）的主要作用是？",
+    "explanation": "BN 通过对每层输入做归一化，缓解内部协变量偏移，使训练更稳定、可使用更高学习率，从而加速收敛；它不能彻底消除过拟合。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "BN 会取代原有的激活函数，网络不再需要非线性变换，因此可以顺手删掉所有激活层来简化结构",
+          "BN 通过对每层输入做归一化来稳定各层的输入分布，使训练更加稳定，从而能够使用更大的学习率加速收敛",
+          "加入 BN 后模型的过拟合问题将被彻底消除，可以同步取消验证集评估环节以进一步节省训练时间",
+          "BN 能显著减少模型的参数量，因此还能顺带降低显存占用与推理成本，一举两得"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "某医疗影像创业公司的算法团队在训练一个数十层的卷积网络时发现：损失曲线剧烈震荡，学习率稍微调大就会发散，被迫使用很小的学习率，导致收敛非常慢，而项目排期要求尽快缩短训练时间。团队讨论后决定在网络各层之间加入批量归一化（Batch Normalization）。关于这次调整的作用与预期效果，下列说法正确的是？"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：减小内部协变量偏移，稳定并加速训练。\n\n解析：BN 通过对每层输入做归一化，缓解内部协变量偏移，使训练更稳定、可使用更高学习率，从而加速收敛；它不能彻底消除过拟合。"
+      }
+    }
+  },
+  {
+    "id": "dl-05",
+    "category": "deep-learning",
+    "topic": "dropout",
+    "tags": [
+      "dropout",
+      "regularization"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
+    "explanation": "Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
+          "推理时通常关闭 Dropout 或使用期望缩放",
+          "它可以作为正则化手段缓解过拟合",
+          "它一定会使模型收敛更快"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：训练时随机丢弃部分神经元，相当于训练多个子网络集成；推理时通常关闭 Dropout 或使用期望缩放；它可以作为正则化手段缓解过拟合。\n\n解析：Dropout 训练时随机失活、近似集成并起正则化作用，推理时关闭或缩放；它不保证更快收敛。"
+      }
+    }
+  },
+  {
+    "id": "dl-07",
+    "category": "deep-learning",
+    "topic": "cross-entropy",
+    "tags": [
+      "lm-loss",
+      "sampling-estimation",
+      "streaming-training",
+      "linearity"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 LLM 流式预训练中，真实目标分布 p 无法预先统计（语料以采样形式到达）。若希望损失 L(p,q) 能通过采样估计（即写成 E_{i~p}[S(q,i)] 的形式），L 对 p 需满足什么数学约束？",
+    "explanation": "当且仅当 L(p,q) 关于 p 为线性函数时，Σ_i p_i·S(q,i) 才能写成期望 E_{i~p}[S(q,i)]，从而支持流式采样估计。Total Variation 等非线性度量因含 p_i 分母需预知全分布，无法 samplable。",
+    "reference": {
+      "concept": "损失对目标分布 p 线性 ⇒ Σ p_i S(q,i) 可改写为期望 E_{i~p}，这是流式预训练可用的充要约束；TV 等非线性度量不满足。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
+          "L(p, q) 关于目标分布 p 必须满足线性（Linear）约束",
+          "L(p, q) 在 p = q 处的二阶导数矩阵必须正定",
+          "预测概率分布 q 必须采用 Softmax 函数进行归一化"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：流式训练时真实分布 p 只能通过逐样本 i~p 体现。L 必须关于 p 线性（形如 Σ_i p_i·S(q,i)）才能把求和改写成采样期望 E_{i~p}[S(q,i)]，用单样本（或 minibatch）无偏估计损失与梯度。凸性/二阶正定是关于 q 的性质、Softmax 只是激活选择，都与能否采样化无关；Total Variation 等对 p 非线性的度量在采样形式中会出现未知分母 p_i，无法落地。"
+      }
+    }
+  },
+  {
+    "id": "dl-10",
+    "category": "deep-learning",
+    "topic": "softmax",
+    "tags": [
+      "brier-score",
+      "gradient-saturation",
+      "convexity",
+      "noise-robustness"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 Softmax 输出 q=Softmax(z) 上，比较交叉熵与 Brier 评分（平方损失）对 Logits z 的梯度特性，下列说法正确的有？（多选）",
+    "explanation": "交叉熵梯度为 q-e_i，距离目标越远梯度越大，无饱和。Brier 在 Softmax 下含 Jacobi 算子 (diag(q)-qqᵀ)，在自信错误（q 集中于错误类别）时趋零而饱和。",
+    "reference": {
+      "concept": "CE 梯度 q−e_i 无饱和且对 z 凸；Brier 含 (diag(q)−qqᵀ) 因子在自信错误时梯度消失、对 z 非凸，但后期天然抗噪。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "交叉熵对 z 的梯度为 ∇_z S(q,i) = q − e_i，当且仅当 q = e_i 时梯度为零，不存在因\"自信地预测错误\"而导致的梯度消失",
+          "Brier 评分梯度中包含变换矩阵 (diag(q) − qqᵀ)，当模型\"自信地预测错误\"（如 q = e_j ≠ e_i）时该矩阵趋近于零，会导致梯度消失（陷入饱和困境）",
+          "在 Softmax 激活下，交叉熵关于 Logits z 是凸函数，而 Brier 评分关于 z 是非凸函数",
+          "Brier 评分在训练初期学习效率极高，但在训练后期容易过拟合噪声样本",
+          "交叉熵更适合作为预训练的主损失函数，而 Brier 评分因其在\"自信错误\"时梯度小的特性，后期可能具备更好的抗噪声能力"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、E。\n\n要点：①CE 经 Softmax 反传后梯度恰为 q − e_i，误差越大梯度越大，永不饱和，且 CE 对 z 凸、有唯一极小（A、C）；②Brier 梯度带 Jacobi 算子 diag(q) − qqᵀ，概率推向错误端点时该矩阵趋于零矩阵，自信错误反而梯度消失（B）；③由此推演出分工：CE 学习效率高适合做主损失，Brier 前期学得慢但后期会自动\"跳过\"极难或噪声样本，呈现抗噪潜力（E）。D 把特性说反了——Brier 初期学习效率低而非极高，后期抗噪而非过拟合噪声。"
+      }
+    }
+  },
+  {
+    "id": "dl-13",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "intractable-posterior",
+      "bayes-rule",
+      "variational-inference"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "VAE 中真实的后验分布 p(z|x) 是\"不可直接计算/采样的（Intractable）\"，其根本数学原因是？",
+    "explanation": "根据贝叶斯定理 p(z|x) = p(x|z)p(z)/p(x)，求分母 p(x) 需要对所有可能隐向量 z 边缘化求解积分 ∫p(x|z)p(z)dz。在大维度隐空间中该全空间积分在计算上不可行（Intractable），因此 VAE 引入编码器拟合变分后验 q(z|x) ≈ N(μ, σ²) 来绕过该积分。",
+    "reference": {
+      "concept": "后验不可积的根因：贝叶斯分母 p(x)=∫p(x|z)p(z)dz 是全隐空间高维积分，无法解析/数值求解，故用变分分布 q(z|x) 近似绕开。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐空间维度过高导致求解协方差矩阵逆矩阵时超内存",
+          "贝叶斯公式中的分母（数据边际概率）p(x) = ∫p(x|z)p(z)dz 需要在全隐空间做全积分，高维连续空间下无法计算",
+          "隐变量先验 p(z) 无法假设为多元高斯分布 N(0, I)",
+          "解码器概率分布 p(x|z) 包含非线性激活函数，无法写出解析式"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：p(z|x) = p(x|z)p(z)/p(x)，问题出在分母 p(x)=∫p(x|z)p(z)dz——它要对整个连续高维隐空间做边缘化积分，既无解析解也难以数值计算，这就是 Intractable 的确切含义。VAE 的应对：不直接算后验，而是用编码器输出 q(z|x)≈N(μ,σ²) 做变分近似，把问题转化为优化 ELBO。A 的矩阵求逆、C 的先验形式（N(0,I) 恰恰是标准假设）、D 的解码器解析性都不是根因。"
+      }
+    }
+  },
+  {
+    "id": "dl-14",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "elbo",
+      "evidence-lower-bound",
+      "kl-decomposition"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "在 VAE 推导数据对数边际似然 log p(x) 的过程中，正确表示其与证据下界（ELBO）及 KL 散度关系的公式是？",
+    "explanation": "经过概率展开与积分变换，log p(x) 拆解为：log p(x) = ( E_{q(z|x)}[log p(x|z)] − D_KL(q(z|x) ∥ p(z)) ) + D_KL(q(z|x) ∥ p(z|x))。括号内第一部分即为 ELBO，第二部分为编码器变分分布 q(z|x) 与真实后验 p(z|x) 之间的 KL 散度。由于 KL 散度恒有 D_KL ≥ 0，因此 log p(x) ≥ ELBO。",
+    "reference": {
+      "concept": "恒等式 log p(x) = ELBO + D_KL(q(z|x)∥p(z|x))；KL≥0 ⇒ ELBO 是下界；ELBO 本身 = 重构项 − KL(q∥p(z))。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "log p(x) = ELBO − D_KL(q(z|x) ∥ p(z|x))",
+          "log p(x) = ELBO + D_KL(q(z|x) ∥ p(z|x))",
+          "log p(x) = ELBO + D_KL(p(z|x) ∥ q(z|x))",
+          "log p(x) = ELBO − D_KL(q(z|x) ∥ p(z))"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：核心恒等式 log p(x) = ELBO + D_KL(q(z|x)∥p(z|x))，其中 ELBO = E_{q(z|x)}[log p(x|z)] − D_KL(q(z|x)∥p(z))（重构项减去与先验的 KL）。由 D_KL ≥ 0 得 log p(x) ≥ ELBO，故称证据下界；且当且仅当 q 与真实后验重合时取等号。注意两个 KL 方向与位置不能混：与真实后验的 KL 在等式右侧（衡量近似误差），与先验 p(z) 的 KL 在 ELBO 内部（充当正则项）。D 项符号与对象都不对。"
+      }
+    }
+  },
+  {
+    "id": "dl-15",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "gaussian-likelihood",
+      "mse-equivalence",
+      "reconstruction-loss"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "VAE 训练目标中的重构项 E_{q(z|x)}[log p(x|z)] 在数学推导上可等价于最小化均方误差（MSE），这一结论建立在以下哪个关键假设之上？",
+    "explanation": "当假设 p(x|z) 为均值为 x̂（解码器预测图）的高斯分布时，其概率密度对数形式展开包含 −(x − x̂)²/(2σ²)。在方差 σ 视为常数的情况下，最大化该对数似然在数值优化方向上完全等价于最小化 MSE 损失函数 (x − x̂)²。",
+    "reference": {
+      "concept": "重构项=MSE 的前提：p(x|z) 取方差固定、均值 x̂ 的高斯似然 ⇒ log 似然展开出 −(x−x̂)²/(2σ²)，常数系数不影响优化方向。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐变量先验 p(z) 服从标准多元高斯分布 N(0, I)",
+          "编码器近似分布 q(z|x) 为完全独立的不相干分布",
+          "解码器的似然概率分布 p(x|z) 服从方差固定、均值为解码器输出 x̂ 的多元高斯分布",
+          "编码器输出的方差 σ² 恒等于 1"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n\n要点：MSE 等价性来自对解码器似然的假设而非先验或编码器：令 p(x|z) = N(x̂, σ²I) 且 σ 视为常数，则 log p(x|z) 展开后含 −(x−x̂)²/(2σ²) 项，去掉常数系数后最大化对数似然 ⇔ 最小化 MSE。若换成立伯努利似然则对应交叉熵/BCE 重构损失——重构损失形态完全由似然假设决定。A 是 KL 正则项可写成闭式的来源，与本问无关。"
+      }
+    }
+  },
+  {
+    "id": "dl-16",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "reparameterization-trick",
+      "gradient-flow",
+      "sampling"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于 VAE 中\"重参数化技巧（Reparameterization Trick）\"的理解，下列说法正确的有？（多选）",
+    "explanation": "重参数化技巧并未消除随机性，随机性依然由外部节点 ε ~ N(0, I) 提供。它的本质是将带参数的随机采样过程转换为\"确定的可导函数运算（μ + σ·ε）+ 无参数的独立外部随机输入（ε）\"，使反向传播路径畅通。",
+    "reference": {
+      "concept": "重参数化 z = μ + σ⊙ε：采样节点不可导阻断计算图 ⇒ 把随机性外移到无参 ε，梯度经确定性变换流回 μ、σ。随机性并未消失。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "解决的核心难题是直接从概率分布中采样节点是不可导的，阻断了反向传播计算图",
+          "将隐向量表达重构为 z = μ + σ ⊙ ε，其中 ε ~ N(0, I)",
+          "该技巧完全消除了隐空间中的概率随机性，使其退化为确定的数值映射",
+          "该变换使得梯度可以顺畅地通过链式法则传递给编码器预测的均值 μ 与方差 σ"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n要点：直接从 N(μ,σ²) 采样的节点对 μ、σ 不可导，反向传播在此断裂（A）。重参数化把采样改写为 z = μ + σ⊙ε，随机源 ε~N(0,I) 成为无参数的外部输入（B）；于是从损失到 μ、σ 的路径全是确定性的可导运算，梯度经链式法则顺畅回传到编码器（D）。C 错误：随机性没有被消除，只是被移出了可导路径之外——模型仍是生成式随机映射，这正是 VAE 区别于 AE 的关键。"
+      }
+    }
+  },
+  {
+    "id": "dl-17",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "elbo-tug-of-war",
+      "posterior-collapse",
+      "latent-space-regularization"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在 VAE 的损失函数优化中，关于重构项与 KL 散度正则化项（D_KL(q(z|x) ∥ p(z))）的作用与关系，下列说法正确的有？（多选）",
+    "explanation": "若移除 KL 项，编码器映射点会失去聚拢约束，隐空间出现大量无定义空隙（退化为 Vanilla AE）。KL 项强制隐空间分布逼近 N(0, I)，使推理阶段可直接从标准高斯采样生成新数据。重构项促使隐向量保持不同输入之间的区别度与细节还原度。两者相互对抗平衡：KL 权重过大时后验崩溃，生成模糊。",
+    "reference": {
+      "concept": "重构项保区分度 ↔ KL 项压向 N(0,I) 保生成连续性；KL 过强 ⇒ 后验崩溃、图像模糊；无 KL ⇒ 退化为 AE、隐空间有空洞。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "若移除 KL 项，编码器映射点会趋向于确定性点，隐空间出现大量无定义空隙（退化为 Vanilla AE）",
+          "KL 项强制隐空间分布逼近 N(0, I)，使得在推理阶段可以直接从标准高斯分布采样生成新数据",
+          "重构项促使隐向量保持不同输入图片之间的区别度与细节还原度",
+          "KL 散度权重设置得越大，解码器生成的图像细节越丰富、越清晰"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n要点：两项是相互制约的博弈关系。重构项要求隐向量携带足够信息区分不同输入、还原细节（C）；KL 正则项把聚合后验整体拉向 N(0,I)，保证隐空间连续且\"空洞处\"也有定义，从而推理时直接从标准高斯采样就能生成合理样本（B）。去掉 KL 就退回 Vanilla AE：隐空间布满无定义空隙、不能随机采样生成（A）。D 把方向说反了——KL 权重过大时编码器忽略输入、所有后验塌缩到先验（Posterior Collapse），解码器只会输出模糊图像；细节清晰恰恰需要相对更小的 KL 权重。"
+      }
+    }
+  },
+  {
+    "id": "dl-18",
+    "category": "deep-learning",
+    "topic": "backprop",
+    "tags": [
+      "inference-pipeline",
+      "cvae",
+      "conditional-generation"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "训练完成后的 VAE 推理过程及条件变分自编码器（CVAE）扩展中，下列说法错误的是？",
+    "explanation": "生成\"全新\"图像（Inference）时不需要真实图片作为输入，也不使用编码器。只需从已知先验分布 N(0, I) 中直接随机采样隐向量 z 并输入解码器即可。选项 D 描述的是图像\"重构/重建\"或训练阶段的流程。",
+    "reference": {
+      "concept": "纯生成阶段只用解码器：z ~ N(0,I) 直接喂 Decoder；Encoder 只在训练/重构时使用。CVAE 在训练与推理两端都拼接条件向量。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在无条件 VAE 纯生成图像阶段，完全不需要使用编码器（Encoder）网络",
+          "推理生成时，从先验分布 p(z) = N(0, I) 中随机采样 z，直接喂给解码器即可生成图像",
+          "在 CVAE 中，为了受控地生成特定类别图像，需要在训练和推理时将条件向量拼接给编码器和解码器",
+          "推理阶段必须先将真实图片输入编码器得到 μ 和 σ，再进行重参数化采样 z 才能生成新图片"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：D（说法错误的选项）。\n\n要点：训练与推理的网络结构不同——推理（无条件生成新图）只需要解码器：从先验 N(0,I) 直接采样 z 送入 Decoder 即可（A、B 正确），不需要真实图片，也不需要 Encoder；\"先过 Encoder 求 μ、σ 再重参数化\"是训练或图像重建的流程，不是全新样本的生成流程。CVAE 中条件向量（如类别标签）需同时注入两端：训练时拼给 Encoder 与 Decoder 对齐条件语义，推理时拼给 Decoder 实现受控生成（C 正确）。"
+      }
+    }
+  },
+  {
+    "id": "llm-18",
+    "category": "deep-learning",
+    "topic": "residual-connections",
+    "tags": [
+      "residual-stream",
+      "mhc",
+      "attention-residuals",
+      "deep-transformer",
+      "gradient-flow"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "某架构说明提到两类改善深层 Transformer 信息流动的设计：mHC 把单一 residual stream 拓宽为数条并行通路；Attention Residuals 把此前若干层的输出经类注意力的加权聚合后注入当前层。关于两者的说法正确的有哪些？（多选）",
+    "explanation": "两者解决的是同一个深层网络问题——信息与梯度的跨层传递，但路径结构不同：mHC 是静态拓宽残差通路，Attention Residuals 是按内容动态聚合历史层输出。后者引入额外 attention 计算与激活占用，属于以计算换表达能力的结构性改进，不应计入推理效率优化。",
+    "reference": {
+      "concept": "mHC：静态拓宽 residual pathways；Attention Residuals：动态加权聚合多层输出。同目标（深层信号传递）、异结构，后者以额外计算换表达能力。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "两者针对的都是深层网络的信息与梯度跨层传递问题，但路径结构不同：mHC 静态拓宽通路，Attention Residuals 按内容动态聚合历史层输出",
+          "Attention Residuals 引入了额外的 attention 计算，属于以计算换取表达能力的结构性改进，不应归类为推理效率优化",
+          "mHC 的多条通路在数学上等价于直接堆叠更多层数，两者可以互相替代",
+          "两者的首要收益都是缩小 KV cache，因此常被用作长上下文的显存优化手段"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "评审会上两位工程师争论：\"这两个设计不就是一回事吗，都是让残差连接多几条路？\"下列哪些说法可以作为专业回应？（请选择以下两个选项）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：共同目标是深层信号/梯度传递；mHC=静态多条并行残差通路，Attention Residuals=对历史层输出的内容感知加权聚合；后者有额外计算成本、属于质量导向改进。\n\n解析：深层 Transformer 的核心困难是信息与梯度要穿越几十上百个层，单一 residual stream 是唯一的高速公路，容易拥堵也容易被单层破坏。两条技术路线：①mHC 把一条 stream 拓宽成多条并行通路，每条通路可独立携带不同粒度的信号，层间读写时跨通路组合——静态结构、推理开销小；②Attention Residuals 则让当前层像做注意力一样回看此前若干层的输出并加权聚合——动态、内容感知，能跳过有害层，但每次都要付出额外 attention 计算与激活内存。判断的关键：前者基本不影响计算画像，后者明确增加计算量换取表达/优化能力，把它算进 inference optimization 清单是分类错误。"
+      }
+    }
+  },
+  {
+    "id": "llm-24",
+    "category": "deep-learning",
+    "topic": "activation",
+    "tags": [
+      "swiglu",
+      "softcap",
+      "numerical-stability",
+      "moe"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 MoE 架构中，传统 SwiGLU 激活因门控与线性分支同向对齐易产生极值膨胀。如何通过平滑截断（Softcap）设计缓解该数值不稳定性？",
+    "explanation": "SwiGLU 中门控与线性分支同向对齐会引发 O(‖x‖⁴) 极值。通用做法是将 SiLU 替换为带 Softcap 的 SiTU（softcap(x)=β·tanh(x/β)），并对门控与线性分支均施加平滑截断。相比 Hard Clip，Softcap 在约束数值界限的同时保留梯度连续性。",
+    "reference": {
+      "concept": "SiTU-GLU 以 Softcap 平滑截断缓解 SwiGLU 极值。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "采用 Hard Clip 将门控与线性分支强制截断在 [−1, 1] 之间",
+          "使用 SiTU 替换 SiLU，并对门控部分与线性分支均施加基于 softcap(x; β) = β·tanh(x/β) 的平滑截断",
+          "在 SwiGLU 前后引入 LayerNorm 以强制归一化特征向量",
+          "增大 SwiGLU 权重矩阵的 Weight Decay 以约束模长"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：SwiGLU 的门控分支（σ(W₁x)⊙W₁x）与线性分支 W₂x 同向对齐时，输出按 ‖x‖ 的四次方量级膨胀，产生训练极值。K3 的方案是 SiTU-GLU：①激活从 SiLU 换成 SiTU，即 softcap(x;β)·σ(x)；②门控与线性两个分支都过 softcap(β·tanh(x/β)) 做平滑截断。选 softcap 而非 Hard Clip 的原因是 tanh 形式处处可导、梯度连续性好，在压住数值上界的同时不损伤优化动力学；LayerNorm/Weight Decay 是间接手段，治标不治本。"
+      }
+    }
+  },
+  {
+    "id": "ml-01",
+    "category": "deep-learning",
+    "topic": "overfitting",
+    "tags": [
+      "overfitting",
+      "evaluation",
+      "generalization"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
+    "explanation": "过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。",
+    "reference": {
+      "concept": "过拟合是模型在训练集上过度拟合噪声，泛化能力下降。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "训练集误差很低，但验证集误差很高",
+          "训练集和验证集误差都很高",
+          "训练集误差很高，验证集误差很低",
+          "模型在训练集上无法收敛"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：训练集误差很低，但验证集误差很高。\n\n解析：过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。"
+      }
+    }
+  },
+  {
+    "id": "ml-02",
+    "category": "deep-learning",
+    "topic": "regularization",
+    "tags": [
+      "regularization",
+      "overfitting",
+      "l1",
+      "l2"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "以下哪些方法可用于缓解过拟合？（多选）",
+    "explanation": "增加数据、正则化、简化模型都能缓解过拟合；提高学习率通常不利于稳定收敛，不是缓解过拟合的手段。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "增加训练数据量",
+          "使用 L1/L2 正则化",
+          "减少模型参数量或降低复杂度",
+          "提高学习率"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：增加训练数据量；使用 L1/L2 正则化；减少模型参数量或降低复杂度。\n\n解析：增加数据、正则化、简化模型都能缓解过拟合；提高学习率通常不利于稳定收敛，不是缓解过拟合的手段。"
+      }
+    }
+  },
+  {
+    "id": "ml-03",
+    "category": "deep-learning",
+    "topic": "overfitting",
+    "tags": [
+      "bias",
+      "variance",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "关于偏差（bias）与方差（variance）的权衡，下列说法正确的是？",
+    "explanation": "偏差高代表模型假设空间不足（欠拟合），方差高代表对训练数据敏感（过拟合），二者通常存在权衡关系。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "高偏差通常对应模型过于复杂",
+          "高方差通常对应模型过于简单",
+          "高偏差模型往往欠拟合，高方差模型往往过拟合",
+          "偏差和方差总是同时增大"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：高偏差模型往往欠拟合，高方差模型往往过拟合。\n\n解析：偏差高代表模型假设空间不足（欠拟合），方差高代表对训练数据敏感（过拟合），二者通常存在权衡关系。"
+      }
+    }
+  },
+  {
+    "id": "ml-04",
+    "category": "deep-learning",
+    "topic": "overfitting",
+    "tags": [
+      "evaluation",
+      "cross-validation"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "请解释交叉验证（cross-validation）的作用，并说明 k 折交叉验证的基本流程。",
+    "explanation": "重点考察对评估方法的理解：重复使用数据、降低评估方差、流程的轮转机制。",
+    "reference": {
+      "concept": "交叉验证通过多次复用数据，降低单次划分带来的评估方差。"
+    },
+    "formats": {
+      "open": {
+        "referenceAnswer": "交叉验证用于更稳健地评估模型在未知数据上的泛化能力，减少因单次训练/测试划分带来的随机性。k 折交叉验证将数据集平均分成 k 份，每次取其中 1 份作为验证集、其余 k-1 份作为训练集，重复 k 次后取各次指标的平均值作为最终评估。常见取值 k=5 或 10。"
+      },
+      "choice": {
+        "type": "single",
+        "options": [
+          "只训练一次模型，让同一份数据既充当训练集又充当验证集，从根本上消除划分带来的波动",
+          "采用 k 折交叉验证：把数据均分为 k 份，每次留 1 份做验证、其余 k-1 份训练，重复 k 次后对各折指标取平均，降低单次划分的偶然性",
+          "每一折都重新随机划分数据，重复 k 次后挑选成绩最好的一折写入评估报告，以增强对管理层的说服力",
+          "交叉验证的主要价值是把有效训练数据成倍放大从而降低偏差，且评估结果与数据划分方式完全无关"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "一家医疗 AI 初创公司仅有 600 例标注影像可用于训练分类模型。团队发现每次随机做一次训练/验证划分，验证集 AUC 都会波动好几个百分点，导致无法判断算法改动是否真的带来提升，管理层也开始质疑评估结论的可信度。在标注数据短期内无法扩充的前提下，最合理的评估改进方案是什么？"
+      }
+    }
+  },
+  {
+    "id": "stat-02",
+    "category": "deep-learning",
+    "topic": "gradient-descent",
+    "tags": [
+      "optimization",
+      "sgd",
+      "mini-batch"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于梯度下降，下列说法正确的有哪些？（多选）",
+    "explanation": "BGD 用全量、SGD 用单样本且噪声大、mini-batch 折中；学习率过大反而可能不收敛，并非越大越好。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "批量梯度下降每次使用全部样本计算梯度",
+          "随机梯度下降（SGD）每次使用一个样本，噪声较大",
+          "学习率越大收敛一定越快越好",
+          "迷你批量（mini-batch）是二者的折中"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：批量梯度下降每次使用全部样本计算梯度；随机梯度下降（SGD）每次使用一个样本，噪声较大；迷你批量（mini-batch）是二者的折中。\n\n解析：BGD 用全量、SGD 用单样本且噪声大、mini-batch 折中；学习率过大反而可能不收敛，并非越大越好。"
+      }
+    }
+  },
+  {
+    "id": "stat-03",
+    "category": "deep-learning",
+    "topic": "cross-entropy",
+    "tags": [
+      "loss",
+      "cross-entropy",
+      "classification"
+    ],
+    "difficulty": "hard",
+    "angle": "definition",
+    "question": "在概率模型中，交叉熵（cross-entropy）损失常用于分类，其本质是？",
+    "explanation": "交叉熵衡量两个概率分布的差异，最小化交叉熵等价于最小化 KL 散度（忽略与参数无关的常数项）。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "预测值与真实值差的平方",
+          "真实分布与预测分布之间 KL 散度的组成部分，衡量分布差异",
+          "样本数量的对数",
+          "模型参数的 L2 范数"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案要点：真实分布与预测分布之间 KL 散度的组成部分，衡量分布差异。\n\n解析：交叉熵衡量两个概率分布的差异，最小化交叉熵等价于最小化 KL 散度（忽略与参数无关的常数项）。"
+      }
+    }
+  }
+]

@@ -1,0 +1,71 @@
+[
+  {
+    "id": "eth-09",
+    "category": "tool-security",
+    "topic": "tool-security",
+    "tags": [
+      "supply-chain",
+      "sbom",
+      "sca",
+      "third-party-dependency"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "开发 Agent 应用时，团队集成了第三方开源 Agent 工具包、预训练微调权重以及 HuggingFace 上的 Prompt 模板。后续发现其中一个第三方向量转换依赖库包含恶意的远程代码执行（RCE）后门。这属于 OWASP LLM 中的哪类风险，应如何防护？",
+    "explanation": "LLM 生态高度依赖第三方 Model Weights、Agent 工具库、向量库和 Prompt 模板。供应链防护要求建立完整的 SBOM（软件物料清单）管理、依赖库漏洞扫描（SCA）、验证模型 Hash 签名，并将第三方 Tool 执行环境限制在沙箱容器中。",
+    "reference": {
+      "concept": "供应链风险：SBOM 管理 + SCA 漏洞扫描 + 模型 Hash 签名校验 + 第三方组件沙箱隔离执行。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不安全的插件设计（Insecure Plugin Design）；仅通过运行日志监控防范",
+          "供应链风险（Supply Chain Vulnerabilities）；对模型权重、第三方 Component、依赖包建立 SBOM 审计、签名验证与静态代码扫描",
+          "训练数据污染（Training Data Poisoning）；对微调数据集实施数据清洗",
+          "过度依赖（Overreliance）；建立人工复核流程"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：风险经由第三方依赖（工具包/权重/Prompt 模板/向量转换库）进入系统，属于 OWASP LLM 的供应链风险（Supply Chain Vulnerabilities）。防护体系：①建立 SBOM（软件物料清单），覆盖传统依赖包与模型权重、数据集等 AI 资产；②SCA 依赖漏洞扫描 + 第三方代码静态审计；③下载的模型权重校验 Hash/签名，从可信镜像源获取；④第三方 Tool/依赖的执行环境沙箱化（容器隔离、最小网络权限），降低后门爆发半径。日志监控只能事后发现，数据清洗与人工复核分别对应其他风险类目。"
+      }
+    }
+  },
+  {
+    "id": "tool-security-01",
+    "category": "tool-security",
+    "topic": "tool-security",
+    "tags": [
+      "tool-security",
+      "sandbox",
+      "privilege",
+      "validation"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个具备代码执行与文件操作能力的 Agent 被赋予“自动修复 bug 并提交 PR”的权限。关于如何防止工具滥用与越权，下列设计正确的有？（多选）",
+    "explanation": "需最小权限、参数校验、沙箱隔离与人工审计，防止工具滥用与逃逸。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为每个工具定义最小权限边界，仅授予完成当前任务必需的文件与网络访问范围",
+          "在工具调用前对参数进行模式校验与合法性检查，拒绝越权路径或危险指令",
+          "将代码执行置于沙箱容器中隔离，限制文件系统与网络出向，并记录审计日志",
+          "为提升自主性，应赋予 Agent 宿主机 Root 权限并关闭所有校验以避免阻塞"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需最小权限、参数校验、沙箱隔离与审计，而非 Root 权限。"
+      }
+    }
+  }
+]
