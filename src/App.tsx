@@ -35,6 +35,7 @@ import AgentInterviewPage from './components/agent/AgentInterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
 import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
+import CopilotSidebar from './components/copilot/CopilotSidebar';
 
 type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
 type Phase = 'home' | 'quiz' | 'result';
@@ -89,6 +90,7 @@ export default function App() {
   const [prevOverall, setPrevOverall] = useState<number | null>(null);
   /** 自适应模式：每题的出题策略（与 questions 顺序对应） */
   const [strategies, setStrategies] = useState<(Strategy | undefined)[]>([]);
+  const [copilotOpen, setCopilotOpen] = useState(false);
 
   // 用 ref 保存最新状态，供倒计时自动交卷 / 异步回调读取，避免闭包过期
   const answersRef = useRef(answers);
@@ -142,6 +144,12 @@ export default function App() {
 
   /** 自适应模式：当前已评分题数 = 游标（题目按顺序追加、按顺序作答）。 */
   const adaptiveCursor = session?.definition.adaptive ? Object.keys(grades).length : 0;
+  const copilotQuestion =
+    phase === 'quiz' && questions.length
+      ? session?.definition.adaptive
+        ? (questions[adaptiveCursor]?.question ?? questions[0]?.question ?? null)
+        : (questions[0]?.question ?? null)
+      : null;
 
   /**
    * 自适应模式的核心循环：评分当前题 → 记录作答信号 →
@@ -294,7 +302,7 @@ export default function App() {
   }, [phase, timeLimitSec, sessionStartedAt, doSubmit, message]);
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Layout.Header
         style={{
           display: 'flex',
@@ -324,6 +332,14 @@ export default function App() {
               {configReady ? 'AI ✓' : 'AI 未配置'}
             </Button>
           )}
+          <Button
+            type={copilotOpen ? 'primary' : 'default'}
+            size="small"
+            icon={<CommentOutlined />}
+            onClick={() => setCopilotOpen((v) => !v)}
+          >
+            ✨ Copilot
+          </Button>
         </Space>
       </Layout.Header>
 
@@ -337,7 +353,18 @@ export default function App() {
         />
       )}
 
-      <Layout.Content style={{ padding: 24, maxWidth: 980, margin: '0 auto', width: '100%' }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+        <Layout.Content
+          style={{
+            padding: 24,
+            maxWidth: 980,
+            margin: '0 auto',
+            width: '100%',
+            flex: 1,
+            minWidth: 0,
+            overflowY: 'auto',
+          }}
+        >
         {loadingProfile ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
             <Spin size="large" tip="正在加载学习记录…" />
@@ -470,6 +497,15 @@ export default function App() {
           </LearnerBound>
         )}
       </Layout.Content>
+        <CopilotSidebar
+          open={copilotOpen}
+          onClose={() => setCopilotOpen(false)}
+          config={config}
+          profile={profile}
+          session={session}
+          currentQuestion={copilotQuestion}
+        />
+      </div>
 
       {busy && (
         <div
