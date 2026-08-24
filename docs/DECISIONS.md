@@ -2,6 +2,21 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-034 · Agent 面试：pi-agent-core 作为面试决策运行时（并行于确定性 Engine）
+
+- 状态：已采纳 · 2026-08-24
+- 背景：先前架构评审曾误报 `@earendil-works/pi-agent-core` 为死依赖（当时 `src/` 确实未引用）。本决策启用它承载「选题 / 追问 / 结束」的自主决策循环，让 Agent 成为 Interview Runtime 的决策中心，而非 LLM 的附加能力。也是对「模拟面试」规则式 `decideStrategy`（deep-dive / gap-probe / broaden / move-on）的对照升级——把"下一题问什么 / 是否追问 / 何时收尾"交给 Agent 实时判断。
+- 决策：
+  - **新增独立运行时层 `src/agent/`**：`observe → decide → tool → observe` 循环；Agent 只做"不确定的决策"，确定性的选题 / 评分 / 读画像全部通过 `AgentTool` 薄包装现有 `domain` / `learner` / `evaluation` / `ai`，不新增业务决策逻辑。
+  - **评分不归 Agent**：选择题走 `gradeChoice`（确定性）、开放题走 `LLMProvider.evaluateOpenAnswer`（LLM），Agent 仅读取 `EvaluationResult`——沿用「分数所有权在 domain、LLM 不拥有分数」的既有边界。
+  - **持久化复用既有管线**：结束经 `sessionRecordFromAgent`（委托 `sessionFromQuiz`）→ `updateLearner` + `saveLearner`，写入同一份 `LearnerProfile`；进度页 / 推荐文案无需改动即可消费 Agent 结果。
+  - **现有 4 页与确定性 `InterviewEngine` 全部保留**，Agent 是并行的新运行时，两者长期共存、互为对照。
+  - **工具参数 schema 用 TypeBox**（pi-agent-core 要求），与项目既有 Zod 不冲突；Agent 单 provider 起步，不接 `FallbackProvider`（避免过度设计）。
+  - **选择题 gap 不污染 Learner Memory 的契约**在 `sessionFromQuiz` 统一落实（Phase 1/2 修复成果被 Agent 路径复用）。
+  - `SessionRecord` 新增 `'agent'` mode（扩展 `schemas/interview.ts` 与 `schemas/learner.ts` 的枚举）。
+- 理由：让"下一题问什么 / 是否追问 / 何时结束"由 Agent 决策，比规则式 if/else 更贴合个性化面试；同时严格守住「Agent 做决策、domain 做执行」的分界，不把题库 / 评分 / 持久化 Agent 化，避免不可测黑盒。Agent 可读 `LearnerProfile` 作上下文（编排层权限），但 `LLMProvider` 仍不直接收 profile。
+- 验证：`src/agent/` 新增 `interviewAgent.test.ts` / `tools.test.ts`（mock `streamFn` 驱动完整 loop 停止、工具委托、选择题 gap 不污染）；`npm run test` / `npm run build` 全绿；新增「Agent 面试」导航项（第 5 项），既有 4 项不动。
+
 ## ADR-033 · 引入 Zod 4 作为数据边界校验层（分阶段迁移，不一次性全面 Zod 化）
 
 - 状态：已采纳 · 2026-08-24

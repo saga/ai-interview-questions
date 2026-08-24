@@ -5,6 +5,7 @@ import {
   ThunderboltOutlined,
   BarChartOutlined,
   CommentOutlined,
+  RobotOutlined,
   CheckCircleFilled,
 } from '@ant-design/icons';
 import { questionBank as bank } from './data/questionBank';
@@ -15,6 +16,7 @@ import type {
   InterviewSession,
   LearnerProfile,
   AIConfig,
+  SessionRecord,
 } from './types';
 import { emptyAnswer } from './domain/quiz';
 import { buildSession, evaluateSession, evaluateAnswer, nextAdaptiveStep } from './application/interviewEngine';
@@ -29,11 +31,12 @@ import SettingsPanel from './components/settings/SettingsPanel';
 import TrainingHome from './components/home/TrainingHome';
 import ProgressPage from './components/progress/ProgressPage';
 import InterviewPage from './components/interview/InterviewPage';
+import AgentInterviewPage from './components/agent/AgentInterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
 import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
 
-type Page = 'train' | 'progress' | 'interview' | 'settings';
+type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
 type Phase = 'home' | 'quiz' | 'result';
 
 /** 作答非空判定（选择题至少选一项，开放题至少有内容）。 */
@@ -46,6 +49,7 @@ const NAV_ITEMS = [
   { key: 'train', icon: <ThunderboltOutlined />, label: '训练' },
   { key: 'progress', icon: <BarChartOutlined />, label: '进度' },
   { key: 'interview', icon: <CommentOutlined />, label: '面试' },
+  { key: 'agent', icon: <RobotOutlined />, label: 'Agent 面试' },
   { key: 'settings', icon: <SettingOutlined />, label: '设置' },
 ];
 
@@ -209,6 +213,15 @@ export default function App() {
     void handleStart(def);
   };
 
+  /** Agent 面试结束后的落库：复用既有 Learner 管线，与确定性 engine 写入同一份画像。 */
+  const handleAgentComplete = (record: SessionRecord) => {
+    const prev = profileRef.current.sessions[0]?.overall ?? null;
+    const next = updateLearner(profileRef.current, record);
+    saveLearner(next);
+    setProfile(next);
+    setPrevOverall(prev);
+  };
+
   const handleRestart = () => {
     setSession(null);
     setAnswers({});
@@ -321,6 +334,16 @@ export default function App() {
 
         {phase === 'home' && page === 'settings' && (
           <SettingsPanel config={config} onSave={handleSaveConfig} />
+        )}
+
+        {phase === 'home' && page === 'agent' && (
+          <AgentInterviewPage
+            config={config}
+            profile={profile}
+            onComplete={handleAgentComplete}
+            onGoSettings={() => setPage('settings')}
+            onGoProgress={() => setPage('progress')}
+          />
         )}
 
         {phase === 'quiz' && session?.definition.adaptive && questions[adaptiveCursor] && (

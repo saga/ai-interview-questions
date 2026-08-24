@@ -2,7 +2,8 @@
 // 这里只描述「本次 Agent 面试的运行时会话」——App 拥有它，Agent 通过工具读写它。
 // 不依赖 React / LLM；纯类型，可单测。
 
-import type { AnswerValue, EvaluationResult, LearnerProfile, SessionQuestion } from '../types';
+import type { AnswerValue, EvaluationResult, LearnerProfile, SessionQuestion, SessionRecord } from '../types';
+import { sessionFromQuiz } from '../domain/learner';
 
 /** Agent 面试的运行状态。 */
 export type AgentStatus = 'running' | 'finished';
@@ -71,6 +72,29 @@ export function averageOverall(session: InterviewAgentSession): number {
   const vals = Object.values(session.evaluations).filter((e): e is EvaluationResult => e != null);
   if (vals.length === 0) return 0;
   return Math.round(vals.reduce((a, e) => a + e.overall, 0) / vals.length);
+}
+
+/**
+ * 把一次 Agent 面试的运行时会话转化为可持久化的 SessionRecord，
+ * 复用现有 `sessionFromQuiz`（选择题 gap 截断、overall 聚合等契约一并生效）。
+ * - `questions`：本轮实际考察过的题（去重后的有序列表，由 UI 在 onQuestion 时累积）；
+ *   仅保留「已评分」的题作为结果，避免把用户未答/未评估的选题以 0 分污染 Learner Memory；
+ * - `evaluations`：按题目 id 收集，直接作为 grades 传入；
+ * - 选择题的 gap 不污染 Learner Memory（与既有 engine 行为一致）。
+ */
+export function sessionRecordFromAgent(
+  session: InterviewAgentSession,
+  questions: SessionQuestion[],
+  title = 'Agent 面试',
+  durationSec?: number,
+): SessionRecord {
+  const evaluatedIds = new Set(Object.keys(session.evaluations));
+  const asked = questions.filter((q) => evaluatedIds.has(q.question.id));
+  return sessionFromQuiz(
+    { questions: asked, startedAt: session.startedAt, definition: { title, mode: 'agent' } },
+    session.evaluations,
+    durationSec,
+  );
 }
 
 // LearnerProfile 在此仅作类型再导出，便于工具层直接引用，不引入运行时依赖。

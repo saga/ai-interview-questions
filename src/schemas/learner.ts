@@ -35,7 +35,7 @@ export const sessionRecordSchema = z.object({
   id: z.string().min(1),
   startedAt: z.number(),
   durationSec: z.number().nonnegative().optional(),
-  mode: z.enum(['quick', 'custom', 'coach', 'interview']).optional(),
+  mode: z.enum(['quick', 'custom', 'coach', 'interview', 'agent']).optional(),
   title: z.string().min(1),
   questionResults: z.array(questionResultSchema),
   overall: z.number().min(0).max(100),

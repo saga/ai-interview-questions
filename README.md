@@ -2,7 +2,7 @@
 
 **会记住你的训练表现，并根据薄弱项动态调整下一次训练的 AI 面试教练。**
 
-Vite + React 18 + TypeScript + Ant Design 单页应用（四页：训练 / 进度 / 面试 / 设置）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
+Vite + React 18 + TypeScript + Ant Design 单页应用（五页：训练 / 进度 / 面试 / Agent 面试 / 设置）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为「Agent 面试」的决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
 
 ## 功能
 
@@ -12,6 +12,7 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（四页：训练 / 进�
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
+- **Agent 面试**（第五页）：基于 `pi-agent-core` 的自主决策运行时——Agent 实时决定下一题问什么、是否追问、何时收尾；评分与 Learner 管线复用同一套，与规则式「模拟面试」并存（ADR-034）
 - 多引擎降级链：Chrome 内置模型 / 本地 Unsloth / 云端服务商可同时启用并排定优先级，失败自动降级到下一个（ADR-023）；密钥仅存浏览器 `localStorage`（「设置」页配置）
 ## 常用命令
 
