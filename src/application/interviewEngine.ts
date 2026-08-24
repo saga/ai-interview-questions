@@ -42,7 +42,7 @@ function effectiveFormats(def: InterviewDefinition, config?: AIConfig): FormatId
  * 由声明式 Definition 构建一次具体会话：
  * 先按 类别 / 难度 / 形态 过滤题池（题目保留任一允许形态即可），再组卷分配本次形态
  * （adaptive 模式只出第一题，后续由 nextAdaptiveStep 决定）；
- * 若启用 AI，则为每题生成变体——校验通过后落地到会话快照，失败则回退原题。
+ * 若启用 AI，则为每题生成变体并经 Knowledge Contract 校验（ADR-036，无兜底）。
  */
 function assertValidDefinition(def: InterviewDefinition): InterviewDefinition {
   const result = interviewDefinitionSchema.safeParse(def);
@@ -72,22 +72,13 @@ export async function buildSession(
   return { definition: validDef, questions, startedAt: Date.now() };
 }
 
-/** 为会话实例生成并校验 LLM 变体；无 provider / 校验失败 / 调用失败时一律回退原题。
- *  变体只改快照副本的题干与解析，题库对象与答案数据（options/answer/referenceAnswer）不动。 */
+/** 为会话实例生成并校验 LLM 变体（ADR-036）：无兜底，校验失败直接抛错。 */
 async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvider | null): Promise<SessionQuestion> {
   if (!provider) return sq;
-  try {
-    const v = await provider.generateVariant(sq.question);
-    const check = validateVariant(sq.question, v);
-    if (!check.ok) {
-      console.warn(`变体校验失败(${sq.question.id})，回退原题：${check.reason}`);
-      return sq;
-    }
-    return { ...sq, question: applyVariant(sq.question, v) };
-  } catch (err) {
-    console.warn(`变体生成失败(${sq.question.id})，回退原题：`, err);
-    return sq;
-  }
+  const v = await provider.generateVariant(sq.question);
+  const check = validateVariant(sq.question, v);
+  if (!check.ok) throw new Error(`变体校验失败(${sq.question.id}): ${check.reason}`);
+  return { ...sq, question: applyVariant(sq.question, v) };
 }
 
 /**

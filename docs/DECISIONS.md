@@ -2,6 +2,20 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-036 · 变体生成从字段白名单转向 Knowledge Contract 语义不变量（取代 ADR-019 变体约束）
+
+- 状态：已采纳 · 2026-08-24
+- 背景：ADR-019 将变体限制为“仅重写题干/解析，options/answer 禁止 LLM 触碰”，以字段级禁止杜绝答案错位。该模型把变体退化为改写，多样性被锁死（同一知识点无法换场景/重设 distractors），与 AI Trainer 利用 LLM 扩大题面多样性的目标冲突：用户已见过原题时可凭选项记忆作答。
+- 决策：
+  - **语义分层**：Invariant（`topic/tags/requiredConcepts/difficulty/type/intent/正确性`）不可变，Presentation（题干/场景/上下文/选项/distractors/解析/措辞）可自由重构；前者由 `domain/knowledge.requiredPointsFor` 提供的 `requiredConcepts` 锚定。
+  - **契约输入**：`ai/variant.ts` 的 user prompt 不再只发 `question/explanation`，改为同时注入 `Knowledge Contract`（topic/tags/requiredConcepts/difficulty/format）与完整 `Original`（question/options/answer/explanation）—— LLM 据契约而非据字段生成。
+  - **输出扩展**：`RawVariant` → `{question, options?, answer?, explanation}`；`GeneratedVariant` 同步扩展，`VariantCandidate` 为未校验中间态。
+  - **校验换安全**：`domain/variant.validateVariant` 从“题干非空”升级为结构（选项≥2无重复、answer 合法且与 `single/multiple` 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败直接抛错，**无兜底回退**（用户显式要求）。
+  - **落地**：`domain/variant.applyVariant` 按 choice/open 分支替换 `question/options/answer/explanation`；`application/interviewEngine.finalizeQuestion` 移除 `try/catch` 回退，校验失败即让 `buildSession` 失败。
+- 理由：安全边界应放在“不变量 + 验证”而非“禁止字段”—— 既保留答案正确性，又释放 LLM 的场景化与选项重塑能力；“LLM 提候选、domain 决定”与既有“分数所有权在 domain”一致，为后续 `pi-agent-core` 的自由生成提供可复用边界。
+- 不做的事：不引入语义向量相似度校验（成本高且阈值易武断），暂以浅层 required 关键词命中作 semantic 兜底；不改变 `difficulty` 带宽校验（仍为 invariant）。
+- 验证：`src/domain/variant.test.ts` 覆盖结构/越界/重复/自包含；`src/ai/variant.test.ts` mock `complete` 注入 contract 断言；`typecheck/build` 通过；失败变体不再静默回退，调用方可见错误。
+
 ## ADR-034 · Agent 面试：pi-agent-core 作为面试决策运行时（并行于确定性 Engine）
 
 - 状态：已采纳 · 2026-08-24

@@ -69,10 +69,20 @@ export interface QuestionBlueprint {
 }
 
 /**
- * LLM 生成的题目变体。安全模型（ADR-019）：LLM 只允许重写题干与解析。
+ * LLM 生成的题目变体候选（未校验）与已校验变体。
+ * 安全模型（ADR-036）：LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须保持 Knowledge Contract 不变量，输出需经 domain 校验。
  */
+export interface VariantCandidate {
+  question?: string;
+  options?: string[];
+  answer?: number[];
+  explanation?: string;
+}
+
 export interface GeneratedVariant {
   question: string;
+  options?: string[];
+  answer?: number[];
   explanation?: string;
 }
 

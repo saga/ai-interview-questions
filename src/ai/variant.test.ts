@@ -1,34 +1,41 @@
 // 变体生成测试：complete 注入后与底层无关（pi-ai / Chrome 均走同一逻辑）。
-// 覆盖：正常重写、LLM 输出残缺时用原题兜底、prompt 只携带题干/解析（答案不进契约）。
+// 覆盖：正常重写含 options、LLM 输出残缺时回退、prompt 携带 Knowledge Contract 与完整原题。
+// 安全模型（ADR-036）：LLM 可重构 Presentation，需保持 Knowledge Contract。
 
 import { describe, expect, it, vi } from 'vitest';
 import { generateVariant } from './variant';
-import type { ChoiceQuestion, CompleteFn } from '../types';
+import type { CompleteFn, Question } from '../types';
 
-const BASE: ChoiceQuestion = {
+const BASE: Question = {
   id: 'q1',
   category: 'machine-learning',
   topic: 'regularization',
   tags: [],
   difficulty: 'medium',
-  type: 'single',
   question: '什么是 L2 正则化？',
   explanation: 'L2 在损失中加入权重平方惩罚。',
-  options: ['A', 'B', 'C', 'D'],
-  answer: [0],
+  formats: { choice: { type: 'single', options: ['A', 'B', 'C', 'D'], answer: [0] } },
 };
 
 describe('generateVariant', () => {
-  it('解析 LLM 输出的 question/explanation', async () => {
-    const complete: CompleteFn = vi.fn(async () => '{"question":"L2 正则化的作用是？","explanation":"权重平方惩罚。"}');
+  it('解析 LLM 输出的 question/explanation/options/answer', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      '{"question":"L2 正则化的作用是？","options":["x","y","z","w"],"answer":[1],"explanation":"权重平方惩罚。"}',
+    );
     const out = await generateVariant(BASE, complete);
-    expect(out).toEqual({ question: 'L2 正则化的作用是？', explanation: '权重平方惩罚。' });
+    expect(out).toEqual({
+      question: 'L2 正则化的作用是？',
+      options: ['x', 'y', 'z', 'w'],
+      answer: [1],
+      explanation: '权重平方惩罚。',
+    });
     const [system, user] = (complete as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(system).toContain('面试官');
-    // 答案数据不进入提示词输出契约（ADR-019 安全模型）
+    expect(system).toContain('知识考察契约');
+    // 完整原题与契约进入提示词（ADR-036 语义不变量）
+    expect(user).toContain('requiredConcepts');
     expect(user).toContain('question');
-    expect(user).not.toContain('"answer"');
-    expect(user).not.toContain('options');
+    expect(user).toContain('options');
+    expect(user).toContain('answer');
   });
 
   it('LLM 输出缺字段时回退原题题干', async () => {

@@ -6055,5 +6055,232 @@
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：参数即记忆，减参降知识容量。\n- B：RAG外挂非参数化知识，避免无限扩参。\n- C：小模型抗噪弱，更需精排剪裁。\n- D 错误：合成数据提效不消参数天花板，容量仍受限。"
       }
     }
+  },
+  {
+    "id": "realtime-pipeline-01",
+    "category": "ai-engineering",
+    "topic": "realtime-interaction",
+    "tags": [
+      "pipeline",
+      "harness",
+      "vad",
+      "bitter-lesson",
+      "duplex",
+      "heuristic"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在基于传统管道架构（Pipeline / Harness）的语音 AI 系统中，通常由轻量级的语音活动检测（VAD）、语音转文本（STT）、单线程轮次制 LLM、文本转语音（TTS）及对话管理器组合而成。针对这种架构的局限性与瓶颈，以下说法正确的有？（多选）",
+    "explanation": "VAD仅声学无语义致无法语义打断、生成期感知冻结排队、Harness属Bitter Lesson启发式终被端到端取代；D称仅换STT/TTS即可双工错误。",
+    "reference": {
+      "concept": "管道瓶颈：语义缺失+感知冻结+Bitter Lesson演进。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "传统 VAD 仅依赖声学信号特征判断用户停顿，缺乏语义理解能力，因此无法原生支持“当我说话出现逻辑或语法错误时立刻打断我”这类基于语义正确性的主动打断逻辑",
+          "在 LLM 生成文本响应期间，系统的感知输入处于冻结状态，用户在 LLM 输出过程中提出的新音频或视觉修改只能入队等待下一次轮次处理",
+          "管道架构中的外围辅助模块（如 VAD、Dialog Manager）属于基于硬编码规则或小型专用模型的 Heuristics，根据 AI 领域的“苦涩的教训”（Bitter Lesson），此类人造启发式设计随着计算力与端到端模型规模扩展，最终会被原生端到端学习的模型所取代",
+          "管道架构的主要瓶颈在于 STT 和 TTS 的处理延迟，只要将 STT/TTS 替换为超低延迟算法，就能完全实现实时双工的并发听写与视觉打断能力"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：声学VAD无语义，无法逻辑纠错打断。\n- B：单线程轮次生成期感知冻结，新输入排队。\n- C：Bitter Lesson：启发式终被端到端学习取代。\n- D 错误：瓶颈在轮次互斥与语义感知，非仅STT/TTS延迟。"
+      }
+    }
+  },
+  {
+    "id": "realtime-micro-01",
+    "category": "ai-engineering",
+    "topic": "realtime-interaction",
+    "tags": [
+      "micro-turns",
+      "time-aligned",
+      "full-duplex",
+      "concurrency",
+      "latency"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "相比传统 LLM 将交互划分为离散的“用户发言 - 模型响应”轮次（Turn-based），采用“时间对齐微轮次”（Time-Aligned Micro-Turns，如按 200ms 切分时间片）的原生实时交互模型在架构上有显著区别。以下关于微轮次机制的分析，正确的有？（多选）",
+    "explanation": "微轮次以时间片并发收发可边听边说/边看边说、低轮次互斥致无法实时视觉打断、C称消除推理开销错误。",
+    "reference": {
+      "concept": "微轮次：时间片并发，原生全双工。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "微轮次将时间片作为基本处理单位，模型在每个时间片内同时感知多模态输入流并决策输出流，使输入和输出可以在时间轴上连续重叠并发发生",
+          "微轮次机制原生支持“边听边说”与“边看边说”，可直接用于实时口译、同声中途纠错以及动作实时计数（如俯卧撑打卡）",
+          "微轮次机制通过将时间切片，彻底消除了大语言模型在复杂长文本推理上的计算开销，从而不再需要考虑推理延迟",
+          "传统轮次制模型即使整体管道响应速度提升至 200ms 以内，由于其感知与生成在单次执行逻辑中互斥，依然难以原生支持在说话的同时基于视觉事件实时触发打断"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：时间片为单位，输入输出重叠并发。\n- B：原生全双工，适口译/纠错/计数。\n- D：轮次互斥致无法边说边感。\n- C 错误：切片不消计算，延迟仍需预算。"
+      }
+    }
+  },
+  {
+    "id": "realtime-dual-01",
+    "category": "ai-engineering",
+    "topic": "realtime-interaction",
+    "tags": [
+      "dual-model",
+      "foreground-background",
+      "fast-slow-path",
+      "streaming",
+      "weave"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在实时多模态交互系统中，为了同时满足 200ms 级别的极低响应延迟与长耗时的深度推理（如复杂工具调用、代码执行、联网搜索），架构师通常采用“前/后台双模型协作”（Foreground/Background Split）设计。其中前台为低延迟交互模型，后台为慢速推理模型。以下关于该模式系统工程细节的说法，正确的有？（多选）",
+    "explanation": "前台仅发最后一句错误，正确为后台异步流式回传、前台择机织入、类OS快慢路径。",
+    "reference": {
+      "concept": "双模型：前台实时+后台异步流式织入，快慢路径。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "前台交互模型负责维持实时对话流与状态，当检测到需要深层推理时，仅向后台模型发送用户最后一句话作为 Prompt，以最大化节省跨进程传输带宽",
+          "后台模型以异步方式运行，其推理与工具调用的中间及最终计算结果以流式（Streaming）形式实时回传给前台交互模型",
+          "前台交互模型收到后台模型的异步回传结果后，会根据当前对话的自然停顿或语义边界择机将结果平滑织入（Weave）对话，而非强制立刻打断当前输出",
+          "该模式在系统设计哲学上类似于操作系统中的“前台进程/后台进程”拆分或高频交易系统中的“快路径/慢路径”（Fast Path / Slow Path）权衡"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C、D。\n\n- B：后台异步+流式回传。\n- C：前台择机织入，非强制打断。\n- D：类OS/高频快慢路径。\n- A 错误：需共享上下文（历史+状态），非仅最后一句。"
+      }
+    }
+  },
+  {
+    "id": "realtime-native-01",
+    "category": "ai-engineering",
+    "topic": "realtime-interaction",
+    "tags": [
+      "multimodal",
+      "whisper",
+      "native-encoder",
+      "latency",
+      "end-to-end"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在构建支持连续音视频流的实时大模型时，设计团队放弃了外挂 Whisper 等重型预训练独立编码器（Pretrained Encoders）的传统方案，转而采用从零训练的轻量化音视频处理模块。做出这一设计决策的核心工程考量是？",
+    "explanation": "重型块式编码引入前级延迟且难与微轮次端到端联合优化，轻量化才适配连续流。",
+    "reference": {
+      "concept": "原生轻量化适配连续微轮次，重型块式难端到端。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "独立预训练编码器（如 Whisper）在物理上无法处理带有地方口音或背景噪声的音频输入",
+          "重型独立编码器通常基于较大粒度的离散块（Block-based）处理，会引入不可忽视的前级延迟，且难以与时间对齐的微轮次（Micro-turns）连续输入流进行端到端梯度的联合优化",
+          "轻量化音视频处理模块可以完全替代后台大模型的逻辑推理能力，从而在前端实现 0 参轻量化部署",
+          "使用独立编码器会导致文本模型的上下文窗口（Context Window）物理容量缩减 90% 以上"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n重型编码器块式处理致前级延迟，且与微轮次连续流难端到端联合优化；A口音不可处理误，C替代后台、D缩90%窗口误。"
+      }
+    }
+  },
+  {
+    "id": "realtime-bench-01",
+    "category": "ai-engineering",
+    "topic": "realtime-interaction",
+    "tags": [
+      "benchmark",
+      "dynamic-benchmark",
+      "time-trigger",
+      "interjection",
+      "visual-tracking"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "评测传统 LLM 主要关注静态准确率（如 MMLU、GSM8K），但对于支持“时间对齐微轮次”的原生实时交互模型，传统基准测试无法有效覆盖其核心能力。如果设计一套针对实时交互能力的基准测试（Benchmark），以下哪些场景和指标能有效评估此类架构的独特性与区分度？（多选）",
+    "explanation": "需时间触发、语义打断、并发视觉追踪；离线BLEU非区分。",
+    "reference": {
+      "concept": "动态评测：时间触发+打断时机+视觉并发。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "时间触发精准度（Time-based Initiation）：测试模型能否严格根据用户指定的相对时间间隔（如“每隔 4 秒提醒我呼吸一次”），在精确的时间点发起语音输出",
+          "打断与接话时机（Interjection Timing）：测试模型在用户持续发言过程中，能否在特定的语义/语境触发点（如用户发生语码转换或说错词）实时插入纠正",
+          "离线静态文本翻译 BLEU 得分：测试模型在无语音输入情况下对批量文本进行标准离线翻译的准确率",
+          "并发视觉事件追踪计数（Real-time Visual Tracking）：在实时视频流中，测试模型能否一边保持语音对话，一边对画面中的动态动作（如做俯卧撑的次数）进行无缝同步计数"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：时间对齐触发。\n- B：语义打断时机。\n- D：并发视觉追踪。\n- C 错误：离线BLEU非实时区分。"
+      }
+    }
+  },
+  {
+    "id": "realtime-bottleneck-01",
+    "category": "ai-engineering",
+    "topic": "realtime-interaction",
+    "tags": [
+      "production",
+      "context-window",
+      "network-jitter",
+      "latency-budget",
+      "active-parameters"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在将“连续音视频输入 + 时间对齐微轮次”的实时交互模型部署至生产环境时，系统工程师需要面对特定的性能瓶颈与架构约束。以下关于该架构生产环境局限性的分析，正确的有？（多选）",
+    "explanation": "高密度Token致Context爆满需流式缓存裁减、200ms强依赖网络、延迟预算限前台参数规模、D称彻底放弃API错误。",
+    "reference": {
+      "concept": "生产瓶颈：Context累积、网络敏感、延迟预算限参。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "上下文窗口快速累积：连续输入的音视频流在时间轴上会产生高密度的 Token 数据，在长会话（Long Session）场景下会导致 Context Window 迅速爆满，需依赖高效的流式会话缓存（Streaming Session Caching）与上下文裁减策略",
+          "对网络质量强依赖：由于要求 200ms 级别的双向音视频流式传输，网络抖动或丢包会导致交互体验发生严重阶跃式下降",
+          "模型规模受延迟预算约束：在严格的 200ms 实时响应 Budget 约束下，前台交互模型单次微轮次激活的参数量（Active Parameters）受到严格限制，难以直接部署千亿级单体全激活模型",
+          "架构物理上隔离工具调用：由于微轮次限制了 200ms 响应时间，此类模型在架构设计上彻底放弃了任何形式的外部 API 调用能力"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：高密度流致Context爆满，需流式裁减。\n- B：200ms双向流强依赖网络。\n- C：延迟预算限前台参量。\n- D 错误：工具调用经后台异步，非彻底放弃。"
+      }
+    }
   }
 ]

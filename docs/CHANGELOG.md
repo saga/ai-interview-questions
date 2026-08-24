@@ -2,6 +2,13 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-24 · 变体生成语义不变量重构（ADR-036，取代 ADR-019 变体约束，无兜底）
+
+- **契约**：`src/types.ts` 新增 `VariantCandidate`，`GeneratedVariant` 扩展为 `{question, options?, answer?, explanation?}`；`src/ai/variant.ts` 重写 `VARIANT_SYSTEM/user`，注入 `Knowledge Contract`（topic/tags/requiredConcepts/difficulty/format）+ 完整原题，LLM 可重构题干/场景/选项/distractors/解析。
+- **校验**：`src/domain/variant.ts` 从“题干非空”升级为结构（选项≥2无重复、answer 合法且与 single/multiple 一致、至少一干扰项、自包含）+ 语义（required 浅覆盖），失败直接抛错；`applyVariant` 按 choice/open 分支替换 `options/answer`。
+- **引擎**：`src/application/interviewEngine.ts:finalizeQuestion` 移除 `try/catch` 回退，无 provider 时仍返回原题，有 provider 时校验失败即让 `buildSession` 失败（用户显式要求“不需要兜底”）。
+- **文档**：`docs/DECISIONS.md` 新增 ADR-036，`docs/ARCHITECTURE.md` “LLM 变体安全”小节重写为 Invariant/Variant 分层图；`typecheck/build` 通过。
+
 ## 2026-08-24 · Zod 类型单源收口 + InterviewDefinition 边界校验（ADR-033 收口）
 
 - **类型单源**：`src/types.ts` 删除全部手写 `interface Question / KnowledgeNode / ProviderEntry / AIConfig / EvaluationResult / LearnerProfile ...`，改为 `export type X = z.infer<typeof xSchema>` re-export 自 `schemas/*`（`Difficulty/ProviderId/FormatId/...` 亦自 `schemas/common` 推导）；`ChoiceFormat/OpenFormat` 改为 `NonNullable<Question['formats'][...]>` 保持与 schema 同步；`types.ts` 仅保留行为契约 `LLMProvider/CompleteFn/QuestionBank/QuestionBlueprint` 等。

@@ -160,7 +160,7 @@ describe('buildSession 组卷与变体处理', () => {
     ).toBe(true);
   });
 
-  it('useAI=true 时生成变体快照（题干替换），答案数据不动；失败回退原题', async () => {
+  it('useAI=true 时生成变体快照（题干替换），答案数据不动；校验失败抛错（无兜底，ADR-036）', async () => {
     const goodBank = { categories: ['x'], questions: [{ ...choiceQ }] };
     const session = await buildSession(goodBank, { ...def(true, ['choice']) }, cfg);
     expect(session.questions[0].question.question).toBe('变体题干');
@@ -170,8 +170,7 @@ describe('buildSession 组卷与变体处理', () => {
       categories: ['x'],
       questions: [{ ...choiceQ, id: 'bad-variant' }],
     };
-    const session2 = await buildSession(badBank, { ...def(true, ['choice']) }, cfg);
-    expect(session2.questions[0].question.question).toBe('qc'); // 回退原题
+    await expect(buildSession(badBank, { ...def(true, ['choice']) }, cfg)).rejects.toThrow(/变体校验失败/);
   });
 
   it('useAI=false 时直接使用原题（无变体快照）', async () => {

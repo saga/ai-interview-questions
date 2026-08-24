@@ -298,23 +298,24 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 
 ## LLM 变体安全（关键）
 
-安全模型（ADR-019）：**LLM 只允许重写题干与解析，答案数据结构上就不在它的输出契约里**——
-不靠校验兜底，靠收窄权限杜绝"选项重排导致 answer 索引错位"这类事故：
+安全模型（ADR-036，取代 ADR-019 字段级白名单）：**LLM 可重构所有 Presentation（题干/场景/选项/distractors/解析），但必须保持 Knowledge Contract 不变量，输出为 VariantCandidate，需经 Domain 校验，无兜底**：
 
 ```
-Canonical Question ──→ LLM（只输出 question / explanation）
-        │                     ↓ validateVariant（唯一硬校验：题干非空）
-        │                通过 → applyVariant：只替换题干/解析，
-        │                      formats（options/answer/referenceAnswer）原样保留
-        └──────────────── 失败 → 保留原题（会话持有的是快照副本，题库对象永不被写）
+                    Knowledge Contract (topic/tags/requiredConcepts/difficulty/type)
+                              │
+Original Question ──→ LLM ──→ VariantCandidate ──→ validateVariant ──→ GeneratedVariant
+  (question/options/                                           │ schema + semantic
+   answer/explanation)                          ┌──────────────┴──────────────┐
+                                               │ ok → applyVariant         │ fail → 抛错（无回退）
+                                               │ 替换 question/options/    │  上层 buildSession 失败
+                                               │ answer/explanation        │
 ```
 
-要点：
-- 变体中选择题的 options/answer 与开放题的 referenceAnswer 永远来自原题——LLM 不接触任何答案数据。
-- ADR-027 起「选择 ⇄ 开放」不再是运行时 LLM 变换：两种形态的内容都在题库静态维护
-  （一次性迁移补齐，见 CHANGELOG 2026-08-23），运行期只做确定性分配，无额外 LLM 成本与审计负担。
-- 原 ADR-024 的 transform 管线（ai/transform.ts、transformAudit 审计日志、
-  transformedFrom 字段）已整体删除。
+- **Invariant（必须保持）**：`topic/tags/requiredConcepts`、正确性语义、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`。
+- **Variant（允许自由变化）**：题干措辞、场景/上下文、选项表达与 distractors、解析表达。
+- **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败直接抛错，无回退原题（用户显式要求）。
+- 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。
+- ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 
