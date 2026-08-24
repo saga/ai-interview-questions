@@ -2,6 +2,20 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-041 · Course Question Bank 独立管线 + QuestionSource 接缝（前瞻设计，尚未实现课程来源）
+
+- 状态：已采纳（前瞻/骨架）· 2026-08-25
+- 背景：用户提出把公开课程（MIT/Harvard/Stanford 等）做成"Course → Course Question Bank"独立生产管线，明确要求**不要把课程内容强行塞进当前 AI Trainer 的 `questionBank`**（避免面试 taxonomy / Concept×Angle 把课程知识面试化）。核心思想：课程是知识来源（source）、题库是课程知识的结构化评估层（assessment artifact）、AI Trainer 是另一个消费方。
+- 决策（仅落地"可插拔接缝"，**不实现**课程生产管线本身）：
+  - **QuestionSource 抽象**：新增 `src/data/source.ts`，定义 `QuestionSource { id; label; getQuestions(): Question[] }` 接口 + `interviewQuestionSource`（包装既有 `questionBank`）+ `questionSources` 注册表 + `sourceToBank()` 适配器。未来 `CourseQuestionBank` 实现同一接口即可接入，**引擎（interviewEngine）与 Agent 工具层已按 `QuestionBank`/`Question[]` 参数化，无需改动**。
+  - **物理隔离**：课程题库落在 `src/data/courses/<courseId>/`（新增空槽位 `.gitkeep`），**不会被** `questionBank.ts` 的 `import.meta.glob('./questions/*.json')` 误收，也不进入 Interview taxonomy。
+  - **Question schema 前瞻字段（可选，不破坏面试题校验）**：`courseId` / `knowledgeId` / `source{materialId,section,page}`（Source Evidence）/ `misconceptions`（反证）。Zod 默认 strip 未知键 + 字段可选，存量 409 题零影响。
+  - **Learner schema 前瞻字段**：`session.mode` 增 `'course'`；`QuestionResult` 增可选 `courseId` 与 `misconceptionIds`；`SessionRecord` 增可选 `courseId`。使未来 `CourseLearnerState` 可在聚合层与 `InterviewLearnerState` 隔离（底层共享 `QuestionResult`/`LearnerEvidence`，上层模型不同）。
+  - **边界红线（与提案一致）**：Interview 与 Course **不共享** taxonomy / blueprint / adaptive policy；**共享**底层基础设施——Zod 校验、Question schema、embedding 去重、learner evidence、IndexedDB、LLM provider、QuestionSource 抽象本身。
+- 理由：以最小、零回归的改动预埋接缝——引擎/工具层本就 source-agnostic，缺的只是"来源抽象"与"课程题可被 schema 接纳"。后续接课程只写一个新 `QuestionSource` 实现 + 其数据文件，不碰引擎/评分/Adaptive。
+- 不做的事（留给后续里程碑）：不实现 Course 生产管线（Manifest→Knowledge Map→Blueprint→Generation→多步 Validation→Bank）；不新建 `CourseLearnerState` 聚合（待有真实课程会话再建）；不改 `difficulty` 为 `{declared,estimated}`（破坏性太大，单独议题）；不引入课程专属 blueprint/adaptive（与 Interview 刻意不共享）。
+- 验证：`npm run typecheck` 与 `npm test` 全绿（接缝为纯增量）；`questionSources` 当前仅含 interview 来源，行为与改造前完全一致。
+
 ## ADR-038 · 题库按 6 大能力域组织（Domain → Topic → Concept → Subtopic → Angle）
 
 - 状态：已采纳 · 2026-08-25

@@ -114,6 +114,14 @@ data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件
                         tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
                         支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
 data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并 + Zod 形状校验，同 questionBank 模式）
+data/courses/          课程题库槽位（前瞻，ADR-041）。每课程一个子目录 <courseId>/，独立存放
+                        course.json / knowledge/concepts.json / blueprint.json / questions/
+                        questions.json / quality/{coverage,validation}.json。关键隔离：本目录
+                        **不会被** questionBank.ts 的 import.meta.glob('./questions/*.json')
+                        误收，也不进入 Interview taxonomy；课程题库经 QuestionSource 接口
+                        （src/data/source.ts）接入引擎与 Agent，与 Interview 来源共享 Question
+                        schema / Zod / learner evidence / IndexedDB / LLM provider，但**不共享**
+                        taxonomy / blueprint / adaptive policy。
 scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：fs 直读
                         questions/ 与 knowledge/ JSON（不走 import.meta.glob），
                         调 domain/coverage 纯函数输出矩阵与补题建议。Node 24+ 原生

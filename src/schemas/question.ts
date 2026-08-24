@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { difficultySchema, questionAngleSchema } from './common';
 
+/** 题目溯源引用：课程题库题必须能追溯到原始教学材料（提案要求"Source Evidence"）。 */
+const questionSourceRefSchema = z.object({
+  materialId: z.string().min(1),
+  section: z.string().optional(),
+  page: z.number().int().nonnegative().optional(),
+});
+
 const choiceFormatSchema = z.object({
   type: z.enum(['single', 'multiple']),
   options: z.array(z.string().min(1)).min(2),
@@ -39,6 +46,15 @@ export const questionSchema = z
     reference: z.object({ concept: z.string().optional() }).optional(),
     rubric: rubricSchema.optional(),
     aiGenerated: z.boolean().optional(),
+    // ── 课程题库前瞻字段（可选，不破坏面试题校验；提案要求 Source Evidence + 反证）──
+    /** 归属课程 id（课程题库题才有；面试题恒缺省）。 */
+    courseId: z.string().min(1).optional(),
+    /** 归属课程知识点 id（Course Knowledge Map 中的概念 id）。 */
+    knowledgeId: z.string().min(1).optional(),
+    /** 题目溯源：来自哪份教学材料 / 章节 / 页码。 */
+    source: questionSourceRefSchema.optional(),
+    /** 该题试图探测的常见误解（用于证据+反证评分器，选择题尤其有价值）。 */
+    misconceptions: z.array(z.string().min(1)).optional(),
     formats: z.object({
       choice: choiceFormatSchema.optional(),
       open: openFormatSchema.optional(),

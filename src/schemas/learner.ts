@@ -40,14 +40,21 @@ export const questionResultSchema = z.object({
   score: z.number().min(0).max(100),
   correct: z.boolean().optional(),
   gaps: z.array(z.string()),
+  // ── 课程题库前瞻字段（可选）──
+  /** 归属课程 id；面试题恒缺省。用于把课程掌握度与面试掌握度在聚合层隔离。 */
+  courseId: z.string().min(1).optional(),
+  /** 用户作答命中的误解 id（来自题目 misconceptions），选择题即可无 LLM 产出反证证据。 */
+  misconceptionIds: z.array(z.string().min(1)).optional(),
 });
 
 export const sessionRecordSchema = z.object({
   id: z.string().min(1),
   startedAt: z.number(),
   durationSec: z.number().nonnegative().optional(),
-  mode: z.enum(['quick', 'custom', 'coach', 'interview', 'agent']).optional(),
+  mode: z.enum(['quick', 'custom', 'coach', 'interview', 'agent', 'course']).optional(),
   title: z.string().min(1),
+  /** 课程会话标注归属课程（与 Interview 会话在聚合层区分）。 */
+  courseId: z.string().min(1).optional(),
   questionResults: z.array(questionResultSchema),
   overall: z.number().min(0).max(100),
 });
