@@ -37,7 +37,7 @@ export default function QuestionCard({ index, question, format, value, onChange 
 
   return (
     <Card size="small" style={{ marginBottom: 16 }}>
-      <Space wrap style={{ marginBottom: 8 }}>
+      <Space wrap style={{ marginBottom: 12 }}>
         <Badge count={index + 1} showZero color="#1677ff" />
         <Tag color="blue">{typeLabel}</Tag>
         <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
@@ -49,7 +49,7 @@ export default function QuestionCard({ index, question, format, value, onChange 
         ))}
         {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
       </Space>
-      <div style={{ marginBottom: 8 }}>
+      <div style={{ marginBottom: 16 }}>
         <RichText text={stem} strong />
       </div>
 
@@ -57,16 +57,32 @@ export default function QuestionCard({ index, question, format, value, onChange 
         <Radio.Group
           value={(value as number[])[0]}
           onChange={(e) => onChange([e.target.value as number])}
-          options={cf.options.map((o, i) => ({ label: o, value: i }))}
-        />
+          style={{ width: '100%' }}
+        >
+          <Space direction="vertical" size={10} style={{ width: '100%' }}>
+            {cf.options.map((o, i) => (
+              <Radio key={i} value={i}>
+                {o}
+              </Radio>
+            ))}
+          </Space>
+        </Radio.Group>
       )}
 
       {format === 'choice' && cf?.type === 'multiple' && (
         <Checkbox.Group
           value={(value as number[]) ?? []}
           onChange={(v) => onChange(v as number[])}
-          options={cf.options.map((o, i) => ({ label: o, value: i }))}
-        />
+          style={{ width: '100%' }}
+        >
+          <Space direction="vertical" size={10} style={{ width: '100%' }}>
+            {cf.options.map((o, i) => (
+              <Checkbox key={i} value={i}>
+                {o}
+              </Checkbox>
+            ))}
+          </Space>
+        </Checkbox.Group>
       )}
 
       {format === 'open' && !of?.language && (

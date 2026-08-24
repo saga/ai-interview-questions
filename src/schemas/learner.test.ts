@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  learnerProfileSchema,
-  persistedLearnerSchema,
-  parsePersistedLearner,
-  serializePersistedLearner,
-} from './learner';
+import { learnerProfileSchema } from './learner';
 
 const validProfile = {
   totalSessions: 1,
@@ -97,26 +92,3 @@ describe('learnerProfileSchema', () => {
   });
 });
 
-describe('persistedLearnerSchema', () => {
-  it('accepts versioned wrapper', () => {
-    const persisted = serializePersistedLearner(validProfile as never);
-    expect(() => persistedLearnerSchema.parse(persisted)).not.toThrow();
-  });
-
-  it('rejects wrong version', () => {
-    expect(() => persistedLearnerSchema.parse({ version: 2, data: validProfile })).toThrow();
-  });
-
-  it('parsePersistedLearner handles both new and legacy', () => {
-    const persisted = serializePersistedLearner(validProfile as never);
-    expect(parsePersistedLearner(persisted)).toEqual(validProfile);
-
-    // legacy direct profile
-    expect(parsePersistedLearner(validProfile)).toEqual(validProfile);
-  });
-
-  it('parsePersistedLearner returns null for invalid', () => {
-    expect(parsePersistedLearner({ foo: 'bar' })).toBeNull();
-    expect(parsePersistedLearner(null)).toBeNull();
-  });
-});

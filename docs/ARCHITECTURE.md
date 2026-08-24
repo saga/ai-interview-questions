@@ -57,9 +57,10 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
                      + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
 
-storage/       本地持久化（localStorage 为不可信边界，一律经 Zod 校验）
-  settings.ts    LLM 配置（localStorage，`aiConfigSchema` 形状 + `isEntryValid`/去重等不变量）
-  learner.ts     LearnerProfile / SessionRecord（localStorage `learner.v1`，`learnerProfileSchema` + `persistedLearnerSchema: {version:1,data}` 版本化包装，兼容旧直接存储）
+storage/       本地持久化（IndexedDB + localStorage；两者均为不可信边界，一律经 Zod 校验）
+  db.ts         Dexie 数据库 schema（version 1）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ memory/agentSessions 预留表
+  settings.ts   LLM 配置（localStorage，`aiConfigSchema` 形状 + `isEntryValid`/去重等不变量）——小 KV 配置保留 localStorage（甜点区）
+  learner.ts    LearnerProfile / SessionRecord（IndexedDB via Dexie）：画像存单例表（剔除 sessions），会话历史拆分到 sessions 表；不读取/迁移任何旧 localStorage 数据，直接以空画像起步
 
 application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
@@ -292,7 +293,7 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 - **记忆是"结构化信号"而非对话原文**：不把用户历史回答塞给 LLM；Coach 只看压缩画像（如 `tool-calling: weak`）。
 - **掌握度**：`mastery = avgScore/100`，简单直接（ADR-019）；置信度由 `attempts` 字段本身表达，不做加权公式。`trend` 由"上次得分 vs 历史均分"判定（±2 分阈值）。
 - **薄弱主题推荐**：`mastery < 0.85 且 avgScore < 85` 的主题按掌握度升序取前 3，写入 `InterviewDefinition.topicPriorities`；`buildSession` 用 `pickPrioritized` 保证薄弱主题的题优先进入训练。
-- **持久化**：`storage/learner.ts`（localStorage `learner.v1`）；MVP 足够，数据量大（对话/流式结果）再迁 IndexedDB。
+- **持久化**：`storage/learner.ts`（IndexedDB via Dexie，见 `db.ts`）。Learner 画像与 SessionRecord 历史已迁 IndexedDB——画像存单例表（剔除 sessions blob），会话历史拆 `sessions` 表并建 `startedAt/overall/*topics` 索引，直接支撑 `getRecentSessions/getWeakTopics` 等范围查询（替代原 localStorage 大 blob 反模式）；小 KV 配置（AIConfig）仍留 localStorage（甜点区）。不读取/迁移任何旧 localStorage 数据，旧画像直接以空画像起步。
 - **边界**：推荐逻辑当前为确定性规则（纯函数、可测）；未来"教练叙事 / 追问面试"可接 `pi-agent-core`，但 Agent 只读压缩画像，不读全文。
 
 ## LLM 变体安全（关键）

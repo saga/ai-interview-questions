@@ -17,6 +17,19 @@
 - 理由：让"下一题问什么 / 是否追问 / 何时结束"由 Agent 决策，比规则式 if/else 更贴合个性化面试；同时严格守住「Agent 做决策、domain 做执行」的分界，不把题库 / 评分 / 持久化 Agent 化，避免不可测黑盒。Agent 可读 `LearnerProfile` 作上下文（编排层权限），但 `LLMProvider` 仍不直接收 profile。
 - 验证：`src/agent/` 新增 `interviewAgent.test.ts` / `tools.test.ts`（mock `streamFn` 驱动完整 loop 停止、工具委托、选择题 gap 不污染）；`npm run test` / `npm run build` 全绿；新增「Agent 面试」导航项（第 5 项），既有 4 项不动。
 
+## ADR-035 · Learner 持久化从 localStorage 大 blob 迁移至 IndexedDB（Dexie）
+
+- 状态：已采纳 · 2026-08-24
+- 背景：原 `storage/learner.ts` 把整个 `LearnerProfile`（含 `sessions` 全部历史）作为一个 JSON blob 写入单个 localStorage key（反模式：read-modify-write 整块、无索引查询、主线程同步序列化）。虽 `updateLearner` 已用 `SESSION_CAP=50` 截断使 blob 有界、短期不会爆 5MB，但项目方向已越过临界点——即将加入 Agent Memory、长期 learner model、完整 `InterviewSession` 回放，这些是非结构化 KV 不擅长的；且现有"加载整个 profile 后 JS filter"无法支撑 `getWeakTopics/getHistoryForTopic` 等索引查询（正是 Agent 决策所需输入）。
+- 决策：
+  - **底层 Dexie（非 localForage）**：Dexie 提供类型化表 + 索引 + 版本化迁移，能直接建 `startedAt/overall/*topics` 索引解锁范围查询；localForage 只是异步 KV、给不了索引，等于白迁。无需 RxDB。
+  - **职责切分**：IndexedDB 存 `LearnerProfile`（画像单例表，落库时剔除 sessions）+ `SessionRecord` 历史（独立 `sessions` 表，带索引）；**小 KV 配置（AIConfig）仍留 localStorage**（`settings.ts` 不动）——正是 localStorage 甜点区。另预留 `memory` / `agentSessions` 表供后续 Agent Memory / 会话回放。
+  - **不迁移旧数据**：旧 localStorage `learner.v1` 画像无意义，直接丢弃、以空画像起步；不提供任何迁移/导入逻辑，也不读取旧 key（用户明确决策）。避免维护双存储路径与无价值兼容代码。
+  - **替换语义**：`saveLearner` 用 Dexie 事务先清旧 sessions 再 bulkPut 当前快照（画像替换、非增量追加），与 `updateLearner` 的"新在前、上限 50"行为一致；`loadLearner` 反向重组完整 `LearnerProfile`。
+  - **调用面改动**：`loadLearner/saveLearner` 由同步改异步；`App.tsx` 改为 `useEffect` 异步初始化 profile（加载态兜底），`doSubmit` / `handleAgentComplete` 内 `await saveLearner`。其余 domain 逻辑、`SECSSION_CAP` 截断、`sessionFromQuiz` 契约全部不变。
+- 理由：把"本地数据库"与"配置文件"分离，符合"localStorage 当配置、IndexedDB 当数据库"的边界；索引查询为 Agent / 进度页解锁结构化检索能力，且 Dexie 的 Repository 形态可平滑预留未来远端 Server（`Application` 不直接依赖存储实现）。
+- 验证：新增 `src/storage/db.ts` + 重写 `src/storage/learner.ts`（无迁移逻辑）+ 新增 `src/storage/learner.test.ts`（fake-indexeddb：空库返回空画像、save→load 往返、sessions 与画像分离、50 上限截断、端到端 sessionFromQuiz 链路）；`npm run test` 260 passed、`npm run typecheck` / `npm run build` 全绿。
+
 ## ADR-033 · 引入 Zod 4 作为数据边界校验层（分阶段迁移，不一次性全面 Zod 化）
 
 - 状态：已采纳 · 2026-08-24
@@ -478,7 +491,7 @@
 - 背景：首版 UI 把系统内部概念（Interview Definition / 评分权重 / API Key 状态）暴露给用户，像"题库测试配置器"而非"个人教练"。
 - 决策：
   - **首页=训练入口**（继续训练 / 快速训练 / 自定义训练折叠），隐藏评分权重，API Key 移入设置页（首页仅 "AI ✓ / AI 未配置" chip）。
-  - **Learner Memory**：`LearnerProfile`（topicStats 的 avgScore/mastery/trend/commonWeaknesses + 最近 50 条 SessionRecord），存 localStorage（MVP 够用，量大再迁 IndexedDB）。
+  - **Learner Memory**：`LearnerProfile`（topicStats 的 avgScore/mastery/trend/commonWeaknesses + 最近 50 条 SessionRecord），当时存 localStorage（MVP 够用）。**注：该 localStorage 方案已于 ADR-035 迁移至 IndexedDB（Dexie），本句为背景记录、非当前实现。**
   - **记忆=结构化学习信号，不是聊天记录**：不把用户历史对话塞给 LLM，只聚合"分数/弱项/掌握度"；Agent（后续 Training Coach）只看压缩画像。
   - **Coach 抽题**：`topicPriorities` + `pickPrioritized`，薄弱主题优先（mastery<0.85 且均分<85）。
   - 结果页：对比上次 delta / 强弱项 / AI 建议 / 继续训练；新增进度页（掌握度条 + 趋势 + 需要关注）与模拟面试页（30 分钟限时，追问 loop 待接）。

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Layout, Typography, Button, Space, Spin, App as AntdApp, Progress, Tag, Menu, Alert } from 'antd';
 import {
   SettingOutlined,
@@ -26,7 +26,7 @@ import type { AnswerSignal, Strategy } from './domain/adaptive';
 import { isConfigValid } from './ai/provider';
 import { loadConfig, saveConfig } from './storage/settings';
 import { loadLearner, saveLearner } from './storage/learner';
-import { buildCoachDefinition, sessionFromQuiz, updateLearner } from './domain/learner';
+import { buildCoachDefinition, sessionFromQuiz, updateLearner, emptyProfile } from './domain/learner';
 import SettingsPanel from './components/settings/SettingsPanel';
 import TrainingHome from './components/home/TrainingHome';
 import ProgressPage from './components/progress/ProgressPage';
@@ -59,10 +59,26 @@ function fmt(sec: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+/**
+ * 把可能为 null 的 LearnerProfile 绑定为确定值（null 时回退空画像），
+ * 通过 render-prop 注入子组件，避免 JSX 内联 IIFE 嵌套与重复兜底。
+ */
+function LearnerBound({
+  profile,
+  children,
+}: {
+  profile: LearnerProfile | null;
+  children: (p: LearnerProfile) => ReactNode;
+}) {
+  return <>{children(profile ?? emptyProfile())}</>;
+}
+
 export default function App() {
   const { message } = AntdApp.useApp();
   const [config, setConfig] = useState<AIConfig>(() => loadConfig());
-  const [profile, setProfile] = useState<LearnerProfile>(() => loadLearner());
+  // profile 初始为 null：Learner 画像现改为异步从 IndexedDB 加载（迁移见 storage/learner.ts）
+  const [profile, setProfile] = useState<LearnerProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [page, setPage] = useState<Page>('train');
   const [phase, setPhase] = useState<Phase>('home');
   const [session, setSession] = useState<InterviewSession | null>(null);
@@ -81,8 +97,8 @@ export default function App() {
   sessionRef.current = session;
   const configRef = useRef(config);
   configRef.current = config;
-  const profileRef = useRef(profile);
-  profileRef.current = profile;
+  const profileRef = useRef<LearnerProfile>(profile ?? emptyProfile());
+  profileRef.current = profile ?? emptyProfile();
   const gradesRef = useRef(grades);
   gradesRef.current = grades;
   /** 自适应模式：按顺序累积的作答信号，供下一题决策使用 */
@@ -198,7 +214,7 @@ export default function App() {
     const prev = profileRef.current.sessions[0]?.overall ?? null;
     const rec = sessionFromQuiz(s, g, durationSec);
     const next = updateLearner(profileRef.current, rec);
-    saveLearner(next);
+    await saveLearner(next);
     setProfile(next);
     setPrevOverall(prev);
     setPhase('result');
@@ -214,10 +230,10 @@ export default function App() {
   };
 
   /** Agent 面试结束后的落库：复用既有 Learner 管线，与确定性 engine 写入同一份画像。 */
-  const handleAgentComplete = (record: SessionRecord) => {
+  const handleAgentComplete = async (record: SessionRecord) => {
     const prev = profileRef.current.sessions[0]?.overall ?? null;
     const next = updateLearner(profileRef.current, record);
-    saveLearner(next);
+    await saveLearner(next);
     setProfile(next);
     setPrevOverall(prev);
   };
@@ -233,6 +249,24 @@ export default function App() {
     setPhase('home');
     setPage('train');
   };
+
+  // 启动：异步加载 Learner 画像（IndexedDB），加载完成后解除加载态。
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const p = await loadLearner();
+        if (!cancelled) setProfile(p);
+      } catch {
+        if (!cancelled) setProfile(emptyProfile());
+      } finally {
+        if (!cancelled) setLoadingProfile(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 倒计时：截止点锚定在会话创建时间（session.startedAt）。
   // 自适应模式追加题目会生成新的 session 对象，但 startedAt 不变——
@@ -304,124 +338,136 @@ export default function App() {
       )}
 
       <Layout.Content style={{ padding: 24, maxWidth: 980, margin: '0 auto', width: '100%' }}>
-        {phase === 'home' && page === 'train' && (
-          <TrainingHome
-            categories={bank.categories}
-            config={config}
-            profile={profile}
-            onStart={handleStart}
-            onGoSettings={() => setPage('settings')}
-          />
-        )}
-
-        {phase === 'home' && page === 'progress' && (
-          <ProgressPage
-            profile={profile}
-            onGoTrain={() => setPage('train')}
-            coverage={computeCoverage(collectTopicRefs(bank.questions), profile)}
-            suggestions={suggestNextTopics(collectTopicRefs(bank.questions), profile)}
-          />
-        )}
-
-        {phase === 'home' && page === 'interview' && (
-          <InterviewPage
-            config={config}
-            profile={profile}
-            onStart={handleStart}
-            onGoSettings={() => setPage('settings')}
-          />
-        )}
-
-        {phase === 'home' && page === 'settings' && (
-          <SettingsPanel config={config} onSave={handleSaveConfig} />
-        )}
-
-        {phase === 'home' && page === 'agent' && (
-          <AgentInterviewPage
-            config={config}
-            profile={profile}
-            onComplete={handleAgentComplete}
-            onGoSettings={() => setPage('settings')}
-            onGoProgress={() => setPage('progress')}
-          />
-        )}
-
-        {phase === 'quiz' && session?.definition.adaptive && questions[adaptiveCursor] && (
-          <div style={{ maxWidth: 820, margin: '0 auto' }}>
-            <AdaptiveQuiz
-              sq={questions[adaptiveCursor]}
-              index={adaptiveCursor}
-              total={session.definition.count}
-              value={
-                answers[questions[adaptiveCursor].question.id] ??
-                emptyAnswer(questions[adaptiveCursor])
-              }
-              strategy={strategies[adaptiveCursor]}
-              evaluating={busy != null}
-              hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].question.id])}
-              onChange={(v) => handleAnswerChange(questions[adaptiveCursor].question.id, v)}
-              onSubmitNext={() => void handleAdaptiveNext()}
-              onFinish={() => void handleFinishEarly()}
-            />
+        {loadingProfile ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
+            <Spin size="large" tip="正在加载学习记录…" />
           </div>
-        )}
+        ) : (
+          <LearnerBound profile={profile}>
+            {(displayedProfile) => (
+              <>
+                {phase === 'home' && page === 'train' && (
+                  <TrainingHome
+                    categories={bank.categories}
+                    config={config}
+                    profile={displayedProfile}
+                    onStart={handleStart}
+                    onGoSettings={() => setPage('settings')}
+                  />
+                )}
 
-        {phase === 'quiz' && session?.definition.adaptive && !questions[adaptiveCursor] && (
-          <div style={{ maxWidth: 820, margin: '0 auto' }}>
-            <Alert
-              type="success"
-              showIcon
-              message={`已完成 ${questions.length} 道自适应题目`}
-              description="每题均已实时评分。点击下方按钮查看完整结果与薄弱项分析。"
-              action={
-                <Button type="primary" onClick={() => void doSubmit()}>
-                  查看训练结果
-                </Button>
-              }
-            />
-          </div>
-        )}
+                {phase === 'home' && page === 'progress' && (
+                  <ProgressPage
+                    profile={displayedProfile}
+                    onGoTrain={() => setPage('train')}
+                    coverage={computeCoverage(collectTopicRefs(bank.questions), displayedProfile)}
+                    suggestions={suggestNextTopics(collectTopicRefs(bank.questions), displayedProfile)}
+                  />
+                )}
 
-        {phase === 'quiz' && !(session?.definition.adaptive && questions[adaptiveCursor]) && !(session?.definition.adaptive && !questions[adaptiveCursor]) && (
-          <div>
-            <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-              <Tag color="blue">共 {questions.length} 题</Tag>
-              <span>
-                已答 {answeredCount}/{questions.length}
-              </span>
-              <Progress
-                percent={Math.round((answeredCount / questions.length) * 100)}
-                size="small"
-                style={{ width: 160 }}
-              />
-              <Button onClick={handleRestart}>退出</Button>
-            </Space>
-            {questions.map((sq, i) => (
-              <QuestionCard
-                key={`${sq.question.id}-${i}`}
-                index={i}
-                question={sq.question}
-                format={sq.format}
-                value={answers[sq.question.id] ?? emptyAnswer(sq)}
-                onChange={(v) => handleAnswerChange(sq.question.id, v)}
-              />
-            ))}
-            <Button type="primary" size="large" block onClick={doSubmit}>
-              提交并查看结果
-            </Button>
-          </div>
-        )}
+                {phase === 'home' && page === 'interview' && (
+                  <InterviewPage
+                    config={config}
+                    profile={displayedProfile}
+                    onStart={handleStart}
+                    onGoSettings={() => setPage('settings')}
+                  />
+                )}
 
-        {phase === 'result' && (
-          <ResultPanel
-            questions={questions}
-            answers={answers}
-            grades={grades}
-            profile={profile}
-            prevOverall={prevOverall}
-            onContinue={handleContinue}
-            onRestart={handleRestart}
-          />
+                {phase === 'home' && page === 'settings' && (
+                  <SettingsPanel config={config} onSave={handleSaveConfig} />
+                )}
+
+                {phase === 'home' && page === 'agent' && (
+                  <AgentInterviewPage
+                    config={config}
+                    profile={displayedProfile}
+                    onComplete={handleAgentComplete}
+                    onGoSettings={() => setPage('settings')}
+                    onGoProgress={() => setPage('progress')}
+                  />
+                )}
+
+                {phase === 'quiz' && session?.definition.adaptive && questions[adaptiveCursor] && (
+                  <div style={{ maxWidth: 820, margin: '0 auto' }}>
+                    <AdaptiveQuiz
+                      sq={questions[adaptiveCursor]}
+                      index={adaptiveCursor}
+                      total={session.definition.count}
+                      value={
+                        answers[questions[adaptiveCursor].question.id] ??
+                        emptyAnswer(questions[adaptiveCursor])
+                      }
+                      strategy={strategies[adaptiveCursor]}
+                      evaluating={busy != null}
+                      hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].question.id])}
+                      onChange={(v) => handleAnswerChange(questions[adaptiveCursor].question.id, v)}
+                      onSubmitNext={() => void handleAdaptiveNext()}
+                      onFinish={() => void handleFinishEarly()}
+                    />
+                  </div>
+                )}
+
+                {phase === 'quiz' && session?.definition.adaptive && !questions[adaptiveCursor] && (
+                  <div style={{ maxWidth: 820, margin: '0 auto' }}>
+                    <Alert
+                      type="success"
+                      showIcon
+                      message={`已完成 ${questions.length} 道自适应题目`}
+                      description="每题均已实时评分。点击下方按钮查看完整结果与薄弱项分析。"
+                      action={
+                        <Button type="primary" onClick={() => void doSubmit()}>
+                          查看训练结果
+                        </Button>
+                      }
+                    />
+                  </div>
+                )}
+
+                {phase === 'quiz' && !(session?.definition.adaptive && questions[adaptiveCursor]) && !(session?.definition.adaptive && !questions[adaptiveCursor]) && (
+                  <div>
+                    <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
+                      <Tag color="blue">共 {questions.length} 题</Tag>
+                      <span>
+                        已答 {answeredCount}/{questions.length}
+                      </span>
+                      <Progress
+                        percent={Math.round((answeredCount / questions.length) * 100)}
+                        size="small"
+                        style={{ width: 160 }}
+                      />
+                      <Button onClick={handleRestart}>退出</Button>
+                    </Space>
+                    {questions.map((sq, i) => (
+                      <QuestionCard
+                        key={`${sq.question.id}-${i}`}
+                        index={i}
+                        question={sq.question}
+                        format={sq.format}
+                        value={answers[sq.question.id] ?? emptyAnswer(sq)}
+                        onChange={(v) => handleAnswerChange(sq.question.id, v)}
+                      />
+                    ))}
+                    <Button type="primary" size="large" block onClick={doSubmit}>
+                      提交并查看结果
+                    </Button>
+                  </div>
+                )}
+
+                {phase === 'result' && (
+                  <ResultPanel
+                    questions={questions}
+                    answers={answers}
+                    grades={grades}
+                    profile={displayedProfile}
+                    prevOverall={prevOverall}
+                    onContinue={handleContinue}
+                    onRestart={handleRestart}
+                  />
+                )}
+              </>
+            )}
+          </LearnerBound>
         )}
       </Layout.Content>
 
