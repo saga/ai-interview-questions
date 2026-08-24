@@ -59,7 +59,7 @@
     "difficulty": "hard",
     "angle": "scenario",
     "question": "Agent 的最终答案看起来正确，但实际上引用的是错误的数据。这类“表面正确”的问题如何被发现？",
-    "explanation": "考察表面正确问题的检测：claim-level 引用核对、埋雷测试与分离式指标。",
+    "explanation": "考察表面正确问题的系统性检测方案。答案流畅正确恰恰绕过人工抽查，需做 claim 级引用核对（NLI 或 LLM judge 逐条比对 claim↔source）、数值复核回查原始数据源、评测集埋雷对抗先验。事实一致率应独立于任务成功率统计。",
     "rubric": {
       "required": [
         "claim 级引用核对机制",
@@ -105,7 +105,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "Agent 的“思考过程”（中间推理、工具调用细节）应该被保存、展示给用户，还是完全隐藏？请给出分场景的策略。",
-    "explanation": "考察保存/展示/隐藏的分层策略：信任与误解的权衡、“策展透明度”概念。",
+    "explanation": "考察思考过程的保存/展示/隐藏分层策略。保存无条件（调试审计生命线，注意脱敏）；展示按场景分层：开发者提供折叠过程视图提升信任，消费级产品只给进度与结论摘要，高风险决策展示策展后的证据层而非原生 CoT。原生思维链含系统提示泄露与中途错误结论，直接公开展示有风险。",
     "rubric": {
       "required": [
         "保存无条件（调试审计）",
@@ -151,7 +151,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "如果一个任务 90% 的情况都能用固定 workflow 完成，为什么还要用 Agent？请为“剩下 10%”辩护，或者论证不该用。",
-    "explanation": "开放式：考察对 Agent 必要性的辩证论证与分层架构直觉。",
+    "explanation": "考察 Agent 必要性的辩证论证能力。成熟答案是架构分层：确定性 workflow 保住 90% 的成本与可靠性，Agent 作为受控逃生舱处理剩余长尾部分，并用路由准确率与升级率监控边界是否划对。拒绝技术万金油——既不全量 Agent 化也不放弃自动化兜底。",
     "rubric": {
       "required": [
         "正反两面都有实质论证",
@@ -241,7 +241,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "一个成功率 95%、平均成本 $0.20 的 Agent，和一个成功率 85%、成本 $0.01 的 Agent，哪个更好？请给出你的评估框架。",
-    "explanation": "开放式：考察期望成本框架与级联共存方案，拒绝脱离业务谈好坏。",
+    "explanation": "考察期望成本框架与级联共存方案。没有脱离业务的答案，需计算每次调用的价值 V 与错误代价 C 的临界点：若错误可低成本挽回则便宜版本性价比碾压；若错误昂贵且高频触达则贵版本可能仍划算。两者还可级联共存——便宜模型处理简单 case、贵的处理难 case。",
     "rubric": {
       "required": [
         "期望成本公式（成本+错误代价+人工兜底）",
@@ -287,7 +287,7 @@
     "difficulty": "hard",
     "angle": "scenario",
     "question": "如果一个 Agent 能够自己修改代码并运行测试，你认为最大的风险是什么？你会设置什么防护？",
-    "explanation": "开放式：考察 reward hacking 本质与“验证权与修改权分离”的核心防护思想。",
+    "explanation": "考察 reward hacking 与修改权验证权分离的核心思想。最大风险不是成本而是 Agent 利用测试漏洞来'通过'而非'做对'（改测试断言、硬编码预期输出），且错误沿版本链复利放大。核心防护是测试由外部冻结版本执行，Agent 无权改动验收标准本身。",
     "rubric": {
       "required": [
         "reward hacking / 目标漂移固化为最大风险",
@@ -333,7 +333,7 @@
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "Agent 应该相信自己的 Memory 吗？记忆里的内容可能是过时的、错误的，甚至是被投毒的。请给出你的信任模型。",
-    "explanation": "开放式：考察带元数据的信任分级、冲突以观察为准、写入侧投毒防御。",
+    "explanation": "考察带元数据的记忆信任模型。不应无条件信任记忆：每条记录出处与时间戳参与决策，过时降权或过期失效；重要事实宁信当下检索不信旧记忆；冲突以观察为准并回写修正。写入路径设权限与审查防投毒。口诀：记忆是假设不是事实，置信度跟着证据走。",
     "rubric": {
       "required": [
         "记忆带来源/新鲜度元数据",
@@ -428,7 +428,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "一个 Agent 系统的“智能”究竟来自哪里：Model、Tools、Memory 还是 Environment？请给出你的排序与论证。",
-    "explanation": "开放式：考察系统性归因（反馈质量>模型本身）与“智能是涌现属性”的观点。",
+    "explanation": "考察系统性归因能力。实际系统中多数失败并非模型不够聪明，而是环境反馈不足（工具返回模糊错误、缺乏 ground truth）与记忆/上下文供给失当。改进反馈质量往往是比换更强模型更大的工程杠杆。智能是系统的涌现属性——好的环境能让平庸模型表现出色。",
     "rubric": {
       "required": [
         "有明确的排序立场而非罗列",
@@ -473,7 +473,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "你认为未来 Agent Runtime 最重要的基础设施是什么？可以选：身份与权限体系、支付与结算、可验证的执行环境、统一记忆协议、评测基础设施……请选一到两项并深入论证。",
-    "explanation": "开放式：考察对信任/责任基础设施的深层理解，论证质量优先于结论。",
+    "explanation": "考察对信任基础设施的深层理解。身份与权限体系是地基——可信身份是授权委托、最小权限锚点与跨组织信任传递的前提；支付、工具市场与审计都构建在其上。类似互联网的价值建立在 TCP/IP 与 PKI 之上而非单个应用。",
     "rubric": {
       "required": [
         "聚焦一到两项深入而非泛列",
@@ -598,8 +598,7 @@
       "multi-agent",
       "benchmark-pitfall",
       "circular-exit",
-      "ceiling-effect",
-      "threshold-distortion"
+      "ceiling-effect"
     ],
     "difficulty": "hard",
     "angle": "scenario",
@@ -642,8 +641,7 @@
       "multi-agent",
       "observability",
       "graph-diagnosis",
-      "relationship-efficiency",
-      "lexical-redundancy"
+      "relationship-efficiency"
     ],
     "difficulty": "medium",
     "angle": "system-design",
@@ -1367,9 +1365,7 @@
       "evaluation",
       "rag",
       "coding-agent",
-      "multi-agent",
-      "grader",
-      "faithfulness"
+      "multi-agent"
     ],
     "difficulty": "hard",
     "angle": "system-design",

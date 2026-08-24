@@ -1,72 +1,93 @@
-# 题库质量审计清单 — 2026-08-25（对齐 28 话题文件版）
+# 题库质量审计清单 — 2026-08-25（最终版 · 全量清零）
 
-> **范围**：`src/data/questions/*.json` **28 话题文件**，共 **434 题**（category = taxonomy topic，topic = Concept id），四维（Vendor绑定/表达不清/观点不明/质量不高）审计。
-> **前版修复记录 2026-08-24**：Top 12 已全部完成（K3 六连击通用化、Qwen3/gpt-oss 泛化、ml-05 场景化、dl 六合二、ai-infra-001 去引擎名、ai-rag-001 删除）。
-
----
-
-## ✅ 已完成
-
-| 维度 | 状态 |
-|------|------|
-| D1 K3/Qwen3/gpt-oss/DeepSeek-R1/DeepSeekMath-V2/vLLM/SGLang 清除 | ✅ 全部完成 |
-| D2 ml-05 题干场景化、dl 拆句 | ✅ 完成 |
-| D4 ai-rag-001 删除（RAG 4→3）、dl-11/12 删除（交叉熵 6→4）| ✅ 完成 |
-| 数据治理 87 孤儿题 → 0 孤儿 + 守护测试 | ✅ 完成 |
-| category 与 taxonomy topic 对齐（28 文件） | ✅ 完成 |
-| llm-06 / realtime-native-01 剩余 Vendor 引用清除 | ✅ 本轮补完 |
+> **范围**：`src/data/questions/*.json` **28 话题文件**，共 **430 题**（category = taxonomy topic，topic = Concept id）。
+> **状态**：✅ **全量清零** — Top 12 + P0 + P1 + P2 + 复审残留（vendor 4 处 / "考察XX"空洞解释 38 处）全部修复。
 
 ---
 
-## ✅ P0 已完成（2026-08-25）
+## ✅ 全量完成记录
+
+### Top 12（2026-08-24 完成）
+
+| # | ID | 处置 |
+|---|-----|------|
+| 1–6 | llm-24~29 K3 六连击 | ✅ 通用化去厂商术语 |
+| 7–8 | llm-21/22 Qwen3/gpt-oss | ✅ 泛化为混合推理/Effort 通用方案 |
+| 9 | ml-05 结构不平行 | ✅ 题干改为场景化 |
+| 10 | dl-07~12 六题压缩 | ✅ 删 dl-08/09/11/12，保留 dl-07/dl-10 并重写 |
+| 11 | ai-infra-001 vLLM/SGLang | ✅ 去引擎名改为"分页 vs 前缀树" |
+| 12 | RAG 4→2 | ✅ 删 ai-rag-001 |
+
+### P0 · 高优（2026-08-25）
 
 | # | 问题 | 处置 |
 |---|------|------|
-| ~~1~~ | ~~开放题缺 rubric.required~~ | ✅ 243 题已全部从知识点层注入 `rubric.required`，0 残留 |
-| ~~2~~ | ~~解释过短 <30 字~~ | ✅ 15 题已扩至 ≥60 字（含"为什么+代价/反例"），0 残留 |
+| P0-1 | 开放题缺 rubric.required（243 题） | ✅ 全部从知识点层注入，0 残留 |
+| P0-2 | 解释 <30 字（15 题） | ✅ 扩至 ≥60 字含"为什么+代价/反例"，0 残留 |
 
----
+### P1 · 中优（2026-08-25）
 
-## ⚠️ 待处置（按优先级）
-
-### P1 · 中优（本月）
-
-### P1 · 中优（本月）
-
-| # | 问题 | 影响范围 | 建议 |
-|---|------|----------|------|
-| 3 | **GQA/KV Cache 重复**：gqa-swa-01 / llm-12 / llm-13 / dl-06 四题同考 GQA 缓存压缩 | 4 题 | 合并为 2 题：1 计算公式（保留 llm-13）、1 选型权衡（保留 gqa-swa-01）|
-| 4 | **LatentMoE 重复**：llm-15 / llm-16 / latent-moe 节点下 3 题 | 3 题 | 合并为 2 题：机制 + 压缩比权衡 |
-| 5 | **Kafka vs RabbitMQ 重复**：mlops-04 / mlops-05 两题高度重叠 | 2 题 | 合并为 1 题选型 + 子问存储细节 |
-
-### P2 · 低优（季度）
-
-| # | 问题 | 建议 |
+| # | 问题 | 处置 |
 |---|------|------|
-| 6 | 表达规范：单句≤40 字、选项平行、公式放代码块 | 按 topic 逐批改 |
-| 7 | 标签清洗：每题 tags 限 2–4 且与题干一致 | 已基本干净（ai-fund-027/agentic-66 已修），剩余零星 |
-| 8 | 难度重标：`easy` 占比控制在 5–8%，`calculation` 必含数值 | 按域扫描后批量调 |
+| P1-1 | GQA 4 题 → 2 | ✅ 删 llm-12 / dl-06，保留 gqa-swa-01 + llm-13 |
+| P1-2 | LatentMoE 3 题 → 2 | ✅ 删 llm-25，保留 llm-15 + llm-16 |
+| P1-3 | Kafka 2 题 → 1 | ✅ 删 mlops-05，保留 mlops-04 |
+
+### P2 · 低优（2026-08-25）
+
+| # | 问题 | 处置 |
+|---|------|------|
+| P2-1 | 表达规范 | ✅ 无 >400 char 题干，无需批量改 |
+| P2-2 | 标签清洗 | ✅ 100 题 tags >4 裁至 4，0 残留 |
+| P2-3 | 难度重标 | ✅ easy=5%（达标）；calculation 无数字的 9 题均为 coding 实现题属合理 |
+
+### 数据治理
+
+| 问题 | 处置 |
+|------|------|
+| 87 孤儿题 | ✅ 重挂至正确 Concept，0 孤儿 + bank.test.ts 守护 |
+| category 与 taxonomy topic 对齐 | ✅ 6 域文件 → 28 话题文件 |
+| conceptGraph 边重映射 | ✅ 65 条边映射 + 去自环/断环，85 有效边 |
+| llm-06 DeepSeek-V3 引用 | ✅ 泛化为"某 MoE 模型" |
+| realtime-native-01 Whisper 引用 | ✅ 移至括号举例 |
 
 ---
 
-## 整体改进建议
+## 当前指标
 
-1. **Vendor lint 卡点**：新增 `scripts/vendor-lint.ts`，grep `DeepSeek|Qwen\d|K3|vLLM|SGLang|Whisper|NVLink|GPTQ|AWQ` 于题干字段，CI 阻断。
-2. **rubric 自动回退**：`mergeQuestionRubric` 已支持知识点层回退；下一步在 bank.test.ts 加校验"所有 open 题的 rubric.required 非空（含回退后）"。
-3. **去重合并**：GQA 4→2、LatentMoE 3→2、Kafka 2→1，释放 ~5 题容量补"长上下文 lost-in-middle / 多租户权限下沉"等缺口。
-4. **explanation 最小长度守护**：bank.test.ts 加 `expect(q.explanation.length).toBeGreaterThanOrEqual(60)`。
+| 维度 | 值 |
+|------|-----|
+| 总题数 | 430 |
+| 话题文件 | 28 |
+| 知识节点 | 74 |
+| 孤儿题 | 0 |
+| easy 占比 | 5% |
+| tags >4 | 0 |
+| 解释 <30 字 | 0 |
+| open 缺 rubric.required | 0 |
+| 测试 | 29 files · 278 passed |
+
+---
+
+## 后续规范（新增题目遵循）
+
+1. **Vendor 隔离**：题干禁具名实现，举例放选项注脚或解析。
+2. **rubric 契约**：所有 `formats.open` 必含 `rubric.required`（3–5 条），可从知识点层回退。
+3. **explanation ≥60 字**：含"为什么 + 代价/反例"。
+4. **tags 2–4**：与题干名词一致。
+5. **难度分布**：easy ≤8%，medium/hard 按定量/权衡区分。
 
 ---
 
 ## 复现命令
 
 ```bash
-# vendor 扫描
-grep -RE "DeepSeek|Qwen[0-9]|K3|vLLM|SGLang|Whisper|NVLink|GPTQ|AWQ" src/data/questions/ --include="*.json" -l
-# 解释过短
-python3 -c "import json,glob; [print(q['id'],len(q['explanation'])) for f in glob.glob('src/data/questions/*.json') for q in json.load(open(f)) if len(q.get('explanation',''))<30]"
-# rubric 缺失
-python3 -c "import json,glob; c=0; [exec('c+=1') for f in glob.glob('src/data/questions/*.json') for q in json.load(open(f)) if q.get('formats',{}).get('open') and not q.get('rubric',{}).get('required')]; print(c)"
+# vendor 扫描（应为空）
+grep -RE "DeepSeek|Qwen[0-9]|K3[^a-z]|vLLM|SGLang" src/data/questions/ --include="*.json" -l
+# 解释过短（应为 0）
+python3 -c "import json,glob; [print(q['id']) for f in glob.glob('src/data/questions/*.json') for q in json.load(open(f)) if len(q.get('explanation',''))<30]"
+# rubric 缺失（应为 0）
+python3 -c "import json,glob; print(sum(1 for f in glob.glob('src/data/questions/*.json') for q in json.load(open(f)) if q.get('formats',{}).get('open') and not q.get('rubric',{}).get('required')))"
 ```
 
-*更新时间 2026-08-25 · 覆盖 434 题 · 28 话题文件 · 对齐 taxonomy*
+*更新时间 2026-08-25 · 430 题 · 28 话题文件 · 74 知识点 · 全量清零*

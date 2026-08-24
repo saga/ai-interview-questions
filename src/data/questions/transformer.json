@@ -370,7 +370,7 @@
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
-    "explanation": "考察 QKV 计算流程、缩放点积、softmax 加权，以及并行性/长程依赖优势。",
+    "explanation": "考察自注意力机制的计算流程与相比 RNN 的优势。Q·Kᵀ/√d 经 softmax 得权重后对 V 加权求和；每个位置的输出可直接关注任意距离的 token（O(1) 路径长度），且训练时可全并行无需按时间步展开。RNN 的序列化依赖使其无法并行且长程信息逐步衰减。",
     "reference": {
       "concept": "自注意力用 QKV 计算 token 间加权表示，可并行建模长程依赖。"
     },
@@ -410,7 +410,7 @@
     "difficulty": "hard",
     "angle": "calculation",
     "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
-    "explanation": "面试高频手写题：考察注意力公式 QKᵀ/√d → softmax → ×V，以及数值稳定处理。",
+    "explanation": "考察缩放点积注意力的手写实现。关键点：①除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和；②softmax 前减去每行最大值保证数值稳定；③最终用权重矩阵乘 V 输出加权表示。忽略 max 减法在大 logits 下会直接产生 NaN 或 Inf。",
     "reference": {
       "concept": "scaled dot-product attention：QKᵀ/√d_k 经 softmax 后对 V 加权求和。"
     },

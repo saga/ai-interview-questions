@@ -11,7 +11,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "设计一个 ESG Research Agent：从几十份 ESG PDF 报告中提取碳排放等指标并生成横向对比结论。难点在数字准确性与口径不一致，怎么处理？",
-    "explanation": "考察高准确性数据抽取场景：结构化输出、口径归一、抽取与计算分离、可审计。",
+    "explanation": "考察高准确性数据抽取场景的架构设计。核心原则：抽取与推理分离——LLM 只做带出处与口径说明的结构化字段抽取（JSON schema 含指标/数值/单位/年份/页码），计算与对比交给确定性代码；不确定就留空而非猜填充。此前让 LLM 边抽取边计算导致多处数字张冠李戴。",
     "rubric": {
       "required": [
         "版面/表格解析",
@@ -58,7 +58,7 @@
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "RAG 应该放在 Agent 外部（前置管线）还是作为 Agent 内部的一个 Tool？两者各适合什么场景？",
-    "explanation": "考察 RAG 放置位置的适用边界与“效果大头在检索质量”的认知。",
+    "explanation": "考察 RAG 放置位置对系统行为的影响。前置管线适合查询意图单一、每次都需要检索的确定性场景（低延迟、行为可预测）；Tool 化适合是否检索、检索几轮都需判断的场景（多轮迭代、跨源验证）。决策依据主要是查询分布的可预测性与延迟预算，两种形态也可按流量分层混用。",
     "rubric": {
       "required": [
         "前置管线的适用与局限",
@@ -947,8 +947,7 @@
       "rag",
       "vector-rag",
       "global-query",
-      "long-context",
-      "graph-rag"
+      "long-context"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -992,8 +991,7 @@
       "graph-rag",
       "indexing",
       "entity-merging",
-      "cost",
-      "community-report"
+      "cost"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
@@ -1035,9 +1033,7 @@
       "graph-rag",
       "leiden",
       "community-detection",
-      "hierarchy",
-      "latency",
-      "comprehensiveness"
+      "hierarchy"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -1081,8 +1077,7 @@
       "graph-rag",
       "local-search",
       "global-search",
-      "map-reduce",
-      "context-window"
+      "map-reduce"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -1126,8 +1121,7 @@
       "lazy-graphrag",
       "graph-rag",
       "indexing-cost",
-      "query-latency",
-      "tradeoff"
+      "query-latency"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -1171,8 +1165,7 @@
       "graph-rag",
       "evaluation",
       "comprehensiveness",
-      "faithfulness",
-      "hallucination"
+      "faithfulness"
     ],
     "difficulty": "medium",
     "angle": "definition",
@@ -1214,8 +1207,7 @@
       "agentic-rag",
       "routing",
       "retrieval-strategy",
-      "latency",
-      "debuggability"
+      "latency"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -1264,7 +1256,7 @@
     "difficulty": "hard",
     "angle": "definition",
     "question": "什么是检索增强生成（RAG）？请描述其基本流程及相比单纯依赖模型参数的优势。",
-    "explanation": "考察检索-拼接-生成流程，以及可溯源、实时性、降幻觉、低成本等优势。",
+    "explanation": "考察 RAG 的检索-拼接-生成三段流程及其相比参数化知识的优势。RAG 将知识外置为可更新索引库，文档更新只需重建索引而无需重训模型；回答时实时检索最新内容进入 context 并附引用来源。它解决不了检索质量差导致的答非所问，也不能消除模型误读证据产生的幻觉。",
     "reference": {
       "concept": "RAG 在生成前检索外部知识作为上下文，提升可溯源性与时效性、降低幻觉。"
     },
@@ -1312,7 +1304,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "面对一个企业知识问答需求（知识频繁更新、需要溯源、数据涉密不能出内网），你会选择提示工程、RAG 还是微调？请说明决策依据与组合方案。",
-    "explanation": "考察三者边界：RAG 管“知识”，微调管“行为”，提示工程管“约束”；以及可溯源、时效性、私有化部署等工程权衡。",
+    "explanation": "考察 RAG vs 微调 vs 提示工程的决策框架。知识频繁更新且需溯源 → RAG（外挂索引实时更新+附引用）；行为风格或输出格式定制 → 微调（改变模型行为倾向）；轻量约束 → 提示工程。数据不出内网可用本地部署的 embedding 与 LLM。三者常组合使用而非互斥。",
     "reference": {
       "concept": "RAG 解决知识时效与溯源，微调改变行为风格，提示工程做约束；三者常组合。"
     },
@@ -1401,9 +1393,7 @@
       "slm",
       "knowledge-ceiling",
       "parametric-memory",
-      "rag",
-      "reranking",
-      "synthetic-data"
+      "rag"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",

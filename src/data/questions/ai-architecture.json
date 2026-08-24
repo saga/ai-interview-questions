@@ -7,8 +7,7 @@
       "bitter-lesson",
       "scaffolding",
       "general-method",
-      "guardrails",
-      "evolution"
+      "guardrails"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
@@ -49,12 +48,11 @@
       "cot",
       "model-family",
       "reasoning",
-      "context-loss",
-      "heterogeneous"
+      "context-loss"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "某 AI Coding Agent 系统采用动态路由机制，在同一任务的不同步骤中根据模式（如从“架构设计”切换到“代码重构”）在不同的模型族（如 Anthropic Claude 系列、OpenAI GPT 系列、DeepSeek 系列）之间进行模型切换。系统发现在某些切换后，Agent 的下一步表现出现了意外的推理解断。关于这一现象的技术原因与工程影响，下列说法正确的有？（多选）",
+    "question": "某 AI Coding Agent 系统采用动态路由机制，在同一任务的不同步骤中根据模式（如从“架构设计”切换到“代码重构”）在不同供应商的推理模型族（模型族 A / B / C）之间进行模型切换。系统发现在某些切换后，Agent 的下一步表现出现了意外的推理解断。关于这一现象的技术原因与工程影响，下列说法正确的有？（多选）",
     "explanation": "异构推理格式不兼容致丢思维链、丢失上下文但可基于工具历史继续、D称JSON可无损共享错误。",
     "reference": {
       "concept": "跨族CoT格式不兼容致上下文裁剪。"
@@ -93,12 +91,11 @@
       "gateway",
       "unified-api",
       "decoupling",
-      "security",
-      "multi-provider"
+      "security"
     ],
     "difficulty": "hard",
     "angle": "system-design",
-    "question": "某企业级 AI 架构团队准备引入统一的 LLM 模型接入网关（Unified LLM Gateway）来管理多供应商（如 OpenAI, Anthropic, 自建开源模型等）的 LLM 调用。关于该 Gateway 在系统架构中的核心职责与设计价值，下列说法正确的有？（多选）",
+    "question": "某企业级 AI 架构团队准备引入统一的 LLM 模型接入网关（Unified LLM Gateway）来管理多供应商（闭源 API 与自建开源模型等）的 LLM 调用。关于该 Gateway 在系统架构中的核心职责与设计价值，下列说法正确的有？（多选）",
     "explanation": "网关统一标准格式屏蔽协议、解耦适配与路由可配置、直联秘钥管理提安全、D称编译为字节码消除语义偏差错误。",
     "reference": {
       "concept": "网关：统一协议+解耦路由+安全隔离。"
@@ -137,8 +134,7 @@
       "routing",
       "signal-based",
       "predictive",
-      "classifier",
-      "latency"
+      "classifier"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -182,8 +178,7 @@
       "stateless",
       "stateful-storage",
       "crash-recovery",
-      "horizontal-scaling",
-      "ground-truth"
+      "horizontal-scaling"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -231,7 +226,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "请设计一个 Agentic 系统来完成“根据用户自然语言需求，自动检索资料并生成一份结构化报告”的任务，描述其核心组件与执行流程。",
-    "explanation": "考察端到端 Agent 系统设计：规划、检索、工具、记忆、评审与流程编排。",
+    "explanation": "考察端到端 Agent 系统设计能力。核心组件包括规划器（任务分解）、检索器（多轮检索补充素材）、工具层（图表等动作执行）、记忆（中间结果持久化）与评审器（来源与结构校验）。流程上需支持失败环节的定点重试而非推倒重来，且关键论断必须标注来源以满足可审计要求。",
     "reference": {
       "concept": "Agent 系统=规划+检索+工具+记忆+撰写+评审的闭环。"
     },
@@ -282,7 +277,7 @@
     "difficulty": "medium",
     "angle": "system-design",
     "question": "设计一个“公司内部知识库 Agent”：可以搜索内部文档并回答员工问题。请给出核心组件、检索设计与防幻觉措施。",
-    "explanation": "考察企业知识场景的系统设计：检索质量、权限、溯源与拒答机制。",
+    "explanation": "考察企业知识场景的检索设计与防幻觉机制。核心要点：混合检索（BM25+dense）按部门/权限过滤结果、答案强制附带引用来源、检索不到相关内容时明确拒答而非编造补全。权限必须下沉到检索层而非仅靠提示词约束——否则模型可能在生成阶段泄露无权限内容。",
     "reference": {
       "concept": "知识库 Agent = 混合检索 + 权限过滤 + 引用溯源 + 检索不到就拒答。"
     },
@@ -331,7 +326,7 @@
     "difficulty": "medium",
     "angle": "system-design",
     "question": "设计一个能读取 GitHub Repository 并回答架构问题的 Agent。仓库可能有几千个文件，如何保证回答有据可依？",
-    "explanation": "考察代码库规模下的检索设计：符号索引 + 多跳检索 + 文件级引用。",
+    "explanation": "考察超大代码库的检索架构。核心挑战是几千个文件的语义定位与跨模块追溯。方案需构建符号索引（类/函数定义与引用关系）结合语义检索，先由 Planner 定位相关模块再按需读取片段；跨模块问题沿 import/调用链做多跳检索。回答必须附文件路径引用供人工复核。",
     "rubric": {
       "required": [
         "结构/符号索引",
@@ -377,7 +372,7 @@
     "difficulty": "medium",
     "angle": "system-design",
     "question": "设计一个 Research Agent：可以搜索互联网、读取网页/PDF 并生成带引用的研究报告。请描述其循环流程与质量控制。",
-    "explanation": "考察研究型 Agent 的规划-检索-验证-撰写闭环与预算控制。",
+    "explanation": "考察研究型 Agent 的规划-验证闭环与预算控制。流程为拆解问题→循环搜索抓取提取→撰写→评审修订，每条事实绑定 URL 与访问时间。交叉验证要求多来源一致才采信；设置最大迭代次数与 token 预算防止无限研究——此前完全自主规划的原型曾连续抓取数小时导致成本超标数十倍。",
     "rubric": {
       "required": [
         "规划搜索查询",
@@ -558,8 +553,7 @@
       "physical-ai",
       "world-model",
       "vla",
-      "simulation",
-      "embodied"
+      "simulation"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -792,8 +786,7 @@
       "system-design",
       "agent",
       "RAG",
-      "tool-calling",
-      "evaluation"
+      "tool-calling"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -841,8 +834,7 @@
       "model-selection",
       "dense-vs-moe",
       "kv-cache",
-      "capacity-planning",
-      "tradeoff"
+      "capacity-planning"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -1287,8 +1279,7 @@
       "unified-backbone",
       "foundation-model",
       "multi-domain",
-      "generalization",
-      "reuse"
+      "generalization"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -1331,8 +1322,7 @@
       "deterministic-code",
       "probabilistic-llm",
       "hybrid-reasoning",
-      "latency",
-      "scaffolding"
+      "latency"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -1376,8 +1366,7 @@
       "feedback-loop",
       "triage",
       "data-quality",
-      "rag",
-      "trace"
+      "rag"
     ],
     "difficulty": "medium",
     "angle": "scenario",
@@ -1418,8 +1407,7 @@
       "code-mode",
       "sandbox",
       "tool-calling",
-      "batch-processing",
-      "context-pruning"
+      "batch-processing"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -1462,9 +1450,7 @@
       "websocket",
       "https",
       "sse",
-      "incremental-request",
-      "agent-loop",
-      "payload"
+      "incremental-request"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -1507,9 +1493,7 @@
       "hybrid-architecture",
       "routing",
       "guardrails",
-      "slm",
-      "llm",
-      "escalation"
+      "slm"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -1552,8 +1536,7 @@
       "kafka",
       "rabbitmq",
       "middleware",
-      "routing",
-      "retention"
+      "routing"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
@@ -1589,52 +1572,6 @@
     }
   },
   {
-    "id": "mlops-05",
-    "category": "ai-architecture",
-    "topic": "system-design",
-    "tags": [
-      "kafka",
-      "storage",
-      "offset",
-      "sequential-append",
-      "rebalance",
-      "zero-copy"
-    ],
-    "difficulty": "medium",
-    "angle": "mechanism",
-    "question": "在 Kafka 分布式消息集群中，为了实现高吞吐量的顺序读写与可靠消费，其底层存储与 Consumer Offset 管理机制进行了专门设计。下列关于 Kafka 核心机制的描述，正确的有？（多选）",
-    "explanation": "四项均正确：Offset可回溯、有序性限单Partition、顺序追加+PageCache+ZeroCopy、Rebalance后从提交Offset续拉。",
-    "reference": {
-      "concept": "Kafka：Offset自管理回溯、单Partition有序、顺序追加+零拷贝、Rebalance续消费。"
-    },
-    "formats": {
-      "choice": {
-        "type": "multiple",
-        "options": [
-          "Kafka 允许 Consumer 自行管理并更新提交的 Offset，因此 Consumer 可以随时调整 Offset 指针回溯并重播过去的消息",
-          "Kafka 仅保证单个 Partition 内部的消息全局有序，无法直接保证跨多个 Partition 之间的绝对消息顺序",
-          "Kafka 生产者将数据写入 Partition 时采用的是磁盘顺序追加（Sequential Append Log），配合 Page Cache 与 Zero-Copy（零拷贝）技术提升传输性能",
-          "当 Consumer Group 中的某个 Consumer 实例发生宕机时，Rebalance 机制会将分区重新分配给其他实例，新实例从该分区最后一次成功提交的 Offset 位置继续拉取消息"
-        ],
-        "answer": [
-          0,
-          1,
-          2,
-          3
-        ]
-      },
-      "open": {
-        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Consumer可自主提交/重置Offset，实现任意回溯重播。\n- B：有序性保证仅在Partition内有效，跨Partition不保证全局序。\n- C：顺序追加避免随机IO，Page Cache与sendfile零拷贝减少内核态拷贝与上下文切换。\n- D：Group Rebalance重新分配Partition，继承已提交Offset，保证至少一次消费连续性。"
-      }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
-    }
-  },
-  {
     "id": "net-napt-01",
     "category": "ai-architecture",
     "topic": "system-design",
@@ -1642,8 +1579,7 @@
       "napt",
       "nat",
       "ip-masquerading",
-      "translation-table",
-      "port-forwarding"
+      "translation-table"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
@@ -1686,8 +1622,7 @@
       "benchmark",
       "dynamic-benchmark",
       "time-trigger",
-      "interjection",
-      "visual-tracking"
+      "interjection"
     ],
     "difficulty": "hard",
     "angle": "scenario",
@@ -1731,8 +1666,7 @@
       "production",
       "context-window",
       "network-jitter",
-      "latency-budget",
-      "active-parameters"
+      "latency-budget"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -1776,8 +1710,7 @@
       "dual-model",
       "foreground-background",
       "fast-slow-path",
-      "streaming",
-      "weave"
+      "streaming"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -1821,8 +1754,7 @@
       "micro-turns",
       "time-aligned",
       "full-duplex",
-      "concurrency",
-      "latency"
+      "concurrency"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -1866,12 +1798,11 @@
       "multimodal",
       "whisper",
       "native-encoder",
-      "latency",
-      "end-to-end"
+      "latency"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
-    "question": "在构建支持连续音视频流的实时大模型时，设计团队放弃了外挂重型预训练独立编码器（Pretrained Encoders，如 Whisper）的传统方案，转而采用从零训练的轻量化音视频处理模块。做出这一设计决策的核心工程考量是？",
+    "question": "在构建支持连续音视频流的实时大模型时，设计团队放弃了外挂重型预训练独立编码器（Pretrained Encoders）的传统方案，转而采用从零训练的轻量化音视频处理模块。做出这一设计决策的核心工程考量是？",
     "explanation": "重型块式编码引入前级延迟且难与微轮次端到端联合优化，轻量化才适配连续流。",
     "reference": {
       "concept": "原生轻量化适配连续微轮次，重型块式难端到端。"
@@ -1909,9 +1840,7 @@
       "pipeline",
       "harness",
       "vad",
-      "bitter-lesson",
-      "duplex",
-      "heuristic"
+      "bitter-lesson"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -1955,9 +1884,7 @@
       "redis",
       "aof",
       "wal",
-      "persistence",
-      "fsync",
-      "latency"
+      "persistence"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -2000,9 +1927,7 @@
       "redis",
       "rdb",
       "bgsave",
-      "cow",
-      "fork",
-      "oom"
+      "cow"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -2045,9 +1970,7 @@
       "self-hosting",
       "api",
       "sla",
-      "cost",
-      "latency-profile",
-      "tco"
+      "cost"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
@@ -2088,8 +2011,7 @@
       "intent-classification",
       "domain-routing",
       "predictive-model",
-      "action-layer",
-      "transaction"
+      "action-layer"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -2175,8 +2097,7 @@
       "confidence-threshold",
       "automation",
       "risk",
-      "escalation",
-      "self-service-rate"
+      "escalation"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
@@ -2217,8 +2138,7 @@
       "escalation",
       "handoff",
       "payload-design",
-      "state-recovery",
-      "human-in-the-loop"
+      "state-recovery"
     ],
     "difficulty": "hard",
     "angle": "system-design",
@@ -2262,9 +2182,7 @@
       "marketplace",
       "platform",
       "autonomous-adjudication",
-      "co-pilot",
-      "routing",
-      "aht"
+      "co-pilot"
     ],
     "difficulty": "hard",
     "angle": "system-design",

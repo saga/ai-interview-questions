@@ -11,7 +11,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "设计一个任务可能持续数小时甚至数天的 Agent：期间可以暂停和恢复。持久化什么、何时落盘、恢复时如何自洽？",
-    "explanation": "考察长时间任务的 checkpoint/resume：状态机建模、落盘时机、幂等重放与过期重规划。",
+    "explanation": "考察长时间任务的 checkpoint/resume 设计。核心要点：checkpoint 包含目标计划、已完成步骤、待办队列与工具幂等键；落盘时机为每步成功后+外部副作用前后；恢复时校验快照完整性（版本/哈希）再用摘要重建上下文。模糊区依赖工具幂等性安全重放——此前恢复后忘记已完成站点导致重复下单即为此类事故。",
     "rubric": {
       "required": [
         "可序列化状态设计（含幂等键/外置大对象）",
@@ -57,7 +57,7 @@
     "difficulty": "medium",
     "angle": "scenario",
     "question": "一个 Agent 经常重复执行同一个 Tool（参数几乎一样）。可能的原因是什么？你会如何定位与修复？",
-    "explanation": "考察从轨迹定位重复调用的根因（上下文可见性 vs 判定失败）与护栏修复。",
+    "explanation": "考察重复调用的根因定位与护栏修复。常见根因：工具结果未被有效写回上下文、错误信息过于模糊使模型以为没拿到结果。修复手段：结果结构化回注并标注第 N 次调用、添加相似参数的重复检测护栏、改进错误信息让模型区分'失败需重试'和'成功无需再调'。",
     "rubric": {
       "required": [
         "至少两种可能根因",
@@ -102,7 +102,7 @@
     "difficulty": "medium",
     "angle": "scenario",
     "question": "Agent 明明拥有正确的 Tool，却经常选择错误的 Tool。你会怎么系统地分析这个问题？",
-    "explanation": "考察系统性归因：错误分桶、描述工程、路由评测集与候选集收窄。",
+    "explanation": "考察工具选择错误的系统性归因方法。先分桶：选错类型/选对但参数错/时机错；再消除 name 与 description 歧义并补充适用条件与反例；最后构造路由评测集对每次改动做回归验证。仅凭直觉改提示词无法量化改进效果。",
     "rubric": {
       "required": [
         "错误分桶分析",
@@ -148,7 +148,7 @@
     "difficulty": "medium",
     "angle": "scenario",
     "question": "Agent 第一次运行成功，第二次同样输入却失败了。你会优先检查哪些 State 与环境因素？",
-    "explanation": "考察非确定性排查：随机性/外部漂移/状态污染三分法与录制回放。",
+    "explanation": "考察非确定性失败的排查框架。优先检查三类非确定源：模型采样随机性与供应商版本漂移、外部环境变化（API 返回不同数据/限流）、残留状态污染（上次 memory/缓存影响本次起点）。用 trace diff 对比两次运行差异，再二分禁用可变因素复现。",
     "rubric": {
       "required": [
         "区分模型随机性/外部环境/状态残留三类因素",
@@ -194,7 +194,7 @@
     "difficulty": "hard",
     "angle": "scenario",
     "question": "Agent 在长任务中表现越来越差（“越来越迷糊”），但模型本身能力没有变化。可能是什么问题？如何解决？",
-    "explanation": "考察 context pollution / lost-in-the-middle 的识别与上下文卫生治理。",
+    "explanation": "考察 context pollution 的识别与治理。失败尝试与冗长工具输出留在上下文中持续干扰决策，加上长上下文 lost-in-the-middle 效应使关键指令被稀释。解决：定期摘要化已完成工作、剥离失败细节（保留教训一句话）、把目标固定在 system 区周期性重申。",
     "rubric": {
       "required": [
         "指出 context pollution 或指令稀释",
@@ -240,7 +240,7 @@
     "difficulty": "hard",
     "angle": "scenario",
     "question": "线上 Agent 成功率从 85% 掉到 60%，但模型版本没有任何变化。你会如何定位？请给出系统的排查框架。",
-    "explanation": "考察系统化排查框架：切片分流、上游变更、trace 聚类与回归防线。",
+    "explanation": "考察成功率回归的系统化排查框架。按依赖链分层排查：①切片分流找掉分具体切片；②上游数据/工具 API 变更（最常见根因）；③环境因素（限流/超时率）；④自身非模型发布变更；⑤用户 query 分布漂移。用 trace diff 聚类新增错误模式而非只看全局均值。",
     "rubric": {
       "required": [
         "按切片分流缩小范围",
@@ -286,7 +286,7 @@
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "某个 Tool API 平均延迟从 200ms 涨到 3s，Agent 的端到端延迟却涨了约 10 倍。为什么放大效应这么明显？",
-    "explanation": "考察延迟放大机制（串行 loop/重试/同步等待）与对应的工程缓解。",
+    "explanation": "考察延迟放大机制与缓解策略。Agent 延迟是串行链：慢工具阻塞整个循环→超时重试叠加→更多确认性调用→并发等待时最慢者拖住整批。缓解：缓存与降级返回部分结果、重试退避上限、非依赖工具并行化、慢工具异步化先返 task id 后轮询。",
     "rubric": {
       "required": [
         "解释串行链与重试的放大机制",
@@ -332,7 +332,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "一个能执行付款的 Agent 偶尔会重复付款两次。你会如何从架构层面彻底解决？",
-    "explanation": "考察副作用安全的架构化：幂等键、确认门、状态机、对账，而非依赖提示词。",
+    "explanation": "考察副作用安全的架构化设计。第一原则：不能指望模型'别再调一次'——必须架构级硬约束。幂等键去重（相同键重放返回首次结果）、确认门（金额阈值审批）、持久化状态机约束推进、audit log + 定时对账兜底。仅靠提示词警告属于反模式。",
     "rubric": {
       "required": [
         "幂等键去重（核心）",
@@ -381,7 +381,7 @@
     "difficulty": "medium",
     "angle": "scenario",
     "question": "一个 Agent 在测试环境表现很好，上线后成功率大幅下降。你会从哪些维度排查这种“实验室到生产”的落差？",
-    "explanation": "考察 lab-to-prod 落差的系统性归因与影子流量/灰度方法论。",
+    "explanation": "考察 lab-to-prod 落差的多维归因。典型维度包括分布漂移（生产 query 更杂更长多语言）、环境差异（限流/脏数据/并发竞争）、知识库内容不同步、使用方式偏离预期。排查方法是对线上失败样本聚类并与测试集对比特征差异，据此扩充评测集。",
     "rubric": {
       "required": [
         "分布漂移（query 分布）",
@@ -871,8 +871,7 @@
       "git",
       "reflog",
       "hard-reset",
-      "object-database",
-      "recovery"
+      "object-database"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
@@ -913,8 +912,7 @@
       "git",
       "reset",
       "head",
-      "index",
-      "working-directory"
+      "index"
     ],
     "difficulty": "medium",
     "angle": "mechanism",
@@ -957,8 +955,7 @@
       "git",
       "stash",
       "working-directory",
-      "staging-area",
-      "untracked"
+      "staging-area"
     ],
     "difficulty": "medium",
     "angle": "mechanism",

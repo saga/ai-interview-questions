@@ -183,48 +183,6 @@
     }
   },
   {
-    "id": "dl-06",
-    "category": "model-architecture",
-    "topic": "gqa",
-    "tags": [
-      "attention",
-      "gqa",
-      "mqa",
-      "kv-cache"
-    ],
-    "difficulty": "hard",
-    "angle": "mechanism",
-    "question": "Llama 3、Mistral 等模型采用分组查询注意力（GQA）而非标准多头注意力（MHA），主要原因是？",
-    "explanation": "推理瓶颈主要在 KV cache 而非计算：GQA 在 MHA（每 Q 头独立 K/V）与 MQA（全部共享 1 组 K/V）之间折中，KV 头数按组缩减，缓存体积成倍下降而效果几乎无损。它不直接提升准确率，也不改变上下文长度上限。",
-    "reference": {
-      "concept": "GQA 用少量 KV 头服务多个 Query 头，缩小 KV cache，是显存与质量的折中。"
-    },
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "GQA 能明显提升模型在各项基准测试上的准确率，弥补高并发压力下的服务质量下降",
-          "GQA 让多个 Query 头共享少量 KV 头，K/V 头数按组缩减使 KV cache 体积成倍下降，可在现有显卡上承载更多并发且效果几乎无损",
-          "GQA 主要通过大幅削减注意力层参数量来缩短训练时间，从而显著节省训练阶段的算力开支",
-          "GQA 能够扩大模型的上下文窗口长度上限，让单个请求可以携带更长的文档而不受影响"
-        ],
-        "answer": [
-          1
-        ],
-        "question": "一家提供智能写作服务的企业自营大模型推理集群，模型采用标准多头注意力（MHA）。随着并发请求持续增长，KV cache 的显存占用成为瓶颈，单卡能承载的并发路数远低于预期，而直接扩容 GPU 又超出了本季度预算。工程团队计划把注意力结构改造为分组查询注意力（GQA）。关于这次改造的主要收益，下列说法正确的是？"
-      },
-      "open": {
-        "referenceAnswer": "正确答案要点：GQA 让多个 Query 头共享少量 KV 头，显著缩小 KV cache，且质量损失极小。\n\n解析：推理瓶颈主要在 KV cache 而非计算：GQA 在 MHA（每 Q 头独立 K/V）与 MQA（全部共享 1 组 K/V）之间折中，KV 头数按组缩减，缓存体积成倍下降而效果几乎无损。它不直接提升准确率，也不改变上下文长度上限。"
-      }
-    },
-    "rubric": {
-      "required": [
-        "压缩倍数 = MHA 头数 ÷ KV 头数，质量影响介于两者之间",
-        "对 decode 的收益最大（缓存读取是带宽瓶颈），prefill 收益相对小"
-      ]
-    }
-  },
-  {
     "id": "gqa-swa-01",
     "category": "model-architecture",
     "topic": "gqa",
@@ -232,9 +190,7 @@
       "gqa",
       "kv-cache",
       "swa",
-      "memory-bandwidth",
-      "long-context",
-      "layer-sharing"
+      "memory-bandwidth"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -277,9 +233,7 @@
       "mamba",
       "ssm",
       "hybrid",
-      "kv-cache",
-      "long-context",
-      "attention"
+      "kv-cache"
     ],
     "difficulty": "medium",
     "angle": "tradeoff",
@@ -395,48 +349,6 @@
     }
   },
   {
-    "id": "llm-12",
-    "category": "model-architecture",
-    "topic": "gqa",
-    "tags": [
-      "gqa",
-      "kv-cache",
-      "mha",
-      "attention"
-    ],
-    "difficulty": "medium",
-    "angle": "calculation",
-    "question": "某模型的架构说明写着：32 个 Query 头、仅 2 个 KV 头（GQA）、head_dim=128。相比每个 Q 头独享 K/V 的标准 MHA（32 个 KV 头），为什么它的单 token KV cache 能缩小约 16 倍？",
-    "explanation": "KV cache 按 token × 层 × KV 头存储：每层每 token 缓存 num_kv_heads × head_dim 的 K 与 V，Query 头从不进入缓存。GQA 让 32 个 Query 头分组共享这 2 组 K/V，缓存规模由 KV 头数决定，因此是 32÷2=16 倍的压缩，而注意力表达力基本保留。",
-    "reference": {
-      "concept": "KV cache/token ∝ 层数 × KV头数 × head_dim × 字节数；GQA 缩的是 KV 头数，Query 头数不进缓存公式。"
-    },
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "归因错了：Query 头从不进入缓存；A 的优势在于 GQA 让 32 个 Query 头共享 2 组 K/V，缓存由 KV 头数决定，恰为 B 的 1/16",
-          "报告正确：KV cache 与 Query 头数成正比，从 32 个 Query 头降到 2 个正是 16 倍压缩的直接来源",
-          "两者缓存相同：GQA 只在训练阶段生效，推理时 A 与 B 的 KV cache 形态和体积完全一致",
-          "A 的优势来自对 K/V 做了低秩压缩投影，把每个头的 128 维压到 8 维再存入缓存，与头数无关"
-        ],
-        "answer": [
-          0
-        ],
-        "question": "你在评审同事的模型选型报告：候选 A 是 30B Dense、32 Query 头 / 2 KV 头（GQA）；候选 B 参数量相同但是标准 MHA、32 个 KV 头。报告中写道：\"A 的显存优势来自它把 Query 头砍到了 2 个\"。对这句话的正确评价是？"
-      },
-      "open": {
-        "referenceAnswer": "正确答案要点：单 token 单层的 KV cache = 2（K 和 V）× num_kv_heads × head_dim × 每元素字节数；GQA 多个 Query 头共享一组 K/V；压缩倍数 = 32÷2 = 16。\n\n解析：MHA 中 num_kv_heads = num_query_heads = 32，K/V 都要各存一份；GQA 把 KV 头降到 2，32 个 Query 头仍各自照常计算注意力，只是分组去读取这 2 组共享的 K/V——Query 张量本身从不被缓存。因此缓存缩小 16 倍而模型表达力基本无损。极端情况是 MQA 全部共享 1 组 KV 头（32× 压缩）。常见误解是把\"Query 头变少\"当成省显存的原因：减少 Query 头只降低注意力计算量，不影响缓存体积。"
-      }
-    },
-    "rubric": {
-      "required": [
-        "压缩倍数 = MHA 头数 ÷ KV 头数，质量影响介于两者之间",
-        "对 decode 的收益最大（缓存读取是带宽瓶颈），prefill 收益相对小"
-      ]
-    }
-  },
-  {
     "id": "llm-13",
     "category": "model-architecture",
     "topic": "kv-cache",
@@ -486,8 +398,7 @@
       "swa",
       "sliding-window-attention",
       "long-context",
-      "hybrid-attention",
-      "gqa"
+      "hybrid-attention"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -613,8 +524,7 @@
       "nope",
       "rope",
       "positional-encoding",
-      "long-context",
-      "causal-mask"
+      "long-context"
     ],
     "difficulty": "hard",
     "angle": "mechanism",
@@ -645,47 +555,6 @@
       "required": [
         "为什么需要位置信息（置换等变性）与各类方案的核心差异",
         "NoPE 的可行性来源与风险：顺序建模可靠性与长度外推需专门验证"
-      ]
-    }
-  },
-  {
-    "id": "llm-25",
-    "category": "model-architecture",
-    "topic": "latent-moe",
-    "tags": [
-      "rmsnorm",
-      "latent-moe",
-      "stability",
-      "ablation"
-    ],
-    "difficulty": "medium",
-    "angle": "mechanism",
-    "question": "LatentMoE 在维度变换流程（d → d/2 → D → d/2 → d）中存在 4 个连续矩阵连乘，极易引发训练不稳定。消融实验表明，保留哪一处关键位置的 RMSNorm 即可达成训练稳定？",
-    "explanation": "遵循最小改动，消融表明仅在升维投影之前（最后一个 d/2 → d 的输入位置）加入 RMSNorm 作用最本质，可防止多层矩阵连乘的梯度震荡并隐式平衡 Routed/Shared Expert 比例。",
-    "reference": {
-      "concept": "Stable LatentMoE 只需在升维投影前（d/2 → d 的输入处）加 RMSNorm：稳定矩阵连乘 + 隐式平衡 Routed/Shared Expert。"
-    },
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "降维投影前（即输入 d 处）",
-          "降维投影后（即 d → d/2 输出处）",
-          "升维投影前（即 MoE 计算完毕、进入 d/2 → d 的输入处）",
-          "升维投影后（即最终输出 d 处）"
-        ],
-        "answer": [
-          2
-        ]
-      },
-      "open": {
-        "referenceAnswer": "正确答案：C。\n\n要点：LatentMoE 的 d → d/2 → D → d/2 → d 流程含 4 个连续矩阵乘法，无归一化时梯度易震荡。消融实验（最小改动原则）的结论是：只在升维投影之前——即专家计算完成、进入最后一个 d/2 → d 投影的位置——放一个 RMSNorm 即可。该位置的作用最本质：①切断多层矩阵连乘的幅度累积，稳定训练；②隐式平衡 Routed Expert 与 Shared Expert 的贡献比例，带来部分 Benchmark 提升。其他三处位置的 Norm 要么冗余要么收益不明显。"
-      }
-    },
-    "rubric": {
-      "required": [
-        "压缩位置在专家层两端（down-proj 进、up-proj 出），省的是矩阵乘法规模而非路由",
-        "latent 维度是容量旋钮：压缩比越高信息瓶颈越紧"
       ]
     }
   },
@@ -820,9 +689,7 @@
       "hybrid-architecture",
       "ssm",
       "mamba",
-      "attention",
-      "long-context",
-      "kv-cache"
+      "attention"
     ],
     "difficulty": "hard",
     "angle": "tradeoff",
@@ -865,8 +732,7 @@
       "moe",
       "routing",
       "gating",
-      "active-parameters",
-      "load-balancing"
+      "active-parameters"
     ],
     "difficulty": "hard",
     "angle": "mechanism",

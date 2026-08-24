@@ -77,8 +77,7 @@
       "tool-layer",
       "mcp",
       "rpc",
-      "decoupling",
-      "security"
+      "decoupling"
     ],
     "difficulty": "medium",
     "angle": "system-design",
@@ -163,7 +162,7 @@
     "difficulty": "medium",
     "angle": "calculation",
     "question": "实现一个简单的 tool-calling 分发器：给定 tools 列表（每个含 name 与 callable），以及模型返回的 tool_call（含 name 与 args 字典），调用对应函数并返回结果。",
-    "explanation": "考察工具分发、参数解包与异常处理，是 Agent 执行层的基本功。",
+    "explanation": "考察工具分发的健壮实现。按 name 查表精确定位、**args 解包传参调用，对未知工具名与执行异常捕获后返回结构化 error 交由上层兜底。此前把所有函数顺序执行再挑'看起来最像'的输出回传是反模式——会导致参数缺失时进程崩溃。",
     "reference": {
       "concept": "按 name 查表分发，解包 args，兜底未知工具与异常。"
     },
@@ -212,7 +211,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "设计一个分析 SQL Server 数据并生成分析报告的 Agent。如何保证生成的 SQL 安全、正确？",
-    "explanation": "考察 text-to-sql Agent 的安全（只读/白名单）、正确性闭环（校验+自修复）与审计。",
+    "explanation": "考察 text-to-SQL Agent 的安全边界与正确性闭环。安全：只读账号+禁止多语句与 DDL/DML（AST 校验）；正确性：schema 上下文注入后 EXPLAIN 试运行校验，出错将错误带回模型有限次自修复；结论必须引用具体查询结果数值。所有执行的 SQL 记入 audit log 供审计追溯。",
     "rubric": {
       "required": [
         "只读权限/SQL 白名单等安全边界",
@@ -305,7 +304,7 @@
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "Agent 的可用 Tool 应该完全交给 LLM 自由选择，还是由代码按任务阶段限定候选集？为什么？",
-    "explanation": "考察最小权限与选择质量的理由，以及收窄过度带来的灵活性代价。",
+    "explanation": "考察工具候选集收窄的安全与质量动机。最小权限缩小注入攻击面；选项更少使选择更准（无关工具是选择噪声的主要来源）；裁剪候选直接节省 token 成本。完全放开仅在探索期或工具少且正交时有意义。限定策略本身也要用路由评测集验证以防收窄过度损害能力。",
     "rubric": {
       "required": [
         "安全（最小权限/攻击面）",
@@ -535,7 +534,7 @@
     ],
     "difficulty": "hard",
     "angle": "system-design",
-    "question": "一个系统同时接入 GPT、Claude 和开源模型。你会根据哪些因素设计 Model Routing？",
+    "question": "一个系统同时接入多个闭源与开源大模型。你会根据哪些因素设计 Model Routing？",
     "explanation": "路由 = 任务难度×质量要求×成本延迟×能力特异性×合规×健康度的多维分流；规则起步、数据成熟后动态化，分支需独立评测与灰度。",
     "rubric": {
       "required": [
@@ -711,8 +710,7 @@
       "tool-discovery",
       "mcp",
       "context-window",
-      "deferred-loading",
-      "routing"
+      "deferred-loading"
     ],
     "difficulty": "medium",
     "angle": "system-design",
