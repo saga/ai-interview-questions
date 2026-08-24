@@ -2,7 +2,8 @@
   {
     "id": "pretraining",
     "name": "预训练",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "在海量无标注语料上以 next-token 目标做自监督训练，把语言/世界知识压进参数；数据配比与质量决定能力上限。",
     "required": [
@@ -21,7 +22,8 @@
   {
     "id": "sft",
     "name": "SFT 监督微调",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "用高质量\"指令→回答\"对做监督训练，教会 base model 遵循指令与对话格式；是 post-training 的第一阶段。",
     "required": [
@@ -40,7 +42,8 @@
   {
     "id": "rlhf",
     "name": "RLHF",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "人类偏好数据训练奖励模型，再用强化学习优化策略使输出符合偏好；让模型从\"能答\"变成\"答得好\"。",
     "required": [
@@ -59,7 +62,8 @@
   {
     "id": "dpo",
     "name": "DPO 直接偏好优化",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "绕开显式奖励模型与 RL 循环，直接在偏好对上做闭式优化的对齐方法；工程上更简单稳定，表达力上限受限于隐式奖励形式。",
     "required": [
@@ -78,7 +82,8 @@
   {
     "id": "alignment",
     "name": "对齐（Alignment）",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P1",
     "summary": "让模型行为符合人类意图与价值观的整条技术线（SFT/RLHF/宪法 AI/红队）；对齐改变行为方式，不等同于能力增强。",
     "required": [
@@ -97,7 +102,8 @@
   {
     "id": "lora",
     "name": "LoRA 参数高效微调",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "冻结基座权重、只训练低秩增量矩阵（ΔW=BA）：可训练参数降千倍级，适配器可插拔共享同一基座。",
     "required": [
@@ -116,7 +122,8 @@
   {
     "id": "fine-tuning",
     "name": "全量微调与 PEFT 选型",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P1",
     "summary": "全量微调更新全部权重（效果上限高、成本高），PEFT（LoRA 等）只训小参数量；选型取决于任务与基座的差距大小和数据量。",
     "required": [
@@ -135,7 +142,8 @@
   {
     "id": "distillation",
     "name": "知识蒸馏",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P1",
     "summary": "让小模型学习大模型的输出分布（软标签/轨迹），以更低成本逼近教师能力；是模型压缩与成本优化的常规手段。",
     "required": [
@@ -154,7 +162,8 @@
   {
     "id": "scaling-law",
     "name": "Scaling Law 与算力最优",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "loss 随参数/数据/算力的幂律可预测地下降；Chinchilla 表明给定算力下参数与数据应同比扩张（compute-optimal），实际产品常为推理成本故意\"欠训练\"小模型。",
     "required": [
@@ -173,7 +182,8 @@
   {
     "id": "training-data",
     "name": "训练数据质量",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P0",
     "summary": "数据质量/多样性/配比决定模型上限：去重、清洗、毒性过滤、配比消融是预训练的核心工程；\"garbage in, garbage out\" 在 LLM 规模下被放大。",
     "required": [
@@ -192,7 +202,8 @@
   {
     "id": "distributed-training",
     "name": "分布式训练并行策略",
-    "area": "training",
+    "area": "llm",
+    "topic": "training",
     "priority": "P1",
     "summary": "数据并行切 batch、张量并行切单层矩阵、流水线并行切层、专家并行切 MoE 专家；组合使用时通信模式决定吞吐上限。",
     "required": [

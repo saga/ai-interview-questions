@@ -11,6 +11,7 @@ import type {
   Question,
   QuestionAngle,
 } from '../types';
+import { DOMAINS, DOMAIN_LABELS, allowedAnglesFor } from '../data/taxonomy.ts';
 
 /** 角度固定排序（难度梯度序），报告与建议都按此序展示。 */
 export const ANGLE_ORDER: QuestionAngle[] = [
@@ -45,7 +46,10 @@ const PRIORITY_ORDER: KnowledgePriority[] = ['P0', 'P1', 'P2'];
 export interface TopicCoverage {
   nodeId: string;
   name: string;
-  area: KnowledgeArea;
+  /** 所属能力域（6 大域之一，ADR-038） */
+  domain: KnowledgeArea;
+  /** 所属主题（域下的二级分类，如 Inference / RAG） */
+  topic: string;
   priority: KnowledgePriority;
   /** 节点声明的期望考察角度 */
   expected: QuestionAngle[];
@@ -83,9 +87,11 @@ export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNo
       {
         nodeId: n.id,
         name: n.name,
-        area: n.area,
+        domain: n.area,
+        topic: n.topic,
         priority: n.priority,
-        expected: [...n.angles],
+        // 节点显式声明 angles 时优先用它；否则回退到所属 topic 的角度白名单（ADR-038 延伸）。
+        expected: n.angles.length ? [...n.angles] : allowedAnglesFor(n.topic),
         counts: {},
         untagged: 0,
         gaps: [],
@@ -153,6 +159,26 @@ export function formatCoverageReport(matrix: CoverageMatrix, suggestions: Covera
     lines.push(`[${t.nodeId}] ${t.name} · ${t.priority}`);
     lines.push(`  ${cells.join(' · ')}`);
     if (t.untagged > 0) lines.push(`  ⚠ ${t.untagged} 题未标注 angle，未计入矩阵`);
+  }
+
+  // ── 按能力域汇总（ADR-038：以域组织而非技术名词平铺） ──
+  const byDomain = new Map<string, { topics: number; p0: number; p0Covered: number; gaps: number }>();
+  for (const t of matrix.topics) {
+    const g = byDomain.get(t.domain) ?? { topics: 0, p0: 0, p0Covered: 0, gaps: 0 };
+    g.topics++;
+    if (t.priority === 'P0') {
+      g.p0++;
+      if (t.gaps.length === 0) g.p0Covered++;
+    }
+    g.gaps += t.gaps.length;
+    byDomain.set(t.domain, g);
+  }
+  lines.push('');
+  lines.push('按能力域汇总（域 → 概念数 / P0覆盖 / 缺口数）：');
+  for (const d of DOMAINS) {
+    const g = byDomain.get(d);
+    if (!g) continue;
+    lines.push(`  ${DOMAIN_LABELS[d]} · ${g.topics} 概念 · P0 ${g.p0Covered}/${g.p0} · 缺口 ${g.gaps}`);
   }
 
   lines.push('');

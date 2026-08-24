@@ -2,6 +2,32 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-038 · 题库按 6 大能力域组织（Domain → Topic → Concept → Subtopic → Angle）
+
+- 状态：已采纳 · 2026-08-25
+- 背景：原 `knowledgeAreaSchema` 是 8 个扁平值（dl-fundamentals/transformer/llm-architecture/moe/training/inference/rag-agent/system-design），把"域"与"主题"混用（transformer/moe 是 LLM 架构下的主题，rag-agent 又横跨 RAG 与 Agent）。题库随之按技术名词平铺，无法回答"我对哪些能力域、哪些 Concept、哪些角度有证据"，只能回答"我有多少道 Transformer 题"。
+- 决策：
+  - **6 大能力域**：`knowledgeAreaSchema` 重构为 `ai-engineering / llm / llm-applications / agent-engineering / ai-systems / ai-security`（骨架见 `src/data/taxonomy.ts` 的 `TAXONOMY`）；域成为顶层组织原则，不再与主题混用。
+  - **三级路径**：`KnowledgeNode` 新增必填 `topic`（域下二级主题，如 Inference/RAG/Agents），与既有 `id`（Concept slug）构成 `Domain(area) → Topic → Concept(id)`；题目侧 `Question.subtopic`（ADR-037 已加）承载 Concept→Subtopic 中间层，配 `Question.angle` 形成完整的 `Concept → Subtopic → Angle` 考察维度。
+  - **单一真理来源**：`src/data/taxonomy.ts` 编码 6 域→topic 骨架（含当前暂无知识点的 topic 作为路线图占位），暴露 `DOMAIN_LABELS / TOPIC_LABELS / groupNodesByDomain / groupNodesByTopic / domainOfTopic`；Concept 层由 `knowledge/*.json` 知识点运行时按 domain/topic 分组填充。
+  - **数据重映射**：7 个知识节点 JSON（67 节点）`area` 改为对应 6 域、注入 `topic`（id 不变，题库 `topic` 引用保持有效）；`coverage.ts` 的 `TopicCoverage.area` 改名 `domain` 并新增 `topic`，覆盖报告新增"按能力域汇总"段。
+  - **标签与分组**：`KNOWLEDGE_AREA_LABELS` 改为 6 域中文标签；`knowledgeCoverage` gap 输出 `domain` 字段；CLI `question:coverage` 报告按域汇总 P0 覆盖与缺口。
+- 理由：把组织单元从"技术名词"升级为"面试能力域"，使 Learner Profile / 自适应选题 / 进度页 / 未来 Agent 都能围绕"能力域×Concept×角度"表达；与 ADR-037 逐角度证据天然对齐——两者合力把题库从"名词大全"变为"能力证据网格"。
+- 不做的事：不重写 `questions/*.json` 的 `category`（文件级分组，保留）；不在本期把 10 个角度扩展为与 topic 绑定的角度白名单（仍由知识节点 `angles` 声明）；不为暂无知识点的 topic 强行造概念。
+- 验证：新增 `src/data/taxonomy.test.ts` 守护"知识节点 domain 在 6 大域内、topic 在骨架内、domain/topic 自洽"；`npm run test` 275 passed；`typecheck`/`build` 全绿；`npm run question:coverage` 输出 6 域汇总。
+
+## ADR-039 · 题库 category 重映射到 6 大能力域 + topic 角度白名单 + Agent 题库补强
+
+- 状态：已采纳 · 2026-08-25
+- 背景：ADR-038 把 taxonomy 落到代码与知识节点，但题库 `questions/*.json` 仍按旧 7 文件（agentic-ai / ai-engineering / deep-learning / llm / machine-learning / mlops / safety-ethics）平铺，`category` 存文件名级 slug；10 个角度仍只由知识节点 `angles` 声明，缺"按 topic 绑定"的白名单。用户确认执行 ADR-038 列为"不做"的这两项（并补 6 道 Agent 架构题）。
+- 决策：
+  - **题库 category 重映射到 6 大能力域**：每道题的 `category` 设为其 `topic` 所属域（解析优先级：知识节点 area → taxonomy topic → 显式纠正 → 源文件域回退），并据此把 7 个旧文件重组为 6 个域文件（`agent-engineering / ai-engineering / llm / llm-applications / ai-systems / ai-security.json`）；409 题 `topic` id 不变，零语义破坏。`categoryLabel`（`domain/categories.ts`）改为复用 `taxonomy.DOMAIN_LABELS`，UI 分类标签直接显示 6 域中文名；`byCategory`（文件名索引）现在恰好等于 6 域。
+  - **6 道 Agent 架构单选题入库**：基于用户给出的 6 个主题（Model vs Harness 边界 / System Prompt 运行时控制 / Agentic Loop / Translation Layer / Tools Schema 解耦 / 本地化 Harness）生成，`topic` 指向有效知识节点（`agent-fundamentals` / `agent-loop` / `tool-calling`），`angle` 取 `system-design / scenario / mechanism / design / tradeoff`。原题正文未保留，选项与答案需用户最终核对。
+  - **topic 角度白名单**：`taxonomy.ts` 新增 `ANGLE_WHITELIST: Record<topic, QuestionAngle[]>`（每个 topic 的合适角度子集）+ `allowedAnglesFor(topic)`；`coverage.questionCoverageMatrix` 在节点未声明 `angles` 时，以所属 topic 白名单作为期望角度兜底（节点显式声明优先）。新增 `taxonomy.test.ts` 守护白名单 key 均为合法 topic、value 均为合法角度且不重复。
+- 理由：让题库的物理组织（文件 / `category`）与 taxonomy（6 域）彻底对齐，分类标签即能力域；topic 角度白名单把"适合考什么角度"从逐节点声明提升为 topic 级默认，减轻新概念建节点时的角度决策负担，并为未来出题蓝图按 topic 过滤角度候选提供单一来源。
+- 不做的事：不强制校验"题目 `angle` 必须 ∈ topic 白名单"（仅作默认/候选，不拒绝现有题）；不为白名单未覆盖的 topic 造概念；6 道 Agent 题按单选落地（待用户确认是否需改为多选）。
+- 验证：`npm run test` 277 passed（含 2 个白名单守护）；`typecheck`/`build` 全绿；`npm run question:coverage` 6 域汇总正常（Agent 工程 6 概念 P0 5/5 缺口 0）；题库 7→6 文件、409 题无丢失。
+
 ## ADR-037 · 学习者画像引入 Concept×Angle 逐角度证据，补 subtopic 字段与角度词表
 
 - 状态：已采纳 · 2026-08-25

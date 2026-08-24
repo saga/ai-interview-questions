@@ -2,7 +2,8 @@
   {
     "id": "inference-optimization",
     "name": "推理优化总览",
-    "area": "inference",
+    "area": "llm",
+    "topic": "inference",
     "priority": "P0",
     "summary": "先判断 compute-bound 还是 memory-bound 再对症下药：prefill 偏计算、decode 偏带宽；量化/并行/投机解码/缓存各治一种病。",
     "required": [
@@ -21,7 +22,8 @@
   {
     "id": "inference-modes",
     "name": "Prefill 与 Decode",
-    "area": "inference",
+    "area": "llm",
+    "topic": "inference",
     "priority": "P0",
     "summary": "Prefill 一次处理全部输入（compute-bound，决定 TTFT），Decode 逐 token 生成（memory-bound，每步读全部权重与 KV cache，决定 TPOT）；两者需要不同的调度与优化策略。",
     "required": [
@@ -40,7 +42,8 @@
   {
     "id": "latency",
     "name": "延迟指标（TTFT/TPOT/E2E）",
-    "area": "inference",
+    "area": "llm",
+    "topic": "inference",
     "priority": "P0",
     "summary": "TTFT 首字延迟由 prefill 与排队决定，TPOT 每 token 延迟由 decode 决定，端到端 = TTFT + 输出长度 × TPOT；SLO 应分指标定义。",
     "required": [
@@ -59,7 +62,8 @@
   {
     "id": "quantization",
     "name": "量化",
-    "area": "inference",
+    "area": "llm",
+    "topic": "inference",
     "priority": "P0",
     "summary": "以更低数值精度存储/计算权重与激活：weight-only（INT4/AWQ/GPTQ）省显存与带宽，W8A8 连激活一起量化提计算效率；KV cache 量化单独治理长上下文。",
     "required": [
@@ -78,7 +82,8 @@
   {
     "id": "caching",
     "name": "Prefix Cache 与请求复用",
-    "area": "inference",
+    "area": "llm",
+    "topic": "inference",
     "priority": "P0",
     "summary": "相同前缀（system prompt / few-shot / 多轮历史）的 KV 可跨请求复用：省掉重复 prefill，TTFT 大幅下降；命中率取决于前缀设计。",
     "required": [
@@ -97,7 +102,8 @@
   {
     "id": "inference-capacity",
     "name": "并发容量规划",
-    "area": "inference",
+    "area": "llm",
+    "topic": "inference",
     "priority": "P0",
     "summary": "总显存 ≈ 权重 + 单请求 KV × 平均上下文 × 并发数；Agent 类 workload 上下文单调增长使 KV 成为第一约束，容量应从 SLO 反推而非拍脑袋。",
     "required": [

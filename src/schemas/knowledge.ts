@@ -5,6 +5,9 @@ export const knowledgeNodeSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   area: knowledgeAreaSchema,
+  // 域（area）下的中间层级主题，如 Inference / RAG / Agents（见 src/data/taxonomy.ts）。
+  // 与 id（Concept slug）共同构成 Domain → Topic → Concept 三级路径。
+  topic: z.string().min(1),
   priority: knowledgePrioritySchema,
   summary: z.string().min(1),
   required: z.array(z.string().min(1)),

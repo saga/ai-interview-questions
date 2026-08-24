@@ -11,7 +11,7 @@ import {
 } from './coverage';
 
 function node(id: string, priority: KnowledgeNode['priority'], angles: KnowledgeNode['angles']): KnowledgeNode {
-  return { id, name: id, area: 'moe', priority, summary: '', required: [], misconceptions: [], angles };
+  return { id, name: id, area: 'llm', topic: 'model-architecture', priority, summary: '', required: [], misconceptions: [], angles };
 }
 
 function q(topic: string, angle?: Question['angle'], id = topic): Question {

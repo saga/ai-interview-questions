@@ -4,7 +4,8 @@ import { knowledgeNodeSchema, knowledgeBankSchema } from './knowledge';
 const validNode = {
   id: 'tool-calling',
   name: 'Tool Calling',
-  area: 'rag-agent' as const,
+  area: 'agent-engineering' as const,
+  topic: 'tool-calling' as const,
   priority: 'P0' as const,
   summary: '概要',
   required: ['要点1', '要点2'],

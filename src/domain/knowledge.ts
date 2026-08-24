@@ -5,14 +5,12 @@ import type { KnowledgeArea, KnowledgeNode, KnowledgePriority, Question } from '
 import { knowledgeNodes } from '../data/knowledgeMap';
 
 export const KNOWLEDGE_AREA_LABELS: Record<KnowledgeArea, string> = {
-  'dl-fundamentals': '深度学习基础',
-  transformer: 'Transformer 核心',
-  'llm-architecture': 'LLM 架构',
-  moe: 'MoE 与稀疏专家',
-  training: '训练与后训练',
-  inference: '推理与服务',
-  'rag-agent': 'RAG 与 Agent',
-  'system-design': 'AI 系统设计',
+  'ai-engineering': 'AI Engineering（基础能力）',
+  llm: 'LLM 核心',
+  'llm-applications': 'LLM 应用',
+  'agent-engineering': 'Agent 工程',
+  'ai-systems': 'AI 系统',
+  'ai-security': 'AI 安全',
 };
 
 /** 按 id（= topic slug）查知识点。 */
@@ -32,7 +30,7 @@ export function requiredPointsFor(q: Question, nodes: KnowledgeNode[] = knowledg
 export interface CoverageGap {
   id: string;
   name: string;
-  area: KnowledgeArea;
+  domain: KnowledgeArea;
   priority: KnowledgePriority;
 }
 
@@ -56,6 +54,6 @@ export function knowledgeCoverage(questions: Question[], nodes: KnowledgeNode[] 
     p0Covered: p0.filter((n) => backedTopics.has(n.id)).length,
     gaps: nodes
       .filter((n) => !backedTopics.has(n.id))
-      .map(({ id, name, area, priority }) => ({ id, name, area, priority })),
+      .map(({ id, name, area, priority }) => ({ id, name, domain: area, priority })),
   };
 }

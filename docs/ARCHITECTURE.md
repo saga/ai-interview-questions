@@ -83,21 +83,29 @@ components/
                                  门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
-data/questions/       题库（用户数据契约，按类目一文件：questions/<slug>.json；
-                       slug 类目 + topic/tags + 可选 rubric + angle（主考察角度，
-                       覆盖矩阵用，ADR-032；存量 315 题已全量标注）；全部同时携带
-                       choice 与 open 双形态（ADR-027），其中 173 题的选择形态带
-                       场景化专属题干 cf.question（ADR-028，工程决策/安全治理/
-                       生产运维类）；ai-fundamentals（基础原理）→ agentic-ai /
-                       ai-engineering（工程判断）按能力维度组织）
+data/questions/       题库（用户数据契约，按 6 大能力域一文件：questions/<domain>.json；
+                       domain ∈ {agent-engineering, ai-engineering, llm, llm-applications,
+                       ai-systems, ai-security}，与 taxonomy 域一一对应，ADR-038/039）。每题
+                       `category` = 所属域 slug（解析链：topic→知识节点 area→taxonomy topic→
+                       源文件域回退，ADR-039），`topic` = 知识节点 id，外加 `tags` / 可选
+                       `rubric` / `angle`（主考察角度，覆盖矩阵用，ADR-032/037）。存量 409 题
+                       全部同时携带 choice 与 open 双形态（ADR-027），其中若干选择形态带场景化
+                       专属题干 cf.question（ADR-028）。题目角度候选由 taxonomy.ANGLE_WHITELIST
+                       （topic→角度子集）约束，节点未声明 angles 时回退到所属 topic 白名单（ADR-039）。
 data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状校验；刻意不建索引/数据库层，
                        规模需要时再加动态 import + 构建期 question-index；失败时抛错并定位到 文件[下标]）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
-data/knowledge/        知识点层（ADR-029，按领域一文件：knowledge/<area>.json，×7 领域：
-                        dl-fundamentals / llm-architecture / training / inference /
-                        rag / agentic-ai / system-design；transformer 与 moe 已并入
-                        llm-architecture，rag-agent 已拆为 rag 与 agentic-ai）。
+data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
+                        slug，×7：dl-fundamentals / llm-architecture / training / inference /
+                        rag / agentic-ai / system-design），但节点内部不再用文件 slug 当分类——
+                        每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
+                        llm-applications / agent-engineering / ai-systems / ai-security，
+                        骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
+                        如 Inference / RAG / Agents）。由此构成 **Domain → Topic →
+                        Concept(id)** 三级路径；题目再经 `subtopic`（Concept→Subtopic）与
+                        `angle`（definition→…→system-design 等 10 角度，见 ADR-037）落到
+                        **Concept → Subtopic → Angle** 的考察维度。
                         知识点是一等公民、题目只是它的 View：节点 id = topic slug
                         （与题目 / conceptGraph / Learner Memory 同一 join key），携带四类
                         "修饰素材"——summary（变体与复盘锚点）/ required（评分必须要点，

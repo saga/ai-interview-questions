@@ -26,15 +26,15 @@ export const questionAngleSchema = z.enum([
   'design',
 ]);
 
+// 6 大能力域（ADR-038）：以"面试能力域"组织题库，而非按技术名词平铺。
+// 每个域下再分 topic（见 src/data/taxonomy.ts），topic 下才是 Concept（KnowledgeNode）。
 export const knowledgeAreaSchema = z.enum([
-  'dl-fundamentals',
-  'transformer',
-  'llm-architecture',
-  'moe',
-  'training',
-  'inference',
-  'rag-agent',
-  'system-design',
+  'ai-engineering', // 基础能力：DL/CNN/序列模型/Transformer
+  'llm', // 大模型核心：基础/训练/推理/架构/多模态
+  'llm-applications', // 大模型应用：RAG/嵌入/检索/上下文工程
+  'agent-engineering', // 智能体工程：基础/工具/MCP/规划/记忆/多智能体
+  'ai-systems', // AI 系统：架构/评估/可观测/成本/可靠性
+  'ai-security', // AI 安全：注入/泄露/工具/智能体安全
 ]);
 
 export const knowledgePrioritySchema = z.enum(['P0', 'P1', 'P2']);

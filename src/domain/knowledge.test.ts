@@ -9,7 +9,9 @@ import { KNOWLEDGE_AREA_LABELS, knowledgeById, knowledgeCoverage, requiredPoints
 
 const AREAS = Object.keys(KNOWLEDGE_AREA_LABELS);
 const PRIORITIES = ['P0', 'P1', 'P2'];
-const ANGLES = ['definition', 'mechanism', 'calculation', 'tradeoff', 'scenario', 'system-design'];
+// 角度白名单须与 questionAngleSchema（ADR-037 起为 10 角度）保持一致：definition / fundamental /
+// mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design。
+const ANGLES = ['definition', 'fundamental', 'mechanism', 'comparison', 'calculation', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'];
 
 describe('知识点层数据完整性', () => {
   it('非空且 id 全局唯一、kebab-case 格式', () => {
@@ -75,9 +77,9 @@ describe('knowledgeById / requiredPointsFor', () => {
 
 describe('knowledgeCoverage', () => {
   const fixture: KnowledgeNode[] = [
-    { id: 'a', name: 'A', area: 'transformer', priority: 'P0', summary: 's', required: ['r'], misconceptions: ['m'], angles: ['definition'] },
-    { id: 'b', name: 'B', area: 'moe', priority: 'P0', summary: 's', required: ['r'], misconceptions: ['m'], angles: ['mechanism'] },
-    { id: 'c', name: 'C', area: 'moe', priority: 'P1', summary: 's', required: ['r'], misconceptions: ['m'], angles: ['tradeoff'] },
+    { id: 'a', name: 'A', area: 'ai-engineering', topic: 'transformer', priority: 'P0', summary: 's', required: ['r'], misconceptions: ['m'], angles: ['definition'] },
+    { id: 'b', name: 'B', area: 'llm', topic: 'model-architecture', priority: 'P0', summary: 's', required: ['r'], misconceptions: ['m'], angles: ['mechanism'] },
+    { id: 'c', name: 'C', area: 'llm', topic: 'model-architecture', priority: 'P1', summary: 's', required: ['r'], misconceptions: ['m'], angles: ['tradeoff'] },
   ];
   const questions = [{ topic: 'a' }, { topic: 'a' }, { topic: 'x' }] as Question[];
 
@@ -88,6 +90,6 @@ describe('knowledgeCoverage', () => {
     expect(c.p0Covered).toBe(1);
     // gaps 列出所有无题目支撑的节点（不分优先级）= 题库建设路线图
     expect(c.gaps.map((g) => g.id)).toEqual(['b', 'c']);
-    expect(c.gaps[0]).toMatchObject({ name: 'B', area: 'moe', priority: 'P0' });
+    expect(c.gaps[0]).toMatchObject({ name: 'B', domain: 'llm', priority: 'P0' });
   });
 });

@@ -10,7 +10,8 @@ const nodes: KnowledgeNode[] = [
   {
     id: 'load-balancing',
     name: '负载均衡',
-    area: 'moe',
+    area: 'llm',
+    topic: 'model-architecture',
     priority: 'P0',
     summary: '',
     required: ['router 机制', 'expert capacity', 'auxiliary loss'],
