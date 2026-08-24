@@ -7,8 +7,8 @@
 //
 // 边界：IndexedDB 同样是不可信边界，读出的数据仍需经 Zod 形状校验（沿用 schemas/learner 的校验）。
 
-import type { LearnerProfile } from '../types';
-import { emptyProfile } from '../domain/learner';
+import type { LearnerProfile, SessionRecord } from '../types';
+import { emptyProfile, recommendWeakTopics } from '../domain/learner';
 import { db, topicsOfSession, type StoredLearner, type StoredSession } from './db';
 
 const SESSION_CAP = 50;
@@ -50,4 +50,41 @@ export async function saveLearner(p: LearnerProfile): Promise<void> {
       await db.sessions.bulkPut(sessionRows);
     }
   });
+}
+
+// ── IndexedDB 索引查询 API（喂给进度页 / Agent 上下文，直接命中 Dexie 索引） ──
+
+/** 最近 N 次会话（按 startedAt 倒序，直接命中 startedAt 索引）。 */
+export async function getRecentSessions(limit = 10): Promise<SessionRecord[]> {
+  const rows = await db.sessions.orderBy('startedAt').reverse().limit(limit).toArray();
+  return rows.map(({ topics: _t, ...s }) => s as SessionRecord);
+}
+
+/** 某 topic 的全部会话（命中 *topics 多值索引，无需全表扫描）。 */
+export async function getSessionsByTopic(topic: string): Promise<SessionRecord[]> {
+  const rows = await db.sessions.where('topics').equals(topic).toArray();
+  // 按时间倒序
+  rows.sort((a, b) => b.startedAt - a.startedAt);
+  return rows.map(({ topics: _t, ...s }) => s as SessionRecord);
+}
+
+/** 某 topic 的逐题历史（扁平化 QuestionResult，按时间倒序）。 */
+export async function getHistoryForTopic(topic: string): Promise<SessionRecord['questionResults'][number][]> {
+  const sessions = await getSessionsByTopic(topic);
+  return sessions.flatMap((s) => s.questionResults.filter((r: SessionRecord['questionResults'][number]) => r.topic === topic));
+}
+
+/** 弱项 topic（基于 LearnerProfile 的 mastery 阈值，直接复用 domain 逻辑）。 */
+export async function getWeakTopics(limit = 3): Promise<string[]> {
+  const profile = await loadLearner();
+  return recommendWeakTopics(profile, limit);
+}
+
+/** 某 topic+angle 的逐题历史（用于 subtopic/角度级追问，预留 subtopic 粒度）。 */
+export async function getHistoryForTopicAngle(
+  topic: string,
+  angle?: string,
+): Promise<SessionRecord['questionResults'][number][]> {
+  const history = await getHistoryForTopic(topic);
+  return angle ? history.filter((r: SessionRecord['questionResults'][number]) => r.angle === angle) : history;
 }

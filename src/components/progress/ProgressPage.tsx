@@ -2,6 +2,7 @@ import { Card, Typography, Progress, Tag, List, Empty, Button, Space } from 'ant
 import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, ThunderboltOutlined, ApartmentOutlined } from '@ant-design/icons';
 import type { LearnerProfile } from '../../types';
 import type { CoverageReport, TopicSuggestion } from '../../domain/learner';
+import { domainLabel, topicLabel } from '../../data/taxonomy';
 
 interface Props {
   profile: LearnerProfile;
@@ -75,12 +76,12 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
         </Typography.Paragraph>
       </Card>
 
-      <Card size="small" style={{ marginBottom: 16 }} title="主题掌握度">
+      <Card size="small" style={{ marginBottom: 16 }} title="主题掌握度（按 6 域）">
         {topics.map(([topic, s]) => (
           <div key={topic} style={{ marginBottom: 8 }}>
             <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
               <Space size={4}>
-                <Typography.Text>{topic}</Typography.Text>
+                <Typography.Text>{topicLabel(topic)} ({topic})</Typography.Text>
                 {s.trend === 'improving' && <Tag icon={<ArrowUpOutlined />} color="success" style={{ marginInlineEnd: 0 }}>进步</Tag>}
                 {s.trend === 'declining' && <Tag icon={<ArrowDownOutlined />} color="error" style={{ marginInlineEnd: 0 }}>下滑</Tag>}
                 {s.trend === 'flat' && <Tag icon={<MinusOutlined />} color="default" style={{ marginInlineEnd: 0 }}>平稳</Tag>}
@@ -99,11 +100,11 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
         ))}
       </Card>
 
-      <Card size="small" style={{ marginBottom: 16 }} title={<span><ApartmentOutlined /> 知识覆盖面</span>}>
+      <Card size="small" style={{ marginBottom: 16 }} title={<span><ApartmentOutlined /> 知识覆盖面 · 6 域</span>}>
         {coverage.categories.map((c) => (
           <div key={c.category} style={{ marginBottom: 8 }}>
             <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-              <Typography.Text>{c.category}</Typography.Text>
+              <Typography.Text>{domainLabel(c.category as any)} ({c.category})</Typography.Text>
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                 覆盖 {c.attempted}/{c.totalTopics} 主题 · 掌握 {c.mastered}
               </Typography.Text>
@@ -152,7 +153,9 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
             renderItem={(s) => (
               <List.Item style={{ padding: '4px 0' }}>
                 <Space wrap>
-                  <Tag color={coverage.weakTopics.includes(s.topic) ? 'orange' : 'geekblue'}>{s.topic}</Tag>
+                  <Tag color={coverage.weakTopics.includes(s.topic) ? 'orange' : 'geekblue'}>
+                    {topicLabel(s.topic)} ({s.topic})
+                  </Tag>
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>{s.reason}</Typography.Text>
                 </Space>
               </List.Item>
@@ -169,7 +172,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
           <Space wrap>
             {needsAttention.map(([topic, s]) => (
               <Tag key={topic} color={masteryColor(s.mastery)}>
-                {topic} · 掌握 {Math.round(s.mastery * 100)}%
+                {topicLabel(topic)} · 掌握 {Math.round(s.mastery * 100)}%
               </Tag>
             ))}
           </Space>

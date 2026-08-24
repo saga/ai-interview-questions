@@ -301,7 +301,7 @@
   {
     "id": "ai-prompt-002",
     "category": "llm-applications",
-    "topic": "prompt-engineering",
+    "topic": "context-engineering",
     "tags": [
       "prompt",
       "few-shot"
@@ -346,7 +346,7 @@
   {
     "id": "ai-prompt-004",
     "category": "llm-applications",
-    "topic": "prompt-engineering",
+    "topic": "context-engineering",
     "tags": [
       "prompt",
       "cost",
@@ -392,7 +392,7 @@
   {
     "id": "ai-prompt-005",
     "category": "llm-applications",
-    "topic": "prompt-engineering",
+    "topic": "context-engineering",
     "tags": [
       "prompt",
       "versioning",
@@ -439,7 +439,7 @@
   {
     "id": "ai-prompt-006",
     "category": "llm-applications",
-    "topic": "prompt-engineering",
+    "topic": "context-engineering",
     "tags": [
       "reasoning",
       "cot",
@@ -1980,6 +1980,195 @@
       },
       "open": {
         "referenceAnswer": "正确答案要点：混合检索：BM25 关键词检索与稠密向量检索并用，兼顾精确匹配与语义匹配；引入重排序（cross-encoder reranker）对初筛结果精细排序；根据文档结构设计分块策略，平衡块大小的召回精度与语义完整性。\n\n解析：生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。"
+      }
+    }
+  },
+  {
+    "id": "emb-03",
+    "category": "llm-applications",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "cosine",
+      "normalization"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在用余弦相似度度量文本嵌入相似性时，为什么通常需要对向量进行 L2 归一化？未归一化时相似度会受什么因素干扰？",
+    "explanation": "余弦相似度度量方向而非长度，L2 归一化消除模长干扰，使相似度仅反映语义方向；未归一化时，向量长度（受文本长度、词频影响）会扭曲相似度。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "归一化消除向量模长干扰，使相似度仅反映方向；未归一化时长文本或高频词的长向量会虚高相似度",
+          "归一化是为了将向量压缩到 0-1 区间以便存储，与相似度计算无关",
+          "余弦相似度本身已自动归一化，无需显式 L2 归一化",
+          "归一化会丢失语义信息，因此检索时应避免归一化"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "余弦关注方向，未归一化时模长干扰；L2 归一化后点积即余弦。"
+      }
+    }
+  },
+  {
+    "id": "emb-04",
+    "category": "llm-applications",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "domain-adaptation",
+      "fine-tuning"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "一个通用多语言嵌入模型在金融研报检索中效果仅 75% 召回，而经过金融语料微调的专用嵌入模型达到 88%。关于嵌入模型的领域适配，下列说法正确的有？（多选）",
+    "explanation": "通用模型在专业术语上区分度不足，领域微调可提升，但需评估通用能力退化。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通用嵌入模型在专业领域可能因术语与语义漂移导致区分度不足",
+          "在领域标注数据上微调嵌入模型可显著提升领域召回",
+          "微调嵌入模型时无需评估通用能力退化，可直接替换线上模型",
+          "领域适配仅需增加向量维度即可解决，无需微调"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "通用泛化有限，微调可提领域召回，但需评估退化。"
+      }
+    }
+  },
+  {
+    "id": "emb-05",
+    "category": "llm-applications",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "chunking",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在 RAG 中，将长文档切成 512 token 的 chunk 并对每个 chunk 单独嵌入，与对整篇文档做单一嵌入相比，检索效果有何权衡？",
+    "explanation": "长文档单嵌入稀释局部语义，小 chunk 提升局部召回但可能丢失跨 chunk 上下文，需重叠与重排弥补。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "长文档单嵌入会稀释局部语义，小 chunk 提升局部召回但需重叠与重排来弥补跨 chunk 丢失",
+          "长文档单嵌入效果一定优于小 chunk",
+          "小 chunk 越多检索越慢，应始终用整文档嵌入",
+          "chunk 大小对检索无影响"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "小 chunk 提升局部召回，长文档单嵌入稀释；需重叠与重排平衡。"
+      }
+    }
+  },
+  {
+    "id": "emb-06",
+    "category": "llm-applications",
+    "topic": "word-embedding",
+    "tags": [
+      "embeddings",
+      "hnsw",
+      "ann"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在向量检索中，HNSW 与精确最近邻（Brute-force）搜索相比，核心权衡是什么？",
+    "explanation": "HNSW 以近似召回换速度，通过 ef/M 参数权衡召回与延迟。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "HNSW 用召回率换速度，通过 efSearch/M 参数权衡召回与延迟，而精确搜索召回 100% 但延迟随库规模线性增长",
+          "HNSW 与精确搜索在召回率与速度上完全一致",
+          "HNSW 召回率必然高于精确搜索",
+          "精确搜索比 HNSW 更省内存"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "HNSW 近似检索以召回换速度，需调参权衡。"
+      }
+    }
+  },
+  {
+    "id": "search-02",
+    "category": "llm-applications",
+    "topic": "vector-db",
+    "tags": [
+      "search",
+      "vector-db",
+      "filtering",
+      "metadata"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在向量检索中，需同时满足“语义相似且发布时间在近 30 天内”这类带时间过滤的查询。关于过滤与向量搜索的执行顺序，下列说法正确的是？",
+    "explanation": "先过滤再搜索（pre-filter）可保证结果满足条件但可能因过滤后候选过少而召回不足；后过滤（post-filter）可能因 Top-K 被不符合条件的向量占据而漏召。需根据选择性与索引支持选择预/后过滤或混合索引。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "应根据过滤条件的选择性决定执行顺序：高选择性过滤用 pre-filter，低选择性可用 post-filter或混合索引，需权衡召回与性能",
+          "一律先做向量搜索再后过滤，因为向量索引无法处理结构化过滤",
+          "过滤与向量搜索完全正交，执行顺序对结果无影响",
+          "应放弃向量检索，改用纯关键词过滤以保证时间条件"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需权衡过滤选择性：pre-filter 保正确性但可能候选不足，post-filter 可能漏召，混合索引最佳。"
+      }
+    }
+  },
+  {
+    "id": "search-03",
+    "category": "llm-applications",
+    "topic": "vector-db",
+    "tags": [
+      "search",
+      "hybrid",
+      "bm25",
+      "recall"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在混合检索（向量 + 关键词 BM25）中，为什么需要对两路召回结果进行归一化与加权融合，而非直接取 Top-K 拼接？",
+    "explanation": "两路分数尺度与分布不同，直接拼接会导致某一路主导；需归一化后加权融合才能平衡语义与关键词信号。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "两路分数分布与尺度不同，需归一化后加权融合以平衡语义与关键词信号",
+          "混合检索无需融合，直接拼接 Top-K 即可",
+          "BM25 分数恒大于向量分数，无需归一化",
+          "融合会降低召回，因此应只选一路"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "两路分数尺度不同，需归一化加权融合。"
       }
     }
   }

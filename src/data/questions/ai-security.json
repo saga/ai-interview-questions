@@ -192,7 +192,7 @@
   {
     "id": "eth-01",
     "category": "ai-security",
-    "topic": "privacy",
+    "topic": "data-leakage",
     "tags": [
       "privacy",
       "compliance",
@@ -224,7 +224,7 @@
   {
     "id": "eth-02",
     "category": "ai-security",
-    "topic": "fairness",
+    "topic": "safety-alignment",
     "tags": [
       "bias",
       "fairness",
@@ -329,7 +329,7 @@
   {
     "id": "eth-09",
     "category": "ai-security",
-    "topic": "llm-supply-chain",
+    "topic": "tool-security",
     "tags": [
       "supply-chain",
       "sbom",
@@ -396,6 +396,202 @@
       },
       "open": {
         "referenceAnswer": "正确答案：B、C、D。\n\n- B：检测是轻量统计过程——用同一密钥与前N个Token重算哈希还原每个位置的绿名单，统计命中率做假设检验，无需模型。\n- C：水印依赖上下文哈希链，大幅改写会改变前N个Token→哈希改变→绿名单失配，信号衰减。\n- D：受限语义下可选同义词少，强制偏向绿名单易选次优Token，质量损伤更明显。\n- A 错误：无需前向传播是该类水印的核心工程优势。"
+      }
+    }
+  },
+  {
+    "id": "data-leakage-01",
+    "category": "ai-security",
+    "topic": "data-leakage",
+    "tags": [
+      "data-leakage",
+      "privacy",
+      "prompt-injection",
+      "logging"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在企业级 RAG 系统中，用户提问“帮我总结上周与客户的会议纪要”时，系统检索到含敏感个人信息（身份证号、合同金额）的文档片段。关于如何防止该敏感信息通过模型输出或日志泄露，下列做法正确的有？（多选）",
+    "explanation": "需在检索前基于权限过滤、在生成前脱敏、在日志中脱敏存储，并通过审计与最小权限原则控制泄露路径。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在检索阶段基于用户身份与权限进行过滤，仅返回有权限的文档片段进入上下文",
+          "在将检索片段注入 Prompt 前，对敏感字段进行脱敏或占位符替换，仅保留任务必需信息",
+          "对模型输出与系统日志中的敏感信息进行脱敏存储与审计，避免通过日志二次泄露",
+          "为提升模型理解能力，应将所有敏感原文完整注入上下文，依赖模型自觉不泄露"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需权限过滤、Prompt 脱敏、输出与日志脱敏三层防护，遵循最小权限与审计，而非依赖模型自觉。"
+      }
+    }
+  },
+  {
+    "id": "tool-security-01",
+    "category": "ai-security",
+    "topic": "tool-security",
+    "tags": [
+      "tool-security",
+      "sandbox",
+      "privilege",
+      "validation"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个具备代码执行与文件操作能力的 Agent 被赋予“自动修复 bug 并提交 PR”的权限。关于如何防止工具滥用与越权，下列设计正确的有？（多选）",
+    "explanation": "需最小权限、参数校验、沙箱隔离与人工审计，防止工具滥用与逃逸。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为每个工具定义最小权限边界，仅授予完成当前任务必需的文件与网络访问范围",
+          "在工具调用前对参数进行模式校验与合法性检查，拒绝越权路径或危险指令",
+          "将代码执行置于沙箱容器中隔离，限制文件系统与网络出向，并记录审计日志",
+          "为提升自主性，应赋予 Agent 宿主机 Root 权限并关闭所有校验以避免阻塞"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需最小权限、参数校验、沙箱隔离与审计，而非 Root 权限。"
+      }
+    }
+  },
+  {
+    "id": "prompt-injection-02",
+    "category": "ai-security",
+    "topic": "prompt-injection",
+    "tags": [
+      "prompt-injection",
+      "defense",
+      "input-validation"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在防御提示注入（Prompt Injection）时，为什么需要对用户输入与外部检索内容进行严格的输入验证与边界隔离，而非仅依赖系统提示词（System Prompt）？",
+    "explanation": "系统提示词可被注入内容覆盖或绕过，需通过输入验证、内容标记与边界隔离（如将外部内容标记为不可信）来防御，而非仅靠提示词声明。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "系统提示词可被注入内容覆盖，需通过输入验证与边界隔离防御",
+          "系统提示词已足够强大，可完全免疫注入",
+          "注入仅影响输出格式，不影响安全",
+          "防御注入只需增加模型参数量即可"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需输入验证与边界隔离，而非仅靠 System Prompt。"
+      }
+    }
+  },
+  {
+    "id": "agent-safety-02",
+    "category": "ai-security",
+    "topic": "safety-alignment",
+    "tags": [
+      "agent-safety",
+      "over-delegation",
+      "human-in-the-loop"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个具备自动执行权限的 Agent 在处理用户请求“帮我清理一下邮箱”时，删除了用户近 3 年的所有邮件且未做确认。关于 Agent 安全中的过度委托（Over-delegation）风险，下列设计正确的有？（多选）",
+    "explanation": "需遵循最小权限、敏感操作需二次确认与可逆设计，避免过度委托。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对删除、支付等高风险操作需引入二次确认或 Human-in-the-loop",
+          "遵循最小权限原则，仅授予完成任务必需的权限",
+          "为提升自主性，应授予 Agent 所有操作的自动执行权限",
+          "操作应可逆或可审计，支持回滚与追溯"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需最小权限+二次确认+可审计回滚，避免过度委托。"
+      }
+    }
+  },
+  {
+    "id": "agent-safety-03",
+    "category": "ai-security",
+    "topic": "safety-alignment",
+    "tags": [
+      "agent-safety",
+      "evaluation",
+      "red-teaming"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在 Agent 安全评估中，为什么需要引入红队测试（Red Teaming）而非仅依赖常规功能测试？",
+    "explanation": "常规测试验证预期路径，红队通过对抗性输入挖掘越权、注入、幻觉等边界风险，是安全评估的必要补充。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "红队通过对抗性输入挖掘越权与边界风险，常规测试无法覆盖",
+          "红队测试与常规测试效果相同，可互相替代",
+          "红队测试仅适用于模型训练阶段，部署后无需",
+          "红队测试会增加成本，因此不应进行"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "红队挖掘边界风险，是安全必要补充。"
+      }
+    }
+  },
+  {
+    "id": "agent-safety-04",
+    "category": "ai-security",
+    "topic": "safety-alignment",
+    "tags": [
+      "agent-safety",
+      "audit",
+      "logging"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "为满足 Agent 操作的可审计性（Auditability），下列哪些日志与追踪能力是必需的？（多选）",
+    "explanation": "需完整记录工具调用、输入输出、决策路径与人工干预，便于回溯与定责。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "完整记录每次工具调用的参数与返回值",
+          "记录完整的决策路径与中间推理（需脱敏）",
+          "记录所有人工确认与干预操作",
+          "仅记录最终回答即可满足审计要求"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需工具调用、决策路径与人工干预的完整审计日志。"
       }
     }
   }

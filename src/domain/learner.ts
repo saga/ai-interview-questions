@@ -80,6 +80,11 @@ export function angleKey(topic: string, angle: QuestionAngle): string {
   return `${topic}|${angle}`;
 }
 
+/** Topic×Subtopic 证据的 key：`${topic}|${subtopic}`。 */
+export function subtopicKey(topic: string, subtopic: string): string {
+  return `${topic}|${subtopic}`;
+}
+
 export function emptyProfile(): LearnerProfile {
   return {
     totalSessions: 0,
@@ -87,6 +92,7 @@ export function emptyProfile(): LearnerProfile {
     overallScore: 0,
     topicStats: {},
     angleCoverage: {},
+    subtopicCoverage: {},
     sessions: [],
     updatedAt: 0,
   };
@@ -118,6 +124,7 @@ function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): s
 export function updateLearner(profile: LearnerProfile, s: SessionRecord): LearnerProfile {
   const topicStats = { ...profile.topicStats };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
+  const subtopicCoverage = { ...(profile.subtopicCoverage ?? {}) };
   const byTopic = new Map<string, QuestionResult[]>();
   for (const r of s.questionResults) {
     const arr = byTopic.get(r.topic) ?? [];
@@ -135,6 +142,23 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
       ? Math.round(((prev.avgScore * prev.attempts + r.score) / attempts) * 10) / 10
       : Math.round(r.score * 10) / 10;
     angleCoverage[key] = {
+      attempts,
+      avgScore,
+      lastScore: r.score,
+      lastAskedAt: s.startedAt,
+    };
+  }
+
+  // Topic×Subtopic 逐子主题证据（用于 subtopic 粒度追问与薄弱分析）
+  for (const r of s.questionResults) {
+    if (!r.subtopic) continue;
+    const key = subtopicKey(r.topic, r.subtopic);
+    const prev = subtopicCoverage[key];
+    const attempts = (prev?.attempts ?? 0) + 1;
+    const avgScore = prev
+      ? Math.round(((prev.avgScore * prev.attempts + r.score) / attempts) * 10) / 10
+      : Math.round(r.score * 10) / 10;
+    subtopicCoverage[key] = {
       attempts,
       avgScore,
       lastScore: r.score,
@@ -186,6 +210,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
     overallScore,
     topicStats,
     angleCoverage,
+    subtopicCoverage,
     sessions,
     updatedAt: s.startedAt,
   };
@@ -203,6 +228,7 @@ export function sessionFromQuiz(
       questionId: q.id,
       category: q.category,
       topic: q.topic,
+      subtopic: q.subtopic ?? undefined,
       format,
       angle: q.angle ?? undefined,
       score: g?.overall ?? 0,
@@ -270,6 +296,31 @@ export function weakAnglesOf(profile: LearnerProfile, topic: string, expected: Q
     .filter((x) => x.rank < 2)
     .sort((a, b) => a.rank - b.rank || a.score - b.score)
     .map((x) => x.angle);
+}
+
+/** 取某个 (topic, subtopic) 的逐子主题证据；未练过返回 undefined。 */
+export function getSubtopicStat(profile: LearnerProfile, topic: string, subtopic: string): AngleStat | undefined {
+  return profile.subtopicCoverage?.[subtopicKey(topic, subtopic)];
+}
+
+/** 该 (topic, subtopic) 是否已有作答证据。 */
+export function isSubtopicAttempted(profile: LearnerProfile, topic: string, subtopic: string): boolean {
+  const s = getSubtopicStat(profile, topic, subtopic);
+  return Boolean(s && s.attempts > 0);
+}
+
+/** 给定某 topic 下的所有 subtopic，返回“证据最薄弱”的子主题优先级。 */
+export function weakSubtopicsOf(profile: LearnerProfile, topic: string, subtopics: string[]): string[] {
+  const scored = subtopics.map((st) => {
+    const stat = getSubtopicStat(profile, topic, st);
+    if (!stat || stat.attempts === 0) return { subtopic: st, rank: 0, score: 0 };
+    if (stat.avgScore < WEAK_AVG) return { subtopic: st, rank: 1, score: stat.avgScore };
+    return { subtopic: st, rank: 2, score: stat.avgScore };
+  });
+  return scored
+    .filter((x) => x.rank < 2)
+    .sort((a, b) => a.rank - b.rank || a.score - b.score)
+    .map((x) => x.subtopic);
 }
 
 export interface CoverageReport {

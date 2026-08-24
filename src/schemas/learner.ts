@@ -34,6 +34,7 @@ export const questionResultSchema = z.object({
   questionId: z.string().min(1),
   category: z.string().min(1),
   topic: z.string().min(1),
+  subtopic: z.string().optional(),
   format: formatIdSchema,
   angle: questionAngleSchema.optional(),
   score: z.number().min(0).max(100),
@@ -58,6 +59,8 @@ export const learnerProfileSchema = z.object({
   topicStats: z.record(z.string(), topicStatsSchema),
   /** Concept×Angle 逐角度证据：key = `${topic}|${angle}`。可选以兼容历史画像。 */
   angleCoverage: z.record(z.string(), angleStatSchema).optional(),
+  /** Topic×Subtopic 逐子主题证据：key = `${topic}|${subtopic}`。 */
+  subtopicCoverage: z.record(z.string(), angleStatSchema).optional(),
   sessions: z.array(sessionRecordSchema),
   updatedAt: z.number(),
 });

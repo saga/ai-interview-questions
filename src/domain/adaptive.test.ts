@@ -27,8 +27,8 @@ const POOL = [
   q('tc-easy', 'tool-calling', 'easy'),
   q('tc-hard', 'tool-calling', 'hard'),
   q('mcp-1', 'mcp', 'medium'),
-  q('react-1', 'react', 'hard'),
-  q('idem-1', 'idempotency', 'hard'),
+  q('react-1', 'agent-loop', 'hard'),
+  q('idem-1', 'reliability', 'hard'),
 ];
 
 function rngSeq(values: number[]): () => number {
@@ -101,8 +101,8 @@ describe('pickNextAdaptive', () => {
     expect(rFb!.strategy).toBe('gap-probe');
     expect(rFb!.question.topic).toBe('agent-fundamentals');
 
-    // 前置主题存在时退到前置（react 的前置 = agent-fundamentals / tool-calling）
-    const r2 = pickNextAdaptive(poolNoEasy, [sig('react', 30, 'hard')], undefined, rngSeq([0, 0]));
+    // 前置主题存在时退到前置（agent-loop 的前置 = agent-fundamentals / tool-calling）
+    const r2 = pickNextAdaptive(poolNoEasy, [sig('agent-loop', 30, 'hard')], undefined, rngSeq([0, 0]));
     expect(r2!.strategy).toBe('gap-probe');
     expect(['agent-fundamentals', 'tool-calling']).toContain(r2!.question.topic);
   });
@@ -115,13 +115,13 @@ describe('pickNextAdaptive', () => {
   });
 
   it('move-on：传入 profile 时优先薄弱主题', () => {
-    // 上一主题在池中无同主题/相关题 → move-on；画像中 idempotency 薄弱，应被优先选中
+    // 上一主题在池中无同主题/相关题 → move-on；画像中 reliability 薄弱，应被优先选中
     const profile: LearnerProfile = {
       totalSessions: 1,
       totalQuestions: 2,
       overallScore: 40,
       topicStats: {
-        'idempotency': { attempts: 2, avgScore: 30, lastScore: 30, trend: 'flat', mastery: 0.3, commonWeaknesses: [], lastSeen: 0 },
+        'reliability': { attempts: 2, avgScore: 30, lastScore: 30, trend: 'flat', mastery: 0.3, commonWeaknesses: [], lastSeen: 0 },
         'agent-fundamentals': { attempts: 5, avgScore: 95, lastScore: 95, trend: 'flat', mastery: 0.95, commonWeaknesses: [], lastSeen: 0 },
       },
       sessions: [],
@@ -129,7 +129,7 @@ describe('pickNextAdaptive', () => {
     };
     const r = pickNextAdaptive(POOL, [sig('nonexistent-topic', 95, 'medium')], profile, rngSeq([0]));
     expect(r!.strategy).toBe('move-on');
-    expect(r!.question.topic).toBe('idempotency'); // 薄弱项优先，而非已掌握的 agent-fundamentals
+    expect(r!.question.topic).toBe('reliability'); // 薄弱项优先，而非已掌握的 agent-fundamentals
   });
 
   it('角度感知：同一 concept 下优先选证据最少的 angle', () => {

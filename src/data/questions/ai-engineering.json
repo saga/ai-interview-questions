@@ -2,7 +2,7 @@
   {
     "id": "ai-eng-024",
     "category": "ai-engineering",
-    "topic": "agent-system-design",
+    "topic": "system-design",
     "tags": [
       "system-design",
       "agent",
@@ -51,7 +51,7 @@
   {
     "id": "ai-engineering-001",
     "category": "ai-engineering",
-    "topic": "routing",
+    "topic": "tool-calling",
     "tags": [
       "model-routing",
       "cost",
@@ -97,7 +97,7 @@
   {
     "id": "ai-security-003",
     "category": "ai-engineering",
-    "topic": "privacy",
+    "topic": "data-leakage",
     "tags": [
       "pii",
       "privacy",
@@ -146,7 +146,7 @@
   {
     "id": "harness-discovery-01",
     "category": "ai-engineering",
-    "topic": "tool-routing",
+    "topic": "tool-calling",
     "tags": [
       "tool-discovery",
       "mcp",
@@ -418,7 +418,7 @@
   {
     "id": "dl-13",
     "category": "ai-engineering",
-    "topic": "vae",
+    "topic": "backprop",
     "tags": [
       "intractable-posterior",
       "bayes-rule",
@@ -452,7 +452,7 @@
   {
     "id": "dl-14",
     "category": "ai-engineering",
-    "topic": "vae",
+    "topic": "backprop",
     "tags": [
       "elbo",
       "evidence-lower-bound",
@@ -486,7 +486,7 @@
   {
     "id": "dl-15",
     "category": "ai-engineering",
-    "topic": "vae",
+    "topic": "backprop",
     "tags": [
       "gaussian-likelihood",
       "mse-equivalence",
@@ -520,7 +520,7 @@
   {
     "id": "dl-16",
     "category": "ai-engineering",
-    "topic": "vae",
+    "topic": "backprop",
     "tags": [
       "reparameterization-trick",
       "gradient-flow",
@@ -556,7 +556,7 @@
   {
     "id": "dl-17",
     "category": "ai-engineering",
-    "topic": "vae",
+    "topic": "backprop",
     "tags": [
       "elbo-tug-of-war",
       "posterior-collapse",
@@ -592,7 +592,7 @@
   {
     "id": "dl-18",
     "category": "ai-engineering",
-    "topic": "vae",
+    "topic": "backprop",
     "tags": [
       "inference-pipeline",
       "cvae",
@@ -694,7 +694,7 @@
   {
     "id": "ml-03",
     "category": "ai-engineering",
-    "topic": "bias-variance",
+    "topic": "overfitting",
     "tags": [
       "bias",
       "variance",
@@ -725,7 +725,7 @@
   {
     "id": "ml-04",
     "category": "ai-engineering",
-    "topic": "cross-validation",
+    "topic": "overfitting",
     "tags": [
       "evaluation",
       "cross-validation"
@@ -759,7 +759,7 @@
   {
     "id": "ml-05",
     "category": "ai-engineering",
-    "topic": "precision-recall",
+    "topic": "evaluation",
     "tags": [
       "metrics",
       "precision",
@@ -791,7 +791,7 @@
   {
     "id": "code-02",
     "category": "ai-engineering",
-    "topic": "linear-regression",
+    "topic": "gradient-descent",
     "tags": [
       "gradient-descent",
       "linear-regression",
@@ -826,7 +826,7 @@
   {
     "id": "stat-01",
     "category": "ai-engineering",
-    "topic": "auc",
+    "topic": "evaluation",
     "tags": [
       "metrics",
       "auc",
@@ -1430,6 +1430,71 @@
         "answer": [
           0
         ]
+      }
+    }
+  },
+  {
+    "id": "cnn-01",
+    "category": "ai-engineering",
+    "topic": "cnn",
+    "tags": [
+      "cnn",
+      "convolution",
+      "pooling",
+      "receptive-field"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在卷积神经网络（CNN）中，卷积层的“局部连接 + 权值共享”与池化层共同实现了什么核心能力？",
+    "explanation": "局部连接使每个神经元仅感知局部感受野，权值共享大幅减少参数并实现平移不变的特征检测；池化进一步通过降采样扩大感受野并增强对微小位移的不变性，层次化地抽象从边缘到语义的特征。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性",
+          "通过全连接实现全局特征融合，使每个神经元感知整张图像的所有像素",
+          "通过增加参数量来 brute-force 记忆训练集中所有图像的精确位置",
+          "通过随机丢弃卷积核来防止过拟合，与池化无关"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "卷积通过局部连接与权值共享实现平移不变的特征检测，参数共享使同一特征可在不同位置复用；池化通过降采样扩大感受野并增强对微小位移/形变的鲁棒性，二者共同实现从局部边缘到全局语义的层次化抽象。"
+      }
+    }
+  },
+  {
+    "id": "seq-01",
+    "category": "ai-engineering",
+    "topic": "sequence-models",
+    "tags": [
+      "rnn",
+      "lstm",
+      "gru",
+      "vanishing-gradient",
+      "gating"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "传统 RNN 在长序列建模中易出现梯度消失，而 LSTM/GRU 通过门控机制缓解该问题。门控的核心作用是什么？",
+    "explanation": "门控通过可学习的 Sigmoid 门（输入、遗忘、输出门）动态控制信息的写入、保留与读出，使梯度能在时间步间以加性而非连乘方式传播，缓解长程梯度消失，同时保留对重要时序依赖的记忆能力。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "通过门控动态控制信息的写入、保留与输出，使梯度以加性传播缓解消失并保留长程依赖",
+          "通过增加隐藏层维度来暴力扩大记忆容量，与门控无关",
+          "通过将所有时间步的输入直接拼接为超长向量来避免循环",
+          "通过固定遗忘率为 0.5 来确保所有历史信息等权重保留"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "门控（LSTM 的输入/遗忘/输出门，GRU 的更新/重置门）以可学习门控动态决定何时写入新信息、何时保留历史、何时输出，使梯度不再连乘衰减而能长程传播。"
       }
     }
   }

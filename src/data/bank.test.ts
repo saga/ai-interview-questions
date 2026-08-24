@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { EVAL_DIMENSIONS } from '../types';
 import { questionBank } from './questionBank';
 import { conceptGraph } from '../domain/conceptGraph';
+import { knowledgeNodes } from './knowledgeMap';
 
 const qs = questionBank.questions;
 
@@ -87,6 +88,13 @@ describe('题库数据完整性', () => {
     for (const e of conceptGraph.edges) {
       expect(topics.has(e.from), `缺 from 题目: ${e.from}`).toBe(true);
       expect(topics.has(e.to), `缺 to 题目: ${e.to}`).toBe(true);
+    }
+  });
+
+  it('每个题目的 topic 都能映射到知识节点 id（防孤儿漂移）', () => {
+    const nodeIds = new Set(knowledgeNodes.map((n) => n.id));
+    for (const q of qs) {
+      expect(nodeIds.has(q.topic), `${q.id} topic "${q.topic}" 未映射到任何知识节点 id`).toBe(true);
     }
   });
 });

@@ -189,7 +189,7 @@
   {
     "id": "agentic-59",
     "category": "ai-systems",
-    "topic": "llm-as-judge",
+    "topic": "evaluation",
     "tags": [
       "evaluation",
       "bias",
@@ -2329,7 +2329,7 @@
   {
     "id": "ai-fund-041",
     "category": "ai-systems",
-    "topic": "llm-as-judge",
+    "topic": "evaluation",
     "tags": [
       "LLM-as-a-Judge",
       "bias",
@@ -3290,7 +3290,7 @@
   {
     "id": "mlops-02",
     "category": "ai-systems",
-    "topic": "monitoring",
+    "topic": "observability",
     "tags": [
       "monitoring",
       "drift",
@@ -3403,7 +3403,7 @@
   {
     "id": "mlops-06",
     "category": "ai-systems",
-    "topic": "git",
+    "topic": "reliability",
     "tags": [
       "git",
       "stash",
@@ -3519,7 +3519,7 @@
   {
     "id": "git-reset-01",
     "category": "ai-systems",
-    "topic": "git",
+    "topic": "reliability",
     "tags": [
       "git",
       "reset",
@@ -3595,7 +3595,7 @@
   {
     "id": "git-recovery-01",
     "category": "ai-systems",
-    "topic": "git",
+    "topic": "reliability",
     "tags": [
       "git",
       "reflog",
@@ -3660,6 +3660,104 @@
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：Model DoS 的危害是双重的——计算资源耗尽 + 财务拒绝服务（EDoS：账单被打爆）。完整防护需多层叠加：①服务端强制输入 Context 长度上限与 Token Bucket 限流（客户端 maxlength 可被绕过，仅是体验提示）；②Agent 循环设最大递归深度与单会话工具调用次数上限，阻断 Recursive Tool Calls 放大；③每次 LLM/工具调用加超时与断路器，防止请求堆积拖垮服务；④按租户设 Token 消费配额并实时监控告警，封顶异常账单。扩容 GPU 和换小模型只是提高攻击成本上限，不构成防线。"
+      }
+    }
+  },
+  {
+    "id": "obs-05",
+    "category": "ai-systems",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "trace",
+      "sampling",
+      "cost"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 LLM 可观测性体系中，对全量 Trace 进行采样（Sampling）时，为什么需要采用“头采样（Head Sampling）+ 尾采样（Tail Sampling）”结合的策略，而非仅头采样？",
+    "explanation": "头采样在入口决定是否记录，可能漏掉长尾异常；尾采样可在完整链路结束后基于错误、延迟等信号决定保留，实现异常全量保留与正常采样率控制的平衡。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "头采样可能漏掉长尾异常，尾采样可在链路结束后基于错误/延迟信号决定保留，实现异常全量保留与正常高采样率控制的平衡",
+          "头采样已足够，尾采样会显著增加存储成本且无额外价值",
+          "尾采样可完全替代头采样，因为它无需在入口做决定",
+          "采样策略对 LLM 可观测性无影响，应全量存储所有 Trace"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "头采样漏异常，尾采样基于结果信号保留异常，实现平衡。"
+      }
+    }
+  },
+  {
+    "id": "obs-06",
+    "category": "ai-systems",
+    "topic": "observability",
+    "tags": [
+      "observability",
+      "metrics",
+      "quality",
+      "human-eval"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在 LLM 应用中，仅监控 Token 消耗与延迟等技术指标，是否足以评估业务质量？还需补充哪些质量维度的可观测性？",
+    "explanation": "技术指标无法反映回答是否正确、有用、安全；需补充基于黄金集的离线评估、在线 LLM-as-Judge 与人工抽检的质量指标。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "需补充基于黄金集的离线评估，衡量回答正确性与召回",
+          "需引入 LLM-as-Judge 或人工抽检，评估回答的有用性与安全性",
+          "仅监控 Token 与延迟已足够，质量可通过用户投诉被动发现",
+          "质量指标无需与技术指标关联，可独立监控"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需离线评估与在线质量抽检，技术指标不等于业务质量。"
+      }
+    }
+  },
+  {
+    "id": "cost-02",
+    "category": "ai-systems",
+    "topic": "cost",
+    "tags": [
+      "cost",
+      "performance",
+      "caching",
+      "routing"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 LLM 服务中，成本与性能（延迟/吞吐）常存在权衡。关于通过缓存与路由优化成本同时保障性能的策略，下列说法正确的有？（多选）",
+    "explanation": "前缀缓存命中可大幅降延迟与成本，路由将简单请求分流至小模型，复杂请求保留大模型，二者结合可在成本与性能间取得平衡。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对高频重复的 System Prompt 与上下文开启前缀缓存，可显著降低首字延迟并节省重复计算成本",
+          "通过模型路由将简单请求分流至小模型，复杂请求保留给大模型，可在保障质量的同时降低平均成本",
+          "成本优化必然导致性能下降，二者无法兼顾",
+          "缓存与路由会增加系统复杂度，因此在任何场景下都不应使用"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "缓存与路由可在成本与性能间取得平衡，非必然对立。"
       }
     }
   }

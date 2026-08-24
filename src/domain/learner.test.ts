@@ -38,7 +38,7 @@ function profileWith(stats: Record<string, { attempts: number; avgScore: number;
 const REFS = [
   { category: 'agentic-ai', topic: 'agent-fundamentals' },
   { category: 'agentic-ai', topic: 'tool-calling' },
-  { category: 'agentic-ai', topic: 'react' },
+  { category: 'agentic-ai', topic: 'agent-loop' },
   { category: 'agentic-ai', topic: 'multi-agent' },
   { category: 'llm', topic: 'rag' },
 ];
@@ -291,23 +291,22 @@ describe('覆盖面与学习建议（学习策略，图查询在 conceptGraph）
     expect(agentic!.attempted).toBe(2);
     expect(agentic!.mastered).toBe(1); // agent-fundamentals 90 分达标
     expect(report.weakTopics).toContain('tool-calling');
-    expect(report.unattemptedCount).toBe(3); // react / multi-agent / rag
+    expect(report.unattemptedCount).toBe(3); // agent-loop / multi-agent / rag
   });
 
   it('computeCoverage：前置全掌握的未学主题进入 readyToLearn，否则计入 blockedCount', () => {
-    // react 的前置闭包 = agent-fundamentals / tool-calling / agent-components / workflow-vs-agent
+    // agent-loop 的前置闭包 = agent-fundamentals / tool-calling / agent-guardrails
     const allMastered = profileWith({
       'agent-fundamentals': { attempts: 2, avgScore: 92 },
       'tool-calling': { attempts: 2, avgScore: 95 },
-      'agent-components': { attempts: 2, avgScore: 93 },
-      'workflow-vs-agent': { attempts: 2, avgScore: 91 },
+      'agent-guardrails': { attempts: 2, avgScore: 93 },
     });
     const reportReady = computeCoverage(REFS, allMastered);
-    expect(reportReady.readyToLearn).toContain('react');
+    expect(reportReady.readyToLearn).toContain('agent-loop');
 
     const prereqWeak = profileWith({ 'agent-fundamentals': { attempts: 2, avgScore: 50 } });
     const reportBlocked = computeCoverage(REFS, prereqWeak);
-    expect(reportBlocked.readyToLearn).not.toContain('react');
+    expect(reportBlocked.readyToLearn).not.toContain('agent-loop');
     expect(reportBlocked.blockedCount).toBeGreaterThan(0);
   });
 
@@ -326,12 +325,11 @@ describe('覆盖面与学习建议（学习策略，图查询在 conceptGraph）
     const masteredAll = profileWith({
       'agent-fundamentals': { attempts: 2, avgScore: 92 },
       'tool-calling': { attempts: 2, avgScore: 95 },
-      'agent-components': { attempts: 2, avgScore: 93 },
-      'workflow-vs-agent': { attempts: 2, avgScore: 91 },
+      'agent-guardrails': { attempts: 2, avgScore: 93 },
     });
     const suggestions = suggestNextTopics(REFS, masteredAll, 5);
-    expect(suggestions.map((s) => s.topic)).toContain('react');
-    // 基础主题（rag 无前置）应排在 react 之前或并列可学——至少都在建议里且理由是前置已具备
+    expect(suggestions.map((s) => s.topic)).toContain('agent-loop');
+    // 基础主题（rag 无前置）应排在 agent-loop 之前或并列可学——至少都在建议里且理由是前置已具备
     for (const s of suggestions) expect(s.reason).toBe('前置知识已具备，适合开始学习');
   });
 });
@@ -352,8 +350,8 @@ describe('掌握度策略与题库边界（自 conceptGraph 迁入，ADR-030）'
       'agent-fundamentals': { attempts: 2, avgScore: 40 },
       'tool-calling': { attempts: 2, avgScore: 95 },
     });
-    const expanded = expandWithPrerequisites(['react'], profile);
-    expect(expanded).toContain('react');
+    const expanded = expandWithPrerequisites(['agent-loop'], profile);
+    expect(expanded).toContain('agent-loop');
     expect(expanded).toContain('agent-fundamentals'); // 未掌握的前置被纳入
     expect(expanded).not.toContain('tool-calling'); // 已掌握的前置被跳过
 

@@ -10,7 +10,8 @@ import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core';
 import type { EvaluationResult, LearnerProfile, LLMProvider, Question, SessionQuestion } from '../types';
 import { availableFormats } from '../domain/quiz';
 import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
-import { recommendWeakTopics } from '../domain/learner';
+import { recommendWeakTopics, weakAnglesOf } from '../domain/learner';
+import { knowledgeById } from '../domain/knowledge';
 import type { InterviewAgentSession } from './types';
 
 /** 工具依赖：题库、用户画像、评分用的 LLMProvider、共享会话。 */
@@ -182,6 +183,42 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     },
   };
 
+  const GetWeakAnglesSchema = Type.Object({
+    topic: Type.String({ description: '要查询的 topic id' }),
+  });
+  const getWeakAngles: AgentTool<typeof GetWeakAnglesSchema> = {
+    name: 'getWeakAngles',
+    label: '读取薄弱角度',
+    description: '读取某 topic 下证据最薄弱的角度列表（基于 angleCoverage），用于“弱 concept → 缺证据 angle”的追问。',
+    parameters: GetWeakAnglesSchema,
+    execute: async (_id, params: { topic: string }) => {
+      const node = knowledgeById(params.topic);
+      const expected = node?.angles ?? [];
+      const weak = weakAnglesOf(profile, params.topic, expected as any);
+      session.log.push({
+        at: Date.now(),
+        kind: 'tool',
+        tool: 'getWeakAngles',
+        summary: `角度薄弱：${weak.join('、') || '（无）'}`,
+        details: { topic: params.topic, weakAngles: weak, expected },
+      });
+      return textResult(`主题 ${params.topic} 的薄弱角度：${weak.join('、') || '（暂无）'}`, { topic: params.topic, weakAngles: weak, expected });
+    },
+  };
+
+  const GetCoverageGapsSchema = Type.Object({});
+  const getCoverageGaps: AgentTool<typeof GetCoverageGapsSchema> = {
+    name: 'getCoverageGaps',
+    label: '读取覆盖缺口',
+    description: '读取当前题库的覆盖缺口（未练或前置未掌握的 topic），用于全局选题与补漏。',
+    parameters: GetCoverageGapsSchema,
+    execute: async () => {
+      // 覆盖缺口需基于题库的 topicRefs；此处返回通用提示，实际由调用方聚合
+      const weak = recommendWeakTopics(profile, 5);
+      return textResult(`覆盖缺口（薄弱优先）：${weak.join('、') || '（暂无）'}`, { weakTopics: weak });
+    },
+  };
+
   const finishInterview: AgentTool<typeof FinishInterviewSchema> = {
     name: 'finishInterview',
     label: '结束面试',
@@ -202,5 +239,5 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     },
   };
 
-  return [searchQuestions, getQuestion, evaluateAnswer, getUserWeaknesses, finishInterview];
+  return [searchQuestions, getQuestion, evaluateAnswer, getUserWeaknesses, getWeakAngles, getCoverageGaps, finishInterview];
 }

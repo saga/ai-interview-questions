@@ -2412,7 +2412,7 @@
   {
     "id": "llm-29",
     "category": "llm",
-    "topic": "muon-optimizer",
+    "topic": "distributed-training",
     "tags": [
       "muon",
       "per-head",
@@ -4360,7 +4360,7 @@
   {
     "id": "ai-fund-008",
     "category": "llm",
-    "topic": "bpe-tokenization",
+    "topic": "tokenization",
     "tags": [
       "BPE",
       "WordPiece",
@@ -4405,7 +4405,7 @@
   {
     "id": "ai-pretraining-007",
     "category": "llm",
-    "topic": "training-stability",
+    "topic": "training-data",
     "tags": [
       "pre-training",
       "debugging"
@@ -4450,7 +4450,7 @@
   {
     "id": "ai-foundation-001",
     "category": "llm",
-    "topic": "foundation-model",
+    "topic": "pretraining",
     "tags": [
       "foundation-model",
       "llm"
@@ -4905,6 +4905,38 @@
       },
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Chinchilla目标为训练Loss最优，不含推理。\n- B：Serving随请求线性累加，长期超预训练。\n- C：Overtraining以多算力换小模型推理经济性。\n- D 错误：过度训练不消解小模型在复杂推理与OOD上的固有容量瓶颈。"
+      }
+    }
+  },
+  {
+    "id": "multimodal-01",
+    "category": "llm",
+    "topic": "multimodal",
+    "tags": [
+      "multimodal",
+      "vision-language",
+      "alignment",
+      "hallucination"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在构建图文多模态 RAG 系统时，系统需对文档中的图表、截图进行理解并回答“该季度营收同比增速是多少？”这类需跨模态对齐的问题。下列关于多模态检索与对齐的说法，正确的是？",
+    "explanation": "跨模态需将图像与文本映射到统一嵌入空间实现图文互检索，并通过图文联合微调实现对齐；多模态幻觉风险更高，需通过引用与校验缓解，且 OCR 质量直接影响检索效果。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将图像与文本通过统一编码器映射到共享嵌入空间进行图文对齐与互检索，并结合 OCR 与图文联合推理，必要时通过引用与校验缓解多模态幻觉",
+          "多模态 RAG 无需图像编码，仅需将图像文件名作为文本关键词进行 BM25 检索即可实现图文对齐",
+          "多模态模型天然不存在幻觉，因其输入包含图像作为事实依据",
+          "跨模态对齐仅需在推理时拼接图像与文本提示，无需任何训练期对齐"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "跨模态需统一嵌入空间实现图文互检索与对齐，OCR 与图像编码质量直接影响召回；多模态幻觉风险更高，需引用与校验。"
       }
     }
   }
