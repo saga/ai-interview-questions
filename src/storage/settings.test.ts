@@ -54,7 +54,7 @@ describe('sanitizeEntry', () => {
 });
 
 describe('loadConfig', () => {
-  it('无存储时返回默认配置（DeepSeek 单通道）', () => {
+  it('无存储时返回默认配置（完整引擎样例：chrome/local 启用，其余禁用）', () => {
     expect(loadConfig()).toEqual(DEFAULT_CONFIG);
   });
 

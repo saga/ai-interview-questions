@@ -2,14 +2,14 @@ import type { AIConfig, ProviderEntry, ProviderId } from '../types';
 import { isEntryValid } from '../ai/provider';
 import { aiConfigSchema } from '../schemas/ai-config';
 import { formatSchemaErrorMessage } from '../schemas/errors';
+import { SAMPLE_CONFIG } from '../config/sampleConfig';
 
 const KEY = 'ai-interview-trainer.config';
 const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai'];
 
-export const DEFAULT_CONFIG: AIConfig = {
-  providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '', baseUrl: '' }],
-  generateOpenQuestions: false,
-};
+// 默认配置 = 内置的干净样例（src/config/sample-config.json）：完整引擎清单，
+// chrome / local 启用、其余禁用。既是「恢复默认」按钮的回填值，也是 localStorage 为空 / 损坏时的兜底。
+export const DEFAULT_CONFIG: AIConfig = SAMPLE_CONFIG;
 
 /** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。
  *  accountId 仅 cloudflare 使用：非空才保留，避免其他引擎的配置出现空噪音字段。 */
