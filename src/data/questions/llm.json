@@ -3471,5 +3471,346 @@
         ]
       }
     }
+  },
+  {
+    "id": "llm-hybrid-02",
+    "category": "llm",
+    "topic": "hybrid-attention",
+    "tags": [
+      "hybrid-architecture",
+      "ssm",
+      "mamba",
+      "attention",
+      "long-context",
+      "kv-cache"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在处理超长上下文（如百万级 Token）时，标准 Transformer 架构与状态空间模型（SSM，如 Mamba）各有优劣。为了兼顾长上下文处理效率与精准细节检索能力，业界提出了将大部分 Attention 层替换为 Mamba 层、同时保留少量 Attention 层的混合架构。以下关于该混合架构的工程权衡与特性的说法，正确的有？（多选）",
+    "explanation": "Attention二次方+KV随长度增长；Mamba线性+常数隐状态；纯Mamba细节检索弱于Transformer；混合以Mamba降开销、少量Attention补检索。",
+    "reference": {
+      "concept": "混合架构：Mamba线性常数成本+Attention精准检索互补。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "标准 Attention 的计算复杂度与序列长度呈二次方关系，且推断阶段 KV Cache 内存占用随上下文增加而显著上升",
+          "Mamba 将历史序列压缩为固定大小的隐状态，计算复杂度与序列长度呈线性关系，推断阶段内存占用为常数级别",
+          "纯 Mamba 模型在长文本精准细节检索（Needle in a Haystack）能力上通常强于纯 Transformer 模型",
+          "混合架构通过 Mamba 层降低绝大部分 Token 的处理与存储开销，同时利用少量 Attention 层弥补 Mamba 在精准信息检索方面的短板"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：标准Attention为O(N²·d)，且KV Cache随N线性膨胀，百万上下文下显存与计算双重瓶颈。\n- B：Mamba(SSM)将历史压缩为固定隐状态，递推更新O(N)且推断内存常数。\n- D：混合架构用Mamba承担主体以获线性效率，保留少量Attention层提供全局精准检索路径，兼顾效率与召回。\n- C 错误：实测纯Mamba在Needle-in-Haystack等精确检索任务上通常弱于Transformer，正是混合的动机。"
+      }
+    }
+  },
+  {
+    "id": "llm-moe-04",
+    "category": "llm",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "routing",
+      "gating",
+      "active-parameters",
+      "load-balancing"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在大模型架构设计中，混合专家（Mixture of Experts, MoE）架构被广泛用于扩展模型容量。以下关于 MoE 架构运行机制及工程特性的说法，正确的有？（多选）",
+    "explanation": "MoE门控动态选专家、以激活参数低开销扩容量；总参仍占显存、单卡部署不省显存；负载均衡是关键挑战。",
+    "reference": {
+      "concept": "MoE=动态路由+激活参数扩容量；显存不省，负载均衡是瓶颈。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MoE 架构通过门控路由（Routing/Gating）机制，为每个输入的 Token 动态选择并激活一部分专家网络（Experts）",
+          "MoE 能够以远低于总参数量的单 Token 激活参数量（Active Parameters）运行，从而在保持低计算开销的同时提高模型的总体容量",
+          "MoE 架构能够减少模型的总显存占用，因此比相同总参数量的 Dense 模型更适合部署在显存受限的单卡设备上",
+          "MoE 在分布式训练与推理时，不同专家节点之间的负载均衡（Load Balancing）是影响硬件利用率和通信开销的关键工程挑战"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：Router为每个Token选Top-K专家，动态激活。\n- B：激活参数≈K×专家大小<<总参，算力与延迟按激活量计，容量按总参计。\n- D：专家间负载不均导致部分设备空闲、all-to-all通信倾斜，需aux loss/capacity factor等均衡。\n- C 错误：MoE总参全需常驻显存（或专家并行跨卡），单卡显存占用不低于同总参Dense，甚至因路由开销更大。"
+      }
+    }
+  },
+  {
+    "id": "llm-open-01",
+    "category": "llm",
+    "topic": "pretraining",
+    "tags": [
+      "open-models",
+      "open-weights",
+      "reproducibility",
+      "synthetic-data",
+      "derivative"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在开源 AI 生态中，仅仅发布模型权重（Open Weights）与完全开放（Fully Open）存在显著区别。以下关于模型完全开放性及其工程价值的说法，正确的有？（多选）",
+    "explanation": "仅权重不足复现；需数据集+RL环境+Recipe+合成数据；开放促进衍生微调。",
+    "reference": {
+      "concept": "Fully Open=权重+数据+环境+配方方可复现与衍生。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "仅提供开源权重即可让开发者完全理解模型的训练细节并无缝复现模型的预训练全过程",
+          "提供完整的数据集（预训练/后训练数据）、RL 训练环境与 Recipe，是实现社区可复现与二次开发的关键",
+          "合成数据生成技术（如合成 Persona 数据）可在保护隐私的同时生成具有统计真实性的训练数据",
+          "开放数据和训练环境能够促进社区产生衍生微调版本，扩展模型在特定垂直领域的适配能力"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C、D。\n\n- B：可复现性需数据+环境+配方三件套，权重仅为结果。\n- C：合成Persona等可在隐私约束下生成具真实统计特性的数据，补足敏感域。\n- D：开放资产降低二次开发门槛，社区可快速产出领域微调。\n- A 错误：权重不含数据配比、课程、优化器轨迹等细节，无法复现预训练。"
+      }
+    }
+  },
+  {
+    "id": "sft-pref-01",
+    "category": "llm",
+    "topic": "sft",
+    "tags": [
+      "sft",
+      "preference-alignment",
+      "pairwise-comparison",
+      "tradeoff",
+      "annotation"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在大语言模型（LLM）训练中，监督微调（SFT）通常基于“Prompt - 正确回答”数据进行模仿学习（Imitation Learning）。然而，对于许多开放式任务，存在多种侧重点不同的优质回答。关于 SFT 与后续偏好对齐（Preference Alignment，如 RLHF/DPO）的技术差异，以下哪些选项是正确的？（多选）",
+    "explanation": "SFT难建模权衡、偏好成对比较一致性更高、仅增SFT不能替代对齐、小模型对齐可超大模型未对齐。",
+    "reference": {
+      "concept": "SFT模仿局限与偏好对齐以成对比较建模权衡。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "SFT 擅长让模型学会遵循指令格式，但难以显式建模不同优质回答之间的权衡（Trade-offs）",
+          "偏好对齐采用成对比较（Pairwise Comparison）数据，相比让标注人员从零撰写理想回答，成对比较的标注一致性（Inter-annotator Agreement）通常更高",
+          "仅靠增加 SFT 训练数据量即可完全替代偏好对齐，因为更大的数据集能够覆盖所有可能的权衡逻辑",
+          "经过偏好对齐的小参数模型在人类偏好评估上，可能显著超越参数量远大于它的未对齐/纯 SFT 模型"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A：SFT以单条“理想回答”为目标做模仿，对同一prompt存在多条优质但侧重不同回答的权衡无法显式优化。\n- B：判断“两者谁更好”比从零撰写理想回答认知更轻、标准更稳，一致性显著更高。\n- D：对齐带来的偏好增益可超越单纯参数规模优势，小对齐模型可胜大未对齐模型。\n- C 错误：权衡逻辑需成对偏好信号监督，SFT的单点模仿无法通过数据量堆砌习得。"
+      }
+    }
+  },
+  {
+    "id": "rlhf-ppo-01",
+    "category": "llm",
+    "topic": "rlhf",
+    "tags": [
+      "ppo",
+      "kl-divergence",
+      "reference-model",
+      "reward-model",
+      "multi-model"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在基于 PPO 算法的标准 RLHF（基于人类反馈的强化学习）训练架构中，通常需要在训练过程中同时维护多个模型（策略模型 Policy、参考模型 Reference、奖励模型 Reward、价值模型 Value），并在损失函数中加入 KL 散度（KL Divergence）惩罚项。关于该架构的设计考量，以下哪些选项是正确的？（多选）",
+    "explanation": "KL限更新防退化、Reference为冻结SFT基准、多模型致显存开销、移除KL不可加速。",
+    "reference": {
+      "concept": "PPO多模型+KL约束防奖励劫持与退化。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "加入 KL 散度惩罚的主要目的是限制策略模型更新幅度，防止其为追求极高 Reward 分数而生成偏离自然语言分布的退化文本",
+          "参考模型（Reference Model）通常是冻结参数的初始 SFT 模型，用于提供 KL 散度的对比基准",
+          "RLHF 训练开销大、显存占用高的主要原因之一，是训练循环中需要在显存中同时常驻或调度多套不同角色的神经网络",
+          "只要奖励模型（Reward Model）足够精确，就可以完全移除 KL 散度惩罚，从而大幅加速 PPO 的收敛速度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：KL约束策略与参考分布的偏离，避免为刷分产生重复/无意义文本。\n- B：Reference为冻结SFT，作KL锚点。\n- C：Policy/Reference/Reward/Value四模型常驻或流水调度，显存与通信为主要开销。\n- D 错误：奖励模型始终是代理指标，移除KL必致过优化与崩溃，精确度不能替代约束。"
+      }
+    }
+  },
+  {
+    "id": "dpo-01",
+    "category": "llm",
+    "topic": "dpo",
+    "tags": [
+      "dpo",
+      "implicit-reward",
+      "pairwise",
+      "ppo-free",
+      "preference"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "DPO（Direct Preference Optimization）将 RLHF 中的显式奖励函数表达为策略模型与参考模型输出概率的比值，从而将强化学习过程转化为在偏好数据对（胜者 y_w 与败者 y_l）上的直接优化。关于 DPO 的工程权衡与底层原理，以下哪些选项是正确的？（多选）",
+    "explanation": "DPO省显式奖励与PPO采样、奖励隐式化、提升w降l、仍会奖励作弊。",
+    "reference": {
+      "concept": "DPO=隐式奖励+直接偏好优化，省模型与采样但仍需防过优化。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "DPO 无需训练独立的显式奖励模型（Reward Model），也不需要运行 PPO 采样循环，大幅降低了训练显存与系统复杂度",
+          "DPO 实际上并未消除奖励信号，而是将奖励函数隐式地嵌入到了策略模型自身的参数分布中",
+          "DPO 的损失函数通过提升策略模型生成胜者 y_w 的相对概率、同时降低生成败者 y_l 的相对概率来进行参数更新",
+          "由于 DPO 摒弃了强化学习采样循环，因此它从原理上彻底避免了对偏好信号的“奖励作弊/过度优化”（Reward Hacking）"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：DPO闭式重写奖励为log π/π_ref比值，无需Reward模型与在线采样。\n- B：奖励隐式存于策略与参考的概率比中，而非消除。\n- C：损失以偏好对为对比，提升y_w相对似然、压低y_l。\n- D 错误：DPO仍优化代理偏好，数据偏差与过拟合仍会致作弊，需正则与早停。"
+      }
+    }
+  },
+  {
+    "id": "rlhf-goodhart-01",
+    "category": "llm",
+    "topic": "rlhf",
+    "tags": [
+      "goodhart",
+      "reward-overoptimization",
+      "proxy-reward",
+      "verbosity",
+      "sycophancy"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 LLM 的偏好对齐（RLHF 或 DPO）过程中，经常观察到随着对偏好信号优化强度的增加，模型在代理奖励（Proxy Reward）上的得分不断攀升，但人类评估的实际真实质量却在达到峰值后开始下降。关于这种“奖励过优化”（Reward Overoptimization）现象，以下哪些选项是正确的？（多选）",
+    "explanation": "符合Goodhart、代理近似易被利用、表现冗长谄媚、DPO亦会过优化。",
+    "reference": {
+      "concept": "代理奖励过优化=Goodhart；显式/隐式均会利用缺陷。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该现象符合古德哈特定律（Goodhart's Law），即当一个代理指标（Proxy Metric）被用作直接优化目标时，它就会失去作为有效测量指标的资格",
+          "无论是显式训练的奖励模型还是隐式嵌入的偏好目标，本质上都是真实人类偏好的近似代理（Proxy），过度优化会迫使模型利用代理模型的缺陷与漏洞",
+          "奖励过优化的常见典型表现包括字数冗长偏好（Verbosity Bias）以及对用户立场的谄媚（Sycophancy）",
+          "该现象是 PPO 强化学习算法特有的缺陷，采用 DPO 算法训练可以彻底避免奖励过优化"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：代理指标被直接优化即失真，经典Goodhart。\n- B：显式Reward与DPO隐式偏好均为真实偏好代理，强优化下均被钻漏洞。\n- C：冗长与谄媚是最易被代理模型误判为“高质量”的捷径。\n- D 错误：DPO同样基于代理偏好，过度优化风险不因算法形态消失。"
+      }
+    }
+  },
+  {
+    "id": "align-syc-01",
+    "category": "llm",
+    "topic": "alignment",
+    "tags": [
+      "sycophancy",
+      "preference-data",
+      "kl-constraint",
+      "bias"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 LLM 对齐交互中，谄媚性（Sycophancy）是指模型即使面对用户给出的明显错误或偏见观点，也会倾向于顺从并迎合用户，而非坚持客观事实。关于谄媚现象的成因与治理，以下哪些选项是正确的？（多选）",
+    "explanation": "根因偏好数据顺从高分、RLHF/DPO均会学谄媚、KL仅限偏离不能根治、非小模型独有。",
+    "reference": {
+      "concept": "谄媚=数据偏差致顺从高分；KL限幅不治本。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "产生谄媚现象的根本原因往往在于偏好数据本身：人类标注员或偏好评估模型倾向于给顺从、迎合且态度肯定的回答打更高分",
+          "无论是 RLHF 还是 DPO，只要底层偏好数据中存在“顺从即高分”的信号偏差，模型就会学到谄媚行为",
+          "KL 散度约束在一定程度上能限制模型偏离初始分布的程度，但无法彻底消除由偏好数据缺陷带来的谄媚倾向",
+          "谄媚现象仅存在于小参数模型中，当模型参数规模达到百亿（10B）以上时该现象会自动消失"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：偏好采集中“肯定迎合”易获高分，数据偏差为源。\n- B：RLHF与DPO均消费同一偏好分布，偏差会被等效学习。\n- C：KL仅约束与初分布距离，不能修正偏好本身的偏差。\n- D 错误：谄媚随规模不自动消失，需数据清洗与客观性奖励修正。"
+      }
+    }
+  },
+  {
+    "id": "rlvr-pref-01",
+    "category": "llm",
+    "topic": "rlhf",
+    "tags": [
+      "verifiable-rewards",
+      "rlvr",
+      "grpo",
+      "preference-learning",
+      "code",
+      "math"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在 LLM 的对齐与推理能力训练实践中，针对不同任务类型存在“偏好学习”（Preference Learning，如 RLHF/DPO）与“可验证奖励”（Verifiable Rewards，如 RLVR/GRPO）两条技术路径。关于这两条路径的适用边界与选型逻辑，以下说法最准确的是哪一项？",
+    "explanation": "可验证奖励以程序/规则客观校验代码数学，偏好学习管主观开放任务；二者互补非替代。",
+    "reference": {
+      "concept": "可验证奖励管客观可校验任务，偏好学习管主观开放任务。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "可验证奖励可以通过代码测试用例或数学规则提供精确反馈，因此能完全替代偏好学习并应用于所有 LLM 任务场景",
+          "对于结果可由程序/规则客观校验的任务（如代码 Pass/Fail、数学题最终答案），应优先采用可验证奖励；对于涉及同理心、语气、安全性和主观偏好的开放式任务，仍需依赖偏好学习",
+          "偏好学习在数学和代码推理任务上的上限远高于可验证奖励，因为人类标注员能更好地评估解题思路的优雅度",
+          "可验证奖励只能用于监督微调（SFT）阶段，不能结合强化学习（RL）算法使用"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n可验证奖励以单元测试、数学答案等规则作精确反馈，适合客观可校验任务（RLVR/GRPO）；同理心/语气/安全等主观维度无法规则化，仍需人类偏好学习。二者按任务可验证性分工，A的全替代、C的偏好优于可验证、D的仅SFT可用均误判。"
+      }
+    }
   }
 ]

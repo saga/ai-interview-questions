@@ -3843,5 +3843,81 @@
         "referenceAnswer": "正确答案：A、B、C。\n\n- A 边利用率：活跃边/配置边，揭示拓扑冗余度。\n- B 关系效率：有效信息消息/总消息，度量流量有效性。\n- C TF-IDF重复度：新增消息与历史库的词法相似度，量化冗余/信息轰炸。\n- D 错误：静态密度仅描述几何可能，不反映实际流量；以静代动会导致对行为连通性的误判。"
       }
     }
+  },
+  {
+    "id": "agentic-world-01",
+    "category": "agentic-ai",
+    "topic": "system-design",
+    "tags": [
+      "physical-ai",
+      "world-model",
+      "vla",
+      "simulation",
+      "embodied"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在具身智能（Physical AI）和机器人控制领域，常结合“世界模型（World Model）”与“视觉-语言-动作模型（Vision-Language-Action Model, VLA）”。以下关于这些模型机制与作用的描述，正确的有？（多选）",
+    "explanation": "世界模型预测下一状态可生成仿真边缘数据；VLA视语入动作出；D称直接驱电机错误。",
+    "reference": {
+      "concept": "世界模型=状态转移预测+仿真造数据；VLA=视语到动作。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "传统文本大模型基于上文预测下一个 Token，而世界模型的核心在于基于当前环境状态和给定动作（Action），预测下一个物理状态或未来场景",
+          "世界模型可用于构建高保真仿真环境，生成现实世界中高成本、高风险或稀缺的边缘场景（Edge Cases）训练数据",
+          "VLA 模型通常将视觉图像和指令作为输入，直接预测或输出机器人的具体控制动作（Action）",
+          "世界模型可以直接替代底层控制算法，无需结合动作预测即可直接驱动硬件电机的物理转动"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：文本LLM为P(next token|prefix)，世界模型为P(next state|state, action)，建模对象为物理动力学。\n- B：世界模型可在仿真中低成本生成高风险/稀缺边缘场景，补足真实采集盲区。\n- C：VLA以图像+语言指令为输入，端到端输出关节/末端动作。\n- D 错误：世界模型仅做预测与规划，需结合控制器/策略才能驱动电机，不直接替代底层控制。"
+      }
+    }
+  },
+  {
+    "id": "agent-proto-01",
+    "category": "agentic-ai",
+    "topic": "multi-agent",
+    "tags": [
+      "mcp",
+      "a2a",
+      "agent-protocol",
+      "tool-calling",
+      "state-machine"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在大模型 Agent 系统架构设计中，为了实现能力解耦与模块化，通常会将“Agent 与外部工具/API 的交互协议”和“Agent 与 Agent 之间的协同/授权协议”进行分层（例如 MCP 与 A2A 协议）。关于这两类协议的设计定位与工作机制，下列说法正确的有？（多选）",
+    "explanation": "MCP单向工具调用由宿主路由、A2A自主委托+Agent Card发现、可Input-Required回抛、D称MCP替代A2A错误。",
+    "reference": {
+      "concept": "MCP=工具调用；A2A=Agent委托+发现+状态回抛；不可互替。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MCP（Model Context Protocol）侧重于 Agent 与工具/上下文服务之间的单向或无状态调用，由宿主应用/Client 负责格式化和路由请求并交由 Server 执行",
+          "A2A（Agent-to-Agent）侧重于具备自主推理能力的 Agent 之间的任务委托与协作，支持通过 Agent Card/Manifest 进行服务发现与元数据暴露",
+          "在 A2A 协作过程中，若被委托的子 Agent 发现任务需要补充额外上下文或交互输入，可以进入暂停状态（Input-Required state）并将控制权/上下文回抛给上游 Agent",
+          "MCP 协议完全可以替代 A2A 协议，因为将其他 Agent 简单封装为一个带 Schema 的 MCP Tool 就能完美实现跨 Agent 的异步流式协商与复杂状态机同步"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A：MCP为工具/上下文调用层，无状态、宿主路由。\n- B：A2A为Agent协作层，Agent Card作发现与能力声明。\n- C：A2A支持Input-Required暂停并回抛上下文，实现多轮协商。\n- D 错误：MCP为单调调用，无Agent自主状态机与流式协商，封装为Tool无法替代A2A。"
+      }
+    }
   }
 ]
