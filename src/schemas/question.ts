@@ -55,6 +55,16 @@ export const questionSchema = z
     source: questionSourceRefSchema.optional(),
     /** 该题试图探测的常见误解（用于证据+反证评分器，选择题尤其有价值）。 */
     misconceptions: z.array(z.string().min(1)).optional(),
+    /** 题目探测的概念（Concept-coverage 用，PR0 实验）。primary 唯一，supporting 0~2；
+     * 概念 id 应来自知识节点的 concepts[]（或既有知识节点 id）。PR2 正式接入校验。 */
+    tests: z
+      .array(
+        z.object({
+          concept: z.string().min(1),
+          role: z.enum(['primary', 'supporting']),
+        }),
+      )
+      .optional(),
     formats: z.object({
       choice: choiceFormatSchema.optional(),
       open: openFormatSchema.optional(),

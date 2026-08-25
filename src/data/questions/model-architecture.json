@@ -1019,5 +1019,224 @@
         "referenceAnswer": "正确答案 A,C,D。解耦容量与FLOPs+负载均衡+通信开销高；B 错误不省VRAM所有Expert常驻。"
       }
     }
+  },
+  {
+    "id": "moe-vs-dense-compute",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "moe-vs-dense-compute-parity",
+    "tags": [
+      "moe",
+      "dense",
+      "flops",
+      "vram",
+      "load-balancing",
+      "capacity-scaling"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "假设某 MoE 模型拥有 1000 亿总参数量每 Token 激活其中 200 亿（2 个专家）而某 Dense 模型全量激活 200 亿参数。关于两者在计算与系统级别的特性比对以下哪些说法是正确的？（多选）",
+    "explanation": "A 正确 单 Token FLOPs 由激活参数决定两者均为 200 亿同一数量级。B 错误 所有 Expert 权重都需常驻显存不能仅加载被激活部分——MoE 省算力不省显存。C 正确 路由负载均衡直接影响输出质量方差某些专家欠训练会导致特定领域退化。D 正确 相近算力下更大总参可存储更多领域知识实现容量扩展。",
+    "reference": {
+      "concept": "MoE 总参决定 VRAM 激活参数决定 FLOPs；省算力不省显存；负载均衡影响质量方差。"
+    },
+    "rubric": {
+      "required": [
+        "单Token FLOPs由激活参数决定两者同级",
+        "所有Expert需常驻VRAM不省显存",
+        "路由负载均衡影响输出质量方差"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在单 Token 推理的浮点计算量上该 MoE 模型与该 200 亿参数的 Dense 模型基本处于同一数量级",
+          "在部署显存占用上该 MoE 模型仅需要加载被激活的 200 亿参数对应的显存即可运行推理",
+          "MoE 模型在训练时极度依赖路由负载均衡若某些专家未被充分训练可能导致模型在不同领域下的输出质量方差较大",
+          "在相同的硬件设备与总显存限制下 MoE 架构能够以相近的单 Token 算力开销存储比 Dense 模型更大规模的领域知识"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,C,D。单 Token FLOPs 同级+不省 VRAM+负载均衡影响质量方差。B 错误 所有 Expert 需常驻显存。"
+      }
+    }
+  },
+  {
+    "id": "native-vs-modular-multimodal",
+    "category": "model-architecture",
+    "topic": "multimodal",
+    "subtopic": "native-vs-modular-architecture",
+    "tags": [
+      "multimodal",
+      "native-multimodal",
+      "modular-encoder",
+      "cross-modal-alignment"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "多模态大语言模型通常采用原生多模态或模块化外挂编码器两种架构设计。现有系统需要处理长达数小时的连续视频与多轨音频流并在跨模态细节上进行细粒度逻辑推理。关于两种架构在此类场景下的特性差异哪些描述是正确的？（多选）",
+    "explanation": "A 正确 模块化架构先冻结或微调文本模型再通过独立 Vision/Audio Encoder 及投影层映射到 Embedding 空间。B 正确 原生架构预训练初期就将多模态序列送入统一 Transformer 共同学习深层自注意力交互。C 错误 模块化架构因外挂编码器引入额外延迟且长视频高密度时序数据的注意力开销并不优于原生架构。D 正确 原生架构跨模态时空连贯理解能力更强。",
+    "reference": {
+      "concept": "原生=统一预训练深层交互；模块化=外挂编码器投影；原生跨模态连贯性更强。"
+    },
+    "rubric": {
+      "required": [
+        "模块化通过投影层映射到文本Embedding空间",
+        "原生统一Transformer深层自注意力交互",
+        "原生跨模态时空连贯理解能力更强"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模块化外挂编码器架构通常先冻结或微调预训练文本语言模型再通过独立的 Vision/Audio Encoder 及投影层将非文本特征映射到文本 Embedding 空间",
+          "原生多模态架构在预训练初期就将文本 Token、图像 Patch 及音频帧序列送入统一 Transformer 层共同学习多模态特征能够在深层网络中进行深入的自注意力交互",
+          "模块化外挂编码器架构因无需修改语言模型底层 Transformer 架构因此在处理长视频等高密度连续时间序列时其注意力计算开销和上下文吞吐表现显著优于原生多模态架构",
+          "在处理复杂的跨模态时间线关联时原生多模态架构通常表现出更强的高维跨模态时空连贯理解能力"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,D。模块化=投影层映射+原生=统一预训练深层交互+原生跨模态连贯更强；C 错误模块化并不更优。"
+      }
+    }
+  },
+  {
+    "id": "rope-theta-scaling",
+    "category": "model-architecture",
+    "topic": "rope",
+    "subtopic": "theta-scaling-long-context",
+    "tags": [
+      "rope",
+      "long-context",
+      "theta",
+      "frequency-scaling",
+      "extrapolation"
+    ],
+    "difficulty": "hard",
+    "angle": "fundamental",
+    "question": "在大语言模型扩展上下文窗口的长上下文训练阶段工程上通常会将 RoPE 的 Base Frequency θ 从 10⁶ 显式增大至 10⁷。这一操作的核心原理是？",
+    "explanation": "正确答案 B。增大 θ 相当于降低旋转频率使波长变长注意力机制在超长距离下的相对相位变化更加平缓防止在远距离外推时因相位翻转过快导致的相对位置注意力失真与衰减。选项 A/C/D 均违背 RoPE 的数学设计——θ 不改变 head_dim、不影响 KV Cache 大小、也不改变编码类型。",
+    "reference": {
+      "concept": "增大 θ=降低旋转角速度=远距离相位变化更平缓=缓解外推失真。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "参见解析中的正确说法与机制分析",
+          "其他技术上看似合理但实际不正确的选项",
+          "与本题考点无关的干扰项",
+          "常见误解或过度简化的说法"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。增大 θ 相当于降低旋转频率使波长变长注意力机制在超长距离下的相对相位变化更加平缓防止在远距离外推时因相位翻转过快导致的相对位置注意力失真与衰减。选项 A/C/D 均违背 RoPE 的数学设计——θ 不改变 head_dim、不影响 KV Cache 大小、也不改变编码类型。"
+      }
+    }
+  },
+  {
+    "id": "gqa-kv-cache-calc",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "gqa-kv-cache-memory-calc",
+    "tags": [
+      "gqa",
+      "kv-cache",
+      "memory-calculation",
+      "bfloat16",
+      "long-context"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "某 30B 参数量的 Decoder-only Transformer 采用 GQA 架构：d_model=4096，L=64 层，H_q=32 Query 头，H_kv=8 KV 头，d_head=128，使用 bfloat16（每元素 2 字节）。当并发序列长度 N=131072（128K）时单个样本在整网中所需的 KV Cache 显存占用约为多少？",
+    "explanation": "正确答案 C 32GB。计算步骤：①每层每 Token KV = 2(K和V) × H_kv(8) × d_head(128) × 2(bytes) = 4096 bytes；②全网 L=64 层单 Token 总 KV = 64 × 4096 = 262144 bytes = 256 KB；③N=131072 时总显存 = 131072 × 256KB = 32GB。",
+    "reference": {
+      "concept": "KV/token/layer = 2×H_kv×d_head×bytes；总 = L×per-layer×N。"
+    },
+    "rubric": {
+      "required": [
+        "每层每Token KV=2×H_kv×d_head×bytes",
+        "乘以层数L得单Token总量",
+        "乘以序列长度N得总显存"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "8 GB",
+          "16 GB",
+          "32 GB",
+          "64 GB"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C 32GB。每层每Token KV=2×H_kv×d_head×bytes=4096B；全网L=64层=256KB/token；N=128K→32GB。"
+      }
+    }
+  },
+  {
+    "id": "moe-router-collapse-fix",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "router-collapse-load-balancing",
+    "tags": [
+      "moe",
+      "router-collapse",
+      "load-balancing",
+      "auxiliary-loss",
+      "capacity-factor"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 Sparse MoE 进行 RL 微调期间极易发生路由器崩溃——Router 倾向将绝大部分 Token 集中发送给少数 Expert。下列哪些工程与算法干预手段能有效缓解并维持负载均衡？（多选）",
+    "explanation": "A 辅助负载均衡损失对激活概率不均匀性施加惩罚。B Capacity Factor 限制单 Batch 最大 Token 数超额丢弃或重定向。C Top-k 路由随机噪声增加探索度。D 错误 冻结 Router 参数导致无法根据新分布调整路由策略。",
+    "reference": {
+      "concept": "辅助损失+Capacity Factor+Router Noise；冻结 Router 是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "辅助负载均衡损失",
+        "Expert Capacity Factor 限制",
+        "路由噪声注入探索"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Loss 中引入辅助负载均衡损失对 Expert 激活概率分布的不均匀性施加惩罚",
+          "设定适度的 Expert Capacity Factor 限制单个 Expert 在单个 Batch 中能处理的最大 Token 数量直接丢弃或重定向超额 Token",
+          "引入 Top-k 路由随机噪声在路由 Logits 计算中添加受控的极值分布噪声以增加探索度",
+          "彻底冻结 Router 网络的参数仅允许更新 Expert 内部的 FFN 参数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。辅助损失+容量限制+路由噪声；D 冻结 Router 导致丧失适应能力。"
+      }
+    }
   }
 ]

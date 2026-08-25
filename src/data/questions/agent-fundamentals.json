@@ -1221,5 +1221,95 @@
         "权限分层：只读默认放开、写操作确认、不可逆操作双人/人工"
       ]
     }
+  },
+  {
+    "id": "hil-vs-auto-loop",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "subtopic": "human-in-loop-vs-autonomous",
+    "tags": [
+      "human-in-the-loop",
+      "autonomous-agent",
+      "code-quality",
+      "code-slop"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在高吞吐量的 AI Agent 辅助软件工程体系中完全无人工干预的自动化循环往往会导致代码库快速退化与代码垃圾堆积。为了在保持高交付并发的同时维持生产级代码质量以下哪些工程取舍是合理的？（多选）",
+    "explanation": "A 正确 人类主导关键设计与技术品味不将核心架构决策完全委托给 Agent。B 正确 引入不同模型族进行对抗性审查交叉消除单一模型的系统性偏差。C 错误 放弃人类合并权限会导致未经人工审核的代码直接进入主干风险极高。D 正确 要求在真实测试环境中校验动态运行行为而非仅通过静态检查或 Mock 断言。",
+    "reference": {
+      "concept": "人类主导设计+对抗审查+真实环境验证；放弃 PR 合并权限是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "人类主导关键设计决策",
+        "不同模型族对抗性审查",
+        "真实环境校验而非仅 Mock"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "人类工程师需主导关键设计与技术品味不将核心架构决策完全委托给 Agent",
+          "在 Spec 制定与代码实现阶段引入独立的、不同模型族的 Agent 进行对抗性审查",
+          "放弃人类对 Pull Request 的控制与合并权限由 Agent 相互审查并直接全自动合入主干",
+          "要求 Agent 在真实测试环境中校验动态运行行为而非仅通过检查静态文本或验证 Mock 来断言任务成功"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,D。人类主导设计+对抗审查+真实环境验证；C 错误放弃 PR 权限是反模式。"
+      }
+    }
+  },
+  {
+    "id": "subagent-vs-inline",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "subtopic": "subagent-vs-inline-execution",
+    "tags": [
+      "subagent",
+      "inline-execution",
+      "incremental-commit",
+      "code-drift"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "不同大语言模型在子 Agent 调度能力和上下文管理上存在差异。在将 Spec 转换为代码实现阶段关于选择子 Agent 驱动还是单层内联执行的工程判断以下哪些说法是合理的？（多选）",
+    "explanation": "A 正确 子 Agent 调度能力强的模型可通过拆分复杂 Spec 提升执行效率。B 正确 调度能力弱或易丢上下文的模型用单层内联配合增量验证更稳妥。C 正确 小粒度增量提交+每次验证 Spec 符合度有效避免长上下文下的代码漂移。D 错误 深度无限嵌套子 Agent 循环会导致上下文丢失与成本失控并非所有模型都适用。",
+    "reference": {
+      "concept": "强模型用子Agent拆分+弱模型用内联增量+小粒度commit防漂移；无限嵌套是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "强调度模型适合子 Agent 拆分",
+        "弱调度模型适合内联增量验证",
+        "小粒度 commit 防 code drift"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对于子 Agent 调度与复杂上下文解耦能力较强的模型采用子 Agent 驱动开发可有效提升复杂 Spec 拆分执行的效率",
+          "对于子 Agent 调度能力相对较弱或容易在多层调用中丢上下文的模型采用单层内联执行配合频繁的增量验证是更稳妥的选择",
+          "在 Implement 阶段配合小粒度的增量提交并在每次提交后验证 Spec 符合度能有效避免模型在长上下文下产生代码漂移",
+          "无论模型能力如何都必须采用深度无限嵌套的子 Agent 循环直到整个仓库的代码全自动重构完毕"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。强模型子Agent+弱模型内联+小粒度commit防漂移；D 错误无限嵌套是反模式。"
+      }
+    }
   }
 ]

@@ -1474,5 +1474,300 @@
         "LLM-as-judge 的偏差（位置/长度偏好）需要校准实验"
       ]
     }
+  },
+  {
+    "id": "adversarial-verification",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "adversarial-code-review",
+    "tags": [
+      "adversarial-review",
+      "bug-bashing",
+      "cross-model",
+      "spec-verification"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "前沿大语言模型生成的代码常存在逻辑漏洞与隐蔽缺陷。在建立连续代码验证与 Bug 清理机制时以下哪些工程策略有助于降低生产环境风险？（多选）",
+    "explanation": "A 正确 在 Large Changeset 上投入对抗性分支审查的综合效益优于让隐蔽 Bug 进入生产后的维护成本。B 错误 编译通过不等于逻辑正确——静态检查无法捕获语义错误。C 正确 使用独立模型族交叉审查 Spec 消除初始逻辑偏差。D 正确 自动化闭环调用修复指令并在合入前重新验证 Spec 符合度形成质量门禁。",
+    "reference": {
+      "concept": "对抗分支审查+跨模型 Spec 交叉审+自动化闭环验证；编译通过≠逻辑正确。"
+    },
+    "rubric": {
+      "required": [
+        "Large Changeset 对抗审查优于事后维护",
+        "跨模型族 Spec 交叉审查",
+        "自动化闭环验证 Spec 符合度"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Large Changeset 上分配专门的算力进行对抗性分支审查其综合效益优于允许隐蔽 Bug 进入生产代码库后的维护成本",
+          "只要代码能够无报错通过编译器静态检查就应当跳过逻辑功能验证以节省 Token 消耗",
+          "在 Spec 阶段完成前使用另一个独立的模型族对规范进行交叉审查以消除初始逻辑偏差",
+          "持续审查系统生成的修复指令应支持自动化工具闭环调用并在最终合入前重新验证 Spec 符合度"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,C,D。对抗审查+跨模型交叉审+自动化闭环；B 错误编译通过≠逻辑正确。"
+      }
+    }
+  },
+  {
+    "id": "llm-judge-vs-agent-judge",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "llm-judge-vs-agent-judge",
+    "tags": [
+      "agent-evaluation",
+      "trajectory",
+      "trace-review",
+      "tool-calling"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在对复杂 AI Agent 系统进行自动化评估时传统的单次 Prompt 匹配式 LLM-as-a-Judge 常常失效。关于导致这一现象的原因以及 Agent-as-a-Judge 的作用机制以下哪些说法是正确的？（多选）",
+    "explanation": "A 正确 LLM-as-a-Judge 仅评估最终 Output 难以察觉轨迹中间步骤导致的'过程错误但结果看似合理'的隐蔽失效。B 正确 依赖预定义字段映射缺乏动态探索 Trace 的能力。C 正确 Agent-as-a-Judge 具备自主调查能力能审查完整 Trace 并检查中间工具调用。D 错误 Agent-as-a-Judge 本身也是 LLM 驱动仍存在生成式不确定性。",
+    "reference": {
+      "concept": "LLM-as-a-Judge 只看终态；Agent-as-a-Judge 可动态审查完整 Trace 与中间工具调用。"
+    },
+    "rubric": {
+      "required": [
+        "LLM-as-a-Judge 仅看终态无法察觉中间步骤错误",
+        "LLM-as-a-Judge 缺乏动态探索 Trace 能力",
+        "Agent-as-a-Judge 可自主调查完整 Trace"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LLM-as-a-Judge 通常仅评估最终生成的 Output 难以察觉执行轨迹中间步骤所导致的过程错误但结果看似合理的隐蔽失效",
+          "LLM-as-a-Judge 依赖预定义字段映射评估者必须在检查日志前预判失效发生的具体位置缺乏动态探索迹线的能力",
+          "Agent-as-a-Judge 具备自主调查能力能够审查完整 Trace、检查中间工具调用的入参出参、执行代码或搜集证据后再给出评估结论",
+          "Agent-as-a-Judge 的核心优势在于它彻底解决了生成式 AI 的不确定性评估同一条 Trace 时能保持 100% 的结果一致性"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。LLM-as-a-Judge 只看终态缺乏动态探索；Agent-as-a-Judge 可自主调查完整 Trace 与中间工具调用。D 错误 Agent-as-a-Judge 本身也是 LLM 驱动仍存在不确定性。"
+      }
+    }
+  },
+  {
+    "id": "judge-memory-cascade",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "memory-propagation-error-cascade",
+    "tags": [
+      "agent-evaluation",
+      "memory-module",
+      "error-cascade",
+      "bias-propagation"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在为评估代码生成 Agent 的 Agent-as-a-Judge 架构引入跨任务持久化记忆模块后测试发现评估准确率反而下降。导致该现象最可能的原因是？",
+    "explanation": "正确答案 B。早期评估中产生的错误判断或偏见写入持久化记忆后在后续评估其他 Trace 时不断传播和放大形成错误级联。A 错误 Needle-in-Haystack 是长上下文注意力问题与记忆模块无直接因果。C/D 错误 记忆模块不影响沙箱调用也不导致死锁。",
+    "reference": {
+      "concept": "评估器记忆的错误级联：早期偏见→持久化→后续传播放大。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "记忆模块增加了 Context 长度导致评估 LLM 触发了 Needle In A Haystack 现象并忽略了关键评测指标",
+          "早期评估中产生的错误判断或偏见写入持久化记忆后会在后续评估其他 Trace 时不断传播和放大形成错误级联",
+          "记忆模块会导致评估 Agent 无法调用外部沙盒去真实运行被评估的代码",
+          "记忆模块会导致评估 Agent 在读取历史数据时发生死锁使其退化为标准的单次 LLM-as-a-Judge"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。早期偏见写入持久化记忆后不断传播放大形成错误级联。"
+      }
+    }
+  },
+  {
+    "id": "trajectory-bias-pitfall",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "trajectory-bias",
+    "tags": [
+      "trajectory-bias",
+      "length-bias",
+      "hallucinated-verification",
+      "cost-explosion"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在将 Agent-as-a-Judge 用于评估 Agent 执行轨迹时评估模型本身可能引入特定的认知偏差与工程隐患。以下哪些属于典型偏差或风险？（多选）",
+    "explanation": "A 正确 轨迹长度偏好偏差——倾向给步数更多的执行过程打高分即使额外步骤无实际价值。B 正确 幻觉验证风险——缺乏外部确定性工具时凭空揣测中间调用的正确性。C 正确 评估成本与延时爆炸——需多轮 Trace 检索与工具调用开销显著增加。D 错误 规则硬化偏差描述不准确——Agent-as-a-Judge 恰恰擅长理解自然语言语义而非仅正则匹配。",
+    "reference": {
+      "concept": "三大偏差：长度偏好+幻觉验证+成本爆炸；D 描述与实际相反。"
+    },
+    "rubric": {
+      "required": [
+        "轨迹长度偏好偏差",
+        "幻觉验证风险",
+        "评估成本与延时爆炸"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "轨迹长度偏好偏差评估 Agent 往往倾向于给步数更多、轨迹更长的执行过程打出高分即使额外的步骤并未带来实际价值甚至包含无效重试",
+          "幻觉验证风险在缺乏外部确定性工具验证的情况下评估 Agent 可能会凭空揣测中间工具调用的正确性产生虚假证据",
+          "评估成本与延时爆炸相比单次 LLM Call Agent-as-a-Judge 需要多轮 Trace 检索与工具调用评估开销与响应时延显著增加",
+          "规则硬化偏差评估 Agent 会严格按照正则表达式匹配日志无法理解自然语言描述的语义指标"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。长度偏好+幻觉验证+成本爆炸；D 描述与实际相反 Agent-as-a-Judge 擅长理解语义。"
+      }
+    }
+  },
+  {
+    "id": "agentic-eval-evolution",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "procedural-reactive-self-evolving",
+    "tags": [
+      "procedural-judge",
+      "reactive-judge",
+      "self-evolving",
+      "evaluation-evolution"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "根据智能体化评估的技术演进路线评估器可划分为程序化、响应式与自演化三种模式。关于这三种模式的特质与差异以下哪些选项的描述是正确的？（多选）",
+    "explanation": "A 正确 程序化评估器遵循固定多智能体协作工作流按预设 DAG 步骤执行。B 正确 响应式评估器能根据 Trace 中发现的异常动态路由并主动调用外部验证工具搜集证据。C 正确 自演化评估器基于评估历史与反思机制自动总结新规则并修正自身标准。D 错误 程序化评估器虽然固定但可以处理多步骤 Trace 只是灵活性不足并非完全不能用。",
+    "reference": {
+      "concept": "程序化=固定DAG；响应式=动态路由工具；自演化=反思修正标准。"
+    },
+    "rubric": {
+      "required": [
+        "程序化=固定工作流/DAG",
+        "响应式=动态路由外部工具",
+        "自演化=反思修正评估标准"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "程序化评估器通常遵循固定的多智能体协作工作流按照预设的固定逻辑或 DAG 步骤执行检查",
+          "响应式评估器能够根据在 Trace 中发现的具体异常或疑点动态路由并主动调用外部验证工具以搜集证据",
+          "自演化评估器能够基于评估历史与反思机制自动总结新规则并动态修正自身评估标准",
+          "程序化评估器由于缺乏动态工具调用能力只能用于评估简单的单轮对话无法用于评估多步骤 Trace"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。程序化=DAG+响应式=动态路由+自演化=反思修正；D 错误程序化也可用于多步 Trace。"
+      }
+    }
+  },
+  {
+    "id": "tiered-eval-strategy",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "tiered-evaluation-strategy",
+    "tags": [
+      "tiered-evaluation",
+      "swiss-cheese-model",
+      "cost-optimization",
+      "pyramid"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "某企业正在构建大模型 Agent 系统的生产级评估架构要求在兼顾评估准确率的同时控制整体计算成本与延迟。根据分层防御/金字塔评估策略最合理的评估链路设计是？",
+    "explanation": "正确答案 B。金字塔策略：第一层确定性规则/单元测试（零成本高速度过滤明显失败）→第二层轻量 LLM-as-a-Judge 批量评估基础输出→第三层对采样得到的复杂或失败 Trace 引入 Agent-as-a-Judge 深层调查→顶层人工抽检校准。这种漏斗式设计确保昂贵的深层评估只用在最有需要的样本上。A/C/D 均违反成本效益原则。",
+    "reference": {
+      "concept": "金字塔评估：确定性过滤→轻量LLM→Agent深审→人工抽检逐层递进控制成本。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "对所有生产 Trace 100% 直接使用最高阶的 Agent-as-a-Judge 深入审查以确保捕捉所有隐蔽错误",
+          "第一层采用确定性的代码规则与单元测试过滤第二层采用轻量 LLM-as-a-Judge 批量评估第三层对采样的复杂或失败 Trace 引入 Agent-as-a-Judge 深层调查顶层配合人工抽检与校准",
+          "放弃所有代码测试与单次 LLM 评估完全依赖 Agent-as-a-Judge 在离线数据集上跑完后直接部署生产环境不再进行实时采样或监测",
+          "仅在开发阶段使用人工评审生产上线后直接将 Agent-as-a-Judge 的输出自动反馈给被评估 Agent 进行实时自校正不设置任何确定性过滤规则"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。金字塔：确定性→轻量LLM→Agent深审→人工抽检。"
+      }
+    }
+  },
+  {
+    "id": "silent-failure-debug",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "silent-failure-detection",
+    "tags": [
+      "silent-failure",
+      "hallucinated-completion",
+      "api-log-check",
+      "trace-consistency"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某订票 Agent 在处理修改机票并发送邮件的任务时最终答复'已成功'但运维日志显示改签 API 返回 401 错误且跳过了发邮件接口。若要设计自动化评估机制精准捕获此类'掩盖内部错误的虚假完成'现象以下哪些手段有效？（多选）",
+    "explanation": "A 正确 Agent-as-a-Judge 可读取 API Log 校验'终态承诺'是否与'工具实际调用结果'一致。C 正确 接入确定性 Trace 检查规则核对关键写操作 API 是否成功返回 200 OK。B 错误 单次文本语义匹配无法发现内部工具调用失败——最终答复与用户 Input 语义匹配度很高。D 错误 简单正则匹配 Error 关键词过于粗糙——Agent 后续通过重试恢复的场景会被误判为不合格。",
+    "reference": {
+      "concept": "捕获 Silent Failure 需要 Trace 一致性检查而非仅看最终文本匹配。"
+    },
+    "rubric": {
+      "required": [
+        "Agent-as-a-Judge 校验终态承诺与工具结果一致性",
+        "确定性规则核对关键 API 状态码"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "引入 Agent-as-a-Judge 允许评估器读取并检查轨迹中的具体 API 请求与响应 Log 校验终态承诺是否与工具实际调用结果一致",
+          "仅依靠单次 LLM-as-a-Judge 检查最终答复与用户初始 Input 的文本语义匹配度",
+          "在评估层中接入确定性的 Trace 检查规则专门核对关键写操作 API 是否被成功调用且返回正常状态码",
+          "使用正则匹配断言日志中是否包含 Error 关键词只要包含就直接判为不合格即使 Agent 后续通过重试成功恢复"
+        ],
+        "answer": [
+          0,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,C。需要 Trace 一致性检查校验终态承诺与工具结果；B 文本匹配不够 D 过于粗糙会误判重试场景。"
+      }
+    }
   }
 ]

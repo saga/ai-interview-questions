@@ -279,5 +279,50 @@
         "红队用例纳入 CI 回归，防止迭代破坏安全表现"
       ]
     }
+  },
+  {
+    "id": "agent-constitution-design",
+    "category": "agent-safety",
+    "topic": "safety-alignment",
+    "subtopic": "operational-rules-design",
+    "tags": [
+      "agent-constitution",
+      "operational-rules",
+      "safety-boundary",
+      "coding-agent"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "在为具备本地文件系统与终端执行权限的 AI Coding Agent 设计安全规范与执行约束时为了平衡执行自主性与工程安全性以下哪些规则设计符合最佳工程实践？（多选）",
+    "explanation": "A 正确 可逆操作（改写单体模块、跑测试）自主推进无需二次确认提升效率。B 错误 破坏性命令如 git reset --hard 不应自动执行必须请求人类授权。C 正确 破坏性影响或重大架构变更必须暂停并请求明确授权——这是安全底线。D 正确 以结果导向的平实语言汇报避免无意义的机器日志提升人机协作效率。",
+    "reference": {
+      "concept": "可逆操作自主+破坏性操作暂停审批+结果导向汇报；自动执行破坏性命令是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "可逆操作自主推进无需确认",
+        "破坏性操作必须暂停请求授权",
+        "结果导向平实语言汇报"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "允许 Agent 对安全且具可逆性的操作（如本地单体模块改写、跑测试）自主推进无需打断人类进行二次确认",
+          "当遇到困难或阻碍时允许 Agent 自动执行破坏性命令（如 git reset --hard 或强制覆盖代码库）以快速恢复初始状态",
+          "针对引发破坏性影响或重大架构变更的操作要求 Agent 必须暂停执行并向人类请求明确授权",
+          "规定 Agent 提交 Pull Request 或汇报进度时必须以结果导向且使用人类易读的平实语言避免生成无意义的机器日志"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,C,D。可逆自主+破坏性暂停+平实汇报；B 错误不应自动执行破坏性命令。"
+      }
+    }
   }
 ]

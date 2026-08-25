@@ -1512,5 +1512,582 @@
         "referenceAnswer": "正确答案 A。训练=并行+Compute-Bound；推理Decode=串行+Memory-Bandwidth-Bound（KV Cache 带宽）。"
       }
     }
+  },
+  {
+    "id": "thinking-token-limits",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "subtopic": "thinking-token-boundary",
+    "tags": [
+      "inference-time-compute",
+      "thinking-tokens",
+      "scaling-limits",
+      "diminishing-returns"
+    ],
+    "difficulty": "hard",
+    "angle": "fundamental",
+    "question": "大语言模型在引入推理期算力机制后可以通过扩展思考 Token 来提高复杂任务正确率。关于推理期算力扩展的技术边界与物理本质以下说法正确的是？",
+    "explanation": "正确答案 B。推理期算力本质是用额外推理端 FLOPs 换取更长逻辑推导链与状态搜索空间用于纠正中间错误并拆解复杂多步问题。A 错误 不能重构预训练参数凭空推理出未公开事实。C 错误 不改变 Attention 复杂度量级。D 错误 边际效益递减且可能陷入循环思考。",
+    "reference": {
+      "concept": "推理期算力=FLOPs换推导链长度；不能重构参数、不降复杂度、有边际递减。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "增加推理期思考 Token 的数量可以在推理阶段动态重构模型的预训练参数从而凭空推理出预训练数据集中完全不存在的未公开领域事实",
+          "推理期算力扩展本质上是用额外的推理端 FLOPs 换取更长的逻辑推导链与状态搜索空间用于纠正中间推导错误并拆解复杂多步问题",
+          "推理期算力扩展能够将 Self-Attention 的计算复杂度从二次方降低为线性从而缩短首包响应时间",
+          "只要无限增加思考 Token 的生成数量模型的任务准确率就会无上限地线性增长不会出现边际效益递减或陷入循环思考"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。用 FLOPs 换推导链与搜索空间；A 不能重构参数 C 不降复杂度 D 有边际递减。"
+      }
+    }
+  },
+  {
+    "id": "thinking-mode-control",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "subtopic": "thinking-mode-dynamic-switch",
+    "tags": [
+      "thinking-mode",
+      "reasoning-budget",
+      "stop-sequence",
+      "control-tokens"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "当前推理大模型通常支持 Thinking、Non-Thinking 及 Low-Effort Thinking 的动态切换。在架构设计与推理服务部署中系统如何在无需修改模型物理结构与重新加载权重的前提下实现这三种模式的实时切换？",
+    "explanation": "正确答案 A。通过后训练注入的 Control Tokens（如 <think>/<no_think>）或 Reasoning Budget 参数结合 Sampling Stop Sequences 干预解码流实现模式切换。B 错误不需要加载多个子模型。C 错误不涉及动态剪层。D 错误不需要维护独立 KV 内存池。",
+    "reference": {
+      "concept": "Control Tokens + Reasoning Budget + Stop Sequences；不改结构不重载权重。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "通过在 Prompt 中注入特定的控制标签（如 <think> 显式开启、<no_think> 禁用）或控制 Reasoning Budget 参数，结合 Sampling Stop Sequences 干预解码流",
+          "在服务层根据请求类型动态路由到三套不同参数量的子模型上",
+          "通过动态裁剪 Transformer 层的数量（例如 Thinking 模式跑 64 层，Non-Thinking 模式只跑 16 层）",
+          "在 GPU 显存中为三种模式分别维护独立的 KV Cache 内存池"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Control Tokens + Reasoning Budget + Stop Sequences 实现模式切换；不改结构不重载权重。"
+      }
+    }
+  },
+  {
+    "id": "ptq-reasoning-llm",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "fp8-fp4-gguf-reasoning",
+    "tags": [
+      "quantization",
+      "fp8",
+      "gguf",
+      "cot-sensitivity",
+      "production-deployment"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在后训练完成的 CoT 推理大模型进行量化部署到生产环境时关于 FP8、NVFP4/MXFP4 和 GGUF 等量化格式的工程权衡以下哪些说法是正确的？（多选）",
+    "explanation": "D 错误。目前先进的 FP8 方案支持无需校准数据的动态 per-channel 权重与 per-token 激活量化即可直接转换且依然保持极高的逻辑推理精度。",
+    "reference": {
+      "concept": "FP8 动态量化几乎无损+CoT 对 Outlier 敏感+GGUF 适合边缘端；FP8 无需校准。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基于 Dynamic Per-Channel Weight 与 Per-Token Activation 的 FP8 动态量化在绝大多数场景下几乎无损推理精度适合高吞吐生产部署",
+          "推理模型的 CoT 思考链对 Activation 中的 Outlier 较为敏感过度的 FP4 极低比特量化可能会导致长链条逻辑推演中出现累积误差或死循环",
+          "GGUF 格式支持 CPU/GPU 混合离线加载与多阶量化非常适合边缘端和单卡显存受限设备的本地部署",
+          "对推理模型进行 FP8 量化前必须经过数万条数据的校准否则模型的逻辑推理能力会立刻降级为随机猜答"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。FP8 动态量化几乎无损+CoT 对 FP4 Outlier 敏感+GGUF 适合边缘端；D 错误 FP8 无需校准数据。"
+      }
+    }
+  },
+  {
+    "id": "prune-quant-compound-degrade",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "pruning-quantization-compound-degradation",
+    "tags": [
+      "pruning",
+      "quantization",
+      "compound-degradation",
+      "cot",
+      "error-accumulation"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 LLM 高效部署管线中通常先通过结构化剪枝降低参数量随后将残余权重进一步量化至 4-bit。这种组合压缩策略在代码生成数学推导与 CoT 任务上性能剧烈下降其底层机制包括哪些？（多选）",
+    "explanation": "A 正确 剪枝降低表征容量使剩余权重对量化噪声容忍度下降。B 正确 4-bit 离散化误差在自回归生成中逐 Token 累积放大。C 正确 剪枝改变激活分布使静态量化 Scaler 失真。D 错误 Softmax 仍能计算注意力权重只是精度受干扰。",
+    "reference": {
+      "concept": "剪枝削容量→量化噪点无法被冗余吸收+误差逐Token累积+分布失真。"
+    },
+    "rubric": {
+      "required": [
+        "剪枝降低容量使量化噪声容忍度下降",
+        "量化误差自回归逐Token累积",
+        "激活分布变化致Scaler失真"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "结构化剪枝删除了部分层或注意力头降低了模型的表征容量与冗余度使得剩余权重对量化噪声的容忍度大幅下降",
+          "4-bit 量化引入的截断误差与舍入误差会在自回归生成过程中沿序列时间轴逐 Token 累积形成误差放大效应",
+          "剪枝打破了原模型内部各层之间的激活值分布平衡使得基于原始分布设计的静态量化 Scaler 发生失真",
+          "4-bit 量化会导致 Transformer 的 Softmax 注意力矩阵彻底退化为单位矩阵失去上下文关联能力"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。剪枝削容量+误差累积+分布失真；D 错误 Softmax 仍能工作只是精度受扰。"
+      }
+    }
+  },
+  {
+    "id": "ptq-vs-qah-compare",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "ptq-vs-qah-comparison",
+    "tags": [
+      "ptq",
+      "qah",
+      "fake-quantization",
+      "hessian-compensation",
+      "tradeoff"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在后训练量化 PTQ 与量化感知修复 QAH 是两种恢复量化损失的技术路径。针对经历过结构化剪枝加 4-bit 量化的模型关于 PTQ 与 QAH 的对比以下哪些说法是正确的？（多选）",
+    "explanation": "PTQ 无梯度/局部梯度无法恢复拓扑受损后的全局权重分布（A）；QAH 通过伪量化算子和梯度更新在离散空间内寻找全局最优点（B）；两者在计算开销与精度恢复上限上存在明显 Trade-off（C）。D 违背信息论限制纯 PTQ 无法凭空增加信息量超越原始全精度模型。",
+    "reference": {
+      "concept": "PTQ=无梯度快速校准适合未剪枝模型；QAH=伪量化+梯度更新弥补复合精度损失。"
+    },
+    "rubric": {
+      "required": [
+        "PTQ 无法恢复剪枝损失的表达容量",
+        "QAH 通过伪量化+梯度更新补偿离散化噪点",
+        "PTQ 低开销 vs QAH 高开销高恢复"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PTQ 仅通过少量校准数据优化量化 Scaling Factor 或进行局部的二阶 Hessian 误差补偿无法重新训练权重因而难以恢复因结构化剪枝直接损失的逻辑表达容量",
+          "QAH 在继续训练阶段的前向传播中引入伪量化节点使权重在更新过程中主动学习并补偿 4-bit 离散化带来的噪点",
+          "PTQ 计算开销极低适合未经历剧烈结构剪枝的纯量化而 QAH 需要消耗反向传播算力但能有效弥补剪枝与低比特量化的复合精度损失",
+          "PTQ 可以在完全不需要反向传播的情况下使 4-bit 剪枝模型的复杂代码推理能力完全超过剪枝前的全精度原始大模型"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。PTQ 无梯度快速校准+QAH 伪量化梯度更新；D 违背信息论。"
+      }
+    }
+  },
+  {
+    "id": "mxfp4-blockwise-advantage",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "mxfp4-blockwise-scaling",
+    "tags": [
+      "mxfp4",
+      "block-scaling",
+      "outlier-isolation",
+      "microscaling"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "微刻度格式 MXFP4 采用每 32 个元素共享一个 8-bit Scale Factor 的设计。相比传统 Per-Tensor 量化这种块级共享 Scaling Factor 设计的核心工程优势是？",
+    "explanation": "正确答案 A。Per-Tensor 量化容易受局部 Outliers 影响导致整个张量动态范围被拉大小数值精度丢失。MXFP4 采用 Block Size=32 的微块设计将异常值影响限制在局部块内同时每元素仅增加 0.25 bits 开销实现高精度与低开销平衡。",
+    "reference": {
+      "concept": "Block-wise Scaling 隔离异常值到 32 元素局部块内，每元素仅增 0.25bit 开销。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在保持极低显存开销的前提下能够有效隔离局部异常值防止单个极值拉大整个 Tensor 的量化阶距",
+          "完全消除了浮点数中的尾数位使硬件只需进行纯整数加法运算",
+          "使得模型在前向传播过程中无需再进行任何反量化操作直接对 FP4 权重进行矩阵乘法",
+          "能够根据输入序列长度自动动态调整 Transformer 模型的注意力头数量"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Block Size=32 隔离 Outliers 每元素仅增 0.25bit Scale 开销。"
+      }
+    }
+  },
+  {
+    "id": "ste-gradient-mismatch",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "straight-through-estimator",
+    "tags": [
+      "ste",
+      "gradient-mismatch",
+      "weight-clipping",
+      "quantization-aware-training"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在进行量化感知训练时离散量化函数的导数处处为 0 导致标准反向传播失效。工程上使用直通估计器 STE 近似梯度。关于 STE 在实际训练中的工程局限与应对策略下列说法正确的有？（多选）",
+    "explanation": "STE 前向离散化反向恒等传导（C）。恒等传导是粗暴近似在截断区外产生梯度不匹配导致主权重越界漂移（A），需 Weight Decay 或 Bound Clipping 约束（B）。D 错误 STE 是启发式近似不可能精确计算二阶 Hessian。",
+    "reference": {
+      "concept": "STE=前向离散+反向恒等近似→截断区外梯度不匹配→需 Weight Decay/Clipping 约束。"
+    },
+    "rubric": {
+      "required": [
+        "截断区外梯度不匹配致主权重漂移",
+        "Weight Decay 或 Clipping 防膨胀",
+        "前向伪量化反向恒等传导"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "STE 引入了梯度不匹配问题当连续浮点主权重严重超出截断区间时仍会向其传递梯度可能导致浮点权重无休止漂移",
+          "对于落入截断区间外的权重可以通过梯度裁剪或对超出界限的权重施加惩罚防止浮点主权重膨胀",
+          "伪量化节点仅作用于前向传播以计算量化后的损失反向传播时根据 STE 规则直接将梯度传递给未量化的连续浮点主权重进行参数更新",
+          "STE 能够精确计算离散量化操作的二阶 Hessian 矩阵因此反向传播得到的梯度与真实梯度完全一致"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。STE=前向离散+反向恒等近似→需约束；D 不可能精确计算 Hessian。"
+      }
+    }
+  },
+  {
+    "id": "qah-outperform-fp16-mechanism",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "qah-outperform-fp16",
+    "tags": [
+      "qah",
+      "regularization",
+      "domain-fine-tuning",
+      "benchmark-surpass"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在基于结构化剪枝加 4-bit 量化感知修复的工程实践中 4-bit 模型的 Benchmark 得分多次被观察到超过了用于量化的 BF16 中间 Checkpoint。关于这一现象背后合理的工程解构以下哪些分析是正确的？（多选）",
+    "explanation": "4-bit 模型逆袭的原因：QAH 包含高质量领域数据的继续训练注入新知识（A）；伪量化噪声起正则化作用提升泛化（B）；优化器在离散约束下找到更稳健表征点（C）。D 错误没有数据训练纯粹量化不可能自发产生能力飞跃。",
+    "reference": {
+      "concept": "QAH 超越 FP16=领域数据训练+伪量化正则化+离散约束下更优表征点。"
+    },
+    "rubric": {
+      "required": [
+        "QAH 使用高质量数据继续训练注入新知识",
+        "伪量化噪声起正则化作用改善泛化",
+        "离散约束下学习 Quantization-Aware Representations"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "QAH 阶段使用了包含高质量推理代码和数学数据的数据集进行继续训练这一过程为模型注入了新的领域知识与能力",
+          "前向传播中的伪量化噪声起到了正则化作用降低了过拟合风险并改善了参数空间的泛化界限",
+          "伪量化节点与 STE 引导连续主权重学习到了能在 4-bit 离散格点上保留最大信息量的参数分布",
+          "4-bit 量化过程彻底削减了模型所有的冗余参数使得模型在无需任何后续数据训练的情况下自发产生了推理飞跃"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。领域数据训练+伪量化正则化+离散约束下最优表征；D 盲目夸大量化作用。"
+      }
+    }
+  },
+  {
+    "id": "mxfp4-vram-savings-calc",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "mxfp4-vram-savings",
+    "tags": [
+      "mxfp4",
+      "vram-savings",
+      "memory-footprint",
+      "calculation"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "某大语言模型拥有 60B 参数。若将其从 BF16 格式（每个参数 2 字节）转换为 MXFP4 格式（约 0.53125 字节/参数含 Scale 开销）在仅考虑权重显存的情况下节省比例约为多少？",
+    "explanation": "正确答案 C 约 73.4%。BF16 权重总显存=60×2=120GB（无法单卡装下）；MXFP4 总显存=60×0.53125≈31.9GB；节省比例=(120-31.875)/120≈73.4%。",
+    "reference": {
+      "concept": "BF16 120GB→MXFP4 31.9GB→节省 73.4%。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 25%",
+          "约 50%",
+          "约 73.4%",
+          "约 90%"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C。(120-31.875)/120≈73.4%。"
+      }
+    }
+  },
+  {
+    "id": "activation-outlier-debug",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "activation-outlier-debugging",
+    "tags": [
+      "activation-outliers",
+      "smoothquant",
+      "per-token-scaling",
+      "mixed-precision",
+      "debugging"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在对 Self-Attention 投影层进行 4-bit 低比特量化时常遇到模型输出死循环无意义重复或逻辑推理能力陡降的量化崩溃现象由激活值异常值引起。针对该问题哪些调试与修复方案是合理的？（多选）",
+    "explanation": "针对 Activation Outliers 工程标准解法为动态 Scaling 隔离极值、SmoothQuant 跨阵转移量化难度或混合精度保留。D 强行置零会破坏关键特征——Outliers 往往承载核心注意力表达。",
+    "reference": {
+      "concept": "Outlier 解法=动态 Per-Token Scaling+SmoothQuant 等效变换+混合精度保留。"
+    },
+    "rubric": {
+      "required": [
+        "动态 Per-Token/Block Scaling 隔离极值",
+        "SmoothQuant 将异常值转移到权重矩阵",
+        "Outlier Channels 保留 FP16 混合精度"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用动态 Per-Token / Per-Block 激活量化避免全局静态 Scale 被极少数极端数值拉大而导致大部分正常数值被量化为 0",
+          "采用 SmoothQuant 等等效数学变换技术将激活值中高精度的异常值平滑转移到比较容易量化的权重矩阵中",
+          "将出现严重 Outliers 的少量特定通道保留为高精度仅对其余正常通道进行 4-bit 量化",
+          "将所有大于截断阈值的激活值直接强制截断为 0 以彻底消除异常值对动态范围的影响"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。动态Scaling+SmoothQuant+混合精度保留；D 强行置零破坏关键特征。"
+      }
+    }
+  },
+  {
+    "id": "paged-attn-block-tradeoff",
+    "category": "inference",
+    "topic": "caching",
+    "subtopic": "paged-attention-block-tradeoff",
+    "tags": [
+      "paged-attention",
+      "block-size",
+      "internal-fragmentation",
+      "copy-on-write",
+      "vllm"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 LLM 推理服务框架中 PagedAttention 借鉴 OS 虚拟内存分页机制将连续 KV Cache 切分为固定大小的 Block 进行非连续显存分配。关于内存管理机制与 Block Size 的工程 Trade-off 下列哪些说法是正确的？（多选）",
+    "explanation": "PagedAttention 核心优势：将连续逻辑显存映射到非连续物理块。较小 Block 降低内部碎片(A)；大 Block 提高 SRAM/DRAM 连续读取效率但增加碎片(B)；统一尺寸 Block 解决外部碎片(C)；Parallel Sampling 场景下通过页表指针实现物理 KV Cache 零拷贝共享(D)。四项均正确。",
+    "reference": {
+      "concept": "小Block=低内部碎片；大Block=高吞吐；统一尺寸=消除外部碎片；COW=零拷贝共享。"
+    },
+    "rubric": {
+      "required": [
+        "小 Block 减少内部碎片提高利用率",
+        "大 Block 提高访存连续性但增加碎片",
+        "消除外部碎片因所有块等大小",
+        "支持 COW 零拷贝共享"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "较小的 Block Size 能显著减少请求结束或未填满 Block 时的内部碎片提高显存利用率",
+          "较大的 Block Size 能提高 GPU Tensor Core 的访存连续性与计算吞吐但会增加内部碎片浪费",
+          "PagedAttention 几乎消除了外部碎片因为所有物理块的大小相同可以按需分配给任意序列",
+          "PagedAttention 允许不同序列共享相同的物理 KV 块从而实现零拷贝 Copy-on-Write"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C,D 全选。小Block减碎片+大Block高吞吐+等大小消除外部碎片+COW零拷贝共享。"
+      }
+    }
+  },
+  {
+    "id": "spec-decode-accept-probability",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "subtopic": "speculative-decoding-math",
+    "tags": [
+      "speculative-decoding",
+      "acceptance-probability",
+      "rejection-sampling",
+      "distribution-preservation"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "投机采样利用草稿模型一次性自回归生成 K 个 Token 候选再由目标模型并行验证。为保证最终输出与直接使用目标模型逐 Token 采样完全一致当 p(x) < q(x) 时接受概率应设定为多少？若拒绝该如何重新采样？",
+    "explanation": "正确答案 A。修正的拒绝采样算法：p(x)≥q(x) 时接受概率为 1.0；p(x)<q(x) 时以 α(x)=p(x)/q(x) 概率接受。被拒绝后从截断残差分布 normalize(max(0,p(x)-q(x))) 中采样新 Token。该推导可严格证明无偏等价于目标模型独立采样。",
+    "reference": {
+      "concept": "α=p/q 当 p<q；拒绝后从 residual distribution normalize(max(0,p-q)) 重采样；严格无偏。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "接受概率 α(x)=p(x)/q(x) 拒绝后从残差分布 normalize(max(0,p(x)-q(x))) 中重新采样",
+          "接受概率 α(x)=p(x)-q(x) 拒绝后直接从原目标模型分布中重新采样",
+          "接受概率 α(x)=1.0 拒绝后直接终止整条轨迹的生成",
+          "接受概率 α(x)=q(x)/p(x) 拒绝后从草稿模型分布中重新采样"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。α=p/q + 从 residual normalize(max(0,p-q)) 重采样；严格无偏等价于目标模型独立采样。"
+      }
+    }
+  },
+  {
+    "id": "fp8-e4m3-vs-e5m2",
+    "category": "inference",
+    "topic": "quantization",
+    "subtopic": "e4m3-vs-e5m2-format-selection",
+    "tags": [
+      "fp8",
+      "e4m3",
+      "e5m2",
+      "mixed-precision-training",
+      "transformer-engine"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在 Modern GPU 架构的原生 FP8 混合精度训练中硬件支持 E4M3（1 符号+4 指数+3 尾数）和 E5M2（1 符号+5 指数+2 尾数）两种格式。关于这两种格式在前向与反向传播中的选型设计哪些说法是正确的？（多选）",
+    "explanation": "这是 FP8 训练标准规范如 Transformer Engine：前向 GEMM 需较高精度故选 E4M3(A)；反向梯度跨多个数量级需大动态范围防下溢故选 E5M2(B)；E4M3 最大值约 448 必须引入 dynamic scaling(C)。D 错误 强制反向用 E4M3 会因动态范围不足导致大规模梯度下溢归零。",
+    "reference": {
+      "concept": "前向=E4M3 高精度+反向=E5M2 大范围+E4M3 需 Dynamic Scaling。"
+    },
+    "rubric": {
+      "required": [
+        "E4M3 高尾数精度适合前向权重与激活",
+        "E5M2 大动态范围适合反向梯度",
+        "E4M3 需配合动态缩放因子防溢出"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "E4M3 具有较高的尾数精度但动态范围较窄更适合用于前向传播中的权重和激活值",
+          "E5M2 具有与 FP16 相同的指数位动态范围极大但尾数精度较低适合用于反向传播中数值跨度极大的梯度",
+          "由于 E4M3 动态范围有限在前向 GEMM 矩阵乘法中必须配合动态缩放因子以防止数值溢出",
+          "在反向传播中应当强制全量使用 E4M3 代替 E5M2 因为更高的尾数精度能完全消除梯度的量化下溢"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "这是 FP8 训练标准规范如 Transformer Engine：前向 GEMM 需较高精度故选 E4M3(A)；反向梯度跨多个数量级需大动态范围防下溢故选 E5M2(B)；E4M3 最大值约 448 必须引入 dynamic scaling(C)。D 错误 强制反向用 E4M3 会因动态范围不足导致大规模梯度下溢归零。"
+      }
+    }
+  },
+  {
+    "id": "continuous-batching-core",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "subtopic": "continuous-batching-mechanism",
+    "tags": [
+      "continuous-batching",
+      "in-flight-batching",
+      "dynamic-scheduling",
+      "padding-waste"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "传统 LLM 推理框架按 Request 进行静态 Batching 当 Batch 内序列长度差异极大时导致严重 Padding 浪费与 GPU 算力闲置。连续批处理技术的核心调度机制是？",
+    "explanation": "正确答案 A。连续批处理将调度粒度从 Request 级别下沉到 Iteration（Token）级别每次前向计算完成后已结束的 Request 退出新 Request 插入使 GPU 保持高饱和度的动态 Batch 运作彻底消除 Padding 浪费。",
+    "reference": {
+      "concept": "Iteration-level 调度：已完成退出+新请求插入=消除 Padding 浪费。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在每一个 Decode 步结束时立刻从队列中将已生成完毕的请求移出并将新的 Prefill 请求或等待中的 Decode 请求插入同一 Batch 中",
+          "强制要求所有入队请求补全到相同的最大序列长度以利用 CUDA Graph 保持固定的 Execution Shape",
+          "将所有请求的 Prompt 一次性拼接为超长单序列交由单一 Attention 头统一并发计算",
+          "在每次新请求到达时彻底暂停当前所有正在运行的推理任务重新构建整张计算图"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Iteration 级调度已完成退出新请求插入消除 Padding 浪费。"
+      }
+    }
   }
 ]

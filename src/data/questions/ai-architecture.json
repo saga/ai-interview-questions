@@ -2216,5 +2216,87 @@
         "检索型可高自动、裁决型遇博弈瓶颈，阈值调优与升级Payload设计"
       ]
     }
+  },
+  {
+    "id": "local-first-tooling",
+    "category": "ai-architecture",
+    "topic": "system-design",
+    "subtopic": "local-first-agentic-tooling",
+    "tags": [
+      "local-first",
+      "caching",
+      "federation",
+      "worktree",
+      "high-throughput"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在每日处理数百个合并请求的高并发 Agentic 协作场景中传统基于 Web API 的中心化平台常面临网络延迟高、Rate Limit 以及可用性波动等瓶颈。为了构建高吞吐的 Agentic 工具链以下哪些本地优先架构设计可以有效提升工程效率？（多选）",
+    "explanation": "A 正确 本地缓存视图实现毫秒级 PR 状态切换与 Diff 渲染。B 正确 本地 Daemon + 异步联邦同步降低 Agent 频繁读写任务状态的延迟。C 错误 同步阻塞等待中心化 API 是反模式恰恰是要被本地优先架构解决的问题。D 正确 终端复用 + 隔离工作树为每个 Agent 任务提供独立的本地执行环境防止冲突。",
+    "reference": {
+      "concept": "本地缓存+异步联邦+隔离工作树；同步阻塞等 API 是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "本地缓存视图毫秒级渲染",
+        "Daemon 异步联邦降低延迟",
+        "隔离工作树防冲突"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "建立远程代码托管平台数据的本地缓存视图实现毫秒级的 PR 状态切换与代码 Diff 渲染",
+          "采用本地 Daemon 与轻量级异步网络联邦同步机制构建任务追踪系统降低 Agent 频繁读写任务状态时的延迟",
+          "强制要求所有本地 Agent 均同步并发阻塞等待中心化 REST API 的 HTTP 响应",
+          "结合终端复用工具与一键隔离工作树为每个 Agent 任务快速提供独立的本地执行环境"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,D。本地缓存+异步联邦+隔离工作树；C 错误同步阻塞是反模式。"
+      }
+    }
+  },
+  {
+    "id": "router-vs-adaptive-thinking",
+    "category": "ai-architecture",
+    "topic": "model-selection",
+    "subtopic": "router-vs-adaptive-thinking",
+    "tags": [
+      "routing",
+      "adaptive-thinking",
+      "inference-time-compute",
+      "latency-variance"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "为了提升推理能力工业界采用推理期计算技术。存在两种主流范式：路由分发架构与统一自适应思考架构。关于这两种架构在系统工程特性上的比较以下说法正确的是？",
+    "explanation": "正确答案 B。路由分发引入分类判别环节误判可能导致相似 Prompt 分发给不同能力的子模型产生不确定的响应延时与质量波动。A 错误 异构模型族之间 Hidden States 与 KV Cache 格式不兼容无法无缝共享。C 错误 统一架构可通过自适应机制动态缩减思考 Token 数量。D 错误 思考 Token 可以通过 API 进行流式输出或摘要。",
+    "reference": {
+      "concept": "路由分发有误判风险+异构 KV 不共享；统一自适应可控思考长度且思考 Token 可流式输出。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "路由分发架构能够保证请求在不同子模型之间切换时 Transformer 的 Hidden States 与 KV Cache 完全无缝共享与接续",
+          "路由分发架构引入了分类路由判别环节若路由器发生误判可能导致意图相似的 Prompt 被分发给不同能力的子模型产生不确定性的响应延时与质量波动",
+          "统一自适应思考架构因仅包含单一模型无法针对简单 Prompt 动态缩减思考 Token 数量因此单次推理延迟固定且极高",
+          "统一自适应思考架构生成的思考 Token 属于内部隐藏特征在工程实现上完全无法通过 API 进行捕获摘要或流式输出"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。路由误判致质量波动；A 异构KV不共享 C 可动态缩减 D 思考Token可流式输出。"
+      }
+    }
   }
 ]

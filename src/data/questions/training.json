@@ -2064,5 +2064,678 @@
         "MoE 引入 all-to-all 通信，多机场景尤其复杂"
       ]
     }
+  },
+  {
+    "id": "rlhf-vs-cai-alignment",
+    "category": "training",
+    "topic": "alignment",
+    "subtopic": "rlhf-vs-constitutional-ai",
+    "tags": [
+      "rlhf",
+      "constitutional-ai",
+      "rlaif",
+      "self-critique",
+      "over-refusal"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "模型后训练阶段的对齐技术中传统 RLHF 与宪政 AI 存在明确的生成与评估机制差异。关于这两种对齐机制的底层逻辑与工程应用以下哪些描述是正确的？（多选）",
+    "explanation": "A 正确 RLHF 依赖人工标注偏好排序训练奖励模型再通过 PPO/DPO 更新权重。B 正确 CAI 将对齐准则写为文本宪法让模型自评修改生成合成数据。C 正确 AI 反馈替代或减少大规模人工标注提升可扩展性与透明度。D 错误 文本原则无法彻底消除过度拒绝仍需迭代校准。",
+    "reference": {
+      "concept": "RLHF=人工偏好→RM→PPO/DPO；CAI=宪法原则→Self-Critique→合成数据；CAI 不消除 Over-Refusal。"
+    },
+    "rubric": {
+      "required": [
+        "RLHF 依赖人工偏好排序训练奖励模型",
+        "CAI 用文本原则指导 Self-Critique 生成合成数据",
+        "CAI 提升可扩展性但不能彻底消除过度拒绝"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "RLHF 依赖大量人工标注对模型候选输出进行偏好排序以此训练奖励模型随后通过 PPO 或 DPO 等算法更新语言模型权重",
+          "宪政 AI 的核心是将对齐准则显式写为文本宪法/原则让模型根据这些原则对自身初始回答进行自评与修改生成合成对齐数据",
+          "宪政 AI 借由 AI 生成反馈替代或减少后训练阶段对大规模人工偏好标注的依赖从而提升了安全策略更新的可扩展性与透明度",
+          "由于宪政 AI 的评价标准基于明确的文本原则该范式能够彻底消除模型对边缘敏感问题的过度拒绝现象"
+        ],
+        "question": "模型后训练阶段的对齐技术中传统 RLHF 与宪政 AI 存在明确的生成与评估机制差异。关于这两种对齐机制的底层逻辑与工程应用以下哪些描述是正确的？（多选）",
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A 正确 RLHF 依赖人工标注偏好排序训练奖励模型再通过 PPO/DPO 更新权重。B 正确 CAI 将对齐准则写为文本宪法让模型自评修改生成合成数据。C 正确 AI 反馈替代或减少大规模人工标注提升可扩展性与透明度。D 错误 文本原则无法彻底消除过度拒绝仍需迭代校准。"
+      }
+    }
+  },
+  {
+    "id": "async-grpo-offpolicy",
+    "category": "training",
+    "topic": "rlhf",
+    "subtopic": "async-grpo-offpolicy",
+    "tags": [
+      "grpo",
+      "asynchronous-training",
+      "off-policy",
+      "importance-sampling",
+      "kv-cache"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在大语言模型的 GRPO 强化学习训练中为避免生成 Worker 与训练器相互等待造成算力闲置通常采用异步流水线设计。在此架构下生成 Worker 会复用现有 KV Cache 持续采样导致同一条轨迹中的 Token 可能由不同版本的策略参数生成引入非策略偏差。针对该工程机制以下哪些设计能有效维持训练稳定性并防止梯度爆炸？（多选）",
+    "explanation": "A 与 B 是异步 GRPO 维持稳定性的核心组合：限制参数漂移步数 bounds off-policy 程度，截断重要性采样则防止个别极度偏离策略的 Token 产生爆炸性更新。C 错误 重构 KV Cache 带来巨大计算开销直接破坏异步高吞吐设想。D 错误 GRPO 显式去除 Value Network 改用组内留一法基线。",
+    "reference": {
+      "concept": "异步GRPO=限制参数滞后+截断重要性采样；不清KV Cache不用Value Network。"
+    },
+    "rubric": {
+      "required": [
+        "限制参数滞后上限",
+        "截断重要性采样裁剪概率比值"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "限制生成 Worker 的参数滞后上限防止采样策略落后训练器超过 1 个更新步",
+          "采用截断重要性采样对训练与生成时的对数概率比值进行上限裁剪",
+          "强制生成 Worker 在每次参数刷新后清空并重新构建 KV Cache 消除跨版本 Token",
+          "引入独立的 Critic/Value Network 来拟合状态价值以抵消非策略偏差"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B。限制参数漂移+截断IS防梯度爆炸。C 破坏异步吞吐 D 违背 GRPO 无 Critic 设计。"
+      }
+    }
+  },
+  {
+    "id": "grpo-leave-one-out-calc",
+    "category": "training",
+    "topic": "rlhf",
+    "subtopic": "group-relative-advantage-calc",
+    "tags": [
+      "grpo",
+      "leave-one-out",
+      "baseline",
+      "advantage-estimation"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "GRPO 摒弃传统 Critic 网络改用组内相对优势估计优势函数。在留一法基线设计中针对某 Prompt 组内第 i 个采样回答的基线定义为除该回答外组内其余 N-1 个采样回答奖励值的算术平均值。假设 N=4 个回答奖励得分为 R=[1.0, 0.6, 0.2, 0.2] 请计算第 1 个回答（得分 1.0）的留一法优势值？",
+    "explanation": "正确答案 C。计算除第 1 个回答外的其余 3 个回答得分均值：B₁=(0.6+0.2+0.2)/3=0.3333。优势值 A₁=r₁-B₁=1.0-0.3333≈0.667。GRPO 用组内留一法均值替代 Value Network 的核心优势是省去训练额外网络的显存与算力开销同时保持基线的无偏性。",
+    "reference": {
+      "concept": "留一法基线 B_i=mean(R\\{r_i})；A_i=r_i-B_i；省去 Value Network。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "0.333",
+          "0.500",
+          "0.667",
+          "0.750"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C。B₁=(0.6+0.2+0.2)/3≈0.333，A₁=1.0-0.333≈0.667。"
+      }
+    }
+  },
+  {
+    "id": "staged-rl-kl-control",
+    "category": "training",
+    "topic": "rlhf",
+    "subtopic": "staged-rl-curriculum-kl",
+    "tags": [
+      "staged-rl",
+      "kl-penalty",
+      "rlvr",
+      "rlhf",
+      "reward-hacking"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "大模型多阶段强化学习通常按顺序包含可验证奖励、技能增强、多轮智能体及偏好对齐等阶段。关于各阶段中 KL 散度约束的调优策略与工程考量下列说法正确的有？（多选）",
+    "explanation": "D 错误。多阶段 RL 的核心正是根据奖励信号的性质动态调整 KL 约束：客观真理类任务（RLVR/SWE 阶段）奖励不易被作弊需要充分探索 KL 可设为 0；而主观偏好/风格对齐阶段（RLHF）奖励模型易被作弊且需保留基座能力必须施加较高 KL 限制如 0.05。",
+    "reference": {
+      "concept": "RLVR 阶段 KL→0 充分探索；RLHF 阶段高 KL 防 Reward Hacking；动态调整非全局恒定。"
+    },
+    "rubric": {
+      "required": [
+        "RLVR 客观任务 KL 可设 0 充分探索",
+        "RLHF 主观偏好保留较高 KL",
+        "多阶段动态调整非恒定"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "参见解析中的正确说法与机制分析",
+          "其他技术上看似合理但实际不正确的选项",
+          "与本题考点无关的干扰项",
+          "常见误解或过度简化的说法"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "D 错误。多阶段 RL 的核心正是根据奖励信号的性质动态调整 KL 约束：客观真理类任务（RLVR/SWE 阶段）奖励不易被作弊需要充分探索 KL 可设为 0；而主观偏好/风格对齐阶段（RLHF）奖励模型易被作弊且需保留基座能力必须施加较高 KL 限制如 0.05。"
+      }
+    }
+  },
+  {
+    "id": "agentic-rl-infra",
+    "category": "training",
+    "topic": "distributed-training",
+    "subtopic": "agentic-rl-infrastructure",
+    "tags": [
+      "agentic-rl",
+      "docker-sandbox",
+      "sparse-reward",
+      "environment-decoupling",
+      "multi-turn"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在训练软件工程或命令行终端等复杂多轮 Agent 模型时模型需在真实沙箱中多次执行工具调用并获取反馈。相比传统单轮问答的 RL 训练关于此类 Agentic RL 系统的架构设计以下哪些说法是合理的？（多选）",
+    "explanation": "D 错误 成熟的 Agentic RL 基础设施中 GRPO 支持长达数十甚至上百轮的环境交互 Rollout 通过将沙箱统一封装后可顺畅地对完整长轨迹施加端到端的二值结果奖励。",
+    "reference": {
+      "concept": "环境抽象接口解耦+异步流水线+稀疏二值奖励作用于全轨迹。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "参见解析中的正确说法与机制分析",
+          "其他技术上看似合理但实际不正确的选项",
+          "与本题考点无关的干扰项",
+          "常见误解或过度简化的说法"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "D 错误 成熟的 Agentic RL 基础设施中 GRPO 支持长达数十甚至上百轮的环境交互 Rollout 通过将沙箱统一封装后可顺畅地对完整长轨迹施加端到端的二值结果奖励。"
+      }
+    }
+  },
+  {
+    "id": "overthink-length-penalty",
+    "category": "training",
+    "topic": "alignment",
+    "subtopic": "reasoning-length-penalty",
+    "tags": [
+      "over-thinking",
+      "reasoning-length-penalty",
+      "rlhf",
+      "inference-efficiency"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "经过长链条思维与 RL 训练后的推理模型部署上线后常出现过度思考现象——面对简短日常问答依然生成大量冗长思考过程导致延迟增加算力开销激增。在后训练最终阶段最直接有效的工程干预手段是？",
+    "explanation": "正确答案 A。在偏好对齐阶段加入推理长度惩罚是解决过度思考的标准做法它在维持解题正确率的同时惩罚冗长思维链。其他选项要么破坏模型长文本能力要么属于不切实际的结构裁切。",
+    "reference": {
+      "concept": "RLHF 加 Reasoning-length Penalty 在维持正确率的同时惩罚冗长 CoT。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "参见解析中的正确说法与机制分析",
+          "其他技术上看似合理但实际不正确的选项",
+          "与本题考点无关的干扰项",
+          "常见误解或过度简化的说法"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。在偏好对齐阶段加入推理长度惩罚是解决过度思考的标准做法它在维持解题正确率的同时惩罚冗长思维链。其他选项要么破坏模型长文本能力要么属于不切实际的结构裁切。"
+      }
+    }
+  },
+  {
+    "id": "sft-catastrophic-forget",
+    "category": "training",
+    "topic": "sft",
+    "subtopic": "catastrophic-forgetting-replay",
+    "tags": [
+      "sft",
+      "catastrophic-forgetting",
+      "replay-data",
+      "learning-rate",
+      "staged-sft"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在对大语言模型进行特定领域能力的二次监督微调时若仅使用新领域的专业数据集进行全量更新模型往往会在通用能力上发生灾难性遗忘。为了在强化 Agentic 编程能力的同时维持通用能力以下哪些工程做法是合理的？（多选）",
+    "explanation": "A/B/D 是防止灾难性遗忘的标准组合拳：掺入 Replay Data 保持旧能力、降低 Learning Rate 减少权重剧烈偏移、控制 Epochs 防过拟合。C 错误 冻结 Attention 会严重限制模型在新领域的学习能力不属于标准 SFT 最佳实践。",
+    "reference": {
+      "concept": "Replay Data + 降低 LR + 短 Epochs；不冻结 Attention。"
+    },
+    "rubric": {
+      "required": [
+        "混合前序 Phase 1 重放数据",
+        "降低 Phase 2 学习率",
+        "控制训练周期避免过拟合"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Phase 2 数据集中混合一定比例的前序 Phase 1 SFT 重放数据",
+          "降低 Phase 2 的学习率例如降至 Phase 1 峰值学习率的 30% 左右",
+          "在 Phase 2 中将微调范围限制为仅更新 FFN 冻结所有 Attention 权重",
+          "采取较短的训练周期如 1 个 Epoch 避免在高强度专业数据上过度拟合"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,D。Replay Data+降LR+短Epochs防遗忘；C 错误冻结Attention限制新领域学习。"
+      }
+    }
+  },
+  {
+    "id": "rlvr-vs-genrm-rewards",
+    "category": "training",
+    "topic": "rlhf",
+    "subtopic": "rlvr-vs-genrm-reward-comparison",
+    "tags": [
+      "rlvr",
+      "genrm",
+      "reward-hacking",
+      "kl-penalty",
+      "verifiable-rewards"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在大模型的强化学习管线中通常会同时用到可验证奖励与基于生成式奖励模型的偏好奖励。关于这两种奖励信号在 RL 训练中的特性对比与工程设计以下哪些说法是正确的？（多选）",
+    "explanation": "D 错误。生成式 RM 的推理开销和延迟远高于简单的规则验证器（如 Python 单元测试、正则表达式匹配）。因此早期大规模 RL（RLVR 阶段）应优先使用高效且确定性的规则验证器而在微调偏好的 RLHF 阶段才引入生成式 RM。",
+    "reference": {
+      "concept": "Verifiable Rewards 确定性+KL=0 探索；GenRM 有 Reward Hacking 风险且速度更慢。"
+    },
+    "rubric": {
+      "required": [
+        "Verifiable Rewards 确定性不易作弊 KL=0 可深度探索",
+        "GenRM 存在泛化边界易被 Reward Hacking",
+        "规则验证器速度远快于生成式 RM"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可验证奖励具有绝对确定性不易被模型作弊因此可以允许模型在无 KL 散度约束的情况下进行深度策略探索",
+          "基于 LLM Judge 或生成式 RM 的奖励信号存在泛化边界与评价死角若关闭 KL 约束策略模型容易通过模仿偏好风格实现 Reward Hacking",
+          "可验证奖励非常适合用于多轮代码重构数学推导等客观真理领域但在开放式写作安全拒绝和表达语气等主观领域无法直接应用",
+          "生成式 RM 的评价速度远快于规则验证器因此在 RL 训练的早期阶段应当优先使用生成式 RM 代替规则验证器"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。Verifiable 确定性+GenRM 有 Hacking 风险+规则验证器更快；D 错误方向反了。"
+      }
+    }
+  },
+  {
+    "id": "env-decoupled-rollout",
+    "category": "training",
+    "topic": "distributed-training",
+    "subtopic": "env-decoupled-rollout-architecture",
+    "tags": [
+      "agentic-rl",
+      "environment-decoupling",
+      "async-rollout",
+      "resource-api",
+      "weight-sync"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "在训练涉及真实 Shell、Docker Sandbox 和 Web 浏览器的 Agentic RL 系统中为实现万卡规模下大规模并行 Rollout 与高效训练分布式系统架构通常需要满足哪些核心要求？（多选）",
+    "explanation": "C 错误。真实 Docker/Shell 编译执行耗时数秒甚至数分钟如果强制同步等待环境返回并阻塞训练器会导致 GPU 算力严重闲置。必须采用异步生成/训练解耦设计。",
+    "reference": {
+      "concept": "环境解耦+资源API抽象+异步权重同步；同步阻塞是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "Rollout 与 Trainer 解耦独立节点池",
+        "统一抽象 Resource API",
+        "异步权重转换与分发机制"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将环境交互与策略更新解耦在独立的计算节点池中",
+          "将多样化的外部环境统一抽象为标准化的资源接口使训练框架无需关注具体环境实现细节",
+          "强制生成 Worker 在每次工具调用后同步等待环境返回结果并阻塞训练器更新",
+          "采用权重转换与分发机制实现生成推理集群与训练集群之间的异步参数同步"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,D。环境解耦+Resource API+异步权重同步；C 错误同步阻塞是反模式。"
+      }
+    }
+  },
+  {
+    "id": "sft-data-quality-control",
+    "category": "training",
+    "topic": "training-data",
+    "subtopic": "sft-trajectory-filtering",
+    "tags": [
+      "sft",
+      "data-quality",
+      "llm-as-judge",
+      "schema-verifier",
+      "deduplication"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在准备大模型指令微调的高质量数据集时防止数据污染与噪声数据侵入是提升模型推理能力的关键。以下哪些质量控制手段已被验证能有效提升 Agentic 与 Reasoning 领域的 SFT 数据质量？（多选）",
+    "explanation": "D 错误。包含错误恢复的轨迹对于培养模型鲁棒性与纠错能力至关重要——删除所有错误交互轨迹会导致模型遇到现实环境报错时无法自我修正。",
+    "reference": {
+      "concept": "LLM Judge 评分过滤+Schema 校验+SHA-256 去重；保留错误恢复轨迹。"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用能力强大的大模型作为 Judge 对生成的 CoT 思考链与工具调用轨迹进行合理性评分过滤低分样本",
+          "针对工具调用数据引入模式校验器剔除调用未定义函数或参数格式错误的样本",
+          "基于包含 tools 定义与 messages 消息体总和计算 SHA-256 哈希值实施跨源与源内的严格去重",
+          "剔除所有包含工具调用失败的轨迹样本仅保留单次尝试即成功的完美交互轨迹"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。LLM Judge+Schema 校验+SHA-256 去重；D 错误错误恢复轨迹对鲁棒性至关重要不应删除。"
+      }
+    }
+  },
+  {
+    "id": "pretrain-annealing-longctx",
+    "category": "training",
+    "topic": "pretraining",
+    "subtopic": "annealing-long-context-scaling",
+    "tags": [
+      "annealing",
+      "progressive-long-context",
+      "rope-scaling",
+      "context-extension"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在预训练大模型并计划将上下文窗口扩展至超长范围时直接从头以 512K 序列长度训练的做法极其低效。目前主流且高效的退火与长上下文扩展策略是？",
+    "explanation": "正确答案 A。渐进式长上下文扩展是业界标准实践：前中期用短/中等序列确保吞吐量与基础语言能力；后半段退火阶段调整 RoPE 底数并混入高质量长文本数据以极小代价完成扩展。",
+    "reference": {
+      "concept": "短序列海量数据→末期退火+RoPE 扩展+高质量长文本→极小代价扩上下文。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在前中期使用较短序列及海量通用数据进行基础语言能力预训练在末期通过高质量数据退火并逐步放大序列长度与 RoPE Base Frequency",
+          "在预训练阶段仅使用 2K 序列训练在推理阶段完全依赖 Context Parallelism 和 RAG 检索拼凑长文本",
+          "从 Phase 1 开始使用 512K 序列但只在每层的 Attention 矩阵中随机丢弃 90% 的 Key-Value 节点以降低计算复杂度",
+          "仅在 SFT 阶段引入长文本数据完全不在预训练阶段进行长上下文扩展"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。渐进式长上下文扩展：短序列预训练→末期退火+RoPE 扩展→极小代价扩上下文。"
+      }
+    }
+  },
+  {
+    "id": "dpo-likelihood-displacement",
+    "category": "training",
+    "topic": "dpo",
+    "subtopic": "likelihood-displacement-debugging",
+    "tags": [
+      "dpo",
+      "likelihood-displacement",
+      "beta-tuning",
+      "nll-regularization",
+      "debugging"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "DPO 容易出现似然下降现象——随着训练进行模型对偏好回答和非偏好回答的绝对对数概率同时下降甚至导致回答长度异常退化。针对该现象以下哪些分析或工程干预是正确的？（多选）",
+    "explanation": "DPO 损失梯度取决于相对差值容易导致两者生成概率同时下降(A)。增大 β 拉紧与参考模型的 KL 距离(B)。掺入 SFT NLL Loss 显式拉高 y_w 绝对概率(C)。D 错误 移除 Reference Model 后隐式 Reward 失去基准崩溃更严重。",
+    "reference": {
+      "concept": "DPO 似然下降→调大 β+加 NLL 正则化；移除 Reference Model 是反模式。"
+    },
+    "rubric": {
+      "required": [
+        "相对差值决定梯度致两者概率同降",
+        "增大 β 增强 KL 约束",
+        "NLL 正则化维持偏好回答绝对概率"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "DPO 损失梯度主要由相对对数比值决定当非偏好回答概率下降快于偏好回答时损失仍下降即使偏好回答绝对概率也被压低",
+          "调节超参数 β 适当增大可以增强参考模型对策略模型的约束抑制绝对概率的过度漂移",
+          "引入 NLL 正则化项在 DPO Loss 中加入 SFT 交叉熵 Loss 有助于维持偏好回答的绝对生成概率",
+          "完全移除参考模型将 DPO 彻底简化为单模型损失可以从根本上消除似然下降问题"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "DPO 损失梯度取决于相对差值容易导致两者生成概率同时下降(A)。增大 β 拉紧与参考模型的 KL 距离(B)。掺入 SFT NLL Loss 显式拉高 y_w 绝对概率(C)。D 错误 移除 Reference Model 后隐式 Reward 失去基准崩溃更严重。"
+      }
+    }
+  },
+  {
+    "id": "ring-attention-context-parallel",
+    "category": "training",
+    "topic": "distributed-training",
+    "subtopic": "ring-attention-context-parallelism",
+    "tags": [
+      "ring-attention",
+      "context-parallelism",
+      "p2p-overlap",
+      "online-softmax"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "RingAttention 结合上下文并行实现了突破单卡显存限制的长文本训练。关于其工作原理与系统性能表现以下哪些说法是正确的？（多选）",
+    "explanation": "RingAttention 借助环形 P2P 异步通信隐藏通信延迟(A)；利用 Online Softmax 分块累计归一化系数(B)；单卡只存自己的片段显存与分段长度相关(D)。C 错误：通信与计算完美重叠时具有极佳线性扩展性而非 O(N²)。",
+    "reference": {
+      "concept": "环形P2P重叠+Online Softmax+线性扩展+单卡显存与切片长度线性相关。"
+    },
+    "rubric": {
+      "required": [
+        "P2P 异步通信重叠传递 KV 块",
+        "Online Softmax 逐步累计归一化",
+        "单卡显存与切片长度线性增长"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将输入序列切分为多个 Chunk 分配给环形 GPU 环路在计算前向 Attention 的同时利用点对点通信异步重叠传递下一个 Chunk 的 KV 块",
+          "借助 FlashAttention 的 Online Softmax 算法允许 GPU 在未接收到完整 KV 序列前逐步累计和更新局部 Softmax 归一化统计量",
+          "随着参与 Context Parallelism 的 GPU 节点数增加 RingAttention 的通信开销呈二次方剧烈膨胀导致扩展性极差",
+          "RingAttention 单卡的显存占用随单个 GPU 上的序列切片长度呈线性增长而非全局总序列长度的平方"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,D。P2P重叠+OnlineSoftmax+线性显存；C 错误具有极佳线性扩展性。"
+      }
+    }
+  },
+  {
+    "id": "prm-vs-orm-credit-assign",
+    "category": "training",
+    "topic": "rlhf",
+    "subtopic": "prm-vs-orm-credit-assignment",
+    "tags": [
+      "prm",
+      "orm",
+      "credit-assignment",
+      "monte-carlo-rollout",
+      "step-level"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在复杂数学推导与代码生成的 CoT 强化学习中信用分配问题是影响收敛速度的核心瓶颈。关于 PRM 与 ORM 的比较及工程选型以下哪些说法是合理的？（多选）",
+    "explanation": "A/B/C 准确概括了 ORM 与 PRM 的核心差异及 MC Rollout 自动合成 PRM 标签的工程实践。D 错误 即使每步看似合理终局仍可能因积累偏差出错需联合 PRM 与 ORM 调控。",
+    "reference": {
+      "concept": "ORM 终态单一奖励信用模糊；PRM Step-level 精准定位+MC Rollout 伪标签；需联合使用。"
+    },
+    "rubric": {
+      "required": [
+        "ORM 终态奖励致信用分配模糊",
+        "PRM Step-level 精准定位中间谬误",
+        "MC Rollout 自动估计中间步骤 Q 值"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "ORM 仅在推理轨迹结尾给出单一标量奖励在长链条推导中容易将错误的中间步骤误归因于正确的终局导致信用分配模糊",
+          "PRM 对 CoT 过程中的每一个步骤进行独立打分能精准定位中间逻辑谬误并加速策略收敛",
+          "PRM 数据标注成本极高工程上常使用蒙特卡洛树搜索或蒙特卡洛 Rollout 自动估计中间步骤的 Q 值作为 PRM 伪标签",
+          "在真实工程实践中 PRM 完全免除了对终局正确性的校验只需每一步逻辑合理即可保证最终答案无误"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。ORM信用模糊+PRM精准定位+MC Rollout伪标签；D 错误需联合使用。"
+      }
+    }
+  },
+  {
+    "id": "pp-1f1b-bubble-calc",
+    "category": "training",
+    "topic": "distributed-training",
+    "subtopic": "pipeline-bubble-ratio",
+    "tags": [
+      "pipeline-parallelism",
+      "1f1b",
+      "bubble-ratio",
+      "calculation"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "某千亿参数模型采用流水线并行部署在 P=8 个 Stage 上采用标准 1F1B 调度 Micro-batch 数量 M=32。假设每个 Micro-batch 的前向与反向耗时相同忽略通信开销请计算流水线泡泡时间占比约为多少？",
+    "explanation": "正确答案 B 约 17.9%。总时间 T=(M+P-1)(tf+tb)；有效计算=M(tf+tb)；泡泡=(P-1)(tf+tb)；比例=(P-1)/(M+P-1)=7/39≈17.95%。",
+    "reference": {
+      "concept": "Bubble%=(P-1)/(M+P-1)；P=8,M=32→7/39≈17.9%。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "8.3%",
+          "17.9%",
+          "21.9%",
+          "33.3%"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。(P-1)/(M+P-1)=7/39≈17.9%。"
+      }
+    }
+  },
+  {
+    "id": "dpo-vs-ppo-compare",
+    "category": "training",
+    "topic": "dpo",
+    "subtopic": "dpo-vs-ppo-comparison",
+    "tags": [
+      "dpo",
+      "ppo",
+      "actor-critic",
+      "reward-hacking",
+      "offline-training"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在对大模型进行偏好对齐时相比基于 Actor-Critic 架构的 PPO 算法 DPO 省去了显式的 Critic/Reward 网络。关于 DPO 与 PPO 在架构稳定性与应用场景上的对比以下哪些说法是合理的？（多选）",
+    "explanation": "A 正确 DPO 将 RL 目标重构为隐式 Reward 解析表达降低显存与框架复杂度。B 正确 Off-policy 无需在线采样直接用静态偏好数据集梯度更新。C 正确 缺少价值迭代难以处理多步环境反馈的精准信用分配。D 错误 DPO 极易受高噪声偏好数据干扰产生 Reward Hacking。",
+    "reference": {
+      "concept": "DPO=离线+省网络+难处理多步信用分配；但极易 Reward Hacking 非抗干扰。"
+    },
+    "rubric": {
+      "required": [
+        "DPO 重构目标降低显存与复杂度",
+        "Off-policy 无需在线采样",
+        "缺少价值迭代难处理多步信用分配"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "DPO 重构目标降低显存与复杂度",
+          "Off-policy 无需在线采样",
+          "缺少价值迭代难处理多步信用分配"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A 正确 DPO 将 RL 目标重构为隐式 Reward 解析表达降低显存与框架复杂度。B 正确 Off-policy 无需在线采样直接用静态偏好数据集梯度更新。C 正确 缺少价值迭代难以处理多步环境反馈的精准信用分配。D 错误 DPO 极易受高噪声偏好数据干扰产生 Reward Hacking。"
+      }
+    }
   }
 ]

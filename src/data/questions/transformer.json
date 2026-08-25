@@ -1777,5 +1777,42 @@
         "referenceAnswer": "正确答案 A,C。双向注意力适合语义检索与 Token 分类；不适合生成类任务。"
       }
     }
+  },
+  {
+    "id": "flash-attn-io-mechanism",
+    "category": "transformer",
+    "topic": "flash-attention",
+    "subtopic": "io-complexity-online-softmax",
+    "tags": [
+      "flash-attention",
+      "online-softmax",
+      "sram-hbm",
+      "tiling",
+      "exact-attention"
+    ],
+    "difficulty": "hard",
+    "angle": "fundamental",
+    "question": "传统 Attention 计算在 GPU 上受限于高昂的 HBM 读写开销。FlashAttention 通过分块载入 SRAM 并结合 Online Softmax 大幅提升效率。关于 FlashAttention 能将 HBM 访存从 O(N²) 降至 O(N) 的核心机制以下说法**错误**的是？",
+    "explanation": "C 项错误因此为正确选项。FlashAttention 是精确 Attention 输出与传统完全一致未做近似删减或忽略极小权重；性能飞跃纯粹来自访存算子融合与 SRAM 分块重计算。",
+    "reference": {
+      "concept": "FlashAttention=精确Attention；O(N)来自SRAM Tiling+算子融合非近似删减。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在 SRAM 中分块计算局部点积并利用 Online Softmax 动态更新归一化系数避免了将 N×N 中间矩阵写入 HBM",
+          "反向传播时不保存 N×N 注意力权重矩阵而是利用全局归一化因子 LSE 在 SRAM 中快速重新计算",
+          "FlashAttention 改变了 Attention 的最终计算结果通过忽略极小注意力权重的计算来实现 O(N) 复杂度",
+          "FlashAttention 调整了计算图的访存顺序融合了 Matmul、Scale、Mask 和 Softmax 算子避免了频繁的全局显存写回"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C（错误选项）。FlashAttention 是精确 Attention 不做近似删减。"
+      }
+    }
   }
 ]
