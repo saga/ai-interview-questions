@@ -23,7 +23,7 @@ export const interviewDefinitionSchema = z.object({
   timeLimitSec: z.number().int().positive().optional(),
   evaluationCriteria: z.string().optional(),
   topicPriorities: z.array(z.string()).optional(),
-  mode: z.enum(['quick', 'custom', 'coach', 'interview', 'agent']).optional(),
+  mode: z.enum(['quick', 'custom', 'coach', 'interview', 'agent', 'course']).optional(),
 });
 
 export type InterviewDefinition = z.infer<typeof interviewDefinitionSchema>;
