@@ -1427,5 +1427,51 @@
         "引用与溯源是可信度的工程保障"
       ]
     }
+  },
+  {
+    "id": "rag-vs-param-memory",
+    "category": "rag",
+    "topic": "rag",
+    "subtopic": "retrieval-vs-parametric-memory",
+    "tags": [
+      "rag",
+      "retrieval-augmented",
+      "parametric-memory",
+      "hallucination",
+      "knowledge-update"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "为解决大型 Transformer 模型'隐式参数记忆'带来的知识时效性差、更新成本高和幻觉问题业界提出了结合外置向量数据库的架构（如 RAG、RETRO）。相比单纯依靠扩充参数量的方案这种设计具备哪些系统级优势？（多选）",
+    "explanation": "A 正确 知识库实时增删改查无需重训底层权重。B 正确 事实存储转移到外部索引降低无限扩参需求。C 正确 检索到的上下文为结论提供可溯源依据降低幻觉风险。D 错误 Context Window 不可能降为零仍需注入检索片段且 PE 需求不变。",
+    "reference": {
+      "concept": "RAG 三大优势：实时更新+降低扩参需求+可溯源降幻觉；不消除 PE 需求。"
+    },
+    "rubric": {
+      "required": [
+        "知识库实时增删改查无需重训",
+        "事实外置降低扩参需求",
+        "可溯源降低幻觉风险"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "知识库的实时增删改查如补充最新的企业内部文档无需重新训练或微调底层 Transformer 模型权重",
+          "将事实性知识的存储转移到外部检索索引中大幅降低了主模型为了记住更多事实而无限制扩展参数量的需求",
+          "检索到的上下文文本被直接注入 Prompt Window 能够为生成的结论提供可溯源的依据降低无中生有的幻觉风险",
+          "在长文本检索场景下由于外部检索模块承担了大部分信息筛选逻辑输入到 Transformer 的 Context Window 可以降为 zero-shot 从而完全消除了 Positional Encoding 的需求"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。实时更新+降低扩参+可溯源降幻觉；D 错误 Context Window 不可为零且 PE 需求不变。"
+      }
+    }
   }
 ]

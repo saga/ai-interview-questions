@@ -766,5 +766,258 @@
         "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
       ]
     }
+  },
+  {
+    "id": "rope-vs-sin-01",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "sinusoidal-vs-rope",
+    "tags": [
+      "positional-encoding",
+      "sinusoidal",
+      "rope",
+      "extrapolation"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "Transformer 论文中的绝对正弦位置编码与大模型广泛应用的旋转位置编码（RoPE）在原理与长文本外推能力上有显著差异。下列说法正确的有？（多选）",
+    "explanation": "A、B、C 正确：绝对正弦编码通过加法融合到 Embedding，三角公式使其具备线性变换特性但外推泛化差；RoPE 将位置隐式转换为旋转矩阵作用于 Q/K，点积天然保留相对距离 m-n。D 错误：直接在 Softmax 权重上加偏置的是 ALiBi 或 T5 Relative Position Bias。",
+    "reference": {
+      "concept": "正弦=加法到Embedding+外推差；RoPE=乘法旋转Q/K+天然相对位置；ALiBi=Softmax偏置。"
+    },
+    "rubric": {
+      "required": [
+        "正弦编码加法融合到 Embedding 且线性可表示",
+        "RoPE 通过旋转使点积含相对位置差 m-n",
+        "超出训练长度时正弦编码泛化较差"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "绝对正弦位置编码通过将位置映射为不同频率的正弦/余弦函数值直接加到 Token Embedding 上，利用三角公式可使 PE(pos+k) 表示为 PE(pos) 的线性变换",
+          "绝对位置编码直接注入绝对坐标，当推理阶段的序列长度超出训练最大长度时，模型对未见过的位置编码无法很好泛化，长文本外推性能较差",
+          "RoPE 通过将 Query 和 Key 向量在二维子空间内旋转特定角度，使得 Q_m 与 K_n 的点积内积自然包含相对位置差 (m-n) 的信息",
+          "绝对正弦位置编码与 RoPE 均通过在注意力 Softmax 权重矩阵上直接叠加一个与相对距离相关的衰减偏置来实现位置信息的注入"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。正弦=加法到Embedding；RoPE=旋转Q/K保留相对位置；D 错误——Softmax 加偏置的是 ALiBi/T5 bias。"
+      }
+    }
+  },
+  {
+    "id": "pos-encoding-sin-01",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "sinusoidal-pe-necessity",
+    "tags": [
+      "positional-encoding",
+      "sinusoidal",
+      "permutation-invariant",
+      "extrapolation"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "标准 Self-Attention 是置换不变的。为了引入序列中 Token 的顺序信息，Transformer 使用了基于正弦和余弦函数的固定位置编码。关于位置编码的必要性与正弦编码的数学性质，下列哪些表述是正确的？（多选）",
+    "explanation": "A 正确：不加位置编码则打乱 Token 顺序输出的集合不变（置换不变）。B 正确：PE(pos+k) 可表示为 PE(pos) 的线性变换有利于学相对位置。C 正确：正弦编码是固定函数可外推到未见长度。D 错误：位置编码通过加法（element-wise addition）注入而非矩阵乘法。",
+    "reference": {
+      "concept": "置换不变性需位置编码；三角公式线性变换利于相对位置；固定函数可外推。"
+    },
+    "rubric": {
+      "required": [
+        "无位置编码则置换不变",
+        "PE(pos+k) 可表示为 PE(pos) 的线性变换",
+        "正弦编码通过加法注入而非矩阵乘法"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "如果不加入位置编码，将输入序列中的 Token 顺序打乱，Self-Attention 最终输出的集合将完全保持不变",
+          "选择正弦和余弦函数的主要数学优势之一是：对于任意固定的偏移量 k，PE(pos+k) 可以表示为 PE(pos) 的线性变换，这有利于模型学习相对位置关系",
+          "与可学习的位置嵌入相比，正弦位置编码具有允许模型外推到训练时未见过的更长序列长度的潜在优势",
+          "正弦位置编码是通过直接与 Token Embedding 进行矩阵乘法来注入位置信息的"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。置换不变性需位置编码；线性变换利于相对位置；固定函数可外推。D 错误：通过加法注入而非矩阵乘法。"
+      }
+    }
+  },
+  {
+    "id": "sin-pe-advantage",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "sinusoidal-vs-learned",
+    "tags": [
+      "positional-encoding",
+      "sinusoidal",
+      "extrapolation",
+      "linear-transform"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "经典 Transformer 采用固定正弦位置编码。相比于可学习的位置嵌入使用这种固定三角函数编码的主要理论优势是？",
+    "explanation": "正确答案 B。三角公式使 PE(pos+k) 表示为 PE(pos) 的线性变换有利于模型学习相对位置关系并外推到更长序列。A 错误：不影响注意力矩阵复杂度。C 错误：通过加法注入非点乘。D 错误：不同位置的编码向量不正交。",
+    "reference": {
+      "concept": "PE(pos+k)=线性变换(PE(pos))利于外推到未见长度。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "三角函数编码可以显著降低注意力矩阵计算的时间复杂度至 O(N log N)",
+          "位置 pos+k 的位置编码可以表示为位置 pos 编码的线性变换使模型更容易外推到训练集未见过的更长序列",
+          "三角函数编码直接将位置向量与词向量进行点乘避免了增加嵌入维度",
+          "三角函数编码能保证任意两个不同位置的向量内积恒等于 0（正交）"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。PE(pos+k) 可表示为 PE(pos) 的线性变换有利于外推与学习相对位置关系。"
+      }
+    }
+  },
+  {
+    "id": "pe-add-vs-concat",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "addition-vs-concatenation",
+    "tags": [
+      "positional-encoding",
+      "addition",
+      "concatenation",
+      "extrapolation"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "Self-Attention 具有置换不变性因此 Transformer 引入正弦位置编码并将编码向量与词嵌入向量直接相加。关于这一设计选择下列分析正确的是？（多选）",
+    "explanation": "A 正确：相加不增加维度避免了拼接带来的后续层参数膨胀。B 正确：三角函数的线性组合性质使模型更容易学习相对位置关系。C 正确：固定函数可外推到未见长度。D 错误：加法不会彻底覆盖语义信息——模型可通过后续线性层学会从混合信号中分离位置与语义成分。",
+    "reference": {
+      "concept": "相加不增维+三角公式利相对位置+可外推；不会覆盖语义。"
+    },
+    "rubric": {
+      "required": [
+        "相加不增加维度与参数量",
+        "三角函数性质利于学习相对位置",
+        "理论上可外推到更长序列"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "相较于将 PE 与 X_embed 进行通道拼接直接相加不会增加输入张量的维度在不增加后续层参数量的前提下保留了位置信息",
+          "由于正弦余弦函数的三角学性质模型更容易学习到相对位置关系",
+          "相较于基于查找表可学习的位置编码正弦位置编码具备理论上外推到比训练集更长序列的能力",
+          "向量直接相加会导致位置数值彻底覆盖原始词向量的语义信息因此必须在每一个 Encoder 层重新叠加 PE"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,B,C。相加不增维+利于相对位置+可外推。D 错误加法不会覆盖语义后续层可分离。"
+      }
+    }
+  },
+  {
+    "id": "pe-removal-defect",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "removal-consequence",
+    "tags": [
+      "positional-encoding",
+      "permutation-invariance",
+      "bag-of-tokens"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "某工程师误将输入层的 Positional Encoding 模块完全移除直接将 Token Embedding 输入注意力层。在不改变其他架构的情况下该模型会出现什么本质缺陷？",
+    "explanation": "正确答案 B。QK^T 具有置换等变性模型会将输入序列视为无序集合（Bag-of-Tokens）。A 错误 Softmax 不会退化为均匀分布——相关性权重仍可正常计算只是不感知顺序。C 错误多头投影与位置编码无关不会秩坍塌。D 错误 K/V 相关性与位置编码缺失无关。",
+    "reference": {
+      "concept": "无 PE → 置换等变 → Bag-of-Tokens，丧失序列顺序信息。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Softmax 函数将退化为均匀分布导致模型无法提取 Token 之间的相关性权重",
+          "注意力矩阵计算 QK^T 具有置换等变性/不变性模型会将输入序列视为无序的集合（Bag-of-Tokens）",
+          "Multi-Head Attention 无法将输入向量投影到不同的子空间导致投影矩阵发生秩坍塌",
+          "Key 与 Value 矩阵之间会产生线性相关性导致反向传播梯度消失"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。无 PE → QK^T 置换等变 → Bag-of-Tokens 丧失序列顺序信息。"
+      }
+    }
+  },
+  {
+    "id": "moe-design-tradeoff",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "sparse-architecture-tradeoff",
+    "tags": [
+      "moe",
+      "switch-transformer",
+      "load-balancing",
+      "all-to-all",
+      "capacity"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在超大规模语言模型中 Mixture-of- Experts 架构被广泛应用。相比同等参数量的稠密模型关于 MoE 的工程特性与架构取舍下列哪些说法是正确的？（多选）",
+    "explanation": "A 正确 门控路由实现总参数量 Scaling 与单 Token FLOPs 解耦。B 错误 所有 Expert 都需常驻 VRAM 总显存不低于同等参数 Dense 甚至因路由开销更大。C 正确 Top-k 路由易导致 Expert 塌缩需辅助负载均衡损失。D 正确 all-to-all 通信开销通常更高。",
+    "reference": {
+      "concept": "MoE 解耦容量与FLOPs；省算力不省显存；负载均衡+all-to-all 是主要代价。"
+    },
+    "rubric": {
+      "required": [
+        "门控路由解耦参数量与 FLOPs",
+        "所有 Expert 常驻 VRAM 不省显存",
+        "需要辅助负载均衡损失",
+        "all-to-all 通信开销更高"
+      ]
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MoE 通过门控路由网络将不同 Token 动态分配给特定的 Expert 子网络实现了总参数量 Scaling 与单 Token 计算量的解耦",
+          "由于每次推理仅激活部分 Expert MoE 模型在分布式部署时所需的 GPU 总显存显著低于同等总参数量的 Dense 模型",
+          "Top-k 门控路由策略容易导致某些 Expert 被过度使用而另一些欠拟合在工程训练中通常需要引入辅助负载均衡损失",
+          "MoE 能够以相对较低的训练与推理算力开销扩充模型容量但相比同算力开销的 Dense 模型其分布式通信开销通常更高"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A,C,D。解耦容量与FLOPs+负载均衡+通信开销高；B 错误不省VRAM所有Expert常驻。"
+      }
+    }
   }
 ]

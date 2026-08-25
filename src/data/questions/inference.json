@@ -1475,5 +1475,42 @@
         "优化手段与瓶颈的对应关系，而非手段的罗列"
       ]
     }
+  },
+  {
+    "id": "inference-training-01",
+    "category": "inference",
+    "topic": "inference-modes",
+    "subtopic": "training-vs-inference",
+    "tags": [
+      "training",
+      "inference",
+      "compute-bound",
+      "memory-bound",
+      "kv-cache"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在大规模语言模型的系统设计与工程落地中，训练阶段与自回归推理阶段具有完全不同的计算模式和瓶颈。下列关于两者的对比描述，最符合工程实际的是？",
+    "explanation": "A 正确：训练通过 Causal Mask 并行处理全序列（Compute-Bound）；推理 Generation 阶段逐 Token 循环，每次从 HBM 加载 KV Cache（Memory-Bandwidth-Bound）。B 错误：训练是并行的非顺序。C 错误：Prefill 是 Compute-Bound 而 Decode 是 Memory-Bandwidth-Bound。D 错误：KV Cache 专用于推理阶段而非训练。",
+    "reference": {
+      "concept": "训练=Compute-Bound（并行+Mask）；推理Decode=Memory-Bound（KV Cache带宽）。"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "训练阶段通过 Causal Mask 实现对整个序列的一次性并行处理，属于 Compute-Bound；自回归推理的 Generation 阶段需逐 Token 循环生成，每次从显存加载历史 KV Cache，属于 Memory-Bandwidth-Bound",
+          "训练阶段需要逐 Token 顺序计算以保持因果逻辑，属于 Memory-Bandwidth-Bound；推理阶段则利用矩阵并行吞吐，属于 Compute-Bound",
+          "自回归推理的 Prefill 阶段与 Generation 阶段均为 Compute-Bound 任务，GPU 算子利用率完全相同",
+          "KV Cache 的工程引入主要是为了在训练阶段避免重复计算投影矩阵，从而大幅加速反向传播过程"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。训练=并行+Compute-Bound；推理Decode=串行+Memory-Bandwidth-Bound（KV Cache 带宽）。"
+      }
+    }
   }
 ]
