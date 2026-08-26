@@ -5,7 +5,7 @@
 // 不触 LLM、不依赖 React —— LLM 生成由 application 层（interviewEngine）调用 provider.generateQuestion。
 
 import type { ConceptRef, KnowledgeNode, Question, QuestionBlueprint } from '../types';
-import { blueprintFromConcept } from './blueprint';
+import { blueprintFromConcept } from './blueprint.ts';
 
 /** 同一概念被探针反复探测达到此次数 → 触发「晋升为正式题」建议（题库自演化，PR6）。 */
 export const PROBE_PROMOTION_THRESHOLD = 3;

@@ -8,7 +8,7 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（五页：训练 / 进�
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/`，7 类别），每题同时具备选择与开放双形态，LLM 变体出题（保持知识点不变）
+- 题库驱动（`src/data/questions/`，按 topic 拆分 28 个文件、520 题；6 大能力域为 taxonomy 逻辑分组），每题同时具备选择与开放双形态（514/520 双形态），LLM 变体出题（保持知识点不变）
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
@@ -41,15 +41,15 @@ npm run question:blueprint # 把缺口格输出为题目蓝图 JSON（含变体�
 
 ## 扩展题库
 
-题库按类目拆分为 `src/data/questions/<category>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应类目文件；新增类目：建同名 JSON 文件并在 `src/domain/categories.ts` 登记中文标签。
+题库按 topic 拆分为 `src/data/questions/<topic>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应 topic 文件；新增 topic：在 `src/data/taxonomy.ts` 登记骨架与中文标签，再建同名 JSON 文件。
 
-补题前先跑 `npm run question:coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。给题目加 `"angle"` 字段（可选，取值 `definition / mechanism / calculation / tradeoff / scenario / system-design`）即可计入矩阵；未标注的题不计入，报告会单列数量：
+补题前先跑 `npm run question:coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。给题目加 `"angle"` 字段（可选，共 10 角度：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / design / system-design`）即可计入矩阵；未标注的题不计入，报告会单列数量：
 
 ```json
 {
   "id": "ml-99",
-  "category": "machine-learning",   // slug，见 src/domain/categories.ts
-  "topic": "regularization",        // 细分主题
+  "category": "training",           // topic slug，与文件名一致（见 src/data/taxonomy.ts）
+  "topic": "regularization",        // 知识节点 id（见 src/data/knowledge/）
   "tags": ["可选", "标签"],
   "difficulty": "easy",             // easy | medium | hard
   "angle": "tradeoff",              // 可选：主考察角度（覆盖矩阵用）

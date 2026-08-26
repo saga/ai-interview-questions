@@ -125,4 +125,43 @@ describe('nextAdaptiveStep · Dynamic Probe（PR6）', () => {
     expect(step!.question.question.transient).toBeFalsy();
     expect(step!.question.question.id).toMatch(/^ffn-q/); // 余下 bank 题（不依赖随机挑选）
   });
+
+  it('生成探针题时调用 curationSink 发出事件（首探未达阈值 → promoted=false）', async () => {
+    const bank = { categories: ['transformer'], questions: transformerBank() };
+    const session = await buildSession(bank, adaptiveDef(), undefined);
+    const sink = vi.fn();
+    const step = await nextAdaptiveStep(bank, session, [], undefined, undefined, fakeProbeProvider(), sink);
+    expect(step).not.toBeNull();
+    expect(sink).toHaveBeenCalledTimes(1);
+    const evt = sink.mock.calls[0][0];
+    expect(evt).toMatchObject({ nodeId: 'transformer', promoted: false });
+    expect(evt.conceptId).toBe(step!.probe!.conceptId);
+  });
+
+  it('探针达阈值时 curationSink 发出 promoted=true（接 curation 管线触发正式题生产）', async () => {
+    const bank = { categories: ['transformer'], questions: transformerBank() };
+    const session = await buildSession(bank, adaptiveDef(), undefined);
+    for (let i = 0; i < 3; i++) {
+      session.questions.push({
+        question: {
+          id: `probe-transformer-${i}`,
+          category: 'transformer',
+          topic: 'transformer',
+          tags: ['transformer'],
+          difficulty: 'easy',
+          question: '?',
+          explanation: '',
+          transient: true,
+          tests: [{ concept: 'transformer', role: 'primary' }],
+          formats: { choice: { type: 'single', options: ['a', 'b'], answer: [0] } },
+        },
+        format: 'choice',
+      });
+    }
+    const sink = vi.fn();
+    const step = await nextAdaptiveStep(bank, session, [], undefined, undefined, fakeProbeProvider(), sink);
+    expect(step).not.toBeNull();
+    expect(sink).toHaveBeenCalledTimes(1);
+    expect(sink.mock.calls[0][0]).toMatchObject({ conceptId: 'transformer', nodeId: 'transformer', promoted: true });
+  });
 });

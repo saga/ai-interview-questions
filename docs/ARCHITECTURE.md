@@ -2,7 +2,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。pi-agent-core 已移除——对话式 Agent 仅在"对话式模拟面试"落地时回归（Future/Experimental，ADR-019）。
+单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行于确定性 InterviewEngine 的第二运行时长期共存、互为对照（ADR-034）；规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
@@ -65,6 +65,15 @@ storage/       本地持久化（IndexedDB + localStorage；两者均为不可�
 application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
 
+agent/         Agent 面试运行时（pi-agent-core，ADR-034）：与确定性 Engine 并行的第二运行时
+   interviewAgent.ts  Agent 编排（observe → decide → tool 循环；停止条件 / 工具守卫）
+   tools.ts           AgentTool 薄包装 domain/learner/evaluation/ai——确定性工作全部走工具，
+                      Agent 只做"不确定的决策"（选题/追问/收尾）；评分不归 Agent
+   prompt.ts          系统提示词；runtime.ts 事件流装配；types.ts 会话与事件类型
+                      （InterviewAgentSession，App 持有、工具读写引用共享）
+   持久化复用既有管线：sessionRecordFromAgent → updateLearner + saveLearner，
+   与训练/模拟面试写入同一份 LearnerProfile
+
 lib/
   codeFence.ts        ``` 围栏切分（纯逻辑 + 单测，容错未闭合围栏）
 
@@ -83,22 +92,26 @@ components/
                                  门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
-data/questions/       题库（用户数据契约，按 6 大能力域一文件：questions/<domain>.json；
-                       domain ∈ {agent-engineering, ai-engineering, llm, llm-applications,
-                       ai-systems, ai-security}，与 taxonomy 域一一对应，ADR-038/039）。每题
-                       `category` = 所属域 slug（解析链：topic→知识节点 area→taxonomy topic→
-                       源文件域回退，ADR-039），`topic` = 知识节点 id，外加 `tags` / 可选
-                       `rubric` / `angle`（主考察角度，覆盖矩阵用，ADR-032/037）。存量 409 题
-                       全部同时携带 choice 与 open 双形态（ADR-027），其中若干选择形态带场景化
-                       专属题干 cf.question（ADR-028）。题目角度候选由 taxonomy.ANGLE_WHITELIST
-                       （topic→角度子集）约束，节点未声明 angles 时回退到所属 topic 白名单（ADR-039）。
+data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 28 文件 /
+                       520 题；topic ∈ taxonomy 的 28 个二级主题，如 transformer / rag /
+                       tool-calling，与 src/data/taxonomy.ts 的骨架一一对应）。每题
+                       `category` = 所属 topic slug（与文件名一致），`topic` = 知识节点 id，
+                       外加 `tags` / 可选 `rubric` / `angle`（主考察角度，覆盖矩阵用，
+                       ADR-032/037）。6 大能力域（ai-engineering / llm / llm-applications /
+                       agent-engineering / ai-systems / ai-security）是 **taxonomy 逻辑分组**
+                       （topic → domain 映射见 `taxonomy.domainOfTopic`），不是物理文件单位；
+                       UI 分类标签由 `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS。
+                       存量 520 题：514 题同时携带 choice 与 open 双形态（ADR-027）、6 题仅
+                       choice、180 题选择形态带场景化专属题干 cf.question（ADR-028）。题目角度
+                       候选由 taxonomy.ANGLE_WHITELIST（topic→角度子集）约束，节点未声明
+                       angles 时回退到所属 topic 白名单（ADR-039）。
 data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状校验；刻意不建索引/数据库层，
                        规模需要时再加动态 import + 构建期 question-index；失败时抛错并定位到 文件[下标]）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
                         slug，×7：dl-fundamentals / llm-architecture / training / inference /
-                        rag / agentic-ai / system-design），但节点内部不再用文件 slug 当分类——
+                        rag / agentic-ai / system-design，共 74 节点），但节点内部不再用文件 slug 当分类——
                         每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
@@ -114,7 +127,8 @@ data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件
                         tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
                         支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
 data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并 + Zod 形状校验，同 questionBank 模式）
-data/courses/          课程题库槽位（前瞻，ADR-041）。每课程一个子目录 <courseId>/，独立存放
+data/courses/          课程题库槽位（前瞻，ADR-041；目录尚未创建——首个真实课程接入时
+                        新建）。每课程一个子目录 <courseId>/，独立存放
                         course.json / knowledge/concepts.json / blueprint.json / questions/
                         questions.json / quality/{coverage,validation}.json。关键隔离：本目录
                         **不会被** questionBank.ts 的 import.meta.glob('./questions/*.json')
@@ -132,7 +146,7 @@ scripts/question-blueprint.ts  蓝图 CLI（npm run question:blueprint -- N）�
 types.ts              全局类型（含 LLMProvider / LearnerProfile）
 ```
 
-依赖方向：`components → application(interviewEngine) → domain + ai`；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库；`schemas` 不依赖 domain（纯数据契约），`domain` 也不依赖 `schemas`——仅在装配边界（questionBank / knowledgeMap / conceptGraph / settings / evaluate）消费校验结果，内部逻辑不感知 Zod。
+依赖方向：`components → application(interviewEngine) → domain + ai`；Agent 面试页 `components/agent → agent/`（`agent → domain + ai + types`，复用评分与持久化管线，不绕过 application 语义）；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库；`schemas` 不依赖 domain（纯数据契约），`domain` 也不依赖 `schemas`——仅在装配边界（questionBank / knowledgeMap / conceptGraph / settings / evaluate）消费校验结果，内部逻辑不感知 Zod。
 
 **ai → domain 的边界约定**：`ai` 只允许依赖 domain 的**纯计算函数**（`evaluation.aggregateOverall`、`provider.mergeQuestionRubric`、variant 校验等），
 不得依赖业务流程模块（`learner` / `adaptive` / `quiz`）——AI 层只负责"生成/评价语言内容"，不理解产品业务流。
@@ -257,26 +271,29 @@ InterviewDefinition  (声明式：categories / difficulties / formats('choice'|'
 - 题目级 `rubric.required` 会注入评分提示、`rubric.dimensions` 覆盖全局权重
   （合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
 
-## LLM 能力边界（ADR-019 / ADR-021 / ADR-023）
+## LLM 能力边界（ADR-019 / ADR-021 / ADR-023 / ADR-034）
 
-一句话：**Domain 决策是核心，LLM 只是插件；pi-agent-core 只在"需要连续对话"的场景回归。**
+一句话：**Domain 决策是核心，LLM 只是插件；Agent 只做"不确定的决策"，确定性工作全部走工具。**
 
 ```
-Quiz / 训练流程 ──→ createLLMProvider(AIConfig)：启用且合法的引擎按配置顺序串成链（ADR-023）
-                       │   单通道 → 直接返回实现；多通道 → FallbackProvider
-                       │   （调用失败/引擎不可用自动切换下一引擎，全败才抛错由上层兜底）
-                       ├── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
-                       └── PiAIProvider(entry) → ai/pi.ts（pi-ai one-shot，统一入口）
-                             ├── 云端：deepseek / openrouter / google(Gemini) / cloudflare-workers-ai
-                             ├── 本地 OpenAI 兼容服务（ADR-022）：buildModels 路由到
-                             │   ai/local.ts 的 createProvider 注册（默认 Unsloth 8888/v1）
-                             ├── ai/variant.ts    变体 = 只重写题干
-                             └── ai/evaluate.ts   开放题评分 = 四维 dimensions
-                                   ↓ overall 由 domain/aggregateOverall 计算
-对话式模拟面试   ──→ （未来）pi-agent-core，仅此场景引入 Agent
+Quiz / 训练 / 规则式模拟面试 ──→ createLLMProvider(AIConfig)：启用且合法的引擎按配置顺序串成链（ADR-023）
+                        │   单通道 → 直接返回实现；多通道 → FallbackProvider
+                        │   （调用失败/引擎不可用自动切换下一引擎，全败才抛错由上层兜底）
+                        ├── ChromeAIProvider → ai/chrome.ts（Prompt API，本地模型，免密钥）
+                        └── PiAIProvider(entry) → ai/pi.ts（pi-ai one-shot，统一入口）
+                              ├── 云端：deepseek / openrouter / google(Gemini) / cloudflare-workers-ai
+                              ├── 本地 OpenAI 兼容服务（ADR-022）：buildModels 路由到
+                              │   ai/local.ts 的 createProvider 注册（默认 Unsloth 8888/v1）
+                              ├── ai/variant.ts    变体 = 只重写题干
+                              └── ai/evaluate.ts   开放题评分 = 四维 dimensions
+                                    ↓ overall 由 domain/aggregateOverall 计算
+Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → decide → tool 循环（ADR-034）
+                        选题/评分/读画像经 tools.ts 薄包装既有能力，Agent 不自己打分；
+                        单 provider 起步，不接 FallbackProvider
 ```
 
-- 当前所有 LLM 调用都是 one-shot 结构化生成，无状态、无事件流；`interviewAgent.ts` 与 pi-agent-core 依赖已删除。
+- 训练与规则式面试的 LLM 调用都是 one-shot 结构化生成，无状态；Agent 面试的
+  多轮决策循环由 `src/agent/interviewAgent.ts` 驱动，是唯一的有状态调用方。
 - **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
   pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
   chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，
@@ -287,8 +304,9 @@ Quiz / 训练流程 ──→ createLLMProvider(AIConfig)：启用且合法的�
   chrome → local → 云端强模型——免费本地模型优先，失败自动落到云端兜底。
   LLMProvider 接口不携带 config：实现类构造时绑定自己的 ProviderEntry，
   interviewEngine 只向工厂传一次 AIConfig。
-- 回归条件：真正实现"面试官追问 → 候选人回答 → 继续追问"的多轮对话时，才重新引入 Agent 层；
-  在那之前不保留任何死代码占位。
+- **Agent 边界（ADR-034）**：Agent 是并行运行时而非替代——现有训练页与确定性
+  InterviewEngine 全部保留，两者长期共存、互为对照；评分所有权仍在 domain/LLM
+  provider，持久化复用 `sessionRecordFromAgent → updateLearner` 同一管线。
 
 ## Training Coach / Learner Memory
 
@@ -430,7 +448,10 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   Google Generative Language API / Cloudflare API（ADR-026）；OpenAI、Anthropic 直连仍不可用，
   有需求走本地 OpenAI 兼容网关（id=local 指向代理地址）。
 - **pi-ai 对浏览器友好**：库内部对 `globalThis.process` 与 `node:fs` 做了守卫/懒加载，打包时 `node:fs` 外部化为警告，属预期且不崩。
-- **pi-agent-core 已移除**（ADR-019）：当前无 Agent 依赖；对话式面试回归时再引入（届时注意其 dist 顶层 import `node:crypto/fs/...` 会被 externalize 成警告，只用 Agent 不触 harness 则不崩）。
+- **pi-agent-core（ADR-034）**：仅在 `src/agent/` 使用，承载「Agent 面试」页的决策循环；
+  训练/规则式面试不引入 Agent。注意其 dist 顶层 import `node:crypto/fs/...` 会被
+  externalize 成构建警告，只用 Agent 不触 harness 则不崩；工具参数 schema 用 TypeBox
+  （pi-agent-core 要求），与项目既有 Zod 不冲突。
 - **monaco-editor 0.56 exports map 对深层导入是坏的**：`monaco-editor/esm/vs/**` 深层导入在 Node 与 rolldown 下均 `ERR_MODULE_NOT_FOUND`（`./*.js → ./esm/vs/*.js` 的 star 替换路径错误），`resolve.alias` 也救不了。解法：worker 用相对路径 `../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js?worker` 绕过包解析；主库走 `import * as monaco from 'monaco-editor'`（`.` 入口正常）。
 - **Shiki grammar 懒加载**：语法文件是独立 chunk，渲染对应语言时才下载；主包只含核心引擎。
 - **构建**：`npm run build` 用 `tsc -b && vite build`，开启 `noUnusedLocals`，未使用 import/变量直接报错；`*.test.ts` 已从 tsc 排除，由 Vitest 处理。

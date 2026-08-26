@@ -4,7 +4,7 @@
 
 ## ADR-042 · Concept-coverage：把抽题从"选哪道题"升级为"先选最该验证哪个概念"
 
-**状态**：已落地（PR0 试点 + PR1–PR4 实现 + 引擎接线 + PR5 概念蓝图生成 + PR6 Dynamic Probe，2026-08-26）
+**状态**：已落地（PR0 试点 + PR1–PR4 实现 + 引擎接线 + PR5 概念蓝图生成 + PR6 Dynamic Probe + **PR6 闭环 Curation 管线** + **概念面推广至 rag/agentic-ai 高频节点**，2026-08-26）
 
 **背景**：题库题量增长不等于知识覆盖增长。PR0 试点证明：transformer 主题 43 道题只触达 8/10 概念面，且概念跨 topic 泄漏（kv-cache 在 `transformer.json` 0 题、却在 `model-architecture`/`inference` 大量存在）。需要一层"概念覆盖坐标系"，让抽题先选概念再找题。
 
@@ -29,11 +29,23 @@
 - **探针晋升（题库自演化）**：`src/domain/probe.ts` 纯函数 `probeFrequency` / `shouldPromoteProbe`（阈值 `PROBE_PROMOTION_THRESHOLD=3`）统计同一概念被探针反复探测的次数——达阈值即视为真实、值得补成正式题的缺口，引擎在返回时带上 `probe: { conceptId, promoted }` 信号，供上层决定把该蓝图送交 curated 题库生产管线。
 - **关键不变量**：探针题带 `transient` 且 `tests` primary 命中目标概念，因此 `getCoverageGaps` 在作答后不再把它当 uncovered，且 `validate:questions` 不强制 transient 题（持久化检查只对正式题库生效）。
 
+**PR6 闭环 · Curation 管线（探针晋升 → 正式题生产）**：
+- **决策（2026-08-26）**：把 `probe.{promoted}` 信号接进正式题生产，形成"题库自演化"闭环。引擎 `nextAdaptiveStep` 新增可选 `curationSink?: (e: ProbePromotionEvent) => void`（`{conceptId, nodeId, promoted}`）；每次生成临时探针题后调用它，由调用方决定如何持久化（SPA 落 IndexedDB / CLI 落文件账本）。无 `curationSink` 时只生成探针、不接入 curation（向后兼容）。
+- **账本与任务（纯逻辑 `src/domain/curation.ts`）**：`CurationLedger{version, entries[]}` 跨会话累计每个 `(conceptId, nodeId)` 的探针探测次数；`recordProbe`（不可变累加）/ `isPromoted`（pending 且 count ≥ `PROBE_PROMOTION_THRESHOLD`）/ `markCurated`（关闭任务）/ `curationTasks(ledger, nodes)` 把每个晋升概念翻译为一张 `QuestionBlueprint` 任务（与 PR5 同款，可直接交 LLM 生产），orphan 概念（无节点归属）自动跳过。
+- **持久化（`src/infra/curationStore.ts`，仅 Node）**：`loadLedger`/`saveLedger`/`appendProbe`/`commitCurated`/`ledgerSink(path)`（供引擎用的同步 sink，失败仅 warn 不卡管线）。浏览器 SPA 不应 import（node:fs 不可用）；SPA 应自备 sink 再经 CLI 同步到 `data/curation/ledger.json`。
+- **CLI 接线**：`scripts/generate-concept-questions.ts` 新增 `--from-curation [path]`（默认读 `data/curation/ledger.json`）把晋升账本翻译成概念蓝图任务清单，加 `--commit` 标记已生成（避免重复生产）。npm 别名 `curation:produce`。实跑验证：含 2 条账本（vdb-hnsw@vector-db 计数 3 晋升、rk-crossencoder@reranking 计数 1 未晋升）→ 仅产出 1 张 vdb-hnsw 蓝图；`--commit` 后该条目 status 变 `curated`，其余保持 `pending`。
+
+**概念面推广（2026-08-26）**：
+- **决策**：把 `concepts[]` 从单一的 `transformer` 节点推广到高频知识节点——`rag.json` 的 `rag`/`vector-db`/`rag-pipeline`/`reranking`（共 33 个概念面）与 `agentic-ai.json` 的 `agent-fundamentals`/`agent-loop`/`tool-calling`/`agent-guardrails`（共 35 个概念面）。概念 id 加命名空间前缀（如 `vdb-`、`rag-`、`rgp-`、`rk-`、`af-`、`aloop-`、`tc-`、`grd-`）避免与节点 id 碰撞。
+- **零引擎改动**：`nextAdaptiveStep` 的 `ConceptSelectionContext` 与 PR6 探针按 `knowledgeNodes` 中 `concepts[]` 非空节点自动取 face——挂上概念面即对这些节点生效，概念优先抽题 + Dynamic Probe 自动覆盖（无需改引擎）。`npm run generate:concept-questions -- --node rag` 实跑：8 概念面 / 16 本节点题 → 均衡蓝图正常产出。
+- **导入一致性修复（支撑 Node 直跑脚本）**：`curation.ts`/`curationStore.ts`/`probe.ts` 的内部相对 import 补 `.ts` 扩展名，与 `blueprint.ts`/`coverage.ts` 一致，确保 `node scripts/*.ts` 在 Node 原生 ESM 下可解析（vitest 不受影响）。
+
 **与既有 ADR 的关系**：ADR-040（确定性策略核心）的"coverage 是核心 signal 之一"在此落地为概念级；ADR-041（课程管线）复用了 `Question.tests` 的前瞻字段与 `validate:questions` 思路。
 
 ## ADR-041 · Course Question Bank 独立管线 + QuestionSource 接缝（前瞻设计，尚未实现课程来源）
 
 - 状态：已采纳（前瞻/骨架）· 2026-08-25
+  - **更正（2026-08-26）**：`src/data/courses/` 目录（含 .gitkeep 槽位）当前尚未创建，`QuestionSource` 接缝已落地、课程来源未接入——与"前瞻设计"定位一致。
 - 背景：用户提出把公开课程（MIT/Harvard/Stanford 等）做成"Course → Course Question Bank"独立生产管线，明确要求**不要把课程内容强行塞进当前 AI Trainer 的 `questionBank`**（避免面试 taxonomy / Concept×Angle 把课程知识面试化）。核心思想：课程是知识来源（source）、题库是课程知识的结构化评估层（assessment artifact）、AI Trainer 是另一个消费方。
 - 决策（仅落地"可插拔接缝"，**不实现**课程生产管线本身）：
   - **QuestionSource 抽象**：新增 `src/data/source.ts`，定义 `QuestionSource { id; label; getQuestions(): Question[] }` 接口 + `interviewQuestionSource`（包装既有 `questionBank`）+ `questionSources` 注册表 + `sourceToBank()` 适配器。未来 `CourseQuestionBank` 实现同一接口即可接入，**引擎（interviewEngine）与 Agent 工具层已按 `QuestionBank`/`Question[]` 参数化，无需改动**。
@@ -61,8 +73,9 @@
 
 ## ADR-039 · 题库 category 重映射到 6 大能力域 + topic 角度白名单 + Agent 题库补强
 
-- 状态：已采纳 · 2026-08-25
-- 背景：ADR-038 把 taxonomy 落到代码与知识节点，但题库 `questions/*.json` 仍按旧 7 文件（agentic-ai / ai-engineering / deep-learning / llm / machine-learning / mlops / safety-ethics）平铺，`category` 存文件名级 slug；10 个角度仍只由知识节点 `angles` 声明，缺"按 topic 绑定"的白名单。用户确认执行 ADR-038 列为"不做"的这两项（并补 6 道 Agent 架构题）。
+- 状态：部分被后续演进取代 · 2026-08-25
+  - **更正（2026-08-26）**：本 ADR 描述的"7 个旧文件重组为 6 个域文件"未以该形态留存——题库随后演进为**按 topic 拆分 28 个文件**（`questions/<topic>.json`，520 题），`category` = topic slug（与文件名一致），`categoryLabel` 由 `domain/categories.ts` 合并 `DOMAIN_LABELS` + `TOPIC_LABELS`。6 大能力域保留为 **taxonomy 逻辑分组**（`taxonomy.domainOfTopic(topic)`），不再是物理文件单位。角度白名单与 Agent 题库补强两部分仍有效。
+  - 背景：ADR-038 把 taxonomy 落到代码与知识节点，但题库 `questions/*.json` 仍按旧 7 文件（agentic-ai / ai-engineering / deep-learning / llm / machine-learning / mlops / safety-ethics）平铺，`category` 存文件名级 slug；10 个角度仍只由知识节点 `angles` 声明，缺"按 topic 绑定"的白名单。用户确认执行 ADR-038 列为"不做"的这两项（并补 6 道 Agent 架构题）。
 - 决策：
   - **题库 category 重映射到 6 大能力域**：每道题的 `category` 设为其 `topic` 所属域（解析优先级：知识节点 area → taxonomy topic → 显式纠正 → 源文件域回退），并据此把 7 个旧文件重组为 6 个域文件（`agent-engineering / ai-engineering / llm / llm-applications / ai-systems / ai-security.json`）；409 题 `topic` id 不变，零语义破坏。`categoryLabel`（`domain/categories.ts`）改为复用 `taxonomy.DOMAIN_LABELS`，UI 分类标签直接显示 6 域中文名；`byCategory`（文件名索引）现在恰好等于 6 域。
   - **6 道 Agent 架构单选题入库**：基于用户给出的 6 个主题（Model vs Harness 边界 / System Prompt 运行时控制 / Agentic Loop / Translation Layer / Tools Schema 解耦 / 本地化 Harness）生成，`topic` 指向有效知识节点（`agent-fundamentals` / `agent-loop` / `tool-calling`），`angle` 取 `system-design / scenario / mechanism / design / tradeoff`。原题正文未保留，选项与答案需用户最终核对。

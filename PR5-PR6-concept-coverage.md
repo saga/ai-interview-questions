@@ -72,3 +72,37 @@
 1. **推广概念面**：向 `rag` / `agent-fundamentals` 等高频节点挂 `concepts[]`，引擎与 PR6 探针自动对这些节点生效（无需改引擎）。
 2. **探针晋升落地**：把 `probe.promoted` 信号接进 curation 管线，触发正式题生产（`generate:concept-questions` 已能产出对应蓝图）。
 3. ADR-042 列明的 V2 项（Facet / BKT / IRT / prerequisite 图）仍留待数据就绪后推进。
+
+---
+
+## 后续增强（2026-08-26 晚）：概念面推广 + Curation 闭环
+
+> 把上表"后续（可选）"的第 1、2 项落地。
+
+### 1. 推广 concepts[] 到高频节点
+- 在 `rag.json`（`rag`/`vector-db`/`rag-pipeline`/`reranking`，共 33 概念面）与 `agentic-ai.json`（`agent-fundamentals`/`agent-loop`/`tool-calling`/`agent-guardrails`，共 35 概念面）知识节点挂 `concepts[]`。
+- 概念 id 加命名空间前缀（`vdb-`/`rag-`/`rgp-`/`rk-`/`af-`/`aloop-`/`tc-`/`grd-`）避免与节点 id 碰撞。
+- **零引擎改动**：`nextAdaptiveStep` 的 `ConceptSelectionContext` 与 PR6 探针按 `knowledgeNodes` 中 `concepts[]` 非空节点自动取 face——挂上即生效。实跑 `npm run generate:concept-questions -- --node rag`：8 概念面 / 16 本节点题 → 均衡蓝图正常产出。
+
+### 2. Curation 闭环（探针晋升 → 正式题生产）
+- 引擎 `nextAdaptiveStep` 新增可选 `curationSink?: (e: ProbePromotionEvent) => void`（`{conceptId, nodeId, promoted}`）；每次生成临时探针题后调用，由调用方决定如何持久化（SPA 落 IndexedDB / CLI 落文件账本）。省略则只生成探针、不接入 curation。
+- 纯逻辑 `src/domain/curation.ts`：`CurationLedger{entries[]}` 跨会话累计每 `(conceptId, nodeId)` 探针次数；`recordProbe` / `isPromoted`（阈值 3）/ `markCurated` / `curationTasks`（晋升概念 → 一张可交 LLM 的 `QuestionBlueprint`，orphan 自动跳过）。
+- Node 持久化 `src/infra/curationStore.ts`：`loadLedger`/`saveLedger`/`appendProbe`/`commitCurated`/`ledgerSink(path)`（浏览器 SPA 不应 import）。
+- CLI 接线：`generate-concept-questions.ts` 增 `--from-curation [path]`（默认 `data/curation/ledger.json`）+ `--commit`；npm 别名 `curation:produce`。实跑：账本含 vdb-hnsw@vector-db(计数 3 晋升) + rk-crossencoder@reranking(计数 1 未晋升) → 仅产出 1 张 vdb-hnsw 蓝图；`--commit` 后该条目 status 变 `curated`。
+
+### 新增/改动文件
+| 文件 | 作用 |
+|------|------|
+| `src/data/knowledge/rag.json` | 4 节点挂 `concepts[]`（33 概念面） |
+| `src/data/knowledge/agentic-ai.json` | 4 节点挂 `concepts[]`（35 概念面） |
+| `src/domain/curation.ts` | Curation 账本纯逻辑（recordProbe/isPromoted/curationTasks/markCurated） |
+| `src/infra/curationStore.ts` | 账本文件持久化（仅 Node） |
+| `src/types.ts` | `ProbePromotionEvent` 类型 |
+| `src/application/interviewEngine.ts` | `curationSink` 接线 |
+| `scripts/generate-concept-questions.ts` | `--from-curation` / `--commit` |
+| `package.json` | `curation:produce` 别名 |
+| `docs/DECISIONS.md` | ADR-042 更新（含 Curation 闭环 + 概念面推广） |
+
+### 验证
+- `npx tsc --noEmit` 绿；`npm test` **338 passed**（原 321，+17：curation 8 / curationStore 7 / 引擎 curation 接线 2）。
+- `node scripts/generate-concept-questions.ts --from-curation` 实跑通过（dry-run 产出 1 任务；`--commit` 落盘 status=curated）。

@@ -142,6 +142,17 @@ export interface LLMProvider {
   ): Promise<EvaluationResult>;
 }
 
+/**
+ * 运行时探针晋升事件（PR6 Dynamic Probe → Curation 管线）：
+ * 引擎在每次生成临时探针题后发出，调用方（SPA/CLI）据其把事件写进 curation 账本。
+ * promoted=true 表示该概念已被反复探测达到晋升阈值，应触发正式题生产。
+ */
+export interface ProbePromotionEvent {
+  conceptId: string;
+  nodeId: string;
+  promoted: boolean;
+}
+
 export type CompleteFn = (system: string, user: string) => Promise<string>;
 
 // ── 常量（与 EvaluationDimension 同源） ──

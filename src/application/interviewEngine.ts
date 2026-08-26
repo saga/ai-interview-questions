@@ -11,6 +11,7 @@ import type {
   InterviewSession,
   LearnerProfile,
   LLMProvider,
+  ProbePromotionEvent,
   QuestionBank,
   SessionQuestion,
 } from '../types';
@@ -130,6 +131,8 @@ async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvider | nul
  * @param profile 学习画像（move-on 兜底时优先薄弱主题）
  * @param config AI 配置（useAI 开启时用于变体与评分）
  * @param providerOverride 注入 LLMProvider（测试用；缺省按 config 现建）
+ * @param curationSink 探针晋升事件回调（PR6 Curation 管线）：每次生成临时探针题后发出，
+ *   调用方据此把事件写进 curation 账本；省略则只生成探针不接入 curation。
  */
 export async function nextAdaptiveStep(
   bank: QuestionBank,
@@ -138,6 +141,7 @@ export async function nextAdaptiveStep(
   profile?: LearnerProfile,
   config?: AIConfig,
   providerOverride?: LLMProvider,
+  curationSink?: (e: ProbePromotionEvent) => void,
 ): Promise<{ question: SessionQuestion; strategy: Strategy; probe?: { conceptId: string; promoted: boolean } } | null> {
   const def = session.definition;
   const formats = effectiveFormats(def, config);
@@ -161,6 +165,8 @@ export async function nextAdaptiveStep(
     const concept = node?.concepts?.find((c) => c.id === picked.probeConceptId);
     if (node && concept) {
       const promoted = shouldPromoteProbe(picked.probeConceptId, session.questions.map((sq) => sq.question));
+      // 把探针事件接入 Curation 管线（由调用方决定如何持久化；跨会话累计到阈值即晋升）
+      curationSink?.({ conceptId: picked.probeConceptId, nodeId: node.id, promoted });
       const provider = providerOverride ?? (def.useAI ? createLLMProvider(config) : null);
       if (provider) {
         try {

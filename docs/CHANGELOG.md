@@ -2,6 +2,13 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-26 · 文档与代码一致性修复（架构评审 P0）
+
+- **背景**：架构评审发现 ARCHITECTURE.md / README 与代码严重脱节——文档仍停留在「pi-agent-core 已移除、无 Agent 依赖」的旧形态，而 `src/agent/`（ADR-034）已落地并作为第五页功能上线；题库描述写「6 域一文件 / 409 题」，实际是 28 个 topic 文件 / 520 题。以代码为准修正文档。
+- **ARCHITECTURE.md**：①总体形态改为五页 SPA + Agent 面试页由 pi-agent-core 驱动（并行运行时，ADR-034）；②分层树新增 `agent/` 目录职责说明；③依赖方向补充 `components/agent → agent → domain + ai + types`；④`data/questions/` 段重写为实际形态（28 topic 文件 / 520 题 / category=topic slug / 514 双形态 + 6 纯选择 + 180 场景题干；6 域为 taxonomy 逻辑分组）；⑤知识节点数修正为 74；⑥`data/courses/` 标注目录尚未创建（ADR-041 前瞻）；⑦「LLM 能力边界」一节删除「interviewAgent.ts 已删除」等过时表述，补 Agent 边界与调用形态对比；⑧技术栈注意点更新 pi-agent-core 条目。
+- **README.md**：类别数「7 类别」→ 实际形态；扩展题库指引改为 topic 维度（taxonomy.ts 登记）；示例 JSON 的 category 注释与 angle 十角度词表同步。
+- **DECISIONS.md**：ADR-039 标注「部分被后续演进取代」（7→6 域文件重组未以该形态留存，实际演进为 28 topic 文件）；ADR-041 补 courses 目录未创建的更正注记。
+
 ## 2026-08-24 · 变体生成语义不变量重构（ADR-036，取代 ADR-019 变体约束，无兜底）
 
 - **契约**：`src/types.ts` 新增 `VariantCandidate`，`GeneratedVariant` 扩展为 `{question, options?, answer?, explanation?}`；`src/ai/variant.ts` 重写 `VARIANT_SYSTEM/user`，注入 `Knowledge Contract`（topic/tags/requiredConcepts/difficulty/format）+ 完整原题，LLM 可重构题干/场景/选项/distractors/解析。
