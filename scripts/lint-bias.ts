@@ -5,7 +5,7 @@
 //   node scripts/lint-bias.ts --soft     # 同时报告 mean 失衡
 //   node scripts/lint-bias.ts --json     # 机器可读输出
 //
-// 为什么独立成脚本而非塞进 validate：本题库历史题中「正确项天然更长」较普遍（约 1/5），
+// 为什么独立成脚本而非塞进 validate：本题库历史题中「正确项天然更长」曾较普遍（约 244/532 道选择题为 strong 档），
 // 直接进 validate 会产生大量噪声；把它做成可单独运行的 lint，便于在出题/变体后按需检查。
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -57,5 +57,5 @@ if (asJson) {
     `\n${includeSoft ? '（含 soft）' : '（仅 strong）'}共 ${hits.length} 道选择题存在选项长度偏差` +
       `（strong=${strong}${includeSoft ? `, soft=${soft}` : ''} / 选择题总数 ${questions.filter((q) => q.formats?.choice).length}）`,
   );
-  console.log('提示：长度偏差在本题库历史题中较普遍，重点用于出题/变体后自检；新变体已由 generateVariant 自动重试修正。');
+  console.log('提示：历史 strong 档长度泄题已于 2026-08-27 批量改写清零；本 lint 保留作新题/变体的回归探针。新变体已由 generateVariant 自动重试修正。');
 }

@@ -14,6 +14,7 @@ import type {
   ScoringRubric,
   SessionQuestion,
   SessionRecord,
+  AnswerValue,
   Trend,
 } from '../types';
 import { DEFAULT_RUBRIC } from './evaluation';
@@ -221,6 +222,7 @@ export function sessionFromQuiz(
   session: { questions: SessionQuestion[]; startedAt: number; definition?: { title?: string; mode?: SessionRecord['mode'] } },
   grades: Record<string, EvaluationResult | null>,
   durationSec?: number,
+  answers?: Record<string, AnswerValue>,
 ): SessionRecord {
   const results: QuestionResult[] = session.questions.map(({ question: q, format }) => {
     const g = grades[q.id];
@@ -248,6 +250,10 @@ export function sessionFromQuiz(
     title: session.definition?.title ?? '训练',
     questionResults: results,
     overall,
+    // 完整原题快照（含 AI 变体），供历史会话原样复现；不写入画像聚合，仅作回放用。
+    questions: session.questions,
+    // 用户作答（选项索引 / 开放题文本），供回放"用户当时选了什么"与后续分析。
+    answers: answers ?? {},
   };
 }
 

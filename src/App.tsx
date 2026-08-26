@@ -231,7 +231,7 @@ export default function App() {
     // 时长从会话创建（startedAt）起算——自适应模式下追加题目不会改变 startedAt
     const durationSec = Math.round((Date.now() - s.startedAt) / 1000);
     const prev = profileRef.current.sessions[0]?.overall ?? null;
-    const rec = sessionFromQuiz(s, g, durationSec);
+    const rec = sessionFromQuiz(s, g, durationSec, answersRef.current);
     const next = updateLearner(profileRef.current, rec);
     await saveLearner(next);
     setProfile(next);

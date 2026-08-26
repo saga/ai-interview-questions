@@ -96,6 +96,7 @@ export function sessionRecordFromAgent(
     { questions: asked, startedAt: session.startedAt, definition: { title, mode: 'agent' } },
     session.evaluations,
     durationSec,
+    session.answers,
   );
 }
 

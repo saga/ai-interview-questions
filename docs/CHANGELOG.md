@@ -2,6 +2,13 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-27 · 批量消除历史选择题「选项长度泄题」（244 道 strong 偏差清零）
+
+- **动机**：`lint:bias` 显示 strong 档长度泄题高达 244/532 选择题（正确项天然最长 + 干扰项过短）。用户要求根治而非仅诊断。
+- **做法**：以大模型直接改写这 244 道题的 `formats.choice.options`——保持 `answer` 索引、正确项语义、题干/解析/标签全部不变，仅扩充偏短干扰项的合理但错误细节，使最长/最短比值 < 1.8 且正确项不再是唯一最长者。按文件分 8 批并行改写（26 个题文件）。
+- **验证**：改写后重跑 `lint:bias --json` 返回 `[]`（全库 0 道 strong 偏差）；26 个题目文件 `JSON.parse` 全部有效；与 `git HEAD` 对比题目总数 532=532、答案索引无越界、选项数无变动。全量测试无回归。
+- 说明：本次为数据层根治；生成期的 anti-cueing 重试（见下条）继续防止新变体引入偏差。
+
 ## 2026-08-27 · 前端接入路由（HashRouter）
 
 - **动机**：所有页面共用 `http://localhost:5173/`，地址栏无法区分当前页面。引入客户端路由，让导航与 URL 一一对应，刷新/分享可直达。
@@ -10,13 +17,35 @@
 - 训练流程的 `phase`（home/quiz/result）仍保留内存 state，不进 URL（刷新会丢失 session，与现状一致；`/train` 承载训练全流程）。
 - 依赖：`react-router-dom` 新装。验证：`typecheck` 无错、全量测试 349 passed、`vite build` 通过。
 
+## 2026-08-27 · 落库用户作答（选项索引 / 开放题文本）+ 回放展示"你当时选了什么"
+
+- **动机**：上一步回放只能看"出了什么题"，用户想要"我当初选了啥"以便后续分析（如错选分布）。
+- **`SessionRecord` 新增可选 `answers: Record<questionId, AnswerValue>`**（`sessionAnswerSchema`，选择题=索引数组、开放/编程=文本）：`src/schemas/learner.ts`。非索引、optional，旧记录兼容、Dexie 无需升版本。
+- **`sessionFromQuiz` 增加 `answers?` 参数**并写入记录；两处调用方补齐：主流程 `App.doSubmit` 传 `answersRef.current`，Agent 流程 `sessionRecordFromAgent` 传 `session.answers`。
+- **`SessionReplayDrawer` 增加"你的选择 / 你的回答"**：选择题显示所选字母、开放题显示作答文本（未作答显"未作答"），与"正确答案"并列。
+- `domain/learner.test.ts` 新增"作答随记录落库"断言；`typecheck`/`build`/`test` 全绿（351 passed）。
+
+## 2026-08-27 · 历史会话回放 UI（读历史题库快照）
+
+- **动机**：上一步已把当次原题（含 AI 变体）快照存入 `SessionRecord.questions`；现补上回放界面，让历史会话可原样查看。
+- **新增 `components/progress/SessionReplayDrawer.tsx`**：只读 Drawer，按 `record.questions` 渲染每题（选择题标出正确项与正确答案、开放题给参考答案）+ 该题得分/对错（取自 `questionResults`）。无快照的旧记录显示提示。
+- **接入 `ProgressPage`「最近趋势」**：前 5 条会话改为可点击，打开上述 Drawer。面试与 agent 会话均覆盖（共用 `sessionFromQuiz` 落库路径）。
+- 仅回放"出了什么题"，未落库用户作答（作答选择未持久化），故不显示"你的答案"。`typecheck`/`build`/`test` 全绿。
+
+## 2026-08-27 · 会话落库增加完整原题快照（含 AI 变体），支持历史复现
+
+- **动机**：此前 `SessionRecord` 只存 `questionResults`（questionId/score/topic…），AI 变体的题干/选项/答案/解析属会话内临时态，关掉即丢，历史会话无法原样回看。
+- **改动（最小方案）**：`sessionRecordSchema` 增加可选 `questions: SessionQuestion[]`；`domain/learner.sessionFromQuiz` 落库时把当次 `session.questions`（含变体）一并写入。面试与 agent 会话均走此构造器，故一处覆盖。
+- **兼容**：字段为 optional，旧记录无 `questions` 仍能解析；非索引字段，Dexie 无需升版本。聚合层（topicStats/angleCoverage）只读 `questionResults`，不受快照影响。
+- 单纯落库，未做回放 UI；需要时历史详情页直接读 `record.questions` 即可原样复现。`domain/learner.test.ts` 新增快照保留断言，全量测试 350 passed、`typecheck` 无错。
+
 ## 2026-08-27 · 变体生成抗长度泄题（anti-cueing 自愈）+ 题库长度偏差 lint
 
 - **动机**：手工修题发现部分选择题存在"正确项明显更长 / 干扰项过短"的长度暗示偏差。用户希望 AI 生成变体或抽题时自动规避，而非逐题手修。
 - **两层方案**：
   - **Prompt 层（生成期防偏差）**：`ai/variant.ts` 的 `VARIANT_SYSTEM` 增加「选项设计约束」——各选项篇幅与细节均衡、禁止用长度暗示答案；生成后自检。
   - **Traditional 启发式 + 自愈**：新增纯函数 `domain/bias.detectOptionLengthBias(options, answer)`，命中高置信长度泄题（正确项全局最长且存在明显过短干扰项，`maxCorrect/minDistractor ≥ 1.8`）时，`generateVariant` 用修正提示词**一次性重试**改写选项（ADR-036 语义：仅重生成，不因此抛错回退原题）。
-  - **诊断工具**：新增 `scripts/lint-bias.ts` + `npm run lint:bias`（默认仅 strong 且摘要前 10 条，`--all/--soft/--json` 可展开）。刻意不并入 `validate:questions`——历史题中长度偏差普遍（约 244/532 选择题），作为软信号诊断而非阻断。
+  - **诊断工具**：新增 `scripts/lint-bias.ts` + `npm run lint:bias`（默认仅 strong 且摘要前 10 条，`--all/--soft/--json` 可展开）。刻意不并入 `validate:questions`——历史题中长度偏差曾普遍（约 244/532 选择题），已于 2026-08-27 批量改写清零；保留 lint 作为新题/变体的回归探针而非阻断。
 - `domain/bias.test.ts` 覆盖 strong/soft/none/无干扰项/长干扰项不误报；`ai/variant.test.ts` 覆盖长度泄题触发一次性重试。全量测试 349 passed、`typecheck` 无错。
 
 ## 2026-08-27 · 进度页新增「知识点清单」Tab（学过的 / 没学过的逐项表格）

@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react';
 import { Card, Typography, Progress, Tag, List, Empty, Button, Space, Tabs, Table, Segmented, Select, Statistic, Tooltip } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, ThunderboltOutlined, ApartmentOutlined } from '@ant-design/icons';
 import type { TableProps } from 'antd';
-import type { LearnerProfile, KnowledgeNode, KnowledgeArea } from '../../types';
+import type { LearnerProfile, KnowledgeNode, KnowledgeArea, SessionRecord } from '../../types';
 import type { CoverageReport, TopicSuggestion } from '../../domain/learner';
 import { WEAK_MASTERY, WEAK_AVG } from '../../domain/learner';
 import { KNOWLEDGE_AREA_LABELS } from '../../domain/knowledge';
 import { knowledgeNodes } from '../../data/knowledgeMap';
 import { domainLabel, topicLabel } from '../../data/taxonomy';
+import SessionReplayDrawer from './SessionReplayDrawer';
 
 interface Props {
   profile: LearnerProfile;
@@ -59,6 +60,7 @@ interface ChecklistRow {
 }
 
 export default function ProgressPage({ profile, onGoTrain, coverage, suggestions }: Props) {
+  const [replay, setReplay] = useState<SessionRecord | null>(null);
   const { sessions, topicStats, overallScore } = profile;
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'unlearned'>('all');
   const [areaFilter, setAreaFilter] = useState<KnowledgeArea | 'all'>('all');
@@ -245,7 +247,10 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
               size="small"
               dataSource={sessions.slice(0, 5)}
               renderItem={(s) => (
-                <List.Item style={{ padding: '4px 0' }}>
+                <List.Item
+                  style={{ padding: '4px 0', cursor: 'pointer' }}
+                  onClick={() => setReplay(s)}
+                >
                   <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                     <span>
                       {s.title}
@@ -253,7 +258,10 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
                         {fmtDate(s.startedAt)}
                       </Typography.Text>
                     </span>
-                    <Tag color={s.overall >= 80 ? 'success' : s.overall >= 60 ? 'gold' : 'error'}>{s.overall} 分</Tag>
+                    <Space size={4}>
+                      <Tag color={s.overall >= 80 ? 'success' : s.overall >= 60 ? 'gold' : 'error'}>{s.overall} 分</Tag>
+                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>查看 ↗</Typography.Text>
+                    </Space>
                   </Space>
                 </List.Item>
               )}
@@ -363,6 +371,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
           { key: 'knowledge', label: `知识点清单 (${rows.length})`, children: checklist },
         ]}
       />
+      <SessionReplayDrawer record={replay} onClose={() => setReplay(null)} />
     </div>
   );
 }

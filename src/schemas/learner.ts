@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { formatIdSchema, questionAngleSchema } from './common';
+import { sessionQuestionSchema, sessionAnswerSchema } from './session';
 
 export const trendSchema = z.enum(['improving', 'declining', 'flat']);
 export type Trend = z.infer<typeof trendSchema>;
@@ -57,6 +58,10 @@ export const sessionRecordSchema = z.object({
   courseId: z.string().min(1).optional(),
   questionResults: z.array(questionResultSchema),
   overall: z.number().min(0).max(100),
+  /** 会话原题快照（含 AI 变体改写后的完整题干/选项/答案/解析）。可选以保持旧记录兼容；用于历史会话原样复现。 */
+  questions: z.array(sessionQuestionSchema).optional(),
+  /** 用户作答（按 questionId）：选择题为选项索引数组，开放/编程题为文本。可选以保持旧记录兼容；用于回放"用户当时选了什么"与后续分析。 */
+  answers: sessionAnswerSchema.optional(),
 });
 
 export const learnerProfileSchema = z.object({

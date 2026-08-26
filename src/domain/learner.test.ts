@@ -198,6 +198,33 @@ describe('sessionFromQuiz', () => {
     expect(rec.mode).toBe('quick');
   });
 
+  it('完整保留原题快照（含 AI 变体）供历史会话复现', () => {
+    const grades = {} as never;
+    const rec = sessionFromQuiz(
+      { questions: [choiceA, openA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
+      grades,
+    );
+    expect(rec.questions).toBeDefined();
+    expect(rec.questions).toHaveLength(2);
+    expect(rec.questions?.[0].question).toBe(choiceA.question);
+    // 变体改写后（aiGenerated）的文本也应原样落库，而非仅存 id
+    expect(rec.questions?.[0].question).not.toBe('__stub__');
+  });
+
+  it('落库同时保留用户作答（选择题索引 / 开放题文本）供回放与分析', () => {
+    const grades = {} as never;
+    const answers = { [choiceA.question.id]: [1], [openA.question.id]: '我的解答文本' } as Record<string, never>;
+    const rec = sessionFromQuiz(
+      { questions: [choiceA, openA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
+      grades,
+      undefined,
+      answers,
+    );
+    expect(rec.answers).toBeDefined();
+    expect(rec.answers?.[choiceA.question.id]).toEqual([1]);
+    expect(rec.answers?.[openA.question.id]).toBe('我的解答文本');
+  });
+
   it('选择题答对：correct=true 且不写 gaps', () => {
     const grades = {
       c1: { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, strengths: ['选择正确'], gaps: [], feedback: '' },
