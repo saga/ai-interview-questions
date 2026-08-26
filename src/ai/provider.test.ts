@@ -173,6 +173,7 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
     return {
       name,
       generateVariant: impl as LLMProvider['generateVariant'],
+      generateQuestion: impl as LLMProvider['generateQuestion'],
       evaluateOpenAnswer: impl as LLMProvider['evaluateOpenAnswer'],
     };
   }
@@ -223,6 +224,15 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
       fake('b', async () => ({ overall: 90 })),
     ]);
     await expect(chain.evaluateOpenAnswer(q(), OPEN_FMT, 'ans', GLOBAL)).resolves.toEqual({ overall: 90 });
+  });
+
+  it('generateQuestion 同样走降级链委托（PR5/PR6 共用生成能力）', async () => {
+    const bp = { topic: 'transformer', angle: 'definition', difficulty: 'easy', format: 'choice', purpose: '', expectedConcepts: ['self-attention'] } as Parameters<LLMProvider['generateQuestion']>[0];
+    const node = { id: 'transformer' } as Parameters<LLMProvider['generateQuestion']>[1];
+    const chain = new FallbackProvider([
+      fake('a', async () => ({ question: 'gen', difficulty: 'easy', formats: { choice: { type: 'single', options: ['x'], answer: [0] } }, explanation: '', tests: [] })),
+    ]);
+    await expect(chain.generateQuestion(bp, node)).resolves.toMatchObject({ question: 'gen' });
   });
 });
 

@@ -3,6 +3,10 @@
 // 两速分离（ADR-032）：本模块是"慢速题库生产"管线的度量端，运行时选题不感知它。
 
 import type {
+  ConceptAttemptSignal,
+  ConceptRef,
+  ConceptStats,
+  ConceptStatus,
   Difficulty,
   FormatId,
   KnowledgeArea,
@@ -196,4 +200,83 @@ export function formatCoverageReport(matrix: CoverageMatrix, suggestions: Covera
       (matrix.unmappedQuestions > 0 ? ` · 未挂靠知识点的题 ${matrix.unmappedQuestions}` : ''),
   );
   return lines.join('\n');
+}
+
+// ── 概念级覆盖（Concept-coverage，PR1–PR4）──
+// 知识节点可拆出 "概念面" (concepts[])，题目通过 tests[] 声明它探测了哪些概念。
+// 这让抽题从 "选哪道题" 变成 "先选最该验证哪个 concept"，解决 "题多但面未覆盖" 问题。
+// 概念是独立的覆盖坐标系，不强制与知识节点一一对应（PR0 洞察 #4）。
+
+/** 概念面：返回知识节点的概念坐标；无则空数组（不抛错，便于通用处理）。 */
+export function conceptFaceOf(node: KnowledgeNode | undefined): ConceptRef[] {
+  return node?.concepts ?? [];
+}
+
+/** 由作答信号（每题的 tests + score）聚合出每个概念的统计（滚动平均）。 */
+export function buildConceptStats(attempts: ConceptAttemptSignal[]): Record<string, ConceptStats> {
+  const out: Record<string, ConceptStats> = {};
+  for (const a of attempts) {
+    const s = out[a.concept] ?? { attempts: 0, avgScore: 0, bestScore: 0 };
+    s.attempts += 1;
+    s.avgScore = s.avgScore + (a.score - s.avgScore) / s.attempts;
+    s.bestScore = Math.max(s.bestScore, a.score);
+    out[a.concept] = s;
+  }
+  return out;
+}
+
+/** 加权覆盖率：已尝试（attempts>0）的概念 importance 之和 / 全部 importance 之和。 */
+export function computeConceptCoverage(
+  concepts: ConceptRef[],
+  stats: Record<string, ConceptStats>,
+): number {
+  let total = 0;
+  let covered = 0;
+  for (const c of concepts) {
+    total += c.importance;
+    const s = stats[c.id];
+    if (s && s.attempts > 0) covered += c.importance;
+  }
+  return total === 0 ? 0 : covered / total;
+}
+
+/** 概念掌握状态：unseen / weak(<60) / partial(<85) / strong(>=85)。unseen ≠ 0 分。 */
+export function getConceptStatus(stats?: ConceptStats): ConceptStatus {
+  if (!stats || stats.attempts === 0) return 'unseen';
+  if (stats.avgScore < 60) return 'weak';
+  if (stats.avgScore < 85) return 'partial';
+  return 'strong';
+}
+
+/** 覆盖缺口：从未被任何题触达的概念（attempts==0）。 */
+export function getCoverageGaps(
+  concepts: ConceptRef[],
+  stats: Record<string, ConceptStats>,
+): ConceptRef[] {
+  return concepts.filter((c) => {
+    const s = stats[c.id];
+    return !s || s.attempts === 0;
+  });
+}
+
+/**
+ * 概念优先级：importance × 需求度。
+ * - unseen：需求 1.0（最该考察）
+ * - 已测但弱/partial(<85)：需求 0.8（需巩固）
+ * - strong(>=85)：需求 0.1（已掌握，低优先）
+ */
+export function conceptPriority(concept: ConceptRef, stats?: ConceptStats): number {
+  if (!stats || stats.attempts === 0) return concept.importance * 1.0;
+  if (stats.avgScore < 85) return concept.importance * 0.8;
+  return concept.importance * 0.1;
+}
+
+/** 概念按优先级降序排列（下一步最该验证的排在最前）。 */
+export function rankConcepts(
+  concepts: ConceptRef[],
+  stats: Record<string, ConceptStats>,
+): ConceptRef[] {
+  return [...concepts].sort(
+    (a, b) => conceptPriority(b, stats[b.id]) - conceptPriority(a, stats[a.id]),
+  );
 }

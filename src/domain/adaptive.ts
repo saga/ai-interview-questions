@@ -6,10 +6,11 @@
 //   move-on    移动到未覆盖方向
 // 不依赖 React / LLM / 网络。
 
-import type { Difficulty, LearnerProfile, Question } from '../types';
+import type { ConceptRef, ConceptStats, Difficulty, LearnerProfile, Question, QuestionTest } from '../types';
 import { pickQuestions } from './quiz';
 import { prerequisiteClosure, relatedOf } from './conceptGraph';
 import { angleKey, recommendWeakTopics } from './learner';
+import { buildConceptStats, getConceptStatus, rankConcepts, type ConceptAttemptSignal } from './coverage';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -76,19 +77,132 @@ function pickLeastCovered(pool: Question[], profile: LearnerProfile | undefined,
   return pickQuestions(least, 1, rng)[0] ?? null;
 }
 
+// ── 概念优先抽题（Concept-coverage，PR1–PR4）──
+// 先在知识节点概念面里选出 "最该验证的 concept"，再找探测该 concept 的题；
+// 无对应概念题时回退到原有 topic/angle 自适应逻辑。四策略（deep-dive/gap-probe/
+// broaden/move-on）保留，作用对象从 topic 升级为 concept。
+
+/** 已作答题目（带 tests 与得分），用于派生概念统计。 */
+export interface AnsweredConceptSignal {
+  id: string;
+  tests?: QuestionTest[];
+  score: number;
+}
+
+/** 概念优先抽题所需的上下文：当前知识节点的概念面 + 已作答题目。 */
+export interface ConceptSelectionContext {
+  face: ConceptRef[];
+  answered: AnsweredConceptSignal[];
+}
+
+/** 选下一步最该验证的概念：按 conceptPriority 降序取首。 */
+export function selectNextConcept(
+  face: ConceptRef[],
+  stats: Record<string, ConceptStats>,
+): ConceptRef | null {
+  if (face.length === 0) return null;
+  return rankConcepts(face, stats)[0] ?? null;
+}
+
+/** 在候选池里找探测某 concept 的题：优先 primary，其次任意角色；未作答由调用方已排除。 */
+export function findQuestionForConcept(
+  conceptId: string,
+  pool: Question[],
+  rng: () => number,
+): Question | null {
+  const candidates = pool.filter((q) => (q.tests ?? []).some((t) => t.concept === conceptId));
+  if (candidates.length === 0) return null;
+  const primary = candidates.filter((q) => (q.tests ?? []).some((t) => t.concept === conceptId && t.role === 'primary'));
+  const chosen = primary.length > 0 ? primary : candidates;
+  return pickQuestions(chosen, 1, rng)[0] ?? null;
+}
+
+/** 概念优先抽题的结果：question 为 null 且 probeConceptId 存在时表示「该概念无题库题，需探针」。 */
+export interface ConceptPick {
+  question: Question | null;
+  strategy: Strategy;
+  selectedConcept?: string;
+  /** 概念被选中但其无对应题库题 → 调用方应据其生成临时探针题（PR6 Dynamic Probe）。 */
+  probeConceptId?: string;
+}
+
+/** 自适应选下一题的结果；probeConceptId 存在表示概念优先路径需要生成探针（question 为 null）。 */
+export interface AdaptivePick {
+  question: Question | null;
+  strategy: Strategy;
+  selectedConcept?: string;
+  probeConceptId?: string;
+}
+
+/** 概念优先抽题：返回概念优先结果；找不到概念题时按 allowProbe 决定「回退」或「发探针信号」。 */
+export function pickNextConceptAware(
+  pool: Question[],
+  signals: AnswerSignal[],
+  ctx: ConceptSelectionContext,
+  profile: LearnerProfile | undefined,
+  rng: () => number,
+  allowProbe = false,
+): ConceptPick | null {
+  const asked = new Set(ctx.answered.map((a) => a.id));
+  const poolUnasked = pool.filter((q) => !asked.has(q.id));
+  if (poolUnasked.length === 0) return null;
+
+  const stats = buildConceptStats(
+    ctx.answered.flatMap((a) =>
+      (a.tests ?? []).map((t): ConceptAttemptSignal => ({ concept: t.concept, score: a.score })),
+    ),
+  );
+  const target = selectNextConcept(ctx.face, stats);
+  if (!target) return pickNextAdaptive(poolUnasked, signals, profile, rng);
+
+  const q = findQuestionForConcept(target.id, poolUnasked, rng);
+  if (!q) {
+    // 概念被选中但无题库题：开 AI 时发探针信号（交由引擎生成临时题），否则回退原 topic/angle 逻辑
+    if (allowProbe) return { question: null, strategy: 'move-on', selectedConcept: target.id, probeConceptId: target.id };
+    return pickNextAdaptive(poolUnasked, signals, profile, rng);
+  }
+
+  // unseen → 新方向(move-on)；已测但未掌握 → 补弱(gap-probe)
+  const strategy: Strategy = getConceptStatus(stats[target.id]) === 'unseen' ? 'move-on' : 'gap-probe';
+  return { question: q, strategy, selectedConcept: target.id };
+}
+
 /**
  * 自适应选下一题：
  * @param pool 候选题池（调用方需已排除已问过的题）
  * @param signals 已答题的作答信号（按顺序）
  * @param profile 学习画像（可选，用于 move-on 时优先薄弱主题）
  * @param rng 可注入随机源（测试用）
+ * @param conceptCtx 可选的概念优先上下文；提供且能选出概念题时走 Concept-coverage 路径，否则回退原逻辑。
+ * @param allowProbe 是否允许「概念无题库题时发探针信号」（需上层有 LLM）；false 时回退到原自适应逻辑（向后兼容）。
  */
 export function pickNextAdaptive(
   pool: Question[],
   signals: AnswerSignal[],
   profile?: LearnerProfile,
   rng: () => number = Math.random,
-): { question: Question; strategy: Strategy } | null {
+  conceptCtx?: ConceptSelectionContext,
+  allowProbe = false,
+): AdaptivePick | null {
+  // 概念优先：若提供概念面且能选出概念题，则走概念优先路径（否则回退原有逻辑）
+  if (conceptCtx && conceptCtx.face.length > 0) {
+    const conceptPick = pickNextConceptAware(pool, signals, conceptCtx, profile, rng, allowProbe);
+    if (conceptPick) {
+      if (conceptPick.probeConceptId) {
+        return {
+          question: null,
+          strategy: conceptPick.strategy,
+          selectedConcept: conceptPick.selectedConcept,
+          probeConceptId: conceptPick.probeConceptId,
+        };
+      }
+      return {
+        question: conceptPick.question,
+        strategy: conceptPick.strategy,
+        selectedConcept: conceptPick.selectedConcept,
+      };
+    }
+  }
   if (pool.length === 0) return null;
 
   const first = signals.length === 0;

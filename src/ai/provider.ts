@@ -7,14 +7,18 @@
 import type {
   AIConfig,
   EvaluationResult,
+  GeneratedQuestion,
   GeneratedVariant,
+  KnowledgeNode,
   LLMProvider,
   OpenFormat,
   ProviderEntry,
   Question,
+  QuestionBlueprint,
   ScoringRubric,
 } from '../types';
 import { generateVariant } from './variant';
+import { generateQuestionForBlueprint } from './generateQuestion';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
@@ -74,6 +78,10 @@ export class PiAIProvider implements LLMProvider {
     return generateVariant(q, (system, user) => callLLM(this.entry, system, user));
   }
 
+  async generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion> {
+    return generateQuestionForBlueprint(blueprint, node, (system, user) => callLLM(this.entry, system, user));
+  }
+
   async evaluateOpenAnswer(
     q: Question,
     open: OpenFormat,
@@ -92,6 +100,10 @@ export class ChromeAIProvider implements LLMProvider {
 
   async generateVariant(q: Question): Promise<GeneratedVariant> {
     return generateVariant(q, chromeComplete);
+  }
+
+  async generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion> {
+    return generateQuestionForBlueprint(blueprint, node, chromeComplete);
   }
 
   async evaluateOpenAnswer(
@@ -129,6 +141,10 @@ export class FallbackProvider implements LLMProvider {
 
   generateVariant(q: Question): Promise<GeneratedVariant> {
     return this.run((p) => p.generateVariant(q));
+  }
+
+  generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion> {
+    return this.run((p) => p.generateQuestion(blueprint, node));
   }
 
   evaluateOpenAnswer(

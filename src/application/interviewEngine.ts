@@ -18,7 +18,18 @@ import { availableFormats, planComposition } from '../domain/quiz';
 import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
-import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/adaptive';
+import {
+  pickNextAdaptive,
+  type AnswerSignal,
+  type Strategy,
+  type ConceptSelectionContext,
+  type AnsweredConceptSignal,
+} from '../domain/adaptive';
+import { conceptFaceOf } from '../domain/coverage';
+import { buildQuestionFromGeneration } from '../domain/blueprint';
+import { buildProbeBlueprint, shouldPromoteProbe } from '../domain/probe';
+import { knowledgeNodes } from '../data/knowledgeMap';
+import type { ConceptRef } from '../types';
 import { interviewDefinitionSchema } from '../schemas/interview';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 
@@ -36,6 +47,38 @@ function effectiveFormats(def: InterviewDefinition, config?: AIConfig): FormatId
   if (config?.generateOpenQuestions) return base;
   const filtered = base.filter((f) => f !== 'open');
   return filtered.length > 0 ? filtered : ['choice'];
+}
+
+/**
+ * 由当前会话的题池话题 + 已答记录，派生概念优先抽题上下文（Concept-coverage 接线，PR1–PR4 落地）。
+ * - face：题池话题对应的知识节点概念面（仅 transformer 等已挂 concepts 的节点非空），
+ *   按概念 id 去重、importance 取较大者；无概念面时返回 null，调用方据此走原 topic/angle 路径。
+ * - answered：已问题目（按序）与其作答信号拼出，供 buildConceptStats 聚合概念掌握度。
+ */
+function buildConceptContext(
+  inScopeTopics: Set<string>,
+  session: InterviewSession,
+  signals: AnswerSignal[],
+): ConceptSelectionContext | null {
+  const nodeById = new Map(knowledgeNodes.map((n) => [n.id, n]));
+  const faceMap = new Map<string, ConceptRef>();
+  for (const topic of inScopeTopics) {
+    const node = nodeById.get(topic);
+    if (!node) continue;
+    for (const c of conceptFaceOf(node)) {
+      const existing = faceMap.get(c.id);
+      if (!existing || c.importance > existing.importance) faceMap.set(c.id, c);
+    }
+  }
+  if (faceMap.size === 0) return null;
+
+  const n = Math.min(session.questions.length, signals.length);
+  const answered: AnsweredConceptSignal[] = [];
+  for (let i = 0; i < n; i++) {
+    const sq = session.questions[i];
+    answered.push({ id: sq.question.id, tests: sq.question.tests, score: signals[i].score });
+  }
+  return { face: [...faceMap.values()], answered };
 }
 
 /**
@@ -85,6 +128,8 @@ async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvider | nul
  * 自适应模式的下一步：根据已答题的作答信号（主题/得分/难度），
  * 由概念图与迁移策略选出下一题（含变体处理与形态分配）；题池耗尽返回 null。
  * @param profile 学习画像（move-on 兜底时优先薄弱主题）
+ * @param config AI 配置（useAI 开启时用于变体与评分）
+ * @param providerOverride 注入 LLMProvider（测试用；缺省按 config 现建）
  */
 export async function nextAdaptiveStep(
   bank: QuestionBank,
@@ -92,29 +137,70 @@ export async function nextAdaptiveStep(
   signals: AnswerSignal[],
   profile?: LearnerProfile,
   config?: AIConfig,
-): Promise<{ question: SessionQuestion; strategy: Strategy } | null> {
+  providerOverride?: LLMProvider,
+): Promise<{ question: SessionQuestion; strategy: Strategy; probe?: { conceptId: string; promoted: boolean } } | null> {
   const def = session.definition;
   const formats = effectiveFormats(def, config);
   let pool = bank.questions;
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   pool = pool.filter((q) => availableFormats(q, formats).length > 0);
+  // 概念面取当前题池话题对应的知识节点（在此处、排除已问之前取，使 face 稳定代表会话概念范围）
+  const inScopeTopics = new Set(pool.map((q) => q.topic));
+  const conceptCtx = buildConceptContext(inScopeTopics, session, signals);
   const asked = new Set(session.questions.map((sq) => sq.question.id));
   pool = pool.filter((q) => !asked.has(q.id));
 
-  const picked = pickNextAdaptive(pool, signals, profile);
+  const picked = pickNextAdaptive(pool, signals, profile, undefined, conceptCtx ?? undefined, Boolean(providerOverride) || def.useAI);
   if (!picked || session.questions.length >= def.count) return null;
 
+  // PR6 Dynamic Probe：概念优先路径选中一个「无对应题库题」的 uncovered 概念时，
+  // 由 LLM 生成一道 transient 临时题来探测它；无 AI 或生成失败则回退到原自适应路径。
+  if (picked.probeConceptId) {
+    const node = knowledgeNodes.find((n) => conceptFaceOf(n).some((c) => c.id === picked.probeConceptId));
+    const concept = node?.concepts?.find((c) => c.id === picked.probeConceptId);
+    if (node && concept) {
+      const promoted = shouldPromoteProbe(picked.probeConceptId, session.questions.map((sq) => sq.question));
+      const provider = providerOverride ?? (def.useAI ? createLLMProvider(config) : null);
+      if (provider) {
+        try {
+          const bp = buildProbeBlueprint(concept, node);
+          const gen = await provider.generateQuestion(bp, node);
+          const probeQ = buildQuestionFromGeneration(gen, bp, `probe-${picked.probeConceptId}-${session.questions.length}`, {
+            transient: true,
+          });
+          const probeSq: SessionQuestion = { question: probeQ, format: probeQ.formats.choice ? 'choice' : 'open' };
+          return { question: probeSq, strategy: 'move-on', probe: { conceptId: picked.probeConceptId, promoted } };
+        } catch (err) {
+          console.warn('[Dynamic Probe] 生成临时题失败，回退到原自适应路径：', err);
+        }
+      }
+    }
+    // 无节点 / 无 provider / 生成失败 → 回退到非概念路径取任一 bank 题（向后兼容，无 AI 时不探针）
+    const fb = pickNextAdaptive(pool, signals, profile);
+    if (fb && fb.question) {
+      const target = toSessionQuestion(fb.question, formats);
+      const question = await finalizeQuestion(target, providerOverride ?? (def.useAI ? createLLMProvider(config) : null));
+      return { question, strategy: fb.strategy };
+    }
+    return null;
+  }
+
+  // 非探针路径：picked.question 必为非空（探针情形已在上方处理并返回/回退）
+  if (!picked.question) return null;
   // 自适应模式无组卷配额：按开放形态概率随机分配（与普通会话的 7:3 体验一致）；
   // generateOpenQuestions 关闭时 formats 不含 open，wantOpen 恒为 false
-  const avail = availableFormats(picked.question, formats);
-  const wantOpen =
-    avail.includes('open') && (!avail.includes('choice') || Math.random() < ADAPTIVE_OPEN_PROBABILITY);
-  const target: SessionQuestion = { question: picked.question, format: wantOpen ? 'open' : 'choice' };
-
+  const target = toSessionQuestion(picked.question, formats);
   const provider = def.useAI ? createLLMProvider(config) : null;
   const question = await finalizeQuestion(target, provider);
   return { question, strategy: picked.strategy };
+}
+
+/** 按会话允许形态分配本次呈现形态（自适应无组卷配额，按 7:3 开放概率随机）。 */
+function toSessionQuestion(q: SessionQuestion['question'], formats: FormatId[]): SessionQuestion {
+  const avail = availableFormats(q, formats);
+  const wantOpen = avail.includes('open') && (!avail.includes('choice') || Math.random() < ADAPTIVE_OPEN_PROBABILITY);
+  return { question: q, format: wantOpen ? 'open' : 'choice' };
 }
 
 /**

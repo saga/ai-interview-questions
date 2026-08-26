@@ -2,6 +2,35 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-042 · Concept-coverage：把抽题从"选哪道题"升级为"先选最该验证哪个概念"
+
+**状态**：已落地（PR0 试点 + PR1–PR4 实现 + 引擎接线 + PR5 概念蓝图生成 + PR6 Dynamic Probe，2026-08-26）
+
+**背景**：题库题量增长不等于知识覆盖增长。PR0 试点证明：transformer 主题 43 道题只触达 8/10 概念面，且概念跨 topic 泄漏（kv-cache 在 `transformer.json` 0 题、却在 `model-architecture`/`inference` 大量存在）。需要一层"概念覆盖坐标系"，让抽题先选概念再找题。
+
+**核心决策**：
+1. **概念是独立覆盖层，不强制与知识节点一一对应**（PR0 洞察 #4）。`KnowledgeNode.concepts[]`（`{id,title,importance}`）即概念面；`Question.tests[]`（`{concept, role: primary|supporting}`）声明题探测了哪些概念。两者通过概念 id 关联，概念 id 不要求存在同名知识节点。
+2. **PR1 范围调整（与原始 action list 偏离，刻意为之）**：原计划"把 ffn / residual-normalization / causal-mask / training-objective 升为正式知识节点"被**有意放弃**——它会触发 `knowledge.test.ts` 的"无悬空节点"不变量（每个节点 id 必须作为某题 topic 存在）失败，且违背上述洞察。这 4 个概念已作为概念面存在于 transformer 节点，无需成为知识节点。
+3. **tests 约束**：每题 `tests` ≤ 3 个概念，primary 唯一（避免"一题测 10 概念"导致无法定位弱点）。由 `scripts/validate-questions.ts`（`npm run validate:questions`）校验。
+4. **PR3 纯函数**（`src/domain/coverage.ts`）：`buildConceptStats` / `computeConceptCoverage`（加权）/ `getConceptStatus`（unseen/weak/partial/strong，unseen≠0 分）/ `getCoverageGaps` / `conceptPriority` / `rankConcepts`。不改动既有 topic×angle 覆盖。
+5. **PR4 概念优先抽题**（`src/domain/adaptive.ts`）：新增 `selectNextConcept → findQuestionForConcept` 与 `pickNextConceptAware`；`pickNextAdaptive` 增加可选 `conceptCtx` 参数，提供概念面时走概念优先路径，否则回退原 topic/angle 逻辑。deep-dive/gap-probe/broaden/move-on 四策略保留，作用对象从 topic 升级为 concept。unseen 概念 → move-on，已测未掌握 → gap-probe。
+6. **未做（避免过度设计）**：Facet（概念×角度）、BKT/IRT、prerequisite 图留待 V2；LearnerProfile 暂不持久化 concept 级统计（由 session 历史派生即可）。
+   **引擎接线（已完成，2026-08-26）**：`nextAdaptiveStep`（`src/application/interviewEngine.ts`）现在会在每步根据当前题池话题取对应知识节点概念面构建 `ConceptSelectionContext`（`face` 取自 `knowledgeNodes` 中 `concepts[]` 非空节点，按概念 id 去重取较大 importance；`answered` 由已问题目按序与其作答信号对齐拼出），并传给 `pickNextAdaptive` 的 `conceptCtx`。无概念面时 `conceptCtx` 为 `null`，`pickNextAdaptive` 自动回退原 topic/angle 路径——**默认路径对无概念节点的会话完全不变**。当前仅 `transformer` 节点挂有概念面，故概念优先抽题已对 transformer 会话生效；向其它高频节点（如 `rag`/`agent-fundamentals`）推广概念面即可自然扩展。
+
+**PR5 · 生成管线前移为 Blueprint（concepts → blueprint → question → tests）**：
+- **决策**：复用并扩展 `src/domain/blueprint.ts`。生成从"直接让 LLM 出 5 道题"前移为：先锁定要验证的概念 → 生成受约束的 `QuestionBlueprint`（concept + purpose + difficulty + format）→ 再据蓝图出题 → 映射回 `tests`。禁止"无蓝图盲生成"。
+- **确定性函数**（纯、可单测、可审查）：`blueprintFromConcept(concept, node, opts)`（以概念为主、同节点其它概念为支撑，expectedConcepts ≤3）、`conceptBlueprintsFromGaps(face, gaps, nodes, opts)`（**均衡**——每个概念最多 `maxPerConcept`=1 张蓝图，从源头消灭"5 题全问同一概念"）、`testsFromBlueprint(bp)`、`buildQuestionFromGeneration(gen, bp, id, opts)`（LLM 输出 → 正式 `Question`，可标 `transient`）。
+- **LLM 生成**（`src/ai/generateQuestion.ts`，PR5/PR6 共用）：`generateQuestionForBlueprint(bp, node, complete)` —— 在蓝图约束内生成 self-contained 新题，输出经 `assembleGeneratedQuestion` 规范化（缺 tests 时回退蓝图映射）。`LLMProvider` 接口新增 `generateQuestion(bp, node)`，由 `PiAIProvider`/`ChromeAIProvider`/`FallbackProvider` 实现（沿用 `callLLM`/`chromeComplete` 适配，降级链自动生效）。
+- **离线入口**：`scripts/generate-concept-questions.ts`（`npm run generate:concept-questions -- --node <id> --count <n>`）取节点概念面 → 用其题库题 `tests` 算覆盖缺口 → 产出可审查的均衡蓝图 JSON（含 purpose 与 expectedConcepts）。实跑 transformer 节点：10 概念面 / 12 本节点题 / 5 未覆盖概念 → 5 张均衡蓝图（multi-head-attention / kv-cache / training-objective / ffn / flash-attention 各 1 张）。
+
+**PR6 · Dynamic Probe（运行时按需生成临时题）**：
+- **决策**：当概念优先路径选中一个「无对应题库题」的 uncovered 概念时（`findQuestionForConcept` 返回 null），由 LLM 生成一道 **transient 临时题**（`Question.transient=true`，不经 `QuestionSource` 持久化、不计入题库统计）探测它；作答后该概念被会话历史记入，概念统计自动回写（见 `buildConceptContext`）。无 AI 或生成失败时**回退**到原 topic/angle 路径，行为完全向后兼容。
+- **信号传递**：`pickNextConceptAware` 新增 `allowProbe` 参数——开 AI 时（引擎传 `allowProbe = Boolean(providerOverride) || def.useAI`）无概念题则返回 `{ question: null, probeConceptId }`；`pickNextAdaptive` 透传该信号。`nextAdaptiveStep` 据此调 `provider.generateQuestion(bp, node)` 组装探针题；并新增可选 `providerOverride` 测试接缝。
+- **探针晋升（题库自演化）**：`src/domain/probe.ts` 纯函数 `probeFrequency` / `shouldPromoteProbe`（阈值 `PROBE_PROMOTION_THRESHOLD=3`）统计同一概念被探针反复探测的次数——达阈值即视为真实、值得补成正式题的缺口，引擎在返回时带上 `probe: { conceptId, promoted }` 信号，供上层决定把该蓝图送交 curated 题库生产管线。
+- **关键不变量**：探针题带 `transient` 且 `tests` primary 命中目标概念，因此 `getCoverageGaps` 在作答后不再把它当 uncovered，且 `validate:questions` 不强制 transient 题（持久化检查只对正式题库生效）。
+
+**与既有 ADR 的关系**：ADR-040（确定性策略核心）的"coverage 是核心 signal 之一"在此落地为概念级；ADR-041（课程管线）复用了 `Question.tests` 的前瞻字段与 `validate:questions` 思路。
+
 ## ADR-041 · Course Question Bank 独立管线 + QuestionSource 接缝（前瞻设计，尚未实现课程来源）
 
 - 状态：已采纳（前瞻/骨架）· 2026-08-25
