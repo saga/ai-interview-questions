@@ -56,10 +56,12 @@ export function createAgentSession(): InterviewAgentSession {
 export interface AgentHandlers {
   /** 每个 AgentEvent（turn_end / tool_execution_* / message_update 等）。 */
   onEvent?: (event: unknown, signal: AbortSignal) => void;
-  /** 当前题变化（getQuestion 后）。 */
+  /** 当前题变化（getQuestion 或兜底交付后）。 */
   onQuestion?: (q: SessionQuestion | null) => void;
   /** 状态变化（finished 后）。 */
   onStatus?: (status: AgentStatus) => void;
+  /** 运行期错误/自愈提示：fatal=true 为致命（应阻塞并 setError），否则为可恢复告警（如已兜底出题）。 */
+  onError?: (message: string, fatal?: boolean) => void;
 }
 
 /** 计算已评分题数（用于「题数上限」停止条件）。 */

@@ -1,11 +1,13 @@
-import { Alert, Button, Card, Typography, Space, App as AntdApp } from 'antd';
-import { UndoOutlined, SaveOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Collapse, Divider, Empty, List, Popconfirm, Tag, Typography, Space, App as AntdApp } from 'antd';
+import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import type { AIConfig } from '../../types';
 import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
 import { DEFAULT_LOCAL_BASE_URL } from '../../ai/local';
 import { DEFAULT_CONFIG, parseConfigJSON, stringifyConfig } from '../../storage/settings';
 import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
+import { getErrorLogs, clearErrorLogs, type ErrorLogEntry } from '../../storage/db';
+import { resetLearnerData } from '../../storage/learner';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
 
@@ -26,12 +28,25 @@ const AVAILABILITY_TEXT: Record<ChromeAvailability, { type: 'success' | 'warning
 interface Props {
   config: AIConfig;
   onSave: (c: AIConfig) => void;
+  /** 重置学习数据后回调，用于父组件把内存中的画像同步回空画像。 */
+  onResetLearner?: () => void;
 }
 
-export default function SettingsPanel({ config, onSave }: Props) {
+export default function SettingsPanel({ config, onSave, onResetLearner }: Props) {
   const { message } = AntdApp.useApp();
   const [text, setText] = useState(() => stringifyConfig(config));
   const [availability, setAvailability] = useState<ChromeAvailability | null>(null);
+  const [logs, setLogs] = useState<ErrorLogEntry[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+
+  const loadLogs = async () => {
+    setLogsLoading(true);
+    try {
+      setLogs(await getErrorLogs(100));
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   useEffect(() => {
     let alive = true;
@@ -134,6 +149,110 @@ export default function SettingsPanel({ config, onSave }: Props) {
           保存设置
         </Button>
       </Space>
+      <Divider />
+      <Space style={{ width: '100%', justifyContent: 'space-between', alignItems: 'center' }} wrap>
+        <div>
+          <Typography.Text strong>学习数据</Typography.Text>
+          <div>
+            <Typography.Text type="secondary">
+              清空所有练习记录、掌握度与薄弱项，回到首次使用的干净状态（Agent 面试将重新随机探索）。不可撤销。
+            </Typography.Text>
+          </div>
+        </div>
+        <Popconfirm
+          title="确认清空全部学习数据？"
+          description="将删除所有练习记录、掌握度与薄弱项，无法恢复。"
+          okText="清空"
+          cancelText="取消"
+          okButtonProps={{ danger: true }}
+          onConfirm={async () => {
+            await resetLearnerData();
+            onResetLearner?.();
+            message.success('学习数据已重置');
+          }}
+        >
+          <Button danger icon={<ClearOutlined />}>
+            重置学习数据
+          </Button>
+        </Popconfirm>
+      </Space>
+      <Collapse
+        style={{ marginTop: 16 }}
+        items={[
+          {
+            key: 'diag',
+            label: `错误日志（诊断回溯，仅本机）${logs.length ? ` · ${logs.length} 条` : ''}`,
+            children: (
+              <div>
+                <Space style={{ marginBottom: 12 }}>
+                  <Button
+                    size="small"
+                    onClick={async () => {
+                      await loadLogs();
+                      message.success('已刷新');
+                    }}
+                  >
+                    刷新
+                  </Button>
+                  <Button
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={async () => {
+                      await clearErrorLogs();
+                      setLogs([]);
+                      message.success('已清空错误日志');
+                    }}
+                  >
+                    清空
+                  </Button>
+                </Space>
+                {logsLoading ? (
+                  <Typography.Text type="secondary">加载中…</Typography.Text>
+                ) : logs.length === 0 ? (
+                  <Empty description="暂无记录" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                ) : (
+                  <List
+                    size="small"
+                    dataSource={logs}
+                    renderItem={(item) => (
+                      <List.Item style={{ display: 'block' }}>
+                        <Space size={8} wrap>
+                          <Tag color="red">{item.scope}</Tag>
+                          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                            {new Date(item.createdAt).toLocaleString()}
+                          </Typography.Text>
+                        </Space>
+                        <div style={{ marginTop: 4 }}>{item.message}</div>
+                        {item.detail != null && (
+                          <pre
+                            style={{
+                              margin: '6px 0 0',
+                              padding: 8,
+                              background: '#f5f5f5',
+                              borderRadius: 6,
+                              fontSize: 12,
+                              maxHeight: 200,
+                              overflow: 'auto',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                            }}
+                          >
+                            {JSON.stringify(item.detail, null, 2)}
+                          </pre>
+                        )}
+                      </List.Item>
+                    )}
+                  />
+                )}
+              </div>
+            ),
+          },
+        ]}
+        onChange={(keys) => {
+          if (Array.isArray(keys) && keys.includes('diag')) void loadLogs();
+        }}
+      />
     </Card>
   );
 }

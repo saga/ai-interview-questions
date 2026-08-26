@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
-import { loadLearner, saveLearner } from './learner';
+import { loadLearner, saveLearner, resetLearnerData } from './learner';
 import { emptyProfile, updateLearner, sessionFromQuiz } from '../domain/learner';
 import type { LearnerProfile, SessionRecord } from '../types';
 
@@ -30,6 +30,19 @@ describe('storage/learner (IndexedDB)', () => {
   it('空库 loadLearner 返回 emptyProfile', async () => {
     const p = await loadLearner();
     expect(p).toEqual(emptyProfile());
+  });
+
+  it('resetLearnerData 清空画像与会话，回到 emptyProfile', async () => {
+    const base = emptyProfile();
+    const profile = updateLearner(base, mkRecord({ startedAt: 1000, overall: 70 }));
+    await saveLearner(profile);
+    expect((await loadLearner()).totalSessions).toBe(1);
+
+    await resetLearnerData();
+    const after = await loadLearner();
+    expect(after).toEqual(emptyProfile());
+    expect(after.totalSessions).toBe(0);
+    expect(Object.keys(after.topicStats)).toHaveLength(0);
   });
 
   it('save → load 往返保持画像与 sessions（且 sessions 在前序新→旧）', async () => {

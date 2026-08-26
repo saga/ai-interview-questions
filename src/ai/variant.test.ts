@@ -51,4 +51,18 @@ describe('generateVariant', () => {
     expect(out.question).toBe('变体题干');
     expect(out.explanation).toBeUndefined();
   });
+
+  it('选项长度泄题时一次性重试并采用修正版', async () => {
+    const complete = vi.fn(async () => {
+      if (complete.mock.calls.length === 1) {
+        // 第一次：正确项（index1）极长，触发长度泄题
+        return `{"question":"biased","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
+      }
+      return '{"question":"fixed","options":["a","b","c","d"],"answer":[1],"explanation":"e"}';
+    });
+    const out = await generateVariant(BASE, complete);
+    expect(complete).toHaveBeenCalledTimes(2);
+    expect(out.question).toBe('fixed');
+    expect(out.options).toEqual(['a', 'b', 'c', 'd']);
+  });
 });

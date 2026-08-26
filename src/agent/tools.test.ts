@@ -102,6 +102,17 @@ describe('createAgentTools', () => {
     expect(d.session.currentQuestion).toBeNull();
   });
 
+  it('getQuestion 传入 topic 而非 id 时按主题兜底选题（修复 D）', async () => {
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    // LLM 把 topic('attention') 当题号传入——应退化为该主题下一道题，而非 not_found
+    const r = await getQ.execute('call', { id: 'attention' });
+    expect((r.details as { error?: string }).error).toBeUndefined();
+    expect(d.session.currentQuestion?.question.id).toBe('q-choice-1');
+    expect((r.details as { matchedBy?: string }).matchedBy).toBe('topic');
+  });
+
   it('evaluateAnswer（选择题正确）返回 100 分且 gaps 为空（不伪造 gap）', async () => {
     const d = deps([makeChoiceQuestion()]);
     d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };

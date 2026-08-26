@@ -3,6 +3,7 @@
 
 import type { CompleteFn, GeneratedVariant, Question } from '../types';
 import { requiredPointsFor } from '../domain/knowledge';
+import { detectOptionLengthBias } from '../domain/bias';
 import { extractJSON } from './pi';
 
 const VARIANT_SYSTEM = `你是一位资深 AI 技术面试官。
@@ -25,6 +26,11 @@ const VARIANT_SYSTEM = `你是一位资深 AI 技术面试官。
 - 选项的表达与错误选项（distractors）
 - 解析的表达方式与切入角度
 
+【选项设计约束】
+- 各选项在篇幅长度与工程细节丰富度上必须保持均衡：干扰项（错误选项）须具备与正确选项同等的描述细致度。
+- 禁止通过“某选项明显更长 / 更详细 / 更啰嗦”来暗示或泄露正确答案；正确项不应系统性地比干扰项更长。
+- 生成后请自检：最长选项是否恰好是正确项、平均正确项长度是否显著高于干扰项，若是则重排或压缩正确项的表达。
+
 你应该尽量生成与原题在表达和场景上明显不同的题目，而不是只替换几个词。
 如果原题是选择题，可以重新设计所有选项，包括错误选项，但正确选项必须与知识契约中的正确结论保持语义一致。
 
@@ -40,8 +46,14 @@ interface RawVariant {
   explanation?: string;
 }
 
-/** 生成变体候选；输出包含题干/选项/答案/解析（后三者仅选择题需要）。 */
-export async function generateVariant(q: Question, complete: CompleteFn): Promise<GeneratedVariant> {
+interface RawVariant {
+  question?: string;
+  options?: string[];
+  answer?: number[];
+  explanation?: string;
+}
+
+function buildUser(q: Question): string {
   const contract = {
     topic: q.topic,
     tags: q.tags,
@@ -58,7 +70,7 @@ export async function generateVariant(q: Question, complete: CompleteFn): Promis
     referenceAnswer: q.formats.open?.referenceAnswer,
   };
 
-  const user = `【知识契约】
+  return `【知识契约】
 ${JSON.stringify(contract, null, 2)}
 
 【原题】
@@ -80,12 +92,35 @@ ${JSON.stringify(original, null, 2)}
 - answer: 正确选项索引数组（选择题必选）
 - explanation: 解析
 示例：{"question":"...","options":["...","...","...","..."],"answer":[1],"explanation":"..."}`;
+}
 
-  const out = extractJSON<RawVariant>(await complete(VARIANT_SYSTEM, user));
+function toGeneratedVariant(q: Question, out: RawVariant): GeneratedVariant {
   return {
     question: out.question ?? q.question,
     options: out.options,
     answer: out.answer,
     explanation: out.explanation,
   };
+}
+
+/** 生成变体候选；输出包含题干/选项/答案/解析（后三者仅选择题需要）。 */
+export async function generateVariant(q: Question, complete: CompleteFn): Promise<GeneratedVariant> {
+  const user = buildUser(q);
+  const out = extractJSON<RawVariant>(await complete(VARIANT_SYSTEM, user));
+
+  // 抗暗示（anti-cueing）自愈：若 LLM 生成的选项存在长度泄题，一次性重试修正，
+  // 避免把「正确项明显更长 / 干扰项过短」的偏差写进变体（traditional 启发式 + prompt 微调）。
+  const biased =
+    Array.isArray(out.options) &&
+    Array.isArray(out.answer) &&
+    detectOptionLengthBias(out.options, out.answer).biased;
+  if (biased) {
+    const retryUser =
+      user +
+      '\n\n【修正】上一版选项中存在长度泄题（正确项明显长于干扰项，或某干扰项过短），' +
+      '请重新生成：确保各选项篇幅长度与工程细节丰富度均衡，不要通过长度暗示正确答案。';
+    const fixed = extractJSON<RawVariant>(await complete(VARIANT_SYSTEM, retryUser));
+    return toGeneratedVariant(q, fixed);
+  }
+  return toGeneratedVariant(q, out);
 }

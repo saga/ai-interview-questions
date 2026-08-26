@@ -52,6 +52,18 @@ export async function saveLearner(p: LearnerProfile): Promise<void> {
   });
 }
 
+/**
+ * 清空全部学习数据（画像 + 会话历史），回到首次使用的干净状态。
+ * 用于「重置学习数据」：让用户随时丢弃陈旧/测试遗留画像，
+ * 使 Agent 面试等依赖 LearnerProfile 的功能重新从空白起步（随机探索）。
+ */
+export async function resetLearnerData(): Promise<void> {
+  await db.transaction('rw', db.learner, db.sessions, async () => {
+    await db.learner.clear();
+    await db.sessions.clear();
+  });
+}
+
 // ── IndexedDB 索引查询 API（喂给进度页 / Agent 上下文，直接命中 Dexie 索引） ──
 
 /** 最近 N 次会话（按 startedAt 倒序，直接命中 startedAt 索引）。 */

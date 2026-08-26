@@ -7,7 +7,7 @@
 
 import { Type } from 'typebox';
 import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core';
-import type { EvaluationResult, LearnerProfile, LLMProvider, Question, SessionQuestion } from '../types';
+import type { AnswerValue, EvaluationResult, LearnerProfile, LLMProvider, Question, SessionQuestion } from '../types';
 import { availableFormats } from '../domain/quiz';
 import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
 import { recommendWeakTopics, weakAnglesOf } from '../domain/learner';
@@ -66,6 +66,29 @@ function toSummary(q: Question) {
 }
 
 /**
+ * 评估「当前题」的用户作答（与 evaluateAnswer 工具共用，便于兜底模式复用）：
+ * 选择题走确定性 gradeChoice；开放题委托 LLMProvider.evaluateOpenAnswer。
+ * 开放题评分失败（无 key / 网络）会向上抛错，调用方决定是记 null 还是提示。
+ */
+export async function evaluateSessionQuestion(
+  sq: SessionQuestion,
+  answer: AnswerValue | undefined,
+  provider: LLMProvider,
+): Promise<EvaluationResult> {
+  const baseRubric = sq.question.rubric?.dimensions
+    ? { ...DEFAULT_RUBRIC, ...sq.question.rubric.dimensions }
+    : DEFAULT_RUBRIC;
+  if (sq.format === 'choice') {
+    const cf = sq.question.formats.choice!;
+    const selected = Array.isArray(answer) ? (answer as number[]) : [];
+    return gradeChoice(cf, selected, baseRubric);
+  }
+  const open = sq.question.formats.open!;
+  const userAnswer = typeof answer === 'string' ? answer : '';
+  return provider.evaluateOpenAnswer(sq.question, open, userAnswer, baseRubric);
+}
+
+/**
  * 创建 Agent 工具集（最小垂直切片：5 个）。
  * 每个工具的 execute 都是「薄包装」：读 session / 调 domain，再写回 session，返回可读结果。
  */
@@ -98,13 +121,23 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const getQuestion: AgentTool<typeof GetQuestionSchema> = {
     name: 'getQuestion',
     label: '选定题目',
-    description: '按题目 id 把某道题置为「当前题」并呈现给用户。可选 format 指定本次呈现形态（choice/open），缺省按题目可用形态优先 choice。',
+    description: '按题目 id 把某道题置为「当前题」并呈现给用户。可选 format 指定本次呈现形态（choice/open），缺省按题目可用形态优先 choice。若传入的是 topic/category 而非题号，则退化为该范围下一道未问的题。',
     parameters: GetQuestionSchema,
     execute: async (_id, params: GetQuestionParams) => {
-      const q = byId.get(params.id);
+      let q = byId.get(params.id);
+      let matchedBy: 'id' | 'topic' = 'id';
+      if (!q) {
+        // 容错（修复 D）：LLM 可能把 topic/category 当题号传入——退化为该范围下一道未问的题，避免 not_found 致卡死
+        const byTopic = bank.filter((x) => x.topic === params.id || x.category === params.id);
+        const unasked = byTopic.filter(
+          (x) => !session.answers[x.id] && !session.evaluations[x.id] && session.currentQuestion?.question.id !== x.id,
+        );
+        q = unasked[0] ?? byTopic[0];
+        if (q) matchedBy = 'topic';
+      }
       if (!q) {
         session.log.push({ at: Date.now(), kind: 'tool', tool: 'getQuestion', summary: `未找到 ${params.id}`, details: { id: params.id } });
-        return textResult(`未找到题目 ${params.id}`, { error: 'not_found', id: params.id });
+        return textResult(`未找到题目 ${params.id}（请使用 searchQuestions 返回的真实题号）`, { error: 'not_found', id: params.id });
       }
       const available = availableFormats(q, []);
       const fmt =
@@ -120,9 +153,12 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         kind: 'tool',
         tool: 'getQuestion',
         summary: `选题 ${q.id}（${fmt}）`,
-        details: { id: q.id, format: fmt },
+        details: { id: q.id, format: fmt, matchedBy },
       });
-      return textResult(`已选定题目 ${q.id}（${fmt}），请呈现给用户`, { id: q.id, format: fmt });
+      return textResult(
+        `已选定题目 ${q.id}（${fmt}）${matchedBy === 'topic' ? '（按主题匹配）' : ''}，请呈现给用户`,
+        { id: q.id, format: fmt, matchedBy },
+      );
     },
   };
 
@@ -138,30 +174,22 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         return textResult('当前没有进行中的题目，无法评估', { error: 'no_current_question' });
       }
       const qid = sq.question.id;
-      const answer = session.answers[qid];
-      const baseRubric = sq.question.rubric?.dimensions
-        ? { ...DEFAULT_RUBRIC, ...sq.question.rubric.dimensions }
-        : DEFAULT_RUBRIC;
-
-      let result: EvaluationResult;
-      if (sq.format === 'choice') {
-        const cf = sq.question.formats.choice!;
-        const selected = Array.isArray(answer) ? (answer as number[]) : [];
-        result = gradeChoice(cf, selected, baseRubric);
-      } else {
-        const open = sq.question.formats.open!;
-        const userAnswer = typeof answer === 'string' ? answer : '';
-        result = await provider.evaluateOpenAnswer(sq.question, open, userAnswer, baseRubric);
+      try {
+        const result = await evaluateSessionQuestion(sq, session.answers[qid], provider);
+        session.evaluations[qid] = result;
+        session.log.push({
+          at: Date.now(),
+          kind: 'tool',
+          tool: 'evaluateAnswer',
+          summary: `评分 ${result.overall} 分`,
+          details: { id: qid, overall: result.overall },
+        });
+        return textResult(`评估完成：综合 ${result.overall} 分`, result);
+      } catch (err) {
+        session.evaluations[qid] = null;
+        session.log.push({ at: Date.now(), kind: 'tool', tool: 'evaluateAnswer', summary: '评估失败', details: { error: String(err) } });
+        return textResult('评估失败（开放题评分缺少可用引擎）', { error: 'evaluation_failed' });
       }
-      session.evaluations[qid] = result;
-      session.log.push({
-        at: Date.now(),
-        kind: 'tool',
-        tool: 'evaluateAnswer',
-        summary: `评分 ${result.overall} 分`,
-        details: { id: qid, overall: result.overall },
-      });
-      return textResult(`评估完成：综合 ${result.overall} 分`, result);
     },
   };
 

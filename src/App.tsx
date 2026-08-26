@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Typography, Button, Space, Spin, App as AntdApp, Progress, Tag, Menu, Alert } from 'antd';
 import {
   SettingOutlined,
@@ -40,6 +41,13 @@ import CopilotSidebar from './components/copilot/CopilotSidebar';
 type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
 type Phase = 'home' | 'quiz' | 'result';
 
+const VALID_PAGES: Page[] = ['train', 'progress', 'interview', 'settings', 'agent'];
+/** 由 URL pathname 派生当前页面；未知路径回退训练首页。 */
+function pageFromPath(pathname: string): Page {
+  const seg = pathname.split('/').filter(Boolean)[0] ?? '';
+  return (VALID_PAGES as string[]).includes(seg) ? (seg as Page) : 'train';
+}
+
 /** 作答非空判定（选择题至少选一项，开放题至少有内容）。 */
 function hasAnswerValue(v?: AnswerValue): boolean {
   if (v == null) return false;
@@ -80,7 +88,10 @@ export default function App() {
   // profile 初始为 null：Learner 画像现改为异步从 IndexedDB 加载（迁移见 storage/learner.ts）
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [page, setPage] = useState<Page>('train');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const page = pageFromPath(location.pathname);
+  const goPage = (p: Page) => navigate(p === 'train' ? '/train' : `/${p}`);
   const [phase, setPhase] = useState<Phase>('home');
   const [session, setSession] = useState<InterviewSession | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
@@ -255,7 +266,7 @@ export default function App() {
     setStrategies([]);
     signalsRef.current = [];
     setPhase('home');
-    setPage('train');
+    goPage('train');
   };
 
   // 启动：异步加载 Learner 画像（IndexedDB），加载完成后解除加载态。
@@ -301,6 +312,11 @@ export default function App() {
     return () => clearInterval(id);
   }, [phase, timeLimitSec, sessionStartedAt, doSubmit, message]);
 
+  // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
+  if (location.pathname === '/' || location.pathname === '') {
+    return <Navigate to="/train" replace />;
+  }
+
   return (
     <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Layout.Header
@@ -327,7 +343,7 @@ export default function App() {
               type={configReady ? 'text' : 'primary'}
               size="small"
               icon={configReady ? <CheckCircleFilled style={{ color: '#52c41a' }} /> : <SettingOutlined />}
-              onClick={() => setPage('settings')}
+              onClick={() => goPage('settings')}
             >
               {configReady ? 'AI ✓' : 'AI 未配置'}
             </Button>
@@ -348,7 +364,7 @@ export default function App() {
           mode="horizontal"
           selectedKeys={[page]}
           items={NAV_ITEMS}
-          onClick={(e) => setPage(e.key as Page)}
+          onClick={(e) => goPage(e.key as Page)}
           style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
         />
       )}
@@ -379,14 +395,14 @@ export default function App() {
                     config={config}
                     profile={displayedProfile}
                     onStart={handleStart}
-                    onGoSettings={() => setPage('settings')}
+                    onGoSettings={() => goPage('settings')}
                   />
                 )}
 
                 {phase === 'home' && page === 'progress' && (
                   <ProgressPage
                     profile={displayedProfile}
-                    onGoTrain={() => setPage('train')}
+                    onGoTrain={() => goPage('train')}
                     coverage={computeCoverage(collectTopicRefs(bank.questions), displayedProfile)}
                     suggestions={suggestNextTopics(collectTopicRefs(bank.questions), displayedProfile)}
                   />
@@ -397,12 +413,16 @@ export default function App() {
                     config={config}
                     profile={displayedProfile}
                     onStart={handleStart}
-                    onGoSettings={() => setPage('settings')}
+                    onGoSettings={() => goPage('settings')}
                   />
                 )}
 
                 {phase === 'home' && page === 'settings' && (
-                  <SettingsPanel config={config} onSave={handleSaveConfig} />
+                  <SettingsPanel
+                    config={config}
+                    onSave={handleSaveConfig}
+                    onResetLearner={() => setProfile(emptyProfile())}
+                  />
                 )}
 
                 {phase === 'home' && page === 'agent' && (
@@ -410,8 +430,8 @@ export default function App() {
                     config={config}
                     profile={displayedProfile}
                     onComplete={handleAgentComplete}
-                    onGoSettings={() => setPage('settings')}
-                    onGoProgress={() => setPage('progress')}
+                    onGoSettings={() => goPage('settings')}
+                    onGoProgress={() => goPage('progress')}
                   />
                 )}
 

@@ -203,4 +203,61 @@ describe('createInterviewAgent 完整 loop', () => {
     expect(session.evaluations['q-open-1']!.overall).toBe(50); // 委托 fake provider
     expect(Object.keys(session.evaluations).length).toBe(2);
   });
+
+  it('Agent 首轮文本收尾未选题 → 确定性兜底交付首题（修复 A/C）', async () => {
+    const bank = [choiceQuestion()]; // 单题题库：兜底必选 q-choice-1（避免随机性）
+    const provider = fakeProvider();
+    const session = createAgentSession();
+    // LLM 只回了一句文本，没有调用 getQuestion → 历史上会卡在「选题中」
+    const streamFn = makeMockStreamFn([makeMsg([{ type: 'text', text: '我先看看你的薄弱点…' }], 'stop')]);
+
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    // 兜底应已交付一道来自题库的题，而非无限「选题中」
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+    // 兜底接管后，自驱评估当前题（选择题确定性判分）
+    await handle.submitAnswer([0]);
+    expect(session.evaluations['q-choice-1']).toBeDefined();
+    expect(session.evaluations['q-choice-1']!.overall).toBe(100);
+    // 题库已空 → 兜底优雅收尾（无更多题可出）
+    expect(Object.keys(session.evaluations).length).toBe(1);
+  });
+
+  it('Agent 中段 stall（评完 q1 却不再选 q2）→ 兜底补出 q2（修复 A/C）', async () => {
+    const bank = [choiceQuestion(), openQuestion()];
+    const provider = fakeProvider();
+    const session = createAgentSession();
+    // 选 q1 → 文本 → 评 q1 → 文本收尾（不调 getQuestion q2）
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请回答。' }], 'stop'),
+      makeMsg([{ type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '好的。' }], 'stop'),
+    ]);
+
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+
+    await handle.submitAnswer([0]);
+    // q1 已评，且兜底补出了 q2（q-open-1），而非卡死
+    expect(session.evaluations['q-choice-1']!.overall).toBe(100);
+    expect(session.currentQuestion?.question.id).toBe('q-open-1');
+  });
 });

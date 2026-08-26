@@ -146,13 +146,22 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
       provider,
       handlers: {
         onQuestion: (q) => {
-          if (!q) return;
+          if (!q) {
+            // 修复 F：getQuestion 未交付题（id 错/已结束）不应静默吞掉，至少留痕便于排查
+            console.warn('[Agent] getQuestion 未交付题目（id 错误或 run 已结束）');
+            return;
+          }
           setCurrentQuestion(q);
           setAnswer(emptyAnswer(q));
           syncQuestions(q);
         },
         onStatus: (status) => {
           if (status === 'finished') finalize();
+        },
+        onError: (msg, fatal) => {
+          // 修复 B：流式错误/自愈提示——致命则阻塞报错，可恢复则轻量告警（兜底已接续出题）
+          if (fatal) setError(msg);
+          else message.warning(msg);
         },
         onEvent: (event: unknown) => {
           const e = event as { type: string; message?: unknown; toolName?: string; isError?: boolean; result?: { details?: unknown } };

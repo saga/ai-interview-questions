@@ -43,22 +43,43 @@ export interface AgentSessionEntry {
   payload: unknown;
 }
 
+/** 错误日志行（诊断/回溯用，与 LearnerProfile / sessions 等业务数据隔离）。 */
+export interface ErrorLogEntry {
+  /** 自增主键。 */
+  id?: number;
+  /** 出错模块：'copilot' / 'interview' / 'agent' 等。 */
+  scope: string;
+  /** 面向用户的错误信息（即抛出的 message）。 */
+  message: string;
+  /** 结构化上下文：provider / model / stopReason / errorMessage / promptLen 等，便于回溯。 */
+  detail?: unknown;
+  /** 写入时间戳。 */
+  createdAt: number;
+}
+
 export class TrainerDB extends Dexie {
   learner!: Table<StoredLearner, string>;
   sessions!: Table<StoredSession, string>;
   memory!: Table<MemoryEntry, string>;
   agentSessions!: Table<AgentSessionEntry, string>;
+  errorLog!: Table<ErrorLogEntry, number>;
 
   constructor() {
     super('ai-interview-trainer');
+    // 首版：画像 + 会话 + 预留
     this.version(1).stores({
-      // 单例画像
       learner: 'id',
-      // 会话历史：主键 id；startedAt/overall 单值索引，topics 多值索引（*）
       sessions: 'id, startedAt, overall, *topics',
-      // 预留
       memory: 'id, kind, updatedAt',
       agentSessions: 'id, startedAt',
+    });
+    // v2：新增 errorLog 诊断表（不改动既有表结构，仅追加）
+    this.version(2).stores({
+      learner: 'id',
+      sessions: 'id, startedAt, overall, *topics',
+      memory: 'id, kind, updatedAt',
+      agentSessions: 'id, startedAt',
+      errorLog: '++id, scope, createdAt',
     });
   }
 }
@@ -68,4 +89,35 @@ export const db = new TrainerDB();
 /** 由 SessionRecord 推导 topics 数组（去重），供多值索引写入。 */
 export function topicsOfSession(s: SessionRecord): string[] {
   return [...new Set(s.questionResults.map((r) => r.topic))];
+}
+
+/**
+ * 记录一条错误日志到本地库（fire-and-forget，失败静默）。
+ * 用于出错时回溯：结构化 detail 写入 errorLog 表，与生产/业务数据隔离。
+ * 不阻塞主流程——无 IndexedDB 的环境（如部分测试/SSR）直接吞掉。
+ */
+export async function recordErrorLog(scope: string, message: string, detail?: unknown): Promise<void> {
+  try {
+    await db.errorLog.add({ scope, message, detail, createdAt: Date.now() });
+  } catch {
+    /* 持久化不可用时不抛，避免影响主流程 */
+  }
+}
+
+/** 读取最近的 errorLog 记录（按时间倒序），供诊断面板回溯。 */
+export async function getErrorLogs(limit = 100): Promise<ErrorLogEntry[]> {
+  try {
+    return await db.errorLog.orderBy('createdAt').reverse().limit(limit).toArray();
+  } catch {
+    return [];
+  }
+}
+
+/** 清空 errorLog 表（诊断面板「清空」用）。 */
+export async function clearErrorLogs(): Promise<void> {
+  try {
+    await db.errorLog.clear();
+  } catch {
+    /* 同上 */
+  }
 }

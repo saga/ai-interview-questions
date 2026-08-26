@@ -14,9 +14,22 @@ import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { buildModels, getModel } from '../../ai/pi';
 import { isConfigValid } from '../../ai/provider';
+import { recordErrorLog } from '../../storage/db';
 import type { AIConfig, InterviewSession, LearnerProfile, Question } from '../../types';
 
 // ---------- Chat helper: multi-turn via pi-ai ----------
+/** 结构化记录一条 Copilot 失败：控制台 + 本地 errorLog 表（fire-and-forget）。 */
+function logCopilotFailure(message: string, detail: Record<string, unknown>): void {
+  console.error('[Copilot] 调用失败：', message, detail);
+  void recordErrorLog('copilot', message, detail);
+}
+
+/** 记录并抛出（供 chatCopilot 内部统一失败处理）。 */
+function fail(message: string, detail: Record<string, unknown>): never {
+  logCopilotFailure(message, detail);
+  throw new Error(message);
+}
+
 async function chatCopilot(
   config: AIConfig,
   system: string,
@@ -30,25 +43,58 @@ async function chatCopilot(
     if (p.id === 'cloudflare-workers-ai') return Boolean(p.apiKey && p.accountId);
     return Boolean(p.apiKey);
   });
-  if (candidates.length === 0) throw new Error('未配置可用的 AI 引擎，请先在设置中配置');
+  if (candidates.length === 0) {
+    fail('未配置可用的 AI 引擎，请先在设置中配置', {
+      providers: config.providers.map((p) => ({ id: p.id, enabled: p.enabled, model: p.model })),
+    });
+  }
   let lastErr: unknown;
   for (const entry of candidates) {
     try {
+      const entryCtx = {
+        provider: entry.id,
+        model: entry.model,
+        hasApiKey: Boolean(entry.apiKey && entry.apiKey.trim()),
+        systemLen: system.length,
+        promptLen: newContent.length,
+        historyLen: history.length,
+      };
       if (entry.id === 'chrome') {
         // Chrome provider not yet exposed as chat; skip to next
-        throw new Error('Chrome 内置模型暂不支持 Copilot 对话，请配置云端或本地引擎');
+        fail('Chrome 内置模型暂不支持 Copilot 对话，请配置云端或本地引擎', entryCtx);
       }
       const models = buildModels(entry);
       const model = getModel(models, entry.id, entry.model);
-      if (!model) throw new Error(`未找到模型 ${entry.model}`);
+      if (!model) fail(`未找到模型 ${entry.model}`, entryCtx);
       const msgs = [...history.map((h) => ({ role: h.role, content: h.content })), { role: 'user', content: newContent }] as any;
       // pi-ai Context expects { systemPrompt, messages }
       const ctx: any = { systemPrompt: system, messages: msgs.map((m: any) => ({ role: m.role, content: m.content, timestamp: Date.now() })) };
       const res: any = await models.complete(model, ctx, entry.apiKey?.trim() ? { apiKey: entry.apiKey } : {});
-      const textBlock = (res.content ?? []).find((b: any) => b.type === 'text');
+      // pi-ai 会把传输/鉴权错误吞成 stopReason='error' 并返回空 content（见 ARCHITECTURE 技术栈注意点），
+      // 必须先看 stopReason，避免把真实错误掩盖成「模型未返回文本」。
+      if (res?.stopReason === 'error') {
+        fail(res?.errorMessage ? `模型调用失败：${res.errorMessage}` : '模型调用返回错误（stopReason=error），请检查引擎配置或网络', {
+          ...entryCtx,
+          stopReason: res?.stopReason,
+          errorMessage: res?.errorMessage,
+        });
+      }
+      const blocks: any[] = Array.isArray(res?.content)
+        ? res.content
+        : typeof res?.content === 'string'
+          ? [{ type: 'text', text: res.content }]
+          : [];
+      const textBlock = blocks.find((b: any) => b?.type === 'text');
       const text = textBlock && 'text' in textBlock ? textBlock.text : '';
       if (text) return text;
-      throw new Error('模型未返回文本');
+      // 推理模型可能只返回了思考过程（thinking）而无正文
+      const hasThinking = blocks.some((b: any) => b?.type === 'thinking');
+      fail(hasThinking ? '模型仅返回了思考过程、未生成正文（可能是 max_tokens 被推理 token 消耗完）' : '模型未返回文本', {
+        ...entryCtx,
+        stopReason: res?.stopReason,
+        blockTypes: blocks.map((b: any) => b?.type),
+        textLen: text.length,
+      });
     } catch (e) {
       lastErr = e;
     }
@@ -148,6 +194,7 @@ ${weak ? `薄弱主题：${weak}` : ''}
       setMessages((prev) => [...prev, { role: 'assistant', content: reply, key: `${Date.now()}-a` }]);
     } catch (e) {
       const msg = (e as Error).message || '请求失败';
+      console.error('[Copilot] 对话失败（已记录到 errorLog）：', msg, { lastErr: e });
       setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${msg}`, key: `${Date.now()}-e` }]);
     } finally {
       setLoading(false);

@@ -2,6 +2,47 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-27 · 前端接入路由（HashRouter）
+
+- **动机**：所有页面共用 `http://localhost:5173/`，地址栏无法区分当前页面。引入客户端路由，让导航与 URL 一一对应，刷新/分享可直达。
+- **main.tsx**：用 `HashRouter` 包裹 `<App/>`——local-first 工具零配置，刷新或静态部署都不会 404（无需 server SPA fallback）。
+- **App.tsx**：移除 `page` 的 `useState`，改为由 `useLocation().pathname` 经 `pageFromPath()` 派生；所有 `setPage(...)` 改为 `goPage(p)`（内部 `navigate(p==='train' ? '/train' : '/' + p)`）。导航 5 项映射 `/train`、`/progress`、`/interview`、`/agent`、`/settings`；根路径 `/` 重定向到 `/train`。
+- 训练流程的 `phase`（home/quiz/result）仍保留内存 state，不进 URL（刷新会丢失 session，与现状一致；`/train` 承载训练全流程）。
+- 依赖：`react-router-dom` 新装。验证：`typecheck` 无错、全量测试 349 passed、`vite build` 通过。
+
+## 2026-08-27 · 变体生成抗长度泄题（anti-cueing 自愈）+ 题库长度偏差 lint
+
+- **动机**：手工修题发现部分选择题存在"正确项明显更长 / 干扰项过短"的长度暗示偏差。用户希望 AI 生成变体或抽题时自动规避，而非逐题手修。
+- **两层方案**：
+  - **Prompt 层（生成期防偏差）**：`ai/variant.ts` 的 `VARIANT_SYSTEM` 增加「选项设计约束」——各选项篇幅与细节均衡、禁止用长度暗示答案；生成后自检。
+  - **Traditional 启发式 + 自愈**：新增纯函数 `domain/bias.detectOptionLengthBias(options, answer)`，命中高置信长度泄题（正确项全局最长且存在明显过短干扰项，`maxCorrect/minDistractor ≥ 1.8`）时，`generateVariant` 用修正提示词**一次性重试**改写选项（ADR-036 语义：仅重生成，不因此抛错回退原题）。
+  - **诊断工具**：新增 `scripts/lint-bias.ts` + `npm run lint:bias`（默认仅 strong 且摘要前 10 条，`--all/--soft/--json` 可展开）。刻意不并入 `validate:questions`——历史题中长度偏差普遍（约 244/532 选择题），作为软信号诊断而非阻断。
+- `domain/bias.test.ts` 覆盖 strong/soft/none/无干扰项/长干扰项不误报；`ai/variant.test.ts` 覆盖长度泄题触发一次性重试。全量测试 349 passed、`typecheck` 无错。
+
+## 2026-08-27 · 进度页新增「知识点清单」Tab（学过的 / 没学过的逐项表格）
+
+- **动机**：用户希望看清"针对当前知识体系，自己学过和没学过的分别有哪些"。原进度页只有按域聚合的覆盖进度条，没有逐项清单。
+- **components/progress/ProgressPage.tsx**：重构为 `Tabs`（进度概览 / 知识点清单）。清单 Tab 将全量 `knowledgeNodes`（67 个知识点，含域/主题/优先级/摘要）与 `profile.topicStats` 对齐，逐节点标注「已学 / 未学 / 薄弱 / 掌握度 / 均分」。
+- 状态判定：节点所属主题在 `topicStats` 有作答记录（`attempts>0`）即记「已学」；掌握度沿用 `WEAK_MASTERY=0.85`/`WEAK_AVG=85`。清单 Tab 不受"无训练记录"早退限制——新用户也能看到全量 67 个未学知识点。
+- 顶部 `Segmented`（全部/已学/未学，带计数）+ 域 `Select` 筛选；默认排序"未学优先 → P0 优先 → 域 → 名称"，让待学重点浮到顶部；表格分页 15/页。
+- 未新增路由/页面文件，改动收敛于 ProgressPage 单文件；`typecheck` 无错、全量测试 348 passed。
+
+## 2026-08-27 · 设置页新增「重置学习数据」按钮
+
+- **动机**：Agent 面试读取跨模式共享、持久化在 IndexedDB 的 `LearnerProfile`（`recommendWeakTopics` 仅返回 `attempts>0` 的主题）。开发/测试期残留画像会让"首次使用"也固定显示历史薄弱项（如遗留 topic id `open-advanced`），用户无法自行回到干净起点。
+- **storage/learner.ts**：新增 `resetLearnerData()`，事务清空 `learner`+`sessions` 两表，回到 `emptyProfile`。
+- **components/settings/SettingsPanel.tsx**：新增「学习数据」区块，`Popconfirm` 二次确认的 danger 按钮「重置学习数据」，确认后清空 DB 并回调 `onResetLearner`。
+- **App.tsx**：`SettingsPanel` 接 `onResetLearner={() => setProfile(emptyProfile())}` 同步内存画像。
+- **storage/learner.test.ts**：新增 `resetLearnerData` 单测（清空后 `loadLearner()` 回到 `emptyProfile`）。
+- 342 测试全过，`typecheck` 无错。
+
+## 2026-08-26 · Copilot 错误可追溯化（结构化日志 + errorLog 持久表）
+
+- **问题**：Copilot 调用失败只显示「⚠️ 模型未返回文本」，真实失败原因（pi-ai 把传输/鉴权错误吞成 `stopReason='error'`、推理模型只回 thinking 等）被掩盖，无法回溯。
+- **storage/db.ts**：新增 `errorLog` 诊断表（Dexie `version(2)`，`++id, scope, createdAt` 索引），与 `LearnerProfile`/`sessions` 业务数据隔离；新增 `recordErrorLog(scope, message, detail)`（fire-and-forget，持久化失败静默）。不改动既有表结构。
+- **components/copilot/CopilotSidebar.tsx**：`chatCopilot` 在每条失败路径（无可用引擎 / Chrome 不支持 / 未找到模型 / `stopReason='error'` / 仅返回 thinking / 无文本）前调用 `logCopilotFailure`，向控制台打印并写入 `errorLog` 结构化上下文（provider、model、hasApiKey、systemLen、promptLen、historyLen、stopReason、errorMessage、blockTypes 等）；`handleSend` 捕获处补 `console.error`。
+- **文档**：ARCHITECTURE.md `storage/db.ts` 段补 errorLog 表说明。
+
 ## 2026-08-26 · 文档与代码一致性修复（架构评审 P0）
 
 - **背景**：架构评审发现 ARCHITECTURE.md / README 与代码严重脱节——文档仍停留在「pi-agent-core 已移除、无 Agent 依赖」的旧形态，而 `src/agent/`（ADR-034）已落地并作为第五页功能上线；题库描述写「6 域一文件 / 409 题」，实际是 28 个 topic 文件 / 520 题。以代码为准修正文档。

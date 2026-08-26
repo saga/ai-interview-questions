@@ -58,7 +58,7 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                      + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
 
 storage/       本地持久化（IndexedDB + localStorage；两者均为不可信边界，一律经 Zod 校验）
-  db.ts         Dexie 数据库 schema（version 1）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ memory/agentSessions 预留表
+   db.ts         Dexie 数据库 schema（version 2）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ memory/agentSessions 预留表 + errorLog 诊断表（scope/createdAt 索引，记录 Copilot/引擎等调用失败的结构化上下文，与业务数据隔离，fire-and-forget 不阻塞主流程）
   settings.ts   LLM 配置（localStorage，`aiConfigSchema` 形状 + `isEntryValid`/去重等不变量）——小 KV 配置保留 localStorage（甜点区）
   learner.ts    LearnerProfile / SessionRecord（IndexedDB via Dexie）：画像存单例表（剔除 sessions），会话历史拆分到 sessions 表；不读取/迁移任何旧 localStorage 数据，直接以空画像起步
 
@@ -354,6 +354,7 @@ Original Question ──→ LLM ──→ VariantCandidate ──→ validateVar
 - **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败直接抛错，无回退原题（用户显式要求）。
 - 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
+- **抗暗示（anti-cueing）自愈**：`ai/variant.generateVariant` 在拿到 LLM 变体后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），用修正提示词**一次性重试**改写选项，避免把“正确项明显更长/干扰项过短”的偏差写进变体。属软信号、非校验阻断（沿用 ADR-036 无兜底语义：仅重生成，不因此抛错改回原题）。
 
 ## 评分 Rubric（四维 + 题目级覆盖）
 
