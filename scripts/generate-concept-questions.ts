@@ -10,10 +10,10 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { CurationLedger, ConceptAttemptSignal, KnowledgeNode, Question } from '../src/types';
+import type { ConceptAttemptSignal, KnowledgeNode, Question } from '../src/types';
 import { buildConceptStats, conceptFaceOf, getCoverageGaps } from '../src/domain/coverage.ts';
 import { conceptBlueprintsFromGaps } from '../src/domain/blueprint.ts';
-import { curationTasks, isPromoted } from '../src/domain/curation.ts';
+import { curationTasks, isPromoted, type CurationLedger } from '../src/domain/curation.ts';
 import { loadLedger, saveLedger } from '../src/infra/curationStore.ts';
 
 const dataDir = fileURLToPath(new URL('../src/data/', import.meta.url));
@@ -91,7 +91,7 @@ const signals: ConceptAttemptSignal[] = nodeQuestions.flatMap((q) =>
 const stats = buildConceptStats(signals);
 const gaps = getCoverageGaps(face, stats);
 
-const blueprints = conceptBlueprintsFromGaps(face, gaps, nodes, { count });
+const blueprints = conceptBlueprintsFromGaps(gaps, nodes, { count });
 
 console.log(`\n=== PR5 · 概念蓝图（节点 ${nodeId}）===`);
 console.log(`概念面: ${face.length}  ·  题库题(本节点): ${nodeQuestions.length}  ·  未覆盖概念: ${gaps.length}  ·  计划蓝图: ${blueprints.length}\n`);

@@ -59,14 +59,14 @@ describe('conceptBlueprintsFromGaps（均衡分布）', () => {
   const gaps: ConceptRef[] = [...face];
 
   it('消灭「5 题全问同一概念」：count=5 但只有 3 个 gap → 仍只产 3 张（每概念 1 张）', () => {
-    const out = conceptBlueprintsFromGaps(face, gaps, [node], { count: 5, maxPerConcept: 1 });
+    const out = conceptBlueprintsFromGaps(gaps, [node], { count: 5, maxPerConcept: 1 });
     expect(out).toHaveLength(3);
     const conceptIds = out.map((o) => o.concept.id);
     expect(new Set(conceptIds).size).toBe(3); // 无重复概念
   });
 
   it('按 importance 降序优先补高权重概念（self-attention 先于 ffn）', () => {
-    const out = conceptBlueprintsFromGaps(face, gaps, [node], { count: 3 });
+    const out = conceptBlueprintsFromGaps(gaps, [node], { count: 3 });
     expect(out[0].concept.id).toBe('self-attention');
     expect(out[1].concept.id).toBe('residual');
     expect(out[2].concept.id).toBe('ffn');
@@ -74,7 +74,7 @@ describe('conceptBlueprintsFromGaps（均衡分布）', () => {
 
   it('orphan 概念（无节点归属）被跳过', () => {
     const orphanFace: ConceptRef[] = [{ id: 'ghost', title: 'Ghost', importance: 1.0 }, ...face];
-    const out = conceptBlueprintsFromGaps(orphanFace, [{ id: 'ghost', title: 'Ghost', importance: 1.0 }, ...gaps], [node], {
+    const out = conceptBlueprintsFromGaps([{ id: 'ghost', title: 'Ghost', importance: 1.0 }, ...gaps], [node], {
       count: 10,
     });
     expect(out.every((o) => o.concept.id !== 'ghost')).toBe(true);

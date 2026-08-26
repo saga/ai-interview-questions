@@ -6,11 +6,11 @@
 //   move-on    移动到未覆盖方向
 // 不依赖 React / LLM / 网络。
 
-import type { ConceptRef, ConceptStats, Difficulty, LearnerProfile, Question, QuestionTest } from '../types';
+import type { ConceptAttemptSignal, ConceptRef, ConceptStats, Difficulty, LearnerProfile, Question, QuestionTest } from '../types';
 import { pickQuestions } from './quiz';
 import { prerequisiteClosure, relatedOf } from './conceptGraph';
 import { angleKey, recommendWeakTopics } from './learner';
-import { buildConceptStats, getConceptStatus, rankConcepts, type ConceptAttemptSignal } from './coverage';
+import { buildConceptStats, getConceptStatus, rankConcepts } from './coverage';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 

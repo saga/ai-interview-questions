@@ -5,8 +5,8 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { CurationLedger, ProbePromotionEvent } from '../types';
-import { emptyLedger, markCurated, recordProbe } from '../domain/curation.ts';
+import type { ProbePromotionEvent } from '../types';
+import { emptyLedger, markCurated, recordProbe, type CurationLedger } from '../domain/curation.ts';
 
 /** 默认账本路径（相对 cwd）。generate:concept-questions --from-curation 也默认读这里。 */
 export const DEFAULT_LEDGER_PATH = 'data/curation/ledger.json';

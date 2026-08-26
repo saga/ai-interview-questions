@@ -139,7 +139,6 @@ const PROBE_ANGLE_PREFERENCE: QuestionAngle[] = [
  * 返回 { blueprint, concept, node }，供人工审查「为何生成此题」或交由 LLM 据此出题。
  */
 export function conceptBlueprintsFromGaps(
-  face: ConceptRef[],
   gaps: ConceptRef[],
   nodes: KnowledgeNode[],
   opts: { count?: number; format?: FormatId; maxPerConcept?: number } = {},
