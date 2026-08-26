@@ -2298,5 +2298,89 @@
         "referenceAnswer": "正确答案 B。路由误判致质量波动；A 异构KV不共享 C 可动态缩减 D 思考Token可流式输出。"
       }
     }
+  },
+  {
+    "id": "ai-arch-ide-dual-endpoint-01",
+    "category": "ai-architecture",
+    "topic": "realtime-interaction",
+    "tags": [
+      "ide",
+      "autocomplete",
+      "endpoint",
+      "model-selection",
+      "latency",
+      "continue-dev"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "在构建基于本地 AI 的 IDE 辅助开发系统（如搭配 Continue.dev 或 VS Code）时，标准架构通常会分别配置“实时代码补全（Tab Autocomplete）”与“侧边栏交互对话（Chat / Code Review）”两个独立的本地 Endpoint。关于该设计方案的合理性分析，下列哪些项是正确的？",
+    "explanation": "Tab Autocomplete 属于极高频、高时延敏感场景，适合极小模型（1.5B-3B）；Chat 属于低频、高推理深度场景，适合大模型（7B-14B）。两者解耦可避免大模型长时间占用计算资源导致的交互卡顿（选项 A、B、C 正确）。不同的 Endpoint 使用独立训练的模型，其 Tokenizer 和 System Prompt 均相互独立（选项 D 错误）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "代码补全要求极低延迟（如 <30ms），应选用参数量较小（如 1.5B–3B）、吞吐量极高的小模型；而侧边栏对话侧重复杂推理与架构重构，宜选用参数量更大（如 7B–14B）的模型。",
+          "实时代码补全在用户输入时高频触发，若使用大模型会导致显存被长期独占并引发 IDE 界面卡顿或输入延迟。",
+          "两个 Endpoint 可以映射到本地推理服务的不同模型实例，利用推理引擎的并发调度与内存装载/卸载机制实现计算资源隔离。",
+          "代码补全模型与侧边栏对话模型必须共享完全相同的 System Prompt 与 Tokenizer 配置，否则 IDE 插件无法正常解析响应。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n- A：补全需极低延迟用小模型，对话需深推理用大模型。\n- B：高频补全用大模型会长期占显存致卡顿。\n- C：双 Endpoint 映射到不同模型实例，资源隔离。\n- D 错误：两模型独立训练，Tokenizer/System Prompt 可不同。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "补全高时延敏感宜用小模型，对话宜用大模型",
+        "高频补全若用大模型会长期占显存致卡顿",
+        "双 Endpoint 通过不同模型实例实现资源隔离"
+      ]
+    }
+  },
+  {
+    "id": "ai-arch-openai-compat-proxy-01",
+    "category": "ai-architecture",
+    "topic": "model-selection",
+    "tags": [
+      "openai-compatible",
+      "base-url",
+      "ollama",
+      "api-proxy",
+      "migration",
+      "sse"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某企业后端团队希望将现有微服务系统从公有云 OpenAI API 平滑无缝迁移至本地私有化部署的 Ollama 推理端点（如 http://localhost:11434/v1）。在不修改原有业务代码中 OpenAI 官方 SDK 调用逻辑的前提下，关于本地兼容 API 端点的行为特征，下列说法正确的是：",
+    "explanation": "本地 Serving 引擎（如 Ollama/LM Studio）通常会在 /v1 路径下实现一个轻量级协议适配层，将 OpenAI 标准请求格式解析并转交给内部 C++ 引擎，因此业务端只需修改 base_url 即可无缝迁移（选项 B 正确）。本地 API 忽略鉴权或接受任意 Dummy API Key（选项 A 错误）；本地端点完整支持 SSE 流式传输（选项 C 错误）；若请求未下载的模型，本地服务端将直接返回 404/500 错误而非自动透传云端（选项 D 错误）。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "本地兼容接口强制要求提供由 OpenAI 颁发的有效 API Key，否则本地 REST 服务将拒绝鉴权。",
+          "兼容层将标准的 /v1/chat/completions 请求映射并转换为本地推理引擎的底层 JSON 数据结构，仅需变更 base_url 与 model 名称即可完成对接。",
+          "更改为本地 base_url 后，原 SDK 支持的 SSE（Server-Sent Events）流式响应（stream=True）将无法在本地端点上生效。",
+          "当本地端点接收到未经本地下载的模型请求时，会自动透明地将该 API 请求代理转发至公有云 OpenAI 服务器。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。本地引擎在 /v1 下实现协议适配层，把 OpenAI 请求转为内部格式，业务仅改 base_url 与 model 即可。A 错（本地多忽略/接受任意 key）；C 错（完整支持 SSE）；D 错（未下载模型返回 404/500，不自动透传云端）。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "本地兼容层将 /v1/chat/completions 映射为内部请求",
+        "迁移只需改 base_url 与 model，不改 SDK 逻辑",
+        "本地端点支持 SSE 流式且不会自动透传云端"
+      ]
+    }
   }
 ]

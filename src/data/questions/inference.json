@@ -2089,5 +2089,344 @@
         "referenceAnswer": "正确答案 A。Iteration 级调度已完成退出新请求插入消除 Padding 浪费。"
       }
     }
+  },
+  {
+    "id": "quantization-mem-bandwidth-gguf-01",
+    "category": "inference",
+    "topic": "quantization",
+    "tags": [
+      "memory-bandwidth",
+      "gguf",
+      "quantization",
+      "local-inference",
+      "tokens-per-sec"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在本地硬件运行大语言模型（LLM/SLM）进行单 Token 自回归生成（Autoregressive Generation）时，推导性能通常受限于内存带宽（Memory Bandwidth Bound）而非纯粹的计算峰值（Compute Bound）。关于 GGUF 量化（如 Q4_K_M）提升本地推理吞吐量的物理机制与影响，下列哪些说法是正确的？",
+    "explanation": "自回归生成是典型的 Memory-bound 任务，每生成一个 Token 都需将全量权重加载进计算单元。GGUF 4-bit 量化将权重体积缩小至原 FP16 的 ~25%，极大减轻了显存带宽压力，并能避免跨 PCIe Offload（选项 A、B、D 正确）。量化压缩的是模型权重和标量数据，并不直接消除 KV Cache（选项 C 错误）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将 FP16 权重压缩为 4-bit 整数后，显著减少了每生成一个 Token 需要从显存/内存传输到计算核心的数据体积，从而直接降低了内存带宽瓶颈。",
+          "4-bit 量化大幅降低了模型权重的显存占用，使原本超出显存容量的模型能够完全驻留于 GPU 显存内，避免了跨 PCIe 总线向系统内存（RAM）Offload 带来的严重性能损耗。",
+          "量化算法通过消除 Transformer 注意力机制中的 KV Cache，从根本上解决了长上下文推理时的显存增长问题。",
+          "量化能够提升 Token 生成速率（Tokens/sec），主要得益于显存数据传输时延的降低，但在计算端需要付出微小的解量化（Dequantization）额外开销。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n- A：权重大小直接决定每 token 需从显存搬入计算单元的数据量，4-bit 使体积降至 FP16 约 1/4，缓解带宽瓶颈。\n- B：权重更小可整体驻留显存，避免 PCIe 跨设备搬运。\n- C 错误：量化不消除 KV Cache，KV Cache 由上下文长度与层数决定。\n- D：吞吐提升来自传输量下降，计算端有轻微 dequant 开销。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "自回归生成为 Memory-bound，每 token 都要加载全量权重",
+        "4-bit 量化约将权重大小压缩到 FP16 的 1/4",
+        "量化压缩权重，不影响 KV Cache 的大小"
+      ]
+    }
+  },
+  {
+    "id": "inference-capacity-num-ctx-kvcache-01",
+    "category": "inference",
+    "topic": "inference-capacity",
+    "tags": [
+      "num_ctx",
+      "kv-cache",
+      "context-window",
+      "oom",
+      "ttft",
+      "offload"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在本地部署推理引擎（如 Ollama / llama.cpp）时，开发者常通过配置文件调整 num_ctx 参数（例如从 4096 扩大至 32768）来支持长文本或全仓库代码分析。在模型权重不变的情况下，大幅扩展上下文窗口会带来哪些工程权衡（Trade-offs）？",
+    "explanation": "num_ctx 的增加影响的是动态 KV Cache 和预填充计算量（Prefill Phase），并不改变模型自身的静态权重大小（选项 C 错误）。KV Cache 显存开销随上下文线性/二次方增长，预填充计算耗时变长会导致 TTFT 明显增加；若 KV Cache 溢出到系统 RAM，会引入严重的内存瓶颈（选项 A、B、D 正确）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随着 Prompt 序列长度增加，KV Cache 占用的显存呈线性（或二次方）增长，可能导致原本刚好的显存瞬间发生 OOM（Out of Memory）。",
+          "首 Token 延迟（Time to First Token, TTFT）显著增加，因为预填充阶段（Prefill Phase）需要一次性并行处理并计算全部输入 Prompt 的注意力矩阵。",
+          "模型静态权重（Model Weight Footprint）在显存中的物理尺寸会随着 num_ctx 的调大而等比例线性膨胀。",
+          "当显存无法完全装下膨胀的 KV Cache 时，多余的缓存会被换出（Offload）到系统内存或磁盘，严重拉低后续续写 Token 的生成吞吐量。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n- A：KV Cache 随 seq_len 增长，易触发 OOM。\n- B：Prefill 需一次性算全序列注意力，TTFT 变长。\n- C 错误：静态权重大小与 num_ctx 无关。\n- D：KV Cache 溢出到 RAM/磁盘造成内存瓶颈，拉低续写吞吐。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "num_ctx 只影响动态 KV Cache 与 Prefill 计算量，不改变静态权重大小",
+        "KV Cache 随上下文线性/二次方增长可能导致 OOM",
+        "Prefill 一次性处理全序列导致 TTFT 上升"
+      ]
+    }
+  },
+  {
+    "id": "inference-offload-pcie-bottleneck-01",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "layer-offloading",
+      "pcie",
+      "vram",
+      "throughput",
+      "bottleneck"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "工程师在配备 12GB VRAM 的显卡上使用 llama.cpp 运行一个 14B 参数的 GGUF 模型。日志显示模型共 40 层，其中 30 层成功载入 GPU 显存，剩余 10 层被分配给 CPU 执行（Partial Offloading）。测试发现 Token 生成速度从完全 GPU 加载时的 50 Tokens/s 降至 6 Tokens/s。造成这种性能断崖式下降的最核心机制原因是：",
+    "explanation": "在多层神经网络的逐层前向传播中，当模型被跨设备拆分（CPU + GPU）时，层与层之间的激活张量（Activations）必须在每生成一个 Token 时通过 PCIe 总线实时同步。PCIe 带宽（如 PCIe 4.0 x16 约 31.5 GB/s）相比 GPU 显存带宽（如 500+ GB/s）慢了一个数量级，导致整体吞吐量受限于 PCIe 数据传输速度。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "现代 CPU 缺乏 AVX-512/AMX 向量指令集，导致 CPU 完全无法执行 Transformer 层的矩阵乘法。",
+          "自回归推导阶段，每生成一个 Token 都需要在 GPU 显存与 CPU 内存之间通过 PCIe 总线频繁同步中间张量（Activation Tensors），PCIe 带宽成为了严重的传输瓶颈。",
+          "拆分模型层后，推理引擎自动开启了 CPU 端的 FP32 强制重量化计算，导致计算复杂度剧增。",
+          "CPU 分担执行层时失去了 KV Cache 缓存支持，导致每次生成新 Token 都必须重新计算历史所有序列。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。跨设备拆分后，逐层前向传播在每个 token 都要把激活张量在 GPU 与 CPU 间经 PCIe 同步；PCIe 带宽比 GPU 显存带宽低一个数量级，是吞吐断崖的主因。A 错误（CPU 仍能做矩阵乘）；C 错误（无强制 FP32 重量化）；D 错误（KV Cache 仍在，不需重算历史）。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "逐层前向传播每 token 都要跨设备同步激活张量",
+        "PCIe 带宽远低于 GPU 显存带宽，是主要瓶颈",
+        "Partial Offloading 的代价来自传输而非 CPU 算力"
+      ]
+    }
+  },
+  {
+    "id": "inference-vram-budget-calc-01",
+    "category": "inference",
+    "topic": "inference-capacity",
+    "tags": [
+      "vram",
+      "budget",
+      "q4-km",
+      "num-ctx",
+      "oom",
+      "quantitative"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "某架构师计划在单张 16GB VRAM 的消费级 GPU 上部署一个 14B 参数的 SLM（如 Qwen 2.5 Coder 14B），模型采用 Q4_K_M 格式量化（平均静态权重占用约 0.55 Bytes/parameter）。若配置上下文窗口 num_ctx = 32768（32K Tokens），假定 FP16 KV Cache 在该上下文长度下占用 3.5GB 显存，且推理引擎运行时需预留 1.5GB 显存作为 CUDA Context 与临时 Tensor Workspace。关于该系统的显存预算评估与可行性计算，下列哪些判断是正确的？",
+    "explanation": "静态权重开销为 14×10^9 × 0.55 Bytes ≈ 7.7 GB。在 32K 上下文下：7.7 GB (权重) + 3.5 GB (KV Cache) + 1.5 GB (Workspace) = 12.7 GB ≤ 16 GB，可以正常运行；扩展至 64K 时，KV Cache 翻倍为 7.0GB，总开销达 16.2GB 导致溢出（选项 A、B、C 正确）。静态权重尺寸由网络结构与量化精度决定，不随运行时 Prompt 长度或 Batch 大小变化（选项 D 正确）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "14B 参数的 Q4_K_M 模型静态权重需占用约 7.7GB 显存。",
+          "系统运行时的总显存开销（静态权重 + 32K KV Cache + 运行时预留）约为 12.7GB，能够稳定运行在 16GB 显存内而不发生 OOM。",
+          "若将 num_ctx 进一步扩大至 64K Tokens 使得 KV Cache 膨胀至 7.0GB，总显存开销将达到 16.2GB，超出 GPU 显存限制导致 OOM 或发生换页。",
+          "模型的静态权重显存开销计算公式只取决于参数量与量化位宽，与 Batch Size 和上下文长度完全无关。"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D。\n- A：14e9×0.55B≈7.7GB。\n- B：7.7+3.5+1.5=12.7GB≤16GB，安全。\n- C：64K 时 7.7+7.0+1.5=16.2GB>16GB，溢出。\n- D：静态权重只由参数量与量化精度决定，与 seq_len/Batch 无关。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "静态权重 = 参数量 × 每参数字节数（量化决定）",
+        "总显存 = 权重 + KV Cache + 运行时预留",
+        "KV Cache 随 num_ctx 增长，是 OOM 主因之一"
+      ]
+    }
+  },
+  {
+    "id": "inference-apple-silicon-uma-01",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "apple-silicon",
+      "unified-memory",
+      "pcie",
+      "bandwidth",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在部署本地 SLM/LLM 时，工程团队常对比 Apple Silicon（如 M3/M4 系列，配备最高 128GB Unified Memory）与传统 PC 独立显卡（如单张 24GB VRAM PCIe GPU）。关于这两种硬件体系在 LLM 本地推理中的架构差异与 Trade-offs，下列哪些说法是正确的？",
+    "explanation": "Apple UMA 解决了显存容量瓶颈且避免了 PCIe 传数据开销，但显存带宽上限低于顶级 NV GPU 显存（如 RTX 4090 达 1008 GB/s），故小模型生成速率独显占优（选项 A、B、D 正确）。PCIe 4.0/5.0 带宽（32~64 GB/s）远低于 VRAM 带宽，系统主存无法补充显存带宽缺陷（选项 C 错误）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Apple Silicon 采用统一内存架构（UMA），CPU 与 GPU 共享同一个高带宽内存池，允许直接分配 64GB 以上内存给 GPU 核心，能以较低成本装载 30B+ 级别的模型。",
+          "Apple Silicon 统一内存的物理带宽（通常为 150 GB/s – 400 GB/s）一般低于高端独显显存带宽（如 1000+ GB/s），因此在运行相同的 7B 小模型时，前者的单用户 Token 生成吞吐量（Tokens/s）通常低于高端独显。",
+          "传统 PCIe 独显通过 PCIe 总线连接系统主存，即使模型权重超出显存容量，系统内存（RAM）也能提供与 VRAM 相同的带宽吞吐。",
+          "Apple Silicon 架构下因为 CPU 与 GPU 物理共享内存，自回归生成阶段层间交互完全不需要跨 PCIe 总线的显存-主存数据拷贝。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n- A：UMA 共享大内存池，可低成本的装大模型。\n- B：UMA 带宽低于顶级独显，小模型生成速率独显更优。\n- C 错误：系统 RAM 带宽远低于 VRAM。\n- D：共享内存免去 PCIe 跨设备拷贝。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "UMA 共享内存池，解决容量瓶颈",
+        "UMA 带宽通常低于高端独显显存带宽",
+        "PCIe 主存带宽远低于 VRAM，无法补足"
+      ]
+    }
+  },
+  {
+    "id": "inference-fim-mechanism-01",
+    "category": "inference",
+    "topic": "inference-modes",
+    "tags": [
+      "fim",
+      "fill-in-the-middle",
+      "code-completion",
+      "autocomplete",
+      "decoder"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "IDE 中的实时代码补全（Tab Autocomplete）要求模型能够根据光标位置的前文（Prefix）和后文（Suffix）预测中间缺失的代码片段。为实现这种双向上下文感知的补全功能，代码 SLM 通常采用什么底层工作机制？",
+    "explanation": "标准的 Causal LLM 是单向自回归的。为了支持中间补全，FIM 机制在训练时将文本切分为 Prefix、Suffix 和 Middle，并在 Prompt 中排列为类似 <PRE> prefix <SUF> suffix <MID> 的格式，使单向 Transformer 能顺理成章地在 <MID> 之后自回归生成中间的 middle 代码（选项 A 正确）。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在训练与推理阶段使用专用的 FIM 特殊 Token（如 <PRE>, <SUF>, <MID>）重排 Prompt 序列，使自回归 Decoder 在看到前文和后文后继续预测中间 Token。",
+          "模型自动将光标后的所有代码截断丢弃，仅将光标前的代码当作标准自回归 Chat Prompt 发送给模型进行单向续写。",
+          "补全引擎自动调用 Encoder-Decoder 双塔架构，利用双向注意力机制在生成阶段同时更新前文与后文的 Token。",
+          "模型要求在推理时先对后文（Suffix）计算全量 Attention 矩阵并反传梯度，再触发前文（Prefix）的生成逻辑。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。FIM 用 <PRE>/<SUF>/<MID> 特殊 Token 重排序列，让单向自回归 Decoder 在看到前后文后生成中间代码。B 错（丢弃后文会丢失上下文）；C 错（代码 SLM 多为 Decoder-only，非 Encoder-Decoder）；D 错（推理不反传梯度）。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "FIM 用特殊 Token 重排 Prefix/Suffix/Middle",
+        "Causal Decoder 在 <MID> 后自回归生成中间片段",
+        "代码 SLM 多为 Decoder-only，非双向 Encoder-Decoder"
+      ]
+    }
+  },
+  {
+    "id": "inference-deterministic-sampling-01",
+    "category": "inference",
+    "topic": "inference-modes",
+    "tags": [
+      "temperature",
+      "top-p",
+      "sampling",
+      "deterministic",
+      "system-prompt",
+      "codegen"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某团队使用本地 Ollama 部署代码生成服务（如自动生成 C# DTO 或 SQL 查询）。测试发现模型输出的代码偶尔会出现幻觉 API 或不稳定的语法格式。为使模型输出尽可能精确、确定且可复现，工程团队应该如何配置推理参数与 System Prompt？",
+    "explanation": "代码生成与结构化提取要求高度确定性，应降低 temperature（接近 0）并限制 Top-P 采样范围，结合强约束的 System Prompt 控制输出规范（选项 A、C、D 正确）。调高 Temperature 会引入高熵随机性，增加语法错误和幻觉风险（选项 B 错误）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将采样温度参数（temperature）调低至近零值（例如 0.0 或 0.1），极大降低高熵非确定性 Token 的采样概率。",
+          "将采样温度参数（temperature）调高至 1.5，通过引入随机性来增加生成代码的多样性与鲁棒性。",
+          "结合调小 Top-P（Nucleus Sampling）参数，将采样候选集限制在累积概率最高的高置信度 Token 范围内。",
+          "在 System Prompt 中注入严格的约束指令（如“严格输出合法 JSON/代码格式，不得包含任何 Markdown 解释文字”），收窄模型的输出概率空间。"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。\n- A：低温降低随机性，提升确定性。\n- C：缩小 Top-P 限制高置信候选。\n- D：强约束 System Prompt 规范输出。\n- B 错误：高温增加幻觉与语法错误风险。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "低温（≈0）提升确定性",
+        "缩小 Top-P 限制高置信候选",
+        "强约束 System Prompt 规范输出格式"
+      ]
+    }
+  },
+  {
+    "id": "inference-prefill-decode-01",
+    "category": "inference",
+    "topic": "latency",
+    "tags": [
+      "prefill",
+      "decode",
+      "ttft",
+      "throughput",
+      "compute-bound",
+      "memory-bound",
+      "batch"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "在 LLM/SLM 自回归推理（Autoregressive Inference）过程中，推理引擎的工作被严格划分为预填充阶段（Prefill Phase）与生成阶段（Generation Phase / Decode Phase）。关于这两个阶段的物理特性与性能瓶颈，下列哪些说法是正确的？",
+    "explanation": "Prefill 阶段针对全量 Prompt 进行 GEMM 并行矩阵乘法，属于 Compute-bound，决定了 TTFT（选项 A、C 正确）；Decode 阶段针对单 Token 进行 GEMV 向量乘法，频繁加载全量权重，受限于 Memory 带宽（选项 B 正确）；多 Batch 并行能够将多个 GEMV 拼成 GEMM，提高计算访存比，有效利用 GPU 算力（选项 D 正确）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "预填充阶段需要并行处理输入的全部 Prompt Tokens 并计算初始 KV Cache，属于计算密集型（Compute-bound）操作，首 Token 延迟（TTFT）主要由 GPU 计算峰值（TFLOPS）决定。",
+          "生成阶段每次仅输入上一个 Token 并结合历史 KV Cache 预测下一个 Token，属于内存带宽密集型（Memory-bound）操作，Token 生成吞吐量（Tokens/s）主要受限于 VRAM 读写带宽。",
+          "当输入 Prompt 序列极长（如 32K 长度的代码文件）时，预填充阶段的计算量显著上升，会导致首 Token 延迟（TTFT）明显拉长。",
+          "在 Decode 阶段，通过将多个并发请求拼成大 Batch 共同计算，可以提高 Operator 算子强度（Operational Intensity），将 Memory-bound 向 Compute-bound 转移，从而提升整体 GPU 利用率。"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、D。\n- A/C：Prefill 是 GEMM 计算密集，决定 TTFT，长 Prompt 拉长 TTFT。\n- B：Decode 是 GEMV 访存密集，吞吐受显存带宽限制。\n- D：大 Batch 把多个 GEMV 拼成 GEMM，提升算子强度与利用率。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "Prefill=GEMM，Compute-bound，决定 TTFT",
+        "Decode=GEMV，Memory-bound，决定 Tokens/s",
+        "大 Batch 提升算子强度，缓解 Memory-bound"
+      ]
+    }
   }
 ]

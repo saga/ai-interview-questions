@@ -1519,5 +1519,48 @@
         "referenceAnswer": "正确答案 A,B,D。O(N²)+Context Rot+RAG 提供权限与更新；C 错误大窗口不自动保障 RBAC。"
       }
     }
+  },
+  {
+    "id": "rag-private-enterprise-01",
+    "category": "rag",
+    "topic": "rag",
+    "tags": [
+      "private-rag",
+      "compliance",
+      "embedding",
+      "vector-db",
+      "data-leakage",
+      "local-deployment"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "某金融机构为满足数据严苛不出域的合规要求，计划构建基于本地代码库的私有 RAG（检索增强生成）系统。架构师设计了一套全本地化的闭环架构方案。关于该架构的设计正确性与安全性分析，下列哪些项是正确的？",
+    "explanation": "私有 RAG 的核心是 Embedding、Vector DB 以及 LLM 引擎全栈本地化部署（选项 A、B、D 正确）。Ollama 是独立运行在本地的 Server，其安全性取决于客户端连接的 base_url 是否指向本地 IP，而不是靠识别 Dummy API Key 去“拦截云端流量”（选项 C 错误）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "向量化（Embedding）阶段使用本地部署的轻量 Embedding 模型（如 bge-small），将代码向量存入本地向量数据库（如 Qdrant/Milvus），全程无需连接外部云服务。",
+          "检索出的代码 Context 与用户 Query 组合后，投递给本地 Ollama 暴露的 HTTP 端点（http://localhost:11434/v1）进行推理。",
+          "在客户端调用本地 OpenAI 兼容 API 时，只要请求 Header 中的 api_key 设置为 \"ollama\"，Ollama 就会自动将发往公有云的流量无感拦截并安全打回本地。",
+          "该架构在“向量切块-索引检索-大模型推理”全链路均在本地局域网物理闭环，实现了零数据外泄风险与低时延响应。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n- A/B/D：全栈本地化（Embedding+VectorDB+Ollama）实现数据不出域。\n- C 错误：Ollama 安全取决于 base_url 指向本地，而非靠 Dummy Key 拦截云端流量。"
+      }
+    },
+    "rubric": {
+      "required": [
+        "全栈本地化：Embedding + VectorDB + LLM 均在本地",
+        "Private RAG 用本地 base_url，不依赖 Dummy Key 拦云端",
+        "数据不出域靠物理闭环而非 Key 识别"
+      ]
+    }
   }
 ]
