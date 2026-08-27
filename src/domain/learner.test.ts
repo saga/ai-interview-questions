@@ -273,7 +273,26 @@ describe('sessionFromQuiz', () => {
       300,
     );
     const profile = updateLearner(emptyProfile(), rec);
-    expect(JSON.stringify(profile)).not.toContain('答案不正确，请参见解析');
+    expect(JSON.stringify(profile)).not.toContain(' 答案不正确，请参见解析');
+  });
+
+  it('未评估（grades 为 null）的题目不计入画像，避免误记 0 分', () => {
+    // grades 缺 o1：等效于开放题未作答/评估失败；不应被记成 0 分拉低画像
+    const grades = {
+      c1: { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, strengths: [], gaps: [], feedback: '' },
+    } as never;
+    const rec = sessionFromQuiz(
+      { questions: [choiceA, openA], startedAt: Date.now(), definition: { title: 't', mode: 'quick' } },
+      grades,
+      300,
+    );
+    // 仅已评分的 c1 进入结果；未评估的 o1 不被记入（不为 0 分污染）
+    expect(rec.questionResults).toHaveLength(1);
+    expect(rec.questionResults[0].questionId).toBe(choiceA.question.id);
+    expect(rec.overall).toBe(100);
+    const profile = updateLearner(emptyProfile(), rec);
+    // topicStats 只含被评分的 topic，且均分不被未评估题拉低
+    expect(profile.totalQuestions).toBe(1);
   });
 });
 

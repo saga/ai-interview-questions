@@ -191,3 +191,49 @@ describe('createAgentTools', () => {
     expect(summary.overall).toBe(80);
   });
 });
+
+describe('getQuestion 尊重 generateOpenQuestions 开关（修复：Agent 不绕过全局开关）', () => {
+  it('关闭时不交付纯开放题', async () => {
+    const session = createAgentSession();
+    const tools = createAgentTools({
+      bank: [makeOpenQuestion()],
+      profile: emptyProfile(),
+      provider: makeProvider(),
+      session,
+      generateOpenQuestions: false,
+    });
+    const getQuestion = tools.find((t) => t.name === 'getQuestion')!;
+    const res = await getQuestion.execute('x', { id: 'q-open-1' });
+    expect((res.details as { error: string }).error).toBe('open_disabled');
+    expect(session.currentQuestion).toBeNull();
+  });
+
+  it('关闭时仍可正常交付选择题', async () => {
+    const session = createAgentSession();
+    const tools = createAgentTools({
+      bank: [makeChoiceQuestion()],
+      profile: emptyProfile(),
+      provider: makeProvider(),
+      session,
+      generateOpenQuestions:  false,
+    });
+    const getQuestion = tools.find((t) => t.name === 'getQuestion')!;
+    const res = await getQuestion.execute('x', { id: 'q-choice-1' });
+    expect((res.details as { format: string }).format).toBe('choice');
+    expect(session.currentQuestion?.format).toBe('choice');
+  });
+
+  it('开启时纯开放题正常交付', async () => {
+    const session = createAgentSession();
+    const tools = createAgentTools({
+      bank: [makeOpenQuestion()],
+      profile: emptyProfile(),
+      provider: makeProvider(),
+      session,
+      generateOpenQuestions: true,
+    });
+    const getQuestion = tools.find((t) => t.name === 'getQuestion')!;
+    const res = await getQuestion.execute('x', { id: 'q-open-1' });
+    expect((res.details as { format: string }).format).toBe('open');
+  });
+});

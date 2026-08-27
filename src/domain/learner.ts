@@ -224,22 +224,26 @@ export function sessionFromQuiz(
   durationSec?: number,
   answers?: Record<string, AnswerValue>,
 ): SessionRecord {
-  const results: QuestionResult[] = session.questions.map(({ question: q, format }) => {
-    const g = grades[q.id];
-    return {
-      questionId: q.id,
-      category: q.category,
-      topic: q.topic,
-      subtopic: q.subtopic ?? undefined,
-      format,
-      angle: q.angle ?? undefined,
-      score: g?.overall ?? 0,
-      correct: format === 'choice' ? (g?.dimensions.correctness ?? 0) === 100 : undefined,
-      // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps；
-      // gaps 仅来自开放题的 LLM 评估，避免把"答案不正确"当真实薄弱要点写进 Learner Memory。
-      gaps: format === 'choice' ? [] : (g?.gaps ?? []),
-    };
-  });
+  // 仅纳入「已评分」的题：grades 为 null（开放题评估失败/未作答、或用户未作答）的题不计入画像，
+  // 避免把「没答/没评」误记为 0 分污染 topicStats / overallScore / 薄弱分析。
+  const results: QuestionResult[] = session.questions
+    .filter(({ question: q }) => grades[q.id] != null)
+    .map(({ question: q,  format }) => {
+      const g = grades[q.id]!;
+      return {
+        questionId: q.id,
+        category: q.category,
+        topic: q.topic,
+        subtopic: q.subtopic ?? undefined,
+        format,
+        angle: q.angle ?? undefined,
+        score: g.overall,
+        correct: format === 'choice' ? (g.dimensions.correctness ?? 0) === 100 : undefined,
+        // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps；
+        // gaps 仅来自开放题的 LLM 评估，避免把"答案不正确"当真实薄弱要点写进 Learner Memory。
+        gaps: format === 'choice' ? [] : (g.gaps ?? []),
+      };
+    });
   const overall =
     results.length > 0 ? Math.round(results.reduce((a, r) => a + r.score, 0) / results.length) : 0;
   return {

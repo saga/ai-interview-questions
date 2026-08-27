@@ -147,6 +147,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
       entry,
       bank: bank.questions,
       provider,
+      generateOpenQuestions: config.generateOpenQuestions,
       handlers: {
         onQuestion: (q) => {
           if (!q) {

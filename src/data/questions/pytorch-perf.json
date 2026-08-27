@@ -1,0 +1,158 @@
+[
+  {
+    "id": "pytorch-perf-tensor-view-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "subtopic": "Tensor View 与元数据",
+    "tags": ["pytorch", "cuda", "tensor-view", "stride", "metadata", "hbm", "gemm"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 PyTorch CUDA 计算中，对一个形如 (B, N, D) 的 CUDA 张量调用 x.transpose(1, 2) 或 x.t() 时，关于底层 CPU 与 GPU 的行为，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确，B 错误：transpose / t / view 等 View 操作是元数据修改（Metadata-only），只在 CPU 端更新 shape 与 stride，不会在 GPU 显存中搬运数据，也不会启动 GPU 内核。C 正确：步长元数据变化后，后续 GEMM 库（cuBLAS/CUTLASS）会读取 stride 并挑选适配对应内存访问模式（如转置布局 _tn）的预编译内核直接读取数据。D 正确：View 张量与原张量指向同一块 Storage，修改视图会直接修改原张量。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "CPU 上会更新张量的 shape 和 stride 元数据，但完全不会在 GPU 显存（HBM）中触发任何物理数据的复制或重新排列。",
+          "GPU 会立即启动一个转置 CUDA Kernel，将显存中的元素按新维度顺序重新排列并写入一块新的显存区域。",
+          "后续进行 GEMM（矩阵乘法）计算时，底层 Dispatcher 会依据该张量修改后的 stride 元数据，选择支持对应输入 layout 的预编译 Kernel。",
+          "该转置操作返回的新 View 张量与原张量共享同一块底层显存缓冲区，修改 View 中的数值会直接影响原张量。"
+        ],
+        "answer": [0, 2, 3]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。\n- A：transpose/t/view 仅改 CPU 端 shape/stride 元数据，不搬 HBM、不起 Kernel。\n- C：步长变化后 GEMM Dispatcher 据 stride 选适配 layout 的预编译内核（如 _tn）。\n- D：View 与原张量共享 Storage，改 View 即改原张量。\n- B 错误：不会启动转置 Kernel 做物理重排。"
+      }
+    }
+  },
+  {
+    "id": "pytorch-perf-gemm-epilogue-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "subtopic": "GEMM Epilogue 与算子融合",
+    "tags": ["pytorch", "cuda", "gemm", "epilogue", "addmm", "hbm", "memory-bandwidth"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "线性层 nn.Linear(in_features, out_features, bias=True) 的前向传播在 PyTorch Eager 模式下映射为 aten::addmm。为何这种设计比先执行矩阵乘法（matmul）再执行偏置加法（add）性能更高？（单选）",
+    "explanation": "B 正确：nn.Linear(bias=True) 前向映射为 aten::addmm，偏置加法在 GEMM 内核尾部写回（Epilogue）前完成，避免了中间矩阵写回 HBM 再读回做 add 的额外显存带宽开销。A 错误：总 FLOPs 不变。C、D 错误：加法仍在 GPU 上完成，矩阵运算未被改写成一维向量运算。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "通过减少总浮点运算次数（FLOPs），从而降低了 GPU 算术逻辑单元（ALU）的计算时间开销。",
+          "通过将偏置加法作为 GEMM Kernel 尾部写回前的 Epilogue 计算，避免了将中间矩阵写回 HBM 及重新读取的显存带宽开销。",
+          "通过将偏置加法完全移至 CPU 端异步计算，从而释放了 GPU 上的 CUDA Core 资源以并行处理其他计算。",
+          "通过将二维矩阵运算自动重构成一维向量运算，从而显著提高了 GPU Tensor Core 的指令发射频率与利用率。"
+        ],
+        "answer": [1]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n- addmm 利用 GEMM Epilogue：寄存器内完成点积后、写回 HBM 前顺带加偏置，省去“写回 HBM→读回 add”的额外显存读写循环。\n- A 错：FLOPs 不变；C/D 错：加法仍在 GPU 上，未改成一维向量。"
+      }
+    }
+  },
+  {
+    "id": "pytorch-perf-torchcompile-boundary-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "subtopic": "torch.compile 优化边界",
+    "tags": ["pytorch", "torch.compile", "inductor", "addmm", "jit", "debugging"],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "工程师对单个独立的 nn.Linear(in_dim=32, out_dim=64, bias=True) 前向过程使用 torch.compile() 优化后，Profiler 追踪显示 GPU 上的 Kernel 执行时间与 Eager 模式几乎完全一致，未能取得预期加速。导致这一现象的核心原因是什么？（单选）",
+    "explanation": "B 正确：torch.compile（Inductor）主要加速来自跨算子内核融合；而独立 nn.Linear(bias=True) 在 Eager 模式已调用自带偏置融合的 aten::addmm cuBLAS 内核，GPU 侧已无可继续合并的独立算子，故编译器无法生成更优内核，仅节省极少 CPU 派发开销。A、C、D 均不符合 PyTorch 编译器真实机制。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "矩阵规模太小触发了 Inductor 的退化机制，编译器放弃生成 GPU Kernel 并降级回 CPU 纯文本解释执行模式。",
+          "Eager 模式下的 nn.Linear 已映射至 aten::addmm，其偏置加法在 GEMM 底层已被融合，无额外 GPU 算子可供编译器进一步融合。",
+          "torch.compile 默认仅支持无偏置（bias=False）的矩阵乘法融合，遇到偏置参数时会自动关闭 Kernel 融合优化。",
+          "独立线性层缺少激活函数，导致 TorchDynamo 无法正确捕获计算图帧，最终回退（Fallback）至 Eager 模式执行。"
+        ],
+        "answer": [1]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n- Inductor 加速主要来自跨算子融合；独立 Linear(bias=True) 在 Eager 已用自带偏置融合的 addmm cuBLAS 内核，GPU 侧无可再合并的算子，故 GPU 时间几乎不变，仅省极少 CPU 派发开销。\n- A/C/D 均与 PyTorch 编译器真实机制不符。"
+      }
+    }
+  },
+  {
+    "id": "pytorch-perf-mlp-fusion-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "subtopic": "Pointwise 算子融合",
+    "tags": ["pytorch", "kernel-fusion", "mlp", "gelu", "triton", "hbm", "memory-bandwidth"],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 Transformer 的 GeGLU MLP 模块中，计算流程包含 gate_proj、up_proj 两个线性投影，以及后接的 GeLU 激活和逐元素乘法（h * u）。使用 torch.compile 或自定义 Triton Kernel 将 GeLU 与 mul 融合为单个 poi_fused Kernel 时，以下哪些说法是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A、B 正确：逐元素算子通常是显存带宽受限型；Eager 下 GeLU 中间张量需写入 HBM，mul 再读回，融合后中间结果留在 GPU 寄存器/SRAM，消除一次 HBM 读写循环。C 正确：合并 Kernel Launch 减少 CPU 发射调度开销。D 错误：融合优化的是显存访问与下发开销，数学逻辑与总 FLOPs 不变。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "融合前的 Eager 模式需要将 GeLU(g) 的中间张量写入 HBM，再由 mul Kernel 重新从 HBM 读取该张量。",
+          "融合后在 GPU 寄存器中直接完成 GeLU(g) * u 计算，避免了中间大张量在 HBM 的完整读写循环。",
+          "算子融合减少了 GPU Kernel Launch（发射）次数，从而降低了 CPU 侧的任务调度与下发开销。",
+          "算子融合通过改变数学算法逻辑，显著减少了计算 GeLU 激活函数所必须的浮点运算数（FLOPs）。"
+        ],
+        "answer": [0, 1, 2]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n- A/B：Pointwise 算子属显存带宽受限；Eager 需把 GeLU 中间张量写回 HBM 再读，融合后留在寄存器/SRAM，省一次 HBM 读写。\n- C：合并 Launch 省 CPU 调度开销。\n- D 错：FLOPs 与数学逻辑不变。"
+      }
+    }
+  },
+  {
+    "id": "pytorch-perf-gemm-layout-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "subtopic": "GEMM Layout 命名",
+    "tags": ["pytorch", "cuda", "profiler", "gemm", "layout", "cublas", "cutlass"],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "在 GPU Profiler 追踪日志中，矩阵乘法调用的底层 CUDA Kernel 名称末尾常带有 _tn 或 _nn 等后缀（例如 ...s16816gemm_bf16_..._tn）。关于这一后缀的技术含义，下列说法正确的是？（单选）",
+    "explanation": "A 正确：GEMM 库中 tn/nn/nt/tt 是矩阵内存布局描述符，t=Transposed（按列优先步长遍历）、n=Non-transposed（按行优先步长遍历）；PyTorch Dispatcher 根据输入张量 stride 匹配相应的预编译内核二进制，使得 GPU 执行矩阵乘法时无需先在显存中做物理转置。B、C、D 与后缀 _tn 的实际含义无关。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "表示输入矩阵 A 与 B 的内存布局期望（Transposed 转置 或 Non-transposed 非转置），Dispatcher 据此挑选无需物理复制即可按正确 Stride 遍历内存的内核。",
+          "表示 GPU 计算精度转换模式（T 为 Tensor Float 32，N 为 Native Bfloat16），决定内核内部使用哪种硬件 Core 进行混合精度计算。",
+          "表示 GPU 内存传输的线程同步模式（T 为 Threadblock-level，N 为 Node-level），决定数据在 SRAM 与 L2 Cache 之间的刷新机制。",
+          "表示动态 Shape 的对齐策略（T 为 Truncated 截断对齐，N 为 Normal 补零对齐），决定内核处理非 8 倍数 Batch Size 时的边界填充逻辑。"
+        ],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n- tn/nn/nt/tt 是 GEMM 布局描述符：t=Transposed、n=Non-transposed；Dispatcher 据 stride 匹配预编译内核，无需显存中物理转置。\n- B/C/D 均与后缀含义无关。"
+      }
+    }
+  },
+  {
+    "id": "pytorch-perf-compile-vs-triton-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "subtopic": "JIT 与手写算子权衡",
+    "tags": ["pytorch", "torch.compile", "triton", "liger", "kernel", "tradeoff", "system-design"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在针对大语言模型 MLP 模块进行性能优化时，工程团队需要在 torch.compile（Inductor JIT 编译）与直接集成预先手写的特化算子库（如 Liger Kernels / Triton Custom Kernels）之间做出架构决策。下列关于两者 Trade-off 的分析，哪些是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A、B 正确：torch.compile 具备通用性，但需付出 Dynamo 图捕获、Guard 检查与首次 JIT 编译开销；手写特化内核（如 Liger Kernels）绕过图追踪与 Guard，零首包编译延迟、确定性更强。C 错误：torch.compile 的灵活性与泛化性高于手写算子（改 Python 代码编译器自动重生成内核）。D 正确：手写内核的 Block/Grid 等 Launch 参数常基于特定维度或硬件调优，超出预设假设时可能需人工重新维护或微调。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "torch.compile 能自动捕获并融合任意通用代码，但可能产生 JIT 编译延迟，且在动态 Shape 场景下可能面临频繁 Re-trace 及 Guard 检查开销。",
+          "预写特化 Kernel 无需经过 TorchDynamo 的图捕获与 Guard 检查，在上线服务时可完全免除运行时 JIT 编译延迟及重编译风险。",
+          "torch.compile 生成的 Triton Kernel 在固定静态 Shape 下可能达到极高的执行效率，但对代码改动的灵活性和泛化性低于手写算子。",
+          "预写特化 Kernel 通常针对特定的输入维度或计算模式做过参数调优，当应用场景超出其预设假设时，可能需要人工重新维护或微调内核参数。"
+        ],
+        "answer": [0, 1, 3]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n- A/B：torch.compile 通用但有 Dynamo 图捕获/Guard/首包编译开销；手写内核绕过图追踪，零首包延迟、更确定。\n- C 错：torch.compile 灵活性与泛化性高于手写算子（改代码即重生成内核）。\n- D：手写内核 Launch 参数常针对特定 Shape/硬件调优，越界可能需重维护。"
+      }
+    }
+  }
+]

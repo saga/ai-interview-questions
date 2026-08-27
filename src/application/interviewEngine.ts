@@ -219,6 +219,14 @@ export async function evaluateAnswer(
   def: InterviewDefinition,
   config?: AIConfig,
 ): Promise<EvaluationResult | null> {
+  // 未作答（undefined/null/空串/空数组）不评分，避免记为 0 分污染画像（与 agent 评分层保持一致）。
+  if (
+    answer == null ||
+    (Array.isArray(answer) && answer.length === 0) ||
+    (typeof answer === 'string' && answer.trim() === '')
+  ) {
+    return null;
+  }
   if (sq.format === 'choice') {
     const cf = sq.question.formats.choice;
     if (!cf) throw new Error(`题目 ${sq.question.id} 缺少 choice 形态，无法判分`);

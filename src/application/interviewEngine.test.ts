@@ -115,6 +115,13 @@ describe('evaluateAnswer 的 useAI 门控（ADR-020）', () => {
     );
     expect(wrong?.overall).toBe(0);
   });
+
+  it('未作答（空串/空数组/undefined）返回 null，不记为 0 分', async () => {
+    expect(await evaluateAnswer({ question: choiceQ, format: 'choice' }, undefined, def(false), undefined)).toBeNull();
+    expect(await evaluateAnswer({ question: choiceQ, format: 'choice' }, [], def(false), undefined)).toBeNull();
+    expect(await evaluateAnswer({ question: openQ, format: 'open' }, '', def(true), { ...config })).toBeNull();
+    expect(await evaluateAnswer({ question: openQ, format: 'open' }, '   ', def(true), { ...config })).toBeNull();
+  });
 });
 
 const dualQ = (id: string): Question => ({

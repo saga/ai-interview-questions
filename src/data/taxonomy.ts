@@ -45,6 +45,7 @@ export const TAXONOMY: TaxonomyDomain[] = [
       { id: 'inference', label: '推理与服务', description: 'KV Cache/批处理/连续批处理/PagedAttention/前缀缓存/投机解码/量化/并行/延迟与吞吐' },
       { id: 'model-architecture', label: '模型架构', description: 'MoE/Mamba/SSM/混合架构/稀疏/高效架构/位置编码' },
       { id: 'multimodal', label: '多模态', description: '视觉语言模型/图像嵌入/OCR/文档理解/多模态RAG/音频/视频' },
+      { id: 'google-genai-leader', label: 'Google Generative AI Leader', description: '生成式 AI 与 Agent 定义/ML 范式区分/Gemini 适用边界/幻觉/扩散模型/负责任 AI 与数据安全' },
     ],
   },
   {
@@ -67,6 +68,7 @@ export const TAXONOMY: TaxonomyDomain[] = [
       { id: 'planning', label: '规划', description: '任务分解/计划执行/动态调整/反思' },
       { id: 'memory', label: '记忆', description: '工作记忆/长期记忆/状态/检索/压缩' },
       { id: 'multi-agent', label: '多智能体', description: '分工/通信/共享状态/编排/人环' },
+      { id: 'anthropic-cca', label: 'Anthropic CCA（Claude API 实战）', description: '协调器/子代理编排/上下文传递与源归因/状态恢复/工具选择/不确定性/提示缓存/评估' },
     ],
   },
   {
@@ -77,7 +79,9 @@ export const TAXONOMY: TaxonomyDomain[] = [
       { id: 'evaluation', label: '评估', description: '离线/在线/黄金集/LLM-as-Judge/rubric/成对/RAG评估/Agent评估/回归/可观测' },
       { id: 'observability', label: '可观测性', description: 'trace/指标/质量抽检/成本监控' },
       { id: 'cost-performance', label: '成本与性能', description: 'token经济/量化取舍/缓存命中/路由/批调度/延迟SLO' },
+      { id: 'model-performance', label: '模型性能优化（CUDA / Kernel）', description: 'View 元数据/GEMM Epilogue/算子融合/torch.compile 边界/手写 Triton 内核权衡/Profiler 内核命名' },
       { id: 'reliability', label: '可靠性', description: '超时/限流/重试/幂等/熔断/降级' },
+      { id: 'aws-ai-practitioner', label: 'AWS Certified AI Practitioner', description: 'SageMaker 推理选型/Bedrock 权限/可解释性/迁移学习/边缘 SLM/human-in-the-loop/提示工程对齐' },
     ],
   },
   {
@@ -172,6 +176,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   inference: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'calculation'],
   'model-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   multimodal: ['definition', 'mechanism', 'comparison', 'scenario'],
+  'google-genai-leader': ['definition', 'fundamental', 'mechanism', 'comparison', 'scenario', 'tradeoff'],
 
   // LLM 应用
   rag: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging'],
@@ -186,13 +191,16 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   planning: ['definition', 'mechanism', 'comparison', 'scenario', 'design'],
   memory: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario'],
   'multi-agent': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
+  'anthropic-cca': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'design'],
 
   // AI 系统
   'ai-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'system-design'],
   evaluation: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   observability: ['definition', 'mechanism', 'scenario', 'debugging'],
   'cost-performance': ['definition', 'mechanism', 'tradeoff', 'calculation', 'scenario'],
+  'model-performance': ['definition', 'fundamental', 'mechanism', 'tradeoff', 'scenario', 'debugging', 'design'],
   reliability: ['definition', 'mechanism', 'tradeoff', 'scenario', 'debugging'],
+  'aws-ai-practitioner': ['definition', 'scenario', 'mechanism', 'comparison', 'tradeoff'],
 
   // AI 安全
   'prompt-injection': ['definition', 'mechanism', 'comparison', 'scenario', 'debugging'],

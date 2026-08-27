@@ -20,15 +20,25 @@ export interface AgentToolDeps {
   profile: LearnerProfile;
   provider: LLMProvider;
   session: InterviewAgentSession;
+  /** 是否允许生成开放题（对应 AIConfig.generateOpenQuestions 全局开关）；默认 true。 */
+  generateOpenQuestions?: boolean;
 }
 
 /** 统一的文本型工具结果构造器。 */
-function textResult<T>(content: string, details: T, terminate = false): AgentToolResult<T> {
+function textResult<T>(content: string,  details: T, terminate = false): AgentToolResult<T> {
   return {
     content: [{ type: 'text', text: content }],
     details,
     terminate,
   };
+}
+
+/** 判断作答是否为空（未作答）：undefined / null / 空串 / 空数组。 */
+function isAnswerEmpty(answer: AnswerValue | undefined): boolean {
+  if (answer === undefined || answer === null) return true;
+  if (typeof answer === 'string') return answer.trim() === '';
+  if (Array.isArray(answer)) return answer.length === 0;
+  return false;
 }
 
 // ── 参数 schema（TypeBox） ───────────────────────────────
@@ -54,8 +64,8 @@ type GetQuestionParams = {
 };
 
 /** 由题目构造工具返回的精简摘要（不含题干全文，避免上下文膨胀）。 */
-function toSummary(q: Question) {
-  const formats = availableFormats(q, []);
+function toSummary(q: Question, generateOpenQuestions: boolean) {
+  const formats = availableFormats(q, generateOpenQuestions ? [] : ['choice']);
   return {
     id: q.id,
     category: q.category,
@@ -69,12 +79,14 @@ function toSummary(q: Question) {
  * 评估「当前题」的用户作答（与 evaluateAnswer 工具共用，便于兜底模式复用）：
  * 选择题走确定性 gradeChoice；开放题委托 LLMProvider.evaluateOpenAnswer。
  * 开放题评分失败（无 key / 网络）会向上抛错，调用方决定是记 null 还是提示。
+ * 未作答（空 answer）直接返回 null，避免把「没答」误记为 0 分污染成绩与画像。
  */
 export async function evaluateSessionQuestion(
   sq: SessionQuestion,
   answer: AnswerValue | undefined,
   provider: LLMProvider,
-): Promise<EvaluationResult> {
+): Promise<EvaluationResult | null> {
+  if (isAnswerEmpty(answer)) return null; // 未作答 → 跳过评分
   const baseRubric = sq.question.rubric?.dimensions
     ? { ...DEFAULT_RUBRIC, ...sq.question.rubric.dimensions }
     : DEFAULT_RUBRIC;
@@ -93,7 +105,7 @@ export async function evaluateSessionQuestion(
  * 每个工具的 execute 都是「薄包装」：读 session / 调 domain，再写回 session，返回可读结果。
  */
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
-  const { bank, profile, provider, session } = deps;
+  const { bank, profile, provider, session, generateOpenQuestions = true } = deps;
   const byId = new Map(bank.map((q) => [q.id, q]));
 
   const searchQuestions: AgentTool<typeof SearchQuestionsSchema> = {
@@ -106,7 +118,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       if (params.topic) {
         pool = pool.filter((q) => q.topic === params.topic || q.category === params.topic);
       }
-      const items = pool.slice(0, params.limit ?? 10).map(toSummary);
+      const items = pool.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
       session.log.push({
         at: Date.now(),
         kind: 'tool',
@@ -139,13 +151,25 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         session.log.push({ at: Date.now(), kind: 'tool', tool: 'getQuestion', summary: `未找到 ${params.id}`, details: { id: params.id } });
         return textResult(`未找到题目 ${params.id}（请使用 searchQuestions 返回的真实题号）`, { error: 'not_found', id: params.id });
       }
-      const available = availableFormats(q, []);
+      // 尊重全局「生成开放题」开关：关闭时只允许选择题，纯开放题不交付（避免绕过 generateOpenQuestions）。
+      const available = availableFormats(q, generateOpenQuestions ? [] : ['choice']);
+      if (available.length === 0) {
+        session.log.push({
+          at: Date.now(),
+          kind: 'tool',
+          tool: 'getQuestion',
+          summary: `题目 ${q.id} 不可用作（开放题已禁用）`,
+          details: { id: q.id, reason: 'open_disabled' },
+        });
+        return textResult(
+          `题目 ${q.id} 仅支持开放题，但「生成开放题」开关已关闭，无法呈现。请用 searchQuestions 选择其他题型，或开启该开关。`,
+          { error: 'open_disabled', id: q.id },
+        );
+      }
       const fmt =
         params.format && available.includes(params.format)
           ? params.format
-          : available.includes('choice')
-            ? 'choice'
-            : 'open';
+          : available[0];
       const sq: SessionQuestion = { question: q, format: fmt };
       session.currentQuestion = sq;
       session.log.push({
@@ -176,13 +200,25 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       const qid = sq.question.id;
       try {
         const result = await evaluateSessionQuestion(sq, session.answers[qid], provider);
+        if (result === null) {
+          // 未作答：跳过评分，不写虚假 0 分（与评估失败同样记为 null，不计入均分）
+          session.evaluations[qid] = null;
+          session.log.push({
+            at: Date.now(),
+            kind: 'tool',
+            tool: 'evaluateAnswer',
+            summary: '未作答，跳过评分',
+            details: { id: qid, skipped: true },
+          });
+          return textResult('当前题尚未作答，已跳过评分（不会计入成绩）。请先提交作答再评估。', { skipped: true });
+        }
         session.evaluations[qid] = result;
         session.log.push({
           at: Date.now(),
           kind: 'tool',
           tool: 'evaluateAnswer',
           summary: `评分 ${result.overall} 分`,
-          details: { id: qid, overall: result.overall },
+          details: { id: qid, overall: <number>result.overall },
         });
         return textResult(`评估完成：综合 ${result.overall} 分`, result);
       } catch (err) {

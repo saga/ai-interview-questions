@@ -1,0 +1,158 @@
+[
+  {
+    "id": "llm-arch-hybrid-recurrent-attention-01",
+    "category": "llm-architecture-advanced",
+    "topic": "hybrid-attention",
+    "subtopic": "混合 Recurrent-Attention 架构",
+    "tags": ["hybrid-architecture", "gated-deltanet", "gqa", "kv-cache", "recurrent", "mechanism"],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在现代超大语言模型设计中，常将线性循环层（如 Gated DeltaNet）与传统 Grouped-Query Attention (GQA) 按比例交替混合堆叠（例如 3:1），构成 Hybrid 架构。关于该设计在生产部署与性能上的取舍，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：Gated DeltaNet 等线性 Recurrent 层把历史压缩进固定大小状态矩阵，不保存 KV Cache；3:1 混合下只有 25% 的层存 KV，显存大幅下降。B 正确：线性 Recurrent 逐 Token 生成为 O(1)，周期性与 GQA 全局注意力兼顾生效率与长距离对齐。C 错误：为保证与 GQA 层的空间对齐及全局定位，Attention 层通常仍需 RoPE 等位置编码。D 正确：部署需同时优化 Linear Recurrent 与 GQA 两套算子与状态逻辑，工程复杂度更高。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "显著降低自回归生成阶段的 KV Cache 显存占用，因为线性循环层在推理时仅维护固定大小的隐状态向量",
+          "保持循环层 O(1) 的逐 Token 生成时间复杂度，同时利用周期性注意力层维持全局长距离上下文对齐能力",
+          "完全消除对位置编码（如 RoPE）的依赖，因为 DeltaNet 的状态更新公式天然具备绝对时间顺序的感知能力",
+          "相比纯 Transformer 架构，混合架构在系统实现与部署时需要同时管理两套不同的状态更新逻辑与算子优化"
+        ],
+        "answer": [0, 1, 3]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n- A：循环层不存 KV，仅 25% 注意力层存 KV，显存大降。\n- B：循环层 O(1) 生成 + 周期注意力保全局。\n- C 错：Attention 层仍需 RoPE。\n- D：双套算子/状态逻辑，部署更繁。"
+      }
+    }
+  },
+  {
+    "id": "llm-arch-preserved-thinking-01",
+    "category": "llm-architecture-advanced",
+    "topic": "kv-cache",
+    "subtopic": "Preserved Thinking 与 KV Cache",
+    "tags": ["preserved-thinking", "kv-cache", "prefix-cache", "multi-turn", "agent", "context-window"],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在多轮 Agent 系统中，可配置是否在历史 Prompt 中保留模型此前生成的思考推理过程（preserve_thinking=True / False）。关于开启保留历史思考（Preserved Thinking）的技术影响，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：保留历史思考块后，多轮前缀可命中已有 KV Cache，减少 Prefix 重解析与首 Token 延迟。B 正确：完整推理上下文保留推演逻辑，减少后续步中逻辑自相矛盾或重复试错。C 正确：思考块 Token 量通常很大，全部保留会快速膨胀 Context，更早触发截断或需 YaRN 外推。D 错误：关闭该配置是为省 Context，不强制模型重生成历史推理，也不成倍提高单轮吞吐量。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "开启该配置可以通过直接复用历史思考块的 KV Cache，降低多轮交互中的 Prefix 预热与首 Token 延迟",
+          "开启该配置可以保留完整推理上下文，避免模型在后续步骤中重复推理或产生决策逻辑前后冲突",
+          "开启该配置会导致历史 Context 长度快速膨胀，在长轮次 Agent 任务中加速挤占有限的上下文窗口配额",
+          "关闭该配置会强制模型在后续每一轮交互中重新生成历史推理过程，从而成倍提高单轮 Token 生成吞吐量"
+        ],
+        "answer": [0, 1, 2]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n- A：前缀命中 KV Cache，降首 Token 延迟。\n- B：保留推演逻辑，避免矛盾/重复。\n- C：思考块 token 多，膨胀 Context。\n- D 错：关闭不强制重生成、不翻倍吞吐。"
+      }
+    }
+  },
+  {
+    "id": "llm-arch-reasoning-effort-nonlinear-01",
+    "category": "llm-architecture-advanced",
+    "topic": "sampling",
+    "subtopic": "Reasoning Effort 非线性影响",
+    "tags": ["reasoning-effort", "thinking-mode", "e2e-latency", "agent", "tradeoff", "retry"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "部署具备推理能力（Thinking Mode）的 LLM Agent 执行复杂工程任务（如代码库重构）时，工程人员有时把单轮推理努力度（reasoning_effort 从 xhigh 降到 low）以优化响应速率。下列哪项最准确地解释为何降低单轮推理努力度可能反常地增加任务的总端到端耗时与 Token 总消耗？（单选）",
+    "explanation": "A 正确：Agent 是长环节闭环系统。单轮推理过浅（reasoning_effort=low）使模型在复杂工程判断时缺乏深入分析，直接输出错误工具调用/代码改动，引发环境报错并被迫进入多轮错误修复循环，最终总轮次、端到端延迟与 Token 费用都上升。B、C、D 均为混淆项：降频、KV Cache 无法对齐、Prompt 变长都不是 Reasoning Effort 降低的内在因果机制。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "单轮推理深度不足导致模型过早生成错误的工具调用指令，引发额外的环境报错与多轮重试修复",
+          "较低的推理预算会直接触发推理引擎降低 Token 输出采样速率，引发显卡计算单元的硬件降频",
+          "降低推理努力度会导致 KV Cache 无法进行内存对齐，被迫在每轮生成时清空并重新计算全部上下文",
+          "思考过程减少使模型生成的最终 Prompt 变长，单次 API 传输载荷大幅提升导致网络通信延迟剧增"
+        ],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n- 浅推理→错误工具调用→环境报错→多轮重试，总轮次/延迟/Token 反升。\n- B/C/D 非因果机制混淆项。"
+      }
+    }
+  },
+  {
+    "id": "llm-arch-mtp-01",
+    "category": "llm-architecture-advanced",
+    "topic": "transformer",
+    "subtopic": "Multi-Token Prediction",
+    "tags": ["mtp", "multi-token-prediction", "speculative-decoding", "training-objective", "mechanism"],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "现代大语言模型在预训练与后训练阶段常引入多 Token 预测（Multi-Token Prediction, MTP）架构，即主干网络在每个位置同时预测未来连续多个 Token。关于 MTP 的实现机制与应用价值，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：MTP 要求当前位置显式预测未来 n 个 Token，迫使隐藏层表征包含更长远语义预判，增强推理与长程规划。B 正确：训练好的附加预测头可作原生 Draft 头，推理时实现 Speculative Decoding，单步多 Token 提升吞吐。C 正确：MTP 增加额外投影头，训练时增显存与 Compute；普通自回归部署若不需投机采样可直接剥离这些头。D 错误：MTP 不跳过 FFN 梯度，反而增加 Loss 与梯度更新，训练显存是增加而非降低。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "额外的 MTP 预测头能促使主干网络表征更长远的前瞻语义，提升模型的逻辑推理与长程规划能力",
+          "MTP 训练获得的附加预测头可以在推理部署阶段直接用于投机采样（Speculative Decoding）以提升生成吞吐",
+          "引入 MTP 预测头会增加模型训练时的显存开销与计算复杂度，但在部署时可选择剥离预测头以节省显存",
+          "MTP 架构通过在后向传播中跳过 FFN 层的梯度更新，从而显著降低训练大参数模型时的整体显存占用"
+        ],
+        "answer": [0, 1, 2]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n- A：强制前瞻预测→更强长程表征。\n- B：附加头作 Draft 头做投机采样。\n- C：训练增开销、部署可剥离。\n- D 错：不跳 FFN 梯度，显存反增。"
+      }
+    }
+  },
+  {
+    "id": "llm-arch-yarn-01",
+    "category": "llm-architecture-advanced",
+    "topic": "rope",
+    "subtopic": "YaRN RoPE 外推",
+    "tags": ["yarn", "rope", "long-context", "extrapolation", "softmax-temperature", "mechanism"],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "当需把原生支持长上下文（如 256K Token）的模型继续外推至超长上下文（如 1M Token）且不密集微调时，通常采用 YaRN（Yet another RoPE Extension）。关于 YaRN 的工作原理与优势，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：YaRN 核心是维度分频缩放（Non-uniform Scaling），高频维度（局部细节）少缩放、低频维度（长距离）加大缩放。B 正确：上下文骤长后 Attention 的 Softmax 分布趋于平坦（熵增），YaRN 引入温度校正因子恢复注意力锐度。C 正确：分频+温度校正解决了传统线性 RoPE 缩放在短文本 PPL 飙升的缺陷，短长兼顾。D 错误：YaRN 仍基于 RoPE 频域变换，并未替换为绝对可学习位置嵌入。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "YaRN 对 RoPE 的不同频率维度实施非均匀缩放，在保留高频细节分辨率的同时对低频进行平滑外推",
+          "YaRN 引入注意力 Softmax 温度校正因子，以缓解上下文大幅延长时注意力分布过于平坦引发的熵崩溃",
+          "YaRN 避免了传统线性 RoPE 缩放导致模型在短上下文性能严重退化的缺陷，具备良好的短长距离兼容性",
+          "YaRN 通过将低频位置编码完全替换为绝对可学习位置嵌入，彻底消除了超长文本场景下的注意力衰减"
+        ],
+        "answer": [0, 1, 2]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n- A：维度分频缩放（高频保、低频扩）。\n- B：Softmax 温度校正抗熵崩。\n- C：解决短文本 PPL 退化。\n- D 错：仍用 RoPE，非绝对嵌入。"
+      }
+    }
+  },
+  {
+    "id": "llm-arch-thinking-sampling-01",
+    "category": "llm-architecture-advanced",
+    "topic": "sampling",
+    "subtopic": "思考/指令模式采样参数",
+    "tags": ["thinking-mode", "instruct-mode", "sampling", "temperature", "top-p", "presence-penalty"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "部署兼具思考模式（Thinking Mode）与指令模式（Instruct/Non-Thinking Mode）的思考型 LLM 时，两种模式需配置不同采样参数。下列关于采样参数配置最佳实践的说法中，正确的是？（单选）",
+    "explanation": "A 正确：Thinking 模式下较高 Temperature（如 1.0）有助于推理阶段探索多条思维分支、避免思维定势。B 错误：指令模式用于快速确切输出，通常用较低 Temperature（如 0.7）与较高 Presence Penalty 防重复，而非强制触发链式思考。C 错误：Presence Penalty 拉到 >2.0 会过度惩罚高频词，易引发语言混用/语法畸变。D 错误：禁用思考模式不强制 Greedy Decoding（Top-k=1），仍可配标准采样输出流畅文本。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "思考模式通常推荐较高的 Temperature（如 1.0）与较宽松的 Top-p，以鼓励推理路径的多样性与自我探索",
+          "指令模式通常推荐极低的 Temperature（如 0.0）与最小的 Presence Penalty，以强制触发链式思考输出",
+          "无论是否开启思考模式，Presence Penalty 都应保持在最高值（如 2.0 以上），以完全避免生成重复 Token",
+          "禁用思考模式后，必须将 Top-k 设为 1 且启用 Greedy Decoding，否则模型无法输出合规的格式化文本"
+        ],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n- Thinking 模式高 Temperature 探索多路径。\n- B 错：指令模式低 Temperature+高 Presence Penalty，不强制 CoT。\n- C 错：Presence Penalty 过高致畸变。\n- D 错：禁用思考不强制 Greedy。"
+      }
+    }
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "pytorch-performance",
+    "name": "PyTorch 性能剖析与优化",
+    "area": "ai-systems",
+    "topic": "model-performance",
+    "priority": "P1",
+    "summary": "围绕 CUDA 执行模型做性能优化：区分元数据操作与物理内存搬运、理解 GEMM Epilogue 与算子融合如何省 HBM 带宽、认清 torch.compile 的融合边界与手写 Triton 内核的权衡，并能读懂 Profiler 内核命名。",
+    "required": [
+      "View 操作（transpose/t/view）只改 CPU 端 shape/stride 元数据，不搬 HBM、不起 Kernel",
+      "GEMM Epilogue 把偏置加法融合进写回前，避免中间结果回写 HBM 再读回",
+      "Pointwise 算子融合把中间结果留在寄存器/SRAM，消除 HBM 读写循环并减少 Kernel Launch",
+      "torch.compile 加速主要来自跨算子融合；已融合的单个算子（如 addmm）无更多可融合空间",
+      "JIT 自动编译 vs 手写特化内核在编译延迟、动态 Shape、维护成本上的权衡"
+    ],
+    "misconceptions": [
+      "以为 transpose/t 会立即启动 GPU Kernel 做物理转置",
+      "以为算子融合改变了数学逻辑或减少了总 FLOPs",
+      "以为给任意算子套上 torch.compile 就一定能加速（忽略 Eager 已融合的单算子）",
+      "以为 Profiler 内核名后缀 _tn 表示精度或线程同步模式"
+    ],
+    "angles": ["mechanism", "tradeoff", "debugging", "scenario", "fundamental", "design"]
+  }
+]

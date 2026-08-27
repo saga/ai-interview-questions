@@ -68,6 +68,8 @@ export interface CreateInterviewAgentOptions {
   bank: Question[];
   provider: LLMProvider;
   handlers?: AgentHandlers;
+  /** 对应 AIConfig.generateOpenQuestions 全局开关；默认 true（允许开放题）。 */
+  generateOpenQuestions?: boolean;
   /** 测试注入：用 mock streamFn + 占位 model 替换真实 buildAgentRuntime（避免真实网络/模型查找）。 */
   runtimeOverride?: { streamFn: StreamFn; model: unknown };
 }
@@ -89,14 +91,18 @@ export interface InterviewAgentHandle {
  * 工具把决策落到共享的 `session` 上（currentQuestion / answers / evaluations / log）。
  */
 export function createInterviewAgent(opts: CreateInterviewAgentOptions): InterviewAgentHandle {
-  const { session, profile, entry, bank, provider, handlers } = opts;
+  const { session, profile, entry, bank, provider, handlers, generateOpenQuestions = true } = opts;
   const runtime = opts.runtimeOverride ?? buildAgentRuntime(entry);
-  const tools = createAgentTools({ bank, profile, provider, session });
+  const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions });
   const bankById = new Map(bank.map((q) => [q.id, q]));
 
+  // 关闭开放题时，把开关状态注入系统提示，让 Agent 主动只选选择题（减少无效请求被拒）。
+  const systemPrompt = generateOpenQuestions
+    ? INTERVIEW_AGENT_SYSTEM_PROMPT
+    : `${INTERVIEW_AGENT_SYSTEM_PROMPT}\n\n## 本轮配置\n「生成开放题」开关已关闭：请只选择并使用选择题（choice），不要请求开放题（open），否则会被系统拦截并要求换题。`;
   const agent = new Agent({
     streamFn: runtime.streamFn,
-    initialState: { model: runtime.model as Model<any>, systemPrompt: INTERVIEW_AGENT_SYSTEM_PROMPT },
+    initialState: { model: runtime.model as Model<any>, systemPrompt },
     shouldStopAfterTurn: (ctx) => shouldStopAfterTurn(session, ctx),
     beforeToolCall: (ctx) => Promise.resolve(beforeToolCall(entry, session, ctx)),
   });
@@ -133,7 +139,9 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       ...Object.keys(session.evaluations),
       ...(session.currentQuestion ? [session.currentQuestion.question.id] : []),
     ]);
-    const pool = bank.filter((q) => !asked.has(q.id));
+    // 尊重全局「生成开放题」开关：关闭时只从「可出选择题」的题中挑选，避免兜底出开放题。
+    const fmtsAllowed = generateOpenQuestions ? [] : ['choice'];
+    const pool = bank.filter((q) => !asked.has(q.id) && availableFormats(q, fmtsAllowed).length > 0);
     if (pool.length === 0) return false;
 
     const signals: AnswerSignal[] = Object.entries(session.evaluations)

@@ -2,6 +2,52 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-27 · 新增 AWS Certified AI Practitioner 题域（先入库 10 题，其余 442 题来源付费墙拦截）
+
+- **动机**：用户要求抓取 ExamTopics 的 AWS Certified AI Practitioner (AIF-C01) 题库入库。该考试共 452 题（46 页），免费用户仅放行第 1 页（10 题），第 2 页起同前例返回付费墙/验证码。先入库可公开获取的 10 题。
+- **数据**：`src/data/questions/aws-ai-practitioner.json`（10 道单选，含 choice + open 双形态，已带「单选」提示）；`category = aws-ai-practitioner`。
+- **知识节点**：`src/data/knowledge/aws-ai-practitioner.json`（`id: aws-ai-practitioner`，`area: ai-systems`）；`taxonomy.ts` 在 `ai-systems` 域下新增 topic `aws-ai-practitioner` 并补 `ANGLE_WHITELIST`。
+- **答案口径**：10 题均属 AWS AI 从业者基础（可解释性 PDP / SageMaker 异步推理 / Bedrock 加密权限 / 迁移学习 / 边缘 SLM / Ground Truth Plus 等），与 AWS 官方指引一致，无存疑项。其中 Q6（大 payload+长时处理+近实时→异步推理）为 AWS 特定事实，已按官方选型确认。
+- **反泄题**：`lint:bias` 初报 4 道 strong（Q1/Q7/Q8/Q9 正确项明显最长），已分别缩短正确项或补齐最短干扰项使 gap < 1.8，复跑 strong=0。
+- **验证**：`validate:questions` 574 题通过；`typecheck` + 全量测试 355 passed。
+- **待办**：剩余 442 题需用户提供可访问来源（登录导出 / PDF / 文本 dump）再补抓。
+
+## 2026-08-27 · 新增 Google Generative AI Leader 题域（先入库 10 题，其余 65 题来源付费墙拦截）
+
+- **动机**：用户要求抓取 ExamTopics 的 Google Generative AI Leader 题库入库。该考试共 75 题（8 页），但 ExamTopics 对免费用户仅放行第 1 页（10 题），第 2 页起同样返回付费墙/验证码（同 CCA-F 情形）。先入库可公开获取的 10 题。
+- **数据**：`src/data/questions/google-genai-leader.json`（10 道单选，含 choice + open 双形态，已带「单选」提示）；`category = google-genai-leader`。
+- **知识节点**：`src/data/knowledge/google-genai-leader.json`（`id: google-genai-leader`，`area: llm`）；`taxonomy.ts` 在 `llm` 域下新增 topic `google-genai-leader` 并补 `ANGLE_WHITELIST`。
+- **答案口径**：10 题均为 GenAI 基础定义/范式（生成式 AI、Agent、监督/无监督/强化、Gemini 边界、幻觉、扩散模型、训练数据安全），与权威定义一致，无存疑项。
+- **反泄题**：`lint:bias` 初报 1 道 strong（Q9 正确项最长、最短干扰项 D），已扩充 D 使 gap < 1.8，复跑 strong=0。
+- **验证**：`validate:questions` 564 题通过；`typecheck` + 全量测试 355 passed。
+- **待办**：剩余 65 题需用户提供可访问来源（登录导出 / PDF / 文本 dump）再补抓。
+
+## 2026-08-27 · 新增「前沿 LLM / Agent 架构」题域（6 题）
+
+- **动机**：用户手搓 6 道高价值面试选择题（混合 Recurrent-Attention / Preserved Thinking KV 复用 / Reasoning Effort 非线性影响 / MTP / YaRN RoPE 外推 / 思考-指令模式采样参数），入库为独立文件。
+- **数据**：`src/data/questions/llm-architecture-advanced.json`（6 题，3 道多选带「请选择以下 N 个正确选项」提示、3 道单选带「单选」提示，含 choice + open 双形态）；`category = llm-architecture-advanced`。
+- **topic 映射**：复用现有知识节点 id，未新增 taxonomy——Q1→`hybrid-attention`、Q2→`kv-cache`、Q3/Q6→`sampling`、Q4→`transformer`（MTP 属 Transformer 预训练架构）、Q5→`rope`。注意 `training-objective` 仅是 `transformer` 节点的子 concept，非节点 id，故 Q4 落 `transformer`。
+- **答案核对**：用户所给参考答案（A,B,D / A,B,C / A / A,B,C / A,B,C / A）均与第一性原理一致，无存疑项。
+- **验证**：`validate:questions` 554 题通过；`lint:bias` strong=0；`typecheck` + 全量测试 355 passed。
+
+## 2026-08-27 · 新增 Anthropic CCA-F 题域（先入库 10 题，其余 124 题来源付费墙拦截）
+
+- **动机**：用户要求抓取 ExamTopics 的 Anthropic CCA-F 题库入库。该考试共 134 题（14 页），但 ExamTopics 对免费用户仅放行第 1 页（10 题），第 2 页起返回「You've Reached Your Free CCA-F Exam Questions Limit / Enter Captcha」——WebFetch 与 curl 均无法越过（题目为 JS 渲染 + 验证码/付费 Contributor Access）。故先入库可公开获取的 10 题。
+- **数据**：`src/data/questions/anthropic-cca-f.json`（10 道单选择，含 choice + open 双形态，已带「单选」提示）；`category = anthropic-cca-f`。
+- **答案口径**：ExamTopics 的「Correct Answer」为社区投票，已结合 Anthropic 官方多代理最佳实践逐题核对——10 题标记答案全部与官方协调器/子代理编排建议一致，无存疑项。
+- **知识节点**：`src/data/knowledge/anthropic-cca.json`（`id: anthropic-cca`，`area: agent-engineering`）；`taxonomy.ts` 在 `agent-engineering` 下新增 topic `anthropic-cca` 并补 `ANGLE_WHITELIST`，使 `topic` 映射到节点且 domain/topic 自洽。
+- **反泄题**：`lint:bias` 初报 2 道 strong 长度偏差，已分别扩充最短干扰项（Q2-A、Q3-C）使 gap < 1.8，复跑 strong=0。
+- **验证**：`validate:questions` 548 题通过；`typecheck` + 全量测试 352 passed。
+- **待办**：剩余 124 题需用户提供可访问的来源（登录后导出 / PDF / 文本 dump），再补抓入库。
+
+## 2026-08-27 · 新增「模型性能优化（CUDA / Kernel）」题域（6 题）
+
+- **动机**：补充 PyTorch 模型性能剖析与优化面试题（Tensor View 元数据 / GEMM Epilogue 融合 / torch.compile 边界 / Pointwise 融合 / Profiler 内核命名 / JIT vs 手写内核权衡）。用户手搓高质量 6 题，入库为独立文件。
+- **数据**：新增 `src/data/questions/pytorch-perf.json`（6 道选择题，single/multiple 混排，含 choice + open 双形态，多选题已带「请选择以下 N 个正确选项」提示）；`category` = 文件名 slug `pytorch-perf`。
+- **知识节点**：新增 `src/data/knowledge/pytorch-performance.json`（`id: pytorch-performance`，`area: ai-systems`），题目的 `topic` 映射到该节点 id。
+- **Taxonomy**：在 `ai-systems` 域下新增 topic `model-performance`（标签「模型性能优化（CUDA / Kernel）」）并补 `ANGLE_WHITELIST`，使节点 domain/topic 自洽；否则 `taxonomy.test` / `bank.test` 的孤儿漂移校验不通过。
+- **验证**：`validate:questions` 538 题通过；`lint:bias` strong=0；`typecheck` 与全量测试 351 passed。
+
 ## 2026-08-27 · 全局消除异步提交重入（防反复点击）
 
 - **动机**：Agent 面试提交后在 LLM 响应前按钮仍可点，触发 `pi-agent-core` 的 `submitAnswer` 重入守卫抛 "Agent is already processing"。排查发现主训练流程与 Copilot 存在同类窗口：仅依赖 `setBusy`/`setLoading` 这类 state（在 re-render 后才禁用按钮），同 tick 内的快速双击仍可重复触发 `await`。
