@@ -115,6 +115,7 @@ interface CopilotSidebarProps {
 const role: BubbleListProps['role'] = {
   assistant: {
     placement: 'start',
+    variant: 'borderless',
     style: { width: '100%', margin: '0 0 8px', boxShadow: 'none' },
     classNames: { root: 'copilot-assistant-bubble', content: 'copilot-assistant-message' },
     styles: { content: { boxShadow: 'none', padding: '10px 12px', width: '100%', maxWidth: '100%' } },
