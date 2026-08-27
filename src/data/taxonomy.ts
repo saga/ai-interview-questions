@@ -82,6 +82,7 @@ export const TAXONOMY: TaxonomyDomain[] = [
       { id: 'model-performance', label: '模型性能优化（CUDA / Kernel）', description: 'View 元数据/GEMM Epilogue/算子融合/torch.compile 边界/手写 Triton 内核权衡/Profiler 内核命名' },
       { id: 'reliability', label: '可靠性', description: '超时/限流/重试/幂等/熔断/降级' },
       { id: 'aws-ai-practitioner', label: 'AWS Certified AI Practitioner', description: 'SageMaker 推理选型/Bedrock 权限/可解释性/迁移学习/边缘 SLM/human-in-the-loop/提示工程对齐' },
+      { id: 'aws-genai-developer-pro', label: 'AWS Certified Generative AI Developer - Professional (AIP-C01)', description: 'Bedrock 编排/智能路由/跨区域推理/Guardrails/知识库/混合检索/MCP/评估/可观测/渐进部署' },
     ],
   },
   {
@@ -201,6 +202,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'model-performance': ['definition', 'fundamental', 'mechanism', 'tradeoff', 'scenario', 'debugging', 'design'],
   reliability: ['definition', 'mechanism', 'tradeoff', 'scenario', 'debugging'],
   'aws-ai-practitioner': ['definition', 'scenario', 'mechanism', 'comparison', 'tradeoff'],
+  'aws-genai-developer-pro': ['definition', 'scenario', 'mechanism', 'comparison', 'tradeoff', 'design', 'debugging'],
 
   // AI 安全
   'prompt-injection': ['definition', 'mechanism', 'comparison', 'scenario', 'debugging'],

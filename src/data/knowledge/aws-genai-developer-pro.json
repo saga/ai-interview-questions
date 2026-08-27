@@ -1,0 +1,35 @@
+[
+  {
+    "id": "aws-genai-developer-pro",
+    "name": "AWS Certified Generative AI Developer - Professional (AIP-C01)",
+    "area": "ai-systems",
+    "topic": "aws-genai-developer-pro",
+    "priority": "P1",
+    "summary": "在 AWS 上构建生产级 GenAI 应用的专家级认知：Bedrock 顺序/并行编排（Step Functions）、智能提示路由、跨区域推理与数据驻留、Guardrails（block/mask/拒绝主题/接地检查）、知识库（分层/语义切分、GraphRAG、来源归因）、RAG 语料处理（Comprehend 去 PII + 嵌入）、混合检索与 reranker、OpenSearch k-NN 语义缓存、MCP（Streamable HTTP + Cognito）、Bedrock Flows、模型评估作业（RWK/BERTScore）与 CI/CD 门禁、可观测性（CloudWatch Application Insights/复合告警）、金丝雀部署。",
+    "required": [
+      "顺序多智能体编排用 Step Functions（任务级 Retry/Catch）而非自定义 Lambda 编排",
+      "Bedrock 智能提示路由按质量-成本自动选模型，省去自建分类与路由",
+      "跨区域推理用地理推理配置文件（EU/US），不支持 Provisioned Throughput，且满足数据驻留",
+      "Guardrails block 从源头拦截被禁主题/PII，mask 仅脱敏；denied-topic + 上下文接地检查拦幻觉",
+      "知识库分层切分（父/子块）解决长文档超窗；GraphRAG + Neptune Analytics 做多跳关系",
+      "RAG 降幻觉靠语义检索锚定源内容 + CoT 事实核验，而非一次性整文档摘要",
+      "混合检索 = 向量 + 关键词，提升精确术语/缩写召回；Bedrock reranker 重排提质",
+      "OpenSearch k-NN 近似检索做语义等价缓存，降冗余模型调用",
+      "MCP 服务器用 Streamable HTTP + API Gateway + Cognito OAuth 鉴权（非 STDIO）",
+      "评估：Bedrock 自动模型评估作业，文本生成 RWK、摘要 BERTScore，可接入 CI/CD 阻断发布",
+      "可观测：CloudWatch Application Insights 自动关联指标/日志异常；复合告警组合技术+业务指标",
+      "渐进/金丝雀部署用 Step Functions 分阶段切流 + CloudWatch 指标门禁自动回滚",
+      "流式 API：API Gateway REST + Lambda 响应流（HTTP API 不支持响应负载流式）",
+      "Bedrock Flows 用 S3 节点 + 表达式抽取 + agent 节点做文档审核工作流"
+    ],
+    "misconceptions": [
+      "以为 API Gateway HTTP API 支持响应负载流式（仅 REST API + Lambda 代理集成支持）",
+      "以为 Bedrock 推理配置文件支持 Provisioned Throughput（当前不支持）",
+      "以为 Guardrails mask 能从源头拦截被禁主题（需 block 策略）",
+      "以为 Bedrock 语义切分支持缓冲 3 句（有效范围为 0–1）",
+      "以为 MCP 用 STDIO 传输就能做网络层鉴权（STDIO 仅进程内，需 Streamable HTTP + Cognito）",
+      "以为提高 temperature 能降低幻觉（反而增加随机性）"
+    ],
+    "angles": ["definition", "scenario", "mechanism", "comparison", "tradeoff", "design", "debugging"]
+  }
+]

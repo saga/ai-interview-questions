@@ -2,6 +2,16 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-27 · 新增 AWS Certified Generative AI Developer - Professional 题域（AIP-C01，先入库 25 题，其余 98 题来源付费墙拦截）
+
+- **动机**：用户要求从 examcademy.com 抓取 AWS Certified Generative AI Developer - Professional (AIP-C01) 题库。该考试共 123 题（5 页），免费页仅完整渲染第 1 页（25 题），第 2 页起为登录/PDF 付费墙，仅留空标题。先入库可公开获取的 25 题。
+- **数据**：`src/data/questions/aws-genai-developer-pro.json`（25 道，其中 Q2/Q9/Q21 为“Choose two”多选，其余单选；均带 choice + open 双形态与「单选 / 请选择以下 N 个正确选项」提示）；`category = aws-genai-developer-pro`。
+- **知识节点**：`src/data/knowledge/aws-genai-developer-pro.json`（`id: aws-genai-developer-pro`，`area: ai-systems`）；`taxonomy.ts` 在 `ai-systems` 域下新增 topic `aws-genai-developer-pro` 并补 `ANGLE_WHITELIST`。
+- **答案口径**：25 题均来自 examcademy 官方解析，覆盖 Bedrock 编排（Step Functions 顺序/Parallel）、智能提示路由、跨区域推理与数据驻留、Guardrails（block/mask/拒绝主题/接地）、知识库（分层切分/GraphRAG/来源归因）、RAG 语料处理（Comprehend 去 PII + 嵌入）、混合检索 + reranker、OpenSearch k-NN 语义缓存、MCP（Streamable HTTP + Cognito）、Bedrock Flows、模型评估作业（RWK/BERTScore）与 CI/CD 门禁、可观测性（Application Insights/复合告警）、金丝雀部署。无存疑项。
+- **反泄题**：`lint:bias` 初报 7 道 strong（Q6/Q7/Q9/Q15/Q16/Q22/Q24 正确项明显最长），已缩短正确项使 gap < 1.8，复跑 strong=0。
+- **验证**：`validate:questions` 599 题通过；`typecheck` + 全量测试通过。
+- **待办**：剩余 98 题需用户提供可访问来源（登录导出 / PDF / 文本 dump）再补抓；examcademy 第 2–5 页为付费墙。
+
 ## 2026-08-27 · 新增 AWS Certified AI Practitioner 题域（先入库 10 题，其余 442 题来源付费墙拦截）
 
 - **动机**：用户要求抓取 ExamTopics 的 AWS Certified AI Practitioner (AIF-C01) 题库入库。该考试共 452 题（46 页），免费用户仅放行第 1 页（10 题），第 2 页起同前例返回付费墙/验证码。先入库可公开获取的 10 题。
