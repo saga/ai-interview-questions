@@ -116,6 +116,7 @@ const role: BubbleListProps['role'] = {
   assistant: {
     placement: 'start',
     style: { width: '100%', margin: '0 0 8px', boxShadow: 'none' },
+    classNames: { root: 'copilot-assistant-bubble', content: 'copilot-assistant-message' },
     styles: { content: { boxShadow: 'none', padding: '10px 12px', width: '100%', maxWidth: '100%' } },
     footer: (
       <Space size={0}>
@@ -256,6 +257,19 @@ ${weak ? `薄弱主题：${weak}` : ''}
       )}
       {open && (
         <>
+          <style>{`
+            .copilot-assistant-bubble.ant-bubble-start {
+              padding-inline-end: 0 !important;
+            }
+            .copilot-assistant-bubble .ant-bubble-body {
+              width: 100% !important;
+            }
+            .copilot-assistant-message.ant-bubble-content {
+              width: 100% !important;
+              max-width: 100% !important;
+              box-shadow: none !important;
+            }
+          `}</style>
           {/* header */}
           <div
             style={{
