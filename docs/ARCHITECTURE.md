@@ -258,7 +258,9 @@ InterviewDefinition  (声明式：categories / difficulties / formats('choice'|'
    → planComposition（抽题 + 形态配额：开放 ≈ floor(count*0.3)，超额与池内未抽中
      的可选择题原位换题，无题可换则裁剪；整池单形态时跳过配比）
    → finalizeQuestion（LLM 变体快照，失败回退原题）
-   InterviewSession.questions: SessionQuestion[] (question 快照 + format + 用户答案 + 评分)
+   InterviewSession.questions: SessionQuestion[]（仅含「题目快照 question + 本次呈现形态 format」，不含答案与评分）
+        │   注：用户作答与评分不挂在 SessionQuestion 上，而分别存于会话运行态的 answers / evaluations（按 questionId 索引），
+        │   最终由 sessionFromQuiz 聚合进 LearnerProfile。
         │
         ↓  evaluateAnswer() / evaluateSession()
    EvaluationResult  (overall 0-100 + 四维 dimensions + strengths/gaps/feedback)

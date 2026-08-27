@@ -182,6 +182,7 @@ describe('createInterviewAgent 完整 loop', () => {
       entry: VALID_ENTRY,
       bank,
       provider,
+      generateOpenQuestions: true, // 测试场景需开放题：显式开启，不依赖默认（全局默认 false）
       runtimeOverride: { streamFn, model: { id: 'mock' } as any },
     });
 
@@ -249,6 +250,7 @@ describe('createInterviewAgent 完整 loop', () => {
       entry: VALID_ENTRY,
       bank,
       provider,
+      generateOpenQuestions: true, // 测试场景需开放题：显式开启，不依赖默认（全局默认 false）
       runtimeOverride: { streamFn, model: { id: 'mock' } as any },
     });
 

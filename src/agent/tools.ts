@@ -20,7 +20,7 @@ export interface AgentToolDeps {
   profile: LearnerProfile;
   provider: LLMProvider;
   session: InterviewAgentSession;
-  /** 是否允许生成开放题（对应 AIConfig.generateOpenQuestions 全局开关）；默认 true。 */
+  /** 是否允许生成开放题（对应 AIConfig.generateOpenQuestions 全局开关）；默认 false（与全局 AIConfig 一致）。 */
   generateOpenQuestions?: boolean;
 }
 
@@ -118,7 +118,7 @@ export async function evaluateSessionQuestion(
  * - session 作为共享可变状态：工具把结论写回 session，UI 通过 handlers 感知变更，形成「Agent 决策 + 工具落地」的闭环。
  */
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
-  const { bank, profile, provider, session, generateOpenQuestions = true } = deps;
+  const { bank, profile, provider, session, generateOpenQuestions = false } = deps;
   const byId = new Map(bank.map((q) => [q.id, q]));
 
   const searchQuestions: AgentTool<typeof SearchQuestionsSchema> = {

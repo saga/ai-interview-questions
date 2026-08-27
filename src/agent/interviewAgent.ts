@@ -68,7 +68,7 @@ export interface CreateInterviewAgentOptions {
   bank: Question[];
   provider: LLMProvider;
   handlers?: AgentHandlers;
-  /** 对应 AIConfig.generateOpenQuestions 全局开关；默认 true（允许开放题）。 */
+  /** 对应 AIConfig.generateOpenQuestions 全局开关；默认 false（与全局 AIConfig 一致，避免漏传时绕过开关）。 */
   generateOpenQuestions?: boolean;
   /** 测试注入：用 mock streamFn + 占位 model 替换真实 buildAgentRuntime（避免真实网络/模型查找）。 */
   runtimeOverride?: { streamFn: StreamFn; model: unknown };
@@ -100,7 +100,7 @@ export interface InterviewAgentHandle {
  * - 工具注入方式：Agent 构造不接受 tools 选项，只能事后通过 state.tools 注入（已验证的 SDK 约定）。
  */
 export function createInterviewAgent(opts: CreateInterviewAgentOptions): InterviewAgentHandle {
-  const { session, profile, entry, bank, provider, handlers, generateOpenQuestions = true } = opts;
+  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false } = opts;
   const runtime = opts.runtimeOverride ?? buildAgentRuntime(entry);
   const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions });
   const bankById = new Map(bank.map((q) => [q.id, q]));
