@@ -87,6 +87,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
   const [questions, setQuestions] = useState<SessionQuestion[]>([]);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
   const [busy, setBusy] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [summary, setSummary] = useState<{ asked: number; overall: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,6 +95,8 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
   const sessionRef = useRef<InterviewAgentSession | null>(null);
   const questionsRef = useRef<SessionQuestion[]>([]);
   const pendingTextRef = useRef('');
+  // 同步守卫：submitAnswer 是异步长任务，同一 tick 内的重复点击需即时拦截，避免触发"already processing"
+  const submittingRef = useRef(false);
 
   const syncQuestions = useCallback((q: SessionQuestion) => {
     setQuestions((prev) => {
@@ -205,15 +208,23 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
   };
 
   const submit = async () => {
+    if (submittingRef.current) return; // 同步拦截：提交进行中不允许重复点击
     if (!currentQuestion) return;
     if (!hasAnswer(answer)) {
       message.warning('请先作答再提交');
       return;
     }
+    submittingRef.current = true;
+    setSubmitting(true);
+    setBusy(true); // 立即禁用按钮 + 显示遮罩，避免 LLM 响应前反复点击
     try {
       await handleRef.current?.submitAnswer(answer);
     } catch (err) {
       setError('提交失败：' + (err as Error).message);
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+      setBusy(false);
     }
   };
 
@@ -311,10 +322,10 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
           <Tag color="blue">
             已考察 {Object.keys(sessionRef.current?.evaluations ?? {}).length} 题
           </Tag>
-          {busy ? (
+          {busy || submitting ? (
             <Tag color="processing">
               <Space size={4}>
-                <Spin size="small" /> 面试官思考中…
+                <Spin size="small" /> {submitting ? '正在检查回答…' : '面试官思考中…'}
               </Space>
             </Tag>
           ) : (
@@ -343,7 +354,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
               </Space>
             </Card>
           )}
-          {busy && (
+          {(busy || submitting) && (
             <div
               style={{
                 position: 'absolute',
@@ -355,7 +366,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
                 borderRadius: 8,
               }}
             >
-              <Spin tip="面试官思考中…" />
+              <Spin tip={submitting ? '正在检查回答…' : '面试官思考中…'} />
             </div>
           )}
         </div>
@@ -366,7 +377,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
           block
           icon={<SendOutlined />}
           style={{ marginTop: 16 }}
-          disabled={!currentQuestion || !hasAnswer(answer) || busy}
+          disabled={!currentQuestion || !hasAnswer(answer) || busy || submitting}
           onClick={() => void submit()}
         >
           提交作答并继续
