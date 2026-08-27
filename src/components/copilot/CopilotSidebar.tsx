@@ -115,8 +115,8 @@ interface CopilotSidebarProps {
 const role: BubbleListProps['role'] = {
   assistant: {
     placement: 'start',
-    style: { width: '100%', maxWidth: '100%', margin: '0 0 8px' },
-    styles: { content: { boxShadow: 'none', padding: '10px 12px' } },
+    style: { width: '100%', margin: '0 0 8px', boxShadow: 'none' },
+    styles: { content: { boxShadow: 'none', padding: '10px 12px', width: '100%', maxWidth: '100%' } },
     footer: (
       <Space size={0}>
         <Button type="text" size="small" icon={<ReloadOutlined />} />
