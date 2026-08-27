@@ -38,15 +38,16 @@ import { formatSchemaErrorMessage } from '../schemas/errors';
 const ADAPTIVE_OPEN_PROBABILITY = 0.3;
 
 /**
- * 本次会话实际允许的呈现形态（ADR-031）：config.generateOpenQuestions 关闭
- * （含 config 未传）时剔除 open——纯开放题因此不入池，双形态题一律出选择。
+ * 本次会话实际允许的呈现形态（ADR-031）：
+ * - config.generateOpenQuestions 关闭（含 config 未传）→ 剔除 open；
+ * - def.useAI 关闭 → 剔除 open（开放题无法评分，避免「出题但不打分」的不一致）；
  * 返回值永远是具体的非空列表：定义未选形态视为不限（choice+open）；
- * 定义只选了 open 而全局关闭时退化为 choice，避免出现空会话。
+ * 定义只选了 open 而不可用时退化为 choice，避免出现空会话。
  */
 function effectiveFormats(def: InterviewDefinition, config?: AIConfig): FormatId[] {
   const base: FormatId[] = def.formats.length > 0 ? def.formats : ['choice', 'open'];
-  if (config?.generateOpenQuestions) return base;
-  const filtered = base.filter((f) => f !== 'open');
+  const allowOpen = Boolean(config?.generateOpenQuestions) && Boolean(def.useAI);
+  const filtered = base.filter((f) => f !== 'open' || allowOpen);
   return filtered.length > 0 ? filtered : ['choice'];
 }
 
@@ -175,7 +176,10 @@ export async function nextAdaptiveStep(
           const probeQ = buildQuestionFromGeneration(gen, bp, `probe-${picked.probeConceptId}-${session.questions.length}`, {
             transient: true,
           });
-          const probeSq: SessionQuestion = { question: probeQ, format: probeQ.formats.choice ? 'choice' : 'open' };
+          // 尊重全局「生成开放题」开关与 useAI：探针题也按 effectiveFormats 决定形态，
+          // 避免绕过 generateOpenQuestions（探针蓝图虽默认 choice，此处防御性收窄，防止未来回归）。
+          const probeFormat: FormatId = availableFormats(probeQ, formats).includes('choice') ? 'choice' : 'open';
+          const probeSq: SessionQuestion = { question: probeQ, format: probeFormat };
           return { question: probeSq, strategy: 'move-on', probe: { conceptId: picked.probeConceptId, promoted } };
         } catch (err) {
           console.warn('[Dynamic Probe] 生成临时题失败，回退到原自适应路径：', err);

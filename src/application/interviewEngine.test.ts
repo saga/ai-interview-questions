@@ -260,6 +260,13 @@ describe('generateOpenQuestions 门控（ADR-031）', () => {
     expect(step!.question.format).toBe('open');
     randomSpy.mockRestore();
   });
+
+  it('useAI=false 时即使定义含 open 也只分配 choice（避免出题但不打分）', async () => {
+    const bank = { categories: [], questions: [dualQ('d1'), dualQ('d2')] };
+    const session = await buildSession(bank, { ...def(false, ['choice', 'open']), count: 2 }, baseCfg);
+    expect(session.questions).toHaveLength(2);
+    expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
+  });
 });
 
 describe('Concept-coverage 接线（PR1–PR4）：nextAdaptiveStep 传 conceptCtx', () => {
