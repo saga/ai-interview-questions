@@ -106,6 +106,8 @@ export default function App() {
   // 用 ref 保存最新状态，供倒计时自动交卷 / 异步回调读取，避免闭包过期
   const answersRef = useRef(answers);
   answersRef.current = answers;
+  // 同步动作锁：防止异步提交/组卷/评分在响应前被重复点击触发（与 Agent 面试防重入同思路）
+  const actionLock = useRef(false);
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const configRef = useRef(config);
@@ -132,6 +134,8 @@ export default function App() {
   };
 
   const handleStart = async (def: InterviewDefinition) => {
+    if (actionLock.current) return;
+    actionLock.current = true;
     setBusy(def.useAI ? '正在用 LLM 生成变体题目…' : '正在组卷…');
     signalsRef.current = [];
     setStrategies([]);
@@ -150,6 +154,7 @@ export default function App() {
       message.error('组卷失败：' + (e as Error).message);
     } finally {
       setBusy(null);
+      actionLock.current = false;
     }
   };
 
@@ -167,12 +172,14 @@ export default function App() {
    * 由概念图迁移策略（deep-dive / gap-probe / broaden / move-on）选出下一题。
    */
   const handleAdaptiveNext = async () => {
+    if (actionLock.current) return;
     const s = sessionRef.current;
     if (!s || !s.definition.adaptive) return;
     const idx = Object.keys(gradesRef.current).length;
     const sq = s.questions[idx];
     if (!sq || idx >= s.definition.count) return;
 
+    actionLock.current = true;
     setBusy('正在评分…');
     try {
       const g = await evaluateAnswer(sq, answersRef.current[sq.question.id], s.definition, configRef.current);
@@ -195,16 +202,19 @@ export default function App() {
       }
     } finally {
       setBusy(null);
+      actionLock.current = false;
     }
   };
 
   /** 提前结束：当前题若尚未评分，先评一次再入账，避免未评分题以 0 分污染学习记录。 */
   const handleFinishEarly = async () => {
+    if (actionLock.current) return;
     const s = sessionRef.current;
     if (!s?.definition.adaptive) return doSubmit();
     const idx = Object.keys(gradesRef.current).length;
     const sq = s.questions[idx];
     if (!sq) return doSubmit();
+    actionLock.current = true;
     setBusy('正在评分…');
     try {
       const g = await evaluateAnswer(sq, answersRef.current[sq.question.id], s.definition, configRef.current);
@@ -217,26 +227,35 @@ export default function App() {
       ];
     } finally {
       setBusy(null);
+      actionLock.current = false;
     }
     doSubmit();
   };
 
   const doSubmit = useCallback(async () => {
+    if (actionLock.current) return;
     const s = sessionRef.current;
     if (!s) return;
+    actionLock.current = true;
+    setBusy('正在评分并提交…');
     const cfg = configRef.current;
-    // 自适应模式逐题评过（含提前结束时的当前题），无需再批量评估
-    const g = s.definition.adaptive ? gradesRef.current : await evaluateSession(s, answersRef.current, cfg);
-    setGrades(g);
-    // 时长从会话创建（startedAt）起算——自适应模式下追加题目不会改变 startedAt
-    const durationSec = Math.round((Date.now() - s.startedAt) / 1000);
-    const prev = profileRef.current.sessions[0]?.overall ?? null;
-    const rec = sessionFromQuiz(s, g, durationSec, answersRef.current);
-    const next = updateLearner(profileRef.current, rec);
-    await saveLearner(next);
-    setProfile(next);
-    setPrevOverall(prev);
-    setPhase('result');
+    try {
+      // 自适应模式逐题评过（含提前结束时的当前题），无需再批量评估
+      const g = s.definition.adaptive ? gradesRef.current : await evaluateSession(s, answersRef.current, cfg);
+      setGrades(g);
+      // 时长从会话创建（startedAt）起算——自适应模式下追加题目不会改变 startedAt
+      const durationSec = Math.round((Date.now() - s.startedAt) / 1000);
+      const prev = profileRef.current.sessions[0]?.overall ?? null;
+      const rec = sessionFromQuiz(s, g, durationSec, answersRef.current);
+      const next = updateLearner(profileRef.current, rec);
+      await saveLearner(next);
+      setProfile(next);
+      setPrevOverall(prev);
+      setPhase('result');
+    } finally {
+      setBusy(null);
+      actionLock.current = false;
+    }
   }, []);
 
   const handleAnswerChange = (id: string, v: AnswerValue) => {
@@ -463,7 +482,7 @@ export default function App() {
                       message={`已完成 ${questions.length} 道自适应题目`}
                       description="每题均已实时评分。点击下方按钮查看完整结果与薄弱项分析。"
                       action={
-                        <Button type="primary" onClick={() => void doSubmit()}>
+                        <Button type="primary" disabled={busy != null} onClick={() => void doSubmit()}>
                           查看训练结果
                         </Button>
                       }
@@ -495,7 +514,7 @@ export default function App() {
                         onChange={(v) => handleAnswerChange(sq.question.id, v)}
                       />
                     ))}
-                    <Button type="primary" size="large" block onClick={doSubmit}>
+                    <Button type="primary" size="large" block disabled={busy != null} onClick={doSubmit}>
                       提交并查看结果
                     </Button>
                   </div>

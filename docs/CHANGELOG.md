@@ -2,6 +2,15 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-27 · 全局消除异步提交重入（防反复点击）
+
+- **动机**：Agent 面试提交后在 LLM 响应前按钮仍可点，触发 `pi-agent-core` 的 `submitAnswer` 重入守卫抛 "Agent is already processing"。排查发现主训练流程与 Copilot 存在同类窗口：仅依赖 `setBusy`/`setLoading` 这类 state（在 re-render 后才禁用按钮），同 tick 内的快速双击仍可重复触发 `await`。
+- **做法**（与 Agent 修复同思路——同步 ref 守卫 + 立即置忙）：
+  - `App.tsx` 新增共享 `actionLock = useRef(false)`；`handleStart` / `handleAdaptiveNext` / `handleFinishEarly` / `doSubmit` 均改为「进入即 `if (actionLock.current) return; actionLock.current = true;` … `finally { actionLock.current = false }`」。其中 `doSubmit` 此前**完全没有**防重入（重复点击会重复 `evaluateSession` + `saveLearner`），现已补上并增加 `setBusy('正在评分并提交…')`。
+  - 非自适应两个提交按钮加 `disabled={busy != null}` 给出可见反馈（自适应逐题按钮本就 `disabled={evaluating}`）。
+  - `CopilotSidebar.handleSend` 增加 `loadingRef` 同步守卫，避免同 tick 双回车重复发消息。
+- **验证**：`typecheck` 无错、全量测试 351 passed。
+
 ## 2026-08-27 · 批量消除历史选择题「选项长度泄题」（244 道 strong 偏差清零）
 
 - **动机**：`lint:bias` 显示 strong 档长度泄题高达 244/532 选择题（正确项天然最长 + 干扰项过短）。用户要求根治而非仅诊断。

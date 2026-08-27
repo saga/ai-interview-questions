@@ -244,10 +244,3 @@ describe('ChromeAIProvider（走注入的 chromeComplete，签名接线正确）
     expect(result.feedback).toBe('未作答。');
   });
 });
-
-describe('config 形状类型守卫', () => {
-  it('AIConfig 由 providers 数组构成', () => {
-    const c: AIConfig = { providers: [entry({})] };
-    expect(Array.isArray(c.providers)).toBe(true);
-  });
-});

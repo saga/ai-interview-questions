@@ -115,6 +115,8 @@ interface CopilotSidebarProps {
 const role: BubbleListProps['role'] = {
   assistant: {
     placement: 'start',
+    style: { width: '100%', maxWidth: '100%', margin: '0 0 8px' },
+    styles: { content: { boxShadow: 'none', padding: '10px 12px' } },
     footer: (
       <Space size={0}>
         <Button type="text" size="small" icon={<ReloadOutlined />} />
@@ -124,7 +126,11 @@ const role: BubbleListProps['role'] = {
       </Space>
     ),
   },
-  user: { placement: 'end' },
+  user: {
+    placement: 'end',
+    style: { margin: '0 0 8px' },
+    styles: { content: { boxShadow: '0 1px 4px rgba(0,0,0,0.12)' } },
+  },
 };
 
 export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion }: CopilotSidebarProps) {
@@ -135,6 +141,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const [dragging, setDragging] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(false);
 
   const configReady = isConfigValid(config);
 
@@ -183,6 +190,8 @@ ${weak ? `薄弱主题：${weak}` : ''}
       antMessage.warning('请先在设置中配置 AI 引擎');
       return;
     }
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     const userMsg = { role: 'user' as const, content, key: `${Date.now()}-u` };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
@@ -198,6 +207,7 @@ ${weak ? `薄弱主题：${weak}` : ''}
       setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${msg}`, key: `${Date.now()}-e` }]);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   };
 
