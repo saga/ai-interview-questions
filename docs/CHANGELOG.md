@@ -2,12 +2,20 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
-## 2026-08-28 · 修复 Chrome 内置 AI 出题卡死（新增 ChromeAIExecutor，并发 2 + 超时 + 取消 + 重试 + 销毁）
+## 2026-08-28 · ChromeAIExecutor 改用「基准 session + clone 每题」模式（贴合官方最佳实践）
+
+- **动机**：Chrome 官方 dos/donts 明确——Prompt API 不要用相同 system 反复 `create()`（每次都重新解析 system 指令，延迟更高），应建一个基准 session（含 `initialPrompts`）、每题用 `clone()` 派生独立会话。我们原先是每道题 `create()` 一次。
+- **变更**：`runPromptOnce` 改为先经 `getBaseSession(system)` 惰性创建并缓存基准 session（按 system 串缓存、memoize create promise 避免并发重复创建），每题 `base.clone()` 后 `prompt()`，用完 `destroy()` 克隆；整批空闲时 `disposeBases()` 统一 `destroy()` 基准 session，避免长期占用 Chrome 并发槽位。业务层签名不变。
+- **默认并发**：应用层单例 `chromeAI` 设 `concurrency:4 / timeoutMs:60_000 / retries:1`（注意此前误写成 8/90s，已纠正）。
+- **验证**：`chrome.test.ts` 11 项、`chromeAgent.test.ts` 3 项（clone session 桩）同步更新通过；`npm run build`（`tsc -b` strict 严格）通过；全量 `npm run test` 364 passed。
+- **真实计时（10 题，干净浏览器）**：clone + 并发 4 ≈ 250s 进入题目页。结论：**clone 只降低"每题 session 创建/解析"开销，但生成耗时主要由单题 prompt 延迟主导**，所以提速的真正杠杆是并发数。实测此前并发 8（无 clone）约 90s 反而更快——故 keep clone 的同时建议把并发提到 6~8（base+克隆 总数需 ≤ Chrome 实际并发上限，待真机验证）。见下方待办。
+
+## 2026-08-28 · 修复 Chrome 内置 AI 出题卡死（新增 ChromeAIExecutor，并发控制 + 超时 + 取消 + 重试 + 销毁）
 
 - **动机**：训练页点「开始自定义训练」永久卡在"正在用 LLM 生成变体题目…"。根因是 Chrome 内置 AI 偶发让 `session.prompt()` 既不 resolve 也不 reject、且不响应 abort，僵尸 session 占满并发名额 → 后续 `create()` 全部挂起死锁（名额上限并非硬性 1，干净状态下并发 2 个 `create()` 均成功，是被残留僵尸占满所致）。
-- **变更**：`src/ai/chrome.ts` 内置 `ChromeAIExecutor`（concurrency=2 / timeoutMs=60s / retries=1），`chromeComplete` 改为委托该 executor；`create` 与 `prompt` 均套回调式 `withTimeout`，`finally` 中 `session.destroy()` 释放名额，用 `AbortController` 取消，`runningTasks` Map 跟踪在途任务。（原独立 `chromeAI.ts` 已合并进 `chrome.ts`。）
+- **变更**：`src/ai/chrome.ts` 内置 `ChromeAIExecutor`，`chromeComplete` 改为委托该 executor；`create`/`clone` 与 `prompt` 均套回调式 `withTimeout`，`finally` 中 `session.destroy()` 释放名额，用 `AbortController` 取消，`runningTasks` Map 跟踪在途任务。（原独立 `chromeAI.ts` 已合并进 `chrome.ts`。）
 - **配套**：`interviewEngine.finalizeQuestion` 变体校验失败时返回原题并 `console.warn`，避免单题坏数据中断整批组卷。
-- **验证**：`chrome.test.ts` 11 项（含并发上限、超时拒绝、重试、不可用时直接报错、不支持时可读错误）、全量 `npm run test` 364 passed、`tsc --noEmit` 通过；手动在浏览器点「开始自定义训练」已能进入题目页（共 10 题）。
+- **验证**：`chrome.test.ts` 11 项（含并发上限、超时拒绝、重试、不可用时直接报错、不支持时可读错误）、全量 `npm run test` 364 passed；手动在浏览器点「开始自定义训练」已能进入题目页（共 10 题）。
 - **注意**：`vite.config.ts` 的 `hmr:false` 仅为本地代理调试临时改动，已还原。
 
 ## 2026-08-27 · 新增 AWS Certified Generative AI Developer - Professional 题域（AIP-C01，先入库 25 题，其余 98 题来源付费墙拦截）

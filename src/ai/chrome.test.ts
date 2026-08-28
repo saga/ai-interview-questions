@@ -1,20 +1,27 @@
 // Chrome Prompt API 封装测试：mock globalThis.LanguageModel，不发任何真实调用。
-// 覆盖：可用性检测（API 缺失 / 异常兜底）、one-shot 补全（system 注入、destroy 清理）、不可用时报错。
+// 覆盖：可用性检测（API 缺失 / 异常兜底）、one-shot 补全（基准 session + clone、system 注入、destroy 清理）、
+// 不可用时报错、并发上限、超时拒绝、重试。
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { chromeAvailability, chromeComplete, getLanguageModel } from './chrome';
 
-type SessionStub = { prompt: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> };
+type CloneSession = { prompt: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> };
+type SessionStub = CloneSession & { clone: ReturnType<typeof vi.fn> };
+
+/** 构造基准 session：其 clone() 返回一个独立的克隆 session（prompt 用 promptImpl）。 */
+function makeSession(promptImpl: (u: string) => string | Promise<string>): SessionStub {
+  const base: SessionStub = {
+    prompt: vi.fn(),
+    destroy: vi.fn(),
+    clone: vi.fn(async () => ({ prompt: vi.fn(promptImpl), destroy: vi.fn() })),
+  };
+  return base;
+}
 
 function stubLanguageModel(impl?: Partial<{ availability: () => Promise<string>; create: (...args: unknown[]) => Promise<SessionStub> }>) {
   const lm = {
     availability: impl?.availability ?? (async () => 'available'),
-    create:
-      impl?.create ??
-      (async () => {
-        const session: SessionStub = { prompt: vi.fn(async () => 'ok'), destroy: vi.fn() };
-        return session;
-      }),
+    create: impl?.create ?? (async () => makeSession(async () => 'ok')),
   };
   (globalThis as { LanguageModel?: unknown }).LanguageModel = lm;
   return lm;
@@ -41,27 +48,30 @@ describe('chromeAvailability', () => {
 });
 
 describe('chromeComplete', () => {
-  it('system 进入 initialPrompts，user 发给 prompt，用后销毁 session', async () => {
+  it('system 进入 initialPrompts；create 建基准、clone 出题、用后 destroy clone，base 空闲销毁', async () => {
     let createdWith: unknown;
-    const session: SessionStub = { prompt: vi.fn(async (u: string) => `echo:${u}`), destroy: vi.fn() };
-    const lm = stubLanguageModel({
-      create: async (opts) => {
-        createdWith = opts;
-        return session;
-      },
+    let cloned: CloneSession | undefined;
+    const base = makeSession(async (u) => `echo:${u}`);
+    base.clone = vi.fn(async () => {
+      cloned = { prompt: vi.fn(async (u) => `echo:${u}`), destroy: vi.fn() };
+      return cloned;
     });
+    const lm = stubLanguageModel({ create: async (opts) => {
+      createdWith = opts;
+      return base;
+    } });
     const out = await chromeComplete('sys-prompt', 'user-prompt');
     expect(out).toBe('echo:user-prompt');
     expect(createdWith).toMatchObject({ initialPrompts: [{ role: 'system', content: 'sys-prompt' }] });
-    expect(session.prompt).toHaveBeenCalledWith('user-prompt', expect.anything());
-    expect(session.destroy).toHaveBeenCalledTimes(1);
+    expect(base.clone).toHaveBeenCalledTimes(1);
+    expect(cloned!.prompt).toHaveBeenCalledWith('user-prompt', expect.anything());
+    expect(cloned!.destroy).toHaveBeenCalledTimes(1);
+    expect(base.destroy).toHaveBeenCalledTimes(1); // 整批空闲后销毁基准
     void lm;
   });
 
   it('prompt 返回空值时兜底为空字符串', async () => {
-    stubLanguageModel({
-      create: async () => ({ prompt: vi.fn(async () => undefined as unknown as string), destroy: vi.fn() }),
-    });
+    stubLanguageModel({ create: async () => makeSession(async () => undefined as unknown as string) });
     expect(await chromeComplete('s', 'u')).toBe('');
   });
 
@@ -84,13 +94,7 @@ describe('chromeComplete', () => {
 
   it('create / prompt 永久不返回（on-device 偶发卡死）时超时拒绝，不假死', async () => {
     vi.useFakeTimers();
-    stubLanguageModel({
-      create: async () => ({
-        // 永不 resolve，模拟 Chrome 内置 AI 偶尔的死锁
-        prompt: () => new Promise<string>(() => {}),
-        destroy: vi.fn(),
-      }),
-    });
+    stubLanguageModel({ create: async () => makeSession(() => new Promise<string>(() => {})) });
     const p = chromeComplete('s', 'u');
     // 先把断言 handler 挂上，再推进假时钟，避免「rejection 处理时机」告警
     const assertions = expect(p).rejects.toThrow('超时');
@@ -104,20 +108,18 @@ describe('chromeComplete', () => {
     let active = 0;
     let maxActive = 0;
     stubLanguageModel({
-      create: async () => ({
-        prompt: async () => {
+      create: async () =>
+        makeSession(async () => {
           active++;
           maxActive = Math.max(maxActive, active);
           await new Promise((r) => setTimeout(r, 5));
           active--;
           return 'ok';
-        },
-        destroy: vi.fn(),
-      }),
+        }),
     });
-    // 模拟组卷路径：Promise.all 同时发起 8 个补全
+    // 模拟组卷路径：Promise.all 同时发起 8 个补全（同 system → 共用一个基准 session，clone 8 次）
     await Promise.all(Array.from({ length: 8 }, (_, i) => chromeComplete('s', `u${i}`)));
-    // 默认 concurrency=8：同一时刻最多 8 个 session 并发，不会退化成串行也不会无限并发
+    // 默认 concurrency=8：同一时刻最多 8 个 clone 并发 prompt，不会退化成串行也不会无限并发
     expect(maxActive).toBeLessThanOrEqual(8);
     expect(maxActive).toBeGreaterThanOrEqual(8);
   });
@@ -129,7 +131,7 @@ describe('chromeComplete', () => {
         n++;
         // 前两次都失败：第一次失败 → executor 重试（retries=1）→ 第二次仍失败 → 才真正 reject
         if (n <= 2) throw new Error('boom');
-        return { prompt: vi.fn(async () => 'ok'), destroy: vi.fn() };
+        return makeSession(async () => 'ok');
       },
     });
     await expect(chromeComplete('s', 'u1')).rejects.toThrow('boom');

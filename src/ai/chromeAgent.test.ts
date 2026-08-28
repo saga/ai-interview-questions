@@ -16,6 +16,8 @@ function stubLanguageModel(reply: string, opts?: { createThrows?: boolean }) {
           throw new Error('boom');
         }
       : async () => ({
+          // clone 返回独立克隆 session（prompt 行为同基准），供 ChromeAIExecutor 使用
+          clone: async () => ({ prompt: vi.fn(async () => reply), destroy: vi.fn() }),
           prompt: vi.fn(async () => reply),
           destroy: vi.fn(),
         }),

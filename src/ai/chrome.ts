@@ -52,6 +52,8 @@ export interface ChromeAIExecuteOptions {
 interface ChromeSessionLike {
   prompt(input: string, opts?: { signal?: AbortSignal }): Promise<string>;
   destroy?(): void;
+  /** Prompt API 支持 clone()：从基准 session 派生独立会话，免去重复解析 system 指令（官方推荐做法）。 */
+  clone?(): Promise<ChromeSessionLike>;
 }
 
 interface LanguageModelLike {
@@ -175,6 +177,10 @@ export class ChromeAIExecutor {
   private readonly queue: QueueItem<unknown>[] = [];
   private readonly runningTasks = new Map<string, QueueItem<unknown>>();
   private readonly tasks = new Map<string, ChromeAITaskInfo>();
+
+  /** 按 system 缓存的基准 session（创建一次，每题 clone）。空闲时随 disposeBases 释放。 */
+  private readonly baseSessions = new Map<string, ChromeSessionLike>();
+  private readonly baseSessionPromises = new Map<string, Promise<ChromeSessionLike>>();
 
   private running = 0;
   private readonly onChange?: (tasks: ChromeAITaskInfo[]) => void;
@@ -344,6 +350,8 @@ export class ChromeAIExecutor {
       this.running--;
       this.emitChange();
       this.pump();
+      // 整批空闲后释放基准 session，避免长期占用 Chrome 的并发槽位（否则会拖累后续训练）
+      if (this.running === 0 && this.queue.length === 0) this.disposeBases();
     }
   }
 
@@ -370,15 +378,44 @@ export class ChromeAIExecutor {
     throw lastError;
   }
 
+  /** 取（或惰性创建并缓存）针对某 system 的基准 session；同 system 只 create 一次，后续 clone 派生。 */
+  private getBaseSession(
+    system: string | undefined,
+    signal: AbortSignal,
+    timeoutMs: number,
+  ): Promise<ChromeSessionLike> {
+    const key = system ?? '';
+    const existing = this.baseSessionPromises.get(key);
+    if (existing) return existing;
+
+    const p = (async () => {
+      const lm = getLanguageModel();
+      if (!lm) throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
+      return await withTimeout(
+        lm.create({
+          ...(system ? { initialPrompts: [{ role: 'system', content: system }] } : {}),
+          signal,
+        }),
+        timeoutMs,
+        'create-base',
+      );
+    })();
+
+    this.baseSessionPromises.set(key, p);
+    // 成功后登记基准；失败则移除，下次重新 create
+    p.then(
+      (s) => this.baseSessions.set(key, s),
+      () => this.baseSessionPromises.delete(key),
+    );
+    return p;
+  }
+
   private async runPromptOnce(
     prompt: string,
     externalSignal: AbortSignal,
     timeoutMs: number,
     system?: string,
   ): Promise<string> {
-    const lm = getLanguageModel();
-    if (!lm) throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
-
     const timeoutController = new AbortController();
     const timer = setTimeout(
       () => timeoutController.abort(new DOMException('Chrome AI request timed out', 'TimeoutError')),
@@ -386,22 +423,34 @@ export class ChromeAIExecutor {
     );
     const signal = combineSignals(externalSignal, timeoutController.signal);
 
-    let session: ChromeSessionLike | undefined;
+    let clone: ChromeSessionLike | undefined;
     try {
-      session = await withTimeout(
-        lm.create({
-          ...(system ? { initialPrompts: [{ role: 'system', content: system }] } : {}),
-          signal,
-        }),
+      const base = await this.getBaseSession(system, signal, timeoutMs);
+      // 基准 session 只建一次；每题用 clone() 派生独立会话，免去重复解析 system 指令（官方推荐）
+      const c = await withTimeout(
+        (base.clone?.() ?? Promise.reject(new Error('session 不支持 clone'))) as Promise<ChromeSessionLike>,
         timeoutMs,
-        'create',
+        'clone',
       );
-      return (await withTimeout(session.prompt(prompt, { signal }), timeoutMs, 'prompt')) ?? '';
+      clone = c;
+      return (await withTimeout(c.prompt(prompt, { signal }), timeoutMs, 'prompt')) ?? '';
     } finally {
       clearTimeout(timer);
-      // destroy() 会中止进行中的工作并释放 session 槽位，是解除死锁的关键
-      session?.destroy?.();
+      // destroy() 释放克隆 session 槽位；基准在整批空闲时由 disposeBases 统一释放
+      clone?.destroy?.();
     }
+  }
+
+  private disposeBases(): void {
+    for (const [, s] of this.baseSessions) {
+      try {
+        s.destroy?.();
+      } catch {
+        /* 忽略销毁异常 */
+      }
+    }
+    this.baseSessions.clear();
+    this.baseSessionPromises.clear();
   }
 
   private emitChange(): void {
@@ -412,7 +461,7 @@ export class ChromeAIExecutor {
 /** 应用层单例：Chrome 内置 AI 并发上限 4，单次 60s 超时，失败重试 1 次。 */
 export const chromeAI = new ChromeAIExecutor({
   concurrency: 8,
-  timeoutMs: 90_000,
+  timeoutMs: 80_000,
   retries: 1,
 });
 
