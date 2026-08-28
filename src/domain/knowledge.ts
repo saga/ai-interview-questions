@@ -19,12 +19,15 @@ export function knowledgeById(id: string, nodes: KnowledgeNode[] = knowledgeNode
 }
 
 /**
- * 开放题评分的必须要点：题目自带 rubric.required 优先，
- * 否则回退到该题 topic 对应知识点节点的 required——
- * 让"没写 rubric 的题"也能按知识点要点评分，而不是裸评。
+ * 开放题评分的必须要点：统一来自该题 topic 对应知识点节点的 `required`。
+ *
+ * 变更（ADR-044）：原先「题目自带 `rubric.required` 优先，否则回退知识点」，
+ * 该字段删除后锚点回归单一来源——知识点层。题目级的评分依据改由
+ * `Question.explanation` 承担（直接注入评分提示，见 `ai/evaluate.buildEvalUser`），
+ * 因此不再需要一个与知识点要点高度重叠、且需逐题维护的字段。
  */
 export function requiredPointsFor(q: Question, nodes: KnowledgeNode[] = knowledgeNodes): string[] | undefined {
-  return q.rubric?.required ?? knowledgeById(q.topic, nodes)?.required;
+  return knowledgeById(q.topic, nodes)?.required;
 }
 
 export interface CoverageGap {

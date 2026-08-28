@@ -13,18 +13,6 @@ export const knowledgeNodeSchema = z.object({
   required: z.array(z.string().min(1)),
   misconceptions: z.array(z.string()),
   angles: z.array(questionAngleSchema),
-  // 概念地图（可选，PR0 实验引入）：把本知识节点拆出的子概念“面”，
-  // 用于 concept-coverage —— 让抽题从“选哪道题”变成“先选最该验证哪个 concept”。
-  // 与 Question.tests 配套；当前仅 transformer 节点试点，不强制其它节点。
-  concepts: z
-    .array(
-      z.object({
-        id: z.string().min(1),
-        title: z.string().min(1),
-        importance: z.number().min(0).max(1),
-      }),
-    )
-    .optional(),
 });
 
 export type KnowledgeNode = z.infer<typeof knowledgeNodeSchema>;

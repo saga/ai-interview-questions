@@ -27,12 +27,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：让 Agent 回顾自身输出或轨迹，发现错误并自我修正，从而提升质量。\n\n解析：Reflection 让 Agent 对自身中间结果或最终产物进行复盘与批评，再迭代改进，是提升复杂任务可靠性的常用手段。"
       }
-    },
-    "rubric": {
-      "required": [
-        "任务分解与依赖排序",
-        "执行中的动态重规划与反思"
-      ]
     }
   },
   {
@@ -50,19 +44,6 @@
     "explanation": "考察 ReAct 与 Plan-and-Execute 的适用边界与取舍。ReAct 每轮 Thought→Action→Observation 即时决策、适应性强但缺乏全局视野；Plan-and-Execute 先出全局计划再执行并在失败处重规划，适合可预先分解的长任务。实践最优常为混合：粗计划+局部 ReAct 式探索。",
     "reference": {
       "concept": "ReAct 逐步交织推理与行动；Plan-and-Execute 先出全局计划再执行+重规划。"
-    },
-    "rubric": {
-      "required": [
-        "两种模式的执行流程",
-        "各自优缺点与适用场景",
-        "混合/重规划的实践考量"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.25,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
     },
     "formats": {
       "open": {
@@ -95,19 +76,6 @@
     "angle": "tradeoff",
     "question": "Agent 的 Planner 应该由 LLM 动态规划，还是用确定性 workflow 写死？各自的适用边界在哪？",
     "explanation": "考察 Planner 选型的适用边界与混合架构。确定性 workflow 适合流程稳定可枚举且合规要求高的场景（可靠、可测、成本低）；LLM 动态规划适合输入空间开放的场景但非确定、贵、难验证。实践最优常为混合：骨架用确定性流程保证主干可控，在真正开放的决策点嵌入 LLM 规划。",
-    "rubric": {
-      "required": [
-        "两种方式各自的适用边界",
-        "混合架构（确定性骨架+局部 LLM 规划）",
-        "可靠性/成本/可调试性的权衡"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "确定性 workflow 适用于：流程稳定可枚举、合规要求可审计、错误代价高的场景——优点是可靠、可测、成本低、易调试；缺点是无法应对意外分支。LLM 动态规划适用于：输入空间开放、步骤依赖中间发现的场景；代价是非确定、贵、难验证，且可能规划出错。实践最优常是混合：骨架用确定性流程保证主干可控，在真正开放的决策点嵌入 LLM 规划；或 LLM 出计划但经确定性校验（schema、依赖检查）后才执行。判断口诀：能用 workflow 解决的不要用 Agent；用 Agent 的地方要让不确定性只存在于必要的环节。"
@@ -159,12 +127,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：retry 只是换个随机性重跑相同输入；Reflection 先分析失败原因，带着修正策略与新信息再试。\n\n解析：Retry 重复同样的过程期望不同结果；Reflection 引入了新的信息（对失败的归因与批评），改变了下一次尝试的输入，这才是它有效的原因。"
       }
-    },
-    "rubric": {
-      "required": [
-        "任务分解与依赖排序",
-        "执行中的动态重规划与反思"
-      ]
     }
   },
   {
@@ -180,20 +142,6 @@
     "angle": "scenario",
     "question": "一个 Agent 经常生成错误的执行计划，但每个 Tool 单独执行都没有问题。你会如何定位这是 Planning 问题而不是 Tool 问题？",
     "explanation": "归因方法 = 轨迹逐步拆分“决策 vs 执行”+ 人工标准计划对照实验；工具全对而计划结构性出错即 planning 短板，修复手段完全不同。",
-    "rubric": {
-      "required": [
-        "轨迹分层归因方法",
-        "对照实验设计",
-        "planning 错误的具体表现",
-        "与 tool 修复方向的区分"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "用轨迹回放做分层归因：收集失败 case 的完整执行轨迹，把每一步拆成“决策”和“执行”两部分分别判定——该步骤选择的工具+参数是否是当时状态下的合理动作（决策质量），工具返回是否符合预期（执行质量）。若工具单测全部通过、失败 case 中工具也都正确执行了“被要求的动作”，错误就出在上游计划：具体表现为步骤顺序错误、遗漏依赖前置步骤、对工具能力假设错误（让工具做它做不了的事）、或没有根据观察更新计划。再交叉统计：把失败按计划结构聚类，看是否集中在特定任务形态；用同一批工具组合跑人工编写的标准计划做对照——标准计划能成功则确证 planning 是短板。修复方向也相应不同：planning 问题靠更好的任务分解提示、plan 校验器或 plan-and-execute 结构化约束，而不是继续调工具。"
@@ -227,20 +175,6 @@
     "angle": "tradeoff",
     "question": "什么时候应该采用 Plan-and-Execute，而不是让 Agent 每一步都重新决定下一步？这种架构有什么代价？",
     "explanation": "任务可先形成稳定多步计划时 Plan-and-Execute 减少重复规划、提高可观察性；代价是计划可能过时需重规划。",
-    "rubric": {
-      "required": [
-        "预先规划",
-        "执行阶段",
-        "减少重复规划",
-        "计划失效"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "当任务可以先形成较稳定的多步骤计划，并且执行阶段可以相对独立时，Plan-and-Execute 可以减少重复规划调用并提高可观察性。代价是计划可能因为执行过程中的新信息而过时，因此需要重新规划或允许局部调整。"
@@ -274,20 +208,6 @@
     "angle": "mechanism",
     "question": "很多 Agent 架构会增加 Reflection 或 Self-Critique 步骤。为什么 Reflection 不一定能提高 Agent 的可靠性？什么时候它反而可能只是增加成本？",
     "explanation": "Reflection 由同一模型生成，可能重复原错误且不提供新信息；有确定性验证手段时优先外部反馈而非自我批评。",
-    "rubric": {
-      "required": [
-        "模型可能重复错误",
-        "外部验证",
-        "成本",
-        "deterministic validation"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Reflection 本身仍然由模型生成，可能重复原来的错误或产生没有依据的自我评价。如果任务没有明确的外部验证信号，额外一次 LLM critique 不一定提供新的信息。对于可以通过 deterministic validation、测试或工具结果验证的任务，应优先使用外部反馈而不是让模型自己评价自己。"
@@ -339,12 +259,6 @@
       "open": {
         "referenceAnswer": "规划需支持动态重规划：基于观察重排依赖、反思调整策略、将任务分解为可验证子目标以触发校验与重规划，而非僵化执行原计划。"
       }
-    },
-    "rubric": {
-      "required": [
-        "任务分解与依赖排序",
-        "执行中的动态重规划与反思"
-      ]
     }
   }
 ]

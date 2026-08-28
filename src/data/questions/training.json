@@ -11,20 +11,6 @@
     "angle": "scenario",
     "question": "一个 70B 模型效果很好，但线上延迟和成本无法接受。你考虑通过 Knowledge Distillation 得到一个 7B 学生模型。你会如何设计蒸馏过程？",
     "explanation": "蒸馏三要素：真实分布的任务数据、soft target（或闭源场景的 response 蒸馏）、评测驱动的迭代补缺；动手前先验证“小模型+量化”是否已够。",
-    "rubric": {
-      "required": [
-        "任务数据来自真实分布",
-        "soft vs response 蒸馏取舍",
-        "评测对比迭代闭环",
-        "先考虑更便宜的替代"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "设计要点：数据——用线上真实 query 分布构建无标注任务集，让学生在“真实会遇到的问题”上学习，而不是通用基准；教师信号——优先蒸馏 soft targets（教师输出的 token 分布/logprobs）而非仅硬标签，软分布包含暗样本间的相似度信息；也可以只做 response distillation（SFT 式模仿教师生成的答案），成本低且无需教师内部 logits（闭源 API 场景唯一可行）。流程：先用教师在任务集上批量生成高质量问答对 → 清洗过滤 → 以 SFT/白盒蒸馏训练学生 → 在业务评测集上对比教师与学生，找出能力缺口补充针对性数据迭代。配套判断：先试更小的现成模型 + 量化是否已够用，蒸馏是有数据与训练能力的团队才值得投入的方案。"
@@ -80,12 +66,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\n要点：①静态测算：月节省 ≈ $50K − $8K = $42K，payback ≈ $120K/$42K ≈ 3 个月，12 个月净省约 $38 万——对稳定、高量、定义清晰的负载，这是教科书级的正向 ROI。②动态成本是容易被漏记的部分：教师模型每升级一代，学生的能力基线就落后一截，应在 ~30 天内再蒸馏；线上 golden set 分数漂移超过阈值（如 -2%）是计划外再蒸馏的触发器；单轮成本 $25-35K 要摊进 4-6 个月的周期预算里，而不是当成意外支出。③适用性判据：A 忽视维护成本会在第二个季度被打脸；B 一刀切否定了最常见的成功场景；D 错误——保留 10% 难例走教师模型正是混合架构的设计要点，总成本照样大幅下降。"
       }
-    },
-    "rubric": {
-      "required": [
-        "软标签携带类间相似度信息，信号量高于 one-hot",
-        "蒸馏上限受教师制约，学生可能在分布外显著退化"
-      ]
     }
   },
   {
@@ -122,12 +102,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B。\n\n要点：①A 正确且是本案例最大的教训来源——合成 prompt 的措辞分布与真实用户输入系统性偏离，模型学到的是\"怎么答合成题\"；正确做法是按任务类目分层采样六个月生产 trace，并对稀有类目做重平衡保证覆盖。②B 正确：教师不是 ground truth，92% 教师精度全量吸收会变成 ~90% 学生精度；5% 抽查 + 拒绝不一致 pair（约抓出 4% 坏标签）以 $1.8K 的人工成本换来最终指标 2-4 点提升。③C 错误：分类/抽取类任务加 rationale 无增益还平添延迟与 token 成本，CoT 蒸馏（Hsieh et al. Distilling Step-by-Step）只对推理密集型任务（如分诊判断）有价值。④D 是 A 的反面——高温合成变体放大的是合成分布的偏差，规模解决不了代表性问题。"
       }
-    },
-    "rubric": {
-      "required": [
-        "软标签携带类间相似度信息，信号量高于 one-hot",
-        "蒸馏上限受教师制约，学生可能在分布外显著退化"
-      ]
     }
   },
   {
@@ -162,12 +136,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①数据段的关键是代表性与洁净度：分层采样保证稀有任务类目有最低覆盖（否则学生会灾难性遗忘它们）；拒绝采样拦截教师幻觉进入训练分布。②合规内嵌：PII 用 NER 模型脱敏成 [EMAIL]/[PERSON_NAME] 类别 token，让学生学结构模式而非记忆身份，脱敏器自身要有 ≥98% precision / ≥95% recall 的评测。③评估段的铁律是隔离：golden set 独立策划、三名专家多数投票、永不参与训练采样，每季度重标 200 例追踪漂移；它是放行的唯一质量门（如复合回归 <2 点）。④上线段的保守性是特性不是浪费：影子期用 delta 分类器全量比对师生输出差异；金丝雀每档都挂三类自动回滚门（p95 延迟、用户满意度、护栏触发率）并按客户层/语言/任务类目做分段监控回滚——保守 ramp 曾抓住 eval 集漏掉的真实退化。⑤10% 常驻教师流量不是浪费而是再蒸馏的数据命脉。A 合成数据+一步到位踩满所有已知坑；C 省下的影子期会在真实事故里加倍还回去；D eval 泄漏进训练集会让质量门形同虚设。"
       }
-    },
-    "rubric": {
-      "required": [
-        "差距小/数据少 → PEFT；分布差异大/需新语言新能力 → 全量或继续预训练",
-        "\"先 RAG 后微调\"的常见决策序：知识问题优先检索化"
-      ]
     }
   },
   {
@@ -183,20 +151,6 @@
     "angle": "tradeoff",
     "question": "你需要让一个通用 LLM 学会公司内部的固定回答风格。你会优先选择 Prompt Engineering、RAG 还是 Fine-tuning？请说明决策依据和实施顺序。",
     "explanation": "风格=行为约束：Prompt+few-shot 先行，不稳定或漂移时才 LoRA 定型；RAG 只对口“动态检索风格指南”这类边缘情况。",
-    "rubric": {
-      "required": [
-        "Prompt 优先及理由",
-        "升级 Fine-tune 的触发条件",
-        "RAG 场景不对口的辨析",
-        "迭代成本对比"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "固定回答风格本质是行为约束，决策依据是“约束的复杂度与稳定性要求”：先用 Prompt Engineering——风格指南写进 system prompt 加 few-shot 示例，成本低、当天可上线，多数风格需求到此为止。如果风格规则太多导致 prompt 膨胀、或模型在长对话中漂移、或需要稳定到每次输出都符合模板，再升级到 LoRA 微调——用几百到几千条符合风格的样本做行为定型。RAG 在这个场景不对口：它注入的是知识不是行为，除非风格指南本身需要按客户/场景动态检索。实施顺序永远是 Prompt → （必要时）Fine-tune，因为前者迭代周期以小时计，后者以天计且有遗忘风险。"
@@ -228,19 +182,6 @@
     "angle": "definition",
     "question": "什么是 Foundation Model？为什么它的出现改变了传统 AI 应用的开发方式？",
     "explanation": "Foundation Model = 预训练通用模型 + 任务适配；范式从“一任务一模型”翻转为“一模型多任务”，开发的中心从训练转向约束与集成。",
-    "rubric": {
-      "required": [
-        "预训练+适配的定义",
-        "范式反转",
-        "带来的新问题（不确定性/成本）"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Foundation Model 是在海量数据上自监督预训练出的通用大模型，通过适配（prompt/fine-tune）可以覆盖大量下游任务。它改变开发范式的核心在于：传统 AI 是一个任务训练一个模型（收集标注数据→训练→部署），而 Foundation Model 把范式反转为“一个模型适配无数任务”——开发从“训练”变成“适配”，标注数据需求大幅下降，原型周期从月降到天；同时能力以涌现方式随规模提升。代价是应用必须接受模型的非确定性、幻觉与成本结构，这催生了 AI Engineering 这门围绕约束与可靠性展开的学科。"
@@ -272,20 +213,6 @@
     "angle": "tradeoff",
     "question": "什么情况下 Fine-tuning 是错误的解决方案？请至少举出两个应该优先使用 RAG 或 Prompt Engineering 的场景。",
     "explanation": "FT 的误用清单：知识频繁更新（→RAG）、prompt 未调优（→先迭代 prompt）、缺高质量数据、指望治幻觉；用“行为还是知识”之问做初筛。",
-    "rubric": {
-      "required": [
-        "至少两个反例场景",
-        "知识与行为的区分",
-        "prompt 先行的迭代成本逻辑",
-        "判断准则总结"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "典型误判场景：其一，知识频繁更新——把产品文档/内部知识 fine-tune 进参数，每次更新都要重训，且无法溯源，RAG 用索引更新分钟级解决（信息问题不等于参数问题）；其二，Prompt 没调好就上微调——很多“效果差”其实是指令不清、缺少示例或格式约束不足，prompt 迭代以小时计而 fine-tune 以天计且有遗忘风险；其三，缺乏高质量训练数据时强行微调，只会把噪声学进去；其四，期望用微调消除幻觉——幻觉根源在生成机制，SFT 反而可能强化自信的错误。判断准则：先问“这是行为问题还是知识问题、prompt 是否已经做到位、有没有持续的高质量训练数据”，三个都过关才轮到 fine-tuning。"
@@ -320,20 +247,6 @@
     "angle": "scenario",
     "question": "LoRA Fine-tune 后训练集表现很好，但真实用户数据效果很差。你会如何判断是过拟合、数据分布问题还是 LoRA 配置问题？",
     "explanation": "曲线形态定过拟合、真实流量分层评测定分布缺口、网格消融定配置；诊断顺序很重要——先数据后超参。",
-    "rubric": {
-      "required": [
-        "三种问题的判别信号",
-        "训练/验证曲线分析",
-        "真实流量分层对照",
-        "先数据后超参的顺序"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "三者的信号不同，用实验区分：过拟合——训练 loss 持续下降而验证集早早回升，模型复述训练样本的措辞；对策是早停、降 epoch、加正则。数据分布问题——验证集（同为训练分布）表现好但真实流量差，说明训练数据和用户真实输入存在覆盖缺口（领域、措辞、难度）；做法是对线上 badcase 分类，对照训练数据统计找盲区，补充真实分布数据重训。LoRA 配置问题——rank 过高小数据下记忆化、过低欠拟合（训练集也一般）、学习率过大破坏原有能力；做 rank/lr 小网格消融，观察验证曲线形态区分。诊断顺序：先看训练/验证曲线定过拟合，再用真实流量分层评测定分布缺口，最后才动超参——多数 case 根因在数据不在超参。"
@@ -366,19 +279,6 @@
     "angle": "definition",
     "question": "从训练目标的角度解释一个现代 Decoder-only LLM 的 Pre-training 在做什么。",
     "explanation": "Pre-training 目标 = causal LM：看前文猜下一 token，cross-entropy 监督；海量数据下涌现出语言/知识/推理能力。",
-    "rubric": {
-      "required": [
-        "next-token prediction",
-        "causal mask",
-        "cross-entropy loss"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "典型 Decoder-only LLM 使用 causal language modeling：给定前面的 token 序列，预测下一个 token，训练损失是预测分布与真实 next token 之间的 cross-entropy。通过在海量文本上重复这个任务，模型学到语言规律、世界知识以及一定程度的推理和模式表示。"
@@ -409,20 +309,6 @@
     "angle": "definition",
     "question": "Pre-training 和 Fine-tuning 的核心区别是什么？",
     "explanation": "数据：通用大规模 vs 任务领域中小规模；起点：随机初始化 vs pretrained 权重；目标：学通用能力 vs 调行为；成本相差数量级。",
-    "rubric": {
-      "required": [
-        "数据规模与来源",
-        "训练目标",
-        "初始化起点",
-        "成本差异"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Pre-training 从随机初始化开始，在大规模通用语料上以自监督目标学习通用表示与能力，成本极高；Fine-tuning 从 pretrained model 出发，用相对小的任务/领域数据调整模型行为或补足领域能力，成本低得多。两者在数据规模、训练目标、起点和成本上都不同。"
@@ -454,20 +340,6 @@
     "angle": "mechanism",
     "question": "为什么 Pre-training 需要如此大量的训练数据？",
     "explanation": "大参数量需要充足信号、知识覆盖面靠数据广度、多样性支撑泛化、scaling law 要求 data/compute 配比；同时存在边际递减，质量优先。",
-    "rubric": {
-      "required": [
-        "参数规模与过拟合",
-        "知识覆盖",
-        "多样性/泛化",
-        "diminishing returns"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "原因包括：参数量大，需要足够多的梯度信号才能充分训练而不严重过拟合；知识覆盖要求广，世界知识与语言现象分散在大量文本中；数据多样性决定泛化能力，单一来源会带来偏置；scaling laws 表明在 compute 预算内 data 应与 model size 同步增长才能达到最优配比。但数据收益也存在 diminishing returns，质量比单纯的量更重要。"
@@ -499,20 +371,6 @@
     "angle": "definition",
     "question": "什么是 Scaling Law？为什么“模型越大”并不意味着效果可以无限提升？",
     "explanation": "Scaling law = 参数/数据/compute 与 loss 的经验幂律；存在最优配比、收益对数级递减，单纯堆参数会欠训练且下游提升非线性。",
-    "rubric": {
-      "required": [
-        "幂律关系",
-        "最优配比",
-        "边际收益递减",
-        "数据质量约束"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Scaling law 描述模型参数量、训练数据量、计算量与 loss / downstream performance 之间的经验幂律关系：在一定范围内，按可预测的方式增加这些要素，loss 会平滑下降。但它同时说明资源之间存在最优配比（如 Chinchilla 结论：给定 compute，model size 与 data 应均衡增长），单方面放大模型而数据不足会欠训练；且收益是对数级的，loss 下降不等于下游能力线性提升，数据质量与分布也会成为瓶颈。"
@@ -544,20 +402,6 @@
     "angle": "calculation",
     "question": "如果训练数据增加 10 倍，模型效果一定会增加 10 倍吗？你会如何分析这个问题？",
     "explanation": "幂律 + 边际递减 → 收益远小于线性；还受数据新颖性/质量、compute 配比和任务上限约束。",
-    "rubric": {
-      "required": [
-        "diminishing returns",
-        "数据质量/重复",
-        "compute 配比",
-        "非线性收益"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "不会。Scaling law 表明 loss 随数据量呈幂律下降，收益是对数级而非线性的，存在明显的 diminishing returns。实际收益还取决于：新增数据是否带来新信息（重复/低质数据收益趋近于零）、当前模型是否已经欠训练或过训练（compute 配比）、以及任务本身的上限。工程上应结合 scaling law 预测曲线、数据去重与质量过滤来判断投入是否值得。"
@@ -589,19 +433,6 @@
     "angle": "definition",
     "question": "什么是 Post-training？它解决 Pre-training 解决不了的问题吗？",
     "explanation": "Post-training = SFT + 偏好优化 + 对齐；解决的是行为塑造（遵循指令、格式、安全性），而非能力获取。",
-    "rubric": {
-      "required": [
-        "SFT + preference optimization 流程",
-        "行为对齐目标",
-        "pretrain 产出的局限"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Post-training 指 pre-training 之后的所有训练阶段，典型流程是 SFT → Preference Optimization（RLHF/DPO）→ 面向生产的行为对齐。Pre-training 让模型具备语言与知识能力，但产出的是一个“续写器”，不会稳定地遵循指令、拒绝有害请求或按期望格式回答。Post-training 把这些已有能力塑造成用户期望的使用方式——可以说 pre-training 让模型“会”，post-training 让模型“按照人希望的方式使用这些能力”。"
@@ -632,19 +463,6 @@
     "angle": "definition",
     "question": "SFT（Supervised Fine-Tuning）是什么？它是如何改变模型行为的？",
     "explanation": "SFT = prompt → desired response 的监督学习（对 response 做 next-token loss），让模型学会模仿示范行为。",
-    "rubric": {
-      "required": [
-        "instruction-response 数据",
-        "监督 next-token loss",
-        "模仿示范行为"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "SFT 用人工编写或审核的 instruction-response 对做监督学习：输入 prompt，目标是最小化与 desired response 之间的 next-token cross-entropy。模型由此学会遵循指令、按特定格式与风格回答、执行对话等行为。它本质上是让模型模仿示范数据中的行为模式，因此数据质量和覆盖面直接决定效果。"
@@ -676,19 +494,6 @@
     "angle": "mechanism",
     "question": "Pre-training 和 SFT 在 loss 计算上有什么区别？为什么要这样设计？",
     "explanation": "Pretrain 对全序列算 loss；SFT 只对 assistant 回复算 loss、mask 掉 prompt——避免容量浪费在学习复述提问上。",
-    "rubric": {
-      "required": [
-        "response-only loss",
-        "prompt masking",
-        "训练目标差异"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Pre-training 通常对所有目标 token 计算 loss，因为整个序列都是学习对象；instruction tuning 一般只对 assistant response 部分计算 loss，把 prompt/system 部分 mask 掉。原因是训练目标是“学会怎么回答”，而不是“复述用户的提问”——如果把 prompt 也纳入 loss，模型会把容量浪费在学习模仿用户输入上，还可能弱化对 response 质量的优化。"
@@ -721,19 +526,6 @@
     "angle": "mechanism",
     "question": "RLHF 为什么需要一个单独的 Reward Model，而不是直接用人类反馈做强化学习？",
     "explanation": "人类反馈太贵太稀疏，无法在线逐条提供；先离线训练 RM 学会打偏好分，再用它作为 RL 的可采样奖励信号。",
-    "rubric": {
-      "required": [
-        "人类偏好数据收集",
-        "RM 作为奖励代理",
-        "RL 用 RM 优化策略"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "人类偏好信号稀疏且昂贵，不可能在线上每生成一个 response 都请人实时打分。Reward Model 先用批量收集的人类偏好数据（对同一 prompt 的多个回答做排序/对比）训练出一个可自动打分的代理，之后 RL 优化（如 PPO）用它作为可无限采样的奖励信号。RM 把“人类觉得哪个更好”压缩成一个可优化的标量函数，是连接人类偏好与 RL 优化的桥梁。"
@@ -765,20 +557,6 @@
     "angle": "mechanism",
     "question": "DPO 为什么不需要显式的 Reward Model？相比 RLHF/PPO 它在工程上有什么优势？",
     "explanation": "DPO 把 RM+RL 目标重写为偏好对上的直接损失（隐式 reward = 与参考模型的 logprob 差）；免去 RL 不稳定性与多模型并跑，工程简单。",
-    "rubric": {
-      "required": [
-        "chosen/rejected 偏好对",
-        "隐式 reward",
-        "免 RM/免 RL",
-        "与 RLHF 的取舍"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "DPO 直接在偏好对（chosen/rejected）上优化策略：通过数学推导可以把原本“训练 RM 再做 RL”的目标转化为一个对 policy 的直接分类式损失，隐含的 reward 就是策略与参考模型的 log-probability 差。工程上它避免了 RL 训练的不稳定性、省去了 RM 训练与维护，也不需要在训练中同时跑四个模型（policy/ref/reward/value），实现和调参都简单得多；代价是对偏好数据质量和分布更敏感，复杂 reward 信号的表达能力不如完整 RLHF。"
@@ -811,20 +589,6 @@
     "angle": "tradeoff",
     "question": "SFT、RLHF、DPO 分别适合解决什么问题？如果一个团队只能选一个阶段投入，你建议怎么选？",
     "explanation": "SFT 教示范行为（地基）、DPO 学偏好（性价比高）、RLHF 做复杂 reward 驱动的优化（成本高）；按需分层投入。",
-    "rubric": {
-      "required": [
-        "SFT=示范行为",
-        "DPO=偏好",
-        "RLHF=复杂 reward",
-        "投入优先级判断"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "三者层次不同：SFT 学习示范行为，适合教格式、风格、任务流程，见效最快；DPO 学习偏好，适合在已有可用行为上做“更好的回答优先于较差的回答”这类优化；RLHF 更适合有复杂、可建模 reward 信号的场景（如数学正确性、安全边界），但工程复杂度和成本最高。一般建议：SFT 是地基必须做；在此基础上多数产品用 DPO 就能获得足够的偏好对齐收益；只有当偏好难以用静态偏好对表达、需要过程级 reward 时才值得上完整 RLHF。"
@@ -859,20 +623,6 @@
     "angle": "mechanism",
     "question": "为什么不直接 Fine-tune 大模型的全部参数？",
     "explanation": "全参微调 = 权重+梯度+optimizer states 的显存倍增、训练贵、易灾难性遗忘、每任务一份副本；PEFT 是更优默认解。",
-    "rubric": {
-      "required": [
-        "optimizer states/显存",
-        "训练成本",
-        "灾难性遗忘",
-        "多任务副本成本"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "全参数微调的成本很高：除了模型权重本身，还需要存 optimizer states（如 Adam 的一二阶矩）和梯度，显存需求可达权重的数倍；训练时间长、多卡基础设施贵；频繁全量更新也更容易灾难性遗忘通用能力，且每个下游任务都要保存一份完整模型副本，存储与版本管理成本高。PEFT 方法（LoRA 等）用极小的可训练参数量获得接近的效果，是绝大多数场景更合理的选择。"
@@ -908,20 +658,6 @@
     "angle": "mechanism",
     "question": "LoRA 为什么可以用很低的成本完成 Fine-tuning？请解释它的核心假设。",
     "explanation": "ΔW ≈ BA 低秩分解：冻结 W 只训 A/B → 参数/显存降几个数量级；产物小、可合并回原权重零推理开销。",
-    "rubric": {
-      "required": [
-        "低秩假设 ΔW≈BA",
-        "冻结原权重",
-        "可训练参数/显存下降",
-        "可合并回 W"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "LoRA 的核心假设是：微调引起的权重变化 ΔW 具有低秩结构，可以近似分解为两个小矩阵的乘积 BA。训练时冻结原权重 W，只训练低秩矩阵 A/B，可训练参数量下降几个数量级，optimizer states 与梯度的显存占用随之大幅减少；推理前可以把 BA 合并回 W（或用可插拔 adapter 服务多任务），不增加推理延迟。"
@@ -953,20 +689,6 @@
     "angle": "tradeoff",
     "question": "LoRA 的 rank 是不是越大越好？你会如何为一个任务选择 rank？",
     "explanation": "rank ↑ = 参数/显存/过拟合风险 ↑，超出任务所需秩后收益递减；按任务所需“更新复杂度”选 rank 并用验证集校准。",
-    "rubric": {
-      "required": [
-        "并非越大越好",
-        "过拟合风险",
-        "任务复杂度匹配",
-        "diminishing returns"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "不是。rank 增大意味着可训练参数增多：显存与训练成本上升，小数据集上更容易过拟合；而且当任务需要的更新本来就是低秩时，超过必要 rank 后收益迅速递减。选择时应从任务的“新知识量”出发：风格/格式类适配低 rank 即可，涉及较多新领域知识或与预训练分布差异大的任务才需要更高 rank，并结合验证集表现和过拟合信号来定，而不是盲目调大。"
@@ -1000,19 +722,6 @@
     "angle": "tradeoff",
     "question": "LoRA 和 RAG 解决的是同一个问题吗？公司要把内部知识库接入模型，应该优先选哪个？",
     "explanation": "RAG 改变模型看到的上下文（知识新鲜、可溯源），LoRA 改变模型行为（格式/风格）；知识库优先 RAG，行为问题再叠加 LoRA。",
-    "rubric": {
-      "required": [
-        "信息 vs 参数的本质区别",
-        "知识库优先 RAG 及理由",
-        "LoRA 适用场景"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "不是同一个问题。RAG 改变的是模型看到的信息：运行时检索相关文档放进 context，知识可以随时更新、可溯源、易于审计；LoRA 改变的是模型参数与行为：适合教格式、风格、领域话术和任务流程，但把事实“训进”参数既难更新又难追溯。内部知识库应优先 RAG——知识频繁变化且需要引用出处；只有在 RAG 之上仍存在输出风格、术语或任务格式问题时，再考虑用 LoRA 补充行为层面的适配。"
@@ -1045,19 +754,6 @@
     "angle": "tradeoff",
     "question": "为什么“这个模型很聪明”（benchmark 表现好）不代表它适合某个具体的生产任务？",
     "explanation": "capability ≠ reliability ≠ controllability ≠ cost/latency；选型应以任务指标 + 真实流量评测为准，而非通用榜单。",
-    "rubric": {
-      "required": [
-        "capability 与生产属性的区分",
-        "可靠性/可控性/成本至少两项",
-        "任务中心评测方法"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Benchmark 衡量的是 capability，而生产任务还要求一系列不同的属性：可靠性（错误率是否低到业务可接受、失败模式是否可预期）、可控性（能否通过 prompt/schema/guardrails 约束行为）、成本效率（单位任务的成本是否划算）、延迟与并发能力、以及数据合规。一个通用能力更强的模型可能在你的窄任务上不如小模型稳定，也可能贵得无法规模化。正确思路是以任务为中心定义指标，用真实流量样本评测候选模型，而不是拿通用榜单排名做选型。"
@@ -1090,20 +786,6 @@
     "angle": "scenario",
     "question": "你有 100 万条用户对话数据，但只有 5 万条经过人工审核。你会如何构建 SFT 数据集？为什么不能直接把 100 万条全部拿来训练？",
     "explanation": "未审核数据混有错误示范/毒性与隐私风险，SFT 会直接放大；用审核种子集 + 分级清洗 + 辅助标注逐步扩容，质量与多样性优先于数量。",
-    "rubric": {
-      "required": [
-        "直接训练的风险（错误模式/隐私）",
-        "种子集+分级扩充流程",
-        "脱敏与安全过滤",
-        "多样性与配比意识"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "SFT 对数据质量极其敏感——“垃圾进垃圾出”在行为学习中会被直接放大：未审核的用户对话里混有错误示范、有毒内容、隐私信息和用户自身的错误认知，直接训练会让模型系统性模仿这些坏模式，还可能记住用户 PII。构建思路：以审核过的 5 万条为核心种子集；对其余数据做分级清洗——脱敏、毒性/质量分类器过滤、规则筛掉超短/超长/无意义样本，再用强模型辅助标注或改写后抽样人审，逐步扩充可信集；保留分布多样性（任务类型/难度/领域配比），而不是单纯堆数量。经验上几万条高质量多样本往往优于百万条噪声数据。"
@@ -1137,20 +819,6 @@
     "angle": "scenario",
     "question": "一个模型经过 SFT 后指令遵循能力明显提高，但原本的知识问答能力下降。你会如何分析和解决这个问题？",
     "explanation": "窄分布小数据 SFT 会挤占通用能力（灾难性遗忘）；对策：通用数据 replay、小学习率/LoRA 限幅、KL 约束，并把 SFT 定位为行为微调。",
-    "rubric": {
-      "required": [
-        "灾难性遗忘成因",
-        "先量化确认真下降",
-        "replay/限幅/KL 至少两项对策",
-        "数据分布反思"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "这是典型的灾难性遗忘/能力对齐税：小规模 SFT 数据分布窄，梯度更新把通用能力对应的参数推向了新任务的解空间。分析上先量化——用原有能力基准测试确认下降幅度与涉及的能力面，排除评测格式变化导致的假下降。解决方案按代价排序：混合通用数据进行 replay（SFT 数据中掺入指令遵循之外的通用问答数据）；降低学习率、减少 epoch、用 LoRA 等参数高效方法限制更新范围；检查数据本身是否过窄或答案风格过于模板化；必要时在 preference optimization 阶段用 KL 约束拉回参考模型分布。根本原则是把 SFT 当作“行为微调”而非“重学”，控制更新幅度。"
@@ -1182,19 +850,6 @@
     "angle": "mechanism",
     "question": "为什么大语言模型通常使用 next-token prediction 作为预训练目标？这种看似简单的训练方式为什么能学到语言、知识甚至一定程度的推理能力？",
     "explanation": "预测下一 token 需要隐式掌握语法/事实/推理链——好预测等价于好的压缩建模；且免标注、可扩展、易并行。",
-    "rubric": {
-      "required": [
-        "预测蕴含理解",
-        "压缩即学习视角",
-        "免标注可扩展的工程优势"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "因为要把下一个 token 预测得足够好，模型被迫理解生成该 token 所需的一切隐含结构：语法与搭配是表层，事实知识决定专有名词后的内容，而很多文本（代码、数学、推理链条）要求模型隐式学会状态跟踪和多步推导才能续写正确。海量数据把这个单一目标变成了对世界知识的压缩建模——预测越准，意味着压缩越好，泛化表示越强。它还有工程优势：目标无需人工标注、可无限扩展、损失天然适配并行训练。"
@@ -1226,20 +881,6 @@
     "angle": "scenario",
     "question": "你负责构建一个 10T token 的预训练数据集，来源包括网页、代码、书籍和论坛。你会设计哪些数据清洗、去重、质量过滤和数据混合策略？",
     "explanation": "流水线四件事：清洗（样板/乱码）、两级去重（精确+模糊）、质量过滤（分类器+启发式+困惑度）、按 domain 配比并小规模消融验证。",
-    "rubric": {
-      "required": [
-        "清洗手段",
-        "精确+模糊去重",
-        "质量过滤机制",
-        "domain 配比与消融验证"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "清洗：去 HTML 样板/广告、语言识别与过滤、长度与符号比例启发式、乱码与编码修复。去重：URL/哈希级精确去重，再加 MinHash/SimHash 等模糊去重消除转载模板文——重复数据浪费算力且加剧记忆。质量过滤：用轻量分类器打分（教育性/流畅度）、基于规则的质量信号（标点、大小写、结构完整性），必要时用参考模型困惑度过滤离群文档。混合配比：按 domain 设定目标比例（网页/代码/书籍/论坛），配合 epoch 策略——高质量数据可以多轮、低质数据少轮；配比影响下游能力（如代码占比影响推理），需要用小模型做消融实验验证后再放大。"
@@ -1275,19 +916,6 @@
     "angle": "tradeoff",
     "question": "预训练数据应该尽可能多，还是优先保证质量？如果高质量数据只有低质量数据的 10%，你会如何做数据配比？",
     "explanation": "质量决定上限、数量决定广度：高质量多 epoch、低质单 epoch 提供覆盖；配比用小规模消融实验确定而非拍脑袋。",
-    "rubric": {
-      "required": [
-        "质量与数量的不同作用",
-        "高质量多 epoch 策略",
-        "代理实验确定配比"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "两者不是对立项：低质数据过多会拖累所有能力的下限，但高质量数据太少又会导致覆盖不足。实践做法是分域处理——高质量数据（书、代码、百科）允许多个 epoch 重复使用，低质网页数据单 epoch 使用以提供广度和多样性；并用数据清理提升中间层（如网页中筛选出高信号子集）。最终配比不靠直觉，而是用固定 compute 的小规模代理实验扫配比，看验证 loss 和下游探针，再外推到全量。"
@@ -1319,20 +947,6 @@
     "angle": "scenario",
     "question": "一个模型需要 256 张 GPU 进行预训练。你会如何组合 Data Parallel、Tensor Parallel 和 Pipeline Parallel？它们分别解决什么问题？",
     "explanation": "DP 扩吞吐、TP 解单层放不下（需高带宽域）、PP 解跨机带宽（有 bubble）;生产上是 TP×PP×DP 三维组合，按模型大小与拓扑取舍。",
-    "rubric": {
-      "required": [
-        "三种并行各自解决的瓶颈",
-        "TP 需要高带宽互联",
-        "PP bubble 代价",
-        "三维组合与 ZeRO/FSDP"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "三者解决不同的瓶颈：Data Parallel 把 batch 切到多机复制模型上，解决吞吐扩展，但前提是单卡放得下模型；Tensor Parallel 把单个矩阵乘切开到多卡（NVLink 域内），解决单层放不下和计算墙，通信频繁适合高速互联；Pipeline Parallel 把层分段流水，解决跨机带宽低的问题，代价是 bubble 和调度复杂度。典型 256 卡配置是 3D 并行组合：节点内 TP（NVLink）× 节点间 PP（IB 网络）× 全局 DP 扩吞吐，同时用 ZeRO/FSDP 思路切分 optimizer states 降低显存冗余。选择依据：先看模型能否单卡/单机放下，再看网络拓扑的通信代价。"
@@ -1364,20 +978,6 @@
     "angle": "scenario",
     "question": "预训练过程中 loss 突然升高并出现 NaN。你会按照什么顺序排查？",
     "explanation": "排查顺序：定位首个异常 step → 数据批次（脏数据最常见）→ 梯度范数/clipping → 数值精度（FP16/BF16/loss scale）→ 学习率变更 → 硬件故障；恢复靠 checkpoint 回退。",
-    "rubric": {
-      "required": [
-        "定位异常 step",
-        "脏数据排查",
-        "梯度/数值精度检查",
-        "checkpoint 回退恢复"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "按时间倒查与由宽到窄排查：先定位首次异常的 step，回看该 step 附近的数据批次（脏数据 spikes 是最常见原因，可用 perplexity 离群检测预筛）；检查梯度范数曲线——爆炸则确认 gradient clipping 是否生效、clipping 阈值是否合理；检查数值精度问题——FP16 下溢/溢出、loss scale 是否震荡，考虑 BF16 或调整 loss scaling；检查学习率 warmup/schedule 与超参变更记录；排除硬件故障——某卡 ECC 报错或静默损坏会产生规律性异常，用日志定位具体 rank；恢复策略是从最近的 checkpoint 回退，跳过问题数据或修正超参后重启，而不是带病继续。"
@@ -1432,12 +1032,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：偏好采集中“肯定迎合”易获高分，数据偏差为源。\n- B：RLHF与DPO均消费同一偏好分布，偏差会被等效学习。\n- C：KL仅约束与初分布距离，不能修正偏好本身的偏差。\n- D 错误：谄媚随规模不自动消失，需数据清洗与客观性奖励修正。"
       }
-    },
-    "rubric": {
-      "required": [
-        "alignment 与 capability 是两个正交维度",
-        "对齐税存在：过度保守会损害可用性，需要按场景校准"
-      ]
     }
   },
   {
@@ -1475,12 +1069,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Chinchilla目标为训练Loss最优，不含推理。\n- B：Serving随请求线性累加，长期超预训练。\n- C：Overtraining以多算力换小模型推理经济性。\n- D 错误：过度训练不消解小模型在复杂推理与OOD上的固有容量瓶颈。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三个变量（N/D/C）的权衡关系与 compute-optimal 含义",
-        "推理感知的 scaling：为部署经济性偏离 Chinchilla 比例是有意为之"
-      ]
     }
   },
   {
@@ -1518,12 +1106,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：DPO闭式重写奖励为log π/π_ref比值，无需Reward模型与在线采样。\n- B：奖励隐式存于策略与参考的概率比中，而非消除。\n- C：损失以偏好对为对比，提升y_w相对似然、压低y_l。\n- D 错误：DPO仍优化代理偏好，数据偏差与过拟合仍会致作弊，需正则与早停。"
       }
-    },
-    "rubric": {
-      "required": [
-        "DPO 把 RLHF 的目标重写为偏好对上的分类式损失，无需在线采样",
-        "与 PPO 系的取舍：简单稳定 vs 优化自由度"
-      ]
     }
   },
   {
@@ -1555,12 +1137,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：让模型输出更符合人类偏好与指令。\n\n解析：RLHF 通过人类偏好反馈训练奖励模型并微调，使模型行为更符合人类期望与指令，是对齐阶段而非替代预训练。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
-        "reward hacking 是核心风险：奖励模型只是代理指标"
-      ]
     }
   },
   {
@@ -1597,12 +1173,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：冻结基座权重，只训练注入的低秩分解矩阵 ΔW = B·A（r ≪ d），大幅减少可训练参数。\n\n解析：LoRA 冻结预训练权重 W₀，为每个目标矩阵学习低秩旁路 A(d×r)、B(r×k)，可训练参数减少百倍以上，单卡即可微调 7B+ 模型，适配器小且可热插拔。QLoRA 在此基础上再把冻结的基座权重量化为 4-bit。其有效性的假设是微调所需的权重更新具有低内在秩。"
       }
-    },
-    "rubric": {
-      "required": [
-        "低秩假设：微调的权重更新集中在低维子空间",
-        "rank 是容量旋钮；多 LoRA 服务可在单基座上热切换任务"
-      ]
     }
   },
   {
@@ -1637,12 +1207,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\n要点：DeepSeek-R1 表明在训练中利用中间推理轨迹并没有带来显著帮助；最终奖励只由最终答案正确性（R_accuracy，数学/代码等可验证领域的规则判分）加规则格式奖励（R_format）构成，中间推理轨迹本身不直接参与梯度更新的奖励计算。链式思考、反思与自我纠错（Aha Moment）是在结果奖励下自发涌现的行为，不依赖 PRM 过程打分；<think> 标记只是分隔推理过程与最终答案的格式约定，不是\"推理能力开关\"。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
-        "reward hacking 是核心风险：奖励模型只是代理指标"
-      ]
     }
   },
   {
@@ -1678,12 +1242,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：训练侧——SFT 阶段做 Thinking Mode Fusion，数据同时包含\"先生成 reasoning trace 再给答案\"和\"直接生成 answer\"两类样本，让同一套权重学会两种行为模式；推理侧——enable_thinking=False 是硬开关，实现方式是 Tokenizer 直接在 Assistant 回复开头插入空的 <think></think>，模型据此跳过推理段直接输出最终答案。它不是靠系统提示词软引导、不涉及注意力头 Mask，更不需要切换不同规模的模型。"
       }
-    },
-    "rubric": {
-      "required": [
-        "SFT 改变行为与格式而非注入新知识——知识主要来自预训练",
-        "数据质量与多样性比数量重要；格式一致性直接影响可用性"
-      ]
     }
   },
   {
@@ -1719,12 +1277,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：单模型多档 Effort 的主流做法有两类且可组合——①输入侧：System Prompt 注入 Effort 等级标记，作为条件信号；②训练侧：RL 阶段引入与 Effort 绑定的 Token 惩罚 R(e) = R_task − λ(e)·N_tokens（低 Effort 档 λ 更大，抑制冗长推理链），或在 SFT 阶段为同一问题配对短答/中等/长推理三种目标响应，让模型学会 Effort 标签到回复长度与深度的映射。Temperature/Top-P 等解码超参只影响采样随机性，Pruning 改变的是模型容量而非行为档位，Self-Consistency 分支数是另一维度的推理时扩展——三者都实现不了\"按指令调控单次推理深度\"。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
-        "reward hacking 是核心风险：奖励模型只是代理指标"
-      ]
     }
   },
   {
@@ -1760,12 +1312,6 @@
       "open": {
         "referenceAnswer": "正确答案：D（说法错误的选项）。\n\n要点：Inference Scaling 有两条正交路径——增加单次生成的 Reasoning Tokens（Reasoning Effort 调控，权重不变）与多样本技术（Self-Consistency 多数投票、Self-Refinement 自我修正），二者完全可以叠加：如 DeepSeekMath-V2 在推理模型之上叠加极限 Self-Consistency 达到 Olympiad 级别表现。其余三项均为正确认知：Effort 提高属于 inference-time scaling；准确率随 Effort 增长存在边际收益递减乃至饱和；小模型 × 高 Effort 可以追平甚至超过大模型 × 低 Effort——这正是\"用推理算力换参数量\"的核心权衡。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三个变量（N/D/C）的权衡关系与 compute-optimal 含义",
-        "推理感知的 scaling：为部署经济性偏离 Chinchilla 比例是有意为之"
-      ]
     }
   },
   {
@@ -1801,12 +1347,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\n要点：Per-Head Muon 在收敛速度与最终 Loss 上并无明显优势也无劣势（排除 A），显存开销也不是动机（排除 B）。真正的考量是结构正确性：Muon 的正交化更新作用在矩阵的谱意义上，而每个 Attention Head 在功能上是独立子空间，把多个 Head 的权重拼成一个大矩阵统一做更新，会让不相干 Head 的更新方向互相耦合、没有物理意义。Per-Head 化让优化器的数学假设与模型的结构假设对齐，属于工程正确性优先的设计决策。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三种基本并行的切割维度与通信代价差异",
-        "MoE 引入 all-to-all 通信，多机场景尤其复杂"
-      ]
     }
   },
   {
@@ -1844,12 +1384,6 @@
       "open": {
         "referenceAnswer": "正确答案：B、C、D。\n\n- B：可复现性需数据+环境+配方三件套，权重仅为结果。\n- C：合成Persona等可在隐私约束下生成具真实统计特性的数据，补足敏感域。\n- D：开放资产降低二次开发门槛，社区可快速产出领域微调。\n- A 错误：权重不含数据配比、课程、优化器轨迹等细节，无法复现预训练。"
       }
-    },
-    "rubric": {
-      "required": [
-        "目标是无监督地学分布，产出的是 base model 而非 assistant",
-        "数据混合（代码/多语言/网页）与去重质量比单纯 token 数更关键"
-      ]
     }
   },
   {
@@ -1887,12 +1421,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：代理指标被直接优化即失真，经典Goodhart。\n- B：显式Reward与DPO隐式偏好均为真实偏好代理，强优化下均被钻漏洞。\n- C：冗长与谄媚是最易被代理模型误判为“高质量”的捷径。\n- D 错误：DPO同样基于代理偏好，过度优化风险不因算法形态消失。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
-        "reward hacking 是核心风险：奖励模型只是代理指标"
-      ]
     }
   },
   {
@@ -1930,12 +1458,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：KL约束策略与参考分布的偏离，避免为刷分产生重复/无意义文本。\n- B：Reference为冻结SFT，作KL锚点。\n- C：Policy/Reference/Reward/Value四模型常驻或流水调度，显存与通信为主要开销。\n- D 错误：奖励模型始终是代理指标，移除KL必致过优化与崩溃，精确度不能替代约束。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
-        "reward hacking 是核心风险：奖励模型只是代理指标"
-      ]
     }
   },
   {
@@ -1971,12 +1493,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n可验证奖励以单元测试、数学答案等规则作精确反馈，适合客观可校验任务（RLVR/GRPO）；同理心/语气/安全等主观维度无法规则化，仍需人类偏好学习。二者按任务可验证性分工，A的全替代、C的偏好优于可验证、D的仅SFT可用均误判。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三件套：偏好数据 → 奖励模型 → 策略优化（如 PPO）",
-        "reward hacking 是核心风险：奖励模型只是代理指标"
-      ]
     }
   },
   {
@@ -2014,12 +1530,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：SFT以单条“理想回答”为目标做模仿，对同一prompt存在多条优质但侧重不同回答的权衡无法显式优化。\n- B：判断“两者谁更好”比从零撰写理想回答认知更轻、标准更稳，一致性显著更高。\n- D：对齐带来的偏好增益可超越单纯参数规模优势，小对齐模型可胜大未对齐模型。\n- C 错误：权衡逻辑需成对偏好信号监督，SFT的单点模仿无法通过数据量堆砌习得。"
       }
-    },
-    "rubric": {
-      "required": [
-        "SFT 改变行为与格式而非注入新知识——知识主要来自预训练",
-        "数据质量与多样性比数量重要；格式一致性直接影响可用性"
-      ]
     }
   },
   {
@@ -2057,12 +1567,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：TP逐层all-reduce同步，带宽敏感。\n- B：EP仅Token路由至专家，all-to-all但频率与量低于TP。\n- C：工程上TP单节点、EP跨节点以匹配带宽层级。\n- D 错误：描述相反，TP需高带宽单节点，EP可跨节点。"
       }
-    },
-    "rubric": {
-      "required": [
-        "三种基本并行的切割维度与通信代价差异",
-        "MoE 引入 all-to-all 通信，多机场景尤其复杂"
-      ]
     }
   },
   {
@@ -2083,13 +1587,6 @@
     "explanation": "A 正确 RLHF 依赖人工标注偏好排序训练奖励模型再通过 PPO/DPO 更新权重。B 正确 CAI 将对齐准则写为文本宪法让模型自评修改生成合成数据。C 正确 AI 反馈替代或减少大规模人工标注提升可扩展性与透明度。D 错误 文本原则无法彻底消除过度拒绝仍需迭代校准。",
     "reference": {
       "concept": "RLHF=人工偏好→RM→PPO/DPO；CAI=宪法原则→Self-Critique→合成数据；CAI 不消除 Over-Refusal。"
-    },
-    "rubric": {
-      "required": [
-        "RLHF 依赖人工偏好排序训练奖励模型",
-        "CAI 用文本原则指导 Self-Critique 生成合成数据",
-        "CAI 提升可扩展性但不能彻底消除过度拒绝"
-      ]
     },
     "formats": {
       "choice": {
@@ -2130,12 +1627,6 @@
     "explanation": "A 与 B 是异步 GRPO 维持稳定性的核心组合：限制参数漂移步数 bounds off-policy 程度，截断重要性采样则防止个别极度偏离策略的 Token 产生爆炸性更新。C 错误 重构 KV Cache 带来巨大计算开销直接破坏异步高吞吐设想。D 错误 GRPO 显式去除 Value Network 改用组内留一法基线。",
     "reference": {
       "concept": "异步GRPO=限制参数滞后+截断重要性采样；不清KV Cache不用Value Network。"
-    },
-    "rubric": {
-      "required": [
-        "限制参数滞后上限",
-        "截断重要性采样裁剪概率比值"
-      ]
     },
     "formats": {
       "choice": {
@@ -2210,13 +1701,6 @@
     "explanation": "D 错误。多阶段 RL 的核心正是根据奖励信号的性质动态调整 KL 约束：客观真理类任务（RLVR/SWE 阶段）奖励不易被作弊需要充分探索 KL 可设为 0；而主观偏好/风格对齐阶段（RLHF）奖励模型易被作弊且需保留基座能力必须施加较高 KL 限制如 0.05。",
     "reference": {
       "concept": "RLVR 阶段 KL→0 充分探索；RLHF 阶段高 KL 防 Reward Hacking；动态调整非全局恒定。"
-    },
-    "rubric": {
-      "required": [
-        "RLVR 客观任务 KL 可设 0 充分探索",
-        "RLHF 主观偏好保留较高 KL",
-        "多阶段动态调整非恒定"
-      ]
     },
     "formats": {
       "choice": {
@@ -2328,13 +1812,6 @@
     "reference": {
       "concept": "Replay Data + 降低 LR + 短 Epochs；不冻结 Attention。"
     },
-    "rubric": {
-      "required": [
-        "混合前序 Phase 1 重放数据",
-        "降低 Phase 2 学习率",
-        "控制训练周期避免过拟合"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2374,13 +1851,6 @@
     "reference": {
       "concept": "Verifiable Rewards 确定性+KL=0 探索；GenRM 有 Reward Hacking 风险且速度更慢。"
     },
-    "rubric": {
-      "required": [
-        "Verifiable Rewards 确定性不易作弊 KL=0 可深度探索",
-        "GenRM 存在泛化边界易被 Reward Hacking",
-        "规则验证器速度远快于生成式 RM"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2419,13 +1889,6 @@
     "explanation": "C 错误。真实 Docker/Shell 编译执行耗时数秒甚至数分钟如果强制同步等待环境返回并阻塞训练器会导致 GPU 算力严重闲置。必须采用异步生成/训练解耦设计。",
     "reference": {
       "concept": "环境解耦+资源API抽象+异步权重同步；同步阻塞是反模式。"
-    },
-    "rubric": {
-      "required": [
-        "Rollout 与 Trainer 解耦独立节点池",
-        "统一抽象 Resource API",
-        "异步权重转换与分发机制"
-      ]
     },
     "formats": {
       "choice": {
@@ -2541,13 +2004,6 @@
     "reference": {
       "concept": "DPO 似然下降→调大 β+加 NLL 正则化；移除 Reference Model 是反模式。"
     },
-    "rubric": {
-      "required": [
-        "相对差值决定梯度致两者概率同降",
-        "增大 β 增强 KL 约束",
-        "NLL 正则化维持偏好回答绝对概率"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2585,13 +2041,6 @@
     "explanation": "RingAttention 借助环形 P2P 异步通信隐藏通信延迟(A)；利用 Online Softmax 分块累计归一化系数(B)；单卡只存自己的片段显存与分段长度相关(D)。C 错误：通信与计算完美重叠时具有极佳线性扩展性而非 O(N²)。",
     "reference": {
       "concept": "环形P2P重叠+Online Softmax+线性扩展+单卡显存与切片长度线性相关。"
-    },
-    "rubric": {
-      "required": [
-        "P2P 异步通信重叠传递 KV 块",
-        "Online Softmax 逐步累计归一化",
-        "单卡显存与切片长度线性增长"
-      ]
     },
     "formats": {
       "choice": {
@@ -2631,13 +2080,6 @@
     "explanation": "A/B/C 准确概括了 ORM 与 PRM 的核心差异及 MC Rollout 自动合成 PRM 标签的工程实践。D 错误 即使每步看似合理终局仍可能因积累偏差出错需联合 PRM 与 ORM 调控。",
     "reference": {
       "concept": "ORM 终态单一奖励信用模糊；PRM Step-level 精准定位+MC Rollout 伪标签；需联合使用。"
-    },
-    "rubric": {
-      "required": [
-        "ORM 终态奖励致信用分配模糊",
-        "PRM Step-level 精准定位中间谬误",
-        "MC Rollout 自动估计中间步骤 Q 值"
-      ]
     },
     "formats": {
       "choice": {
@@ -2713,13 +2155,6 @@
     "explanation": "A 正确 DPO 将 RL 目标重构为隐式 Reward 解析表达降低显存与框架复杂度。B 正确 Off-policy 无需在线采样直接用静态偏好数据集梯度更新。C 正确 缺少价值迭代难以处理多步环境反馈的精准信用分配。D 错误 DPO 极易受高噪声偏好数据干扰产生 Reward Hacking。",
     "reference": {
       "concept": "DPO=离线+省网络+难处理多步信用分配；但极易 Reward Hacking 非抗干扰。"
-    },
-    "rubric": {
-      "required": [
-        "DPO 重构目标降低显存与复杂度",
-        "Off-policy 无需在线采样",
-        "缺少价值迭代难处理多步信用分配"
-      ]
     },
     "formats": {
       "choice": {

@@ -3,7 +3,13 @@
 // 不可用时报错、并发上限、超时拒绝、重试。
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { chromeAI, chromeAvailability, chromeComplete, getLanguageModel } from './chrome';
+import {
+  CHROME_AI_CONCURRENCY,
+  chromeAI,
+  chromeAvailability,
+  chromeComplete,
+  getLanguageModel,
+} from './chrome';
 
 type CloneSession = { prompt: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> };
 type SessionStub = CloneSession & { clone: ReturnType<typeof vi.fn> };
@@ -105,7 +111,7 @@ describe('chromeComplete', () => {
     vi.useRealTimers();
   });
 
-  it('Chrome on-device 模型支持并发 session：并发调用上限为 executor 的 concurrency（默认 4）', async () => {
+  it(`并发调用上限为 executor 的 concurrency（当前 ${CHROME_AI_CONCURRENCY}）`, async () => {
     let active = 0;
     let maxActive = 0;
     stubLanguageModel({
@@ -118,11 +124,15 @@ describe('chromeComplete', () => {
           return 'ok';
         }),
     });
-    // 模拟组卷路径：Promise.all 同时发起 8 个补全（同 system → 共用一个基准 session，clone 8 次）
-    await Promise.all(Array.from({ length: 8 }, (_, i) => chromeComplete('s', `u${i}`)));
-    // 默认 concurrency=8：同一时刻最多 8 个 clone 并发 prompt，不会退化成串行也不会无限并发
-    expect(maxActive).toBeLessThanOrEqual(8);
-    expect(maxActive).toBeGreaterThanOrEqual(8);
+    // 模拟组卷路径：Promise.all 同时发起 2×concurrency 个补全（同 system → 共用一个基准 session，逐个 clone）。
+    // 任务数取 2 倍并发上限，确保队列一定被填满，从而能真实观测到峰值并发。
+    const total = CHROME_AI_CONCURRENCY * 2;
+    await Promise.all(Array.from({ length: total }, (_, i) => chromeComplete('s', `u${i}`)));
+    // 上界：同一时刻最多 concurrency 个 clone 在 prompt，不会无限并发。
+    // 断言引用常量而非硬编码数字——调整并发数时本测试自动跟随，不会再把旧值"锁死"。
+    expect(maxActive).toBeLessThanOrEqual(CHROME_AI_CONCURRENCY);
+    // 下界：既然任务数（2×）多于并发上限，就应当跑满；防止将来悄悄退化成串行而无人察觉。
+    expect(maxActive).toBe(CHROME_AI_CONCURRENCY);
   });
 
   it('前一个调用失败不影响后续调用（rejection 不透传，且会按 executor 重试一次）', async () => {

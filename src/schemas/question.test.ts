@@ -45,11 +45,10 @@ describe('questionSchema', () => {
     expect(() => questionSchema.parse(validOpenOnly)).not.toThrow();
   });
 
-  it('accepts question with optional fields (angle, rubric, reference)', () => {
+  it('accepts question with optional fields (angle, reference)', () => {
     const q = {
       ...validChoiceSingle,
       angle: 'tradeoff' as const,
-      rubric: { required: ['要点1'], dimensions: { correctness: 0.5 } },
       reference: { concept: '概念' },
     };
     expect(() => questionSchema.parse(q)).not.toThrow();

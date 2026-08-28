@@ -34,12 +34,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：增量上下文累积仍巨。\n- B：前沿模型基数大，高频仍贵。\n- C：Caching与Routing互补。\n- D 错误：高命中不一定优于路由。"
       }
-    },
-    "rubric": {
-      "required": [
-        "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
-        "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
-      ]
     }
   },
   {
@@ -58,20 +52,6 @@
     "explanation": "Agent 上下文随多轮工具调用单调增长，KV cache ∝ 上下文长度，总占用还要乘并发路数——低 KV/token 直接换来更高并发或更长可用上下文，这是吞吐与成本的硬约束。但 KV 优化不改善 prefill 计算（首 token 延迟主要由权重读取/QKV 投影/FFN 主导）、decode 权重带宽、kernel 效率，也不提升模型质量本身。",
     "reference": {
       "concept": "Agent serving：总 KV cache ≈ 每 token 开销 × 上下文长度 × 并发数；KV 效率决定并发容量上限，但不解决 prefill/质量瓶颈。"
-    },
-    "rubric": {
-      "required": [
-        "KV cache 随上下文线性增长，Agent 多轮工具调用使上下文持续膨胀",
-        "总显存压力 = 单 token KV × 上下文长度 × 并发会话数",
-        "低 KV/token 换来更高并发容量或更长上下文，即更低的单位服务成本",
-        "指出不会消失的瓶颈：prefill 计算与首 token 延迟、权重读取带宽、kernel/调度效率、模型能力边界"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.25,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
     },
     "formats": {
       "choice": {
@@ -106,20 +86,6 @@
     "angle": "scenario",
     "question": "一个 Agent 请求平均需要 18 秒。一次请求包含 3 次 LLM 调用、2 次 retrieval 和 2 次 tool call。你会如何分析和优化 latency？",
     "explanation": "先做分阶段 latency trace 并区分串并行；合并调用、并行执行独立步骤、缩 context、设合理 timeout。",
-    "rubric": {
-      "required": [
-        "latency breakdown",
-        "串并行",
-        "减少 LLM calls",
-        "context"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "首先建立每个阶段的 latency breakdown 和 trace，区分串行和并行调用。可以合并不必要的 LLM 调用、并行执行独立工具和 retrieval、减少 context、选择更快模型，并设置合理的 timeout。不能只通过更换模型解决问题，因为串行调用次数和上下文大小可能是主要瓶颈。"
@@ -172,12 +138,6 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n\n要点：Prefix Caching 的命中条件苛刻——必须从 Prompt 第一个字符开始连续完全一致，任何中间位置的变动都会使其后的所有 Token 缓存失效，与\"语义相似\"无关、与总 Token 数无关。因此布局铁律：静态不变的内容（系统指令、文档语料）全部前置，每次请求唯一变化的部分（用户提问）放到最末尾。这样多轮不同提问共享同一长前缀缓存，缓存部分计费可降一个数量级（如 $3.00/1M → $0.30/1M），TTFT 也因跳过重复 prefill 大幅下降。"
       }
-    },
-    "rubric": {
-      "required": [
-        "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
-        "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
-      ]
     }
   },
   {
@@ -215,12 +175,6 @@
       "open": {
         "referenceAnswer": "正确答案：B、C、D。\n\n要点：延迟要分两段归因——Prefill（读上下文）与 Decode（逐 token 生成）。Prefix Cache 100% 命中已把 Prefill 几乎降为零（所以 A 错误），剩下的时间全花在 Decode：全局归纳类任务促使推理模型生成成千上万的 Thinking Tokens 来梳理跨文档逻辑（B），且上下文越大思考链条往往越长（C）；Decode 本质是自回归串行过程，每个 token 都要等上一个生成完，Cache 对这段毫无帮助（D）。结论：长上下文 + 推理模型的延迟瓶颈在串行解码的思考链，而不是读缓存的吞吐。"
       }
-    },
-    "rubric": {
-      "required": [
-        "E2E ≈ TTFT + N_out × TPOT，流式场景用户体感主要看 TTFT",
-        "批大小提升吞吐但抬高 TPOT——吞吐与延迟是显式权衡"
-      ]
     }
   },
   {
@@ -255,12 +209,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①无损性是核心卖点：拒绝采样式的验证保证了最终输出分布与目标模型直接采样完全一致，所以它不像低精度量化那样有质量代价。②经济学：目标模型的 K 个 token 由一次并行前向验证完成，把最贵的自回归串行步骤压缩了；实际加速 = f(接受率 α, 草稿/目标速度比)，α 高（代码补全、模板化文本）可达 3x，开放性创作任务 α 低可能不赚反亏。③工程约束：同 tokenizer 是硬前提；Medusa（多头预测）、Lookahead（Jacobi 迭代）是无草稿模型的变体。适用场景：延迟敏感、流量大的服务；不适用：草稿模型不可得或任务高度开放。"
       }
-    },
-    "rubric": {
-      "required": [
-        "两阶段的瓶颈差异及对应指标 TTFT/TPOT",
-        "chunked prefill 等技术正是为了协调两阶段对资源的争用"
-      ]
     }
   },
   {
@@ -296,12 +244,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：量化的本质是用更低位宽存权重（可选激活），省显存、加快访存受限的解码，代价是舍入误差。各家差异在\"误差放在哪\"：AWQ 观察激活找出高显著权重并给予保护，因此同等位宽下质量优于均匀处理的朴素 GPTQ（A 错）；LLM.int8 把离群通道留在高精度、其余 INT8，质量接近无损但只有 2x 压缩（D 错：那是 4-bit 的水平）；GGUF 的 Q4_K_M 是 llama.cpp/CPU 生态格式。实践路径：GPU 生产从 AWQ 4-bit 起步 → 任务上 benchmark 回归（困惑度+业务指标）→ 不合格升 INT8；纯 CPU/边缘用 GGUF；质量红线场景留 FP16 对照。C 过于绝对——现代 4-bit 方法在多数任务上的损失已在噪声级别，但\"必须实测\"永远是铁律。"
       }
-    },
-    "rubric": {
-      "required": [
-        "weight-only vs weight+activation 的适用场景差异",
-        "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
-      ]
     }
   },
   {
@@ -337,12 +279,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①预算分配的核心思想是\"实时路径只做组合，不做计算\"：用户平均消费、常驻商户、home geography 全部离线（小时/天级）预计算；实时侧只增量计算本笔交易的 velocity（Redis 原子计数器）、设备指纹（缓存查询）、IP 归属地（查表）。②LLM 解释的正确位置是异步旁路：监管要的是\"7 年可审计的解释\"而非\"100ms 内的解释\"——拒绝/升级分支把特征贡献度投给小型 LLM 生成两句话的人话解释，随通知异步送达。③降级阶梯的本质是用确定性的能力下界换可用性：纯规则虽抓不住复杂模式但覆盖已知模式且永不超时；小额默认放行则把最坏情况的资金敞口变成常数。C 的\"新鲜度洁癖\"会把离线管线优势全部放弃；D 的无限重试在依赖故障时会把超时放大成雪崩。"
       }
-    },
-    "rubric": {
-      "required": [
-        "E2E ≈ TTFT + N_out × TPOT，流式场景用户体感主要看 TTFT",
-        "批大小提升吞吐但抬高 TPOT——吞吐与延迟是显式权衡"
-      ]
     }
   },
   {
@@ -380,12 +316,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n要点：①这是缓存层独有的风险面：检索层的 Pre-filtering 防得再好，答案一旦进了共享缓存，就从\"受索引保护的数据\"变成\"按 Key 取用的数据\"——保护机制必须跟着迁移到 Key 设计上。②两种实现路径：显式绑定（tenant/user/ACL 标签拼进 Key 或作为语义缓存匹配的前置过滤）最干净；语义向量化会抹平权限差异（两个不同部门的\"报销政策是什么\"向量几乎重合），此时只能命中后回查源文档权限。③C 混淆了两个维度：阈值高→命中率低→省钱效果差，这是经济性；越权与否取决于 Key 里有没有权限上下文，这是安全性——互不决定。④个性化查询同理：涉及\"我的订单/我的余额\"类语义的缓存还必须绑 user_id（见 ai-eng-036）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
-        "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
-      ]
     }
   },
   {
@@ -401,20 +331,6 @@
     "angle": "mechanism",
     "question": "为什么 LLM 推理通常分成 Prefill 和 Decode 两个阶段？两个阶段各自的性能特征是什么？",
     "explanation": "Prefill 并行处理 prompt、compute-bound，决定 TTFT;Decode 逐 token 生成、memory-bound，决定 TPOT;瓶颈不同故优化策略不同。",
-    "rubric": {
-      "required": [
-        "prefill 并行/compute-bound",
-        "decode 逐步/memory-bound",
-        "TTFT 与 TPOT",
-        "KV Cache 写入与读取"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Prefill 阶段一次性并行处理整个 prompt，计算所有 token 的 K/V 并写入 KV Cache，是计算密集型，吞吐高，耗时主要由 prompt 长度和算力决定；Decode 阶段每步只生成一个 token，但要读取全部历史 K/V 并访问权重，是访存密集型（memory-bound），速度由显存带宽和输出 token 数决定。两阶段瓶颈不同，所以调度、批处理和优化策略也不同，这也是 TTFT 与 TPOT 分别被度量的原因。"
@@ -447,20 +363,6 @@
     "angle": "scenario",
     "question": "线上 LLM API 的 P50 延迟从 1 秒突然涨到 8 秒。你会如何定位原因？",
     "explanation": "总延迟 = queue + network + TTFT(prefill) + TPOT×output_tokens;按分段变化方向归因：排队→容量限流、TTFT→prompt 变长、TPOT→实例降级、token 数→上游 prompt 改动。",
-    "rubric": {
-      "required": [
-        "延迟分段拆解",
-        "TTFT 与 TPOT 区分",
-        "queue/provider 容量",
-        "变更清单核对"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "先把总延迟拆成可观测的分段：排队时间（provider 限流/容量紧张时常表现为 queue time 暴涨）、网络传输、TTFT（受 prefill 长度和首字生成影响）、decode 速度（TPOT）× 输出 token 数。对比延迟构成的变化方向：queue 上涨指向 provider 容量或限流；TTFT 上涨检查 prompt 是否变长（上游功能改动、context 泄漏）、是否触发了长 prefill；TPOT 变慢可能是 provider 降级到拥堵实例或换了部署；输出 token 数暴增则查上游是否改了 prompt 导致冗长输出。同时核对变更清单（prompt/模型版本/参数/上游功能）与 provider status，用分段指标而非总时长来归因。"
@@ -493,20 +395,6 @@
     "angle": "scenario",
     "question": "线上 LLM 服务 TTFT 从 500ms 上升到 3s，但生成速度基本没有变化。你会重点排查哪些环节？",
     "explanation": "TTFT↑ 而 decode 不变 ⇒ 瓶颈在首 token 前：排队、prefill 输入膨胀、batching 调度、prefix cache 失效或 provider 容量，分段 trace 二分。",
-    "rubric": {
-      "required": [
-        "queue time",
-        "prefill 输入变长",
-        "batching/调度",
-        "prefix cache 命中率"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "TTFT 变慢而 decode 速度不变，说明瓶颈在首 token 之前而非逐 token 生成。重点排查：排队等待——并发上涨或上游重试风暴导致请求在队列积压（看服务端 queue time 指标）；Prefill 输入变长——上游改动使 prompt/context 膨胀（如检索结果变多、历史未裁剪），prefill 是 compute-bound，对输入长度敏感而 decode 不受影响；批处理调度变化——continuous batching 配置或优先级策略调整让新请求等待当前 batch；缓存失效——prefix cache 命中率下降导致公共前缀重复计算；provider 侧容量降级或路由到了更远的区域。用分段 trace 对比变更前后即可快速二分定位。"
@@ -538,20 +426,6 @@
     "angle": "mechanism",
     "question": "为什么 LLM serving 通常需要 Continuous Batching？它和传统 Web 服务中的请求批处理有什么本质区别？",
     "explanation": "decode 访存密集需批量填充 GPU;静态 batch 等最长的、短请求被拖死；continuous batching 按 decode step 动态进出队，吞吐/延迟双赢。",
-    "rubric": {
-      "required": [
-        "decode 低 GPU 利用率背景",
-        "静态 batching 的队头阻塞",
-        "step 级动态调度",
-        "KV Cache 生命周期管理"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "LLM 生成长度差异极大且 decode 阶段是访存密集型——单请求 decode 时 GPU 利用率很低，必须靠批量并发填满带宽。传统静态 batching 要凑齐一批、等整批最长的那条生成完才能释放，短请求被长请求拖住，GPU 大量空转。Continuous Batching 在每个 decode step 后做调度：已完成的请求立即退出，排队的新请求立即插入空位，迭代级别地动态组 batch，从而大幅提高吞吐并降低平均延迟。本质区别在于：Web 批处理是一次性的请求级分组，而 continuous batching 是生成过程内部的步级调度，且要管理每个请求各自的 KV Cache 生命周期。"
@@ -584,20 +458,6 @@
     "angle": "scenario",
     "question": "一个 70B 模型无法部署到现有 GPU 集群。你会考虑哪些量化方案？量化可能带来哪些质量和性能上的损失？",
     "explanation": "权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径；省显存常带来吞吐红利，但 INT4 有质量退化且长尾任务敏感，须用业务评测集实测权衡。",
-    "rubric": {
-      "required": [
-        "主流量化方案至少两种",
-        "显存与吞吐收益",
-        "质量损失与敏感层",
-        "业务评测集驱动决策"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "方案按侵入性排序：权重-only 量化（GPTQ/AWQ，INT8/INT4）把显存降到约 1/2 到 1/4，70B 可进单机多卡甚至更少卡，推理时反量化计算，兼容性最好；FP8 前向量化（部分硬件原生支持）几乎无损且快；GGUF 类格式适合端侧。还可以配合 GQA 已有的 KV Cache 量化进一步省显存。质量风险：INT4 下困惑度上升、精细语义区分和数学/代码能力可能退化，长尾任务受损比平均指标明显；个别层对量化敏感需要混合精度保留。性能收益：显存省 → 可更大 batch/更长 context，带宽压力小反而常提速；但反量化开销和 kernel 效率可能吃掉部分收益，需实测吞吐与延迟而非只看理论。决策应基于目标任务评测集对比量化前后的质量-成本曲线。"
@@ -652,12 +512,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：PagedAttention将逻辑连续的KV切为固定物理Block，按需分配，彻底解决预分配导致的外部碎片与内部浪费。\n- B：RadixAttention用基数树按token序列做前缀匹配，共享节点即共享KV，命中即跳过Prefill。\n- C：在Agent多步工具调用/多轮对话中，重叠system prompt与历史Prefix大量复用，TTFT显著下降。\n- D 错误：PagedAttention的物理块机制本身支持跨请求共享（多个逻辑页映射同一物理块），vLLM的Prefix缓存与共享均基于此。"
       }
-    },
-    "rubric": {
-      "required": [
-        "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
-        "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
-      ]
     }
   },
   {
@@ -693,12 +547,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n传统Request级Batch必须等批次内最长序列完成才释放整批，造成Bubble。Continuous Batching把调度粒度细化到单个Token生成Iteration（Step）——每步前检查：已完成的Request立即移出、排队的新Request立即填充空位，GPU始终满载。A是Chunked Prefill/Tensor并行，C是朴素静态Batch的Padding浪费，D是Prefill/Decode分离架构（PD分离），与Continuous Batching正交。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -714,20 +562,6 @@
     "angle": "scenario",
     "question": "你的 LLM 应用存在大量重复 Query，API 成本很高。你会如何设计 LLM Response Cache？哪些请求不适合缓存？",
     "explanation": "Key = 归一化 query + 全部影响输出的变量；私有上下文、实时数据、创意发散、副作用调用都不该进缓存；版本绑定失效策略。",
-    "rubric": {
-      "required": [
-        "缓存键构成完整性",
-        "失效与版本绑定",
-        "不可缓存场景至少三类",
-        "命中监控与开关"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.35,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "设计要点：缓存键——不能只用原始字符串，要规范化（大小写/空白归一）后哈希，并把影响输出的所有变量纳入 key（prompt 版本、模型、温度等参数），否则会命中错误版本的响应；失效策略——与 prompt 版本和知识时效绑定，prompt 一改相关缓存整体失效；个性化与权限——含用户私有上下文的响应绝不能进共享缓存。不适合缓存的请求：带强个人上下文的对话、实时性数据（行情/库存）、随机性是特性的场景（创意发散）、合规敏感输出（结果可能随政策变化）、以及有副作用的调用。配套：命中率监控、缓存层灰度开关。语义缓存（按相似度命中）是另一个方案，风险更高需单独评估阈值。"
@@ -760,20 +594,6 @@
     "angle": "scenario",
     "question": "“What is ESG?” 和 “Can you explain ESG?” 语义相似但字符串不同。如何设计 Semantic Cache？它有什么风险？",
     "explanation": "Embedding 相似度 + 阈值直返历史答案；最大风险是“相似不等于同答”的错误命中且难以察觉——限定事实型无状态 query、分区校准阈值、TTL 兜底。",
-    "rubric": {
-      "required": [
-        "工作机制",
-        "相似不等于可复用的核心风险",
-        "阈值两难与校准",
-        "适用边界"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "设计：query 经 embedding 编码后在向量库检索历史 query，相似度超过阈值直接返回缓存答案，未命中则正常调用并回填。核心难点是风险：语义相近不等于可复用答案——“ESG 报告 2023 年收入是多少”和“2024 年是多少”高度相似但答案完全不同；阈值两难——高了命中率低失去意义，低了开始返回张冠李戴的答案且用户很难察觉；上下文丢失——相同 query 在不同对话历史下应有不同回答。缓解措施：只对事实型、无状态、答案稳定的 query 启用；按意图/domain 分区缓存；阈值结合业务容忍度实测校准；命中附加“来自缓存”标记便于追踪；时效敏感内容设 TTL。适合客服 FAQ 类高频重复场景，不适合开放对话。"
@@ -830,12 +650,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：4-bit的数值范围与舍入行为需硬件原生FP4 Tensor Core支持，否则模拟开销抵消收益。\n- B：预训练期即在低精度量化噪声下优化，权重分布已适配量化区间，比PTQ的离线截断更保真。\n- C：4-bit使权重/激活带宽减半，矩阵乘可利用低精度单元加速。\n- D 错误：低精度核心收益正是降显存占用与带宽，显存显著下降而非增加。"
       }
-    },
-    "rubric": {
-      "required": [
-        "weight-only vs weight+activation 的适用场景差异",
-        "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
-      ]
     }
   },
   {
@@ -871,12 +685,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\nRL后训练的核心是采样-反馈-更新循环：策略在环境中大规模并行Rollout产生轨迹，奖励/环境反馈驱动更新。推理吞吐直接决定单位算力可采样的轨迹数与环境多样性覆盖度，低单Token成本使更大规模探索成为可能。A忽略采样成本，C误把慢速当精度保障，D把瓶颈单归因于预训练数据，忽视RL环境多样性与探索。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -914,12 +722,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。\n\n- A：前缀缓存为最长公共前缀匹配，首Token失配即全不命中。\n- C：工程上静态前置、动态后置以保最大公共前缀。\n- D：命中跳过Prefill计算，直接复用KV。\n- B 错误：System Prompt在末尾则前缀不连续，无法命中。"
       }
-    },
-    "rubric": {
-      "required": [
-        "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
-        "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
-      ]
     }
   },
   {
@@ -957,12 +759,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：无状态下全量重新分词，CPU耗时∝上下文长度。\n- B：有状态缓存已分词序列，增量仅分词Delta并追加，近O(1)。\n- C：安全分类器与Prefill并发，利用GPU等待窗口掩盖审查延迟。\n- D 错误：并发并非反模式，极小概率的无效算力可接受，换来TTFT显著下降；失败时可中断/丢弃首包。"
       }
-    },
-    "rubric": {
-      "required": [
-        "E2E ≈ TTFT + N_out × TPOT，流式场景用户体感主要看 TTFT",
-        "批大小提升吞吐但抬高 TPOT——吞吐与延迟是显式权衡"
-      ]
     }
   },
   {
@@ -999,12 +795,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C。\n\n- A：Prompt Cache以前缀精确匹配为前提。工具Schema若以无序Map存储，JSON序列化顺序随机→同语义Prompt的Token序列前缀失配→KV无法命中。需确定性序列化（排序/Sorted Map）。\n- C：权限策略等高频易变配置若入Prompt，每次变更即改前缀文本→全量缓存失效。正确做法是外置：Prompt仅放稳定工具契约，运行时由Harness拦截工具调用并校验权限。\n- B 错误：直接改Prompt文本正是缓存杀手，应外置校验。\n- D 错误：缓存不仅看Token数量，更看内容与顺序；中间插入/重排/格式变更即破前缀连续性，即使总数不变也失效。"
       }
-    },
-    "rubric": {
-      "required": [
-        "复用单位是 KV cache 而非文本——前缀必须逐 token 完全一致才命中",
-        "把稳定内容前置、动态内容后置是提升命中率的提示词工程"
-      ]
     }
   },
   {
@@ -1042,12 +832,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：KV缺失需全量Prefill重算，延迟与算力陡增。\n- B：纯命中导向会导致热点过载，需负载-命中联合调度。\n- C：KV常驻显存，需基于Trace做LRU/分层下沉至Host/驱逐。\n- D 错误：目标是命中率与均衡的权衡，非绝对粘性，必要时可牺牲命中以避过载或做迁移。"
       }
-    },
-    "rubric": {
-      "required": [
-        "容量公式三要素：权重常驻、KV/token × 上下文 × 并发、激活与碎片余量",
-        "KV 效率（GQA/MLA/量化）直接换算为并发容量或成本"
-      ]
     }
   },
   {
@@ -1085,12 +869,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：Prefill对Prompt做并行矩阵乘，算力密集。\n- B：Decode每步读全量权重，仅产一Token，访存密集。\n- D：TTFT≈Prefill耗时∝算力，TPS受Decode带宽制约。\n- C 错误：TTFT由Prefill决定，TPS由Decode决定，描述相反。"
       }
-    },
-    "rubric": {
-      "required": [
-        "两阶段的瓶颈差异及对应指标 TTFT/TPOT",
-        "chunked prefill 等技术正是为了协调两阶段对资源的争用"
-      ]
     }
   },
   {
@@ -1130,12 +908,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：对权重做 INT4/FP8 量化，减少每步需读取的字节数；用 GQA/MQA 减少 KV 头数，缩小 KV cache；增大批量（batch），把权重读取摊到更多请求上；使用投机解码（speculative decoding），一次前向验证多个草稿 token。\n\n解析：解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -1172,12 +944,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：MLA 缩 KV cache、KDA 降低长上下文注意力复杂度、LatentMoE 降低专家 FLOPs——三者首要目标是推理效率；Attention Residuals 以额外计算换深层信号传播与表达能力，首要目标是质量。\n\n解析：判断依据是\"改动直接优化的资源或指标\"：MLA 改变 KV cache 的字节画像，直接影响并发容量与显存账单；KDA 用线性状态更新替代二次方注意力矩阵，长上下文 prefill/decode 成本显著下降；LatentMoE 压专家矩阵乘法的规模。而 Attention Residuals 反向——它在标准前向之外追加聚合计算，动机是缓解深层网络的信号衰减、提升模型上限，属于 quality-driven 的结构投资。注意这不是说它不能带来间接收益（例如更快收敛、更少层数达到同等质量），但\"首要设计目标\"的归属应以机制的直接作用对象为准。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -1210,12 +976,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：降低模型体积与推理延迟，便于在资源受限设备上运行。\n\n解析：量化将浮点权重转为低精度（如 INT8），减小体积、加速推理，代价通常是轻微精度损失，而非提升准确率。"
       }
-    },
-    "rubric": {
-      "required": [
-        "weight-only vs weight+activation 的适用场景差异",
-        "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
-      ]
     }
   },
   {
@@ -1251,12 +1011,6 @@
         ],
         "question": "某电商平台的算法团队正在规划两类业务的推理架构：一是每天凌晨基于前一日全量行为数据刷新数千万用户的兴趣画像，时效性要求不高；二是搜索结果排序必须在用户发起请求后几十毫秒内返回，否则转化率明显下滑。对于这两类业务的服务模式划分，以下哪种规划最合理？"
       }
-    },
-    "rubric": {
-      "required": [
-        "两阶段的瓶颈差异及对应指标 TTFT/TPOT",
-        "chunked prefill 等技术正是为了协调两阶段对资源的争用"
-      ]
     }
   },
   {
@@ -1294,12 +1048,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Prefill算力型、Decode带宽型可异构选型。\n- B：KV为解耦纽带，需高速网络搬运。\n- C：条件路由短/命中请求本地闭环以省传输。\n- D 错误：解耦引入跨节点KV传输，非消除通信，运维更复杂。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -1338,12 +1086,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Prefill算力受限，低精度Tensor Core加速。\n- B：Decode访存受限，小体积权重降带宽提TPS。\n- C：Attention误差跨步累积，比Linear更敏感。\n- D：常见混合精度：Attention保FP16，Linear量化。"
       }
-    },
-    "rubric": {
-      "required": [
-        "weight-only vs weight+activation 的适用场景差异",
-        "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
-      ]
     }
   },
   {
@@ -1381,12 +1123,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：PTQ免训练，快但INT4易掉点。\n- B：QAT模拟量化噪声，权重适配低精度。\n- C：量化为内存带宽优化。\n- D 错误：量化与GQA正交，可同时叠加。"
       }
-    },
-    "rubric": {
-      "required": [
-        "weight-only vs weight+activation 的适用场景差异",
-        "量化降低显存与带宽压力，但延迟收益受限于 kernel 与非量化环节"
-      ]
     }
   },
   {
@@ -1424,12 +1160,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。\n\n- A：一次前向并行验证多候选，摊薄Decode访存。\n- C：低Batch算力空闲可用于验证，加速显著。\n- D：高Batch算力饱和，验证成额外负担，动态禁用。\n- B 错误：投机解码不处理Prefill，TTFT不变。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -1468,12 +1198,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Draft小模型快，串行产候选。\n- B：Target一次前向并行校验。\n- C：拒绝时按残差分布重采样，保分布等价。\n- D：Tokenizer不一致致Token边界错位，必须对齐。"
       }
-    },
-    "rubric": {
-      "required": [
-        "瓶颈分析方法：算力利用率、带宽占用、批大小与序列长度的关系",
-        "优化手段与瓶颈的对应关系，而非手段的罗列"
-      ]
     }
   },
   {
@@ -1643,13 +1367,6 @@
     "reference": {
       "concept": "剪枝削容量→量化噪点无法被冗余吸收+误差逐Token累积+分布失真。"
     },
-    "rubric": {
-      "required": [
-        "剪枝降低容量使量化噪声容忍度下降",
-        "量化误差自回归逐Token累积",
-        "激活分布变化致Scaler失真"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1688,13 +1405,6 @@
     "explanation": "PTQ 无梯度/局部梯度无法恢复拓扑受损后的全局权重分布（A）；QAH 通过伪量化算子和梯度更新在离散空间内寻找全局最优点（B）；两者在计算开销与精度恢复上限上存在明显 Trade-off（C）。D 违背信息论限制纯 PTQ 无法凭空增加信息量超越原始全精度模型。",
     "reference": {
       "concept": "PTQ=无梯度快速校准适合未剪枝模型；QAH=伪量化+梯度更新弥补复合精度损失。"
-    },
-    "rubric": {
-      "required": [
-        "PTQ 无法恢复剪枝损失的表达容量",
-        "QAH 通过伪量化+梯度更新补偿离散化噪点",
-        "PTQ 低开销 vs QAH 高开销高恢复"
-      ]
     },
     "formats": {
       "choice": {
@@ -1770,13 +1480,6 @@
     "reference": {
       "concept": "STE=前向离散+反向恒等近似→截断区外梯度不匹配→需 Weight Decay/Clipping 约束。"
     },
-    "rubric": {
-      "required": [
-        "截断区外梯度不匹配致主权重漂移",
-        "Weight Decay 或 Clipping 防膨胀",
-        "前向伪量化反向恒等传导"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1814,13 +1517,6 @@
     "explanation": "4-bit 模型逆袭的原因：QAH 包含高质量领域数据的继续训练注入新知识（A）；伪量化噪声起正则化作用提升泛化（B）；优化器在离散约束下找到更稳健表征点（C）。D 错误没有数据训练纯粹量化不可能自发产生能力飞跃。",
     "reference": {
       "concept": "QAH 超越 FP16=领域数据训练+伪量化正则化+离散约束下更优表征点。"
-    },
-    "rubric": {
-      "required": [
-        "QAH 使用高质量数据继续训练注入新知识",
-        "伪量化噪声起正则化作用改善泛化",
-        "离散约束下学习 Quantization-Aware Representations"
-      ]
     },
     "formats": {
       "choice": {
@@ -1897,13 +1593,6 @@
     "reference": {
       "concept": "Outlier 解法=动态 Per-Token Scaling+SmoothQuant 等效变换+混合精度保留。"
     },
-    "rubric": {
-      "required": [
-        "动态 Per-Token/Block Scaling 隔离极值",
-        "SmoothQuant 将异常值转移到权重矩阵",
-        "Outlier Channels 保留 FP16 混合精度"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1942,14 +1631,6 @@
     "explanation": "PagedAttention 核心优势：将连续逻辑显存映射到非连续物理块。较小 Block 降低内部碎片(A)；大 Block 提高 SRAM/DRAM 连续读取效率但增加碎片(B)；统一尺寸 Block 解决外部碎片(C)；Parallel Sampling 场景下通过页表指针实现物理 KV Cache 零拷贝共享(D)。四项均正确。",
     "reference": {
       "concept": "小Block=低内部碎片；大Block=高吞吐；统一尺寸=消除外部碎片；COW=零拷贝共享。"
-    },
-    "rubric": {
-      "required": [
-        "小 Block 减少内部碎片提高利用率",
-        "大 Block 提高访存连续性但增加碎片",
-        "消除外部碎片因所有块等大小",
-        "支持 COW 零拷贝共享"
-      ]
     },
     "formats": {
       "choice": {
@@ -2026,13 +1707,6 @@
     "explanation": "这是 FP8 训练标准规范如 Transformer Engine：前向 GEMM 需较高精度故选 E4M3(A)；反向梯度跨多个数量级需大动态范围防下溢故选 E5M2(B)；E4M3 最大值约 448 必须引入 dynamic scaling(C)。D 错误 强制反向用 E4M3 会因动态范围不足导致大规模梯度下溢归零。",
     "reference": {
       "concept": "前向=E4M3 高精度+反向=E5M2 大范围+E4M3 需 Dynamic Scaling。"
-    },
-    "rubric": {
-      "required": [
-        "E4M3 高尾数精度适合前向权重与激活",
-        "E5M2 大动态范围适合反向梯度",
-        "E4M3 需配合动态缩放因子防溢出"
-      ]
     },
     "formats": {
       "choice": {
@@ -2123,13 +1797,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n- A：权重大小直接决定每 token 需从显存搬入计算单元的数据量，4-bit 使体积降至 FP16 约 1/4，缓解带宽瓶颈。\n- B：权重更小可整体驻留显存，避免 PCIe 跨设备搬运。\n- C 错误：量化不消除 KV Cache，KV Cache 由上下文长度与层数决定。\n- D：吞吐提升来自传输量下降，计算端有轻微 dequant 开销。"
       }
-    },
-    "rubric": {
-      "required": [
-        "自回归生成为 Memory-bound，每 token 都要加载全量权重",
-        "4-bit 量化约将权重大小压缩到 FP16 的 1/4",
-        "量化压缩权重，不影响 KV Cache 的大小"
-      ]
     }
   },
   {
@@ -2166,13 +1833,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n- A：KV Cache 随 seq_len 增长，易触发 OOM。\n- B：Prefill 需一次性算全序列注意力，TTFT 变长。\n- C 错误：静态权重大小与 num_ctx 无关。\n- D：KV Cache 溢出到 RAM/磁盘造成内存瓶颈，拉低续写吞吐。"
       }
-    },
-    "rubric": {
-      "required": [
-        "num_ctx 只影响动态 KV Cache 与 Prefill 计算量，不改变静态权重大小",
-        "KV Cache 随上下文线性/二次方增长可能导致 OOM",
-        "Prefill 一次性处理全序列导致 TTFT 上升"
-      ]
     }
   },
   {
@@ -2206,13 +1866,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。跨设备拆分后，逐层前向传播在每个 token 都要把激活张量在 GPU 与 CPU 间经 PCIe 同步；PCIe 带宽比 GPU 显存带宽低一个数量级，是吞吐断崖的主因。A 错误（CPU 仍能做矩阵乘）；C 错误（无强制 FP32 重量化）；D 错误（KV Cache 仍在，不需重算历史）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "逐层前向传播每 token 都要跨设备同步激活张量",
-        "PCIe 带宽远低于 GPU 显存带宽，是主要瓶颈",
-        "Partial Offloading 的代价来自传输而非 CPU 算力"
-      ]
     }
   },
   {
@@ -2250,13 +1903,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D。\n- A：14e9×0.55B≈7.7GB。\n- B：7.7+3.5+1.5=12.7GB≤16GB，安全。\n- C：64K 时 7.7+7.0+1.5=16.2GB>16GB，溢出。\n- D：静态权重只由参数量与量化精度决定，与 seq_len/Batch 无关。"
       }
-    },
-    "rubric": {
-      "required": [
-        "静态权重 = 参数量 × 每参数字节数（量化决定）",
-        "总显存 = 权重 + KV Cache + 运行时预留",
-        "KV Cache 随 num_ctx 增长，是 OOM 主因之一"
-      ]
     }
   },
   {
@@ -2292,13 +1938,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n- A：UMA 共享大内存池，可低成本的装大模型。\n- B：UMA 带宽低于顶级独显，小模型生成速率独显更优。\n- C 错误：系统 RAM 带宽远低于 VRAM。\n- D：共享内存免去 PCIe 跨设备拷贝。"
       }
-    },
-    "rubric": {
-      "required": [
-        "UMA 共享内存池，解决容量瓶颈",
-        "UMA 带宽通常低于高端独显显存带宽",
-        "PCIe 主存带宽远低于 VRAM，无法补足"
-      ]
     }
   },
   {
@@ -2332,13 +1971,6 @@
       "open": {
         "referenceAnswer": "正确答案：A。FIM 用 <PRE>/<SUF>/<MID> 特殊 Token 重排序列，让单向自回归 Decoder 在看到前后文后生成中间代码。B 错（丢弃后文会丢失上下文）；C 错（代码 SLM 多为 Decoder-only，非 Encoder-Decoder）；D 错（推理不反传梯度）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "FIM 用特殊 Token 重排 Prefix/Suffix/Middle",
-        "Causal Decoder 在 <MID> 后自回归生成中间片段",
-        "代码 SLM 多为 Decoder-only，非双向 Encoder-Decoder"
-      ]
     }
   },
   {
@@ -2375,13 +2007,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。\n- A：低温降低随机性，提升确定性。\n- C：缩小 Top-P 限制高置信候选。\n- D：强约束 System Prompt 规范输出。\n- B 错误：高温增加幻觉与语法错误风险。"
       }
-    },
-    "rubric": {
-      "required": [
-        "低温（≈0）提升确定性",
-        "缩小 Top-P 限制高置信候选",
-        "强约束 System Prompt 规范输出格式"
-      ]
     }
   },
   {
@@ -2420,13 +2045,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D。\n- A/C：Prefill 是 GEMM 计算密集，决定 TTFT，长 Prompt 拉长 TTFT。\n- B：Decode 是 GEMV 访存密集，吞吐受显存带宽限制。\n- D：大 Batch 把多个 GEMV 拼成 GEMM，提升算子强度与利用率。"
       }
-    },
-    "rubric": {
-      "required": [
-        "Prefill=GEMM，Compute-bound，决定 TTFT",
-        "Decode=GEMV，Memory-bound，决定 Tokens/s",
-        "大 Batch 提升算子强度，缓解 Memory-bound"
-      ]
     }
   },
   {
@@ -2463,13 +2081,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B。\n- A：FP16 每 1B 参数约 2GB，9B 模型权重即 18GB+，超 16GB。\n- B：Q4_K_M 比 Q8_0 省约一半显存且精度损失极小，是消费级首选。\n- C 错误：Q8_0 是标量量化，不剪枝、不删 Attention。\n- D 错误：上下文上限由 Position Embedding/num_ctx 决定，量化不改。"
       }
-    },
-    "rubric": {
-      "required": [
-        "FP16 每 1B 参数约 2GB，9B+ 无法装进 16GB",
-        "Q8_0 是标量量化，不改变网络拓扑/不删 Attention",
-        "上下文窗口由 Position Embedding 与 num_ctx 决定，量化不影响"
-      ]
     }
   }
 ]

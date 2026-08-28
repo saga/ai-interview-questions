@@ -186,9 +186,11 @@ export class ChromeAIExecutor {
   private readonly onChange?: (tasks: ChromeAITaskInfo[]) => void;
 
   constructor(options: ChromeAIExecutorOptions = {}) {
-    this.concurrency = Math.max(1, options.concurrency ?? 2);
-    this.defaultTimeoutMs = options.timeoutMs ?? 90_000;
-    this.defaultRetries = Math.max(0, options.retries ?? 1);
+    // 未显式传参时的兜底值同样引用下方 CHROME_AI_* 常量——保证整个模块里
+    // "并发/超时/重试"只有一处数字，不会再冒出第二套默认值造成漂移。
+    this.concurrency = Math.max(1, options.concurrency ?? CHROME_AI_CONCURRENCY);
+    this.defaultTimeoutMs = options.timeoutMs ?? CHROME_AI_TIMEOUT_MS;
+    this.defaultRetries = Math.max(0, options.retries ?? CHROME_AI_RETRIES);
     this.onChange = options.onChange;
   }
 
@@ -458,15 +460,34 @@ export class ChromeAIExecutor {
   }
 }
 
-/** 应用层单例：Chrome 内置 AI 并发上限 8，单次 90s 超时，失败重试 1 次。 */
+/**
+ * 应用层单例的默认参数 —— **单一出处**，代码 / 注释 / 测试 / 文档一律以这里为准。
+ *
+ * 背景：这三个数值曾同时存在 5 种互相矛盾的说法（并发 8 / 4 / 2，超时 90s / 60s），
+ * 分散在代码常量、同文件注释、JSDoc、测试断言、CHANGELOG、ARCHITECTURE 六处。
+ * 更糟的是测试把某个值硬编码成断言，导致"改代码就红、不改又与文档矛盾"。
+ * 现统一抽为常量导出，测试直接引用，杜绝再次漂移；需要调整时只改这三行。
+ *
+ * - `concurrency = 4`：本机 on-device 模型算力有限，并发过高会排队甚至触发
+ *   QuotaExceededError。4 是「吞吐 vs 稳定性」的折中（实测 8 更快但对本机负载更激进）。
+ * - `timeoutMs = 90_000`：本地模型单题 prompt 可能较慢（首题还含模型预热），
+ *   给足 90s 再判死，避免误判超时引发不必要的重试。
+ * - `retries = 1`：偶发失败重试一次即可，重试过多会拖长整批等待。
+ */
+export const CHROME_AI_CONCURRENCY = 4;
+export const CHROME_AI_TIMEOUT_MS = 90_000;
+export const CHROME_AI_RETRIES = 1;
+
+/** 应用层单例：Chrome 内置 AI 并发上限 4，单次 90s 超时，失败重试 1 次。 */
 export const chromeAI = new ChromeAIExecutor({
-  concurrency: 8,
-  timeoutMs: 90_000,
-  retries: 1,
+  concurrency: CHROME_AI_CONCURRENCY,
+  timeoutMs: CHROME_AI_TIMEOUT_MS,
+  retries: CHROME_AI_RETRIES,
 });
 
 /**
- * 一次性补全：把 system + user 交给 ChromeAIExecutor（默认并发 2、单次 60s 超时、失败重试 1 次）。
+ * 一次性补全：把 system + user 交给 ChromeAIExecutor（并发 4、单次 90s 超时、失败重试 1 次，
+ * 具体数值见上方 `CHROME_AI_*` 常量）。
  * 业务层签名不变（variant / evaluate / provider 无需改动）；session 的创建、超时、销毁都在 executor 内完成。
  * 先做一次可用性预检，模型明确 unavailable 时直接报错、连 session 都不建（避免无谓的 create 超时）。
  */

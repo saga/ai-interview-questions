@@ -12,20 +12,6 @@
     "angle": "mechanism",
     "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在不改变 Attention 数学结果的情况下提升性能？",
     "explanation": "优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵；公式不变、IO 大减。",
-    "rubric": {
-      "required": [
-        "O(N²) 中间矩阵访存瓶颈",
-        "分块计算+SRAM 驻留",
-        "online softmax 等价性",
-        "显存 O(N) 收益"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "标准 attention 实现要把 N×N 的注意力矩阵完整写入 GPU 显存再读回参与后续计算，长序列下这块中间结果的读写（memory traffic）成为瓶颈，且显存占用 O(N²)。FlashAttention 通过分块计算解决：把 Q/K/V 切成小块在 SRAM（片上高速缓存）中完成“矩阵乘→softmax 归一化→加权求和”的整链路，用 online softmax 技巧在块间增量维护归一化统计量，全程不物化完整的注意力矩阵。数学结果不变——只是把同一套公式的计算顺序重排并合并了访存——但显存从 O(N²) 降为 O(N)，速度因减少 HBM 往返显著提升，使长上下文训练与推理变得实际可行。"
@@ -42,17 +28,7 @@
           0
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "flash-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "ai-fund-001",
@@ -68,19 +44,6 @@
     "angle": "mechanism",
     "question": "为什么 Transformer 相比 RNN 更适合大规模训练？请从计算并行性和长距离依赖两个角度解释。",
     "explanation": "并行性来自整段序列同时计算（RNN 必须串行），长距离依赖来自 attention 的 O(1) 依赖路径（RNN 需逐步传播）。",
-    "rubric": {
-      "required": [
-        "训练并行性",
-        "O(1) 依赖路径",
-        "RNN 顺序计算瓶颈"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Transformer 在训练时可以并行处理整个 sequence，而 RNN 必须按时间步顺序计算；Self-Attention 可以直接建立任意两个 token 之间的依赖，路径长度为 O(1)，相比 RNN 的逐步传播更容易建模长距离依赖。"
@@ -97,17 +60,7 @@
           2
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "transformer",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "ai-fund-002",
@@ -122,20 +75,6 @@
     "angle": "mechanism",
     "question": "请解释 Self-Attention 中 Query、Key、Value 分别代表什么，以及 Attention 最终是如何计算出来的。",
     "explanation": "Q/K/V 来自三组线性投影；Q·K 打相似度 → 缩放 → softmax 归一化 → 对 V 加权求和。",
-    "rubric": {
-      "required": [
-        "QKV 线性投影",
-        "相似度打分",
-        "softmax 归一化",
-        "加权求和公式"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "输入经过不同线性投影得到 Q、K、V；Q 与 K 计算相似度得到 attention scores，通常除以 sqrt(d_k) 后进行 softmax，再使用得到的权重对 V 加权求和。公式为 softmax(QK^T/sqrt(d_k))V。"
@@ -152,13 +91,7 @@
           0
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "ai-fund-003",
@@ -173,18 +106,6 @@
     "angle": "mechanism",
     "question": "Scaled Dot-Product Attention 中为什么要除以 sqrt(d_k)？",
     "explanation": "dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。",
-    "rubric": {
-      "required": [
-        "方差随维度增长",
-        "softmax 饱和与梯度"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -201,13 +122,7 @@
       "open": {
         "referenceAnswer": "正确答案要点：避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域。\n\n解析：dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "ai-fund-004",
@@ -222,19 +137,6 @@
     "angle": "mechanism",
     "question": "Multi-Head Attention 为什么需要多个 Head？单个 Attention 不够吗？",
     "explanation": "多头 = 多个表示子空间并行建模不同关系（语法/语义/位置等），单头只有一种混合视角；代价近似不变而表达能力更强。",
-    "rubric": {
-      "required": [
-        "不同表示子空间",
-        "不同类型关系",
-        "单头的加权平均局限"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "多个 Head 让模型在不同的表示子空间中学习不同类型的关系：有的 head 关注局部语法关系，有的关注长距离语义关联或位置模式。单头 attention 只能输出一种加权平均，容易把不同类型的信息混在一起；多头机制在保持计算量近似不变的情况下提升了表达能力。"
@@ -251,17 +153,7 @@
           1
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "multi-head-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "ai-fund-005",
@@ -276,19 +168,6 @@
     "angle": "mechanism",
     "question": "Transformer 为什么需要 Position Encoding？常见的位置信息注入方式有哪些？",
     "explanation": "Attention 是排列等变的，天然不含顺序信息；需通过绝对/相对/RoPE 等编码显式注入位置。",
-    "rubric": {
-      "required": [
-        "attention 与顺序无关",
-        "需要显式位置注入",
-        "绝对/相对/RoPE"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Self-Attention 本身对 token 顺序不敏感——打乱输入顺序，attention 输出只是相应置换，模型无法区分词序。因此需要额外注入位置信息。常见方案包括绝对位置编码（正弦/可学习）、相对位置编码，以及现代 LLM 广泛使用的 RoPE（旋转位置编码）。"
@@ -305,13 +184,7 @@
           3
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "positional-encoding",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "ai-transformer-003",
@@ -326,20 +199,6 @@
     "angle": "scenario",
     "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
     "explanation": "长文本退化通常源于位置编码外推失效、注意力稀释（lost-in-the-middle）、数值漂移或隐性截断；用变长诊断集分层定位。",
-    "rubric": {
-      "required": [
-        "位置编码外推",
-        "注意力稀释/lost-in-the-middle",
-        "隐性截断检查",
-        "变长诊断方法"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "可以从几个层面分析：位置编码的外推能力（训练时未见过的长度上 RoPE/绝对编码是否失效）；注意力分散——长序列中相关 token 的注意力权重被稀释（lost-in-the-middle）；数值问题——长序列下 softmax/logits 的数值尺度漂移；以及实现层面的上下文截断或滑窗是否悄悄丢掉了关键信息。定位方法是用可控长度的诊断集（同一任务只变长度）分别测首/中/尾信息利用率，区分“能力边界”还是“信息被截断”。"
@@ -360,17 +219,7 @@
         ],
         "question": "一个合同审阅助手处理短文本表现出色，但输入整份长合同时回答质量明显下降，且涉及中段条款的问题出错率最高。工程上已排除网络与算力因素。从模型与实现层面分析，以下判断正确的有哪些？（请选择以下三个选项）"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "positional-encoding",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "ai-xattn-001",
@@ -385,19 +234,6 @@
     "angle": "definition",
     "question": "Self-Attention 和 Cross-Attention 有什么区别？为什么 Encoder-Decoder 模型需要 Cross-Attention？",
     "explanation": "Self-attention 序列内交互（QKV 同源）；cross-attention 跨序列读取（Q 一方、KV 另一方），是 encoder-decoder 的信息桥梁；decoder-only 用因果 self-attention 替代。",
-    "rubric": {
-      "required": [
-        "Q/KV 来源差异",
-        "encoder-decoder 信息通道角色",
-        "decoder-only 为何不需要"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Self-Attention 的 Q、K、V 来自同一个序列，让序列内部 token 互相交换信息；Cross-Attention 的 Q 来自一个序列（如解码器当前状态），K、V 来自另一个序列（如编码器输出），实现跨序列的信息读取。Encoder-Decoder 架构中，编码器把输入压缩成表示序列，解码器生成时必须“回头看”输入——Cross-Attention 正是这个通道：每个生成步用当前解码状态作 Q 去查询输入表示。现代 Decoder-only LLM 没有独立编码器，“看输入”退化为因果 self-attention 对整个 context 的处理，因此不再有显式 cross-attention；但在多模态（如图文对齐）和语音识别等场景它仍是核心组件。"
@@ -414,13 +250,7 @@
           3
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "dl-04",
@@ -454,23 +284,7 @@
           0
         ]
       }
-    },
-    "rubric": {
-      "required": [
-        "Q/K/V 的角色：查询、检索地址、被聚合的内容",
-        "复杂度 O(N²·d)：平方项来自所有位置两两计算注意力，这是长上下文成本的根源"
-      ]
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "llm-11",
@@ -487,19 +301,6 @@
     "explanation": "考察缩放点积注意力的手写实现。关键点：①除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和；②softmax 前减去每行最大值保证数值稳定；③最终用权重矩阵乘 V 输出加权表示。忽略 max 减法在大 logits 下会直接产生 NaN 或 Inf。",
     "reference": {
       "concept": "scaled dot-product attention：QKᵀ/√d_k 经 softmax 后对 V 加权求和。"
-    },
-    "rubric": {
-      "required": [
-        "sqrt(d_k) 缩放",
-        "softmax 数值稳定处理",
-        "对 V 加权求和"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.2,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
     },
     "formats": {
       "open": {
@@ -518,13 +319,7 @@
           2
         ]
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "transformer-ln-01",
@@ -563,17 +358,7 @@
       "open": {
         "referenceAnswer": "正确答案要点：A、B、C。\n\n解析：Post-LN 导数在深层受 LN 链式法则累积影响，训练极其依赖 Warmup；Pre-LN 残差直通缓解梯度消失但深层范数增大稀释相对更新量。D 错误：LN 不改变复杂度量级。"
       }
-    },
-    "tests": [
-      {
-        "concept": "residual-normalization",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "transformer-perm-01",
@@ -608,17 +393,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Self-Attention 具有行置换等变性：Attention(PX) = P·Attention(X)。这表明无位置编码的 Self-Attention 无法区分 Token 顺序。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "positional-encoding",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "mha-complexity-01",
@@ -639,13 +414,6 @@
     "reference": {
       "concept": "MHA 复杂度分解：投影 O(Nd²) + Score O(N²d)；FlashAttention 前空间 O(hN²)。"
     },
-    "rubric": {
-      "required": [
-        "投影矩阵线性项 O(Nd²)",
-        "Score 矩阵二次方项 O(N²d)",
-        "无 FlashAttention 时注意力权重显存 O(h·N²)"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -664,21 +432,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。投影 O(Nd²)、Score O(N²d)、FlashAttention 前空间 O(hN²)。D 错误：N≫d 时二次方项占绝对主导。"
       }
-    },
-    "tests": [
-      {
-        "concept": "multi-head-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      },
-      {
-        "concept": "flash-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "mask-debug-01",
@@ -714,17 +468,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Softmax 中 e^0=1，掩码位置仍有权重；应填 -inf 使 e^{-inf}=0。"
       }
-    },
-    "tests": [
-      {
-        "concept": "causal-mask",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "seq2seq-arch-01",
@@ -745,13 +489,6 @@
     "reference": {
       "concept": "Encoder-Decoder 双向编码源语言更适合专用翻译；Decoder-Only 统一但翻译场景有额外开销。"
     },
-    "rubric": {
-      "required": [
-        "Encoder 双向并行提取源语言上下文",
-        "Encoder KV 不占用解码自回归窗口",
-        "Cross-Attention 支持 TP 并行"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -768,17 +505,7 @@
       "open": {
         "referenceAnswer": "正确答案 A。Encoder-Decoder 双向编码源语言+Cross-Attention 支持并行，专用翻译场景参数效率优于 Decoder-Only。B/C/D 均错误。"
       }
-    },
-    "tests": [
-      {
-        "concept": "transformer",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "transformer-comparison-01",
@@ -799,13 +526,6 @@
     "reference": {
       "concept": "Self-Attention: 并行 O(1) + 路径 O(1)；RNN: 串行 O(n) + 路径 O(n)。"
     },
-    "rubric": {
-      "required": [
-        "Self-Attention 顺序操作为 O(1)",
-        "Recurrent 顺序操作为 O(n)",
-        "Self-Attention 最长路径 O(1) 有助于长距离依赖"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -823,17 +543,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,C,D。Self-Attention 并行 O(1)+路径 O(1)；B 错误 n>d 时 O(n²d)>O(nd²)。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "softmax-scaling-01",
@@ -852,13 +562,6 @@
     "explanation": "四项均正确。A：q,k 各分量独立均值0方差1，则点积方差为 d_k。B：d_k 大时点积方差大幅增加导致输入到 Softmax 的值极大或极小。C：Softmax 在输入绝对值大且不均匀时输出趋近 one-hot 且饱和区梯度接近零。D：乘以 1/√d_k 将方差归一化回 1 维持梯度敏感区。",
     "reference": {
       "concept": "点积方差=d_k；不缩放→Softmax 饱和→梯度消失；1/√d_k 归一化方差回 1。"
-    },
-    "rubric": {
-      "required": [
-        "点积方差随 d_k 线性增长",
-        "Softmax 饱和区梯度接近零",
-        "缩放因子归一化方差"
-      ]
     },
     "formats": {
       "choice": {
@@ -879,13 +582,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C,D。点积方差=d_k；Softmax 饱和致梯度消失；1/√d_k 归一化方差维持梯度敏感。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "mha-heads-01",
@@ -905,13 +602,6 @@
     "reference": {
       "concept": "多头=多子空间并行注意力；总计算量≈单头全维；h 过大有边际递减。"
     },
-    "rubric": {
-      "required": [
-        "多子空间克服单头平均化缺点",
-        "总复杂度与单头全维基本相同",
-        "不同 Head 学不同关联模式"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -930,17 +620,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,D。多子空间并行+计算量不变+不同 Head 学不同模式；C 错误 h 有上限不是越大越好。"
       }
-    },
-    "tests": [
-      {
-        "concept": "multi-head-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "causal-mask-01",
@@ -976,17 +656,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Softmax 之前填 -inf 使 e^{-inf}=0 权重恰好为零。"
       }
-    },
-    "tests": [
-      {
-        "concept": "causal-mask",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "long-context-attn-01",
@@ -1006,13 +676,6 @@
     "reference": {
       "concept": "Full Attention N=128K 单头权重矩阵≈32GB FP16；FlashAttention 将 HBM 从 O(N²) 降至 O(N)。"
     },
-    "rubric": {
-      "required": [
-        "Score 矩阵时间 O(N²·D)",
-        "FP16 注意力权重矩阵在 N=128K 时达数十 GB",
-        "FlashAttention 将 HBM 从 O(N²) 降至 O(N)"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1031,17 +694,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,D。N=128K 单头 FP16 ≈32GB；FlashAttention 将 HBM 从 O(N²) 降至 O(N)。C 错误 N≫D 时 Attention 远超 FFN。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "flash-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "pe-perm-equivariance",
@@ -1076,17 +729,7 @@
       "open": {
         "referenceAnswer": "正确答案 A。Self-Attention 具有置换等变性：输出随输入行置换而等变，无位置编码时无法区分 Token 位置。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "positional-encoding",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "scale-factor-debug",
@@ -1106,13 +749,6 @@
     "reference": {
       "concept": "遗漏缩放→方差膨胀→Softmax 饱和→梯度消失+可能溢出。"
     },
-    "rubric": {
-      "required": [
-        "点积方差随 d_k 线性增大",
-        "Softmax 饱和区梯度消失",
-        "浮点溢出风险"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1131,13 +767,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。方差膨胀→Softmax 饱和→梯度消失+溢出；D 错误与并行无关。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "mha-subspace-tradeoff",
@@ -1156,12 +786,6 @@
     "reference": {
       "concept": "MHA=多子空间提升表达+计算量不变；不省 FLOPs 也不省显存。"
     },
-    "rubric": {
-      "required": [
-        "多子空间捕捉多样化关系",
-        "总计算复杂度与单头全维基本一致"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1179,17 +803,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B。多子空间提升表达+计算量不变；C/D 错误不省显存也不省 FLOPs。"
       }
-    },
-    "tests": [
-      {
-        "concept": "multi-head-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "attn-complexity-core",
@@ -1224,17 +838,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。时间 O(N²·D)，空间 O(N²)。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "flash-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "mask-parallel-training",
@@ -1252,13 +856,6 @@
     "explanation": "A 正确：Softmax 前将未来位置 Score 设为负无穷使 e^{-inf}=0。B 正确：Softmax 后未来位置权重精确为零防偷看。C 正确：因果掩码使得 Teacher Forcing 并行训练成为可能——全序列一次输入而非逐字自回归循环。D 错误：因果掩码屏蔽的是未来 Token 而非 Padding Token，二者是不同的掩码类型。",
     "reference": {
       "concept": "因果掩码=Softmax前-inf + 并行Teacher Forcing 的前提条件。"
-    },
-    "rubric": {
-      "required": [
-        "Softmax 前设 -inf",
-        "Softmax 后未来权重为零",
-        "使 Teacher Forcing 并行训练成为可能"
-      ]
     },
     "formats": {
       "choice": {
@@ -1278,17 +875,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。-inf→Softmax 后零权重→Teacher Forcing 并行训练；D 错误因果掩码非 Padding 掩码。"
       }
-    },
-    "tests": [
-      {
-        "concept": "causal-mask",
-        "role": "primary"
-      },
-      {
-        "concept": "training-objective",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "cross-attn-qkv",
@@ -1323,17 +910,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Cross-Attention：Q=Decoder（当前生成），K/V=Encoder（源信息）。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "rnn-vs-tf-compare",
@@ -1353,13 +930,6 @@
     "reference": {
       "concept": "Transformer 训练并行+O(1) 路径消除梯度消失；但推理自回归+O(N²) 显存是劣势。"
     },
-    "rubric": {
-      "required": [
-        "Transformer 可全序列并行训练",
-        "任意两 Token 信息路径 O(1)",
-        "推理阶段不比 RNN 更快"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1377,17 +947,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B。并行训练+O(1) 路径是核心优势；C/D 错误推理不更快且 O(N²) 显存更大。"
       }
-    },
-    "tests": [
-      {
-        "concept": "transformer",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "sdpa-scaling-mech",
@@ -1405,13 +965,6 @@
     "explanation": "A 正确：独立变量点积的方差为各分量方差之和即 d_k。B 正确：不缩放时大方差使 Softmax 进入饱和区引发梯度消失。C 正确：乘以 1/√d_k 将方差归一化回 1。D 错误：缩放因子是标量除法不改变 FLOPs 量级。",
     "reference": {
       "concept": "Var(q·k)=d_k；1/√d_k 归一化方差维持 Softmax 梯度敏感。"
-    },
-    "rubric": {
-      "required": [
-        "点积方差=d_k 随维度线性增长",
-        "Softmax 饱和致梯度消失",
-        "1/√d_k 归一化方差"
-      ]
     },
     "formats": {
       "choice": {
@@ -1431,13 +984,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。Var(q·k)=d_k→Softmax 饱和→梯度消失；1/√d_k 归一化方差。D 错误：不影响 FLOPs。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "mha-vram-tradeoff",
@@ -1457,13 +1004,6 @@
     "reference": {
       "concept": "MHA=多子空间提升表达+计算量不变；代价是 h 倍注意力矩阵显存。"
     },
-    "rubric": {
-      "required": [
-        "多子空间避免语义模糊化",
-        "总复杂度与单头相当",
-        "h 个注意力矩阵增加 VRAM 开销"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1482,21 +1022,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。多子空间+计算量不变+h 倍 VRAM 开销；D 错误不消除 O(N²)。"
       }
-    },
-    "tests": [
-      {
-        "concept": "multi-head-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      },
-      {
-        "concept": "flash-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "attn-vs-rnn-complexity",
@@ -1532,17 +1058,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Self-Attention O(N²d)+O(1) 并行。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "causal-mask-cross-attn",
@@ -1560,13 +1076,6 @@
     "explanation": "A 正确：Softmax 前 Score 设为负无穷使未来权重为零。B 正确：当前位置只聚合 ≤i 的上下文信息。C 错误：因果掩码恰好使 Decoder 可以全序列并行训练而非退化为串行。D 正确且常被忽视：因果掩码仅施加在 Decoder 自注意力层；Cross-Attention 中 Decoder 可以关注 Encoder 整个源序列无掩码限制。",
     "reference": {
       "concept": "因果掩码=Decoder Self-Attn 独有；Cross-Attention 无掩码可看全部源序列。"
-    },
-    "rubric": {
-      "required": [
-        "Softmax 前设 -inf",
-        "Softmax 后未来权重归零",
-        "Cross-Attention 不受因果掩码限制"
-      ]
     },
     "formats": {
       "choice": {
@@ -1586,17 +1095,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,D。-inf→零权重→并行训练；Cross-Attention 无因果掩码限制。C 错误掩码使并行成为可能。"
       }
-    },
-    "tests": [
-      {
-        "concept": "causal-mask",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "preln-vs-postln-compare",
@@ -1617,13 +1116,6 @@
     "reference": {
       "concept": "Post-LN 表达上限高但需 Warmup；Pre-LN 稳定但极限泛化略低。"
     },
-    "rubric": {
-      "required": [
-        "Post-LN 深层易梯度不稳定",
-        "Post-LN 高度依赖 Learning Rate Warmup",
-        "Pre-LN 保持恒等映射提升稳定性"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1642,17 +1134,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。Post-LN 不稳+依赖 Warmup；Pre-LN 稳定但极限泛化略低。D 错误方向反了。"
       }
-    },
-    "tests": [
-      {
-        "concept": "residual-normalization",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "cross-attn-qkv-mech",
@@ -1687,17 +1169,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Q=Decoder 当前生成状态；K/V=Encoder 源序列编码。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "embed-scaling-share",
@@ -1717,13 +1189,6 @@
     "reference": {
       "concept": "权重绑定省参数+正则化；√d_model 缩放防 PE 掩盖语义。"
     },
-    "rubric": {
-      "required": [
-        "权重共享减少参数量起正则化作用",
-        "√d_model 缩放防止位置编码掩盖语义",
-        "共享强制输入输出空间几何一致性"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1742,17 +1207,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。权重绑定省参数正则化；√d_model 放大语义防 PE 掩盖；几何映射一致。D 错误放大非压缩。"
       }
-    },
-    "tests": [
-      {
-        "concept": "transformer",
-        "role": "primary"
-      },
-      {
-        "concept": "positional-encoding",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "sdpa-omit-scaling",
@@ -1772,12 +1227,6 @@
     "reference": {
       "concept": "遗漏 √d_k → Softmax 饱和（one-hot 化而非均匀化）→ 梯度消失。"
     },
-    "rubric": {
-      "required": [
-        "Softmax 饱和区梯度消失",
-        "概率过度集中降低表征"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1795,13 +1244,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B。方差膨胀→one-hot 饱和→梯度消失；C 错误是尖锐非均匀；D 错误维度不受影响。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      }
-    ]
+    }
   },
   {
     "id": "mha-param-calc",
@@ -1836,17 +1279,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。MHA 与单头全维的参数量和 FLOPs 均为 4·d_model² 完全一致。"
       }
-    },
-    "tests": [
-      {
-        "concept": "multi-head-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "mask-remove-debug",
@@ -1866,13 +1299,6 @@
     "reference": {
       "concept": "移除掩码→训练 Loss 骤降（数据泄漏）+ 推理崩塌（训练推理不一致）。"
     },
-    "rubric": {
-      "required": [
-        "训练 Loss 异常骤降因看到未来 token",
-        "推理崩塌产生不连贯文本",
-        "不触发形状错误"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1890,17 +1316,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,C。训练 Loss 骤降=数据泄漏；推理崩塌=训练推理不一致。B 无形状错误 D 无法并行。"
       }
-    },
-    "tests": [
-      {
-        "concept": "causal-mask",
-        "role": "primary"
-      },
-      {
-        "concept": "training-objective",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "crossattn-qkv-flow",
@@ -1935,17 +1351,7 @@
       "open": {
         "referenceAnswer": "正确答案 B。Q=Decoder 当前状态（查什么）；K/V=Encoder 编码（被查内容）。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "rnn-to-tf-migration",
@@ -1966,13 +1372,6 @@
     "reference": {
       "concept": "Transformer：训练并行+推理串行+O(N²) 显存；RNN：训练串行+O(N) 显存。"
     },
-    "rubric": {
-      "required": [
-        "Teacher Forcing 全序列并行训练",
-        "推理仍需逐 Token 串行",
-        "O(N²) 显存增长快于 RNN O(N)"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1991,17 +1390,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。训练并行+推理串行+O(N²) 显存；D 错误不天然优于 Encoder-only。"
       }
-    },
-    "tests": [
-      {
-        "concept": "transformer",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "attn-vs-seq-models",
@@ -2022,13 +1411,6 @@
     "reference": {
       "concept": "路径 O(1)+全并行+动态全局权重是 SA 三大优势；N≫d 时计算量反超 RNN。"
     },
-    "rubric": {
-      "required": [
-        "SA 最长路径 O(1) vs RNN O(N)",
-        "训练阶段全并行消除逐步依赖",
-        "CNN 固定感受野 vs SA 动态全局权重"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2047,17 +1429,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。路径O(1)+并行+动态全局；D 错误 N≫d 时 SA 计算量反超 RNN。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "transformer",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "attn-scaling-memory",
@@ -2076,13 +1448,6 @@
     "explanation": "A 正确 Score 矩阵浮点运算 O(N²·d)。B 正确 反向传播保存原始 Attention Matrix 占 O(N²) 激活显存。C 正确 N 扩大4倍→N²扩大16倍计算量和显存均变为16倍。D 正确 检索增强或线性注意力的动机就是将全局计算从 O(N²) 降至亚二次级别。",
     "reference": {
       "concept": "Score 计算 O(N²d) + 存储 O(N²)；N×4→资源×16；RAG/线性注意力动机=降亚二次。"
-    },
-    "rubric": {
-      "required": [
-        "Score 浮点运算 O(N²·d)",
-        "反向传播激活显存 O(N²)",
-        "N×4→资源×16"
-      ]
     },
     "formats": {
       "choice": {
@@ -2103,17 +1468,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C,D。O(N²d) 计算+O(N²) 存储+N×4→×16+检索增强动机=降亚二次。"
       }
-    },
-    "tests": [
-      {
-        "concept": "self-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "flash-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "enc-vs-dec-scenario",
@@ -2134,13 +1489,6 @@
     "reference": {
       "concept": "双向编码器适合理解类任务（嵌入/分类）；自回归解码器适合生成类任务。"
     },
-    "rubric": {
-      "required": [
-        "双向注意力适合密集文本向量表示",
-        "全局上下文适合 Token 级分类",
-        "双向编码器不适合开放式生成"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2158,17 +1506,7 @@
       "open": {
         "referenceAnswer": "正确答案 A,C。双向注意力适合语义检索与 Token 分类；不适合生成类任务。"
       }
-    },
-    "tests": [
-      {
-        "concept": "transformer",
-        "role": "primary"
-      },
-      {
-        "concept": "causal-mask",
-        "role": "supporting"
-      }
-    ]
+    }
   },
   {
     "id": "flash-attn-io-mechanism",
@@ -2205,16 +1543,6 @@
       "open": {
         "referenceAnswer": "正确答案 C（错误选项）。FlashAttention 是精确 Attention 不做近似删减。"
       }
-    },
-    "tests": [
-      {
-        "concept": "flash-attention",
-        "role": "primary"
-      },
-      {
-        "concept": "self-attention",
-        "role": "supporting"
-      }
-    ]
+    }
   }
 ]

@@ -12,20 +12,6 @@
     "angle": "system-design",
     "question": "设计一个 ESG Research Agent：从几十份 ESG PDF 报告中提取碳排放等指标并生成横向对比结论。难点在数字准确性与口径不一致，怎么处理？",
     "explanation": "考察高准确性数据抽取场景的架构设计。核心原则：抽取与推理分离——LLM 只做带出处与口径说明的结构化字段抽取（JSON schema 含指标/数值/单位/年份/页码），计算与对比交给确定性代码；不确定就留空而非猜填充。此前让 LLM 边抽取边计算导致多处数字张冠李戴。",
-    "rubric": {
-      "required": [
-        "版面/表格解析",
-        "带出处与口径的结构化抽取",
-        "单位/标准归一化",
-        "抽取与计算分离 + 校验兜底"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.25,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "管线：PDF 解析（版面感知，表格单独处理）→ 指标抽取用结构化输出（JSON schema：指标名/数值/单位/年份/页码/口径说明）→ 口径归一化（单位换算、标准映射如 GRI/SASB，缺失口径标记 unknown）→ 校验层（数值范围检查、同页原文比对、抽样人工复核）→ 汇总对比。关键原则：抽取与推理分离——LLM 只做带引用的字段抽取，计算与对比交给确定性代码；不确定就留空而不是猜。输出附每条指标的原文出处供审计。"
@@ -59,20 +45,6 @@
     "angle": "tradeoff",
     "question": "RAG 应该放在 Agent 外部（前置管线）还是作为 Agent 内部的一个 Tool？两者各适合什么场景？",
     "explanation": "考察 RAG 放置位置对系统行为的影响。前置管线适合查询意图单一、每次都需要检索的确定性场景（低延迟、行为可预测）；Tool 化适合是否检索、检索几轮都需判断的场景（多轮迭代、跨源验证）。决策依据主要是查询分布的可预测性与延迟预算，两种形态也可按流量分层混用。",
-    "rubric": {
-      "required": [
-        "前置管线的适用与局限",
-        "Tool 化的多轮迭代优势",
-        "按查询分布/延迟预算决策",
-        "检索质量工程优先"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "前置管线（retrieve-then-generate）：适合查询意图单一、每次都需要检索的确定性场景——延迟低、成本低、行为可预测、易评测；缺点是不灵活，不需要检索的问题也被强制检索。RAG 作为 Tool：适合是否检索、检索哪个源、检索几轮都依赖判断的场景——Agent 可以多轮迭代检索、改写查询、跨源交叉验证；代价是多一次 LLM 决策的开销与更高的不确定性。决策依据主要是查询分布的可预测性与延迟预算；混合做法也常见：高频意图走前置管线，长尾复杂问题升级给 Agentic RAG。要注意无论哪种形态，检索质量工程（分块/混合检索/重排）才是效果大头。"
@@ -105,20 +77,6 @@
     "angle": "calculation",
     "question": "请实现一个简单的 Recursive Text Chunker：支持 chunkSize 和 overlap，并避免在单词中间切断文本。",
     "explanation": "滑动窗口 + 边界回退（句号/换行/空格）+ 防死循环的前进保证;生产化方向是段落预切分与 token 计数。",
-    "rubric": {
-      "required": [
-        "窗口滑动与 overlap 正确性",
-        "边界回退逻辑",
-        "zero-progress 防御",
-        "参数校验"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "interface ChunkOptions {\n  chunkSize: number;   // 目标字符上限\n  overlap: number;     // 相邻块重叠字符数\n}\n\nexport function chunkText(text: string, opts: ChunkOptions): string[] {\n  const { chunkSize, overlap } = opts;\n  if (overlap >= chunkSize) throw new Error('overlap must be < chunkSize');\n  const chunks: string[] = [];\n  let start = 0;\n  while (start < text.length) {\n    let end = Math.min(start + chunkSize, text.length);\n    if (end < text.length) {\n      // 在窗口内找最后一个断句边界，避免切断单词/句子\n      const window = text.slice(start, end);\n      const boundary = Math.max(\n        window.lastIndexOf(' '),\n        window.lastIndexOf('\\\\n'),\n        window.lastIndexOf('.'),\n      );\n      if (boundary > chunkSize * 0.5) end = start + boundary + 1;\n    }\n    chunks.push(text.slice(start, end).trim());\n    if (end >= text.length) break;\n    start = Math.max(end - overlap, start + 1); // 防 zero-progress 死循环\n  }\n  return chunks.filter(Boolean);\n}\n\n关键点：优先在自然边界切分（句子>空格）；边界太靠前时接受硬切避免无限膨胀；start 回退量受 overlap 约束但必须保证前进，否则死循环；生产版还应支持按段落预切分、token 计数代替字符数。",
@@ -153,20 +111,6 @@
     "angle": "scenario",
     "question": "一个 RAG 系统的 retrieval recall@10 达到 95%，但是最终回答准确率只有 70%。正确答案经常出现在 Top-10 中。你会如何判断问题究竟出在 retrieval、reranking、context construction 还是 generation？",
     "explanation": "recall@10 只覆盖检索一层；需对 ranking、context 构建、generation 分层评测才能定位具体瓶颈阶段。",
-    "rubric": {
-      "required": [
-        "分层评估",
-        "ranking",
-        "context",
-        "generation"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "不能只看 recall@10。应该分别评估正确 chunk 的排名、reranker 后的位置、最终送入 LLM 的 context，以及模型是否使用了正确证据。可以建立分层 evaluation：retrieval recall、MRR/nDCG、context precision、answer faithfulness 和最终 task success，从而定位具体阶段。"
@@ -200,20 +144,6 @@
     "angle": "tradeoff",
     "question": "你需要为企业 ESG 报告建立 RAG 系统。PDF 中同时包含长文本、表格、脚注、多级标题和图表。你会选择固定长度 chunk、semantic chunk，还是基于文档结构进行 chunking？为什么？",
     "explanation": "结构化文档优先按章节/标题/表格边界切分，再结合 token 长度；不同内容类型采用不同 chunking 策略。",
-    "rubric": {
-      "required": [
-        "文档结构",
-        "chunk size",
-        "语义完整性",
-        "不同内容类型"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "更适合优先利用文档结构，例如章节、标题、段落和表格边界，再结合 token 长度进行必要切分。固定 chunk 简单但可能破坏语义结构；纯 semantic chunk 更复杂且不一定适合表格和报告结构。实际系统通常需要针对不同内容类型采用不同策略。"
@@ -266,12 +196,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：切分是 RAG 检索质量的第一决定因素，必须按文档类型分流——①技术手册：递归切分（约 512 token、50 token 重叠），兼顾语义完整与粒度均匀；②法律合同：按段落/条款自然边界切，绝不能把一条义务切成两半；③FAQ：一问一答整体成块，保证命中的块自带完整答案；④财务报告中的表格：用文档解析抽取表格结构，序列化为 Markdown 入正文或单独建表索引并挂元数据摘要。⑤对检索精度要求高的场景采用 parent-child 方案：子块小而准用于向量命中，命中后返回其父块提供完整上下文。A 会切碎句子且无重叠导致边界信息丢失；C 受上下文长度限制且噪声大；D 丢弃原文会让引用与细节核对失去依据。"
       }
-    },
-    "rubric": {
-      "required": [
-        "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
-        "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
-      ]
     }
   },
   {
@@ -306,12 +230,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①机制：bi-encoder（向量检索）为了速度牺牲了 query-doc 的细粒度交互；cross-encoder 把二者拼在一起过 Transformer 联合编码，精度更高但每对都要跑一遍模型，所以只能用于小候选集（top 50-100）精排。注意 C 说反了——cross-encoder 恰恰因为联合编码而更慢。②跳过 rerank 的正当性：TTFT 预算极紧（<200ms）、embedding 模型在领域内已足够准、高 QPS 下 cross-encoder 的算力成本不可接受、查询以关键词型为主首段召回已经稳定。③必须上的信号：bad case 分析显示\"答案在 top10-50 里但没进 top5\"、领域术语密集（法律/医疗）、答案正确性是硬 SLA。④D 是事实陈述但构不成\"何时跳过\"的答案——rerank 本来就不负责召回，这正是它依赖第一阶段质量的含义。"
       }
-    },
-    "rubric": {
-      "required": [
-        "bi-encoder 可离线建索引、cross-encoder 必须在线逐对计算——分工由此而来",
-        "rerank 收益依赖初筛召回率：漏召的文档排不回来"
-      ]
     }
   },
   {
@@ -347,12 +265,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①诉求①的知识库内容会增删改，微调把知识冻进权重既滞后又无法溯源，RAG 即时生效且天然带引用；注意权限过滤要在检索层做。②诉求②是典型的行为一致性问题：先用提示词工程验证需求稳定，规模化后微调固化格式与话风（1K+ 高质量样本即可起步）。③诉求③命中蒸馏的 quick-screen 双条件：流量集中度（80% in 4 类 ≥ 60% in 5 类）与支出规模（$25K > $20K），预期 payback ~3 个月。④强调组合性：三个机制作用在不同维度（RAG=事实供给、微调=行为塑形、蒸馏=成本工程），生产系统常常三者并存——例如把微调过的行为规范作为蒸馏任务的一部分训进学生，再给学生的上游接 RAG。⑤反向清单同样重要：低流量、任务发散、教师快速换代、>99% 保真度红线，任一命中就放弃蒸馏继续用教师。"
       }
-    },
-    "rubric": {
-      "required": [
-        "\"知识外挂化（RAG）、行为内生化（微调）\"的分界逻辑",
-        "组合方案：微调定格式与方法论，RAG 供实时事实"
-      ]
     }
   },
   {
@@ -388,12 +300,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①先例库的价值在于把\"成文法\"补全为\"活法\"：条文说不得做虚假疗效宣称，但什么措辞算虚假是由处罚史界定的——相似案例检索把执法尺度注入上下文，显著降低\"字面合规、实质违规\"的漏报。②claim 级分解的三重收益：定位精确（报告能指到页段落）、评估单元小（每条 claim 的检索与判断互不干扰，不会互相污染上下文）、审计粒度对齐（每条宣称一条独立证据链）。③Regulation Watch 解决法规时效性：这正是该场景选 RAG 而非微调的根本理由——指南月更，微调每次都要重训且无法追溯\"当时依据的是哪版条文\"。C 低估了先例的信号密度：几十个针对性案例对边界措辞的判别力远超泛泛条文；D 是本场景的反模式——法规频繁更新 + 需要引用溯源，两者都是微调的死穴。"
       }
-    },
-    "rubric": {
-      "required": [
-        "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
-        "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
-      ]
     }
   },
   {
@@ -429,12 +335,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①问题的根源是\"分数不可比\"：BM25 的 IDF 加权使其分数随查询词的稀有度波动，跨查询、跨引擎都不可直接比较；任何基于原始分数的融合都要先做归一化（min-max/z-score），而归一化参数本身随语料漂移。②RRF 的公式 score(d)=Σ_i 1/(k+rank_i(d)) 只看每路内部的名次——名次在同一路内天然可比，跨路求和才有意义；k=60 起平滑作用，防止排名第 1 的单路结果独裁。③C 复杂度说法颠倒且无关紧要；A/D 是对 RRF 能力的想象——它不学习参数、不去重也不影响 LLM 端 anything。"
       }
-    },
-    "rubric": {
-      "required": [
-        "bi-encoder 可离线建索引、cross-encoder 必须在线逐对计算——分工由此而来",
-        "rerank 收益依赖初筛召回率：漏召的文档排不回来"
-      ]
     }
   },
   {
@@ -450,19 +350,6 @@
     "angle": "mechanism",
     "question": "RAG 为什么能够降低 Hallucination？它的作用机制是什么？",
     "explanation": "RAG 提供外部证据做条件生成（grounding），把回答锚定在材料上从而降低编造概率；是缓解不是消除。",
-    "rubric": {
-      "required": [
-        "条件生成/grounding",
-        "参数记忆 vs 上下文证据",
-        "降低而非消除"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "RAG 把相关证据直接放进 context，让模型的回答基于提供的材料进行条件生成，而不是仅凭参数里的记忆自由发挥——这相当于给 next-token 预测加上了 grounding。配合要求模型引用来源、只在证据范围内作答的 prompt 约束，可以显著减少编造。但它只是降低了概率，并不能消除幻觉：检索失败、证据被误读时幻觉依然会出现。"
@@ -496,20 +383,6 @@
     "angle": "mechanism",
     "question": "Chunk size 为什么会影响 RAG 效果？chunk 过大或过小分别有什么问题？",
     "explanation": "过大 → embedding 语义稀释 + context 噪声；过小 → 语义破碎、召回了也答不全；按语义边界切分并用 overlap/parent-child 平衡。",
-    "rubric": {
-      "required": [
-        "过大：语义稀释+噪声",
-        "过小：语义破碎",
-        "检索与生成的双重影响",
-        "结构化/overlap 策略"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Chunk size 同时影响检索和生成两端。过大：单个 chunk 包含多个主题，embedding 向量语义被稀释，检索精度下降；进入 context 后也包含大量无关内容，占用 token 并引入噪声。过小：语义单元被切碎，孤立 chunk 缺少上下文，即使被召回也无法支撑完整回答；同时检索次数和索引规模上升。理想做法是按文档结构和语义边界切分，配合 overlap 或父子 chunk（小块检索、大块喂给模型）等策略。"
@@ -544,19 +417,6 @@
     "angle": "definition",
     "question": "Vector Search 和 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
     "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
-    "rubric": {
-      "required": [
-        "语义 vs 词面",
-        "各自强项",
-        "互补失败模式"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Vector search 把 query 和文档映射成语义向量，按余弦等距离检索，擅长同义改写、跨语言和模糊语义匹配，但对精确符号（型号、错误码、专有名词）不敏感，且依赖 embedding 模型的领域适应性；Keyword search 按词面匹配，擅长精确实体、编号、代码标识符的查找，对 OOV 词鲁棒、无需模型，但无法理解同义表达。两者的失败模式互补，这是 hybrid search 存在的理由。"
@@ -588,19 +448,6 @@
     "angle": "mechanism",
     "question": "Hybrid Search 为什么通常比单独使用 Vector Search 更可靠？通常会怎么组合？",
     "explanation": "双路失败模式互补 → recall 更稳；典型做法：双路召回 → RRF 融合或 cross-encoder 重排 → top-k 进生成。",
-    "rubric": {
-      "required": [
-        "失败模式互补",
-        "recall 提升",
-        "RRF/rerank 融合方式"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Hybrid search 并行使用向量检索和关键词检索，两路的失败模式互补：语义改写的 query 由向量路兜住，精确实体/编号由关键词路兜住，任一路失效时另一路仍可能召回正确文档，整体 recall 更稳。常见组合方式是双路召回后在候选并集上用 RRF（Reciprocal Rank Fusion）融合排序，或接一个 cross-encoder reranker 统一重排，最后取 top-k 进入生成阶段。"
@@ -633,19 +480,6 @@
     "angle": "mechanism",
     "question": "在 RAG 流程中，Reranker 解决的是什么问题？为什么有了向量检索还需要它？",
     "explanation": "bi-encoder 快但粗（独立编码），cross-encoder 准但慢（联合编码）→ 召回后对少量候选精排，提升进入 context 的 precision。",
-    "rubric": {
-      "required": [
-        "bi-encoder vs cross-encoder",
-        "粗排→精排分工",
-        "precision 提升"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "向量检索用的 bi-encoder 为了吞吐把 query 和文档独立编码，精度有限，只能保证“大致相关”的粗排结果。Reranker（通常是 cross-encoder）把 query 和每个候选放在一起做深度交互打分，精度更高但算得慢，所以放在召回之后对少量候选精排。它解决的核心问题是 precision：让最终进入 context 的 top-k 尽量都是真正相关的内容，减少噪声、节省 token。"
@@ -678,19 +512,6 @@
     "angle": "mechanism",
     "question": "一段文档与 query 的 Embedding 相似度很高，是否意味着它能回答这个问题？为什么？",
     "explanation": "semantic similarity ≠ answer relevance：同话题无答案、相反结论都可能高分；需要 rerank 与 faithfulness 校验兜底。",
-    "rubric": {
-      "required": [
-        "相似度语义定义",
-        "高分但不相关的情形",
-        "需要下游校验"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "不一定。Embedding 相似度衡量的是语义空间中的距离接近，不是问答相关性：同话题但不包含答案的内容（背景介绍 vs 具体数字）、表述相似的相反结论、模板化的相似段落都可能拿到高分。相似度是必要线索而非充分条件，这正是 reranker、答案覆盖性校验和 faithfulness 评测存在的意义——最终要验证的是“这段内容是否真的支持答案”，而不是“它听起来像不像”。"
@@ -724,20 +545,6 @@
     "angle": "tradeoff",
     "question": "公司希望模型掌握 10 万条内部 FAQ。你会选择继续 Pre-training、Fine-tuning 还是 RAG？请说明理由和实施路径。",
     "explanation": "FAQ = 会更新、需溯源的可检索知识 → RAG 优先；pretrain 不可能，FT 仅在行为/格式不达标时作为补充（LoRA+SFT）。",
-    "rubric": {
-      "required": [
-        "优先 RAG 及理由",
-        "排除 pre-training 的理由",
-        "FT 的适用判断",
-        "实施路径"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "优先 RAG。10 万条 FAQ 是典型的可检索知识：内容会持续更新、答案需要引用出处、且要求可审计——这三点恰好是 RAG 的强项，也是重新 pre-training 完全不适合的原因（成本天文数字、无法增量更新、知识不可溯源）。Fine-tune 是否要做取决于另一个问题：FAQ 的回答是否需要特殊的行为/格式/术语风格。推荐路径：先把 FAQ 建成高质量检索库（清洗、结构化、chunk、hybrid 检索 + reranker）；上线后若发现回答风格、格式或拒答行为不达标，再用 SFT/LoRA 做行为层适配。"
@@ -770,21 +577,6 @@
     "angle": "scenario",
     "question": "一个 RAG 系统 Recall 很高，但最终回答质量很差。请描述你的排查思路。",
     "explanation": "recall 高 ≠ 排名靠前 ≠ 进了 context ≠ 被正确使用；分层评测 rewrite/ranking/rerank/context/generation 各段指标，修掉分最大的环节。",
-    "rubric": {
-      "required": [
-        "分层 trace 思路",
-        "ranking 深于 recall",
-        "context/prompt 检查",
-        "faithfulness 验证",
-        "定位后针对性修复"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "沿流水线逐层定位，先建立分层 trace：query rewrite 是否改变了原意 → 检索虽然 recall 高但正确 chunk 排在第几（MRR/nDCG，而非只看 recall@k）→ reranker 是否把正确内容挤出 top-k → context construction 是否截断、丢失元数据或引入噪声 → prompt 组织是否让模型清楚该基于哪些材料作答 → generation 是否忠实使用了证据（faithfulness）。用带标准答案的评测集对每一层单独打分，找到掉分最大的那一层优先修复，而不是凭感觉全局调优。"
@@ -817,20 +609,6 @@
     "angle": "scenario",
     "question": "你的 Vector Search 对长问题效果很好，但对 “ESG scope 3？”、“DPO？” 这类短 Query 效果很差。你会如何优化？",
     "explanation": "短 query = 信息不足导致向量失配；LLM 扩写 + 缩写词典 + BM25 补充 + 文档侧 FAQ 化，配专项评测集验证。",
-    "rubric": {
-      "required": [
-        "信息不足的失败机理",
-        "query 扩写",
-        "缩写词典/BM25 至少一项",
-        "专项评测回归"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "短查询的问题是信息太少：几个缩写词的 embedding 无法与完整文档段落形成有效匹配。优化手段：Query Expansion / Rewriting——用 LLM 把短查询扩写成完整问题（“ESG scope 3 是什么，包含哪些排放范围”），这是最直接的方案；缩写词典——维护领域缩写到标准术语的映射表，确定性展开；Hybrid search——短查询往往是精确实体查找，BM25 对关键词命中的稳定性优于纯向量；文档侧配合生成 FAQ 型摘要或同义表述，提高与短问句的匹配面。工程上先用错误样本分析确认失败模式确实是查询信息不足，再上对应手段，并用短查询专项评测集回归。"
@@ -865,20 +643,6 @@
     "angle": "tradeoff",
     "question": "通用 Embedding Model 在你的金融领域检索效果只有 75%。你会优先更换模型、Fine-tune Embedding Model，还是增加 Reranker？为什么？",
     "explanation": "升级阶梯：换模型（零训练）→ 加 reranker（零训练换延迟）→ FT embedding（高上限高成本）；由错误分析决定走到哪一级。",
-    "rubric": {
-      "required": [
-        "阶梯式投入顺序及理由",
-        "错误分析驱动",
-        "FT embedding 的成本前提",
-        "reranker 的延迟代价"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "按投入产出比排序：第一步先换更强的通用/领域模型——零训练成本，半天就能用评测集 A/B 出结论；第二步加 Reranker——cross-encoder 对召回结果精排，通常能把端到端质量拉高一截，同样不需要训练 embedding 模型，代价是延迟与算力；两步之后若仍不达标，才考虑 Fine-tune embedding（用领域内 query-positive 对做对比学习）——收益上限最高但要求标注数据、训练与运维能力，且从此背上模型维护责任。决策前先做错误分析：如果是术语同义问题（“市盈率”vs“PE”），换模型/reranker 就够；如果是细粒度语义区分（相似财务指标间辨析），fine-tune 的必要性才真正上升。"
@@ -931,12 +695,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：LLM 不能作为鉴权决策点——它既不可靠验证调用者身份，也无法保证遵守\"不要透露\"类指令。可靠做法是把权限控制下沉到检索层：文档入库时在 Metadata 写入租户/密级/属主等 ACL 信息；查询时把当前用户身份凭证（如 JWT 解析出的身份与角色）注入 Vector DB 查询，执行 RBAC/ACL Metadata 过滤（优先 Pre-filtering，避免 Post-filtering 导致 top-k 配额被无关结果挤占），确保未授权的 chunks 从源头就不进入 Context Window——模型看不到的内容就泄露不了。向量加密保护的是静态存储而非访问控制；输出限长与权限无关。"
       }
-    },
-    "rubric": {
-      "required": [
-        "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
-        "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
-      ]
     }
   },
   {
@@ -974,13 +732,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：向量检索优化的是query与chunk的余弦/点积近似，命中含相同关键词的片段，而非跨文档的频度分布。\n- B：全局统计答案分散于数百份报告，无单块可承载“出现频率最高”这类聚合结果，Top-k召回天然失效。\n- C：长上下文只是放大输入带宽，若召回本身偏置，模型仅在偏置子集上推理，无法涌现全局统计。\n- D 错误：点状问题（实体属性、单文档事实）向量检索常足够高效，结构化关联是图谱对全局/多跳的优势，不意味点查必然落后。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1016,13 +767,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\nGraphRAG索引管线中，实体/关系抽取后需跨数百Text Units消歧同名实体、合并多源描述并用LLM重写压缩为单一实体画像，该步骤触发的LLM调用量与Token量占索引总成本约75%。A仅为规则切分，C为纯图算法计算，D为批量Embedding，均远低于LLM生成成本。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1060,13 +804,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：深层级=小社区，报告更聚焦子主题，Map阶段覆盖更全，回答更详尽。\n- B：社区数随层级指数增长，需并行处理的报告份数与Token/延迟同比例上升。\n- C：Level0宏观社区数少、成本低，但摘要高度压缩，子领域特征易被泛化淹没。\n- D 错误：层级与报告均在索引期由Leiden聚类+LLM离线生成，查询期仅选择既有层级，层级选择直接影响索引成本与查询成本。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1104,13 +841,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Local Search以向量检索命中的实体为锚点，k跳扩展关联的Text Units、社区报告、邻居实体、关系与Claims，排序截断后单Context推理。\n- B：Global Search面向全局统计，跳过图遍历，直接消费离线社区报告。\n- C：Map阶段分批(shuffle)并行让LLM对每批社区报告生成中间回答并打分，Reduce阶段择优融合。\n- D 错误：Local仅扩展邻域子图，扫描范围与成本远小于需处理全量社区报告的Global。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1148,13 +878,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Lazy用传统NLP/规则抽实体词，索引期几乎不调LLM，成本接近向量RAG。\n- B：省下的抽取/合并/总结在查询期按需用LLM补做，保质量但牺牲查询延迟与Token。\n- C：标准路径的实体画像与社区报告本身即结构化知识资产，可独立于QA被复用。\n- D 错误：Lazy仍保留向量索引以服务高效点查，并非纯图计算。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1190,13 +913,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\n实验表明GraphRAG在全局统计型问题上显著提升回答的完整性、视角多样性与支撑来源的覆盖度，这正是图+社区报告对分布式信息的综合能力。A错误：单点事实忠实度未被证实大幅超越，幻觉仍可能发生；B相反：图索引成本与Global的Map-Reduce延迟均高于向量RAG；D错误：图谱不擅长精确数值聚合，应由SQL/代码执行承担。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1235,13 +951,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：核心是query分类→策略选择，点查与全局分析走不同索引。\n- B：路由可嵌套——顶层选索引族，子层选算法变体。\n- C：每查询多一次LLM路由调用，延迟与Token线性增加。\n- D：路由为单点失效放大器，错判导致召回域错配，且动态路径使复现与归因比静态路由更困难，需路由评估集与回退策略。"
       }
-    },
-    "rubric": {
-      "required": [
-        "向量RAG对全局聚合查询失效的分布性原理及大上下文无法根治",
-        "图索引成本瓶颈在跨块实体合并与描述重写（约75%）",
-        "社区层级对详尽度/延迟/成本的权衡及Local vs Global执行差异"
-      ]
     }
   },
   {
@@ -1259,18 +968,6 @@
     "explanation": "考察 RAG 的检索-拼接-生成三段流程及其相比参数化知识的优势。RAG 将知识外置为可更新索引库，文档更新只需重建索引而无需重训模型；回答时实时检索最新内容进入 context 并附引用来源。它解决不了检索质量差导致的答非所问，也不能消除模型误读证据产生的幻觉。",
     "reference": {
       "concept": "RAG 在生成前检索外部知识作为上下文，提升可溯源性与时效性、降低幻觉。"
-    },
-    "rubric": {
-      "required": [
-        "检索-拼接-生成 基本流程",
-        "可溯源/降幻觉/时效性等优势"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.25,
-        "architecture": 0.15,
-        "communication": 0.2
-      }
     },
     "formats": {
       "open": {
@@ -1307,19 +1004,6 @@
     "explanation": "考察 RAG vs 微调 vs 提示工程的决策框架。知识频繁更新且需溯源 → RAG（外挂索引实时更新+附引用）；行为风格或输出格式定制 → 微调（改变模型行为倾向）；轻量约束 → 提示工程。数据不出内网可用本地部署的 embedding 与 LLM。三者常组合使用而非互斥。",
     "reference": {
       "concept": "RAG 解决知识时效与溯源，微调改变行为风格，提示工程做约束；三者常组合。"
-    },
-    "rubric": {
-      "required": [
-        "选择 RAG 的理由（时效性/溯源/私有化）",
-        "微调的适用边界（行为而非事实）",
-        "组合方案与评估手段"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.25,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
     },
     "formats": {
       "open": {
@@ -1377,12 +1061,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：混合检索：BM25 关键词检索与稠密向量检索并用，兼顾精确匹配与语义匹配；引入重排序（cross-encoder reranker）对初筛结果精细排序；根据文档结构设计分块策略，平衡块大小的召回精度与语义完整性。\n\n解析：生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。"
       }
-    },
-    "rubric": {
-      "required": [
-        "chunking 是语义完整性与检索精度的权衡：过大稀释相似度、过小丢失上下文",
-        "端到端评估（召回率 + 答案质量）才能定位瓶颈在检索还是生成"
-      ]
     }
   },
   {
@@ -1420,12 +1098,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：参数即记忆，减参降知识容量。\n- B：RAG外挂非参数化知识，避免无限扩参。\n- C：小模型抗噪弱，更需精排剪裁。\n- D 错误：合成数据提效不消参数天花板，容量仍受限。"
       }
-    },
-    "rubric": {
-      "required": [
-        "RAG 解决知识问题而非理解问题：答案质量受检索质量上限制约",
-        "引用与溯源是可信度的工程保障"
-      ]
     }
   },
   {
@@ -1446,13 +1118,6 @@
     "explanation": "A 正确 知识库实时增删改查无需重训底层权重。B 正确 事实存储转移到外部索引降低无限扩参需求。C 正确 检索到的上下文为结论提供可溯源依据降低幻觉风险。D 错误 Context Window 不可能降为零仍需注入检索片段且 PE 需求不变。",
     "reference": {
       "concept": "RAG 三大优势：实时更新+降低扩参需求+可溯源降幻觉；不消除 PE 需求。"
-    },
-    "rubric": {
-      "required": [
-        "知识库实时增删改查无需重训",
-        "事实外置降低扩参需求",
-        "可溯源降低幻觉风险"
-      ]
     },
     "formats": {
       "choice": {
@@ -1492,13 +1157,6 @@
     "explanation": "A 正确 Self-Attention 计算与显存随 N 二次方增长极长 Prompt 导致 TTFT 与成本大幅上升。B 正确 上下文腐化现象表明大量冗余信息会降低对关键细节的精准检索能力。C 错误 即使窗口够大也无法自动保障实时更新与 RBAC 权限控制需检索层另行实现。D 正确 上下文压缩与 RAG 混合架构可在保持连贯性的同时降低延迟与成本。",
     "reference": {
       "concept": "O(N²) 计算+Context Rot 衰减+RAG 提供权限控制与实时更新；混合架构互补。"
-    },
-    "rubric": {
-      "required": [
-        "Self-Attention O(N²) 随 N 二次方增长",
-        "Context Rot 降低精准检索能力",
-        "RAG 提供实时更新与 RBAC"
-      ]
     },
     "formats": {
       "choice": {
@@ -1554,13 +1212,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n- A/B/D：全栈本地化（Embedding+VectorDB+Ollama）实现数据不出域。\n- C 错误：Ollama 安全取决于 base_url 指向本地，而非靠 Dummy Key 拦截云端流量。"
       }
-    },
-    "rubric": {
-      "required": [
-        "全栈本地化：Embedding + VectorDB + LLM 均在本地",
-        "Private RAG 用本地 base_url，不依赖 Dummy Key 拦云端",
-        "数据不出域靠物理闭环而非 Key 识别"
-      ]
     }
   }
 ]

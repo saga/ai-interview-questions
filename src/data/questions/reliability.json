@@ -12,20 +12,6 @@
     "angle": "system-design",
     "question": "设计一个任务可能持续数小时甚至数天的 Agent：期间可以暂停和恢复。持久化什么、何时落盘、恢复时如何自洽？",
     "explanation": "考察长时间任务的 checkpoint/resume 设计。核心要点：checkpoint 包含目标计划、已完成步骤、待办队列与工具幂等键；落盘时机为每步成功后+外部副作用前后；恢复时校验快照完整性（版本/哈希）再用摘要重建上下文。模糊区依赖工具幂等性安全重放——此前恢复后忘记已完成站点导致重复下单即为此类事故。",
-    "rubric": {
-      "required": [
-        "可序列化状态设计（含幂等键/外置大对象）",
-        "明确的落盘时机",
-        "恢复时的上下文重建",
-        "模糊区依赖幂等安全重放"
-      ],
-      "dimensions": {
-        "correctness": 0.25,
-        "completeness": 0.25,
-        "architecture": 0.35,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "核心是把 Agent 建模为可序列化的状态机：checkpoint 包含目标与计划、已完成步骤及产出、待办队列、关键中间结果（大对象外置到对象存储，state 里只存引用）、工具幂等键。落盘时机：每个成功步骤后、每次外部副作用前后、定期心跳。恢复流程：加载 checkpoint → 校验完整性（版本/哈希）→ 重建上下文（摘要化历史而非全量回放）→ 从待办队列继续；对“步骤完成但结果未落盘”的模糊区，依赖工具幂等性安全重放。暂停还需支持取消语义与过期检测（外部世界已变化时重新规划）。"
@@ -58,20 +44,6 @@
     "angle": "scenario",
     "question": "一个 Agent 经常重复执行同一个 Tool（参数几乎一样）。可能的原因是什么？你会如何定位与修复？",
     "explanation": "考察重复调用的根因定位与护栏修复。常见根因：工具结果未被有效写回上下文、错误信息过于模糊使模型以为没拿到结果。修复手段：结果结构化回注并标注第 N 次调用、添加相似参数的重复检测护栏、改进错误信息让模型区分'失败需重试'和'成功无需再调'。",
-    "rubric": {
-      "required": [
-        "至少两种可能根因",
-        "用 trace 定位的方法",
-        "重复检测护栏",
-        "改进结果回注/错误信息"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "可能原因：工具结果没有被有效写回上下文或格式让模型没“看见”；模型认为上次结果失败而重试（错误信息模糊）；缺少已尝试动作的记忆；提示词没有告知“重复调用无意义”；或解码温度过低陷入重复模式。定位：拉取完整 execution trace，看重复调用间上下文是否包含上次结果、参数差异是什么。修复：确保工具结果结构化注入并在结果上标注“这是你第 N 次调用”；加重复检测护栏（相似参数直接返回缓存结果并提醒模型）；改进错误信息让模型能区分“失败需重试”和“成功无需再调”。"
@@ -103,20 +75,6 @@
     "angle": "scenario",
     "question": "Agent 明明拥有正确的 Tool，却经常选择错误的 Tool。你会怎么系统地分析这个问题？",
     "explanation": "考察工具选择错误的系统性归因方法。先分桶：选错类型/选对但参数错/时机错；再消除 name 与 description 歧义并补充适用条件与反例；最后构造路由评测集对每次改动做回归验证。仅凭直觉改提示词无法量化改进效果。",
-    "rubric": {
-      "required": [
-        "错误分桶分析",
-        "工具描述/示例改进",
-        "路由评测集回归",
-        "候选集收窄等工程兜底"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "先量化：把错误分桶——选错工具类型、选对但参数错、时机错（过早/过晚）。再看工具描述质量：名称是否歧义（如 search_web vs search_docs 边界模糊）、描述是否含适用条件与反例、few-shot 是否覆盖易混场景。然后看上下文：模型是否缺少做出正确选择的信息（比如不知道某工具需要特殊权限）。实验方法：构造路由评测集（query → 期望工具），改动描述后回归测试。工程兜底：对易混淆工具做前置分类器或合并冗余工具、收窄候选集（按任务阶段暴露工具子集）。"
@@ -149,20 +107,6 @@
     "angle": "scenario",
     "question": "Agent 第一次运行成功，第二次同样输入却失败了。你会优先检查哪些 State 与环境因素？",
     "explanation": "考察非确定性失败的排查框架。优先检查三类非确定源：模型采样随机性与供应商版本漂移、外部环境变化（API 返回不同数据/限流）、残留状态污染（上次 memory/缓存影响本次起点）。用 trace diff 对比两次运行差异，再二分禁用可变因素复现。",
-    "rubric": {
-      "required": [
-        "区分模型随机性/外部环境/状态残留三类因素",
-        "trace diff 定位法",
-        "二分禁用复现",
-        "录制回放的长期方案"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "优先检查非确定源：模型采样随机性（temperature、provider 版本漂移）；外部环境变化（API 返回不同数据、限流、网络）；残留状态污染（上次的 memory/缓存/数据库副作用影响了本次起点）；并发竞争（两实例同时改共享状态）；时间依赖（日期函数、缓存 TTL 过期）。排查顺序：先 diff 两次运行的完整 trace 与外部请求响应，再二分禁用可变因素（关 memory、固定种子、mock 外部 API）复现。长期解法：对 Agent 做 trace 级录制回放，把“同样输入”定义清楚（含环境快照）。"
@@ -195,20 +139,6 @@
     "angle": "scenario",
     "question": "Agent 在长任务中表现越来越差（“越来越迷糊”），但模型本身能力没有变化。可能是什么问题？如何解决？",
     "explanation": "考察 context pollution 的识别与治理。失败尝试与冗长工具输出留在上下文中持续干扰决策，加上长上下文 lost-in-the-middle 效应使关键指令被稀释。解决：定期摘要化已完成工作、剥离失败细节（保留教训一句话）、把目标固定在 system 区周期性重申。",
-    "rubric": {
-      "required": [
-        "指出 context pollution 或指令稀释",
-        "摘要化/剥离失败细节等治理手段",
-        "固定并重申目标",
-        "分段统计验证劣化拐点"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "最可能是 context pollution：早期失败的尝试、冗长的工具原始输出、错误结论留在上下文里持续干扰后续决策；加上长上下文中的 lost-in-the-middle 效应，关键指令被稀释。也可能是目标漂移：初始目标在多轮中被逐渐遗忘。解决：上下文管理——定期把已完成工作摘要化、剥离失败尝试的细节（保留教训一句话）、工具大输出落盘只回注摘要；把目标与关键约束固定在 system 区并周期性重申；必要时主动“重启”子任务（干净上下文 + 摘要交接）。验证：按任务进度分段统计成功率，确认劣化拐点与上下文长度/污染事件的相关性。"
@@ -241,20 +171,6 @@
     "angle": "scenario",
     "question": "线上 Agent 成功率从 85% 掉到 60%，但模型版本没有任何变化。你会如何定位？请给出系统的排查框架。",
     "explanation": "考察成功率回归的系统化排查框架。按依赖链分层排查：①切片分流找掉分具体切片；②上游数据/工具 API 变更（最常见根因）；③环境因素（限流/超时率）；④自身非模型发布变更；⑤用户 query 分布漂移。用 trace diff 聚类新增错误模式而非只看全局均值。",
-    "rubric": {
-      "required": [
-        "按切片分流缩小范围",
-        "上游数据/工具变更是重点嫌疑",
-        "trace diff + 失败聚类",
-        "切片级监控与回归评测预防"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "按依赖链分层排查：① 分流内部：按任务类型/用户/时段切分成败率，找到掉分的具体切片；② 上游数据：检索语料、知识库、工具 API 的内容或 schema 是否变更（最常见根因）；③ 环境：限流、超时率、错误率、区域切换；④ 自身发布：除模型外的变更——提示词、工具描述、编排逻辑、缓存策略是否上线；⑤ 漂移：用户 query 分布变化使训练评测集失真。方法：对比掉分前后的 trace diff，聚类失败模式（新错误类型 vs 既有类型比例恶化）。预防：把工具/语料变更纳入变更管理与回归评测，成功率按切片监控告警而非只看全局均值。"
@@ -287,20 +203,6 @@
     "angle": "mechanism",
     "question": "某个 Tool API 平均延迟从 200ms 涨到 3s，Agent 的端到端延迟却涨了约 10 倍。为什么放大效应这么明显？",
     "explanation": "考察延迟放大机制与缓解策略。Agent 延迟是串行链：慢工具阻塞整个循环→超时重试叠加→更多确认性调用→并发等待时最慢者拖住整批。缓解：缓存与降级返回部分结果、重试退避上限、非依赖工具并行化、慢工具异步化先返 task id 后轮询。",
-    "rubric": {
-      "required": [
-        "解释串行链与重试的放大机制",
-        "trace 拆解定位",
-        "缓存/并行/异步化缓解",
-        "降级指引"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "因为 Agent 的延迟是串行链：慢工具不仅自身变慢，还会引发连锁放大——① 每次调用都串行阻塞整个 loop，而慢响应常导致更多重试与额外调用轮次；② 超时重试叠加（3s×N 次）；③ 模型看到慢/部分结果后产生更多“确认性”调用；④ 若有并发等待（gather 所有工具结果），最慢者拖住整批。定位：trace 里拆分 LLM 时间 vs 工具时间 vs 重试次数。缓解：工具侧缓存与降级（超时返回部分结果）、重试退避上限、非依赖工具并行化、慢工具异步化（先返回 task id 后续轮询）、以及给 Agent 明确的降级指引（拿不到就基于已有信息作答）。"
@@ -333,20 +235,6 @@
     "angle": "system-design",
     "question": "一个能执行付款的 Agent 偶尔会重复付款两次。你会如何从架构层面彻底解决？",
     "explanation": "考察副作用安全的架构化设计。第一原则：不能指望模型'别再调一次'——必须架构级硬约束。幂等键去重（相同键重放返回首次结果）、确认门（金额阈值审批）、持久化状态机约束推进、audit log + 定时对账兜底。仅靠提示词警告属于反模式。",
-    "rubric": {
-      "required": [
-        "幂等键去重（核心）",
-        "确认门/风控规则",
-        "持久化状态机约束",
-        "audit + 对账兜底"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "第一原则：不能指望模型“别再调一次”——副作用安全必须是架构属性。手段：① 幂等键：每次业务操作生成确定性 idempotency-key（如订单号+操作类型），支付 API 层去重，重放返回首次结果；② 确认门：付款前强制人工确认或二次校验规则（金额阈值/频控）；③ 状态机：把“待支付→已支付”做成持久化状态，Agent 只能通过受控服务推进状态，禁止绕过；④ 审计与对账：所有调用落 audit log，定时对账发现异常双付。根因层面：排查为什么会重复（超时重试未带同一幂等键、模型重复调用），对症加固。"
@@ -382,20 +270,6 @@
     "angle": "scenario",
     "question": "一个 Agent 在测试环境表现很好，上线后成功率大幅下降。你会从哪些维度排查这种“实验室到生产”的落差？",
     "explanation": "考察 lab-to-prod 落差的多维归因。典型维度包括分布漂移（生产 query 更杂更长多语言）、环境差异（限流/脏数据/并发竞争）、知识库内容不同步、使用方式偏离预期。排查方法是对线上失败样本聚类并与测试集对比特征差异，据此扩充评测集。",
-    "rubric": {
-      "required": [
-        "分布漂移（query 分布）",
-        "真实环境差异（限流/脏数据/并发)",
-        "线上失败聚类反哺评测集",
-        "影子流量/灰度上线"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "典型维度：① 分布漂移——生产 query 更长更杂、多语言、对抗性输入，测试集太窄太干净；② 环境差异——真实工具的限流/延迟/脏数据、权限差异、并发竞争；③ 数据差异——生产知识库内容与测试 fixture 不同步；④ 使用方式——用户不会按预期措辞交互，缺少澄清轮次；⑤ 规模效应——长尾任务占比高、上下文更长触发压缩。排查方法：对线上失败样本聚类并与测试集对比特征差异，据此扩充评测集（用真实流量采样回放）；上线前用影子流量/金丝雀灰度验证。根本教训：评测集必须持续从真实分布 replenish，“测试通过”只在分布一致时有意义。"
@@ -428,20 +302,6 @@
     "angle": "calculation",
     "question": "请实现一个调用 LLM API 的 retry 函数：支持 exponential backoff，只对 429 和 5xx 重试，并设置最大重试次数。",
     "explanation": "要点：只对 429/5xx 重试（4xx 参数错误重试无意义）；指数退避封顶 + jitter；尊重 retry-after；非幂等调用方需自行保证安全。",
-    "rubric": {
-      "required": [
-        "错误分类过滤",
-        "指数退避实现",
-        "jitter 或 retry-after",
-        "最大次数与最终抛错"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "interface RetryOptions {\n  maxRetries?: number;\n  baseDelayMs?: number;\n  maxDelayMs?: number;\n}\n\nconst RETRYABLE = new Set([429, 500, 502, 503, 504]);\n\nclass ApiError extends Error {\n  constructor(public status: number, public retryAfterMs?: number) {\n    super(`HTTP ${status}`);\n  }\n}\n\nexport async function callWithRetry<T>(\n  fn: () => Promise<T>,\n  opts: RetryOptions = {},\n): Promise<T> {\n  const { maxRetries = 3, baseDelayMs = 500, maxDelayMs = 8000 } = opts;\n  for (let attempt = 0; ; attempt++) {\n    try {\n      return await fn();\n    } catch (err) {\n      const e = err as ApiError;\n      const retryable = e instanceof ApiError && RETRYABLE.has(e.status);\n      if (!retryable || attempt >= maxRetries) throw err;\n      // 优先尊重服务端 retry-after；否则指数退避 + jitter 防惊群\n      const delay = Math.min(\n        e.retryAfterMs ?? baseDelayMs * 2 ** attempt,\n        maxDelayMs,\n      );\n      await new Promise((r) => setTimeout(r, delay + Math.random() * 250));\n    }\n  }\n}",
@@ -475,21 +335,6 @@
     "angle": "scenario",
     "question": "一个 AI 服务依赖第三方 LLM API。线上偶尔出现 timeout、429、5xx 和 malformed JSON。你会设计哪些 reliability mechanisms？",
     "explanation": "按错误类型分别处理：timeout 重试、429 backoff、5xx 限次重试+降级、malformed JSON 校验修复；整体设预算与可观测性。",
-    "rubric": {
-      "required": [
-        "timeout",
-        "rate limit",
-        "retry/backoff",
-        "fallback",
-        "validation"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "应该区分不同错误处理：timeout 可以有限重试或 fallback；429 需要 backoff 和 rate limiting；5xx 可以有限重试并切换 provider 或模型；malformed JSON 需要 schema validation 和有限修复/重试。同时应设置整体 request budget、超时、fallback 和 observability，避免 Agent 或重试逻辑无限扩大成本。"
@@ -545,12 +390,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：推理模型的 max_completion_tokens 是\"思考 + 回答\"的总预算，思维链对用户不可见但照常计费占额。预算给得太紧时，模型可能在思考阶段就花光配额，最终回答一个字都没渲染——HTTP 层面一切正常（200），只有 finish_reason=length 和空 content 暴露问题，属于典型的静默失败。工程对策：为推理模型预留充足的 completion 预算；监控 finish_reason 分布并对 length+空内容告警重试。Context 溢出会直接报错而非空返回，安全拦截有独立标识，HTTP 超时则连响应都拿不到——均与本现象特征不符。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -586,12 +425,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：网关无法预知模型会生成多少 Token，只能在受理请求时按最坏情况预扣：占用额度 = Input Tokens + max_completion_tokens，完成后多退少补（多数平台不退）。工程后果是把 max_completion_tokens 当\"保险丝\"盲目调大（如 16k）——每个请求预扣 136k+，少量并发就把每日配额冲爆，而实际可能只生成了几百 Token。对策：按真实需要设置输出上限、监控配额水位、必要时拆分请求。Prefix Cache 只影响计费单价不影响配额扣减逻辑（C 错）；长上下文场景下 Daily Quota 恰恰是最先撞上的墙之一（D 错）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -629,12 +462,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n要点：①D 是这类系统的经典事故源：200 页扫描件的 OCR+embedding+四次网络写入轻松超过分钟级，同步执行等于把可用性交给最慢的依赖。②B 的状态门禁是\"读侧一致性\"的关键：分布式系统做不到跨四库的原子事务，就用应用层状态机把\"半更新态\"挡在读者视野之外。③C 的幂等性靠 ID 约定而非协议恩赐：Qdrant 用 document_id 作 point id、ES 用作 _id、Postgres 作主键，重放天然覆盖旧版本；漏掉这一点，一次 MQ 的 at-least-once 重投递就会造出重复召回。④补偿策略按业务选：宁可短暂不可见（回滚删除已写库）还是允许人工修复（死信队列+告警），两者都比\"静默不一致\"好。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -670,12 +497,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①阈值是纯策略参数，不触碰任何基础设施性能——A/C/D 都是把策略误配的症状安到了错误的机制上：检索延迟与分类器能力、拒答行为都不受该阈值影响。②这个参数的真实杠杆是\"人工团队负载 ↔ 自动解决率\"的跷跷板：0.9 的阈值本质上是宣布\"AI 只处理百分百确定的场景\"，等于放弃了自动化的主要收益。③调优方法论：转人工率当 SLI（设目标带宽）、bad case 双向复盘（该转没转的 vs 不该转转了的）、按意图差异化阈值（法律/退款类天然更高）、阈值变更走灰度。这与 eval 门禁的 block-rate 治理（5-12% 区间）是同一种工程哲学：门槛参数永远是运营变量而非一次性配置。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -690,20 +511,6 @@
     "angle": "system-design",
     "question": "主模型 API 出现故障时，系统应该如何自动降级？除了切换备用模型，你还可以采用哪些降级策略？",
     "explanation": "降级阶梯：备用模型 → 语义缓存 → 功能裁剪/直返原文 → 异步队列 → 模板兜底 → 明示受限；熔断触发、降级可观测、定期演练。",
-    "rubric": {
-      "required": [
-        "熔断/健康检测触发",
-        "至少三级降级阶梯",
-        "降级标记与可观测",
-        "演练与渐进恢复"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "降级是一个阶梯而非单点切换：检测层靠健康探测与熔断器（连续失败/延迟超标即触发）；响应阶梯包括——切换备用 provider 或更小的本地模型；启用缓存的相似问题答案（语义缓存）；功能降级——关闭可选能力（不做摘要/不改写、缩短输出、退化为检索直接返回原文段落加免责说明）；异步化——把非紧急请求转入队列延后处理；预设模板兜底（客服场景的标准话术）；最后是明确告知用户服务受限而非硬报错。配套要求：每次降级打标记并可观测（用户看到的是哪一级产物）、降级演练常态化、恢复后渐进放量。原则是预先定义每一级的质量含义，而不是故障现场临时决定。"
@@ -738,20 +545,6 @@
     "angle": "scenario",
     "question": "LLM Provider 对你的 API 设置了 RPM 和 TPM 双重限制。你的系统如何同时控制 Request Rate 和 Token Rate？",
     "explanation": "RPM 用经典限流器、TPM 要先预估 token 再扣预算，集中式计量；优先级排队 + 429 反馈调节 + 多实例共享配额是关键工程点。",
-    "rubric": {
-      "required": [
-        "双维度分别计量",
-        "output token 预估",
-        "集中式限流器",
-        "优先级队列与 429 反馈"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.35,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "两个维度分开计量、协同调度：Request 层用令牌桶限 RPM；Token 层要在请求发出前预估消耗（input tokens 可精确计算，output tokens 按任务类型估均值加 p95 上限），用分布式令牌桶控 TPM——预算不足时请求排队等下一个窗口。工程要点：多实例部署时限流器必须集中式（Redis 等），各实例本地限速总和必超限；按优先级排队——限流触发时优先保障交互式请求，批处理让路降速；监听 429 响应的 retry-after 动态调整速率；多 provider 场景把配额管理做成独立模块，与路由/fallback 协同。目标是既不浪费配额也不触发硬限。"
@@ -786,20 +579,6 @@
     "angle": "scenario",
     "question": "Primary LLM Provider 故障时系统自动切换备用 Provider。如何保证切换过程中不会导致大量重复请求和成本失控？",
     "explanation": "三大事故点：重试相乘、双写计费、备库被打爆；对策 = 熔断统一决策 + 幂等 id 去重 + 渐进放量 + 成本硬顶 + 渐进回流。",
-    "rubric": {
-      "required": [
-        "重试风暴成因",
-        "幂等与去重",
-        "渐进切换与配额预案",
-        "成本硬顶护栏"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "故障切换最容易引发三种事故：重试风暴（客户端+网关+应用三层重试相乘）、双写放大（主备都收到请求都计费）、备用 provider 配额被打爆产生二次故障。防护设计：熔断器统一收敛重试决策——主 provider 熔断打开后才切流，避免半死状态下反复探测；请求幂等化——为每个业务请求分配唯一 id，切换层去重，保证一次业务操作最多一次有效计费调用；切换限速——对新 provider 渐进放量（1%→10%→100%）而非瞬时全量，其 TPM 配额提前申请并压测；全局预算护栏——故障期间额外成本设硬顶，超限自动降级为更便宜的兜底模式；恢复同样渐进——主 provider 回来后先探活再逐步回流，防止来回横跳。"
@@ -855,12 +634,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：Model DoS 的危害是双重的——计算资源耗尽 + 财务拒绝服务（EDoS：账单被打爆）。完整防护需多层叠加：①服务端强制输入 Context 长度上限与 Token Bucket 限流（客户端 maxlength 可被绕过，仅是体验提示）；②Agent 循环设最大递归深度与单会话工具调用次数上限，阻断 Recursive Tool Calls 放大；③每次 LLM/工具调用加超时与断路器，防止请求堆积拖垮服务；④按租户设 Token 消费配额并实时监控告警，封顶异常账单。扩容 GPU 和换小模型只是提高攻击成本上限，不构成防线。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -896,12 +669,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\n已提交对象已入对象库，reflog可找回；未add/commit的改动仅在工作区，未入对象库，hard重置后丢失不可Git恢复。A称连未提交一并恢复误，B称对象库清空误，D称需重init误。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -939,12 +706,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- --soft：仅HEAD，Index/Workdir不变。\n- --mixed：HEAD+Index重置，Workdir保留。\n- --hard：三区同步回退，未提交改动丢失。\n- D 错误：描述相反，soft留暂存，mixed回工作区。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   },
   {
@@ -982,12 +743,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。\n\n- A：默认git stash对已追踪（tracked）文件的working directory与index的修改做栈保存，工作区回到HEAD干净态。\n- D：未追踪文件不被默认包含，需-u/--include-untracked。\n- C：pop=apply+drop，无冲突则出栈；有冲突则保留。\n- B 错误：apply仅应用不删除，删除的是drop/pop，混淆二者会导致栈垃圾堆积或误删。"
       }
-    },
-    "rubric": {
-      "required": [
-        "幂等与重试预算：LLM 调用昂贵且不保证一致",
-        "降级路径要预先定义（换引擎/缩短上下文/静态兜底文案）"
-      ]
     }
   }
 ]

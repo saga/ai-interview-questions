@@ -31,12 +31,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：以标准协议连接模型与外部工具/数据源，避免每个应用为每套工具重复写私有集成（M×N 问题变 M+N）。\n\n解析：没有统一协议时，M 个应用接入 N 个工具需要 M×N 套定制集成；MCP 把工具能力发现、调用、资源访问标准化为通用协议（类似“AI 应用的 USB-C”），工具方实现一次即可被所有支持该协议的客户端使用。它不改变采样机制，也不替代参数描述本身。"
       }
-    },
-    "rubric": {
-      "required": [
-        "MCP 的 resources/tools/prompts 三件套",
-        "上下文供给与工具调用的安全边界"
-      ]
     }
   },
   {
@@ -52,20 +46,6 @@
     "angle": "tradeoff",
     "question": "一个企业已有 50 个内部 API，希望多个 AI Agent 复用这些能力。你会直接为每个 Agent 实现 Function Calling，还是引入 MCP？如何判断？",
     "explanation": "本质是 M×N → M+N 的集成成本问题；消费方少且稳定就直连，多消费方+快演进+需要统一治理则 MCP,可先小范围试点验证。",
-    "rubric": {
-      "required": [
-        "M×N vs M+N 成本模型",
-        "判断维度（消费方数/演进/治理）",
-        "小 Agent 场景下不引入的克制",
-        "渐进迁移路径"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "核心判断变量是“消费方数量 × 演进速度”。直接 Function Calling 的隐形成本：每个 Agent 应用各自维护 50 个工具的定义、鉴权、错误处理和版本适配——3 个 Agent 就是 150 份重复胶水代码，API 一改全线跟进。MCP 把这层收敛成 M+N：每个 API 封装一次 MCP server（统一 schema、鉴权、限流、审计），Agent 作为标准 client 接入。判断标准：如果只有一两个 Agent、工具集稳定且高度定制，直连更简单，别为协议而协议；如果 Agent 数量会增长、多个团队都要消费这些 API、或者需要统一的权限/审计/计量层，MCP 的前期投入很快回本。迁移上可以渐进：先挑高频稳定的 10 个 API 做成 MCP server 验证运维成本，再决定全面推广。"
@@ -98,20 +78,6 @@
     "angle": "tradeoff",
     "question": "一个 Agent 已经可以调用 REST API。为什么一个团队仍然可能选择 MCP？MCP 解决的主要问题是什么，而不是什么？",
     "explanation": "MCP 解决工具/资源/提示的标准化连接与互操作问题，不是 REST 的替代品，也不自动解决 tool selection 与推理。",
-    "rubric": {
-      "required": [
-        "标准化",
-        "互操作",
-        "工具/资源发现",
-        "不是 REST 替代品"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "MCP 可以提供一种标准化的模型与外部工具、资源、提示之间的连接方式，使不同 Agent 或客户端能够以统一协议发现和使用能力。它解决的是工具和上下文能力的标准化与互操作问题，而不是简单替代 REST API，也不会自动解决 tool selection 或 Agent reasoning。"
@@ -143,20 +109,6 @@
     "angle": "definition",
     "question": "MCP 解决的主要问题是什么？它和 Function Calling 是什么关系？",
     "explanation": "Function Calling = 模型输出调用意图的能力；MCP = 工具暴露/发现/调用的标准协议。互补：MCP 管接入标准化，填参与选择仍靠模型能力。",
-    "rubric": {
-      "required": [
-        "FC 是模型能力",
-        "MCP 是集成协议",
-        "互补关系",
-        "不解决 selection/schema 质量"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Function Calling 是模型厂商提供的模型能力——模型按 schema 输出调用意图，但工具的定义、发现、执行和鉴权都由每个应用自己实现，M×N 集成成本高。MCP 是应用层的开放协议：标准化 server 如何向 client 暴露 tools/resources/prompts，统一发现、调用与上下文交换方式，让一个工具实现可以被任意兼容客户端复用。两者是互补而非竞争：MCP 负责工具侧的标准化接入与分发，最终“选择哪个工具、如何填参”仍依赖模型的 function calling 能力。它也不解决工具质量本身——schema 歧义、tool selection 准确率这些问题依然要靠工程设计。"

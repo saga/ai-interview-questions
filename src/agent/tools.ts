@@ -93,9 +93,8 @@ export async function evaluateSessionQuestion(
   provider: LLMProvider,
 ): Promise<EvaluationResult | null> {
   if (isAnswerEmpty(answer)) return null; // 未作答 → 跳过评分
-  const baseRubric = sq.question.rubric?.dimensions
-    ? { ...DEFAULT_RUBRIC, ...sq.question.rubric.dimensions }
-    : DEFAULT_RUBRIC;
+  // 题目级权重覆盖已随 rubric 字段一并移除（ADR-044），一律使用全局默认权重
+  const baseRubric = DEFAULT_RUBRIC;
   if (sq.format === 'choice') {
     const cf = sq.question.formats.choice!;
     const selected = Array.isArray(answer) ? (answer as number[]) : [];

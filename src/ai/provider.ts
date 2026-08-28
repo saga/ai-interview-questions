@@ -7,18 +7,14 @@
 import type {
   AIConfig,
   EvaluationResult,
-  GeneratedQuestion,
   GeneratedVariant,
-  KnowledgeNode,
   LLMProvider,
   OpenFormat,
   ProviderEntry,
   Question,
-  QuestionBlueprint,
   ScoringRubric,
 } from '../types';
 import { generateVariant } from './variant';
-import { generateQuestionForBlueprint } from './generateQuestion';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
@@ -47,17 +43,19 @@ export function isConfigValid(c?: AIConfig): boolean {
 }
 
 /**
- * 合并题目级 rubric 与全局 rubric（纯函数，便于测试）：
- * - dimensions：该题权重覆盖全局对应维度
- * - required：必须覆盖的要点，注入评分提示；
- *   题目未自带时回退到知识点节点的 required（知识点层是评分锚点的默认来源，ADR-029）
+ * 装配评分参数（纯函数，便于测试）：
+ * - `rubric`：四维权重，**统一使用全局 `InterviewDefinition.scoringRubric`**。
+ *   原先支持题目级 `rubric.dimensions` 覆盖，但该字段已随 ADR-044 删除——
+ *   权重定制只覆盖 29.6% 的题、共 21 种组合，维护成本高于收益。
+ * - `requiredPoints`：必须覆盖的要点，来自知识点节点的 `required`（ADR-029，单一来源）。
+ *   题目级的评分依据由 `Question.explanation` 直接注入评分提示提供。
  */
 export function mergeQuestionRubric(
   q: Question,
   globalRubric: ScoringRubric,
 ): { rubric: ScoringRubric; requiredPoints?: string[] } {
   return {
-    rubric: { ...globalRubric, ...(q.rubric?.dimensions ?? {}) },
+    rubric: { ...globalRubric },
     requiredPoints: requiredPointsFor(q),
   };
 }
@@ -78,10 +76,6 @@ export class PiAIProvider implements LLMProvider {
     return generateVariant(q, (system, user) => callLLM(this.entry, system, user));
   }
 
-  async generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion> {
-    return generateQuestionForBlueprint(blueprint, node, (system, user) => callLLM(this.entry, system, user));
-  }
-
   async evaluateOpenAnswer(
     q: Question,
     open: OpenFormat,
@@ -100,10 +94,6 @@ export class ChromeAIProvider implements LLMProvider {
 
   async generateVariant(q: Question): Promise<GeneratedVariant> {
     return generateVariant(q, chromeComplete);
-  }
-
-  async generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion> {
-    return generateQuestionForBlueprint(blueprint, node, chromeComplete);
   }
 
   async evaluateOpenAnswer(
@@ -141,10 +131,6 @@ export class FallbackProvider implements LLMProvider {
 
   generateVariant(q: Question): Promise<GeneratedVariant> {
     return this.run((p) => p.generateVariant(q));
-  }
-
-  generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion> {
-    return this.run((p) => p.generateQuestion(blueprint, node));
   }
 
   evaluateOpenAnswer(

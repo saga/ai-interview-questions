@@ -2,13 +2,65 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 删除 `Question.rubric`，评分锚点改由「知识点要点 + explanation」承担（ADR-044）
+
+- **动机**：`rubric` 覆盖 493/624 题（79%），是需逐题维护的高覆盖字段，但其中 `rubric.required` 有 **239 题（48.5%）与所属知识节点 `required` 逐字相同**（纯副本）；`rubric.dimensions` 仅覆盖 185 题（29.6%）、21 种权重组合，为少量微调维护整套字段不划算。
+- **决策**：删除整个 `Question.rubric`，评分锚点改为两层——泛化锚点用 `KnowledgeNode.required`（单一来源），题目锚点用已有的 `Question.explanation`（不增加任何维护成本，净减一个字段）；四维权重统一使用全局 `scoringRubric`。
+- **⚠️ 事实澄清**：`rubric` 与 `explanation` **原本并无交互**——`explanation` 只用于 UI 展示（`ResultPanel` / `SessionReplayDrawer`）与变体生成，**从不参与评分**；评分时 LLM 拿到的是 `open.referenceAnswer`。本次是让 `explanation` **新增**承担评分锚点，而非"两者本就重合"。
+- **改动**：
+  - 数据：删除 493 处 `rubric`（28 个文件）
+  - `schemas/question.ts`：删 `rubricSchema` 与 `rubric` 字段
+  - `domain/knowledge.ts`：`requiredPointsFor` 改为只取 `KnowledgeNode.required`
+  - `ai/provider.ts`：`mergeQuestionRubric` 不再合并题目级 dimensions，只返回全局权重副本 + 知识点要点
+  - `ai/evaluate.ts`：`buildEvalUser` 新增「题目解析」段，把 `q.explanation` 作为题目级评分锚点注入
+  - `agent/tools.ts`：`evaluateSessionQuestion` 改用全局 `DEFAULT_RUBRIC`
+  - 测试：改写 3 个 rubric 用例；新增 2 例（explanation 注入评分提示 / 为空时不产生多余段落）；`bank.test.ts` 的 rubric 权重校验改为校验 explanation 非空
+- **已知代价**：254 题（51.5%）的逐题定制 `required` 移除后，评分依据由 explanation 承担——信息量相当，但形态从"结构化要点清单"变为"解析文本"；185 题失去题目级权重定制。
+- **验证**：`tsc` 通过；全量 `npm run test` **308 passed**；数据层 `rubric` 残留 0。
+
+## 2026-08-29 · 移除概念层，覆盖索引统一为 topic × angle（ADR-043，取代 ADR-042）
+
+- **动机**：ADR-042 的概念层（`KnowledgeNode.concepts[]` 概念面 + `Question.tests` 概念标注）落地后只服务约 **20%** 的题库——概念面仅挂 9/79 节点，题目 `tests` 仅 123/624 题（即便当天刚补齐 rag/agentic-ai 的 80 题）。同时它与 `subtopic`/`tags` 重复建模，且 `primary/supporting` 的判定高度主观，标注规则 + QA + 维护的成本换不到对等的体验提升。
+- **决策**：删除整个概念层，覆盖索引回归 **`topic × angle`**（两者均 100% 覆盖、无需额外人工标注）。详见 ADR-043。
+- **删除清单**：
+  - 数据：`Question.tests`（123 处）、`Question.transient`（0 处）、`KnowledgeNode.concepts[]`（9 处）
+  - 整文件删除（13 个）：`domain/probe.ts`、`domain/curation.ts`、`infra/curationStore.ts`（连带空目录 `src/infra/`）、`ai/generateQuestion.ts`、`scripts/generate-concept-questions.ts`，以及 8 个测试文件
+  - 部分移除：`coverage.ts`（删 7 个概念统计函数，保留 ADR-032 的 topic×angle 矩阵）、`adaptive.ts`（删概念优先路径与 `conceptCtx`/`allowProbe` 参数）、`blueprint.ts`（删 PR5 概念蓝图与 PR6 探针组装）、`provider.ts`（删 `generateQuestion` 及三个实现）、`interviewEngine.ts`（删 `buildConceptContext` / Dynamic Probe / `curationSink`）、`types.ts`、`schemas/question.ts`、`schemas/knowledge.ts`
+  - npm script：`generate:concept-questions`、`curation:produce`
+- **保留未动**：ADR-032 的 `questionCoverageMatrix`（topic×angle 覆盖矩阵）与补题建议、ADR-037 的 `angleCoverage` / `weakAnglesOf`、`conceptGraph`（知识关系图，与概念层无关）、`subtopic` 字段。
+- **改写**：`scripts/validate-questions.ts` 原为概念标注校验，改为面向新索引的通用数据校验（topic 必须有知识节点、angle 必填且在枚举内、选择题 answer 不越界）。
+- **验证**：`tsc` 通过；全量 `npm run test` **306 passed**（删减 58 个概念相关用例，另补 2 个验证"无概念层后自适应仍正常"）；`npm run validate:questions` 通过（624 题 / 79 节点，**angle 覆盖 100%**）。
+
+## 2026-08-29 · 补齐 rag / agentic-ai 域的 `Question.tests` 概念标注（ADR-042 概念面推广收尾）
+
+- **动机**：ADR-042 的「概念面推广」（2026-08-26）只完成了**节点挂 `concepts[]`**，却漏了配套的题目 `tests` 标注——624 题中仅 43 题有 `tests`（全在 transformer），rag/agentic-ai 域 **80 题为 0**。而 `findQuestionForConcept`（`adaptive.ts:113`）硬依赖 `q.tests` 找题，导致这两个域的概念优先抽题**实际空转**：开 AI 则每步都触发 Dynamic Probe 现场生成临时题（慢、费、质量不可控），关 AI 则直接回退原 topic/angle 路径。
+- **变更**：为八节点（rag / vector-db / rag-pipeline / reranking / agent-fundamentals / agent-loop / tool-calling / agent-guardrails）下的 **80 道题**补 `tests`（primary 唯一、每题 ≤3 概念），落在 4 个文件：`agent-fundamentals.json` 31、`rag.json` 26、`tool-calling.json` 17、`search.json` 6。标注为结合题干与概念面语义逐题判定，未用关键词硬匹配。
+- **验证**：`npm run validate:questions` 通过（624 题，含 tests 的题 **43 → 123**）；该域 tests 覆盖率 **0% → 100%**；概念覆盖 **59/66 → 62/66**；全量 `npm run test` 364 passed。
+- **剩余 4 个无题覆盖的概念（真实知识缺口，正是 curation 管线的补题输入）**：
+  - `vdb-params`（ef / M / nprobe 参数调优）、`rag-latency`（端到端延迟与吞吐）——本次推广域内新暴露；
+  - `ffn`、`kv-cache`——transformer 节点既有缺口（PR0 试点即已存在，可按 ADR-042 的 Blueprint 管线补题）。
+- **文档同步**：ADR-042 更正概念面数量（rag / agentic-ai 各 **28**，原写 33 / 35），并新增「概念面生效的前置依赖」警示——挂 `concepts[]` 与标 `tests` 必须配套，只做前者等于空转。
+
+## 2026-08-29 · 统一 Chrome 内置 AI 的并发/超时配置（修复六处数值互相矛盾）
+
+- **动机**：`chromeAI` 的并发与超时在六处给出五种互相矛盾的说法——代码常量 `8/90s`、同文件 JSDoc `2/60s`、测试标题 `4`、测试注释 `8`、测试断言要求恰好 `8`、CHANGELOG 声称"已纠正为 4/60s"、ARCHITECTURE 写 `2/60s`。其中 CHANGELOG 记录的"纠正"当时**并未落到代码**；而测试把 `maxActive >= 8` 硬编码成断言，又把错误值锁死，导致"改代码就红、不改又与文档矛盾"。
+- **决策**：并发定为 **4**、单次超时 **90s**、重试 **1**（超时保留 90s：本地模型首题含预热，60s 易误判为卡死而触发不必要重试）。
+- **变更**：
+  - `src/ai/chrome.ts` 新增导出常量 `CHROME_AI_CONCURRENCY=4` / `CHROME_AI_TIMEOUT_MS=90_000` / `CHROME_AI_RETRIES=1`，`chromeAI` 单例改为引用它们；同步修正同文件注释与 `chromeComplete` 的 JSDoc（原写"默认并发 2、单次 60s"）；`ChromeAIExecutor` 构造函数的兜底默认值（原 `?? 2` / `?? 90_000` / `?? 1`）也一并改为引用这些常量——自此全模块内这三参数只有一处数字。
+  - `src/ai/chrome.test.ts` 并发用例改为**从常量取值**（任务数取 2×并发上限），断言 `maxActive <= CHROME_AI_CONCURRENCY` 且 `== CHROME_AI_CONCURRENCY`——调整并发数时测试自动跟随，不再把某个具体数字"锁死"，同时仍能捕捉"悄悄退化成串行"。
+  - `docs/ARCHITECTURE.md`「Chrome 内置 AI 的并发与卡死」小节数值改为 4 / 90s，并注明单一出处。
+  - 本文件 2026-08-28 条目的「默认并发」行加勘误，并复核其"建议 6~8"的结论。
+- **验证**：`chrome.test.ts` 11 项通过；全量 `npm run test` 与 `tsc` 均通过。
+
 ## 2026-08-28 · ChromeAIExecutor 改用「基准 session + clone 每题」模式（贴合官方最佳实践）
 
 - **动机**：Chrome 官方 dos/donts 明确——Prompt API 不要用相同 system 反复 `create()`（每次都重新解析 system 指令，延迟更高），应建一个基准 session（含 `initialPrompts`）、每题用 `clone()` 派生独立会话。我们原先是每道题 `create()` 一次。
 - **变更**：`runPromptOnce` 改为先经 `getBaseSession(system)` 惰性创建并缓存基准 session（按 system 串缓存、memoize create promise 避免并发重复创建），每题 `base.clone()` 后 `prompt()`，用完 `destroy()` 克隆；整批空闲时 `disposeBases()` 统一 `destroy()` 基准 session，避免长期占用 Chrome 并发槽位。业务层签名不变。
-- **默认并发**：应用层单例 `chromeAI` 设 `concurrency:4 / timeoutMs:60_000 / retries:1`（注意此前误写成 8/90s，已纠正）。
+- **默认并发**：应用层单例 `chromeAI` 设 `concurrency:4 / timeoutMs:90_000 / retries:1`。
+  （勘误：本条曾写"已纠正为 4/60s"，但该纠正**当时并未落到代码**——代码实际仍为 8/90s；2026-08-29 已真正统一为 4/90s，并抽成 `CHROME_AI_*` 常量，见顶部 2026-08-29 条目。）
 - **验证**：`chrome.test.ts` 11 项、`chromeAgent.test.ts` 3 项（clone session 桩）同步更新通过；`npm run build`（`tsc -b` strict 严格）通过；全量 `npm run test` 364 passed。
 - **真实计时（10 题，干净浏览器）**：clone + 并发 4 ≈ 250s 进入题目页。结论：**clone 只降低"每题 session 创建/解析"开销，但生成耗时主要由单题 prompt 延迟主导**，所以提速的真正杠杆是并发数。实测此前并发 8（无 clone）约 90s 反而更快——故 keep clone 的同时建议把并发提到 6~8（base+克隆 总数需 ≤ Chrome 实际并发上限，待真机验证）。见下方待办。
+  （2026-08-29 复核：综合本机负载与稳定性，最终**定为 4** 而非 6~8，见顶部条目；若日后真机显示偏慢，改 `CHROME_AI_CONCURRENCY` 一处即可全局生效。）
 
 ## 2026-08-28 · 修复 Chrome 内置 AI 出题卡死（新增 ChromeAIExecutor，并发控制 + 超时 + 取消 + 重试 + 销毁）
 

@@ -32,12 +32,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：HNSW 是多层跳表式图索引，高召回（95-99%）低延迟但内存开销大，适合质量优先的生产服务；IVF 先聚类、查询时只搜 nprobe 个相关簇，以少量召回换速度与内存；PQ 对向量做乘积量化压缩、显著省内存但有精度损失，常与 IVF 组合成 IVF-PQ 应对超大规模。三者都要在自己的数据上实测召回-延迟曲线。"
       }
-    },
-    "rubric": {
-      "required": [
-        "ANN 是精度-性能的权衡而非精确搜索",
-        "索引类型与参数影响 recall@k，必须用真实查询分布评估"
-      ]
     }
   },
   {
@@ -53,20 +47,6 @@
     "angle": "scenario",
     "question": "生产环境已经存储了 1000 万条 1536 维 embedding，现在准备切换到 3072 维 embedding。你会如何进行迁移，避免线上搜索中断？",
     "explanation": "新旧向量空间不兼容 ⇒ 双索引并行 + 评测达标 + 灰度切流 + 保留回滚；注意重嵌入成本、双写完成点与 query/doc 同版本。",
-    "rubric": {
-      "required": [
-        "空间不兼容的前提认知",
-        "并行索引与灰度切换",
-        "重嵌入成本与限流",
-        "回滚与双写一致性"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "关键约束：新旧 embedding 空间不兼容，混存必然导致检索错乱，所以迁移本质是双索引并行 + 原子切换。步骤：新建 3072 维 collection 批量重建（全量重嵌入 1000 万条文档，注意 API 成本与限流，通常离线跑数天）；期间旧索引照常服务线上；用抽样评测集对比新旧索引的召回质量，达标后进入灰度——按流量比例把读请求切到新索引并监控检索指标；确认稳定后旧索引保留一段时间作为回滚兜底，最后下线释放资源。细节坑：query 侧与 document 侧必须同模型同版本；切换点要保证写入路径已完成双写，否则切流后新索引缺数据；元数据与 ID 映射保持一致以便结果可比。"
@@ -99,20 +79,6 @@
     "angle": "scenario",
     "question": "更换 Embedding Model 后，RAG 系统的 Recall 从 92% 降到 65%。你会如何定位问题？",
     "explanation": "Recall 暴跌首查空间一致性：一侧旧模型、缓存污染、预处理差异、度量配置；用新旧组合的金标集矩阵快速二分出错误侧。",
-    "rubric": {
-      "required": [
-        "双侧同模型前提",
-        "存量/缓存污染排查",
-        "预处理与度量配置",
-        "组合矩阵定位法"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "第一嫌疑是空间不一致：query 与 document 是否有一侧仍用旧模型编码（最常见的灾难）——新旧向量在同一空间里余弦相似度完全无意义，65% 可能全是巧合命中。逐一排查：确认库内全部向量的模型版本元数据，是否有未重嵌的存量数据；确认 query 编码服务已更新且没有缓存旧向量（语义缓存里的旧 embedding 也是污染源）；确认预处理链路一致（截断长度、检索前缀指令、归一化方式）；排除距离度量配置错误（cosine 被改成内积等）。定位方法：构造小型金标集分别测“query 新 vs doc 新”“query 旧 vs doc 新”等组合，快速锁定哪一侧编码错了。修复即全量重嵌并对齐两侧版本，之后把 embedding 模型版本纳入数据血缘管理防止复发。"
@@ -145,20 +111,6 @@
     "angle": "tradeoff",
     "question": "一个 Vector Database 已存储 1 亿条 embedding，内存成本越来越高。你有哪些降低成本的办法？会牺牲什么？",
     "explanation": "省钱阶梯：数据治理 → 索引参数调优 → PQ/INT8 量化 → 磁盘索引；每一级都在用召回率或延迟换内存，须以评测曲线定取舍。",
-    "rubric": {
-      "required": [
-        "量化及其召回代价",
-        "磁盘索引的延迟代价",
-        "数据治理优先",
-        "评测驱动的取舍"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "主要手段及代价：量化压缩——PQ（乘积量化）或 scalar quantization（FP32→INT8），内存可降数倍到数十倍，代价是召回率损失，需要实测 recall-vs-compression 曲线找平衡点；磁盘索引（DiskANN 类）——大部分向量放 SSD、只留热点在内存，成本低一个数量级，代价是查询延迟上升；索引结构调优——HNSW 的 M/ef 参数下调省内存但牺牲召回；数据治理——去重、过期数据淘汰、低价值文档降采样，这往往是最被忽略的一手；降维或换更小维度的 embedding 模型（配合迁移成本评估）。策略上先做数据治理（免费），再调索引参数（低成本），最后才动量化/磁盘架构（需重新验证质量）。"
@@ -208,12 +160,6 @@
       "open": {
         "referenceAnswer": "需权衡过滤选择性：pre-filter 保正确性但可能候选不足，post-filter 可能漏召，混合索引最佳。"
       }
-    },
-    "rubric": {
-      "required": [
-        "ANN 是精度-性能的权衡而非精确搜索",
-        "索引类型与参数影响 recall@k，必须用真实查询分布评估"
-      ]
     }
   },
   {
@@ -246,12 +192,6 @@
       "open": {
         "referenceAnswer": "两路分数尺度不同，需归一化加权融合。"
       }
-    },
-    "rubric": {
-      "required": [
-        "ANN 是精度-性能的权衡而非精确搜索",
-        "索引类型与参数影响 recall@k，必须用真实查询分布评估"
-      ]
     }
   }
 ]

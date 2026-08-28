@@ -2,7 +2,56 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
-## ADR-042 · Concept-coverage：把抽题从"选哪道题"升级为"先选最该验证哪个概念"
+## ADR-044 · 删除 `Question.rubric`：评分锚点改由「知识点要点 + explanation」承担
+
+- 状态：已采纳 · 2026-08-29
+- 背景：`Question.rubric` 含两个子字段——`required`（评分要点）与 `dimensions`（四维权重覆盖），覆盖 **493/624 题（79%）**，是个高覆盖字段。
+- 决策：**删除整个 `Question.rubric`**，评分锚点改为两层：
+  1. **知识点层（泛化锚点）**：`requiredPointsFor()` 统一取 `KnowledgeNode.required`——ADR-029 的"回退"升级为**唯一来源**
+  2. **题目层（具体锚点）**：`Question.explanation` 直接注入评分提示，作为"该题特有关键结论"的判据
+  3. 四维权重统一使用全局 `InterviewDefinition.scoringRubric`，**不再支持题目级覆盖**
+- 理由：
+  1. **`required` 与知识点要点高度冗余**：493 题中 **239 题（48.5%）**的 `rubric.required` 与所属知识节点 `required` 逐字相同，纯属副本。
+  2. **`dimensions` 收益低于成本**：仅覆盖 185 题（29.6%）、共 21 种权重组合，为少量微调维护一整套字段不划算。
+  3. **`explanation` 已存在且必填**：用它做题目级锚点**不增加任何维护成本**——净减少一个字段，符合"不为未来算法预存数据"。
+- ⚠️ **事实澄清**：`rubric` 与 `explanation` **原本并无交互**——`explanation` 只用于 UI 展示（`ResultPanel` / `SessionReplayDrawer`）与变体生成，**从不参与评分**；评分时 LLM 拿到的是 `open.referenceAnswer`。本次是让 `explanation` **新增**承担评分锚点职责，而非"两者本就重合"。此点易误解，特记。
+- 影响（已知代价）：
+  - 254 题（51.5%）原先**逐题定制**的 `required` 被移除，评分依据改由 `explanation` 承担——信息量相当，但形态从"结构化要点清单"变为"解析文本"，评分精度可能略有变化。
+  - 185 题失去题目级权重定制，改用全局默认权重。
+- 验证：`tsc` 通过；全量 `npm run test` 308 passed（新增 2 例：explanation 注入评分提示 / 为空时不产生多余段落）；数据层 `rubric` 残留 0；`bank.test.ts` 改为校验 explanation 非空。
+
+## ADR-043 · 移除概念层：覆盖索引统一为 topic × angle（取代 ADR-042）
+
+- 状态：已采纳 · 2026-08-29
+- 背景：ADR-042 引入概念层（`KnowledgeNode.concepts[]` 概念面 + `Question.tests` 概念标注），试图把抽题从"选哪道题"升级为"先选最该验证哪个概念"。落地后的真实数据是：
+  - 概念面仅挂在 **9/79** 个知识节点（11%）；
+  - 题目 `tests` 标注仅 **123/624** 题（19.7%）——即便 2026-08-29 刚补齐了 rag/agentic-ai 的 80 题；
+  - 即这套复杂度只服务约 **20%** 的题库。
+- 决策：**移除概念层，覆盖索引统一为 `topic × angle`**。删除范围：
+  - 数据：`Question.tests`、`Question.transient`、`KnowledgeNode.concepts[]`（共 132 处字段）
+  - 代码整文件删除：`domain/probe.ts`、`domain/curation.ts`、`infra/curationStore.ts`、`ai/generateQuestion.ts`、`scripts/generate-concept-questions.ts`
+  - 部分移除：`coverage.ts`（概念统计函数）、`adaptive.ts`（概念优先路径）、`blueprint.ts`（PR5 概念蓝图）、`provider.ts`（`generateQuestion`）、`interviewEngine.ts`（`buildConceptContext` / 探针 / `curationSink`）、`types.ts`、两个 schema
+  - npm script：`generate:concept-questions`、`curation:produce`
+- 理由：
+  1. **重复建模**：`subtopic` / `tags` 已表达"这道题关于什么"，`tests` 是第三套同类信息。
+  2. **标注主观**：`primary` / `supporting` 缺乏客观判定标准，同一题两种标法都说得通；由此产生的标注规则、QA 与后续维护成本，换不到对等的体验提升。
+  3. **不为未来算法预存数据**：字段若没有明确的当前消费者（谁读、何时读、读了改变什么决策），就不该提前塞进题目。
+  4. **ROI 低**：20% 覆盖率支撑不起一整套管线的维护成本。
+- 保留并强化（ADR-032 / ADR-037 的既有能力，本决策使其成为唯一主干）：
+  - `topic`：100% 覆盖，主干维度
+  - `angle`：100% 覆盖（10 个角度）；ADR-037 的 `angleCoverage` / `weakAnglesOf` 已提供"某 topic 下哪个角度最缺证据"
+  - `questionCoverageMatrix`（topic × angle 覆盖矩阵）与 `coverageSuggestions` 补题建议——这才是覆盖与补题的核心索引
+- 不做的事：不删 `subtopic`（稀疏但无害，属 ADR-038 三级路径的一环）；不动 `LearnerProfile.angleCoverage` 结构（它按 `topic|angle` 累计，正是要强化的方向）。
+- 验证：`tsc` 通过；全量 `npm run test` 306 passed（删减 58 个概念相关用例）；`npm run validate:questions` 通过（624 题 / 79 节点，angle 覆盖 100%）。
+
+## ADR-042 · Concept-coverage：把抽题从"选哪道题"升级为"先选最该验证哪个概念" —— **已废弃**
+
+**状态**：~~已落地~~ → **已废弃（2026-08-29，见 ADR-043）**
+
+> ⚠️ **本 ADR 已作废，以下内容保留仅供追溯，不再描述当前架构。**
+> 概念层（`Question.tests` + `KnowledgeNode.concepts[]`）及其全部运行时——概念优先抽题、
+> Dynamic Probe、Curation 自演化管线、PR5 概念蓝图生成——已于 2026-08-29 全部删除。
+> 覆盖索引回归 `topic × angle`（两者均 100% 覆盖）。作废理由见 **ADR-043**。
 
 **状态**：已落地（PR0 试点 + PR1–PR4 实现 + 引擎接线 + PR5 概念蓝图生成 + PR6 Dynamic Probe + **PR6 闭环 Curation 管线** + **概念面推广至 rag/agentic-ai 高频节点**，2026-08-26）
 
@@ -36,7 +85,12 @@
 - **CLI 接线**：`scripts/generate-concept-questions.ts` 新增 `--from-curation [path]`（默认读 `data/curation/ledger.json`）把晋升账本翻译成概念蓝图任务清单，加 `--commit` 标记已生成（避免重复生产）。npm 别名 `curation:produce`。实跑验证：含 2 条账本（vdb-hnsw@vector-db 计数 3 晋升、rk-crossencoder@reranking 计数 1 未晋升）→ 仅产出 1 张 vdb-hnsw 蓝图；`--commit` 后该条目 status 变 `curated`，其余保持 `pending`。
 
 **概念面推广（2026-08-26）**：
-- **决策**：把 `concepts[]` 从单一的 `transformer` 节点推广到高频知识节点——`rag.json` 的 `rag`/`vector-db`/`rag-pipeline`/`reranking`（共 33 个概念面）与 `agentic-ai.json` 的 `agent-fundamentals`/`agent-loop`/`tool-calling`/`agent-guardrails`（共 35 个概念面）。概念 id 加命名空间前缀（如 `vdb-`、`rag-`、`rgp-`、`rk-`、`af-`、`aloop-`、`tc-`、`grd-`）避免与节点 id 碰撞。
+- **决策**：把 `concepts[]` 从单一的 `transformer` 节点推广到高频知识节点——`rag.json` 的 `rag`/`vector-db`/`rag-pipeline`/`reranking`（各 8/8/7/5，共 **28** 个概念面）与 `agentic-ai.json` 的 `agent-fundamentals`/`agent-loop`/`tool-calling`/`agent-guardrails`（各 8/6/7/7，共 **28** 个概念面）。概念 id 加命名空间前缀（如 `vdb-`、`rag-`、`rgp-`、`rk-`、`af-`、`aloop-`、`tc-`、`grd-`）避免与节点 id 碰撞。
+  （勘误：本条原写「共 33 个概念面」与「共 35 个概念面」，与实际落库的 **28 / 28** 不符，2026-08-29 更正。）
+- ⚠️ **概念面生效的前置依赖（易被忽略，务必连同下一件事一起做）**：挂上 `concepts[]` **不等于**概念优先抽题就已生效——`findQuestionForConcept`（`adaptive.ts:113`）是按 `Question.tests` 找题的：
+  `pool.filter(q => (q.tests ?? []).some(t => t.concept === conceptId))`。
+  题目未标 `tests` 时它**恒返回 `null`**，此时：开 AI 会每步都退化成 Dynamic Probe（现场让 LLM 生成临时题，慢且费），关 AI 则直接回退原 topic/angle 路径，概念优先等于没启用。
+  **故「推广概念面」是两件事：① 节点挂 `concepts[]`；② 该节点下的题目标 `tests`。** 本条 2026-08-26 只做了 ①，② 于 2026-08-29 补齐（见 CHANGELOG）。
 - **零引擎改动**：`nextAdaptiveStep` 的 `ConceptSelectionContext` 与 PR6 探针按 `knowledgeNodes` 中 `concepts[]` 非空节点自动取 face——挂上概念面即对这些节点生效，概念优先抽题 + Dynamic Probe 自动覆盖（无需改引擎）。`npm run generate:concept-questions -- --node rag` 实跑：8 概念面 / 16 本节点题 → 均衡蓝图正常产出。
 - **导入一致性修复（支撑 Node 直跑脚本）**：`curation.ts`/`curationStore.ts`/`probe.ts` 的内部相对 import 补 `.ts` 扩展名，与 `blueprint.ts`/`coverage.ts` 一致，确保 `node scripts/*.ts` 在 Node 原生 ESM 下可解析（vitest 不受影响）。
 

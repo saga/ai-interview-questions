@@ -272,53 +272,35 @@ describe('generateOpenQuestions 门控（ADR-031）', () => {
   });
 });
 
-describe('Concept-coverage 接线（PR1–PR4）：nextAdaptiveStep 传 conceptCtx', () => {
-  // 构造一个纯 transformer 题池：两张题主探最高 importance 概念 'transformer'，
-  // 另两张主探 self-attention / causal-mask。知识节点（真实 knowledgeNodes 单例）中
-  // transformer 节点挂了 concepts[]，故 face 非空，应走概念优先路径。
-  const tq = (id: string, primary: string): Question => ({
-    id,
-    category: 'ai-engineering',
-    topic: 'transformer',
-    tags: [],
-    difficulty: 'medium',
-    question: `q-${id}`,
-    explanation: '',
-    tests: [{ concept: primary, role: 'primary' }],
-    formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [0] } },
+describe('自适应选题：无概念层后仅按 (topic, angle) 推进', () => {
+  const plain = (ids: string[]) => ({
+    categories: [],
+    questions: ids.map((id) => ({
+      id,
+      category: 'ai-engineering',
+      topic: 'transformer',
+      tags: [id],
+      difficulty: 'medium' as const,
+      angle: 'mechanism' as const,
+      question: `q-${id}`,
+      explanation: '',
+      formats: { choice: { type: 'single' as const, options: ['a', 'b', 'c', 'd'], answer: [0] } },
+    })),
   });
 
-  const bank = {
-    categories: ['ai-engineering'],
-    questions: [tq('a', 'transformer'), tq('b', 'transformer'), tq('c', 'self-attention'), tq('d', 'causal-mask')],
-  };
-
-  it('会话含概念面节点时，第一步（无作答）优先选最高 importance 概念(transformer)的主探题', async () => {
+  it('第一步（无作答）能选出题，策略为 move-on', async () => {
+    const bank = plain(['a', 'b', 'c']);
     const first = await buildSession(bank, { ...def(false, ['choice']), count: 3, adaptive: true }, undefined);
     const step = await nextAdaptiveStep(bank, first, []);
     expect(step).not.toBeNull();
-    const tests = step!.question.question.tests ?? [];
-    expect(tests.some((t) => t.concept === 'transformer' && t.role === 'primary')).toBe(true);
-    expect(step!.strategy).toBe('move-on'); // 概念 unseen → 新方向
+    expect(step!.strategy).toBe('move-on');
+    expect(step!.question.question.tests).toBeUndefined(); // 概念层已移除
   });
 
-  it('已作答后，下一步继续覆盖尚未掌握的概念（而非随机 topic）', async () => {
+  it('题池耗尽返回 null，不报错', async () => {
+    const bank = plain(['a']);
     const first = await buildSession(bank, { ...def(false, ['choice']), count: 3, adaptive: true }, undefined);
-    // 假设第一题（任意）得了低分，信号按已问题序对齐
-    const signals: { topic: string; score: number; difficulty: 'medium' }[] = [
-      { topic: 'transformer', score: 40, difficulty: 'medium' },
-    ];
-    const step = await nextAdaptiveStep(bank, first, signals);
-    expect(step).not.toBeNull();
-    expect(step!.question.question.tests).toBeDefined();
-    // 至少应命中某条 concept 主探（概念优先已生效）
-    expect(step!.question.question.tests!.some((t) => t.role === 'primary')).toBe(true);
-  });
-
-  it('题池话题无对应知识节点概念面时（如 d1/d2），conceptCtx 为空走原 topic/angle 路径，不报错', async () => {
-    const plain = { categories: [], questions: [dualQ('d1'), dualQ('d2')] };
-    const first = await buildSession(plain, { ...def(false, ['choice', 'open']), count: 3, adaptive: true }, undefined);
-    const step = await nextAdaptiveStep(plain, first, []);
-    expect(step).not.toBeNull();
+    const step = await nextAdaptiveStep(bank, first, []);
+    expect(step).toBeNull();
   });
 });

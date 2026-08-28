@@ -161,7 +161,7 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       })
       .filter((x): x is AnswerSignal => x !== null);
 
-    const picked = pickNextAdaptive(pool, signals, profile, Math.random, undefined, false);
+    const picked = pickNextAdaptive(pool, signals, profile, Math.random);
     if (!picked || !picked.question) return false;
     const q = picked.question;
     const fmts = availableFormats(q, []);

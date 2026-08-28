@@ -102,12 +102,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\nMCP等标准协议将工具封装为可发现、可鉴权的微服务，经受控RPC注入上下文，解耦且安全。A硬编码难维护，C Root高危，D原始二进制增解析负担。"
       }
-    },
-    "rubric": {
-      "required": [
-        "function calling 是结构化输出生成而非魔法 API 访问",
-        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
-      ]
     }
   },
   {
@@ -142,12 +136,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：描述工具的名称、参数与类型，使模型能生成可被程序安全解析与调用的结构化调用。\n\n解析：工具 schema 让模型知道有哪些能力、参数如何填，从而输出可被代码校验并执行的结构化 tool_call，是 Agent 调用外部能力的基石。"
       }
-    },
-    "rubric": {
-      "required": [
-        "function calling 是结构化输出生成而非魔法 API 访问",
-        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
-      ]
     }
   },
   {
@@ -165,19 +153,6 @@
     "explanation": "考察工具分发的健壮实现。按 name 查表精确定位、**args 解包传参调用，对未知工具名与执行异常捕获后返回结构化 error 交由上层兜底。此前把所有函数顺序执行再挑'看起来最像'的输出回传是反模式——会导致参数缺失时进程崩溃。",
     "reference": {
       "concept": "按 name 查表分发，解包 args，兜底未知工具与异常。"
-    },
-    "rubric": {
-      "required": [
-        "按 name 查表分发",
-        "用 **args 解包参数",
-        "对未知工具与异常做兜底"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.2,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
     },
     "formats": {
       "open": {
@@ -212,20 +187,6 @@
     "angle": "system-design",
     "question": "设计一个分析 SQL Server 数据并生成分析报告的 Agent。如何保证生成的 SQL 安全、正确？",
     "explanation": "考察 text-to-SQL Agent 的安全边界与正确性闭环。安全：只读账号+禁止多语句与 DDL/DML（AST 校验）；正确性：schema 上下文注入后 EXPLAIN 试运行校验，出错将错误带回模型有限次自修复；结论必须引用具体查询结果数值。所有执行的 SQL 记入 audit log 供审计追溯。",
-    "rubric": {
-      "required": [
-        "只读权限/SQL 白名单等安全边界",
-        "schema 上下文注入",
-        "SQL 校验与自修复闭环",
-        "结论与查询结果对应 + audit log"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "安全边界：只读账号 + 连接级权限隔离；强制 LIMIT/TOP 与超时；禁止多语句与 DDL/DML（语法白名单或 AST 校验）。正确性：提供 schema 上下文（表结构、注释、样例行、枚举值），text-to-sql 后先 EXPLAIN/试运行校验，错误带回给模型自修复（有限次）；聚合口径与业务术语表对齐。报告生成：结果表格 + 图表建议 + 结论必须引用具体查询结果数值；大结果集采样后再进上下文。所有执行的 SQL 与行数记录进 audit log。"
@@ -258,19 +219,6 @@
     "angle": "system-design",
     "question": "设计一个能自主判断“该搜网页、查数据库还是调内部 API”的路由 Agent。决策依据是什么？如何避免路由错误？",
     "explanation": "考察路由决策信号与容错设计。依据数据特性选通道（公开常识→网页；结构化业务→数据库；事务操作→API），置信度低时询问用户或并行尝试比较。关键是把'为什么选这个通道'显式化以便调试；路由错误样本应回流评测集持续修正工具描述。",
-    "rubric": {
-      "required": [
-        "路由决策依据（数据特性/时效/权限）",
-        "低置信度兜底（询问/并行尝试）",
-        "路由错误反馈改进机制"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "决策依据：数据特性（公开常识→网页；结构化业务数据→数据库；事务操作→内部 API）、时效性（实时数据走 API/DB）、权限（私有数据只能走内网工具）。实现：工具描述中写清适用边界与示例（few-shot 路由），或先用轻量分类模型粗路由再由强模型细化。防错手段：路由置信度低时询问用户或并行尝试并比较；维护路由错误的反馈日志持续改进工具描述；对高危 API 加确认门。关键是把“为什么选这个工具”显式化，便于调试与评测。"
@@ -305,20 +253,6 @@
     "angle": "tradeoff",
     "question": "Agent 的可用 Tool 应该完全交给 LLM 自由选择，还是由代码按任务阶段限定候选集？为什么？",
     "explanation": "考察工具候选集收窄的安全与质量动机。最小权限缩小注入攻击面；选项更少使选择更准（无关工具是选择噪声的主要来源）；裁剪候选直接节省 token 成本。完全放开仅在探索期或工具少且正交时有意义。限定策略本身也要用路由评测集验证以防收窄过度损害能力。",
-    "rubric": {
-      "required": [
-        "安全（最小权限/攻击面）",
-        "选择质量（噪声减少）",
-        "token 成本",
-        "过度收窄的风险与评测保障"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "应由代码限定候选集，理由：① 安全——最小权限原则，高危工具只在必要阶段暴露，缩小注入攻击面；② 质量——选项越少越准，无关工具是选择噪声的主要来源；③ 成本——工具描述占 token，裁剪候选直接省上下文。完全放开仅在探索期或工具少且正交时有意义。实现：按任务阶段/意图动态装配工具子集（工具注册中心 + 路由规则），配合权限标签过滤。权衡点：过度收窄会让 Agent 缺少完成任务的灵活性——限定策略本身也要评测（路由评测集），确保需要的工具总在候选中。"
@@ -351,20 +285,6 @@
     "angle": "calculation",
     "question": "请实现一个简单的 Tool Calling Handler：解析模型返回的 tool call，根据 tool name 找到对应函数，执行函数并将结果重新加入 conversation。",
     "explanation": "注册表分发 + arguments 当不可信 JSON 校验 + 错误结构化回传给模型修正 + 并发执行;生产补 timeout/幂等/鉴权。",
-    "rubric": {
-      "required": [
-        "注册表分发",
-        "JSON.parse 容错处理",
-        "错误结构化回传",
-        "tool role 回填 conversation"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "type ToolFn = (args: Record<string, unknown>) => Promise<unknown>;\n\ninterface ToolCall { name: string; arguments: string; }\n\nclass ToolHandler {\n  private registry = new Map<string, ToolFn>();\n\n  register(name: string, fn: ToolFn, schema: object): void {\n    this.registry.set(name, fn);\n  }\n\n  async execute(call: ToolCall): Promise<string> {\n    const tool = this.registry.get(call.name);\n    if (!tool) return this.errorResult(call.name, `unknown tool: ${call.name}`);\n    try {\n      const args = JSON.parse(call.arguments || '{}');   // 模型输出必须当不可信输入\n      const result = await tool(args);\n      return JSON.stringify({ ok: true, data: result });\n    } catch (err) {\n      // 解析失败/执行失败都结构化返回给模型，让它有机会修正而不是崩溃\n      return this.errorResult(call.name, err instanceof Error ? err.message : 'unknown');\n    }\n  }\n\n  private errorResult(name: string, message: string): string {\n    return JSON.stringify({ ok: false, tool: name, error: message });\n  }\n\n  async runAll(calls: ToolCall[]): Promise<Array<{ role: 'tool'; content: string }>> {\n    // 多个独立调用可并发；结果以 tool role 消息回填 conversation\n    const results = await Promise.all(calls.map((c) => this.execute(c)));\n    return results.map((content) => ({ role: 'tool' as const, content }));\n  }\n}\n\n设计要点：模型输出的 arguments 是不可信 JSON，必须 parse+校验而非直接信任；错误要结构化回传给模型形成修正闭环；未知工具名优雅降级；独立工具并发执行；超时控制生产上还应加 per-tool timeout 与幂等保护。",
@@ -398,20 +318,6 @@
     "angle": "scenario",
     "question": "一个 Agent 有 20 个 tools。线上发现 tool selection accuracy 只有 75%，而且经常在多个功能相似的 tool 之间选错。你会如何定位和解决这个问题？",
     "explanation": "先定位错误是否集中在相似工具间，检查 name/description/schema 歧义，再通过分组、routing、减少暴露和选择评测集改进。",
-    "rubric": {
-      "required": [
-        "tool description/schema",
-        "tool routing",
-        "减少暴露工具",
-        "evaluation"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "应该先分析错误是否集中在相似工具之间，并检查 tool name、description 和 schema 是否存在歧义。可以通过减少工具暴露范围、对工具分组、增加 tool routing、简化 schema、改善描述和增加选择评测集来解决。如果工具数量继续增长，可以采用分层 tool discovery，而不是把所有工具一次性提供给模型。"
@@ -445,19 +351,6 @@
     "angle": "mechanism",
     "question": "为什么 Agent 的 tool schema 不应该无限详细？如果一个 tool 的参数有 30 个字段，你会考虑如何重新设计？",
     "explanation": "schema 过大增加上下文成本与参数选择错误率；应精简参数、拆分工具、用默认值或上下文补齐。",
-    "rubric": {
-      "required": [
-        "context cost",
-        "tool selection",
-        "schema simplification"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "过大的 schema 会增加上下文长度、认知负担和参数选择错误。应该优先减少不必要参数，把复杂操作拆成更清晰的工具，或者让部分参数通过上下文、默认值或后续确定步骤获得。目标不是让 schema 最大程度表达能力，而是让模型可靠地选择和调用工具。"
@@ -490,20 +383,6 @@
     "angle": "system-design",
     "question": "一个企业 Agent 最终拥有 300 个 tools。把 300 个 tools 全部放进每次 LLM 请求的 tool definitions 中，会产生哪些问题？你会设计什么样的 tool routing 方案？",
     "explanation": "全量注入几百个工具会推高 token 成本并降低选择准确率；应做分层/动态 tool routing，只暴露相关工具子集。",
-    "rubric": {
-      "required": [
-        "token/context cost",
-        "tool selection accuracy",
-        "tool routing",
-        "分层或动态工具暴露"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "会增加 prompt 和 token 成本，并降低模型区分相似工具的能力，还会增加延迟和错误率。可以先根据用户任务进行 tool discovery 或 routing，只向主 Agent 暴露少量相关工具；也可以采用 domain → capability → concrete tool 的分层路由。"
@@ -536,20 +415,6 @@
     "angle": "system-design",
     "question": "一个系统同时接入多个闭源与开源大模型。你会根据哪些因素设计 Model Routing？",
     "explanation": "路由 = 任务难度×质量要求×成本延迟×能力特异性×合规×健康度的多维分流；规则起步、数据成熟后动态化，分支需独立评测与灰度。",
-    "rubric": {
-      "required": [
-        "任务难度分级",
-        "成本/延迟预算",
-        "能力与合规差异",
-        "健康度与灰度配套"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "路由维度包括：任务难度与类型（简单改写/抽取走小模型或开源模型，复杂推理走旗舰模型）；质量要求（用分级评测集标定各模型在各任务档位的表现）；成本与延迟预算（按请求优先级分配）；能力特异性（长上下文、特定语言、代码能力、function calling 可靠性差异）；合规与数据敏感级别（某些数据只能进私有化开源模型）；可用性健康度（结合熔断把请求导向健康 provider）。实现上从规则路由起步（按任务类型/intent 分类器分流），积累数据后可升级为基于置信度或学习的动态路由；关键配套是每条路由分支都有独立评测与灰度开关，避免路由层成为新的黑盒。"
@@ -580,19 +445,6 @@
     "angle": "definition",
     "question": "LLM 的 Tool Calling 和普通文本生成有什么本质区别？",
     "explanation": "文本生成输出内容；tool calling 输出结构化调用意图、由外部执行并回传观察，形成闭环——副作用带来参数可靠性/错误处理/安全等新问题。",
-    "rubric": {
-      "required": [
-        "结构化调用意图 vs 内容",
-        "外部执行与副作用",
-        "生成-执行-观察循环"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "普通文本生成是单向的：模型输出文本后任务结束，输出只影响人。Tool Calling 是一个结构化的交互协议：模型输出的不是给人看的内容，而是符合 schema 的结构化调用意图（工具名+参数），由外部执行环境真正执行并把结果回传给模型继续推理。本质区别有三点：输出从“内容”变成“对世界的操作请求”；引入了模型之外的状态与副作用（真实系统被改变）；形成了生成→执行→观察→再生成的循环。因此 tool calling 带来了文本生成没有的新问题：参数可靠性、错误处理、幂等性和安全控制。"
@@ -625,20 +477,6 @@
     "angle": "tradeoff",
     "question": "Agent 调用外部 API 经常 timeout。Retry 应该放在哪一层：模型、Agent Loop、Tool Executor 还是基础设施层？为什么？",
     "explanation": "网络瞬断 → Executor/基础设施退避重试；参数/业务错误 → 结构化错误回流 Agent Loop 让模型改道;timeout ≠ 未执行，非幂等操作要 idempotency key，全局设预算防重试相乘。",
-    "rubric": {
-      "required": [
-        "按错误类型分层重试",
-        "语义错误回流模型",
-        "幂等性与副作用",
-        "重试预算上限"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "分层各司其职，而不是放单处：瞬时网络类错误（timeout/连接抖动）由 Tool Executor 或基础设施层处理——指数退避有限重试，模型根本不该感知；语义类失败（参数不合法、业务拒绝）不能盲目重试，应把结构化错误信息返回给 Agent Loop，让模型修正参数或换路径——这是只有模型层能做的“智能重试”。关键约束：重试必须考虑副作用与幂等性——timeout 不代表没执行成功，非幂等操作（下单、发邮件）重试可能造成重复动作，需要 idempotency key 或先查询状态再决定。整体还要有 budget 上限，防止 executor 重试 × loop 重试相乘导致成本爆炸。"
@@ -694,12 +532,6 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n\n要点：违反的是最小权限原则，对应 OWASP LLM 的 Excessive Agency——Agent 被赋予了超出任务所需的执行能力（任意 Shell）。正确做法：①工具能力原子化，只暴露固定语义的高阶 API（如 query_logs、rotate_log），不提供通用命令执行入口；②为工具设置指令白名单与参数 Schema 校验；③必须在严格隔离的降权沙箱（如 ephemeral container、无网络出站、只挂载必要目录）中运行；④破坏性操作引入人机确认。HTML 转义、API 限频、第三方插件审计各自对应其他风险类目，都不是本案根因。"
       }
-    },
-    "rubric": {
-      "required": [
-        "function calling 是结构化输出生成而非魔法 API 访问",
-        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
-      ]
     }
   },
   {
@@ -735,12 +567,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n延迟发现（Deferred Discovery）将工具集视为可检索索引：Prompt常驻仅基础工具与tool_search，扩展能力按需搜索加载，Context体积与注意力干扰最小。A仍全量膨胀，Cache仅摊平Prefill不减输入Token与注意力噪声；C压缩丢参数语义致调用幻觉；D无Schema盲猜必致参数错误。"
       }
-    },
-    "rubric": {
-      "required": [
-        "function calling 是结构化输出生成而非魔法 API 访问",
-        "高危操作需要确认门/最小权限；工具结果要作为 observation 回填上下文"
-      ]
     }
   }
 ]

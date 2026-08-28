@@ -32,12 +32,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n模型进化使特化补丁过时，但窗口、状态一致性、安全等工程本质约束不随模型变强消失，需长期Scaffolding。A全弃、C去人机、D零误差均过度演绎。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -75,12 +69,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Thinking格式分供应商差异。\n- B：切换需丢弃致上下文损失。\n- C：仍可凭工具历史继续。\n- D 错误：格式不兼容非JSON封装可解。"
       }
-    },
-    "rubric": {
-      "required": [
-        "选型五维：quality/latency/memory/concurrency/cost，缺一不可",
-        "自建评测集 > 公开 benchmark：分布匹配才有参考价值"
-      ]
     }
   },
   {
@@ -118,12 +106,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：统一格式降对接成本。\n- B：解耦可配置。\n- C：直联秘钥提安全与核算。\n- D 错误：不编译字节码，不消语义偏差。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -162,12 +144,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：已知信号为查表，低延迟。\n- B：预测按文本特征分难度。\n- C：额外分类器增延迟与维护。\n- D：信号粗致误判弱模型。"
       }
-    },
-    "rubric": {
-      "required": [
-        "选型五维：quality/latency/memory/concurrency/cost，缺一不可",
-        "自建评测集 > 公开 benchmark：分布匹配才有参考价值"
-      ]
     }
   },
   {
@@ -205,12 +181,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：外置持久化状态可重建上下文，实现恢复与暂停。\n- B：每次重建拉取最新Ground Truth，防过期决策。\n- C：无状态易水平扩展。\n- D 错误：模型上下文易丢失/幻觉，不保一致性。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -229,22 +199,6 @@
     "explanation": "考察端到端 Agent 系统设计能力。核心组件包括规划器（任务分解）、检索器（多轮检索补充素材）、工具层（图表等动作执行）、记忆（中间结果持久化）与评审器（来源与结构校验）。流程上需支持失败环节的定点重试而非推倒重来，且关键论断必须标注来源以满足可审计要求。",
     "reference": {
       "concept": "Agent 系统=规划+检索+工具+记忆+撰写+评审的闭环。"
-    },
-    "rubric": {
-      "required": [
-        "规划器 Planner",
-        "检索器 Retriever",
-        "工具层 Tool",
-        "记忆 Memory",
-        "评审 Critic",
-        "失败重试与来源引用"
-      ],
-      "dimensions": {
-        "correctness": 0.25,
-        "completeness": 0.25,
-        "architecture": 0.35,
-        "communication": 0.15
-      }
     },
     "formats": {
       "open": {
@@ -281,20 +235,6 @@
     "reference": {
       "concept": "知识库 Agent = 混合检索 + 权限过滤 + 引用溯源 + 检索不到就拒答。"
     },
-    "rubric": {
-      "required": [
-        "混合检索/重排",
-        "权限过滤",
-        "来源引用",
-        "检索不到时明确拒答"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "组件：意图理解 → 检索器（混合检索 BM25+dense，按部门/权限过滤）→ 重排 → 生成器 → 引用标注。索引管线：文档接入、分块、向量化、增量更新与权限元数据。防幻觉：要求每个结论附来源引用；检索不到相关内容时明确说不知道而非编造；生成后做 faithfulness 校验。工程要点：权限必须下沉到检索层（不能只靠提示词），敏感内容脱敏，冷热数据分层，回答延迟预算与缓存高频问答。"
@@ -327,20 +267,6 @@
     "angle": "system-design",
     "question": "设计一个能读取 GitHub Repository 并回答架构问题的 Agent。仓库可能有几千个文件，如何保证回答有据可依？",
     "explanation": "考察超大代码库的检索架构。核心挑战是几千个文件的语义定位与跨模块追溯。方案需构建符号索引（类/函数定义与引用关系）结合语义检索，先由 Planner 定位相关模块再按需读取片段；跨模块问题沿 import/调用链做多跳检索。回答必须附文件路径引用供人工复核。",
-    "rubric": {
-      "required": [
-        "结构/符号索引",
-        "按需读取而非全量入上下文",
-        "文件路径级引用",
-        "多跳检索（import/调用链）"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "核心挑战是超大代码库的检索。方案：构建仓库结构索引（目录树 + 符号索引：类/函数定义与引用关系），结合代码语义检索（embedding + 关键词）；先让 Planner 根据问题定位相关模块，再用工具按需读取具体文件片段而非整仓塞入。回答要求附带文件路径与行号引用；对跨模块问题做多跳检索（沿 import/调用链扩展）。可选离线预处理：为每个模块生成摘要卡片加速定位。"
@@ -373,20 +299,6 @@
     "angle": "system-design",
     "question": "设计一个 Research Agent：可以搜索互联网、读取网页/PDF 并生成带引用的研究报告。请描述其循环流程与质量控制。",
     "explanation": "考察研究型 Agent 的规划-验证闭环与预算控制。流程为拆解问题→循环搜索抓取提取→撰写→评审修订，每条事实绑定 URL 与访问时间。交叉验证要求多来源一致才采信；设置最大迭代次数与 token 预算防止无限研究——此前完全自主规划的原型曾连续抓取数小时导致成本超标数十倍。",
-    "rubric": {
-      "required": [
-        "规划搜索查询",
-        "抓取与要点提取循环",
-        "来源引用与交叉验证",
-        "迭代上限/预算控制"
-      ],
-      "dimensions": {
-        "correctness": 0.25,
-        "completeness": 0.25,
-        "architecture": 0.35,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "流程：问题澄清与拆解 → 规划搜索查询列表 → 循环（搜索 → 筛选链接 → 抓取/解析 PDF → 提取要点与来源）→ 信息足够或达预算后进入撰写 → 评审（覆盖度/矛盾检测）→ 修订终稿。质量控制：每条事实绑定 URL 与访问时间；交叉验证关键结论（多来源一致才采信）；去重与矛盾标记；设置最大迭代次数与 token 预算防止无限研究。PDF 解析失败要有降级路径（提示用户或跳过并声明局限）。"
@@ -419,20 +331,6 @@
     "angle": "system-design",
     "question": "设计一个 Financial Research Agent：可调用市场行情、新闻和公司财报三类数据源。多源数据的时效性与冲突如何处理？",
     "explanation": "考察多源异构数据的冲突处理与合规意识。决策要点：以数据权威性与时效性建立优先级（官方公告>主流媒体>社交），冲突时并列呈现并标注差异原因而非擅自取平均；缓存带 TTL 保证时效；每次引用记录数据源版本与时间戳以便回溯。忽视口径差异直接取平均是金融场景的高频事故。",
-    "rubric": {
-      "required": [
-        "数据源分级/路由",
-        "冲突不擅自合并而是标注呈现",
-        "时效性（TTL/时间戳）",
-        "合规免责与可回溯"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "工具层：行情 API（实时性强）、新闻检索（时效+可信度分级：官方公告 > 主流财经媒体 > 社交）、财报解析（结构化库，权威但滞后）。路由策略：按问题类型选主数据源，其余交叉验证。冲突处理：以数据权威性与时效性建立优先级，冲突时并列呈现并标注差异原因（如口径/时点不同），不擅自取平均。合规红线：明确输出非投资建议免责声明；数据缓存带 TTL 保证时效；每次引用记录数据源、版本与时间戳以便回溯。"
@@ -465,20 +363,6 @@
     "angle": "system-design",
     "question": "设计一个企业级 Agent Platform：让上千个业务 Agent 复用 Tool、Memory、Evaluation 与 Observability。平台层与业务层的边界怎么划？",
     "explanation": "考察平台管机制/业务管策略的边界划分。平台层提供工具注册、统一记忆、评测与观测等标准化能力；业务层只声明系统提示与评测标准。一切通过契约（OpenAPI/schema）解耦，多租户隔离与成本分账是治理底线。平台接管策略决策会导致业务失去差异化能力。",
-    "rubric": {
-      "required": [
-        "平台管机制/业务管策略的边界",
-        "工具注册与权限治理",
-        "统一评测与观测服务",
-        "多租户隔离与成本分账"
-      ],
-      "dimensions": {
-        "correctness": 0.2,
-        "completeness": 0.25,
-        "architecture": 0.4,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "平台层提供标准化能力：Tool 注册中心（schema、权限、版本、灰度）、统一 Memory 服务（会话态 + 长期记忆 API，租户隔离）、Evaluation 服务（评测集托管、回归流水线、LLM-as-judge 池）、Observability（trace/成本/成功率统一采集与告警）、Runtime（沙箱执行、配额与熔断）。业务层只声明：系统提示、工具选择、评测标准。边界原则：平台管“机制”，业务管“策略”。关键设计：一切通过契约（OpenAPI/schema）解耦；多租户隔离（数据/配额/密钥）；平台自身要有 SLA 与版本兼容策略，否则业务不敢升级。治理：工具上线审批、审计日志、成本分账。"
@@ -512,20 +396,6 @@
     "angle": "tradeoff",
     "question": "Agent 应该用一个强模型贯穿始终，还是多个弱模型协作？给出决策依据。",
     "explanation": "考察级联路由的成本-误差权衡。级联将简单步骤交给小模型、关键推理保留强模型，可大幅降低成本；风险是误差在链条中累积放大。决策需 A/B 实测对比级联 vs 全强的成功率与成本曲线，而非拍脑袋。多弱模型协作的协调开销与责任归因困难也是隐性代价。",
-    "rubric": {
-      "required": [
-        "级联/路由思想",
-        "按错误代价分配模型",
-        "误差累积与协调开销风险",
-        "用实测数据驱动决策"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.25,
-        "architecture": 0.3,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "不是二选一，主流是级联/路由：简单步骤（格式化、初筛、路由）用便宜快的小模型，关键推理节点（规划、最终综合、歧义消解）用强模型。决策依据：① 错误代价——错误会被后续步骤放大的环节必须用强模型；② 任务难度可预测性——可预测的分片适合静态路由，否则用模型自评置信度动态升级；③ 总成本与延迟预算。多弱模型协作的风险：误差在链条中累积、协调开销、责任难以归因；全强模型的风险：成本失控与不必要的延迟。落地时要 A/B 对比“级联 vs 全强”的真实成功率与成本曲线，而非拍脑袋。"
@@ -580,12 +450,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：文本LLM为P(next token|prefix)，世界模型为P(next state|state, action)，建模对象为物理动力学。\n- B：世界模型可在仿真中低成本生成高风险/稀缺边缘场景，补足真实采集盲区。\n- C：VLA以图像+语言指令为输入，端到端输出关节/末端动作。\n- D 错误：世界模型仅做预测与规划，需结合控制器/策略才能驱动电机，不直接替代底层控制。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -601,21 +465,6 @@
     "angle": "system-design",
     "question": "设计一个企业级 AI Coding Agent。它可以读取代码库、搜索代码、修改文件、运行测试并根据失败结果继续修复。请重点说明 Agent Loop、Tool、Context、权限和可靠性设计。",
     "explanation": "骨架 = workflow 化的修复循环 + budget/终止;工具高正交带 diff;context 靠检索+结构化状态;安全 = 沙箱+分支隔离+审计;可靠 = 循环检测与可回滚。",
-    "rubric": {
-      "required": [
-        "Agent Loop 与终止预算",
-        "工具设计与沙箱",
-        "Context 检索策略",
-        "权限/分支隔离",
-        "循环检测与回滚"
-      ],
-      "dimensions": {
-        "correctness": 0.25,
-        "completeness": 0.3,
-        "architecture": 0.35,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "架构：Workflow 骨架 + 受限 Agent 循环——任务解析→定位相关文件→修改→跑测试→根据失败迭代，循环外层套 budget（最大步数/token/时间）与终止条件。Tool 设计：少量高正交工具（search/read/edit/test），schema 精确；edit 工具返回 diff 便于审查与回滚；test 工具限定沙箱环境执行。Context 管理：仓库太大不能全塞 context——用检索定位相关文件，只读必要片段；维护结构化任务状态（当前假设、已试方案、失败原因）而非依赖完整历史；长会话做摘要压缩。权限与安全：文件修改在隔离分支/worktree 进行，PR 审查后才合入；测试在容器沙箱运行，无网络或受限网络；禁止访问密钥与环境配置；所有操作审计日志。可靠性：测试失败循环检测（同一错误修两轮即升级人工）、每步校验（编辑后语法检查）、失败可回滚到上个绿色状态；评测用真实 bug 修复基准集回归。关键取舍：让模型负责“理解与决策”，把“执行与验证”交给确定性工具。"
@@ -648,21 +497,6 @@
     "angle": "system-design",
     "question": "设计一个 AI API Platform，同时支持多个 LLM Provider。系统需要处理成本、Latency、Rate Limit、Fallback、Model Routing 和 Observability。请说明核心架构。",
     "explanation": "统一 Gateway 抽象多 provider:路由/配额/熔断降级/缓存/归一化/trace 六大件;先落地 adapter+fallback+observability,路由缓存靠数据驱动后置。",
-    "rubric": {
-      "required": [
-        "Gateway 统一抽象",
-        "路由与配额机制",
-        "熔断降级与幂等",
-        "归一化契约",
-        "trace 与成本分账"
-      ],
-      "dimensions": {
-        "correctness": 0.25,
-        "completeness": 0.3,
-        "architecture": 0.35,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "核心是一个统一的 Gateway 层，业务方只面向抽象 API：请求接入 → 路由决策 → 配额检查 → provider adapter 执行 → 响应归一化。各子系统：Model Routing——按任务类型/难度分级、成本延迟预算、合规约束选择 provider，规则起步数据成熟后动态化；Rate Limiting——集中式配额管理，RPM/TPM 双维计量，多实例共享状态；Fallback——健康探测+熔断器驱动主备切换，幂等 id 去重防重试风暴，切换渐进放量并设成本硬顶；Caching——精确缓存+可选语义缓存，版本绑定失效；Observability——统一 trace（prompt 版本、provider、token 用量、分段延迟），成本按团队/功能分账，质量抽检回流评测集；响应归一化——不同 provider 的消息格式/工具调用协议/错误码映射成统一契约，模型版本元数据随响应透传。演进建议：先做好 adapter+trace+fallback 三件套（解决可用性与可观测），路由和缓存等有流量数据后再上。"
@@ -696,20 +530,6 @@
     "angle": "tradeoff",
     "question": "一个复杂 Agent 方案比简单 RAG 的 Benchmark 高 15%，但维护成本和延迟都是 RAG 的 5 倍。作为架构师，你会如何决定最终采用哪种方案？",
     "explanation": "决策框架：benchmark 差距用真实分布重测并按场景占比折算，对照 5 倍的全拥有成本与延迟代价；混合架构（RAG 主干+复杂 case 升级 Agent）常是最优解。",
-    "rubric": {
-      "required": [
-        "benchmark 与业务的转换",
-        "全拥有成本核算",
-        "失败代价与兜底分析",
-        "混合方案意识"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "先把“15%”翻译成业务语言：benchmark 提升不等于业务提升——用真实流量样本重测两个方案，看差距在哪些场景成立（可能集中在长尾复杂 case，而它们占比 5%）。再算全成本：5 倍维护成本包括工程人力、故障面扩大、评测复杂度、以及 Agent 特有的运维风险（循环、失控成本）；5 倍延迟对用户体验的影响要按场景评估。然后问三个问题：高出的能力是否是核心价值所系（错一个答案的业务代价多大）？RAG 的失败模式是否有便宜的兜底（人工升级通道）？团队能否长期养得起 Agent 的评测与运维体系？常见结论是混合路线：90% 流量走 RAG 快速便宜地满足，识别出的复杂请求升级到 Agent 处理——拿到大部分质量收益而只承担小部分流量上的高成本。决策原则是用期望价值（质量收益×场景占比−全拥有成本）比较，而不是 benchmark 分数。"
@@ -743,20 +563,6 @@
     "angle": "scenario",
     "question": "你需要让 LLM 输出固定结构的 JSON。仅仅在 prompt 中写“请返回 JSON”有哪些风险？你会如何提高结构化输出的可靠性？",
     "explanation": "仅靠 prompt 约束格式不可靠；应使用 provider 结构化输出/JSON schema + 客户端校验 + 有限重试与安全 fallback。",
-    "rubric": {
-      "required": [
-        "schema",
-        "validation",
-        "structured output",
-        "fallback"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "单纯 prompt 约束无法保证格式正确，模型可能输出 markdown、缺失字段或类型错误。可以使用 provider 支持的 structured output、JSON schema 或 function/tool calling，并在客户端进行 schema validation。对于失败结果应该有有限重试或安全 fallback。"
@@ -792,21 +598,6 @@
     "angle": "system-design",
     "question": "设计一个 Research Agent。用户输入“分析某家公司最近三个季度的 AI 业务表现，并与主要竞争对手比较”。系统需要搜索网页、读取财报、查询金融数据、提取指标、计算同比变化，并生成带引用的分析报告。请说明整体架构、Agent 如何使用 tools、哪些步骤应该使用确定性 workflow，以及你会如何评估系统质量。",
     "explanation": "Research Agent 用 Workflow+Agent 混合架构：确定性步骤走 workflow，语义判断交给 Agent；配套结构化 state、tool routing、citation、budget/termination 与分层评估。",
-    "rubric": {
-      "required": [
-        "Workflow + Agent",
-        "tool routing",
-        "structured state",
-        "citation",
-        "evaluation"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "应该采用 Workflow + Agent 的混合架构，而不是让一个 Agent 完全自由执行。确定性的数据获取、解析、指标计算和结果校验可以使用 workflow；Agent 负责根据任务选择信息源、决定搜索方向和处理需要语义判断的步骤。系统需要有结构化 research state、tool routing、citation provenance、budget 和 termination mechanism。评估应覆盖 retrieval、数据抽取、计算正确性、citation grounding、最终答案质量以及任务完成率。"
@@ -843,20 +634,6 @@
     "reference": {
       "concept": "选型框架：SLO 反推资源预算 → 逐项测算权重显存/KV 显存/decode FLOPs → 实测校验质量底线；Dense+GQA/MoE/MHA 的资源画像完全不同。"
     },
-    "rubric": {
-      "required": [
-        "MoE：总参决定显存（专家权重全量常驻），激活参数决定每 token FLOPs 与 decode 延迟",
-        "MHA：KV 头数等于 Query 头数，单 token KV cache 最大，高并发长上下文下成为容量瓶颈",
-        "Dense+GQA：KV cache 由 KV 头数控制，本例中三者最小",
-        "结论应从目标并发 × 上下文长度 × 显存预算的定量测算反推，而非单看参数量或 benchmark 分数"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.15
-      }
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -892,20 +669,6 @@
     "explanation": "容量规划看一阶资源变量：MLA 与 LatentMoE 直接改写每 token 显存/FLOPs 画像（KV cache 字节数、专家计算量），是 serving 成本的主项；线性注意力局部层降低长上下文计算；Attention Residuals 反向增加计算与激活占用、回报在质量，应计为成本项；NoPE 只是去掉了很小的位置编码开销，既不会显著提吞吐也不影响 cache 规模。",
     "reference": {
       "concept": "架构→serving 归因：MLA/LatentMoE/线性注意力=成本主项；Attention Residuals=质量投资的成本项；NoPE=近似中性。"
-    },
-    "rubric": {
-      "required": [
-        "MLA 与 LatentMoE 直接改变每 token 显存与 FLOPs 画像，是 serving cost 的一阶变量",
-        "线性注意力局部层主要降低长上下文的注意力计算成本",
-        "Attention Residuals 增加计算与激活占用、回报在质量，容量规划时应计为成本项",
-        "NoPE 对 serving 成本近似中性，其风险在顺序建模可靠性而非性能"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.25,
-        "architecture": 0.25,
-        "communication": 0.15
-      }
     },
     "formats": {
       "choice": {
@@ -960,12 +723,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：两种架构各有压倒性场景。质量维度：\"统计全语料\"类问题的答案分散在整个知识库，固定 Top-K 检索天然漏召，Completeness 掉到 0；而 12 万 Tokens 在长上下文容量内可全量喂入，完整度接近 100%。成本维度：总成本 ≈ 单次成本 × 并发查询量 N——低频查询时长上下文（配合 Prefix Cache）便宜省事；N 一大，每请求都背全量 Token 的长上下文方案费用爆炸，RAG 只检索少量 chunks 反而呈数量级优势（故 A、D 反了）。延迟维度：长上下文 + 思考链动辄数分钟，交互式应用不可接受（C 错）。选型公式：低频/全局分析用长上下文，高频/点查用 RAG，或两者混合。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1001,12 +758,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\n要点：①分层依据是\"任务难度×风险等级\"而非字数：分类/路由/简单抽取/格式转换这类模式化任务 SLM 即可胜任，占生产流量的大头；多步推理、工具编排、涉及资金/合规的操作升级中高端或旗舰。②路由器设计：轻量嵌入+分类器（成本须远低于路由决策节省的费用），输出档位与置信度；置信度低于阈值或首轮验证失败时自动升级重试——用户感知的是旗舰的质量下限、便宜档的平均成本。③治理：每一档维护独立评测集与质量基线，防止\"悄悄降档\"；配置化降级链应对限流与故障；报表按\"每解决任务成本×各档质量\"呈现。A 让 80% 可被廉价消化的流量烧旗舰钱；B 把复杂任务交给注定失败的模型；D 长度≠难度，一句话的反欺诈风控可能比千字闲聊更需要强模型。"
       }
-    },
-    "rubric": {
-      "required": [
-        "选型五维：quality/latency/memory/concurrency/cost，缺一不可",
-        "自建评测集 > 公开 benchmark：分布匹配才有参考价值"
-      ]
     }
   },
   {
@@ -1042,12 +793,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①影子阶段的价值在于零风险地拿到\"新旧模型在同一真实流量上的全量差异画像\"——delta 分类器把分歧样本送人工复核，提前暴露语义漂移。②阶梯放量（5%→20%→50%→90%）每档停留足够时间是为了让低频场景有机会出现；三类回滚门缺一不可：p95 延迟护体验、点赞率/任务完成率护质量、护栏触发率护安全。③分段回滚是关键细节：全局指标正常不代表每个细分健康——某个客户层或某语言的退化会被大盘稀释，只有 per-segment 判定才能精准止血而不误伤全量。④影子+eval 通过仍翻车的根因是覆盖缺口：测试集与影子里没有那个特定地区的新定价层用户。⑤保留 10% 旧模型一举两得：兜底路由 + 持续产生对照与新训练数据。A 忽视长尾是本案例中被验证过的真实事故来源；C 一刀切回滚会把局部问题放大成全局故障；D 关闭监控等于盲飞。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1083,12 +828,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①二值决策太粗：把灰区单独拎出来，用\"透明规则 + 人工/二次验证\"消化不确定性——这正是 ML 黑盒与监管可解释性之间的桥：最终决策由可向监管复述的显式规则落地，ML 只提供排序信号。②insult rate 预算是把\"客户体验 vs 风控\"从吵架变成工程：误拦率是可度量、可分摊、可设 SLA 的一等指标，超预算触发阈值回退的自动化闭环避免每个 case 都靠人拍板；同时必须双向监控——只盯 insult rate 会放跑欺诈潮，只盯损失率会逼走忠实客户。③协同攻击是 per-user 特征的盲区：100 张不同卡 1 分钟内打向同一冷门商户，单笔都像正常消费——所以要有跨实体的全局 velocity 计数器与商户级熔断。C 把所有不确定性都转嫁成客户摩擦；D 是典型的局部最优陷阱，$4M 续约流失往往就始于一次高调误杀。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1124,12 +863,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①审计的本质是\"证据链可重放\"：从结论出发能逐级回溯到 claim 原文 → 引用的法规条款（含文本快照，防法规库事后变更）→ 先例编号 → 模型推理 → 人工终审。②强 Schema 不是审美偏好而是工程必需：自由文本无法被程序断言\"是否包含有效引用\"，Schema 校验失败→自动重试是拦住幻觉引用的第一道闸；枚举型 severity 让下游工单路由零歧义。③三重版本号缺一不可：模型版本（供应商会静默更新）、法规索引版本（月度更新后旧审查依据仍在）、prompt 版本——它们共同保证\"这个决定是在什么系统状态下做出的\"可以被精确回答。④C 在监管语境下直接不及格——\"黑盒结论\"正是这类系统被否决的原因；D 温度为 0 只固定采样，固定不了知识截止、索引内容与 prompt，可复现性靠记录而非参数。"
       }
-    },
-    "rubric": {
-      "required": [
-        "受约束解码在采样层强制合法 JSON，比提示词恳求可靠",
-        "schema 越复杂越易触发截断/低质填充，需要防御性设计"
-      ]
     }
   },
   {
@@ -1167,12 +900,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。\n\n要点：①A：复杂法律文档的 OCR 是版式理解问题不是字符识别问题——Vision 模型保留表格结构与多栏关系，这一步的精度上限决定了后续所有抽取的上限。②C：单 prompt 全字段抽取会让模型在长指令里顾此失彼；专用抽取器的 prompt 短而聚焦、Schema 只含本领域字段，准确率更高且天然并行（asyncio.gather），延迟反而更低。③D：很多错误单看一个字段无懈可击，字段间的逻辑矛盾才是暴露面；置信度门控让人工只花在刀刃上（平均每份 30 秒）。④B 是反模式——看似省钱，实际因互相干扰拉低每个字段的准确率，重试与人审成本远超省下的调用费。多语言场景再叠加一层：按语种路由到语言专属抽取器（德语 DD.MM.YYYY、GmbH/AG 实体模式、Kündigung 条款模式）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "受约束解码在采样层强制合法 JSON，比提示词恳求可靠",
-        "schema 越复杂越易触发截断/低质填充，需要防御性设计"
-      ]
     }
   },
   {
@@ -1188,20 +915,6 @@
     "angle": "tradeoff",
     "question": "一个 7B 模型和一个 70B 模型摆在面前，你会如何为业务做选型？请说明决策依据。",
     "explanation": "选型依据 = 任务准确率增益 × 业务价值 vs 显存/成本/延迟/并发增量；必要时用模型路由混合部署，而非直觉二选一。",
-    "rubric": {
-      "required": [
-        "任务增益先行",
-        "成本/显存/延迟/并发权衡",
-        "部署与合规约束",
-        "模型路由混合策略"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "应从任务出发反向推导：先用评测集确认 70B 相对 7B 在目标任务上的准确率增益有多大——如果 7B 已接近任务上限，大模型没有意义。然后核算代价：70B 的显存需求（多卡部署）、单位 token 成本、延迟与并发吞吐都显著更高。还要考虑部署形态（自建 vs API）、数据合规约束、以及混合策略的可能：简单请求路由给小模型、困难请求升级到大模型，往往比二选一更优。结论应来自“准确率增益 × 业务价值 vs 成本/延迟增量”的量化权衡，而非直觉。"
@@ -1234,21 +947,6 @@
     "angle": "scenario",
     "question": "一个 Agent 系统单步都很聪明，但端到端任务成功率只有 70%。你会从哪些方面系统性提高成功率？",
     "explanation": "成功率是各环节可靠性的乘积：先失败归因分类，再固化 workflow、加固工具/状态/termination、加 validation 与 guardrails、建端到端回归评测。",
-    "rubric": {
-      "required": [
-        "失败归因分类",
-        "workflow 固化高频路径",
-        "工具/状态/终止机制加固",
-        "validation/guardrails",
-        "端到端评测回归"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "先做失败归因：把失败 case 分类——工具调用错误、规划偏离、状态丢失、循环不终止、还是最后一步生成失误——不同根因对策完全不同。系统性手段包括：把高频成功路径固化成确定性 workflow，只把真正需要语义判断的部分留给 Agent 自由度；提高工具可靠性（schema 清晰、参数校验、失败重试与 fallback）；引入结构化状态避免上下文丢失；加 termination budget 与循环检测；对关键输出加 validation/guardrails，失败时可回退或重试；建立端到端成功率评测集持续回归。核心思想是多步系统的成功率是各环节可靠性的乘积，要用工程手段减少步数和自由度，而不是寄望于换更强的模型。"
@@ -1306,12 +1004,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：推理与表征为通用能力，Backbone复用避免N个领域N次造轮子。\n- B：单基座集中算力与数据迭代，升级一次全业务受益，摊薄成本。\n- D：共享隐式表征打通模态与场景，利于零样本/少样本泛化。\n- C 错误：统一基座指架构与权重初始化共享，可通过蒸馏/剪枝/适配器做领域轻量化，不强制同参量。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1350,12 +1042,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：固定流代码化最稳低延迟。\n- B：LLM逐轮增往返与非确定性。\n- C：LLM长于意图与非结构化。\n- D：混合以代码定边界、LLM处柔性。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1391,12 +1077,6 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n\nTrace显示推理与检索均正确，根因在源文档过期，属数据质量。应路由至数据所有者更新/下架，而非改Prompt、扩工具或调语气。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1434,12 +1114,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：单轮生成含循环/过滤的完整脚本，替代N次JSON单调往返。\n- B：沙箱将工具注册为本地函数，脚本可同步批量调用。\n- C：中间大数据在沙箱内存降噪，仅精炼结果入Context，大幅省Token与上下文污染。\n- D 错误：Code Mode仍需一轮LLM生成脚本，省的是后续N-1轮往返，而非省去推理本身。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1477,12 +1151,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：无状态HTTPS每轮需全量回放上下文，上传量随轮次线性增长。\n- B：WebSocket复用单一TCP/TLS会话，省去N次握手。\n- C：增量架构由服务端会话态持有全量历史，客户端仅发delta与句柄。\n- D 错误：SSE为单向服务端推送，客户端仍需传统请求上行，无法实现WebSocket式双向增量流。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1520,12 +1188,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：轻Classifier分难度，分级缓存思想。\n- B：SLM作前后置Guardrail，省LLM算力。\n- D：误判致质量降与重试开销，需阈值调优。\n- C 错误：混合目标含端侧/边缘协同，非集中数据中心。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1563,12 +1225,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Kafka以Partition Append-only Log落盘，生命周期由Retention（时间/大小）决定，与消费进度解耦，天生适合日志流+回放。\n- B：RabbitMQ队列在ACK后即删，单队列无法让多独立消费者各自回溯。\n- C：RabbitMQ的Exchange+Binding提供Direct/Topic/Fanout灵活路由，适合订单状态机分发。\n- D 错误：Kafka是Pull（Consumer主动拉取并管理Offset），RabbitMQ主要是Push（Broker推送给Consumer），描述相反。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1606,12 +1262,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。\n\n- A：出站改源IP/端口并建表。\n- C：状态化查表，仅命中表项的入站才转发。\n- D：无映射的外部主动连接被丢弃。\n- B 错误：需IP+端口查表，仅IP无法区分多内网设备。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1649,13 +1299,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：时间对齐触发。\n- B：语义打断时机。\n- D：并发视觉追踪。\n- C 错误：离线BLEU非实时区分。"
       }
-    },
-    "rubric": {
-      "required": [
-        "管道架构的声学限制与感知冻结及Bitter Lesson演进",
-        "微轮次时间片并发与双模型前后/后台协作机制",
-        "原生多模态权衡与动态评测、Context/网络/延迟瓶颈"
-      ]
     }
   },
   {
@@ -1693,13 +1336,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：高密度流致Context爆满，需流式裁减。\n- B：200ms双向流强依赖网络。\n- C：延迟预算限前台参量。\n- D 错误：工具调用经后台异步，非彻底放弃。"
       }
-    },
-    "rubric": {
-      "required": [
-        "管道架构的声学限制与感知冻结及Bitter Lesson演进",
-        "微轮次时间片并发与双模型前后/后台协作机制",
-        "原生多模态权衡与动态评测、Context/网络/延迟瓶颈"
-      ]
     }
   },
   {
@@ -1737,13 +1373,6 @@
       "open": {
         "referenceAnswer": "正确答案：B、C、D。\n\n- B：后台异步+流式回传。\n- C：前台择机织入，非强制打断。\n- D：类OS/高频快慢路径。\n- A 错误：需共享上下文（历史+状态），非仅最后一句。"
       }
-    },
-    "rubric": {
-      "required": [
-        "管道架构的声学限制与感知冻结及Bitter Lesson演进",
-        "微轮次时间片并发与双模型前后/后台协作机制",
-        "原生多模态权衡与动态评测、Context/网络/延迟瓶颈"
-      ]
     }
   },
   {
@@ -1781,13 +1410,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：时间片为单位，输入输出重叠并发。\n- B：原生全双工，适口译/纠错/计数。\n- D：轮次互斥致无法边说边感。\n- C 错误：切片不消计算，延迟仍需预算。"
       }
-    },
-    "rubric": {
-      "required": [
-        "管道架构的声学限制与感知冻结及Bitter Lesson演进",
-        "微轮次时间片并发与双模型前后/后台协作机制",
-        "原生多模态权衡与动态评测、Context/网络/延迟瓶颈"
-      ]
     }
   },
   {
@@ -1823,13 +1445,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n重型编码器块式处理致前级延迟，且与微轮次连续流难端到端联合优化；A口音不可处理误，C替代后台、D缩90%窗口误。"
       }
-    },
-    "rubric": {
-      "required": [
-        "管道架构的声学限制与感知冻结及Bitter Lesson演进",
-        "微轮次时间片并发与双模型前后/后台协作机制",
-        "原生多模态权衡与动态评测、Context/网络/延迟瓶颈"
-      ]
     }
   },
   {
@@ -1867,13 +1482,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：声学VAD无语义，无法逻辑纠错打断。\n- B：单线程轮次生成期感知冻结，新输入排队。\n- C：Bitter Lesson：启发式终被端到端学习取代。\n- D 错误：瓶颈在轮次互斥与语义感知，非仅STT/TTS延迟。"
       }
-    },
-    "rubric": {
-      "required": [
-        "管道架构的声学限制与感知冻结及Bitter Lesson演进",
-        "微轮次时间片并发与双模型前后/后台协作机制",
-        "原生多模态权衡与动态评测、Context/网络/延迟瓶颈"
-      ]
     }
   },
   {
@@ -1911,12 +1519,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：先执行后记日志，无效命令不入AOF，省去预校验。\n- B：内存执行与磁盘追加解耦，写请求P99不受同步盘I/O拖累。\n- D：always每命令fsync，追加需等待盘确认，仍会阻塞主线程。\n- C 错误：先内存后日志窗口期崩溃即丢数据，非RPO=0，需fsync策略权衡。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1954,12 +1556,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：fork时页表共享、物理页只读标记，零拷贝快照起点。\n- B：写时触发COW复制，主进程写副本、子进程读原页，实现非阻塞。\n- C：持续大量写导致大量页被复制，内存近翻倍，极易OOM。\n- D 错误：COW快照隔离的是fork时刻的内存视图，子进程写入的是当时点的冻结数据，不含期间新写。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -1995,12 +1591,6 @@
       "open": {
         "referenceAnswer": "正确答案：D。\n\n- A：自建可按负载定制延迟与吞吐权衡。\n- B：专用高可用可提SLA至4个9+。\n- C：规模化摊薄硬件与研发，单价下降。\n- D 错误：TCO有规模拐点，小流量下API更经济，无关于规模均优不成立。"
       }
-    },
-    "rubric": {
-      "required": [
-        "先定 SLO 再做容量测算与选型，而不是反过来",
-        "降级链路与过载保护是生产设计的必选项"
-      ]
     }
   },
   {
@@ -2038,12 +1628,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：顶域分类作快速路由，缩小子领域模型输入空间与上下文。\n- B：领域回归/预测模型以历史人工判决为监督，保一致性。\n- C：Action Layer为权限校验与交易/支付调用的受控闸门，保障可逆与审计。\n- D 错误：分层旨在可控自动化与风险隔离，而非彻底去人工；裁决型纠纷仍需人工兜底。"
       }
-    },
-    "rubric": {
-      "required": [
-        "分层分类+领域预测模型+Action Layer的职责解耦",
-        "检索型可高自动、裁决型遇博弈瓶颈，阈值调优与升级Payload设计"
-      ]
     }
   },
   {
@@ -2081,12 +1665,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：检索型答案确定，瓶颈在召回与匹配。\n- B：裁决型需主观认定与利益权衡，强行自动闭环风险高，存在天花板。\n- D：突发流量下检索型分流为经典削峰，使人工聚焦高复杂度裁决。\n- C 错误：裁决型盲目追求100%无人化将放大误判与资金/体验损失，应设人工复核与置信度闸门。"
       }
-    },
-    "rubric": {
-      "required": [
-        "分层分类+领域预测模型+Action Layer的职责解耦",
-        "检索型可高自动、裁决型遇博弈瓶颈，阈值调优与升级Payload设计"
-      ]
     }
   },
   {
@@ -2122,12 +1700,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n降低阈值=放宽自动执行标准，更多中低置信样本被自动放行，自助率上升但误判与资金风险同步上升。A/D为升高阈值的表现，C的AHT与推理延迟与阈值无直接因果。"
       }
-    },
-    "rubric": {
-      "required": [
-        "分层分类+领域预测模型+Action Layer的职责解耦",
-        "检索型可高自动、裁决型遇博弈瓶颈，阈值调优与升级Payload设计"
-      ]
     }
   },
   {
@@ -2166,12 +1738,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：摘要避免重复陈述，秒级对齐焦点。\n- B：结构化事实免去二次抽取与核对。\n- C：实时状态防基于过期信息的误操作。\n- D：翻译保障多语言无损交接。四者共同构成可恢复的升级上下文。"
       }
-    },
-    "rubric": {
-      "required": [
-        "分层分类+领域预测模型+Action Layer的职责解耦",
-        "检索型可高自动、裁决型遇博弈瓶颈，阈值调优与升级Payload设计"
-      ]
     }
   },
   {
@@ -2209,12 +1775,6 @@
       "open": {
         "referenceAnswer": "正确答案：B、C、D。\n\n- B：自主裁决以判例模型+置信度闸门直接执行裁定。\n- C：赋能范式以Co-pilot草稿前置化解买卖双方摩擦，减平台工单。\n- D：全局路由以多语言摘要无损传递降AHT。\n- A 错误：三方异步博弈需显式状态机/工作流编排，单线Chat无法表达资金与权限状态。"
       }
-    },
-    "rubric": {
-      "required": [
-        "分层分类+领域预测模型+Action Layer的职责解耦",
-        "检索型可高自动、裁决型遇博弈瓶颈，阈值调优与升级Payload设计"
-      ]
     }
   },
   {
@@ -2235,13 +1795,6 @@
     "explanation": "A 正确 本地缓存视图实现毫秒级 PR 状态切换与 Diff 渲染。B 正确 本地 Daemon + 异步联邦同步降低 Agent 频繁读写任务状态的延迟。C 错误 同步阻塞等待中心化 API 是反模式恰恰是要被本地优先架构解决的问题。D 正确 终端复用 + 隔离工作树为每个 Agent 任务提供独立的本地执行环境防止冲突。",
     "reference": {
       "concept": "本地缓存+异步联邦+隔离工作树；同步阻塞等 API 是反模式。"
-    },
-    "rubric": {
-      "required": [
-        "本地缓存视图毫秒级渲染",
-        "Daemon 异步联邦降低延迟",
-        "隔离工作树防冲突"
-      ]
     },
     "formats": {
       "choice": {
@@ -2333,13 +1886,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n- A：补全需极低延迟用小模型，对话需深推理用大模型。\n- B：高频补全用大模型会长期占显存致卡顿。\n- C：双 Endpoint 映射到不同模型实例，资源隔离。\n- D 错误：两模型独立训练，Tokenizer/System Prompt 可不同。"
       }
-    },
-    "rubric": {
-      "required": [
-        "补全高时延敏感宜用小模型，对话宜用大模型",
-        "高频补全若用大模型会长期占显存致卡顿",
-        "双 Endpoint 通过不同模型实例实现资源隔离"
-      ]
     }
   },
   {
@@ -2374,13 +1920,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。本地引擎在 /v1 下实现协议适配层，把 OpenAI 请求转为内部格式，业务仅改 base_url 与 model 即可。A 错（本地多忽略/接受任意 key）；C 错（完整支持 SSE）；D 错（未下载模型返回 404/500，不自动透传云端）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "本地兼容层将 /v1/chat/completions 映射为内部请求",
-        "迁移只需改 base_url 与 model，不改 SDK 逻辑",
-        "本地端点支持 SSE 流式且不会自动透传云端"
-      ]
     }
   }
 ]

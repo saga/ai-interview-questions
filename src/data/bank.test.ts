@@ -1,9 +1,9 @@
 // 题库数据完整性测试：替代人工核对，防止坏数据进入运行时。
 // 覆盖：id 唯一、类目与文件一致、双形态数据合法（ADR-027 数据契约）、
-// rubric 权重合法、conceptGraph 前置节点都有题目支撑。纯静态校验，无 LLM/网络。
+// explanation 非空（ADR-044 后为题目级评分锚点）、conceptGraph 前置节点都有题目支撑。
+// 纯静态校验，无 LLM/网络。
 
 import { describe, expect, it } from 'vitest';
-import { EVAL_DIMENSIONS } from '../types';
 import { questionBank } from './questionBank';
 import { conceptGraph } from '../domain/conceptGraph';
 import { knowledgeNodes } from './knowledgeMap';
@@ -70,16 +70,10 @@ describe('题库数据完整性', () => {
     }
   });
 
-  it('rubric：dimensions 键合法且权重和不超过 1', () => {
+  // ADR-044：题目级 rubric 已删除，explanation 接替成为题目级评分锚点，故它必须非空
+  it('explanation 非空（评分锚点依赖它）', () => {
     for (const q of qs) {
-      if (!q.rubric?.dimensions) continue;
-      const entries = Object.entries(q.rubric.dimensions);
-      for (const [k, w] of entries) {
-        expect(EVAL_DIMENSIONS, `${q.id} 维度 ${k}`).toContain(k);
-        expect(w!, q.id).toBeGreaterThan(0);
-      }
-      const sum = entries.reduce((acc, [, w]) => acc + (w ?? 0), 0);
-      expect(sum, q.id).toBeLessThanOrEqual(1.0001);
+      expect(q.explanation?.trim().length ?? 0, `${q.id} explanation 为空`).toBeGreaterThan(0);
     }
   });
 

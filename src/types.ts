@@ -8,7 +8,7 @@ import type { QuestionAngle as QuestionAngleT } from './schemas/common';
 import type { KnowledgeArea as KnowledgeAreaT } from './schemas/common';
 import type { KnowledgePriority as KnowledgePriorityT } from './schemas/common';
 import type { EvaluationDimension as EvaluationDimensionT } from './schemas/common';
-import type { Question as QuestionT, QuestionTest as QuestionTestT } from './schemas/question';
+import type { Question as QuestionT } from './schemas/question';
 import type { KnowledgeNode as KnowledgeNodeT } from './schemas/knowledge';
 import type { InterviewDefinition as InterviewDefinitionT, ScoringRubric as ScoringRubricT } from './schemas/interview';
 import type { EvaluationResult as EvaluationResultT } from './schemas/evaluation';
@@ -41,28 +41,6 @@ export type SessionRecord = SessionRecordT;
 export type LearnerProfile = LearnerProfileT;
 export type SessionQuestion = SessionQuestionT;
 export type InterviewSession = InterviewSessionT;
-export type QuestionTest = QuestionTestT;
-
-// ── Concept-coverage（PR1–PR4）：概念是独立于知识节点的覆盖坐标系 ──
-/** 知识节点概念面中的一个子概念（覆盖坐标），不要求与知识节点一一对应。 */
-export interface ConceptRef {
-  id: string;
-  title: string;
-  importance: number;
-}
-/** 单概念尝试统计（可由 session 历史派生，不强制持久化到 learner profile）。 */
-export interface ConceptStats {
-  attempts: number;
-  avgScore: number;
-  bestScore: number;
-  lastAttemptAt?: number;
-}
-export type ConceptStatus = 'unseen' | 'weak' | 'partial' | 'strong';
-/** 单题作答对某个概念的证据信号（用于聚合概念统计）。 */
-export interface ConceptAttemptSignal {
-  concept: string;
-  score: number;
-}
 
 // ── 轻量聚合 / 行为契约（仍保留于 types，属非数据契约） ──
 
@@ -109,30 +87,10 @@ export interface GeneratedVariant {
   explanation?: string;
 }
 
-/**
- * LLM 依据"题目蓝图"从零生成的题（未校验、未落地）。
- * 与 GeneratedVariant 不同：它不是变体改写，而是全新题；自带 tests（概念映射）。
- * 由 domain/blueprint.buildQuestionFromGeneration 组装为正式 Question。
- */
-export interface GeneratedQuestion {
-  question: string;
-  angle?: QuestionAngle;
-  difficulty: Difficulty;
-  formats: {
-    choice?: { type: 'single' | 'multiple'; options: string[]; answer: number[] };
-    open?: { referenceAnswer: string };
-  };
-  explanation: string;
-  /** 该题探测的概念（1 primary + ≤2 supporting），与蓝图 expectedConcepts 对齐。 */
-  tests: QuestionTest[];
-}
-
 /** LLM Provider 抽象：应用只依赖此接口。 */
 export interface LLMProvider {
   readonly name: string;
   generateVariant(question: Question): Promise<GeneratedVariant>;
-  /** 依据题目蓝图从零生成全新题（PR5 生成管线前移 / PR6 Dynamic Probe 共用）。 */
-  generateQuestion(blueprint: QuestionBlueprint, node: KnowledgeNode): Promise<GeneratedQuestion>;
   evaluateOpenAnswer(
     question: Question,
     open: OpenFormat,
@@ -140,17 +98,6 @@ export interface LLMProvider {
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult>;
-}
-
-/**
- * 运行时探针晋升事件（PR6 Dynamic Probe → Curation 管线）：
- * 引擎在每次生成临时探针题后发出，调用方（SPA/CLI）据其把事件写进 curation 账本。
- * promoted=true 表示该概念已被反复探测达到晋升阈值，应触发正式题生产。
- */
-export interface ProbePromotionEvent {
-  conceptId: string;
-  nodeId: string;
-  promoted: boolean;
 }
 
 export type CompleteFn = (system: string, user: string) => Promise<string>;

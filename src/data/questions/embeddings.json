@@ -12,19 +12,6 @@
     "angle": "calculation",
     "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
     "explanation": "单遍累加点积与两个范数、除零防御;cosine 只看方向不看幅度,消除长度偏差;归一化后等价于内积。",
-    "rubric": {
-      "required": [
-        "正确实现含除零防御",
-        "方向 vs 幅度的解释",
-        "归一化后与内积等价"
-      ],
-      "dimensions": {
-        "correctness": 0.45,
-        "completeness": 0.25,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "export function cosineSimilarity(a: number[], b: number[]): number {\n  if (a.length !== b.length) throw new Error('dimension mismatch');\n  let dot = 0, normA = 0, normB = 0;\n  for (let i = 0; i < a.length; i++) {\n    dot += a[i] * b[i];\n    normA += a[i] * a[i];\n    normB += b[i] * b[i];\n  }\n  const denom = Math.sqrt(normA) * Math.sqrt(normB);\n  return denom === 0 ? 0 : dot / denom;\n}\n// 单次遍历同时算点积与范数；零向量防御除零。\n\n为什么用 cosine：它度量方向而非幅度——embedding 的模长常受文本长度/词频影响，cosine 消除了幅度的干扰，只比较语义方向的接近程度；取值 [-1,1] 有明确语义且尺度稳定。当所有向量都已 L2 归一化时，cosine 相似度等价于点积，此时可直接用内积换取计算速度（很多向量库的 IP 度量就是这个原理）。",
@@ -57,19 +44,6 @@
     "angle": "definition",
     "question": "Embedding 模型输出的向量和大语言模型的 hidden state 有什么区别？各自的用途是什么？",
     "explanation": "Embedding = 面向语义度量的固定向量（检索/聚类用）；hidden state = 生成模型内部服务于 next-token 预测的中间表示，无度量约束。",
-    "rubric": {
-      "required": [
-        "语义空间度量",
-        "next-token 预测服务",
-        "模型用途不可互换"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Embedding 是把整段文本映射到一个固定的语义空间向量，目标是让语义相近的文本距离接近，用于检索、聚类、相似度比较；通常是双向编码器或专门训练的表示模型，不用于生成。Hidden state 是生成式 LLM 在处理上下文过程中的内部表示，服务于下一个 token 预测，没有针对语义空间的度量约束，不能直接当作检索向量用。两者的训练目标和用途不同，不能互换。"
@@ -118,12 +92,6 @@
       "open": {
         "referenceAnswer": "余弦关注方向，未归一化时模长干扰；L2 归一化后点积即余弦。"
       }
-    },
-    "rubric": {
-      "required": [
-        "cosine similarity 度量方向而非距离，需与归一化方式配套理解",
-        "embedding 模型的训练目标决定它\"擅长什么相似性\""
-      ]
     }
   },
   {
@@ -156,12 +124,6 @@
       "open": {
         "referenceAnswer": "通用泛化有限，微调可提领域召回，但需评估退化。"
       }
-    },
-    "rubric": {
-      "required": [
-        "cosine similarity 度量方向而非距离，需与归一化方式配套理解",
-        "embedding 模型的训练目标决定它\"擅长什么相似性\""
-      ]
     }
   },
   {
@@ -193,12 +155,6 @@
       "open": {
         "referenceAnswer": "小 chunk 提升局部召回，长文档单嵌入稀释；需重叠与重排平衡。"
       }
-    },
-    "rubric": {
-      "required": [
-        "cosine similarity 度量方向而非距离，需与归一化方式配套理解",
-        "embedding 模型的训练目标决定它\"擅长什么相似性\""
-      ]
     }
   },
   {
@@ -230,12 +186,6 @@
       "open": {
         "referenceAnswer": "HNSW 近似检索以召回换速度，需调参权衡。"
       }
-    },
-    "rubric": {
-      "required": [
-        "cosine similarity 度量方向而非距离，需与归一化方式配套理解",
-        "embedding 模型的训练目标决定它\"擅长什么相似性\""
-      ]
     }
   }
 ]

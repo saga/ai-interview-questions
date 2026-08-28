@@ -34,12 +34,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：无状态需重发全量上下文单调递增。\n- B：历史累积致超线性增长。\n- C：无人干预高频消除自然制约。\n- D 错误：隐状态不持久化，需重传。"
       }
-    },
-    "rubric": {
-      "required": [
-        "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
-        "降本手段的优先级：先省 token、再提命中、后换模型"
-      ]
     }
   },
   {
@@ -77,12 +71,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：Jevons反弹致总量涨。\n- B：需预算上限。\n- C：目标为预算内价值最大。\n- D 错误：非路由失效，不应回退。"
       }
-    },
-    "rubric": {
-      "required": [
-        "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
-        "降本手段的优先级：先省 token、再提命中、后换模型"
-      ]
     }
   },
   {
@@ -121,12 +109,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：最大步数 / 最大 tool call 次数；token 预算与累计费用上限，超限熔断；总执行时间上限（wall-clock timeout）。\n\n解析：步数/调用数、token/费用预算、时间上限三层硬边界缺一不可；停止与否不能只依赖模型自觉——失控的直接后果是真金白银。还应配合重复检测与异常告警。"
       }
-    },
-    "rubric": {
-      "required": [
-        "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
-        "降本手段的优先级：先省 token、再提命中、后换模型"
-      ]
     }
   },
   {
@@ -143,20 +125,6 @@
     "angle": "scenario",
     "question": "一个 Agent 平均每次请求消耗 50K tokens，日请求量从 10K 增长到 1M。你会从哪些层面控制成本？请按优先级说明。",
     "explanation": "优先级：削减无效 context → caching → 减少 iterations → model routing；成本优化必须结合质量指标一起看。",
-    "rubric": {
-      "required": [
-        "context reduction",
-        "model routing",
-        "caching",
-        "iteration budget"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "首先分析 token 消耗来源，减少无效 context 和 tool results；然后考虑 prompt/context caching、减少不必要的 Agent iterations、模型路由和更小模型处理简单任务。还可以对 retrieval、tool call 和整体任务设置 budget。成本优化应该结合质量指标，而不是单纯追求最低 token 数。"
@@ -211,12 +179,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①账要算全：毛节省 = 20,000 × 30% × $0.01 = $60/天，但每次缓存查询自身有一次 embedding + 向量检索的开销（虽远小于 LLM 调用），加上缓存存储与失效管理成本，净节省低于 $60；量级判断依然成立（日均万级请求才值得做）。②阈值是灵魂旋钮：起点建议 ~0.95，用命中率与用户投诉两个指标回调——0.85 级别的宽松会制造\"看起来像就当是\"的错误命中，直接伤信任。③三类内容要特殊处理：个性化查询（\"我的余额\"）cache key 必须绑定 user_id；时效性查询（价格/库存）设短 TTL；个性化实时类干脆禁缓存。缓存失效还要联动知识库更新（按来源文档 ID 打标签做定向失效）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
-        "降本手段的优先级：先省 token、再提命中、后换模型"
-      ]
     }
   },
   {
@@ -251,12 +213,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①规模账先算清：5M 日活 × 10 组 × 每组若干条 = 数亿次/天，哪怕 $0.001/次也是每天数十万美元——所以 LLM 绝不能进排序路径（embedding 查找 $0.00001、ANN $0.0001、rerank $0.001，便宜三个数量级）。②缓存的正确粒度是内容对而非用户：解释的理由绑定于\"从 A 推荐 B 的原因类别\"，天然跨用户共享，热门内容对预热后命中率轻松上 90%。③命中率与 SLA 的硬耦合是本题核心：混合延迟 ≈ hit_rate×70ms + (1−hit_rate)×500ms，要 p95 ≤200ms 就要求第 95 百分位的请求落在命中路径上，即命中率 ≥95%；做不到就异步化——同步返回占位或次优解释，后台生成后写缓存供下个请求命中。④A 的账漏算了倍数关系且没算延迟违约；C 方向反了，更强模型只会更贵；D 牺牲产品价值省小钱，属于错误的优化目标。"
       }
-    },
-    "rubric": {
-      "required": [
-        "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
-        "降本手段的优先级：先省 token、再提命中、后换模型"
-      ]
     }
   },
   {
@@ -290,12 +246,6 @@
       "open": {
         "referenceAnswer": "缓存与路由可在成本与性能间取得平衡，非必然对立。"
       }
-    },
-    "rubric": {
-      "required": [
-        "token 经济学：输入输出分别计价，长 system prompt 是隐性大头",
-        "降本手段的优先级：先省 token、再提命中、后换模型"
-      ]
     }
   }
 ]

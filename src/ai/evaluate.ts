@@ -11,9 +11,9 @@ import { llmEvaluationRawSchema } from '../schemas/evaluation';
 const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;
 
 export interface EvalOptions {
-  /** 四维权重（已与全局 rubric 合并），仅注入提示词供参考。 */
+  /** 四维权重，仅注入提示词供参考。题目级权重覆盖已移除（ADR-044），一律使用全局 rubric。 */
   rubric?: ScoringRubric;
-  /** 必须覆盖的要点（命中情况计入 completeness）。 */
+  /** 必须覆盖的要点（命中情况计入 completeness），来自知识点节点的 required。 */
   requiredPoints?: string[];
   /** 额外评估要求（来自 InterviewDefinition.evaluationCriteria）。 */
   extraCriteria?: string;
@@ -34,7 +34,7 @@ ${q.question}
 ${q.reference?.concept ? '\n概念提示：\n' + q.reference.concept + '\n' : ''}
 参考答案：
 ${open.referenceAnswer}
-
+${q.explanation ? '\n题目解析（该题的评分锚点：请据此判断回答是否覆盖本题特有的关键结论）：\n' + q.explanation + '\n' : ''}
 候选人回答：
 ${noAnswer ? '（未作答）' : answer}
 

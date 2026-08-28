@@ -13,12 +13,13 @@ import {
   mergeQuestionRubric,
 } from './provider';
 import type { AIConfig, LLMProvider, OpenFormat, ProviderEntry, Question, ScoringRubric } from '../types';
+import { knowledgeById } from '../domain/knowledge';
 
 const GLOBAL: ScoringRubric = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };
 
 const OPEN_FMT: OpenFormat = { referenceAnswer: 'a' };
 
-function q(rubric?: Question['rubric'], topic = 'memory'): Question {
+function q(topic = 'memory'): Question {
   return {
     id: 'q1',
     category: 'agentic-ai',
@@ -27,7 +28,6 @@ function q(rubric?: Question['rubric'], topic = 'memory'): Question {
     difficulty: 'medium',
     question: 'q',
     explanation: '',
-    rubric,
     formats: {},
   };
 }
@@ -37,26 +37,28 @@ function entry(partial: Partial<ProviderEntry>): ProviderEntry {
 }
 
 describe('mergeQuestionRubric', () => {
-  it('无题目级 rubric 且 topic 无知识点节点时返回全局权重（required 为 undefined）', () => {
-    expect(mergeQuestionRubric(q(undefined, 'linear-regression'), GLOBAL)).toEqual({
+  it('topic 无知识点节点时返回全局权重（required 为 undefined）', () => {
+    expect(mergeQuestionRubric(q('linear-regression'), GLOBAL)).toEqual({
       rubric: GLOBAL,
       requiredPoints: undefined,
     });
   });
 
-  it('无题目级 rubric 时回退到知识点节点的 required（ADR-029）', () => {
+  it('requiredPoints 统一来自知识点节点的 required（ADR-029 回退，ADR-044 后为唯一来源）', () => {
     const { requiredPoints } = mergeQuestionRubric(q(), GLOBAL);
     expect(requiredPoints?.length ?? 0).toBeGreaterThan(0);
   });
 
-  it('dimensions 只覆盖给出的维度，其余沿用全局', () => {
-    const { rubric } = mergeQuestionRubric(q({ dimensions: { architecture: 0.5 } }), GLOBAL);
-    expect(rubric).toEqual({ correctness: 0.4, completeness: 0.2, architecture: 0.5, communication: 0.2 });
+  it('权重统一使用全局 rubric（题目级 dimensions 覆盖已移除，ADR-044）', () => {
+    // 题目不再携带 rubric，无论传什么都应原样返回全局权重
+    expect(mergeQuestionRubric(q(), GLOBAL).rubric).toEqual(GLOBAL);
+    expect(mergeQuestionRubric(q(), GLOBAL).rubric).not.toBe(GLOBAL); // 返回副本，不共享引用
   });
 
-  it('题目自带 rubric.required 优先于知识点要点', () => {
-    const { requiredPoints } = mergeQuestionRubric(q({ required: ['短期记忆', '长期记忆'] }), GLOBAL);
-    expect(requiredPoints).toEqual(['短期记忆', '长期记忆']);
+  it('requiredPoints 统一来自知识点节点的 required（单一来源，ADR-044）', () => {
+    const { requiredPoints } = mergeQuestionRubric(q(), GLOBAL);
+    expect(requiredPoints).toEqual(knowledgeById('memory')?.required);
+    expect(requiredPoints?.length ?? 0).toBeGreaterThan(0);
   });
 });
 
@@ -173,7 +175,6 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
     return {
       name,
       generateVariant: impl as LLMProvider['generateVariant'],
-      generateQuestion: impl as LLMProvider['generateQuestion'],
       evaluateOpenAnswer: impl as LLMProvider['evaluateOpenAnswer'],
     };
   }
@@ -226,14 +227,6 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
     await expect(chain.evaluateOpenAnswer(q(), OPEN_FMT, 'ans', GLOBAL)).resolves.toEqual({ overall: 90 });
   });
 
-  it('generateQuestion 同样走降级链委托（PR5/PR6 共用生成能力）', async () => {
-    const bp = { topic: 'transformer', angle: 'definition', difficulty: 'easy', format: 'choice', purpose: '', expectedConcepts: ['self-attention'] } as Parameters<LLMProvider['generateQuestion']>[0];
-    const node = { id: 'transformer' } as Parameters<LLMProvider['generateQuestion']>[1];
-    const chain = new FallbackProvider([
-      fake('a', async () => ({ question: 'gen', difficulty: 'easy', formats: { choice: { type: 'single', options: ['x'], answer: [0] } }, explanation: '', tests: [] })),
-    ]);
-    await expect(chain.generateQuestion(bp, node)).resolves.toMatchObject({ question: 'gen' });
-  });
 });
 
 describe('ChromeAIProvider（走注入的 chromeComplete，签名接线正确）', () => {

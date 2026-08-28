@@ -313,9 +313,12 @@ Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → de
   这类"僵尸 session"占满，后续所有 `create()` 都会永久挂起 → 整批出题死锁。该上限**不是**硬性的
   1（干净状态下 `lm.create()` 并发 2 个均可成功），而是被残留的僵尸 session 占满名额所致。
 - **修复**：`chromeComplete` 改为委托给同文件内的 `ChromeAIExecutor`（`src/ai/chrome.ts`）：
-  - 并发上限 `concurrency`（默认 2），超出排队，避免瞬间打满名额；
+  - 并发上限 `concurrency`（当前 **4**），超出排队，避免瞬间打满名额；
   - 每次 `create` 与 `prompt` 都套 `withTimeout`（`setTimeout` 回调式，非 race 的 reject promise，
-    避免伪未处理拒绝），单次 `timeoutMs`（默认 60s）后**一定**拒绝；
+    避免伪未处理拒绝），单次 `timeoutMs`（当前 **90s**）后**一定**拒绝；
+  - ⚠️ 这三个数值的**单一出处**是 `chrome.ts` 导出的 `CHROME_AI_CONCURRENCY` / `CHROME_AI_TIMEOUT_MS`
+    / `CHROME_AI_RETRIES`；测试亦直接引用这些常量。历史上它们曾散落在六处并互相矛盾
+    （并发 8/4/2、超时 90s/60s），调整时**只改常量**，不要在本文档或其它地方再写死数字。
   - 用 `AbortController` 取消（手动合并多个 signal，不依赖 `AbortSignal.any`）；
   - 失败按 `retries`（默认 1）重试一次；无论成功/失败/超时，`finally` 中 `session.destroy()`
     释放本 session，腾出并发名额；
@@ -347,7 +350,13 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 
 > 角度级证据（ADR-037）：`LearnerProfile.angleCoverage` 额外按 `topic|angle` 累计
 > （attempts/avgScore/lastScore/lastAskedAt），与 topic×angle 覆盖矩阵（`coverage.ts`）形成双向闭环；
-> `weakAnglesOf()` 给出某 concept 下证据最薄弱的角度，`pickNextAdaptive` 据此优先追问缺证据角度。
+> `weakAnglesOf()` 给出某 topic 下证据最薄弱的角度。
+>
+> ⚠️ **覆盖索引统一为 `topic × angle`（ADR-043）**：概念层（`Question.tests` / `KnowledgeNode.concepts[]`）
+> 已于 2026-08-29 移除——它只覆盖约 20% 题库，且与 `subtopic`/`tags` 重复建模，
+> `primary/supporting` 的判定还高度主观。现在 `topic` 与 `angle` **均 100% 覆盖且无需额外人工标注**，
+> 是选题与覆盖统计的唯一主干。`weakAnglesOf()` 当前被 Agent 面试的追问工具调用
+> （`agent/tools.ts` 的 `getWeakAngles`）；确定性引擎里 `angle` 以 `angleEvidence` 的形式参与兜底排序。
 ```
 
 - **记忆是"结构化信号"而非对话原文**：不把用户历史回答塞给 LLM；Coach 只看压缩画像（如 `tool-calling: weak`）。
@@ -378,7 +387,7 @@ Original Question ──→ LLM ──→ VariantCandidate ──→ validateVar
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
 - **抗暗示（anti-cueing）自愈**：`ai/variant.generateVariant` 在拿到 LLM 变体后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），用修正提示词**一次性重试**改写选项，避免把“正确项明显更长/干扰项过短”的偏差写进变体。属软信号、非校验阻断（沿用 ADR-036 无兜底语义：仅重生成，不因此抛错改回原题）。
 
-## 评分 Rubric（四维 + 题目级覆盖）
+## 评分 Rubric（四维 + 两层评分锚点）
 
 开放题 `EvaluationResult` 拆为四维度（默认权重和为 1）：
 
@@ -391,18 +400,22 @@ Original Question ──→ LLM ──→ VariantCandidate ──→ validateVar
 
 综合分 `overall` = Σ(dim × weight)，**只**由 `domain/evaluation.aggregateOverall` 计算——LLM 只输出四维 dimensions，不拥有最终分数（ADR-019）。选择题四维同取 100/0。
 
-**题目级 rubric（可选）**：`questions/<category>.json` 里每题可带 `rubric`：
+**评分锚点分两层**（ADR-044：题目级 `rubric` 字段已删除）：
 
-```json
-"rubric": {
-  "required": ["规划器", "检索器", "失败重试"],
-  "dimensions": { "correctness": 0.25, "completeness": 0.25, "architecture": 0.35, "communication": 0.15 }
-}
-```
+| 层 | 来源 | 作用 |
+| --- | --- | --- |
+| 泛化锚点（必须覆盖的要点） | `KnowledgeNode.required`（经 `domain/knowledge.requiredPointsFor`，按题目 topic 查节点） | 注入评分提示，命中情况计入 completeness |
+| 题目锚点（该题特有结论） | `Question.explanation` | 注入评分提示，判断回答是否覆盖本题特有的关键结论 |
 
-- `required`：必须覆盖的要点，注入评分提示，命中情况计入 completeness。
-- `dimensions`：该题的四维权重覆盖（未给的维度沿用全局 `InterviewDefinition.scoringRubric`），在 `PiAIProvider.evaluateOpenAnswer` 里合并。
-- **知识点回退（ADR-029）**：题目未自带 `rubric.required` 时，`mergeQuestionRubric` 回退到该题 topic 对应知识节点（`data/knowledge/`）的 `required`——评分锚点的默认来源是知识点层而非逐题手写。
+权重**统一使用全局 `InterviewDefinition.scoringRubric`**，不再支持题目级覆盖。
+
+> ⚠️ **常见误解**：`explanation` 与 rubric **原本并无交互**——`explanation` 只用于 UI 展示
+> （`ResultPanel` / `SessionReplayDrawer`）与变体生成，评分时 LLM 拿到的是 `open.referenceAnswer`，
+> **不是** `explanation`。ADR-044 是让 `explanation` **新增**承担评分锚点职责，而非两者本就重合。
+>
+> 删除理由：493 题的 `rubric.required` 中有 239 题（48.5%）与知识节点 `required` 逐字相同（纯副本）；
+> `rubric.dimensions` 仅覆盖 185 题（29.6%）、21 种组合，收益低于维护成本。
+> 代价：254 题（51.5%）的逐题定制要点改由 `explanation` 承担，形态从"结构化要点清单"变为"解析文本"。
 
 ## 数据契约与运行时校验（Zod 边界层，ADR-033）
 

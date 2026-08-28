@@ -62,15 +62,13 @@ describe('knowledgeById / requiredPointsFor', () => {
     expect(knowledgeById('no-such-topic')).toBeUndefined();
   });
 
-  it('题目自带 rubric.required 时优先于知识点要点', () => {
-    const q = { topic: 'kv-cache', rubric: { required: ['自定义要点'] } } as unknown as Question;
-    expect(requiredPointsFor(q)).toEqual(['自定义要点']);
+  it('评分要点统一来自知识点节点（题目级 rubric 已移除，ADR-044）', () => {
+    const q = { topic: 'kv-cache' } as Question;
+    expect(requiredPointsFor(q)).toEqual(knowledgeById('kv-cache')?.required);
+    expect(requiredPointsFor(q)?.length ?? 0).toBeGreaterThan(0);
   });
 
-  it('无题目级 rubric 时回退到知识点 required；topic 无节点时返回 undefined', () => {
-    const q = { topic: 'kv-cache' } as Question;
-    const fallback = requiredPointsFor(q);
-    expect(fallback?.length ?? 0).toBeGreaterThan(0);
+  it('topic 无知识点节点时返回 undefined', () => {
     expect(requiredPointsFor({ topic: 'no-such-topic' } as Question)).toBeUndefined();
   });
 });

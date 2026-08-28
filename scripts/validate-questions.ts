@@ -1,6 +1,10 @@
-// npm run validate:questions —— 题目 concept-coverage 数据完整性校验（PR2）。
-// 借鉴 question-coverage.ts：直接 fs 读 JSON（不经过 Vite / import.meta.glob），
-// 调用 Zod 不变量 + 概念面校验。Node 原生运行 TS，相对导入带 .ts 扩展名。
+// npm run validate:questions —— 题库数据完整性校验。
+// 概念层（Question.tests / KnowledgeNode.concepts）移除后，覆盖索引回归
+// topic × angle 两个维度，故本脚本改为校验这两个维度的数据质量：
+//   1. topic 必须存在对应知识节点（无悬空 topic）
+//   2. angle 必须存在于全局角度枚举（覆盖率统计的前提）
+//   3. 选择题 answer 索引必须落在 options 范围内
+// 借鉴 question-coverage.ts：fs 直读 JSON（不经 Vite / import.meta.glob），Node 原生运行 TS。
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -17,31 +21,46 @@ function readJsonDir(dir: string): unknown[] {
 
 const questions = readJsonDir(dataDir + 'questions/') as Question[];
 const nodes = readJsonDir(dataDir + 'knowledge/') as KnowledgeNode[];
+const nodeIds = new Set(nodes.map((n) => n.id));
 
-// 全局概念 id 集合：所有知识节点 concepts[] 面里的概念（概念独立于知识节点本身）。
-const conceptIds = new Set<string>();
-for (const n of nodes) for (const c of n.concepts ?? []) conceptIds.add(c.id);
+const VALID_ANGLES = new Set([
+  'definition',
+  'fundamental',
+  'mechanism',
+  'calculation',
+  'comparison',
+  'tradeoff',
+  'scenario',
+  'debugging',
+  'design',
+  'system-design',
+]);
 
 let errors = 0;
-let withTests = 0;
+let withAngle = 0;
 for (const q of questions) {
-  const tests = q.tests ?? [];
-  if (tests.length > 0) withTests++;
-  for (const t of tests) {
-    if (!conceptIds.has(t.concept)) {
-      console.error(`✗ ${q.id}: tests 概念 "${t.concept}" 不在任何知识节点 concepts[] 面中`);
-      errors++;
+  if (!nodeIds.has(q.topic)) {
+    console.error(`✗ ${q.id}: topic "${q.topic}" 无对应知识节点`);
+    errors++;
+  }
+  if (!q.angle) {
+    console.error(`✗ ${q.id}: 缺少 angle（覆盖索引依赖它）`);
+    errors++;
+  } else if (!VALID_ANGLES.has(q.angle)) {
+    console.error(`✗ ${q.id}: angle "${q.angle}" 不在合法角度枚举内`);
+    errors++;
+  } else {
+    withAngle++;
+  }
+  const choice = q.formats?.choice;
+  if (choice) {
+    const max = choice.options.length - 1;
+    for (const i of choice.answer) {
+      if (i < 0 || i > max) {
+        console.error(`✗ ${q.id}: 选择题 answer 索引 ${i} 越界（options 共 ${choice.options.length} 项）`);
+        errors++;
+      }
     }
-  }
-  // 约束：每题 ≤3 concept，且 primary 唯一（避免 "一题测 10 个概念" 导致无法定位弱点）。
-  if (tests.length > 3) {
-    console.error(`✗ ${q.id}: tests 数量 ${tests.length} > 3`);
-    errors++;
-  }
-  const primaries = tests.filter((t) => t.role === 'primary');
-  if (primaries.length > 1) {
-    console.error(`✗ ${q.id}: 有 ${primaries.length} 个 primary，应唯一`);
-    errors++;
   }
 }
 
@@ -50,5 +69,5 @@ if (errors > 0) {
   process.exit(1);
 }
 console.log(
-  `✓ 校验通过：${questions.length} 题，含 tests 的题 ${withTests} 道，概念面共 ${conceptIds.size} 个`,
+  `✓ 校验通过：${questions.length} 题 / ${nodes.length} 知识节点 · 带 angle ${withAngle} 题（${((withAngle / questions.length) * 100).toFixed(1)}%）`,
 );

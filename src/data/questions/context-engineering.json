@@ -34,12 +34,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：低相关材料稀释注意力致准确率降。\n- B：Prompt需版本化可审计。\n- C：清晰Schema降误选误参。\n- D 错误：数百工具致选择噪声与上下文膨胀，应按需加载。"
       }
-    },
-    "rubric": {
-      "required": [
-        "上下文是稀缺资源，需要像内存一样做分配与淘汰",
-        "压缩（摘要）与截断的信息损失特性不同，适用场景不同"
-      ]
     }
   },
   {
@@ -75,12 +69,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：对历史轨迹做摘要压缩（compaction），保留关键状态与结论，裁剪冗余中间输出。\n\n解析：长程 Agent 的标准做法是上下文工程：将旧轨迹摘要化，持久化关键状态（目标、已完成步骤、重要结果），按需检索细节。全量丢弃会丢失进度，无限窗口则成本与注意力稀释都不可行。"
       }
-    },
-    "rubric": {
-      "required": [
-        "上下文是稀缺资源，需要像内存一样做分配与淘汰",
-        "压缩（摘要）与截断的信息损失特性不同，适用场景不同"
-      ]
     }
   },
   {
@@ -96,21 +84,6 @@
     "angle": "system-design",
     "question": "请设计一个 Context Manager：当 conversation 超过 token budget 时，保留 system prompt、最近 N 轮消息，并对更早消息进行 summary。",
     "explanation": "三层装配：system 恒定 + 旧轮次滚动摘要（增量合并）+ 近 N 轮原文；预算不足时扩大摘要区;summarize 可注入,memory 类关键信息不应依赖摘要。",
-    "rubric": {
-      "required": [
-        "system 保留与分区装配",
-        "摘要触发与预算计算",
-        "近 N 轮保护",
-        "增量摘要合并",
-        "依赖注入可测性"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "interface Message { role: 'user' | 'assistant'; content: string; tokens: number; }\n\ninterface Turn { user: Message; assistant?: Message; }  // 按轮组织便于摘要\n\nclass ContextManager {\n  private turns: Turn[] = [];\n  private summary: string | null = null;\n\n  constructor(\n    private systemPrompt: string,\n    private budgetTokens: number,\n    private recentTurns: number,\n    private summarize: (text: string) => Promise<string>,  // 注入 LLM\n  ) {}\n\n  async buildContext(): Promise<Array<{ role: string; content: string }>> {\n    const system = [{ role: 'system', content: this.systemPrompt }];\n    const sysTokens = this.approxTokens(this.systemPrompt);\n    const recent = this.turns.slice(-this.recentTurns);\n    let older = this.turns.slice(0, -this.recentTurns);\n\n    let total = sysTokens + this.turnTokens(recent) + (this.summary ? this.approxTokens(this.summary) : 0);\n\n    // 预算仍不够时：从最旧开始把更多轮次并入摘要区\n    while (total > this.budgetTokens && this.turns.length > 0 && older.length < this.turns.length - 1) {\n      older.push(this.turns[this.turns.length - older.length - 2]);\n      total = sysTokens + this.turnTokens(recent) + this.turnTokens(older) + (this.summary ? this.approxTokens(this.summary) : 0);\n    }\n\n    if (older.length > 0) {\n      const raw = older.map((t) => `User: ${t.user.content}\\\\nAssistant: ${t.assistant?.content ?? ''}`).join('\\\\n\\\\n');\n      this.summary = [this.summary, await this.summarize(raw)].filter(Boolean).join('\\\\n');  // 增量合并旧摘要\n    }\n\n    const msgs: Array<{ role: string; content: string }> = [...system];\n    if (this.summary) msgs.push({ role: 'system', content: `此前对话摘要：${this.summary}` });\n    for (const t of recent) {\n      msgs.push({ role: 'user', content: t.user.content });\n      if (t.assistant) msgs.push({ role: 'assistant', content: t.assistant.content });\n    }\n    return msgs;\n  }\n\n  private turnTokens(turns: Turn[]): number {\n    return turns.reduce((s, t) => s + t.user.tokens + (t.assistant?.tokens ?? 0), 0);\n  }\n  private approxTokens(s: string): number { return Math.ceil(s.length / 4); }\n}\n\n设计要点：system 永远保留且不参与压缩；摘要增量合并（旧摘要+新入档内容一起总结）避免信息反复丢失；summarize 作为注入函数便于 mock 测试；生产版应记录“被压缩”标记保证可观测，并对摘要丢失的关键事实（如用户偏好）走显式 memory 而非指望摘要保留。",
@@ -145,20 +118,6 @@
     "angle": "scenario",
     "question": "一个 Agent 运行 20 轮之后，context 已经达到 200K tokens。此时模型速度变慢，成本上升，回答质量也开始下降。你会如何处理？",
     "explanation": "区分完整历史与任务状态：压缩摘要、裁剪已完成 tool results、提取结构化状态、长期信息放入独立 memory。",
-    "rubric": {
-      "required": [
-        "context compression",
-        "结构化状态",
-        "tool result pruning",
-        "memory"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "应该把完整对话历史与真正需要的状态区分开。可以进行历史压缩、摘要、删除已经完成的 tool results、提取结构化状态，并把长期信息放入独立 memory。对于每轮请求，只保留当前任务真正需要的上下文，而不是无限累积 transcript。"
@@ -192,20 +151,6 @@
     "angle": "mechanism",
     "question": "一个模型支持 1M token context。你的 RAG 系统可以把检索得到的 100 个 chunk 全部放进去。为什么仍然不应该简单地把所有 chunk 都塞进 context？",
     "explanation": "长上下文不等于有效利用；无关 chunk 带来成本、延迟与噪声，应 rerank/dedup/compress 后再进入 context。",
-    "rubric": {
-      "required": [
-        "context cost",
-        "noise",
-        "relevance",
-        "reranking/compression"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "更大的 context 并不意味着所有信息都能被同等有效地利用。无关信息会增加成本、延迟和干扰，并可能让真正重要的信息更难被模型关注。应该通过 retrieval、reranking、deduplication 和 context compression 选择真正相关的信息。"
@@ -258,12 +203,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：①固定切块（A）会把条款从中间切断且无法跳过无信息量的附录，成本随页数线性上涨；②位置启发（C）对合同不成立——关键定义可能出现在任意 Exhibit 或附函；③摘要后抽取（D）丢的是抽取最需要的原文措辞与精确数值，摘要过程本身就会引入信息损失。④交叉引用解析是最容易被忽略的一环：主文档 \"如附件 A 所定义\" 的模式非常普遍，不做解析就会产生大量看似模型失职实则输入缺失的 null 字段。⑤输出侧的引用占位保证了 \"未处理 ≠ 未记录\"，与审计要求一致。"
       }
-    },
-    "rubric": {
-      "required": [
-        "上下文是稀缺资源，需要像内存一样做分配与淘汰",
-        "压缩（摘要）与截断的信息损失特性不同，适用场景不同"
-      ]
     }
   },
   {
@@ -278,20 +217,6 @@
     "angle": "tradeoff",
     "question": "什么时候应该使用 Zero-shot，什么时候应该加入 Few-shot Examples？Few-shot 一定会提升效果吗？",
     "explanation": "Few-shot 的本质是“用示例当规格说明书”——格式/风格难描述时最有价值；但它带来锚定、偏差和 token 成本，是否使用应由评测对照决定。",
-    "rubric": {
-      "required": [
-        "zero/few-shot 适用分界",
-        "示例=精确规格",
-        "锚定与偏差风险",
-        "评测驱动决策"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "Zero-shot 适合任务描述可以讲清楚、模型预训练中已充分见过的任务（摘要、翻译、常规分类）；Few-shot 适合输出格式/风格难以用语言精确描述、或任务与通用分布差异大的场景——示例是最精确的规格说明。但 Few-shot 不保证提升：示例会强烈锚定输出（模型可能机械模仿示例的措辞甚至错误）；示例选择有偏差会把模型带偏；示例占用 token 提高成本延迟；对足够强的模型和清晰任务，加示例可能毫无收益甚至干扰。正确做法是用评测集做对照实验决定，而不是默认堆示例。"
@@ -324,20 +249,6 @@
     "angle": "scenario",
     "question": "一个生产 Prompt 从 2K tokens 增长到了 8K tokens，准确率只提高了 1%，但成本和延迟明显增加。你会如何优化？",
     "explanation": "逐块消融找到贡献 1% 的最小集合；清理累积补丁、结构化改写、prefix caching、按需检索；建立变更评测门禁防再度膨胀。",
-    "rubric": {
-      "required": [
-        "消融归因方法",
-        "识别膨胀来源",
-        "caching/检索等结构性优化",
-        "变更门禁"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "先做归因分析：把 8K prompt 拆成区块（指令、few-shot 示例、上下文、历史），逐块消融——每次移除一块跑评测集，找出真正贡献那 1% 的最小组合。经验上大量增长来自累积的补丁式规则（“不要做 X”越叠越多）、冗余示例和失效的历史约束。优化手段：合并冲突与重复指令；用结构化格式替代散文降低解析负担；裁剪到贡献边际最大的示例；把稳定不变的部分挪到 prefix 以利用 provider 的 prompt caching（成本折扣且 TTFT 更低）；对长文档类内容改走检索按需注入。同时建立 prompt 变更必须过评测集的流程，防止再次无意识膨胀。目标不是最短 prompt，而是每 token 的边际收益。"
@@ -370,21 +281,6 @@
     "angle": "system-design",
     "question": "一个生产 LLM 应用有 20 个 Prompt，开发团队经常修改 Prompt 但没有任何版本管理。你会如何设计 Prompt Versioning？",
     "explanation": "Prompt 即代码：集中注册+版本化+变更评测门禁+trace 记录实际版本+灰度放量；最小实现 Git+版本日志即可起步。",
-    "rubric": {
-      "required": [
-        "资产化管理思想",
-        "变更附评测对比",
-        "trace 关联版本",
-        "灰度机制",
-        "最小可行方案"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.35,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "核心原则是把 Prompt 当代码资产而非字符串常量。设计：统一存储与命名（按用途注册），每个 prompt 有版本号、作者、变更说明；支持模板变量与多模型变体；变更流程——修改必须附带在固定评测集上的前后对比结果，通过评审后发布，生产环境引用版本号而不是最新版；可观测——日志记录每次请求实际使用的 prompt 版本，使线上问题能回溯到具体版本；灰度能力——新版本先切小流量对比业务指标再全量。可选引入 prompt management 工具或自建简单表+SDK。最小可行版本：Git 管理 + 版本号写入 trace + 变更必附评测报告，就能解决 80% 的问题。"
@@ -417,20 +313,6 @@
     "angle": "tradeoff",
     "question": "加入 Chain-of-Thought Prompt 后，一个推理任务的准确率没有提升，但 token 消耗增加了 3 倍。你会如何判断是否应该继续使用 CoT？",
     "explanation": "先归因错误类型（CoT 只救推理类错误）并甄别表演式推理，再做成本收益与替代方案比较（条件启用/换小模型+CoT/reasoning budget）。",
-    "rubric": {
-      "required": [
-        "错误类型归因先行",
-        "表演式推理识别",
-        "错误代价与成本收益权衡",
-        "条件启用等替代方案"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "先验证 CoT 是否真的没起作用：分析错误类型分布——如果失败集中在知识缺失或检索错误，推理链再长也无济于事，CoT 只对计算/多步推导类错误有效；再检查 CoT 输出质量——模型写出的推理链是真实推导还是事后合理化（post-hoc rationalization），后者只是表演。然后做成本收益判断：该任务的错误代价多大？如果错误可通过下游校验兜住，3 倍成本买不到准确率就是纯亏损；若换更便宜模型+CoT 能追平贵模型的零样本表现，反而是降本路径。替代方案：只在困难请求启用 CoT（路由分流）、限制思考长度、或换成原生 reasoning 模型并控制 reasoning budget。结论应基于错误归因而非平均指标。"
@@ -485,12 +367,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。\n\n- A：100K Token显著抬TTFT与费用。\n- B：海量噪声稀释注意力，针尖难捞。\n- C：无关字段增幻觉与误用。\n- D 错误：全量非推崇，需按需裁切瘦身。"
       }
-    },
-    "rubric": {
-      "required": [
-        "上下文是稀缺资源，需要像内存一样做分配与淘汰",
-        "压缩（摘要）与截断的信息损失特性不同，适用场景不同"
-      ]
     }
   },
   {

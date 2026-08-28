@@ -12,19 +12,6 @@
     "angle": "mechanism",
     "question": "RoPE（Rotary Position Embedding）解决了什么问题？为什么它在现代 LLM 中被广泛使用？",
     "explanation": "RoPE 把位置编码为 Q/K 的旋转，使 attention 只依赖相对位置；无附加参数、利于长上下文外推，是主流选择。",
-    "rubric": {
-      "required": [
-        "作用于 Q/K",
-        "相对位置关系",
-        "长上下文外推优势"
-      ],
-      "dimensions": {
-        "correctness": 0.4,
-        "completeness": 0.3,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "RoPE 通过对 Q/K 做旋转变换把相对位置关系注入 attention 计算：两个 token 的 attention 分数只取决于它们的相对距离。它不需要在 context 里附加额外参数，外推到更长序列时也更稳定，配合 NTK/YaRN 等缩放策略可以较方便地扩展 context window，因此在现代开源 LLM 中被广泛采用。"
@@ -56,20 +43,6 @@
     "angle": "mechanism",
     "question": "KV Cache 解决了什么问题？它为什么会占用大量 GPU 内存？",
     "explanation": "KV Cache 免去逐步重算历史 K/V（平方→线性），但体积随 batch×layers×seq_len×heads 线性膨胀，长上下文下成为显存大头。",
-    "rubric": {
-      "required": [
-        "避免重复计算",
-        "平方→线性",
-        "显存占用构成",
-        "GQA/量化等缓解手段"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.35,
-        "architecture": 0.2,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "没有 KV Cache 的话，每生成一个 token 都要对之前所有 token 重算一遍 K/V，decode 复杂度随序列长度平方增长。KV Cache 把已计算的 K/V 缓存下来，每步只算新 token 的 K/V，把复杂度降回线性。代价是缓存大小与 batch size × 层数 × 序列长度 × hidden size × KV 头数成正比，长上下文和高并发下会膨胀到数十 GB，成为 GPU 显存的主要消耗之一——这也是 GQA、量化 KV cache、PagedAttention 等技术要解决的问题。"
@@ -102,20 +75,6 @@
     "angle": "mechanism",
     "question": "MoE 模型为什么可以拥有很大的总参数量，同时保持相对较低的每 token 计算量？它会引入哪些工程复杂度？",
     "explanation": "MoE 解耦“总参=容量”与“激活=计算”；代价是全量显存驻留、负载均衡、路由训练不稳、all-to-all 通信与专家并行等系统工程成本。",
-    "rubric": {
-      "required": [
-        "稀疏激活解耦容量与计算",
-        "显存仍需容纳全部专家",
-        "负载均衡与训练不稳定",
-        "专家并行/通信复杂度"
-      ],
-      "dimensions": {
-        "correctness": 0.35,
-        "completeness": 0.3,
-        "architecture": 0.25,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "MoE 把 Transformer 的 FFN 层替换成多个专家子网络加一个路由器，每个 token 只被路由到 top-k 个专家（如 DeepSeek-V3：671B 总参、37B 激活）。总参数决定知识容量（专家可以各自学到不同领域模式），激活参数决定每 token 的 FLOPs——两者解耦，所以能“容量大、推理便宜”。工程复杂度包括：显存并不能省——所有专家都要驻留显存；负载不均——热门专家被打爆、冷门闲置，需要 auxiliary loss 或路由策略做负载均衡；训练不稳定——路由不可导、专家容易塌缩；部署复杂——expert parallelism 成为新的并行维度，batch 内 token 要按专家重新分发（all-to-all 通信）；微调也更棘手（容易过拟合到少数专家）。"
@@ -148,20 +107,6 @@
     "angle": "scenario",
     "question": "一个 LLM 服务的 GPU 显存随并发请求增加迅速耗尽，即使模型本身可以放入显存。你会如何判断是不是 KV Cache 导致的？有哪些优化方向？",
     "explanation": "KV Cache 占用 ∝ 并发×层数×长度×KV头数；先按公式对账再优化：GQA/MQA、量化、PagedAttention、限长限并发、前缀复用。",
-    "rubric": {
-      "required": [
-        "占用公式估算",
-        "与监控对账定位",
-        "GQA/量化/PagedAttention 至少两项",
-        "限流与前缀复用"
-      ],
-      "dimensions": {
-        "correctness": 0.3,
-        "completeness": 0.3,
-        "architecture": 0.3,
-        "communication": 0.1
-      }
-    },
     "formats": {
       "open": {
         "referenceAnswer": "判断方法：估算理论 KV Cache 占用（batch × layers × seq_len × kv_heads × head_dim × 2 × dtype 大小），与显存监控中的非权重占用对比；观察显存增长是否与并发数和序列长度成正比；用单请求压测排除碎片等其他因素。优化方向：GQA/MQA 减少 KV 头数；KV Cache 量化（FP8/INT8）；PagedAttention 消除预留浪费；限制 max seq len 与抢占/驱逐策略；前缀缓存复用公共 system prompt；必要时降低并发上限换取稳定性。"
@@ -217,12 +162,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：GQA多Q共享同KV，KV头数与缓存成比例下降。\n- B：KV∝N·层·KV头·head_dim，GQA降斜率不改线性本质。\n- D：SWA有界窗口+跨层共享与GQA正交叠加。\n- C 错误：GQA优化KV Cache，非权重INT4量化。"
       }
-    },
-    "rubric": {
-      "required": [
-        "压缩倍数 = MHA 头数 ÷ KV 头数，质量影响介于两者之间",
-        "对 decode 的收益最大（缓存读取是带宽瓶颈），prefill 收益相对小"
-      ]
     }
   },
   {
@@ -258,12 +197,6 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n\nHybrid Mamba/SSM以线性递推替代二次Attention，生成阶段隐状态常数级，无需随N膨胀的KV，显著降长上下文推理成本。B字节建模、C零幻觉、D无GPU均为夸大。"
       }
-    },
-    "rubric": {
-      "required": [
-        "SWA 层复杂度 O(N·w)、缓存上界固定为窗口 w 而非序列长度 N",
-        "代价：局部层无法一步看到窗口外信息，长程推理依赖全局层中转"
-      ]
     }
   },
   {
@@ -299,12 +232,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：缓存历史 token 的 Key/Value 张量，使每步只需计算新 token 的 Q，把整体复杂度从 O(n²) 降为每步 O(n)。\n\n解析：自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "单 token 占用 = 2(K和V) × 层数 × KV头数 × head_dim × 每元素字节数",
-        "缓存规模 ∝ 序列长度且随并发数相乘——容量规划的一阶变量"
-      ]
     }
   },
   {
@@ -340,12 +267,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：总参决定显存占用，激活参数决定每 token 计算量与延迟。\n\n解析：MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。"
       }
-    },
-    "rubric": {
-      "required": [
-        "总参数量与激活参数量分别约束显存与计算/延迟",
-        "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
-      ]
     }
   },
   {
@@ -382,12 +303,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：KV cache/token = 2 × 48 × 2 × 128 × 2B = 49,152 B ≈ 48 KiB；10k token 会话 ≈ 0.47 GB。\n\n解析：逐项代入公式 2（K 和 V 两份）× N_layers(48) × N_kv_heads(2) × head_dim(128) × 每元素字节数(BF16 为 2)。注意三个易错点：①漏乘 K/V 因子 2 会得到 24 KiB；②误用 32 个 Query 头会得到 768 KiB——缓存只看 KV 头数；③误按 FP32 计算会翻倍。工程含义：80GB 卡去掉 60GB 权重剩约 20GB，0.47GB/路 → 约 40 路并发；若换成标准 MHA（32 KV 头）则单路 7.5GB，同卡只能跑 2 路左右。量化 KV cache（如 FP8）可再线性减半。"
       }
-    },
-    "rubric": {
-      "required": [
-        "单 token 占用 = 2(K和V) × 层数 × KV头数 × head_dim × 每元素字节数",
-        "缓存规模 ∝ 序列长度且随并发数相乘——容量规划的一阶变量"
-      ]
     }
   },
   {
@@ -424,12 +339,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：SWA 层复杂度 O(n·w)、KV 缓存有界（只需保留窗口内 w 个 token）；全局层负责长距离信息通路；收益=计算+显存双降，代价=局部层不能直接看全史。\n\n解析：若窗口 w=1024、上下文 n=131k，SWA 层的注意力计算从 O(n²) 降到 O(n·w)，其 KV cache 上界固定为 O(w) 而非 O(n)——75% 的层的缓存不再随上下文线性增长，再乘上 GQA 的 KV 头缩减，两层优化相乘。少量全局层像\"信息高速公路\"，让深层网络仍能整合任意远处的信息（Gemma 等模型即此设计）。trade-off：token 无法在局部层内一步关注窗口外内容，长程推理质量依赖全局层的数量与分布；纯检索类超长程任务上可能弱于全全局注意力。"
       }
-    },
-    "rubric": {
-      "required": [
-        "SWA 层复杂度 O(N·w)、缓存上界固定为窗口 w 而非序列长度 N",
-        "代价：局部层无法一步看到窗口外信息，长程推理依赖全局层中转"
-      ]
     }
   },
   {
@@ -466,12 +375,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：压缩位置在专家线性层两端（down-proj 进、up-proj 出）；专家大矩阵在低维空间执行，参数/FLOPs 随 latent 维度缩放；代价是信息瓶颈。\n\n解析：标准 MoE 中每个专家的 gate/up/down 矩阵都作用于完整 hidden size d_model；LatentMoE 借鉴 MLA 的低秩思想，先用一个 d_model×d_latent 的瘦矩阵把表示压到 latent（d_latent ≪ d_model），专家计算在低维进行后再还原。专家 FLOPs 与参数从 O(d_model×d_ff) 降为约 O(d_latent×d_ff)+O(d_model×d_latent)，压缩比高时收益显著。要能说清三点：①省的不是路由，而是专家本体的矩阵乘法；②投影本身开销小但非零；③latent 维度是显式的容量旋钮——压得越狠越省，但表征瓶颈越紧，这是它与普通剪枝的本质区别。"
       }
-    },
-    "rubric": {
-      "required": [
-        "压缩位置在专家层两端（down-proj 进、up-proj 出），省的是矩阵乘法规模而非路由",
-        "latent 维度是容量旋钮：压缩比越高信息瓶颈越紧"
-      ]
     }
   },
   {
@@ -508,12 +411,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：FLOPs/显存进一步下降；latent 成为信息瓶颈（专家输入表征变弱、路由区分度下降）；质量对压缩比敏感，需实验标定拐点。\n\n解析：latent 维度是 LatentMoE 唯一的容量旋钮，压低它的影响链路是：①收益侧——专家矩阵乘法与参数量按比例缩小，单 token 成本继续下降；②代价侧——所有 token 都要先挤过同一根细管子，专家能区分的特征变少，router 在低维空间里也更难把不同类型的 token 分开；③后果——预训练损失可能只轻微上浮，但在分布外任务或长尾能力上出现不成比例的回退。评审时还应指出两个常见误区：LatentMoE 压缩的是 FFN 路径，KV cache 一点不变；加专家数量补不回单个专家的输入带宽损失。正确做法是用消融实验找质量-成本曲线的拐点，而不是拍脑袋定压缩比。"
       }
-    },
-    "rubric": {
-      "required": [
-        "压缩位置在专家层两端（down-proj 进、up-proj 出），省的是矩阵乘法规模而非路由",
-        "latent 维度是容量旋钮：压缩比越高信息瓶颈越紧"
-      ]
     }
   },
   {
@@ -550,12 +447,6 @@
       "open": {
         "referenceAnswer": "正确答案要点：因果掩码打破置换对称性提供隐式位置信号；需用扰动实验/探针/长度外推验证顺序建模可靠性；局部注意力结构会改变这一权衡。\n\n解析：①原理层面——纯双向自注意力对 token 顺序是置换等变的，但因果掩码让位置 i 只能看到 i 个前缀，不同深度的可用上下文本身就是一种位置信号，因此 NoPE 并非必然失败（小型模型已有实证）；②验证方法——a) 扰动实验：打乱输入 token 顺序或替换为乱序文本，观察困惑度/任务指标退化幅度；b) 探针：在中间层隐藏态上线性探测位置 ID，看位置信息是否真的被编码；c) 长度外推：构造超过训练长度的顺序敏感任务（长文档检索、代码缩进结构），检验隐式信号是否随距离衰减。③结构交互——若模型大量使用滑动窗口等局部注意力，相对距离分布被窗口截断，隐式顺序更容易学；反之全局长程依赖下 NoPE 的风险更高。④工程结论——顺序敏感场景（代码、表格、长文档）应要求厂商或自查提供上述证据，而不是默认位置建模没问题。"
       }
-    },
-    "rubric": {
-      "required": [
-        "为什么需要位置信息（置换等变性）与各类方案的核心差异",
-        "NoPE 的可行性来源与风险：顺序建模可靠性与长度外推需专门验证"
-      ]
     }
   },
   {
@@ -591,12 +482,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：全局分位数的两条朴素路线都不可行——局部分位数取平均在大规模异质分布下误差大；全量收集得分到中心节点排序通信开销爆炸。Quantile Balancing 的做法：先把路由分数压缩到 [0,1]，再划约 1000 个 bin 做直方图估计；直方图分布具有可加性，各 Worker 只需聚合（All-Reduce）低维直方图而非原始得分，且可跨梯度累积，从而用极低的固定通信量精确重建全局近似分位数。Expert 数扩到 896 选 16 时负载均衡依然稳健。"
       }
-    },
-    "rubric": {
-      "required": [
-        "总参数量与激活参数量分别约束显存与计算/延迟",
-        "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
-      ]
     }
   },
   {
@@ -632,12 +517,6 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n\n要点：MLA 在 Decoding 阶段的等价形态是 head_dims=512+ 的大头 MQA——每步 decode 本身就消耗大量算力；MTP/推测解码的加速原理恰恰是\"用富余算力换速度\"，两者叠加时算力瓶颈先于带宽瓶颈出现，MTP 收益被压缩。但这不代表 MLA 不划算：它的 KV Cache 压缩率远优于 GQA8（B 反向错误）、Prefill 保持标准注意力复杂度（C 错误），综合性价比仍优，所以 K3 保留 MLA 并接受其与 MTP 的这层张力。D 的对比对象 MFA 与训练开销表述也不成立。"
       }
-    },
-    "rubric": {
-      "required": [
-        "单 token 占用 = 2(K和V) × 层数 × KV头数 × head_dim × 每元素字节数",
-        "缓存规模 ∝ 序列长度且随并发数相乘——容量规划的一阶变量"
-      ]
     }
   },
   {
@@ -673,12 +552,6 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n\n要点：理论上可以证明，正交情形下的 PaTH 位置编码等价于对 Q、K 施加一次 DeltaNet 变换；而 KDA（Kimi Linear）是比 DeltaNet 更一般的线性注意力形式。因此在 KDA + MLA 的混合架构里，KDA 层已经隐式完成了类似 RoPE/PaTH 的位置注入，MLA 层无需再显式加 RoPE（NoPE）也能保持位置感知。这不是靠拼接绝对位置编码（A），更与 MoE 无关（C）；纯 Softmax Attention 对置换等变，本身不具备全序表达能力（D）。"
       }
-    },
-    "rubric": {
-      "required": [
-        "为什么需要位置信息（置换等变性）与各类方案的核心差异",
-        "NoPE 的可行性来源与风险：顺序建模可靠性与长度外推需专门验证"
-      ]
     }
   },
   {
@@ -716,12 +589,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：标准Attention为O(N²·d)，且KV Cache随N线性膨胀，百万上下文下显存与计算双重瓶颈。\n- B：Mamba(SSM)将历史压缩为固定隐状态，递推更新O(N)且推断内存常数。\n- D：混合架构用Mamba承担主体以获线性效率，保留少量Attention层提供全局精准检索路径，兼顾效率与召回。\n- C 错误：实测纯Mamba在Needle-in-Haystack等精确检索任务上通常弱于Transformer，正是混合的动机。"
       }
-    },
-    "rubric": {
-      "required": [
-        "SWA 层复杂度 O(N·w)、缓存上界固定为窗口 w 而非序列长度 N",
-        "代价：局部层无法一步看到窗口外信息，长程推理依赖全局层中转"
-      ]
     }
   },
   {
@@ -759,12 +626,6 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。\n\n- A：Router为每个Token选Top-K专家，动态激活。\n- B：激活参数≈K×专家大小<<总参，算力与延迟按激活量计，容量按总参计。\n- D：专家间负载不均导致部分设备空闲、all-to-all通信倾斜，需aux loss/capacity factor等均衡。\n- C 错误：MoE总参全需常驻显存（或专家并行跨卡），单卡显存占用不低于同总参Dense，甚至因路由开销更大。"
       }
-    },
-    "rubric": {
-      "required": [
-        "总参数量与激活参数量分别约束显存与计算/延迟",
-        "负载均衡（auxiliary loss / capacity factor）决定实际吞吐，expert collapse 是主要失败模式"
-      ]
     }
   },
   {
@@ -784,13 +645,6 @@
     "explanation": "A、B、C 正确：绝对正弦编码通过加法融合到 Embedding，三角公式使其具备线性变换特性但外推泛化差；RoPE 将位置隐式转换为旋转矩阵作用于 Q/K，点积天然保留相对距离 m-n。D 错误：直接在 Softmax 权重上加偏置的是 ALiBi 或 T5 Relative Position Bias。",
     "reference": {
       "concept": "正弦=加法到Embedding+外推差；RoPE=乘法旋转Q/K+天然相对位置；ALiBi=Softmax偏置。"
-    },
-    "rubric": {
-      "required": [
-        "正弦编码加法融合到 Embedding 且线性可表示",
-        "RoPE 通过旋转使点积含相对位置差 m-n",
-        "超出训练长度时正弦编码泛化较差"
-      ]
     },
     "formats": {
       "choice": {
@@ -829,13 +683,6 @@
     "explanation": "A 正确：不加位置编码则打乱 Token 顺序输出的集合不变（置换不变）。B 正确：PE(pos+k) 可表示为 PE(pos) 的线性变换有利于学相对位置。C 正确：正弦编码是固定函数可外推到未见长度。D 错误：位置编码通过加法（element-wise addition）注入而非矩阵乘法。",
     "reference": {
       "concept": "置换不变性需位置编码；三角公式线性变换利于相对位置；固定函数可外推。"
-    },
-    "rubric": {
-      "required": [
-        "无位置编码则置换不变",
-        "PE(pos+k) 可表示为 PE(pos) 的线性变换",
-        "正弦编码通过加法注入而非矩阵乘法"
-      ]
     },
     "formats": {
       "choice": {
@@ -911,13 +758,6 @@
     "reference": {
       "concept": "相加不增维+三角公式利相对位置+可外推；不会覆盖语义。"
     },
-    "rubric": {
-      "required": [
-        "相加不增加维度与参数量",
-        "三角函数性质利于学习相对位置",
-        "理论上可外推到更长序列"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -992,14 +832,6 @@
     "reference": {
       "concept": "MoE 解耦容量与FLOPs；省算力不省显存；负载均衡+all-to-all 是主要代价。"
     },
-    "rubric": {
-      "required": [
-        "门控路由解耦参数量与 FLOPs",
-        "所有 Expert 常驻 VRAM 不省显存",
-        "需要辅助负载均衡损失",
-        "all-to-all 通信开销更高"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1040,13 +872,6 @@
     "reference": {
       "concept": "MoE 总参决定 VRAM 激活参数决定 FLOPs；省算力不省显存；负载均衡影响质量方差。"
     },
-    "rubric": {
-      "required": [
-        "单Token FLOPs由激活参数决定两者同级",
-        "所有Expert需常驻VRAM不省显存",
-        "路由负载均衡影响输出质量方差"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1084,13 +909,6 @@
     "explanation": "A 正确 模块化架构先冻结或微调文本模型再通过独立 Vision/Audio Encoder 及投影层映射到 Embedding 空间。B 正确 原生架构预训练初期就将多模态序列送入统一 Transformer 共同学习深层自注意力交互。C 错误 模块化架构因外挂编码器引入额外延迟且长视频高密度时序数据的注意力开销并不优于原生架构。D 正确 原生架构跨模态时空连贯理解能力更强。",
     "reference": {
       "concept": "原生=统一预训练深层交互；模块化=外挂编码器投影；原生跨模态连贯性更强。"
-    },
-    "rubric": {
-      "required": [
-        "模块化通过投影层映射到文本Embedding空间",
-        "原生统一Transformer深层自注意力交互",
-        "原生跨模态时空连贯理解能力更强"
-      ]
     },
     "formats": {
       "choice": {
@@ -1168,13 +986,6 @@
     "reference": {
       "concept": "KV/token/layer = 2×H_kv×d_head×bytes；总 = L×per-layer×N。"
     },
-    "rubric": {
-      "required": [
-        "每层每Token KV=2×H_kv×d_head×bytes",
-        "乘以层数L得单Token总量",
-        "乘以序列长度N得总显存"
-      ]
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1211,13 +1022,6 @@
     "explanation": "A 辅助负载均衡损失对激活概率不均匀性施加惩罚。B Capacity Factor 限制单 Batch 最大 Token 数超额丢弃或重定向。C Top-k 路由随机噪声增加探索度。D 错误 冻结 Router 参数导致无法根据新分布调整路由策略。",
     "reference": {
       "concept": "辅助损失+Capacity Factor+Router Noise；冻结 Router 是反模式。"
-    },
-    "rubric": {
-      "required": [
-        "辅助负载均衡损失",
-        "Expert Capacity Factor 限制",
-        "路由噪声注入探索"
-      ]
     },
     "formats": {
       "choice": {

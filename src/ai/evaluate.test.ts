@@ -39,6 +39,19 @@ describe('buildEvalUser', () => {
     expect(s).toContain('- 短期记忆');
     expect(s).toContain('- 长期记忆');
   });
+
+  // ADR-044：题目级 rubric 删除后，explanation 接替成为题目级评分锚点
+  it('题目解析（explanation）作为题目级评分锚点注入提示词', () => {
+    const withExplanation: Question = { ...q, explanation: '记忆分短期上下文与长期持久化两类' };
+    const s = buildEvalUser(withExplanation, open, 'a');
+    expect(s).toContain('题目解析');
+    expect(s).toContain('记忆分短期上下文与长期持久化两类');
+  });
+
+  it('explanation 为空时不产生多余的解析段落', () => {
+    const s = buildEvalUser(q, open, 'a');
+    expect(s).not.toContain('题目解析');
+  });
 });
 
 describe('parseEvaluation', () => {
