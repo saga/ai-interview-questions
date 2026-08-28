@@ -1,12 +1,56 @@
 // Chrome Built-in AI（Prompt API）底层封装：浏览器自带的本地模型，无需 API Key、无网络外发。
 // 与 pi.ts 对等——只做"可用性检测 + 一次性补全"，业务语义在 variant / evaluate。
 // 兼容性由运行时能力检测决定（LanguageModel 不存在 → unavailable），不做 polyfill（ADR-021）。
+//
+// 并发 / 超时 / 取消 / session 生命周期统一由文件内的 ChromeAIExecutor 管理：
+// 本地模型支持并发 session，但偶发「prompt 永久不返回」会占住槽位导致后续 create 全部死锁，
+// 故由 executor 用超时 + AbortSignal + destroy() 把死锁降级为「超时拒绝」，上层再回退原题。
 
 /** Chrome Prompt API 的可用性状态（与 LanguageModel.availability() 对齐）。 */
 export type ChromeAvailability = 'available' | 'downloadable' | 'downloading' | 'unavailable';
 
+export type ChromeAITaskStatus =
+  | 'queued'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
+
+export interface ChromeAITaskInfo {
+  id: string;
+  status: ChromeAITaskStatus;
+  createdAt: number;
+  startedAt?: number;
+  finishedAt?: number;
+  error?: unknown;
+}
+
+export interface ChromeAIExecutorOptions {
+  /** 同时执行的 prompt 数上限。Chrome 本机模型建议 2（竞争本机算力，不是硬上限）。 */
+  concurrency?: number;
+  /** 单次 prompt 的默认超时（ms）。 */
+  timeoutMs?: number;
+  /** 执行失败后的重试次数。 */
+  retries?: number;
+  /** 队列状态变化回调（可接 React state）。 */
+  onChange?: (tasks: ChromeAITaskInfo[]) => void;
+}
+
+export interface ChromeAIExecuteOptions {
+  /** 取消本任务。 */
+  signal?: AbortSignal;
+  /** 覆盖默认超时。 */
+  timeoutMs?: number;
+  /** 覆盖默认重试次数。 */
+  retries?: number;
+  /** 可选的 system prompt（进入 initialPrompts）。 */
+  system?: string;
+  /** 可选任务 id。 */
+  taskId?: string;
+}
+
 interface ChromeSessionLike {
-  prompt(input: string): Promise<string>;
+  prompt(input: string, opts?: { signal?: AbortSignal }): Promise<string>;
   destroy?(): void;
 }
 
@@ -14,6 +58,7 @@ interface LanguageModelLike {
   availability?(): Promise<ChromeAvailability>;
   create(options?: {
     initialPrompts?: Array<{ role: string; content: string }>;
+    signal?: AbortSignal;
     monitor?: unknown;
   }): Promise<ChromeSessionLike>;
 }
@@ -35,80 +80,347 @@ export async function chromeAvailability(): Promise<ChromeAvailability> {
   }
 }
 
-/**
- * 受限并发队列：Chrome on-device 模型在同一时刻只允许存在「一个」活跃 session——
- * 第二个 `lm.create()` 会无限挂起（不抛错），导致 Promise.all 整体死锁、组卷永远卡在
- * 「正在生成」。因此本地引擎必须严格串行（CONCURRENCY = 1），用完即 destroy 后再建下一个。
- * 模块级队列对所有调用方生效（组卷变体的 Promise.all / 自适应出题 / 开放题评分），
- * 云端引擎（pi.ts）不受影响，仍可自由并发。
- */
-const CONCURRENCY = 1;
-let activeCount = 0;
-const pending: Array<() => void> = [];
-
-/** 当活跃数低于并发上限时，从等待队列取出任务启动。 */
-function pump() {
-  while (activeCount < CONCURRENCY && pending.length > 0) {
-    const start = pending.shift()!;
-    start();
-  }
+function createTaskId(): string {
+  return `chrome-ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/**
- * 把任务投入受限并发队列。任务的成败只影响自身 promise，不会透传给队列中的其他任务，
- * 因此单个失败不会阻塞后续调用。
- */
-function runLimited<T>(task: () => Promise<T>): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    pending.push(() => {
-      activeCount++;
-      task()
-        .then(resolve, reject)
-        .finally(() => {
-          activeCount--;
-          pump();
-        });
-    });
-    pump();
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError';
+}
+
+function isRetryableError(error: unknown): boolean {
+  if (isAbortError(error)) return false;
+  if (error instanceof DOMException) {
+    return ['NetworkError', 'InvalidStateError', 'OperationError', 'TimeoutError'].includes(error.name);
+  }
+  return true;
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  if (signal?.aborted) {
+    return Promise.reject(new DOMException('Aborted', 'AbortError'));
+  }
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 }
 
-/**
- * 单次补全硬超时：Chrome on-device 模型是单 session 的，且偶尔会在某些 prompt 上「永久不返回」
- * （既不复议也不抛错），也不提供 abort。若不设超时，一次卡死会永久占用唯一 session 槽位、
- * 让后续所有 create 死锁、整场组卷卡死。这里用 watchdog 把 create / prompt 包成「超时即拒绝」，
- * 上层（finalizeQuestion 的回退）据此降级为原题，保证 UI 永不假死。
- */
-const CALL_TIMEOUT_MS = 60_000;
-function withTimeout<T>(p: Promise<T>, label: string): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(`Chrome 内置 AI ${label} 超时（${CALL_TIMEOUT_MS}ms），已降级为原题`)), CALL_TIMEOUT_MS),
+function combineSignals(...signals: Array<AbortSignal | undefined>): AbortSignal {
+  const valid = signals.filter(Boolean) as AbortSignal[];
+  if (valid.length <= 1) return valid[0] ?? new AbortController().signal;
+  const ctrl = new AbortController();
+  valid.forEach((s) =>
+    s.addEventListener(
+      'abort',
+      () => ctrl.abort(s.reason),
+      { once: true },
     ),
-  ]);
+  );
+  return ctrl.signal;
 }
 
-/** 一次性补全：每次调用新建 session（one-shot 无状态架构），用完即销毁；全局最多 1 个并发。 */
+/** 无论底层是否遵守 abort，都保证在 timeoutMs 后拒绝，避免永久假死。
+ *  用回调式 setTimeout（而非会 reject 的 timer promise + Promise.race），
+ *  可避免「rejection 暂未被处理」的伪未处理拒绝告警。 */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Chrome 内置 AI ${label} 超时（${ms}ms）`)),
+      ms,
+    );
+    p.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
+
+interface QueueItem<T> {
+  task: ChromeAITaskInfo;
+  execute: (signal: AbortSignal) => Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+  controller: AbortController;
+}
+
+/**
+ * Chrome Built-in AI / Prompt API 执行器（基础设施层，不依赖 React）。
+ *
+ * 职责：并发控制、FIFO 队列、取消（AbortSignal）、超时、重试、LanguageModel session 生命周期、状态回调。
+ *
+ * 关键修正（对比早期「CONCURRENCY=1 串行」的误判）：
+ * 实测 Chrome on-device 模型支持并发 session，真正导致「开始自定义训练」卡死的是——
+ * 某个 prompt 偶发永久不返回（既不 resolve 也不 reject，也不遵守 abort），其 session 一直占着槽位，
+ * 后续 create 拿不到槽位而全部挂起。因此这里必须靠「超时 + AbortSignal + destroy()」把死锁变成「超时拒绝」，
+ * 上层（finalizeQuestion 回退原题）据此降级，UI 永不假死。
+ *
+ * 设计来源：用户提供的 ChromeAIExecutor 方案（含 runningTasks Map 修正）。
+ */
+export class ChromeAIExecutor {
+  private readonly concurrency: number;
+  private readonly defaultTimeoutMs: number;
+  private readonly defaultRetries: number;
+
+  private readonly queue: QueueItem<unknown>[] = [];
+  private readonly runningTasks = new Map<string, QueueItem<unknown>>();
+  private readonly tasks = new Map<string, ChromeAITaskInfo>();
+
+  private running = 0;
+  private readonly onChange?: (tasks: ChromeAITaskInfo[]) => void;
+
+  constructor(options: ChromeAIExecutorOptions = {}) {
+    this.concurrency = Math.max(1, options.concurrency ?? 2);
+    this.defaultTimeoutMs = options.timeoutMs ?? 60_000;
+    this.defaultRetries = Math.max(0, options.retries ?? 1);
+    this.onChange = options.onChange;
+  }
+
+  get activeCount(): number {
+    return this.running;
+  }
+  get pendingCount(): number {
+    return this.queue.length;
+  }
+  get maxConcurrency(): number {
+    return this.concurrency;
+  }
+  getTasks(): ChromeAITaskInfo[] {
+    return Array.from(this.tasks.values());
+  }
+
+  execute(prompt: string, options: ChromeAIExecuteOptions = {}): Promise<string> {
+    return this.enqueue(
+      (signal) => this.runPrompt(prompt, signal, options),
+      options,
+    );
+  }
+
+  enqueue<T>(
+    execute: (signal: AbortSignal) => Promise<T>,
+    options: ChromeAIExecuteOptions = {},
+  ): Promise<T> {
+    const id = options.taskId ?? createTaskId();
+    const task: ChromeAITaskInfo = { id, status: 'queued', createdAt: Date.now() };
+    const controller = new AbortController();
+
+    if (options.signal) {
+      if (options.signal.aborted) controller.abort(options.signal.reason);
+      else
+        options.signal.addEventListener(
+          'abort',
+          () => controller.abort(options.signal!.reason),
+          { once: true },
+        );
+    }
+
+    this.tasks.set(id, task);
+    this.emitChange();
+
+    return new Promise<T>((resolve, reject) => {
+      this.queue.push({ task, execute, resolve, reject, controller });
+      this.pump();
+    });
+  }
+
+  cancel(taskId: string): boolean {
+    const task = this.tasks.get(taskId);
+    if (!task) return false;
+    if (task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
+      return false;
+
+    const queuedIndex = this.queue.findIndex((item) => item.task.id === taskId);
+    if (queuedIndex >= 0) {
+      const [item] = this.queue.splice(queuedIndex, 1);
+      item.controller.abort();
+      task.status = 'cancelled';
+      task.finishedAt = Date.now();
+      item.reject(new DOMException('Task cancelled', 'AbortError'));
+      this.emitChange();
+      return true;
+    }
+
+    const item = this.runningTasks.get(taskId);
+    if (item) {
+      item.controller.abort();
+      return true;
+    }
+    return false;
+  }
+
+  cancelAll(): void {
+    for (const task of this.tasks.values()) {
+      if (task.status === 'queued' || task.status === 'running') this.cancel(task.id);
+    }
+  }
+
+  cleanup(): void {
+    for (const [id, task] of this.tasks) {
+      if (task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
+        this.tasks.delete(id);
+    }
+    this.emitChange();
+  }
+
+  clearQueue(): void {
+    const pending = [...this.queue];
+    this.queue.length = 0;
+    for (const item of pending) {
+      item.controller.abort();
+      item.task.status = 'cancelled';
+      item.task.finishedAt = Date.now();
+      item.reject(new DOMException('Queue cleared', 'AbortError'));
+    }
+    this.emitChange();
+  }
+
+  async idle(): Promise<void> {
+    if (this.running === 0 && this.queue.length === 0) return;
+    await new Promise<void>((resolve) => {
+      const check = () => {
+        if (this.running === 0 && this.queue.length === 0) resolve();
+        else setTimeout(check, 25);
+      };
+      check();
+    });
+  }
+
+  private pump(): void {
+    while (this.running < this.concurrency && this.queue.length > 0) {
+      const item = this.queue.shift()!;
+      this.running++;
+      void this.runItem(item);
+    }
+    this.emitChange();
+  }
+
+  private async runItem<T>(item: QueueItem<T>): Promise<void> {
+    const { task, execute, resolve, reject, controller } = item;
+    this.runningTasks.set(task.id, item as QueueItem<unknown>);
+    task.status = 'running';
+    task.startedAt = Date.now();
+    this.emitChange();
+
+    try {
+      const result = await execute(controller.signal);
+      if (controller.signal.aborted) {
+        task.status = 'cancelled';
+        task.finishedAt = Date.now();
+        reject(new DOMException('Task cancelled', 'AbortError'));
+      } else {
+        task.status = 'completed';
+        task.finishedAt = Date.now();
+        resolve(result);
+      }
+    } catch (error) {
+      if (controller.signal.aborted || isAbortError(error)) {
+        task.status = 'cancelled';
+        task.finishedAt = Date.now();
+        reject(error);
+      } else {
+        task.status = 'failed';
+        task.finishedAt = Date.now();
+        task.error = error;
+        reject(error);
+      }
+    } finally {
+      this.runningTasks.delete(task.id);
+      this.running--;
+      this.emitChange();
+      this.pump();
+    }
+  }
+
+  private async runPrompt(
+    prompt: string,
+    signal: AbortSignal,
+    options: ChromeAIExecuteOptions,
+  ): Promise<string> {
+    const timeoutMs = options.timeoutMs ?? this.defaultTimeoutMs;
+    const retries = options.retries ?? this.defaultRetries;
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      try {
+        return await this.runPromptOnce(prompt, signal, timeoutMs, options.system);
+      } catch (error) {
+        lastError = error;
+        if (signal.aborted || isAbortError(error) || !isRetryableError(error) || attempt >= retries)
+          throw error;
+        await sleep(250 * 2 ** attempt, signal);
+      }
+    }
+    throw lastError;
+  }
+
+  private async runPromptOnce(
+    prompt: string,
+    externalSignal: AbortSignal,
+    timeoutMs: number,
+    system?: string,
+  ): Promise<string> {
+    const lm = getLanguageModel();
+    if (!lm) throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
+
+    const timeoutController = new AbortController();
+    const timer = setTimeout(
+      () => timeoutController.abort(new DOMException('Chrome AI request timed out', 'TimeoutError')),
+      timeoutMs,
+    );
+    const signal = combineSignals(externalSignal, timeoutController.signal);
+
+    let session: ChromeSessionLike | undefined;
+    try {
+      session = await withTimeout(
+        lm.create({
+          ...(system ? { initialPrompts: [{ role: 'system', content: system }] } : {}),
+          signal,
+        }),
+        timeoutMs,
+        'create',
+      );
+      return (await withTimeout(session.prompt(prompt, { signal }), timeoutMs, 'prompt')) ?? '';
+    } finally {
+      clearTimeout(timer);
+      // destroy() 会中止进行中的工作并释放 session 槽位，是解除死锁的关键
+      session?.destroy?.();
+    }
+  }
+
+  private emitChange(): void {
+    this.onChange?.(this.getTasks());
+  }
+}
+
+/** 应用层单例：Chrome 内置 AI 并发上限 2，单次 60s 超时，失败重试 1 次。 */
+export const chromeAI = new ChromeAIExecutor({
+  concurrency: 2,
+  timeoutMs: 60_000,
+  retries: 1,
+});
+
+/**
+ * 一次性补全：把 system + user 交给 ChromeAIExecutor（默认并发 2、单次 60s 超时、失败重试 1 次）。
+ * 业务层签名不变（variant / evaluate / provider 无需改动）；session 的创建、超时、销毁都在 executor 内完成。
+ * 先做一次可用性预检，模型明确 unavailable 时直接报错、连 session 都不建（避免无谓的 create 超时）。
+ */
 export async function chromeComplete(system: string, user: string): Promise<string> {
-  return runLimited(() => chromeCompleteOnce(system, user));
-}
-
-async function chromeCompleteOnce(system: string, user: string): Promise<string> {
-  const lm = getLanguageModel();
-  if (!lm) {
+  if (!getLanguageModel()) {
     throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
   }
   if ((await chromeAvailability()) === 'unavailable') {
     throw new Error('Chrome 内置 AI 模型在当前环境不可用，请在设置中改用云端服务商');
   }
-  const session = await withTimeout(
-    lm.create({ initialPrompts: [{ role: 'system', content: system }] }),
-    'create',
-  );
-  try {
-    return (await withTimeout(session.prompt(user), 'prompt')) ?? '';
-  } finally {
-    await session.destroy?.();
-  }
+  return chromeAI.execute(user, { system });
 }

@@ -50,7 +50,9 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
    pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON；local 在此路由到
                      createProvider 注册的自定义 provider，ADR-022）
-   chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete，ADR-021）
+    chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete）+ ChromeAIExecutor
+                      （并发上限 + 单次超时 + AbortSignal 取消 + 失败重试 + session 自动销毁，
+                      核心机制见下「Chrome 内置 AI 的并发与卡死」，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
    variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
    evaluate.ts       开放形态评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
@@ -297,11 +299,29 @@ Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → de
 - 训练与规则式面试的 LLM 调用都是 one-shot 结构化生成，无状态；Agent 面试的
   多轮决策循环由 `src/agent/interviewAgent.ts` 驱动，是唯一的有状态调用方。
 - **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
-  pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
-  chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，
-  在降级链中表现为"切换到下一引擎"，链尾才由 interviewEngine 现有 catch 兜底
-  （原题 / 不评分），不做 polyfill。设置页用 `chromeAvailability()` 展示本地模型状态
-  （available/downloadable/downloading/unavailable）。
+   pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
+   chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，
+   在降级链中表现为"切换到下一引擎"，链尾才由 interviewEngine 现有 catch 兜底
+   （原题 / 不评分），不做 polyfill。设置页用 `chromeAvailability()` 展示本地模型状态
+   （available/downloadable/downloading/unavailable）。
+
+### Chrome 内置 AI 的并发与卡死（修复记录，2026-08-28）
+
+- **现象**：训练页点「开始自定义训练」后一直卡在"正在用 LLM 生成变体题目…"，从不进入题目。
+- **根因**：Chrome 内置 AI 的 `LanguageModel` 偶尔会让一次 `session.prompt()` 既不 resolve 也不
+  reject、且不响应 `AbortSignal`；该 session 会一直存活并占用进程内的并发名额。一旦名额被
+  这类"僵尸 session"占满，后续所有 `create()` 都会永久挂起 → 整批出题死锁。该上限**不是**硬性的
+  1（干净状态下 `lm.create()` 并发 2 个均可成功），而是被残留的僵尸 session 占满名额所致。
+- **修复**：`chromeComplete` 改为委托给同文件内的 `ChromeAIExecutor`（`src/ai/chrome.ts`）：
+  - 并发上限 `concurrency`（默认 2），超出排队，避免瞬间打满名额；
+  - 每次 `create` 与 `prompt` 都套 `withTimeout`（`setTimeout` 回调式，非 race 的 reject promise，
+    避免伪未处理拒绝），单次 `timeoutMs`（默认 60s）后**一定**拒绝；
+  - 用 `AbortController` 取消（手动合并多个 signal，不依赖 `AbortSignal.any`）；
+  - 失败按 `retries`（默认 1）重试一次；无论成功/失败/超时，`finally` 中 `session.destroy()`
+    释放本 session，腾出并发名额；
+  - 用 `runningTasks` Map 跟踪在途任务（用户提供的第 3 点修正：避免共享闭包变量被并发覆盖）。
+- **配套兜底**：`interviewEngine.finalizeQuestion` 在变体 `validate/JSON` 失败时 `console.warn`
+  并返回原题，避免单题坏数据导致整批 `buildSession` 中断（与降级链链尾兜底互补）。
 - **多引擎降级链（ADR-023）**：`AIConfig.providers` 是有序数组，典型排布
   chrome → local → 云端强模型——免费本地模型优先，失败自动落到云端兜底。
   LLMProvider 接口不携带 config：实现类构造时绑定自己的 ProviderEntry，

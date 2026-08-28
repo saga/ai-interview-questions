@@ -53,7 +53,7 @@ describe('chromeComplete', () => {
     const out = await chromeComplete('sys-prompt', 'user-prompt');
     expect(out).toBe('echo:user-prompt');
     expect(createdWith).toMatchObject({ initialPrompts: [{ role: 'system', content: 'sys-prompt' }] });
-    expect(session.prompt).toHaveBeenCalledWith('user-prompt');
+    expect(session.prompt).toHaveBeenCalledWith('user-prompt', expect.anything());
     expect(session.destroy).toHaveBeenCalledTimes(1);
     void lm;
   });
@@ -82,7 +82,25 @@ describe('chromeComplete', () => {
     expect(getLanguageModel()).toBe(lm);
   });
 
-  it('Chrome on-device 模型单 session：并发调用严格串行（同一时刻最多 1 个）', async () => {
+  it('create / prompt 永久不返回（on-device 偶发卡死）时超时拒绝，不假死', async () => {
+    vi.useFakeTimers();
+    stubLanguageModel({
+      create: async () => ({
+        // 永不 resolve，模拟 Chrome 内置 AI 偶尔的死锁
+        prompt: () => new Promise<string>(() => {}),
+        destroy: vi.fn(),
+      }),
+    });
+    const p = chromeComplete('s', 'u');
+    // 先把断言 handler 挂上，再推进假时钟，避免「rejection 处理时机」告警
+    const assertions = expect(p).rejects.toThrow('超时');
+    // 单次 60s 超时 + 1 次重试（sleep 250ms）≈ 120.25s，留余量
+    await vi.advanceTimersByTimeAsync(125_000);
+    await assertions;
+    vi.useRealTimers();
+  });
+
+  it('Chrome on-device 模型支持并发 session：并发调用上限为 executor 的 concurrency（默认 2）', async () => {
     let active = 0;
     let maxActive = 0;
     stubLanguageModel({
@@ -99,17 +117,18 @@ describe('chromeComplete', () => {
     });
     // 模拟组卷路径：Promise.all 同时发起 5 个补全
     await Promise.all(Array.from({ length: 5 }, (_, i) => chromeComplete('s', `u${i}`)));
-    // Chrome 内置 AI 同时只允许一个活跃 session，第二个 create 会死锁，故必须串行
-    expect(maxActive).toBeLessThanOrEqual(1);
-    expect(maxActive).toBeGreaterThanOrEqual(1);
+    // 默认 concurrency=2：同一时刻最多 2 个 session 并发，不会退化成串行也不会无限并发
+    expect(maxActive).toBeLessThanOrEqual(2);
+    expect(maxActive).toBeGreaterThanOrEqual(2);
   });
 
-  it('前一个调用失败不影响后续调用（rejection 不透传）', async () => {
+  it('前一个调用失败不影响后续调用（rejection 不透传，且会按 executor 重试一次）', async () => {
     let n = 0;
     stubLanguageModel({
       create: async () => {
         n++;
-        if (n === 1) throw new Error('boom');
+        // 前两次都失败：第一次失败 → executor 重试（retries=1）→ 第二次仍失败 → 才真正 reject
+        if (n <= 2) throw new Error('boom');
         return { prompt: vi.fn(async () => 'ok'), destroy: vi.fn() };
       },
     });
