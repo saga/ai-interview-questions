@@ -4,7 +4,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "Bedrock 多智能体顺序编排（Step Functions）",
-    "tags": ["aws", "bedrock", "step-functions", "agent", "orchestration"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "step-functions",
+      "agent",
+      "orchestration"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某公司要搭建年度客户奖励计划。奖励依据所购商品类目与客户购买历史等参数计算。公司需要一个生成式 AI（GenAI）方案：用 3 个 Amazon Bedrock 智能体在客户浏览在线目录时提供协助，智能体须借助知识库与 action group 管理搜索、推荐、下单三个模块，且三个模块必须顺序执行；一个 Lambda 函数计算每个推荐商品的预估奖励。方案需在服务中断时优雅降级。以下哪个方案以最高运维效率满足？（单选）",
@@ -18,7 +24,9 @@
           "为每个智能体配置独立的重试/兜底，另写 Lambda 编排调用，并在该 Lambda 后放 API Gateway REST API",
           "另写 Lambda 编排调用，再用只含 1 个任务的 Step Functions 状态机运行该 Lambda，配置 Retry/Catch"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- Step Functions 托管顺序编排 + 任务级 Retry/Catch，故障精准恢复/兜底。\n- A/C 自定义 Lambda 编排更重；D 未对智能体分别做任务级错误处理。"
@@ -30,7 +38,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "Bedrock 护栏 + SCP 防主题/模型越权",
-    "tags": ["aws", "bedrock", "guardrails", "scp", "iam", "governance"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "guardrails",
+      "scp",
+      "iam",
+      "governance"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司用已开启全部功能的 AWS Organizations 管理多账号，员工在多个账号使用 Bedrock。公司必须：禁止在提交给 Bedrock 模型的提示中出现特定主题与专有信息；员工只能用获批的 Bedrock 模型；员工 IAM 角色由公司集中管理。哪些方案组合满足？（请选择以下 2 个正确选项）",
@@ -45,7 +60,10 @@
           "用 CloudFormation 建带 block（拦截）过滤策略的 Bedrock guardrail，并用 StackSets 部署到各账号",
           "用 CloudFormation 建带 mask（掩码）过滤策略的 Bedrock guardrail，并用 StackSets 部署到各账号"
         ],
-        "answer": [2, 3]
+        "answer": [
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C、D。\n- Guardrails block 策略从源头拦截被禁主题/PII；StackSets 集中部署。\n- SCP 拒绝未带 guardrail 标识符的调用；权限边界限制只用获批模型。\n- A 权限边界无法强制指定标识符；B SCP 无此语义；E mask 仅脱敏不拦截。"
@@ -57,7 +75,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "数据血缘与审计（Glue Data Catalog + CloudTrail）",
-    "tags": ["aws", "glue", "cloudtrail", "lineage", "audit", "compliance"],
+    "tags": [
+      "aws",
+      "glue",
+      "cloudtrail",
+      "lineage",
+      "audit",
+      "compliance"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某公司开发 GenAI 应用，从内外部数据源生成内容，需保证生成结果完全可溯源：注册数据源并打元数据标签以归因到原始来源，且保留数据访问与使用的审计日志。哪个方案满足？（单选）",
@@ -71,7 +96,9 @@
           "数据存 S3 并用对象标签归因，用 Glue Data Catalog 管 schema，用 CloudTrail 记录 S3 访问",
           "用 Glue Data Catalog 注册所有数据源并打元数据标签归因，用 CloudTrail 记录跨服务的访问与活动"
         ],
-        "answer": [3]
+        "answer": [
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- Glue Data Catalog 集中注册+归因标签；CloudTrail 跨服务审计轨迹。\n- A 偏访问管控；B/C 审计不全面。"
@@ -83,7 +110,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "Bedrock 自适应重试 + 流式断点续传",
-    "tags": ["aws", "bedrock", "retry", "backoff", "circuit-breaker", "streaming"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "retry",
+      "backoff",
+      "circuit-breaker",
+      "streaming"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司用 Bedrock API 处理复杂客户咨询。高峰时段出现间歇性 API 超时导致响应分片断裂、数据交付延迟，且因咨询长度不一难以保证不超 token 上限，用户反映输入被截断、响应不完整，还出现 FM 调用失败。公司需要一种重试策略：自动处理瞬时错误、高峰时不压垮 Bedrock、能适应服务可用性变化，并支持流式响应与 token 感知的请求处理。哪个方案满足？（单选）",
@@ -97,7 +131,9 @@
           "用 SDK 标准模式重试，try-catch 处理超时，流式失败返回缓存补全；全局 token 上限；加抖动与轻量裁剪；只补缺失分片；小内存缓冲",
           "Bedrock 客户端超时设 30 秒，客户端侧限流，缓冲部分结果并在性能下降时停新请求；静态 token 上限；指数退避+动态分片+上下文感知 token 上限"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 自适应重试=指数退避+抖动+熔断+动态限流，契合“适应可用性”。\n- 流式处理器缓冲并续传。C 固定标准模式且不返陈旧补全；A/D 非自适应无抖动。"
@@ -109,7 +145,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "长文档切分（Bedrock Knowledge Bases 分层切分）",
-    "tags": ["aws", "bedrock", "knowledge-base", "chunking", "hierarchical", "context-window"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "knowledge-base",
+      "chunking",
+      "hierarchical",
+      "context-window"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某企业应用用 Bedrock FM 处理分析 50–200 页技术文档。当用户处理超过 FM 上下文窗口的文档时，出现响应不一致与输出被截断。哪个方案解决该问题？（单选）",
@@ -123,7 +166,9 @@
           "语义切分：断点百分位 95%、缓冲 3 句，用 RetrieveAndGenerate 按嵌入相似度动态选最相关分片",
           "用 Lambda 借 FM tokenizer 分析 token 数，把文档切成不超上下文窗口 80% 的等长段，分段独立处理后再聚合"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 分层切分：小子块检索、父块喂 FM，保持每次推理在窗内且上下文完整。\n- C 语义切分不支持缓冲 3 句；A 拼到 200k 仍可能超窗；D 等长切切断语义。"
@@ -135,7 +180,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "智能提示路由（intelligent prompt routing）",
-    "tags": ["aws", "bedrock", "prompt-routing", "cost", "model-selection"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "prompt-routing",
+      "cost",
+      "model-selection"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某零售商用 Bedrock 建客服助手。分析显示 70% 咨询是小型产品问题（小模型即可），30% 是复杂退换货政策问题（需强推理）。公司想以最低实现成本做按复杂度自动路由的模型选择框架，保持高满意度且低延迟。哪个方案满足？（单选）",
@@ -149,7 +200,9 @@
           "单模型方案：用中等 FM 按需计费，在提示中加指令让同一模型处理简/繁",
           "为简/繁建独立 Bedrock 端点，基于关键词的规则路由，简单用按需、复杂用 Provisioned Throughput"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 智能提示路由托管、按需质量-成本自动选模型，零自建。\n- A 自建路由；C 单模型难兼顾；D 关键词路由脆弱。"
@@ -161,7 +214,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "MCP 服务器鉴权（Streamable HTTP + Cognito）",
-    "tags": ["aws", "mcp", "bedrock", "cognito", "api-gateway", "security"],
+    "tags": [
+      "aws",
+      "mcp",
+      "bedrock",
+      "cognito",
+      "api-gateway",
+      "security"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司用 Lambda 建 AI agent 方案。开发者要配置一个访问用户信息的 MCP 服务器，并让 agent 使用该服务器，且确保只有授权用户能访问。哪个方案满足？（单选）",
@@ -175,7 +235,9 @@
           "用 Lambda 托管 MCP 服务器，前接 API Gateway 代理，agent 用 Streamable HTTP + Cognito OAuth 鉴权",
           "用 Lambda 层托管 MCP 服务器，把层加到 agent 的 Lambda，agent 用 STDIO 传输，层 ARN 作为命令、用户凭据作环境变量"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- Streamable HTTP 是受支持网络传输；API Gateway 代理 + Cognito OAuth 鉴权。\n- STDIO 仅进程内无网络鉴权；凭据放环境变量不安全。"
@@ -187,7 +249,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "RAG 语料处理（PII 脱敏 + 嵌入，Step Functions）",
-    "tags": ["aws", "rag", "comprehend", "pii", "step-functions", "opensearch"],
+    "tags": [
+      "aws",
+      "rag",
+      "comprehend",
+      "pii",
+      "step-functions",
+      "opensearch"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "开发者做基于 RAG 的客服应用，用 Bedrock FM，需处理 S3 中 50 GB 历史对话 JSON 作为检索语料。数据处理流程要抽取相关字段、移除 PII、生成嵌入向量，且要在 4 小时内低成本完成。哪个方案以最低运维开销满足？（单选）",
@@ -201,7 +270,9 @@
           "EMR 集群跑 Spark UDF 调 Comprehend 去 PII，Bedrock 生成向量，存入 Aurora PostgreSQL(pgvector)",
           "用 Step Functions 编排：Comprehend 去 PII、Bedrock 生成嵌入，直接对接 OpenSearch Serverless 存向量并做相似度检索"
         ],
-        "answer": [3]
+        "answer": [
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- Step Functions 编排托管服务（Comprehend 去 PII + Bedrock 嵌入）+ OpenSearch Serverless，无服务器最省运维。\n- A Lambda 受限；B/C 需运维集群。"
@@ -213,7 +284,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "降低幻觉（RAG + CoT 事实核验）",
-    "tags": ["aws", "rag", "hallucination", "bedrock", "cot", "knowledge-base"],
+    "tags": [
+      "aws",
+      "rag",
+      "hallucination",
+      "bedrock",
+      "cot",
+      "knowledge-base"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司用 Bedrock 生成技术内容，近期长文档摘要出现大量幻觉（错误/编造细节）。现有方案用大 FM 加一次性把整文档塞进提示。公司需要降低幻觉、满足事实准确性，且每小时处理 1000+ 文档、单文档 3 秒内出摘要。哪些方案组合满足？（请选择以下 2 个正确选项）",
@@ -228,7 +306,10 @@
           "提高 Bedrock 的 temperature 参数",
           "提示模型对每篇完整文档一次性摘要"
         ],
-        "answer": [0, 1]
+        "answer": [
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、B。\n- RAG 锚定源内容 + Bedrock KB 自动化带引用；CoT 事实核验做提示层检查。\n- C 模式拦截不建立事实落地；D 增随机性；E 保留易幻觉设计。"
@@ -240,7 +321,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "多语言一致性评估（Bedrock 评估作业 + CI/CD 门禁）",
-    "tags": ["aws", "bedrock", "evaluation", "multilingual", "cicd", "gate"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "evaluation",
+      "multilingual",
+      "cicd",
+      "gate"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司升级了支撑多语言客服助手的 Bedrock FM。升级后不同语言对相同问题给出不一致回答。公司需要一套方案在今后的更新中识别并修复此类问题，评估须：每语言 45 分钟内完成、至少并发 15,000 条测试对话、完全自动化并接入 CI/CD、质量阈值不达标则阻止发布。哪个方案满足？（单选）",
@@ -254,7 +342,9 @@
           "预处理管道把所有消息规范化为统一格式再送助手，规则检查标幻觉，仅对规范化文本做跨语言测试",
           "用含义相同的标准化多语言测试对话，经 Bedrock 模型评估作业并行运行，设相似度与幻觉阈值，并接入 CI/CD 在失败时阻断发布"
         ],
-        "answer": [3]
+        "answer": [
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- Bedrock 自动评估作业 + 同义多语言数据集 + 相似度/幻觉阈值 + CI/CD 阻断，构成自动门禁。\n- A/B/C 为人工/周期审计，不满足自动阻断与并发 15k。"
@@ -266,7 +356,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "统一可观测性（CloudWatch 复合告警）",
-    "tags": ["aws", "cloudwatch", "composite-alarm", "observability", "sns"],
+    "tags": [
+      "aws",
+      "cloudwatch",
+      "composite-alarm",
+      "observability",
+      "sns"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某电商用 FM 生成商品描述。工程团队用 CloudWatch 监控 token/延迟/错误率等技术指标，营销团队在另一系统看转化率/营收等业务指标。公司要统一可观测性把技术与业务关联，指标劣化自动告警，并同时可见两类指标。哪个方案满足？（单选）",
@@ -280,7 +376,9 @@
           "把 CloudWatch 指标经指标流送到 S3，用 QuickSight 看板，EventBridge 规则超阈值时通知",
           "配 CloudWatch 自定义看板整合指标，配带异常检测的复合告警，SNS 通知"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 业务指标发布为 CloudWatch 自定义指标，复合告警组合技术+业务并 SNS 通知。\n- B 自动修复超出需求；C 链路更重；D 异常检测可行但不如 A 直接组合两类。"
@@ -292,7 +390,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "金融多跳关系（GraphRAG + Neptune Analytics）",
-    "tags": ["aws", "rag", "graphrag", "neptune", "multi-hop", "bedrock"],
+    "tags": [
+      "aws",
+      "rag",
+      "graphrag",
+      "neptune",
+      "multi-hop",
+      "bedrock"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某金融机构建 RAG 应用帮分析师查询跨越多种投资工具、行业板块、监管环境的复杂金融关系，数据高度互联、含多跳关系，分析师要整体审视间接关系以给出准确建议，响应需 <3 秒。哪个方案以最低运维开销满足？（单选）",
@@ -306,7 +411,9 @@
           "用 OpenSearch Serverless 向量库做 k-NN，在 EC2 Auto Scaling 的应用层手写关系映射",
           "用 DynamoDB 自定义索引，Lambda 按问题查记录，SageMaker AI 生成回答"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- GraphRAG + Neptune 托管图 RAG，自动多跳遍历，免自运维。\n- B/C/D 都要自运维计算/查询层，开销大且难达 3 秒。"
@@ -318,7 +425,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "跨区域推理与数据驻留（cross-Region inference profiles）",
-    "tags": ["aws", "bedrock", "cross-region", "data-residency", "inference-profile"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "cross-region",
+      "data-residency",
+      "inference-profile"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司用支持跨区域推理与 Provisioned Throughput 的 Bedrock FM 建应用，需对欧洲与北美用户提供稳定低延迟，并满足数据驻留（欧洲用户数据留欧）。测试时区域流量突增触及配额致服务降级。公司要保留韧性且最小化运维复杂度。哪个方案满足？（单选）",
@@ -332,7 +445,9 @@
           "多区域 API Gateway + Lambda 重试，主区域触配额时调最近次区域 FM，智能路由保证数据驻留",
           "多区域配 Provisioned Throughput，应用代码写故障转移逻辑，Global Accelerator 按位置路由"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 地理跨区域推理配置文件在 EU/US 内自动路由，满足数据驻留且免自建故障转移。\n- 推理配置文件不支持 Provisioned Throughput（D 错）；A/C 自建路由更重。"
@@ -344,7 +459,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "法律检索（OpenSearch 混合检索 + reranker）",
-    "tags": ["aws", "opensearch", "hybrid-search", "reranker", "legal", "retrieval"],
+    "tags": [
+      "aws",
+      "opensearch",
+      "hybrid-search",
+      "reranker",
+      "legal",
+      "retrieval"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司建法律研究助手，用 Bedrock + Anthropic Claude FM，须检索高度相关的判例文档以增强回答，要识别法律概念间的语义关系、专业术语与引用，且要快、结果精准。哪个方案满足？（单选）",
@@ -358,7 +480,9 @@
           "启用 Amazon Kendra 查询建议，再用 Bedrock 后处理搜索结果识别语义相似",
           "OpenSearch 向量检索 + Titan 嵌入索引，Lambda 把结果与 RDS 中关键词过滤合并"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 混合检索=向量+关键词，覆盖语义关系与精确术语/引用；Bedrock reranker 重排提质降延迟。\n- A 默认向量抓不住精确术语；C 查询建议非核心；D 自写合并脆弱。"
@@ -370,7 +494,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "金丝雀部署（Step Functions 流量切换 + 回滚）",
-    "tags": ["aws", "deployment", "canary", "step-functions", "bedrock", "rollback"],
+    "tags": [
+      "aws",
+      "deployment",
+      "canary",
+      "step-functions",
+      "bedrock",
+      "rollback"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司为支付 API 设计金丝雀部署：依据实时推理指标、历史流量、服务健康在多个 Bedrock 模型版本间自动渐进切流；健康则加流量、劣化则回退；全程监控延迟与错误率，并能在不人工干预下停止部署、回滚到旧版本。哪个方案满足？（单选）",
@@ -384,7 +515,9 @@
           "用 SageMaker AI 端点变体代表各 Bedrock 版本，变体权重切流，CloudWatch 监控，Model Monitor 触发 Lambda 回滚，EventBridge 异常时回滚",
           "用 OpenSearch 跟踪推理日志，触发 SSM Automation runbook 更新 Bedrock 端点切流"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- Step Functions 分阶段切流 + Lambda 评估 CloudWatch 指标 + 阈值破自动回滚，形成自动闭环。\n- B 外部逻辑非闭环；C SageMaker 端点变体不自然；D 链路间接。"
@@ -396,7 +529,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "推荐系统可观测性（CloudWatch Application Insights）",
-    "tags": ["aws", "cloudwatch", "application-insights", "anomaly", "recommendation"],
+    "tags": [
+      "aws",
+      "cloudwatch",
+      "application-insights",
+      "anomaly",
+      "recommendation"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司推荐系统跑在 EC2 上，调用 Bedrock FM 分析用户行为生成个性化推荐。系统间歇性出问题：部分推荐不符合用户偏好。公司要可观测方案监控运维指标、对照基线识别性能劣化模式，并在 FM 行为偏离预期时 10 分钟内产出含关联数据的告警。哪个方案满足？（单选）",
@@ -410,7 +549,9 @@
           "启用 CloudWatch Application Insights，用 EMF 发布推荐质量/token/延迟自定义指标，开异常检测，Logs Insights 做日志模式分析",
           "用 OpenSearch Observability 插件，Kinesis 摄入指标日志，PPL 查询分析行为模式，实时看板"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- Application Insights 自动关联指标/日志异常 + EMF 自定义指标 + 异常检测，10 分钟内 SNS 通知。\n- A 仅基础设施；B/D 无自动关联与基线异常。"
@@ -422,7 +563,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "语义等价缓存（OpenSearch k-NN）",
-    "tags": ["aws", "opensearch", "knn", "cache", "semantic", "embedding"],
+    "tags": [
+      "aws",
+      "opensearch",
+      "knn",
+      "cache",
+      "semantic",
+      "embedding"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某公司用 Bedrock 建客服助手。分析显示 40% 咨询用不同措辞问相同问题。公司要降低冗余模型调用、让语义等价问题得到一致回答且低延迟。哪个方案满足？（单选）",
@@ -436,7 +584,9 @@
           "用 OpenSearch k-NN 存查询-响应对，用近似 k-NN 找相似查询与响应",
           "用 DynamoDB 对规范化查询文本建 GSI，对入查询做词干还原后查缓存"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- 向量嵌入表达语义，OpenSearch k-NN 近似检索找等价问题，降冗余调用且一致响应。\n- A LIKE 字面；B 非向量检索；D 词干还原偏字面。"
@@ -448,7 +598,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "医疗 RAG 检索质量（混合检索）",
-    "tags": ["aws", "rag", "hybrid-search", "opensearch", "medical", "retrieval"],
+    "tags": [
+      "aws",
+      "rag",
+      "hybrid-search",
+      "opensearch",
+      "medical",
+      "retrieval"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某医疗公司做基于 RAG 的证据医学信息应用，用 OpenSearch 检索向量嵌入。用户反映搜索常漏掉含精确医学术语/缩写的結果，却返回过多语义相似但不相关的文档。公司要在低延迟、文档扩到百万级时提升检索质量且最低运维开销。哪个方案满足？（单选）",
@@ -462,7 +619,9 @@
           "用 Amazon Kendra 替换 OpenSearch，预处理用查询扩展处理医学缩写",
           "两阶段检索：初始向量检索结果再用 SageMaker 上 ML 模型重排"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 混合检索=关键词（精确术语/缩写）+向量（语义），OpenSearch 原生支持，运维最低。\n- B 升维不解决漏术语；C Kendra 替换成本高；D 加重排增延迟与运维。"
@@ -474,7 +633,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "流式 API（API Gateway REST + Lambda 响应流）",
-    "tags": ["aws", "api-gateway", "lambda", "streaming", "bedrock", "token-limit"],
+    "tags": [
+      "aws",
+      "api-gateway",
+      "lambda",
+      "streaming",
+      "bedrock",
+      "token-limit"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司为 GenAI 应用建 API，用托管模型服务上的 FM。API 须流式响应以降低延迟、强制 token 上限控算力、并对模型超时与部分响应做重试。哪个方案以最低运维开销满足？（单选）",
@@ -488,7 +654,9 @@
           "API Gateway WebSocket API + ECS 容器推理服务，WebSocket 流，ECS 内强制 token 上限，任务生命周期钩子处理超时",
           "API Gateway REST API + Lambda 调 Bedrock，Lambda 响应流，Lambda 内强制 token 上限，用 Lambda/API Gateway 超时配重试"
         ],
-        "answer": [3]
+        "answer": [
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- 响应负载流式仅 REST API + Lambda 代理支持；Lambda 集中强制 token 上限与重试，免运维容器。\n- HTTP API 不支持响应流（A/B 错）；C 需运维 ECS。"
@@ -500,7 +668,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "Bedrock Flows 文档工作流（S3 节点 + 表达式）",
-    "tags": ["aws", "bedrock-flows", "s3", "agent", "workflow"],
+    "tags": [
+      "aws",
+      "bedrock-flows",
+      "s3",
+      "agent",
+      "workflow"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某公司建工作流在发送前审核面向客户的沟通内容：用预定义模板生成并存于 S3。工作流须抽取模板特定部分发给 Bedrock 模型，并把模型响应存回原 S3 桶。哪个方案满足？（单选）",
@@ -514,7 +688,9 @@
           "建带 action group 的 Bedrock agent，指令定义如何解析，action group 负责取 S3、调 Bedrock、存回 S3",
           "建带单个 action group 的 Bedrock agent，组内配 3 个 Lambda 分别取 S3、解析并调 Bedrock、存回 S3"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- Bedrock Flows 的 S3 节点 + 表达式抽取 + agent 节点正好构成取-抽取-审核-存。\n- B Pass 解析能力有限；C/D agent+action group 较重需自写解析。"
@@ -526,7 +702,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "模型评估指标（RWK + BERTScore，Bedrock 评估作业）",
-    "tags": ["aws", "bedrock", "evaluation", "rwk", "bertscore", "metrics"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "evaluation",
+      "rwk",
+      "bertscore",
+      "metrics"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某电商建内部 Bedrock 应用开发平台，开发者要按与电商场景对齐的评估选模型，看板要展示文本生成与摘要的准确率指标，并有自定义电商数据集作标准评估输入。哪些步骤组合以最低运维开销满足？（请选择以下 2 个正确选项）",
@@ -541,7 +724,10 @@
           "用 SageMaker Clarify 定时建评估作业，开源框架跑标准化评估，结果发 CloudWatch，文本生成用 WER、摘要用 toxicity 作准确率指标，Lambda 查状态发日志建看板",
           "用 SageMaker AI notebook 定时跑 fmevals/ragas，直接 InvokeModel 处理，结果发 CloudWatch Logs，文本生成用 RWK、摘要用 toxicity，建 Logs Insights 看板"
         ],
-        "answer": [0, 2]
+        "answer": [
+          0,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、C。\n- Bedrock 托管评估作业用 S3 数据集（IAM/CORS）；文本生成 RWK、摘要 BERTScore，运维最省。\n- B VPC 端点非必需；D/E 用 WER/toxicity 作准确率不对且走 SageMaker 更重。"
@@ -553,7 +739,13 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "批量报告并行处理（Step Functions Parallel）",
-    "tags": ["aws", "step-functions", "parallel", "bedrock", "batch"],
+    "tags": [
+      "aws",
+      "step-functions",
+      "parallel",
+      "bedrock",
+      "batch"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某金融机构用 Bedrock 建文档分析系统处理季度报告：分析财务数据、做情感分析、跨批次做合规校验，每批 5 份报告、每份需多次 FM 调用，须每批 10 秒内完成（当前串行需 45 秒）。哪个方案满足？（单选）",
@@ -567,7 +759,9 @@
           "SQS 缓冲请求，多 Lambda 预留并发，各 Lambda 串行处理报告不同方面再合并",
           "ECS 集群容器串行处理，负载均衡分发批次，按 CPU 自动扩缩"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- Parallel 状态并发运行三类分析分支，消除串行瓶颈达 10 秒。\n- A/C/D 仍串行，无法从 45 秒降到 10 秒。"
@@ -579,7 +773,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "来源归因（Bedrock Knowledge Bases 引用）",
-    "tags": ["aws", "bedrock", "knowledge-base", "attribution", "rag", "latency"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "knowledge-base",
+      "attribution",
+      "rag",
+      "latency"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "某公司用 Bedrock 建面向客户的建议应用，须解释推理并引用具体数据源，从公司数据源检索信息并逐步推理，且把数据主张关联到源文档，响应延迟 <3 秒。哪个方案以最低运维开销满足？（单选）",
@@ -593,7 +794,9 @@
           "用 SageMaker AI 自定义 Claude 模型，借模型 reasoning 参数 + Lambda 处理，引用来自独立 RDS",
           "用 Bedrock + Claude 与 CoT 推理，自定义检索跟踪（Bedrock Knowledge Bases API），CloudWatch 监控延迟"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- KB 托管 RAG + 来源归因，主张链接源文档，低延迟且免自建。\n- B/C/D 需自建 SageMaker/Lambda/检索跟踪，运维更重。"
@@ -605,7 +808,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "提示链稳定性与护栏（Provisioned Throughput + Guardrails + Prompt Management）",
-    "tags": ["aws", "bedrock", "guardrails", "prompt-management", "consistency", "safety"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "guardrails",
+      "prompt-management",
+      "consistency",
+      "safety"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某咖啡公司移动 app 用 Bedrock + 三段式提示链生成个性化烘焙曲线：把用户输入转结构化元数据、检索烘焙日志、生成推荐。多地用户反映相同输入推荐不一致、检索步骤推理慢、且出现不安全建议（如过高温度冲泡）。公司要提升重复输入的一致性（99.5%）、性能（<1 秒）、并用已验证安全控制拦截不安全/幻觉建议。哪个方案满足？（单选）",
@@ -619,7 +829,9 @@
           "结果缓存到 ElastiCache，Lambda 预处理元数据并追踪端到端延迟，X-Ray 定位性能瓶颈",
           "用 Kendra 提升检索准确度，归一化元数据存 DynamoDB，Step Functions 编排多步提示"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- Provisioned Throughput 稳延迟 + Guardrails 拦截不安全/幻觉 + Prompt Management 版本化提一致性。\n- B/C/D 未同时覆盖一致性+延迟+安全拦截三要件。"
@@ -631,7 +843,14 @@
     "category": "aws-genai-developer-pro",
     "topic": "aws-genai-developer-pro",
     "subtopic": "内容审核与 PII（Bedrock Guardrails + Comprehend + Rekognition）",
-    "tags": ["aws", "bedrock", "guardrails", "comprehend", "rekognition", "content-moderation"],
+    "tags": [
+      "aws",
+      "bedrock",
+      "guardrails",
+      "comprehend",
+      "rekognition",
+      "content-moderation"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "某媒体公司发布平台，每小时数千用户上传图文，用 Bedrock 处理并生成创意合成。公司要确保平台既不处理也不产出不当内容、不在合成中泄露 PII，且要与现有 S3 存储工作流集成。哪个方案以最低基础设施管理开销满足？（单选）",
@@ -645,10 +864,918 @@
           "Cognito 用户池用预认证 Lambda 做审核，Textract 过滤文本、Rekognition 过滤图像后才允许上传",
           "Step Functions 工作流用内置 Bedrock Guardrails 过滤内容，Comprehend 做 PII 预处理，Rekognition 做图像审核"
         ],
-        "answer": [3]
+        "answer": [
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- Guardrails 托管文本/图像过滤与 PII 控制 + Comprehend/Rekognition 预处理 + Step Functions 编排进 S3 流，运维最省。\n- A Enhanced Monitoring 非过滤；B 自建 SageMaker；C 不处理生成侧。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-26",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "语义检索（Titan Embeddings + Aurora Serverless pgvector）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "titan-embeddings",
+      "aurora",
+      "pgvector",
+      "semantic-search"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某大学将档案、学术期刊与手稿数字化后存入 AWS Lake Formation 数据湖。大学要构建方案让用户用文本查询检索数字文件，需返回与查询语义相似的期刊摘要；用户既要按文本、也要按期刊摘要的元数据检索；元数据不含关键词；需按文本相似度匹配相似摘要；数据湖文件少于 100 万。哪种方案以最低运维开销满足？（单选）",
+    "explanation": "Amazon Titan Embeddings 生成的向量能捕捉摘要文本的语义。Aurora PostgreSQL Serverless 配合 pgvector 扩展可存储这些向量、执行向量相似度搜索并保留关联元数据用于过滤。使用 Bedrock 与 Aurora Serverless 避免了自管 SageMaker 模型端点，并降低了数据库容量管理开销；Aurora PostgreSQL 支持 pgvector 向量搜索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用 Amazon Titan Embeddings（Bedrock）为数字文件生成向量，存入 Amazon OpenSearch Service 的 Neural Plugin。",
+          "用 Amazon Comprehend 从数字文件抽取主题，将主题与文件元数据存入 Amazon Aurora PostgreSQL，按 Aurora 库中的摘要元数据查询。",
+          "在 Amazon SageMaker AI 部署 sentence-transformer 模型生成向量，存入带 pgvector 扩展的 Amazon Aurora PostgreSQL。",
+          "用 Amazon Titan Embeddings（Bedrock）为数字文件生成向量，存入带 pgvector 扩展的 Amazon Aurora PostgreSQL Serverless 数据库。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：D。\nAmazon Titan Embeddings 生成的向量能捕捉摘要文本的语义。Aurora PostgreSQL Serverless 配合 pgvector 扩展可存储这些向量、执行向量相似度搜索并保留关联元数据用于过滤。使用 Bedrock 与 Aurora Serverless 避免了自管 SageMaker 模型端点，并降低了数据库容量管理开销；Aurora PostgreSQL 支持 pgvector 向量搜索。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-27",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "混合部署（Bedrock 预置吞吐 + SageMaker Neo 边缘）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "provisioned-throughput",
+      "sagemaker",
+      "neo",
+      "hybrid",
+      "data-residency"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某公司用基础模型（FM）支撑多个 AI 工作负载：部分 FM 需按需实时调用，部分需高吞吐批处理；方案须支持混合部署模式，并跨云与本地基础设施运行以满足数据驻留与合规。哪两项组合满足？（请选择 2 个）",
+    "explanation": "Amazon Bedrock 预置吞吐为一致、高吞吐工作负载提供专用模型容量。Amazon SageMaker AI 端点支持实时推理，而 SageMaker Neo 可优化并将受支持模型部署到云实例与边缘设备，从而实现云/本地的混合模式。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用 AWS Lambda 编排低延迟 FM 推理，调用托管在 Amazon SageMaker AI 异步端点的 FM。",
+          "在 Amazon Bedrock 中配置预置吞吐（provisioned throughput），保证高吞吐量工作负载性能一致。",
+          "将 FM 部署到支持边缘部署的 Amazon SageMaker AI 端点（用 SageMaker Neo），并用 AWS Lambda 编排以支持混合部署。",
+          "用带自动伸缩的 Amazon Bedrock 应对不可预测的流量高峰。",
+          "用 Amazon SageMaker JumpStart 托管并调用 FM。"
+        ],
+        "answer": [
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C。\nAmazon Bedrock 预置吞吐为一致、高吞吐工作负载提供专用模型容量。Amazon SageMaker AI 端点支持实时推理，而 SageMaker Neo 可优化并将受支持模型部署到云实例与边缘设备，从而实现云/本地的混合模式。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-28",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "动态模型路由（AppConfig + Lambda 业务逻辑）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "appconfig",
+      "lambda",
+      "api-gateway",
+      "routing",
+      "a-b-testing"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某电商全球推荐系统须按法规、成本、性能在多个 Bedrock FM 间切换；须按专有业务逻辑强制控制（动态成本阈值、区域合规规则、跨 FM 实时 A/B）；切换 FM 不得重新部署代码；按用户层级/交易额/监管区/每小时变化的实时成本指标路由，且须即时传播到数千并发请求。哪种方案满足？（单选）",
+    "explanation": "AWS AppConfig 让应用使用与代码独立更新的集中配置。Lambda 函数可通过 AWS AppConfig Agent 获取当前路由配置，并为每个请求执行任意业务逻辑来选择并调用合适的 Bedrock 基础模型，从而在一个 API 端点后支持动态变化的阈值、区域规则与 A/B 路由逻辑。API Gateway 的转换与变量不适合复杂动态路由，Lambda authorizer 用于授权而非模型选择。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "部署 AWS Lambda，用环境变量存储路由规则与 Bedrock FM ID；业务变化时在 Lambda 控制台更新环境变量；用 API Gateway REST 读取请求参数做路由。",
+          "用 API Gateway REST 请求转换模板按请求属性实现路由，Bedrock FM 端点存为阶段变量，切换模型时更新变量。",
+          "配置 AWS Lambda 在每个请求时从 AWS AppConfig Agent 拉取路由配置，在 Lambda 内运行业务逻辑为每个请求选 FM，通过单一 API Gateway REST 端点暴露。",
+          "用 API Gateway REST 的 Lambda authorizer 评估存于 AppConfig 的路由规则，返回基于业务逻辑的授权上下文，将请求路由到各 FM 专属 Lambda。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nAWS AppConfig 让应用使用与代码独立更新的集中配置。Lambda 函数可通过 AWS AppConfig Agent 获取当前路由配置，并为每个请求执行任意业务逻辑来选择并调用合适的 Bedrock 基础模型，从而在一个 API 端点后支持动态变化的阈值、区域规则与 A/B 路由逻辑。API Gateway 的转换与变量不适合复杂动态路由，Lambda authorizer 用于授权而非模型选择。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-29",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "近实时幻觉与成本监控（调用日志 + Guardrails 接地 + CloudWatch 异常检测）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "guardrails",
+      "contextual-grounding",
+      "cloudwatch",
+      "anomaly-detection",
+      "monitoring"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某医疗公司用 Bedrock 生成临床文档摘要，响应质量不稳定且偶发事实幻觉，月度成本比预期高 40%。需近实时监控方案检测幻觉、识别异常 token 消耗、对成本异常预警，且自定义开发最少。哪种方案满足？（单选）",
+    "explanation": "Amazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "配置 CloudWatch 告警监控 InputTokenCount/OutputTokenCount 检测异常，调用日志存 S3，用 Glue+Athena 识别潜在幻觉。",
+          "运行 Bedrock 评估作业（LLM 评判）检测幻觉，用 CloudWatch 跟踪 token 用量，Lambda 处理指标并通知。",
+          "配置 Bedrock 将调用日志存 S3 并开启文本输出日志；启用 Guardrails 上下文接地检查检测幻觉；对 token 用量指标建 CloudWatch 异常检测告警。",
+          "用 CloudTrail 记录所有 Bedrock API 调用，QuickSight 自建仪表盘可视化 token，用 SageMaker Model Monitor 检测质量漂移。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nAmazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-30",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "限流治理（调用日志 + 跨区域推理端点）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "cross-region-inference",
+      "throttling",
+      "cloudwatch",
+      "serverless"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某公司用 Lambda 帮助学生全球总结笔记，调用 Bedrock 的 Claude。流量集中在各时区晚间，高峰期用户报限流错误。须在持续运行前提下解决限流，且低峰不得产生固定小时费用。哪种方案满足？（单选）",
+    "explanation": "Amazon Bedrock 跨区域推理将按需请求分散到多个区域的容量，在不购买持续计费的预置吞吐的情况下吸收突发流量、提升可用性。Bedrock 运行时指标含 Invocations/InputTokenCount/OutputTokenCount/InvocationThrottles，提供用量与限流可见性。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "建自定义 CloudWatch 指标监控模型错误，将预置吞吐设得高于观测峰值。",
+          "建自定义 CloudWatch 指标监控错误，错误超阈值时故障转移到备份区域。",
+          "开启 Bedrock 调用日志，监控 Invocations/InputTokenCount/OutputTokenCount/Invocation Throttles，将流量分散到跨区域推理端点。",
+          "开启 Bedrock 调用日志，监控 InvocationLatency/ClientErrors/ServerErrors，将流量分散到同一模型的多个版本。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nAmazon Bedrock 跨区域推理将按需请求分散到多个区域的容量，在不购买持续计费的预置吞吐的情况下吸收突发流量、提升可用性。Bedrock 运行时指标含 Invocations/InputTokenCount/OutputTokenCount/InvocationThrottles，提供用量与限流可见性。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-31",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "通话录音分析（EventBridge + Step Functions + Transcribe + Bedrock）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "step-functions",
+      "eventbridge",
+      "transcribe",
+      "s3",
+      "sentiment"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某金融公司用 Bedrock FM 分析呼叫中心录音：通话结束存为 S3 的 MP3，须在新建文件后尽快生成结构化摘要与情感分析；录音平均 20MB。哪两项组合满足？（请选择 2 个）",
+    "explanation": "AWS Step Functions 可编排 Amazon Transcribe 并经其优化的 Bedrock 集成直接调用 Bedrock 模型；该集成接受模型专属 JSON 请求体，可让提示直接请求结构化摘要与情感输出，无需中间 Lambda。Amazon S3 可向 EventBridge 发送 Object Created 事件，EventBridge 规则以 Step Functions 状态机为目标，在每次新建录音时启动工作流。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用 Step Functions 编排：调 Transcribe 转写、校验完成、再调 Lambda 用 Bedrock 生成结构化分析。",
+          "用 Step Functions 编排：调 Transcribe 转写、校验完成、直接调 Bedrock 生成 JSON 格式摘要与情感分析。",
+          "用 Step Functions 编排：调 Transcribe 转写、校验完成、调 Lambda 构造 prompt 再调 Bedrock 生成结构化分析。",
+          "配置源 S3 桶向 EventBridge 发事件，建 EventBridge 规则在桶中新建对象时触发 Step Functions 工作流。",
+          "配置源 S3 桶在新建对象时直接向 Step Functions 工作流发通知。"
+        ],
+        "answer": [
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、D。\nAWS Step Functions 可编排 Amazon Transcribe 并经其优化的 Bedrock 集成直接调用 Bedrock 模型；该集成接受模型专属 JSON 请求体，可让提示直接请求结构化摘要与情感输出，无需中间 Lambda。Amazon S3 可向 EventBridge 发送 Object Created 事件，EventBridge 规则以 Step Functions 状态机为目标，在每次新建录音时启动工作流。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-32",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "MCP 服务器对外暴露（API Gateway HTTP + Cognito OAuth）",
+    "tags": [
+      "aws",
+      "mcp",
+      "api-gateway",
+      "cognito",
+      "oauth",
+      "lambda",
+      "security"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某公司把本地无状态 MCP 服务器部署为 Lambda 以支撑生产应用；须能被内部应用与授权第三方伙伴访问，并强制严格认证授权。哪种附加步骤以最低运维开销满足？（单选）",
+    "explanation": "API Gateway HTTP API 可直接集成 Lambda 并支持 OAuth 2.0/OIDC 授权。Cognito 为内部与第三方客户端发放 OAuth 令牌，API Gateway 在将 MCP Streamable HTTP 请求转发给 Lambda 前校验令牌。这保留 MCP 兼容传输的同时使用托管的令牌校验与基于 scope/claim 的访问控制，避免自定义传输与面向伙伴的直接 IAM 凭据管理。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用 Lambda Invoke API 自建传输，IAM 认证并授权 InvokeFunction 权限。",
+          "经 API Gateway REST 暴露 Lambda，用 API key 认证，应用改用标准 HTTP 而非 MCP 协议。",
+          "建 Lambda Function URL 并启用自定义 Streamable HTTP 传输 + SigV4，IAM 认证并授权 InvokeFunctionUrl。",
+          "经 API Gateway HTTP API 暴露 Lambda（Streamable HTTP 传输），用 Cognito 实现 OAuth 认证，API Gateway 校验 OAuth 令牌。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：D。\nAPI Gateway HTTP API 可直接集成 Lambda 并支持 OAuth 2.0/OIDC 授权。Cognito 为内部与第三方客户端发放 OAuth 令牌，API Gateway 在将 MCP Streamable HTTP 请求转发给 Lambda 前校验令牌。这保留 MCP 兼容传输的同时使用托管的令牌校验与基于 scope/claim 的访问控制，避免自定义传输与面向伙伴的直接 IAM 凭据管理。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-33",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "推荐落地产品目录（Bedrock 知识库 + RAG）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "knowledge-base",
+      "rag",
+      "performance-config",
+      "recommendation"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某电商用 Bedrock+Claude 做商品推荐，用户反映部分推荐商品网站无售或不相关，且部分推荐生成慢；确认推荐了不在商品目录中的商品。须解决该问题。哪种方案满足？（单选）",
+    "explanation": "Amazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性。将性能配置 latency 设为 optimized 使用低延迟推理选项，降低受支持模型与推理配置的响应时间。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "提高 Bedrock Guardrails 接地程度，启用 Automated Reasoning 检查，设预置吞吐。",
+          "用提示工程将模型响应限制在相关商品，用 InvokeModelWithResponseStream 流式降低感知延迟。",
+          "建 Bedrock 知识库，实施 RAG，将 PerformanceConfigLatency 设为 optimized。",
+          "将商品目录存 OpenSearch，校验模型推荐是否命中目录，用 DynamoDB 做响应缓存。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nAmazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性。将性能配置 latency 设为 optimized 使用低延迟推理选项，降低受支持模型与推理配置的响应时间。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-34",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "数据驻留与分类（S3 Object Lock + Macie + CloudTrail）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "s3-object-lock",
+      "macie",
+      "cloudtrail",
+      "data-residency",
+      "compliance"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某公司用 Bedrock 分析数据中的模式与关系，每日跨欧洲/北美/亚洲区域处理数百万新数据点后存 S3；须符合当地数据保护与存储法规，数据驻留与处理须在同一大洲，并保留决策审计轨迹与数据分类能力。哪种方案满足？（单选）",
+    "explanation": "在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控。S3 Object Lock 提供 WORM 留存保护存储记录，Macie 发现并分类 S3 中的敏感数据，CloudTrail 提供带日志完整性校验的可审计 API 活动。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在每个区域部署应用并配本地 IAM 策略，用 Bedrock 跨区域推理分发负载，CloudWatch 记录决策，手动跟踪各区域合规认证。",
+          "用 AWS Organizations 的 SCP 管理区域权限，CloudTrail 不可变日志审计决策，导入自定义模型到 Bedrock 并部署到各区域。",
+          "用 S3 Object Lock + 区域级桶策略；按地理来源在区域内预处理后再送 Bedrock；用 Macie 分类数据；CloudTrail 不可变日志审计决策。",
+          "为每个区域建独立账号与各自合规框架，用 SageMaker AI 自定义监控跟踪驻留合规，向各监管机构手工报告。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控。S3 Object Lock 提供 WORM 留存保护存储记录，Macie 发现并分类 S3 中的敏感数据，CloudTrail 提供带日志完整性校验的可审计 API 活动。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-35",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "多轮对话与澄清（Step Functions 标准 + Wait for Callback + DynamoDB）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "step-functions",
+      "dynamodb",
+      "conversation",
+      "clarification"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某客服应用用 Bedrock+Claude 推荐商品，须跨多次交互保留对话上下文、对歧义查询跑澄清工作流、加密留存每轮对话用于个性化，并支撑数千并发且响应快。哪种方案满足？（单选）",
+    "explanation": "Step Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应。DynamoDB 提供持久、低延迟的对话存储，按需容量应对变动高并发，并支持静态服务端加密。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用 Step Functions Express 工作流编排对话，Lambda 跑澄清逻辑，对话历史存 RDS 以 session ID 为主键。",
+          "用 Step Functions 标准工作流编排澄清工作流，含 Wait for a Callback 模式管理流程，对话历史存 DynamoDB 按需容量并启用服务端加密。",
+          "用 API Gateway REST 路由到 Lambda 更新/获取上下文，对话历史存 S3 并服务端加密，每次交互存为独立 JSON。",
+          "用 Lambda 调 Bedrock 推理，SQS 队列编排澄清步骤，对话历史存 ElastiCache(Redis) 并加密。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\nStep Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应。DynamoDB 提供持久、低延迟的对话存储，按需容量应对变动高并发，并支持静态服务端加密。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-36",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "Guardrails 精细策略（denied topics + 敏感信息掩码/拦截 + 双向评估）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "guardrails",
+      "denied-topics",
+      "pii",
+      "content-filter",
+      "governance"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某金融客服助手须不提供投资建议、拦截有害内容、掩码 PII、保留审计轨迹；须对用户输入与模型响应都按敏感度做内容过滤；需以最少误杀生效，且支持多种敏感内容的多种处理策略。哪种方案满足？（单选）",
+    "explanation": "Bedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器。敏感信息策略可对输入/输出施加不同动作：响应中脱敏 PII，输入中拦截金融信息。Guardrails 同时评估提示与模型响应，中等过滤相比高强度有助于减少误杀。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "配单个 guardrail，所有类别内容过滤器设 high，denied topics 设投资建议并加样例短语，敏感信息过滤器对所有 PII 实体 block，应用到所有推理调用。",
+          "配多个分级 guardrail：一个 high 过滤并对公开交互 block PII，一个 medium 并对内部 mask PII，多个主题 guardrail 拦截投资建议并加接地检查。",
+          "配 guardrail 对有害内容过滤器设 medium；denied topics 设投资建议并配清晰定义与样例短语；敏感信息过滤器对响应 mask PII、对输入 block 金融信息；启用输入/输出双向评估并自定义拦截消息供审计。",
+          "为每个用例建独立 guardrail：一个有害内容过滤、一个主题过滤投资建议、一个敏感信息过滤 block PII；用 Step Functions 顺序串联并按分类条件路由。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nBedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器。敏感信息策略可对输入/输出施加不同动作：响应中脱敏 PII，输入中拦截金融信息。Guardrails 同时评估提示与模型响应，中等过滤相比高强度有助于减少误杀。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-37",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "提示治理（Bedrock Prompt Management + CloudTrail + IAM）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "prompt-management",
+      "cloudtrail",
+      "iam",
+      "versioning",
+      "governance"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某媒体公司须用 Bedrock 建立 AI 内容治理：管理数百个提示模板，多团队多区域使用；须版本控制 + 含待审通知的审批工作流 + 详细审计轨迹 + 一致参数化以保质量。哪种方案满足？（单选）",
+    "explanation": "Bedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置。CloudTrail 记录含身份/动作/时间/请求参数的 AWS 活动，形成可审计的提示管理操作历史。IAM 策略可分离并限制创建/修改/版本化提示的权限，支撑受控审批流程。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用 Bedrock Studio 提示模板，CloudWatch 仪表盘展示用量，DynamoDB 存审批状态，Lambda 强制审批。",
+          "用 Bedrock Prompt Management 做版本控制，配 CloudTrail 审计日志，IAM 策略控制审批权限，用变量建参数化模板。",
+          "用 Step Functions 建审批工作流，提示存 S3 并用标签做版本控制，EventBridge 发通知。",
+          "部署 SageMaker Canvas 存 S3 的提示模板，CloudFormation 做版本控制，AWS Config 强制审批策略。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\nBedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置。CloudTrail 记录含身份/动作/时间/请求参数的 AWS 活动，形成可审计的提示管理操作历史。IAM 策略可分离并限制创建/修改/版本化提示的权限，支撑受控审批流程。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-38",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "角色化 PII 脱敏（S3 生命周期 + ApplyGuardrail + Cognito 组）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "knowledge-base",
+      "guardrails",
+      "cognito",
+      "pii",
+      "s3-lifecycle"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某医疗设备公司 AI 助手引用手术报告：对患者隐私 PII 仅对外科医生展示，对工程师须脱敏；只引用 3 年内报告；报告存 S3 且已建 Bedrock 知识库，用 Cognito 认证。哪种方案满足？（单选）",
+    "explanation": "Bedrock Guardrails 敏感信息过滤器可在模型响应中匿名化 PII。按认证 Cognito 用户组施加对应 guardrail，可使 PII 对外科医生保留、对工程师脱敏。S3 生命周期过期规则删除超 3 年报告，每日定时同步更新知识库以反映 S3 的增删改，使过期报告不再可被检索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "对 S3 启用 Macie PII 检测，S3 触发器调 Lambda 脱敏并删除过期文档、触发知识库同步。",
+          "新报告上传时调 Lambda 同步 S3 与知识库；第二 Lambda 调 Comprehend 对工程师组用户脱敏；S3 生命周期删除超 3 年报告。",
+          "对桶设 S3 生命周期删除超 3 年报告；每日调度 Lambda 同步桶与知识库；用户交互时按 Cognito 用户组调用 ApplyGuardrail 在响应中适当脱敏。",
+          "建第二个知识库；S3 生命周期删除超 3 年报告；新报告上传调 Lambda 同步原知识库，用 Comprehend 同步前脱敏再同步到第二知识库；按 Cognito 组重定向到对应知识库。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nBedrock Guardrails 敏感信息过滤器可在模型响应中匿名化 PII。按认证 Cognito 用户组施加对应 guardrail，可使 PII 对外科医生保留、对工程师脱敏。S3 生命周期过期规则删除超 3 年报告，每日定时同步更新知识库以反映 S3 的增删改，使过期报告不再可被检索。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-39",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "客户数据主权（Amazon Q Business 索引 + 安全 API 富化）",
+    "tags": [
+      "aws",
+      "amazon-q-business",
+      "data-governance",
+      "cross-account",
+      "prompt-enrichment"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "Example Corp 的视频生成服务被数百万企业客户使用，客户提交提示给自有 GenAI 模型；为提升相关性想用客户专属上下文（产品偏好/属性/历史）富化提示。客户有严格数据治理要求、须保留数据所有权与控制权，不需实时但语义准确度要高、检索延迟低；希望最小化集成复杂度，除非必要不在客户环境部署服务。哪种方案满足？（单选）",
+    "explanation": "Amazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限。供应商可用 SearchRelevantContent API 检索相关内容用于提示富化，无需直接连接或索引每个客户数据源。Amazon Q 支持语义与混合检索并应用客户配置访问控制。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "让每客户建含其内部数据的 Amazon Q Business 索引，并指定 Example Corp 为数据访问者，使 Example Corp 经安全 API 在运行时取回相关内容富化提示。",
+          "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数。",
+          "让每客户配置 Bedrock 知识库，允许跨账号查询供 Example Corp 取结构化数据做提示增强。",
+          "配置 Amazon Kendra 爬取客户数据源，跨账号共享索引供 Example Corp 查询增强。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\nAmazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限。供应商可用 SearchRelevantContent API 检索相关内容用于提示富化，无需直接连接或索引每个客户数据源。Amazon Q 支持语义与混合检索并应用客户配置访问控制。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-40",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "持续重训练（Step Functions 标准 + SageMaker Pipelines）",
+    "tags": [
+      "aws",
+      "sagemaker",
+      "step-functions",
+      "pipelines",
+      "retraining",
+      "s3",
+      "lambda"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某保险公司用既有 SageMaker 基础设施做保费预测 Web 应用，训练数据存 S3 且增长快；需持续重训练方案：员工上传新客户数据文件到 S3 时须自动重训练并将模型重部署到应用。哪种方案满足？（单选）",
+    "explanation": "S3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程。SageMaker Pipeline 可包含训练与模型部署步骤，上传后启动流水线即用更新数据集重训练并将模型重部署到应用。SageMaker Pipelines 支持部署步骤，AWS 文档化了 EventBridge/S3 驱动的流水线执行自动化。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用 Glue 对每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，实时推理在更新数据集重训练后重部署。",
+          "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。",
+          "建 Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导出到 Autopilot，Autopilot 重训练后重部署。",
+          "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：D。\nS3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程。SageMaker Pipeline 可包含训练与模型部署步骤，上传后启动流水线即用更新数据集重训练并将模型重部署到应用。SageMaker Pipelines 支持部署步骤，AWS 文档化了 EventBridge/S3 驱动的流水线执行自动化。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-41",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "负责任 AI 治理（Agents+KB 接地 + Guardrails + OpenSearch/QuickSight）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "agents",
+      "knowledge-base",
+      "guardrails",
+      "opensearch",
+      "quicksight",
+      "governance"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某金融公司上线用 Bedrock 帮客服代表做个性化投资建议的 GenAI 应用，须负责任的 AI 治理并满足监管：检测并防止推荐幻觉、对客户交互加安全控制、实时监控模型行为漂移、保留所有 prompt-响应对审计。须 60 天内上线、集成既有合规仪表盘、响应 <200ms。哪种方案以最低运维开销满足？（单选）",
+    "explanation": "Bedrock 知识库提供托管 RAG 工作流，使响应基于企业数据并附来源归因，降低幻觉风险。Guardrails 按配置安全策略评估输入与响应。将 prompt-响应对存于 OpenSearch 支撑可搜索的合规审计轨迹，QuickSight 可用收集数据做合规报告与行为趋势分析。该托管服务组合最小化快速部署所需的自定义代码与运维基础设施。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "配 Bedrock Guardrails 自定义内容过滤与毒性检测，用 Model Evaluation 检幻觉，prompt-响应对存 DynamoDB 加 TTL，CloudWatch 自定义指标接合规仪表盘。",
+          "用 PrivateLink 安全访问 Bedrock，Lambda 做自定义提示校验，prompt-响应对存 S3 配生命周期，自建 CloudWatch 仪表盘监控。",
+          "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。",
+          "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\nBedrock 知识库提供托管 RAG 工作流，使响应基于企业数据并附来源归因，降低幻觉风险。Guardrails 按配置安全策略评估输入与响应。将 prompt-响应对存于 OpenSearch 支撑可搜索的合规审计轨迹，QuickSight 可用收集数据做合规报告与行为趋势分析。该托管服务组合最小化快速部署所需的自定义代码与运维基础设施。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-42",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "前端流式优化（Amplify AI Kit + GraphQL 流式）",
+    "tags": [
+      "aws",
+      "amplify",
+      "appsync",
+      "bedrock",
+      "knowledge-base",
+      "streaming",
+      "performance"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某公司把 AI 助手做成 React 应用，用 AWS Amplify + AppSync GraphQL + Bedrock 知识库；GraphQL 调 RetrieveAndGenerate，配 Lambda resolver（RequestResponse）。用户报复杂问题常超时变慢。哪种方案解决性能问题？（单选）",
+    "explanation": "AWS Amplify AI Kit 支持 React 应用的流式 LLM 响应。其 Lambda 集成以流式请求调用 Bedrock，并经由 AppSync WebSocket 将响应块送往浏览器增量渲染，避免了同步 RequestResponse resolver 所需的等待整段长生成。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
+          "增大 Lambda resolver 超时并加指数退避重试。",
+          "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
+          "改 RetrieveAndGenerate 为 InvokeModelWithResponseStream，应用改用 API Gateway WebSocket API 支持流式。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\nAWS Amplify AI Kit 支持 React 应用的流式 LLM 响应。其 Lambda 集成以流式请求调用 Bedrock，并经由 AppSync WebSocket 将响应块送往浏览器增量渲染，避免了同步 RequestResponse resolver 所需的等待整段长生成。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-43",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "Token 用量管理（Lambda 分词器预估 + CloudWatch 告警 + DynamoDB）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "lambda",
+      "tokenizer",
+      "cloudwatch",
+      "dynamodb",
+      "cost-allocation"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某金融公司经 Bedrock 用多个 FM，新法规要求对敏感金融数据做 token 管理：须在接近模型专属 token 上限时主动告警，支撑 >5000 请求/分钟，并留存 token 用量指标供业务单元分摊成本。哪种方案满足？（单选）",
+    "explanation": "Bedrock 按模型强制 token 配额，故须在推理前用对应模型的分词规则预估 token 用量以识别接近上限。可扩展的 Lambda 层可做该请求前预估，发出模型与业务单元专属的 CloudWatch 自定义指标用于阈值告警，并将详细用量存 DynamoDB 供分摊计费。Guardrails 不实现 token 配额策略，死信队列在请求失败后才运作，API Gateway 使用计划施加的是请求配额而非模型专属 token 计算。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。",
+          "用 Bedrock Guardrails 的 token 配额策略，捕获被拒请求指标，EventBridge 规则触发通知，CloudWatch 仪表盘看趋势。",
+          "部署 SQS 死信队列处理失败请求，Lambda 分析 token 相关失败，CloudWatch Logs Insights 基于错误日志生成报告。",
+          "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\nBedrock 按模型强制 token 配额，故须在推理前用对应模型的分词规则预估 token 用量以识别接近上限。可扩展的 Lambda 层可做该请求前预估，发出模型与业务单元专属的 CloudWatch 自定义指标用于阈值告警，并将详细用量存 DynamoDB 供分摊计费。Guardrails 不实现 token 配额策略，死信队列在请求失败后才运作，API Gateway 使用计划施加的是请求配额而非模型专属 token 计算。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-44",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "RAG 相关性提升（Bedrock 知识库内置重排器）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "knowledge-base",
+      "rerank",
+      "rag",
+      "retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某 RAG 应用用 Bedrock 知识库做合规查询，调 RetrieveAndGenerateStream，知识库含 5 万+ 监管文档；因初始检索常返回语义相似但上下文无关文档，导致幻觉与错误指引。须以最低运维开销提升相关性。哪种方案满足？（单选）",
+    "explanation": "Bedrock 知识库在使用 RetrieveAndGenerate/RetrieveAndGenerateStream 时可通过检索重排配置应用托管重排器。重排器评估检索文本块与查询的相关性并重排序，替代默认排名，提升上下文相关性且免去了部署与集成独立排序/API/文档分析/图处理服务的运维负担。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。",
+          "用 Comprehend 分类文档打相关分，集成 Textract 文档分析，Neptune 做图相关计算。",
+          "用 Knowledge Bases Retrieve API 初检，调 Bedrock Rerank API 重排，再 InvokeModelWithResponseStream 生成。",
+          "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：D。\nBedrock 知识库在使用 RetrieveAndGenerate/RetrieveAndGenerateStream 时可通过检索重排配置应用托管重排器。重排器评估检索文本块与查询的相关性并重排序，替代默认排名，提升上下文相关性且免去了部署与集成独立排序/API/文档分析/图处理服务的运维负担。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-45",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "多智能体架构（supervisor 路由 + 各部门知识库隔离）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "agents",
+      "multi-agent",
+      "knowledge-base",
+      "iam",
+      "supervisor"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某医疗公司用 Bedrock 建实时患者护理助手，回应临床/保险核验/预约/理赔等部门；欲用多智能体架构，须可扩展、能接入新功能、支撑数千并行交互，并确保领域专属响应。哪种方案满足？（单选）",
+    "explanation": "Bedrock 多智能体协作支持 supervisor 智能体将请求路由到专精 collaborator 智能体。每个 collaborator 可配置为不同部门并使用自有知识库做 RAG，保留领域专精且可通过增删 collaborator 扩展能力。supervisor 路由模型旨在将请求发往合适 collaborator 并降低延迟。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。",
+          "每部门建独立 supervisor，各 collaborator 做意图分类，仅接本部门知识库，supervisor 间手工交接。",
+          "每部门数据隔离在独立知识库，IAM 过滤；部署单一通用智能体，内部多 action group 做部门功能，规则路由。",
+          "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\nBedrock 多智能体协作支持 supervisor 智能体将请求路由到专精 collaborator 智能体。每个 collaborator 可配置为不同部门并使用自有知识库做 RAG，保留领域专精且可通过增删 collaborator 扩展能力。supervisor 路由模型旨在将请求发往合适 collaborator 并降低延迟。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-46",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "实时低延迟模型（Bedrock 预置吞吐 + 自动伸缩）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "provisioned-throughput",
+      "auto-scaling",
+      "real-time",
+      "latency"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某应用实时分析客服通话并为人工坐席生成建议，峰值 50 万并发呼叫、每条建议端到端 <200ms；已有转写架构，须控制在月度计算预算内并保持自动伸缩。哪种方案满足？（单选）",
+    "explanation": "低延迟、实时优化的 Bedrock 模型适合交互式响应生成。预置吞吐为持续高并发提供专用、可预测的推理容量，自动伸缩策略应对变动需求并帮助管理容量与计算成本。批处理无法满足单条建议 <200ms 延迟目标。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
+          "在 Bedrock 部署低延迟实时优化模型，购预置吞吐并设自动伸缩策略。",
+          "在 SageMaker AI 实时端点部署 LLM（专用 GPU 实例）。",
+          "在 SageMaker AI serverless 端点部署中型 LLM 并优化批处理。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n低延迟、实时优化的 Bedrock 模型适合交互式响应生成。预置吞吐为持续高并发提供专用、可预测的推理容量，自动伸缩策略应对变动需求并帮助管理容量与计算成本。批处理无法满足单条建议 <200ms 延迟目标。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-47",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "Guardrails 高风险管控（denied topics + 竞品词过滤 + 高接地阈值）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "guardrails",
+      "denied-topics",
+      "word-filter",
+      "grounding",
+      "compliance"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某金融公司建 AI 助手帮客户做投资规划，识别高风险对话模式（如具体股票推荐、保证收益）以免违规。须确保助手不提供不适当投资建议、不产出竞品内容、不编造无获批指引支撑的断言；用 Bedrock Guardrails。哪三项组合满足？（请选择 3 个）",
+    "explanation": "Bedrock denied topics 可拦截提示与响应中的不良上下文主题，适合高风险投资建议模式。自定义词过滤器屏蔽精确词或短语（含竞品名），且可同时拦截输入与输出。上下文接地检查评估响应是否事实性基于所提供获批源材料；高阈值要求更强置信度才放行内容。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将高风险对话模式加入 denied topics guardrail。",
+          "配置内容过滤器 guardrail 过滤含高风险模式的提示。",
+          "配置内容过滤器 guardrail 过滤含竞品名称的提示。",
+          "将竞品名称加入自定义词过滤器，输入与输出动作均设为 block。",
+          "设较低的接地分数阈值。",
+          "设较高的接地分数阈值。"
+        ],
+        "answer": [
+          0,
+          3,
+          5
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、D、F。\nBedrock denied topics 可拦截提示与响应中的不良上下文主题，适合高风险投资建议模式。自定义词过滤器屏蔽精确词或短语（含竞品名），且可同时拦截输入与输出。上下文接地检查评估响应是否事实性基于所提供获批源材料；高阈值要求更强置信度才放行内容。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-48",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "分酒店知识库隔离（每酒店独立 KB + 多账号）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "knowledge-base",
+      "multi-account",
+      "access-control",
+      "pms",
+      "real-time"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某酒店公司想给遗留 Java PMS 加 AI 能力，用 Bedrock 知识库给员工房间可用性与酒店详情；须每家酒店独立访问控制、近实时房间可用性、峰值性能稳定。哪种方案满足？（单选）",
+    "explanation": "每家酒店独立知识库（多账号）隔离各酒店数据与访问控制，同时可独立管理容量与性能。Bedrock 知识库直接摄入支持单次操作增删改文档而无需等待数据源同步，支撑近实时房间可用性更新；定时同步适合时效性较低的信息。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "建单一知识库存所有酒店合并数据，Lambda 经 API 同步各 PMS，CloudTrail 按酒店过滤审计。",
+          "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
+          "多账号结构下每家酒店一个知识库，直接摄入提供实时房间可用性，非关键信息定时同步。",
+          "建集中 Bedrock 智能体用多个知识库，IAM Identity Center 按酒店权限集控员工访问。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。\n每家酒店独立知识库（多账号）隔离各酒店数据与访问控制，同时可独立管理容量与性能。Bedrock 知识库直接摄入支持单次操作增删改文档而无需等待数据源同步，支撑近实时房间可用性更新；定时同步适合时效性较低的信息。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-49",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "贷款文档处理（Textract+A2I + Lambda 脱敏 + Glue Data Quality）",
+    "tags": [
+      "aws",
+      "bedrock",
+      "textract",
+      "a2i",
+      "guardrails",
+      "glue",
+      "data-residency",
+      "pii"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某银行用 Bedrock 评估扫描财务文档的贷款申请：须抽取结构化数据、推理前脱敏 PII、用 FM 生成审批、将低置信度抽取结果路由到同区域的真人复核；须满足严格区域数据驻留与可审计，日处理 2.5 万申请、99.9% 可用。哪三项组合满足？（请选择 3 个）",
+    "explanation": "Textract 抽取文档数据，A2I 在与 Textract 集成时在置信度条件满足时创建人工复核环。Lambda 可在数据送推理前做特定应用 PII 脱敏，Bedrock Guardrails 可检测并掩码敏感信息并施加输出安全控制。Glue Data Quality 校验抽取的结构化数据，Step Functions 可编排工作流（含提示变换后调用 Bedrock）。这些托管无服务器服务在按所需区域配置时提供可扩展工作流处理并保留区域部署边界。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在同区域部署 Textract 与 Augmented AI(A2I) 抽取数据，低置信度页路由到真人复核。",
+          "用 Lambda 在推理前检测并脱敏 PII，用 Guardrails 防止模型输出不当内容，配区域级 IAM 角色强制驻留并控访问。",
+          "用 Kendra 与 OpenSearch 从上传文档语义抽取字段级值。",
+          "上传文档存 S3 加对象元数据，IAM 策略使原文档与申请人同区域，启用对象标签供未来审计。",
+          "用 Glue Data Quality 校验结构化数据，Step Functions 编排含提示工程步骤的审核工作流后再调 Bedrock 评估。",
+          "用 SageMaker Clarify 基于 Bedrock 评分生成公平与偏差报告。"
+        ],
+        "answer": [
+          0,
+          1,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、E。\nTextract 抽取文档数据，A2I 在与 Textract 集成时在置信度条件满足时创建人工复核环。Lambda 可在数据送推理前做特定应用 PII 脱敏，Bedrock Guardrails 可检测并掩码敏感信息并施加输出安全控制。Glue Data Quality 校验抽取的结构化数据，Step Functions 可编排工作流（含提示变换后调用 Bedrock）。这些托管无服务器服务在按所需区域配置时提供可扩展工作流处理并保留区域部署边界。"
+      }
+    }
+  },
+  {
+    "id": "aws-genai-developer-pro-50",
+    "category": "aws-genai-developer-pro",
+    "topic": "aws-genai-developer-pro",
+    "subtopic": "小规模向量库选型（MemoryDB + Flat 精确索引）",
+    "tags": [
+      "aws",
+      "memorydb",
+      "vector",
+      "flat",
+      "rag",
+      "similarity-search",
+      "performance"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某金融 RAG 应用用 Bedrock 生成市场活动摘要，依赖存小规模专有数据集、索引量少的向量库；须做相似度搜索且模型响应最大化准确度并保持高性能。须配置向量库并集成。哪种方案满足？（单选）",
+    "explanation": "MemoryDB 的 FLAT 向量索引对每向量做暴力线性比对，在距离计算精度内返回精确最近邻结果。对小索引而言，这在不招致穷举搜索的大索引延迟劣势下保留最大检索准确度。HNSW 与 IVFFlat 是近似索引方法，以可能的召回损失换取速度。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
+          "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
+          "启 Amazon Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载升高时升实例规格。",
+          "启 Amazon DocumentDB 集群（IVFFlat 索引、高 probe 值），以副本集连接并将读分发到副本。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\nMemoryDB 的 FLAT 向量索引对每向量做暴力线性比对，在距离计算精度内返回精确最近邻结果。对小索引而言，这在不招致穷举搜索的大索引延迟劣势下保留最大检索准确度。HNSW 与 IVFFlat 是近似索引方法，以可能的召回损失换取速度。"
       }
     }
   }
