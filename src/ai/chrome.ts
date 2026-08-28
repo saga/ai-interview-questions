@@ -36,22 +36,62 @@ export async function chromeAvailability(): Promise<ChromeAvailability> {
 }
 
 /**
- * 串行互斥队列：Chrome on-device 模型并发能力受限（受空闲内存约束，并发 create
- * 会排队甚至抛 QuotaExceededError），因此所有补全调用——无论从哪条路径发起
- * （组卷变体的 Promise.all / 自适应出题 / 开放题评分）——都在此逐个执行。
- * 模块级队列对所有调用方生效，云端引擎（pi.ts）不受影响，仍可并发。
+ * 受限并发队列：Chrome on-device 模型在同一时刻只允许存在「一个」活跃 session——
+ * 第二个 `lm.create()` 会无限挂起（不抛错），导致 Promise.all 整体死锁、组卷永远卡在
+ * 「正在生成」。因此本地引擎必须严格串行（CONCURRENCY = 1），用完即 destroy 后再建下一个。
+ * 模块级队列对所有调用方生效（组卷变体的 Promise.all / 自适应出题 / 开放题评分），
+ * 云端引擎（pi.ts）不受影响，仍可自由并发。
  */
-let chain: Promise<unknown> = Promise.resolve();
-function runSerialized<T>(task: () => Promise<T>): Promise<T> {
-  const run = chain.then(task, task);
-  // 吞掉 rejection 后再作为新链尾：避免单次失败把 rejection 透传给后续所有任务
-  chain = run.catch(() => undefined);
-  return run;
+const CONCURRENCY = 1;
+let activeCount = 0;
+const pending: Array<() => void> = [];
+
+/** 当活跃数低于并发上限时，从等待队列取出任务启动。 */
+function pump() {
+  while (activeCount < CONCURRENCY && pending.length > 0) {
+    const start = pending.shift()!;
+    start();
+  }
 }
 
-/** 一次性补全：每次调用新建 session（one-shot 无状态架构），用完即销毁；全局串行执行。 */
+/**
+ * 把任务投入受限并发队列。任务的成败只影响自身 promise，不会透传给队列中的其他任务，
+ * 因此单个失败不会阻塞后续调用。
+ */
+function runLimited<T>(task: () => Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    pending.push(() => {
+      activeCount++;
+      task()
+        .then(resolve, reject)
+        .finally(() => {
+          activeCount--;
+          pump();
+        });
+    });
+    pump();
+  });
+}
+
+/**
+ * 单次补全硬超时：Chrome on-device 模型是单 session 的，且偶尔会在某些 prompt 上「永久不返回」
+ * （既不复议也不抛错），也不提供 abort。若不设超时，一次卡死会永久占用唯一 session 槽位、
+ * 让后续所有 create 死锁、整场组卷卡死。这里用 watchdog 把 create / prompt 包成「超时即拒绝」，
+ * 上层（finalizeQuestion 的回退）据此降级为原题，保证 UI 永不假死。
+ */
+const CALL_TIMEOUT_MS = 60_000;
+function withTimeout<T>(p: Promise<T>, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Chrome 内置 AI ${label} 超时（${CALL_TIMEOUT_MS}ms），已降级为原题`)), CALL_TIMEOUT_MS),
+    ),
+  ]);
+}
+
+/** 一次性补全：每次调用新建 session（one-shot 无状态架构），用完即销毁；全局最多 1 个并发。 */
 export async function chromeComplete(system: string, user: string): Promise<string> {
-  return runSerialized(() => chromeCompleteOnce(system, user));
+  return runLimited(() => chromeCompleteOnce(system, user));
 }
 
 async function chromeCompleteOnce(system: string, user: string): Promise<string> {
@@ -62,12 +102,13 @@ async function chromeCompleteOnce(system: string, user: string): Promise<string>
   if ((await chromeAvailability()) === 'unavailable') {
     throw new Error('Chrome 内置 AI 模型在当前环境不可用，请在设置中改用云端服务商');
   }
-  const session = await lm.create({
-    initialPrompts: [{ role: 'system', content: system }],
-  });
+  const session = await withTimeout(
+    lm.create({ initialPrompts: [{ role: 'system', content: system }] }),
+    'create',
+  );
   try {
-    return (await session.prompt(user)) ?? '';
+    return (await withTimeout(session.prompt(user), 'prompt')) ?? '';
   } finally {
-    session.destroy?.();
+    await session.destroy?.();
   }
 }

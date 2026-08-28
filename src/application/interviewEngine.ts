@@ -117,13 +117,26 @@ export async function buildSession(
   return { definition: validDef, questions, startedAt: Date.now() };
 }
 
-/** 为会话实例生成并校验 LLM 变体（ADR-036）：无兜底，校验失败直接抛错。 */
+/**
+ * 为会话实例生成并校验 LLM 变体（ADR-036）。
+ * 本地模型输出不稳定（偶发 JSON 残缺 / 校验不通过），若直接抛错会让整场组卷中止、
+ * 用户点「开始」永远进不去。这里改成「失败回退原题」：单个变体坏掉不影响其它题，
+ * 至多该题不享受变体（仍是一套可用的正常题）。生成与校验都不抛到上层。
+ */
 async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvider | null): Promise<SessionQuestion> {
   if (!provider) return sq;
-  const v = await provider.generateVariant(sq.question);
-  const check = validateVariant(sq.question, v);
-  if (!check.ok) throw new Error(`变体校验失败(${sq.question.id}): ${check.reason}`);
-  return { ...sq, question: applyVariant(sq.question, v) };
+  try {
+    const v = await provider.generateVariant(sq.question);
+    const check = validateVariant(sq.question, v);
+    if (!check.ok) {
+      console.warn(`变体校验未通过(${sq.question.id})，回退到原题：${check.reason}`);
+      return sq;
+    }
+    return { ...sq, question: applyVariant(sq.question, v) };
+  } catch (err) {
+    console.warn(`变体生成失败(${sq.question.id})，回退到原题：`, err);
+    return sq;
+  }
 }
 
 /**

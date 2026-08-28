@@ -82,7 +82,7 @@ describe('chromeComplete', () => {
     expect(getLanguageModel()).toBe(lm);
   });
 
-  it('并发调用时全局串行执行：同一时刻只有一个 session 在跑', async () => {
+  it('Chrome on-device 模型单 session：并发调用严格串行（同一时刻最多 1 个）', async () => {
     let active = 0;
     let maxActive = 0;
     stubLanguageModel({
@@ -99,7 +99,9 @@ describe('chromeComplete', () => {
     });
     // 模拟组卷路径：Promise.all 同时发起 5 个补全
     await Promise.all(Array.from({ length: 5 }, (_, i) => chromeComplete('s', `u${i}`)));
-    expect(maxActive).toBe(1);
+    // Chrome 内置 AI 同时只允许一个活跃 session，第二个 create 会死锁，故必须串行
+    expect(maxActive).toBeLessThanOrEqual(1);
+    expect(maxActive).toBeGreaterThanOrEqual(1);
   });
 
   it('前一个调用失败不影响后续调用（rejection 不透传）', async () => {

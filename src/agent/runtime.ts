@@ -4,6 +4,7 @@
 import type { Model } from '@earendil-works/pi-ai';
 import type { StreamFn } from '@earendil-works/pi-agent-core';
 import { buildModels, getModel } from '../ai/pi';
+import { buildChromeAgentRuntime, isChromeEntry } from '../ai/chromeAgent';
 import type { ProviderEntry } from '../types';
 
 /**
@@ -14,6 +15,9 @@ import type { ProviderEntry } from '../types';
  * 但仍透传给 streamSimple 以保持与底层 provider 路由一致。
  */
 export function buildAgentRuntime(entry: ProviderEntry): { streamFn: StreamFn; model: Model<any> } {
+  // Chrome 内置 AI 没有原生 function calling，走专用的 prompt-based 工具调用运行时；
+  // 其余引擎（云端 / 本地 OpenAI 兼容）由 pi-ai 的 streamSimple 提供流式 + 原生工具调用。
+  if (isChromeEntry(entry)) return buildChromeAgentRuntime();
   const models = buildModels(entry);
   const model = getModel(models, entry.id, entry.model);
   if (!model) {
