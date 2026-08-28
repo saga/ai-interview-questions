@@ -228,7 +228,13 @@ export class ChromeAIExecutor {
     this.emitChange();
 
     return new Promise<T>((resolve, reject) => {
-      this.queue.push({ task, execute, resolve, reject, controller });
+      this.queue.push({
+        task,
+        execute: execute as (signal: AbortSignal) => Promise<unknown>,
+        resolve: resolve as (value: unknown) => void,
+        reject,
+        controller,
+      });
       this.pump();
     });
   }
@@ -403,10 +409,10 @@ export class ChromeAIExecutor {
   }
 }
 
-/** 应用层单例：Chrome 内置 AI 并发上限 2，单次 60s 超时，失败重试 1 次。 */
+/** 应用层单例：Chrome 内置 AI 并发上限 4，单次 60s 超时，失败重试 1 次。 */
 export const chromeAI = new ChromeAIExecutor({
-  concurrency: 2,
-  timeoutMs: 60_000,
+  concurrency: 8,
+  timeoutMs: 90_000,
   retries: 1,
 });
 

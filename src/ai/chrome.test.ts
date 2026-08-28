@@ -100,7 +100,7 @@ describe('chromeComplete', () => {
     vi.useRealTimers();
   });
 
-  it('Chrome on-device 模型支持并发 session：并发调用上限为 executor 的 concurrency（默认 2）', async () => {
+  it('Chrome on-device 模型支持并发 session：并发调用上限为 executor 的 concurrency（默认 4）', async () => {
     let active = 0;
     let maxActive = 0;
     stubLanguageModel({
@@ -115,11 +115,11 @@ describe('chromeComplete', () => {
         destroy: vi.fn(),
       }),
     });
-    // 模拟组卷路径：Promise.all 同时发起 5 个补全
-    await Promise.all(Array.from({ length: 5 }, (_, i) => chromeComplete('s', `u${i}`)));
-    // 默认 concurrency=2：同一时刻最多 2 个 session 并发，不会退化成串行也不会无限并发
-    expect(maxActive).toBeLessThanOrEqual(2);
-    expect(maxActive).toBeGreaterThanOrEqual(2);
+    // 模拟组卷路径：Promise.all 同时发起 8 个补全
+    await Promise.all(Array.from({ length: 8 }, (_, i) => chromeComplete('s', `u${i}`)));
+    // 默认 concurrency=8：同一时刻最多 8 个 session 并发，不会退化成串行也不会无限并发
+    expect(maxActive).toBeLessThanOrEqual(8);
+    expect(maxActive).toBeGreaterThanOrEqual(8);
   });
 
   it('前一个调用失败不影响后续调用（rejection 不透传，且会按 executor 重试一次）', async () => {
