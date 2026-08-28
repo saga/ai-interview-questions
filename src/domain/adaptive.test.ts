@@ -147,4 +147,21 @@ describe('pickNextAdaptive', () => {
   it('空池返回 null', () => {
     expect(pickNextAdaptive([], [])).toBeNull();
   });
+
+  it('topic×angle 主干：gap-probe 降难度时弱角度优先于已掌握角度', () => {
+    // tool-calling 的 definition 角度薄弱(均分20)、tradeoff 角度已掌握(均分95)
+    const profile = emptyProfile();
+    profile.angleCoverage = {
+      'tool-calling|definition': { attempts: 4, avgScore: 20, lastScore: 20, lastAskedAt: 0 },
+      'tool-calling|tradeoff': { attempts: 3, avgScore: 95, lastScore: 95, lastAskedAt: 0 },
+    };
+    const pool = [
+      q('tc-def', 'tool-calling', 'easy', 'definition'),
+      q('tc-trade', 'tool-calling', 'easy', 'tradeoff'),
+    ];
+    // 上一题 tool-calling hard 答差 → gap-probe 降难度；两题都 easy，弱角度 definition 应优先
+    const r = pickNextAdaptive(pool, [sig('tool-calling', 30, 'hard')], profile, rngSeq([0]));
+    expect(r!.strategy).toBe('gap-probe');
+    expect(r!.question.id).toBe('tc-def');
+  });
 });

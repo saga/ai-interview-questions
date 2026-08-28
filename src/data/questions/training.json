@@ -47,9 +47,6 @@
     "angle": "tradeoff",
     "question": "客户每月 $50K 的旗舰模型支出中，90% 流量来自稳定的代码评审类任务。团队提议蒸馏一个专用学生模型接管这部分流量（一次性投入约 $120K，上线后月推理成本降至约 $8K）。关于该项目的 ROI 判断与持续维护，下列说法正确的是？",
     "explanation": "静态账：月省约 $42K，$120K 投入约 3 个月回本，一年净省 $380K+——稳定高量任务上蒸馏是正确的 CapEx→OpEx 转换。但蒸馏不是一次性买卖：教师模型升级（如 Opus 4.x → 下一代）后需 30 天内再蒸馏以继承质量提升；评测集分数漂移超阈值（如 -2%）触发计划外再蒸馏，每轮成本 $25-35K 应摊入周期预算。工作负载不稳定或变化快于再蒸馏周期的场景不该做蒸馏。",
-    "reference": {
-      "concept": "蒸馏 ROI = 回本周期（≈一次性投入/月节省）+ 再蒸馏维护成本；触发器是教师升级与质量漂移；负载不稳则不值得做。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -82,9 +79,6 @@
     "angle": "mechanism",
     "question": "在\"用前沿模型蒸馏学生模型接管高频任务\"的项目中，关于数据工程的三个关键决策，下列说法正确的有？（多选）",
     "explanation": "①蒸馏数据必须来自真实生产 trace 而非 LLM 合成 prompt：合成数据训出的模型在合成题上表现好、在真实流量上掉 4-7 个点，因为生产 trace 才携带分布偏移、长尾与怪异输入；②教师标签需要拒绝采样兜底：92% 精度的教师若全量照单全收，会把错误写进学生的训练分布——对随机样本做约 5% 人工抽查并丢弃不一致的 pair，可再抬 2-4 个点；③思维链蒸馏只用于推理型任务：教师同时产出答案+理由、学生学习双输出，对分类/抽取类无增益反而增加延迟。",
-    "reference": {
-      "concept": "蒸馏数据三原则：真实 trace > 合成数据；拒绝采样+人工抽查防教师错误传染；CoT rationale 蒸馏只给推理型任务用。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -117,9 +111,6 @@
     "angle": "scenario",
     "question": "公司旗舰模型月支出 $50K，分析发现约 90% 流量集中在少数几类重复任务模式上，决定蒸馏一个小参数量学生模型接管这部分流量。请设计端到端的蒸馏管线：从数据准备到学生模型全面接管的完整流程与各环节质量门。",
     "explanation": "①数据：6 个月生产 trace 按任务类目分层采样（稀有类目重平衡保底），教师生成目标标签（推理型任务附 rationale），5% 人工抽查做拒绝采样；②训练：7-13B 学生模型在 8x H100 上微调约一周，PII 先经 NER 脱敏替换为类别 token；③评估：独立策划的 golden set（专家多数投票标注、与训练集隔离、季度重标追踪漂移）作为硬门，复合指标回归超阈值即阻断；④上线：影子流量对比（delta 分类器标记分歧供人审）→ 5%→20%→50%→90% 金丝雀放量，每档挂自动回滚门（延迟 p95、用户点赞率、护栏触发率）；⑤长期：永久保留 ~10% 流量给教师持续收集新 trace，支撑 4-6 个月的再蒸馏节律。",
-    "reference": {
-      "concept": "管线五段：分层采样+拒绝采样的数据段 → PII 脱敏+一周训练段 → 隔离 golden set 硬门段 → 影子+金丝雀放量段（自动回滚）→ 10% 教师常驻养数据的再蒸馏循环。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1011,9 +1002,6 @@
     "angle": "mechanism",
     "question": "在 LLM 对齐交互中，谄媚性（Sycophancy）是指模型即使面对用户给出的明显错误或偏见观点，也会倾向于顺从并迎合用户，而非坚持客观事实。关于谄媚现象的成因与治理，以下哪些选项是正确的？（多选）",
     "explanation": "根因偏好数据顺从高分、RLHF/DPO均会学谄媚、KL仅限偏离不能根治、非小模型独有。",
-    "reference": {
-      "concept": "谄媚=数据偏差致顺从高分；KL限幅不治本。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1048,9 +1036,6 @@
     "angle": "tradeoff",
     "question": "根据 DeepMind 提出的 Chinchilla Scaling Law，在给定的训练 Compute 预算下，模型参数量与训练 Token 数的 Compute-Optimal 比例约为 1:20。然而，现代轻量级端侧模型（如 3B 参数模型）通常会使用数万亿（Trillions）Token 进行过度训练（Overtraining）。关于这一工程决策的经济与技术考量，下列说法正确的有？（多选）",
     "explanation": "Chinchilla仅优化预训练Loss未计推理、Serving为长期Recurring远超预训练、小模型过度训练以一次预训练换低Serving成本、D称消除推理限制错误。",
-    "reference": {
-      "concept": "Chinchilla最优为训练最优，过度训练为推理经济性。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1085,9 +1070,6 @@
     "angle": "mechanism",
     "question": "DPO（Direct Preference Optimization）将 RLHF 中的显式奖励函数表达为策略模型与参考模型输出概率的比值，从而将强化学习过程转化为在偏好数据对（胜者 y_w 与败者 y_l）上的直接优化。关于 DPO 的工程权衡与底层原理，以下哪些选项是正确的？（多选）",
     "explanation": "DPO省显式奖励与PPO采样、奖励隐式化、提升w降l、仍会奖励作弊。",
-    "reference": {
-      "concept": "DPO=隐式奖励+直接偏好优化，省模型与采样但仍需防过优化。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1153,9 +1135,6 @@
     "angle": "definition",
     "question": "LoRA 高效微调的核心思想是？",
     "explanation": "LoRA 冻结预训练权重 W₀，为每个目标矩阵学习低秩旁路 A(d×r)、B(r×k)，可训练参数减少百倍以上，单卡即可微调 7B+ 模型，适配器小且可热插拔。QLoRA 在此基础上再把冻结的基座权重量化为 4-bit。其有效性的假设是微调所需的权重更新具有低内在秩。",
-    "reference": {
-      "concept": "LoRA = 冻结基座 + 低秩旁路 ΔW=BA，可训练参数缩减 100~1000 倍。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1188,9 +1167,6 @@
     "angle": "mechanism",
     "question": "在针对大语言模型进行 RLVR（可验证奖励强化学习）训练以构建推理模型时，关于中间推理轨迹与奖励信号的设计，以下说法正确的是？",
     "explanation": "可验证奖励 RL 表明，利用中间推理轨迹并未带来显著帮助，最终奖励只由最终答案正确性加规则格式奖励构成，链式思考为结果奖励下自发涌现。",
-    "reference": {
-      "concept": "RLVR 只奖励可验证的最终结果与格式，中间推理轨迹不进入奖励函数；Aha Moment 是结果奖励下自发涌现的行为。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1223,9 +1199,6 @@
     "angle": "mechanism",
     "question": "在支持动态开启或关闭思考过程（Thinking Mode）的混合推理模型中，系统在训练与推理端如何实现这一开关？",
     "explanation": "在训练阶段通过 SFT 加入 Thinking Mode Fusion（同时包含生成推理轨迹和直接生成答案的样本）；在推理阶段，关闭思考是一种硬开关，需在分词与模板层显式控制，例如在助手回复起点插入空思考标签以跳过推理。",
-    "reference": {
-      "concept": "混合推理开关：训练期融合样本，推理期硬控。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1258,9 +1231,6 @@
     "angle": "mechanism",
     "question": "要实现在 Post-training 阶段让单个模型支持低、中、高等多档 Reasoning Effort 调控，以下哪种方案最符合工业界主流工程实现？",
     "explanation": "主流机制是在系统提示中声明 Effort 等级，并在 RL 阶段设置与 Effort 绑定的 Token 惩罚函数，或在 SFT 阶段通过多档推理深度样本建立 Effort 标签与长度的映射。",
-    "reference": {
-      "concept": "多档 Effort：Prompt 标记 + RL Token 惩罚或 SFT 配对。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1293,9 +1263,6 @@
     "angle": "tradeoff",
     "question": "关于 Reasoning LLM 中的 Training Scaling（模型/训练扩展）与 Inference Scaling（推理算力扩展）的性能与成本关系，下列说法错误的是？",
     "explanation": "Inference Scaling 包含增加单次 Reasoning Tokens（Effort 调控）以及 Self-Consistency / Self-Refinement 等采样与自我修正技术，两者可以无缝叠加使用（例如 DeepSeekMath-V2 在推理模型基础上叠加极限 Self-Consistency 取得了 Olympiad 级别的表现）。选项 D 说二者互斥是错误的，故选 D。",
-    "reference": {
-      "concept": "Inference Scaling 两条正交路径：单次更多 Reasoning Tokens（Effort）与多次采样投票（Self-Consistency），可以叠加；准确率随 Effort 提升呈边际收益递减。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1328,9 +1295,6 @@
     "angle": "mechanism",
     "question": "训练优化器采用 Muon，但在 Attention 权重的更新策略上改用 Per-Head 形式，这一改动的主要考量是？",
     "explanation": "Per-Head Muon 在收敛与 Loss 上无显著优劣，核心是工程正确性：每个 Attention Head 语义相对独立，不应将不同 Head 的权重更新耦合在同一全局大矩阵中计算。",
-    "reference": {
-      "concept": "Per-Head Muon：Loss 上无明显增益，采纳理由是结构正确性——各 Attention Head 语义独立，更新不应耦合进同一全局矩阵。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1363,9 +1327,6 @@
     "angle": "tradeoff",
     "question": "在开源 AI 生态中，仅仅发布模型权重（Open Weights）与完全开放（Fully Open）存在显著区别。以下关于模型完全开放性及其工程价值的说法，正确的有？（多选）",
     "explanation": "仅权重不足复现；需数据集+RL环境+Recipe+合成数据；开放促进衍生微调。",
-    "reference": {
-      "concept": "Fully Open=权重+数据+环境+配方方可复现与衍生。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1400,9 +1361,6 @@
     "angle": "tradeoff",
     "question": "在 LLM 的偏好对齐（RLHF 或 DPO）过程中，经常观察到随着对偏好信号优化强度的增加，模型在代理奖励（Proxy Reward）上的得分不断攀升，但人类评估的实际真实质量却在达到峰值后开始下降。关于这种“奖励过优化”（Reward Overoptimization）现象，以下哪些选项是正确的？（多选）",
     "explanation": "符合Goodhart、代理近似易被利用、表现冗长谄媚、DPO亦会过优化。",
-    "reference": {
-      "concept": "代理奖励过优化=Goodhart；显式/隐式均会利用缺陷。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1437,9 +1395,6 @@
     "angle": "mechanism",
     "question": "在基于 PPO 算法的标准 RLHF（基于人类反馈的强化学习）训练架构中，通常需要在训练过程中同时维护多个模型（策略模型 Policy、参考模型 Reference、奖励模型 Reward、价值模型 Value），并在损失函数中加入 KL 散度（KL Divergence）惩罚项。关于该架构的设计考量，以下哪些选项是正确的？（多选）",
     "explanation": "KL限更新防退化、Reference为冻结SFT基准、多模型致显存开销、移除KL不可加速。",
-    "reference": {
-      "concept": "PPO多模型+KL约束防奖励劫持与退化。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1474,9 +1429,6 @@
     "angle": "tradeoff",
     "question": "在 LLM 的对齐与推理能力训练实践中，针对不同任务类型存在“偏好学习”（Preference Learning，如 RLHF/DPO）与“可验证奖励”（Verifiable Rewards，如 RLVR/GRPO）两条技术路径。关于这两条路径的适用边界与选型逻辑，以下说法最准确的是哪一项？",
     "explanation": "可验证奖励以程序/规则客观校验代码数学，偏好学习管主观开放任务；二者互补非替代。",
-    "reference": {
-      "concept": "可验证奖励管客观可校验任务，偏好学习管主观开放任务。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1509,9 +1461,6 @@
     "angle": "tradeoff",
     "question": "在大语言模型（LLM）训练中，监督微调（SFT）通常基于“Prompt - 正确回答”数据进行模仿学习（Imitation Learning）。然而，对于许多开放式任务，存在多种侧重点不同的优质回答。关于 SFT 与后续偏好对齐（Preference Alignment，如 RLHF/DPO）的技术差异，以下哪些选项是正确的？（多选）",
     "explanation": "SFT难建模权衡、偏好成对比较一致性更高、仅增SFT不能替代对齐、小模型对齐可超大模型未对齐。",
-    "reference": {
-      "concept": "SFT模仿局限与偏好对齐以成对比较建模权衡。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1546,9 +1495,6 @@
     "angle": "mechanism",
     "question": "在多 GPU 部署超大模型或 Mixture-of-Experts (MoE) 模型时，通常需要结合张量并行（Tensor Parallelism, TP）与专家并行（Expert Parallelism, EP）。关于这两种并行策略的通信特性与集群部署建议，下列说法正确的有？（多选）",
     "explanation": "TP每层同步高带宽、EP按Token路由通信低、TP限单节点内+EP跨节点为常见组合、D的TP/EP带宽描述相反。",
-    "reference": {
-      "concept": "TP高频同步需NVLink单节点，EP低频按需跨节点。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1585,9 +1531,6 @@
     "angle": "mechanism",
     "question": "模型后训练阶段的对齐技术中传统 RLHF 与宪政 AI 存在明确的生成与评估机制差异。关于这两种对齐机制的底层逻辑与工程应用以下哪些描述是正确的？（多选）",
     "explanation": "A 正确 RLHF 依赖人工标注偏好排序训练奖励模型再通过 PPO/DPO 更新权重。B 正确 CAI 将对齐准则写为文本宪法让模型自评修改生成合成数据。C 正确 AI 反馈替代或减少大规模人工标注提升可扩展性与透明度。D 错误 文本原则无法彻底消除过度拒绝仍需迭代校准。",
-    "reference": {
-      "concept": "RLHF=人工偏好→RM→PPO/DPO；CAI=宪法原则→Self-Critique→合成数据；CAI 不消除 Over-Refusal。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1625,9 +1568,6 @@
     "angle": "mechanism",
     "question": "在大语言模型的 GRPO 强化学习训练中为避免生成 Worker 与训练器相互等待造成算力闲置通常采用异步流水线设计。在此架构下生成 Worker 会复用现有 KV Cache 持续采样导致同一条轨迹中的 Token 可能由不同版本的策略参数生成引入非策略偏差。针对该工程机制以下哪些设计能有效维持训练稳定性并防止梯度爆炸？（多选）",
     "explanation": "A 与 B 是异步 GRPO 维持稳定性的核心组合：限制参数漂移步数 bounds off-policy 程度，截断重要性采样则防止个别极度偏离策略的 Token 产生爆炸性更新。C 错误 重构 KV Cache 带来巨大计算开销直接破坏异步高吞吐设想。D 错误 GRPO 显式去除 Value Network 改用组内留一法基线。",
-    "reference": {
-      "concept": "异步GRPO=限制参数滞后+截断重要性采样；不清KV Cache不用Value Network。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1662,9 +1602,6 @@
     "angle": "calculation",
     "question": "GRPO 摒弃传统 Critic 网络改用组内相对优势估计优势函数。在留一法基线设计中针对某 Prompt 组内第 i 个采样回答的基线定义为除该回答外组内其余 N-1 个采样回答奖励值的算术平均值。假设 N=4 个回答奖励得分为 R=[1.0, 0.6, 0.2, 0.2] 请计算第 1 个回答（得分 1.0）的留一法优势值？",
     "explanation": "正确答案 C。计算除第 1 个回答外的其余 3 个回答得分均值：B₁=(0.6+0.2+0.2)/3=0.3333。优势值 A₁=r₁-B₁=1.0-0.3333≈0.667。GRPO 用组内留一法均值替代 Value Network 的核心优势是省去训练额外网络的显存与算力开销同时保持基线的无偏性。",
-    "reference": {
-      "concept": "留一法基线 B_i=mean(R\\{r_i})；A_i=r_i-B_i；省去 Value Network。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1699,9 +1636,6 @@
     "angle": "tradeoff",
     "question": "大模型多阶段强化学习通常按顺序包含可验证奖励、技能增强、多轮智能体及偏好对齐等阶段。关于各阶段中 KL 散度约束的调优策略与工程考量下列说法正确的有？（多选）",
     "explanation": "D 错误。多阶段 RL 的核心正是根据奖励信号的性质动态调整 KL 约束：客观真理类任务（RLVR/SWE 阶段）奖励不易被作弊需要充分探索 KL 可设为 0；而主观偏好/风格对齐阶段（RLHF）奖励模型易被作弊且需保留基座能力必须施加较高 KL 限制如 0.05。",
-    "reference": {
-      "concept": "RLVR 阶段 KL→0 充分探索；RLHF 阶段高 KL 防 Reward Hacking；动态调整非全局恒定。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1736,9 +1670,6 @@
     "angle": "scenario",
     "question": "在训练软件工程或命令行终端等复杂多轮 Agent 模型时模型需在真实沙箱中多次执行工具调用并获取反馈。相比传统单轮问答的 RL 训练关于此类 Agentic RL 系统的架构设计以下哪些说法是合理的？（多选）",
     "explanation": "D 错误 成熟的 Agentic RL 基础设施中 GRPO 支持长达数十甚至上百轮的环境交互 Rollout 通过将沙箱统一封装后可顺畅地对完整长轨迹施加端到端的二值结果奖励。",
-    "reference": {
-      "concept": "环境抽象接口解耦+异步流水线+稀疏二值奖励作用于全轨迹。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1772,9 +1703,6 @@
     "angle": "debugging",
     "question": "经过长链条思维与 RL 训练后的推理模型部署上线后常出现过度思考现象——面对简短日常问答依然生成大量冗长思考过程导致延迟增加算力开销激增。在后训练最终阶段最直接有效的工程干预手段是？",
     "explanation": "正确答案 A。在偏好对齐阶段加入推理长度惩罚是解决过度思考的标准做法它在维持解题正确率的同时惩罚冗长思维链。其他选项要么破坏模型长文本能力要么属于不切实际的结构裁切。",
-    "reference": {
-      "concept": "RLHF 加 Reasoning-length Penalty 在维持正确率的同时惩罚冗长 CoT。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1809,9 +1737,6 @@
     "angle": "tradeoff",
     "question": "在对大语言模型进行特定领域能力的二次监督微调时若仅使用新领域的专业数据集进行全量更新模型往往会在通用能力上发生灾难性遗忘。为了在强化 Agentic 编程能力的同时维持通用能力以下哪些工程做法是合理的？（多选）",
     "explanation": "A/B/D 是防止灾难性遗忘的标准组合拳：掺入 Replay Data 保持旧能力、降低 Learning Rate 减少权重剧烈偏移、控制 Epochs 防过拟合。C 错误 冻结 Attention 会严重限制模型在新领域的学习能力不属于标准 SFT 最佳实践。",
-    "reference": {
-      "concept": "Replay Data + 降低 LR + 短 Epochs；不冻结 Attention。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1848,9 +1773,6 @@
     "angle": "comparison",
     "question": "在大模型的强化学习管线中通常会同时用到可验证奖励与基于生成式奖励模型的偏好奖励。关于这两种奖励信号在 RL 训练中的特性对比与工程设计以下哪些说法是正确的？（多选）",
     "explanation": "D 错误。生成式 RM 的推理开销和延迟远高于简单的规则验证器（如 Python 单元测试、正则表达式匹配）。因此早期大规模 RL（RLVR 阶段）应优先使用高效且确定性的规则验证器而在微调偏好的 RLHF 阶段才引入生成式 RM。",
-    "reference": {
-      "concept": "Verifiable Rewards 确定性+KL=0 探索；GenRM 有 Reward Hacking 风险且速度更慢。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1887,9 +1809,6 @@
     "angle": "design",
     "question": "在训练涉及真实 Shell、Docker Sandbox 和 Web 浏览器的 Agentic RL 系统中为实现万卡规模下大规模并行 Rollout 与高效训练分布式系统架构通常需要满足哪些核心要求？（多选）",
     "explanation": "C 错误。真实 Docker/Shell 编译执行耗时数秒甚至数分钟如果强制同步等待环境返回并阻塞训练器会导致 GPU 算力严重闲置。必须采用异步生成/训练解耦设计。",
-    "reference": {
-      "concept": "环境解耦+资源API抽象+异步权重同步；同步阻塞是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1926,9 +1845,6 @@
     "angle": "mechanism",
     "question": "在准备大模型指令微调的高质量数据集时防止数据污染与噪声数据侵入是提升模型推理能力的关键。以下哪些质量控制手段已被验证能有效提升 Agentic 与 Reasoning 领域的 SFT 数据质量？（多选）",
     "explanation": "D 错误。包含错误恢复的轨迹对于培养模型鲁棒性与纠错能力至关重要——删除所有错误交互轨迹会导致模型遇到现实环境报错时无法自我修正。",
-    "reference": {
-      "concept": "LLM Judge 评分过滤+Schema 校验+SHA-256 去重；保留错误恢复轨迹。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1964,9 +1880,6 @@
     "angle": "tradeoff",
     "question": "在预训练大模型并计划将上下文窗口扩展至超长范围时直接从头以 512K 序列长度训练的做法极其低效。目前主流且高效的退火与长上下文扩展策略是？",
     "explanation": "正确答案 A。渐进式长上下文扩展是业界标准实践：前中期用短/中等序列确保吞吐量与基础语言能力；后半段退火阶段调整 RoPE 底数并混入高质量长文本数据以极小代价完成扩展。",
-    "reference": {
-      "concept": "短序列海量数据→末期退火+RoPE 扩展+高质量长文本→极小代价扩上下文。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -2001,9 +1914,6 @@
     "angle": "debugging",
     "question": "DPO 容易出现似然下降现象——随着训练进行模型对偏好回答和非偏好回答的绝对对数概率同时下降甚至导致回答长度异常退化。针对该现象以下哪些分析或工程干预是正确的？（多选）",
     "explanation": "DPO 损失梯度取决于相对差值容易导致两者生成概率同时下降(A)。增大 β 拉紧与参考模型的 KL 距离(B)。掺入 SFT NLL Loss 显式拉高 y_w 绝对概率(C)。D 错误 移除 Reference Model 后隐式 Reward 失去基准崩溃更严重。",
-    "reference": {
-      "concept": "DPO 似然下降→调大 β+加 NLL 正则化；移除 Reference Model 是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2039,9 +1949,6 @@
     "angle": "comparison",
     "question": "RingAttention 结合上下文并行实现了突破单卡显存限制的长文本训练。关于其工作原理与系统性能表现以下哪些说法是正确的？（多选）",
     "explanation": "RingAttention 借助环形 P2P 异步通信隐藏通信延迟(A)；利用 Online Softmax 分块累计归一化系数(B)；单卡只存自己的片段显存与分段长度相关(D)。C 错误：通信与计算完美重叠时具有极佳线性扩展性而非 O(N²)。",
-    "reference": {
-      "concept": "环形P2P重叠+Online Softmax+线性扩展+单卡显存与切片长度线性相关。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2078,9 +1985,6 @@
     "angle": "comparison",
     "question": "在复杂数学推导与代码生成的 CoT 强化学习中信用分配问题是影响收敛速度的核心瓶颈。关于 PRM 与 ORM 的比较及工程选型以下哪些说法是合理的？（多选）",
     "explanation": "A/B/C 准确概括了 ORM 与 PRM 的核心差异及 MC Rollout 自动合成 PRM 标签的工程实践。D 错误 即使每步看似合理终局仍可能因积累偏差出错需联合 PRM 与 ORM 调控。",
-    "reference": {
-      "concept": "ORM 终态单一奖励信用模糊；PRM Step-level 精准定位+MC Rollout 伪标签；需联合使用。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2116,9 +2020,6 @@
     "angle": "calculation",
     "question": "某千亿参数模型采用流水线并行部署在 P=8 个 Stage 上采用标准 1F1B 调度 Micro-batch 数量 M=32。假设每个 Micro-batch 的前向与反向耗时相同忽略通信开销请计算流水线泡泡时间占比约为多少？",
     "explanation": "正确答案 B 约 17.9%。总时间 T=(M+P-1)(tf+tb)；有效计算=M(tf+tb)；泡泡=(P-1)(tf+tb)；比例=(P-1)/(M+P-1)=7/39≈17.95%。",
-    "reference": {
-      "concept": "Bubble%=(P-1)/(M+P-1)；P=8,M=32→7/39≈17.9%。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -2153,9 +2054,6 @@
     "angle": "comparison",
     "question": "在对大模型进行偏好对齐时相比基于 Actor-Critic 架构的 PPO 算法 DPO 省去了显式的 Critic/Reward 网络。关于 DPO 与 PPO 在架构稳定性与应用场景上的对比以下哪些说法是合理的？（多选）",
     "explanation": "A 正确 DPO 将 RL 目标重构为隐式 Reward 解析表达降低显存与框架复杂度。B 正确 Off-policy 无需在线采样直接用静态偏好数据集梯度更新。C 正确 缺少价值迭代难以处理多步环境反馈的精准信用分配。D 错误 DPO 极易受高噪声偏好数据干扰产生 Reward Hacking。",
-    "reference": {
-      "concept": "DPO=离线+省网络+难处理多步信用分配；但极易 Reward Hacking 非抗干扰。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

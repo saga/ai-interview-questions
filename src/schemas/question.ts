@@ -31,7 +31,6 @@ export const questionSchema = z
     angle: questionAngleSchema.optional(),
     question: z.string().min(1),
     explanation: z.string().min(1),
-    reference: z.object({ concept: z.string().optional() }).optional(),
     aiGenerated: z.boolean().optional(),
     // ── 课程题库前瞻字段（可选，不破坏面试题校验；提案要求 Source Evidence + 反证）──
     /** 归属课程 id（课程题库题才有；面试题恒缺省）。 */

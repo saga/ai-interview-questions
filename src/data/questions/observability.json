@@ -13,9 +13,6 @@
     "angle": "scenario",
     "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
     "explanation": "成本驱动为Token尤其长Context、需Token粒度按Task聚合、长上下文低频远超高频短上下文、D称仅监控输出错误。",
-    "reference": {
-      "concept": "成本归因为Token浓度，非请求次数。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -49,9 +46,6 @@
     "angle": "system-design",
     "question": "为 LLM 应用设计可观测性体系时，与传统 Web 服务相比需要额外覆盖哪些维度？请说明日志/指标/追踪三层各自的关键内容，以及为什么\"又快又稳\"的系统仍可能是失败的。",
     "explanation": "LLM 特有增量：日志需含 prompt/completion（或哈希）、检索到的 chunks 及得分、模型版本与参数；指标除常规 p95/错误率外必须有 Token 用量与成本、缓存命中率、以及抽样的质量分（LLM-as-judge 忠实度等）；追踪要还原一次请求的完整链路（检索→重排→生成→工具调用）。核心洞察：LLM 系统的失败多数不是宕机而是静默的质量退化——快且可用但答案错了就是失败，因此质量指标是一等公民。",
-    "reference": {
-      "concept": "LLM 可观测 = 传统三层 + 质量 维度：prompt/检索过程入日志、Token 成本与抽样质量分入指标、端到端链路 trace；质量退化是静默失败，必须主动度量。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -151,9 +145,6 @@
     "angle": "system-design",
     "question": "在微服务分布式链路追踪与可观测性（Observability）架构中，引入 OpenTelemetry Collector 作为中间件层，而不是让各微服务直接将 Trace、Log 和 Metric 写入后端存储（如 ElasticSearch、Jaeger 等），其核心工程考量包括：（多选）",
     "explanation": "下沉批重试压缩采样、多路由透明、统一格式拆三流水线、D自动修正时钟错误。",
-    "reference": {
-      "concept": "OTel Collector：下沉处理+解耦存储+统一流水线，非时钟修正。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

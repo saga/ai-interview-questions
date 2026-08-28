@@ -13,9 +13,6 @@
     "angle": "system-design",
     "question": "在构建生产级 AI Agent 架构时，内存层（Memory Layer）通常划分为短期工作内存（Short-term Working Memory）、长期语义内存（Long-term Semantic Memory）与事务状态内存（Transactional Memory / State）。针对不同内存层的架构职责与权衡，下列说法正确的有？（多选）",
     "explanation": "短期Scratchpad随会话销毁、长期向量/图谱无ACID、事务不可交LLM隐式、外置持久化可恢复重试。",
-    "reference": {
-      "concept": "三层内存分工：工作随会话、语义跨会话无ACID、事务外置持久化。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -49,9 +46,6 @@
     "angle": "definition",
     "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
     "explanation": "考察短期/长期记忆的区分与配合。短期记忆即当前上下文窗口（工作内存），支撑即时推理但受限于窗口大小且随会话结束销毁；长期记忆为跨会话持久化知识库，常借助向量检索按需召回。二者配合的关键在于：写入策略（什么值得沉淀）比读取策略更常被忽视——无差别写入会导致噪声膨胀、检索精度下降。",
-    "reference": {
-      "concept": "短期记忆=当前上下文；长期记忆=跨会话持久知识，常借 RAG 召回。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "短期记忆通常指当前会话/任务的上下文窗口，保存最近的对话、中间步骤与工具结果，支撑即时推理；长期记忆则是跨会话持久化的知识库（如向量数据库、文件、数据库），用于积累经验、个性化与检索历史。二者配合：短期保证连贯，长期提供可复用的背景。实现上长期记忆常借助嵌入检索（RAG）按需召回。"
@@ -180,9 +174,6 @@
     "angle": "definition",
     "question": "关于 Agent 的 State 设计，下列说法正确的有哪些？（多选）",
     "explanation": "State 应精炼、结构化：目标 + 进度 + 关键结论。全量原文堆入会造成 context pollution、成本膨胀与注意力稀释；大内容应外置存储、按需检索。",
-    "reference": {
-      "concept": "State = 精炼结构化信号；原文外置按需检索。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -215,9 +206,6 @@
     "angle": "mechanism",
     "question": "为什么 Agent 的 Memory 不应该简单等同于 Conversation History？",
     "explanation": "逐字历史是记忆的原料而非记忆本身：大量寒暄、重复与失败尝试会稀释关键信号。有效的 Memory 需要提炼（摘要/结构化/向量化），支持按相关性召回而非按时间全量回放。",
-    "reference": {
-      "concept": "记忆 = 提炼的结构化信号；历史只是原料。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -249,9 +237,6 @@
     "angle": "tradeoff",
     "question": "长对话应用中上下文窗口终会耗尽。对比滑动窗口、摘要压缩、分层摘要与检索式记忆四种对话历史管理策略的取舍，应该怎么选？",
     "explanation": "滑动窗口（保留最近 N 条）：零成本实现但早期信息直接丢失，只适合短会话。摘要压缩：超阈值时把旧消息总结、近况保真，用户体验接近\"好记性\"且成本可控，是多数聊天应用的默认解。分层摘要：近期全文/中期段落摘要/远期一行摘要，粒度换成本，适合超长程任务。检索式记忆：全部历史外置存储，按当前查询相关性取回，扩展性最好但引入检索延迟与相关性风险，等于给对话史做 RAG。默认推荐摘要压缩，超长会话演进到分层或检索式。",
-    "reference": {
-      "concept": "对话记忆四档：滑窗（丢信息）/摘要压缩（默认解）/分层摘要（粒度换成本）/检索式记忆（可扩展但引入 RAG 复杂度），按会话长度与信息价值演进。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -351,9 +336,6 @@
     "angle": "scenario",
     "question": "多轮客服对话的记忆模块上线初期频繁遭遇上下文超限与 Token 成本暴涨。下列关于对话历史管理的生产实践正确的有？（多选）",
     "explanation": "①Redis 存会话历史并设 TTL（如 1 小时）：失效会话自动淘汰，防存储无限膨胀，TTL 同时定义了\"回话连续性\"的业务边界；②滑动窗口截断：超过 max_turns 后保留最近约 2×max_turns 条消息——多留一倍是为了在窗口边缘保留指代消解所需的上下文；③保留全量历史是最快的成本爆炸器：Token 成本随轮数线性上涨且旧信息注意力贡献递减；④摘要压缩作为滑窗的补充手段：把截掉的历史总结成 digest 放在窗口头部，兼顾成本与远期信息。",
-    "reference": {
-      "concept": "对话记忆三件套：Redis TTL 定业务边界并防存储膨胀；滑动窗口留 2×max_turns 保指代上下文；摘要压缩补远期信息——全量历史在生产环境是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -388,9 +370,6 @@
     "angle": "definition",
     "question": "AI Agent 的记忆架构通常借鉴认知科学，将其划分为不同功能的记忆类型。现有一个智能编程/运维 Agent，在其运行过程中记录了以下数据：1. 当前正在针对某堆栈报错及对应代码段进行 Debug 分析；2. 记录“三天前与用户排查了 CI/CD 流程报错，并修改了部署脚本”；3. 记录“用户团队在生产环境采用 GitHub Actions 部署，且偏好使用 Python”；4. 记录“在生成代码 Review 总结时，用户要求固定采用三段式结构”。关于上述数据与 Agent 记忆类型的对应关系，下列分析正确的是？（多选）",
     "explanation": "1工作记忆随任务清、2情境带时戳、3语义持久事实、4程序固化范式。",
-    "reference": {
-      "concept": "四类记忆：Working/Episodic/Semantic/Procedural分工。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -426,9 +405,6 @@
     "angle": "mechanism",
     "question": "生产环境中的 AI Agent 架构常借鉴操作系统（OS）在 RAM 与 Disk 之间进行页面调度（Paging）的思想，设计分层记忆架构（包含 Context Window、Session Memory、Long-term Store、Cold Archive）。关于信息在该分层体系中的动态流转与调配机制，下列描述最准确的是？",
     "explanation": "新消息到达时从Long-term Store检索提升至Context，A全量直写、C无损降级、D Window成本低容量大均误。",
-    "reference": {
-      "concept": "分层记忆：检索提升、会话结束压缩降级。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -461,9 +437,6 @@
     "angle": "tradeoff",
     "question": "在 Agent 的检索层（Retrieval Tier）中，系统需要在每轮交互前决定哪些存储信息应该被召回并填充到 Context Window 中。针对检索策略的设计与上下文摆放，下列说法正确的是？（多选）",
     "explanation": "过度相关致过时吸引、过度时效丢久远约束、首尾摆放抗Lost-in-Middle、D称LLM可完全忽略干扰错误。",
-    "reference": {
-      "concept": "检索权衡相关与时效，布局抗中间丢失。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -498,9 +471,6 @@
     "angle": "scenario",
     "question": "为了节省 Context Window 开销，Agent 架构常引入“摘要压缩（Summarization）”与“长期记忆持久化”。然而这些机制在工程落地中会引入副作用与安全风险。下列关于其副作用的分析正确的是？（多选）",
     "explanation": "摘要有损丢精确细节、缺失效致陈旧事实高置信、持久层可被毒化持续污染、D称可明确识别错误。",
-    "reference": {
-      "concept": "摘要有损、过时失效、毒化持续污染。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -535,9 +505,6 @@
     "angle": "definition",
     "question": "在开发 Agent 产品时，用户往往感觉“模型记住了昨天的对话”。从 Transformer 模型底层的 API 合约与系统架构的角度来看，这种记忆连续性的本质是？",
     "explanation": "LLM无状态，每轮全新空白，连续性由平台状态管理与检索组装实现。",
-    "reference": {
-      "concept": "LLM无状态，连续性由平台外置记忆实现。"
-    },
     "formats": {
       "choice": {
         "type": "single",

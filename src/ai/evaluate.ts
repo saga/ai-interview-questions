@@ -31,7 +31,6 @@ export function buildEvalUser(q: Question, open: OpenFormat, answer: string, opt
   const noAnswer = !answer || !answer.trim();
   return `题目（开放题${open.language ? '，语言：' + open.language : ''}）：
 ${q.question}
-${q.reference?.concept ? '\n概念提示：\n' + q.reference.concept + '\n' : ''}
 参考答案：
 ${open.referenceAnswer}
 ${q.explanation ? '\n题目解析（该题的评分锚点：请据此判断回答是否覆盖本题特有的关键结论）：\n' + q.explanation + '\n' : ''}

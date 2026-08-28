@@ -13,9 +13,6 @@
     "angle": "scenario",
     "question": "线上 RAG 助手被投诉\"检索明明召回了正确文档，模型却无视上下文、用训练记忆里的过时信息作答\"。作为负责工程师，你如何诊断并系统性修复这个 grounding 失效问题？",
     "explanation": "先确认检索确实含答案（排除检索问题），再修生成端：强化 grounding 指令（仅基于给定上下文作答、缺失就明说）、用明确分隔符区分上下文与指令、强制逐条引用来源使无据可引的内容无法输出、必要时换 grounding 表现更好的模型或微调。最难缠的是\"部分接地\"——上下文给了部分信息，模型用参数知识补齐空隙，需要训练/提示模型显式声明信息来源。",
-    "reference": {
-      "concept": "Grounding 失效修复四件套：强指令限定只用上下文+缺失即拒答、结构化分隔 context、强制 citation、换模型或微调；警惕部分接地式混编。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -47,9 +44,6 @@
     "angle": "tradeoff",
     "question": "推荐系统的 LLM 解释层要为每条推荐生成一句自然语言理由（如\"因为你喜欢 Inception 的时间叙事，同一导演的 Tenet 会合你口味\"）。如何防止 LLM 在解释中编造电影事实（错误导演、不存在奖项）？在\"解释自由度\"与\"事实可靠性\"之间如何权衡？",
     "explanation": "双层防线：①生成前 grounding——给 LLM 注入结构化 fact sheet（导演/演员/主题/获奖），prompt 明确只允许使用 sheet 内信息组织语言，把生成任务从\"回忆事实\"降级为\"用给定事实造句\"；②生成后校验——validator 对照目录元数据核查解释中的事实性断言，不合格即重试或降级为模板句。权衡结论：个性化靠 prompt 中的用户上下文与 reason_type 提供，事实性靠 fact sheet 封死输入空间——两者正交，不必牺牲。兜底：校验失败率异常升高说明 fact sheet 本身有错，回溯目录数据质量。",
-    "reference": {
-      "concept": "解释层防幻觉 = 输入侧 fact sheet 圈定信息空间 + 输出侧对照元数据后置校验；个性化来自用户上下文，事实性来自封闭输入——二者正交。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -82,9 +76,6 @@
     "angle": "scenario",
     "question": "生产级 RAG 正从\"小切片（512 token）\"向\"平衡上下文 RAG（10K~50K token 大段落乃至整页/整文档）\"演化。团队提议：既然模型支持百万 token 上下文，干脆取消检索与重排、全库直连。请分析该演化的合理部分与错误结论。（多选）",
     "explanation": "合理的部分：①长上下文模型成熟让大切片成为可能，避免了小切片断章取义造成的上下文断裂（条款引用、跨段指涉不再被切断）；②架构重心随之转移——大切片模式更依赖模型原生长文本注意力去段落内\"找针\"，小切片模式更依赖切块与 embedding 匹配的精准度。错误结论：全库直连不成立——延迟（prefill 数秒到分钟）、成本（每次请求背全部 token）、注意力衰减（lost in the middle）三座大山仍在；检索与重排不仅不能省，反而更重要：要从海量候选中挑出最相关的少数大块喂给模型。",
-    "reference": {
-      "concept": "Balanced Context = 切片变大但检索重排不退场：大切片防断裂、靠长注意力找针；全库直连输给延迟/成本/注意力衰减，Reranker 反而更关键。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -599,9 +590,6 @@
     "angle": "tradeoff",
     "question": "在构建 AI Agent 系统时，一种直观做法是每次 API 调用都将全部历史对话拼接到 Context Window 中。但在长期运行的 Agent 中，这种做法存在显著的工程瓶颈。关于单纯依赖扩大 Context Window 来维护记忆带来的隐患，下列说法正确的是？（多选）",
     "explanation": "Token计费与处理线性增、TTFT随上下文增、长文本Attention Lost-in-the-Middle、D称扩窗根治错误。",
-    "reference": {
-      "concept": "长上下文三瓶颈：成本、延迟、注意力衰减。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

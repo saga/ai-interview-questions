@@ -13,9 +13,6 @@
     "angle": "system-design",
     "question": "在 Agent 的上下文工程（Context Engineering）实践中，关于上下文窗口（Context Window）与工具（Tools）的管理，下列哪些说法是正确的？（多选）",
     "explanation": "非越多越好需剪枝、Prompt是代码资产需版本化、工具描述清晰降误选、D挂数百工具错误。",
-    "reference": {
-      "concept": "上下文剪枝+Prompt治理+清晰Tool Schema。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -49,9 +46,6 @@
     "angle": "scenario",
     "question": "一个长任务 Agent 运行数百步后上下文接近溢出，最合理的处理方式是？",
     "explanation": "长程 Agent 的标准做法是上下文工程：将旧轨迹摘要化，持久化关键状态（目标、已完成步骤、重要结果），按需检索细节。全量丢弃会丢失进度，无限窗口则成本与注意力稀释都不可行。",
-    "reference": {
-      "concept": "上下文压缩：摘要旧轨迹 + 保留关键状态 + 按需检索。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -184,9 +178,6 @@
     "angle": "scenario",
     "question": "一份 200 页的合同要抽取关键条款，但上下文窗口与成本都不允许全文逐页过模型。请设计长文档的选择性处理策略：如何切、哪些跳过、附件引用如何处理？",
     "explanation": "三步走：①结构恢复——先做章节检测（标题层级、编号条款、Recitals/Terms/Exhibits 等逻辑单元），已知模板优先匹配模板库，未知名版式回退到启发式规则（编号章节、全大写标题）；②选择性处理——只有含目标字段的章节才进抽取（Terms 部分常占篇幅大头且含绝大多数关键字段），Exhibits 等附属原件不处理、存为引用占位；③交叉引用解析——检测 \"as defined in Exhibit A\" 类指涉，把被引用附件的相关内容注入对应抽取调用的上下文，避免关键字段定义在附件里导致 null 结果。全程按章节粒度记账，未处理部分在输出 JSON 中留引用标记保证可追溯。",
-    "reference": {
-      "concept": "长文档处理 = 结构恢复（模板库+启发式）→ 选择性处理（相关章节才抽取、附件存引用）→ 交叉引用解析（把 Exhibit 内容注入指涉处的调用上下文）。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -346,9 +337,6 @@
     "angle": "scenario",
     "question": "在 Agent 工具调用设计中，某 Backend 服务 API get_orders() 默认返回包含完整用户历史、支付明细、商品长文本描述的原始 JSON，大小约为 100K Tokens。开发者直接将该原始返回值注入 LLM 的上下文窗口中。这种设计会导致哪些系统性后果？（多选）",
     "explanation": "增TTFT与成本、注意力稀释降精度、误用字段、D称全量推崇错误。",
-    "reference": {
-      "concept": "Token瘦身：全量注入增成本与稀释，需裁切。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -383,9 +371,6 @@
     "angle": "fundamental",
     "question": "在基于 Agent 的敏捷开发中 Agent 会产生大量临时设计文档、Spec 和 Implementation Plan。为了保证项目上下文的长期可持续性避免上下文漂移与知识孤岛关于这些中间产物的处理方案以下哪项最为推荐？",
     "explanation": "正确答案 B。将最终验证通过的方案提炼转换为与代码一同维护的活架构文档是最推荐做法——它保证知识持久化、版本受控且随代码演进同步更新。A 错误 私有 Memory 导致知识孤岛。C 错误 对话历史塞入注释造成噪声。D 错误 彻底丢弃导致上下文漂移与重复踩坑。",
-    "reference": {
-      "concept": "活架构文档与代码同版本维护；私有 Memory 和丢弃上下文都是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "single",

@@ -13,9 +13,6 @@
     "angle": "system-design",
     "question": "在处理复杂多步骤业务时，关于单 Agent 与多 Agent（Multi-Agent）架构以及 Orchestrator-Worker 模式的工程权衡，下列哪些说法是正确的？（多选）",
     "explanation": "点对点自由通信易冲突、Orchestrator集中分发短Worker减冲突、单职责缩小故障面、多Agent增Token与延迟。",
-    "reference": {
-      "concept": "Orchestrator集中调度优于点对点，窄域Worker提可测性，代价为成本延迟。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -51,9 +48,6 @@
     "angle": "mechanism",
     "question": "在大模型 Agent 系统架构设计中，为了实现能力解耦与模块化，通常会将“Agent 与外部工具/API 的交互协议”和“Agent 与 Agent 之间的协同/授权协议”进行分层（例如 MCP 与 A2A 协议）。关于这两类协议的设计定位与工作机制，下列说法正确的有？（多选）",
     "explanation": "MCP单向工具调用由宿主路由、A2A自主委托+Agent Card发现、可Input-Required回抛、D称MCP替代A2A错误。",
-    "reference": {
-      "concept": "MCP=工具调用；A2A=Agent委托+发现+状态回抛；不可互替。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -217,9 +211,6 @@
     "angle": "tradeoff",
     "question": "关于多智能体（Multi-Agent）系统的架构模式与适用边界，下列说法正确的是？",
     "explanation": "四种主流拓扑各有适配场景：Hierarchical（Manager 分解派发）适合可分解复杂任务但 Manager 易成瓶颈；Pipeline 顺序交接适合阶段化处理但无并行；Peer-to-peer 协作自然但协调复杂；Critic/Verifier 一个生成一个挑刺能有效提质。启用多智能体的前提是任务天然分解、各子任务需要不同工具/专长、或批判模式确有增益；单一 Agent 加好工具就能搞定时应坚决用单 Agent——协调开销、调试复杂度与多倍 LLM 成本是真实代价。",
-    "reference": {
-      "concept": "Multi-agent 拓扑按任务形态选：层级/流水线/P2P/Critic；启用判据=任务可分解+异质能力需求；单 Agent 够用时协调开销就是负资产。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -252,9 +243,6 @@
     "angle": "calculation",
     "question": "在由 8 个 Agent 构成的无自环有向通信网络中，系统架构师配置了 22 条单向通信链路（静态配置边）。在一次协同任务运行中，实际仅有 15 条链路产生了消息交互（行为边）。关于该网络的拓扑指标与运行特征，以下分析正确的是？",
     "explanation": "无自环有向图最大边数 = N(N-1)=56（非 28，后者为无向图公式 N(N-1)/2）；静态配置关系密度 = 22/56≈39.3%；动态边利用率 = 实际行为边/配置边 =15/22≈68.2%，度量配置连通性 vs 行为连通性的差异。",
-    "reference": {
-      "concept": "有向图关系密度 D=E/N(N-1) 与行为边利用率 = 活跃边/配置边；最大边数与无向图差一倍。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -287,9 +275,6 @@
     "angle": "system-design",
     "question": "在评估 Agent 协同网络的通信密度对系统性能的影响时，传统做法若直接对比链式（Chain）、星型（Star）与全连接（Mesh）结构，会导致“拓扑中心性/结构形状”与“边数量（关系密度）”两个混淆变量同时变化。为了在固定节点数（如 N=8）前提下严格隔离并独立评估“关系密度”这一单一变量，以下哪些实验设计是合理的？（多选）",
     "explanation": "需固定 N、隔离关系密度单一变量：ER随机图均匀采样+剔除不连通样本（A）、锁定随机种子保证可复现（B）、单向梯度扫边数（D）均正确；C 扩充节点改变了 N，破坏控制变量。",
-    "reference": {
-      "concept": "多Agent拓扑Benchmark的单变量隔离：固定N的ER随机图 + 可复现种子 + 密度梯度扫描；Chain/Star/Mesh混淆结构与密度。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -324,9 +309,6 @@
     "angle": "tradeoff",
     "question": "在构建 Agent 系统架构评估测试集（Benchmark）时，为了消除大语言模型（LLM）API 调用带来的高成本、网络延迟及随机波动，架构师采用确定性规则策略（如基于 TF-IDF 提炼并共享未重复的最新事实）代替真实 LLM。关于这种评估设计的工程权衡（Trade-offs），以下说法正确的有？（多选）",
     "explanation": "确定性规则实现100%可审计/比特级复现、零API开销（A），能准确评估拓扑几何与链路利用率等结构性指标（B），但丢失LLM推理噪声/指令偏差/幻觉（D）；C称可无缝推广至生产是过度承诺。",
-    "reference": {
-      "concept": "确定性策略评估拓扑：完全可复现与零成本 vs 缺少真实LLM随机性与推理噪声的权衡。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -361,9 +343,6 @@
     "angle": "mechanism",
     "question": "在固定 Agent 数量（N=8）和特定协作任务的实验中，当通信网络的静态配置关系密度从 20%（11 条边）提升至 100%（56 条边）时，实测信息恢复率始终保持在 92%~98% 之间，而实际活跃边数仅从 10.7 条增加至 26.4 条，边利用率从 97.3% 单调下降至 47.1%。关于这一现象的架构归因与工程启示，以下理解正确的有？（多选）",
     "explanation": "配置连通≠行为连通（A）；新增边边际递减、冗余边增多（B）；稀疏网利用率高则承载近满、冗余不足（C）；D把特定任务结论无条件泛化至所有场景错误。",
-    "reference": {
-      "concept": "配置连通性与行为连通性的离散边际递减：盲目全连接导致边利用率单调下降与冗余配置。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

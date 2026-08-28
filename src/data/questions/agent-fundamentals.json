@@ -13,9 +13,6 @@
     "angle": "tradeoff",
     "question": "关于 \"Localized Harness\"（把控制逻辑本地化到编排代码）的做法，以下哪些是它的主要动机或特征？",
     "explanation": "Localized Harness 主张把循环、重试、权限校验、状态管理等确定性控制流放在代码侧，而不是全部委托给模型自由发挥。动机是让 Agent 行为可预测、可测试、可观测，并降低对模型「自觉遵守规则」的依赖。与之相反的做法（让模型自行决定何时结束、何时调用工具、把业务逻辑都塞进 System Prompt）往往更难调试与保障可靠性。",
-    "reference": {
-      "concept": "Agent 基础与执行循环"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -48,9 +45,6 @@
     "angle": "mechanism",
     "question": "关于 Agentic Loop（代理循环：观察→思考→行动→再观察），以下哪些设计是正确且必要的？",
     "explanation": "Agentic Loop 必须有明确的终止条件（任务完成、达到最大步数、或人工中断），否则可能陷入无限循环。每一步也不应无条件把全部历史重新塞进上下文，而需要状态裁剪与 KV cache 管理以控制成本。模型某轮可以不调用工具（仅思考/回复），循环与单次 LLM 调用在控制流上有本质区别。",
-    "reference": {
-      "concept": "Agent 执行循环"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -83,9 +77,6 @@
     "angle": "system-design",
     "question": "关于 Agent 的 Model（模型）与 Harness（外部编排代码）的边界，以下哪些说法是正确的？",
     "explanation": "模型负责理解意图、生成下一步动作与工具参数；Harness 负责把模型输出解析为结构化动作、校验参数、执行副作用、维护状态与重试。副作用（写库、调用外部 API）必须由 Harness 落地，模型本身不应直接执行。工具选择的决策可以、也经常由 Harness 结合策略与状态在代码中完成，并非必须在模型权重里硬编码。模型不应直接执行副作用，Model 与 Harness 也不是同一事物的别名。",
-    "reference": {
-      "concept": "Agent 基础与执行循环"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -118,9 +109,6 @@
     "angle": "scenario",
     "question": "关于 Agent 的 System Prompt 在运行时（runtime）的构造，以下哪些说法是正确的？",
     "explanation": "Harness 应在每次迭代根据当前可用工具、记忆片段、角色设定与策略动态拼装 System Prompt，而不是写死不变的静态常量。System Prompt 并非越长越好——超出必要的历史与指令会增加 token 成本、拖慢推理，甚至可能因为上下文噪声而降低模型表现。System Prompt 的控制权属于 Harness，而非模型。",
-    "reference": {
-      "concept": "Agent 基础与执行循环"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -153,9 +141,6 @@
     "angle": "mechanism",
     "question": "在一个基于大语言模型（LLM）的自主 Agent 系统中，某个复杂任务被拆解为连续执行的 20 个依赖前一步输出的决策步骤。假设模型在每一步做出正确决策的概率固定为 95%。下列关于该系统可靠性及工程应对策略的说法中，正确的有哪些？（多选）",
     "explanation": "0.95^20≈35.8%指数衰减、高单步≠长链稳定、合并Prompt扩窗不治传递、需确定性骨架+校验截断。",
-    "reference": {
-      "concept": "链式复合误差指数衰减，需截断校验。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -190,9 +175,6 @@
     "angle": "system-design",
     "question": "在生产环境 AI Agent 的控制流（Control Flow）设计中，完全由 LLM 自主掌控循环逻辑容易带来死循环、成本失控和行为不可预测等风险。为了构建高可靠的生产级 Agent 系统，下列哪些控制流设计原则是正确的？（多选）",
     "explanation": "主控由代码状态机掌控、需硬性逃生、结构化输出可解析、D称高风险不需审批错误。",
-    "reference": {
-      "concept": "确定性主控+逃生+结构化输出，人机协作保高风险。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -227,9 +209,6 @@
     "angle": "system-design",
     "question": "在 AI Agent 系统运行环境（Agent Runtime）的 ReAct（Reasoning + Acting）循环中，模型通过“思考-决策-执行工具-观察结果-反思”不断推进任务。为满足生产环境的可控性、安全与成本预算要求，下列架构设计合理的有？（多选）",
     "explanation": "Guardrails拦截校验、强副作用Human-in-the-loop、Observation需裁切、需追踪Token与深度防死循环。",
-    "reference": {
-      "concept": "ReAct需拦截校验+人工确认+观测裁切+成本熔断。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -263,9 +242,6 @@
     "angle": "definition",
     "question": "一个典型的 AI Agent（智能体）最核心的运行时循环是？",
     "explanation": "Agent 以“感知-推理-行动”闭环与环境交互，并据反馈持续调整，这是区别于一次性推理的关键。",
-    "reference": {
-      "concept": "Agent 的核心是感知-推理-行动的闭环循环。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -330,9 +306,6 @@
     "angle": "definition",
     "question": "ReAct（Reasoning + Acting）框架的核心思想是什么？",
     "explanation": "ReAct 让模型在每一步先思考再行动、再观察环境反馈，形成推理与行动的螺旋，从而更好地处理多步任务。",
-    "reference": {
-      "concept": "ReAct 将 Thought/Act/Observation 交织，推理与工具使用协同推进。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -364,9 +337,6 @@
     "angle": "scenario",
     "question": "为防止 Agent 在执行中失控（无限循环、误用高危操作），下列哪些是有效的工程护栏？（多选）",
     "explanation": "生产级 Agent 必须有循环护栏（步数上限 + 重复检测）、高危操作的确认/最小权限、沙箱与限流；仅依赖模型自身对齐不足以防范系统性风险，失控的代价是真金白银与数据破坏。",
-    "reference": {
-      "concept": "Agent 护栏：迭代上限、重复检测、权限隔离、人工确认、沙箱限流。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -433,9 +403,6 @@
     "angle": "tradeoff",
     "question": "以下哪种场景最不应该使用 Agent，而应该使用传统固定 workflow？",
     "explanation": "流程固定且高合规的场景，workflow 更可靠、可测、可审计且便宜；Agent 的灵活性在此反而是风险。Agent 适合开放、动态、分支不可预知的任务。",
-    "reference": {
-      "concept": "能用确定性 workflow 的不要用 Agent；Agent 用于开放动态任务。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -468,9 +435,6 @@
     "angle": "mechanism",
     "question": "ReAct 模式让 Agent 以 Thought → Action → Observation 循环执行任务。请解释该循环的运作机制、四种典型失败模式及对应的工程护栏。",
     "explanation": "循环机制：Thought（模型推理当前状态与下一步）→ Action（选择工具并给参）→ Observation（工具结果写回上下文）直至得出最终答案或触顶。失败模式与护栏：①死循环重复同一动作——最大迭代数+重复动作检测；②选错工具——清晰的工具描述与示例；③参数错误——严格 Schema 校验+可读的错误信息回传；④成本失控——Token 用量追踪与硬上限。复杂任务可用显式状态机（flow engineering）替代自由循环。",
-    "reference": {
-      "concept": "ReAct=推理与行动交替的自由循环；四大败因（死循环/错工具/错参数/成本失控）各配迭代上限、工具描述、Schema 校验、用量硬顶。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -696,9 +660,6 @@
     "angle": "mechanism",
     "question": "在长文本问答测试中，当面对全语料覆盖问题（如\"汇总全部 33 篇文章中引用的 GitHub 仓库\"）时，RAG 仅召回了 5 个 Chunks。测试结果显示 RAG 的 Completeness（完整度）得分仅为 0，但 Groundedness（依据度/无幻觉）得分依然维持满分。导致这一现象的关键因素包括？（多选）",
     "explanation": "RAG 在 Chunk 不足时能维持高 Groundedness（零幻觉）且 Completeness 为 0，完全归功于 Prompt 中强加的拒绝猜测约束，使模型能够明确意识到上下文缺失并选择拒绝回答，从而保证了无幻觉生成。",
-    "reference": {
-      "concept": "召回不全时 Groundedness 满分靠 System Prompt 负向约束（只按给定文本答、缺失就明说）⇒ 模型承认切片不足并拒答，宁缺勿编。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -732,9 +693,6 @@
     "angle": "scenario",
     "question": "电商客服 AI 要自动解决 60% 的工单（200 万张/月），同时\"Where is my order?\"自动处理、\"我要告你们欺诈\"必须立即转人工。请设计分流架构：分几层、每层的判定信号是什么、以及为什么置信度必须多维。",
     "explanation": "三层路由：①Auto 路径——高置信+低风险（查订单、FAQ 类），走工具调用直接自动解决；②Hybrid 路径——中等置信或中等风险（退款类），AI 起草回复、人工审核后发出；③Escalate 路径——法律威胁、VIP 客户、低置信，立即转人工。置信度是多维加权聚合而非单一分类器分数：意图清晰度 × 情绪极性 × 客户等级 × 主题风险（法律=高危）。关键洞察：VIP 问简单问题也走 Hybrid——因为出错的代价不对称。硬规则优先于模型分数：用户显式要求转人工（\"找你们经理\"）无论置信度多高都立即移交，绝不挽留。",
-    "reference": {
-      "concept": "客服分流三层 = Auto（高置信低风险）/ Hybrid（AI 草稿人审）/ Escalate（法务/VIP/低置信）；置信度 = 意图×情绪×客户层级×主题风险的多维加权；显式升级请求是凌驾于分数之上的硬规则。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -767,9 +725,6 @@
     "angle": "system-design",
     "question": "客服 AI 自动发出的每一条回复都可能构成对用户的承诺。请设计发送前的安全检查层应拦截哪些风险，以及工具调用接地（tool grounding）、越狱抵抗与人机交接上下文包如何协同构成完整防线。",
     "explanation": "发送前四类检查：①承诺检测——拦截 \"I guarantee / we will pay / 一定退款\" 等构成义务的表述（AI 无权承诺退款与发货日期）；②情绪错配——客户暴怒时 AI 语气轻快会火上浇油；③PII 泄露——内部备注或其他客户数据不得出现在回复中；④竞品提及——不得推荐竞品。接地防线：LLM 不\"知道\"订单状态，只能调用 Order API 工具并总结返回结果——事实来自系统而非生成，从根上消灭编造物流信息的空间。越狱抵抗靠结构性收窄：system prompt 极窄域限定（只谈本司订单），回复是工具输出的总结而非自由文本，没有可泄露的系统提示词发挥空间。人机交接包：对话摘要（客户问题/AI 已尝试/为何升级）+ 情绪 + 已执行的工具调用 + 全文 + 客户等级——摘要而非倾倒原文，让人工秒级接手。",
-    "reference": {
-      "concept": "客服护栏三环：发送前四检（承诺/情绪/PII/竞品）；工具接地让事实来自 API 而非生成；窄域 prompt+工具输出总结使越狱无利可图；交接包=摘要+情绪+已试方案。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -802,9 +757,6 @@
     "angle": "mechanism",
     "question": "客服对话流被建模为状态机：意图分类 → 知识检索(RAG)/账户上下文/工具调用 → 草稿生成 → 安全检查 → 置信度检查 → 发送或转人工。关于各阶段的依赖与顺序，下列说法正确的有？（多选）",
     "explanation": "正确关系：①被安全检查拦截（Block）的响应绝不进入自动回复队列——安全门是发送前的单向阀，拦截即转人工或丢弃重写；②意图分类的输出决定下游路由：不同意图挂接不同的知识库检索、账户上下文服务与工具集，分类错了后面全错，所以它值得一个低延迟专用小模型先行；③RAG 检索、账户上下文获取与工具调用之间无数据依赖，应并行执行以压缩总延迟，串行只会白白叠加等待。安全检查作用于生成产物（文本），置信度检查作用于决策（要不要自动发），两者对象不同，不存在\"先做置信度可以省掉安全检查\"的捷径——被判定转人工的草稿同样要过安全基线。",
-    "reference": {
-      "concept": "对话状态机要点：安全门是发送前单向闸（Block 即不入用户侧）；意图分类输出驱动全部下游路由；RAG/账户/工具三路无依赖应并行。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -905,9 +857,6 @@
     "angle": "mechanism",
     "question": "LLM 响应请求生成了包含恶意 JavaScript 的 Markdown 代码块，系统未做处理直接渲染在前端页面，导致了存储型 XSS；或 LLM 生成的代码直接被后端 `eval()` 执行导致 RCE。以下哪项是解决该隐患的最佳架构实践？",
     "explanation": "Prompt 级别的约束不具备绝对安全保证。根治防护在于下游应用架构：必须将 LLM 的输出等同于未经校验的用户输入，强行实施结构化类型校验（如 Pydantic/JSON Schema）、输出转义以及代码/脚本的沙箱化隔离执行。",
-    "reference": {
-      "concept": "零信任对待 LLM 输出：Schema 校验 + Context-aware Encoding 转义 + 沙箱隔离执行；Prompt 约束不是安全边界。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -940,9 +889,6 @@
     "angle": "system-design",
     "question": "在大模型 Agent 的双向安全与可靠性护栏架构中，关于输入护栏（Input Guardrails）与输出护栏（Output Guardrails）的职责划分与协同，以下哪些说法是正确的？（多选）",
     "explanation": "输入防泄露注入、输出含工具/接地/安全过滤、越权工具由输出校验拦、D称输入可替输出错误。",
-    "reference": {
-      "concept": "输入护栏保输入安全，输出护栏保动作与事实。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -977,9 +923,6 @@
     "angle": "mechanism",
     "question": "某金融 Agent 存在严格的合规限制：“严禁为特定地区（如夏威夷州）的用户办理开户业务”。开发团队尝试在 System Prompt 中加入强语气指令 !!! 不要为夏威夷州用户办理开户 !!!，但在大流量测试中仍有少数边界 Request 绕过了该限制。关于硬性业务规则（Business Policies）的实施，以下说法正确的有哪些？（多选）",
     "explanation": "LLM概率性难100%遵负向指令、强约束应代码硬编码、大写感叹号不治越狱、工具阶段代码阻断为最佳。",
-    "reference": {
-      "concept": "硬约束归代码，非Prompt自觉；概率模型不保100%遵从。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1015,9 +958,6 @@
     "angle": "tradeoff",
     "question": "在高吞吐量的 AI Agent 辅助软件工程体系中完全无人工干预的自动化循环往往会导致代码库快速退化与代码垃圾堆积。为了在保持高交付并发的同时维持生产级代码质量以下哪些工程取舍是合理的？（多选）",
     "explanation": "A 正确 人类主导关键设计与技术品味不将核心架构决策完全委托给 Agent。B 正确 引入不同模型族进行对抗性审查交叉消除单一模型的系统性偏差。C 错误 放弃人类合并权限会导致未经人工审核的代码直接进入主干风险极高。D 正确 要求在真实测试环境中校验动态运行行为而非仅通过静态检查或 Mock 断言。",
-    "reference": {
-      "concept": "人类主导设计+对抗审查+真实环境验证；放弃 PR 合并权限是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1053,9 +993,6 @@
     "angle": "comparison",
     "question": "不同大语言模型在子 Agent 调度能力和上下文管理上存在差异。在将 Spec 转换为代码实现阶段关于选择子 Agent 驱动还是单层内联执行的工程判断以下哪些说法是合理的？（多选）",
     "explanation": "A 正确 子 Agent 调度能力强的模型可通过拆分复杂 Spec 提升执行效率。B 正确 调度能力弱或易丢上下文的模型用单层内联配合增量验证更稳妥。C 正确 小粒度增量提交+每次验证 Spec 符合度有效避免长上下文下的代码漂移。D 错误 深度无限嵌套子 Agent 循环会导致上下文丢失与成本失控并非所有模型都适用。",
-    "reference": {
-      "concept": "强模型用子Agent拆分+弱模型用内联增量+小粒度commit防漂移；无限嵌套是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

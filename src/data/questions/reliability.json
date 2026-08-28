@@ -371,9 +371,6 @@
     "angle": "scenario",
     "question": "在集成具备显式思考过程的推理模型时，系统偶发出现 API 状态码 200 OK，但返回文本（content）为空，且诊断字段显示 finish_reason == \"length\"。该现象的根本原因与解决方法是？",
     "explanation": "推理模型的生成预算（Completion Budget）涵盖了内部 Thinking Tokens 和最终的 Answer Tokens。当限制过紧且面对复杂归纳问题时，模型会在思考阶段耗尽所有输出配额，导致没有剩余 Token 渲染最终回答，抛出 finish_reason = length 且内容为空，但 API 仍返回 200。",
-    "reference": {
-      "concept": "思考 Token 与最终回答共享 max_completion_tokens 预算；配额被思维链吃光 ⇒ 200 OK + 空 content + finish_reason=length 的静默失败。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -406,9 +403,6 @@
     "angle": "scenario",
     "question": "在长上下文 API（如 120k+ Input Tokens/Request）的实际生产调用中，以下关于 API 每日配额（Daily Token Quota）与 Rate Limit 扣减逻辑的说法，正确的是？",
     "explanation": "API 网关在接收到请求时，为了防止超额生成，通常会将 Input Tokens + max_completion_tokens 作为该请求的临时占用额度进行预扣。如果将 max_completion_tokens 盲目调大（如设为 16k），会极大地消耗 Daily Quota，导致少量并发即可把每日配额冲爆，即便实际生成的 Token 远远低于该上限。",
-    "reference": {
-      "concept": "配额按 Input + max_completion_tokens 预扣而非实际生成；盲目调大上限 ⇒ 少量并发就打爆 Daily Quota。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -441,9 +435,6 @@
     "angle": "scenario",
     "question": "文档摄取管道需将一份新文档扇出写入四个存储：Qdrant（向量）、Elasticsearch（全文）、S3（原件）、Postgres（元数据）。请设计写入流程以应对局部失败（Partial Failure），并保证检索一致性。（多选）",
     "explanation": "①异步化：解析+embedding+四库写入是重 IO/CPU 操作，必须在 MQ 驱动的后台管线执行，HTTP 请求只负责受理并入队，否则 API 必然超时；②状态门禁：所有目标存储提交完成前，文档状态保持 \"processing\"，检索服务只读 \"ready\" 状态的 document_id——防止查到半更新数据；③幂等更新：统一 document_id 作为各库的主键/point ID，重试与重写都是 upsert 语义，同一文档重放不会产生重复向量或重复索引；④失败补偿：局部失败进入重试队列，多次失败走 Saga 式补偿（回滚已写成功的库）或转入死信队列人工介入，绝不留半成品文档长期可见。",
-    "reference": {
-      "concept": "摄取一致性四件套：MQ 异步化（Web 线程不入重活）、状态机门禁（processing→ready 才可检）、document_id 幂等 upsert、Saga 补偿+死信队列收尾。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -478,9 +469,6 @@
     "angle": "scenario",
     "question": "客服 AI 上线初期把转人工的置信度阈值设得过高（如 0.9），最直接的系统性后果是什么？应如何持续调优这个参数？",
     "explanation": "阈值过高意味着只有模型几乎万无一失才敢自动回答，大量本可自动解决的常规请求涌入人工队列——转人工率飙升、人工成本暴增，自动化收益归零；反向调得过低则错误答复直达用户，投诉与返工上升。正确做法是把转人工率当作一等 SLI 来运营：设定目标区间（如 20%-40%），配合解决率与满意度指标持续监控，用线上 bad case 复盘驱动阈值分意图细调（高风险意图阈值天然更高），而不是一次性拍定。",
-    "reference": {
-      "concept": "Escalation 阈值 = 自动化率与人工负载的直接调节旋钮：过高→人工队列爆炸，过低→错误直达用户；应作为 SLI 设目标区间持续调优。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -615,9 +603,6 @@
     "angle": "system-design",
     "question": "攻击者通过精心构造的超长 Context、嵌套循环 Prompt 或高消耗计算的 Recursive Tool Calls，导致 LLM 应用后端 API 消耗巨额 Token 费用并造成服务响应卡死。针对此类风险，以下哪项架构防御手段最全面？",
     "explanation": "Model DoS 不仅造成计算资源耗尽，还会触发财务拒绝服务（Economic Denial of Sustainability）。防护架构必须涵盖输入 Token 校验、Agent 递归层数/工具调用次数上限、超时断路器以及租户级 Token 消费配额。",
-    "reference": {
-      "concept": "Model DoS 防护四件套：输入 Token 上限、递归/工具调用深度上限、超时断路器、租户级费用配额监控。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -650,9 +635,6 @@
     "angle": "mechanism",
     "question": "某开发者在本地工作区修改了若干代码，未执行 git add 暂存，也未执行 git commit 提交。随后该开发者误操作执行了 git reset --hard HEAD~1。针对此场景的代码挽救可行性与底层原理，下列结论最准确的是？",
     "explanation": "已提交可reflog找回，未暂存未提交因未入对象库无法Git恢复。",
-    "reference": {
-      "concept": "Git持久化以对象库为准，未 add/commit不入库不可恢复。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -685,9 +667,6 @@
     "angle": "mechanism",
     "question": "Git 版本控制体系由 HEAD 指针、Index（暂存区/Staging Area）和 Working Directory（工作区）三部分共同维护。关于不同模式下的 git reset 对这三个区域的作用机制，下列说法正确的有？（多选）",
     "explanation": "--soft仅移HEAD、--mixed移HEAD+重置Index、--hard三区同步丢弃、D的soft/mixed区别相反。",
-    "reference": {
-      "concept": "reset三档：soft移HEAD、mixed+清暂存、hard全清。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -722,9 +701,6 @@
     "angle": "mechanism",
     "question": "开发人员在分支开发过程中，工作区（Working Directory）和暂存区（Staging Area）存在未提交的修改。此时需要紧急切换到 hotfix 分支修复线上 Bug。关于使用 git stash 及其相关命令处理代码状态的行为，下列说法正确的有？（多选）",
     "explanation": "默认stash存已追踪文件的工作区+暂存区并恢复HEAD；apply不删栈、pop删栈；未追踪文件需-u。",
-    "reference": {
-      "concept": "git stash栈：默认不含untracked；apply留栈、pop移栈；-u含未追踪。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

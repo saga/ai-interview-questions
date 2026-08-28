@@ -2,6 +2,21 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-045 · 删除 `Question.reference`；topic×angle 掌握度成为确定性引擎选题主干
+
+- 状态：已采纳 · 2026-08-29
+- 背景：
+  1. `Question.reference` 仅含 `reference.concept`（核心知识结论摘要）。核查发现它与必填的 `Question.explanation`（题目解析）**内容重复**——两者都是"该题核心结论"的摘要；而它与 `open.referenceAnswer`（完整答案 + 逐项分析）**不重复**，后者才是评分/展示真正需要的完整材料。
+  2. `weakAnglesOf`（ADR-037）已实现"某 topic 下哪个角度最缺证据"，但**只被 Agent 面试的追问工具调用**；确定性引擎 `pickNextAdaptive` 此前只用 `angleEvidence`（证据计数）做兜底排序因子，没把 topic×angle 掌握度作为选题主干。
+- 决策：
+  1. **删除整个 `Question.reference`**：内容已 100% 由 `explanation` 承载，净减一个字段，符合"不为未来算法预存数据"；评分提示里原「概念提示」段（注入 `reference.concept`）一并移除——`explanation` 已在 ADR-044 承担题目级评分锚点。
+  2. **把 `weakAnglesOf` 接入确定性引擎选题主干**：在 `learner.ts` 新增同源原子原语 `angleWeakRank(profile, topic, angle)`（0=未练/最弱、1=低分、2=已掌握）；`adaptive.ts` 用它在每个策略子集内做「弱角度优先、证据最少次之」的细选（`pickByWeakAngle`），替换原先散落的 `pickLeastCovered`/证据计数兜底；move-on 兜底先按 topic 级薄弱（`recommendWeakTopics`）粗筛，再按弱角度细选。
+- 理由：
+  1. `reference.concept` 与 `explanation` 重复建模同一信息，维护两份结论摘要无意义。
+  2. topic×angle 是题库 100% 覆盖且无主观判定的索引；把它从"兜底排序因子"升级为"选题主干"，让"弱 concept 缺证据 angle"的闭环同时落到确定性引擎与 Agent，提升覆盖效率、避免总问同一类。
+- 影响（已知代价）：评分提示少了一段「概念提示」（其内容与 explanation 重复，无信息损失）。
+- 验证：`tsc` 通过；全量 `npm run test` **309 passed**（新增 1 例：gap-probe 降难度时弱角度优先于已掌握角度）；数据层 `reference` 残留 0（308 题移除）；`bank.test.ts` 通过。
+
 ## ADR-044 · 删除 `Question.rubric`：评分锚点改由「知识点要点 + explanation」承担
 
 - 状态：已采纳 · 2026-08-29

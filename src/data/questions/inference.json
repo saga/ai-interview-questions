@@ -13,9 +13,6 @@
     "angle": "tradeoff",
     "question": "在大型 Agent 系统的成本优化实践中，团队开启了 API 供应商的 Prompt Caching（前缀缓存）功能，并且在某些高频场景下达到了 80% 以上的缓存重用率（Cache Hit Rate）。然而，系统的月度 API 总账单依然居高不下。关于 Prompt Caching 的局限性及与 Smart Routing（智能路由）的关系，下列分析正确的有？（多选）",
     "explanation": "缓存仅降前缀单价、未命中增量仍巨、前沿模型基数大、Caching与Routing互补维度不同、D称80%必优于路由错误。",
-    "reference": {
-      "concept": "Caching降单价，Routing配算力，互补。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -50,9 +47,6 @@
     "angle": "tradeoff",
     "question": "你的团队自托管 LLM 给多轮工具调用 Agent 使用：每次会话从较长的 system prompt 开始，工具结果使上下文持续增长到数万 token，且需同时服务上百个并发会话。在这种 workload 下，为什么\"单 token KV cache 更小\"往往比 benchmark 分数更值得作为选型依据？哪些性能瓶颈不会因此消失？",
     "explanation": "Agent 上下文随多轮工具调用单调增长，KV cache ∝ 上下文长度，总占用还要乘并发路数——低 KV/token 直接换来更高并发或更长可用上下文，这是吞吐与成本的硬约束。但 KV 优化不改善 prefill 计算（首 token 延迟主要由权重读取/QKV 投影/FFN 主导）、decode 权重带宽、kernel 效率，也不提升模型质量本身。",
-    "reference": {
-      "concept": "Agent serving：总 KV cache ≈ 每 token 开销 × 上下文长度 × 并发数；KV 效率决定并发容量上限，但不解决 prefill/质量瓶颈。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -119,9 +113,6 @@
     "angle": "mechanism",
     "question": "在长上下文 LLM 架构中，为了最大化利用 Provider 的 Prefix Caching 机制降低 Token 计费与首帧延迟（TTFT），提示词（Prompt）结构的构建规范是怎样的？原理是什么？",
     "explanation": "Prefix Caching 仅在请求的前缀字符与历史请求完全一致时才能命中。将静态语料置于 Prompt 头部，变动的 Question 置于尾部，可确保多轮不同提问共享相同的前缀缓存。若将提问置于头部，每次提问变动都会破坏前缀匹配，导致 100% Cache Miss。",
-    "reference": {
-      "concept": "Prefix Cache 按从首字符起的连续完全匹配命中 ⇒ 静态语料前置、动态提问后置；顺序错了就是 100% miss。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -154,9 +145,6 @@
     "angle": "mechanism",
     "question": "实测表明，在约 12 万 Tokens 的全量语料下运行全局归纳类提问（如\"统计全语料提及频次最高的工具\"），即便 Prefix Cache 达到了 100% 命中，长上下文方案的端到端延迟仍高达 200 秒以上。以下关于该延迟瓶颈的分析，正确的有？（多选）",
     "explanation": "Prefix Cache 完全命中意味着 Prefill 阶段的上下文计算时间几乎被消除。由于 LLM 的解码生成是串行的，复杂大上下文触发了数千甚至上万个内部 Thinking Tokens 的生成，正是这些 Thinking Tokens 的自回归串行解码过程构成了数百秒延迟的主要瓶颈。",
-    "reference": {
-      "concept": "Cache 只省 Prefill；Decode 是逐 token 串行的，大上下文诱发海量 Thinking Tokens，串行解码才是数百秒延迟的主因。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -190,9 +178,6 @@
     "angle": "tradeoff",
     "question": "关于推测解码（Speculative Decoding）：小\"草稿\"模型快速生成 K 个候选 token，大\"目标\"模型一次前向并行验证，接受一致前缀、从首个不一致处重新生成。以下说法正确的是？",
     "explanation": "推测解码的数学性质是无损：输出分布与目标模型独自采样完全等价，只是把\"串行生成 K 个 token\"变成\"1 次草稿 + 1 次目标验证\"。加速比取决于草稿-目标的接受率与两者速度差，典型 2-3x；任务越模式化接受率越高。前提是草稿与目标共享 tokenizer。变体如 Medusa 用多头预测替代草稿模型。",
-    "reference": {
-      "concept": "Speculative Decoding = 草稿串行起草 + 目标并行验证，数学上与目标模型输出严格同分布（无损）；加速比 = 接受率 × 速度差的函数，需同 tokenizer。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -225,9 +210,6 @@
     "angle": "tradeoff",
     "question": "自部署 LLM 时需要在 FP16、INT8（LLM.int8）、GPTQ/AWQ 4-bit、GGUF Q4_K_M 之间做部署选型。关于各方案的取舍，下列说法正确的是？",
     "explanation": "AWQ 是激活感知量化：按激活分布保护高影响权重，4-bit 下质量损失小于朴素 GPTQ，是多数 GPU 部署的首选；INT8 折中——几乎无感损失但只省一半显存；GGUF Q4_K_M 面向 CPU/llama.cpp 场景；FP16 作为质量基准。经验法则：先试 AWQ 4-bit，质量不够升 INT8，纯 CPU 用 GGUF，任何量化都要在自己任务上实测。",
-    "reference": {
-      "concept": "AWQ=激活感知保护重要权重，4-bit 首选；INT8=近无损但省一半；GPTQ=训练后量化偏速度；GGUF=CPU 部署；一切以自有任务 benchmark 为准。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -260,9 +242,6 @@
     "angle": "calculation",
     "question": "实时反欺诈决策要求端到端 <100ms：特征提取（预计算画像拼接 + 实时 velocity 计数）、ML 集成打分（~10ms）、规则引擎（~5ms）、以及一个用于生成自然语言拒付解释的小型 LLM。请给出延迟预算分配与各级超时降级设计。",
     "explanation": "预算分配：特征拼装 ~15ms（用户画像/商户风险离线预计算，实时侧只做 Redis velocity 计数与设备指纹缓存查询）、ML 打分 ~10ms、规则引擎 ~5ms，留出网络与排队余量——同步关键路径合计 ~30ms，远低于 100ms。LLM 解释层绝不同步阻塞决策：只在\"拒绝/升级\"分支上异步触发，事后随通知送达。降级阶梯：ML 打分 >50ms 未返回即降级为纯规则打分（覆盖已知主要欺诈模式）；全链路劣化时对 <$10 小额交易默认放行，把风险敞口限制在有界金额内。",
-    "reference": {
-      "concept": "延迟预算三原则：能离线预计算的不进实时路径；LLM 解释异步化绝不阻塞决策；每级设超时降级（ML 超时→纯规则→小额默认放行）封顶风险敞口。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -295,9 +274,6 @@
     "angle": "scenario",
     "question": "企业级 RAG 引入精确缓存（Query 哈希）与语义缓存（Embedding 相似度匹配）来降低成本与延迟。在多租户 + 严格 RBAC 场景下，缓存层会引入什么新的安全风险？应如何设计才能既省钱又不越权？（多选）",
     "explanation": "风险：若 Cache Key 只由 Query 文本哈希或语义向量构成，低权限用户可能命中高权限用户留下的缓存答案——ACL Leakage，越权数据根本没经过检索层过滤就直达用户。设计：①权限上下文强绑定进 Key（部门/用户 ID/ACL 标签参与哈希或作为语义缓存的预过滤条件）；②语义缓存无法把 ACL 编进向量时，命中后必须对答案引用的源文档做二次权限校验再放行；③注意区分概念：相似度阈值过高影响的是命中率（经济问题），不是隔离性问题。",
-    "reference": {
-      "concept": "缓存越权 = Key 缺权限上下文 ⇒ 低权用户命中高权答案；解法为 ACL 进 Key 或命中后二次校验源文档；阈值高低是命中率问题而非安全问题。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -491,9 +467,6 @@
     "angle": "mechanism",
     "question": "在 LLM 高并发服务化部署中，显存（VRAM）碎片与前缀重复计算是吞吐瓶颈。关于分页式 KV Cache（借鉴 OS 分页）与前缀树（Radix Tree）复用机制的原理与权衡，下列说法正确的有？（多选）",
     "explanation": "分页式将逻辑连续 KV 切为固定物理 Block 解决碎片；前缀树按 Token 序列做前缀匹配跨请求复用；二者在多轮 Agent 场景均显著降 TTFT；D 称分页不能跨请求共享错误（物理块可共享）。",
-    "reference": {
-      "concept": "分页治碎片；前缀树跨请求复用；TTFT=避免重复 Prefill。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -528,9 +501,6 @@
     "angle": "mechanism",
     "question": "传统的 LLM 推理批处理（Batching）受限于批次内不同序列生成长度不一的问题，导致 GPU 在等待最长序列完成时出现严重的算力空闲（Bubble）。连续批处理（Continuous Batching）技术解决该问题的核心机制是？",
     "explanation": "Continuous Batching在Iteration/Step粒度调度，每Step结束点动态插入新请求/移出已完成请求，消除等待气泡。",
-    "reference": {
-      "concept": "Continuous Batching= Iteration级动态调度，破除Request级Batch的队头阻塞。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -629,9 +599,6 @@
     "angle": "tradeoff",
     "question": "在深度学习大规模预训练中，采用低精度数值格式（如 4-bit / FP4）是降低显存吞吐与计算功耗的重要手段。以下关于低精度预训练与软硬件协同设计的说法，正确的有？（多选）",
     "explanation": "FP4需硬件FP4张量单元、预训练低精度适配减少后量化损失、优势在带宽与矩阵乘加速、D称显存增加错误。",
-    "reference": {
-      "concept": "低精度预训练：硬件原生+预适应减损+带宽加速。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -666,9 +633,6 @@
     "angle": "system-design",
     "question": "在大模型强化学习（RL）后训练阶段，提升模型本身的推理效率和降低单 Token 算力成本对扩展模型能力（RL Scaling）至关重要。关于推理效率与 RL 后训练的关系，最准确的描述是？",
     "explanation": "RL需大规模并行采样积累探索，推理快则低成本扩rollout；与奖励模型、数据多样性相关，非唯一瓶颈但关键。",
-    "reference": {
-      "concept": "推理效率→低成本大规模Rollout→丰富探索→RL能力扩展。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -701,9 +665,6 @@
     "angle": "mechanism",
     "question": "为了降低 LLM 推理的 Prefill 计算开销并减少首 Token 延迟，推理引擎普遍引入了 Prefix Caching（前缀缓存）机制。针对该机制的匹配规则与 Prompt 结构设计，下列说法正确的有？（多选）",
     "explanation": "前缀需从头连续匹配、System Prompt置前置提升命中、命中可复用KV显著降TTFT。",
-    "reference": {
-      "concept": "Prefix Caching=严格前缀匹配，结构置静态于前。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -738,9 +699,6 @@
     "angle": "mechanism",
     "question": "在 Agent 系统架构的 API gateway/服务层（运行于 CPU 集群）中，处理分词（Tokenization）与安全审查（Safety Checks）是首包延迟（TTFT）的重要影响因素。关于 API 层的工程优化策略，下列分析正确的有？（多选）",
     "explanation": "无状态全量分词O(N)；有状态Delta追加近O(1)；安全审查与Prefill并发掩延迟；D称必须同步反模式错误。",
-    "reference": {
-      "concept": "API层：增量分词近O(1)+安全与Prefill并发掩盖。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -775,9 +733,6 @@
     "angle": "mechanism",
     "question": "在 LLM Agent 系统中，利用 Prompt Caching（前缀缓存）重用已计算的 KV 状态是降低延迟和成本的关键手段。Prompt Caching 的匹配要求输入 Token 序列必须保持精确的前缀一致。关于 Harness 层在构建 Prompt 时引发缓存失效的原因及优化策略，下列说法正确的有？（多选）",
     "explanation": "无序HashMap序列化致工具顺序抖动破前缀命中；易变权限应移出Prompt由Harness校验；B直接改Prompt文本破稳定、D中改历史仍破前缀。",
-    "reference": {
-      "concept": "Prompt Cache需前缀Token精确一致；Harness需确定性序列化+外置易变配置。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -811,9 +766,6 @@
     "angle": "system-design",
     "question": "在大模型分布式推理集群中，KV Cache 管理直接决定了系统的吞吐量和延迟。在负载均衡器（Router）将请求分发给后端 GPU 节点时，关于“缓存感知路由（Cache-Aware Routing）”的设计原理与工程权衡，下列说法正确的有？（多选）",
     "explanation": "错配致全量Prefill重算、需权衡负载与命中率、需制定淘汰/分层策略、D称绝对粘性错误。",
-    "reference": {
-      "concept": "Cache-Aware路由权衡负载与命中率，避免重算与显存爆炸。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -848,9 +800,6 @@
     "angle": "mechanism",
     "question": "在大语言模型（LLM）推理系统中，请求处理分为 Prefill（前缀填充/首 Token 生成）与 Decode（逐 Token 解码）两个阶段。针对这两个阶段的硬件瓶颈与性能评价指标，下列说法正确的有？（多选）",
     "explanation": "Prefill算力受限、Decode带宽受限、TTFT由Prefill决定、TPS由Decode决定；提高TFLOPS缩TTFT、提带宽提TPS。",
-    "reference": {
-      "concept": "Prefill=Compute-bound→TTFT；Decode=Memory-bound→TPS。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -885,9 +834,6 @@
     "angle": "mechanism",
     "question": "LLM 解码阶段通常是访存受限（memory-bandwidth-bound）。下列哪些手段能有效降低单 token 延迟？（多选）",
     "explanation": "解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。",
-    "reference": {
-      "concept": "解码是带宽瓶颈：量化、GQA、大批量、投机解码都通过减少/摊薄字节读取提速。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -924,9 +870,6 @@
     "angle": "definition",
     "question": "现代 LLM 的组件替换各有不同的首要动机。下列四项设计中，哪一项的首要设计目标不是 inference efficiency？",
     "explanation": "MLA（K/V 低秩 latent 投影）直接缩小 KV cache；KDA（门控 delta 线性注意力）把长上下文注意力成本降为近似线性；LatentMoE 在低维空间执行专家计算以降低 FLOPs——三者都是冲着推理效率去的。Attention Residuals 聚合历史多层输出，增加计算以改善深层信号传播与表达能力，首要回报在质量而非效率。",
-    "reference": {
-      "concept": "组件动机分类：MLA/KDA/LatentMoE → 效率（cache/计算量）；Attention Residuals → 质量（深层信息流）。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -991,9 +934,6 @@
     "angle": "definition",
     "question": "请说明什么是模型训练与推理的“离线/在线”服务模式，并各举一个适用场景。",
     "explanation": "考察离线批处理与在线实时服务的区别及适用场景。离线批处理周期性对批量数据集中计算，适合时效要求不高的场景（如每日画像刷新），成本低、吞吐高；在线推理请求到达时即时返回，适合延迟敏感场景（搜索排序、对话机器人），但需要考虑并发、SLA 与降级。二者在延迟、成本与架构上权衡截然不同。",
-    "reference": {
-      "concept": "离线批处理适合非实时；在线推理适合低延迟场景。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "离线（batch）推理：周期性对批量数据集中计算，适合对时效性要求不高的场景，如每日用户画像更新。在线（实时）推理：请求到达时即时返回结果，适合对延迟敏感的场景，如搜索排序、实时推荐、对话机器人。二者在延迟、成本、架构上权衡不同。"
@@ -1027,9 +967,6 @@
     "angle": "system-design",
     "question": "PD 分离（Prefill-Decode Disaggregation）架构将 LLM 推理的 Prefill 和 Decode 阶段解耦，分别部署在不同的硬件集群上，并在两者之间通过网络传输 KV Cache。关于 PD 分离架构，下列说法正确的有？（多选）",
     "explanation": "按阶段瓶颈选型、需高速传KV、条件分离短请求本地完成省传输、D称消除网络错误。",
-    "reference": {
-      "concept": "PD分离按瓶颈异构部署+KV传输，条件路由短请求。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1064,9 +1001,6 @@
     "angle": "tradeoff",
     "question": "对 LLM 进行低比特量化（如从 FP16 量化为 INT8/INT4）是常见的推理优化手段。关于量化在 Prefill 与 Decode 阶段的加速机理以及模型不同组件对量化的敏感度，下列说法正确的有？（多选）",
     "explanation": "Prefill以低精度算单元加速、Decode以减权重体积降带宽、Attention更敏感需保精度、实践Attention保FP16仅量化Linear。",
-    "reference": {
-      "concept": "量化：Prefill算力加速，Decode带宽减压，Attention敏感。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1102,9 +1036,6 @@
     "angle": "tradeoff",
     "question": "在将大语言模型部署至内存受限设备（如手机、边缘设备或高并发服务节点）时，权重量化（Quantization）是核心压缩技术。关于训练后量化（PTQ）与量化感知训练（QAT）的技术特性及工程权衡，下列说法正确的有？（多选）",
     "explanation": "PTQ免训练但低比特易退化、QAT引入噪声适应精度好、量化降显存带宽为内存密集型优化、与GQA可叠加。",
-    "reference": {
-      "concept": "PTQ低成本易退化，QAT噪声适应，量化为内存优化可叠加KV优化。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1139,9 +1070,6 @@
     "angle": "mechanism",
     "question": "投机解码（Speculative Decoding）使用一个小型的 Draft Model 预预测多个候选 Token，再由大模型（Target Model）在一次前向传播中并行验证。关于该技术在工程落地时的特性与权衡，下列说法正确的有？（多选）",
     "explanation": "验证远低于逐生成、预预测不缩Prefill TTFT、低Batch算力空闲获益、高Batch饱和则禁用。",
-    "reference": {
-      "concept": "投机解码：并行验证提Decode TPS，低Batch获益，高Batch禁。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1176,9 +1104,6 @@
     "angle": "mechanism",
     "question": "投机解码（Speculative Decoding）是一种提升大语言模型推理吞吐与降低延迟的系统设计模式，通常包含一个小规模草稿模型（Draft Model）和一个大规模验证模型（Target Model）。关于 Speculative Decoding 的工作原理与工程特性，下列说法正确的有？（多选）",
     "explanation": "草稿低延迟串行候选、验证单次并行校验、拒绝回退重采样保分布等价、需Tokenizer兼容。",
-    "reference": {
-      "concept": "草稿串行+验证并行，分布等价，Tokenizer需对齐。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1216,9 +1141,6 @@
     "angle": "scenario",
     "question": "在大规模语言模型的系统设计与工程落地中，训练阶段与自回归推理阶段具有完全不同的计算模式和瓶颈。下列关于两者的对比描述，最符合工程实际的是？",
     "explanation": "A 正确：训练通过 Causal Mask 并行处理全序列（Compute-Bound）；推理 Generation 阶段逐 Token 循环，每次从 HBM 加载 KV Cache（Memory-Bandwidth-Bound）。B 错误：训练是并行的非顺序。C 错误：Prefill 是 Compute-Bound 而 Decode 是 Memory-Bandwidth-Bound。D 错误：KV Cache 专用于推理阶段而非训练。",
-    "reference": {
-      "concept": "训练=Compute-Bound（并行+Mask）；推理Decode=Memory-Bound（KV Cache带宽）。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1252,9 +1174,6 @@
     "angle": "fundamental",
     "question": "大语言模型在引入推理期算力机制后可以通过扩展思考 Token 来提高复杂任务正确率。关于推理期算力扩展的技术边界与物理本质以下说法正确的是？",
     "explanation": "正确答案 B。推理期算力本质是用额外推理端 FLOPs 换取更长逻辑推导链与状态搜索空间用于纠正中间错误并拆解复杂多步问题。A 错误 不能重构预训练参数凭空推理出未公开事实。C 错误 不改变 Attention 复杂度量级。D 错误 边际效益递减且可能陷入循环思考。",
-    "reference": {
-      "concept": "推理期算力=FLOPs换推导链长度；不能重构参数、不降复杂度、有边际递减。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1288,9 +1207,6 @@
     "angle": "mechanism",
     "question": "当前推理大模型通常支持 Thinking、Non-Thinking 及 Low-Effort Thinking 的动态切换。在架构设计与推理服务部署中系统如何在无需修改模型物理结构与重新加载权重的前提下实现这三种模式的实时切换？",
     "explanation": "正确答案 A。通过后训练注入的 Control Tokens（如 <think>/<no_think>）或 Reasoning Budget 参数结合 Sampling Stop Sequences 干预解码流实现模式切换。B 错误不需要加载多个子模型。C 错误不涉及动态剪层。D 错误不需要维护独立 KV 内存池。",
-    "reference": {
-      "concept": "Control Tokens + Reasoning Budget + Stop Sequences；不改结构不重载权重。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1325,9 +1241,6 @@
     "angle": "tradeoff",
     "question": "在后训练完成的 CoT 推理大模型进行量化部署到生产环境时关于 FP8、NVFP4/MXFP4 和 GGUF 等量化格式的工程权衡以下哪些说法是正确的？（多选）",
     "explanation": "D 错误。目前先进的 FP8 方案支持无需校准数据的动态 per-channel 权重与 per-token 激活量化即可直接转换且依然保持极高的逻辑推理精度。",
-    "reference": {
-      "concept": "FP8 动态量化几乎无损+CoT 对 Outlier 敏感+GGUF 适合边缘端；FP8 无需校准。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1364,9 +1277,6 @@
     "angle": "mechanism",
     "question": "在 LLM 高效部署管线中通常先通过结构化剪枝降低参数量随后将残余权重进一步量化至 4-bit。这种组合压缩策略在代码生成数学推导与 CoT 任务上性能剧烈下降其底层机制包括哪些？（多选）",
     "explanation": "A 正确 剪枝降低表征容量使剩余权重对量化噪声容忍度下降。B 正确 4-bit 离散化误差在自回归生成中逐 Token 累积放大。C 正确 剪枝改变激活分布使静态量化 Scaler 失真。D 错误 Softmax 仍能计算注意力权重只是精度受干扰。",
-    "reference": {
-      "concept": "剪枝削容量→量化噪点无法被冗余吸收+误差逐Token累积+分布失真。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1403,9 +1313,6 @@
     "angle": "comparison",
     "question": "在后训练量化 PTQ 与量化感知修复 QAH 是两种恢复量化损失的技术路径。针对经历过结构化剪枝加 4-bit 量化的模型关于 PTQ 与 QAH 的对比以下哪些说法是正确的？（多选）",
     "explanation": "PTQ 无梯度/局部梯度无法恢复拓扑受损后的全局权重分布（A）；QAH 通过伪量化算子和梯度更新在离散空间内寻找全局最优点（B）；两者在计算开销与精度恢复上限上存在明显 Trade-off（C）。D 违背信息论限制纯 PTQ 无法凭空增加信息量超越原始全精度模型。",
-    "reference": {
-      "concept": "PTQ=无梯度快速校准适合未剪枝模型；QAH=伪量化+梯度更新弥补复合精度损失。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1441,9 +1348,6 @@
     "angle": "fundamental",
     "question": "微刻度格式 MXFP4 采用每 32 个元素共享一个 8-bit Scale Factor 的设计。相比传统 Per-Tensor 量化这种块级共享 Scaling Factor 设计的核心工程优势是？",
     "explanation": "正确答案 A。Per-Tensor 量化容易受局部 Outliers 影响导致整个张量动态范围被拉大小数值精度丢失。MXFP4 采用 Block Size=32 的微块设计将异常值影响限制在局部块内同时每元素仅增加 0.25 bits 开销实现高精度与低开销平衡。",
-    "reference": {
-      "concept": "Block-wise Scaling 隔离异常值到 32 元素局部块内，每元素仅增 0.25bit 开销。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1477,9 +1381,6 @@
     "angle": "tradeoff",
     "question": "在进行量化感知训练时离散量化函数的导数处处为 0 导致标准反向传播失效。工程上使用直通估计器 STE 近似梯度。关于 STE 在实际训练中的工程局限与应对策略下列说法正确的有？（多选）",
     "explanation": "STE 前向离散化反向恒等传导（C）。恒等传导是粗暴近似在截断区外产生梯度不匹配导致主权重越界漂移（A），需 Weight Decay 或 Bound Clipping 约束（B）。D 错误 STE 是启发式近似不可能精确计算二阶 Hessian。",
-    "reference": {
-      "concept": "STE=前向离散+反向恒等近似→截断区外梯度不匹配→需 Weight Decay/Clipping 约束。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1515,9 +1416,6 @@
     "angle": "scenario",
     "question": "在基于结构化剪枝加 4-bit 量化感知修复的工程实践中 4-bit 模型的 Benchmark 得分多次被观察到超过了用于量化的 BF16 中间 Checkpoint。关于这一现象背后合理的工程解构以下哪些分析是正确的？（多选）",
     "explanation": "4-bit 模型逆袭的原因：QAH 包含高质量领域数据的继续训练注入新知识（A）；伪量化噪声起正则化作用提升泛化（B）；优化器在离散约束下找到更稳健表征点（C）。D 错误没有数据训练纯粹量化不可能自发产生能力飞跃。",
-    "reference": {
-      "concept": "QAH 超越 FP16=领域数据训练+伪量化正则化+离散约束下更优表征点。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1553,9 +1451,6 @@
     "angle": "calculation",
     "question": "某大语言模型拥有 60B 参数。若将其从 BF16 格式（每个参数 2 字节）转换为 MXFP4 格式（约 0.53125 字节/参数含 Scale 开销）在仅考虑权重显存的情况下节省比例约为多少？",
     "explanation": "正确答案 C 约 73.4%。BF16 权重总显存=60×2=120GB（无法单卡装下）；MXFP4 总显存=60×0.53125≈31.9GB；节省比例=(120-31.875)/120≈73.4%。",
-    "reference": {
-      "concept": "BF16 120GB→MXFP4 31.9GB→节省 73.4%。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1590,9 +1485,6 @@
     "angle": "debugging",
     "question": "在对 Self-Attention 投影层进行 4-bit 低比特量化时常遇到模型输出死循环无意义重复或逻辑推理能力陡降的量化崩溃现象由激活值异常值引起。针对该问题哪些调试与修复方案是合理的？（多选）",
     "explanation": "针对 Activation Outliers 工程标准解法为动态 Scaling 隔离极值、SmoothQuant 跨阵转移量化难度或混合精度保留。D 强行置零会破坏关键特征——Outliers 往往承载核心注意力表达。",
-    "reference": {
-      "concept": "Outlier 解法=动态 Per-Token Scaling+SmoothQuant 等效变换+混合精度保留。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1629,9 +1521,6 @@
     "angle": "mechanism",
     "question": "在 LLM 推理服务框架中 PagedAttention 借鉴 OS 虚拟内存分页机制将连续 KV Cache 切分为固定大小的 Block 进行非连续显存分配。关于内存管理机制与 Block Size 的工程 Trade-off 下列哪些说法是正确的？（多选）",
     "explanation": "PagedAttention 核心优势：将连续逻辑显存映射到非连续物理块。较小 Block 降低内部碎片(A)；大 Block 提高 SRAM/DRAM 连续读取效率但增加碎片(B)；统一尺寸 Block 解决外部碎片(C)；Parallel Sampling 场景下通过页表指针实现物理 KV Cache 零拷贝共享(D)。四项均正确。",
-    "reference": {
-      "concept": "小Block=低内部碎片；大Block=高吞吐；统一尺寸=消除外部碎片；COW=零拷贝共享。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1668,9 +1557,6 @@
     "angle": "calculation",
     "question": "投机采样利用草稿模型一次性自回归生成 K 个 Token 候选再由目标模型并行验证。为保证最终输出与直接使用目标模型逐 Token 采样完全一致当 p(x) < q(x) 时接受概率应设定为多少？若拒绝该如何重新采样？",
     "explanation": "正确答案 A。修正的拒绝采样算法：p(x)≥q(x) 时接受概率为 1.0；p(x)<q(x) 时以 α(x)=p(x)/q(x) 概率接受。被拒绝后从截断残差分布 normalize(max(0,p(x)-q(x))) 中采样新 Token。该推导可严格证明无偏等价于目标模型独立采样。",
-    "reference": {
-      "concept": "α=p/q 当 p<q；拒绝后从 residual distribution normalize(max(0,p-q)) 重采样；严格无偏。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1705,9 +1591,6 @@
     "angle": "comparison",
     "question": "在 Modern GPU 架构的原生 FP8 混合精度训练中硬件支持 E4M3（1 符号+4 指数+3 尾数）和 E5M2（1 符号+5 指数+2 尾数）两种格式。关于这两种格式在前向与反向传播中的选型设计哪些说法是正确的？（多选）",
     "explanation": "这是 FP8 训练标准规范如 Transformer Engine：前向 GEMM 需较高精度故选 E4M3(A)；反向梯度跨多个数量级需大动态范围防下溢故选 E5M2(B)；E4M3 最大值约 448 必须引入 dynamic scaling(C)。D 错误 强制反向用 E4M3 会因动态范围不足导致大规模梯度下溢归零。",
-    "reference": {
-      "concept": "前向=E4M3 高精度+反向=E5M2 大范围+E4M3 需 Dynamic Scaling。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1743,9 +1626,6 @@
     "angle": "mechanism",
     "question": "传统 LLM 推理框架按 Request 进行静态 Batching 当 Batch 内序列长度差异极大时导致严重 Padding 浪费与 GPU 算力闲置。连续批处理技术的核心调度机制是？",
     "explanation": "正确答案 A。连续批处理将调度粒度从 Request 级别下沉到 Iteration（Token）级别每次前向计算完成后已结束的 Request 退出新 Request 插入使 GPU 保持高饱和度的动态 Batch 运作彻底消除 Padding 浪费。",
-    "reference": {
-      "concept": "Iteration-level 调度：已完成退出+新请求插入=消除 Padding 浪费。"
-    },
     "formats": {
       "choice": {
         "type": "single",

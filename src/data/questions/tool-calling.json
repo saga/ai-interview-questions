@@ -13,9 +13,6 @@
     "angle": "design",
     "question": "关于 Tools Schema（工具接口定义）与实现的解耦，以下哪些说法是正确的？",
     "explanation": "工具应定义为与具体模型协议无关的 schema，由 Harness 适配到不同 provider 的调用格式。这样不同模型可以复用同一套工具实现，只需适配 schema 差异，而不必为每个模型重写工具逻辑。工具 schema 不是和模型权重一起训练的，解耦恰恰提升了可复用性与可维护性。",
-    "reference": {
-      "concept": "工具调用"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -48,9 +45,6 @@
     "angle": "design",
     "question": "关于 Agent 架构中的 \"Translation Layer（翻译层）\"，以下哪些说法是正确的？",
     "explanation": "Translation Layer 是模型面向的「工具 schema（模型可读接口）」与内部「工具实现（函数/API）」之间的适配层：它把模型的工具调用意图映射到具体实现、转换参数与返回值格式。这样可以在不重新训练模型的前提下替换或新增工具。它并不替代模型的规划决策，也不只是把输出翻译给用户看（那是展示层）。",
-    "reference": {
-      "concept": "工具调用"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -83,9 +77,6 @@
     "angle": "system-design",
     "question": "在 AI Agent 的工具层（Tool Layer）扩展架构设计中，若需要支持 Agent 动态接入数十种跨语言、分布式部署的第三方服务（如身份认证、数据库查询、审计日志），同时保证系统解耦与受控安全，下列方案中最符合工程最佳实践的是？",
     "explanation": "硬编码Prompt、Root权限、原始二进制均反模式；MCP标准化微服务+受控RPC为最佳。",
-    "reference": {
-      "concept": "工具层解耦：MCP标准化+RPC发现，非硬编码/Root。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -117,9 +108,6 @@
     "angle": "definition",
     "question": "在 LLM 的 Tool / Function Calling 中，工具 schema（如 JSON Schema）的主要作用是？",
     "explanation": "工具 schema 让模型知道有哪些能力、参数如何填，从而输出可被代码校验并执行的结构化 tool_call，是 Agent 调用外部能力的基石。",
-    "reference": {
-      "concept": "工具 schema 描述名称/参数/类型，使模型产出可安全解析的结构化调用。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -151,9 +139,6 @@
     "angle": "calculation",
     "question": "实现一个简单的 tool-calling 分发器：给定 tools 列表（每个含 name 与 callable），以及模型返回的 tool_call（含 name 与 args 字典），调用对应函数并返回结果。",
     "explanation": "考察工具分发的健壮实现。按 name 查表精确定位、**args 解包传参调用，对未知工具名与执行异常捕获后返回结构化 error 交由上层兜底。此前把所有函数顺序执行再挑'看起来最像'的输出回传是反模式——会导致参数缺失时进程崩溃。",
-    "reference": {
-      "concept": "按 name 查表分发，解包 args，兜底未知工具与异常。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "def dispatch(tools, tool_call):\n    # tools: [{\"name\": str, \"fn\": callable}, ...]\n    table = {t[\"name\"]: t[\"fn\"] for t in tools}\n    name = tool_call[\"name\"]\n    args = tool_call.get(\"args\", {})\n    if name not in table:\n        return {\"error\": f\"unknown tool: {name}\"}\n    try:\n        return {\"result\": table[name](**args)}\n    except Exception as e:\n        return {\"error\": str(e)}\n要点：按 name 查表、用 **args 解包、对未知工具与异常做兜底。",
@@ -513,9 +498,6 @@
     "angle": "scenario",
     "question": "某企业部署了一个运维 Agent，赋予其数据库只读权限以及系统 Shell 执行权限用于分析日志。在处理一条恶意伪造的日志时，Agent 自行解析并生成了破坏性 Shell 命令并直接执行。从安全架构角度，该系统主要违反了哪项设计原则？",
     "explanation": "此漏洞属于 Excessive Agency（过度授权）。不能赋予 Agent 过宽的执行环境（如开放任意 Shell 权限）。架构层面应将工具能力原子化（只暴露固定的高阶 API），并在严格隔离的沙箱（如 ephemeral container）中低权限运行，禁止直接暴露通用系统 Shell。",
-    "reference": {
-      "concept": "Excessive Agency：给 Agent 开放通用 Shell 即过度授权；应原子化高阶 API + 低权限沙箱执行 + 指令白名单。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -548,9 +530,6 @@
     "angle": "system-design",
     "question": "当 Agent 系统集成了数百个扩展工具（如各种 API 或 MCP 服务）时，若直接将所有工具的完整 JSON Schema 注入 Prompt，会导致 Context 上下文体积膨胀、推理延迟增加以及模型注意力分散。针对这一问题，下列哪种 Harness 架构设计是最佳选择？",
     "explanation": "最佳为延迟发现：仅放基础工具+tool_search，LLM按需检索再动态加载匹配Schema；全量注入(A)仍膨胀、小模型压缩(C)丢参数、仅名称(D)盲猜均劣。",
-    "reference": {
-      "concept": "Deferred Tool Discovery：基础工具常驻+检索按需加载治膨胀。"
-    },
     "formats": {
       "choice": {
         "type": "single",

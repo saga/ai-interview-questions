@@ -12,9 +12,6 @@
     "angle": "calculation",
     "question": "用 Python（可借助 numpy）实现一个数值稳定的 softmax 函数，输入为一维 logits 数组，输出概率分布（和为 1）。",
     "explanation": "考察数值稳定性实现：softmax 前减去每行最大值防止 exp 溢出，再归一化保证和为 1。这是注意力机制与分类头的基础组件，面试中常作为手写题检验候选人对数值计算的理解深度。忽略 max 减法在大 logits 下会直接产生 NaN 或 Inf。",
-    "reference": {
-      "concept": "softmax 减去最大值再做指数，避免溢出。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "import numpy as np\ndef softmax(x):\n    x = np.asarray(x, dtype=float)\n    z = x - np.max(x)          # 减去最大值，避免指数溢出\n    e = np.exp(z)\n    return e / e.sum()\n关键：先做 max 平移再 exp，保证数值稳定；输出归一化到和为 1。",
@@ -47,9 +44,6 @@
     "angle": "calculation",
     "question": "不用任何机器学习框架，用纯 Python/numpy 实现一元线性回归的批量梯度下降：给定 x、y 数组与学习率 lr、迭代次数 iters，返回拟合的 (w, b) 并尽量简洁。",
     "explanation": "考察梯度下降的手写实现：批量更新 w = w - lr * gradient，其中 gradient = (1/n) * Σ(2x(wx-y))。需注意学习率过大导致发散、迭代次数不足导致欠拟合。这是面试中检验对优化算法底层理解的经典题。",
-    "reference": {
-      "concept": "MSE 对 w/b 的闭式梯度 + 向量化更新。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "import numpy as np\ndef linear_fit(x, y, lr=0.01, iters=1000):\n    x, y = np.asarray(x), np.asarray(y)\n    n = len(x); w, b = 0.0, 0.0\n    for _ in range(iters):\n        yhat = w * x + b\n        dw = (2/n) * np.sum((yhat - y) * x)\n        db = (2/n) * np.sum(yhat - y)\n        w -= lr * dw; b -= lr * db\n    return w, b\n关键：MSE 对 w、b 的梯度推导正确，并用向量化更新。",
@@ -211,9 +205,6 @@
     "angle": "mechanism",
     "question": "在 LLM 流式预训练中，真实目标分布 p 无法预先统计（语料以采样形式到达）。若希望损失 L(p,q) 能通过采样估计（即写成 E_{i~p}[S(q,i)] 的形式），L 对 p 需满足什么数学约束？",
     "explanation": "当且仅当 L(p,q) 关于 p 为线性函数时，Σ_i p_i·S(q,i) 才能写成期望 E_{i~p}[S(q,i)]，从而支持流式采样估计。Total Variation 等非线性度量因含 p_i 分母需预知全分布，无法 samplable。",
-    "reference": {
-      "concept": "损失对目标分布 p 线性 ⇒ Σ p_i S(q,i) 可改写为期望 E_{i~p}，这是流式预训练可用的充要约束；TV 等非线性度量不满足。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -246,9 +237,6 @@
     "angle": "mechanism",
     "question": "在 Softmax 输出 q=Softmax(z) 上，比较交叉熵与 Brier 评分（平方损失）对 Logits z 的梯度特性，下列说法正确的有？（多选）",
     "explanation": "交叉熵梯度为 q-e_i，距离目标越远梯度越大，无饱和。Brier 在 Softmax 下含 Jacobi 算子 (diag(q)-qqᵀ)，在自信错误（q 集中于错误类别）时趋零而饱和。",
-    "reference": {
-      "concept": "CE 梯度 q−e_i 无饱和且对 z 凸；Brier 含 (diag(q)−qqᵀ) 因子在自信错误时梯度消失、对 z 非凸，但后期天然抗噪。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -284,9 +272,6 @@
     "angle": "mechanism",
     "question": "VAE 中真实的后验分布 p(z|x) 是\"不可直接计算/采样的（Intractable）\"，其根本数学原因是？",
     "explanation": "根据贝叶斯定理 p(z|x) = p(x|z)p(z)/p(x)，求分母 p(x) 需要对所有可能隐向量 z 边缘化求解积分 ∫p(x|z)p(z)dz。在大维度隐空间中该全空间积分在计算上不可行（Intractable），因此 VAE 引入编码器拟合变分后验 q(z|x) ≈ N(μ, σ²) 来绕过该积分。",
-    "reference": {
-      "concept": "后验不可积的根因：贝叶斯分母 p(x)=∫p(x|z)p(z)dz 是全隐空间高维积分，无法解析/数值求解，故用变分分布 q(z|x) 近似绕开。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -318,9 +303,6 @@
     "angle": "calculation",
     "question": "在 VAE 推导数据对数边际似然 log p(x) 的过程中，正确表示其与证据下界（ELBO）及 KL 散度关系的公式是？",
     "explanation": "经过概率展开与积分变换，log p(x) 拆解为：log p(x) = ( E_{q(z|x)}[log p(x|z)] − D_KL(q(z|x) ∥ p(z)) ) + D_KL(q(z|x) ∥ p(z|x))。括号内第一部分即为 ELBO，第二部分为编码器变分分布 q(z|x) 与真实后验 p(z|x) 之间的 KL 散度。由于 KL 散度恒有 D_KL ≥ 0，因此 log p(x) ≥ ELBO。",
-    "reference": {
-      "concept": "恒等式 log p(x) = ELBO + D_KL(q(z|x)∥p(z|x))；KL≥0 ⇒ ELBO 是下界；ELBO 本身 = 重构项 − KL(q∥p(z))。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -352,9 +334,6 @@
     "angle": "calculation",
     "question": "VAE 训练目标中的重构项 E_{q(z|x)}[log p(x|z)] 在数学推导上可等价于最小化均方误差（MSE），这一结论建立在以下哪个关键假设之上？",
     "explanation": "当假设 p(x|z) 为均值为 x̂（解码器预测图）的高斯分布时，其概率密度对数形式展开包含 −(x − x̂)²/(2σ²)。在方差 σ 视为常数的情况下，最大化该对数似然在数值优化方向上完全等价于最小化 MSE 损失函数 (x − x̂)²。",
-    "reference": {
-      "concept": "重构项=MSE 的前提：p(x|z) 取方差固定、均值 x̂ 的高斯似然 ⇒ log 似然展开出 −(x−x̂)²/(2σ²)，常数系数不影响优化方向。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -386,9 +365,6 @@
     "angle": "mechanism",
     "question": "关于 VAE 中\"重参数化技巧（Reparameterization Trick）\"的理解，下列说法正确的有？（多选）",
     "explanation": "重参数化技巧并未消除随机性，随机性依然由外部节点 ε ~ N(0, I) 提供。它的本质是将带参数的随机采样过程转换为\"确定的可导函数运算（μ + σ·ε）+ 无参数的独立外部随机输入（ε）\"，使反向传播路径畅通。",
-    "reference": {
-      "concept": "重参数化 z = μ + σ⊙ε：采样节点不可导阻断计算图 ⇒ 把随机性外移到无参 ε，梯度经确定性变换流回 μ、σ。随机性并未消失。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -422,9 +398,6 @@
     "angle": "tradeoff",
     "question": "在 VAE 的损失函数优化中，关于重构项与 KL 散度正则化项（D_KL(q(z|x) ∥ p(z))）的作用与关系，下列说法正确的有？（多选）",
     "explanation": "若移除 KL 项，编码器映射点会失去聚拢约束，隐空间出现大量无定义空隙（退化为 Vanilla AE）。KL 项强制隐空间分布逼近 N(0, I)，使推理阶段可直接从标准高斯采样生成新数据。重构项促使隐向量保持不同输入之间的区别度与细节还原度。两者相互对抗平衡：KL 权重过大时后验崩溃，生成模糊。",
-    "reference": {
-      "concept": "重构项保区分度 ↔ KL 项压向 N(0,I) 保生成连续性；KL 过强 ⇒ 后验崩溃、图像模糊；无 KL ⇒ 退化为 AE、隐空间有空洞。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -458,9 +431,6 @@
     "angle": "definition",
     "question": "训练完成后的 VAE 推理过程及条件变分自编码器（CVAE）扩展中，下列说法错误的是？",
     "explanation": "生成\"全新\"图像（Inference）时不需要真实图片作为输入，也不使用编码器。只需从已知先验分布 N(0, I) 中直接随机采样隐向量 z 并输入解码器即可。选项 D 描述的是图像\"重构/重建\"或训练阶段的流程。",
-    "reference": {
-      "concept": "纯生成阶段只用解码器：z ~ N(0,I) 直接喂 Decoder；Encoder 只在训练/重构时使用。CVAE 在训练与推理两端都拼接条件向量。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -493,9 +463,6 @@
     "angle": "mechanism",
     "question": "某架构说明提到两类改善深层 Transformer 信息流动的设计：mHC 把单一 residual stream 拓宽为数条并行通路；Attention Residuals 把此前若干层的输出经类注意力的加权聚合后注入当前层。关于两者的说法正确的有哪些？（多选）",
     "explanation": "两者解决的是同一个深层网络问题——信息与梯度的跨层传递，但路径结构不同：mHC 是静态拓宽残差通路，Attention Residuals 是按内容动态聚合历史层输出。后者引入额外 attention 计算与激活占用，属于以计算换表达能力的结构性改进，不应计入推理效率优化。",
-    "reference": {
-      "concept": "mHC：静态拓宽 residual pathways；Attention Residuals：动态加权聚合多层输出。同目标（深层信号传递）、异结构，后者以额外计算换表达能力。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -530,9 +497,6 @@
     "angle": "mechanism",
     "question": "在 MoE 架构中，传统 SwiGLU 激活因门控与线性分支同向对齐易产生极值膨胀。如何通过平滑截断（Softcap）设计缓解该数值不稳定性？",
     "explanation": "SwiGLU 中门控与线性分支同向对齐会引发 O(‖x‖⁴) 极值。通用做法是将 SiLU 替换为带 Softcap 的 SiTU（softcap(x)=β·tanh(x/β)），并对门控与线性分支均施加平滑截断。相比 Hard Clip，Softcap 在约束数值界限的同时保留梯度连续性。",
-    "reference": {
-      "concept": "SiTU-GLU 以 Softcap 平滑截断缓解 SwiGLU 极值。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -564,9 +528,6 @@
     "angle": "definition",
     "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
     "explanation": "过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。",
-    "reference": {
-      "concept": "过拟合是模型在训练集上过度拟合噪声，泛化能力下降。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -662,9 +623,6 @@
     "angle": "definition",
     "question": "请解释交叉验证（cross-validation）的作用，并说明 k 折交叉验证的基本流程。",
     "explanation": "考察交叉验证的原理与应用。k 折交叉验证将数据分为 k 份轮流作为验证集，充分利用有限数据并降低单次划分带来的评估方差；特别适用于数据量少或需要模型选择与超参调优的场景。留一法（LOOCV）是 k=N 的极端情况，计算代价高但偏差最小。",
-    "reference": {
-      "concept": "交叉验证通过多次复用数据，降低单次划分带来的评估方差。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "交叉验证用于更稳健地评估模型在未知数据上的泛化能力，减少因单次训练/测试划分带来的随机性。k 折交叉验证将数据集平均分成 k 份，每次取其中 1 份作为验证集、其余 k-1 份作为训练集，重复 k 次后取各次指标的平均值作为最终评估。常见取值 k=5 或 10。"

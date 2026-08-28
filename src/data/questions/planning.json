@@ -42,9 +42,6 @@
     "angle": "definition",
     "question": "对比 ReAct 与 Plan-and-Execute 两种 Agent 架构模式：各自的执行流程是什么？分别适合什么任务场景？",
     "explanation": "考察 ReAct 与 Plan-and-Execute 的适用边界与取舍。ReAct 每轮 Thought→Action→Observation 即时决策、适应性强但缺乏全局视野；Plan-and-Execute 先出全局计划再执行并在失败处重规划，适合可预先分解的长任务。实践最优常为混合：粗计划+局部 ReAct 式探索。",
-    "reference": {
-      "concept": "ReAct 逐步交织推理与行动；Plan-and-Execute 先出全局计划再执行+重规划。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "ReAct：思考与行动逐步交织——每轮生成 Thought → Action → Observation，根据环境反馈即时决定下一步。优点是对意外情况适应性强、单步上下文小；缺点是缺乏全局视野，容易在长任务上绕路或丢失目标。Plan-and-Execute：先一次性生成完整多步计划，再顺序执行各步，必要时在失败处重规划（replan）。优点是有全局结构、适合可预先分解的长任务、中间步骤可并行；缺点是计划可能过时，对动态变化的环境需要额外重规划成本。选型依据：环境是否可预测、任务长度、反馈延迟。实践中常混合——先粗计划再在局部用 ReAct 式探索。"
@@ -108,9 +105,6 @@
     "angle": "definition",
     "question": "Reflection / Self-Critique 与普通 retry 的本质区别是？",
     "explanation": "Retry 重复同样的过程期望不同结果；Reflection 引入了新的信息（对失败的归因与批评），改变了下一次尝试的输入，这才是它有效的原因。",
-    "reference": {
-      "concept": "Reflection = 归因分析驱动的定向重试，信息增量的差异。"
-    },
     "formats": {
       "choice": {
         "type": "single",

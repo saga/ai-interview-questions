@@ -2,6 +2,13 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 删除 `Question.reference`；topic×angle 掌握度成为确定性引擎选题主干（ADR-045）
+
+- **动机**：`Question.reference` 仅含 `reference.concept`（核心结论摘要），与必填的 `Question.explanation` 内容重复，与 `open.referenceAnswer` 不重复但后者才是完整材料；同时 `weakAnglesOf`（ADR-037）此前只被 Agent 追问工具使用，确定性引擎 `pickNextAdaptive` 只用证据计数做兜底排序，没把 topic×angle 掌握度作为选题主干。
+- **决策**：① 删除整个 `Question.reference`（评分提示里的「概念提示」段一并移除，`explanation` 已于 ADR-044 承担题目级锚点）；② `learner.ts` 新增同源原语 `angleWeakRank`，`adaptive.ts` 用它在各策略子集内做「弱角度优先、证据最少次之」的细选（`pickByWeakAngle`），替换原 `pickLeastCovered`/证据计数兜底，move-on 先按 topic 级薄弱粗筛再按弱角度细选。
+- **改动**：数据删除 308 处 `reference`（23 个文件）；`schemas/question.ts` 删 `reference` 字段；`ai/evaluate.ts` 的 `buildEvalUser` 删「概念提示」段；`domain/learner.ts` 新增 `angleWeakRank`；`domain/adaptive.ts` 以 `pickByWeakAngle` 重构选题。
+- **验证**：`tsc` 通过；全量 `npm run test` **309 passed**（新增 1 例弱角度优先）；数据层 `reference` 残留 0。
+
 ## 2026-08-29 · 删除 `Question.rubric`，评分锚点改由「知识点要点 + explanation」承担（ADR-044）
 
 - **动机**：`rubric` 覆盖 493/624 题（79%），是需逐题维护的高覆盖字段，但其中 `rubric.required` 有 **239 题（48.5%）与所属知识节点 `required` 逐字相同**（纯副本）；`rubric.dimensions` 仅覆盖 185 题（29.6%）、21 种权重组合，为少量微调维护整套字段不划算。

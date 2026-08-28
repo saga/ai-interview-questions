@@ -177,9 +177,6 @@
     "angle": "scenario",
     "question": "你要为一个企业文档知识库搭建 RAG 的切分（Chunking）管线，语料混合了技术手册、法律合同、FAQ 和带大量表格的财务报告。请给出你的分块策略设计与理由。",
     "explanation": "没有万能切分策略：技术文档用递归切分（如 512 token + 50 overlap）；法律合同按段落/条款边界保留语义完整；FAQ 按问答对整体成块；表格先抽取结构再序列化为 Markdown 或单独建表索引。精度要求高的场景用 parent-child：小块用于检索命中、返回大块补充上下文。策略选择由文档类型与下游查询形态决定。",
-    "reference": {
-      "concept": "切分策略跟随文档类型：递归/定长+overlap 通用、段落边界保法律条款、FAQ 整块、表格结构化抽取；parent-child 用小块检索大块回答兼顾精度与上下文。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -211,9 +208,6 @@
     "angle": "tradeoff",
     "question": "RAG 两阶段检索中，Reranker（如 cross-encoder / Cohere Rerank）通常能带来 10-15% 的精确率提升，但它并非总是必要的。什么情况下应该跳过 rerank，什么情况下必须上？",
     "explanation": "Rerank 的本质是用更贵更准的模型给第一阶段（向量/BM25 召回的 top 50-100）重排。跳过的合理场景：延迟预算 <200ms、embedding 模型质量已足够、高并发下成本压力大、简单查询首段已够准。必上的场景：检索精度是硬指标、可承受 50-100ms 增量延迟、复杂语义查询、法务/医疗/金融等高风险领域。",
-    "reference": {
-      "concept": "Rerank=第二阶段精排（cross-encoder 对 query-doc 联合编码），用延迟换精确率；低延迟预算/低成本场景可跳过，高利害场景必上。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -246,9 +240,6 @@
     "angle": "scenario",
     "question": "某产品同时面临三个诉求：①客服机器人要基于企业知识库回答事实问题且要求给出出处；②所有回复需遵循固定的 JSON 输出格式与服务话术风格；③日均 30 万次请求中 80% 集中在 4 类高度重复的任务模式上，旗舰模型月支出已达 $25K。三项诉求分别应该用 RAG、微调、蒸馏中的哪个（或组合）解决？",
     "explanation": "①知识库问答 → RAG：知识频繁更新、需要引用溯源、RAG 天然提供 source attribution；②格式与风格一致化 → 微调（或强 System Prompt 起步，规模化后微调小模型固化行为）；③高重复高流量 → 蒸馏：满足 quick-screen 启发式（≥60% 流量集中于 ≤5 种任务模式 且 相关月支出 >$20K），payback 约 3 个月。三者不互斥：典型终态是 RAG 管事实、微调管行为、蒸馏管成本——甚至可以蒸馏一个\"已学会格式规范\"的学生再用 RAG 供给它事实。反指标：流量 <20 万/月、任务高度多样、教师快速迭代、质量红线 >99% 保真度时不要蒸馏。",
-    "reference": {
-      "concept": "选型三问：知识是否频繁变化（RAG）/ 行为是否需要固化（微调）/ 流量是否高频重复（蒸馏）；quick-screen：≥60% 流量 ≤5 模式且月支出 >$20K 才值得蒸馏。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -281,9 +272,6 @@
     "angle": "mechanism",
     "question": "合规审查 RAG 中，只检索法规条文往往不够——条文常是模糊的，真正的执法尺度体现在历史处罚案例里。请设计\"条文 + 先例\"双库检索方案，并说明先验式的 claim 级分解为什么先于整体文档比对。",
     "explanation": "双库设计：①法规库（CFR 条文、指南文档），Regulation Watch 服务监听 RSS/Federal Register 更新即时重建索引并回溯标记近期受影响审查；②先例库（FDA Warning Letters 解析出的违规模式），月度构建向量索引。查询时以单条 claim 为单位并行检索两库：条文给\"规则是什么\"，相似历史处罚给\"执法时怎么解释规则\"——例如\"clinically proven\"字面无问题，但 5 封警告信都因此处罚过缺少试验数据的使用，即为红旗。claim 级分解先行是因为营销材料信息密集，整体比对会让 LLM 在长上下文里丢失局部违规且无法给出精确定位；拆成带位置元数据的原子宣称后，逐条检索评估、逐条产出带引用的判定，粒度才对得上审计要求。",
-    "reference": {
-      "concept": "双库检索 = 条文库答\"规则\"+先例库答\"执法尺度\"；Regulation Watch 触发重索引；claim 级分解保证定位精度与逐条引用，优于整档比对。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -316,9 +304,6 @@
     "angle": "mechanism",
     "question": "混合检索用 RRF（Reciprocal Rank Fusion，按排名倒数加权）合并向量检索与 BM25 的结果。相比于直接对两路相似度分数做加权求和，RRF 的核心优势是什么？",
     "explanation": "两路得分量纲不可通约：Cosine 相似度落在 [0,1]，BM25 分数是无上界的正实数且分布随语料库统计漂移——直接加权求和时数值范围大的一方会主导最终排序，权重形同虚设且极难调稳。RRF 只消费各路的相对排名（score = Σ 1/(k+rank_i)，k 通常取 60），彻底剥离原始分数量纲；代价是丢弃了\"第 1 名比第 2 名好多少\"的幅度信息，但对异构分数融合这一场景，鲁棒性的价值远大于幅度精度。",
-    "reference": {
-      "concept": "RRF 的本质是量纲无关：只依赖 rank 不依赖原始分数，规避 Cosine 与 BM25 分数分布不可通约的问题；代价是丢失分数幅度信息。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -676,9 +661,6 @@
     "angle": "system-design",
     "question": "在企业级 RAG 系统中，文档向量化存储于 Vector DB 中。在多租户/多权限级别场景下，低权限员工通过针对性提问获取了高权限（如 HR 薪酬表）文档解密的回答。架构层面应如何实现可靠的权限隔离？",
     "explanation": "LLM 模型本身无法可靠承担鉴权决策（Authorization Decision Point）。RAG 系统的权限控制必须下沉至数据检索层，在向量数据库查询时注入当前用户的身份凭证（如 JWT），通过 Metadata 过滤（Pre-filtering/Post-filtering）确保未授权的 Document Chunks 根本不会进入 Context Window。",
-    "reference": {
-      "concept": "鉴权决策点在检索层：向量查询携带用户身份凭证做 Metadata ACL/RBAC Pre-filtering，未授权 chunk 不进 Context Window。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -711,9 +693,6 @@
     "angle": "tradeoff",
     "question": "在基于海量技术文档（如数百份故障复盘报告）构建 RAG 系统时，针对全局聚合类问题（如“所有复盘报告中，出现频率最高的根本原因是什么？”），传统的基于向量相似度的检索（Vector RAG）效果通常较差。即使将 LLM 的上下文窗口扩大至 64k 甚至更大并将更多文档放入 Prompt，也无法根本解决该问题。关于这一现象的原因及机制，下列哪些说法是正确的？（多选）",
     "explanation": "向量检索匹配词汇/语义近似块，无法捕捉跨文档分布式统计特征；全局答案分散无单块可定位；扩窗口不解决召回偏置；D称点查也必然落后于图谱过度泛化。",
-    "reference": {
-      "concept": "全局查询失效：向量检索的局部语义匹配 vs 分布式统计；上下文扩容不补召回缺陷。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -748,9 +727,6 @@
     "angle": "mechanism",
     "question": "在一个典型的 GraphRAG 系统构建流程中，系统需要对原始文档进行切片（Text Units）、抽取实体与关系、合并重名实体描述、生成社区报告（Community Reports）并对相关内容进行向量化存储。在整个索引构建（Indexing）阶段，通常消耗计算资源和 LLM Token 最多（占总索引成本约 75% 左右）的步骤是？",
     "explanation": "成本瓶颈在跨块重名实体与关系的合并及描述压缩重写，需大量LLM调用；切片/图计算/Embedding占比低。",
-    "reference": {
-      "concept": "GraphRAG索引成本分布：实体合并描述重写占约75%。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -783,9 +759,6 @@
     "angle": "tradeoff",
     "question": "GraphRAG 在构建知识图谱后，会使用层次化社区检测算法（如 Leiden 算法）将实体图划分为多层社区（Community Hierarchy），并为每个社区生成摘要报告（Community Report）。层级 0（Level 0）代表最宏观的社区划分，而随着层级深入（如 Level 2、Level 3），社区数量增加且覆盖范围更精细。在配置全局查询（Global Search）所使用的社区报告层级时，关于工程权衡的说法，哪些是正确的？（多选）",
     "explanation": "深层级社区更细致、详尽度更高但报告数剧增致Token/延迟飙升；Level0宏观省成本但易漏细节；D称层级查询时动态生成错误。",
-    "reference": {
-      "concept": "社区层级权衡：粒度细→详尽度↑但成本/延迟↑；宏观→省成本但漏细节。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -820,9 +793,6 @@
     "angle": "mechanism",
     "question": "GraphRAG 针对不同类型的查询提供了局部检索（Local Search）和全局检索（Global Search）两种不同的执行路径。假设系统已建立完整的知识图谱与分层社区报告，关于这两种检索模式的底层执行逻辑，下列哪些描述是正确的？（多选）",
     "explanation": "Local从匹配实体向外扩展收集块/报告/邻居/关系/断言并排序填Context；Global不做实时图遍历而用社区报告做Map-Reduce并行打分汇总；D称Local需全图扫描错误。",
-    "reference": {
-      "concept": "Local=实体为锚点图扩展+排序；Global=社区报告Map-Reduce并行汇总。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -857,9 +827,6 @@
     "angle": "tradeoff",
     "question": "为了解决完整 GraphRAG 在文档频繁更新时索引构建成本过高、更新代价大的问题，业界提出了 LazyGraphRAG 等优化方案（通过传统 NLP 抽出实体词或将部分 LLM 计算推迟到查询时）。关于 LazyGraphRAG 与标准 GraphRAG 的对比及工程权衡，下列哪些说法是正确的？（多选）",
     "explanation": "Lazy大幅削减索引期LLM调用降成本近向量RAG、推迟计算致查询期延迟/Token上升、标准GraphRAG的报告可作人类资产、D称取消向量索引错误。",
-    "reference": {
-      "concept": "LazyGraphRAG=索引期省99% LLM，查询期偿还；标准报告可独立复用。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -894,9 +861,6 @@
     "angle": "definition",
     "question": "在评估 GraphRAG 与传统 Vector RAG 的实际表现时，研发团队常对其性能指标产生误解。根据实验评估结果，GraphRAG 相较于传统向量 RAG 最显著且被证实的优势在于？",
     "explanation": "实证优势在全局问题的完整性/多样性/佐证覆盖，而非单点忠实度消除幻觉、也非索引更快或可替代SQL。",
-    "reference": {
-      "concept": "GraphRAG优势=全局完整性与多样性，非忠实度/成本/数值计算。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -929,9 +893,6 @@
     "angle": "system-design",
     "question": "由于没有单一的检索策略（如 Vector RAG、GraphRAG Global Search、SQL 查询）能完美胜任所有类型的用户提问，现代系统架构引入了 Agentic RAG（基于 Agent 的动态路由检索）。关于 Agentic RAG 的工作机制及其引入的工程权衡，下列哪些说法是正确的？（多选）",
     "explanation": "四项均正确：LLM驱动路由按问题特征选路径、路由可分层复合、引入前置LLM致延迟/成本上升、误路由致质量雪崩且难排查。",
-    "reference": {
-      "concept": "Agentic RAG=LLM分类路由+多层组合；代价=延迟/成本/误判难排。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -966,9 +927,6 @@
     "angle": "definition",
     "question": "什么是检索增强生成（RAG）？请描述其基本流程及相比单纯依赖模型参数的优势。",
     "explanation": "考察 RAG 的检索-拼接-生成三段流程及其相比参数化知识的优势。RAG 将知识外置为可更新索引库，文档更新只需重建索引而无需重训模型；回答时实时检索最新内容进入 context 并附引用来源。它解决不了检索质量差导致的答非所问，也不能消除模型误读证据产生的幻觉。",
-    "reference": {
-      "concept": "RAG 在生成前检索外部知识作为上下文，提升可溯源性与时效性、降低幻觉。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "RAG 在生成前先从外部知识库（如向量数据库）检索与问题相关的文档片段，将其作为上下文拼接到提示中，再由 LLM 生成答案。基本流程：问题向量化 → 向量检索 top-k 文档 → 拼接提示 → LLM 生成。优势在于：答案可溯源、能利用最新/私有知识、减少幻觉、无需为每个领域重训模型。"
@@ -1002,9 +960,6 @@
     "angle": "tradeoff",
     "question": "面对一个企业知识问答需求（知识频繁更新、需要溯源、数据涉密不能出内网），你会选择提示工程、RAG 还是微调？请说明决策依据与组合方案。",
     "explanation": "考察 RAG vs 微调 vs 提示工程的决策框架。知识频繁更新且需溯源 → RAG（外挂索引实时更新+附引用）；行为风格或输出格式定制 → 微调（改变模型行为倾向）；轻量约束 → 提示工程。数据不出内网可用本地部署的 embedding 与 LLM。三者常组合使用而非互斥。",
-    "reference": {
-      "concept": "RAG 解决知识时效与溯源，微调改变行为风格，提示工程做约束；三者常组合。"
-    },
     "formats": {
       "open": {
         "referenceAnswer": "首选 RAG + 提示工程：知识频繁更新适合外挂检索而非改参数（微调无法实时更新且易遗忘）；答案需溯源，RAG 可附引用；数据不出内网可用本地部署的 embedding 与 LLM。微调适用于改变行为/风格/格式或领域语言建模，而不是注入易变事实——事实性内容放参数里既难更新又难审计。组合方案：基座模型（必要时轻量 LoRA 微调对齐领域术语与输出格式）+ RAG 注入动态知识 + 提示工程约束引用与拒答（检索不到相关内容时明确说不知道）。还需配套评估：faithfulness/groundedness 指标与引用校验。"
@@ -1038,9 +993,6 @@
     "angle": "mechanism",
     "question": "要把一个 naive RAG 升级为生产级检索管线，以下哪些做法是合理且常见的？（多选）",
     "explanation": "生产级 RAG 通常拆成索引/检索/重排/生成四段优化：混合搜索弥补纯向量检索对产品型号、人名等精确词的短板；cross-encoder 重排显著提升相关性；分块策略直接影响召回质量。但 RAG 有自己的失败模式（检索不到、块截断、冲突来源），必须配合引用与忠实度评估（如 RAGAS），绝非幻觉银弹。",
-    "reference": {
-      "concept": "生产级 RAG：混合检索 + 重排 + 合理分块 + 忠实度评估，不是简单“塞进向量库”。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1077,9 +1029,6 @@
     "angle": "tradeoff",
     "question": "由于参数量限制，小语言模型（SLM）存在隐式事实记忆容量受限的“知识天花板”（Knowledge Ceiling）。关于克服小模型知识天花板的架构设计与技术权衡，下列说法正确的有？（多选）",
     "explanation": "参数为参数化记忆、小则知识少、RAG非参数化注入、SLM对噪声更敏感需剪裁重排、合成数据不消参数限制。",
-    "reference": {
-      "concept": "参数化记忆天花板需RAG外挂，小模型更需重排。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1116,9 +1065,6 @@
     "angle": "design",
     "question": "为解决大型 Transformer 模型'隐式参数记忆'带来的知识时效性差、更新成本高和幻觉问题业界提出了结合外置向量数据库的架构（如 RAG、RETRO）。相比单纯依靠扩充参数量的方案这种设计具备哪些系统级优势？（多选）",
     "explanation": "A 正确 知识库实时增删改查无需重训底层权重。B 正确 事实存储转移到外部索引降低无限扩参需求。C 正确 检索到的上下文为结论提供可溯源依据降低幻觉风险。D 错误 Context Window 不可能降为零仍需注入检索片段且 PE 需求不变。",
-    "reference": {
-      "concept": "RAG 三大优势：实时更新+降低扩参需求+可溯源降幻觉；不消除 PE 需求。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1155,9 +1101,6 @@
     "angle": "scenario",
     "question": "随着上下文窗口扩展至百万 Token 级别某些团队主张直接将全部企业文档加载至 Prompt 中彻底淘汰 RAG 系统。系统架构师指出需要考虑计算复杂度与上下文腐化现象。关于 Long Context 与 RAG 的技术权衡以下哪些说法是合理的？（多选）",
     "explanation": "A 正确 Self-Attention 计算与显存随 N 二次方增长极长 Prompt 导致 TTFT 与成本大幅上升。B 正确 上下文腐化现象表明大量冗余信息会降低对关键细节的精准检索能力。C 错误 即使窗口够大也无法自动保障实时更新与 RBAC 权限控制需检索层另行实现。D 正确 上下文压缩与 RAG 混合架构可在保持连贯性的同时降低延迟与成本。",
-    "reference": {
-      "concept": "O(N²) 计算+Context Rot 衰减+RAG 提供权限控制与实时更新；混合架构互补。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

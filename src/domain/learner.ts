@@ -300,6 +300,21 @@ export function isAngleAttempted(profile: LearnerProfile, topic: string, angle: 
 }
 
 /**
+ * 单个 (topic, angle) 的薄弱等级（topic×angle 掌握度的原子查询，供确定性引擎选题用）：
+ * - 0 = 未练过（最该被考察）；
+ * - 1 = 已练但均分低于掌握线（薄弱）；
+ * - 2 = 已掌握（不入弱项）。
+ * 无画像或未标注角度 → 0（视为最弱，优先考察）。
+ */
+export function angleWeakRank(profile: LearnerProfile, topic: string, angle: QuestionAngle | undefined): 0 | 1 | 2 {
+  if (!profile || !angle) return 0;
+  const stat = getAngleStat(profile, topic, angle);
+  if (!stat || stat.attempts === 0) return 0;
+  if (stat.avgScore < WEAK_AVG) return 1;
+  return 2;
+}
+
+/**
  * 给定某 concept（topic）与其期望考察角度，返回"证据最薄弱"的角度优先级列表：
  * - 未练过的角度排最前（attempts=0）；
  * - 已练但均分低于掌握线的角度其次（按均分升序）；

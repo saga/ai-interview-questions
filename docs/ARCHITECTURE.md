@@ -355,8 +355,9 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 > ⚠️ **覆盖索引统一为 `topic × angle`（ADR-043）**：概念层（`Question.tests` / `KnowledgeNode.concepts[]`）
 > 已于 2026-08-29 移除——它只覆盖约 20% 题库，且与 `subtopic`/`tags` 重复建模，
 > `primary/supporting` 的判定还高度主观。现在 `topic` 与 `angle` **均 100% 覆盖且无需额外人工标注**，
-> 是选题与覆盖统计的唯一主干。`weakAnglesOf()` 当前被 Agent 面试的追问工具调用
-> （`agent/tools.ts` 的 `getWeakAngles`）；确定性引擎里 `angle` 以 `angleEvidence` 的形式参与兜底排序。
+> 是选题与覆盖统计的唯一主干。`weakAnglesOf()` 的同源原语 `angleWeakRank` 现在同时驱动**确定性引擎**
+> （`adaptive.ts` 的 `pickByWeakAngle`：在每个策略子集内「弱角度优先、证据最少次之」）与 Agent 追问工具
+> （`agent/tools.ts` 的 `getWeakAngles`）——topic×angle 掌握度成为选题主干（ADR-045）。
 ```
 
 - **记忆是"结构化信号"而非对话原文**：不把用户历史回答塞给 LLM；Coach 只看压缩画像（如 `tool-calling: weak`）。

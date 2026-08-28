@@ -45,11 +45,10 @@ describe('questionSchema', () => {
     expect(() => questionSchema.parse(validOpenOnly)).not.toThrow();
   });
 
-  it('accepts question with optional fields (angle, reference)', () => {
+  it('accepts question with optional angle field', () => {
     const q = {
       ...validChoiceSingle,
       angle: 'tradeoff' as const,
-      reference: { concept: '概念' },
     };
     expect(() => questionSchema.parse(q)).not.toThrow();
   });

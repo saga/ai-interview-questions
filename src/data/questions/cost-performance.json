@@ -13,9 +13,6 @@
     "angle": "mechanism",
     "question": "某系统架构师在评估 LLM Agent 系统的 API 调用成本时发现，在处理多步骤复杂任务时，Agent 产生的 Token 消耗量远超单次 Chatbot 对话。关于 Agent 运行机制对 Token 消费的影响，下列说法正确的有？（多选）",
     "explanation": "LLM无状态致每轮重发递增Context、超线性累积、高频消除自然制约、D称本地更新隐状态错误。",
-    "reference": {
-      "concept": "Agent Context膨胀致Token超线性累积。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -50,9 +47,6 @@
     "angle": "tradeoff",
     "question": "某团队通过引入廉价模型路由和 Prompt 优化，成功将单次 Agent 任务的平均 Token 成本降低了 60%。然而在结算时发现，团队的月度 LLM 账单总额不仅没有下降，反而上升了 20%。关于这一工程与经济现象的分析及应对策略，下列说法正确的有？（多选）",
     "explanation": "单价降致反弹用量暴涨、需全局预算上限、目标为预算内价值最大化、D称路由失效切回单模型错误。",
-    "reference": {
-      "concept": "Jevons反弹：单价降致总量涨，需预算治理。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -86,9 +80,6 @@
     "angle": "definition",
     "question": "为了限制 Agent 的最大执行成本、防止失控，下列哪些是可以设置的硬性边界？（多选）",
     "explanation": "步数/调用数、token/费用预算、时间上限三层硬边界缺一不可；停止与否不能只依赖模型自觉——失控的直接后果是真金白银。还应配合重复检测与异常告警。",
-    "reference": {
-      "concept": "执行边界三板斧：步数、预算、时限，外加熔断与告警。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -160,9 +151,6 @@
     "angle": "calculation",
     "question": "某 LLM 应用单次调用成本 $0.01，日均 20,000 次请求。计划引入语义缓存：嵌入相似度超过阈值即返回缓存答案。已知缓存查询本身有成本，且预计命中率约 30%。以下估算与判断正确的是？",
     "explanation": "30% 命中意味着每天省 6,000 次 LLM 调用 = $60；但要扣除缓存查询（一次嵌入 + 相似度检索）的成本与存储费用，净节省略低于 $60/天。此外相似度阈值是核心旋钮：太松（如 0.85）会把不同意图误判为命中而返回错误缓存，太严（如 0.98）命中率趋近于零；个性化或时效性问题必须在 cache key 中加入用户/时间维度甚至禁止缓存。",
-    "reference": {
-      "concept": "语义缓存收益 = 命中率×调用量×单价 − 缓存查询与存储成本；阈值松紧决定\"错误命中 vs 低命中\"的两难，时效/个性化内容需进 key 或禁缓存。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -194,9 +182,6 @@
     "angle": "scenario",
     "question": "5000 万用户的流媒体平台要为每条推荐附加 LLM 生成的解释：日活 500 万 × 每人 10+ 组推荐意味着每天数亿次潜在调用。请设计成本可控的解释服务架构，并推导缓存命中率与 200ms p95 延迟目标之间的量化关系。",
     "explanation": "架构原则：传统 ML 负责排序（embedding 召回 + cross-encoder 精排，单用户日成本低至 $0.001 量级），LLM 只做最末端的解释生成。缓存按 (source_content, target_content, reason_type) 三元组建 key——同一条\"因为 Inception 推荐 Tenet\"的理由对成千上万用户复用，预热后命中率可达 85-95%。延迟联动：命中路径 ~70ms 远低于 200ms p95；未命中路径一次 LLM 调用 ~450-500ms 会击穿 SLA——所以必须保证命中率 ≥95%（p95 用户几乎全走命中路径），未命中的新生成异步化补进缓存而非同步等待；新内容对的解释离线预生成。",
-    "reference": {
-      "concept": "解释服务 = 排序不用 LLM + (源,目标,理由类型) 三元组缓存；SLA 数学：未命中路径 ~500ms 击穿 200ms p95 ⇒ 命中率必须 ≥95%，miss 异步回填。"
-    },
     "formats": {
       "choice": {
         "type": "single",

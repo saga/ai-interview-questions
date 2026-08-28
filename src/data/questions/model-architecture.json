@@ -141,9 +141,6 @@
     "angle": "tradeoff",
     "question": "在 Transformer Decoder 架构大语言模型自回归推理（Generation 阶段）中，KV Cache 的内存占用常成为端侧或高并发场景下的主要瓶颈。关于 Grouped-Query Attention (GQA) 与传统 Multi-Head Attention (MHA) 在改善该瓶颈上的机制与权衡，下列说法正确的有？（多选）",
     "explanation": "GQA共享KV降低显存带宽、线性增长斜率可叠加SWA/跨层共享；C称权重量化错误。",
-    "reference": {
-      "concept": "GQA共享KV降带宽与显存，斜率可叠加SWA。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -178,9 +175,6 @@
     "angle": "tradeoff",
     "question": "在需要执行成百上千次 Tool Calling 的长流程 AI Agent 场景中，随着 Context Length（上下文长度）持续增长，传统 Transformer 架构面临的主要推理瓶颈是 O(N^2) 的 Attention 计算开销及庞大的 KV Cache 内存占用。为了降低长上下文推理成本，在模型选型上引入 Mamba 或 SSM（State Space Model）混合架构（Hybrid Architecture）的主要优势是？",
     "explanation": "混合将Attention降至O(N)或O(1)并大幅消KV，降长上下文成本；B无Tokenizer、C100%无幻觉、D无GPU均错。",
-    "reference": {
-      "concept": "Hybrid SSM：线性/常数化Attention与KV，降长上下文成本。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -212,9 +206,6 @@
     "angle": "definition",
     "question": "在 LLM 自回归推理中，KV 缓存（KV cache）的核心作用是？",
     "explanation": "自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。",
-    "reference": {
-      "concept": "KV cache 复用历史 K/V 张量，解码从二次降为线性，但本身是显存瓶颈。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -247,9 +238,6 @@
     "angle": "calculation",
     "question": "某 MoE 模型的总参数量远大于每 token 的激活参数量。这两个数字分别决定了什么？",
     "explanation": "MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。",
-    "reference": {
-      "concept": "MoE：总参决定显存，激活参数决定计算/延迟；省算力不省显存。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -283,9 +271,6 @@
     "angle": "calculation",
     "question": "某模型架构说明给出：30B Dense Transformer、48 层、32 Query 头 / 2 KV 头（GQA）、head_dim=128，KV cache 以 BF16 存储（每元素 2 字节）。忽略框架开销，单个 token 占用的 KV cache 约是多少？一个 10k token 的会话呢？",
     "explanation": "公式：KV cache/token = 2（K 和 V）× 层数 48 × KV 头数 2 × head_dim 128 × 2 字节 ≈ 49KB ≈ 48 KiB。10k token 会话约 49152×10000 ≈ 0.47 GB。推论：一张减去权重后剩约 20GB 显存的 80GB 卡，大约只能同时服务 40 路这样的会话——这就是为什么 KV 头数是容量规划的一阶参数。",
-    "reference": {
-      "concept": "KV cache/token = 2 × N_layers × N_kv_heads × head_dim × bytes；会话总量 = 单 token × 序列长度，并发场景再乘并发路数。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -319,9 +304,6 @@
     "angle": "tradeoff",
     "question": "一个面向长上下文（131k token）的模型将约 75% 的 Transformer 层设为滑动窗口注意力（SWA），其余 25% 使用全局注意力的 GQA 层。相比所有层都用全局注意力，这种混合设计最直接的收益是什么？",
     "explanation": "SWA 层只在固定窗口内计算注意力：复杂度从 O(n²) 降为 O(n·w)，且窗口外的旧 token KV 可直接淘汰，该层缓存上界固定为窗口大小 w 而非序列长度 n。少量全局层负责建立跨全序列的信息通路。代价是局部层无法一步看到窗口外信息，长程依赖依赖全局层中转。",
-    "reference": {
-      "concept": "混合注意力：多数层 SWA 提供有界计算与有界缓存，少数全局层维持长程信息流；与 GQA 的头数缩减相乘进一步压缩 KV cache。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -355,9 +337,6 @@
     "angle": "mechanism",
     "question": "某模型的架构说明描述其 LatentMoE 设计：先把 hidden representation 经 down projection 映射到低维 latent space，在其中执行专家（MoE）计算，再经 up projection 还原回原维度。基于这一机制，为什么它可能降低推理成本？",
     "explanation": "压缩发生在专家线性层：MoE 专家的大矩阵原本作用于完整 hidden size，LatentMoE 让它们在低维 latent 空间执行，参数量与 FLOPs 随 latent 维度而非 hidden size 缩放；两次投影本身是 d_model×d_latent 的瘦矩阵，开销远小于被替换的原层。代价是 latent 成为信息瓶颈，质量对压缩比敏感。",
-    "reference": {
-      "concept": "LatentMoE：down-projection → 低维专家计算 → up-projection；省的是专家线性层的参数与 FLOPs（随 latent 维度缩放），牺牲的是表征带宽。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -391,9 +370,6 @@
     "angle": "mechanism",
     "question": "如果把 LatentMoE 的 latent 维度压得非常低，最可能带来什么后果？",
     "explanation": "压缩比上升 → 计算/参数继续下降，但 latent 成为更紧的信息瓶颈：专家只能看到低维投影后的输入，路由区分度与专家容量同时受损，质量回退风险随压缩比单调上升。它是典型的 compute/memory 与 representation bandwidth 的交换，不存在免费的极限压缩。",
-    "reference": {
-      "concept": "latent 维度是容量旋钮：compression ratio ↑ → FLOPs/显存 ↓ 但 representation bottleneck ↑；KV cache 不受影响。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -427,9 +403,6 @@
     "angle": "mechanism",
     "question": "某 frontier LLM 的架构说明写明：完全未使用显式位置编码（没有 RoPE，也没有绝对位置嵌入），即 NoPE 设计。相比传统 RoPE 模型，这种架构最需要解决或验证的核心问题是什么？",
     "explanation": "去掉显式位置编码后，顺序信息只能隐式地来自因果掩码的不对称性（每个位置能看到的前缀长度不同）与数据统计规律。模型必须自己学到可靠的顺序建模，最大风险在长度泛化：超出训练长度后，隐式位置信号是否仍然成立需要专门验证。",
-    "reference": {
-      "concept": "NoPE：位置信息隐式来源于因果掩码不对称性；核心风险是 order 建模的可靠性（尤其长上下文泛化），需实验验证而非默认成立。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -463,9 +436,6 @@
     "angle": "mechanism",
     "question": "在超大规模 MoE（从数百专家 Top-8 扩展至近千专家 Top-16）时，基于 SignSGD 的负载均衡在计算全局分位数时通信开销过大。如何以极低通信量实现全局近似分位数的精准估计？",
     "explanation": "局部求分位数再平均在超大规模下不够准确，全量收集通信过高。通用做法是将分数量化为 0～1 直方图（约 1000 bins），利用分布可加性跨节点聚合直方图，以极低通信精准估计全局近似分位数。",
-    "reference": {
-      "concept": "QB 用直方图可加性替代全量排序：分数压到 [0,1] 分 ~1000 bin，跨节点聚合直方图即可低成本估全局分位数。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -498,9 +468,6 @@
     "angle": "tradeoff",
     "question": "关于类 MLA 的低秩 KV 压缩在 Decoding 阶段与推测解码（MTP / Speculative Decoding）结合时的表现，下列说法正确的是？",
     "explanation": "类 MLA 在 Decoding 本质是 head_dims=512+ 的 MQA，算力已被提前占用；而 MTP 依赖“以计算换速度”，二者结合时算力瓶颈更明显。但考虑到 KV Cache 压缩率与 Prefill 效率，MLA 在综合性价比上依然优异。",
-    "reference": {
-      "concept": "Decoding 时 MLA ≈ head_dims=512+ 的 MQA，算力已打满，与 MTP 的\"以计算换速度\"相冲；但 KV Cache 压缩与 Prefill 效率仍使 MLA 综合性价比最优。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -533,9 +500,6 @@
     "angle": "mechanism",
     "question": "在保持低秩 KV 压缩结构的前提下移除旋转位置编码（RoPE）变成 NoPE，且模型依然具备良好的位置感知能力，其根本机制是什么？",
     "explanation": "理论推导表明，正交情形下的类 PaTH 位置编码可等价为对 Q/K 施加广义 DeltaNet。混合线性注意力作为更一般的 DeltaNet，隐式提供了类似 RoPE/PaTH 的位置编码作用，因此无需显式 RoPE 即可维持位置感知。",
-    "reference": {
-      "concept": "NoPE 可行的根因：正交 PaTH ≡ 对 Q/K 施加 DeltaNet，而 KDA 是广义 DeltaNet——混合架构中 KDA 隐式承担了位置编码职能。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -568,9 +532,6 @@
     "angle": "tradeoff",
     "question": "在处理超长上下文（如百万级 Token）时，标准 Transformer 架构与状态空间模型（SSM，如 Mamba）各有优劣。为了兼顾长上下文处理效率与精准细节检索能力，业界提出了将大部分 Attention 层替换为 Mamba 层、同时保留少量 Attention 层的混合架构。以下关于该混合架构的工程权衡与特性的说法，正确的有？（多选）",
     "explanation": "Attention二次方+KV随长度增长；Mamba线性+常数隐状态；纯Mamba细节检索弱于Transformer；混合以Mamba降开销、少量Attention补检索。",
-    "reference": {
-      "concept": "混合架构：Mamba线性常数成本+Attention精准检索互补。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -605,9 +566,6 @@
     "angle": "mechanism",
     "question": "在大模型架构设计中，混合专家（Mixture of Experts, MoE）架构被广泛用于扩展模型容量。以下关于 MoE 架构运行机制及工程特性的说法，正确的有？（多选）",
     "explanation": "MoE门控动态选专家、以激活参数低开销扩容量；总参仍占显存、单卡部署不省显存；负载均衡是关键挑战。",
-    "reference": {
-      "concept": "MoE=动态路由+激活参数扩容量；显存不省，负载均衡是瓶颈。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -643,9 +601,6 @@
     "angle": "comparison",
     "question": "Transformer 论文中的绝对正弦位置编码与大模型广泛应用的旋转位置编码（RoPE）在原理与长文本外推能力上有显著差异。下列说法正确的有？（多选）",
     "explanation": "A、B、C 正确：绝对正弦编码通过加法融合到 Embedding，三角公式使其具备线性变换特性但外推泛化差；RoPE 将位置隐式转换为旋转矩阵作用于 Q/K，点积天然保留相对距离 m-n。D 错误：直接在 Softmax 权重上加偏置的是 ALiBi 或 T5 Relative Position Bias。",
-    "reference": {
-      "concept": "正弦=加法到Embedding+外推差；RoPE=乘法旋转Q/K+天然相对位置；ALiBi=Softmax偏置。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -681,9 +636,6 @@
     "angle": "mechanism",
     "question": "标准 Self-Attention 是置换不变的。为了引入序列中 Token 的顺序信息，Transformer 使用了基于正弦和余弦函数的固定位置编码。关于位置编码的必要性与正弦编码的数学性质，下列哪些表述是正确的？（多选）",
     "explanation": "A 正确：不加位置编码则打乱 Token 顺序输出的集合不变（置换不变）。B 正确：PE(pos+k) 可表示为 PE(pos) 的线性变换有利于学相对位置。C 正确：正弦编码是固定函数可外推到未见长度。D 错误：位置编码通过加法（element-wise addition）注入而非矩阵乘法。",
-    "reference": {
-      "concept": "置换不变性需位置编码；三角公式线性变换利于相对位置；固定函数可外推。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -719,9 +671,6 @@
     "angle": "fundamental",
     "question": "经典 Transformer 采用固定正弦位置编码。相比于可学习的位置嵌入使用这种固定三角函数编码的主要理论优势是？",
     "explanation": "正确答案 B。三角公式使 PE(pos+k) 表示为 PE(pos) 的线性变换有利于模型学习相对位置关系并外推到更长序列。A 错误：不影响注意力矩阵复杂度。C 错误：通过加法注入非点乘。D 错误：不同位置的编码向量不正交。",
-    "reference": {
-      "concept": "PE(pos+k)=线性变换(PE(pos))利于外推到未见长度。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -755,9 +704,6 @@
     "angle": "tradeoff",
     "question": "Self-Attention 具有置换不变性因此 Transformer 引入正弦位置编码并将编码向量与词嵌入向量直接相加。关于这一设计选择下列分析正确的是？（多选）",
     "explanation": "A 正确：相加不增加维度避免了拼接带来的后续层参数膨胀。B 正确：三角函数的线性组合性质使模型更容易学习相对位置关系。C 正确：固定函数可外推到未见长度。D 错误：加法不会彻底覆盖语义信息——模型可通过后续线性层学会从混合信号中分离位置与语义成分。",
-    "reference": {
-      "concept": "相加不增维+三角公式利相对位置+可外推；不会覆盖语义。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -792,9 +738,6 @@
     "angle": "mechanism",
     "question": "某工程师误将输入层的 Positional Encoding 模块完全移除直接将 Token Embedding 输入注意力层。在不改变其他架构的情况下该模型会出现什么本质缺陷？",
     "explanation": "正确答案 B。QK^T 具有置换等变性模型会将输入序列视为无序集合（Bag-of-Tokens）。A 错误 Softmax 不会退化为均匀分布——相关性权重仍可正常计算只是不感知顺序。C 错误多头投影与位置编码无关不会秩坍塌。D 错误 K/V 相关性与位置编码缺失无关。",
-    "reference": {
-      "concept": "无 PE → 置换等变 → Bag-of-Tokens，丧失序列顺序信息。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -829,9 +772,6 @@
     "angle": "tradeoff",
     "question": "在超大规模语言模型中 Mixture-of- Experts 架构被广泛应用。相比同等参数量的稠密模型关于 MoE 的工程特性与架构取舍下列哪些说法是正确的？（多选）",
     "explanation": "A 正确 门控路由实现总参数量 Scaling 与单 Token FLOPs 解耦。B 错误 所有 Expert 都需常驻 VRAM 总显存不低于同等参数 Dense 甚至因路由开销更大。C 正确 Top-k 路由易导致 Expert 塌缩需辅助负载均衡损失。D 正确 all-to-all 通信开销通常更高。",
-    "reference": {
-      "concept": "MoE 解耦容量与FLOPs；省算力不省显存；负载均衡+all-to-all 是主要代价。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -869,9 +809,6 @@
     "angle": "tradeoff",
     "question": "假设某 MoE 模型拥有 1000 亿总参数量每 Token 激活其中 200 亿（2 个专家）而某 Dense 模型全量激活 200 亿参数。关于两者在计算与系统级别的特性比对以下哪些说法是正确的？（多选）",
     "explanation": "A 正确 单 Token FLOPs 由激活参数决定两者均为 200 亿同一数量级。B 错误 所有 Expert 权重都需常驻显存不能仅加载被激活部分——MoE 省算力不省显存。C 正确 路由负载均衡直接影响输出质量方差某些专家欠训练会导致特定领域退化。D 正确 相近算力下更大总参可存储更多领域知识实现容量扩展。",
-    "reference": {
-      "concept": "MoE 总参决定 VRAM 激活参数决定 FLOPs；省算力不省显存；负载均衡影响质量方差。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -907,9 +844,6 @@
     "angle": "comparison",
     "question": "多模态大语言模型通常采用原生多模态或模块化外挂编码器两种架构设计。现有系统需要处理长达数小时的连续视频与多轨音频流并在跨模态细节上进行细粒度逻辑推理。关于两种架构在此类场景下的特性差异哪些描述是正确的？（多选）",
     "explanation": "A 正确 模块化架构先冻结或微调文本模型再通过独立 Vision/Audio Encoder 及投影层映射到 Embedding 空间。B 正确 原生架构预训练初期就将多模态序列送入统一 Transformer 共同学习深层自注意力交互。C 错误 模块化架构因外挂编码器引入额外延迟且长视频高密度时序数据的注意力开销并不优于原生架构。D 正确 原生架构跨模态时空连贯理解能力更强。",
-    "reference": {
-      "concept": "原生=统一预训练深层交互；模块化=外挂编码器投影；原生跨模态连贯性更强。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -946,9 +880,6 @@
     "angle": "fundamental",
     "question": "在大语言模型扩展上下文窗口的长上下文训练阶段工程上通常会将 RoPE 的 Base Frequency θ 从 10⁶ 显式增大至 10⁷。这一操作的核心原理是？",
     "explanation": "正确答案 B。增大 θ 相当于降低旋转频率使波长变长注意力机制在超长距离下的相对相位变化更加平缓防止在远距离外推时因相位翻转过快导致的相对位置注意力失真与衰减。选项 A/C/D 均违背 RoPE 的数学设计——θ 不改变 head_dim、不影响 KV Cache 大小、也不改变编码类型。",
-    "reference": {
-      "concept": "增大 θ=降低旋转角速度=远距离相位变化更平缓=缓解外推失真。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -983,9 +914,6 @@
     "angle": "calculation",
     "question": "某 30B 参数量的 Decoder-only Transformer 采用 GQA 架构：d_model=4096，L=64 层，H_q=32 Query 头，H_kv=8 KV 头，d_head=128，使用 bfloat16（每元素 2 字节）。当并发序列长度 N=131072（128K）时单个样本在整网中所需的 KV Cache 显存占用约为多少？",
     "explanation": "正确答案 C 32GB。计算步骤：①每层每 Token KV = 2(K和V) × H_kv(8) × d_head(128) × 2(bytes) = 4096 bytes；②全网 L=64 层单 Token 总 KV = 64 × 4096 = 262144 bytes = 256 KB；③N=131072 时总显存 = 131072 × 256KB = 32GB。",
-    "reference": {
-      "concept": "KV/token/layer = 2×H_kv×d_head×bytes；总 = L×per-layer×N。"
-    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1020,9 +948,6 @@
     "angle": "tradeoff",
     "question": "在 Sparse MoE 进行 RL 微调期间极易发生路由器崩溃——Router 倾向将绝大部分 Token 集中发送给少数 Expert。下列哪些工程与算法干预手段能有效缓解并维持负载均衡？（多选）",
     "explanation": "A 辅助负载均衡损失对激活概率不均匀性施加惩罚。B Capacity Factor 限制单 Batch 最大 Token 数超额丢弃或重定向。C Top-k 路由随机噪声增加探索度。D 错误 冻结 Router 参数导致无法根据新分布调整路由策略。",
-    "reference": {
-      "concept": "辅助损失+Capacity Factor+Router Noise；冻结 Router 是反模式。"
-    },
     "formats": {
       "choice": {
         "type": "multiple",

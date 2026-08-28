@@ -9,7 +9,7 @@
 import type { Difficulty, LearnerProfile, Question } from '../types';
 import { pickQuestions } from './quiz';
 import { prerequisiteClosure, relatedOf } from './conceptGraph';
-import { angleKey, recommendWeakTopics } from './learner';
+import { angleKey, angleWeakRank, recommendWeakTopics } from './learner';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -67,12 +67,24 @@ function angleEvidence(q: Question, profile: LearnerProfile | undefined): number
   return stat ? stat.attempts : 0;
 }
 
-/** 在候选集中优先选 (topic, angle) 证据最少的题（证据相同则随机）。 */
-function pickLeastCovered(pool: Question[], profile: LearnerProfile | undefined, rng: () => number): Question | null {
+/**
+ * 在候选集中以「弱角度优先、证据最少次之」选下一题——把 topic×angle 掌握度作为选题主干：
+ * - 首要：未练/低分的角度（angleWeakRank 升序）；已掌握角度最后才问；
+ * - 次要：同一弱度内，作答证据最少的 (topic,angle) 优先（覆盖效率）；
+ * - 末位：随机（由 rng 决定同权题）。
+ * 与 weakAnglesOf 同源，确保确定性引擎也按 topic×angle 掌握度驱动（此前仅 Agent 工具使用）。
+ */
+function pickByWeakAngle(pool: Question[], profile: LearnerProfile | undefined, rng: () => number): Question | null {
   if (pool.length === 0) return null;
-  const evs = pool.map((q) => angleEvidence(q, profile));
-  const min = Math.min(...evs);
-  const least = pool.filter((_, i) => evs[i] === min);
+  const scored = pool.map((q) => ({
+    q,
+    weak: angleWeakRank(profile, q.topic, q.angle),
+    ev: angleEvidence(q, profile),
+  }));
+  const minWeak = Math.min(...scored.map((s) => s.weak));
+  const inWeak = scored.filter((s) => s.weak === minWeak);
+  const minEv = Math.min(...inWeak.map((s) => s.ev));
+  const least = inWeak.filter((s) => s.ev === minEv).map((s) => s.q);
   return pickQuestions(least, 1, rng)[0] ?? null;
 }
 
@@ -92,8 +104,9 @@ export interface AdaptivePick {
  * 设计权衡（trade-off）：
  * - 覆盖维度统一为 (topic, angle)——两者在题库中均为 100% 覆盖，无需额外标注即可索引，
  *   避免引入需要人工维护、且判定主观的概念标签层。
- * - 最终兜底采用「证据最少优先」(angleEvidence 升序)：越没练过的 (topic,angle) 越先被问，
- *   复用 Learner 的探针语义，避免机械按难度顺序导致「总在问同一类」，提升覆盖效率。
+ * - 选题主干是 (topic, angle) 掌握度：用 weakAnglesOf 的同源原语 angleWeakRank 在每个策略子集内
+ *   先做「弱角度优先、证据最少次之」的细选，把"弱 concept 缺证据 angle"的闭环落到确定性引擎
+ *   （此前 weakAnglesOf 仅被 Agent 工具调用，确定性引擎只做证据计数）。提升覆盖效率，避免总问同一类。
  * - 策略不是「越难越好」：答得好才 broaden、答得差才 gap-probe，刻意避免「越答越难」的挫败感设计。
  */
 export function pickNextAdaptive(
@@ -119,7 +132,8 @@ export function pickNextAdaptive(
 
   switch (strategy) {
     case 'broaden': {
-      const q = pickFromTopics(pool, relatedTopics, rng);
+      // 相关主题中同样按弱角度优先选题（主干一致）
+      const q = pickByWeakAngle(relatedPool, profile, rng);
       if (q) return { question: q, strategy };
       break;
     }
@@ -128,39 +142,38 @@ export function pickNextAdaptive(
       const easier = sameTopicPool
         .filter((q) => !difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(a.difficulty) - DIFF_ORDER.indexOf(b.difficulty));
-      if (easier[0]) return { question: pickLeastCovered(easier, profile, rng)!, strategy: 'gap-probe' };
+      // 同一降难度子集内，弱角度优先（而非单纯随机）
+      const easierPick = pickByWeakAngle(easier, profile, rng);
+      if (easierPick) return { question: easierPick, strategy: 'gap-probe' };
 
       const pres = prerequisiteClosure(last.topic);
       const preQ = pickFromTopics(pool, pres, rng);
       if (preQ) return { question: preQ, strategy: 'gap-probe' };
 
-      // 前置也问不了 → 同主题任意剩余题兜底（仍优先缺证据角度）
-      const fallback = pickLeastCovered(sameTopicPool, profile, rng);
+      // 前置也问不了 → 同主题任意剩余题兜底（仍按弱角度优先）
+      const fallback = pickByWeakAngle(sameTopicPool, profile, rng);
       if (fallback) return { question: fallback, strategy: 'gap-probe' };
       break;
     }
     case 'deep-dive': {
-      // 同主题更高难度优先；没有更难题则交回 move-on 兜底
+      // 同主题更高难度优先；没有更难题则交回 move-on 兜底；子集内弱角度优先
       const harder = sameTopicPool
         .filter((q) => difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(b.difficulty) - DIFF_ORDER.indexOf(a.difficulty));
-      if (harder[0]) return { question: pickLeastCovered(harder, profile, rng)!, strategy: 'deep-dive' };
+      const harderPick = pickByWeakAngle(harder, profile, rng);
+      if (harderPick) return { question: harderPick, strategy: 'deep-dive' };
       break;
     }
     default:
       break;
   }
 
-  // move-on 及一切策略的最终兜底：排除刚答的主题，优先薄弱项，且按 (topic,angle) 证据升序挑最缺考察的
+  // move-on 及一切策略的最终兜底：排除刚答的主题；先按 topic 级薄弱粗筛，再按弱角度为主干细选
   const rest = pool.filter((q) => q.topic !== (first ? '' : last.topic));
   const target = rest.length > 0 ? rest : pool;
   const weakTopics = profile ? recommendWeakTopics(profile, 5) : [];
-  const scored = target.map((q) => ({
-    q,
-    // 弱 concept 加权（减分 = 更优先），再叠加 (topic,angle) 证据量——证据越少越该被问
-    ev: angleEvidence(q, profile) + (weakTopics.includes(q.topic) ? -0.6 : 0),
-  }));
-  const minEv = Math.min(...scored.map((s) => s.ev));
-  const least = scored.filter((s) => s.ev === minEv).map((s) => s.q);
-  return { question: pickQuestions(least, 1, rng)[0], strategy: 'move-on' };
+  const weakPool = target.filter((q) => weakTopics.includes(q.topic));
+  const pickPool = weakPool.length > 0 ? weakPool : target;
+  // 弱角度优先 + 证据最少次之（topic×angle 掌握度作为选题主干，而非单纯证据计数）
+  return { question: pickByWeakAngle(pickPool, profile, rng)!, strategy: 'move-on' };
 }
