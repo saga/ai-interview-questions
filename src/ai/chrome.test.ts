@@ -3,7 +3,7 @@
 // 不可用时报错、并发上限、超时拒绝、重试。
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { chromeAvailability, chromeComplete, getLanguageModel } from './chrome';
+import { chromeAI, chromeAvailability, chromeComplete, getLanguageModel } from './chrome';
 
 type CloneSession = { prompt: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> };
 type SessionStub = CloneSession & { clone: ReturnType<typeof vi.fn> };
@@ -95,11 +95,12 @@ describe('chromeComplete', () => {
   it('create / prompt 永久不返回（on-device 偶发卡死）时超时拒绝，不假死', async () => {
     vi.useFakeTimers();
     stubLanguageModel({ create: async () => makeSession(() => new Promise<string>(() => {})) });
-    const p = chromeComplete('s', 'u');
+    // 用显式 timeoutMs=5000，避免依赖单例默认超时值；与真实 90s 行为一致（单测不卡 180s）
+    const p = chromeAI.execute('u', { system: 's', timeoutMs: 5000, retries: 1 });
     // 先把断言 handler 挂上，再推进假时钟，避免「rejection 处理时机」告警
     const assertions = expect(p).rejects.toThrow('超时');
-    // 单次 60s 超时 + 1 次重试（sleep 250ms）≈ 120.25s，留余量
-    await vi.advanceTimersByTimeAsync(125_000);
+    // 单次 5s 超时 + 1 次重试（sleep 250+500ms）≈ 5.75s，留余量
+    await vi.advanceTimersByTimeAsync(11_000);
     await assertions;
     vi.useRealTimers();
   });

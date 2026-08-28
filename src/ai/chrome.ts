@@ -187,7 +187,7 @@ export class ChromeAIExecutor {
 
   constructor(options: ChromeAIExecutorOptions = {}) {
     this.concurrency = Math.max(1, options.concurrency ?? 2);
-    this.defaultTimeoutMs = options.timeoutMs ?? 60_000;
+    this.defaultTimeoutMs = options.timeoutMs ?? 90_000;
     this.defaultRetries = Math.max(0, options.retries ?? 1);
     this.onChange = options.onChange;
   }
@@ -458,10 +458,10 @@ export class ChromeAIExecutor {
   }
 }
 
-/** 应用层单例：Chrome 内置 AI 并发上限 4，单次 60s 超时，失败重试 1 次。 */
+/** 应用层单例：Chrome 内置 AI 并发上限 8，单次 90s 超时，失败重试 1 次。 */
 export const chromeAI = new ChromeAIExecutor({
   concurrency: 8,
-  timeoutMs: 80_000,
+  timeoutMs: 90_000,
   retries: 1,
 });
 

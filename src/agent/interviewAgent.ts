@@ -31,7 +31,7 @@ export const MAX_AGENT_QUESTIONS = 10;
  * 看门狗：若 Agent run 在 WATCHDOG_MS 内既未交付题目也未结束（如流式挂起），
  * 主动中止并触发确定性兜底出题，避免页面无限停在「面试官正在选题…」。
  */
-const WATCHDOG_MS = 60_000;
+const WATCHDOG_MS = 90_000;
 
 /** 停止条件：本轮调用了 finishInterview，或已评题数达上限。导出便于单测。 */
 export function shouldStopAfterTurn(
