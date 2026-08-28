@@ -149,7 +149,7 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       ...(session.currentQuestion ? [session.currentQuestion.question.id] : []),
     ]);
     // 尊重全局「生成开放题」开关：关闭时只从「可出选择题」的题中挑选，避免兜底出开放题。
-    const fmtsAllowed = generateOpenQuestions ? [] : ['choice'];
+    const fmtsAllowed: FormatId[] = generateOpenQuestions ? [] : ['choice'];
     const pool = bank.filter((q) => !asked.has(q.id) && availableFormats(q, fmtsAllowed).length > 0);
     if (pool.length === 0) return false;
 

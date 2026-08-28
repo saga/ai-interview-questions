@@ -35,8 +35,26 @@ export async function chromeAvailability(): Promise<ChromeAvailability> {
   }
 }
 
-/** 一次性补全：每次调用新建 session（one-shot 无状态架构），用完即销毁。 */
+/**
+ * 串行互斥队列：Chrome on-device 模型并发能力受限（受空闲内存约束，并发 create
+ * 会排队甚至抛 QuotaExceededError），因此所有补全调用——无论从哪条路径发起
+ * （组卷变体的 Promise.all / 自适应出题 / 开放题评分）——都在此逐个执行。
+ * 模块级队列对所有调用方生效，云端引擎（pi.ts）不受影响，仍可并发。
+ */
+let chain: Promise<unknown> = Promise.resolve();
+function runSerialized<T>(task: () => Promise<T>): Promise<T> {
+  const run = chain.then(task, task);
+  // 吞掉 rejection 后再作为新链尾：避免单次失败把 rejection 透传给后续所有任务
+  chain = run.catch(() => undefined);
+  return run;
+}
+
+/** 一次性补全：每次调用新建 session（one-shot 无状态架构），用完即销毁；全局串行执行。 */
 export async function chromeComplete(system: string, user: string): Promise<string> {
+  return runSerialized(() => chromeCompleteOnce(system, user));
+}
+
+async function chromeCompleteOnce(system: string, user: string): Promise<string> {
   const lm = getLanguageModel();
   if (!lm) {
     throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');

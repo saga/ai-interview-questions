@@ -81,4 +81,37 @@ describe('chromeComplete', () => {
     const lm = stubLanguageModel();
     expect(getLanguageModel()).toBe(lm);
   });
+
+  it('并发调用时全局串行执行：同一时刻只有一个 session 在跑', async () => {
+    let active = 0;
+    let maxActive = 0;
+    stubLanguageModel({
+      create: async () => ({
+        prompt: async () => {
+          active++;
+          maxActive = Math.max(maxActive, active);
+          await new Promise((r) => setTimeout(r, 5));
+          active--;
+          return 'ok';
+        },
+        destroy: vi.fn(),
+      }),
+    });
+    // 模拟组卷路径：Promise.all 同时发起 5 个补全
+    await Promise.all(Array.from({ length: 5 }, (_, i) => chromeComplete('s', `u${i}`)));
+    expect(maxActive).toBe(1);
+  });
+
+  it('前一个调用失败不影响后续调用（rejection 不透传）', async () => {
+    let n = 0;
+    stubLanguageModel({
+      create: async () => {
+        n++;
+        if (n === 1) throw new Error('boom');
+        return { prompt: vi.fn(async () => 'ok'), destroy: vi.fn() };
+      },
+    });
+    await expect(chromeComplete('s', 'u1')).rejects.toThrow('boom');
+    await expect(chromeComplete('s', 'u2')).resolves.toBe('ok');
+  });
 });
