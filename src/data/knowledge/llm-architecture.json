@@ -162,6 +162,69 @@
     ]
   },
   {
+    "id": "factuality-verification",
+    "name": "事实性验证与拒答",
+    "area": "llm",
+    "topic": "llm-fundamentals",
+    "priority": "P0",
+    "summary": "高风险场景不能把生成模型当作事实源；应通过封闭证据、逐条引用、独立校验和明确拒答把错误控制在可接受范围内，必要时转人工或确定性系统。",
+    "required": [
+      "允许模型表达不确定并在缺少证据时拒答，不把温度为零当作正确性证明",
+      "生成后逐条核对事实性断言与可信来源，校验失败时撤回、重试、降级或人工升级"
+    ],
+    "misconceptions": [
+      "以为检索到了文档就能保证答案忠实于文档",
+      "以为高风险业务可以用更大的模型承诺 100% 无错"
+    ],
+    "angles": [
+      "scenario",
+      "system-design",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "generation-reproducibility",
+    "name": "生成可复现性",
+    "area": "llm",
+    "topic": "llm-fundamentals",
+    "priority": "P1",
+    "summary": "相同请求的重复生成可能不同；固定随机种子、采样参数、模型版本和后端配置只能提高可复现性，不能替代输出校验和版本化评估。",
+    "required": [
+      "复现需要固定输入、采样参数、随机种子和模型/后端版本，并记录响应元数据",
+      "即使参数和后端指纹相同也不应假设绝对确定；生产系统应验证语义或结构契约而非比较全文字符串"
+    ],
+    "misconceptions": [
+      "以为 temperature=0 就能保证所有 API 请求逐字一致",
+      "只保存 prompt 不保存模型版本、参数和评估结果"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "prompt-robustness",
+    "name": "提示鲁棒性",
+    "area": "llm",
+    "topic": "llm-fundamentals",
+    "priority": "P1",
+    "summary": "模型可能对不改变语义的措辞、格式或示例顺序敏感；工程上要用明确契约、模板化输入、语义等价扰动测试和版本化评估降低脆弱性。",
+    "required": [
+      "单一 prompt 的成功率不能代表鲁棒性，应在合理的措辞和格式变体集合上报告性能范围",
+      "把提示当作可测试的程序接口：固定模板、隔离变量、保留回归集并监控版本变化"
+    ],
+    "misconceptions": [
+      "认为把 prompt 写得更长就能消除所有措辞敏感性",
+      "只在一个人工挑选的 prompt 上比较模型或上线版本"
+    ],
+    "angles": [
+      "scenario",
+      "system-design",
+      "tradeoff"
+    ]
+  },
+  {
     "id": "transformer",
     "name": "Transformer 总体架构",
     "area": "ai-engineering",

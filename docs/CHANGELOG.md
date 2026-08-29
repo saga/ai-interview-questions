@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · LLM 可靠性与提示鲁棒性补充
+
+- 新增 `factuality-verification`、`generation-reproducibility` 和 `prompt-robustness` 三个原子知识节点，覆盖高风险场景的证据校验与拒答、随机性与后端变更导致的复现边界、以及语义等价提示扰动和回归测试。
+- 新增 14 道题，明确“不能承诺 100% 正确”：工程目标是封闭证据、逐条验证、拒答/人工升级和确定性降级；固定 seed、采样参数和模型配置只能提高复现性，不能保证绝对一致；单一 prompt 的成功率不能代表鲁棒性。
+- 来源：[Anthropic Reduce hallucinations](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations)、[OpenAI reproducible outputs cookbook](https://developers.openai.com/cookbook/examples/reproducible_outputs_with_the_seed_parameter)、Sclar 等人的 [FormatSpread 论文](https://arxiv.org/abs/2310.11324)。
+
 ## 2026-08-29 · Claude Blog 技术题库扩充
 
 - 新增 30 道基于 Anthropic Claude Blog 公开文章的题目，覆盖 Managed Agents 的 dreaming、memory、Outcomes、独立 grader、多 Agent 编排，以及 AI-native SDLC 的版本化交付物、连续评估、hooks、沙箱、MCP 部署工具、环境权限分级和确定性控制带。
