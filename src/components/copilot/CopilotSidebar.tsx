@@ -62,12 +62,15 @@ async function chatCopilot(
         return chromeComplete(system, `${transcript}${transcript ? '\n' : ''}user: ${newContent}`);
       }
       const models = buildModels(entry);
-      const model = getModel(models, entry.id, entry.model);
+      const model = getModel(models, entry);
       if (!model) fail(`未找到模型 ${entry.model}`, entryCtx);
       const msgs = [...history.map((h) => ({ role: h.role, content: h.content })), { role: 'user', content: newContent }] as any;
       // pi-ai Context expects { systemPrompt, messages }
       const ctx: any = { systemPrompt: system, messages: msgs.map((m: any) => ({ role: m.role, content: m.content, timestamp: Date.now() })) };
-      const res: any = await models.complete(model, ctx, entry.apiKey?.trim() ? { apiKey: entry.apiKey } : {});
+      // 鉴权交给内存 CredentialStore（buildModels 已按 provider 注入 apiKey/accountId）。
+      // 切勿传 { apiKey }——pi-ai 收到 apiKey override 会丢弃 store 中的 env（Cloudflare 的
+      // accountId），导致 "Provider is not configured"。
+      const res: any = await models.complete(model, ctx, {});
       // pi-ai 会把传输/鉴权错误吞成 stopReason='error' 并返回空 content（见 ARCHITECTURE 技术栈注意点），
       // 必须先看 stopReason，避免把真实错误掩盖成「模型未返回文本」。
       if (res?.stopReason === 'error') {

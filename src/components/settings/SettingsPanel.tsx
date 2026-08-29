@@ -470,12 +470,12 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
                   placeholder="可留空（该引擎停用时不影响保存）"
                 />
               )}
-              {provider.id !== 'chrome' && (
+              {provider.id === 'local' && (
                 <Input
                   addonBefore="Base URL"
                   value={provider.baseUrl ?? ''}
                   onChange={(event) => updateProvider(index, { baseUrl: event.target.value })}
-                  placeholder={provider.id === 'local' ? DEFAULT_LOCAL_BASE_URL : '可选'}
+                  placeholder={DEFAULT_LOCAL_BASE_URL}
                 />
               )}
               {provider.id === 'cloudflare-workers-ai' && (

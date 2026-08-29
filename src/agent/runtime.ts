@@ -19,7 +19,7 @@ export function buildAgentRuntime(entry: ProviderEntry): { streamFn: StreamFn; m
   // 其余引擎（云端 / 本地 OpenAI 兼容）由 pi-ai 的 streamSimple 提供流式 + 原生工具调用。
   if (isChromeEntry(entry)) return buildChromeAgentRuntime();
   const models = buildModels(entry);
-  const model = getModel(models, entry.id, entry.model);
+  const model = getModel(models, entry);
   if (!model) {
     throw new Error(`在引擎 "${entry.id}" 中未找到模型 "${entry.model}"`);
   }

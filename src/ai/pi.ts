@@ -2,7 +2,7 @@
 // 上层（variant / evaluate）才表达业务语义。浏览器：密钥经内存 CredentialStore 注入。
 
 import { createModels } from '@earendil-works/pi-ai';
-import type { Context, CredentialStore, Model, ProviderId, UserMessage } from '@earendil-works/pi-ai';
+import type { Context, CredentialStore, Model, UserMessage } from '@earendil-works/pi-ai';
 import { deepseekProvider } from '@earendil-works/pi-ai/providers/deepseek';
 import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
 import { googleProvider } from '@earendil-works/pi-ai/providers/google';
@@ -46,22 +46,36 @@ export function buildModels(config: ProviderEntry): ModelsClient {
   return models;
 }
 
-/** 按 provider + 模型 id 取模型；找不到返回 undefined。 */
-export function getModel(models: ModelsClient, provider: ProviderId, modelId: string): Model<any> | undefined {
-  return models.getModel(provider, modelId);
+/** 按 provider + 模型 id 取模型；找不到返回 undefined。
+ *  仅 cloudflare-workers-ai：浏览器无法直连 api.cloudflare.com（该域名不返回 CORS 头），
+ *  故强制走同源 Worker 代理 /api/ai/client/v4/accounts/{accountId}/ai/v1
+ *  （由 worker/index.ts 服务端转发到 api.cloudflare.com），从而规避跨域。
+ *  该 provider 未启用时不会被调用，故不会产生任何代理流量。
+ *  其它 provider（deepseek / openrouter / google / local）一律走各自模型目录里的默认 baseUrl。 */
+export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any> | undefined {
+  const model = models.getModel(entry.id, entry.model);
+  if (!model) return undefined;
+  if (entry.id === 'cloudflare-workers-ai') {
+    const proxyBase = `/api/ai/client/v4/accounts/${(entry.accountId ?? '').trim()}/ai/v1`;
+    return { ...model, baseUrl: proxyBase };
+  }
+  return model;
 }
 
 /** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
 export async function callLLM(entry: ProviderEntry, system: string, user: string): Promise<string> {
   const models = buildModels(entry);
-  const model = getModel(models, entry.id, entry.model);
+  const model = getModel(models, entry);
   if (!model) {
     throw new Error(`在引擎 "${entry.id}" 中未找到模型 "${entry.model}"`);
   }
   const message: UserMessage = { role: 'user', content: user, timestamp: Date.now() };
   const context: Context = { systemPrompt: system, messages: [message] };
-  // 空 apiKey 不显式传入，让 provider 的 auth.resolve 兜底（local 用占位符）
-  const res = await models.complete(model, context, entry.apiKey.trim() ? { apiKey: entry.apiKey } : {});
+  // 鉴权完全交给内存 CredentialStore（createCredentialStore 已按 provider 注入
+  // apiKey / accountId 等字段）。切勿在此传 { apiKey }——pi-ai 收到 apiKey override
+  // 时会构造「合成 credential」并丢弃 store 中的 env（如 Cloudflare 的 accountId），
+  // 导致 applyAuth 拿到不到 accountId 而抛 "Provider is not configured"。
+  const res = await models.complete(model, context, {});
   const textBlock = (res.content ?? []).find((b) => b.type === 'text');
   return (textBlock && 'text' in textBlock ? textBlock.text : '') ?? '';
 }
