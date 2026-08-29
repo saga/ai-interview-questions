@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseQuestionArray, type Question } from '../src/schemas/question.ts';
 import type { KnowledgeNode } from '../src/schemas/knowledge.ts';
+import { detectOptionLengthRatio } from '../src/domain/bias.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const questionsDir = resolve(root, 'src/data/questions');
@@ -77,6 +78,14 @@ for (const question of incoming) {
     if (new Set(options).size !== options.length) errors.push(`${question.id}: 选项重复`);
     if (choice.options.some((option) => /^(参见解析|见解析|略|待补充|todo|tbd)$/iu.test(option.trim()))) {
       errors.push(`${question.id}: 选项包含占位文本`);
+    }
+    // 长度泄题门禁（AGENTS.md §4.2）：最长/最短选项比 > 1.8 会被应试者当"正确项更长"破绽利用。
+    const ratioReport = detectOptionLengthRatio(choice.options);
+    if (ratioReport.biased) {
+      errors.push(
+        `${question.id}: 选项长度失衡（最长 ${ratioReport.maxLen} / 最短 ${ratioReport.minLen} = ${ratioReport.ratio.toFixed(1)}× > 1.8），` +
+          `存在长度泄题风险，请让各选项篇幅接近后再导入`,
+      );
     }
     if (choice.type === 'single') singleCount++;
     else if (choice.type === 'multiple') multipleCount++;

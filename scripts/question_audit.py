@@ -123,6 +123,19 @@ def audit() -> dict[str, Any]:
             normalized_options = [normalized_text(option) for option in options if isinstance(option, str)]
             if len(normalized_options) != len(set(normalized_options)):
                 add_issue(issues, "P1", "duplicate-option", question_id, file_name, "choice options repeat")
+            option_lengths = [len(str(option).strip()) for option in options if isinstance(option, str)]
+            if len(option_lengths) >= 2:
+                max_len = max(option_lengths)
+                min_len = min(option_lengths)
+                if min_len > 0 and max_len / min_len > 1.8:
+                    add_issue(
+                        issues,
+                        "P2",
+                        "option-length-ratio",
+                        question_id,
+                        file_name,
+                        f"选项长度比 {max_len / min_len:.1f}× > 1.8（最长 {max_len} / 最短 {min_len}），存在长度泄题风险",
+                    )
             if choice.get("type") == "single" and len(answers) != 1:
                 add_issue(issues, "P0", "single-answer-count", question_id, file_name, "single choice must have one answer")
             if choice.get("type") == "multiple" and len(answers) < 2:
@@ -194,6 +207,14 @@ def main() -> int:
         "Off by default: the historical bank is single-heavy, so enabling it today would fail until that is rebalanced. "
         "New-batch enforcement is already a hard gate in `npm run question:add`.",
     )
+    parser.add_argument(
+        "--gate-length-ratio",
+        action="store_true",
+        help="exit non-zero when any question has max/min option length ratio > 1.8 (anti-cueing rule, AGENTS.md §4.2). "
+        "Off by default: the historical bank has many legacy imbalanced options, so enabling it today would fail until "
+        "those are rebalanced. New-batch enforcement is already a hard gate in `npm run question:add`, and CI gates only "
+        "newly-added questions via `npm run lint:length --changed`.",
+    )
     args = parser.parse_args()
     report = audit()
     serialized = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
@@ -218,6 +239,9 @@ def main() -> int:
             f"✗ 题型门禁失败：全库单选题占比 {single_ratio(report) * 100:.1f}% 超过 1/3（AGENTS.md §4.2）",
             file=sys.stderr,
         )
+        failed = True
+    if args.gate_length_ratio and any(issue["code"] == "option-length-ratio" for issue in report["issues"]):
+        print("✗ 长度比门禁失败：存在选项长度比 > 1.8 的题（详见上方 option-length-ratio）", file=sys.stderr)
         failed = True
     return 1 if failed else 0
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectOptionLengthBias } from './bias';
+import { detectOptionLengthBias, detectOptionLengthRatio } from './bias';
 
 describe('detectOptionLengthBias', () => {
   it('flags when longest option is the correct one and clearly longer', () => {
@@ -55,5 +55,38 @@ describe('detectOptionLengthBias', () => {
     ];
     const r = detectOptionLengthBias(options, [0]);
     expect(r.biased).toBe(false);
+  });
+});
+
+describe('detectOptionLengthRatio', () => {
+  it('flags when the longest option is much longer than the shortest', () => {
+    const options = ['短选项', 'x'.repeat(60), '中等长度选项', '另一个短选项'];
+    const r = detectOptionLengthRatio(options);
+    expect(r.biased).toBe(true);
+    expect(r.ratio).toBeGreaterThan(1.8);
+  });
+
+  it('passes when all options are comparable in length', () => {
+    const options = [
+      '每 1B 参数约 2GB 显存。',
+      'Q4_K_M 比 Q8_0 省一半显存。',
+      '标量量化不剪枝不删 Attn。',
+      '上限由位置编码与 num_ctx。',
+    ];
+    const r = detectOptionLengthRatio(options);
+    expect(r.biased).toBe(false);
+  });
+
+  it('does not flag at exactly the 1.8 threshold (strict greater-than)', () => {
+    const options = ['x'.repeat(18), 'x'.repeat(10), 'x'.repeat(10), 'x'.repeat(10)];
+    const r = detectOptionLengthRatio(options);
+    expect(r.ratio).toBeCloseTo(1.8);
+    expect(r.biased).toBe(false);
+  });
+
+  it('treats a single option as balanced (no division by zero)', () => {
+    const r = detectOptionLengthRatio(['只有一个选项']);
+    expect(r.biased).toBe(false);
+    expect(r.ratio).toBe(1);
   });
 });

@@ -65,3 +65,32 @@ export function detectOptionLengthBias(options: string[], answer: number[]): Opt
   }
   return { ...base, biased: false, severity: 'none', detail: '选项长度均衡' };
 }
+
+export interface OptionLengthRatioReport {
+  /** 最长选项长度 / 最短选项长度 */
+  ratio: number;
+  /** ratio > threshold（默认 1.8）即视为存在长度泄题 */
+  biased: boolean;
+  maxLen: number;
+  minLen: number;
+  maxIdx: number;
+  minIdx: number;
+}
+
+/**
+ * 纯长度比检测：最长选项 / 最短选项 > threshold（默认 1.8）即告警。
+ * 与 detectOptionLengthBias 的区别：它只看「组合泄题」（最长项是否 = 正确项且最短=干扰项），
+ * 本函数只看长度比本身，是最直接的抗暗示（anti-cueing）信号，用于 CI 门禁（AGENTS.md §4.2）。
+ */
+export function detectOptionLengthRatio(options: string[], threshold = 1.8): OptionLengthRatioReport {
+  const lengths = options.map((o) => String(o).trim().length);
+  if (lengths.length < 2) {
+    return { ratio: 1, biased: false, maxLen: lengths[0] ?? 0, minLen: lengths[0] ?? 0, maxIdx: 0, minIdx: 0 };
+  }
+  const maxLen = Math.max(...lengths);
+  const minLen = Math.min(...lengths);
+  const maxIdx = lengths.indexOf(maxLen);
+  const minIdx = lengths.indexOf(minLen);
+  const ratio = minLen > 0 ? maxLen / minLen : Infinity;
+  return { ratio, biased: ratio > threshold, maxLen, minLen, maxIdx, minIdx };
+}
