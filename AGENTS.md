@@ -70,7 +70,7 @@
 
 - **新题导入**：`npm run question:add -- --file draft.json --check` 已内置题型门禁（见 `scripts/add-question.ts`）。本批选择题 ≥ 3 道且单选占比 > 1/3 时直接报错退出并打印分布；少于 3 道自动豁免。被拦就改写为多选，不要绕过。
 - **全库可见性**：`npm run validate:questions` 与 `npm run question:audit` 每次都会打印单选/多选分布，便于观察长期漂移。
-- **全库门禁（可选）**：`python scripts/question_audit.py --gate-format-ratio` 在单选占比 > 1/3 时以退出码 1 失败。**默认关闭**——历史题库单选占比高，默认开启会让它永远红；等存量单选清理到 1/3 以下再打开。
+- **全库门禁（可选）**：`python analysis/question_audit.py --gate-format-ratio` 在单选占比 > 1/3 时以退出码 1 失败。**默认关闭**——历史题库单选占比高，默认开启会让它永远红；等存量单选清理到 1/3 以下再打开。
 - **长度泄题门禁（已自动化）**：选项最长/最短长度比 > 1.8× 即告警（抗暗示）。新增题经 `npm run question:add` 导入时被**硬门禁**拦截；CI（`scripts/lint-length.ts --changed`）仅对本次变更文件中的**新增题目**做门禁，命中即失败，防止存量失衡被再次批量引入；历史存量失衡由 `question:audit` 以 P2（`option-length-ratio`）持续可见，待逐步改写清零。
 
 ### 5. web抓取注意

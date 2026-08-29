@@ -1,7 +1,7 @@
 # Cloudflare Workers + Assets 部署配置
 # 本应用是纯静态 SPA，构建产物在 dist/，使用 HashRouter（无需 Worker 脚本 / SPA fallback）。
-# 发布范围：仅 dist/ —— Python 分析脚本（analysis/ 工程 + scripts/*.py）与经 Git LFS 管理的离线模型 models/ 不参与浏览器构建，不会被发布。
-# 仓库根的 Python 工程清单（pyproject.toml / uv.lock）已移至 analysis/，避免 Cloudflare 把本仓库识别成 Python 项目而在构建期安装 Python。
+# 发布范围：仅 dist/ —— 本地 Python 分析工程（analysis/，含 *.py、pyproject.toml、uv.lock）与经 Git LFS 管理的离线模型 analysis/models/ 不参与浏览器构建，不会被发布。
+# 全部 Python 工程已收进 analysis/ 子目录，仓库根不再有 pyproject.toml / uv.lock / requirements.txt，避免 Cloudflare 把本仓库识别成 Python 项目而在构建期安装 Python。
 # 部署命令：npx wrangler deploy（Workers + Assets 模式，读取 [assets] directory = "./dist"）。
 
 name = "ai-interview-trainer"

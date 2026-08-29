@@ -148,14 +148,14 @@ scripts/question-blueprint.ts  蓝图 CLI（npm run question:blueprint -- N）�
 scripts/add-question.ts     题目导入闸门（npm run question:add）：复用 Zod 解析，
                              检查 ID/题干重复、topic/angle、选项和 coverage 增量；
                              默认只检查，显式 --write 才写入批次文件
-scripts/question_audit.py   Python 标准库离线审计（npm run question:audit）：输出题库
+analysis/question_audit.py   Python 标准库离线审计（npm run question:audit）：输出题库
                              分布、覆盖率、重复/占位/答案问题与时效元数据告警；
                              Python 只做分析，不复制 TypeScript schema
-scripts/question_analysis.py Python 离线分析：pandas/NumPy 统计、rapidfuzz 近重复、
+analysis/question_analysis.py Python 离线分析：pandas/NumPy 统计、rapidfuzz 近重复、
                              scikit-learn TF-IDF/聚类/难度信号、NetworkX 图分析；
                              --semantic 使用仓库内 ARM64 ONNX INT8 embedding 模型
                              做语义重复与 embedding 聚类，不参与线上运行时
-models/                       Git LFS 管理的本地分析模型；当前仅 check in
+analysis/models/              Git LFS 管理的本地分析模型；当前仅 check in
                              paraphrase-multilingual-MiniLM-L12-v2 的 ONNX INT8 权重
 types.ts              跨层行为契约（LLMProvider / QuestionBank / AnswerValue 等），数据形状类型直接用 schemas/*
 ```

@@ -67,7 +67,7 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
    - `npx vitest run src/data/bank.test.ts`
    - `npm run lint:bias`
    - `npm run question:coverage`
-   - `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 uv run --project analysis --extra analysis python scripts/question_analysis.py --semantic --json`
+   - `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
      使用仓库内 ONNX INT8 模型检查语义重复；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
 5. 再运行 `npm run typecheck` 和 `npm run test`。
 6. 运行 `git diff --check`，确认没有意外改动。

@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS_DIR = ROOT / "src" / "data" / "questions"
 KNOWLEDGE_DIR = ROOT / "src" / "data" / "knowledge"
 CONCEPT_GRAPH_FILE = ROOT / "src" / "data" / "conceptGraph.json"
-LOCAL_MODEL_DIR = ROOT / "models" / "paraphrase-multilingual-MiniLM-L12-v2"
+LOCAL_MODEL_DIR = ROOT / "analysis" / "models" / "paraphrase-multilingual-MiniLM-L12-v2"
 QUANTIZED_MODEL_FILE = "onnx/model_qint8_arm64.onnx"
 
 

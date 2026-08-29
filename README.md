@@ -31,11 +31,11 @@ npm run question:analysis # Python 统计、近重复、TF-IDF 聚类、难度�
 Python 分析工具使用 `uv` 管理（工程清单在 `analysis/pyproject.toml`），首次运行前执行 `uv sync --project analysis --extra analysis`。`question:analysis` 默认不会加载语义模型；需要语义去重时显式运行：
 
 ```bash
-uv run --project analysis --extra analysis python scripts/question_analysis.py --json
-uv run --project analysis --extra analysis python scripts/question_analysis.py --semantic --json
+uv run --project analysis --extra analysis python analysis/question_analysis.py --json
+uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json
 ```
 
-报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用仓库内 ARM64 INT8 ONNX 模型，通过 ONNX Runtime 的同一次 embedding 编码同时发现语义重复题和语义题簇。`optimum-onnx` 负责 Sentence Transformers 的 ONNX backend 接入，运行设备为 CPU；M5 的 CoreML provider 需单独 benchmark，不默认宣称使用 Neural Engine。默认模型路径为 `models/paraphrase-multilingual-MiniLM-L12-v2`，加载使用 `local_files_only=True`，模型缺失会直接报错，不会访问 Hugging Face。模型权重通过 Git LFS 管理，模型卡为 Apache-2.0 并随模型文件保留。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
+报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用仓库内 ARM64 INT8 ONNX 模型，通过 ONNX Runtime 的同一次 embedding 编码同时发现语义重复题和语义题簇。`optimum-onnx` 负责 Sentence Transformers 的 ONNX backend 接入，运行设备为 CPU；M5 的 CoreML provider 需单独 benchmark，不默认宣称使用 Neural Engine。默认模型路径为 `analysis/models/paraphrase-multilingual-MiniLM-L12-v2`，加载使用 `local_files_only=True`，模型缺失会直接报错，不会访问 Hugging Face。模型权重通过 Git LFS 管理，模型卡为 Apache-2.0 并随模型文件保留。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
 
 ## 文档
 
@@ -100,7 +100,7 @@ npm run deploy     # = wrangler pages deploy dist
 
 **Git 仓库连接（Cloudflare Pages 控制台）：** 构建命令 `npm run build`、输出目录 `dist`、Node 版本 22。
 
-**发布范围（Python 与 offline 模型不发布）：** 发布产物仅为 `dist/`（`wrangler pages deploy dist` 只上传该目录）。仓库中的 Python 分析脚本（`scripts/*.py`、`main.py`、`analysis/pyproject.toml`、`analysis/uv.lock`）以及经 Git LFS 管理的离线嵌入模型 `models/`（仅供 Python 语义去重分析，不参与浏览器构建）都**不会被发布**。浏览器运行所需的全部资源——含题库 JSON（已在构建期打包进 `dist/`）——均已包含。
+**发布范围（Python 与 offline 模型不发布）：** 发布产物仅为 `dist/`（`wrangler deploy` 只上传该目录）。仓库中的 Python 分析脚本（`analysis/*.py`、`analysis/pyproject.toml`、`analysis/uv.lock`）以及经 Git LFS 管理的离线嵌入模型 `analysis/models/`（仅供 Python 语义去重分析，不参与浏览器构建）都**不会被发布**。浏览器运行所需的全部资源——含题库 JSON（已在构建期打包进 `dist/`）——均已包含。
 
 > 若需部署到子路径（非根域名），先在 `vite.config.ts` 设置 `base: '/subpath/'` 再 `npm run build`。
 
