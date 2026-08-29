@@ -1012,5 +1012,70 @@
         "referenceAnswer": "正确答案 A,B,C。强模型子Agent+弱模型内联+小粒度commit防漂移；D 错误无限嵌套是反模式。"
       }
     }
+  },
+  {
+    "id": "longhorizon-harness-vs-finetune-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "harness-refinement",
+      "fine-tuning",
+      "self-improvement"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在智能体系统的自我演化（Self-Improvement）架构设计中，“持续 Harness 提炼”（Continual Harness Refinement）与传统的“模型权重微调”（Weight Fine-tuning）代表了两种不同的演化路径。关于这两者的技术对比，下列说法正确的是：",
+    "explanation": "A 正确：Harness 提炼通过修改外部 L3 状态（版本化的 Prompt 说明、技能、记忆）实现行为演化，L0 模型权重保持固定。B 错误：权重微调是黑盒参数更新，可解释性与归因能力较差；Harness 提炼的状态是明文版本控制，透明度与可干预性更高。C 错误：提炼是增量补充与修改规则，不需要每次全量重写基座 Prompt，迭代开销远低于参数微调。D 错误：把经验保存在外部可读写状态库的是 Harness 提炼而非权重微调；参数更新式微调反而更容易产生灾难性遗忘。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "持续 Harness 提炼将轨迹经验转化为版本化的 Prompt 规则、记忆与可执行技能保存在外部存储中，无需更改 L0 权重即可改变未来行为。",
+          "模型权重微调能够精准保留每条运行轨迹的操作归因与触发条件，在进行演进策略调整时具有比 Harness 提炼更高的可干预性与透明度。",
+          "持续 Harness 提炼要求在每次任务执行结束后对基座 Prompt 进行整体重写，因此在频繁迭代时的计算开销显著高于模型权重微调。",
+          "模型权重微调通过将经验写入外部可读写的状态库来实现知识积累，因此在跨领域任务迁移时完全不会产生灾难性遗忘问题。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：Harness 提炼通过修改外部 L3 状态（版本化的 Prompt 说明、技能、记忆）来实现系统行为的演化，保持 L0 模型权重固定。\n- B 错误：权重微调是黑盒参数更新，可解释性与归因能力较差；而 Harness 提炼的状态具有明文版本控制，透明度和可干预性更高。\n- C 错误：提炼是通过补充和修改增量规则来实现的，不需要全量重写基础 Prompt，开销远低于模型参数微调。\n- D 错误：参数更新式微调容易产生灾难性遗忘，而将其保存在外部状态库中的是 Harness 提炼机制。"
+      }
+    }
+  },
+  {
+    "id": "longhorizon-control-modes-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "autonomous-mode",
+      "goal-mode",
+      "heartbeat",
+      "termination"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "长程智能体系统需要灵活的控制机制（Control Mechanisms）来管理任务的持续推进、终止校验与调度。关于自主模式（Autonomous Mode）、目标模式（Goal Mode）与心跳模式（Heartbeat Mode）的比较，下列哪些说法是正确的？",
+    "explanation": "A 正确：自主模式在指定预算内循环，每轮把外部校验结果作为下一步依据，直到校验通过或触发资源上限。B 正确：目标模式由智能体发出的终止指令（Agentic Completion）判断结束，适合没有确定外部测试集的高阶目标。C 正确：心跳模式由 Cron 或定时器触发 Turn，适合长期后台运行的巡检与持续监控。D 错误：外部测试失败不会强行终止并清空持久化状态，而是把测试错误写回上下文，让智能体在下一轮调整策略。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "自主模式在每个 Turn 结束后触发外部测试，若测试失败且未超预算，系统会将有界的错误信息反馈给智能体并开启下一轮尝试。",
+          "目标模式依赖智能体的主观完成声明（Agentic Completion），只要智能体未主动标记目标完成，系统就会跨多个 Turn 保持该目标。",
+          "心跳模式主要用于响应定时计划（Cron/Timed）或周期性事件，触发智能体定期执行巡检、监测或维护类长程任务。",
+          "无论处于哪种控制模式，只要遇到外部环境测试失败，系统就会立即强行终止进程并清空 L2 与 L3 层的所有持久化状态。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：自主模式在指定预算内循环，每次反馈外部校验结果作为下一步依据，直到校验通过或触发资源上限。\n- B 正确：目标模式通过智能体发出的特定终止指令（Agentic Completion）来判断结束，适合没有确定外部测试集的高阶目标。\n- C 正确：心跳模式利用 Cron 或定时定时器触发 Turn，适合长期后台运行与持续监控。\n- D 错误：外部测试失败不会立即清空持久化状态，而是会将测试错误写回上下文以便智能体在下一轮调整策略。"
+      }
+    }
   }
 ]

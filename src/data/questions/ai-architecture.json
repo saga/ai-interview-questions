@@ -1835,5 +1835,36 @@
         "referenceAnswer": "正确答案：A、B、D。\n\n- A 正确：KV Cache 驻留特定物理显存/内存，节点请求过载时网关触发溢出路由，流量被分发到无缓存节点即造成 Miss。\n- B 正确：Prompt Cache Key 赋予网关亲和性路由能力，让同一组业务逻辑的请求尽量落到同一计算节点，减少溢出造成的失效。\n- C 错误：KV Tensor 空间占用极大（通常 GB 级），高并发下用 Redis 跨节点实时同步会严重打满网络带宽并带来巨大延迟，工程上不可行。\n- D 正确：出于数据隐私、安全隔离与跨 Region 延迟控制，缓存边界严格限制在同一 Organization 和同一 Region 内。"
       }
     }
+  },
+  {
+    "id": "longhorizon-daemon-session-01",
+    "category": "ai-architecture",
+    "topic": "system-design",
+    "tags": [
+      "daemon",
+      "session-decoupling",
+      "long-running"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "在支持长程异步任务的智能体系统架构中，采用后台守护进程（Daemon）解耦客户端前端与智能体会话（Session）是核心设计之一。下列关于守护进程架构优势的描述，正确的是：",
+    "explanation": "A 正确：守护进程脱离前端客户端独立持有 Session，客户端连接断开后，Agent 的执行、工具调用与子 Agent 通信仍可在后台持续进行。B 错误：守护进程管理彼此独立的 Session 节点以保持隔离性，而非把子 Agent 挤进同一线程。C 错误：守护进程暴露 Agents View 接口，允许人类操作员随时 attach 到运行中的节点进行实时观测或人工干预。D 错误：每个子 Agent 拥有各自独立的 L1 上下文，守护进程并不提供全局共享的 L1。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "守护进程独立持有 Session 的生命周期与状态，使得客户端的连接断开或网络异常不会中断后台正在进行的工具执行与子 Agent 协作。",
+          "守护进程通过将所有并发子智能体的内存空间强制合并至单一线程，彻底消除了多 Agent 系统在跨进程协作时的 IPC 通信延迟。",
+          "守护进程机制要求人类操作员只能在 Agent 完全退出后通过静态日志进行审计，严格禁止在任务运行过程中进行交互与干预。",
+          "守护进程通过为所有子智能体提供共享的 L1 激活上下文，从根本上简化了复杂长程任务在并发执行时的上下文同步问题。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：守护进程（Daemon）脱离前端客户端独立运行，客户端连接断开后，Agent 的执行、工具调用与子 Agent 通信依然可以在后台持续进行。\n- B 错误：守护进程管理独立的 Session 节点，而非强制把所有子 Agent 挤入同一个线程，这样才能保持隔离性。\n- C 错误：守护进程暴露 Agents View 接口，允许人类操作员随时 attach 到正在运行的节点进行实时观测或人工插预。\n- D 错误：每个子 Agent 拥有各自独立的 L1 上下文，守护进程并不提供全局共享的 L1 上下文。"
+      }
+    }
   }
 ]
