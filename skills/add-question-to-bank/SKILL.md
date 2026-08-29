@@ -11,9 +11,16 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 
 1. 阅读 `AGENTS.md`、`README.md`、`src/schemas/question.ts`、目标题库 JSON 和 `src/data/knowledge/` 中对应知识节点。
 2. 先运行 `npm run question:coverage`，确认新增题解决真实的 topic × angle 缺口，而不是重复堆积已有题型；如果还没确定要补哪些缺口，转 **fill-coverage-gap** skill 先出蓝图和优先级，再回到本 skill 写题。
-3. 检查同 topic 下已有题的题干、angle、difficulty、选项和答案，避免近重复。
-4. 如果题目涉及 AWS、模型、API、认证考试或其他时效事实，确认来源、适用版本和核验日期；不确定的事实不得写成绝对结论。
-5. 如果题目内容来自一篇具体文章而不是从零构思，转 **article-to-questions** skill 生成内容，再回到本 skill 完成校验与写入。
+3. **不要只看 `question:coverage` 的"缺口数"**：它按知识节点自身声明的 `angles` 计算，加题后缺口数不变，既不代表白加、也不代表填上了缺口。必须直接数目标 (topic, angle) 格子的现有题量：
+
+   ```
+   python3 -c "import json,glob; qs=[q for f in glob.glob('src/data/questions/*.json') for q in json.load(open(f,encoding='utf-8'))]; print(sum(1 for q in qs if q['topic']=='<topic>' and q.get('angle')=='<angle>'))"
+   ```
+
+   格子已有 3 题以上属于"加深"而非"补缺"，需确认新题与已有题不近重复；想真正消缺口就优先挑统计里为 0 的格子。加题后重跑同一条命令，确认格子数确实 +1。
+4. 检查同 topic 下已有题的题干、angle、difficulty、选项和答案，避免近重复。
+5. 如果题目涉及 AWS、模型、API、认证考试或其他时效事实，确认来源、适用版本和核验日期；不确定的事实不得写成绝对结论。
+6. 如果题目内容来自一篇具体文章而不是从零构思，转 **article-to-questions** skill 生成内容，再回到本 skill 完成校验与写入。
 
 ## 题目契约
 
@@ -28,6 +35,10 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 - 如果同时提供 open 形态，`referenceAnswer` 必须与 choice 正确答案一致。
 - 开放题参考答案应包含可检查的关键要点，而不只是重复题干。
 - `tags` 使用已有命名风格，避免创建同义或大小写重复标签。
+- `topic` 必须是 `src/data/knowledge/` 里已存在的**知识节点 id**（如 `caching`、`cost`、`system-design`），不是 taxonomy 的 topic；`bank.test.ts` 会强制校验，写错直接失败。
+- `category` 必须与所在文件名一致，且每个题库文件只含一个 category（唯一例外是 `p0-gap-fill.json`）。
+- 目标题库文件普遍是 choice + open 双形态 100% 覆盖，新题应同时写两种形态。
+- `open.referenceAnswer` 若写成 `正确答案：B、C、D。`（全角冒号），`bank.test.ts` 的一致性正则**不会命中**（正则要求"正确答案"后紧跟空白+字母），因此需**人工核对**字母与 `answer` 索引一致。
 
 ## 内容设计
 

@@ -1962,5 +1962,101 @@
         "referenceAnswer": "正确答案：A、B。\n- A：FP16 每 1B 参数约 2GB，9B 模型权重即 18GB+，超 16GB。\n- B：Q4_K_M 比 Q8_0 省约一半显存且精度损失极小，是消费级首选。\n- C 错误：Q8_0 是标量量化，不剪枝、不删 Attention。\n- D 错误：上下文上限由 Position Embedding/num_ctx 决定，量化不改。"
       }
     }
+  },
+  {
+    "id": "prompt-cache-kv-mechanism-01",
+    "category": "inference",
+    "topic": "caching",
+    "tags": [
+      "prompt-caching",
+      "kv-cache",
+      "prefix-matching",
+      "ttl"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在基于 Transformer 架构的大模型 API 服务中，Prompt Caching 被广泛用于降低长上下文处理的首字延迟（TTFT）与计算成本。关于 KV Cache Prompt Caching 的底层工作机制与前缀匹配规则，下列哪些说法是正确的？",
+    "explanation": "缓存的物理载体是 Transformer 前向传播算出的 KV State（Key-Value Tensors），而非 Token ID，所以 A 错——只存 Token ID 无法跳过注意力的矩阵乘法；B 正确，复用 KV Tensor 正是避免 Self-Attention 重复计算的核心；C 正确，KV Tensor 具有因果依赖，前缀中任一 Token 或配置（如 Tool Schema）变动，其后所有 Token 的 KV State 随之改变，后续断点全部失效；D 正确，Cache Read Hit 按 Read rate 折扣计费并自动续期 TTL，不会重复产生写缓存的 Write Charge。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "缓存系统直接保存的是经过 Tokenizer 处理后的 Token ID 序列，当新请求到达时通过逐字比较 Token ID 实现毫秒级快速匹配与复用",
+          "缓存系统保存的是模型在前向传播过程中计算出的 KV Tensor，从而避免对已处理前缀进行重复的 Self-Attention 矩阵乘法计算",
+          "缓存命中严格依赖前缀的完全一致性，若在前缀断点前的任何位置修改工具定义或参数，会导致该断点之后的所有缓存全部失效",
+          "每次成功读取并复用已有缓存前缀时，不仅能以折扣价格结算输入 Token，还会同步刷新该缓存条目的存活周期（TTL）而无需再次缴纳写入费"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C、D。\n\n- A 错误：缓存保存的是 KV State（Key-Value Tensors），不是 Token 或 Token ID；仅保存 Token ID 无法跳过前向传播中的注意力矩阵乘法计算。\n- B 正确：准确描述了 Prompt Caching 避免 Self-Attention 重复计算的核心物理载体。\n- C 正确：KV Tensor 的生成具有因果依赖关系，前缀中任何 Token 或配置（如 Tool Schema）改变，其后所有 Token 的 KV State 都会变化，导致后续断点无法命中。\n- D 正确：Cache Read Hit 按优惠的 Read rate 计费，并会自动续期 TTL，不会重复产生 Write Charge。"
+      }
+    }
+  },
+  {
+    "id": "prompt-cache-breakpoint-01",
+    "category": "inference",
+    "topic": "caching",
+    "tags": [
+      "prompt-caching",
+      "cache-breakpoint",
+      "prefix-search"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在大模型 Prompt Caching 的实现中，系统需要确定在何处截断并保存 KV Cache 状态（即设置缓存断点 Cache Breakpoint）。关于隐式（Implicit）与显式（Explicit）缓存断点的匹配机制与设计差异，下列哪项描述是正确的？",
+    "explanation": "B 正确：Prefix Search 采用逆向查找，无论隐式还是显式断点，系统都从最长候选前缀开始，沿可能存在的断点位置向后（Backward）逐个比对直至命中。A 错误：颠倒了概念——显式断点由开发者显式控制位置，隐式断点由系统自动推断（按固定 Token 间隔或特定消息边界）。C 错误：隐式断点通常放在最新合规的 Message 边界或定长间隔，而非系统消息开头；显式断点也无需对每条消息逐一标注。D 错误：只要前缀符合条件且满足最小 Token 门槛，隐式断点在单轮 LLM-as-a-Judge 或多轮场景均可命中。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐式断点模式允许开发者在 Prompt 的任意字符位置手动插入标记，而显式断点模式仅能在固定 Token 步长（如每 2,048 Tokens）自动截断",
+          "无论采用何种断点模式，缓存查找算法都会从当前请求的最长候选前缀开始，沿可能存在的断点位置向后（Backward）逆向搜索最佳匹配项",
+          "隐式断点模式会自动在系统消息的最开头放置断点，而显式断点模式要求必须对所有对话历史消息逐条标注才能触发 KV Cache 复用",
+          "显式断点模式仅适用于包含多轮 Tool Call 的场景，而隐式断点模式在所有单轮 LLM-as-a-Judge 评估场景中均无法产生任何缓存命中"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n- A 错误：颠倒了概念。显式断点（Explicit Breakpoint）由开发者显式控制位置；隐式断点（Implicit Breakpoint）由系统自动推断（如按固定 Token 间隔或特定消息边界放置）。\n- B 正确：准确表达了 Prefix Search 的逆向查找机制——系统寻找能够匹配的最大前缀，从最长前缀向后（Backward）逐个比对候选断点直至命中。\n- C 错误：隐式断点通常放置在最新合规的 Message 边界或定长间隔，而非系统消息开头；显式断点也无需逐条标注。\n- D 错误：隐式断点只要前缀符合条件且满足最小 Token 门槛，在单轮 LLM-as-a-Judge 或多轮场景均可命中。"
+      }
+    }
+  },
+  {
+    "id": "prompt-cache-min-tokens-01",
+    "category": "inference",
+    "topic": "caching",
+    "tags": [
+      "prompt-caching",
+      "minimum-cacheable-tokens",
+      "token-accounting"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "在大模型 Prompt Caching 机制中，通常设定有“最小可缓存 Token 长度”（Minimum Cacheable Token Length，例如 1,024 或 2,048 Tokens）。关于这一限制及相关 Token 统计逻辑，下列哪项描述是正确的？",
+    "explanation": "B 正确：只有开发者构建的可见 Token（开发者消息、工具定义、历史对话）达到规定门槛（如 1,024 或 2,048），系统才会为其建立或匹配缓存断点。A 错误：平台/厂商内部注入的隐藏 System Token 不计入开发者可见的最小缓存门槛，开发者仍需自行关注可见 Token 数量。C 错误：未达门槛仅表示该请求不会触发 Prompt Caching，系统会作为普通 Uncached 请求正常执行推理，不会抛 400 异常。D 错误：Tool Definitions 属于前缀的一部分，同样受统一最小 Token 门槛约束，没有特权豁免。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "系统内部注入的隐藏 System 指令 Token 会自动计入该最小长度门槛，因此开发者无需关注实际可见输入 Token 的数量",
+          "只有开发者发送的可见输入 Token（包含开发者消息、工具定义与历史对话）达到门槛时，前缀才具备写入或匹配缓存的资格",
+          "当请求的可见 Token 总数未达到最小缓存门槛时，系统会强制抛出 API 400 异常并拒绝执行推理，直到补齐 Token 数量",
+          "只要 Prompt 前缀包含了完整的 Tool Definitions，无论总 Token 数量多大，系统都会无条件忽略最小长度限制并强制触发缓存"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n- A 错误：平台/厂商内部注入的隐藏 System Token 不计入开发者可见的最小缓存门槛。\n- B 正确：只有开发者构建的可见 Token 数量达到规定的最小门槛（如 1,024 或 2,048 Tokens）时，系统才会为其建立或匹配缓存断点。\n- C 错误：未达到门槛仅表示该请求不会触发 Prompt Caching，系统会将其作为普通的 Uncached 请求正常执行推理，不会报错。\n- D 错误：Tool Definitions 属于前缀的一部分，但仍然受制于统一的最小 Token 长度门槛，不能享有特权豁免。"
+      }
+    }
   }
 ]

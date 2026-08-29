@@ -388,5 +388,39 @@
         "referenceAnswer": "正确答案 B。活架构文档与代码同版本维护保证知识持久化与一致性。"
       }
     }
+  },
+  {
+    "id": "prompt-cache-context-ordering-01",
+    "category": "context-engineering",
+    "topic": "context-engineering",
+    "tags": [
+      "prompt-caching",
+      "context-ordering",
+      "tool-definitions",
+      "append-only"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在开发复杂的多轮 AI Agent 系统时，为了最大化 Prompt Caching 的命中率并降低系统响应延迟，下列哪些上下文组织（Context Ordering）与设计模式属于工程最佳实践？",
+    "explanation": "A 正确：前缀一致性是缓存命中的前提，把完全静态、高复用度的长文本与 Schema 前置可最大化缓存覆盖率。B 正确：在静态前缀注入动态变量（毫秒级时间戳、UUID、Request ID）会让前缀每次都变，使其后所有 KV Cache 彻底失效。C 正确：Append-only 追加工具可保持已有工具在 Schema 数组中的相对顺序不变，仍能命中先前建立的断点。D 错误：按意图动态裁剪或重排 Tool Definitions 会改变该区域的 Token 序列，导致 Tool 区域及其后全部对话历史的缓存全盘失效。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将固定不变的 System Prompt、静态上下文文档以及完整的 Tool Definitions 结构化 Schema 统一放置在 Prompt 的最前端",
+          "避免在 System Prompt 或前端静态区域中动态注入每次请求独有的变量（如当前 Request ID、动态精确时间戳或用户 Session Token）",
+          "对 Tool Definitions 进行更新时，优先采用 Append-only（仅末尾追加）策略，避免改变已有工具在 Schema 数组中的相对顺序",
+          "为了提高灵活性，在每轮对话中根据当前 User Message 的意图，动态裁剪并重排 Tool Definitions 列表中不相干的工具定义"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：前缀一致性是缓存命中的前提，将完全静态、高复用度的长文本/Schema 前置可保证最大化缓存覆盖率。\n- B 正确：如果在静态前缀中注入了动态变量（如毫秒级时间戳或 UUID），会导致前缀每次改变，使后续所有的 KV Cache 彻底失效。\n- C 正确：采用 Append-only 追加工具，前面的工具 Schema 保持一致，依然能命中前面已建立的 KV Cache 断点。\n- D 错误：按意图动态裁剪或重排 Tool Definitions 会彻底改变 Tool 区域的 Token 序列，导致 Tool 区域及其后所有对话历史的缓存全盘失效。"
+      }
+    }
   }
 ]

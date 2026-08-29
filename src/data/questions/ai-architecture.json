@@ -1801,5 +1801,39 @@
         "referenceAnswer": "正确答案：B。本地引擎在 /v1 下实现协议适配层，把 OpenAI 请求转为内部格式，业务仅改 base_url 与 model 即可。A 错（本地多忽略/接受任意 key）；C 错（完整支持 SSE）；D 错（未下载模型返回 404/500，不自动透传云端）。"
       }
     }
+  },
+  {
+    "id": "prompt-cache-affinity-routing-01",
+    "category": "ai-architecture",
+    "topic": "system-design",
+    "tags": [
+      "prompt-caching",
+      "affinity-routing",
+      "cache-key",
+      "distributed-serving"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在一个高并发的 LLM 服务架构中，即使多个客户端发送了完全相同的静态 Prompt 前缀，系统仍可能频繁出现 Prompt Cache Miss 的现象。针对这一现象的原因分析及系统设计优化手段，下列哪些项是正确的？",
+    "explanation": "A 正确：KV Cache 驻留在特定物理节点的显存/内存中，节点过载时网关触发 Overflow Routing，把流量打到未持有该缓存的节点，直接造成 Cache Miss；B 正确：Prompt Cache Key 让网关具备按业务维度哈希分组与亲和性路由（Affinity Routing）的能力，使同组高频请求尽量落到同一节点；C 错误：KV Tensor 常达 GB 级，用 Redis 之类做跨节点实时同步会打满带宽并引入巨大延迟，工程上不可行；D 正确：出于数据隐私、安全隔离与跨 Region 延迟控制，缓存边界默认限定在同一 Organization 与同一 Region 内。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KV Cache 存储在具体物理算力节点的内存中，当单节点 QPS 超过阈值时，网关会进行溢出路由将请求分发至未持有该缓存的节点",
+          "在请求参数中显式指定业务层面的 Prompt Cache Key，可引导网关对高频请求进行哈希分组与节点亲和性路由，提高命中率",
+          "为彻底解决跨节点 Cache Miss 问题，生产环境通常采用分布式共享内存库（如 Redis）在所有推理算力节点间实时同步 KV Tensor",
+          "跨地理区域（Region）或跨隔离租户（Organization）的请求，出于安全隔离与网络传输时延考虑，默认无法共享或复用已有缓存"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A 正确：KV Cache 驻留特定物理显存/内存，节点请求过载时网关触发溢出路由，流量被分发到无缓存节点即造成 Miss。\n- B 正确：Prompt Cache Key 赋予网关亲和性路由能力，让同一组业务逻辑的请求尽量落到同一计算节点，减少溢出造成的失效。\n- C 错误：KV Tensor 空间占用极大（通常 GB 级），高并发下用 Redis 跨节点实时同步会严重打满网络带宽并带来巨大延迟，工程上不可行。\n- D 正确：出于数据隐私、安全隔离与跨 Region 延迟控制，缓存边界严格限制在同一 Organization 和同一 Region 内。"
+      }
+    }
   }
 ]

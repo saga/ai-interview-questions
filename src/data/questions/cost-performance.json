@@ -232,5 +232,40 @@
         "referenceAnswer": "缓存与路由可在成本与性能间取得平衡，非必然对立。"
       }
     }
+  },
+  {
+    "id": "prompt-cache-billing-tradeoff-01",
+    "category": "cost-performance",
+    "topic": "cost",
+    "tags": [
+      "prompt-caching",
+      "billing",
+      "breakeven",
+      "write-charge",
+      "read-discount"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "某些大模型 API 采用了“写缓存收取额外溢价（如 1.25x 基础输入价），读缓存给予大幅折扣（如 0.1x 基础输入价）”的计费机制。针对此类计费模型，在架构设计与成本优化时，下列哪些推论是正确的？",
+    "explanation": "A 正确：前缀仅调用一次且无后续复用时，写缓存需付 1.25x 溢价，相比不开启缓存（1.0x）多付 25%，即“最小缓存长度成本陷阱”。B 正确：写入溢价必须靠足够多次的 Read Hit（0.1x 折扣）来摊薄，复用次数超过平衡点阈值才有净成本下降。C 错误：结算逻辑恰好相反——命中的前缀 Token 享 0.1x 读折扣，未命中的尾部新增 Token 才按 1.0x 标准原价结算。D 正确：缓存读命中只产生 Read Charge（0.1x），并会自动重置刷新 TTL，无需重新支付 1.25x 写缓存费。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对于长尾、一次性（Single-turn Non-recurring）且无重复前缀的 API 调用，开启显式写缓存功能反而会导致整体 Token 成本上升 25%",
+          "只有当某个前缀的预期复用次数（即 Read Hit 次数）达到或超过平衡点阈值时，引入带写缓存费用的 Prompt Caching 才能实现净成本下降",
+          "缓存命中时，系统会基于原始基础输入单价结算全部 Token，然后再将未命中的尾部 Token 按照 0.1x 的读缓存折扣价进行补偿扣减",
+          "在维持缓存活性的场景中，周期性地发送基于相同前缀的 Hit 请求，可以在不再次产生 1.25x 写缓存费用的情况下持续刷新 TTL 存活期"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A 正确：若前缀仅调用一次且无后续复用，写入缓存需支付 1.25x 溢价，相比不开启缓存（1.0x）额外增加 25% 成本，形成“最小缓存长度成本陷阱”。\n- B 正确：写缓存存在溢价，必须通过足够多次数的 Read Hit（0.1x 折扣）平摊初始写入溢价，才能降低总成本。\n- C 错误：结算逻辑相反，命中的前缀 Token 享受 0.1x 读折扣，未命中的尾部新增 Token 按 1.0x 标准原价结算。\n- D 正确：缓存读命中仅产生 Read Charge（0.1x），且会自动重置并刷新 TTL，无需重新支付 1.25x 的写缓存费用。"
+      }
+    }
   }
 ]
