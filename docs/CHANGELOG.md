@@ -1,11 +1,23 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 知识分布结构优化与基础题阶梯扩充
+
+- **难度金字塔重塑**：新增 20 道高质量 Easy/Medium 题目，重点补强 `llm-applications`（RAG 分块/混合检索/重排、向量嵌入几何意义、上下文 Few-shot 与结构化输出）及 `ai-security`（直接/间接注入攻防、安全护栏、循环配额熔断）。
+- **题库总量提升**：题库规模扩充至 719 题，Easy 题量提升至 57 题，为自适应测评提供更扎实的基础概念探针。
+- **题目规范修复**：修正 `deep-learning.json` 中 `dl-14`（VAE ELBO 公式）的选项文本规范化歧义，全库 P0/P1 结构与内容问题清零。
+
 ## 2026-08-29 · 基础与中级题库补充
 
 - 将跨 topic 的生产补题批次从 `p0-gap-fill.json` 重命名为 `foundational-and-intermediate.json`，名称改为描述题目用途而非内部优先级。
 - 新增 14 道 easy/medium 题，覆盖 CNN、序列模型、多模态、数据泄露、MCP、工具安全、上下文窗口和 RAG；题目均提供 choice/open 双形态。
 - 题库总量增至 683 题，覆盖矩阵缺口由 25 个降至 16 个；新增内容依据 TensorFlow CNN 教程、MCP 官方架构文档、IBM LLM 概览和 OWASP GenAI 安全资料复核。
+
+## 2026-08-29 · 覆盖缺口清零
+
+- 继续补充 16 道题，覆盖 `activation`、`cnn`、`flash-attention`、`graph-rag`、`latent-moe`、`mcp`、`multimodal`、`planning`、`pytorch-performance`、`sequence-models`、`task-oriented-ai` 和 `tool-security` 的剩余角度。
+- 题库总量增至 699 题，覆盖矩阵达到 187/187；难度分布为 easy 41、medium 301、hard 357。
+- 新增内容依据 FlashAttention 论文、PyTorch 官方性能指南、MCP 官方架构文档和 Anthropic Agent 设计指南复核。
 
 ## 2026-08-29 · 引入 Python 题库分析栈
 
