@@ -83,3 +83,24 @@ uv run --extra analysis python scripts/question_analysis.py --semantic --json
 
 - 题库对象是知识本体；「本次出选择还是开放」由组卷分配（会话实例 `SessionQuestion`），同一道题可跨会话换形态。
 - 开放形态由 LLM 按四维评分（正确性/完整性/架构/表达）；评分要点来自知识节点的 `required` 与题目的 `explanation`，权重统一使用训练定义中的全局 rubric。
+
+## 部署到 Cloudflare Pages
+
+本应用是纯静态 SPA：构建产物在 `dist/`，使用 `HashRouter`（路由走 URL hash），因此**无需 SPA fallback，也无需 Pages Functions**。
+
+**本地发布（需 Wrangler CLI）：**
+
+```bash
+npm install
+npm run build      # 类型检查 + 生产构建，生成 dist/
+npm run deploy     # = wrangler pages deploy dist
+```
+
+首次运行 `wrangler` 会引导登录；也可用非交互方式设置环境变量 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`。项目名见 `wrangler.toml` 的 `name`。
+
+**Git 仓库连接（Cloudflare Pages 控制台）：** 构建命令 `npm run build`、输出目录 `dist`、Node 版本 22。
+
+**发布范围（Python 与 offline 模型不发布）：** 发布产物仅为 `dist/`（`wrangler pages deploy dist` 只上传该目录）。仓库中的 Python 分析脚本（`scripts/*.py`、`main.py`、`pyproject.toml`、`uv.lock`）以及经 Git LFS 管理的离线嵌入模型 `models/`（仅供 Python 语义去重分析，不参与浏览器构建）都**不会被发布**。浏览器运行所需的全部资源——含题库 JSON（已在构建期打包进 `dist/`）——均已包含。
+
+> 若需部署到子路径（非根域名），先在 `vite.config.ts` 设置 `base: '/subpath/'` 再 `npm run build`。
+
