@@ -166,8 +166,8 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
         entry.id === 'local'
           ? '本地 API 引擎必须填写模型 ID'
           : entry.id === 'cloudflare-workers-ai'
-            ? 'Cloudflare 引擎必须填写模型、API Token 与 Account ID'
-            : '云端引擎必须同时填写模型与 API Key';
+            ? 'Cloudflare 引擎必须填写model、apiKey 与 accountId'
+            : '云端引擎必须同时填写模型与 apiKey';
       return { ok: false, error: `providers[${i}]（${entry.id}）已启用但配置不完整：${hint}` };
     }
     entries.push(entry);

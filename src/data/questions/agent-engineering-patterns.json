@@ -1,0 +1,233 @@
+[
+  {
+    "id": "agentdual-generator-evaluator",
+    "category": "agent-engineering",
+    "topic": "multi-agent",
+    "subtopic": "generator-evaluator",
+    "tags": [
+      "multi-agent",
+      "generator-evaluator",
+      "agent-architecture",
+      "evaluation"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在复杂的大模型 Agent（如自主代码生成或前端 UI 设计系统）中，单 Agent 自我评估（Self-Evaluation）往往难以维持高质量的输出控制。引入独立的 Evaluator Agent 构建生成-评估（Generator-Evaluator）双 Agent 或多 Agent 协作架构，其核心机制在于解决哪些问题？",
+    "explanation": "A、B 项（偏见解耦与可调优性）：LLM 普遍对自身输出具有正向偏见（Sycophancy）。将 Generator 与 Evaluator 解耦后，可以通过专门的提示词、Few-Shot 示例与严格的 Rubric（评估细则）把 Evaluator 训练得更苛刻客观，而无需污染 Generator 的创造性 Prompt。C 项（上下文干扰）：单 Agent 持续生成大量代码后，context 中充满自身推导过程和错误尝试，易陷入局部思维；独立 Evaluator 可在干净或专门构造的评估上下文中重新审视产出。D 项（工具与接地能力）：优秀的 Evaluator 通常结合 MCP（如 Playwright 或沙箱执行环境）直接操作真实应用、检验 API 响应与数据库状态，基于 Ground Truth 判断，而非仅凭 LLM 文本推理猜测代码是否可用。",
+    "misconceptions": [
+      "认为单 Agent 自评估足以保证客观质量，忽视谄媚效应（Sycophancy）与自洽偏见。",
+      "认为 Evaluator 只能做文本语义推断，无法借助真实运行环境反馈进行接地判断。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单 Agent 在自我评估时极易产生谄媚效应与自洽偏见，倾向于对自身生成的代码或设计给出过高的质量评价。",
+          "独立的 Evaluator Agent 可以解耦生成逻辑与检验逻辑，便于通过针对性的提示词与示例调优其批判性标准。",
+          "单 Agent 经过长流程编码后上下文状态混杂，难以以客观中立的视角对其先前的历史产出进行全面审查。",
+          "Evaluator Agent 可以配备独立的交互与测试工具链，通过真实运行环境反馈取代单纯的文本语义推断。"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C、D。\n生成-评估双 Agent 架构的核心机制是：(1) 破解单 Agent 的谄媚效应与自洽偏见（A）；(2) 解耦生成与检验逻辑，使 Evaluator 可通过专门提示词/Rubric 被调优得更苛刻客观（B）；(3) 让 Evaluator 在干净上下文中避开 Generator 自身推导的干扰做中立复审（C）；(4) 为 Evaluator 配备真实运行环境工具链（如 Playwright、沙箱），以 Ground Truth 取代纯文本推断（D）。"
+      }
+    }
+  },
+  {
+    "id": "agentdual-context-compaction",
+    "category": "agent-engineering",
+    "topic": "context-engineering",
+    "subtopic": "context-compaction-reset",
+    "tags": [
+      "context-engineering",
+      "context-window",
+      "context-compaction",
+      "harness"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在长流程自主 Code Agent 的 Harness 设计中，针对 Agent 随上下文增长出现的“上下文焦虑”（Context Anxiety，即接近窗口上限时倾向于草率收尾）和性能衰退问题，业界存在上下文压缩（Context Compaction）与上下文重置（Context Reset）两种方案。关于这两种方案的对比与权衡，下列哪项说法是正确的？",
+    "explanation": "B 项正确：Context Reset 将上下文彻底清空（Clear Window），并依赖前一轮留下的结构化产物（如 Handoff Artifact / State File）启动全新 Agent。这为模型提供干净的推理起点，彻底消除基于历史窗口长度触发的“上下文焦虑”，但代际切换需要重新加载基础 Prompt 与全局状态，增加了系统编排复杂度和 Token 开销。A 项错误：上下文压缩（Compaction）只是在原位摘要对话，Agent 的历史轨迹和窗口占用感仍留在 Context 中，无法完全消除上下文焦虑。C、D 项错误：重置并不涉及局部变量的“指数级延迟归档”，压缩也并非完全丢弃意图，选项中关于 Socket 通信等描述属于无依据推断。",
+    "misconceptions": [
+      "认为上下文压缩能彻底消除上下文焦虑（压缩仍在原位保留历史轨迹与窗口占用感）。",
+      "认为上下文重置需要指数级延迟归档局部变量，或依赖 Socket 通信补充上下文。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "上下文压缩通过在原位总结历史对话来释放空间，能彻底消除 Agent 的上下文焦虑，且无需额外的状态传递机制。",
+          "上下文重置通过清空窗口并基于结构化 Artifact 进行 Session 转移，提供了干净的推理状态，但增加了编排复杂度与 Token 重复开销。",
+          "上下文重置需要 Agent 实时归档所有局部变量，会导致推理延迟指数级增加，因此仅适用于非交互式的离线批处理任务。",
+          "上下文压缩会导致模型彻底丢失先前的决策意图，因而必须依赖 Generator 与 Evaluator 之间的实时双向 Socket 通信来补充上下文。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。\nContext Reset 清空窗口并基于结构化 Artifact（Handoff/State File）做 Session 转移，提供干净推理起点、彻底消除上下文焦虑，代价是增加编排复杂度与 Token 重复开销；Context Compaction 仅原位摘要，无法完全消除焦虑。C、D 对重置/压缩机制的描述（指数级延迟归档、Socket 通信）均无依据。"
+      }
+    }
+  },
+  {
+    "id": "agentdual-planner-decomposition",
+    "category": "agent-engineering",
+    "topic": "planning",
+    "subtopic": "task-decomposition",
+    "tags": [
+      "planning",
+      "task-decomposition",
+      "agent-architecture",
+      "planner"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在构建基于 LLM 的长流程全栈应用生成 Agent 系统时，架构师通常会将工作流划分为 Planner（规划者）、Generator（生成者）和 Evaluator（评估者）。在设计 Planner 的提示词与约束条件时，下列哪些选项解释了“避免在初始规划阶段过于精细地规定底层技术实现细节”的原因？",
+    "explanation": "A、B 项（防范错误级联与保持工程弹性）：Agentic 开发中静态初始规划无法预知具体运行时报错或依赖冲突。若 Planner 提前把 API 签名、具体函数实现步骤死锁，Generator 会被迫沿错误假想路径编写代码；出现编译或逻辑错误时，Generator 难以突破 Planner 的强约束自我纠错（Cascading Failure）。C 项（责任分离与契约机制）：高层 Spec 定义“做什么（What）”与产品目标，而“怎么做（How）”与“如何测试（Verification）”更适合由 Generator 与 Evaluator 在具体 Sprint 前通过动态协商（Sprint Contract）确定。D 项错误：Planner 输出过细主要影响架构弹性与容错率，而非仅仅导致下游 Token 不够；Generator 启动时可通过重新分发结构化 Artifact 获取所需架构信息。",
+    "misconceptions": [
+      "认为初始规划越细越能减少下游错误（实则易引发级联错误且限制弹性）。",
+      "认为规划过细只影响 Token 占用，不影响架构容错与全局风格控制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "初始 Planner 若在缺乏运行时反馈的情况下强制指定过细的代码实现，容易产生错误假设并引发下游错误的连锁级联。",
+          "过度具体的实现细节会限制 Generator 在编码阶段根据实际编译与运行报错进行灵活调整与解法重构的空间。",
+          "保持 Planner 聚焦于高层产品规格与业务需求，可以将具体的实现路径与验证条件留给后续迭代中动态协商。",
+          "规划阶段过多占用 Token 会导致下游 Generator 无法读取完整系统架构，进而完全丧失对全局代码风格的控制力。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。\n避免初始规划过细的原因：(1) 缺乏运行时反馈时强制指定实现易产生错误假设并引发下游级联失败（A）；(2) 过细约束限制 Generator 按实际编译/运行报错灵活重构的空间（B）；(3) 高层 Spec 应定义 What 与目标，How 与 Verification 留给后续 Sprint 通过契约动态协商（C）。D 错：过细主要损害弹性与容错，而非仅 Token 不足。"
+      }
+    }
+  },
+  {
+    "id": "agentdual-sprint-contract",
+    "category": "agent-engineering",
+    "topic": "evaluation",
+    "subtopic": "sprint-contract",
+    "tags": [
+      "evaluation",
+      "sprint-contract",
+      "agent-architecture",
+      "verification"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在长流程软件工程 Agent 中，为了确保 Generator 生成的代码功能符合预期，通常会引入基于 Sprint Contract（迭代契约）与自动化环境测试的 Evaluator 机制。下列哪些设计有助于解决“LLM 作为 QA 角色时容易进行表面化测试或对 Bug 妥协”的问题？",
+    "explanation": "A 项（事前契约）：避免“先写代码再找理由解释”的懒惰行为。Generator 与 Evaluator 预先锁定含具体断言（Assertions）的 Contract，Evaluator 即可针对可量化条件测试。B 项（黑盒/灰盒交互验证）：纯文本级 QA 极表面化。给 Evaluator 提供浏览器自动化控制（如 Playwright MCP）和数据库/API 检查权限，可强制其模仿真实用户路径做动态黑盒/灰盒测试。C 项（评分校准）：LLM 默认性格偏温和。通过 Few-Shot 给出真实错误案例（边界条件遗漏、样式错位、异步路由匹配失败等）及其严厉拒收评价，能有效降低 Evaluator 的妥协倾向。D 项错误：允许 Generator 忽略失败意见并强制合并会破坏测试防护网，导致质控失效。",
+    "misconceptions": [
+      "认为 LLM 做 QA 天生严格，无需事前契约与工具化测试。",
+      "认为允许 Generator 忽略失败意见合并代码是可接受的（破坏测试防护网）。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在开发前要求 Generator 与 Evaluator 共同协商并锁定具体的 Sprint Contract，明确定义当次迭代的可测试验收标准。",
+          "为 Evaluator 配备具备交互能力的端到端测试工具（如 Playwright），允许其直接操作真实应用并检查系统内部状态。",
+          "使用 Few-Shot 示例校准 Evaluator 的评分标准与边界条件，使其对非预期行为建立严格的扣分与 Fail 判定逻辑。",
+          "将 Evaluator 的评估结果仅作为日志输出，允许 Generator 在三次测试失败后自动忽略反对意见并合并代码。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。\n对抗 LLM QA 表面化/妥协的设计：(1) 事前锁定含具体断言的 Sprint Contract，使验收可量化（A）；(2) 给 Evaluator 配 Playwright 等端到端工具做黑盒/灰盒交互验证（B）；(3) 用 Few-Shot 校准评分标准，对边界遗漏等建立严厉 Fail 判定（C）。D 错：允许忽略失败并合并会破坏防护网。"
+      }
+    }
+  },
+  {
+    "id": "agentdual-rubric-quality",
+    "category": "agent-engineering",
+    "topic": "evaluation",
+    "subtopic": "rubric-engineering",
+    "tags": [
+      "evaluation",
+      "rubric",
+      "ui-generation",
+      "agent-architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "当使用 LLM 进行前端界面设计与 UI 生成时，模型倾向于生成技术上可行但视觉上平庸、充满套路化模板的“安全设计”。为了推动 LLM 在保持基础功能的同时进行更具创意的视觉探索，下列关于评估指标（Rubric）的设计与权重分配策略，最有效的是哪一项？",
+    "explanation": "C 项正确：大模型在基础技术完备性（Craft/Functionality，如 HTML/CSS 语法正确性、组件可用性）上默认表现良好，但在设计质量与原创性（Design Quality & Originality）上易陷于“AI 常见的平庸设计”。在 Rubric 中明确惩罚默认模板（如标准白底紫渐变卡片）、提高视觉风格与原创性权重，能驱动 Generator 主动承担审美风险（Aesthetic Risk-Taking），突破平庸。A 项错误：过度强调 Craft/Functionality 会使模型退缩到最安全的通用模板，无法改善审美平庸。B 项错误：缺乏具体量化维度的抽象词汇会导致打分漂移（Score Drift），模型无具体改进导向。D 项错误：限制 DOM 修改阻碍大规模重构与创新布局（如 2D 转 3D/空间交互）。",
+    "misconceptions": [
+      "认为强调技术执行力/Craft 就能改善审美平庸（反而驱使安全模板）。",
+      "认为抽象赞美性词汇比具体 Rubric 更能引导创意（实际导致打分漂移）。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将“技术执行力（Craft）”与“基础功能性（Functionality）”作为最高权重的考核指标，严厉惩罚任何不符合标准 CSS 布局的代码。",
+          "避免在提示词中定义具体的视觉评估标准，仅使用抽象概括的赞美性词汇以保留 Generator 在生成过程中的最大自由度。",
+          "明确区分“视觉质量与原创性”与“技术完备性”，对模板化默认样式加重扣分，同时提升对独特视觉决策的评分权重。",
+          "强制限制 Generator 每轮迭代仅能修改 CSS 样式变量，严格禁止对 DOM 结构进行调整，以防止审美方向发生二次漂移。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C。\n最有效策略是在 Rubric 中明确区分“视觉质量与原创性”和“技术完备性”，对模板化默认样式加重扣分并提高视觉原创性权重，驱动 Generator 承担审美风险、突破平庸。A 过度强调 Craft 反致安全模板；B 抽象词汇导致打分漂移；D 禁改 DOM 阻碍创新布局。"
+      }
+    }
+  },
+  {
+    "id": "agentdual-harness-simplicity",
+    "category": "agent-engineering",
+    "topic": "agent-fundamentals",
+    "subtopic": "harness-simplicity",
+    "tags": [
+      "agent-architecture",
+      "harness",
+      "model-capability",
+      "multi-agent"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 Agent 系统的演进过程中，开发者需要根据底层大语言模型（Base Model）能力升级来重新审查并精简 Harness（脚手架）复杂度。关于“模型基座能力提升对 Agent Harness 设计的影响”，下列哪些说法是合理的？",
+    "explanation": "A、C 项（脚手架减法原则）：Agent Harness 本质是对当前模型缺陷的补偿（如上下文焦虑、遗忘、自我盲目）。当基座模型原生修正这些缺陷（如长上下文逻辑推演与自我审查能力升级）后，过多过度拆解（微型 Sprint 分解、频繁强制 Reset）会引入不必要的 Token 开销、系统延迟与编排复杂度。团队应遵循“做减法”原则（Less is More），测试模型原生长流程自治能力。B 项（架构留存价值）：需求规划（Planner）与独立 QA（Evaluator）属软件工程结构上的逻辑解耦，即使模型能力极强，Multi-Agent 在角色扮演、关注点分离和对抗性审查上的架构价值仍在。D 项错误：单一 Prompt 无法解决工具交互、确定性验证与复杂系统状态维护，Multi-Agent 协作模式不会被彻底取代。",
+    "misconceptions": [
+      "认为 Harness 中的强约束是基于通用最佳实践，而非补偿特定模型缺陷。",
+      "认为单一 Prompt 可彻底取代 Multi-Agent 与工具调用架构。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当新一代基座模型原生具备更强的长上下文保持与自我纠错能力时，可以适当精简或移除频繁的强制上下文重置机制。",
+          "即使基座模型的基础编码能力大幅提升，高层的需求规划（Planner）与独立的质量评估（Evaluator）依然能带来显著提升。",
+          "Harness 中设计的每一个复杂约束都暗示了底层模型能力的某种缺陷，应随模型迭代持续进行简化验证与“减法测试”。",
+          "基座模型的上下文窗口扩大后，Multi-Agent 协作与工具调用架构将被完全淘汰，单一 Prompt 即可解决所有复杂工程问题。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。\n合理看法：(1) 基座模型原生修正缺陷（长上下文/自我纠错）后，可精简强制 Reset 等补偿性约束（A）；(2) Planner 与 Evaluator 属结构化解耦，即使模型很强仍有架构价值（B）；(3) Harness 的每个复杂约束多补偿某模型缺陷，应随迭代做“减法测试”（C）。D 错：单一 Prompt 无法解决工具交互、确定性验证与状态维护，Multi-Agent 不会被彻底取代。"
+      }
+    }
+  }
+]

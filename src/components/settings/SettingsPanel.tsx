@@ -78,13 +78,28 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
     });
   }, [config]);
 
+  // 初始检测 + 轮询：Chrome Prompt API 在模型刚下载完时 often 仍返回 `downloading`，
+  // 故状态为 downloading 时每 4s 复查，直到变为 available / unavailable / downloadable 才停。
   useEffect(() => {
     let alive = true;
-    chromeAvailability().then((s) => {
-      if (alive) setAvailability(s);
-    });
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const check = async () => {
+      const s = await chromeAvailability();
+      if (!alive) return;
+      setAvailability(s);
+      if (s === 'downloading') {
+        if (!timer) timer = setInterval(check, 4000);
+      } else if (timer) {
+        clearInterval(timer);
+        timer = undefined;
+      }
+    };
+
+    void check();
     return () => {
       alive = false;
+      if (timer) clearInterval(timer);
     };
   }, []);
 
