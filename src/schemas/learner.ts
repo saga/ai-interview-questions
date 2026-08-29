@@ -26,6 +26,8 @@ export const topicStatsSchema = z.object({
   lastScore: z.number().min(0).max(100),
   trend: trendSchema,
   mastery: z.number().min(0).max(1),
+  /** 该 topic 参与过的不同训练会话数，用于估计熟练度置信度。 */
+  practiceSessions: z.number().int().nonnegative().optional(),
   commonWeaknesses: z.array(z.string()),
   evidence: z.array(evidenceSchema).optional(),
   lastSeen: z.number(),

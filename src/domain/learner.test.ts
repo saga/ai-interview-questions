@@ -12,6 +12,7 @@ import {
   sessionFromQuiz,
   expandWithPrerequisites,
   suggestNextTopics,
+  calculateProficiency,
   updateLearner,
   weakAnglesOf,
 } from './learner';
@@ -118,9 +119,30 @@ describe('updateLearner', () => {
     expect(p.topicStats['rag'].trend).toBe('declining');
   });
 
-  it('mastery = avgScore/100，落在 [0,1]', () => {
+  it('熟练度结合得分与证据量，落在 [0,1]', () => {
     const p = updateLearner(emptyProfile(), session(70, Array.from({ length: 5 }, () => result('rag', 70))));
-    expect(p.topicStats['rag'].mastery).toBe(0.7);
+    expect(p.topicStats['rag'].mastery).toBe(calculateProficiency(70, 5, 1));
+  });
+
+  it('单题一次满分不会直接代表 100% 熟练', () => {
+    const p = updateLearner(emptyProfile(), session(100, [result('rag', 100)]));
+    expect(p.topicStats['rag'].mastery).toBe(0.35);
+    expect(p.topicStats['rag'].mastery).toBeLessThan(1);
+    expect(p.topicStats['rag'].practiceSessions).toBe(1);
+  });
+
+  it('题目数量和训练次数增加时，熟练度提高', () => {
+    const oneQuestion = updateLearner(emptyProfile(), session(100, [result('rag', 100)]));
+    const moreQuestions = updateLearner(emptyProfile(), session(100, Array.from({ length: 5 }, () => result('rag', 100))));
+    const morePractice = updateLearner(oneQuestion, session(100, [result('rag', 100)]));
+    expect(moreQuestions.topicStats['rag'].mastery).toBeGreaterThan(oneQuestion.topicStats['rag'].mastery);
+    expect(morePractice.topicStats['rag'].mastery).toBeGreaterThan(oneQuestion.topicStats['rag'].mastery);
+  });
+
+  it('同一训练会话的多道同主题题只增加一次训练次数', () => {
+    const p = updateLearner(emptyProfile(), session(100, [result('rag', 100), result('rag', 80)]));
+    expect(p.topicStats['rag'].attempts).toBe(2);
+    expect(p.topicStats['rag'].practiceSessions).toBe(1);
   });
 
   it('commonWeaknesses 按出现频率取前 3', () => {

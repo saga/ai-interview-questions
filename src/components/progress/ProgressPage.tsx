@@ -238,11 +238,11 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
                     </Typography.Text>
                   </Space>
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    覆盖 {c.attempted}/{c.totalTopics} 主题 · 掌握 {c.mastered}
+                    熟练度 {c.proficiency}% · 已练 {c.attempted}/{c.totalTopics} 题 · 达标 {c.mastered}
                   </Typography.Text>
                 </Space>
                 <Progress
-                  percent={Math.round((c.attempted / c.totalTopics) * 100)}
+                  percent={c.proficiency}
                   strokeColor={disabledCategories.includes(c.category) ? '#bfbfbf' : c.mastered >= c.totalTopics ? '#52c41a' : undefined}
                   size="small"
                   format={(p) => `${p}%`}

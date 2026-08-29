@@ -16,10 +16,9 @@ import { prerequisiteClosure, topoRankOf } from './conceptGraph';
 const SESSION_CAP = 50;
 const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/下滑"
 
-// ── 掌握度启发式（mastery heuristic，ADR-030） ───────────────
-// mastery = avgScore/100 只是当前简化启发式，不是学习能力的真实度量——
-// 平均分无法区分"先会后忘"与"渐入佳境"。语义分工：mastery=当前启发式、
-// trend=近期表现信号、attempts=置信度信号、evidence=溯源。
+// ── 熟练度启发式（proficiency heuristic，ADR-030） ──────────
+// 得分代表表现，题目数和训练会话数代表证据量。证据量只提高置信度，
+// 不会把低分题目变成高熟练度；单题一次满分也不会直接得到 100%。
 // 不引入 Bayesian/ELO/IRT；升级评分模型的前提是现有信号被证明不够用。
 
 /** 薄弱判定阈值：掌握度 <0.85 且均分 <85 视为未掌握（learner 内单一出处）。 */
@@ -91,6 +90,15 @@ function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
 }
 
+export function calculateProficiency(avgScore: number, attempts: number, practiceSessions: number): number {
+  const scoreFactor = clamp01(avgScore / 100);
+  const questionConfidence = attempts / (attempts + 4);
+  const practiceConfidence = practiceSessions / (practiceSessions + 2);
+  return Math.round(clamp01(scoreFactor * (
+    0.15 + 0.6 * questionConfidence + 0.25 * practiceConfidence
+  )) * 100) / 100;
+}
+
 /** 由会话结果聚合"高频遗漏要点"：按出现次数取前 3；本会话无遗漏则沿用历史。 */
 function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): string[] {
   const counts = new Map<string, number>();
@@ -107,7 +115,7 @@ function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): s
 /**
  * 把新会话并入 Learner Profile，返回新画像（不可变更新）。
  * - 每个 topic 独立聚合：attempts / avgScore / lastScore / trend / mastery / commonWeaknesses / lastSeen
- * - mastery = avgScore/100（ADR-019 简化公式）；置信度由 attempts 字段本身表达，不做加权
+ * - mastery 是结合得分、题目次数、训练会话次数的熟练度，不是单次答题正确率
  * - 会话列表新在前，上限 SESSION_CAP；overallScore = 最近 10 次会话均值
  *
  * 设计权衡（trade-off）：
@@ -159,9 +167,8 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
           ? 'declining'
           : 'flat'
       : 'flat';
-    // 掌握度 = 均分/100，简单直接（ADR-019）；置信度由 attempts 字段本身表达，不做加权公式
-    const mastery = Math.round(clamp01(newAvg / 100) * 100) / 100;
-
+    const practiceSessions = (prev?.practiceSessions ?? 0) + 1;
+    const mastery = calculateProficiency(newAvg, attempts, practiceSessions);
 
     topicStats[topic] = {
       attempts,
@@ -169,6 +176,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
       lastScore: last,
       trend,
       mastery,
+      practiceSessions,
       commonWeaknesses: aggregateGaps(prev?.commonWeaknesses, results),
       evidence: [...(prev?.evidence ?? []), ...results.map((r) => ({ questionId: r.questionId, score: r.score, at: s.startedAt }))].slice(-10),
       lastSeen: s.startedAt,
@@ -255,6 +263,7 @@ export interface CategoryCoverage {
   totalTopics: number;
   attempted: number;
   mastered: number;
+  proficiency: number;
 }
 
 /** 取某个 (topic, angle) 的逐角度证据；未练过返回 undefined。 */
@@ -333,6 +342,9 @@ export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile):
       totalTopics: refs.length,
       attempted: refs.filter((t) => isAttempted(profile, t.topic)).length,
       mastered: refs.filter((t) => isMastered(profile, t.topic)).length,
+      proficiency: refs.length === 0
+        ? 0
+        : Math.round(refs.reduce((sum, t) => sum + (profile.topicStats[t.topic]?.mastery ?? 0), 0) / refs.length * 100),
     }))
     .sort((a, b) => b.totalTopics - a.totalTopics);
 
