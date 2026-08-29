@@ -1,0 +1,211 @@
+[
+  {
+    "id": "distill-01",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "knowledge-distillation",
+      "teacher-student",
+      "definition"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "知识蒸馏（knowledge distillation）中『教师-学生』框架指什么？下列哪些描述正确？",
+    "explanation": "知识蒸馏用已训练好的大模型（教师）指导更小的模型（学生）学习，学生模仿教师的输出分布；相比只用硬标签（one-hot），教师提供的软化输出分布（soft targets）携带了更多类别间关系信息。学生通常更小而非更大，也不同于从头预训练。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用已训练好的大模型（教师）指导更小的模型（学生），学生模仿教师的输出分布",
+          "相比只用硬标签，教师提供的软化输出分布（soft targets）含更多类别间关系信息",
+          "蒸馏要求学生模型比教师更大，才能学全教师的全部知识",
+          "蒸馏与从头预训练完全相同，只是所用的数据来源并不相同"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "教师(大模型)指导学生(小模型)模仿输出分布；soft targets 比硬标签含更多类别关系信息。学生更小，非从头预训练。"
+      }
+    }
+  },
+  {
+    "id": "distill-02",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "distillation-loss",
+      "kl-divergence",
+      "soft-targets"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "典型的知识蒸馏损失如何构成？",
+    "explanation": "蒸馏损失在教师软化后的输出分布上计算 KL 散度（学生 ‖ 教师），迫使学生匹配教师的软目标；同时保留对真实硬标签的交叉熵，常见形式为 α·KL(学生‖教师) + (1−α)·CE(学生, 硬标签) 的加权组合。完全不用教师输出分布就只是普通监督训练，不是蒸馏。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在教师软化后的输出分布上算 KL 散度（学生 ‖ 教师），迫使学生匹配软目标",
+          "同时保留对真实硬标签的交叉熵，蒸馏损失常为 α·KL + (1−α)·CE 的加权组合",
+          "只用硬标签的交叉熵损失，完全不使用教师提供的输出分布",
+          "先训练学生再用学生当教师去训练另一个，如此循环无限次"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "蒸馏损失 = KL(学生‖教师软分布) + 硬标签 CE，常加权 α·KL+(1−α)·CE。完全不用教师分布则非蒸馏。"
+      }
+    }
+  },
+  {
+    "id": "distill-03",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "qad",
+      "quantization-aware-distillation",
+      "kl-logits"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在『量化感知蒸馏（QAD）』中，关于教师与对齐方式，下列哪些符合文中描述？",
+    "explanation": "QAD 冻结一个同架构的全精度教师，通过学生与教师输出 logits 的 KL 散度把知识蒸馏到量化学生；它仅在『只做量化、未做结构压缩』时有效，因为此时存在同架构全精度教师可做对齐。QAD 并非无教师随机训练，也不把师生拼成单模型联合前向。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "冻结一个同架构的全精度教师，用学生与教师输出 logits 的 KL 散度蒸馏到量化学生",
+          "QAD 仅在『只做量化、未做结构压缩』时有效，因为存在同架构全精度教师",
+          "QAD 不需要教师，直接让学生随机初始化后自我训练",
+          "QAD 必须把教师和学生拼成同一个单一模型做联合前向"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "QAD：冻结同架构全精度教师，KL(logits) 蒸馏到量化学生；仅量化(未结构压缩)时有效。"
+      }
+    }
+  },
+  {
+    "id": "distill-04",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "qah",
+      "cross-architecture-distillation",
+      "frozen-teacher"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "本文提出的 Quantization-Aware Healing（QAH）在蒸馏设定上与 QAD 有何不同？",
+    "explanation": "QAH 以压缩前的原始全精度模型为冻结教师，做跨架构蒸馏，仅使用教师的输出分布（logits 上的 KL），不依赖学生与教师同架构；这使它不被结构压缩后退化检查点限制。QAD 在结构压缩后的问题（学生上限锚定退化目标）正被 QAH 规避。两者并非只是学生大小的差别。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "以压缩前的原始全精度模型为冻结教师，做跨架构蒸馏",
+          "仅使用教师的输出分布（logits 上的 KL），不依赖学生与教师同架构",
+          "学生上限被锚定在退化的 bf16 检查点上，因此精度必然更差",
+          "QAH 与 QAD 完全一样，只是把学生换成了更大模型"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "QAH：原始模型为冻结教师、跨架构蒸馏、仅用 logits KL，不被退化检查点限制。QAD 的退化锚定问题被规避。"
+      }
+    }
+  },
+  {
+    "id": "distill-05",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "distillation-benefit",
+      "student-ceiling",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "相比从头训练同尺寸小模型，知识蒸馏带来哪些典型收益与限制？",
+    "explanation": "学生在远少于教师参数量下仍能保留教师的大部分能力，部署更便宜；但学生的能力上限被教师锚定，无法超越教师（除非教师本身在持续更新）。学生不会比教师更准，蒸馏也离不开教师模型。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "学生在远少于教师参数量下仍能保留教师的大部分能力，部署更便宜",
+          "学生的能力上限被教师锚定，无法超越教师（除非教师本身在持续更新）",
+          "学生一定比教师更准，因为学了更多数据",
+          "蒸馏不需要任何教师模型，学生可自行达到教师水平"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "收益：小模型保留教师大部分能力、部署便宜。限制：学生上限≤教师，离不开教师。"
+      }
+    }
+  },
+  {
+    "id": "distill-06",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "qad-insufficiency",
+      "structural-compression",
+      "scenario"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在『先结构压缩再量化』的部署流水线中，为什么常规的 QAD 往往不够、需要 QAH 这类跨架构蒸馏？",
+    "explanation": "结构压缩后会移除 layer/head/neuron，已不存在同架构的全精度教师；此时唯一可做的教师是退化的 bf16 检查点（它本身是对原模型的蒸馏近似），会把学生上限锚定在退化目标。因此需要以压缩前的原始模型为冻结教师做跨架构蒸馏（QAH）。QAD 失效的根因是结构压缩而非量化精度，QAH 也不用权重拷贝。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "结构压缩后已无同架构全精度教师，仅剩退化 bf16 检查点会锚定学生上限，故需原始模型为教师",
+          "因为 QAD 只能用于 8-bit 以上精度，4-bit 必须用 QAH 才行",
+          "因为 QAH 完全不需要 KL 散度，直接拷贝权重就能恢复精度",
+          "因为 QAD 要求学生模型必须比教师更大，而它不支持小模型学大模型"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "结构压缩后无同架构全精度教师，唯一教师是退化 bf16 检查点→锚定学生上限；故需原始模型为教师的跨架构 QAH。QAD 失效因结构压缩非精度。"
+      }
+    }
+  }
+]

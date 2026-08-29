@@ -1,0 +1,283 @@
+[
+  {
+    "id": "vlm-01",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "native-unified",
+      "vl-pipeline",
+      "definition"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "什么是『原生统一多模态模型（native unified multimodal）』，它与常见的『视觉编码器(VE) + LLM』流水线有何根本区别？",
+    "explanation": "原生统一模型直接从近无损的像素与词语端到端学习，表征空间由模型自身塑造，无需先把模态翻译成共享 tokenizer；VE+LLM 流水线则依赖预训练编码器感知、VAE 生成，再通过共享 tokenizer 连接，常有对齐折中。原生统一模型并非先跑 VAE 得离散 token 再送 LLM（那恰是 VE/VAE 范式）。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "原生统一模型直接从近无损的像素与词语学习，表征由自身塑造，无需先翻译成共享 tokenizer",
+          "VE+LLM 流水线依赖预训练编码器感知、VAE 生成，再用共享 tokenizer 连接，常有对齐折中",
+          "原生统一模型必须先对每个图像跑一遍 VAE 得离散 token，再送入 LLM",
+          "两者在底层架构上完全相同，区别仅在于所用训练数据的来源不同"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "原生统一：端到端从像素+词语学统一表征，无共享 tokenizer 翻译。VE+LLM：编码器/VAE+共享 tokenizer 连接，有对齐折中。"
+      }
+    }
+  },
+  {
+    "id": "vlm-02",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "neo-unify",
+      "pixel-flow-matching",
+      "alignment"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "NEO-unify 如何把图像像素与文本词元对齐到同一序列？",
+    "explanation": "通过『近无损视觉接口』直接处理像素，无需 VAE 离散 tokenizer；文本用自回归交叉熵、视觉用像素流匹配（pixel flow matching），二者在同一 MoT（Mixture-of-Transformer）主干内协同演化。它打破外部共享 tokenizer 依赖，并非把图像编码成单一稠密向量再与文本向量相加。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通过『近无损视觉接口』直接处理像素，无需 VAE 离散 tokenizer",
+          "文本用自回归交叉熵、视觉用像素流匹配，在同一 MoT 主干内协同",
+          "依靠外部共享 tokenizer 把图像和文本映射到同一词表后再拼接",
+          "先把图像编码成单一稠密向量再与文本向量相加"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "近无损视觉接口直接处理像素(无 VAE tokenizer)；文本 AR cross-entropy + 视觉 pixel flow matching，统一于 MoT 主干。"
+      }
+    }
+  },
+  {
+    "id": "vlm-03",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "early-fusion",
+      "late-fusion",
+      "fusion-timing"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于多模态融合时机（早融合 vs 晚融合），结合 NEO-unify 的设计，下列哪些描述正确？",
+    "explanation": "NEO-unify 的近无损视觉接口让图像像素在输入侧就进入统一序列，属于早融合思路；早融合使模态在主干内部即混合，避免了传统晚融合需要后期跨系统对齐的问题。NEO-unify 并非选择晚融合，融合时机也显著影响跨模态表征质量。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NEO-unify 的近无损视觉接口让图像像素在输入侧就进入统一序列，属早融合思路",
+          "早融合使模态在主干内部即混合，避免传统晚融合需后期跨系统对齐的问题",
+          "晚融合（先各自编码再拼接）总比早融合精度更高，因此 NEO-unify 选择晚融合",
+          "融合时机对跨模态表征的最终质量其实没有任何影响"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "NEO-unify 近无损接口=早融合（像素输入侧进统一序列）；早融合免后期跨系统对齐。非晚融合，时机有影响。"
+      }
+    }
+  },
+  {
+    "id": "vlm-04",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "tradeoff",
+      "alignment",
+      "flexibility",
+      "native-vs-pipeline"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "相比『视觉编码器 + LLM』流水线，原生统一多模态模型在对齐与灵活性上带来哪些变化？",
+    "explanation": "原生统一模型消除了跨系统（VE/VAE 与 LLM）的连接与对齐负担，且理解分支冻结后仍可做图像编辑等灵活任务；近无损输入同时支持语义理解与像素保真，不再受预训练编码器表征先验限制。但它并非在所有指标严格更优、延迟更低（端到端像素流匹配可能增加计算，仍处 preview），数据需求也未必更低（只是数据效率更高）。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "消除了跨系统（VE/VAE 与 LLM）的连接与对齐负担，理解分支冻结后仍可做图像编辑等灵活任务",
+          "近无损输入同时支持语义理解与像素保真，不再受预训练编码器的表征先验限制",
+          "原生统一模型一定在所有指标上严格优于 VE+LLM 流水线，且推理延迟更低",
+          "原生统一模型完全不需要任何视觉先验，因此训练数据需求远低于流水线方案"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "变化：免跨系统对齐、冻结理解分支仍可编辑、近无损兼顾语义与像素保真。非全指标更优/延迟更低/数据更少。"
+      }
+    }
+  },
+  {
+    "id": "vlm-05",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "cross-modal-reasoning",
+      "world-model",
+      "unified"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为什么说『统一（未分割的单一模型）』有助于跨模态推理与世界模型构建？",
+    "explanation": "统一模型不在模态间做翻译，而是原生地跨模态思考，可信赖能力从内部涌现；MoT 主干内理解分支与生成分支共演化、内在冲突小，为跨模态推理提供一致表征基础。它恰恰要避免先把图像转成文字描述再对齐，也不能仅靠并联多个单模态专家。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模型不在模态间做翻译，而是原生地跨模态思考，可信赖能力从内部涌现",
+          "MoT 主干内理解分支与生成分支共演化、内在冲突小，为跨模态推理提供一致表征基础",
+          "统一模型必须把图像先转成文字描述，才能与文本推理对齐",
+          "跨模态推理只靠把多个单模态专家并联即可，无需统一表征"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "统一模型原生跨模态思考(非翻译)，MoT 内理解/生成共演化、冲突小→一致表征，利好跨模态推理与世界模型。"
+      }
+    }
+  },
+  {
+    "id": "vlm-06",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "cost",
+      "limitation",
+      "maturity"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "原生统一多模态模型（如端到端像素流匹配）可能带来哪些新的权衡或代价？",
+    "explanation": "端到端像素级处理可能增加计算量，且模型尚处预览阶段、成熟度与生态不如 VE+LLM 流水线；完全去掉 VE/VAE 减少预处理环节，但整体延迟是否降低取决于实现。它并不保证显存更小（仍要加载统一主干），数据缩放效率也高于对照模型而非更低。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "端到端像素级处理可能增加计算量，且模型尚处预览阶段、成熟度与生态不如 VE+LLM 流水线",
+          "完全去掉 VE/VAE 会减少预处理环节，但是否降低整体延迟仍取决于具体实现",
+          "它比 VE+LLM 流水线显存占用一定更小，因为不加载编码器",
+          "其数据缩放效率低于对照模型，需要更多训练 token"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "代价：端到端像素计算可能增加、成熟度/生态不如流水线、延迟非必降、显存非必小、数据效率高于对照(非更低)。"
+      }
+    }
+  },
+  {
+    "id": "vlm-07",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "colpali",
+      "visual-document",
+      "cross-modal",
+      "late-interaction"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "把视觉语言模型用于『文档检索』（如 ColPali）体现了多模态的哪种能力？",
+    "explanation": "ColPali 把页面图像与文本查询做跨模态 late interaction（MaxSim），无需 OCR 即可利用表格/图表等视觉线索；模型同时理解图像与语言两种模态，并在统一相似度空间里对齐页面 patch 与查询 token。它并非只处理纯文本，也不先把整页 OCR 再退化为单模态检索。",
+    "source": {
+      "materialId": "hf-blog-colpali"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把页面图像与文本查询做跨模态 late interaction（MaxSim），免 OCR 即可利用表格图表等线索",
+          "模型同时理解图像与语言两种模态，在统一相似度空间对齐页面 patch 与查询 token",
+          "它只处理纯文本内容，图像仅作为装饰性内容，完全不参与任何检索打分",
+          "必须先把整页 OCR 识别转换成文本，再退化为纯单模态的文本检索"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "跨模态能力：页面图像与文本查询做 late interaction(MaxSim)，免 OCR 利用视觉线索；图像+语言在统一空间对齐 patch 与 token。"
+      }
+    }
+  },
+  {
+    "id": "vlm-08",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": [
+      "definition",
+      "summary",
+      "native-vs-pipeline"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "下列哪一项最能概括『原生统一多模态』与『视觉编码器 + LLM』流水线的根本区别？",
+    "explanation": "根本区别在表征构建方式：原生统一模型从近无损的像素与词语端到端学习统一表征；VE+LLM 流水线先把各模态编码/生成（VE 感知、VAE 生成）再用共享 tokenizer 连接对齐。两者都处理多模态、都常需训练数据，且前者并不强制图像经 VAE 得离散 token。",
+    "source": {
+      "materialId": "hf-blog-neo-unify"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "前者端到端从像素与词语学统一表征，后者先编码/生成各模态再用共享 tokenizer 连接",
+          "前者在架构上只处理文本，图像的处理完全交给流水线中的后者",
+          "两者都强制要求图像先经过 VAE 才能获得离散 token",
+          "前者完全不需要任何训练数据，而后者需要大量的训练数据"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "区别在表征构建：原生统一端到端学统一表征；VE+LLM 先编码/生成再用共享 tokenizer 连接对齐。"
+      }
+    }
+  }
+]

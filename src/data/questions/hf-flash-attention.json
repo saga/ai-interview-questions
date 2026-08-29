@@ -1,0 +1,289 @@
+[
+  {
+    "id": "flashattn-01",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "flash-attention",
+      "io-aware",
+      "exact-attention",
+      "definition"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "FlashAttention 是什么类型的注意力算法？下列哪些描述正确？",
+    "explanation": "FlashAttention 是 IO 感知（IO-aware）的精确注意力算法，输出与标准注意力完全相同（不是近似）；它从不把完整的 N×N 注意力矩阵物化（materialize）到 HBM 显存，前向与反向都基于分块计算。近似注意力才靠稀疏化/低秩换取速度。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "它是 IO 感知的精确注意力算法，输出与标准注意力完全相同",
+          "它从不把完整的 N×N 注意力矩阵物化到 HBM 显存",
+          "它是一种近似注意力，通过稀疏化或低秩来换取速度，因此输出只是近似",
+          "它只在反向传播中使用，前向传播仍依赖标准注意力矩阵"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "FlashAttention 是 IO-aware 的精确注意力：输出与标准注意力完全相同，且不物化 N×N 矩阵。非近似，前反向都用。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-02",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "flash-attention",
+      "fusion",
+      "tiling",
+      "recomputation",
+      "online-softmax"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "FlashAttention 通过哪几个相互依赖的技术手段避免物化 N×N 矩阵？",
+    "explanation": "四个手段：①算子融合（operator fusion）把 matmul、softmax、matmul 放进单个 kernel，中间结果留在 SRAM；②分块（tiling）把 Q/K/V 切成能放入 SRAM 的块逐块处理；③重计算（recomputation）不存 N×N 概率矩阵 P，反向时由 Q、K 与归一化常数重算；④在线 softmax（online softmax）用滑动最大值与求和增量计算，使分块得到精确结果。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "算子融合：把 matmul、softmax、matmul 放进单个 kernel，中间结果留在 SRAM",
+          "分块：把 Q、K、V 切成能放入 SRAM 的块，逐块处理",
+          "重计算：不存 N×N 概率矩阵 P，反向时由 Q、K 与归一化常数重新计算",
+          "在线 softmax：用滑动的最大值与求和统计量增量计算 softmax，使分块得到精确结果"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "四手段：算子融合(单 kernel, 中间留 SRAM)、分块(切块入 SRAM)、重计算(不存 P, 反向重算)、在线 softmax(滑动统计量得精确值)。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-03",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "online-softmax",
+      "exactness",
+      "mechanism"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "为什么『在线 softmax（online softmax）』对 FlashAttention 的分块策略至关重要？",
+    "explanation": "softmax 需要整行的全局归一化信息，无法在只看到一块时直接算；在线 softmax 用滑动最大值与求和统计量逐步得到精确结果，使分块处理的最终 softmax 与标准 softmax 完全一致（精确而非近似）。softmax 不是直接可结合的，不能随便分块相加。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "softmax 需整行全局归一化信息，无法只看到一块就直接算；在线 softmax 用滑动最大与求和逐步得精确结果",
+          "它使即便分块处理，最终 softmax 仍与标准 softmax 完全一致（精确而非近似）",
+          "softmax 天然满足结合律，因此任意分块都能直接相加而无需修正",
+          "在线 softmax 只为加速，对最终结果的精确性没有任何实质影响"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "softmax 需整行全局归一化，不能直分块；在线 softmax 用滑动 max/sum 增量得到精确值，保证分块结果=标准 softmax。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-04",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "interdependence",
+      "design",
+      "mechanism"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "FlashAttention 的四个手段为何说『相互依赖』而非各自独立？",
+    "explanation": "融合需要分块（否则中间矩阵太大放不进 SRAM）；分块需要在线 softmax（softmax 不是直接可结合，分块后需增量归一化才精确）；重计算需要 logsumexp 统计量 L（反向必须能不存储 P 就恢复它）。因此去掉任何一个都会破坏其余。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "融合需要分块：否则中间矩阵太大，放不进 SRAM",
+          "分块需要在线 softmax：softmax 非直接可结合，分块后需增量归一化才精确",
+          "重计算需要 logsumexp 统计量 L：反向必须能不存储 P 就恢复它",
+          "四个手段彼此完全独立，去掉任意一个都不影响其余三者的运行"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "相互依赖：融合需分块(否则 SRAM 放不下)；分块需在线 softmax(softmax 不可直结合)；重计算需 L 统计量。不可独立去掉。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-05",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "memory",
+      "on",
+      "hbm",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "关于 FlashAttention 的显存占用，下列哪些正确？",
+    "explanation": "注意力中间结果的 HBM 占用从 O(N²) 降到 O(N)，因为不再物化完整注意力矩阵；除 Q/K/V/O 外只需额外存储每行的 logsumexp 统计量（O(N)），用于反向重计算。它不会把 N×N 矩阵存到 HBM，显存也不随序列长度平方增长。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "注意力中间结果的 HBM 占用从 O(N²) 降到 O(N)，因为不再物化完整注意力矩阵",
+          "除 Q、K、V、O 外，只需额外存储每行的 logsumexp 统计量（O(N)），用于反向重计算",
+          "它把 N×N 注意力矩阵完整存到 HBM 以加速反向传播",
+          "FlashAttention 的显存占用仍随序列长度平方增长"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "HBM 占用 O(N) 非 O(N²)：不物化注意力矩阵，只额外存每行 logsumexp(O(N)) 供反向重算。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-06",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "prefill",
+      "decode",
+      "gqa",
+      "scenario"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "FlashAttention 在哪些阶段收益最大、哪些阶段收益很小？",
+    "explanation": "在 prefill（处理长提示）阶段收益最大，因为要算完整 N×N 注意力；在单 token decode 阶段收益很小，因为 decode 主要受权重加载的带宽限制，而非注意力矩阵。GQA/MQA 通过缩小 KV cache 降显存，与 FlashAttention 正交，可叠加使用；decode 阶段 FlashAttention 并不会再把延迟降一个数量级。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 prefill（处理长提示）阶段收益最大，因为此时要算完整 N×N 注意力",
+          "在单 token decode 阶段收益很小，因为 decode 主要受权重加载的带宽限制，而非注意力矩阵",
+          "GQA/MQA 通过缩小 KV cache 来降显存，与 FlashAttention 正交，可叠加使用",
+          "在单 token decode 阶段 FlashAttention 能把延迟再降一个数量级"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "prefill 收益最大(算完整 N×N)；decode 收益很小(受权重带宽限)。GQA/MQA 缩 KV cache 与 FA 正交可叠加。decode 非再降数量级。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-07",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "hbm-traffic",
+      "calculation",
+      "io-complexity"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "在典型配置（N=4096, d=128）下，FlashAttention 相比标准注意力把 HBM 显存访问流量减少了大约多少倍？",
+    "explanation": "标准注意力把约 97% 的内存流量花在中间 N×N 矩阵上；FlashAttention 把 HBM IO 复杂度从 O(N²) 降到接近 O(Nd)，在 N=4096、d=128 的典型配置下 HBM 流量减少约 33 倍。收益来自减少反复读写而非单纯算子融合。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 33 倍：从 O(N²) 降到接近 O(Nd) 的 IO 复杂度",
+          "约 2 倍，其收益仅来自算子融合这一项而已",
+          "约 1000 倍，因为完全消除了全部的注意力计算",
+          "实际上没有减少，只是改变了计算的先后顺序"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "约 33 倍：HBM IO 从 O(N²) 降到 ~O(Nd)（N=4096,d=128）。"
+      }
+    }
+  },
+  {
+    "id": "flashattn-08",
+    "category": "ai-systems",
+    "topic": "flash-attention",
+    "tags": [
+      "exact-vs-approximate",
+      "tradeoff",
+      "fidelity"
+    ],
+    "difficulty": "easy",
+    "angle": "tradeoff",
+    "question": "FlashAttention 的输出相对于标准注意力，关系是？",
+    "explanation": "FlashAttention 是精确算法，输出与标准注意力完全相同，只是以不同的 IO 顺序计算（先分块再累加），不存在可觉察的精度损失，也不依赖更低精度。长序列上它依然精确，并非退化为近似。",
+    "source": {
+      "materialId": "hf-blog-flash-attention-overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "完全相同（精确算法），只是以不同的 IO 顺序计算",
+          "近似相等，存在可觉察的精度损失",
+          "只在短序列上精确，长序列退化为近似",
+          "比标准注意力更精确，因为它用了更低精度"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "完全相同：FlashAttention 是精确算法，仅改 IO 顺序，无精度损失，长序列也精确。"
+      }
+    }
+  }
+]

@@ -1,0 +1,215 @@
+[
+  {
+    "id": "moe-mixtral-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "mixture-of-experts",
+      "sparse-moe",
+      "router"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "在 Transformer 中引入稀疏 MoE（Mixture of Experts）层时，关于其结构与工作方式，下列哪些描述是正确的？",
+    "explanation": "稀疏 MoE 用多个专家前馈子层（expert FFN）替换原有的『部分』前馈层，并增加路由器决定每个 token 走哪些专家；每个 token 仅激活少数专家，未选中的专家不参与该 token 的计算。它并非替换所有前馈层，且单 token 计算量取决于被激活的专家数而非专家总数。",
+    "source": {
+      "materialId": "hf-blog-mixtral"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用多个专家前馈子层替换原有的部分前馈层，并增加路由器来为每个 token 选择专家",
+          "每个 token 在每层只被路由到少数几个专家，未被选中的专家不参与该 token 的计算",
+          "MoE 会替换掉所有前馈层，因此总参数量一定等于专家数乘以单个专家参数量",
+          "引入 MoE 后，单 token 计算量随专家总数线性增长，与激活专家数无关"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确：稀疏 MoE 用多个专家 FFN 替换『部分』前馈层并加路由器；每个 token 仅激活少数专家。错误：并非替换所有 FFN；单 token 计算量取决于激活专家数而非专家总数。"
+      }
+    }
+  },
+  {
+    "id": "moe-mixtral-02",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "router",
+      "top-k",
+      "gating"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "Mixtral 8x7B 的路由（gating）机制如何为每个 token 选择专家？",
+    "explanation": "Mixtral 的每个 MoE 层包含一个路由器，对当前 token 输出专家权重并取最高的 2 个专家（top-2 of 8）参与计算；路由是按 token、按层独立进行的，不同层可以选出不同的 2 个专家。并非所有 token 共享固定专家，也不是按整段序列路由。",
+    "source": {
+      "materialId": "hf-blog-mixtral"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "路由器对每 token 输出专家权重，取权重最高的 2 个专家参与计算",
+          "每个 token 在每一层被独立路由，不同层可选出的 2 个专家可以不同",
+          "所有 token 共享同一组固定专家，以保证训练稳定",
+          "路由在序列级别进行，一整段文本只能进入同一个专家"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Mixtral 每层路由器对每 token 取 top-2 of 8 专家；路由按 token、按层独立，不同层可选不同专家。"
+      }
+    }
+  },
+  {
+    "id": "moe-mixtral-03",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "parameters",
+      "mixtral-8x7b"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "Mixtral 8x7B 的命名容易让人误以为总参数量是 56B（8×7B），但实际约为 45B。造成这一差异的主要原因是？",
+    "explanation": "除 8 个专家 FFN 外，注意力层、词嵌入、归一化等大量参数是所有专家共享的，只计算一次，因此总参约 45B 而非 56B；更清晰的命名应为 Mixtral-45-8e。专家本身仍是约 7B 级，并非被压缩到 5.6B。",
+    "source": {
+      "materialId": "hf-blog-mixtral"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "除 8 个专家 FFN 外，注意力、词嵌入等大量参数被所有专家共享，只计算一次",
+          "每个专家实际只有约 5.6B 参数，并非完整的 7B",
+          "路由器和负载均衡损失额外占用了约 11B 参数",
+          "模型采用了 4-bit 量化，因此有效参数量被压缩"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "总参约 45B 而非 56B，因为注意力、词嵌入等共享参数只算一次；更清晰命名是 Mixtral-45-8e。"
+      }
+    }
+  },
+  {
+    "id": "moe-mixtral-04",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "deployment",
+      "quantization",
+      "vram"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "你要在单张 24GB 显存的消费级 GPU 上部署 Mixtral 8x7B 提供推理服务。基于该模型已知的资源特征，下列哪些做法是可行或必要的？",
+    "explanation": "Mixtral 8x7B 在 fp16 下需 >90GB 显存，单张 24GB 卡无法容纳；采用 4-bit 量化（bitsandbytes/QLoRA）并配合 device_map='auto' 把部分层卸载，可把显存降到约 24GB。4-bit 量化对 MoE 是支持的，并非必须用 INT8+张量并行。",
+    "source": {
+      "materialId": "hf-blog-mixtral"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用 4-bit 量化并配合 device_map='auto' 把部分层卸载，使显存占用降到约 24GB",
+          "若坚持 fp16 精度则需要多卡或 >90GB 显存，单张 24GB 卡无法容纳",
+          "直接以 fp16 加载即可，因为激活参数只有约 12B，显存也应按 12B 估算",
+          "必须用 INT8 且启用张量并行才能在该卡运行，4-bit 量化不支持 MoE"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "fp16 下 >90GB，单张 24GB 装不下；应 4-bit 量化 + device_map='auto' 降到约 24GB。4-bit 对 MoE 支持。"
+      }
+    }
+  },
+  {
+    "id": "moe-mixtral-05",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "tradeoff",
+      "dense-vs-moe"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "相比同质量的稠密模型，以 Mixtral 为例的 MoE 带来了哪些典型权衡？",
+    "explanation": "MoE 总参更多但单 token 解码计算量对标小得多的稠密模型（约 12B），从而在质量与推理成本间取得更好平衡，且 Mixtral 在 Open LLM Leaderboard（68.42）高于 Llama-2-70B（67.87）。代价是全部权重需驻留显存，部署显存通常高于同质量稠密模型；延迟并非与稠密完全等价。",
+    "source": {
+      "materialId": "hf-blog-mixtral"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "总参更大但单 token 解码计算量对标小得多的稠密模型，平衡质量与成本",
+          "参数更多需更多显存驻留全部权重，部署成本可能高于同质量稠密模型",
+          "MoE 与同质量稠密模型在推理延迟上完全等价，因为参数总量不影响单步速度",
+          "Mixtral 榜上低于 Llama-2-70B，说明 MoE 必然劣于稠密模型"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "优势：总参大但解码像 12B 稠密，质量/成本更优（榜上 68.42>67.87）。代价：权重全驻留，显存更高；延迟非等价。"
+      }
+    }
+  },
+  {
+    "id": "moe-mixtral-06",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "peft",
+      "lora",
+      "fine-tuning"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "用 PEFT（如 LoRA）微调 Mixtral 这类 MoE 模型时，下列哪些做法符合常见建议？",
+    "explanation": "实践中建议把适配器加在注意力投影层（q_proj/k_proj/v_proj/o_proj），并避免对专家 MLP 层做 PEFT，因为专家层稀疏且与 PEFT 兼容性较差。仅微调路由器或对所有专家均匀加 LoRA 并非推荐做法。",
+    "source": {
+      "materialId": "hf-blog-mixtral"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把 LoRA 适配器加在注意力投影层（q/k/v/o_proj），而非专家层",
+          "避免对专家 MLP 层做 PEFT，因为专家层稀疏且与 PEFT 兼容性差",
+          "对所有 8 个专家 MLP 层均匀加 LoRA，以获得最好的微调效果",
+          "只微调路由器（router）即可，其余参数则全部冻结不动"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "建议 LoRA 加在注意力投影层（q/k/v/o_proj），避免对专家 MLP 层做 PEFT。"
+      }
+    }
+  }
+]

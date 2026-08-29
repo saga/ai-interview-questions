@@ -1,0 +1,183 @@
+[
+  {
+    "id": "vectordb-01",
+    "category": "search",
+    "topic": "vector-db",
+    "tags": [
+      "multi-vector",
+      "index-structure",
+      "maxsim",
+      "storage"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在向量数据库中存储多向量（late interaction）表示时，与单向量表示相比，有哪些结构性差异？",
+    "explanation": "多向量下每个文档不再是 1 个向量，而是一组按 token/patch 的向量，查询时需对每个查询 token 做 MaxSim 归约；文档向量可在索引阶段离线计算并持久化，查询时只编码查询。代价是索引体积随文档 token 数近似线性增长，需要更多内存/磁盘。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每文档不再是一个向量，而是一组 token/patch 向量，查询时对每查询 token 做 MaxSim 归约",
+          "文档向量可在索引阶段就离线计算并持久化，查询时只需要编码查询即可",
+          "多向量使索引体积随文档 token 数近似线性增长，需更多内存或磁盘",
+          "多向量索引的体积规模与单向量完全相同，只是最终的分数计算方式也不同"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多向量：每文档一组 token/patch 向量，查询时 MaxSim 归约；文档离线编码；索引体积随 token 数线性增长。"
+      }
+    }
+  },
+  {
+    "id": "vectordb-02",
+    "category": "search",
+    "topic": "vector-db",
+    "tags": [
+      "multi-vector",
+      "index-size",
+      "plaid",
+      "token-pooling"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "实验表明多向量索引体积可达同语料单向量的数十倍（如 4874 段 NQ：MiniLM 384d 约 7.5MB，LateOn 多向量约 311MB）。下列哪些是有效的缓解手段？",
+    "explanation": "缓解手段：用 PLAID 类量化把多向量索引压缩到与稠密向量同量级（如 92MB）；对 bi-encoder 召回的 top-k 做多向量重排，避免全库建多向量索引；token pooling 把向量数减半而性能几乎不降。把维度从 128 提升到 1024 会增大存储，反而更糟。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用 PLAID 类量化把多向量索引压缩到与稠密向量同量级（如 92MB）",
+          "对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，避免全库建多向量索引",
+          "token pooling 把向量数减半，通常仅损失极少的检索性能",
+          "将维度从 128 提升到 1024，以换取更小的索引体积"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "有效缓解：PLAID 量化到同量级(92MB)、rerank-only 不建全库索引、token pooling 减半。升维 1024 反而增大存储。"
+      }
+    }
+  },
+  {
+    "id": "vectordb-03",
+    "category": "search",
+    "topic": "vector-db",
+    "tags": [
+      "rerank-pattern",
+      "bi-encoder",
+      "two-stage-retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在『bi-encoder 召回 + 多向量重排』这一常见检索模式中，多向量 LateOn 扮演什么角色？",
+    "explanation": "先用便宜的单向量 bi-encoder 从全库召回 top-k 候选，再对这 k 个候选用多向量 MaxSim 重排获得更精细排序。该模式下多向量只需编码 k 个候选，不必为全库维护完整索引；它仍是 late interaction（查询与候选 token 级匹配），并非把查询与全部文档联合送交叉编码器。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先用便宜的单向量 bi-encoder 从全库召回 top-k 候选",
+          "再对这 k 个候选用多向量 MaxSim 重排，获得更精细的排序",
+          "多向量需要为全库维护完整索引，否则无法工作",
+          "重排阶段要把查询与全部文档再次联合编码进交叉编码器"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "bi-encoder 全库召回 top-k → 多向量 MaxSim 重排这 k 个。多向量只需编码候选，非全库索引，也非 cross-encoder。"
+      }
+    }
+  },
+  {
+    "id": "vectordb-04",
+    "category": "search",
+    "topic": "vector-db",
+    "tags": [
+      "multi-vector",
+      "latency",
+      "plaid",
+      "exhaustive"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "关于多向量检索的查询延迟，下列哪些描述符合其权衡？",
+    "explanation": "穷举全库多向量（如 60 万向量）在 GPU 上单查询约百毫秒级，比单向量全扫慢；用 PLAID/fast-plaid 等近似索引可降到约 10ms 级；只对召回的 top-k 做多向量重排时延迟几乎可忽略。多向量『穷举』比单向量 ANN 更慢，并非永远更快。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "穷举全库多向量在 GPU 上单查询约百毫秒级，比单向量全扫更慢",
+          "用 PLAID/fast-plaid 等近似索引可把多向量查询降到约 10ms 级",
+          "只对召回的 top-k 做多向量重排时，延迟几乎可忽略",
+          "多向量查询永远比单向量 ANN 快一个数量级，因为它无需扫描"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "穷举多向量~百毫秒(比单向量全扫慢)；PLAID~10ms；rerank-only 延迟可忽略。多向量穷举并不永远更快。"
+      }
+    }
+  },
+  {
+    "id": "vectordb-05",
+    "category": "search",
+    "topic": "vector-db",
+    "tags": [
+      "single-vs-multi-vector",
+      "selection",
+      "scenario"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "给定『百万级语料、存储与延迟敏感、查询条件单一』的场景，关于单向量与多向量的选型，哪些判断合理？",
+    "explanation": "该场景优先单向量 bi-encoder：索引小、查询快，足以覆盖单一条件查询；若后续出现多约束或精确标识符查询且质量不达标，可再叠加多向量重排。并非必须一开始就上多向量全库索引，且多向量在该场景是更费存储而非更省显存。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "优先单向量 bi-encoder：索引小、查询快，足以覆盖单一条件查询",
+          "若后续出现多约束或精确标识符查询且质量不达标，可再叠加多向量重排",
+          "必须一开始就上多向量全库索引，否则检索质量一定不达标",
+          "多向量在此场景的主要优势是显著节省显存，而非提升召回"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "该场景优先单向量(小/快/够用)；质量不达标时再叠多向量重排。非必须全库多向量索引，多向量更费存储。"
+      }
+    }
+  }
+]

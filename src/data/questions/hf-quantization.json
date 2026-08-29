@@ -1,0 +1,218 @@
+[
+  {
+    "id": "quant-qah-01",
+    "category": "model-performance",
+    "topic": "quantization",
+    "tags": [
+      "quantization",
+      "structural-compression",
+      "healing-pipeline",
+      "mxfp4"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "工业界部署大模型时常采用『结构压缩 → 量化 → 修复（healing）』流水线。关于这一步步，下列哪些描述正确？",
+    "explanation": "标准做法是先移除 layer/head/neuron 等结构以削减参数量，再把剩余权重量化到 4-bit（如 MXFP4）；压缩与量化会系统性降低推理、数学、代码等能力，因此部署前需一个轻量的修复（healing）步骤恢复能力。healing 是轻量后训练/蒸馏，并非从头预训练；通常顺序是先结构压缩再量化。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先移除 layer/head/neuron 等结构削减参数量，再把剩余权重量化到 4-bit（如 MXFP4）",
+          "压缩与量化会系统性降低推理、数学、代码等能力，部署前需修复步骤恢复",
+          "修复（healing）指的是把模型重新从头预训练一遍来恢复精度",
+          "量化必须在结构压缩之前完成，否则无法得到可用的 4-bit 权重"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "顺序：结构压缩→4-bit 量化(MXFP4)→healing 恢复能力。healing 是轻量后训练/蒸馏，非从头预训练。"
+      }
+    }
+  },
+  {
+    "id": "quant-qah-02",
+    "category": "model-performance",
+    "topic": "quantization",
+    "tags": [
+      "qat",
+      "qah",
+      "quantization-aware-training",
+      "stability"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "Quantization-Aware Training（QAT）与本文的 Quantization-Aware Healing（QAH）在做法与特性上有何不同？",
+    "explanation": "QAT 在前向中插入 fake-quantization 并用任务损失微调，使权重适应低精度；但其成本高且不稳定——9B 模型 MXFP4 实验中约 step 700 达峰后到 step 1200 暴跌近 19 个百分点。QAH 以压缩前的原始全精度模型为冻结教师，用 KL 散度仅依赖教师输出分布做跨架构蒸馏，达到峰值比 QAT 快约 7 倍且峰值后稳定（±2 点内）。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "QAT 在前向插入 fake-quantization 并用任务损失微调，使权重适应低精度",
+          "QAH 以压缩前原始全精度模型为冻结教师，用 KL 散度做跨架构蒸馏",
+          "QAT 在 9B 模型 MXFP4 实验约 step700 达峰后到 step1200 暴跌近 19 点，不稳",
+          "QAH 在整体耗时上比 QAT 慢约 7 倍，但峰值精度反而更高"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "QAT：fake-quant+任务损失微调，贵且不稳(9B 实验 step700 峰后暴跌~19pt)。QAH：原始模型为冻结教师、KL 跨架构蒸馏，快~7x 且稳定。"
+      }
+    }
+  },
+  {
+    "id": "quant-qah-03",
+    "category": "model-performance",
+    "topic": "quantization",
+    "tags": [
+      "qad",
+      "qah",
+      "teacher-collapse",
+      "structural-compression"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "为什么在『结构压缩之后』，常规的 Quantization-Aware Distillation（QAD）会失效，而 QAH 仍能生效？",
+    "explanation": "QAD 需要同架构的全精度教师来对齐 logits；结构压缩后，唯一可做的教师是已退化的 bf16 检查点（它本身是对原模型的蒸馏近似），学生上限被锚定在退化目标。QAH 直接以压缩前的原始模型为冻结教师做跨架构蒸馏，不被退化检查点限制；而 QAD 在『仅做量化、未结构压缩』时才是有效手段。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "QAD 需同架构全精度教师；结构压缩后唯一教师是退化 bf16 检查点，学生上限被锚定",
+          "QAH 直接以压缩前的原始模型为冻结教师跨架构蒸馏，不被退化检查点限制",
+          "QAD 仅在只做量化（未结构压缩）时有效，因为存在同架构全精度教师",
+          "QAH 与 QAD 在做法上完全等价，只是把学生换成了更大的模型"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "QAD 需同架构全精度教师；结构压缩后只剩退化 bf16 教师→学生上限被锚定。QAH 用原始模型为教师跨架构蒸馏，不受限。QAD 仅量化时有效。"
+      }
+    }
+  },
+  {
+    "id": "quant-qah-04",
+    "category": "model-performance",
+    "topic": "quantization",
+    "tags": [
+      "4-bit",
+      "16-bit",
+      "mxfp4",
+      "accuracy-recovery"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在 GPT-OSS 120B 结构压缩到 60B 再经 QAH 量化为 MXFP4 的实验中，关于 4-bit 与 16-bit 的对比，哪些结论成立？",
+    "explanation": "多个基准上 4-bit 学生超过了同尺寸 16-bit（bf16）恢复版（如 AIME 2025、LiveCodeBench）；相比 120B 教师，60B 4-bit 学生参数减半、权重内存约 1/4，且在 LiveCodeBench 上反超教师；4-bit 权重内存约为同尺寸 bf16 学生的 1/4，每 token 计算因参数减半约减半。但并非所有基准都严格优于 16-bit（MMLU-Pro/SciCode 仍微幅落后）。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "多个基准上 4-bit 学生反超同尺寸 16-bit（bf16）恢复版，如 AIME 2025 与 LiveCodeBench",
+          "相比 120B 教师，60B 4-bit 学生参数减半、权重内存约 1/4，且 LiveCodeBench 反超教师",
+          "4-bit 在全部基准上都严格优于 16-bit，彻底推翻精度与比特的权衡",
+          "4-bit 权重内存约同尺寸 bf16 学生的 1/4，每 token 计算因参数减半约减半"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "成立：4-bit 在多基准超同尺寸 bf16(AIME2025/LiveCodeBench)；60B 4-bit 参数半/内存~1/4 且 LiveCodeBench 超 120B 教师。但非全胜(MMLU-Pro/SciCode 微落后)。"
+      }
+    }
+  },
+  {
+    "id": "quant-qah-05",
+    "category": "model-performance",
+    "topic": "quantization",
+    "tags": [
+      "4-bit",
+      "tradeoff",
+      "accuracy-gap"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "尽管 4-bit 量化能在多数基准追平甚至超过 16-bit，但在哪些情形下 4-bit 仍可能微幅落后？",
+    "explanation": "在 MMLU-Pro、SciCode 等知识/科学类基准上，4-bit 仍比同尺寸 16-bit 低不到 1.5 个点；若量化时未做 healing（修复），能力退化会更大、落后更多。4-bit 并非绝对优于 16-bit，也不是对精度毫无影响。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 MMLU-Pro、SciCode 等知识类基准上，4-bit 仍比同尺寸 16-bit 低不到 1.5 个点",
+          "若量化时未做 healing 修复，能力退化会更大，落后的幅度也更多",
+          "4-bit 在任何基准上都绝对优于 16-bit，不存在落后情形",
+          "4-bit 量化只影响推理速度，对模型的最终精度其实没有任何影响"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "4-bit 仍微幅落后：MMLU-Pro/SciCode 低<1.5pt；未 healing 退化更大。4-bit 非绝对优、也非不影响精度。"
+      }
+    }
+  },
+  {
+    "id": "quant-qah-06",
+    "category": "model-performance",
+    "topic": "quantization",
+    "tags": [
+      "compute-savings",
+      "mxfp4",
+      "4-bit"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "把 120B 模型结构压缩到 60B，再以 MXFP4 量化部署，相比原 bf16 权重族，每 token 计算量约下降几倍？",
+    "explanation": "参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省，合计约 8 倍；权重内存因 4-bit 约为同尺寸 bf16 学生的 1/4。量化确实改变计算量（低精度运算更省），并非仅影响速度而计算量不变。",
+    "source": {
+      "materialId": "hf-blog-quantization-aware-healing"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 8 倍：参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省",
+          "约 1 倍，因为量化这一操作本身并不改变每 token 的计算量",
+          "约 2 倍，因为模型全部计算收益仅来自参数减半这一项因素而已",
+          "约 32 倍，因为 4-bit 的精度只有 bf16 的四分之一"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "约 8 倍：参数减半(~2x) 叠加 4-bit 相对 bf16 的计算节省，合计~8x；权重内存~1/4。"
+      }
+    }
+  }
+]

@@ -1,0 +1,184 @@
+[
+  {
+    "id": "lateinter-01",
+    "category": "rag",
+    "topic": "reranking",
+    "tags": [
+      "late-interaction",
+      "colbert",
+      "maxsim",
+      "multi-vector"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 ColBERT 风格的『晚期交互（late interaction）』检索中，查询与文档的相似度如何计算？",
+    "explanation": "对查询中每个 token 嵌入，取它与文档所有 token/patch 嵌入的最大相似度，再对所有查询 token 求和，即 MaxSim：LI(q,d)=Σ max_sim(q_term, doc_patch)。文档在索引阶段就独立编码完毕、可离线存储，评分只在查询时与查询做细粒度匹配。交叉编码器是早交互（拼接联合编码），单向量 bi-encoder 是整篇一个向量。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对查询每个 token 取其与文档所有 token/patch 的最大相似度，再求和（MaxSim）",
+          "文档在索引阶段独立编码、可离线存储，评分只在查询时细粒度匹配",
+          "把查询和文档拼接后送交叉编码器，得到单一的整体相关性分数",
+          "只取文档单个稠密向量与查询向量做点积，等价于单向量检索方式"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MaxSim：每查询 token 取与文档 token/patch 最大相似度后求和；文档离线编码。交叉编码器是早交互，单向量是整篇一向量。"
+      }
+    }
+  },
+  {
+    "id": "lateinter-02",
+    "category": "rag",
+    "topic": "reranking",
+    "tags": [
+      "multi-vector",
+      "single-vector",
+      "exact-match",
+      "token-alignment"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "相比把整篇文本压成单个稠密向量，多向量（late interaction）表示在哪些匹配场景下更占优？",
+    "explanation": "单向量把全文压进一个向量，稀有实体（产品编码、人名、函数名）和长文关键句要与全部内容竞争同一空间，多条件查询被迫折中；多向量保留每 token 一个向量，能与查询 token 逐项对齐，更适合精确标识符与多约束查询。多向量可离线建索引，并非必须在线编码文档。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "需精确匹配产品编码、人名、函数名等稀有实体时，单向量把它们与全文竞争同一空间",
+          "多条件查询能逐项与文档 token 对齐，而非被迫在单一向量中折中",
+          "单向量在所有情况下都严格优于多向量，只是存储体积更大",
+          "多向量必须在线编码文档，无法在索引阶段离线建索引"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多向量胜在：稀有实体/精确标识符不被全文压缩淹没；多条件查询逐项对齐。单向量在压缩中易丢失。"
+      }
+    }
+  },
+  {
+    "id": "lateinter-03",
+    "category": "rag",
+    "topic": "reranking",
+    "tags": [
+      "multi-vector",
+      "storage-cost",
+      "token-pooling",
+      "plaid"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "多向量表示的主要代价是索引体积随 token 数线性增长。下列哪些做法可以缓解这一存储代价？",
+    "explanation": "缓解手段包括：把每个 token 向量投影到低维（如 ColPali 的 D=128）；token pooling（pool_factor=2）把向量数减半而性能几乎不降；只对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，避免对全库建多向量索引。把多向量拼接成单个向量会丢失 token 级对齐且维度爆炸，并非可行缓解。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把每个 token 向量投影到低维（如 ColPali 的 D=128）以减少单向量大小",
+          "采用 token pooling（如 pool_factor=2）把向量数减半，通常只损失极少性能",
+          "只对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，而不对全库建多向量索引",
+          "把多向量拼接成单个向量后做 cosine，既保留细粒度又省存储"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "缓解：低维投影(D=128)、token pooling 减半、rerank-only 不建全库索引。拼接单向量丢失对齐且维度爆炸。"
+      }
+    }
+  },
+  {
+    "id": "lateinter-04",
+    "category": "rag",
+    "topic": "reranking",
+    "tags": [
+      "late-interaction",
+      "when-to-use",
+      "long-doc",
+      "visual-doc"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在检索管线中，什么情况下值得引入多向量 late interaction 做重排（reranking）而非仅用单向量 bi-encoder？",
+    "explanation": "值得引入的情形：语料含长文档且超单向量模型训练长度上限（多向量可按块保留信息）；查询含多个独立约束或稀有标识符（单向量易在压缩中丢失）；需要跨视觉文档（表格/图表）检索且不想做 OCR 流水线时可用视觉 late interaction（如 ColPali）。存储/延迟极紧、语料百万级且查询单一时单向量已足够，那是『不引入』的情形。",
+    "source": {
+      "materialId": "hf-blog-multi-vector-encoder"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "语料含长文档且超单向量模型训练长度上限，多向量可按块保留信息",
+          "查询含多个独立约束或稀有标识符，单向量容易在压缩中丢失",
+          "存储与延迟极紧、语料仅百万级且查询单一，单向量已足够",
+          "跨视觉文档（表格/图表）检索且不想做 OCR 时，可用视觉 late interaction"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "值得：长文档超长度上限、多约束/稀有标识符查询、视觉文档免 OCR(ColPali)。百万级+单一查询用单向量即可。"
+      }
+    }
+  },
+  {
+    "id": "lateinter-05",
+    "category": "rag",
+    "topic": "reranking",
+    "tags": [
+      "colpali",
+      "visual-document",
+      "ocr-free",
+      "patch-embedding"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "ColPali 如何把晚期交互用于『视觉文档检索』，从而跳过传统 OCR/版面分析流水线？",
+    "explanation": "ColPali 把页面截图送视觉语言模型切成 patch 并编码为多向量，查询文本 token 与页面 patch 做 MaxSim 匹配；直接在图像像素/patch 层面检索，无需先把页面识别成文本，从而能利用表格、图形等视觉线索。它并非先做 OCR 再单向量嵌入，也不是每页一个稠密向量。",
+    "source": {
+      "materialId": "hf-blog-colpali"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把页面截图送视觉语言模型切 patch 并编码为多向量，与查询 token 做 MaxSim",
+          "直接在图像像素/patch 层面检索，无需先识别成文本，可利用表格图形等线索",
+          "先对页面做 OCR 得文本，再对文本做单向量嵌入，与传统文本 RAG 等价",
+          "每个页面只生成一个稠密向量，再用 cosine 做相似度检索"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "ColPali：页面截图→VLM 切 patch→多向量；查询 token 与 patch 做 MaxSim；免 OCR，利用视觉线索。非 OCR 后单向量。"
+      }
+    }
+  }
+]

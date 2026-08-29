@@ -1,0 +1,214 @@
+[
+  {
+    "id": "specdec-01",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "assisted-generation",
+      "lossless",
+      "verification"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "投机解码（Hugging Face 称为 assisted generation）如何在不改变目标模型输出分布的前提下，验证草稿模型提出的若干候选 token？",
+    "explanation": "把候选序列一次性送入目标模型做前向传播得到各位置 logits，再与目标模型自身的贪心/采样结果逐位比对；从首个不匹配位置起其后候选全部作废（因果性约束），只保留匹配前缀加首个分歧 token。验证完全依据目标模型分布，不修改其权重，因此结果是无损的。",
+    "source": {
+      "materialId": "hf-blog-assisted-generation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把候选序列一次性送入目标模型做前向传播，得到各位置 logits，再逐位比对",
+          "从首个不匹配位置起其后候选全部作废，只保留匹配前缀加首个分歧 token",
+          "只要候选中有任一 token 不一致，就丢弃整条候选序列重新生成",
+          "验证会微调目标模型权重以适配草稿模型，因此分布会略有偏移"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "目标模型一次前向验证整条候选，逐位比对；首个不匹配之后作废（因果约束），仅保留匹配前缀+首个分歧 token；不改动目标权重，故无损。"
+      }
+    }
+  },
+  {
+    "id": "specdec-02",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "draft-model",
+      "target-model"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "在投机解码中，草稿模型（assistant / draft）与目标模型（target）分别承担什么角色？",
+    "explanation": "草稿模型用一次前向传播生成若干候选 token；目标模型用一次前向传播验证整条候选，其分布是最终输出的唯一来源，因此结果无损。两者不必权重一致，草稿通常更小且同架构即可；最终采样由目标模型完成，而非草稿。",
+    "source": {
+      "materialId": "hf-blog-assisted-generation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "草稿模型一次前向生成候选，目标模型一次前向验证整条候选",
+          "目标模型是最终输出的唯一分布来源，验证只依据它故无损",
+          "两者权重必须完全一致，否则候选序列无法被验证",
+          "草稿模型负责最终采样，目标模型仅做质量打分"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "草稿生成候选，目标一次前向验证；目标分布是唯一输出来源，故无损。两者不必同权重，草稿更小同架构即可。"
+      }
+    }
+  },
+  {
+    "id": "specdec-03",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "when-it-helps",
+      "offload"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在哪些情形下，投机解码最可能带来明显的推理加速？",
+    "explanation": "当草稿模型比目标小一个数量级以上、任务偏输入驱动（转录/翻译/摘要等事实生成）、同架构仅规模更小、且采样温度接近 0 时接受率高；当目标模型需内存卸载（offload）时加速最显著，可达约 10x。草稿差且大反而无益。",
+    "source": {
+      "materialId": "hf-blog-assisted-generation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "草稿模型比目标小一个数量级以上，且任务偏输入驱动（转录、翻译、摘要）",
+          "目标模型放不下 GPU、需靠内存卸载时，加速比可达约 10x",
+          "草稿与目标同架构仅规模更小，且采样温度接近 0",
+          "草稿模型质量很差但很大，能保证每次生成很长的候选"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "有利：草稿小≥10x、输入驱动任务、同架构小模型、低温；offload 时可达约 10x。差且大的草稿无益。"
+      }
+    }
+  },
+  {
+    "id": "specdec-04",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "when-it-hurts"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在哪些情形下，投机解码可能无明显收益甚至变慢？",
+    "explanation": "输出很短时省下的前向次数少，难以摊薄草稿开销；高温开放生成时草稿频繁猜错、接受段很短；草稿模型本身很慢则会抵消跳过目标前向的收益。共享同 tokenizer 且草稿小是『有利』条件，不是有害条件。",
+    "source": {
+      "materialId": "hf-blog-assisted-generation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "输出很短，省下的前向次数很少，难以摊薄草稿模型开销",
+          "采样温度很高，草稿模型频繁猜错、接受段很短",
+          "草稿模型本身很慢，其开销抵消了跳过目标前向的收益",
+          "草稿与目标使用完全相同的 tokenizer，且草稿小一个数量级"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "无益/变慢：短输出、高温、草稿自身慢。共享同 tokenizer 且小是『有利』条件。"
+      }
+    }
+  },
+  {
+    "id": "specdec-05",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "acceptance-rate",
+      "tokenizer"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "哪些因素会提高投机解码中候选 token 被目标模型接受的比例？",
+    "explanation": "接受率取决于草稿与目标输出分布的相似度：同 tokenizer 避免跨设备编解码拖慢收益；同架构仅规模更小的模型分布更相近；温度接近 0（近似贪心）时两者更一致。候选数量并非越大越好，过大会增加草稿开销且与目标质量无关。",
+    "source": {
+      "materialId": "hf-blog-assisted-generation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "草稿与目标共享同一 tokenizer，避免跨设备编解码",
+          "草稿与目标同架构、仅规模更小，输出分布更相近",
+          "采样温度接近 0，草稿与目标更一致",
+          "把候选数量设得越大越好，与目标模型质量无关"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "提高接受率：同 tokenizer、同架构小模型、低温。候选数量非越大越好。"
+      }
+    }
+  },
+  {
+    "id": "specdec-06",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "speculative-decoding",
+      "complexity",
+      "latency"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "在理想情况下（草稿模型几乎零误差），投机解码把逐 token 自回归生成的延迟复杂度从约 O(n) 降到接近？",
+    "explanation": "理想情况下每次迭代用一次前向即可验证并产出整条候选序列，等效把逐 token 生成的延迟从 O(n) 降到接近 O(1)；这依赖于内存带宽瓶颈而非计算瓶颈，因此跳跃式跳过多个前向传播。",
+    "source": {
+      "materialId": "hf-blog-assisted-generation"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "O(1)，因为一次前向即可验证整条候选序列",
+          "O(log n)，因为采用二分验证",
+          "O(n²)，因为要存储完整注意力矩阵",
+          "不变，仍是 O(n)，只是常数更小"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "理想下接近 O(1)：一次前向验证整条候选，跳过多个目标前向。"
+      }
+    }
+  }
+]
