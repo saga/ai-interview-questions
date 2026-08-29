@@ -522,5 +522,99 @@
         "referenceAnswer": "正确答案：B。\n\nLLM API为无状态，隐层与KV不跨请求保留，权重亦不实时更新；连续性由平台的状态存储、检索与Prompt组装实现。"
       }
     }
+  },
+  {
+    "id": "skillevo-persistence-asymmetry-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "skill-evolution",
+      "persistence",
+      "rollback",
+      "wiki"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在基于反思与迭代优化的 AI Agent 技能演进（Skill Evolution）架构中，系统通常包含用于指导 Agent 执行的具体“技能库（Skills Layer）”与记录历史经验模式的“知识库（Wiki Layer）”。当系统对新生成的候选技能进行验证评估（Validation Gating），发现性能下降并触发技能回滚（Rollback）时，关于系统的状态更新机制，下列哪种设计最为合理？",
+    "explanation": "A 正确：技能库控制 Inference Agent 的执行逻辑，验证集表现衰退时必须回滚以维持系统 Baseline 性能；而知识库保存的是高层抽象的失败归纳与历史决策记录（如提案 Diff 和准入结果）。知识库保持单调递增、不断积累（Never rolled back），能确保后续优化器在产生新提案时具备长期的历史感知，避免重复提出已验证无效的方案。B、C、D 错误：均把只应作用于技能库的回滚扩散到了知识库，会丢失失败经验这一关键演进资产。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "技能库回滚至上一轮验证通过的版本，而知识库保留本轮提取出的失败模式与日志记录",
+          "技能库与知识库同步回滚至上一轮状态，彻底清除本轮尝试产生的所有数据与临时修改",
+          "技能库保留本次修改但降低调用权重，知识库仅在后续验证通过后才补充记录相关模式",
+          "技能库回滚至上一轮验证通过的版本，同时重置知识库中涉及该技能的所有归纳索引"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n技能库控制 Inference Agent 的执行逻辑，当验证集表现衰退时必须回滚以维持系统 Baseline 性能；而知识库保存的是高层抽象的失败归纳与历史决策记录（如提案 Diff 和准入结果）。知识库保持单调递增、不断积累（Never rolled back），能确保后续优化器在产生新提案时具备长期的历史感知，避免重复提出已验证无效的方案。"
+      }
+    }
+  },
+  {
+    "id": "skillevo-anti-oscillation-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "anti-oscillation",
+      "impact-tracking",
+      "validation-gating"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在基于 LLM 的 Agent 技能优化器（Skill Proposer）多轮迭代演进过程中，系统可能陷入“反复提出已被历史验证为无效或有害的技能修改”这一震荡困境。为了从架构机制上解决该问题，最有效的方案是：",
+    "explanation": "B 正确：优化器反复提出无效修改的核心原因是缺乏对自己历史尝试的客观反馈记忆。通过程序化手段在知识库中维护一个明确的 skill-impact.md 影响追踪表（记录提议元数据、代码统一 Diff、验证得分以及最终接受/拒绝状态），可以为优化器提供可靠的 Ground-truth 审计依据，从根源上避免提议震荡。A 错误：提高温度只会增加随机性，不能避免重复。C 错误：清空历史上下文恰恰会加剧震荡。D 错误：限制技能数量与震荡无因果关系。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "调高优化器生成提议时的采样温度（Temperature），以强制优化器产生完全随机的修改指令",
+          "在知识库中维护持久化的修改影响追踪表（如 skill-impact.md），记录历次提案 Diff 与验证结果",
+          "在每次验证失败后清空优化器的全部历史对话上下文，使其在下一轮完全从零开始进行盲推",
+          "限制技能库最大只能包含单一技能文件，以避免优化器在解析多文件依赖时产生逻辑冲突"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n优化器反复提出无效修改的核心原因是缺乏对自己历史尝试的客观反馈记忆。通过程序化手段在知识库中维护一个明确的 skill-impact.md 影响追踪表（记录提议元数据、代码统一 Diff、验证得分以及最终接受/拒绝状态），可以为优化器提供可靠的 Ground-truth 审计依据，从根源上避免提议震荡。"
+      }
+    }
+  },
+  {
+    "id": "skillevo-knowledge-compilation-01",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "knowledge-compilation",
+      "pattern-pages",
+      "raw-traces"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "在 Agent 长期自主演进架构中，系统需要处理海量的历史执行轨迹（Raw Traces）。相比于直接保留并在演进时检索全量原始日志，将经验编译为持久化的“模式化文档（Pattern Pages）”的核心价值在于：",
+    "explanation": "B 正确：原始交互轨迹包含大量冗余对话、失败重试的细节噪声和巨大的 Token 长度。将 Trace 编译为模式化文档，本质上是进行跨轨迹的根因分析与经验归纳（提取通用 Failure Modes 和 Success Strategies），形成高信息密度的中间知识表示，大幅降低优化器在后续轮次中的上下文开销与认知负担。A、C、D 错误：模式化文档不删代码、不能编译为二进制，也不能替代参数微调。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "模式化文档删除了所有的工具调用代码，从而能在演进过程中彻底避免 Agent 产生越权操作风险",
+          "模式化文档对多条轨迹进行跨样本归纳与根因分析，形成了高信息密度的知识抽象，降低了噪声与开销",
+          "模式化文档可被编译器直接编译为二进制执行文件，显著提升后续 Agent 推理时的计算吞吐效率",
+          "模式化文档能够替代大模型的参数微调过程，使基座模型在不加载提示词的情况下自动具备领域经验"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n原始交互轨迹（Raw Traces）包含大量冗余对话、失败重试的细节噪声和巨大的 Token 长度。将 Trace 编译为模式化文档，本质上是进行跨轨迹的根因分析与经验归纳（提取通用 Failure Modes 和 Success Strategies），形成了高信息密度的中间知识表示，大幅降低了优化器在后续轮次中的上下文开销与认知负担。"
+      }
+    }
   }
 ]

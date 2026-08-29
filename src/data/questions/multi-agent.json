@@ -396,5 +396,38 @@
         "referenceAnswer": "正确答案：A、B、D。\n\n- A 正确：异步 RLM 原语在调度子智能体后立即返回稳定句柄，父智能体无需阻塞等待，可继续执行本地计算。\n- B 正确：子智能体具备独立的 L1 上下文和 IPython 运行环境，实现了运行域与上下文域的隔离。\n- C 错误：系统支持基于守护进程消息队列的 Agent-to-Agent 点对点直连通信，而非固化的同步阻塞图。\n- D 正确：由于句柄持久化保存在 L2/L3 状态中，即使父智能体发生上下文压缩或系统重启，仍可根据句柄重新建立与子智能体的联系。"
       }
     }
+  },
+  {
+    "id": "skillevo-multi-agent-roles-01",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "role-separation",
+      "skill-proposer"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "在设计一个通过运行日志离线迭代优化 Agent 技能的自动化系统时，为避免单 Agent 架构在长轨迹诊断中产生注意力分散与决策冲突，通常采用多 Agent 职责分离架构。关于 Inference Agent、Wiki Maintainer 与 Skill Proposer 的职责边界设计，以下哪些说法是合理的？",
+    "explanation": "A、B、C 正确：三者职责解耦——执行者专注于 rollout 输出轨迹，知识维护者专注于离线反思与归纳 Pattern，技能提议者专注于读取 Pattern 与轨迹并生成候选修改。D 错误：任何新生成的技能 Patch 都必须经过 Validation Gating（验证集评估）来决定接受或回滚，不能直接覆盖生产技能库。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Inference Agent 专注于根据当前技能执行任务并输出交互轨迹，不直接承担归纳总结或修改技能的职责",
+          "Wiki Maintainer 负责分析成功与失败轨迹，提炼通用故障模式并增量更新持久化知识库",
+          "Skill Proposer 结合知识库、修改历史与具体轨迹，以 Agent 模式自主诊断并生成单点技能 Patch",
+          "Skill Proposer 生成技能 Patch 后可直接覆盖生产技能库，无需再经过 Validation Gating 验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\nA、B、C 准确描述了三者的职责解耦：执行者专注于 rollout，知识维护者专注于离线反思与归纳 Pattern，技能提议者专注于调用工具读取 Pattern 和轨迹并生成候选修改。D 选项错误，因为任何新生成的技能 Patch 必须经过 Validation Gating（验证集评估）来决定接受或回滚，不能直接盲目覆盖生产库。"
+      }
+    }
   }
 ]

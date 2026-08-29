@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · Claude Blog 技术题库扩充
+
+- 新增 30 道基于 Anthropic Claude Blog 公开文章的题目，覆盖 Managed Agents 的 dreaming、memory、Outcomes、独立 grader、多 Agent 编排，以及 AI-native SDLC 的版本化交付物、连续评估、hooks、沙箱、MCP 部署工具、环境权限分级和确定性控制带。
+- 新题复用现有原子知识节点，通过 `claude-blog`、文章主题 tags 和 `source` 元数据保留出处，不新增产品或认证分类节点。
+- 题目批次见 [src/data/questions/claude-blog-2026-08.json](../src/data/questions/claude-blog-2026-08.json)，来源为 [Managed Agents](https://claude.com/blog/new-in-claude-managed-agents) 与 [AI-native SDLC playbook](https://claude.com/blog/the-ai-native-sdlc-playbook)。
+
 ## 2026-08-29 · 知识体系与分类解耦（ADR-042：认证题解耦与纯净能力域架构）
 
 - **认证考纲与能力域解耦**：将 `google-genai-leader`、`anthropic-cca`、`aws-ai-practitioner`、`aws-genai-developer-pro` 等 76 道认证考题全部解构并精确映射到对应的原子技术知识节点（如 `rag`、`agent-fundamentals`、`evaluation`、`multi-agent`、`mcp`、`observability`、`system-design` 等），同时保留各题的认证专属 tags（如 `tags: ["aws-genai-developer-pro", "certification"]`）。
