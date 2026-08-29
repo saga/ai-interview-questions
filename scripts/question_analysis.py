@@ -30,6 +30,8 @@ ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS_DIR = ROOT / "src" / "data" / "questions"
 KNOWLEDGE_DIR = ROOT / "src" / "data" / "knowledge"
 CONCEPT_GRAPH_FILE = ROOT / "src" / "data" / "conceptGraph.json"
+LOCAL_MODEL_DIR = ROOT / "models" / "paraphrase-multilingual-MiniLM-L12-v2"
+QUANTIZED_MODEL_FILE = "onnx/model_qint8_arm64.onnx"
 
 
 class QuestionRecord(BaseModel):
@@ -132,10 +134,43 @@ def graph_report(frame: pd.DataFrame, nodes: list[dict[str, Any]], edges: list[d
     }
 
 
-def encode_embeddings(texts: list[str], model_name: str) -> Any:
+def pandas_coverage_report(frame: pd.DataFrame) -> dict[str, Any]:
+    topic_counts = frame.groupby("topic", sort=True).size()
+    topic_angle = (
+        frame.dropna(subset=["angle"])
+        .groupby(["topic", "angle"], sort=True)
+        .size()
+        .unstack(fill_value=0)
+    )
+    return {
+        "topicCounts": {str(topic): int(count) for topic, count in topic_counts.items()},
+        "topicAngleCounts": {
+            str(topic): {str(angle): int(count) for angle, count in row.items() if count}
+            for topic, row in topic_angle.iterrows()
+        },
+    }
+
+
+def encode_embeddings(texts: list[str], model_name: str, requested_device: str) -> tuple[Any, str]:
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(model_name).encode(texts, normalize_embeddings=True, show_progress_bar=False)
+    model_path = Path(model_name)
+    if not model_path.is_absolute():
+        model_path = ROOT / model_path
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"本地 embedding 模型不存在：{model_path}。请准备仓库内模型，或通过 --model 指定本地目录。"
+        )
+    if requested_device != "cpu":
+        raise ValueError("ONNX Runtime 方案只支持 --device cpu；Apple Silicon 的 CoreML provider 需另行 benchmark")
+    model = SentenceTransformer(
+        str(model_path),
+        backend="onnx",
+        device="cpu",
+        local_files_only=True,
+        model_kwargs={"file_name": QUANTIZED_MODEL_FILE},
+    )
+    return model.encode(texts, batch_size=32, normalize_embeddings=True, show_progress_bar=False), "onnx-cpu"
 
 
 def semantic_candidates(embeddings: Any, ids: list[str], threshold: float) -> list[dict[str, Any]]:
@@ -181,13 +216,21 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
             "category": frame["category"].value_counts().sort_index().to_dict(),
             "angle": frame["angle"].fillna("<missing>").value_counts().sort_index().to_dict(),
         },
+        "pandas": pandas_coverage_report(frame),
         "fuzzyDuplicateCandidates": fuzzy_duplicate_candidates(texts, args.fuzzy_threshold),
         "clusters": cluster_report(texts, ids),
         "difficultyPredictability": difficulty_predictability(frame),
         "knowledgeGraph": graph_report(frame, nodes, edges),
     }
     if args.semantic:
-        embeddings = encode_embeddings(texts, args.model)
+        embeddings, actual_device = encode_embeddings(texts, args.model, args.device)
+        result["semanticConfig"] = {
+            "model": args.model,
+            "threshold": args.semantic_threshold,
+            "normalizedEmbeddings": True,
+            "requestedDevice": args.device,
+            "actualDevice": actual_device,
+        }
         result["semanticDuplicateCandidates"] = semantic_candidates(embeddings, ids, args.semantic_threshold)
         result["embeddingClusters"] = embedding_cluster_report(embeddings, ids)
     return result
@@ -199,7 +242,8 @@ def main() -> int:
     parser.add_argument("--fuzzy-threshold", type=int, default=92)
     parser.add_argument("--semantic", action="store_true", help="load sentence-transformers and find semantic duplicates")
     parser.add_argument("--semantic-threshold", type=float, default=0.9)
-    parser.add_argument("--model", default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    parser.add_argument("--model", default=str(LOCAL_MODEL_DIR.relative_to(ROOT)))
+    parser.add_argument("--device", choices=["cpu"], default="cpu")
     args = parser.parse_args()
     result = analyze(args)
     print(json.dumps(result, ensure_ascii=False, indent=2))

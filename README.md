@@ -35,7 +35,7 @@ uv run --extra analysis python scripts/question_analysis.py --json
 uv run --extra analysis python scripts/question_analysis.py --semantic --json
 ```
 
-其中 TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用同一次 embedding 编码同时发现语义重复题和语义题簇，首次运行可能下载 `sentence-transformers` 模型。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
+报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用仓库内 ARM64 INT8 ONNX 模型，通过 ONNX Runtime 的同一次 embedding 编码同时发现语义重复题和语义题簇。`optimum-onnx` 负责 Sentence Transformers 的 ONNX backend 接入，运行设备为 CPU；M5 的 CoreML provider 需单独 benchmark，不默认宣称使用 Neural Engine。默认模型路径为 `models/paraphrase-multilingual-MiniLM-L12-v2`，加载使用 `local_files_only=True`，模型缺失会直接报错，不会访问 Hugging Face。模型权重通过 Git LFS 管理，模型卡为 Apache-2.0 并随模型文件保留。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
 
 ## 文档
 

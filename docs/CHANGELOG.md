@@ -4,8 +4,10 @@
 
 ## 2026-08-29 · 引入 Python 题库分析栈
 
+- 目标方案恢复为 ONNX Runtime：`optimum` 核心包与 `optimum-onnx` 集成包分开；依赖使用 `optimum-onnx[onnxruntime]>=0.1.0`，不使用此前不准确的 `0.0.3`。
+- Apple Silicon 离线分析使用仓库内 `model_qint8_arm64.onnx`（约 118 MB）；Sentence Transformers 通过 ONNX backend 在 CPU 上运行，CoreML provider 留待独立 benchmark。
 - `pyproject.toml` 增加 `analysis` optional extra：Pydantic、pandas、NumPy、rapidfuzz、scikit-learn、networkx 和 sentence-transformers；由 `uv.lock` 固定解析结果。
-- 新增 `scripts/question_analysis.py`：提供题库统计、模糊近重复、TF-IDF/KMeans 聚类、基于 TF-IDF 的难度可预测性分析和真实 `conceptGraph.json` 图分析；`--semantic` 用一次 embedding 同时执行语义重复检测和 embedding 聚类。
+- 新增 `scripts/question_analysis.py`：提供题库统计、模糊近重复、TF-IDF/KMeans 聚类、基于 TF-IDF 的难度可预测性分析和真实 `conceptGraph.json` 图分析；`--semantic` 用一次 embedding 同时执行语义重复检测和 embedding 聚类。实际分析发现 `ai-fund-026` ↔ `llm-03` 相似度 0.9245，列为人工合并/改写候选。
 - 保持边界：Python 只做离线分析，TypeScript/Zod 仍是题库运行时契约唯一来源；模型分析结果只能作为人工复核信号。
 
 ## 2026-08-29 · 题库质量自动化工具
