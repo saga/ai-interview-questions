@@ -57,7 +57,17 @@ export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any>
   const model = models.getModel(entry.id, entry.model);
   if (!model) return undefined;
   if (entry.id === 'cloudflare-workers-ai') {
-    const proxyBase = `/api/ai/client/v4/accounts/${(entry.accountId ?? '').trim()}/ai/v1`;
+    // pi-ai 已为 cloudflare 内置完整 baseUrl（含 {CLOUDFLARE_ACCOUNT_ID} 占位符，
+    // 运行时由 credential store 的 env 注入真实 accountId，路径结构也由 pi-ai 负责拼接），
+    // 我们**不要**自己拼路径。只需把跨域的源 https://api.cloudflare.com 换成「同源代理前缀」。
+    // 代理前缀 /api/ai 由以下任一处在服务端剥离后转发到 api.cloudflare.com：
+    //   · 本地开发：vite.config.ts 的 dev proxy → 可选 Node 服务（server/index.js）
+    //   · Cloudflare 生产：worker/index.ts（wrangler deploy 的 main 脚本）
+    //   · GitHub Pages：无服务端，cloudflare provider 不可用（见 DEPLOYMENT.md）
+    // 必须保留「绝对 URL」：pi-ai 底层用 OpenAI SDK，会对 baseUrl 执行 new URL()，
+    // 相对路径会抛 "Failed to construct 'URL': Invalid URL"，故前缀用 location.origin 拼成同源绝对地址。
+    const origin = typeof location !== 'undefined' ? location.origin : '';
+    const proxyBase = model.baseUrl.replace('https://api.cloudflare.com', `${origin}/api/ai`);
     return { ...model, baseUrl: proxyBase };
   }
   return model;
