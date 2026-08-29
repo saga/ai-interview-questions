@@ -55,7 +55,8 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 ## 修改与验证
 
 1. 先将草稿保存为 JSON 数组，运行 `npm run question:add -- --file draft.json --check`。
-   同时统计草稿里 single / multiple 的分布：**单选题超过 1/3 说明题型设计偷懒，应回炉改写而不是继续走流程**（AGENTS.md §4.2）。统计命令：
+   该命令已内置**题型门禁**（AGENTS.md §4.2，实现见 `scripts/add-question.ts`）：本批选择题 ≥ 3 道且单选占比 > 1/3 时**直接报错退出**，并打印单选/多选分布。被拦住时应改写为多选，不要想办法绕过门禁；少于 3 道选择题的小批量自动豁免。
+   手工查看分布：
    ```
    python3 -c "import json,collections;d=json.load(open('draft.json',encoding='utf-8'));c=collections.Counter(q['formats']['choice']['type'] for q in d if q['formats'].get('choice'));print(dict(c))"
    ```

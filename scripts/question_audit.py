@@ -33,6 +33,8 @@ VALID_ANGLES = {
 }
 PLACEHOLDER_RE = re.compile(r"^(?:参见解析|见解析|略|同上|待补充|todo|tbd)$", re.IGNORECASE)
 VOLATILE_RE = re.compile(r"(?:aws|amazon|openai|anthropic|google|azure|api|sdk|模型版本|版本号|version|认证考试|claude|gpt|gemini)", re.IGNORECASE)
+# 题型门禁阈值（AGENTS.md §4.2）：单选题在选择题中的占比上限。
+MAX_SINGLE_RATIO = 1 / 3
 
 
 def read_bundles(directory: Path) -> list[tuple[str, list[dict[str, Any]]]]:
@@ -159,10 +161,39 @@ def audit() -> dict[str, Any]:
     }
 
 
+def single_ratio(report: dict[str, Any]) -> float:
+    """单选题在全部选择题中的占比；无选择题时返回 0。"""
+    fmt = report["distributions"]["choiceFormat"]
+    total = fmt.get("single", 0) + fmt.get("multiple", 0)
+    return fmt.get("single", 0) / total if total else 0.0
+
+
+def print_choice_format(report: dict[str, Any]) -> None:
+    """题型分布只做可见性输出；硬门禁在 question:add（仅约束新导入批次）。"""
+    fmt = report["distributions"]["choiceFormat"]
+    total = fmt.get("single", 0) + fmt.get("multiple", 0)
+    if not total:
+        return
+    ratio = single_ratio(report)
+    flag = "" if ratio <= MAX_SINGLE_RATIO else "  ← 偏低，新题请以多选为主"
+    extra = f" · open-only {fmt['open-only']}" if fmt.get("open-only") else ""
+    print(
+        f"Choice format: single {fmt.get('single', 0)} · multiple {fmt.get('multiple', 0)}"
+        f"{extra}（single {ratio * 100:.1f}%，目标 ≤ 33.3%）{flag}"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit the question bank without external Python dependencies")
     parser.add_argument("--json", action="store_true", help="print machine-readable JSON")
     parser.add_argument("--output", type=Path, help="also write the JSON report to this path")
+    parser.add_argument(
+        "--gate-format-ratio",
+        action="store_true",
+        help="exit non-zero when the whole bank skews to single-choice (single ratio > 1/3, per AGENTS.md §4.2). "
+        "Off by default: the historical bank is single-heavy, so enabling it today would fail until that is rebalanced. "
+        "New-batch enforcement is already a hard gate in `npm run question:add`.",
+    )
     args = parser.parse_args()
     report = audit()
     serialized = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
@@ -176,11 +207,19 @@ def main() -> int:
         print(f"Question bank: {summary['questions']} questions / {summary['knowledgeNodes']} knowledge nodes")
         print(f"Coverage: {summary['coveredCoverageCells']}/{summary['expectedCoverageCells']} cells covered; {summary['coverageGaps']} gaps")
         print(f"Issues: {summary['issueCounts'] or 'none'}")
+        print_choice_format(report)
         for issue in report["issues"]:
             print(f"[{issue['severity']}] {issue['code']} {issue['id']} ({issue['file']}): {issue['detail']}")
         if args.output:
             print(f"Report written to {args.output}")
-    return 1 if report["summary"]["issueCounts"].get("P0", 0) else 0
+    failed = bool(report["summary"]["issueCounts"].get("P0", 0))
+    if args.gate_format_ratio and single_ratio(report) > MAX_SINGLE_RATIO:
+        print(
+            f"✗ 题型门禁失败：全库单选题占比 {single_ratio(report) * 100:.1f}% 超过 1/3（AGENTS.md §4.2）",
+            file=sys.stderr,
+        )
+        failed = True
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
