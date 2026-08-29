@@ -55,6 +55,18 @@ for (const q of questions) {
   }
   const choice = q.formats?.choice;
   if (choice) {
+    if (new Set(choice.answer).size !== choice.answer.length) {
+      console.error(`✗ ${q.id}: 选择题 answer 索引重复`);
+      errors++;
+    }
+    if (choice.type === 'single' && choice.answer.length !== 1) {
+      console.error(`✗ ${q.id}: single 题必须恰好有一个正确答案`);
+      errors++;
+    }
+    if (choice.type === 'multiple' && choice.answer.length < 2) {
+      console.error(`✗ ${q.id}: multiple 题至少需要两个正确答案`);
+      errors++;
+    }
     const max = choice.options.length - 1;
     for (const i of choice.answer) {
       if (i < 0 || i > max) {

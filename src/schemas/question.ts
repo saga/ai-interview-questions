@@ -13,6 +13,28 @@ const choiceFormatSchema = z.object({
   options: z.array(z.string().min(1)).min(2),
   answer: z.array(z.number().int().nonnegative()).min(1),
   question: z.string().min(1).optional(),
+}).superRefine((choice, ctx) => {
+  if (new Set(choice.answer).size !== choice.answer.length) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['answer'],
+      message: 'answer 索引不能重复',
+    });
+  }
+  if (choice.type === 'single' && choice.answer.length !== 1) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['answer'],
+      message: 'single 题必须恰好有一个正确答案',
+    });
+  }
+  if (choice.type === 'multiple' && choice.answer.length < 2) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['answer'],
+      message: 'multiple 题至少需要两个正确答案',
+    });
+  }
 });
 
 const openFormatSchema = z.object({

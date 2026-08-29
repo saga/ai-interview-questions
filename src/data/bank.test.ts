@@ -46,7 +46,10 @@ describe('题库数据完整性', () => {
         expect(i, q.id).toBeLessThan(cf.options.length);
       }
       if (cf.type === 'single') expect(cf.answer, q.id).toHaveLength(1);
-      if (cf.type === 'multiple') expect(new Set(cf.answer).size, q.id).toBe(cf.answer.length);
+      if (cf.type === 'multiple') {
+        expect(cf.answer.length, q.id).toBeGreaterThanOrEqual(2);
+        expect(new Set(cf.answer).size, q.id).toBe(cf.answer.length);
+      }
       if (cf.question !== undefined) {
         expect(cf.question.trim().length, `${q.id} choice 场景题干为空`).toBeGreaterThan(0);
       }
@@ -58,6 +61,25 @@ describe('题库数据完整性', () => {
       const of = q.formats.open;
       if (!of) continue;
       expect(of.referenceAnswer.trim().length, q.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('choice/open 双形态的正确答案一致，且没有明显占位选项', () => {
+    const placeholderPatterns = [/参见解析/, /上述方法/, /原题中/, /本文提到/];
+    for (const q of qs) {
+      const choice = q.formats.choice;
+      if (!choice) continue;
+      for (const option of choice.options) {
+        expect(placeholderPatterns.some((pattern) => pattern.test(option)), `${q.id} 存在占位或原题指代选项`).toBe(false);
+      }
+      const open = q.formats.open;
+      if (!open) continue;
+      const answerMatch = open.referenceAnswer.match(/正确答案\s*([A-Z](?:\s*[,、和]\s*[A-Z])*)/i);
+      if (answerMatch) {
+        const expected = choice.answer.map((index) => String.fromCharCode(65 + index)).sort();
+        const actual = (answerMatch[1].match(/[A-Z]/gi) ?? []).map((label) => label.toUpperCase()).sort();
+        expect(actual, `${q.id} open 参考答案与 choice 答案不一致`).toEqual(expected);
+      }
     }
   });
 
