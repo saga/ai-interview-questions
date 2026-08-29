@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · LLM 安全与金融服务 AI 场景补充
+
+- 新增 `llm-application-security` 与 `financial-ai-governance` 两个知识节点，覆盖提示注入、间接注入、最小权限、不安全输出处理、敏感信息泄露、红队评估、供应链风险，以及金融高影响决策、模型验证、公平性、解释、欺诈检测、隐私、漂移、供应商治理和审计。
+- 新增 18 道题：8 道 LLM 应用安全题、10 道金融服务 AI 场景题。题目强调模型外的权限边界、故障半径、证据链和人工复核，不把生成式模型的平均准确率或自我声明当作安全保证。
+- 来源：[OWASP GenAI LLM Top 10 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/)、[Federal Reserve SR 11-7 Model Risk Management](https://www.federalreserve.gov/supervisionreg/srletters/SR1107.htm)、[CFPB adverse action and AI](https://www.consumerfinance.gov/about-us/blog/continued-use-of-ai-and-adverse-action-requirements/)、[NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)。
+
 ## 2026-08-29 · LLM 可靠性与提示鲁棒性补充
 
 - 新增 `factuality-verification`、`generation-reproducibility` 和 `prompt-robustness` 三个原子知识节点，覆盖高风险场景的证据校验与拒答、随机性与后端变更导致的复现边界、以及语义等价提示扰动和回归测试。
