@@ -10,10 +10,18 @@ const providerEntrySchema = z.object({
   accountId: z.string().optional(),
 });
 
+const promptConfigSchema = z.object({
+  agentSystem: z.string().optional(),
+  evaluationSystem: z.string().optional(),
+  variantSystem: z.string().optional(),
+});
+
 export const aiConfigSchema = z.object({
   providers: z.array(providerEntrySchema),
   generateOpenQuestions: z.preprocess((v) => v === true, z.boolean().default(false)),
   masteryThreshold: z.number().int().min(0).max(100).default(75),
+  disabledCategories: z.array(z.string()).default([]),
+  prompts: promptConfigSchema.optional(),
 });
 
 export type ProviderEntry = z.infer<typeof providerEntrySchema>;

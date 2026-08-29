@@ -48,6 +48,7 @@ export async function buildSession(
   const validDef = assertValidDefinition(def);
   const formats = effectiveFormats(validDef.formats, validDef.useAI, config?.generateOpenQuestions);
   let pool = bank.questions;
+  if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (validDef.categories.length > 0) pool = pool.filter((q) => validDef.categories.includes(q.category));
   if (validDef.difficulties.length > 0) pool = pool.filter((q) => validDef.difficulties.includes(q.difficulty));
   // 形态过滤：题目具备至少一种允许形态即入池；完全无可用形态的题剔除
@@ -84,6 +85,7 @@ export async function nextAdaptiveStep(
   const def = session.definition;
   const formats = effectiveFormats(def.formats, def.useAI, config?.generateOpenQuestions);
   let pool = bank.questions;
+  if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   pool = pool.filter((q) => availableFormats(q, formats).length > 0);

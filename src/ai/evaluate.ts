@@ -11,7 +11,7 @@ import type { OpenFormat, Question } from '../schemas/question';
 import type { ScoringRubric } from '../schemas/interview';
 import { llmEvaluationRawSchema } from '../schemas/evaluation';
 
-const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;
+export const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;
 
 export interface EvalOptions {
   /** 四维权重，仅注入提示词供参考。题目级权重覆盖已移除（ADR-044），一律使用全局 rubric。 */
@@ -110,12 +110,13 @@ export async function evaluateOpenAnswer(
   rubric: ScoringRubric,
   extraCriteria?: string,
   requiredPoints?: string[],
+  systemPrompt = EVAL_SYSTEM,
 ): Promise<EvaluationResult> {
   if (!userAnswer || !userAnswer.trim()) {
     return parseEvaluation('', open, rubric);
   }
   const raw = await complete(
-    EVAL_SYSTEM,
+    systemPrompt,
     buildEvalUser(q, open, userAnswer, { rubric, extraCriteria, requiredPoints }),
   );
   return parseEvaluation(raw, open, rubric);

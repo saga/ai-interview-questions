@@ -40,13 +40,25 @@ export function loadConfig(): AIConfig {
       // 历史存储无此字段：缺省视为关闭（与默认值一致，ADR-031）
       const generateOpenQuestions = parsed.generateOpenQuestions === true;
       const masteryThreshold = typeof parsed.masteryThreshold === 'number' ? parsed.masteryThreshold : 75;
+      const disabledCategories = Array.isArray(parsed.disabledCategories)
+        ? parsed.disabledCategories.filter((value): value is string => typeof value === 'string')
+        : [];
+      const prompts = parsed.prompts && typeof parsed.prompts === 'object' ? parsed.prompts : undefined;
       if (Array.isArray(parsed.providers)) {
         const providers = parsed.providers
           .map(sanitizeEntry)
           .filter((e): e is ProviderEntry => e !== null)
           // 同一引擎只保留首个出现，避免降级链语义混乱
           .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i);
-        if (providers.length > 0) return { providers, generateOpenQuestions, masteryThreshold };
+        if (providers.length > 0) {
+          return {
+            providers,
+            generateOpenQuestions,
+            masteryThreshold,
+            disabledCategories,
+            ...(prompts ? { prompts } : {}),
+          };
+        }
       }
     }
   } catch {
@@ -129,6 +141,8 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
       providers: entries,
       generateOpenQuestions: normalized.generateOpenQuestions,
       masteryThreshold: normalized.masteryThreshold,
+      disabledCategories: normalized.disabledCategories,
+      ...(normalized.prompts ? { prompts: normalized.prompts } : {}),
     },
   };
 }

@@ -55,6 +55,7 @@ export interface TrainingSession {
   copilotQuestion: Question | null;
   resetLearnerProfile: () => void;
   handleSaveConfig: (c: AIConfig) => void;
+  handleToggleCategory: (category: string) => void;
   handleStart: (def: InterviewDefinition) => Promise<void>;
   handleAdaptiveNext: () => Promise<void>;
   handleFinishEarly: () => Promise<void>;
@@ -111,6 +112,17 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
     setConfig(c);
     saveConfig(c);
     message.success('设置已保存');
+  };
+
+  const handleToggleCategory = (category: string) => {
+    const disabled = configRef.current.disabledCategories ?? [];
+    const nextDisabled = disabled.includes(category)
+      ? disabled.filter((item) => item !== category)
+      : [...disabled, category];
+    const next = { ...configRef.current, disabledCategories: nextDisabled };
+    configRef.current = next;
+    setConfig(next);
+    saveConfig(next);
   };
 
   const handleStart = async (def: InterviewDefinition) => {
@@ -332,6 +344,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
     copilotQuestion,
     resetLearnerProfile,
     handleSaveConfig,
+    handleToggleCategory,
     handleStart,
     handleAdaptiveNext,
     handleFinishEarly,

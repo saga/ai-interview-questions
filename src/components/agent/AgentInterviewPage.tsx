@@ -148,10 +148,11 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
       session,
       profile,
       entry,
-      bank: bank.questions,
+      bank: bank.questions.filter((question) => !(config.disabledCategories ?? []).includes(question.category)),
       provider,
       generateOpenQuestions: config.generateOpenQuestions,
       masteryThreshold: config.masteryThreshold,
+      systemPrompt: config.prompts?.agentSystem,
       handlers: {
         onQuestion: (q) => {
           if (!q) {

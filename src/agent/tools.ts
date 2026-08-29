@@ -26,6 +26,7 @@ export interface AgentToolDeps {
   generateOpenQuestions?: boolean;
   /** 主题达标线（0-100）；默认 75。 */
   masteryThreshold?: number;
+  disabledCategories?: string[];
 }
 
 /** 统一的文本型工具结果构造器。 */

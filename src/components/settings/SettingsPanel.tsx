@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Switch, Tag, Typography, Space, App as AntdApp } from 'antd';
+import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Switch, Tabs, Tag, Typography, Space, App as AntdApp } from 'antd';
 import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import type { AIConfig } from '../../schemas/ai-config';
@@ -8,6 +8,9 @@ import { DEFAULT_CONFIG, parseConfigJSON, stringifyConfig } from '../../storage/
 import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
 import { getErrorLogs, clearErrorLogs, type ErrorLogEntry } from '../../storage/db';
 import { resetLearnerData } from '../../storage/learner';
+import { INTERVIEW_AGENT_SYSTEM_PROMPT } from '../../agent/prompt';
+import { EVAL_SYSTEM } from '../../ai/evaluate';
+import { VARIANT_SYSTEM } from '../../ai/variant';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
 
@@ -45,6 +48,12 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
   const { message } = AntdApp.useApp();
   const [text, setText] = useState(() => stringifyConfig(config));
   const [draft, setDraft] = useState<AIConfig>(config);
+  const [promptDraft, setPromptDraft] = useState(() => ({
+    agentSystem: config.prompts?.agentSystem ?? INTERVIEW_AGENT_SYSTEM_PROMPT,
+    evaluationSystem: config.prompts?.evaluationSystem ?? EVAL_SYSTEM,
+    variantSystem: config.prompts?.variantSystem ?? VARIANT_SYSTEM,
+  }));
+  const [activeTab, setActiveTab] = useState('settings');
   const [availability, setAvailability] = useState<ChromeAvailability | null>(null);
   const [logs, setLogs] = useState<ErrorLogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -61,6 +70,11 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
   useEffect(() => {
     setDraft(config);
     setText(stringifyConfig(config));
+    setPromptDraft({
+      agentSystem: config.prompts?.agentSystem ?? INTERVIEW_AGENT_SYSTEM_PROMPT,
+      evaluationSystem: config.prompts?.evaluationSystem ?? EVAL_SYSTEM,
+      variantSystem: config.prompts?.variantSystem ?? VARIANT_SYSTEM,
+    });
   }, [config]);
 
   useEffect(() => {
@@ -137,6 +151,19 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
     message.success('设置已保存');
   };
 
+  const handlePromptSave = () => {
+    const prompts = {
+      agentSystem: promptDraft.agentSystem.trim() || undefined,
+      evaluationSystem: promptDraft.evaluationSystem.trim() || undefined,
+      variantSystem: promptDraft.variantSystem.trim() || undefined,
+    };
+    const next = { ...draft, prompts };
+    setDraft(next);
+    setText(stringifyConfig(next));
+    onSave(next);
+    message.success('提示词已保存');
+  };
+
   return (
     <Card style={{ maxWidth: 860, margin: '0 auto' }}>
       <Typography.Title level={4} style={{ marginTop: 0 }}>
@@ -180,6 +207,39 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           message={`Chrome 内置 AI 状态：${AVAILABILITY_TEXT[availability].message}`}
         />
       )}
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[{ key: 'settings', label: '基础配置' }, { key: 'prompts', label: '提示词' }]}
+        style={{ marginBottom: 16 }}
+      />
+      {activeTab === 'prompts' ? (
+        <Space direction="vertical" style={{ width: '100%' }} size={16}>
+          <Alert
+            type="info"
+            showIcon
+            message="提示词覆盖"
+            description="这里修改的内容会在下一次 AI 调用时生效；恢复为默认文本即可删除自定义覆盖。提示词仅保存在本机。"
+          />
+          <div>
+            <Typography.Text strong>Agent 系统提示词</Typography.Text>
+            <Input.TextArea autoSize={{ minRows: 10, maxRows: 24 }} value={promptDraft.agentSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, agentSystem: event.target.value }))} />
+          </div>
+          <div>
+            <Typography.Text strong>开放题评分系统提示词</Typography.Text>
+            <Input.TextArea autoSize={{ minRows: 5, maxRows: 16 }} value={promptDraft.evaluationSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, evaluationSystem: event.target.value }))} />
+          </div>
+          <div>
+            <Typography.Text strong>题目变体系统提示词</Typography.Text>
+            <Input.TextArea autoSize={{ minRows: 10, maxRows: 28 }} value={promptDraft.variantSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, variantSystem: event.target.value }))} />
+          </div>
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+            <Button onClick={() => setPromptDraft({ agentSystem: INTERVIEW_AGENT_SYSTEM_PROMPT, evaluationSystem: EVAL_SYSTEM, variantSystem: VARIANT_SYSTEM })}>恢复提示词默认值</Button>
+            <Button type="primary" icon={<SaveOutlined />} onClick={handlePromptSave}>保存提示词</Button>
+          </Space>
+        </Space>
+      ) : (
+        <>
       <Typography.Title level={5}>基础设置</Typography.Title>
       <Space direction="vertical" style={{ width: '100%', marginBottom: 20 }} size={12}>
         <Space align="center" wrap>
@@ -210,7 +270,7 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           key: provider.id,
           label: (
             <Space>
-              <Switch checked={provider.enabled} onChange={(checked) => updateProvider(index, { enabled: checked })} onClick={(event) => event.stopPropagation()} />
+              <Switch checked={provider.enabled} onChange={(checked) => updateProvider(index, { enabled: checked })} />
               <span>{PROVIDER_LABELS[provider.id] ?? provider.id}</span>
               <Tag color={provider.enabled ? 'green' : 'default'}>{provider.enabled ? '启用' : '停用'}</Tag>
               <Button
@@ -282,6 +342,8 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           保存设置
         </Button>
       </Space>
+        </>
+      )}
       <Divider />
       <Space style={{ width: '100%', justifyContent: 'space-between', alignItems: 'center' }} wrap>
         <div>

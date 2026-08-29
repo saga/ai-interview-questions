@@ -63,12 +63,12 @@ export function mergeQuestionRubric(
 export class PiAIProvider implements LLMProvider {
   readonly name: string;
 
-  constructor(private readonly entry: ProviderEntry) {
+  constructor(private readonly entry: ProviderEntry, private readonly prompts?: AIConfig['prompts']) {
     this.name = `pi-ai(${entry.id})`;
   }
 
   async generateVariant(q: Question): Promise<GeneratedVariant> {
-    return generateVariant(q, (system, user) => callLLM(this.entry, system, user));
+    return generateVariant(q, (system, user) => callLLM(this.entry, system, user), this.prompts?.variantSystem?.trim() || undefined);
   }
 
   async evaluateOpenAnswer(
@@ -79,7 +79,7 @@ export class PiAIProvider implements LLMProvider {
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
-    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user), effectiveRubric, extraCriteria, requiredPoints);
+    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user), effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
   }
 }
 
@@ -87,8 +87,10 @@ export class PiAIProvider implements LLMProvider {
 export class ChromeAIProvider implements LLMProvider {
   readonly name = 'chrome';
 
+  constructor(private readonly prompts?: AIConfig['prompts']) {}
+
   async generateVariant(q: Question): Promise<GeneratedVariant> {
-    return generateVariant(q, chromeComplete);
+    return generateVariant(q, chromeComplete, this.prompts?.variantSystem?.trim() || undefined);
   }
 
   async evaluateOpenAnswer(
@@ -99,7 +101,7 @@ export class ChromeAIProvider implements LLMProvider {
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
-    return evalOpen(q, open, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints);
+    return evalOpen(q, open, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
   }
 }
 
@@ -139,8 +141,8 @@ export class FallbackProvider implements LLMProvider {
   }
 }
 
-function buildEntryProvider(entry: ProviderEntry): LLMProvider {
-  return entry.id === 'chrome' ? new ChromeAIProvider() : new PiAIProvider(entry);
+function buildEntryProvider(entry: ProviderEntry, prompts?: AIConfig['prompts']): LLMProvider {
+  return entry.id === 'chrome' ? new ChromeAIProvider(prompts) : new PiAIProvider(entry, prompts);
 }
 
 /** 由配置构造 LLMProvider：把所有启用且合法的引擎按顺序串成降级链；
@@ -149,7 +151,7 @@ export function createLLMProvider(config?: AIConfig): LLMProvider | null {
   if (!config || !isConfigValid(config)) return null;
   const chain = config.providers
     .filter((p) => p.enabled && isEntryValid(p))
-    .map(buildEntryProvider);
+    .map((entry) => buildEntryProvider(entry, config.prompts));
   if (chain.length === 0) return null;
   return chain.length === 1 ? chain[0] : new FallbackProvider(chain);
 }

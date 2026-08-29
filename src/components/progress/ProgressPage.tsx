@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Card, Typography, Progress, Tag, List, Empty, Button, Space, Tabs, Table, Segmented, Select, Statistic, Tooltip } from 'antd';
+import { Card, Typography, Progress, Tag, List, Empty, Button, Space, Tabs, Table, Segmented, Select, Statistic, Tooltip, Switch } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, ThunderboltOutlined, ApartmentOutlined } from '@ant-design/icons';
 import type { TableProps } from 'antd';
 import type { LearnerProfile, SessionRecord } from '../../schemas/learner';
@@ -17,6 +17,8 @@ interface Props {
   onGoTrain: () => void;
   coverage: CoverageReport;
   suggestions: TopicSuggestion[];
+  disabledCategories: string[];
+  onToggleCategory: (category: string) => void;
 }
 
 function fmtDate(ts: number): string {
@@ -61,7 +63,7 @@ interface ChecklistRow {
   attempts: number;
 }
 
-export default function ProgressPage({ profile, onGoTrain, coverage, suggestions }: Props) {
+export default function ProgressPage({ profile, onGoTrain, coverage, suggestions, disabledCategories, onToggleCategory }: Props) {
   const [replay, setReplay] = useState<SessionRecord | null>(null);
   const { sessions, topicStats, overallScore } = profile;
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'unlearned'>('all');
@@ -222,15 +224,26 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
           <Card size="small" style={{ marginBottom: 16 }} title={<span><ApartmentOutlined /> 知识覆盖面 · 6 域</span>}>
             {coverage.categories.map((c) => (
               <div key={c.category} style={{ marginBottom: 8 }}>
-                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                  <Typography.Text>{domainLabel(c.category as any)} ({c.category})</Typography.Text>
+                <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+                  <Space size={8}>
+                    <Switch
+                      size="small"
+                      checked={!disabledCategories.includes(c.category)}
+                      onChange={() => onToggleCategory(c.category)}
+                      checkedChildren="出题"
+                      unCheckedChildren="暂停"
+                    />
+                    <Typography.Text type={disabledCategories.includes(c.category) ? 'secondary' : undefined}>
+                      {domainLabel(c.category as any)} ({c.category})
+                    </Typography.Text>
+                  </Space>
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                     覆盖 {c.attempted}/{c.totalTopics} 主题 · 掌握 {c.mastered}
                   </Typography.Text>
                 </Space>
                 <Progress
                   percent={Math.round((c.attempted / c.totalTopics) * 100)}
-                  strokeColor={c.mastered >= c.totalTopics ? '#52c41a' : undefined}
+                  strokeColor={disabledCategories.includes(c.category) ? '#bfbfbf' : c.mastered >= c.totalTopics ? '#52c41a' : undefined}
                   size="small"
                   format={(p) => `${p}%`}
                 />

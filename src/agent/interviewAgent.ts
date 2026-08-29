@@ -78,6 +78,8 @@ export interface CreateInterviewAgentOptions {
   generateOpenQuestions?: boolean;
   /** 主题达标线（0-100）；默认 75。 */
   masteryThreshold?: number;
+  /** 覆盖 Agent 系统提示词；为空时使用内置默认值。 */
+  systemPrompt?: string;
   /** 测试注入：用 mock streamFn + 占位 model 替换真实 buildAgentRuntime（避免真实网络/模型查找）。 */
   runtimeOverride?: { streamFn: StreamFn; model: unknown };
 }
@@ -108,15 +110,15 @@ export interface InterviewAgentHandle {
  * - 工具注入方式：Agent 构造不接受 tools 选项，只能事后通过 state.tools 注入（已验证的 SDK 约定）。
  */
 export function createInterviewAgent(opts: CreateInterviewAgentOptions): InterviewAgentHandle {
-  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, masteryThreshold } = opts;
+  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, masteryThreshold, systemPrompt: configuredSystemPrompt } = opts;
   const runtime = opts.runtimeOverride ?? buildAgentRuntime(entry);
   const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions, masteryThreshold });
   const bankById = new Map(bank.map((q) => [q.id, q]));
 
   // 关闭开放题时，把开关状态注入系统提示，让 Agent 主动只选选择题（减少无效请求被拒）。
-  const systemPrompt = generateOpenQuestions
-    ? INTERVIEW_AGENT_SYSTEM_PROMPT
-    : `${INTERVIEW_AGENT_SYSTEM_PROMPT}\n\n## 本轮配置\n「生成开放题」开关已关闭：请只选择并使用选择题（choice），不要请求开放题（open），否则会被系统拦截并要求换题。`;
+  const systemPrompt = (configuredSystemPrompt?.trim() || INTERVIEW_AGENT_SYSTEM_PROMPT) + (generateOpenQuestions
+    ? ''
+    : `\n\n## 本轮配置\n「生成开放题」开关已关闭：请只选择并使用选择题（choice），不要请求开放题（open），否则会被系统拦截并要求换题。`);
   const agent = new Agent({
     streamFn: runtime.streamFn,
     initialState: { model: runtime.model as Model<any>, systemPrompt },

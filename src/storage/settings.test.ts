@@ -70,6 +70,7 @@ describe('loadConfig', () => {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: false,
       masteryThreshold: 75,
+      disabledCategories: [],
     });
 
     store['ai-interview-trainer.config'] = JSON.stringify({
@@ -81,6 +82,7 @@ describe('loadConfig', () => {
       ],
       generateOpenQuestions: false,
       masteryThreshold: 75,
+      disabledCategories: [],
     });
   });
 
@@ -132,6 +134,7 @@ describe('saveConfig / loadConfig 往返', () => {
       ],
       generateOpenQuestions: true,
       masteryThreshold: 75,
+      disabledCategories: [],
     };
     saveConfig(c);
     expect(loadConfig()).toEqual(c);
@@ -144,6 +147,7 @@ describe('stringifyConfig', () => {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: true,
       masteryThreshold: 75,
+      disabledCategories: [],
     };
     const text = stringifyConfig(c);
     expect(text).toBe(JSON.stringify(c, null, 2));
@@ -167,6 +171,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
         ],
         generateOpenQuestions: false,
         masteryThreshold: 75,
+        disabledCategories: [],
       },
     });
   });
@@ -176,7 +181,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     const on = parseConfigJSON(JSON.stringify({ ...base, generateOpenQuestions: true }));
     expect(on).toEqual({
       ok: true,
-      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, masteryThreshold: 75 },
+      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, masteryThreshold: 75, disabledCategories: [] },
     });
     for (const bad of [undefined, 'yes', 1, null]) {
       const raw = bad === undefined ? base : { ...base, generateOpenQuestions: bad };
@@ -217,6 +222,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
         ],
         generateOpenQuestions: false,
         masteryThreshold: 75,
+        disabledCategories: [],
       },
     });
     const bad = parseConfigJSON(JSON.stringify({ providers: [CF] }));

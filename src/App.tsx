@@ -85,6 +85,7 @@ export default function App() {
     copilotQuestion,
     resetLearnerProfile,
     handleSaveConfig,
+    handleToggleCategory,
     handleStart,
     handleAdaptiveNext,
     handleFinishEarly,
@@ -177,7 +178,6 @@ export default function App() {
                     categories={bank.categories}
                     config={config}
                     profile={displayedProfile}
-                    masteryThreshold={config.masteryThreshold}
                     onStart={handleStart}
                     onGoSettings={() => goPage('settings')}
                   />
@@ -189,6 +189,8 @@ export default function App() {
                     onGoTrain={() => goPage('train')}
                     coverage={computeCoverage(collectTopicRefs(bank.questions), displayedProfile)}
                     suggestions={suggestNextTopics(collectTopicRefs(bank.questions), displayedProfile)}
+                    disabledCategories={config.disabledCategories ?? []}
+                    onToggleCategory={handleToggleCategory}
                   />
                 )}
 
