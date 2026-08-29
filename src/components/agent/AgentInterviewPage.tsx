@@ -44,7 +44,7 @@ const TOOL_LABELS: Record<string, string> = {
   searchQuestions: '搜索题目',
   getQuestion: '选定题目',
   evaluateAnswer: '评估作答',
-  getUserWeaknesses: '读取薄弱点',
+  getUserWeaknesses: '读取薄弱主题',
   finishInterview: '结束面试',
 };
 
@@ -191,9 +191,12 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
               break;
             case 'tool_execution_end': {
               const label = TOOL_LABELS[e.toolName ?? ''] ?? (e.toolName ?? '工具');
+              const detail = toolDetail(e);
+              // 没有薄弱主题时，这条调用只返回固定占位文本，不提供新的决策信息。
+              if (e.toolName === 'getUserWeaknesses' && detail === '薄弱：（暂无）' && !e.isError) return;
               setTranscript((prev) => [
                 ...prev,
-                { kind: 'tool', tool: e.toolName ?? '', label, ok: !e.isError, detail: toolDetail(e) },
+                { kind: 'tool', tool: e.toolName ?? '', label, ok: !e.isError, detail },
               ]);
               break;
             }
