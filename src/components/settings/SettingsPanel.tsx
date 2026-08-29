@@ -179,12 +179,15 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       <Alert
         type="info"
         showIcon
+        closable
         style={{ marginBottom: 16 }}
-        message="直接编辑 config.json"
+        message="配置分为四部分"
         description={
           <>
-            引擎配置就是一份 JSON：<code>providers</code> 数组即多引擎降级链，
-            按顺序从上到下尝试，失败的引擎自动切到下一个。可用引擎：
+            基础配置管理出题开关和 AI 引擎，熟练度管理学习算法，提示词管理 AI 指令；
+            需要批量修改或导入导出完整配置时，再使用“高级 JSON”。所有配置仅保存在本机浏览器。
+            <br />
+            AI 引擎按列表顺序组成降级链，失败时自动尝试下一个。可用引擎：
             <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
               <li>
                 <code>chrome</code> —— 浏览器内置 AI，无需密钥；
@@ -199,10 +202,7 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
                 <code>cloudflare-workers-ai</code> —— Cloudflare Workers AI，需 API Token + Account ID。
               </li>
             </ul>
-            布尔字段 <code>generateOpenQuestions</code> 控制是否生成开放题（默认 false：纯开放题不入卷，
-            双形态题一律出选择；改为 true 恢复开放题）。
-            数字字段 <code>masteryThreshold</code> 控制主题达标线（0-100，默认 75）；主题平均分达到该值后不再作为薄弱项推荐。
-            配置仅保存在本机浏览器（localStorage），不会上传；但浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。
+            浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。
           </>
         }
       />
@@ -217,7 +217,12 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}
-        items={[{ key: 'settings', label: '基础配置' }, { key: 'proficiency', label: '熟练度' }, { key: 'prompts', label: '提示词' }]}
+        items={[
+          { key: 'settings', label: '基础配置' },
+          { key: 'proficiency', label: '熟练度' },
+          { key: 'prompts', label: '提示词' },
+          { key: 'json', label: '高级 JSON' },
+        ]}
         style={{ marginBottom: 16 }}
       />
       {activeTab === 'prompts' ? (
@@ -279,6 +284,26 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           </Space>
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
             <Button type="primary" icon={<SaveOutlined />} onClick={handleFormSave}>保存熟练度设置</Button>
+          </Space>
+        </Space>
+      ) : activeTab === 'json' ? (
+        <Space direction="vertical" style={{ width: '100%' }} size={16}>
+          <Alert
+            type="warning"
+            showIcon
+            message="高级 JSON 编辑"
+            description="这里编辑完整配置。保存时会进行结构校验、引擎清洗和重复引擎检查；校验失败不会覆盖当前配置。"
+          />
+          <Suspense fallback={null}>
+            <LazyCodeEditor value={text} onChange={setText} language="json" height={520} />
+          </Suspense>
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+            <Button icon={<UndoOutlined />} onClick={() => setText(stringifyConfig(DEFAULT_CONFIG))}>
+              恢复默认文本
+            </Button>
+            <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+              保存 JSON 配置
+            </Button>
           </Space>
         </Space>
       ) : (
@@ -371,19 +396,6 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       />
       <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'flex-end' }}>
         <Button type="primary" icon={<SaveOutlined />} onClick={handleFormSave}>保存可视化设置</Button>
-      </Space>
-      <Divider />
-      <Typography.Title level={5}>高级 JSON 编辑</Typography.Title>
-      <Suspense fallback={null}>
-        <LazyCodeEditor value={text} onChange={setText} language="json" height={420} />
-      </Suspense>
-      <Space style={{ marginTop: 16, width: '100%', justifyContent: 'flex-end' }}>
-        <Button icon={<UndoOutlined />} onClick={() => setText(stringifyConfig(DEFAULT_CONFIG))}>
-          恢复默认
-        </Button>
-        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
-          保存设置
-        </Button>
       </Space>
         </>
       )}
