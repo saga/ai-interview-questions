@@ -48,8 +48,9 @@ export function buildModels(config: ProviderEntry): ModelsClient {
 
 /** 按 provider + 模型 id 取模型；找不到返回 undefined。
  *  仅 cloudflare-workers-ai：浏览器无法直连 api.cloudflare.com（该域名不返回 CORS 头），
- *  故强制走同源 Worker 代理 /api/ai/client/v4/accounts/{accountId}/ai/v1
- *  （由 worker/index.ts 服务端转发到 api.cloudflare.com），从而规避跨域。
+ *  故强制走同源代理 /api/ai/client/v4/accounts/{accountId}/ai/v1
+ *  （由可选的 Node.js server：server/index.js 服务端转发到 api.cloudflare.com，
+ *   本地则由 vite.config.ts 的 dev proxy 转发），从而规避跨域。
  *  该 provider 未启用时不会被调用，故不会产生任何代理流量。
  *  其它 provider（deepseek / openrouter / google / local）一律走各自模型目录里的默认 baseUrl。 */
 export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any> | undefined {

@@ -7,13 +7,13 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    // 本地开发时让 /api/ai/* 也走同源代理（与生产 Worker 行为一致），
-    // 仅转发 cloudflare-workers-ai 的请求到 api.cloudflare.com，规避浏览器 CORS。
+    // 本地开发时让 /api/ai/* 也走同源代理。为保持「代理只有一份实现」，这里把请求
+    // 转发到本地可选的 Node server（server/index.js，端口 3000），由它再服务端转发到
+    // api.cloudflare.com，与生产的可选 server 行为完全一致（不再直连 cloudflare）。
     proxy: {
       '/api/ai': {
-        target: 'https://api.cloudflare.com',
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/ai/, ''),
       },
     },
   },

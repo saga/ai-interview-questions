@@ -5,9 +5,10 @@
   "type": "module",
   "description": "AI 面试题训练器 — Ant Design + React + pi-ai LLM 集成",
   "scripts": {
-    "dev": "vite",
+    "dev": "trap 'kill $VITE_PID $SERVER_PID 2>/dev/null' EXIT INT TERM; vite & VITE_PID=$!; node server/index.js & SERVER_PID=$!; wait",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "server": "node server/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "question:coverage": "node scripts/question-coverage.ts",
@@ -19,8 +20,7 @@
     "lint:bias": "node scripts/lint-bias.ts",
     "lint:length": "node scripts/lint-length.ts",
     "fix:bias": "node scripts/fix-bias.ts",
-    "deploy": "wrangler pages deploy dist",
-    "deploy:cloudflare": "wrangler pages deploy dist"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",

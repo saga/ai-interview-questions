@@ -1,16 +1,16 @@
-# Cloudflare Workers + Assets 部署配置
-# 本应用是纯静态 SPA（构建产物 dist/，HashRouter，无需 SPA fallback 也能正常路由）。
-# 新增 main 入口 worker/index.ts：仅提供同源 AI 代理 /api/ai/*，把 cloudflare-workers-ai 的请求
-# 服务端转发到 api.cloudflare.com，从而绕过浏览器直连时的 CORS 拦截。其它请求回退到 Assets。
+# Cloudflare 纯静态 Assets 部署配置（无 Worker 脚本）
+# 本应用是纯静态 SPA（构建产物 dist/，HashRouter）。Cloudflare 仅作为静态资源托管，
+# 不需要任何 Worker 脚本。Cloudflare Workers AI 的浏览器直连 CORS 问题，由可选的
+# Node.js server（server/index.js）统一解决：它提供同源 /api/ai/* 代理并转发到
+# api.cloudflare.com，同时可托管 dist/。该 server 不是强依赖，仅在需要服务端能力时启用。
 # 发布范围：仅 dist/ —— 本地 Python 分析工程（analysis/，含 *.py、pyproject.toml、uv.lock）与经
 #   Git LFS 管理的离线模型 analysis/models/ 不参与浏览器构建，不会被发布。
 # 全部 Python 工程已收进 analysis/ 子目录，仓库根不再有 pyproject.toml / uv.lock / requirements.txt，
 #   避免 Cloudflare 把本仓库识别成 Python 项目而在构建期安装 Python。
-# 部署命令：npx wrangler deploy（Workers + Assets 模式，读取 [assets] directory = "./dist" + main）。
+# 部署命令：npx wrangler deploy（Workers + Assets 模式，仅读取 [assets] directory = "./dist"）。
 
 name = "ai-interview-trainer"
 compatibility_date = "2025-08-30"
-main = "./worker/index.ts"
 
 [observability]
 enabled = false
