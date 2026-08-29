@@ -2,18 +2,47 @@
 // 以及 config.json 编辑器的解析校验（parseConfigJSON）。
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import 'fake-indexeddb/auto';
 import { DEFAULT_CONFIG, loadConfig, parseConfigJSON, saveConfig, sanitizeEntry, stringifyConfig } from './settings';
+import { clearErrorLogs, getErrorLogs } from './db';
 import type { AIConfig } from '../schemas/ai-config';
 
 let store: Record<string, string>;
 
-beforeEach(() => {
+beforeEach(async () => {
   store = {};
+  await clearErrorLogs();
   vi.stubGlobal('localStorage', {
     getItem: (k: string) => store[k] ?? null,
     setItem: (k: string, v: string) => {
       store[k] = v;
     },
+  });
+});
+
+describe('配置审计日志', () => {
+  it('记录安全摘要，不写入 API Key 或提示词正文', async () => {
+    const secret = 'sk-audit-secret';
+    saveConfig({
+      ...DEFAULT_CONFIG,
+      providers: DEFAULT_CONFIG.providers.map((provider) =>
+        provider.id === 'deepseek' ? { ...provider, enabled: true, model: 'm', apiKey: secret } : provider,
+      ),
+      prompts: { agentSystem: 'private prompt body' },
+    });
+
+    const logs = await getErrorLogs();
+    expect(logs).toHaveLength(1);
+    expect(logs[0].scope).toBe('config-audit');
+    expect(JSON.stringify(logs[0])).not.toContain(secret);
+    expect(JSON.stringify(logs[0])).not.toContain('private prompt body');
+    expect(logs[0].detail).toMatchObject({ after: { providers: expect.any(Array), prompts: expect.any(Object) } });
+  });
+
+  it('配置没有变化时不重复记录审计日志', async () => {
+    saveConfig(DEFAULT_CONFIG);
+    saveConfig(DEFAULT_CONFIG);
+    expect(await getErrorLogs()).toHaveLength(0);
   });
 });
 

@@ -4,6 +4,7 @@ import { isEntryValid } from '../ai/provider';
 import { aiConfigSchema, proficiencyConfigSchema } from '../schemas/ai-config';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 import { SAMPLE_CONFIG } from '../config/sampleConfig';
+import { recordErrorLog } from './db';
 
 const KEY = 'ai-interview-trainer.config';
 const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai'];
@@ -11,6 +12,28 @@ const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'ope
 // 默认配置 = 内置的干净样例（src/config/sample-config.json）：完整引擎清单，
 // chrome / local 启用、其余禁用。既是「恢复默认」按钮的回填值，也是 localStorage 为空 / 损坏时的兜底。
 export const DEFAULT_CONFIG: AIConfig = SAMPLE_CONFIG;
+
+function safeConfigSnapshot(config: AIConfig) {
+  return {
+    providers: config.providers.map((provider) => ({
+      id: provider.id,
+      enabled: provider.enabled,
+      model: provider.model,
+      hasApiKey: Boolean(provider.apiKey),
+      hasAccountId: Boolean(provider.accountId),
+      hasBaseUrl: Boolean(provider.baseUrl),
+    })),
+    generateOpenQuestions: config.generateOpenQuestions,
+    masteryThreshold: config.masteryThreshold,
+    disabledCategories: [...(config.disabledCategories ?? [])],
+    proficiency: { ...config.proficiency },
+    prompts: {
+      agentSystem: { present: Boolean(config.prompts?.agentSystem), length: config.prompts?.agentSystem?.length ?? 0 },
+      evaluationSystem: { present: Boolean(config.prompts?.evaluationSystem), length: config.prompts?.evaluationSystem?.length ?? 0 },
+      variantSystem: { present: Boolean(config.prompts?.variantSystem), length: config.prompts?.variantSystem?.length ?? 0 },
+    },
+  };
+}
 
 /** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。
  *  accountId 仅 cloudflare 使用：非空才保留，避免其他引擎的配置出现空噪音字段。 */
@@ -71,7 +94,13 @@ export function loadConfig(): AIConfig {
 }
 
 export function saveConfig(c: AIConfig): void {
+  const previous = loadConfig();
+  const before = safeConfigSnapshot(previous);
+  const after = safeConfigSnapshot(c);
   localStorage.setItem(KEY, JSON.stringify(c));
+  if (JSON.stringify(before) !== JSON.stringify(after)) {
+    void recordErrorLog('config-audit', 'AI 配置已修改', { before, after });
+  }
 }
 
 export function stringifyConfig(c: AIConfig): string {
