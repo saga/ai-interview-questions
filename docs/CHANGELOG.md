@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · O'Reilly Radar 高价值技术主题题库补充
+
+- 基于 O'Reilly Radar 首页筛选并阅读全文，新增 20 道题，来源为 [The Identity Crisis No One Planned For](https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/)、[Effective Patterns for Advanced MCP Usage](https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/)、[When Smaller Models Win](https://www.oreilly.com/radar/when-smaller-models-win/) 和 [When Guardrails Go Wrong](https://www.oreilly.com/radar/when-guardrails-go-wrong/)。
+- 题目覆盖非人类身份生命周期、意图绑定授权、Agent 供应链和沙箱、多服务组合、远程多租户、MCP 聚合与上下文膨胀、专用小模型、模型路由、LoRA、推理约束、Guardrails 的 ROC 权衡、上下文级判定、稳定性和纵深防御。
+- 题目保留文章小节作为来源依据，但将具体产品和供应商降级为背景，重点考察可迁移的身份治理、权限边界、系统设计、性能成本、评估、排障与安全工程原则。题库批次见 [src/data/questions/oreilly-radar-2026-08.json](../src/data/questions/oreilly-radar-2026-08.json)。
+
 ## 2026-08-29 · AWS Well-Architected Lens 子页面题库补充
 
 - 基于 Financial Services Industry、Agentic AI、Responsible AI、Machine Learning 和 Generative AI Lens 的总览页及其安全、可靠性、监控、身份权限、响应校验、数据集治理和发布标准子页面，新增 30 道题，每个 Lens 6 道。

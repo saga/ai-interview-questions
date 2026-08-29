@@ -391,6 +391,14 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           <Typography.Text type="secondary">需要可用 AI 引擎，关闭时只出选择题</Typography.Text>
         </Space>
         <Space align="center" wrap>
+          <Switch
+            checked={draft.questionChallengerEnabled}
+            onChange={(checked) => setDraft((current) => ({ ...current, questionChallengerEnabled: checked }))}
+          />
+          <Typography.Text>启用题目质疑者</Typography.Text>
+          <Typography.Text type="secondary">使用当前配置的 AI 引擎，关闭时不调用质疑模型</Typography.Text>
+        </Space>
+        <Space align="center" wrap>
           <Typography.Text>主题达标线</Typography.Text>
           <InputNumber
             min={0}

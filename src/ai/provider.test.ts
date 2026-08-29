@@ -179,6 +179,7 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
       name,
       generateVariant: impl as LLMProvider['generateVariant'],
       evaluateOpenAnswer: impl as LLMProvider['evaluateOpenAnswer'],
+      challengeQuestion: impl as LLMProvider['challengeQuestion'],
     };
   }
 
@@ -228,6 +229,17 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
       fake('b', async () => ({ overall: 90 })),
     ]);
     await expect(chain.evaluateOpenAnswer(q(), OPEN_FMT, 'ans', GLOBAL)).resolves.toEqual({ overall: 90 });
+  });
+
+  it('challengeQuestion 同样享受降级语义', async () => {
+    const expected = { verdict: 'accept', summary: 'ok', issues: [] };
+    const chain = new FallbackProvider([
+      fake('a', async () => {
+        throw new Error('down');
+      }),
+      fake('b', async () => expected),
+    ]);
+    await expect(chain.challengeQuestion(q())).resolves.toEqual(expected);
   });
 
 });

@@ -19,6 +19,11 @@ describe('aiConfigSchema', () => {
     expect(parsed.generateOpenQuestions).toBe(false);
   });
 
+  it('defaults questionChallengerEnabled to false', () => {
+    const parsed = aiConfigSchema.parse({ providers: [{ id: 'chrome' }] });
+    expect(parsed.questionChallengerEnabled).toBe(false);
+  });
+
   it('defaults masteryThreshold to 75', () => {
     const parsed = aiConfigSchema.parse({ providers: [] });
     expect(parsed.masteryThreshold).toBe(75);

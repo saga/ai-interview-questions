@@ -7,6 +7,7 @@ import type { QuestionAngle, Difficulty, EvaluationDimension } from './schemas/c
 import type { FormatId } from './schemas/common';
 import type { ScoringRubric } from './schemas/interview';
 import type { EvaluationResult } from './schemas/evaluation';
+import type { QuestionChallenge } from './ai/questionChallenger';
 
 /** 题库：source of truth；LLM 只是增强层。 */
 export interface QuestionBank {
@@ -58,6 +59,7 @@ export interface LLMProvider {
     rubric: ScoringRubric,
     extraCriteria?: string,
   ): Promise<EvaluationResult>;
+  challengeQuestion(question: Question): Promise<QuestionChallenge>;
 }
 
 export type CompleteFn = (system: string, user: string) => Promise<string>;

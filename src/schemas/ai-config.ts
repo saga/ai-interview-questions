@@ -39,6 +39,7 @@ const DEFAULT_PROFICIENCY: ProficiencyConfig = {
 export const aiConfigSchema = z.object({
   providers: z.array(providerEntrySchema),
   generateOpenQuestions: z.preprocess((v) => v === true, z.boolean().default(false)),
+  questionChallengerEnabled: z.preprocess((v) => v === true, z.boolean().default(false)),
   masteryThreshold: z.number().int().min(0).max(100).default(75),
   disabledCategories: z.array(z.string()).default([]),
   proficiency: proficiencyConfigSchema.default(DEFAULT_PROFICIENCY),

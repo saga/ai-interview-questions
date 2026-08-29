@@ -1,6 +1,7 @@
 import { Button, Card, Tag, Typography } from 'antd';
 import { ArrowRightOutlined, CheckOutlined, SendOutlined } from '@ant-design/icons';
 import type { AnswerValue } from '../../types';
+import type { LLMProvider } from '../../types';
 import type { SessionQuestion } from '../../schemas/session';
 import { STRATEGY_LABELS, type Strategy } from '../../domain/adaptive';
 import QuestionCard from '../quiz/QuestionCard';
@@ -17,6 +18,8 @@ interface Props {
   onChange: (v: AnswerValue) => void;
   onSubmitNext: () => void;
   onFinish: () => void;
+  challengerEnabled?: boolean;
+  challengerProvider?: LLMProvider | null;
 }
 
 /** 自适应面试的逐题视图：答一题、评一题，下一题由迁移策略决定。 */
@@ -31,6 +34,8 @@ export default function AdaptiveQuiz({
   onChange,
   onSubmitNext,
   onFinish,
+  challengerEnabled = false,
+  challengerProvider,
 }: Props) {
   return (
     <div>
@@ -52,6 +57,8 @@ export default function AdaptiveQuiz({
         format={sq.format}
         value={value}
         onChange={onChange}
+        challengerEnabled={challengerEnabled}
+        challengerProvider={challengerProvider}
       />
 
       <Button

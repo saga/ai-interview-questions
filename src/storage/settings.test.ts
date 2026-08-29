@@ -98,6 +98,7 @@ describe('loadConfig', () => {
     expect(loadConfig()).toEqual({
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: false,
+      questionChallengerEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -111,6 +112,7 @@ describe('loadConfig', () => {
         { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x', baseUrl: '' },
       ],
       generateOpenQuestions: false,
+      questionChallengerEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -164,6 +166,7 @@ describe('saveConfig / loadConfig 往返', () => {
         { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
       ],
       generateOpenQuestions: true,
+      questionChallengerEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -178,6 +181,7 @@ describe('stringifyConfig', () => {
     const c: AIConfig = {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: true,
+      questionChallengerEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -203,6 +207,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
           { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
         ],
         generateOpenQuestions: false,
+        questionChallengerEnabled: false,
         masteryThreshold: 75,
         disabledCategories: [],
         proficiency: DEFAULT_CONFIG.proficiency,
@@ -215,7 +220,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     const on = parseConfigJSON(JSON.stringify({ ...base, generateOpenQuestions: true }));
     expect(on).toEqual({
       ok: true,
-      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, masteryThreshold: 75, disabledCategories: [], proficiency: DEFAULT_CONFIG.proficiency },
+      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, questionChallengerEnabled: false, masteryThreshold: 75, disabledCategories: [], proficiency: DEFAULT_CONFIG.proficiency },
     });
     for (const bad of [undefined, 'yes', 1, null]) {
       const raw = bad === undefined ? base : { ...base, generateOpenQuestions: bad };
@@ -255,6 +260,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
           },
         ],
         generateOpenQuestions: false,
+        questionChallengerEnabled: false,
         masteryThreshold: 75,
         disabledCategories: [],
         proficiency: DEFAULT_CONFIG.proficiency,

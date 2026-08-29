@@ -1,9 +1,12 @@
-import { Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography } from 'antd';
-import { Suspense, lazy } from 'react';
+import { Alert, Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography, Button, List } from 'antd';
+import { Suspense, lazy, useState } from 'react';
+import { SafetyCertificateOutlined } from '@ant-design/icons';
 import type { AnswerValue } from '../../types';
 import type { FormatId } from '../../schemas/common';
 import type { Question } from '../../schemas/question';
 import { categoryLabel } from '../../domain/categories';
+import type { LLMProvider } from '../../types';
+import type { QuestionChallenge } from '../../ai/questionChallenger';
 import RichText from '../common/RichText';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
@@ -21,9 +24,13 @@ interface Props {
   format: FormatId;
   value: AnswerValue;
   onChange: (v: AnswerValue) => void;
+  challengerEnabled?: boolean;
+  challengerProvider?: LLMProvider | null;
 }
 
-export default function QuestionCard({ index, question, format, value, onChange }: Props) {
+export default function QuestionCard({ index, question, format, value, onChange, challengerEnabled = false, challengerProvider }: Props) {
+  const [challenge, setChallenge] = useState<QuestionChallenge | null>(null);
+  const [challenging, setChallenging] = useState(false);
   const cf = question.formats.choice;
   const of = question.formats.open;
   // 选择形态可携带场景化专属题干（cf.question），未给则与开放形态共用共享题干
@@ -36,6 +43,28 @@ export default function QuestionCard({ index, question, format, value, onChange 
       : of?.language
         ? `编程题 · ${of.language}`
         : '问答题';
+
+  const runChallenge = async () => {
+    setChallenging(true);
+    try {
+      if (!challengerProvider) throw new Error('没有可用的 AI 引擎。');
+      setChallenge(await challengerProvider.challengeQuestion(question));
+    } catch (error) {
+      setChallenge({
+        verdict: 'revise',
+        summary: 'AI 质询失败，需要人工复核。',
+        issues: [{
+          severity: 'critical',
+          dimension: 'logic',
+          issue: error instanceof Error ? error.message : 'AI 引擎返回错误。',
+          evidence: '',
+          suggestion: '确认当前 AI 引擎可用后重试。',
+        }],
+      });
+    } finally {
+      setChallenging(false);
+    }
+  };
 
   return (
     <Card size="small" style={{ marginBottom: 16 }}>
@@ -55,6 +84,49 @@ export default function QuestionCard({ index, question, format, value, onChange 
       <div style={{ marginBottom: 18 }}>
         <RichText text={stem} strong />
       </div>
+
+      {challengerEnabled && (
+        <div style={{ marginBottom: 18 }}>
+          <Button
+            size="small"
+            icon={<SafetyCertificateOutlined />}
+            loading={challenging}
+            onClick={() => void runChallenge()}
+          >
+            质询题目
+          </Button>
+        </div>
+      )}
+
+      {challenge && (
+        <Alert
+          style={{ marginBottom: 18 }}
+          type={challenge.verdict === 'accept' ? 'success' : challenge.verdict === 'reject' ? 'error' : 'warning'}
+          showIcon
+          message={`质询结论：${challenge.verdict}`}
+          description={
+            <>
+              <Typography.Paragraph style={{ marginBottom: challenge.issues.length ? 8 : 0 }}>
+                {challenge.summary}
+              </Typography.Paragraph>
+              {challenge.issues.length > 0 && (
+                <List
+                  size="small"
+                  dataSource={challenge.issues}
+                  renderItem={(issue) => (
+                    <List.Item>
+                      <Typography.Text>
+                        <strong>{issue.dimension}</strong>：{issue.issue}
+                        {issue.suggestion && ` 建议：${issue.suggestion}`}
+                      </Typography.Text>
+                    </List.Item>
+                  )}
+                />
+              )}
+            </>
+          }
+        />
+      )}
 
       {format === 'choice' && cf?.type === 'single' && (
         <Radio.Group

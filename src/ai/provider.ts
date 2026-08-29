@@ -14,6 +14,7 @@ import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
 import { requiredPointsFor } from '../domain/knowledge';
+import { challengeQuestion, type QuestionChallenge } from './questionChallenger';
 
 /** 单个引擎通道的校验按 id 区分：
  *  - chrome：浏览器内置模型，无需 apiKey/model；
@@ -81,6 +82,10 @@ export class PiAIProvider implements LLMProvider {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
     return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user), effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
   }
+
+  async challengeQuestion(q: Question): Promise<QuestionChallenge> {
+    return challengeQuestion(q, (system, user) => callLLM(this.entry, system, user));
+  }
 }
 
 /** Chrome Built-in AI（本地 Prompt API）实现：同一套 prompt/解析逻辑，仅底层不同。 */
@@ -102,6 +107,10 @@ export class ChromeAIProvider implements LLMProvider {
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
     return evalOpen(q, open, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
+  }
+
+  async challengeQuestion(q: Question): Promise<QuestionChallenge> {
+    return challengeQuestion(q, chromeComplete);
   }
 }
 
@@ -138,6 +147,10 @@ export class FallbackProvider implements LLMProvider {
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     return this.run((p) => p.evaluateOpenAnswer(q, open, userAnswer, rubric, extraCriteria));
+  }
+
+  challengeQuestion(q: Question): Promise<QuestionChallenge> {
+    return this.run((p) => p.challengeQuestion(q));
   }
 }
 

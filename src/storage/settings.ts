@@ -24,6 +24,7 @@ function safeConfigSnapshot(config: AIConfig) {
       hasBaseUrl: Boolean(provider.baseUrl),
     })),
     generateOpenQuestions: config.generateOpenQuestions,
+    questionChallengerEnabled: config.questionChallengerEnabled,
     masteryThreshold: config.masteryThreshold,
     disabledCategories: [...(config.disabledCategories ?? [])],
     proficiency: { ...config.proficiency },
@@ -62,6 +63,7 @@ export function loadConfig(): AIConfig {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
       // 历史存储无此字段：缺省视为关闭（与默认值一致，ADR-031）
       const generateOpenQuestions = parsed.generateOpenQuestions === true;
+      const questionChallengerEnabled = parsed.questionChallengerEnabled === true;
       const masteryThreshold = typeof parsed.masteryThreshold === 'number' ? parsed.masteryThreshold : 75;
       const disabledCategories = Array.isArray(parsed.disabledCategories)
         ? parsed.disabledCategories.filter((value): value is string => typeof value === 'string')
@@ -79,6 +81,7 @@ export function loadConfig(): AIConfig {
           return {
             providers,
             generateOpenQuestions,
+            questionChallengerEnabled,
             masteryThreshold,
             disabledCategories,
             proficiency,
@@ -173,12 +176,13 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
   if (!entries.some((p) => p.enabled && isEntryValid(p))) {
     return { ok: false, error: '至少需要一个启用且配置完整的引擎' };
   }
-  // generateOpenQuestions 已由 Zod 默认 false，无需额外处理
+  // 题目开关已由 Zod 默认 false，无需额外处理
   return {
     ok: true,
     config: {
       providers: entries,
       generateOpenQuestions: normalized.generateOpenQuestions,
+      questionChallengerEnabled: normalized.questionChallengerEnabled,
       masteryThreshold: normalized.masteryThreshold,
       disabledCategories: normalized.disabledCategories,
       proficiency: normalized.proficiency,

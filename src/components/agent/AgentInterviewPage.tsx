@@ -9,6 +9,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import type { AnswerValue } from '../../types';
+import type { LLMProvider } from '../../types';
 import type { AIConfig } from '../../schemas/ai-config';
 import type { LearnerProfile, SessionRecord } from '../../schemas/learner';
 import type { SessionQuestion } from '../../schemas/session';
@@ -27,6 +28,7 @@ import QuestionCard from '../quiz/QuestionCard';
 
 interface Props {
   config: AIConfig;
+  challengerProvider?: LLMProvider | null;
   profile: LearnerProfile;
   /** Agent 面试结束后，由 App 负责落库（updateLearner + saveLearner）。 */
   onComplete: (record: SessionRecord) => void;
@@ -80,7 +82,7 @@ function hasAnswer(v?: AnswerValue): boolean {
 }
 
 /** Agent 面试页：用 pi-agent-core 跑「选题/追问/结束」的自主决策循环，复用现有题库、评分与 Learner 管线。 */
-export default function AgentInterviewPage({ config, profile, onComplete, onGoSettings, onGoProgress }: Props) {
+export default function AgentInterviewPage({ config, challengerProvider, profile, onComplete, onGoSettings, onGoProgress }: Props) {
   const { message } = AntdApp.useApp();
   const configReady = isConfigValid(config);
 
@@ -353,6 +355,8 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
               format={currentQuestion.format}
               value={answer}
               onChange={setAnswer}
+              challengerEnabled={config.questionChallengerEnabled}
+              challengerProvider={challengerProvider}
             />
           ) : (
             <Card size="small">

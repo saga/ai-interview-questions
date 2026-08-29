@@ -25,6 +25,7 @@ import QuestionCard from './components/quiz/QuestionCard';
 import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
 import CopilotSidebar from './components/copilot/CopilotSidebar';
+import { createLLMProvider } from './ai/provider';
 
 type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
 
@@ -65,6 +66,7 @@ export default function App() {
   const page = pageFromPath(location.pathname);
   const goPage = (p: Page) => navigate(p === 'train' ? '/train' : `/${p}`);
   const [copilotOpen, setCopilotOpen] = useState(false);
+  const challengerProvider = createLLMProvider(config);
 
   const {
     config,
@@ -214,6 +216,7 @@ export default function App() {
                 {phase === 'home' && page === 'agent' && (
                   <AgentInterviewPage
                     config={config}
+                      challengerProvider={challengerProvider}
                     profile={displayedProfile}
                     onComplete={handleAgentComplete}
                     onGoSettings={() => goPage('settings')}
@@ -237,6 +240,8 @@ export default function App() {
                       onChange={(v) => handleAnswerChange(questions[adaptiveCursor].question.id, v)}
                       onSubmitNext={() => void handleAdaptiveNext()}
                       onFinish={() => void handleFinishEarly()}
+                      challengerEnabled={config.questionChallengerEnabled}
+                      challengerProvider={challengerProvider}
                     />
                   </div>
                 )}
@@ -279,6 +284,8 @@ export default function App() {
                         format={sq.format}
                         value={answers[sq.question.id] ?? emptyAnswer(sq)}
                         onChange={(v) => handleAnswerChange(sq.question.id, v)}
+                        challengerEnabled={config.questionChallengerEnabled}
+                        challengerProvider={challengerProvider}
                       />
                     ))}
                     <Button type="primary" size="large" block disabled={busy != null} onClick={doSubmit}>
