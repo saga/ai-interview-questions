@@ -24,7 +24,18 @@ npm run preview            # 预览构建产物
 npm run test               # Vitest 单元测试（见 AGENTS.md 原则 2）
 npm run question:coverage  # 题库覆盖矩阵（topic × angle）+ 补题建议清单（ADR-032）
 npm run question:blueprint # 把缺口格输出为题目蓝图 JSON（含变体候选），如 -- 10
+npm run question:audit    # Python 结构/分布/覆盖率审计
+npm run question:analysis # Python 统计、近重复、TF-IDF 聚类、难度分类、图分析
 ```
+
+Python 分析工具使用 `uv` 管理，首次运行前执行 `uv sync --extra analysis`。`question:analysis` 默认不会加载语义模型；需要语义去重时显式运行：
+
+```bash
+uv run --extra analysis python scripts/question_analysis.py --json
+uv run --extra analysis python scripts/question_analysis.py --semantic --json
+```
+
+其中 TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用同一次 embedding 编码同时发现语义重复题和语义题簇，首次运行可能下载 `sentence-transformers` 模型。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
 
 ## 文档
 

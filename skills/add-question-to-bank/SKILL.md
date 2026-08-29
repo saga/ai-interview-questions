@@ -38,15 +38,17 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 
 ## 修改与验证
 
-1. 使用 `apply_patch` 修改对应 JSON 文件，保持现有格式和排序风格。
-2. 运行：
+1. 先将草稿保存为 JSON 数组，运行 `npm run question:add -- --file draft.json --check`。
+2. 检查通过且人工确认后，使用 `npm run question:add -- --file draft.json --write --output src/data/questions/<batch>.json` 写入；目标文件不能覆盖已有文件。
+3. 直接修改题库时使用 `apply_patch`，保持现有格式和排序风格。
+4. 运行：
    - `npm run validate:questions`
    - `npx vitest run src/data/bank.test.ts`
    - `npm run lint:bias`
    - `npm run question:coverage`
-3. 再运行 `npm run typecheck` 和 `npm run test`。
-4. 运行 `git diff --check`，确认没有意外改动。
-5. 最终说明新增题的 id、覆盖的知识缺口、验证结果和仍需人工复核的事实。
+5. 再运行 `npm run typecheck` 和 `npm run test`。
+6. 运行 `git diff --check`，确认没有意外改动。
+7. 最终说明新增题的 id、覆盖的知识缺口、验证结果和仍需人工复核的事实。
 
 ## LLM 使用边界
 

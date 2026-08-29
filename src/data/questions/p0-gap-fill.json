@@ -1,0 +1,327 @@
+[
+  {
+    "id": "p0-batch-norm-tradeoff-01",
+    "category": "deep-learning",
+    "topic": "batch-norm",
+    "tags": ["batch-norm", "layer-norm", "rms-norm", "normalization"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "一个 Transformer 训练任务的 batch size 因显存限制经常只有 2，且线上推理 batch size 不固定。若在 BN、LN、RMSNorm 中选择归一化方式，哪项判断最合理？",
+    "explanation": "应优先考虑 LN 或 RMSNorm。BN 依赖 batch 内统计量，小 batch 和训练/推理统计切换会增加不稳定性；LN 按单个样本归一化，RMSNorm 进一步省去去均值步骤，通常更适合 Transformer。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "优先选择 LN 或 RMSNorm，因为它们按样本归一化，不依赖 batch 统计量，RMSNorm 还可省去均值计算",
+          "必须选择 BN，因为 batch 越小，BN 的运行均值越准确，推理时也不需要维护额外统计量",
+          "三者在小 batch 和变动推理 batch 下完全等价，只需比较参数数量即可",
+          "选择 BN 并在推理时继续使用当前 batch 的统计量，就能消除训练与推理之间的差异"
+        ],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "优先选择 LN 或 RMSNorm。BN 依赖 batch 内统计量，小 batch 和训练/推理统计切换会增加不稳定性；LN 按单个样本归一化，RMSNorm 省去去均值步骤，通常更适合 Transformer。"
+      }
+    }
+  },
+  {
+    "id": "p0-cross-entropy-calculation-01",
+    "category": "deep-learning",
+    "topic": "cross-entropy",
+    "tags": ["cross-entropy", "loss", "perplexity", "calculation"],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "一个分类模型对真实类别的预测概率为 0.25，使用自然对数计算交叉熵。该样本的 loss 和对应 perplexity 分别约为多少？",
+    "explanation": "单样本交叉熵为 -ln(0.25) = ln(4) ≈ 1.386；该样本对应的 perplexity 为 exp(loss) = 4。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["loss ≈ 0.25，perplexity ≈ 0.25", "loss ≈ 1.386，perplexity = 4", "loss = 4，perplexity ≈ 1.386", "loss ≈ 0.693，perplexity = 2"],
+        "answer": [1]
+      },
+      "open": {
+        "referenceAnswer": "loss = -ln(0.25) = ln(4) ≈ 1.386；perplexity = exp(loss) = 4。"
+      }
+    }
+  },
+  {
+    "id": "p0-dpo-tradeoff-01",
+    "category": "training",
+    "topic": "dpo",
+    "tags": ["dpo", "ppo", "preference-optimization", "tradeoff"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "团队需要在固定偏好数据集上快速完成对齐，并比较 DPO 与 PPO 的工程取舍。以下判断最准确的是？",
+    "explanation": "DPO 直接在偏好对上优化闭式目标，不需要在线 rollout 和显式奖励模型，工程更简单稳定；代价是优化自由度和对动态环境反馈的适应能力通常不如 PPO。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["DPO 通常更适合固定偏好数据集，省去在线采样和显式奖励模型，但对动态多步反馈的优化自由度较低", "DPO 与 PPO 都必须训练奖励模型并进行在线 rollout，区别只在 batch size", "PPO 不需要奖励模型，因为策略梯度可以直接从偏好标签计算", "DPO 一定比 PPO 事实准确率高，因此可以跳过独立评测和 KL 控制"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "DPO 直接在偏好对上优化闭式目标，不需要在线 rollout 和显式奖励模型，工程更简单稳定；代价是优化自由度和对动态环境反馈的适应能力通常不如 PPO。"
+      }
+    }
+  },
+  {
+    "id": "p0-dropout-tradeoff-01",
+    "category": "deep-learning",
+    "topic": "dropout",
+    "tags": ["dropout", "regularization", "generalization", "training"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "一个模型训练集准确率持续上升而验证集准确率下降。提高 dropout 率可能带来什么效果，使用时最需要注意什么？",
+    "explanation": "提高 dropout 率可以通过训练时随机丢弃激活来降低共适应，缓解过拟合；但过高会导致欠拟合和优化困难。Dropout 只在训练期启用，评估和推理期必须关闭并使用相应的缩放约定。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["适度提高 dropout 可能缓解过拟合，但过高会导致欠拟合，且推理阶段应关闭 dropout", "提高 dropout 一定会提高训练准确率，推理阶段也应保持开启以获得同样正则化", "dropout 只改变数据集大小，不会改变神经元之间的共适应", "dropout 率越高越好，因为丢弃更多激活总能提升泛化能力"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "适度提高 dropout 通过随机丢弃激活降低共适应，可能缓解过拟合；过高会导致欠拟合和优化困难。Dropout 只在训练期启用，评估和推理期应关闭。"
+      }
+    }
+  },
+  {
+    "id": "p0-gqa-mechanism-01",
+    "category": "model-architecture",
+    "topic": "gqa",
+    "tags": ["gqa", "mqa", "mha", "kv-cache"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "GQA 相比 MHA 在不改变 Query 头数量的情况下，主要改变了哪部分结构？",
+    "explanation": "GQA 保留多个 Query 头，但让一组 Query 头共享一个 K/V 头组，因此减少 KV Cache 的头数和读取量，同时保留比 MQA 更丰富的表示能力。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["多个 Query 头共享一组 Key/Value 头，减少 KV Cache 头数，但保留 Query 头数量", "删除全部 Query 头，只保留一组共享的 Key/Value 头进行注意力计算", "移除 Value 分支，只缓存 Query 以减少显存，但不改变 Key 的计算方式", "把每个 Query 头复制成独立的 Key/Value 头，增加缓存容量和访问开销"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "GQA 保留多个 Query 头，但让一组 Query 头共享一个 K/V 头组，因此减少 KV Cache 的头数和读取量，同时保留比 MQA 更丰富的表示能力。"
+      }
+    }
+  },
+  {
+    "id": "p0-gqa-calculation-01",
+    "category": "model-architecture",
+    "topic": "gqa",
+    "tags": ["gqa", "kv-cache", "head-count", "calculation"],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "某模型有 32 个 Query 头，GQA 使用 8 个 KV 头。与 MHA 使用 32 个 KV 头相比，单 token 的 KV Cache 理论上压缩了多少倍？",
+    "explanation": "KV Cache 与 KV 头数成正比。压缩倍数 = 32 / 8 = 4 倍；Query 头数量不进入 KV Cache 的头数计算。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["2 倍", "4 倍", "8 倍", "32 倍"],
+        "answer": [1]
+      },
+      "open": {
+        "referenceAnswer": "压缩倍数 = MHA 的 KV 头数 / GQA 的 KV 头数 = 32 / 8 = 4 倍。Query 头数量不进入 KV Cache 的 K/V 头数计算。"
+      }
+    }
+  },
+  {
+    "id": "p0-gradient-descent-scenario-01",
+    "category": "deep-learning",
+    "topic": "gradient-descent",
+    "tags": ["gradient-descent", "learning-rate", "loss-curve", "debugging"],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "训练 loss 在相邻 step 之间大幅上下震荡，长期没有下降；把学习率降低 10 倍后曲线开始稳定下降但变慢。最可能的原因和下一步是什么？",
+    "explanation": "原学习率很可能过大，更新在最优点附近或不同方向间跳跃。应在稳定收敛的范围内重新搜索学习率，并结合梯度范数、验证集曲线和 warmup 判断是否还存在梯度爆炸或调度问题。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["学习率可能过大，应在稳定区间重新搜索，并结合梯度范数和调度策略继续定位", "说明模型容量一定不足，应立即扩大层数而无需检查优化器", "说明 batch size 一定过小，唯一修复方式是把 batch 调到全量", "说明训练已经完全收敛，应停止训练并忽略震荡"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "loss 大幅震荡且降低学习率后稳定，首先说明原学习率可能过大。应在稳定区间重新搜索，并结合梯度范数、验证集曲线和 warmup 检查梯度爆炸或调度问题。"
+      }
+    }
+  },
+  {
+    "id": "p0-inference-optimization-scenario-01",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": ["inference", "ttft", "tpOT", "gpu-utilization", "bottleneck"],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "线上观测到 TTFT 很高、TPOT 正常，GPU 利用率在短请求下偏低；增加输出长度并未明显改变首 token 延迟。优先排查哪类瓶颈？",
+    "explanation": "TTFT 高而 TPOT 正常，说明瓶颈更可能在请求排队、调度、prefill 输入处理或网络/序列化，而不是 decode 阶段。应先拆分排队、prefill、首 token 和网络耗时，再选择 batching、缓存或并行化手段。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["优先拆分排队、prefill 和网络耗时，排查调度或短请求利用率问题，而不是先优化 decode", "直接把 temperature 调低，因为采样参数决定首 token 的主要延迟", "只增加最大输出 token 数，因为 TPOT 正常代表 prefill 一定过慢", "立即把模型换成更大的版本，因为更大模型一定能提高短请求 GPU 利用率"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "TTFT 高而 TPOT 正常，优先怀疑排队、调度、prefill 输入处理或网络/序列化，而非 decode。应先拆分排队、prefill、首 token 和网络耗时，再针对瓶颈选择 batching、缓存或并行化。"
+      }
+    }
+  },
+  {
+    "id": "p0-moe-definition-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "expert-routing", "active-parameters", "sparse-model"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "MoE Transformer 中“总参数量”和“激活参数量”的区别是什么？",
+    "explanation": "总参数量包括所有专家的参数，影响模型存储和部署显存；激活参数量是一次 token 路由到的专家参数及共享参数，主要影响该 token 的计算量和部分延迟。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["总参数量包含所有专家，主要影响存储和显存；激活参数量只包含本次路由使用的部分，主要影响计算量", "总参数量和激活参数量始终相等，因为每个 token 都会访问所有专家", "激活参数量只影响磁盘大小，与一次 token 的计算量无关", "MoE 通过删除专家参数降低总参数量，因此不会产生路由和负载均衡问题"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "总参数量包括所有专家的参数，影响模型存储和部署显存；激活参数量是一次 token 实际使用的专家及共享参数，主要影响该 token 的计算量和部分延迟。"
+      }
+    }
+  },
+  {
+    "id": "p0-overfitting-tradeoff-01",
+    "category": "deep-learning",
+    "topic": "overfitting",
+    "tags": ["overfitting", "regularization", "data-augmentation", "model-capacity"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "训练集指标继续提升，但验证集指标持续下降。以下哪组措施最符合过拟合治理的优先顺序？",
+    "explanation": "过拟合通常可通过增加或清洗数据、数据增强、正则化、降低模型容量或早停缓解。应结合训练/验证曲线和业务约束选择，不能只盲目增加模型规模或训练轮数。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["检查数据划分和泄露后，尝试增加有效数据、正则化、数据增强或早停，并评估是否需要降低容量", "继续训练更多轮并扩大模型，因为训练集指标上升说明模型还没有学够", "删除验证集以避免验证指标下降，让训练集指标代表泛化能力", "只提高学习率，因为过拟合本质上一定是参数更新太慢"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "应先检查数据划分和泄露，再尝试增加有效数据、正则化、数据增强或早停，并根据结果评估是否需要降低模型容量。继续训练或扩大模型通常会加重过拟合。"
+      }
+    }
+  },
+  {
+    "id": "p0-overfitting-scenario-01",
+    "category": "deep-learning",
+    "topic": "overfitting",
+    "tags": ["overfitting", "train-validation-gap", "diagnosis", "data"],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "模型在训练集和同分布验证集上都很高，但上线后真实用户数据表现明显下降。排查过拟合时最重要的第一步是什么？",
+    "explanation": "先确认验证集是否真正代表线上分布，并排查数据泄露、重复样本和时间切分错误。训练/验证都高不等于没有过拟合，也可能是验证集与线上分布不一致或存在污染。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["先检查验证集代表性、数据泄露、重复样本和时间切分，再建立接近线上分布的评测集", "直接增加模型层数，因为线上表现差说明模型容量一定不足", "删除线上样本以保持离线评测稳定，离线高分即可证明泛化", "只看训练 loss 是否下降，不需要比较数据分布和样本去重情况"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "先检查验证集是否代表线上分布，并排查数据泄露、重复样本和时间切分错误；训练集和同分布验证集都高，仍可能是验证集污染或线上分布偏移。"
+      }
+    }
+  },
+  {
+    "id": "p0-regularization-tradeoff-01",
+    "category": "deep-learning",
+    "topic": "regularization",
+    "tags": ["l1", "l2", "weight-decay", "adamw"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "关于 L1、L2、weight decay 和 AdamW 的关系，哪项说法最准确？",
+    "explanation": "L1 倾向产生稀疏权重，L2 倾向平滑收缩权重；在普通 SGD 下 L2 惩罚与 weight decay 可近似等价，但 AdamW 将 weight decay 从自适应梯度更新中解耦，行为不完全相同。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["L1 倾向稀疏，L2 倾向收缩；SGD 下 L2 与 weight decay 较接近，AdamW 则将 weight decay 解耦", "L1 和 L2 只影响推理阶段的输出，训练时不会参与参数更新或改变优化轨迹", "AdamW 与 Adam 加 L2 惩罚在任何学习率、参数状态和优化阶段都严格等价", "weight decay 会随机丢弃神经元，所以它与 dropout 都是完全相同的结构正则化机制"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "L1 倾向产生稀疏权重，L2 倾向平滑收缩；普通 SGD 下 L2 惩罚与 weight decay 可近似等价，但 AdamW 将 weight decay 与自适应梯度更新解耦，因此并非在所有情况下等价。"
+      }
+    }
+  },
+  {
+    "id": "p0-rope-calculation-01",
+    "category": "model-architecture",
+    "topic": "rope",
+    "tags": ["rope", "position-encoding", "qk", "long-context"],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "在使用 RoPE 的注意力层中，哪些向量需要施加旋转位置变换，才能让注意力内积体现相对位置信息？",
+    "explanation": "RoPE 作用于 Query 和 Key，而不是 Value。对 Q/K 按位置旋转后，它们的内积会体现位置差异；V 不需要进行同样的旋转。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["只对 Query 和 Key 施加与位置有关的旋转，Value 不参与该位置旋转", "只对 Value 施加旋转，Query 和 Key 保持不变", "同时只对 Query 施加旋转，因为 Key 会从 Value 中自动得到位置", "对 Query、Key、Value 全部施加相同旋转，否则无法进行注意力计算"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "RoPE 作用于 Query 和 Key，而不是 Value。对 Q/K 按位置旋转后，它们的内积体现相对位置差异；V 不需要进行同样的旋转。"
+      }
+    }
+  },
+  {
+    "id": "p0-sampling-scenario-01",
+    "category": "llm-fundamentals",
+    "topic": "sampling",
+    "tags": ["temperature", "top-p", "decoding", "structured-output"],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "同一个模型需要分别处理 JSON 字段抽取和创意文案生成。哪种解码策略更合理？",
+    "explanation": "结构化抽取通常使用较低 temperature，必要时配合约束解码，以减少随机性和格式错误；创意生成可以提高 temperature，并根据多样性和稳定性调整 top-p。参数没有脱离任务目标的固定最优值。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["JSON 抽取用低 temperature 并优先约束格式；创意文案可提高 temperature，再按多样性调整 top-p", "两类任务都使用最高 temperature，因为随机性总能提升格式稳定性和创意质量", "JSON 抽取使用高 temperature 产生候选，创意文案则固定 greedy 以避免任何变化", "只调 top-p 就能保证 JSON 合法，temperature 不会改变输出概率分布或格式风险"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "JSON 抽取通常使用低 temperature，必要时配合约束解码以减少格式错误；创意生成可适度提高 temperature，并按需要调整 top-p。应根据任务目标评估，而不是使用固定参数。"
+      }
+    }
+  },
+  {
+    "id": "p0-tokenization-scenario-01",
+    "category": "llm-fundamentals",
+    "topic": "tokenization",
+    "tags": ["bpe", "tokens", "chinese", "code", "context-cost"],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个 RAG 服务在英文短文本上成本正常，但接入中文、代码和大量数字后 token 数明显增加并频繁超出上下文窗口。最合理的排查和优化顺序是什么？",
+    "explanation": "应先统计不同数据类型的 token 分布，确认 tokenizer 对中文、数字、缩进和代码符号的切分特征，再优化 chunk 大小、字段裁剪、摘要或模型/tokenizer 选择。不能用字符数直接代替 token 数估算。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["按语言、数字和代码统计 token 分布，再调整 chunk、字段裁剪和模型选择，不能只按字符数估算", "按固定字符数切块即可，因为不同语言和代码中的一个字符总是对应一个 token", "直接删除中文和代码即可保证窗口不溢出，不需要评估内容损失或检索质量", "只扩大上下文窗口就能同时解决 token 成本、切块大小和检索噪声问题"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "应按语言、数字和代码类型统计 token 分布，确认 tokenizer 的切分特征，再调整 chunk 大小、字段裁剪、摘要或模型/tokenizer 选择。字符数不能直接替代 token 数估算成本。"
+      }
+    }
+  },
+  {
+    "id": "p0-transformer-definition-01",
+    "category": "transformer",
+    "topic": "transformer",
+    "tags": ["transformer", "encoder", "decoder", "causal-mask"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "关于 Transformer 的三种常见结构及其典型用途，哪项概括最准确？",
+    "explanation": "Encoder-only 通过双向上下文更适合理解任务；Decoder-only 使用因果掩码逐 token 生成；Encoder-Decoder 用编码器理解输入、解码器生成输出，常用于翻译等序列到序列任务。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": ["Encoder-only 偏理解，Decoder-only 用因果掩码偏生成，Encoder-Decoder 适合序列转换", "三种结构都必须使用因果掩码，所以都只能从左到右读取和理解输入序列", "Decoder-only 只能用于分类，不能通过 next-token 预测生成连续文本", "Encoder-Decoder 没有注意力机制，只依靠循环状态完成输入输出序列转换"],
+        "answer": [0]
+      },
+      "open": {
+        "referenceAnswer": "Encoder-only 通过双向上下文更适合理解任务；Decoder-only 使用因果掩码逐 token 生成；Encoder-Decoder 用编码器理解输入、解码器生成输出，常用于翻译等序列到序列任务。"
+      }
+    }
+  }
+]

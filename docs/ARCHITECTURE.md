@@ -145,6 +145,12 @@ scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：
 scripts/question-blueprint.ts  蓝图 CLI（npm run question:blueprint -- N）：把前 N 个
                         缺口格输出为蓝图 JSON（含变体候选 id），作为补题/
                         受约束生成的结构化输入
+scripts/add-question.ts     题目导入闸门（npm run question:add）：复用 Zod 解析，
+                             检查 ID/题干重复、topic/angle、选项和 coverage 增量；
+                             默认只检查，显式 --write 才写入批次文件
+scripts/question_audit.py   Python 标准库离线审计（npm run question:audit）：输出题库
+                             分布、覆盖率、重复/占位/答案问题与时效元数据告警；
+                             Python 只做分析，不复制 TypeScript schema
 types.ts              跨层行为契约（LLMProvider / QuestionBank / AnswerValue 等），数据形状类型直接用 schemas/*
 ```
 

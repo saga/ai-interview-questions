@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { difficultySchema, questionAngleSchema } from './common';
+import { difficultySchema, questionAngleSchema } from './common.ts';
 
 /** 题目溯源引用：课程题库题必须能追溯到原始教学材料（提案要求"Source Evidence"）。 */
 const questionSourceRefSchema = z.object({

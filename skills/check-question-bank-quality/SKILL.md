@@ -19,6 +19,12 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 4. 抽查失败项的完整题目、选项、答案、解析和开放题参考答案，不只看脚本摘要。
 5. 按 P0/P1/P2 输出问题：必须包含题目 id、文件、字段证据、影响和建议。
 
+## 自动化工具
+
+- `npm run question:audit`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
+- `python scripts/question_audit.py --json --output reports/question-audit.json`：生成机器可读报告；Python 报告是辅助分析，TypeScript/Zod 仍是数据契约唯一来源。
+- 审计报告中的 P0 表示结构性阻塞，P1/P2 仍需结合完整题目人工复核，不要把启发式告警直接当作事实错误。
+
 ## 必查项目
 
 - `id` 唯一，题干无精确或规范化重复。

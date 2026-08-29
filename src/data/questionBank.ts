@@ -1,4 +1,5 @@
-// 题库加载：按类目拆分的静态 JSON（content source），启动时经 import.meta.glob 合并。
+// 题库加载：按内容批次拆分的静态 JSON（content source），启动时经 import.meta.glob 合并。
+// category 以题目字段为准，允许一个批次文件包含多个已有领域，避免为了文件组织制造伪分类。
 // 刻意保持简单——不建数据库/Repository/索引层；题库规模到达需要按需加载时，
 // 再引入动态 import + 构建期 question-index.json（决策记录见 docs/CHANGELOG.md）。
 // 运行时边界校验：Zod 负责形状合法性，domain 负责跨字段业务不变量（见 schemas/question.ts）。
@@ -31,6 +32,6 @@ for (const file of Object.keys(modules).sort()) {
 }
 
 export const questionBank: QuestionBank = {
-  categories: [...byCategory.keys()],
+  categories: [...new Set([...byCategory.values()].flat().map((q) => q.category))],
   questions: [...byCategory.values()].flat(),
 };

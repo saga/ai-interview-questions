@@ -2,12 +2,26 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 引入 Python 题库分析栈
+
+- `pyproject.toml` 增加 `analysis` optional extra：Pydantic、pandas、NumPy、rapidfuzz、scikit-learn、networkx 和 sentence-transformers；由 `uv.lock` 固定解析结果。
+- 新增 `scripts/question_analysis.py`：提供题库统计、模糊近重复、TF-IDF/KMeans 聚类、基于 TF-IDF 的难度可预测性分析和真实 `conceptGraph.json` 图分析；`--semantic` 用一次 embedding 同时执行语义重复检测和 embedding 聚类。
+- 保持边界：Python 只做离线分析，TypeScript/Zod 仍是题库运行时契约唯一来源；模型分析结果只能作为人工复核信号。
+
+## 2026-08-29 · 题库质量自动化工具
+
+- 新增 `scripts/question_audit.py`：使用 Python 标准库输出题库规模、分布、topic × angle 覆盖率，以及重复题、占位选项、答案契约和时效元数据告警。
+- 新增 `scripts/add-question.ts`：复用 TypeScript/Zod 题目契约，导入前检查 ID、规范化题干、topic/angle、选项和新增覆盖格；默认只检查，显式 `--write` 才写入题库。
+- Python 仅承担离线分析，不复制 TypeScript schema；题库运行时契约仍由 Zod、数据测试和 `validate:questions` 共同维护。
+
 ## 2026-08-29 · 覆盖矩阵改为核心角度优先
 
 - **问题**：原覆盖矩阵把每个知识节点声明的所有 angle 都视为必须独立出现的题目类型，导致宽泛认证节点出现模型性缺口；例如 `aws-genai-developer-pro` 已有 50 道场景题，却因缺少其他标签产生 6 个缺口。
 - **决策**：收窄认证/课程节点的强制角度目标，优先保证核心知识与应用场景，不为清零矩阵制造换皮题。AWS GenAI Developer 保留 `scenario`，AWS Practitioner 保留 `scenario`/`tradeoff`，Anthropic CCA 保留 `scenario`/`mechanism`/`debugging`，Google GenAI Leader 保留 `definition`/`fundamental`/`mechanism`/`scenario`。
 - **结果**：覆盖缺口由 53 个降至 41 个；P0 缺口仍为 16 个，说明核心技术节点的真实补题工作仍需按 required 要点和题目质量逐批完成。
 - **原则**：新增题优先补 `gqa`、`cross-entropy`、`rope`、`overfitting`、`regularization` 等题量少且缺少计算/权衡/场景的 P0 节点；认证节点的剩余角度缺口不再自动等价为知识缺口。
+- **题库批次文件**：题库加载改以题目自身 `category` 为分类来源，允许 `p0-gap-fill.json` 这类生产批次文件跨领域收录题目，不会把批次文件名暴露为 UI 分类。
+- **P0 补题批次**：新增 16 道经过 choice/open 双形态校验的题目，覆盖 BN、交叉熵、DPO、Dropout、GQA、梯度下降、推理优化、MoE、过拟合、正则化、RoPE、采样、分词和 Transformer 定义缺口；覆盖缺口由 41 降至 25。
 
 ## 2026-08-29 · 第二轮清理：Chrome fallback、旧配置迁移、types.ts 收敛、仓库卫生
 

@@ -17,13 +17,12 @@ describe('题库数据完整性', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('每个文件的 category 与文件名一致，categories 列表与之吻合', () => {
+  it('每道题的 category 都出现在 categories 列表中，且不包含空分类', () => {
     for (const q of qs) {
       expect(questionBank.categories).toContain(q.category);
     }
-    const fileCats = new Set(qs.map((q) => q.category));
-    // categories 由文件名生成，不应包含没有任何题目的类目
-    expect(new Set(questionBank.categories)).toEqual(fileCats);
+    expect(questionBank.categories.every((category) => category.trim().length > 0)).toBe(true);
+    expect(new Set(questionBank.categories)).toEqual(new Set(qs.map((q) => q.category)));
   });
 
   it('每道题至少携带一种形态（formats.choice 或 formats.open）', () => {

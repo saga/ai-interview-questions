@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { knowledgeAreaSchema, knowledgePrioritySchema, questionAngleSchema } from './common';
+import { knowledgeAreaSchema, knowledgePrioritySchema, questionAngleSchema } from './common.ts';
 
 export const knowledgeNodeSchema = z.object({
   id: z.string().min(1),
