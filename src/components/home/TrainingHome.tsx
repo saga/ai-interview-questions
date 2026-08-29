@@ -20,8 +20,10 @@ import {
   PlayCircleOutlined,
   HistoryOutlined,
 } from '@ant-design/icons';
-import type { Difficulty, FormatId, InterviewDefinition, LearnerProfile } from '../../types';
-import type { AIConfig } from '../../types';
+import type { Difficulty, FormatId } from '../../schemas/common';
+import type { InterviewDefinition } from '../../schemas/interview';
+import type { LearnerProfile } from '../../schemas/learner';
+import type { AIConfig } from '../../schemas/ai-config';
 import { isConfigValid } from '../../ai/provider';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 import { categoryLabel } from '../../domain/categories';

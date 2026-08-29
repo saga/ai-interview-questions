@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Collapse, Divider, Empty, List, Popconfirm, Tag, Typography, Space, App as AntdApp } from 'antd';
 import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons';
 import { Suspense, lazy, useEffect, useState } from 'react';
-import type { AIConfig } from '../../types';
+import type { AIConfig } from '../../schemas/ai-config';
 import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
 import { DEFAULT_LOCAL_BASE_URL } from '../../ai/local';
 import { DEFAULT_CONFIG, parseConfigJSON, stringifyConfig } from '../../storage/settings';

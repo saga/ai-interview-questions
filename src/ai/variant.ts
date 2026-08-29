@@ -1,7 +1,8 @@
 // 题目变体生成（one-shot 结构化生成，不需要 Agent）。
 // 安全模型（ADR-036）：LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须保持 Knowledge Contract 不变量，输出为 VariantCandidate，需经 domain 校验。
 
-import type { CompleteFn, GeneratedVariant, Question } from '../types';
+import type { CompleteFn, GeneratedVariant } from '../types';
+import type { Question } from '../schemas/question';
 import { requiredPointsFor } from '../domain/knowledge';
 import { detectOptionLengthBias } from '../domain/bias';
 import { extractJSON } from './pi';

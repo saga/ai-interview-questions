@@ -8,7 +8,10 @@ import {
   ToolOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import type { AIConfig, AnswerValue, LearnerProfile, SessionQuestion, SessionRecord } from '../../types';
+import type { AnswerValue } from '../../types';
+import type { AIConfig } from '../../schemas/ai-config';
+import type { LearnerProfile, SessionRecord } from '../../schemas/learner';
+import type { SessionQuestion } from '../../schemas/session';
 import { emptyAnswer } from '../../domain/quiz';
 import { questionBank as bank } from '../../data/questionBank';
 import { isConfigValid, isEntryValid, createLLMProvider } from '../../ai/provider';

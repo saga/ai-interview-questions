@@ -2,7 +2,8 @@
 // LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须通过 Knowledge Contract 校验。
 // 输出为 VariantCandidate，需经此模块验证后方可落为 GeneratedVariant。
 
-import type { GeneratedVariant, Question, VariantCandidate } from '../types';
+import type { GeneratedVariant, VariantCandidate } from '../types';
+import type { Question } from '../schemas/question';
 
 export interface VariantCheck {
   ok: boolean;

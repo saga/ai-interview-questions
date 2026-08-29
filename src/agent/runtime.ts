@@ -5,7 +5,7 @@ import type { Model } from '@earendil-works/pi-ai';
 import type { StreamFn } from '@earendil-works/pi-agent-core';
 import { buildModels, getModel } from '../ai/pi';
 import { buildChromeAgentRuntime, isChromeEntry } from '../ai/chromeAgent';
-import type { ProviderEntry } from '../types';
+import type { ProviderEntry } from '../schemas/ai-config';
 
 /**
  * 由引擎配置构造 Agent 运行时所需的两样东西：

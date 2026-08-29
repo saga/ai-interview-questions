@@ -16,8 +16,8 @@ import {
   weakAnglesOf,
 } from './learner';
 import { pickPrioritized } from './quiz';
-import type { LearnerProfile } from '../types';
-import type { ChoiceQuestion, OpenQuestion, Question, QuestionResult, SessionRecord } from '../types';
+import type { LearnerProfile, QuestionResult, SessionRecord } from '../schemas/learner';
+import type { Question } from '../schemas/question';
 
 function profileWith(stats: Record<string, { attempts: number; avgScore: number; mastery?: number }>): LearnerProfile {
   const p = emptyProfile();

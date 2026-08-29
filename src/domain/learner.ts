@@ -4,19 +4,12 @@
 // ——掌握判定阈值、coverage、推荐展开等学习策略全部收拢在本模块。
 // 不依赖 React / LLM / 网络，全部可单测。
 
-import type {
-  AngleStat,
-  EvaluationResult,
-  InterviewDefinition,
-  LearnerProfile,
-  QuestionAngle,
-  QuestionResult,
-  ScoringRubric,
-  SessionQuestion,
-  SessionRecord,
-  AnswerValue,
-  Trend,
-} from '../types';
+import type { AnswerValue } from '../types';
+import type { QuestionAngle } from '../schemas/common';
+import type { InterviewDefinition, ScoringRubric } from '../schemas/interview';
+import type { AngleStat, LearnerProfile, QuestionResult, SessionRecord, Trend } from '../schemas/learner';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { SessionQuestion } from '../schemas/session';
 import { DEFAULT_RUBRIC } from './evaluation';
 import { prerequisiteClosure, topoRankOf } from './conceptGraph';
 

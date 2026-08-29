@@ -10,7 +10,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { Question } from '../src/types.ts';
+import type { Question } from '../src/schemas/question.ts';
 import { detectOptionLengthBias } from '../src/domain/bias.ts';
 
 const dataDir = fileURLToPath(new URL('../src/data/questions/', import.meta.url));

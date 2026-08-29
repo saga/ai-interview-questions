@@ -2,6 +2,16 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 第二轮清理：Chrome fallback、旧配置迁移、types.ts 收敛、仓库卫生
+
+- **Chrome AI**：`ChromeAIExecutor` 的 `clone()` 增加 fallback——不支持 `clone()` 的浏览器版本退化为独立 `create()`（重新解析 system 指令，但通道不再整体失效）。
+- **⚠️ 用户数据契约变更**：`storage/settings.ts` 的 `loadConfig` 删除旧单选形态（`{ provider, model, apiKey, baseUrl }`）迁移分支，只识别 `{ providers: [...] }`。极旧格式的本地配置会被判定为不合法并回退到默认配置（不会崩溃，但需要用户在设置页重新配置一次）。localStorage key 本身不变。
+- **`src/types.ts` 收敛**：删除所有数据形状类型的 re-export（`Question`/`AIConfig`/`LearnerProfile`/`SessionRecord`/`KnowledgeNode` 等 20+ 个），调用方（60 余个文件）改为直接从 `schemas/*` 导入；`types.ts` 只保留没有单一归属模块的跨层行为契约（`LLMProvider`/`QuestionBank`/`AnswerValue`/`CompleteFn`/`GeneratedVariant`/`VariantCandidate`/`QuestionBlueprint`/`EVAL_DIMENSIONS`/`DIMENSION_LABELS`）。顺带修正 `domain/evaluation.test.ts`、`domain/learner.test.ts` 中两个不存在的类型引用（`ChoiceQuestion`/`OpenQuestion`，此前仅因 `*.test.ts` 被排除在 `tsc` 之外才未报错）。
+- **仓库卫生**：`.gitignore` 移除与本项目无关的 Angular 残留条目（`/out-tsc/`、`/.angular/`、`/.angular-cli.json`、`/.ng/`、`/e2e/test-output/`、`/tmp/`）；删除根目录过程稿（`PR0-transformer-pilot.md`、`PR1-PR4-concept-coverage.md`、`PR5-PR6-concept-coverage.md`、`llm-replacement-analysis.md`、`pi-agent-core-alignment.md`、`concept-coverage-action-list.md`、`embedding-questions-preset.md`、`CHECKLIST.md`、`QUALITY_AUDIT.md`、`agent-interview-stuck-analysis.md`、`prompt.txt`、`ARCHITECTURE-REVIEW.md`）——结论均已沉淀在 `docs/DECISIONS.md`/`docs/CHANGELOG.md`（如 agent 面试卡死问题已在 `interviewAgent.ts` 的 watchdog + `ensureQuestionDelivered` 兜底中修复），过程稿不再保留；删除 `ttt/`（AI 协作草稿区，按 AGENTS.md 本就不该入库）、`temp/`（抓题脚本残留）、`outputs/`（陈旧的源文件/报告副本，非实际依赖）。
+- **`App.tsx` 拆分**：把 13 个 `useState`/6 个 `useRef` 与全部训练时序处理函数（`handleStart`/`handleAdaptiveNext`/`handleFinishEarly`/`doSubmit`/`handleAgentComplete`/`handleRestart` 等）抽到新的 `src/hooks/useTrainingSession.ts`；`App.tsx` 从 567 行减到 333 行，只保留路由/布局/导航与 JSX 渲染。
+- 验证：`npm run typecheck` / `npm run build` / `npm run test` 全绿（308 passed）。
+
+
 ## 2026-08-29 · 收敛未使用的架构预留
 
 - 删除未使用的 `graphology` 依赖，并从 `.gitignore` 移除 `package-lock.json` 忽略规则。

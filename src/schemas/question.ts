@@ -60,6 +60,11 @@ export const questionSchema = z
 
 export type Question = z.infer<typeof questionSchema>;
 
+/** 选择题呈现形态：单选/多选题干与选项。 */
+export type ChoiceFormat = NonNullable<Question['formats']['choice']>;
+/** 开放题呈现形态：参考答案（可选语言标注，给出则为编程题）。 */
+export type OpenFormat = NonNullable<Question['formats']['open']>;
+
 // ── 边界适配器：Zod 仅在边界工作，domain 内部不感知 Zod ──
 
 export function parseQuestion(input: unknown): Question {

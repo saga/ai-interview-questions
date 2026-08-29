@@ -15,7 +15,12 @@ import type {
 } from '@earendil-works/pi-agent-core';
 import type { AssistantMessage, Model, UserMessage } from '@earendil-works/pi-ai';
 import { isEntryValid } from '../ai/provider';
-import type { AnswerValue, FormatId, LLMProvider, LearnerProfile, ProviderEntry, Question, SessionQuestion } from '../types';
+import type { AnswerValue, LLMProvider } from '../types';
+import type { FormatId } from '../schemas/common';
+import type { LearnerProfile } from '../schemas/learner';
+import type { ProviderEntry } from '../schemas/ai-config';
+import type { Question } from '../schemas/question';
+import type { SessionQuestion } from '../schemas/session';
 import { availableFormats } from '../domain/quiz';
 import { pickNextAdaptive, type AnswerSignal } from '../domain/adaptive';
 import { createAgentTools, evaluateSessionQuestion } from './tools';

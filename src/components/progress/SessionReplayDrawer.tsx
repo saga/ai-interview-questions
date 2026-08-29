@@ -1,6 +1,7 @@
 import { Alert, Card, Drawer, Empty, List, Space, Tag, Typography } from 'antd';
 import { useState } from 'react';
-import type { SessionQuestion, SessionRecord } from '../../types';
+import type { SessionQuestion } from '../../schemas/session';
+import type { SessionRecord } from '../../schemas/learner';
 import { categoryLabel } from '../../domain/categories';
 import RichText from '../common/RichText';
 

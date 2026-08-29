@@ -4,7 +4,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { generateVariant } from './variant';
-import type { CompleteFn, Question } from '../types';
+import type { CompleteFn } from '../types';
+import type { Question } from '../schemas/question';
 
 const BASE: Question = {
   id: 'q1',

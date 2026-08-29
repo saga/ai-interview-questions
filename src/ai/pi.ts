@@ -8,7 +8,7 @@ import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
 import { googleProvider } from '@earendil-works/pi-ai/providers/google';
 import { cloudflareWorkersAIProvider } from '@earendil-works/pi-ai/providers/cloudflare-workers-ai';
 import { buildLocalProvider } from './local.ts';
-import type { ProviderEntry } from '../types';
+import type { ProviderEntry } from '../schemas/ai-config';
 
 /** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。
  *  空 key 返回 undefined，交给 provider 自身的 auth.resolve 兜底（如 local 的占位符）。

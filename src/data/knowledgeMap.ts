@@ -2,7 +2,7 @@
 // import.meta.glob eager 合并；知识点是一等公民，题目只是它的 View（ADR-029）。
 // 边界校验：Zod 负责形状，domain 负责跨引用不变量。
 
-import type { KnowledgeNode } from '../types';
+import type { KnowledgeNode } from '../schemas/knowledge';
 import { knowledgeNodeSchema } from '../schemas/knowledge';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 

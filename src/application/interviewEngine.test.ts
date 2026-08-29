@@ -2,7 +2,9 @@
 // 变体校验失败/调用失败回退原题；组卷按 def.formats 过滤并分配 SessionQuestion。
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { InterviewDefinition, Question, ScoringRubric } from '../types';
+import type { InterviewDefinition } from '../schemas/interview';
+import type { Question } from '../schemas/question';
+import type { ScoringRubric } from '../schemas/interview';
 
 let store: Record<string, string>;
 beforeEach(() => {

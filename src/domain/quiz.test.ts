@@ -9,7 +9,8 @@ import {
   pickQuestions,
   planComposition,
 } from './quiz';
-import type { ChoiceFormat, FormatId, OpenFormat, Question } from '../types';
+import type { ChoiceFormat, OpenFormat, Question } from '../schemas/question';
+import type { FormatId } from '../schemas/common';
 
 const choiceFmt: ChoiceFormat = { type: 'single', options: ['a', 'b'], answer: [0] };
 const openFmt: OpenFormat = { referenceAnswer: 'a' };

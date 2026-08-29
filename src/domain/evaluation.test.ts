@@ -2,7 +2,9 @@
 
 import { describe, it, expect } from 'vitest';
 import { aggregateOverall, gradeChoice } from './evaluation';
-import type { ChoiceQuestion, EvaluationDimension, ScoringRubric } from '../types';
+import type { ChoiceFormat } from '../schemas/question';
+import type { EvaluationDimension } from '../schemas/common';
+import type { ScoringRubric } from '../schemas/interview';
 
 const rubric: ScoringRubric = {
   correctness: 0.4,
@@ -11,17 +13,11 @@ const rubric: ScoringRubric = {
   communication: 0.2,
 };
 
-const cq: ChoiceQuestion = {
-  id: 'x',
-  category: 'machine-learning',
-  topic: 'overfitting',
-  tags: [],
-  difficulty: 'easy',
+const cq: ChoiceFormat = {
   type: 'single',
   question: 'q',
   options: ['a', 'b'],
   answer: [0],
-  explanation: 'e',
 };
 
 describe('aggregateOverall', () => {

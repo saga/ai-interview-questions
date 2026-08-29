@@ -29,7 +29,7 @@ import type {
 import { createAssistantMessageEventStream } from '@earendil-works/pi-ai';
 import type { StreamFn } from '@earendil-works/pi-agent-core';
 import { chromeComplete } from './chrome';
-import type { ProviderEntry } from '../types';
+import type { ProviderEntry } from '../schemas/ai-config';
 
 /** 占位的 Chrome 模型 id（Agent 会把 model 回传进 streamFn，但本实现忽略它，直接绑定 chromeComplete）。 */
 const CHROME_MODEL_ID = 'chrome-builtin';

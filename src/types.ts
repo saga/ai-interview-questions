@@ -1,52 +1,12 @@
-// 全局类型定义 — 单源真理在 src/schemas（Zod 即契约，z.infer 即类型）。
-// 本文件为兼容层：re-export schemas 的推导类型，业务代码仍可 `from '../types'`。
+// 跨层行为契约与轻量聚合类型的单一出处——不是 schemas 的兼容层。
+// 数据形状类型（Question / AIConfig / LearnerProfile 等）直接从 src/schemas/* 导入。
 
-import type { Difficulty as DifficultyT } from './schemas/common';
-import type { ProviderId as ProviderIdT } from './schemas/common';
-import type { FormatId as FormatIdT } from './schemas/common';
-import type { QuestionAngle as QuestionAngleT } from './schemas/common';
-import type { KnowledgeArea as KnowledgeAreaT } from './schemas/common';
-import type { KnowledgePriority as KnowledgePriorityT } from './schemas/common';
-import type { EvaluationDimension as EvaluationDimensionT } from './schemas/common';
-import type { Question as QuestionT } from './schemas/question';
-import type { KnowledgeNode as KnowledgeNodeT } from './schemas/knowledge';
-import type { InterviewDefinition as InterviewDefinitionT, ScoringRubric as ScoringRubricT } from './schemas/interview';
-import type { EvaluationResult as EvaluationResultT } from './schemas/evaluation';
-import type { ProviderEntry as ProviderEntryT, AIConfig as AIConfigT } from './schemas/ai-config';
-import type { TopicStats as TopicStatsT, QuestionResult as QuestionResultT, SessionRecord as SessionRecordT, LearnerProfile as LearnerProfileT, AngleStat as AngleStatT, Trend as TrendT } from './schemas/learner';
-import type { SessionQuestion as SessionQuestionT, InterviewSession as InterviewSessionT } from './schemas/session';
-
-// ── 基础枚举（re-export 单源类型，运行时值与 schemas/common 保持一致） ──
-export type Difficulty = DifficultyT;
-export type ProviderId = ProviderIdT;
-export type FormatId = FormatIdT;
-export type QuestionAngle = QuestionAngleT;
-export type KnowledgeArea = KnowledgeAreaT;
-export type KnowledgePriority = KnowledgePriorityT;
-export type EvaluationDimension = EvaluationDimensionT;
-export type Trend = TrendT;
-
-// ── 复杂对象（re-export 推导类型，删除重复 interface 定义） ──
-export type Question = QuestionT;
-export type KnowledgeNode = KnowledgeNodeT;
-export type ProviderEntry = ProviderEntryT;
-export type AIConfig = AIConfigT;
-export type EvaluationResult = EvaluationResultT;
-export type ScoringRubric = ScoringRubricT;
-export type InterviewDefinition = InterviewDefinitionT;
-export type TopicStats = TopicStatsT;
-export type AngleStat = AngleStatT;
-export type QuestionResult = QuestionResultT;
-export type SessionRecord = SessionRecordT;
-export type LearnerProfile = LearnerProfileT;
-export type SessionQuestion = SessionQuestionT;
-export type InterviewSession = InterviewSessionT;
-
-// ── 轻量聚合 / 行为契约（仍保留于 types，属非数据契约） ──
-
-/** 呈现形态：ChoiceFormat / OpenFormat 的运行时结构与 schemas/question 保持同步，此处保留别名以避免深层导入。 */
-export type ChoiceFormat = NonNullable<Question['formats']['choice']>;
-export type OpenFormat = NonNullable<Question['formats']['open']>;
+import type { Question } from './schemas/question';
+import type { OpenFormat } from './schemas/question';
+import type { QuestionAngle, Difficulty, EvaluationDimension } from './schemas/common';
+import type { FormatId } from './schemas/common';
+import type { ScoringRubric } from './schemas/interview';
+import type { EvaluationResult } from './schemas/evaluation';
 
 /** 题库：source of truth；LLM 只是增强层。 */
 export interface QuestionBank {
@@ -111,3 +71,4 @@ export const DIMENSION_LABELS: Record<EvaluationDimension, string> = {
   architecture: '架构',
   communication: '表达',
 };
+

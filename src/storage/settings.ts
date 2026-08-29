@@ -1,4 +1,5 @@
-import type { AIConfig, ProviderEntry, ProviderId } from '../types';
+import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
+import type { ProviderId } from '../schemas/common';
 import { isEntryValid } from '../ai/provider';
 import { aiConfigSchema } from '../schemas/ai-config';
 import { formatSchemaErrorMessage } from '../schemas/errors';
@@ -28,9 +29,8 @@ export function sanitizeEntry(raw: unknown): ProviderEntry | null {
 }
 
 /**
- * 读取配置。兼容两种历史形态（localStorage key 不变，属用户数据契约）：
- * - 旧单选：{ provider, model, apiKey, baseUrl } → 迁移为单元素降级链；
- * - 新链式：{ providers: [...] } → 逐项清洗。
+ * 读取配置：localStorage key 不变（用户数据契约），形态为 `{ providers: [...] }`。
+ * 解析失败、形状不合法或全部引擎无效时回退默认配置。
  */
 export function loadConfig(): AIConfig {
   try {
@@ -39,10 +39,6 @@ export function loadConfig(): AIConfig {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
       // 历史存储无此字段：缺省视为关闭（与默认值一致，ADR-031）
       const generateOpenQuestions = parsed.generateOpenQuestions === true;
-      if (!Array.isArray(parsed.providers) && parsed.provider) {
-        const entry = sanitizeEntry({ ...parsed, id: parsed.provider, enabled: true });
-        if (entry) return { providers: [entry], generateOpenQuestions };
-      }
       if (Array.isArray(parsed.providers)) {
         const providers = parsed.providers
           .map(sanitizeEntry)

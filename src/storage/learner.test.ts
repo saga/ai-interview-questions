@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import { loadLearner, saveLearner, resetLearnerData } from './learner';
 import { emptyProfile, updateLearner, sessionFromQuiz } from '../domain/learner';
-import type { LearnerProfile, SessionRecord } from '../types';
+import type { LearnerProfile, SessionRecord } from '../schemas/learner';
 
 function mkRecord(over: Partial<SessionRecord> = {}): SessionRecord {
   return {

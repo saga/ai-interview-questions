@@ -2,18 +2,13 @@
 // 依赖 domain（纯逻辑）与 ai（适配层）；不直接 import pi-ai，便于替换底层。
 // ADR-027：会话持有 SessionQuestion（题库快照 + 本次形态），同一道题可跨会话换形态。
 
-import type {
-  AIConfig,
-  AnswerValue,
-  EvaluationResult,
-  FormatId,
-  InterviewDefinition,
-  InterviewSession,
-  LearnerProfile,
-  LLMProvider,
-  QuestionBank,
-  SessionQuestion,
-} from '../types';
+import type { AnswerValue, LLMProvider, QuestionBank } from '../types';
+import type { AIConfig } from '../schemas/ai-config';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { FormatId } from '../schemas/common';
+import type { InterviewDefinition } from '../schemas/interview';
+import type { InterviewSession, SessionQuestion } from '../schemas/session';
+import type { LearnerProfile } from '../schemas/learner';
 import { availableFormats, planComposition } from '../domain/quiz';
 import { gradeChoice } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';

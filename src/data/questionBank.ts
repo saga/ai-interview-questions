@@ -3,7 +3,8 @@
 // 再引入动态 import + 构建期 question-index.json（决策记录见 docs/CHANGELOG.md）。
 // 运行时边界校验：Zod 负责形状合法性，domain 负责跨字段业务不变量（见 schemas/question.ts）。
 
-import type { Question, QuestionBank } from '../types';
+import type { QuestionBank } from '../types';
+import type { Question } from '../schemas/question';
 import { questionSchema } from '../schemas/question';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 

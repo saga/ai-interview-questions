@@ -1,6 +1,8 @@
 import { Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography } from 'antd';
 import { Suspense, lazy } from 'react';
-import type { AnswerValue, FormatId, Question } from '../../types';
+import type { AnswerValue } from '../../types';
+import type { FormatId } from '../../schemas/common';
+import type { Question } from '../../schemas/question';
 import { categoryLabel } from '../../domain/categories';
 import RichText from '../common/RichText';
 

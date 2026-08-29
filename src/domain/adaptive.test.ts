@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { LearnerProfile, Question, QuestionAngle } from '../types';
+import type { LearnerProfile } from '../schemas/learner';
+import type { Question, QuestionAngle } from '../schemas/question';
 import { decideStrategy, pickNextAdaptive, type AnswerSignal } from './adaptive';
 import { emptyProfile } from './learner';
 

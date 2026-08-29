@@ -3,7 +3,10 @@
 // 成题后 validateAgainstBlueprint 把关一致性。不依赖 React / LLM / 数据单例，
 // 题目与知识点由调用方注入，浏览器与 CLI 共用同一实现。
 
-import type { KnowledgeNode, Question, QuestionAngle, QuestionBlueprint } from '../types';
+import type { QuestionBlueprint } from '../types';
+import type { KnowledgeNode } from '../schemas/knowledge';
+import type { Question } from '../schemas/question';
+import type { QuestionAngle } from '../schemas/common';
 import { ANGLE_ORDER, type CoverageSuggestion } from './coverage.ts';
 
 /** 缺口格 → 考察目的的默认措辞。模板只是起点：人工可在蓝图上改写 purpose。 */

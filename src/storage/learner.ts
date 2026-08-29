@@ -7,7 +7,7 @@
 //
 // 边界：IndexedDB 同样是不可信边界，读出的数据仍需经 Zod 形状校验（沿用 schemas/learner 的校验）。
 
-import type { LearnerProfile, SessionRecord } from '../types';
+import type { LearnerProfile, SessionRecord } from '../schemas/learner';
 import { emptyProfile, recommendWeakTopics } from '../domain/learner';
 import { db, topicsOfSession, type StoredLearner, type StoredSession } from './db';
 

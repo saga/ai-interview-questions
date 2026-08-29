@@ -18,7 +18,7 @@ schemas/       数据契约层（Zod 4）：runtime validation + TypeScript 类�
   conceptGraph.ts ConceptGraph 形状（只验结构，DAG 仍由 domain 校验）
   ai-config.ts   AIConfig 形状（校验结构，业务不变量由 isEntryValid / 去重等保障）
   evaluation.ts  LLM 输出形状（只验 JSON 形状，overall 仍由 domain 聚合）
-  types.ts       兼容 re-export 层（`types.ts` 不再手写 `interface Question`，全部 `export type X = z.infer` 自 schemas，行为契约 `LLMProvider` 等除外）
+  types.ts       跨层行为契约与轻量聚合类型的单一出处（`QuestionBank` / `AnswerValue` / `LLMProvider` / `CompleteFn` / `GeneratedVariant` / `VariantCandidate` / `QuestionBlueprint` 等）——不再 re-export 数据形状类型，后者直接从 `schemas/*` 导入
   errors.ts      统一 ZodError → path/message 格式化（bracket 记法 providers[0].id）
   questionBank / knowledgeMap / conceptGraph 的加载期校验均在此层完成；
   详见「数据契约与运行时校验」小节（ADR-033）
@@ -79,6 +79,11 @@ agent/         Agent 面试运行时（pi-agent-core，ADR-034）：与确定性
 lib/
   codeFence.ts        ``` 围栏切分（纯逻辑 + 单测，容错未闭合围栏）
 
+hooks/
+  useTrainingSession.ts  训练会话状态机（组卷 → 作答 → 自适应逐题评分选下一题 → 提交 →
+                          落库 Learner 画像），从 `App.tsx` 抽出；`App.tsx` 只保留
+                          路由/布局/导航与 JSX 渲染，不持有业务状态
+
 components/
   common/CodeBlock.tsx     只读代码高亮（Shiki，单例 highlighter + CSS 行号）
   common/RichText.tsx      文本段落 + 围栏代码块混合渲染
@@ -138,7 +143,7 @@ scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：
 scripts/question-blueprint.ts  蓝图 CLI（npm run question:blueprint -- N）：把前 N 个
                         缺口格输出为蓝图 JSON（含变体候选 id），作为补题/
                         受约束生成的结构化输入
-types.ts              全局类型（含 LLMProvider / LearnerProfile）
+types.ts              跨层行为契约（LLMProvider / QuestionBank / AnswerValue 等），数据形状类型直接用 schemas/*
 ```
 
 依赖方向：`components → application(interviewEngine) → domain + ai`；Agent 面试页 `components/agent → agent/`（`agent → domain + ai + types`，复用评分与持久化管线，不绕过 application 语义）；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库；`schemas` 不依赖 domain（纯数据契约），`domain` 也不依赖 `schemas`——仅在装配边界（questionBank / knowledgeMap / conceptGraph / settings / evaluate）消费校验结果，内部逻辑不感知 Zod。
@@ -437,9 +442,9 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 ```
 
 - **职责切分**：Zod 校验 `type/difficulty/options 是否为数组/question 是否为 string`；domain 校验 `单选题恰好一个答案 / topic 必须存在于 knowledge / prerequisite 不能成环`。前者在 `schemas/*.ts`，后者在 `domain/*` 与 `data/bank.test.ts`。
-- **类型即 schema**：`export type Question = z.infer<typeof questionSchema>`，运行时与静态类型由同一份定义产生，避免两套类型漂移。`src/types.ts` 当前仅作为统一公共入口 re-export 数据类型与行为契约；若未来迁移到按模块导入，应一次性删除该入口，不再增加新的兼容分支。
+- **类型即 schema**：`export type Question = z.infer<typeof questionSchema>`，运行时与静态类型由同一份定义产生，避免两套类型漂移。数据形状类型（`Question`/`AIConfig`/`LearnerProfile` 等）由各模块直接从 `schemas/*` 导入；`src/types.ts` 仅保留没有单一归属模块的跨层行为契约（`LLMProvider` / `QuestionBank` / `AnswerValue` / `CompleteFn` 等），不再承担数据类型 re-export。
 - **装配期 fail-fast**：`data/questionBank.ts`、`data/knowledgeMap.ts`、`domain/conceptGraph.ts` 在 `import.meta.glob` eager 合并后逐条 `safeParse`，失败直接抛错并定位到 `文件[下标]` 与 `path → message`（bracket 记法如 `providers[0].id`），不在用户进入某 topic 时才暴露坏数据。
-- **AIConfig**：`storage/settings.ts` 的 `parseConfigJSON` 先走 `aiConfigSchema.safeParse` 做形状校验（provider id 白名单、数组结构），再走 domain 不变量（同引擎去重、`isEntryValid` 完整性、`至少一个可用引擎`、`generateOpenQuestions` 非 true 视为 false 的清洗语义）。`loadConfig` 的历史 `provider → providers` 迁移与静默丢弃逻辑保留于 storage 层。
+- **AIConfig**：`storage/settings.ts` 的 `parseConfigJSON` 先走 `aiConfigSchema.safeParse` 做形状校验（provider id 白名单、数组结构），再走 domain 不变量（同引擎去重、`isEntryValid` 完整性、`至少一个可用引擎`、`generateOpenQuestions` 非 true 视为 false 的清洗语义）。`loadConfig` 只识别 `{ providers: [...] }` 形态（旧单选 `{ provider, ... }` 迁移分支已于 2026-08-29 移除，不合法/缺失一律回退默认配置）。
 - **LLM 输出**：`ai/evaluate.ts` 的 `parseEvaluation` 在 `extractJSON` 之后走 `llmEvaluationRawSchema.safeParse`，形状合法才进入 `clamp + aggregateOverall`；`overall` 仍由 `domain/evaluation` 聚合，LLM 不拥有分数。`schemas/jsonSchema.ts` 的 `z.toJSONSchema(aiConfigSchema)` 已接入 `SettingsPanel` 的 Monaco 校验（自动补全/悬停/枚举提示），后续可复用同一份契约做 LLM structured output。
 - **持久化**：`storage/learner.ts` 的 `LearnerProfile / SessionRecord / QuestionResult` 由 `schemas/learner.ts` 定义（`topicStats`/`evidence`/`questionResults` 全约束），`persistedLearnerSchema = { version: literal(1), data: learnerProfile }` 版本化包装；`loadLearner` 兼容旧直接存储形态（无 `version`）与新 `version:1` 形态，`saveLearner` 一律写入版本化结构，损坏数据回退空画像。Migration 仍属 storage/domain 逻辑，不塞进 Zod。
 - **错误呈现**：`schemas/errors.ts` 的 `formatSchemaError` 将 ZodError 扁平为 `{ path, message }`，path 按 `a.b[0].c` 记法，便于维护大量 JSON 题库时定位；`questionBank/knowledgeMap/conceptGraph/settings` 统一使用该格式化。
@@ -460,7 +465,6 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
 - **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认降级链
   `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }], generateOpenQuestions: false }`；
-  旧单选形态（`{ provider, ... }`）由 loadConfig 自动迁移（key 不变，ADR-023）；
   示例配置见 `docs/config.example.json`。
 - **开放题生成门控（ADR-031）**：`AIConfig.generateOpenQuestions` 默认 false——
   interviewEngine 的 `effectiveFormats` 从允许形态剔除 open（纯开放题不入池、

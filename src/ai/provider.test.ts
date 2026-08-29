@@ -12,7 +12,10 @@ import {
   isEntryValid,
   mergeQuestionRubric,
 } from './provider';
-import type { AIConfig, LLMProvider, OpenFormat, ProviderEntry, Question, ScoringRubric } from '../types';
+import type { LLMProvider } from '../types';
+import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
+import type { OpenFormat, Question } from '../schemas/question';
+import type { ScoringRubric } from '../schemas/interview';
 import { knowledgeById } from '../domain/knowledge';
 
 const GLOBAL: ScoringRubric = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };

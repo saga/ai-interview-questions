@@ -8,7 +8,7 @@
 // 版本化迁移：version(1) 即首版。不读取/迁移任何旧 localStorage 数据——旧画像无意义，直接以空画像起步。
 
 import Dexie, { type Table } from 'dexie';
-import type { LearnerProfile, SessionRecord } from '../types';
+import type { LearnerProfile, SessionRecord } from '../schemas/learner';
 
 /** learner 表行：画像去掉 sessions（历史在 sessions 表）。 */
 export interface StoredLearner {

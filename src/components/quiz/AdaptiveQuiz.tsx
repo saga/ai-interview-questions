@@ -1,6 +1,7 @@
 import { Button, Card, Tag, Typography } from 'antd';
 import { ArrowRightOutlined, CheckOutlined, SendOutlined } from '@ant-design/icons';
-import type { AnswerValue, SessionQuestion } from '../../types';
+import type { AnswerValue } from '../../types';
+import type { SessionQuestion } from '../../schemas/session';
 import { STRATEGY_LABELS, type Strategy } from '../../domain/adaptive';
 import QuestionCard from '../quiz/QuestionCard';
 

@@ -4,8 +4,11 @@
 
 import { extractJSON } from './pi';
 import { aggregateOverall } from '../domain/evaluation';
-import type { CompleteFn, EvaluationResult, OpenFormat, Question, ScoringRubric } from '../types';
+import type { CompleteFn } from '../types';
 import { EVAL_DIMENSIONS } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { OpenFormat, Question } from '../schemas/question';
+import type { ScoringRubric } from '../schemas/interview';
 import { llmEvaluationRawSchema } from '../schemas/evaluation';
 
 const EVAL_SYSTEM = `你是一位严格的 AI 技术面试官，负责评估候选人的开放题/编程题回答。基于参考答案与评分量表给出多维评分与详细反馈。只输出 JSON，不要任何额外文字或 Markdown 代码块。`;

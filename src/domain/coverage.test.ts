@@ -2,7 +2,8 @@
 // 纯函数测试，注入合成节点/题目，不读真实数据文件。
 
 import { describe, expect, it } from 'vitest';
-import type { KnowledgeNode, Question } from '../types';
+import type { KnowledgeNode } from '../schemas/knowledge';
+import type { Question } from '../schemas/question';
 import {
   ANGLE_SUGGESTIONS,
   coverageSuggestions,

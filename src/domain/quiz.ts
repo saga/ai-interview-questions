@@ -2,7 +2,10 @@
 // ADR-027：Question 是知识对象（可同时携带 choice/open 两种形态），
 // 组卷 = 抽题 + 为每道题分配本次呈现形态；同一道题本次出选择、下次可出开放。
 
-import type { AnswerValue, ChoiceFormat, FormatId, Question, SessionQuestion } from '../types';
+import type { AnswerValue } from '../types';
+import type { ChoiceFormat, Question } from '../schemas/question';
+import type { FormatId } from '../schemas/common';
+import type { SessionQuestion } from '../schemas/session';
 
 /** 开放形态占比上限：单选/多选为主的训练体验，
  *  开放题数量不超过总题量的三成（约 7:3；想收紧到 8:2 改 0.2 即可）。 */

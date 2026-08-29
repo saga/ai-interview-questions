@@ -15,7 +15,10 @@ import { useEffect, useRef, useState } from 'react';
 import { buildModels, getModel } from '../../ai/pi';
 import { isConfigValid } from '../../ai/provider';
 import { recordErrorLog } from '../../storage/db';
-import type { AIConfig, InterviewSession, LearnerProfile, Question } from '../../types';
+import type { AIConfig } from '../../schemas/ai-config';
+import type { InterviewSession } from '../../schemas/session';
+import type { LearnerProfile } from '../../schemas/learner';
+import type { Question } from '../../schemas/question';
 
 // ---------- Chat helper: multi-turn via pi-ai ----------
 /** 结构化记录一条 Copilot 失败：控制台 + 本地 errorLog 表（fire-and-forget）。 */

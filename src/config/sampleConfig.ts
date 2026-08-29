@@ -1,5 +1,5 @@
 import sampleConfig from './sample-config.json';
-import type { AIConfig } from '../types';
+import type { AIConfig } from '../schemas/ai-config';
 
 /**
  * 干净、可被应用代码直接引用的配置样例。

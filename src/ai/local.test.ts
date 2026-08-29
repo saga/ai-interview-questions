@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createModels } from '@earendil-works/pi-ai';
 import { buildLocalProvider, DEFAULT_LOCAL_BASE_URL, normalizeBaseUrl } from './local';
 import { callLLM } from './pi';
-import type { ProviderEntry } from '../types';
+import type { ProviderEntry } from '../schemas/ai-config';
 
 const CFG: ProviderEntry = { id: 'local', enabled: true, model: 'unsloth/Qwen3-8B', apiKey: '', baseUrl: '' };
 

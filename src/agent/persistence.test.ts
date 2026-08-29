@@ -2,7 +2,8 @@
 // SessionRecord，并复用 sessionFromQuiz 的选择题 gap 截断契约与 overall 聚合。
 
 import { describe, it, expect } from 'vitest';
-import type { EvaluationResult, SessionQuestion } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { SessionQuestion } from '../schemas/session';
 import { averageOverall, createAgentSession, sessionRecordFromAgent } from './types';
 
 function sq(id: string, topic: string, format: 'choice' | 'open'): SessionQuestion {

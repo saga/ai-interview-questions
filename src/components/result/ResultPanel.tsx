@@ -9,8 +9,11 @@ import {
   PlayCircleOutlined,
   BulbOutlined,
 } from '@ant-design/icons';
-import type { AnswerValue, EvaluationResult, LearnerProfile, SessionQuestion } from '../../types';
+import type { AnswerValue } from '../../types';
 import { DIMENSION_LABELS, EVAL_DIMENSIONS } from '../../types';
+import type { EvaluationResult } from '../../schemas/evaluation';
+import type { LearnerProfile } from '../../schemas/learner';
+import type { SessionQuestion } from '../../schemas/session';
 import { categoryLabel } from '../../domain/categories';
 import { recommendationText } from '../../domain/learner';
 import RichText from '../common/RichText';

@@ -2,15 +2,9 @@
 // 题目与知识点均由调用方注入，浏览器与 CLI（scripts/question-coverage.ts）共用同一实现。
 // 两速分离（ADR-032）：本模块是"慢速题库生产"管线的度量端，运行时选题不感知它。
 
-import type {
-  Difficulty,
-  FormatId,
-  KnowledgeArea,
-  KnowledgeNode,
-  KnowledgePriority,
-  Question,
-  QuestionAngle,
-} from '../types';
+import type { Difficulty, FormatId, KnowledgeArea, KnowledgePriority, QuestionAngle } from '../schemas/common';
+import type { KnowledgeNode } from '../schemas/knowledge';
+import type { Question } from '../schemas/question';
 import { DOMAINS, DOMAIN_LABELS, allowedAnglesFor } from '../data/taxonomy.ts';
 
 /** 角度固定排序（难度梯度序），报告与建议都按此序展示。 */

@@ -6,7 +6,8 @@
 // - 知识节点是"有哪些概念"，taxonomy 是"我们打算覆盖哪些能力域与主题"——前者是内容，后者是路线图与归类权威。
 // - 即使某 topic 当前还没有任何知识点（如 cnn / mcp / planning），taxonomy 也先占位，驱动 roadmap 与覆盖率报告。
 
-import type { KnowledgeArea, KnowledgeNode, QuestionAngle } from '../types';
+import type { KnowledgeArea, QuestionAngle } from '../schemas/common';
+import type { KnowledgeNode } from '../schemas/knowledge';
 
 export interface TaxonomyTopic {
   id: string;

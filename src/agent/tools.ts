@@ -7,7 +7,11 @@
 
 import { Type } from 'typebox';
 import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core';
-import type { AnswerValue, EvaluationResult, LearnerProfile, LLMProvider, Question, SessionQuestion } from '../types';
+import type { AnswerValue, LLMProvider } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { LearnerProfile } from '../schemas/learner';
+import type { Question } from '../schemas/question';
+import type { SessionQuestion } from '../schemas/session';
 import { availableFormats } from '../domain/quiz';
 import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
 import { recommendWeakTopics, weakAnglesOf } from '../domain/learner';

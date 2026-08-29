@@ -3,7 +3,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildEvalUser, parseEvaluation } from './evaluate';
-import type { OpenFormat, Question, ScoringRubric } from '../types';
+import type { OpenFormat, Question } from '../schemas/question';
+import type { ScoringRubric } from '../schemas/interview';
 
 const RUBRIC: ScoringRubric = { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 };
 

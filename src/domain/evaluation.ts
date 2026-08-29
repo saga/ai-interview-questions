@@ -1,12 +1,10 @@
 // 纯逻辑：评分聚合与确定性判分。不依赖 React / LLM。
 
-import type {
-  ChoiceFormat,
-  EvaluationDimension,
-  EvaluationResult,
-  ScoringRubric,
-} from '../types';
 import { EVAL_DIMENSIONS } from '../types';
+import type { ChoiceFormat } from '../schemas/question';
+import type { EvaluationDimension } from '../schemas/common';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { ScoringRubric } from '../schemas/interview';
 import { isChoiceCorrect } from './quiz';
 
 /** 默认四维权重（和为 1）：正确性 / 完整性 / 架构 / 表达 */

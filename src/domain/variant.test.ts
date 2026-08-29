@@ -3,7 +3,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { applyVariant, validateVariant } from './variant';
-import type { GeneratedVariant, Question } from '../types';
+import type { GeneratedVariant } from '../types';
+import type { Question } from '../schemas/question';
 
 const cq: Question = {
   id: 'x',

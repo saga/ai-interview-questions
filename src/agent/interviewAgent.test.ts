@@ -13,7 +13,10 @@ import {
   type Usage,
 } from '@earendil-works/pi-ai';
 import type { StreamFn, BeforeToolCallContext, ShouldStopAfterTurnContext } from '@earendil-works/pi-agent-core';
-import type { EvaluationResult, LLMProvider, ProviderEntry, Question } from '../types';
+import type { LLMProvider } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { ProviderEntry } from '../schemas/ai-config';
+import type { Question } from '../schemas/question';
 import { emptyProfile } from '../domain/learner';
 import { createInterviewAgent, shouldStopAfterTurn, beforeToolCall, MAX_AGENT_QUESTIONS } from './interviewAgent';
 import { createAgentSession } from './types';

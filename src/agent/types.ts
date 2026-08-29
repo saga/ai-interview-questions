@@ -2,7 +2,10 @@
 // 这里只描述「本次 Agent 面试的运行时会话」——App 拥有它，Agent 通过工具读写它。
 // 不依赖 React / LLM；纯类型，可单测。
 
-import type { AnswerValue, EvaluationResult, LearnerProfile, SessionQuestion, SessionRecord } from '../types';
+import type { AnswerValue } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { LearnerProfile, SessionRecord } from '../schemas/learner';
+import type { SessionQuestion } from '../schemas/session';
 import { sessionFromQuiz } from '../domain/learner';
 
 /** Agent 面试的运行状态。 */

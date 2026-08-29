@@ -428,9 +428,10 @@ export class ChromeAIExecutor {
     let clone: ChromeSessionLike | undefined;
     try {
       const base = await this.getBaseSession(system, signal, timeoutMs);
-      // 基准 session 只建一次；每题用 clone() 派生独立会话，免去重复解析 system 指令（官方推荐）
+      // 基准 session 只建一次；每题用 clone() 派生独立会话，免去重复解析 system 指令（官方推荐）。
+      // 部分 Chrome 版本不提供 clone()：退化为独立 create()，代价是重新解析 system 指令，但通道仍可用。
       const c = await withTimeout(
-        (base.clone?.() ?? Promise.reject(new Error('session 不支持 clone'))) as Promise<ChromeSessionLike>,
+        base.clone ? base.clone() : this.createStandaloneSession(system, signal),
         timeoutMs,
         'clone',
       );
@@ -441,6 +442,19 @@ export class ChromeAIExecutor {
       // destroy() 释放克隆 session 槽位；基准在整批空闲时由 disposeBases 统一释放
       clone?.destroy?.();
     }
+  }
+
+  /** clone() 不可用时的兜底：直接开一个独立 session，不复用基准（仅退化路径使用）。 */
+  private async createStandaloneSession(
+    system: string | undefined,
+    signal: AbortSignal,
+  ): Promise<ChromeSessionLike> {
+    const lm = getLanguageModel();
+    if (!lm) throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
+    return lm.create({
+      ...(system ? { initialPrompts: [{ role: 'system', content: system }] } : {}),
+      signal,
+    });
   }
 
   private disposeBases(): void {

@@ -2,7 +2,9 @@
 // 并复用上一轮修复的「选择题 gap 不污染」契约——选择题评分返回 gaps: []（绝不伪造 gap）。
 
 import { describe, it, expect, vi } from 'vitest';
-import type { EvaluationResult, LLMProvider, Question } from '../types';
+import type { LLMProvider } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { Question } from '../schemas/question';
 import { emptyProfile } from '../domain/learner';
 import { createAgentTools } from './tools';
 import { createAgentSession } from './types';

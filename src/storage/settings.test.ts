@@ -1,9 +1,9 @@
-// 配置存取测试：新链式形态清洗 + 旧单选形态迁移（localStorage key 属用户数据契约）
+// 配置存取测试：链式形态清洗（localStorage key 属用户数据契约）
 // 以及 config.json 编辑器的解析校验（parseConfigJSON）。
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_CONFIG, loadConfig, parseConfigJSON, saveConfig, sanitizeEntry, stringifyConfig } from './settings';
-import type { AIConfig } from '../types';
+import type { AIConfig } from '../schemas/ai-config';
 
 let store: Record<string, string>;
 
@@ -56,18 +56,6 @@ describe('sanitizeEntry', () => {
 describe('loadConfig', () => {
   it('无存储时返回默认配置（完整引擎样例：chrome/local 启用，其余禁用）', () => {
     expect(loadConfig()).toEqual(DEFAULT_CONFIG);
-  });
-
-  it('旧单选形态迁移为单元素降级链', () => {
-    store['ai-interview-trainer.config'] = JSON.stringify({
-      provider: 'deepseek',
-      model: 'deepseek-v4-flash',
-      apiKey: 'sk-x',
-    });
-    expect(loadConfig()).toEqual({
-      providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' }],
-      generateOpenQuestions: false,
-    });
   });
 
   it('历史遗留的已下线引擎（openai/anthropic）被丢弃，openrouter 恢复后正常保留', () => {

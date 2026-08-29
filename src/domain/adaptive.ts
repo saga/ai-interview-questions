@@ -6,7 +6,9 @@
 //   move-on    移动到未覆盖方向
 // 不依赖 React / LLM / 网络。
 
-import type { Difficulty, LearnerProfile, Question } from '../types';
+import type { Difficulty } from '../schemas/common';
+import type { LearnerProfile } from '../schemas/learner';
+import type { Question } from '../schemas/question';
 import { pickQuestions } from './quiz';
 import { prerequisiteClosure, relatedOf } from './conceptGraph';
 import { angleKey, angleWeakRank, recommendWeakTopics } from './learner';

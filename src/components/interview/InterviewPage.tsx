@@ -1,8 +1,9 @@
 import { Card, Typography, Button, Tag, Space, Alert } from 'antd';
 import { CommentOutlined, PlayCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import type { InterviewDefinition, LearnerProfile } from '../../types';
+import type { InterviewDefinition } from '../../schemas/interview';
+import type { LearnerProfile } from '../../schemas/learner';
 import { isConfigValid } from '../../ai/provider';
-import type { AIConfig } from '../../types';
+import type { AIConfig } from '../../schemas/ai-config';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 
 interface Props {

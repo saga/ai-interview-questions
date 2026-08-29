@@ -28,7 +28,8 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { ProviderEntry, Question } from '../src/types.ts';
+import type { ProviderEntry } from '../src/schemas/ai-config.ts';
+import type { Question } from '../src/schemas/question.ts';
 import { detectOptionLengthBias } from '../src/domain/bias.ts';
 import { callLLM, extractJSON } from '../src/ai/pi.ts';
 

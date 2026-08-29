@@ -5,7 +5,8 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { KnowledgeNode, Question } from '../src/types';
+import type { KnowledgeNode } from '../src/schemas/knowledge';
+import type { Question } from '../src/schemas/question';
 import {
   coverageSuggestions,
   formatCoverageReport,

@@ -4,16 +4,11 @@
 // 覆盖云端与本地 OpenAI 兼容服务，后者由 buildModels 路由到自定义 provider，ADR-022）。
 // 多引擎同时启用时按配置顺序组成降级链：前一个失败自动尝试下一个（ADR-023）。
 
-import type {
-  AIConfig,
-  EvaluationResult,
-  GeneratedVariant,
-  LLMProvider,
-  OpenFormat,
-  ProviderEntry,
-  Question,
-  ScoringRubric,
-} from '../types';
+import type { GeneratedVariant, LLMProvider } from '../types';
+import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
+import type { EvaluationResult } from '../schemas/evaluation';
+import type { OpenFormat, Question } from '../schemas/question';
+import type { ScoringRubric } from '../schemas/interview';
 import { generateVariant } from './variant';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
