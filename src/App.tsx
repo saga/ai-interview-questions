@@ -66,7 +66,6 @@ export default function App() {
   const page = pageFromPath(location.pathname);
   const goPage = (p: Page) => navigate(p === 'train' ? '/train' : `/${p}`);
   const [copilotOpen, setCopilotOpen] = useState(false);
-  const challengerProvider = createLLMProvider(config);
 
   const {
     config,
@@ -97,6 +96,7 @@ export default function App() {
     handleAgentComplete,
     handleRestart,
   } = useTrainingSession(message, () => goPage('train'));
+  const challengerProvider = createLLMProvider(config);
 
   // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
   if (location.pathname === '/' || location.pathname === '') {
