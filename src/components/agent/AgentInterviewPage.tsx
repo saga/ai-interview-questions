@@ -330,9 +330,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
           </Tag>
           {busy || submitting ? (
             <Tag color="processing">
-              <Space size={4}>
-                <Spin size="small" /> {submitting ? '正在检查回答…' : '面试官思考中…'}
-              </Space>
+              {submitting ? '正在检查回答…' : '面试官思考中…'}
             </Tag>
           ) : (
             <Tag color="default">等待你的作答</Tag>
@@ -355,9 +353,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
             />
           ) : (
             <Card size="small">
-              <Space>
-                <Spin /> <Typography.Text type="secondary">面试官正在选题…</Typography.Text>
-              </Space>
+              <Typography.Text type="secondary">面试官正在选题…</Typography.Text>
             </Card>
           )}
           {(busy || submitting) && (

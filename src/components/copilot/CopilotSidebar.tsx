@@ -13,7 +13,8 @@ import type { BubbleListProps } from '@ant-design/x';
 import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { buildModels, getModel } from '../../ai/pi';
-import { isConfigValid } from '../../ai/provider';
+import { chromeComplete } from '../../ai/chrome';
+import { isConfigValid, isEntryValid } from '../../ai/provider';
 import { recordErrorLog } from '../../storage/db';
 import type { AIConfig } from '../../schemas/ai-config';
 import type { InterviewSession } from '../../schemas/session';
@@ -39,13 +40,7 @@ async function chatCopilot(
   history: { role: 'user' | 'assistant'; content: string }[],
   newContent: string,
 ): Promise<string> {
-  const valid = config.providers.filter((p) => p.enabled && p.model && p.model.trim());
-  const candidates = valid.filter((p) => {
-    if (p.id === 'chrome') return true;
-    if (p.id === 'local') return Boolean(p.model);
-    if (p.id === 'cloudflare-workers-ai') return Boolean(p.apiKey && p.accountId);
-    return Boolean(p.apiKey);
-  });
+  const candidates = config.providers.filter((p) => p.enabled && isEntryValid(p));
   if (candidates.length === 0) {
     fail('未配置可用的 AI 引擎，请先在设置中配置', {
       providers: config.providers.map((p) => ({ id: p.id, enabled: p.enabled, model: p.model })),
@@ -63,8 +58,8 @@ async function chatCopilot(
         historyLen: history.length,
       };
       if (entry.id === 'chrome') {
-        // Chrome provider not yet exposed as chat; skip to next
-        fail('Chrome 内置模型暂不支持 Copilot 对话，请配置云端或本地引擎', entryCtx);
+        const transcript = history.map((h) => `${h.role}: ${h.content}`).join('\n');
+        return chromeComplete(system, `${transcript}${transcript ? '\n' : ''}user: ${newContent}`);
       }
       const models = buildModels(entry);
       const model = getModel(models, entry.id, entry.model);
