@@ -75,6 +75,7 @@ def audit() -> dict[str, Any]:
     difficulty_counts: Counter[str] = Counter()
     angle_counts: Counter[str] = Counter()
     category_counts: Counter[str] = Counter()
+    format_counts: Counter[str] = Counter()
     covered_cells: set[tuple[str, str]] = set()
 
     for file_name, question in questions:
@@ -112,6 +113,7 @@ def audit() -> dict[str, Any]:
             continue
         choice = formats.get("choice")
         if isinstance(choice, dict):
+            format_counts[str(choice.get("type", "<missing>"))] += 1
             options = choice.get("options", [])
             answers = choice.get("answer", [])
             if any(isinstance(option, str) and PLACEHOLDER_RE.fullmatch(option.strip()) for option in options):
@@ -127,6 +129,8 @@ def audit() -> dict[str, Any]:
                 add_issue(issues, "P0", "duplicate-answer-index", question_id, file_name, "answer indexes repeat")
             if any(not isinstance(index, int) or index < 0 or index >= len(options) for index in answers):
                 add_issue(issues, "P0", "answer-index-range", question_id, file_name, "answer index is outside options")
+        else:
+            format_counts["open-only"] += 1
 
         if VOLATILE_RE.search(f"{question_text or ''} {question.get('explanation', '')}") and not question.get("source"):
             add_issue(issues, "P2", "missing-source", question_id, file_name, "volatile vendor/API/model fact has no source")
@@ -148,6 +152,7 @@ def audit() -> dict[str, Any]:
             "difficulty": dict(sorted(difficulty_counts.items())),
             "angle": dict(sorted(angle_counts.items())),
             "topic": dict(sorted(topic_counts.items())),
+            "choiceFormat": dict(sorted(format_counts.items())),
         },
         "coverageGaps": [{"topic": topic, "angle": angle} for topic, angle in gaps],
         "issues": issues,

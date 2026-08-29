@@ -51,6 +51,14 @@ const warnings: string[] = [];
 const newlyCovered = new Set<string>();
 const existingCells = new Set(existing.filter((question) => question.angle).map((question) => `${question.topic}\u0000${question.angle}`));
 
+// 题型门禁（AGENTS.md §4.2）：多选题应占多数，单选题超过 1/3 视为题型设计偷懒。
+// 只对"本批导入"生效，不追溯历史题目——历史单选占比高是存量问题，不应阻塞新题导入。
+const MAX_SINGLE_RATIO = 1 / 3;
+const MIN_CHOICE_FOR_FORMAT_GATE = 3;
+let singleCount = 0;
+let multipleCount = 0;
+let openOnlyCount = 0;
+
 for (const question of incoming) {
   if (existingIds.has(question.id)) errors.push(`${question.id}: id 已存在`);
   if (nodeIds.has(question.topic) && question.angle && !existingCells.has(`${question.topic}\u0000${question.angle}`)) {
@@ -70,6 +78,21 @@ for (const question of incoming) {
     if (choice.options.some((option) => /^(参见解析|见解析|略|待补充|todo|tbd)$/iu.test(option.trim()))) {
       errors.push(`${question.id}: 选项包含占位文本`);
     }
+    if (choice.type === 'single') singleCount++;
+    else if (choice.type === 'multiple') multipleCount++;
+  } else {
+    openOnlyCount++;
+  }
+}
+
+const choiceTotal = singleCount + multipleCount;
+if (choiceTotal >= MIN_CHOICE_FOR_FORMAT_GATE) {
+  const singleRatio = singleCount / choiceTotal;
+  if (singleRatio > MAX_SINGLE_RATIO) {
+    errors.push(
+      `题型分布：本批 ${choiceTotal} 道选择题里单选 ${singleCount} 道（${(singleRatio * 100).toFixed(0)}%），超过 1/3。` +
+        `AGENTS.md §4.2 要求以多选为主（multiple ≥ 2/3），请回炉改写后再导入`,
+    );
   }
 }
 
@@ -81,6 +104,11 @@ if (errors.length) {
 
 console.log(`导入检查通过：${incoming.length} 题`);
 console.log(`新增覆盖格：${newlyCovered.size ? [...newlyCovered].join('、') : '无'}`);
+console.log(
+  `题型分布：单选 ${singleCount} · 多选 ${multipleCount}` +
+    (openOnlyCount ? ` · 纯开放题 ${openOnlyCount}` : '') +
+    (choiceTotal ? `（多选占比 ${((multipleCount / choiceTotal) * 100).toFixed(0)}%）` : ''),
+);
 warnings.forEach((warning) => console.warn(`⚠ ${warning}`));
 
 if (write) {

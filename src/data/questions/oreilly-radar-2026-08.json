@@ -7,10 +7,10 @@
     "tags": ["oreilly-radar", "agent", "nonhuman-identity", "governance"],
     "difficulty": "medium",
     "angle": "system-design",
-    "question": "企业部署大量自主 Agent 后，哪组问题应成为每个非人类身份的最小治理记录？（单选）",
+    "question": "企业部署大量自主 Agent 后，哪些问题应成为每个非人类身份的最小治理记录？（请选择两个）",
     "explanation": "最小记录应回答‘它是什么、谁负责、能访问什么、何时应失效’。缺少身份归属和生命周期，权限审查、轮换和撤销都会依赖猜测。",
     "source": {"materialId": "https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/", "section": "What exists, who owns it, what can it reach, and when should it die?"},
-    "formats": {"choice": {"type": "single", "options": ["只记录模型名称和调用次数", "记录身份、责任人、权限范围和失效条件", "只记录创建者，不记录权限和生命周期", "只记录最终输出，不记录执行主体"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。身份治理必须覆盖资产发现、责任归属、访问范围和生命周期终止。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["确认该身份代表的资产和责任归属", "记录权限范围以及生命周期失效条件", "只记录模型名称和调用次数", "只记录最终输出，不记录执行主体"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。身份治理需要知道谁负责该资产，以及它能访问什么、何时应失效。"}}
   },
   {
     "id": "oreilly-radar-2026-08-02",
@@ -20,10 +20,10 @@
     "tags": ["oreilly-radar", "agent", "authorization", "short-lived-credentials"],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "为什么 Agent 工具调用更适合使用短期、范围收窄且按意图评估的凭证，而不是长期 standing token？（单选）",
+    "question": "为什么 Agent 工具调用更适合使用短期、范围收窄且按意图评估的凭证，而不是长期 standing token？（请选择两个）",
     "explanation": "凭证应绑定具体任务和操作范围，在实际调用时重新评估；这样能减少凭证泄露、任务结束后权限残留和 Agent 行为变化带来的暴露窗口。",
     "source": {"materialId": "https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/", "section": "Intent-bound authorization"},
-    "formats": {"choice": {"type": "single", "options": ["长期 token 更便于 Agent 自主扩展任务", "短期且按任务收窄的凭证可减少权限残留并在调用时重新验证意图", "只要 token 加密，生命周期和范围就不重要", "把所有工具放在管理员 token 后即可统一审计"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。授权应绑定当前意图和最小范围，且在工具调用时执行，而非安装时一次性放行。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["缩短凭证生命周期可以减少泄露后的暴露窗口", "按当前任务收窄范围并在调用时重新验证意图", "长期 token 更便于 Agent 自主扩展任务", "只要 token 加密，生命周期和范围就不重要"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。短生命周期限制泄露窗口，意图绑定和最小权限减少任务结束后的权限残留。"}}
   },
   {
     "id": "oreilly-radar-2026-08-03",
@@ -33,10 +33,10 @@
     "tags": ["oreilly-radar", "agent", "supply-chain", "integrity"],
     "difficulty": "hard",
     "angle": "scenario",
-    "question": "一个 Agent skill 安装时通过安全扫描，但之后把外部链接重定向到另一份载荷。最关键的治理改进是什么？（单选）",
+    "question": "一个 Agent skill 安装时通过安全扫描，但之后把外部链接重定向到另一份载荷。哪些治理改进最关键？（请选择两个）",
     "explanation": "安装时审查不能证明运行时内容仍未改变。应固定并校验依赖和载荷完整性，限制可变远程内容，持续监控变更，并在变更后重新审批或阻断执行。",
     "source": {"materialId": "https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/", "section": "The artifact scanned and the payload executed were different"},
-    "formats": {"choice": {"type": "single", "options": ["安装扫描通过后永久信任所有后续内容", "固定版本和内容完整性，监控变更并在变更后重新审批", "只增加更多自然语言安全说明", "让 Agent 自己判断远程链接是否仍可信"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。供应链信任必须覆盖实际执行的版本和运行时变更，不能只做一次安装检查。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["固定依赖版本并校验实际执行载荷的完整性", "监控运行时变更，变更后重新审批或阻断执行", "安装扫描通过后永久信任所有后续内容", "让 Agent 自己判断远程链接是否仍可信"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。供应链控制既要固定并校验实际载荷，也要持续监测变更并重新审批。"}}
   },
   {
     "id": "oreilly-radar-2026-08-04",
@@ -46,10 +46,10 @@
     "tags": ["oreilly-radar", "agent", "audit", "ownership"],
     "difficulty": "medium",
     "angle": "debugging",
-    "question": "发现一个长期未使用但仍有完整访问权限的 Agent 身份时，为什么不能直接删除而不做调查？（单选）",
+    "question": "发现一个长期未使用但仍有完整访问权限的 Agent 身份时，调查中应确认哪些事项？（请选择两个）",
     "explanation": "删除前需要确认责任人、依赖关系、最近调用和替代路径，否则可能中断隐藏业务；治理应先建立资产清单和所有权，再按风险撤销、轮换或隔离。",
     "source": {"materialId": "https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/", "section": "Ownership and dormant identities"},
-    "formats": {"choice": {"type": "single", "options": ["未使用就一定可以立即删除", "先确认所有权、依赖和调用证据，再按风险撤销或隔离", "扩大权限避免删除造成故障", "忽略身份，因为没有近期调用就没有风险"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。休眠身份仍可能是风险，但撤销需要资产、所有权和依赖证据支持。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["确认责任人以及是否存在隐藏依赖", "查看最近调用证据后决定撤销、轮换或隔离", "未使用就一定可以立即删除", "忽略身份，因为没有近期调用就没有风险"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。休眠身份仍可能有风险，处置前要确认所有权、依赖和调用证据。"}}
   },
   {
     "id": "oreilly-radar-2026-08-05",
@@ -59,10 +59,10 @@
     "tags": ["oreilly-radar", "agent", "sandbox", "tenant-isolation"],
     "difficulty": "hard",
     "angle": "scenario",
-    "question": "一个共享 Agent 预览链接导致跨租户会话数据暴露。这个案例首先说明什么安全原则？（单选）",
+    "question": "一个共享 Agent 预览链接导致跨租户会话数据暴露。修复时哪些边界必须由服务端强制执行？（请选择两个）",
     "explanation": "Agent 身份隔离不能只依赖界面链接或模型上下文，必须由服务端会话绑定、租户授权和沙箱边界强制执行；远程脚本或间接执行路径也必须纳入边界设计。",
     "source": {"materialId": "https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/", "section": "Agent identity isolation is only as strong as the sandbox boundary"},
-    "formats": {"choice": {"type": "single", "options": ["预览链接本身就是租户隔离边界", "服务端必须绑定租户会话并执行授权、沙箱和数据隔离", "只要输入侧有过滤就不会跨租户", "把 token 放入 prompt 能自动隔离租户"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。租户和身份隔离必须在服务端和执行环境强制实现，不能依赖 UI 或模型自律。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["会话访问必须绑定经过认证的租户身份", "授权、沙箱和数据隔离必须在服务端或执行环境 enforced", "预览链接本身就是租户隔离边界", "把 token 放入 prompt 能自动隔离租户"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。租户会话绑定和执行环境中的授权、沙箱、数据隔离都不能依赖 UI 或模型自律。"}}
   },
   {
     "id": "oreilly-radar-2026-08-06",
@@ -72,10 +72,10 @@
     "tags": ["oreilly-radar", "mcp", "agent", "composition"],
     "difficulty": "medium",
     "angle": "system-design",
-    "question": "为什么 Agent 连接多个服务的主要价值通常来自跨应用工作流，而不是把单个应用改成聊天界面？（单选）",
+    "question": "为什么 Agent 连接多个服务的主要价值通常来自跨应用工作流，而不是把单个应用改成聊天界面？（请选择两个）",
     "explanation": "跨应用任务需要在不同系统间传递状态、权限和结果，组合式 Agent 可以完成单一应用无法独立完成的流程；单应用问答往往只是替换成熟 UI，收益有限。",
     "source": {"materialId": "https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/", "section": "Connecting to multiple servers starts the unlock"},
-    "formats": {"choice": {"type": "single", "options": ["跨应用组合只会增加复杂度，没有系统价值", "价值在于编排多个应用完成单一系统无法独立完成的任务", "只需把一个应用的按钮改成自然语言", "连接越多服务就一定越可靠"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。组合的价值来自跨系统状态和动作编排，但同时需要权限、失败和审计边界。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["跨应用工作流可以传递状态并编排连续动作", "价值在于完成单一系统无法独立完成的任务", "只需把一个应用的按钮改成自然语言", "连接越多服务就一定越可靠"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。组合的收益来自跨系统状态和动作编排，而不是简单替换单个应用的界面。"}}
   },
   {
     "id": "oreilly-radar-2026-08-07",
@@ -85,10 +85,10 @@
     "tags": ["oreilly-radar", "mcp", "remote-service", "oauth"],
     "difficulty": "hard",
     "angle": "system-design",
-    "question": "把只为单用户设计的本地工具服务改造成可供团队使用的远程服务，最重要的新增边界是什么？（单选）",
+    "question": "把只为单用户设计的本地工具服务改造成可供团队使用的远程服务，哪些新增边界最重要？（请选择两个）",
     "explanation": "远程化意味着多用户和网络暴露，必须引入每用户身份认证、凭证隔离、租户授权、资源限制和审计；简单把本地端口暴露到公网不是部署方案。",
     "source": {"materialId": "https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/", "section": "Go remote ASAP; local servers won't get you far"},
-    "formats": {"choice": {"type": "single", "options": ["直接把本地端口公开即可", "在远程入口执行 OAuth/租户认证，并在后端隔离每用户凭证和权限", "所有用户共用本地用户的凭证", "只增加一个更长的工具描述"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。远程服务需要把单用户假设改成显式的身份、凭证、租户和审计模型。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["在入口执行用户认证并区分租户身份", "在后端隔离每用户凭证、权限和审计记录", "直接把本地端口公开即可", "所有用户共用本地用户的凭证"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。远程服务必须显式处理用户和租户身份，并隔离凭证、权限和审计边界。"}}
   },
   {
     "id": "oreilly-radar-2026-08-08",
@@ -98,10 +98,10 @@
     "tags": ["oreilly-radar", "mcp", "gateway", "configuration"],
     "difficulty": "medium",
     "angle": "tradeoff",
-    "question": "同一团队需要让多个 Agent 客户端使用相同的一组服务连接。集中式聚合层的主要收益和主要风险分别是什么？（单选）",
+    "question": "同一团队需要让多个 Agent 客户端使用相同的一组服务连接。集中式聚合层的收益和风险有哪些？（请选择两个）",
     "explanation": "聚合层可把重复配置和认证集中为较少的连接，降低 M×N 配置成本；但它也成为权限、可用性和会话约束的集中边界，必须支持按会话限制工具和服务。",
     "source": {"materialId": "https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/", "section": "Remove the need to do it again, and again"},
-    "formats": {"choice": {"type": "single", "options": ["聚合层只带来收益，不会扩大故障域", "它减少重复配置和认证，但集中权限与可用性风险，需要会话级约束", "聚合层应默认开放所有服务器和工具", "每个客户端继续独立配置才能保证一致性"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。聚合是降低配置复杂度的架构层，同时必须管理集中式权限、故障和 per-session 限制。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["它减少多个客户端重复配置和认证的成本", "它集中了承载权限和可用性的风险，需要会话级约束", "聚合层应默认开放所有服务器和工具", "每个客户端继续独立配置才能保证一致性"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。聚合层降低重复配置成本，但也集中权限、可用性和故障风险，必须做会话级限制。"}}
   },
   {
     "id": "oreilly-radar-2026-08-09",
@@ -111,10 +111,10 @@
     "tags": ["oreilly-radar", "mcp", "context-window", "performance"],
     "difficulty": "hard",
     "angle": "tradeoff",
-    "question": "多个工具定义和中间结果都预先放入上下文，导致 Agent 还没开始工作就消耗大量 token。哪种改进最有针对性？（单选）",
+    "question": "多个工具定义和中间结果都预先放入上下文，导致 Agent 还没开始工作就消耗大量 token。哪些改进最有针对性？（请选择两个）",
     "explanation": "应按需发现工具、搜索并截断结果，或把数据处理移到代码执行层，避免每个中间结果反复经过模型。这样能降低 token 和注意力稀释，但需保留权限、审计和错误可见性。",
     "source": {"materialId": "https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/", "section": "Don't forget the context bloat footgun"},
-    "formats": {"choice": {"type": "single", "options": ["把所有工具和完整结果永久塞进上下文", "按需发现工具、截断检索结果或用代码层处理中间数据", "增加模型温度以压缩上下文", "删除工具结果让模型猜测后续动作"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。上下文治理应减少无必要的数据往返，同时保留可验证的结果和安全边界。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["按需发现工具而不是预加载全部定义", "截断检索结果或把中间数据处理移到代码层", "把所有工具和完整结果永久塞进上下文", "删除工具结果让模型猜测后续动作"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。上下文治理应减少无必要的数据往返，同时保留可验证的结果和安全边界。"}}
   },
   {
     "id": "oreilly-radar-2026-08-10",
@@ -124,10 +124,10 @@
     "tags": ["oreilly-radar", "mcp", "observability", "workflow"],
     "difficulty": "hard",
     "angle": "debugging",
-    "question": "跨邮件、日历和业务系统的 Agent 工作流失败时，只记录最终错误消息为什么不够？（单选）",
+    "question": "跨邮件、日历和业务系统的 Agent 工作流失败时，哪些观测信息有助于定位问题？（请选择两个）",
     "explanation": "跨服务失败可能来自工具选择、认证、参数、数据转换、重试或副作用状态。应以请求为单位串联每次工具调用、权限决策、输入输出摘要和外部结果，才能定位并安全恢复。",
     "source": {"materialId": "https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/", "section": "Embed existing MCP client harnesses into SaaS apps"},
-    "formats": {"choice": {"type": "single", "options": ["最终错误已经足够定位所有问题", "记录完整工作流 trace，串联调用、授权、参数、重试和副作用状态", "只记录模型最终文本以节省日志成本", "遇到错误就自动重跑整个工作流"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。多工具工作流需要链路级 trace，且重试必须了解已发生的副作用。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["串联每次工具调用、授权和参数的工作流 trace", "记录重试以及已经发生的外部副作用状态", "只记录模型最终文本以节省日志成本", "遇到错误就自动重跑整个工作流"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。多工具工作流需要链路级 trace，并记录副作用状态以便安全恢复。"}}
   },
   {
     "id": "oreilly-radar-2026-08-11",
@@ -137,10 +137,10 @@
     "tags": ["oreilly-radar", "small-model", "specialization", "evaluation"],
     "difficulty": "medium",
     "angle": "comparison",
-    "question": "为什么一个更小但针对单一任务优化的模型可能优于更大的通用模型？（单选）",
+    "question": "为什么一个更小但针对单一任务优化的模型可能优于更大的通用模型？（请选择两个）",
     "explanation": "任务表现取决于目标匹配、训练数据和输出约束，不只取决于参数规模。专用模型可降低成本和延迟，并在窄任务上更容易获得稳定行为。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-smaller-models-win/", "section": "Smaller models are sometimes better"},
-    "formats": {"choice": {"type": "single", "options": ["参数越多就必然在所有任务上更好", "任务专用数据、流程和约束可能让小模型在目标任务上更合适", "小模型不需要评估，因为任务简单", "只比较通用 benchmark 就能确定生产选型"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。模型选型应以目标任务的质量、成本、延迟和可控性综合评估，规模不是唯一变量。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["专用数据和输出约束可以提升目标任务的匹配度", "小模型可能同时降低目标任务的成本和延迟", "参数越多就必然在所有任务上更好", "只比较通用 benchmark 就能确定生产选型"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。任务匹配度、成本和延迟都可能使小模型更合适，规模不是唯一变量。"}}
   },
   {
     "id": "oreilly-radar-2026-08-12",
@@ -150,10 +150,10 @@
     "tags": ["oreilly-radar", "small-model", "routing", "cost"],
     "difficulty": "hard",
     "angle": "tradeoff",
-    "question": "一个 Agent 的简单分类、工具参数提取和复杂规划都使用同一旗舰模型。更合理的优化方向是什么？（单选）",
+    "question": "一个 Agent 的简单分类、工具参数提取和复杂规划都使用同一旗舰模型。哪些优化方向更合理？（请选择两个）",
     "explanation": "应按任务复杂度和质量门槛路由模型：简单、结构化任务可用小模型，复杂推理升级到更强模型，并用固定评估集验证路由错误和尾部风险。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-smaller-models-win/", "section": "Smaller models are sometimes better"},
-    "formats": {"choice": {"type": "single", "options": ["所有任务继续使用最大模型以避免路由逻辑", "按任务复杂度路由到满足质量门槛的模型，并评估误路由和尾部风险", "随机选择模型以平均成本", "按参数量越小越好，不需要质量门槛"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。路由是质量、成本和延迟的权衡，必须由任务级评估和升级策略约束。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["为简单结构化任务配置满足质量门槛的小模型", "为复杂规划保留升级到强模型的路径并评估尾部风险", "所有任务继续使用最大模型以避免路由逻辑", "按参数量越小越好，不需要质量门槛"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。模型路由应按任务复杂度满足质量门槛，并为复杂或失败请求保留升级路径。"}}
   },
   {
     "id": "oreilly-radar-2026-08-13",
@@ -163,10 +163,10 @@
     "tags": ["oreilly-radar", "small-model", "lora", "fine-tuning"],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "LoRA 相比全量微调的核心工程特点是什么？（单选）",
+    "question": "LoRA 相比全量微调的核心工程特点有哪些？（请选择两个）",
     "explanation": "LoRA 冻结基础模型，仅训练较小的低秩适配器，因此训练和迁移成本较低，也能降低灾难性遗忘风险；它仍需要独立的数据、评估和版本管理。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-smaller-models-win/", "section": "How do you train it, and where does it run?"},
-    "formats": {"choice": {"type": "single", "options": ["LoRA 会更新基础模型全部权重", "LoRA 只训练小型适配器，降低训练与部署迁移成本但仍需评估", "LoRA 不需要训练数据", "LoRA 自动保证适配器不会改变模型行为"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。LoRA 通过少量可训练权重实现适配，但适配器仍可能引入质量、安全和兼容性变化。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["基础模型权重通常保持冻结", "只训练小型适配器可以降低训练和迁移成本", "LoRA 不需要训练数据", "LoRA 自动保证适配器不会改变模型行为"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。LoRA 通常冻结基础权重，只训练低秩适配器，从而降低训练和迁移成本，但仍需评估变化。"}}
   },
   {
     "id": "oreilly-radar-2026-08-14",
@@ -176,10 +176,10 @@
     "tags": ["oreilly-radar", "small-model", "inference", "constraints"],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "自托管或可控推理管线相比普通聊天 API，在哪方面可能提升专用任务的可靠性？（单选）",
+    "question": "自托管或可控推理管线相比普通聊天 API，哪些机制可能提升专用任务的可靠性？（请选择两个）",
     "explanation": "应用可以在推理层加入有效输出约束、状态缓存、概率或任务特定逻辑，而不只依赖 prompt；这些控制仍需通过 schema 校验、回归测试和权限层验证。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-smaller-models-win/", "section": "Control beyond the model weights"},
-    "formats": {"choice": {"type": "single", "options": ["自托管自动消除所有幻觉", "可在推理管线中施加有效输出约束、缓存和任务逻辑", "只要能改权重就不需要应用层验证", "自托管意味着无需监控成本和延迟"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。推理管线的可控性允许把任务约束落到系统层，但不等于自动保证事实正确。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["在推理层施加 schema 等有效输出约束", "在系统层加入状态缓存和任务特定逻辑", "自托管自动消除所有幻觉", "只要能改权重就不需要应用层验证"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。可控推理管线能把输出约束、缓存和任务逻辑落到系统层，但仍需要应用层验证。"}}
   },
   {
     "id": "oreilly-radar-2026-08-15",

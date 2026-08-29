@@ -10,14 +10,15 @@
     "explanation": "应优先考虑 LN 或 RMSNorm。BN 依赖 batch 内统计量，小 batch 和训练/推理统计切换会增加不稳定性；LN 按单个样本归一化，RMSNorm 进一步省去去均值步骤，通常更适合 Transformer。",
     "formats": {
       "choice": {
-        "type": "single",
+        "type": "multiple",
         "options": [
-          "优先选择 LN 或 RMSNorm，因为它们按样本归一化，不依赖 batch 统计量，RMSNorm 还可省去均值计算",
+          "LN 或 RMSNorm 按样本归一化，不依赖 batch 统计量",
+          "RMSNorm 还可省去去均值步骤，通常更适合该 Transformer 场景",
           "必须选择 BN，因为 batch 越小，BN 的运行均值越准确，推理时也不需要维护额外统计量",
           "三者在小 batch 和变动推理 batch 下完全等价，只需比较参数数量即可",
           "选择 BN 并在推理时继续使用当前 batch 的统计量，就能消除训练与推理之间的差异"
         ],
-        "answer": [0]
+        "answer": [0, 1]
       },
       "open": {
         "referenceAnswer": "优先选择 LN 或 RMSNorm。BN 依赖 batch 内统计量，小 batch 和训练/推理统计切换会增加不稳定性；LN 按单个样本归一化，RMSNorm 省去去均值步骤，通常更适合 Transformer。"

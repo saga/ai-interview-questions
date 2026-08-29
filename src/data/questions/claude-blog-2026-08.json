@@ -7,10 +7,10 @@
     "tags": ["claude-blog", "managed-agents", "memory", "agent-design"],
     "difficulty": "medium",
     "angle": "mechanism",
-    "question": "一个客服 Agent 需要从历史会话中提炼可复用经验，但不能把每条原始对话永久塞入上下文。哪种设计更合理？（单选）",
+    "question": "一个客服 Agent 需要从历史会话中提炼可复用经验，但不能把每条原始对话永久塞入上下文。哪些设计更合理？（请选择两个）",
     "explanation": "可以异步回顾历史会话，提炼经过筛选的高信号规律并更新记忆；运行时只读取相关记忆，从而控制上下文规模并支持跨会话改进。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Build self-improving agents with dreaming"},
-    "formats": {"choice": {"type": "single", "options": ["只保留当前会话摘要", "异步筛选历史经验并更新长期记忆", "永久保留全部原始会话内容", "把每次输出直接写入业务数据库"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。异步过程回顾历史会话和记忆，提炼模式并整理高信号记忆。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["异步筛选历史经验并更新长期记忆", "运行时只读取与当前任务相关的记忆", "永久保留全部原始会话内容", "把每次输出直接写入业务数据库"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。异步过程筛选高信号经验，运行时只读取相关记忆以控制上下文规模。"}}
   },
   {
     "id": "claude-blog-2026-08-02",
@@ -20,10 +20,10 @@
     "tags": ["claude-blog", "memory", "human-in-the-loop", "governance"],
     "difficulty": "medium",
     "angle": "tradeoff",
-    "question": "一个 Agent 会从用户对话中自动提炼长期记忆，而记忆错误可能导致后续错误决策。上线前应优先增加什么控制？（单选）",
+    "question": "一个 Agent 会从用户对话中自动提炼长期记忆，而记忆错误可能导致后续错误决策。上线前应增加哪些控制？（请选择两个）",
     "explanation": "高影响的记忆写入应经过人工审核或独立验证，并保留版本和回滚能力；只依赖模型自我判断不能提供足够的治理边界。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Build self-improving agents with dreaming"},
-    "formats": {"choice": {"type": "single", "options": ["关闭全部历史记忆功能", "对高影响记忆启用审核、版本化和回滚", "只把采样温度设置为零", "只更换长期记忆的存储引擎"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。高影响的自动记忆更新需要审核、版本化和回滚，而不是只改变存储形式或采样参数。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["对高影响记忆启用人工或独立审核", "为记忆更新保留版本化和回滚能力", "只把采样温度设置为零", "只更换长期记忆的存储引擎"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。高影响记忆写入需要审核，并保留版本化和回滚边界。"}}
   },
   {
     "id": "claude-blog-2026-08-03",
@@ -33,10 +33,10 @@
     "tags": ["claude-blog", "memory", "agent-design"],
     "difficulty": "easy",
     "angle": "comparison",
-    "question": "设计跨会话 Agent 记忆时，在线记录和离线整理分别应承担什么职责？（单选）",
+    "question": "设计跨会话 Agent 记忆时，在线记录和离线整理分别应承担哪些职责？（请选择两个）",
     "explanation": "在线过程记录与当前任务相关的事实或反馈，离线过程再去重、提炼、筛选并更新长期记忆；把未经整理的全部轨迹直接作为长期记忆会放大噪声。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Build self-improving agents with dreaming"},
-    "formats": {"choice": {"type": "single", "options": ["两者都是模型参数的在线更新", "在线捕获工作信息，离线筛选后更新长期记忆", "在线管理权限，离线负责调用工具", "在线记录计费数据，离线整理运行日志"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。在线阶段捕获信息，离线阶段去重、提炼和筛选后写入长期记忆。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["在线过程捕获与当前任务相关的工作信息", "离线过程去重、提炼和筛选后更新长期记忆", "两者都是模型参数的在线更新", "在线管理权限，离线负责调用工具"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。在线阶段捕获信息，离线阶段去重、提炼和筛选后写入长期记忆。"}}
   },
   {
     "id": "claude-blog-2026-08-04",
@@ -46,10 +46,10 @@
     "tags": ["claude-blog", "grader", "evaluation", "quality-control"],
     "difficulty": "medium",
     "angle": "mechanism",
-    "question": "一个 Agent 需要评价自己生成的研究报告，而生成过程可能影响它对结果的判断。如何降低这种自评偏差？（单选）",
+    "question": "一个 Agent 需要评价自己生成的研究报告，而生成过程可能影响它对结果的判断。哪些措施能降低自评偏差？（请选择两个）",
     "explanation": "使用独立评估器在隔离上下文中依据预先定义的 rubric 检查最终结果，并把缺陷反馈给执行 Agent；这样评估不完全依赖原 Agent 的自我叙述。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "single", "options": ["让评估器代替执行 Agent 完成全部任务", "让独立评估器按标准检查结果并反馈缺陷", "保证所有生成结果都不需要重试", "只把执行模型切换成参数更大的模型"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。隔离的评估器按 rubric 检查最终结果，能降低执行 Agent 自评造成的偏差。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["让评估器与执行过程隔离", "让评估器按预先定义的标准检查结果并反馈缺陷", "保证所有生成结果都不需要重试", "只把执行模型切换成参数更大的模型"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。隔离的评估器按 rubric 检查最终结果，能降低执行 Agent 自评造成的偏差。"}}
   },
   {
     "id": "claude-blog-2026-08-05",
@@ -59,10 +59,10 @@
     "tags": ["claude-blog", "evaluation", "self-correction"],
     "difficulty": "medium",
     "angle": "scenario",
-    "question": "Agent 生成报告后，独立检查器发现缺少必需章节。为了提高成功率，编排器应如何处理？（单选）",
+    "question": "Agent 生成报告后，独立检查器发现缺少必需章节。为了提高成功率，编排器应如何处理？（请选择两个）",
     "explanation": "应把结构化检查结果作为反馈，让 Agent 针对缺失章节修订，并设置重试次数、成本和停止条件，避免无限自我纠错。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "single", "options": ["直接返回未经检查的报告", "反馈缺陷并在有界重试内修订", "删除格式要求以避免失败", "只记录失败而不反馈给 Agent"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。将检查结果反馈给 Agent，在限制次数、成本和停止条件的前提下修订。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["把结构化缺陷反馈给 Agent 进行定向修订", "设置重试次数、成本和停止条件", "删除格式要求以避免失败", "只记录失败而不反馈给 Agent"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。将检查结果反馈给 Agent，并在限制次数、成本和停止条件的前提下修订。"}}
   },
   {
     "id": "claude-blog-2026-08-06",

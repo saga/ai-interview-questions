@@ -39,6 +39,10 @@ const VALID_ANGLES = new Set([
 
 let errors = 0;
 let withAngle = 0;
+// 题型分布仅作可见性输出（AGENTS.md §4.2）：硬门禁在 question:add 上，只约束新导入批次，
+// 不在这里拦全库——历史单选占比高是存量问题，卡住校验会让它永远红。
+let singleCount = 0;
+let multipleCount = 0;
 for (const q of questions) {
   if (!nodeIds.has(q.topic)) {
     console.error(`✗ ${q.id}: topic "${q.topic}" 无对应知识节点`);
@@ -55,6 +59,8 @@ for (const q of questions) {
   }
   const choice = q.formats?.choice;
   if (choice) {
+    if (choice.type === 'single') singleCount++;
+    else if (choice.type === 'multiple') multipleCount++;
     if (new Set(choice.answer).size !== choice.answer.length) {
       console.error(`✗ ${q.id}: 选择题 answer 索引重复`);
       errors++;
@@ -84,3 +90,11 @@ if (errors > 0) {
 console.log(
   `✓ 校验通过：${questions.length} 题 / ${nodes.length} 知识节点 · 带 angle ${withAngle} 题（${((withAngle / questions.length) * 100).toFixed(1)}%）`,
 );
+const choiceTotal = singleCount + multipleCount;
+if (choiceTotal) {
+  const multiRatio = (multipleCount / choiceTotal) * 100;
+  console.log(
+    `  题型分布：单选 ${singleCount} · 多选 ${multipleCount}（多选占比 ${multiRatio.toFixed(1)}%，目标 ≥ 66.7%）` +
+      (multiRatio < 66.7 ? ' ← 偏低，新题请以多选为主' : ''),
+  );
+}

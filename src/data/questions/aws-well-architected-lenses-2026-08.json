@@ -7,10 +7,10 @@
     "tags": ["aws-well-architected", "agentic-ai", "atomic-task"],
     "difficulty": "medium",
     "angle": "system-design",
-    "question": "一个 Agent 同时负责检索、审批、发信和修改生产数据，错误很难定位。按照可预测执行原则，首要的架构改进是什么？（单选）",
+    "question": "一个 Agent 同时负责检索、审批、发信和修改生产数据，错误很难定位。哪些架构改进最关键？（请选择两个）",
     "explanation": "应按单一、原子的能力拆分任务，为每个能力定义输入校验和结构化输出契约，并分别配置权限、遥测和失败处理。扩大上下文或只加一句谨慎提示不能降低组合式失败面。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html", "section": "AGENTREL02: Predictable task execution"},
-    "formats": {"choice": {"type": "single", "options": ["继续扩大一个 Agent 的职责以减少通信开销", "拆成原子能力并为输入、输出和权限建立可测试契约", "只增加 system prompt 中的安全提醒", "关闭日志以减少复杂度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。原子任务、明确 schema 和独立权限能限制随机行为的影响并提高可测试性。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["拆成原子能力并为输入、输出建立可测试契约", "为不同能力分别配置权限和遥测边界", "继续扩大一个 Agent 的职责以减少通信开销", "只增加 system prompt 中的安全提醒"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。原子任务、明确 schema、独立权限和遥测能限制随机行为的影响并提高可测试性。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-02",
@@ -20,10 +20,10 @@
     "tags": ["aws-well-architected", "agentic-ai", "least-privilege", "identity"],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "Agent 代表用户调用下游服务时，哪种身份设计既能保留用户级授权又避免把用户凭证交给 Agent？（单选）",
+    "question": "Agent 代表用户调用下游服务时，哪些身份设计能保留用户级授权又避免把用户凭证交给 Agent？（请选择两个）",
     "explanation": "应使用独立的 Agent/service identity，并在调用链中传播经过签名的用户上下文声明；服务身份、单次 transaction 权限和用户级约束分别控制，不应让 Agent 直接接管用户角色。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentsec03-bp03.html", "section": "Identity layers and dynamic boundaries"},
-    "formats": {"choice": {"type": "single", "options": ["让 Agent 长期保存用户的 API key", "让 Agent 直接假设用户完整角色", "使用独立 Agent 身份并传播签名用户上下文，在服务端执行用户级授权", "所有 Agent 共用一个管理员角色并依赖审计区分"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。用户上下文应以受验证的声明传递，Agent 不应持有用户凭证；权限还需受服务身份和单次操作边界限制。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["使用独立 Agent 身份执行服务级认证", "传播签名用户上下文并在服务端执行用户级授权", "让 Agent 长期保存用户的 API key", "所有 Agent 共用一个管理员角色并依赖审计区分"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Agent 不应持有用户凭证，服务端应同时验证服务身份和签名用户上下文。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-03",
@@ -33,10 +33,10 @@
     "tags": ["aws-well-architected", "agentic-ai", "human-oversight"],
     "difficulty": "medium",
     "angle": "tradeoff",
-    "question": "为什么不应让所有 Agent 动作都采用同一种人工审批策略？（单选）",
+    "question": "为什么不应让所有 Agent 动作都采用同一种人工审批策略？哪些设计更合理？（请选择两个）",
     "explanation": "审批等级应匹配动作的风险、影响和可逆性。低风险可逆操作可以自动化，高影响或不可逆操作需要审批、超时和升级路径；统一全审批会形成瓶颈，统一全自动则放大事故。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html", "section": "Tiered human oversight and approval workflows"},
-    "formats": {"choice": {"type": "single", "options": ["所有动作都人工批准，才能保证系统可靠", "所有动作都自动执行，才能体现 Agent 价值", "按风险和可逆性分级，关键动作审批并设置超时和升级", "由模型自行决定是否需要人工，不设外部规则"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。监督应按风险分层，审批流程需要外部可验证的策略、超时和审计。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["低风险且可逆的动作可以在规则内自动执行", "高影响或不可逆动作应审批并设置超时和升级", "所有动作都人工批准，才能保证系统可靠", "由模型自行决定是否需要人工，不设外部规则"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。监督应按风险和可逆性分层，关键动作需要外部策略、超时和审计。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-04",
@@ -46,10 +46,10 @@
     "tags": ["aws-well-architected", "agentic-ai", "observability", "drift"],
     "difficulty": "hard",
     "angle": "debugging",
-    "question": "基础设施 CPU 和延迟均正常，但 Agent 最近平均调用工具次数翻倍、输出变长。为什么现有监控不足？（单选）",
+    "question": "基础设施 CPU 和延迟均正常，但 Agent 最近平均调用工具次数翻倍、输出变长。哪些监控改进有价值？（请选择两个）",
     "explanation": "Agent 的行为指标也是可靠性信号，应监控工具调用、记忆访问、输出分布、失败重试和任务完成质量，并与行为基线比较。基础设施健康不代表认知流程没有漂移。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html", "section": "Agent-specific telemetry and behavioral baselines"},
-    "formats": {"choice": {"type": "single", "options": ["这些变化只影响成本，与可靠性无关", "只要 CPU 正常就不需要继续排查", "增加 Agent 决策点和工具行为遥测，比较基线并触发异常调查", "删除较长输出样本以恢复平均值"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。Agent-specific telemetry 能发现基础设施指标覆盖不到的行为漂移和级联风险。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["监控工具调用次数和输出分布等行为指标", "建立行为基线并对异常变化触发调查", "只要 CPU 正常就不需要继续排查", "删除较长输出样本以恢复平均值"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Agent 行为遥测和基线能发现基础设施指标覆盖不到的漂移与级联风险。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-05",
@@ -59,10 +59,10 @@
     "tags": ["aws-well-architected", "agentic-ai", "reasoning-loop", "cost"],
     "difficulty": "medium",
     "angle": "tradeoff",
-    "question": "Agent 一次请求会触发多次推理、工具和多 Agent 通信。优化时最应该先建立什么可见性？（单选）",
+    "question": "Agent 一次请求会触发多次推理、工具和多 Agent 通信。优化时哪些可见性最重要？（请选择两个）",
     "explanation": "应按请求和工作流归因每次推理、工具调用、记忆访问、重试和 Agent 间通信的延迟与成本，才能识别不必要的循环、模型过度使用和协调开销。只看平均 API 延迟会遗漏主要成本。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentic-ai-lens.html", "section": "What makes this lens unique: reasoning, acting, and collaboration"},
-    "formats": {"choice": {"type": "single", "options": ["只统计最终 HTTP 请求次数", "按工作流追踪推理、工具、记忆、重试和通信的成本与延迟", "让所有任务使用最大模型以减少步骤", "删除中间 trace 以降低观测成本"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。Agent 成本和延迟来自认知流水线的多个步骤，必须做端到端归因。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["按工作流追踪推理、工具、记忆、重试和通信的成本", "按步骤记录延迟并识别循环或协调开销", "只统计最终 HTTP 请求次数", "删除中间 trace 以降低观测成本"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Agent 成本和延迟来自认知流水线的多个步骤，必须按工作流和步骤做端到端归因。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-06",
