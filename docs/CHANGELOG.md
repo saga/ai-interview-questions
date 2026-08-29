@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · AWS Well-Architected Lens 子页面题库补充
+
+- 基于 Financial Services Industry、Agentic AI、Responsible AI、Machine Learning 和 Generative AI Lens 的总览页及其安全、可靠性、监控、身份权限、响应校验、数据集治理和发布标准子页面，新增 30 道题，每个 Lens 6 道。
+- 题目覆盖原子 Agent、分级人工监督、动态最小权限、RTO/RPO、金融数据保护、风险登记、发布置信度、数据集重叠、ML 漂移监控、shadow testing、RAG 性能、模型/Token 成本、提示注入、数据投毒和输出护栏等可迁移工程原则。
+- 来源：[Financial Services Industry Lens](https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html)、[Agentic AI Lens](https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentic-ai-lens.html)、[Responsible AI Lens](https://docs.aws.amazon.com/wellarchitected/latest/responsible-ai-lens/responsible-ai-lens.html)、[Machine Learning Lens](https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/machine-learning-lens.html)、[Generative AI Lens](https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html)，以及各 Lens 的具体子页面和 Responsible AI custom lens 细则。
+
 ## 2026-08-29 · LLM 安全与金融服务 AI 场景补充
 
 - 新增 `llm-application-security` 与 `financial-ai-governance` 两个知识节点，覆盖提示注入、间接注入、最小权限、不安全输出处理、敏感信息泄露、红队评估、供应链风险，以及金融高影响决策、模型验证、公平性、解释、欺诈检测、隐私、漂移、供应商治理和审计。
