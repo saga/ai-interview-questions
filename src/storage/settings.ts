@@ -4,7 +4,7 @@ import { isEntryValid } from '../ai/provider';
 import { aiConfigSchema, proficiencyConfigSchema } from '../schemas/ai-config';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 import { SAMPLE_CONFIG } from '../config/sampleConfig';
-import { recordErrorLog } from './db';
+import { recordLog } from './db';
 
 const KEY = 'ai-interview-trainer.config';
 const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai'];
@@ -99,7 +99,14 @@ export function saveConfig(c: AIConfig): void {
   const after = safeConfigSnapshot(c);
   localStorage.setItem(KEY, JSON.stringify(c));
   if (JSON.stringify(before) !== JSON.stringify(after)) {
-    void recordErrorLog('config-audit', 'AI 配置已修改', { before, after });
+    void recordLog({
+      scope: 'config-audit',
+      event: 'config_saved',
+      kind: 'audit',
+      level: 'info',
+      message: 'AI 配置已修改',
+      detail: { before, after },
+    });
   }
 }
 

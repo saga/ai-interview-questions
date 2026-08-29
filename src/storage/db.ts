@@ -33,6 +33,12 @@ export interface ErrorLogEntry {
   id?: number;
   /** 出错模块：'copilot' / 'interview' / 'agent' 等。 */
   scope: string;
+  /** 日志类型：错误、审计或运行事件。旧记录缺省为 error。 */
+  kind?: 'error' | 'audit' | 'runtime';
+  /** 稳定事件名，便于筛选和后续分析。 */
+  event?: string;
+  /** 严重级别。 */
+  level?: 'info' | 'warning' | 'error';
   /** 面向用户的错误信息（即抛出的 message）。 */
   message: string;
   /** 结构化上下文：provider / model / stopReason / errorMessage / promptLen 等，便于回溯。 */
@@ -59,6 +65,16 @@ export class TrainerDB extends Dexie {
       sessions: 'id, startedAt, overall, *topics',
       errorLog: '++id, scope, createdAt',
     });
+    // v3：将 errorLog 扩展为通用本地日志表，旧记录保持可读
+    this.version(3).stores({
+      learner: 'id',
+      sessions: 'id, startedAt, overall, *topics',
+      errorLog: '++id, scope, createdAt, kind, event, level',
+    }).upgrade((tx) => tx.table('errorLog').toCollection().modify((entry: ErrorLogEntry) => {
+      entry.kind ??= 'error';
+      entry.event ??= 'error';
+      entry.level ??= 'error';
+    }));
   }
 }
 
@@ -75,8 +91,13 @@ export function topicsOfSession(s: SessionRecord): string[] {
  * 不阻塞主流程——无 IndexedDB 的环境（如部分测试/SSR）直接吞掉。
  */
 export async function recordErrorLog(scope: string, message: string, detail?: unknown): Promise<void> {
+  await recordLog({ scope, event: 'error', kind: 'error', level: 'error', message, detail });
+}
+
+/** 记录一条通用本地日志；detail 由调用方提供安全摘要，不应包含原文或密钥。 */
+export async function recordLog(entry: Omit<ErrorLogEntry, 'id' | 'createdAt'>): Promise<void> {
   try {
-    await db.errorLog.add({ scope, message, detail, createdAt: Date.now() });
+    await db.errorLog.add({ ...entry, createdAt: Date.now() });
   } catch {
     /* 持久化不可用时不抛，避免影响主流程 */
   }

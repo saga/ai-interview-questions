@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Switch, Tabs, Tag, Typography, Space, App as AntdApp } from 'antd';
+import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Select, Switch, Tabs, Tag, Typography, Space, App as AntdApp } from 'antd';
 import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import type { AIConfig } from '../../schemas/ai-config';
@@ -6,7 +6,7 @@ import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
 import { DEFAULT_LOCAL_BASE_URL } from '../../ai/local';
 import { DEFAULT_CONFIG, parseConfigJSON, stringifyConfig } from '../../storage/settings';
 import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
-import { getErrorLogs, clearErrorLogs, type ErrorLogEntry } from '../../storage/db';
+import { getErrorLogs, clearErrorLogs, recordLog, type ErrorLogEntry } from '../../storage/db';
 import { resetLearnerData } from '../../storage/learner';
 import { INTERVIEW_AGENT_SYSTEM_PROMPT } from '../../agent/prompt';
 import { EVAL_SYSTEM } from '../../ai/evaluate';
@@ -57,6 +57,7 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
   const [availability, setAvailability] = useState<ChromeAvailability | null>(null);
   const [logs, setLogs] = useState<ErrorLogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [logKind, setLogKind] = useState<'all' | 'error' | 'audit' | 'runtime'>('all');
 
   const loadLogs = async () => {
     setLogsLoading(true);
@@ -171,6 +172,8 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
     }));
   };
 
+  const visibleLogs = logs.filter((item) => logKind === 'all' || (item.kind ?? 'error') === logKind);
+
   return (
     <Card style={{ maxWidth: 860, margin: '0 auto' }}>
       <Typography.Title level={4} style={{ marginTop: 0 }}>
@@ -216,14 +219,18 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       )}
       <Tabs
         activeKey={activeTab}
-        onChange={setActiveTab}
         items={[
           { key: 'settings', label: '基础配置' },
           { key: 'proficiency', label: '熟练度' },
           { key: 'prompts', label: '提示词' },
           { key: 'json', label: '高级 JSON' },
+          { key: 'logs', label: '日志' },
         ]}
         style={{ marginBottom: 16 }}
+        onChange={(key) => {
+          setActiveTab(key);
+          if (key === 'logs') void loadLogs();
+        }}
       />
       {activeTab === 'prompts' ? (
         <Space direction="vertical" style={{ width: '100%' }} size={16}>
@@ -305,6 +312,71 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
               保存 JSON 配置
             </Button>
           </Space>
+        </Space>
+      ) : activeTab === 'logs' ? (
+        <Space direction="vertical" style={{ width: '100%' }} size={16}>
+          <Alert
+            type="info"
+            showIcon
+            message="本地日志"
+            description="这里记录配置审计、运行事件和错误诊断，仅保存在当前浏览器。日志只保留安全摘要，不包含 API Key、提示词正文或用户答案。"
+          />
+          <Space wrap>
+            <Select
+              value={logKind}
+              style={{ width: 140 }}
+              options={[
+                { value: 'all', label: '全部日志' },
+                { value: 'error', label: '错误' },
+                { value: 'audit', label: '审计' },
+                { value: 'runtime', label: '运行' },
+              ]}
+              onChange={setLogKind}
+            />
+            <Button size="small" onClick={async () => { await loadLogs(); message.success('已刷新日志'); }}>刷新</Button>
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={async () => { await clearErrorLogs(); setLogs([]); message.success('日志已清空'); }}
+            >
+              清空日志
+            </Button>
+          </Space>
+          {logsLoading ? (
+            <Typography.Text type="secondary">加载中…</Typography.Text>
+          ) : visibleLogs.length === 0 ? (
+            <Empty description="暂无日志" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          ) : (
+            <List
+              size="small"
+              dataSource={visibleLogs}
+              renderItem={(item) => {
+                const kind = item.kind ?? 'error';
+                const level = item.level ?? (kind === 'error' ? 'error' : 'info');
+                return (
+                  <List.Item style={{ display: 'block' }}>
+                    <Space size={8} wrap>
+                      <Tag color={kind === 'error' ? 'red' : kind === 'audit' ? 'blue' : 'green'}>
+                        {kind === 'error' ? '错误' : kind === 'audit' ? '审计' : '运行'}
+                      </Tag>
+                      <Tag color={level === 'error' ? 'red' : level === 'warning' ? 'orange' : 'default'}>{item.scope}</Tag>
+                      {item.event && <Typography.Text type="secondary">{item.event}</Typography.Text>}
+                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        {new Date(item.createdAt).toLocaleString()}
+                      </Typography.Text>
+                    </Space>
+                    <div style={{ marginTop: 4 }}>{item.message}</div>
+                    {item.detail != null && (
+                      <pre style={{ margin: '6px 0 0', padding: 8, background: '#f5f5f5', borderRadius: 6, fontSize: 12, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {JSON.stringify(item.detail, null, 2)}
+                      </pre>
+                    )}
+                  </List.Item>
+                );
+              }}
+            />
+          )}
         </Space>
       ) : (
         <>
@@ -417,6 +489,13 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           okButtonProps={{ danger: true }}
           onConfirm={async () => {
             await resetLearnerData();
+            await recordLog({
+              kind: 'audit',
+              event: 'learner_data_reset',
+              level: 'warning',
+              scope: 'settings',
+              message: '学习数据已重置',
+            });
             onResetLearner?.();
             message.success('学习数据已重置');
           }}
@@ -426,83 +505,6 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           </Button>
         </Popconfirm>
       </Space>
-      <Collapse
-        style={{ marginTop: 16 }}
-        items={[
-          {
-            key: 'diag',
-            label: `错误日志（诊断回溯，仅本机）${logs.length ? ` · ${logs.length} 条` : ''}`,
-            children: (
-              <div>
-                <Space style={{ marginBottom: 12 }}>
-                  <Button
-                    size="small"
-                    onClick={async () => {
-                      await loadLogs();
-                      message.success('已刷新');
-                    }}
-                  >
-                    刷新
-                  </Button>
-                  <Button
-                    size="small"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={async () => {
-                      await clearErrorLogs();
-                      setLogs([]);
-                      message.success('已清空错误日志');
-                    }}
-                  >
-                    清空
-                  </Button>
-                </Space>
-                {logsLoading ? (
-                  <Typography.Text type="secondary">加载中…</Typography.Text>
-                ) : logs.length === 0 ? (
-                  <Empty description="暂无记录" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                ) : (
-                  <List
-                    size="small"
-                    dataSource={logs}
-                    renderItem={(item) => (
-                      <List.Item style={{ display: 'block' }}>
-                        <Space size={8} wrap>
-                          <Tag color="red">{item.scope}</Tag>
-                          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                            {new Date(item.createdAt).toLocaleString()}
-                          </Typography.Text>
-                        </Space>
-                        <div style={{ marginTop: 4 }}>{item.message}</div>
-                        {item.detail != null && (
-                          <pre
-                            style={{
-                              margin: '6px 0 0',
-                              padding: 8,
-                              background: '#f5f5f5',
-                              borderRadius: 6,
-                              fontSize: 12,
-                              maxHeight: 200,
-                              overflow: 'auto',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-word',
-                            }}
-                          >
-                            {JSON.stringify(item.detail, null, 2)}
-                          </pre>
-                        )}
-                      </List.Item>
-                    )}
-                  />
-                )}
-              </div>
-            ),
-          },
-        ]}
-        onChange={(keys) => {
-          if (Array.isArray(keys) && keys.includes('diag')) void loadLogs();
-        }}
-      />
     </Card>
   );
 }
