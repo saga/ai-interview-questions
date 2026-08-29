@@ -10,9 +10,10 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 ## 添加前
 
 1. 阅读 `AGENTS.md`、`README.md`、`src/schemas/question.ts`、目标题库 JSON 和 `src/data/knowledge/` 中对应知识节点。
-2. 先运行 `npm run question:coverage`，确认新增题解决真实的 topic × angle 缺口，而不是重复堆积已有题型。
+2. 先运行 `npm run question:coverage`，确认新增题解决真实的 topic × angle 缺口，而不是重复堆积已有题型；如果还没确定要补哪些缺口，转 **fill-coverage-gap** skill 先出蓝图和优先级，再回到本 skill 写题。
 3. 检查同 topic 下已有题的题干、angle、difficulty、选项和答案，避免近重复。
 4. 如果题目涉及 AWS、模型、API、认证考试或其他时效事实，确认来源、适用版本和核验日期；不确定的事实不得写成绝对结论。
+5. 如果题目内容来自一篇具体文章而不是从零构思，转 **article-to-questions** skill 生成内容，再回到本 skill 完成校验与写入。
 
 ## 题目契约
 

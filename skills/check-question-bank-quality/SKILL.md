@@ -25,6 +25,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 - `python scripts/question_audit.py --json --output reports/question-audit.json`：生成机器可读报告；Python 报告是辅助分析，TypeScript/Zod 仍是数据契约唯一来源。
 - `uv run --extra analysis python scripts/question_analysis.py --semantic --json`：使用仓库内 ARM64 ONNX INT8 模型发现语义重复和 embedding 概念簇；默认离线，不访问 Hugging Face。
 - 审计报告中的 P0 表示结构性阻塞，P1/P2 仍需结合完整题目人工复核，不要把启发式告警直接当作事实错误。
+- 如果发现 topic × angle 覆盖缺口且用户要求补题，转 **fill-coverage-gap** skill 处理，不在本 skill 内直接生成新题。
 
 ## 必查项目
 
