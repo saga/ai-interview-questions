@@ -28,6 +28,8 @@ export const topicStatsSchema = z.object({
   mastery: z.number().min(0).max(1),
   /** 该 topic 参与过的不同训练会话数，用于估计熟练度置信度。 */
   practiceSessions: z.number().int().nonnegative().optional(),
+  /** 该 topic 的加权评分量：选择题 1，开放题 5。 */
+  scoreWeightTotal: z.number().positive().optional(),
   commonWeaknesses: z.array(z.string()),
   evidence: z.array(evidenceSchema).optional(),
   lastSeen: z.number(),

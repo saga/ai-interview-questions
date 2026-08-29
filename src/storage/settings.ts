@@ -1,7 +1,7 @@
 import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
 import type { ProviderId } from '../schemas/common';
 import { isEntryValid } from '../ai/provider';
-import { aiConfigSchema } from '../schemas/ai-config';
+import { aiConfigSchema, proficiencyConfigSchema } from '../schemas/ai-config';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 import { SAMPLE_CONFIG } from '../config/sampleConfig';
 
@@ -43,6 +43,8 @@ export function loadConfig(): AIConfig {
       const disabledCategories = Array.isArray(parsed.disabledCategories)
         ? parsed.disabledCategories.filter((value): value is string => typeof value === 'string')
         : [];
+      const proficiencyResult = proficiencyConfigSchema.safeParse(parsed.proficiency);
+      const proficiency = proficiencyResult.success ? proficiencyResult.data : proficiencyConfigSchema.parse({});
       const prompts = parsed.prompts && typeof parsed.prompts === 'object' ? parsed.prompts : undefined;
       if (Array.isArray(parsed.providers)) {
         const providers = parsed.providers
@@ -56,6 +58,7 @@ export function loadConfig(): AIConfig {
             generateOpenQuestions,
             masteryThreshold,
             disabledCategories,
+            proficiency,
             ...(prompts ? { prompts } : {}),
           };
         }
@@ -142,6 +145,7 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
       generateOpenQuestions: normalized.generateOpenQuestions,
       masteryThreshold: normalized.masteryThreshold,
       disabledCategories: normalized.disabledCategories,
+      proficiency: normalized.proficiency,
       ...(normalized.prompts ? { prompts: normalized.prompts } : {}),
     },
   };

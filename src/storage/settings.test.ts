@@ -71,6 +71,7 @@ describe('loadConfig', () => {
       generateOpenQuestions: false,
       masteryThreshold: 75,
       disabledCategories: [],
+      proficiency: DEFAULT_CONFIG.proficiency,
     });
 
     store['ai-interview-trainer.config'] = JSON.stringify({
@@ -83,6 +84,7 @@ describe('loadConfig', () => {
       generateOpenQuestions: false,
       masteryThreshold: 75,
       disabledCategories: [],
+      proficiency: DEFAULT_CONFIG.proficiency,
     });
   });
 
@@ -135,6 +137,7 @@ describe('saveConfig / loadConfig 往返', () => {
       generateOpenQuestions: true,
       masteryThreshold: 75,
       disabledCategories: [],
+      proficiency: DEFAULT_CONFIG.proficiency,
     };
     saveConfig(c);
     expect(loadConfig()).toEqual(c);
@@ -148,6 +151,7 @@ describe('stringifyConfig', () => {
       generateOpenQuestions: true,
       masteryThreshold: 75,
       disabledCategories: [],
+      proficiency: DEFAULT_CONFIG.proficiency,
     };
     const text = stringifyConfig(c);
     expect(text).toBe(JSON.stringify(c, null, 2));
@@ -172,6 +176,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
         generateOpenQuestions: false,
         masteryThreshold: 75,
         disabledCategories: [],
+        proficiency: DEFAULT_CONFIG.proficiency,
       },
     });
   });
@@ -181,7 +186,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     const on = parseConfigJSON(JSON.stringify({ ...base, generateOpenQuestions: true }));
     expect(on).toEqual({
       ok: true,
-      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, masteryThreshold: 75, disabledCategories: [] },
+      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, masteryThreshold: 75, disabledCategories: [], proficiency: DEFAULT_CONFIG.proficiency },
     });
     for (const bad of [undefined, 'yes', 1, null]) {
       const raw = bad === undefined ? base : { ...base, generateOpenQuestions: bad };
@@ -223,6 +228,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
         generateOpenQuestions: false,
         masteryThreshold: 75,
         disabledCategories: [],
+        proficiency: DEFAULT_CONFIG.proficiency,
       },
     });
     const bad = parseConfigJSON(JSON.stringify({ providers: [CF] }));

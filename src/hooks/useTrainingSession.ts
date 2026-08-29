@@ -213,7 +213,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
       const durationSec = Math.round((Date.now() - s.startedAt) / 1000);
       const prev = profileRef.current.sessions[0]?.overall ?? null;
       const rec = sessionFromQuiz(s, g, durationSec, answersRef.current);
-      const next = updateLearner(profileRef.current, rec);
+      const next = updateLearner(profileRef.current, rec, configRef.current.proficiency);
       await saveLearner(next);
       setProfile(next);
       setPrevOverall(prev);
@@ -262,7 +262,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
   /** Agent 面试结束后的落库：复用既有 Learner 管线，与确定性 engine 写入同一份画像。 */
   const handleAgentComplete = async (record: SessionRecord) => {
     const prev = profileRef.current.sessions[0]?.overall ?? null;
-    const next = updateLearner(profileRef.current, record);
+    const next = updateLearner(profileRef.current, record, configRef.current.proficiency);
     await saveLearner(next);
     setProfile(next);
     setPrevOverall(prev);
@@ -287,7 +287,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
     let cancelled = false;
     (async () => {
       try {
-        const p = await loadLearner();
+        const p = await loadLearner(config.proficiency);
         if (!cancelled) setProfile(p);
       } catch {
         if (!cancelled) setProfile(emptyProfile());
@@ -298,7 +298,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [config.proficiency]);
 
   // 倒计时：截止点锚定在会话创建时间（session.startedAt）。
   // 自适应模式追加题目会生成新的 session 对象，但 startedAt 不变——

@@ -144,7 +144,7 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
   };
 
   const handleFormSave = () => {
-    const next = { ...draft, masteryThreshold: draft.masteryThreshold ?? 75 };
+    const next = { ...draft, masteryThreshold: draft.masteryThreshold ?? 75, proficiency: draft.proficiency };
     setDraft(next);
     setText(stringifyConfig(next));
     onSave(next);
@@ -162,6 +162,13 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
     setText(stringifyConfig(next));
     onSave(next);
     message.success('提示词已保存');
+  };
+
+  const updateProficiency = (key: keyof AIConfig['proficiency'], value: number | null) => {
+    setDraft((current) => ({
+      ...current,
+      proficiency: { ...current.proficiency, [key]: value ?? current.proficiency[key] },
+    }));
   };
 
   return (
@@ -210,7 +217,7 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}
-        items={[{ key: 'settings', label: '基础配置' }, { key: 'prompts', label: '提示词' }]}
+        items={[{ key: 'settings', label: '基础配置' }, { key: 'proficiency', label: '熟练度' }, { key: 'prompts', label: '提示词' }]}
         style={{ marginBottom: 16 }}
       />
       {activeTab === 'prompts' ? (
@@ -236,6 +243,42 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
             <Button onClick={() => setPromptDraft({ agentSystem: INTERVIEW_AGENT_SYSTEM_PROMPT, evaluationSystem: EVAL_SYSTEM, variantSystem: VARIANT_SYSTEM })}>恢复提示词默认值</Button>
             <Button type="primary" icon={<SaveOutlined />} onClick={handlePromptSave}>保存提示词</Button>
+          </Space>
+        </Space>
+      ) : activeTab === 'proficiency' ? (
+        <Space direction="vertical" style={{ width: '100%' }} size={16}>
+          <Alert
+            type="info"
+            showIcon
+            message="熟练度算法"
+            description="熟练度由得分、题目数量和跨训练会话的练习次数共同决定。开放题和选择题使用各自的评分权重；调整后会影响后续训练以及重新加载时的历史画像计算。"
+          />
+          <Typography.Title level={5} style={{ margin: 0 }}>题型权重</Typography.Title>
+          <Space wrap>
+            <Typography.Text>选择题权重</Typography.Text>
+            <InputNumber min={0.1} step={0.5} value={draft.proficiency.choiceWeight} onChange={(value) => updateProficiency('choiceWeight', value)} />
+            <Typography.Text>开放题权重</Typography.Text>
+            <InputNumber min={0.1} step={0.5} value={draft.proficiency.openWeight} onChange={(value) => updateProficiency('openWeight', value)} />
+          </Space>
+          <Typography.Title level={5} style={{ margin: 0 }}>熟练度构成</Typography.Title>
+          <Space wrap>
+            <Typography.Text>基础系数</Typography.Text>
+            <InputNumber min={0} max={1} step={0.05} value={draft.proficiency.baseCoefficient} onChange={(value) => updateProficiency('baseCoefficient', value)} />
+            <Typography.Text>题量系数</Typography.Text>
+            <InputNumber min={0} max={1} step={0.05} value={draft.proficiency.questionCoefficient} onChange={(value) => updateProficiency('questionCoefficient', value)} />
+            <Typography.Text>训练次数系数</Typography.Text>
+            <InputNumber min={0} max={1} step={0.05} value={draft.proficiency.practiceCoefficient} onChange={(value) => updateProficiency('practiceCoefficient', value)} />
+          </Space>
+          <Typography.Text type="secondary">三个构成系数建议总和为 1，实际结果会限制在 0-100%。</Typography.Text>
+          <Typography.Title level={5} style={{ margin: 0 }}>证据置信度</Typography.Title>
+          <Space wrap>
+            <Typography.Text>题量平滑值</Typography.Text>
+            <InputNumber min={0.1} step={1} value={draft.proficiency.questionConfidenceSmoothing} onChange={(value) => updateProficiency('questionConfidenceSmoothing', value)} />
+            <Typography.Text>训练次数平滑值</Typography.Text>
+            <InputNumber min={0.1} step={1} value={draft.proficiency.practiceConfidenceSmoothing} onChange={(value) => updateProficiency('practiceConfidenceSmoothing', value)} />
+          </Space>
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+            <Button type="primary" icon={<SaveOutlined />} onClick={handleFormSave}>保存熟练度设置</Button>
           </Space>
         </Space>
       ) : (

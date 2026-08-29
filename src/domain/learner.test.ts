@@ -145,6 +145,16 @@ describe('updateLearner', () => {
     expect(p.topicStats['rag'].practiceSessions).toBe(1);
   });
 
+  it('开放题对 topic 均分的权重是选择题的 5 倍', () => {
+    const p = updateLearner(emptyProfile(), session(50, [
+      { ...result('rag', 0), format: 'choice' },
+      { ...result('rag', 100), format: 'open' },
+    ]));
+    expect(p.topicStats['rag'].attempts).toBe(2);
+    expect(p.topicStats['rag'].scoreWeightTotal).toBe(6);
+    expect(p.topicStats['rag'].avgScore).toBe(83.3);
+  });
+
   it('commonWeaknesses 按出现频率取前 3', () => {
     const gaps = ['error handling', 'error handling', 'schema validation', 'memory', 'retry'];
     const p = updateLearner(emptyProfile(), session(50, [result('tool-calling', 50, gaps)]));

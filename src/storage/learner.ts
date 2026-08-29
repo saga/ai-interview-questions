@@ -8,7 +8,8 @@
 // 边界：IndexedDB 同样是不可信边界，读出的数据仍需经 Zod 形状校验（沿用 schemas/learner 的校验）。
 
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
-import { emptyProfile, recommendWeakTopics } from '../domain/learner';
+import type { ProficiencyConfig } from '../schemas/ai-config';
+import { calculateProficiency, emptyProfile, recommendWeakTopics } from '../domain/learner';
 import { db, topicsOfSession, type StoredLearner, type StoredSession } from './db';
 
 const SESSION_CAP = 50;
@@ -24,14 +25,31 @@ function toStoredSession(s: LearnerProfile['sessions'][number]): StoredSession {
 }
 
 /** 从 Dexie 重组完整 LearnerProfile；空库返回 emptyProfile。 */
-export async function loadLearner(): Promise<LearnerProfile> {
+export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerProfile> {
   const stored = await db.learner.get(SINGLETON);
   if (!stored) return emptyProfile();
 
   const sessions = await db.sessions.orderBy('startedAt').reverse().toArray();
   const { id: _id, ...rest } = stored;
+  const topicPracticeSessions = new Map<string, number>();
+  for (const session of sessions) {
+    for (const topic of new Set(session.questionResults.map((result) => result.topic))) {
+      topicPracticeSessions.set(topic, (topicPracticeSessions.get(topic) ?? 0) + 1);
+    }
+  }
+  const topicStats = Object.fromEntries(
+    Object.entries(rest.topicStats).map(([topic, stat]) => {
+      const practiceSessions = stat.practiceSessions ?? topicPracticeSessions.get(topic) ?? 0;
+      return [topic, {
+        ...stat,
+        practiceSessions,
+        mastery: calculateProficiency(stat.avgScore, stat.attempts, practiceSessions, config),
+      }];
+    }),
+  );
   return {
     ...rest,
+    topicStats,
     // 与 updateLearner 保持一致：新在前、上限 SESSION_CAP
     sessions: sessions.slice(0, SESSION_CAP).map(({ topics: _t, ...s }) => s),
   };

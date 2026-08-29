@@ -10,6 +10,8 @@ import type { InterviewDefinition, ScoringRubric } from '../schemas/interview';
 import type { AngleStat, LearnerProfile, QuestionResult, SessionRecord, Trend } from '../schemas/learner';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { SessionQuestion } from '../schemas/session';
+import type { ProficiencyConfig } from '../schemas/ai-config';
+import { proficiencyConfigSchema } from '../schemas/ai-config';
 import { DEFAULT_RUBRIC } from './evaluation';
 import { prerequisiteClosure, topoRankOf } from './conceptGraph';
 
@@ -25,6 +27,10 @@ const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/�
 export const WEAK_MASTERY = 0.75;
 export const WEAK_AVG = 75;
 export const RECENT_TOPIC_COOLDOWN_SESSIONS = 1;
+
+function scoreWeight(format: QuestionResult['format'], config: ProficiencyConfig): number {
+  return format === 'open' ? config.openWeight : config.choiceWeight;
+}
 
 function isMastered(profile: LearnerProfile, topic: string, threshold = WEAK_AVG): boolean {
   const s = profile.topicStats[topic];
@@ -90,12 +96,19 @@ function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
 }
 
-export function calculateProficiency(avgScore: number, attempts: number, practiceSessions: number): number {
+export function calculateProficiency(
+  avgScore: number,
+  attempts: number,
+  practiceSessions: number,
+  config: ProficiencyConfig = proficiencyConfigSchema.parse({}),
+): number {
   const scoreFactor = clamp01(avgScore / 100);
-  const questionConfidence = attempts / (attempts + 4);
-  const practiceConfidence = practiceSessions / (practiceSessions + 2);
+  const questionConfidence = attempts / (attempts + config.questionConfidenceSmoothing);
+  const practiceConfidence = practiceSessions / (practiceSessions + config.practiceConfidenceSmoothing);
   return Math.round(clamp01(scoreFactor * (
-    0.15 + 0.6 * questionConfidence + 0.25 * practiceConfidence
+    config.baseCoefficient
+    + config.questionCoefficient * questionConfidence
+    + config.practiceCoefficient * practiceConfidence
   )) * 100) / 100;
 }
 
@@ -124,7 +137,11 @@ function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): s
  *   若未来「先会后忘」现象成为问题，再升级评分模型——见模块顶部启发式说明。
  * - 最近 10 次均值作为 overallScore：用滑动窗口平滑单次失常，又不让远古成绩永远拖着整体，平衡「稳定」与「时效」。
  */
-export function updateLearner(profile: LearnerProfile, s: SessionRecord): LearnerProfile {
+export function updateLearner(
+  profile: LearnerProfile,
+  s: SessionRecord,
+  config: ProficiencyConfig = proficiencyConfigSchema.parse({}),
+): LearnerProfile {
   const topicStats = { ...profile.topicStats };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
   const byTopic = new Map<string, QuestionResult[]>();
@@ -154,12 +171,15 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
   for (const [topic, results] of byTopic) {
     const prev = topicStats[topic];
     const n = results.length;
-    const avg = results.reduce((a, r) => a + r.score, 0) / n;
+    const weight = results.reduce((sum, result) => sum + scoreWeight(result.format, config), 0);
+    const weightedScore = results.reduce((sum, result) => sum + result.score * scoreWeight(result.format, config), 0);
     const last = results[n - 1].score;
     const attempts = (prev?.attempts ?? 0) + n;
+    const previousWeight = prev?.scoreWeightTotal ?? prev?.attempts ?? 0;
+    const scoreWeightTotal = previousWeight + weight;
     const newAvg = prev
-      ? Math.round(((prev.avgScore * prev.attempts + avg * n) / attempts) * 10) / 10
-      : Math.round(avg * 10) / 10;
+      ? Math.round(((prev.avgScore * previousWeight + weightedScore) / scoreWeightTotal) * 10) / 10
+      : Math.round((weightedScore / weight) * 10) / 10;
     const trend: Trend = prev
       ? last > prev.avgScore + TREND_EPSILON
         ? 'improving'
@@ -168,7 +188,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
           : 'flat'
       : 'flat';
     const practiceSessions = (prev?.practiceSessions ?? 0) + 1;
-    const mastery = calculateProficiency(newAvg, attempts, practiceSessions);
+    const mastery = calculateProficiency(newAvg, attempts, practiceSessions, config);
 
     topicStats[topic] = {
       attempts,
@@ -177,6 +197,7 @@ export function updateLearner(profile: LearnerProfile, s: SessionRecord): Learne
       trend,
       mastery,
       practiceSessions,
+      scoreWeightTotal,
       commonWeaknesses: aggregateGaps(prev?.commonWeaknesses, results),
       evidence: [...(prev?.evidence ?? []), ...results.map((r) => ({ questionId: r.questionId, score: r.score, at: s.startedAt }))].slice(-10),
       lastSeen: s.startedAt,
