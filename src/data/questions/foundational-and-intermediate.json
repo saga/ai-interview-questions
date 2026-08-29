@@ -323,5 +323,148 @@
         "referenceAnswer": "Encoder-only 通过双向上下文更适合理解任务；Decoder-only 使用因果掩码逐 token 生成；Encoder-Decoder 用编码器理解输入、解码器生成输出，常用于翻译等序列到序列任务。"
       }
     }
+  },
+  {
+    "id": "foundation-cnn-definition-01",
+    "category": "cnn",
+    "topic": "cnn",
+    "tags": ["cnn", "convolution", "image"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "卷积神经网络中的卷积层主要利用了图像的什么特性？",
+    "explanation": "卷积层通过局部感受野和权重共享提取局部模式，既减少参数，又能利用相邻像素的空间结构。",
+    "formats": {"choice": {"type": "single", "options": ["局部连接和权重共享带来的空间结构利用", "每个像素都使用一套完全独立的全连接参数", "只把图像转换成文本，不进行特征提取", "保证所有输入图像都具有相同的标签"], "answer": [0]}, "open": {"referenceAnswer": "卷积层通过局部感受野和权重共享提取局部模式，减少参数并利用图像的空间结构。"}}
+  },
+  {
+    "id": "foundation-cnn-pooling-01",
+    "category": "cnn",
+    "topic": "cnn",
+    "tags": ["cnn", "pooling", "downsampling"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 CNN 中加入 2×2、stride=2 的最大池化层，通常会产生什么效果？",
+    "explanation": "最大池化在局部窗口中取最大值，通常使空间宽高减半、保留较强响应，并减少后续计算量；它不是无损操作。",
+    "formats": {"choice": {"type": "single", "options": ["通常使空间尺寸减半并保留局部最强响应", "一定使通道数增加四倍且不改变空间尺寸", "为每个像素引入独立可训练参数", "保证所有细粒度位置信息完全不丢失"], "answer": [0]}, "open": {"referenceAnswer": "stride=2 的 2×2 最大池化通常让空间宽高减半，在窗口中保留最大响应，从而降低计算量，但会损失部分位置信息。"}}
+  },
+  {
+    "id": "foundation-sequence-definition-01",
+    "category": "sequence-models",
+    "topic": "sequence-models",
+    "tags": ["rnn", "sequence", "hidden-state"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "RNN 处理序列时，隐藏状态的主要作用是什么？",
+    "explanation": "隐藏状态携带此前时间步的摘要信息，并与当前输入共同决定下一步状态或输出。",
+    "formats": {"choice": {"type": "single", "options": ["携带序列前文的信息并参与当前步计算", "保存整个训练集的所有原始样本", "只负责随机初始化模型参数", "替代损失函数计算最终准确率"], "answer": [0]}, "open": {"referenceAnswer": "RNN 的隐藏状态是随时间步更新的记忆表示，携带前文摘要并与当前输入一起计算新的状态或输出。"}}
+  },
+  {
+    "id": "foundation-sequence-comparison-01",
+    "category": "sequence-models",
+    "topic": "sequence-models",
+    "tags": ["rnn", "lstm", "gru", "gradient"],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "相比普通 RNN，LSTM 或 GRU 主要试图改善哪类问题？",
+    "explanation": "门控机制让模型更容易保留或遗忘信息，缓解长序列训练中的梯度消失和长期依赖学习困难；它们仍然按时间步递归计算。",
+    "formats": {"choice": {"type": "single", "options": ["通过门控改善长期依赖和梯度消失问题", "完全移除序列顺序，因此不再需要输入时间步", "保证训练不会出现任何梯度爆炸", "把所有序列压缩成同一个固定标签"], "answer": [0]}, "open": {"referenceAnswer": "LSTM/GRU 使用门控控制信息保留与遗忘，帮助缓解普通 RNN 在长序列上的梯度消失和长期依赖问题，但仍是递归结构。"}}
+  },
+  {
+    "id": "foundation-multimodal-definition-01",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": ["multimodal", "vision-language", "embedding"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "多模态模型中的“多模态”通常指什么？",
+    "explanation": "多模态模型处理两种或更多类型的数据，例如文本、图像、音频或视频，并学习它们之间的对应关系。",
+    "formats": {"choice": {"type": "single", "options": ["处理并关联文本、图像、音频等多种数据模态", "只把更大的文本模型称为多模态模型", "只支持一种输入但输出多个类别", "把多个完全相同的文本副本拼接在一起"], "answer": [0]}, "open": {"referenceAnswer": "多模态模型能够处理两种或更多数据类型，并建立它们之间的语义对应关系，例如图像与文本。"}}
+  },
+  {
+    "id": "foundation-multimodal-mechanism-01",
+    "category": "multimodal",
+    "topic": "multimodal",
+    "tags": ["multimodal", "projector", "alignment"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "视觉语言模型常用一个 projector 或适配层连接视觉编码器与语言模型，主要目的是什么？",
+    "explanation": "视觉编码器产生视觉特征，projector 将其映射到语言模型可接收的表示空间或 token 序列，使语言模型能结合图像特征生成文本。",
+    "formats": {"choice": {"type": "single", "options": ["把视觉特征映射到语言模型可处理的表示空间", "把所有图像像素直接改写成真实文字标签", "替代语言模型的 tokenizer 并删除文本输入", "只负责压缩模型文件而不参与前向计算"], "answer": [0]}, "open": {"referenceAnswer": "视觉编码器输出视觉表示，projector/适配层将其变换到语言模型能够消费的表示空间，使语言模型可以融合图像和文本信息。"}}
+  },
+  {
+    "id": "foundation-data-leakage-mechanism-01",
+    "category": "data-leakage",
+    "topic": "data-leakage",
+    "tags": ["data-leakage", "train-test-split", "evaluation"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为什么在划分训练集和验证集之前用全量数据拟合标准化参数，可能造成数据泄露？",
+    "explanation": "全量均值、方差或词表可能包含验证集分布信息，使训练过程间接看到评估数据；应只用训练集拟合预处理器，再应用到验证集。",
+    "formats": {"choice": {"type": "single", "options": ["预处理器吸收了验证集统计信息，评估结果可能偏乐观", "因为标准化会让模型参数数量增加一倍", "因为验证集必须使用不同的标签编码", "因为任何数据预处理都会让模型无法训练"], "answer": [0]}, "open": {"referenceAnswer": "若在切分前用全量数据拟合均值、方差或词表，验证集信息会进入训练流程，导致评估偏乐观。正确做法是只用训练集拟合，再变换验证集。"}}
+  },
+  {
+    "id": "foundation-data-leakage-debugging-01",
+    "category": "data-leakage",
+    "topic": "data-leakage",
+    "tags": ["data-leakage", "duplicate", "debugging"],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "训练集和验证集指标都异常高，但线上效果很差，哪项排查最优先？",
+    "explanation": "应先检查重复样本、时间切分、标签泄露和验证集是否代表线上分布。离线高分不能证明不存在泄露或分布偏移。",
+    "formats": {"choice": {"type": "single", "options": ["检查重复样本、标签泄露、切分方式和线上分布代表性", "立即把模型换成更大的版本", "删除验证集并只报告训练集指标", "只增加训练轮数而不检查数据"], "answer": [0]}, "open": {"referenceAnswer": "优先审计数据切分、重复样本、标签泄露及验证集与线上分布的差异，再判断模型容量或训练策略。"}}
+  },
+  {
+    "id": "foundation-mcp-mechanism-01",
+    "category": "mcp",
+    "topic": "mcp",
+    "tags": ["mcp", "tools", "resources", "protocol"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "MCP server 暴露的 tools、resources 和 prompts 分别主要代表什么？",
+    "explanation": "tools 是可执行操作，resources 是可读取的上下文数据，prompts 是可复用的交互模板；客户端可先发现能力，再按需调用。",
+    "formats": {"choice": {"type": "single", "options": ["tools 执行动作，resources 提供数据，prompts 提供可复用模板", "三者都只是模型权重文件的不同名称", "resources 负责执行任意写操作，tools 只能返回静态文本", "prompts 会自动授予服务器访问所有用户数据的权限"], "answer": [0]}, "open": {"referenceAnswer": "MCP 的 tools 表示可调用的函数或动作，resources 表示可供模型使用的数据，上下文模板由 prompts 提供；权限仍需由宿主应用和服务器显式控制。"}}
+  },
+  {
+    "id": "foundation-mcp-discovery-01",
+    "category": "mcp",
+    "topic": "mcp",
+    "tags": ["mcp", "tools/list", "capability"],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "MCP 客户端在调用一个工具前，为什么通常先执行工具发现？",
+    "explanation": "发现可以获得工具名称、描述和 inputSchema，客户端据此判断能力并校验参数，避免盲目调用不存在或参数不匹配的工具。",
+    "formats": {"choice": {"type": "single", "options": ["获取工具清单和输入 schema，以便选择工具并校验参数", "为了把服务器的全部数据库内容复制到客户端", "为了跳过认证并自动获得写权限", "因为 MCP 工具名称永远不能由服务器动态改变"], "answer": [0]}, "open": {"referenceAnswer": "工具发现让客户端获得工具名称、用途和输入 schema，从而能够正确选择、生成和校验调用参数；它不等于自动授予权限。"}}
+  },
+  {
+    "id": "foundation-tool-security-mechanism-01",
+    "category": "tool-security",
+    "topic": "tool-security",
+    "tags": ["tool-security", "least-privilege", "authorization"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "给 Agent 设计“发送邮件”和“读取订单”工具时，最符合最小权限原则的做法是什么？",
+    "explanation": "按工具和调用者身份限制资源范围与操作类型；高影响写操作应有参数校验、审批或确认，而不能因为 Agent 能调用工具就给予全库权限。",
+    "formats": {"choice": {"type": "single", "options": ["分别限制工具权限和资源范围，对发送邮件等高影响操作增加校验或确认", "给两个工具都授予管理员权限以减少开发工作", "只依赖系统提示词要求 Agent 不要误操作", "把所有工具合并成一个任意代码执行接口"], "answer": [0]}, "open": {"referenceAnswer": "应按工具、用户和资源范围实施最小权限，读取与写入分离，对发送邮件这类高影响操作进行参数校验、审批或用户确认，不能只依赖提示词。"}}
+  },
+  {
+    "id": "foundation-context-window-definition-01",
+    "category": "llm-fundamentals",
+    "topic": "context-window",
+    "tags": ["context-window", "tokens", "llm"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "LLM 的上下文窗口通常指什么？",
+    "explanation": "上下文窗口是模型一次处理的 token 总量上限，通常包括输入上下文和生成输出所占的 token，具体边界由模型和 API 定义。",
+    "formats": {"choice": {"type": "single", "options": ["一次请求中模型可处理的输入与输出 token 容量上限", "模型可以永久记住的用户数量", "GPU 显存大小的另一种名称", "只限制输出字符数而不限制输入"], "answer": [0]}, "open": {"referenceAnswer": "上下文窗口是模型一次请求可处理的 token 容量上限，通常需要在输入上下文和输出预算之间分配。"}}
+  },
+  {
+    "id": "foundation-rag-definition-01",
+    "category": "rag",
+    "topic": "rag",
+    "tags": ["rag", "retrieval", "grounding"],
+    "difficulty": "easy",
+    "angle": "definition",
+    "question": "RAG 的核心流程是什么？",
+    "explanation": "RAG 先从外部知识库检索与问题相关的内容，再把结果放入模型上下文中生成回答，从而不必仅依赖模型参数中的知识。",
+    "formats": {"choice": {"type": "single", "options": ["先检索外部相关内容，再将其作为上下文辅助生成", "把所有文档永久重新训练进模型后再回答", "只对用户问题做随机采样，不访问知识库", "只把模型温度调低就完成了检索增强"], "answer": [0]}, "open": {"referenceAnswer": "RAG 在生成前从外部知识库检索相关内容，并将检索结果注入上下文，以提高回答的依据性和时效性。"}}
   }
 ]
