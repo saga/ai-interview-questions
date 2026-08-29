@@ -5,7 +5,7 @@
 //       ④ 工具名不在允许集合 → 回落为文本；⑤ 占位 model 字段。
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildChromeAgentRuntime } from './chromeAgent';
+import { buildChromeAgentRuntime, buildUserPrompt } from './chromeAgent';
 import type { Context, Tool } from '@earendil-works/pi-ai';
 
 function stubLanguageModel(reply: string, opts?: { createThrows?: boolean }) {
@@ -89,6 +89,22 @@ describe('buildChromeAgentRuntime', () => {
     const events = await collect(streamFn({} as any, makeContext()));
     const done = events.find((e) => e.type === 'done');
     expect(done.reason).toBe('stop');
+  });
+
+  it('user prompt 只保留近期历史和紧凑工具清单，不重复注入协议长文', () => {
+    const context = makeContext();
+    context.messages = Array.from({ length: 12 }, (_, i) => ({
+      role: 'user' as const,
+      content: `历史消息 ${i}`,
+      timestamp: Date.now(),
+    }));
+    const prompt = buildUserPrompt(context);
+    expect(prompt).toContain('## Recent interview state');
+    expect(prompt).toContain('getQuestion');
+    expect(prompt).toContain('"properties"');
+    expect(prompt).toContain('已省略 2 条较早历史');
+    expect(prompt).not.toContain('Respond with EXACTLY ONE JSON object');
+    expect(prompt).not.toContain('Available tools (you MUST call exactly one)');
   });
 
   it('chrome 不可用时（抛出）编码为 error 事件而非拒绝', async () => {

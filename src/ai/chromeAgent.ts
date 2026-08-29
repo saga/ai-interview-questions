@@ -81,32 +81,40 @@ function textBlock(text: string): TextContent {
   return { type: 'text', text };
 }
 
+const MAX_HISTORY_MESSAGES = 10;
+const MAX_HISTORY_ITEM_CHARS = 900;
+
 /**
- * 把对话历史（UserMessage / AssistantMessage / ToolResultMessage）渲染为纯文本，
- * 供注入 Chrome 提示词。AssistantMessage 优先还原其「工具调用」（让模型看到自己上一步做了什么），
- * 否则还原其文本；ToolResultMessage 还原为「工具返回」。
+ * 把最近的对话历史压缩为纯文本，供注入 Chrome 提示词。
+ * Chrome Agent 每轮都会重建 user prompt；只保留最近状态可避免 prompt 随轮次线性膨胀。
  */
 function renderMessages(messages: Context['messages']): string {
   const parts: string[] = [];
-  for (const m of messages) {
+  const recent = messages.slice(-MAX_HISTORY_MESSAGES);
+  if (messages.length > recent.length) parts.push(`[已省略 ${messages.length - recent.length} 条较早历史]`);
+  for (const m of recent) {
     if (m.role === 'user') {
-      parts.push('User: ' + contentToText(m.content));
+      parts.push('User: ' + truncate(contentToText(m.content)));
     } else if (m.role === 'assistant') {
       const blocks = m.content ?? [];
       const calls = blocks.filter((b): b is ToolCall => b.type === 'toolCall');
       if (calls.length > 0) {
         for (const c of calls) {
-          parts.push(`Assistant invoked tool "${c.name}" with arguments ${JSON.stringify(c.arguments ?? {})}`);
+          parts.push(`Assistant tool "${c.name}" ${JSON.stringify(c.arguments ?? {})}`);
         }
       } else {
         const text = blocks.filter((b): b is TextContent => b.type === 'text').map((b) => b.text).join(' ');
-        if (text.trim()) parts.push('Assistant: ' + text);
+        if (text.trim()) parts.push('Assistant: ' + truncate(text));
       }
     } else if (m.role === 'toolResult') {
-      parts.push(`Tool "${m.toolName}" returned: ${contentToText(m.content)}`);
+      parts.push(`Tool "${m.toolName}": ${truncate(contentToText(m.content))}`);
     }
   }
   return parts.join('\n');
+}
+
+function truncate(value: string, max = MAX_HISTORY_ITEM_CHARS): string {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
 }
 
 /** 把多形态 content（string 或 TextContent[]）统一成纯文本。 */
@@ -118,7 +126,7 @@ function contentToText(content: string | Array<{ type: string; text?: string }>)
     .trim();
 }
 
-/** 把可用工具渲染成「名称 + 描述 + JSON Schema 参数」的文本，注入提示词。 */
+/** 把可用工具渲染成紧凑签名；工具语义在 system prompt 中定义，避免每轮重复长描述。 */
 function renderTools(tools?: Tool[]): string {
   if (!tools || tools.length === 0) return '(no tools available)';
   return tools
@@ -129,28 +137,27 @@ function renderTools(tools?: Tool[]): string {
       } catch {
         schema = '{}';
       }
-      return `- ${t.name}: ${t.description}\n  parameters (JSON schema): ${schema}`;
+      return `- ${t.name}: ${schema}`;
     })
     .join('\n');
 }
 
-/** 构造用户侧提示词：对话历史 + 工具清单 + 严格的「只输出单个 JSON 工具调用」格式指令。 */
-function buildUserPrompt(context: Context): string {
+/** 构造用户侧提示词：近期状态 + 紧凑工具清单；稳定协议放在 system prompt。 */
+export function buildUserPrompt(context: Context): string {
   const transcript = renderMessages(context.messages);
   const tools = renderTools(context.tools);
   return [
-    '## Conversation so far',
+    '## Recent interview state',
     transcript || '(empty)',
     '',
-    '## Available tools (you MUST call exactly one)',
+    '## Available tools',
     tools,
     '',
-    '## Response format',
-    'Respond with EXACTLY ONE JSON object and nothing else — no markdown, no code fences, no extra commentary.',
-    "The object must be: {\"tool\": \"<tool_name>\", \"args\": { <arguments matching that tool's schema> }}",
-    'Choose the single most appropriate tool for the current interview state and output only its JSON.',
+    'Choose exactly one tool for the current state.',
   ].join('\n');
 }
+
+const CHROME_TOOL_PROTOCOL = `\n\n## Chrome tool protocol\nRespond with exactly one JSON object and nothing else (no markdown): {"tool":"<tool_name>","args":{}}. The tool name must be from the available tools and args must match its schema.`;
 
 /**
  * 容错解析模型输出为工具调用：兼容代码块包裹与多余文字，支持 {tool,args} 与 {name,arguments} 两种写法；
@@ -246,7 +253,7 @@ function createChromeEventStream(context: Context): AssistantMessageEventStream 
 
 /** 异步驱动：调用 chromeComplete → 解析 → 发射事件；任何异常都编码进 stream 而非抛出。 */
 async function driveStream(stream: AssistantMessageEventStream, context: Context): Promise<void> {
-  const system = context.systemPrompt ?? '';
+  const system = `${context.systemPrompt ?? ''}${CHROME_TOOL_PROTOCOL}`;
   const userPrompt = buildUserPrompt(context);
   let raw: string;
   try {
