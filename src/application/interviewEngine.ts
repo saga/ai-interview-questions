@@ -10,12 +10,11 @@ import type { InterviewDefinition } from '../schemas/interview';
 import type { InterviewSession, SessionQuestion } from '../schemas/session';
 import type { LearnerProfile } from '../schemas/learner';
 import { availableFormats, planComposition } from '../domain/quiz';
-import { gradeChoice } from '../domain/evaluation';
-import { applyVariant, validateVariant } from '../domain/variant';
 import { createLLMProvider } from '../ai/provider';
 import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/adaptive';
 import { interviewDefinitionSchema } from '../schemas/interview';
 import { formatSchemaErrorMessage } from '../schemas/errors';
+import { effectiveFormats, evaluateSessionQuestion, finalizeQuestion } from './sessionEvaluator';
 
 /** 自适应模式无组卷配额：开放形态按此概率随机分配（与普通会话的 7:3 体验一致）。 */
 const ADAPTIVE_OPEN_PROBABILITY = 0.3;
@@ -27,13 +26,6 @@ const ADAPTIVE_OPEN_PROBABILITY = 0.3;
  * 返回值永远是具体的非空列表：定义未选形态视为不限（choice+open）；
  * 定义只选了 open 而不可用时退化为 choice，避免出现空会话。
  */
-function effectiveFormats(def: InterviewDefinition, config?: AIConfig): FormatId[] {
-  const base: FormatId[] = def.formats.length > 0 ? def.formats : ['choice', 'open'];
-  const allowOpen = Boolean(config?.generateOpenQuestions) && Boolean(def.useAI);
-  const filtered = base.filter((f) => f !== 'open' || allowOpen);
-  return filtered.length > 0 ? filtered : ['choice'];
-}
-
 /**
  * 由声明式 Definition 构建一次具体会话：
  * 先按 类别 / 难度 / 形态 过滤题池（题目保留任一允许形态即可），再组卷分配本次形态
@@ -54,7 +46,7 @@ export async function buildSession(
   config?: AIConfig,
 ): Promise<InterviewSession> {
   const validDef = assertValidDefinition(def);
-  const formats = effectiveFormats(validDef, config);
+  const formats = effectiveFormats(validDef.formats, validDef.useAI, config?.generateOpenQuestions);
   let pool = bank.questions;
   if (validDef.categories.length > 0) pool = pool.filter((q) => validDef.categories.includes(q.category));
   if (validDef.difficulties.length > 0) pool = pool.filter((q) => validDef.difficulties.includes(q.difficulty));
@@ -74,22 +66,6 @@ export async function buildSession(
  * 用户点「开始」永远进不去。这里改成「失败回退原题」：单个变体坏掉不影响其它题，
  * 至多该题不享受变体（仍是一套可用的正常题）。生成与校验都不抛到上层。
  */
-async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvider | null): Promise<SessionQuestion> {
-  if (!provider) return sq;
-  try {
-    const v = await provider.generateVariant(sq.question);
-    const check = validateVariant(sq.question, v);
-    if (!check.ok) {
-      console.warn(`变体校验未通过(${sq.question.id})，回退到原题：${check.reason}`);
-      return sq;
-    }
-    return { ...sq, question: applyVariant(sq.question, v) };
-  } catch (err) {
-    console.warn(`变体生成失败(${sq.question.id})，回退到原题：`, err);
-    return sq;
-  }
-}
-
 /**
  * 自适应模式的下一步：根据已答题的作答信号（主题/得分/难度），
  * 由概念图与迁移策略选出下一题（含变体处理与形态分配）；题池耗尽返回 null。
@@ -106,7 +82,7 @@ export async function nextAdaptiveStep(
   providerOverride?: LLMProvider,
 ): Promise<{ question: SessionQuestion; strategy: Strategy } | null> {
   const def = session.definition;
-  const formats = effectiveFormats(def, config);
+  const formats = effectiveFormats(def.formats, def.useAI, config?.generateOpenQuestions);
   let pool = bank.questions;
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
@@ -149,30 +125,12 @@ export async function evaluateAnswer(
   def: InterviewDefinition,
   config?: AIConfig,
 ): Promise<EvaluationResult | null> {
-  // 未作答（undefined/null/空串/空数组）不评分，避免记为 0 分污染画像（与 agent 评分层保持一致）。
-  if (
-    answer == null ||
-    (Array.isArray(answer) && answer.length === 0) ||
-    (typeof answer === 'string' && answer.trim() === '')
-  ) {
-    return null;
-  }
-  if (sq.format === 'choice') {
-    const cf = sq.question.formats.choice;
-    if (!cf) throw new Error(`题目 ${sq.question.id} 缺少 choice 形态，无法判分`);
-    return gradeChoice(cf, (answer as number[]) ?? [], def.scoringRubric);
-  }
-  if (!def.useAI) return null;
-  const open = sq.question.formats.open;
-  if (!open) throw new Error(`题目 ${sq.question.id} 缺少 open 形态，无法评分`);
+  if (!def.useAI) return evaluateSessionQuestion(sq, answer, null, def.scoringRubric, def.evaluationCriteria);
   const provider = createLLMProvider(config);
-  if (!provider) return null;
-  return provider
-    .evaluateOpenAnswer(sq.question, open, (answer as string) ?? '', def.scoringRubric, def.evaluationCriteria)
-    .catch((err) => {
-      console.warn('评分失败：', err);
-      return null;
-    });
+  return evaluateSessionQuestion(sq, answer, provider, def.scoringRubric, def.evaluationCriteria).catch((err) => {
+    console.warn('评分失败：', err);
+    return null;
+  });
 }
 
 /** 批量评估整场会话，返回 题目 id → 评估结果 的映射。 */

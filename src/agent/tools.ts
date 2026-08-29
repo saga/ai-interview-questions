@@ -7,13 +7,11 @@
 
 import { Type } from 'typebox';
 import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core';
-import type { AnswerValue, LLMProvider } from '../types';
+import type { LLMProvider } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
-import type { SessionQuestion } from '../schemas/session';
-import { availableFormats } from '../domain/quiz';
-import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
+import { availableSessionFormats, evaluateSessionQuestion, finalizeQuestion } from '../application/sessionEvaluator';
 import { recommendWeakTopics, weakAnglesOf } from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge';
 import type { InterviewAgentSession } from './types';
@@ -35,20 +33,6 @@ function textResult<T>(content: string,  details: T, terminate = false): AgentTo
     details,
     terminate,
   };
-}
-
-/**
- * 判断作答是否为空（未作答）：undefined / null / 空串 / 空数组。
- *
- * 为什么集中一处而非散落的 `!answer`：作答结构有两种（选择题 number[]、开放题 string），
- * 各自「空」的语义不同；评分、出题、摘要都需复用同一判空规则，集中定义可避免到处写不一致的判断、
- * 也不会把「空数组」误判成「已作答」（否则会被记成 0 分污染画像）。
- */
-function isAnswerEmpty(answer: AnswerValue | undefined): boolean {
-  if (answer === undefined || answer === null) return true;
-  if (typeof answer === 'string') return answer.trim() === '';
-  if (Array.isArray(answer)) return answer.length === 0;
-  return false;
 }
 
 // ── 参数 schema（TypeBox） ───────────────────────────────
@@ -75,7 +59,7 @@ type GetQuestionParams = {
 
 /** 由题目构造工具返回的精简摘要（不含题干全文，避免上下文膨胀）。 */
 function toSummary(q: Question, generateOpenQuestions: boolean) {
-  const formats = availableFormats(q, generateOpenQuestions ? [] : ['choice']);
+  const formats = availableSessionFormats(q, undefined, true, generateOpenQuestions);
   return {
     id: q.id,
     category: q.category,
@@ -83,30 +67,6 @@ function toSummary(q: Question, generateOpenQuestions: boolean) {
     difficulty: q.difficulty,
     formats,
   };
-}
-
-/**
- * 评估「当前题」的用户作答（与 evaluateAnswer 工具共用，便于兜底模式复用）：
- * 选择题走确定性 gradeChoice；开放题委托 LLMProvider.evaluateOpenAnswer。
- * 开放题评分失败（无 key / 网络）会向上抛错，调用方决定是记 null 还是提示。
- * 未作答（空 answer）直接返回 null，避免把「没答」误记为 0 分污染成绩与画像。
- */
-export async function evaluateSessionQuestion(
-  sq: SessionQuestion,
-  answer: AnswerValue | undefined,
-  provider: LLMProvider,
-): Promise<EvaluationResult | null> {
-  if (isAnswerEmpty(answer)) return null; // 未作答 → 跳过评分
-  // 题目级权重覆盖已随 rubric 字段一并移除（ADR-044），一律使用全局默认权重
-  const baseRubric = DEFAULT_RUBRIC;
-  if (sq.format === 'choice') {
-    const cf = sq.question.formats.choice!;
-    const selected = Array.isArray(answer) ? (answer as number[]) : [];
-    return gradeChoice(cf, selected, baseRubric);
-  }
-  const open = sq.question.formats.open!;
-  const userAnswer = typeof answer === 'string' ? answer : '';
-  return provider.evaluateOpenAnswer(sq.question, open, userAnswer, baseRubric);
 }
 
 /**
@@ -168,7 +128,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         return textResult(`未找到题目 ${params.id}（请使用 searchQuestions 返回的真实题号）`, { error: 'not_found', id: params.id });
       }
       // 尊重全局「生成开放题」开关：关闭时只允许选择题，纯开放题不交付（避免绕过 generateOpenQuestions）。
-      const available = availableFormats(q, generateOpenQuestions ? [] : ['choice']);
+      const available = availableSessionFormats(q, undefined, true, generateOpenQuestions);
       if (available.length === 0) {
         session.log.push({
           at: Date.now(),
@@ -186,7 +146,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         params.format && available.includes(params.format)
           ? params.format
           : available[0];
-      const sq: SessionQuestion = { question: q, format: fmt };
+      const sq = await finalizeQuestion({ question: q, format: fmt }, provider);
       session.currentQuestion = sq;
       session.log.push({
         at: Date.now(),

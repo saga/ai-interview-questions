@@ -188,7 +188,7 @@
   - **新增独立运行时层 `src/agent/`**：`observe → decide → tool → observe` 循环；Agent 只做"不确定的决策"，确定性的选题 / 评分 / 读画像全部通过 `AgentTool` 薄包装现有 `domain` / `learner` / `evaluation` / `ai`，不新增业务决策逻辑。
   - **评分不归 Agent**：选择题走 `gradeChoice`（确定性）、开放题走 `LLMProvider.evaluateOpenAnswer`（LLM），Agent 仅读取 `EvaluationResult`——沿用「分数所有权在 domain、LLM 不拥有分数」的既有边界。
   - **持久化复用既有管线**：结束经 `sessionRecordFromAgent`（委托 `sessionFromQuiz`）→ `updateLearner` + `saveLearner`，写入同一份 `LearnerProfile`；进度页 / 推荐文案无需改动即可消费 Agent 结果。
-  - **现有 4 页与确定性 `InterviewEngine` 当前保留**，Agent 作为并行的实验性运行时；是否长期共存根据真实使用率、完成率、耗时和评分差异再决定。
+  - **现有 4 页与确定性 `InterviewEngine` 当前保留**，Agent 作为并行运行时保留并持续建设，定位为未来正式方向；短期仍通过真实使用率、完成率、耗时和评分差异持续校准体验，不再以是否删除 Agent 为决策目标。
   - **工具参数 schema 用 TypeBox**（pi-agent-core 要求），与项目既有 Zod 不冲突；Agent 单 provider 起步，不接 `FallbackProvider`（避免过度设计）。
   - **选择题 gap 不污染 Learner Memory 的契约**在 `sessionFromQuiz` 统一落实（Phase 1/2 修复成果被 Agent 路径复用）。
   - `SessionRecord` 新增 `'agent'` mode（扩展 `schemas/interview.ts` 与 `schemas/learner.ts` 的枚举）。

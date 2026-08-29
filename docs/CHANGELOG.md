@@ -4,6 +4,9 @@
 
 ## 2026-08-29 · 第二轮清理：Chrome fallback、旧配置迁移、types.ts 收敛、仓库卫生
 
+- **双引擎评分统一**：新增 `application/sessionEvaluator.ts`，集中单题判空、选择题判分、开放题 LLM 评分与 rubric 默认值；`interviewEngine.ts` 与 `agent/tools.ts` 共用同一评分入口，Agent 不再保留重复实现；题型过滤也统一走共享 `effectiveFormats`。
+- **Agent 正式方向**：按 ADR-034 将 Agent 运行时作为未来正式方向保留；`getQuestion` 现在复用共享 `finalizeQuestion`，生成并校验 LLM 变体，失败时回退原题。
+
 - **Chrome AI**：`ChromeAIExecutor` 的 `clone()` 增加 fallback——不支持 `clone()` 的浏览器版本退化为独立 `create()`（重新解析 system 指令，但通道不再整体失效）。
 - **⚠️ 用户数据契约变更**：`storage/settings.ts` 的 `loadConfig` 删除旧单选形态（`{ provider, model, apiKey, baseUrl }`）迁移分支，只识别 `{ providers: [...] }`。极旧格式的本地配置会被判定为不合法并回退到默认配置（不会崩溃，但需要用户在设置页重新配置一次）。localStorage key 本身不变。
 - **`src/types.ts` 收敛**：删除所有数据形状类型的 re-export（`Question`/`AIConfig`/`LearnerProfile`/`SessionRecord`/`KnowledgeNode` 等 20+ 个），调用方（60 余个文件）改为直接从 `schemas/*` 导入；`types.ts` 只保留没有单一归属模块的跨层行为契约（`LLMProvider`/`QuestionBank`/`AnswerValue`/`CompleteFn`/`GeneratedVariant`/`VariantCandidate`/`QuestionBlueprint`/`EVAL_DIMENSIONS`/`DIMENSION_LABELS`）。顺带修正 `domain/evaluation.test.ts`、`domain/learner.test.ts` 中两个不存在的类型引用（`ChoiceQuestion`/`OpenQuestion`，此前仅因 `*.test.ts` 被排除在 `tsc` 之外才未报错）。

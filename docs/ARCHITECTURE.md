@@ -2,7 +2,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），当前作为并行的实验性运行时；是否长期保留与确定性 InterviewEngine 并行，待真实使用数据评估（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。
+单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
@@ -66,6 +66,8 @@ storage/       本地持久化（IndexedDB + localStorage；两者均为不可�
 
 application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
+  sessionEvaluator.ts  双引擎共享衔接层：isAnswerEmpty / effectiveFormats /
+                        evaluateSessionQuestion；选择题判分与开放题 LLM 评分的统一入口
 
 agent/         Agent 面试运行时（pi-agent-core，ADR-034）：与确定性 Engine 并行的第二运行时
    interviewAgent.ts  Agent 编排（observe → decide → tool 循环；停止条件 / 工具守卫）
