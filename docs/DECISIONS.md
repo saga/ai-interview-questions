@@ -111,20 +111,19 @@
 
 **与既有 ADR 的关系**：ADR-040（确定性策略核心）的"coverage 是核心 signal 之一"在此落地为概念级；ADR-041（课程管线）复用了 `Question.tests` 的前瞻字段与 `validate:questions` 思路。
 
-## ADR-041 · Course Question Bank 独立管线 + QuestionSource 接缝（前瞻设计，尚未实现课程来源）
+## ADR-041 · Course Question Bank 独立管线（暂缓，尚未实现）
 
 - 状态：已采纳（前瞻/骨架）· 2026-08-25
-  - **更正（2026-08-26）**：`src/data/courses/` 目录（含 .gitkeep 槽位）当前尚未创建，`QuestionSource` 接缝已落地、课程来源未接入——与"前瞻设计"定位一致。
+  - **更正（2026-08-29）**：课程目录与 `QuestionSource` 接缝均未保留；在真实课程需求出现前不维护预留抽象。
 - 背景：用户提出把公开课程（MIT/Harvard/Stanford 等）做成"Course → Course Question Bank"独立生产管线，明确要求**不要把课程内容强行塞进当前 AI Trainer 的 `questionBank`**（避免面试 taxonomy / Concept×Angle 把课程知识面试化）。核心思想：课程是知识来源（source）、题库是课程知识的结构化评估层（assessment artifact）、AI Trainer 是另一个消费方。
 - 决策（仅落地"可插拔接缝"，**不实现**课程生产管线本身）：
-  - **QuestionSource 抽象**：新增 `src/data/source.ts`，定义 `QuestionSource { id; label; getQuestions(): Question[] }` 接口 + `interviewQuestionSource`（包装既有 `questionBank`）+ `questionSources` 注册表 + `sourceToBank()` 适配器。未来 `CourseQuestionBank` 实现同一接口即可接入，**引擎（interviewEngine）与 Agent 工具层已按 `QuestionBank`/`Question[]` 参数化，无需改动**。
-  - **物理隔离**：课程题库落在 `src/data/courses/<courseId>/`（新增空槽位 `.gitkeep`），**不会被** `questionBank.ts` 的 `import.meta.glob('./questions/*.json')` 误收，也不进入 Interview taxonomy。
+  - **物理隔离**：未来课程题库应落在独立目录，不进入 Interview taxonomy；具体来源接口与数据契约留到首个课程需求出现时设计。
   - **Question schema 前瞻字段（可选，不破坏面试题校验）**：`courseId` / `knowledgeId` / `source{materialId,section,page}`（Source Evidence）/ `misconceptions`（反证）。Zod 默认 strip 未知键 + 字段可选，存量 409 题零影响。
   - **Learner schema 前瞻字段**：`session.mode` 增 `'course'`；`QuestionResult` 增可选 `courseId` 与 `misconceptionIds`；`SessionRecord` 增可选 `courseId`。使未来 `CourseLearnerState` 可在聚合层与 `InterviewLearnerState` 隔离（底层共享 `QuestionResult`/`LearnerEvidence`，上层模型不同）。
   - **边界红线（与提案一致）**：Interview 与 Course **不共享** taxonomy / blueprint / adaptive policy；**共享**底层基础设施——Zod 校验、Question schema、embedding 去重、learner evidence、IndexedDB、LLM provider、QuestionSource 抽象本身。
-- 理由：以最小、零回归的改动预埋接缝——引擎/工具层本就 source-agnostic，缺的只是"来源抽象"与"课程题可被 schema 接纳"。后续接课程只写一个新 `QuestionSource` 实现 + 其数据文件，不碰引擎/评分/Adaptive。
+- 理由：当前没有课程用户流程，预埋来源抽象只会增加维护面。等课程需求明确后，再根据课程数据和学习流程设计最小接入边界。
 - 不做的事（留给后续里程碑）：不实现 Course 生产管线（Manifest→Knowledge Map→Blueprint→Generation→多步 Validation→Bank）；不新建 `CourseLearnerState` 聚合（待有真实课程会话再建）；不改 `difficulty` 为 `{declared,estimated}`（破坏性太大，单独议题）；不引入课程专属 blueprint/adaptive（与 Interview 刻意不共享）。
-- 验证：`npm run typecheck` 与 `npm test` 全绿（接缝为纯增量）；`questionSources` 当前仅含 interview 来源，行为与改造前完全一致。
+- 验证：当前实现不包含课程来源或课程目录；Interview Engine 继续直接使用 `QuestionBank`。
 
 ## ADR-038 · 题库按 6 大能力域组织（Domain → Topic → Concept → Subtopic → Angle）
 
@@ -169,17 +168,17 @@
 
 ## ADR-036 · 变体生成从字段白名单转向 Knowledge Contract 语义不变量（取代 ADR-019 变体约束）
 
-- 状态：已采纳 · 2026-08-24
+- 状态：已采纳，失败回退策略于 2026-08-28 修订 · 2026-08-24
 - 背景：ADR-019 将变体限制为“仅重写题干/解析，options/answer 禁止 LLM 触碰”，以字段级禁止杜绝答案错位。该模型把变体退化为改写，多样性被锁死（同一知识点无法换场景/重设 distractors），与 AI Trainer 利用 LLM 扩大题面多样性的目标冲突：用户已见过原题时可凭选项记忆作答。
 - 决策：
   - **语义分层**：Invariant（`topic/tags/requiredConcepts/difficulty/type/intent/正确性`）不可变，Presentation（题干/场景/上下文/选项/distractors/解析/措辞）可自由重构；前者由 `domain/knowledge.requiredPointsFor` 提供的 `requiredConcepts` 锚定。
   - **契约输入**：`ai/variant.ts` 的 user prompt 不再只发 `question/explanation`，改为同时注入 `Knowledge Contract`（topic/tags/requiredConcepts/difficulty/format）与完整 `Original`（question/options/answer/explanation）—— LLM 据契约而非据字段生成。
   - **输出扩展**：`RawVariant` → `{question, options?, answer?, explanation}`；`GeneratedVariant` 同步扩展，`VariantCandidate` 为未校验中间态。
-  - **校验换安全**：`domain/variant.validateVariant` 从“题干非空”升级为结构（选项≥2无重复、answer 合法且与 `single/multiple` 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败直接抛错，**无兜底回退**（用户显式要求）。
-  - **落地**：`domain/variant.applyVariant` 按 choice/open 分支替换 `question/options/answer/explanation`；`application/interviewEngine.finalizeQuestion` 移除 `try/catch` 回退，校验失败即让 `buildSession` 失败。
+  - **校验换安全**：`domain/variant.validateVariant` 从“题干非空”升级为结构（选项≥2无重复、answer 合法且与 `single/multiple` 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）。
+  - **落地**：`domain/variant.applyVariant` 按 choice/open 分支替换 `question/options/answer/explanation`；2026-08-28 起 `application/interviewEngine.finalizeQuestion` 在调用或校验失败时记录 warning 并回退原题，避免单题坏变体中断整场组卷。安全性仍由变体校验保证，回退只发生在未通过校验的候选上。
 - 理由：安全边界应放在“不变量 + 验证”而非“禁止字段”—— 既保留答案正确性，又释放 LLM 的场景化与选项重塑能力；“LLM 提候选、domain 决定”与既有“分数所有权在 domain”一致，为后续 `pi-agent-core` 的自由生成提供可复用边界。
 - 不做的事：不引入语义向量相似度校验（成本高且阈值易武断），暂以浅层 required 关键词命中作 semantic 兜底；不改变 `difficulty` 带宽校验（仍为 invariant）。
-- 验证：`src/domain/variant.test.ts` 覆盖结构/越界/重复/自包含；`src/ai/variant.test.ts` mock `complete` 注入 contract 断言；`typecheck/build` 通过；失败变体不再静默回退，调用方可见错误。
+- 验证：`src/domain/variant.test.ts` 覆盖结构/越界/重复/自包含；`src/ai/variant.test.ts` mock `complete` 注入 contract 断言；`typecheck/build` 通过；失败变体回退原题并记录 warning。
 
 ## ADR-034 · Agent 面试：pi-agent-core 作为面试决策运行时（并行于确定性 Engine）
 
@@ -189,7 +188,7 @@
   - **新增独立运行时层 `src/agent/`**：`observe → decide → tool → observe` 循环；Agent 只做"不确定的决策"，确定性的选题 / 评分 / 读画像全部通过 `AgentTool` 薄包装现有 `domain` / `learner` / `evaluation` / `ai`，不新增业务决策逻辑。
   - **评分不归 Agent**：选择题走 `gradeChoice`（确定性）、开放题走 `LLMProvider.evaluateOpenAnswer`（LLM），Agent 仅读取 `EvaluationResult`——沿用「分数所有权在 domain、LLM 不拥有分数」的既有边界。
   - **持久化复用既有管线**：结束经 `sessionRecordFromAgent`（委托 `sessionFromQuiz`）→ `updateLearner` + `saveLearner`，写入同一份 `LearnerProfile`；进度页 / 推荐文案无需改动即可消费 Agent 结果。
-  - **现有 4 页与确定性 `InterviewEngine` 全部保留**，Agent 是并行的新运行时，两者长期共存、互为对照。
+  - **现有 4 页与确定性 `InterviewEngine` 当前保留**，Agent 作为并行的实验性运行时；是否长期共存根据真实使用率、完成率、耗时和评分差异再决定。
   - **工具参数 schema 用 TypeBox**（pi-agent-core 要求），与项目既有 Zod 不冲突；Agent 单 provider 起步，不接 `FallbackProvider`（避免过度设计）。
   - **选择题 gap 不污染 Learner Memory 的契约**在 `sessionFromQuiz` 统一落实（Phase 1/2 修复成果被 Agent 路径复用）。
   - `SessionRecord` 新增 `'agent'` mode（扩展 `schemas/interview.ts` 与 `schemas/learner.ts` 的枚举）。
@@ -202,7 +201,7 @@
 - 背景：原 `storage/learner.ts` 把整个 `LearnerProfile`（含 `sessions` 全部历史）作为一个 JSON blob 写入单个 localStorage key（反模式：read-modify-write 整块、无索引查询、主线程同步序列化）。虽 `updateLearner` 已用 `SESSION_CAP=50` 截断使 blob 有界、短期不会爆 5MB，但项目方向已越过临界点——即将加入 Agent Memory、长期 learner model、完整 `InterviewSession` 回放，这些是非结构化 KV 不擅长的；且现有"加载整个 profile 后 JS filter"无法支撑 `getWeakTopics/getHistoryForTopic` 等索引查询（正是 Agent 决策所需输入）。
 - 决策：
   - **底层 Dexie（非 localForage）**：Dexie 提供类型化表 + 索引 + 版本化迁移，能直接建 `startedAt/overall/*topics` 索引解锁范围查询；localForage 只是异步 KV、给不了索引，等于白迁。无需 RxDB。
-  - **职责切分**：IndexedDB 存 `LearnerProfile`（画像单例表，落库时剔除 sessions）+ `SessionRecord` 历史（独立 `sessions` 表，带索引）；**小 KV 配置（AIConfig）仍留 localStorage**（`settings.ts` 不动）——正是 localStorage 甜点区。另预留 `memory` / `agentSessions` 表供后续 Agent Memory / 会话回放。
+  - **职责切分**：IndexedDB 存 `LearnerProfile`（画像单例表，落库时剔除 sessions）+ `SessionRecord` 历史（独立 `sessions` 表，带索引）；**小 KV 配置（AIConfig）仍留 localStorage**（`settings.ts` 不动）——正是 localStorage 甜点区。
   - **不迁移旧数据**：旧 localStorage `learner.v1` 画像无意义，直接丢弃、以空画像起步；不提供任何迁移/导入逻辑，也不读取旧 key（用户明确决策）。避免维护双存储路径与无价值兼容代码。
   - **替换语义**：`saveLearner` 用 Dexie 事务先清旧 sessions 再 bulkPut 当前快照（画像替换、非增量追加），与 `updateLearner` 的"新在前、上限 50"行为一致；`loadLearner` 反向重组完整 `LearnerProfile`。
   - **调用面改动**：`loadLearner/saveLearner` 由同步改异步；`App.tsx` 改为 `useEffect` 异步初始化 profile（加载态兜底），`doSubmit` / `handleAgentComplete` 内 `await saveLearner`。其余 domain 逻辑、`SECSSION_CAP` 截断、`sessionFromQuiz` 契约全部不变。

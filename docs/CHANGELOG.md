@@ -2,6 +2,15 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 收敛未使用的架构预留
+
+- 删除未使用的 `graphology` 依赖，并从 `.gitignore` 移除 `package-lock.json` 忽略规则。
+- 删除没有读写方的 Dexie `memory` / `agentSessions` 空表；保留实际使用的 `errorLog`。
+- 删除尚未接线的 `QuestionSource` 课程题库抽象；课程设计暂缓到出现真实课程需求时再建模。
+- 删除 `LearnerProfile.subtopicCoverage` 及其聚合/查询 API；`Question.subtopic` 仍保留为题目展示和 Agent 上下文字段，当前学习选题只使用 topic 与 topic×angle 证据。
+- 将 Agent 双运行时标记为阶段性并行方案，将变体失败策略与代码统一为“校验/调用失败回退原题”。
+- 验证：`npm run typecheck` 通过；全量测试 309 passed；learner / adaptive / storage 定向测试 48 passed。
+
 ## 2026-08-29 · 删除 `Question.reference`；topic×angle 掌握度成为确定性引擎选题主干（ADR-045）
 
 - **动机**：`Question.reference` 仅含 `reference.concept`（核心结论摘要），与必填的 `Question.explanation` 内容重复，与 `open.referenceAnswer` 不重复但后者才是完整材料；同时 `weakAnglesOf`（ADR-037）此前只被 Agent 追问工具使用，确定性引擎 `pickNextAdaptive` 只用证据计数做兜底排序，没把 topic×angle 掌握度作为选题主干。

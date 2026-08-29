@@ -2,7 +2,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行于确定性 InterviewEngine 的第二运行时长期共存、互为对照（ADR-034）；规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。
+单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），当前作为并行的实验性运行时；是否长期保留与确定性 InterviewEngine 并行，待真实使用数据评估（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
@@ -60,7 +60,7 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                      + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
 
 storage/       本地持久化（IndexedDB + localStorage；两者均为不可信边界，一律经 Zod 校验）
-   db.ts         Dexie 数据库 schema（version 2）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ memory/agentSessions 预留表 + errorLog 诊断表（scope/createdAt 索引，记录 Copilot/引擎等调用失败的结构化上下文，与业务数据隔离，fire-and-forget 不阻塞主流程）
+  db.ts         Dexie 数据库 schema（version 2）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ errorLog 诊断表（scope/createdAt 索引，记录 Copilot/引擎等调用失败的结构化上下文，与业务数据隔离，fire-and-forget 不阻塞主流程）
   settings.ts   LLM 配置（localStorage，`aiConfigSchema` 形状 + `isEntryValid`/去重等不变量）——小 KV 配置保留 localStorage（甜点区）
   learner.ts    LearnerProfile / SessionRecord（IndexedDB via Dexie）：画像存单例表（剔除 sessions），会话历史拆分到 sessions 表；不读取/迁移任何旧 localStorage 数据，直接以空画像起步
 
@@ -95,7 +95,7 @@ components/
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
 data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 28 文件 /
-                       520 题；topic ∈ taxonomy 的 28 个二级主题，如 transformer / rag /
+                       624 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
                        tool-calling，与 src/data/taxonomy.ts 的骨架一一对应）。每题
                        `category` = 所属 topic slug（与文件名一致），`topic` = 知识节点 id，
                        外加 `tags` / 可选 `rubric` / `angle`（主考察角度，覆盖矩阵用，
@@ -103,7 +103,7 @@ data/questions/       题库（用户数据契约，按 topic 一文件：questi
                        agent-engineering / ai-systems / ai-security）是 **taxonomy 逻辑分组**
                        （topic → domain 映射见 `taxonomy.domainOfTopic`），不是物理文件单位；
                        UI 分类标签由 `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS。
-                       存量 520 题：514 题同时携带 choice 与 open 双形态（ADR-027）、6 题仅
+                       存量 624 题：618 题同时携带 choice 与 open 双形态（ADR-027）、6 题仅
                        choice、180 题选择形态带场景化专属题干 cf.question（ADR-028）。题目角度
                        候选由 taxonomy.ANGLE_WHITELIST（topic→角度子集）约束，节点未声明
                        angles 时回退到所属 topic 白名单（ADR-039）。
@@ -113,7 +113,7 @@ data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
                         slug，×7：dl-fundamentals / llm-architecture / training / inference /
-                        rag / agentic-ai / system-design，共 74 节点），但节点内部不再用文件 slug 当分类——
+                        knowledge JSON 文件，共 79 节点），但节点内部不再用文件 slug 当分类——
                         每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
@@ -129,15 +129,8 @@ data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件
                         tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
                         支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
 data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并 + Zod 形状校验，同 questionBank 模式）
-data/courses/          课程题库槽位（前瞻，ADR-041；目录尚未创建——首个真实课程接入时
-                        新建）。每课程一个子目录 <courseId>/，独立存放
-                        course.json / knowledge/concepts.json / blueprint.json / questions/
-                        questions.json / quality/{coverage,validation}.json。关键隔离：本目录
-                        **不会被** questionBank.ts 的 import.meta.glob('./questions/*.json')
-                        误收，也不进入 Interview taxonomy；课程题库经 QuestionSource 接口
-                        （src/data/source.ts）接入引擎与 Agent，与 Interview 来源共享 Question
-                        schema / Zod / learner evidence / IndexedDB / LLM provider，但**不共享**
-                        taxonomy / blueprint / adaptive policy。
+data/courses/          课程题库尚未实现。课程需求出现前不创建目录、注册来源或课程专用 schema；
+                        首个真实课程接入时再设计独立来源与数据管线，避免维护空接缝。
 scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：fs 直读
                         questions/ 与 knowledge/ JSON（不走 import.meta.glob），
                         调 domain/coverage 纯函数输出矩阵与补题建议。Node 24+ 原生
@@ -376,14 +369,14 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 Original Question ──→ LLM ──→ VariantCandidate ──→ validateVariant ──→ GeneratedVariant
   (question/options/                                           │ schema + semantic
    answer/explanation)                          ┌──────────────┴──────────────┐
-                                               │ ok → applyVariant         │ fail → 抛错（无回退）
-                                               │ 替换 question/options/    │  上层 buildSession 失败
+                                               │ ok → applyVariant         │ fail → 回退原题
+                                               │ 替换 question/options/    │  记录 warning
                                                │ answer/explanation        │
 ```
 
 - **Invariant（必须保持）**：`topic/tags/requiredConcepts`、正确性语义、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`。
 - **Variant（允许自由变化）**：题干措辞、场景/上下文、选项表达与 distractors、解析表达。
-- **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败直接抛错，无回退原题（用户显式要求）。
+- **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败由应用层记录 warning 并回退原题，避免单题坏变体中断整场组卷。
 - 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
 - **抗暗示（anti-cueing）自愈**：`ai/variant.generateVariant` 在拿到 LLM 变体后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），用修正提示词**一次性重试**改写选项，避免把“正确项明显更长/干扰项过短”的偏差写进变体。属软信号、非校验阻断（沿用 ADR-036 无兜底语义：仅重生成，不因此抛错改回原题）。
@@ -444,7 +437,7 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 ```
 
 - **职责切分**：Zod 校验 `type/difficulty/options 是否为数组/question 是否为 string`；domain 校验 `单选题恰好一个答案 / topic 必须存在于 knowledge / prerequisite 不能成环`。前者在 `schemas/*.ts`，后者在 `domain/*` 与 `data/bank.test.ts`。
-- **类型即 schema**：`export type Question = z.infer<typeof questionSchema>`，运行时与静态类型由同一份定义产生，避免两套类型漂移。当前为增量迁移阶段，`src/types.ts` 仍保留以兼容存量引用，后续可收敛为 `z.infer` 单一来源。
+- **类型即 schema**：`export type Question = z.infer<typeof questionSchema>`，运行时与静态类型由同一份定义产生，避免两套类型漂移。`src/types.ts` 当前仅作为统一公共入口 re-export 数据类型与行为契约；若未来迁移到按模块导入，应一次性删除该入口，不再增加新的兼容分支。
 - **装配期 fail-fast**：`data/questionBank.ts`、`data/knowledgeMap.ts`、`domain/conceptGraph.ts` 在 `import.meta.glob` eager 合并后逐条 `safeParse`，失败直接抛错并定位到 `文件[下标]` 与 `path → message`（bracket 记法如 `providers[0].id`），不在用户进入某 topic 时才暴露坏数据。
 - **AIConfig**：`storage/settings.ts` 的 `parseConfigJSON` 先走 `aiConfigSchema.safeParse` 做形状校验（provider id 白名单、数组结构），再走 domain 不变量（同引擎去重、`isEntryValid` 完整性、`至少一个可用引擎`、`generateOpenQuestions` 非 true 视为 false 的清洗语义）。`loadConfig` 的历史 `provider → providers` 迁移与静默丢弃逻辑保留于 storage 层。
 - **LLM 输出**：`ai/evaluate.ts` 的 `parseEvaluation` 在 `extractJSON` 之后走 `llmEvaluationRawSchema.safeParse`，形状合法才进入 `clamp + aggregateOverall`；`overall` 仍由 `domain/evaluation` 聚合，LLM 不拥有分数。`schemas/jsonSchema.ts` 的 `z.toJSONSchema(aiConfigSchema)` 已接入 `SettingsPanel` 的 Monaco 校验（自动补全/悬停/枚举提示），后续可复用同一份契约做 LLM structured output。

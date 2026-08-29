@@ -4,7 +4,6 @@
 // - learner 表：单例画像，落库时**剔除 sessions**（历史会话拆到 sessions 表），避免大 blob 重复序列化。
 // - sessions 表：每条 SessionRecord 一行，建立 startedAt / overall / *topics 索引，
 //   直接支撑 getRecentSessions / getWeakTopics 等范围/索引查询（localStorage 做不到）。
-// - memory / agentSessions 表：为后续 Agent Memory、Agent 会话回放预留（架构方向所需，目前不强制写入）。
 //
 // 版本化迁移：version(1) 即首版。不读取/迁移任何旧 localStorage 数据——旧画像无意义，直接以空画像起步。
 
@@ -28,21 +27,6 @@ export interface StoredSession extends SessionRecord {
   topics: string[];
 }
 
-/** 通用结构化记忆行（Agent/Learner Memory 预留）。 */
-export interface MemoryEntry {
-  id: string;
-  kind: string;
-  payload: unknown;
-  updatedAt: number;
-}
-
-/** Agent 会话回放预留。 */
-export interface AgentSessionEntry {
-  id: string;
-  startedAt: number;
-  payload: unknown;
-}
-
 /** 错误日志行（诊断/回溯用，与 LearnerProfile / sessions 等业务数据隔离）。 */
 export interface ErrorLogEntry {
   /** 自增主键。 */
@@ -60,25 +44,19 @@ export interface ErrorLogEntry {
 export class TrainerDB extends Dexie {
   learner!: Table<StoredLearner, string>;
   sessions!: Table<StoredSession, string>;
-  memory!: Table<MemoryEntry, string>;
-  agentSessions!: Table<AgentSessionEntry, string>;
   errorLog!: Table<ErrorLogEntry, number>;
 
   constructor() {
     super('ai-interview-trainer');
-    // 首版：画像 + 会话 + 预留
+    // 首版：画像 + 会话
     this.version(1).stores({
       learner: 'id',
       sessions: 'id, startedAt, overall, *topics',
-      memory: 'id, kind, updatedAt',
-      agentSessions: 'id, startedAt',
     });
     // v2：新增 errorLog 诊断表（不改动既有表结构，仅追加）
     this.version(2).stores({
       learner: 'id',
       sessions: 'id, startedAt, overall, *topics',
-      memory: 'id, kind, updatedAt',
-      agentSessions: 'id, startedAt',
       errorLog: '++id, scope, createdAt',
     });
   }

@@ -8,7 +8,7 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（五页：训练 / 进�
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/`，按 topic 拆分 28 个文件、520 题；6 大能力域为 taxonomy 逻辑分组），每题同时具备选择与开放双形态（514/520 双形态），LLM 变体出题（保持知识点不变）
+- 题库驱动（`src/data/questions/`，按 topic 拆分 34 个文件、624 题；6 大能力域为 taxonomy 逻辑分组），其中 618 题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
@@ -66,13 +66,9 @@ npm run question:blueprint # 把缺口格输出为题目蓝图 JSON（含变体�
       "referenceAnswer": "参考答案…",
       "language": "python"          // 可选：给出则为编程形态（Monaco 编辑器 + 代码对比）
     }
-  },
-  "rubric": {                       // 可选：题目级评分量表
-    "required": ["必须覆盖的要点1", "要点2"],
-    "dimensions": { "correctness": 0.4, "completeness": 0.2, "architecture": 0.2, "communication": 0.2 }
   }
 }
 ```
 
 - 题库对象是知识本体；「本次出选择还是开放」由组卷分配（会话实例 `SessionQuestion`），同一道题可跨会话换形态。
-- 开放形态由 LLM 按四维评分（正确性/完整性/架构/表达）；`rubric.required` 会作为"必须覆盖的要点"注入评分提示，`rubric.dimensions` 覆盖该题的四维权重。
+- 开放形态由 LLM 按四维评分（正确性/完整性/架构/表达）；评分要点来自知识节点的 `required` 与题目的 `explanation`，权重统一使用训练定义中的全局 rubric。

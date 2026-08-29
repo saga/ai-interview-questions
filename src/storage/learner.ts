@@ -92,7 +92,7 @@ export async function getWeakTopics(limit = 3): Promise<string[]> {
   return recommendWeakTopics(profile, limit);
 }
 
-/** 某 topic+angle 的逐题历史（用于 subtopic/角度级追问，预留 subtopic 粒度）。 */
+/** 某 topic+angle 的逐题历史，用于角度级追问。 */
 export async function getHistoryForTopicAngle(
   topic: string,
   angle?: string,
