@@ -8,7 +8,7 @@ import {
   ReloadOutlined,
   ScheduleOutlined,
 } from '@ant-design/icons';
-import { Bubble, Prompts, Sender, Welcome } from '@ant-design/x';
+import { Bubble, Prompts, Sender } from '@ant-design/x';
 import type { BubbleListProps } from '@ant-design/x';
 import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -119,9 +119,9 @@ const role: BubbleListProps['role'] = {
   assistant: {
     placement: 'start',
     variant: 'borderless',
-    style: { width: '100%', margin: '0 0 8px', boxShadow: 'none' },
+    style: { maxWidth: '94%', margin: '0 0 8px', boxShadow: 'none' },
     classNames: { root: 'copilot-assistant-bubble', content: 'copilot-assistant-message' },
-    styles: { content: { boxShadow: 'none', padding: '10px 12px', width: '100%', maxWidth: '100%' } },
+    styles: { content: { boxShadow: 'none', padding: '10px 12px', maxWidth: '100%' } },
     footer: (
       <Space size={0}>
         <Button type="text" size="small" icon={<ReloadOutlined />} />
@@ -134,7 +134,7 @@ const role: BubbleListProps['role'] = {
   user: {
     placement: 'end',
     style: { margin: '0 0 8px' },
-    styles: { content: { boxShadow: '0 1px 4px rgba(0,0,0,0.12)' } },
+    styles: { content: { boxShadow: '0 1px 4px rgba(0,0,0,0.12)', borderRadius: 12 } },
   },
 };
 
@@ -230,6 +230,7 @@ ${weak ? `薄弱主题：${weak}` : ''}
   return (
     <div
       ref={sidebarRef}
+      className="copilot-shell"
       style={{
         width: open ? width : 0,
         minWidth: open ? 300 : 0,
@@ -265,51 +266,44 @@ ${weak ? `薄弱主题：${weak}` : ''}
       )}
       {open && (
         <>
-          <style>{`
-            .copilot-assistant-bubble.ant-bubble-start {
-              padding-inline-end: 0 !important;
-            }
-            .copilot-assistant-bubble .ant-bubble-body {
-              width: 100% !important;
-            }
-            .copilot-assistant-message.ant-bubble-content {
-              width: 100% !important;
-              max-width: 100% !important;
-              box-shadow: none !important;
-            }
-          `}</style>
           {/* header */}
           <div
+            className="copilot-header"
             style={{
-              height: 52,
-              borderBottom: '1px solid #f0f0f0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '0 12px 0 16px',
               flexShrink: 0,
             }}
           >
-            <Space>
-              <CommentOutlined style={{ color: '#1677ff' }} />
-              <Typography.Text strong>✨ AI Copilot</Typography.Text>
+            <Space size={10}>
+              <span className="copilot-brand-mark"><CommentOutlined /></span>
+              <span>
+                <Typography.Text className="copilot-title" strong>面试 Copilot</Typography.Text>
+                <Typography.Text className="copilot-subtitle" style={{ display: 'block' }}>你的即时训练助手</Typography.Text>
+              </span>
             </Space>
             <Button type="text" icon={<CloseOutlined />} onClick={onClose} />
           </div>
 
           {/* chat list */}
+          {currentQuestion && (
+            <div className="copilot-context">
+              <div className="copilot-context-label">正在辅导</div>
+              <div className="copilot-context-value">{currentQuestion.topic} · {currentQuestion.difficulty}</div>
+            </div>
+          )}
           <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {messages.length === 0 ? (
               <>
-                <Welcome
-                  variant="borderless"
-                  title="👋 你好，我是面试 Copilot"
-                  description="我可以解释题目、给提示、分析薄弱项、规划下一步。基于 ant-design/x 的 Copilot 范式构建。"
-                  style={{ background: '#f5f5ff', borderRadius: 12, marginBottom: 8 }}
-                />
+                <div className="copilot-welcome">
+                  <div className="copilot-welcome-title">你好，我来陪你练</div>
+                  <div className="copilot-welcome-copy">解释考点、拆解思路、给出提示，也可以根据你的薄弱项安排下一步。</div>
+                </div>
                 <Prompts
+                  className="copilot-prompts"
                   vertical
-                  title="试试这样问："
+                  title={<div className="copilot-prompts-title">从这里开始</div>}
                   items={quickPrompts.map((p) => ({ key: p.key, description: p.label }))}
                   onItemClick={(info) => handleSend(info?.data?.description as string)}
                 />
@@ -360,9 +354,6 @@ ${weak ? `薄弱主题：${weak}` : ''}
               placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '请先配置 AI 引擎…'}
               disabled={!configReady}
             />
-            <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 6, textAlign: 'center' }}>
-              Copilot 基于 @ant-design/x 构建 · 复用站内 AI 配置
-            </Typography.Text>
           </div>
         </>
       )}
