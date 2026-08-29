@@ -2,9 +2,16 @@
   {
     "id": "anthropic-cca-f-01",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "structured-output",
     "subtopic": "源归因与引用",
-    "tags": ["multi-agent", "citation", "attribution", "structured-output", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "citation",
+      "attribution",
+      "structured-output",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "合成代理（synthesis agent）从网页搜索与文档分析代理拿到汇总发现后，转交给报告生成器。测试中发现最终报告存在事实性陈述却缺乏出处——因为汇总步骤丢掉了来源元数据，报告生成器无法把结论归因到原始来源。要确保最终报告有正确的来源归因，最有效的做法是什么？（单选）",
@@ -18,7 +25,9 @@
           "跳过汇总，直接把网页搜索与文档分析的原始完整输出透传给报告生成器。",
           "指示合成代理在其摘要文本中用统一引用格式把来源内联嵌入。"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 结构化输出把内容与来源元数据分离，溯源信息随数据传递，报告生成器可正确归因。\n- A 低效且上下文已丢失；C 浪费上下文不可持续；D 多次合并后易错配。"
@@ -28,9 +37,16 @@
   {
     "id": "anthropic-cca-f-02",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "context-engineering",
     "subtopic": "跨代理上下文传递",
-    "tags": ["multi-agent", "context-passing", "coordinator", "citation", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "context-passing",
+      "coordinator",
+      "citation",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "网页搜索代理找到 25 个来源（120K token 原始内容），文档分析代理提取关键洞察（15K token），合成代理产出叙述草稿（3K token）。协调器需把上下文交给报告生成代理产出带正确引用的终稿。哪种上下文传递策略在完整性与效率间最平衡？（单选）",
@@ -44,7 +60,9 @@
           "只传合成草稿，由独立的后处理管线把声明匹配到来源并在报告生成后再插入引用。",
           "传递所有前置阶段的浓缩摘要，仅按来源名称归属主要发现。"
         ],
-        "answer": [1]
+        "answer": [
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 草稿+结构化来源索引：报告生成器有主线也能按索引回填引用，省上下文且保真。\n- A 费上下文；C 易错配；D 缺摘录不可用。"
@@ -54,9 +72,16 @@
   {
     "id": "anthropic-cca-f-03",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "agent-fundamentals",
     "subtopic": "状态管理与断点恢复",
-    "tags": ["multi-agent", "state-management", "resume", "checkpoint", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "state-management",
+      "resume",
+      "checkpoint",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "多代理研究管线在处理 28 篇文档中的第 12 篇时崩溃。网页搜索已定位来源、文档分析已部分抽取、合成器已开始模式识别。你要在不重复劳动、不丢失已有发现的前提下恢复处理。哪种状态管理在保真与上下文效率间最平衡？（单选）",
@@ -70,7 +95,9 @@
           "每个代理各自维护持久状态文件，并在每次会话开始时独立重载，协调器无法一致重建依赖链。",
           "持久化协调器的对话日志（含全部委派与响应），恢复时把它提供给各代理。"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 结构化 manifest + 协调器注入：可精确续跑、上下文可控。\n- B 模糊；C 难重建依赖；D 保真低且冗长。"
@@ -80,9 +107,15 @@
   {
     "id": "anthropic-cca-f-04",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "tool-calling",
     "subtopic": "工具选择与授权",
-    "tags": ["multi-agent", "tool-selection", "tool-scope", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "tool-selection",
+      "tool-scope",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "你给全部 4 个子代理都开放了完整 18 个工具。测试中发现代理频繁调用其专业之外的工具——合成代理去搜网页、报告生成器去分析文档。这种糟糕工具选择行为的主因是什么？（单选）",
@@ -96,7 +129,9 @@
           "代理 system prompt 中的角色描述与“可使用角色外工具”相互冲突。",
           "协调器无法跟踪各子代理拥有哪些能力，导致任务误派。"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 工具候选集过大→决策复杂度超阈值→越权调用；应“按角色最小化暴露工具”。\n- B 次要；C/D 非主因。"
@@ -106,9 +141,15 @@
   {
     "id": "anthropic-cca-f-05",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "agent-fundamentals",
     "subtopic": "子代理适应性",
-    "tags": ["multi-agent", "delegation", "subagent-autonomy", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "delegation",
+      "subagent-autonomy",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "协调器给网页搜索子代理下发逐步指令（具体查询、来源优先级、日期过滤）。生产监控暴露三个问题：(1) 预置搜索无果时子代理直接报“结果不足”而不尝试替代方案；(2) 对不匹配预期模式的新兴话题质量下降；(3) 很少浮现有价值的相关旁支来源。最有效地提升子代理适应性的做法是？（单选）",
@@ -122,7 +163,9 @@
           "彻底去掉过程细节，只用“彻底研究 X”这类简单目标委派，依赖子代理通用能力。",
           "指定研究目标与质量标准（覆盖广度、来源多样性、时效性），而非过程步骤，让子代理自定搜索策略。"
         ],
-        "answer": [3]
+        "answer": [
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- 给目标+质量标准、交还策略制定权，保留适应性与验收标准。\n- A/B 治标；C 过度放权失管控。"
@@ -132,9 +175,16 @@
   {
     "id": "anthropic-cca-f-06",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "planning",
     "subtopic": "研究完整性",
-    "tags": ["multi-agent", "completeness", "gap-detection", "coordinator", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "completeness",
+      "gap-detection",
+      "coordinator",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "合成代理首轮完成但标记有 3 个关键研究问题未答（因为网页搜索与文档分析没找到相关子主题信息）。协调器当前直接进入报告生成，导致覆盖不全。最能提升研究完整性的改动是？（单选）",
@@ -148,7 +198,9 @@
           "协调器评估合成输出的缺口，再用定向查询重新委派给网页搜索与文档分析，之后再次调用合成。",
           "给合成代理直接访问网页搜索工具，使其无需交还协调器即可自主补齐知识缺口。"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- 协调器发现缺口→定向重委派→再合成，闭环补全。\n- A 不补全；B 概率性；D 破坏编排。"
@@ -158,9 +210,15 @@
   {
     "id": "anthropic-cca-f-07",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "multi-agent",
     "subtopic": "代理间信息流",
-    "tags": ["multi-agent", "info-flow", "coordinator", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "info-flow",
+      "coordinator",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "网页搜索代理已为某研究主题收集若干相关来源，文档分析代理现在需要审阅这些来源。这两个专门子代理之间信息通常如何流动？（单选）",
@@ -174,7 +232,9 @@
           "协调器收到网页搜索代理的输出，并在调用文档分析代理时把相关发现写进其 prompt。",
           "两代理访问同一共享记忆库，网页搜索写入、文档分析读取。"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- 协调器模式下子代理不直接互调，由协调器在 prompt 中显式传递上下文，可控且可追溯。\n- A/B/D 非推荐典型流。"
@@ -184,9 +244,16 @@
   {
     "id": "anthropic-cca-f-08",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "agent-guardrails",
     "subtopic": "不确定性处理",
-    "tags": ["multi-agent", "uncertainty", "synthesis", "confidence", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "uncertainty",
+      "synthesis",
+      "confidence",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "生产评审发现终稿对不确定性的处理不一致：有时把冲突发现合成成一句过于自信的陈述（丢失细节），有时又过度铺垫（变得无用）。例如网页搜索返回“行业分析估 $50B（方法各异）”、文档分析返回“同行评审估 $35B（±$7B, 95% CI）”，协调器要么武断选一、要么含糊写“可能在 $35B-$50B 视因素而定”。最系统的应对方法是？（单选）",
@@ -200,7 +267,9 @@
           "指示合成代理把报告结构化为显式分区，区分确证发现与有争议发现，保留原始来源刻画与方法学上下文。",
           "实现置信校准层，把子代理的不确定性表达归一为 0.0-1.0 标准分，再按校准置信做加权平均。"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- 显式分区（确证/有争议）+ 保留来源方法学上下文，不失真不含糊。\n- A 丢信号；B 丢单源有效发现；D 不可靠且抹差异。"
@@ -210,9 +279,16 @@
   {
     "id": "anthropic-cca-f-09",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "rag-pipeline",
     "subtopic": "结构化声明-来源映射",
-    "tags": ["multi-agent", "citation", "claim-source-map", "architecture", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "citation",
+      "claim-source-map",
+      "architecture",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "生产中终稿频繁出现无出处的声明。排查发现网页搜索与文档分析代理的输出都正确带了引用，但合成代理在合并多源发现时弄丢了“哪些来源支撑哪些结论”。最有效的架构改动是？（单选）",
@@ -226,7 +302,9 @@
           "加一步核验：报告生成器用语义相似度对原始来源匹配，重建声明来自哪些文档。",
           "协调器在每次交接前把来源标识前缀注入文本，报告生成时解析这些前缀重建引用。"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 结构化声明-来源映射随数据合并，溯源可靠且报告可直接用。\n- B 重且易错；C 不可靠；D 脆弱难解析。"
@@ -236,9 +314,16 @@
   {
     "id": "anthropic-cca-f-10",
     "category": "anthropic-cca-f",
-    "topic": "anthropic-cca",
+    "topic": "agent-loop",
     "subtopic": "上下文缺失debug",
-    "tags": ["multi-agent", "debugging", "coordinator", "context-missing", "anthropic-cca"],
+    "tags": [
+      "multi-agent",
+      "debugging",
+      "coordinator",
+      "context-missing",
+      "anthropic-cca",
+      "certification"
+    ],
     "difficulty": "easy",
     "angle": "debugging",
     "question": "网页搜索与文档分析代理都完成后，协调器调用合成代理，但合成代理回复“没有提供研究发现，无法完成任务”。最可能的原因是？（单选）",
@@ -252,7 +337,9 @@
           "协调器没有把前序代理的输出放进合成代理的 prompt。",
           "合成代理的上下文窗口不足以容纳两个前序代理的合并输出。"
         ],
-        "answer": [2]
+        "answer": [
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：C。\n- 子代理不共享上下文，协调器须显式把前序输出放入合成代理 prompt。\n- A/B 误解架构；D 若没放入则非窗口问题。"

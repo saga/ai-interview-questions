@@ -2,6 +2,19 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-046 · 认证考纲解耦与纯净能力域（Domain → Topic → KnowledgeNode）
+
+- 状态：已采纳 · 2026-08-29
+- 背景：
+  1. 过去为了导入外部认证考纲题库（Google GenAI Leader, Anthropic CCA, AWS AIP-C01, AWS AIF-C01），在 `taxonomy.ts` 和 `knowledge/*.json` 中为它们创建了伪 Topic 与伪 KnowledgeNode。
+  2. 这导致通用技术面试体系与特定厂商认证考纲混淆，破坏了纯粹的 6 大能力域（Domain）划分与能力证据闭环。
+- 决策：
+  1. **Taxonomy 骨架纯净化**：移除 4 个认证类 Topic，保留 6 大领域下 23 个标准技术 Topic。
+  2. **知识节点标准化**：删除 4 个粗粒度认证知识节点 JSON，知识库收敛为 75 个标准原子概念节点。
+  3. **题目 Topic 精确重映射**：将全部 76 道认证题目按考查实质分别映射到真实的底层原子知识点（`rag`、`agent-fundamentals`、`evaluation`、`multi-agent`、`mcp`、`observability`、`system-design` 等），同时在 `tags` 中追加 `certification` 与考纲标识，实现考纲与技术域的清晰正交分离。
+- 理由：解耦认证考纲使得 LearnerProfile、自适应抽题和知识覆盖分析完全基于真正的技术能力维度展开，不再受特定认证范围的扭曲。
+- 验证：`scripts/validate-questions.ts`、`scripts/question-coverage.ts`（177/177 覆盖率 100%）、`vitest run`（323 测试全过）、`tsc --noEmit`、`vite build` 全部通过。
+
 ## ADR-045 · 删除 `Question.reference`；topic×angle 掌握度成为确定性引擎选题主干
 
 - 状态：已采纳 · 2026-08-29

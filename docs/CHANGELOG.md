@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 知识体系与分类解耦（ADR-042：认证题解耦与纯净能力域架构）
+
+- **认证考纲与能力域解耦**：将 `google-genai-leader`、`anthropic-cca`、`aws-ai-practitioner`、`aws-genai-developer-pro` 等 76 道认证考题全部解构并精确映射到对应的原子技术知识节点（如 `rag`、`agent-fundamentals`、`evaluation`、`multi-agent`、`mcp`、`observability`、`system-design` 等），同时保留各题的认证专属 tags（如 `tags: ["aws-genai-developer-pro", "certification"]`）。
+- **Taxonomy 骨架净化**：移除 [src/data/taxonomy.ts](src/data/taxonomy.ts) 中混杂的认证 Topic，使 6 大能力域与 23 个标准技术 Topic 保持纯粹与高度一致；更新对应的角度白名单（`ANGLE_WHITELIST`）。
+- **知识库去冗余**：清理 [src/data/knowledge/](src/data/knowledge/) 中 4 个粗粒度认证 JSON 定义，知识库收敛至 75 个标准原子概念节点。覆盖矩阵 177/177 期望网格 100% 覆盖，0 缺口，323 项单测全部通过。
+
 ## 2026-08-29 · 知识分布结构优化与基础题阶梯扩充
 
 - **难度金字塔重塑**：新增 20 道高质量 Easy/Medium 题目，重点补强 `llm-applications`（RAG 分块/混合检索/重排、向量嵌入几何意义、上下文 Few-shot 与结构化输出）及 `ai-security`（直接/间接注入攻防、安全护栏、循环配额熔断）。
