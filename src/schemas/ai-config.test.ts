@@ -7,6 +7,7 @@ describe('aiConfigSchema', () => {
       aiConfigSchema.parse({
         providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' }],
         generateOpenQuestions: false,
+        masteryThreshold: 75,
       }),
     ).not.toThrow();
   });
@@ -16,6 +17,11 @@ describe('aiConfigSchema', () => {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '' }],
     });
     expect(parsed.generateOpenQuestions).toBe(false);
+  });
+
+  it('defaults masteryThreshold to 75', () => {
+    const parsed = aiConfigSchema.parse({ providers: [] });
+    expect(parsed.masteryThreshold).toBe(75);
   });
 
   it('defaults enabled to true', () => {

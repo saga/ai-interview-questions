@@ -177,6 +177,7 @@ export default function App() {
                     categories={bank.categories}
                     config={config}
                     profile={displayedProfile}
+                    masteryThreshold={config.masteryThreshold}
                     onStart={handleStart}
                     onGoSettings={() => goPage('settings')}
                   />

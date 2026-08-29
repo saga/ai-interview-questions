@@ -39,13 +39,14 @@ export function loadConfig(): AIConfig {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
       // 历史存储无此字段：缺省视为关闭（与默认值一致，ADR-031）
       const generateOpenQuestions = parsed.generateOpenQuestions === true;
+      const masteryThreshold = typeof parsed.masteryThreshold === 'number' ? parsed.masteryThreshold : 75;
       if (Array.isArray(parsed.providers)) {
         const providers = parsed.providers
           .map(sanitizeEntry)
           .filter((e): e is ProviderEntry => e !== null)
           // 同一引擎只保留首个出现，避免降级链语义混乱
           .filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i);
-        if (providers.length > 0) return { providers, generateOpenQuestions };
+        if (providers.length > 0) return { providers, generateOpenQuestions, masteryThreshold };
       }
     }
   } catch {
@@ -122,5 +123,12 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
     return { ok: false, error: '至少需要一个启用且配置完整的引擎' };
   }
   // generateOpenQuestions 已由 Zod 默认 false，无需额外处理
-  return { ok: true, config: { providers: entries, generateOpenQuestions: normalized.generateOpenQuestions } };
+  return {
+    ok: true,
+    config: {
+      providers: entries,
+      generateOpenQuestions: normalized.generateOpenQuestions,
+      masteryThreshold: normalized.masteryThreshold,
+    },
+  };
 }

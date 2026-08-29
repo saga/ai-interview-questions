@@ -13,6 +13,7 @@ import type { AnswerValue } from '../../types';
 import { DIMENSION_LABELS, EVAL_DIMENSIONS } from '../../types';
 import type { EvaluationResult } from '../../schemas/evaluation';
 import type { LearnerProfile } from '../../schemas/learner';
+import type { AIConfig } from '../../schemas/ai-config';
 import type { SessionQuestion } from '../../schemas/session';
 import { categoryLabel } from '../../domain/categories';
 import { recommendationText } from '../../domain/learner';
@@ -30,6 +31,7 @@ interface Props {
   answers: Record<string, AnswerValue>;
   grades: Record<string, EvaluationResult | null>;
   profile: LearnerProfile;
+  masteryThreshold?: AIConfig['masteryThreshold'];
   /** 上一次会话的 overall（用于对比），无则 null */
   prevOverall: number | null;
   onContinue: () => void;
@@ -241,7 +243,7 @@ function ResultItem({
   );
 }
 
-export default function ResultPanel({ questions, answers, grades, profile, prevOverall, onContinue, onRestart }: Props) {
+export default function ResultPanel({ questions, answers, grades, profile, masteryThreshold, prevOverall, onContinue, onRestart }: Props) {
   let earned = 0;
   const total = questions.length;
 
@@ -322,7 +324,7 @@ export default function ResultPanel({ questions, answers, grades, profile, prevO
         icon={<BulbOutlined />}
         style={{ marginBottom: 16 }}
         message="AI 训练建议"
-        description={recommendationText(profile)}
+        description={recommendationText(profile, masteryThreshold)}
       />
 
       <List

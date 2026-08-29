@@ -154,11 +154,19 @@ describe('buildCoachDefinition', () => {
   it('把薄弱主题写入 topicPriorities，mode 标记正确', () => {
     let p = emptyProfile();
     p = updateLearner(p, session(60, [result('tool-calling', 50)]));
+    p = updateLearner(p, session(90, [result('rag', 90)]));
     const def = buildCoachDefinition(p, { title: '快速训练', timeLimitSec: 600, mode: 'quick' });
     expect(def.topicPriorities).toContain('tool-calling');
     expect(def.mode).toBe('quick');
     expect(def.timeLimitSec).toBe(600);
     expect(def.useAI).toBe(true);
+  });
+
+  it('最近一轮练过的薄弱主题进入冷却，不再集中优先抽取', () => {
+    let p = emptyProfile();
+    p = updateLearner(p, session(75, [result('google-genai-leader', 75), result('rag', 90)]));
+    const def = buildCoachDefinition(p, { title: '快速训练', mode: 'quick' });
+    expect(def.topicPriorities ?? []).not.toContain('google-genai-leader');
   });
 });
 
@@ -176,6 +184,14 @@ describe('recommendationText', () => {
     const text = recommendationText(p);
     expect(text).toContain('tool-calling');
     expect(text).toContain('error handling');
+  });
+
+  it('刚练过薄弱主题时说明冷却，而不是误报为已经掌握', () => {
+    let p = emptyProfile();
+    p = updateLearner(p, session(70, [result('google-genai-leader', 70)]));
+    const text = recommendationText(p);
+    expect(text).toContain('仍低于掌握线');
+    expect(text).toContain('暂不集中重复');
   });
 });
 

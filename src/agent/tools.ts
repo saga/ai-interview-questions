@@ -24,6 +24,8 @@ export interface AgentToolDeps {
   session: InterviewAgentSession;
   /** 是否允许生成开放题（对应 AIConfig.generateOpenQuestions 全局开关）；默认 false（与全局 AIConfig 一致）。 */
   generateOpenQuestions?: boolean;
+  /** 主题达标线（0-100）；默认 75。 */
+  masteryThreshold?: number;
 }
 
 /** 统一的文本型工具结果构造器。 */
@@ -211,7 +213,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     description: '读取用户已练主题的薄弱点（掌握度 < 阈值），作为选题与追问的上下文。只读，不修改画像。',
     parameters: GetUserWeaknessesSchema,
     execute: async () => {
-      const weak = recommendWeakTopics(profile, 3);
+      const weak = recommendWeakTopics(profile, 3, deps.masteryThreshold);
       session.log.push({
         at: Date.now(),
         kind: 'tool',
@@ -254,7 +256,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     parameters: GetCoverageGapsSchema,
     execute: async () => {
       // 覆盖缺口需基于题库的 topicRefs；此处返回通用提示，实际由调用方聚合
-      const weak = recommendWeakTopics(profile, 5);
+      const weak = recommendWeakTopics(profile, 5, deps.masteryThreshold);
       return textResult(`覆盖缺口（薄弱优先）：${weak.join('、') || '（暂无）'}`, { weakTopics: weak });
     },
   };

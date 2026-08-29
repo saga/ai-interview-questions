@@ -23,12 +23,13 @@ const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/�
 // 不引入 Bayesian/ELO/IRT；升级评分模型的前提是现有信号被证明不够用。
 
 /** 薄弱判定阈值：掌握度 <0.85 且均分 <85 视为未掌握（learner 内单一出处）。 */
-export const WEAK_MASTERY = 0.85;
-export const WEAK_AVG = 85;
+export const WEAK_MASTERY = 0.75;
+export const WEAK_AVG = 75;
+export const RECENT_TOPIC_COOLDOWN_SESSIONS = 1;
 
-function isMastered(profile: LearnerProfile, topic: string): boolean {
+function isMastered(profile: LearnerProfile, topic: string, threshold = WEAK_AVG): boolean {
   const s = profile.topicStats[topic];
-  return Boolean(s && s.attempts > 0 && (s.mastery >= WEAK_MASTERY || s.avgScore >= WEAK_AVG));
+  return Boolean(s && s.attempts > 0 && s.avgScore >= threshold);
 }
 
 function isAttempted(profile: LearnerProfile, topic: string): boolean {
@@ -55,7 +56,7 @@ export function collectTopicRefs(questions: TopicRef[]): TopicRef[] {
  * 把教练推荐的主题沿前置闭包展开：薄弱主题的全部未掌握前置都纳入抽题优先级，
  * 实现"先补地基再攻难点"。（图关系来自 conceptGraph；跳过已掌握是学习策略，归本模块。）
  */
-export function expandWithPrerequisites(priorities: string[], profile: LearnerProfile): string[] {
+export function expandWithPrerequisites(priorities: string[], profile: LearnerProfile, threshold = WEAK_AVG): string[] {
   const result: string[] = [];
   const seen = new Set<string>();
   const queue = [...priorities];
@@ -63,7 +64,7 @@ export function expandWithPrerequisites(priorities: string[], profile: LearnerPr
     const topic = queue.shift() as string;
     if (seen.has(topic)) continue;
     seen.add(topic);
-    if (!isMastered(profile, topic)) result.push(topic);
+    if (!isMastered(profile, topic, threshold)) result.push(topic);
     queue.push(...prerequisiteClosure(topic).slice(0, 3));
   }
   return result;
@@ -241,9 +242,9 @@ export function sessionFromQuiz(
  * 为什么按「掌握度升序」而非「最近分数」：掌握度是长期信号、稳定可预测；最近分数波动大，
  * 用它会让推荐随单次表现剧烈跳动。排序次键用 lastSeen（越久没练的优先），避免推荐「刚练过」的题反复出现。
  */
-export function recommendWeakTopics(profile: LearnerProfile, limit = 3): string[] {
+export function recommendWeakTopics(profile: LearnerProfile, limit = 3, threshold = WEAK_AVG): string[] {
   return Object.entries(profile.topicStats)
-    .filter(([, s]) => s.attempts > 0 && s.mastery < WEAK_MASTERY && s.avgScore < WEAK_AVG)
+    .filter(([, s]) => s.attempts > 0 && s.avgScore < threshold)
     .sort((a, b) => a[1].mastery - b[1].mastery || b[1].lastSeen - a[1].lastSeen)
     .slice(0, limit)
     .map(([topic]) => topic);
@@ -416,8 +417,16 @@ export function buildCoachDefinition(
     mode?: SessionRecord['mode'];
     rubric?: ScoringRubric;
     adaptive?: boolean;
+    masteryThreshold?: number;
   } = {},
 ): InterviewDefinition {
+  const recentTopics = new Set(
+    profile.sessions
+      .slice(0, RECENT_TOPIC_COOLDOWN_SESSIONS)
+      .flatMap((session) => session.questionResults.map((result) => result.topic)),
+  );
+  const masteryThreshold = opts.masteryThreshold ?? WEAK_AVG;
+  const weakTopics = recommendWeakTopics(profile, 3, masteryThreshold).filter((topic) => !recentTopics.has(topic));
   return {
     title: opts.title ?? '推荐训练',
     categories: [],
@@ -428,22 +437,36 @@ export function buildCoachDefinition(
     scoringRubric: opts.rubric ?? DEFAULT_RUBRIC,
     timeLimitSec: opts.timeLimitSec,
     // 沿概念图前置链展开薄弱主题：先补地基（未掌握的前置）再攻难点
-    topicPriorities: expandWithPrerequisites(recommendWeakTopics(profile, 3), profile),
+    topicPriorities: expandWithPrerequisites(weakTopics, profile, masteryThreshold),
     mode: opts.mode ?? 'coach',
     adaptive: opts.adaptive,
   };
 }
 
 /** 生成训练建议文案（纯文本，Training Coach 首页/结果页展示）。 */
-export function recommendationText(profile: LearnerProfile): string {
+export function recommendationText(profile: LearnerProfile, masteryThreshold = WEAK_AVG): string {
   if (profile.totalSessions === 0) {
     return '完成一次训练后，我会根据你的表现生成个性化建议。';
   }
-  const weak = recommendWeakTopics(profile, 3);
+  const weak = recommendWeakTopics(profile, 3, masteryThreshold);
   if (weak.length === 0) {
-    return '各主题表现都很稳定，继续保持；可以尝试更高难度或编程题。';
+    return `各主题均已达到掌握线（均分 ${masteryThreshold} 分及以上），继续保持；可以尝试更高难度或编程题。`;
   }
-  const lines = weak.map((t) => {
+  const recentTopics = new Set(
+    profile.sessions
+      .slice(0, RECENT_TOPIC_COOLDOWN_SESSIONS)
+      .flatMap((session) => session.questionResults.map((result) => result.topic)),
+  );
+  const activeWeak = weak.filter((topic) => !recentTopics.has(topic));
+  if (activeWeak.length === 0) {
+    const gaps = weak
+      .flatMap((topic) => (profile.topicStats[topic]?.commonWeaknesses ?? []).slice(0, 2))
+      .slice(0, 3);
+    return `薄弱项仍低于掌握线（均分 ${masteryThreshold} 分），但刚刚练过 ${weak.join('、')}；下一轮先混合复习，暂不集中重复。${
+      gaps.length > 0 ? `注意：${gaps.join('、')}。` : ''
+    }`;
+  }
+  const lines = activeWeak.map((t) => {
     const s = profile.topicStats[t];
     const trendNote =
       s.trend === 'improving' ? '（在进步）' : s.trend === 'declining' ? '（需警惕下滑）' : '';

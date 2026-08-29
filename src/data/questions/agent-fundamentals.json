@@ -1077,5 +1077,392 @@
         "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：自主模式在指定预算内循环，每次反馈外部校验结果作为下一步依据，直到校验通过或触发资源上限。\n- B 正确：目标模式通过智能体发出的特定终止指令（Agentic Completion）来判断结束，适合没有确定外部测试集的高阶目标。\n- C 正确：心跳模式利用 Cron 或定时定时器触发 Turn，适合长期后台运行与持续监控。\n- D 错误：外部测试失败不会立即清空持久化状态，而是会将测试错误写回上下文以便智能体在下一轮调整策略。"
       }
     }
+  },
+  {
+    "id": "envharness-duality-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "env-harness",
+      "agent-harness",
+      "duality"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "在 LLM Agent 系统设计中，Agent Harness（如工具调用、记忆检索、提示词链循环等）与 Environment Harness 展现出高度的对偶性（Duality）。关于这两者的架构定义与工作机制，下列说法正确的有？",
+    "explanation": "A、B、D 正确：Agent Harness 是“冻结模型权重，用外部 Harness 包装成 Agent”（Agent = Model + Harness）；Environment Harness 是“冻结原环境底层，用外部 Harness 包装成定制环境”（Customized Env = Static Env + EnvHarness）。两者均是在不破坏基础核心系统的原则下，通过可编程外壳扩展系统边界。C 错误：Agent Harness 作用于模型侧（管理上下文与工具执行），Environment Harness 作用于环境接口侧（重塑状态与观察），说法颠倒且混淆了机制。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Agent Harness 在冻结 LLM 基础模型权重的前提下，通过外部包装层扩展 LLM 处理复杂任务的动作与记忆能力。",
+          "Environment Harness 在冻结静态环境底层逻辑的前提下，通过接口包装层动态重塑环境的初始状态、交互规则与组合结构。",
+          "Agent Harness 主要修改环境的观察输入，而 Environment Harness 主要修改 Agent 的预测概率分布。",
+          "两者均旨在不改变核心系统（模型权重或底层模拟引擎）内部实现的前提下，提高系统的适应力与训练效率。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A、B、D 正确：Agent Harness 是“冻结模型权重，用外部 Harness 包装成 Agent（Agent = Model + Harness）”；Environment Harness 是“冻结原环境底层，用外部 Harness 包装成定制环境（Customized Env = Static Env + EnvHarness）”。两者均是在不破坏基础核心系统的原则下，通过可编程外壳扩展系统边界。\n- C 错误：Agent Harness 作用于模型侧（管理上下文与工具执行），Environment Harness 作用于环境接口侧（重塑状态与观察），说法颠倒且混淆了其机制。"
+      }
+    }
+  },
+  {
+    "id": "envharness-stage-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "env-harness",
+      "stage",
+      "reset"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在 Environment Harness 体系中，Stage 组件被定义为在环境初始化时静默施加一个预设的动作序列 δ = (a1, a2, …, ak)。关于 Stage 组件的执行流程与工程作用，下列说法正确的有？",
+    "explanation": "A 正确：Stage 重写了 reset() 阶段，在底层的状态 transition 迭代运行完预设动作序列 δ 后，才将最终生成的新初始状态 s0' 及相应观察暴露给 Agent。B、C 正确：Stage 可用于控制任务难度起点——既可以提前完成前置工作以简化 Horizon，也可以主动注入干扰步骤以提升难度、考察探索能力。D 错误：Stage 仅在初始化阶段作用于 reset()，后续交互阶段对 step() 的动作权限控制属于 Contract 组件的职责，Stage 不限制后续动作空间。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Stage 组件覆盖环境的 reset() 方法，在向 Agent 返回初始观察之前，先在底层环境中连续执行动作序列 δ，将环境状态推进至新的初始状态 s0'。",
+          "通过预先执行部分前置子任务（如“打开抽屉”或“清洁物品”），Stage 组件可以有效缩短任务 Horizon，使 Agent 能聚焦于特定后续步骤的学习。",
+          "通过预先制造干扰或隐蔽目标（如“将关键道具移入柜中并关闭柜门”），Stage 组件可以提高起始难度，考察 Agent 的探索能力。",
+          "Stage 组件执行时会修改环境原生的 step() 逻辑，屏蔽 Agent 在后续交互中调用动作序列 δ 中所包含动作的权限。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：Stage 重写了 reset() 阶段，在底层的状态 transition 迭代运行完预设动作序列 δ 后，才将最终生成的新初始状态 s0' 及相应观察暴露给 Agent。\n- B、C 正确：Stage 可用于控制任务难度起点：既可以提前完成前置工作以简化 Horizon，也可以主动注入干扰步骤以提升难度。\n- D 错误：Stage 仅在初始化阶段作用于 reset()，后续交互阶段对 step() 的动作权限控制属于 Contract 组件的职责，Stage 不限制后续动作空间。"
+      }
+    }
+  },
+  {
+    "id": "envharness-contract-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "env-harness",
+      "contract",
+      "action-space",
+      "observation"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "某 Agent 在代码修复任务中表现出对“全量观察信息”的过度依赖，且频繁调用高阶快捷指令而跳过基础代码排查步骤。开发者希望在不修改底层环境源码的前提下，通过 Contract 组件对 Agent 的交互进行约束：限制快捷动作使用、隐藏部分全局上下文、并在特定非法操作时追加结构化提示。根据 Contract 组件的标准定义 r = (f_A, f_T, f_O)，下列映射分配最合理的是？",
+    "explanation": "A 正确：Contract 组件通过三元组转换接口——f_A 作用于动作空间（用于动作过滤/限制），f_O 作用于观察空间（用于信息掩码/裁剪），f_T 作用于转移函数（用于约束转移逻辑或在满足条件时注入反馈/打断）。B、C、D 错误：混淆了 Contract 接口的映射职责，把 Stage（初始化动作）、Chain（组合代码库）及验证器修改等职责错配到了 Contract 的映射函数中。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "利用 f_A 过滤或屏蔽快捷动作，利用 f_O 裁剪与掩码全局观察文本，利用 f_T 拦截状态转移并注入错误提示。",
+          "利用 f_A 预先执行初始化脚本，利用 f_O 串联多个独立代码库，利用 f_T 拦截环境的 reset() 调用。",
+          "利用 f_A 重新计算验证器的得分，利用 f_O 增加环境初始化动作，利用 f_T 修改 Agent 模型内部权重。",
+          "利用 f_A 扩展动作空间维度，利用 f_O 将多回合交互压缩为单回合，利用 f_T 替换静态数据库。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：Contract 组件通过三元组转换接口：f_A 作用于动作空间（用于动作过滤/限制），f_O 作用于观察空间（用于信息掩码/裁剪），f_T 作用于转移函数（用于约束转移逻辑或在满足条件时注入反馈/打断）。\n- B、C、D 错误：混淆了 Contract 接口的映射职责，将 Stage（初始化动作）、Chain（组合代码库）及验证器修改等职责错配到了 Contract 的映射函数中。"
+      }
+    }
+  },
+  {
+    "id": "envharness-chain-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "env-harness",
+      "chain",
+      "long-horizon"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "Chain 组件通过组合逻辑 g(E, E_ext) 将基础环境 E 与附加环境 E_ext 组合为复合环境。关于 Chain 组件的技术实现与交互机制，下列说法正确的有？",
+    "explanation": "A 正确：组合后的复合环境需要支持 Agent 在不同子环境中所需的动作，动作空间取并集。B 正确：Chain 支持动态转移，当第一阶段环境达到终止/成功条件时，转移函数自动将后续交互送入下一个环境。C 正确：Chain 统一包装奖励判定，保证复合长程任务具备端到端的可验证性。D 错误：Chain 在接口层进行组合与调度，只要子环境均遵循标准交互接口，其底层数据结构和实现细节可以相互独立。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "复合环境暴露给 Agent 的动作空间通常为各参与环境动作空间的并集（如 A' = A ∪ A_ext）。",
+          "Chain 组件可以基于内部转换条件，在 Agent 完成基础任务后动态将交互焦点转移至附加环境，实现跨任务的序列化拼接。",
+          "复合环境的整体奖励由 Chain 组件管理，只有当 Agent 连续满足所有被拼接子环境的验证条件时才给出最终成功信号。",
+          "Chain 组件要求参与拼接的所有子环境必须基于完全相同的底层实现代码与内存数据结构。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：组合后的复合环境需要支持 Agent 在不同子环境中所需的动作，动作空间取并集。\n- B 正确：Chain 支持动态转移，当第一阶段环境达到终止/成功条件时，转移函数自动将后续交互送入下一个环境。\n- C 正确：Chain 统一包装奖励判定，保证复合任务（Long-horizon Task）具备端到端的可验证性。\n- D 错误：Chain 在接口层（API）进行组合与调度，只要子环境均遵循标准交互接口，其底层数据结构和实现细节可以相互独立。"
+      }
+    }
+  },
+  {
+    "id": "envharness-envrigger-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "env-rigger",
+      "observe-diagnose-write-validate"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "EnvRigger 是用于自动化生成 Harness 组件的控制闭环，其工作流包含四个阶段：Observe、Diagnose、Write 和 Validate。关于各阶段的职责与数据流转，下列说法正确的有？",
+    "explanation": "A、B 正确：Observe 收集完整的轨迹上下文（成功与失败都要，以界定能力边界）；Diagnose 将行为模式归因并提出调整方向，输出诊断报告。D 正确：Validate 阶段通过 fresh rollout 判断新环境是否“恰到难度”（既暴露弱点又能被求解），未通过时触发迭代修正。C 错误：Write 阶段生成的候选组件必须经过 Validate 阶段采样验证并被接受后才能加入环境，而非直接投入生产。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Observe 阶段通过在当前环境中运行目标策略，同时收集成功与失败轨迹，以界定策略当前的能力边界。",
+          "Diagnose 阶段分析轨迹中的死循环、冗余动作或观察解析失误等归因，输出指导环境定制的诊断报告。",
+          "Write 阶段依据诊断生成候选 Harness 组件（如 Stage/Contract 组合），生成的代码会直接写入生产环境无需验证。",
+          "Validate 阶段利用目标策略在包装了候选组件的新环境中重新采样 Rollout，评估该环境是否提供了有效且可解的训练信号。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A、B 正确：Observe 收集完整的轨迹上下文；Diagnose 将行为模式归因并提出调整方向。\n- D 正确：Validate 阶段通过 fresh rollout 判断新环境是否“恰到难度”（既暴露弱点又能被求解），未通过时触发迭代修正。\n- C 错误：Write 阶段生成的候选组件必须经过 Validate 阶段的采样验证，被接受后才能加入环境，而非直接投入生产。"
+      }
+    }
+  },
+  {
+    "id": "envharness-composition-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "env-harness",
+      "composition",
+      "non-commutativity"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "EnvHarness 允许将多个组件嵌套叠加在同一个静态环境上，例如构造复合环境 E' = w_chain ∘ w_contract ∘ w_stage (E)。关于该复合系统的执行特性，下列说法正确的有？",
+    "explanation": "A、B 正确：由于每个 Harness 组件的输入与输出都是标准环境对象（w: E → E'），因此支持无缝叠加；但具体动作执行与观察转换的顺序不同会导致不同的环境行为，满足非交换性。C 正确：按照函数复合次序，内层的 Stage 先作用于环境的 reset() 修改底层的初始状态，外层的 Contract 再对后续返回的观察与动作流施加过滤或修改。D 错误：无论叠加多少层，底层验证器依然保留在最内层，依然可以通过底层状态判定是否达到任务目标，无需重写验证逻辑。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "所有组件均遵循统一的 reset / step 接口规范，因此支持多层组件以链式方式逐层嵌套封装。",
+          "组件的叠加顺序具有非交换性（w1 ∘ w2 ≠ w2 ∘ w1），嵌套次序决定了作用的优先级与状态传递机制。",
+          "在 w_contract ∘ w_stage (E) 中调用 reset() 时，Stage 先改写初始状态，Contract 再对该初始状态返回的观察施加转换。",
+          "一旦进行多层嵌套，最内层原始环境的验证器（Verifier）即随之失效，必须由开发者手动重写整套验证代码。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A、B 正确：由于每个 Harness 组件的输入与输出都是标准环境对象（w: E → E'），因此支持无缝叠加；但具体动作执行与观察转换的顺序不同会导致不同的环境行为，满足非交换性。\n- C 正确：按照函数复合次序，内层的 Stage 先作用于环境的 reset() 修改底层的初始状态，外层的 Contract 再对后续返回的观察与动作流施加过滤或修改。\n- D 错误：无论叠加多少层，底层验证器依然保留在最内层，依然可以通过底层状态判定是否达到任务目标，无需重写验证逻辑。"
+      }
+    }
+  },
+  {
+    "id": "selfharness-definition-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "harness",
+      "definition",
+      "non-parametric"
+    ],
+    "difficulty": "medium",
+    "angle": "definition",
+    "question": "在基于大语言模型（LLM）的智能体（Agent）系统架构中，系统通常被划分为“基座模型（Base Model）”与“操作 Harness（Environment Interaction Harness）”。关于这两者在系统架构中的边界与协作方式，下列哪种说法是准确的？",
+    "explanation": "A 正确：Agent Harness（操作 Harness）是智能体系统的非参数化外壳与控制层，不改变基座模型权重，介于模型与外部环境之间，负责系统提示词构建、工具接口定义、环境状态管理、校验规则应用、编排逻辑及错误恢复策略。B 错误：注意力掩码策略属于基座模型内部推理引擎或 Transformer 架构的组成部分，并非 Harness 控制层。C 错误：模型权重增量属于参数化微调（如 LoRA），而 Harness 明确属于非参数化的系统调度与交互层。D 错误：网络负载均衡与 API 限速属于基础设施网络层服务，不属于管理 Agent 运行逻辑与环境交互的 Harness 范畴。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Harness 是指围绕基座模型的非参数化控制层，包含提示词、工具封装、状态管理及运行时校验逻辑",
+          "Harness 是指注入基座模型内部的注意力掩码策略，用以控制模型在多轮对话中的上下文注意力衰减",
+          "Harness 是指智能体在推理过程中动态优化的模型权重增量，用以提升特定任务下的具身交互精度",
+          "Harness 是指部署在模型前端的网络负载均衡器，用以路由不同租户请求并管理并发 API 调用限速"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：Agent Harness 是智能体系统的非参数化外壳与控制层。它不改变基座模型的权重参数，而是介于模型与外部环境之间，负责系统提示词构建、工具接口定义、环境状态管理、校验规则应用、编排逻辑及错误恢复策略。\n- B 错误：注意力掩码策略属于基座模型内部推理引擎或 Transformer 架构的组成部分，并非 Harness 控制层。\n- C 错误：模型权重增量属于参数化微调（如 LoRA），而 Harness 明确属于非参数化的系统调度与交互层。\n- D 错误：网络负载均衡与 API 限速属于基础设施网络层服务，不属于管理 Agent 运行逻辑与环境交互的 Harness 范畴。"
+      }
+    }
+  },
+  {
+    "id": "selfharness-paradigms-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "self-harness",
+      "meta-harness",
+      "human-engineering"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "优化 LLM Agent Harness 的演进路径通常包含“人工工程化（Human Engineering）”、“强模型驱动（Meta-Harness / Teacher-driven）”与“模型自我演进（Self-Harness）”三种模式。在面对多样化且快速迭代的基座模型时，相比前两种模式，“模型自我演进（Self-Harness）”架构具备哪些核心优势？",
+    "explanation": "A 正确：基于强模型驱动的优化器（如 Teacher LLM）往往根据强模型自身的理解能力设计 Harness，容易忽略目标模型特有的行为偏好与能力短板；自我演进由目标模型自身驱动，能更好拟合其专属缺陷模式。B 正确：不同 LLM 在工具使用习惯、提示词敏感度及错误恢复上差异显著，自我演进可为各模型自动演进专属 Harness，避免人工为每个基座模型重写和调优的庞大人力成本。C 错误：自我演进依然高度依赖严格的运行时环境校验与回归测试，以确保提议的修改不会引发性能倒退。D 错误：自我演进修改的是非参数化 Harness 层策略，与参数微调解耦是 Harness 架构本身的特点，且无法彻底消除长上下文带来的注意力衰减问题。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "降低对外部高阶强模型的依赖，避免强模型调优策略与目标基座模型实际行为模式出现偏差",
+          "消除人工维护针对不同模型专属 Harness 的高昂人力成本，实现模型特定缺陷的自动化闭环修复",
+          "彻底取消运行时环境校验与回归测试环节，通过单一提议直接完成底层代码层面的无损热更新",
+          "避免生成式优化器由于上下文过长而引发的衰减问题，将模型参数微调与环境策略调整完全解耦"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。\n\n- A 正确：基于强模型驱动的优化器（如 Teacher LLM）往往根据强模型自身的理解能力设计 Harness，容易忽略目标模型特有的行为偏好与能力短板。自我演进模式由目标模型自身驱动，能更好地拟合其专属缺陷模式。\n- B 正确：不同 LLM 在工具使用习惯、提示词敏感度及错误恢复上差异显著。自我演进能够针对各模型自动演进专属 Harness，避免了人工为每个基座模型重写和调优 Harness 的庞大人力成本。\n- C 错误：自我演进依然高度依赖严格的运行时环境校验与回归测试，以确保提议的修改不会引发性能倒退。\n- D 错误：自我演进修改的是非参数化的 Harness 层策略，与参数微调解耦是 Harness 架构本身的特点，且无法彻底消除长上下文带来的注意力衰减问题。"
+      }
+    }
+  },
+  {
+    "id": "selfharness-failure-clustering-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "failure-clustering",
+      "weakness-mining",
+      "terminal-cause"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在智能体自我演进的“缺陷挖掘（Weakness Mining）”阶段，如果仅根据终态校验结果（如“输出文件缺失”或“运行超时”）对失败执行轨迹（Execution Traces）进行归类，往往无法有效地指导 Harness 改进。造成这一现象的核心机制是什么？",
+    "explanation": "A 正确：相同的终端失败现象可能由完全不同的底层行为机制引起，例如因工具参数解析错误导致、因进入死循环超时未完成导致，或因生成完成后未能正确保存导致。仅按终态分类会把需要不同 Harness 干预措施的案例混为一谈，无法提供精准可复用的缺陷模式。B 错误：终态结果由确定性的自动化评测器/断言给出，并非源于采样随机误差。C 错误：终态结果是运行轨迹分析的输入数据，不会强制重置上下文记忆。D 错误：终态结果是评测系统的判定数据，不影响工具调用的格式规范。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "终态结果仅表征系统的外部失败现象，无法区分触发该现象的底层 Agent 行为机制与因果关联",
+          "终态结果完全依赖外部评测器的随机采样误差，无法准确反映智能体在推理过程中的真实执行状态",
+          "终态结果会强制重置智能体的上下文记忆，导致优化器无法提取历史执行步骤中的提示词匹配特征",
+          "终态结果直接破坏了工具调用的格式规范，使得提议模块无法解析解析器所返回的结构化异常码"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：终端失败现象（如“输出文件缺失”）可能由完全不同的底层行为机制引起，例如：因工具参数解析错误导致、因进入死循环超时未完成导致，或因生成完成后未能正确保存导致。如果仅按终态分类，会将需要不同 Harness 干预措施的案例混为一谈，无法提供精准可复用的缺陷模式。\n- B 错误：终态结果由确定性的自动化评测器/断言给出，并非因为“采样随机误差”。\n- C 错误：终态结果是运行轨迹分析的输入数据，不会“强制重置上下文记忆”。\n- D 错误：终态结果是评测系统的判定数据，不影响工具调用的格式规范。"
+      }
+    }
+  },
+  {
+    "id": "selfharness-signature-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "attribution-signature",
+      "causal-status",
+      "clustering"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "为了实现精细化的缺陷归因，智能体分析模块构建了由“终端校验原因（Terminal Cause）”、“Agent 行为因果状态（Causal Status）”与“抽象行为机制（Abstract Mechanism）”构成的归因签名 φ(r) = (c, q, m)。下列关于该归因机制在失败轨迹聚类中作用的描述，哪些是正确的？",
+    "explanation": "A 正确：通过精准的签名拟合，聚合起具备相同根因机制的样例，使后续提议模块能够针对共性机制制定 Harness 修改。B 正确：归因签名将评测器判定结果（Terminal Cause）与智能体内部行为（Agent Mechanism）分离开来，避免将表象当作根因。D 正确：通过将失败归类为模式，促使提议模块基于群体模式生成通用 Harness 修改，防止为单个任务生成死记硬背式的特定硬编码补丁。C 错误：归因签名的目的是对失败机制进行确定性归类和结构化分析，而不是仅保留“模型参数不稳定的随机错误”。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确保归因签名相同的失败样例能够映射到同一种可复用的 Harness 级别改进干预措施中",
+          "将外部评测器的判定结果与 Agent 内部行为解耦，防止将表面症状误判为底层根因机制",
+          "允许系统自动过滤掉所有非确定性的运行异常，仅保留由于模型参数不稳定导致的随机错误",
+          "避免提议模块针对单次偶发的特定任务失败生成过度的局部补丁，提升修改的泛化能力"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。\n\n- A 正确：通过精准的签名拟合，聚合起具备相同根因机制的样例，使后续提议模块能够针对共性机制制定 Harness 修改。\n- B 正确：归因签名将评测器结果（Terminal Cause）与智能体内部行为（Agent Mechanism）分离开来，避免将表象当作根因。\n- D 正确：通过将失败归类为模式，促使提议模块基于群体模式生成通用 Harness 修改，防止为单个任务生成死记硬背式的特定硬编码补丁。\n- C 错误：归因签名的目的是对失败机制进行确定性归类和结构化分析，而不是仅保留“模型参数不稳定的随机错误”。"
+      }
+    }
+  },
+  {
+    "id": "selfharness-parallel-edits-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "parallel-proposals",
+      "minimal-edit",
+      "bounded"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "在 Self-Harness 的提议生成（Harness Proposal）阶段，系统采用“并行提出多个多元化且最小化候选修改（Parallel Bounded Edits）”策略，而不是让智能体直接重新生成一套全新的完整 Harness。这种设计基于哪些工程设计取舍（Trade-offs）？",
+    "explanation": "A 正确：局部有界的极小修改（Minimal Edit）能最大程度保护原有的有效机制，降低不可预测的副作用，使回归校验（A/B 测试）归因更明确。B 正确：针对同一个归因缺陷，不同的并行提议可以探索 Prompt 提醒、工具校验规则或流程控制等不同修复思路，增加单轮搜索效率。C 正确：保持修改的最小化与模块化（Bounded & Modular），能降低不同提议之间的冲突概率，使验证阶段同时通过校验的多个增量修改可以顺畅合并。D 错误：全局重构全新 Harness 会大幅增加提议生成与测试阶段的 Token 开销，且选项对 Token 消耗与格式漂移的因果关系描述错误。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "最小化修改能够限定干预范围，降低破坏智能体已有有效行为模式的风险，便于开展回归测试",
+          "多元化候选能够覆盖同类缺陷的不同修复路径，提高在单轮演进中发现有效改进措施的成功概率",
+          "架构限定最小修改能确保各候选变更保持相互正交，便于后续将多个通过校验的修改直接合并",
+          "全局重构会显著降低基座模型的 Token 消耗成本，但会导致提示词上下文发生严重的格式漂移现象"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：局部有界的极小修改（Minimal Edit）能最大程度保护原有的有效机制，降低不可预测的副作用，使得回归校验（A/B 测试）归因更明确。\n- B 正确：针对同一个归因缺陷，不同的并行提议（Parallel Proposals）可以探索 Prompt 提醒、工具校验规则或流程控制等不同修复思路，增加单轮搜索效率。\n- C 正确：保持修改的最小化与模块化（Bounded & Modular），能够降低不同提议之间的冲突概率，使得在验证阶段同时通过校验的多个增量修改可以顺畅合并。\n- D 错误：全局重构全新 Harness 会大幅增加提议生成与测试阶段的 Token 开销，且选项对 Token 消耗与格式漂移的因果关系描述错误。"
+      }
+    }
+  },
+  {
+    "id": "selfharness-vs-optimizer-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "self-refinement",
+      "external-optimizer",
+      "system-design"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "假设某团队正在规划构建一套自动化的 AI Agent 研发迭代系统。在评估“基于强模型（如 Teacher LLM）的 Meta-Harness 优化器”与“基于目标模型自我闭环（Self-Harness）”两种系统架构方案时，下列哪项分析切中了前者的主要系统性缺陷？",
+    "explanation": "A 正确：Meta-Harness 的核心痛点在于“能力不匹配”。强模型作为优化器时，倾向于假设目标模型具备与其相当的指令遵循和隐式逻辑推理能力，其设计的 Harness 可能在较弱或不同架构的目标模型上失效，无法精准修复目标模型独特的工具调用错乱或循环停滞等瓶颈。B 错误：吞吐量瓶颈可通过工程并发扩容解决，并非架构范式上的固有理论缺陷。C 错误：Harness 的优化属于非参数化的 Prompt 与代码逻辑调整，不涉及任何梯度反向传播或显存权重更新。D 错误：Tokenizer 解析属于底层文本编码层，与高级别 Harness 文本/代码生成之间不存在编码兼容性障碍。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "强模型生成的 Harness 优化策略往往基于其自身优异的理解力，容易忽略目标基座模型特有的行为偏好与能力短板",
+          "强模型在处理并发 Trace 分析时会导致系统吞吐量剧烈下降，无法支撑大规模软件工程基准测试的并行评估",
+          "强模型优化器需要对目标基座模型的内部参数权重进行实时梯度反向传播，带来了不可接受的算力开销与显存瓶颈",
+          "强模型生成的系统提示词无法适配目标模型的 Tokenizer 编码规则，容易在运行过程中引发严重的解码异常"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：Meta-Harness 的核心痛点在于“能力不匹配”。强模型（如 GPT-4 / Claude 3.5）作为优化器时，倾向于假设目标模型具备与其相当的指令遵循和隐式逻辑推理能力，其设计的 Harness 可能在 weaker 或不同架构的目标模型上失效，无法精准修复目标模型独特的工具调用错乱或循环停滞等瓶颈。\n- B 错误：吞吐量瓶颈可通过工程并发扩容解决，并非架构范式上的固有理论缺陷。\n- C 错误：Harness 的优化属于非参数化的 Prompt 与代码逻辑调整，不涉及任何梯度反向传播或显存权重更新。\n- D 错误：Tokenizer 解析属于底层的文本编码层，与高级别 Harness 文本/代码生成之间不存在编码兼容性障碍。"
+      }
+    }
   }
 ]

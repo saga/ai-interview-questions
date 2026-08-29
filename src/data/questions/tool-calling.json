@@ -547,5 +547,38 @@
         "referenceAnswer": "正确答案：B。\n\n延迟发现（Deferred Discovery）将工具集视为可检索索引：Prompt常驻仅基础工具与tool_search，扩展能力按需搜索加载，Context体积与注意力干扰最小。A仍全量膨胀，Cache仅摊平Prefill不减输入Token与注意力噪声；C压缩丢参数语义致调用幻觉；D无Schema盲猜必致参数错误。"
       }
     }
+  },
+  {
+    "id": "selfharness-runtime-mechanisms-01",
+    "category": "tool-calling",
+    "topic": "tool-calling",
+    "tags": [
+      "runtime-mechanism",
+      "shell-persistence",
+      "sub-agent"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "当智能体在复杂环境（如 Terminal CLI、软件工程 SWE-bench 或应用 API）中执行任务时，Harness 的演进往往会沉淀出针对特定模型弱点的运行时机制。下列哪些机制属于典型的 Harness 层干预策略而非单纯的语言提示补充？",
+    "explanation": "A 正确：通过在工具交互层实现环境变量持久化中间件，补充了纯 Stateless CLI 工具无法保持状态的缺陷，属于标准的 Harness 运行时控制逻辑。B 正确：子 Agent 解耦与任务编排逻辑属于 Harness 的架构层控制机制。C 正确：在工具层与环境交互拦截点设置运行时断言与强制提示回调，属于 Harness 的失败恢复与流程控制逻辑。D 错误：修改 Transformer 注意力权重参数属于参数化微调（Parametric Fine-tuning），不属于 Harness 层非参数化的工程干预策略。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Shell 命令执行层注入环境变量持久化中间件，确保连续的跨步骤命令能够共享运行时上下文",
+          "引入子 Agent 拆分与协同编排机制，将长流程复杂任务动态解耦为独立的子目标并由专门模块执行",
+          "在工具调用返回异常时插入强制校验规则，提醒智能体及时生成要求的交付产物以防止死循环",
+          "动态微调基座模型的 Transformer 注意力层参数，使其在面对结构化 JSON 返回时具备更高的解析精度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n- A 正确：通过在工具交互层实现环境变量持久化中间件，补充了纯 Stateless CLI 工具无法保持状态的缺陷，属于标准的 Harness 运行时控制逻辑。\n- B 正确：子 Agent 解耦与任务编排逻辑属于 Harness 的架构层控制机制。\n- C 正确：在工具层与环境交互拦截点设置运行时断言与强制提示回调，属于 Harness 的失败恢复与流程控制逻辑。\n- D 错误：修改 Transformer 注意力权重参数属于参数化微调（Parametric Fine-tuning），不属于 Harness 层非参数化的工程干预策略。"
+      }
+    }
   }
 ]

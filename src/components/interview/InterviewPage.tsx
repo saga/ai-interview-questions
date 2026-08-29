@@ -24,6 +24,7 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
         timeLimitSec: 30 * 60,
         mode: 'interview',
         adaptive: true,
+        masteryThreshold: config.masteryThreshold,
       }),
     );
   };
@@ -77,7 +78,7 @@ export default function InterviewPage({ config, profile, onStart, onGoSettings }
       {profile.totalSessions > 0 && (
         <Card size="small" style={{ marginTop: 16 }} title="面试官视角的你的档案">
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            {recommendationText(profile)}
+            {recommendationText(profile, config.masteryThreshold)}
           </Typography.Paragraph>
         </Card>
       )}

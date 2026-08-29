@@ -13,6 +13,7 @@ const providerEntrySchema = z.object({
 export const aiConfigSchema = z.object({
   providers: z.array(providerEntrySchema),
   generateOpenQuestions: z.preprocess((v) => v === true, z.boolean().default(false)),
+  masteryThreshold: z.number().int().min(0).max(100).default(75),
 });
 
 export type ProviderEntry = z.infer<typeof providerEntrySchema>;

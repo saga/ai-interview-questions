@@ -69,6 +69,7 @@ describe('loadConfig', () => {
     expect(loadConfig()).toEqual({
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: false,
+      masteryThreshold: 75,
     });
 
     store['ai-interview-trainer.config'] = JSON.stringify({
@@ -79,6 +80,7 @@ describe('loadConfig', () => {
         { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x', baseUrl: '' },
       ],
       generateOpenQuestions: false,
+      masteryThreshold: 75,
     });
   });
 
@@ -129,6 +131,7 @@ describe('saveConfig / loadConfig 往返', () => {
         { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
       ],
       generateOpenQuestions: true,
+      masteryThreshold: 75,
     };
     saveConfig(c);
     expect(loadConfig()).toEqual(c);
@@ -140,6 +143,7 @@ describe('stringifyConfig', () => {
     const c: AIConfig = {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: true,
+      masteryThreshold: 75,
     };
     const text = stringifyConfig(c);
     expect(text).toBe(JSON.stringify(c, null, 2));
@@ -162,6 +166,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
           { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
         ],
         generateOpenQuestions: false,
+        masteryThreshold: 75,
       },
     });
   });
@@ -171,7 +176,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     const on = parseConfigJSON(JSON.stringify({ ...base, generateOpenQuestions: true }));
     expect(on).toEqual({
       ok: true,
-      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true },
+      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, masteryThreshold: 75 },
     });
     for (const bad of [undefined, 'yes', 1, null]) {
       const raw = bad === undefined ? base : { ...base, generateOpenQuestions: bad };
@@ -211,6 +216,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
           },
         ],
         generateOpenQuestions: false,
+        masteryThreshold: 75,
       },
     });
     const bad = parseConfigJSON(JSON.stringify({ providers: [CF] }));

@@ -1,5 +1,5 @@
-import { Alert, Button, Card, Collapse, Divider, Empty, List, Popconfirm, Tag, Typography, Space, App as AntdApp } from 'antd';
-import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Switch, Tag, Typography, Space, App as AntdApp } from 'antd';
+import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import type { AIConfig } from '../../schemas/ai-config';
 import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
@@ -10,6 +10,15 @@ import { getErrorLogs, clearErrorLogs, type ErrorLogEntry } from '../../storage/
 import { resetLearnerData } from '../../storage/learner';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
+
+const PROVIDER_LABELS: Record<string, string> = {
+  chrome: 'Chrome 内置 AI',
+  local: '本地 OpenAI 兼容服务',
+  deepseek: 'DeepSeek',
+  openrouter: 'OpenRouter',
+  google: 'Google Gemini',
+  'cloudflare-workers-ai': 'Cloudflare Workers AI',
+};
 
 const AVAILABILITY_TEXT: Record<ChromeAvailability, { type: 'success' | 'warning' | 'error'; message: string }> = {
   available: { type: 'success', message: '本地模型已就绪：推理在本机完成，无需 API Key，答案不出设备。' },
@@ -35,6 +44,7 @@ interface Props {
 export default function SettingsPanel({ config, onSave, onResetLearner }: Props) {
   const { message } = AntdApp.useApp();
   const [text, setText] = useState(() => stringifyConfig(config));
+  const [draft, setDraft] = useState<AIConfig>(config);
   const [availability, setAvailability] = useState<ChromeAvailability | null>(null);
   const [logs, setLogs] = useState<ErrorLogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -47,6 +57,11 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       setLogsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setDraft(config);
+    setText(stringifyConfig(config));
+  }, [config]);
 
   useEffect(() => {
     let alive = true;
@@ -94,6 +109,32 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       return;
     }
     onSave(res.config);
+    setDraft(res.config);
+  };
+
+  const updateProvider = (index: number, patch: Partial<AIConfig['providers'][number]>) => {
+    setDraft((current) => ({
+      ...current,
+      providers: current.providers.map((provider, i) => (i === index ? { ...provider, ...patch } : provider)),
+    }));
+  };
+
+  const moveProvider = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= draft.providers.length) return;
+    setDraft((current) => {
+      const providers = [...current.providers];
+      [providers[index], providers[target]] = [providers[target], providers[index]];
+      return { ...current, providers };
+    });
+  };
+
+  const handleFormSave = () => {
+    const next = { ...draft, masteryThreshold: draft.masteryThreshold ?? 75 };
+    setDraft(next);
+    setText(stringifyConfig(next));
+    onSave(next);
+    message.success('设置已保存');
   };
 
   return (
@@ -126,6 +167,7 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
             </ul>
             布尔字段 <code>generateOpenQuestions</code> 控制是否生成开放题（默认 false：纯开放题不入卷，
             双形态题一律出选择；改为 true 恢复开放题）。
+            数字字段 <code>masteryThreshold</code> 控制主题达标线（0-100，默认 75）；主题平均分达到该值后不再作为薄弱项推荐。
             配置仅保存在本机浏览器（localStorage），不会上传；但浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。
           </>
         }
@@ -138,6 +180,97 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
           message={`Chrome 内置 AI 状态：${AVAILABILITY_TEXT[availability].message}`}
         />
       )}
+      <Typography.Title level={5}>基础设置</Typography.Title>
+      <Space direction="vertical" style={{ width: '100%', marginBottom: 20 }} size={12}>
+        <Space align="center" wrap>
+          <Switch
+            checked={draft.generateOpenQuestions}
+            onChange={(checked) => setDraft((current) => ({ ...current, generateOpenQuestions: checked }))}
+          />
+          <Typography.Text>允许生成开放题</Typography.Text>
+          <Typography.Text type="secondary">需要可用 AI 引擎，关闭时只出选择题</Typography.Text>
+        </Space>
+        <Space align="center" wrap>
+          <Typography.Text>主题达标线</Typography.Text>
+          <InputNumber
+            min={0}
+            max={100}
+            precision={0}
+            value={draft.masteryThreshold}
+            addonAfter="分"
+            onChange={(value) => setDraft((current) => ({ ...current, masteryThreshold: value ?? 75 }))}
+          />
+          <Typography.Text type="secondary">主题平均分达到此分数后不再推荐为薄弱项</Typography.Text>
+        </Space>
+      </Space>
+      <Typography.Title level={5}>AI 引擎</Typography.Title>
+      <Collapse
+        style={{ marginBottom: 16 }}
+        items={draft.providers.map((provider, index) => ({
+          key: provider.id,
+          label: (
+            <Space>
+              <Switch checked={provider.enabled} onChange={(checked) => updateProvider(index, { enabled: checked })} onClick={(event) => event.stopPropagation()} />
+              <span>{PROVIDER_LABELS[provider.id] ?? provider.id}</span>
+              <Tag color={provider.enabled ? 'green' : 'default'}>{provider.enabled ? '启用' : '停用'}</Tag>
+              <Button
+                size="small"
+                type="text"
+                icon={<ArrowUpOutlined />}
+                disabled={index === 0}
+                aria-label="上移引擎"
+                onClick={(event) => { event.stopPropagation(); moveProvider(index, -1); }}
+              />
+              <Button
+                size="small"
+                type="text"
+                icon={<ArrowDownOutlined />}
+                disabled={index === draft.providers.length - 1}
+                aria-label="下移引擎"
+                onClick={(event) => { event.stopPropagation(); moveProvider(index, 1); }}
+              />
+            </Space>
+          ),
+          children: (
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Input
+                addonBefore="模型"
+                value={provider.model}
+                onChange={(event) => updateProvider(index, { model: event.target.value })}
+                placeholder={provider.id === 'chrome' ? 'Chrome 内置模型，无需填写' : '模型 ID'}
+              />
+              {provider.id !== 'chrome' && (
+                <Input.Password
+                  addonBefore={provider.id === 'cloudflare-workers-ai' ? 'API Token' : 'API Key'}
+                  value={provider.apiKey}
+                  onChange={(event) => updateProvider(index, { apiKey: event.target.value })}
+                  placeholder="可留空（该引擎停用时不影响保存）"
+                />
+              )}
+              {provider.id !== 'chrome' && (
+                <Input
+                  addonBefore="Base URL"
+                  value={provider.baseUrl ?? ''}
+                  onChange={(event) => updateProvider(index, { baseUrl: event.target.value })}
+                  placeholder={provider.id === 'local' ? DEFAULT_LOCAL_BASE_URL : '可选'}
+                />
+              )}
+              {provider.id === 'cloudflare-workers-ai' && (
+                <Input
+                  addonBefore="Account ID"
+                  value={provider.accountId ?? ''}
+                  onChange={(event) => updateProvider(index, { accountId: event.target.value })}
+                />
+              )}
+            </Space>
+          ),
+        }))}
+      />
+      <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'flex-end' }}>
+        <Button type="primary" icon={<SaveOutlined />} onClick={handleFormSave}>保存可视化设置</Button>
+      </Space>
+      <Divider />
+      <Typography.Title level={5}>高级 JSON 编辑</Typography.Title>
       <Suspense fallback={null}>
         <LazyCodeEditor value={text} onChange={setText} language="json" height={420} />
       </Suspense>

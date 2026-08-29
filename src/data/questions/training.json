@@ -2074,5 +2074,100 @@
         "referenceAnswer": "A 正确 DPO 将 RL 目标重构为隐式 Reward 解析表达降低显存与框架复杂度。B 正确 Off-policy 无需在线采样直接用静态偏好数据集梯度更新。C 正确 缺少价值迭代难以处理多步环境反馈的精准信用分配。D 错误 DPO 极易受高噪声偏好数据干扰产生 Reward Hacking。"
       }
     }
+  },
+  {
+    "id": "envharness-vs-generation-01",
+    "category": "training",
+    "topic": "rlhf",
+    "tags": [
+      "env-harness",
+      "env-generation",
+      "verifier",
+      "tradeoff"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在基于大语言模型（LLM）的 Agent 训练中，通过外部代码包装静态环境（Environment Harness）与直接通过 LLM 自动生成新代码/新任务（Environment Generation）是两种代表性的环境增强途径。关于这两种架构路线在工程落地中的设计取舍与核心优势，下列说法正确的有？",
+    "explanation": "A 正确：Harness 模式（如 EnvHarness）在静态环境外加装可编程包装层，不修改底层环境逻辑与验证逻辑，完全继承原始验证器，消除了合成环境生成中常见的验证器不准确或难以对齐的缺点。B 正确：通过抽象统一的 Markov 决策过程或 Gym 风格接口，Harness 模式能够直接跨领域应用（代码求解、网页浏览、具身导航等）；而生成式管道往往针对单一领域搭建。C 错误：Harness 属于环境侧的接口层包装，不依赖也不改变 Agent 模型的内部结构或权重更新机制。D 错误：LLM 生成的环境与验证器极易出现语法或逻辑漏洞，无法完全消除验证失真（False Positive/False Negative）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Harness 模式运行于标准交互接口层，无需重写底层模拟引擎，能完全继承原环境人工构建的验证器（Verifier），避免了生成式验证器容易产生的幻觉与评分失真问题。",
+          "Harness 模式作用于通用的 reset 与 step 接口，具备跨领域的通用性；而生成式环境管道通常强依赖特定领域的代码生成模板或特定的环境构建规则。",
+          "Harness 模式通过拦截 Agent 的动作输出，能够实时修改 Agent 的内部神经网络权重与 KV Cache，实现模型与环境的同步微调。",
+          "生成式环境管道虽然构建成本较高，但能够完全消除环境验证失败（False Positive/False Negative）的现象。"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。\n\n- A 正确：Harness 模式在静态环境外加装可编程包装层，不修改底层环境逻辑与验证逻辑，完全继承原始验证器，消除了合成环境生成中常见的验证器不准确或难以对齐的缺点。\n- B 正确：通过抽象统一的 Markov 决策过程或 Gym 风格接口，Harness 模式能够直接跨领域应用；而生成式管道往往针对单一领域搭建。\n- C 错误：Harness 属于环境侧的接口层包装，不依赖或改变 Agent 模型的内部结构或权重更新机制。\n- D 错误：LLM 生成的环境和验证器极易出现语法或逻辑漏洞，无法完全消除验证失真。"
+      }
+    }
+  },
+  {
+    "id": "envharness-saturation-01",
+    "category": "training",
+    "topic": "rlhf",
+    "tags": [
+      "saturation",
+      "rl-training",
+      "difficulty-tuning"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在对某个 LLM Agent 进行强化学习（RL）微调时，监测到 Agent 在当前基准环境中达到了 100% 的成功率，导致梯度更新幅度趋近于零，策略优化进入停滞期（性能饱和）。在基于 EnvRigger 的自适应环境演进体系中，诊断模块应采取的正确调控策略是？",
+    "explanation": "A 正确：当策略达到 100% 成功率时，说明现有静态环境已无法提供有效的学习信号（Lack of challenging signals）。Diagnose 模块会判定当前环境过于宽松，指导 Write 阶段增加干扰、隐藏条件或增加限制，驱动策略继续进化。B 错误：饱和通常是因为静态任务集有限，并非模型达到了能力极限。C 错误：高成功率不等于验证器失效，重新生成验证器会打破验证器的可靠性保障。D 错误：将任务压缩变简单与解决饱和问题背道而驰。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "诊断当前环境过于宽松，通过 Write 阶段引入 Stage（如添加初始隐蔽或干扰状态）或 Contract（如限制高阶动作与裁剪提示），主动提升难度以逼出策略潜在缺陷。",
+          "诊断策略已完整掌握该静态环境所能暴露的全部技能，直接终止本轮 RL 微调流程，将学习率永久置零以固化策略，并判定无需再采集任何新轨迹。",
+          "诊断原有环境的验证器（Verifier）存在严重误判，强制改用 LLM 重新生成一整套全新的验证逻辑，以完全替换底层原有的判定代码。",
+          "诊断动作空间维度过高导致探索效率低下，通过 Chain 组件将原本的多回合长程任务强行压缩为单回合的简化任务，以降低策略的搜索难度。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：当策略达到 100% 成功率时，说明现有静态环境已无法提供有效的学习信号（Lack of challenging signals）。Diagnose 模块会判定当前环境过于宽松，指导 Write 阶段增加干扰、隐藏条件或增加限制，驱动策略继续进化。\n- B 错误：饱和通常是因为静态任务集有限，并非模型达到了能力极限。\n- C 错误：高成功率不等于验证器失效，重新生成验证器会打破验证器的可靠性保障。\n- D 错误：将任务压缩变简单与解决饱和问题背道而驰。"
+      }
+    }
+  },
+  {
+    "id": "envharness-reward-integrity-01",
+    "category": "training",
+    "topic": "rlhf",
+    "tags": [
+      "rl",
+      "reward-integrity",
+      "reward-hacking"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 LLM Agent 的强化学习（RL）训练中，相比于使用纯生成式环境（Fully-generated Environments），采用 EnvHarness 包装演进环境对于 RL 优化过程最重要的系统级保障是？",
+    "explanation": "A 正确：在 RL 训练中，若环境及验证器由 LLM 生成，极易出现验证漏洞（Reward Hacking），导致 Agent 学习到错误的捷径行为。EnvHarness 保持底层原装验证器不变，仅重塑状态与规则，保证了奖励信号的高度可信与无污染（High Reward Integrity）。B 错误：RL 依然需要通过 Rollout 与环境交互收集轨迹。C 错误：RL 训练本身具有探索性和随机性，改变环境包装无法完全消除曲线波动。D 错误：EnvHarness 并不强制改写物理/软件模拟器的非确定性本质。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "确保 Reward 评分始终来自继承的原生验证器（Ground-truth Verifier），防止“Reward 毒化或误判”导致模型盲目过拟合奖励漏洞。",
+          "使 Agent 无需执行任何环境交互步骤（Zero-rollout）即可解析式地直接计算策略梯度，从而省去全部轨迹采样开销。",
+          "彻底消除 RL 训练过程中的 Reward 波动，保证策略评估曲线在训练全程呈现严格、稳定的单调递增趋势。",
+          "将底层环境的非确定性状态转移强制改写为确定性的单步映射，从而显著降低反复采样带来的算力与时间消耗。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n- A 正确：在 RL 训练中，若环境及验证器由 LLM 生成，极易出现验证漏洞（Reward Hacking），导致 Agent 学习到错误的捷径行为。EnvHarness 保持底层原装验证器不变，仅重塑状态与规则，保证了奖励信号的高度可信与无污染（High Reward Integrity）。\n- B 错误：RL 依然需要通过 Rollout 与环境交互收集轨迹。\n- C 错误：RL 训练本身具有探索性和随机性，改变环境包装无法完全消除曲线波动。\n- D 错误：EnvHarness 并不强制改写物理/软件模拟器的非确定性本质。"
+      }
+    }
   }
 ]

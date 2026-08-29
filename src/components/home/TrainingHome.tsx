@@ -81,7 +81,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
     });
   };
 
-  const recommendation = recommendationText(profile);
+  const recommendation = recommendationText(profile, config.masteryThreshold);
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
@@ -125,7 +125,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
             <Button
               type="primary"
               icon={<PlayCircleOutlined />}
-              onClick={() => onStart(buildCoachDefinition(profile, { title: '继续训练' }))}
+              onClick={() => onStart(buildCoachDefinition(profile, { title: '继续训练', masteryThreshold: config.masteryThreshold }))}
             >
               按薄弱项继续训练
             </Button>
@@ -164,7 +164,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
           ghost
           icon={<PlayCircleOutlined />}
           block
-          onClick={() => onStart(buildCoachDefinition(profile, { title: '快速训练', timeLimitSec: 600 }))}
+          onClick={() => onStart(buildCoachDefinition(profile, { title: '快速训练', timeLimitSec: 600, masteryThreshold: config.masteryThreshold }))}
         >
           开始快速训练
         </Button>

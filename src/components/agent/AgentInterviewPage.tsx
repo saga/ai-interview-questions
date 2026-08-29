@@ -151,6 +151,7 @@ export default function AgentInterviewPage({ config, profile, onComplete, onGoSe
       bank: bank.questions,
       provider,
       generateOpenQuestions: config.generateOpenQuestions,
+      masteryThreshold: config.masteryThreshold,
       handlers: {
         onQuestion: (q) => {
           if (!q) {

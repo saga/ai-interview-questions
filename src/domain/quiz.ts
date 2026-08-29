@@ -10,6 +10,8 @@ import type { SessionQuestion } from '../schemas/session';
 /** 开放形态占比上限：单选/多选为主的训练体验，
  *  开放题数量不超过总题量的三成（约 7:3；想收紧到 8:2 改 0.2 即可）。 */
 export const MAX_OPEN_RATIO = 0.3;
+export const TARGET_MULTIPLE_RATIO = 0.5;
+export const MAX_PRIORITY_RATIO = 0.5;
 
 function shuffle<T>(arr: T[], rng: () => number): T[] {
   const a = [...arr];
@@ -74,11 +76,17 @@ export function pickPrioritized(
   const pri = priorities.filter(Boolean);
   if (pri.length === 0) return pickQuestions(pool, count, rng);
   const weak = pool.filter((q) => pri.includes(q.topic));
-  const rest = pool.filter((q) => !pri.includes(q.topic));
-  const pickedWeak = pickQuestions(weak, Math.min(count, weak.length), rng);
+  const priorityLimit = Math.min(count, Math.max(1, Math.ceil(count * MAX_PRIORITY_RATIO)));
+  const pickedWeak = pickQuestions(weak, Math.min(priorityLimit, weak.length), rng);
+  const pickedIds = new Set(pickedWeak.map((q) => q.id));
+  const rest = pool.filter((q) => !pickedIds.has(q.id));
   const remaining = count - pickedWeak.length;
   const pickedRest = remaining > 0 ? pickQuestions(rest, remaining, rng) : [];
   return [...pickedWeak, ...pickedRest];
+}
+
+function choiceType(q: Question): 'single' | 'multiple' | null {
+  return q.formats.choice?.type ?? null;
 }
 
 /**
@@ -111,13 +119,31 @@ export function planComposition(
     question,
     format: availableFormats(question, allowedFormats).includes('choice') ? 'choice' : 'open',
   }));
+  const pickedIds = new Set(rawPicked.map((q) => q.id));
+  const targetMultiple = Math.floor(count * TARGET_MULTIPLE_RATIO);
+  const availableMultiple = pool.filter(
+    (q) => !pickedIds.has(q.id) && availableFormats(q, allowedFormats).includes('choice') && choiceType(q) === 'multiple',
+  );
+  const singleIndexes = result
+    .map((sq, index) => (sq.format === 'choice' && choiceType(sq.question) === 'single' ? index : -1))
+    .filter((index) => index >= 0);
+  const multipleCount = result.filter(
+    (sq) => sq.format === 'choice' && choiceType(sq.question) === 'multiple',
+  ).length;
+  const replacements = pickQuestions(
+    availableMultiple,
+    Math.max(0, Math.min(targetMultiple - multipleCount, singleIndexes.length, availableMultiple.length)),
+    rng,
+  );
+  replacements.forEach((question, index) => {
+    result[singleIndexes[index]] = { question, format: 'choice' };
+  });
   // 候选池里存在两种可用形态才有配比意义（或存在可翻转的双形态题）
   const canChoice = pool.some((q) => availableFormats(q, allowedFormats).includes('choice'));
   const canOpen = pool.some((q) => availableFormats(q, allowedFormats).includes('open'));
   if (!(canChoice && canOpen)) return result;
 
   const maxOpen = Math.max(0, Math.floor(count * MAX_OPEN_RATIO));
-  const pickedIds = new Set(rawPicked.map((q) => q.id));
   let openCount = result.filter((sq) => sq.format === 'open').length;
 
   // 超额开放形态：尾部向前，先把双形态题翻回 choice，无题可翻则与池中未抽中的双形态题原位交换，再不行裁掉
