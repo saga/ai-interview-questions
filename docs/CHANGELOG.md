@@ -2,6 +2,13 @@
 
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-29 · 覆盖矩阵改为核心角度优先
+
+- **问题**：原覆盖矩阵把每个知识节点声明的所有 angle 都视为必须独立出现的题目类型，导致宽泛认证节点出现模型性缺口；例如 `aws-genai-developer-pro` 已有 50 道场景题，却因缺少其他标签产生 6 个缺口。
+- **决策**：收窄认证/课程节点的强制角度目标，优先保证核心知识与应用场景，不为清零矩阵制造换皮题。AWS GenAI Developer 保留 `scenario`，AWS Practitioner 保留 `scenario`/`tradeoff`，Anthropic CCA 保留 `scenario`/`mechanism`/`debugging`，Google GenAI Leader 保留 `definition`/`fundamental`/`mechanism`/`scenario`。
+- **结果**：覆盖缺口由 53 个降至 41 个；P0 缺口仍为 16 个，说明核心技术节点的真实补题工作仍需按 required 要点和题目质量逐批完成。
+- **原则**：新增题优先补 `gqa`、`cross-entropy`、`rope`、`overfitting`、`regularization` 等题量少且缺少计算/权衡/场景的 P0 节点；认证节点的剩余角度缺口不再自动等价为知识缺口。
+
 ## 2026-08-29 · 第二轮清理：Chrome fallback、旧配置迁移、types.ts 收敛、仓库卫生
 
 - **双引擎评分统一**：新增 `application/sessionEvaluator.ts`，集中单题判空、选择题判分、开放题 LLM 评分与 rubric 默认值；`interviewEngine.ts` 与 `agent/tools.ts` 共用同一评分入口，Agent 不再保留重复实现；题型过滤也统一走共享 `effectiveFormats`。
