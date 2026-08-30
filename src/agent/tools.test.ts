@@ -195,6 +195,36 @@ describe('createAgentTools', () => {
     expect((r.details as { validIds: string[] }).validIds).toEqual(['q-choice-1', 'q-open-1']);
   });
 
+  it('C4 回归：未先搜索就传入错误 id 时，not_found 不把全题库题号灌进 context，而是引导用 searchQuestions', async () => {
+    const bank = Array.from({ length: 8 }, (_, i) => makeQuestion({ id: `c4-${i}` }));
+    const d = deps(bank);
+    const tools = createAgentTools(d);
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'attnetion' }); // 拼写错误，且未搜索
+    expect((r.details as { error: string }).error).toBe('not_found');
+    const text = textOf(r);
+    // 关键：任何题库 id 都不应出现在结果文本里（不再回退全题库）
+    for (const q of bank) expect(text).not.toContain(q.id);
+    // 应引导 Agent 主动搜索，而非列出题号
+    expect(text).toContain('searchQuestions');
+    // details 也不应携带全量题号
+    expect((r.details as { validIds: string[] }).validIds).toEqual([]);
+  });
+
+  it('C4 回归：最近一次搜索结果很多时，not_found 只列出有限候选（≤5），不整段回贴', async () => {
+    const bank = Array.from({ length: 8 }, (_, i) => makeQuestion({ id: `c5-${i}` }));
+    const d = deps(bank);
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    await search.execute('call', {}); // lastSearchIds = 8 个 id
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'nope' });
+    const text = textOf(r);
+    const listed = (text.match(/id=/g) ?? []).length;
+    expect(listed).toBeGreaterThan(0);
+    expect(listed).toBeLessThanOrEqual(5);
+  });
+
   it('searchQuestions 重复调用幂等复用缓存列表并写入 lastSearchIds（消除反复调用动机）', async () => {
     const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
     const tools = createAgentTools(d);
@@ -434,7 +464,7 @@ describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到�
     expect(textOf(r)).toContain('已全部考察过');
   });
 
-  it('原题 bug 回归：兜底不再落回该主题第一道（已考察）题，而是指向未考察的题', async () => {
+  it('C4 后：topic 全部考察完且无搜索结果时，不再回退全题库列出其它题，而是引导 Agent 用 searchQuestions', async () => {
     // 修复前：unasked 为空时执行 `unasked[0] ?? byTopic[0]`，会把已考察的 a1 再交一遍
     const d = deps([makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' }), makeQuestion({ id: 'b1', topic: 'rag' })]);
     d.session.evaluations['a1'] = fakeOpenResult(80);
@@ -443,8 +473,9 @@ describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到�
     // 绝不重复交付已考察过的题（宁可不出题）
     expect(d.session.currentQuestion).toBeNull();
     expect((r.details as { error: string }).error).toBe('topic_exhausted');
-    // 但要把唯一还没考察过的 b1 指给 Agent，让它能立刻接着问
-    expect((r.details as { validIds: string[] }).validIds).toEqual(['b1']);
+    // C4 修复：没有 searchQuestions 结果时不回退全题库（b1 不应被列出），改为引导 Agent 主动搜索
+    expect((r.details as { validIds: string[] }).validIds).toEqual([]);
+    expect(textOf(r)).toContain('searchQuestions');
   });
 
   it('评分为 null（未作答 / 评估失败）也算已考察，不重复交付', async () => {
@@ -474,12 +505,17 @@ describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到�
     expect(d.session.currentQuestion?.question.id).toBe('a2');
   });
 
-  it('not_found 自纠正只回带未考察的题号，不会把 Agent 指回刚问过的题', async () => {
+  it('not_found 自纠正只回带最近搜索中未考察的题号，不会把 Agent 指回刚问过的题（C4 后：必须来自 lastSearchIds，不再回退全题库）', async () => {
     const bank = [makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' }), makeQuestion({ id: 'a3' })];
     const d = deps(bank);
-    d.session.currentQuestion = { question: bank[0], format: 'choice' }; // a1 正在答
-    const r = await getQ(d).execute('call', { id: 'nope' });
+    d.session.currentQuestion = { question: bank[0], format: 'choice' }; // a1 正在答（视为已交付）
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    await search.execute('call', {}); // 写入 lastSearchIds
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'nope' });
     expect((r.details as { error: string }).error).toBe('not_found');
+    // 关键契约：只从最近一次搜索结果里回带「未考察」的题号，且不把正在答的 a1 指回去
     expect((r.details as { validIds: string[] }).validIds).toEqual(['a2', 'a3']);
   });
 

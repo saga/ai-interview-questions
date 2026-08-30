@@ -352,6 +352,14 @@ Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → de
   `details` 仍完整保留整个 `EvaluationResult`；`evidence` / `strengths` / `feedback` 不进文本（对选题无增量）。
   这是与 C1 同类的 **Agent context contract 不一致**——可归纳为一句话检查：
   *prompt 要求 Agent 用 X → Tool 是否把 X 放进 LLM-visible 的 text？*
+- **id 纠错池不再回退全题库（ADR-055，同源 context-replay 成本）**：`getQuestion` 的 `not_found` / `topic_exhausted`
+  自纠正依赖一个 id 池（旧 `validIdPool`）。旧实现在 `lastSearchIds` 为空时回退到 `Array.from(byId.keys())`
+  ——即整张题库——会把上千个 id 一次性灌进一条历史消息，并在后续 replay 中持续占 token。
+  正确修复不是「截断」或「降 `searchQuestions` 的 `limit`」，而是把池子收窄为
+  `deliverableIds` = 「最近一次 `searchQuestions` 真实返回、且本轮尚未交付」的题号（`tools.ts:109`），
+  `not_found` 改为四路 `hint`：有候选只列 ≤5 个真实 id；题库全考完引导 `finishInterview`；
+  主题考完/完全没搜索过则引导 Agent 主动 `searchQuestions`。**代价视角与 C1/C2 一致**：
+  避免把确定性的大块数据塞进每轮重放的上下文，代价由工具的确定性行为承担，而非靠 prompt 约束 Agent 不犯错。
 - **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
    pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
    chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，

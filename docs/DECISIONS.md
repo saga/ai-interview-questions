@@ -2,6 +2,37 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-055 · id 纠错池不再回退全题库，避免异常 tool 消息在 context replay 中持续占 token（修复 `深度审查报告.md` C4 / P1）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`深度审查报告.md` C4（P1）。旧 `validIdPool()`（`tools.ts:92`）在 `lastSearchIds` 为空时回退到
+  `Array.from(byId.keys())`，即**整张题库**（当时 1084 题）。`getQuestion` 的 `not_found` 自纠正会把这池子全量拼进消息，
+  Agent 一旦 id 拼错又还没调过 `searchQuestions`，一次就注入上千个 id。
+- **问题表述更正（用户复核确立）**：原报告写「1084 个 id 永久灌进上下文 / 永久驻留」不够严谨。
+  核心不是 `1084` 这个数字，而是 Agent 的纠错路径在**正常情况下**就可能把整个题库 ID 集合注入 LLM context。
+  更准确的表述是：一次异常的 `getQuestion({id: 拼错})` 产生一条**不必要的大型历史消息**，
+  在后续 context replay 中**持续占用 token**——是否「永久」取决于 message history 实现（每轮重放全量历史则持续，设上限则收敛）。
+  真正该关注的指标是 **token 数 × replay 次数**，而不是字符串字节数（原「单次约 4.5KB」不应写死）。
+- **决策（用户指定的最小正确方案）**：让 id 纠错池只承载「最近一次 `searchQuestions` 真实返回、且本轮尚未交付」的题号，
+  其余交给 Agent 主动 `searchQuestions`。具体改动：
+  1. `validIdPool` → `deliverableIds(session, byId)`，实现改为
+     `session.lastSearchIds.filter((id) => byId.has(id) && !isDelivered(session, id))`——**删除全题库回退分支**。
+  2. `not_found` / `topic_exhausted` 改为**四路 `hint`**：
+     - 有候选 → 只列 **≤5** 个真实 id（`MAX_SUGGEST = 5`），明确「用上面列出的真实 id，不要猜测或编造」；
+     - 题库全考完 → 引导 `finishInterview`；
+     - 主题考完但无搜索结果 → 引导 `searchQuestions`（可换其它 topic / category）；
+     - 完全没搜索过 → 引导先 `searchQuestions` 拿到真实 id 再调 `getQuestion`，**绝不**把全题库塞给 Agent。
+  3. 选题兜底（`matchedBy === 'topic'`）的示例 id 同样改用 `deliverableIds` 并加空集合守卫。
+- **刻意不做的（用户明确否决）**：
+  - ❌ 机械 `slice(0, 20)`：阈值太随意，可能截断掉真正该给 Agent 的那个 id；
+  - ❌ 为这道题把 `searchQuestions` 的 `limit` 上限从 50 降到 20（`tools.ts:45`）：那是另一个维度的问题，不应被这道题机械牵连；
+  - ❌ 为这题专门引入 `fuzzball`：若已为 `validateVariant` 导入可复用，但不为本题新增依赖；
+  - ❌ 写死「4.5KB」：以 token 数 + replay 次数衡量，而非字节数。
+- **验证**：`src/agent/tools.test.ts` 新增 2 个 C4 回归测试（未先搜索就传错 id → 不灌全题库；搜索结果很多时只列 ≤5 候选），
+  并修正 2 个原本依赖「全题库回退」的旧用例（改为先 `search.execute` 注入 `lastSearchIds` 再断言）。
+  `npx vitest run src/agent/tools.test.ts` **33 passed**，`npx tsc --noEmit` 0 error。
+  反向验证：临时还原 `Array.from(byId.keys())` 回退 → 新回归测试失败（把 `c4-0…c4-7` 全量吐出），证明测试守住了根因。
+
 ## ADR-054 · 评价结果的决策字段必须显式进入 LLM-visible text（details ≠ 模型可见）
 
 - 状态：已采纳 · 2026-08-30

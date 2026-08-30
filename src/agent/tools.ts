@@ -96,16 +96,18 @@ function isDelivered(session: InterviewAgentSession, id: string): boolean {
 }
 
 /**
- * 可交付题号池：优先「最近一次 searchQuestions 返回的真实 id」，否则退回全题库；
- * 两种来源都只保留**本轮尚未交付过**、且确实存在于题库中的 id。
+ * 可交付题号池：只返回「最近一次 searchQuestions 返回的真实 id」中、本轮尚未交付的题号。
+ *
+ * 关键约束（C4 修复）：**不再回退到全题库**。一次 id 拼错若把 1084 个题号灌进 tool result，
+ * 会作为一条异常历史消息在后续 context replay 中持续占用 token；正确做法是由 Agent 主动
+ * searchQuestions 拿到候选，而不是工具把整张题库塞给它。
  *
  * 作为 getQuestion 做 id 校验与自纠正（not_found / topic_exhausted）的唯一可信来源——
  * 让 Agent 无需记忆即可挑到真 id，把「回到列表挑真 id / 不要编造」从 prompt 约束下沉为确定性行为。
  * 过滤掉已交付的题，是为了避免自纠正又把 Agent 指回刚问过的题。
  */
 function deliverableIds(session: InterviewAgentSession, byId: Map<string, Question>): string[] {
-  const pool = session.lastSearchIds.length ? session.lastSearchIds : Array.from(byId.keys());
-  return pool.filter((id) => byId.has(id) && !isDelivered(session, id));
+  return session.lastSearchIds.filter((id) => byId.has(id) && !isDelivered(session, id));
 }
 
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
@@ -182,14 +184,27 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         }
       }
       if (!q) {
-        // 自纠正：把可用题号直接回带，Agent 无需记忆即可挑真 id——
+        // 自纠正：把「最近一次 searchQuestions 返回的、尚未考察」的题号直接回带，Agent 无需记忆即可挑真 id；
         // 替代原 prompt「若 not_found 就回到 searchQuestions 列表挑真 id」的脆弱约束（确定性、不依赖 LLM 听话）。
-        // 只回带未交付的题，避免 Agent 按提示又挑到刚问过的题。
+        // C4 修复：deliverableIds 不再回退到全题库，所以这里最多只列 lastSearchIds 中的若干候选（见 MAX_SUGGEST），
+        // 没有任何搜索结果时则引导 Agent 主动 searchQuestions，绝不把 1084 个题号灌进 context。
         const reason = exhaustedTopic ? 'topic_exhausted' : 'not_found';
         const validIds = deliverableIds(session, byId);
-        const hint = validIds.length
-          ? `\n可用题号（本轮尚未考察过，请直接挑其中一个传入）：\n${validIds.map((id, i) => `${i + 1}. id=${id}`).join('\n')}`
-          : '\n题库中所有题目本轮均已考察过，没有可继续出的题了——请调用 finishInterview 结束面试。';
+        const bankHasMore = bank.some((x) => !isDelivered(session, x.id));
+        const MAX_SUGGEST = 5;
+        let hint: string;
+        if (validIds.length > 0) {
+          const shown = validIds.slice(0, MAX_SUGGEST);
+          hint = `\n可用题号（最近一次搜索结果中尚未考察过的，请直接挑其中一个传入）：\n${shown
+            .map((id, i) => `${i + 1}. id=${id}`)
+            .join('\n')}\n请用上面列出的真实 id 调 getQuestion，不要猜测或编造。`;
+        } else if (!bankHasMore) {
+          hint = '\n题库中所有题目本轮均已考察过，没有可继续出的题了——请调用 finishInterview 结束面试。';
+        } else if (exhaustedTopic) {
+          hint = `\n主题「${params.id}」的题目本轮已全部考察过，且当前没有可用的搜索结果。请调用 searchQuestions（可指定其它 topic / category）后再选其它题。`;
+        } else {
+          hint = `\n未找到题目 ${params.id}，且当前没有可用的搜索结果。请先调用 searchQuestions 搜索题目，再用返回的真实 id 调用 getQuestion——不要猜测或编造 id。`;
+        }
         const message = exhaustedTopic
           ? `主题「${params.id}」的题目本轮已全部考察过，为避免重复出题不再从中选题。`
           : `未找到题目 ${params.id}。`;
@@ -200,10 +215,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
           summary: exhaustedTopic ? `${params.id} 已考察完` : `未找到 ${params.id}`,
           details: { id: params.id, validIds, reason },
         });
-        return textResult(
-          `${message}${hint}${validIds.length ? '\n请用上面列出的真实 id 调 getQuestion，不要猜测或编造。' : ''}`,
-          { error: reason, id: params.id, validIds },
-        );
+        return textResult(`${message}${hint}`, { error: reason, id: params.id, validIds });
       }
       // 尊重全局「生成开放题」开关：关闭时只允许选择题，纯开放题不交付（避免绕过 generateOpenQuestions）。
       const available = availableSessionFormats(q, undefined, true, generateOpenQuestions);
@@ -234,14 +246,12 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         details: { id: q.id, format: fmt, matchedBy },
       });
       // topic 兜底（修复 D）仍保留以防卡死，但回带正确 id 示例，教 Agent「应直接传真实 id」。
+      const exampleIds = deliverableIds(session, byId).slice(0, 3);
       const topicNote =
         matchedBy === 'topic'
-          ? `（提示：你传入的是 topic 而非真实 id，已按主题兜底选 ${q.id}；正确做法是直接用 searchQuestions 返回的真实 id，例如：${deliverableIds(
-              session,
-              byId,
-            )
-              .slice(0, 3)
-              .join('、')}）`
+          ? `（提示：你传入的是 topic 而非真实 id，已按主题兜底选 ${q.id}；正确做法是直接用 searchQuestions 返回的真实 id${
+              exampleIds.length ? `，例如：${exampleIds.join('、')}` : ''
+            }）`
           : '';
       // 注意措辞：这里是「已由界面呈现」，不是「请呈现给用户」。
       // 题目正文从未进入 Agent 上下文，让模型「呈现」等于逼它凭 id 编一段题干出来（原 C1 缺陷）。

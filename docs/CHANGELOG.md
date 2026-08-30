@@ -1,6 +1,23 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-30 · id 纠错池不再回退全题库（ADR-055，修复 `深度审查报告.md` C4 / P1）
+
+- **问题**：`getQuestion` 的 `not_found` 自纠正依赖一个 id 池，旧 `validIdPool()` 在 `lastSearchIds` 为空时回退到
+  `Array.from(byId.keys())`——即整张题库。Agent 一旦 id 拼错又还没调过 `searchQuestions`，一次就注入上千个 id。
+- **问题表述更正（用户复核确立）**：原报告「1084 个 id 永久灌进上下文 / 永久驻留」不够严谨——真正该关注的是
+  **token 数 × replay 次数**，而非字节数（「单次约 4.5KB」不应写死）；一次异常 tool 调用会产生持续占 token 的历史负载，
+  是否「永久」取决于 message history 是否每轮重放全量。
+- **修复（用户指定的最小正确方案）**：`validIdPool` → `deliverableIds`，**删除全题库回退**，
+  只返回「最近一次 `searchQuestions` 真实返回、且本轮尚未交付」的题号；`not_found` / `topic_exhausted`
+  改为四路 `hint`（有候选只列 ≤5 个真实 id / 题库全考完引导 `finishInterview` / 主题考完引导换 topic 搜索 /
+  完全没搜索过引导先 `searchQuestions`），绝不把全题库塞给 Agent。
+- **刻意不做的（用户明确否决）**：机械 `slice(0, 20)`；为这道题把 `searchQuestions` 的 `limit` 从 50 降到 20；
+  为这题专门引入 `fuzzball`；写死「4.5KB」。
+- **验证**：`src/agent/tools.test.ts` 新增 2 个 C4 回归测试、修正 2 个依赖旧回退的用例，**33 passed**，`tsc` 0 error；
+  反向验证（还原全题库回退）新测试失败，证明守住根因。
+- **文档同步**：`深度审查报告.md` C4 标记已修复并按用户更正改写；新增 **ADR-055**；`docs/ARCHITECTURE.md` LLM 能力边界节补交叉引用。
+
 ## 2026-08-30 · 评分决策字段进入 LLM 可见文本（ADR-054，修复 `深度审查报告.md` C2 / P1）
 
 - **问题**：系统提示要求 Agent「根据评分分三路分支」，工具描述也承诺「原样返回 EvaluationResult（综合分/维度/优势/薄弱/gap）」，
