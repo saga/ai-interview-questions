@@ -404,23 +404,25 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 安全模型（ADR-036，取代 ADR-019 字段级白名单）：**LLM 可重构所有 Presentation（题干/场景/选项/distractors/解析），但必须保持 Knowledge Contract 不变量，输出为 VariantCandidate，需经 Domain 校验，无兜底**：
 
 ```
-                    Knowledge Contract (topic/tags/requiredConcepts/difficulty/type)
+                    Knowledge Contract (topic/tags/requiredConcepts/difficulty/type/angle)
                               │
-Original Question ──→ LLM ──→ VariantCandidate ──→ validateVariant ──→ GeneratedVariant
-  (question/options/                                           │ schema + semantic
-   answer/explanation)                          ┌──────────────┴──────────────┐
-                                               │ ok → applyVariant         │ fail → 回退原题
-                                               │ 替换 question/options/    │  记录 warning
-                                               │ answer/explanation        │
+Original Question ──→ LLM ──→ parse ──→ VariantCandidate ──→ validateVariant ──→ anti-cueing ──→ GeneratedVariant
+  (question/options/   JSON                   │ schema + 保守语义              │ biased? → retry → re-validate
+   answer/explanation)              ┌─────────┴─────────┐                  └───────────────────────┘
+                                   │ ok → applyVariant │ fail → 重试一次 → 仍失败则抛错由上层回退原题
+                                   │ 替换 question/    │  记录 warning
+                                   │ options/answer/   │
+                                   │ explanation       │
 ```
 
-- **Invariant（必须保持）**：`topic/tags/requiredConcepts`、正确性语义、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`。
+- **Invariant（必须保持）**：`topic/tags/requiredConcepts/angle`、正确性语义及适用条件、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`，`Question.angle` 已纳入契约（尽量换角度但不引入新核心知识）。
 - **Variant（允许自由变化）**：题干措辞、场景/上下文、选项表达与 distractors、解析表达。
-- **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败由应用层记录 warning 并回退原题，避免单题坏变体中断整场组卷。
-- 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。
+- **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述/本文/该方案…”等 10 类指代，含新增“前文/下文/题目中/题干中”）+ 极保守语义（topic/tags/required 任一 token 证据缺失即判漂移，拆 token 匹配避免整句误伤，全部丢失才拒）；失败由 `ai/variant.generateVariant` 内先重试一次，仍失败抛错由应用层 `finalizeQuestion` 记录 warning 并回退原题，避免单题坏变体中断整场组卷。
+- 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。`toGeneratedVariant` 已移除对缺失 `question` 的静默回退（缺失由校验显式拒绝）。
+- **Prompt 约束**：`VARIANT_SYSTEM` 新增【正确答案不变量】（先锁定原正确结论再重构选项，不得因换场景偷改适用条件）与角度提示（`angle` 入契约，优先换角度）；`buildUser` 同时注入完整原题与契约，保持 stable-prefix KV-Cache 友好。
 - **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
-- **抗暗示（anti-cueing）自愈**：`ai/variant.generateVariant` 在拿到 LLM 变体后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），用修正提示词**一次性重试**改写选项，避免把“正确项明显更长/干扰项过短”的偏差写进变体。属软信号、非校验阻断（沿用 ADR-036 无兜底语义：仅重生成，不因此抛错改回原题）。
+- **抗暗示（anti-cueing）自愈 + 再校验**：`ai/variant.generateVariant` 在拿到已通过首轮校验的候选后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），用修正提示词**一次性重试**改写选项，**并对修正版再次 `validateVariant`**，失败则保留首版（避免 retry 绕过 domain gate）。属软信号、非校验阻断（沿用 ADR-036 无兜底语义：仅重生成，不因此抛错改回原题）。
 
 ## 评分 Rubric（四维 + 两层评分锚点）
 

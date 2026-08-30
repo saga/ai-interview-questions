@@ -5,6 +5,7 @@ import type { CompleteFn, GeneratedVariant } from '../types';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from '../domain/knowledge';
 import { detectOptionLengthBias } from '../domain/bias';
+import { validateVariant } from '../domain/variant';
 import { extractJSON } from './pi';
 
 // 变体系统提示（稳定前缀，KV-Cache 友好）：分层硬约束（角色→不变量→变化维度→生成规则→
@@ -85,6 +86,15 @@ distractors 应该具有一定迷惑性，但必须存在明确的技术错误�
 - 看似合理但违反题目约束
 避免使用明显荒谬、与主题无关或一眼可排除的错误选项。
 
+【正确答案不变量】
+生成选择题时，先锁定原题正确答案所表达的技术结论。
+新的选项可以完全重写，但必须满足：
+- 原正确结论在新题场景下仍然成立；
+- 正确选项必须表达该结论；
+- 只能有一个选项（多选题则为原正确结论对应的全部选项）成立；
+- 不得因为改变场景而偷偷改变正确答案的适用条件。
+不要通过在选项中重复关键词来“保持知识点”；必须保持实际考察的技术结论。
+
 【抗暗示】
 不要通过形式特征泄露答案。
 - 各选项应具有相近的表达完整度和细节程度。
@@ -143,21 +153,15 @@ interface RawVariant {
   explanation?: string;
 }
 
-interface RawVariant {
-  question?: string;
-  options?: string[];
-  answer?: number[];
-  explanation?: string;
-}
-
 function buildUser(q: Question): string {
-  const contract = {
+  const contract: Record<string, unknown> = {
     topic: q.topic,
     tags: q.tags,
     requiredConcepts: requiredPointsFor(q) ?? [],
     difficulty: q.difficulty,
     format: q.formats.choice ? (q.formats.choice.type === 'single' ? 'single' : 'multiple') : 'open',
   };
+  if (q.angle) contract.angle = q.angle;
 
   const original = {
     question: q.question,
@@ -167,6 +171,10 @@ function buildUser(q: Question): string {
     referenceAnswer: q.formats.open?.referenceAnswer,
   };
 
+  const angleHint = q.angle
+    ? `原题角度为 ${q.angle}，变体应尽量选择一个不同但相关的角度（definition/fundamental/mechanism/comparison/calculation/tradeoff/scenario/debugging/design/system-design），不要为换角度引入新的核心知识；若无合适替代角度则保持原角度但明显改变场景或问题组织方式。`
+    : '变体应尽量改变考察角度或工程场景，但不得引入新的核心知识。';
+
   return `【知识契约】
 ${JSON.stringify(contract, null, 2)}
 
@@ -175,7 +183,7 @@ ${JSON.stringify(original, null, 2)}
 
 【变体目标】
 生成与原题实质不同的变体。
-优先改变认知角度或工程场景，但不得改变知识契约。
+${angleHint}
 
 要求：
 - 必须保持 requiredConcepts 被实际考察（通过推理 / 判断，而非仅在题干中提及）；
@@ -189,9 +197,10 @@ ${JSON.stringify(original, null, 2)}
 按 [JSON 输出契约] 输出。`;
 }
 
-function toGeneratedVariant(q: Question, out: RawVariant): GeneratedVariant {
+function toGeneratedVariant(_q: Question, out: RawVariant): GeneratedVariant {
   return {
-    question: out.question ?? q.question,
+    // 不再静默回退原题题干：缺失的 question 由 validateVariant 显式拒绝
+    question: out.question ?? '',
     options: out.options,
     answer: out.answer,
     explanation: out.explanation,
@@ -201,7 +210,26 @@ function toGeneratedVariant(q: Question, out: RawVariant): GeneratedVariant {
 /** 生成变体候选；输出包含题干/选项/答案/解析（后三者仅选择题需要）。 */
 export async function generateVariant(q: Question, complete: CompleteFn, systemPrompt = VARIANT_SYSTEM): Promise<GeneratedVariant> {
   const user = buildUser(q);
-  const out = extractJSON<RawVariant>(await complete(systemPrompt, user));
+
+  // 首次生成
+  let out = extractJSON<RawVariant>(await complete(systemPrompt, user));
+  let candidate = toGeneratedVariant(q, out);
+  let check = validateVariant(q, candidate);
+
+  // P0-1：validateVariant 真正成为 gate —— 首次校验失败则一次性重试
+  if (!check.ok) {
+    const retryUser =
+      user + `\n\n【修正】上一版变体未通过校验：${check.reason}，请重新生成并确保满足所有硬约束（题干自包含、选项/答案合法、topic/required 证据保留、难度与题型不变）。`;
+    const fixedRaw = extractJSON<RawVariant>(await complete(systemPrompt, retryUser));
+    const fixedCandidate = toGeneratedVariant(q, fixedRaw);
+    const fixedCheck = validateVariant(q, fixedCandidate);
+    if (!fixedCheck.ok) {
+      throw new Error(fixedCheck.reason ?? check.reason ?? '变体校验未通过');
+    }
+    out = fixedRaw;
+    candidate = fixedCandidate;
+    check = fixedCheck;
+  }
 
   // 抗暗示（anti-cueing）自愈：若 LLM 生成的选项存在长度泄题，一次性重试修正，
   // 避免把「正确项明显更长 / 干扰项过短」的偏差写进变体（traditional 启发式 + prompt 微调）。
@@ -215,7 +243,14 @@ export async function generateVariant(q: Question, complete: CompleteFn, systemP
       '\n\n【修正】上一版选项中存在长度泄题（正确项明显长于干扰项，或某干扰项过短），' +
       '请重新生成：确保各选项篇幅长度与工程细节丰富度均衡，不要通过长度暗示正确答案。';
     const fixed = extractJSON<RawVariant>(await complete(systemPrompt, retryUser));
-    return toGeneratedVariant(q, fixed);
+    const fixedCandidate = toGeneratedVariant(q, fixed);
+    // P0-2：retry 后再次 validate，避免绕过 domain gate
+    const fixedCheck = validateVariant(q, fixedCandidate);
+    if (!fixedCheck.ok) {
+      // 修正版未通过校验则保留首版已校验的候选
+      return candidate;
+    }
+    return fixedCandidate;
   }
-  return toGeneratedVariant(q, out);
+  return candidate;
 }

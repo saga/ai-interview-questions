@@ -33,7 +33,7 @@ vi.mock('../ai/provider', () => ({
       ? {
           name: 'mock',
           generateVariant: vi.fn(async (q: Question) =>
-            q.id === 'bad-variant' ? { question: '' } : { question: '变体题干' },
+            q.id === 'bad-variant' ? { question: '' } : { question: `${q.topic} 变体题干` },
           ),
           evaluateOpenAnswer,
         }
@@ -172,7 +172,7 @@ describe('buildSession 组卷与变体处理', () => {
   it('useAI=true 时生成变体快照（题干替换），答案数据不动；单个变体校验失败时回退原题而非整场中止', async () => {
     const goodBank = { categories: ['x'], questions: [{ ...choiceQ }] };
     const session = await buildSession(goodBank, { ...def(true, ['choice']) }, cfg);
-    expect(session.questions[0].question.question).toBe('变体题干');
+    expect(session.questions[0].question.question).toBe(`${choiceQ.topic} 变体题干`);
     expect(session.questions[0].question.formats.choice).toEqual(choiceQ.formats.choice);
 
     const badBank = {

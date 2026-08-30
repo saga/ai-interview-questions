@@ -4,13 +4,63 @@
 
 import type { GeneratedVariant, VariantCandidate } from '../types';
 import type { Question } from '../schemas/question';
+import { requiredPointsFor } from './knowledge';
+import * as fuzz from 'fuzzball';
 
 export interface VariantCheck {
   ok: boolean;
   reason?: string;
+  warning?: string;
 }
 
-const FORBIDDEN_REFERENCES = ['原题', '上述', '本文', '该方案', '原文章', '原方案'];
+const FORBIDDEN_REFERENCES = ['原题', '上述', '下文', '本文', '原文章', '原方案', '该方案', '前文', '题目中', '题干中'];
+
+function normalizeConcept(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[-_/]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function hasConceptEvidence(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
+  const required = requiredPointsFor(canonical) ?? [];
+  const text = [v.question ?? '', ...(v.options ?? []), v.explanation ?? ''].join(' ').toLowerCase();
+  const anchors = [canonical.topic, ...canonical.tags, ...required].map(normalizeConcept).filter(Boolean);
+  if (anchors.length === 0) return true;
+  // 极保守：只要任一 anchor 的任一 token 在文本中出现即视为有证据
+  // anchor 可能是长句（required），需拆 token 后匹配，避免整句匹配永远不命中
+  for (const anchor of anchors) {
+    if (text.includes(anchor)) return true;
+    const tokens = anchor
+      .split(/[\s，,。；;、\/:：]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 2);
+    for (const tok of tokens) {
+      if (text.includes(tok)) return true;
+      // 英文 topic/tag 可能为 kebab-case，拆分后单 token 也需匹配（如 multi-agent → multi / agent）
+      const subTokens = tok.split(/[-_]+/).filter((s) => s.length >= 2);
+      for (const sub of subTokens) {
+        if (text.includes(sub)) return true;
+      }
+    }
+  }
+  // 二次兜底：fuzzball 模糊匹配（浏览器纯 JS，无后端），处理词序/形态差异
+  // 例如 required "batch statistics" vs 变体 "statistics computed across the batch" → token_set_ratio 100
+  // 阈值取 75（token_set）/ 80（partial），兼顾形态变化（normalization/normalized）与避免漂移误判
+  for (const anchor of anchors) {
+    if (anchor.length < 3) continue;
+    try {
+      const s1 = fuzz.token_set_ratio(anchor, text);
+      if (s1 >= 75) return true;
+      const s2 = fuzz.partial_ratio(anchor, text);
+      if (s2 >= 80) return true;
+    } catch {
+      // fuzzball 异常时忽略，退化为精确匹配
+    }
+  }
+  return false;
+}
 
 function hasDuplicateOptions(options: string[]): boolean {
   const seen = new Set<string>();
@@ -71,7 +121,11 @@ export function validateVariant(canonical: Question, v: VariantCandidate | Gener
     }
   }
 
-  // 语义：requiredConcepts 的浅校验仅作提示，不阻断（避免测试短文本误伤）；真正的语义漂移由人工/覆盖率保障
+  // 语义：极保守的 concept evidence 检查——仅当 topic/tags/required 的任何明显证据都未出现时才拒绝
+  // 避免对 required 全量匹配的误伤（单缺失不拒）；该条件非常保守，命中则大概率已语义漂移
+  if (!hasConceptEvidence(canonical, v)) {
+    return { ok: false, reason: '变体未发现 canonical topic / required concept 的明显证据，疑似语义漂移' };
+  }
 
   return { ok: true };
 }

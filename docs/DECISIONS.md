@@ -2,6 +2,19 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-047 · 变体链路收敛：validateVariant 真正入链 + 保守证据检查（不引入 embedding）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：ADR-036 要求“LLM 输出 → domain 校验 → GeneratedVariant”，但 `ai/variant.generateVariant` 实际为 `extractJSON → detectOptionLengthBias → return`，未调用 `validateVariant`；`toGeneratedVariant` 对缺失 `question` 静默回退；retry 后未再校验；`validateVariant` 对 required 仅作提示不阻断，FORBIDDEN 指代覆盖不全；`angle` 已是覆盖矩阵主干却未进入变体契约。
+- 决策（收敛 5 项，不引入 embedding/LLM judge/semantic classifier）：
+  1. `generateVariant` 内联 `validateVariant` gate：首版失败带原因重试一次，仍失败抛错由 `finalizeQuestion` 统一回退。
+  2. 长度泄题重试后再次 `validateVariant`，失败保留首版。
+  3. `toGeneratedVariant` 移除 `out.question ?? q.question` 静默回退，缺失题干由校验显式拒绝。
+  4. `validateVariant` 新增极保守 concept evidence（topic/tags/required 任一 token 命中即过，拆 token 避免整句误伤，全部丢失才拒）与 `FORBIDDEN_REFERENCES` 扩至 10 项（新增 前文/下文/题目中/题干中）。
+  5. `buildUser` 将 `q.angle` 注入契约，`VARIANT_SYSTEM` 新增【正确答案不变量】（先锁原结论再重构选项）。
+- 不做：embedding runtime validator、二次 LLM judge、自动 angle planner、concept graph 大对象体系——当前缺口仅需确定性检查，embedding 维持离线质量信号定位（见 README）。
+- 验证：`npm run test` 356 passed，`tsc -b && vite build` 通过；`src/domain/variant.test.ts` 与 `src/ai/variant.test.ts` 新增漂移/重试用例。
+
 ## ADR-046 · 认证考纲解耦与纯净能力域（Domain → Topic → KnowledgeNode）
 
 - 状态：已采纳 · 2026-08-29

@@ -62,7 +62,7 @@ function fakeOpenResult(overall = 50): EvaluationResult {
 function makeProvider(): LLMProvider & { evaluateOpenAnswer: ReturnType<typeof vi.fn> } {
   return {
     name: 'fake',
-    generateVariant: vi.fn(async () => ({ question: 'x' })),
+    generateVariant: vi.fn(async (q: Question) => ({ question: `${q.topic} 变体题干` })),
     evaluateOpenAnswer: vi.fn(async () => fakeOpenResult(50)),
   };
 }
@@ -109,7 +109,7 @@ describe('createAgentTools', () => {
     expect(d.session.currentQuestion?.question.id).toBe('q-choice-1');
     expect(d.session.currentQuestion?.format).toBe('choice');
     expect(d.provider.generateVariant).toHaveBeenCalledWith(expect.objectContaining({ id: 'q-choice-1' }));
-    expect(d.session.currentQuestion?.question.question).toBe('x');
+    expect(d.session.currentQuestion?.question.question).toBe('attention 变体题干');
     expect((r.details as { id: string }).id).toBe('q-choice-1');
   });
 

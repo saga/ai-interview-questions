@@ -1,6 +1,18 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-30 · 变体链路收敛修复：validateVariant 真正成为 gate + 保守漂移检查 + angle 入契约
+
+- **问题**：`ai/variant.generateVariant` 此前未调用 `domain/variant.validateVariant`，而是直连 `extractJSON → detectOptionLengthBias → return`，导致 ADR-036 的“LLM 输出必须经 domain 校验”未在真实链路兑现；`toGeneratedVariant` 对缺失 `question` 静默回退原题掩盖模型失败；retry 后未再校验；FORBIDDEN 指代与 prompt 对“答案适用条件不变量”表述偏弱；已有的 `angle` 未进入 Knowledge Contract。
+- **修复（5 项收敛，不引入 embedding/LLM judge）**：
+  1. `ai/variant.generateVariant` 真正接入 `validateVariant`：首版失败则带校验原因一次性重试，仍失败抛错由 `application/sessionEvaluator.finalizeQuestion` 统一回退原题。
+  2. `detectOptionLengthBias` 的一次性重试后**再次 `validateVariant`**，失败保留首版已校验候选，避免 retry 绕过 gate。
+  3. `toGeneratedVariant` 移除 `out.question ?? q.question` 静默回退，缺失题干由校验显式拒绝。
+  4. `domain/variant.validateVariant` 新增极保守 concept evidence 检查（topic/tags/required 任一 token 命中即放行，拆 token 匹配避免整句误伤，全部丢失才拒）与 expanded `FORBIDDEN_REFERENCES`（新增 前文/下文/题目中/题干中）。
+  5. `ai/variant.buildUser` 将 `q.angle` 注入契约并加角度提示；`VARIANT_SYSTEM` 新增【正确答案不变量】段（先锁定原正确结论再重构选项，不得因换场景偷改适用条件）。
+- **文档**：`docs/ARCHITECTURE.md` LLM 变体安全小节图示与校验描述同步上述链路；`src/domain/variant.test.ts` 与 `src/ai/variant.test.ts` 同步新门禁与证据逻辑。
+- **验证**：`npm run test` 356 passed（含新增概念漂移与重试再校验用例），`npm run build`（`tsc -b`）通过。
+
 ## 2026-08-29 · O'Reilly Radar 高价值技术主题题库补充
 
 - 基于 O'Reilly Radar 首页筛选并阅读全文，新增 20 道题，来源为 [The Identity Crisis No One Planned For](https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/)、[Effective Patterns for Advanced MCP Usage](https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/)、[When Smaller Models Win](https://www.oreilly.com/radar/when-smaller-models-win/) 和 [When Guardrails Go Wrong](https://www.oreilly.com/radar/when-guardrails-go-wrong/)。
