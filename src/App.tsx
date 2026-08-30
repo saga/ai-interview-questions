@@ -16,6 +16,8 @@ import { collectTopicRefs } from './domain/learner';
 import { computeCoverage, suggestNextTopics } from './domain/learner';
 import { emptyProfile } from './domain/learner';
 import { useTrainingSession, hasAnswerValue, fmt } from './hooks/useTrainingSession';
+import { useAgentInterview } from './hooks/useAgentInterview';
+import { useSettingsDraft } from './hooks/useSettingsDraft';
 import SettingsPanel from './components/settings/SettingsPanel';
 import TrainingHome from './components/home/TrainingHome';
 import ProgressPage from './components/progress/ProgressPage';
@@ -96,6 +98,10 @@ export default function App() {
     handleAgentComplete,
     handleRestart,
   } = useTrainingSession(message, () => goPage('train'));
+  // Agent 面试会话状态提升到 App 层（与训练同思路），切 tab（如去设置页）时不丢失。
+  const agent = useAgentInterview(config, profile ?? emptyProfile(), handleAgentComplete, message);
+  // 设置页未保存草稿提升到 App 层（同上思路），切到其它 tab 再切回时不丢编辑态。
+  const settings = useSettingsDraft(config, handleSaveConfig, message);
   const challengerProvider = createLLMProvider(config);
 
   // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
@@ -145,15 +151,14 @@ export default function App() {
         </Space>
       </Layout.Header>
 
-      {phase === 'home' && (
-        <Menu
-          mode="horizontal"
-          selectedKeys={[page]}
-          items={NAV_ITEMS}
-          onClick={(e) => goPage(e.key as Page)}
-          style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
-        />
-      )}
+      {/* 导航菜单常驻：进入训练/面试后也允许切换 tab 再切回，进行中的会话不会丢失 */}
+      <Menu
+        mode="horizontal"
+        selectedKeys={[page]}
+        items={NAV_ITEMS}
+        onClick={(e) => goPage(e.key as Page)}
+        style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
+      />
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
         <Layout.Content
@@ -207,24 +212,22 @@ export default function App() {
 
                 {phase === 'home' && page === 'settings' && (
                   <SettingsPanel
-                    config={config}
-                    onSave={handleSaveConfig}
                     onResetLearner={resetLearnerProfile}
+                    {...settings}
                   />
                 )}
 
                 {phase === 'home' && page === 'agent' && (
                   <AgentInterviewPage
                     config={config}
-                      challengerProvider={challengerProvider}
-                    profile={displayedProfile}
-                    onComplete={handleAgentComplete}
+                    challengerProvider={challengerProvider}
                     onGoSettings={() => goPage('settings')}
                     onGoProgress={() => goPage('progress')}
+                    {...agent}
                   />
                 )}
 
-                {phase === 'quiz' && session?.definition.adaptive && questions[adaptiveCursor] && (
+                {phase === 'quiz' && page === 'train' && session?.definition.adaptive && questions[adaptiveCursor] && (
                   <div style={{ maxWidth: 820, margin: '0 auto' }}>
                     <AdaptiveQuiz
                       sq={questions[adaptiveCursor]}
@@ -246,7 +249,7 @@ export default function App() {
                   </div>
                 )}
 
-                {phase === 'quiz' && session?.definition.adaptive && !questions[adaptiveCursor] && (
+                {phase === 'quiz' && page === 'train' && session?.definition.adaptive && !questions[adaptiveCursor] && (
                   <div style={{ maxWidth: 820, margin: '0 auto' }}>
                     <Alert
                       type="success"
@@ -262,7 +265,7 @@ export default function App() {
                   </div>
                 )}
 
-                {phase === 'quiz' && !(session?.definition.adaptive && questions[adaptiveCursor]) && !(session?.definition.adaptive && !questions[adaptiveCursor]) && (
+                {phase === 'quiz' && page === 'train' && !(session?.definition.adaptive && questions[adaptiveCursor]) && !(session?.definition.adaptive && !questions[adaptiveCursor]) && (
                   <div>
                     <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
                       <Tag color="blue">共 {questions.length} 题</Tag>
@@ -294,7 +297,7 @@ export default function App() {
                   </div>
                 )}
 
-                {phase === 'result' && (
+                {phase === 'result' && page === 'train' && (
                   <ResultPanel
                     questions={questions}
                     answers={answers}

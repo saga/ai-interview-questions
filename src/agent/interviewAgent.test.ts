@@ -113,14 +113,12 @@ function fakeProvider(): LLMProvider {
 
 const VALID_ENTRY: ProviderEntry = { id: 'local', model: 'fake', apiKey: '' };
 
-// 7 步脚本：选q1 → 问q1 → 评q1 → 选q2(追问) → 问q2 → 评q2 → 结束
+// 脚本化响应：开场选 q1 并提问（2 条）；随后选择题回合走确定性快路径（不消费 LLM）；
+// 开放题回合由 LLM 评估并结束（2 条）。共 4 条，与确定性选择题快路径对齐。
 function scriptedResponses(): AssistantMessage[] {
   return [
     makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
     makeMsg([{ type: 'text', text: '请回答：Transformer 中 multi-head attention 的作用？' }], 'stop'),
-    makeMsg([{ type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
-    makeMsg([{ type: 'toolCall', id: 'c3', name: 'getQuestion', arguments: { id: 'q-open-1' } }], 'toolUse'),
-    makeMsg([{ type: 'text', text: '请回答：RAG 与 fine-tuning 的区别？' }], 'stop'),
     makeMsg([{ type: 'toolCall', id: 'c4', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
     makeMsg([{ type: 'toolCall', id: 'c5', name: 'finishInterview', arguments: {} }], 'toolUse'),
   ];

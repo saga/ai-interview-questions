@@ -66,7 +66,10 @@ export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any>
     //   · GitHub Pages：无服务端，cloudflare provider 不可用（见 DEPLOYMENT.md）
     // 必须保留「绝对 URL」：pi-ai 底层用 OpenAI SDK，会对 baseUrl 执行 new URL()，
     // 相对路径会抛 "Failed to construct 'URL': Invalid URL"，故前缀用 location.origin 拼成同源绝对地址。
-    const origin = typeof location !== 'undefined' ? location.origin : '';
+    // 注意：不要直接引用 DOM 全局 `location`——本文件被 scripts/fix-bias.ts（Node 端构建，无 DOM lib）
+    // 引用，直接写 location 会让 node 项目编译失败。改为从 globalThis 结构性读取，两种编译环境都通过。
+    const g = globalThis as unknown as { location?: { origin: string } };
+    const origin = g.location?.origin ?? '';
     const proxyBase = model.baseUrl.replace('https://api.cloudflare.com', `${origin}/api/ai`);
     return { ...model, baseUrl: proxyBase };
   }

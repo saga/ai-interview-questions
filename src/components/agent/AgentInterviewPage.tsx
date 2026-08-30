@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { App as AntdApp, Alert, Button, Card, Divider, Space, Spin, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Divider, Space, Spin, Tag, Typography } from 'antd';
 import {
   PlayCircleOutlined,
   RobotOutlined,
@@ -8,72 +7,49 @@ import {
   ToolOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import type { AnswerValue } from '../../types';
-import type { LLMProvider } from '../../types';
+import type { AnswerValue, LLMProvider } from '../../types';
 import type { AIConfig } from '../../schemas/ai-config';
-import type { LearnerProfile, SessionRecord } from '../../schemas/learner';
-import type { SessionQuestion } from '../../schemas/session';
-import { emptyAnswer } from '../../domain/quiz';
-import { questionBank as bank } from '../../data/questionBank';
-import { isConfigValid, isEntryValid, createLLMProvider } from '../../ai/provider';
-import {
-  createAgentSession,
-  sessionRecordFromAgent,
-  averageOverall,
-  type InterviewAgentSession,
-} from '../../agent/types';
-import { createInterviewAgent } from '../../agent/interviewAgent';
-import type { InterviewAgentHandle } from '../../agent/interviewAgent';
+import { isConfigValid } from '../../ai/provider';
+import type { AgentInterviewState, TranscriptItem } from '../../hooks/useAgentInterview';
 import QuestionCard from '../quiz/QuestionCard';
 
-interface Props {
+interface Props extends AgentInterviewState {
   config: AIConfig;
   challengerProvider?: LLMProvider | null;
-  profile: LearnerProfile;
-  /** Agent 面试结束后，由 App 负责落库（updateLearner + saveLearner）。 */
-  onComplete: (record: SessionRecord) => void;
   onGoSettings: () => void;
   onGoProgress: () => void;
 }
 
-type PagePhase = 'intro' | 'running' | 'done';
-
-type TranscriptItem =
+/**
+ * 把 transcript 中「连续同名、同状态的工具调用」合并为一条带 ×N 计数的记录，
+ * 避免 agent 每轮都 searchQuestions 时刷出一长串内容相同的「搜索题目」噪声。
+ * agent 文本行保持原样。
+ */
+type DisplayItem =
   | { kind: 'agent'; text: string }
-  | { kind: 'tool'; tool: string; label: string; ok: boolean; detail?: string };
+  | { kind: 'tool'; tool: string; label: string; ok: boolean; detail?: string; count: number };
 
-const TOOL_LABELS: Record<string, string> = {
-  searchQuestions: '搜索题目',
-  getQuestion: '选定题目',
-  evaluateAnswer: '评估作答',
-  getUserWeaknesses: '读取薄弱主题',
-  finishInterview: '结束面试',
-};
-
-const OPENING_INSTRUCTION = `你是一位资深 AI 技术面试官，主持一次约 6–10 题的模拟面试。流程：
-1) 先调用 getUserWeaknesses 了解我的薄弱主题；
-2) 用 searchQuestions 在相关主题找候选题，再用 getQuestion 选定一道题呈现给我；
-3) 等我作答后，调用 evaluateAnswer 评分；
-4) 根据评分决定下一步：答得好就换方向或提高难度，答不好就追问或回退前置知识；当充分考察或达到约 8 题时调用 finishInterview 结束。
-注意：你不要自己打分，评分必须走 evaluateAnswer 工具；每次只呈现一道题，等我作答。`;
-
-/** 从一条 assistant message 中抽取纯文本（忽略 toolCall 等内容块）。 */
-function messageText(msg: unknown): string {
-  const m = msg as { content?: Array<{ type: string; text?: string }> } | undefined;
-  if (!m?.content) return '';
-  return m.content.filter((c) => c.type === 'text').map((c) => c.text ?? '').join('');
-}
-
-/** 为工具调用结果生成一行简短可读摘要（用于 transcript）。 */
-function toolDetail(event: { result?: { details?: unknown } }): string | undefined {
-  const d = event.result?.details;
-  if (!d || typeof d !== 'object') return undefined;
-  const o = d as Record<string, unknown>;
-  if (typeof o.overall === 'number') return `综合 ${o.overall} 分`;
-  if (typeof o.questionsAsked === 'number') return `已评 ${o.questionsAsked} 题`;
-  if (typeof o.count === 'number') return `${o.count} 道候选`;
-  if (Array.isArray(o.weakTopics)) return `薄弱：${(o.weakTopics as string[]).join('、') || '（暂无）'}`;
-  return undefined;
+function collapseToolRuns(items: TranscriptItem[]): DisplayItem[] {
+  const out: DisplayItem[] = [];
+  for (const it of items) {
+    if (it.kind === 'agent') {
+      out.push({ kind: 'agent', text: it.text });
+      continue;
+    }
+    const last = out[out.length - 1];
+    if (
+      last &&
+      last.kind === 'tool' &&
+      last.tool === it.tool &&
+      last.ok === it.ok &&
+      last.detail === it.detail
+    ) {
+      last.count += 1;
+      continue;
+    }
+    out.push({ kind: 'tool', tool: it.tool, label: it.label, ok: it.ok, detail: it.detail, count: 1 });
+  }
+  return out;
 }
 
 function hasAnswer(v?: AnswerValue): boolean {
@@ -81,188 +57,29 @@ function hasAnswer(v?: AnswerValue): boolean {
   return typeof v === 'string' ? v.trim().length > 0 : v.length > 0;
 }
 
-/** Agent 面试页：用 pi-agent-core 跑「选题/追问/结束」的自主决策循环，复用现有题库、评分与 Learner 管线。 */
-export default function AgentInterviewPage({ config, challengerProvider, profile, onComplete, onGoSettings, onGoProgress }: Props) {
-  const { message } = AntdApp.useApp();
+/** Agent 面试页（纯展示）：会话状态由 App 层 useAgentInterview 持有，切 tab 不丢失。 */
+export default function AgentInterviewPage({
+  config,
+  challengerProvider,
+  onGoSettings,
+  onGoProgress,
+  phase,
+  currentQuestion,
+  answer,
+  questions,
+  transcript,
+  busy,
+  submitting,
+  summary,
+  error,
+  evaluatedCount,
+  setAnswer,
+  start,
+  submit,
+  endEarly,
+  restart,
+}: Props) {
   const configReady = isConfigValid(config);
-
-  const [phase, setPhase] = useState<PagePhase>('intro');
-  const [currentQuestion, setCurrentQuestion] = useState<SessionQuestion | null>(null);
-  const [answer, setAnswer] = useState<AnswerValue>([]);
-  const [questions, setQuestions] = useState<SessionQuestion[]>([]);
-  const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [summary, setSummary] = useState<{ asked: number; overall: number } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleRef = useRef<InterviewAgentHandle | null>(null);
-  const sessionRef = useRef<InterviewAgentSession | null>(null);
-  const questionsRef = useRef<SessionQuestion[]>([]);
-  const pendingTextRef = useRef('');
-  // 同步守卫：submitAnswer 是异步长任务，同一 tick 内的重复点击需即时拦截，避免触发"already processing"
-  const submittingRef = useRef(false);
-
-  const syncQuestions = useCallback((q: SessionQuestion) => {
-    setQuestions((prev) => {
-      if (prev.some((x) => x.question.id === q.question.id)) return prev;
-      const next = [...prev, q];
-      questionsRef.current = next;
-      return next;
-    });
-  }, []);
-
-  const finalize = useCallback(() => {
-    const session = sessionRef.current;
-    if (!session) return;
-    handleRef.current?.abort();
-    const asked = Object.keys(session.evaluations).length;
-    if (asked === 0) {
-      setPhase('done');
-      setSummary({ asked: 0, overall: 0 });
-      return;
-    }
-    const durationSec = Math.round((Date.now() - session.startedAt) / 1000);
-    const record = sessionRecordFromAgent(session, questionsRef.current, 'Agent 面试', durationSec);
-    onComplete(record);
-    setSummary({ asked, overall: averageOverall(session) });
-    setPhase('done');
-  }, [onComplete]);
-
-  const start = async () => {
-    setError(null);
-    const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
-    const provider = createLLMProvider(config);
-    if (!entry || !provider) {
-      setError('未找到可用的 AI 引擎配置，请先在设置中配置。');
-      return;
-    }
-    const session = createAgentSession();
-    sessionRef.current = session;
-    setQuestions([]);
-    questionsRef.current = [];
-    pendingTextRef.current = '';
-    setTranscript([]);
-    setCurrentQuestion(null);
-    setAnswer([]);
-
-    const handle = createInterviewAgent({
-      session,
-      profile,
-      entry,
-      bank: bank.questions.filter((question) => !(config.disabledCategories ?? []).includes(question.category)),
-      provider,
-      generateOpenQuestions: config.generateOpenQuestions,
-      masteryThreshold: config.masteryThreshold,
-      systemPrompt: config.prompts?.agentSystem,
-      handlers: {
-        onQuestion: (q) => {
-          if (!q) {
-            // 修复 F：getQuestion 未交付题（id 错/已结束）不应静默吞掉，至少留痕便于排查
-            console.warn('[Agent] getQuestion 未交付题目（id 错误或 run 已结束）');
-            return;
-          }
-          setCurrentQuestion(q);
-          setAnswer(emptyAnswer(q));
-          syncQuestions(q);
-        },
-        onStatus: (status) => {
-          if (status === 'finished') finalize();
-        },
-        onError: (msg, fatal) => {
-          // 修复 B：流式错误/自愈提示——致命则阻塞报错，可恢复则轻量告警（兜底已接续出题）
-          if (fatal) setError(msg);
-          else message.warning(msg);
-        },
-        onEvent: (event: unknown) => {
-          const e = event as { type: string; message?: unknown; toolName?: string; isError?: boolean; result?: { details?: unknown } };
-          switch (e.type) {
-            case 'agent_start':
-              setBusy(true);
-              break;
-            case 'turn_end':
-            case 'agent_end': {
-              setBusy(false);
-              const text = pendingTextRef.current;
-              pendingTextRef.current = '';
-              if (text.trim()) setTranscript((prev) => [...prev, { kind: 'agent', text }]);
-              break;
-            }
-            case 'message_update':
-              pendingTextRef.current = messageText(e.message);
-              break;
-            case 'tool_execution_end': {
-              const label = TOOL_LABELS[e.toolName ?? ''] ?? (e.toolName ?? '工具');
-              const detail = toolDetail(e);
-              // 没有薄弱主题时，这条调用只返回固定占位文本，不提供新的决策信息。
-              if (e.toolName === 'getUserWeaknesses' && detail === '薄弱：（暂无）' && !e.isError) return;
-              setTranscript((prev) => [
-                ...prev,
-                { kind: 'tool', tool: e.toolName ?? '', label, ok: !e.isError, detail },
-              ]);
-              break;
-            }
-            default:
-              break;
-          }
-        },
-      },
-    });
-    handleRef.current = handle;
-    setPhase('running');
-    try {
-      await handle.start(OPENING_INSTRUCTION);
-    } catch (err) {
-      setBusy(false);
-      setError('面试启动失败：' + (err as Error).message);
-    }
-  };
-
-  const submit = async () => {
-    if (submittingRef.current) return; // 同步拦截：提交进行中不允许重复点击
-    if (!currentQuestion) return;
-    if (!hasAnswer(answer)) {
-      message.warning('请先作答再提交');
-      return;
-    }
-    submittingRef.current = true;
-    setSubmitting(true);
-    setBusy(true); // 立即禁用按钮 + 显示遮罩，避免 LLM 响应前反复点击
-    try {
-      await handleRef.current?.submitAnswer(answer);
-    } catch (err) {
-      setError('提交失败：' + (err as Error).message);
-    } finally {
-      submittingRef.current = false;
-      setSubmitting(false);
-      setBusy(false);
-    }
-  };
-
-  const endEarly = () => {
-    if (Object.keys(sessionRef.current?.evaluations ?? {}).length === 0) {
-      message.info('还没有可保存的作答');
-      return;
-    }
-    finalize();
-  };
-
-  const restart = () => {
-    handleRef.current?.dispose();
-    handleRef.current = null;
-    sessionRef.current = null;
-    setPhase('intro');
-    setCurrentQuestion(null);
-    setAnswer([]);
-    setQuestions([]);
-    questionsRef.current = [];
-    setTranscript([]);
-    setSummary(null);
-    setError(null);
-  };
-
-  // 卸载时清理 Agent 订阅与运行。
-  useEffect(() => () => handleRef.current?.dispose(), []);
 
   // ── 开场介绍 ──
   if (phase === 'intro') {
@@ -331,7 +148,7 @@ export default function AgentInterviewPage({ config, challengerProvider, profile
       <div style={{ maxWidth: 820, margin: '0 auto' }}>
         <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 12 }} wrap>
           <Tag color="blue">
-            已考察 {Object.keys(sessionRef.current?.evaluations ?? {}).length} 题
+            已考察 {evaluatedCount} 题
           </Tag>
           {busy || submitting ? (
             <Tag color="processing">
@@ -394,27 +211,52 @@ export default function AgentInterviewPage({ config, challengerProvider, profile
 
         {transcript.length > 0 && (
           <Card size="small" style={{ marginTop: 20 }} title="面试官的推理与决策">
-            <div style={{ maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {transcript.map((item, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  {item.kind === 'agent' ? (
-                    <>
-                      <RobotOutlined style={{ color: '#1677ff', marginTop: 4 }} />
+            <div style={{ maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {collapseToolRuns(transcript).map((item, i) =>
+                item.kind === 'agent' ? (
+                  <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: '#e6f4ff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <RobotOutlined style={{ color: '#1677ff', fontSize: 15 }} />
+                    </div>
+                    <div
+                      style={{
+                        flex: 1,
+                        background: '#f6f8fa',
+                        borderRadius: 12,
+                        padding: '10px 14px',
+                        border: '1px solid #e5e7eb',
+                      }}
+                    >
                       <Typography.Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
                         {item.text}
                       </Typography.Paragraph>
-                    </>
-                  ) : (
-                    <>
-                      <ToolOutlined style={{ color: item.ok ? '#52c41a' : '#cf1322', marginTop: 4 }} />
-                      <Typography.Text type={item.ok ? undefined : 'danger'}>
-                        {item.label}
-                        {item.detail ? ` · ${item.detail}` : ''}
-                      </Typography.Text>
-                    </>
-                  )}
-                </div>
-              ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', paddingLeft: 42 }}>
+                    <Tag
+                      icon={<ToolOutlined />}
+                      color={item.ok ? 'success' : 'error'}
+                      style={{ margin: 0, borderRadius: 10 }}
+                    >
+                      {item.label}
+                      {item.count > 1 ? ` ×${item.count}` : ''}
+                      {item.count === 1 && item.detail ? ` · ${item.detail}` : ''}
+                    </Tag>
+                  </div>
+                )
+              )}
             </div>
           </Card>
         )}

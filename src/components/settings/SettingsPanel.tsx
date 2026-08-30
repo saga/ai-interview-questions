@@ -1,16 +1,17 @@
 import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Select, Switch, Tabs, Tag, Typography, Space, App as AntdApp } from 'antd';
 import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { AIConfig } from '../../schemas/ai-config';
 import { chromeAvailability, type ChromeAvailability } from '../../ai/chrome';
 import { DEFAULT_LOCAL_BASE_URL } from '../../ai/local';
-import { DEFAULT_CONFIG, parseConfigJSON, stringifyConfig } from '../../storage/settings';
+import { DEFAULT_CONFIG, stringifyConfig } from '../../storage/settings';
 import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
 import { getErrorLogs, clearErrorLogs, recordLog, type ErrorLogEntry } from '../../storage/db';
 import { resetLearnerData } from '../../storage/learner';
 import { INTERVIEW_AGENT_SYSTEM_PROMPT } from '../../agent/prompt';
 import { EVAL_SYSTEM } from '../../ai/evaluate';
 import { VARIANT_SYSTEM } from '../../ai/variant';
+import type { PromptDraft } from '../../hooks/useSettingsDraft';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
 
@@ -38,22 +39,43 @@ const AVAILABILITY_TEXT: Record<ChromeAvailability, { type: 'success' | 'warning
 };
 
 interface Props {
-  config: AIConfig;
-  onSave: (c: AIConfig) => void;
   /** 重置学习数据后回调，用于父组件把内存中的画像同步回空画像。 */
   onResetLearner?: () => void;
+  // 以下编辑态由 App 层 useSettingsDraft 提升，切 tab 再切回时保留未保存草稿
+  draft: AIConfig;
+  setDraft: Dispatch<SetStateAction<AIConfig>>;
+  text: string;
+  setText: Dispatch<SetStateAction<string>>;
+  promptDraft: PromptDraft;
+  setPromptDraft: Dispatch<SetStateAction<PromptDraft>>;
+  activeTab: string;
+  setActiveTab: Dispatch<SetStateAction<string>>;
+  updateProvider: (index: number, patch: Partial<AIConfig['providers'][number]>) => void;
+  moveProvider: (index: number, direction: -1 | 1) => void;
+  updateProficiency: (key: keyof AIConfig['proficiency'], value: number | null) => void;
+  handleFormSave: () => void;
+  handlePromptSave: () => void;
+  handleSave: () => void;
 }
 
-export default function SettingsPanel({ config, onSave, onResetLearner }: Props) {
+export default function SettingsPanel({
+  onResetLearner,
+  draft,
+  setDraft,
+  text,
+  setText,
+  promptDraft,
+  setPromptDraft,
+  activeTab,
+  setActiveTab,
+  updateProvider,
+  moveProvider,
+  updateProficiency,
+  handleFormSave,
+  handlePromptSave,
+  handleSave,
+}: Props) {
   const { message } = AntdApp.useApp();
-  const [text, setText] = useState(() => stringifyConfig(config));
-  const [draft, setDraft] = useState<AIConfig>(config);
-  const [promptDraft, setPromptDraft] = useState(() => ({
-    agentSystem: config.prompts?.agentSystem ?? INTERVIEW_AGENT_SYSTEM_PROMPT,
-    evaluationSystem: config.prompts?.evaluationSystem ?? EVAL_SYSTEM,
-    variantSystem: config.prompts?.variantSystem ?? VARIANT_SYSTEM,
-  }));
-  const [activeTab, setActiveTab] = useState('settings');
   const [availability, setAvailability] = useState<ChromeAvailability | null>(null);
   const [logs, setLogs] = useState<ErrorLogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -67,16 +89,6 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       setLogsLoading(false);
     }
   };
-
-  useEffect(() => {
-    setDraft(config);
-    setText(stringifyConfig(config));
-    setPromptDraft({
-      agentSystem: config.prompts?.agentSystem ?? INTERVIEW_AGENT_SYSTEM_PROMPT,
-      evaluationSystem: config.prompts?.evaluationSystem ?? EVAL_SYSTEM,
-      variantSystem: config.prompts?.variantSystem ?? VARIANT_SYSTEM,
-    });
-  }, [config]);
 
   // 初始检测 + 轮询：Chrome Prompt API 在模型刚下载完时 often 仍返回 `downloading`，
   // 故状态为 downloading 时每 4s 复查，直到变为 available / unavailable / downloadable 才停。
@@ -131,61 +143,6 @@ export default function SettingsPanel({ config, onSave, onResetLearner }: Props)
       cancelled = true;
     };
   }, []);
-
-  const handleSave = () => {
-    const res = parseConfigJSON(text);
-    if (!res.ok) {
-      message.error(res.error);
-      return;
-    }
-    onSave(res.config);
-    setDraft(res.config);
-  };
-
-  const updateProvider = (index: number, patch: Partial<AIConfig['providers'][number]>) => {
-    setDraft((current) => ({
-      ...current,
-      providers: current.providers.map((provider, i) => (i === index ? { ...provider, ...patch } : provider)),
-    }));
-  };
-
-  const moveProvider = (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= draft.providers.length) return;
-    setDraft((current) => {
-      const providers = [...current.providers];
-      [providers[index], providers[target]] = [providers[target], providers[index]];
-      return { ...current, providers };
-    });
-  };
-
-  const handleFormSave = () => {
-    const next = { ...draft, masteryThreshold: draft.masteryThreshold ?? 75, proficiency: draft.proficiency };
-    setDraft(next);
-    setText(stringifyConfig(next));
-    onSave(next);
-    message.success('设置已保存');
-  };
-
-  const handlePromptSave = () => {
-    const prompts = {
-      agentSystem: promptDraft.agentSystem.trim() || undefined,
-      evaluationSystem: promptDraft.evaluationSystem.trim() || undefined,
-      variantSystem: promptDraft.variantSystem.trim() || undefined,
-    };
-    const next = { ...draft, prompts };
-    setDraft(next);
-    setText(stringifyConfig(next));
-    onSave(next);
-    message.success('提示词已保存');
-  };
-
-  const updateProficiency = (key: keyof AIConfig['proficiency'], value: number | null) => {
-    setDraft((current) => ({
-      ...current,
-      proficiency: { ...current.proficiency, [key]: value ?? current.proficiency[key] },
-    }));
-  };
 
   const visibleLogs = logs.filter((item) => logKind === 'all' || (item.kind ?? 'error') === logKind);
 

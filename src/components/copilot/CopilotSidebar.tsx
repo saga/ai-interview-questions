@@ -64,7 +64,15 @@ async function chatCopilot(
       const models = buildModels(entry);
       const model = getModel(models, entry);
       if (!model) fail(`未找到模型 ${entry.model}`, entryCtx);
-      const msgs = [...history.map((h) => ({ role: h.role, content: h.content })), { role: 'user', content: newContent }] as any;
+      // pi-ai 的 transformMessages / openai-completions 要求消息 content 为「内容块数组」：
+      // assistant 消息若用 string，transformMessages 里 assistantMsg.content.flatMap 会抛
+      // "assistantMsg.content.flatMap is not a function"。历史里的 assistant 回复是 string，
+      // 这里统一规整成 [{ type: 'text', text }] 块数组（user 消息用 string 也兼容，统一更稳妥）。
+      const toBlocks = (c: string) => (c && c.length ? [{ type: 'text', text: c }] : []);
+      const msgs = [
+        ...history.map((h) => ({ role: h.role, content: toBlocks(h.content) })),
+        { role: 'user', content: toBlocks(newContent) },
+      ] as any;
       // pi-ai Context expects { systemPrompt, messages }
       const ctx: any = { systemPrompt: system, messages: msgs.map((m: any) => ({ role: m.role, content: m.content, timestamp: Date.now() })) };
       // 鉴权交给内存 CredentialStore（buildModels 已按 provider 注入 apiKey/accountId）。

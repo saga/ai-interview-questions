@@ -198,6 +198,37 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
   }
 
   /**
+   * 选择题快路径（性能优化，独立于兜底）：选择题判分是确定性的（gradeChoice，不触 LLM/网络），
+   * 且下一题选择由确定性自适应引擎 pickNextAdaptive 承担，因此**完全跳过 LLM 决策循环**——
+   * 用户提交选择题后应瞬时出结果，不应出现「正在检查回答」长时间转圈。
+   * 与 fallbackAdvance 的区别：本路径只处理「当前题为选择题」这一回合，不翻转 usingFallback，
+   * 以免误杀后续开放题的 LLM 评分路径与 Agent 自适应决策。
+   */
+  async function choiceAdvance(answer: AnswerValue): Promise<void> {
+    const sq = session.currentQuestion;
+    if (sq) {
+      const qid = sq.question.id;
+      session.answers[qid] = answer;
+      try {
+        // choice 形态走 gradeChoice（确定性），不触 LLM；即使 provider 无效也不影响
+        session.evaluations[qid] = await evaluateSessionQuestion(sq, answer, provider);
+      } catch {
+        session.evaluations[qid] = null;
+      }
+    }
+    // 确定性交付下一题（或收尾），不设置 usingFallback
+    const askedCount = new Set([...Object.keys(session.answers), ...Object.keys(session.evaluations)]).size;
+    if (askedCount >= MAX_AGENT_QUESTIONS || session.status === 'finished') {
+      handlers?.onStatus?.('finished');
+      return;
+    }
+    if (!fallbackNextQuestion()) {
+      if (Object.keys(session.evaluations).length > 0) handlers?.onStatus?.('finished');
+      else handlers?.onError?.('面试已结束：当前题库没有可考察的题目', true);
+    }
+  }
+
+  /**
    * 在 Agent run 收尾（agent_end）或看门狗触发时，确保「题已交付」：
    * - 当前已有一道待用户作答的题 → 不干预（正常等待作答）；
    * - 否则若仍在题数上限内且有未问题目 → 确定性兜底交付；
@@ -253,6 +284,8 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
   function submitAnswer(answer: AnswerValue): Promise<void> {
     // 兜底模式已接管：不走 agent.continue()，自驱评分与下一题（修复 C）
     if (usingFallback) return fallbackAdvance(answer);
+    // 选择题：确定性判分 + 确定性选题，跳过 LLM 循环（应非常快，避免「正在检查回答」长时间转圈）
+    if (session.currentQuestion?.format === 'choice') return choiceAdvance(answer);
     const qid = session.currentQuestion?.question.id;
     if (qid !== undefined) session.answers[qid] = answer;
     const msg: UserMessage = { role: 'user', content: typeof answer === 'string' ? answer : JSON.stringify(answer), timestamp: Date.now() };
