@@ -126,21 +126,71 @@ function contentToText(content: string | Array<{ type: string; text?: string }>)
     .trim();
 }
 
-/** 把可用工具渲染成「签名 + 语义描述」，描述取自 tools.ts 的单一信息源。
+/** 参数 schema 的最小可用子集（JSON Schema / TypeBox 序列化后的形状，字段全可选）。 */
+interface Schemaish {
+  type?: string;
+  properties?: Record<string, Schemaish>;
+  required?: string[];
+  items?: Schemaish;
+  enum?: unknown[];
+  const?: unknown;
+  anyOf?: Schemaish[];
+  oneOf?: Schemaish[];
+}
+
+/** 把单个参数的 schema 渲染成类型串：`string` / `"choice" | "open"` / `number` / `string[]`。 */
+function renderType(s: Schemaish | undefined): string {
+  if (!s) return 'any';
+  if (Array.isArray(s.enum) && s.enum.length > 0) return s.enum.map((v) => JSON.stringify(v)).join(' | ');
+  if (s.const !== undefined) return JSON.stringify(s.const);
+  // TypeBox 的 Type.Union 序列化为 anyOf；每个分支通常是 Literal（{type, const}）
+  const branches = s.anyOf ?? s.oneOf;
+  if (Array.isArray(branches) && branches.length > 0) return branches.map(renderType).join(' | ');
+  if (s.type === 'array') return `${renderType(s.items)}[]`;
+  if (s.type === 'integer' || s.type === 'number') return 'number';
+  if (s.type === 'boolean' || s.type === 'string' || s.type === 'object') return s.type;
+  return 'any';
+}
+
+/**
+ * 把参数 schema 渲染成紧凑签名：`getQuestion(id: string, format?: "choice" | "open")`。
+ *
+ * 只保留模型真正需要的三件事——参数名、类型、是否必填——丢掉 `properties` / `required` /
+ * `anyOf` / `minimum` 等结构性噪音。模型只需照签名产出 args，校验与兜底由工具层做。
+ */
+function renderParams(schema: unknown): string {
+  const s = (schema ?? {}) as Schemaish;
+  const props = s.properties ?? {};
+  const required = new Set(Array.isArray(s.required) ? s.required : []);
+  const parts = Object.entries(props).map(([name, sub]) => {
+    // 类型串过长（深层嵌套对象）时退化为 any，避免签名比 schema 还长
+    const raw = renderType(sub);
+    const type = raw.length > 40 ? 'any' : raw;
+    return `${name}${required.has(name) ? '' : '?'}: ${type}`;
+  });
+  if (parts.length === 0) return '';
+  const joined = parts.join(', ');
+  return joined.length > 120 ? 'args: object' : joined;
+}
+
+/** 把可用工具渲染成「紧凑签名 + 语义描述」，描述取自 tools.ts 的单一信息源。
  *  Chrome 无原生 function calling，无法像 DeepSeek 那样经 API 的 tools 参数拿到工具定义，
- *  故在此随用户提示词一并提供 name + 参数 schema + description，避免再依赖 system prompt 罗列工具。 */
+ *  故在此随用户提示词一并提供 name + 参数签名 + description，避免再依赖 system prompt 罗列工具。
+ *
+ *  刻意**不输出完整 JSON Schema**：7 个真实工具的 schema 共 513 字符，占整段工具清单的 39%
+ *  （实测 1312 字符），而 Chrome 的上下文窗口远小于云端模型，这部分会直接挤占对话历史。
+ *  改成签名后 schema 归零、只多出约 150 字符的签名，实测降到 947 字符（−28%，vol 断言见
+ *  tools.test.ts「工具定义注入 Chrome prompt 的体积」）。
+ *
+ *  取舍：只保留模型产出 args 所需的三件事（参数名 / 类型 / 是否必填），**丢掉参数级 description**
+ *  （如 `topic` 的「要查询的 topic id」）。若将来某个参数名不自明，应改参数名或写进工具级
+ *  description，而不是把参数级描述塞回签名——工具级 description 是模型选工具的依据，必须完整保留。 */
 function renderTools(tools?: Tool[]): string {
   if (!tools || tools.length === 0) return '(no tools available)';
   return tools
     .map((t) => {
-      let schema = '{}';
-      try {
-        schema = JSON.stringify(t.parameters ?? {});
-      } catch {
-        schema = '{}';
-      }
       const desc = t.description ? ` — ${t.description}` : '';
-      return `- ${t.name}: ${schema}${desc}`;
+      return `- ${t.name}(${renderParams(t.parameters)})${desc}`;
     })
     .join('\n');
 }

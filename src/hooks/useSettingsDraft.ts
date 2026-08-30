@@ -2,12 +2,13 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { App as AntdApp } from 'antd';
 import type { AIConfig } from '../schemas/ai-config';
 import { parseConfigJSON, stringifyConfig } from '../storage/settings';
-import { INTERVIEW_AGENT_SYSTEM_PROMPT } from '../agent/prompt';
+import { INTERVIEW_AGENT_OPENING_INSTRUCTION, INTERVIEW_AGENT_SYSTEM_PROMPT } from '../agent/prompt';
 import { EVAL_SYSTEM } from '../ai/evaluate';
 import { VARIANT_SYSTEM } from '../ai/variant';
 
 export interface PromptDraft {
   agentSystem: string;
+  agentOpening: string;
   evaluationSystem: string;
   variantSystem: string;
 }
@@ -45,6 +46,7 @@ export function useSettingsDraft(
   const [draft, setDraft] = useState<AIConfig>(config);
   const [promptDraft, setPromptDraft] = useState<PromptDraft>(() => ({
     agentSystem: config.prompts?.agentSystem ?? INTERVIEW_AGENT_SYSTEM_PROMPT,
+    agentOpening: config.prompts?.agentOpening ?? INTERVIEW_AGENT_OPENING_INSTRUCTION,
     evaluationSystem: config.prompts?.evaluationSystem ?? EVAL_SYSTEM,
     variantSystem: config.prompts?.variantSystem ?? VARIANT_SYSTEM,
   }));
@@ -56,6 +58,7 @@ export function useSettingsDraft(
     setText(stringifyConfig(config));
     setPromptDraft({
       agentSystem: config.prompts?.agentSystem ?? INTERVIEW_AGENT_SYSTEM_PROMPT,
+      agentOpening: config.prompts?.agentOpening ?? INTERVIEW_AGENT_OPENING_INSTRUCTION,
       evaluationSystem: config.prompts?.evaluationSystem ?? EVAL_SYSTEM,
       variantSystem: config.prompts?.variantSystem ?? VARIANT_SYSTEM,
     });
@@ -106,6 +109,7 @@ export function useSettingsDraft(
   const handlePromptSave = () => {
     const prompts = {
       agentSystem: promptDraft.agentSystem.trim() || undefined,
+      agentOpening: promptDraft.agentOpening.trim() || undefined,
       evaluationSystem: promptDraft.evaluationSystem.trim() || undefined,
       variantSystem: promptDraft.variantSystem.trim() || undefined,
     };

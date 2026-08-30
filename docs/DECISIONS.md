@@ -2,6 +2,144 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-053 · 题目由 UI 呈现，Agent 不复述题干（职责边界优先于补齐上下文）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`深度审查报告.md` C1（P0）。系统提示要求 Agent「用自然语言把题干 + 选项清晰表述给用户」，
+  但 `getQuestion` 只返回 `{ id, format, matchedBy }`——题干从未进入 Agent 上下文。
+  同时 UI 已通过 `session.currentQuestion`（`AgentInterviewPage.tsx:168-172`）渲染真题干。
+  于是形成职责冲突：用户看到真题干，Agent 却以为那句话是自己说的，只能凭 id 重述。
+- **问题表述的更正**（用户复核）：不是「必然幻觉」，而是
+  **prompt 要求模型生成它上下文中没有的数据 → 模型无法可靠复述真实题干 → 存在不必要的重述/幻觉风险**。
+  风险等级不变，但根因是职责冲突而非模型缺陷——这一点决定了修复方向。
+- 决策：**改 prompt，而不是给 `getQuestion` 补 `question` / `options`。**
+  - ❌ 补题干：Agent 会在**选题阶段**拿到它不需要的 `answer` / `explanation`；
+    扩大 prompt injection 与数据污染面；题干/解析进入上下文也让每轮 token 上升。
+  - ✅ 改 prompt：声明「真实题干和选项由客户端界面自动呈现，不要重新生成、改写或完整复述」。
+    职责干净（Agent = 决策/编排/解释，UI = 题目呈现），省 token，减少上下文中的题库数据量。
+- 关键实施点：**改 5 处措辞，不是 2 处**。除 `prompt.ts` 的 §呈现方式 与 §工具调用铁律 外，
+  还有 §你的职责 1、开场指令，以及 `tools.ts` 中 `getQuestion` 的**工具 description** 与**结果正文**
+  （原文 `请呈现给用户` → `已由界面呈现，你不需要复述`）和 `searchQuestions` 的 `nextStep`。
+  只要留下一处，模型仍会收到「呈现题目」的指令；其中工具结果正文那句紧跟在工具返回之后，是最直接的触发器。
+- **不改返回结构**：`details` 仍严格是 `{ id, format, matchedBy }`。改的是措辞，不是数据。
+  有测试断言 `Object.keys(details)` 与「正文中不含题干/解析」双重守着。
+- **刻意保留弹性**：不写「绝对禁止提及题目内容」。开放题反馈里引用关键概念是有价值的
+  （「你解释了 KV Cache 的作用，但没说明它为什么能减少重复计算」），
+  所以禁令只针对「重新生成 / 完整复述」，明确留出「简短引用关键概念」的口子。
+- 与 ADR-052 的关系（不冲突）：052 说「不写模型无需执行的说明」，但本 ADR 在禁令后保留了
+  「题目正文不在你的上下文里」这一句**理由**。判断标准：**理由是否服务于一条模型需主动执行的规则**——
+  服务于「无需执行」的一律不写；服务于「必须执行且反直觉」的禁令可留一句短理由
+  （模型天然想复述题目，不说「你没有这段数据」压不住）。该判断已写入 `prompt.ts` 头注释。
+- 顺带收益：模型不再输出一遍 UI 已显示的题干与 A/B/C/D（对 DeepSeek Flash 这类按量计费模型尤其明显）。
+- 验证（均反向验证过：改回旧措辞 → 相应测试变红）：
+  - `src/agent/prompt.test.ts` +4（8 → 12）：不再出现 `把题干` / `表述给用户` / `题干 + 选项` / `每次选定题目后`；
+    必须含「真实题干和选项由客户端界面自动呈现」「不要重新生成、改写或完整复述题干和选项」「题目正文不在你的上下文里」；
+    必须含「可以简短引用题目的关键概念」且**不含**「绝对禁止」；开场指令含「题干和选项由界面显示」。
+  - `src/agent/tools.test.ts` +2（29 → 31）：`Object.keys(details)` 恰为 `['format','id','matchedBy']`、
+    正文不含题干与解析；`getQuestion` / `searchQuestions` 的正文与 description 均不再出现「呈现给用户」。
+  - `npx vitest run` **402 passed**（36 文件，基线 396），`npx tsc --noEmit` 0 error，`npm run build` 通过。
+- 附带重构：把 `textOf` 从 `tools.test.ts` 的某个 `describe` 内提升到模块作用域（两个 describe 都要用）。
+
+## ADR-052 · LLM 的每轮输入只放「模型需要主动使用的信息」
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`ARCHITECTURE-REVIEW.md` 第 6、7 条指出两处 token 浪费，本质是同一个问题——
+  **把开发者才需要的信息放进了 LLM 的每轮输入**：
+  1. 系统提示里有一段 141 字符的括号说明，内容是「这些规则代码已经保证了，你不用管」（
+     `只调一次 searchQuestions` / `不编造 id` / `not_found 回列表挑真 id`）；
+  2. Chrome 路径把 7 个工具的完整 JSON Schema 塞进 prompt（schema 部分 513 字符，占工具清单 39%）。
+  两者都会被**每轮重复发送**——系统前缀每轮重发，Chrome 每轮重建 user prompt。
+- 决策：
+  1. **系统提示只写模型需主动遵守的规则**。「代码已保证」的部分留在 `prompt.ts` 文件头注释里，
+     紧邻它所描述的那个工具行为，比埋在模板字符串里更好找。删掉后顺带把 `[PROMPT-VERSION v1]` 升到 `v2`。
+  2. **Chrome 的 `renderTools` 输出紧凑签名**，只保留模型产出 args 所需的三件事——参数名、类型、是否必填：
+     `- getQuestion(id: string, format?: "choice" | "open") — 按 id 选定题目并写入会话`。
+     schema 结构（`properties` / `required` / `anyOf` / `minimum`）全部丢弃，校验与兜底由工具层做。
+  3. **工具级 `description` 一字不减**。它是模型判断「该调哪个工具」的唯一依据，且已是单一信息源（tools.ts）。
+- 理由：这些字符不是一次性成本，而是**每轮的固定税**。LLM 不会从「你不需要遵守 X」里获得任何决策信息；
+  JSON Schema 的结构性字段对「照签名产出 args」也没有帮助——模型需要的是签名，不是校验器。
+- 取舍与边界：
+  - **丢弃参数级 `description`**（如 `getWeakAngles` 的 `topic` 原带「要查询的 topic id」）。
+    若将来某个参数名不自明，正确做法是**改参数名或写进工具级 description**，不是把参数级描述塞回签名。
+  - **不追求极致压缩**：实测只省 28%（1312 → 947 字符），不是数量级变化，因为大头（644 字符，68%）是必须保留的工具描述。
+    这条的价值是「把确定性信息清零」，不是「把 prompt 压小一个数量级」——**不要为了继续压而开始砍描述**。
+  - **用户保存的自定义 `agentSystem` 副本不自动迁移**到 v2。用户手改过的提示不应被静默覆盖，
+    版本号的作用就是让其可自行判断副本是否过期。
+- 验证（均做过反向验证：临时改回旧实现确认测试变红后再改回）：
+  - `src/agent/prompt.test.ts` +3：括号说明的 4 个特征串**不出现**；4 条真红线**仍在**（防误删）；版本号格式。
+  - `src/ai/chromeAgent.test.ts` +5：签名形态（联合字面量塌缩、必填/选填 `?`、空参数 `()`、`string[]`、
+    `minimum` 不出现）、过长退化（>40 字符的类型 → `any`、>120 字符的签名 → `args: object`）、无工具占位、体积比。
+  - `src/agent/tools.test.ts` +3：用**真实** `createAgentTools` 产物做门禁——相对阈值 `< 80%` 等效 JSON
+    （schema 被塞回来时两边都是 1312，直接失败）+ 绝对上限 `< 1100` 字符（防描述逐条变长的温水膨胀）+ 工具名不丢。
+  - `npx vitest run` **396 passed**（36 文件，基线 385），`npx tsc --noEmit` 0 error，`npm run build` 通过。
+
+## ADR-051 · 开场指令纳入 `config.prompts.agentOpening`，默认值上移到 `agent/prompt.ts`
+
+- 状态：已采纳 · 2026-08-30
+- 背景：Agent 的系统提示可通过 `config.prompts.agentSystem` 覆盖，但开场指令（首轮 user 消息，定义本轮流程与停止条件）
+  是 `useAgentInterview.ts` 里的硬编码模块常量。造成「能改系统提示、不能改开场指令」的不对称——
+  用户想改成 15 题、或跳过查薄弱主题，只能去改系统提示（语义错位：系统提示定义角色与红线，不该承载本轮流程）。
+- 决策：
+  1. **走 `config.prompts.agentOpening`，而不是 `createInterviewAgent` 的可选参数**。
+     理由：本条诉求是「**用户**能通过设置页修改」；做成构造参数只解决代码侧可注入性，用户仍然改不了。
+  2. **默认值上移到 `agent/prompt.ts`**（`INTERVIEW_AGENT_OPENING_INSTRUCTION`），与 `INTERVIEW_AGENT_SYSTEM_PROMPT` 同处。
+     理由：设置页的「恢复默认值」按钮需要引用它；若留在 hooks 层，组件就要反向依赖 hooks 内部的模块常量。
+  3. **回退逻辑抽为纯函数 `resolveOpeningInstruction()`**：空白串与 `undefined` 都回退默认。
+     理由：用户清空输入框是高概率操作，把空指令发给模型会让 Agent 失去流程约束（不查薄弱主题、不停止）；
+     这条规则必须可测，而 hooks 层当前无测试基建。
+  4. **UI 写明题数硬上限由代码控制**（`MAX_AGENT_QUESTIONS`）。
+     理由：默认文案里「约 6–10 题 / 达到约 8 题」与代码上限 10 并不一致（见下方遗留项），
+     必须让编辑者知道这里是软目标而非硬约束，否则改了也不生效、且无从判断原因。
+- 不做：
+  - 不新建 `useSettingsPrompt` 之类的抽象，沿用既有的 `PromptDraft` 结构加一个字段。
+  - 不动 `interviewAgent.ts`：`handle.start(instruction)` 本来就接受指令字符串，无需改签名。
+- 遗留项（已知，不在本次范围）：
+  - **默认文案的题数说法仍不一致**：开场指令里「约 6–10 题」与「达到约 8 题」自相矛盾，且与硬上限 10 不同。
+    本次**刻意不动文案**——改提示词内容属行为变更，应与可配置化分开提交，便于单独回退与对比效果。
+  - `loadConfig` 对 `prompts` 透传不校验（只有 `parseConfigJSON` 经 Zod），手改 localStorage 写入非字符串时
+    新字段与既有 `agentSystem` 一样会在下游 `.trim()` 抛错。已在 `深度审查报告.md` A3 跟踪。
+- 验证：新增 `src/agent/prompt.test.ts` 5 例（默认回退 / 自定义生效 / 空白回退 / 仅裁首尾 / 默认文案含关键契约），
+  `src/storage/settings.test.ts` +3 例（往返持久化、非字符串被 Zod 拒绝、审计日志不落正文）；
+  反向验证：去掉 `resolveOpeningInstruction` 的 `trim()` → 2 例失败；从 schema 移除 `agentOpening` → 1 例失败。
+  `npx vitest run` 385 passed（36 文件），`npx tsc --noEmit` 0 error，`npm run build` 通过。
+
+## ADR-050 · 选择题跳过 LLM Agent loop，保留确定性 adaptive engine（Agent ≠ 每次决策都要调 LLM）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`ARCHITECTURE-REVIEW.md` 第 4 条判定「选择题快路径**完全跳过 Agent 决策**」，并建议让 Agent 也参与选择题的选题决策。
+  经逐跳核实调用链，该判定不成立——它把「Agent 的决策能力」与「LLM 调用」错误地绑定了。
+- 事实（已核实）：
+
+  ```
+  choiceAdvance()                    interviewAgent.ts:212
+    ├─ evaluateSessionQuestion()     → gradeChoice（确定性判分，不触 LLM）
+    └─ fallbackNextQuestion()        interviewAgent.ts:160
+         ├─ pool    = 传入 Agent 的 bank（已排除 disabledCategories）− 已问题
+         ├─ signals = 从 session.evaluations 实时重建（topic/score/difficulty）
+         └─ pickNextAdaptive(pool, signals, profile, Math.random)   adaptive.ts:114
+  ```
+
+  `pickNextAdaptive` 用到了：上一题得分 → `decideStrategy`（`<60` gap-probe / `≥80` broaden / 否则 deep-dive）、
+  难度升降、`relatedOf`、`prerequisiteClosure`、`recommendWeakTopics(profile)`，
+  以及每个策略子集内按 (topic, angle) 掌握度的细选（`angleWeakRank` + `angleEvidence`）。
+- 决策：
+  1. **选择题不进 LLM 决策循环**。判分是确定性的（`gradeChoice`），`correct` 与 `score` 代码已知；
+     再让模型把已有的 deterministic decision 复述一遍，只增加 latency / token / failure surface / prompt 复杂度，不增加效果。
+  2. **保留完整的确定性 adaptive selection**。这是 algorithmic agent，不是「没有 agent」——
+     `Adaptive Interview Engine` 的设计意图本就是把选题 / mastery / coverage / prerequisite / ranking 下沉到 domain / application 层。
+  3. **准确表述**：选择题跳过的是 **LLM Agent loop**，不是 **adaptive 决策**。文档与注释须按此措辞，避免后续评审再次误判。
+- 不做：
+  - 不把 `pickNextAdaptive` 的结果作为「建议」交给 LLM 复核（无增量信息，纯延迟）。
+  - 不在 UI 上专门标注「本轮是否调用 LLM」——用户关心的是「为什么下一题是这个」，Adaptive / Topic / Difficulty / Progress 已足够。
+- 已知边界（非缺陷）：`profile`（跨会话 `mastery` / `angleCoverage`）在会话进行中是**会话开始时的快照**，
+  只在会话结束时经 `finalize → onComplete → handleAgentComplete → updateLearner → saveLearner` 落库。
+  确定性引擎（`useTrainingSession.ts:216/265`）同样只在会话结束调用 `updateLearner`，**两条路径完全一致**，不构成双引擎分叉。
+  即：会话内自适应由 `signals` 实时驱动，跨会话掌握度按会话边界更新。
+- 可选改进（命名，非功能）：`fallbackNextQuestion()` 同时承担「LLM 失败后的降级」与「选择题的正常确定性选题」两种角色，
+  前者语义容易误导。可更名 `selectNextDeterministically()` / `advanceDeterministically()`，或至少在注释中写明「fallback 是历史命名，并非降级路径」。
+- 验证：逐跳跟读 `choiceAdvance → fallbackNextQuestion → pickNextAdaptive`，并对照 `useTrainingSession.ts` 确认两路径 profile 更新时机一致。
+  `ARCHITECTURE-REVIEW.md` 第 4 条已标记为「复核关闭」。
+
 ## ADR-049 · getCoverageGaps 是 coverage-based 事实查询，不做推荐系统
 
 - 状态：已采纳 · 2026-08-30

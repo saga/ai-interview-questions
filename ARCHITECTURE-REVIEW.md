@@ -105,33 +105,64 @@ Agent 在系统提示里被告知可以用 `getCoverageGaps` 做「全局选题�
 
 ### P1 —— 影响可维护性或用户体验
 
-#### 4. Agent 的「选择题快路径」跳过了 Agent 决策
+> **进度（2026-08-30）**：本节 5 条中，第 4 条复核后关闭（误报），第 5、6、7 条已修复，仅剩第 8 条待办。
 
-**文件**：`src/agent/interviewAgent.ts` 第 212-234 行
+#### 4. ✅ 已复核关闭 · 选择题快路径跳过的是 **LLM 循环**，不是 adaptive 决策
 
-```typescript
-async function choiceAdvance(answer: AnswerValue): Promise<void> {
-  // ...
-  session.evaluations[qid] = await evaluateSessionQuestion(sq, answer, provider);
-  // 确定性交付下一题（或收尾），不设置 usingFallback
-  if (!fallbackNextQuestion()) { ... }
-}
+**文件**：`src/agent/interviewAgent.ts:212-234` → `:160-188` → `src/domain/adaptive.ts:114`
+
+> **2026-08-30 复核更正**：原判定「选择题的面试流程**完全不经过 Agent 决策**」不成立，已修正。
+> 该表述把「Agent 决策能力」与「LLM 调用」错误地绑定了。实测调用链如下。
+
+```
+choiceAdvance()                          interviewAgent.ts:212   选择题提交后
+  ├─ evaluateSessionQuestion()           → gradeChoice（确定性判分，不触 LLM）
+  └─ fallbackNextQuestion()              interviewAgent.ts:160
+       ├─ pool    = 传入 Agent 的 bank（已排除 disabledCategories）
+       │            − 已问过的题，并按 generateOpenQuestions 开关过滤形态
+       ├─ signals = 从 session.evaluations **实时重建**（topic / score / difficulty）
+       └─ pickNextAdaptive(pool, signals, profile, Math.random)   adaptive.ts:114
 ```
 
-当当前题是选择题时，`submitAnswer` 会走 `choiceAdvance`——完全跳过 LLM 循环，用确定性逻辑评分 + 选题。这是性能优化（选择题判分是确定性的，不需要 LLM），但意味着：
+`pickNextAdaptive` 是**真自适应**，不是「取下一道未问题」：
 
-- **选择题的面试流程完全不经过 Agent 决策**——Agent 只负责开放题的评估决策；
-- Agent 面试在「全选择题」场景下退化成「确定性引擎自动播放」，Agent 的自适应能力（根据表现调整难度/主题）没有发挥作用。
+| 输入 | 在选题中的作用 |
+| --- | --- |
+| 上一题 `score` | `decideStrategy`：`< 60` → `gap-probe`；`≥ 80` 且有相关主题 → `broaden`；否则同主题 `deep-dive` |
+| `difficulty` | `deep-dive` 取更难题；`gap-probe` 取更简题 |
+| `relatedOf(topic)` | `broaden` 时切到相关主题 |
+| `prerequisiteClosure(topic)` | `gap-probe` 时沿前置链回退（近的前置优先） |
+| `profile` → `recommendWeakTopics` | `move-on` 时优先薄弱主题 |
+| `profile` → `angleWeakRank` / `angleEvidence` | 每个策略子集内按 (topic, angle) 掌握度细选：弱角度优先、证据最少次之 |
 
-这不是 bug，是设计上的 trade-off（性能 vs 决策完整性）。但值得注意：**如果用户关闭了 `generateOpenQuestions`（默认关闭），Agent 面试几乎不会用到 Agent 的决策能力**——它变成了一个「有 Agent 外壳的确定性引擎」。
+**准确表述应是**：
 
-**建议**：在 UI 上明确告知「选择题由系统自动评分并选题，开放题由 AI 评估」，或者在选择题场景下也让 Agent 参与选题决策（把 `pickNextAdaptive` 的结果作为「建议」交给 Agent，Agent 可以接受或调整）。
+> 选择题跳过 **LLM Agent loop**，但仍经过**确定性的 adaptive engine**。
+
+这是 **algorithmic agent**，不是「没有 agent」。项目的 `Adaptive Interview Engine` 本就把选题 / mastery / coverage / prerequisite / ranking 尽可能下沉到 deterministic 的 domain / application 层——**Agent ≠ 每一道题都必须经过 LLM**。
+
+用「全选择题场景下还有没有自适应」这条验收标准检验：**有**。
+
+**一个需要精确说明的边界**：`profile`（跨会话 `mastery` / `angleCoverage`）在会话进行中是**会话开始时的快照**，只在会话结束时经
+`finalize → onComplete → handleAgentComplete → updateLearner → saveLearner` 落库。这**两条路径完全一致**
+（确定性引擎 `useTrainingSession.ts:216/265` 同样只在会话结束调用 `updateLearner`），因此不是本项缺陷，也不构成双引擎分叉。
+即：**会话内自适应由 `signals` 实时驱动，跨会话掌握度按会话边界更新**。
+
+**保留的可选改进（命名 / 可解释性，非功能缺陷）**：
+
+- `fallbackNextQuestion()` 的命名易被误读为「LLM 失败后的降级」，但它同时承担选择题的**正常确定性选题**路径。
+  建议更名 `selectNextDeterministically()` / `advanceDeterministically()`。
+- UI 若已展示 Adaptive / Topic / Difficulty / Progress，则**无需**额外标注「本轮是否调用了 LLM」——
+  用户关心的是「为什么下一题是这个」，而不是底层走没走模型。
+
+**明确不建议**：把选择题塞进 LLM 决策循环。确定性代码已知 `correct` 与 `score`，再让模型把已有的
+deterministic decision 复述一遍，只增加 latency / token / failure surface / prompt 复杂度，不增加实际效果。
 
 ---
 
-#### 5. `OPENING_INSTRUCTION` 硬编码，不可配置
+#### 5. ✅ 已修复（2026-08-30）· `OPENING_INSTRUCTION` 硬编码，不可配置
 
-**文件**：`src/hooks/useAgentInterview.ts` 第 49-54 行
+**原文件**：`src/hooks/useAgentInterview.ts` 第 49-54 行
 
 ```typescript
 const OPENING_INSTRUCTION = `你是一位资深 AI 技术面试官，主持一次约 6–10 题的模拟面试。流程：
@@ -143,43 +174,79 @@ const OPENING_INSTRUCTION = `你是一位资深 AI 技术面试官，主持一�
 
 Agent 的系统提示词可以通过 `config.prompts?.agentSystem` 覆盖，但**开场指令（OPENING_INSTRUCTION）是硬编码的**，用户无法通过设置页修改。这造成「能改系统提示但不能改开场指令」的不对称——如果用户想调整面试流程（比如改成 15 题、或者不查薄弱主题），只能改系统提示，不能改开场指令。
 
-**修复**：把 `OPENING_INSTRUCTION` 也纳入 `config.prompts`（比如 `config.prompts?.agentOpening`），或者作为 `createInterviewAgent` 的可选参数。
+**原建议**：把 `OPENING_INSTRUCTION` 也纳入 `config.prompts`（比如 `config.prompts?.agentOpening`），或者作为 `createInterviewAgent` 的可选参数。
+
+**实际修复（2026-08-30，ADR-051）**：采用 `config.prompts?.agentOpening`。理由是只有这条路能让**用户通过设置页修改**；做成 `createInterviewAgent` 的可选参数只解决代码侧可注入性，不解决本条诉求。
+
+1. 默认值从 `useAgentInterview.ts` 的模块常量**上移到 `agent/prompt.ts`**（`INTERVIEW_AGENT_OPENING_INSTRUCTION`），与 `INTERVIEW_AGENT_SYSTEM_PROMPT` 同处，成为单一出处，设置页「恢复默认值」可直接引用。
+2. `schemas/ai-config.ts` 的 `promptConfigSchema` 新增 `agentOpening: z.string().optional()`；设置页的 Monaco JSON 编辑器借已有的 `z.toJSONSchema(aiConfigSchema)` 自动获得校验与补全，无需额外接线。
+3. 回退逻辑抽为纯函数 `resolveOpeningInstruction(agentOpening)`——空白串与 `undefined` 都回退默认（用户清空输入框不能把空指令发给模型），并新增 `src/agent/prompt.test.ts` 5 例覆盖。
+4. 设置页新增「Agent 开场指令」编辑区，说明中写明**题数硬上限由代码控制**（`MAX_AGENT_QUESTIONS`），此处只是给模型的软目标。
+5. `storage/settings.ts` 的 `safeConfigSnapshot` 同步新增 `agentOpening`，保持审计日志不落提示词正文。
+
+> ⚠️ 遗留项（非本次引入）：`loadConfig` 对 `prompts` 是**透传不校验**的，只有 JSON 编辑器走的 `parseConfigJSON` 才经 Zod。
+> 因此手改 localStorage 写入非字符串时，新字段与既有的 `agentSystem` 一样会在下游 `.trim()` 处抛错。
+> 该问题已作为 `深度审查报告.md` 的 A3（storage 层 Zod 边界承诺未兑现）跟踪，不在本条修复范围内。
 
 ---
 
-#### 6. Prompt 里的「工具调用铁律」说明浪费 token
+#### 6. ✅ 已修复（2026-08-30）· Prompt 里的「工具调用铁律」说明浪费 token
 
 **文件**：`src/agent/prompt.ts` 第 25 行
 
 ```typescript
-（说明：「只调一次 searchQuestions / 不编造 id / not_found 回列表挑真 id」已由工具代码确定性保证：getQuestion 找不到 id 时会回带可用题号，searchQuestions 重复调用幂等复用缓存列表，无需在 prompt 中约束。）
+（说明：「只调一次 searchQuestions / 不编造 id / not_found 回列表挑真 id」已由工具代码确定性保证：……无需在 prompt 中约束。）
 ```
 
-这段说明**放在了系统提示里**，LLM 每次调用都会读到。但它的内容是「你不需要遵守这些规则，因为代码已经保证了」——这是给开发者看的注释，不是给 LLM 的指令。
+这段说明**放在了系统提示里**，LLM 每次调用都会读到。但它的内容是「你不需要遵守这些规则，因为代码已经保证了」——这是给开发者看的注释，不是给 LLM 的指令。实测 141 字符（约 100 token，略高于原报告的 80 估算）；system 前缀每轮重发，30 轮就是约 3000 token。
 
-这段文字约 80 个 token，在每次 Agent 调用中都会被发送。如果一场面试有 30 次 LLM 调用，就是 2400 个 token 的浪费。
+**已做的修复**：从 `INTERVIEW_AGENT_SYSTEM_PROMPT` 中删除，内容原样保留在 `prompt.ts` 的文件头注释里（紧邻被描述的工具行为，比埋在字符串里更好找）。系统提示只留 LLM 需**主动遵守**的规则；由代码兜底的部分留给注释。
 
-**修复**：把这段说明从系统提示里删掉，只保留在代码注释里。系统提示应该只包含 LLM 需要遵守的规则，不包含「不需要遵守的规则」的说明。
+顺带把版本标记 `[PROMPT-VERSION v1]` → `v2`——用户若保存过自定义 `config.prompts.agentSystem`，可据此判断副本是否过期（自定义副本不会被自动迁移，这是有意的：用户手改过的提示不应被静默覆盖）。
+
+**回归门禁**：`src/agent/prompt.test.ts` 的「系统提示词只写 LLM 需主动遵守的规则」描述块：
+- 断言 `说明：` / `已由工具代码确定性保证` / `幂等复用缓存列表` / `无需在 prompt 中约束` 均**不出现**（把注释塞回去就红）；
+- 同时断言 `不要自己打分` / `禁止自己计算或编造评分` / `禁止修改 learner state` / `finishInterview` **仍在**（防止下次清理提示时把真规则一起删了）；
+- 断言版本号格式 `^\[PROMPT-VERSION v\d+\]$`。
 
 ---
 
-#### 7. Chrome 的 `renderTools` 把完整 JSON Schema 塞进 prompt，可能膨胀
+#### 7. ✅ 已修复（2026-08-30）· Chrome 的 `renderTools` 把完整 JSON Schema 塞进 prompt
 
-**文件**：`src/ai/chromeAgent.ts` 第 132-146 行
+**文件**：`src/ai/chromeAgent.ts`
 
 ```typescript
-function renderTools(tools?: Tool[]): string {
-  return tools.map((t) => {
-    let schema = '{}';
-    try { schema = JSON.stringify(t.parameters ?? {}); } catch { schema = '{}'; }
-    return `- ${t.name}: ${schema} — ${t.description ?? ''}`;
-  }).join('\n');
-}
+// 修复前：整段 schema 进 prompt
+return `- ${t.name}: ${JSON.stringify(t.parameters ?? {})} — ${t.description ?? ''}`;
 ```
 
-7 个工具 × 每个工具的 JSON Schema（几十到几百字符）+ description，会让 Chrome 的 prompt 快速膨胀。Chrome Prompt API 的上下文窗口有限（约 4K-8K tokens），如果工具 schema 太长，可能挤占对话历史的空间。
+7 个工具 × 完整 JSON Schema + description 会让 Chrome 的 prompt 膨胀，挤占对话历史空间（Chrome Prompt API 上下文窗口约 4K-8K token）。
 
-**修复**：Chrome 的 renderTools 可以只输出工具名 + 关键参数说明，不输出完整 JSON Schema。比如 `- getQuestion(id: string, format?: "choice" | "open") — 按 id 选定题目`。这样更紧凑，也更适合 Chrome 的小上下文窗口。
+**已做的修复**：`renderTools` 改为输出**紧凑签名**，只保留模型产出 args 所需的三件事——参数名、类型、是否必填：
+
+```typescript
+- getQuestion(id: string, format?: "choice" | "open") — 按 id 选定题目并写入会话
+- finishInterview() — 结束本轮面试
+```
+
+新增两个内部函数：`renderType()`（`enum` / `const` / `anyOf`+`oneOf` 联合 / `array` / `integer`→`number` 的类型塌缩，>40 字符退化为 `any`）与 `renderParams()`（必填无 `?`、选填带 `?`；整条签名 >120 字符折叠为 `args: object`）。
+
+**实测效果**（7 个真实工具，见 `tools.test.ts` 的体积断言）：
+
+| | 完整 schema | 紧凑签名 |
+|---|---|---|
+| 工具清单总长 | 1312 字符 | **947 字符** |
+| 其中 schema 部分 | 513 字符（39%） | 0 |
+
+净省 365 字符（**−28%**）。
+
+> **对原报告估值的修正**：原报告称 schema「几十到几百字符」「会让 prompt 快速膨胀」。实测 schema 只占 39%，改签名后净省 28%，**不是数量级的变化**——真正的体积大头是 7 条工具 `description`（644 字符，占紧凑版的 68%）。这些描述是模型判断「该调哪个工具」的唯一依据，不能砍。所以这条修复的价值是「把确定性的、模型不需要的信息（schema 结构）清零」，而不是「把 prompt 压小一个数量级」。
+
+**一个有意的信息取舍**：参数级 `description` 会被丢弃（如 `getWeakAngles` 的 `topic` 参数原本带「要查询的 topic id」）。工具级 `description` 一字不减。若将来某个参数名不自明，正确做法是**改参数名或写进工具级 description**，而不是把参数级描述塞回签名。
+
+**回归门禁**：
+- `src/ai/chromeAgent.test.ts`：签名形态（联合字面量塌缩为 `"choice" | "open"`、必填/选填 `?`、空参数 `()`、`string[]`、`minimum` 等校验字段不出现）、过长退化、无工具占位；
+- `src/agent/tools.test.ts`：用**真实** `createAgentTools` 产物做体积门禁——相对阈值 `< 80%` 等效 JSON 渲染（schema 被塞回来时两边都是 1312，直接失败）+ 绝对上限 `< 1100` 字符（防描述逐条变长的温水膨胀）+ 7 个工具名必须都在。
 
 ---
 
@@ -290,14 +357,14 @@ export async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvide
 
 ### 立即修复（P0，会导致功能缺陷）
 
-1. **`getQuestion` topic 兜底重复出题**（tools.ts:161）——`unasked` 为空时不要兜底到 `byTopic[0]`，改为从全题库选未问的题或返回 not_found。
-2. **`getCoverageGaps` 半成品**（tools.ts:318）——要么实现真正的覆盖缺口逻辑，要么从工具列表删掉。
+1. ~~**`getQuestion` topic 兜底重复出题**（tools.ts:161）~~ → ✅ 已修复（2026-08-30，ADR-048）
+2. ~~**`getCoverageGaps` 半成品**（tools.ts:318）~~ → ✅ 已修复（2026-08-30，ADR-049：保留工具并重定义为 coverage-based 事实查询，与 mastery-based 的 `getUserWeaknesses` 正交）
 
 ### 短期修复（P1，1-2 天内可完成）
 
-3. **删掉 prompt.ts 第 25 行的「不需要遵守的规则」说明**——只保留在代码注释里。
-4. **`OPENING_INSTRUCTION` 纳入 config.prompts**——让用户可以通过设置页修改开场指令。
-5. **Chrome renderTools 简化**——只输出工具名 + 关键参数，不输出完整 JSON Schema。
+3. ~~**删掉 prompt.ts 第 25 行的「不需要遵守的规则」说明**~~ → ✅ 已修复（2026-08-30，ADR-052）
+4. ~~**`OPENING_INSTRUCTION` 纳入 config.prompts**~~ → ✅ 已修复（2026-08-30，ADR-051）
+5. ~~**Chrome renderTools 简化**~~ → ✅ 已修复（2026-08-30，ADR-052：改输出紧凑签名，实测 1312 → 947 字符）
 6. **`missingConcepts` 接入 Learner Memory**——作为 gaps 的补充写入 `commonWeaknesses`。
 
 ### 中期改进（P2，1-2 周）
@@ -320,7 +387,11 @@ export async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvide
 这个项目的架构基线已经很高——分层清晰、边界明确、原则被执行。上面指出的问题**不是「做错了」，而是「在正确方向上的系统性盲区」**：
 
 - **P0 问题**（topic 兜底重复、validateVariant 语义空洞、getCoverageGaps 半成品）是「承诺了但没兑现」——prompt/工具描述说了，但代码没实现；
-- **P1 问题**（choiceAdvance 跳过决策、OPENING_INSTRUCTION 硬编码、prompt 浪费 token）是「设计上的 trade-off 没有被显式记录」——性能优化牺牲了决策完整性，但用户不知道；
+  （2026-08-30：topic 兜底重复已由 ADR-048 修复，getCoverageGaps 已由 ADR-049 重定义为 coverage-based 事实查询，validateVariant 已由 ADR-047 接入真实校验——三项均已关闭）
+- **P1 问题**（prompt 浪费 token）是「设计上的 trade-off 没有被显式记录」——性能优化牺牲了决策完整性，但用户不知道；
+  （2026-08-30：**choiceAdvance 跳过决策**一项经复核为误报，已关闭——见第 4 条，它跳过的是 LLM 循环，确定性 adaptive 决策照常执行；
+  **OPENING_INSTRUCTION 硬编码**已修复——见第 5 条，纳入 `config.prompts.agentOpening`；
+  **prompt 里的开发者注释**与 **Chrome 工具 schema 膨胀**已修复——见第 6、7 条，ADR-052）
 - **P2 问题**（证据链不完整、无成本控制、选题逻辑重复）是「长期演进方向」——不影响当前使用，但会在规模增长时暴露。
 
 **最值得立即修复的是 P0 的三个问题**——它们都是「承诺了但没兑现」，修复成本低（每个不超过 50 行代码），但能消除真实的功能缺陷。
@@ -330,3 +401,7 @@ export async function finalizeQuestion(sq: SessionQuestion, provider: LLMProvide
 ---
 
 *本报告基于 2026-08-30 的 main 分支代码，含 DeepSeek 优化、评分序级重构、VARIANT v2、session 持久化等最新改动。*
+
+*2026-08-30 复核记录：第 4 条（选择题快路径）经逐跳核实调用链后判定为**误报并关闭**——原结论把「Agent 决策」与「LLM 调用」绑定，实际选择题路径仍经 `pickNextAdaptive` 做完整自适应选题。同时关闭两项已修复的 P0（ADR-047 / 048 / 049）。复核方法：从 `choiceAdvance` 逐跳跟到 `pickNextAdaptive`，并对照 `useTrainingSession.ts` 确认两条路径的 profile 更新时机一致（均在会话结束 `updateLearner`）。*
+
+*2026-08-30 第二批评审修复（ADR-051 / 052）：第 5 条开场指令可配置、第 6 条 prompt 注释瘦身、第 7 条 Chrome 工具签名化。三项均为「把确定性信息从 LLM 的输入里挪走或原地降级」——不新增能力，只减少每轮重复发送的字符。第 7 条实测后修正了原报告的估值：schema 只占工具清单 39%，净省 28% 而非数量级，体积大头是必须保留的工具描述。所有新增断言均做过反向验证（临时改回旧实现确认测试变红后再改回）。*

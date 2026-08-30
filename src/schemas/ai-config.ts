@@ -12,6 +12,8 @@ const providerEntrySchema = z.object({
 
 const promptConfigSchema = z.object({
   agentSystem: z.string().optional(),
+  /** Agent 开场指令（首轮 user 消息）：本轮流程与停止条件。缺省用 `INTERVIEW_AGENT_OPENING_INSTRUCTION`。 */
+  agentOpening: z.string().optional(),
   evaluationSystem: z.string().optional(),
   variantSystem: z.string().optional(),
 });

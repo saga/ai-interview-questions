@@ -101,7 +101,6 @@ describe('buildChromeAgentRuntime', () => {
     const prompt = buildUserPrompt(context);
     expect(prompt).toContain('## Recent interview state');
     expect(prompt).toContain('getQuestion');
-    expect(prompt).toContain('"properties"');
     expect(prompt).toContain('已省略 2 条较早历史');
     expect(prompt).not.toContain('Respond with EXACTLY ONE JSON object');
     expect(prompt).not.toContain('Available tools (you MUST call exactly one)');
@@ -115,5 +114,129 @@ describe('buildChromeAgentRuntime', () => {
     expect(err).toBeTruthy();
     expect(err.reason).toBe('error');
     expect(err.error.errorMessage).toContain('boom');
+  });
+});
+
+const TOOLS_HEADER = '## Available tools\n';
+
+/** 构造只带工具清单的 context（历史为空），用于单独断言工具清单的渲染形态。 */
+function toolsContext(tools: Tool[]): Context {
+  return { systemPrompt: 'sys', messages: [], tools };
+}
+
+/** 从 user prompt 中截出 `## Available tools` 段落，便于对工具清单做精确断言。 */
+function toolsSection(prompt: string): string {
+  const start = prompt.indexOf(TOOLS_HEADER);
+  expect(start).toBeGreaterThanOrEqual(0);
+  return prompt.slice(start + TOOLS_HEADER.length);
+}
+
+function tool(name: string, parameters: unknown, description = ''): Tool {
+  return { name, description, parameters: parameters as Tool['parameters'] };
+}
+
+describe('renderTools（经 buildUserPrompt 的公开出口）', () => {
+  it('渲染成「名字(参数签名) — 描述」，不再注入完整 JSON Schema', () => {
+    const prompt = buildUserPrompt(
+      toolsContext([
+        tool(
+          'getQuestion',
+          {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              format: { anyOf: [{ type: 'string', const: 'choice' }, { type: 'string', const: 'open' }] },
+            },
+            required: ['id'],
+          },
+          '按 id 选定题目',
+        ),
+      ]),
+    );
+    const section = toolsSection(prompt);
+    // TypeBox 的 Union 序列化为 anyOf，这里必须塌缩成可读的联合字面量
+    expect(section).toContain('- getQuestion(id: string, format?: "choice" | "open") — 按 id 选定题目');
+    // 结构性噪音对模型没用，只占 Chrome 的上下文预算
+    expect(section).not.toContain('"properties"');
+    expect(section).not.toContain('"required"');
+    expect(section).not.toContain('anyOf');
+  });
+
+  it('区分必填/选填，支持空参数、数组、布尔与数字', () => {
+    const prompt = buildUserPrompt(
+      toolsContext([
+        tool(
+          'searchQuestions',
+          { type: 'object', properties: { topic: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 50 } }, required: [] },
+          '检索候选题',
+        ),
+        tool('finishInterview', { type: 'object', properties: {} }, '结束面试'),
+        tool(
+          'tagQuestions',
+          { type: 'object', properties: { tags: { type: 'array', items: { type: 'string' } }, boost: { type: 'boolean' } }, required: ['tags'] },
+        ),
+      ]),
+    );
+    const section = toolsSection(prompt);
+    expect(section).toContain('- searchQuestions(topic?: string, limit?: number) — 检索候选题');
+    expect(section).toContain('- finishInterview() — 结束面试');
+    expect(section).toContain('- tagQuestions(tags: string[], boost?: boolean)');
+    // integer 与校验边界（minimum/maximum）对产出 args 没有帮助，不进 prompt
+    expect(section).not.toContain('minimum');
+    expect(section).not.toContain('integer');
+  });
+
+  it('类型串或签名过长时退化，避免签名比 schema 还长', () => {
+    const longEnum = tool('pick', {
+      type: 'object',
+      properties: { code: { enum: ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta'] } },
+      required: ['code'],
+    });
+    const manyParams: Record<string, unknown> = {};
+    for (let i = 0; i < 8; i += 1) manyParams[`paramNumber${i}`] = { type: 'string' };
+    const wide = tool('wide', { type: 'object', properties: manyParams, required: [] });
+
+    const section = toolsSection(buildUserPrompt(toolsContext([longEnum, wide])));
+    // 单个类型串超长 → 该参数退化为 any（不能让一个枚举吃掉整行预算）
+    expect(section).toContain('- pick(code: any)');
+    // 整个签名超长 → 折叠成 args: object
+    expect(section).toContain('- wide(args: object)');
+  });
+
+  it('无工具时输出占位而不是空段落', () => {
+    expect(toolsSection(buildUserPrompt(toolsContext([])))).toContain('(no tools available)');
+  });
+
+  it('紧凑清单的体积显著小于等价的完整 JSON Schema', () => {
+    const tools = [
+      tool(
+        'searchQuestions',
+        { type: 'object', properties: { topic: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 50 } }, required: [] },
+        '按 topic 检索候选题目，返回 id、题干摘要与该 topic 的掌握度',
+      ),
+      tool(
+        'getQuestion',
+        {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            format: { anyOf: [{ type: 'string', const: 'choice' }, { type: 'string', const: 'open' }] },
+          },
+          required: ['id'],
+        },
+        '按 id 选定题目并写入会话',
+      ),
+      tool('evaluateAnswer', { type: 'object', properties: {} }, '对当前题目的作答评分'),
+    ];
+    const section = toolsSection(buildUserPrompt(toolsContext(tools)));
+    const asJson = tools
+      .map((t) => `- ${t.name}: ${JSON.stringify(t.parameters)}${t.description ? ` — ${t.description}` : ''}`)
+      .join('\n');
+    // 信息量等价（参数名、类型、必填性、描述都在），体积应降到六成以下
+    expect(section.length).toBeLessThan(asJson.length * 0.6);
+    // 且描述一个字都不能丢——描述是模型判断该调哪个工具的唯一依据
+    for (const t of tools) {
+      if (t.description) expect(section).toContain(t.description);
+    }
   });
 });

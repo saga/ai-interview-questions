@@ -24,6 +24,7 @@ import {
 } from '../agent/types';
 import { createInterviewAgent } from '../agent/interviewAgent';
 import type { InterviewAgentHandle } from '../agent/interviewAgent';
+import { resolveOpeningInstruction } from '../agent/prompt';
 import { devUsageLogger } from '../ai/usageTelemetry';
 import {
   saveAgentSession,
@@ -45,13 +46,6 @@ const TOOL_LABELS: Record<string, string> = {
   getUserWeaknesses: '读取薄弱主题',
   finishInterview: '结束面试',
 };
-
-const OPENING_INSTRUCTION = `你是一位资深 AI 技术面试官，主持一次约 6–10 题的模拟面试。流程：
-1) 先调用 getUserWeaknesses 了解我的薄弱主题；
-2) 用 searchQuestions 在相关主题找候选题，再用 getQuestion 选定一道题呈现给我；
-3) 等我作答后，调用 evaluateAnswer 评分；
-4) 根据评分决定下一步：答得好就换方向或提高难度，答不好就追问或回退前置知识；当充分考察或达到约 8 题时调用 finishInterview 结束。
-注意：你不要自己打分，评分必须走 evaluateAnswer 工具；每次只呈现一道题，等我作答。`;
 
 /** 从一条 assistant message 中抽取纯文本（忽略 toolCall 等内容块）。 */
 function messageText(msg: unknown): string {
@@ -281,7 +275,7 @@ export function useAgentInterview(
     const handle = buildHandle(session, profile, entry);
     setPhase('running');
     try {
-      await handle.start(OPENING_INSTRUCTION);
+      await handle.start(resolveOpeningInstruction(config.prompts?.agentOpening));
       void persistDraft(); // 首轮结束落库
     } catch (err) {
       setBusy(false);

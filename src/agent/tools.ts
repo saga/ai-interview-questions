@@ -141,7 +141,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         )
         .join('\n');
       const nextStep =
-        '下一步：从这些候选里选 1 道（建议从薄弱主题 / 难度适中开始），调用 getQuestion(id=<上面列出的真实 id>) 呈现给用户。';
+        '下一步：从这些候选里选 1 道（建议从薄弱主题 / 难度适中开始），调用 getQuestion(id=<上面列出的真实 id>) 选定。';
       const content =
         items.length > 0
           ? isRepeat
@@ -162,7 +162,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const getQuestion: AgentTool<typeof GetQuestionSchema> = {
     name: 'getQuestion',
     label: '选定题目',
-    description: '按题目 id 把某道题置为「当前题」并呈现给用户。可选 format 指定本次呈现形态（choice/open），缺省按题目可用形态优先 choice。若传入的是 topic/category 而非题号，则退化为该范围内一道尚未考察过的题；该范围已全部考察过时会返回 topic_exhausted 并列出其它未考察题号供你另选，绝不重复出已考察过的题。',
+    description: '按题目 id 把某道题置为「当前题」；题干与选项由客户端界面呈现，你不需要也不应该复述。可选 format 指定本次呈现形态（choice/open），缺省按题目可用形态优先 choice。若传入的是 topic/category 而非题号，则退化为该范围内一道尚未考察过的题；该范围已全部考察过时会返回 topic_exhausted 并列出其它未考察题号供你另选，绝不重复出已考察过的题。',
     parameters: GetQuestionSchema,
     execute: async (_id, params: GetQuestionParams) => {
       let q = byId.get(params.id);
@@ -242,8 +242,11 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
               .slice(0, 3)
               .join('、')}）`
           : '';
+      // 注意措辞：这里是「已由界面呈现」，不是「请呈现给用户」。
+      // 题目正文从未进入 Agent 上下文，让模型「呈现」等于逼它凭 id 编一段题干出来（原 C1 缺陷）。
+      // 返回值结构本身不变，仍是 { id, format, matchedBy }——只是把错误的动作指令换成职责边界说明。
       return textResult(
-        `已选定题目 ${q.id}（${fmt}）${topicNote}，请呈现给用户`,
+        `已选定题目 ${q.id}（${fmt}）${topicNote}。题干与选项已由界面呈现给用户，你不需要复述；如需发言，直接说明本轮的考察方向。`,
         { id: q.id, format: fmt, matchedBy },
       );
     },

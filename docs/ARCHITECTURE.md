@@ -326,11 +326,26 @@ Quiz / 训练 / 规则式模拟面试 ──→ createLLMProvider(AIConfig)：�
                                     ↓ overall 由 domain/aggregateOverall 计算
 Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → decide → tool 循环（ADR-034）
                         选题/评分/读画像经 tools.ts 薄包装既有能力，Agent 不自己打分；
+                        题目正文不进 Agent 上下文，呈现归 UI（ADR-053）；
                         单 provider 起步，不接 FallbackProvider
 ```
 
 - 训练与规则式面试的 LLM 调用都是 one-shot 结构化生成，无状态；Agent 面试的
   多轮决策循环由 `src/agent/interviewAgent.ts` 驱动，是唯一的有状态调用方。
+- **题目呈现的职责边界（ADR-053）**：`Agent = 决策 / 编排 / 解释`，`UI = 题目呈现`。
+  `getQuestion` 的 `details` 恒为 `{ id, format, matchedBy }`——**题干 / 选项 / 答案 / 解析一律不进
+  Agent 上下文**，真实题干由 `session.currentQuestion`（`AgentInterviewPage.tsx:168-172`）渲染。
+  因此 prompt 禁止 Agent 重新生成、改写或完整复述题干与选项，只说考察方向 / 操作提示 / 评估反馈；
+  但**允许简短引用关键概念**（如「你解释了 KV Cache 的作用，但没说明它为什么能减少重复计算」）——
+  禁令针对「重新生成」，不扩大到「提及题目内容」。
+  - 为什么不给 `getQuestion` 补 `question` / `options`：补数据会让 Agent 在**选题阶段**拿到
+    `answer` / `explanation` 等它不需要的数据，还扩大 prompt injection 与数据污染面；
+    划清职责优于补齐上下文。
+  - **改动面是 5 处措辞而非一处**：`prompt.ts` 的 §你的职责 / §题目呈现 / §工具调用铁律 / 开场指令，
+    加 `tools.ts` 中 `getQuestion` 的 description 与结果正文、`searchQuestions` 的 `nextStep`。
+    留任何一处，模型都仍会收到「呈现题目」的指令——其中工具结果正文那句紧跟在返回之后，是最直接的触发器。
+  - 修复前 prompt 要求模型「把题干 + 选项清晰表述给用户」，而它上下文里只有 id
+    （`深度审查报告.md` C1 / P0，已于 2026-08-30 修复）。
 - **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
    pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
    chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，
@@ -514,7 +529,8 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
     append-only 多轮历史 + 稳定 system 前缀——均天然命中缓存，不做「每轮重新压缩 prompt」。
   - **Tool Calls**：Agent 走 pi-agent-core 原生工具调用（searchQuestions / getQuestion /
     evaluateAnswer / getUserWeaknesses / getWeakAngles / getCoverageGaps / finishInterview），
-    确定性工作全在工具内，Agent 只做选题/追问/收尾决策。
+    确定性工作全在工具内，Agent 只做选题/追问/收尾决策；工具结果只回 id 级事实，
+    题目正文不进上下文（ADR-053），省下的输出 token 也不再重复 UI 已渲染的题干与选项。
   - **Thinking**：能力已声明（deepseek `thinking:true`），但由选 `deepseek-reasoner` 模型驱动而非运行时参数；
     当前不自动切模型，需用户配置 reasoner 模型才启用。
   - **Cache 遥测**：dev 下 `devUsageLogger` 打印 cacheHit/cacheMiss，用于验证命中率（见 usageTelemetry.ts）。

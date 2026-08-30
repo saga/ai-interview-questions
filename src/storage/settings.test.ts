@@ -28,7 +28,7 @@ describe('配置审计日志', () => {
       providers: DEFAULT_CONFIG.providers.map((provider) =>
         provider.id === 'deepseek' ? { ...provider, enabled: true, model: 'm', apiKey: secret } : provider,
       ),
-      prompts: { agentSystem: 'private prompt body' },
+      prompts: { agentSystem: 'private prompt body', agentOpening: 'private opening body' },
     });
 
     const logs = await getErrorLogs();
@@ -36,6 +36,7 @@ describe('配置审计日志', () => {
     expect(logs[0].scope).toBe('config-audit');
     expect(JSON.stringify(logs[0])).not.toContain(secret);
     expect(JSON.stringify(logs[0])).not.toContain('private prompt body');
+    expect(JSON.stringify(logs[0])).not.toContain('private opening body');
     expect(logs[0].detail).toMatchObject({ after: { providers: expect.any(Array), prompts: expect.any(Object) } });
   });
 
@@ -174,6 +175,15 @@ describe('saveConfig / loadConfig 往返', () => {
     saveConfig(c);
     expect(loadConfig()).toEqual(c);
   });
+
+  it('prompts.agentOpening 原样往返（开场指令可持久化）', () => {
+    const c: AIConfig = {
+      ...DEFAULT_CONFIG,
+      prompts: { agentOpening: '只考 RAG，5 题，不要查薄弱主题' },
+    };
+    saveConfig(c);
+    expect(loadConfig().prompts?.agentOpening).toBe('只考 RAG，5 题，不要查薄弱主题');
+  });
 });
 
 describe('stringifyConfig', () => {
@@ -228,6 +238,18 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
       expect(res.ok).toBe(true);
       if (res.ok) expect(res.config.generateOpenQuestions).toBe(false);
     }
+  });
+
+  it('prompts.agentOpening：字符串通过，非字符串整体拒绝', () => {
+    const base = { providers: [VALID_ENTRY] };
+    const ok = parseConfigJSON(JSON.stringify({ ...base, prompts: { agentOpening: '改成 15 题' } }));
+    expect(ok.ok).toBe(true);
+    if (ok.ok) expect(ok.config.prompts?.agentOpening).toBe('改成 15 题');
+
+    // 非字符串 → 整个配置被拒（与 agentSystem 同口径，不静默丢弃）
+    const bad = parseConfigJSON(JSON.stringify({ ...base, prompts: { agentOpening: 15 } }));
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.error).toContain('agentOpening');
   });
 
   it('停用的引擎允许配置不完整（保留其配置）', () => {

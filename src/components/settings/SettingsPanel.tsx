@@ -8,7 +8,8 @@ import { DEFAULT_CONFIG, stringifyConfig } from '../../storage/settings';
 import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
 import { getErrorLogs, clearErrorLogs, recordLog, type ErrorLogEntry } from '../../storage/db';
 import { resetLearnerData } from '../../storage/learner';
-import { INTERVIEW_AGENT_SYSTEM_PROMPT } from '../../agent/prompt';
+import { INTERVIEW_AGENT_OPENING_INSTRUCTION, INTERVIEW_AGENT_SYSTEM_PROMPT } from '../../agent/prompt';
+import { MAX_AGENT_QUESTIONS } from '../../agent/interviewAgent';
 import { EVAL_SYSTEM } from '../../ai/evaluate';
 import { VARIANT_SYSTEM } from '../../ai/variant';
 import type { PromptDraft } from '../../hooks/useSettingsDraft';
@@ -217,6 +218,15 @@ export default function SettingsPanel({
             <Input.TextArea autoSize={{ minRows: 10, maxRows: 24 }} value={promptDraft.agentSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, agentSystem: event.target.value }))} />
           </div>
           <div>
+            <Typography.Text strong>Agent 开场指令</Typography.Text>
+            <div style={{ marginBottom: 4 }}>
+              <Typography.Text type="secondary">
+                面试第一轮发给模型的指令，决定本轮流程（题数、顺序）。题数硬上限由代码控制（{MAX_AGENT_QUESTIONS} 题），此处只是给模型的软目标。
+              </Typography.Text>
+            </div>
+            <Input.TextArea autoSize={{ minRows: 5, maxRows: 16 }} value={promptDraft.agentOpening} onChange={(event) => setPromptDraft((current) => ({ ...current, agentOpening: event.target.value }))} />
+          </div>
+          <div>
             <Typography.Text strong>开放题评分系统提示词</Typography.Text>
             <Input.TextArea autoSize={{ minRows: 5, maxRows: 16 }} value={promptDraft.evaluationSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, evaluationSystem: event.target.value }))} />
           </div>
@@ -225,7 +235,7 @@ export default function SettingsPanel({
             <Input.TextArea autoSize={{ minRows: 10, maxRows: 28 }} value={promptDraft.variantSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, variantSystem: event.target.value }))} />
           </div>
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-            <Button onClick={() => setPromptDraft({ agentSystem: INTERVIEW_AGENT_SYSTEM_PROMPT, evaluationSystem: EVAL_SYSTEM, variantSystem: VARIANT_SYSTEM })}>恢复提示词默认值</Button>
+            <Button onClick={() => setPromptDraft({ agentSystem: INTERVIEW_AGENT_SYSTEM_PROMPT, agentOpening: INTERVIEW_AGENT_OPENING_INSTRUCTION, evaluationSystem: EVAL_SYSTEM, variantSystem: VARIANT_SYSTEM })}>恢复提示词默认值</Button>
             <Button type="primary" icon={<SaveOutlined />} onClick={handlePromptSave}>保存提示词</Button>
           </Space>
         </Space>

@@ -6,6 +6,7 @@ import type { LLMProvider } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { Question } from '../schemas/question';
 import { emptyProfile } from '../domain/learner';
+import { buildUserPrompt } from '../ai/chromeAgent';
 import { createAgentTools } from './tools';
 import { createAgentSession } from './types';
 import type { AgentToolDeps } from './tools';
@@ -96,6 +97,11 @@ function deps(bank: Question[], profile = emptyProfile()): AgentToolDeps {
   };
 }
 
+/** 取工具返回的文本——LLM 只能读到 content，看不到 details，所以措辞上的坑都在这里。 */
+function textOf(r: { content: unknown }): string {
+  return (r.content as { type: string; text: string }[]).map((c) => c.text).join('');
+}
+
 describe('createAgentTools', () => {
   it('searchQuestions 按主题筛选并返回精简摘要', async () => {
     const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
@@ -131,6 +137,38 @@ describe('createAgentTools', () => {
     expect(d.provider.generateVariant).toHaveBeenCalledWith(expect.objectContaining({ id: 'q-choice-1' }));
     expect(d.session.currentQuestion?.question.question).toBe('attention 变体题干');
     expect((r.details as { id: string }).id).toBe('q-choice-1');
+  });
+
+  it('getQuestion 不回传题干/答案，只回 id + format（工具只说「选好了哪道」，不说「题是什么」）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const tools = createAgentTools(d);
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'q-choice-1' });
+    const text = textOf(r);
+    // 结构不变：details 里只有这三个字段，题干/选项/答案/解析一律不进 Agent 上下文
+    expect(Object.keys(r.details as object).sort()).toEqual(['format', 'id', 'matchedBy']);
+    expect(text).not.toContain(makeChoiceQuestion().question);
+    expect(text).not.toContain('多头并行捕捉不同子空间关系'); // explanation
+  });
+
+  it('getQuestion 与 searchQuestions 都不再命令模型「呈现」题目（C1 的根因就在这些措辞里）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const tools = createAgentTools(d);
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+
+    // 工具结果正文：不能再说「请呈现给用户」——题目正文不在上下文里，这句话等于让模型编题干
+    const picked = textOf(await getQ.execute('call', { id: 'q-choice-1' }));
+    expect(picked).not.toContain('请呈现给用户');
+    expect(picked).toContain('已由界面呈现');
+
+    const listed = textOf(await search.execute('call', {}));
+    expect(listed).not.toContain('呈现给用户');
+
+    // 工具描述同样会进入 prompt（Chrome 路径）与 API 的 tools 参数（DeepSeek 路径），必须一致
+    const getQTool = tools.find((t) => t.name === 'getQuestion')!;
+    expect(getQTool.description).not.toContain('并呈现给用户');
+    expect(getQTool.description).toContain('你不需要也不应该复述');
   });
 
   it('getQuestion 找不到题目时优雅返回而非崩溃', async () => {
@@ -381,9 +419,6 @@ describe('getQuestion 尊重 generateOpenQuestions 开关（修复：Agent 不�
 });
 
 describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到已考察的题）', () => {
-  /** 取工具返回的文本，LLM 只能读到 content。 */
-  const textOf = (r: { content: unknown }) =>
-    (r.content as { type: string; text: string }[]).map((c) => c.text).join('');
   const getQ = (d: AgentToolDeps) => createAgentTools(d).find((t) => t.name === 'getQuestion')!;
   const twoInSameTopic = () => [makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' })];
 
@@ -456,5 +491,38 @@ describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到�
     expect((r.details as { validIds: string[] }).validIds).toEqual([]);
     expect(textOf(r)).toContain('finishInterview');
     expect(d.session.currentQuestion).toBeNull();
+  });
+});
+
+// Chrome 走「工具清单注入 prompt」的路径，没有原生 function calling 可用。
+// 工具 schema 越长，Chrome 每轮重发的 prompt 越大，挤占的正是对话历史的空间。
+// 这组断言用**真实**工具定义做门禁：任何人给工具加字段导致清单膨胀，都会在这里被拦下。
+describe('工具定义注入 Chrome prompt 的体积', () => {
+  it('7 个真实工具的紧凑清单显著小于完整 JSON Schema，且每个工具名都在', () => {
+    const tools = createAgentTools(deps([makeChoiceQuestion(), makeOpenQuestion()]));
+    const prompt = buildUserPrompt({ systemPrompt: 'sys', messages: [], tools: tools as never });
+    const section = prompt.slice(prompt.indexOf('## Available tools'));
+
+    const asJson = tools.map((t) => `- ${t.name}: ${JSON.stringify(t.parameters)} — ${t.description}`).join('\n');
+    // 实测基线：完整 schema 1312 字符 → 紧凑签名 947 字符（schema 部分 513 → 0，净省 28%）。
+    // 相对阈值 0.8 足以拦住「又有人把 schema 塞回来」（那样两边都是 1312，直接失败）；
+    // 绝对上限 1100 则防的是工具描述逐条变长这种温水式膨胀。
+    expect(section.length).toBeLessThan(asJson.length * 0.8);
+    expect(section.length).toBeLessThan(1100);
+    // 体积降了，但工具名一个都不能少——少一个工具模型就调不到它
+    for (const t of tools) expect(section).toContain(t.name);
+  });
+
+  it('getQuestion 的签名必须保留 id 必填与 format 联合字面量', () => {
+    const tools = createAgentTools(deps([makeChoiceQuestion()]));
+    const prompt = buildUserPrompt({ systemPrompt: 'sys', messages: [], tools: tools as never });
+    expect(prompt).toContain('getQuestion(id: string, format?: "choice" | "open")');
+  });
+
+  it('无参工具不产生空括号以外的内容', () => {
+    const tools = createAgentTools(deps([makeChoiceQuestion()]));
+    const prompt = buildUserPrompt({ systemPrompt: 'sys', messages: [], tools: tools as never });
+    expect(prompt).toContain('- finishInterview()');
+    expect(prompt).toContain('- evaluateAnswer()');
   });
 });

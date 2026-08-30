@@ -30,6 +30,7 @@ function safeConfigSnapshot(config: AIConfig) {
     proficiency: { ...config.proficiency },
     prompts: {
       agentSystem: { present: Boolean(config.prompts?.agentSystem), length: config.prompts?.agentSystem?.length ?? 0 },
+      agentOpening: { present: Boolean(config.prompts?.agentOpening), length: config.prompts?.agentOpening?.length ?? 0 },
       evaluationSystem: { present: Boolean(config.prompts?.evaluationSystem), length: config.prompts?.evaluationSystem?.length ?? 0 },
       variantSystem: { present: Boolean(config.prompts?.variantSystem), length: config.prompts?.variantSystem?.length ?? 0 },
     },
