@@ -20,6 +20,7 @@ import {
   createAgentSession,
   sessionRecordFromAgent,
   averageOverall,
+  countDelivered,
   type InterviewAgentSession,
 } from '../agent/types';
 import { createInterviewAgent } from '../agent/interviewAgent';
@@ -148,7 +149,7 @@ export function useAgentInterview(
     if (!session) return;
     finalizedRef.current = true;
     handleRef.current?.abort();
-    const asked = Object.keys(session.evaluations).length;
+    const asked = countDelivered(session);
     if (asked === 0) {
       setPhase('done');
       setSummary({ asked: 0, overall: 0 });
@@ -161,6 +162,24 @@ export function useAgentInterview(
     setPhase('done');
   }, [onComplete]);
 
+  /**
+   * 落库写入的串行队列：所有 saveAgentSession 都接到队尾依次执行。
+   *
+   * 背景：persistDraft 原先是 fire-and-forget（`void saveAgentSession(...)`），
+   * IndexedDB 写入完成顺序不保证与调用顺序一致，快速连续落库时会出现
+   * 「旧快照后完成、覆盖新快照」的回退。串行化后写入顺序恒等于调用顺序。
+   */
+  const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  /** 等待队列中未完成的落库写完后，再执行后续动作（如删除草稿）。 */
+  const flushPersist = useCallback(async () => {
+    try {
+      await persistQueueRef.current;
+    } catch {
+      // 落库失败不应阻塞收尾流程（草稿只是可恢复快照，非权威数据）
+    }
+  }, []);
+
   /** 落库当前进行中面试（仅在回合边界调用，保证 session/messages 处于一致状态）。 */
   const persistDraft = useCallback(() => {
     const handle = handleRef.current;
@@ -168,7 +187,8 @@ export function useAgentInterview(
     const entryId = entryIdRef.current;
     if (!handle || !session || !entryId) return;
     if (session.status === 'finished') return; // 结束由 deleteAgentSession 处理
-    void saveAgentSession({
+    // 快照在此同步取好（session/messages/questions 均为引用，入队后再读可能已变）。
+    const snapshot = {
       id: session.id,
       session,
       messages: handle.agent.state.messages,
@@ -176,7 +196,14 @@ export function useAgentInterview(
       entryId,
       profile: profileRef.current,
       updatedAt: Date.now(),
-    });
+    };
+    // 接到队尾串行执行，保证「后调用的写入后落库」，避免旧快照覆盖新快照。
+    persistQueueRef.current = persistQueueRef.current
+      .then(() => saveAgentSession(snapshot))
+      .catch(() => {
+        // 落库失败不冒泡：草稿持久化是尽力而为，不能打断面试主流程
+      });
+    return persistQueueRef.current;
   }, []);
 
   /**
@@ -209,7 +236,8 @@ export function useAgentInterview(
           },
           onStatus: (status) => {
             if (status === 'finished') {
-              void deleteAgentSession(session.id); // 结束即清草稿，避免残留
+              // 先等未完成的落库写完再删，否则在途写入会在删除之后把草稿重新写回
+              void flushPersist().then(() => deleteAgentSession(session.id)); // 结束即清草稿，避免残留
               finalize();
             }
           },
@@ -322,7 +350,8 @@ export function useAgentInterview(
   const restart = () => {
     handleRef.current?.dispose(); // 真正中止进行中的 run + 清看门狗 + 取消订阅
     handleRef.current = null;
-    if (sessionRef.current) void deleteAgentSession(sessionRef.current.id);
+    const restartSessionId = sessionRef.current?.id;
+    if (restartSessionId) void flushPersist().then(() => deleteAgentSession(restartSessionId));
     sessionRef.current = null;
     finalizedRef.current = false; // 解除终局守卫，允许下次面试收尾
     setPhase('intro');
@@ -345,7 +374,7 @@ export function useAgentInterview(
       const entry = config.providers?.find((p) => p.id === rec.entryId && p.enabled && isEntryValid(p));
       if (!entry) {
         // 引擎已不可用，无法续面：清掉草稿，回到 intro 由用户重开
-        void deleteAgentSession(rec.id);
+        void flushPersist().then(() => deleteAgentSession(rec.id));
         return;
       }
       const session = rec.session;
@@ -375,7 +404,7 @@ export function useAgentInterview(
           },
           onStatus: (status) => {
             if (status === 'finished') {
-              void deleteAgentSession(session.id);
+              void flushPersist().then(() => deleteAgentSession(session.id));
               finalize();
             }
           },
@@ -445,7 +474,8 @@ export function useAgentInterview(
     submitting,
     summary,
     error,
-    evaluatedCount: Object.keys(sessionRef.current?.evaluations ?? {}).length,
+    // 「已考察 N 题」= 已交付题数（含评分失败记为 null 的题），与 MAX_AGENT_QUESTIONS 上限口径一致。
+    evaluatedCount: sessionRef.current ? countDelivered(sessionRef.current) : 0,
     setAnswer,
     start,
     submit,

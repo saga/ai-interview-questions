@@ -15,6 +15,7 @@ import { availableSessionFormats, evaluateSessionQuestion, finalizeQuestion } fr
 import { describeEvaluationSummary } from '../domain/evaluation';
 import { collectTopicRefs, describeCoverageGap, findCoverageGaps, recommendWeakTopics, weakAnglesOf } from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge';
+import { countDelivered } from './types';
 import type { InterviewAgentSession } from './types';
 
 /** 工具依赖：题库、用户画像、评分用的 LLMProvider、共享会话。 */
@@ -89,7 +90,7 @@ function toSummary(q: Question, generateOpenQuestions: boolean) {
  * 否则用户会重复看到同一道题。
  *
  * 用 `in` 而非真值判断是刻意的：`evaluations[id]` 可以是 null（未作答 / 评估失败被记为 null），
- * 但那道题确实已经呈现给用户了，口径与 `countEvaluated` 保持一致。
+ * 但那道题确实已经呈现给用户了，口径与 `countDelivered` 保持一致。
  */
 function isDelivered(session: InterviewAgentSession, id: string): boolean {
   return id in session.answers || id in session.evaluations || session.currentQuestion?.question.id === id;
@@ -404,7 +405,8 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     parameters: FinishInterviewSchema,
     execute: async () => {
       session.status = 'finished';
-      const questionsAsked = Object.keys(session.evaluations).length;
+      // 「问过几题」= 已交付题数（含评分失败记为 null 的题）；已评分题数见 countScored。
+      const questionsAsked = countDelivered(session);
       const overall = Object.values(session.evaluations)
         .filter((e): e is EvaluationResult => e != null)
         .reduce((a, e, _i, arr) => a + e.overall / arr.length, 0);

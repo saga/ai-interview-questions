@@ -30,7 +30,7 @@ import { buildAgentRuntime } from './runtime';
 import { piUsageToLLMUsage } from '../ai/pi';
 import type { LLMUsage } from '../types';
 import type { AgentHandlers, InterviewAgentSession } from './types';
-import { countEvaluated } from './types';
+import { countDelivered } from './types';
 
 /** 单轮 Agent 面试的题数上限（达到即优雅停止）。 */
 export const MAX_AGENT_QUESTIONS = 10;
@@ -41,13 +41,18 @@ export const MAX_AGENT_QUESTIONS = 10;
  */
 const WATCHDOG_MS = 90_000;
 
-/** 停止条件：本轮调用了 finishInterview，或已评题数达上限。导出便于单测。 */
+/**
+ * 停止条件：本轮调用了 finishInterview，或已交付题数达上限。导出便于单测。
+ *
+ * 用「已交付」而非「已评分」计数：交付即占位，即便该题评分失败（evaluations[id] = null）
+ * 也必须计入上限，否则评分连续失败时永远停不下来。
+ */
 export function shouldStopAfterTurn(
   session: InterviewAgentSession,
   ctx: ShouldStopAfterTurnContext,
 ): boolean {
   if (ctx.toolResults.some((tr) => tr.toolName === 'finishInterview')) return true;
-  if (countEvaluated(session) >= MAX_AGENT_QUESTIONS) return true;
+  if (countDelivered(session) >= MAX_AGENT_QUESTIONS) return true;
   return false;
 }
 
@@ -269,7 +274,7 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       return;
     }
     // 无更多题目可交付
-    if (Object.keys(session.evaluations).length > 0) handlers?.onStatus?.('finished');
+    if (countDelivered(session) > 0) handlers?.onStatus?.('finished');
     else handlers?.onError?.('面试已结束：当前题库没有可考察的题目', true);
   }
 
@@ -289,10 +294,13 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       if (event.toolName === 'finishInterview') handlers?.onStatus?.('finished');
     }
     if (event.type === 'agent_end') {
+      // 先定格兜底原因：lastErrorMessage 稍后会被清空，若等清空后再判断，
+      // ensureQuestionDelivered 永远只会收到 'agent_no_action'，model_error 将永不入账。
+      const reason = lastErrorMessage ? 'model_error' : 'agent_no_action';
       if (lastErrorMessage) handlers?.onError?.(lastErrorMessage);
       lastErrorMessage = undefined;
       // 修复 A/C：agent 静默收场但未交付题 → 兜底出题（或收尾）
-      await ensureQuestionDelivered(lastErrorMessage ? 'model_error' : 'agent_no_action');
+      await ensureQuestionDelivered(reason);
     }
   });
 

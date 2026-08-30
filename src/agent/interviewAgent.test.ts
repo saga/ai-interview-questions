@@ -19,7 +19,7 @@ import type { ProviderEntry } from '../schemas/ai-config';
 import type { Question } from '../schemas/question';
 import { emptyProfile } from '../domain/learner';
 import { createInterviewAgent, shouldStopAfterTurn, beforeToolCall, MAX_AGENT_QUESTIONS } from './interviewAgent';
-import { createAgentSession } from './types';
+import { countDelivered, countScored, createAgentSession } from './types';
 import type { InterviewAgentSession } from './types';
 
 const EMPTY_USAGE: Usage = {
@@ -142,11 +142,49 @@ describe('shouldStopAfterTurn', () => {
     expect(shouldStopAfterTurn(session, ctx)).toBe(false);
   });
 
-  it(`已评题数达 ${MAX_AGENT_QUESTIONS} 时停止`, () => {
+  it(`已交付题数达 ${MAX_AGENT_QUESTIONS} 时停止（含评分失败记为 null 的题）`, () => {
     const session = createAgentSession();
+    // 全部评分失败（键值为 null）也必须计入上限，否则面试永远停不下来
     for (let i = 0; i < MAX_AGENT_QUESTIONS; i++) session.evaluations[`q${i}`] = null;
     const ctx = { toolResults: [] } as unknown as ShouldStopAfterTurnContext;
     expect(shouldStopAfterTurn(session, ctx)).toBe(true);
+  });
+});
+
+describe('countDelivered / countScored 语义分离', () => {
+  const scoredResult = (overall: number) =>
+    ({
+      overall,
+      dimensions: { correctness: overall, completeness: overall, architecture: overall, communication: overall },
+      levels: { correctness: 4, completeness: 4, architecture: 4, communication: 4 },
+      evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
+      strengths: [],
+      gaps: [],
+      missingConcepts: [],
+      feedback: '',
+      referenceAnswer: '',
+    }) as unknown as EvaluationResult;
+
+  it('null 计入已交付、但不计入已评分', () => {
+    const session = createAgentSession();
+    session.evaluations['q1'] = scoredResult(100);
+    session.evaluations['q2'] = null; // 评分失败
+    expect(countDelivered(session)).toBe(2);
+    expect(countScored(session)).toBe(1);
+  });
+
+  it('全为 null 时：已交付非 0、已评分为 0（null 不计入成绩）', () => {
+    const session = createAgentSession();
+    session.evaluations['q1'] = null;
+    session.evaluations['q2'] = null;
+    expect(countDelivered(session)).toBe(2);
+    expect(countScored(session)).toBe(0);
+  });
+
+  it('空会话两者均为 0', () => {
+    const session = createAgentSession();
+    expect(countDelivered(session)).toBe(0);
+    expect(countScored(session)).toBe(0);
   });
 });
 
@@ -238,6 +276,36 @@ describe('createInterviewAgent 完整 loop', () => {
     expect(session.evaluations['q-choice-1']!.overall).toBe(100);
     // 题库已空 → 兜底优雅收尾（无更多题可出）
     expect(Object.keys(session.evaluations).length).toBe(1);
+  });
+
+  it('模型流式报错 → 兜底原因记为 model_error（而非恒为 agent_no_action）', async () => {
+    const bank = [choiceQuestion()];
+    const provider = fakeProvider();
+    const session = createAgentSession();
+    const errors: string[] = [];
+    // LLM 流式返回错误：既没选题也没显式结束 → 走 agent_end 兜底分支
+    const errMsg: AssistantMessage = {
+      ...makeMsg([{ type: 'text', text: '' }], 'error'),
+      errorMessage: 'upstream 500',
+    };
+    const streamFn = makeMockStreamFn([errMsg]);
+
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+      handlers: { onError: (m) => errors.push(m) },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    // 回归重点：修复前 lastErrorMessage 在 onError 后被清空，
+    // 导致 ensureQuestionDelivered 永远收到 'agent_no_action'，model_error 从不入账。
+    expect(session.fallbackReason).toBe('model_error');
+    expect(session.fallbackCount).toBe(1);
+    expect(errors.some((m) => m.includes('upstream 500'))).toBe(true);
   });
 
   it('Agent 中段 stall（评完 q1 却不再选 q2）→ 兜底补出 q2（修复 A/C）', async () => {

@@ -87,9 +87,23 @@ export interface AgentHandlers {
   onError?: (message: string, fatal?: boolean) => void;
 }
 
-/** 计算已评分题数（用于「题数上限」停止条件）。 */
-export function countEvaluated(session: InterviewAgentSession): number {
+/**
+ * 已交付题数：`evaluations[id]` 在题目交付给用户时即建键（尚未评分时为 null），
+ * 因此键数 = 已呈现给用户 / 已尝试过的题数，与 `isDelivered` 口径一致。
+ *
+ * 题数上限（MAX_AGENT_QUESTIONS）必须用本口径：若改用「已评分」口径，
+ * 一旦评分连续失败（键值为 null），上限永远达不到，面试无法优雅收尾。
+ */
+export function countDelivered(session: InterviewAgentSession): number {
   return Object.keys(session.evaluations).length;
+}
+
+/**
+ * 已评分题数：只统计真正拿到 EvaluationResult 的题目。
+ * `null` 表示未作答 / 评估失败（不计入成绩），与 `averageOverall` 口径一致。
+ */
+export function countScored(session: InterviewAgentSession): number {
+  return Object.values(session.evaluations).filter((e): e is EvaluationResult => e != null).length;
 }
 
 /** 从已评分结果聚合综合均分（0-100），无评分返回 0。 */
