@@ -124,7 +124,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       if (params.topic) {
         pool = pool.filter((q) => q.topic === params.topic || q.category === params.topic);
       }
-      const items = pool.slice(0, params.limit ?? 8).map((q) => toSummary(q, generateOpenQuestions));
+      const items = pool.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
       const ids = items.map((it) => it.id);
       // 幂等判定：与「最近一次搜索结果」完全一致视为重复调用——直接复用缓存列表，
       // 从代码层消除「反复调用 searchQuestions」动机（原 prompt 约束由此下沉为确定性行为）。

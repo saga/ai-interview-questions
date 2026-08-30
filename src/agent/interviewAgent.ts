@@ -152,7 +152,7 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       if (session.status === 'finished') return;
       if (session.currentQuestion && !Object.prototype.hasOwnProperty.call(session.evaluations, session.currentQuestion.question.id)) return;
       agent.abort();
-      void ensureQuestionDelivered();
+      void ensureQuestionDelivered('timeout');
     }, WATCHDOG_MS);
   }
 
@@ -239,7 +239,9 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
    * - 否则若仍在题数上限内且有未问题目 → 确定性兜底交付；
    * - 否则（无题可出 / 已达上限）→ 优雅收尾（onStatus('finished')）。
    */
-  async function ensureQuestionDelivered(): Promise<void> {
+  async function ensureQuestionDelivered(
+    reason: 'timeout' | 'model_error' | 'agent_no_action' = 'agent_no_action',
+  ): Promise<void> {
     clearWatchdog();
     // 已交付且用户尚未作答 → 等待用户，不干预
     if (session.currentQuestion && !Object.prototype.hasOwnProperty.call(session.evaluations, session.currentQuestion.question.id)) {
@@ -252,6 +254,15 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     }
     if (fallbackNextQuestion()) {
       usingFallback = true;
+      // telemetry：记录兜底原因与次数，便于观察真实 Agent 稳定性（P1 第 4 项），不驱动逻辑。
+      session.fallbackCount = (session.fallbackCount ?? 0) + 1;
+      if (!session.fallbackReason) session.fallbackReason = reason;
+      session.log.push({
+        at: Date.now(),
+        kind: 'event',
+        summary: `兜底出题接管（原因：${reason}）`,
+        details: { fallbackReason: reason, fallbackCount: session.fallbackCount },
+      });
       return;
     }
     // 无更多题目可交付
@@ -278,7 +289,7 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       if (lastErrorMessage) handlers?.onError?.(lastErrorMessage);
       lastErrorMessage = undefined;
       // 修复 A/C：agent 静默收场但未交付题 → 兜底出题（或收尾）
-      await ensureQuestionDelivered();
+      await ensureQuestionDelivered(lastErrorMessage ? 'model_error' : 'agent_no_action');
     }
   });
 

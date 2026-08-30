@@ -4,7 +4,7 @@
 import type { Question } from './schemas/question';
 import type { OpenFormat } from './schemas/question';
 import type { QuestionAngle, Difficulty, EvaluationDimension } from './schemas/common';
-import type { FormatId, VariantFormat } from './schemas/common';
+import type { FormatId } from './schemas/common';
 import type { ScoringRubric } from './schemas/interview';
 import type { EvaluationResult } from './schemas/evaluation';
 import type { QuestionChallenge } from './ai/questionChallenger';
@@ -52,7 +52,7 @@ export interface GeneratedVariant {
 export interface LLMProvider {
   readonly name: string;
   /** 生成变体；format 为本次会话实际呈现形态（P0-1：变体须对齐 Session format，而非永远按 choice）。 */
-  generateVariant(question: Question, format?: VariantFormat): Promise<GeneratedVariant>;
+  generateVariant(question: Question, format?: FormatId): Promise<GeneratedVariant>;
   evaluateOpenAnswer(
     question: Question,
     open: OpenFormat,

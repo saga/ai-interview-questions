@@ -1,13 +1,22 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-30 · Variant format 参数收紧为 FormatId + 兜底 telemetry + P1-3 收回（ADR-059）
+
+- **P0-1 修订（ADR-059）**：`generateVariant`/`validateVariant`/`applyVariant` 的 `format` 形参类型由 `VariantFormat` 收缩回 `FormatId`（`'choice'|'open'`），删除 `VariantFormat`；`buildUser` 改为 `format==='choice' ? q.formats.choice!.type : 'open'`，彻底落实按 `sq.format` 生成变体（单选题不再被误当多选题）。
+- **P1-1 修正**：`searchQuestions` `limit` 上限 50→20（不变），**默认恢复为 10**（ADR-058 误降到 8，本次复核维持 10）。
+- **P1 第4项·兜底 telemetry**：`InterviewAgentSession` 增 `fallbackReason` + `fallbackCount`；`ensureQuestionDelivered` 接管时记录原因（timeout/model_error/agent_no_action）与次数并写入 `session.log`（仅观察）。
+- **P1-3 收回**：撤销 `missingConcepts → commonWeaknesses` 映射；`aggregateWeaknesses` 仅统计 `gaps`，`missingConcepts` 仍落库 `QuestionResult` 但不汇入长期薄弱项（暂不改动 Learner Memory 数据结构）。
+- **文档同步**：`docs/ARCHITECTURE.md` 变体形态对齐段补 single/multiple 子类型推导说明；新增 ADR-059。
+- **验证**：全量 `vitest` **422 passed**，`tsc` 0 error；`src/agent/interviewAgent.test.ts` 新增兜底 telemetry 断言。
+
 ## 2026-08-30 · Variant 形态对齐 + 语义闸门收紧 + Agent/Learner/Eval 微调（ADR-056/057/058）
 
 - **P0-1（ADR-056）**：`sq.format` 透传 `generateVariant` / `validateVariant` / `applyVariant`，双形态题按当前 Session 形态生成变体，不再永远当选择题（`buildUser` 据 format 输出对应 JSON 契约）。
 - **P0-2（ADR-057）**：`validateVariant` 语义闸门收紧——证据文本排除 `explanation`；requiredConcepts 覆盖率门槛 `max(1, round(N*2/3))`（3 条需≥2、2 条需≥1、1 条需全中）；保留 fuzzball 兜底。旧 `hasConceptEvidence` 拆为 `anchorHasEvidence` + `hasMinimalEvidence` + `requiredCoverageMet`。
-- **P1-1**：`searchQuestions` `limit` 上限 50→20、默认 10→8（`src/agent/tools.ts`）。
+- **P1-1**：`searchQuestions` `limit` 上限 50→20；**默认 10 保持（ADR-058 曾误降为 8，已由 ADR-059 复核纠正回 10）**。
 - **P1-2**：Agent 系统提示升 `v3→v4`，新增「工具调用节制」段（辅助查询仅在结果不足以决策时调用、从已有候选挑 id 不重复搜）。
-- **P1-3**：`questionResultSchema` 增 `missingConcepts?`；开放题评估结果并入 `commonWeaknesses`（`aggregateGaps`→`aggregateWeaknesses` 合并 `gaps` 与 `missingConcepts`），选择题不伪造 gap。
+- **P1-3（已被 ADR-059 收回）**：原拟将 `missingConcepts` 并入 `commonWeaknesses`（`aggregateGaps`→`aggregateWeaknesses`），复核后撤销——`aggregateWeaknesses` 仅统计 `gaps`，`missingConcepts` 仍落库 `QuestionResult` 但不汇入长期薄弱项。
 - **P1-4**：EVAL 系统提示升 `v2→v3`，新增「维度适用性」段（不适用维度给中性 2 而非低分）。
 - **文档同步**：`docs/ARCHITECTURE.md` 变体闸门描述与 `hasConceptEvidence` 引用更新、React 18→19、补 `server/`+`worker/` 同源代理说明；`README.md` React 18→19；新增 ADR-056/057/058。
 - **验证**：全量 `vitest` **422 passed**（36 文件），`tsc -p tsconfig.app.json` 0 error。

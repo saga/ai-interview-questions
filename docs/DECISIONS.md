@@ -2,6 +2,17 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-059 · Variant format 参数收紧为 FormatId + 兜底 telemetry（P0-1 修订 + P1 第4项 + P1-3 收回）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：复核发现 ADR-056 的 P0-1 落地仍有偏差：① `generateVariant`/`validateVariant`/`applyVariant` 的 `format` 形参类型被扩成 `VariantFormat`（含 `single`/`multiple`），`buildUser` 在未传 format 时回退到 `single`/`multiple`——但 `format==='choice'` 时未正确落到 `q.formats.choice!.type`，导致双形态单选题被错误按「多选题」生成；② `searchQuestions` 默认误降到 `?? 8`；③ `missingConcepts` 被并入 `commonWeaknesses` 属于过度改动。
+- **决策（用户复核收口，明确「做到这里停手，不再加复杂机制」）**：
+  1. **P0-1 修订**：`format` 形参类型收缩回 `FormatId`（`'choice' | 'open'`），删除 `VariantFormat`；`buildUser` 改为 `const fmt = format === 'choice' ? q.formats.choice!.type : 'open'`——`format==='choice'` 时由题面 `q.formats.choice!.type` 推导 single/multiple，否则（open 或未指定）按开放题；`validateVariant`/`applyVariant` 同步改用 `FormatId`。
+  2. **P1-1 修正**：`searchQuestions` `limit` 上限 50→20 保留，但**默认恢复为 10**（ADR-058 误降到 8，复核后维持 10）。
+  3. **P1 第4项·兜底 telemetry**：`InterviewAgentSession` 新增 `fallbackReason?: 'timeout' | 'model_error' | 'agent_no_action'` 与 `fallbackCount: number`；`ensureQuestionDelivered` 接管时写入首次原因并累加次数，推一条 `kind:'event'` 日志到 `session.log`（仅观察，不驱动逻辑）。看门狗触发记 `timeout`、Agent 流式报错记 `model_error`、run 静默收尾记 `agent_no_action`。
+  4. **P1-3 收回**：撤销「`missingConcepts` 并入 `commonWeaknesses`」——`aggregateWeaknesses` 仅统计 `gaps`，LLM 评估的 `missingConcepts` 仍落库到 `QuestionResult` 但不汇入长期薄弱项（用户决策：暂不改动 Learner Memory 数据结构）。
+- **验证**：全量 `vitest` **422 passed**，`tsc` 0 error；`src/agent/interviewAgent.test.ts` 新增兜底 telemetry 断言（reason=`agent_no_action`、count=1、日志存在）。**刻意不做的**：未为 fallback 引入新机制/配置；未改 `commonWeaknesses` 数据结构；`limit` 下限与 single/multiple 契约不动；未继续复杂化。
+
 ## ADR-058 · Agent / Learner / Eval 提示与门禁微调（P1-1~P1-4，收尾批次小修）
 
 - 状态：已采纳 · 2026-08-30

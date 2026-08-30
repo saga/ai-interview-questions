@@ -112,12 +112,14 @@ export function calculateProficiency(
   )) * 100) / 100;
 }
 
-/** 由会话结果聚合"高频遗漏要点"：gaps（开放题 LLM 评估）+ missingConcepts（缺失概念）一并计数，取前 3；
- *  本会话无遗漏则沿用历史。选择题无 LLM 评估、不产生 gaps / missingConcepts（不伪造 gap）。 */
+/** 由会话结果聚合"高频遗漏要点"：仅统计 gaps（开放题 LLM 评估识别的具体薄弱点），取前 3；
+ *  本会话无遗漏则沿用历史。选择题无 LLM 评估、不产生 gaps（不伪造 gap）。
+ *  注：EvaluationResult.missingConcepts（候选缺失概念）目前只落库到 QuestionResult，不并入 commonWeaknesses——
+ *  避免把 LLM 评估的"候选缺失概念"稀释/污染历史薄弱项（用户决策：暂不改动 Learner Memory 数据结构）。 */
 function aggregateWeaknesses(prev: string[] | undefined, results: QuestionResult[]): string[] {
   const counts = new Map<string, number>();
   for (const r of results) {
-    for (const g of [...(r.gaps ?? []), ...(r.missingConcepts ?? [])]) {
+    for (const g of (r.gaps ?? [])) {
       const key = g.trim();
       if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
     }

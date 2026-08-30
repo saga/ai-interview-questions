@@ -3,7 +3,7 @@
 // 输出为 VariantCandidate，需经此模块验证后方可落为 GeneratedVariant。
 
 import type { GeneratedVariant, VariantCandidate } from '../types';
-import type { VariantFormat } from '../schemas/common';
+import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from './knowledge';
 import * as fuzz from 'fuzzball';
@@ -103,7 +103,7 @@ function hasDuplicateOptions(options: string[]): boolean {
 export function validateVariant(
   canonical: Question,
   v: VariantCandidate | GeneratedVariant,
-  format?: VariantFormat,
+  format?: FormatId,
 ): VariantCheck {
   if (!v || typeof v.question !== 'string' || !v.question.trim()) {
     return { ok: false, reason: '变体题干为空' };
@@ -171,7 +171,7 @@ export function validateVariant(
  * 开放题：仅替换 question / explanation
  * @param format 本次会话实际形态（P0-1）；提供时以它决定呈现结构，否则回退到 canonical 是否含 choice。
  */
-export function applyVariant(canonical: Question, v: GeneratedVariant, format?: VariantFormat): Question {
+export function applyVariant(canonical: Question, v: GeneratedVariant, format?: FormatId): Question {
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     return {

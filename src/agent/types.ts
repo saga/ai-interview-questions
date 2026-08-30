@@ -44,6 +44,16 @@ export interface InterviewAgentSession {
    * - 避免 Agent 反复调用 searchQuestions（调用即幂等复用缓存列表）。
    */
   lastSearchIds: string[];
+  /**
+   * 兜底接管原因（telemetry，仅观察用，不驱动逻辑）：
+   * - 'timeout'：看门狗超时（Agent 未在 WATCHDOG_MS 内交付题目）；
+   * - 'model_error'：Agent 流式返回错误 / aborted；
+   * - 'agent_no_action'：Agent run 正常收尾但未调用 getQuestion 交付题目。
+   * 仅在首次兜底接管时记录一次，用于观察真实 Agent 稳定性（P1 第 4 项）。
+   */
+  fallbackReason?: 'timeout' | 'model_error' | 'agent_no_action';
+  /** 兜底接管的次数（telemetry）：每次确定性兜底成功交付下一道题 +1。 */
+  fallbackCount: number;
 }
 
 /** 新建一个空的运行时会话。 */
@@ -61,6 +71,7 @@ export function createAgentSession(): InterviewAgentSession {
     evaluations: {},
     log: [],
     lastSearchIds: [],
+    fallbackCount: 0,
   };
 }
 

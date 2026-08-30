@@ -2,7 +2,7 @@
 // 安全模型（ADR-036）：LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须保持 Knowledge Contract 不变量，输出为 VariantCandidate，需经 domain 校验。
 
 import type { CompleteFn, GeneratedVariant } from '../types';
-import type { VariantFormat } from '../schemas/common';
+import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from '../domain/knowledge';
 import { detectOptionLengthBias } from '../domain/bias';
@@ -154,10 +154,11 @@ interface RawVariant {
   explanation?: string;
 }
 
-function buildUser(q: Question, format?: VariantFormat): string {
-  // P0-1：变体题型以「本次会话实际形态」为准；未提供时再回退到题库默认（有 choice 即 single/multiple，否则 open）。
-  // 关键：双形态题（1078/1084）按 sq.format 生成，而不是永远按 choice 生成。
-  const fmt: VariantFormat = format ?? (q.formats.choice ? (q.formats.choice.type === 'single' ? 'single' : 'multiple') : 'open');
+function buildUser(q: Question, format?: FormatId): string {
+  // P0-1（修订）：变体题型严格以「本次会话实际形态」为准。format==='choice' 时按题面 single/multiple 呈现，
+  // 否则（open 或未指定）按开放题呈现。不再回退到「canonical 有 choice 即 single/multiple」的默认，
+  // 从而保证双形态题（1078/1084）按 sq.format 生成，而不是永远按 choice 生成。
+  const fmt = format === 'choice' ? q.formats.choice!.type : 'open';
   const contract: Record<string, unknown> = {
     topic: q.topic,
     tags: q.tags,
@@ -220,7 +221,7 @@ function toGeneratedVariant(_q: Question, out: RawVariant): GeneratedVariant {
 }
 
 /** 生成变体候选；输出包含题干/选项/答案/解析（后三者仅选择题需要）。 */
-export async function generateVariant(q: Question, complete: CompleteFn, format?: VariantFormat, systemPrompt = VARIANT_SYSTEM): Promise<GeneratedVariant> {
+export async function generateVariant(q: Question, complete: CompleteFn, format?: FormatId, systemPrompt = VARIANT_SYSTEM): Promise<GeneratedVariant> {
   const user = buildUser(q, format);
 
   // 首次生成

@@ -7,7 +7,7 @@
 import type { GeneratedVariant, LLMProvider, LLMUsage } from '../types';
 import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
 import type { EvaluationResult } from '../schemas/evaluation';
-import type { VariantFormat } from '../schemas/common';
+import type { FormatId } from '../schemas/common';
 import type { OpenFormat, Question } from '../schemas/question';
 import type { ScoringRubric } from '../schemas/interview';
 import { generateVariant } from './variant';
@@ -74,7 +74,7 @@ export class PiAIProvider implements LLMProvider {
     this.name = `pi-ai(${entry.id})`;
   }
 
-  async generateVariant(q: Question, format?: VariantFormat): Promise<GeneratedVariant> {
+  async generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {
     // 声明 jsonMode 能力的引擎（deepseek / openrouter）开启原生 JSON 模式：强制合法 JSON 输出，
     // 减少因非 JSON 引发的整段重生成（省 token）。
     return generateVariant(q, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, onUsage: this.onUsage }), format, this.prompts?.variantSystem?.trim() || undefined);
@@ -104,7 +104,7 @@ export class ChromeAIProvider implements LLMProvider {
 
   constructor(private readonly prompts?: AIConfig['prompts']) {}
 
-  async generateVariant(q: Question, format?: VariantFormat): Promise<GeneratedVariant> {
+  async generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {
     return generateVariant(q, chromeComplete, format, this.prompts?.variantSystem?.trim() || undefined);
   }
 
@@ -145,7 +145,7 @@ export class FallbackProvider implements LLMProvider {
     throw lastErr ?? new Error('所有已启用的 AI 引擎均不可用');
   }
 
-  generateVariant(q: Question, format?: VariantFormat): Promise<GeneratedVariant> {
+  generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {
     return this.run((p) => p.generateVariant(q, format));
   }
 

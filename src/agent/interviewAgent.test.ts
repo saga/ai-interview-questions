@@ -228,6 +228,10 @@ describe('createInterviewAgent 完整 loop', () => {
     await handle.start('请开始一次 AI 面试。');
     // 兜底应已交付一道来自题库的题，而非无限「选题中」
     expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+    // 兜底 telemetry（P1 第 4 项）：首次兜底记录原因与次数，且原因应为 agent_no_action
+    expect(session.fallbackReason).toBe('agent_no_action');
+    expect(session.fallbackCount).toBe(1);
+    expect(session.log.some((e) => e.kind === 'event' && e.summary.startsWith('兜底出题接管'))).toBe(true);
     // 兜底接管后，自驱评估当前题（选择题确定性判分）
     await handle.submitAnswer([0]);
     expect(session.evaluations['q-choice-1']).toBeDefined();
