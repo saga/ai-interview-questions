@@ -1,0 +1,400 @@
+[
+  {
+    "id": "sentence-embedding-inbatch-negatives-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "In-Batch Negative Sampling & Loss Dynamics",
+    "tags": [
+      "bi-encoder",
+      "sentence-transformer",
+      "in-batch-negatives",
+      "mnrl",
+      "contrastive"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在基于对比学习训练句向量（Bi-Encoder）模型时，以 MultipleNegativesRankingLoss（MNRL）为代表的损失函数高度依赖 In-Batch Negatives 机制。关于该机制的核心工作原理与计算特征，以下哪些描述是正确的？",
+    "explanation": "正确项：B、C、E。B 指出对于包含 B 个 (anchor, positive) 句对的小批次，系统将 Batch 内其他 B-1 个 positive 句直接作为当前 anchor 的隐式负样本，构建 B×B 相似度矩阵并做 CrossEntropy/Softmax。C 指出若 Batch 内存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在反向传播中错误地推开语义实际相近的文本表示。E 指出该机制在统计意义上等价于在当前 Batch 样本分布下对全量语料对比损失的采样估计。A 错在 MNRL 并非“完全不需要负样本”，而是用同 Batch 其他正样本作隐式负例；D 错在它不要求提前显式挖取 Hard Negatives。",
+    "misconceptions": [
+      "以为 In-Batch Negatives 完全不需要任何负样本",
+      "以为对比损失必须显式挖 Hard Negatives 才能展开 Softmax"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "它仅在正样本对 (anchor, positive) 的基础上计算 Loss，完全不依赖任何负样本即可独立更新模型梯度。",
+          "含 B 个 (anchor, positive) 句对的小批次中，其余 B-1 个 positive 句直接作为当前 anchor 的 negative 样本，构建 B×B 相似度矩阵。",
+          "在 Batch 内若存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在梯度反向传播中错误地推开语义实际相近的文本表示。",
+          "这种机制要求所有训练样本必须提前显式挖取 Hard Negatives 拼接在输入中，否则 Softmax 归一化项无法正常展开。",
+          "该机制的梯度更新在统计意义上等价于：以当前 Batch 的样本分布，对全量语料上的整体对比损失做了一次无偏的采样估计。"
+        ],
+        "answer": [
+          1,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "In-Batch Negatives 利用当前 Batch 中的其他正样本作为当前句子的隐式负样本，避免显式标注大量负例；它在 Batch 内计算 B×B 相似度矩阵并做 Softmax/CrossEntropy，提供有效的对比梯度（B 正确）。但若 Batch 内恰好包含近义句（False Negatives），模型会错误地将其语义表示拉开，注入与真实语义相悖的排斥信号（C 正确）。该机制在统计意义上等价于在当前 Batch 样本分布下对全量语料对比损失的采样估计（E 正确）。正确答案 B、C、E。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-batchsampler-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Batch Sampling Strategy & Label Noise Mitigation",
+    "tags": [
+      "bi-encoder",
+      "false-negatives",
+      "batchsampler",
+      "no-duplicates",
+      "label-noise"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在微调双塔句向量模型时，研发团队发现虽然对比 Loss 保持平稳下降，但模型在评估集上的语义召回率在训练若干 Epoch 后开始出现异常波动与性能停滞。排查发现训练集中存在大量来自同一主题领域的近义句对。在使用以 In-Batch Negatives 为核心的损失函数时，造成该现象的根本原因以及针对性的工程解决手段是？",
+    "explanation": "正确项：C、E。C 指出同一 Batch 内抽样出语义极度相似的文本并互为负例（False Negatives）会引入梯度噪声，解决手段是在 Trainer 中启用避免 Batch 内文本重复的 BatchSampler（如 BatchSamplers.NO_DUPLICATES）。E 进一步点明根因：假负例会向梯度反向传播注入与真实语义相悖的排斥信号，正是召回率波动与性能停滞的直接来源。A 错在 FP16 下溢与现象无关；B 错在字段字母序与训练机制无关；D 错在 scale 设大只会使分布更陡峭而非“平滑”，且并非根因。",
+    "misconceptions": [
+      "以为召回率波动是 FP16 浮点下溢导致",
+      "以为只要缩小 scale 即可解决（实际根因是假负例标签噪声）"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "原因在于硬件 GPU 在计算大 Batch 内积矩阵时触发了 FP16 浮点数下溢；解决手段是将训练精度切回 FP32 并禁用混合精度。",
+          "原因在于数据集未严格按字段字母表顺序重新排列；其解决手段是在加载数据集后手动重命名列字段，以匹配模型底层词表的列顺序。",
+          "同一 Batch 内若抽出语义极近文本并互为负例（False Negatives），会引入梯度噪声，可启用避免 Batch 内重复的 BatchSampler（如 NO_DUPLICATES）解决。",
+          "原因在于对比损失的温度缩放系数 scale 设得过大导致 Logit 极度平滑；解决手段是将 scale 调小至 0.01 以下。",
+          "根因是 Batch 内近义句被错误当作负例（False Negatives），其向梯度注入的排斥信号与真实语义相悖，这正是验证集召回率波动与性能停滞的直接来源。"
+        ],
+        "answer": [
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "当训练集中存在大量同领域或重复句子时，随机 Batch 采样容易将语义极度接近的句子分在同一小批次中，使它们在 In-Batch Negatives 计算中互为负例，产生严重的标签噪声并破坏语义空间（C 正确）。其机理是假负例向梯度注入与真实语义相悖的排斥信号，导致召回率波动与性能停滞（E 正确）。使用 BatchSamplers.NO_DUPLICATES 可确保同一小批次不含重复或极近义文本，消除假负例干扰。正确答案 C、E。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-dataset-schema-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Dataset Schema & Input Parsing Mechanism",
+    "tags": [
+      "sentence-transformer",
+      "trainer",
+      "dataset-schema",
+      "column-order",
+      "triplet-loss"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在使用封装好的句向量训练器（如 SentenceTransformerTrainer）加载本地数据集时，数据集字段的解析映射遵循特定的绑定规则。假设训练数据集包含 [\"anchor\", \"positive\", \"negative\", \"sample_id\", \"domain_tag\"] 5 个列，且损失函数使用的是仅接收 (anchor, positive, negative) 文本三元组的 TripletLoss。若未对数据集做删列处理而直接传入 Trainer，最可能导致什么后果？",
+    "explanation": "正确项：A。在 SentenceTransformerTrainer 的设计中，除名为 label/score 的数值列外，其余列会按物理列顺序（Column Order）被提取为前向传播的文本输入。数据集有 5 列而 TripletLoss 仅期望 3 个文本输入列，未删除的 sample_id、domain_tag 会被当成文本传给模型或损失函数，导致类型/维度错配或 tokenizer 报错。B 错在 Trainer 并不强制要求存在 label 列；C 错在它不会自动按列名识别 anchor/positive/negative 并静默存日志；D 错在 sample_id 不会变成可训练参数。",
+    "misconceptions": [
+      "以为 Trainer 会自动按列名识别 anchor/positive/negative 并忽略元数据列",
+      "以为必须存在 label 列否则 KeyError"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Trainer 会根据列的物理索引顺序依次提取非 label 列；因未删除后两列，Trainer 会把 sample_id 等无意义元数据列也当成文本输入传给模型，引发维度错配或 tokenizer 报错。",
+          "损失函数初始化时会强制校验列名是否包含 \"label\"；因为当前数据集不存在 \"label\" 字段，Trainer 会在启动前立即抛出 KeyError。",
+          "Trainer 会自动识别列名 \"anchor\"、\"positive\" 和 \"negative\"，并将 sample_id 与 domain_tag 自动存入底层日志，不影响前向传播。",
+          "自动求导机制会将 sample_id 转换为连续可训练参数并分配梯度，导致 GPU 显存被无意义的 ID 嵌入阵列迅速耗尽。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在 SentenceTransformerTrainer 中，除 label/score 数值列外所有列均按物理列顺序提取为文本输入；5 列超出 TripletLoss 期望的 3 个文本列，sample_id、domain_tag 会被当作文本传入，导致维度错配或 tokenizer 报错（A 正确）。正确答案 A。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-multi-dataset-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Multi-Dataset Fine-Tuning Batch Sampling",
+    "tags": [
+      "multi-dataset",
+      "batch-sampling",
+      "proportional",
+      "round-robin",
+      "loss-mapping"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在对句向量模型进行多任务/多数据集联合微调时，通常需要同时整合多个结构与规模差异悬殊的数据集（例如数百万条的 NLI 通用数据与仅数万条的特定领域问答数据）。关于多数据集批次采样策略（Multi-Dataset Batch Sampling），以下哪些分析是正确的？",
+    "explanation": "正确项：A、B、C。A 指出 PROPORTIONAL 策略按数据集规模比例采样，保证大数据集充分学习，但小数据集可能被反复采样或梯度被稀释。B 指出 ROUND_ROBIN 依次交替从各数据集抽 Batch，保证每个数据集获得相等梯度更新机会，直到最小的数据集被抽空为止。C 指出每个 Batch 内样本通常严格来自同一数据集，以使用对应的专用 Loss 函数。D 错在 Trainer 支持多 Loss 字典按数据集独立绑定；E 错在 ROUND_ROBIN 遇到最小数据集抽空即终止，不会遍历完大数据集剩余样本。",
+    "misconceptions": [
+      "以为多数据集训练强制统一格式、无法为不同数据集绑定不同 Loss",
+      "以为 ROUND_ROBIN 必然遍历完所有数据集的全部样本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用按比例采样（PROPORTIONAL）策略时，各个数据集被采样的频率与其数据量大小成正比，能确保大数据集被充分学习，但可能导致小数据集在单次 Epoch 中被反复采样或梯度被稀释。",
+          "采用轮询采样（ROUND_ROBIN）策略时，Trainer 依次交替从各个数据集抽取 Batch，保证每个数据集获得相等的梯度更新机会，直到最小的数据集被抽空为止。",
+          "每个训练小批次（Batch）内部的样本通常严格来自于同一个数据集，以保证该 Batch 计算时使用对应的 Loss 函数及其匹配的结构输入。",
+          "多数据集训练强制要求所有数据集必须统一格式（例如全量转换为三元组），无法在同一个 Trainer 中为不同数据集独立绑定不同的 Loss 函数。",
+          "轮询采样（ROUND_ROBIN）策略必然会将所有数据集的所有样本完整训练完毕，绝不会造成大数据集样本遗漏。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多数据集训练中每个 Batch 仅含单一数据集样本，从而可对该数据集使用专用 Loss（A、B、C 正确）。PROPORTIONAL 按规模比例采样，保证大数据集充分学习但小数据集梯度可能被稀释；ROUND_ROBIN 轮流抽样保证训练权重平等，但最小数据集抽空即终止（不会遍历完大数据集）。Trainer 支持多 Loss 字典按数据集独立绑定，并不强制统一格式。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-matryoshka-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Matryoshka Representation Learning (MRL)",
+    "tags": [
+      "matryoshka",
+      "mrl",
+      "dimension-truncation",
+      "vector-db",
+      "latency"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在海量向量检索系统（Vector Database）中，存储成本与检索延迟随向量维度线性增加。为了实现“低维度高速度”与“高维度高精度”的灵活切换，工程上常用套娃损失（MatryoshkaLoss）训练句向量模型。以下关于 MatryoshkaLoss 工作机制与工程落地的描述，正确的是？",
+    "explanation": "正确项：C、E。C 指出 MatryoshkaLoss 对模型输出的原始高维 Embedding 做多预设维度（如 64/128/256/768）前缀截断，对每个截断子向量分别计算底层 Loss 并累加回传，使前 k 维即具高表达力。E 指出经该损失训练的模型在部署时可按资源/延迟需求仅截取并保存单一目标前缀维度（如 128 维）的向量索引，无需为所有维度分别建库。A 错在并非只对最窄前缀算损失；B 错在无需同时维护所有维度索引并求交集；D 错在可独立提取单一维度向量。",
+    "misconceptions": [
+      "以为 Matryoshka 训练后必须同时维护所有维度索引",
+      "以为只能对最窄前缀维度算损失"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "它在训练时仅对最窄的前缀维度（如 64 维）计算对比损失，依靠 Transformer 的隐层自注意力机制自然泛化到完整高维（如 768 维）。",
+          "它要求线上检索系统必须同时维护所有指定维度的向量索引；检索时需分别在低维库与高维库查出 Top-K 结果后求交集。",
+          "它在前向传播中对模型输出的文本向量在多个预设维度（如 64, 128, 256, 768）进行前缀截断，对每个截断子向量分别计算底层 Loss 并累加求和进行反向传播。",
+          "模型经 MatryoshkaLoss 训练后，线上部署提取向量时必须一次性输出全量截断维度的拼接矩阵，无法独立提取单一维度的向量。",
+          "部署时只需截取并保存某一目标前缀维度的向量（如仅存 128 维）即可满足检索需求，无需为所有指定维度分别建立索引。"
+        ],
+        "answer": [
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MatryoshkaLoss 对高维 Embedding 做多前缀维度（如 64/128/256/768）截断，并对每个截断子向量分别计算目标对比 Loss 后累加回传，使前 k 维即具表达力（C 正确）。部署时可按硬件/延迟需求只存单一目标维度（如 128 维）的索引，无需为所有维度分别建库（E 正确）。正确答案 C、E。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-evaluator-vs-loss-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Evaluator vs. Evaluation Loss Dynamics",
+    "tags": [
+      "evaluator",
+      "validation-loss",
+      "ndcg",
+      "spearman",
+      "embedding-similarity"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在训练 Sentence Transformers 模型时，Trainer 配置中的 eval_dataset（计算 Validation Loss）与专门的 Evaluator（如 EmbeddingSimilarityEvaluator 或 InformationRetrievalEvaluator）在评估模型性能时起到了不同的作用。关于这两者的区别与联系，以下叙述正确的是？",
+    "explanation": "正确项：B、E。B 指出 Validation Loss 是通过当前训练所用对比损失函数在验证集上算出的标量损失，用于监测过拟合；而 Evaluator 直接在业务目标任务（余弦相似度排序、检索召回率）上评估向量模型的实际表征质量。E 补充说明 Validation Loss 的数值下降并不必然线性等价于 NDCG@K、Spearman 等业务指标的提升，二者需用 Evaluator 交叉验证。A 错在 Loss 极小不保证业务指标同时最优；C 错在 Evaluator 不做反向传播；D 错在多数据集时仍可用 eval_dataset 算验证 Loss。",
+    "misconceptions": [
+      "以为 Validation Loss 下降即代表 NDCG/Spearman 等业务指标同步最优",
+      "以为 Evaluator 会在评估时更新模型参数"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "eval_dataset 上算出的 Validation Loss 极小说明模型在 Evaluator 的所有真实业务指标（如 NDCG@K、Spearman 相关系数）上必然同时达到最优值。",
+          "Validation Loss 是通过当前训练所用的对比 Loss 函数在验证集上算出的标量损失；而 Evaluator 则是直接在业务目标任务（如余弦相似度排序、检索召回率）上评估向量模型的实际表征质量。",
+          "Evaluator 在每个 Checkpoint 评估时都会执行反向传播并更新模型参数，而 eval_dataset 只做无梯度的前向计算。",
+          "当使用多数据集训练时，Trainer 只能使用 Evaluator 进行质量评估，无法计算 eval_dataset 的验证集 Loss。",
+          "Validation Loss 仅反映优化过程是否过拟合，其下降与 NDCG@K、Spearman 等业务指标的提升并非线性等价，需用 Evaluator 交叉验证。"
+        ],
+        "answer": [
+          1,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Validation Loss 依赖特定损失函数（如 CrossEntropy/Contrastive）的数值表示，主要用于监测过拟合（B 正确）；Evaluator 直接在业务任务（余弦排序、检索召回）上评估实际表征质量。二者并非线性等价，Loss 下降不保证 NDCG/Spearman 同步最优，需 Evaluator 交叉验证（E 正确）。Evaluator 评估时不做反向传播。正确答案 B、E。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-loss-schema-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Loss Function Selection & Data Schema",
+    "tags": [
+      "loss-function",
+      "mnrl",
+      "triplet",
+      "softmax-loss",
+      "cosent",
+      "data-schema"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "训练句向量模型时，选择合适的 Loss 函数必须匹配数据集中具体的样本表达格式。以下关于常见损失函数与输入数据架构的映射关系，哪些是正确的？",
+    "explanation": "正确项：A、C、D。A 指出 CosineSimilarityLoss / CoSENTLoss 需要 (text_A, text_B) 加连续相似度分值（如 0~5 的 STS 分数）作为 label。C 指出 SoftmaxLoss 适用于含文本对及离散分类标签（如 NLI 蕴含/中立/矛盾）的数据集，通过分类头约束语义空间。D 指出 TripletLoss 只需 (anchor, positive, negative) 三个文本列，不需额外 label 列。B 错在 MNRL 不需要连续 label 列；E 错在对比损失不会自动过滤文本列。",
+    "misconceptions": [
+      "以为 MNRL 必须提供连续 label 列",
+      "以为对比损失会自动过滤文本列、只优化 label 矩阵"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "CosineSimilarityLoss 或 CoSENTLoss 要求数据集包含两个文本字段，以及一个连续型浮点数相似度分值（如 0.0 至 5.0 的 STS 分数）作为 label。",
+          "MultipleNegativesRankingLoss 要求输入样本必须包含显式连续的 label 数值，否则无法建立 Softmax 的归一化概率分布。",
+          "SoftmaxLoss 适用于包含文本对及离散分类标签（如 NLI 任务中的蕴含、中立、矛盾）的数据集，通过拼接收集到的文本表示训练分类头来约束语义空间。",
+          "TripletLoss 仅要求数据集依次包含 (anchor, positive, negative) 3 个文本列，不需要额外的 label 列，其优化目标是拉近正样本距离并推远负样本距离。",
+          "只要使用对比学习 Loss 函数，系统就会自动过滤掉数据集中所有文本列，仅对包含 label 的数值矩阵进行优化。"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "损失函数与数据格式须匹配：CosineSimilarityLoss/CoSENTLoss 需 (text_A, text_B, score)（A 正确）；SoftmaxLoss 需 (text_A, text_B, label_id) 用于多分类（C 正确）；TripletLoss 接收 (anchor, positive, negative) 无需 label 列（D 正确）。MNRL 同样不需要连续 label 列，对比损失也不会自动过滤文本列。正确答案 A、C、D。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-similarity-notion-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Domain-Specific Notion of Semantic Similarity",
+    "tags": [
+      "similarity-notion",
+      "fine-tuning",
+      "sts",
+      "news-classification",
+      "task-dependent"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某一通用预训练双塔 Embedding 模型在标准 Web 文本检索任务上表现优异。团队试图将其直接同时应用于“新闻分类”与“语义文本相似度（STS）”两个业务模块。现有两组新闻标题：标题 1：“苹果发布全新 iPad”；标题 2：“英伟达备战下一代 GPU 显卡”。以下关于句向量模型中“语义相似度定义”与微调必要性的分析，正确的是？",
+    "explanation": "正确项：A。语义相似度是任务强相关的：在 STS 任务中两句涉及不同实体与产品，向量应保持较大距离；而在新闻分类任务中两句均属于科技类，向量应相互接近。微调的本质是学习特定任务所需的相似度几何分布（重塑向量空间拓扑）。B 错在不存在绝对统一的语义距离空间，微调不会“破坏”而会重塑；C 错在仅切换距离公式无法弥补任务语义定义差异；D 错在有监督微调不会彻底丧失 zero-shot 能力。",
+    "misconceptions": [
+      "以为存在绝对统一的语义距离空间，任何微调都会破坏拓扑",
+      "以为只切换余弦/欧氏距离公式即可适配不同任务"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "语义相似度是任务强相关的：在 STS 任务中两句涉及不同实体与产品，向量应保持较大距离；而在新闻分类任务中两句均属于科技类，向量应相互接近。微调的本质是学习特定任务所需的相似度几何分布。",
+          "通用 Embedding 模型在预训练后已具备绝对统一的语义距离空间，任何特定领域的微调都会破坏其向量空间的拓扑结构并导致表征退化。",
+          "针对不同下游任务（分类 vs 检索），只需要在推理时切换余弦相似度与欧氏距离计算公式，无需对 Embedding 模型权重做任何微调。",
+          "双塔 Embedding 模型只能在无监督数据上微调，引入任何特定领域的有监督数据都会使模型彻底失去 zero-shot 泛化能力。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "句向量不存在单一固定的“真实语义距离”，相似度定义取决于下游场景：STS 关注微观语义与实体匹配（两篇产品/芯片不同，应不相似），新闻分类关注宏观 Topic 粒度（两篇均科技，应相似）（A 正确）。微调即通过适配任务的损失与数据重塑向量空间拓扑。正确答案 A。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-l2-norm-scale-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Contrastive Loss Scaling Factor & Gradient Saturation",
+    "tags": [
+      "l2-norm",
+      "scale",
+      "temperature",
+      "gradient-vanishing",
+      "softmax"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "在单向量 Dense Embedding 模型中，对比损失（如 InfoNCE / MultipleNegativesRankingLoss）通常会配置一个缩放系数（scale 或温度倒数 1/τ）将余弦相似度乘以一个常数（如 20.0）。若在计算相似度时未将向量进行 L2 归一化（Unit Norm），最可能对模型训练带来什么影响？",
+    "explanation": "正确项：A。scale 的作用是放大归一化向量间微小的余弦相似度差异（从 [-1,1] 到 [-20,20]），使 Softmax 输出陡峭分布并产生足够梯度。若向量未经 L2 归一化，网络可通过简单放大向量模长来无限增大点积结果，使 Softmax 输入迅速饱和（概率趋近 0/1），导数极小并造成梯度消失，阻碍语义空间有效学习。B 错在 Autograd 不要求 L2 严格为 1；C 错在饱和导致分布趋极端而非均匀；D 错在不会退化为 K-Means。",
+    "misconceptions": [
+      "以为未归一化只是数值尺度问题、不影响训练",
+      "以为 Autograd 要求 L2 范数严格等于 1"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "向量模长（Magnitude）会随着训练不断膨胀，导致点积数值远超原设定范围，使 Softmax 输入严重饱和并产生梯度消失。",
+          "损失函数无法进行反向传播，因为 Autograd 引擎要求所有对比向量的 L2 范数必须严格等于 1.0。",
+          "Softmax 输出的概率分布会极度趋近于均匀分布，导致正负样本之间的梯度差别被缩小为零。",
+          "模型会自动退化为无监督 K-Means 聚类过程，忽视所有输入句对的对比梯度。"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "scale 放大归一化向量间余弦差异（[-1,1]→[-20,20]）使 Softmax 陡峭并产出足够梯度。若未 L2 归一化，网络可放大向量模长使点积无限增大，Softmax 输入饱和、导数极小导致梯度消失（A 正确）。正确答案 A。"
+      }
+    }
+  },
+  {
+    "id": "sentence-embedding-evaluator-retrieval-01",
+    "category": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "topic": "sentence-embedding",
+    "subtopic": "Triplet vs MultipleNegativesRanking Evaluation Dynamics",
+    "tags": [
+      "evaluator",
+      "information-retrieval",
+      "embedding-similarity",
+      "top-k",
+      "recall"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "团队在对模型进行微调时，比较了 TripletEvaluator 与 EmbeddingSimilarityEvaluator 在验证集上的评估行为。若训练目标是优化检索系统的 Top-K 召回率，为什么仅使用 EmbeddingSimilarityEvaluator（基于 STS 数据评估 Cosine-Spearman 相关系数）可能无法全面反映模型的真实检索效能？",
+    "explanation": "正确项：A、E。A 指出 EmbeddingSimilarityEvaluator 仅评估预设 Pair 对的连续得分拟合程度，无法衡量模型在面临大规模 Candidate 语料库时的全局对比排序与抗干扰能力。E 进一步给出工程指引：面向检索的微调应以 InformationRetrievalEvaluator 等检索指标为准，而非仅靠 EmbeddingSimilarityEvaluator 的句对相似度相关性来判定模型优劣。B 错在不存在强制 FP32 锁定；C 错在其评估的是整句向量余弦而非单字 token；D 错在 Evaluator 不会修改模型权重。",
+    "misconceptions": [
+      "以为 STS Spearman 高即代表检索召回率高",
+      "以为 Evaluator 评估时会修改模型权重"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "EmbeddingSimilarityEvaluator 仅评估预设 Pair 对的连续得分拟合程度，无法衡量模型在面临大规模 Candidate 语料库时的全局对比排序与抗干扰能力。",
+          "EmbeddingSimilarityEvaluator 计算时强制锁定了 FP32 精度，与推理阶段的 FP16 浮点计算存在无法弥合的系统误差。",
+          "EmbeddingSimilarityEvaluator 只能评估单字 token 的匹配度，无法评估整句向量的余弦相似度。",
+          "EmbeddingSimilarityEvaluator 在评估过程中会自动修改模型最后两层的权重，导致验证结果偏离真实模型状态。",
+          "优化检索 Top-K 召回应优先采用面向检索的指标（如 InformationRetrievalEvaluator），而非仅依赖 EmbeddingSimilarityEvaluator 的句对相似度相关性来判定模型优劣。"
+        ],
+        "answer": [
+          0,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "EmbeddingSimilarityEvaluator 通过计算句对向量余弦与标注 score 的 Spearman 相关系数，衡量对句子对相对相似度顺序的拟合（适用于相似度打分），但无法衡量在大规模候选语料中的全局对比排序与抗干扰能力（A 正确）。优化检索 Top-K 召回应以 InformationRetrievalEvaluator 等检索指标为准（E 正确）。正确答案 A、E。"
+      }
+    }
+  }
+]

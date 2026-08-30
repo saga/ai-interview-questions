@@ -142,5 +142,64 @@
       "scenario",
       "system-design"
     ]
+  },
+  {
+    "id": "multi-vector-retrieval",
+    "name": "多向量检索与 Late Interaction（ColBERT）",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "保留每个 token 的独立向量，用 MaxSim 实现查询-文档的细粒度 Late Interaction 匹配；相对单向量 Dense Embedding 在召回精度上更优，但索引体积与算力开销更大，训练与部署需针对性优化。",
+    "required": [
+      "Late Interaction 的 MaxSim 算子：query 每 token 与 doc 所有 token 取最大点积后累加得到相关性得分",
+      "多向量损失的 scale 默认 1.0（MaxSim 累加值已远大于单向量余弦的 [-1,1]），沿用 Dense 的 scale=20 会导致 Softmax 饱和、梯度消失",
+      "训练截断长度应与 Serving 长度匹配，否则长文档后半段匹配质量会出现不可逆下降"
+    ],
+    "misconceptions": [
+      "以为多向量模型也在编码期用交叉注意力融合 query-doc（实际是检索期 MaxSim，无交叉注意力）",
+      "以为 skiplist 去除标点会损害匹配（实际降低存储且常微幅提升精度）",
+      "以为评估 NDCG 接近满分即模型完美（往往因语料过小、缺乏干扰项导致任务过易）"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation",
+      "tradeoff",
+      "system-design",
+      "design",
+      "debugging",
+      "fundamental",
+      "comparison",
+      "scenario"
+    ]
+  },
+  {
+    "id": "sentence-embedding",
+    "name": "句向量模型训练（Sentence Embedding / Bi-Encoder）",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "以双塔（Bi-Encoder）句向量模型为核心，覆盖对比学习损失（MNRL / Triplet / Softmax / CoSENT）、In-Batch Negatives 机制与假负例、多数据集批次采样、Matryoshka 维度截断训练、L2 归一化与温度缩放、Trainer 数据集字段解析与 Evaluator 评估逻辑等训练工程要点。",
+    "required": [
+      "In-Batch Negatives：以 Batch 内其他正样本作为隐式负例构建 B×B 相似度矩阵做 Softmax，避免显式挖负；同 Batch 近义句会构成假负例（False Negatives）注入错误排斥梯度",
+      "损失与数据格式匹配：MNRL/Triplet 不需要连续 label 列，CosineSimilarity/CoSENT 需要 (text_A, text_B, score)，SoftmaxLoss 需要 (text_A, text_B, label_id)",
+      "MatryoshkaLoss 对高维 Embedding 做多前缀维度（如 64/128/256/768）截断并分别算损失累加，使前 k 维即具表达力，部署可按需只存单一维度",
+      "温度缩放（scale）依赖 L2 归一化：未归一化时向量模长膨胀使点积饱和、Softmax 梯度消失"
+    ],
+    "misconceptions": [
+      "以为 In-Batch Negatives 不需要任何负样本（实际用同 Batch 其他正样本作隐式负例）",
+      "以为对比损失必须显式挖 Hard Negatives 才能展开 Softmax（In-Batch Negatives 即可）",
+      "以为 Validation Loss 下降即代表 NDCG/Spearman 等业务指标同步最优（需用 Evaluator 交叉验证）",
+      "以为句向量存在绝对统一的语义距离空间（相似度定义随下游任务而变，需微调重塑拓扑）"
+    ],
+    "angles": [
+      "mechanism",
+      "debugging",
+      "comparison",
+      "tradeoff",
+      "system-design",
+      "fundamental",
+      "scenario",
+      "calculation"
+    ]
   }
 ]

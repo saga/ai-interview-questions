@@ -1,0 +1,277 @@
+[
+  {
+    "id": "multi-vector-late-interaction-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Late Interaction / Multi-Vector Scoring Mechanism",
+    "tags": [
+      "colbert",
+      "late-interaction",
+      "maxsim",
+      "multi-vector",
+      "dense-embedding"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在基于 ColBERT 架构的 Late Interaction（多向量）检索模型中，查询（Query）与文档（Document）之间的相关性得分是如何计算的？它与传统 Single-Vector Dense Embedding 模型有何本质区别？",
+    "explanation": "正确项：A、B。A 描述了 MaxSim 算子——Query 每个 token 向量与 Document 所有 token 向量计算点积并取最大值，再对所有 Query token 的最大匹配得分累加；Dense 模型则将整段文本压缩为单一向量后只计算一次点积/余弦。B 指出 Late-Interaction 为每个 token 保留独立向量，可用 MaxSim 矩阵实现可解释的细粒度匹配，但文档侧索引体积与检索计算开销显著高于单向量模型。C 错在把 MeanSim/加权和当成机制；D 错在引入编码期 Cross-Attention 融合（多向量检索期无交叉注意力）；E 错在用欧氏距离全局最小值与全连接网络预测。",
+    "misconceptions": [
+      "以为多向量模型在编码期用交叉注意力融合 query-doc",
+      "以为 MaxSim 取均值或最小值而非最大值累加"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每一个 Query token 向量与 Document 中所有 token 向量计算点积并取最大值（MaxSim），再将所有 Query token 的最大匹配得分累加；Dense 模型则将整段文本压缩为单一向量并计算一次点积或余弦相似度。",
+          "Late-Interaction 为每个 token 保留独立向量，可用 MaxSim 矩阵实现可解释的细粒度匹配，但文档侧索引体积与检索计算开销显著高于单向量模型。",
+          "每一个 Document token 向量与 Query 中所有 token 向量计算点积并取均值（MeanSim），再对所有 Document token 得分取加权和；Dense 模型则为每个 token 分配独立权重后再做自注意力聚合。",
+          "Query 向量与 Document 向量先经过交叉注意力层（Cross-Attention）深度融合，再通过 Pooling 得到标量相关性得分；Dense 模型则是先分别做自注意力编码再在最后一层做内积。",
+          "Query 与 Document 的每个 token 向量两两计算欧氏距离并求全局最小值作为匹配得分；Dense 模型则是将 token 向量按通道维度拼接后传入全连接网络预测相关性。"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Late-Interaction（如 ColBERT）为 Query 和 Document 的每个 token 都生成独立向量，相关性得分用 MaxSim 算子计算：对 Query 中每个 token 向量，与 Document 所有 token 向量逐一求点积并取最大值（最匹配得分），再把这些最大值跨 Query token 累加得到整体得分。Dense 单向量模型则把整段文本压缩成一个向量，只做一次点积或余弦相似度。多向量方式保留细粒度语义、可解释性更强，但索引体积与检索算力开销更高。"
+      }
+    }
+  },
+  {
+    "id": "multi-vector-domain-finetune-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Domain Finetuning Starting Point Selection",
+    "tags": [
+      "finetuning",
+      "checkpoint",
+      "domain-adaptation",
+      "multi-vector",
+      "ndcg"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在对特定领域（如医疗、法律或代码）微调 Multi-Vector Embedding 模型时，关于初始 Checkpoint 选择的实验结论，下列哪些叙述是正确的？",
+    "explanation": "正确项：C、D。C 指出仅经过大规模对比预训练（Unsupervised / Pre-supervised）的 Checkpoint 适应性更好，因为它未被通用检索数据集过度拟合，更容易吸收领域特定信号。D 指出领域微调时保留 Late-Interaction 的多向量交互结构（MaxSim）比替换为单向量投影，通常更能吸收领域特定的语义分布。A 错在认为 fully-SFT 的通用 Checkpoint 是最佳起点（它已锁定 web 检索特征偏好，领域微调易停滞甚至回退）；B 错在随机初始化 Dense 投影层固定基底能“彻底避免”灾难性遗忘；E 错在声称两种起点最终 NDCG 完全一致（起始点对领域最终性能有实质影响）。",
+    "misconceptions": [
+      "以为通用检索 SFT 后的成熟 Checkpoint 是领域微调最佳起点",
+      "以为起始 Checkpoint 只影响收敛速度不影响最终性能"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "经过通用检索任务全面监督微调（Supervised Finetuning）的成熟 Checkpoint 是最佳起点，因为其已具备完善的语义排序与泛化能力。",
+          "从零随机初始化 Dense 投影层并固定基底 Transformer 权重是最优方案，能彻底避免预训练权重导致的灾难性遗忘。",
+          "仅经过大规模对比预训练（Unsupervised / Pre-supervised）的 Checkpoint 适应性更好，其未被通用检索数据集过度拟合，更容易吸收领域特定信号。",
+          "领域微调时保留 Late-Interaction 的多向量交互结构（MaxSim）比替换为单向量投影，通常更能吸收领域特定的语义分布。",
+          "无论选择 Unsupervised 还是 Supervised Checkpoint，在相同数据量微调后最终收敛的 NDCG 指标均完全一致，起始点仅影响收敛速度。"
+        ],
+        "answer": [
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "领域微调 Multi-Vector 检索模型时，从仅做大规模对比预训练（unsupervised / pre-supervised）的 Checkpoint 起调通常优于从 fully-SFT 的通用检索 Checkpoint 起调：后者已锁定通用 web 检索的特征偏好，在领域数据上易停滞甚至回退；前者保留 Late-Interaction 交互结构且未被过度拟合，更易吸收领域语义。同时应保留多向量 MaxSim 结构而非替换为单向量投影，以更好适配领域分布。"
+      }
+    }
+  },
+  {
+    "id": "multi-vector-loss-scale-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Loss Function Design & Temperature Scaling",
+    "tags": [
+      "loss-function",
+      "temperature-scaling",
+      "mnrl",
+      "gradient-vanishing",
+      "scale"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "训练单向量 Dense Embedding 模型时，对比损失（如 MultipleNegativesRankingLoss）通常把温度/缩放参数 scale 设为约 20.0；但在训练 Multi-Vector 模型使用 MultiVectorMultipleNegativesRankingLoss 时，若直接沿用 scale=20.0，最可能导致什么问题？下列哪些叙述正确？",
+    "explanation": "正确项：D、E。D 指出 Multi-Vector 的 MaxSim 分数跨 Query token 累加后数值范围远超单向量的 [-1,1]，再乘高 scale 会让 Softmax 输入 Logit 极大、分布极度饱和、反向传播梯度近乎为零（梯度消失）。E 指出 Dense 模型中两单位向量余弦相似度局限在 [-1,1]，故需较大 scale（约 20）放大分差以让 Softmax 具备区分度；而多向量损失默认 scale 取 1.0。A 把现象说成“输出过平滑、梯度极小”但未点明根因（数值范围叠加高 scale）；B 错在称无法求导或显存溢出；C 错在称会强制标点 token 梯度归零、使 Skiplist 失效。",
+    "misconceptions": [
+      "以为多向量损失可沿用 Dense 的 scale=20",
+      "以为 Softmax 饱和与 MaxSim 数值范围无关"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Softmax 输出过分平滑、正负样本间梯度极小，导致模型无法拉开相关与不相关文档的距离。",
+          "损失函数会因此完全无法正常反向求导，从而在反向传播阶段直接触发 GPU 显存爆满与溢出错误。",
+          "会强制将所有标点符号 token 的梯度置为零，导致 Skiplist 过滤机制在训练期间彻底失效。",
+          "MaxSim 分数跨 Query token 累积，数值范围远超单向量 [-1,1]，乘高 scale 使 Softmax 饱和并引起梯度消失。",
+          "Dense 模型两单位向量余弦相似度限于 [-1,1]，需较大 scale（约 20）放大分差使 Softmax 具区分度；多向量损失默认 scale=1.0。"
+        ],
+        "answer": [
+          3,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Dense 对比损失需 scale≈20 是因为两单位向量余弦相似度被限制在 [-1,1]，要用大温度放大分差让 Softmax 有区分度。Multi-Vector 的得分是各 Query token 的 MaxSim 累加值，对 32 token 的 Query 可达约 30，数值范围远大于单向量；若仍乘 20，Softmax 输入 Logit 极大、分布饱和、反向传播梯度近乎为零（梯度消失）。因此多向量损失（MultiVectorMultipleNegativesRankingLoss）默认 scale=1.0。"
+      }
+    }
+  },
+  {
+    "id": "multi-vector-gradcache-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Scalable Training Architecture / Memory Optimization",
+    "tags": [
+      "gradcache",
+      "in-batch-negatives",
+      "memory-optimization",
+      "training-architecture"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "Multi-Vector 模型训练时每个 token 都生成独立向量，显存随 Batch Size 和序列长度剧烈增加。在需要大 Batch 提供足够 In-Batch Negatives 时，工程上常引入 GradCache（如 CachedMultiVectorMultipleNegativesRankingLoss）。下列关于 GradCache 工作机制的描述，哪些正确？",
+    "explanation": "正确项：A、E。A 描述 GradCache 核心：前向按小 Chunk 编码文本并仅保存不带梯度的向量，构建全局对比矩阵算 Loss 及对向量的梯度，再通过二次带梯度前向分块回传，数学等价地解耦显存与有效对比 Batch 大小。E 指出它解耦物理显存分块（mini-batch）与有效对比批次大小（effective batch），可在有限显存下用更大 In-Batch Negatives 提升训练质量。B 错在称其放弃精确梯度、用量化/低秩近似（GradCache 是精确梯度，只是分块）；C 错在称向量传 CPU 算 MaxSim 再回传标量（不是该机制本质）；D 错在称动态截断后半段 token（会损精度，非 GradCache 做法）。",
+    "misconceptions": [
+      "以为 GradCache 用低秩近似牺牲梯度精度换显存",
+      "以为 GradCache 靠截断长序列 token 降显存"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "GradCache 在前向传播中按小 Chunk 编码文本并仅保存不带梯度的向量，随后计算全局损失并对向量求导，最后通过二次前向传播分块回传梯度，在保证数学等价性的同时解耦显存与有效对比 Batch 大小。",
+          "GradCache 通过放弃反向传播中的精确梯度，采用标量量化与低秩近似换取显存降低，从而支持在小显存 GPU 上拟合大 Batch。",
+          "GradCache 将 Query 和 Document 的 token 向量先传输至 CPU 内存中完成 MaxSim 计算，仅将标量损失值送回 GPU 进行反向传播，从而消除 GPU 显存限制。",
+          "GradCache 动态截断样本中超出显存限制的后半段 token 向量，利用残差连接补偿截断损失，实现显存的动态平衡。",
+          "GradCache 解耦物理显存分块（mini-batch）与有效对比批次大小（effective batch），可在有限显存下使用更大的 In-Batch Negatives 提升训练质量。"
+        ],
+        "answer": [
+          0,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "GradCache 的核心思想是解耦“物理显存分块（mini_batch_size）”与“有效对比批次大小（effective batch size）”。前向阶段按 mini-batch 分块编码文本、收集不带梯度的特征向量，构建全局对比矩阵算 Loss 及对特征的梯度；第二阶段再分块做带梯度的前向传播并把先前向量梯度注入回传。它能在不损失梯度精确度的情况下用有限显存支撑更大的 In-Batch Negatives，从而提升检索训练质量。"
+      }
+    }
+  },
+  {
+    "id": "multi-vector-length-truncation-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Context Truncation & Generalization Trade-off",
+    "tags": [
+      "max-length",
+      "truncation",
+      "training-serving-mismatch",
+      "generalization",
+      "ndcg"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "某团队微调 Multi-Vector 检索模型时，为加快训练把 max_length 强制限制为 512 token，但上线推理与评估允许处理长达 8192 token 的长文档。这种做法最可能产生的后果是？",
+    "explanation": "正确项：C。训练对比损失时若限制 max_length=512，模型参数更新永远看不到 512 token 之后的文本及其 token 向量交互，推理期虽支持 8192 长度，但后半段 token 的 Late Interaction 权重未经长上下文场景优化，匹配质量显著下降（实验显示约损失 0.015 NDCG@10，且加数据也补不回）。A 错在称截断提升召回率；B 错在称位置编码可无缝外推、性能不受影响；D 错在称会抛索引越界异常（MultiVectorMask 不会因此越界，是质量而非崩溃问题）。",
+    "misconceptions": [
+      "以为相对位置编码可无缝外推到远超训练截断的长度",
+      "以为训练截断只影响速度不影响最终检索质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检索召回率提升，因为截断训练迫使模型将全文语义信息强行压缩进前 512 个 token 向量中，提高了表达效率。",
+          "模型性能不受影响，因为 Transformer 的相对位置编码与自注意力机制可以无缝外推到未见过的序列长度。",
+          "检索性能显著下降，因为模型在训练期间从未观察过 512 token 之后的文本及其 token 向量交互，无法为后半部分文本提供高质量的 Late Interaction 匹配。",
+          "模型会在推理阶段抛出索引越界异常，因为 MultiVectorMask 模块无法处理超出训练截断长度的掩码阵列。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "检索性能会显著下降。训练对比损失时若把 max_length 限制为 512，模型在参数更新时永远看不到 512 token 之后的文档文本及其 token 向量交互；推理期虽能处理 8192 长度，但后半段 token 的 Late Interaction 特征与权重未在该长上下文场景下被优化，匹配质量不可逆变差（实验约损失 0.015 NDCG@10，且增加训练数据也无法弥补）。训练截断长度应尽量与实际 Serving 需求匹配。"
+      }
+    }
+  },
+  {
+    "id": "multi-vector-skiplist-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Multi-vector Index Storage Optimization",
+    "tags": [
+      "skiplist",
+      "index-storage",
+      "colbert",
+      "multi-vector-mask",
+      "token-filtering"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "Multi-Vector 模型（如 ColBERT）索引体积大是生产落地的主要痛点。若在模型中配置 skiplist_words（如把标点符号加入 Skiplist），对检索系统的影响，下列哪些说法正确？",
+    "explanation": "正确项：B、E。B 指出文档侧直接跳过标点 token 的向量生成与存储，显著降低索引体积（约降 10%）且通常不损害甚至微幅提升检索质量。E 指出 Multi-Vector 索引体积随文档 token 数近似线性增长，从文档侧排除低信息量 token（如标点）是主要降本手段之一。A 错在称仅省 CPU、存储不变；C 错在称 MaxSim 矩阵维度不匹配需补零（skiplist 只减 token，Query 侧不受影响，无需 Padding）；D 错在称显著提升检索延迟（实际减少参与计算的向量，常降延迟）。",
+    "misconceptions": [
+      "以为 skiplist 去除标点会损害检索质量",
+      "以为索引体积与 token 数无关、无法靠减 token 降本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "仅减少索引构建时的 CPU 计算耗时，存储空间无变化，因为空向量仍需保存在向量数据库中。",
+          "在文档侧直接跳过标点符号 token 的向量生成与存储，不仅显著降低索引存储体积（例如降低近 10%），且通常不会损害甚至能微幅提升检索质量。",
+          "会导致 MaxSim 算子中的矩阵维度不匹配，必须在 Query 侧同步补零填充（Padding）才能正常计算。",
+          "显著提升检索延迟，因为在计算 MaxSim 时需要在运行时频繁过滤标点符号的 ID。",
+          "Multi-Vector 索引体积随文档 token 数近似线性增长，从文档侧排除低信息量 token（如标点）是主要的降本手段之一。"
+        ],
+        "answer": [
+          1,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "配置 skiplist_words（如加入 string.punctuation）后，文档编码与索引阶段会直接排除属于 skiplist 的 token 向量，不写入向量库。标点 token 占比不低且对语义检索贡献极低，去除后可节省约 9.6% 的索引存储，同时消除噪声匹配、保持甚至微幅提升精度；Multi-Vector 索引体积随文档 token 数近似线性增长，减 token 是主要降本手段。它不会造成 MaxSim 维度不匹配（Query 侧不变，无需 Padding），通常也降低而非升高检索延迟。"
+      }
+    }
+  },
+  {
+    "id": "multi-vector-eval-corpus-01",
+    "category": "检索模型与嵌入（Multi-Vector / Late Interaction）",
+    "topic": "multi-vector-retrieval",
+    "subtopic": "Retrieval Evaluation Dataset Construction",
+    "tags": [
+      "evaluation",
+      "ndcg",
+      "distractors",
+      "corpus-size",
+      "retrieval-benchmark"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "评估领域微调后的检索模型时，若测试集仅含 1000 个查询及其对应 1000 篇黄金正例文档（Gold Passages），结果显示所有模型 NDCG@10 均接近 0.98，但上线后用户反馈召回不佳。从评估集设计看，最可能的原因是？",
+    "explanation": "正确项：D。当检索语料库仅含目标 Query 的 Gold Passages（如 1000 篇里选 1 篇），任务过易，绝大多数模型都能拿近满分 NDCG@10，无法区分模型真实排序与抗干扰能力；必须在 Corpus 中加入大量无关联干扰文档（Distractors，如从训练集抽数十万未标注文档）以提升检索密度与混淆度。A 错在称应换 MRR 指标（NDCG 本身无错）；B 错在称 Query 超 Marker 上限致全局失效（与现象无关）；C 错在称 FP16/BF16 浮点误差导致（误差不会系统性地把所有模型都抬到 0.98）。",
+    "misconceptions": [
+      "以为 NDCG 接近满分即模型检索完美",
+      "以为评估只需 Gold Passages 不需要干扰项"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "评估指标选择错误，对于多向量模型应使用 MRR@10 而不是 NDCG@10。",
+          "测试集中的 Query 长度超过了 Query Marker 预设的上限，导致评估时全局匹配失效。",
+          "Evaluator 在计算 MaxSim 时未开启混合精度（FP16/BF16），产生了浮点数累积误差。",
+          "检索候选集（Corpus）规模过小且缺乏干扰项（Distractors），导致检索任务过于简单，无法区分不同模型的真实排序与抗干扰能力。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "最可能的原因是检索语料库规模过小、缺乏干扰项：当 Corpus 只含每个 Query 的 Gold Passage（1000 篇选 1），任务极简，几乎所有模型都能得近满分 NDCG@10，无法反映真实排序与抗干扰能力。要在评估中拉开模型差距，必须在 Corpus 中加入大量无关联干扰文档（Distractors，例如从训练集抽取数十万未标注文档），提高检索密度与混淆度。指标选 NDCG 本身没错，问题在评估集构建。"
+      }
+    }
+  }
+]
