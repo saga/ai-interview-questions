@@ -35,6 +35,13 @@ async function proxyCloudflare(request: Request, url: URL): Promise<Response> {
   const strippedPath = url.pathname.replace(API_PREFIX, '') || '/';
   const targetUrl = new URL(strippedPath + url.search, `https://${TARGET_HOST}`);
 
+  // SECURITY（防 SSRF / 开放中继）：代理只转发到固定的 Cloudflare 主机。
+  // 若 pathname 是协议相对（//evil.com）或绝对 URL，new URL 会把主机解析成攻击者域名，
+  // 使本 Worker 变成开放代理并转发 Authorization 头。必须在此硬性拦截。
+  if (targetUrl.hostname !== TARGET_HOST || targetUrl.protocol !== 'https:') {
+    return new Response('Invalid proxy target host', { status: 400 });
+  }
+
   // 复制请求头，剔除逐跳（hop-by-hop）与会被运行时重算的字段。
   const headers = new Headers();
   for (const [key, value] of request.headers.entries()) {

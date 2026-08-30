@@ -1,6 +1,16 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-30 · 安全与状态机收口：Proxy SSRF / 串行工具 / 生命周期幂等 / 防重复出题 / Provider 错误≠0 分（ADR-060）
+
+- **Proxy SSRF 加固（P0）**：`server/index.js` 与 `worker/index.ts` 的 Cloudflare 同源代理在拼完 `targetUrl` 后校验 `hostname === TARGET_HOST && protocol === 'https:'`，拒绝协议相对/绝对 URL 改变目标主机（否则变开放中继并泄露 `Authorization`），违规返回 400。
+- **Agent 工具串行（P0）**：`createInterviewAgent` 构造 `Agent` 时显式 `toolExecution: 'sequential'`，消除共享 `session` 状态在并行工具执行下的竞态（SDK 默认 `parallel`）。
+- **生命周期幂等（P0）**：`dispose()` 改为「清看门狗 → `agent.abort()` → unsubscribe」真实释放；`useAgentInterview.finalize()` 加 `finalizedRef` 守卫，`onComplete` 只调用一次；`start()`/`restart()` 重置守卫；`restart()` 与卸载清理均走真正 abort 的 `dispose()`。
+- **防重复出题（P0）**：`getQuestion` 真实 id 命中分支补 `isDelivered` 守门，已交付 id 不再重复呈现，降级到自纠正路径另选。
+- **Provider 错误 ≠ 0 分（P1）**：`parseEvaluation` 遇到非空但不可解析/结构不符的模型输出时抛 `EvaluationParseError`，由上层记为 `null`（跳过评分），杜绝虚假 0 分污染 Learner Memory；空输入仍走未作答短路 → null。
+- **文档同步**：新增 **ADR-060**；`docs/ARCHITECTURE.md` 补同源代理安全校验与 Agent 生命周期说明。
+- **验证**：全量 `vitest` **423 passed**（36 文件），`tsc` 0 error；`src/ai/evaluate.test.ts` 新增「不可解析 JSON → 抛 `EvaluationParseError`」用例。
+
 ## 2026-08-30 · Variant format 参数收紧为 FormatId + 兜底 telemetry + P1-3 收回（ADR-059）
 
 - **P0-1 修订（ADR-059）**：`generateVariant`/`validateVariant`/`applyVariant` 的 `format` 形参类型由 `VariantFormat` 收缩回 `FormatId`（`'choice'|'open'`），删除 `VariantFormat`；`buildUser` 改为 `format==='choice' ? q.formats.choice!.type : 'open'`，彻底落实按 `sq.format` 生成变体（单选题不再被误当多选题）。

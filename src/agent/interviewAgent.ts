@@ -129,6 +129,9 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     initialState: { model: runtime.model as Model<any>, systemPrompt },
     shouldStopAfterTurn: (ctx) => shouldStopAfterTurn(session, ctx),
     beforeToolCall: (ctx) => Promise.resolve(beforeToolCall(entry, session, ctx)),
+    // 共享可变 session 状态：并行执行工具调用会引入真实竞态（同 tick 内多个 getQuestion/evaluateAnswer
+    // 交错写入 session.currentQuestion / evaluations）。强制串行，保证工具按 LLM 决策顺序顺序落地。
+    toolExecution: 'sequential',
   });
   // Agent 构造不接受 tools 选项，工具须通过 state.tools 注入（AgentState 的 setter 会拷贝数组）。
   agent.state.tools = tools;
@@ -318,5 +321,17 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     agent.abort();
   }
 
-  return { agent, start, submitAnswer, abort, dispose: unsubscribe };
+  // 真正的资源释放：清空看门狗（避免悬挂定时器）→ 中止仍在运行的 run → 取消事件订阅。
+  // 此前 dispose 仅等于 unsubscribe，看门狗与进行中的 run 不会被回收，切换/卸载会话时造成泄漏与竞态。
+  function dispose(): void {
+    clearWatchdog();
+    try {
+      agent.abort();
+    } catch {
+      // 未运行 agent.abort() 是安全的 no-op，忽略
+    }
+    unsubscribe();
+  }
+
+  return { agent, start, submitAnswer, abort, dispose };
 }

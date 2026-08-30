@@ -129,6 +129,9 @@ export function useAgentInterview(
   profileRef.current = profile;
   const entryIdRef = useRef<string | null>(null);
   const resumeStartedRef = useRef(false);
+  // 终局幂等守卫：finishInterview / 兜底收尾 / endEarly 都可能触发 finalize，
+  // 必须保证 onComplete（落库到 Learner Memory）只调用一次，禁止重复写入。
+  const finalizedRef = useRef(false);
 
   const syncQuestions = useCallback((q: SessionQuestion) => {
     setQuestions((prev) => {
@@ -140,8 +143,10 @@ export function useAgentInterview(
   }, []);
 
   const finalize = useCallback(() => {
+    if (finalizedRef.current) return; // 幂等：已收尾则直接返回，杜绝重复落库
     const session = sessionRef.current;
     if (!session) return;
+    finalizedRef.current = true;
     handleRef.current?.abort();
     const asked = Object.keys(session.evaluations).length;
     if (asked === 0) {
@@ -255,6 +260,7 @@ export function useAgentInterview(
 
   const start = async () => {
     setError(null);
+    finalizedRef.current = false; // 新一轮面试：解除终局守卫
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
     const provider = createLLMProvider(config, devUsageLogger);
     if (!entry || !provider) {
@@ -314,10 +320,11 @@ export function useAgentInterview(
   };
 
   const restart = () => {
-    handleRef.current?.dispose();
+    handleRef.current?.dispose(); // 真正中止进行中的 run + 清看门狗 + 取消订阅
     handleRef.current = null;
     if (sessionRef.current) void deleteAgentSession(sessionRef.current.id);
     sessionRef.current = null;
+    finalizedRef.current = false; // 解除终局守卫，允许下次面试收尾
     setPhase('intro');
     setCurrentQuestion(null);
     setAnswer([]);

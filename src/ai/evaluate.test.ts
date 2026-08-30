@@ -2,7 +2,7 @@
 // 分数所有权（ADR-019）：LLM 只给四维 dimensions，综合分由 domain/aggregateOverall 计算。
 
 import { describe, expect, it } from 'vitest';
-import { buildEvalUser, parseEvaluation } from './evaluate';
+import { buildEvalUser, parseEvaluation, EvaluationParseError } from './evaluate';
 import type { OpenFormat, Question } from '../schemas/question';
 import type { ScoringRubric } from '../schemas/interview';
 
@@ -94,6 +94,13 @@ describe('parseEvaluation', () => {
     expect(r.levels.correctness).toBe(2);
     expect(r.dimensions.completeness).toBe(0);
     expect(r.overall).toBe(20); // 50*0.4
+  });
+
+  it('不可解析的 JSON（残缺/乱码）→ 抛出 EvaluationParseError，绝不降级为 0 分', () => {
+    // 模型输出被截断（半截 JSON）
+    expect(() => parseEvaluation('{"correctness": { "level": 2, "evid', open, RUBRIC)).toThrow(EvaluationParseError);
+    // 完全不是 JSON
+    expect(() => parseEvaluation('模型抽风返回了一段乱码文本', open, RUBRIC)).toThrow(EvaluationParseError);
   });
 
   it('序级越界被钳制到 [0,4]（level 仍是 LLM 判断、分数由代码归一化）', () => {

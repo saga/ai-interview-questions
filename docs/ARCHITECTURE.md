@@ -2,7 +2,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，核心为纯静态 SPA、无独立业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。仅 Cloudflare Workers AI provider 需要同源代理：本地开发由 `server/index.js`（经 Vite dev proxy 转发）提供，生产由 `worker/index.ts`（Cloudflare Worker）提供，二者均不含业务逻辑（详见 `DEPLOYMENT.md`）。
+单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，核心为纯静态 SPA、无独立业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。仅 Cloudflare Workers AI provider 需要同源代理：本地开发由 `server/index.js`（经 Vite dev proxy 转发）提供，生产由 `worker/index.ts`（Cloudflare Worker）提供，二者均不含业务逻辑（详见 `DEPLOYMENT.md`）。**代理安全（ADR-060）**：两者在 `new URL(stripped, base)` 之后硬性校验 `hostname === 'api.cloudflare.com' && protocol === 'https:'`，拒绝协议相对（`//evil.com`）或绝对 URL 改变目标主机——否则会变成对任意主机的开放中继并泄露 `Authorization`，违规请求直接返回 400。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
@@ -92,6 +92,10 @@ agent/         Agent 面试运行时（pi-agent-core，ADR-034）：与确定性
                       Agent 只做"不确定的决策"（选题/追问/收尾）；评分不归 Agent
    prompt.ts          系统提示词；runtime.ts 事件流装配；types.ts 会话与事件类型
                       （InterviewAgentSession，App 持有、工具读写引用共享）
+   **生命周期（ADR-060）**：`Agent` 构造显式 `toolExecution: 'sequential'`（共享 `session` 状态，防并行工具竞态）；
+                      `dispose()` 为「清看门狗 → `agent.abort()` → unsubscribe」的真实释放；`useAgentInterview.finalize()`
+                      由 `finalizedRef` 幂等守卫保证 `onComplete` 只落库一次；`getQuestion` 经 `isDelivered` 守门不重复出题；
+                      `parseEvaluation` 遇不可解析的模型输出抛 `EvaluationParseError`，上层记为 `null`（跳过评分）而非 0 分。
    持久化复用既有管线：sessionRecordFromAgent → updateLearner + saveLearner，
    与训练/模拟面试写入同一份 LearnerProfile
 

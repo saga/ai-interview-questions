@@ -37,6 +37,14 @@ app.use(API_PREFIX, async (req, res) => {
   const stripped = (req.originalUrl || '').replace(API_PREFIX, '') || '/';
   const targetUrl = new URL(stripped, `https://${TARGET_HOST}`);
 
+  // SECURITY（防 SSRF / 开放中继）：代理只允许转发到固定的 Cloudflare 主机。
+  // 若请求路径是协议相对（//evil.com）或绝对 URL，new URL 会把主机解析成攻击者控制的域名，
+  // 导致本服务变成对任意主机的开放代理并转发 Authorization 头。必须在此硬性拦截。
+  if (targetUrl.hostname !== TARGET_HOST || targetUrl.protocol !== 'https:') {
+    res.status(400).type('text').send('Invalid proxy target host');
+    return;
+  }
+
   // 复制请求头，剔除逐跳（hop-by-hop）与会被 fetch 自动重算的字段。
   const headers = { ...req.headers };
   delete headers.host;

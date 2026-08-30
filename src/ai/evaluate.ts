@@ -90,6 +90,17 @@ ${opts.rubric ? '评分维度权重（系统聚合用，仅供参考；你只需
 }
 
 /**
+ * 模型返回的评估结果无法解析（JSON 残缺 / 格式错误）。由上层捕获并记为 null（跳过评分），
+ * 避免把一个虚假的 0 分写进 Learner Memory 污染画像。
+ */
+export class EvaluationParseError extends Error {
+  constructor(message: string, public readonly raw?: unknown) {
+    super(message);
+    this.name = 'EvaluationParseError';
+  }
+}
+
+/**
  * 从 LLM 文本输出解析出结构化评估结果。纯函数，便于测试。
  * LLM 只输出四维「序级 + evidence」——分数由 domain/levelToScore 归一化、overall 由 aggregateOverall 计算（Domain 拥有分数）。
  * 边界：Zod 校验 LLM 形状（数据长什么样），domain clamp/聚合负责业务不变量。
@@ -120,9 +131,21 @@ export function parseEvaluation(raw: string, open: OpenFormat, rubric: ScoringRu
       referenceAnswer: open.referenceAnswer,
     };
   }
-  const json = extractJSON<unknown>(raw);
+  let json: unknown;
+  try {
+    json = extractJSON<unknown>(raw);
+  } catch {
+    // extractJSON 在无法解析（截断/乱码）时抛泛型 Error；统一转为 EvaluationParseError，
+    // 让上层能识别「这是评分解析失败」并一致记为 null（跳过评分），而非其它含义的错误。
+    throw new EvaluationParseError('无法解析模型返回的评估结果（JSON 残缺或格式错误）', raw);
+  }
   const validated = llmEvaluationRawSchema.safeParse(json);
-  const out = validated.success ? validated.data : {};
+  if (!validated.success) {
+    // 模型返回了可解析但结构严重偏离契约的 JSON：同样是 provider 输出错误，
+    // 绝不能降级成全 0 分污染 Learner Memory。抛出，由上层记为 null（跳过评分）。
+    throw new EvaluationParseError('无法解析模型返回的评估结果（字段结构不符合契约）', json);
+  }
+  const out = validated.data;
 
   // LLM 给的是序级（level: number，可能越界/带小数）——钳制到 [0,4] 作为原始等级；
   // 归一化分数由 LEVEL_TO_SCORE 映射得到（LLM 做判断，代码做数学）。

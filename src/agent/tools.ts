@@ -171,6 +171,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       let q = byId.get(params.id);
       let matchedBy: 'id' | 'topic' = 'id';
       let exhaustedTopic = false;
+      let alreadyDelivered = false;
       if (!q) {
         // 容错（修复 D）：LLM 可能把 topic/category 当题号传入——退化为该范围下一道未交付的题，避免 not_found 致卡死。
         const byTopic = bank.filter((x) => x.topic === params.id || x.category === params.id);
@@ -182,13 +183,25 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
           // 换去哪个主题是业务决策，交给 Agent——工具只负责回带「尚未交付」的题号。
           exhaustedTopic = byTopic.length > 0;
         }
+      } else if (isDelivered(session, q.id)) {
+        // 防重复出题（Item #4）：即便直接传入一个已交付过的真实 id，也绝不重复呈现。
+        // 降级到「自纠正」路径，让 Agent 从尚未考察的候选里另选，而不是把同一道题再交给用户。
+        session.log.push({
+          at: Date.now(),
+          kind: 'tool',
+          tool: 'getQuestion',
+          summary: `题目 ${q.id} 已出过，拒绝重复`,
+          details: { id: q.id, reason: 'already_delivered' },
+        });
+        q = undefined;
+        alreadyDelivered = true;
       }
       if (!q) {
         // 自纠正：把「最近一次 searchQuestions 返回的、尚未考察」的题号直接回带，Agent 无需记忆即可挑真 id；
         // 替代原 prompt「若 not_found 就回到 searchQuestions 列表挑真 id」的脆弱约束（确定性、不依赖 LLM 听话）。
         // C4 修复：deliverableIds 不再回退到全题库，所以这里最多只列 lastSearchIds 中的若干候选（见 MAX_SUGGEST），
         // 没有任何搜索结果时则引导 Agent 主动 searchQuestions，绝不把 1084 个题号灌进 context。
-        const reason = exhaustedTopic ? 'topic_exhausted' : 'not_found';
+        const reason = exhaustedTopic ? 'topic_exhausted' : alreadyDelivered ? 'already_delivered' : 'not_found';
         const validIds = deliverableIds(session, byId);
         const bankHasMore = bank.some((x) => !isDelivered(session, x.id));
         const MAX_SUGGEST = 5;
@@ -202,17 +215,21 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
           hint = '\n题库中所有题目本轮均已考察过，没有可继续出的题了——请调用 finishInterview 结束面试。';
         } else if (exhaustedTopic) {
           hint = `\n主题「${params.id}」的题目本轮已全部考察过，且当前没有可用的搜索结果。请调用 searchQuestions（可指定其它 topic / category）后再选其它题。`;
+        } else if (alreadyDelivered) {
+          hint = `\n题目 ${params.id} 本轮已经出过，为避免重复不会再次呈现。可用题号如下，请直接挑其中一个传入：`;
         } else {
           hint = `\n未找到题目 ${params.id}，且当前没有可用的搜索结果。请先调用 searchQuestions 搜索题目，再用返回的真实 id 调用 getQuestion——不要猜测或编造 id。`;
         }
         const message = exhaustedTopic
           ? `主题「${params.id}」的题目本轮已全部考察过，为避免重复出题不再从中选题。`
+          : alreadyDelivered
+          ? `题目 ${params.id} 本轮已经出过，为避免重复不会再次呈现。`
           : `未找到题目 ${params.id}。`;
         session.log.push({
           at: Date.now(),
           kind: 'tool',
           tool: 'getQuestion',
-          summary: exhaustedTopic ? `${params.id} 已考察完` : `未找到 ${params.id}`,
+          summary: exhaustedTopic ? `${params.id} 已考察完` : alreadyDelivered ? `${params.id} 已出过` : `未找到 ${params.id}`,
           details: { id: params.id, validIds, reason },
         });
         return textResult(`${message}${hint}`, { error: reason, id: params.id, validIds });

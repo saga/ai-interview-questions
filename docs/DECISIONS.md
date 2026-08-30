@@ -2,6 +2,18 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-060 · 安全与状态机收口（Proxy SSRF / 串行工具 / 生命周期幂等 / 防重复出题 / Provider 错误≠0 分）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：用户从《完整仓库审查报告》砍掉一半以上建议，收窄为 7 项最小 TODO（#6/#7 即 ADR-056/057 的 Variant format / 语义闸门，已在 ADR-059 收口），本 ADR 覆盖剩余 5 项 P0/P1 收口。原则：**做完即停，不再加架构**（不做 BKT/IRT、embedding judge、第二个 LLM judge、复杂 context compaction、Agent 架构重设计、语义搜索、KV Cache 抽象层）。
+- **决策（5 项）**：
+  1. **Proxy SSRF 加固（P0）**：`server/index.js` 与 `worker/index.ts` 的 Cloudflare 同源代理在 `new URL(stripped, base)` 之后硬性校验 `targetUrl.hostname === TARGET_HOST && protocol === 'https:'`。拒绝协议相对（`//evil.com`）或绝对 URL 改变目标主机——否则本服务会变成对任意主机的开放中继，并转发 `Authorization` 头。违规返回 400。
+  2. **Agent 工具串行（P0）**：`createInterviewAgent` 构造 `Agent` 时显式传 `toolExecution: 'sequential'`。共享可变 `session` 状态，并行执行工具调用会引入真实竞态（同 tick 内多个 `getQuestion`/`evaluateAnswer` 交错写入 `session.currentQuestion` / `evaluations`）；默认 `parallel` 不安全。
+  3. **生命周期幂等收口（P0）**：① `dispose()` 由「仅 unsubscribe」改为「清看门狗 → `agent.abort()` → unsubscribe」的真实释放，避免切换/卸载会话时看门狗定时器与进行中 run 泄漏；② `useAgentInterview` 的 `finalize()` 加 `finalizedRef` 幂等守卫，保证 `onComplete`（落库到 Learner Memory）只调用一次（finishInterview / 兜底收尾 / endEarly 任一触发后不再重复写入）；③ `start()` / `restart()` 重置 `finalizedRef`；④ `restart()` 与 App 卸载清理均改走 `dispose()`（现已真正 abort），不再仅 unsubscribe。
+  4. **防重复出题（P0）**：`getQuestion` 按真实 id 命中的分支补 `isDelivered(session, q.id)` 守门——即便传入已交付过的真实 id，也绝不重复呈现，降级到「自纠正」路径让 Agent 从 `deliverableIds` 另选。topic 兜底分支本已排除已交付题；新增 `already_delivered` reason 与对应提示文案。
+  5. **Provider 错误 ≠ 0 分（P1）**：`parseEvaluation` 在 `raw` 非空但无法解析（截断/乱码）或 Zod 结构校验失败（`llmEvaluationRawSchema.safeParse` 不通过）时，抛出 `EvaluationParseError`，**绝不降级为全 0 分污染 Learner Memory**。上层（tools.ts `evaluateAnswer` / interviewAgent 的 `fallbackAdvance` / `choiceAdvance`）的 try-catch 捕获后记为 `null`（跳过评分），与「未作答」一致。`evaluateOpenAnswer` 的 `complete()` 传输/provider 异常本就向上抛出，同样被记为 `null`。空输入（真正未作答）仍走 `isAnswerEmpty` 短路 → `null`，不会进入评分 0 分。
+- **验证（用户要求「做完这 7 项先跑真实使用与测试」）**：全量 `vitest` **423 passed**（36 文件），`tsc` 0 error；新增 `src/ai/evaluate.test.ts` 断言「不可解析 JSON → 抛出 `EvaluationParseError`」；原有「残缺 JSON → 缺失维度按 0 级兜底」用例用的是**合法但部分缺字段**的 JSON（safeParse 仍通过），保持不变，确认未退化为 0 分污染。**刻意不做的**：未为 fallback/错误引入新配置或新机制；未改 `commonWeaknesses` 数据结构；未把 schema 失败与传输异常再做细分错误类型（统一记为 null 跳过即可）。
+
 ## ADR-059 · Variant format 参数收紧为 FormatId + 兜底 telemetry（P0-1 修订 + P1 第4项 + P1-3 收回）
 
 - 状态：已采纳 · 2026-08-30
