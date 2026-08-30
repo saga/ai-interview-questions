@@ -1,0 +1,210 @@
+[
+  {
+    "id": "agtool-guard-01",
+    "category": "agent-safety",
+    "topic": "agent-guardrails",
+    "tags": [
+      "agent-guardrails",
+      "cascade",
+      "two-stage-classifier",
+      "prefix-caching",
+      "false-negative-rate"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在 LLM Agent 工具调用安全拦截系统的设计中，采用「Stage 1 单 Token 快速筛选 + Stage 2 CoT 推理审查」的两阶段级联架构（Cascade Architecture）。关于这种架构所解决的工程权衡与性能问题，下列分析正确的有哪些？（多选）",
+    "explanation": "A 正确：Stage 1 仅输出单个 Token（Yes/No），成本极低、速度极快，绝大多数常规操作在此阶段直接通过，无需触发昂贵的 Stage 2 CoT 推理，从而降低整体延迟与 Token 成本。B 正确：Stage 1 与 Stage 2 共享几乎相同的 Transcript 与系统 Prompt 上下文（仅末尾指令不同），可最大化利用推理引擎的前缀缓存（Prompt Caching），降低 Stage 2 首 Token 延迟与计算开销。C 正确：级联设计的关键在于前级高召回（低 FNR），宁可将部分无害操作推入 Stage 2 甄别，也不漏过潜在高危指令，把降低误报（低 FPR）的任务交给 Stage 2，实现安全与性能的平衡。D 错误：安全分类器是概率模型，无法做到 100% 绝对零风险——Stage 2 仍存在一定漏报与误报率。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "降低绝大多数安全操作的推理延迟与 Token 成本，仅对被 Stage 1 标记的高风险或存在疑虑的操作投入高成本的 CoT 推理",
+          "通过在 Stage 2 复用与 Stage 1 几乎相同的 Prompt 上下文，利用前缀缓存（Prompt Caching）大幅降低 Stage 2 的首 Token 延迟与计算开销",
+          "将 Stage 1 配置为高召回率（Low FNR）策略，宁可将部分无害操作推入 Stage 2 甄别，也不漏过潜在的高危指令",
+          "消除 Agent 在执行复杂多轮工具调用时的假阳性（False Positive），确保通过 Stage 2 校验的指令 100% 不发生越权风险"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。\n\n（要点）级联架构用低成本的单 Token Stage 1 过滤绝大多数安全操作，仅对高风险/存疑操作启用昂贵的 Stage 2 CoT；两阶段复用相同上下文以命中前缀缓存；Stage 1 取高召回（低 FNR）把误报过滤交给 Stage 2。安全分类器为概率模型，无法保证 100% 零越权风险。"
+      }
+    }
+  },
+  {
+    "id": "agtool-guard-02",
+    "category": "agent-safety",
+    "topic": "agent-guardrails",
+    "tags": [
+      "agent-guardrails",
+      "context-isolation",
+      "double-blind",
+      "prompt-injection",
+      "tool-output"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "为防止安全审核分类器（Guardrail Classifier）被恶意 Prompt 注入操控或被 Agent 的自我辩解误导，系统在构造传递给分类器的 Transcript 时，主动裁剪掉了 Agent 的推理/回复文本（Assistant Prose）以及工具返回结果（Tool Output），仅保留用户原始输入与工具调用指令（Tool Calls）。关于这种「推理与结果双盲」的隔离设计，下列说法正确的有哪些？（多选）",
+    "explanation": "A 正确：Agent 自身的推理文本易对分类器产生「辩解」或「归因」干扰（如声称「用户先前已隐式授权」），剥离后分类器仅基于用户要求与实际执行命令做客观匹配。B 正确：Tool Output 是外部不可信数据（Prompt Injection）进入系统的主要入口，剥离它可保证分类器运行在受信任上下文中，阻断二次劫持。C 正确：由于看不见 Tool Output，分类器无法校验工具参数的来源真实性（如某目标 ID 是系统查询所得还是凭空捏造），这是该设计的主要工程取舍。D 错误：分类器可通过捕获 Agent 写入的文件 Payload 或后续待执行的组装 Shell 命令，在工具调用文本层直接评估其危害，并非完全无法评估。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "剥离 Assistant Prose 能防止 Agent 利用说服性文本（如「用户先前已隐式授权该操作」）说服分类器批准越权命令",
+          "剥离 Tool Output 能阻断外部不可信数据源（如网页、文件内容）中的恶意注入指令对分类器自身的二次劫持",
+          "该设计带来的主要工程取舍（Trade-off）是分类器无法校验工具参数的来源真实性（如无法确认某个目标 ID 是由系统查询所得还是凭空捏造）",
+          "剥离 Tool Output 会导致分类器完全无法评估写文件与脚本执行类操作的实际代码安全危害"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。\n\n（要点）双盲隔离剥离 Assistant Prose（防 Agent 自我辩解误导）与 Tool Output（阻断不可信数据注入劫持），使分类器仅基于用户指令与工具调用指令判定；代价是分类器无法验证工具参数的来源真实性。危害评估仍可在工具调用文本层进行（如文件 Payload、组装命令），并非完全盲区。"
+      }
+    }
+  },
+  {
+    "id": "agtool-guard-03",
+    "category": "tool-security",
+    "topic": "tool-security",
+    "tags": [
+      "tool-security",
+      "auto-mode",
+      "static-rules",
+      "wildcard",
+      "policy-enforcement"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "在 Agent 系统中，用户常配置通配符规则（如允许全局执行 shell 或脚本解释器 python *）以减少手动审批弹窗。当系统从「手动模式」切换为「基于分类器的自主运行模式（Auto Mode）」时，关于静态规则与动态分类器的协同工作机制，下列哪种设计最符合生产安全最佳实践？（单选）",
+    "explanation": "C 正确：进入自主模式时必须主动剥离任意代码执行类（Arbitrary Code Execution）的宽泛通配规则，仅保留风险明确且范围限定的窄域规则（如特定代码格式化工具），使高风险 Shell/解释器操作必须经由分类器审查。A 错误：若保留宽泛通配规则（如 python *），所有命令都会直接命中静态 Allowlist，导致安全分类器形同虚设，危险操作极易逃逸。B 错误：一刀切禁用所有规则会让无害的低风险操作（如代码格式化、项目内文件读取）也走完整分类器，带来不必要的开销与延迟。D 错误：沙箱化是另一种隔离手段，但无法替代对敏感操作（如网络外泄、生产配置修改）的策略拦截。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "保持现存的所有静态通配符规则优先生效，分类器仅对不匹配静态规则的剩余工具调用进行拦截评估",
+          "自动模式下强制禁用所有静态规则，要求所有的工具调用均必须无条件经过分类器的两阶段推理评估",
+          "动态剥离宽泛的解释器与 Shell 通配规则，仅保留窄域规则（如特定代码格式化工具），确保高风险命令必须经过分类器审查",
+          "允许静态规则对只读（Read-Only）操作保持生效，而将所有写与执行类操作自动重定向至隔离沙箱内执行"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C。\n\n（要点）自主模式（Auto Mode）下必须剥离任意代码执行的宽泛通配规则（如 python *、shell *），只保留范围限定的窄域规则，让高风险命令强制经过安全分类器审查；既避免通配规则使分类器失效，也避免无差别禁用规则带来的性能损耗。沙箱不能替代策略拦截。"
+      }
+    }
+  },
+  {
+    "id": "agtool-guard-04",
+    "category": "prompt-injection",
+    "topic": "prompt-injection",
+    "tags": [
+      "prompt-injection",
+      "defense-in-depth",
+      "input-probe",
+      "output-classifier",
+      "tool-call"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 Agent 安全架构中，通常同时部署「输入层 Prompt 注入探测器（Probe）」与「输出层 Transcript 分类器（Classifier）」。前者在工具返回结果（Tool Outputs）进入 Agent Context 前进行扫描，后者在 Agent 发起工具调用（Tool Calls）前进行拦截。关于这种双层防御体系（Defense-in-Depth），下列分析正确的有哪些？（多选）",
+    "explanation": "A 正确：输入层探测器通常采用 Prompt Injection Scan，命中后向 Agent 上下文植入安全警告，引导其重新锚定用户原始意图。B 正确：输出层分类器独立对工具调用的真实 Payload（如 curl -X POST ...）做规则与意图匹配，即便 Agent 上下文已被注入，危险动作仍会被阻断。C 错误：输入层无法保证 100% 拦截所有隐蔽注入，必须依靠输出层的动作审计进行双重保障，而非「单靠输入层即可解决所有注入风险」。D 正确：双层防御形成独立且互补的安全边界，数据外泄要成功必须同时突破输入层（绕过检测）与输出层（使外泄动作看起来符合用户授权）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "输入层探测器若发现潜在注入攻击，主要通过向 Agent 上下文植入安全警告，引导 Agent 重新锚定用户原始意图",
+          "输出层分类器因不读取工具返回结果，即使 Agent 被输入层遗漏的注入指令劫持，仍可基于动作本身的危险性实施拦截",
+          "单靠输入层探测器即可解决 Prompt 注入引发的所有风险，输出层分类器仅用于防御 Agent 自身的失误操作",
+          "攻击者若要成功实施数据外泄（Data Exfiltration），必须同时突破输入层（绕过检测）与输出层（使外泄动作看起来符合用户授权）"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。\n\n（要点）输入层 Probe 在 Tool Output 进入 Context 前扫描注入并植入安全警告；输出层 Classifier 对 Tool Call 的真实 Payload 独立做意图/规则匹配，即使上下文已被劫持仍可阻断危险动作。两者是互补的独立边界，单点突破不足以造成外泄；不能认为输入层可单独解决所有注入风险。"
+      }
+    }
+  },
+  {
+    "id": "agtool-guard-05",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "multi-agent",
+      "delegation",
+      "subagent",
+      "security-check",
+      "permission-escalation"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在多 Agent 协同（Multi-agent Architecture）系统中，主 Agent（Orchestrator）可将任务委派给子 Agent（Subagent）执行。为防止权限越界与注入扩散，系统在子 Agent 生命周期中设置了「委派时（Delegation）」与「返回时（Return）」两次安全检查。关于这一判定机制，下列说法正确的有哪些？（多选）",
+    "explanation": "A 正确：若不进行委派前审查，子 Agent 会把主 Agent 传来的任务当作「初始 User Prompt」，其内部分类器将无法识别这是主 Agent 的过度越权行为。B 正确：返回阶段（Return check）评估子 Agent 运行中是否已被外部注入并产生危险隐蔽动作，防止其将毒化结果带回主 Agent。C 错误：返回阶段触发告警时，生产最佳实践通常是附带安全警告（Security Warning）降级返回给主 Agent 审查，而非直接销毁丢弃导致整个工作流死锁。D 正确：委派检查必须结合主 Agent 的完整历史，校验「主 Agent 委派给子 Agent 的任务」是否符合「原始用户对主 Agent 的授权」。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "委派阶段审查是必要的，因为在子 Agent 内部，主 Agent 的指令会被视为用户指令，掩盖其越权本质",
+          "子 Agent 若在执行中读取到恶意数据被注入，返回阶段的分类器会审查其动作历史，防止污染主 Agent",
+          "子 Agent 返回阶段若触发安全告警，系统应直接阻断结果返回并销毁子 Agent，禁止向主 Agent 传递上下文",
+          "委派阶段的分类器能够基于主 Agent 的全局上下文，评估委派任务是否超出了原始用户的真实意图授权"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。\n\n（要点）委派时审查防止子 Agent 把主 Agent 指令误当原始用户意图而越权；返回时审查防止子 Agent 被注入后把毒化动作/结果带回主 Agent。返回告警应采用「带安全警告降级返回」而非直接销毁，避免工作流死锁。委派检查需对照原始用户对主 Agent 的授权边界。"
+      }
+    }
+  },
+  {
+    "id": "agtool-guard-06",
+    "category": "agent-safety",
+    "topic": "agent-guardrails",
+    "tags": [
+      "agent-guardrails",
+      "deny-and-continue",
+      "circuit-breaker",
+      "fault-tolerance",
+      "false-positive"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在无需用户实时干预的自主 Agent 系统中，安全分类器难免存在一定比例的误报（False Positive，即阻止了本无害的操作）。为保障系统连续运行，系统采用「拦截后继续（Deny-and-Continue）」与阈值熔断机制。关于该机制的设计与实现，下列分析正确的有哪些？（多选）",
+    "explanation": "A 正确：被阻断时，系统将阻断反馈（Denial reason）写回工具返回结果，提示 Agent「该路径被安全策略拒绝，请尝试更安全的方法」，促使其寻找替代解法。B 正确：误报（False Positive）从 fatal error 降级为自适应重试（Retry），低比例误报转化为可接受的重试开销，避免单个误报导致任务中断或崩溃。C 正确：若 Agent 持续触发阻断，说明陷入死循环或被深度注入，必须设置连续/累计拦截上限（如连续 3 次或累计 20 次）强行熔断。D 错误：在 Headless Mode（无交互终端）下无法等待用户输入，触发熔断的最佳策略是直接终止进程（Terminate），防止静默越权，而非降级等待控制台输入。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当工具调用被分类器拒绝时，拒绝原因会作为工具执行结果返回给 Agent，促使其主动寻找安全性更高的替代解法",
+          "该机制使得低比例的误报（False Positive）转化为可接受的重试开销，避免单个误报直接导致任务中断或系统崩溃",
+          "为防止被恶意注入或严重失控的 Agent 不断尝试绕过安全边界，系统必须设置连续拦截上限与累计拦截上限熔断机制",
+          "在无界面后台运行模式（Headless Mode）下，当触发拦截熔断阈值时，系统应自动降级为等待控制台终端的用户输入"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。\n\n（要点）Deny-and-Continue 把拦截原因回写工具结果，让 Agent 改走更安全路径；误报从致命错误降级为可重试开销。必须设置连续/累计拦截上限熔断以防死循环或被注入。Headless 模式触发熔断应直接终止进程，而非等待不存在的用户输入。"
+      }
+    }
+  }
+]

@@ -8,7 +8,7 @@ Vite + React 18 + TypeScript + Ant Design 单页应用（五页：训练 / 进�
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/`，按 topic/批次拆分 35 个文件、719 题；6 大能力域为 taxonomy 逻辑分组），其中大多数题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
+- 题库驱动（`src/data/questions/`，按 topic/批次拆分 53 个文件、1084 题；6 大能力域为 taxonomy 逻辑分组），其中大多数题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
@@ -84,21 +84,23 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 - 题库对象是知识本体；「本次出选择还是开放」由组卷分配（会话实例 `SessionQuestion`），同一道题可跨会话换形态。
 - 开放形态由 LLM 按四维评分（正确性/完整性/架构/表达）；评分要点来自知识节点的 `required` 与题目的 `explanation`，权重统一使用训练定义中的全局 rubric。
 
-## 部署到 Cloudflare Pages
+## 部署到 Cloudflare（Workers + Assets）
 
-本应用是纯静态 SPA：构建产物在 `dist/`，使用 `HashRouter`（路由走 URL hash），因此**无需 SPA fallback，也无需 Pages Functions**。
+本应用是纯静态 SPA：构建产物在 `dist/`，使用 `HashRouter`（路由走 URL hash）。部署采用 **Cloudflare Workers + Assets** 模式——`wrangler.toml` 同时配置 `[assets]`（托管 `dist/`）与 `main = "./worker/index.ts"`（一份极薄同源代理，供 Cloudflare Workers AI provider 规避浏览器直连 CORS）。SPA 回退由 `[assets]` 的 `not_found_handling = "single-page-application"` 提供，无需额外配置。
+
+> ⚠️ **Cloudflare Workers AI 需要同源代理**：该 provider 不能直连 `api.cloudflare.com`（无 CORS 头）。生产环境由 `worker/index.ts` 提供的同源代理 `/api/ai/*` 转发；本地由 `vite.config.ts` 的 dev proxy 转给可选 Node 服务（`server/index.js`）。详细机制与「GitHub Pages 等纯静态托管下该 provider 不可用」的说明见 [`DEPLOYMENT.md`](./DEPLOYMENT.md)。
 
 **本地发布（需 Wrangler CLI）：**
 
 ```bash
 npm install
 npm run build      # 类型检查 + 生产构建，生成 dist/
-npm run deploy     # = wrangler pages deploy dist
+npm run deploy     # = wrangler deploy（Workers + Assets 模式）
 ```
 
 首次运行 `wrangler` 会引导登录；也可用非交互方式设置环境变量 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`。项目名见 `wrangler.toml` 的 `name`。
 
-**Git 仓库连接（Cloudflare Pages 控制台）：** 构建命令 `npm run build`、输出目录 `dist`、Node 版本 22。
+**Git 仓库连接（Cloudflare 控制台）：** 构建命令 `npm run build`、输出目录 `dist`、Node 版本 22。
 
 **发布范围（Python 与 offline 模型不发布）：** 发布产物仅为 `dist/`（`wrangler deploy` 只上传该目录）。仓库中的 Python 分析脚本（`analysis/*.py`、`analysis/pyproject.toml`、`analysis/uv.lock`）以及经 Git LFS 管理的离线嵌入模型 `analysis/models/`（仅供 Python 语义去重分析，不参与浏览器构建）都**不会被发布**。浏览器运行所需的全部资源——含题库 JSON（已在构建期打包进 `dist/`）——均已包含。
 

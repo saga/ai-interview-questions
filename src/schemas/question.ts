@@ -10,7 +10,7 @@ const questionSourceRefSchema = z.object({
 
 const choiceFormatSchema = z.object({
   type: z.enum(['single', 'multiple']),
-  options: z.array(z.string().min(1)).min(2),
+  options: z.array(z.string().min(1)).min(4).max(6),
   answer: z.array(z.number().int().nonnegative()).min(1),
   question: z.string().min(1).optional(),
 }).superRefine((choice, ctx) => {

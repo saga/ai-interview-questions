@@ -37,7 +37,8 @@ describe('题库数据完整性', () => {
     for (const q of qs) {
       const cf = q.formats.choice;
       if (!cf) continue;
-      expect(cf.options.length, q.id).toBeGreaterThan(1);
+      expect(cf.options.length, `${q.id} 选项数至少 4 个`).toBeGreaterThanOrEqual(4);
+      expect(cf.options.length, `${q.id} 选项数不能超过 6（最多 6 个）`).toBeLessThanOrEqual(6);
       expect(new Set(cf.options).size, `${q.id} options 有重复项`).toBe(cf.options.length);
       expect(cf.answer.length, q.id).toBeGreaterThan(0);
       for (const i of cf.answer) {

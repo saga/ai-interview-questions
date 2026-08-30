@@ -85,6 +85,10 @@ hooks/
   useTrainingSession.ts  训练会话状态机（组卷 → 作答 → 自适应逐题评分选下一题 → 提交 →
                           落库 Learner 画像），从 `App.tsx` 抽出；`App.tsx` 只保留
                           路由/布局/导航与 JSX 渲染，不持有业务状态
+  useAgentInterview.ts   Agent 面试会话状态机（从 `AgentInterviewPage` 抽出，提升到 App 层：
+                          切 tab 不丢进行中的会话，Agent 在后台继续跑，restart 才 dispose）
+  useSettingsDraft.ts     设置页「未保存草稿」编辑态（draft/text/promptDraft 及各字段更新器），
+                          提升到 App 层：编辑中途切到其它 tab 再切回，未保存的改动不丢
 
 components/
   common/CodeBlock.tsx     只读代码高亮（Shiki，单例 highlighter + CSS 行号）
@@ -101,8 +105,8 @@ components/
                                  门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
-data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 28 文件 /
-                       624 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
+data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 53 文件 /
+                       1084 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
                        tool-calling，与 src/data/taxonomy.ts 的骨架一一对应）。每题
                        `category` = 所属 topic slug（与文件名一致），`topic` = 知识节点 id，
                        外加 `tags` / 可选 `rubric` / `angle`（主考察角度，覆盖矩阵用，
@@ -110,7 +114,7 @@ data/questions/       题库（用户数据契约，按 topic 一文件：questi
                        agent-engineering / ai-systems / ai-security）是 **taxonomy 逻辑分组**
                        （topic → domain 映射见 `taxonomy.domainOfTopic`），不是物理文件单位；
                        UI 分类标签由 `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS。
-                       存量 624 题：618 题同时携带 choice 与 open 双形态（ADR-027）、6 题仅
+                       存量 1084 题：1078 题同时携带 choice 与 open 双形态（ADR-027）、6 题仅
                        choice、180 题选择形态带场景化专属题干 cf.question（ADR-028）。题目角度
                        候选由 taxonomy.ANGLE_WHITELIST（topic→角度子集）约束，节点未声明
                        angles 时回退到所属 topic 白名单（ADR-039）。
@@ -119,8 +123,8 @@ data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状�
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
-                        slug，×7：dl-fundamentals / llm-architecture / training / inference /
-                        knowledge JSON 文件，共 79 节点），但节点内部不再用文件 slug 当分类——
+                        slug，×8：dl-fundamentals / llm-architecture / training / inference /
+                        knowledge JSON 文件，共 80 节点），但节点内部不再用文件 slug 当分类——
                         每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
