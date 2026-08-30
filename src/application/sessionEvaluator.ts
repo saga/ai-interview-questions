@@ -55,20 +55,21 @@ export async function evaluateSessionQuestion(
   return provider.evaluateOpenAnswer(sq.question, open, userAnswer, rubric, extraCriteria);
 }
 
-/** 生成并校验会话题目变体；单题失败时回退原题，不阻断整场面试。 */
+/** 生成并校验会话题目变体；单题失败时回退原题，不阻断整场面试。
+ *  P0-1：把本次会话形态 sq.format 透传给变体生成/校验/落地，使双形态题按当前呈现形态生成变体。 */
 export async function finalizeQuestion(
   sq: SessionQuestion,
   provider: LLMProvider | null,
 ): Promise<SessionQuestion> {
   if (!provider) return sq;
   try {
-    const variant = await provider.generateVariant(sq.question);
-    const check = validateVariant(sq.question, variant);
+    const variant = await provider.generateVariant(sq.question, sq.format);
+    const check = validateVariant(sq.question, variant, sq.format);
     if (!check.ok) {
       console.warn(`变体校验未通过(${sq.question.id})，回退到原题：${check.reason}`);
       return sq;
     }
-    return { ...sq, question: applyVariant(sq.question, variant) };
+    return { ...sq, question: applyVariant(sq.question, variant, sq.format) };
   } catch (error) {
     console.warn(`变体生成失败(${sq.question.id})，回退到原题：`, error);
     return sq;

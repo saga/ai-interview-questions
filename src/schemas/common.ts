@@ -13,6 +13,9 @@ export const providerIdSchema = z.enum([
 
 export const formatIdSchema = z.enum(['choice', 'open']);
 
+/** 变体生成/校验时使用的实际呈现形态：双形态题按 single/multiple 呈现，否则 open。含 choice 以兼容仅声明 canonical 形态的来源。 */
+export type VariantFormat = 'choice' | 'open' | 'single' | 'multiple';
+
 export const questionAngleSchema = z.enum([
   'definition',
   'fundamental',

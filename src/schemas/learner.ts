@@ -45,6 +45,9 @@ export const questionResultSchema = z.object({
   score: z.number().min(0).max(100),
   correct: z.boolean().optional(),
   gaps: z.array(z.string()),
+  /** 开放题 LLM 评估识别的「候选人本应掌握却缺失的概念」（EvaluationResult.missingConcepts）。
+   *  仅开放题有产出；选择题确定性判分不产生。与 gaps 一并汇入 commonWeaknesses（P1-3）。 */
+  missingConcepts: z.array(z.string()).optional(),
   // ── 课程题库前瞻字段（可选）──
   /** 归属课程 id；面试题恒缺省。用于把课程掌握度与面试掌握度在聚合层隔离。 */
   courseId: z.string().min(1).optional(),

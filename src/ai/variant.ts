@@ -2,6 +2,7 @@
 // 安全模型（ADR-036）：LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须保持 Knowledge Contract 不变量，输出为 VariantCandidate，需经 domain 校验。
 
 import type { CompleteFn, GeneratedVariant } from '../types';
+import type { VariantFormat } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from '../domain/knowledge';
 import { detectOptionLengthBias } from '../domain/bias';
@@ -153,13 +154,16 @@ interface RawVariant {
   explanation?: string;
 }
 
-function buildUser(q: Question): string {
+function buildUser(q: Question, format?: VariantFormat): string {
+  // P0-1：变体题型以「本次会话实际形态」为准；未提供时再回退到题库默认（有 choice 即 single/multiple，否则 open）。
+  // 关键：双形态题（1078/1084）按 sq.format 生成，而不是永远按 choice 生成。
+  const fmt: VariantFormat = format ?? (q.formats.choice ? (q.formats.choice.type === 'single' ? 'single' : 'multiple') : 'open');
   const contract: Record<string, unknown> = {
     topic: q.topic,
     tags: q.tags,
     requiredConcepts: requiredPointsFor(q) ?? [],
     difficulty: q.difficulty,
-    format: q.formats.choice ? (q.formats.choice.type === 'single' ? 'single' : 'multiple') : 'open',
+    format: fmt,
   };
   if (q.angle) contract.angle = q.angle;
 
@@ -174,6 +178,12 @@ function buildUser(q: Question): string {
   const angleHint = q.angle
     ? `原题角度为 ${q.angle}，变体应尽量选择一个不同但相关的角度（definition/fundamental/mechanism/comparison/calculation/tradeoff/scenario/debugging/design/system-design），不要为换角度引入新的核心知识；若无合适替代角度则保持原角度但明显改变场景或问题组织方式。`
     : '变体应尽量改变考察角度或工程场景，但不得引入新的核心知识。';
+
+  // 题型专属输出契约：按本次 format 明确告知模型该输出哪类 JSON，避免双形态题被默认成 choice。
+  const formatInstruction =
+    fmt === 'open'
+      ? '本次必须生成【开放题】变体：不输出 options / answer；只输出 { "question": 新的自包含题干, "explanation": 解析 }。'
+      : `本次必须生成【${fmt === 'single' ? '单选题' : '多选题'}】变体：输出 { "question", "options": [...], "answer": [...]（${fmt === 'single' ? '单选题 answer 仅 1 项' : '多选题 answer 可多项'}）, "explanation" }。`;
 
   return `【知识契约】
 ${JSON.stringify(contract, null, 2)}
@@ -194,6 +204,8 @@ ${angleHint}
 - 避免通过选项长度、细节丰富度或措辞特征泄露答案；
 - 难度保持为 ${q.difficulty}。
 
+${formatInstruction}
+
 按 [JSON 输出契约] 输出。`;
 }
 
@@ -208,13 +220,13 @@ function toGeneratedVariant(_q: Question, out: RawVariant): GeneratedVariant {
 }
 
 /** 生成变体候选；输出包含题干/选项/答案/解析（后三者仅选择题需要）。 */
-export async function generateVariant(q: Question, complete: CompleteFn, systemPrompt = VARIANT_SYSTEM): Promise<GeneratedVariant> {
-  const user = buildUser(q);
+export async function generateVariant(q: Question, complete: CompleteFn, format?: VariantFormat, systemPrompt = VARIANT_SYSTEM): Promise<GeneratedVariant> {
+  const user = buildUser(q, format);
 
   // 首次生成
   let out = extractJSON<RawVariant>(await complete(systemPrompt, user));
   let candidate = toGeneratedVariant(q, out);
-  let check = validateVariant(q, candidate);
+  let check = validateVariant(q, candidate, format);
 
   // P0-1：validateVariant 真正成为 gate —— 首次校验失败则一次性重试
   if (!check.ok) {
@@ -222,7 +234,7 @@ export async function generateVariant(q: Question, complete: CompleteFn, systemP
       user + `\n\n【修正】上一版变体未通过校验：${check.reason}，请重新生成并确保满足所有硬约束（题干自包含、选项/答案合法、topic/required 证据保留、难度与题型不变）。`;
     const fixedRaw = extractJSON<RawVariant>(await complete(systemPrompt, retryUser));
     const fixedCandidate = toGeneratedVariant(q, fixedRaw);
-    const fixedCheck = validateVariant(q, fixedCandidate);
+    const fixedCheck = validateVariant(q, fixedCandidate, format);
     if (!fixedCheck.ok) {
       throw new Error(fixedCheck.reason ?? check.reason ?? '变体校验未通过');
     }
@@ -245,7 +257,7 @@ export async function generateVariant(q: Question, complete: CompleteFn, systemP
     const fixed = extractJSON<RawVariant>(await complete(systemPrompt, retryUser));
     const fixedCandidate = toGeneratedVariant(q, fixed);
     // P0-2：retry 后再次 validate，避免绕过 domain gate
-    const fixedCheck = validateVariant(q, fixedCandidate);
+    const fixedCheck = validateVariant(q, fixedCandidate, format);
     if (!fixedCheck.ok) {
       // 修正版未通过校验则保留首版已校验的候选
       return candidate;

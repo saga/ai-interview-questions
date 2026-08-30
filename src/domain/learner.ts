@@ -112,11 +112,12 @@ export function calculateProficiency(
   )) * 100) / 100;
 }
 
-/** 由会话结果聚合"高频遗漏要点"：按出现次数取前 3；本会话无遗漏则沿用历史。 */
-function aggregateGaps(prev: string[] | undefined, results: QuestionResult[]): string[] {
+/** 由会话结果聚合"高频遗漏要点"：gaps（开放题 LLM 评估）+ missingConcepts（缺失概念）一并计数，取前 3；
+ *  本会话无遗漏则沿用历史。选择题无 LLM 评估、不产生 gaps / missingConcepts（不伪造 gap）。 */
+function aggregateWeaknesses(prev: string[] | undefined, results: QuestionResult[]): string[] {
   const counts = new Map<string, number>();
   for (const r of results) {
-    for (const g of r.gaps) {
+    for (const g of [...(r.gaps ?? []), ...(r.missingConcepts ?? [])]) {
       const key = g.trim();
       if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
     }
@@ -198,7 +199,7 @@ export function updateLearner(
       mastery,
       practiceSessions,
       scoreWeightTotal,
-      commonWeaknesses: aggregateGaps(prev?.commonWeaknesses, results),
+      commonWeaknesses: aggregateWeaknesses(prev?.commonWeaknesses, results),
       evidence: [...(prev?.evidence ?? []), ...results.map((r) => ({ questionId: r.questionId, score: r.score, at: s.startedAt }))].slice(-10),
       lastSeen: s.startedAt,
     };
@@ -243,9 +244,10 @@ export function sessionFromQuiz(
         angle: q.angle ?? undefined,
         score: g.overall,
         correct: format === 'choice' ? (g.dimensions.correctness ?? 0) === 100 : undefined,
-        // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps；
-        // gaps 仅来自开放题的 LLM 评估，避免把"答案不正确"当真实薄弱要点写进 Learner Memory。
+        // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps / missingConcepts；
+        // 二者仅来自开放题的 LLM 评估，避免把"答案不正确"当真实薄弱要点写进 Learner Memory（不伪造 gap）。
         gaps: format === 'choice' ? [] : (g.gaps ?? []),
+        missingConcepts: format === 'choice' ? [] : (g.missingConcepts ?? []),
       };
     });
   const overall =

@@ -2,7 +2,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 18 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，无独立后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。
+单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，核心为纯静态 SPA、无独立业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。仅 Cloudflare Workers AI provider 需要同源代理：本地开发由 `server/index.js`（经 Vite dev proxy 转发）提供，生产由 `worker/index.ts`（Cloudflare Worker）提供，二者均不含业务逻辑（详见 `DEPLOYMENT.md`）。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
@@ -446,7 +446,7 @@ Original Question ──→ LLM ──→ parse ──→ VariantCandidate ─�
 
 - **Invariant（必须保持）**：`topic/tags/requiredConcepts/angle`、正确性语义及适用条件、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`，`Question.angle` 已纳入契约（尽量换角度但不引入新核心知识）。
 - **Variant（允许自由变化）**：题干措辞、场景/上下文、选项表达与 distractors、解析表达。
-- **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述/本文/该方案…”等 10 类指代，含新增“前文/下文/题目中/题干中”）+ 极保守语义（topic/tags/required 任一 token 证据缺失即判漂移，拆 token 匹配避免整句误伤，全部丢失才拒，**二阶段追加 `fuzzball` 模糊兜底**：`token_set_ratio ≥75` / `partial_ratio ≥80` 视为命中，处理 `batch statistics ↔ statistics across the batch` / 拼写差异 `regularisation ↔ regularization` 等词序/形态变化，纯 JS 无后端，阈值偏保守避免误放漂移）；失败由 `ai/variant.generateVariant` 内先重试一次，仍失败抛错由应用层 `finalizeQuestion` 记录 warning 并回退原题，避免单题坏变体中断整场组卷。
+- **校验（P0-1/P0-2 收紧，ADR-056/057）**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述/本文/该方案…”等 10 类指代，含“前文/下文/题目中/题干中”）+ 语义闸门。**形态对齐（P0-1）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options/answer，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（约 1078/1084）按当前 Session 形态生成变体而非永远当选择题。**语义闸门（P0-2）**：① 证据文本仅取「题干+选项」，**刻意排除 `explanation`**——解析可“提到”required concept 却没让题目真正考察它，靠解析蒙混不计；② 门槛从「topic/tags/required 任一 token 命中即通过」收紧为「requiredConcepts 覆盖率 ≈ 2/3」（`need = max(1, round(N*2/3))`：N=3 需≥2、N=2 需≥1、N=1 需全中），整段丢失 required 才判漂移；③ 保留 **`fuzzball` 兜底**（`token_set_ratio ≥75` / `partial_ratio ≥80`，处理 `batch statistics ↔ statistics across the batch` / `regularisation ↔ regularization` 等词序/拼写差异，纯 JS 无后端）。失败由 `ai/variant.generateVariant` 内先重试一次（修正提示词），仍失败抛错由应用层 `finalizeQuestion` 记录 warning 并回退原题，避免单题坏变体中断整场组卷。
 - 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。`toGeneratedVariant` 已移除对缺失 `question` 的静默回退（缺失由校验显式拒绝）。
 - **Prompt 约束**：`VARIANT_SYSTEM` 新增【正确答案不变量】（先锁定原正确结论再重构选项，不得因换场景偷改适用条件）与角度提示（`angle` 入契约，优先换角度）；`buildUser` 同时注入完整原题与契约，保持 stable-prefix KV-Cache 友好。
 - **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
@@ -571,5 +571,5 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 - **monaco-editor 0.56 exports map 对深层导入是坏的**：`monaco-editor/esm/vs/**` 深层导入在 Node 与 rolldown 下均 `ERR_MODULE_NOT_FOUND`（`./*.js → ./esm/vs/*.js` 的 star 替换路径错误），`resolve.alias` 也救不了。解法：worker 用相对路径 `../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js?worker` 绕过包解析；主库走 `import * as monaco from 'monaco-editor'`（`.` 入口正常）。
 - **Shiki grammar 懒加载**：语法文件是独立 chunk，渲染对应语言时才下载；主包只含核心引擎。
 - **构建**：`npm run build` 用 `tsc -b && vite build`，开启 `noUnusedLocals`，未使用 import/变量直接报错；`*.test.ts` 已从 tsc 排除，由 Vitest 处理。
-- **fuzzball（浏览器纯 JS 模糊匹配，ADR-047 语义漂移兜底）**：`fuzzball@latest` 纯 JS 实现，无 Node 核心依赖，适配 Vite SPA；`domain/variant.hasConceptEvidence` 在精确 token 未命中时追加 `token_set_ratio ≥75` / `partial_ratio ≥80` 二次判定，处理词序/形态/拼写差异（如 `batch statistics ↔ statistics across the batch` 100 分、`regularisation ↔ regularization` 93 分），计算量仅 `1题×数个 requiredConcepts×数百字文本`，无需后端；bundle 增量约 15KB gzip（52KB 原始），已验证 `npm run build`。
+- **fuzzball（浏览器纯 JS 模糊匹配，ADR-047 语义漂移兜底）**：`fuzzball@latest` 纯 JS 实现，无 Node 核心依赖，适配 Vite SPA；`domain/variant.validateVariant` 内的 `anchorHasEvidence`（配合 `hasMinimalEvidence` / `requiredCoverageMet`）在精确 token 未命中时追加 `token_set_ratio ≥75` / `partial_ratio ≥80` 二次判定，处理词序/形态/拼写差异（如 `batch statistics ↔ statistics across the batch` 100 分、`regularisation ↔ regularization` 93 分），计算量仅 `1题×数个 requiredConcepts×数百字文本`，无需后端；bundle 增量约 15KB gzip（52KB 原始），已验证 `npm run build`。
 - **密钥定位**：local-first 隐私友好，但浏览器侧密钥**不是安全机密**（受 XSS / 扩展威胁），勿用高权限生产密钥。

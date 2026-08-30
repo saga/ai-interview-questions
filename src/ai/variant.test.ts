@@ -62,9 +62,9 @@ describe('generateVariant', () => {
   });
 
   it('容忍 markdown 代码块包裹的 JSON', async () => {
-    const complete: CompleteFn = async () => '```json\n{"question":"regularization 变体题干"}\n```';
+    const complete: CompleteFn = async () => '```json\n{"question":"L2 正则化变体题干"}\n```';
     const out = await generateVariant(BASE, complete);
-    expect(out.question).toBe('regularization 变体题干');
+    expect(out.question).toBe('L2 正则化变体题干');
     expect(out.explanation).toBeUndefined();
   });
 
@@ -72,27 +72,27 @@ describe('generateVariant', () => {
     const complete = vi.fn(async () => {
       if (complete.mock.calls.length === 1) {
         // 第一次：正确项（index1）极长，触发长度泄题，且题干含证据以便通过首轮校验
-        return `{"question":"regularization 长度偏差题","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
+        return `{"question":"L2 正则化长度偏差题","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
       }
-      return '{"question":"regularization 修正后题","options":["a","b","c","d"],"answer":[1],"explanation":"e"}';
+      return '{"question":"L2 正则化修正后题","options":["a","b","c","d"],"answer":[1],"explanation":"e"}';
     });
     const out = await generateVariant(BASE, complete);
     expect(complete).toHaveBeenCalledTimes(2);
-    expect(out.question).toBe('regularization 修正后题');
+    expect(out.question).toBe('L2 正则化修正后题');
     expect(out.options).toEqual(['a', 'b', 'c', 'd']);
   });
 
   it('长度泄题重试后若修正版未通过校验则保留首版', async () => {
     const complete = vi.fn(async () => {
       if (complete.mock.calls.length === 1) {
-        return `{"question":"regularization 首版题","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
+        return `{"question":"L2 正则化首版题","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
       }
       // 修正版题干为空，校验失败，应回退首版
       return '{"question":"","options":["a","b","c","d"],"answer":[1],"explanation":"e"}';
     });
     const out = await generateVariant(BASE, complete);
     expect(complete).toHaveBeenCalledTimes(2);
-    expect(out.question).toBe('regularization 首版题');
+    expect(out.question).toBe('L2 正则化首版题');
   });
 
   it('变体未包含 topic/required 证据时重试一次', async () => {

@@ -134,7 +134,10 @@ describe('createAgentTools', () => {
     const r = await getQ.execute('call', { id: 'q-choice-1' });
     expect(d.session.currentQuestion?.question.id).toBe('q-choice-1');
     expect(d.session.currentQuestion?.format).toBe('choice');
-    expect(d.provider.generateVariant).toHaveBeenCalledWith(expect.objectContaining({ id: 'q-choice-1' }));
+    expect(d.provider.generateVariant).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'q-choice-1' }),
+      'choice',
+    );
     expect(d.session.currentQuestion?.question.question).toBe('attention 变体题干');
     expect((r.details as { id: string }).id).toBe('q-choice-1');
   });

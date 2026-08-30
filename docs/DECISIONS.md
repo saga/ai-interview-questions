@@ -2,6 +2,27 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-058 · Agent / Learner / Eval 提示与门禁微调（P1-1~P1-4，收尾批次小修）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`深度审查报告.md` 收尾批次的四处小修：① Agent 反复调用辅助查询工具（getUserWeaknesses / getWeakAngles / getCoverageGaps）造成 context 浪费、且常把三个无差别全调；② open-answer 评估识别的 `missingConcepts` 未汇入 Learner Memory 的 `commonWeaknesses`（旧逻辑只聚合 `gaps`，而选择题无 `gaps`，等于丢弃了开放题真实识别出的薄弱概念）；③ eval 提示对「某维度不适用本题」仍按低分惩罚，扭曲评分；④ `searchQuestions` 的 `limit` 上限 50、默认 10 偏大。
+- **决策**：P1-1 `SearchQuestionsSchema.limit.maximum` 50→20、默认 `params.limit ?? 10`→`?? 8`；P1-2 Agent system prompt 升 `v3→v4` 并新增「工具调用节制」段（辅助查询仅在「已有结果不足以做下一步决策」时调用、从 `searchQuestions` 已返回的候选 id 中直接挑选不重复搜索）；P1-3 `questionResultSchema` 增 `missingConcepts?: string[]`，`sessionFromQuiz` 对开放题写入 `gaps` 与 `missingConcepts`、选择题二者均留空（不伪造 gap），`aggregateGaps`→`aggregateWeaknesses` 合并 `gaps` 与 `missingConcepts` 计数；P1-4 `EVAL_SYSTEM` 升 `v2→v3` 新增「维度适用性」段（不适用维度给中性档 2 而非低分，不因数目未考而额外扣分）。
+- **验证**：全量 `vitest` **422 passed**（含 `agent/tools.test.ts` limit 用例、`domain/learner.test.ts` missingConcepts 汇入用例）；`tsc` 0 error。**刻意不做的**：未改动 `limit` 下限与 single/multiple 题型契约；未引入新依赖。
+
+## ADR-057 · Variant 语义闸门收紧（P0-2，修复漂移变体靠解析蒙混/任一命中即通过）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：旧 `hasConceptEvidence` 把 `explanation` 计入证据，且判定为「topic/tags/required 任一 token 命中即通过」。两个漏洞：① 变体题干/选项已完全漂移，只要 `explanation` 里写满 required concept 就能通过——题目实际没考，靠解析蒙混；② 只要蹭到一个 required token 就放行，required 概念覆盖率可能极低。
+- **决策**：① 证据文本仅取「题干+选项」，**刻意排除 `explanation`**；② 覆盖率门槛改为 `requiredCoverageMet(canonical, v)`：`need = max(1, round(N*2/3))`（N=3 需≥2、N=2 需≥1、N=1 需全中），整段丢失 required 才判漂移；③ 保留 **`fuzzball` 兜底**（`token_set_ratio ≥75` / `partial_ratio ≥80`，处理 `batch statistics ↔ statistics across the batch` / `regularisation ↔ regularization` 等词序/拼写差异，纯 JS 无后端）。旧 `hasConceptEvidence` 拆为 `anchorHasEvidence` + `hasMinimalEvidence`（topic/tags/required 任一出现即防整段漂移）+ `requiredCoverageMet`。
+- **验证**：`src/domain/variant.test.ts` 新增 P0-2 用例（解析提及 required 仍拒、仅 topic 命中但 required 不足拒、realtime-interaction 1/3 拒 / 2/3 通过）；`src/ai/variant.test.ts` 变体题干补 `L2 正则化` 等 required 证据以通过新闸门。全量 `vitest` **422 passed**，`tsc` 0 error。**刻意不做的**：未把难度/angle 纳入证据门槛；未提高 fuzzball 阈值（保持偏保守避免误放漂移）。
+
+## ADR-056 · Variant 形态对齐（P0-1，双形态题按 Session format 而非永远当选择题）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：双形态题（canonical 同时含 choice 与 open，约 1078/1084）在 `finalizeQuestion` 里调用 `provider.generateVariant(sq.question)` 时不带 `sq.format`；`buildUser` 与 `validateVariant`/`applyVariant` 一律按 `canonical.formats.choice` 存在与否判断形态。后果：无论本次 Session 以哪种形态呈现，变体都按**选择题**生成——`format==='open'` 的双形态题被错误塞进 options/answer，`open.referenceAnswer` 也被覆盖路径忽略。
+- **决策**：把 `sq.format` 透传整条链路——`LLMProvider.generateVariant(q, format?)`、`ai/variant.generateVariant(q, complete, format?)`、`domain/variant.validateVariant(canonical, v, format?)`、`domain/variant.applyVariant(canonical, v, format?)`；`buildUser` 以 `format` 决定输出契约（开放题明确不输出 options/answer），`validateVariant`/`applyVariant` 以 `format==='choice'` 决定是否校验/落地 options；**不传 `format` 时回退旧行为**（看 `canonical.formats.choice`），兼容单形态历史路径。
+- **验证**：`src/domain/variant.test.ts` 新增「applyVariant / validateVariant 形态对齐（P0-1）」5 用例（open 保留 referenceAnswer 与 choice、choice 替换 options、open 不要求 options、choice 必须 options≥2、无 format 回退）；`src/agent/tools.test.ts` 修正 `generateVariant` 调用断言为 `(question, 'choice')`。全量 `vitest` **422 passed**，`tsc` 0 error。**不**改变 ADR-027 的静态形态约定：canonical 的 choice/open 仍静态维护，P0-1 只决定「本次生成哪种形态的变体」，不运行时互转形态。
+
 ## ADR-055 · id 纠错池不再回退全题库，避免异常 tool 消息在 context replay 中持续占 token（修复 `深度审查报告.md` C4 / P1）
 
 - 状态：已采纳 · 2026-08-30

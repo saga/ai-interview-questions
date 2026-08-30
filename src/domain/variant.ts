@@ -3,6 +3,7 @@
 // 输出为 VariantCandidate，需经此模块验证后方可落为 GeneratedVariant。
 
 import type { GeneratedVariant, VariantCandidate } from '../types';
+import type { VariantFormat } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from './knowledge';
 import * as fuzz from 'fuzzball';
@@ -23,43 +24,68 @@ function normalizeConcept(value: string): string {
     .trim();
 }
 
-function hasConceptEvidence(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
-  const required = requiredPointsFor(canonical) ?? [];
-  const text = [v.question ?? '', ...(v.options ?? []), v.explanation ?? ''].join(' ').toLowerCase();
-  const anchors = [canonical.topic, ...canonical.tags, ...required].map(normalizeConcept).filter(Boolean);
-  if (anchors.length === 0) return true;
-  // 极保守：只要任一 anchor 的任一 token 在文本中出现即视为有证据
-  // anchor 可能是长句（required），需拆 token 后匹配，避免整句匹配永远不命中
-  for (const anchor of anchors) {
-    if (text.includes(anchor)) return true;
-    const tokens = anchor
-      .split(/[\s，,。；;、\/:：]+/)
-      .map((t) => t.trim())
-      .filter((t) => t.length >= 2);
-    for (const tok of tokens) {
-      if (text.includes(tok)) return true;
-      // 英文 topic/tag 可能为 kebab-case，拆分后单 token 也需匹配（如 multi-agent → multi / agent）
-      const subTokens = tok.split(/[-_]+/).filter((s) => s.length >= 2);
-      for (const sub of subTokens) {
-        if (text.includes(sub)) return true;
-      }
+/**
+ * 评估文本：仅题干 + 选项，刻意排除 explanation。
+ * 理由（P0-2）：解析可「提到」required concept 却并未让题目真正考察该概念，
+ * 把 explanation 当证据会让「题目已漂移、靠解析蒙混」的变体通过校验。
+ */
+function evidenceText(v: VariantCandidate | GeneratedVariant): string {
+  return [v.question ?? '', ...(v.options ?? [])].join(' ').toLowerCase();
+}
+
+/** 单条 anchor（topic/tag/required）是否在文本中有证据（精确 token / 子 token / fuzzball 兜底）。 */
+function anchorHasEvidence(anchor: string, text: string): boolean {
+  if (text.includes(anchor)) return true;
+  const tokens = anchor
+    .split(/[\s，,。；;、\/:：]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2);
+  for (const tok of tokens) {
+    if (text.includes(tok)) return true;
+    // 英文 topic/tag 可能为 kebab-case，拆分后单 token 也需匹配（如 multi-agent → multi / agent）
+    const subTokens = tok.split(/[-_]+/).filter((s) => s.length >= 2);
+    for (const sub of subTokens) {
+      if (text.includes(sub)) return true;
     }
   }
-  // 二次兜底：fuzzball 模糊匹配（浏览器纯 JS，无后端），处理词序/形态差异
-  // 例如 required "batch statistics" vs 变体 "statistics computed across the batch" → token_set_ratio 100
-  // 阈值取 75（token_set）/ 80（partial），兼顾形态变化（normalization/normalized）与避免漂移误判
-  for (const anchor of anchors) {
-    if (anchor.length < 3) continue;
+  // fuzzball 兜底（浏览器纯 JS，无后端）：处理词序/形态差异，如
+  // "batch statistics" vs "statistics computed across the batch" → token_set 100；
+  // "regularisation" vs "regularization" 拼写差异。阈值 75/80 兼顾形态变化与避免漂移误判。
+  if (anchor.length >= 3) {
     try {
-      const s1 = fuzz.token_set_ratio(anchor, text);
-      if (s1 >= 75) return true;
-      const s2 = fuzz.partial_ratio(anchor, text);
-      if (s2 >= 80) return true;
+      if (fuzz.token_set_ratio(anchor, text) >= 75) return true;
+      if (fuzz.partial_ratio(anchor, text) >= 80) return true;
     } catch {
       // fuzzball 异常时忽略，退化为精确匹配
     }
   }
   return false;
+}
+
+/**
+ * 最小证据：topic / tags / required 中至少有一个在（题干+选项）中出现。
+ * 这是「这道变体还在考原题主题」的硬门槛——整段丢失即判漂移。
+ */
+function hasMinimalEvidence(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
+  const text = evidenceText(v);
+  const anchors = [canonical.topic, ...canonical.tags, ...(requiredPointsFor(canonical) ?? [])]
+    .map(normalizeConcept)
+    .filter(Boolean);
+  if (anchors.length === 0) return true;
+  return anchors.some((a) => anchorHasEvidence(a, text));
+}
+
+/**
+ * requiredConcepts 覆盖率（P0-2）：不再「任一命中即通过」，要求达到约 2/3 覆盖。
+ * 例如 3 个必考概念至少命中 2 个；1 个则全中。靠解析蒙混（explanation 提及）不计。
+ */
+function requiredCoverageMet(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
+  const required = (requiredPointsFor(canonical) ?? []).map(normalizeConcept).filter(Boolean);
+  if (required.length === 0) return true;
+  const text = evidenceText(v);
+  const matched = required.filter((a) => anchorHasEvidence(a, text)).length;
+  const need = Math.max(1, Math.round((required.length * 2) / 3));
+  return matched >= need;
 }
 
 function hasDuplicateOptions(options: string[]): boolean {
@@ -72,8 +98,13 @@ function hasDuplicateOptions(options: string[]): boolean {
   return false;
 }
 
-/** 校验变体候选：结构 + 语义不变量。无兜底——失败即拒绝。 */
-export function validateVariant(canonical: Question, v: VariantCandidate | GeneratedVariant): VariantCheck {
+/** 校验变体候选：结构 + 语义不变量。无兜底——失败即拒绝。
+ *  @param format 本次会话实际形态（P0-1）；提供时以它决定选择/开放结构，否则回退到 canonical 是否含 choice。 */
+export function validateVariant(
+  canonical: Question,
+  v: VariantCandidate | GeneratedVariant,
+  format?: VariantFormat,
+): VariantCheck {
   if (!v || typeof v.question !== 'string' || !v.question.trim()) {
     return { ok: false, reason: '变体题干为空' };
   }
@@ -81,7 +112,8 @@ export function validateVariant(canonical: Question, v: VariantCandidate | Gener
     return { ok: false, reason: '题干包含依赖原题的指代，需自包含' };
   }
 
-  const isChoice = !!canonical.formats.choice;
+  // P0-1：以会话形态为准，而不是「canonical 有 choice 就当选择题」
+  const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     const cf = canonical.formats.choice!;
     const hasOptions = v.options !== undefined;
@@ -121,10 +153,13 @@ export function validateVariant(canonical: Question, v: VariantCandidate | Gener
     }
   }
 
-  // 语义：极保守的 concept evidence 检查——仅当 topic/tags/required 的任何明显证据都未出现时才拒绝
-  // 避免对 required 全量匹配的误伤（单缺失不拒）；该条件非常保守，命中则大概率已语义漂移
-  if (!hasConceptEvidence(canonical, v)) {
-    return { ok: false, reason: '变体未发现 canonical topic / required concept 的明显证据，疑似语义漂移' };
+  // 语义：最小证据（topic/tags/required 任一出现于题干+选项）+ required 覆盖率（约 2/3）。
+  // 解析(explanation)不计入证据，避免「题目已漂移、靠解析蒙混」通过（P0-2）。
+  if (!hasMinimalEvidence(canonical, v)) {
+    return { ok: false, reason: '变体未保留 canonical topic / tags / required 的明显证据，疑似语义漂移' };
+  }
+  if (!requiredCoverageMet(canonical, v)) {
+    return { ok: false, reason: '变体仅保留部分必考概念证据（requiredConcepts 未充分考察），疑似遗漏核心知识' };
   }
 
   return { ok: true };
@@ -134,9 +169,10 @@ export function validateVariant(canonical: Question, v: VariantCandidate | Gener
  * 把通过校验的变体落到题目上。
  * 选择题：替换 question / explanation / options / answer
  * 开放题：仅替换 question / explanation
+ * @param format 本次会话实际形态（P0-1）；提供时以它决定呈现结构，否则回退到 canonical 是否含 choice。
  */
-export function applyVariant(canonical: Question, v: GeneratedVariant): Question {
-  const isChoice = !!canonical.formats.choice;
+export function applyVariant(canonical: Question, v: GeneratedVariant, format?: VariantFormat): Question {
+  const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     return {
       ...canonical,
