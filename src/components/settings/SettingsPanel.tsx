@@ -1,4 +1,5 @@
-import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, List, Popconfirm, Select, Switch, Tabs, Tag, Typography, Space, App as AntdApp } from 'antd';
+import { Alert, Button, Card, Collapse, Divider, Empty, Input, InputNumber, Popconfirm, Select, Switch, Tabs, Tag, Typography, Space, App as AntdApp, Table } from 'antd';
+import type { TableColumnsType } from 'antd';
 import { UndoOutlined, SaveOutlined, DeleteOutlined, ClearOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { Suspense, lazy, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { AIConfig } from '../../schemas/ai-config';
@@ -38,6 +39,77 @@ const AVAILABILITY_TEXT: Record<ChromeAvailability, { type: 'success' | 'warning
     message: '当前浏览器不支持 Chrome 内置 AI（需较新版 Chrome 且启用 Prompt API）；该引擎会被自动跳过。',
   },
 };
+
+/** 日志类型展示元信息（错误 / 审计 / 运行）。 */
+const LOG_KIND_META: Record<string, { label: string; color: string }> = {
+  error: { label: '错误', color: 'red' },
+  audit: { label: '审计', color: 'blue' },
+  runtime: { label: '运行', color: 'green' },
+};
+
+/** 日志级别 → Tag 颜色。 */
+const LOG_LEVEL_COLOR: Record<string, string> = {
+  error: 'red',
+  warning: 'orange',
+  info: 'default',
+};
+
+/** 诊断日志表格列定义（设置 → 日志），用 antd Table 呈现，错误日志按类型 / 级别着色。 */
+const LOG_TABLE_COLUMNS: TableColumnsType<ErrorLogEntry> = [
+  {
+    title: '时间',
+    dataIndex: 'createdAt',
+    key: 'createdAt',
+    width: 180,
+    sorter: (a, b) => a.createdAt - b.createdAt,
+    defaultSortOrder: 'descend',
+    render: (createdAt: number) => (
+      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        {new Date(createdAt).toLocaleString()}
+      </Typography.Text>
+    ),
+  },
+  {
+    title: '类型',
+    key: 'kind',
+    width: 90,
+    render: (_: unknown, record) => {
+      const kind = record.kind ?? 'error';
+      const meta = LOG_KIND_META[kind] ?? { label: kind, color: 'default' };
+      return <Tag color={meta.color}>{meta.label}</Tag>;
+    },
+  },
+  {
+    title: '级别',
+    dataIndex: 'level',
+    key: 'level',
+    width: 90,
+    render: (level?: string) => {
+      const lv = level ?? 'info';
+      return <Tag color={LOG_LEVEL_COLOR[lv] ?? 'default'}>{lv}</Tag>;
+    },
+  },
+  {
+    title: '模块',
+    dataIndex: 'scope',
+    key: 'scope',
+    width: 120,
+    render: (scope: string) => <Tag>{scope}</Tag>,
+  },
+  {
+    title: '事件',
+    dataIndex: 'event',
+    key: 'event',
+    width: 150,
+    render: (event?: string) => <Typography.Text type="secondary">{event ?? '—'}</Typography.Text>,
+  },
+  {
+    title: '信息',
+    dataIndex: 'message',
+    key: 'message',
+    ellipsis: true,
+  },
+];
 
 interface Props {
   /** 重置学习数据后回调，用于父组件把内存中的画像同步回空画像。 */
@@ -330,32 +402,33 @@ export default function SettingsPanel({
           ) : visibleLogs.length === 0 ? (
             <Empty description="暂无日志" image={Empty.PRESENTED_IMAGE_SIMPLE} />
           ) : (
-            <List
-              size="small"
+            <Table<ErrorLogEntry>
+              rowKey={(record) => record.id ?? record.createdAt}
+              columns={LOG_TABLE_COLUMNS}
               dataSource={visibleLogs}
-              renderItem={(item) => {
-                const kind = item.kind ?? 'error';
-                const level = item.level ?? (kind === 'error' ? 'error' : 'info');
-                return (
-                  <List.Item style={{ display: 'block' }}>
-                    <Space size={8} wrap>
-                      <Tag color={kind === 'error' ? 'red' : kind === 'audit' ? 'blue' : 'green'}>
-                        {kind === 'error' ? '错误' : kind === 'audit' ? '审计' : '运行'}
-                      </Tag>
-                      <Tag color={level === 'error' ? 'red' : level === 'warning' ? 'orange' : 'default'}>{item.scope}</Tag>
-                      {item.event && <Typography.Text type="secondary">{item.event}</Typography.Text>}
-                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                        {new Date(item.createdAt).toLocaleString()}
-                      </Typography.Text>
-                    </Space>
-                    <div style={{ marginTop: 4 }}>{item.message}</div>
-                    {item.detail != null && (
-                      <pre style={{ margin: '6px 0 0', padding: 8, background: '#f5f5f5', borderRadius: 6, fontSize: 12, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                        {JSON.stringify(item.detail, null, 2)}
-                      </pre>
-                    )}
-                  </List.Item>
-                );
+              size="small"
+              scroll={{ x: 780, y: 420 }}
+              pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `共 ${total} 条` }}
+              expandable={{
+                rowExpandable: (record) => record.detail != null,
+                expandedRowRender: (record) =>
+                  record.detail != null ? (
+                    <pre
+                      style={{
+                        margin: 0,
+                        padding: 8,
+                        background: '#f5f5f5',
+                        borderRadius: 6,
+                        fontSize: 12,
+                        maxHeight: 240,
+                        overflow: 'auto',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {JSON.stringify(record.detail, null, 2)}
+                    </pre>
+                  ) : null,
               }}
             />
           )}
