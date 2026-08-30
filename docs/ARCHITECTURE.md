@@ -61,8 +61,11 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                       核心机制见下「Chrome 内置 AI 的并发与卡死」，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
    variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）。
-                     VARIANT_SYSTEM 为稳定契约前缀（含 [PROMPT-VERSION]、知识考察契约、生成策略、
-                     JSON 输出契约），动态数据只在 buildUser，便于 DeepSeek KV Cache 命中。
+                     VARIANT_SYSTEM 为稳定契约前缀（v2 分层：角色→知识契约不变量→变化维度→生成规则→
+                     distractor 规则→抗暗示→静默验证→JSON 输出契约），专为 Flash 类模型设计，把
+                     「真正不同（认知角度/reasoning path）/ requiredConcepts 必须被实际考察 / 答案适用条件
+                     不变量 / 优先用有明确错因的 plausible distractor」写成显式规则；动态数据只在 buildUser
+                     （知识契约 + 原题 + 变体目标），便于 DeepSeek KV Cache 命中。
    evaluate.ts       开放形态评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）。
                      EVAL_SYSTEM 为稳定契约前缀（角色 + 判断标准 + 四维原则 + 责任边界「LLM 不计算
                      overall」+ JSON 输出契约），动态数据只在 buildEvalUser。
@@ -415,6 +418,7 @@ Original Question ──→ LLM ──→ VariantCandidate ──→ validateVar
 - **Variant（允许自由变化）**：题干措辞、场景/上下文、选项表达与 distractors、解析表达。
 - **校验**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、answer 索引合法且与 type 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）；失败由应用层记录 warning 并回退原题，避免单题坏变体中断整场组卷。
 - 选择题 `options/answer` 可由 LLM 重设计，`answer` 索引由 LLM 给出但由校验重算合法性，彻底避免“索引错位”靠验证而非靠字段禁止。
+- **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
 - **抗暗示（anti-cueing）自愈**：`ai/variant.generateVariant` 在拿到 LLM 变体后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），用修正提示词**一次性重试**改写选项，避免把“正确项明显更长/干扰项过短”的偏差写进变体。属软信号、非校验阻断（沿用 ADR-036 无兜底语义：仅重生成，不因此抛错改回原题）。
 

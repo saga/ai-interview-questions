@@ -37,6 +37,10 @@ describe('generateVariant', () => {
     expect(user).toContain('question');
     expect(user).toContain('options');
     expect(user).toContain('answer');
+    // v2：buildUser 显式注入「变体目标」约束段
+    expect(user).toContain('变体目标');
+    expect(user).toContain('实际考察');
+    expect(user).toContain('适用条件');
   });
 
   it('LLM 输出缺字段时回退原题题干', async () => {
