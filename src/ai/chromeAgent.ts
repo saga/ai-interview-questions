@@ -126,7 +126,9 @@ function contentToText(content: string | Array<{ type: string; text?: string }>)
     .trim();
 }
 
-/** 把可用工具渲染成紧凑签名；工具语义在 system prompt 中定义，避免每轮重复长描述。 */
+/** 把可用工具渲染成「签名 + 语义描述」，描述取自 tools.ts 的单一信息源。
+ *  Chrome 无原生 function calling，无法像 DeepSeek 那样经 API 的 tools 参数拿到工具定义，
+ *  故在此随用户提示词一并提供 name + 参数 schema + description，避免再依赖 system prompt 罗列工具。 */
 function renderTools(tools?: Tool[]): string {
   if (!tools || tools.length === 0) return '(no tools available)';
   return tools
@@ -137,7 +139,8 @@ function renderTools(tools?: Tool[]): string {
       } catch {
         schema = '{}';
       }
-      return `- ${t.name}: ${schema}`;
+      const desc = t.description ? ` — ${t.description}` : '';
+      return `- ${t.name}: ${schema}${desc}`;
     })
     .join('\n');
 }

@@ -1,8 +1,11 @@
-// Agent 系统提示词：定义「面试官决策中心」的角色与边界。
+// Agent 系统提示词：定义「面试官决策中心」的角色与边界（只承载行为策略，不罗列工具）。
 // 关键约束（对齐 AGENTS.md 与计划）：
 // - Agent 只做「不确定的决策」（下一题问什么 / 是否追问 / 何时结束）；
 // - 绝不自己打分——必须通过 evaluateAnswer 工具获取评分；
 // - 持久化由外部在 finishInterview 后接管（Agent 不直接写库）。
+// 工具名 / 签名 / 语义描述的唯一来源是 src/agent/tools.ts 的 AgentTool.description+parameters：
+// 原生 tool-call 模型（DeepSeek 等）经 API 的 tools 参数获得，Chrome 经 chromeAgent.renderTools 获得，
+// 故本文件不再重复罗列「可用工具」，避免与 schema 漂移、并节省 system 前缀 token（利于 KV Cache）。
 
 export const INTERVIEW_AGENT_SYSTEM_PROMPT = `[PROMPT-VERSION v1]
 
@@ -16,15 +19,6 @@ export const INTERVIEW_AGENT_SYSTEM_PROMPT = `[PROMPT-VERSION v1]
    - 候选部分掌握 → 就同一主题追问（用 getWeakAngles 选缺证据角度，再选对应 subtopic）；
    - 候选明显不会 → 简短说明后切换前置主题，不要反复追问打击信心；
 4. 达到题数上限（如 10 题）或你认为已充分评估时，调用 finishInterview 结束。
-
-## 可用工具
-- searchQuestions(topic?, limit?)：按主题筛选题库，**返回候选题列表，每行都带真实 id（如 id=agtool-guard-01）**。
-- getQuestion(id, format?)：把某题置为「当前题」呈现给用户；**id 必须是 searchQuestions 返回列表里的真实 id**。
-- evaluateAnswer()：评估「当前题」的用户作答，返回 EvaluationResult。
-- getUserWeaknesses()：读取候选人的薄弱主题（只读）。
-- getWeakAngles(topic)：读取某 topic 下最薄弱的角度（基于 angleCoverage），用于精准追问。
-- getCoverageGaps()：读取全局覆盖缺口与薄弱优先列表。
-- finishInterview()：结束本轮面试并返回摘要。
 
 ## 工具调用铁律（避免卡死）
 1. **只调用一次 searchQuestions**：拿到返回列表里的真实 id 后，立刻用其中一个 id 调 getQuestion 进入提问。**不要反复调用 searchQuestions，也不要凭空猜测 / 编造 id**（例如把 "choice"、topic 名、或随机数字当 id 传入）——getQuestion 只用真实 id 才能命中。
