@@ -98,6 +98,18 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         pool = pool.filter((q) => q.topic === params.topic || q.category === params.topic);
       }
       const items = pool.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
+      // 关键修复：候选的真实 id 必须写进 content 文本（LLM 只能读到 content，看不到 details），
+      // 否则 LLM 拿不到题号、只能反复猜测 id 导致卡死。
+      const list = items
+        .map(
+          (it, i) =>
+            `${i + 1}. id=${it.id} | topic=${it.topic} | category=${it.category} | difficulty=${it.difficulty} | formats=${it.formats.join('/')}`,
+        )
+        .join('\n');
+      const content =
+        items.length > 0
+          ? `找到 ${items.length} 道候选题（按顺序排列，请用其中真实 id 调用 getQuestion）：\n${list}\n\n下一步：从这些候选里选 1 道（建议从薄弱主题 / 难度适中开始），调用 getQuestion(id=<上面列出的真实 id>) 呈现给用户。不要反复调用 searchQuestions，也不要猜测或编造 id。`
+          : `未找到匹配「${params.topic ?? '全部'}」的候选题。请换一个 topic / category，或不带参数重新 searchQuestions 获取全部候选。`;
       session.log.push({
         at: Date.now(),
         kind: 'tool',
@@ -105,7 +117,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         summary: `返回 ${items.length} 道候选`,
         details: { count: items.length },
       });
-      return textResult(`找到 ${items.length} 道候选题`, items);
+      return textResult(content, items);
     },
   };
 

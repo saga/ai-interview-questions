@@ -27,6 +27,8 @@ import { createAgentTools } from './tools';
 import { evaluateSessionQuestion } from '../application/sessionEvaluator';
 import { INTERVIEW_AGENT_SYSTEM_PROMPT } from './prompt';
 import { buildAgentRuntime } from './runtime';
+import { piUsageToLLMUsage } from '../ai/pi';
+import type { LLMUsage } from '../types';
 import type { AgentHandlers, InterviewAgentSession } from './types';
 import { countEvaluated } from './types';
 
@@ -80,6 +82,9 @@ export interface CreateInterviewAgentOptions {
   masteryThreshold?: number;
   /** 覆盖 Agent 系统提示词；为空时使用内置默认值。 */
   systemPrompt?: string;
+  /** KV Cache 命中遥测（P1④）：每轮 assistant 消息结束（含工具调用轮）回传归一化用量。
+   * 多轮 append-only 对话下，cacheHitTokens 应随轮次递增——这是验证 stable-prefix 是否命中缓存的真凭实据。 */
+  onUsage?: (usage: LLMUsage) => void;
   /** 测试注入：用 mock streamFn + 占位 model 替换真实 buildAgentRuntime（避免真实网络/模型查找）。 */
   runtimeOverride?: { streamFn: StreamFn; model: unknown };
 }
@@ -262,6 +267,8 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       if (msg.stopReason === 'error' || msg.stopReason === 'aborted' || msg.errorMessage) {
         lastErrorMessage = msg.errorMessage ?? `模型返回错误（${msg.stopReason}）`;
       }
+      // P1④：每轮 assistant 消息都带用量（含 KV Cache 命中/未命中），回传上层做遥测。
+      if (opts.onUsage && msg.usage) opts.onUsage(piUsageToLLMUsage(msg.usage));
     }
     if (event.type === 'tool_execution_end') {
       if (event.toolName === 'getQuestion') handlers?.onQuestion?.(session.currentQuestion);

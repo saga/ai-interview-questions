@@ -64,6 +64,21 @@ export interface LLMProvider {
 
 export type CompleteFn = (system: string, user: string) => Promise<string>;
 
+/**
+ * 一次 LLM 调用的 token 用量（provider 无关归一化）。用于 KV Cache 命中遥测（P1④）：
+ * - cacheHitTokens：命中前缀缓存的 token 数（DeepSeek 的 prompt_cache_hit_tokens，pi-ai 归一为 cacheRead）；
+ * - cacheMissTokens：未命中、需重新计算的 token 数（≈ 输入 - 命中；DeepSeek 的 prompt_cache_miss_tokens）；
+ * 这两个字段让我们能真实验证「stable-prefix prompt 是否真的命中了 KV Cache」，而不是凭感觉。
+ */
+export interface LLMUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheHitTokens: number;
+  cacheMissTokens: number;
+  /** 推理/思考 token（若 provider 上报；thinking 模式会占用，已是 output 的子集）。 */
+  reasoningTokens?: number;
+}
+
 // ── 常量（与 EvaluationDimension 同源） ──
 export const EVAL_DIMENSIONS: EvaluationDimension[] = ['correctness', 'completeness', 'architecture', 'communication'];
 

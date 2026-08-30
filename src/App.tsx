@@ -28,6 +28,7 @@ import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
 import CopilotSidebar from './components/copilot/CopilotSidebar';
 import { createLLMProvider } from './ai/provider';
+import { devUsageLogger } from './ai/usageTelemetry';
 
 type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
 
@@ -102,7 +103,7 @@ export default function App() {
   const agent = useAgentInterview(config, profile ?? emptyProfile(), handleAgentComplete, message);
   // 设置页未保存草稿提升到 App 层（同上思路），切到其它 tab 再切回时不丢编辑态。
   const settings = useSettingsDraft(config, handleSaveConfig, message);
-  const challengerProvider = createLLMProvider(config);
+  const challengerProvider = createLLMProvider(config, devUsageLogger);
 
   // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
   if (location.pathname === '/' || location.pathname === '') {

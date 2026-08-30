@@ -48,16 +48,30 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
 
 ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI；
                多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
-   pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON；local 在此路由到
-                     createProvider 注册的自定义 provider，ADR-022）
+   pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON / piUsageToLLMUsage；
+                     local 在此路由到 createProvider 注册的自定义 provider，ADR-022）。
+                     callLLM 支持 opts（jsonMode / temperature / onUsage）：jsonMode 时经
+                     samplingParams 透传 response_format=json_object（DeepSeek 原生 JSON 模式，
+                     免去偶发非 JSON 被 extractJSON 抛错触发整段重生成）；onUsage 回传归一化用量。
+   capabilities.ts   Provider 能力协商（P2⑦）：LLMCapabilities { jsonMode, toolCalls, thinking,
+                     contextCaching, multiRound } + capabilitiesFor(entry) 查表。业务层只问「能力有没有」，
+                     不写死 provider；新增引擎只需此处登记，callLLM / provider 无需改动。
     chrome.ts         Chrome Prompt API 封装（chromeAvailability / chromeComplete）+ ChromeAIExecutor
                       （并发上限 + 单次超时 + AbortSignal 取消 + 失败重试 + session 自动销毁，
                       核心机制见下「Chrome 内置 AI 的并发与卡死」，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
-   variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）
-   evaluate.ts       开放形态评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）
+   variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）。
+                     VARIANT_SYSTEM 为稳定契约前缀（含 [PROMPT-VERSION]、知识考察契约、生成策略、
+                     JSON 输出契约），动态数据只在 buildUser，便于 DeepSeek KV Cache 命中。
+   evaluate.ts       开放形态评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）。
+                     EVAL_SYSTEM 为稳定契约前缀（角色 + 判断标准 + 四维原则 + 责任边界「LLM 不计算
+                     overall」+ JSON 输出契约），动态数据只在 buildEvalUser。
+   questionChallenger.ts  质询（one-shot 结构化 JSON；QUESTION_CHALLENGER_SYSTEM 同样为稳定契约前缀）。
+   usageTelemetry.ts KV Cache 命中遥测（P1④）：devUsageLogger 仅 import.meta.env.DEV 打印
+                     in/out/token 与 cacheHit/cacheMiss，用于验证 stable-prefix prompt 是否命中缓存。
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
-                     + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）
+                     + ChromeAIProvider / PiAIProvider / FallbackProvider（降级链，ADR-023）。
+                     createLLMProvider(config, onUsage?) 把用量回调透传给每个 PiAIProvider 通道。
 
 storage/       本地持久化（IndexedDB + localStorage；两者均为不可信边界，一律经 Zod 校验）
   db.ts         Dexie 数据库 schema（version 2）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ errorLog 诊断表（scope/createdAt 索引，记录 Copilot/引擎等调用失败的结构化上下文，与业务数据隔离，fire-and-forget 不阻塞主流程）
@@ -483,7 +497,19 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
 - **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认降级链
   `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }], generateOpenQuestions: false }`；
-  示例配置见 `docs/config.example.json`。
+  示例配置见 `docs/config.example.json`。DeepSeek 特性已按能力协商充分利用：
+  - **原生 JSON 模式**：声明 `jsonMode` 能力的引擎（deepseek / openrouter）经 samplingParams 透传
+    `response_format={type:'json_object'}`，变体/评分/质询均走原生 JSON（extractJSON 仅作 fallback）；
+    DeepSeek 要求 prompt 含 "json"，三套系统提示的系统契约段均满足。
+  - **KV Cache（默认开启，prefix matching）**：one-shot 路径（variant/evaluate/challenge）把角色/原则/
+    JSON 契约等稳定内容放进 system 前缀、动态数据只放 user 消息；Agent 路径由 pi-agent-core 维持
+    append-only 多轮历史 + 稳定 system 前缀——均天然命中缓存，不做「每轮重新压缩 prompt」。
+  - **Tool Calls**：Agent 走 pi-agent-core 原生工具调用（searchQuestions / getQuestion /
+    evaluateAnswer / getUserWeaknesses / getWeakAngles / getCoverageGaps / finishInterview），
+    确定性工作全在工具内，Agent 只做选题/追问/收尾决策。
+  - **Thinking**：能力已声明（deepseek `thinking:true`），但由选 `deepseek-reasoner` 模型驱动而非运行时参数；
+    当前不自动切模型，需用户配置 reasoner 模型才启用。
+  - **Cache 遥测**：dev 下 `devUsageLogger` 打印 cacheHit/cacheMiss，用于验证命中率（见 usageTelemetry.ts）。
 - **开放题生成门控（ADR-031）**：`AIConfig.generateOpenQuestions` 默认 false——
   interviewEngine 的 `effectiveFormats` 从允许形态剔除 open（纯开放题不入池、
   双形态题一律出选择、自适应随机开放分配恒为 choice），定义只选 open 时退化

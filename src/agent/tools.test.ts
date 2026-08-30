@@ -85,6 +85,19 @@ describe('createAgentTools', () => {
     expect(items[0].topic).toBe('attention');
   });
 
+  it('searchQuestions 文本结果必须包含真实题号，否则 LLM 拿不到 id 会卡死（修复：content 不再只是数量）', async () => {
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    const r = await search.execute('call', {});
+    const text = (r.content as { type: string; text: string }[]).map((c) => c.text).join('');
+    // 关键契约：content 文本里必须出现真实 id，LLM 才能据此调用 getQuestion
+    expect(text).toContain('q-choice-1');
+    expect(text).toContain('q-open-1');
+    // 且不能再只回一句数量的话
+    expect(text).not.toMatch(/^找到 \d+ 道候选题$/);
+  });
+
   it('getQuestion 选中题目并写入会话 currentQuestion', async () => {
     const d = deps([makeChoiceQuestion()]);
     const tools = createAgentTools(d);

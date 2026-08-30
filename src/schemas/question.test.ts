@@ -10,7 +10,7 @@ const validChoiceSingle = {
   question: '什么是 tool calling？',
   explanation: '解析',
   formats: {
-    choice: { type: 'single' as const, options: ['A', 'B', 'C'], answer: [1] },
+    choice: { type: 'single' as const, options: ['A', 'B', 'C', 'D'], answer: [1] },
     open: { referenceAnswer: '要点' },
   },
 };
@@ -102,7 +102,7 @@ describe('questionSchema', () => {
       formats: {
         choice: {
           type: 'single' as const,
-          options: ['A', 'B'],
+          options: ['A', 'B', 'C', 'D'],
           answer: [0],
           question: '场景化题干',
         },

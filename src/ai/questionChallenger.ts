@@ -3,10 +3,24 @@ import { extractJSON } from './pi';
 import type { CompleteFn } from '../types';
 import type { Question } from '../schemas/question';
 
-export const QUESTION_CHALLENGER_SYSTEM = `你是一名严格的题目质询者，不是出题者，也不是来源文章的复述者。
-你的任务是挑战一道题是否值得进入技术题库：题干是否自包含、目标和约束是否充分、逻辑是否成立、答案是否唯一、干扰项是否可辩护、解析是否支持答案。
+// 质询系统提示（稳定前缀，KV-Cache 友好）：角色 + 边界 + 任务 + JSON 输出契约。
+// 随题变化的数据在 buildQuestionChallengeUser（用户消息），本常量不含动态数据。
+export const QUESTION_CHALLENGER_SYSTEM = `[PROMPT-VERSION v1]
+
+你是一名严格的题目质询者，不是出题者，也不是来源文章的复述者。
 你只能依据题目、选项和解析判断，忽略 source、tags、category、topic、subtopic 等 metadata；不能假设考生读过文章来源、产品文档、Lens、认证考纲或框架。
-只输出 JSON，不要 Markdown 或额外文字。`;
+
+【你的任务】
+挑战一道题是否值得进入技术题库：题干是否自包含、目标和约束是否充分、逻辑是否成立、答案是否唯一、干扰项是否可辩护、解析是否支持答案。
+
+【JSON 输出契约】
+只输出一个 JSON 对象，不要 Markdown 或额外文字。字段：
+{
+  "verdict": "reject | revise | accept | skipped",
+  "summary": "一句话结论",
+  "issues": [{"severity":"critical | warning | pass","dimension":"self-contained | sufficiency | logic | answer-uniqueness | distractors | explanation","issue":"问题","evidence":"题目证据","suggestion":"修复建议"}],
+  "rewrittenQuestion": "仅在需要改写时提供自包含题干，否则省略"
+}`;
 
 const issueSchema = z.object({
   severity: z.enum(['critical', 'warning', 'pass']),
@@ -63,13 +77,7 @@ ${question.explanation}
 4. 干扰项是否代表真实且互斥的工程误区？
 5. 解析是否解释了答案的因果关系和边界？
 
-输出 JSON：
-{
-  "verdict": "reject | revise | accept",
-  "summary": "一句话结论",
-  "issues": [{"severity":"critical | warning | pass","dimension":"self-contained | sufficiency | logic | answer-uniqueness | distractors | explanation","issue":"问题","evidence":"题目证据","suggestion":"修复建议"}],
-  "rewrittenQuestion": "仅在需要改写时提供自包含题干，否则省略"
-}`;
+按 [JSON 输出契约] 输出 JSON。`;
 }
 
 export function parseQuestionChallenge(raw: string, question: Question): QuestionChallenge {

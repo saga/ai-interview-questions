@@ -11,6 +11,7 @@ import type { InterviewSession, SessionQuestion } from '../schemas/session';
 import type { LearnerProfile } from '../schemas/learner';
 import { availableFormats, planComposition } from '../domain/quiz';
 import { createLLMProvider } from '../ai/provider';
+import { devUsageLogger } from '../ai/usageTelemetry';
 import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/adaptive';
 import { interviewDefinitionSchema } from '../schemas/interview';
 import { formatSchemaErrorMessage } from '../schemas/errors';
@@ -56,7 +57,7 @@ export async function buildSession(
 
   const count = validDef.adaptive ? 1 : validDef.count;
   const plan = planComposition(pool, count, validDef.topicPriorities, formats, Math.random);
-  const provider = validDef.useAI ? createLLMProvider(config) : null;
+  const provider = validDef.useAI ? createLLMProvider(config, devUsageLogger) : null;
   const questions = await Promise.all(plan.map((sq) => finalizeQuestion(sq, provider)));
   return { definition: validDef, questions, startedAt: Date.now() };
 }
@@ -98,7 +99,7 @@ export async function nextAdaptiveStep(
   // 自适应模式无组卷配额：按开放形态概率随机分配（与普通会话的 7:3 体验一致）；
   // generateOpenQuestions 关闭时 formats 不含 open，wantOpen 恒为 false
   const target = toSessionQuestion(picked.question, formats);
-  const provider = providerOverride ?? (def.useAI ? createLLMProvider(config) : null);
+  const provider = providerOverride ?? (def.useAI ? createLLMProvider(config, devUsageLogger) : null);
   const question = await finalizeQuestion(target, provider);
   return { question, strategy: picked.strategy };
 }
@@ -128,7 +129,7 @@ export async function evaluateAnswer(
   config?: AIConfig,
 ): Promise<EvaluationResult | null> {
   if (!def.useAI) return evaluateSessionQuestion(sq, answer, null, def.scoringRubric, def.evaluationCriteria);
-  const provider = createLLMProvider(config);
+  const provider = createLLMProvider(config, devUsageLogger);
   return evaluateSessionQuestion(sq, answer, provider, def.scoringRubric, def.evaluationCriteria).catch((err) => {
     console.warn('评分失败：', err);
     return null;

@@ -18,6 +18,7 @@ import {
 } from '../agent/types';
 import { createInterviewAgent } from '../agent/interviewAgent';
 import type { InterviewAgentHandle } from '../agent/interviewAgent';
+import { devUsageLogger } from '../ai/usageTelemetry';
 
 export type AgentPhase = 'intro' | 'running' | 'done';
 
@@ -135,7 +136,7 @@ export function useAgentInterview(
   const start = async () => {
     setError(null);
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
-    const provider = createLLMProvider(config);
+    const provider = createLLMProvider(config, devUsageLogger);
     if (!entry || !provider) {
       setError('未找到可用的 AI 引擎配置，请先在设置中配置。');
       return;
@@ -158,6 +159,7 @@ export function useAgentInterview(
       generateOpenQuestions: config.generateOpenQuestions,
       masteryThreshold: config.masteryThreshold,
       systemPrompt: config.prompts?.agentSystem,
+      onUsage: devUsageLogger,
       handlers: {
         onQuestion: (q) => {
           if (!q) {

@@ -4,7 +4,7 @@
 // 覆盖云端与本地 OpenAI 兼容服务，后者由 buildModels 路由到自定义 provider，ADR-022）。
 // 多引擎同时启用时按配置顺序组成降级链：前一个失败自动尝试下一个（ADR-023）。
 
-import type { GeneratedVariant, LLMProvider } from '../types';
+import type { GeneratedVariant, LLMProvider, LLMUsage } from '../types';
 import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { OpenFormat, Question } from '../schemas/question';
@@ -64,12 +64,19 @@ export function mergeQuestionRubric(
 export class PiAIProvider implements LLMProvider {
   readonly name: string;
 
-  constructor(private readonly entry: ProviderEntry, private readonly prompts?: AIConfig['prompts']) {
+  /** KV Cache 命中遥测（P1④）：把每次 one-shot 补全的归一化用量回传给上层（如 dev 控制台 / 调试面板）。 */
+  constructor(
+    private readonly entry: ProviderEntry,
+    private readonly prompts?: AIConfig['prompts'],
+    private readonly onUsage?: (usage: LLMUsage) => void,
+  ) {
     this.name = `pi-ai(${entry.id})`;
   }
 
   async generateVariant(q: Question): Promise<GeneratedVariant> {
-    return generateVariant(q, (system, user) => callLLM(this.entry, system, user), this.prompts?.variantSystem?.trim() || undefined);
+    // 声明 jsonMode 能力的引擎（deepseek / openrouter）开启原生 JSON 模式：强制合法 JSON 输出，
+    // 减少因非 JSON 引发的整段重生成（省 token）。
+    return generateVariant(q, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, onUsage: this.onUsage }), this.prompts?.variantSystem?.trim() || undefined);
   }
 
   async evaluateOpenAnswer(
@@ -80,11 +87,13 @@ export class PiAIProvider implements LLMProvider {
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
-    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user), effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
+    // 评分是确定性场景：声明 jsonMode 的引擎走原生 JSON 模式 + temperature 0（稳定且省 token）。
+    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, temperature: 0, onUsage: this.onUsage }), effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
   }
 
   async challengeQuestion(q: Question): Promise<QuestionChallenge> {
-    return challengeQuestion(q, (system, user) => callLLM(this.entry, system, user));
+    // 质询输出也是结构化 JSON：JSON 模式 + temperature 0（verdict 应确定性）。
+    return challengeQuestion(q, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, temperature: 0, onUsage: this.onUsage }));
   }
 }
 
@@ -154,17 +163,18 @@ export class FallbackProvider implements LLMProvider {
   }
 }
 
-function buildEntryProvider(entry: ProviderEntry, prompts?: AIConfig['prompts']): LLMProvider {
-  return entry.id === 'chrome' ? new ChromeAIProvider(prompts) : new PiAIProvider(entry, prompts);
+function buildEntryProvider(entry: ProviderEntry, prompts?: AIConfig['prompts'], onUsage?: (usage: LLMUsage) => void): LLMProvider {
+  return entry.id === 'chrome' ? new ChromeAIProvider(prompts) : new PiAIProvider(entry, prompts, onUsage);
 }
 
 /** 由配置构造 LLMProvider：把所有启用且合法的引擎按顺序串成降级链；
- *  链为空返回 null（上层据此退化为原题/不评分），单引擎直接返回该实现。 */
-export function createLLMProvider(config?: AIConfig): LLMProvider | null {
+ *  链为空返回 null（上层据此退化为原题/不评分），单引擎直接返回该实现。
+ *  @param onUsage 可选 KV Cache 遥测回调（P1④），会透传给每个 PiAIProvider 通道（Chrome 通道忽略）。 */
+export function createLLMProvider(config?: AIConfig, onUsage?: (usage: LLMUsage) => void): LLMProvider | null {
   if (!config || !isConfigValid(config)) return null;
   const chain = config.providers
     .filter((p) => p.enabled && isEntryValid(p))
-    .map((entry) => buildEntryProvider(entry, config.prompts));
+    .map((entry) => buildEntryProvider(entry, config.prompts, onUsage));
   if (chain.length === 0) return null;
   return chain.length === 1 ? chain[0] : new FallbackProvider(chain);
 }

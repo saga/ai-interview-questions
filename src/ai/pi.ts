@@ -9,6 +9,9 @@ import { googleProvider } from '@earendil-works/pi-ai/providers/google';
 import { cloudflareWorkersAIProvider } from '@earendil-works/pi-ai/providers/cloudflare-workers-ai';
 import { buildLocalProvider } from './local.ts';
 import type { ProviderEntry } from '../schemas/ai-config';
+import type { LLMUsage } from '../types';
+import { capabilitiesFor } from './capabilities';
+import type { Usage } from '@earendil-works/pi-ai';
 
 /** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。
  *  空 key 返回 undefined，交给 provider 自身的 auth.resolve 兜底（如 local 的占位符）。
@@ -76,8 +79,40 @@ export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any>
   return model;
 }
 
+/** 一次性补全的可选参数。 */
+export interface CallLLMOptions {
+  /** 要求模型输出严格 JSON。是否真正附加 `response_format={type:'json_object'}` 由 provider 能力决定
+   *  （见 capabilities.ts：仅声明 jsonMode 的引擎才启用，当前为 deepseek / openrouter）。
+   *  DeepSeek 文档要求 prompt 含 "json" 字样，VARIANT_SYSTEM / EVAL_SYSTEM / QUESTION_CHALLENGER_SYSTEM 均满足。
+   *  收益：免去偶发非 JSON 输出被 extractJSON 抛错、进而触发整段重生成（浪费 token）。 */
+  jsonMode?: boolean;
+  /** 采样温度；不传则使用模型默认。评分等确定性场景建议传 0。 */
+  temperature?: number;
+  /** KV Cache 命中遥测（P1④）：一次补全结束（含 JSON 空内容重试后的那次）后回传归一化用量。
+   * 应用层可据此观察 cacheHitTokens / cacheMissTokens，验证 stable-prefix prompt 是否真的命中缓存。 */
+  onUsage?: (usage: LLMUsage) => void;
+}
+
+/** 把 pi-ai 的 Usage 归一化为 provider 无关的 LLMUsage（cacheRead→命中，input-cacheRead→未命中）。 */
+export function piUsageToLLMUsage(u: Usage): LLMUsage {
+  const input = u.input ?? 0;
+  const cacheHit = u.cacheRead ?? 0;
+  return {
+    inputTokens: input,
+    outputTokens: u.output ?? 0,
+    cacheHitTokens: cacheHit,
+    cacheMissTokens: Math.max(0, input - cacheHit),
+    reasoningTokens: u.reasoning,
+  };
+}
+
 /** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
-export async function callLLM(entry: ProviderEntry, system: string, user: string): Promise<string> {
+export async function callLLM(
+  entry: ProviderEntry,
+  system: string,
+  user: string,
+  opts?: CallLLMOptions,
+): Promise<string> {
   const models = buildModels(entry);
   const model = getModel(models, entry);
   if (!model) {
@@ -89,9 +124,36 @@ export async function callLLM(entry: ProviderEntry, system: string, user: string
   // apiKey / accountId 等字段）。切勿在此传 { apiKey }——pi-ai 收到 apiKey override
   // 时会构造「合成 credential」并丢弃 store 中的 env（如 Cloudflare 的 accountId），
   // 导致 applyAuth 拿到不到 accountId 而抛 "Provider is not configured"。
-  const res = await models.complete(model, context, {});
-  const textBlock = (res.content ?? []).find((b) => b.type === 'text');
-  return (textBlock && 'text' in textBlock ? textBlock.text : '') ?? '';
+
+  // 能力协商（P2⑦）：是否启用原生 JSON 模式由 provider 能力决定，而非硬编码 `entry.id === 'deepseek'`。
+  // DeepSeek / OpenRouter 等声明 jsonMode 能力的引擎会收到 response_format=json_object，
+  // 其余引擎走 prompt + parser 兜底（避免向非预期引擎发送不支持的参数）。
+  // 透传机制：pi-ai 对 openai-completions 适配器执行 Object.assign(params, samplingParams)。
+  const useJson = Boolean(opts?.jsonMode) && capabilitiesFor(entry).jsonMode;
+  const samplingParams = useJson ? { response_format: { type: 'json_object' } } : undefined;
+  const temperature = opts?.temperature;
+
+  const completeOnce = async (): Promise<{ text: string; usage?: Usage }> => {
+    const res = await models.complete(model, context, {
+      ...(samplingParams ? { samplingParams } : {}),
+      ...(temperature !== undefined ? { temperature } : {}),
+    });
+    const textBlock = (res.content ?? []).find((b) => b.type === 'text');
+    return { text: (textBlock && 'text' in textBlock ? textBlock.text : '') ?? '', usage: res.usage };
+  };
+
+  let first = await completeOnce();
+  let text = first.text;
+  let lastUsage = first.usage;
+  // DeepSeek JSON 模式官方已知偶发返回空内容（"API may occasionally return empty content"）。
+  // 单次重试兜底，避免把空串直接交给上层 parse 报错而浪费一次整段重生成。
+  if (useJson && !text.trim()) {
+    const retry = await completeOnce();
+    text = retry.text;
+    lastUsage = retry.usage;
+  }
+  if (opts?.onUsage && lastUsage) opts.onUsage(piUsageToLLMUsage(lastUsage));
+  return text;
 }
 
 /** 从 LLM 文本中稳健地提取 JSON（容忍代码块包裹与多余文字）。 */

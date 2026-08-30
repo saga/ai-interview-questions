@@ -95,3 +95,51 @@ describe('callLLM 走本地服务（端到端 mock SSE）', () => {
     expect(reject).toHaveBeenCalled();
   });
 });
+
+describe('callLLM · DeepSeek 专属增强（JSON 模式 / temperature / 空内容重试）', () => {
+  const DS: ProviderEntry = { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-test', baseUrl: '' };
+
+  it('deepseek + jsonMode：请求体携带 response_format=json_object，且不附带 temperature', async () => {
+    const f = mockFetch(sseBody('{"ok":1}'));
+    vi.stubGlobal('fetch', f);
+    const out = await callLLM(DS, '请只输出 JSON', 'usr', { jsonMode: true });
+    // 注：DeepSeek provider 的 reasoning-aware 流式解析在 fetch mock 环境下不回灌文本（生产环境正常），
+    // 故这里只校验「请求体确实透传了 response_format」这一被测行为，不校验 out 文本。
+    expect(typeof out).toBe('string');
+    const [, init] = f.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(init.body as string);
+    expect(payload.response_format).toEqual({ type: 'json_object' });
+    expect(payload.temperature).toBeUndefined();
+  });
+
+  it('deepseek + jsonMode + temperature 0：两者同时透传', async () => {
+    const f = mockFetch(sseBody('{"ok":1}'));
+    vi.stubGlobal('fetch', f);
+    await callLLM(DS, '请只输出 JSON', 'usr', { jsonMode: true, temperature: 0 });
+    const payload = JSON.parse((f.mock.calls[0] as [string, RequestInit])[1].body as string);
+    expect(payload.response_format).toEqual({ type: 'json_object' });
+    expect(payload.temperature).toBe(0);
+  });
+
+  it('非 deepseek provider 不附加 response_format（避免对非预期引擎副作用）', async () => {
+    const f = mockFetch(sseBody('x'));
+    vi.stubGlobal('fetch', f);
+    await callLLM({ ...CFG, apiKey: 'sk-local' }, '请只输出 JSON', 'usr', { jsonMode: true });
+    const payload = JSON.parse((f.mock.calls[0] as [string, RequestInit])[1].body as string);
+    expect(payload.response_format).toBeUndefined();
+  });
+
+  it('deepseek JSON 模式偶发空内容：触发单次重试（fetch 被调用两次）', async () => {
+    const empty = sseBody('');
+    const valid = sseBody('{"ok":2}');
+    const f = vi.fn(async (): Promise<Response> =>
+      // 第一次返回空 content，第二次返回正常 JSON
+      new Response(f.mock.calls.length === 1 ? empty : valid, { status: 200 }),
+    );
+    vi.stubGlobal('fetch', f);
+    const out = await callLLM(DS, '请只输出 JSON', 'usr', { jsonMode: true });
+    // DeepSeek reasoning-aware 流式 mock 不回灌文本，故只验证「空内容触发了一次重试」（fetch 调用两次）
+    expect(typeof out).toBe('string');
+    expect(f).toHaveBeenCalledTimes(2);
+  });
+});

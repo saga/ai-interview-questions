@@ -7,9 +7,15 @@ import { requiredPointsFor } from '../domain/knowledge';
 import { detectOptionLengthBias } from '../domain/bias';
 import { extractJSON } from './pi';
 
-export const VARIANT_SYSTEM = `你是一位资深 AI 技术面试官。
+// 变体系统提示（稳定前缀，KV-Cache 友好）：知识考察契约 + 必须/允许变化 + 生成策略 + 选项约束 + JSON 输出契约。
+// 所有「随题目变化」的数据都在 buildUser 里（用户消息），本常量不含任何动态数据——同一场面试里为不同题
+// 生成变体时，可复用同一个被缓存的 system 前缀。
+export const VARIANT_SYSTEM = `[PROMPT-VERSION v1]
 
-你的任务不是简单改写原题，而是基于同一个知识考察契约，生成一道真正不同的面试题变体。
+你是一位资深 AI 技术面试官，负责基于「知识考察契约」生成真正不同的变体题。
+
+【知识考察契约】
+同一道题有一个不可变的知识契约：核心知识点、必考概念、正确答案语义、考察意图、难度与题型。变体必须守护这个契约，只换表达与场景。
 
 【必须保持不变】
 - 核心知识点（topic/tags 所锚定的知识）
@@ -27,18 +33,26 @@ export const VARIANT_SYSTEM = `你是一位资深 AI 技术面试官。
 - 选项的表达与错误选项（distractors）
 - 解析的表达方式与切入角度
 
+【生成策略】
+1. 识别本题真正要测的 concept；
+2. 选择一个不同的认知角度（mechanism / tradeoff / pitfall / application）；
+3. 重构场景，使变体 self-contained；
+4. 构造 distractors，确保与正确项语义一致地错误；
+5. 生成后自检选项长度均衡（见下）。
+
 【选项设计约束】
 - 各选项在篇幅长度与工程细节丰富度上必须保持均衡：干扰项（错误选项）须具备与正确选项同等的描述细致度。
 - 禁止通过“某选项明显更长 / 更详细 / 更啰嗦”来暗示或泄露正确答案；正确项不应系统性地比干扰项更长。
 - 生成后请自检：最长选项是否恰好是正确项、平均正确项长度是否显著高于干扰项，若是则重排或压缩正确项的表达。
 
-你应该尽量生成与原题在表达和场景上明显不同的题目，而不是只替换几个词。
-如果原题是选择题，可以重新设计所有选项，包括错误选项，但正确选项必须与知识契约中的正确结论保持语义一致。
-
-题目必须 self-contained：考生不阅读原文章或原题，也能够仅凭变体题干和选项理解问题并作答。
-不要使用“上述方法”“原题中”“本文提到”“该方案”等依赖原始题目的指代。
-
-只输出 JSON，不要任何额外文字。`;
+【JSON 输出契约】
+只输出一个 JSON 对象，不要任何额外文字或 Markdown 代码块。字段：
+{
+  "question": "新题干（必选，self-contained）",
+  "options": ["...","...","...","..."],   // 选择题必选，开放题省略
+  "answer": [1],                          // 正确选项索引数组（选择题必选）
+  "explanation": "解析"
+}`;
 
 interface RawVariant {
   question?: string;
@@ -77,22 +91,13 @@ ${JSON.stringify(contract, null, 2)}
 【原题】
 ${JSON.stringify(original, null, 2)}
 
-请生成一道真正不同的变体题。
-
-要求：
-1. 保持知识契约不变
-2. 不要只是改写题干，可重构场景/选项/解析
-3. 选项需自包含且互斥，distractors 需合理但错误
-4. 正确答案必须与知识契约一致
-5. 不要引入无依据的新知识作为正确答案
-6. 难度保持在 ${q.difficulty} 档位
-
-输出 JSON 字段：
-- question: 新题干（必选）
-- options: 选项数组（选择题必选，开放题可省略）
-- answer: 正确选项索引数组（选择题必选）
-- explanation: 解析
-示例：{"question":"...","options":["...","...","...","..."],"answer":[1],"explanation":"..."}`;
+请按 [知识考察契约] 与 [生成策略] 生成一道真正不同的变体题：
+- 保持知识契约不变（正确答案语义一致）
+- 可重构场景 / 选项 / 解析，不要只替换几个词
+- 选项需自包含且互斥，distractors 合理但错误
+- 难度保持在 ${q.difficulty} 档位
+- 不要引入无依据的新知识作为正确答案
+按 [JSON 输出契约] 输出。`;
 }
 
 function toGeneratedVariant(q: Question, out: RawVariant): GeneratedVariant {
