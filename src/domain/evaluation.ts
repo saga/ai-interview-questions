@@ -3,7 +3,7 @@
 import { EVAL_DIMENSIONS } from '../types';
 import type { ChoiceFormat } from '../schemas/question';
 import type { EvaluationDimension } from '../schemas/common';
-import type { EvaluationResult } from '../schemas/evaluation';
+import type { EvalLevel, EvaluationResult } from '../schemas/evaluation';
 import type { ScoringRubric } from '../schemas/interview';
 import { isChoiceCorrect } from './quiz';
 
@@ -14,6 +14,19 @@ export const DEFAULT_RUBRIC: ScoringRubric = {
   architecture: 0.2,
   communication: 0.2,
 };
+
+/**
+ * 序级 → 归一化分数（LLM 做「判断」，代码做「数学」）。
+ * 0→0, 1→25, 2→50, 3→75, 4→100：五个离散档位足以承载 LLM 的真实区分力，
+ * 又避免让 LLM 伪装成精确的 0-100 评分器（82 vs 84 通常没有可靠语义差）。
+ */
+export const LEVEL_TO_SCORE = { 0: 0, 1: 25, 2: 50, 3: 75, 4: 100 } as const;
+
+/** 把任意数值钳制到 [0,4] 整型序级，再映射到归一化分数。 */
+export function levelToScore(level: number): number {
+  const l = Math.max(0, Math.min(4, Math.round(Number(level) || 0))) as EvalLevel;
+  return LEVEL_TO_SCORE[l];
+}
 
 /** 按 rubric 权重把四维分数聚合成综合分（0-100）。 */
 export function aggregateOverall(
@@ -39,18 +52,34 @@ export function aggregateOverall(
 export function gradeChoice(cf: ChoiceFormat, selected: number[], rubric: ScoringRubric): EvaluationResult {
   const correct = isChoiceCorrect(cf, selected);
   const v = correct ? 100 : 0;
+  const level: EvalLevel = correct ? 4 : 0;
   const dimensions: Record<EvaluationDimension, number> = {
     correctness: v,
     completeness: v,
     architecture: v,
     communication: v,
   };
+  const levels: Record<EvaluationDimension, EvalLevel> = {
+    correctness: level,
+    completeness: level,
+    architecture: level,
+    communication: level,
+  };
+  const evidence: Record<EvaluationDimension, string> = {
+    correctness: '',
+    completeness: '',
+    architecture: '',
+    communication: '',
+  };
   return {
     overall: aggregateOverall(dimensions, rubric),
     dimensions,
+    levels,
+    evidence,
     strengths: correct ? ['选择正确'] : [],
     // 选择题判定性打分，不知道用户漏了哪个知识点，不伪造 gap（避免污染 Learner Memory）。
     gaps: [],
+    missingConcepts: [],
     feedback: correct ? '回答正确。' : '回答错误。',
   };
 }

@@ -74,7 +74,7 @@ export interface CreateInterviewAgentOptions {
   profile: LearnerProfile;
   entry: ProviderEntry;
   bank: Question[];
-  provider: LLMProvider;
+  provider: LLMProvider | null;
   handlers?: AgentHandlers;
   /** 对应 AIConfig.generateOpenQuestions 全局开关；默认 false（与全局 AIConfig 一致，避免漏传时绕过开关）。 */
   generateOpenQuestions?: boolean;

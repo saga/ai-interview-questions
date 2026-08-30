@@ -295,7 +295,7 @@ InterviewDefinition  (声明式：categories / difficulties / formats('choice'|'
         │   最终由 sessionFromQuiz 聚合进 LearnerProfile。
         │
         ↓  evaluateAnswer() / evaluateSession()
-   EvaluationResult  (overall 0-100 + 四维 dimensions + strengths/gaps/feedback)
+   EvaluationResult  (overall 0-100 + 四维 dimensions + levels 0-4 序级 + evidence + strengths/gaps/missingConcepts/feedback)
 ```
 
 - 选择形态：`gradeChoice(cf, selected)` 确定性判分（选中集合 == 正确答案集合，顺序无关）。
@@ -429,7 +429,9 @@ Original Question ──→ LLM ──→ VariantCandidate ──→ validateVar
 | architecture 架构 | 方案/代码结构是否合理（编程题看实现质量） | 0.2 |
 | communication 表达 | 清晰度、条理与专业性 | 0.2 |
 
-综合分 `overall` = Σ(dim × weight)，**只**由 `domain/evaluation.aggregateOverall` 计算——LLM 只输出四维 dimensions，不拥有最终分数（ADR-019）。选择题四维同取 100/0。
+综合分 `overall` = Σ(dim × weight)，**只**由 `domain/evaluation.aggregateOverall` 计算——LLM 不拥有最终分数（ADR-019）。
+
+**LLM 判「序级」而非百分制（评分层重构）**：LLM 对每个维度只输出 `level: 0-4` 的ordinal rating + 一句 `evidence`，分数由 `domain/evaluation.levelToScore` 按固定映射归一化（`0→0, 1→25, 2→50, 3→75, 4→100`）。这样「LLM 做判断、代码做数学」——避免让 LLM 伪装成精确的 0-100 评分器（82 vs 84 通常没有可靠语义差），且层级映射是确定性的、可复现。选择题四维同取 level 4/0（即 100/0）。`EvaluationResult` 同时携带 `dimensions`（0-100 归一化分，供下游与存储兼容）与 `levels`（原始序级，供 UI 展示等级标签）及 `evidence` / `missingConcepts`。
 
 **评分锚点分两层**（ADR-044：题目级 `rubric` 字段已删除）：
 

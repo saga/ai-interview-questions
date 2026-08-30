@@ -43,13 +43,23 @@ function letterList(idxs: number[]): string {
   return idxs.map((i) => LETTERS[i] ?? `#${i + 1}`).join('、');
 }
 
+// 序级 → 可解释文字标签（与 EVAL_SYSTEM 等级含义表对应；LLM 判级，代码只做展示）。
+const LEVEL_LABELS: Record<number, string> = {
+  0: '完全错误',
+  1: '主要误解',
+  2: '部分正确',
+  3: '正确',
+  4: '强/有洞见',
+};
+
 function DimensionRates({ g }: { g: EvaluationResult }) {
   return (
     <Space wrap size={[16, 4]}>
       {EVAL_DIMENSIONS.map((dim) => (
         <span key={dim}>
           <Typography.Text type="secondary">{DIMENSION_LABELS[dim]}：</Typography.Text>
-          <Typography.Text strong>{g.dimensions[dim]}</Typography.Text>
+          <Typography.Text strong>{LEVEL_LABELS[g.levels[dim]] ?? '—'}</Typography.Text>
+          <Typography.Text type="secondary">（{g.dimensions[dim]}）</Typography.Text>
         </span>
       ))}
     </Space>

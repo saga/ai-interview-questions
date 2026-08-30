@@ -56,47 +56,60 @@ describe('buildEvalUser', () => {
 });
 
 describe('parseEvaluation', () => {
-  it('解析四维并按权重聚合 overall（忽略 LLM 的任何 overall 输出）', () => {
+  it('解析四维序级并按权重聚合成 overall（忽略 LLM 的任何 overall 输出）', () => {
     const raw = JSON.stringify({
-      correctness: 90,
-      completeness: 80,
-      architecture: 70,
-      communication: 60,
+      correctness: { level: 4, evidence: '命中核心机制' },
+      completeness: { level: 3 },
+      architecture: { level: 3 },
+      communication: { level: 2 },
       overall: 99, // LLM 直出的分数必须被忽略
       feedback: '不错',
       strengths: ['要点全'],
       gaps: ['缺例子'],
+      missingConcepts: ['sparse activation'],
     });
     const r = parseEvaluation(raw, open, RUBRIC);
-    expect(r.dimensions).toEqual({ correctness: 90, completeness: 80, architecture: 70, communication: 60 });
-    expect(r.overall).toBe(90 * 0.4 + 80 * 0.2 + 70 * 0.2 + 60 * 0.2); // = 78
+    // level → score: 4→100, 3→75, 3→75, 2→50
+    expect(r.dimensions).toEqual({ correctness: 100, completeness: 75, architecture: 75, communication: 50 });
+    expect(r.levels).toEqual({ correctness: 4, completeness: 3, architecture: 3, communication: 2 });
+    expect(r.overall).toBe(100 * 0.4 + 75 * 0.2 + 75 * 0.2 + 50 * 0.2); // = 80
     expect(r.overall).not.toBe(99);
     expect(r.feedback).toBe('不错');
     expect(r.strengths).toEqual(['要点全']);
     expect(r.gaps).toEqual(['缺例子']);
+    expect(r.missingConcepts).toEqual(['sparse activation']);
   });
 
   it('空输入 → 全零分 + 未作答反馈', () => {
     const r = parseEvaluation('', open, RUBRIC);
     expect(r.overall).toBe(0);
+    expect(r.levels).toEqual({ correctness: 0, completeness: 0, architecture: 0, communication: 0 });
     expect(r.feedback).toBe('未作答。');
     expect(r.referenceAnswer).toBe(open.referenceAnswer);
   });
 
-  it('残缺 JSON → 缺失维度按 0 分兜底', () => {
-    const r = parseEvaluation('{"correctness": 50, "feedback": "部分"}', q, RUBRIC);
-    expect(r.dimensions.correctness).toBe(50);
+  it('残缺 JSON → 缺失维度按 0 级兜底', () => {
+    const r = parseEvaluation('{"correctness": { "level": 2 }, "feedback": "部分"}', q, RUBRIC);
+    expect(r.dimensions.correctness).toBe(50); // level 2 → 50
+    expect(r.levels.correctness).toBe(2);
     expect(r.dimensions.completeness).toBe(0);
     expect(r.overall).toBe(20); // 50*0.4
   });
 
-  it('维度分越界被钳制到 [0,100]', () => {
+  it('序级越界被钳制到 [0,4]（level 仍是 LLM 判断、分数由代码归一化）', () => {
     const r = parseEvaluation(
-      JSON.stringify({ correctness: 150, completeness: -5, architecture: 0, communication: 0 }),
+      JSON.stringify({
+        correctness: { level: 150 },
+        completeness: { level: -5 },
+        architecture: { level: 0 },
+        communication: { level: 0 },
+      }),
       q,
       RUBRIC,
     );
+    expect(r.levels.correctness).toBe(4);
     expect(r.dimensions.correctness).toBe(100);
+    expect(r.levels.completeness).toBe(0);
     expect(r.dimensions.completeness).toBe(0);
   });
 });

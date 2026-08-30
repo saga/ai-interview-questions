@@ -20,7 +20,7 @@ import type { InterviewAgentSession } from './types';
 export interface AgentToolDeps {
   bank: Question[];
   profile: LearnerProfile;
-  provider: LLMProvider;
+  provider: LLMProvider | null;
   session: InterviewAgentSession;
   /** 是否允许生成开放题（对应 AIConfig.generateOpenQuestions 全局开关）；默认 false（与全局 AIConfig 一致）。 */
   generateOpenQuestions?: boolean;

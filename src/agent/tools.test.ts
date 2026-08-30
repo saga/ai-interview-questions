@@ -50,8 +50,11 @@ function fakeOpenResult(overall = 50): EvaluationResult {
   return {
     overall,
     dimensions: { correctness: overall, completeness: overall, architecture: overall, communication: overall },
+    levels: { correctness: 2, completeness: 2, architecture: 2, communication: 2 },
+    evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
     strengths: ['答到要点'],
     gaps: ['未展开推理成本'],
+    missingConcepts: [],
     feedback: '基本正确。',
   };
 }
@@ -229,8 +232,11 @@ describe('createAgentTools', () => {
     d.session.evaluations['q-choice-1'] = {
       overall: 80,
       dimensions: { correctness: 80, completeness: 80, architecture: 80, communication: 80 },
+      levels: { correctness: 3, completeness: 3, architecture: 3, communication: 3 },
+      evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
       strengths: [],
       gaps: [],
+      missingConcepts: [],
       feedback: '',
     };
     const tools = createAgentTools(d);

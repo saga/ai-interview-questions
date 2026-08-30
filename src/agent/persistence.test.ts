@@ -21,11 +21,15 @@ function sq(id: string, topic: string, format: 'choice' | 'open'): SessionQuesti
 }
 
 function evalWith(overall: number, format: 'choice' | 'open'): EvaluationResult {
+  const level = overall >= 75 ? 4 : overall >= 50 ? 2 : overall >= 25 ? 1 : 0;
   return {
     overall,
     dimensions: { correctness: overall, completeness: overall, architecture: overall, communication: overall },
+    levels: { correctness: level, completeness: level, architecture: level, communication: level },
+    evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
     strengths: [],
     gaps: format === 'open' ? ['遗漏要点'] : [],
+    missingConcepts: [],
     feedback: '',
   };
 }

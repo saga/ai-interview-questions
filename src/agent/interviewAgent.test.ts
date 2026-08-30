@@ -104,8 +104,11 @@ function fakeProvider(): LLMProvider {
     evaluateOpenAnswer: vi.fn(async (): Promise<EvaluationResult> => ({
       overall: 50,
       dimensions: { correctness: 50, completeness: 50, architecture: 50, communication: 50 },
+      levels: { correctness: 2, completeness: 2, architecture: 2, communication: 2 },
+      evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
       strengths: ['答到要点'],
       gaps: ['未展开推理成本'],
+      missingConcepts: [],
       feedback: '基本正确。',
     })),
   };
