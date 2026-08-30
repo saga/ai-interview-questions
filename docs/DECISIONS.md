@@ -13,7 +13,8 @@
   4. `validateVariant` 新增极保守 concept evidence（topic/tags/required 任一 token 命中即过，拆 token 避免整句误伤，全部丢失才拒）与 `FORBIDDEN_REFERENCES` 扩至 10 项（新增 前文/下文/题目中/题干中）。
   5. `buildUser` 将 `q.angle` 注入契约，`VARIANT_SYSTEM` 新增【正确答案不变量】（先锁原结论再重构选项）。
 - 不做：embedding runtime validator、二次 LLM judge、自动 angle planner、concept graph 大对象体系——当前缺口仅需确定性检查，embedding 维持离线质量信号定位（见 README）。
-- 验证：`npm run test` 356 passed，`tsc -b && vite build` 通过；`src/domain/variant.test.ts` 与 `src/ai/variant.test.ts` 新增漂移/重试用例。
+- 补充（同日）：`hasConceptEvidence` 在精确 token 未命中后追加 `fuzzball` 纯 JS 模糊兜底（`token_set_ratio≥75` / `partial_ratio≥80`），处理 `batch statistics` ↔ `statistics across the batch`（100）、拼写差异（93）等；浏览器/Node 均可用，无后端，阈值保守（漂移仍 18 分拒绝），bundle +15KB gzip。
+- 验证：`npm run test` 358 passed，`tsc -b && vite build` 通过；`src/domain/variant.test.ts` 与 `src/ai/variant.test.ts` 新增漂移/重试/模糊用例。
 
 ## ADR-046 · 认证考纲解耦与纯净能力域（Domain → Topic → KnowledgeNode）
 

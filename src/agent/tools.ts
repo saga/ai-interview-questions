@@ -84,12 +84,27 @@ function toSummary(q: Question, generateOpenQuestions: boolean) {
  * - session 作为共享可变状态：工具把结论写回 session，UI 通过 handlers 感知变更，形成「Agent 决策 + 工具落地」的闭环。
  */
 /**
- * 可用题号池：优先「最近一次 searchQuestions 返回的真实 id」，否则退回全题库。
- * 作为 getQuestion 做 id 校验与 not_found 自纠正的唯一可信来源——
- * 让 Agent 无需记忆即可挑到真 id，把「回到列表挑真 id / 不要编造」从 prompt 约束下沉为确定性行为。
+ * 「已交付过」判定：已作答、已评分、或正是当前题——三者任一成立都不得再次交付，
+ * 否则用户会重复看到同一道题。
+ *
+ * 用 `in` 而非真值判断是刻意的：`evaluations[id]` 可以是 null（未作答 / 评估失败被记为 null），
+ * 但那道题确实已经呈现给用户了，口径与 `countEvaluated` 保持一致。
  */
-function validIdPool(session: InterviewAgentSession, byId: Map<string, Question>): string[] {
-  return session.lastSearchIds.length ? session.lastSearchIds : Array.from(byId.keys());
+function isDelivered(session: InterviewAgentSession, id: string): boolean {
+  return id in session.answers || id in session.evaluations || session.currentQuestion?.question.id === id;
+}
+
+/**
+ * 可交付题号池：优先「最近一次 searchQuestions 返回的真实 id」，否则退回全题库；
+ * 两种来源都只保留**本轮尚未交付过**、且确实存在于题库中的 id。
+ *
+ * 作为 getQuestion 做 id 校验与自纠正（not_found / topic_exhausted）的唯一可信来源——
+ * 让 Agent 无需记忆即可挑到真 id，把「回到列表挑真 id / 不要编造」从 prompt 约束下沉为确定性行为。
+ * 过滤掉已交付的题，是为了避免自纠正又把 Agent 指回刚问过的题。
+ */
+function deliverableIds(session: InterviewAgentSession, byId: Map<string, Question>): string[] {
+  const pool = session.lastSearchIds.length ? session.lastSearchIds : Array.from(byId.keys());
+  return pool.filter((id) => byId.has(id) && !isDelivered(session, id));
 }
 
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
@@ -147,37 +162,46 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const getQuestion: AgentTool<typeof GetQuestionSchema> = {
     name: 'getQuestion',
     label: '选定题目',
-    description: '按题目 id 把某道题置为「当前题」并呈现给用户。可选 format 指定本次呈现形态（choice/open），缺省按题目可用形态优先 choice。若传入的是 topic/category 而非题号，则退化为该范围下一道未问的题。',
+    description: '按题目 id 把某道题置为「当前题」并呈现给用户。可选 format 指定本次呈现形态（choice/open），缺省按题目可用形态优先 choice。若传入的是 topic/category 而非题号，则退化为该范围内一道尚未考察过的题；该范围已全部考察过时会返回 topic_exhausted 并列出其它未考察题号供你另选，绝不重复出已考察过的题。',
     parameters: GetQuestionSchema,
     execute: async (_id, params: GetQuestionParams) => {
       let q = byId.get(params.id);
       let matchedBy: 'id' | 'topic' = 'id';
+      let exhaustedTopic = false;
       if (!q) {
-        // 容错（修复 D）：LLM 可能把 topic/category 当题号传入——退化为该范围下一道未问的题，避免 not_found 致卡死
+        // 容错（修复 D）：LLM 可能把 topic/category 当题号传入——退化为该范围下一道未交付的题，避免 not_found 致卡死。
         const byTopic = bank.filter((x) => x.topic === params.id || x.category === params.id);
-        const unasked = byTopic.filter(
-          (x) => !session.answers[x.id] && !session.evaluations[x.id] && session.currentQuestion?.question.id !== x.id,
-        );
-        q = unasked[0] ?? byTopic[0];
-        if (q) matchedBy = 'topic';
+        q = byTopic.find((x) => !isDelivered(session, x.id));
+        if (q) {
+          matchedBy = 'topic';
+        } else {
+          // 该主题已全部考察过：**绝不**回退到已交付的题（否则用户会重复看到同一道题）。
+          // 换去哪个主题是业务决策，交给 Agent——工具只负责回带「尚未交付」的题号。
+          exhaustedTopic = byTopic.length > 0;
+        }
       }
       if (!q) {
         // 自纠正：把可用题号直接回带，Agent 无需记忆即可挑真 id——
         // 替代原 prompt「若 not_found 就回到 searchQuestions 列表挑真 id」的脆弱约束（确定性、不依赖 LLM 听话）。
-        const validIds = validIdPool(session, byId);
+        // 只回带未交付的题，避免 Agent 按提示又挑到刚问过的题。
+        const reason = exhaustedTopic ? 'topic_exhausted' : 'not_found';
+        const validIds = deliverableIds(session, byId);
         const hint = validIds.length
-          ? `\n可用题号（请直接挑其中一个传入）：\n${validIds.map((id, i) => `${i + 1}. id=${id}`).join('\n')}`
-          : '';
+          ? `\n可用题号（本轮尚未考察过，请直接挑其中一个传入）：\n${validIds.map((id, i) => `${i + 1}. id=${id}`).join('\n')}`
+          : '\n题库中所有题目本轮均已考察过，没有可继续出的题了——请调用 finishInterview 结束面试。';
+        const message = exhaustedTopic
+          ? `主题「${params.id}」的题目本轮已全部考察过，为避免重复出题不再从中选题。`
+          : `未找到题目 ${params.id}。`;
         session.log.push({
           at: Date.now(),
           kind: 'tool',
           tool: 'getQuestion',
-          summary: `未找到 ${params.id}`,
-          details: { id: params.id, validIds },
+          summary: exhaustedTopic ? `${params.id} 已考察完` : `未找到 ${params.id}`,
+          details: { id: params.id, validIds, reason },
         });
         return textResult(
-          `未找到题目 ${params.id}。${hint}\n请用上面列出的真实 id 调 getQuestion，不要猜测或编造。`,
-          { error: 'not_found', id: params.id, validIds },
+          `${message}${hint}${validIds.length ? '\n请用上面列出的真实 id 调 getQuestion，不要猜测或编造。' : ''}`,
+          { error: reason, id: params.id, validIds },
         );
       }
       // 尊重全局「生成开放题」开关：关闭时只允许选择题，纯开放题不交付（避免绕过 generateOpenQuestions）。
@@ -211,7 +235,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       // topic 兜底（修复 D）仍保留以防卡死，但回带正确 id 示例，教 Agent「应直接传真实 id」。
       const topicNote =
         matchedBy === 'topic'
-          ? `（提示：你传入的是 topic 而非真实 id，已按主题兜底选 ${q.id}；正确做法是直接用 searchQuestions 返回的真实 id，例如：${validIdPool(
+          ? `（提示：你传入的是 topic 而非真实 id，已按主题兜底选 ${q.id}；正确做法是直接用 searchQuestions 返回的真实 id，例如：${deliverableIds(
               session,
               byId,
             )

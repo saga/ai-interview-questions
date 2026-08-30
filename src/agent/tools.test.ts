@@ -46,6 +46,26 @@ function makeOpenQuestion(): Question {
   };
 }
 
+/** 造一道指定 id / topic 的选择题，便于构造「同一主题多道题」的重复出题场景。 */
+function makeQuestion(over: Partial<Question> & { id: string }): Question {
+  return {
+    category: 'transformer',
+    topic: 'attention',
+    tags: [],
+    difficulty: 'easy',
+    question: `题干 ${over.id}`,
+    explanation: '解析',
+    formats: {
+      choice: {
+        type: 'single',
+        options: ['正确项', '干扰项一', '干扰项二'],
+        answer: [0],
+      },
+    },
+    ...over,
+  };
+}
+
 function fakeOpenResult(overall = 50): EvaluationResult {
   return {
     overall,
@@ -292,5 +312,84 @@ describe('getQuestion 尊重 generateOpenQuestions 开关（修复：Agent 不�
     const getQuestion = tools.find((t) => t.name === 'getQuestion')!;
     const res = await getQuestion.execute('x', { id: 'q-open-1' });
     expect((res.details as { format: string }).format).toBe('open');
+  });
+});
+
+describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到已考察的题）', () => {
+  /** 取工具返回的文本，LLM 只能读到 content。 */
+  const textOf = (r: { content: unknown }) =>
+    (r.content as { type: string; text: string }[]).map((c) => c.text).join('');
+  const getQ = (d: AgentToolDeps) => createAgentTools(d).find((t) => t.name === 'getQuestion')!;
+  const twoInSameTopic = () => [makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' })];
+
+  it('topic 内所有题都已考察过 → topic_exhausted，且不把任何已考察的题再次设为当前题', async () => {
+    const bank = twoInSameTopic();
+    const d = deps(bank);
+    d.session.evaluations['a1'] = fakeOpenResult(80);
+    d.session.evaluations['a2'] = fakeOpenResult(60);
+    const r = await getQ(d).execute('call', { id: 'attention' });
+    expect((r.details as { error: string }).error).toBe('topic_exhausted');
+    // 关键契约：宁可不出题，也绝不重复交付
+    expect(d.session.currentQuestion).toBeNull();
+    expect(textOf(r)).toContain('已全部考察过');
+  });
+
+  it('原题 bug 回归：兜底不再落回该主题第一道（已考察）题，而是指向未考察的题', async () => {
+    // 修复前：unasked 为空时执行 `unasked[0] ?? byTopic[0]`，会把已考察的 a1 再交一遍
+    const d = deps([makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' }), makeQuestion({ id: 'b1', topic: 'rag' })]);
+    d.session.evaluations['a1'] = fakeOpenResult(80);
+    d.session.evaluations['a2'] = fakeOpenResult(60);
+    const r = await getQ(d).execute('call', { id: 'attention' });
+    // 绝不重复交付已考察过的题（宁可不出题）
+    expect(d.session.currentQuestion).toBeNull();
+    expect((r.details as { error: string }).error).toBe('topic_exhausted');
+    // 但要把唯一还没考察过的 b1 指给 Agent，让它能立刻接着问
+    expect((r.details as { validIds: string[] }).validIds).toEqual(['b1']);
+  });
+
+  it('评分为 null（未作答 / 评估失败）也算已考察，不重复交付', async () => {
+    const bank = twoInSameTopic();
+    const d = deps(bank);
+    d.session.evaluations['a1'] = null; // 已呈现过，只是没拿到分数
+    const r = await getQ(d).execute('call', { id: 'attention' });
+    expect(d.session.currentQuestion?.question.id).toBe('a2');
+    expect((r.details as { matchedBy?: string }).matchedBy).toBe('topic');
+  });
+
+  it('已作答但尚未评分的题也算已考察', async () => {
+    const bank = twoInSameTopic();
+    const d = deps(bank);
+    d.session.answers['a1'] = [0];
+    await getQ(d).execute('call', { id: 'attention' });
+    expect(d.session.currentQuestion?.question.id).toBe('a2');
+  });
+
+  it('重复传入同一 topic 会依次给出未考察的题，不会停留在同一道', async () => {
+    const bank = twoInSameTopic();
+    const d = deps(bank);
+    await getQ(d).execute('call', { id: 'attention' });
+    expect(d.session.currentQuestion?.question.id).toBe('a1');
+    // a1 是当前题 → 再次传入 topic 必须给 a2，而不是把 a1 再交一遍
+    await getQ(d).execute('call', { id: 'attention' });
+    expect(d.session.currentQuestion?.question.id).toBe('a2');
+  });
+
+  it('not_found 自纠正只回带未考察的题号，不会把 Agent 指回刚问过的题', async () => {
+    const bank = [makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' }), makeQuestion({ id: 'a3' })];
+    const d = deps(bank);
+    d.session.currentQuestion = { question: bank[0], format: 'choice' }; // a1 正在答
+    const r = await getQ(d).execute('call', { id: 'nope' });
+    expect((r.details as { error: string }).error).toBe('not_found');
+    expect((r.details as { validIds: string[] }).validIds).toEqual(['a2', 'a3']);
+  });
+
+  it('题库全部考察完时提示结束面试，而不是回退重复出题', async () => {
+    const bank = [makeQuestion({ id: 'a1' })];
+    const d = deps(bank);
+    d.session.evaluations['a1'] = fakeOpenResult(70);
+    const r = await getQ(d).execute('call', { id: 'attention' });
+    expect((r.details as { validIds: string[] }).validIds).toEqual([]);
+    expect(textOf(r)).toContain('finishInterview');
+    expect(d.session.currentQuestion).toBeNull();
   });
 });

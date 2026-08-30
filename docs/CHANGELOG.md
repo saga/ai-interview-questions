@@ -13,6 +13,11 @@
 - **文档**：`docs/ARCHITECTURE.md` LLM 变体安全小节图示与校验描述同步上述链路；`src/domain/variant.test.ts` 与 `src/ai/variant.test.ts` 同步新门禁与证据逻辑。
 - **验证**：`npm run test` 356 passed（含新增概念漂移与重试再校验用例），`npm run build`（`tsc -b`）通过。
 
+## 2026-08-30 · 变体校验引入 fuzzball 模糊匹配兜底（纯 JS 浏览器可用）
+
+- 在 `domain/variant.hasConceptEvidence` 的精确 token 命中后追加 `fuzzball` 二阶段模糊判定（`token_set_ratio ≥75` / `partial_ratio ≥80`），处理词序/形态/拼写差异：`batch statistics ↔ statistics computed across the batch`（100）、`regularisation ↔ regularization`（93）等；纯 JS 无后端，适配 Vite SPA，计算量仅 1题×数个概念×数百字。
+- 依赖：`npm install fuzzball`（52KB 原始，gzip +15KB，经 `vite build` 验证）；阈值偏保守，漂移文本（`regularization` vs CNN/BatchNorm 题）仍 18 分正确拒绝。`docs/ARCHITECTURE.md` 技术栈注意点与校验小节同步；`src/domain/variant.test.ts` 新增 2 例模糊证据用例（356→358 passed）。
+
 ## 2026-08-29 · O'Reilly Radar 高价值技术主题题库补充
 
 - 基于 O'Reilly Radar 首页筛选并阅读全文，新增 20 道题，来源为 [The Identity Crisis No One Planned For](https://www.oreilly.com/radar/the-identity-crisis-no-one-planned-for-governing-non-human-agents-at-enterprise-scale/)、[Effective Patterns for Advanced MCP Usage](https://www.oreilly.com/radar/effective-patterns-for-advanced-mcp-usage/)、[When Smaller Models Win](https://www.oreilly.com/radar/when-smaller-models-win/) 和 [When Guardrails Go Wrong](https://www.oreilly.com/radar/when-guardrails-go-wrong/)。
