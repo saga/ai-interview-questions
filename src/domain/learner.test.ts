@@ -5,7 +5,9 @@ import {
   buildCoachDefinition,
   collectTopicRefs,
   computeCoverage,
+  describeCoverageGap,
   emptyProfile,
+  findCoverageGaps,
   getAngleStat,
   recommendWeakTopics,
   recommendationText,
@@ -425,6 +427,95 @@ describe('覆盖面与学习建议（学习策略，图查询在 conceptGraph）
     expect(suggestions.map((s) => s.topic)).toContain('agent-loop');
     // 基础主题（rag 无前置）应排在 agent-loop 之前或并列可学——至少都在建议里且理由是前置已具备
     for (const s of suggestions) expect(s.reason).toBe('前置知识已具备，适合开始学习');
+  });
+});
+
+// findCoverageGaps：覆盖缺口（「没练到」），与 recommendWeakTopics（「练得不好」）职责不重叠。
+// 用例里的 topic-a/b/c 是概念图中不存在的合成 topic（前置闭包为空），用于隔离 uncovered 逻辑；
+// prerequisite 用例复用真实图边 agent-fundamentals -> tool-calling。
+describe('findCoverageGaps（覆盖缺口 · coverage discovery）', () => {
+  const flatRefs = (...topics: string[]) => topics.map((t) => ({ category: 'test', topic: t }));
+  const MASTERED = { attempts: 3, avgScore: 90 };
+  const WEAK = { attempts: 3, avgScore: 50 };
+
+  it('Case 1：题库 A B C，只练过 A → B、C 为 uncovered', () => {
+    const gaps = findCoverageGaps(flatRefs('topic-a', 'topic-b', 'topic-c'), profileWith({ 'topic-a': MASTERED }));
+    expect(gaps).toEqual([
+      { topic: 'topic-b', reason: 'uncovered' },
+      { topic: 'topic-c', reason: 'uncovered' },
+    ]);
+  });
+
+  it('Case 2：题库 A B C 全部练过并掌握 → 无缺口', () => {
+    const gaps = findCoverageGaps(
+      flatRefs('topic-a', 'topic-b', 'topic-c'),
+      profileWith({ 'topic-a': MASTERED, 'topic-b': MASTERED, 'topic-c': MASTERED }),
+    );
+    expect(gaps).toEqual([]);
+  });
+
+  it('Case 3：前置已掌握、本体未练 → 本体为 uncovered（而非 prerequisite）', () => {
+    // tool-calling 的前置闭包（在题库内的部分）= agent-fundamentals
+    const refs = flatRefs('agent-fundamentals', 'tool-calling');
+    const gaps = findCoverageGaps(refs, profileWith({ 'agent-fundamentals': MASTERED }));
+    expect(gaps).toEqual([{ topic: 'tool-calling', reason: 'uncovered' }]);
+  });
+
+  it('Case 4：前置未练、本体已练但未掌握 → 前置 uncovered，本体 prerequisite（前置缺口排在前）', () => {
+    const refs = flatRefs('agent-fundamentals', 'tool-calling');
+    const gaps = findCoverageGaps(refs, profileWith({ 'tool-calling': WEAK }));
+    expect(gaps).toEqual([
+      { topic: 'tool-calling', reason: 'prerequisite', prerequisites: ['agent-fundamentals'] },
+      { topic: 'agent-fundamentals', reason: 'uncovered' },
+    ]);
+  });
+
+  it('不与 recommendWeakTopics 重叠：已练但未掌握、前置完备的 topic 不算覆盖缺口', () => {
+    const refs = flatRefs('topic-a', 'topic-b');
+    const profile = profileWith({ 'topic-a': MASTERED, 'topic-b': WEAK });
+    // topic-b 是薄弱项 —— 但它的缺口类型是 mastery 而非 coverage
+    expect(recommendWeakTopics(profile, 5)).toEqual(['topic-b']);
+    expect(findCoverageGaps(refs, profile)).toEqual([]);
+  });
+
+  it('已掌握的 topic 即使前置缺失也不算缺口（否则会为已会的内容刷屏）', () => {
+    const refs = flatRefs('agent-fundamentals', 'tool-calling');
+    const gaps = findCoverageGaps(refs, profileWith({ 'tool-calling': MASTERED }));
+    expect(gaps).toEqual([{ topic: 'agent-fundamentals', reason: 'uncovered' }]);
+  });
+
+  it('只统计题库中存在的前置：题库外的前置不构成缺口', () => {
+    // tool-calling 的完整闭包含 agent-guardrails，但它不在本次 topicRefs 里
+    const gaps = findCoverageGaps(flatRefs('tool-calling'), emptyProfile());
+    expect(gaps).toEqual([{ topic: 'tool-calling', reason: 'uncovered' }]);
+  });
+
+  it('limit 截断生效（按前置优先 + 拓扑序，不是按输入顺序）', () => {
+    const refs = flatRefs('topic-a', 'topic-b', 'topic-c');
+    expect(findCoverageGaps(refs, emptyProfile())).toHaveLength(3);
+    expect(findCoverageGaps(refs, emptyProfile(), { limit: 2 })).toEqual([
+      { topic: 'topic-a', reason: 'uncovered' },
+      { topic: 'topic-b', reason: 'uncovered' },
+    ]);
+  });
+
+  it('describeCoverageGap：区分「未练习」「前置未掌握」「未练习+前置未掌握」', () => {
+    const refs = flatRefs('agent-fundamentals', 'tool-calling');
+
+    // 本体未练 → "未练习"
+    const blank = emptyProfile();
+    const gaps = findCoverageGaps(refs, blank);
+    expect(gaps.map((g) => g.topic)).toEqual(['tool-calling', 'agent-fundamentals']);
+    expect(describeCoverageGap(gaps[1], blank)).toBe('未练习');
+
+    // 本体未练但前置也未掌握 → reason 仍是 prerequisite（前置缺口优先），描述带上"未练习"
+    expect(describeCoverageGap(gaps[0], blank)).toBe('未练习，前置 agent-fundamentals 尚未掌握');
+
+    // 本体已练（未掌握）+ 前置未练 → 只说前置缺失，不说"未练习"（本体练过）
+    const practiced = profileWith({ 'tool-calling': WEAK });
+    const [prereqGap] = findCoverageGaps(refs, practiced);
+    expect(prereqGap).toEqual({ topic: 'tool-calling', reason: 'prerequisite', prerequisites: ['agent-fundamentals'] });
+    expect(describeCoverageGap(prereqGap, practiced)).toBe('前置 agent-fundamentals 尚未掌握');
   });
 });
 

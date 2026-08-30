@@ -12,7 +12,7 @@ import type { EvaluationResult } from '../schemas/evaluation';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { availableSessionFormats, evaluateSessionQuestion, finalizeQuestion } from '../application/sessionEvaluator';
-import { recommendWeakTopics, weakAnglesOf } from '../domain/learner';
+import { collectTopicRefs, describeCoverageGap, findCoverageGaps, recommendWeakTopics, weakAnglesOf } from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge';
 import type { InterviewAgentSession } from './types';
 
@@ -337,12 +337,27 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const getCoverageGaps: AgentTool<typeof GetCoverageGapsSchema> = {
     name: 'getCoverageGaps',
     label: '读取覆盖缺口',
-    description: '读取当前题库的覆盖缺口（未练或前置未掌握的 topic），用于全局选题与补漏。',
+    // 与 getUserWeaknesses 明确分工：后者回答「已练但薄弱」（掌握度），本工具回答「还没练到」（覆盖度），两者不重叠。
+    description: '读取覆盖缺口：题库里有、但用户尚未练习的 topic（uncovered），以及因前置知识未掌握而暂时不该上的 topic（prerequisite）。只读事实，不含建议；与 getUserWeaknesses（已练但薄弱）互补，不要混用。',
     parameters: GetCoverageGapsSchema,
     execute: async () => {
-      // 覆盖缺口需基于题库的 topicRefs；此处返回通用提示，实际由调用方聚合
-      const weak = recommendWeakTopics(profile, 5, deps.masteryThreshold);
-      return textResult(`覆盖缺口（薄弱优先）：${weak.join('、') || '（暂无）'}`, { weakTopics: weak });
+      const gaps = findCoverageGaps(collectTopicRefs(bank), profile, {
+        threshold: deps.masteryThreshold,
+        limit: 5,
+      });
+      const content = gaps.length
+        ? `覆盖缺口（${gaps.length} 个，前置缺口优先）：\n${gaps
+            .map((g) => `- ${g.topic}：${describeCoverageGap(g, profile)}`)
+            .join('\n')}`
+        : '当前题库中的所有 topic 均已练习且前置完备，没有覆盖缺口。';
+      session.log.push({
+        at: Date.now(),
+        kind: 'tool',
+        tool: 'getCoverageGaps',
+        summary: `覆盖缺口 ${gaps.length} 个`,
+        details: { gaps },
+      });
+      return textResult(content, { gaps });
     },
   };
 

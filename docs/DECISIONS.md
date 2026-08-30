@@ -2,6 +2,38 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-049 · getCoverageGaps 是 coverage-based 事实查询，不做推荐系统
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`getCoverageGaps` 声明读"覆盖缺口（未练或前置未掌握的 topic）"，实现却调用 `recommendWeakTopics(profile, 5)`，与 `getUserWeaknesses` 完全同源。两个工具返回同一信号却有两种描述，模型会误以为拿到互补信息，实际是重复 token 成本 + 决策误导。
+- 决策：
+  1. **不删除该工具**。它承载一个 `getUserWeaknesses` 无法回答的独立问题：**题库里有、但我还没练到的是什么**。删掉会让 Agent 失去"探测未知"的能力，只能围着已练内容打转。
+  2. **明确正交分工**：`getUserWeaknesses` = **mastery-based**（已练，但薄弱，依据 `mastery`/`avgScore`）；`getCoverageGaps` = **coverage-based**（还没练到，依据有无作答证据 + 前置链完备性）。判据：**已练但未掌握、前置完备的 topic 不是覆盖缺口**。
+  3. **只有两类缺口**：`uncovered`（`attempts === 0` 且前置完备）与 `prerequisite`（存在题库内、未达掌握线的前置）。不引入第三类、不发明新的掌握度模型——"练过没有"用既有的 `TopicStats.attempts`（`isAttempted`）判定，不新增 `hasEvidence` 之类的平行概念。
+  4. **前置缺口排序在前**：基础没打就去练上层 topic 是无效投入；同档内按拓扑序（基础优先）+ topic 字典序，保证结果稳定可测。
+  5. **复用既有能力**：`collectTopicRefs`（题库 topic 集合）、`prerequisiteClosure`（前置闭包）、`isMastered`/`isAttempted`/`WEAK_AVG`（掌握判定，与 `recommendWeakTopics` 同口径）。不新建评分模型。
+  6. **只统计题库中存在的前置**：前置链上的 topic 若题库里没题，用户无从练习，不构成可闭合的学习缺口——那是题库内容问题，归 `domain/coverage.ts` 的生产视角，不属于学习者状态。
+  7. **仍是事实查询工具**：不含优先级分数、不推荐具体题目、不生成学习路径。排序与取舍由 Agent 决策，工具只做确定性执行（架构红线：工具薄包装，Agent 负责决策）。
+  8. `recommendWeakTopics()` **完全移出**该工具，并在 description 中写明与 `getUserWeaknesses` 的分工——工具描述即 LLM 可见提示，必须与代码一致。
+- 不做：
+  - **不做成推荐系统**（无 priority score、无"建议下一步学 X"、无学习路径生成）。产出学习路径是 `nextAdaptiveStep` 与 Agent 编排层的职责，工具层越权会让职责再次坍缩到一处。
+  - **不测试复杂 ranking**。只断言两类缺口的判定与"前置优先"这一条排序规则，不锁死完整顺序（顺序细节变化不应让测试变红）。
+  - 不新增 `CoverageGap` 之外的字段（如 `severity` / `estimatedGain`）。
+- 放置位置（偏离原方案）：helper 落在 **`domain/learner.ts`** 而非 `domain/coverage.ts`。理由：`domain/coverage.ts` 是 ADR-032「两速分离」下的**题库生产侧** topic×angle 矩阵，不感知 `LearnerProfile`、运行时不加载；而本函数依赖 `isAttempted`/`isMastered`/`WEAK_AVG`/`prerequisiteClosure`，这些都在 `learner.ts`。放进 `coverage.ts` 会让它反向依赖 learner 概念，制造循环。
+- 验证：`src/domain/learner.test.ts` +9 例、`src/agent/tools.test.ts` +4 例；反向验证——还原旧实现后 4 例工具测试失败，破坏「前置优先排序」与 `isAttempted` 守卫后 3 例 domain 测试失败，确认用例真实捕获行为而非仅断言"不崩"。`npx vitest run` 378 passed，`npx tsc --noEmit` 0 error。
+
+## ADR-048 · getQuestion 绝不重复出题：topic 兜底拒绝回退已考察的题，换主题交由 Agent 决策
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`agent/tools.ts` 的 topic 兜底（修复 D：LLM 误把 topic/category 当题号传入时的容错）原实现为 `unasked[0] ?? byTopic[0]`。当某主题题目全部考察完，`unasked` 为空即回退 `byTopic[0]`——该主题第一道题，而它通常已作答/已评分，导致**用户重复看到已答过的题**。这是确定性护栏自身的缺陷：护栏本意为防卡死，却制造了错误内容。
+- 决策：
+  1. **兜底只从「未交付」集合中选取，不存在时宁可不出题**，绝不回退到已交付的题。新增 `isDelivered()` 作为「是否已交付」的单一判定出处。
+  2. **主题耗尽时返回 `topic_exhausted`**，回带全题库中未交付的题号；不擅自切换主题。理由：换去哪个主题是选题决策，属 Agent 职责（架构红线：工具只做确定性执行，Agent 负责决策）；工具越权代劳会让 Agent 误以为自己仍在原主题内提问。
+  3. **`evaluations[id]` 用 `in` 判定而非真值**：`null` 表示未作答 / 评估失败，但该题确实已呈现过，必须与 `countEvaluated` 同口径，否则「答不上来的题」会被反复追问。
+  4. **自纠正回带的题号同样过滤已交付项**（`validIdPool` → `deliverableIds`）：此前 not_found 会把正在作答的当前题也列为建议 id，等于诱导 Agent 重复选题。
+- 不做：不新增 session 字段单独记录「已交付题目」——`answers ∪ evaluations ∪ currentQuestion` 已足以表达该语义；加字段会动到持久化契约（`storage/agentSession`）与已存草稿的兼容性，收益不抵成本。
+- 验证：`src/agent/tools.test.ts` 新增 7 例（15 → 22）；已还原旧实现反向验证，其中 5 例失败，证明用例真实捕获该 bug 而非仅断言「不崩」。`npx vitest run` 365 passed，`npx tsc --noEmit` 0 error。
+
 ## ADR-047 · 变体链路收敛：validateVariant 真正入链 + 保守证据检查（不引入 embedding）
 
 - 状态：已采纳 · 2026-08-30

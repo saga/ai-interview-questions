@@ -1,6 +1,32 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-30 · getCoverageGaps 重定义为「覆盖度」事实查询，与 getUserWeaknesses 正交
+
+- **问题**：`src/agent/tools.ts` 的 `getCoverageGaps` 描述为"读取覆盖缺口（未练或前置未掌握的 topic）"，实现却是 `recommendWeakTopics(profile, 5)`——与 `getUserWeaknesses` **完全同源**。两个工具、同一种行为、两种描述，会误导模型以为拿到了两个不同信号；代码注释自己也承认"此处返回通用提示"。
+- **修复**：
+  1. 新增 `domain/learner.findCoverageGaps(topicRefs, profile, opts)`：只遍历**题库中确实存在题目**的 topic（`collectTopicRefs(bank)`），逐个判定两类缺口——`prerequisite`（存在题库内且未达掌握线的前置）与 `uncovered`（`attempts === 0`，即无任何作答证据且前置完备）。
+  2. 语义与 `getUserWeaknesses` 正交：后者是 **mastery-based**（已练但薄弱，看 `mastery`/`avgScore`），本工具是 **coverage-based**（还没练到，看作答证据 + 前置链）。**已练但未掌握、前置完备的 topic 不算覆盖缺口**，两者不再重叠。
+  3. 已掌握的 topic 直接跳过（不为已会的内容刷屏）；前置列表只保留题库中也存在的 topic——用户无从练习的前置不是可闭合的学习缺口，那是题库生产问题。
+  4. 排序：**前置缺口优先**（基础没打就去练上层是无效投入），同档内按拓扑序（基础优先）+ topic 名字典序，保证稳定可测。
+  5. 新增 `describeCoverageGap()` 生成只读文案，区分「未练习」「前置 X 尚未掌握」「未练习，前置 X 尚未掌握」。
+  6. `recommendWeakTopics()` **完全移出**该工具；工具 description 同步写明两者分工（该描述即 LLM 可见提示）；补 `session.log` 条目供 UI 透明化。
+- **保持事实查询**：不含优先级分数、不推荐具体题目、不生成学习路径——排序与取舍仍是 Agent 的决策，工具只做确定性执行。
+- **放置位置**：`findCoverageGaps` 落在 `domain/learner.ts`（与 `isAttempted` / `isMastered` / `WEAK_AVG` / `computeCoverage` 同处），**而非** `domain/coverage.ts`——后者是 ADR-032 的题库生产侧 topic×angle 矩阵，不感知学习者状态、运行时不加载。详见 ADR-049。
+- **验证**：`src/domain/learner.test.ts` +9 例（44）、`src/agent/tools.test.ts` +4 例（22 → 26）；均已反向验证——还原旧实现后 4 例工具测试失败，破坏「前置优先排序」与 `isAttempted` 守卫后 3 例 domain 测试失败，确认用例真实捕获行为。`npx vitest run` 378 passed，`npx tsc --noEmit` 0 error。
+
+## 2026-08-30 · getQuestion 不再重复出题：topic 兜底拒绝回退到已考察的题
+
+- **问题**：`src/agent/tools.ts` 的 topic 兜底（LLM 把 topic/category 当题号传入时的容错）原为 `unasked[0] ?? byTopic[0]`。当某主题所有题都已考察过，`unasked` 为空会回退到 `byTopic[0]`——即该主题第一道题，而它往往已在 `answers` / `evaluations` 里，**用户会重复看到已答过的题**。
+- **修复**：
+  1. 新增 `isDelivered(session, id)` 作为「是否已交付」的单一判定（已作答 / 已评分 / 正是当前题），topic 兜底改为 `byTopic.find((x) => !isDelivered(...))`，**绝不**再回退到已交付的题。
+  2. 该主题全部考察过时返回新错误码 `topic_exhausted`（不再静默换题），并回带**全题库中尚未交付**的题号交由 Agent 决策下一步——换去哪个主题是选题决策，工具不越权代劳。
+  3. `isDelivered` 对 `evaluations[id]` 用 `in` 而非真值判断：`null`（未作答 / 评估失败）也算已交付，与 `countEvaluated` 口径一致，避免把「答不上来的题」再问一遍。
+  4. `validIdPool` → `deliverableIds`：not_found 自纠正回带的题号同样过滤掉已交付的题（此前会把当前正在作答的题也列为建议 id，等于诱导 Agent 重复选题），并剔除已不在题库中的陈旧 id。
+  5. 全部题目考察完时明确提示调用 `finishInterview`，而不是继续兜底。
+- **提示同步**：`getQuestion` 的 tool description 同步新语义（该描述即 LLM 可见的工具提示，必须与代码一致）。
+- **验证**：`src/agent/tools.test.ts` 新增 7 例（15 → 22）；已反向验证——还原旧实现后其中 5 例会失败，确认用例真实捕获该 bug。`npx vitest run` 365 passed，`npx tsc --noEmit` 0 error。
+
 ## 2026-08-30 · 变体链路收敛修复：validateVariant 真正成为 gate + 保守漂移检查 + angle 入契约
 
 - **问题**：`ai/variant.generateVariant` 此前未调用 `domain/variant.validateVariant`，而是直连 `extractJSON → detectOptionLengthBias → return`，导致 ADR-036 的“LLM 输出必须经 domain 校验”未在真实链路兑现；`toGeneratedVariant` 对缺失 `question` 静默回退原题掩盖模型失败；retry 后未再校验；FORBIDDEN 指代与 prompt 对“答案适用条件不变量”表述偏弱；已有的 `angle` 未进入 Knowledge Contract。

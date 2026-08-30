@@ -394,6 +394,87 @@ export function computeCoverage(topicRefs: TopicRef[], profile: LearnerProfile):
   };
 }
 
+// ── 覆盖缺口（coverage discovery）────────────────────────────
+// 与 recommendWeakTopics 的「掌握度排序」正交，两者职责不重叠：
+//   recommendWeakTopics → 「已练了，但练得不好」（mastery 维度）
+//   findCoverageGaps    → 「题库里有，但根本没练到 / 前置没打就上不去」（coverage 维度）
+// 刻意不返回优先级分数、推荐题目或学习路径——那是 nextAdaptiveStep / Agent 的决策，
+// 本函数只做事实查询，避免第 5 个「缺口计算」实现出现并互相不一致。
+
+export type CoverageGapReason = 'uncovered' | 'prerequisite';
+
+export interface CoverageGap {
+  topic: string;
+  reason: CoverageGapReason;
+  /** reason === 'prerequisite' 时为未掌握的前置 topic（已过滤为题库中也存在的）。 */
+  prerequisites?: string[];
+}
+
+export interface CoverageGapOptions {
+  /** 掌握线（0-100），与 recommendWeakTopics / isMastered 同口径。 */
+  threshold?: number;
+  /** 最多返回条数；缺省不截断。 */
+  limit?: number;
+}
+
+/** 单条缺口的自然语言描述（只读事实，不含建议）。 */
+export function describeCoverageGap(gap: CoverageGap, profile: LearnerProfile): string {
+  if (gap.reason === 'prerequisite') {
+    const prereq = (gap.prerequisites ?? []).join('、');
+    return isAttempted(profile, gap.topic)
+      ? `前置 ${prereq} 尚未掌握`
+      : `未练习，前置 ${prereq} 尚未掌握`;
+  }
+  return '未练习';
+}
+
+/**
+ * 覆盖缺口：只遍历「题库中实际存在题目」的 topic，逐一判定两类缺口。
+ *
+ * - `prerequisite`：存在「题库中也有、且未达掌握线」的前置。
+ *   **这一档优先于 uncovered**——基础没打就去练上层 topic 是无效投入，
+ *   所以「Transformer 没练 + Attention 没练」报的是 Attention 这个根因，而不是 Transformer。
+ * - `uncovered`：无任何作答证据（attempts === 0），且前置完备。
+ *
+ * 已掌握的 topic 直接跳过：它既非未覆盖，也不该再占缺口位。
+ * 已练但未掌握、且前置完备的 topic **不算覆盖缺口**——那是薄弱项，归 recommendWeakTopics。
+ * 前置列表只保留题库中也存在的 topic：用户无从练习的前置不是可闭合的学习缺口，
+ * 那是题库内容问题（归 domain/coverage.ts 的题库生产视角），不是学习状态问题。
+ */
+export function findCoverageGaps(
+  topicRefs: TopicRef[],
+  profile: LearnerProfile,
+  opts: CoverageGapOptions = {},
+): CoverageGap[] {
+  const threshold = opts.threshold ?? WEAK_AVG;
+  const bankTopics = new Set(topicRefs.map((t) => t.topic));
+  const gaps: CoverageGap[] = [];
+
+  for (const { topic } of topicRefs) {
+    if (isMastered(profile, topic, threshold)) continue;
+    // 前置链可能很深，只取最近的 3 个——与 expandWithPrerequisites 的截断口径一致
+    const missingPrereqs = prerequisiteClosure(topic)
+      .filter((p) => bankTopics.has(p) && !isMastered(profile, p, threshold))
+      .slice(0, 3);
+    if (missingPrereqs.length > 0) {
+      gaps.push({ topic, reason: 'prerequisite', prerequisites: missingPrereqs });
+      continue;
+    }
+    if (!isAttempted(profile, topic)) {
+      gaps.push({ topic, reason: 'uncovered' });
+    }
+  }
+
+  // 前置缺口排在前（更根本、更可行动）；同档内按拓扑序（基础优先），保证结果稳定可测。
+  gaps.sort(
+    (a, b) =>
+      (a.reason === 'prerequisite' ? 0 : 1) - (b.reason === 'prerequisite' ? 0 : 1) ||
+      topoRankOf(a.topic) - topoRankOf(b.topic) ||
+      a.topic.localeCompare(b.topic),
+  );
+  return opts.limit ? gaps.slice(0, opts.limit) : gaps;
+}
+
 export interface TopicSuggestion {
   topic: string;
   reason: string;

@@ -247,6 +247,71 @@ describe('createAgentTools', () => {
     expect(details.weakTopics).toContain('attention');
   });
 
+  it('getCoverageGaps 报出题组合有、但用户没练过的 topic（uncovered）', async () => {
+    // 题库含 attention / rag 两个 topic，profile 为空 → 两个都是覆盖缺口
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const gapsTool = tools.find((t) => t.name === 'getCoverageGaps')!;
+    const r = await gapsTool.execute('call', {});
+    const { gaps } = r.details as { gaps: { topic: string; reason: string }[] };
+    expect(gaps.map((g) => g.topic).sort()).toEqual(['attention', 'rag']);
+    expect(gaps.every((g) => g.reason === 'uncovered')).toBe(true);
+    expect(r.content[0].text).toContain('attention');
+  });
+
+  it('getCoverageGaps 与 getUserWeaknesses 不重叠：已练但薄弱的 topic 不算覆盖缺口', async () => {
+    const profile = emptyProfile();
+    profile.topicStats['attention'] = {
+      attempts: 3, avgScore: 40, lastScore: 40, trend: 'flat', mastery: 0.4,
+      commonWeaknesses: ['未理解 QKV'], evidence: [], lastSeen: Date.now(),
+    };
+    profile.topicStats['rag'] = {
+      attempts: 3, avgScore: 90, lastScore: 90, trend: 'flat', mastery: 0.9,
+      commonWeaknesses: [], evidence: [], lastSeen: Date.now(),
+    };
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()], profile);
+    const tools = createAgentTools(d);
+
+    // mastery-based：attention 薄弱 → 报出来
+    const weakTopics = ((await tools.find((t) => t.name === 'getUserWeaknesses')!.execute('call', {})).details as { weakTopics: string[] }).weakTopics;
+    expect(weakTopics).toEqual(['attention']);
+
+    // coverage-based：两个 topic 都练过且前置不缺 → 没有覆盖缺口
+    const { gaps } = (await tools.find((t) => t.name === 'getCoverageGaps')!.execute('call', {})).details as { gaps: unknown[] };
+    expect(gaps).toEqual([]);
+  });
+
+  it('getCoverageGaps 报出前置缺口（prerequisite），且排在 uncovered 之前', async () => {
+    // 真实概念图：tool-calling 的前置是 agent-fundamentals
+    const bank = [
+      makeQuestion({ id: 'q-fund', topic: 'agent-fundamentals' }),
+      makeQuestion({ id: 'q-tool', topic: 'tool-calling' }),
+    ];
+    const profile = emptyProfile();
+    profile.topicStats['tool-calling'] = {
+      attempts: 2, avgScore: 50, lastScore: 50, trend: 'flat', mastery: 0.5,
+      commonWeaknesses: [], evidence: [], lastSeen: Date.now(),
+    };
+    const d = deps(bank, profile);
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'getCoverageGaps')!.execute('call', {});
+    const { gaps } = r.details as { gaps: { topic: string; reason: string; prerequisites?: string[] }[] };
+
+    expect(gaps[0]).toEqual({ topic: 'tool-calling', reason: 'prerequisite', prerequisites: ['agent-fundamentals'] });
+    expect(gaps[1]).toEqual({ topic: 'agent-fundamentals', reason: 'uncovered' });
+    // 文案要让 Agent 看得懂「为什么不能上这道题」
+    expect(r.content[0].text).toContain('前置 agent-fundamentals 尚未掌握');
+  });
+
+  it('getCoverageGaps 把缺口写入 session.log，供 UI 透明化', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const tools = createAgentTools(d);
+    await tools.find((t) => t.name === 'getCoverageGaps')!.execute('call', {});
+    const entry = d.session.log.find((e) => e.tool === 'getCoverageGaps');
+    expect(entry).toBeDefined();
+    expect((entry!.details as { gaps: unknown[] }).gaps).toHaveLength(1);
+  });
+
   it('finishInterview 置状态为 finished 并返回摘要', async () => {
     const d = deps([makeChoiceQuestion()]);
     d.session.evaluations['q-choice-1'] = {
