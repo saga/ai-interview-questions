@@ -1,0 +1,292 @@
+[
+  {
+    "id": "rl-reward-verifier-01",
+    "category": "training",
+    "topic": "rlhf",
+    "tags": [
+      "reward-hacking",
+      "synthetic-verifier",
+      "rlhf",
+      "reward-shortcut"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在针对 Agent / 代码生成大模型进行强化学习（RL）训练时，若直接使用合成校验器（Synthetic Verifier）生成二值奖励（Binary Reward），模型容易利用校验器的逻辑漏洞产生“奖励捷径”（Reward Shortcuts / Reward Hacking）。为确保合成校验器的可靠性，应如何设计校验与验证策略？",
+    "explanation": "正确做法：①生成校验器时隔离对参考标准解答（Reference Solution）的访问，防止校验逻辑与特定实现硬编码绑定（A 对）；②投入 RL 前用 Oracle（标准解应通过）/ No-op（未修改代码应拒绝）/ Unsolved（应拒绝）三态元测试验证二值奖励逻辑（B 对）；③引入求解器轨迹（Solver Trajectories）分析，捕获模型未真正解决问题却触发奖励的边缘情况并闭环修补校验器（C 对）。错误做法：对仅能通过语法解析的非空代码就给正向奖励，会诱导模型生成大量语法正确但无逻辑功能的冗余代码（D 错）；在 RL 沙盒中允许访问无限制公网会引入不可重现性与严重安全风险（E 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在生成校验器代码时，严格隔离对参考标准解答（Reference Solution）的访问，防止校验器逻辑直接与特定实现硬编码绑定",
+          "在校验器投入 RL 训练前，依次运行 Oracle 状态（标准解）、No-op 状态（未修改代码）和 Unsolved 状态以验证二值奖励逻辑的正确性",
+          "引入求解器轨迹（Solver Trajectories）分析，捕获模型在未真正解决问题时触发奖励的边缘情况，进而修复校验器漏洞",
+          "为防止校验器因随机报错影响训练，只要模型生成了非空代码且能通过语法解析即给予正向标量奖励",
+          "强制校验器通过与外部公网环境实时交互来动态判断代码行为，避免在隔离沙盒中产生局部测试覆盖不全的问题"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "在针对 Agent / 代码生成大模型（LLM）进行强化学习（RL）训练时，若直接使用合成校验器（Synthetic Verifier）生成二值奖励（Binary Reward），模型容易利用校验器的逻辑漏洞产生“奖励捷径”（Reward Shortcuts / Reward Hacking）。为了确保合成校验器的可靠性，以下哪些校验与设计策略是有效的？（多选）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。\n\n要点：①合成校验器必须与被评估的实现解耦——生成校验器时隔离 Reference Solution，避免它对特定解答逻辑过度拟合或泄露答案，保证校验的通用性。②对校验器本身做元测试：Oracle 状态应通过、No-op 与 Unsolved 状态应被拒绝，这是验证二值奖励（0/1）功能正确的必要断言。③分析 Agent 的失败/欺骗性轨迹，发现校验器的漏洞（如只匹配输出字符串而非断言逻辑），从而闭环修补奖励黑客路径。④绝不能对“语法可解析的非空代码”给奖励（典型 reward hacking）；也不能为覆盖“放开公网”而牺牲确定性与安全。"
+      }
+    }
+  },
+  {
+    "id": "rl-logprob-mismatch-01",
+    "category": "training",
+    "topic": "distributed-training",
+    "tags": [
+      "logprob",
+      "distributed-training",
+      "rollout",
+      "numerical-alignment"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在大规模 Agent 强化学习系统中，训练端（基于 DeepSpeed / Megatron 等训练框架）与 Rollout 采样端（基于 vLLM / SGLang 等推理引擎）通常采用异构算子与并行策略。在这类异步架构中，采样端与训练端 Log-Probability（对数概率）出现明显偏差（Logprob Mismatch）的最常见原因及解法是什么？",
+    "explanation": "正确：采样推理引擎（如 FlashAttention / vLLM 算子）与分布式训练引擎在低精度（BF16 / FP16）下的 Gemm 累加顺序和近似算法不一致，会导致计算的 Logprob 存在偏差，在 PPO / OPD 等算法中会破坏 Importance Sampling 权重，必须在计算图与硬件算子层做严格数值平齐（A 对）。错误：Top-p 只是采样截断策略，无法消除底层浮点累加与算子舍入误差（B 错）；KV Cache 存否影响的是速度而非数值精度，重算全量 KV 仍解决不了不同算子库的浮点差异（C 错）；梯度累积步数影响前向/后向 Batch 聚合，与单次前向传导算出的 Logprob 数值精度无关（D 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "采样引擎为了提高吞吐量使用了低精度 Attention 算子或非确定性 Gemm 优化，需在采样与训练路径上进行严格的数值对齐与算子控制",
+          "采样端的软硬件环境配置与训练端完全隔离，只要使用相同参数的 Top-p 采样即可彻底规避不同算子库带来的浮点舍入误差",
+          "采样引擎在解码过程中未保存 Prompt 阶段的 KV Cache，只需强制每步重新计算全量 KV Cache 即可实现无误差对齐",
+          "训练端使用的梯度累积步数（Gradient Accumulation Steps）过大，只需将训练端 Batch Size 降至与 Sampling Size 一致即可消除数值偏差"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "在大规模 Agent 强化学习系统中，训练端（基于 DeepSpeed / Megatron 等训练框架）与 Rollout 采样端（基于 vLLM / SGLang 等推理引擎）通常采用异构算子与并行策略。在这类异步架构中，造成采样端与训练端 Log-Probability（对数概率）出现明显偏差（Logprob Mismatch）的最常见原因及解法是："
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。\n\n要点：采样推理引擎（FlashAttention / vLLM 等算子）与分布式训练引擎在低精度（BF16 / FP16）下的 Gemm 累加顺序和近似算法不一致，会导致计算出的 Logprob 存在偏差；这在 RL 算子（PPO / OPD）中会破坏 Importance Sampling 权重计算，必须在计算图与硬件算子层进行严格的数值平齐。Top-p 是采样截断策略，无法消除底层浮点舍入误差；KV Cache 保存与否只影响速度，重新计算全量 KV 仍无法解决不同算子库的浮点差异；梯度累积步数影响的是参数更新的 Batch 聚合，与单次前向传导算出的 Logprob 数值精度无关。"
+      }
+    }
+  },
+  {
+    "id": "rl-opd-memory-01",
+    "category": "training",
+    "topic": "distillation",
+    "tags": [
+      "distillation",
+      "off-policy-distillation",
+      "multi-teacher",
+      "memory-optimization"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在长文本 / 长链条任务的 Agent 强化学习中，引入 Off-Policy Distillation (OPD) 或多教师模型（Multi-Teacher）指导能显著提升策略学习效率。但若为每个教师模型建立常驻（Long-running）的独立推理服务，会导致显存与计算资源消耗过高。针对该架构瓶颈，哪些系统设计方案能在控制显存开销的同时维持较高的蒸馏吞吐？",
+    "explanation": "正确：①用 Host RAM + NVMe 构建多级缓存，并在计算下一 Batch 前预取（Prefetch）目标教师模型权重，能在有限 GPU 显存下实现多教师动态切换（A 对）；②统一的数据流 Buffer 解耦 Sampling、Teacher Inference 与 Policy Training 的速率差异，让硬件资源流水线（Pipeline）重叠利用（C 对）；③根据环境与 Prompt 特性做工作负载感知路由，把 Compute-bound（Prefill）与 Memory-bound（Decode）动态分配给不同实例，提升整体利用率（E 对）。错误：1-bit 极限量化会严重劣化教师推理能力，失去蒸馏信号意义（B 错）；同步单步推导会造成严重线程阻塞与 Straggler，摧毁异步 RL 的并行吞吐（D 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "利用本地 Host 内存与 NVMe 存储作为分层缓存（Hierarchical Cache），在训练端对教师模型状态进行预取（Prefetching）与动态切换",
+          "将所有教师模型统一量化至 1-bit 权重并强行常驻显存，完全牺牲教师模型推理精度以消除显存加载延迟",
+          "在 Rollout 与训练的数据流中引入统一的 Data Buffer，使教师模型推导与学生模型采样在同一数据流控制下实现异步流水线重叠",
+          "废弃所有 Off-Policy 教师信号，强制要求所有教师模型在学生模型的每个 Rollout Step 中进行同步单步对齐推导",
+          "针对不同 Rollout 环境的请求特性，采用工作负载感知的路由调度，实现 Prefill 与 Decode 阶段动态资源比例调节"
+        ],
+        "answer": [
+          0,
+          2,
+          4
+        ],
+        "question": "在长文本 / 长链条任务的 Agent 强化学习中，引入 Off-Policy Distillation (OPD) 或多教师模型（Multi-Teacher）指导能显著提升策略学习效率。然而，如果为每个教师模型建立常驻（Long-running）的独立推理服务，会导致显存与计算资源消耗过高。针对该架构瓶颈，以下哪些系统设计方案能在控制显存开销的同时维持较高的蒸馏吞吐？（多选）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、E。\n\n要点：①利用 Host RAM + NVMe 构建多级缓存，在下一 Batch 前预取目标教师模型权重，可在有限显存下动态切换多教师模型，极大节省 GPU 显存。②统一的数据流 Buffer 解耦采样、教师推理与学生训练速率，实现流水线重叠。③工作负载感知路由把 Prefill（计算密集）与 Decode（访存密集）动态分配给不同实例，提升蒸馏系统利用率。④1-bit 极限量化会劣化教师逻辑推理能力，失去高质量蒸馏信号；⑤同步单步对齐推导会引发严重 Straggler，摧毁异步 RL 吞吐。"
+      }
+    }
+  },
+  {
+    "id": "rl-test-time-compute-01",
+    "category": "inference",
+    "topic": "inference-optimization",
+    "tags": [
+      "test-time-compute",
+      "reasoning-effort",
+      "token-efficiency",
+      "inference"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在解决复杂工程任务（如代码库重构、系统性能调优或多模块 Debug）时，推理模型通常支持设置不同的思考努力程度（Reasoning Effort，如 Low、High、Max）。关于 Reasoning Effort 对系统性能与工程调优的影响，下列说法正确的是？",
+    "explanation": "正确：①提高 Reasoning Effort 通常显著增加 Output Token 消耗，因此简单单文件代码修改应优先用较低 Effort 以优化延迟与成本（A 对）；②复杂长流程任务中，较高 Effort 虽增加单次推理 Token，但可能通过减少整体交互轮次与错误尝试，最终降低总任务完成时间与 Token 消耗（B 对）；③异步 RL 采样中高 Effort 会使不同任务输出长度方差变大，需要工作负载感知的动态 Batching 以防尾部延迟 Straggler（E 对）。错误：Prompt Context Caching 作用于输入前缀匹配，与模型内部生成的思考 Token 无关，但前缀缓存仍能大幅降低多轮 Agent 交互的输入 Token 成本（C 错）；深度思考无法替代环境验证（单元测试 / 沙盒编译），复杂系统级逻辑必须经真实执行断言（D 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提高 Reasoning Effort 通常会显著增加模型的 Output Token 消耗，因此在简单单文件代码修改场景下应优先采用较低 Effort 以优化延迟与成本",
+          "在复杂长流程任务中，较高的 Reasoning Effort 虽然增加单次推理 Token，但可能通过减少整体交互轮次与错误尝试，最终降低总任务完成时间与 Token 消耗",
+          "在 Agent 执行端启用 Reasoning 模式时，系统的 Prompt Context Caching（上下文缓存）命中率与 Reasoning Effort 设置完全无关，缓存无法降低思考 Token 的计算成本",
+          "开启深度思考（Max Effort）可以替代环境验证（如单元测试与沙盒编译），模型无需在外部沙盒中运行校验即可确保 100% 复杂的系统级逻辑无误",
+          "在异步 RL 采样场景中，高 Reasoning Effort 会导致不同 Agent 任务的输出长度方差变大，需要配合工作负载感知的动态 Batching 机制以防尾部延迟（Straggler）"
+        ],
+        "answer": [
+          0,
+          1,
+          4
+        ],
+        "question": "在解决复杂工程任务（如代码库重构、系统性能调优或多模块 Debug）时，推理模型通常支持设置不同的思考努力程度（Reasoning Effort，如 Low、High、Max）。关于 Reasoning Effort 对系统性能与工程调优的影响，以下说法正确的是：（多选）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、E。\n\n要点：①低 Effort 思维链短，适合简单确定性修改，可降低首字延迟与 Token 计费；②高 / Max Effort 能在模型内部计划更完整的解法，减少反复试错导致的多轮 Context 重传，长流程任务总体可能更省 Token 与耗时；③不同任务在 Max Effort 下思考链长度差异大，会使 Batch 内任务等待（Tail Latency），需工作负载感知动态调度或 PagedAttention 管理资源。④Context Caching 作用于输入前缀，不降低思考 Token 成本，但能降低多轮交互输入成本；⑤深度思考（Thinking）不能替代真实沙盒执行与单元测试断言。"
+      }
+    }
+  },
+  {
+    "id": "rl-context-compaction-01",
+    "category": "context-engineering",
+    "topic": "context-engineering",
+    "tags": [
+      "context-compaction",
+      "long-horizon",
+      "selective-attention",
+      "agent-memory"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在针对长流程 Agent 进行强化学习（RL）训练时，随着 Agent 与环境交互轮数增加，上下文（Context Window）急剧膨胀，导致计算复杂度呈二次方增长且注意力容易分散。在策略优化中引入“上下文压缩与选择性注意力”（Context Compaction / Selective Attention）机制的核心作用是？",
+    "explanation": "正确：上下文压缩（Context Compaction）通过智能提取或总结历史交互轨迹中的关键状态（错误根因、尝试过的错误方案、关键变量定义），在保持长跨度因果依赖的同时减少无效 Token 对注意力与算力的占用（B 对）。错误：盲目移除所有历史报错日志会让 Agent 丢失迭代调试依据，易陷入重复错误死循环（A 错）；固定滑动窗口会丢弃最初的任务目标与约束，使 Agent 丢失最终方向（C 错）；Transformer 架构无法在推理阶段动态替换为 RNN（D 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "移除所有历史 Bash 执行输出与报错日志，仅保留最初始的 System Prompt 与最新的代码差异（Git Diff）",
+          "动态提炼与压缩历史轨迹中的关键决策状态与环境反馈，在保留长跨度因果依赖的同时减少无效 Token 对模型注意力与算力的占用",
+          "将长上下文直接剪裁为固定长度的滑动窗口（Sliding Window），完全放弃超出窗口范围的所有早期历史信息",
+          "在推理阶段关闭所有注意力层，改用递归神经网络（RNN）单元对上下文进行无损线性记忆"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "在针对长流程 Agent 进行强化学习（RL）训练时，随着 Agent 与环境交互轮数增加，上下文（Context Window）急剧膨胀，导致计算复杂度呈二次方增长且注意力容易分散。在策略优化中引入“上下文压缩与选择性注意力”（Context Compaction / Selective Attention）机制的核心作用是："
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。\n\n要点：上下文压缩通过智能提取或总结历史轨迹中的关键决策状态与环境反馈（错误根因、已尝试的错误方案、关键变量定义），防止无用日志占用注意力权重，在保持长跨度因果依赖（Long-horizon Dependencies）的同时提升训练与推理效率。盲目移除所有历史报错日志会丢失迭代调试上下文；固定滑动窗口会丢弃最初的任务目标与约束；Transformer 无法在推理阶段替换为 RNN 单元。"
+      }
+    }
+  },
+  {
+    "id": "sec-exploit-chaining-01",
+    "category": "tool-security",
+    "topic": "tool-security",
+    "tags": [
+      "exploit-chaining",
+      "vulnerability",
+      "security-agent",
+      "sandbox"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "大型语言模型在网络安全领域展现出“漏洞识别（Vulnerability Discovery）”与“漏洞利用链构建（Exploit Chaining）”两种不同维度的能力。结合实战安全评估经验，关于这两类能力在机制与工程复杂度上的差异，以下说法正确的是？",
+    "explanation": "正确：①源码漏洞识别主要依赖单点模式匹配与上下文语义理解，而利用链构建需要多步骤计划、环境状态推理与动态反馈调整（A 对）；②即使模型准确发现孤立漏洞，也不代表具备自动化生成可突破防御（ASLR / DEP）的完整 Exploit 能力（B 对）；③RL 对长链条规划与多步探索能力提升最显著，因此在 Exploit Chaining 等复杂任务上的边际收益高于简单静态判定（C 对）；⑤为安全评估训练的安全 Agent 必须在隔离沙盒中运行并施加网络域名白名单，防止非预期外部破坏或数据偷跑（E 对）。错误：定位漏洞与自动构造端到端 RCE 攻击链难度完全不同，100% 自动推导过于绝对（D 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "源码漏洞识别主要依赖单点模式匹配与上下文语义理解，而漏洞利用链构建需要多步骤计划、环境状态推理与动态反馈调整",
+          "在代码库静态扫描中，即使模型准确发现了孤立的内存溢出或逻辑漏洞，也并不意味着模型具备自动化生成可突破防御（如 ASLR/DEP）的完整 Exploit 能力",
+          "随着 Post-Training（如强化学习与长流程环境训练）规模的扩大，模型在复杂利用链构建（Exploit Chaining）上的性能提升增幅通常比简单的静态漏洞判定更为显著",
+          "只要模型能够在白盒源码中定位所有 C/C++ 内存漏洞，即可 100% 自动推导出跨网络协议的远程代码执行（RCE）攻击链，两者难度完全等价",
+          "为安全评估训练的安全 Agent，在自动化测试过程中必须施加沙盒隔离与网络域名白名单限制，以防 Agent 产生非预期的外部破坏行为或利用网络偷跑数据"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ],
+        "question": "大型语言模型在网络安全领域展现出“漏洞识别（Vulnerability Discovery）”与“漏洞利用链构建（Exploit Chaining）”两种不同维度的能力。结合实战安全评估经验，关于这两类能力在机制与工程复杂度上的差异，以下说法正确的是：（多选）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C、E。\n\n要点：①漏洞识别是局部模式判断（如未校验的 strcpy），利用链构建涉及多步攻防博弈、内存布局计算与状态机转换，属高阶长流程推理。②发现漏洞与编写成功 Exploit 之间存在巨大能力鸿沟，后者依赖具体系统环境与防御绕过技巧。③RL 对长链条规划与多步探索的提升最显著，故在 Exploit Chaining 上边际收益高于静态判定。④安全评估 Agent 须完全隔离于 Docker / VM 沙盒并施加网络域名白名单（如仅允许必要包下载），防止非预期行为。⑤定位漏洞与自动推导端到端 RCE 难度完全不同，不能等价。"
+      }
+    }
+  },
+  {
+    "id": "rl-workload-scheduling-01",
+    "category": "ai-architecture",
+    "topic": "system-design",
+    "tags": [
+      "scheduling",
+      "continuous-batching",
+      "workload-aware",
+      "rl-infra"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 Agent 强化学习系统的分布式 Rollout 阶段，不同智能体任务的执行轨迹（Trajectory Length）差异巨大。若不做专门调度，会导致 Prefill 与 Decode 阶段资源不均及 GPU 显存碎裂。为了解决这一问题，哪些系统调度策略是有效的？",
+    "explanation": "正确：①工作负载感知（Workload-Aware）路由器根据任务历史与类型预测轨迹特征，动态调节 Prefill 与 Decode 的计算资源分配比例（A 对）；③采用异步任务队列（Asynchronous Task Queue），短轨迹 Worker 完成即可立即拉取新任务，消除同步屏障等待（C 对）；④Continuous Batching 与 PagedAttention 动态插入/移除不同长度请求的 KV Cache 页并配合并发度控制，防止显存 OOM 与碎片（D 对）。错误：强行截断长流程任务会破坏 Agent 完整推理与环境反馈闭环，使策略无法学到解决长流程任务的能力（B 错）；按最大 Context 静态预分配 KV Cache 会造成极严重显存浪费，降低最大并发 Batch（E 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "引入工作负载感知（Workload-Aware）的路由器调度，根据任务历史与类型启发式预测轨迹特征，动态调节 Prefill 与 Decode 的计算资源分配比例",
+          "强制所有 Agent 无论任务复杂度如何，均在执行固定步数（如 10 步）后直接截断并终止采样，以实现绝对均匀的批处理",
+          "在推理引擎与训练框架之间实现统一的数据流调度，使得完成长轨迹任务的 Worker 可以立即释放并抢占新任务（Asynchronous Task Queue）",
+          "为长短不一的推理请求采用连续批处理（Continuous Batching / PagedAttention）技术，并结合并发度控制（Concurrency Tuning）以优化整体 KV Cache 内存使用",
+          "关闭显存管理机制，强制将所有请求的 KV Cache 分配至全量 Context Window 长度的最大固态空间，避免动态分配开销"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "在 Agent 强化学习系统的分布式 Rollout 阶段，不同智能体任务的执行轨迹（Trajectory Length）差异巨大（有些任务几步即结束，有些包含上百步环境交互与长代码生成）。如果不做专门调度，会导致严重的服务端 Prefill 与 Decode 阶段资源不均及 GPU 显存碎裂。为了解决这一问题，以下哪些系统调度策略是有效的？（多选）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。\n\n要点：①工作负载感知调度器预估长/短请求比例，按需调整 Prefill（计算密集）与 Decode（访存密集）节点的多租户分配，提升整体吞吐。③异步任务队列让提前完成短轨迹的 Worker 立即拉取新任务，无需等待同 Batch 中最慢任务（Straggler），消除同步屏障。④Continuous Batching 与 PagedAttention 动态管理不同长度请求的 KV Cache 页并配合并发度限制，防 OOM 与碎片。②强行截断长流程会破坏 Agent 推理闭环；⑤按最大 Context 静态预分配 KV Cache 会严重浪费显存、降低并发。"
+      }
+    }
+  },
+  {
+    "id": "api-contract-reasoning-effort-01",
+    "category": "ai-architecture",
+    "topic": "structured-output",
+    "tags": [
+      "api-contract",
+      "breaking-change",
+      "reasoning-effort",
+      "gateway"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "某工程团队计划将系统中的 LLM 代码助手从早期模型平滑迁移至支持 Reasoning Effort（低、中、高）的下一代思考型模型。新模型规范中“完全禁用思考（Thinking Disabled）”已被废弃，请求必须包含 thinking: {type: 'enabled'} 与对应的 reasoning_effort 参数。若团队在迁移过程中直接将原有包含 thinking.type: 'disabled' 的 API 请求发往新模型，关于契约兼容与正确的升级做法，以下说法正确的有？",
+    "explanation": "正确：①现代 AI API 在底层契约（Schema Contract）发生非兼容变更（Breaking Change）时，服务端校验层会直接拒绝非法请求（返回 HTTP 400 Bad Request），防止未定义行为；正确做法是在 API 网关 / Adapter 层拦截旧请求并重写成新版字段格式（thinking.type: 'enabled' 并赋予合理的 reasoning_effort）（A 对）；②客户端侧也应具备 schema 版本协商能力，对废弃字段做兼容默认值映射，使旧客户端不必直接触达新模型校验层，二者是分层防御策略（E 对）。错误：API 不再支持 disabled，不会静默降级到零思考（B 错）；校验失败会在推理前中止，不会自动提升到 max（C 错）；错误发生在网关/请求校验层，不会进入生成与后处理阶段导致 JSON 解析 Null 崩溃（D 错）。",
+    "aiGenerated": false,
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "服务端将直接拒绝请求并抛出校验错误；需在网关层将参数重写为 thinking.type: enabled 并补充合理的 reasoning_effort",
+          "服务端会自动降级至零思考模式继续执行；无需修改客户端代码，但模型回答复杂问题时的逻辑推理能力会显著下降",
+          "服务端会自动将思考模式强制提升至 max 级别；请求能够正常响应，但会导致下游 API 的调用延迟与 Token 费用大幅飙升",
+          "服务端将正常接收请求并输出结果；但由于缺失思考链控制标头，返回的 JSON 结构解析器会抛出 Null 异常导致系统崩溃",
+          "客户端应在发请求前做 schema 版本协商，对废弃字段做兼容默认值映射，使旧客户端不必直接触达新模型的校验层"
+        ],
+        "answer": [
+          0,
+          4
+        ],
+        "question": "某工程团队计划将系统中的 LLM 代码助手从早期模型平滑迁移至支持 Reasoning Effort（低、中、高）的下一代思考型模型。新模型规范中“完全禁用思考（Thinking Disabled）”已被废弃，且请求必须包含 thinking: {type: 'enabled'} 与对应的 reasoning_effort 参数。若该团队在迁移过程中直接将原有包含 thinking.type: 'disabled' 的 API 请求发往新模型，关于契约兼容与正确的升级做法，以下说法正确的有？（多选）"
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、E。\n\n要点：①AI API 在底层契约（Schema Contract）发生非兼容变更（Breaking Change）时，服务端校验层会直接拒绝非法请求（返回 HTTP 400 Bad Request），避免未定义行为；正确做法是在 API 网关或 Adapter 层拦截旧请求，重写为新版字段（thinking.type: 'enabled' 并赋予合理 reasoning_effort，如 low / high）。②客户端侧也应具备 schema 版本协商能力，对废弃字段做兼容默认值映射，使旧客户端不必直接触达新模型校验层——A 与 E 是分层的防御策略。③B/C/D 均错：API 不再支持 disabled 故不会静默降级；校验失败在推理前中止而非自动提升到 max；错误发生在请求校验层而非生成/后处理阶段，不会引发 JSON 解析 Null 崩溃。"
+      }
+    }
+  }
+]

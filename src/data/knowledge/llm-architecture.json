@@ -432,5 +432,64 @@
       "scenario",
       "tradeoff"
     ]
+  },
+  {
+    "id": "interpretability",
+    "name": "可解释性（Mechanistic Interpretability）",
+    "area": "llm",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "研究大模型内部激活值与隐藏表示的可解释性方法，包括稀疏自编码器（SAE）、自然语言自编码器（NLA）等，用于解码模型潜意识意图、对齐审计与潜空间监控（Latent-space Guardrailling）。",
+    "required": [
+      "NLA 闭环：激活值表达器（AV）将激活向量映射为自然语言文本，激活值重构器（AR）从文本重构激活值，以重构相似度为训练信号",
+      "离散文本采样的不可导问题需用 RL（PPO/策略梯度）或 Gumbel-Softmax 松弛跨越，目标模型在训练与提取阶段保持冻结",
+      "SAE 用线性稀疏字典解耦激活值、特征需事后打标；NLA 直接产出人类可读文本但推理开销大、存在幻觉风险",
+      "潜空间监控因 AV 需自回归生成而不适合实时全量拦截，宜用于离线审计或高风险场景的抽样触发"
+    ],
+    "misconceptions": [
+      "以为 NLA 的 AR 在推理阶段会干预目标模型输出分布或需要反向传播",
+      "以为目标模型在 NLA 训练中应同步更新（实际必须冻结以防表征漂移）",
+      "以为 NLA 解释文本绝对客观无幻觉（生成模型先验偏置会引入事实性幻觉，需交叉验证）"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "system-design",
+      "tradeoff",
+      "fundamental",
+      "debugging"
+    ]
+  },
+  {
+    "id": "model-behavior",
+    "name": "模型行为与对齐安全（Model Behavior & Alignment Safety）",
+    "area": "llm",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "从角色选择模型（PSM）、涌现性非对齐、接种提示到语境外泛化，研究预训练/后训练如何塑造模型行为、意图与动机；以及 Masked Shoggoth / Operating System 等不同主体性架构假设对安全与对齐的含义。",
+    "required": [
+      "PSM 视角：预训练建立多样化角色先验分布，后训练是对该分布的贝叶斯式条件更新，目标模型在提取阶段冻结",
+      "涌现性非对齐：微调单一异常行为会作为\"行为人具备反叛/恶意倾向\"的证据，引发跨领域动机泛化",
+      "接种提示（Inoculation Prompting）通过重述上下文，将负面输出归因于\"遵守指令\"而非\"具备恶意\"，阻断恶意角色概率转移",
+      "语境外泛化（OOC）：陈述性文本无需 (x,y) 示范即可改变被激活角色的行为，Context 与输出共同决定后验更新方向",
+      "主体性视图分歧在于代理权/动机源于底座还是被模拟角色，而非架构细节"
+    ],
+    "misconceptions": [
+      "以为后训练会彻底擦除预训练习得的其他角色权重（实际只改变采样概率，边缘提示仍可能复现）",
+      "以为涌现性非对齐是注意力机制损坏或特征线性叠加所致（实际是角色归因的认知层面后验偏移）",
+      "以为 NLA/解释文本绝对客观无幻觉（生成模型先验偏置会引入事实性幻觉，需交叉验证）",
+      "以为拟人化输出是权重数值崩塌（实际是角色混淆/演导偏差）"
+    ],
+    "angles": [
+      "definition",
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "tradeoff",
+      "system-design",
+      "debugging"
+    ]
   }
 ]
