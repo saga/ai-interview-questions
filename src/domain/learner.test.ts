@@ -9,6 +9,8 @@ import {
   emptyProfile,
   findCoverageGaps,
   getAngleStat,
+  conceptKey,
+  missingConceptsOf,
   recommendWeakTopics,
   recommendationText,
   sessionFromQuiz,
@@ -84,6 +86,83 @@ function session(overall: number, results: QuestionResult[], title = 't'): Sessi
 function result(topic: string, score: number, gaps: string[] = [], correct?: boolean): QuestionResult {
   return { questionId: 'x', category: 'c', topic, format: 'open' as const, score, gaps, correct };
 }
+
+/** 带概念级缺失证据的结果（missingConcepts 只由开放题 LLM 评估产出）。 */
+function resultWithConcepts(topic: string, score: number, missingConcepts: string[], gaps: string[] = []): QuestionResult {
+  return { questionId: 'q-' + topic, category: 'c', topic, format: 'open' as const, score, gaps, missingConcepts };
+}
+
+describe('conceptEvidence（概念级缺失证据层）', () => {
+  it('按 topic|concept 累计 misses，并记录最近一次得分', () => {
+    const p = updateLearner(
+      emptyProfile(),
+      session(55, [
+        resultWithConcepts('rag', 50, ['混合检索', '重排']),
+        resultWithConcepts('rag', 40, ['混合检索']),
+      ]),
+    );
+    expect(p.conceptEvidence?.[conceptKey('rag', '混合检索')]?.misses).toBe(2);
+    // lastScore 取最近一次（40），用于衡量缺失严重度
+    expect(p.conceptEvidence?.[conceptKey('rag', '混合检索')]?.lastScore).toBe(40);
+    expect(p.conceptEvidence?.[conceptKey('rag', '重排')]?.misses).toBe(1);
+  });
+
+  it('跨会话累计（misses 递增而非覆盖）', () => {
+    let p = updateLearner(emptyProfile(), session(50, [resultWithConcepts('rag', 50, ['重排'])]));
+    p = updateLearner(p, session(60, [resultWithConcepts('rag', 60, ['重排'])]));
+    expect(p.conceptEvidence?.[conceptKey('rag', '重排')]?.misses).toBe(2);
+  });
+
+  it('概念名归一化：大小写与空白不产生重复计数', () => {
+    const p = updateLearner(
+      emptyProfile(),
+      session(50, [resultWithConcepts('rag', 50, [' 混合检索 ', '混合检索'])]),
+    );
+    const keys = Object.keys(p.conceptEvidence ?? {}).filter((k) => k.startsWith('rag|'));
+    expect(keys).toHaveLength(1);
+    expect(p.conceptEvidence?.[keys[0]]?.misses).toBe(2);
+  });
+
+  it('不并入 commonWeaknesses（两层证据刻意分离）', () => {
+    const p = updateLearner(
+      emptyProfile(),
+      session(50, [resultWithConcepts('rag', 50, ['混合检索'])]),
+    );
+    // gaps 为空 → commonWeaknesses 不应凭 missingConcepts 产生内容
+    expect(p.topicStats['rag'].commonWeaknesses).toEqual([]);
+    // 但概念级证据已单独累计
+    expect(p.conceptEvidence?.[conceptKey('rag', '混合检索')]?.misses).toBe(1);
+  });
+
+  it('missingConceptsOf 按 misses 降序返回该 topic 的薄弱概念', () => {
+    const p = updateLearner(
+      emptyProfile(),
+      session(50, [
+        resultWithConcepts('rag', 50, ['重排']),
+        resultWithConcepts('rag', 50, ['混合检索', '重排']),
+        resultWithConcepts('rag', 50, ['混合检索', '重排']),
+      ]),
+    );
+    expect(missingConceptsOf(p, 'rag')).toEqual(['重排', '混合检索']);
+    expect(missingConceptsOf(p, 'rag', 1)).toEqual(['重排']);
+  });
+
+  it('missingConceptsOf 不跨 topic 泄漏', () => {
+    const p = updateLearner(
+      emptyProfile(),
+      session(50, [resultWithConcepts('rag', 50, ['重排']), resultWithConcepts('rlhf', 50, ['PPO'])]),
+    );
+    expect(missingConceptsOf(p, 'rag')).toEqual(['重排']);
+    // 大小写敏感的专有名词要保留原始写法（key 归一化去重，但展示用 label）
+    expect(missingConceptsOf(p, 'rlhf')).toEqual(['PPO']);
+    expect(missingConceptsOf(p, 'transformer')).toEqual([]);
+  });
+
+  it('emptyProfile 自带空概念证据层', () => {
+    expect(emptyProfile().conceptEvidence).toEqual({});
+    expect(missingConceptsOf(emptyProfile(), 'rag')).toEqual([]);
+  });
+});
 
 describe('updateLearner', () => {
   it('聚合 topic 统计：attempts / avgScore / lastScore / lastSeen', () => {

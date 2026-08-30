@@ -11,6 +11,29 @@ const evidenceSchema = z.object({
   at: z.number(),
 });
 
+/**
+ * 单条「概念级缺失证据」：某个 topic 下某个具体概念被判为缺失的累计信号。
+ *
+ * 与 `commonWeaknesses`（自由文本、来自开放题 gaps）是**两层不同的证据**，刻意不合并：
+ * - gaps 是「这次回答漏了什么要点」，粒度粗、受当次题目影响大；
+ * - missingConcepts 是「候选人知识结构里缺哪个概念」，跨题目累计才有意义。
+ * 直接把 missingConcepts 塞进 commonWeaknesses 会让 LLM 产出稀释历史薄弱项，故单列一层。
+ */
+export const conceptEvidenceSchema = z.object({
+  /** 该概念累计被判为「缺失」的次数。 */
+  misses: z.number().int().nonnegative(),
+  /** 最近一次被判缺失时的该题得分（0-100）：分数越低说明缺失越严重。 */
+  lastScore: z.number().min(0).max(100),
+  lastSeenAt: z.number(),
+  /**
+   * 概念的原始写法（首次出现时记下），用于展示。
+   * key 为归一化后的形式（trim + lowercase）以便去重，但像 "PPO" / "RLHF" 这类大小写敏感的
+   * 专有名词若直接回填 key 会显示成 "ppo"，故保留首次出现的原文。
+   */
+  label: z.string().optional(),
+});
+export type ConceptEvidence = z.infer<typeof conceptEvidenceSchema>;
+
 /** 单 (topic, angle) 的逐角度掌握证据（Concept×Angle 覆盖的核心数据）。 */
 export const angleStatSchema = z.object({
   attempts: z.number().int().nonnegative(),
@@ -46,7 +69,9 @@ export const questionResultSchema = z.object({
   correct: z.boolean().optional(),
   gaps: z.array(z.string()),
   /** 开放题 LLM 评估识别的「候选人本应掌握却缺失的概念」（EvaluationResult.missingConcepts）。
-   *  仅开放题有产出；选择题确定性判分不产生。与 gaps 一并汇入 commonWeaknesses（P1-3）。 */
+   *  仅开放题有产出；选择题确定性判分不产生（避免把「选错」过度推断成「缺某个知识点」）。
+   *  **不并入 commonWeaknesses**：该数组由 updateLearner 单独聚合到 LearnerProfile.conceptEvidence，
+   *  以免 LLM 产出的候选概念稀释历史薄弱项（两层证据刻意分离）。 */
   missingConcepts: z.array(z.string()).optional(),
   // ── 课程题库前瞻字段（可选）──
   /** 归属课程 id；面试题恒缺省。用于把课程掌握度与面试掌握度在聚合层隔离。 */
@@ -78,6 +103,8 @@ export const learnerProfileSchema = z.object({
   topicStats: z.record(z.string(), topicStatsSchema),
   /** Concept×Angle 逐角度证据：key = `${topic}|${angle}`。可选以兼容历史画像。 */
   angleCoverage: z.record(z.string(), angleStatSchema).optional(),
+  /** 概念级缺失证据（源自开放题 missingConcepts）：key = `${topic}|${concept}`。可选以兼容历史画像。 */
+  conceptEvidence: z.record(z.string(), conceptEvidenceSchema).optional(),
   sessions: z.array(sessionRecordSchema),
   updatedAt: z.number(),
 });

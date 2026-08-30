@@ -18,7 +18,14 @@ import type { EvaluationResult } from '../schemas/evaluation';
 import type { ProviderEntry } from '../schemas/ai-config';
 import type { Question } from '../schemas/question';
 import { emptyProfile } from '../domain/learner';
-import { createInterviewAgent, shouldStopAfterTurn, beforeToolCall, MAX_AGENT_QUESTIONS } from './interviewAgent';
+import {
+  clampAnswer,
+  createInterviewAgent,
+  shouldStopAfterTurn,
+  beforeToolCall,
+  MAX_AGENT_QUESTIONS,
+  MAX_ANSWER_CHARS,
+} from './interviewAgent';
 import { countDelivered, countScored, createAgentSession } from './types';
 import type { InterviewAgentSession } from './types';
 
@@ -148,6 +155,29 @@ describe('shouldStopAfterTurn', () => {
     for (let i = 0; i < MAX_AGENT_QUESTIONS; i++) session.evaluations[`q${i}`] = null;
     const ctx = { toolResults: [] } as unknown as ShouldStopAfterTurnContext;
     expect(shouldStopAfterTurn(session, ctx)).toBe(true);
+  });
+});
+
+describe('clampAnswer（答案长度上限）', () => {
+  it('短答案原样返回', () => {
+    expect(clampAnswer('这是一个正常长度的回答。')).toBe('这是一个正常长度的回答。');
+  });
+
+  it('超长答案被截断，并保留截断标记', () => {
+    const long = 'x'.repeat(MAX_ANSWER_CHARS + 500);
+    const out = clampAnswer(long) as string;
+    expect(out.length).toBeLessThan(long.length);
+    expect(out.startsWith('x'.repeat(MAX_ANSWER_CHARS))).toBe(true);
+    expect(out).toContain('已截断');
+  });
+
+  it('恰好等于上限时不截断', () => {
+    const exact = 'y'.repeat(MAX_ANSWER_CHARS);
+    expect(clampAnswer(exact)).toBe(exact);
+  });
+
+  it('选择题答案（数组）不受影响', () => {
+    expect(clampAnswer([0, 2])).toEqual([0, 2]);
   });
 });
 

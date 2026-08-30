@@ -80,6 +80,11 @@ export function angleKey(topic: string, angle: QuestionAngle): string {
   return `${topic}|${angle}`;
 }
 
+/** 概念级缺失证据的 key：`${topic}|${concept}`（概念名先归一化，避免大小写/空白造成重复计数）。 */
+export function conceptKey(topic: string, concept: string): string {
+  return `${topic}|${concept.trim().toLowerCase()}`;
+}
+
 export function emptyProfile(): LearnerProfile {
   return {
     totalSessions: 0,
@@ -87,9 +92,27 @@ export function emptyProfile(): LearnerProfile {
     overallScore: 0,
     topicStats: {},
     angleCoverage: {},
+    conceptEvidence: {},
     sessions: [],
     updatedAt: 0,
   };
+}
+
+/**
+ * 取某 topic 下缺失次数最多的概念（按 misses 降序，同次数则最近发生的在前）。
+ *
+ * 用途：给 Agent / 推荐层提供「结构性知识缺口」信号——比 mastery 更具体、比 commonWeaknesses 更稳定。
+ * 返回空数组表示尚无概念级证据（如只做过选择题）。
+ */
+export function missingConceptsOf(profile: LearnerProfile, topic: string, limit = 3): string[] {
+  const evidence = profile.conceptEvidence;
+  if (!evidence) return [];
+  const prefix = `${topic}|`;
+  return Object.entries(evidence)
+    .filter(([k, v]) => k.startsWith(prefix) && v.misses > 0)
+    .sort((a, b) => b[1].misses - a[1].misses || b[1].lastSeenAt - a[1].lastSeenAt)
+    .slice(0, limit)
+    .map(([k, v]) => v.label ?? k.slice(prefix.length));
 }
 
 function clamp01(n: number): number {
@@ -114,8 +137,9 @@ export function calculateProficiency(
 
 /** 由会话结果聚合"高频遗漏要点"：仅统计 gaps（开放题 LLM 评估识别的具体薄弱点），取前 3；
  *  本会话无遗漏则沿用历史。选择题无 LLM 评估、不产生 gaps（不伪造 gap）。
- *  注：EvaluationResult.missingConcepts（候选缺失概念）目前只落库到 QuestionResult，不并入 commonWeaknesses——
- *  避免把 LLM 评估的"候选缺失概念"稀释/污染历史薄弱项（用户决策：暂不改动 Learner Memory 数据结构）。 */
+ *  注：EvaluationResult.missingConcepts（候选缺失概念）**不并入** commonWeaknesses——
+ *  避免把 LLM 评估的候选概念稀释/污染历史薄弱项。它改由 updateLearner 单独聚合进
+ *  LearnerProfile.conceptEvidence（概念级证据层），与 gaps 形成的 commonWeaknesses 分层并存。 */
 function aggregateWeaknesses(prev: string[] | undefined, results: QuestionResult[]): string[] {
   const counts = new Map<string, number>();
   for (const r of results) {
@@ -131,6 +155,7 @@ function aggregateWeaknesses(prev: string[] | undefined, results: QuestionResult
 /**
  * 把新会话并入 Learner Profile，返回新画像（不可变更新）。
  * - 每个 topic 独立聚合：attempts / avgScore / lastScore / trend / mastery / commonWeaknesses / lastSeen
+ * - 三条证据线并行累计：topicStats（主题）、angleCoverage（Concept×Angle）、conceptEvidence（概念级缺失）
  * - mastery 是结合得分、题目次数、训练会话次数的熟练度，不是单次答题正确率
  * - 会话列表新在前，上限 SESSION_CAP；overallScore = 最近 10 次会话均值
  *
@@ -147,6 +172,7 @@ export function updateLearner(
 ): LearnerProfile {
   const topicStats = { ...profile.topicStats };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
+  const conceptEvidence = { ...(profile.conceptEvidence ?? {}) };
   const byTopic = new Map<string, QuestionResult[]>();
   for (const r of s.questionResults) {
     const arr = byTopic.get(r.topic) ?? [];
@@ -169,6 +195,24 @@ export function updateLearner(
       lastScore: r.score,
       lastAskedAt: s.startedAt,
     };
+  }
+
+  // 概念级缺失证据：与 topic 聚合、angleCoverage 并行，key = topic|concept。
+  // 只累加开放题的 missingConcepts（选择题不产出，见 sessionFromQuiz 的口径）。
+  for (const r of s.questionResults) {
+    for (const rawConcept of r.missingConcepts ?? []) {
+      const concept = rawConcept.trim();
+      if (!concept) continue;
+      const key = conceptKey(r.topic, concept);
+      const prev = conceptEvidence[key];
+      conceptEvidence[key] = {
+        misses: (prev?.misses ?? 0) + 1,
+        lastScore: r.score,
+        lastSeenAt: s.startedAt,
+        // 保留首次出现的原文：key 已归一化（小写），直接回填会让 "PPO" 显示成 "ppo"
+        label: prev?.label ?? concept,
+      };
+    }
   }
 
   for (const [topic, results] of byTopic) {
@@ -219,6 +263,7 @@ export function updateLearner(
     overallScore,
     topicStats,
     angleCoverage,
+    conceptEvidence,
     sessions,
     updatedAt: s.startedAt,
   };

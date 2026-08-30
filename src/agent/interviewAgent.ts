@@ -36,6 +36,27 @@ import { countDelivered } from './types';
 export const MAX_AGENT_QUESTIONS = 10;
 
 /**
+ * 单条用户答案的最大字符数：超出部分截断。
+ *
+ * 目的（评审第八节）：用户答案会直接进入 Agent 的 UserMessage 并被 evaluateAnswer 评分，
+ * 若不限长，一次粘贴长文就能让上下文与评估 token 无界膨胀。
+ *
+ * 取舍：这里 **故意** 不设成与 Chrome 历史条目截断（900 字符）相同的值——
+ * 过紧会截断开放题的正常作答，反而损害评分质量。副作用是超长答案在
+ * 「Native 完整答案」与「Chrome 截断历史」两条路径上仍可能有差异，但差异已被本上限约束，
+ * 且按评审结论**不引入 context compaction**：当前 10 题以内、以选择题为主，收益不足以抵消复杂度。
+ */
+export const MAX_ANSWER_CHARS = 2000;
+
+/** 把用户答案限制在 {@link MAX_ANSWER_CHARS} 内（仅对字符串生效，选择题的选项数组原样返回）。 */
+export function clampAnswer(answer: AnswerValue): AnswerValue {
+  if (typeof answer !== 'string') return answer;
+  return answer.length > MAX_ANSWER_CHARS
+    ? `${answer.slice(0, MAX_ANSWER_CHARS)}…（已截断至 ${MAX_ANSWER_CHARS} 字）`
+    : answer;
+}
+
+/**
  * 看门狗：若 Agent run 在 WATCHDOG_MS 内既未交付题目也未结束（如流式挂起），
  * 主动中止并触发确定性兜底出题，避免页面无限停在「面试官正在选题…」。
  */
@@ -311,13 +332,15 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
   }
 
   function submitAnswer(answer: AnswerValue): Promise<void> {
+    // 入口处统一限长：答案无上界会让上下文/评估 token 随一次粘贴无限膨胀（评审第八节）。
+    const bounded = clampAnswer(answer);
     // 兜底模式已接管：不走 agent.continue()，自驱评分与下一题（修复 C）
-    if (usingFallback) return fallbackAdvance(answer);
+    if (usingFallback) return fallbackAdvance(bounded);
     // 选择题：确定性判分 + 确定性选题，跳过 LLM 循环（应非常快，避免「正在检查回答」长时间转圈）
-    if (session.currentQuestion?.format === 'choice') return choiceAdvance(answer);
+    if (session.currentQuestion?.format === 'choice') return choiceAdvance(bounded);
     const qid = session.currentQuestion?.question.id;
-    if (qid !== undefined) session.answers[qid] = answer;
-    const msg: UserMessage = { role: 'user', content: typeof answer === 'string' ? answer : JSON.stringify(answer), timestamp: Date.now() };
+    if (qid !== undefined) session.answers[qid] = bounded;
+    const msg: UserMessage = { role: 'user', content: typeof bounded === 'string' ? bounded : JSON.stringify(bounded), timestamp: Date.now() };
     agent.state.messages = [...agent.state.messages, msg];
     lastErrorMessage = undefined;
     armWatchdog();
