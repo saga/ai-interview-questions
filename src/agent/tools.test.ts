@@ -119,6 +119,37 @@ describe('createAgentTools', () => {
     expect(d.session.currentQuestion).toBeNull();
   });
 
+  it('getQuestion not_found 回带可用题号（self-correcting），Agent 无需记忆即可挑真 id', async () => {
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    await search.execute('call', {}); // 先 search 写入 lastSearchIds
+    const getQ = tools.find((t) => t.name === 'getQuestion')!;
+    const r = await getQ.execute('call', { id: 'nope' });
+    const text = (r.content as { type: string; text: string }[]).map((c) => c.text).join('');
+    expect((r.details as { error: string }).error).toBe('not_found');
+    // 关键契约：not_found 直接列出可用题号，替代 prompt「回到列表挑真 id」约束
+    expect(text).toContain('q-choice-1');
+    expect(text).toContain('q-open-1');
+    expect((r.details as { validIds: string[] }).validIds).toEqual(['q-choice-1', 'q-open-1']);
+  });
+
+  it('searchQuestions 重复调用幂等复用缓存列表并写入 lastSearchIds（消除反复调用动机）', async () => {
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    const r1 = await search.execute('call', {});
+    expect(d.session.lastSearchIds).toEqual(['q-choice-1', 'q-open-1']);
+    const text1 = (r1.content as { type: string; text: string }[]).map((c) => c.text).join('');
+    expect(text1).toContain('找到 2 道候选题');
+    // 重复调用（相同参数）→ 复用缓存、明确提示无需再调
+    const r2 = await search.execute('call', {});
+    const text2 = (r2.content as { type: string; text: string }[]).map((c) => c.text).join('');
+    expect(text2).toContain('复用上次的候选列表');
+    expect(text2).toContain('q-choice-1');
+    expect(d.session.lastSearchIds).toEqual(['q-choice-1', 'q-open-1']);
+  });
+
   it('getQuestion 传入 topic 而非 id 时按主题兜底选题（修复 D）', async () => {
     const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
     const tools = createAgentTools(d);
@@ -128,6 +159,9 @@ describe('createAgentTools', () => {
     expect((r.details as { error?: string }).error).toBeUndefined();
     expect(d.session.currentQuestion?.question.id).toBe('q-choice-1');
     expect((r.details as { matchedBy?: string }).matchedBy).toBe('topic');
+    // 兜底同时回带正确 id 示例，教 Agent「应直接传真实 id」
+    const text = (r.content as { type: string; text: string }[]).map((c) => c.text).join('');
+    expect(text).toContain('q-choice-1');
   });
 
   it('evaluateAnswer（选择题正确）返回 100 分且 gaps 为空（不伪造 gap）', async () => {

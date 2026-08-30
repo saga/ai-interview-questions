@@ -83,6 +83,15 @@ function toSummary(q: Question, generateOpenQuestions: boolean) {
  * - 真正「不确定的」部分留给 Agent，工具层只做只读/写入与受控副作用，便于测试与审计。
  * - session 作为共享可变状态：工具把结论写回 session，UI 通过 handlers 感知变更，形成「Agent 决策 + 工具落地」的闭环。
  */
+/**
+ * 可用题号池：优先「最近一次 searchQuestions 返回的真实 id」，否则退回全题库。
+ * 作为 getQuestion 做 id 校验与 not_found 自纠正的唯一可信来源——
+ * 让 Agent 无需记忆即可挑到真 id，把「回到列表挑真 id / 不要编造」从 prompt 约束下沉为确定性行为。
+ */
+function validIdPool(session: InterviewAgentSession, byId: Map<string, Question>): string[] {
+  return session.lastSearchIds.length ? session.lastSearchIds : Array.from(byId.keys());
+}
+
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const { bank, profile, provider, session, generateOpenQuestions = false } = deps;
   const byId = new Map(bank.map((q) => [q.id, q]));
@@ -98,6 +107,16 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         pool = pool.filter((q) => q.topic === params.topic || q.category === params.topic);
       }
       const items = pool.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
+      const ids = items.map((it) => it.id);
+      // 幂等判定：与「最近一次搜索结果」完全一致视为重复调用——直接复用缓存列表，
+      // 从代码层消除「反复调用 searchQuestions」动机（原 prompt 约束由此下沉为确定性行为）。
+      const isRepeat =
+        session.lastSearchIds.length > 0 &&
+        ids.length > 0 &&
+        ids.length === session.lastSearchIds.length &&
+        ids.every((id, i) => id === session.lastSearchIds[i]);
+      // 写入「最近一次搜索结果」：getQuestion 的 id 校验 / not_found 自纠正的唯一可信池。
+      session.lastSearchIds = ids;
       // 关键修复：候选的真实 id 必须写进 content 文本（LLM 只能读到 content，看不到 details），
       // 否则 LLM 拿不到题号、只能反复猜测 id 导致卡死。
       const list = items
@@ -106,16 +125,20 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
             `${i + 1}. id=${it.id} | topic=${it.topic} | category=${it.category} | difficulty=${it.difficulty} | formats=${it.formats.join('/')}`,
         )
         .join('\n');
+      const nextStep =
+        '下一步：从这些候选里选 1 道（建议从薄弱主题 / 难度适中开始），调用 getQuestion(id=<上面列出的真实 id>) 呈现给用户。';
       const content =
         items.length > 0
-          ? `找到 ${items.length} 道候选题（按顺序排列，请用其中真实 id 调用 getQuestion）：\n${list}\n\n下一步：从这些候选里选 1 道（建议从薄弱主题 / 难度适中开始），调用 getQuestion(id=<上面列出的真实 id>) 呈现给用户。不要反复调用 searchQuestions，也不要猜测或编造 id。`
+          ? isRepeat
+            ? `（检测到重复调用 searchQuestions，已复用上次的候选列表，无需再次调用）\n${list}\n\n${nextStep}`
+            : `找到 ${items.length} 道候选题（按顺序排列，请用其中真实 id 调用 getQuestion）：\n${list}\n\n${nextStep}`
           : `未找到匹配「${params.topic ?? '全部'}」的候选题。请换一个 topic / category，或不带参数重新 searchQuestions 获取全部候选。`;
       session.log.push({
         at: Date.now(),
         kind: 'tool',
         tool: 'searchQuestions',
         summary: `返回 ${items.length} 道候选`,
-        details: { count: items.length },
+        details: { count: items.length, repeat: isRepeat },
       });
       return textResult(content, items);
     },
@@ -139,8 +162,23 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         if (q) matchedBy = 'topic';
       }
       if (!q) {
-        session.log.push({ at: Date.now(), kind: 'tool', tool: 'getQuestion', summary: `未找到 ${params.id}`, details: { id: params.id } });
-        return textResult(`未找到题目 ${params.id}（请使用 searchQuestions 返回的真实题号）`, { error: 'not_found', id: params.id });
+        // 自纠正：把可用题号直接回带，Agent 无需记忆即可挑真 id——
+        // 替代原 prompt「若 not_found 就回到 searchQuestions 列表挑真 id」的脆弱约束（确定性、不依赖 LLM 听话）。
+        const validIds = validIdPool(session, byId);
+        const hint = validIds.length
+          ? `\n可用题号（请直接挑其中一个传入）：\n${validIds.map((id, i) => `${i + 1}. id=${id}`).join('\n')}`
+          : '';
+        session.log.push({
+          at: Date.now(),
+          kind: 'tool',
+          tool: 'getQuestion',
+          summary: `未找到 ${params.id}`,
+          details: { id: params.id, validIds },
+        });
+        return textResult(
+          `未找到题目 ${params.id}。${hint}\n请用上面列出的真实 id 调 getQuestion，不要猜测或编造。`,
+          { error: 'not_found', id: params.id, validIds },
+        );
       }
       // 尊重全局「生成开放题」开关：关闭时只允许选择题，纯开放题不交付（避免绕过 generateOpenQuestions）。
       const available = availableSessionFormats(q, undefined, true, generateOpenQuestions);
@@ -170,8 +208,18 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         summary: `选题 ${q.id}（${fmt}）`,
         details: { id: q.id, format: fmt, matchedBy },
       });
+      // topic 兜底（修复 D）仍保留以防卡死，但回带正确 id 示例，教 Agent「应直接传真实 id」。
+      const topicNote =
+        matchedBy === 'topic'
+          ? `（提示：你传入的是 topic 而非真实 id，已按主题兜底选 ${q.id}；正确做法是直接用 searchQuestions 返回的真实 id，例如：${validIdPool(
+              session,
+              byId,
+            )
+              .slice(0, 3)
+              .join('、')}）`
+          : '';
       return textResult(
-        `已选定题目 ${q.id}（${fmt}）${matchedBy === 'topic' ? '（按主题匹配）' : ''}，请呈现给用户`,
+        `已选定题目 ${q.id}（${fmt}）${topicNote}，请呈现给用户`,
         { id: q.id, format: fmt, matchedBy },
       );
     },

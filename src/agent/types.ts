@@ -36,6 +36,14 @@ export interface InterviewAgentSession {
   answers: Record<string, AnswerValue>;
   evaluations: Record<string, EvaluationResult | null>;
   log: AgentLogEntry[];
+  /**
+   * 最近一次 searchQuestions 返回的真实题目 id 列表（有序）。
+   * 由工具层写入，作为 getQuestion「id 校验 / not_found 自纠正」的唯一可信池：
+   * - getQuestion 找不到 id 时，直接回带这些可用 id，让 Agent 无需记忆即可挑真 id，
+   *   （替代原本只能靠 prompt 提醒「回到列表挑真 id」的脆弱约束）；
+   * - 避免 Agent 反复调用 searchQuestions（调用即幂等复用缓存列表）。
+   */
+  lastSearchIds: string[];
 }
 
 /** 新建一个空的运行时会话。 */
@@ -52,6 +60,7 @@ export function createAgentSession(): InterviewAgentSession {
     answers: {},
     evaluations: {},
     log: [],
+    lastSearchIds: [],
   };
 }
 

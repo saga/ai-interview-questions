@@ -9,6 +9,7 @@
 
 import Dexie, { type Table } from 'dexie';
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
+import type { InterviewAgentSession } from '../agent/types';
 
 /** learner 表行：画像去掉 sessions（历史在 sessions 表）。 */
 export interface StoredLearner {
@@ -47,10 +48,35 @@ export interface ErrorLogEntry {
   createdAt: number;
 }
 
+/**
+ * 进行中 Agent 面试的可恢复草稿（刷新/重开页面后据此续上面试）。
+ * 只存重建 createInterviewAgent 所必需的状态，不重复存题库（恢复时由数据文件重新加载）。
+ * 设计要点：
+ * - `session` / `messages` / `questions` 是续面三要素：session=应用状态、messages=Agent 对话历史（append-only）、
+ *   questions=已交付题列表（用于最终落库）；均为纯数据，IndexedDB 结构化克隆可序列化。
+ * - `entryId` 而非整份 ProviderEntry：避免把 apiKey 落本地库；恢复时从 config 按 id 重新查找并走当前密钥。
+ * - `profile` 存面试开始时的画像快照：弱项推荐基于它，保证中断前后一致（不随后续练习漂移）。
+ */
+export interface StoredAgentSession {
+  /** 等于 InterviewAgentSession.id（进行中面试唯一 id，亦为主键）。 */
+  id: string;
+  session: InterviewAgentSession;
+  /** agent.state.messages 完整对话历史（含 system 之外的全部轮次），恢复时整体写回以续上上下文。 */
+  messages: unknown[];
+  /** 已交付题目列表（SessionQuestion[]），UI 展示与最终 sessionRecordFromAgent 计算均依赖它。 */
+  questions: unknown[];
+  /** 引擎 id：恢复时从 config.providers 重新查找 ProviderEntry。 */
+  entryId: string;
+  /** 面试开始时的画像快照。 */
+  profile: LearnerProfile;
+  updatedAt: number;
+}
+
 export class TrainerDB extends Dexie {
   learner!: Table<StoredLearner, string>;
   sessions!: Table<StoredSession, string>;
   errorLog!: Table<ErrorLogEntry, number>;
+  agentSessions!: Table<StoredAgentSession, string>;
 
   constructor() {
     super('ai-interview-trainer');
@@ -75,6 +101,13 @@ export class TrainerDB extends Dexie {
       entry.event ??= 'error';
       entry.level ??= 'error';
     }));
+    // v4：新增 agentSessions 进行中面试草稿表（刷新/重开可续面），其余表结构不变
+    this.version(4).stores({
+      learner: 'id',
+      sessions: 'id, startedAt, overall, *topics',
+      errorLog: '++id, scope, createdAt, kind, event, level',
+      agentSessions: 'id, updatedAt',
+    });
   }
 }
 

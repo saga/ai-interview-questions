@@ -74,7 +74,7 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                      createLLMProvider(config, onUsage?) 把用量回调透传给每个 PiAIProvider 通道。
 
 storage/       本地持久化（IndexedDB + localStorage；两者均为不可信边界，一律经 Zod 校验）
-  db.ts         Dexie 数据库 schema（version 2）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ errorLog 诊断表（scope/createdAt 索引，记录 Copilot/引擎等调用失败的结构化上下文，与业务数据隔离，fire-and-forget 不阻塞主流程）
+  db.ts         Dexie 数据库 schema（version 4）：learner 单例表 + sessions 表（startedAt/overall/*topics 索引）+ errorLog 诊断表（scope/createdAt 索引，记录 Copilot/引擎等调用失败的结构化上下文，与业务数据隔离，fire-and-forget 不阻塞主流程）+ agentSessions 表（进行中 Agent 面试草稿：session/messages/questions/entryId/profile 快照，刷新/重开可续面；只存重建所需纯数据，不存题库、存 entryId 而非 apiKey）
   settings.ts   LLM 配置（localStorage，`aiConfigSchema` 形状 + `isEntryValid`/去重等不变量）——小 KV 配置保留 localStorage（甜点区）
   learner.ts    LearnerProfile / SessionRecord（IndexedDB via Dexie）：画像存单例表（剔除 sessions），会话历史拆分到 sessions 表；不读取/迁移任何旧 localStorage 数据，直接以空画像起步
 
