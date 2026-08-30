@@ -12,6 +12,7 @@ import type { EvaluationResult } from '../schemas/evaluation';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { availableSessionFormats, evaluateSessionQuestion, finalizeQuestion } from '../application/sessionEvaluator';
+import { describeEvaluationSummary } from '../domain/evaluation';
 import { collectTopicRefs, describeCoverageGap, findCoverageGaps, recommendWeakTopics, weakAnglesOf } from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge';
 import type { InterviewAgentSession } from './types';
@@ -255,7 +256,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const evaluateAnswer: AgentTool<typeof EvaluateAnswerSchema> = {
     name: 'evaluateAnswer',
     label: '评估作答',
-    description: '评估「当前题」的用户作答：选择题走确定性判分；开放题交给 LLM 评分（四维 rubric）。结果写入会话 evaluations，并原样返回 EvaluationResult（综合分/维度/优势/薄弱/gap）。不要自己打分。',
+    description: '评估「当前题」的用户作答：选择题走确定性判分；开放题交给 LLM 评分（四维 rubric）。结果写入会话 evaluations，并返回综合分、各维度序级（0-4）与薄弱点 gaps，作为你决定下一步的依据。不要自己打分。',
     parameters: EvaluateAnswerSchema,
     execute: async () => {
       const sq = session.currentQuestion;
@@ -286,7 +287,12 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
           summary: `评分 ${result.overall} 分`,
           details: { id: qid, overall: <number>result.overall },
         });
-        return textResult(`评估完成：综合 ${result.overall} 分`, result);
+        // 修复 C2：details 不进 LLM 上下文，Agent 只能读到这段文本。
+        // 原实现只回「综合 X 分」，而 prompt 要求按维度与 gaps 分支决策 → 两个 overall 相同、
+        // 维度构成不同的答案无法区分。这里补上决策真正依赖的字段（综合分 / 各维序级 / gaps），
+        // 但**不**全量 stringify EvaluationResult——evidence/strengths/feedback 对选题无增量且推高上下文。
+        // details 保持完整 result 不变（程序侧消费者依赖它）。
+        return textResult(`评估完成\n${describeEvaluationSummary(result)}`, result);
       } catch (err) {
         session.evaluations[qid] = null;
         session.log.push({ at: Date.now(), kind: 'tool', tool: 'evaluateAnswer', summary: '评估失败', details: { error: String(err) } });

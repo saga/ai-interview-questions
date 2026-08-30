@@ -1,6 +1,6 @@
 // 纯逻辑：评分聚合与确定性判分。不依赖 React / LLM。
 
-import { EVAL_DIMENSIONS } from '../types';
+import { EVAL_DIMENSIONS, DIMENSION_LABELS } from '../types';
 import type { ChoiceFormat } from '../schemas/question';
 import type { EvaluationDimension } from '../schemas/common';
 import type { EvalLevel, EvaluationResult } from '../schemas/evaluation';
@@ -35,6 +35,35 @@ export function aggregateOverall(
 ): number {
   const sum = EVAL_DIMENSIONS.reduce((acc, dim) => acc + dimensions[dim] * rubric[dim], 0);
   return Math.max(0, Math.min(100, Math.round(sum)));
+}
+
+/**
+ * 把评分结果压缩成「Agent 决策所需的最小文本」（ADR-054）。
+ *
+ * 为什么需要这个函数：工具返回的 `details` **不进 LLM 上下文**——Agent 只能读到 content 文本。
+ * 而系统提示要求 Agent「按维度与薄弱点决定下一步」，因此这些字段必须由文本显式带出，
+ * 否则模型只看到一个综合分：两个 overall 相同、但维度构成完全不同的答案就无法区分。
+ *
+ * 刻意**不**全量 stringify EvaluationResult：`evidence` / `strengths` / `feedback` 对「下一步考什么」
+ * 没有增量信息，却会线性推高上下文。只带 Agent 决策真正依赖的三样：综合分、各维序级、gaps。
+ */
+export function describeEvaluationSummary(result: EvaluationResult): string {
+  const parts = [
+    `综合评分：${result.overall}`,
+    `维度评分（0-4 序级）：${describeLevels(result.levels)}`,
+    result.gaps.length > 0 ? `薄弱点：${result.gaps.join('、')}` : '薄弱点：无',
+  ];
+  return parts.join('\n');
+}
+
+/**
+ * 渲染四维序级。四维相同时塌缩为一行——选择题按对错判定，四维必然全 0 或全 4，
+ * 逐维打印只是每轮把同一个数字重复四遍，纯浪费上下文（与 ADR-052 的取舍一致）。
+ */
+export function describeLevels(levels: EvaluationResult['levels']): string {
+  const entries = EVAL_DIMENSIONS.map((dim) => [dim, levels[dim]] as const);
+  if (entries.every(([, v]) => v === entries[0][1])) return `四维均为 ${entries[0][1]}`;
+  return entries.map(([dim, v]) => `${DIMENSION_LABELS[dim]}=${v}`).join(', ');
 }
 
 /**

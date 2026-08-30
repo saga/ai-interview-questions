@@ -1,10 +1,24 @@
 // 纯逻辑测试：评分聚合与选择题确定性判分。
 
 import { describe, it, expect } from 'vitest';
-import { aggregateOverall, gradeChoice } from './evaluation';
+import { aggregateOverall, gradeChoice, describeEvaluationSummary, describeLevels } from './evaluation';
 import type { ChoiceFormat } from '../schemas/question';
 import type { EvaluationDimension } from '../schemas/common';
+import type { EvalLevel, EvaluationResult } from '../schemas/evaluation';
 import type { ScoringRubric } from '../schemas/interview';
+
+function resultWith(levels: Record<EvaluationDimension, EvalLevel>, gaps: string[]): EvaluationResult {
+  return {
+    overall: 72,
+    dimensions: { correctness: 75, completeness: 50, architecture: 75, communication: 75 },
+    levels,
+    evidence: { correctness: 'e1', completeness: 'e2', architecture: 'e3', communication: 'e4' },
+    strengths: ['答到要点'],
+    gaps,
+    missingConcepts: [],
+    feedback: '整体不错',
+  };
+}
 
 const rubric: ScoringRubric = {
   correctness: 0.4,
@@ -71,5 +85,74 @@ describe('gradeChoice', () => {
   it('未作答（空数组）按错误处理', () => {
     const g = gradeChoice(cq, [], rubric);
     expect(g.overall).toBe(0);
+  });
+});
+
+describe('describeEvaluationSummary（ADR-054：把决策依据放进 LLM 可见文本）', () => {
+  it('带出综合分、各维序级与薄弱点——这是 prompt 三路分支的全部输入', () => {
+    const text = describeEvaluationSummary(
+      resultWith({ correctness: 3, completeness: 1, architecture: 2, communication: 3 }, ['KV Cache 复用边界']),
+    );
+    expect(text).toContain('综合评分：72');
+    expect(text).toContain('正确性=3');
+    expect(text).toContain('完整性=1');
+    expect(text).toContain('薄弱点：KV Cache 复用边界');
+  });
+
+  it('两个 overall 相同但维度构成不同的答案，摘要必须能区分（C2 的核心诉求）', () => {
+    const a = describeEvaluationSummary(
+      resultWith({ correctness: 4, completeness: 1, architecture: 4, communication: 1 }, []),
+    );
+    const b = describeEvaluationSummary(
+      resultWith({ correctness: 1, completeness: 4, architecture: 1, communication: 4 }, []),
+    );
+    expect(a).not.toBe(b);
+    expect(a).toContain('正确性=4');
+    expect(b).toContain('正确性=1');
+  });
+
+  it('gaps 为空时显式写「无」，而不是省略该行', () => {
+    const text = describeEvaluationSummary(
+      resultWith({ correctness: 4, completeness: 4, architecture: 4, communication: 4 }, []),
+    );
+    expect(text).toContain('薄弱点：无');
+  });
+
+  it('不泄漏 evidence / feedback / strengths——它们对选题决策无增量，只会推高上下文', () => {
+    const text = describeEvaluationSummary(
+      resultWith({ correctness: 3, completeness: 1, architecture: 2, communication: 3 }, ['g1']),
+    );
+    expect(text).not.toContain('e1'); // evidence.correctness
+    expect(text).not.toContain('整体不错'); // feedback
+    expect(text).not.toContain('答到要点'); // strengths
+  });
+
+  it('标注序级刻度（0-4），避免模型把 3 当成百分位', () => {
+    expect(describeEvaluationSummary(resultWith({ correctness: 3, completeness: 3, architecture: 3, communication: 3 }, [])))
+      .toContain('0-4 序级');
+  });
+});
+
+describe('describeLevels', () => {
+  it('四维相同 → 塌缩成一行（选择题按对错判定，四维必然全 0 或全 4）', () => {
+    expect(describeLevels({ correctness: 4, completeness: 4, architecture: 4, communication: 4 })).toBe('四维均为 4');
+    expect(describeLevels({ correctness: 0, completeness: 0, architecture: 0, communication: 0 })).toBe('四维均为 0');
+  });
+
+  it('塌缩后明显短于逐维打印，避免每轮重复同一个数字', () => {
+    const uniform = { correctness: 4, completeness: 4, architecture: 4, communication: 4 };
+    expect(describeLevels(uniform).length).toBeLessThan(
+      'correctness=4, completeness=4, architecture=4, communication=4'.length / 2,
+    );
+  });
+
+  it('四维不同 → 逐维打印，保留区分度', () => {
+    const text = describeLevels({ correctness: 3, completeness: 1, architecture: 2, communication: 4 });
+    expect(text).toBe('正确性=3, 完整性=1, 架构=2, 表达=4');
+  });
+
+  it('只有一维不同也要展开，不能因为「多数相同」就丢信息', () => {
+    const text = describeLevels({ correctness: 4, completeness: 4, architecture: 4, communication: 1 });
+    expect(text).toBe('正确性=4, 完整性=4, 架构=4, 表达=1');
   });
 });

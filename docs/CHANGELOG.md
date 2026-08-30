@@ -1,6 +1,26 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-30 · 评分决策字段进入 LLM 可见文本（ADR-054，修复 `深度审查报告.md` C2 / P1）
+
+- **问题**：系统提示要求 Agent「根据评分分三路分支」，工具描述也承诺「原样返回 EvaluationResult（综合分/维度/优势/薄弱/gap）」，
+  但 `evaluateAnswer` 实际只回 `评估完成：综合 X 分`。`details` 不进 LLM 上下文，Agent 只看到综合分，
+  维度与 gaps 全丢——两个 `overall` 相同、维度构成不同的答案无法区分。与 C1 同一根因：**Agent context contract 不一致**。
+- **关键认知（C2 评审确立）**：`textResult` 的 `details` 是给**程序/UI/logging** 的，**不**自动进入模型上下文；
+  prompt 要求模型使用的字段必须由**文本**显式带出。
+- **修复（用户指定方案：补文本，不删描述、不补全量、不追加工具调用）**：
+  1. 新增纯函数 `describeEvaluationSummary(result)`（`domain/evaluation.ts`）：`综合评分：X` / `维度评分（0-4 序级）：正确性=a, …` /
+     `薄弱点：g1、g2`（无则「无」）；`describeLevels()` 四维相同时塌缩为「四维均为 X」，否则逐维展开。
+  2. `evaluateAnswer` 返回 `评估完成\n${describeEvaluationSummary(result)}`，`details` **完整保留整个 `result`** 不变；
+     工具 description 同步改为「返回综合分、各维度序级（0-4）与薄弱点 gaps，作为你决定下一步的依据」。
+  3. **刻意不带** `evidence` / `strengths` / `feedback`——对选题决策无增量，只推高上下文（反对全量 stringify EvaluationResult）。
+- **验证**（新增 `src/domain/evaluation.test.ts` +6 例）：带出三要素；两个 overall 相同、维度构成不同的答案摘要必须可区分；
+  gaps 为空显式写「无」；不泄漏 evidence/feedback/strengths；标注 0-4 序级；`describeLevels` 塌缩/展开正确。
+  `npx vitest run` **402 passed**（36 文件），`npx tsc --noEmit` 0 error。
+- **来源说明**：实现（含 `describeEvaluationSummary` / `describeLevels` 与对应测试）在 `git status` 中显示为**未提交**改动，
+  由并行工作流写入工作区；本条目仅做记录与文档同步，未重新实现。
+- **文档同步**：`深度审查报告.md` C2 标记已修复并按同源原则改写（C1/C2 同属 context contract 不一致）；新增 **ADR-054**。
+
 ## 2026-08-30 · 题目由 UI 呈现，Agent 不再复述题干（ADR-053，修复 `深度审查报告.md` C1 / P0）
 
 - **问题**：系统提示要求 Agent「用自然语言把题干 + 选项清晰表述给用户」，但 `getQuestion` 只返回

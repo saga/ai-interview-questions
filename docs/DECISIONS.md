@@ -2,6 +2,37 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-054 · 评价结果的决策字段必须显式进入 LLM-visible text（details ≠ 模型可见）
+
+- 状态：已采纳 · 2026-08-30
+- 背景：`深度审查报告.md` C2（P1）。系统提示要求 Agent「根据评分分三路分支（掌握良好/部分掌握/明显不会）」，
+  `evaluateAnswer` 的工具描述也承诺「原样返回 EvaluationResult（综合分/维度/优势/薄弱/gap）」，
+  但工具实际只回 `评估完成：综合 ${result.overall} 分`。
+  根因与 C1 同源：**Agent context contract 不一致**——`textResult` 的 `details` 不进 LLM 上下文，
+  Agent 只能读到 content 文本，于是模型只拿到一个综合分，维度与 gaps 全丢。
+- **关键认知（用户复核确立）**：`details` 是给**程序/UI/logging** 消费的，**不是**给 LLM 消费的。
+  不能指望 `details` 自动成为模型上下文；prompt 要求模型使用的字段，必须由**文本**显式带出。
+- 决策：**补文本，不删描述、不补全量、不追加工具调用**。
+  1. 新增纯函数 `describeEvaluationSummary(result)`（`domain/evaluation.ts`），输出三行：
+     `综合评分：X` / `维度评分（0-4 序级）：正确性=a, 完整性=b, 架构=c, 表达=d`（四维相同时塌缩为「四维均为 X」）/
+     `薄弱点：g1、g2`（无则 `薄弱点：无`）。
+  2. `evaluateAnswer` 返回 `评估完成\n${describeEvaluationSummary(result)}`，`details` **完整保留整个 `result`** 不变
+     （程序侧消费者依赖它）。工具 description 同步改为「返回综合分、各维度序级（0-4）与薄弱点 gaps，作为你决定下一步的依据」。
+- 为什么要 `describeLevels` 的塌缩：选择题按对错判定 → 四维必全 0 或全 4，逐维打印只是把同一数字重复四遍，
+  纯浪费上下文（取舍同 ADR-052：确定性的冗余信息不该进 prompt）。
+- 刻意**不带** `evidence` / `strengths` / `feedback`：它们对「下一步考什么」无增量，却线性推高上下文；
+  用户复核时明确反对「把完整 EvaluationResult 全量 stringify」。
+- 与 C1 的统一视角（见 ADR-053）：可归纳成一条检查原则——
+  **Agent Prompt 要求 Agent 使用 X → Tool 是否真的把 X 放进 LLM-visible 的 text？**
+  C1 是「要求复述题干 / Tool 只有 id」，C2 是「要求按 levels/gaps 决策 / Tool 只给 overall」。两者都是 context contract 不一致。
+- 验证（`domain/evaluation.test.ts` +6 例）：带出综合分/各维序级/薄弱点；
+  **两个 overall 相同、维度构成不同的答案摘要必须可区分**（C2 核心诉求）；
+  gaps 为空显式写「无」；不泄漏 `evidence`/`feedback`/`strengths`；标注 0-4 序级刻度；
+  `describeLevels` 四维相同塌缩、不同则逐维展开、仅一维不同也展开。
+  `npx vitest run` **402 passed**（36 文件），`npx tsc --noEmit` 0 error。
+  > 实现（含 `describeEvaluationSummary` / `describeLevels` 与对应测试）在 `git status` 中显示为**未提交**改动，
+  > 由并行工作流写入工作区；本 ADR 仅做记录与文档同步，未重新实现。
+
 ## ADR-053 · 题目由 UI 呈现，Agent 不复述题干（职责边界优先于补齐上下文）
 
 - 状态：已采纳 · 2026-08-30

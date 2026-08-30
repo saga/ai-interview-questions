@@ -346,6 +346,12 @@ Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → de
     留任何一处，模型都仍会收到「呈现题目」的指令——其中工具结果正文那句紧跟在返回之后，是最直接的触发器。
   - 修复前 prompt 要求模型「把题干 + 选项清晰表述给用户」，而它上下文里只有 id
     （`深度审查报告.md` C1 / P0，已于 2026-08-30 修复）。
+- **评价结果进 LLM 上下文（ADR-054，同源）**：`textResult` 的 `details` 给程序/UI/logging，**不**自动进模型上下文；
+  因此 prompt 要求 Agent 使用的字段必须由**文本**显式带出。`evaluateAnswer` 现在在 content 里写入
+  `综合评分 / 维度序级（0-4）/ 薄弱点 gaps`（经 `domain/evaluation.describeEvaluationSummary`），
+  `details` 仍完整保留整个 `EvaluationResult`；`evidence` / `strengths` / `feedback` 不进文本（对选题无增量）。
+  这是与 C1 同类的 **Agent context contract 不一致**——可归纳为一句话检查：
+  *prompt 要求 Agent 用 X → Tool 是否把 X 放进 LLM-visible 的 text？*
 - **双底层（ADR-021）**：`variant` / `evaluate` 只依赖注入的 `CompleteFn(system, user)`，
    pi-ai 与 Chrome Prompt API 各自实现；prompt 构建、JSON 解析、评分兜底逻辑只有一份。
    chrome 通道无需 apiKey/model（isEntryValid 按引擎区分）；运行时模型不可用会抛错，
