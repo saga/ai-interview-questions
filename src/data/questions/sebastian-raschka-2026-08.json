@@ -62,7 +62,7 @@
     "question": "一个长上下文服务的 GPU FLOPs 还有余量，但生成每个 token 的延迟随上下文增长明显上升。优先检查 KV cache 的哪些影响？（请选择两个）",
     "explanation": "decode 每一步都要读取历史 KV。上下文越长，读取的数据越多，内存带宽和缓存容量可能成为瓶颈，即使计算单元仍有余量。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison", "section": "GQA memory bandwidth during inference"},
-    "formats": {"choice": {"type": "multiple", "options": ["历史 KV 读取的数据量是否随上下文增长", "历史 KV 的读取带宽和缓存容量是否成为瓶颈", "训练集是否缺少图像", "位置编码是否让 prefill 变成稀疏计算"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。decode 要反复读取历史 KV，长上下文会放大缓存读取和带宽压力。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["历史 KV 读取的数据量是否随上下文增长", "历史 KV 的读取带宽和缓存容量是否成为瓶颈", "检查训练数据是否缺少图像样本", "位置编码是否让 prefill 变成稀疏计算"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。decode 要反复读取历史 KV，长上下文会放大缓存读取和带宽压力。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-06",
@@ -153,7 +153,7 @@
     "question": "比较两个 LLM 架构改动是否带来性能提升时，为什么不能只比较公开 benchmark 分数？（单选）",
     "explanation": "数据、训练方法、超参数和训练规模的差异也会显著影响 benchmark。若要归因于架构，应控制或记录这些混杂变量，并结合消融实验。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison", "section": "Challenges of comparing LLM architectures"},
-    "formats": {"choice": {"type": "single", "options": ["benchmark 永远不能评估模型", "训练数据和超参数等混杂变量会影响分数归因", "架构只影响模型大小", "公开分数只适合分类模型"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。架构差异必须与数据、训练和超参数差异区分，消融和受控比较比单一分数更有解释力。"}}
+    "formats": {"choice": {"type": "single", "options": ["benchmark 永远不能评估模型", "训练数据和超参数等混杂变量会影响分数归因", "认为架构改动只影响模型参数量大小", "公开分数只适合分类模型"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。架构差异必须与数据、训练和超参数差异区分，消融和受控比较比单一分数更有解释力。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-13",
@@ -218,7 +218,7 @@
     "question": "对答案可以由程序可靠验证的数学或代码任务，强化学习中的奖励函数优先应如何设计？（单选）",
     "explanation": "应优先使用可执行、可重复的结果验证器作为奖励来源，减少主观偏好模型带来的噪声；仍需防止模型钻验证器漏洞。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Reinforcement learning with verifiable rewards"},
-    "formats": {"choice": {"type": "single", "options": ["只按输出长度奖励", "使用可重复执行的答案或测试验证器", "随机奖励所有轨迹", "只奖励包含特定措辞的回答"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。可验证任务适合用程序化验证器提供稳定奖励，但必须审查验证器覆盖范围和可被利用的漏洞。"}}
+    "formats": {"choice": {"type": "single", "options": ["只按生成回答的长度长短来给奖励", "使用可重复执行的答案或测试验证器", "对每条采样轨迹随机发放奖励", "只奖励包含特定措辞的回答"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。可验证任务适合用程序化验证器提供稳定奖励，但必须审查验证器覆盖范围和可被利用的漏洞。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-18",
@@ -257,7 +257,7 @@
     "question": "学生模型在蒸馏数据上表现很好，但遇到不同题型就明显退化，最合理的改进方向是什么？（单选）",
     "explanation": "蒸馏只保证学生学习到教师在蒸馏分布上的行为，分布外泛化仍受数据覆盖和验证限制。应扩大任务多样性并用独立分布外集评估。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Limitations of distillation"},
-    "formats": {"choice": {"type": "single", "options": ["只增加同分布样本的重复次数", "扩展任务分布并用独立分布外集验证", "删除所有推理轨迹", "只提高学生模型输出温度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。蒸馏能力受教师示例分布约束，应增加多样覆盖并进行分布外评估。"}}
+    "formats": {"choice": {"type": "single", "options": ["只增加同分布样本的重复次数", "扩展任务分布并用独立分布外集验证", "删掉教师模型所有的推理轨迹数据", "只提高学生模型输出温度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。蒸馏能力受教师示例分布约束，应增加多样覆盖并进行分布外评估。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-21",
@@ -270,7 +270,7 @@
     "question": "在不改变模型参数的情况下，为难题生成多条候选推理并选择通过验证的一条，主要增加了什么资源？（单选）",
     "explanation": "这是测试时计算扩展，通过增加采样、搜索或验证次数换取更高解题概率；代价是推理 token、延迟和算力增加。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Inference-time scaling"},
-    "formats": {"choice": {"type": "single", "options": ["训练数据存储空间", "测试时的采样、验证和计算预算", "模型词表大小", "梯度累积步数"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。测试时扩展通过增加推理阶段的计算预算提升复杂任务表现，不需要立即改变参数。"}}
+    "formats": {"choice": {"type": "single", "options": ["训练阶段的数据存储与磁盘空间开销", "测试时的采样、验证和计算预算", "模型词表规模与嵌入维度的大小", "训练时的梯度累积步数与批次设置"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。测试时扩展通过增加推理阶段的计算预算提升复杂任务表现，不需要立即改变参数。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-22",
@@ -361,7 +361,7 @@
     "question": "系统只监控最终答案准确率，却发现推理服务成本突然升高。为了定位问题，最应该新增哪组指标？（单选）",
     "explanation": "推理模型的成本与中间轨迹长度、采样次数、验证重试次数和请求难度有关。只看最终准确率无法解释推理预算变化。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Reasoning cost and inference behavior"},
-    "formats": {"choice": {"type": "single", "options": ["只记录模型名称", "记录推理 token、采样数、验证重试和按难度分桶的延迟", "只记录 HTTP 状态码", "删除中间轨迹以避免指标变化"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。应把推理预算和任务难度纳入可观测性，才能解释成本、延迟和准确率之间的变化。"}}
+    "formats": {"choice": {"type": "single", "options": ["只记录所使用模型的名称", "记录推理 token、采样数、验证重试和按难度分桶的延迟", "只记录 HTTP 状态码", "删除中间轨迹以避免指标变化"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。应把推理预算和任务难度纳入可观测性，才能解释成本、延迟和准确率之间的变化。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-29",

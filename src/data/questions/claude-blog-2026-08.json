@@ -114,7 +114,7 @@
     "question": "多个执行 Agent 并行处理同一任务时，需要交换中间结果。哪种共享状态设计更稳妥？（单选）",
     "explanation": "应使用有命名约定、权限边界和结构化格式的共享工作区，并让协调 Agent 明确读取哪些结果；裸共享状态仍需处理并发写入、过期数据和来源追踪。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Multiagent orchestration"},
-    "formats": {"choice": {"type": "single", "options": ["使用有权限、格式和并发约束的共享工作区", "只共享模型权重", "只共享浏览器 Cookie", "依赖人工复制粘贴且不记录来源"], "answer": [0]}, "open": {"referenceAnswer": "正确答案：A。共享状态应有权限、格式、并发和来源约束，不能只依赖无结构的临时传递。"}}
+    "formats": {"choice": {"type": "single", "options": ["使用有权限、格式和并发约束的共享工作区", "只让各 Agent 共享同一份模型权重而不交换中间结果", "只共享浏览器 Cookie", "依赖人工复制粘贴且不记录来源"], "answer": [0]}, "open": {"referenceAnswer": "正确答案：A。共享状态应有权限、格式、并发和来源约束，不能只依赖无结构的临时传递。"}}
   },
   {
     "id": "claude-blog-2026-08-10",
@@ -127,7 +127,7 @@
     "question": "排查多 Agent 任务为何选择了错误路径时，哪些遥测字段最有价值？（单选）",
     "explanation": "应关联任务、Agent、工具调用、时间顺序、输入输出摘要和委派原因，才能判断是路由、执行还是汇总阶段出错；只看最终文本无法定位链路。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Multiagent orchestration"},
-    "formats": {"choice": {"type": "single", "options": ["只看最终答案长度", "关联 Agent、动作顺序、工具结果摘要和委派原因", "只看模型名称", "删除中间事件后重新猜测"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。需要可关联的 Agent、动作、顺序、工具结果和路由原因，才能定位错误路径。"}}
+    "formats": {"choice": {"type": "single", "options": ["仅比较最终答案的字数多少，据此判断路径是否正确", "关联 Agent、动作顺序、工具结果摘要和委派原因", "仅依据所用模型的名称来判断哪条路径更可靠", "删除中间事件后再凭印象重新猜测，丢弃可追溯的调试线索"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。需要可关联的 Agent、动作、顺序、工具结果和路由原因，才能定位错误路径。"}}
   },
   {
     "id": "claude-blog-2026-08-11",
@@ -140,7 +140,7 @@
     "question": "多 Agent 工作流需要中断后继续执行，哪项能力最直接支持该需求？（单选）",
     "explanation": "持久事件记录已完成的工作，使协调 Agent 能在工作流中断后重新检查执行状态并继续推进，而不必无条件重跑全部步骤。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Multiagent orchestration"},
-    "formats": {"choice": {"type": "single", "options": ["持久事件和跨 Agent 的工作记忆", "每次中断都完全重跑", "只增加上下文窗口", "禁用所有子 Agent"], "answer": [0]}, "open": {"referenceAnswer": "正确答案：A。持久事件和 Agent 对已完成工作的记忆支持中途恢复。"}}
+    "formats": {"choice": {"type": "single", "options": ["持久事件和跨 Agent 的工作记忆", "每次中断都把整条工作流无条件从头完全重跑", "只靠增大模型上下文窗口来容纳所有中间状态", "禁用所有子 Agent"], "answer": [0]}, "open": {"referenceAnswer": "正确答案：A。持久事件和 Agent 对已完成工作的记忆支持中途恢复。"}}
   },
   {
     "id": "claude-blog-2026-08-12",
@@ -153,7 +153,7 @@
     "question": "想让多 Agent 写作系统只返回达到编辑标准的草稿，合理的设计是什么？（单选）",
     "explanation": "可以让每份草稿按照编辑原则和用户语气 rubric 评分，只有通过质量门槛的草稿才返回。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "What teams are building"},
-    "formats": {"choice": {"type": "single", "options": ["返回第一份草稿", "对草稿按 rubric 评分，只返回通过门槛的结果", "只按 token 数选择草稿", "让用户阅读所有中间推理"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。用 rubric 评估草稿，达标后才返回。"}}
+    "formats": {"choice": {"type": "single", "options": ["直接返回生成的第一份草稿而不做任何质量检查", "对草稿按 rubric 评分，只返回通过门槛的结果", "只按 token 数选择草稿", "让用户阅读所有中间推理"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。用 rubric 评估草稿，达标后才返回。"}}
   },
   {
     "id": "claude-blog-2026-08-13",
@@ -166,7 +166,7 @@
     "question": "如何让一个生成报告的 Agent 对“完成”有可执行且可验证的定义？（单选）",
     "explanation": "把完整性、事实依据、格式和受众要求写成可检查的 rubric，并让独立验收步骤据此评分；自然语言中的“写得好”不足以作为稳定门槛。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "single", "options": ["只设置最大 token 数", "把完整性、依据、格式和受众要求写成可检查 rubric", "只指定模型名称", "只记录用户最后一次点击"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。把质量要求拆成可检查的 rubric，才能形成稳定的完成判定。"}}
+    "formats": {"choice": {"type": "single", "options": ["只设置最大 token 数", "把完整性、依据、格式和受众要求写成可检查 rubric", "只指定要使用的模型名称而不定义完成标准", "只记录用户最后一次点击"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。把质量要求拆成可检查的 rubric，才能形成稳定的完成判定。"}}
   },
   {
     "id": "claude-blog-2026-08-14",
@@ -192,7 +192,7 @@
     "question": "在由 Agent 参与的软件交付流程中，下一阶段如何获得上一阶段的决策上下文？（单选）",
     "explanation": "每个阶段结束时都把交付物写入版本控制，下一阶段读取它；例如 intent.md、spec.md、plan.md、diff、测试和评审结果形成连续链条。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "What is an AI-native SDLC"},
-    "formats": {"choice": {"type": "single", "options": ["依赖口头交接", "每个阶段提交版本化交付物供下一阶段读取", "只保留最终 diff", "清空前一阶段上下文"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。阶段间通过版本控制中的交付物自动交接。"}}
+    "formats": {"choice": {"type": "single", "options": ["依赖工程师之间的口头交接来传递上下文", "每个阶段提交版本化交付物供下一阶段读取", "只保留最终 diff", "进入下一阶段前清空前一阶段的所有上下文"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。阶段间通过版本控制中的交付物自动交接。"}}
   },
   {
     "id": "claude-blog-2026-08-16",
@@ -205,7 +205,7 @@
     "question": "如何把业务发起者的模糊想法变成后续 Agent 和工程师都能使用的起点？（单选）",
     "explanation": "应形成版本化的意图文档，记录问题、预期结果、受影响系统、约束和开放问题；它既保留原始意图，也为后续规格设计提供输入。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Capture as intent.md"},
-    "formats": {"choice": {"type": "single", "options": ["记录模型权重", "记录问题意图、结果、约束和开放问题", "替代所有测试", "只存部署凭据"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。intent.md 是人类意图和约束的版本化起点。"}}
+    "formats": {"choice": {"type": "single", "options": ["只记录所使用模型的权重文件来承载意图", "记录问题意图、结果、约束和开放问题", "用这份意图文档替代所有后续的自动化测试", "只把部署所需的凭据写入意图文档"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。intent.md 是人类意图和约束的版本化起点。"}}
   },
   {
     "id": "claude-blog-2026-08-17",
@@ -218,7 +218,7 @@
     "question": "由 Agent 根据业务对话生成意图文档后，在进入设计阶段前应保留哪项人工控制？（单选）",
     "explanation": "发起者或产品负责人应检查文档是否准确表达问题、范围和约束，并决定接受、修改还是关闭；不能让生成 Agent 自己批准输入。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Capture as intent.md"},
-    "formats": {"choice": {"type": "single", "options": ["完全由模型自行批准", "产品负责人或发起者进行人工检查和纠正", "只由部署脚本决定", "由随机用户投票决定"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。人负责纠正误解并决定是否接受 intent。"}}
+    "formats": {"choice": {"type": "single", "options": ["让生成意图文档的模型完全自行批准", "产品负责人或发起者进行人工检查和纠正", "只由部署脚本自动决定文档是否通过", "由随机抽到的用户投票决定是否采纳"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。人负责纠正误解并决定是否接受 intent。"}}
   },
   {
     "id": "claude-blog-2026-08-18",
@@ -231,7 +231,7 @@
     "question": "在 Agent 开始修改代码前，工程师应要求它先提交哪种可审查产物？（单选）",
     "explanation": "应先生成实现计划，列出变更文件、工作顺序、主要风险和验证方式，并由工程师审核后再执行，以便在代码生成前纠正方向。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Claude Code plan mode as the default starting point"},
-    "formats": {"choice": {"type": "single", "options": ["直接修改生产分支", "先生成并审核包含文件、风险和验证方式的实现计划", "先删除测试以减少约束", "先扩大模型上下文窗口"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。先审核实现计划，确认文件、顺序、风险和验证方式，再允许执行。"}}
+    "formats": {"choice": {"type": "single", "options": ["让 Agent 直接修改生产分支而不先提交计划", "先生成并审核包含文件、风险和验证方式的实现计划", "先删除测试以减少约束", "先扩大模型上下文窗口"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。先审核实现计划，确认文件、顺序、风险和验证方式，再允许执行。"}}
   },
   {
     "id": "claude-blog-2026-08-19",
@@ -244,7 +244,7 @@
     "question": "当 Agent 的模型、提示或规则发生变化时，为什么要把连续评估放进 CI？（单选）",
     "explanation": "当模型替换或提示改写时，连续评估可以检查 Agent 是否仍以相同标准完成任务，避免只在阶段末进行一次性 QA。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Continuous evals in CI"},
-    "formats": {"choice": {"type": "single", "options": ["让模型永远不改变", "在模型或配置变化时验证任务质量是否回归", "减少真实任务样本", "替代所有确定性测试"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。连续评估用于检测模型、提示或配置变化造成的质量回归。"}}
+    "formats": {"choice": {"type": "single", "options": ["冻结模型使其永远不再发生任何改变", "在模型或配置变化时验证任务质量是否回归", "用减少真实任务样本的方式来简化评估", "用连续评估完全替代所有确定性测试"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。连续评估用于检测模型、提示或配置变化造成的质量回归。"}}
   },
   {
     "id": "claude-blog-2026-08-20",
@@ -257,7 +257,7 @@
     "question": "建设 Agent 连续评估集时，哪种起步方式最能反映真实质量？（单选）",
     "explanation": "应从近期真实工作中抽取一组有代表性的任务，为每个任务定义输入、可接受结果和检查条件；样本不应只由模型自造的理想案例组成。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Continuous evals in CI"},
-    "formats": {"choice": {"type": "single", "options": ["只随机生成无限任务", "收集有代表性的真实任务并定义输入、结果和验收检查", "只使用模型自造的完美案例", "只评估响应速度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。真实任务样本和明确验收条件能检验 Agent 是否满足实际需求。"}}
+    "formats": {"choice": {"type": "single", "options": ["只让模型随机生成无限多的合成任务", "收集有代表性的真实任务并定义输入、结果和验收检查", "只使用模型自造的完美案例", "只评估生成响应速度快慢这一项指标"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。真实任务样本和明确验收条件能检验 Agent 是否满足实际需求。"}}
   },
   {
     "id": "claude-blog-2026-08-21",
@@ -270,7 +270,7 @@
     "question": "在 Agent 参与的软件交付流程中，必须阻止它直接部署生产环境，最合适的控制是什么？（单选）",
     "explanation": "应在 Agent 行动前检查生产部署条件；缺少命名的发布授权时直接阻断，并把原因输出给 Agent。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Hooks as approval gates"},
-    "formats": {"choice": {"type": "single", "options": ["只在 system prompt 中请求谨慎", "用 PreToolUse hook 检查授权并阻断未授权生产部署", "把生产凭据放入 prompt", "部署后再检查日志"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。审批门应在行动前由 hook 确定性阻断未授权生产部署。"}}
+    "formats": {"choice": {"type": "single", "options": ["只在 system prompt 中请求谨慎", "用 PreToolUse hook 检查授权并阻断未授权生产部署", "把生产凭据放入 prompt", "先允许部署再事后检查日志是否越权"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。审批门应在行动前由 hook 确定性阻断未授权生产部署。"}}
   },
   {
     "id": "claude-blog-2026-08-22",
@@ -296,7 +296,7 @@
     "question": "要限制 Agent 只能访问批准的外部域名，哪一层控制最可靠？（单选）",
     "explanation": "工具级拒绝规则只覆盖特定调用路径；操作系统或网络层的域名 allowlist 才能同时约束工具和 shell 对未批准目标的访问。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Managed settings for a regulated enterprise"},
-    "formats": {"choice": {"type": "single", "options": ["只在 prompt 中列出域名", "沙箱或网络层的 allowedDomains 出口策略", "只限制浏览器窗口大小", "只记录请求而不阻止"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。网络层 allowlist 能约束不同工具和 shell 的实际出口。"}}
+    "formats": {"choice": {"type": "single", "options": ["只在 prompt 中列出域名", "沙箱或网络层的 allowedDomains 出口策略", "只限制浏览器窗口大小", "只记录被拒绝的请求而不真正阻断访问"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。网络层 allowlist 能约束不同工具和 shell 的实际出口。"}}
   },
   {
     "id": "claude-blog-2026-08-24",
@@ -309,7 +309,7 @@
     "question": "在 CI/CD 中首次引入 Agent 处理失败构建时，哪种权限递进方式更稳妥？（单选）",
     "explanation": "先让 Agent 只读分析构建日志、判断失败类型并起草摘要，验证稳定后再加入受 PR、分支保护和审批门约束的写入动作，可以降低错误自动修复的影响范围。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "CI/CD integration and deployment"},
-    "formats": {"choice": {"type": "single", "options": ["直接推送修复到 main", "先做只读分析，再把写入动作放在 PR 和审批门之后", "直接读取生产密钥", "绕过测试运行部署"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。先验证只读判断的可靠性，写入必须经过 PR、分支保护和审批门。"}}
+    "formats": {"choice": {"type": "single", "options": ["直接推送修复到 main", "先做只读分析，再把写入动作放在 PR 和审批门之后", "让 Agent 直接读取生产密钥来排查失败", "绕过测试直接运行部署以加快修复速度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。先验证只读判断的可靠性，写入必须经过 PR、分支保护和审批门。"}}
   },
   {
     "id": "claude-blog-2026-08-25",
@@ -322,7 +322,7 @@
     "question": "如何为同一个 Agent 设置开发、预发布和生产环境的自主权限？（单选）",
     "explanation": "开发环境可以更自由，预发布居中，生产环境只允许 Agent 准备发布，最终由发布负责人授权并由 hook 强制门禁。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "CI/CD integration and deployment"},
-    "formats": {"choice": {"type": "single", "options": ["所有环境完全相同", "开发自由、预发布居中、生产必须经过人工授权", "生产最宽松", "只按模型大小决定权限"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。权限应随环境风险递增，生产保留人工发布授权。"}}
+    "formats": {"choice": {"type": "single", "options": ["开发与生产使用完全相同的权限配置，不做任何环境区分", "开发自由、预发布居中、生产必须经过人工授权", "生产环境采用最宽松的权限策略，以最大化自主执行效率", "只按模型大小决定权限"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。权限应随环境风险递增，生产保留人工发布授权。"}}
   },
   {
     "id": "claude-blog-2026-08-26",
@@ -335,7 +335,7 @@
     "question": "为什么自动化部署系统应优先反复演练回滚路径？（单选）",
     "explanation": "维护闭环可能在控制带突破时触发回滚；只有提前在预发布环境反复验证，Agent 才能在故障时执行可靠且可控的恢复动作。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "CI/CD integration and deployment"},
-    "formats": {"choice": {"type": "single", "options": ["回滚只用于节省 token", "维护闭环可能自动触发回滚，恢复路径必须事先验证", "回滚可以由模型临时发明", "回滚与生产安全无关"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。自动化闭环需要一个已验证的回滚路径。"}}
+    "formats": {"choice": {"type": "single", "options": ["回滚只用于节省 token", "维护闭环可能自动触发回滚，恢复路径必须事先验证", "回滚可以由模型临时发明", "认为回滚机制与生产安全没有关系"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。自动化闭环需要一个已验证的回滚路径。"}}
   },
   {
     "id": "claude-blog-2026-08-27",
@@ -348,7 +348,7 @@
     "question": "AI-native 维护闭环中，控制带的异常检测应由什么负责？（单选）",
     "explanation": "检测脚本应保持确定性，例如使用滚动窗口均值和标准差，并经过版本控制和单元测试；模型只在达到相应阈值后参与诊断或行动。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Closing the loop"},
-    "formats": {"choice": {"type": "single", "options": ["由模型自由判断是否异常", "由版本控制且经过测试的确定性检测脚本负责", "由用户每次手动估计", "只看单次尖峰"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。异常检测本身保持确定性，模型在阈值触发后参与诊断或行动。"}}
+    "formats": {"choice": {"type": "single", "options": ["由模型自由判断是否异常", "由版本控制且经过测试的确定性检测脚本负责", "由用户每次手动估计是否出现异常", "只看单次指标尖峰就判定为异常"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。异常检测本身保持确定性，模型在阈值触发后参与诊断或行动。"}}
   },
   {
     "id": "claude-blog-2026-08-28",
@@ -374,7 +374,7 @@
     "question": "控制带突破后，维护闭环如何把运行时异常重新接入 SDLC？（单选）",
     "explanation": "Agent 诊断异常后，将发现写成包含证据、影响系统、预期结果和开放问题的 intent.md，再按 Plan 到 Maintain 的流程处理。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Maintenance and closing the loop"},
-    "formats": {"choice": {"type": "single", "options": ["直接修改生产代码并结束", "把诊断写成 intent.md，重新进入版本化的 SDLC 流程", "删除监控事件", "只发送一条无上下文告警"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。异常被转成 intent.md，再进入正常的计划、设计、构建、测试和部署门禁。"}}
+    "formats": {"choice": {"type": "single", "options": ["不写诊断、不回滚，直接在生产代码上修改并标记结束", "把诊断写成 intent.md，重新进入版本化的 SDLC 流程", "删除监控事件与告警记录，让事故无迹可查", "只发一条没有上下文与证据链的通告，不进入任何修复流程"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。异常被转成 intent.md，再进入正常的计划、设计、构建、测试和部署门禁。"}}
   },
   {
     "id": "claude-blog-2026-08-30",
@@ -413,7 +413,7 @@
     "question": "当需求系统和代码仓库同时保存交付信息时，最低限度应如何避免出现两个互相矛盾的权威版本？（单选）",
     "explanation": "每类交付物应明确一个 source of truth，其他系统保存副本或链接；如果无法立即迁移，至少让双方互相记录 ID 和提交 SHA。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Legacy systems and the source of truth"},
-    "formats": {"choice": {"type": "single", "options": ["允许多个系统各自作为权威且不互链", "为每类交付物指定一个权威来源，其他系统保存副本或链接", "删除旧系统所有记录", "只保留聊天记录"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。关键是明确单一 source of truth，并用链接或 ID/SHA 保持关联。"}}
+    "formats": {"choice": {"type": "single", "options": ["允许多个系统各自作为权威且不互链", "为每类交付物指定一个权威来源，其他系统保存副本或链接", "删除旧系统中所有相关的交付记录", "只保留原始聊天记录作为唯一来源"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。关键是明确单一 source of truth，并用链接或 ID/SHA 保持关联。"}}
   },
   {
     "id": "claude-blog-2026-08-33",
@@ -426,7 +426,7 @@
     "question": "一个团队维护供 Agent 启动时读取的仓库级工作约定文件，最适合放入哪些内容？（单选）",
     "explanation": "该文件应保持短小，包含构建、测试和 lint 命令、关键约定、架构边界以及 Agent 经常犯的错误；完整聊天历史、秘密和所有业务背景会稀释真正有用的上下文。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "The CLAUDE.md"},
-    "formats": {"choice": {"type": "single", "options": ["全部业务历史和每次聊天全文", "构建测试命令、关键约定、架构边界和常犯错误", "生产密钥和个人 token", "只写品牌宣传文案"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。仓库级 Agent 约定文件应保存短小、版本化且可执行的工作上下文。"}}
+    "formats": {"choice": {"type": "single", "options": ["全部业务历史和每次聊天全文", "构建测试命令、关键约定、架构边界和常犯错误", "生产密钥和个人 token", "只写入品牌宣传文案之类无关内容"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。仓库级 Agent 约定文件应保存短小、版本化且可执行的工作上下文。"}}
   },
   {
     "id": "claude-blog-2026-08-34",
@@ -439,7 +439,7 @@
     "question": "在 Agent 工程中，如何区分“指导模型遵循规范”的机制和“确定性阻止危险动作”的机制？（单选）",
     "explanation": "Skill 是 Agent 应遵循的建议性知识，Hook 是可以在行动前允许、询问或阻断操作的确定性层；必须无例外的策略应有 Hook 支撑。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Skills as institutional knowledge"},
-    "formats": {"choice": {"type": "single", "options": ["Skill 确定性阻断，Hook 只是文档", "Skill 是建议性约束，Hook 可确定性允许、询问或阻断", "两者完全等价", "Hook 只能用于 UI 动画"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。Skill 提供知识和规范，Hook 提供确定性行动门禁。"}}
+    "formats": {"choice": {"type": "single", "options": ["Skill 确定性阻断，Hook 只是文档", "Skill 是建议性约束，Hook 可确定性允许、询问或阻断", "Skill 与 Hook 在控制力度上完全等价，可任意互换使用", "Hook 只能用于 UI 动画"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。Skill 提供知识和规范，Hook 提供确定性行动门禁。"}}
   },
   {
     "id": "claude-blog-2026-08-35",
@@ -452,7 +452,7 @@
     "question": "多个 Agent 要并行修改不同任务，如何避免它们互相覆盖工作？（单选）",
     "explanation": "相互独立的任务应放在独立 worktree 中运行；共享同一文件的任务应顺序处理，避免并发写入和难以合并的冲突。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Parallel sessions and subagents"},
-    "formats": {"choice": {"type": "single", "options": ["所有 Agent 共用同一工作树并同时写文件", "独立任务使用独立 worktree，共享文件的任务顺序执行", "复制生产数据库给每个 Agent", "禁止所有并行"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。独立 worktree 隔离并行修改，共享文件的任务避免并发写入。"}}
+    "formats": {"choice": {"type": "single", "options": ["所有 Agent 共用同一工作树并同时写文件", "独立任务使用独立 worktree，共享文件的任务顺序执行", "复制生产数据库给每个 Agent", "直接禁止所有 Agent 并行运行"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。独立 worktree 隔离并行修改，共享文件的任务避免并发写入。"}}
   },
   {
     "id": "claude-blog-2026-08-36",
@@ -465,7 +465,7 @@
     "question": "AI-native SDLC 中，为什么提交链可以成为审计轨迹？（单选）",
     "explanation": "intent、spec、plan、diff、测试、评审和事故记录都进入版本控制，提交历史可以关联需求、Agent 产物和人的批准决定。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "What is an AI-native SDLC"},
-    "formats": {"choice": {"type": "single", "options": ["因为 Git 自动证明代码正确", "因为版本化交付物记录了请求、产物、决策和批准链", "因为提交会替代监控", "因为所有 Agent 都没有权限"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。版本控制把需求到批准的交付物链串成可追溯记录。"}}
+    "formats": {"choice": {"type": "single", "options": ["因为 Git 自动证明代码正确", "因为版本化交付物记录了请求、产物、决策和批准链", "因为提交本身会替代运行时的监控", "因为所有 Agent 都没有权限"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。版本控制把需求到批准的交付物链串成可追溯记录。"}}
   },
   {
     "id": "claude-blog-2026-08-37",
@@ -478,7 +478,7 @@
     "question": "维护阶段让 Agent 无人值守运行时，阶段之间为什么需要 independent confidence gate？（单选）",
     "explanation": "独立信心门可以用确定性检查或对抗性审查 Agent 判断上一阶段是否达到继续条件，不满足时升级给人，避免错误自动传播。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Maintenance and closing the loop"},
-    "formats": {"choice": {"type": "single", "options": ["让同一个 Agent 无条件批准自己的输出", "用独立检查决定继续或升级，阻止错误跨阶段传播", "删除所有阶段门", "只按响应速度放行"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。独立信心门为无人值守阶段提供继续或人工升级的边界。"}}
+    "formats": {"choice": {"type": "single", "options": ["让同一个 Agent 无条件批准自己的输出", "用独立检查决定继续或升级，阻止错误跨阶段传播", "直接删除所有阶段之间的检查门", "只按响应速度快慢决定是否放行"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。独立信心门为无人值守阶段提供继续或人工升级的边界。"}}
   },
   {
     "id": "claude-blog-2026-08-38",
@@ -491,7 +491,7 @@
     "question": "一个生产事故修复后，如何把它转化为可持续执行的防回归控制？（单选）",
     "explanation": "应把该事故加入持续评估集，作为回归用例；以后 Agent 配置或模型变化时，评估会再次检查该行为。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Continuous evals in CI"},
-    "formats": {"choice": {"type": "single", "options": ["只关闭告警", "把事故写成持续评估中的回归用例", "删除事故记录", "只增加模型参数"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。每个生产事故都应沉淀为 Eval 回归用例。"}}
+    "formats": {"choice": {"type": "single", "options": ["仅关闭告警通道而不沉淀任何回归检查，事故会再次发生", "把事故写成持续评估中的回归用例", "删除事故记录与复盘文档，让组织无法从失败中学习", "仅靠增大模型参数量来规避同类事故，而不改变评估与流程"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。每个生产事故都应沉淀为 Eval 回归用例。"}}
   },
   {
     "id": "claude-blog-2026-08-39",
@@ -504,7 +504,7 @@
     "question": "在 Agent 参与的软件交付闭环中，人的责任边界应如何定义？（单选）",
     "explanation": "Agent 可以自动化执行和交接，但需要判断的决策仍由人承担责任；人的注意力从逐行操作转移到意图、风险和关键门禁。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "What is an AI-native SDLC"},
-    "formats": {"choice": {"type": "single", "options": ["Agent 对所有决策承担法律责任", "人仍对需要判断的决策负责，Agent 负责受控执行", "人不再参与任何门禁", "只由模型置信度决定责任"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。自动化不等于转移人的决策责任。"}}
+    "formats": {"choice": {"type": "single", "options": ["Agent 对所有决策承担法律责任", "人仍对需要判断的决策负责，Agent 负责受控执行", "让人完全退出所有审批和门禁环节", "只由模型置信度决定责任"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。自动化不等于转移人的决策责任。"}}
   },
   {
     "id": "claude-blog-2026-08-40",
@@ -517,6 +517,6 @@
     "question": "AI-native SDLC 与传统线性 SDLC 的关键结构差异是什么？（单选）",
     "explanation": "AI-native SDLC 把生命周期变成一个循环：接受的交付物触发下一阶段，生产控制带突破又可以生成新的 intent.md，重新进入计划流程。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "What is an AI-native SDLC"},
-    "formats": {"choice": {"type": "single", "options": ["完全删除阶段概念", "由版本化交付物触发阶段，并允许生产反馈重新进入流程", "只保留 Build 阶段", "所有阶段必须由同一个人手动启动"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。AI-native SDLC 是由交付物和生产反馈驱动的闭环。"}}
+    "formats": {"choice": {"type": "single", "options": ["把阶段概念从流程中完全删除", "由版本化交付物触发阶段，并允许生产反馈重新进入流程", "只保留 Build 阶段", "所有阶段必须由同一个人手动启动"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。AI-native SDLC 是由交付物和生产反馈驱动的闭环。"}}
   }
 ]

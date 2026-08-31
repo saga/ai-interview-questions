@@ -164,19 +164,24 @@ def build_plan(audit_report: dict[str, Any], semantic_report: dict[str, Any] | N
         if suggested_angle and action in ("rewrite",):
             e["suggestedAngle"] = suggested_angle
 
-    # ---- Rule A: option length imbalance (poor distractor / cueing) ----
-    # The reliable leak signal is the *ratio* between the longest and shortest
-    # option (already a CI gate in `question:add`). A correct option merely
-    # being the longest is normal and NOT flagged on its own — only when the
-    # ratio is already elevated do we add the more specific "answer-leaks" note.
+    # ---- Rule A: option length imbalance that actually leaks the answer ----
+    # The dangerous pattern (user §③) is the *correct* option being a
+    # kitchen-sink answer that dwarfs the others in length/completeness — that
+    # lets a test-taker pick it by verbosity instead of judgment. Arbitrary
+    # length variance (a longer correct definition, or one *distractor* phrased
+    # longer) is benign and must NOT auto-trigger a rewrite, otherwise we would
+    # "fix" hundreds of good questions. Empirically, even the most extreme
+    # cases in this bank are benign (definition questions, or wrong options that
+    # are themselves long). Per our own review principle ("选项长度偏差是启发式
+    # 信号，soft 命中不要直接当作错误"), length imbalance is therefore an
+    # *advisory review* signal, not an automatic rewrite. The genuine fix (if a
+    # distractor is trivially short) is to expand it to equal granularity — done
+    # manually via `question:review`, not blindly here.
     for file_name, q in questions:
         qid = str(q.get("id"))
         ratio, answer_longest = option_signals(q)
-        if ratio > MAX_LENGTH_RATIO:
-            reasons = ["option-length-leak", "low-diagnostic-value"]
-            if answer_longest:
-                reasons.append("answer-leaks-by-length")
-            apply(qid, "rewrite", "P1", reasons)
+        if ratio > MAX_LENGTH_RATIO and answer_longest:
+            apply(qid, "review", "P2", ["option-length-leak", "answer-leaks-by-length"])
 
     # ---- Rule C: pseudo-hard (hard + low-cognitive angle) ----
     for file_name, q in questions:

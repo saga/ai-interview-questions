@@ -88,7 +88,7 @@
     "question": "业务要求升级模型后，分类接口仍保持行为稳定。哪些回归策略更合理？（请选择两个）",
     "explanation": "应版本化输入集和模型配置，比较标签、结构、关键约束和业务指标等行为契约；自然语言表述可合理变化，不应把全文字面相等误当成质量标准。",
     "source": {"materialId": "https://developers.openai.com/cookbook/examples/reproducible_outputs_with_the_seed_parameter", "section": "Conclusion"},
-    "formats": {"choice": {"type": "multiple", "options": ["固定评估集和配置，校验结构、标签和关键约束", "比较业务质量指标而不是要求自然语言全文逐字相同", "只抽查一次人工输出", "忽略模型版本，因为 seed 已经保证行为不变"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。升级回归应验证可观察的行为契约和质量指标，而非把自然语言全文相同当作唯一标准。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["固定评估集和配置，校验结构、标签和关键约束", "比较业务质量指标而不是要求自然语言全文逐字相同", "只对人工输出做一次抽查就认为行为稳定", "忽略模型版本，因为 seed 已经保证行为不变"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。升级回归应验证可观察的行为契约和质量指标，而非把自然语言全文相同当作唯一标准。"}}
   },
   {
     "id": "llm-reliability-2026-08-08",
@@ -179,6 +179,6 @@
     "question": "一次提示词改动使主测试集准确率上升，但带有不同标点和示例顺序的输入准确率下降。是否应直接发布？（单选）",
     "explanation": "不应只看主测试集平均值。应分析语义等价变体和受影响子群，确认回归是否违反业务门槛；必要时回滚或调整提示后再发布。",
     "source": {"materialId": "https://arxiv.org/abs/2310.11324", "section": "Abstract"},
-    "formats": {"choice": {"type": "single", "options": ["直接发布，因为平均准确率提高", "先分析变体和子群回归，未达门槛则不发布或回滚", "删掉格式变化的样本", "把下降归因于用户输入不规范"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。平均值提升不能抵消变体或关键子群回归，应在发布门检查并在必要时回滚。"}}
+    "formats": {"choice": {"type": "single", "options": ["直接发布，因为平均准确率提高", "先分析变体和子群回归，未达门槛则不发布或回滚", "直接删掉格式变化的样本以掩盖回归", "把下降归因于用户输入不规范"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。平均值提升不能抵消变体或关键子群回归，应在发布门检查并在必要时回滚。"}}
   }
 ]
