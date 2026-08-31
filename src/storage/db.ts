@@ -19,6 +19,14 @@ export interface StoredLearner {
   totalQuestions: number;
   overallScore: number;
   topicStats: LearnerProfile['topicStats'];
+  /**
+   * Concept×Angle 逐角度证据（`LearnerProfile.angleCoverage`）。
+   * 运行时由 `toStoredLearner` 的对象展开写入 IndexedDB（Dexie 会保留未知字段，所以此前「碰巧能用」），
+   * 但类型上缺失 ⇒ 一旦有人把 toStoredLearner 改成显式列字段，这层证据会被静默丢掉。显式声明以防漂移。
+   */
+  angleCoverage?: LearnerProfile['angleCoverage'];
+  /** 概念级缺失证据（`LearnerProfile.conceptEvidence`），同上理由显式声明。 */
+  conceptEvidence?: LearnerProfile['conceptEvidence'];
   updatedAt: number;
 }
 

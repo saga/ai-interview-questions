@@ -92,6 +92,33 @@ function resultWithConcepts(topic: string, score: number, missingConcepts: strin
   return { questionId: 'q-' + topic, category: 'c', topic, format: 'open' as const, score, gaps, missingConcepts };
 }
 
+describe('updateLearner · 无有效评分的会话不入账', () => {
+  it('questionResults 为空：原样返回画像，不被记成 0 分', () => {
+    const base = updateLearner(emptyProfile(), session(80, [result('rag', 80)]));
+    const overallBefore = base.overallScore;
+    const sessionsBefore = base.sessions.length;
+
+    const after = updateLearner(base, session(0, [])); // 整场全 null → results 为空、overall 被算成 0
+    expect(after).toBe(base); // 未产生新对象，即完全没入账
+    expect(after.overallScore).toBe(overallBefore);
+    expect(after.sessions.length).toBe(sessionsBefore);
+  });
+
+  it('空会话不拉低最近 10 场均值（语义：没有证据 ≠ 得 0 分）', () => {
+    let p = updateLearner(emptyProfile(), session(90, [result('rag', 90)]));
+    p = updateLearner(p, session(0, []));
+    expect(p.overallScore).toBe(90);
+    expect(p.totalSessions).toBe(1);
+  });
+
+  it('部分题为 null 的会话仍然入账（只纳入已评分的题）', () => {
+    const mixed: QuestionResult[] = [result('rag', 60)];
+    const p = updateLearner(emptyProfile(), session(60, mixed));
+    expect(p.totalSessions).toBe(1);
+    expect(p.topicStats['rag'].avgScore).toBe(60);
+  });
+});
+
 describe('conceptEvidence（概念级缺失证据层）', () => {
   it('按 topic|concept 累计 misses，并记录最近一次得分', () => {
     const p = updateLearner(

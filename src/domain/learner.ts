@@ -156,6 +156,7 @@ function aggregateWeaknesses(prev: string[] | undefined, results: QuestionResult
  * 把新会话并入 Learner Profile，返回新画像（不可变更新）。
  * - 每个 topic 独立聚合：attempts / avgScore / lastScore / trend / mastery / commonWeaknesses / lastSeen
  * - 三条证据线并行累计：topicStats（主题）、angleCoverage（Concept×Angle）、conceptEvidence（概念级缺失）
+ * - 无有效评分的会话（`questionResults` 为空）原样返回：不入账、不污染 overallScore
  * - mastery 是结合得分、题目次数、训练会话次数的熟练度，不是单次答题正确率
  * - 会话列表新在前，上限 SESSION_CAP；overallScore = 最近 10 次会话均值
  *
@@ -170,6 +171,12 @@ export function updateLearner(
   s: SessionRecord,
   config: ProficiencyConfig = proficiencyConfigSchema.parse({}),
 ): LearnerProfile {
+  // 没有任何有效评分的会话**不入账**：它不含任何学习证据。
+  // 若照常入账，questionResults 为空 → overall 被算成 0 → 再被计入「最近 10 场均值」，
+  // 于是「这一场没有产生有效评分」被误解释成「用户这一场得了 0 分」，把 overallScore 往下拉。
+  // 与「null = 未评分、不计入成绩」是同一条语义：没有证据就不该产生统计量。
+  if (s.questionResults.length === 0) return profile;
+
   const topicStats = { ...profile.topicStats };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
   const conceptEvidence = { ...(profile.conceptEvidence ?? {}) };

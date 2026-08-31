@@ -64,6 +64,38 @@ describe('storage/learner (IndexedDB)', () => {
     expect(got.topicStats.moe.attempts).toBe(2);
   });
 
+  it('save → load 往返保留 angleCoverage 与 conceptEvidence（证据层不会静默丢失）', async () => {
+    // 两层证据都由 toStoredLearner 的对象展开落库；StoredLearner 类型现已显式声明它们，
+    // 本用例锁定「往返不丢」，防止未来把 toStoredLearner 改成显式列字段时漏掉这两层。
+    const record: SessionRecord = {
+      ...mkRecord(),
+      questionResults: [
+        {
+          questionId: 'q1',
+          category: 'c',
+          topic: 'rag',
+          format: 'open',
+          angle: 'mechanism',
+          score: 50,
+          gaps: [],
+          missingConcepts: ['混合检索', 'PPO'],
+        },
+      ],
+    };
+    const profile = updateLearner(emptyProfile(), record);
+    // 前置断言：内存里两层证据都已生成
+    expect(Object.keys(profile.angleCoverage ?? {})).toContain('rag|mechanism');
+    expect(profile.conceptEvidence?.['rag|混合检索']?.misses).toBe(1);
+
+    await saveLearner(profile);
+    const got = await loadLearner();
+
+    expect(got.angleCoverage?.['rag|mechanism']).toEqual(profile.angleCoverage?.['rag|mechanism']);
+    expect(got.conceptEvidence?.['rag|混合检索']?.misses).toBe(1);
+    // 原始写法（label）也要保住，否则 "PPO" 会退化成 "ppo"
+    expect(got.conceptEvidence?.['rag|ppo']?.label).toBe('PPO');
+  });
+
   it('save 不会把 sessions 写进 learner 表（画像与历史分离）', async () => {
     const profile = updateLearner(emptyProfile(), mkRecord());
     await saveLearner(profile);
