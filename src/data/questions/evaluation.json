@@ -888,7 +888,7 @@
       "trade-off"
     ],
     "difficulty": "medium",
-    "angle": "definition",
+    "angle": "mechanism",
     "question": "LLM-as-a-Judge 作为评测手段有哪些已知的问题？你会如何缓解？",
     "explanation": "judge 有 position/verbosity/self bias 与打分波动，且与人工相关性有限；用顺序交换、rubric 校准、人工抽检对齐来缓解。",
     "formats": {
@@ -957,7 +957,7 @@
       "online-evaluation"
     ],
     "difficulty": "medium",
-    "angle": "definition",
+    "angle": "comparison",
     "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
     "explanation": "Offline = 固定集上可重复对比（守门快迭代，覆盖不了真实分布）；Online = 真实流量验证（可信但慢且贵）；二者互补缺一不可。",
     "formats": {
@@ -1054,24 +1054,17 @@
       "roc"
     ],
     "difficulty": "easy",
-    "angle": "definition",
-    "question": "在二分类模型中，ROC 曲线下的面积（AUC）越大表示？",
-    "explanation": "AUC 衡量模型对不同类别的排序区分能力，越接近 1 区分能力越强；与预测倾向、特征数量无直接关系。",
+    "angle": "mechanism",
+    "question": "两个二分类模型在某一固定阈值下准确率相近，但模型 B 的 AUC 明显高于模型 A。这主要说明什么？（单选）",
+    "explanation": "A 正确：AUC 汇总所有阈值下的排序区分能力，不受单一阈值或类别比例影响；准确率相近而 AUC 不同，说明二者在阈值敏感性与排序质量上有差异，B 更稳健。B 混淆训练误差与泛化排序能力，C 误将 AUC 等同于正类输出倾向，D 误以为准确率相同则 AUC 无意义。",
     "formats": {
       "choice": {
         "type": "single",
-        "options": [
-          "AUC 越高表示模型越倾向于把样本预测为正类；只要提高判别阈值就能让正类预测占比上升，因此 AUC 直接反映正类输出的多少，与正负样本的区分能力无关。",
-          "模型整体区分正负类的能力越强",
-          "AUC 越高表示训练集上的误差越小；模型在训练数据上拟合得越好、损失越低，其 AUC 自然随之升高，因此 AUC 主要刻画的是训练阶段的拟合程度而非泛化。",
-          "AUC 越高表示使用的特征数量越多；特征维度越丰富模型表达能力越强，AUC 随之上升，所以提升 AUC 的关键手段是不断往模型里加入新的特征维度。"
-        ],
-        "answer": [
-          1
-        ]
+        "options": ["在不同阈值与类别分布下，模型 B 对正负样本的排序区分能力整体更强，结果更稳健。", "模型 A 在训练集上拟合更好、损失更低，因此实际可用性一定优于 B。", "模型 B 输出的正类占比更高，所以 AUC 高只是因为它更倾向预测正类。", "只要两者准确率相同，AUC 的高低就毫无实际意义，可直接忽略。"],
+        "answer": [0]
       },
       "open": {
-        "referenceAnswer": "正确答案要点：模型整体区分正负类的能力越强。\n\n解析：AUC 衡量模型对不同类别的排序区分能力，越接近 1 区分能力越强；与预测倾向、特征数量无直接关系。"
+        "referenceAnswer": "正确答案：A。\n- AUC 衡量跨阈值的正负排序区分能力，比值更稳健。\n- B 训练误差≠泛化排序；C AUC≠正类倾向；D 准确率相同不意味 AUC 无意义。"
       }
     }
   },

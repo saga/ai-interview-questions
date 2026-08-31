@@ -76,6 +76,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 ### 先定目标，再改写
 - 保留核心 Knowledge：`topic` 不变，必要时只换 `angle`；不要改成一道全新同类题。
 - 优先改 Cognitive Task，而非重出一道同类题。例：`kv-cache` 已有 4 道 `definition` → 目标 `angle` 改成 `tradeoff`、`difficulty` 改 `medium`，核心 Concept 不变。
+- **只换 `angle` 的前提是：该题内容本身已经属于目标 angle（只是字段标错）。** 若内容是低价值 `definition` 回忆题，必须改写题干/选项/解释让它真正变成 mechanism/comparison/… 题，`angle` 随内容自然改变；**绝不允许只把标签从 `definition` 改成 `mechanism` 而内容不动**——那只是在骗 `topic×angle` 密度计数器，没有提升诊断价值。改前务必通读题目内容，逐题判断是「标错」还是「内容低价值」。
 - 计划里的 `suggestedAngle` 作为首选目标；与 `fill-coverage-gap` 的题量控制一致：同 `topic×angle` 已有 ≥3 题时，新角度须证明新认知任务 / 场景 / misconception / 难度层次。
 
 ### 改写内部 Prompt（10 条硬约束）
