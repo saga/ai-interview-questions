@@ -15,12 +15,14 @@ import type { KnowledgeArea, KnowledgePriority, QuestionAngle, Difficulty } from
 export type KnowledgeDocumentKind = 'knowledge' | 'question' | 'misconception' | 'concept';
 
 /**
- * 答案安全模式（ADR-063 §7）。
- * - answer：可暴露 referenceAnswer / explanation / 选项答案
+ * 答案安全模式（ADR-063 §7，ADR-065 扩为四模式）。
+ * - answer：可暴露 referenceAnswer / explanation / 选项答案（"直接给我答案"）
+ * - explain：详细解读——同样暴露正确选项与解析，但语境是"讲解这道题"，不篡改 assessment truth
+ *            （与 hint 的区别：hint 禁止解释正确选项；explain 允许，用于"这道题我不会，给我详细解读"）
  * - hint  ：只给知识骨架与常见误解，禁止 referenceAnswer / choice.answer / 完整 explanation
  * - quiz  ：只给题干与考点，隐藏一切真值
  */
-export type RetrievalMode = 'answer' | 'hint' | 'quiz';
+export type RetrievalMode = 'answer' | 'explain' | 'hint' | 'quiz';
 
 /**
  * 检索范围（ADR-063 §6）。轻量 query planner 的结果：
@@ -77,6 +79,12 @@ export interface KnowledgeSearchQuery {
   seeds?: string[];
   /** 强制排除的题目 id */
   excludeIds?: string[];
+  /**
+   * Learner Memory 信号（ADR-065）：把用户长期弱项透传给检索排序，做小幅提权，不主导。
+   * - weakTopics：命中 knowledgeId / topic 的弱项节点 metadata 轻微上浮
+   * - weakAngles：命中 question.angle 的弱角度节点轻微上浮
+   */
+  learnerContext?: { weakTopics?: string[]; weakAngles?: string[] };
 }
 
 /** 引用溯源（ADR-063 §8）：最终回答要能列出"依据了什么"。 */

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { Question } from '../../schemas/question';
 import {
   buildKnowledgePromptSection,
+  combineFollowUp,
   knowledgeCitations,
   planRetrievalMode,
   planRetrievalScope,
@@ -69,8 +70,13 @@ describe('planRetrievalMode（答案安全模式）', () => {
     expect(planRetrievalMode({ query: '解析一下正确选项', activeQuestion })).toBe('answer');
   });
 
-  it('有当前题但没明说 → 默认 hint，绝不主动泄露真值', () => {
-    expect(planRetrievalMode({ query: '讲考点', activeQuestion })).toBe('hint');
+  it('有当前题但没明说 → 默认 explain（可解释正确选项，但不改 assessment truth）', () => {
+    expect(planRetrievalMode({ query: '讲考点', activeQuestion })).toBe('explain');
+  });
+
+  it('当前题 + 详细解读类请求 → explain（而非只给提示）', () => {
+    expect(planRetrievalMode({ query: '这道题我不会，给我详细解读', activeQuestion })).toBe('explain');
+    expect(planRetrievalMode({ query: '帮我讲透这道题', activeQuestion })).toBe('explain');
   });
 
   it('没有当前题 → answer', () => {
@@ -101,10 +107,37 @@ describe('buildKnowledgePromptSection', () => {
     expect(section).toContain('严禁直接给出或变相暗示正确答案');
   });
 
+  it('explain 模式与 answer 同样允许暴露真值（不写禁止项）', () => {
+    const evidence = retrieveForCopilot({ query: 'RAG reranker', mode: 'explain', limit: 3 });
+    const section = buildKnowledgePromptSection(evidence);
+    expect(section).toContain('模式=explain');
+    expect(section).not.toContain('严禁直接给出或变相暗示正确答案');
+  });
+
   it('片段长度受控，避免单条长文档挤爆上下文', () => {
     const evidence = retrieveForCopilot({ query: 'agent 记忆', scope: 'global', limit: 8 });
     const section = buildKnowledgePromptSection(evidence);
     expect(section.length).toBeLessThan(8000);
+  });
+});
+
+describe('combineFollowUp（ADR-065 P1-1）', () => {
+  it('当前消息已有主题锚点（已知 topic 或较长查询）时直接返回，不污染检索', () => {
+    expect(combineFollowUp('讲一下 KV Cache 的显存优化', '这道题为什么错', 'kv-cache')).toBe('讲一下 KV Cache 的显存优化');
+    expect(combineFollowUp('什么是 GQA，它和 MHA 有什么区别', '上一轮问题')).toBe('什么是 GQA，它和 MHA 有什么区别');
+  });
+
+  it('短追问拼接上一轮用户消息以提供上下文', () => {
+    expect(combineFollowUp('为什么', '这道题为什么错')).toBe('这道题为什么错 为什么');
+    expect(combineFollowUp('那多选题呢', '给我出一道 RAG 的题')).toBe('给我出一道 RAG 的题 那多选题呢');
+  });
+
+  it('与上一轮完全相同时不拼接', () => {
+    expect(combineFollowUp('这道题为什么错', '这道题为什么错')).toBe('这道题为什么错');
+  });
+
+  it('无上一轮时直接返回当前消息', () => {
+    expect(combineFollowUp('什么是 GQA')).toBe('什么是 GQA');
   });
 });
 

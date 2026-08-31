@@ -11,9 +11,20 @@
 import type { InterviewSession } from '../../schemas/session';
 import type { LearnerProfile } from '../../schemas/learner';
 import type { Question } from '../../schemas/question';
+import type { AnswerValue } from '../../types';
+import type { EvaluationResult } from '../../schemas/evaluation';
 import type { KnowledgeEvidence, RetrievalMode } from '../../domain/knowledge/types';
-import { knowledgeCitations, retrieveForCopilot } from './knowledgeCapability';
+import { knowledgeCitations, retrieveForCopilot, combineFollowUp } from './knowledgeCapability';
 import { buildCopilotSystemPrompt } from './copilotPrompt';
+import { WEAK_AVG } from '../../domain/learner';
+
+/** 用户实际作答与评分诊断（ADR-065 P0-2）：让 Copilot 从"泛知识解释器"升级为"个性化教练"。 */
+export interface AnswerContext {
+  /** 用户作答：选择题为选项索引数组，开放/编程题为文本。 */
+  answer: AnswerValue;
+  /** 该题评分诊断（可能尚未评分时为 null）。 */
+  evaluation?: EvaluationResult | null;
+}
 
 export interface CopilotTurnInput {
   /** 本轮用户消息原文。 */
@@ -27,6 +38,10 @@ export interface CopilotTurnInput {
   topic?: string;
   /** 显式指定答案安全模式（例如 UI 的「给提示」按钮强制 hint）。 */
   mode?: RetrievalMode;
+  /** 用户实际作答与诊断（ADR-065 P0-2），非当前题/未作答时为 undefined。 */
+  answerContext?: AnswerContext | null;
+  /** Learner Memory 弱项信号（ADR-065 P1-2），透传给检索排序做小幅提权。 */
+  learnerContext?: { weakTopics?: string[]; weakAngles?: string[] };
 }
 
 export interface CopilotTurnResult {
@@ -42,17 +57,55 @@ export type CopilotChatFn = (
   message: string,
 ) => Promise<string>;
 
+/**
+ * 从 Learner Profile 推导弱项信号（ADR-065 P1-2）：只做轻量透传，供检索排序小幅提权。
+ * - weakTopics：均分低于掌握线的 topic
+ * - weakAngles：angleCoverage 中均分低于掌握线的角度（跨 topic 汇总，去重）
+ * 不引入新排序层，也不改变其他检索逻辑。
+ */
+export function deriveLearnerContext(
+  profile: LearnerProfile | null,
+  topic?: string,
+): { weakTopics: string[]; weakAngles: string[] } {
+  const weakTopics: string[] = [];
+  const weakAngles = new Set<string>();
+  if (profile) {
+    for (const [t, s] of Object.entries(profile.topicStats)) {
+      if (s.attempts > 0 && s.avgScore < WEAK_AVG) weakTopics.push(t);
+    }
+    if (profile.angleCoverage) {
+      for (const [key, s] of Object.entries(profile.angleCoverage)) {
+        if (s.avgScore < WEAK_AVG) {
+          const angle = key.split('|')[1];
+          if (angle) weakAngles.add(angle);
+        }
+      }
+    }
+  }
+  // 若已解析出当前 topic，确保它进 weakTopics 候选（即便恰好在阈值附近也优先关注）
+  if (topic && !weakTopics.includes(topic)) weakTopics.push(topic);
+  return { weakTopics: weakTopics.slice(0, 8), weakAngles: [...weakAngles].slice(0, 8) };
+}
+
 export async function runCopilotTurn(
   deps: { chat: CopilotChatFn },
   input: CopilotTurnInput,
 ): Promise<CopilotTurnResult> {
   let evidence: KnowledgeEvidence | null = null;
   try {
+    // P1-1：follow-up 检索 query 与上一轮用户消息绑定（不消耗 LLM 做 query rewriting）。
+    const lastUserTurn = [...input.history].reverse().find((m) => m.role === 'user')?.content;
+    const resolvedTopic = input.topic ?? input.activeQuestion?.topic;
+    const retrieveQuery = combineFollowUp(input.message, lastUserTurn, resolvedTopic);
+    // P1-2：弱项信号透传给检索排序（若上游未显式传入则在此推导）。
+    const learnerContext = input.learnerContext ?? deriveLearnerContext(input.profile, resolvedTopic);
     evidence = retrieveForCopilot({
       query: input.message,
+      retrieveQuery,
       activeQuestion: input.activeQuestion,
-      topic: input.topic,
+      topic: resolvedTopic,
       mode: input.mode,
+      learnerContext,
     });
   } catch (e) {
     // 检索是增强而非前置条件：失败时降级为无依据问答，不把错误抛给用户。
@@ -63,6 +116,7 @@ export async function runCopilotTurn(
     activeQuestion: input.activeQuestion,
     session: input.session,
     evidence,
+    answerContext: input.answerContext,
   });
   const reply = await deps.chat(system, input.history, input.message);
   const citations = knowledgeCitations(evidence);

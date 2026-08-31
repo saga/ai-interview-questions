@@ -2,6 +2,27 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-065 · Personalized Grounded Copilot：explain 模式 + AnswerContext + Learner 检索信号
+
+- 状态：已采纳 · 2026-08-31
+- 来源：`main` 代码复查（ADR-064 落地后）。确认方向正确，但指出「Copilot 知识能力仍不完整 + 少数状态/文档一致性问题」。
+- 背景：ADR-064 把 Copilot 从「命令路由器」救回「解释/提示通道」，但仍有两处让 Copilot 退化为「泛知识解释器」而非「个性化教练」：
+  1. **explain 与 hint 没分开**：`planRetrievalMode` 里 `if (input.activeQuestion) return 'hint'`，导致「这道题我不会，给我详细解读」虽进了 Copilot，却因有当前题被限成 `hint`（hint 禁止解释正确选项），用户拿不到想要的「详细解读」。
+  2. **用户作答与诊断未进 Copilot**：输入只有 `message/history/profile/activeQuestion/session`，没有当前题的用户答案与 `EvaluationResult`，所以「为什么错 / 针对性讲」无从谈起。
+  3. **检索 query 与上一轮知识上下文割裂**：`history` 只给 LLM 不参与 `retrieveForCopilot()`；follow-up「为什么」在空 query 上检索，召回差。
+  4. **Learner Memory 只进 prompt 不进检索排序**（ADR-063 §14 列为 Phase 2）：弱项节点在检索里没有优先级。
+  5. **纯 Copilot 会话不持久化**：`handleCopilotChat` 在 `convSession=null` 时不落库，与文档「transcript 随 ConversationSession 持久化可恢复」矛盾。
+- 决策（不引入新 abstraction，沿用 ADR-063/064 的 capability + 确定性 planner）：
+  1. **答案安全模式扩为四模式** `answer / explain / hint / quiz`（ADR-063 §7）：`explain` 在检索层与 `answer` 完全等价（暴露 `sensitiveText`：正确选项 + 解析 + 参考答案），区别只在 prompt 的 `modeNote`（「讲解这道题」vs「给答案」）；两者都**禁止模型篡改 assessment truth**（prompt 硬约束）。`planRetrievalMode` 改为「有当前题默认 `explain`」，明确要思路/提示的仍走 `hint`。
+  2. **新增 `AnswerContext = { answer: AnswerValue; evaluation?: EvaluationResult | null }`**（`copilot.ts`）：`CopilotSidebar` 从 `ConversationSession.answers/evaluations` 取出当前题的作答与诊断下传；`buildCopilotSystemPrompt` 渲染「用户作答与诊断（个性化教练依据）」段，让 Copilot 围绕用户实际偏差讲解。
+  3. **follow-up 检索 query 绑定上一轮知识上下文**（`combineFollowUp`，确定性、无 LLM query rewriting）：当前消息是短追问（<16 字且无 topic 锚点）时拼上上一轮用户消息，只用于 lexical 检索；**模式/范围规划仍用原始 `query`**，避免命令词把追问误判成 `quiz`。
+  4. **Learner Memory 参与检索排序**（`learnerContext?: { weakTopics; weakAngles }` 透传 `KnowledgeSearchQuery`）：`metadataScore` 内 `learnerBoost` 对命中弱项 knowledgeId/topic/angle 的节点小幅提权（上限 0.15），**不主导**、不新增排序层。
+  5. **纯 Copilot 会话持久化（方案 A）**：`handleCopilotChat` 首次进入即 `createConversationSession(mode='chat')` 落库，transcript 随 `ConversationSession` 刷新可恢复，与命令/答案通道一致。
+  6. **修正 `current_question` 测试语义（改测试不改实现）**：`inScope` 的 current_question = `questionId 匹配 OR knowledgeId 匹配`（当前题 + 其知识点 + 误解/概念证据），原 `every(h.kind==='question')` 断言与实现不符，改为校验「命中必属当前题或其知识节点」。
+- 不做（与用户 "不要继续增加新的 abstraction" 一致）：Vector DB / reranker / query-rewrite agent / multi-agent；embedding 语义检索仍留 Phase 2（复用已有 MiniLab/MiniLM）。inline citation/UI 证据折叠面板暂不做（当前为「依据列表」文本尾部拼接）。
+- 验证：`tsc -b 0`；`vitest` 全量通过（新增/修正 `knowledgeCapability.test.ts`、`retrieve.test.ts` 用例）；`npm run build` 通过。
+- 关联：`docs/CONVERSATION_ARCHITECTURE.md`（已全量重写为三通道 + 个性化 Copilot）；ADR-063 §7（四模式）、§14（Learner 进检索，本 ADR 落地为轻量提权）。
+
 ## ADR-064 · Copilot 双通道：commandDetector + copilot（删 LLM intent router）
 
 - 状态：已采纳 · 2026-08-31

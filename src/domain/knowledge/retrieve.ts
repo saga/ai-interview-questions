@@ -74,10 +74,31 @@ function metadataScore(doc: KnowledgeDocument, q: KnowledgeSearchQuery, tokens: 
     });
     if (hit) bump(0.35);
   }
-  return score;
+  // Learner Memory 弱项信号：小幅提权（见 learnerBoost），不影响已有命中等级。
+  return score + learnerBoost(doc, q);
 }
 
-// ── scope 过滤（ADR-063 §6）──────────────────────────────────
+/**
+ * Learner Memory 信号（ADR-065 P1-2）：弱项节点在检索排序里轻微上浮。
+ * 刻意只做"小幅提权、不主导"——上限 0.15，远小于 lexical/metadata 命中，
+ * 避免把弱项证据挤出真实语义命中，也避免引入新的排序层。
+ * - weakTopics：命中 knowledgeId（最强）/ topic 的节点上浮
+ * - weakAngles：命中 question.angle 的节点上浮
+ */
+function learnerBoost(doc: KnowledgeDocument, q: KnowledgeSearchQuery): number {
+  const lc = q.learnerContext;
+  if (!lc) return 0;
+  const meta = doc.metadata;
+  let boost = 0;
+  if (lc.weakTopics && lc.weakTopics.length > 0) {
+    if (meta.knowledgeId && lc.weakTopics.includes(meta.knowledgeId)) boost = Math.max(boost, 0.15);
+    if (meta.topic && lc.weakTopics.includes(meta.topic)) boost = Math.max(boost, 0.12);
+  }
+  if (lc.weakAngles && lc.weakAngles.length > 0 && meta.angle && lc.weakAngles.includes(meta.angle)) {
+    boost = Math.max(boost, 0.1);
+  }
+  return boost;
+}
 
 function inScope(
   doc: KnowledgeDocument,

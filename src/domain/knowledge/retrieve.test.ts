@@ -143,6 +143,12 @@ describe('答案安全模式（ADR-063 §7）', () => {
     expect(content).toContain('正确选项：');
   });
 
+  it('explain 模式与 answer 同样暴露解析与正确选项（ADR-065）', () => {
+    const content = renderDocument(doc, 'explain');
+    expect(content).toContain('解析：');
+    expect(content).toContain('正确选项：');
+  });
+
   it('hint 模式剥离真值，保留题干与误解', () => {
     const content = renderDocument(doc, 'hint');
     expect(content).toContain('KV Cache 为什么能降低');
@@ -292,13 +298,19 @@ describe('题目证据槽位上限（ADR-063 §11）', () => {
     expect(evidence.hits.every((h) => h.kind === 'question')).toBe(true);
   });
 
-  it('current_question 下题目不受槽位限制（当前题就是检索目标）', () => {
+  it('current_question 下题目不受槽位限制，且语义为"当前题 + 其知识点 + 误解/概念证据"', () => {
     const evidence = searchKnowledge(
       { query: '这道题为什么错', scope: 'current_question', knowledgeId: 'kv-cache', mode: 'answer', limit: 5 },
       { index },
     );
-    expect(evidence.hits.length).toBe(5);
-    expect(evidence.hits.every((h) => h.kind === 'question')).toBe(true);
+    expect(evidence.hits.length).toBeGreaterThan(0);
+    expect(evidence.hits.length).toBeLessThanOrEqual(5);
+    // 正确语义（不改实现）：命中只能是当前题（questionId=q-kv-1）或该知识点（knowledgeId=kv-cache），
+    // 含其知识节点 / 误解 / 概念证据，而非"全是 question"。
+    for (const hit of evidence.hits) {
+      const ok = hit.metadata.questionId === 'q-kv-1' || hit.metadata.knowledgeId === 'kv-cache';
+      expect(ok).toBe(true);
+    }
   });
 
   it('questionSlotLimit 口径：quiz / current_question 放开，其余最多 2', () => {

@@ -28,7 +28,7 @@ import type { Question } from '../../schemas/question';
 import { emptyProfile } from '../../domain/learner';
 import { describeEvaluationSummary } from '../../domain/evaluation';
 import type { SessionRecord } from '../../schemas/learner';
-import { runCopilotTurn } from '../../application/conversation/copilot';
+import { runCopilotTurn, type AnswerContext } from '../../application/conversation/copilot';
 import {
   createConversationSession,
   addQuestionToSession,
@@ -459,12 +459,21 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     content: string,
     nextMessages: { role: 'user' | 'assistant'; content: string; key: string }[],
   ): Promise<void> => {
-    // 先把用户消息落库，保持与命令/答案通道一致的持久化行为。
+    // 方案 A（ADR-065 P1-4）：首次进入 Copilot 即创建并持久化 session（mode=chat），
+    // 保持与命令/答案通道一致的落库行为，使 transcript 随 ConversationSession 刷新可恢复。
     setConvSession((prev) => {
-      if (!prev) return prev;
-      const updated = { ...prev, messages: nextMessages };
-      saveConversationSession(updated);
-      return updated;
+      if (prev) {
+        const updated: ConversationSession = { ...prev, messages: nextMessages, context: { ...prev.context, mode: 'chat' } };
+        saveConversationSession(updated);
+        return updated;
+      }
+      // 方案 A（ADR-065 P1-4）：首次进入 Copilot 即创建并持久化 session（mode=chat），
+      // 使 transcript 随 ConversationSession 刷新可恢复，与命令/答案通道一致。
+      const sid = crypto.randomUUID();
+      const base = createConversationSession(sid);
+      const created: ConversationSession = { ...base, messages: nextMessages, context: { ...base.context, mode: 'chat' } };
+      saveConversationSession(created);
+      return created;
     });
     if (!configReady) {
       antMessage.warning('请先在设置中配置 AI 引擎；未配置时仍可直接请求选择题。');
@@ -473,9 +482,15 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     }
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
     const activeQuestion = chatQuestion ?? currentQuestion ?? null;
+    // ADR-065 P0-2：从会话里取出用户实际作答与评分诊断，注入 Copilot，使其从"泛知识解释器"
+    // 升级为"个性化教练"。当前题尚未作答（无 records）时为 null。
+    const answerContext: AnswerContext | null =
+      activeQuestion && convSession && Object.prototype.hasOwnProperty.call(convSession.answers, activeQuestion.id)
+        ? { answer: convSession.answers[activeQuestion.id], evaluation: convSession.evaluations[activeQuestion.id] ?? null }
+        : null;
     const result = await runCopilotTurn(
       { chat: (system, h, msg) => chatCopilot(config, system, h, msg) },
-      { message: content, history, profile, activeQuestion, session },
+      { message: content, history, profile, activeQuestion, session, answerContext },
     );
     setMessages((prev) => {
       const withAssistant = [...prev, { role: 'assistant' as const, content: result.reply, key: `${Date.now()}-a` }];

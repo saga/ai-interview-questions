@@ -191,7 +191,10 @@ export function buildKnowledgeDocuments(
  * 这是硬裁剪——被裁剪的内容根本不会进入 prompt，而不是请求模型"不要说"。
  */
 export function renderDocument(doc: KnowledgeDocument, mode: RetrievalMode): string {
-  if (mode === 'answer') {
+  if (mode === 'answer' || mode === 'explain') {
+    // answer / explain 都允许暴露真值（正确选项 + 解析 + 参考答案）。
+    // explain 与 answer 在检索层无差异——区别在 prompt 的 modeNote（"讲解" vs "给答案"），
+    // 但两者都禁止模型篡改 assessment truth（prompt 硬约束，见 copilotPrompt.ts）。
     return doc.sensitiveText ? `${doc.text}\n${doc.sensitiveText}` : doc.text;
   }
   if (mode === 'quiz') {
