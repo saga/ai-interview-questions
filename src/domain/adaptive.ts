@@ -10,8 +10,8 @@ import type { Difficulty } from '../schemas/common';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { pickQuestions } from './quiz';
-import { prerequisiteClosure, relatedOf } from './conceptGraph';
-import { angleKey, angleWeakRank, recommendWeakTopics } from './learner';
+import { prerequisiteClosure, relatedOf, topoRankOf } from './conceptGraph';
+import { angleKey, angleWeakRank, recommendWeakTopics, WEAK_AVG } from './learner';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -70,24 +70,62 @@ function angleEvidence(q: Question, profile: LearnerProfile | undefined): number
 }
 
 /**
- * 在候选集中以「弱角度优先、证据最少次之」选下一题——把 topic×angle 掌握度作为选题主干：
- * - 首要：未练/低分的角度（angleWeakRank 升序）；已掌握角度最后才问；
- * - 次要：同一弱度内，作答证据最少的 (topic,angle) 优先（覆盖效率）；
- * - 末位：随机（由 rng 决定同权题）。
- * 与 weakAnglesOf 同源，确保确定性引擎也按 topic×angle 掌握度驱动（此前仅 Agent 工具使用）。
+ * 统一候选排序（P0-3）：Agent 的 searchQuestions 与确定性引擎 pickNextAdaptive 共用同一选题策略，
+ * 避免两条路径各自实现一套 interviewer policy。排序键（值越小越优先，确定性）：
+ *   1. 主题档位：薄弱主题（已练但均分 < WEAK_AVG）最前 → 未练过次之 → 已掌握最后；
+ *   2. 档内序：薄弱主题按掌握度升序；未练/已掌握按知识点拓扑序（基础优先）；
+ *   3. 角度薄弱度：angleWeakRank 升序（0=未练/最弱，最该被考察）；
+ *   4. 证据量：(topic,angle) 累计作答次数升序（覆盖效率，避免总问同一类）；
+ *   5. 难度：easy → hard（同权内先易后难，难度梯度留给 Agent 决策或策略子集过滤）；
+ *   6. 题库稳定序兜底：完全可预测、可测试。
+ * 可选 rng 只打散「前 5 键完全相同」的并列组，不改变排序语义——随机不再参与策略选择。
+ */
+export function rankCandidatePool(pool: Question[], profile?: LearnerProfile, rng?: () => number): Question[] {
+  // 主题级排序键：weak → [0, mastery]；unattempted → [1, topoRank]；mastered → [2, topoRank]
+  const topicKey = new Map<string, [number, number]>();
+  for (const q of pool) {
+    if (topicKey.has(q.topic)) continue;
+    const s = profile?.topicStats[q.topic];
+    const weak = Boolean(s && s.attempts > 0 && s.avgScore < WEAK_AVG);
+    const tier = weak ? 0 : s && s.attempts > 0 ? 2 : 1;
+    const order = weak ? s!.mastery : topoRankOf(q.topic);
+    topicKey.set(q.topic, [tier, order]);
+  }
+  const keyOf = (q: Question, idx: number): number[] => {
+    const [tier, order] = topicKey.get(q.topic) ?? [1, 0];
+    return [tier, order, angleWeakRank(profile, q.topic, q.angle), angleEvidence(q, profile), DIFF_ORDER.indexOf(q.difficulty), idx];
+  };
+  const ranked = pool
+    .map((q, idx) => ({ q, keys: keyOf(q, idx) }))
+    .sort((a, b) => {
+      for (let k = 0; k < a.keys.length; k++) {
+        if (a.keys[k] !== b.keys[k]) return a.keys[k] - b.keys[k];
+      }
+      return 0;
+    });
+  if (rng) {
+    // 并列（前 5 键完全相同）组内打散：确定性排序 + 并列随机，二者兼得
+    const result: Question[] = [];
+    let i = 0;
+    while (i < ranked.length) {
+      let j = i + 1;
+      while (j < ranked.length && ranked[j].keys.slice(0, 5).every((v, k) => v === ranked[i].keys[k])) j++;
+      result.push(...pickQuestions(ranked.slice(i, j).map((x) => x.q), j - i, rng));
+      i = j;
+    }
+    return result;
+  }
+  return ranked.map((x) => x.q);
+}
+
+/**
+ * 在候选集中以「弱角度优先、证据最少次之」选下一题——直接复用 {@link rankCandidatePool}
+ * 的统一排序取第一题（并列组内由 rng 打散）。与 weakAnglesOf 同源，确保确定性引擎
+ * 与 Agent 候选列表按同一 topic×angle 掌握度主干驱动。
  */
 function pickByWeakAngle(pool: Question[], profile: LearnerProfile | undefined, rng: () => number): Question | null {
   if (pool.length === 0) return null;
-  const scored = pool.map((q) => ({
-    q,
-    weak: angleWeakRank(profile, q.topic, q.angle),
-    ev: angleEvidence(q, profile),
-  }));
-  const minWeak = Math.min(...scored.map((s) => s.weak));
-  const inWeak = scored.filter((s) => s.weak === minWeak);
-  const minEv = Math.min(...inWeak.map((s) => s.ev));
-  const least = inWeak.filter((s) => s.ev === minEv).map((s) => s.q);
-  return pickQuestions(least, 1, rng)[0] ?? null;
+  return rankCandidatePool(pool, profile, rng)[0] ?? null;
 }
 
 /** 自适应选下一题的结果。question 为 null 表示题池耗尽（调用方据此结束会话）。 */

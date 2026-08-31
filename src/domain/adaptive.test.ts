@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question, QuestionAngle } from '../schemas/question';
-import { decideStrategy, pickNextAdaptive, type AnswerSignal } from './adaptive';
+import { decideStrategy, pickNextAdaptive, rankCandidatePool, type AnswerSignal } from './adaptive';
 import { emptyProfile } from './learner';
 
 function q(id: string, topic: string, difficulty: Question['difficulty'] = 'medium', angle?: QuestionAngle): Question {
@@ -164,5 +164,87 @@ describe('pickNextAdaptive', () => {
     const r = pickNextAdaptive(pool, [sig('tool-calling', 30, 'hard')], profile, rngSeq([0]));
     expect(r!.strategy).toBe('gap-probe');
     expect(r!.question.id).toBe('tc-def');
+  });
+});
+
+describe('rankCandidatePool（统一候选排序：Agent 与确定性引擎共享同一 policy）', () => {
+  const stat = (avg: number): NonNullable<LearnerProfile['topicStats']>[string] => ({
+    attempts: 3, avgScore: avg, lastScore: avg, trend: 'flat', mastery: avg / 100, commonWeaknesses: [], lastSeen: 0,
+  });
+  const prof = (stats: Record<string, number>): LearnerProfile => {
+    const p = emptyProfile();
+    for (const [t, avg] of Object.entries(stats)) p.topicStats[t] = stat(avg);
+    return p;
+  };
+
+  it('主题档位：薄弱主题（已练但 <75）→ 未练 → 已掌握', () => {
+    const pool = [q('m-1', 'mcp'), q('s-1', 'agent-fundamentals'), q('w-1', 'reliability')];
+    const profile = prof({ reliability: 30, 'agent-fundamentals': 90 });
+    expect(rankCandidatePool(pool, profile).map((x) => x.id)).toEqual(['w-1', 'm-1', 's-1']);
+  });
+
+  it('薄弱主题内部按掌握度升序（越弱越靠前）', () => {
+    const pool = [q('w2-1', 'reliability'), q('w1-1', 'agent-loop')];
+    // reliability mastery 0.3 < agent-loop mastery 0.5 → reliability 更前
+    const p = prof({ reliability: 30, 'agent-loop': 50 });
+    expect(rankCandidatePool(pool, p).map((x) => x.id)).toEqual(['w2-1', 'w1-1']);
+  });
+
+  it('同主题内角度排序：未练角度 → 弱角度 → 已掌握角度（angleWeakRank 升序）', () => {
+    const profile = emptyProfile();
+    profile.angleCoverage = {
+      'tool-calling|definition': { attempts: 4, avgScore: 20, lastScore: 20, lastAskedAt: 0 }, // 弱(1)
+      'tool-calling|tradeoff': { attempts: 3, avgScore: 95, lastScore: 95, lastAskedAt: 0 },  // 已掌握(2)
+      // mechanism 未练(0)
+    };
+    profile.topicStats['tool-calling'] = stat(30); // 主题本身薄弱 → 三题同主题档
+    const pool = [
+      q('a-trade', 'tool-calling', 'medium', 'tradeoff'),
+      q('a-mech', 'tool-calling', 'medium', 'mechanism'),
+      q('a-def', 'tool-calling', 'medium', 'definition'),
+    ];
+    expect(rankCandidatePool(pool, profile).map((x) => x.id)).toEqual(['a-mech', 'a-def', 'a-trade']);
+  });
+
+  it('同角度档位内证据最少（该 (topic,angle) 累计作答次数最少）优先', () => {
+    // 两个角度都「弱」（avg < 75）→ 同 rank 1；evidence 按 attempts 升序：mechanism(1) < definition(2)
+    const profile = emptyProfile();
+    profile.angleCoverage = {
+      'tool-calling|definition': { attempts: 2, avgScore: 30, lastScore: 30, lastAskedAt: 0 },
+      'tool-calling|mechanism': { attempts: 1, avgScore: 30, lastScore: 30, lastAskedAt: 0 },
+    };
+    profile.topicStats['tool-calling'] = stat(30);
+    const pool = [
+      q('ev-asked', 'tool-calling', 'easy', 'definition'),
+      q('ev-fresh', 'tool-calling', 'easy', 'mechanism'),
+    ];
+    expect(rankCandidatePool(pool, profile).map((x) => x.id)).toEqual(['ev-fresh', 'ev-asked']);
+  });
+
+  it('同档内先易后难', () => {
+    const pool = [q('d-hard', 'mcp', 'hard'), q('d-easy', 'mcp', 'easy'), q('d-med', 'mcp', 'medium')];
+    // 无 profile：mcp 未练，三题同档（同 topoRank、同角度、同证据）→ 仅难度区分
+    expect(rankCandidatePool(pool).map((x) => x.id)).toEqual(['d-easy', 'd-med', 'd-hard']);
+  });
+
+  it('确定性：不传 rng 时同键题保持池内相对顺序（不 shuffle）', () => {
+    const pool = [q('t1', 'mcp', 'easy'), q('t2', 'mcp', 'easy'), q('t3', 'mcp', 'easy')];
+    expect(rankCandidatePool(pool).map((x) => x.id)).toEqual(['t1', 't2', 't3']);
+  });
+
+  it('传入 rng 时仅打散完全并列组，组间顺序不变', () => {
+    const pool = [q('t1', 'mcp', 'easy'), q('t2', 'mcp', 'easy'), q('t3', 'mcp', 'easy')];
+    const shuffled = rankCandidatePool(pool, undefined, rngSeq([0.9])).map((x) => x.id);
+    expect(shuffled).toHaveLength(3);
+    expect(new Set(shuffled)).toEqual(new Set(['t1', 't2', 't3'])); // 仍是同一批题
+    // 对照组：rng 序列相同 → 结果确定可复现
+    expect(rankCandidatePool(pool, undefined, rngSeq([0.9])).map((x) => x.id)).toEqual(shuffled);
+  });
+
+  it('profile 为 undefined 与空画像等价（调用方无画像时行为一致）', () => {
+    const pool = [q('t1', 'mcp', 'easy'), q('t2', 'mcp', 'hard')];
+    expect(rankCandidatePool(pool, undefined).map((x) => x.id)).toEqual(
+      rankCandidatePool(pool, emptyProfile()).map((x) => x.id),
+    );
   });
 });

@@ -62,6 +62,8 @@ export const evaluationResultSchema = z.object({
   strengths: z.array(z.string()),
   gaps: z.array(z.string()),
   missingConcepts: z.array(z.string()),
+  /** 选择题命中的误解（来自题目 misconceptions × misconceptionMap）；开放题恒缺省。 */
+  misconceptionIds: z.array(z.string()).optional(),
   feedback: z.string(),
   referenceAnswer: z.string().optional(),
 });

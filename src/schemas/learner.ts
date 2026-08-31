@@ -96,6 +96,16 @@ export const sessionRecordSchema = z.object({
   answers: sessionAnswerSchema.optional(),
 });
 
+/** 误解命中统计（选择题反证证据，来自 QuestionResult.misconceptionIds）。 */
+export const misconceptionHitSchema = z.object({
+  /** 累计命中次数（选中该误解对应错误选项的次数）。 */
+  hits: z.number().int().nonnegative(),
+  lastSeenAt: z.number(),
+  /** 误解原文（题目 misconceptions 数组中的条目）。 */
+  label: z.string(),
+});
+export type MisconceptionHit = z.infer<typeof misconceptionHitSchema>;
+
 export const learnerProfileSchema = z.object({
   totalSessions: z.number().int().nonnegative(),
   totalQuestions: z.number().int().nonnegative(),
@@ -105,6 +115,8 @@ export const learnerProfileSchema = z.object({
   angleCoverage: z.record(z.string(), angleStatSchema).optional(),
   /** 概念级缺失证据（源自开放题 missingConcepts）：key = `${topic}|${concept}`。可选以兼容历史画像。 */
   conceptEvidence: z.record(z.string(), conceptEvidenceSchema).optional(),
+  /** 误解命中证据（源自选择题 misconceptionIds）：key = 归一化误解文本。可选以兼容历史画像。 */
+  misconceptionHits: z.record(z.string(), misconceptionHitSchema).optional(),
   sessions: z.array(sessionRecordSchema),
   updatedAt: z.number(),
 });

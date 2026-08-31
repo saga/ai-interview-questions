@@ -10,6 +10,8 @@ import {
   findCoverageGaps,
   getAngleStat,
   conceptKey,
+  conceptGapsOf,
+  misconceptionKey,
   missingConceptsOf,
   recommendWeakTopics,
   recommendationText,
@@ -17,6 +19,7 @@ import {
   expandWithPrerequisites,
   suggestNextTopics,
   calculateProficiency,
+  topMisconceptionsOf,
   updateLearner,
   weakAnglesOf,
 } from './learner';
@@ -678,5 +681,77 @@ describe('Concept×Angle 弱角判定', () => {
     expect(weak).toContain('tradeoff');
     expect(weak).not.toContain('mechanism'); // 已掌握的不列入
     expect(weak.indexOf('debugging')).toBeLessThan(weak.indexOf('tradeoff')); // 未练排在低分前
+  });
+});
+
+describe('misconceptionHits（选择题反证证据层）', () => {
+  const misResult = (topic: string, score: number, misconceptionIds: string[]): QuestionResult => ({
+    questionId: 'q-' + topic, category: 'c', topic, format: 'choice' as const, score, gaps: [], misconceptionIds,
+  });
+
+  it('按 topic|误解 累计 hits，label 保留首次原文', () => {
+    const p = updateLearner(emptyProfile(), session(0, [
+      misResult('rag', 0, ['以为向量检索可全面取代关键词检索']),
+      misResult('rag', 0, ['以为向量检索可全面取代关键词检索', '以为融合顺序与归一化无关紧要']),
+    ]));
+    expect(p.misconceptionHits?.[misconceptionKey('rag', '以为向量检索可全面取代关键词检索')]?.hits).toBe(2);
+    expect(p.misconceptionHits?.[misconceptionKey('rag', '以为融合顺序与归一化无关紧要')]?.hits).toBe(1);
+  });
+
+  it('跨会话累计', () => {
+    let p = updateLearner(emptyProfile(), session(0, [misResult('rag', 0, ['误解A'])]));
+    p = updateLearner(p, session(0, [misResult('rag', 0, ['误解A'])]));
+    expect(p.misconceptionHits?.[misconceptionKey('rag', '误解A')]?.hits).toBe(2);
+  });
+
+  it('空 misconceptionIds 不产生条目', () => {
+    const p = updateLearner(emptyProfile(), session(0, [misResult('rag', 0, [])]));
+    expect(Object.keys(p.misconceptionHits ?? {})).toHaveLength(0);
+  });
+
+  it('topMisconceptionsOf 按 hits 降序返回该 topic 命中的误解', () => {
+    const p = updateLearner(emptyProfile(), session(0, [
+      misResult('rag', 0, ['误解B']),
+      misResult('rag', 0, ['误解A', '误解B']),
+      misResult('rag', 0, ['误解A', '误解B']),
+    ]));
+    expect(topMisconceptionsOf(p, 'rag')).toEqual(['误解B', '误解A']);
+    expect(topMisconceptionsOf(p, 'rag', 1)).toEqual(['误解B']);
+    // 不跨 topic 泄漏
+    expect(topMisconceptionsOf(p, 'attention')).toEqual([]);
+  });
+
+  it('emptyProfile 自带空误解层', () => {
+    expect(emptyProfile().misconceptionHits).toEqual({});
+    expect(topMisconceptionsOf(emptyProfile(), 'rag')).toEqual([]);
+  });
+});
+
+describe('conceptGapsOf（coverage 第二层：必考点证据）', () => {
+  it('已练且必考点答错过 → missed（带 misses 计数）', () => {
+    const p = updateLearner(emptyProfile(), session(50, [
+      { questionId: 'a', category: 'c', topic: 'rag', format: 'open', score: 40, gaps: [], missingConcepts: ['混合检索'] },
+    ]));
+    const gaps = conceptGapsOf(p, 'rag', ['混合检索', '重排']);
+    expect(gaps).toEqual([{ topic: 'rag', point: '混合检索', status: 'missed', misses: 1 }]);
+  });
+
+  it('从未练过 → 全部必考点 unprobed', () => {
+    const gaps = conceptGapsOf(emptyProfile(), 'rag', ['混合检索', '重排']);
+    expect(gaps).toEqual([
+      { topic: 'rag', point: '混合检索', status: 'unprobed', misses: 0 },
+      { topic: 'rag', point: '重排', status: 'unprobed', misses: 0 },
+    ]);
+  });
+
+  it('已练但无缺失证据的必考点不列为缺口（不制造虚假缺口）', () => {
+    const p = updateLearner(emptyProfile(), session(80, [
+      { questionId: 'a', category: 'c', topic: 'rag', format: 'open', score: 80, gaps: [], missingConcepts: [] },
+    ]));
+    expect(conceptGapsOf(p, 'rag', ['混合检索'])).toEqual([]);
+  });
+
+  it('required 为空时返回空数组', () => {
+    expect(conceptGapsOf(emptyProfile(), 'rag', [])).toEqual([]);
   });
 });

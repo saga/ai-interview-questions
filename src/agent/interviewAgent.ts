@@ -24,6 +24,7 @@ import type { SessionQuestion } from '../schemas/session';
 import { availableFormats } from '../domain/quiz';
 import { pickNextAdaptive, type AnswerSignal } from '../domain/adaptive';
 import { createAgentTools } from './tools';
+import { effectiveProfileFor } from './sessionState';
 import { evaluateSessionQuestion } from '../application/sessionEvaluator';
 import { buildAgentSystemPrompt } from './prompt';
 import { buildAgentRuntime } from './runtime';
@@ -207,7 +208,9 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       })
       .filter((x): x is AnswerSignal => x !== null);
 
-    const picked = pickNextAdaptive(pool, signals, profile, Math.random);
+    // P0-1：确定性兜底与 Agent 工具读同一份「有效画像」（历史 + 本轮已评分），
+    // 保证兜底接管的选题也感知本轮表现，而不是冻结的历史快照。
+    const picked = pickNextAdaptive(pool, signals, effectiveProfileFor(session, bank, profile), Math.random);
     if (!picked || !picked.question) return false;
     const q = picked.question;
     const fmts = availableFormats(q, []);

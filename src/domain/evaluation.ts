@@ -53,6 +53,11 @@ export function describeEvaluationSummary(result: EvaluationResult): string {
     `维度评分（0-4 序级）：${describeLevels(result.levels)}`,
     result.gaps.length > 0 ? `薄弱点：${result.gaps.join('、')}` : '薄弱点：无',
   ];
+  // 选择题反证证据：命中误解是「下一步问什么」的增量信息（如「错在混淆了 retrieval 与 reranking」），
+  // 一行带出，供 Agent 决定追问方向；无命中（答对 / 未标注误解）时不占上下文。
+  if (result.misconceptionIds && result.misconceptionIds.length > 0) {
+    parts.push(`命中误解：${result.misconceptionIds.join('、')}`);
+  }
   return parts.join('\n');
 }
 
@@ -74,11 +79,18 @@ export function describeLevels(levels: EvaluationResult['levels']): string {
  *   与开放题「走 LLM」形成互补，保证弱网/无 key 情况下仍有可用的评分路径。
  * - 不伪造 gap：选择题只能判定「对/错」，无法定位用户「漏了哪个知识点」，故 gaps 恒为空，
  *   避免把「答错」误写成「漏了某要点」污染 Learner Memory（见 sessionFromQuiz）。
+ * - 不伪造 score 粒度：正确/错误二元，无法区分「部分正确」；更细的反馈留给开放题的四维 rubric。
  *
- * 权衡（trade-off）：粒度粗——正确/错误二元，无法区分「部分正确」。这是刻意取舍：
- * 选择题本身是离散判断，强行拆维度会失真；更细的反馈留给开放题的四维 rubric。
+ * 误解命中（P0-5）：不伪造 gap ≠ 丢弃全部信号。当题目带 `misconceptions × misconceptionMap`
+ * 且用户选中某个错误选项时，把该选项对应的误解记为结构化反证证据（misconceptionIds），
+ * 选择题从此可以无 LLM 回答「用户错在哪个认知误区」，供 Learner Memory 聚合与 Agent 追问。
  */
-export function gradeChoice(cf: ChoiceFormat, selected: number[], rubric: ScoringRubric): EvaluationResult {
+export function gradeChoice(
+  cf: ChoiceFormat,
+  selected: number[],
+  rubric: ScoringRubric,
+  misconceptions?: string[],
+): EvaluationResult {
   const correct = isChoiceCorrect(cf, selected);
   const v = correct ? 100 : 0;
   const level: EvalLevel = correct ? 4 : 0;
@@ -100,6 +112,16 @@ export function gradeChoice(cf: ChoiceFormat, selected: number[], rubric: Scorin
     architecture: '',
     communication: '',
   };
+  // 命中误解：仅答错时判定。misconceptionMap 与 options 等长索引对齐（null = 未标注），
+  // 把选中的错误选项映射为题目 misconceptions 的下标，再还原为误解原文；
+  // 未标注映射的选项不产生信号（不做猜测，宁缺毋滥）。
+  const misconceptionIds = correct
+    ? []
+    : (cf.misconceptionMap ?? []).flatMap((misIdx, optIdx) =>
+        misIdx != null && selected.includes(optIdx) && misconceptions && misconceptions[misIdx] != null
+          ? [misconceptions[misIdx]]
+          : [],
+      );
   return {
     overall: aggregateOverall(dimensions, rubric),
     dimensions,
@@ -109,6 +131,7 @@ export function gradeChoice(cf: ChoiceFormat, selected: number[], rubric: Scorin
     // 选择题判定性打分，不知道用户漏了哪个知识点，不伪造 gap（避免污染 Learner Memory）。
     gaps: [],
     missingConcepts: [],
+    misconceptionIds,
     feedback: correct ? '回答正确。' : '回答错误。',
   };
 }

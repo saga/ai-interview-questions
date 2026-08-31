@@ -33,6 +33,11 @@ function evidenceText(v: VariantCandidate | GeneratedVariant): string {
   return [v.question ?? '', ...(v.options ?? [])].join(' ').toLowerCase();
 }
 
+/** 题干文本（仅题干，不含选项）——题干锚定检查（hasStemAnchor）的证据面。 */
+function stemText(v: VariantCandidate | GeneratedVariant): string {
+  return (v.question ?? '').toLowerCase();
+}
+
 /** 单条 anchor（topic/tag/required）是否在文本中有证据（精确 token / 子 token / fuzzball 兜底）。 */
 function anchorHasEvidence(anchor: string, text: string): boolean {
   if (text.includes(anchor)) return true;
@@ -63,11 +68,20 @@ function anchorHasEvidence(anchor: string, text: string): boolean {
 }
 
 /**
- * 最小证据：topic / tags / required 中至少有一个在（题干+选项）中出现。
- * 这是「这道变体还在考原题主题」的硬门槛——整段丢失即判漂移。
+ * 题干锚定（P0-6）：topic / tags / required 中至少有一个必须出现在**题干本身**。
+ *
+ * 为什么把证据面从「题干+选项」收紧到「题干」：概念出现在选项里 ≠ 题干在考察它。
+ * 「变体保持原题主题」的硬门槛不能靠选项兜底——否则 LLM 可以把核心概念全部挪进选项、
+ * 题干改写成一个与主题无关的提问，靠选项蒙混通过最小证据检查。
+ *
+ * 这是「requiredConcepts 必须成为答题所必需的推理条件」的确定性代理：
+ * 题干必须自身锚定主题/必考概念，才存在可判断的考察意图。刻意不引入
+ * 关键词级「意图识别」（问句词/动词白名单易误伤合法变体），也暂不上 LLM/embedding judge。
+ * 局限（承认而非隐藏）：锚定检查证明「题干提到核心概念」，不证明「推理必须用到它」；
+ * 后者靠 ai/variant.ts 的生成提示约束 + 覆盖率规则（requiredCoverageMet）近似保证。
  */
-function hasMinimalEvidence(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
-  const text = evidenceText(v);
+function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
+  const text = stemText(v);
   const anchors = [canonical.topic, ...canonical.tags, ...(requiredPointsFor(canonical) ?? [])]
     .map(normalizeConcept)
     .filter(Boolean);
@@ -153,10 +167,11 @@ export function validateVariant(
     }
   }
 
-  // 语义：最小证据（topic/tags/required 任一出现于题干+选项）+ required 覆盖率（约 2/3）。
-  // 解析(explanation)不计入证据，避免「题目已漂移、靠解析蒙混」通过（P0-2）。
-  if (!hasMinimalEvidence(canonical, v)) {
-    return { ok: false, reason: '变体未保留 canonical topic / tags / required 的明显证据，疑似语义漂移' };
+  // 语义：题干锚定（topic/tags/required 至少一个出现在题干本身）+ required 覆盖率（约 2/3）。
+  // 解析(explanation)不计入证据，避免「题目已漂移、靠解析蒙混」通过（P0-2）；
+  // 题干锚定（P0-6）进一步堵住「核心概念只挂在选项里、题干与主题无关」的蒙混路径。
+  if (!hasStemAnchor(canonical, v)) {
+    return { ok: false, reason: '变体题干未锚定 canonical topic / tags / required（核心概念只出现在选项中，无考察意图），疑似语义漂移' };
   }
   if (!requiredCoverageMet(canonical, v)) {
     return { ok: false, reason: '变体仅保留部分必考概念证据（requiredConcepts 未充分考察），疑似遗漏核心知识' };

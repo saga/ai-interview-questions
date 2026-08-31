@@ -46,7 +46,8 @@ export async function evaluateSessionQuestion(
     const choice = sq.question.formats.choice;
     if (!choice) throw new Error(`题目 ${sq.question.id} 缺少 choice 形态，无法判分`);
     const selected = Array.isArray(answer) ? answer : [];
-    return gradeChoice(choice, selected, rubric);
+    // 传入题目 misconceptions 供选项映射：选中错误选项时产出误解命中信号（结构化反证证据）
+    return gradeChoice(choice, selected, rubric, sq.question.misconceptions);
   }
   if (!provider) return null;
   const open = sq.question.formats.open;

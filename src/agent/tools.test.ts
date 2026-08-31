@@ -195,7 +195,9 @@ describe('createAgentTools', () => {
     // 关键契约：not_found 直接列出可用题号，替代 prompt「回到列表挑真 id」约束
     expect(text).toContain('q-choice-1');
     expect(text).toContain('q-open-1');
-    expect((r.details as { validIds: string[] }).validIds).toEqual(['q-choice-1', 'q-open-1']);
+    // 候选顺序由统一排序（rankCandidatePool：拓扑/薄弱/角度/证据）决定，不再等于题库原始顺序——
+    // 这里只断言「两个真实 id 都在」，顺序语义由专门的排序测试覆盖。
+    expect((r.details as { validIds: string[] }).validIds).toEqual(expect.arrayContaining(['q-choice-1', 'q-open-1']));
   });
 
   it('C4 回归：未先搜索就传入错误 id 时，not_found 不把全题库题号灌进 context，而是引导用 searchQuestions', async () => {
@@ -233,7 +235,9 @@ describe('createAgentTools', () => {
     const tools = createAgentTools(d);
     const search = tools.find((t) => t.name === 'searchQuestions')!;
     const r1 = await search.execute('call', {});
-    expect(d.session.lastSearchIds).toEqual(['q-choice-1', 'q-open-1']);
+    // 顺序由统一排序决定（两个真实 id 都在即可，具体序见排序契约测试）
+    expect(d.session.lastSearchIds).toEqual(expect.arrayContaining(['q-choice-1', 'q-open-1']));
+    expect(d.session.lastSearchIds).toHaveLength(2);
     const text1 = (r1.content as { type: string; text: string }[]).map((c) => c.text).join('');
     expect(text1).toContain('找到 2 道候选题');
     // 重复调用（相同参数）→ 复用缓存、明确提示无需再调
@@ -241,7 +245,7 @@ describe('createAgentTools', () => {
     const text2 = (r2.content as { type: string; text: string }[]).map((c) => c.text).join('');
     expect(text2).toContain('复用上次的候选列表');
     expect(text2).toContain('q-choice-1');
-    expect(d.session.lastSearchIds).toEqual(['q-choice-1', 'q-open-1']);
+    expect(d.session.lastSearchIds).toEqual(expect.arrayContaining(['q-choice-1', 'q-open-1']));
   });
 
   it('getQuestion 传入 topic 而非 id 时按主题兜底选题（修复 D）', async () => {
@@ -563,5 +567,192 @@ describe('工具定义注入 Chrome prompt 的体积', () => {
     const prompt = buildUserPrompt({ systemPrompt: 'sys', messages: [], tools: tools as never });
     expect(prompt).toContain('- finishInterview()');
     expect(prompt).toContain('- evaluateAnswer()');
+  });
+});
+
+// ── P0 回归：会话级学习状态 / 候选排序 / 误解命中 / 必考点覆盖 ───────────────
+describe('P0-1 会话级学习状态（有效画像，非冻结快照）', () => {
+  it('本轮答错后 getUserWeaknesses 立即报出该主题（无需等 finishInterview 落库）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
+    d.session.answers['q-choice-1'] = [1]; // 答错 → 0 分
+    const tools = createAgentTools(d);
+    await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    const r = await tools.find((t) => t.name === 'getUserWeaknesses')!.execute('call', {});
+    const { weakTopics } = r.details as { weakTopics: string[] };
+    // 修复前：getUserWeaknesses 读创建工具时的空画像 → 报不出 attention
+    expect(weakTopics).toContain('attention');
+  });
+
+  it('本轮答对 100 分不把主题误判为薄弱（有效画像与历史画像叠加）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
+    d.session.answers['q-choice-1'] = [0]; // 答对 → 100
+    const tools = createAgentTools(d);
+    await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    const r = await tools.find((t) => t.name === 'getUserWeaknesses')!.execute('call', {});
+    const { weakTopics } = r.details as { weakTopics: string[] };
+    expect(weakTopics).not.toContain('attention');
+  });
+
+  it('getWeakAngles 同样读有效画像：本轮答错的角度立即进入薄弱列表', async () => {
+    const q = { ...makeChoiceQuestion(), angle: 'mechanism' as const };
+    const d = deps([q]);
+    d.session.currentQuestion = { question: q, format: 'choice' };
+    d.session.answers['q-choice-1'] = [1];
+    const tools = createAgentTools(d);
+    await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    const r = await tools.find((t) => t.name === 'getWeakAngles')!.execute('call', { topic: 'attention' });
+    const { weakAngles } = r.details as { weakAngles: string[] };
+    expect(weakAngles).toContain('mechanism');
+  });
+});
+
+describe('P0-2/P0-3 候选排序与已交付过滤（统一 rankCandidatePool 策略）', () => {
+  const weakProfile = () => {
+    const p = emptyProfile();
+    p.topicStats['attention'] = {
+      attempts: 3, avgScore: 40, lastScore: 40, trend: 'flat', mastery: 0.4,
+      commonWeaknesses: [], evidence: [], lastSeen: 0,
+    };
+    p.topicStats['rag'] = {
+      attempts: 3, avgScore: 95, lastScore: 95, trend: 'flat', mastery: 0.95,
+      commonWeaknesses: [], evidence: [], lastSeen: 0,
+    };
+    return p;
+  };
+
+  it('薄弱主题的题排在前，已掌握主题最后（不再按题库原始顺序截取前 N）', async () => {
+    const d = deps([makeOpenQuestion(), makeChoiceQuestion()], weakProfile());
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'searchQuestions')!.execute('call', {});
+    // attention 薄弱（tier 0）→ 必须排在 rag（已掌握 tier 2）之前
+    expect((r.details as { id: string; topic: string }[]).map((x) => x.topic)).toEqual([
+      'attention',
+      'rag',
+    ]);
+  });
+
+  it('已交付的题从候选池剔除：问过的题不再出现，候选随本轮推进动态前移', async () => {
+    const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
+    const tools = createAgentTools(d);
+    const search = tools.find((t) => t.name === 'searchQuestions')!;
+    await search.execute('call', {});
+    const first = [...d.session.lastSearchIds];
+    expect(first).toContain('q-choice-1');
+    expect(first).toContain('q-open-1');
+    // 交付 q-choice-1 并评分（写入 evaluations）后重新搜索：只剩 q-open-1
+    d.session.evaluations['q-choice-1'] = fakeOpenResult(80);
+    const r2 = await search.execute('call', {});
+    expect(d.session.lastSearchIds).toEqual(['q-open-1']);
+    const text = textOf(r2);
+    expect(text).not.toContain('q-choice-1');
+    expect(text).toContain('q-open-1');
+  });
+
+  it('范围内题目全部考察完时给出「已全部考察过」提示，而非空列表', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.evaluations['q-choice-1'] = fakeOpenResult(80);
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'searchQuestions')!.execute('call', {});
+    expect(d.session.lastSearchIds).toEqual([]);
+    expect(textOf(r)).toContain('均已考察过');
+  });
+
+  it('getQuestion topic 兜底同样走统一排序（薄弱主题优先）', async () => {
+    const d = deps([makeOpenQuestion(), makeChoiceQuestion()], weakProfile());
+    const tools = createAgentTools(d);
+    // 直接传 topic 而非 id：应从 attention（薄弱）里选，而不是题库顺序的 rag
+    const r = await tools.find((t) => t.name === 'getQuestion')!.execute('call', { id: 'attention' });
+    expect((r.details as { id: string }).id).toBe('q-choice-1');
+  });
+});
+
+describe('P0-5 选择题误解命中（misconceptionMap → 结构化反证证据）', () => {
+  const misconceptionQuestion = (): Question => ({
+    id: 'mis-q',
+    category: 'rag',
+    topic: 'rag',
+    tags: [],
+    difficulty: 'medium',
+    question: '混合检索的两路分数应如何融合？',
+    explanation: '需先归一化再加权融合。',
+    misconceptions: ['以为向量检索可全面取代关键词检索', '以为融合顺序与归一化无关紧要'],
+    formats: {
+      choice: {
+        type: 'single',
+        options: ['先归一化再做加权融合', '直接拼接 Top-K 即可', '纯向量检索足够，无需关键词'],
+        answer: [0],
+        misconceptionMap: [null, 1, 0], // 选项1→误解[1]，选项2→误解[0]（与 options 等长索引对齐）
+      },
+    },
+  });
+
+  it('答错时按 misconceptionMap 命中对应误解，答对时不产生', async () => {
+    const q = misconceptionQuestion();
+    const d = deps([q]);
+    d.session.currentQuestion = { question: q, format: 'choice' };
+    d.session.answers['mis-q'] = [2]; // 选中「纯向量检索足够」→ 误解[0]
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    const result = r.details as EvaluationResult;
+    expect(result.overall).toBe(0);
+    expect(result.misconceptionIds).toEqual(['以为向量检索可全面取代关键词检索']);
+    // 摘要文本把误解带进 Agent 上下文（details 不进上下文，正文必须可见）
+    expect(textOf(r)).toContain('命中误解');
+    expect(textOf(r)).toContain('以为向量检索可全面取代关键词检索');
+
+    // 答对 → 无误解命中
+    d.session.currentQuestion = { question: q, format: 'choice' };
+    d.session.answers['mis-q'] = [0];
+    const r2 = await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    expect((r2.details as EvaluationResult).misconceptionIds).toEqual([]);
+    expect(textOf(r2)).not.toContain('命中误解');
+  });
+
+  it('未标注 misconceptionMap 的题目答错不产生误解信号（宁缺毋滥）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
+    d.session.answers['q-choice-1'] = [1];
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    const result = r.details as EvaluationResult;
+    expect(result.overall).toBe(0);
+    expect(result.misconceptionIds ?? []).toEqual([]);
+  });
+});
+
+describe('P0-5 coverage 第二层：必考点证据缺口', () => {
+  it('薄弱主题的必考点「已答错 N 次」被报出（angle 有题 ≠ 知识点被覆盖）', async () => {
+    const d = deps([makeOpenQuestion()]); // rag 主题
+    const profile = d.profile;
+    profile.topicStats['rag'] = {
+      attempts: 3, avgScore: 40, lastScore: 40, trend: 'flat', mastery: 0.4,
+      commonWeaknesses: [], evidence: [], lastSeen: 0,
+    };
+    profile.conceptEvidence = {
+      'rag|rag 解决知识问题而非理解问题：答案质量受检索质量上限制约': {
+        misses: 2, lastScore: 25, lastSeenAt: 0,
+        label: 'RAG 解决知识问题而非理解问题：答案质量受检索质量上限制约',
+      },
+    };
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'getCoverageGaps')!.execute('call', {});
+    const { conceptGaps } = r.details as { conceptGaps: { point: string; status: string; misses: number }[] };
+    expect(conceptGaps.length).toBeGreaterThan(0);
+    const missed = conceptGaps.find((g) => g.status === 'missed');
+    expect(missed).toBeDefined();
+    expect(missed!.misses).toBe(2);
+    expect(textOf(r)).toContain('已答错 2 次');
+  });
+
+  it('从未练过的主题：必考点标为「从未探测」', async () => {
+    const d = deps([makeOpenQuestion()]); // rag 主题，空画像
+    const tools = createAgentTools(d);
+    const r = await tools.find((t) => t.name === 'getCoverageGaps')!.execute('call', {});
+    const { conceptGaps } = r.details as { conceptGaps: { status: string }[] };
+    expect(conceptGaps.length).toBeGreaterThan(0);
+    expect(conceptGaps.every((g) => g.status === 'unprobed')).toBe(true);
+    expect(textOf(r)).toContain('从未探测');
   });
 });

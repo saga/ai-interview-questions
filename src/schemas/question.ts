@@ -13,6 +13,13 @@ const choiceFormatSchema = z.object({
   options: z.array(z.string().min(1)).min(4).max(6),
   answer: z.array(z.number().int().nonnegative()).min(1),
   question: z.string().min(1).optional(),
+  /**
+   * 选项→误解映射（可选，与 `options` 等长索引对齐）：`misconceptionMap[i]` = 选项 i 体现的误解
+   * 在题目级 `misconceptions` 数组中的下标，`null` = 该选项未标注。仅干扰项（错误选项）需要标注；
+   * 答题者选中该错误选项时，即可无 LLM 产出结构化的误解命中信号（反证证据）。
+   * 未标注的选项不产生信号（旧题库保持零破坏）。由 scripts/backfill-misconceptions.ts 自动回填。
+   */
+  misconceptionMap: z.array(z.union([z.number().int().nonnegative(), z.null()])).optional(),
 }).superRefine((choice, ctx) => {
   if (new Set(choice.answer).size !== choice.answer.length) {
     ctx.addIssue({

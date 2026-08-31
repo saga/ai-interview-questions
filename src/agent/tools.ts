@@ -13,8 +13,19 @@ import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { availableSessionFormats, evaluateSessionQuestion, finalizeQuestion } from '../application/sessionEvaluator';
 import { describeEvaluationSummary } from '../domain/evaluation';
-import { collectTopicRefs, describeCoverageGap, findCoverageGaps, recommendWeakTopics, weakAnglesOf } from '../domain/learner';
+import {
+  collectTopicRefs,
+  conceptGapsOf,
+  describeCoverageGap,
+  findCoverageGaps,
+  recommendWeakTopics,
+  topMisconceptionsOf,
+  weakAnglesOf,
+  type ConceptGap,
+} from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge';
+import { rankCandidatePool } from '../domain/adaptive';
+import { effectiveProfileFor } from './sessionState';
 import { countDelivered } from './types';
 import type { InterviewAgentSession } from './types';
 
@@ -114,6 +125,10 @@ function deliverableIds(session: InterviewAgentSession, byId: Map<string, Questi
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
   const { bank, profile, provider, session, generateOpenQuestions = false } = deps;
   const byId = new Map(bank.map((q) => [q.id, q]));
+  // P0-1：画像类工具读取「有效画像」= 历史 profile 叠加本轮已评分结果（会话级学习状态），
+  // 而不是创建工具时冻结的快照——本轮第 1 题的表现从第 2 题起即可反馈到薄弱分析。
+  // 纯函数、幂等、不落库（落库仍由 finishInterview 后 updateLearner 统一接管）。
+  const effectiveProfile = () => effectiveProfileFor(session, bank, profile);
 
   const searchQuestions: AgentTool<typeof SearchQuestionsSchema> = {
     name: 'searchQuestions',
@@ -125,7 +140,16 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       if (params.topic) {
         pool = pool.filter((q) => q.topic === params.topic || q.category === params.topic);
       }
-      const items = pool.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
+      // P0-2：候选池 = 过滤条件 + 排除已交付题 + 统一策略排序（弱主题→弱角度→证据最少→难度→稳定序）。
+      // 替换原 `pool.slice(0, limit)` 的「前 N 题偏置」：不指定 topic 时不再永远返回题库最前面 10 道，
+      // 且已交付题被剔除后，候选会随本轮推进动态前移，Agent 可遍历到整个题库。
+      // P0-3：排序复用 adaptive.ts 的 rankCandidatePool（与确定性兜底引擎同一 policy），
+      // Agent 只是从同一份候选中做取舍，而不是另起一套选题逻辑。
+      const candidates = rankCandidatePool(
+        pool.filter((q) => !isDelivered(session, q.id)),
+        effectiveProfile(),
+      );
+      const items = candidates.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
       const ids = items.map((it) => it.id);
       // 幂等判定：与「最近一次搜索结果」完全一致视为重复调用——直接复用缓存列表，
       // 从代码层消除「反复调用 searchQuestions」动机（原 prompt 约束由此下沉为确定性行为）。
@@ -146,12 +170,15 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         .join('\n');
       const nextStep =
         '下一步：从这些候选里选 1 道（建议从薄弱主题 / 难度适中开始），调用 getQuestion(id=<上面列出的真实 id>) 选定。';
+      const allDelivered = pool.length > 0 && candidates.length === 0;
       const content =
         items.length > 0
           ? isRepeat
             ? `（检测到重复调用 searchQuestions，已复用上次的候选列表，无需再次调用）\n${list}\n\n${nextStep}`
-            : `找到 ${items.length} 道候选题（按顺序排列，请用其中真实 id 调用 getQuestion）：\n${list}\n\n${nextStep}`
-          : `未找到匹配「${params.topic ?? '全部'}」的候选题。请换一个 topic / category，或不带参数重新 searchQuestions 获取全部候选。`;
+            : `找到 ${items.length} 道候选题（按弱主题→弱角度→证据最少排序，请用其中真实 id 调用 getQuestion）：\n${list}\n\n${nextStep}`
+          : allDelivered
+            ? `「${params.topic ?? '全部'}」范围内的题目本轮均已考察过。请换一个 topic / category 搜索其它候选，或调用 getCoverageGaps 查看还有哪些主题可考。`
+            : `未找到匹配「${params.topic ?? '全部'}」的候选题。请换一个 topic / category，或不带参数重新 searchQuestions 获取全部候选。`;
       session.log.push({
         at: Date.now(),
         kind: 'tool',
@@ -176,7 +203,12 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       if (!q) {
         // 容错（修复 D）：LLM 可能把 topic/category 当题号传入——退化为该范围下一道未交付的题，避免 not_found 致卡死。
         const byTopic = bank.filter((x) => x.topic === params.id || x.category === params.id);
-        q = byTopic.find((x) => !isDelivered(session, x.id));
+        // P0-3：topic 兜底同样走统一排序（弱主题→弱角度→证据最少），而不是题库原始顺序，
+        // 保证「按 topic 传参」与「按 searchQuestions 候选选」遵循同一 policy。
+        q = rankCandidatePool(
+          byTopic.filter((x) => !isDelivered(session, x.id)),
+          effectiveProfile(),
+        )[0];
         if (q) {
           matchedBy = 'topic';
         } else {
@@ -335,7 +367,8 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     description: '读取用户已练主题的薄弱点（掌握度 < 阈值），作为选题与追问的上下文。只读，不修改画像。',
     parameters: GetUserWeaknessesSchema,
     execute: async () => {
-      const weak = recommendWeakTopics(profile, 3, deps.masteryThreshold);
+      // P0-1：读「有效画像」（历史 + 本轮已评分），而非创建工具时的冻结快照
+      const weak = recommendWeakTopics(effectiveProfile(), 3, deps.masteryThreshold);
       session.log.push({
         at: Date.now(),
         kind: 'tool',
@@ -358,15 +391,22 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     execute: async (_id, params: { topic: string }) => {
       const node = knowledgeById(params.topic);
       const expected = node?.angles ?? [];
-      const weak = weakAnglesOf(profile, params.topic, expected as any);
+      // P0-1：读「有效画像」；P0-5：顺带带上该主题选择题命中的误解（结构化反证证据）
+      const weak = weakAnglesOf(effectiveProfile(), params.topic, expected as any);
+      const misconceptions = topMisconceptionsOf(effectiveProfile(), params.topic, 2);
       session.log.push({
         at: Date.now(),
         kind: 'tool',
         tool: 'getWeakAngles',
-        summary: `角度薄弱：${weak.join('、') || '（无）'}`,
-        details: { topic: params.topic, weakAngles: weak, expected },
+        summary: `角度薄弱：${weak.join('、') || '（无）'}${misconceptions.length ? `；误解：${misconceptions.join('；')}` : ''}`,
+        details: { topic: params.topic, weakAngles: weak, misconceptions, expected },
       });
-      return textResult(`主题 ${params.topic} 的薄弱角度：${weak.join('、') || '（暂无）'}`, { topic: params.topic, weakAngles: weak, expected });
+      return textResult(
+        `主题 ${params.topic} 的薄弱角度：${weak.join('、') || '（暂无）'}${
+          misconceptions.length ? `；该主题命中过的误解：${misconceptions.join('；')}` : ''
+        }`,
+        { topic: params.topic, weakAngles: weak, misconceptions, expected },
+      );
     },
   };
 
@@ -378,23 +418,44 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     description: '读取覆盖缺口：题库里有、但用户尚未练习的 topic（uncovered），以及因前置知识未掌握而暂时不该上的 topic（prerequisite）。只读事实，不含建议；与 getUserWeaknesses（已练但薄弱）互补，不要混用。',
     parameters: GetCoverageGapsSchema,
     execute: async () => {
-      const gaps = findCoverageGaps(collectTopicRefs(bank), profile, {
+      // P0-1：读「有效画像」（历史 + 本轮已评分）
+      const eff = effectiveProfile();
+      const gaps = findCoverageGaps(collectTopicRefs(bank), eff, {
         threshold: deps.masteryThreshold,
         limit: 5,
       });
-      const content = gaps.length
-        ? `覆盖缺口（${gaps.length} 个，前置缺口优先）：\n${gaps
-            .map((g) => `- ${g.topic}：${describeCoverageGap(g, profile)}`)
-            .join('\n')}`
-        : '当前题库中的所有 topic 均已练习且前置完备，没有覆盖缺口。';
+      // P0-5（coverage 第二层）：必考点证据缺口。「topic×angle 有题」≠「必考点被覆盖」——
+      // 对缺口主题 + 薄弱主题逐一查 KnowledgeNode.required 的证据：答错过（missed）或从未探测（unprobed）。
+      const conceptGaps: ConceptGap[] = [];
+      const conceptTopics = [
+        ...new Set([...gaps.map((g) => g.topic), ...recommendWeakTopics(eff, 3, deps.masteryThreshold)]),
+      ];
+      for (const topic of conceptTopics) {
+        const required = knowledgeById(topic)?.required ?? [];
+        if (required.length === 0) continue;
+        conceptGaps.push(...conceptGapsOf(eff, topic, required).slice(0, 3));
+      }
+      const conceptText =
+        conceptGaps.length > 0
+          ? `\n必考点缺口（${conceptGaps.length} 个）：\n${conceptGaps
+              .slice(0, 6)
+              .map((g) => `- ${g.topic}｜${g.point}：${g.status === 'missed' ? `已答错 ${g.misses} 次` : '从未探测'}`)
+              .join('\n')}`
+          : '';
+      const content =
+        (gaps.length
+          ? `覆盖缺口（${gaps.length} 个，前置缺口优先）：\n${gaps
+              .map((g) => `- ${g.topic}：${describeCoverageGap(g, eff)}`)
+              .join('\n')}`
+          : '当前题库中的所有 topic 均已练习且前置完备，没有覆盖缺口。') + conceptText;
       session.log.push({
         at: Date.now(),
         kind: 'tool',
         tool: 'getCoverageGaps',
-        summary: `覆盖缺口 ${gaps.length} 个`,
-        details: { gaps },
+        summary: `覆盖缺口 ${gaps.length} 个${conceptGaps.length ? `，必考点缺口 ${conceptGaps.length} 个` : ''}`,
+        details: { gaps, conceptGaps },
       });
-      return textResult(content, { gaps });
+      return textResult(content, { gaps, conceptGaps });
     },
   };
 

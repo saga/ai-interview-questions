@@ -85,6 +85,11 @@ export function conceptKey(topic: string, concept: string): string {
   return `${topic}|${concept.trim().toLowerCase()}`;
 }
 
+/** 误解命中的 key：`${topic}|${misconception}`（误解文本归一化；按 topic 分桶便于逐主题查询）。 */
+export function misconceptionKey(topic: string, misconception: string): string {
+  return `${topic}|${misconception.trim().toLowerCase()}`;
+}
+
 export function emptyProfile(): LearnerProfile {
   return {
     totalSessions: 0,
@@ -93,6 +98,7 @@ export function emptyProfile(): LearnerProfile {
     topicStats: {},
     angleCoverage: {},
     conceptEvidence: {},
+    misconceptionHits: {},
     sessions: [],
     updatedAt: 0,
   };
@@ -180,6 +186,7 @@ export function updateLearner(
   const topicStats = { ...profile.topicStats };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
   const conceptEvidence = { ...(profile.conceptEvidence ?? {}) };
+  const misconceptionHits = { ...(profile.misconceptionHits ?? {}) };
   const byTopic = new Map<string, QuestionResult[]>();
   for (const r of s.questionResults) {
     const arr = byTopic.get(r.topic) ?? [];
@@ -218,6 +225,23 @@ export function updateLearner(
         lastSeenAt: s.startedAt,
         // 保留首次出现的原文：key 已归一化（小写），直接回填会让 "PPO" 显示成 "ppo"
         label: prev?.label ?? concept,
+      };
+    }
+  }
+
+  // 误解命中证据：选择题反证信号，与 conceptEvidence 并行（误解 ≠ 缺失概念，刻意分桶）。
+  // 由题目 misconceptions × misconceptionMap 产出（见 gradeChoice / sessionFromQuiz），无 LLM。
+  for (const r of s.questionResults) {
+    for (const rawMis of r.misconceptionIds ?? []) {
+      const mis = rawMis.trim();
+      if (!mis) continue;
+      const key = misconceptionKey(r.topic, mis);
+      const prev = misconceptionHits[key];
+      misconceptionHits[key] = {
+        hits: (prev?.hits ?? 0) + 1,
+        lastSeenAt: s.startedAt,
+        // 保留首次出现的原文（key 已归一化）
+        label: prev?.label ?? mis,
       };
     }
   }
@@ -271,9 +295,58 @@ export function updateLearner(
     topicStats,
     angleCoverage,
     conceptEvidence,
+    misconceptionHits,
     sessions,
     updatedAt: s.startedAt,
   };
+}
+
+/** 某 topic 下命中次数最多的误解（选择题反证证据，按 hits 降序、同次数最近在前）；无证据返回空数组。 */
+export function topMisconceptionsOf(profile: LearnerProfile, topic: string, limit = 3): string[] {
+  const hits = profile.misconceptionHits;
+  if (!hits) return [];
+  const prefix = `${topic}|`;
+  return Object.entries(hits)
+    .filter(([k]) => k.startsWith(prefix))
+    .sort((a, b) => b[1].hits - a[1].hits || b[1].lastSeenAt - a[1].lastSeenAt)
+    .slice(0, limit)
+    .map(([, v]) => v.label);
+}
+
+// ── 概念必考点覆盖（coverage 第二层：知识证据，而非「angle 有题」）────────────────
+// 与 Topic×Angle 结构覆盖（computeCoverage / coverage.ts 矩阵）正交：
+// 前者回答「题库有没有题」，这里回答「该知识点是否真的被学习证据覆盖」。
+// 证据口径刻意保守——只有「答错过」算 missed，「从未练过」算 unprobed；
+// 「练过且无缺失证据」不列为缺口（无法区分「没问过」与「掌握了」，不制造虚假缺口）。
+
+export interface ConceptGap {
+  topic: string;
+  /** 必考点原文（KnowledgeNode.required 中的条目）。 */
+  point: string;
+  status: 'missed' | 'unprobed';
+  /** status === 'missed' 时的累计缺失次数（开放题 missingConcepts 计数）。 */
+  misses: number;
+}
+
+/**
+ * 单个主题的必考点覆盖缺口：在 `required`（该主题知识节点的必考要点）中，
+ * 列出有证据缺失（missed）或从未探测（unprobed）的条目。
+ * 与 findCoverageGaps 的 topic 级缺口互补：后者回答「哪些主题没练」，这里精确到「哪个必考点没覆盖」。
+ */
+export function conceptGapsOf(profile: LearnerProfile, topic: string, required: string[]): ConceptGap[] {
+  const evidence = profile.conceptEvidence ?? {};
+  const attempted = isAttempted(profile, topic);
+  const gaps: ConceptGap[] = [];
+  for (const point of required) {
+    const key = conceptKey(topic, point);
+    const ev = evidence[key];
+    if (ev && ev.misses > 0) {
+      gaps.push({ topic, point, status: 'missed', misses: ev.misses });
+    } else if (!attempted) {
+      gaps.push({ topic, point, status: 'unprobed', misses: 0 });
+    }
+  }
+  return gaps;
 }
 
 /** 由一次已评分的训练会话构造 SessionRecord（纯函数；答案只影响判分结果，不在此读取）。 */
@@ -302,6 +375,9 @@ export function sessionFromQuiz(
         // 二者仅来自开放题的 LLM 评估，避免把"答案不正确"当真实薄弱要点写进 Learner Memory（不伪造 gap）。
         gaps: format === 'choice' ? [] : (g.gaps ?? []),
         missingConcepts: format === 'choice' ? [] : (g.missingConcepts ?? []),
+        // 选择题例外：misconceptionIds 是「选中错误选项」带来的结构化反证证据（无 LLM），
+        // 不属「猜测漏了哪个知识点」，如实透传，由 updateLearner 聚合进 misconceptionHits。
+        misconceptionIds: format === 'choice' ? (g.misconceptionIds ?? []) : [],
       };
     });
   const overall =
