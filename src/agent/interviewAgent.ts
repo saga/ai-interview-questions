@@ -157,6 +157,11 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     : `\n\n## 本轮配置\n「生成开放题」开关已关闭：请只选择并使用选择题（choice），不要请求开放题（open），否则会被系统拦截并要求换题。`);
   const agent = new Agent({
     streamFn: runtime.streamFn,
+    // P0-1（DeepSeek KV Cache）：把 InterviewAgentSession.id（稳定 UUID）作为 provider cache-aware
+    // 的 session identity 转给底层。DeepSeek 的磁盘 prefix cache 虽不靠 sessionId 命中，但这是 Pi 官方
+    // 为 cache-aware backend 提供的会话身份，且能跨 resume/刷新保持同一身份（resume 复用持久化 session.id），
+    // 对未来 provider 变化与任何 session-affinity 机制都有价值（pi-agent-core AgentOptions.sessionId）。
+    sessionId: session.id,
     initialState: { model: runtime.model as Model<any>, systemPrompt },
     shouldStopAfterTurn: (ctx) => shouldStopAfterTurn(session, ctx),
     beforeToolCall: (ctx) => Promise.resolve(beforeToolCall(entry, session, ctx)),

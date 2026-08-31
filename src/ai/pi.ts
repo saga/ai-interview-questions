@@ -93,15 +93,27 @@ export interface CallLLMOptions {
   onUsage?: (usage: LLMUsage) => void;
 }
 
-/** 把 pi-ai 的 Usage 归一化为 provider 无关的 LLMUsage（cacheRead→命中，input-cacheRead→未命中）。 */
+/**
+ * 把 pi-ai 的 Usage 归一化为 provider 无关的 LLMUsage。
+ *
+ * 关键语义（已核对 pi-ai 源码 `dist/api/openai-completions.js` 的 `parseChunkUsage`，DeepSeek 走此适配器）：
+ * - `u.cacheRead` = DeepSeek 的 `prompt_cache_hit_tokens`（命中前缀的 token，即 cache 命中）；
+ * - `u.input` = `prompt_tokens − cacheRead − cacheWrite`（**重新计算/未命中的部分**，不是总 prompt tokens）；
+ * - `u.cacheWrite` = `prompt_tokens_details.cache_write_tokens`（DeepSeek 通常在此为 0，命中/未命中都在顶层）。
+ * 因此「未命中 token」= `input + cacheWrite`（= 原始 `prompt_tokens − 命中`），**绝不能**再做 `input − cacheHit`
+ * （会重复减去 cacheRead，导致 cacheMiss 恒为 0、命中率恒 100% 的假象——旧实现正是这个 bug）。
+ * `inputTokens`（总 prompt）= `cacheHit + cacheMiss`，命中率 = `cacheHit / inputTokens`。
+ */
 export function piUsageToLLMUsage(u: Usage): LLMUsage {
-  const input = u.input ?? 0;
   const cacheHit = u.cacheRead ?? 0;
+  const cacheWrite = u.cacheWrite ?? 0;
+  const cacheMiss = (u.input ?? 0) + cacheWrite; // 重新计算的部分 = 总 prompt − 命中
+  const total = cacheHit + cacheMiss; // = 原始 prompt_tokens（命中 + 未命中）
   return {
-    inputTokens: input,
+    inputTokens: total,
     outputTokens: u.output ?? 0,
     cacheHitTokens: cacheHit,
-    cacheMissTokens: Math.max(0, input - cacheHit),
+    cacheMissTokens: cacheMiss,
     reasoningTokens: u.reasoning,
   };
 }

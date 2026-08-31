@@ -26,7 +26,7 @@ import {
 import { createInterviewAgent } from '../agent/interviewAgent';
 import type { InterviewAgentHandle } from '../agent/interviewAgent';
 import { resolveOpeningInstruction } from '../agent/prompt';
-import { devUsageLogger } from '../ai/usageTelemetry';
+import { devUsageLogger, resetUsageTelemetry } from '../ai/usageTelemetry';
 import {
   saveAgentSession,
   getActiveAgentSession,
@@ -311,6 +311,7 @@ export function useAgentInterview(
   const startInner = async () => {
     setError(null);
     finalizedRef.current = false; // 新一轮面试：解除终局守卫
+    resetUsageTelemetry(); // 重置 KV Cache 命中率累计（P1④）：每场面试从 Round 1 重新计数
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
     const provider = createLLMProvider(config, devUsageLogger);
     if (!entry || !provider) {
