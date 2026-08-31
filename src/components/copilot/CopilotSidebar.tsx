@@ -37,9 +37,11 @@ import {
   loadConversationSession,
   saveConversationSession,
   clearConversationSession,
+  projectToConversationSession,
+  shouldUpgradeToInterview,
   type ConversationSession,
 } from '../../application/conversation/conversationSession';
-import { startChatInterview, type ChatInterviewController } from '../../application/conversation/interviewCapability';
+import { startChatInterview, rehydrateInterviewAgent, type ChatInterviewController } from '../../application/conversation/interviewCapability';
 
 function logCopilotFailure(message: string, detail: Record<string, unknown>): void {
   console.error('[Copilot] 调用失败：', message, detail);
@@ -123,6 +125,8 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const loadingRef = useRef(false);
   // 面试（Agent 驱动）运行时会话句柄：跨多次用户输入复用，不持久化（plan0831_5 §P0-1/P0-2）。
   const chatInterviewRef = useRef<ChatInterviewController | null>(null);
+  // 恢复中标记：避免刷新恢复与用户首次交互并发时创建两个 Agent（plan0831_6 P0-1）。
+  const resumingRef = useRef(false);
   const configReady = isConfigValid(config);
 
   // Persist context + messages together (P1-1)
@@ -149,6 +153,41 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       chatInterviewRef.current?.dispose();
       chatInterviewRef.current = null;
     };
+  }, []);
+
+  // 刷新恢复（plan0831_6 P0-1）：若持久化的 session 仍在 interview 模式且有当前题，
+  // 重建运行时会话并接回 controller，避免「假恢复 → 静默退化成 Question 模式确定性评分」。
+  // 无可用引擎时给出明确提示，不静默退化。
+  useEffect(() => {
+    const persisted = loadConversationSession();
+    if (!persisted || persisted.context.mode !== 'interview' || !persisted.context.currentQuestionId) return;
+    const entry = config.providers.find((p) => p.enabled && isEntryValid(p)) ?? null;
+    const providerForAgent = configReady ? createLLMProvider(config) : null;
+    if (!entry || !providerForAgent) {
+      appendAssistant('检测到上一场「模拟面试」未结束（mode=interview），但当前未配置可用的 AI 引擎，无法恢复运行时会话。请先在设置中配置引擎，或回复「结束」以保存进度。');
+      return;
+    }
+    resumingRef.current = true;
+    const resumeSession = rehydrateInterviewAgent(persisted);
+    void startChatInterview({
+      bank: questionBank.questions,
+      profile: profile ?? emptyProfile(),
+      entry,
+      provider: providerForAgent,
+      resumeSession,
+    })
+      .then((res) => {
+        resumingRef.current = false;
+        if (res.fatalError) {
+          appendAssistant(res.fatalError);
+          return;
+        }
+        chatInterviewRef.current = res.controller;
+        setChatQuestion(res.firstQuestion?.question ?? null);
+      })
+      .catch(() => {
+        resumingRef.current = false;
+      });
   }, []);
 
   const appendAssistant = (content: string) => {
@@ -202,40 +241,37 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       const provider = configReady ? createLLMProvider(config) : null;
       const deps = { bank: questionBank, profile: profile ?? emptyProfile(), config, provider };
 
-      // --- end_interview: aggregate single record ---
+      // --- end_interview：严格顺序（plan0831_6 P0-2）：build record → persist learner
+      // → dispose Agent → clear active session → set UI to ended。end 分支不再调用任何
+      // saveConversationSession，确保刷新后不会恢复一个「已结束」的 session。 ---
       if (intent.intent === 'end_interview') {
         chatInterviewRef.current?.dispose();
         chatInterviewRef.current = null;
+        let assistantMsg = '已结束。';
         if (convSession && convSession.questions.length > 0 && onSessionComplete) {
           const record = toSessionRecord(convSession);
           if (record && record.questionResults.length > 0) {
             await onSessionComplete(record);
-            appendAssistant(`已结束本次训练，共 ${record.questionResults.length} 题，均分 ${record.overall}。已写入学习记录。`);
+            assistantMsg = `已结束本次训练，共 ${record.questionResults.length} 题，均分 ${record.overall}。已写入学习记录。`;
           } else {
-            appendAssistant('已结束。当前没有可保存的作答。');
+            assistantMsg = '已结束。当前没有可保存的作答。';
           }
-        } else {
-          appendAssistant('已结束。');
         }
-        clearConversationSession();
+        // 先清掉 active session（setConvSession(null)），使后续 appendAssistant 内部的
+        // setConvSession(prevS) 因 prevS 为 null 不再回写 localStorage，杜绝「clear→save」竞态。
         setConvSession(null);
-        // P1-4：保留「上一 session 已结束」状态（endedAt），而非完全清空上下文，
-        // 让用户明确自己已不在原面试中；后续「下一题」会据此开新会话。
+        clearConversationSession();
+        // 保留「上一 session 已结束」状态（endedAt），让用户明确自己已不在原面试中。
         setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
         setChatQuestion(null);
-        // messages keep but mark ended
-        setMessages((prev) => {
-          const next = [...prev];
-          if (convSession) saveConversationSession({ ...convSession, messages: next } as any);
-          return next;
-        });
+        appendAssistant(assistantMsg);
         return;
       }
 
       if (intent.intent === 'ask_question' || intent.intent === 'continue_interview' || intent.intent === 'start_interview') {
         let baseSession = convSession ?? ensureSession(intent.intent === 'start_interview' ? 'interview' : 'question');
-        // Upgrade logic P1-4: if in question mode, questionCount>=2 and continue with difficulty hint => upgrade to interview
-        const shouldUpgrade = baseSession.questionCount >= 2 && intent.intent === 'continue_interview' && (intent.difficulty === 'hard' || (intent.topic && baseSession.context.questionHistory?.length));
+        // 升级策略收口到 shouldUpgradeToInterview（plan0831_6 P1-5 / 小问题）：唯一 policy。
+        const shouldUpgrade = shouldUpgradeToInterview(baseSession, { intent: intent.intent, difficulty: intent.difficulty, topic: intent.topic });
         const targetMode: 'question' | 'interview' = intent.intent === 'start_interview' || shouldUpgrade || baseSession.context.mode === 'interview' ? 'interview' : 'question';
 
         if (targetMode === 'interview') {
@@ -244,6 +280,8 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           let finished = false;
           let fatal: string | undefined;
           let controller = chatInterviewRef.current;
+          // 刷新恢复进行中：忽略本次输入，等 resume 把 controller 接回后再交互（plan0831_6 P0-1）。
+          if (!controller && resumingRef.current) return;
           if (!controller) {
             // 首次进入：需要可用的 AI 引擎（entry + provider）。
             const entry = config.providers.find((p) => p.enabled && isEntryValid(p)) ?? null;
@@ -267,7 +305,8 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
             fatal = res.fatalError;
           } else {
             // 已存在 controller：用户说「下一题/继续/换一道」→ 交付下一题（上一题未答则跳过不计分）。
-            const step = await controller.skip();
+            const step = await controller.skip().catch(() => null);
+            if (!step) return;
             question = step.question;
             finished = step.finished;
             fatal = step.fatalError;
@@ -289,32 +328,16 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
             setConvSession((prev) => prev ? { ...prev, messages: nextMessages } : prev);
             return;
           }
-          // 同步运行时会话到 ConversationSession（桥接，plan0831_5 §P1-2）；agentSession 仅内存态，save 时剔除。
-          const updated: ConversationSession = {
-            ...baseSession,
-            messages: nextMessages,
-            context: {
-              ...baseSession.context,
-              mode: 'interview',
-              currentQuestionId: question.question.id,
-              pendingAction: 'answer',
-              questionHistory: [...(baseSession.context.questionHistory ?? []), question.question.id],
-              questionCount: baseSession.questionCount + 1,
-              messageTurnCount: baseSession.messageTurnCount + 1,
-            },
-            questions: baseSession.questions.some((q) => q.question.id === question.question.id) ? baseSession.questions : [...baseSession.questions, question],
-            answers: { ...baseSession.answers, ...controller.session.answers },
-            evaluations: { ...baseSession.evaluations, ...controller.session.evaluations },
-            agentSession: controller.session,
-          };
-          setConvSession(updated);
-          setConversationContext(updated.context);
-          setChatQuestion(question.question);
+          // 投影运行时会话到 ConversationSession（单一真源，plan0831_6 P1-3）；不再手工拼 answers/evaluations。
           const body = question.format === 'choice' && question.question.formats.choice
             ? `${question.question.question}\n\n${question.question.formats.choice.options.map((option, i) => `${String.fromCharCode(65 + i)}. ${option}`).join('\n')}\n\n请直接回复选项字母，或输入“继续/结束”。`
             : `${question.question.question}\n\n请作答；完成后我会按题库评分。输入“结束”可结束本轮训练。`;
           const withAssistant = [...nextMessages, { role: 'assistant' as const, content: body, key: `${Date.now()}-a` }];
-          saveConversationSession({ ...updated, messages: withAssistant });
+          const updated = projectToConversationSession(baseSession, controller.session, withAssistant, { deliveredQuestion: question, countAsNew: true });
+          saveConversationSession(updated);
+          setConvSession(updated);
+          setConversationContext(updated.context);
+          setChatQuestion(question.question);
           setMessages(withAssistant);
           return;
         }
@@ -354,7 +377,9 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
         if (convSession?.context.mode === 'interview' && chatInterviewRef.current) {
           const controller = chatInterviewRef.current;
           const answer = parseChatAnswer(chatQuestion, content);
-          const step = await controller.submit(answer);
+          // 并发提交保护（plan0831_6 P1-4）：上一次 submit 仍在进行时，忽略本次重复提交，不覆盖 resolver。
+          const step = await controller.submit(answer).catch(() => null);
+          if (!step) return;
           if (step.fatalError) {
             appendAssistant(step.fatalError);
             controller.dispose();
@@ -362,44 +387,30 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
             return;
           }
           const base = convSession;
-          const synced: ConversationSession = {
-            ...base,
-            answers: { ...base.answers, ...controller.session.answers },
-            evaluations: { ...base.evaluations, ...controller.session.evaluations },
-          };
           if (step.finished || !step.question) {
-            // 面试结束：等待用户「结束」保存成绩
-            appendAssistant(`本轮训练已完成，共 ${Object.keys(controller.session.evaluations).length} 题。回复“结束”可保存成绩。`);
+            // 面试结束：等待用户「结束」保存成绩（投影到 ConversationSession，plan0831_6 P1-3）。
+            const body = `本轮训练已完成，共 ${Object.keys(controller.session.evaluations).length} 题。回复“结束”可保存成绩。`;
+            const withAssistant = [...nextMessages, { role: 'assistant' as const, content: body, key: `${Date.now()}-a` }];
+            const updated = projectToConversationSession(base, controller.session, withAssistant, { deliveredQuestion: null, countAsNew: false });
             controller.dispose();
             chatInterviewRef.current = null;
-            const ctx = { ...synced.context, currentQuestionId: undefined, pendingAction: 'choose_question' as const };
-            setConvSession({ ...synced, context: ctx });
-            setConversationContext(ctx);
+            saveConversationSession(updated);
+            setConvSession(updated);
+            setConversationContext(updated.context);
             setChatQuestion(null);
+            setMessages(withAssistant);
             return;
           }
           const q = step.question;
-          const nextSession: ConversationSession = {
-            ...synced,
-            context: {
-              ...synced.context,
-              currentQuestionId: q.question.id,
-              pendingAction: 'answer',
-              questionHistory: [...(synced.context.questionHistory ?? []), q.question.id],
-              questionCount: synced.questionCount + 1,
-              messageTurnCount: synced.messageTurnCount + 1,
-            },
-            questions: base.questions.some((x) => x.question.id === q.question.id) ? base.questions : [...base.questions, q],
-            agentSession: controller.session,
-          };
-          setConvSession(nextSession);
-          setConversationContext(nextSession.context);
-          setChatQuestion(q.question);
           const body = q.format === 'choice' && q.question.formats.choice
             ? `${q.question.question}\n\n${q.question.formats.choice.options.map((option, i) => `${String.fromCharCode(65 + i)}. ${option}`).join('\n')}\n\n请直接回复选项字母，或输入“继续/结束”。`
             : `${q.question.question}\n\n请作答；完成后我会按题库评分。输入“结束”可结束本轮训练。`;
           const withAssistant = [...nextMessages, { role: 'assistant' as const, content: body, key: `${Date.now()}-a` }];
-          saveConversationSession({ ...nextSession, messages: withAssistant });
+          const updated = projectToConversationSession(base, controller.session, withAssistant, { deliveredQuestion: q, countAsNew: true });
+          saveConversationSession(updated);
+          setConvSession(updated);
+          setConversationContext(updated.context);
+          setChatQuestion(q.question);
           setMessages(withAssistant);
           return;
         }

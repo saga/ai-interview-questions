@@ -8,6 +8,7 @@ import type { ProviderEntry } from '../../schemas/ai-config';
 import type { AnswerValue } from '../../types';
 import type { InterviewSession, SessionQuestion } from '../../schemas/session';
 import type { Question } from '../../schemas/question';
+import type { ConversationSession } from './conversationSession';
 import { buildSession, nextAdaptiveStep } from '../interviewEngine';
 import { evaluateAnswer } from './evaluationCapability';
 import type { AnswerSignal, Strategy } from '../../domain/adaptive';
@@ -78,6 +79,32 @@ export interface ChatInterviewController {
   dispose: () => void;
 }
 
+/**
+ * 从持久化的 ConversationSession 重建运行时会话（plan0831_6 P0-1）。
+ *
+ * 不序列化整个 Agent（含 LLM 运行时），只重建纯数据：answers / evaluations / currentQuestion /
+ * startedAt。log / lastSearchIds / fallback 等运行时遥测不持久化，重建时清空。
+ * 用于刷新后「把已有 session state 恢复进去、继续 agent」：choice 题走确定性 choiceAdvance，
+ * 无需重建 LLM loop；open 题走 submitAnswer → continue()，SDK 允许不先 prompt() 直接续跑
+ * （continue() 仅要求 transcript 末条为 user/toolResult，submitAnswer 已满足）。
+ */
+export function rehydrateInterviewAgent(session: ConversationSession): InterviewAgentSession {
+  const currentQuestion = session.context.currentQuestionId
+    ? session.questions.find((q) => q.question.id === session.context.currentQuestionId) ?? null
+    : null;
+  return {
+    id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+    status: 'running',
+    startedAt: session.startedAt,
+    currentQuestion,
+    answers: { ...session.answers },
+    evaluations: { ...session.evaluations },
+    log: [],
+    lastSearchIds: [],
+    fallbackCount: 0,
+  };
+}
+
 export interface StartChatInterviewOptions {
   bank: Question[];
   profile: LearnerProfile;
@@ -90,6 +117,8 @@ export interface StartChatInterviewOptions {
   agentInstructions?: string;
   /** 测试注入：用 mock streamFn + 占位 model 替换真实运行时。 */
   runtimeOverride?: { streamFn: StreamFn; model: unknown };
+  /** 恢复模式（plan0831_6 P0-1）：传入已重建的运行时会话，跳过开场指令直接接回当前题。 */
+  resumeSession?: InterviewAgentSession;
 }
 
 export async function startChatInterview(opts: StartChatInterviewOptions): Promise<{
@@ -98,8 +127,14 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
   finished: boolean;
   fatalError?: string;
 }> {
-  const session = createAgentSession();
+  // 恢复模式：直接复用已重建的运行时会话，不新建（plan0831_6 P0-1）。
+  const session = opts.resumeSession ?? createAgentSession();
   let resolver: ((step: ChatInterviewStep) => void) | null = null;
+
+  // 并发保护（plan0831_6 P1-4）：两次提交之间 Agent 必须空闲。busy 期间拒绝新提交，
+  // 避免「后一次 makeStepPromise 覆盖 resolver」导致前一次 submit 的 Promise 永不 resolve
+  // （double click / 键盘重复提交 / 重入都会触发）。
+  let busy = false;
 
   // 开场阶段的致命错误（首题交付前 Agent 直接 fatal，应终止并开新会话）。
   let startFatal: string | undefined;
@@ -113,6 +148,10 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
     if (!resolver) return;
     const r = resolver;
     resolver = null;
+    // 一步已交付/结束 → Agent 回到空闲，解除并发锁（plan0831_6 P1-4）。
+    // 必须在 step 落定时清除，而非在 submitAnswer 内部 Promise 结束时（后者晚于 step 落定，
+    // 会与下一次 submit 的 busy=true 竞态，导致锁被错误提前清除）。
+    busy = false;
     r(step);
   };
 
@@ -151,19 +190,34 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
     session,
     // 提交答案并推进：先挂 resolver，再驱动 Agent（评当前题 → 交付下一题 / 结束）。
     submit: (answer) => {
+      if (busy) return Promise.reject(new Error('BUSY'));
+      busy = true;
       const p = makeStepPromise();
-      void agent.submitAnswer(answer);
+      // 错误兜底：仅当没有新一步在途（resolver 已空）时才解锁，避免与下一次 submit 的 busy=true 竞态。
+      void agent.submitAnswer(answer).catch(() => { if (resolver === null) busy = false; });
       return p;
     },
     // 跳过当前题（不计分）并交付下一题。
     skip: () => {
+      if (busy) return Promise.reject(new Error('BUSY'));
+      busy = true;
       const p = makeStepPromise();
-      void agent.skip();
+      void agent.skip().catch(() => { if (resolver === null) busy = false; });
       return p;
     },
     abort: () => agent.abort(),
     dispose: () => agent.dispose(),
   };
+
+  // 恢复模式：当前题已在 session.currentQuestion，无需重新开场（plan0831_6 P0-1）。
+  // choice 题后续 submit 走确定性 choiceAdvance；open 题走 submitAnswer → continue()（无需 prior prompt）。
+  if (opts.resumeSession?.currentQuestion) {
+    return {
+      controller,
+      firstQuestion: opts.resumeSession.currentQuestion,
+      finished: opts.resumeSession.status === 'finished',
+    };
+  }
 
   // 开场：await 首轮 run 完整完成（agent_end / 兜底出题），再读 session.currentQuestion 作首题。
   // 不能在第 1 个 onQuestion 事件上提前 resolve——此时 Agent 仍在 processing，

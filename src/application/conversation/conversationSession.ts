@@ -121,11 +121,73 @@ export function toSessionRecord(session: ConversationSession, title = 'Chat 连�
   );
 }
 
-export function shouldUpgradeToInterview(session: ConversationSession): boolean {
-  // Heuristic: after 2+ questions with explicit difficulty/continue requests, upgrade makes sense.
-  // For now: if questionCount >= 2 and lastEvaluation exists, suggest upgrade path.
-  // Caller decides whether to auto-upgrade or ask.
-  return session.questionCount >= 2;
+export interface UpgradeIntent {
+  intent: string;
+  difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
+  topic?: string;
+}
+
+/**
+ * 统一的「升级到 Agent 面试」策略（plan0831_6 P1-5 / 小问题）。
+ * 之前 ConversationSession 层（`questionCount >= 2`）与 CopilotSidebar 内联各有一份 policy，
+ * 现收口到此处作为唯一来源：题数达阈值 + 用户明确「继续面试」+ 带难度/主题信号才升级。
+ */
+export function shouldUpgradeToInterview(session: ConversationSession, intent?: UpgradeIntent): boolean {
+  if (session.questionCount < 2) return false;
+  if (!intent || intent.intent !== 'continue_interview') return false;
+  return (
+    intent.difficulty === 'hard' ||
+    (Boolean(intent.topic) && (session.context.questionHistory?.length ?? 0) > 0)
+  );
+}
+
+/**
+ * 把运行时会话（InterviewAgentSession）投影到 ConversationSession（plan0831_6 P1-3）。
+ *
+ * 明确「Agent 运行时会话 = runtime 真源，ConversationSession = 投影」：Chat 不再手工
+ * `{...base.answers, ...controller.session.answers}` 双向同步，避免长期 drift。题数 / 作答 /
+ * 评分配额都从这里统一计算（projectToConversationSession 是单一写入点）。
+ *
+ * @param base 当前 ConversationSession（投影的基底）
+ * @param agentSession 运行时会话（真源）
+ * @param messages 完整 transcript（含本轮用户消息与即将追加的助手消息）
+ * @param opts.deliveredQuestion 本轮刚交付给用户作答的新题；收尾 / 「结束」时传 null
+ * @param opts.countAsNew 是否把 deliveredQuestion 计入题数（每交付一题 +1；收尾 / 换题不计重复）
+ */
+export function projectToConversationSession(
+  base: ConversationSession,
+  agentSession: InterviewAgentSession,
+  messages: { role: 'user' | 'assistant'; content: string; key: string }[],
+  opts: { deliveredQuestion?: SessionQuestion | null; countAsNew?: boolean } = {},
+): ConversationSession {
+  const delivered = opts.deliveredQuestion ?? null;
+  const countAsNew = opts.countAsNew ?? false;
+  const questionCount = countAsNew ? base.questionCount + 1 : base.questionCount;
+  const messageTurnCount = countAsNew ? base.messageTurnCount + 1 : base.messageTurnCount;
+  const questions = delivered && !base.questions.some((q) => q.question.id === delivered.question.id)
+    ? [...base.questions, delivered]
+    : base.questions;
+  // delivered=null 表示本轮收尾：清空当前题；delivered 为具体题则指向它；未传（undefined）沿用原值。
+  const currentQuestionId = delivered ? delivered.question.id : delivered === null ? undefined : base.context.currentQuestionId;
+  return {
+    ...base,
+    messages,
+    answers: { ...base.answers, ...agentSession.answers },
+    evaluations: { ...base.evaluations, ...agentSession.evaluations },
+    agentSession,
+    questions,
+    questionCount,
+    messageTurnCount,
+    context: {
+      ...base.context,
+      mode: 'interview',
+      currentQuestionId,
+      pendingAction: delivered ? 'answer' : 'choose_question',
+      questionHistory: delivered ? [...(base.context.questionHistory ?? []), delivered.question.id] : base.context.questionHistory,
+      questionCount,
+      messageTurnCount,
+    },
+  };
 }
 
 export const CONVERSATION_SESSION_KEY = 'ai-interview-conversation-session-v1';

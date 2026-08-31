@@ -19,7 +19,8 @@ import type { EvaluationResult } from '../../schemas/evaluation';
 import type { ProviderEntry } from '../../schemas/ai-config';
 import type { Question } from '../../schemas/question';
 import { emptyProfile } from '../../domain/learner';
-import { startChatInterview } from './interviewCapability';
+import { startChatInterview, rehydrateInterviewAgent } from './interviewCapability';
+import type { ConversationSession } from './conversationSession';
 
 const EMPTY_USAGE: Usage = {
   input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0,
@@ -88,6 +89,19 @@ function openQuestion(): Question {
     question: 'RAG 与 fine-tuning 的区别？',
     explanation: 'RAG 注入外部知识，fine-tuning 更新参数。',
     formats: { open: { referenceAnswer: 'RAG 检索外部知识，fine-tuning 更新模型参数。' } },
+  };
+}
+
+function choiceQuestion2(): Question {
+  return {
+    id: 'q-choice-2',
+    category: 'transformer',
+    topic: 'attention',
+    tags: [],
+    difficulty: 'easy',
+    question: 'LayerNorm 在 Transformer 中的作用？',
+    explanation: '稳定隐层分布，加速收敛。',
+    formats: { choice: { type: 'single', options: ['A', 'B', 'C'], answer: [0] } },
   };
 }
 
@@ -184,6 +198,63 @@ describe('startChatInterview（Chat 面试走 pi-agent-core）', () => {
     expect(step.question?.question.id).toBe('q-open-1');
     // 跳过的题标记为「已处理但未评分」：evaluations 建键但为 null
     expect(res.controller.session.evaluations['q-choice-1']).toBeNull();
+    res.controller.dispose();
+  });
+
+  it('刷新恢复：rehydrateInterviewAgent + resumeSession 跳过开场、接回当前题并继续（plan0831_6 P0-1）', async () => {
+    const q1 = choiceQuestion();
+    const q2 = choiceQuestion2();
+    const bank = [q1, q2];
+    const provider = fakeProvider();
+
+    // 模拟「上一次面试」已交付并答完 q1，当前停在 q2（已交付、未答）。
+    const session: ConversationSession = {
+      id: 's-resume',
+      startedAt: Date.now() - 1000,
+      context: { version: 1, mode: 'interview', sessionId: 's-resume', pendingAction: 'answer', questionHistory: ['q-choice-1'], currentQuestionId: 'q-choice-2', questionCount: 2, messageTurnCount: 2 },
+      messages: [],
+      questions: [{ question: q1, format: 'choice' }, { question: q2, format: 'choice' }],
+      answers: { 'q-choice-1': [0] },
+      evaluations: { 'q-choice-1': { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, levels: { correctness: 3, completeness: 3, architecture: 3, communication: 3 }, evidence: { correctness: '', completeness: '', architecture: '', communication: '' }, strengths: [], gaps: [], missingConcepts: [], feedback: '' }, 'q-choice-2': null },
+      questionCount: 2,
+      messageTurnCount: 2,
+    };
+
+    const resumeSession = rehydrateInterviewAgent(session);
+    expect(resumeSession.currentQuestion?.question.id).toBe('q-choice-2');
+    expect(resumeSession.answers['q-choice-1']).toEqual([0]);
+
+    // 恢复：不重新开场（无 LLM loop），直接以已恢复的题目为首题；choice 路径走确定性 choiceAdvance。
+    const res = await startChatInterview({
+      bank,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      provider,
+      runtimeOverride: { streamFn: makeMockStreamFn([]), model: { id: 'mock' } as any },
+      resumeSession,
+    });
+    expect(res.firstQuestion?.question.id).toBe('q-choice-2');
+    expect(res.finished).toBe(false);
+
+    // 提交 q2 答案 → 确定性判分 → 无更多选择题 → 结束。
+    const step = await res.controller.submit([0]);
+    expect(step.finished).toBe(true);
+    expect(res.controller.session.evaluations['q-choice-2']).toBeDefined();
+    expect(res.controller.session.evaluations['q-choice-2']!.overall).toBe(100);
+    res.controller.dispose();
+  });
+
+  it('并发保护：busy 期间重复 submit 被拒绝，不覆盖 resolver（plan0831_6 P1-4）', async () => {
+    const bank = [choiceQuestion(), choiceQuestion2()];
+    const provider = fakeProvider();
+    const res = await startChatInterview({ bank, profile: emptyProfile(), entry: VALID_ENTRY, provider });
+    expect(res.firstQuestion?.question.id).toBeDefined();
+
+    // 两次 submit 同步发起：第一次在途（choice 路径异步判分），期间第二次 submit 应被拒，避免覆盖 resolver。
+    const p1 = res.controller.submit([0]);
+    const p2 = res.controller.submit([1]);
+    await expect(p1).resolves.toBeDefined();
+    await expect(p2).rejects.toThrow('BUSY');
     res.controller.dispose();
   });
 });

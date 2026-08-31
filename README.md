@@ -2,7 +2,7 @@
 
 **会记住你的训练表现，并根据薄弱项动态调整下一次训练的 AI 面试教练。**
 
-Vite + React 19 + TypeScript + Ant Design 单页应用（五页：训练 / 进度 / 面试 / Agent 面试 / 设置）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为「Agent 面试」的决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
+Vite + React 19 + TypeScript + Ant Design 单页应用（训练 / 进度 / 面试 / 设置，外加常驻的面试 Copilot 侧栏）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为面试（Chat Copilot 与独立面试页）的统一决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
 
 ## 功能
 
@@ -11,8 +11,8 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（五页：训练 / 进�
 - 题库驱动（`src/data/questions/`，按 topic/批次拆分 53 个文件、1084 题；6 大能力域为 taxonomy 逻辑分组），其中大多数题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
-- 模拟面试（30 分钟限时题组；追问式对话面试后续接入）——未配置 AI 也可开始，选择题照常判分
-- **Agent 面试**（第五页）：基于 `pi-agent-core` 的自主决策运行时——Agent 实时决定下一题问什么、是否追问、何时收尾；评分与 Learner 管线复用同一套，与规则式「模拟面试」并存（ADR-034）
+- 模拟面试（对话式追问训练）：进入 interview 模式后复用与独立面试页**同一套** `pi-agent-core` 运行时（`createInterviewAgent`）——统一选题 / 评分 / 收尾逻辑，不再维护独立的简化版 Agent 面试；未配置 AI 也能开始，选择题照常确定性判分
+- **Agent runtime**：`pi-agent-core` 驱动的自主决策运行时——Agent 实时决定下一题问什么、是否追问、何时收尾；Chat Copilot 的面试模式与独立「面试」页共用同一运行时与 Learner 管线（即「Conversation → Interview capability → Agent runtime」统一模型，详见 `docs/CONVERSATION_ARCHITECTURE.md`）
 - 多引擎降级链：Chrome 内置模型 / 本地 Unsloth / 云端服务商可同时启用并排定优先级，失败自动降级到下一个（ADR-023）；密钥仅存浏览器 `localStorage`（「设置」页配置）
 ## 常用命令
 
