@@ -2,6 +2,21 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-066 · 评分聚合 bug 修复 + Copilot RAG 语义边界收口
+
+- 状态：已采纳 · 2026-09-01
+- 来源：`main` HEAD 收尾复查（Conversation / Copilot / Structured Knowledge RAG / Learner Memory / 评分 / 文档）。结论：架构方向已稳，无需推翻，但有 2 个 P0 + 多个 P1/P2 真实问题需修。
+- 决策（沿用既有 capability + 确定性 planner，不引入新 abstraction；与"不要再做大架构优化"一致）：
+  1. **【P0】评分维度适用性真实扣分**：旧实现让 LLM 给"不适用维度"打中性档 2（=50 分）后 `Σ dim×weight` 仍会扣掉 0.2×50=10 分，与 prompt 承诺的"不额外扣分"相悖。改为 LLM 显式返回 `applicable:false`（`evalDimensionRawSchema`），`aggregateOverall` 对不适用维度**从分母摘掉、剩余权重重归一化**——知识题 `architecture` 不适用时权重由 (0.4,0.2,0.2,0.2) 归一为 (0.5,0.25,0.25)，全 4 分仍能拿 100；`applicable` 缺省（历史/选择题）按四维全参与，等价于旧行为；全部不适用则退回原权重避免虚假满分。`EvaluationResult.applicable` 设为 optional 以兼容已持久化数据。
+  2. **【P0】`explain` 与 assessment truth 暴露解耦**：旧 `if (input.activeQuestion) return 'explain'` 让"页面上有任意一道题"就默认开真值闸门——用户问 `讲讲 GQA` 也会把 GQA 题库正确答案/解析送进 prompt。改为 `explain` **只在 scope=current_question 时出现**（用户明确在谈那道题或求详细解读）；其余知识点/概念提问一律走安全模式 `hint`，`renderDocument` 在检索层把真值裁掉，模型根本看不到。回答风格（knowledge/hint/explain/answer/quiz）与真值可见性不再被"有当前题"这一个条件耦合。
+  3. **【P1】`detectQueryTopic` 最长匹配 + 检索按 canonical id 去重**：旧实现按知识节点数组顺序"首次命中即返回"，query `模型推理优化` 先撞泛化节点 `模型` 就停，再不判断更具体的 `推理优化`。改为收集全部命中、取 term 最长者（中文短词天然是长词子串，顺序即偏见）。检索 dedup 由按 `title` 改为按 `kind:id`（concept 锚点因正文近似仍按 title 去重防刷屏），避免"两个不同知识点同名"其中一个被吞掉。
+  4. **【P1】`weakTopics` 与 focusTopic 分离 + follow-up 结构化锚点**：旧 `deriveLearnerContext` 把当前查询 topic 并入 `weakTopics` 一起 boost，使"用户这轮问 RAG"被当成"长期弱项"误提权。`learnerContext` 拆为 `weakTopics`（真实弱项，来自 Profile）/ `weakAngles` / `focusTopic`（当前查询焦点，只作锚点不提权）。`ConversationContext` 新增 `activeKnowledgeIds`，每轮把解析出的知识锚点记回会话，下一轮 follow-up 把它接成 graph 种子——确定性、无 LLM rewrite，比纯字符串拼接更稳。
+  5. **【P1】Copilot prompt 去重 + citation 软化**：删除 system prompt 第 6 条与末尾完全重复的中文/Markdown 要求；不再要求模型自写 `[K]/[Q]` 引用标记（未校验即软 grounding，短期不值得做 parser），保留 `runCopilotTurn` 追加的"知识库依据"脚注作为 verified citation 列表（只渲染真实 evidence 的合法引用）。
+  6. **【P2】命名与注释**：`conceptDocuments` → `conceptAnchorDocuments` 并注释明确它是"概念锚点、非完整知识文档"；`HYBRID_WEIGHTS` → `BASE_RETRIEVAL_WEIGHTS`（Phase 1 尚未 hybrid semantic，命名避免误导）。`ARCHITECTURE.md` 同步：存量计数 1084→1317、双形态 1078→1237、choice-only 6→80；删除"只要存在当前题目就走 hint"的过时描述。
+- 不做（与用户一致）：Vector DB / LLM query planner / reranker / Agent 再加 abstraction；Variant & Question Challenger & Agent Prompt 已达"不应再加"阶段，本次零改动。
+- 验证：`tsc --noEmit` EXIT 0；`vitest` 全量通过（新增/修正 `evaluation.test.ts` / `evaluate.test.ts` / `knowledgeCapability.test.ts` / `retrieve.test.ts` / `copilot.test.ts` 用例，含最长匹配、不适用维度归一化、id 去重、focusTopic 分离、follow-up 锚点）；`npm run build` 通过。
+- 关联：ADR-063 §7（四模式）、§11（槽位）；ADR-065（个性化 Copilot）；`src/domain/evaluation.ts`（aggregateOverall）、`src/application/conversation/{knowledgeCapability,copilot,copilotPrompt}.ts`。
+
 ## ADR-065 · Personalized Grounded Copilot：explain 模式 + AnswerContext + Learner 检索信号
 
 - 状态：已采纳 · 2026-08-31

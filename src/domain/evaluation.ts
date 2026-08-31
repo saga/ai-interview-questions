@@ -28,12 +28,35 @@ export function levelToScore(level: number): number {
   return LEVEL_TO_SCORE[l];
 }
 
-/** 按 rubric 权重把四维分数聚合成综合分（0-100）。 */
+/**
+ * 按 rubric 权重把四维分数聚合成综合分（0-100）。
+ *
+ * `applicable[dim] === false` 的维度**不参与加权**，其权重按比例重分配给剩余维度：
+ * 知识题 `architecture` 不适用时，权重由 (0.4, 0.2, 0.2, 0.2) 重归一化为 (0.5, 0.25, -, 0.25)，
+ * 全 4 分仍能拿 100。
+ *
+ * 为什么必须重归一化而不是"给不适用维度打中性分"：
+ * 中性档 2 = 50 分，按原权重乘进去就是凭空扣掉 10 分；而"给满分"又是虚假加分。
+ * 只有把不适用维度从分母里摘掉，才既不扣分也不加分。
+ *
+ * 边界：
+ * - `applicable` 缺省（历史持久化数据 / 选择题）→ 四维全部参与，等价于旧实现。
+ * - 全部维度被标为不适用（模型异常输出）→ 退回原权重全量加权，避免除零与虚假满分。
+ * - 剩余权重和为 0（不适用维度权重恰为 0）→ 同上退回。
+ */
 export function aggregateOverall(
   dimensions: Record<EvaluationDimension, number>,
   rubric: ScoringRubric,
+  applicable?: Partial<Record<EvaluationDimension, boolean>>,
 ): number {
-  const sum = EVAL_DIMENSIONS.reduce((acc, dim) => acc + dimensions[dim] * rubric[dim], 0);
+  const active = EVAL_DIMENSIONS.filter((dim) => applicable?.[dim] !== false);
+  const totalWeight = active.reduce((acc, dim) => acc + rubric[dim], 0);
+  const usable = active.length > 0 && totalWeight > 0 ? active : EVAL_DIMENSIONS;
+  const usableWeight = usable.reduce((acc, dim) => acc + rubric[dim], 0);
+  const sum = usable.reduce(
+    (acc, dim) => acc + dimensions[dim] * (usableWeight > 0 ? rubric[dim] / usableWeight : rubric[dim]),
+    0,
+  );
   return Math.max(0, Math.min(100, Math.round(sum)));
 }
 
@@ -50,7 +73,7 @@ export function aggregateOverall(
 export function describeEvaluationSummary(result: EvaluationResult): string {
   const parts = [
     `综合评分：${result.overall}`,
-    `维度评分（0-4 序级）：${describeLevels(result.levels)}`,
+    `维度评分（0-4 序级）：${describeLevels(result.levels, result.applicable)}`,
     result.gaps.length > 0 ? `薄弱点：${result.gaps.join('、')}` : '薄弱点：无',
   ];
   // 选择题反证证据：命中误解是「下一步问什么」的增量信息（如「错在混淆了 retrieval 与 reranking」），
@@ -65,10 +88,21 @@ export function describeEvaluationSummary(result: EvaluationResult): string {
  * 渲染四维序级。四维相同时塌缩为一行——选择题按对错判定，四维必然全 0 或全 4，
  * 逐维打印只是每轮把同一个数字重复四遍，纯浪费上下文（与 ADR-052 的取舍一致）。
  */
-export function describeLevels(levels: EvaluationResult['levels']): string {
+export function describeLevels(
+  levels: EvaluationResult['levels'],
+  applicable?: Partial<Record<EvaluationDimension, boolean>>,
+): string {
   const entries = EVAL_DIMENSIONS.map((dim) => [dim, levels[dim]] as const);
-  if (entries.every(([, v]) => v === entries[0][1])) return `四维均为 ${entries[0][1]}`;
-  return entries.map(([dim, v]) => `${DIMENSION_LABELS[dim]}=${v}`).join(', ');
+  const skipped = entries.some(([dim]) => applicable?.[dim] === false);
+  // 存在不适用维度时禁止塌缩：否则「四维均为 2」会把"不适用"伪装成真实的中性档评分，
+  // 让 Agent 误判候选人架构能力只有 2 级，并据此追问一个本题根本不考的维度。
+  const uniform = !skipped && entries.every(([, v]) => v === entries[0][1]);
+  if (uniform) return `四维均为 ${entries[0][1]}`;
+  return entries
+    .map(([dim, v]) =>
+      applicable?.[dim] === false ? `${DIMENSION_LABELS[dim]}=不适用` : `${DIMENSION_LABELS[dim]}=${v}`,
+    )
+    .join(', ');
 }
 
 /**
@@ -127,6 +161,8 @@ export function gradeChoice(
     dimensions,
     levels,
     evidence,
+    // 选择题按对错二元判定，四维同时成立或同时不成立，不存在"某一维不适用"。
+    applicable: { correctness: true, completeness: true, architecture: true, communication: true },
     strengths: correct ? ['选择正确'] : [],
     // 选择题判定性打分，不知道用户漏了哪个知识点，不伪造 gap（避免污染 Learner Memory）。
     gaps: [],

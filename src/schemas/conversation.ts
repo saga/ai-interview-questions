@@ -16,6 +16,9 @@ export const conversationContextSchema = z.object({
   questionCount: z.number().min(0).optional(),
   // 独立的对话轮数（每次用户发送消息 +1），与 questionCount 解耦（plan0831_5 §P1-3）。
   messageTurnCount: z.number().min(0).optional(),
+  // 上一轮 Copilot 解析出的知识锚点（ADR-066 P1）：确定性 follow-up 的 graph 种子，
+  // 让"那 reranker 呢？"在已锚定 RAG 的会话里稳定延续，而非只靠字符串拼接。纯 UI 派生状态，不进评分。
+  activeKnowledgeIds: z.array(z.string()).optional(),
   // 上一场训练已结束的时间戳；存在时 UI 提示「上一 session 已结束」，
   // 后续「下一题」应开新会话而非续接到已清空的 session（plan0831_5 §P1-4）。
   endedAt: z.number().min(0).optional(),

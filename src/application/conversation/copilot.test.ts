@@ -57,8 +57,32 @@ describe('deriveLearnerContext（ADR-065 P1-2）', () => {
     expect(ctx.weakAngles).not.toContain('comparison');
   });
 
-  it('空画像返回空候选', () => {
-    expect(deriveLearnerContext(null)).toEqual({ weakTopics: [], weakAngles: [] });
+  it('空画像返回空候选（focusTopic 缺省）', () => {
+    const ctx = deriveLearnerContext(null);
+    expect(ctx.weakTopics).toEqual([]);
+    expect(ctx.weakAngles).toEqual([]);
+    expect(ctx.focusTopic).toBeUndefined();
+  });
+
+  it('P1：focusTopic 只作锚点，不并进 weakTopics（避免把"当前问的 topic"误当"长期弱项"）', () => {
+    const profile: LearnerProfile = {
+      totalSessions: 1,
+      totalQuestions: 2,
+      overallScore: 60,
+      topicStats: {
+        'kv-cache': { attempts: 2, avgScore: 60, lastScore: 60, trend: 'flat', mastery: 0.6, commonWeaknesses: [], lastSeen: 1 },
+        rag: { attempts: 1, avgScore: 90, lastScore: 90, trend: 'flat', mastery: 0.95, commonWeaknesses: [], lastSeen: 1 },
+      },
+      angleCoverage: {},
+      conceptEvidence: {},
+      misconceptionHits: {},
+      sessions: [],
+      updatedAt: 1,
+    };
+    const ctx = deriveLearnerContext(profile, 'rag');
+    expect(ctx.weakTopics).toContain('kv-cache'); // 真实弱项来自 Profile
+    expect(ctx.weakTopics).not.toContain('rag'); // focusTopic 不应混入弱项
+    expect(ctx.focusTopic).toBe('rag'); // 但作为锚点透传
   });
 });
 
@@ -127,5 +151,21 @@ describe('runCopilotTurn 检索范围决策（ADR-065 P0-2 解耦）', () => {
       },
     );
     expect(res.evidence?.scope).toBe('global');
+  });
+
+  it('P1：上一轮知识锚点（activeKnowledgeIds）接成 follow-up 的 graph 种子', async () => {
+    const chat = async (): Promise<string> => 'ok';
+    const res = await runCopilotTurn(
+      { chat },
+      {
+        message: '那显存呢',
+        history: [{ role: 'user', content: '讲讲 KV Cache' }, { role: 'assistant', content: 'x' }],
+        profile: null,
+        activeQuestion: null,
+        session: null,
+        context: { version: 1, mode: 'chat', activeKnowledgeIds: ['kv-cache'] },
+      },
+    );
+    expect(res.evidence?.seeds).toContain('kv-cache');
   });
 });

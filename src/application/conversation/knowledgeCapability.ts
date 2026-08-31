@@ -49,8 +49,10 @@ export interface KnowledgeRetrievalInput {
    * 不参与模式/范围规划（规划用原始 `query`，避免命令词把追问误判成 quiz）。缺省回退到 `query`。
    */
   retrieveQuery?: string;
-  /** Learner Memory 弱项信号（ADR-065 P1-2），透传给检索排序做小幅提权。 */
-  learnerContext?: { weakTopics?: string[]; weakAngles?: string[] };
+  /** Learner Memory 弱项信号（ADR-065 P1-2 / ADR-066 P1）：weakTopics/weakAngles 为真实弱项，focusTopic 为当前查询焦点（只作锚点，不参与提权）。 */
+  learnerContext?: { weakTopics?: string[]; weakAngles?: string[]; focusTopic?: string };
+  /** 上一轮解析出的知识锚点（ADR-066 P1）：接成 graph 种子，让确定性 follow-up 也吃到上一轮知识点邻域，而非只靠字符串拼接。 */
+  priorKnowledgeIds?: string[];
 }
 
 /**
@@ -68,14 +70,31 @@ function knowledgeTopicTerms(): { id: string; terms: string[] }[] {
   return topicTermIndex;
 }
 
-/** 判定 query 是否指向某个知识节点（P0-2）。未命中返回 undefined。 */
+/**
+ * 判定 query 是否指向某个知识节点（P0-2）。未命中返回 undefined。
+ *
+ * **最长匹配优先**：收集全部命中后取 term 最长的那个，而不是"数组里第一个命中的"。
+ * 旧写法首次命中即返回，锚点由 knowledgeNodes 的数组顺序决定——query「模型推理优化」
+ * 会先撞见靠前的泛化节点「模型」就停下，再也不会考虑更具体的「推理优化」。
+ * 中文尤其吃这个亏：短词（量化 / 规划 / 幻觉）天然是长词的子串，顺序即偏见。
+ *
+ * 匹配方式仍是子串包含（nodes 的 id 最短为 3 字符，name 最短 2 字，均已在索引里过滤）：
+ * 若对短 term 要求整句相等，"讲讲量化" 这类自然语言提问会几乎全部失配，召回损失远大于误伤。
+ */
 export function detectQueryTopic(query: string): string | undefined {
   const lower = (query ?? '').toLowerCase();
   if (!lower.trim()) return undefined;
+  let bestId: string | undefined;
+  let bestLength = 0;
   for (const { id, terms } of knowledgeTopicTerms()) {
-    if (terms.some((t) => (id.length >= 3 ? lower.includes(t) : t === lower))) return id;
+    for (const term of terms) {
+      if (term.length > bestLength && lower.includes(term)) {
+        bestId = id;
+        bestLength = term.length;
+      }
+    }
   }
-  return undefined;
+  return bestId;
 }
 
 /**
@@ -118,7 +137,17 @@ export function planRetrievalScope(input: KnowledgeRetrievalInput): RetrievalSco
 }
 
 /**
- * 答案安全模式（ADR-063 §7）。默认保守：只要存在当前题目，就不主动暴露真值。
+ * 答案安全模式（ADR-063 §7）。
+ *
+ * 核心不变量（P0-B）：**`explain` 只允许在 `current_question` 范围出现**。
+ * `explain` 在检索层与 `answer` 完全等价——都会把 `sensitiveText`（正确选项 / 参考答案 /
+ * 完整解析）喂给模型。旧实现写 `if (input.activeQuestion) return 'explain'`，于是只要页面上
+ * 恰好有一道题，任何提问都开着真值闸门：用户问「讲讲 GQA 和 MQA 的区别」（scope 已正确切成
+ * topic(gqa)），GQA 题库的 assessment truth 仍被一并送进 prompt——用户只是想聊知识。
+ *
+ * 现在把「回答风格」与「真值可见性」解耦：真值只在**用户明确在谈那道题**时开启，
+ * 其余一切知识问答走安全模式（`hint`）：知识节点 / 误解 / 概念锚点完整可见，
+ * 题库真值在检索层就被 `renderDocument` 裁掉，模型根本看不到。
  */
 export function planRetrievalMode(input: KnowledgeRetrievalInput): RetrievalMode {
   if (input.mode) return input.mode;
@@ -126,11 +155,10 @@ export function planRetrievalMode(input: KnowledgeRetrievalInput): RetrievalMode
   if (QUIZ_PATTERN.test(text)) return 'quiz';
   if (HINT_PATTERN.test(text)) return 'hint';
   if (ANSWER_PATTERN.test(text)) return 'answer';
-  // P0-1 修复（ADR-065）：有当前题默认给"详细解读"（explain），可解释正确选项，
-  // 但不改 assessment truth（prompt 硬约束）。之前的 `return 'hint'` 会把"这道题我不会，
-  // 给我详细解读"误限成提示，用户拿不到想要的正解讲解。明确要思路/提示的已在前两行命中 hint。
-  if (input.activeQuestion) return 'explain';
-  return 'answer';
+  // 明确锚定当前题（"这道题/我刚才那道/我的答案" 或对它求提示/求答案）→ 允许讲这道题的真值。
+  if (planRetrievalScope(input) === 'current_question') return 'explain';
+  // 其余（其它知识点、概念讲解、普通追问）→ 安全模式，不暴露题库真值。
+  return 'hint';
 }
 
 /**
@@ -180,6 +208,13 @@ export function retrieveForCopilot(
   else if (input.topic) knowledgeId = input.topic;
   else knowledgeId = detectQueryTopic(input.query ?? '') ?? undefined;
   const questionId = scope === 'current_question' ? input.activeQuestion?.id ?? undefined : undefined;
+  // ADR-066 P1：把"当前解析出的锚点（topic / 命中节点）+ 上一轮知识锚点"合并为 graph 种子，
+  // 让确定性 follow-up 也能吃到上一轮知识点邻域，而不只靠 combineFollowUp 的字符串拼接。
+  const seeds = [
+    ...(input.topic ? [input.topic] : []),
+    ...(knowledgeId ? [knowledgeId] : []),
+    ...(input.priorKnowledgeIds ?? []),
+  ];
   return searchKnowledge(
     {
       query: input.retrieveQuery ?? input.query ?? '',
@@ -188,6 +223,7 @@ export function retrieveForCopilot(
       topic: input.topic,
       knowledgeId,
       questionId,
+      ...(seeds.length ? { seeds: [...new Set(seeds)] } : {}),
       limit: input.limit,
       excludeIds: input.excludeIds,
       learnerContext: input.learnerContext,
@@ -212,7 +248,7 @@ export function buildKnowledgePromptSection(evidence: KnowledgeEvidence | null):
   // hint / quiz 才硬性禁止泄露答案（检索层已裁剪，这里是双保险）。
   const guard =
     evidence.mode === 'answer' || evidence.mode === 'explain'
-      ? '回答时如需引用，请使用下方引用标记（如 [K] KV Cache），不要编造未列出的依据。'
+      ? '可基于上方依据作答；不得编造库里不存在的事实，上下文不足时可用通用知识补充并说明。'
       : '以下依据已剔除正确选项、参考答案与完整解析。严禁直接给出或变相暗示正确答案，只能讲知识、给思路、提示常见误区。';
   const body = evidence.hits
     .map((hit, index) => {

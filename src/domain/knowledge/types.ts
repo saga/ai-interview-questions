@@ -80,11 +80,13 @@ export interface KnowledgeSearchQuery {
   /** 强制排除的题目 id */
   excludeIds?: string[];
   /**
-   * Learner Memory 信号（ADR-065）：把用户长期弱项透传给检索排序，做小幅提权，不主导。
-   * - weakTopics：命中 knowledgeId / topic 的弱项节点 metadata 轻微上浮
+   * Learner Memory 信号（ADR-065 / ADR-066）：把用户长期弱项透传给检索排序，做小幅提权，不主导。
+   * - weakTopics：命中 knowledgeId / topic 的**真实弱项**节点 metadata 轻微上浮（来自 Learner Profile，不含当前查询焦点）
    * - weakAngles：命中 question.angle 的弱角度节点轻微上浮
+   * - focusTopic：当前查询上下文（Intent.topic / query 命中的知识节点），**只作检索锚点、不参与弱项提权**——
+   *   避免把「用户这轮问的 topic」误当成「用户长期弱项」去 boost（ADR-066 P1）。
    */
-  learnerContext?: { weakTopics?: string[]; weakAngles?: string[] };
+  learnerContext?: { weakTopics?: string[]; weakAngles?: string[]; focusTopic?: string };
 }
 
 /** 引用溯源（ADR-063 §8）：最终回答要能列出"依据了什么"。 */
@@ -123,8 +125,12 @@ export interface KnowledgeEvidence {
   hits: KnowledgeHit[];
 }
 
-/** 混合检索权重（ADR-063 §4）。semantic 权重在 Phase 2 接入前按比例回填给其余三项。 */
-export const HYBRID_WEIGHTS = {
+/**
+ * 混合检索权重（ADR-063 §4）。Phase 1 未接入 embedding（semantic=0），权重按比例回填给其余三项，
+ * 由 `effectiveWeights` 重分配。命名刻意不用 HYBRID_WEIGHTS——Phase 1 还没有语义通道，
+ * 叫 hybrid 会让人误以为已经 hybrid semantic retrieval（ADR-066 P2）。
+ */
+export const BASE_RETRIEVAL_WEIGHTS = {
   lexical: 0.4,
   metadata: 0.25,
   graph: 0.2,

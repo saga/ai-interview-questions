@@ -143,7 +143,15 @@ export function misconceptionDocuments(node: KnowledgeNode): KnowledgeDocument[]
     }));
 }
 
-export function conceptDocuments(node: KnowledgeNode): KnowledgeDocument[] {
+/**
+ * 概念锚点文档（concept anchor，不是完整知识文档）。
+ *
+ * 它只承载「X 出现在某知识节点的前置要点（required）中」这一事实，本身不含知识内容——
+ * 真正知识在 `knowledge` 文档里。它存在的唯一目的是让「概念名」可被直接命中并桥接到
+ * 所属 knowledge 节点的 graph 邻域。检索去重时按 id（而非 title）去重，但 concept 锚点
+ * 因正文近似、只作检索跳板，仍按 title 去重以免同类概念刷屏（见 retrieve.ts dedup 注释）。
+ */
+export function conceptAnchorDocuments(node: KnowledgeNode): KnowledgeDocument[] {
   return node.required
     .map((concept) => concept.trim())
     .filter((concept) => concept.length > 0)
@@ -151,7 +159,7 @@ export function conceptDocuments(node: KnowledgeNode): KnowledgeDocument[] {
       id: `concept:${node.id}:${index}`,
       kind: 'concept' as const,
       title: concept.slice(0, 60),
-      text: `概念：${concept}\n出现在「${node.name}（${node.id}）」的前置要点中。`,
+      text: `概念：${concept}\n出现在「${node.name}（${node.id}）」的前置要点中（概念锚点，非完整知识文档）。`,
       metadata: {
         area: node.area,
         knowledgeId: node.id,
@@ -175,7 +183,7 @@ export function buildKnowledgeDocuments(
     for (const node of nodes) docs.push(...misconceptionDocuments(node));
   }
   if (includeConcepts) {
-    for (const node of nodes) docs.push(...conceptDocuments(node));
+    for (const node of nodes) docs.push(...conceptAnchorDocuments(node));
   }
   if (includeQuestions) {
     for (const q of questions) docs.push(questionDocument(q));

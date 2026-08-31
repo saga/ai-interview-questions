@@ -259,11 +259,11 @@ describe('searchKnowledge', () => {
     expect(answered.hits.map((h) => h.content).join('\n')).toContain('正确选项：');
   });
 
-  it('命中数量不超过 limit 且标题不重复', () => {
+  it('命中数量不超过 limit 且 id 不重复（dedup 用 canonical id 而非 title）', () => {
     const evidence = searchKnowledge({ query: '推理', scope: 'global', limit: 3 }, { index: testIndex(), nodes });
     expect(evidence.hits.length).toBeLessThanOrEqual(3);
-    const titles = evidence.hits.map((h) => h.title);
-    expect(new Set(titles).size).toBe(titles.length);
+    const ids = evidence.hits.map((h) => h.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('每条命中都带可溯源 source（ADR-063 §8）', () => {
@@ -362,6 +362,20 @@ describe('全库索引', () => {
     const index = buildKnowledgeIndex(buildKnowledgeDocuments(nodes, questions));
     const evidence = searchKnowledge({ query: '', topic: 'kv-cache', limit: 3 }, { index, nodes });
     expect(evidence.hits.length).toBeGreaterThan(0);
+  });
+});
+
+describe('检索 dedup 按 canonical id（P1）', () => {
+  const dupQuestions: Question[] = [
+    { id: 'q-dup-1', category: 'llm', topic: 'kv-cache', tags: [], difficulty: 'easy', angle: 'mechanism', question: '这是一道题干被完全相同复用的题', explanation: 'x', misconceptions: [], formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [1] } } },
+    { id: 'q-dup-2', category: 'llm', topic: 'kv-cache', tags: [], difficulty: 'easy', angle: 'mechanism', question: '这是一道题干被完全相同复用的题', explanation: 'x', misconceptions: [], formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [1] } } },
+  ];
+  const idx = buildIndexFrom(nodes, dupQuestions);
+  it('同标题不同 id 的两道题都保留（按 id 去重，不按 title 吞掉一个）', () => {
+    const ev = searchKnowledge({ query: '这是一道题干被完全相同复用的题', scope: 'global', limit: 10 }, { index: idx, nodes });
+    const qHits = ev.hits.filter((h) => h.kind === 'question');
+    expect(qHits.length).toBe(2);
+    expect(qHits.map((h) => h.metadata.questionId).sort()).toEqual(['q-dup-1', 'q-dup-2']);
   });
 });
 

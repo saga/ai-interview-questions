@@ -101,6 +101,65 @@ describe('parseEvaluation', () => {
     expect(r.missingConcepts).toEqual(['sparse activation']);
   });
 
+  it('不适用维度（applicable:false）不参与加权：知识题全 4 分必须能拿 100', () => {
+    const raw = JSON.stringify({
+      correctness: { level: 4, evidence: '正确' },
+      completeness: { level: 4, evidence: '完整' },
+      // 概念题不涉及架构设计，模型给中性档 2 —— 这一维不得参与加权
+      architecture: { level: 2, evidence: '本题不涉及', applicable: false },
+      communication: { level: 4, evidence: '清晰' },
+    });
+    const r = parseEvaluation(raw, open, RUBRIC);
+    expect(r.applicable).toEqual({
+      correctness: true,
+      completeness: true,
+      architecture: false,
+      communication: true,
+    });
+    // 权重重归一化：0.5 / 0.25 / 0.25 → 100；旧实现会算成 90
+    expect(r.overall).toBe(100);
+  });
+
+  it('未声明 applicable 的维度视为适用（缺省 true）', () => {
+    const raw = JSON.stringify({
+      correctness: { level: 4 },
+      completeness: { level: 4 },
+      architecture: { level: 2 },
+      communication: { level: 4 },
+    });
+    const r = parseEvaluation(raw, open, RUBRIC);
+    expect(r.applicable).toEqual({
+      correctness: true,
+      completeness: true,
+      architecture: true,
+      communication: true,
+    });
+    expect(r.overall).toBe(90);
+  });
+
+  it('correctness 恒为适用：即便模型标了 applicable:false 也被忽略', () => {
+    const raw = JSON.stringify({
+      correctness: { level: 4, applicable: false },
+      completeness: { level: 4 },
+      architecture: { level: 4 },
+      communication: { level: 4 },
+    });
+    const r = parseEvaluation(raw, open, RUBRIC);
+    expect(r.applicable?.correctness).toBe(true);
+    expect(r.overall).toBe(100);
+  });
+
+  it('维度对象整体缺失仍按 level 0 兜底，不享受不适用待遇', () => {
+    const r = parseEvaluation('{"correctness": { "level": 2 }, "feedback": "部分"}', q, RUBRIC);
+    expect(r.applicable).toEqual({
+      correctness: true,
+      completeness: true,
+      architecture: true,
+      communication: true,
+    });
+    expect(r.overall).toBe(20); // 50*0.4，缺失维度不因"未声明"而被排除
+  });
+
   it('空输入 → 全零分 + 未作答反馈', () => {
     const r = parseEvaluation('', open, RUBRIC);
     expect(r.overall).toBe(0);

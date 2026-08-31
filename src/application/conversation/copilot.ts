@@ -45,8 +45,8 @@ export interface CopilotTurnInput {
   answerContext?: AnswerContext | null;
   /** 真实 ConversationContext（UI 侧状态），用于 P1-4 判定上一轮用户消息的通道；缺省回退初始态。 */
   context?: ConversationContext | null;
-  /** Learner Memory 弱项信号（ADR-065 P1-2），透传给检索排序做小幅提权。 */
-  learnerContext?: { weakTopics?: string[]; weakAngles?: string[] };
+  /** Learner Memory 弱项信号（ADR-065 P1-2 / ADR-066 P1）：weakTopics/weakAngles 为真实弱项，focusTopic 为当前查询焦点（只作锚点）。 */
+  learnerContext?: { weakTopics?: string[]; weakAngles?: string[]; focusTopic?: string };
 }
 
 export interface CopilotTurnResult {
@@ -64,14 +64,16 @@ export type CopilotChatFn = (
 
 /**
  * 从 Learner Profile 推导弱项信号（ADR-065 P1-2）：只做轻量透传，供检索排序小幅提权。
- * - weakTopics：均分低于掌握线的 topic
+ * - weakTopics：均分低于掌握线的 topic（**真实的长期弱项**，来自 Profile，不含当前查询焦点）
  * - weakAngles：angleCoverage 中均分低于掌握线的角度（跨 topic 汇总，去重）
+ * - focusTopic：当前查询上下文（Intent.topic / query 命中的知识节点），**只作检索锚点、不并入 weakTopics**——
+ *   否则「用户这轮问的 RAG」会被当成「长期弱项」去 boost，与"真实弱项"语义混淆（ADR-066 P1）。
  * 不引入新排序层，也不改变其他检索逻辑。
  */
 export function deriveLearnerContext(
   profile: LearnerProfile | null,
-  topic?: string,
-): { weakTopics: string[]; weakAngles: string[] } {
+  focusTopic?: string,
+): { weakTopics: string[]; weakAngles: string[]; focusTopic?: string } {
   const weakTopics: string[] = [];
   const weakAngles = new Set<string>();
   if (profile) {
@@ -87,9 +89,7 @@ export function deriveLearnerContext(
       }
     }
   }
-  // 若已解析出当前 topic，确保它进 weakTopics 候选（即便恰好在阈值附近也优先关注）
-  if (topic && !weakTopics.includes(topic)) weakTopics.push(topic);
-  return { weakTopics: weakTopics.slice(0, 8), weakAngles: [...weakAngles].slice(0, 8) };
+  return { weakTopics: weakTopics.slice(0, 8), weakAngles: [...weakAngles].slice(0, 8), focusTopic };
 }
 
 export async function runCopilotTurn(
@@ -117,6 +117,8 @@ export async function runCopilotTurn(
       topic: anchor,
       mode: input.mode,
       learnerContext,
+      // ADR-066 P1：上一轮解析出的知识锚点接成 graph 种子，让确定性 follow-up 也吃到邻域。
+      priorKnowledgeIds: input.context?.activeKnowledgeIds ?? [],
     });
   } catch (e) {
     // 检索是增强而非前置条件：失败时降级为无依据问答，不把错误抛给用户。

@@ -17,7 +17,7 @@ import { expandGraph, graphScoreOf, type GraphWeights } from './graph';
 import { buildKnowledgeIndex, lexicalScores, tokenize, type KnowledgeIndex } from './index';
 import {
   DEFAULT_KNOWLEDGE_LIMIT,
-  HYBRID_WEIGHTS,
+  BASE_RETRIEVAL_WEIGHTS,
   type KnowledgeDocument,
   type KnowledgeEvidence,
   type KnowledgeHit,
@@ -51,7 +51,7 @@ export function buildIndexFrom(nodes: KnowledgeNode[], questions: Question[] = [
  * 保证 Phase 1 与最终版评分同量纲。
  */
 export function effectiveWeights(semantic: number): KnowledgeScoreBreakdown {
-  const w = HYBRID_WEIGHTS;
+  const w = BASE_RETRIEVAL_WEIGHTS;
   if (semantic > 0) return { ...w, semantic };
   const total = w.lexical + w.metadata + w.graph;
   return { lexical: w.lexical / total, metadata: w.metadata / total, graph: w.graph / total, semantic: 0 };
@@ -241,9 +241,17 @@ export function searchKnowledge(q: KnowledgeSearchQuery, options: SearchOptions 
     });
 
     scored.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
-    // 同标题只保留最强一条：concept 锚点在不同节点下会重名，避免 top N 被同一概念刷屏。
+    /**
+     * 去重键用 canonical id，不再用 title。
+     *
+     * 按 title 去重会让"两个不同知识点恰好同名"的其中一个直接消失——例如不同知识节点下
+     * 的同名词条、或题干前 80 字相同的两道独立题目。title 是展示字段，不是身份。
+     *
+     * 唯一例外是 `concept`：它只是**概念锚点**（"X 出现在某节点的前置要点中"），本身不含
+     * 知识内容。同名锚点在不同节点下正文近乎一致，若按 id 去重会让 top N 被同一个概念名刷屏。
+     */
     const questionSlots = questionSlotLimit(scope, mode, limit);
-    const seenTitles = new Set<string>();
+    const seen = new Set<string>();
     const deduped: KnowledgeHit[] = [];
     let usedOtherQuestionSlots = 0;
     let usedCurrentQuestion = false;
@@ -252,7 +260,8 @@ export function searchKnowledge(q: KnowledgeSearchQuery, options: SearchOptions 
     // 让"这题为什么错"真正回到知识解释，而不是把相似题重新喂一遍。
     const otherQuestionCap = scope === 'current_question' ? 1 : questionSlots;
     for (const hit of scored) {
-      if (seenTitles.has(hit.title)) continue;
+      const dedupKey = hit.kind === 'concept' ? `concept:${hit.title}` : hit.id;
+      if (seen.has(dedupKey)) continue;
       if (hit.kind === 'question') {
         if (scope === 'current_question' && q.questionId && hit.metadata.questionId === q.questionId) {
           if (usedCurrentQuestion) continue;
@@ -262,7 +271,7 @@ export function searchKnowledge(q: KnowledgeSearchQuery, options: SearchOptions 
           usedOtherQuestionSlots += 1;
         }
       }
-      seenTitles.add(hit.title);
+      seen.add(dedupKey);
       deduped.push(hit);
       if (deduped.length >= limit) break;
     }

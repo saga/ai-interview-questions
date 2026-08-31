@@ -1,6 +1,16 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-01 · 评分聚合 bug 修复 + Copilot RAG 语义边界收口（ADR-066）
+
+- **【P0】评分维度适用性真实扣分**：`aggregateOverall` 改为对 `applicable:false` 维度摘分母、剩余权重重归一化（旧"给不适用维度中性档 2"仍会凭空扣 10 分）。LLM 输出新增 `applicable` 字段，`EvaluationResult.applicable` 可选以兼容历史数据。
+- **【P0】explain 与真值暴露解耦**：`explain` 仅在 scope=current_question 出现；其余知识提问走安全模式 `hint`，题库真值在检索层裁掉，不再因"页面上有任意题"误开闸门。
+- **【P1】detectQueryTopic 最长匹配**：收集全部命中取 term 最长者，消除数组顺序导致的错误锚定；检索 dedup 改按 canonical id（concept 锚点仍按 title）。
+- **【P1】weakTopics / focusTopic 分离 + follow-up 锚点**：`learnerContext` 拆 focusTopic（只作锚点不提权）；`ConversationContext.activeKnowledgeIds` 记回每轮知识锚点，下一轮接成 graph 种子。
+- **【P1】Copilot prompt 去重 + citation 软化**：删 system prompt 重复行；不再要求模型自写 [K]/[Q] 标记，保留尾部"知识库依据"作为 verified 引用。
+- **【P2】命名**：`conceptDocuments→conceptAnchorDocuments`、`HYBRID_WEIGHTS→BASE_RETRIEVAL_WEIGHTS`；`ARCHITECTURE.md` 计数同步 1317 题 / 1237 双形态 / 80 choice-only。
+- 验证：`tsc --noEmit` 0；`vitest` 全量通过；`npm run build` 通过。
+
 ## 2026-08-31 · Copilot 双通道：commandDetector + copilot（ADR-064）
 
 - 删除 `src/application/conversation/router.ts`（含 LLM `classifyIntent` 与 `confidence < 0.75` 阻断）。新增 `commandDetector.ts`：仅 5 个确定性命令（`start_interview / ask_question / continue_interview / end_interview / re_evaluate`），正则识别、无 LLM；`routeUserMessage` 为唯一通道决策点（command → answer → copilot，求助优先于作答）。

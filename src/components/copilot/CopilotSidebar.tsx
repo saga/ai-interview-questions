@@ -500,7 +500,18 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
         // prevS.context 并显式锁定 mode='chat'，不能回退到外层陈旧的 conversationContext（否则 mode
         // 可能被覆盖成 question，破坏刷新恢复与后续 command/answer 路由）。单独持有的 conversationContext
         // 只是 UI 派生状态，此处一并同步。
-        const updated: ConversationSession = { ...prevS, messages: withAssistant, context: { ...prevS.context, mode: 'chat' } };
+        // ADR-066 P1：把本轮解析出的知识锚点（检索 seeds）记回会话，作为下一轮 follow-up 的 graph 种子，
+        // 让"那 reranker 呢？"在已锚定 RAG 的会话里稳定延续（检索失败 / 无锚点时保留上一轮）。
+        const seeds = result.evidence?.seeds ?? [];
+        const updated: ConversationSession = {
+          ...prevS,
+          messages: withAssistant,
+          context: {
+            ...prevS.context,
+            mode: 'chat',
+            activeKnowledgeIds: seeds.length ? seeds : prevS.context.activeKnowledgeIds,
+          },
+        };
         saveConversationSession(updated);
         setConversationContext(updated.context);
         return updated;

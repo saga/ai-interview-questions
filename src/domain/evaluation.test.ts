@@ -66,6 +66,72 @@ describe('aggregateOverall', () => {
   });
 });
 
+describe('aggregateOverall 维度适用性（P0：不适用维度不得扣分）', () => {
+  const full: Record<EvaluationDimension, number> = {
+    correctness: 100,
+    completeness: 100,
+    architecture: 50, // 不适用维度被模型给的中性档（level 2）
+    communication: 100,
+  };
+
+  it('不适用维度参与加权时会凭空扣掉 10 分——这正是要修掉的 bug', () => {
+    // 100*0.4 + 100*0.2 + 50*0.2 + 100*0.2 = 40 + 20 + 10 + 20 = 90
+    expect(aggregateOverall(full, rubric)).toBe(90);
+  });
+
+  it('标记 applicable:false 后权重重归一化，全 4 分的知识题仍可拿满分', () => {
+    // 剩余权重 0.8 → 归一化 0.5 / 0.25 / 0.25
+    const applicable = { correctness: true, completeness: true, architecture: false, communication: true };
+    expect(aggregateOverall(full, rubric, applicable)).toBe(100);
+  });
+
+  it('重归一化按剩余权重比例分配，不是简单均分', () => {
+    // 只剩 correctness(0.4) 与 communication(0.2) → 0.667 / 0.333
+    const applicable = { correctness: true, completeness: false, architecture: false, communication: true };
+    const dims: Record<EvaluationDimension, number> = {
+      correctness: 100,
+      completeness: 0,
+      architecture: 0,
+      communication: 25,
+    };
+    expect(aggregateOverall(dims, rubric, applicable)).toBe(Math.round(100 * (0.4 / 0.6) + 25 * (0.2 / 0.6)));
+  });
+
+  it('applicable 缺省（历史持久化数据 / 选择题）等价于旧实现', () => {
+    expect(aggregateOverall(full, rubric, undefined)).toBe(90);
+    expect(aggregateOverall(full, rubric)).toBe(90);
+  });
+
+  it('四维全被标为不适用（模型异常）→ 退回原权重，不产生 NaN 或虚假满分', () => {
+    const allFalse = { correctness: false, completeness: false, architecture: false, communication: false };
+    expect(Number.isFinite(aggregateOverall(full, rubric, allFalse))).toBe(true);
+    expect(aggregateOverall(full, rubric, allFalse)).toBe(90);
+  });
+});
+
+describe('describeLevels 维度适用性', () => {
+  it('不适用维度显式写「不适用」，不伪装成真实的中性档评分', () => {
+    const text = describeLevels(
+      { correctness: 4, completeness: 4, architecture: 2, communication: 4 },
+      { correctness: true, completeness: true, architecture: false, communication: true },
+    );
+    expect(text).toBe('正确性=4, 完整性=4, 架构=不适用, 表达=4');
+  });
+
+  it('存在不适用维度时禁止塌缩成「四维均为 N」', () => {
+    const text = describeLevels(
+      { correctness: 2, completeness: 2, architecture: 2, communication: 2 },
+      { correctness: true, completeness: true, architecture: false, communication: true },
+    );
+    expect(text).not.toContain('四维均为');
+    expect(text).toContain('架构=不适用');
+  });
+
+  it('全部适用时行为不变（仍可塌缩）', () => {
+    expect(describeLevels({ correctness: 4, completeness: 4, architecture: 4, communication: 4 })).toBe('四维均为 4');
+  });
+});
+
 describe('gradeChoice', () => {
   it('答对：四维全 100，overall 100', () => {
     const g = gradeChoice(cq, [0], rubric);

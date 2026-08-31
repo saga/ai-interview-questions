@@ -59,7 +59,7 @@ export interface ConversationSession {
 
 /** 空闲态上下文：无 session、无当前题，等待用户开口。 */
 export function initialConversationContext(): ConversationContext {
-  return { version: 1, mode: 'chat', questionHistory: [], questionCount: 0, messageTurnCount: 0 };
+  return { version: 1, mode: 'chat', questionHistory: [], questionCount: 0, messageTurnCount: 0, activeKnowledgeIds: [] };
 }
 
 /** 已交付某道题、等待作答。 */

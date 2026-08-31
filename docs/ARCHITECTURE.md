@@ -172,8 +172,8 @@ data/questions/       题库（用户数据契约，按 topic 一文件：questi
                        agent-engineering / ai-systems / ai-security）是 **taxonomy 逻辑分组**
                        （topic → domain 映射见 `taxonomy.domainOfTopic`），不是物理文件单位；
                        UI 分类标签由 `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS。
-                       存量 1084 题：1078 题同时携带 choice 与 open 双形态（ADR-027）、6 题仅
-                       choice、180 题选择形态带场景化专属题干 cf.question（ADR-028）。题目角度
+                       存量 1317 题：约 1237 题同时携带 choice 与 open 双形态（ADR-027）、80 题仅
+                       choice（open 形态统一由双形态题的 open 字段承载，ADR-027）。题目角度
                        候选由 taxonomy.ANGLE_WHITELIST（topic→角度子集）约束，节点未声明
                        angles 时回退到所属 topic 白名单（ADR-039）。
 data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状校验；刻意不建索引/数据库层，
@@ -293,7 +293,7 @@ User Query → query planner（scope / mode，确定性规则）
 
 1. **投影而非切块**：`KnowledgeNode`（summary/required/misconceptions/angles）与 `Question`（stem/options/explanation）投影成统一的 `KnowledgeDocument`，保留 metadata 供精确过滤；不把 JSON 当 chunk 直接喂。
 2. **真值隔离在检索层**：`explanation / choice.answer / referenceAnswer` 进入 `sensitiveText`，`renderDocument(doc, mode)` 硬裁剪——`hint` 只给知识骨架与误解，`quiz` 只给题干。检索不能绕过 assessment boundary。
-3. **scope / mode 由确定性规则决定**，不额外消耗一次 LLM 调用：检索范围与答案可见性是安全边界，不能交给模型判断。默认保守——只要存在当前题目就走 `hint`。
+3. **scope / mode 由确定性规则决定**，不额外消耗一次 LLM 调用：检索范围与答案可见性是安全边界，不能交给模型判断。`explain` 只在 scope=`current_question` 时出现（用户明确在谈那道题、或对其求提示/求详细解读）；其余知识问题默认走安全模式 `hint`，不暴露题库真值（`answer`/`explain` 才开真值闸门）。
 4. **Question 是 Knowledge 的 evidence 而非主知识源**：`knowledge` scope 排除题目；其余 scope 题目证据最多 2 个槽位（`current_question` / `quiz` 放开）。实测不加限制时 top 5 全是题目，模型会「从题库答案总结答案」。
 
 Concept Graph 由此从「出题算法辅助结构」升级为 **Knowledge Backbone**：同一张图（1-hop：prerequisite 0.8 / related 0.6 / dependent 0.45）同时驱动 adaptive selection 与 knowledge retrieval。

@@ -6,6 +6,7 @@ import type { Question } from '../../schemas/question';
 import {
   buildKnowledgePromptSection,
   combineFollowUp,
+  detectQueryTopic,
   knowledgeCitations,
   planRetrievalMode,
   planRetrievalScope,
@@ -64,6 +65,17 @@ describe('planRetrievalScope（含 P0-2 当前题与知识主题解耦）', () =
   });
 });
 
+describe('detectQueryTopic（P1 最长匹配）', () => {
+  it('不被数组顺序里先出现的泛化节点劫持：收集全部命中、取 term 最长者', () => {
+    // 'training'(8) ⊂ 'pretraining'(11)：query 明确含更具体的 pretraining 时应锚定它。
+    expect(detectQueryTopic('pretraining 和 training 有什么区别')).toBe('pretraining');
+    // 'ranking'(7) ⊂ 'reranking'(9)
+    expect(detectQueryTopic('reranking 与 ranking 的关系')).toBe('reranking');
+    // 'attention'(9) ⊂ 'self-attention'(13)（带连字符）
+    expect(detectQueryTopic('self-attention 的注意力机制')).toBe('self-attention');
+  });
+});
+
 describe('planRetrievalMode（答案安全模式）', () => {
   it('要提示 → hint', () => {
     expect(planRetrievalMode({ query: '给我一点提示，不要直接给答案', activeQuestion })).toBe('hint');
@@ -80,17 +92,24 @@ describe('planRetrievalMode（答案安全模式）', () => {
     expect(planRetrievalMode({ query: '解析一下正确选项', activeQuestion })).toBe('answer');
   });
 
-  it('有当前题但没明说 → 默认 explain（可解释正确选项，但不改 assessment truth）', () => {
-    expect(planRetrievalMode({ query: '讲考点', activeQuestion })).toBe('explain');
+  it('P0-B：有当前题但没在谈它 → 安全模式 hint（不因页面上恰好有题就开真值闸门）', () => {
+    expect(planRetrievalMode({ query: '讲考点', activeQuestion })).toBe('hint');
   });
 
   it('当前题 + 详细解读类请求 → explain（而非只给提示）', () => {
     expect(planRetrievalMode({ query: '这道题我不会，给我详细解读', activeQuestion })).toBe('explain');
     expect(planRetrievalMode({ query: '帮我讲透这道题', activeQuestion })).toBe('explain');
+    expect(planRetrievalMode({ query: '为什么错', activeQuestion })).toBe('explain');
   });
 
-  it('没有当前题 → answer', () => {
-    expect(planRetrievalMode({ query: '什么是 GQA？' })).toBe('answer');
+  it('P0-B：有当前题(rag)却问另一个知识点 → hint，不暴露 GQA 题库的 assessment truth', () => {
+    expect(planRetrievalMode({ query: 'GQA 和 MQA 有什么区别', activeQuestion })).toBe('hint');
+    expect(planRetrievalMode({ query: '讲讲 KV Cache', activeQuestion })).toBe('hint');
+  });
+
+  it('P0-B：没有当前题的纯知识问题同样走安全模式（旧实现为 answer）', () => {
+    expect(planRetrievalMode({ query: '什么是 GQA？' })).toBe('hint');
+    expect(planRetrievalMode({ query: '介绍一下 RAG' })).toBe('hint');
   });
 });
 
@@ -107,7 +126,7 @@ describe('buildKnowledgePromptSection', () => {
     const section = buildKnowledgePromptSection(evidence);
     expect(section).toContain('【知识库检索依据】');
     expect(section).toContain('模式=answer');
-    expect(section).toContain('引用标记');
+    expect(section).toContain('不得编造');
   });
 
   it('非 answer 模式写入硬性禁止项', () => {
@@ -200,5 +219,32 @@ describe('retrieveForCopilot 端到端', () => {
   it('P0-2：有当前题求提示 → current_question 范围（锚定当前题）', () => {
     const evidence = retrieveForCopilot({ query: '给我一点提示，不要直接给答案', activeQuestion, limit: 5 });
     expect(evidence.scope).toBe('current_question');
+  });
+
+  it('P0-B：有当前题(rag)问 GQA → 检索结果不含任何题库真值（只是想聊知识）', () => {
+    const evidence = retrieveForCopilot({ query: 'GQA 和 MQA 有什么区别', activeQuestion, limit: 8 });
+    expect(evidence.scope).toBe('topic');
+    expect(evidence.mode).toBe('hint');
+    const joined = evidence.hits.map((h) => h.content).join('\n');
+    expect(joined).not.toContain('正确选项：');
+    expect(joined).not.toContain('参考答案：');
+    expect(joined).not.toContain('解析：');
+  });
+
+  it('P0-B：明确谈当前题时仍可拿到该题真值（explain 未被误伤）', () => {
+    const evidence = retrieveForCopilot({ query: '这道题我不会，给我详细解读', activeQuestion, limit: 8 });
+    expect(evidence.scope).toBe('current_question');
+    expect(evidence.mode).toBe('explain');
+    expect(evidence.hits.map((h) => h.content).join('\n')).toContain('解析：');
+  });
+
+  it('P1：priorKnowledgeIds 接成 graph 种子，让确定性 follow-up 也吃到上一轮知识点邻域', () => {
+    const evidence = retrieveForCopilot({
+      query: '那显存呢',
+      activeQuestion,
+      priorKnowledgeIds: ['kv-cache'],
+      limit: 5,
+    });
+    expect(evidence.seeds).toContain('kv-cache');
   });
 });

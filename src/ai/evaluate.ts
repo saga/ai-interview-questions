@@ -14,7 +14,7 @@ import { llmEvaluationRawSchema } from '../schemas/evaluation';
 // 评估系统提示（稳定前缀，KV-Cache 友好）：角色 + 判断标准 + 四维评分原则 + 序级定义 + 责任边界 + JSON 输出契约。
 // 所有「随题目变化」的内容都在 buildEvalUser 里（用户消息），本常量不含任何动态数据——
 // 这样同一场面试里多次评分可复用同一个被缓存的 system 前缀（DeepSeek Context Caching 命中）。
-export const EVAL_SYSTEM = `[PROMPT-VERSION v3]
+export const EVAL_SYSTEM = `[PROMPT-VERSION v4]
 
 你是一个严格、客观的 AI 技术面试评估器。你只负责评估，不负责出题、不负责讲解、也不决定最终分数。
 
@@ -33,7 +33,11 @@ export const EVAL_SYSTEM = `[PROMPT-VERSION v3]
 - communication：表达清晰度（条理、专业度）
 
 【维度适用性】
-若某维度对当前题目不适用（例如概念题几乎不涉及 architecture、纯编码题不涉及 communication），**不要因为缺少该维度内容而额外扣分**——只按题目实际要求的维度评估；不适用的维度给中性档（2）而非低分，避免用「题目本来就不考」的内容惩罚候选人。
+若某维度对当前题目不适用（例如概念题几乎不涉及 architecture、纯编码题不涉及 communication），在该维度对象里写 "applicable": false。
+- **不适用维度不参与综合分加权**，它的权重会按比例分给其余维度。所以不要为了「凑分」给它打中性档——打几分都不影响综合分，但错误的 applicable 标记会。
+- 不适用维度仍要给出 level 与 evidence（供人工复核），系统会忽略它的 level。
+- correctness 恒为适用：任何题目都考「结论是否成立」，你即便写了 applicable:false 也会被忽略。
+- 只有在题目**根本没给该维度留任何作答空间**时才标 false；「候选人答得不好」属于低分，不是不适用。
 
 【用「序级」而非百分制】
 你不要输出 0-100 的分数——LLM 对 82 与 84 通常没有可靠的语义区分。**你只需对每个维度判断一个 0~4 的序级（ordinal rating），并用一句话 evidence 说明依据**。分数由系统按固定映射归一化（0→0, 1→25, 2→50, 3→75, 4→100），你无需、也不能计算它。
@@ -57,10 +61,11 @@ export const EVAL_SYSTEM = `[PROMPT-VERSION v3]
 【JSON 输出契约】
 只输出一个 JSON 对象，不要任何额外文字或 Markdown 代码块。字段与类型：
 {
-  "correctness":   { "level": 0, "evidence": "为什么给这个等级（命中/缺失的要点）" },
-  "completeness":  { "level": 0, "evidence": "" },
-  "architecture":  { "level": 0, "evidence": "" },
-  "communication": { "level": 0, "evidence": "" },
+  "correctness":   { "level": 0, "evidence": "为什么给这个等级（命中/缺失的要点）", "applicable": true },
+  "completeness":  { "level": 0, "evidence": "", "applicable": true },
+  "architecture":  { "level": 0, "evidence": "", "applicable": true },
+  "communication": { "level": 0, "evidence": "", "applicable": true },
+  // applicable=false 表示该维度对本题不适用，不参与综合分加权（见 [维度适用性]）；缺省视为 true。
   "strengths": [],        // 字符串数组：有证据的回答亮点
   "gaps": [],             // 字符串数组：遗漏或错误的要点（用于 Learner Memory，务必具体、可操作）
   "missingConcepts": [],  // 字符串数组：候选人本应掌握却明显缺失的概念（如 sparse activation、total vs active params）
@@ -139,6 +144,7 @@ export function parseEvaluation(raw: string, open: OpenFormat, rubric: ScoringRu
       dimensions: zero,
       levels: zeroLevel,
       evidence: emptyEvidence,
+      applicable: { correctness: true, completeness: true, architecture: true, communication: true },
       strengths: [],
       gaps: [],
       missingConcepts: [],
@@ -183,12 +189,23 @@ export function parseEvaluation(raw: string, open: OpenFormat, rubric: ScoringRu
     architecture: out.architecture?.evidence ?? '',
     communication: out.communication?.evidence ?? '',
   };
+  // 维度适用性：只有模型**显式**写 applicable:false 才排除。维度对象整体缺失属于残缺输出，
+  // 仍按 level 0 参与加权（与既有行为一致）——否则模型少输出一维就能白拿满分。
+  const applicable = {
+    correctness: out.correctness?.applicable !== false,
+    completeness: out.completeness?.applicable !== false,
+    architecture: out.architecture?.applicable !== false,
+    communication: out.communication?.applicable !== false,
+  };
+  // 不变量：正确性永远计入。任何题都考"结论是否成立"，把它标为不适用会让综合分失去意义。
+  applicable.correctness = true;
 
   return {
-    overall: aggregateOverall(dimensions, rubric),
+    overall: aggregateOverall(dimensions, rubric, applicable),
     dimensions,
     levels,
     evidence,
+    applicable,
     strengths: Array.isArray(out.strengths) ? out.strengths : [],
     gaps: Array.isArray(out.gaps) ? out.gaps : [],
     missingConcepts: Array.isArray(out.missingConcepts) ? out.missingConcepts : [],
