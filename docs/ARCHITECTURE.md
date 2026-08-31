@@ -10,7 +10,7 @@
 
 ## 统一交互入口（Phase 1–5 已实施，ADR-061/062，plan0831_4 融合收敛）
 
-Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record；Router 含 `end_interview` 与丰富 `questionHistory/lastEvaluation/turnCount` 上下文，`chatCopilot` 仅保留为 general-chat 与 intent-classification adapter；`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。general-chat 走「检索 → 组装 → LLM → 回答 + 依据」而非裸 prompt（ADR-063，见下节）。
+Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record。`handleSend` 经 `routeUserMessage` 三通道分流（ADR-064）：`command`（5 个确定性训练动作，无 LLM）→ `answer`（提交作答）→ `copilot`（解释/提示/比较/追问/知识问答，零副作用）；检索在 `copilot.ts` 内先于 LLM 完成（ADR-063），失败只降级为无依据问答。`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`（含 §8 六约束）。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。
 
 目标架构为：
 
@@ -113,12 +113,13 @@ application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
   sessionEvaluator.ts  双引擎共享衔接层：isAnswerEmpty / effectiveFormats /
                         evaluateSessionQuestion；选择题判分与开放题 LLM 评分的统一入口
-  conversation/        统一交互入口的能力层（ADR-061/062/063）
-    router.ts              intent 分类（确定性规则 + LLM 兜底）
+  conversation/        统一交互入口的能力层（ADR-061/062/063/064）
+    commandDetector.ts     命令检测器（ADR-064）：仅 5 个确定性训练动作，无 LLM 意图分类
+    copilot.ts             Copilot 通道（ADR-064）：runCopilotTurn = 检索→组装→LLM→引用，零副作用
     conversationSession.ts ConversationSession 聚合与 localStorage 持久化
     questionCapability.ts  出题；evaluationCapability.ts 评分；learnerCapability.ts 画像
     interviewCapability.ts Chat × Agent runtime 的衔接
-    copilotPrompt.ts       buildCopilotSystemPrompt（纯函数，UI 不拼 prompt）
+    copilotPrompt.ts       buildCopilotSystemPrompt（纯函数，UI 不拼 prompt；含 ADR-064 §8 六约束）
     knowledgeCapability.ts 知识检索的应用层：query planner（scope / mode 由确定性规则决定）、
                            evidence → prompt 片段、引用列表
 

@@ -2,6 +2,22 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-064 · Copilot 双通道：commandDetector + copilot（删 LLM intent router）
+
+- 状态：已采纳 · 2026-08-31
+- 来源：`docs/improvement_plan/knowledge_base_for_copilot_2.md`（用户截图 bug：「这道题我不会，给我一些详细解读」被路由层挡成「请明确说：给我出一道题」）。
+- 背景：旧 `router.ts` 把**所有**聊天输入先过 `classifyIntent`（每条消息多一次 LLM 调用），再从一组「动作型 intent」里选；`explain_topic / general_chat` 是剩余垃圾桶；`confidence < 0.75` 直接给用户报「意图不确定，请使用命令」——把自然语言 Copilot 强行降级成命令行，与 UI 明示的「解释考点、拆解思路、给出提示」定位冲突。
+- 决策：
+  1. **删 `router.ts`，新增 `commandDetector.ts`**：命令只剩 5 个确定性动作 `start_interview / ask_question / continue_interview / end_interview / re_evaluate`，纯正则识别，**不再有 LLM 意图分类**。
+  2. **删「意图不确定」阻断**：识别不出命令一律走 Copilot，不弹报错——「不确定是不是命令 = 默认 Chat」。
+  3. **唯一通道决策点 `routeUserMessage`**（§5）：`command → answer → copilot` 三通道按优先级收敛。**求助信号优先于答案**：「这道题我不会，给我详细解读」命中 `isHelpSeeking` 走 Copilot，不再被误判成一次评分（`answer` 通道仅在「确有待作答题目且输入可解析为作答」时成立）。
+  4. **Copilot 通道抽到 `copilot.ts` 的 `runCopilotTurn`**：固定 `检索 → 组装 → LLM → 引用`，零副作用；检索失败只降级为无依据问答，不阻断对话。与刚落地的 ADR-063 知识检索自然接合。
+  5. **`explain_topic / evaluate_answer / general_chat` 不再是 intent**：解释/提示/比较/追问/知识问答全部归 Copilot 能力；「重新评分」收敛为 `re_evaluate` 命令（确定性、用已存答案重跑评分）。
+  6. **`buildCopilotSystemPrompt` 升级 §8 六条约束**：优先基于知识依据、不虚构库外事实、不足时说明补充、assessment 真值不可篡改、提示模式不泄露正确选项、优先用知识节点而非堆题干。
+- 不做：LLM intent classifier（已删除）；命令集继续膨胀（保持 5 个）；把 answer/re_evaluate 重新塞回「意图」集合。
+- 验证：`tsc -b 0`；`vitest 612 passed / 47 files`（新增 `commandDetector.test.ts` 15 例、`conversation.test.ts` 路由用例迁移）；`npm run build` 通过；`git diff --check` 干净。
+- 关联：`docs/improvement_plan/knowledge_base_for_copilot_2.md`、`docs/ARCHITECTURE.md`「Copilot 双通道路由」。
+
 ## ADR-063 · Structured Knowledge RAG：Knowledge Base 提升为 domain capability
 
 - 状态：已采纳（Phase 1 已实施） · 2026-08-31

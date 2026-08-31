@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { difficultySchema, formatIdSchema } from './common';
 
 export const conversationModeSchema = z.enum(['chat', 'question', 'interview']);
 export const pendingActionSchema = z.enum(['answer', 'choose_question']);
@@ -22,28 +21,10 @@ export const conversationContextSchema = z.object({
   endedAt: z.number().min(0).optional(),
 });
 
-export const userIntentTypeSchema = z.enum([
-  'start_interview',
-  'ask_question',
-  'answer_current_question',
-  'continue_interview',
-  'end_interview',
-  'evaluate_answer',
-  'explain_topic',
-  'general_chat',
-]);
-
-export const userIntentSchema = z.object({
-  version: z.literal(1),
-  intent: userIntentTypeSchema,
-  topic: z.string().min(1).optional(),
-  difficulty: difficultySchema.optional(),
-  format: formatIdSchema.optional(),
-  answer: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-});
+// 命令（Command）是纯内部、非持久化的输入解释结果，类型定义在
+// `application/conversation/commandDetector.ts`，不在此处建 zod schema：
+// 它已经不再来自 LLM 输出，无需运行时校验。
 
 export type ConversationMode = z.infer<typeof conversationModeSchema>;
 export type PendingAction = z.infer<typeof pendingActionSchema>;
 export type ConversationContext = z.infer<typeof conversationContextSchema>;
-export type UserIntent = z.infer<typeof userIntentSchema>;

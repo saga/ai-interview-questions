@@ -1,6 +1,13 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-31 · Copilot 双通道：commandDetector + copilot（ADR-064）
+
+- 删除 `src/application/conversation/router.ts`（含 LLM `classifyIntent` 与 `confidence < 0.75` 阻断）。新增 `commandDetector.ts`：仅 5 个确定性命令（`start_interview / ask_question / continue_interview / end_interview / re_evaluate`），正则识别、无 LLM；`routeUserMessage` 为唯一通道决策点（command → answer → copilot，求助优先于作答）。
+- 新增 `src/application/conversation/copilot.ts`：`runCopilotTurn` 固定「检索 → 组装 → LLM → 引用」，零副作用；检索失败降级为无依据问答。`CopilotSidebar.handleSend` 拆为 `handleCommand / handleAnswer / handleCopilotChat` 三分支，「这道题我不会，给我详细解读」类输入不再被挡成报错，直接走 RAG 通道。
+- `copilotPrompt.ts` 升级 §8 六条约束：优先基于知识依据、不虚构库外事实、不足时说明补充、assessment 真值不可篡改、提示模式不泄露正确选项、优先用知识节点而非堆题干。
+- 测试：`conversation.test.ts` 路由用例迁移至 `commandDetector.test.ts`（15 例），`vitest 612 passed / 47 files`；`tsc -b 0`；`npm run build` 通过。
+
 ## 2026-08-31 · 结构化知识检索（Structured Knowledge RAG，ADR-063）
 
 - 新增 `src/domain/knowledge/`：`types.ts`（KnowledgeDocument / Hit / Evidence、RetrievalScope、RetrievalMode、混合权重）、`documents.ts`（KnowledgeNode / Question → 统一文档投影，真值隔离进 `sensitiveText`）、`index.ts`（内存倒排索引 + BM25，CJK 单字 + bigram / 拉丁串成词）、`graph.ts`（Concept Graph 1-hop 扩展，seed 1.0 / prerequisite 0.8 / related 0.6 / dependent 0.45）、`retrieve.ts`（`searchKnowledge`：metadata + lexical + graph 混合评分，semantic 权重 0.15 未接入前按比例回填）。原 `src/domain/knowledge.ts` 拆为 `knowledge/nodes.ts`（`knowledgeById / requiredPointsFor / knowledgeCoverage` 不变，引用方同步改路径）。
