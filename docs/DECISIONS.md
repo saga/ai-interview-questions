@@ -2,9 +2,27 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-062 · Chat 与 Agent Interview 融合收敛（plan0831_4 收口）
+
+- 状态：已采纳 · 2026-08-31
+- 背景：ADR-061 完成后 Chat 已能“出题→回答→评分→继续”，但仍为割裂态：`start_interview` 仅改 `mode='interview'` 未进 Agent runtime；`continue_interview` 只是重做 `rankQuestions` 未用历史/评分/Learner；每答一题即存单题 `SessionRecord` 违背用户“一轮连续训练”心智；`sessionId` 无生命周期；`结束` 误判为 `evaluate_answer`；`messages` 不持久化；prompt 拼接耦合 UI；三套 orchestration 仍各管一摊。详见 `docs/improvement_plan/plan0831_4.md` 11 项诊断。
+- 决策（P0 必须）：
+  1. **Router**：新增 `end_interview`，`结束/停止/结束面试` 直接落该 intent；`evaluate_answer` 收敛为“重新评价刚才答案”的显式请求；扩展确定性模式覆盖 `考考我/来个RAG的/难一点/system design/继续考/追问` 等，`TOPIC_ALIASES` 补全，`INTENT_SYSTEM` 升 v2 说明语义；`ConversationContext` 追加 `questionHistory/lastEvaluationOverall/turnCount`，`interviewContext()` 新增，LLM router 可据历史/评分做“针对薄弱点继续”。
+  2. **Prompt 解耦**：新增 `src/application/conversation/copilotPrompt.ts`（`buildCopilotSystemPrompt` 纯函数），`CopilotSidebar` 不再直接拼 `weakness/currentQuestion/session`。
+  3. **真实 Session**：新增 `src/application/conversation/conversationSession.ts`（`ConversationSession` 聚合 `context+messages+questions+answers+evaluations+turnCount`，`create/addQuestion/addEvaluation/toSessionRecord`，`localStorage CONVERSATION_SESSION_KEY` 统一持久化）；`sessionId` 对应真实生命周期，`toSessionRecord` 仅在 `end_interview` 时一次性生成多题 `SessionRecord`。
+  4. **不拆 session**：答题后只 `addEvaluationToSession`，不立即 `sessionFromQuiz+onSessionComplete`；`end_interview` 才 `toSessionRecord → onSessionComplete` 一次性落库，修复 `average/duration/history/progress/replay` 语义。
+  5. **继续即自适应**：`interview` 模式或连续追问下，`continue_interview` 先尝试 `nextAdaptiveStep(fakeSession, signals, profile)`（signals 来自已评题），命中则直接用其策略选下一题；未命中回退 `askQuestion(excludeIds=history)`。实现 `history + Learner + strategy + 追问状态` 驱动的 continuation。
+  6. **面试真入 Agent**：`start_interview` 创建 `interview` 模式 session；后续 `continue_interview` 走 adaptive 引擎（共享 `rankCandidatePool` 但由 session 驱动），与 `InterviewAgent` 共用策略；动态升级：`question` 模式下 `turnCount>=2` 且出现 `难一点/继续` 显式 hint 时自动 `upgrade → interview`。
+- 决策（P1 体验/收敛）：
+  7. **消息统一持久化**：`messages` 随 `ConversationSession` 一并落 `localStorage`，刷新后 `context+transcript` 同步恢复，`general_chat` 的 `history` 不丢。
+  8. **不再造第四套 abstraction**：`Question Mode → QuestionCapability`，`Interview Mode → Agent/Adaptive Runtime`，共享 `Question/Evaluation/Learner/Session`。
+- 不做：未引入 BKT/IRT/embedding judge/第二个 LLM judge/复杂 context compaction；未把 `ConversationSession` 迁入 IndexedDB agentSessions（localStorage 已满足 Chat 体量）；未重写 `useTrainingSession`/`useAgentInterview`。
+- 验证：`tsc 0`，`vitest 525 passed`，新增 `conversationSession` 单测与 router `end_interview` 覆盖；`plan0831_4_checklist.md` 逐项打勾。
+- 关联：`docs/improvement_plan/plan0831_4_checklist.md`；`docs/CONVERSATION_ARCHITECTURE.md` §8 已同步。
+
 ## ADR-061 · Conversation 作为统一交互入口，Capability 归 application 层所有
 
-- 状态：已采纳，Phase 1–3 已实施；Phase 4 统一 LearningSession 迁移暂缓 · 2026-08-31
+- 状态：已采纳，Phase 1–4 已实施；Phase 5 融合收敛见 ADR-062 · 2026-08-31
 - 背景：Copilot Chat、训练、模拟面试和 Agent 面试复用了部分题库/评分/Learner 能力，但入口和状态机割裂。`CopilotSidebar` 内部直接维护 `chatCopilot`；Agent 面试能力主要通过 `src/agent/tools.ts` 暴露，缺少统一的自然语言 intent → application capability 路由。因此“给我出一道题”可能退化成普通文本生成，不能自然进入答题、评分和继续流程。
 - 决策：
   1. 增加 `src/application/conversation/` 作为 Conversation Controller / Intent Router / Capability adapter 的归属层。

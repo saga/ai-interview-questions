@@ -1,6 +1,15 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-31 · Chat 与 Agent 融合收敛（ADR-062，plan0831_4）
+
+- 将 `start_interview`/`continue_interview` 从 `askQuestion()` 直通改为真实 continuation：`interview` 模式下经 `nextAdaptiveStep(signals)` 自适应选题（历史+评分+Learner），`question` 模式长链自动 `upgrade → interview`。
+- `ConversationContext` 扩展 `questionHistory/lastEvaluationOverall/turnCount` 与 `interviewContext()`，Router 新增 `end_interview`（`结束/停止/结束面试`），`evaluate_answer` 收敛为重评语义，`INTENT_SYSTEM v2`，`TOPIC_ALIASES` 补全，确定性规则覆盖 `考我/来个RAG的/难一点/追问` 等。
+- 新增 `src/application/conversation/conversationSession.ts`（聚合 `context+messages+questions+answers+evaluations`，`localStorage` 统一持久化，`toSessionRecord` 仅 `end_interview` 时一次性落库），修复单轮拆 N 个 `SessionRecord` 的语义污染。
+- 新增 `src/application/conversation/copilotPrompt.ts`（`buildCopilotSystemPrompt` 纯函数），解耦 UI 与 domain prompt 拼接。
+- `CopilotSidebar` 重构为 Session 驱动：`messages+context` 统一持久化、刷新可恢复，自适应继续与面试模式共用能力，`结束` 聚合落库后清 session；新增 `结束训练` 快捷操作。
+- 同步 `docs/CONVERSATION_ARCHITECTURE.md`、`docs/ARCHITECTURE.md`、ADR-062 与 `docs/improvement_plan/plan0831_4_checklist.md`。
+
 ## 2026-08-31 · 实施统一 Conversation / Intent / Capability 第一阶段（ADR-061）
 
 - 新增 `src/application/conversation/`：Question / Evaluation / Interview / Learner capabilities，以及 Conversation types/router。

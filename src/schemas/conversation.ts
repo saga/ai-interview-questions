@@ -10,6 +10,10 @@ export const conversationContextSchema = z.object({
   sessionId: z.string().min(1).optional(),
   currentQuestionId: z.string().min(1).optional(),
   pendingAction: pendingActionSchema.optional(),
+  // Rich history for adaptive routing (P0-2/12): not required for validation, best-effort persisted.
+  questionHistory: z.array(z.string()).optional(),
+  lastEvaluationOverall: z.number().min(0).max(100).optional(),
+  turnCount: z.number().min(0).optional(),
 });
 
 export const userIntentTypeSchema = z.enum([
@@ -17,6 +21,7 @@ export const userIntentTypeSchema = z.enum([
   'ask_question',
   'answer_current_question',
   'continue_interview',
+  'end_interview',
   'evaluate_answer',
   'explain_topic',
   'general_chat',
