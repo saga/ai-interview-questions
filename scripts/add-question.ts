@@ -105,6 +105,25 @@ if (choiceTotal >= MIN_CHOICE_FOR_FORMAT_GATE) {
   }
 }
 
+// 批量集中度告警（仅告警，不阻塞）：同一 topic × angle 在"本批导入"里过于集中（≥4 题），
+// 属于重复堆砌同一认知任务。已有 ≥3 题的格子应确认新题带来新价值，而非同类堆砌。
+const incomingCellCounts = new Map<string, number>();
+for (const question of incoming) {
+  if (question.angle) {
+    const cell = `${question.topic}\u0000${question.angle}`;
+    incomingCellCounts.set(cell, (incomingCellCounts.get(cell) ?? 0) + 1);
+  }
+}
+for (const [cell, count] of incomingCellCounts) {
+  if (count >= 4) {
+    const [topic, angle] = cell.split('\u0000');
+    warnings.push(
+      `批量集中度：本批 ${count} 道题都落在 ${topic} × ${angle} 同一格子里（≥4）。` +
+        `同一 topic×angle 已有 ≥3 题时应确认新题带来新认知任务 / 场景 / misconception，而不是堆砌同类题`,
+    );
+  }
+}
+
 if (errors.length) {
   console.error(`导入检查失败：${errors.length} 个错误`);
   errors.forEach((error) => console.error(`✗ ${error}`));

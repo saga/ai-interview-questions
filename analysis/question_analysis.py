@@ -195,6 +195,52 @@ def embedding_cluster_report(embeddings: Any, ids: list[str]) -> list[dict[str, 
     return [{"cluster": label, "size": len(values), "questionIds": values[:20]} for label, values in sorted(grouped.items())]
 
 
+def conceptual_cluster_density(duplicate_pairs: list[dict[str, Any]], oversaturation_size: int = 3) -> dict[str, Any]:
+    """从语义近重复对构建“概念簇”（同一知识的近邻题群），标记过大的簇为过密。
+
+    信号含义：一个概念被反复以近重复方式出题 → 过密（"同一知识反复考"）。
+    这种密度来自同一份 embedding：把 ``semanticDuplicateCandidates``（cosine ≥ 阈值）
+    视为无向边，做连通分量，每个分量就是一个概念簇。
+
+    注意：这只是一种 soft 信号，不做质量评分，也不自动删题。
+    ``oversaturation_size`` 为簇规模上限，规模严格大于该值的簇被标记为过密。
+    """
+    adjacency: defaultdict[str, set[str]] = defaultdict(set)
+    nodes: set[str] = set()
+    for pair in duplicate_pairs:
+        left, right = pair["left"], pair["right"]
+        adjacency[left].add(right)
+        adjacency[right].add(left)
+        nodes.add(left)
+        nodes.add(right)
+    visited: set[str] = set()
+    components: list[list[str]] = []
+    for node in nodes:
+        if node in visited:
+            continue
+        stack = [node]
+        component: list[str] = []
+        while stack:
+            current = stack.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            component.append(current)
+            stack.extend(adjacency[current] - visited)
+        components.append(component)
+    oversaturated = [
+        {"size": len(component), "questionIds": sorted(component)[:25]}
+        for component in components
+        if len(component) > oversaturation_size
+    ]
+    return {
+        "oversaturationSize": oversaturation_size,
+        "clustersTotal": len(components),
+        "oversaturatedClusterCount": len(oversaturated),
+        "oversaturatedClusters": oversaturated,
+    }
+
+
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
     raw_questions = read_arrays(QUESTIONS_DIR)
     records = [QuestionRecord.model_validate(question) for question in raw_questions]
@@ -233,6 +279,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         }
         result["semanticDuplicateCandidates"] = semantic_candidates(embeddings, ids, args.semantic_threshold)
         result["embeddingClusters"] = embedding_cluster_report(embeddings, ids)
+        result["conceptualClusterDensity"] = conceptual_cluster_density(result["semanticDuplicateCandidates"], oversaturation_size=3)
     return result
 
 

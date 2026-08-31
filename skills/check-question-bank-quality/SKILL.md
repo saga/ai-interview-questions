@@ -9,15 +9,33 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 
 ## 检查顺序
 
+质量分三层，逐层推进；上层通过不保证下层通过，下层问题不靠上层脚本自动判定。
+
+### Level 1 — Contract（契约与结构）
+
 1. 读取 `AGENTS.md`、`README.md`、题目 schema 和相关校验脚本，确认当前数据契约。
 2. 运行基础检查：
    - `npm run validate:questions`
    - `npm run lint:bias`
-   - `npm run question:coverage`
    - `npx vitest run src/data/bank.test.ts`
-3. 统计题库规模、题型、难度、angle、topic、重复题和元数据覆盖率。
-4. 抽查失败项的完整题目、选项、答案、解析和开放题参考答案，不只看脚本摘要。
-5. 按 P0/P1/P2 输出问题：必须包含题目 id、文件、字段证据、影响和建议。
+3. 确认 `id` 唯一、题干无精确/规范化重复、`topic` 映射到知识节点、`angle` 合法、答案索引合法且不重复、choice 与 open 双形态答案一致、选项无占位/原题指代/不互斥内容。
+
+### Level 2 — Heuristic（启发式分布与重复）
+
+4. 运行 `npm run question:coverage` 与 `npm run question:audit`，统计题库规模、题型、难度、angle、topic × angle 密度、重复题和元数据覆盖率。
+5. 用 `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json` 发现语义重复候选与概念簇过密信号（默认离线，不访问 Hugging Face）。
+6. 启发式告警（长度偏差、topic × angle 过密、难度 × angle 不一致）是 soft 信号，需结合完整题目人工复核，不要直接当作事实错误。
+
+### Level 3 — Content quality（内容质量，由 challenger + 人工负责）
+
+7. 对 Level 1/2 通过但内容上存疑的题，按以下维度做内容审查（这部分无法全自动，需 LLM challenger 或人工逐题判断）：
+   - **Concept Scope**：每题是否只测一个可诊断的核心 Concept，没有混入多余独立主题？
+   - **Answer Determinism**：正确答案在题干约束下是否唯一稳定，不依赖隐藏前提？
+   - **Option Quality**：选项是否同决策层级，正确项是否仅因更完整/信息量更大胜出？
+   - **Diagnostic Value**：答错后能否较明确反映知识或能力缺口？
+   - **工程推理 vs 术语记忆**：是否考理解/判断/应用而非文章原句记忆？产品绑定题是否改写为自包含工程场景？
+8. 抽查失败项的完整题目、选项、答案、解析和开放题参考答案，不只看脚本摘要。
+9. 按 P0/P1/P2 输出问题：必须包含题目 id、文件、字段证据、影响和建议。
 
 ## 自动化工具
 

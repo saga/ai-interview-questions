@@ -79,6 +79,8 @@ def audit() -> dict[str, Any]:
     category_counts: Counter[str] = Counter()
     format_counts: Counter[str] = Counter()
     covered_cells: set[tuple[str, str]] = set()
+    cell_question_counts: Counter[tuple[str, str]] = Counter()
+    angle_difficulty_counts: Counter[tuple[str, str]] = Counter()
 
     for file_name, question in questions:
         question_id = str(question.get("id", "<missing-id>"))
@@ -88,6 +90,9 @@ def audit() -> dict[str, Any]:
         difficulty_counts[str(question.get("difficulty", "<missing>"))] += 1
         angle_counts[angle or "<missing>"] += 1
         category_counts[str(question.get("category", "<missing>"))] += 1
+        if topic in node_ids and angle in VALID_ANGLES:
+            cell_question_counts[(topic, angle)] += 1
+            angle_difficulty_counts[(angle, str(question.get("difficulty", "<missing>")))] += 1
 
         if question_id in ids:
             add_issue(issues, "P0", "duplicate-id", question_id, file_name, f"also in {ids[question_id][0]}")
@@ -152,6 +157,34 @@ def audit() -> dict[str, Any]:
 
     expected_cells = {(str(node.get("id")), angle) for node in nodes for angle in node.get("angles", [])}
     gaps = sorted(expected_cells - covered_cells)
+
+    def _classify_density(n: int) -> str:
+        if n == 0:
+            return "gap"
+        if n == 1:
+            return "sparse"
+        if n == 2:
+            return "healthy"
+        if n == 3:
+            return "deep"
+        return "oversaturated"
+
+    topic_angle_density: list[dict[str, Any]] = []
+    density_level_counts: Counter[str] = Counter()
+    for cell in sorted(expected_cells):
+        n = cell_question_counts.get(cell, 0)
+        level = _classify_density(n)
+        density_level_counts[level] += 1
+        topic_angle_density.append({"topic": cell[0], "angle": cell[1], "count": n, "level": level})
+
+    difficulty_by_angle: dict[str, dict[str, int]] = {}
+    for (ang, diff), cnt in angle_difficulty_counts.items():
+        difficulty_by_angle.setdefault(ang, {"easy": 0, "medium": 0, "hard": 0})
+        difficulty_by_angle[ang][diff] = cnt
+    for row in difficulty_by_angle.values():
+        for d in ("easy", "medium", "hard"):
+            row.setdefault(d, 0)
+
     return {
         "summary": {
             "questions": len(questions),
@@ -170,6 +203,9 @@ def audit() -> dict[str, Any]:
             "choiceFormat": dict(sorted(format_counts.items())),
         },
         "coverageGaps": [{"topic": topic, "angle": angle} for topic, angle in gaps],
+        "topicAngleDensity": topic_angle_density,
+        "topicAngleDensitySummary": dict(density_level_counts),
+        "difficultyByAngle": difficulty_by_angle,
         "issues": issues,
     }
 
@@ -194,6 +230,39 @@ def print_choice_format(report: dict[str, Any]) -> None:
         f"Choice format: single {fmt.get('single', 0)} · multiple {fmt.get('multiple', 0)}"
         f"{extra}（single {ratio * 100:.1f}%，目标 ≤ 33.3%）{flag}"
     )
+
+
+def print_topic_angle_density(report: dict[str, Any]) -> None:
+    """topic×angle 题目密度分级（信号，不自动删题）。
+
+    gap=0 · sparse=1 · healthy=2 · deep=3 · oversaturated=4+
+    """
+    density = report.get("topicAngleDensity", [])
+    if not density:
+        return
+    summary = report.get("topicAngleDensitySummary", {})
+    print("Topic×Angle density:")
+    print(
+        f"  gap={summary.get('gap', 0)} · sparse={summary.get('sparse', 0)} · "
+        f"healthy={summary.get('healthy', 0)} · deep={summary.get('deep', 0)} · "
+        f"oversaturated={summary.get('oversaturated', 0)}"
+    )
+    oversaturated = [d for d in density if d["level"] == "oversaturated"]
+    if oversaturated:
+        print("  oversaturated cells (≥4 questions, signal only — not auto-removed):")
+        for d in oversaturated:
+            print(f"    {d['topic']} × {d['angle']}: {d['count']}")
+
+
+def print_difficulty_by_angle(report: dict[str, Any]) -> None:
+    """angle × difficulty 交叉表，用于发现被标 hard 但内容仍是 definition 之类的不一致。"""
+    table = report.get("difficultyByAngle", {})
+    if not table:
+        return
+    print("Difficulty × Angle:")
+    for angle in sorted(table):
+        d = table[angle]
+        print(f"  {angle}: easy {d.get('easy', 0)} · medium {d.get('medium', 0)} · hard {d.get('hard', 0)}")
 
 
 def main() -> int:
@@ -229,6 +298,8 @@ def main() -> int:
         print(f"Coverage: {summary['coveredCoverageCells']}/{summary['expectedCoverageCells']} cells covered; {summary['coverageGaps']} gaps")
         print(f"Issues: {summary['issueCounts'] or 'none'}")
         print_choice_format(report)
+        print_topic_angle_density(report)
+        print_difficulty_by_angle(report)
         for issue in report["issues"]:
             print(f"[{issue['severity']}] {issue['code']} {issue['id']} ({issue['file']}): {issue['detail']}")
         if args.output:
