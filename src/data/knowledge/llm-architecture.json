@@ -3,7 +3,7 @@
     "id": "kv-cache",
     "name": "KV Cache",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P0",
     "summary": "缓存历史 token 的 K/V 使每步只算新 token 的投影，把解码从重算全史降为增量；代价是显存占用随 上下文×并发 线性增长，是长上下文服务的主要瓶颈。",
     "required": [
@@ -24,7 +24,7 @@
     "id": "gqa",
     "name": "GQA / MQA / MHA",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P0",
     "summary": "MHA 每个 Q 头独享 K/V；MQA 全部共享一组；GQA 分组共享居中。KV cache 按 KV 头数缩放，GQA 以极小质量损失换来数倍到数十倍的缓存压缩。",
     "required": [
@@ -45,7 +45,7 @@
     "id": "hybrid-attention",
     "name": "混合注意力（SWA + Global）",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P0",
     "summary": "多数层用滑动窗口注意力获得有界计算与有界缓存，少数全局层维持长距离信息通路；两层优化与 GQA 相乘进一步压低长上下文成本。",
     "required": [
@@ -65,7 +65,7 @@
     "id": "positional-encoding",
     "name": "位置编码策略",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P0",
     "summary": "自注意力本身置换等变，必须注入位置信息：正弦/可学习/RoPE/ALiBi/NoPE 各自在相对性、外推性与实现成本上取舍。NoPE 依赖因果掩码的不对称性隐式编码位置。",
     "required": [
@@ -85,7 +85,7 @@
     "id": "rope",
     "name": "RoPE 旋转位置编码",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P0",
     "summary": "用频率不同的旋转矩阵作用于 Q/K，使内积只依赖相对位置；配合 scaling（线性/NTK-aware 等）外推更长上下文。",
     "required": [
@@ -274,7 +274,7 @@
     "id": "transformer",
     "name": "Transformer 总体架构",
     "area": "ai-engineering",
-    "topic": "transformer",
+    "topic": "model-architecture",
     "priority": "P0",
     "summary": "自注意力 + FFN + 残差 + 归一化的堆叠；相比 RNN 全并行、长程依赖一步可达。Decoder-only 因训练目标简单、KV cache 友好成为 LLM 主流形态。",
     "required": [
@@ -294,7 +294,7 @@
     "id": "self-attention",
     "name": "自注意力机制",
     "area": "ai-engineering",
-    "topic": "transformer",
+    "topic": "model-architecture",
     "priority": "P0",
     "summary": "Q·Kᵀ/√d 经 softmax 得权重后对 V 加权求和：每个位置动态地从全序列聚合信息；√d 缩放防止 logits 过大使 softmax 饱和。",
     "required": [
@@ -314,7 +314,7 @@
     "id": "attention",
     "name": "多头注意力",
     "area": "ai-engineering",
-    "topic": "transformer",
+    "topic": "model-architecture",
     "priority": "P0",
     "summary": "多组独立投影在子空间各自算注意力再拼接：不同头可关注不同位置与关系模式，表达力高于单头大维度。",
     "required": [
@@ -334,7 +334,7 @@
     "id": "flash-attention",
     "name": "FlashAttention",
     "area": "ai-engineering",
-    "topic": "transformer",
+    "topic": "model-architecture",
     "priority": "P1",
     "summary": "IO 感知的精确注意力实现：分块计算 + online softmax，把 HBM 读写从 O(N²) 降到线性，省显存且不改变数学结果。",
     "required": [
@@ -374,7 +374,7 @@
     "id": "moe",
     "name": "MoE 混合专家",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P0",
     "summary": "Router 为每个 token 选 Top-K 个专家，只有被选中者的参数参与计算：总参决定显存、激活参数决定 FLOPs 与延迟——省算力不省显存。",
     "required": [
@@ -395,7 +395,7 @@
     "id": "latent-moe",
     "name": "LatentMoE 低维专家计算",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P1",
     "summary": "借鉴 MLA 低秩思想：先把表示投影到低维 latent space 再执行专家线性变换、最后还原；专家参数/FLOPs 随 latent 维度缩放，代价是表征带宽瓶颈。",
     "required": [
@@ -437,7 +437,7 @@
     "id": "interpretability",
     "name": "可解释性（Mechanistic Interpretability）",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P1",
     "summary": "研究大模型内部激活值与隐藏表示的可解释性方法，包括稀疏自编码器（SAE）、自然语言自编码器（NLA）等，用于解码模型潜意识意图、对齐审计与潜空间监控（Latent-space Guardrailling）。",
     "required": [
@@ -465,7 +465,7 @@
     "id": "model-behavior",
     "name": "模型行为与对齐安全（Model Behavior & Alignment Safety）",
     "area": "llm",
-    "topic": "model-architecture",
+    "topic": "llm-architecture",
     "priority": "P1",
     "summary": "从角色选择模型（PSM）、涌现性非对齐、接种提示到语境外泛化，研究预训练/后训练如何塑造模型行为、意图与动机；以及 Masked Shoggoth / Operating System 等不同主体性架构假设对安全与对齐的含义。",
     "required": [
