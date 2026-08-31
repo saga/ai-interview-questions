@@ -3,11 +3,15 @@
     "id": "posttraining-2026-001",
     "category": "llm",
     "topic": "training",
-    "tags": ["sft", "post-training", "instruction-tuning"],
+    "tags": [
+      "sft",
+      "post-training",
+      "instruction-tuning"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "什么时候应该优先增加 SFT 数据，而不是继续优化 Prompt？什么情况下继续做 SFT 反而可能把模型行为限制得更死？",
-    "explanation": "A 正确：当任务需要模型稳定学会某种新的输出格式、语气或领域知识，而仅靠 Prompt 难以在长尾样本上保持一致时，把能力内化进权重（加 SFT 数据）优先于反复调 Prompt。B 正确：若线上效果不稳定主要来自 Prompt 措辞不清或上下文缺失，应先优化 Prompt，而非盲目加 SFT 数据。C 错误：SFT 数据并非越多越好，过度堆量会导致过拟合到演示分布。D 正确：当目标只是临时适配、且样本分布会频繁变化时，过度 SFT 容易让模型过拟合到演示行为、缩小策略空间，此时轻量 Prompt 反而更灵活，继续 SFT 会把行为“限制得更死”。",
+    "explanation": "A 正确：当任务需要模型稳定学会某种新的输出格式、语气或领域知识，而仅靠 Prompt 难以在长尾样本上保持一致时，把能力内化进权重（加 SFT 数据）优先于反复调 Prompt。B 正确：若线上效果不稳定主要来自 Prompt 措辞不清或上下文缺失，应先优化 Prompt，而非盲目加 SFT 数据。C 错误：SFT 数据并非越多越好，过度堆量会导致过拟合到演示分布、反而把行为限制得更死。D 正确：当目标只是临时适配、且样本分布会频繁变化时，过度 SFT 容易让模型过拟合到演示行为、缩小策略空间，此时轻量 Prompt 反而更灵活，继续 SFT 会把行为“限制得更死”。",
     "misconceptions": [
       "以为 SFT 数据越多模型泛化一定越强、不存在过拟合风险",
       "以为只要线上效果不好就应当优先加 SFT 数据而非先优化 Prompt"
@@ -16,12 +20,16 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "当任务需要模型稳定学会某种新的输出格式、语气或领域知识，而仅靠 Prompt 难以在长尾样本上保持一致性时，增加高质量 SFT 数据优先",
-          "当线上效果不稳定主要源于 Prompt 措辞不清晰或上下文缺失时，应先优化 Prompt 而非盲目加 SFT 数据",
-          "一旦开始 SFT 就应当持续堆量，因为 SFT 数据越多模型泛化一定越强，不存在“限制更死”的风险",
-          "当目标只是临时适配某类请求且样本分布会频繁变化时，过度 SFT 容易让模型过拟合到演示行为、缩小策略空间，反而不如轻量 Prompt 灵活"
+          "当任务需要模型稳定学会一种新的输出格式、语气或领域知识，仅靠 Prompt 难以在长尾样本上保持一致时，应优先增加高质量 SFT 数据",
+          "当线上效果不稳定主要源于 Prompt 措辞不清或上下文缺失时，应先优化 Prompt 而非盲目加 SFT 数据",
+          "一旦开始 SFT 就应当持续堆量，因为 SFT 数据越多模型泛化一定越强，根本不存在所谓“限制更死”的行为退化风险",
+          "当目标只是临时适配某类请求且样本分布会频繁变化时，过度 SFT 容易过拟合演示行为、缩小策略空间，反而不如轻量 Prompt 灵活"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：优先加 SFT 数据的情况是——需要把新格式/语气/领域知识内化为稳定能力、且 Prompt 在长尾上无法保持一致；应优化 Prompt 的情况是——问题源于措辞不清或上下文缺失。继续 SFT 反而“限制更死”的情况是——目标临时多变、分布频繁变化，过度 SFT 会过拟合演示行为、压缩策略空间，降低灵活性。"
@@ -32,7 +40,11 @@
     "id": "posttraining-2026-002",
     "category": "llm",
     "topic": "training",
-    "tags": ["dpo", "preference-learning", "alignment"],
+    "tags": [
+      "dpo",
+      "preference-learning",
+      "alignment"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "DPO 与传统 RLHF + Reward Model + PPO 相比，训练流程少了哪些组件？为什么它仍然能够利用 chosen/rejected preference pairs 学习偏好？",
@@ -46,11 +58,15 @@
         "type": "multiple",
         "options": [
           "DPO 省去了独立训练奖励模型这一步，直接把偏好信号融进策略优化，而不再单独训练 RM",
-          "DPO 并不需要训练显式的 value/critic 网络来估计优势函数，这是它区别于 PPO 的关键所在",
+          "DPO 仍然需要训练一个显式的 value/critic 网络来估计优势函数，这与 PPO 的强化学习流程完全一致，并未省略任何组件",
           "DPO 通过奖励重参数化，把 Bradley-Terry 偏好写成 policy 与参考策略差异的 logistic 损失",
           "DPO 依赖一个冻结的参考策略作为正则项，仅用 chosen/rejected 偏好对就能直接优化策略"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：DPO 相比 RLHF+RM+PPO 少了独立 Reward Model 训练与 PPO 的 value/critic；它用一个冻结的 reference policy 作正则，并通过封闭形式的奖励重参数化，把 Bradley-Terry 偏好概率写成 policy 与参考 policy 差异的 logistic 损失，从而仅用 chosen/rejected 对就能直接优化策略。"
@@ -61,7 +77,11 @@
     "id": "posttraining-2026-003",
     "category": "llm",
     "topic": "training",
-    "tags": ["grpo", "rl", "reward"],
+    "tags": [
+      "grpo",
+      "rl",
+      "reward"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "GRPO 为什么可以不显式训练传统 PPO 中的 value model？它通过什么机制估计同一组采样结果的相对优势？",
@@ -74,12 +94,15 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "GRPO 对每个 prompt 采样 G 条回复，用这组回复奖励的组内均值与标准差来标准化优势，从而无需价值网络",
+          "GRPO 对每个 prompt 采样 G 条回复，用这组回复奖励的组内均值与标准差标准化优势，从而无需价值网络",
           "GRPO 仍需训练一个 value model 来预测状态价值，只是把它换成了更小的网络",
-          "相对优势（组内归一化）本质上是用同一 prompt 的多条样本互相作为基线，消除了对独立 critic 的依赖",
-          "GRPO 因为不需要估计优势，所以直接把奖励当作损失梯度，完全跳过了 baseline 的设计"
+          "相对优势（组内归一化）本质是用同一 prompt 的多条样本互相作基线，消除了对独立 critic 的依赖",
+          "GRPO 因为完全不需要估计任何优势，所以直接把奖励当作最终损失梯度，彻底跳过了 baseline 这一完整的设计环节"
         ],
-        "answer": [0, 2]
+        "answer": [
+          0,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "要点：GRPO 去掉 value model 的方式是——对每个 prompt 采样 G 条回复，将每条回复的奖励减去组内均值再除以组内标准差得到相对优势（组内归一化），用同 prompt 的多条样本互相作基线，从而无需独立 critic。代价是每 prompt 需要多条采样。"
@@ -90,7 +113,11 @@
     "id": "posttraining-2026-004",
     "category": "llm",
     "topic": "training",
-    "tags": ["rlvr", "verifiable-reward", "reward-design"],
+    "tags": [
+      "rlvr",
+      "verifiable-reward",
+      "reward-design"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "对于代码生成任务，如果最终答案可以通过测试用例验证，为什么 programmatic reward 往往比另一个 LLM 作为 reward judge 更有吸引力？它又有哪些局限？",
@@ -105,10 +132,13 @@
         "options": [
           "Programmatic reward 来自确定性测试，方差低、信号干净，比 LLM judge 的噪声与可博弈性更可控",
           "Programmatic reward 能覆盖所有开放式写作任务，只是测试用例编写成本略高",
-          "它的局限在于只适用于存在自动验证器的任务，对开放性问题奖励稀疏，且验证器本身的 bug 可能被策略利用为 reward hack",
-          "LLM judge 通常更便宜且推理更快，因此代码任务里应优先使用 LLM 作为 reward"
+          "它的局限是只适用于有自动验证器的任务，开放性问题奖励稀疏，且验证器 bug 会被利用为 reward hack",
+          "LLM judge 通常更便宜且推理速度也更快，因此在代码生成任务里应当优先使用 LLM 作为 reward 来指导模型训练"
         ],
-        "answer": [0, 2]
+        "answer": [
+          0,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "要点：programmatic reward（由测试用例/验证器给出）方差低、信号干净、难以被博弈且便宜，相对于 LLM-as-judge 的噪声/可博弈/高成本更有吸引力。局限：只覆盖有自动验证器的任务、开放任务奖励稀疏、验证器 bug 会变成可被利用的 reward hack。"
@@ -119,11 +149,15 @@
     "id": "posttraining-2026-005",
     "category": "llm",
     "topic": "training",
-    "tags": ["reward-hacking", "rl", "alignment"],
+    "tags": [
+      "reward-hacking",
+      "rl",
+      "alignment"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "一个 GRPO 实验中 reward 持续上升，但真实 benchmark accuracy 开始下降。你会优先怀疑哪些 reward hacking 或分布偏移问题？如何定位？",
-    "explanation": "A 正确：应优先怀疑策略在利用验证器或格式漏洞（reward hacking），而非真正提升能力。B 正确：还应检查策略是否已经偏离训练分布（distribution shift / off-policy drift），导致在线上分布上泛化变差。C 错误：这不是经典过拟合，直接加大学习率并不能定位或缓解，反而可能加剧不稳定。D 正确：定位手段包括拆解 reward 成分、在 held-out 评测上观察、并人工检查 rollout 轨迹中是否出现捷径（shortcut）行为。",
+    "explanation": "A 正确：应优先怀疑策略在利用验证器或格式漏洞（reward hacking），而非真正提升能力。B 正确：还应检查策略是否已经偏离训练分布（distribution shift / off-policy drift），导致在线上分布上泛化变差。C 错误：这不是经典过拟合，直接加大学习率既不能定位也不能缓解，反而可能加剧不稳定。D 正确：定位手段包括拆解 reward 成分、在 held-out 评测上观察、并人工检查 rollout 轨迹中是否出现捷径（shortcut）行为。",
     "misconceptions": [
       "以为 reward 上升而 accuracy 下降是过拟合，加大学习率即可缓解",
       "以为只要 reward 在涨就说明策略真的在变强"
@@ -134,10 +168,14 @@
         "options": [
           "应优先怀疑策略在利用验证器或格式漏洞（reward hacking），而非真正提升了能力",
           "还应检查策略是否已偏离训练分布（distribution shift），导致在线上分布上泛化变差",
-          "这并非经典过拟合，直接加大学习率既不能定位也不能缓解，反而可能加剧不稳定",
-          "定位手段包括拆解 reward 成分、在 held-out 评测上观察、人工检查 rollout 轨迹是否出现捷径行为"
+          "这并非经典过拟合问题，直接加大学习率既无法定位根因也无法缓解，反而可能让整个训练过程更加不稳定",
+          "定位手段包括拆解 reward 成分、在 held-out 评测上观察、人工检查 rollout 轨迹中的捷径行为"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：reward 升、accuracy 降时优先怀疑 reward hacking（利用验证器/格式漏洞）与 distribution shift（策略漂离训练分布）。定位：拆解 reward 各成分看是否某一项虚高、在 held-out 评测上观察真实能力、人工检查 rollout 轨迹是否出现捷径行为。加大学习率不能解决本质问题。"
@@ -148,7 +186,11 @@
     "id": "posttraining-2026-006",
     "category": "llm",
     "topic": "training",
-    "tags": ["data-quality", "synthetic-data", "post-training"],
+    "tags": [
+      "data-quality",
+      "synthetic-data",
+      "post-training"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "为什么 post-training 中高质量数据通常比简单扩大样本数量更重要？如何识别大量 synthetic data 已经开始降低训练收益的信号？",
@@ -162,11 +204,15 @@
         "type": "multiple",
         "options": [
           "高质量、多样、清洗充分的数据往往比盲目扩大合成数据更能提升下游效果",
-          "合成数据越多越好，因为模型能从海量样本中自动去噪，不存在收益下降",
+          "合成数据越多越好，因为模型能从海量样本中自动去噪，不存在收益下降或多样性塌陷的问题",
           "当合成数据规模增长时若收益递减甚至转负、风格趋同、多样性塌陷，说明已出现合成数据饱和",
           "监控 held-out 评测出现回归、以及生成样本的风格同质化，是识别合成数据失效的有效信号"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：高质量>数量，因为少量高质量多样清洗数据胜过盲目堆合成数据。合成数据饱和信号：随规模增长收益递减/转负、风格趋同、多样性塌陷、held-out 评测回归。识别方法：监控收益曲线拐点、风格同质化指标、以及 OOD/held-out 评测是否下滑。"
@@ -177,7 +223,11 @@
     "id": "posttraining-2026-007",
     "category": "llm",
     "topic": "training",
-    "tags": ["exploration", "sft", "grpo"],
+    "tags": [
+      "exploration",
+      "sft",
+      "grpo"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "为什么某些任务上一个过度 SFT 的 checkpoint 反而可能比 base/instruction checkpoint 更难通过后续 RL 学到新策略？从 exploration 角度解释。",
@@ -191,11 +241,15 @@
         "type": "multiple",
         "options": [
           "过度 SFT 让策略过度贴合演示分布，压缩了策略空间与覆盖率，降低后续 RL 可探索范围",
-          "过度 SFT 并非抬高策略熵，而是降低熵、使行为更确定，不会因梯度噪声大而难收敛",
+          "过度 SFT 会抬高策略熵、使 RL 阶段梯度噪声过大而难以收敛，因此必须大幅降低学习率才能让它稳定",
           "过度 SFT 的 checkpoint 往往策略熵偏低、行为更确定，RL 难以通过随机探索发现新策略",
           "对需要后续 RL 的任务，保留更具探索性、未被过度 SFT 的 checkpoint 反而更利于探索"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：过度 SFT 让策略过度贴合演示分布，压缩了策略空间（action/coverage）并降低策略熵，使行为更确定，后续 RL 难以通过随机探索发现新策略。因此若任务还需 RL，保留一个更具探索性、未被过度 SFT 的 checkpoint 反而更利于探索。"
@@ -206,7 +260,11 @@
     "id": "posttraining-2026-008",
     "category": "llm",
     "topic": "training",
-    "tags": ["training-infrastructure", "rollout", "grpo"],
+    "tags": [
+      "training-infrastructure",
+      "rollout",
+      "grpo"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "为什么 GRPO 类训练相比普通 SFT 会引入明显的 inference-system 问题？请从 rollout workers、generation throughput、policy version 和训练数据新鲜度角度分析。",
@@ -219,12 +277,16 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "GRPO 需要大规模 rollout 生成大量采样轨迹，因此必须部署 rollout workers 并保证高 generation throughput",
-          "由于 rollout 与训练异步，不同批次的轨迹可能来自不同 policy 版本，带来 policy version drift 问题",
-          "GRPO 与 SFT 一样只在单卡前向即可，不需要专门的推理集群，因此没有额外系统开销",
-          "训练数据的新鲜度（on-policy 与 off-policy 的偏离）会影响 GRPO 收敛，需要考虑轨迹过期 / staleness"
+          "GRPO 需要大规模 rollout 生成大量采样轨迹，要部署 rollout workers 并保证高 generation throughput",
+          "rollout 与训练异步，不同批次轨迹可能来自不同 policy 版本，带来 policy version drift 问题",
+          "GRPO 与 SFT 一样只需在单卡上做前向、不需要专门的推理集群，因此相比 SFT 并没有引入任何额外的系统开销",
+          "训练数据新鲜度（on-policy 与 off-policy 的偏离）会影响收敛，需要考虑轨迹过期 / staleness"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：GRPO 相比 SFT 多出一个大规模 rollout 阶段，需要 rollout workers 与高 generation throughput；rollout 与训练异步会导致 policy version drift；批次轨迹的新鲜度（on-policy/off-policy 偏离、staleness）影响收敛。因此必须设计推理集群、版本管理与数据新鲜度机制。"
@@ -235,7 +297,11 @@
     "id": "posttraining-2026-009",
     "category": "llm",
     "topic": "training",
-    "tags": ["catastrophic-forgetting", "alignment", "regression"],
+    "tags": [
+      "catastrophic-forgetting",
+      "alignment",
+      "regression"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "一个模型经过针对数学推理的 post-training 后数学 benchmark 提升了，但通用对话能力下降。你会如何判断这是必要的 specialization 还是不希望出现的 catastrophic forgetting？",
@@ -251,9 +317,13 @@
           "不能只看数学 benchmark，还需在通用能力与安全 held-out 评测上同时观察对话/指令遵循是否退化",
           "若仅目标能力上升、通用与安全能力损失在可接受范围内，可视为必要的 specialization",
           "若通用对话、指令遵循、安全对齐等多个维度出现广泛回归，则应判定为有害的 catastrophic forgetting",
-          "只要数学分数提升，通用对话下降就是合理的代价，无需额外评估即可认定是 specialization"
+          "只要数学分数提升，通用对话下降就是合理的代价，无需额外评估即可认定这是正常的 specialization"
         ],
-        "answer": [0, 1, 2]
+        "answer": [
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "要点：判断依据是同时在通用能力与安全 held-out 评测上观察。若仅目标能力上升、通用/安全损失可接受→必要 specialization；若通用对话、指令遵循、安全对齐等多维广泛回归→有害 catastrophic forgetting。不能仅凭目标 benchmark 下结论。"
@@ -264,7 +334,11 @@
     "id": "posttraining-2026-010",
     "category": "llm",
     "topic": "training",
-    "tags": ["evaluation", "post-training", "generalization"],
+    "tags": [
+      "evaluation",
+      "post-training",
+      "generalization"
+    ],
     "difficulty": "hard",
     "angle": "design",
     "question": "设计一个 post-training 实验时，为什么必须同时观察 target capability、general capability、safety 和 out-of-distribution generalization？只看目标 benchmark 会有什么风险？",
@@ -279,10 +353,14 @@
         "options": [
           "只盯目标 benchmark 容易漏掉 reward hacking、能力遗忘与安全退化等问题",
           "同时观测 OOD 泛化可判断策略是否只是在训练分布上过拟合而非真正学会能力",
-          "安全维度必须单独评估，因为能力提升可能伴随对齐/安全性质的退化",
-          "实验只需最大化目标 benchmark 即可，通用与安全能力会随目标提升自动保持"
+          "安全维度必须单独评估，因为目标能力提升可能伴随对齐与安全性质的退化",
+          "实验只需最大化目标 benchmark 即可，通用与安全能力会随着目标能力的提升自动保持不退化"
         ],
-        "answer": [0, 1, 2]
+        "answer": [
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "要点：post-training 实验必须同时看 target capability（目标能力）、general capability（通用能力）、safety（安全）与 OOD generalization（分布外泛化）。只看目标 benchmark 的风险：可能掩盖 reward hacking、能力遗忘、安全退化与过拟合，无法发现策略是否真正泛化。"

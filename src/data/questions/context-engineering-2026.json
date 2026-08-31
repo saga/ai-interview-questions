@@ -3,7 +3,11 @@
     "id": "context-2026-101",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["context-selection", "retrieval", "relevance"],
+    "tags": [
+      "context-selection",
+      "retrieval",
+      "relevance"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "一个 Agent 有 50 万 token 的潜在信息源，但单次模型调用只有有限 context budget。你会如何设计 context selection pipeline，使模型看到的是\"当前最有用的信息\"而不是简单的 top-K 检索结果？",
@@ -21,7 +25,11 @@
           "做 query-aware 选择：根据 Agent 当前阶段与计划动态决定需要哪些信息源，而非固定窗口",
           "用离线日志与执行反馈训练选择器，对真正影响任务成败的片段加权并优先纳入"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：context selection 不是 top-K 检索。应召回后做 rerank（任务相关性+近期性+预测有用性），按 Agent 当前阶段与计划做 query-aware 动态选择，并用执行反馈/离线日志训练选择器对关键片段加权；避免把相似但不相关或冲突的内容直接塞入 context。"
@@ -32,7 +40,11 @@
     "id": "context-2026-102",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["state", "memory", "context"],
+    "tags": [
+      "state",
+      "memory",
+      "context"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "为什么 Agent 的 conversation history、task state、long-term memory 和 tool result 不应该全部作为同一种 context 数据管理？如何设计它们之间的边界？",
@@ -50,7 +62,11 @@
           "为简化管理，应把所有 context 拼成单一大字符串并统一压缩，避免维护多个 store 的复杂度",
           "按体积与访问模式用不同存储与淘汰策略：长记忆用向量库、工具结果用完即弃、历史用滑动窗口"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：四类 context 生命周期与信任等级不同，不应混为同一 blob。应按生命周期（对话历史/任务状态/长期记忆/工具结果）与信任等级（可信指令 vs 不可信外部数据）分仓管理，采用不同存储（向量库、KV、缓存、滑动窗口）与淘汰策略，并隔离不可信内容防止其获得指令优先级。"
@@ -61,7 +77,11 @@
     "id": "context-2026-103",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["context-injection", "untrusted-data", "security"],
+    "tags": [
+      "context-injection",
+      "untrusted-data",
+      "security"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "一个 Agent 从网页、邮件和文档中提取内容，并将其作为 context 提供给模型。为什么这些内容必须被视为不可信数据，而不能因为它们出现在 context 中就获得指令优先级？",
@@ -79,7 +99,11 @@
           "只要把抓取内容放在 system prompt 之后，模型就会自动识别其为不可信数据并忽略其中指令",
           "应显式标注来源边界并对敏感操作二次确认，同时最小化这些内容可触发的工具权限"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：网页/邮件/文档内容由外部生成，可能含间接提示注入，不能因出现在 context 就获得指令优先级。应将其作为不可信数据隔离（与 system instruction 分离、显式标注来源边界），对敏感操作二次确认，并最小化其可触发的工具权限；顺序本身不构成安全边界。"
@@ -90,7 +114,11 @@
     "id": "context-2026-104",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["tool-context", "progressive-disclosure", "tools"],
+    "tags": [
+      "tool-context",
+      "progressive-disclosure",
+      "tools"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "一个 Agent 有 300 个工具。如果一开始把全部 tool schema 都放入 context，会带来什么问题？为什么按需加载、tool search 或 progressive disclosure 能改善这一问题？",
@@ -108,7 +136,9 @@
           "主要问题是 system prompt 会因此超过模型最大长度而无法启动，与选择质量无关",
           "工具 schema 数量不影响推理，是否全量加载只改变首字延迟，对质量毫无作用"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "要点：全量放入 300 个 tool schema 会浪费 token、稀释注意力、增加选错工具的困惑。按需加载、tool search 或 progressive disclosure（渐进式披露）让 context 只保留当前阶段相关工具，降低干扰与成本、提升选择准确率。"
@@ -119,7 +149,11 @@
     "id": "context-2026-105",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["prompt-caching", "prefix-stability", "cost"],
+    "tags": [
+      "prompt-caching",
+      "prefix-stability",
+      "cost"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "为什么 prompt caching 强依赖稳定的前缀？一个工程师把时间戳、request ID 和动态用户信息放到了静态 system prompt 前面，会发生什么？",
@@ -137,7 +171,10 @@
           "把动态内容放最前面能让缓存更新鲜，因为每次重新计算前缀反而更准确",
           "缓存只对长 system prompt 有效，动态内容放在哪都不影响命中率"
         ],
-        "answer": [0, 1]
+        "answer": [
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "要点：prompt caching 依赖稳定前缀命中。把时间戳、request ID、动态用户信息等易变内容放在静态 system prompt 前面会破坏缓存前缀，导致每次缓存失效、成本与延迟显著上升。正确做法是将静态内容置于前缀、动态内容放在其后变量区，保持前缀稳定。"
@@ -148,7 +185,11 @@
     "id": "context-2026-106",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["compaction", "information-loss", "long-horizon"],
+    "tags": [
+      "compaction",
+      "information-loss",
+      "long-horizon"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "Context compaction 可以显著降低 token 数量，但也可能丢失细节。如何设计 compaction 策略，使关键事实、约束、未完成任务和可恢复状态不会被错误摘要掉？",
@@ -166,7 +207,11 @@
           "设 do-not-compact 锚点，把关键事实与开放任务标记为不可压缩并常驻 context",
           "压缩前抽取可恢复状态为结构化字段，摘要丢失时可从工具或日志重建"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：compaction 不能无差别压短。应采用结构化压缩保留约束/未完成任务清单/关键实体并附可回溯指针；用 do-not-compact 锚点保护关键事实与开放任务常驻；压缩前把可恢复状态（变量/进度）抽成结构化字段，丢失时从工具或日志重建。"
@@ -177,7 +222,11 @@
     "id": "context-2026-107",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["context-quality", "evaluation", "ablation"],
+    "tags": [
+      "context-quality",
+      "evaluation",
+      "ablation"
+    ],
     "difficulty": "hard",
     "angle": "design",
     "question": "如何评估一个 Context Manager 是否真的提高了 Agent 性能？为什么仅比较输入 token 数量是不够的？",
@@ -195,7 +244,11 @@
           "仅比较输入 token 数即可，token 越少说明 context 越精简、性能越好",
           "检查失败模式：如关键信息被错删、不可信内容被错误提升优先级等退化"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：评估 Context Manager 要看端到端任务成功率/质量，而非仅输入 token 数——省 token 不代表更好，过度裁剪会丢关键信息。应做消融（有/无 Manager 对比质量、成本、失败模式），并专门检查关键信息错删、不可信内容越权等退化。"
@@ -206,7 +259,11 @@
     "id": "context-2026-108",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["dynamic-context", "routing", "budget"],
+    "tags": [
+      "dynamic-context",
+      "routing",
+      "budget"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "一个 Agent 有三个阶段：规划、检索、执行。三个阶段需要的信息不同。你会如何让 context 随阶段动态变化，而不是整个生命周期使用同一个固定 prompt？",
@@ -224,7 +281,11 @@
           "用 context assembler 按当前 phase 动态组装所需 context 块，而非静态写死",
           "阶段切换时清空无关上下文并加载该阶段专属信息，以控制 budget 与注意力"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：context 应随阶段变化。用 context assembler 按 phase 路由组装——规划注入目标/计划，检索注入检索工具/查询，执行注入当前步骤/工具结果；阶段切换时清空上一阶段无关 context、加载本阶段专属信息，控制 budget 并减少干扰。"
@@ -235,7 +296,11 @@
     "id": "context-2026-109",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["context-ordering", "attention", "information-density"],
+    "tags": [
+      "context-ordering",
+      "attention",
+      "information-density"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "同样的一组信息，为什么仅仅改变 context 中的信息顺序，也可能影响模型表现？工程上你会如何利用这一现象设计 context layout？",
@@ -253,7 +318,9 @@
           "只要按字母序排列就能保证模型同等关注，顺序本身无需专门设计",
           "顺序仅影响首字延迟，对生成内容的质量起不到任何实质作用"
         ],
-        "answer": [0]
+        "answer": [
+          0
+        ]
       },
       "open": {
         "referenceAnswer": "要点：LLM 有注意力与 recency 效应，信息位置影响被使用程度。工程上应把最关键决策信息放在高注意力区（靠近任务指令处或重复出现），用清晰结构（分隔符、标题、列表）组织，并避免把重要约束埋在长文本中段被稀释。"
@@ -264,7 +331,11 @@
     "id": "context-2026-110",
     "category": "llm-applications",
     "topic": "context-engineering",
-    "tags": ["programmatic-context", "agent", "long-context"],
+    "tags": [
+      "programmatic-context",
+      "agent",
+      "long-context"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "为什么处理超长数据集时，应该优先让代码或工具在模型上下文之外完成过滤、聚合和计算，再把精炼结果提供给 LLM？哪些任务特别适合这种 programmatic context strategy？",
@@ -282,7 +353,11 @@
           "应把所有原始数据全量塞进 context，让 LLM 自己逐行扫描以不漏掉任何细节",
           "适合任务包括日志异常聚合、大规模表格统计、语料去重与 diff、按条件检索"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：超长数据集应在代码/工具中先做过滤、聚合、检索、diff 等计算，只把精炼结果交给 LLM——省 token、降噪、避免截断。适合日志异常聚合、大表统计、语料去重/diff、条件检索等可程序化预处理任务；不应把原始全量塞进 context 让 LLM 逐行扫。"

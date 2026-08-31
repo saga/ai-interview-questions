@@ -3,7 +3,11 @@
     "id": "hitl-2026-001",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["risk-tiering", "approval", "agent-safety"],
+    "tags": [
+      "risk-tiering",
+      "approval",
+      "agent-safety"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "一个 Agent 可以自动执行查询、修改数据和发起退款三类操作。你会如何设计 Human-in-the-loop（HITL）策略，使高风险操作需要人工审批，同时避免所有操作都进入审批队列？",
@@ -21,7 +25,11 @@
           "仅对退款等不可逆高影响操作设人工审批，查询与常规修改默认自动放行",
           "依风险等级与可逆性设阈值，超阈值才进入审批队列并支持分级动态调整"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：按风险分级（read/query < modify < refund/delete），只有高影响、不可逆操作进入审批队列，低风险自动放行；阈值可由策略动态调整，避免所有操作都排队导致审批疲劳与吞吐下降。"
@@ -32,7 +40,10 @@
     "id": "hitl-2026-002",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["approval-fatigue", "risk-based-review"],
+    "tags": [
+      "approval-fatigue",
+      "risk-based-review"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "为什么\"每次 Agent 工具调用都要求人工确认\"通常不是好的 HITL 设计？什么情况下这种策略仍然合理？",
@@ -50,7 +61,11 @@
           "只要工具调用都经确认就必然彻底杜绝一切错误，故该策略在所有场景都最优",
           "在高危不可逆或强监管领域（资金划转、医疗指令）逐次确认仍合理甚至必要"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：逐次确认引发审批疲劳与 rubber-stamping，且对低风险可逆操作收益极低、拖累吞吐；仅在强监管/不可逆高危操作（资金、医疗）下逐次确认才合理。应按风险分级而非无差别确认。"
@@ -61,7 +76,11 @@
     "id": "hitl-2026-003",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["escalation", "uncertainty", "agent"],
+    "tags": [
+      "escalation",
+      "uncertainty",
+      "agent"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "一个客服 Agent 大多数订单都能自动处理，但遇到金额异常、政策冲突和身份验证失败时容易出错。你会如何定义 Agent 应该\"主动求助人类\"的条件，而不是简单按固定步骤强制升级？",
@@ -79,7 +98,11 @@
           "当检测到金额异常、政策冲突或身份验证失败等高风险特征时触发求助",
           "结合业务影响面与可逆性评估，影响大或不可逆时才求助避免打扰人类"
         ],
-        "answer": [0, 2, 3]
+        "answer": [
+          0,
+          2,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：升级条件应数据驱动而非机械步骤——结合模型置信度/不确定性、已知高风险特征（金额异常、政策冲突、身份验证失败）以及业务影响面与可逆性；只对高影响或不可逆情形求助，避免对低风险琐事打扰人类。"
@@ -90,7 +113,10 @@
     "id": "hitl-2026-004",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["approval-context", "auditability"],
+    "tags": [
+      "approval-context",
+      "auditability"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "人工审批 Agent 操作时，审批界面至少应该向审核者提供哪些信息？为什么只展示 Agent 即将执行的动作通常不够？",
@@ -108,7 +134,11 @@
           "只需展示即将执行的命令字符串即可，审核者应自行理解其全部后果",
           "展示受影响对象、预计结果与历史类似操作记录以支持审计一致性"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：审批 UI 须提供上下文——动作含义、影响范围/blast radius、可逆性、Agent 的推理理由与意图，以及受影响对象/预计结果/历史类似处置。只给命令会让审核者盲批，无法判断风险与一致性，削弱 HITL 有效性。"
@@ -119,7 +149,11 @@
     "id": "hitl-2026-005",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["timeout", "escalation", "workflow"],
+    "tags": [
+      "timeout",
+      "escalation",
+      "workflow"
+    ],
     "difficulty": "medium",
     "angle": "debugging",
     "question": "Agent 已经暂停等待人工审批，但审核者 30 分钟没有响应。你会如何设计 timeout、取消、重新分配和 escalation 机制？",
@@ -137,7 +171,11 @@
           "无限期挂起等待审核者上线，只要用户最终回来就能继续无需处理",
           "超时触发升级并通知值班人，同时支持人工接管后从中断点恢复"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：设超时阈值，超时后自动取消等待并保留已完成状态；按策略重新分配给他人或升级到更高权限；触发 escalation 通知值班人；支持人工接管后从中断点恢复，而非永久挂起或整体重跑。"
@@ -148,7 +186,11 @@
     "id": "hitl-2026-006",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["approval-scope", "permissions", "revocation"],
+    "tags": [
+      "approval-scope",
+      "permissions",
+      "revocation"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "为什么\"批准 Agent 可以处理这类请求\"不应该等价于永久授予它处理该类所有未来请求的权限？如何设计作用域受限、可撤销的审批？",
@@ -166,7 +208,11 @@
           "一旦批准某类请求即可永久信任 Agent 处理该类所有未来请求以简化",
           "采用最小权限与按需再授权，高敏感操作每次或每会话都重新确认"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：审批≠永久授权。应把授权限定到本次请求/会话/指定金额，可随时撤销、设有效期与审计记录；采用最小权限、按需再授权，高敏感操作每会话/每次重新确认，避免 blanket 永久放权。"
@@ -177,7 +223,11 @@
     "id": "hitl-2026-007",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["human-feedback", "learning", "feedback-loop"],
+    "tags": [
+      "human-feedback",
+      "learning",
+      "feedback-loop"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "人工审核 Agent 的 approve、reject、edit 和 override 都会产生反馈。如何把这些行为转化为后续评估、策略优化或训练数据，而又避免把人的随手操作直接当成高质量监督信号？",
@@ -195,7 +245,11 @@
           "把每一次点击 approve 都直接当作高质量标注用于微调无需甄别",
           "仅把经确认的低置信或高影响反馈纳入训练，随手操作只进监控"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：把 approve/reject/edit/override 转为评估信号与策略更新；对 edit/override 做差异归因定位失败模式；打标高/低置信度，仅经确认的低置信或高影响反馈进训练，随手操作只进监控指标，避免把随意点击当高质量监督。"
@@ -206,7 +260,10 @@
     "id": "hitl-2026-008",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["automation-bias", "oversight"],
+    "tags": [
+      "automation-bias",
+      "oversight"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "一个 Agent 的建议长期有 95% 的情况下是正确的，审核员逐渐习惯直接点击批准。为什么这种高通过率反而可能降低 HITL 的有效性？你会如何检测和缓解这种 automation bias？",
@@ -224,7 +281,11 @@
           "高通过率说明 HITL 已无必要，应直接把同类请求都默认改为全自动放行",
           "通过随机抽样审计、强制低置信复核与跟踪错误率来缓解自动化偏差"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：长期高通过率诱发 rubber-stamping，审核员对关键少数错误也机械批准，HITL 形同虚设。检测：监测自动批准率、覆盖/纠错率、低置信案例复核比例；缓解：随机抽样审计、强制低置信/高影响复核、跟踪错误率，并保留人工接管。"
@@ -235,7 +296,11 @@
     "id": "hitl-2026-009",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["agent-loop", "pause-resume", "state"],
+    "tags": [
+      "agent-loop",
+      "pause-resume",
+      "state"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "一个长时间运行的 Agent 在第 17 步需要人工批准后才能继续。你会如何实现暂停与恢复，使恢复后的 Agent 不需要重新执行已经完成的工具调用？",
@@ -253,7 +318,11 @@
           "暂停时只保留最终目标，恢复后从头重新规划并执行全部步骤以保证正确",
           "为每步写入幂等可重入的进度记录，使中断点之后的步骤可安全恢复"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：暂停前把已完成步骤、中间结果、检查点持久化到外部存储；恢复时从最近检查点加载状态续跑，跳过已完成工具调用；每步写幂等可重入进度记录，避免重放已完成的调用与重复副作用。"
@@ -264,7 +333,11 @@
     "id": "hitl-2026-010",
     "category": "agent-engineering",
     "topic": "human-in-the-loop",
-    "tags": ["metrics", "oversight", "production"],
+    "tags": [
+      "metrics",
+      "oversight",
+      "production"
+    ],
     "difficulty": "hard",
     "angle": "design",
     "question": "如何评估一个生产 Agent 的 HITL 机制是否真正有效？除了人工审批率，还应该关注哪些指标？",
@@ -282,7 +355,11 @@
           "只要人工审批率高就说明 HITL 有效，无需关注下游结果与误批准",
           "跟踪下游结果质量与异常率，评估 HITL 是否改善最终业务产出"
         ],
-        "answer": [0, 1, 3]
+        "answer": [
+          0,
+          1,
+          3
+        ]
       },
       "open": {
         "referenceAnswer": "要点：除审批率外，还应追踪覆盖/纠错率、误批准率（把关是否真拦截错误）、time-to-approve 与升级率（流程是否过慢/过载）、下游结果质量与异常率（是否改善业务产出），并监控自动化偏差指标。"
