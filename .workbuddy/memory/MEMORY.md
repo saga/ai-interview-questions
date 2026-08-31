@@ -9,5 +9,13 @@
 - angle 白名单 10 个：definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design；不在白名单则改写。
 - `scripts/question_analysis.py --semantic` 本仓不存在，语义去重只能人工复核（非阻断）。
 
+## 结构化知识检索（ADR-063，2026-08-31）
+- 模块：`src/domain/knowledge/`（`nodes` 知识点查询 / `documents` 投影 / `index` BM25 / `graph` 1-hop / `retrieve` 混合评分）；应用层 `application/conversation/knowledgeCapability.ts` 负责 scope 与答案安全模式（确定性正则，不额外调 LLM）。
+- 真值隔离在**检索层**：`questionDocument` 把 explanation / choice.answer / referenceAnswer 放进 `sensitiveText`，`renderDocument(doc, mode)` 硬裁剪，不靠 prompt 约束模型。
+- 题目证据槽位上限 `questionSlotLimit`：global/topic 下题目至多 2 条，`current_question` 与 `quiz` 放开。删过一版 `KIND_PRIORS` 乘性先验——实测无法改变排序，别再加。
+- 改检索评分后**必须在真实语料上跑冒烟看 top5 组成**（题干+4 选项文本长，词面命中天然压过知识节点），只加单测看不出排序退化。
+- 踩坑：把 `src/domain/knowledge.ts` 拆成目录时，旧文件挪进去后相对导入深度要 `../` → `../../`（含同名 `.test.ts`），否则 tsc 报 TS2307 但 `tsc -b` 退出码仍是 0，容易漏看。
+- 踩坑：新 ADR 号取号前先 grep `docs/DECISIONS.md` 顶部，ADR-062 已占用（Chat×Agent 融合收敛）。
+
 ## git 状态
-- 截至 2026-08-31 第十六轮，全部改动（Prompt 分层重构 + AI 搜索 40 题 + 自我改进 Agent 7 题 + 多轮 taxonomy/App 修复）均**未 commit**，等用户指示。
+- 截至 2026-08-31 第十七轮，全部改动（Prompt 分层重构 + AI 搜索 40 题 + 自我改进 Agent 7 题 + 多轮 taxonomy/App 修复 + 结构化知识检索 ADR-063）均**未 commit**，等用户指示。

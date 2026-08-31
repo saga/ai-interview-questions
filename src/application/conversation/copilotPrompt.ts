@@ -1,17 +1,22 @@
 import type { LearnerProfile } from '../../schemas/learner';
 import type { Question } from '../../schemas/question';
 import type { InterviewSession } from '../../schemas/session';
+import type { KnowledgeEvidence } from '../../domain/knowledge/types';
+import { buildKnowledgePromptSection } from './knowledgeCapability';
 
 /**
  * Build conversation-facing context string. Pure function, no React.
  * Extracted from CopilotSidebar to keep UI thin (plan0831_4 §11).
+ *
+ * `evidence` 为结构化知识检索结果（ADR-063）：有则拼入依据与引用要求。
  */
 export function buildCopilotSystemPrompt(opts: {
   profile: LearnerProfile | null;
   activeQuestion: Question | null | undefined;
   session: InterviewSession | null;
+  evidence?: KnowledgeEvidence | null;
 }): string {
-  const { profile, activeQuestion, session } = opts;
+  const { profile, activeQuestion, session, evidence } = opts;
   const weak = profile?.topicStats
     ? Object.entries(profile.topicStats as Record<string, { mastery: number }>)
         .filter(([, s]) => s.mastery < 0.85)
@@ -24,11 +29,13 @@ export function buildCopilotSystemPrompt(opts: {
     : session
       ? `当前训练：${session.definition.title} 共${session.questions.length}题`
       : '用户尚未开始训练';
+  const knowledge = buildKnowledgePromptSection(evidence ?? null);
   return `你是 AI 面试训练器的 Copilot 侧边助手，基于 ant-design/x 的 Copilot 交互范式。
 职责：解释题目知识点、给出不直接泄露答案的提示、梳理薄弱项、推荐下一步训练。严禁直接替用户作答选择题的正确选项，可引导思考。
 当前上下文：
 ${qInfo}
 ${weak ? `薄弱主题：${weak}` : ''}
+${knowledge ? `\n${knowledge}\n` : ''}
 若用户未配置 AI，请引导去设置页配置。回答使用中文，条理清晰，必要时用 Markdown 列表。`;
 }
 

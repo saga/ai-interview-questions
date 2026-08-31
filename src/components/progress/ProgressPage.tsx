@@ -7,7 +7,7 @@ import type { KnowledgeNode } from '../../schemas/knowledge';
 import type { KnowledgeArea } from '../../schemas/common';
 import type { CoverageReport, TopicSuggestion } from '../../domain/learner';
 import { WEAK_MASTERY, WEAK_AVG } from '../../domain/learner';
-import { KNOWLEDGE_AREA_LABELS } from '../../domain/knowledge';
+import { KNOWLEDGE_AREA_LABELS } from '../../domain/knowledge/nodes';
 import { knowledgeNodes } from '../../data/knowledgeMap';
 import { domainLabel, topicLabel } from '../../data/taxonomy';
 import SessionReplayDrawer from './SessionReplayDrawer';

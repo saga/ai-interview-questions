@@ -1,6 +1,16 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-31 · 结构化知识检索（Structured Knowledge RAG，ADR-063）
+
+- 新增 `src/domain/knowledge/`：`types.ts`（KnowledgeDocument / Hit / Evidence、RetrievalScope、RetrievalMode、混合权重）、`documents.ts`（KnowledgeNode / Question → 统一文档投影，真值隔离进 `sensitiveText`）、`index.ts`（内存倒排索引 + BM25，CJK 单字 + bigram / 拉丁串成词）、`graph.ts`（Concept Graph 1-hop 扩展，seed 1.0 / prerequisite 0.8 / related 0.6 / dependent 0.45）、`retrieve.ts`（`searchKnowledge`：metadata + lexical + graph 混合评分，semantic 权重 0.15 未接入前按比例回填）。原 `src/domain/knowledge.ts` 拆为 `knowledge/nodes.ts`（`knowledgeById / requiredPointsFor / knowledgeCoverage` 不变，引用方同步改路径）。
+- 新增 `src/application/conversation/knowledgeCapability.ts`：确定性 query planner（scope `current_question/topic/knowledge/global`、mode `answer/hint/quiz`，不额外消耗 LLM 调用）、`buildKnowledgePromptSection`、`knowledgeCitations`。
+- `CopilotSidebar` 的 general-chat 改为「检索 → 组装 → LLM」：调用前 `retrieveForCopilot`，失败只降级为无依据问答不阻断对话；回答尾部附「依据：[K]…｜[Q]…」。`copilotPrompt.ts` 新增 `evidence` 参数。
+- 答案安全：hint / quiz 模式在检索层硬裁剪 `explanation / choice.answer / referenceAnswer`，不依赖 prompt 约束模型。
+- 检索实测调优（1317 题 / 123 节点）：新增题目证据槽位上限 `questionSlotLimit`（global / topic 下题目至多 2 条，`current_question` 与 `quiz` 放开），修正「top 5 全是题目、知识节点进不来」的排序缺陷；`quiz` 模式只返回题目；概念层提问的判定补 `讲讲 / 聊聊 / 介绍`。
+- 文档：新增 ADR-063（DECISIONS.md 顶部）、`ARCHITECTURE.md` 新增「结构化知识检索」小节与 `domain/knowledge`、`application/conversation` 分层条目；计划原文落到 `docs/improvement_plan/knowledge_base_for_copilot.md`。
+- 验证：`tsc 0`、`npm run build` 通过、`vitest 588 passed / 46 files`（新增 `retrieve.test.ts` 25 例、`knowledgeCapability.test.ts` 17 例）。
+
 ## 2026-08-31 · NMF/主题建模与矩阵分解题库补齐（nmf-theory）
 
 - 新增 `src/data/knowledge/nmf-theory.json` 4 节点（`topic-modeling / matrix-factorization / linear-algebra / algorithm-design`，`area: ai-engineering/topic: ml-foundations`，P0×1/P1×3），补齐 SVD 负权重抵消/正交局限、NMF 凸组合概率语义与规范化尺度消除、代数秩 vs 非负秩矩形支撑与无上界、Eckart-Young 旋转不变性与截断嵌套、Separability/平滑分析超越最坏情况及交替最小化凸子问题与局部最优的知识锚点；`src/data/questions/nmf-theory.json` 新增 6 题（5 多选 1 单选，多选占比 83%，覆盖 `comparison/fundamental/tradeoff/mechanism/design` 5 角度，长度比 1.32–1.72× <1.8）。

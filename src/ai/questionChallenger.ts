@@ -11,16 +11,18 @@ export const QUESTION_CHALLENGER_SYSTEM = `[PROMPT-VERSION v1]
 你只能依据题目、选项和解析判断，忽略 source、tags、category、topic、subtopic 等 metadata；不能假设考生读过文章来源、产品文档、Lens、认证考纲或框架。
 
 【你的任务】
-挑战一道题是否值得进入技术题库：题干是否自包含、目标和约束是否充分、逻辑是否成立、答案是否唯一、干扰项是否可辩护、解析是否支持答案。
+挑战一道题是否值得进入技术题库：题干是否自包含、目标和约束是否充分、逻辑是否成立、答案是否唯一、干扰项是否可辩护、解析是否支持答案；以及这道题对目标候选人的区分度——能否把「懂」与「不懂」区分开。
 
 【JSON 输出契约】
 只输出一个 JSON 对象，不要 Markdown 或额外文字。字段：
 {
   "verdict": "reject | revise | accept | skipped",
+  "value": "high | medium | low",
   "summary": "一句话结论",
   "issues": [{"severity":"critical | warning | pass","dimension":"self-contained | sufficiency | logic | answer-uniqueness | distractors | explanation","issue":"问题","evidence":"题目证据","suggestion":"修复建议"}],
   "rewrittenQuestion": "仅在需要改写时提供自包含题干，否则省略"
-}`;
+}
+value（面试区分度 / 价值）：high=能区分懂与不懂；medium=可接受；low=太 trivial-like / 只考记忆背诵 / 对声明难度过易 / 不能区分常见误解。value=low 的题即使结构正确也应 revise 而非 accept。`;
 
 const issueSchema = z.object({
   severity: z.enum(['critical', 'warning', 'pass']),
@@ -32,6 +34,7 @@ const issueSchema = z.object({
 
 const challengeSchema = z.object({
   verdict: z.enum(['reject', 'revise', 'accept', 'skipped']),
+  value: z.enum(['high', 'medium', 'low']).optional(),
   summary: z.string(),
   issues: z.array(issueSchema),
   rewrittenQuestion: z.string().optional(),
@@ -76,6 +79,7 @@ ${question.explanation}
 3. 是否只有一个可由通用工程知识推导的正确答案？
 4. 干扰项是否代表真实且互斥的工程误区？
 5. 解析是否解释了答案的因果关系和边界？
+6. 这道题能否把「懂」与「不懂」的候选人区分开？还是太 trivial / 只考记忆背诵 / 对声明难度过易 / 不能区分常见误解？请给出 value（high / medium / low）。
 
 按 [JSON 输出契约] 输出 JSON。`;
 }
@@ -103,12 +107,21 @@ export function parseQuestionChallenge(raw: string, question: Question): Questio
     };
   }
   const modelResult = parsed.data;
-  if (!hardIssues.length) return modelResult;
+  // 区分度偏低（value=low）的题即使结构正确也降为 revise，避免把「只考记忆背诵」的题放进题库。
+  const downgraded =
+    modelResult.value === 'low' && modelResult.verdict === 'accept'
+      ? {
+          ...modelResult,
+          verdict: 'revise' as const,
+          summary: `${modelResult.summary} 但区分度偏低（value=low），建议改写提升面试价值。`,
+        }
+      : modelResult;
+  if (!hardIssues.length) return downgraded;
   return {
-    ...modelResult,
+    ...downgraded,
     verdict: 'reject',
-    summary: `${modelResult.summary} 另命中来源框架前置知识规则。`,
-    issues: [...hardIssues, ...modelResult.issues],
+    summary: `${downgraded.summary} 另命中来源框架前置知识规则。`,
+    issues: [...hardIssues, ...downgraded.issues],
   };
 }
 

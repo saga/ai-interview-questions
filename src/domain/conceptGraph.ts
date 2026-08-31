@@ -96,6 +96,16 @@ export function relatedOf(topic: string): string[] {
   return [...result];
 }
 
+/** 直接前置（1 跳，不含传递闭包）。供知识检索的 graph expansion 使用。 */
+export function prerequisitesOf(topic: string): string[] {
+  return [...(prerequisiteDag.predecessors(topic) ?? [])];
+}
+
+/** 直接后继（1 跳：以该主题为前置的进阶概念）。 */
+export function dependentsOf(topic: string): string[] {
+  return [...(prerequisiteDag.successors(topic) ?? [])];
+}
+
 /** 主题在 prerequisite DAG 拓扑序中的位置（越靠前越基础）；不在依赖图中返回 Infinity。 */
 export function topoRankOf(topic: string): number {
   return topoRank.get(topic) ?? Infinity;

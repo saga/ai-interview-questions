@@ -142,13 +142,14 @@ export function useAgentInterview(
   // 必须保证 onComplete（落库到 Learner Memory）只调用一次，禁止重复写入。
   const finalizedRef = useRef(false);
 
+  // 先同步写 ref，再触发 state 更新：React 的 setState updater 不保证在调用处立即执行，
+  // 若把 ref 更新塞进 updater，后面紧跟的 persistDraft() 可能读到上一轮的旧 ref，
+  // 导致「UI 显示 3 题、草稿只存 2 题」、续面缺最后一题、sessionRecord 丢最后一题评分（P0-2）。
   const syncQuestions = useCallback((q: SessionQuestion) => {
-    setQuestions((prev) => {
-      if (prev.some((x) => x.question.id === q.question.id)) return prev;
-      const next = [...prev, q];
-      questionsRef.current = next;
-      return next;
-    });
+    if (questionsRef.current.some((x) => x.question.id === q.question.id)) return;
+    const next = [...questionsRef.current, q];
+    questionsRef.current = next;
+    setQuestions(next);
   }, []);
 
   const finalize = useCallback(() => {
@@ -156,8 +157,11 @@ export function useAgentInterview(
     const session = sessionRef.current;
     if (!session) return;
     finalizedRef.current = true;
+    session.status = 'finished'; // domain truth：持久化层据此判定草稿可删，修复「终局状态分裂」（P0-1）
     handleRef.current?.abort();
     const asked = countDelivered(session);
+    // 终局：先等未完成的落库写完，再删草稿，避免删除之后在途写入把草稿重新写回（草稿复活）。
+    void flushPersist().then(() => deleteAgentSession(session.id));
     if (asked === 0) {
       setPhase('done');
       setSummary({ asked: 0, overall: 0 });
@@ -165,6 +169,13 @@ export function useAgentInterview(
     }
     const durationSec = Math.round((Date.now() - session.startedAt) / 1000);
     const record = sessionRecordFromAgent(session, questionsRef.current, 'Agent 面试', durationSec);
+    // 没有任何有效评分（整场 LLM 评分都失败）：不写入 Learner Memory，
+    // 避免把「未产生成绩」误解成一次 0 分训练（与 updateLearner 空结果守卫同义，此处显式拦截，P1-4）。
+    if (record.questionResults.length === 0) {
+      setSummary({ asked, overall: 0 });
+      setPhase('done');
+      return;
+    }
     onComplete(record);
     setSummary({ asked, overall: averageOverall(session) });
     setPhase('done');
@@ -194,7 +205,9 @@ export function useAgentInterview(
     const session = sessionRef.current;
     const entryId = entryIdRef.current;
     if (!handle || !session || !entryId) return;
-    if (session.status === 'finished') return; // 结束由 deleteAgentSession 处理
+    // 终局后不再落库（无论 UI 是否已切到 done）：finalize 已置 finalizedRef 并负责删草稿，
+    // 否则会在 deleteAgentSession 之后又把旧快照写回（草稿复活）。status 是 domain truth 冗余校验。
+    if (finalizedRef.current || session.status === 'finished') return;
     // 快照在此同步取好（session/messages/questions 均为引用，入队后再读可能已变）。
     const snapshot = {
       id: session.id,
@@ -243,11 +256,7 @@ export function useAgentInterview(
             void persistDraft(); // 题目已交付 = 安全断点，立即落库
           },
           onStatus: (status) => {
-            if (status === 'finished') {
-              // 先等未完成的落库写完再删，否则在途写入会在删除之后把草稿重新写回
-              void flushPersist().then(() => deleteAgentSession(session.id)); // 结束即清草稿，避免残留
-              finalize();
-            }
+            if (status === 'finished') finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete
           },
           onError: (msg, fatal) => {
             // 修复 B：流式错误/自愈提示——致命则阻塞报错，可恢复则轻量告警（兜底已接续出题）
@@ -435,10 +444,7 @@ export function useAgentInterview(
             void persistDraft();
           },
           onStatus: (status) => {
-            if (status === 'finished') {
-              void flushPersist().then(() => deleteAgentSession(session.id));
-              finalize();
-            }
+            if (status === 'finished') finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete
           },
           onError: (msg, fatal) => {
             if (fatal) setError(msg);

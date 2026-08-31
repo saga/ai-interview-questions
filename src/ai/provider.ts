@@ -14,7 +14,7 @@ import { generateVariant } from './variant';
 import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
-import { requiredPointsFor } from '../domain/knowledge';
+import { requiredPointsFor } from '../domain/knowledge/nodes';
 import { challengeQuestion, type QuestionChallenge } from './questionChallenger';
 
 /** 单个引擎通道的校验按 id 区分：

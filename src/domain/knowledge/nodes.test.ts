@@ -2,11 +2,11 @@
 // 覆盖度统计正确。纯静态校验，无 LLM/网络。
 
 import { describe, expect, it } from 'vitest';
-import type { KnowledgeNode } from '../schemas/knowledge';
-import type { Question } from '../schemas/question';
-import { knowledgeNodes } from '../data/knowledgeMap';
-import { questionBank } from '../data/questionBank';
-import { KNOWLEDGE_AREA_LABELS, knowledgeById, knowledgeCoverage, requiredPointsFor } from './knowledge';
+import type { KnowledgeNode } from '../../schemas/knowledge';
+import type { Question } from '../../schemas/question';
+import { knowledgeNodes } from '../../data/knowledgeMap';
+import { questionBank } from '../../data/questionBank';
+import { KNOWLEDGE_AREA_LABELS, knowledgeById, knowledgeCoverage, requiredPointsFor } from './nodes';
 
 const AREAS = Object.keys(KNOWLEDGE_AREA_LABELS);
 const PRIORITIES = ['P0', 'P1', 'P2'];

@@ -1,10 +1,10 @@
 // 纯逻辑：知识点层查询与覆盖分析。不依赖 React / LLM。
 // API 默认注入 knowledgeNodes 单例，测试可传入自定义节点列表替换数据源。
 
-import type { KnowledgeArea, KnowledgePriority } from '../schemas/common';
-import type { KnowledgeNode } from '../schemas/knowledge';
-import type { Question } from '../schemas/question';
-import { knowledgeNodes } from '../data/knowledgeMap';
+import type { KnowledgeArea, KnowledgePriority } from '../../schemas/common';
+import type { KnowledgeNode } from '../../schemas/knowledge';
+import type { Question } from '../../schemas/question';
+import { knowledgeNodes } from '../../data/knowledgeMap';
 
 export const KNOWLEDGE_AREA_LABELS: Record<KnowledgeArea, string> = {
   'ai-engineering': 'AI Engineering（基础能力）',

@@ -10,7 +10,7 @@
 
 ## 统一交互入口（Phase 1–5 已实施，ADR-061/062，plan0831_4 融合收敛）
 
-Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record；Router 含 `end_interview` 与丰富 `questionHistory/lastEvaluation/turnCount` 上下文，`chatCopilot` 仅保留为 general-chat 与 intent-classification adapter；`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。
+Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record；Router 含 `end_interview` 与丰富 `questionHistory/lastEvaluation/turnCount` 上下文，`chatCopilot` 仅保留为 general-chat 与 intent-classification adapter；`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。general-chat 走「检索 → 组装 → LLM → 回答 + 依据」而非裸 prompt（ADR-063，见下节）。
 
 目标架构为：
 
@@ -43,8 +43,18 @@ schemas/       数据契约层（Zod 4）：runtime validation + TypeScript 类�
 
 domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单测覆盖）
   categories.ts  类目 slug → 中文标签
-  knowledge.ts   知识点层查询：knowledgeById / requiredPointsFor（评分要点回退）
-                 / knowledgeCoverage（P0 覆盖率与题库建设 gap 路线图）
+  knowledge/     知识点查询 + 结构化知识检索（Structured Knowledge RAG，ADR-063）
+    nodes.ts       knowledgeById / requiredPointsFor（评分要点回退）
+                   / knowledgeCoverage（P0 覆盖率与题库建设 gap 路线图）
+    types.ts       KnowledgeDocument / Hit / Evidence 契约；RetrievalScope（current_question/
+                   topic/knowledge/global）、RetrievalMode（answer/hint/quiz）、混合权重
+    documents.ts   投影层：KnowledgeNode / Question → 统一 KnowledgeDocument（knowledge/
+                   question/misconception/concept），真值隔离进 `sensitiveText`
+    index.ts       内存倒排索引 + BM25（CJK 单字 + bigram、拉丁串整体成词），纯函数
+    graph.ts       Concept Graph 1-hop 扩展（seed 1.0 / prerequisite 0.8 / related 0.6 /
+                   dependent 0.45）——同一张图同时服务 adaptive selection 与 retrieval
+    retrieve.ts    searchKnowledge：metadata + lexical + graph 混合评分
+                   （0.40/0.25/0.20，semantic 0.15 未接入前按比例回填）
   conceptGraph.ts 知识关系图（prerequisite/related/closure/topo）——只回答
                  "知识之间是什么关系"，不持有任何学习状态与掌握度策略（ADR-030）；
                  graphlib 数据结构不外泄，对外只有 topic 字符串
@@ -103,6 +113,14 @@ application/
   interviewEngine.ts  应用服务：buildSession / nextAdaptiveStep / evaluateAnswer / evaluateSession
   sessionEvaluator.ts  双引擎共享衔接层：isAnswerEmpty / effectiveFormats /
                         evaluateSessionQuestion；选择题判分与开放题 LLM 评分的统一入口
+  conversation/        统一交互入口的能力层（ADR-061/062/063）
+    router.ts              intent 分类（确定性规则 + LLM 兜底）
+    conversationSession.ts ConversationSession 聚合与 localStorage 持久化
+    questionCapability.ts  出题；evaluationCapability.ts 评分；learnerCapability.ts 画像
+    interviewCapability.ts Chat × Agent runtime 的衔接
+    copilotPrompt.ts       buildCopilotSystemPrompt（纯函数，UI 不拼 prompt）
+    knowledgeCapability.ts 知识检索的应用层：query planner（scope / mode 由确定性规则决定）、
+                           evidence → prompt 片段、引用列表
 
 agent/         Agent 面试运行时（pi-agent-core，ADR-034）：与确定性 Engine 并行的第二运行时
    interviewAgent.ts  Agent 编排（observe → decide → tool 循环；停止条件 / 工具守卫）
@@ -248,6 +266,38 @@ Learner Profile
    （generateVariant / evaluateOpenAnswer），永不扩展为推荐/规划/学习者分析类接口。
 4. **Learner Memory 驱动下一次训练。** 掌握度启发式 + 薄弱项推荐构成闭环；
    图只回答关系，learner 回答掌握状态（ADR-030）。
+
+## 结构化知识检索（Structured Knowledge RAG，ADR-063）
+
+Copilot 此前是 prompt-only：只把「当前题目 + 训练信息 + 薄弱主题」拼进 system prompt 后直连 LLM，从未真正检索知识库。Phase 1 增加一层检索能力，**不引入 embedding / 向量库 / 外部依赖**。
+
+```text
+KnowledgeNode ┐
+Question      ┼→ 投影（documents.ts）→ KnowledgeDocument ─┐
+ConceptGraph  ┘                                          │
+                                        ┌────────────────┘
+                                        ↓
+                              内存倒排索引（index.ts, BM25）
+                                        ↓
+User Query → query planner（scope / mode，确定性规则）
+                                        ↓
+                    metadata 0.25 + lexical 0.40 + graph 0.20
+                                        ↓
+                              top 5 evidence（retrieve.ts）
+                                        ↓
+               knowledgeCapability → copilotPrompt → LLM → 回答 + 依据
+```
+
+四条硬规则：
+
+1. **投影而非切块**：`KnowledgeNode`（summary/required/misconceptions/angles）与 `Question`（stem/options/explanation）投影成统一的 `KnowledgeDocument`，保留 metadata 供精确过滤；不把 JSON 当 chunk 直接喂。
+2. **真值隔离在检索层**：`explanation / choice.answer / referenceAnswer` 进入 `sensitiveText`，`renderDocument(doc, mode)` 硬裁剪——`hint` 只给知识骨架与误解，`quiz` 只给题干。检索不能绕过 assessment boundary。
+3. **scope / mode 由确定性规则决定**，不额外消耗一次 LLM 调用：检索范围与答案可见性是安全边界，不能交给模型判断。默认保守——只要存在当前题目就走 `hint`。
+4. **Question 是 Knowledge 的 evidence 而非主知识源**：`knowledge` scope 排除题目；其余 scope 题目证据最多 2 个槽位（`current_question` / `quiz` 放开）。实测不加限制时 top 5 全是题目，模型会「从题库答案总结答案」。
+
+Concept Graph 由此从「出题算法辅助结构」升级为 **Knowledge Backbone**：同一张图（1-hop：prerequisite 0.8 / related 0.6 / dependent 0.45）同时驱动 adaptive selection 与 knowledge retrieval。
+
+Phase 2/3 未做（有意推迟）：embedding 语义通道（权重 0.15 已预留，未接入时按比例回填）、reranking、query expansion、multi-hop；`KnowledgeNode.keyIdeas / tradeoffs` 字段扩展；Learner memory 参与检索排序；MCP 暴露 Knowledge Base。
 
 ## 自适应面试引擎 + 知识覆盖面（ADR-017）
 

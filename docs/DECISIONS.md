@@ -2,6 +2,23 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-063 · Structured Knowledge RAG：Knowledge Base 提升为 domain capability
+
+- 状态：已采纳（Phase 1 已实施） · 2026-08-31
+- 来源：`docs/improvement_plan/knowledge_base_for_copilot.md`（用户 14 节建议）。
+- 背景：Copilot 此前只是把「当前题目 + 训练信息 + 薄弱主题」拼进 system prompt 后直连 LLM，**从未真正从知识库检索**；`knowledgeMap.ts` / `questionBank.ts` 只是静态加载器，Concept Graph 只服务 adaptive selection。知识库是数据文件，不是能力。
+- 决策：
+  1. **新增 `src/domain/knowledge/`（types / documents / index / graph / retrieve）**：`KnowledgeNode + Question` 运行时投影为统一的 `KnowledgeDocument`（knowledge / question / misconception / concept 四类），建内存倒排索引，检索 = metadata 精确匹配 + BM25 词法 + Concept Graph 1-hop 扩展。
+  2. **Phase 1 不做 embedding / 向量库 / 外部依赖**（计划 §3/§13）：corpus 仅数千条且结构极强，混合权重定为 `0.40 lexical + 0.25 metadata + 0.20 graph + 0.15 semantic`；semantic 未接入前其权重按比例回填给其余三路（`effectiveWeights`），保证 Phase 1 与终态同量纲。
+  3. **真值隔离在检索层，不在 prompt 层**（计划 §7）：`questionDocument` 把 `explanation / choice.answer / referenceAnswer` 隔离进 `sensitiveText`，`renderDocument(doc, mode)` 硬裁剪 —— `hint` 只给知识骨架与误解，`quiz` 只给题干。这是「检索不能绕过 assessment boundary」的硬保证，不是请求模型自觉。
+  4. **轻量 query planner 在 application 层**（`application/conversation/knowledgeCapability.ts`）：scope `current_question / topic / knowledge / global` 与 mode `answer / hint / quiz` 由确定性正则 + 上下文决定，**不额外消耗一次 LLM 调用**——检索范围与答案可见性属于安全边界，不能交给模型判断。默认保守：存在当前题目时即 `hint`。
+  5. **Concept Graph 升级为 Knowledge Backbone**（计划 §9）：`graph.ts` 复用 `domain/conceptGraph` 做 1-hop 扩展（seed 1.0 / prerequisite 0.8 / related 0.6 / dependent 0.45），同一图同时驱动 adaptive selection 与 knowledge retrieval。
+  6. **Question 是 Knowledge 的 evidence 而非主知识源**（计划 §11）：`knowledge` scope 下排除 question doc；其余 scope 下题目证据**最多占 2 个槽位**（`questionSlotLimit`，`current_question` 与 `quiz` 放开）。实测不加限制时 top 5 全是题目（题干 + 4 个选项文本长、词面命中天然更多），模型会「从题库答案总结答案」。
+  7. **引用溯源**（计划 §8）：每条 hit 带 `source{kind,id,label}`，`formatCitations` 生成 `[K]/[Q]/[C]` 列表，Copilot 回答尾部附「依据：…」。
+- 不做（Phase 2/3 再议）：embedding 与语义通道、reranking、query expansion、multi-hop；`KnowledgeNode.keyIdeas / tradeoffs` 字段扩展（计划 §10）；Learner memory 参与检索排序（计划 §14）；MCP 暴露 Knowledge Base；UI 可点击引用折叠面板（当前为纯文本尾部拼接）。
+- 验证：`tsc 0`；`vitest 588 passed / 46 files`（新增 `domain/knowledge/retrieve.test.ts` 25 例、`application/conversation/knowledgeCapability.test.ts` 17 例、`domain/knowledge/nodes.test.ts` 迁移 8 例）。
+- 关联：`docs/ARCHITECTURE.md`「结构化知识检索」小节。
+
 ## ADR-062 · Chat 与 Agent Interview 融合收敛（plan0831_4 收口）
 
 - 状态：已采纳 · 2026-08-31

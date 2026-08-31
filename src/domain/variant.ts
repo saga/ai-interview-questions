@@ -5,7 +5,7 @@
 import type { GeneratedVariant, VariantCandidate } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
-import { requiredPointsFor } from './knowledge';
+import { requiredPointsFor } from './knowledge/nodes';
 import * as fuzz from 'fuzzball';
 
 export interface VariantCheck {

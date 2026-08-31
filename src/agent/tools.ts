@@ -25,7 +25,7 @@ import {
   weakAnglesOf,
   type ConceptGap,
 } from '../domain/learner';
-import { knowledgeById } from '../domain/knowledge';
+import { knowledgeById } from '../domain/knowledge/nodes';
 import { effectiveProfileFor } from './sessionState';
 import { countDelivered } from './types';
 import type { InterviewAgentSession } from './types';

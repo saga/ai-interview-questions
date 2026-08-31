@@ -4,7 +4,7 @@
 import type { CompleteFn, GeneratedVariant } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
-import { requiredPointsFor } from '../domain/knowledge';
+import { requiredPointsFor } from '../domain/knowledge/nodes';
 import { detectOptionLengthBias } from '../domain/bias';
 import { validateVariant } from '../domain/variant';
 import { extractJSON } from './pi';

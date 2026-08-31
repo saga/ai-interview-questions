@@ -74,4 +74,28 @@ describe('question challenger', () => {
     }));
     expect(result.verdict).toBe('accept');
   });
+
+  // P1-6：区分度偏低（value=low）的题即使结构正确也降为 revise，避免只考记忆背诵的题入库。
+  it('value=low 时把 accept 降级为 revise', () => {
+    const result = parseQuestionChallenge(JSON.stringify({
+      verdict: 'accept',
+      value: 'low',
+      summary: '结构正确但太 trivial。',
+      issues: [{ severity: 'pass', dimension: 'self-contained', issue: '自包含', evidence: '题干完整', suggestion: '无需修改' }],
+    }), question);
+    expect(result.verdict).toBe('revise');
+    expect(result.value).toBe('low');
+    expect(result.summary).toContain('区分度偏低');
+  });
+
+  it('value=high 且结构正确时保持 accept', () => {
+    const result = parseQuestionChallenge(JSON.stringify({
+      verdict: 'accept',
+      value: 'high',
+      summary: '能区分懂与不懂。',
+      issues: [],
+    }), question);
+    expect(result.verdict).toBe('accept');
+    expect(result.value).toBe('high');
+  });
 });

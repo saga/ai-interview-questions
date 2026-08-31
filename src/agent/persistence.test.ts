@@ -67,4 +67,15 @@ describe('sessionRecordFromAgent', () => {
   it('averageOverall 在无评分时返回 0', () => {
     expect(averageOverall(createAgentSession())).toBe(0);
   });
+
+  // P1-4：整场 LLM 评分全部失败（evaluations 全 null）→ 不产生任何有效评分结果。
+  // finalize 据此跳过 onComplete，避免把「未产生成绩」误解成一次 0 分训练写进 Learner Memory。
+  it('全 null 评估 → questionResults 为空（finalize 应跳过落库）', () => {
+    const session = createAgentSession();
+    const open = sq('o1', 'rag', 'open');
+    session.answers['o1'] = ['一些作答'];
+    session.evaluations['o1'] = null; // 评分失败
+    const record = sessionRecordFromAgent(session, [open], 'Agent 面试', 10);
+    expect(record.questionResults).toHaveLength(0);
+  });
 });

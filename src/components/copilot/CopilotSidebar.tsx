@@ -29,6 +29,8 @@ import { emptyProfile } from '../../domain/learner';
 import { describeEvaluationSummary } from '../../domain/evaluation';
 import type { SessionRecord } from '../../schemas/learner';
 import { buildCopilotSystemPrompt } from '../../application/conversation/copilotPrompt';
+import { retrieveForCopilot, knowledgeCitations } from '../../application/conversation/knowledgeCapability';
+import type { KnowledgeEvidence } from '../../domain/knowledge/types';
 import {
   createConversationSession,
   addQuestionToSession,
@@ -212,6 +214,28 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     s.context.mode = mode;
     s.messages = messages;
     return s;
+  };
+
+  /**
+   * 结构化知识检索 → prompt 组装 → LLM（ADR-063）。
+   * 检索在调用模型之前完成；检索失败只降级为无依据问答，不阻断对话。
+   */
+  const runKnowledgeChat = async (
+    content: string,
+    history: { role: 'user' | 'assistant'; content: string }[],
+  ): Promise<string> => {
+    const activeQuestion = chatQuestion ?? currentQuestion ?? null;
+    let evidence: KnowledgeEvidence | null = null;
+    try {
+      evidence = retrieveForCopilot({ query: content, activeQuestion });
+    } catch (e) {
+      console.warn('[Copilot] 知识检索失败，降级为无依据问答：', e);
+    }
+    const sys = buildCopilotSystemPrompt({ profile, activeQuestion, session, evidence });
+    const reply = await chatCopilot(config, sys, history, content);
+    const citations = knowledgeCitations(evidence);
+    if (citations.length === 0) return reply;
+    return `${reply}\n\n依据：${citations.join('｜')}`;
   };
 
   const handleSend = async (val: string) => {
@@ -450,7 +474,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           saveConversationSession(updated);
           return updated;
         });
-      } else if (intent.intent === 'general_chat') {
+      } else if (intent.intent === 'general_chat' || intent.intent === 'explain_topic') {
         // persist user message to session if exists
         setConvSession((prev) => {
           if (!prev) return prev;
@@ -462,8 +486,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           appendAssistant('当前未配置 AI 引擎。你仍可以说“给我出一道题”开始选择题训练；开放题评分和普通问答需要先配置 AI。');
         } else {
           const history = messages.map((m) => ({ role: m.role, content: m.content }));
-          const sys = buildCopilotSystemPrompt({ profile, activeQuestion: chatQuestion ?? currentQuestion ?? null, session });
-          const reply = await chatCopilot(config, sys, history, content);
+          const reply = await runKnowledgeChat(content, history);
           // append and persist
           setMessages((prev) => {
             const withAssistant = [...prev, { role: 'assistant' as const, content: reply, key: `${Date.now()}-a` }];
