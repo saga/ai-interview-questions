@@ -74,6 +74,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         description: '预训练/SFT/LoRA/QLoRA/PEFT/梯度累积/混合精度/分布式训练/检查点',
       },
       {
+        id: 'model-scaling-and-skills',
+        label: '模型规模与技能协同',
+        description: '模型规模/技能收益/能力解耦/跨模型迁移/程序化知识的相对与绝对收益',
+      },
+      {
         id: 'inference',
         label: '推理与服务',
         description: 'KV Cache/批处理/连续批处理/PagedAttention/前缀缓存/投机解码/量化/并行/延迟与吞吐',
@@ -114,6 +119,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         id: 'context-engineering',
         label: '上下文工程',
         description: '指令层级/few-shot/结构化输出/上下文选择/压缩/长上下文/注入/隔离/动态上下文/Token预算',
+      },
+      {
+        id: 'agent-context-engineering',
+        label: 'Agent 上下文与技能上下文',
+        description: '演化知识库与执行上下文隔离/上下文预算/按需检索/技能编译与运行时注入',
       },
     ],
   },
@@ -162,6 +172,26 @@ export const TAXONOMY: TaxonomyDomain[] = [
         label: 'Agent 运行时',
         description: '运行时/进程模型/会话与状态持久化/并发与隔离/生命周期与热更新/故障重启',
       },
+      {
+        id: 'skill-evolution-state-management',
+        label: '技能演化与状态管理',
+        description: '候选 Skill 生成/验证集门控/回滚/演化日志/持久知识与可执行状态分离',
+      },
+      {
+        id: 'agent-memory-and-tool-use',
+        label: 'Agent 记忆与工具使用',
+        description: '执行轨迹索引/按需读取/元优化器上下文预算/工具驱动的诊断与检索',
+      },
+      {
+        id: 'skill-discovery-vs-execution',
+        label: '技能发现与执行',
+        description: 'Skill 提炼/程序化知识/跨模型迁移/发现能力与执行能力解耦',
+      },
+      {
+        id: 'self-evolving-agent-workspace',
+        label: '自演化 Agent 工作区',
+        description: 'Raw/Wiki/Skill 三层工作区/不可变轨迹/持久知识/验证门控的活性技能',
+      },
     ],
   },
 
@@ -208,6 +238,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         id: 'reliability',
         label: '可靠性',
         description: '超时/限流/重试/幂等/熔断/降级/故障恢复/一致性',
+      },
+      {
+        id: 'prompt-optimization-debugging',
+        label: 'Prompt 优化与调试',
+        description: '优化死循环/影响追踪/验证集对照/修改 diff/失败模式审计与迭代诊断',
       },
     ],
   },
@@ -338,6 +373,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   // LLM 核心
   'llm-fundamentals': ['definition', 'fundamental', 'mechanism', 'comparison', 'scenario', 'debugging'],
   training: ['definition', 'mechanism', 'comparison', 'tradeoff', 'calculation', 'scenario'],
+  'model-scaling-and-skills': ['fundamental', 'comparison', 'tradeoff', 'scenario', 'system-design'],
   inference: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'calculation'],
   'llm-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   multimodal: ['definition', 'mechanism', 'comparison', 'scenario'],
@@ -347,6 +383,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   embeddings: ['definition', 'mechanism', 'comparison', 'calculation', 'scenario'],
   'ai-search': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging'],
   'context-engineering': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
+  'agent-context-engineering': ['mechanism', 'tradeoff', 'scenario', 'system-design', 'design'],
 
   // Agent 工程
   'agent-fundamentals': ['definition', 'fundamental', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'design'],
@@ -357,6 +394,10 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'multi-agent': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   'human-in-the-loop': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   'agent-runtime': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'debugging'],
+  'skill-evolution-state-management': ['mechanism', 'tradeoff', 'scenario', 'system-design', 'design', 'debugging'],
+  'agent-memory-and-tool-use': ['mechanism', 'tradeoff', 'scenario', 'system-design', 'design'],
+  'skill-discovery-vs-execution': ['fundamental', 'comparison', 'tradeoff', 'scenario', 'system-design'],
+  'self-evolving-agent-workspace': ['comparison', 'tradeoff', 'scenario', 'system-design', 'design'],
 
   // AI 系统
   'ai-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'system-design'],
@@ -367,6 +408,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'cost-performance': ['definition', 'mechanism', 'tradeoff', 'calculation', 'scenario'],
   'model-performance': ['definition', 'fundamental', 'mechanism', 'tradeoff', 'scenario', 'debugging', 'design'],
   reliability: ['definition', 'mechanism', 'tradeoff', 'scenario', 'debugging'],
+  'prompt-optimization-debugging': ['mechanism', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
 
   // AI 安全
   'prompt-injection': ['definition', 'mechanism', 'comparison', 'scenario', 'debugging'],

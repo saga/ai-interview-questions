@@ -1,0 +1,735 @@
+[
+  {
+    "id": "wikiskill-persistent-knowledge-rollback",
+    "category": "ai-agent-architecture",
+    "topic": "skill-evolution-state-management",
+    "tags": [
+      "agent",
+      "skill-evolution",
+      "state-management",
+      "system-design"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在一个基于验证集评估（Validation Gating）进行自我演化的 AI Agent 系统中，当新生成的候选 Prompt/Skill 导致验证集性能下降而被回滚（Rollback）时，系统应当如何管理演化过程中积累的诊断日志与知识库状态？",
+    "explanation": "在 Agent 技能演化系统中，候选 Skill 修改可能因引入不当逻辑而在验证集上引发性能衰退，此时必须将可执行 Skill 回滚至上一代最佳版本。然而，演化过程中对失败原因的根因分析、成功策略模式以及该次修改的实验记录（如 diff 和验证分）属于持久性知识，不应被回滚。保留这些知识可以使后续的 Proposer 避免重复犯错并持续在之前的经验基础上递进探索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将可执行 Skill 回滚至上一代最佳配置，但保留持久化知识库中的诊断日志与错误模式记录，以便后续迭代参考",
+          "同时回滚 Skill 与知识库状态至上一代完全一致的快照，以保证整个系统数据状态的严格一致性",
+          "保留更新后的 Skill 以避免覆盖探索成果，但清空知识库中的诊断日志以重新收集无偏见的执行轨迹",
+          "将 Skill 和知识库全部丢弃，重新从初始空配置启动下一轮演化以突破局部最优陷阱"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "在一个基于验证集评估（Validation Gating）进行自我演化的 AI Agent 系统中，当新生成的候选 Prompt/Skill 导致验证集性能下降而被回滚（Rollback）时，系统应当如何管理演化过程中积累的诊断日志与知识库状态？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-runtime-context-isolation",
+    "category": "ai-agent-architecture",
+    "topic": "agent-context-engineering",
+    "tags": [
+      "agent",
+      "context-window",
+      "tradeoff",
+      "inference"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在设计 Agent 技能演化框架时，运行任务的执行 Agent（Inference Agent）通常只加载编译后的高层 Skill 指令，而被禁止在运行时直接读取完整的演化知识库（如历史错误模式、演化日志等）。这种上下文隔离设计的主要工程考量是什么？",
+    "explanation": "任务执行阶段（Inference）的核心目标是以极高的上下文效率和准确度完成当前任务。直接将庞大的历史演化日志、元诊断信息注入推理上下文，不仅会剧烈消耗 Context Window 导致注意力分散，还会引入不相关的元信息噪声，降低模型遵循具体 SOP 指令的执行精度。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "过度注入元级别的历史演化知识会挤占上下文窗口并引入噪音，降低执行 Agent 遵从具体 SOP 的注意力与精度",
+          "防止执行 Agent 在调用工具时意外修改持久化知识库，从而破坏演化日志的数据完整性",
+          "避免执行 Agent 生成与历史错误轨迹完全相同的工具调用序列，强迫其使用硬编码的 fallback 逻辑",
+          "因为 LLM 无法同时处理指令类 Prompt 和知识库类 Markdown 文件，会导致系统 Prompt 解析失败"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "在设计 Agent 技能演化框架时，运行任务的执行 Agent（Inference Agent）通常只加载编译后的高层 Skill 指令，而被禁止在运行时直接读取完整的演化知识库（如历史错误模式、演化日志等）。这种上下文隔离设计的主要工程考量是什么？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-meta-optimizer-context-overflow",
+    "category": "llm-systems",
+    "topic": "agent-memory-and-tool-use",
+    "tags": [
+      "agent",
+      "context-budget",
+      "react",
+      "meta-prompting"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "在自动化 Prompt/Skill 优化系统中，负责诊断错误并提出修改方案的 Proposer Agent 往往面临“所有任务的完整执行轨迹（Execution Traces）远超 LLM 上下文上限”的难题。以下哪种架构设计能最有效地缓解该上下文过载问题？",
+    "explanation": "直接将成百上千条长轨迹推入 Prompt 会迅速导致 Context Window 溢出或引发“Lost in the Middle”现象。最合理的架构是解耦“知识索引”与“按需检索”：Proposer 先阅读高层模式索引和任务执行汇总结果，再以 ReAct 方式通过文件读取工具，仅在需要时精细化抽查特定的失败轨迹或模式文件。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将所有轨迹截断为固定长度后拼接传入 Prompt，保证每次迭代覆盖全量样本",
+          "仅向 Proposer 提供知识索引与任务统计结果，由 Proposer 结合工具（如 read_file）按需检索特定轨迹与模式",
+          "放弃分析轨迹，改为在每轮迭代中随机采样单个失败任务并全量输入该任务的 Trace",
+          "在每轮迭代后使用最新的轨迹数据对 Proposer 模型进行实时微调，避免使用 Context 传递信息"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "在自动化 Prompt/Skill 优化系统中，负责诊断错误并提出修改方案的 Proposer Agent 往往面临“所有任务的完整执行轨迹（Execution Traces）远超 LLM 上下文上限”的难题。以下哪种架构设计能最有效地缓解该上下文过载问题？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-cross-model-skill-transfer",
+    "category": "ai-agent-architecture",
+    "topic": "skill-discovery-vs-execution",
+    "tags": [
+      "agent",
+      "skill-transfer",
+      "model-capability",
+      "fundamental"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "研究表明，由强模型（如 27B 参数模型）自我演化提炼出的 Agent 技能（Skills），直接跨模型转移给弱模型（如 9B 参数模型）执行时，其任务表现甚至可以超越弱模型“自我演化”出的技能。这一现象揭示了 Agent 系统设计的什么核心观点？",
+    "explanation": "这一现象说明 Skill 的“发现/提炼能力”（从错误轨迹中归纳根因并撰写结构化 SOP）与 Skill 的“执行能力”（依据明确 SOP 进行步骤推理与工具调用）在 Agent 中是解耦的。强模型能输出高质量的程序化知识 artifact，使得能力较弱的模型无需具备强大的归纳反思能力，也能通过遵循该 artifact 获得大幅性能提升。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Skill 的“发现归纳能力”与“指令执行能力”是可解耦的，优质的 Skill 可以将强模型的推理经验压缩并复用到弱模型上",
+          "弱模型天生比强模型具备更强的 Prompt 遵从能力，因此更适合执行复杂的外部 Skill",
+          "Skill 演化能够完全替代模型基座能力的提升，小模型加上 Skill 后在所有任务上均能超越未加 Skill 的大模型",
+          "跨模型转移 Skill 要求源模型与目标模型必须使用完全相同的 Tokenizer 和注意力机制"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "研究表明，由强模型（如 27B 参数模型）自我演化提炼出的 Agent 技能（Skills），直接跨模型转移给弱模型（如 9B 参数模型）执行时，其任务表现甚至可以超越弱模型“自我演化”出的技能。这一现象揭示了 Agent 系统设计的什么核心观点？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-anti-looping-impact-tracker",
+    "category": "ai-systems",
+    "topic": "prompt-optimization-debugging",
+    "tags": [
+      "agent",
+      "prompt-optimization",
+      "debugging",
+      "audit-trail"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在一个迭代式自动 Prompt 优化系统中，如果 Optimizer Agent 频繁陷入局部最优，反复提出与之前已被验证集拒绝过的类似的 Prompt 修改建议。为了解决这种“优化死循环”现象，系统最需要增加哪种机制？",
+    "explanation": "Prompt / Skill 优化器陷入死循环的主要原因是缺乏对自己历史修改行为及验证结果的“显式审计日志”（Audit Trail）。通过在系统层面记录由机制更新的统一 diff、验证集得分和最终接受/拒绝状态（如 skill-impact 记录），并在后续提议时作为上下文暴露给 Optimizer，能够提供客观的判决历史，从而有效杜绝重复提议失败修改。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "提高 Optimizer Agent 在生成建议时的采样温度（Temperature）至 1.5 以上，强行增加随机性",
+          "建立显式的影响追踪日志（Skill Impact Tracker），记录历史各次修改的 Diff、验证得分及接受/拒绝决策",
+          "清空历史所有任务轨迹，让 Optimizer Agent 在每轮优化时均面对无历史背景的全新状态",
+          "将验证集评估策略由全量测试改为随机抽样单个样本测试，以降低评估门槛并减少运行开销"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "在一个迭代式自动 Prompt 优化系统中，如果 Optimizer Agent 频繁陷入局部最优，反复提出与之前已被验证集拒绝过的类似的 Prompt 修改建议。为了解决这种“优化死循环”现象，系统最需要增加哪种机制？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-model-scaling-synergy",
+    "category": "llm-engineering",
+    "topic": "model-scaling-and-skills",
+    "tags": [
+      "llm",
+      "scaling-laws",
+      "skill-evolution",
+      "comparison"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于结构化程序化技能（Evolved Procedural Skills）与大语言模型规模（Model Scaling）之间的相互作用关系，以下哪种说法最符合工程实际？",
+    "explanation": "程序化技能演化与模型规模之间存在互补且协同（Synergistic）的关系：一方面，演化出的 Skill 可以赋予模型领域工作流知识，使小模型达到甚至超越未加 Skill 的大模型效果；另一方面，更大规模的模型通常拥有更强的泛化、指令遵循与复杂逻辑理解能力，因此能够从相同的演化技能中释放出比小模型更高的相对与绝对性能提升。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "技能演化与模型规模呈现互补协同效应：更大规模的模型通常能从演化技能中获得更高的性能收益，同时带有 Skill 的小模型可超越无 Skill 的大模型",
+          "技能演化只对 7B 以下的极小模型有效，对于 20B 以上的模型，系统 Prompt 注入技能反而会引发严重性能下降",
+          "技能演化的收益与模型规模呈严格负相关，模型参数量越大，技能演化带来的边际提升越接近于零",
+          "技能演化完全独立于模型规模，同一套 Skill 在 4B、9B 和 27B 模型上的相对性能提升百分比始终保持恒定"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "关于结构化程序化技能（Evolved Procedural Skills）与大语言模型规模（Model Scaling）之间的相互作用关系，以下哪种说法最符合工程实际？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-three-layer-architecture-design",
+    "category": "ai-agent-architecture",
+    "topic": "self-evolving-agent-workspace",
+    "tags": [
+      "agent",
+      "workspace-architecture",
+      "system-design",
+      "state-management"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "某企业正在设计一套能够在生产环境中无监督自我演化的 Agent 运维系统，要求系统既能追溯故障历史，又能沉淀领域经验，还能防止异常 Prompt 破坏生产执行。以下哪种三层工作区（Workspace）架构最符合这一需求？",
+    "explanation": "生产级 Agent 自我演化架构的核心是职责分离与状态可控：1. Raw Layer 存放不可变（Immutable）的原始执行轨迹，保障故障完全可追溯；2. Wiki Layer 存放跨迭代持续累积、只增不减的模式归纳与修改审计日志，作为持久知识库；3. Skill Layer 存放通过验证集门控的活性程序化 SOP/脚本，直接供推理 Agent 使用。该架构保证了历史可审计、知识不断层、执行安全受控。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不可变的 Raw 轨迹层（存储原始执行日志） + 持续累积的 Wiki 知识层（存储故障模式与审计日志） + 受门控保护的 Skill 技能层（存储活性 SOP 规范）",
+          "覆盖写式的 Cache 状态层（存储最新一次调用） + 向量数据库索引层（存储 Embedding） + 全量 Prompt 组合层（包含所有历史版本）",
+          "实时 LoRA 权重层（在线更新模型参数） + Working Memory 内存层（短期对话） + System Prompt 挂载层（静态硬编码）",
+          "临时 Trace 镜像层（每次评估后自动清空） + Skill 模板层（仅存储 Markdown） + 外部 Guardrail 安全校验层"
+        ],
+        "answer": [
+          0
+        ],
+        "question": "某企业正在设计一套能够在生产环境中无监督自我演化的 Agent 运维系统，要求系统既能追溯故障历史，又能沉淀领域经验，还能防止异常 Prompt 破坏生产执行。以下哪种三层工作区（Workspace）架构最符合这一需求？"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-001",
+    "category": "agent-engineering",
+    "topic": "skill-evolution-state-management",
+    "tags": [
+      "immutable-version",
+      "atomic-publish",
+      "canary-validation"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "候选 Skill 从生成到上线时，哪组发布流程能避免半成品版本进入执行路径？",
+    "explanation": "候选版本应不可变，发布时以原子操作切换版本指针，并先在隔离环境完成验证，再用小流量 canary 检查真实运行行为。任何阶段失败都只改变候选状态，不覆盖当前活性版本。",
+    "misconceptions": [
+      "以为覆盖同一个文件就等同于原子发布",
+      "以为验证集通过后无需 canary 就能代表生产行为"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "候选版本写入不可变存储，并带有内容指纹和父版本关系",
+          "直接修改当前 Skill 文件，写完后再补记版本号即可",
+          "先隔离验证，再用原子指针切换并通过 canary 观察生产信号",
+          "让多个执行进程共同编辑候选内容，靠最后一次写入完成发布"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "question": "候选 Skill 从生成到上线时，哪组发布流程能避免半成品版本进入执行路径？"
+      },
+      "open": {
+        "referenceAnswer": "候选 Skill 应作为带内容指纹和父版本关系的不可变版本保存；验证在隔离环境完成，发布时通过事务或原子版本指针切换，随后用小流量 canary 观察真实执行信号。当前活性版本不应被原地覆盖，失败只标记候选为拒绝或回滚。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-002",
+    "category": "agent-engineering",
+    "topic": "skill-evolution-state-management",
+    "tags": [
+      "rollback",
+      "append-only",
+      "audit-trail",
+      "version-pointer"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "Skill 发布失败后，怎样设计知识记录与版本指针，既能回到稳定执行版本又不抹掉失败证据？",
+    "explanation": "执行版本指针和演化知识日志应分离。回滚只把活性指针移回已验证版本；Wiki 或审计日志采用 append-only 追加失败事件、diff 和验证结果，以便追溯并避免重复尝试。",
+    "misconceptions": [
+      "以为回滚必须删除失败实验记录",
+      "以为知识日志和执行版本必须共享同一个可变快照"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "失败事件、候选 diff 与验证结果追加写入审计日志，不覆盖旧记录",
+          "回滚时只移动活性版本指针，不要求把知识记录恢复成旧快照",
+          "为省事把 Wiki 和 Skill 绑定为同一可变快照，回滚时整体替换",
+          "删除被拒绝候选及原因，避免未来检索到负面实验信息"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "Skill 发布失败后，怎样设计知识记录与版本指针，既能回到稳定执行版本又不抹掉失败证据？"
+      },
+      "open": {
+        "referenceAnswer": "把活性 Skill 版本指针与 Wiki、审计日志分离。失败候选的内容指纹、diff、验证分、拒绝原因和时间线采用 append-only 记录；回滚只移动活性指针到已验证版本，并保留可追溯的指针变更事件。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-003",
+    "category": "llm-applications",
+    "topic": "agent-context-engineering",
+    "tags": [
+      "trust-boundary",
+      "compiled-skill",
+      "permission-isolation"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "执行上下文同时需要编译 Skill 和 Wiki 证据时，哪种权限边界最稳妥？",
+    "explanation": "编译 Skill 可以作为受控指令输入，原始 Wiki 和轨迹只能作为不可信数据，由检索器按权限读取并显式标注。执行 Agent 不应因读到 Wiki 文本就获得写入、发布或工具授权。",
+    "misconceptions": [
+      "以为内部 Wiki 的所有文本天然等价于受信指令",
+      "以为把检索结果放进 system prompt 就能自动解决权限问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "编译 Skill 通过受控接口注入，原始 Wiki 以不可信数据块提供",
+          "按身份和任务限制 Wiki 读取范围，并让发布权限停留在独立服务",
+          "只要文档存储在内网，执行 Agent 就可将其中文本当作授权指令",
+          "把 Wiki 全文提升为最高优先级提示，绕过检索器的权限过滤"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "执行上下文同时需要编译 Skill 和 Wiki 证据时，哪种权限边界最稳妥？"
+      },
+      "open": {
+        "referenceAnswer": "将编译后的 Skill 与原始 Wiki 分开处理：Skill 通过受控的编译和注入接口进入执行上下文，Wiki 与轨迹作为带来源和权限标签的不可信数据按需读取。读取权限、工具权限和发布权限应由外部服务或策略层控制，不能由文档内容自行授予。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-004",
+    "category": "llm-applications",
+    "topic": "agent-context-engineering",
+    "tags": [
+      "context-budget",
+      "retrieval",
+      "attention-noise"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "当执行 Agent 的上下文预算紧张时，哪种取舍更符合 Skill 运行时的职责边界？",
+    "explanation": "执行阶段应保留目标、约束、当前步骤和编译 Skill 等直接相关信息；历史 Wiki 和原始轨迹通过按需检索补充。这样不会用低相关历史挤占当前决策所需的上下文。",
+    "misconceptions": [
+      "以为上下文越长就越不容易漏掉关键知识",
+      "以为摘要可以替代所有按任务筛选和权限控制"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "优先保留当前目标、约束、步骤状态和编译后的 Skill",
+          "对历史材料按任务检索，并在注入前限制来源和 token 预算",
+          "把所有旧轨迹完整拼接，再让模型自行忽略无关内容",
+          "遇到超限就随机删除上下文，避免引入额外检索逻辑"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "当执行 Agent 的上下文预算紧张时，哪种取舍更符合 Skill 运行时的职责边界？"
+      },
+      "open": {
+        "referenceAnswer": "执行上下文优先放当前任务目标、约束、步骤状态和已验证的编译 Skill。历史 Wiki 与轨迹应根据当前任务检索，限制来源、相关性和 token 预算，必要时只提供摘要和少量证据，而不是默认全量拼接。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-005",
+    "category": "agent-engineering",
+    "topic": "agent-memory-and-tool-use",
+    "tags": [
+      "proposer",
+      "hierarchical-retrieval",
+      "trace-clustering",
+      "tool-use"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "Proposer 要从超长执行数据中找出系统性失败模式时，哪种处理链路更合理？",
+    "explanation": "先用索引和统计摘要做层级检索，再对失败轨迹聚类，最后通过工具读取代表性原文核查因果细节。每一阶段都要管理候选数量和 token 预算，避免把全量轨迹直接塞进上下文。",
+    "misconceptions": [
+      "以为随机读取一条失败轨迹就能代表所有失败",
+      "以为固定截断比分层检索更能保留系统性模式"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先按任务、错误类型和时间等索引筛选，再查看聚类后的代表样本",
+          "通过 read_file 等工具按需读取原始轨迹，核查摘要是否遗漏细节",
+          "把所有原始轨迹一次性放入 Proposer 上下文，避免检索偏差",
+          "只取最新一条失败样本，并把它当作全局根因的充分证据"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "Proposer 要从超长执行数据中找出系统性失败模式时，哪种处理链路更合理？"
+      },
+      "open": {
+        "referenceAnswer": "应采用分层链路：用索引和统计摘要定位任务、错误类型和时间范围，再对失败轨迹聚类并挑选代表样本，最后用 read_file 等工具按需读取原文核查细节。检索结果数量、工具读取次数和最终注入 token 都应有预算。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-006",
+    "category": "agent-engineering",
+    "topic": "agent-memory-and-tool-use",
+    "tags": [
+      "memory",
+      "tool-reading",
+      "token-budget"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "如何让记忆系统与工具读取协同，而不是用固定截断掩盖 Proposer 的上下文超限？",
+    "explanation": "记忆层负责提供可检索的索引、摘要和统计，工具层负责读取被选中的原始证据；调度器应根据诊断阶段动态分配预算，并记录实际读取，便于复现和审计。",
+    "misconceptions": [
+      "以为摘要层存在后就不需要读取原始证据",
+      "以为固定 token 截断天然比动态预算更可控"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "记忆层返回压缩索引和候选范围，工具层读取被选中的原始证据",
+          "按诊断阶段动态分配检索与读取预算，并记录实际使用量",
+          "每轮固定保留最前面的若干轨迹，不区分任务和失败类型",
+          "只把工具调用次数作为预算，不管返回内容是否挤满上下文"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "如何让记忆系统与工具读取协同，而不是用固定截断掩盖 Proposer 的上下文超限？"
+      },
+      "open": {
+        "referenceAnswer": "记忆层应提供层级索引、摘要和统计，用于缩小候选范围；工具层再读取代表性原始轨迹和必要上下文。调度器应按诊断阶段设置检索、工具调用和 token 预算，并记录实际读取内容，便于复现和审计。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-007",
+    "category": "agent-engineering",
+    "topic": "skill-discovery-vs-execution",
+    "tags": [
+      "discovery",
+      "evaluation",
+      "execution",
+      "responsibility"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在 Skill 生命周期中，发现、评估和执行三个阶段应如何分工，才能避免让执行模型承担不该承担的职责？",
+    "explanation": "发现阶段从轨迹归纳策略与步骤，评估阶段用固定数据和门控指标验证候选，执行阶段只遵循已发布的 Skill 并处理当前任务。将三者混在一起会使发布不可审计，也难以定位收益来源。",
+    "misconceptions": [
+      "以为执行时临时反思就等于完成了 Skill 发现",
+      "以为评估只需看一次成功轨迹而不需要固定验证集"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "发现阶段归纳根因、策略和可执行步骤，产出候选 Skill",
+          "评估阶段用固定任务和指标验证候选，再决定是否发布",
+          "执行阶段可直接改写候选 Skill，省去独立评估以提高适应性",
+          "把发现、评估和执行合并为一次模型调用，减少系统边界"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "在 Skill 生命周期中，发现、评估和执行三个阶段应如何分工，才能避免让执行模型承担不该承担的职责？"
+      },
+      "open": {
+        "referenceAnswer": "发现阶段从执行轨迹中归纳根因、策略和步骤，形成候选；评估阶段在固定且隔离的任务集上比较候选与基线并执行发布门控；执行阶段只加载已发布 Skill，在当前任务中遵循它并记录结果。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-008",
+    "category": "agent-engineering",
+    "topic": "skill-discovery-vs-execution",
+    "tags": [
+      "cross-model",
+      "compatibility",
+      "evaluation"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "要把一个模型发现的 Skill 迁移给不同模型执行，哪种验证设计最能区分可迁移知识与模型特定假设？",
+    "explanation": "应在目标模型上复现相同任务集，同时检查格式遵循、工具调用、失败类型和分布外任务，并与无 Skill 基线比较。只看发现模型上的分数无法证明跨模型兼容。",
+    "misconceptions": [
+      "以为自然语言 Skill 不依赖执行模型所以无需重测",
+      "以为目标模型平均分上升就足以证明所有步骤都兼容"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在目标模型上重跑固定任务集，并与目标模型无 Skill 基线比较",
+          "检查目标模型的工具参数、格式遵循、失败类型和分布外任务",
+          "只复用发现模型的评估分，因为 Skill 内容本身已经通过验证",
+          "要求目标模型与发现模型使用相同结构，否则直接判定迁移失败"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "要把一个模型发现的 Skill 迁移给不同模型执行，哪种验证设计最能区分可迁移知识与模型特定假设？"
+      },
+      "open": {
+        "referenceAnswer": "在目标模型上使用相同任务集、无 Skill 基线和必要的分布外任务进行对照，检查成功率之外的工具参数、格式遵循、步骤遗漏和失败类型。发现模型的分数只能说明候选在发现模型上有效，不能替代目标模型验证。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-009",
+    "category": "ai-systems",
+    "topic": "prompt-optimization-debugging",
+    "tags": [
+      "candidate-fingerprint",
+      "rejection-reason",
+      "anti-loop"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "影响追踪器要识别语义近似的重复候选，最少应维护哪些结构化信号？",
+    "explanation": "候选需要经过规范化后计算指纹，并记录统一枚举的拒绝原因、验证分和尝试次数。这样可以把文本表面不同但效果相同的候选归并，并为停止条件提供可靠信号。",
+    "misconceptions": [
+      "以为只保存候选原文就能稳定判断语义重复",
+      "以为拒绝原因保留自由文本即可直接用于停止策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对候选的结构化内容和关键 diff 规范化后计算 fingerprint",
+          "把拒绝原因归一化为有限类别，并保留验证分和尝试计数",
+          "只按原始字符串精确去重，措辞稍变就当作全新候选",
+          "只记录最终分数，不保存拒绝原因以减少日志字段数量"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "影响追踪器要识别语义近似的重复候选，最少应维护哪些结构化信号？"
+      },
+      "open": {
+        "referenceAnswer": "应对候选结构和关键 diff 做稳定规范化并计算 fingerprint，同时用有限枚举归一化拒绝原因，记录验证分、接受状态和尝试次数。可据此识别近似重复、统计某类失败并触发停止条件。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-010",
+    "category": "ai-systems",
+    "topic": "prompt-optimization-debugging",
+    "tags": [
+      "stop-condition",
+      "optimization-loop",
+      "debugging"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "自动 Skill 优化器在连续多轮没有有效提升时，哪种停止策略更容易审计和恢复？",
+    "explanation": "停止条件应由可观测状态驱动，例如重复 fingerprint、连续无改进轮数、验证预算耗尽或拒绝原因达到阈值。停止时保留候选、指标和原因，之后可人工诊断或从新方向恢复。",
+    "misconceptions": [
+      "以为只要继续采样总会跳出循环",
+      "以为停止时清空中间状态能让下一轮更容易探索"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "设置重复指纹、连续无改进轮数和验证预算等可观测停止条件",
+          "停止时保留候选、指标和归一化原因，支持审计后从新方向恢复",
+          "只要候选文本还未完全相同，就持续优化而不统计近似重复",
+          "遇到循环就清空全部记录，再从相同初始候选重新开始"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "自动 Skill 优化器在连续多轮没有有效提升时，哪种停止策略更容易审计和恢复？"
+      },
+      "open": {
+        "referenceAnswer": "以结构化状态定义停止条件，包括重复 fingerprint、连续无改进轮数、验证预算或某类拒绝原因的阈值。停止时保留候选、diff、验证分、拒绝原因和计数，并把该方向标记为暂停，之后可审计并切换到新方向。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-011",
+    "category": "llm",
+    "topic": "model-scaling-and-skills",
+    "tags": [
+      "ablation-matrix",
+      "model-scaling",
+      "skill-gain",
+      "ood"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "研究模型规模与 Skill 收益的交互时，哪种实验矩阵能支持可解释结论？",
+    "explanation": "至少要交叉模型规模与 Skill 条件，并在同一任务集上比较无 Skill、同一 Skill 和必要的模型专属 Skill；还应分解任务难度并加入 OOD 测试，避免把单点收益误当成普遍规律。",
+    "misconceptions": [
+      "以为只测最大和最小模型就能估计中间规模趋势",
+      "以为单一平均分足以揭示 Skill 收益的边界"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "交叉多个模型规模与无 Skill、同一 Skill 的条件，使用同一任务集对照",
+          "按任务难度和分布内外拆分结果，报告相对收益与绝对能力",
+          "只测一个大模型加 Skill 和一个小模型无 Skill，比较最终平均分",
+          "每种模型使用不同任务集，以便让各自最擅长的场景充分发挥"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "研究模型规模与 Skill 收益的交互时，哪种实验矩阵能支持可解释结论？"
+      },
+      "open": {
+        "referenceAnswer": "构造模型规模 × Skill 条件的消融矩阵，在同一任务集上比较无 Skill、同一 Skill 和必要的模型专属条件。按任务难度、分布内外和失败类型分层报告绝对分数与相对收益，才能判断互补关系和收益边界。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-012",
+    "category": "llm",
+    "topic": "model-scaling-and-skills",
+    "tags": [
+      "benefit-boundary",
+      "generalization",
+      "ood"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "发现小模型加 Skill 在部分任务上超过大模型无 Skill 后，下一步怎样验证这个结论的适用边界？",
+    "explanation": "应检查不同难度、任务类型和分布外样本，并比较大模型加同一 Skill、无 Skill 和目标模型的失败模式。局部超越只能说明某些工作流知识被 Skill 有效压缩，不能证明基座能力已被替代。",
+    "misconceptions": [
+      "以为一个任务上的反转足以证明 Skill 全面替代规模",
+      "以为只要 OOD 分数下降就应删除 Skill 而不分析失败模式"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "增加不同难度、任务类型和 OOD 数据，观察收益是否保持或出现边界",
+          "比较多个规模在有无 Skill 下的绝对能力、相对增益和失败模式",
+          "把局部任务的排名直接外推到所有任务，不再做规模交叉实验",
+          "只看 Skill 带来的平均分增量，不区分原本已经会做的任务"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "发现小模型加 Skill 在部分任务上超过大模型无 Skill 后，下一步怎样验证这个结论的适用边界？"
+      },
+      "open": {
+        "referenceAnswer": "应扩展到不同任务难度、类型和 OOD 数据，并构造多个模型规模在有无同一 Skill 下的对照，分别观察绝对能力、相对增益和失败模式。若只在固定工作流上有效，应把结论限定为局部互补，而不是替代基座规模。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-013",
+    "category": "ai-systems",
+    "topic": "self-evolving-agent-workspace",
+    "tags": [
+      "raw-wiki-skill",
+      "write-permission",
+      "promotion-gate",
+      "audit"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "Raw、Wiki、Skill 三层工作区如何设置写入权限和 promotion gate，才能防止未经验证的内容进入执行层？",
+    "explanation": "Raw 应由采集器追加写入且不可变，Wiki 由受控整理流程追加实验和知识，Skill 只能由发布器在验证门通过后写入新版本。执行 Agent 不应直接写入活性 Skill。",
+    "misconceptions": [
+      "以为把所有层开放给同一 Agent 能减少同步延迟",
+      "以为 Wiki 中的高频内容可以自动绕过验证门进入 Skill"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Raw 由采集器追加写入且不可变，执行流程不能修改历史轨迹",
+          "Wiki 通过受控流程记录知识和审计，Skill 由发布器经过验证门写入",
+          "执行 Agent 可直接覆盖活性 Skill，事后再由 Wiki 记录这次变化",
+          "Wiki 内容被多次检索后即可自动晋升 Skill，无需固定验证集"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "Raw、Wiki、Skill 三层工作区如何设置写入权限和 promotion gate，才能防止未经验证的内容进入执行层？"
+      },
+      "open": {
+        "referenceAnswer": "Raw 层只允许采集器追加写入并保持不可变；Wiki 层由受控整理流程写入故障模式、实验和审计信息；Skill 层只允许发布器在固定验证集通过、权限检查和版本检查后写入候选或切换活性指针，执行 Agent 不应直接覆盖活性版本。"
+      }
+    }
+  },
+  {
+    "id": "wikiskill-supp-014",
+    "category": "ai-systems",
+    "topic": "self-evolving-agent-workspace",
+    "tags": [
+      "rollback-pointer",
+      "disaster-recovery",
+      "workspace"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "三层工作区发生 Skill 发布事故或存储故障时，怎样设计回滚指针与灾备，才能恢复服务并保留审计链？",
+    "explanation": "活性 Skill 应由可复制的版本指针引用，指针变更本身写入审计日志并可原子恢复；Raw 和 Wiki 需要独立的不可变备份与校验。灾备恢复先恢复已验证 Skill 指针，再补齐知识和日志，不应依赖一份可变总快照。",
+    "misconceptions": [
+      "以为只备份当前 Skill 文件就足以恢复整个演化系统",
+      "以为灾备时重建一个最新快照比恢复版本指针更可追溯"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为活性 Skill 保存可复制的版本指针，并把每次指针变更写入审计链",
+          "对 Raw 与 Wiki 做独立的不可变备份、校验和恢复演练",
+          "只备份当前 Skill 文件，Raw 和 Wiki 可在故障后重新生成",
+          "灾备时直接制作一个最新总快照，覆盖原指针和历史审计记录"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "question": "三层工作区发生 Skill 发布事故或存储故障时，怎样设计回滚指针与灾备，才能恢复服务并保留审计链？"
+      },
+      "open": {
+        "referenceAnswer": "活性 Skill 用指向不可变版本的可复制指针表示，指针更新以原子方式完成并追加审计事件；Raw 和 Wiki 分别做不可变备份、完整性校验和恢复演练。灾备时先恢复最近的已验证 Skill 指针，再恢复知识和日志，避免用新的可变总快照覆盖历史。"
+      }
+    }
+  }
+]
