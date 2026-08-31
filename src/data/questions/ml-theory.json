@@ -1,0 +1,248 @@
+[
+  {
+    "id": "q1-pac-learning-framework",
+    "category": "machine-learning-theory",
+    "topic": "statistical-learning-theory",
+    "tags": [
+      "pac-learning",
+      "agnostic-pac",
+      "sample-complexity"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于 PAC 学习框架中的可实现性假设（Realizability Assumption）与不可知 PAC 学习（Agnostic PAC Learning），下列哪些说法是正确的？",
+    "explanation": "不可知 PAC 学习不假设数据分布满足无错可实现条件，其目标是逼近假设空间内的最佳假设（即 Bayes 最优在假设空间中的投影）。在有限假设空间下，可实现 PAC 学习的样本复杂度界为 O(1/ε * log(|H|/δ))，而不可知 PAC 学习的样本复杂度界降为 O(1/ε^2 * log(|H|/δ))。训练集上经验风险为 0 并不能直接保证测试集泛化风险为 0；且 VC 维是假设空间本身的固有属性，与训练样本量无直接增长关系。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可实现性假设意味着只要训练集上的经验风险为 0，该假设在未知测试集上的泛化风险也必然精确为 0",
+          "不可知 PAC 学习不假设假设空间内存在无错假设，其目标是寻找泛化风险与假设空间中最佳假设相差在 ε 范围内的假设",
+          "在不可知 PAC 学习中，为了保证样本复杂度（Sample Complexity）有界，假设空间的 VC 维必须随着训练样本量的增加而动态扩展",
+          "在有限假设空间下，可实现 PAC 学习的样本复杂度上限与 1/ε 成正比，而不可知 PAC 学习的样本复杂度上限增长为 O(1/ε^2)"
+        ],
+        "answer": [
+          1,
+          3
+        ],
+        "question": "关于 PAC 学习框架中的可实现性假设（Realizability Assumption）与不可知 PAC 学习（Agnostic PAC Learning），下列哪些说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "q2-vc-dimension-nfl-theorem",
+    "category": "machine-learning-theory",
+    "topic": "statistical-learning-theory",
+    "tags": [
+      "vc-dimension",
+      "no-free-lunch",
+      "fundamental-theorem"
+    ],
+    "difficulty": "hard",
+    "angle": "fundamental",
+    "question": "关于 VC 维（VC-Dimension）与 No-Free-Lunch (NFL) 定理在机器学习中的理论内涵，下列哪些说法是正确的？",
+    "explanation": "VC 维定义为能够被假设空间打散（Shatter）的最大样本集的大小，即存在至少一个规模为 d 的样本集能被打散，而非任意规模为 d 的集合。NFL 定理指出不存在普遍适用的无先验学习算法，领域先验知识是实现泛化的必要条件。根据 PAC 学习基本定理，在二分类问题中假设空间可学习的充要条件是其 VC 维有限；若 VC 维无限，则即使样本量趋于无穷，Uniform Convergence 仍可能失效导致无法保证可学习性。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "如果一个假设空间 H 的 VC 维为 d，这意味着 H 能够打散（Shatter）域集中任意规模为 d 的样本子集",
+          "No-Free-Lunch 定理表明，不存在对所有数据分布都普遍优越的学习算法，如果没有针对领域的先验知识，有效泛化是不可能的",
+          "无论假设空间 H 的 VC 维是有限还是无限，只要训练样本量 m 趋于无穷，经验风险最小化（ERM）算法就必然收敛到最佳假设",
+          "对于二分类问题，假设空间 H 在 PAC 学习框架下可学习的充要条件是其 VC 维有限"
+        ],
+        "answer": [
+          1,
+          3
+        ],
+        "question": "关于 VC 维（VC-Dimension）与 No-Free-Lunch (NFL) 定理在机器学习中的理论内涵，下列哪些说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "q3-srm-regularization-stability",
+    "category": "machine-learning-theory",
+    "topic": "model-selection-and-regularization",
+    "tags": [
+      "structural-risk-minimization",
+      "regularization",
+      "algorithmic-stability"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在控制模型复杂度和避免过拟合的工程实践与理论中，关于结构风险最小化（SRM）与正则化（Regularization）的机制，下列哪些说法是正确的？",
+    "explanation": "结构风险最小化（SRM）通过在假设空间族 H_1 ⊂ H_2 ⊂ ... 上引入与假设空间复杂度相关的惩罚项来实现泛化风险界定。L2 正则化（Tikhonov Regularization）通过给损失函数增加严格凸项改善算法的 Uniform Stability，即训练样本的微小变化仅对输出模型产生有界扰动。MDL 原则与 Occam's Razor 统一了假设编码紧凑度与泛化能力的关系。经验风险最小化（ERM）在假设空间容量无限时，若无归纳偏置或正则化约束，仅靠增加样本量无法排除过拟合。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "结构风险最小化（SRM）通过将假设空间划分为嵌套的子集序列，并在经验风险的基础上增加基于子集复杂度的惩罚项来实现模型选择",
+          "引入 L2 正则化（Tikhonov Regularization）可以增强学习算法的稳定性（Stability），即单个训练样本的微小扰动不会导致输出假设剧烈变化",
+          "经验风险最小化（ERM）在假设空间复杂度无限时，可以通过增加训练样本数量来完全替代正则化项的作用",
+          "根据 Occam's Razor 原理和 Minimum Description Length (MDL) 原则，在经验风险相近的情况下，编码长度更短的假设具有更好的泛化界"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "在控制模型复杂度和避免过拟合的工程实践与理论中，关于结构风险最小化（SRM）与正则化（Regularization）的机制，下列哪些说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "q4-sgd-convex-optimization",
+    "category": "machine-learning-theory",
+    "topic": "optimization",
+    "tags": [
+      "stochastic-gradient-descent",
+      "convex-optimization",
+      "subgradient"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "关于凸学习问题（Convex Learning Problems）以及随机梯度下降（SGD）算法的收敛特性与应用，下列哪些说法是正确的？",
+    "explanation": "对 Convex-Lipschitz 损失函数，SGD 可以保证在 T 次迭代后预期风险达到 O(1/√T) 的收敛速率。当函数具有光滑性（Gradient Lipschitz）时，梯度变化连续且受限，可以使用固定步长并获得更优的收敛率。在样本抽样过程中，从训练集中随机独立无偏地抽取样本可确保梯度的期望等于整体经验损失的梯度。对于非光滑函数（如 Hinge Loss），在不可导点处的次梯度是一个闭凸集（Subdifferential Set），而非唯一确定的向量。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对于 Lipschitz 连续的凸损失函数，使用标准 SGD 算法可以在不需要假设目标函数二次可微的前提下保证 O(1/√T) 的期望误差收敛速率",
+          "在凸优化中，当损失函数满足平滑性（Smoothness）时，损失函数的梯度变化受限，此时 SGD 的步长选择可以取固定常数且收敛速度优于仅满足 Lipschitz 连续的情况",
+          "对非光滑凸函数（如 Hinge Loss）求导时，SGD 使用次梯度（Subgradient）代替梯度，次梯度在不可导点处始终唯一确定",
+          "将 SGD 应用于经验风险最小化时，对样本进行有放回的随机均匀抽样以获取无偏梯度估计，是保证算法期望损失收敛的理论前提"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "关于凸学习问题（Convex Learning Problems）以及随机梯度下降（SGD）算法的收敛特性与应用，下列哪些说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "q5-svm-margin-kernel-methods",
+    "category": "machine-learning-theory",
+    "topic": "kernel-methods",
+    "tags": [
+      "svm",
+      "margin",
+      "kernel-trick",
+      "mercer-theorem"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于支持向量机（SVM）与核方法（Kernel Methods）的数学原理及工程特性，下列哪些说法是正确的？",
+    "explanation": "Hard-SVM 通过约束最小化 ||w||^2 等价于最大化几何间隔（Margin），几何间隔越大，假设空间的实际容量（以 Margin 计）越小。Soft-SVM 引入 Hinge Loss 与松弛变量，通过参数 C 在间隔最大化与经验拟合误差之间进行折中。核技巧利用了对偶问题中仅依赖向量内积 <x_i, x_j> 的性质，将运算隐式地转换为高维空间点积 K(x_i, x_j)。基于 Margin 的 SVM 泛化界主要取决于 Margin 大小和权重范数，而与特征空间的维数无直接膨胀关系，因此即使映射到无穷维 space，样本复杂度依然可以保持有界。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Hard-SVM 要求数据严格线性可分，其通过最大化几何间隔（Margin）来隐式地控制解的 L2 范数，从而降低假设空间的有效容量",
+          "Soft-SVM 引入松弛变量（Slack Variables）和 Hinge Loss，其中的惩罚参数 C 用于平衡间隔最大化与经验误差最小化",
+          "使用 Mercer 核函数（Kernel Trick）将低维特征映射到高维甚至无穷维 Hilbert 空间时，由于维度剧增，模型的样本复杂度必定急剧膨胀",
+          "SVM 对偶（Dual）问题的决策函数仅依赖于输入样本之间的内积，这使得核技巧能够直接应用于对偶形式而不必显式计算高维特征向量"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "关于支持向量机（SVM）与核方法（Kernel Methods）的数学原理及工程特性，下列哪些说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "q6-adaboost-learnability",
+    "category": "machine-learning-theory",
+    "topic": "ensemble-learning",
+    "tags": [
+      "adaboost",
+      "boosting",
+      "weak-learnability"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "在 Boosting 理论及 AdaBoost 算法机制中，关于弱可学习性（Weak Learnability）与强可学习性（Strong Learnability）的关系，下列哪项说法是正确的？",
+    "explanation": "Freund & Schapire 的等价定理证明了在 PAC 框架下，弱可学习性与强可学习性是充分必要的同价关系。只要基学习器的分类准确率比随机猜想稍高（即误差率小于 50% - γ），AdaBoost 就能通过反复调整样本权重并加权组合基分类器，构造出任意高精度的强分类器。AdaBoost 分配给基分类器的权重由 α_t 决定，并非等权重；且 AdaBoost 即使在训练误差降至 0 后继续迭代，依然能增大 Margin，不会立即过拟合。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "AdaBoost 算法要求每个基学习器（Weak Learner）的训练误差都必须严格低于 25%，才能将弱学习器提升为强学习器",
+          "根据弱可学习与强可学习等价性定理，只要存在一个分类准确率略高于随机猜想（错误率小于 50%）的弱学习算法，就能通过 AdaBoost 构造出任意高精度的强学习器",
+          "AdaBoost 算法在迭代过程中会持续降低此前被正确分类样本的权重，这导致算法在训练集经验风险降至 0 后会立即出现严重过拟合",
+          "AdaBoost 最终的组合决策规则是对所有基分类器进行等权重投票，因此训练后期的弱分类器与早期分类器的地位完全相同"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "在 Boosting 理论及 AdaBoost 算法机制中，关于弱可学习性（Weak Learnability）与强可学习性（Strong Learnability）的关系，下列哪项说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "q7-model-selection-debugging",
+    "category": "machine-learning-theory",
+    "topic": "model-selection-and-validation",
+    "tags": [
+      "bias-variance-tradeoff",
+      "cross-validation",
+      "data-leakage"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某 ML 工程师在构建模型时发现：模型在训练集上损失极小，但在 Hold-out 验证集上性能显著下降；此外，在根据验证集指标反复调优超参数后，最终在独立测试集上的表现依然不达标。针对该现象，下列哪些分析与解决策略是合理的？",
+    "explanation": "训练集损失极小而验证集损失大属于典型的过拟合（高方差 High Variance）而非高偏差（High Bias）。频繁依据验证集指标调整超参数会导致验证集信息隐式泄露（Hyperparameter Overfitting），使得验证集结果过于乐观而测试集结果恶化。针对小数据集采用 k-Fold 交叉验证可以有效降低评估方差；使用 SRM 框架或增加正则化惩罚可有效限制假设空间容量，抑制过拟合。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "验证集与测试集表现均差表明模型处于高偏差（High Bias）状态，此时最有效的手段是增加训练样本量并减少正则化强度",
+          "频繁根据验证集性能调整超参数会导致验证集信息泄露（Data Leakage），使得验证集评估结果产生过度乐观的估计偏差",
+          "在小规模数据集场景下，使用 k-Fold 交叉验证替代单次 Hold-out 划分，能够有效降低因验证集划分随机性带来的估算方差",
+          "发生过拟合时，可以尝试使用结构风险最小化（SRM）或通过正则化限制假设空间复杂度，重新平衡 Bias-Variance Tradeoff"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "某 ML 工程师在构建模型时发现：模型在训练集上损失极小，但在 Hold-out 验证集上性能显著下降；此外，在根据验证集指标反复调优超参数后，最终在独立测试集上的表现依然不达标。针对该现象，下列哪些分析与解决策略是合理的？"
+      }
+    }
+  },
+  {
+    "id": "q8-nearest-neighbors-dimensionality-reduction",
+    "category": "machine-learning-theory",
+    "topic": "dimensionality-reduction",
+    "tags": [
+      "curse-of-dimensionality",
+      "pca",
+      "compressed-sensing",
+      "random-projection"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "当在高维特征空间中应用 Nearest Neighbor 算法或进行降维（Dimensionality Reduction）时，关于维数灾难（Curse of Dimensionality）与降维技术的 trade-off，下列哪些说法是正确的？",
+    "explanation": "维数灾难指出在高维空间中数据点倾向于处于边界且点间距离收敛接近，导致基于欧氏距离的近邻算法样本复杂度随维度呈指数增长。PCA 是一种有损降维技术（除非舍弃特征对应的特征值为 0），其目标是最大化投影方差或最小化重构误差。随机投影基于 Johnson-Lindenstrauss (JL) 引理，证明通过随机正交矩阵可以将高维点投影到低维空间且距离保持 ε 扰动有界。压缩感知（Compressed Sensing）利用信号的稀疏性（Sparsity），通过 L1 范数最小化恢复信号，能突破传统 Shannon 采样的限制。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随着特征维度 d 的增加，高维空间中任意两点间的距离趋于收敛且均匀，使得基于欧氏距离的 1-NN 样本复杂度随维度呈指数级增长",
+          "主成分分析（PCA）是一种无监督无损降维技术，其核心是寻找一个线性投影矩阵，使得数据在低维子空间上的投影方差最小",
+          "随机投影（Random Projections）基于 Johnson-Lindenstrauss 引理，表明高维空间中的点集投影到适当维数的随机低维子空间时，点对间的距离可以以高概率保持近似不变",
+          "压缩感知（Compressed Sensing）利用了信号在某种基下的稀疏性（Sparsity），可以通过远低于 Shannon 采样定理要求的非自适应线性测量精确重构原始信号"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "当在高维特征空间中应用 Nearest Neighbor 算法或进行降维（Dimensionality Reduction）时，关于维数灾难（Curse of Dimensionality）与降维技术的 trade-off，下列哪些说法是正确的？"
+      }
+    }
+  }
+]

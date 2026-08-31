@@ -144,8 +144,8 @@ components/
                                  门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
-data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 53 文件 /
-                       1084 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
+data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 77 文件 /
+                         1317 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
                        tool-calling，与 src/data/taxonomy.ts 的骨架一一对应）。每题
                        `category` = 所属 topic slug（与文件名一致），`topic` = 知识节点 id，
                        外加 `tags` / 可选 `rubric` / `angle`（主考察角度，覆盖矩阵用，
@@ -162,8 +162,8 @@ data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状�
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
-                        slug，×8：dl-fundamentals / llm-architecture / training / inference /
-                        knowledge JSON 文件，共 80 节点），但节点内部不再用文件 slug 当分类——
+                          slug，16 文件：dl-fundamentals / llm-architecture / training / inference /
+                          ml-theory / gnn-theory / nmf-theory 等，共 123 节点，含 ml-foundations 11 节点、GNN 6 节点与矩阵/主题建模 4 节点），但节点内部不再用文件 slug 当分类——
                         每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，

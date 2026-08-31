@@ -1,6 +1,23 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-31 · NMF/主题建模与矩阵分解题库补齐（nmf-theory）
+
+- 新增 `src/data/knowledge/nmf-theory.json` 4 节点（`topic-modeling / matrix-factorization / linear-algebra / algorithm-design`，`area: ai-engineering/topic: ml-foundations`，P0×1/P1×3），补齐 SVD 负权重抵消/正交局限、NMF 凸组合概率语义与规范化尺度消除、代数秩 vs 非负秩矩形支撑与无上界、Eckart-Young 旋转不变性与截断嵌套、Separability/平滑分析超越最坏情况及交替最小化凸子问题与局部最优的知识锚点；`src/data/questions/nmf-theory.json` 新增 6 题（5 多选 1 单选，多选占比 83%，覆盖 `comparison/fundamental/tradeoff/mechanism/design` 5 角度，长度比 1.32–1.72× <1.8）。
+- `npm run question:add --check` / `validate:questions` 通过（1317 题 / 123 节点，多选 51.3%）；`taxonomy.test.ts` 域/主题一致性通过。
+
+## 2026-08-31 · 图神经网络题库补齐（gnn-theory）
+
+- 新增 `src/data/knowledge/gnn-theory.json` 6 节点（`expressiveness-and-theory / scalability / deep-gnn-architectures / spectral-and-spatial-convolutions / graph-recommender-system / robustness-and-security`，`ai-engineering/model-architecture,deep-learning` 与 `ai-systems/ai-architecture`，P1×6），补齐 MPNN/1-WL/GIN、邻居爆炸三类采样、过平滑/Dirichlet/DropEdge/JK-Net、谱/空域 ChebNet-GCN、高吞吐图推荐离线ANN与图对抗净化/GSL 的知识锚点；`src/data/questions/gnn-theory.json` 新增 6 题（5 多选 1 单选，多选占比 83%，覆盖 `mechanism/comparison/debugging/system-design/tradeoff` 5 角度，长度比 1.17–1.48× <1.8）。
+- 数据契约：题干自包含可脱离产品名作答，干扰项为半对/稀疏方差/维度爆炸等真实误区；`npm run question:add --check` / `validate:questions` 通过（1311 题 / 119 节点，多选 51.1%）。
+- 同步 `docs/ARCHITECTURE.md` 知识/题库文件数与覆盖统计。
+
+## 2026-08-31 · 统计学习理论题库补齐（ml-theory）
+
+- 新增 `src/data/knowledge/ml-theory.json` 7 节点（`statistical-learning-theory / model-selection-and-regularization / optimization / kernel-methods / ensemble-learning / model-selection-and-validation / dimensionality-reduction`，`area: ai-engineering / topic: ml-foundations`，P0×4 / P1×3），补齐 PAC/VC/SRM/正则稳定性/凸优化SGD/核SVM/AdaBoost/验证与维数灾难的知识锚点；`src/data/questions/ml-theory.json` 新增 8 题（7 多选 1 单选，多选占比 88%，覆盖 `comparison/fundamental/tradeoff/mechanism/debugging` 5 角度，长度比全 <1.8 阈值）。
+- 数据契约：题干/解析自包含无产品名依赖，干扰项为半对/条件错配/程度偏差等真实误区；`npm run question:add --check` / `validate:questions` 通过（1305 题 / 113 节点），`validate:questions` 多选占比由 50.8% 提升至 51.0%。
+- 同步 `docs/ARCHITECTURE.md` 知识层文件数与 `ml-foundations` 主题说明。
+
 ## 2026-08-31 · Chat 与 Agent 融合收敛（ADR-062，plan0831_4）
 
 - 将 `start_interview`/`continue_interview` 从 `askQuestion()` 直通改为真实 continuation：`interview` 模式下经 `nextAdaptiveStep(signals)` 自适应选题（历史+评分+Learner），`question` 模式长链自动 `upgrade → interview`。

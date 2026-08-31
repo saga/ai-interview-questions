@@ -1,0 +1,110 @@
+[
+  {
+    "id": "expressiveness-and-theory",
+    "name": "GNN 表达能力与 WL 测试",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "MPNN 与 1-WL 颜色细化的等价性、正则图不可区分性、GIN 单射聚合的上界与随机特征/子图 GNN 对 1-WL 的超越。",
+    "required": [
+      "标准 MPNN 的消息聚合等价于 1-WL 颜色细化，理论上限为 1-WL",
+      "GIN 的 Sum 单射聚合可达到但不能超越 1-WL；高度正则/同构度图是典型的 1-WL 盲区",
+      "随机节点特征与高阶子图架构（Subgraph GNN）是打破 1-WL 上限的有效手段"
+    ],
+    "misconceptions": [
+      "以为单射聚合就能超越 1-WL",
+      "认为 MPNN 无需标识符也能区分任意正则环结构"
+    ],
+    "angles": ["mechanism", "fundamental", "comparison"]
+  },
+  {
+    "id": "scalability",
+    "name": "大规模图可扩展性与采样",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "邻居爆炸 O(S^L)、Node-wise/Layer-wise/Subgraph-wise 采样复杂度和方差权衡、GraphSAINT 无偏估计与并行化。",
+    "required": [
+      "Node-wise 每层采样 S 邻居导致 O(S^L) 指数膨胀与重复计算",
+      "Layer-wise 每层固定节点集合消除指数增长但因跨层连通稀疏而方差增大",
+      "GraphSAINT 经概率采样与归一化系数实现无偏估计；Subgraph-wise 可并行且保留子图内消息"
+    ],
+    "misconceptions": [
+      "以为 Subgraph-wise 彻底切断跨子图传递就无法无偏或并行",
+      "认为 Layer-wise 无方差代价"
+    ],
+    "angles": ["comparison", "mechanism", "tradeoff"]
+  },
+  {
+    "id": "deep-gnn-architectures",
+    "name": "深层 GNN 与过平滑",
+    "area": "ai-engineering",
+    "topic": "deep-learning",
+    "priority": "P1",
+    "summary": "深层图卷积的低通滤波与 Dirichlet 能量衰减、DropEdge 随机删边与 JK-Net 跨层跳跃、LayerNorm 无法纠正方向趋同。",
+    "required": [
+      "多次图卷积等价于过度低通滤波，Dirichlet 能量→0 导致节点表示趋同",
+      "DropEdge 每轮随机删边降低连通度以减缓过平滑；JK-Net 跨层连接融合局部与全局特征",
+      "标准 LayerNorm 仅归一化单节点模长，无法阻止向量方向余弦相似度→1"
+    ],
+    "misconceptions": [
+      "以为加 LayerNorm 就能解决过平滑",
+      "把过平滑归因于参数量而非滤波本质"
+    ],
+    "angles": ["debugging", "mechanism", "tradeoff"]
+  },
+  {
+    "id": "spectral-and-spatial-convolutions",
+    "name": "谱域与空域图卷积",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "拉普拉斯特征分解的拓扑绑定与泛化局限、ChebNet 切比雪夫多项式避开 O(N³) 并对应 K-hop 聚合、GCN 为 K=1 特例、空域即低通滤波。",
+    "required": [
+      "谱域傅里叶基绑定特定拓扑，难以泛化到动态图",
+      "ChebNet 以切比雪夫多项式逼近滤波函数，避开特征分解且阶数 K 对应 K-hop 空域聚合",
+      "GCN 是 ChebNet 在 K=1、最大特征值假设与对称归一化下的特例；空域卷积可严格映射为频域低通滤波"
+    ],
+    "misconceptions": [
+      "以为谱域可直接跨图泛化",
+      "认为空域与频域低通无关联"
+    ],
+    "angles": ["comparison", "mechanism", "fundamental"]
+  },
+  {
+    "id": "graph-recommender-system",
+    "name": "图推荐系统架构",
+    "area": "ai-systems",
+    "topic": "ai-architecture",
+    "priority": "P1",
+    "summary": "亿级 user/item 图的离线/近实时 Embedding 预计算与 KV/向量索引解耦、在线 ANN 召回满足 P95 <15ms 的工程权衡。",
+    "required": [
+      "在线实时多跳 GNN 聚合无法满足 P95 15ms 与数千候选的延迟约束",
+      "离线/近实时采样计算 Embedding 并写入 KV/ANN 索引，线上解耦为向量检索是工业标准（PinSage 范式）",
+      "全量图每夜更新与秒级行为异步写入需与离线 Embedding 刷新协同"
+    ],
+    "misconceptions": [
+      "以为在线实时 3-hop GNN 可达 15ms P95",
+      "认为客户端全量部署或纯 PageRank 可替代图表征"
+    ],
+    "angles": ["system-design", "tradeoff", "scenario"]
+  },
+  {
+    "id": "robustness-and-security",
+    "name": "图鲁棒性与对抗防御",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "低秩先验净化高频扰动、特征相似度剪枝在异质图中的误删风险、图结构学习的双层优化开销、特征扰动对抗训练无法防御拓扑加边。",
+    "required": [
+      "真实邻接矩阵低秩稀疏，高频对抗边破坏低秩假设，低秩近似可有效过滤",
+      "特征相似度剪枝在同质图有效但在异质图中会误删正常跨类边",
+      "图结构学习联合优化邻接矩阵与 GNN 参数带来非凸双层优化与显著训练开销；仅特征扰动的对抗训练无法抵御加边/删边"
+    ],
+    "misconceptions": [
+      "以为特征扰动对抗训练可全面防御拓扑攻击",
+      "认为图结构学习无额外收敛代价"
+    ],
+    "angles": ["tradeoff", "mechanism", "debugging"]
+  }
+]

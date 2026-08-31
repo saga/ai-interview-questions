@@ -1,0 +1,129 @@
+[
+  {
+    "id": "statistical-learning-theory",
+    "name": "统计学习理论与 PAC 框架",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P0",
+    "summary": "PAC 可实现/不可知、样本复杂度与一致收敛、VC 维与基本定理、No-Free-Lunch 的可学习性边界。",
+    "required": [
+      "可实现假设指存在零误差假设，目标是找到零经验风险假设；不可知不假设可实现，目标是逼近假设空间内最优假设的 ε 范围",
+      "有限假设空间下可实现样本复杂度 O(1/ε·log(|H|/δ))，不可知为 O(1/ε²·log(|H|/δ))",
+      "VC 维是能被打散的最大样本集大小（存在一个而非任意），二分类可学习充要条件是 VC 维有限；NFL 说明无先验则无普遍最优学习器"
+    ],
+    "misconceptions": [
+      "以为经验风险为 0 就必有泛化风险为 0",
+      "把 VC 维理解为随样本量动态扩展或任意 d 集皆可打散",
+      "认为样本量趋于无穷时 ERM 在任意 VC 维下都收敛"
+    ],
+    "angles": ["comparison", "fundamental", "mechanism"]
+  },
+  {
+    "id": "model-selection-and-regularization",
+    "name": "模型选择与正则化",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P0",
+    "summary": "结构风险最小化（嵌套假设空间+复杂度惩罚）、L2/Tikhonov 正则与算法稳定性、MDL/Occam 编码长度与泛化界。",
+    "required": [
+      "SRM 在嵌套假设空间族 H1⊂H2⊂... 上以经验风险加复杂度惩罚做模型选择",
+      "L2 正则通过强凸性提升 Uniform Stability，单样本扰动仅有界改变输出假设",
+      "MDL/Occam：在经验风险相近时编码更短的假设有更紧泛化界；无限容量下加样本不能替代正则"
+    ],
+    "misconceptions": [
+      "以为正则可被无限加样本完全替代",
+      "混淆 SRM 惩罚项与单纯经验风险最小化"
+    ],
+    "angles": ["tradeoff", "mechanism", "comparison"]
+  },
+  {
+    "id": "optimization",
+    "name": "凸优化与随机梯度下降",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P0",
+    "summary": "Convex-Lipschitz 与光滑性下的 SGD 收敛率、固定步长条件、无偏梯度估计与次梯度非唯一性。",
+    "required": [
+      "Lipschitz 凸损失 SGD 无需二阶可微即可达 O(1/√T) 期望收敛",
+      "光滑（梯度 Lipschitz）时可用固定步长且收敛更快",
+      "非光滑点次梯度为闭凸集非唯一；有放回均匀抽样给出无偏梯度估计是期望收敛前提"
+    ],
+    "misconceptions": [
+      "以为 Hinge 等非光滑点的次梯度唯一",
+      "认为光滑性与 Lipschitz 等价或不影响步长选择"
+    ],
+    "angles": ["mechanism", "fundamental", "tradeoff"]
+  },
+  {
+    "id": "kernel-methods",
+    "name": "核方法与支持向量机",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P0",
+    "summary": "Hard/Soft-SVM 的间隔最大化与 Hinge 松弛、对偶仅依赖内积、Mercer 核技巧与基于 Margin 的维数无关泛化界。",
+    "required": [
+      "Hard-SVM 最大化几何间隔等价于最小化 ||w||²，隐式控制 L2 范数与有效容量",
+      "Soft-SVM 以 Hinge+松弛变量经参数 C 平衡间隔与经验误差",
+      "对偶决策仅依赖内积使核技巧免显式高维映射；Margin 界取决于间隔与范数而非维数"
+    ],
+    "misconceptions": [
+      "以为映射到高/无穷维则样本复杂度必爆炸",
+      "以为核技巧必须显式计算高维特征"
+    ],
+    "angles": ["mechanism", "tradeoff", "comparison"]
+  },
+  {
+    "id": "ensemble-learning",
+    "name": "集成学习与 Boosting",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P1",
+    "summary": "弱可学习与强可学习等价（Freund & Schapire）、AdaBoost 权重更新与加权投票、训练误差归零后仍可增 Margin。",
+    "required": [
+      "弱可学习（err<0.5-γ）与强可学习在 PAC 下等价，AdaBoost 可将弱提升为任意精度强学习器",
+      "AdaBoost 按 α_t 加权投票并重加权错分样本，非等权重",
+      "训练误差归零后继续迭代仍可增大 Margin，不立即过拟合"
+    ],
+    "misconceptions": [
+      "以为弱学习器需 err<25% 才能提升",
+      "以为 AdaBoost 等权重投票或归零后必立即严重过拟合"
+    ],
+    "angles": ["fundamental", "mechanism", "tradeoff"]
+  },
+  {
+    "id": "model-selection-and-validation",
+    "name": "模型选择与验证",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P0",
+    "summary": "偏差-方差权衡、Hold-out/k-Fold 验证、超参数调优导致的数据泄露与 SRM/正则的过拟合抑制。",
+    "required": [
+      "训练低损验证高损为高方差过拟合，非高偏差；对策是限容量/加正则非降正则",
+      "反复以验证集调参导致信息泄露与乐观偏差，需独立测试集",
+      "小数据下 k-Fold 降低划分方差；SRM/正则重新平衡 Bias-Variance"
+    ],
+    "misconceptions": [
+      "把过拟合误判为高偏差而去加样本降正则",
+      "以为验证集可无限调参而无泄露"
+    ],
+    "angles": ["debugging", "tradeoff", "scenario"]
+  },
+  {
+    "id": "dimensionality-reduction",
+    "name": "维数灾难与降维",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P1",
+    "summary": "高维距离收敛与近邻样本复杂度指数增长、PCA 有损与最大方差/最小重构、JL 随机投影保距与压缩感知稀疏重构。",
+    "required": [
+      "高维欧氏距离趋于均匀，1-NN 样本复杂度随维度指数增长",
+      "PCA 为有损（除零特征值外），目标为最大投影方差/最小重构误差",
+      "JL 引理保证随机投影以高概率近似保距；压缩感知利用稀疏性以远低于 Shannon 测量数重构"
+    ],
+    "misconceptions": [
+      "以为 PCA 是无损或目标为最小化投影方差",
+      "以为高维必然提升近邻性能"
+    ],
+    "angles": ["tradeoff", "mechanism", "comparison"]
+  }
+]

@@ -13,7 +13,13 @@ export const conversationContextSchema = z.object({
   // Rich history for adaptive routing (P0-2/12): not required for validation, best-effort persisted.
   questionHistory: z.array(z.string()).optional(),
   lastEvaluationOverall: z.number().min(0).max(100).optional(),
-  turnCount: z.number().min(0).optional(),
+  // 出过几道题（原计划称 turnCount，但语义是「题数」而非对话轮数，故改名，plan0831_5 §P1-3）。
+  questionCount: z.number().min(0).optional(),
+  // 独立的对话轮数（每次用户发送消息 +1），与 questionCount 解耦（plan0831_5 §P1-3）。
+  messageTurnCount: z.number().min(0).optional(),
+  // 上一场训练已结束的时间戳；存在时 UI 提示「上一 session 已结束」，
+  // 后续「下一题」应开新会话而非续接到已清空的 session（plan0831_5 §P1-4）。
+  endedAt: z.number().min(0).optional(),
 });
 
 export const userIntentTypeSchema = z.enum([

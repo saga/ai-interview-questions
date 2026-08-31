@@ -1,15 +1,42 @@
+import { z } from 'zod';
 import type { AnswerValue } from '../../types';
 import type { EvaluationResult } from '../../schemas/evaluation';
 import type { SessionQuestion } from '../../schemas/session';
 import type { ConversationContext } from '../../schemas/conversation';
+import { conversationContextSchema } from '../../schemas/conversation';
+import { sessionQuestionSchema } from '../../schemas/session';
+import { evaluationResultSchema } from '../../schemas/evaluation';
 import { sessionFromQuiz } from '../../domain/learner';
 import type { SessionRecord } from '../../schemas/learner';
+import type { InterviewAgentSession } from '../../agent/types';
 
 /**
  * ConversationSession is the real lifecycle object for Chat.
  * It aggregates multiple questions into ONE SessionRecord (P0-3/4).
  * Persisted as JSON in localStorage (messages + context together, P1-1).
  */
+/**
+ * ConversationSession 的运行时校验 schema（plan0831_5 §P2）。
+ * 复用 question/evaluation 的既有 schema，避免重复定义；`agentSession` 是运行时对象、
+ * 不持久化（见 saveConversationSession），故不纳入 schema。`.passthrough()` 允许旧版本
+ * 残留字段（如 `turnCount`）通过，便于 load 时做版本迁移。
+ */
+const sessionAnswerValueSchema = z.union([z.array(z.number()), z.string()]);
+
+export const conversationSessionSchema = z
+  .object({
+    id: z.string(),
+    startedAt: z.number(),
+    context: conversationContextSchema,
+    messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string(), key: z.string() })),
+    questions: z.array(sessionQuestionSchema),
+    answers: z.record(z.string(), sessionAnswerValueSchema),
+    evaluations: z.record(z.string(), evaluationResultSchema.nullable()),
+    questionCount: z.number().optional(),
+    messageTurnCount: z.number().optional(),
+  })
+  .passthrough();
+
 export interface ConversationSession {
   id: string;
   startedAt: number;
@@ -18,19 +45,29 @@ export interface ConversationSession {
   questions: SessionQuestion[];
   answers: Record<string, AnswerValue>;
   evaluations: Record<string, EvaluationResult | null>;
-  turnCount: number;
+  /** 出过几道题（plan0831_5 §P1-3：原 turnCount，语义是题数）。 */
+  questionCount: number;
+  /** 对话轮数（每次用户发送 +1），与 questionCount 解耦（plan0831_5 §P1-3）。 */
+  messageTurnCount: number;
+  /**
+   * 桥接字段（plan0831_5 §P1-2）：当 Chat 以「模拟面试」模式运行时，
+   * 复用与独立 Agent Interview 同一份运行时会话（InterviewAgentSession），
+   * 而非维护第三套状态。仅在内存中存在，不强制持久化（运行时对象，刷新后由 Agent 侧重建）。
+   */
+  agentSession?: InterviewAgentSession;
 }
 
 export function createConversationSession(sessionId: string): ConversationSession {
   return {
     id: sessionId,
     startedAt: Date.now(),
-    context: { version: 1, mode: 'question', sessionId, pendingAction: 'choose_question', questionHistory: [], turnCount: 0 },
+    context: { version: 1, mode: 'question', sessionId, pendingAction: 'choose_question', questionHistory: [], questionCount: 0, messageTurnCount: 0 },
     messages: [],
     questions: [],
     answers: {},
     evaluations: {},
-    turnCount: 0,
+    questionCount: 0,
+    messageTurnCount: 0,
   };
 }
 
@@ -44,9 +81,11 @@ export function addQuestionToSession(session: ConversationSession, sq: SessionQu
       currentQuestionId: sq.question.id,
       pendingAction: 'answer',
       questionHistory: nextHistory,
-      turnCount: session.turnCount + 1,
+      questionCount: session.questionCount + 1,
+      messageTurnCount: session.messageTurnCount + 1,
     },
-    turnCount: session.turnCount + 1,
+    questionCount: session.questionCount + 1,
+    messageTurnCount: session.messageTurnCount + 1,
   };
 }
 
@@ -83,10 +122,10 @@ export function toSessionRecord(session: ConversationSession, title = 'Chat 连�
 }
 
 export function shouldUpgradeToInterview(session: ConversationSession): boolean {
-  // Heuristic: after 2+ turns with explicit difficulty/continue requests, upgrade makes sense.
-  // For now: if turnCount >= 2 and lastEvaluation exists, suggest upgrade path.
+  // Heuristic: after 2+ questions with explicit difficulty/continue requests, upgrade makes sense.
+  // For now: if questionCount >= 2 and lastEvaluation exists, suggest upgrade path.
   // Caller decides whether to auto-upgrade or ask.
-  return session.turnCount >= 2;
+  return session.questionCount >= 2;
 }
 
 export const CONVERSATION_SESSION_KEY = 'ai-interview-conversation-session-v1';
@@ -95,7 +134,21 @@ export function loadConversationSession(): ConversationSession | null {
   try {
     const raw = localStorage.getItem(CONVERSATION_SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as ConversationSession;
+    const parsed = conversationSessionSchema.safeParse(JSON.parse(raw));
+    // 损坏 / 老版本数据：校验失败直接丢弃（不再用类型断言把脏数据塞进运行时，plan0831_5 §P2）。
+    if (!parsed.success) return null;
+    const data = parsed.data as Record<string, unknown>;
+    // 版本迁移：旧字段 turnCount → questionCount（plan0831_5 §P1-3 改名）。
+    if (data.questionCount === undefined && typeof data.turnCount === 'number') {
+      data.questionCount = data.turnCount;
+    }
+    // messageTurnCount 缺省时与 questionCount 对齐，避免旧数据缺字段。
+    if (data.messageTurnCount === undefined && typeof data.questionCount === 'number') {
+      data.messageTurnCount = data.questionCount;
+    }
+    // agentSession 是运行时对象，不持久化；若旧数据残留则剔除。
+    delete data.agentSession;
+    return data as unknown as ConversationSession;
   } catch {
     return null;
   }
@@ -103,7 +156,10 @@ export function loadConversationSession(): ConversationSession | null {
 
 export function saveConversationSession(session: ConversationSession): void {
   try {
-    localStorage.setItem(CONVERSATION_SESSION_KEY, JSON.stringify(session));
+    // agentSession 是运行时对象（含 log 数组），不写入 localStorage（plan0831_5 §P1-2）。
+    const { agentSession: _drop, ...persisted } = session;
+    void _drop;
+    localStorage.setItem(CONVERSATION_SESSION_KEY, JSON.stringify(persisted));
   } catch {
     // best effort
   }

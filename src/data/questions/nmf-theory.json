@@ -1,0 +1,196 @@
+[
+  {
+    "id": "nmf-svd-topic-modeling-comparison",
+    "category": "machine-learning",
+    "topic": "topic-modeling",
+    "tags": [
+      "SVD",
+      "NMF",
+      "Topic Modeling",
+      "LSI"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在文本表示和主题建模（Topic Modeling）中，使用奇异值分解（SVD / Latent Semantic Indexing）相比于非负矩阵分解（NMF）存在若干固有局限性。以下关于 SVD 和 NMF 在主题表达与建模特性上的对比，哪些是正确的？",
+    "explanation": "SVD 生成的正交基允许负值，可能导致词频权重发生非物理含义的相互抵消；正交约束要求主题间不互相重叠，这不符合现实中主题（如政治与金融）词汇共享的实际情况；另外两文档在某主题上分量均为负时，SVD 内积可能误判其相似度。而 NMF 要求矩阵元素非负，可将文档自然表示为主题的凸组合。需要注意，SVD 依据 Eckart-Young 定理能提供正交旋转不变范数下的最佳低秩逼近，而 NMF 是非凸且 worst-case NP-hard 的，无法保证获得全局最优低秩逼近。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "SVD 得到的正交主题向量允许出现负数权重，可能导致词频贡献在主题表达中发生不符合物理意义的相互抵消。",
+          "SVD 要求分解出的主题向量彼此正交，而实际文本主题（如政治与金融）在词汇分布上常有重叠，正交性约束不符合真实语义关系。",
+          "SVD 无法保证获得最佳低秩逼近，而 NMF 在 Frobenius 范数下能够保证获得全局唯一的最佳低秩逼近。",
+          "两个文档可能因为同时不包含某个主题（低维向量对应分量为负）而被 SVD 计算的内积错误地判定为高相似度。",
+          "NMF 将文档约束为主题的凸组合（Convex Combination），其基向量与系数均为非负，使得主题可自然解释为词表上的概率分布。"
+        ],
+        "answer": [
+          0,
+          1,
+          3,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "id": "matrix-rank-vs-nonnegative-rank",
+    "category": "machine-learning",
+    "topic": "matrix-factorization",
+    "tags": [
+      "Matrix Rank",
+      "Nonnegative Rank",
+      "Linear Algebra",
+      "Complexity"
+    ],
+    "difficulty": "hard",
+    "angle": "fundamental",
+    "question": "对于任意非负实数矩阵 M，其代数秩 rank(M) 与非负秩 rank+(M) 之间存在深刻的理论与计算差异。以下关于矩阵代数秩与非负秩特性的表述，哪些是正确的？",
+    "explanation": "任意非负矩阵均满足 rank+(M) >= rank(M)。对于 rank(M) <= 2 的非负矩阵，已证明 rank+(M) = rank(M)。非负秩一矩阵的非零元素模式在组合拓扑上形成矩形结构（Combinatorial Rectangle）。当对角线全 0 且非对角线为正时，对角线零点限制了矩形覆盖，导致 rank+(M) 随维数 n 增加而增长，但其代数秩 rank(M) 可保持为很小的常数（如 3）。因此，非负秩无法被代数秩的任何有限函数作为上界约束。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对于任意非负矩阵 M，其非负秩必定大于或等于其代数秩，即 rank+(M) >= rank(M)。",
+          "非负秩 rank+(M) 总是可以被代数秩 rank(M) 的某项有限多项式函数作为上界进行约束。",
+          "将非负矩阵分解为 r 个非负秩一矩阵之和时，每个秩一矩阵在非负约束下的非零元素模式表现为组合矩形（Combinatorial Rectangle）。",
+          "对于对角线全为 0 且非对角线均为正数的非负矩阵，随着矩阵维数 n 增加，其代数秩可维持在极低常数（如 3），但非负秩会随维数 n 持续增长。",
+          "当矩阵代数秩 rank(M) <= 2 时，其非负秩 rank+(M) 必定严格等于其代数秩 rank(M)。"
+        ],
+        "answer": [
+          0,
+          2,
+          3,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "id": "nmf-alternating-minimization-dynamics",
+    "category": "machine-learning",
+    "topic": "optimization",
+    "tags": [
+      "NMF",
+      "Alternating Minimization",
+      "Non-convex Optimization",
+      "Heuristics"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在工程实践中，交替最小二乘法（Alternating Minimization）常用于求解非负矩阵分解 M ≈ AW。关于该算法在工程优化与理论性质上的描述，哪些是正确的？",
+    "explanation": "交替最小二乘法将总体非凸的 NMF 问题拆解为交替求解 A 或 W 的子问题，每个子问题为非负约束下的凸二次规划（可并行求解 NNLS）。由于总体目标函数是非凸的，算法在每步迭代中能保证损失单调不增，但极易陷入局部最优解或鞍点，且对初始值非常敏感，无法提供最坏情况下的多项式时间收敛保证。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "虽然优化目标对于 A 和 W 整体是非凸（Non-convex）的，但固定 A 求解 W 或固定 W 求解 A 的子问题均属于凸二次规划。",
+          "该算法能够保证在有限迭代步数内收敛到全局极小值点，且收敛路径与初始矩阵 A(0) 的选取无关。",
+          "在每步子问题求解中，可以利用非负约束下的凸优化算法（如非负最小二乘法 NNLS）对矩阵的各个列向量进行并行优化。",
+          "算法容易陷入局部优解（Local Optima），工程上通常需采用多次随机初始化或借助特定领域假设（如 Separability）来保证解的质量。",
+          "交替最小二乘法在每步迭代中能保证目标函数单调不增，但无法提供最坏情况下的多项式时间求解 guarantees。"
+        ],
+        "answer": [
+          0,
+          2,
+          3,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "id": "svd-eckart-young-norm-invariance",
+    "category": "machine-learning",
+    "topic": "linear-algebra",
+    "tags": [
+      "SVD",
+      "Eckart-Young Theorem",
+      "Low-Rank Approximation",
+      "Matrix Norm"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "奇异值分解（SVD）在矩阵低秩逼近和特征降维中具有重要地位。根据 Eckart-Young 定理及矩阵范数性质，以下哪些说法是正确的？",
+    "explanation": "Frobenius 范数和算子范数均具有正交旋转不变性。根据 Eckart-Young 定理，对任意旋转不变范数，最佳秩-k 逼近均由截断 SVD Σ_{i=1}^k σ_i u_i v_i^T 给出。在算子范数下，近似误差为 σ_{k+1}；且最佳秩-(k+1) 逼近可以通过直接在最佳秩-k 逼近上累加第 k+1 个奇异分量构建。而特征值分解仅适用于特定可对角化的方阵，与实数矩阵普遍存在的 SVD 形式不同。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "矩阵的 Frobenius 范数与算子范数（Operator Norm）都具有正交旋转不变性（Rotation Invariance）。",
+          "对于任意正交旋转不变范数，矩阵 M 的最佳秩-k 逼近均由其截断 SVD 即 Σ_{i=1}^k σ_i u_i v_i^T 给出。",
+          "截断 SVD 具有嵌套累加特性，最佳秩-(k+1) 逼近可以直接通过在最佳秩-k 逼近的基础上累加第 k+1 个奇异分量得到。",
+          "针对算子范数，矩阵 M 与其最佳秩-k 逼近 M_k 之间的逼近误差完全等于第 k+1 个奇异值 σ_{k+1}。",
+          "任意 m × n 实数矩阵都存在 SVD 分解，且只要矩阵是方阵，其 SVD 分解的形式与特征值分解（Eigendecomposition）完全一致。"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ml-theory-beyond-worst-case",
+    "category": "machine-learning",
+    "topic": "algorithm-design",
+    "tags": [
+      "Worst-case Analysis",
+      "Smoothed Analysis",
+      "Separability",
+      "Algorithm Theory"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在针对机器学习算法进行理论分析与系统设计时，传统计算机科学的“最坏情况分析（Worst-case Analysis）”常面临 NP-hard 的阻碍。为了为实践中的启发式算法（如 EM、NMF、非凸梯度下降）提供可证明的理论 guarantees，理论机器学习领域的核心解决思路是什么？",
+    "explanation": "机器学习中的许多参数估计和推理问题在最坏情况下是 NP-hard 的。为了克服最坏情况分析的过度保守性，理论研究通过引入贴近实际数据生成机制的结构性假设（如 NMF 中的 Separability 假设）或概率/平滑模型（如 Semi-random Models, Smoothed Analysis），在避开极端最坏情况的同时，为实际启发式算法提供严谨的算法正确性与收敛性证明。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "完全放弃理论证明，仅依赖大规模真实数据集上的 Benchmark 经验评估来验证算法有效性。",
+          "引入对输入数据的合理概率模型或结构假设（如 Separability、平滑分析 Smoothed Analysis），绕开最坏情况障碍并给出可证明的理论保障。",
+          "将所有非凸优化问题统一转化为高维凸优化松弛问题，从而确保在最坏情况下能够在多项式时间内找到全局最优解。",
+          "仅针对一维简单数据分布求解解析解，并在高维场景下通过强行剪枝将最坏情况时间复杂度降至多项式级别。"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "nmf-canonical-form-probabilistic-design",
+    "category": "machine-learning",
+    "topic": "topic-modeling",
+    "tags": [
+      "NMF",
+      "Canonical Form",
+      "Probabilistic Model",
+      "Normalization"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "在基于非负矩阵分解构建主题模型系统时，假设输入的词文档矩阵 M ∈ R^{m × n} 各列和为 1（代表文档在词表上的分布）。将 M 分解为 AW 后，利用对角阵 D（D_{j,j} = Σ_i A_{i,j}）重构为规范形式 A~ = AD^{-1} 与 W^ = DW。关于该规范化设计及其工程含义，哪些描述是正确的？",
+    "explanation": "通过对角缩放 D，矩阵 A~ 的每一列列和变为 1，可解释为各主题在词表上的概率分布；在 M 列和为 1 的条件下，W^ 的每一列列和也自动为 1，可解释为文档在 r 个主题上的凸组合权重。由于 (AD^{-1})(DW) = AW = M，重构矩阵完全不变，该变换消除了解的尺度不确定性（Scale Ambiguity），并建立了清晰的生成式概率语义。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "规范化后的矩阵 A~ 的每一列列和均为 1，每个列向量可以严格解释为某一个主题在词表上的概率分布。",
+          "规范化后的矩阵 W^ 的每一列列和均为 1，每个列向量代表对应文档在 r 个主题上的凸组合权重（主题分布）。",
+          "该对角缩放操作改变了拟合矩阵的重构值，使得规范化后的 A~W^ 不再等于原始分解结果 AW。",
+          "规范化消除了非负矩阵分解中的尺度模糊性（Scale Ambiguity），使主题向量与文档主题权重具备明确的生成式概率意义。",
+          "只要原始词文档矩阵 M 的列和为 1 且 A 的列和非零，缩放后的 W^ 的列和将自动恒等于 1。"
+        ],
+        "answer": [
+          0,
+          1,
+          3,
+          4
+        ]
+      }
+    }
+  }
+]

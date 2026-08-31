@@ -1,0 +1,74 @@
+[
+  {
+    "id": "topic-modeling",
+    "name": "主题建模与 NMF/SVD 对比",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P1",
+    "summary": "SVD/LSI 的负权重抵消与正交重叠局限、内积误判相似度、NMF 凸组合与概率可解释性及规范化尺度消除。",
+    "required": [
+      "SVD 正交基允许负值导致词频抵消且正交约束迫使主题不重叠，不符真实词汇共享；两负分量内积会误判相似度",
+      "NMF 非负约束将文档表示为主题的凸组合，基与系数可解释为词表/主题上的概率分布",
+      "规范化 A~=AD⁻¹、W^=DW 保持重构不变且消除尺度模糊，M 列和为1时 W^ 列和自动为1"
+    ],
+    "misconceptions": [
+      "以为 SVD 在 Frobenius 下无最佳低秩逼近而 NMF 有全局最优",
+      "认为对角缩放会改变重构值 AW"
+    ],
+    "angles": ["comparison", "design", "mechanism"]
+  },
+  {
+    "id": "matrix-factorization",
+    "name": "矩阵分解与非负秩理论",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P1",
+    "summary": "代数秩 vs 非负秩 rank+(M)≥rank(M)、秩≤2 时等号、矩形支撑结构与对角零矩阵的分离、非负秩无有限函数上界。",
+    "required": [
+      "任意非负矩阵 rank+(M)≥rank(M)；rank≤2 时 rank+=rank",
+      "非负秩一支撑为组合矩形；对角0、非对角正矩阵的代数秩可为常数3而非负秩随 n 增长",
+      "非负秩不能被代数秩的任何有限函数上界约束"
+    ],
+    "misconceptions": [
+      "以为非负秩总可被代数秩多项式上界",
+      "混淆秩一矩阵的矩形结构与任意稀疏模式"
+    ],
+    "angles": ["fundamental", "comparison", "mechanism"]
+  },
+  {
+    "id": "linear-algebra",
+    "name": "线性代数与 Eckart-Young 定理",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P0",
+    "summary": "Frobenius/算子范数的旋转不变性、截断 SVD 为任意旋转不变范数最佳秩-k 逼近、嵌套累加与 σ_{k+1} 误差、SVD 普适性 vs 特征分解局限。",
+    "required": [
+      "Frobenius 与算子范数均旋转不变；任意旋转不变范数的最佳秩-k 逼近为截断 SVD",
+      "截断 SVD 具嵌套性：最佳秩-(k+1) 可在最佳秩-k 上累加第 k+1 奇异分量；算子范数误差为 σ_{k+1}",
+      "任意实矩阵存在 SVD，方阵的 SVD 与特征分解一般不一致"
+    ],
+    "misconceptions": [
+      "以为方阵 SVD 等同特征分解",
+      "认为最佳低秩逼近不具嵌套累加性"
+    ],
+    "angles": ["mechanism", "fundamental", "comparison"]
+  },
+  {
+    "id": "algorithm-design",
+    "name": "超越最坏情况的算法设计",
+    "area": "ai-engineering",
+    "topic": "ml-foundations",
+    "priority": "P1",
+    "summary": "最坏情况 NP-hard 障碍、Separability/平滑分析/半随机模型等结构假设为 EM/NMF/非凸问题提供可证明保障。",
+    "required": [
+      "许多学习推断问题最坏情况 NP-hard，过度保守的最坏分析需绕开",
+      "引入 Separability、Smoothed Analysis、半随机模型等现实结构假设可为启发式算法提供收敛与正确性证明",
+      "交替最小化虽子问题凸且单调不增，但全局非凸、初值敏感且无多项式最坏保证"
+    ],
+    "misconceptions": [
+      "以为放弃理论或统一凸松弛可解决非凸 NP-hard",
+      "认为交替最小化保证全局最优且与初值无关"
+    ],
+    "angles": ["fundamental", "tradeoff", "mechanism"]
+  }
+]

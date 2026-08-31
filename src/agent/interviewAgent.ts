@@ -123,6 +123,8 @@ export interface InterviewAgentHandle {
   start: (instruction: string) => Promise<void>;
   /** 提交用户作答并推进下一轮（当前题的答案 + 继续）。 */
   submitAnswer: (answer: AnswerValue) => Promise<void>;
+  /** 跳过当前题（不计分）并交付下一题，供「换一道/跳过/不想答」控制词使用。 */
+  skip: () => Promise<void>;
   /** 中止当前运行。 */
   abort: () => void;
   /** 取消事件订阅。 */
@@ -357,6 +359,16 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     agent.abort();
   }
 
+  /**
+   * 跳过当前题：不评分，直接交付下一题（或收尾）。供 Chat「换一道/跳过/不想答」控制词使用。
+   * 仅标记当前题为「已处理（不计分）」，复用确定性兜底选题（与正常流程同一份 effective profile）。
+   */
+  async function skip(): Promise<void> {
+    const sq = session.currentQuestion;
+    if (sq) session.evaluations[sq.question.id] = null;
+    await ensureQuestionDelivered();
+  }
+
   // 真正的资源释放：清空看门狗（避免悬挂定时器）→ 中止仍在运行的 run → 取消事件订阅。
   // 此前 dispose 仅等于 unsubscribe，看门狗与进行中的 run 不会被回收，切换/卸载会话时造成泄漏与竞态。
   function dispose(): void {
@@ -369,5 +381,5 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     unsubscribe();
   }
 
-  return { agent, start, submitAnswer, abort, dispose };
+  return { agent, start, submitAnswer, skip, abort, dispose };
 }

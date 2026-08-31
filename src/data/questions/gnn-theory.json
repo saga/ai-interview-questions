@@ -1,0 +1,194 @@
+[
+  {
+    "id": "gnn-expressiveness-1wl",
+    "category": "graph-neural-networks",
+    "topic": "expressiveness-and-theory",
+    "tags": [
+      "GNN",
+      "Weisfeiler-Lehman",
+      "Message-Passing",
+      "Expressiveness"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在消息传递图神经网络（MPNN）中，其图结构表达能力的理论上限通常由 1-Weisfeiler-Lehman (1-WL) 同构测试界定。关于 MPNN 在区分不同图拓扑结构上的局限性及其底层机制，以下哪些说法是正确的？",
+    "explanation": "1-WL 测试是判定图同构的经典启发式算法。标准 MPNN 的消息聚合过程在数学上等价于 1-WL 的颜色细化过程。由于 1-WL 无法区分某些高度对称的非同构图（如度相同的连通正则图），标准 MPNN 也面临同样的理论上限；如仅使用单射聚合函数（如 GIN 中的 Sum 聚合），只能使表达能力接近或达到 1-WL，但无法超越；在没有唯一节点标识符时，MPNN 无法识别特定环路结构（如 6 节点单环与两个 3 节点孤立环）；引入高阶结构（如 Subgraph GNN）或随机节点特征是打破 1-WL 上限的经典方法。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对于无法被 1-WL 测试区分的非同构图（例如某些同构度的正则图），任何标准 MPNN 均无法仅依赖图拓扑学习出不同的图级特征表示",
+          "将邻域聚合函数（Aggregate Function）替换为单射函数（如 GIN 中的 Sum 聚合）可以使 MPNN 的区分能力超越 1-WL 测试的上限",
+          "缺少节点初始唯一特征（如纯拓扑结构输入）时，MPNN 无法准确区分环长不同的连通正则图（例如 6-node ring 与两个 3-node rings）",
+          "在节点特征中引入随机采样特征或采用高阶子图架构（如 Subgraph GNN）是打破 1-WL 理论表达能力上限的有效手段"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "在消息传递图神经网络（MPNN）中，其图结构表达能力的理论上限通常由 1-Weisfeiler-Lehman (1-WL) 同构测试界定。关于 MPNN 在区分不同图拓扑结构上的局限性及其底层机制，以下哪些说法是正确的？"
+      }
+    }
+  },
+  {
+    "id": "gnn-scalable-sampling",
+    "category": "graph-neural-networks",
+    "topic": "scalability",
+    "tags": [
+      "GNN",
+      "Scalability",
+      "Sampling",
+      "Neighbor-Explosion"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在超大规模图（如十亿级节点与百亿级边）上训练多层 GNN 时，邻居爆炸（Neighbor Explosion）是主要的计算与显存瓶颈。针对 Node-wise（如 GraphSAGE）、Layer-wise（如 FastGCN）与 Subgraph-wise（如 Cluster-GCN、GraphSAINT）采样策略，以下哪些对比与机制分析是正确的？",
+    "explanation": "Node-wise 采样（GraphSAGE）在每层独立采样固定的 $S$ 个邻居，在 $L$ 层网络中单个目标节点的邻域扩展大小为 $O(S^L)$，存在指数级膨胀与重复计算问题。Layer-wise 采样（FastGCN）在每一层固定采样子图节点集合，将每层计算复杂度解耦为线性，但由于邻居间连通稀疏性，会导致梯度估计的方差较大。GraphSAINT 通过定义节点/边采样概率并引入方差归一化系数，实现了对原图梯度的无偏估计。Subgraph-wise 采样非常适合并行化训练，且在子图内部保留了丰富的消息传递，并非不能并行或带来无法纠正的误差。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Node-wise 采样在 $L$ 层 GNN 中的单样本计算复杂度随层数呈指数级增长 $O(S^L)$，在深层网络中存在严重的显存膨胀与重复计算",
+          "Layer-wise 采样在每层固定采样独立节点集合，消除了计算复杂度的指数增长，但容易因邻居节点间连接稀疏而增大梯度估计方差",
+          "Subgraph-wise 采样在训练前将图划分为独立子图并在内部聚合，彻底切断了跨子图消息传递，因此无法实现无偏梯度估计与多卡并行训练",
+          "GraphSAINT 通过基于节点度或边的概率采样并引入方差归一化系数（Normalization Coefficients），实现了对原图梯度的无偏估计"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "在超大规模图（如十亿级节点与百亿级边）上训练多层 GNN 时，邻居爆炸（Neighbor Explosion）是主要的计算与显存瓶颈。针对 Node-wise（如 GraphSAGE）、Layer-wise（如 FastGCN）与 Subgraph-wise（如 Cluster-GCN、GraphSAINT）采样策略，以下哪些对比与机制分析是正确的？"
+      }
+    }
+  },
+  {
+    "id": "gnn-over-smoothing-debugging",
+    "category": "graph-neural-networks",
+    "topic": "deep-gnn-architectures",
+    "tags": [
+      "GNN",
+      "Over-smoothing",
+      "DropEdge",
+      "Jumping-Knowledge"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在一个 16 层的深层 GCN 模型训练过程中，工程师观察到随着网络层数增加，节点表示的 Dirichlet 能量快速接近于 0，验证集上的节点分类准确率显著下降，不同类别的节点表征几乎趋于一致（Over-smoothing）。针对该现象及相应解法，以下哪些分析是正确的？",
+    "explanation": "Over-smoothing 的根本原因在于多次反复图卷积在频域上起到了过度低通滤波器的作用，使得高频特征丢失，所有节点表示收敛至平滑的基态。DropEdge 通过在每个 epoch 动态随机删除一部分边，降低了图连通度与消息传递强度，从而减缓过平滑。Jumping Knowledge (JK-Net) 采用跨层跳跃连接，将浅层的局部拓扑/节点特征与深层的全局抽象特征融合，防止低层信息丢失。标准 Layer Normalization 仅对单个节点的特征向量进行缩放归一化，无法阻断不同节点向量方向在空间上的两两趋同（余弦相似度逼近 1），因此单纯增加 LayerNorm 无法解决图结构的过平滑问题。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Over-smoothing 的本质原因是深层图卷积操作起到了低通滤波器的效果，多次迭代导致节点表征收敛至平滑的基态",
+          "DropEdge 通过在每次训练迭代中随机移除一定比例的边，降低了图消息传递的连通度，从而减缓过平滑现象",
+          "Jumping Knowledge (JK-Net) 架构通过建立跨层跳跃连接，将底层局部拓扑特征与高层全局抽象特征结合，缓解深层特征退化",
+          "仅增加标准层归一化（Layer Normalization）只能重置特征向量的模长，但无法阻止不同节点表征向量方向上的余弦相似度逼近 1"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "question": "在一个 16 层的深层 GCN 模型训练过程中，工程师观察到随着网络层数增加，节点表示的 Dirichlet 能量快速接近于 0，验证集上的节点分类准确率显著下降，不同类别的节点表征几乎趋于一致（Over-smoothing）。针对该现象及相应解法，以下哪些分析是正确的？"
+      }
+    }
+  },
+  {
+    "id": "gnn-spectral-vs-spatial",
+    "category": "graph-neural-networks",
+    "topic": "spectral-and-spatial-convolutions",
+    "tags": [
+      "Spectral-GNN",
+      "Spatial-GNN",
+      "Graph-Laplacian",
+      "ChebNet"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在图神经网络的理论体系中，谱域图卷积（Spectral GNN）与空域图卷积（Spatial GNN）代表了两种不同的建模视角。关于谱域与空域图卷积的联系与区别，以下哪些表述是正确的？",
+    "explanation": "谱域图卷积依赖于图拉普拉斯矩阵的特征分解（Fourier 变换），其基底绑定于特定的图拓扑，因此无法直接跨图泛化或处理动态变化图。ChebNet 采用切比雪夫多项式逼近谱域滤波函数，免去了 $O(N^3)$ 的特征值分解，同时切比雪夫多项式的阶数 $K$ 在空域上刚好对应 $K$-hop 邻域聚合。GCN 可以证明是 ChebNet 在一阶截断（$K=1$）并引入最大特征值假设与正则化技巧后的简化特例。空域图卷积（如 GCN、SGC）虽然定义在空域消息传递上，但在图信号处理中依然可以严格映射为频域低通滤波器，两者并非完全割裂。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "谱域图卷积基于图拉普拉斯矩阵的特征分解，其傅里叶变换基底依赖于特定的图拓扑，因而难以直接泛化到拓扑动态变化的图",
+          "ChebNet 采用切比雪夫多项式逼近谱域滤波函数，不仅避开了特征值分解的高昂计算代价 $O(N^3)$，同时在空域上实现了 $K$-hop 局部邻域聚合",
+          "经典 GCN（Graph Convolutional Network）在数学上可以看作是 ChebNet 在一阶截断（$K=1$）并做参数简化与对称归一化后的特例",
+          "空域图卷积直接在节点空间图拓扑上定义消息传递机制，因此无法建立与图信号处理（Graph Signal Processing）中频域低通滤波的映射关系"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "在图神经网络的理论体系中，谱域图卷积（Spectral GNN）与空域图卷积（Spatial GNN）代表了两种不同的建模视角。关于谱域与空域图卷积的联系与区别，以下哪些表述是正确的？"
+      }
+    }
+  },
+  {
+    "id": "gnn-large-scale-recommender-system-design",
+    "category": "ai-systems",
+    "topic": "graph-recommender-system",
+    "tags": [
+      "System-Design",
+      "GNN",
+      "Recommender-Systems",
+      "KV-Cache",
+      "ANN"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "某大型电商平台需构建一套亿级 user/item 节点的实时图推荐系统。系统约束如下：全量图拓扑每晚更新一次，用户高频行为秒级异步写入；线上召回阶段要求 P95 延迟小于 15ms；单次召回需为用户评估数千个候选 item。以下哪种架构设计方案在满足上述延迟与一致性约束的同时最具有工程可行性？",
+    "explanation": "在亿级节点图上，线上实时进行多层 GNN 邻域采样与多层消息传递矩阵运算无法满足 P95 < 15ms 的严苛延迟约束（通常需要数毫秒级的向量检索）。工业界标准架构（如 PinSage / EASE）是将 GNN 消息传递解耦：通过离线/近实时图计算任务（如 GraphSAGE / PinSage）预计算或更新 User 和 Item 的 Embedding，并同步至高并发分布式 Key-Value 存储或向量索引库（如 Milvus / FAISS）。线上召回请求仅需从 KV 库提取用户 Embedding 并执行近似最近邻（ANN）向量检索，兼顾了图结构表征能力与毫秒级在线服务性能。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "采用端到端在线图神经网络计算，在线请求到来时实时查询图数据库获取 3-hop 邻域拓扑，并在 GPU 上运行多层 GNN 聚合得到 User 向量",
+          "采用离线/近实时图采样计算节点 Embedding 并写入分布式 Key-Value 缓存，线上召回阶段解耦 GNN 聚合，直接转换为高效的向量 Nearest Neighbor (ANN) 检索",
+          "将 GNN 模型全量部署在客户端（Client Side），通过 WebSocket 实时同步全量图拓扑与权重，并在本地进行邻域采样与推断",
+          "仅使用 CPU 离线计算 PageRank 排序结果作为静态推荐列表，通过 Redis 进行高并发缓存，放弃基于深度表征的图特征学习"
+        ],
+        "answer": [
+          1
+        ],
+        "question": "某大型电商平台需构建一套亿级 user/item 节点的实时图推荐系统。系统约束如下：全量图拓扑每晚更新一次，用户高频行为秒级异步写入；线上召回阶段要求 P95 延迟小于 15ms；单次召回需为用户评估数千个候选 item。以下哪种架构设计方案在满足上述延迟与一致性约束的同时最具有工程可行性？"
+      }
+    }
+  },
+  {
+    "id": "gnn-adversarial-attack-defense",
+    "category": "graph-neural-networks",
+    "topic": "robustness-and-security",
+    "tags": [
+      "Adversarial-Attacks",
+      "Graph-Purification",
+      "Structure-Learning",
+      "Robust-GNN"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在图对抗攻击（Graph Adversarial Attacks）场景中，攻击者通过微量修改图拓扑结构（如恶意加边或删边）即可显著破坏 GNN 模型的分类性能。关于图净化（Graph Purification）与图结构学习（Graph Structure Learning）防御策略的工程权衡，以下哪些说法是正确的？",
+    "explanation": "真实世界网络（如社交网络、引用网络）的邻接矩阵通常具有低秩（Low-rank）与高稀疏性特征，攻击者注入的对抗扰动边通常表现出高频或打破低秩约束的特性，因此基于低秩矩阵近似的图净化能有效过滤扰动。基于节点特征相似度的边剪枝净化（如移除连接特征余弦相似度极低节点的边）在同质图上有效，但在异质图（Heterophilous Graph）中，正常连接的节点本身特征差异就很大，容易被误删。图结构学习（GSL）将图邻接矩阵设为可优化变量与 GNN 联合训练，虽可自适应净化图结构，但使优化目标变成非凸双层优化，极大增加了训练开销与收敛难度。仅对节点输入特征添加梯度扰动的对抗训练，无法抵抗离散的图拓扑结构加边/删边攻击。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基于低秩近似（Low-Rank Approximation）的图净化利用了真实图邻接矩阵通常具有低秩特性的先验，能有效过滤高频对抗扰动",
+          "基于特征相似度的边剪枝净化策略假设扰动边通常连接特征差异较大的节点，但可能误删异质图（Heterophilous Graph）中的正常跨类边",
+          "图结构学习（GSL）通过同时优化 GNN 参数与图结构邻接矩阵，虽然能防御拓扑攻击，但会显著增加训练的计算开销与收敛难度",
+          "对抗训练（Adversarial Training）在图领域中仅需对节点输入特征添加梯度扰动，即可全面抵御针对图拓扑结构的对抗加边攻击"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "在图对抗攻击（Graph Adversarial Attacks）场景中，攻击者通过微量修改图拓扑结构（如恶意加边或删边）即可显著破坏 GNN 模型的分类性能。关于图净化（Graph Purification）与图结构学习（Graph Structure Learning）防御策略的工程权衡，以下哪些说法是正确的？"
+      }
+    }
+  }
+]
