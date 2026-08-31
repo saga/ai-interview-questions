@@ -54,7 +54,7 @@ export const TAXONOMY: TaxonomyDomain[] = [
     topics: [
       { id: 'rag', label: 'RAG 检索增强生成', description: '文档摄入/切分/嵌入/向量检索/混合检索/元数据过滤/重排/上下文构建/引用/检索失败/评估' },
       { id: 'embeddings', label: '嵌入与语义检索', description: '语义相似度/维度/余弦/归一化/分块嵌入/多语言/嵌入模型/ANN/HNSW/检索质量' },
-      { id: 'search', label: '向量检索', description: 'HNSW/IVF/ANN/过滤/混合检索/索引/召回与延迟/扩展' },
+      { id: 'ai-search', label: 'AI 搜索（信息检索与语义检索）', description: '倒排/BM25/稠密向量/混合检索/Late Interaction/排序重排/Agentic Search/ANN 索引（HNSW/IVF）/检索质量与基础设施' },
       { id: 'context-engineering', label: '上下文工程', description: '指令层级/few-shot/结构化输出/上下文选择/压缩/长上下文/注入/隔离/动态/预算' },
     ],
   },
@@ -178,7 +178,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   // LLM 应用
   rag: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging'],
   embeddings: ['definition', 'mechanism', 'comparison', 'calculation', 'scenario'],
-  search: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario'],
+  'ai-search': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging'],
   'context-engineering': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
 
   // Agent 工程

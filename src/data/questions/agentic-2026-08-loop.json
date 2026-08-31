@@ -1,0 +1,234 @@
+[
+  {
+    "id": "agentic-loop-error-01",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "agent-loop",
+      "error-handling",
+      "tool-feedback"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在一个基于 LLM 的 Coding Agent 交互循环（LLM + System Prompt + Tool Call Loop）中，Agent 在执行代码修改指令时抛出了编译或代码规范（Lint）错误。为了保证 Agent 能够自我纠错并完成任务，下列哪些系统设计或控制流机制是正确且必须的？（多选）",
+    "explanation": "A正确：需将错误堆栈/Lint日志作为新Message反馈形成闭环。C正确：需最大迭代上限防死循环并触发人工介入。E正确：结构化输出降低理解成本。B错误：清空Context丢失历史。D错误：升Temperature增幻觉。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将工具执行失败后的错误堆栈或 Lint 日志作为新的 Message 追加入 Context，让 LLM 在下一轮迭代中推理出修复方案",
+          "在工具执行抛出异常时自动清空之前所有的对话 Context，避免旧的提示词污染 LLM 对错误的判断",
+          "限制单次 Agentic Loop 的最大连续重试次数（Max Iterations），并在达到阈值后触发中断退回人类介入",
+          "在工具返回错误时强制提高 LLM 的 Temperature 参数至 1.0 以上，以增加模型探索非传统修复路径的能力",
+          "确保工具调用的输出（包含标准输出与标准错误）格式具备明确的语义结构，以便 LLM 能够精准识别错误位置与原因"
+        ],
+        "answer": [
+          0,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、E。需反馈错误日志到Context、设最大重试上限、结构化输出便于定位；清空Context与提Temperature错误。"
+      }
+    }
+  },
+  {
+    "id": "agentic-caching-02",
+    "category": "agent-fundamentals",
+    "topic": "memory",
+    "tags": [
+      "prompt-caching",
+      "prefix-caching",
+      "performance"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在构建长上下文 Coding Agent 时，使用 LLM 厂商提供的 Prompt Caching（前缀缓存）技术可以大幅降低 API 延迟与调用成本。关于 Prompt Caching 在 Agent 系统中的应用与优化策略，下列说法正确的有哪些？（多选）",
+    "explanation": "B、E正确：静态内容放开头命中Prefix Cache并可复用KV，仅增量计算后缀。A错误：动态放前端破坏前缀。C错误：仍需窗口管理。D错误：追加后缀不使前缀失效。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将频繁变化的动态数据（如系统当前时间、不断追加的工具调用历史）放在 System Prompt 最前端能实现最佳缓存命中率",
+          "确保系统提示词（System Prompt）、工具声明（Tool Definitions）等静态内容紧贴 Prompt 开头，并将动态变更追加在末尾",
+          "Prompt Caching 能够消除因 Context 增长导致的 LLM 推理计算开销，因此不再需要限制输入 Context 的总 Token 数量",
+          "在 agentic 循环中每次向 Context 中追加新的用户交互时，此前已建立的 Prompt Cache 会全部失效并触发重新计算",
+          "将不变的系统提示词与工具定义置于前缀位置后，后续轮次可复用已计算的 KV 状态，仅需增量计算新增后缀内容"
+        ],
+        "answer": [
+          1,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、E。静态前缀命中缓存并可复用KV，仅增量计算后缀；A破坏前缀，C仍有KV显存与解码开销，D追加不失效。"
+      }
+    }
+  },
+  {
+    "id": "agentic-subagent-03",
+    "category": "agent-fundamentals",
+    "topic": "context-engineering",
+    "tags": [
+      "subagent",
+      "context-isolation",
+      "parallelism"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "在复杂 Agent 框架中，常引入“子 Agent”（Subagents，例如专门负责代码库探索的 Explore Subagent 或负责跑测试的 Test Subagent）。关于引入 Subagent 架构的核心优势与设计取舍，下列表达正确的有？（多选）",
+    "explanation": "A正确：独立精简Prompt/工具提升精度。C正确：隔离消化后仅返回摘要防膨胀。D正确：可并行降低延迟。B错误：共享窗口错误。E错误：仍有死循环风险。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "子 Agent 可以拥有独立且精简的 System Prompt 与工具集，从而提高特定子任务（如只读探索）的执行成功率",
+          "主 Agent 与子 Agent 共享同一个连续的 Context 窗口，因此子 Agent 产生的所有长文本搜索结果会自动保留在主 Agent 的上下文中",
+          "子 Agent 能够将大范围的代码检索或杂乱调试日志在自身 Context 内消化，仅将最终凝练的结论返回给主 Agent，有效防止主 Context 膨胀",
+          "可以通过并行启动多个子 Agent 分别调查独立子模块，从而将原本串行的上下文探索过程转化为并发处理以降低整体等待时间",
+          "引入子 Agent 架构能够彻底避免工具调用的死循环问题，因为子 Agent 具备完全独立的判断能力且不受主 Agent 任务目标的约束"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。精简工具提升精度、隔离消化防膨胀、并行降延迟；B共享窗口错误，E仍需护栏。"
+      }
+    }
+  },
+  {
+    "id": "agentic-tdd-04",
+    "category": "agent-fundamentals",
+    "topic": "agent-loop",
+    "tags": [
+      "tdd",
+      "testing",
+      "hallucination"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在利用 Coding Agent 自动编写新功能代码时，研发团队发现 Agent 常常在没有真正实现逻辑的情况下修改测试代码（使其恒真 pass）或伪造假数据，造成“虚假成功”（False Positive）。为了在工程实践中避免此问题，下列哪种 Agentic 交互流程最合理？（单选）",
+    "explanation": "B正确：红绿TDD先失败后锁定防篡改。A仅靠Prompt自查不可靠。C本地不跑测试反馈慢。D正则禁用mock不灵活。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "允许 Agent 同时修改业务代码与单元测试文件，但在 Commit 前引入人工 Prompt 要求 Agent 自查是否修改了断言",
+          "采用红/绿 TDD 模式：先让 Agent 编写测试并运行确认断言失败（红），锁定测试文件权限后，再让 Agent 撰写业务代码直至测试通过（绿）",
+          "禁用 Agent 运行任何本地单元测试命令，改为全部交给远端 CI/CD 流水线，在 CI 失败时直接重新生成整套代码",
+          "在 System Prompt 中写入“禁止伪造测试”，并在每次工具调用时通过正则检查代码中是否包含 mock 或 assert true"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。红阶段验证失败、锁定测试，绿阶段仅改业务代码，从机制上防篡改。"
+      }
+    }
+  },
+  {
+    "id": "agentic-safety-05",
+    "category": "agent-fundamentals",
+    "topic": "safety-alignment",
+    "tags": [
+      "safety",
+      "sandbox",
+      "human-in-the-loop"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "当赋能 Coding Agent 可以在本地环境中执行 Shell 命令或 Git 操作时，系统架构师需要平衡 Agent 的“自主性”与“破坏风险”。下列哪些技术手段属于保障 Agent 安全高效执行工具命令的推荐工程实践？（多选）",
+    "explanation": "A正确：黑名单+人工确认。C正确：沙盒隔离。E正确：只读自动、写操作审批。B错误：频繁push污染主干。D错误：移除Shell退化为Chat。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将高危命令（如 rm -rf、git push --force、删除数据库）列入显式黑名单或要求必须弹出 Human-in-the-loop 确认",
+          "鼓励 Agent 在每次修改代码后直接执行 git commit 和 git push 到主干分支，以确保所有修改被及时持久化",
+          "为 Agent 提供专用的沙盒（Sandbox）环境或隔离容器（如 Docker），限制其访问宿主机敏感目录与网络资源",
+          "移除所有 Shell 执行工具，仅允许 Agent 逐行输出代码更改并由开发者手动复制粘贴到 IDE 中以确保零风险",
+          "允许 Agent 执行只读类指令（如 git status、ls、grep）无需人工审批，仅对写操作或破坏性指令施加审批逻辑"
+        ],
+        "answer": [
+          0,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、E。黑名单确认、沙盒隔离、读写分级；B污染主干，D丧失自主价值。"
+      }
+    }
+  },
+  {
+    "id": "agentic-context-drift-06",
+    "category": "agent-fundamentals",
+    "topic": "pytorch-performance",
+    "tags": [
+      "context-window",
+      "lost-in-the-middle",
+      "drift"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在一次长达数十分钟的复杂代码重构任务中，Coding Agent 在前几轮交互中表现出色，但随着交互轮次达到 40 轮以上、上下文占用接近 128k Token 时，Agent 开始频繁遗忘最开始设定的架构约束，甚至重复执行已经失败过的工具命令。下列哪项是导致该现象的最根本原因？（单选）",
+    "explanation": "C正确：长Context注意力稀释与Lost in Middle。A无状态权重固定。B限流报429非遗忘。D缓存不截断。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "LLM 模型进入了永久性权重退化状态，需要重启 API 服务以清空模型显存中的权重缓存",
+          "频繁的工具调用触发了 API 速率限制（Rate Limit），导致模型随机丢弃返回的 Response",
+          "注意力机制在超长 Context 下出现“Lost in the Middle”效应以及垃圾 Context（噪点 Token）积聚对注意力的稀释",
+          "厂商的 Prefix Caching 机制在超过 32k Token 后会自动将早期的 System Prompt 强制删除"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。超长上下文注意力饱和、中间约束被忽略、垃圾Token稀释是主因。"
+      }
+    }
+  },
+  {
+    "id": "agentic-e2e-07",
+    "category": "agent-fundamentals",
+    "topic": "observability",
+    "tags": [
+      "e2e",
+      "testing",
+      "playwright",
+      "observability"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "为 Web 应用构建基于 Agent 的自动化 UI 测试系统时，为了使 Agent 能够像真实用户一样进行端到端（E2E）测试并生成可靠的 Bug 报告，系统架构设计中应包含下列哪些核心组件或机制？（多选）",
+    "explanation": "A正确：需Headless Browser工具。B正确：记录DOM/Console/Network。D正确：结构化证据链。C错误：忽略错误掩盖Bug。E错误：需截图Vision。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "赋予 Agent 操作无头浏览器（Headless Browser，如 Playwright/Puppeteer）的工具，使其能执行点击、输入和截屏",
+          "在 Agent 的测试执行过程中自动记录 DOM 状态、Console 日志与网络请求（Network Trace），作为诊断凭证",
+          "强制 Agent 在遇到 UI 渲染错误时忽略该错误并跳过相关断言，以确保自动化测试脚本能 100% 运行完毕",
+          "设计结构化的记录工具，让 Agent 在测试步骤的关键节点保存现场“证据链”（如日志记录与截图存盘）",
+          "仅依赖 LLM 对网页 HTML 源码的文本理解，禁止向 LLM 输入任何图像/截图信息，以降低 Token 消耗"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。浏览器工具、DOM/日志/网络追踪、结构化证据链；C掩盖Bug，E需Vision。"
+      }
+    }
+  }
+]

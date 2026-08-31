@@ -1,0 +1,291 @@
+[
+  {
+    "id": "agent-eval-01",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "eval-metrics",
+    "tags": [
+      "pass@k",
+      "pass^k",
+      "agent-eval",
+      "reliability",
+      "trial"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "在对具备随机性的 AI Agent 进行多轮试炼（Trials）评测时，常用的两个统计指标是 pass@k（k 次尝试中至少成功 1 次的概率）和 pass^k（k 次尝试全部成功的概率）。假设某 Agent 解决某类独立任务的单次执行成功率 p = 0.8。关于这两个指标的计算与工程应用场景，下列哪些说法是正确的？",
+    "explanation": "A 正确：pass@3 = 1 - (1-0.8)^3 = 0.992（99.2%），pass^3 = 0.8^3 = 0.512（51.2%）。B 正确：pass@k 衡量「k 次中至少成功一次」，适合探索性生成（如代码修复）中取最优解的场景。C 正确：pass^k 要求 k 次全成功，体现系统高可靠性与行为一致性，适合面向用户的线上 Agent。D 正确：k=1 时二者均等于单次成功率 p。E 错误：这两个指标衡量任务成功概率分布，并不衡量 Token 消耗效率。",
+    "misconceptions": [
+      "误以为 pass@k 与 pass^k 用于衡量 Token 消耗效率",
+      "误以为 pass^k 随 k 增加而递增（实际递减）"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "针对该任务进行 3 次独立试验时，pass@3 的值为 99.2%，而 pass^3 的值为 51.2%",
+          "pass@k 随着 k 的增加而递增，适合用于评估探索性生成任务（如代码修复）中 Agent 找出可行解的能力上限",
+          "pass^k 随着 k 的增加而递减，适合用于评估高可靠性业务场景（如自动化客服）中 Agent 的行为稳定性",
+          "当 k=1 时，pass@k 与 pass^k 的数值相等，均等于 Agent 单次执行的成功概率 p",
+          "pass@k 与 pass^k 均用于衡量 Agent 在多轮重试下的平均 Token 消耗效率"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：pass@k = 1-(1-p)^k（至少成功一次，随 k 递增），pass^k = p^k（全部成功，随 k 递减）；p=0.8 时 pass@3=99.2%、pass^3=51.2%；k=1 时二者都等于 p。pass@k 适合探索性取优，pass^k 适合高可靠线上场景。二者衡量成功概率分布，不衡量 Token 效率。"
+      }
+    }
+  },
+  {
+    "id": "agent-eval-02",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "grader-trace-vs-state",
+    "tags": [
+      "grader",
+      "trajectory",
+      "outcome",
+      "agent-eval",
+      "false-positive"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在复杂 AI Agent 系统评估中，评估器（Grader）通常分为对「轨迹 / 过程（Transcript / Trace）」的检查和对「环境最终状态（Outcome / State）」的检查。关于这两种检查机制的作用与潜在陷阱，下列哪些说法是正确的？",
+    "explanation": "A 正确：仅看轨迹文本会有伪阳性——Agent 可能在最终回复中声明已完成（如「机票已预订」），实际未发起真实 API 调用。B 正确：仅看最终状态可能放过过程违规（如跳过身份鉴权 Tool 而达成预期状态）。C 正确：轨迹含完整 Tool 调用序列、Token 消耗与重试频次，是分析执行效率与成本结构的关键依据。D 正确：缺乏柔性断言的静态轨迹检查会把有效的新解法误判为失败（伪阴性）。E 错误：强制 Tool 参数与标准轨迹绝对一致会让评估过度硬化，无法适应 Agent 探索性自主行为。",
+    "misconceptions": [
+      "以为轨迹检查应强制 Tool 参数与预设标准轨迹绝对一致",
+      "以为仅检查最终状态即可保证过程合规"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "仅依赖轨迹检查容易导致伪阳性，因为 Agent 可能仅在最终回复中声明已完成任务（如「机票已预订」），而实际未在环境中发起 API 调用",
+          "仅依赖环境状态检查容易遗漏过程违规，因为 Agent 可能通过越权调用接口或违反安全策略的方式达到了预期的最终状态断言",
+          "轨迹检查能够完整记录 Tool 调用序列、Token 消耗量与重试频次，是分析 Agent 执行效率与成本结构的关键依据",
+          "当 Agent 采用非预期但合理的替代路径达成目标时，缺乏柔性断言的静态轨迹检查容易产生误判（伪阴性）",
+          "轨迹检查应当强制要求 Agent 的 Tool 调用参数与预设标准轨迹保持绝对一致，以确保评估逻辑的确定性"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：轨迹检查防「口头完成却未执行」（伪阳性），状态检查防「过程违规却达成结果」；轨迹还承载成本/效率分析；但静态轨迹检查会因新解法产生伪阴性。评估应轨迹 + 状态结合，且轨迹断言需柔性，不能强制参数绝对一致。"
+      }
+    }
+  },
+  {
+    "id": "agent-eval-03",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "grader-types",
+    "tags": [
+      "code-grader",
+      "llm-grader",
+      "human-grader",
+      "agent-eval",
+      "rubric"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "评估 Agent 性能时，通常需要结合基于代码的评估器（Code-based Grader）、基于大模型的评估器（LLM-based Grader）和人工评估器（Human Grader）。关于不同评估器的选用策略与工程取舍，下列哪些说法是正确的？",
+    "explanation": "A 正确：代码断言（pytest / 静态分析 / DB 记录校验）确定性高、快、便宜，适合单测与最终状态校验。B 正确：LLM 评估器适合语气、上下文遵循等开放维度，但非确定，需人工对齐 Rubric。C 正确：专家人工评估虽不可扩展，但是建立 LLM 评估器可靠基准（Calibration）的金标准。D 错误：代码与 LLM 评估器互补，绝不能用 LLM 全面替代代码断言（确定性状态检查上代码更经济准确）。E 正确：实践中最常见组合即「硬指标用代码校验，软质量用 LLM 评分」。",
+    "misconceptions": [
+      "以为应当用 LLM 评估器全面替代代码评估器",
+      "以为代码评估器可被 LLM 评估器取代"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基于代码的评估器具备确定性高、执行速度快、成本低等优势，适合用于校验单元测试或数据库最终状态",
+          "基于大模型的评估器适合评估交互语气、上下文遵循度等开放性维度，但存在非确定性且需要人工评测进行校准",
+          "基于人工的评估虽然成本高昂且扩展性受限，但常作为金标准（Gold Standard）用于迭代和校准大模型评估器的 Rubric",
+          "在构建复合评估器时，应当用大模型评估器全面替代代码评估器，以避免维护自动化测试用例所带来的工程开销",
+          "组合评估策略中，可以通过组合硬性代码断言与软性大模型 Rubric，实现对复杂任务成功率与完成质量的综合打分"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：代码评估器确定性高/快/便宜，适合单测与状态校验；LLM 评估器适合开放语义维度但非确定需校准；人工是校准 LLM Rubric 的金标准。三者互补，常见组合是硬指标用代码、软质量用 LLM。绝不可用 LLM 全面替代代码断言。"
+      }
+    }
+  },
+  {
+    "id": "agent-eval-04",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "capability-vs-regression",
+    "tags": [
+      "capability-eval",
+      "regression-eval",
+      "ci-cd",
+      "agent-eval",
+      "lifecycle"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "在 AI Agent 的持续迭代和部署生命周期中，开发团队需要区分能力评估（Capability Evals）与回归评估（Regression Evals）。关于两者的定义、演进关系及在 CI/CD 中的应用，下列哪些说法是正确的？",
+    "explanation": "A 正确：能力评估探索能力边界，初始通过率通常较低，用于指导攻坚演进。B 正确：回归评估是防退化防线，目标通过率近 100%。C 正确：通过率已达标且稳定的能力用例可「毕业」转入回归套件。D 正确：更换底层模型或改动 Scaffold 时，回归套件能第一时间暴露边缘场景下滑。E 错误：回归评估应频繁运行（进 CI pipeline），高成本、长耗时的能力评估通常按需或定期批量运行，而非反过来。",
+    "misconceptions": [
+      "以为能力评估应在每次提交全量运行、回归仅季度跑一次",
+      "以为回归评估可以低频运行而能力评估进 CI"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "能力评估（Capability Evals）旨在探索 Agent 的能力边界，初始通过率通常较低，用于指导系统的攻坚演进",
+          "回归评估（Regression Evals）旨在确保系统在升级或 Prompt 调整后不发生既有能力退化，目标通过率通常接近 100%",
+          "随着 Agent 能力的提升，通过率已达标且稳定的能力评估测试用例可以逐步「毕业」（Graduate）并转入回归评估套件",
+          "当更换底层基础大模型时，回归评估套件能够帮助团队快速验证新模型是否会引起特定边缘场景的性能下滑",
+          "为最大化评测效率，能力评估应在每次代码提交（Git Push）时全量运行，而回归评估仅需在季度发布前运行一次"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：能力评估探索边界、初始通过率低；回归评估防退化、目标通过率近 100%。达标的能力用例可毕业转入回归套件；换模型时回归套件快速暴露边缘退化。运行频率上回归应进 CI 高频跑，能力评估按需/定期跑，与 E 说法相反。"
+      }
+    }
+  },
+  {
+    "id": "agent-eval-05",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "computer-use-perception",
+    "tags": [
+      "computer-use",
+      "browser-agent",
+      "dom",
+      "vision",
+      "agent-eval"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在设计针对 Web / GUI 计算机使用 Agent（Computer Use Agent）的评估与感知架构时，面临 DOM 树解析与屏幕截图（Screenshot / Vision）两种主要的感知交互模式。关于这两种模式的权衡与评估设计，下列哪项分析是正确的？",
+    "explanation": "A 正确：纯文本提取时 DOM 效率极高；但在极度庞大的 DOM（如电商商品页）上，全量 DOM 序列化进上下文会带来巨大 Token 开销与延迟，此时视觉截图反而更省 Token。B 错误：视觉截图在庞大 DOM 场景下可能比完整 DOM 字符串更省 Token，并非所有场景都更贵。C 错误：仅检查最终 URL 易被欺骗（如导航到结算页却未真正下单）。D 错误：Visual Diff 受无害渲染差异（广告弹窗、CSS 动画）影响，且校验不了后端副作用（文件生成、DB 落盘）。",
+    "misconceptions": [
+      "以为仅检查 Agent 最终停留的网页 URL 即可确保任务成功",
+      "以为端到端 GUI 评估只需像素比对无需结合后端状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在长文本提取场景下 DOM 模式消耗更少 Token，但在复杂 DOM 树结构的电商页面上，全量 DOM 模式会导致 Token 消耗大幅上升",
+          "视觉截图模式能够天然兼容非标准 Web 控件和桌面 GUI 应用，但在所有 Web 自动化场景下的 Token 消耗均高于 DOM 解析模式",
+          "评估系统在判断 Browser Agent 任务成功时，仅需检查 Agent 最终停留的网页 URL 即可确保任务结果的准确性",
+          "针对 GUI Agent 的端到端评估应仅依赖最终界面元素的像素比对（Visual Diff），无需结合系统后端数据库或文件系统的状态检验"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：DOM 在纯文本提取时极省 Token，但庞大 DOM 全量序列化开销巨大，此时截图反而更省；截图兼容非标准控件但非所有场景都更贵。成功判定不能只看 URL（易被欺骗）或只看像素 Diff（受无害渲染差异影响、校验不了后端副作用）。"
+      }
+    }
+  },
+  {
+    "id": "agent-eval-06",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "user-simulation",
+    "tags": [
+      "user-simulator",
+      "conversational-agent",
+      "agent-eval",
+      "multi-turn",
+      "adversarial"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "评估多轮对话型 Agent（Conversational Agents，如客户支持、售前咨询 Agent）时，通常需要引入一个模拟用户的大模型（User Simulator LLM）。关于这种模拟交互评估机制的设计与挑战，下列哪些说法是正确的？",
+    "explanation": "A 正确：User Simulator 可按 Persona 动态生成多轮甚至对抗性（Adversarial）交互，进行压力测试。B 错误：模拟器核心价值在于根据被测 Agent 回答动态多轮适应，而非死板执行脚本。C 正确：对话 Agent 评估需多维（是否解决、轮数限制、语气/政策遵循的 LLM Rubric 得分）。D 正确：敏感操作（如退款）需校验是否调用了正确的验证 Tool，而不只看最终回复文本。E 错误：Simulator 扮演用户、Grader 扮演中立裁判，角色不同，混用 Prompt 会破坏评测隔离与客观性。",
+    "misconceptions": [
+      "以为 User Simulator 必须严格按预设脚本输出、不得动态调整",
+      "以为 Simulator 与 Grader 可共享同一 Prompt 人设以简化架构"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "User Simulator 允许评估系统在无人工干预的情况下自动化模拟多轮复杂、甚至带有对抗性（Adversarial）的真实用户交互场景",
+          "为确保评估的客观性，User Simulator 必须严格按照预设的具体对话脚本输出，不得根据 Agent 的中间回答进行动态调整",
+          "对话型 Agent 的成功判定通常需要结合多维指标，包括任务最终解决状态、交互轮数限制以及回复语气 / 政策遵循的 LLM Rubric 得分",
+          "在涉及身份验证或敏感操作的对话流程中，评估工具需要同时检验 Agent 是否调用了正确的验证 Tool，而不仅看最终回复文本",
+          "使用 LLM 作为 User Simulator 与 LLM 作为 Grader 时，可以通过共享相同的 Prompt 人设来简化评估系统的架构设计"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：User Simulator 按 Persona 动态生成多轮/对抗性交互；其价值恰在动态适应而非死板脚本；对话评估需多维（解决状态/轮数/语气合规 Rubric）；敏感操作须校验是否调用正确验证 Tool。Simulator（用户）与 Grader（裁判）角色不同，Prompt 不可混用以保隔离。"
+      }
+    }
+  },
+  {
+    "id": "agent-eval-07",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "subtopic": "flakiness-debugging",
+    "tags": [
+      "flakiness",
+      "sandbox",
+      "agent-eval",
+      "eval-debugging",
+      "inter-annotator"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在对 Agent 评估套件进行构建与调试时，测试用例经常出现「不稳定（Flakiness）」或 Agent 屡次失败（如 pass@100 为 0%）的情况。下列哪些处理和排查策略符合 Agent 评测的最佳实践？",
+    "explanation": "A 正确：前沿模型在大样本（k=100）下通过率仍 0%，极可能是 Task 描述有歧义、缺依赖文件或 Grader 断言本身写错。B 正确：好 Task 应达到两位领域专家对通过/失败判定高度一致（高 Inter-annotator Agreement）。C 正确：隔离沙盒 + 每 Trial 前重置状态保证可重复，防止上一次 Trial 残留污染。D 错误：评测关注目标与约束是否达成，不应因 Agent 探索出有效新方法而盲目判错（这是静态过严 Grader 的典型缺陷）。E 正确：评估集构建遵循 80/20，前期 20~50 个来自真实失败的高质量用例足以推动早期演进，胜过盲目堆数千合成题。",
+    "misconceptions": [
+      "以为 Agent 提出创新但合规的解法应直接判定为失败",
+      "以为应优先堆数千个合成 Task 而非积累真实失败案例"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当前沿大模型在某个评估任务上的 pass@100 概率为 0% 时，工程团队应优先检查该任务描述与 Grader 是否存在隐式假设或漏洞",
+          "好的评估 Task 应当达到「两位领域专家独立审阅该任务描述和测试环境后，能够对其通过 / 失败判定达成一致」的明确程度",
+          "针对代码或环境修改类 Agent，评估套件应提供干净且隔离的沙盒环境（Sandbox），并在每个 Trial 执行前重置环境状态",
+          "若 Agent 在尝试解决问题时提出了与预设参考方案不同但能够完全满足业务约束的创新解法，Grader 应直接判定为失败",
+          "在 Agent 评估初始阶段，开发团队应优先积累 20~50 个源自真实失败案例的典型 Task，而不是盲目追求构建包含数千个合成 Task 的庞大评测集"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：大样本（k=100）仍 0% 先查 Task 描述/Grader 漏洞；好 Task 需两位专家判定高度一致；隔离沙盒+Trial 前重置保证可重复；不应因 Agent 创新合规解法判错；前期优先积累 20~50 个真实失败用例，胜过堆数千合成题。"
+      }
+    }
+  }
+]
