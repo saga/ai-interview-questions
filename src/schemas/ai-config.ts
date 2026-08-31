@@ -11,11 +11,14 @@ const providerEntrySchema = z.object({
 });
 
 const promptConfigSchema = z.object({
-  agentSystem: z.string().optional(),
+  /**
+   * 用户自定义指令（目标 / 风格 / 偏好层）。
+   * 它**只追加**在不可覆盖的安全层与契约层之后（见 `buildAgentSystemPrompt`），
+   * 永远不会替换或覆盖内置 system prompt。缺省为空（仅用安全层 + 契约层）。
+   */
+  agentInstructions: z.string().optional(),
   /** Agent 开场指令（首轮 user 消息）：本轮流程与停止条件。缺省用 `INTERVIEW_AGENT_OPENING_INSTRUCTION`。 */
   agentOpening: z.string().optional(),
-  evaluationSystem: z.string().optional(),
-  variantSystem: z.string().optional(),
 });
 
 export const proficiencyConfigSchema = z.object({

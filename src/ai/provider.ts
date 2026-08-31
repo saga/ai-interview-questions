@@ -68,7 +68,6 @@ export class PiAIProvider implements LLMProvider {
   /** KV Cache 命中遥测（P1④）：把每次 one-shot 补全的归一化用量回传给上层（如 dev 控制台 / 调试面板）。 */
   constructor(
     private readonly entry: ProviderEntry,
-    private readonly prompts?: AIConfig['prompts'],
     private readonly onUsage?: (usage: LLMUsage) => void,
   ) {
     this.name = `pi-ai(${entry.id})`;
@@ -77,7 +76,9 @@ export class PiAIProvider implements LLMProvider {
   async generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {
     // 声明 jsonMode 能力的引擎（deepseek / openrouter）开启原生 JSON 模式：强制合法 JSON 输出，
     // 减少因非 JSON 引发的整段重生成（省 token）。
-    return generateVariant(q, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, onUsage: this.onUsage }), format, this.prompts?.variantSystem?.trim() || undefined);
+    // 评分 / 变体系统提示词由 evaluate.ts / variant.ts 内部固定为不可变的 EVAL_SYSTEM / VARIANT_SYSTEM，
+    // 这里**不**透传任何用户自定义 system（用户配置不允许覆盖评分协议与题库完整性协议）。
+    return generateVariant(q, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, onUsage: this.onUsage }), format);
   }
 
   async evaluateOpenAnswer(
@@ -89,7 +90,8 @@ export class PiAIProvider implements LLMProvider {
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
     // 评分是确定性场景：声明 jsonMode 的引擎走原生 JSON 模式 + temperature 0（稳定且省 token）。
-    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, temperature: 0, onUsage: this.onUsage }), effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
+    // 评分 system 始终用 evaluate.ts 的不可变 EVAL_SYSTEM（见上方说明）。
+    return evalOpen(q, open, userAnswer, (system, user) => callLLM(this.entry, system, user, { jsonMode: true, temperature: 0, onUsage: this.onUsage }), effectiveRubric, extraCriteria, requiredPoints);
   }
 
   async challengeQuestion(q: Question): Promise<QuestionChallenge> {
@@ -102,10 +104,8 @@ export class PiAIProvider implements LLMProvider {
 export class ChromeAIProvider implements LLMProvider {
   readonly name = 'chrome';
 
-  constructor(private readonly prompts?: AIConfig['prompts']) {}
-
   async generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {
-    return generateVariant(q, chromeComplete, format, this.prompts?.variantSystem?.trim() || undefined);
+    return generateVariant(q, chromeComplete, format);
   }
 
   async evaluateOpenAnswer(
@@ -116,7 +116,7 @@ export class ChromeAIProvider implements LLMProvider {
     extraCriteria?: string,
   ): Promise<EvaluationResult> {
     const { rubric: effectiveRubric, requiredPoints } = mergeQuestionRubric(q, rubric);
-    return evalOpen(q, open, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints, this.prompts?.evaluationSystem?.trim() || undefined);
+    return evalOpen(q, open, userAnswer, chromeComplete, effectiveRubric, extraCriteria, requiredPoints);
   }
 
   async challengeQuestion(q: Question): Promise<QuestionChallenge> {
@@ -164,8 +164,8 @@ export class FallbackProvider implements LLMProvider {
   }
 }
 
-function buildEntryProvider(entry: ProviderEntry, prompts?: AIConfig['prompts'], onUsage?: (usage: LLMUsage) => void): LLMProvider {
-  return entry.id === 'chrome' ? new ChromeAIProvider(prompts) : new PiAIProvider(entry, prompts, onUsage);
+function buildEntryProvider(entry: ProviderEntry, onUsage?: (usage: LLMUsage) => void): LLMProvider {
+  return entry.id === 'chrome' ? new ChromeAIProvider() : new PiAIProvider(entry, onUsage);
 }
 
 /** 由配置构造 LLMProvider：把所有启用且合法的引擎按顺序串成降级链；
@@ -175,7 +175,7 @@ export function createLLMProvider(config?: AIConfig, onUsage?: (usage: LLMUsage)
   if (!config || !isConfigValid(config)) return null;
   const chain = config.providers
     .filter((p) => p.enabled && isEntryValid(p))
-    .map((entry) => buildEntryProvider(entry, config.prompts, onUsage));
+    .map((entry) => buildEntryProvider(entry, onUsage));
   if (chain.length === 0) return null;
   return chain.length === 1 ? chain[0] : new FallbackProvider(chain);
 }

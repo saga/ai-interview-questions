@@ -228,7 +228,7 @@ export function useAgentInterview(
         provider: createLLMProvider(config, devUsageLogger),
         generateOpenQuestions: config.generateOpenQuestions,
         masteryThreshold: config.masteryThreshold,
-        systemPrompt: config.prompts?.agentSystem,
+        agentInstructions: config.prompts?.agentInstructions,
         onUsage: devUsageLogger,
         handlers: {
           onQuestion: (q) => {
@@ -420,7 +420,7 @@ export function useAgentInterview(
         provider: createLLMProvider(config, devUsageLogger),
         generateOpenQuestions: config.generateOpenQuestions,
         masteryThreshold: config.masteryThreshold,
-        systemPrompt: config.prompts?.agentSystem,
+        agentInstructions: config.prompts?.agentInstructions,
         onUsage: devUsageLogger,
         handlers: {
           onQuestion: (q) => {

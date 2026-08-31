@@ -25,7 +25,7 @@ import { availableFormats } from '../domain/quiz';
 import { pickNextAdaptive, type AnswerSignal } from '../domain/adaptive';
 import { createAgentTools } from './tools';
 import { evaluateSessionQuestion } from '../application/sessionEvaluator';
-import { INTERVIEW_AGENT_SYSTEM_PROMPT } from './prompt';
+import { buildAgentSystemPrompt } from './prompt';
 import { buildAgentRuntime } from './runtime';
 import { piUsageToLLMUsage } from '../ai/pi';
 import type { LLMUsage } from '../types';
@@ -106,8 +106,9 @@ export interface CreateInterviewAgentOptions {
   generateOpenQuestions?: boolean;
   /** 主题达标线（0-100）；默认 75。 */
   masteryThreshold?: number;
-  /** 覆盖 Agent 系统提示词；为空时使用内置默认值。 */
-  systemPrompt?: string;
+  /** 用户自定义指令（目标 / 风格 / 偏好层）。只追加在不可覆盖的安全层 + 契约层之后，
+   *  绝不会替换或覆盖内置 system prompt；为空时仅用安全层 + 契约层（见 `buildAgentSystemPrompt`）。 */
+  agentInstructions?: string;
   /** KV Cache 命中遥测（P1④）：每轮 assistant 消息结束（含工具调用轮）回传归一化用量。
    * 多轮 append-only 对话下，cacheHitTokens 应随轮次递增——这是验证 stable-prefix 是否命中缓存的真凭实据。 */
   onUsage?: (usage: LLMUsage) => void;
@@ -141,13 +142,14 @@ export interface InterviewAgentHandle {
  * - 工具注入方式：Agent 构造不接受 tools 选项，只能事后通过 state.tools 注入（已验证的 SDK 约定）。
  */
 export function createInterviewAgent(opts: CreateInterviewAgentOptions): InterviewAgentHandle {
-  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, masteryThreshold, systemPrompt: configuredSystemPrompt } = opts;
+  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, masteryThreshold, agentInstructions: configuredInstructions } = opts;
   const runtime = opts.runtimeOverride ?? buildAgentRuntime(entry);
   const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions, masteryThreshold });
   const bankById = new Map(bank.map((q) => [q.id, q]));
 
-  // 关闭开放题时，把开关状态注入系统提示，让 Agent 主动只选选择题（减少无效请求被拒）。
-  const systemPrompt = (configuredSystemPrompt?.trim() || INTERVIEW_AGENT_SYSTEM_PROMPT) + (generateOpenQuestions
+  // 分层构建系统提示：安全层 + 契约层（不可覆盖）始终在前，用户自定义指令只追加在后。
+  // 关闭开放题时，把开关状态作为「本轮配置」追加在最后，让 Agent 主动只选选择题（减少无效请求被拒）。
+  const systemPrompt = buildAgentSystemPrompt(configuredInstructions) + (generateOpenQuestions
     ? ''
     : `\n\n## 本轮配置\n「生成开放题」开关已关闭：请只选择并使用选择题（choice），不要请求开放题（open），否则会被系统拦截并要求换题。`);
   const agent = new Agent({

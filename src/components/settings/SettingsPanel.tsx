@@ -9,10 +9,8 @@ import { DEFAULT_CONFIG, stringifyConfig } from '../../storage/settings';
 import { getAIConfigJsonSchema } from '../../schemas/jsonSchema';
 import { getErrorLogs, clearErrorLogs, recordLog, type ErrorLogEntry } from '../../storage/db';
 import { resetLearnerData } from '../../storage/learner';
-import { INTERVIEW_AGENT_OPENING_INSTRUCTION, INTERVIEW_AGENT_SYSTEM_PROMPT } from '../../agent/prompt';
+import { INTERVIEW_AGENT_OPENING_INSTRUCTION, USER_CUSTOM_PROMPT_MAX } from '../../agent/prompt';
 import { MAX_AGENT_QUESTIONS } from '../../agent/interviewAgent';
-import { EVAL_SYSTEM } from '../../ai/evaluate';
-import { VARIANT_SYSTEM } from '../../ai/variant';
 import type { PromptDraft } from '../../hooks/useSettingsDraft';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
@@ -282,12 +280,24 @@ export default function SettingsPanel({
           <Alert
             type="info"
             showIcon
-            message="提示词覆盖"
-            description="这里修改的内容会在下一次 AI 调用时生效；恢复为默认文本即可删除自定义覆盖。提示词仅保存在本机。"
+            message="提示词分层（不可覆盖的安全层 + 可配置偏好层）"
+            description="内置的「安全策略」与「面试官契约」系统提示词始终生效且不可修改——它们负责安全边界与评分/题库完整性协议。你只能配置下方的「Agent 自定义指令」（目标 / 风格 / 偏好），它只追加在安全层之后，无法覆盖它们。配置仅保存在本机，下次 AI 调用时生效。"
           />
           <div>
-            <Typography.Text strong>Agent 系统提示词</Typography.Text>
-            <Input.TextArea autoSize={{ minRows: 10, maxRows: 24 }} value={promptDraft.agentSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, agentSystem: event.target.value }))} />
+            <Typography.Text strong>Agent 自定义指令</Typography.Text>
+            <div style={{ marginBottom: 4 }}>
+              <Typography.Text type="secondary">
+                描述你希望这场面试怎样进行（考察重点、提问风格、语气、偏好等）。它不是系统提示词、不能改写安全边界，模型会把它作为偏好参考。最多 {USER_CUSTOM_PROMPT_MAX} 字符，超出部分会截断。
+              </Typography.Text>
+            </div>
+            <Input.TextArea
+              autoSize={{ minRows: 6, maxRows: 16 }}
+              maxLength={USER_CUSTOM_PROMPT_MAX}
+              showCount
+              value={promptDraft.agentInstructions}
+              onChange={(event) => setPromptDraft((current) => ({ ...current, agentInstructions: event.target.value }))}
+              placeholder="例如：多考察系统设计，少问纯记忆题；用中文回答；语气更严厉一些。"
+            />
           </div>
           <div>
             <Typography.Text strong>Agent 开场指令</Typography.Text>
@@ -298,16 +308,8 @@ export default function SettingsPanel({
             </div>
             <Input.TextArea autoSize={{ minRows: 5, maxRows: 16 }} value={promptDraft.agentOpening} onChange={(event) => setPromptDraft((current) => ({ ...current, agentOpening: event.target.value }))} />
           </div>
-          <div>
-            <Typography.Text strong>开放题评分系统提示词</Typography.Text>
-            <Input.TextArea autoSize={{ minRows: 5, maxRows: 16 }} value={promptDraft.evaluationSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, evaluationSystem: event.target.value }))} />
-          </div>
-          <div>
-            <Typography.Text strong>题目变体系统提示词</Typography.Text>
-            <Input.TextArea autoSize={{ minRows: 10, maxRows: 28 }} value={promptDraft.variantSystem} onChange={(event) => setPromptDraft((current) => ({ ...current, variantSystem: event.target.value }))} />
-          </div>
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-            <Button onClick={() => setPromptDraft({ agentSystem: INTERVIEW_AGENT_SYSTEM_PROMPT, agentOpening: INTERVIEW_AGENT_OPENING_INSTRUCTION, evaluationSystem: EVAL_SYSTEM, variantSystem: VARIANT_SYSTEM })}>恢复提示词默认值</Button>
+            <Button onClick={() => setPromptDraft({ agentInstructions: '', agentOpening: INTERVIEW_AGENT_OPENING_INSTRUCTION })}>恢复提示词默认值</Button>
             <Button type="primary" icon={<SaveOutlined />} onClick={handlePromptSave}>保存提示词</Button>
           </Space>
         </Space>

@@ -118,6 +118,150 @@ export default function App() {
     void handleStart(def);
   };
 
+  // 渲染主区：把 (phase, page) → 组件的映射收敛到单一函数，
+  // 让 P0-1 的不变量（进行中会话仅 /train 渲染）在一处可读、可审计，避免分支漂移再次白屏。
+  const renderContent = (p: LearnerProfile): ReactNode => {
+    // 进行中的训练会话（quiz / result）只在 /train 渲染；其它页无对应分支会白屏。
+    // 菜单已禁用非 train 的 tab，这里再兜底一处守卫。
+    if (phase === 'quiz' || phase === 'result') {
+      if (page !== 'train') return null;
+      if (phase === 'result') {
+        return (
+          <ResultPanel
+            questions={questions}
+            answers={answers}
+            grades={grades}
+            profile={p}
+            prevOverall={prevOverall}
+            onContinue={handleContinue}
+            onRestart={handleRestart}
+          />
+        );
+      }
+      // phase === 'quiz'
+      if (session?.definition.adaptive) {
+        if (questions[adaptiveCursor]) {
+          return (
+            <div style={{ maxWidth: 820, margin: '0 auto' }}>
+              <AdaptiveQuiz
+                sq={questions[adaptiveCursor]}
+                index={adaptiveCursor}
+                total={session.definition.count}
+                value={
+                  answers[questions[adaptiveCursor].question.id] ??
+                  emptyAnswer(questions[adaptiveCursor])
+                }
+                strategy={strategies[adaptiveCursor]}
+                evaluating={busy != null}
+                hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].question.id])}
+                onChange={(v) => handleAnswerChange(questions[adaptiveCursor].question.id, v)}
+                onSubmitNext={() => void handleAdaptiveNext()}
+                onFinish={() => void handleFinishEarly()}
+                challengerEnabled={config.questionChallengerEnabled}
+                challengerProvider={challengerProvider}
+              />
+            </div>
+          );
+        }
+        return (
+          <div style={{ maxWidth: 820, margin: '0 auto' }}>
+            <Alert
+              type="success"
+              showIcon
+              message={`已完成 ${questions.length} 道自适应题目`}
+              description="每题均已实时评分。点击下方按钮查看完整结果与薄弱项分析。"
+              action={
+                <Button type="primary" disabled={busy != null} onClick={() => void doSubmit()}>
+                  查看训练结果
+                </Button>
+              }
+            />
+          </div>
+        );
+      }
+      // 非自适应：完整题目列表
+      return (
+        <div>
+          <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
+            <Tag color="blue">共 {questions.length} 题</Tag>
+            <span>
+              已答 {answeredCount}/{questions.length}
+            </span>
+            <Progress
+              percent={Math.round((answeredCount / questions.length) * 100)}
+              size="small"
+              style={{ width: 160 }}
+            />
+            <Button onClick={handleRestart}>退出</Button>
+          </Space>
+          {questions.map((sq, i) => (
+            <QuestionCard
+              key={`${sq.question.id}-${i}`}
+              index={i}
+              question={sq.question}
+              format={sq.format}
+              value={answers[sq.question.id] ?? emptyAnswer(sq)}
+              onChange={(v) => handleAnswerChange(sq.question.id, v)}
+              challengerEnabled={config.questionChallengerEnabled}
+              challengerProvider={challengerProvider}
+            />
+          ))}
+          <Button type="primary" size="large" block disabled={busy != null} onClick={doSubmit}>
+            提交并查看结果
+          </Button>
+        </div>
+      );
+    }
+
+    // phase === 'home'：按当前 page 渲染首页型组件
+    switch (page) {
+      case 'train':
+        return (
+          <TrainingHome
+            categories={bank.categories}
+            config={config}
+            profile={p}
+            onStart={startSession}
+            onGoSettings={() => goPage('settings')}
+          />
+        );
+      case 'progress':
+        return (
+          <ProgressPage
+            profile={p}
+            onGoTrain={() => goPage('train')}
+            coverage={computeCoverage(collectTopicRefs(bank.questions), p)}
+            suggestions={suggestNextTopics(collectTopicRefs(bank.questions), p)}
+            disabledCategories={config.disabledCategories ?? []}
+            onToggleCategory={handleToggleCategory}
+          />
+        );
+      case 'interview':
+        return (
+          <InterviewPage
+            config={config}
+            profile={p}
+            onStart={startSession}
+            onGoSettings={() => goPage('settings')}
+          />
+        );
+      case 'settings':
+        return <SettingsPanel onResetLearner={resetLearnerProfile} {...settings} />;
+      case 'agent':
+        return (
+          <AgentInterviewPage
+            config={config}
+            challengerProvider={challengerProvider}
+            onGoSettings={() => goPage('settings')}
+            onGoProgress={() => goPage('progress')}
+            {...agent}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
   if (location.pathname === '/' || location.pathname === '') {
     return <Navigate to="/train" replace />;
@@ -195,140 +339,7 @@ export default function App() {
             <Spin size="large" tip="正在加载学习记录…" />
           </div>
         ) : (
-          <LearnerBound profile={profile}>
-            {(displayedProfile) => (
-              <>
-                {phase === 'home' && page === 'train' && (
-                  <TrainingHome
-                    categories={bank.categories}
-                    config={config}
-                    profile={displayedProfile}
-                    onStart={startSession}
-                    onGoSettings={() => goPage('settings')}
-                  />
-                )}
-
-                {phase === 'home' && page === 'progress' && (
-                  <ProgressPage
-                    profile={displayedProfile}
-                    onGoTrain={() => goPage('train')}
-                    coverage={computeCoverage(collectTopicRefs(bank.questions), displayedProfile)}
-                    suggestions={suggestNextTopics(collectTopicRefs(bank.questions), displayedProfile)}
-                    disabledCategories={config.disabledCategories ?? []}
-                    onToggleCategory={handleToggleCategory}
-                  />
-                )}
-
-                {phase === 'home' && page === 'interview' && (
-                  <InterviewPage
-                    config={config}
-                    profile={displayedProfile}
-                    onStart={startSession}
-                    onGoSettings={() => goPage('settings')}
-                  />
-                )}
-
-                {phase === 'home' && page === 'settings' && (
-                  <SettingsPanel
-                    onResetLearner={resetLearnerProfile}
-                    {...settings}
-                  />
-                )}
-
-                {phase === 'home' && page === 'agent' && (
-                  <AgentInterviewPage
-                    config={config}
-                    challengerProvider={challengerProvider}
-                    onGoSettings={() => goPage('settings')}
-                    onGoProgress={() => goPage('progress')}
-                    {...agent}
-                  />
-                )}
-
-                {phase === 'quiz' && page === 'train' && session?.definition.adaptive && questions[adaptiveCursor] && (
-                  <div style={{ maxWidth: 820, margin: '0 auto' }}>
-                    <AdaptiveQuiz
-                      sq={questions[adaptiveCursor]}
-                      index={adaptiveCursor}
-                      total={session.definition.count}
-                      value={
-                        answers[questions[adaptiveCursor].question.id] ??
-                        emptyAnswer(questions[adaptiveCursor])
-                      }
-                      strategy={strategies[adaptiveCursor]}
-                      evaluating={busy != null}
-                      hasAnswer={hasAnswerValue(answers[questions[adaptiveCursor].question.id])}
-                      onChange={(v) => handleAnswerChange(questions[adaptiveCursor].question.id, v)}
-                      onSubmitNext={() => void handleAdaptiveNext()}
-                      onFinish={() => void handleFinishEarly()}
-                      challengerEnabled={config.questionChallengerEnabled}
-                      challengerProvider={challengerProvider}
-                    />
-                  </div>
-                )}
-
-                {phase === 'quiz' && page === 'train' && session?.definition.adaptive && !questions[adaptiveCursor] && (
-                  <div style={{ maxWidth: 820, margin: '0 auto' }}>
-                    <Alert
-                      type="success"
-                      showIcon
-                      message={`已完成 ${questions.length} 道自适应题目`}
-                      description="每题均已实时评分。点击下方按钮查看完整结果与薄弱项分析。"
-                      action={
-                        <Button type="primary" disabled={busy != null} onClick={() => void doSubmit()}>
-                          查看训练结果
-                        </Button>
-                      }
-                    />
-                  </div>
-                )}
-
-                {phase === 'quiz' && page === 'train' && !(session?.definition.adaptive && questions[adaptiveCursor]) && !(session?.definition.adaptive && !questions[adaptiveCursor]) && (
-                  <div>
-                    <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-                      <Tag color="blue">共 {questions.length} 题</Tag>
-                      <span>
-                        已答 {answeredCount}/{questions.length}
-                      </span>
-                      <Progress
-                        percent={Math.round((answeredCount / questions.length) * 100)}
-                        size="small"
-                        style={{ width: 160 }}
-                      />
-                      <Button onClick={handleRestart}>退出</Button>
-                    </Space>
-                    {questions.map((sq, i) => (
-                      <QuestionCard
-                        key={`${sq.question.id}-${i}`}
-                        index={i}
-                        question={sq.question}
-                        format={sq.format}
-                        value={answers[sq.question.id] ?? emptyAnswer(sq)}
-                        onChange={(v) => handleAnswerChange(sq.question.id, v)}
-                        challengerEnabled={config.questionChallengerEnabled}
-                        challengerProvider={challengerProvider}
-                      />
-                    ))}
-                    <Button type="primary" size="large" block disabled={busy != null} onClick={doSubmit}>
-                      提交并查看结果
-                    </Button>
-                  </div>
-                )}
-
-                {phase === 'result' && page === 'train' && (
-                  <ResultPanel
-                    questions={questions}
-                    answers={answers}
-                    grades={grades}
-                    profile={displayedProfile}
-                    prevOverall={prevOverall}
-                    onContinue={handleContinue}
-                    onRestart={handleRestart}
-                  />
-                )}
-              </>
-            )}
-          </LearnerBound>
+          <LearnerBound profile={profile}>{(displayedProfile) => renderContent(displayedProfile)}</LearnerBound>
         )}
       </Layout.Content>
         <CopilotSidebar

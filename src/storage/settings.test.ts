@@ -28,7 +28,7 @@ describe('配置审计日志', () => {
       providers: DEFAULT_CONFIG.providers.map((provider) =>
         provider.id === 'deepseek' ? { ...provider, enabled: true, model: 'm', apiKey: secret } : provider,
       ),
-      prompts: { agentSystem: 'private prompt body', agentOpening: 'private opening body' },
+      prompts: { agentInstructions: 'private prompt body', agentOpening: 'private opening body' },
     });
 
     const logs = await getErrorLogs();
@@ -184,6 +184,50 @@ describe('saveConfig / loadConfig 往返', () => {
     saveConfig(c);
     expect(loadConfig().prompts?.agentOpening).toBe('只考 RAG，5 题，不要查薄弱主题');
   });
+
+  it('prompts.agentInstructions 原样往返（用户自定义偏好层可持久化）', () => {
+    const c: AIConfig = {
+      ...DEFAULT_CONFIG,
+      prompts: { agentInstructions: '多问系统设计，语气严厉' },
+    };
+    saveConfig(c);
+    expect(loadConfig().prompts?.agentInstructions).toBe('多问系统设计，语气严厉');
+  });
+
+  it('兼容旧字段：agentSystem 迁移为 agentInstructions，evaluationSystem/variantSystem 被丢弃', () => {
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'chrome', enabled: true }],
+      prompts: {
+        agentSystem: '旧的系统提示词副本',
+        agentOpening: '旧开场',
+        evaluationSystem: '旧的评分系统提示词',
+        variantSystem: '旧的变体系统提示词',
+      },
+    });
+    const loaded = loadConfig();
+    expect(loaded.prompts?.agentInstructions).toBe('旧的系统提示词副本');
+    expect(loaded.prompts?.agentOpening).toBe('旧开场');
+    // 不可再配置的字段直接丢弃，不应出现在读回结果中
+    expect(loaded.prompts).not.toHaveProperty('evaluationSystem');
+    expect(loaded.prompts).not.toHaveProperty('variantSystem');
+  });
+
+  it('新字段 agentInstructions 优先于旧字段 agentSystem（不回退到旧值）', () => {
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'chrome', enabled: true }],
+      prompts: { agentSystem: '旧值', agentInstructions: '新值' },
+    });
+    expect(loadConfig().prompts?.agentInstructions).toBe('新值');
+  });
+
+  it('prompts 仅含不可配置的 eval/variant 字段时，读回时不带 prompts（避免空噪音字段）', () => {
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'chrome', enabled: true }],
+      prompts: { evaluationSystem: 'x', variantSystem: 'y' },
+    });
+    const loaded = loadConfig();
+    expect(loaded.prompts).toBeUndefined();
+  });
 });
 
 describe('stringifyConfig', () => {
@@ -246,7 +290,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     expect(ok.ok).toBe(true);
     if (ok.ok) expect(ok.config.prompts?.agentOpening).toBe('改成 15 题');
 
-    // 非字符串 → 整个配置被拒（与 agentSystem 同口径，不静默丢弃）
+    // 非字符串 → 整个配置被拒（与 agentInstructions 同口径，不静默丢弃）
     const bad = parseConfigJSON(JSON.stringify({ ...base, prompts: { agentOpening: 15 } }));
     expect(bad.ok).toBe(false);
     if (!bad.ok) expect(bad.error).toContain('agentOpening');

@@ -29,10 +29,8 @@ function safeConfigSnapshot(config: AIConfig) {
     disabledCategories: [...(config.disabledCategories ?? [])],
     proficiency: { ...config.proficiency },
     prompts: {
-      agentSystem: { present: Boolean(config.prompts?.agentSystem), length: config.prompts?.agentSystem?.length ?? 0 },
+      agentInstructions: { present: Boolean(config.prompts?.agentInstructions), length: config.prompts?.agentInstructions?.length ?? 0 },
       agentOpening: { present: Boolean(config.prompts?.agentOpening), length: config.prompts?.agentOpening?.length ?? 0 },
-      evaluationSystem: { present: Boolean(config.prompts?.evaluationSystem), length: config.prompts?.evaluationSystem?.length ?? 0 },
-      variantSystem: { present: Boolean(config.prompts?.variantSystem), length: config.prompts?.variantSystem?.length ?? 0 },
     },
   };
 }
@@ -71,7 +69,19 @@ export function loadConfig(): AIConfig {
         : [];
       const proficiencyResult = proficiencyConfigSchema.safeParse(parsed.proficiency);
       const proficiency = proficiencyResult.success ? proficiencyResult.data : proficiencyConfigSchema.parse({});
-      const prompts = parsed.prompts && typeof parsed.prompts === 'object' ? parsed.prompts : undefined;
+      // 提示词配置迁移：
+      // - 旧字段 `agentSystem` 重命名为 `agentInstructions`（用户自定义偏好层）；新字段优先。
+      // - `evaluationSystem` / `variantSystem` 已不再可配置（评分 / 变体协议改为不可变，见 ADR-036），直接丢弃。
+      // - 仅保留 `agentInstructions` / `agentOpening`，且只有确实含有效字段时才带上 prompts。
+      const rawPrompts =
+        parsed.prompts && typeof parsed.prompts === 'object' ? (parsed.prompts as Record<string, unknown>) : undefined;
+      const prompts = rawPrompts
+        ? {
+            ...(typeof rawPrompts.agentSystem === 'string' ? { agentInstructions: rawPrompts.agentSystem } : {}),
+            ...(typeof rawPrompts.agentInstructions === 'string' ? { agentInstructions: rawPrompts.agentInstructions } : {}),
+            ...(typeof rawPrompts.agentOpening === 'string' ? { agentOpening: rawPrompts.agentOpening } : {}),
+          }
+        : undefined;
       if (Array.isArray(parsed.providers)) {
         const providers = parsed.providers
           .map(sanitizeEntry)
@@ -86,7 +96,7 @@ export function loadConfig(): AIConfig {
             masteryThreshold,
             disabledCategories,
             proficiency,
-            ...(prompts ? { prompts } : {}),
+            ...(prompts && Object.keys(prompts).length > 0 ? { prompts } : {}),
           };
         }
       }

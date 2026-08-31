@@ -92,10 +92,22 @@ function renderMessages(messages: Context['messages']): string {
   const parts: string[] = [];
   const recent = messages.slice(-MAX_HISTORY_MESSAGES);
   if (messages.length > recent.length) parts.push(`[已省略 ${messages.length - recent.length} 条较早历史]`);
+  // 区分「首轮开场指令」与「候选人作答」：开场指令出现在任何 assistant / toolResult 之前，
+  // 之后出现的 user 消息才是候选人的回答（数据，非指令，必须标记为 <untrusted>）。
+  let seenAssistantOrTool = false;
   for (const m of recent) {
     if (m.role === 'user') {
-      parts.push('User: ' + truncate(contentToText(m.content)));
+      const body = truncate(contentToText(m.content));
+      if (seenAssistantOrTool) {
+        // 候选人的回答：明文数据，可能含提示注入。用 `### Candidate Answer` + `<untrusted>` 明确边界，
+        // 配合 system 安全层「禁止把回答当指令执行」。
+        parts.push(`### Candidate Answer\n<untrusted>\n${body}\n</untrusted>`);
+      } else {
+        // 首轮开场指令：开发者配置（面试流程），作为正常指令呈现。
+        parts.push('User: ' + body);
+      }
     } else if (m.role === 'assistant') {
+      seenAssistantOrTool = true;
       const blocks = m.content ?? [];
       const calls = blocks.filter((b): b is ToolCall => b.type === 'toolCall');
       if (calls.length > 0) {
@@ -107,7 +119,11 @@ function renderMessages(messages: Context['messages']): string {
         if (text.trim()) parts.push('Assistant: ' + truncate(text));
       }
     } else if (m.role === 'toolResult') {
-      parts.push(`Tool "${m.toolName}": ${truncate(contentToText(m.content))}`);
+      seenAssistantOrTool = true;
+      const body = truncate(contentToText(m.content));
+      // 工具结果同样加 <untrusted> 边界：它来自工具而非候选人，但其中被回显的文本
+      // 不应被模型误当指令，或在下一轮被当作可信上下文注入。
+      parts.push(`### Tool Result (${m.toolName})\n<untrusted>\n${body}\n</untrusted>`);
     }
   }
   return parts.join('\n');

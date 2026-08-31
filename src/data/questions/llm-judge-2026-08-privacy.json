@@ -1,0 +1,202 @@
+[
+  {
+    "id": "llm-judge-privacy-01",
+    "category": "evaluation",
+    "topic": "llm-application-security",
+    "tags": [
+      "llm-as-judge",
+      "privacy",
+      "debugging",
+      "aggregation"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "某 AI 平台构建了一套面向大规模用户对话日志的隐私保护分析系统。系统不允许研究人员直接阅读原始文本，而是由研究人员编写自然语言分类 Query，利用大语言模型（LLM-as-a-Judge）对全量日志进行逐条判断，最终仅输出分类比例（Percentage Statistics）等聚合结果。在维护与调试该系统时，下列关于其内部机制与潜在失效模式的说法，哪些是正确的？（多选）",
+    "explanation": "A正确：Query措辞高度敏感易致误分类。B正确：无法调阅原始样本难以定位错误。E正确：LLM长上下文隐含意图优于关键词。C错误：无法消除采样偏差。D错误：聚合仍需二次安全审查。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分类 Query 的措辞微调对分类结果极其敏感，不当的提示词描述可能导致模型将大量对话错误归类",
+          "由于研究人员无法调阅底层原始对话样本进行人工校验，分类错误极难被直接识别与定位",
+          "该模式通过引入非确定性的 LLM 判规，自动消除了一切统计学上的采样偏差（Sampling Bias）",
+          "聚合统计机制彻底解决了数据泄漏风险，无需对分类结果进行涉及内容安全与违规绕过手段的二次审查",
+          "依赖 LLM 判断的分类模型在处理长上下文多轮对话时，对逻辑隐含意图的识别精度通常优于简单关键字匹配"
+        ],
+        "answer": [
+          0,
+          1,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、E。A对Prompt敏感，B隐私隔离难校验，E长上下文语义优于关键词；C不能消除采样偏差，D聚合仍需安全审查。"
+      }
+    }
+  },
+  {
+    "id": "prompt-calibration-shift-02",
+    "category": "evaluation",
+    "topic": "training-data",
+    "tags": [
+      "distribution-shift",
+      "prompt-calibration",
+      "wildchat"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "团队在将 LLM 分类 Query 应用于生产环境真实对话日志之前，通常需要对分类 Prompt 进行校准和迭代。若团队选择在一个公开的、偏向休闲与创意类对话的开源数据集（如 WildChat）上测试并优化 Prompt，再直接部署至以专业咨询与代码开发为主的生产环境日志中。这种做法面临的最核心技术风险是什么？（多选）",
+    "explanation": "A正确：开源与生产分布偏移导致Prompt在生产失真。E正确：需在目标生产分布上重新校准验证。B错误：BPE不会OOV。C错误：Prompt测试不污染权重。D错误：方差非核心风险。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "开源数据集与生产环境在任务类型和上下文复杂度上存在明显分布偏移，导致在测试集上表现良好的 Prompt 在生产集上生成误导性的分类结果",
+          "开源数据集缺乏生产环境专有的 Token 词表，会导致分类 LLM 在推理过程中抛出严重的 Out-of-Vocabulary (OOV) 异常",
+          "在公开数据集上测试 Prompt 会直接污染分类模型的基础权重，导致模型在后续推理中丧失对特定领域专业术语的分类能力",
+          "跨数据集迁移 Prompt 会破坏分类输出的概率平滑性，导致最终生成的分类百分比统计值无法通过方差检验",
+          "Prompt在不同数据分布下的表现差异显著，必须在目标生产流量的真实分布上重新评估与校准，才能保证其泛化有效性"
+        ],
+        "answer": [
+          0,
+          4
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、E。核心风险是分布偏移导致边界失真，需在生产分布上重新校准；BPE无OOV，Prompt不污染权重，方差非核心。"
+      }
+    }
+  },
+  {
+    "id": "compliance-audit-desensitize-03",
+    "category": "evaluation",
+    "topic": "safety-alignment",
+    "tags": [
+      "compliance",
+      "desensitization",
+      "aup",
+      "audit"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在面向外部审计或研究人员开放 LLM 平台使用情况的聚合分析数据时，平台需要兼顾“对外展示平台真实安全状况与违规趋势”以及“防止泄露安全防护机制绕过细节”的双重目标。针对涉及平台服务条款（AUP）违规的分类数据，下列哪种脱敏与发布策略最符合工程最佳实践？（单选）",
+    "explanation": "A正确：允许宏观统计但屏蔽绕过细节。B错误：完全禁止缺透明度。C错误：发布完整越狱Prompt暴露漏洞。D错误：混入噪音破坏真实性。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "允许对外发布违规行为的类型分布与尝试频率等宏观统计数据，但屏蔽或重构描述具体如何绕过安全栅栏（Jailbreak Techniques）的微观分类信息",
+          "完全禁止发布任何涉及违规分类的统计数据，因为暴露违规尝试的频次本身即会为潜在攻击者提供系统防护弱点的推断依据",
+          "允许发布包含攻击者完整越狱 Prompt 细节的原始文本，但对攻击者的用户 ID 与 IP 地址进行高强度哈希脱敏处理",
+          "将所有违规对话按照统一比例混入正常对话分类中，利用人为引入的噪音数据模糊外部审计对平台合规性的判断"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。保留宏观意图与频次，屏蔽具体绕过路径；B缺透明，C暴露漏洞，D破坏统计真实性。"
+      }
+    }
+  },
+  {
+    "id": "counterfactual-estimation-04",
+    "category": "evaluation",
+    "topic": "cost",
+    "tags": [
+      "counterfactual",
+      "agent-productivity",
+      "calibration"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "question": "评估智能编程 Agent（如 Coding Agent）对真实研发效能的提升时，一种常见的方法是利用模型评估任务的“反事实耗时”（即估算“若不使用 AI 辅助，人类开发者完成该任务需要多久”）。为确保这种基于模型判规的反事实时间估计具备科学性与可靠性，工程团队应采取下列哪种验证机制？（单选）",
+    "explanation": "A正确：与人类受控实验实际耗时校准。B错误：打字速度非瓶颈。C错误：Logits熵与思考耗时无线性映射。D错误：自信度校准不良。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将模型对各类编程任务的估算耗时与 Controlled 人类开发者实验中记录的实际无 AI 辅助完成耗时进行相关性对比与校准",
+          "直接将模型生成的代码 Token 数量乘以人类平均打字速度，得出反事实耗时的基准对照值",
+          "计算模型在生成代码过程中的 Logits 熵值变化，以熵衰减速率线性换算人类开发者的思考耗时",
+          "依赖模型自评的置信度得分（Confidence Score）对估算耗时进行归一化处理，无需任何人类历史履约数据的交叉比对"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A。需与人类受控实验真实耗时做相关性校准；B打字速度非核心，C熵与耗时无映射，D自信度不可靠。"
+      }
+    }
+  },
+  {
+    "id": "human-ai-collab-05",
+    "category": "evaluation",
+    "topic": "model-behavior",
+    "tags": [
+      "human-ai-collaboration",
+      "delegation",
+      "friction"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在高风险与高专业度领域（如法律、金融或系统架构）中，分析人类用户与高能力 LLM 的交互模式时，下列哪些现象符合高效“人机协作”的典型特征与内部机制？（多选）",
+    "explanation": "A正确：委托高后果任务但人类把控。B正确：适应性修改而非 verbatim 复制。C正确：摩擦具建设性促澄清。D错误：盲信单轮高危。E错误：仅边缘任务错误。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用户倾向于将具有高后果性（Consequential）和专业导向的任务委托给 AI，但通常扮演方向把控与最终审核者的角色",
+          "用户在协作过程中很少直接原样复制（Verbatim）AI 生成的输出，而是会对模型结果进行适应性修改与二次加工",
+          "交互过程中的“摩擦”（如模型理解偏差导致需要多轮迭代）往往具有建设性，能促使用户进一步澄清意图并完善需求",
+          "用户会完全让渡决策权给 AI，并在单轮 Prompt 交互后直接执行模型给出的高风险操作指令",
+          "为降低沟通成本，用户仅将零风险、重复性极高的边缘子任务交由 AI 完成，避免在核心业务中引入 AI"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。高效协作是委托高价值任务+人类审核、适应性重构、建设性摩擦；D盲信高危，E仅边缘任务与实际不符。"
+      }
+    }
+  },
+  {
+    "id": "privacy-research-arch-06",
+    "category": "evaluation",
+    "topic": "system-design",
+    "tags": [
+      "privacy",
+      "sandbox",
+      "audit",
+      "research-architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "某 AI 厂商希望建立一个允许外部独立研究员分析内部 LLM 真实使用场景的系统架构。要求系统在保证用户数据隐私的前提下，最大化研究员的探索自由度与分析独立性。在设计该系统时，下列哪些架构选择与流程设计是合理的？（多选）",
+    "explanation": "A正确：服务端沙盒仅输出聚合。B正确：第三方隐私审计。C正确：公开数据预调试降开销。D、E错误：直接暴露原始日志或SQL违隐私。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提供服务端的沙盒化 Query 执行环境，研究员仅能提交抽象的分类规则，由系统服务端统一在全量日志上运行并输出聚合统计结果",
+          "在将数据交付给外部研究员前，建立独立的第三方隐私审计与数据审查机制，确保分类输出不暴露敏感个人身份信息（PII）",
+          "允许研究人员在开源或公开发布的数据集上提前调试分类 Prompt，以降低在生产环境日志上多次重复迭代带来的隐私审查开销",
+          "允许外部研究员直接下载包含哈希 ID 的全量原始对话日志，并在研究员本地服务器上运行自定义的深度学习提取模型",
+          "签署法律协议后，赋予外部研究员直接对生产环境数据库执行未过滤 SQL 语句与 Raw 文本检索的权限"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。沙盒聚合、第三方审计、公开数据预调试；D/E直接暴露原始数据违隐私。"
+      }
+    }
+  }
+]

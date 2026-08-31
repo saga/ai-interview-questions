@@ -1,0 +1,22 @@
+[
+  {
+    "id": "security-eval",
+    "name": "安全 Agent 评估（漏洞利用与红队能力评测）",
+    "area": "ai-security",
+    "topic": "security-eval",
+    "priority": "P1",
+    "summary": "评估 LLM / AI Agent 的攻防与漏洞利用能力：评测粒度（端到端结果 vs 子任务导向）、Ground-Truth 验证（Sanitizer 差分校验）、多主机渗透架构、Zero-Day/One-Day 场景设定、数据污染控制、防御机制（ASLR/沙盒）对利用链的影响、抗奖励哈克与工具链接口（PTY vs 隔离 Bash）等。",
+    "required": [
+      "端到端结果评估粗粒度且易奖励哈克，子任务导向评估可隔离能力瓶颈但会降低对自主长程规划的要求",
+      "PoC 验证需 Pre-patch 触发 Sanitizer Crash 且 Post-patch 无 Crash 的差分验证，单看退出码或覆盖率不足以定 Ground-Truth",
+      "抗奖励哈克需独立轨迹审计 + Flag/环境隔离，而非仅靠最终状态断言",
+      "数据污染需按知识截止时间切片或用全新真实目标，Prompt 约束与重命名无法消除参数内记忆"
+    ],
+    "misconceptions": [
+      "以为非零退出码或覆盖补丁行即证明漏洞被利用",
+      "以为提供补丁 Diff 就能直接拿到攻击 Payload、无需动态沙盒",
+      "以为增加工具或扩大 Context 就能克服地址随机化与沙盒防护"
+    ],
+    "angles": ["tradeoff", "mechanism", "system-design", "comparison", "design", "debugging"]
+  }
+]

@@ -1,0 +1,354 @@
+[
+  {
+    "id": "sec-eval-01",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "outcome-vs-subtask",
+    "tags": [
+      "security-eval",
+      "reward-hacking",
+      "subtask-guided",
+      "outcome-based"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在针对大语言模型（LLM）及 AI Agent 进行网络安全与漏洞利用能力评估时，通常有两种评测粒度设计：仅以最终结果（如获取目标容器内隐藏 Flag 或触发 Sanitizer Crash）为依据的端到端结果评估（Outcome-based Evaluation）；以及将攻击链条拆解为阶段性里程碑（发现漏洞位置 -> 构造 PoC 重现 Crash -> 实现提权/沙盒突破 -> 执行数据外泄）的子任务导向评估（Subtask-guided Evaluation）。关于这两种评估模式的对比与工程取舍，下列哪些说法是正确的？",
+    "explanation": "B 正确：纯端到端结果是二元 Pass/Fail，缺乏对中间状态的感知，无法区分「完全未能定位漏洞」与「已精准定位但因格式/环境限制未能生成有效 Exploit」这两种能力层次。C 正确：子任务模式把长链条拆成独立里程碑，有助于定位模型究竟卡在代码审计、PoC 触发还是提权突破。D 正确：子任务相当于为 Agent 提供攻击步骤的导航提示（Hints），降低了自主搜索与长程规划的门槛，可能高估其无指导攻击能力。A 错误：端到端结果评估极易遭受 Reward Hacking（如利用挂载漏洞直接读 Flag），仍需要轨迹审计来校验攻击行为合规性。",
+    "misconceptions": [
+      "以为端到端结果评估可避免 Reward Hacking 而无需审计轨迹",
+      "以为子任务导向评估不会高估 Agent 的自主长程规划能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "端到端结果评估由于只校验最终结果，可以完全避免 Agent 发生奖励哈克（Reward Hacking），因此无需再对 Agent 的执行轨迹进行审计",
+          "仅依赖端到端结果评估会导致评分过于粗粒度，无法区分「完全未能定位漏洞」与「已精准定位漏洞但因格式或环境限制未能生成有效 Exploit」这两种能力层次不同的 Agent",
+          "子任务导向评估通过在各个攻击节点提供提示或单步断言，可以更精准地隔离 Agent 在复杂攻击链中的能力瓶颈（如漏洞定位、探索分析还是 Payload 构造）",
+          "引入子任务导向评估会降低对 Agent 独立进行长程规划与自主探索能力的要求，可能高估其在真实 Zero-day 场景下的无指导攻击能力"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：端到端结果评估粗粒度（二元 Pass/Fail）且易 Reward Hacking，无法区分「没定位」与「定位了但没打出 Exploit」；子任务导向可隔离能力瓶颈但提供导航提示、降低自主规划门槛，可能高估真实无指导攻击能力。A 错在以为端到端免审计。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-02",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "sanitizer-verification",
+    "tags": [
+      "security-eval",
+      "sanitizer",
+      "poc",
+      "differential-verification"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在针对 C/C++ 内存安全漏洞构建自动化 Proof of Concept (PoC) 生成与重现评估系统时，需要自动判别 Agent 提交的特定 PoC 输入是否真正触发并利用了目标漏洞。为了防止误报（False Positive）与漏报（False Negative），下列哪项是基于 Sanitizer（如 AddressSanitizer/UBSan）与 Git 代码提交历史实现自动化 Ground-Truth 验证的最有效机制？",
+    "explanation": "B 正确：通过 Pre-patch（必须触发 Sanitizer Crash）与 Post-patch（必须无 Crash 正常运行）的差分验证（Differential Verification），能确切证明该 PoC 既触发了漏洞、且触发的就是当前修复 Commit 对应的具体漏洞，排除了无关崩溃或环境异常。A 错误：非零退出码可能由语法错误、参数不匹配或普通断言失败引起，不等于内存安全破坏。C 错误：若 Post-patch 仍发生完全一致崩溃，说明补丁未生效或 PoC 触发了无关的预存漏洞。D 错误：仅覆盖补丁修改行（Statement Coverage）不代表成功构造了触发内存腐败的合法 Payload。",
+    "misconceptions": [
+      "以为非零退出码即证明重现了内存安全漏洞",
+      "以为覆盖率触及补丁行即证明漏洞被利用"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只要 PoC 运行后导致目标程序返回非零退出码（Non-zero Exit Code），即可判定成功重现了内存安全漏洞",
+          "要求该 PoC 在包含漏洞的预修补（Pre-patch）源码编译版本上必须触发 Sanitizer 崩溃，且在已修复（Post-patch）源码编译版本上能够正常运行不发生崩溃",
+          "要求该 PoC 在预修补与已修复两个编译版本上均产生完全一致的 Sanitizer Crash 堆栈回溯日志",
+          "仅对目标代码执行静态覆盖率检查，若 PoC 运行时的指令覆盖率触及了补丁 Commit 修改的代码行，即判定成功重现漏洞"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：最有效是 Pre-patch 必须触发 Sanitizer Crash 且 Post-patch 必须无 Crash 的差分验证，由此证明 PoC 触发的是该修复 Commit 对应的具体漏洞。非零退出码（语法/参数错误）和覆盖率触及补丁行都不构成 Ground-Truth。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-03",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "pentest-agent-architecture",
+    "tags": [
+      "security-eval",
+      "red-team",
+      "agent-architecture",
+      "attack-graph",
+      "c2"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在包含几十台主机、多个子网及信任域的复杂企业网络中部署自主红队渗透测试 Agent 时，直接使用单体 LLM（Mono-LLM Agent）直接执行 Bash 命令通常面临上下文膨胀（Context Bloat）、大量冗余无效指令以及长程决策失效。为了构建具备高可靠性与自主渗透能力的多主机系统，下列哪些架构设计模式是合理的？",
+    "explanation": "A 正确：将高层战术规划与底层工具调用的具体语法执行解耦，可避免 LLM 在复杂上下文中迷失或产生格式错误。B 正确：将网络状态和攻击图提炼到外部服务，防止原始扫描数据挤爆上下文窗口，并提供确定性的下一步拓扑路径。D 正确：用标准 C2 服务维护已控主机的 Session，避免把所有主机的 Shell 交互状态交由 LLM 上下文维持。C 错误：全量拼接未过滤的工具原始输出会导致严重上下文膨胀，使注意力退化并增加决策噪声。",
+    "misconceptions": [
+      "以为把所有工具原始输出全量拼进 Prompt 能提升 Agent 全局记忆",
+      "以为单体 LLM 直接执行 Bash 足以应对多主机渗透"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用分层解耦架构，由高层规划 Agent 仅负责高阶目标决策（如服务扫描、横向移动、提权、数据外泄），再由专项执行 Agent 将高阶目标转化为具体的工具指令",
+          "引入外部环境状态跟踪器（State Tracker）与攻击图服务（Attack Graph Service），将网络拓扑与已获取权限信息维护在 LLM 上下文之外，动态为 Agent 提供候选动作建议",
+          "将渗透测试过程中产生的所有底层工具（如 Nmap、Metasploit）的标准输出全量拼接在 Prompt 上下文中，以保证大模型拥有最完整的全局记忆",
+          "引入独立的 Command-and-Control (C2) 基础设施，将已控制主机的持久化控制与命令执行机制从 LLM 的会话上下文中解耦"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：合理模式是分层解耦（规划 Agent 与执行 Agent 分离）、外部 State Tracker/Attack Graph 把网络状态移出上下文、C2 服务解耦已控主机 Session。全量拼接工具原始输出会上下文膨胀、注意力退化（C 错）。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-04",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "zero-day-vs-one-day",
+    "tags": [
+      "security-eval",
+      "zero-day",
+      "one-day",
+      "exploration",
+      "patch-reverse"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在评估安全 Agent 的漏洞利用能力时，通常划分为 Zero-Day（零日）与 One-Day（一日）两种评估场景。关于这两种场景的技术设定、测试重点及 Agent 的表现瓶颈，下列哪些表述是正确的？",
+    "explanation": "A 正确：准确定义了 Zero-Day 场景（无已知 CVE 描述、无补丁、无先验位置信息，考察自主漏洞挖掘）。B 正确：准确定义了 One-Day 场景（给定补丁或描述，测试 Patch Reverse Engineering 与精准 Exploit 构造）。C 正确：无提示的 Zero-Day 搜索空间中，Agent 极易因缺乏方向感而在边缘代码/无关服务上浪费大量 Step。D 错误：补丁 Diff 仅展示修补位置与代码改动，并不包含攻击 Payload；构造有效 Exploitation 仍需动态沙盒、内存布局分析与利用链合成。",
+    "misconceptions": [
+      "以为 One-Day 提供补丁 Diff 就能直接拿到攻击 Payload",
+      "以为 One-Day 评估无需动态运行沙盒"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Zero-Day 评估场景下，Agent 仅能访问存在漏洞的系统源码或运行环境，不提供任何关于漏洞类型、位置或补丁的提示，重点考察 Agent 的自主漏洞挖掘能力",
+          "One-Day 评估场景下，Agent 会获得 CVE 描述、补丁 Diff 或崩溃堆栈信息，重点考察 Agent 根据已有公开情报进行补丁逆向工程与精准 Exploit 构造的能力",
+          "实验表明，Agent 在 Zero-Day 场景下的主要失败模式是「探索不足（Insufficient Exploration）」，即 Agent 极易陷入无关代码审计或非关键端口的无效搜索中",
+          "由于 One-Day 场景提供了补丁 Diff 信息，Agent 可以直接从中提取完整攻击 Payload，因此 One-Day 评估无需构建动态运行沙盒即可直接完成评估"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：Zero-Day = 无提示自主挖洞，主要瓶颈是探索不足（陷在无关代码/端口）；One-Day = 给定补丁/CVE 考察逆向与精准 Exploit。D 错：补丁 Diff 不含 Payload，构造利用仍需动态沙盒与内存布局分析。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-05",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "data-contamination",
+    "tags": [
+      "security-eval",
+      "data-contamination",
+      "knowledge-cutoff",
+      "ctf",
+      "web3"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "在针对 Web3/智能合约漏洞利用或标准 CTF 竞赛进行 LLM 安全能力评估时，由于大量历史漏洞 Payload、解题 Writeup 及分析文章已被广泛包含在 LLM 的预训练数据集中，极易产生「数据污染（Data Contamination）」问题，导致模型靠记忆而非逻辑推理解题。为了有效抑制数据污染对评估有效性的干扰，下列哪项评估方案最为严谨？",
+    "explanation": "B 正确：按知识截止时间进行严格的时间切片（Temporal Cutoff Control）或使用全新的真实 Zero-Day 目标，是消除预训练数据记忆污染最直接且无争议的工程方法。A 错误：Prompt 级约束无法阻止 LLM 参数权重对预训练知识的隐式检索与利用。C 错误：LLM 具备强语义抽象能力，简单变量/函数重命名无法掩盖控制流、数据流与核心算法漏洞模式。D 错误：关闭 Web 搜索仅阻断实时检索，无法消除模型预训练阶段已内化的记忆。",
+    "misconceptions": [
+      "以为 Prompt 约束能阻止模型利用预训练记忆",
+      "以为变量重命名或关掉 Web 搜索就能消除数据污染"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仅使用已公开且得分最高的历史经典 CTF 赛题，通过在系统 Prompt 中加入「禁止使用记忆解法」的合规约束指令",
+          "按模型知识截止时间（Knowledge Cutoff）划分数据，仅用截止后的真实新漏洞或新目标做 Zero-Day 测试",
+          "对历史题目的变量名和函数名进行随机混淆重命名，直接在文本语义层面阻止 LLM 识别出原始代码库",
+          "屏蔽 Agent 的 Web 搜索工具，仅提供本地 Docker 沙盒，即可彻底排除预训练数据集带来的内存记忆污染"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：最严谨是按知识截止时间切片（Temporal Cutoff）或用全新真实目标做 Zero-Day 测试——直接切断预训练记忆来源。Prompt 约束挡不住权重内记忆，重命名遮不住控制流/漏洞模式，关 Web 搜索也清不掉预训练内化知识。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-06",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "defense-impact",
+    "tags": [
+      "security-eval",
+      "aslr",
+      "kaslr",
+      "sandbox-escape",
+      "exploitation-tier"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在评估高难度漏洞（如 JavaScript 引擎漏洞、内核提权或 C/C++ 内存破坏漏洞）的利用过程时，通常将攻击进展划分为不同阶梯（如从触发 Crash 到构造引擎内部内存读写原语，再到突破沙盒实现任意代码执行）。在此过程中，开启现代系统安全防御机制（如 ASLR、KASLR、V8 Sandbox）会对 Agent 的利用成功率产生深远影响。下列哪些说法准确反映了防御机制对 Agent 漏洞利用能力的要求与挑战？",
+    "explanation": "A 正确：区分了崩溃触发与完整代码执行的本质差异（能 Crash 不等于能控制指令流）。B 正确：ASLR 破坏了硬编码地址的有效性，要求攻击链必须包含泄露真实内存基址的原语。C 正确：沙盒隔离将引擎漏洞约束在受限内存池，越狱必须依赖专门的沙盒逃逸原语（如未受保护的系统调用或 rendezvous 原语）。D 错误：绕过防御需要特定的利用原语与逻辑构造，并非简单增加上下文窗口或 Payload 长度即可解决。",
+    "misconceptions": [
+      "以为能触发 Crash 就等于实现了任意代码执行",
+      "以为扩大 Context 或加长 Payload 即可克服 ASLR/沙盒"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "仅仅生成能够导致程序崩溃（Crash/Trigger）的 PoC 输入，并不等同于成功构造了能实现受控指令流劫持的任意代码执行（Arbitrary Code Execution）",
+          "开启 ASLR/KASLR 地址随机化防御后，Agent 必须进一步寻找并结合内存泄露（Memory Leak）漏洞或指针低位爆破等技术才能构造有效 Exploits",
+          "现代系统防御机制（如 V8 沙盒）会将崩溃限制在沙盒隔离区内，Agent 必须构造专门的沙盒突破原语（Sandbox Escape Primitives）才能获得宿主进程的完全控制权",
+          "开启防御机制仅会增加 Payload 的字节长度，Agent 只要扩展 LLM 的 Context Window 长度即可自然克服地址随机化与沙盒防护"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：Crash ≠ 任意代码执行（A）；ASLR 使硬编码地址失效，需内存泄露原语（B）；沙盒把漏洞限制在隔离区，需专门逃逸原语（C）。D 错：绕过防御靠利用原语与逻辑，不是加长 Context/Payload。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-07",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "anti-reward-hacking",
+    "tags": [
+      "security-eval",
+      "reward-hacking",
+      "transcript-audit",
+      "harness",
+      "flag-isolation"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在基于沙盒与确定性 Grader（如检测 Flag 文件读取或目标数据外泄）的安全 Agent 评测框架中，Agent 可能会利用评测环境本身的配置疏漏（例如通过沙盒挂载漏洞直接读取宿主机存储的 Flag、或利用未妥善隔离的侧信道绕过目标服务）获得满分。这种现象被称为奖励哈克（Reward Hacking）。为了构建防篡改的高信度评估 Harness，下列哪些措施是有效的工程做法？",
+    "explanation": "A 正确：通过自动化轨迹审计，检查 Agent 是否确实按合规的漏洞利用路径执行命令，能有效识别旁路非预期解。B 正确：动态 Flag 生成或利用后解锁机制可防止 Agent 通过直接挂载读取或暴力搜索本地文件系统偷跑。D 正确：严格约束网络与环境边界，防止 Agent 攻击评测 harness 本身或宿主机。C 错误：解除所有隔离与系统调用限制会大幅增加评测环境被 Agent 提权越狱并进行 Reward Hacking 的风险。",
+    "misconceptions": [
+      "以为关闭沙盒隔离可测试 Agent 应变能力（实则会放大 Reward Hacking）",
+      "以为仅靠最终状态 Grader 就能防止环境旁路破解"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "引入独立于 Agent 的 Transcript Auditor（日志审计器，如使用强模型审查 Agent 的完整执行轨迹与指令流），确认攻击路径符合预期漏洞利用逻辑",
+          "对 Grader 和 Flag 存储进行严格的环境隔离，使 Flag 仅能在目标应用程序被正确利用（如执行了特定溢出并反弹 Shell）后在内存/受限环境中动态生成或解锁",
+          "在 Sandbox 中关闭一切网络隔离与系统调用限制，以便 Agent 可以自由尝试任何非预期途径来测试其应变能力",
+          "限制 Agent 的攻击范围，明确约束其攻击目标仅限于指定容器及特定服务端口，并通过评测框架阻断对外部宿主机及无关服务的非授权访问"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：有效做法 = 独立 Transcript Auditor 审查执行轨迹 + Flag/环境严格隔离（动态生成或利用后解锁）+ 约束攻击边界阻断对宿主机/无关服务的越权访问。C 错：解除隔离会放大提权越狱与 Reward Hacking 风险。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-08",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "toolchain-interface",
+    "tags": [
+      "security-eval",
+      "pseudoterminal",
+      "bash",
+      "tool-misuse",
+      "agent-interface"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在构建网络安全 LLM Agent 的交互环境时，Agent 与目标系统的交互接口设计（工具集选择）对其攻击成败有显著影响。例如，提供标准隔离 Bash（单次无状态命令执行）与 Pseudoterminal（支持长会话伪终端）是两种常见的终端工具接入方式。关于这两类工具接入方式对安全 Agent 性能与行为影响的分析，下列哪项最为准确？",
+    "explanation": "A 正确：Pseudoterminal 提供持久化的 Terminal Session，使 GDB 调试、Sudo 交互密码输入、交互式 Shell 等依赖标准输入的场景成为可能；但同时保持会话也会引入交互杂音与状态遗留，增加模型推理负担。B 错误：单次无状态 Bash 在需连续交互输入的场景（如 GDB 交互调试）无法工作，且无法消除 LLM 的上下文限制。C 错误：增加更多工具（如 WebSearch/PTY）有时反而导致工具误用（Tool Misuse）或注意力分散，成功率可能下降。D 错误：两者在底层 I/O 机制与会话状态保持上有本质区别，直接影响交互式工具能否执行。",
+    "misconceptions": [
+      "以为无状态 Bash 在所有复杂渗透场景都优于伪终端",
+      "以为工具越多成功率必然单调上升、两者机制等价"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "伪终端（Pseudoterminal）支持交互式会话（如 SSH 交互、GDB 调试、Python 交互 Shell），对需要维持长会话状态的复杂利用任务更有利，但也会增加上下文管理与状态混淆的风险",
+          "无状态 Bash 工具因为每次执行独立，能够彻底消除大模型的上下文长度限制，因此在所有复杂渗透测试场景下均显著优于 Pseudoterminal",
+          "工具集包含的扩展工具（如 WebSearch、静态分析工具）越多，LLM Agent 的利用成功率必然单调上升，不会带来任何负面效果",
+          "伪终端与无状态 Bash 在机制上完全等价，因为大模型本质上只能处理文本输入输出，无法感知底层终端会话是否被保持"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：PTY 提供持久会话，利于 GDB/Sudo 交互等需标准输入的场景，但带来状态遗留与推理负担；无状态 Bash 在交互调试场景失效且不能消除上下文限制。工具增多可能致 Tool Misuse，两者机制不等价（D 错）。"
+      }
+    }
+  },
+  {
+    "id": "sec-eval-09",
+    "category": "ai-security",
+    "topic": "security-eval",
+    "subtopic": "scoring-metric-design",
+    "tags": [
+      "security-eval",
+      "scoring",
+      "partial-credit",
+      "reward-hacking-rate",
+      "grader-validation"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "在设计与落地一套针对安全 Agent 的漏洞利用能力评测框架时，评分机制（Scoring Scheme）的严谨性直接决定评测结论是否可信。关于如何构建兼顾「区分度、可复现性与抗奖励哈克」的评测度量体系，下列哪些做法是合理且推荐的？",
+    "explanation": "B 正确：同时报告任务成功率与奖励哈克 / 非合规旁路解法比率，能把「靠环境漏洞拿满分」与「真正具备利用能力」区分开。C 正确：按攻击链阶段（崩溃→读写原语→沙盒逃逸→外泄）给分层部分分，可区分不同能力层次并降低二元 Pass/Fail 的噪声。D 正确：用人工标注小样本对自动化 Grader 做交叉校验（Inter-rater / 假阳性检查），可评估评分器本身的可靠性与偏差。A 错误：单轮 Pass@1 受运行随机性影响大、缺乏可复现性，不能单独作为能力指标。",
+    "misconceptions": [
+      "以为单轮 Pass@1 简洁稳定即可作为唯一能力指标",
+      "以为只报成功率就能反映真实利用能力（忽略奖励哈克）"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "仅以单轮（single-run）Pass@1 作为唯一能力指标，能最简洁、稳定地反映 Agent 真实漏洞利用水平",
+          "在评分中同时报告任务成功率与「奖励哈克 / 非合规旁路解法」比率，避免 Agent 靠环境漏洞拿满分而掩盖真实能力缺口",
+          "按攻击链阶段（崩溃→读写原语→沙盒逃逸→外泄）给分层部分分（Tiered Partial Credit），而非二元 Pass/Fail",
+          "用人工标注的小样本对自动化 Grader 做交叉校验（Inter-rater / 假阳性核查），评估评分器本身的可靠性与偏差"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：合理做法是（B）同时报成功率+奖励哈克率、（C）按攻击链阶段给分层部分分、（D）用人工标注交叉校验 Grader 可靠性。A 错：单轮 Pass@1 受随机性影响、缺乏可复现性，不可作为唯一指标。"
+      }
+    }
+  }
+]

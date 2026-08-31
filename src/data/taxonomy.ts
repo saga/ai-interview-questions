@@ -157,6 +157,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         label: '人机协同',
         description: '人工审批/确认机制/接管/异常升级/高风险操作/可恢复交互',
       },
+      {
+        id: 'agent-runtime',
+        label: 'Agent 运行时',
+        description: '运行时/进程模型/会话与状态持久化/并发与隔离/生命周期与热更新/故障重启',
+      },
     ],
   },
 
@@ -346,6 +351,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   memory: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario'],
   'multi-agent': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   'human-in-the-loop': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
+  'agent-runtime': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'debugging'],
 
   // AI 系统
   'ai-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'system-design'],
