@@ -1,8 +1,9 @@
 # 统一交互入口架构设计
 
-状态：设计已记录，尚未实施
-日期：2026-08-31
+状态：Phase 1–3 已实施，Phase 4 统一 LearningSession 暂缓 · 2026-08-31
+日期：2026-08-31（实现同步更新）
 关联决策：ADR-061
+关联清单：`ACTION_CHECKLIST.md` · `docs/ARCHITECTURE.md`「统一交互入口」节
 
 ## 1. 问题定义
 
@@ -85,37 +86,41 @@ interface ConversationContext {
 2. 有 interview session 且用户说“继续/下一题/结束”：交给 Interview capability。
 3. 无 active session：再进行 intent classification。
 
-### 3.3 Capability 边界
+### 3.3 Capability 边界（已落地 `src/application/conversation/`）
 
-建议新增：
+已实现：
 
 ```text
 src/application/conversation/
-  intent.ts
-  conversationRouter.ts
-  questionCapability.ts
-  evaluationCapability.ts
-  interviewCapability.ts
-  learnerCapability.ts
+  router.ts                # classifyIntent + ConversationContext 工厂 + telemetry
+  questionCapability.ts    # rankQuestions / askQuestion
+  evaluationCapability.ts  # evaluateAnswer（统一判分入口）
+  interviewCapability.ts   # startInterview / continueAdaptiveInterview / evaluateInterviewAnswer
+  learnerCapability.ts     # getWeakTopics / commitSession
+  types.ts                 # ConversationDeps / AskQuestionInput 等
+  conversation.test.ts     # 纯逻辑回归
+src/schemas/conversation.ts # ConversationContext / UserIntent Zod 契约（version:1）
 ```
 
 Capability 负责：
 
-- `QuestionCapability`：按 topic/difficulty/format 和 Learner signal 选题、建立 `SessionQuestion`。
-- `EvaluationCapability`：复用 `sessionEvaluator`，统一选择题判分和开放题评分。
-- `InterviewCapability`：创建/推进/结束 session，调用确定性策略或 Agent runtime。
-- `LearnerCapability`：读取弱项、更新画像、提交 session record。
-- `ConversationRouter`：解释 intent、当前 mode 和 capability 结果，管理 pending action；不直接计算分数。
+- `QuestionCapability`：按 topic/difficulty/format 和 Learner signal 选题、建立 `SessionQuestion`（`rankQuestions` 复用 `domain/adaptive.rankCandidatePool`）。
+- `EvaluationCapability`：复用 `sessionEvaluator.evaluateSessionQuestion`，统一选择题判分和开放题评分，失败返回 `null` 不伪造 0 分。
+- `InterviewCapability`：创建/推进/结束 session（对 `application/interviewEngine.buildSession/nextAdaptiveStep` 的薄封装）。
+- `LearnerCapability`：读取弱项、更新画像、幂等提交 session record（`updateLearner → saveLearner`）。
+- `ConversationRouter`：解释 intent、当前 mode 和 capability 结果，管理 pending action；不直接计算分数；`chatCopilot` 仅作为 `general_chat` 与 `classifyIntent` 的 LLM adapter。
 
-现有 `src/agent/tools.ts` 应逐步变为薄适配层：
+`src/agent/tools.ts` 已改为薄适配层：
 
 ```text
 domain / storage
       ↑
-application capabilities
+application capabilities（question / evaluation / learner）
       ↑
-agent tools / training hooks / conversation controller
+agent tools / Copilot conversation controller / training hooks
 ```
+
+`searchQuestions` / `getQuestion` 复用 `rankQuestions`，`evaluateAnswer` 复用 `evaluationCapability`，不再重复实现 ranking/evaluation 业务规则。
 
 ## 4. 关键用户流程
 
@@ -157,40 +162,40 @@ Chat 不自行生成题目正文，不绕过题库和题目契约。
 
 “针对刚才的弱点再问我”可触发 Agent follow-up，但题目选择与评分仍必须走共享 capability。
 
-## 5. 分阶段实施
+## 5. 分阶段实施（Phase 1–3 已完成，Phase 4 已评估暂缓）
 
-### Phase 1：抽 application capabilities
+### Phase 1：抽 application capabilities — 已完成
 
 - 从 Agent tools、训练 Hook 和 Interview Engine 中识别重复业务逻辑。
-- 新增 capability 接口和纯逻辑测试。
-- 先让 Agent tools 调用 capability；不新增 Chat 行为。
+- 新增 `src/application/conversation/` 能力接口和 `conversation.test.ts` 纯逻辑测试。
+- `src/agent/tools.ts` 已改为 capability adapter，不重复实现 ranking/evaluation 业务规则。
 
-验收：Agent 面试现有行为不变；出题、评分、Learner 更新只有一个 application 入口。
+验收：Agent 面试现有行为不回归；出题、评分、Learner 更新已有共享 application 入口。`npm run test` 41 files / 525 tests 通过。
 
-### Phase 2：建立 Conversation Context
+### Phase 2：建立 Conversation Context — 已完成
 
-- 为 Copilot 增加 context/session adapter。
-- 支持 `question` mode 和 `pendingAction`。
-- 复用现有 `InterviewAgentSession` 或建立最小 adapter；暂不迁移全部 IndexedDB 数据。
+- 为 Copilot 增加 `ConversationContext` schema（`src/schemas/conversation.ts:7-13`，`version:1`）与 localStorage 最小 context 恢复（`CopilotSidebar.tsx:134-199`，best-effort，transcript 不恢复）。
+- 支持 `question` / `interview` mode 和 `pendingAction: answer | choose_question`。
+- `ask_question` 只调用 `QuestionCapability` 并渲染题库快照；`answer_current_question` 交由 `EvaluationCapability`；`continue_interview` / `start_interview` 复用共享 capability。
 
-验收：Chat 产生的题目可被回答和评分；刷新/结束行为有明确策略；不重复执行已完成工具调用。
+验收：Chat 已支持“给我出一道题”→ question mode → 回答 → 共享评分 → “下一题”闭环；失效题目提示重新出题；重复提交由 `loadingRef` + context 状态阻断。
 
-### Phase 3：接入轻量 Intent Router
+### Phase 3：接入轻量 Intent Router — 已完成
 
-- 先用结构化 LLM intent 或确定性规则处理高置信命令。
-- intent 经过 Zod/schema 校验。
-- 未知意图回退 general chat。
-- 所有副作用仍由 capability 执行。
+- 定义 `UserIntent` schema（`src/schemas/conversation.ts:15-33`，`version:1`，`intent/confidence/source/fallbackReason` telemetry）。
+- 高置信确定性规则：`给我出题`/`继续/下一题`/`开始面试`/`结束`（`router.ts:45-65`）。
+- 接入结构化 LLM intent classification（`INTENT_SYSTEM` + `extractJSON` + `userIntentSchema.safeParse`），分类器不执行副作用；topic/difficulty/format 经 schema 校验并支持常用 alias（`TOPIC_ALIASES`）。
+- 低置信（`confidence<0.75`）或冲突要求澄清；未知回退 `general_chat`；dev 环境输出 debug telemetry。
 
-验收：`ask_question`、`answer_current_question`、`continue_interview`、`start_interview` 四条核心路径有测试和 telemetry。
+验收：核心 intent 有可追踪路由结果；未知输入回退 general chat；注入字符串作为数据处理，不改变 router 权限（有回归测试）。
 
-### Phase 4：逐步统一 Session
+### Phase 4：逐步统一 Session — 已评估，暂缓统一 schema
 
 - 对比训练、模拟面试、Agent 面试和 Chat session 的字段。
 - 设计统一 `LearningSession` 前先完成数据迁移方案与回放兼容策略。
 - 只有在 adapter 稳定后，才合并 session schema 与持久化。
 
-当前评估结论：
+当前评估结论（与 `ACTION_CHECKLIST.md` Phase 4 一致）：
 
 | 入口 | 当前状态 | 关键字段 | 持久化/收尾 |
 | --- | --- | --- | --- |
@@ -220,11 +225,11 @@ Chat 不自行生成题目正文，不绕过题库和题目契约。
 | Chat 历史污染 Agent 状态 | ConversationContext 与 Agent runtime session 分离，显式 attach |
 | 大范围状态迁移回归 | adapter-first，分阶段迁移 |
 
-## 8. 当前实现与设计的差距
+## 8. 当前实现状态（已与代码同步，以代码为准）
 
-- `src/components/copilot/CopilotSidebar.tsx` 内部仍持有 `chatCopilot`，尚未调用 Question/Evaluation/Interview capability。
-- `src/agent/tools.ts` 主要服务 Agent 面试，尚未作为跨入口的 application API。
-- Agent prompt 已具备连续面试决策语义，但该语义尚未被 Conversation Router 复用。
-- 训练、模拟面试、Agent 面试仍由不同 Hook/runtime 管理 session。
+- `src/components/copilot/CopilotSidebar.tsx` 已接入 Conversation 能力：`classifyIntent` → `askQuestion` / `evaluateConversationAnswer` / `continue_interview` / `start_interview`，题目展示来自题库快照不由 LLM 生成，`chatCopilot` 仅保留为 `general_chat` 与 `classifyIntent` 的 LLM adapter；`ConversationContext` 经 `conversationContextSchema` 校验后 best-effort 写入 `localStorage`（`CONVERSATION_CONTEXT_KEY`），刷新可恢复当前题 id，完整 transcript 不恢复（设计如此）。
+- `src/agent/tools.ts` 已改为 application capability 的薄适配层：`searchQuestions`/`getQuestion` 复用 `questionCapability.rankQuestions`，`evaluateAnswer` 复用 `evaluationCapability.evaluateAnswer`，评分不归 Agent；重复 ranking/evaluation 逻辑已消除。
+- `src/application/conversation/router.ts` 已实现轻量 Intent Router：确定性高置信规则 + 结构化 LLM intent（`INTENT_SYSTEM`，`extractJSON` 后 `userIntentSchema.safeParse`）+ topic alias + 低置信澄清 + `IntentTelemetry`（`intent/confidence/source/fallbackReason`，dev 调试输出）。
+- 训练、模拟面试、Agent 面试仍由不同 Hook/runtime 管理 session，未统一为 `LearningSession` — 这是 Phase 4 **刻意暂缓**的决策（见 `§5 Phase 4` 与 ADR-061），非遗漏；adapter-first，暂不重写 `useTrainingSession` / `useAgentInterview` / IndexedDB。
 
-本文件只记录目标设计和实施顺序；完成用户确认前不应直接开始 Phase 1 的大范围重构。
+历史备注：本文件初版为“设计已记录、尚未实施”；2026-08-31 起 Phase 1–3 已落地，本文档同步更新为实现状态，后续以代码为准并即时修正文档。
