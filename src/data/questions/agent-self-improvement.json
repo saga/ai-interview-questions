@@ -1,0 +1,212 @@
+[
+  {
+    "id": "agent-self-improvement-dual-architecture",
+    "category": "Agent Architecture",
+    "topic": "self-improving-agents",
+    "tags": [
+      "agent-architecture",
+      "self-improvement",
+      "prompt-engineering"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在基于大语言模型（LLM）构建具自我改进能力的 Agent 系统时，解耦“执行 Agent（Base Agent）”与“改进 Agent（Improver Agent）”是一种常见的生产级架构模式。关于这种双 Agent 演进机制的工作流程与设计原理，下列哪些说法是正确的？",
+    "explanation": "执行 Agent 负责基于独立的 Skill 文件执行领域任务。改进 Agent 作为观察者按计划（定时或批处理）异步运行，对比历史执行结果与人类反馈的差异，向 Skill 文件提出精细的修改建议。这些变更必须通过 Git PR 和人类审核合并后方可被后续任务继承，以保障演进的安全可控。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "执行 Agent 的提示词与操作规范被托管于独立且可版本控制的技能（Skill）文件中，而非硬编码于应用代码中",
+          "改进 Agent 作为异步或定时运行的观察者，负责拉取历史执行日志与人类反馈，对比差异后对技能文件提出增量修改",
+          "改进 Agent 生成的技能修改应当直接自动同步写入在线运行时，无需通过人类审核即可实现实时的无缝自我进化",
+          "技能更新提案通常以 Pull Request / Code Review 工作流的方式呈现，经人类审查合并后供后续执行 Agent 继承",
+          "执行 Agent 在响应单一请求时须同时完成业务推理与自身技能文件的重写，以实现单次会话内的持久化更新"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-skill-context-engineering-design",
+    "category": "Context Engineering",
+    "topic": "skill-design",
+    "tags": [
+      "context-engineering",
+      "prompt-optimization",
+      "agent-skills"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "在设计用于指导 Agent 处理复杂工程任务的技能（Skill）文件时，为了在有限的 Context Window 内兼顾高泛化能力与低 Token 消耗，下列哪些模块级设计策略符合最佳实践？",
+    "explanation": "技能文件应以指导原则（Principles）和解释原理（Why）为主，这赋予了 LLM 推理泛化能力；同时采用渐进式披露模式，将数据提取、清洗或复杂的确定性逻辑解耦为外部脚本或资源文件，仅在运行期按需调用，从而节省 Context 空间并提升稳定性。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在技能文件中优先撰写原则性指导（Principles）并说明背后的因果逻辑，而非枚举死板的规则（Rules）",
+          "采用渐进式披露（Progressive Disclosure）模式，将复杂的确定性数据处理逻辑解耦为外部脚本供 Agent 按需调用",
+          "将所有相关的业务文档、API 规范及历史失败案例平铺展开写入主技能文件中，以消除运行期的脚本调用开销",
+          "为改进 Agent 配套提供封装好的数据清洗脚本，使其在解析人类反馈时直接调用脚本而非从头生成代码"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-procedural-skill-vs-episodic-memory",
+    "category": "Agent Memory & Knowledge",
+    "topic": "skills-vs-memory",
+    "tags": [
+      "agent-memory",
+      "procedural-knowledge",
+      "agent-state"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "在 Agent 系统设计中，工程师常常需要区分“技能（Skills）”与“情境记忆（Episodic Memory）”。关于两者的本质差异与应用边界，下列哪项表述最为准确？",
+    "explanation": "技能（Skills）是过程性、结构化且相对稳固的领域知识规范，通过版本控制系统（如 Git）进行显式更新与审查；而情境记忆（Episodic Memory）则是 Agent 在推理或会话过程中自动记录的动态事件与上下文信息，随着运行会话的推进持续变化。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "技能是推理期由 Agent 自动写入且持续变动的会话数据，而情境记忆是人工维护的版本化文本文件",
+          "技能是过程性且相对稳定的领域指导规范，通过显式版本控制演进；情境记忆则是运行期自动记录的会话上下文",
+          "技能仅适用于确定性的代码编写场景，而情境记忆专用于处理非确定性的人类自然语言对话场景",
+          "技能与情境记忆在本质上完全相同，均指通过向量数据库（Vector DB）在检索增强（RAG）阶段动态加载的内容"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "human-feedback-noise-mitigation-guardrails",
+    "category": "Agent Reliability",
+    "topic": "feedback-loops",
+    "tags": [
+      "human-in-the-loop",
+      "feedback-noise",
+      "agent-security"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在利用人类反馈（Human Feedback）驱动改进 Agent 自动优化基础技能时，低质量或误导性的反馈可能会导致提示词漂移（Prompt Drift）。为了在保持自改进能力的同时保障系统稳定性，下列哪些工程措施是合理的？",
+    "explanation": "人类反馈中普遍存在噪声。引入健全性检查（Sanity Check）可帮助改进 Agent 过滤违背工程常识的建议；限制高权重反馈来源或要求附带因果解释可提高信号质量；而在 Git PR 合并环节保留 Human-in-the-Loop 则是防止错误指令或潜在 Prompt 注入进入生产环境的最终防线。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在改进 Agent 中引入健全性检查（Sanity Check）上下文，用于评估反馈意见是否符合工程规范与基本逻辑",
+          "建立反馈来源的权限与权重控制机制，优先采纳附带明确因果解释（Rationale）的高质量专家反馈",
+          "在技能文件合并至主干时保留人类审核（Human-in-the-Loop）环节，由维护者对改进提案进行最终把关",
+          "只要系统捕获到用户的负向反馈（如 Downvote），即触发改进 Agent 无条件覆盖现有的技能指导规则",
+          "取消文本格式的反馈输入，仅依赖二元赞踩信号触发技能更新，以最大化降低用户提供反馈的门槛"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-evaluation-verifiability-system-design",
+    "category": "Agent Evaluation",
+    "topic": "eval-harness",
+    "tags": [
+      "agent-evaluation",
+      "domain-verifiability",
+      "system-design"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "某团队正在为其生产级 Agent 系统搭建评估与自改进闭环架构。根据业务领域的“可验证性（Verifiability）”差异，在评估体系设计、控制流以及闭环策略上，下列哪些设计组合是合理的？",
+    "explanation": "在确定性可验证领域（如代码编译、单元测试），建立自动化 Test Harness 能提供最低成本、最客观的反馈；在主观非确定领域，缺乏客观 Ground Truth，必须依赖带理由的专家反馈与黄金数据集；同时，监控宏观业务指标可确保自改进闭环能真正转化为组织效能的提升。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对于确定性可验证领域（如代码编译或单元测试），应构建自动化测试 Harness 并以通过率作为 Agent 优化的客观指标",
+          "对于主观或不可确定性验证的领域（如文本风格调整），应依赖领域专家提供的具名因果反馈与 Golden Outputs 进行评估",
+          "无论领域是否具备确定性验证手段，均应完全抛弃基准测试，统一采用 LLM-as-a-Judge 对每次技能更新进行无监督打分",
+          "在系统架构维度建立全局业务指标监控（如任务解决耗时、修复成功率），作为评估改进 Agent 长期效果的最终锚点"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "automated-issue-triage-agent-workflow-design",
+    "category": "Agent Architecture",
+    "topic": "end-to-end-workflow",
+    "tags": [
+      "github-actions",
+      "agentic-workflow",
+      "system-design"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "某团队拟基于 GitHub Actions 与事件驱动架构设计一套开源项目 Issue 自动分类与修复提议 Agent 系统。系统约束包括：要求低反馈摩擦、防止恶意/错误反馈污染技能库，且更新过程透明可追溯。下列哪些架构设计环节符合上述约束？",
+    "explanation": "该闭环利用开发者原生的工作界面（Issue 评论区）实现无额外门槛的反馈收集；改进 Agent 异步抓取并结构化反馈后提出 Git PR，将改动透明化；合并前保留人类 Review 这一关键 Gatekeeper，合并后新任务自然加载最新 Skill，实现了兼顾低摩擦、可追溯与生产安全的全流程设计。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用户创建 Issue 时触发执行 Agent，读取分类技能文件分析问题类型、自动标记 Label 并给出初步修复方向",
+          "维护者在审查分类结果时，直接在 Issue 评论区留言说明分类错误及期望行为，系统作为异步事件捕获该反馈",
+          "改进 Agent 定时被调度运行，调用绑定的数据提取脚本收集新增反馈评论，分析后针对分类技能提交修改 PR",
+          "改进 Agent 提交的技能修改 PR 经 Git CI 流程自动合入主干，跳过人工 Review 步骤以保证闭环的极致响应速度",
+          "技能 PR 被人类维护者 Review 并合并后，后续新建 Issue 触发执行 Agent 时将自动载入新版技能文件执行分类"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-skill-drift-debugging",
+    "category": "Agent Operations",
+    "topic": "agent-debugging",
+    "tags": [
+      "debugging",
+      "prompt-drift",
+      "agent-operations"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在基于人类反馈自动更新技能（Skill）文件的自改进 Agent 运行一段时间后，工程师发现 Agent 在处理特定常规任务时频繁出现遗漏核心步骤的现象（如代码审查时不再检查重复代码）。经定位，发现技能文件已被改进 Agent 修改。针对该现象，最可能的原因是下列哪一项？",
+    "explanation": "改进 Agent 在缺乏过拟合防护与原则指导约束时，极易因个别用户的特例反馈生成过度具体的排他性规则（Overfitting to specific feedback）。这种修改会削弱技能文件的泛化推理能力，甚至挤占原本通用指导原则的 Prompt Context 关注度，导致 Agent 遗漏基础功能。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "改进 Agent 在缺乏上下文约束的情况下盲目将个别用户的特殊偏好写成了排他性规则，挤占了通用原则的提示空间",
+          "执行 Agent 内部的推理温度（Temperature）设置过低，导致其在调用更新后的技能文件时丧失了随机采样能力",
+          "技能文件被解耦成了外部脚本进行渐进式加载，导致执行 Agent 在运行阶段完全无法读取到技能文件的指令",
+          "人类维护者在合并 PR 时开启了自动压缩合并（Squash Merge），破坏了技能文件的历史版本追踪信息"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  }
+]

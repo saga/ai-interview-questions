@@ -1,0 +1,735 @@
+[
+  {
+    "id": "ai-search-extra-001",
+    "category": "llm-applications",
+    "topic": "information-retrieval",
+    "tags": [
+      "information-retrieval",
+      "lexical-search",
+      "bm25"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为什么 BM25 对包含产品型号、错误码或专有名词的查询通常仍然很有价值？",
+    "explanation": "BM25 直接利用词项匹配和词频、文档长度等信号，对精确术语尤其敏感，而纯语义检索可能把表面不同但语义相近的内容混在一起。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "能够直接利用查询词与文档词项之间的匹配关系",
+          "对罕见术语和精确型号通常具有较强区分能力",
+          "不需要任何索引就能完成大规模检索",
+          "可以弥补纯语义检索对专有词和错误码匹配不足的问题",
+          "能够自动理解任何隐含语义关系"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-002",
+    "category": "llm-applications",
+    "topic": "information-retrieval",
+    "tags": [
+      "information-retrieval",
+      "query-understanding",
+      "query-expansion"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "对于“怎么处理 connection pool exhausted”这样的查询，query expansion 与直接把原始 query 做 embedding 的主要区别是什么？",
+    "explanation": "query expansion 通过增加同义词、相关术语或更明确的表达改善召回，而原始 embedding 主要依赖模型现有的语义表示。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "query expansion 可以扩大词面覆盖，而 embedding 主要依赖已有语义表示",
+          "query expansion 一定会降低召回，而 embedding 一定只返回精确匹配",
+          "query expansion 会直接替代索引，而 embedding 不需要候选集合",
+          "两者都只作用于 reranking 阶段，不影响候选召回"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-003",
+    "category": "llm-applications",
+    "topic": "information-retrieval",
+    "tags": [
+      "information-retrieval",
+      "query-rewriting",
+      "retrieval"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在线搜索系统增加 LLM query rewriting 后，最需要警惕哪类 trade-off？",
+    "explanation": "query rewriting 可能改善用户原始表达与知识库术语之间的匹配，但会增加推理延迟和成本，并可能错误改变原始意图。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "改善原始查询与知识库术语之间的匹配",
+          "增加额外模型调用带来的延迟和成本",
+          "错误改写可能使原始查询意图发生偏移",
+          "一定能够提升所有查询的 Recall@K",
+          "可以完全消除原始 query 中的歧义"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-004",
+    "category": "llm-applications",
+    "topic": "information-retrieval",
+    "tags": [
+      "information-retrieval",
+      "filters",
+      "metadata"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "question": "一个企业知识库包含多个部门的文档，用户查询时明确要求“只搜索东京办公室 2026 年后的政策”。哪种设计最合理？",
+    "explanation": "结构化约束应尽可能在 retrieval 阶段通过 metadata filters 缩小候选空间，再执行语义或关键词检索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把部门和日期要求全部交给生成模型在最终答案阶段自行判断",
+          "先使用 metadata filters 限定部门和时间范围，再执行相关性检索",
+          "把所有文档都检索出来，再让 reranker 删除不符合日期的结果",
+          "为每个部门建立完全独立的模型，避免使用 metadata"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-005",
+    "category": "llm-applications",
+    "topic": "ranking",
+    "tags": [
+      "ranking",
+      "learning-to-rank",
+      "signals"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "一个搜索系统的 ranker 同时使用 text relevance、freshness 和 click signals。为什么 ranker 需要学习或配置这些信号之间的关系，而不能简单把三个分数直接相加？",
+    "explanation": "不同信号的尺度、重要性和交互关系可能不同，直接相加容易导致某个数值范围较大的信号支配最终排序。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同信号的尺度和重要性不同，需要学习或配置其组合关系",
+          "直接相加容易让数值范围更大的信号主导排序",
+          "不同信号间可能存在需要学习的交互关系",
+          "所有 relevance 信号数值天然相同，可直接相加",
+          "click signal 一加入排序就自动变成监督标签",
+          "直接相加会让检索阶段失去索引能力"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-006",
+    "category": "llm-applications",
+    "topic": "ranking",
+    "tags": [
+      "ranking",
+      "freshness",
+      "personalization"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在新闻搜索中提高 freshness 权重可能导致什么问题？",
+    "explanation": "更高 freshness 会优先近期内容，但可能压低更权威、更相关或长期有效的旧内容，因此需要平衡相关性、时效性和质量。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "最新内容可能获得过高排序位置",
+          "长期有效但较旧的高质量内容可能被压低",
+          "新鲜度与主题性冲突会拉低相关性",
+          "提高 freshness 权重必能提升满意度",
+          "新鲜度与相关性在任何查询上同等重要"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-007",
+    "category": "llm-applications",
+    "topic": "ranking",
+    "tags": [
+      "ranking",
+      "reranking",
+      "cross-encoder"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "为什么 cross-encoder reranker 通常不直接对整个百万级文档库执行，而是对 first-stage retrieval 的候选集执行？",
+    "explanation": "cross-encoder 能更细致地建模 query-document 关系，但单条候选的计算成本较高，因此通常只处理已经缩小的候选集合。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "它计算更精细但单次成本更高，适合对已缩小的候选集重排",
+          "query 与 document 联合编码能捕捉更细相关性",
+          "对全库逐条使用会带来过高延迟或成本，所以放在召回之后",
+          "它只能处理已经经过关键词匹配的文档",
+          "它无法比较 query 与 document 的语义关系",
+          "它的主要作用是建立向量索引而不是排序"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-008",
+    "category": "llm-applications",
+    "topic": "ranking",
+    "tags": [
+      "ranking",
+      "fusion",
+      "rrf"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "RRF（Reciprocal Rank Fusion）融合 BM25 和 dense retrieval 结果时，核心利用了什么信息？",
+    "explanation": "RRF 主要利用各个检索结果中的排名位置，将多个排序列表融合，而不要求不同检索器的原始 score 可以直接比较。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "利用每个检索器里的排名位置计算融合分数",
+          "不要求各检索器的原始 score 处于相同量纲",
+          "通过排名倒数加权，让靠前文档获得更高融合分",
+          "要求所有检索器使用完全相同的原始 score 范围",
+          "只保留 BM25 排名最高的结果",
+          "直接让 LLM 生成最终排序"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-009",
+    "category": "llm-applications",
+    "topic": "ranking",
+    "tags": [
+      "ranking",
+      "reranking",
+      "candidate-generation"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "一个搜索系统的 Recall@100 很高，但 Recall@10 很低，而且 reranker 很强。最可能的问题在哪里？",
+    "explanation": "高 Recall@100 说明相关结果大多进入候选集，但前 10 个结果质量差，问题更可能出现在候选排序或 reranking 策略，而不是召回覆盖本身。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "问题更可能在排序或 reranking 阶段，而非召回覆盖",
+          "候选集中存在相关文档，但没有被推到前 10 位",
+          "应检查 reranker 或排序策略是否把相关项压到后排",
+          "first-stage retrieval 完全没有找到相关文档",
+          "embedding index 一定损坏并返回空结果",
+          "文档 ingestion 一定丢失了所有元数据"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-010",
+    "category": "llm-applications",
+    "topic": "agentic-search",
+    "tags": [
+      "agentic-search",
+      "iterative-retrieval",
+      "budget"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "一个 Agentic Search 系统允许最多 5 轮检索，并在每轮判断证据是否充分。把最大轮数从 2 提高到 5，最可能带来哪些变化？",
+    "explanation": "更多轮次给了系统发现遗漏和进一步检索的机会，但同时会增加延迟、token 和工具调用成本，并可能导致收益递减。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "复杂问题可能获得更充分的检索机会",
+          "平均检索延迟可能明显上升",
+          "工具调用和 token 成本可能增加",
+          "多轮检索不一定让每个查询都同等幅度提升",
+          "系统更需要可靠的终止条件"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-011",
+    "category": "llm-applications",
+    "topic": "agentic-search",
+    "tags": [
+      "agentic-search",
+      "tool-routing",
+      "retrieval"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "question": "一个 Agent 同时可以访问企业文档搜索、SQL 数据库和实时 Web Search。对于“昨天订单量是多少”这类查询，最合理的检索策略是什么？",
+    "explanation": "查询需要实时结构化业务数据，因此应优先选择能够直接查询订单数据的工具，而不是把所有来源都交给统一语义检索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "优先调用实时订单数据库查询工具，再根据需要补充其他来源",
+          "首先对整个企业文档库执行 dense retrieval",
+          "先搜索 Web，再让模型猜测企业内部订单量",
+          "同时对所有数据源进行全文检索并让模型自行挑选数字"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-012",
+    "category": "llm-applications",
+    "topic": "agentic-search",
+    "tags": [
+      "agentic-search",
+      "query-decomposition",
+      "parallelism"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "一个复杂查询被拆成 4 个互相独立的子查询。整体请求的主要 SLO 是低延迟。哪种执行策略通常更合理？",
+    "explanation": "独立子查询可以并行执行以降低 wall-clock latency，再汇总结果；但仍需控制并发和总资源预算。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "独立子查询可以并行执行以降低整体 wall-clock 延迟",
+          "并行后统一聚合结果，并受总并发与预算约束",
+          "相比串行，并行更能满足低延迟 SLO",
+          "串行执行四个子查询，以保证严格固定顺序完成",
+          "只选择一个子查询执行，以避免额外的 token 成本",
+          "让每个子查询再创建独立 Agent，直到得到相同结果"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-013",
+    "category": "llm-applications",
+    "topic": "multi-vector-retrieval",
+    "tags": [
+      "multi-vector-retrieval",
+      "late-interaction",
+      "colbert"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "与单向量 document embedding 相比，late-interaction 类多向量检索的主要优势是什么？",
+    "explanation": "late interaction 可以保留 token-level 或局部表示，并在 query 与 document 的多个表示之间进行更细粒度匹配，因此能减少单向量压缩造成的信息损失。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保留更细粒度的文档局部表示",
+          "允许 query 与文档的局部表示直接匹配",
+          "通常比单向量方案需要更多存储和计算",
+          "保证每个 query 只会匹配一个文档",
+          "完全不需要第一阶段候选检索"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-014",
+    "category": "llm-applications",
+    "topic": "multi-vector-retrieval",
+    "tags": [
+      "multi-vector-retrieval",
+      "storage",
+      "index"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个企业拥有 1 亿篇文档，每篇文档平均包含 100 个局部向量。如果采用多向量表示，最先需要重点评估的问题是什么？",
+    "explanation": "100 亿级局部向量会显著增加索引存储、更新和检索计算成本，因此应先评估资源与 query-time latency 是否可接受。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "向量索引的存储规模",
+          "检索和排序的计算成本",
+          "索引更新和维护开销",
+          "是否仍然能够满足查询延迟 SLO",
+          "是否可以完全取消召回阶段"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-015",
+    "category": "llm-applications",
+    "topic": "search-quality",
+    "tags": [
+      "search-quality",
+      "precision",
+      "recall"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "一个搜索系统为了减少用户看到的无关结果，提高了 relevance threshold。最可能出现的 trade-off 是什么？",
+    "explanation": "更高阈值通常可以提高结果精度，但可能过滤掉部分实际上相关但得分较低的结果，导致 recall 下降。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "结果 precision 可能提高，因为更多无关项被过滤",
+          "recall 可能下降，因为部分低分但相关的文档被丢弃",
+          "precision 与 recall 一定同步提高",
+          "recall 会提高，因为更多结果被保留下来",
+          "threshold 只影响延迟，不影响搜索质量"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-016",
+    "category": "llm-applications",
+    "topic": "search-quality",
+    "tags": [
+      "search-quality",
+      "ab-testing",
+      "evaluation"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "你上线新的 reranker 后，离线 nDCG@10 提升了 8%，但线上用户满意度没有改善。下一步最合理的调查方向是什么？",
+    "explanation": "离线排序指标提升不代表线上真实需求一定改善，应检查评估集与真实流量的分布差异、query segment、行为指标和端到端答案质量。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查离线评估集是否代表真实线上查询分布",
+          "按 query 类型分析 reranker 的收益和退化",
+          "检查搜索结果之外的端到端回答或用户体验指标",
+          "确认线上请求是否实际使用了新 reranker",
+          "只继续增加 reranker 模型规模"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-017",
+    "category": "llm-applications",
+    "topic": "search-quality",
+    "tags": [
+      "search-quality",
+      "duplicate",
+      "diversity"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "搜索结果的 Recall@20 很高，但前 10 条结果几乎都是同一篇文档的不同 chunk。最可能需要优化什么？",
+    "explanation": "问题不是候选覆盖不足，而是结果多样性和 chunk-to-document aggregation。需要避免单一文档占据大量 top positions。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "增加 embedding 维度",
+          "优化去重、文档级聚合或多样性排序",
+          "把 top-K 从 20 降到 5",
+          "关闭 reranking 并只使用原始向量分数"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-018",
+    "category": "llm-applications",
+    "topic": "search-quality",
+    "tags": [
+      "search-quality",
+      "freshness",
+      "filtering"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "一个技术支持搜索系统中，新发布的文档经常排在旧文档之后。检查发现 relevance score 相近，但新文档没有任何 freshness boost。最合理的改进是什么？",
+    "explanation": "如果业务确实偏好最新有效文档，可以在 ranking 阶段加入 freshness signal，同时限制其权重，避免牺牲语义相关性。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在排序中加入受控的 freshness 信号",
+          "完全按照发布时间排序，忽略 relevance",
+          "删除旧文档，让搜索结果自然变新",
+          "把 freshness 信号放进分词器里"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-019",
+    "category": "llm-applications",
+    "topic": "search-infrastructure",
+    "tags": [
+      "search-infrastructure",
+      "indexing",
+      "consistency"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "一个企业搜索系统每天新增 500 万文档，同时要求新增文档在 5 分钟内可被搜索。哪项架构能力最关键？",
+    "explanation": "这个需求要求 ingestion、embedding、index update 具备持续增量处理能力，并明确 freshness SLA，而不是依赖低频全量重建。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "增量式 ingestion 管道",
+          "异步 embedding 与索引更新",
+          "明确的索引新鲜度 SLA 与监控",
+          "每次新增都重建整个索引",
+          "失败任务应有重试与恢复机制"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-020",
+    "category": "llm-applications",
+    "topic": "search-infrastructure",
+    "tags": [
+      "search-infrastructure",
+      "cache",
+      "debugging"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "搜索 API 的平均延迟基本不变，但 p99 从 1 秒升到 8 秒，同时 QPS 没有明显增加。最值得优先检查哪些问题？",
+    "explanation": "只出现 tail latency 恶化通常应先检查排队、资源争用、偶发慢查询、cache miss、下游服务抖动和 timeout/retry 放大。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "下游 reranker 或 embedding 出现尾部延迟",
+          "线程池、连接池或队列是否出现局部拥塞",
+          "cache miss 是否集中在某类查询",
+          "重试有可能显著放大少量慢请求的耗时",
+          "只需要检查平均 CPU 使用率即可"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-021",
+    "category": "llm-applications",
+    "topic": "agentic-search",
+    "tags": [
+      "agentic-search",
+      "sufficiency",
+      "uncertainty"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "Agentic retrieval 中的 retrieval sufficiency evaluator 最主要解决什么问题？",
+    "explanation": "它判断当前检索结果是否已经足够回答原问题，并识别仍然缺失的信息，从而决定是否需要继续检索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "判断当前证据是否足够，并识别需要补充的检索方向",
+          "替代所有底层搜索索引并直接生成最终答案",
+          "把每次检索结果永久写入长期记忆",
+          "仅根据 token 数量判断是否继续检索"
+        ],
+        "answer": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-022",
+    "category": "llm-applications",
+    "topic": "agentic-search",
+    "tags": [
+      "agentic-search",
+      "failure-mode",
+      "query-rewriting"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "一个 Agentic Search 系统连续三轮生成几乎相同的 reformulated queries，最终没有获得新证据。哪种改进最合理？",
+    "explanation": "重复查询说明 retrieval loop 没有产生有效的新搜索状态，需要检测 query novelty、结果 novelty 或 progress，并设置终止条件。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检测新 query 与历史 query 的相似度",
+          "检测新一轮结果是否带来新的证据",
+          "达到连续无进展次数后终止检索",
+          "无限增加 maximum iterations",
+          "为每一轮强制生成更多相同关键词"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-023",
+    "category": "llm-applications",
+    "topic": "agentic-search",
+    "tags": [
+      "agentic-search",
+      "state",
+      "multi-turn"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "用户先问“日本办公室有哪些合规要求？”，随后问“那东京呢？”一个支持多轮搜索的 Agent 应如何处理第二个查询？",
+    "explanation": "第二个查询依赖上一轮上下文，应合成带有已知实体和任务状态的完整查询，再执行针对东京的检索。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把“那东京呢？”作为完全独立查询直接检索",
+          "结合上一轮上下文，将查询解析为针对东京办公室的合规要求",
+          "始终重复执行上一轮完全相同的检索",
+          "忽略上一轮结果，只根据东京这个词进行关键词搜索"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "ai-search-extra-024",
+    "category": "llm-applications",
+    "topic": "search-quality",
+    "tags": [
+      "search-quality",
+      "metrics",
+      "business"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "对于企业搜索系统，为什么只用 Recall@K 和 nDCG@K 评估仍然可能不足？",
+    "explanation": "离线 relevance metrics 无法完全反映真实用户体验，还需要结合 query success、点击、任务完成、引用正确性、延迟和业务结果等线上指标。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "离线 relevance 指标可能与真实用户任务不完全一致",
+          "不同 query 类型对业务价值的影响可能不同",
+          "端到端 latency 和可靠性也会影响搜索体验",
+          "需要结合线上行为或任务完成指标进行验证",
+          "只要 nDCG 足够高，业务指标一定会同步提升"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  }
+]
