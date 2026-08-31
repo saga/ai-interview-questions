@@ -1,5 +1,5 @@
 import { Alert, Card, Drawer, Empty, List, Space, Tag, Typography } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SessionQuestion } from '../../schemas/session';
 import type { SessionRecord } from '../../schemas/learner';
 import { categoryLabel } from '../../domain/categories';
@@ -25,6 +25,11 @@ export default function SessionReplayDrawer({
   onClose: () => void;
 }) {
   const [open, setOpen] = useState(true);
+  // 本组件常驻挂载（ProgressPage 不卸载它），关闭只把 open 置 false、父级把 record 置 null。
+  // 若不同步复位 open，再次点击其它会话行时 record 变了但 open 仍为 false ⇒ 抽屉再也打不开。
+  useEffect(() => {
+    if (record) setOpen(true);
+  }, [record]);
   const close = () => {
     setOpen(false);
     onClose();

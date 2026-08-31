@@ -298,19 +298,26 @@ function randomId(): string {
  * 创建一个 Chrome 专属的事件流：异步驱动 chromeComplete，并把结果解析为工具调用或文本。
  * 返回流是同步的（与 faux provider 的 queueMicrotask 模式一致），驱动在微任务中异步进行。
  */
-function createChromeEventStream(context: Context): AssistantMessageEventStream {
+function createChromeEventStream(
+  context: Context,
+  signal?: AbortSignal,
+): AssistantMessageEventStream {
   const stream = createAssistantMessageEventStream();
-  void driveStream(stream, context);
+  void driveStream(stream, context, signal);
   return stream;
 }
 
 /** 异步驱动：调用 chromeComplete → 解析 → 发射事件；任何异常都编码进 stream 而非抛出。 */
-async function driveStream(stream: AssistantMessageEventStream, context: Context): Promise<void> {
+async function driveStream(
+  stream: AssistantMessageEventStream,
+  context: Context,
+  signal?: AbortSignal,
+): Promise<void> {
   const system = `${context.systemPrompt ?? ''}${CHROME_TOOL_PROTOCOL}`;
   const userPrompt = buildUserPrompt(context);
   let raw: string;
   try {
-    raw = await chromeComplete(system, userPrompt);
+    raw = await chromeComplete(system, userPrompt, signal);
   } catch (err) {
     emitError(stream, err instanceof Error ? err.message : String(err));
     return;
@@ -331,8 +338,11 @@ async function driveStream(stream: AssistantMessageEventStream, context: Context
  */
 export function buildChromeAgentRuntime(): { streamFn: StreamFn; model: Model<any> } {
   const model = chromeModel();
-  // streamFn 忽略回传的 model（始终用 chromeComplete），第三个 options 参数无关紧要予以忽略
-  const streamFn: StreamFn = (_model, context) => createChromeEventStream(context);
+  // streamFn 忽略回传的 model（始终用 chromeComplete）；第三个 options 携带上层传入的
+  // AbortSignal（用户取消 / 超时），必须透传到 chromeComplete，否则在途 prompt 不会被取消，
+  // 会一直占着 Chrome 本机模型的并发槽位，拖慢后续选题。
+  const streamFn: StreamFn = (_model, context, options) =>
+    createChromeEventStream(context, options?.signal);
   return { streamFn, model };
 }
 

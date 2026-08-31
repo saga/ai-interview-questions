@@ -505,12 +505,16 @@ export const chromeAI = new ChromeAIExecutor({
  * 业务层签名不变（variant / evaluate / provider 无需改动）；session 的创建、超时、销毁都在 executor 内完成。
  * 先做一次可用性预检，模型明确 unavailable 时直接报错、连 session 都不建（避免无谓的 create 超时）。
  */
-export async function chromeComplete(system: string, user: string): Promise<string> {
+export async function chromeComplete(
+  system: string,
+  user: string,
+  signal?: AbortSignal,
+): Promise<string> {
   if (!getLanguageModel()) {
     throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
   }
   if ((await chromeAvailability()) === 'unavailable') {
     throw new Error('Chrome 内置 AI 模型在当前环境不可用，请在设置中改用云端服务商');
   }
-  return chromeAI.execute(user, { system });
+  return chromeAI.execute(user, { system, signal });
 }

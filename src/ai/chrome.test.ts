@@ -93,6 +93,26 @@ describe('chromeComplete', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  it('已 aborted 的 signal 立即被拒绝且不创建 session（P1-9：取消信号必须透传进 executor）', async () => {
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const create = vi.fn();
+    const lm = stubLanguageModel({ create: async () => {
+      create();
+      return makeSession(async () => 'ok');
+    } });
+    void lm;
+    await expect(chromeComplete('s', 'u', ctrl.signal)).rejects.toThrow(DOMException);
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('未中止的 signal 作为透传选项被接受、不影响正常补全', async () => {
+    stubLanguageModel();
+    const ctrl = new AbortController();
+    const out = await chromeComplete('s', 'u', ctrl.signal);
+    expect(out).toBe('ok');
+  });
+
   it('getLanguageModel 返回全局注入的实例', () => {
     const lm = stubLanguageModel();
     expect(getLanguageModel()).toBe(lm);

@@ -90,6 +90,11 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
   answersRef.current = answers;
   // 同步动作锁：防止异步提交/组卷/评分在响应前被重复点击触发（与 Agent 面试防重入同思路）
   const actionLock = useRef(false);
+  /**
+   * 倒计时归零时若 doSubmit 正被 actionLock 挡回，置位本标志；
+   * 由 doSubmit 的 finally 在锁释放后补交一次。避免「计时器已 clear + 提交被吞 ⇒ 永久卡在答题页」。
+   */
+  const pendingAutoSubmitRef = useRef(false);
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const configRef = useRef(config);
@@ -218,9 +223,19 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
       setProfile(next);
       setPrevOverall(prev);
       setPhase('result');
+    } catch (err) {
+      // 评分 / 落库 / 其它运行时异常都必须给用户可见反馈。
+      // 缺 catch 时错误只会变成未处理 rejection：转圈消失、无任何提示、停在答题页，本次作答静默丢失。
+      message.error('提交失败：' + (err as Error).message);
     } finally {
       setBusy(null);
       actionLock.current = false;
+      // 倒计时到点时若本函数正被 actionLock 挡回，计时器已 clear 且不会重试 ⇒ 用户永久卡在答题页。
+      // 因此由 timer 置位 pendingAutoSubmitRef，等此处锁释放后补交一次（只补一次，标志先清）。
+      if (pendingAutoSubmitRef.current) {
+        pendingAutoSubmitRef.current = false;
+        if (sessionRef.current) void doSubmit();
+      }
     }
   }, []);
 
@@ -319,7 +334,10 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
       if (left <= 0) {
         clearInterval(id);
         message.warning('时间到，自动交卷');
-        void doSubmit();
+        // 正在评分/提交时 doSubmit 会被 actionLock 直接 return，而 interval 已 clear ⇒ 永不重试。
+        // 改为置位待交卷标志，由 doSubmit 的 finally 在锁释放后补交。
+        if (actionLock.current) pendingAutoSubmitRef.current = true;
+        else void doSubmit();
       }
     }, 1000);
     return () => clearInterval(id);

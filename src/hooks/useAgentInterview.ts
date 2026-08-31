@@ -130,6 +130,14 @@ export function useAgentInterview(
   profileRef.current = profile;
   const entryIdRef = useRef<string | null>(null);
   const resumeStartedRef = useRef(false);
+  /**
+   * 续面是否已完成（无论是否真的找到草稿）。
+   * `start()` 在此之前一律拒绝：resume 的 `await getActiveAgentSession()` 期间若用户点了开始，
+   * resume 随后会用 `sessionRef/handleRef = ...` 覆盖刚创建的会话，导致新会话的 run / 看门狗 / 草稿全部泄漏。
+   */
+  const resumeDoneRef = useRef(false);
+  /** `start()` 的重入锁（同步拦截，覆盖同 tick 内多次点击与 await 期间的再次进入）。 */
+  const startingRef = useRef(false);
   // 终局幂等守卫：finishInterview / 兜底收尾 / endEarly 都可能触发 finalize，
   // 必须保证 onComplete（落库到 Learner Memory）只调用一次，禁止重复写入。
   const finalizedRef = useRef(false);
@@ -287,6 +295,20 @@ export function useAgentInterview(
   );
 
   const start = async () => {
+    // 重入保护：同 tick 内多次点击、或 await 期间再次进入，都直接忽略。
+    // 缺这条会创建多个 session/handle，而 getActiveAgentSession 只取最新一条草稿 ⇒ 其余全部泄漏。
+    if (startingRef.current) return;
+    // resume 的异步恢复尚未落地，此时开始会被 resume 的赋值覆盖 → 拒绝，等 resume 完成再点。
+    if (!resumeDoneRef.current) return;
+    startingRef.current = true;
+    try {
+      await startInner();
+    } finally {
+      startingRef.current = false;
+    }
+  };
+
+  const startInner = async () => {
     setError(null);
     finalizedRef.current = false; // 新一轮面试：解除终局守卫
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
@@ -312,8 +334,16 @@ export function useAgentInterview(
       await handle.start(resolveOpeningInstruction(config.prompts?.agentOpening));
       void persistDraft(); // 首轮结束落库
     } catch (err) {
+      // 启动失败 ≠ 一个可以继续的 running 会话：必须清理并回到 intro。
+      // 否则 phase 停在 'running'、currentQuestion 为 null、endEarly 又被「无可保存作答」挡回，
+      // 用户会永久卡在「面试官正在选题…」，既无题也无出口。
+      handleRef.current?.dispose(); // 中止 run + 清看门狗 + 取消订阅
+      handleRef.current = null;
+      sessionRef.current = null;
+      questionsRef.current = [];
       setBusy(false);
       setError('面试启动失败：' + (err as Error).message);
+      setPhase('intro');
     }
   };
 
@@ -369,6 +399,7 @@ export function useAgentInterview(
     if (resumeStartedRef.current) return;
     resumeStartedRef.current = true;
     void (async () => {
+      try {
       const rec = await getActiveAgentSession();
       if (!rec) return;
       const entry = config.providers?.find((p) => p.id === rec.entryId && p.enabled && isEntryValid(p));
@@ -455,6 +486,11 @@ export function useAgentInterview(
       setTranscript(rebuildTranscript(session));
       setPhase('running');
       setBusy(false);
+      } finally {
+        // 无论是否找到草稿、是否成功续面，都必须放行 start()：
+        // 否则一次 resume 异常会让用户永远无法开始新面试。
+        resumeDoneRef.current = true;
+      }
     })();
   // 仅挂载时尝试一次；resumeStartedRef 保证 StrictMode 双调用下不重复重建
   // eslint-disable-next-line react-hooks/exhaustive-deps

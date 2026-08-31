@@ -9,11 +9,15 @@ import type { ProviderEntry } from '../schemas/ai-config';
 
 const CFG: ProviderEntry = { id: 'local', enabled: true, model: 'unsloth/Qwen3-8B', apiKey: '', baseUrl: '' };
 
-/** pi-ai 的 openai-completions 走 SSE 流式，mock 必须返回 event-stream。 */
+/** pi-ai 的 openai-completions 走 SSE 流式，mock 必须返回 event-stream。
+ *  content 经 JSON.stringify 转义，避免把 {"ok":1} 这类文本原样塞进 content 字段导致
+ *  SSE 行本身不是合法 JSON（修复前会因 pi-ai 解析失败而 stopReason='error'，
+ *  恰好被 callLLM 的旧「静默吞错」行为掩盖）。 */
 function sseBody(text: string): string {
+  const evt = (obj: unknown) => `data: ${JSON.stringify(obj)}\n\n`;
   return (
-    `data: {"choices":[{"delta":{"content":"${text}"}}]}\n\n` +
-    `data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n` +
+    evt({ choices: [{ delta: { content: text } }] }) +
+    evt({ choices: [{ delta: {}, finish_reason: 'stop' }] }) +
     'data: [DONE]\n'
   );
 }
@@ -86,12 +90,12 @@ describe('callLLM 走本地服务（端到端 mock SSE）', () => {
     expect(new Headers(init.headers).get('authorization')).toBe('Bearer sk-local');
   });
 
-  it('服务返回错误状态 / 连接失败：callLLM 不抛错，降级为空文本（上层 parse 兜底）', async () => {
+  it('服务返回错误状态 / 连接失败：callLLM 抛错（恢复 FallbackProvider 降级语义，而非静默空文本）', async () => {
     vi.stubGlobal('fetch', mockFetch('', false));
-    await expect(callLLM(CFG, 's', 'u')).resolves.toBe('');
+    await expect(callLLM(CFG, 's', 'u')).rejects.toThrow(/server error|LLM 调用失败/);
     const reject = vi.fn(async () => Promise.reject(new TypeError('Failed to fetch')));
     vi.stubGlobal('fetch', reject);
-    await expect(callLLM(CFG, 's', 'u')).resolves.toBe('');
+    await expect(callLLM(CFG, 's', 'u')).rejects.toThrow(/Connection error|LLM 调用失败/);
     expect(reject).toHaveBeenCalled();
   });
 });

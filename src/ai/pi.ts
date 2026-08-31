@@ -138,6 +138,14 @@ export async function callLLM(
       ...(samplingParams ? { samplingParams } : {}),
       ...(temperature !== undefined ? { temperature } : {}),
     });
+    // P0-2：provider 调用失败（HTTP 5xx / 401 / 429 / 断网 / content_filter）时，pi-ai 返回
+    // stopReason='error' 而非抛出异常。若不在此显式抛出，callLLM 会静默返回空串 ''——上层依赖
+    // 异常来降级的 FallbackProvider（provider.ts:135）就永远捕获不到失败、永不切换到下一引擎，
+    // 401/429/断网全部被伪装成「第一个引擎返回空」。归一为抛错，恢复失败语义：
+    // FallbackProvider 的 try/catch 才能按设计降级到链中下一个引擎。
+    if (res.stopReason === 'error' || res.stopReason === 'aborted') {
+      throw new Error(res.errorMessage || `LLM 调用失败（stopReason=${res.stopReason}）`);
+    }
     const textBlock = (res.content ?? []).find((b) => b.type === 'text');
     return { text: (textBlock && 'text' in textBlock ? textBlock.text : '') ?? '', usage: res.usage };
   };

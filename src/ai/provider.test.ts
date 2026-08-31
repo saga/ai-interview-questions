@@ -242,6 +242,16 @@ describe('FallbackProvider（ADR-023 降级链核心语义）', () => {
     await expect(chain.challengeQuestion(q())).resolves.toEqual(expected);
   });
 
+  it('P0-2：首个引擎 provider 错误（callLLM 抛错）时，FallbackProvider 真实降级到下一引擎', async () => {
+    // 首个引擎用真实 PiAIProvider（local），fetch 返回 500 ⇒ callLLM 抛错；
+    // 修复前 callLLM 静默返回空串，FallbackProvider 永不降级（永远是「第一个引擎返回空」）。
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('server error', { status: 500 })));
+    const failing = new PiAIProvider(entry({ id: 'local', model: 'unsloth/Qwen3-8B', apiKey: '' }));
+    const ok = fake('b', async () => 'degraded-ok');
+    const chain = new FallbackProvider([failing, ok]);
+    await expect(chain.generateVariant(q())).resolves.toBe('degraded-ok');
+  });
+
 });
 
 describe('ChromeAIProvider（走注入的 chromeComplete，签名接线正确）', () => {

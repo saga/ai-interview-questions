@@ -1,0 +1,236 @@
+[
+  {
+    "id": "hw-scratchpad-01",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "scratchpad",
+      "cache",
+      "tpu",
+      "memory-hierarchy"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在针对专用硬件加速器（如 TPU、NPU）进行性能优化时，系统工程师经常需要显式管理 Scratchpad Memory（片上暂存存储器），而非依赖 CPU 中传统的硬件自动管理缓存（如 L1/L2 Cache）。关于这两种内存架构的性能工程取舍，下列哪些说法是正确的？（多选）",
+    "explanation": "A正确：Scratchpad避免Tag比较、替换策略与一致性开销，无伪共享与隐式淘汰抖动。B正确：需显式DMA搬运与双缓冲编排。C错误：随机访存下Cache行浪费与高Miss率，Scratchpad可定制更优。D正确：生命周期确定的张量计算可在Scratchpad实现接近理论峰值带宽。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Scratchpad Memory 移除了自动缓存行替换和缺失检查的硬件开销，消除了伪共享与隐式缓存淘汰带来的性能抖动",
+          "Scratchpad Memory 要求程序员或编译器显式编排数据在片上与片外的 DMA 搬运，增加了指令打包和双缓冲区设计的复杂性",
+          "硬件 Cache 依靠空间局部性和时间局部性自动提升缓存命中率，在访问模式随机、非顺序的图计算或树遍历任务中通常表现出优于 Scratchpad 的决定性带宽效率",
+          "Scratchpad Memory 允许代码根据确定的内存访问生命周期精准控制分配，从而在静态可预测的张量计算中实现接近理论极限的片上带宽利用率"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。A Scratchpad无Tag/替换开销、无伪共享；B 需显式DMA与双缓冲；C错误，随机访存下Cache浪费大；D 生命周期确定时Scratchpad可达峰值带宽。"
+      }
+    }
+  },
+  {
+    "id": "hw-transpose-02",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "transpose",
+      "bank-conflict",
+      "sram",
+      "graph-rewrite"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "在专用加速器上执行二维向量寄存器数据转置（Data Transposition）时，经常面临 Bank Conflict（存储体冲突）与高昂的寄存器重排开销。性能工程师在面对此类瓶颈时，通常需要在“算子内部数据布局转置”与“图/算法级计算等效重构”之间做出抉择。下列关于这两种优化路径的比较，哪些表述是准确的？（多选）",
+    "explanation": "A正确：图级重构将转置吸收到周围算子避免显式指令。B正确：算子内转置保持接口独立、模块化好。C错误：ReLU等逐元素非线性满足f(A^T)=(f(A))^T仍可重构。D正确：硬件层常需Padding错开Bank，牺牲部分容量。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "“图/算法级计算等效重构”通过转置后续整个计算图的数学表达（如将前向矩阵乘法与权重转置合并），从根本上消除了显式数据转置指令的执行开销",
+          "“算子内部数据布局转置”保持了后续算子输入输出拓扑的独立性，不需要重新推导整个数据流图的代数等价性，具备更好的模块化与工程可维护性",
+          "“图/算法级计算等效重构”仅能应用于线性代数算子，当数据流中包含非线性激活函数或条件分支时，该优化方法在数学上彻底失效",
+          "“算子内部数据布局转置”在避免 SRAM Bank Conflict 时，通常需要引入填充（Padding）或交错索引，这可能导致片上内存利用率下降"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、D。A 图级重构吸收转置；B 局部优化隔离性好；C错误，逐元素非线性可交换；D Padding避冲突但降利用率。"
+      }
+    }
+  },
+  {
+    "id": "hw-ai-resistant-03",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "benchmark",
+      "ai-resistant",
+      "evaluation",
+      "custom-isa"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在评估高级性能工程师的编码与系统优化能力时，如果测试题目设计为常规硬件体系（如 Nvidia GPU / x86 CPU）上的已知标准优化问题（如标准 CUDA Bank 冲突消除或 GEMM 调优），大语言模型通常能凭借海量训练数据迅速超越人类。为了在允许使用 AI 辅助的评估环境中保持高区分度，测试题目设计应当遵循以下哪项关键原则？（单选）",
+    "explanation": "A错误：伪代码无法量化Benchmark。B正确：高约束非标自定义ISA迫使一阶推理而非模式匹配，区分度高。C错误：缩短时间对LLM更有利。D错误：引入未定义行为破坏可重复性。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "强制要求候选人使用纯自然语言伪代码描述系统架构与优化思路，放弃可自动执行与量化的性能基准测试",
+          "构建高限制、强约束且非标的自定义指令集或模拟器环境，迫使解题者依赖一阶逻辑推理而非训练集经验",
+          "极度缩短测试时间限制（如缩短至 15 分钟内），试图利用人类工程师在简单编码任务上的瞬时响应速度击败 LLM",
+          "在编译环境中故意引入包含随机噪声与未定义行为的测验用例，通过干扰评测机制的确定性来阻断代码生成"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。LLM在标准体系上靠历史套路；自定义ISA需从头一阶推理，方能区分人类深度建模能力。"
+      }
+    }
+  },
+  {
+    "id": "hw-vector-bw-04",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "vectorization",
+      "memory-bandwidth",
+      "simd",
+      "soa"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "工程师在向量加速器上优化非紧凑型数据结构（例如并行决策树推理或图遍历任务）时，经常面临从内存读取树节点数据引发的内存带宽瓶颈（Memory Bandwidth Bottleneck）。若硬件不支持自动硬件预取，下列哪些工程手段能够有效缓解该带宽瓶颈并提升硬件利用率？（多选）",
+    "explanation": "A正确：无分支SIMD批处理提升吞吐。B正确：AoS转SoA提升向量加载有效率。C正确：软件预取与重叠掩盖延迟。D错误：Memory-bound时提升主频无用。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用无分支（Branchless）SIMD 向量化计算，将多个独立样本的遍历路径压入同一个向量寄存器并行推进，提升内存读取的吞吐批处理度",
+          "改变树节点的内存存储布局，从结构体数组（AoS）重构为数组结构体（SoA），提升连续向量加载（Vector Load）时有效数据的装载率",
+          "将多个节点访问打包进行交错编排，利用软件预取（Software Prefetching）或计算与访存重叠掩盖高延迟",
+          "增加计算单元的主频，通过大幅提高 ALU 执行速度来直接抵消片上 DRAM 的访存延迟"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。A 无分支SIMD批处理；B SoA提升Vector Load装载率；C 软件预取重叠延迟；D 访存瓶颈下提主频无效。"
+      }
+    }
+  },
+  {
+    "id": "hw-vliw-05",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "vliw",
+      "hazard",
+      "instruction-packing",
+      "software-pipelining"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "在超长指令字（VLIW）架构的性能优化中，目标是在每个时钟周期内最大化打包到同一个超长指令字中的微操作（Micro-operations）数量。下列关于 VLIW 体系结构指令打包与性能调优的说法，哪些是正确的？（多选）",
+    "explanation": "A错误：VLIW由编译器静态调度，无动态乱序。B正确：争用同一执行单元致结构冲突需插NOP。C正确：展开与软流水是填槽有效手段。D正确：固定格式空槽需NOP填充致代码膨胀。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "VLIW 依赖硬件在运行时进行动态指令重排（Out-of-Order Execution）和依赖检查，因此指令打包不当不会导致流水线停顿",
+          "当不同微操作争用同一个硬件执行单元（例如同时存在两个向量乘法但仅有一个 Vector MAC 单元）时，会产生结构冲突（Structural Hazard），迫使打包插入 NOP 填充",
+          "循环展开（Loop Unrolling）与软件流水线（Software Pipelining）是消除 VLIW 数据依赖、填满并行指令槽（Slot）的有效优化手段",
+          "若当前周期内并行微操作少于 VLIW 槽位数，空余槽位必须显式用 NOP 填充，这会导致指令体积膨胀与代码密度下降"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B、C、D。A错误，VLIW静态调度无动态重排；B 结构冲突需插NOP；C 展开与软流水填槽；D 空槽NOP致膨胀。"
+      }
+    }
+  },
+  {
+    "id": "hw-observability-06",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "observability",
+      "profiling",
+      "trace",
+      "tooling"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在对复杂底层系统或硬件 Kernel 进行高强度性能调优时，工程师需要在“直接修改代码并试错测试”与“先构建/拓展定制化调试工具（如 Trace 可视化、Hot-reload 性能追踪器）”之间进行时间分配。下列关于性能工程中可观测性与工具建设的分析，哪些符合生产最佳实践？（多选）",
+    "explanation": "A正确：仅凭端到端时间易误判瓶颈。B错误：短窗口内定制工具仍常指数级提升效率。C正确：Perfetto等可视化揭示Stall与空闲槽。D正确：AI生成代码需强验证链防隐蔽Bug。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在缺乏细粒度 Trace（如指令级或周期级执行追踪）的情况下，仅凭端到端执行时间进行优化容易陷入局部最优或误判真实瓶颈",
+          "在短时间窗口（如数小时）的优化任务中，构建定制化调试工具所消耗的时间必然无法通过后续调优效率的提升来收回成本",
+          "借助可视化性能剖析工具（如 Perfetto 时间轴），工程师可以快速识别流水线停顿（Stall）、内存等待时间以及未填满的并行槽",
+          "在引入 AI 代码生成辅助进行性能调优时，完善的自动化验证与性能测试工具链是防止大模型引入隐蔽语义 Bug 或虚假优化的关键保障"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、C、D。A 粗粒度易误判；B错误，小工具常指数级提效；C 可视化定位Stall；D 自动化验证防AI虚假优化。"
+      }
+    }
+  },
+  {
+    "id": "hw-simd-align-07",
+    "category": "pytorch-perf",
+    "topic": "pytorch-performance",
+    "tags": [
+      "simd",
+      "alignment",
+      "vector-load",
+      "debugging"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某性能工程师在为包含 128-bit SIMD 向量扩展指令集的专用处理器编写高吞吐矩阵乘法 Kernel 时，发现将循环展开后代码的实际执行周期数反而比展开前增加了约 40%。经分析发现计算逻辑本身无误，但存在频繁的向量内存加载停顿。下列哪项是最可能导致该性能逆退的原因？（单选）",
+    "explanation": "A错误：I-Cache Miss表现为Fetch延迟而非向量加载特异Stall。B正确：16字节对齐 Violation致多周期拼接与微码惩罚。C错误：PRF耗尽致发射阻塞非加载暴涨。D错误：Forwarding已处理相关性。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "循环展开导致生成的汇编指令体积大幅超出指令缓存（I-Cache）容量，导致指令获取阶段发生严重的连续缺失",
+          "循环展开后向量加载指令的内存基地址未对齐到 16 字节边界，导致硬件触发了多周期的非对齐访存与微码惩罚",
+          "SIMD 向量寄存器的频繁重命名导致物理寄存器堆（PRF）资源耗尽，迫使发射阶段退化为单发射标量模式",
+          "向量执行单元在处理展开后的连续向量指令时，因缺少软件流水线编排而触发了显式的跨周期数据相关性锁存"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。128-bit Vector Load需16字节对齐，未对齐则分两次读取+位移拼接或触发Fault，致40%加载停顿。"
+      }
+    }
+  }
+]

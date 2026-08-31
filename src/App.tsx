@@ -10,6 +10,7 @@ import {
   CheckCircleFilled,
 } from '@ant-design/icons';
 import { questionBank as bank } from './data/questionBank';
+import type { InterviewDefinition } from './schemas/interview';
 import type { LearnerProfile } from './schemas/learner';
 import { emptyAnswer } from './domain/quiz';
 import { collectTopicRefs } from './domain/learner';
@@ -29,8 +30,7 @@ import ResultPanel from './components/result/ResultPanel';
 import CopilotSidebar from './components/copilot/CopilotSidebar';
 import { createLLMProvider } from './ai/provider';
 import { devUsageLogger } from './ai/usageTelemetry';
-
-type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
+import { type Page, attemptNavigate, isTrainingSessionRunning } from './navigationGuard';
 
 const VALID_PAGES: Page[] = ['train', 'progress', 'interview', 'settings', 'agent'];
 /** 由 URL pathname 派生当前页面；未知路径回退训练首页。 */
@@ -67,7 +67,10 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const page = pageFromPath(location.pathname);
-  const goPage = (p: Page) => navigate(p === 'train' ? '/train' : `/${p}`);
+  // P0-1（续）：进行中的训练会话（quiz/result）锁定普通 tab 导航——离开 /train 会白屏。
+  // 直接把 goPage 收敛为受守导航，所有调用点（菜单、子页回调、开局）统一受益。
+  const goPage = (p: Page) =>
+    attemptNavigate({ target: p, phase, navigate, warn: (m) => message.warning(m) });
   const [copilotOpen, setCopilotOpen] = useState(false);
 
   const {
@@ -104,6 +107,16 @@ export default function App() {
   // 设置页未保存草稿提升到 App 层（同上思路），切到其它 tab 再切回时不丢编辑态。
   const settings = useSettingsDraft(config, handleSaveConfig, message);
   const challengerProvider = createLLMProvider(config, devUsageLogger);
+
+  // P0-1：从非 train 页面（如 /interview「面试」页）开局时，handleStart 只 setPhase('quiz')
+  // 而不导航；而 quiz / result / adaptive 渲染分支全部 gated 在 `page === 'train'`，
+  // 于是 phase==='quiz' 但 page!=='train' 时四个分支全不命中 ⇒ 白屏。
+  // 这里在开局时把页面收敛到 /train，让 quiz 渲染分支命中；已在 train 页则为 no-op。
+  // （与 useTrainingSession 的 onRestart 同理：退出/重开都回 train 页。）
+  const startSession = (def: InterviewDefinition) => {
+    if (page !== 'train') goPage('train');
+    void handleStart(def);
+  };
 
   // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
   if (location.pathname === '/' || location.pathname === '') {
@@ -152,11 +165,15 @@ export default function App() {
         </Space>
       </Layout.Header>
 
-      {/* 导航菜单常驻：进入训练/面试后也允许切换 tab 再切回，进行中的会话不会丢失 */}
+      {/* 导航菜单常驻：进入训练/面试后也允许切换 tab 再切回，进行中的会话不会丢失。
+          但若训练会话进行中，非 train 的 tab 直接禁用（goPage 仍是兜底，双击/键盘不会漏） */}
       <Menu
         mode="horizontal"
         selectedKeys={[page]}
-        items={NAV_ITEMS}
+        items={NAV_ITEMS.map((it) => ({
+          ...it,
+          disabled: isTrainingSessionRunning(phase) && it.key !== 'train',
+        }))}
         onClick={(e) => goPage(e.key as Page)}
         style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
       />
@@ -186,7 +203,7 @@ export default function App() {
                     categories={bank.categories}
                     config={config}
                     profile={displayedProfile}
-                    onStart={handleStart}
+                    onStart={startSession}
                     onGoSettings={() => goPage('settings')}
                   />
                 )}
@@ -206,7 +223,7 @@ export default function App() {
                   <InterviewPage
                     config={config}
                     profile={displayedProfile}
-                    onStart={handleStart}
+                    onStart={startSession}
                     onGoSettings={() => goPage('settings')}
                   />
                 )}

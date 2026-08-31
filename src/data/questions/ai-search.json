@@ -1,0 +1,468 @@
+[
+  {
+    "id": "ai-search-01",
+    "category": "search",
+    "topic": "information-retrieval",
+    "subtopic": "hybrid-search",
+    "tags": [
+      "hybrid-search",
+      "bm25",
+      "dense-retrieval",
+      "fusion"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在构建生产级语义搜索时，关于「混合检索（关键词 + 向量）」与「纯稠密向量检索」的取舍，下列说法正确的是？",
+    "explanation": "关键词检索擅长精确命中专有名词、ID、罕见实体与罕见拼写，向量检索擅长语义泛化，二者是互补而非互斥关系；混合检索需对两路分数做归一化与加权融合，直接拼接 Top-K 会被单一尺度主导而失衡。纯向量检索在精确术语、稀有实体上常不如词汇匹配，因此不应简单弃用关键词检索。",
+    "misconceptions": [
+      "以为向量检索可全面取代关键词检索",
+      "以为融合顺序与归一化无关紧要"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "关键词检索擅长精确命中专有名词、ID、罕见实体与罕见拼写，向量检索擅长语义泛化，二者互补而非互斥",
+          "纯稠密向量检索在一切场景下召回都严格优于混合检索，因此应直接弃用关键词检索",
+          "混合检索需对两路分数做归一化与加权融合，直接拼接 Top-K 会被单一尺度主导而失衡",
+          "混合检索的分数融合只是工程细节，是否归一化对最终排序结果没有任何可观测影响"
+        ],
+        "answer": [
+          0,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：关键词检索与向量检索互补（词汇精确命中 vs 语义泛化）；混合检索必须对两路分数归一化后加权融合，直接拼接 Top-K 会被尺度主导；纯向量检索在专有名词/ID/罕见实体上常不如词汇匹配，不应弃用关键词检索。取舍由真实查询分布上的召回-延迟-成本曲线决定。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-02",
+    "category": "search",
+    "topic": "information-retrieval",
+    "subtopic": "inverted-index",
+    "tags": [
+      "inverted-index",
+      "bm25",
+      "tf-idf",
+      "lexical-retrieval"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于传统信息检索中倒排索引与 BM25 的工作原理，下列说法正确的是？",
+    "explanation": "倒排索引以词项为键映射到含该词项的文档列表与词频等统计信息；BM25 在词频饱和度（TF 过高时边际收益递减）与文档长度归一化（长文档天然词频更高需惩罚）之上估计查询-文档相关性。BM25 是词汇统计模型，与稠密向量表示（embedding）完全不同；倒排索引可扩展到千万乃至亿级文档，无需整篇载入内存。",
+    "misconceptions": [
+      "以为 BM25 是稠密向量表示，与 embedding 等价",
+      "以为倒排索引必须整篇载入内存才能查询"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "倒排索引以词项为键映射到含该词项的文档列表与词频，BM25 用词频饱和度与文档长度归一化估计相关性",
+          "BM25 是一种稠密向量表示，本质与 embedding 相似度计算等价，只是实现更轻量",
+          "倒排索引必须先把整篇文档载入内存才能查询，因此无法扩展到千万级文档",
+          "BM25 完全不考虑词频，仅按词项是否出现做二值匹配，故对长文档更公平"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：倒排索引 = 词项 → (文档列表, 词频) 的映射；BM25 在词频饱和度（TF 饱和）与文档长度归一化（惩罚长文档天然高词频）上估计相关性。它是词汇统计模型，非向量表示；可大规模扩展，无需整篇入内存。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-03",
+    "category": "search",
+    "topic": "agentic-search",
+    "subtopic": "real-search",
+    "tags": [
+      "search-agent",
+      "tool-calling",
+      "hallucination",
+      "observability"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "你们上线了一个号称「会自己搜索」的问答 Agent，但用户反馈它常给出过时或编造的引用。要判断它是否「真的在搜索」而非凭参数记忆作答，下列哪些做法有效？",
+    "explanation": "「伪搜索」的核心标志是没有真实的检索工具调用：应要求 Agent 每一步检索都产出可追溯的工具调用记录（查询词、命中条目、来源），没有记录即视为未检索；用答案不在训练数据中的「保鲜」探针观察它是否真调用检索；把检索结果显式回灌上下文并要求答案标注可对应到真实条目的引用。仅出现「根据搜索结果」这类措辞不能证明检索发生。",
+    "misconceptions": [
+      "以为答案里出现「根据搜索结果」措辞即证明检索发生",
+      "以为轮数多就等于检索充分"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "要求 Agent 每一步检索都产出可追溯的工具调用记录（查询词、命中条目、来源 URL），没有记录即视为未检索",
+          "只要最终答案里出现了「根据搜索结果」这类措辞，就足以认定它真的检索过",
+          "用已知答案不在模型训练数据中的「保鲜」问题做探针，观察它是否真的调用检索而非直接编造",
+          "把检索结果显式回灌进上下文并要求答案标注引用，若引用无法对应到真实检索条目即为伪搜索"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：伪搜索 = 没有真实检索调用。验证手段：① 强制每步检索产出可追溯工具调用记录（查询/命中/来源），无记录即未检索；② 用训练数据外的「保鲜」探针题，观察是否真调检索；③ 检索结果回灌上下文并要求引用可对应真实条目。仅文本中出现「根据搜索结果」不能证明检索发生。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-04",
+    "category": "search",
+    "topic": "ranking",
+    "subtopic": "bi-encoder-cross-encoder",
+    "tags": [
+      "bi-encoder",
+      "cross-encoder",
+      "learning-to-rank",
+      "rerank"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于检索排序中 bi-encoder（双塔）、cross-encoder（交叉编码器）与 Learning to Rank 的分工与取舍，下列说法正确的是？",
+    "explanation": "bi-encoder 把 query 与 doc 独立编码、可离线建索引，支持毫秒级初筛；cross-encoder 在线逐对交互打分更准但更慢，故不能离线建索引替代全库检索。重排只能对初筛已召回的候选重排，漏召文档永远排不回来，初筛召回率是上游瓶颈。Learning to Rank 的点/对/列表式损失对应不同标注成本与优化目标，列表式更关注整体排序质量。",
+    "misconceptions": [
+      "以为 cross-encoder 可离线建索引替代 bi-encoder 做全库检索",
+      "以为加重排就能解决召回不足"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "bi-encoder 把 query 与 doc 独立编码、可离线建索引支持毫秒级初筛；cross-encoder 在线逐对交互打分更准但更慢",
+          "cross-encoder 可以离线建索引，因此应直接用它替代 bi-encoder 做全库检索以同时获得速度与精度",
+          "重排只能对初筛已召回的候选重新排序，漏召的文档永远排不回来，故初筛召回率是上游瓶颈",
+          "Learning to Rank 的点 / 对 / 列表式损失对应不同的标注成本与优化目标，列表式更关注整体排序质量"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：bi-encoder 独立编码、可离线建索引、快；cross-encoder 在线逐对交互、准但慢，不能离线替代全库检索。重排受初筛召回率上限约束（漏召排不回）。LTR 点/对/列表式损失有不同标注成本与优化目标，列表式优化整体排序。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-05",
+    "category": "search",
+    "topic": "information-retrieval",
+    "subtopic": "query-rewriting",
+    "tags": [
+      "query-rewriting",
+      "hyde",
+      "query-decomposition",
+      "lexical-gap"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "用户查询往往简短、歧义或缺乏上下文。关于查询改写与扩展（如 HyDE、查询分解、同义扩展）在生产检索中的作用，下列说法正确的是？",
+    "explanation": "查询改写把模糊自然语言映射为更利于检索的表示，可显著提升短查询与口语化查询的召回；HyDE 先让模型生成假设性答案文档再做向量检索，用「答案形态」对齐缓解词汇鸿沟；复杂问题可分解为子查询分别检索再合并，但需控制子查询爆炸带来的成本与噪声。改写并非越多越好，需评估其引入的偏差。",
+    "misconceptions": [
+      "以为查询改写次数越多检索越准，无需评估偏差",
+      "以为改写对所有查询都必然提升效果"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查询改写把模糊自然语言映射为更利于检索的表示，可显著提升短查询与口语化查询的召回",
+          "HyDE 先让模型生成假设性答案文档再做向量检索，用「答案形态」对齐缓解词汇鸿沟",
+          "查询改写必然提升效果，改写次数越多检索越准，无需评估改写引入的偏差",
+          "复杂问题可分解为子查询分别检索再合并，但需控制子查询爆炸带来的成本与噪声"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：改写提升短/口语化查询召回；HyDE 用假设答案文档对齐缓解词汇鸿沟；复杂问题可子查询分解后合并，但要防子查询爆炸。改写不是越多越好，需评测其偏差与成本。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-06",
+    "category": "search",
+    "topic": "information-retrieval",
+    "subtopic": "late-interaction",
+    "tags": [
+      "late-interaction",
+      "colbert",
+      "maxsim",
+      "multi-vector"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "关于 Late Interaction 多向量检索（如 ColBERT 的 MaxSim）的原理与代价，下列说法正确的是？",
+    "explanation": "Late Interaction 在检索期让 query 每 token 与 doc 每 token 取最大点积后累加（MaxSim），实现细粒度词级匹配，而非把文档压成单向量；它不在编码期用交叉注意力融合 query-doc（融合发生在检索期的 MaxSim，无交叉注意力）。保留每 token 向量使索引体积与算力显著大于单向量稠密检索，是精度换存储与算力的典型权衡。MaxSim 累加值尺度远大于单向量余弦，训练若沿用 Dense 的过大温度缩放会导致 Softmax 饱和、梯度消失。",
+    "misconceptions": [
+      "以为 Late Interaction 在编码期用交叉注意力融合 query-doc（实际是检索期 MaxSim）",
+      "以为索引体积与单向量检索相同"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检索期 query 每 token 与 doc 每 token 取最大点积后累加（MaxSim），实现细粒度词级匹配而非单向量压缩",
+          "Late Interaction 在编码期就用交叉注意力融合 query 与 doc，因此索引体积与单向量检索相同",
+          "保留每 token 向量使索引体积与算力显著大于单向量稠密检索，是精度换存储与算力的典型权衡",
+          "MaxSim 累加值尺度远大于单向量余弦，训练若沿用 Dense 的过大温度缩放会导致 Softmax 饱和、梯度消失"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：MaxSim = query 每 token 与 doc 每 token 最大点积累加，细粒度词级匹配；融合在检索期发生，编码期无交叉注意力；保留多向量使索引/算力显著增大（精度换存储算力）；MaxSim 尺度远大于单向量余弦，沿用 Dense 大温度会 Softmax 饱和、梯度消失。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-07",
+    "category": "search",
+    "topic": "search-quality",
+    "subtopic": "evaluation",
+    "tags": [
+      "recall",
+      "ndcg",
+      "mrr",
+      "llm-as-judge",
+      "offline-eval"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "关于检索系统质量的评估方法（Recall@k、NDCG、MRR、LLM-as-Judge、金标集），下列说法正确的是？",
+    "explanation": "Recall@k 衡量前 k 个结果是否命中相关文档（召回），NDCG/MRR 额外刻画相关项是否排在更靠前位置（排序）。LLM-as-Judge 需用金标集校准，并要能区分「检索错误」与「生成错误」，否则会混淆上下游瓶颈。评估集必须代表真实查询分布，否则离线指标虚高、上线翻车是常见事故。NDCG 接近满分往往因评估集过小、缺乏干扰项而虚高，不代表系统完美。",
+    "misconceptions": [
+      "以为 NDCG 接近满分即系统完美无瑕",
+      "以为端到端答案变好就等于检索变好"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Recall@k 衡量前 k 个结果是否命中相关文档（召回），NDCG/MRR 额外刻画相关项是否排在更靠前位置（排序）",
+          "LLM-as-Judge 需用金标集校准，并要能区分「检索错误」与「生成错误」，否则会混淆上下游瓶颈",
+          "评估集必须代表真实查询分布，否则离线指标虚高、上线后效果翻车是常见事故",
+          "NDCG 接近满分即代表检索系统完美无瑕，可以停止继续优化召回与排序"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：Recall@k 测召回命中，NDCG/MRR 测排序靠前程度。LLM-as-Judge 需金标校准且能区分检索错/生成错。评估集须代表真实查询分布，否则离线虚高。NDCG 满分常因评估集过小虚高，不代表完美。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-08",
+    "category": "search",
+    "topic": "search-infrastructure",
+    "subtopic": "chunking",
+    "tags": [
+      "chunking",
+      "chunk-size",
+      "context",
+      "indexing"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在为 RAG / 检索系统做文档切分（chunking）时，关于 chunk 粒度对召回的影响，下列说法正确的是？",
+    "explanation": "chunk 过大稀释单块与查询的相似度、过小丢失上下文，需在语义完整性与检索精度间权衡，理想做法是按文档结构（段落/小节/标题层级）切分而非固定字符数。切分越细并不必然更好：过小 chunk 丢失上下文、增加噪声与成本；整篇单向量则难以精确定位答案片段。",
+    "misconceptions": [
+      "以为 chunk 越细召回必然越好",
+      "以为固定字符数机械切分对所有文档都最优"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "chunk 过大稀释单块相似度、过小丢失上下文，需在语义完整性与检索精度间权衡，并按文档结构切分",
+          "chunk 切得越细召回必然越好，因为更短的文本更容易与查询精确匹配",
+          "切分策略对检索质量没有影响，只需把整篇文档作为单一向量即可获得最佳效果",
+          "应一律采用固定字符数机械切分，简单且对所有文档类型都最优"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：chunk 粒度是语义完整性 vs 检索精度的权衡——过大稀释相似度，过小丢上下文。应按文档结构切分而非固定字符数；过细会丢上下文、增噪声与成本；整篇单向量难定位答案。需按真实查询分布评测选定粒度。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-09",
+    "category": "search",
+    "topic": "agentic-search",
+    "subtopic": "stopping-condition",
+    "tags": [
+      "search-agent",
+      "stopping",
+      "information-gain",
+      "budget"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "Search Agent 在「多轮检索-推理」循环中，应如何决定「已经搜得够了、可以停止」？下列哪些做法稳健？",
+    "explanation": "停止条件应基于「已收集证据是否足以回答」而非固定轮数：可用子问题覆盖度或信息增益触发停止；最大轮数只应作为防成本/延迟爆炸的安全上限（兜底），不是正常停止条件；检测到新检索结果不再提供增量信息（边际收益递减）时应停止，避免无谓重复搜索。无限循环直到上下文填满既浪费又易引入噪声。",
+    "misconceptions": [
+      "以为轮数越多检索越充分，应无限循环",
+      "以为固定轮数就是合理的停止条件"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基于「已收集证据是否足以回答」做判断，而非固定轮数，可用子问题覆盖度或信息增益触发停止",
+          "设置最大轮数作为安全上限防止成本 / 延迟爆炸，但那是兜底而非正常停止条件",
+          "轮数越多检索越充分，应让 Agent 无限循环直到上下文窗口填满再停止",
+          "检测到新检索结果不再提供增量信息（边际收益递减）时停止，避免无谓的重复搜索"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：停止应基于证据充分性（子问题覆盖度/信息增益），非固定轮数；最大轮数仅作安全兜底防成本爆炸；边际收益递减（新结果无增量）时停止。无限循环既费成本又易引入噪声。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-10",
+    "category": "search",
+    "topic": "search-infrastructure",
+    "subtopic": "search-as-code",
+    "tags": [
+      "search-as-code",
+      "versioning",
+      "ci",
+      "regression",
+      "config"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "把「搜索 / 相关性」当作代码来工程化（Search as Code），意味着把检索配置纳入版本管理与 CI。下列哪些做法符合这一理念？",
+    "explanation": "Search as Code 主张把同义词表、字段权重、过滤规则、融合参数等相关性配置写入仓库并评审，改动可回滚、可追溯；用固定金标查询集做检索回归测试，配置变更导致核心查询召回退化则 CI 拦截；索引构建与切分策略以可复现脚本管理，环境间一致性由流水线保证。完全依赖线上 A/B 与人工直觉、不做版本化与回归，违背该理念。",
+    "misconceptions": [
+      "以为相关性调优只需线上 A/B 与人工直觉，无需版本化",
+      "以为配置改动无需回归测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同义词表、字段权重、过滤规则、融合参数等相关性配置写入仓库并评审，改动可回滚、可追溯",
+          "用固定的金标查询集做检索回归测试，配置变更若导致核心查询召回退化则 CI 拦截",
+          "索引构建与切分策略以可复现脚本管理，环境间一致性由流水线保证而非手工操作",
+          "相关性调优完全依赖线上 A/B 与人工直觉，无需任何版本化或自动化回归"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：相关性配置（同义词/权重/过滤/融合）入仓评审、可回滚；固定金标集做检索回归，CI 拦截召回退化；索引与切分用可复现脚本管理、流水线保环境一致。反对纯线上 A/B + 人工直觉、无版本化无回归。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-11",
+    "category": "search",
+    "topic": "information-retrieval",
+    "subtopic": "embedding-selection",
+    "tags": [
+      "embedding",
+      "matryoshka",
+      "domain-adaptation",
+      "dimension"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "为自有领域的检索系统选择 embedding 模型时，关于维度、领域适配与评测的权衡，下列说法正确的是？",
+    "explanation": "通用 embedding 未必适配垂直领域术语，应在自有金标集上实测召回而非盲信公开 benchmark；Matryoshka 训练可在同一模型上支持多维度截断，部署按精度/成本按需只存前 k 维；维度并非越高越好，需权衡存储与延迟；更换 embedding 模型须全量重嵌并对齐 query/doc 两侧版本，否则向量空间不一致致召回崩塌。",
+    "misconceptions": [
+      "以为维度越高检索质量必然越好",
+      "以为换模型只需重嵌文档侧，query 侧可不动"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通用 embedding 未必适配垂直领域术语，应在自有金标集上实测召回而非盲信公开 benchmark",
+          "Matryoshka 训练可在同一模型上支持多维度截断，部署按精度 / 成本按需只存前 k 维",
+          "维度越高检索质量必然越好，应无脑选最高维模型而无需权衡存储与延迟",
+          "更换 embedding 模型须全量重嵌并对齐 query / doc 两侧版本，否则向量空间不一致致召回崩塌"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：通用模型未必适配垂直领域，应在自有金标集实测；Matryoshka 支持多维度截断、按需存前 k 维；维度非越高越好，需权衡存储/延迟；换模型须全量重嵌并对齐 query/doc 两侧版本，否则空间不一致召回崩塌。"
+      }
+    }
+  },
+  {
+    "id": "ai-search-12",
+    "category": "search",
+    "topic": "search-infrastructure",
+    "subtopic": "cost-latency-quality",
+    "tags": [
+      "observability",
+      "slo",
+      "cost",
+      "latency",
+      "degradation"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "生产检索系统需要在成本、延迟与质量之间做工程权衡。下列哪些做法稳健？",
+    "explanation": "应为检索链路设定延迟 SLO 与成本预算，用缓存命中、候选截断、回退关键词等降级路径保可用；建立检索可观测（命中率、空结果率、Top-1 相关率、耗时分位），用线上信号反向驱动评测集更新；用分级检索（先廉价粗排再昂贵精排）在质量与成本间取舍，而非对所有查询一视同仁全量精排。质量优先于一切、无条件走最贵最慢精排，会压垮成本与延迟预算。",
+    "misconceptions": [
+      "以为质量优先于一切，检索应无条件走最贵最慢精排",
+      "以为成本由预算兜底，无需做检索权衡"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为检索链路设定延迟 SLO 与成本预算，用缓存命中、候选截断、回退关键词等降级路径保可用",
+          "建立检索可观测（命中率、空结果率、Top-1 相关率、耗时分位），用线上信号反向驱动评测集更新",
+          "用分级检索（先廉价粗排再昂贵精排）在质量与成本间取舍，而非对所有查询一视同仁地全量精排",
+          "质量优先于一切，检索应无条件走最贵最慢的精排与最大 top-k，成本由预算兜底无需权衡"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要点：设延迟 SLO 与成本预算，配降级路径（缓存/候选截断/回退关键词）；建可观测（命中率/空结果率/Top-1 相关率/耗时分位）反驱评测集；分级检索（粗排→精排）按查询取舍质量与成本。反对无条件最贵最慢精排压垮预算。"
+      }
+    }
+  }
+]
