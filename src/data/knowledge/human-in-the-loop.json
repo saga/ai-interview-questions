@@ -1,0 +1,22 @@
+[
+  {
+    "id": "human-in-the-loop",
+    "name": "人机协同（Human-in-the-loop）",
+    "area": "agent-engineering",
+    "topic": "human-in-the-loop",
+    "priority": "P1",
+    "summary": "在生产 Agent 中嵌入人工干预与审批机制：按风险分级（risk-tiered）决定哪些操作需人工确认、审批上下文与可审计性、timeout / escalation 与可撤销授权、审批疲劳与 automation bias 的缓解，以及把人工反馈转化为评估与策略优化信号。",
+    "required": [
+      "按操作风险分级（查询/读 < 修改 < 退款/删除），仅高风险动作进入审批队列，避免所有调用都人工确认",
+      "审批界面必须提供动作上下文、影响范围与可逆性，而非仅展示即将执行的命令",
+      "审批应作用域受限且可撤销，不应等价于永久授权；长时间等待需 timeout、重新分配与 escalation",
+      "高自动通过率会造成 automation bias（rubber-stamping），需以抽检、异常率与结果质量监控来 mitigation"
+    ],
+    "misconceptions": [
+      "以为每次工具调用都人工确认最安全（实则引发审批疲劳并拖垮吞吐）",
+      "以为批准一次就永久授权 Agent 处理该类所有未来请求",
+      "以为高自动通过率代表 HITL 有效（可能只是人在 rubber-stamping）"
+    ],
+    "angles": ["tradeoff", "scenario", "system-design", "debugging", "design"]
+  }
+]

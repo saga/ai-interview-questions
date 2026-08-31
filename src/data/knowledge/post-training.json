@@ -1,0 +1,23 @@
+[
+  {
+    "id": "training",
+    "name": "训练与后训练（Training / Post-training）",
+    "area": "llm",
+    "topic": "training",
+    "priority": "P0",
+    "summary": "从预训练到后训练（SFT / DPO / GRPO / PPO / RLVR）的全链路：偏好学习、reward design 与 reward hacking、rollout / inference 系统成本、数据质量与 synthetic data、exploration 与 catastrophic forgetting、post-training 评估与泛化。",
+    "required": [
+      "DPO 省去显式 reward model 与 PPO 的 critic，直接对 chosen / rejected 做偏好优化",
+      "GRPO 用同组采样内的相对优势替代 value model，同时带来 rollout 推理成本与训练数据新鲜度问题",
+      "可验证 reward（programmatic / RLVR）比 LLM-as-judge 更稳但覆盖有限；reward hacking 需从 reward 与分布双视角定位",
+      "数据质量通常优于数量；过度 SFT 会压缩探索空间使后续 RL 更难学新策略",
+      "评估须同时看 target / general / safety / OOD，避免单看目标 benchmark 的虚假提升"
+    ],
+    "misconceptions": [
+      "以为 reward 上升就代表真实能力上升（可能 reward hacking）",
+      "以为 SFT 越多越好（过度 SFT 抑制后续 RL 探索）",
+      "以为扩大 synthetic data 数量总能提升收益"
+    ],
+    "angles": ["tradeoff", "mechanism", "system-design", "debugging", "design"]
+  }
+]

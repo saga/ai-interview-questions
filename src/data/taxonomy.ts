@@ -251,6 +251,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         label: 'AI 安全治理',
         description: '审计/监控/红队/攻击检测/事件响应/风险评估/安全测试/治理与合规',
       },
+      {
+        id: 'security-eval',
+        label: '安全评估与红队测试',
+        description: '漏洞利用与红队能力评测/端到端 vs 子任务评估/Ground-Truth 差分验证/多主机渗透/Zero-Day 场景/数据污染控制/防御机制影响',
+      },
     ],
   },
 ];
@@ -371,6 +376,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'agent-security': ['definition', 'mechanism', 'tradeoff', 'scenario', 'debugging'],
   'model-data-security': ['definition', 'mechanism', 'scenario', 'debugging'],
   'ai-security-operations': ['definition', 'mechanism', 'scenario', 'debugging'],
+  'security-eval': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
 };
 
 /** 全部 10 个角度（白名单兜底值，用于 taxonomy 中未登记的 topic）。 */
