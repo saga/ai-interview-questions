@@ -24,25 +24,35 @@ const activeQuestion: Question = {
   formats: { open: { referenceAnswer: '召回粗排 + 交叉编码精排。' } },
 };
 
-describe('planRetrievalScope', () => {
+describe('planRetrievalScope（含 P0-2 当前题与知识主题解耦）', () => {
   it('提到"这道题"时锁定当前题', () => {
     expect(planRetrievalScope({ query: '这道题为什么选 B', activeQuestion })).toBe('current_question');
     expect(planRetrievalScope({ query: '我刚才那道为什么错了', activeQuestion })).toBe('current_question');
   });
 
-  it('有明确主题时收敛到 topic', () => {
-    expect(planRetrievalScope({ query: '讲一下原理', activeQuestion })).toBe('topic');
+  it('显式 topic → topic', () => {
+    expect(planRetrievalScope({ query: '讲一下原理', topic: 'rag' })).toBe('topic');
     expect(planRetrievalScope({ query: '随便聊聊', topic: 'rag' })).toBe('topic');
   });
 
-  it('纯概念提问走 knowledge 层，不塞题目', () => {
-    expect(planRetrievalScope({ query: '什么是 reranker？' })).toBe('knowledge');
-    expect(planRetrievalScope({ query: 'RAG 和微调有什么区别？' })).toBe('knowledge');
+  it('P0-2：有当前题(rag)时问另一个知识点不被当前题 topic 限制', () => {
+    expect(planRetrievalScope({ query: 'GQA 和 MQA 有什么区别', activeQuestion })).toBe('topic');
+    expect(planRetrievalScope({ query: '讲讲 KV Cache', activeQuestion })).toBe('topic');
   });
 
-  it('"讲讲 X / 介绍 X" 也判为概念讲解', () => {
-    expect(planRetrievalScope({ query: '给我讲讲 RAG' })).toBe('knowledge');
-    expect(planRetrievalScope({ query: '介绍一下 KV Cache' })).toBe('knowledge');
+  it('P0-2：有当前题求提示/答案 → current_question（锚定当前题，而非被其他 topic 带走）', () => {
+    expect(planRetrievalScope({ query: '给我一点提示，不要直接给答案', activeQuestion })).toBe('current_question');
+    expect(planRetrievalScope({ query: '这题正确答案是什么', activeQuestion })).toBe('current_question');
+  });
+
+  it('纯概念提问（无当前题/无锚点）→ knowledge', () => {
+    expect(planRetrievalScope({ query: '什么是 reranker？' })).toBe('knowledge');
+    expect(planRetrievalScope({ query: 'RAG 和微调有什么区别？' })).toBe('topic');
+  });
+
+  it('有当前题的普通 follow-up（无锚点、非求助）→ global，不被当前题 topic 限制', () => {
+    expect(planRetrievalScope({ query: '为什么', activeQuestion })).toBe('global');
+    expect(planRetrievalScope({ query: '还有呢', activeQuestion })).toBe('global');
   });
 
   it('其他情况走 global', () => {
@@ -139,6 +149,12 @@ describe('combineFollowUp（ADR-065 P1-1）', () => {
   it('无上一轮时直接返回当前消息', () => {
     expect(combineFollowUp('什么是 GQA')).toBe('什么是 GQA');
   });
+
+  it('P1-4：上一轮是 command / answer 时不参与拼接（避免污染 lexical 检索）', () => {
+    expect(combineFollowUp('为什么', '给我出一道题', undefined, 'command')).toBe('为什么');
+    expect(combineFollowUp('为什么', 'A', undefined, 'answer')).toBe('为什么');
+    expect(combineFollowUp('为什么', '这道题为什么错', undefined, 'copilot')).toBe('这道题为什么错 为什么');
+  });
 });
 
 describe('retrieveForCopilot 端到端', () => {
@@ -172,5 +188,17 @@ describe('retrieveForCopilot 端到端', () => {
     });
     expect(evidence.mode).toBe('answer');
     expect(evidence.hits.map((h) => h.content).join('\n')).toContain('解析：');
+  });
+
+  it('P0-2：有当前题(rag)问另一知识点 → 锚定该节点、不被当前题 topic 限制', () => {
+    const evidence = retrieveForCopilot({ query: 'GQA 和 MQA 有什么区别', activeQuestion, limit: 5 });
+    expect(evidence.scope).toBe('topic');
+    expect(evidence.seeds).toContain('gqa');
+    expect(evidence.seeds).not.toContain('rag'); // 关键：没有退化为 activeQuestion.topic
+  });
+
+  it('P0-2：有当前题求提示 → current_question 范围（锚定当前题）', () => {
+    const evidence = retrieveForCopilot({ query: '给我一点提示，不要直接给答案', activeQuestion, limit: 5 });
+    expect(evidence.scope).toBe('current_question');
   });
 });

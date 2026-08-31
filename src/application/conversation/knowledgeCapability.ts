@@ -18,6 +18,7 @@ import type {
   RetrievalScope,
 } from '../../domain/knowledge/types';
 import type { Question } from '../../schemas/question';
+import { knowledgeNodes } from '../../data/knowledgeMap';
 
 /** 用户明确在谈"当前/上一道题"。 */
 const CURRENT_QUESTION_PATTERN = /这[道个]?题|当前题|刚才|上一题|我答的|为什么错|错在哪|我的答案|这题/;
@@ -53,18 +54,66 @@ export interface KnowledgeRetrievalInput {
 }
 
 /**
- * 轻量 query planner（ADR-063 §6）：
- *   当前题解释      → current_question
- *   概念解释        → topic（能解析出主题）/ knowledge（解析不出）
- *   普通聊天/对比   → global
+ * query 命中的知识节点 id（ADR-065 P0-2）：用于把"用户想问的知识点"与"当前题 topic"解耦。
+ * 只匹配节点 id（长度≥3）与 name，避免把通用词误判成节点。命中返回该节点 id，否则 undefined。
+ */
+let topicTermIndex: { id: string; terms: string[] }[] | null = null;
+function knowledgeTopicTerms(): { id: string; terms: string[] }[] {
+  if (!topicTermIndex) {
+    topicTermIndex = knowledgeNodes.map((n) => ({
+      id: n.id,
+      terms: [n.id, n.name].map((t) => t.toLowerCase()).filter((t) => t.length >= 2),
+    }));
+  }
+  return topicTermIndex;
+}
+
+/** 判定 query 是否指向某个知识节点（P0-2）。未命中返回 undefined。 */
+export function detectQueryTopic(query: string): string | undefined {
+  const lower = (query ?? '').toLowerCase();
+  if (!lower.trim()) return undefined;
+  for (const { id, terms } of knowledgeTopicTerms()) {
+    if (terms.some((t) => (id.length >= 3 ? lower.includes(t) : t === lower))) return id;
+  }
+  return undefined;
+}
+
+/**
+ * query 是否是对"当前题"的求助（ADR-065 P0-2）：要思路/提示/答案，但没指向其它知识主题。
+ * 用于把"求助当前题"与"问另一个知识点"区分开——后者不应被当前题 topic 限制。
+ */
+function isAboutActiveQuestion(text: string): boolean {
+  return HINT_PATTERN.test(text) || ANSWER_PATTERN.test(text);
+}
+
+/**
+ * 轻量 query planner（ADR-063 §6 / ADR-065 P0-2）：
+ *   当前题解释（这题/我的答案/为什么错） → current_question
+ *   显式主题 / query 命中其它知识节点    → topic（该节点，不限制到当前题 topic）
+ *   关于当前题的求助（提示/答案）         → current_question
+ *   概念讲解（什么是 RAG / 讲讲 transformer）→ knowledge
+ *   普通 follow-up / 闲聊                 → global
+ *
+ * 关键修正（P0-2）：activeQuestion 不再天然决定 scope。旧写法
+ * `resolvedTopic = topic ?? activeQuestion.topic` 会把"用户在已有题时问另一知识点"
+ * 错误限制在 current question 的 topic 内。现在"当前题上下文"与"用户想问的知识主题"
+ * 彻底解耦：只有 query 明确指向当前题、或明显是对当前题的求助时，才锚定当前题。
  */
 export function planRetrievalScope(input: KnowledgeRetrievalInput): RetrievalScope {
   if (input.scope) return input.scope;
   const text = input.query ?? '';
+  // 1) 用户明显在问"当前/上一道题"
   if (input.activeQuestion && CURRENT_QUESTION_PATTERN.test(text)) return 'current_question';
-  const resolvedTopic = input.topic ?? input.activeQuestion?.topic;
-  if (resolvedTopic) return 'topic';
+  // 2) 显式主题（来自 Intent.topic 或 UI 选择）
+  if (input.topic) return 'topic';
+  // 3) query 命中另一个知识节点 → 锚定该节点，不被当前题 topic 限制
+  const anchor = detectQueryTopic(text);
+  if (anchor) return 'topic';
+  // 4) 有当前题且是对当前题的求助（要提示/要答案，无其它主题指向）→ 锚定当前题
+  if (input.activeQuestion && isAboutActiveQuestion(text)) return 'current_question';
+  // 5) 概念层讲解 → 全局知识节点，不塞 10 道题
   if (CONCEPT_PATTERN.test(text)) return 'knowledge';
+  // 6) 其余（普通 follow-up / 闲聊）→ 全局
   return 'global';
 }
 
@@ -91,11 +140,27 @@ export function planRetrievalMode(input: KnowledgeRetrievalInput): RetrievalMode
  * - 当前消息与上一轮完全相同 → 直接返回
  * - 否则（短追问如"为什么""那多选呢"）→ 拼接上一轮用户消息
  */
-export function combineFollowUp(current: string, lastUserTurn?: string, topic?: string): string {
+/**
+ * 把 follow-up 查询与上一轮用户消息绑定（ADR-065 P1-1）：不消耗 LLM 做 query rewriting，
+ * 仅在当前消息看起来是短追问时拼上上一轮用户消息，给 lexical 检索提供上下文。
+ * - 当前消息已含明确主题锚点（已知 topic 或较长查询）→ 直接返回，避免污染检索
+ * - 当前消息与上一轮完全相同 → 直接返回
+ * - 上一轮是 command / answer（不是 Copilot 知识问题）→ 不参与拼接（P1-4），避免
+ *   "给我出一道题 为什么" 这类噪声污染 lexical 检索
+ * - 否则（短追问如"为什么""那多选呢"）→ 拼接上一轮 Copilot 用户消息
+ */
+export function combineFollowUp(
+  current: string,
+  lastUserTurn?: string,
+  topic?: string,
+  lastTurnChannel: 'command' | 'answer' | 'copilot' = 'copilot',
+): string {
   const cur = current.trim();
   if (!lastUserTurn || lastUserTurn.trim() === cur) return current;
   // 已含主题锚点时不拼接：规划仍用原始 query，避免噪声改变范围/模式
   if (topic || cur.length >= 16) return current;
+  // P1-4：上一轮是命令/作答而非 Copilot 知识问题 → 不污染 lexical 检索
+  if (lastTurnChannel !== 'copilot') return current;
   return `${lastUserTurn} ${cur}`;
 }
 
@@ -106,14 +171,23 @@ export function retrieveForCopilot(
 ): KnowledgeEvidence {
   const scope = planRetrievalScope(input);
   const mode = planRetrievalMode(input);
+  // P0-2：knowledgeId 按 scope 解析，不再恒等于 activeQuestion.topic。
+  // - current_question：用当前题自身知识点，并透传 questionId 锁定"这道题"
+  // - 显式 topic / query 命中其它节点：用该节点，避免被当前题 topic 限制
+  // - 其它（global/knowledge）：不传 knowledgeId，由 query 词面 + graph 决定
+  let knowledgeId: string | undefined;
+  if (scope === 'current_question') knowledgeId = input.activeQuestion?.topic ?? undefined;
+  else if (input.topic) knowledgeId = input.topic;
+  else knowledgeId = detectQueryTopic(input.query ?? '') ?? undefined;
+  const questionId = scope === 'current_question' ? input.activeQuestion?.id ?? undefined : undefined;
   return searchKnowledge(
     {
       query: input.retrieveQuery ?? input.query ?? '',
       scope,
       mode,
       topic: input.topic,
-      knowledgeId: input.activeQuestion?.topic,
-      questionId: input.activeQuestion?.id,
+      knowledgeId,
+      questionId,
       limit: input.limit,
       excludeIds: input.excludeIds,
       learnerContext: input.learnerContext,

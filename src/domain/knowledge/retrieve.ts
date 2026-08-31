@@ -245,12 +245,22 @@ export function searchKnowledge(q: KnowledgeSearchQuery, options: SearchOptions 
     const questionSlots = questionSlotLimit(scope, mode, limit);
     const seenTitles = new Set<string>();
     const deduped: KnowledgeHit[] = [];
-    let usedQuestionSlots = 0;
+    let usedOtherQuestionSlots = 0;
+    let usedCurrentQuestion = false;
+    // P1-3（ADR-065）：current_question 范围下，当前题本身恒保留 1 条，其余其他题目
+    // （同 knowledgeId、不同 questionId）最多 1 条，避免"题库里类似题"刷满 top5，
+    // 让"这题为什么错"真正回到知识解释，而不是把相似题重新喂一遍。
+    const otherQuestionCap = scope === 'current_question' ? 1 : questionSlots;
     for (const hit of scored) {
       if (seenTitles.has(hit.title)) continue;
       if (hit.kind === 'question') {
-        if (usedQuestionSlots >= questionSlots) continue;
-        usedQuestionSlots += 1;
+        if (scope === 'current_question' && q.questionId && hit.metadata.questionId === q.questionId) {
+          if (usedCurrentQuestion) continue;
+          usedCurrentQuestion = true;
+        } else {
+          if (usedOtherQuestionSlots >= otherQuestionCap) continue;
+          usedOtherQuestionSlots += 1;
+        }
       }
       seenTitles.add(hit.title);
       deduped.push(hit);

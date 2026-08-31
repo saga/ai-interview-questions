@@ -364,3 +364,32 @@ describe('全库索引', () => {
     expect(evidence.hits.length).toBeGreaterThan(0);
   });
 });
+
+describe('current_question 槽位（P1-3）', () => {
+  const manyQuestions: Question[] = [
+    { id: 'q-kv-main', category: 'llm', topic: 'kv-cache', tags: ['inference'], difficulty: 'medium', angle: 'mechanism', question: 'KV Cache 主问？', explanation: 'x', misconceptions: [], formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [1] } } },
+    { id: 'q-kv-o1', category: 'llm', topic: 'kv-cache', tags: ['inference'], difficulty: 'easy', angle: 'mechanism', question: 'KV Cache 其他题1？', explanation: 'x', misconceptions: [], formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [1] } } },
+    { id: 'q-kv-o2', category: 'llm', topic: 'kv-cache', tags: ['inference'], difficulty: 'easy', angle: 'mechanism', question: 'KV Cache 其他题2？', explanation: 'x', misconceptions: [], formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [1] } } },
+    { id: 'q-kv-o3', category: 'llm', topic: 'kv-cache', tags: ['inference'], difficulty: 'easy', angle: 'mechanism', question: 'KV Cache 其他题3？', explanation: 'x', misconceptions: [], formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [1] } } },
+  ];
+  const idx = buildIndexFrom(nodes, manyQuestions);
+  it('当前题恒保留 1 条，其余同知识点其他题最多 1 条（不被题库类似题刷满）', () => {
+    const ev = searchKnowledge(
+      { query: '这道题为什么错', scope: 'current_question', questionId: 'q-kv-main', knowledgeId: 'kv-cache', limit: 5 },
+      { index: idx, nodes },
+    );
+    const questions = ev.hits.filter((h) => h.kind === 'question');
+    expect(questions.some((h) => h.metadata.questionId === 'q-kv-main')).toBe(true);
+    expect(questions.filter((h) => h.metadata.questionId !== 'q-kv-main').length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('检索排名 fixture（P2-7）', () => {
+  it('"为什么 KV Cache 占显存" top 应为 kv-cache 知识节点', () => {
+    const ev = searchKnowledge(
+      { query: '为什么 KV Cache 会占用大量显存', scope: 'topic', topic: 'kv-cache', limit: 5 },
+      { index: testIndex(), nodes },
+    );
+    expect(ev.hits[0].metadata.knowledgeId).toBe('kv-cache');
+  });
+});

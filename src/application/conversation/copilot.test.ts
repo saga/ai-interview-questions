@@ -92,3 +92,40 @@ describe('runCopilotTurn 注入 AnswerContext（ADR-065 P0-2）', () => {
     expect(captured).not.toContain('用户作答与诊断');
   });
 });
+
+describe('runCopilotTurn 检索范围决策（ADR-065 P0-2 解耦）', () => {
+  it('有当前题(kv-cache)时问另一个知识点 → 不被当前题 topic 限制', async () => {
+    const chat = async (): Promise<string> => 'ok';
+    const res = await runCopilotTurn(
+      { chat },
+      { message: 'GQA 和 MQA 有什么区别', history: [], profile: null, activeQuestion: question, session: null },
+    );
+    expect(res.evidence?.scope).toBe('topic');
+    expect(res.evidence?.seeds).toContain('gqa');
+    expect(res.evidence?.seeds).not.toContain('kv-cache');
+  });
+
+  it('有当前题求提示 → current_question 范围', async () => {
+    const chat = async (): Promise<string> => 'ok';
+    const res = await runCopilotTurn(
+      { chat },
+      { message: '给我一点提示，但不要直接给答案', history: [], profile: null, activeQuestion: question, session: null },
+    );
+    expect(res.evidence?.scope).toBe('current_question');
+  });
+
+  it('有当前题的普通 follow-up（上一轮是 Copilot 知识问题）→ 不被当前题 topic 限制', async () => {
+    const chat = async (): Promise<string> => 'ok';
+    const res = await runCopilotTurn(
+      { chat },
+      {
+        message: '为什么',
+        history: [{ role: 'user', content: 'KV Cache 是什么' }, { role: 'assistant', content: 'x' }],
+        profile: null,
+        activeQuestion: question,
+        session: null,
+      },
+    );
+    expect(res.evidence?.scope).toBe('global');
+  });
+});

@@ -188,10 +188,10 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const appendAssistant = (content: string) => {
     setMessages((prev) => {
       const next = [...prev, { role: 'assistant' as const, content, key: `${Date.now()}-a-${Math.random().toString(36).slice(2,6)}` }];
-      // sync to convSession messages
+      // sync to convSession messages：convSession.context 是 Conversation 真源，不回退到外层陈旧的 conversationContext
       setConvSession((prevS) => {
         if (!prevS) return prevS;
-        const updated: ConversationSession = { ...prevS, messages: next, context: conversationContext };
+        const updated: ConversationSession = { ...prevS, messages: next };
         saveConversationSession(updated);
         return updated;
       });
@@ -490,14 +490,19 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
         : null;
     const result = await runCopilotTurn(
       { chat: (system, h, msg) => chatCopilot(config, system, h, msg) },
-      { message: content, history, profile, activeQuestion, session, answerContext },
+      { message: content, history, profile, activeQuestion, session, answerContext, context: conversationContext },
     );
     setMessages((prev) => {
       const withAssistant = [...prev, { role: 'assistant' as const, content: result.reply, key: `${Date.now()}-a` }];
       setConvSession((prevS) => {
         if (!prevS) return prevS;
-        const updated = { ...prevS, messages: withAssistant, context: conversationContext };
+        // P0-1：convSession.context 是 Conversation 真源。首次进入纯 Chat 时 LLM 返回后这里必须用
+        // prevS.context 并显式锁定 mode='chat'，不能回退到外层陈旧的 conversationContext（否则 mode
+        // 可能被覆盖成 question，破坏刷新恢复与后续 command/answer 路由）。单独持有的 conversationContext
+        // 只是 UI 派生状态，此处一并同步。
+        const updated: ConversationSession = { ...prevS, messages: withAssistant, context: { ...prevS.context, mode: 'chat' } };
         saveConversationSession(updated);
+        setConversationContext(updated.context);
         return updated;
       });
       return withAssistant;

@@ -15,7 +15,7 @@ Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Inte
 目标架构为：
 
 ```text
-Conversation UI → Conversation Controller → Intent / Mode Router
+Conversation UI → Conversation Controller → routeUserMessage（三通道分流：command / answer / copilot）
                                       ↓
        Question / Evaluation / Interview / Learner Capabilities
                                       ↓
@@ -47,7 +47,7 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
     nodes.ts       knowledgeById / requiredPointsFor（评分要点回退）
                    / knowledgeCoverage（P0 覆盖率与题库建设 gap 路线图）
     types.ts       KnowledgeDocument / Hit / Evidence 契约；RetrievalScope（current_question/
-                   topic/knowledge/global）、RetrievalMode（answer/hint/quiz）、混合权重
+                   topic/knowledge/global）、RetrievalMode（answer/explain/hint/quiz）、混合权重
     documents.ts   投影层：KnowledgeNode / Question → 统一 KnowledgeDocument（knowledge/
                    question/misconception/concept），真值隔离进 `sensitiveText`
     index.ts       内存倒排索引 + BM25（CJK 单字 + bigram、拉丁串整体成词），纯函数
