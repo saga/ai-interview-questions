@@ -69,6 +69,31 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 - 选项长度偏差是启发式信号，soft 命中不要直接当作错误。
 - 不要把 `subtopic` 缺失自动判为质量错误，除非产品明确依赖它。
 
+## 存量题改写契约（REWRITE 执行标准）
+
+当 `question:curate` 把一题标为 `rewrite` 时，**不要整题重新生成**——那样极易再生一道重复题。先定改造目标，再改写。
+
+### 先定目标，再改写
+- 保留核心 Knowledge：`topic` 不变，必要时只换 `angle`；不要改成一道全新同类题。
+- 优先改 Cognitive Task，而非重出一道同类题。例：`kv-cache` 已有 4 道 `definition` → 目标 `angle` 改成 `tradeoff`、`difficulty` 改 `medium`，核心 Concept 不变。
+- 计划里的 `suggestedAngle` 作为首选目标；与 `fill-coverage-gap` 的题量控制一致：同 `topic×angle` 已有 ≥3 题时，新角度须证明新认知任务 / 场景 / misconception / 难度层次。
+
+### 改写内部 Prompt（10 条硬约束）
+> 你正在维护一个已有的 AI/ML 面试题库。任务不是简单换句话说，而是在保留核心知识的前提下提高面试价值与诊断价值：
+> 1. 保留原题真正考察的核心知识。
+> 2. 不得与已有题重复。
+> 3. 若原题是低价值 `definition`，优先转 `mechanism` / `comparison` / `tradeoff` / `scenario` / `debugging`。
+> 4. 保证正确答案唯一。
+> 5. 错误选项必须来自真实技术误解或条件错配。
+> 6. 所有选项处于相同决策层级和粒度。
+> 7. 不得通过答案长度、完整程度、专业术语数量泄露答案。
+> 8. 不要为增加难度而加入无关知识。
+> 9. 保持题目 self-contained。
+> 10. `explanation` 必须说明核心原理和关键误区。
+
+### 改写后
+重新跑 `npm run question:review -- <id>` 与 `npm run validate:questions`，确认无长度失衡、无同 cell 过密、答案唯一。
+
 ## 修改后的验证
 
 如果用户要求修复：
