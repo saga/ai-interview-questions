@@ -13,13 +13,22 @@ import type { BubbleListProps } from '@ant-design/x';
 import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { buildModels, getModel } from '../../ai/pi';
+import { questionBank } from '../../data/questionBank';
+import { askQuestion } from '../../application/conversation/questionCapability';
+import { evaluateAnswer as evaluateConversationAnswer } from '../../application/conversation/evaluationCapability';
+import { classifyIntent, initialConversationContext, questionContext, waitingForQuestionContext } from '../../application/conversation/router';
+import { conversationContextSchema, type ConversationContext } from '../../schemas/conversation';
 import { chromeComplete } from '../../ai/chrome';
-import { isConfigValid, isEntryValid } from '../../ai/provider';
+import { createLLMProvider, isConfigValid, isEntryValid } from '../../ai/provider';
 import { recordErrorLog } from '../../storage/db';
 import type { AIConfig } from '../../schemas/ai-config';
 import type { InterviewSession } from '../../schemas/session';
 import type { LearnerProfile } from '../../schemas/learner';
 import type { Question } from '../../schemas/question';
+import { emptyProfile } from '../../domain/learner';
+import { describeEvaluationSummary } from '../../domain/evaluation';
+import { sessionFromQuiz } from '../../domain/learner';
+import type { SessionRecord } from '../../schemas/learner';
 
 // ---------- Chat helper: multi-turn via pi-ai ----------
 /** 结构化记录一条 Copilot 失败：控制台 + 本地 errorLog 表（fire-and-forget）。 */
@@ -119,6 +128,26 @@ interface CopilotSidebarProps {
   profile: LearnerProfile | null;
   session: InterviewSession | null;
   currentQuestion?: Question | null;
+  onSessionComplete?: (record: SessionRecord) => Promise<void>;
+}
+
+const CONVERSATION_CONTEXT_KEY = 'ai-interview-conversation-context-v1';
+
+function loadConversationContext(): ConversationContext {
+  try {
+    const raw = localStorage.getItem(CONVERSATION_CONTEXT_KEY);
+    if (raw) return conversationContextSchema.parse(JSON.parse(raw));
+  } catch {
+    // Corrupt context is disposable; start a fresh Chat mode.
+  }
+  return initialConversationContext();
+}
+
+function parseChatAnswer(question: Question, input: string): string | number[] {
+  if (!question.formats.choice) return input;
+  const indexes = [...input.toUpperCase().matchAll(/(?:^|[^A-Z])([A-F])(?=$|[^A-Z])/g)].map((m) => m[1].charCodeAt(0) - 65);
+  const valid = [...new Set(indexes)].filter((i) => i >= 0 && i < question.formats.choice!.options.length);
+  return valid.length ? valid : input;
 }
 
 const role: BubbleListProps['role'] = {
@@ -144,10 +173,15 @@ const role: BubbleListProps['role'] = {
   },
 };
 
-export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion }: CopilotSidebarProps) {
+export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete }: CopilotSidebarProps) {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; key: string }[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [conversationContext, setConversationContext] = useState<ConversationContext>(() => loadConversationContext());
+  const [chatQuestion, setChatQuestion] = useState<Question | null>(() => {
+    const context = loadConversationContext();
+    return context.currentQuestionId ? questionBank.questions.find((q) => q.id === context.currentQuestionId) ?? null : null;
+  });
   const [width, setWidth] = useState(380);
   const [dragging, setDragging] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -155,6 +189,14 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const loadingRef = useRef(false);
 
   const configReady = isConfigValid(config);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CONVERSATION_CONTEXT_KEY, JSON.stringify(conversationContext));
+    } catch {
+      // Context persistence is best effort; the active UI state remains authoritative.
+    }
+  }, [conversationContext]);
 
   // auto scroll to bottom
   useEffect(() => {
@@ -189,7 +231,8 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   // 提示词刻意保持「不给答案、只给提示」，契合中国用户「辅导」的预期，也规避评分公平性争议。
   const buildSystemPrompt = () => {
     const weak = profile ? profile.topicStats ? Object.entries(profile.topicStats as any).filter(([, s]: any) => s.mastery < 0.85).slice(0,3).map(([k])=>k).join(', ') : '' : '';
-    const qInfo = currentQuestion ? `当前题目：${currentQuestion.question.slice(0,200)}\n类别：${currentQuestion.category} 主题：${currentQuestion.topic} 难度：${currentQuestion.difficulty}` : session ? `当前训练：${session.definition.title} 共${session.questions.length}题` : '用户尚未开始训练';
+    const activeQuestion = chatQuestion ?? currentQuestion;
+    const qInfo = activeQuestion ? `当前题目：${activeQuestion.question.slice(0,200)}\n类别：${activeQuestion.category} 主题：${activeQuestion.topic} 难度：${activeQuestion.difficulty}` : session ? `当前训练：${session.definition.title} 共${session.questions.length}题` : '用户尚未开始训练';
     return `你是 AI 面试训练器的 Copilot 侧边助手，基于 ant-design/x 的 Copilot 交互范式。
 职责：解释题目知识点、给出不直接泄露答案的提示、梳理薄弱项、推荐下一步训练。严禁直接替用户作答选择题的正确选项，可引导思考。
 当前上下文：
@@ -198,28 +241,90 @@ ${weak ? `薄弱主题：${weak}` : ''}
 若用户未配置 AI，请引导去设置页配置。回答使用中文，条理清晰，必要时用 Markdown 列表。`;
   };
 
+  const appendAssistant = (content: string) => {
+    setMessages((prev) => [...prev, { role: 'assistant', content, key: `${Date.now()}-a` }]);
+  };
+
   const handleSend = async (val: string) => {
     const content = val.trim();
-    if (!content) return;
-    if (!configReady) {
-      antMessage.warning('请先在设置中配置 AI 引擎');
-      return;
-    }
-    if (loadingRef.current) return;
+    if (!content || loadingRef.current) return;
     loadingRef.current = true;
     const userMsg = { role: 'user' as const, content, key: `${Date.now()}-u` };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setLoading(true);
     try {
-      const history = messages.map((m) => ({ role: m.role, content: m.content }));
-      const system = buildSystemPrompt();
-      const reply = await chatCopilot(config, system, history, content);
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply, key: `${Date.now()}-a` }]);
+      const complete = configReady
+        ? (system: string, user: string) => chatCopilot(config, system, [], user)
+        : undefined;
+      const intent = await classifyIntent(content, conversationContext, complete, (event) => {
+        if (import.meta.env.DEV) console.debug('[ConversationRouter]', event);
+      });
+      if (intent.intent !== 'general_chat' && (intent.confidence ?? 0) < 0.75) {
+        appendAssistant('我不确定你希望执行哪种操作。请明确说“给我出一道题”“下一题”或“开始模拟面试”。');
+        return;
+      }
+      const provider = configReady ? createLLMProvider(config) : null;
+      const deps = { bank: questionBank, profile: profile ?? emptyProfile(), config, provider };
+
+      if (intent.intent === 'ask_question' || intent.intent === 'continue_interview' || intent.intent === 'start_interview') {
+        const question = await askQuestion(deps, {
+          topic: intent.topic,
+          difficulty: intent.difficulty,
+          format: intent.format,
+          excludeIds: chatQuestion ? [chatQuestion.id] : [],
+        });
+        if (!question) {
+          appendAssistant('当前条件下没有找到可用题目。请换一个主题或题型。');
+        } else {
+          const nextContext = intent.intent === 'start_interview'
+            ? { ...questionContext(question.question.id, crypto.randomUUID()), mode: 'interview' as const }
+            : questionContext(question.question.id);
+          setChatQuestion(question.question);
+          setConversationContext(nextContext);
+          const body = question.format === 'choice' && question.question.formats.choice
+            ? `${question.question.question}\n\n${question.question.formats.choice.options.map((option, i) => `${String.fromCharCode(65 + i)}. ${option}`).join('\n')}\n\n请直接回复选项字母，或输入“继续”。`
+            : `${question.question.question}\n\n请作答；完成后我会按题库评分。`;
+          appendAssistant(body);
+        }
+      } else if (intent.intent === 'answer_current_question' && chatQuestion) {
+        const format = chatQuestion.formats.choice ? 'choice' as const : 'open' as const;
+        const answer = parseChatAnswer(chatQuestion, content);
+        const evaluation = await evaluateConversationAnswer({ question: chatQuestion, format }, answer, provider);
+        setConversationContext(waitingForQuestionContext(conversationContext.sessionId));
+        if (!evaluation) {
+          appendAssistant(configReady ? '当前回答暂未得到有效评分，请检查答案格式后重试。' : '当前题需要配置 AI 引擎才能评分。');
+        } else {
+          if (onSessionComplete) {
+            const record = sessionFromQuiz(
+              { questions: [{ question: chatQuestion, format }], startedAt: Date.now() - 1, definition: { title: 'Chat 题目训练' } },
+              { [chatQuestion.id]: evaluation },
+              1,
+              { [chatQuestion.id]: answer },
+            );
+            await onSessionComplete(record);
+          }
+          appendAssistant(`评分完成：${describeEvaluationSummary(evaluation)}\n\n如需继续，请回复“下一题”。`);
+        }
+      } else if (intent.intent === 'evaluate_answer' && chatQuestion) {
+        appendAssistant('当前题已结束评分流程。如需继续训练，请回复“下一题”。');
+        setConversationContext(waitingForQuestionContext(conversationContext.sessionId));
+      } else if (intent.intent === 'general_chat') {
+        if (!configReady) {
+          antMessage.warning('请先在设置中配置 AI 引擎；未配置时仍可直接请求选择题。');
+          appendAssistant('当前未配置 AI 引擎。你仍可以说“给我出一道题”开始选择题训练；开放题评分和普通问答需要先配置 AI。');
+        } else {
+          const history = messages.map((m) => ({ role: m.role, content: m.content }));
+          const reply = await chatCopilot(config, buildSystemPrompt(), history, content);
+          appendAssistant(reply);
+        }
+      } else {
+        appendAssistant('当前没有可处理的题目状态，请先说“给我出一道题”。');
+      }
     } catch (e) {
       const msg = (e as Error).message || '请求失败';
       console.error('[Copilot] 对话失败（已记录到 errorLog）：', msg, { lastErr: e });
-      setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${msg}`, key: `${Date.now()}-e` }]);
+      appendAssistant(`⚠️ ${msg}`);
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -227,6 +332,7 @@ ${weak ? `薄弱主题：${weak}` : ''}
   };
 
   const quickPrompts = [
+    { key: 'question', label: '给我出一道题' },
     { key: 'explain', label: '解释当前题目涉及的知识点' },
     { key: 'hint', label: '给一点提示，但不要直接给答案' },
     { key: 'weak', label: '分析我的薄弱项并推荐下一步' },
@@ -293,10 +399,25 @@ ${weak ? `薄弱主题：${weak}` : ''}
           </div>
 
           {/* chat list */}
-          {currentQuestion && (
+          {currentQuestion && !chatQuestion && (
             <div className="copilot-context">
               <div className="copilot-context-label">正在辅导</div>
               <div className="copilot-context-value">{currentQuestion.topic} · {currentQuestion.difficulty}</div>
+            </div>
+          )}
+          {chatQuestion && (
+            <div className="copilot-context" style={{ maxHeight: 220, overflowY: 'auto' }}>
+              <div className="copilot-context-label">题目模式 · {conversationContext.mode}</div>
+              <Typography.Text strong>{chatQuestion.question}</Typography.Text>
+              {chatQuestion.formats.choice && (
+                <div style={{ marginTop: 8 }}>
+                  {chatQuestion.formats.choice.options.map((option, i) => (
+                    <div key={`${chatQuestion.id}-${i}`} style={{ fontSize: 12, marginTop: 4 }}>
+                      {String.fromCharCode(65 + i)}. {option}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -357,8 +478,8 @@ ${weak ? `薄弱主题：${weak}` : ''}
               onChange={setInput}
               onSubmit={() => handleSend(input)}
               loading={loading}
-              placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '请先配置 AI 引擎…'}
-              disabled={!configReady}
+              placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '可先说“给我出一道题”；普通问答需配置 AI…'}
+              disabled={false}
             />
           </div>
         </>

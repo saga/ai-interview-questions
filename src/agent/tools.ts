@@ -11,7 +11,9 @@ import type { LLMProvider } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
-import { availableSessionFormats, evaluateSessionQuestion, finalizeQuestion } from '../application/sessionEvaluator';
+import { availableSessionFormats, finalizeQuestion } from '../application/sessionEvaluator';
+import { evaluateAnswer as evaluateAnswerCapability } from '../application/conversation/evaluationCapability';
+import { rankQuestions } from '../application/conversation/questionCapability';
 import { describeEvaluationSummary } from '../domain/evaluation';
 import {
   collectTopicRefs,
@@ -24,7 +26,6 @@ import {
   type ConceptGap,
 } from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge';
-import { rankCandidatePool } from '../domain/adaptive';
 import { effectiveProfileFor } from './sessionState';
 import { countDelivered } from './types';
 import type { InterviewAgentSession } from './types';
@@ -136,18 +137,12 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
     description: '按主题或类目筛选题库，返回候选题的精简摘要（id / 类目 / 主题 / 难度 / 可用题型）。用于决定本轮考察哪道题。',
     parameters: SearchQuestionsSchema,
     execute: async (_id, params: SearchQuestionsParams) => {
-      let pool = bank;
-      if (params.topic) {
-        pool = pool.filter((q) => q.topic === params.topic || q.category === params.topic);
-      }
-      // P0-2：候选池 = 过滤条件 + 排除已交付题 + 统一策略排序（弱主题→弱角度→证据最少→难度→稳定序）。
-      // 替换原 `pool.slice(0, limit)` 的「前 N 题偏置」：不指定 topic 时不再永远返回题库最前面 10 道，
-      // 且已交付题被剔除后，候选会随本轮推进动态前移，Agent 可遍历到整个题库。
-      // P0-3：排序复用 adaptive.ts 的 rankCandidatePool（与确定性兜底引擎同一 policy），
-      // Agent 只是从同一份候选中做取舍，而不是另起一套选题逻辑。
-      const candidates = rankCandidatePool(
-        pool.filter((q) => !isDelivered(session, q.id)),
-        effectiveProfile(),
+      // 候选池与 Chat/Interview 共享 question capability 的过滤与排序策略，
+      // Agent 只负责从候选中做决策，不再维护第二套 ranking policy。
+      const pool = params.topic ? bank.filter((q) => q.topic === params.topic || q.category === params.topic) : bank;
+      const candidates = rankQuestions(
+        { bank: { categories: [...new Set(bank.map((q) => q.category))], questions: bank }, profile: effectiveProfile(), provider },
+        { topic: params.topic, excludeIds: bank.filter((q) => isDelivered(session, q.id)).map((q) => q.id) },
       );
       const items = candidates.slice(0, params.limit ?? 10).map((q) => toSummary(q, generateOpenQuestions));
       const ids = items.map((it) => it.id);
@@ -205,9 +200,9 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         const byTopic = bank.filter((x) => x.topic === params.id || x.category === params.id);
         // P0-3：topic 兜底同样走统一排序（弱主题→弱角度→证据最少），而不是题库原始顺序，
         // 保证「按 topic 传参」与「按 searchQuestions 候选选」遵循同一 policy。
-        q = rankCandidatePool(
-          byTopic.filter((x) => !isDelivered(session, x.id)),
-          effectiveProfile(),
+        q = rankQuestions(
+          { bank: { categories: [...new Set(byTopic.map((x) => x.category))], questions: byTopic }, profile: effectiveProfile(), provider },
+          { excludeIds: byTopic.filter((x) => isDelivered(session, x.id)).map((x) => x.id) },
         )[0];
         if (q) {
           matchedBy = 'topic';
@@ -326,7 +321,7 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
       }
       const qid = sq.question.id;
       try {
-        const result = await evaluateSessionQuestion(sq, session.answers[qid], provider);
+        const result = await evaluateAnswerCapability(sq, session.answers[qid], provider);
         if (result === null) {
           // 未作答：跳过评分，不写虚假 0 分（与评估失败同样记为 null，不计入均分）
           session.evaluations[qid] = null;

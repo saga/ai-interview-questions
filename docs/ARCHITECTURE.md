@@ -8,6 +8,24 @@
 
 **核心原则**：题库是 source of truth，LLM 是 enhancement layer（不是题库本身）。变体的答案 key 永远来自原题，LLM 只改表达。
 
+## 统一交互入口（Phase 1–3 已实施，ADR-061）
+
+Copilot Chat、训练、模拟面试和 Agent 面试仍保留各自 UI/runtime 边界，但共享能力已收拢到 `src/application/conversation/`：Copilot 通过 Conversation Router 进入 Question/Evaluation/Learner capabilities，Agent tools 复用 question ranking 与 evaluation capability；`chatCopilot` 仅保留为 general-chat 与 intent-classification 的 LLM adapter。训练和 Agent session 暂不合并。
+
+目标架构为：
+
+```text
+Conversation UI → Conversation Controller → Intent / Mode Router
+                                      ↓
+       Question / Evaluation / Interview / Learner Capabilities
+                                      ↓
+                 Question Bank / Domain / Storage
+                                      ↑
+                 Agent Runtime（能力消费者）
+```
+
+设计约束：LLM 只识别经 schema 校验的结构化 intent；出题、评分、session 状态和 Learner 写入由 application capabilities 确定性执行。采用 adapter-first 分阶段实施：先抽 capability，再引入 `ConversationContext` 和 question mode，最后评估统一 `LearningSession`；不一次性重写现有 Hook、Agent runtime 或 IndexedDB。详见 `docs/CONVERSATION_ARCHITECTURE.md` 与根目录 `ACTION_CHECKLIST.md`。
+
 ## 分层
 
 ```

@@ -349,6 +349,7 @@ export default function App() {
           profile={profile}
           session={session}
           currentQuestion={copilotQuestion}
+          onSessionComplete={handleAgentComplete}
         />
       </div>
 

@@ -2,6 +2,20 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-061 · Conversation 作为统一交互入口，Capability 归 application 层所有
+
+- 状态：已采纳，Phase 1–3 已实施；Phase 4 统一 LearningSession 迁移暂缓 · 2026-08-31
+- 背景：Copilot Chat、训练、模拟面试和 Agent 面试复用了部分题库/评分/Learner 能力，但入口和状态机割裂。`CopilotSidebar` 内部直接维护 `chatCopilot`；Agent 面试能力主要通过 `src/agent/tools.ts` 暴露，缺少统一的自然语言 intent → application capability 路由。因此“给我出一道题”可能退化成普通文本生成，不能自然进入答题、评分和继续流程。
+- 决策：
+  1. 增加 `src/application/conversation/` 作为 Conversation Controller / Intent Router / Capability adapter 的归属层。
+  2. 将出题、评分、Interview session、Learner Memory 抽象为 application capabilities；Chat、训练页、Agent tools 都调用这些 capability，不在入口层重复业务逻辑。
+  3. LLM 只负责结构化 intent 识别；intent 经 schema 校验后，由 deterministic application service 执行出题、评分、状态变更和持久化。
+  4. 先采用 adapter-first：Phase 1 抽 capability，Phase 2 引入 ConversationContext，Phase 3 接入轻量 router，Phase 4 再评估统一 LearningSession；不一次性迁移现有 session schema/IndexedDB。
+  5. active question/session 优先于普通 Chat 路由；`pendingAction` 明确当前消息应被解释为答案、选题还是继续命令。
+- 不做：第一阶段不引入 Multi-Agent/Planner，不让 Chat 自己生成题目，不把完整题库答案无条件注入 context，不直接重写训练 Hook、Agent runtime 和 IndexedDB。
+- 设计文档：`docs/CONVERSATION_ARCHITECTURE.md`；执行清单：根目录 `ACTION_CHECKLIST.md`。
+- 验收原则：Agent 面试现有行为不回归；Question/Evaluation/Learner 业务逻辑只保留一个 application 入口；Chat 能通过共享 capability 进入“出题 → 回答 → 评分 → 继续”闭环后，才扩大 session 统一范围。
+
 ## ADR-060 · 安全与状态机收口（Proxy SSRF / 串行工具 / 生命周期幂等 / 防重复出题 / Provider 错误≠0 分）
 
 - 状态：已采纳 · 2026-08-30

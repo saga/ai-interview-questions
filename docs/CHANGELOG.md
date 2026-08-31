@@ -1,6 +1,23 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-08-31 · 实施统一 Conversation / Intent / Capability 第一阶段（ADR-061）
+
+- 新增 `src/application/conversation/`：Question / Evaluation / Interview / Learner capabilities，以及 Conversation types/router。
+- Agent tools 改用共享 question ranking 与 evaluation capability，减少入口侧重复业务规则。
+- Copilot 支持 `ask_question`、`answer_current_question`、`continue_interview`、`start_interview`；题目来自 canonical bank，评分与 Learner 写入复用既有管线。
+- 新增 `ConversationContext` / `UserIntent` Zod schema；支持确定性高置信路由、结构化 LLM intent、低置信澄清、topic alias 和 dev telemetry。
+- 新增 Chat question mode 的最小 localStorage context 恢复；不恢复完整 transcript。
+- 新增 capability/router/注入边界测试；统一 LearningSession 迁移暂缓，保留 adapter-first 架构。
+- 同步 `ACTION_CHECKLIST.md`、`docs/CONVERSATION_ARCHITECTURE.md`、ADR-061 和 `docs/ARCHITECTURE.md`。
+
+## 2026-08-31 · 记录统一 Conversation / Intent / Capability 架构设计（ADR-061）
+
+- 记录 Chat 作为自然语言统一入口的目标架构：Intent Router → application capabilities → Question/Evaluation/Learner/Session。
+- 明确 Agent Runtime 是 capability 的消费者，不再拥有跨入口业务能力。
+- 采用 adapter-first 分阶段实施：先抽 capability，再接 ConversationContext/router，最后评估统一 LearningSession。
+- 本次仅更新设计文档与根目录 action checklist，未修改业务代码。
+
 ## 2026-08-30 · 安全与状态机收口：Proxy SSRF / 串行工具 / 生命周期幂等 / 防重复出题 / Provider 错误≠0 分（ADR-060）
 
 - **Proxy SSRF 加固（P0）**：`server/index.js` 与 `worker/index.ts` 的 Cloudflare 同源代理在拼完 `targetUrl` 后校验 `hostname === TARGET_HOST && protocol === 'https:'`，拒绝协议相对/绝对 URL 改变目标主机（否则变开放中继并泄露 `Authorization`），违规返回 400。

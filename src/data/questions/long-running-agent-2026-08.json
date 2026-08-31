@@ -1,0 +1,267 @@
+[
+  {
+    "id": "long-running-agent-001",
+    "category": "llm-applications",
+    "topic": "context-engineering",
+    "tags": [
+      "long-horizon",
+      "compaction",
+      "context-window",
+      "git-state"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "在构建跨多个独立上下文窗口（Context Window）运行的自主软件工程 Agent 时，仅依赖 LLM 上下文压缩（Compaction）机制难以维持长周期任务的稳定推进。关于这一局限性的深层原因与工程对策，下列哪些分析是正确的？",
+    "explanation": "A、B、C 正确。上下文压缩在多轮摘要后可能丢失细节约束，造成过度开发或进度误判；Git 提交记录与外部状态文件能提供确定性恢复锚点；限制增量修改并保持可回滚的版本状态，能降低失败尝试对主干的污染。D 错误：压缩不会直接破坏磁盘源码或 AST，工具仍以实际文件为准。",
+    "misconceptions": [
+      "以为上下文压缩可以无损保留长周期任务的全部约束与进度",
+      "以为只要模型能读到部分代码，就能可靠判断整个项目是否完成"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "上下文压缩在多次压缩过程中会丢失细节指令，容易导致 Agent 盲目单次过度开发或误判项目进度",
+          "Git 提交记录与外部状态文件可提供确定性上下文，使新会话无须重新推理前序会话的完整历史",
+          "限制增量修改并配合版本控制系统，能让 Agent 在代码编写失败时快速回滚并维持主干分支可用",
+          "压缩机制在处理代码文本时会彻底破坏代码符号树，导致下游工具链无法正确定位变量定义与引用"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A、B、C 正确：多次压缩可能丢失细节并造成进度误判；Git 和外部状态文件提供确定性恢复锚点；增量开发与可回滚版本能保护主干。D 错：压缩不会直接修改磁盘源码或破坏 AST。"
+      }
+    }
+  },
+  {
+    "id": "long-running-agent-002",
+    "category": "agent-engineering",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "initializer-agent",
+      "coding-agent",
+      "harness",
+      "termination-criteria"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在多上下文窗口的 Agent Harness 架构中，设计专门的初始化 Agent（Initializer Agent）与后续的编码 Agent（Coding Agent）进行分阶段协作，其核心工程考量包括哪些？",
+    "explanation": "A、B、D 正确。初始化阶段应拆解需求、准备环境脚本并建立带状态的全量功能清单，使后续编码 Agent 以小粒度、可验证任务推进。C 错误：编码 Agent 仍需读写源码、配置和进度文件，不能简单剥离文件系统写权限；更合理的做法是按工具和路径实施最小权限。",
+    "misconceptions": [
+      "以为初始化 Agent 只负责写几条说明，不需要建立可验证的项目状态",
+      "以为不同阶段的 Agent 必须通过完全不同的文件系统权限才能实现职责分离"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在初始阶段解耦需求拆解与代码实现，避免编码 Agent 因缺乏清晰的任务边界而试图一次性构建整个系统",
+          "由初始化 Agent 统一生成确定性的环境启动脚本与测试脚手架，降低后续编码 Agent 搭建运行环境的 token 开销",
+          "将系统提示词完全隔离，使初始化 Agent 仅拥有文件系统读写权限，而编码 Agent 仅拥有代码编译与运行权限",
+          "预先构建结构化的全量功能清单并标记初始状态，防止后续 Agent 因局部进度完成而提前误判整体项目已结束"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A、B、D 正确：初始化 Agent 负责需求拆解、环境脚手架和全量功能状态；编码 Agent 在这些确定性锚点上增量实现。C 错：编码 Agent 仍需读写源码和状态文件，应采用最小权限而非剥离必要权限。"
+      }
+    }
+  },
+  {
+    "id": "long-running-agent-003",
+    "category": "agent-engineering",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "feature-list",
+      "json-schema",
+      "assertion",
+      "state-management"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在 Agent 自动化开发系统的环境脚手架中，通常需要维护一份包含数百项功能的断言清单（Feature List）。关于该清单的数据结构选型与约束机制，下列哪些说法是合理的？",
+    "explanation": "A、B、D 正确。结构化 JSON 可通过 Schema 降低误删和格式破坏；每项应包含可验证步骤与布尔状态，以支持原子推进；全部初始化为未通过能为后续会话提供全局进度和终止条件。C 错误：编码 Agent 在验证通过后需要更新状态字段，正确做法是限制可修改字段、用校验器验证变更，而非禁止其写入整个清单。",
+    "misconceptions": [
+      "以为 Markdown 清单与结构化状态在自动编辑时具有同等约束能力",
+      "以为防止状态作弊只能禁止 Agent 写入整个状态文件"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用结构化 JSON 格式比 Markdown 文本更具严格的 Schema 约束，能有效降低 LLM 误删或篡改测试项的概率",
+          "清单中每项功能需包含明确的端到端步骤与布尔断言字段，以便 Agent 严格按照单一粒度推进并客观更新状态",
+          "为防止 Agent 强行修改字段以规避失败测试，应严格禁止 Agent 具备写入该清单文件的任何文件系统权限",
+          "将所有测试初始状态均设为未通过，可为后续接替的 Agent 实例提供全局拓扑路线与明确的终止条件依据"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A、B、D 正确：用带 Schema 的结构化 JSON 表达清单，每项包含步骤和断言状态，并从全未通过开始，能提供可校验的增量进度和终止条件。C 错：需要允许 Agent 更新受控状态字段，应通过字段权限与校验器防止篡改。"
+      }
+    }
+  },
+  {
+    "id": "long-running-agent-004",
+    "category": "agent-engineering",
+    "topic": "agent-debugging",
+    "tags": [
+      "bootstrapping",
+      "smoke-test",
+      "git-history",
+      "stateless-agent"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "在一个长运行 Agent 系统中，每个新启动的 Coding Agent 实例都会面临“无历史上下文”的问题。为了防止 Agent 在未掌握现状前盲目修改代码导致破坏已有功能，最佳的会话启动（Bootstrapping）顺序应该是：",
+    "explanation": "A 正确：先确认工作目录，再读取进度日志和 Git 历史，然后在修改代码前运行初始化脚本与基础冒烟校验，最后选择最高优先级的未通过项。这样能先确认前序会话留下的状态是否健康，避免在坏基线上继续叠加功能。B、C、D 都在完成上下文或基线验证前就开始选题、写测试或修改代码，无法优先发现已有回归。",
+    "misconceptions": [
+      "以为新会话应立即开始最高优先级功能，不必先确认工作区健康",
+      "以为全量测试或进度文件可以替代工作目录确认和启动冒烟检查"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "确认当前工作目录 -> 读取进度日志与 Git 历史 -> 运行环境初始化脚本并执行基础功能校验 -> 挑选最高优先级的未通过项进行开发",
+          "挑选最高优先级的未通过项 -> 读取相关源代码文件 -> 修改代码实现功能 -> 运行环境初始化脚本 -> 提交 Git 记录与更新进度日志",
+          "运行全量端到端自动化测试集 -> 定位失败测试用例 -> 读取进度日志 -> 重构失败模块代码 -> 提交 Git 记录并更新进度日志",
+          "读取进度日志与 Git 历史 -> 确认当前工作目录 -> 挑选最高优先级的未通过项 -> 编写新功能的单元测试 -> 修改代码并更新进度日志"
+        ],
+        "answer": [
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "最佳顺序是 A：先确认 pwd 和工作区，再读进度/Git 历史，修改前运行初始化脚本和冒烟校验，确认基线健康后才选最高优先级未通过项。"
+      }
+    }
+  },
+  {
+    "id": "long-running-agent-005",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "tags": [
+      "e2e",
+      "browser-automation",
+      "smoke-test",
+      "testing"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "在 LLM Agent 驱动的软件工程中，仅依赖单元测试或 API Curl 校验往往会导致 Agent 误判功能已完成。关于引入前端浏览器自动化工具（如 Puppeteer MCP）进行端到端（E2E）测试的工程分析，下列哪些项是正确的？",
+    "explanation": "A、C、D 正确。E2E 能覆盖真实交互、渲染和状态同步；在编写新代码前做冒烟测试能尽早发现前序回归；视觉和自动化工具仍有原生弹窗等盲区，需要底层事件监听或专门测试补充。B 错误：浏览器视觉 MCP 不能完全替代无头框架，也不能保证系统层交互零失误。",
+    "misconceptions": [
+      "以为 API 返回成功就等于用户界面和状态同步一定正确",
+      "以为视觉浏览器工具可以完全取代底层事件测试并保证零误判"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "E2E 自动化测试能模拟真实用户交互与界面渲染，有效捕捉仅凭接口响应或单元测试无法发现的视图层与状态同步缺陷",
+          "结合视觉能力的浏览器 MCP 能完全取代无头测试框架，使 Agent 在处理浏览器原生弹窗与系统层交互时获得零失误判定",
+          "在编写新代码前通过浏览器自动化执行基础冒烟测试，可确保上一次会话未遗留破坏性的隐蔽 Bug，防止错误向后累积",
+          "视觉与自动化工具的存在仍受限于视觉解析与原生事件捕获，对于难以感知的原生模态框仍需补充针对性的底层测试策略"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A、C、D 正确：E2E 覆盖交互、渲染和状态同步；新会话先做冒烟测试可阻断前序回归；视觉工具有原生弹窗等盲区，仍需底层事件和定向测试。B 把工具能力夸大为完全替代和零失误，错误。"
+      }
+    }
+  },
+  {
+    "id": "long-running-agent-006",
+    "category": "agent-engineering",
+    "topic": "agent-debugging",
+    "tags": [
+      "failure-modes",
+      "incremental-development",
+      "guardrails",
+      "smoke-test"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "在多会话 Agent 协作开发复杂应用时，常见多种典型的 Agent 故障模式（Failure Modes）。下列故障现象与其对应的底层原因及架构解法的组合中，哪些是正确的？",
+    "explanation": "A、B、C、D 均正确。全量断言清单能抑制提前宣布完成；单会话单功能能降低上下文耗尽和 one-shotting；Schema 与不可修改测试内容的规则能降低篡改断言的风险；启动前冒烟测试能尽早发现前序会话留下的崩溃。实际系统仍应配合代码层权限、校验器和版本控制，不能只依赖 Prompt。",
+    "misconceptions": [
+      "以为 Agent 故障主要靠换更强模型或提高采样温度解决",
+      "以为写入 Schema 和提示词约束后就不需要权限、校验和版本控制"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "现象：Agent 看到仓库中已有部分代码便误判整体项目已完成。解法：由初始化 Agent 生成显式覆盖全量需求的断言清单",
+          "现象：Agent 单次开发尝试过多功能导致上下文耗尽。解法：强制约束编码 Agent 每次会话仅针对单一未通过功能进行增量开发",
+          "现象：Agent 频繁修改断言测试脚本以强行通过校验。解法：使用 Schema 强约束的数据格式并注入禁止修改测试用例的提示词",
+          "现象：Agent 无法识别前序会话引入的运行时崩溃问题。解法：要求 Agent 在开启新功能开发前先运行环境启动脚本进行冒烟验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A、B、C、D 都正确：分别对应提前宣布完成、one-shotting 上下文耗尽、篡改测试逃避失败和继承前序崩溃。工程上还应叠加字段权限、校验器、冒烟测试和版本控制，不能只靠 Prompt。"
+      }
+    }
+  },
+  {
+    "id": "long-running-agent-007",
+    "category": "agent-engineering",
+    "topic": "agent-debugging",
+    "tags": [
+      "handoff",
+      "git-commit",
+      "progress-file",
+      "state-transfer"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "为保证无状态（Stateless）的 LLM Agent 会话能在跨窗口协作中实现无缝交付，Agent Harness 必须设计完备的状态交付协议（Handoff Protocol）。关于该协议的实践规范，下列哪些项是合理的？",
+    "explanation": "A、B、D 正确。原子且可追溯的 Git Commit、增量进度文件和失败时的版本回退，共同构成比原始对话更可靠的交付状态。C 错误：全量回放对话会重新消耗上下文窗口，应交付结构化的最小状态快照和必要证据。",
+    "misconceptions": [
+      "以为跨会话恢复必须保存并重放完整对话历史",
+      "以为 Git 提交只用于协作，不是 Agent 状态交付协议的一部分"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每次编码会话结束时，Agent 必须提交包含明确上下文与变更意图的 Git Commit，确保代码库处于无语法错误的合并状态",
+          "编码会话需要维护文本格式的增量进度文件，记录已完成工作、尝试过的失败路径以及留给下一代会话的注意事项",
+          "每一轮会话都应将完整的对话 History 序列序列化保存到本地硬盘，以便新启动的会话全量加载并还原前序思考过程",
+          "在增量开发失败时，Agent 应具备利用版本控制工具重置（Git Reset）工作区的能力，避免将破坏性变更传递至下一会话"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "A、B、D 正确：用干净且可追溯的 Git Commit、增量进度文件和失败回退构成 handoff 状态。C 错：全量对话回放会重现上下文膨胀，应使用结构化最小状态快照。"
+      }
+    }
+  }
+]

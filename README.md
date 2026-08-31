@@ -40,8 +40,10 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 ## 文档
 
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
+- `docs/CONVERSATION_ARCHITECTURE.md`：统一 Conversation / Intent / Capability 入口设计（ADR-061）
 - `docs/DECISIONS.md`：关键决策（ADR，含"为何不迁 Astro"）
 - `docs/CHANGELOG.md`：设计变更记录
+- `ACTION_CHECKLIST.md`：统一交互架构实施清单
 - `AGENTS.md`：协作原则（不向后兼容 / 关键测试）
 
 ## 配置 LLM（可选但推荐）

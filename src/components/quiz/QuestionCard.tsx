@@ -1,5 +1,5 @@
 import { Alert, Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography, Button, List } from 'antd';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { SafetyCertificateOutlined } from '@ant-design/icons';
 import type { AnswerValue } from '../../types';
 import type { FormatId } from '../../schemas/common';
@@ -17,6 +17,21 @@ const DIFF_COLOR: Record<string, string> = {
   hard: 'red',
 };
 
+interface ShuffledOption {
+  text: string;
+  originalIndex: number;
+}
+
+/** Fisher–Yates 洗牌：返回带原始索引的展示序，便于把选中值映射回原始 answer 空间。 */
+function shuffleOptions(options: string[]): ShuffledOption[] {
+  const arr = options.map((text, originalIndex) => ({ text, originalIndex }));
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 interface Props {
   index: number;
   question: Question;
@@ -33,6 +48,13 @@ export default function QuestionCard({ index, question, format, value, onChange,
   const [challenging, setChallenging] = useState(false);
   const cf = question.formats.choice;
   const of = question.formats.open;
+  // 展示时随机打乱选项顺序（抗位置记忆）：仅重排显示顺序，value 仍写回原始索引，
+  // 父层 isChoiceCorrect 用原始 answer 比对，判分逻辑不受影响。question 变化时重新洗牌。
+  const [shuffled, setShuffled] = useState<ShuffledOption[]>(() => (cf ? shuffleOptions(cf.options) : []));
+  useEffect(() => {
+    setShuffled(cf ? shuffleOptions(cf.options) : []);
+  }, [cf]);
+
   // 选择形态可携带场景化专属题干（cf.question），未给则与开放形态共用共享题干
   const stem = (format === 'choice' ? cf?.question : undefined) ?? question.question;
   const typeLabel =
@@ -135,10 +157,10 @@ export default function QuestionCard({ index, question, format, value, onChange,
           style={{ width: '100%' }}
         >
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            {cf.options.map((o, i) => (
-              <Radio key={i} value={i}>
+            {shuffled.map(({ text, originalIndex }) => (
+              <Radio key={originalIndex} value={originalIndex}>
                   <Typography.Text style={{ lineHeight: 1.8 }}>
-                          {o}
+                          {text}
                   </Typography.Text> 
               </Radio>
             ))}
@@ -153,10 +175,10 @@ export default function QuestionCard({ index, question, format, value, onChange,
           style={{ width: '100%' }}
         >
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            {cf.options.map((o, i) => (
-              <Checkbox key={i} value={i}>
+            {shuffled.map(({ text, originalIndex }) => (
+              <Checkbox key={originalIndex} value={originalIndex}>
                   <Typography.Text style={{ lineHeight: 1.8 }}>
-                          {o}
+                          {text}
                   </Typography.Text> 
               </Checkbox>
             ))}
