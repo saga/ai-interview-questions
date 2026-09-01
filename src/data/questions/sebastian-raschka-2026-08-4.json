@@ -1,60 +1,2153 @@
 [
-  {"id":"sebastian-raschka-2026-08-121","category":"ai-systems","topic":"attention","subtopic":"RoPE 位置编码","tags":["raschka","architecture","rope"],"difficulty":"medium","angle":"mechanism","question":"相较于绝对位置嵌入，RoPE 在 Transformer 中主要提供哪些能力？（请选择两个）","explanation":"RoPE 通过旋转查询和键表示编码位置信息，使注意力分数带有相对位置信息，同时仍需关注长上下文外推边界。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Positional embeddings and RoPE"},"formats":{"choice":{"type":"multiple","options":["将位置信息作用到注意力中的查询和键表示","使注意力分数能够体现相对位置关系","保证任意长度外推都不需要重新评估","完全替代 token embedding"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。RoPE 将位置信息融入查询和键并产生相对位置结构，但不保证任意长度外推。"}}},
-  {"id":"sebastian-raschka-2026-08-122","category":"ai-systems","topic":"attention","subtopic":"GQA 与 MQA","tags":["raschka","architecture","gqa"],"difficulty":"medium","angle":"comparison","question":"Grouped-Query Attention 相较于标准 Multi-Head Attention 可能带来哪些变化？（请选择三个）","explanation":"GQA 让多组查询头共享键和值头，从而减少 KV Cache 和带宽开销，但共享程度会影响表达能力与质量。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Grouped-Query Attention"},"formats":{"choice":{"type":"multiple","options":["多个查询头可以共享一组键和值头","解码阶段的 KV Cache 通常可以缩小","内存带宽压力可能降低","共享键和值保证质量与标准多头注意力完全相同"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。GQA 用较少的 KV 头服务更多查询头，通常节省缓存和带宽，但存在质量取舍。"}}},
-  {"id":"sebastian-raschka-2026-08-123","category":"ai-systems","topic":"kv-cache","subtopic":"KV Cache 成本","tags":["raschka","architecture","kv-cache"],"difficulty":"hard","angle":"calculation","question":"在自回归解码中，KV Cache 的主要资源成本受哪些因素影响？（请选择三个）","explanation":"缓存规模与层数、KV 头数量、每头维度、序列长度和数值精度相关，GQA/MQA 能减少 KV 头数量。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"KV cache"},"formats":{"choice":{"type":"multiple","options":["上下文序列长度","KV 头数量和每头维度","缓存使用的数据类型字节数","只由模型总参数量决定，与上下文长度无关"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。KV Cache 随序列和 KV 表示规模增长，也受精度影响，不能只看总参数量。"}}},
-  {"id":"sebastian-raschka-2026-08-124","category":"ai-systems","topic":"moe","subtopic":"稀疏专家路由","tags":["raschka","architecture","moe"],"difficulty":"hard","angle":"mechanism","question":"稀疏 Mixture-of-Experts 层的核心计算特点有哪些？（请选择三个）","explanation":"路由器为每个 token 选择少数专家，只有被选专家参与该 token 的前向计算；总参数可很大而每 token 激活参数较少。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Mixture-of-Experts"},"formats":{"choice":{"type":"multiple","options":["路由器为 token 选择一个或多个专家","每个 token 通常只激活专家子集","总参数量可以高于每 token 的激活参数量","所有专家对每个 token 都执行完整前向计算"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。稀疏 MoE 通过 token 路由只执行部分专家，从而实现大总容量与较低激活计算。"}}},
-  {"id":"sebastian-raschka-2026-08-125","category":"ai-systems","topic":"moe","subtopic":"专家负载均衡","tags":["raschka","architecture","moe"],"difficulty":"hard","angle":"tradeoff","question":"MoE 路由出现专家负载不均衡时，可能产生哪些后果？（请选择三个）","explanation":"热门专家会成为容量和通信瓶颈，token 可能被丢弃或溢出，吞吐和训练稳定性都会受影响。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Expert routing and load balancing"},"formats":{"choice":{"type":"multiple","options":["部分专家过载并形成计算瓶颈","token 可能因容量限制被丢弃或转移","跨设备专家通信和尾延迟可能上升","只要总参数量不变，路由不均衡就不会影响训练"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。专家负载不均衡会造成容量、通信和稳定性问题，必须在路由和系统层处理。"}}},
-  {"id":"sebastian-raschka-2026-08-126","category":"ai-systems","topic":"attention","subtopic":"SwiGLU 激活","tags":["raschka","architecture","swiglu"],"difficulty":"medium","angle":"comparison","question":"使用 SwiGLU 等门控前馈结构时，哪些描述正确？（请选择两个）","explanation":"门控分支让一部分表示调制另一部分表示，可能提升表达能力，但参数量和隐藏维度配置需要重新平衡。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"SwiGLU feed-forward layers"},"formats":{"choice":{"type":"multiple","options":["门控分支可以调制另一条特征分支","与简单 GELU 前馈层相比需要考虑参数和维度预算","门控结构必然使推理 FLOPs 降为零","激活函数选择可以独立于隐藏维度和参数预算"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。SwiGLU 通过门控增强前馈表达，但会影响参数和计算预算。"}}},
-  {"id":"sebastian-raschka-2026-08-127","category":"ai-systems","topic":"hybrid-attention","subtopic":"混合注意力架构","tags":["raschka","architecture","hybrid"],"difficulty":"hard","angle":"tradeoff","question":"交替使用全注意力与线性或状态空间层时，设计者需要权衡哪些方面？（请选择三个）","explanation":"全注意力擅长内容寻址，替代层通常更节省长序列计算；层间比例、状态容量和硬件实现决定最终效果。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Hybrid architectures"},"formats":{"choice":{"type":"multiple","options":["长上下文计算和缓存成本","精确内容寻址与压缩状态表达能力","不同层类型之间的信息传递和实现复杂度","加入替代层就能保证所有任务质量不变"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。混合架构在效率与表达能力间取舍，层比例和接口设计需要实测。"}}},
-  {"id":"sebastian-raschka-2026-08-128","category":"ai-systems","topic":"inference-optimization","subtopic":"MLA 与压缩注意力","tags":["raschka","architecture","mla"],"difficulty":"hard","angle":"mechanism","question":"多头潜在注意力或压缩注意力减少 KV 成本的基本思路是什么？（请选择两个）","explanation":"方法通常把键和值压缩到更小的潜在表示并在需要时恢复相关表示，从而降低缓存维度，但会引入重构和质量权衡。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Multi-head latent attention"},"formats":{"choice":{"type":"multiple","options":["将部分 KV 信息表示为更低维的潜在状态","通过压缩降低解码时需要缓存的表示规模","无需任何额外投影或重构操作","压缩后可以保证精确保留全部原始 KV 信息"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。压缩注意力以较小潜在状态降低缓存成本，但需要额外映射并面对信息损失边界。"}}},
-  {"id":"sebastian-raschka-2026-08-129","category":"ai-systems","topic":"attention","subtopic":"归一化位置","tags":["raschka","architecture","normalization"],"difficulty":"hard","angle":"comparison","question":"比较 Pre-Norm 与 Post-Norm Transformer 时，哪些判断更准确？（请选择两个）","explanation":"归一化位置会影响残差路径、训练稳定性和梯度传播；不能只凭架构名称推断所有模型的质量。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Normalization and residual design"},"formats":{"choice":{"type":"multiple","options":["归一化位置会改变残差路径上的数值和梯度行为","训练稳定性与深度、初始化和其他组件共同相关","某一种位置在所有规模和任务上必然最优","只改变归一化位置就能预测最终基准成绩"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。Pre-Norm/Post-Norm 的差异涉及残差和梯度，但效果必须结合完整训练配置评估。"}}},
-  {"id":"sebastian-raschka-2026-08-130","category":"ai-systems","topic":"attention","subtopic":"注意力头共享取舍","tags":["raschka","architecture","attention"],"difficulty":"hard","angle":"tradeoff","question":"减少 KV 头数量时，哪些现象值得重点观察？（请选择三个）","explanation":"KV 共享通常节省缓存和带宽，但可能减少表示多样性并影响长上下文检索、事实任务或不同层行为。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Attention head sharing"},"formats":{"choice":{"type":"multiple","options":["解码内存占用和带宽是否下降","长上下文检索和任务质量是否回归","不同查询头共享表示后的表达能力变化","KV 头越少就必然在所有硬件和任务上更优"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。KV 头共享是系统效率与表示能力的取舍，需按任务和硬件验证。"}}},
-  {"id":"sebastian-raschka-2026-08-131","category":"ai-systems","topic":"model-selection","subtopic":"架构选型证据","tags":["raschka","architecture","selection"],"difficulty":"hard","angle":"system-design","question":"团队选择新 LLM 架构用于长上下文服务时，哪些验证方式更可靠？（请选择三个）","explanation":"应在相同任务、长度和服务约束下比较质量、缓存、延迟与成本，并检查消融或等条件基线。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Architecture selection"},"formats":{"choice":{"type":"multiple","options":["在目标上下文长度和真实任务上测试质量","测量 KV Cache、TTFT、吞吐和尾延迟","使用尽量一致的提示、解码和硬件条件","只根据论文图表中的总参数量选型"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。架构选型需要在目标工作负载和系统约束下做可比实验。"}}},
-  {"id":"sebastian-raschka-2026-08-133","category":"ai-systems","topic":"inference-optimization","subtopic":"架构与解码吞吐","tags":["raschka","architecture","throughput"],"difficulty":"hard","angle":"calculation","question":"解释“每 token 激活计算较低”时，哪些额外指标仍必须测量？（请选择三个）","explanation":"FLOPs 不是端到端性能，内存带宽、通信、kernel 实现、首 token 延迟和尾延迟都会决定实际吞吐。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Inference efficiency"},"formats":{"choice":{"type":"multiple","options":["内存带宽和缓存访问量","设备间通信与专家负载均衡","TTFT、端到端延迟和尾延迟","只用理论 FLOPs 就能推断用户体验"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。实际推理性能由计算、内存、通信和服务延迟共同决定。"}}},
-  {"id":"sebastian-raschka-2026-08-134","category":"ai-systems","topic":"evaluation","subtopic":"架构图阅读","tags":["raschka","architecture","diagram"],"difficulty":"medium","angle":"mechanism","question":"阅读一个 LLM 架构图时，哪些组件关系应先确认？（请选择三个）","explanation":"需要定位 token/位置表示、归一化与残差、注意力和前馈层、路由与输出头，才能理解数据流和成本。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Reading architecture diagrams"},"formats":{"choice":{"type":"multiple","options":["位置和 token 表示如何进入主干","注意力、前馈层与残差连接的顺序","MoE 路由或 KV 压缩发生在哪个阶段","只看模块名字而不确认张量流向"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。架构图应按张量流、残差和关键成本点阅读，而非只记组件名称。"}}},
-  {"id":"sebastian-raschka-2026-08-135","category":"ai-systems","topic":"hybrid-attention","subtopic":"架构演进连续性","tags":["raschka","architecture","history"],"difficulty":"medium","angle":"comparison","question":"观察 GPT 到现代开源 LLM 的架构演进时，哪些结论较为谨慎？（请选择两个）","explanation":"许多基础组件仍延续 Transformer，改进集中在位置、注意力共享、激活、稀疏化和效率；“仍相似”不等于没有实质优化。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Architectural evolution"},"formats":{"choice":{"type":"multiple","options":["基础 Transformer 数据流仍在许多模型中延续","位置编码、注意力共享和稀疏化等改变会影响效率","结构相似意味着所有模型质量和成本都相同","只有完全更换架构才算有意义的改进"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。现代架构既继承 Transformer 主干，也在多个组件上持续优化，不能用是否完全替换来判断创新。"}}},
-  {"id":"sebastian-raschka-2026-08-136","category":"ai-systems","topic":"evaluation","subtopic":"架构消融实验","tags":["raschka","architecture","ablation"],"difficulty":"hard","angle":"system-design","question":"要验证某个架构组件是否真正带来收益，消融实验应如何设计？（请选择三个）","explanation":"应保持数据、训练预算和评估一致，只改变目标组件，并同时报告质量和系统指标。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Ablation studies"},"formats":{"choice":{"type":"multiple","options":["尽量固定数据、训练预算和优化配置","只改变待研究的架构组件","同时报告目标任务质量与资源指标","同时改变模型规模、数据和架构以放大差异"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。消融的目标是隔离变量，并同时确认质量收益是否值得系统成本。"}}},
-  {"id":"sebastian-raschka-2026-08-137","category":"ai-systems","topic":"kv-cache","subtopic":"长上下文成本","tags":["raschka","architecture","long-context"],"difficulty":"hard","angle":"scenario","question":"长上下文服务的显存突然成为瓶颈时，哪些架构方向值得比较？（请选择三个）","explanation":"可以比较 GQA/MQA、KV 压缩、量化缓存和滑动窗口等方法，同时验证检索质量和服务延迟。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Long-context costs"},"formats":{"choice":{"type":"multiple","options":["减少 KV 头或压缩 KV 表示","对 KV Cache 使用合适的低精度表示","限制或分层管理上下文窗口","只增加显存而不测量检索质量和尾延迟"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。长上下文优化既要降低缓存成本，也要验证信息检索和服务行为。"}}},
-  {"id":"sebastian-raschka-2026-08-138","category":"ai-systems","topic":"attention","subtopic":"架构比较的边界","tags":["raschka","architecture","benchmark"],"difficulty":"hard","angle":"tradeoff","question":"为什么单一基准榜单不足以决定 LLM 架构选型？（请选择三个）","explanation":"榜单任务分布、提示格式和实现可能与目标工作负载不同，且平均分无法显示成本、延迟和长上下文边界。","source":{"materialId":"https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison","section":"Limits of benchmark comparisons"},"formats":{"choice":{"type":"multiple","options":["榜单任务分布可能不代表生产任务","平均分可能掩盖长上下文和尾延迟问题","不同实现和提示格式会影响可比性","榜单分数高就必然意味着部署总成本最低"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。选型要把基准质量与目标任务、实现条件和系统成本结合起来。"}}},
-  {"id":"sebastian-raschka-2026-08-139","category":"ai-systems","topic":"inference-optimization","subtopic":"KV Sharing","tags":["raschka","architecture","kv-sharing"],"difficulty":"hard","angle":"mechanism","question":"KV Sharing 类方法试图优化推理时的哪个资源？（请选择两个）","explanation":"通过在层或头之间共享部分键值表示，可以减少存储和带宽，但共享范围可能影响层间独立性和质量。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"KV sharing"},"formats":{"choice":{"type":"multiple","options":["解码阶段的键值缓存存储","生成过程中读取 KV 的内存带宽","保证每层都保留完全独立的 KV 表示","让上下文长度不再影响任何资源"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。KV Sharing 通过复用键值表示降低缓存和带宽成本，但存在表达能力取舍。"}}},
-  {"id":"sebastian-raschka-2026-08-140","category":"ai-systems","topic":"kv-cache","subtopic":"跨层 KV 复用","tags":["raschka","architecture","kv-cache"],"difficulty":"hard","angle":"tradeoff","question":"跨层或跨头复用 KV 表示时，哪些质量风险应测试？（请选择三个）","explanation":"不同层可能编码不同抽象，过度共享会损害检索、复制、位置处理或特定任务表现，需按层和任务测量。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Shared KV representations"},"formats":{"choice":{"type":"multiple","options":["长上下文信息检索能力","不同任务和语言的质量变化","共享比例变化带来的层间表达损失","缓存缩小就代表模型质量必然不变"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。KV 共享改变层间表示独立性，需对检索、任务和语言进行分桶回归。"}}},
-  {"id":"sebastian-raschka-2026-08-141","category":"ai-systems","topic":"inference-optimization","subtopic":"压缩注意力缓存","tags":["raschka","architecture","compressed-attention"],"difficulty":"hard","angle":"mechanism","question":"压缩注意力在解码阶段降低缓存规模时，通常需要哪些额外步骤？（请选择两个）","explanation":"压缩表示需要投影、解码或等价的变换来参与注意力计算；这些步骤的计算和数值误差需要纳入评估。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Compressed attention"},"formats":{"choice":{"type":"multiple","options":["把原始键值映射到较小的潜在表示","在查询计算时通过投影或变换使用压缩状态","压缩状态可以不参与任何恢复或映射直接替代所有计算","压缩一定会消除所有注意力计算"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。压缩注意力以低维状态换取缓存效率，但使用压缩状态仍需要相应映射和计算。"}}},
-  {"id":"sebastian-raschka-2026-08-142","category":"ai-systems","topic":"attention","subtopic":"mHC 残差连接","tags":["raschka","architecture","residual"],"difficulty":"hard","angle":"mechanism","question":"多路残差或混合残差设计的目标可能包括哪些方面？（请选择两个）","explanation":"让残差路径中的信息混合更可控，可能改善深层网络的优化与表示流动，但需要验证额外参数和稳定性。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"mHC and residual mixing"},"formats":{"choice":{"type":"multiple","options":["控制不同表示流之间的信息混合","改善深层残差路径的优化行为","自动替代所有注意力和前馈计算","不需要任何稳定性和额外开销评估"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。多路残差关注信息流与优化控制，但仍需评估复杂度和训练稳定性。"}}},
-  {"id":"sebastian-raschka-2026-08-143","category":"ai-systems","topic":"attention","subtopic":"残差与归一化耦合","tags":["raschka","architecture","normalization"],"difficulty":"hard","angle":"tradeoff","question":"改变残差混合和归一化机制时，哪些指标应一起观察？（请选择三个）","explanation":"结构变化可能影响梯度、激活尺度、收敛速度和最终质量，单独看 loss 或单个基准不足以判断。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Residual and normalization design"},"formats":{"choice":{"type":"multiple","options":["激活和梯度的数值稳定性","训练收敛速度与最终损失","目标任务质量及推理开销","只看参数量是否减少"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。残差和归一化是训练与推理共同影响的组件，需要联合测量稳定性、收敛、质量和开销。"}}},
-  {"id":"sebastian-raschka-2026-08-144","category":"ai-systems","topic":"inference-optimization","subtopic":"缓存优化的系统边界","tags":["raschka","architecture","serving"],"difficulty":"hard","angle":"scenario","question":"KV Cache 压缩后平均吞吐提高但 P99 延迟变差，哪些原因值得调查？（请选择三个）","explanation":"压缩可能增加解码、同步或 kernel 开销，并在长短请求混合时放大尾部排队；平均吞吐不能代表用户体验。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Serving tradeoffs"},"formats":{"choice":{"type":"multiple","options":["压缩和恢复操作增加了单请求计算","不同长度请求造成排队和缓存碎片","内存节省带来的并发提升改变了尾部负载","只要平均吞吐提高就可以忽略 P99"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。缓存优化需同时分析额外算子、排队、并发和尾延迟。"}}},
-  {"id":"sebastian-raschka-2026-08-145","category":"ai-systems","topic":"evaluation","subtopic":"架构新方法评估","tags":["raschka","architecture","evaluation"],"difficulty":"hard","angle":"system-design","question":"评估 KV Sharing、压缩注意力或 mHC 等新架构时，哪些对照更有说服力？（请选择三个）","explanation":"应包含相同规模基线、组件消融、目标长度和真实服务指标，避免只展示最有利的设置。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Evaluating recent architecture ideas"},"formats":{"choice":{"type":"multiple","options":["相同模型规模和训练预算的基线","只改变一个组件的消融实验","不同上下文长度下的质量、显存和延迟","只展示新方法最优长度下的平均速度"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。架构评估要隔离变量并覆盖质量、长度和服务资源。"}}},
-  {"id":"sebastian-raschka-2026-08-146","category":"ai-systems","topic":"quantization","subtopic":"压缩表示量化","tags":["raschka","architecture","quantization"],"difficulty":"hard","angle":"tradeoff","question":"对压缩 KV 或共享表示做量化时，哪些风险应单独验证？（请选择三个）","explanation":"低精度误差可能在重构、长序列累积或特殊 token 上放大，应比较不同长度、任务和数值稳定性。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Quantized compressed representations"},"formats":{"choice":{"type":"multiple","options":["重构后的注意力分数误差","长上下文累积误差和检索质量","不同硬件 kernel 下的速度与数值行为","只要缓存字节数下降就无需质量回归"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。压缩表示量化的误差可能通过重构和长上下文放大，必须同时测精度与系统收益。"}}},
-  {"id":"sebastian-raschka-2026-08-147","category":"ai-systems","topic":"attention","subtopic":"稀疏与压缩注意力","tags":["raschka","architecture","sparse-attention"],"difficulty":"hard","angle":"comparison","question":"稀疏注意力和压缩注意力降低长上下文成本的路径有何不同？（请选择两个）","explanation":"稀疏注意力减少交互位置，压缩注意力减少每个位置的表示维度或缓存量；两者都可能损失信息，需要不同测试。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Sparse and compressed attention"},"formats":{"choice":{"type":"multiple","options":["稀疏注意力主要减少需要计算的 token 交互","压缩注意力主要减少需要保存或处理的表示规模","二者都必然保留完整注意力矩阵且没有近似","二者的质量风险完全相同，不需分别评估"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。稀疏性减少交互，压缩减少表示规模，质量边界和实现方式并不相同。"}}},
-  {"id":"sebastian-raschka-2026-08-148","category":"ai-systems","topic":"model-selection","subtopic":"新架构生产准入","tags":["raschka","architecture","production"],"difficulty":"hard","angle":"system-design","question":"将论文中的缓存优化架构引入生产前，哪些门禁合理？（请选择三个）","explanation":"需要目标任务回归、长上下文和故障场景测试，并确认运行时实现、监控和回滚路径。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Production readiness"},"formats":{"choice":{"type":"multiple","options":["在代表性输入长度上验证质量和资源指标","检查运行时 kernel、并发和 P99 行为","准备灰度、监控和回滚机制","论文中报告节省显存就足以直接替换线上服务"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。生产准入必须覆盖任务质量、运行时行为和发布控制。"}}},
-  {"id":"sebastian-raschka-2026-08-149","category":"ai-systems","topic":"evaluation","subtopic":"架构趋势判断","tags":["raschka","architecture","trend"],"difficulty":"medium","angle":"comparison","question":"从近期架构趋势提炼工程结论时，哪些说法更稳妥？（请选择两个）","explanation":"行业同时探索 KV 共享、残差混合和压缩注意力，趋势说明约束在变化，但不能替代目标系统上的验证。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Recent architecture trends"},"formats":{"choice":{"type":"multiple","options":["长上下文的内存和带宽成本是重要驱动因素","不同方法需要在质量与系统指标间比较","某个趋势出现就证明所有旧架构已不可用","论文数量多就等于生产收益已经确定"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。趋势可帮助识别问题和候选方案，生产结论仍需受控验证。"}}},
-  {"id":"sebastian-raschka-2026-08-150","category":"ai-systems","topic":"inference-optimization","subtopic":"上下文成本分解","tags":["raschka","architecture","context"],"difficulty":"hard","angle":"calculation","question":"拆解长上下文推理成本时，哪些部分应分别测量？（请选择三个）","explanation":"需要区分预填充、解码、KV 存储和访存、压缩/恢复操作以及并发排队，单个平均 token 成本不够。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Context cost decomposition"},"formats":{"choice":{"type":"multiple","options":["Prefill 的计算和首 token 延迟","Decode 的每 token 计算与内存带宽","KV Cache 显存、压缩恢复和并发排队","只测短输入的平均 tokens/s"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。长上下文服务需拆分 prefill、decode、缓存和排队成本。"}}},
-  {"id":"sebastian-raschka-2026-08-151","category":"ai-systems","topic":"attention","subtopic":"架构实现与理论差异","tags":["raschka","architecture","implementation"],"difficulty":"hard","angle":"debugging","question":"理论上更省计算的注意力变体在线上没有提速时，哪些排查方向合理？（请选择三个）","explanation":"可能是 kernel 未优化、内存访问和转换开销、批处理形态或硬件不匹配；应以 profile 和真实负载定位。","source":{"materialId":"https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures","section":"Implementation realities"},"formats":{"choice":{"type":"multiple","options":["检查 kernel 和算子融合是否支持该变体","分析内存访问、投影和格式转换开销","按真实 batch、长度和硬件做 profiling","看到理论复杂度下降就直接判定实现有 bug"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。理论复杂度必须通过实现、访存和真实负载才能转化为端到端收益。"}}},
-  {"id":"sebastian-raschka-2026-08-152","category":"ai-systems","topic":"evaluation","subtopic":"论文列表使用边界","tags":["raschka","research","evaluation"],"difficulty":"medium","angle":"comparison","question":"使用研究论文清单寻找工程方案时，哪些理解正确？（请选择三个）","explanation":"清单是经过筛选的导航，不是完整文献库或生产结论；应回到论文、实现和目标任务验证。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"How to use a curated paper list"},"formats":{"choice":{"type":"multiple","options":["清单可以帮助按主题定位候选论文","清单不等于该领域所有论文的完整覆盖","论文摘要或作者报告仍需结合实现和实验核验","被收录就证明方法已经适合生产"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。论文清单适合作为检索入口，但不能代替原文阅读和目标场景验证。"}}},
-  {"id":"sebastian-raschka-2026-08-153","category":"ai-systems","topic":"hybrid-attention","subtopic":"研究论文中的混合架构","tags":["raschka","research","hybrid"],"difficulty":"hard","angle":"mechanism","question":"研究论文中的混合 Transformer 与状态空间架构通常试图获得哪些互补性？（请选择两个）","explanation":"注意力提供内容相关交互，状态空间层提供更高效的序列状态更新；实际收益取决于层组合和任务。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Hybrid attention and state-space models"},"formats":{"choice":{"type":"multiple","options":["保留注意力的内容寻址能力","利用状态空间层改善长序列效率","混合后无需再评估状态表达能力","只要层数相同就必然比纯 Transformer 更好"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。混合架构试图结合内容寻址和高效状态更新，但效果需要实验确认。"}}},
-  {"id":"sebastian-raschka-2026-08-154","category":"ai-systems","topic":"inference-optimization","subtopic":"论文中的推测解码","tags":["raschka","research","speculative-decoding"],"difficulty":"hard","angle":"mechanism","question":"推测解码获得加速的必要条件包括哪些？（请选择三个）","explanation":"草稿模型或多 token 预测头需提出候选，目标模型需高效验证，且候选接受率和验证开销要带来净收益。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Multi-token prediction and speculative decoding"},"formats":{"choice":{"type":"multiple","options":["存在能快速提出后续 token 的候选机制","目标模型可以批量或并行验证候选","候选接受率足以抵消额外开销","只要候选模型更小就保证端到端加速"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。推测解码的净收益取决于候选质量、验证并行度和额外开销。"}}},
-  {"id":"sebastian-raschka-2026-08-155","category":"ai-systems","topic":"kv-cache","subtopic":"注意力 sink 与缓存","tags":["raschka","research","attention-sink"],"difficulty":"hard","angle":"debugging","question":"分析 attention sink 或 massive activation 对推理系统的影响时，哪些检查合理？（请选择三个）","explanation":"应定位异常层和 token，观察量化、缓存和数值稳定性变化，并进行质量回归，而不是盲目裁剪。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Massive activations and attention sinks"},"formats":{"choice":{"type":"multiple","options":["按层、通道和位置定位异常值","比较量化和非量化推理的数值行为","检查特殊 token、缓存和长上下文质量","直接裁剪所有极端值而不做回归测试"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。异常激活的处理要结合位置、量化、缓存和质量证据。"}}},
-  {"id":"sebastian-raschka-2026-08-156","category":"ai-systems","topic":"training-data","subtopic":"合成数据与基准污染","tags":["raschka","research","synthetic-data"],"difficulty":"hard","angle":"debugging","question":"模型在合成的基准风格数据上提升后，如何判断是否出现评估污染？（请选择三个）","explanation":"应做样本重叠和模板审计，并使用未见表述、独立任务和真实业务数据验证泛化。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Synthetic MMLU-style data"},"formats":{"choice":{"type":"multiple","options":["检查训练样本与测试样本的文本或模板重叠","用不同表述和未见任务组合测试","在独立真实分布上验证收益","只继续增加同样模板数据观察榜单分数"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。分数提升必须排除重叠和模板记忆，并在独立任务上验证。"}}},
-  {"id":"sebastian-raschka-2026-08-158","category":"ai-systems","topic":"evaluation","subtopic":"论文消融阅读","tags":["raschka","research","ablation"],"difficulty":"hard","angle":"system-design","question":"阅读论文消融表时，哪些信息有助于判断组件贡献？（请选择三个）","explanation":"要看基线是否公平、一次改变哪些变量、不同任务是否一致以及资源指标是否同时变化。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Reading ablation studies"},"formats":{"choice":{"type":"multiple","options":["确认对照模型和训练预算是否匹配","确认每行是否只移除或替换目标组件","比较多个任务和资源指标的变化","只挑对作者最有利的一列作为结论"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。消融阅读需要确认公平基线、变量隔离和跨任务一致性。"}}},
-  {"id":"sebastian-raschka-2026-08-159","category":"ai-systems","topic":"evaluation","subtopic":"研究结果外推","tags":["raschka","research","generalization"],"difficulty":"hard","angle":"tradeoff","question":"将论文结果外推到自己的业务任务时，哪些边界必须检查？（请选择三个）","explanation":"数据分布、上下文长度、硬件、提示和评估标准变化都可能改变收益，论文结果不能直接等同于目标场景结果。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Generalizing research results"},"formats":{"choice":{"type":"multiple","options":["任务和输入分布是否相似","上下文长度、提示和解码设置是否一致","硬件、实现和服务指标是否匹配","论文榜单分数高就可以跳过本地验证"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。外推前要识别任务、配置和系统环境差异。"}}},
-  {"id":"sebastian-raschka-2026-08-160","category":"ai-systems","topic":"model-selection","subtopic":"研究方案选型","tags":["raschka","research","selection"],"difficulty":"hard","angle":"system-design","question":"从论文清单筛选值得复现的方案时，哪些步骤合理？（请选择三个）","explanation":"应先匹配问题和约束，阅读方法与实现，建立小规模基线，再决定是否扩大实验。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Selecting papers to reproduce"},"formats":{"choice":{"type":"multiple","options":["先明确目标瓶颈、质量指标和资源约束","检查论文代码、数据和实现是否可获得","用小规模可控实验与基线比较","只按发布日期和标题选择，不看目标问题"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。复现选型应从目标问题和证据可得性出发，并先做小规模可比验证。"}}},
-  {"id":"sebastian-raschka-2026-08-161","category":"ai-systems","topic":"evaluation","subtopic":"代理与工具论文分类","tags":["raschka","research","agents"],"difficulty":"hard","angle":"comparison","question":"评估 Agent 或工具使用论文时，为什么不能只看最终任务成功率？（请选择三个）","explanation":"成功率可能掩盖工具调用次数、错误恢复、成本、延迟和安全边界，需同时观察执行轨迹。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Agent systems and tool use"},"formats":{"choice":{"type":"multiple","options":["工具调用次数和失败恢复行为","端到端延迟、token 和执行成本","权限边界、错误副作用和人工介入率","成功率高就证明 Agent 的执行过程可靠"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。Agent 评价要覆盖结果、过程、资源和风险，不能只看终点。"}}},
-  {"id":"sebastian-raschka-2026-08-162","category":"ai-systems","topic":"inference-optimization","subtopic":"论文中的长上下文效率","tags":["raschka","research","long-context"],"difficulty":"hard","angle":"calculation","question":"论文声称长上下文复杂度更低时，工程验证应包括哪些内容？（请选择三个）","explanation":"复杂度声明需要转化为实际长度、硬件和批处理下的内存、延迟、吞吐和质量测量。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Long-context efficiency"},"formats":{"choice":{"type":"multiple","options":["不同序列长度下的显存和吞吐曲线","首 token、端到端和尾延迟","长上下文检索与任务质量","只在最短序列上测一次平均速度"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。复杂度优势必须在长度、系统和质量维度同时可观测。"}}},
-  {"id":"sebastian-raschka-2026-08-163","category":"ai-systems","topic":"attention","subtopic":"模型架构事实核查","tags":["raschka","research","architecture"],"difficulty":"medium","angle":"debugging","question":"技术报告对模型架构描述不完整时，哪些事实核查路径更可靠？（请选择三个）","explanation":"应交叉检查配置、参考实现、权重形状和运行时行为，并记录版本，避免仅依赖营销描述。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Architecture facts from technical reports"},"formats":{"choice":{"type":"multiple","options":["检查官方配置文件中的层数、头数和维度","阅读参考实现确认张量流和模块顺序","用权重形状或小规模运行验证推断","只根据模型名称中的架构后缀作结论"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。架构事实应由配置、代码、权重和运行行为交叉验证。"}}},
-  {"id":"sebastian-raschka-2026-08-164","category":"ai-systems","topic":"evaluation","subtopic":"研究结果可复现性","tags":["raschka","research","reproducibility"],"difficulty":"medium","angle":"system-design","question":"要提高论文实验的可复现性，哪些内容应记录？（请选择三个）","explanation":"代码、数据版本、依赖、硬件、随机种子、配置和日志共同决定结果，缺失任一项都可能造成差异。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Reproducibility"},"formats":{"choice":{"type":"multiple","options":["代码、数据和权重版本","训练、推理、随机种子和评估配置","硬件、依赖、日志和失败运行","只保存最终表格，不保存运行环境"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。复现需要保存输入、实现、环境和配置，而不仅是结果表格。"}}},
-  {"id":"sebastian-raschka-2026-08-165","category":"ai-systems","topic":"training-data","subtopic":"研究数据覆盖","tags":["raschka","research","data"],"difficulty":"hard","angle":"tradeoff","question":"论文只在单一领域或单一语言上验证时，读者应如何解释结果？（请选择两个）","explanation":"结果可能只说明该分布上的有效性；需要额外测试跨领域、跨语言和不同长度的泛化。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Dataset and evaluation coverage"},"formats":{"choice":{"type":"multiple","options":["把结论限定在已测分布和任务范围内","在目标分布上补充独立验证","单一领域结果可直接代表所有语言和行业","样本量小但分数高就不需要不确定性分析"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。有限分布上的结果需要限定外推范围，并在目标分布补充测试。"}}},
-  {"id":"sebastian-raschka-2026-08-166","category":"ai-systems","topic":"model-selection","subtopic":"研究阅读优先级","tags":["raschka","research","workflow"],"difficulty":"medium","angle":"system-design","question":"面对大量 LLM 论文时，怎样建立高效的阅读优先级？（请选择三个）","explanation":"可以按当前瓶颈、任务相关性、证据质量和可复现性排序，先读能改变决策的论文。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Organizing research reading"},"formats":{"choice":{"type":"multiple","options":["按自己的工程问题和瓶颈筛选主题","优先阅读有方法、实验和实现细节的工作","为候选方案记录可验证的假设和风险","只按引用数或社交媒体热度决定优先级"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。阅读优先级应服务于问题、证据和可验证性，而不是只追逐热度。"}}},
-  {"id":"sebastian-raschka-2026-08-167","category":"ai-systems","topic":"evaluation","subtopic":"论文结论与事实","tags":["raschka","research","claims"],"difficulty":"hard","angle":"comparison","question":"区分论文中的事实、实验结果和推测时，哪些做法合理？（请选择三个）","explanation":"应把实现事实、作者测量、消融证据和未来推测分开记录，并检查是否存在独立复现。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"Interpreting paper claims"},"formats":{"choice":{"type":"multiple","options":["区分配置或代码可直接核验的事实","区分作者在特定数据上的实验结果","把趋势判断和未来推测标成假设","将摘要中的因果措辞直接视为普遍定律"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。阅读论文时要分离可核验事实、条件化实验结果和未证实推测。"}}},
-  {"id":"sebastian-raschka-2026-08-168","category":"ai-systems","topic":"inference-optimization","subtopic":"研究到部署的性能鸿沟","tags":["raschka","research","deployment"],"difficulty":"hard","angle":"tradeoff","question":"论文中的 FLOPs 降低没有转化为线上成本下降时，哪些解释可能成立？（请选择三个）","explanation":"实际成本还受访存、通信、并发、kernel、量化和利用率影响，理论计算量只是成本的一部分。","source":{"materialId":"https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1","section":"From theoretical efficiency to deployment"},"formats":{"choice":{"type":"multiple","options":["内存访问或通信成为新的瓶颈","实现的 kernel 和批处理利用率不足","额外投影、路由或恢复操作抵消了 FLOPs 节省","FLOPs 降低必然等价于 API 账单降低"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。线上成本是系统级结果，不能由 FLOPs 单独决定。"}}},
-  {"id":"sebastian-raschka-2026-08-169","category":"ai-systems","topic":"attention","subtopic":"开放权重架构学习","tags":["raschka","workflow","architecture"],"difficulty":"medium","angle":"system-design","question":"学习一个新开放权重模型的架构时，哪些顺序较合理？（请选择三个）","explanation":"先读技术报告建立假设，再检查配置和代码，最后用权重形状或小实验验证关键细节。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Workflow overview"},"formats":{"choice":{"type":"multiple","options":["先阅读官方技术报告和模型卡建立初始假设","再检查配置文件和参考实现","用权重形状、前向运行或小实验验证疑点","只看博客中的架构图，不需要确认实现"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。推荐路径是报告、配置与代码、运行验证逐层收敛。"}}},
-  {"id":"sebastian-raschka-2026-08-170","category":"ai-systems","topic":"model-selection","subtopic":"配置文件阅读","tags":["raschka","workflow","config"],"difficulty":"medium","angle":"mechanism","question":"从开放权重模型配置中，哪些字段通常有助于重建架构草图？（请选择三个）","explanation":"层数、隐藏维度、注意力头、KV 头、上下文长度、激活和归一化配置共同决定主干结构。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Inspecting configuration files"},"formats":{"choice":{"type":"multiple","options":["层数、隐藏维度和中间层维度","查询头、KV 头和头维度","最大位置或上下文长度以及位置编码设置","只看模型参数总数就能确定完整数据流"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。配置字段能提供架构骨架，但仍需结合代码确认数据流和特殊组件。"}}},
-  {"id":"sebastian-raschka-2026-08-171","category":"ai-systems","topic":"attention","subtopic":"参考实现核对","tags":["raschka","workflow","implementation"],"difficulty":"hard","angle":"debugging","question":"为什么参考实现通常比营销式架构摘要更适合核对模型细节？（请选择两个）","explanation":"运行代码必须处理真实张量形状、分支和特殊逻辑，能揭示摘要省略的共享、归一化和缓存行为。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Reference implementations"},"formats":{"choice":{"type":"multiple","options":["代码展示了真实的张量流和条件分支","实现可以核对配置字段如何落到模块行为","代码永远没有 bug 或版本差异","只要实现存在就不需要运行或检查版本"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。参考实现是重要证据，但仍需结合版本、运行和配置进行核对。"}}},
-  {"id":"sebastian-raschka-2026-08-172","category":"ai-systems","topic":"evaluation","subtopic":"架构草图验证","tags":["raschka","workflow","diagram"],"difficulty":"hard","angle":"system-design","question":"从代码绘制架构图后，哪些验证步骤有助于避免误读？（请选择三个）","explanation":"应追踪一批张量的形状和顺序，核对残差与归一化，检查特殊层及输出头，并与配置匹配。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Validating architecture sketches"},"formats":{"choice":{"type":"multiple","options":["沿前向路径核对张量形状和模块顺序","确认残差、归一化和注意力缓存的位置","检查 MoE、共享 KV 或特殊位置编码等分支","只要图画得像常见 Transformer 就不必验证"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。架构图应由代码路径、形状和配置共同验证，而非凭熟悉感绘制。"}}},
-  {"id":"sebastian-raschka-2026-08-173","category":"ai-systems","topic":"evaluation","subtopic":"开放权重模型可解释性","tags":["raschka","workflow","open-weight"],"difficulty":"medium","angle":"comparison","question":"为什么开放权重模型更适合做架构学习练习？（请选择两个）","explanation":"权重、配置和实现可检查并运行，学习者能把抽象描述与实际张量行为对应起来；闭源模型通常缺少这些证据。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Open-weight model scope"},"formats":{"choice":{"type":"multiple","options":["可以检查配置、代码和权重之间的关系","可以通过本地运行验证架构假设","开放权重保证训练数据和全部训练细节公开","闭源模型的公开宣传材料等同于参考实现"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。开放权重提供可检查和运行的证据，但不意味着所有训练信息都公开。"}}},
-  {"id":"sebastian-raschka-2026-08-174","category":"ai-systems","topic":"model-selection","subtopic":"模型仓库信息核对","tags":["raschka","workflow","model-hub"],"difficulty":"medium","angle":"debugging","question":"从模型仓库获取架构信息时，哪些一致性检查值得做？（请选择三个）","explanation":"应核对配置与代码版本、权重命名和形状、Tokenizer 与上下文设置，避免混用变体或分支。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Model repository checks"},"formats":{"choice":{"type":"multiple","options":["确认配置、代码和权重属于同一模型变体","检查关键权重形状是否匹配头数和隐藏维度","核对 tokenizer、位置设置和最大上下文","只按仓库 README 的默认模型名，不检查版本"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。仓库常包含多个变体，必须做版本、配置和权重一致性检查。"}}},
-  {"id":"sebastian-raschka-2026-08-175","category":"ai-systems","topic":"attention","subtopic":"张量形状推理","tags":["raschka","workflow","tensors"],"difficulty":"hard","angle":"calculation","question":"通过张量形状检查注意力实现时，哪些关系应保持一致？（请选择三个）","explanation":"查询和键值头数、每头维度、投影输出和拼接维度必须兼容，GQA 等结构会改变查询与 KV 头的对应关系。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Tracing tensor shapes"},"formats":{"choice":{"type":"multiple","options":["隐藏维度与头数乘每头维度相容","查询头与 KV 头的共享或分组关系明确","投影、拼接和输出维度能够闭合","只要矩阵乘法能运行，头数和缓存语义就不重要"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。形状检查不仅要能运行，还要解释头数、共享和缓存语义。"}}},
-  {"id":"sebastian-raschka-2026-08-176","category":"ai-systems","topic":"evaluation","subtopic":"手工学习与自动化","tags":["raschka","workflow","learning"],"difficulty":"medium","angle":"tradeoff","question":"为什么理解新 LLM 架构时，手工检查少量模型仍有价值？（请选择两个）","explanation":"手工追踪代码、形状和数据流能建立机制性理解；自动化适合重复检查，但可能隐藏关键假设。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Manual learning workflow"},"formats":{"choice":{"type":"multiple","options":["手工追踪能把抽象组件对应到真实数据流","可以发现自动化摘要可能隐藏的假设和例外","手工分析保证不会产生任何解释错误","一旦能自动抽取配置就不需要理解代码"],"answer":[0,1]},"open":{"referenceAnswer":"正确答案：A、B。手工学习有助于形成机制理解，自动化可作为后续辅助而非替代。"}}},
-  {"id":"sebastian-raschka-2026-08-177","category":"ai-systems","topic":"evaluation","subtopic":"架构假设记录","tags":["raschka","workflow","hypothesis"],"difficulty":"hard","angle":"system-design","question":"在分析一个新模型前记录架构假设，有哪些好处？（请选择三个）","explanation":"假设清单能明确待核验事实、定位证据来源、区分推断与观察，并在代码验证后更新结论。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Recording assumptions"},"formats":{"choice":{"type":"multiple","options":["把待验证问题变成明确检查项","区分报告中的事实与自己的推断","便于发现配置、代码和图表之间的不一致","记录假设后就可以不再查看实现"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。显式假设让架构学习可追踪、可证伪并能随证据修正。"}}},
-  {"id":"sebastian-raschka-2026-08-178","category":"ai-systems","topic":"evaluation","subtopic":"架构知识来源分层","tags":["raschka","workflow","evidence"],"difficulty":"hard","angle":"comparison","question":"核对开放权重模型架构时，哪些证据通常应优先交叉使用？（请选择三个）","explanation":"官方报告解释设计意图，配置声明参数，代码揭示实际逻辑，运行和权重形状可验证落地行为。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Evidence hierarchy"},"formats":{"choice":{"type":"multiple","options":["技术报告中的设计说明","配置文件中的结构参数","参考实现、权重形状和小规模运行","社交媒体评论作为唯一实现证据"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。应把设计意图、配置、实现和运行证据互相校验。"}}},
-  {"id":"sebastian-raschka-2026-08-179","category":"ai-systems","topic":"model-selection","subtopic":"架构学习的可重复流程","tags":["raschka","workflow","reproducibility"],"difficulty":"medium","angle":"system-design","question":"要让团队成员重复分析一个开放权重模型，流程中应固定哪些内容？（请选择三个）","explanation":"应固定模型版本、代码和依赖、分析脚本、关键检查项和输出格式，确保不同成员得到可比较证据。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Repeatable workflow"},"formats":{"choice":{"type":"multiple","options":["模型仓库 commit、配置和权重版本","Python、transformers 等依赖版本","张量形状、代码路径和架构图的检查清单","只固定最终图像，不记录分析输入"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。可重复分析需要固定输入、环境、检查路径和输出证据。"}}},
-  {"id":"sebastian-raschka-2026-08-180","category":"ai-systems","topic":"evaluation","subtopic":"架构分析的停止标准","tags":["raschka","workflow","validation"],"difficulty":"hard","angle":"scenario","question":"什么时候可以认为一个模型的架构分析已经达到可交付程度？（请选择三个）","explanation":"关键结构假设应有来源和代码证据，张量形状能闭合，目标组件在小规模运行中可验证，并明确未知项。","source":{"materialId":"https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms","section":"Validation checklist"},"formats":{"choice":{"type":"multiple","options":["主要模块和数据流都有可追溯证据","关键维度、头数和残差关系经过检查","特殊组件和未确认事项被明确记录","架构图与代码不一致但图看起来合理"],"answer":[0,1,2]},"open":{"referenceAnswer":"正确答案：A、B、C。交付标准是证据、形状和未知项都可追踪，而不是图像是否熟悉。"}}}
+  {
+    "id": "sebastian-raschka-2026-08-121",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "RoPE 位置编码",
+    "tags": [
+      "raschka",
+      "architecture",
+      "rope"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "相较于绝对位置嵌入，RoPE 在 Transformer 中主要提供哪些能力？（请选择两个）",
+    "explanation": "RoPE 通过旋转查询和键表示编码位置信息，使注意力分数带有相对位置信息，同时仍需关注长上下文外推边界。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Positional embeddings and RoPE"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将位置信息作用到注意力中的查询和键表示",
+          "使注意力分数能够体现相对位置关系",
+          "保证任意长度外推都不需要重新评估",
+          "完全替代 token embedding"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。RoPE 将位置信息融入查询和键并产生相对位置结构，但不保证任意长度外推。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-122",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "GQA 与 MQA",
+    "tags": [
+      "raschka",
+      "architecture",
+      "gqa"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "Grouped-Query Attention 相较于标准 Multi-Head Attention 可能带来哪些变化？（请选择三个）",
+    "explanation": "GQA 让多组查询头共享键和值头，从而减少 KV Cache 和带宽开销，但共享程度会影响表达能力与质量。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Grouped-Query Attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "多个查询头可以共享一组键和值头",
+          "解码阶段的 KV Cache 通常可以缩小",
+          "内存带宽压力可能降低",
+          "共享键和值保证质量与标准多头注意力完全相同"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。GQA 用较少的 KV 头服务更多查询头，通常节省缓存和带宽，但存在质量取舍。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-123",
+    "category": "ai-systems",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache 成本",
+    "tags": [
+      "raschka",
+      "architecture",
+      "kv-cache"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "在自回归解码中，KV Cache 的主要资源成本受哪些因素影响？（请选择三个）",
+    "explanation": "缓存规模与层数、KV 头数量、每头维度、序列长度和数值精度相关，GQA/MQA 能减少 KV 头数量。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "KV cache"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "上下文序列长度",
+          "KV 头数量和每头维度",
+          "缓存使用的数据类型字节数",
+          "只由模型总参数量决定，与上下文长度无关"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。KV Cache 随序列和 KV 表示规模增长，也受精度影响，不能只看总参数量。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-124",
+    "category": "ai-systems",
+    "topic": "moe",
+    "subtopic": "稀疏专家路由",
+    "tags": [
+      "raschka",
+      "architecture",
+      "moe"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "稀疏 Mixture-of-Experts 层的核心计算特点有哪些？（请选择三个）",
+    "explanation": "路由器为每个 token 选择少数专家，只有被选专家参与该 token 的前向计算；总参数可很大而每 token 激活参数较少。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Mixture-of-Experts"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "路由器为 token 选择一个或多个专家",
+          "每个 token 通常只激活专家子集",
+          "总参数量可以高于每 token 的激活参数量",
+          "所有专家对每个 token 都执行完整前向计算"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。稀疏 MoE 通过 token 路由只执行部分专家，从而实现大总容量与较低激活计算。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-125",
+    "category": "ai-systems",
+    "topic": "moe",
+    "subtopic": "专家负载均衡",
+    "tags": [
+      "raschka",
+      "architecture",
+      "moe"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "MoE 路由出现专家负载不均衡时，可能产生哪些后果？（请选择三个）",
+    "explanation": "热门专家会成为容量和通信瓶颈，token 可能被丢弃或溢出，吞吐和训练稳定性都会受影响。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Expert routing and load balancing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "部分专家过载并形成计算瓶颈",
+          "token 可能因容量限制被丢弃或转移",
+          "跨设备专家通信和尾延迟可能上升",
+          "只要总参数量不变，路由不均衡就不会影响训练"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。专家负载不均衡会造成容量、通信和稳定性问题，必须在路由和系统层处理。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-126",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "SwiGLU 激活",
+    "tags": [
+      "raschka",
+      "architecture",
+      "swiglu"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "使用 SwiGLU 等门控前馈结构时，哪些描述正确？（请选择两个）",
+    "explanation": "门控分支让一部分表示调制另一部分表示，可能提升表达能力，但参数量和隐藏维度配置需要重新平衡。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "SwiGLU feed-forward layers"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "门控分支可以调制另一条特征分支",
+          "与简单 GELU 前馈层相比需要考虑参数和维度预算",
+          "门控结构必然使推理 FLOPs 降为零",
+          "激活函数选择可以独立于隐藏维度和参数预算"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。SwiGLU 通过门控增强前馈表达，但会影响参数和计算预算。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-127",
+    "category": "ai-systems",
+    "topic": "hybrid-attention",
+    "subtopic": "混合注意力架构",
+    "tags": [
+      "raschka",
+      "architecture",
+      "hybrid"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "交替使用全注意力与线性或状态空间层时，设计者需要权衡哪些方面？（请选择三个）",
+    "explanation": "全注意力擅长内容寻址，替代层通常更节省长序列计算；层间比例、状态容量和硬件实现决定最终效果。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Hybrid architectures"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "长上下文计算和缓存成本",
+          "精确内容寻址与压缩状态表达能力",
+          "不同层类型之间的信息传递和实现复杂度",
+          "加入替代层就能保证所有任务质量不变"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。混合架构在效率与表达能力间取舍，层比例和接口设计需要实测。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-128",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "MLA 与压缩注意力",
+    "tags": [
+      "raschka",
+      "architecture",
+      "mla"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "多头潜在注意力或压缩注意力减少 KV 成本的基本思路是什么？（请选择两个）",
+    "explanation": "方法通常把键和值压缩到更小的潜在表示并在需要时恢复相关表示，从而降低缓存维度，但会引入重构和质量权衡。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Multi-head latent attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将部分 KV 信息表示为更低维的潜在状态",
+          "通过压缩降低解码时需要缓存的表示规模",
+          "无需任何额外投影或重构操作",
+          "压缩后可以保证精确保留全部原始 KV 信息"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。压缩注意力以较小潜在状态降低缓存成本，但需要额外映射并面对信息损失边界。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-129",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "归一化位置",
+    "tags": [
+      "raschka",
+      "architecture",
+      "normalization"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "比较 Pre-Norm 与 Post-Norm Transformer 时，哪些判断更准确？（请选择两个）",
+    "explanation": "归一化位置会影响残差路径、训练稳定性和梯度传播；不能只凭架构名称推断所有模型的质量。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Normalization and residual design"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "归一化位置会改变残差路径上的数值和梯度行为",
+          "训练稳定性与深度、初始化和其他组件共同相关",
+          "某一种位置在所有规模和任务上必然最优",
+          "只改变归一化位置就能预测最终基准成绩"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。Pre-Norm/Post-Norm 的差异涉及残差和梯度，但效果必须结合完整训练配置评估。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-130",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "注意力头共享取舍",
+    "tags": [
+      "raschka",
+      "architecture",
+      "attention"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "减少 KV 头数量时，哪些现象值得重点观察？（请选择三个）",
+    "explanation": "KV 共享通常节省缓存和带宽，但可能减少表示多样性并影响长上下文检索、事实任务或不同层行为。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Attention head sharing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "解码内存占用和带宽是否下降",
+          "长上下文检索和任务质量是否回归",
+          "不同查询头共享表示后的表达能力变化",
+          "KV 头越少就必然在所有硬件和任务上更优"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。KV 头共享是系统效率与表示能力的取舍，需按任务和硬件验证。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-131",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "架构选型证据",
+    "tags": [
+      "raschka",
+      "architecture",
+      "selection"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "团队选择新 LLM 架构用于长上下文服务时，哪些验证方式更可靠？（请选择三个）",
+    "explanation": "应在相同任务、长度和服务约束下比较质量、缓存、延迟与成本，并检查消融或等条件基线。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Architecture selection"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在目标上下文长度和真实任务上测试质量",
+          "测量 KV Cache、TTFT、吞吐和尾延迟",
+          "使用尽量一致的提示、解码和硬件条件",
+          "只根据论文图表中的总参数量选型"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。架构选型需要在目标工作负载和系统约束下做可比实验。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-133",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "架构与解码吞吐",
+    "tags": [
+      "raschka",
+      "architecture",
+      "throughput"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "解释“每 token 激活计算较低”时，哪些额外指标仍必须测量？（请选择三个）",
+    "explanation": "FLOPs 不是端到端性能，内存带宽、通信、kernel 实现、首 token 延迟和尾延迟都会决定实际吞吐。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Inference efficiency"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "内存带宽和缓存访问量",
+          "设备间通信与专家负载均衡",
+          "TTFT、端到端延迟和尾延迟",
+          "只用理论 FLOPs 就能推断用户体验"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。实际推理性能由计算、内存、通信和服务延迟共同决定。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-134",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构图阅读",
+    "tags": [
+      "raschka",
+      "architecture",
+      "diagram"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "阅读一个 LLM 架构图时，哪些组件关系应先确认？（请选择三个）",
+    "explanation": "需要定位 token/位置表示、归一化与残差、注意力和前馈层、路由与输出头，才能理解数据流和成本。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Reading architecture diagrams"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "位置和 token 表示如何进入主干",
+          "注意力、前馈层与残差连接的顺序",
+          "MoE 路由或 KV 压缩发生在哪个阶段",
+          "只看模块名字而不确认张量流向"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。架构图应按张量流、残差和关键成本点阅读，而非只记组件名称。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-135",
+    "category": "ai-systems",
+    "topic": "hybrid-attention",
+    "subtopic": "架构演进连续性",
+    "tags": [
+      "raschka",
+      "architecture",
+      "history"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "观察 GPT 到现代开源 LLM 的架构演进时，哪些结论较为谨慎？（请选择两个）",
+    "explanation": "许多基础组件仍延续 Transformer，改进集中在位置、注意力共享、激活、稀疏化和效率；“仍相似”不等于没有实质优化。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Architectural evolution"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基础 Transformer 数据流仍在许多模型中延续",
+          "位置编码、注意力共享和稀疏化等改变会影响效率",
+          "结构相似意味着所有模型质量和成本都相同",
+          "只有完全更换架构才算有意义的改进"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。现代架构既继承 Transformer 主干，也在多个组件上持续优化，不能用是否完全替换来判断创新。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-136",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构消融实验",
+    "tags": [
+      "raschka",
+      "architecture",
+      "ablation"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "要验证某个架构组件是否真正带来收益，消融实验应如何设计？（请选择三个）",
+    "explanation": "应保持数据、训练预算和评估一致，只改变目标组件，并同时报告质量和系统指标。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Ablation studies"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "尽量固定数据、训练预算和优化配置",
+          "只改变待研究的架构组件",
+          "同时报告目标任务质量与资源指标",
+          "同时改变模型规模、数据和架构以放大差异"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。消融的目标是隔离变量，并同时确认质量收益是否值得系统成本。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-137",
+    "category": "ai-systems",
+    "topic": "kv-cache",
+    "subtopic": "长上下文成本",
+    "tags": [
+      "raschka",
+      "architecture",
+      "long-context"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "长上下文服务的显存突然成为瓶颈时，哪些架构方向值得比较？（请选择三个）",
+    "explanation": "可以比较 GQA/MQA、KV 压缩、量化缓存和滑动窗口等方法，同时验证检索质量和服务延迟。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Long-context costs"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "减少 KV 头或压缩 KV 表示",
+          "对 KV Cache 使用合适的低精度表示",
+          "限制或分层管理上下文窗口",
+          "只增加显存而不测量检索质量和尾延迟"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。长上下文优化既要降低缓存成本，也要验证信息检索和服务行为。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-138",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "架构比较的边界",
+    "tags": [
+      "raschka",
+      "architecture",
+      "benchmark"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "为什么单一基准榜单不足以决定 LLM 架构选型？（请选择三个）",
+    "explanation": "榜单任务分布、提示格式和实现可能与目标工作负载不同，且平均分无法显示成本、延迟和长上下文边界。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison",
+      "section": "Limits of benchmark comparisons"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "榜单任务分布可能不代表生产任务",
+          "平均分可能掩盖长上下文和尾延迟问题",
+          "不同实现和提示格式会影响可比性",
+          "榜单分数高就必然意味着部署总成本最低"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。选型要把基准质量与目标任务、实现条件和系统成本结合起来。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-139",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "KV Sharing",
+    "tags": [
+      "raschka",
+      "architecture",
+      "kv-sharing"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "KV Sharing 类方法试图优化推理时的哪个资源？（请选择两个）",
+    "explanation": "通过在层或头之间共享部分键值表示，可以减少存储和带宽，但共享范围可能影响层间独立性和质量。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "KV sharing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "解码阶段的键值缓存存储",
+          "生成过程中读取 KV 的内存带宽",
+          "保证每层都保留完全独立的 KV 表示",
+          "让上下文长度不再影响任何资源"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。KV Sharing 通过复用键值表示降低缓存和带宽成本，但存在表达能力取舍。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-140",
+    "category": "ai-systems",
+    "topic": "kv-cache",
+    "subtopic": "跨层 KV 复用",
+    "tags": [
+      "raschka",
+      "architecture",
+      "kv-cache"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "跨层或跨头复用 KV 表示时，哪些质量风险应测试？（请选择三个）",
+    "explanation": "不同层可能编码不同抽象，过度共享会损害检索、复制、位置处理或特定任务表现，需按层和任务测量。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Shared KV representations"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "长上下文信息检索能力",
+          "不同任务和语言的质量变化",
+          "共享比例变化带来的层间表达损失",
+          "缓存缩小就代表模型质量必然不变"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。KV 共享改变层间表示独立性，需对检索、任务和语言进行分桶回归。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-141",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "压缩注意力缓存",
+    "tags": [
+      "raschka",
+      "architecture",
+      "compressed-attention"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "压缩注意力在解码阶段降低缓存规模时，通常需要哪些额外步骤？（请选择两个）",
+    "explanation": "压缩表示需要投影、解码或等价的变换来参与注意力计算；这些步骤的计算和数值误差需要纳入评估。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Compressed attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把原始键值映射到较小的潜在表示",
+          "在查询计算时通过投影或变换使用压缩状态",
+          "压缩状态可以不参与任何恢复或映射直接替代所有计算",
+          "压缩一定会消除所有注意力计算"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。压缩注意力以低维状态换取缓存效率，但使用压缩状态仍需要相应映射和计算。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-142",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "mHC 残差连接",
+    "tags": [
+      "raschka",
+      "architecture",
+      "residual"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "多路残差或混合残差设计的目标可能包括哪些方面？（请选择两个）",
+    "explanation": "让残差路径中的信息混合更可控，可能改善深层网络的优化与表示流动，但需要验证额外参数和稳定性。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "mHC and residual mixing"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "控制不同表示流之间的信息混合",
+          "改善深层残差路径的优化行为",
+          "自动替代所有注意力和前馈计算",
+          "不需要任何稳定性和额外开销评估"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。多路残差关注信息流与优化控制，但仍需评估复杂度和训练稳定性。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-143",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "残差与归一化耦合",
+    "tags": [
+      "raschka",
+      "architecture",
+      "normalization"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "改变残差混合和归一化机制时，哪些指标应一起观察？（请选择三个）",
+    "explanation": "结构变化可能影响梯度、激活尺度、收敛速度和最终质量，单独看 loss 或单个基准不足以判断。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Residual and normalization design"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "激活和梯度的数值稳定性",
+          "训练收敛速度与最终损失",
+          "目标任务质量及推理开销",
+          "只看参数量是否减少"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。残差和归一化是训练与推理共同影响的组件，需要联合测量稳定性、收敛、质量和开销。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-144",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "缓存优化的系统边界",
+    "tags": [
+      "raschka",
+      "architecture",
+      "serving"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "KV Cache 压缩后平均吞吐提高但 P99 延迟变差，哪些原因值得调查？（请选择三个）",
+    "explanation": "压缩可能增加解码、同步或 kernel 开销，并在长短请求混合时放大尾部排队；平均吞吐不能代表用户体验。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Serving tradeoffs"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "压缩和恢复操作增加了单请求计算",
+          "不同长度请求造成排队和缓存碎片",
+          "内存节省带来的并发提升改变了尾部负载",
+          "只要平均吞吐提高就可以忽略 P99"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。缓存优化需同时分析额外算子、排队、并发和尾延迟。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-145",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构新方法评估",
+    "tags": [
+      "raschka",
+      "architecture",
+      "evaluation"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "评估 KV Sharing、压缩注意力或 mHC 等新架构时，哪些对照更有说服力？（请选择三个）",
+    "explanation": "应包含相同规模基线、组件消融、目标长度和真实服务指标，避免只展示最有利的设置。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Evaluating recent architecture ideas"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "相同模型规模和训练预算的基线",
+          "只改变一个组件的消融实验",
+          "不同上下文长度下的质量、显存和延迟",
+          "只展示新方法最优长度下的平均速度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。架构评估要隔离变量并覆盖质量、长度和服务资源。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-146",
+    "category": "ai-systems",
+    "topic": "quantization",
+    "subtopic": "压缩表示量化",
+    "tags": [
+      "raschka",
+      "architecture",
+      "quantization"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "对压缩 KV 或共享表示做量化时，哪些风险应单独验证？（请选择三个）",
+    "explanation": "低精度误差可能在重构、长序列累积或特殊 token 上放大，应比较不同长度、任务和数值稳定性。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Quantized compressed representations"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "重构后的注意力分数误差",
+          "长上下文累积误差和检索质量",
+          "不同硬件 kernel 下的速度与数值行为",
+          "只要缓存字节数下降就无需质量回归"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。压缩表示量化的误差可能通过重构和长上下文放大，必须同时测精度与系统收益。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-147",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "稀疏与压缩注意力",
+    "tags": [
+      "raschka",
+      "architecture",
+      "sparse-attention"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "稀疏注意力和压缩注意力降低长上下文成本的路径有何不同？（请选择两个）",
+    "explanation": "稀疏注意力减少交互位置，压缩注意力减少每个位置的表示维度或缓存量；两者都可能损失信息，需要不同测试。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Sparse and compressed attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "稀疏注意力主要减少需要计算的 token 交互",
+          "压缩注意力主要减少需要保存或处理的表示规模",
+          "二者都必然保留完整注意力矩阵且没有近似",
+          "二者的质量风险完全相同，不需分别评估"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。稀疏性减少交互，压缩减少表示规模，质量边界和实现方式并不相同。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-148",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "新架构生产准入",
+    "tags": [
+      "raschka",
+      "architecture",
+      "production"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "将论文中的缓存优化架构引入生产前，哪些门禁合理？（请选择三个）",
+    "explanation": "需要目标任务回归、长上下文和故障场景测试，并确认运行时实现、监控和回滚路径。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Production readiness"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在代表性输入长度上验证质量和资源指标",
+          "检查运行时 kernel、并发和 P99 行为",
+          "准备灰度、监控和回滚机制",
+          "论文中报告节省显存就足以直接替换线上服务"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。生产准入必须覆盖任务质量、运行时行为和发布控制。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-149",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构趋势判断",
+    "tags": [
+      "raschka",
+      "architecture",
+      "trend"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "从近期架构趋势提炼工程结论时，哪些说法更稳妥？（请选择两个）",
+    "explanation": "行业同时探索 KV 共享、残差混合和压缩注意力，趋势说明约束在变化，但不能替代目标系统上的验证。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Recent architecture trends"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "长上下文的内存和带宽成本是重要驱动因素",
+          "不同方法需要在质量与系统指标间比较",
+          "某个趋势出现就证明所有旧架构已不可用",
+          "论文数量多就等于生产收益已经确定"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。趋势可帮助识别问题和候选方案，生产结论仍需受控验证。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-150",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "上下文成本分解",
+    "tags": [
+      "raschka",
+      "architecture",
+      "context"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "拆解长上下文推理成本时，哪些部分应分别测量？（请选择三个）",
+    "explanation": "需要区分预填充、解码、KV 存储和访存、压缩/恢复操作以及并发排队，单个平均 token 成本不够。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Context cost decomposition"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Prefill 的计算和首 token 延迟",
+          "Decode 的每 token 计算与内存带宽",
+          "KV Cache 显存、压缩恢复和并发排队",
+          "只测短输入的平均 tokens/s"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。长上下文服务需拆分 prefill、decode、缓存和排队成本。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-151",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "架构实现与理论差异",
+    "tags": [
+      "raschka",
+      "architecture",
+      "implementation"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "理论上更省计算的注意力变体在线上没有提速时，哪些排查方向合理？（请选择三个）",
+    "explanation": "可能是 kernel 未优化、内存访问和转换开销、批处理形态或硬件不匹配；应以 profile 和真实负载定位。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/recent-developments-in-llm-architectures",
+      "section": "Implementation realities"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查 kernel 和算子融合是否支持该变体",
+          "分析内存访问、投影和格式转换开销",
+          "按真实 batch、长度和硬件做 profiling",
+          "看到理论复杂度下降就直接判定实现有 bug"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。理论复杂度必须通过实现、访存和真实负载才能转化为端到端收益。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-152",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "论文列表使用边界",
+    "tags": [
+      "raschka",
+      "research",
+      "evaluation"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "使用研究论文清单寻找工程方案时，哪些理解正确？（请选择三个）",
+    "explanation": "清单是经过筛选的导航，不是完整文献库或生产结论；应回到论文、实现和目标任务验证。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "How to use a curated paper list"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "清单可以帮助按主题定位候选论文",
+          "清单不等于该领域所有论文的完整覆盖",
+          "论文摘要或作者报告仍需结合实现和实验核验",
+          "被收录就证明方法已经适合生产"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。论文清单适合作为检索入口，但不能代替原文阅读和目标场景验证。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-153",
+    "category": "ai-systems",
+    "topic": "hybrid-attention",
+    "subtopic": "研究论文中的混合架构",
+    "tags": [
+      "raschka",
+      "research",
+      "hybrid"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "研究论文中的混合 Transformer 与状态空间架构通常试图获得哪些互补性？（请选择两个）",
+    "explanation": "注意力提供内容相关交互，状态空间层提供更高效的序列状态更新；实际收益取决于层组合和任务。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Hybrid attention and state-space models"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保留注意力的内容寻址能力",
+          "利用状态空间层改善长序列效率",
+          "混合后无需再评估状态表达能力",
+          "只要层数相同就必然比纯 Transformer 更好"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。混合架构试图结合内容寻址和高效状态更新，但效果需要实验确认。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-154",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "论文中的推测解码",
+    "tags": [
+      "raschka",
+      "research",
+      "speculative-decoding"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "推测解码获得加速的必要条件包括哪些？（请选择三个）",
+    "explanation": "草稿模型或多 token 预测头需提出候选，目标模型需高效验证，且候选接受率和验证开销要带来净收益。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Multi-token prediction and speculative decoding"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "存在能快速提出后续 token 的候选机制",
+          "目标模型可以批量或并行验证候选",
+          "候选接受率足以抵消额外开销",
+          "只要候选模型更小就保证端到端加速"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。推测解码的净收益取决于候选质量、验证并行度和额外开销。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-155",
+    "category": "ai-systems",
+    "topic": "kv-cache",
+    "subtopic": "注意力 sink 与缓存",
+    "tags": [
+      "raschka",
+      "research",
+      "attention-sink"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "分析 attention sink 或 massive activation 对推理系统的影响时，哪些检查合理？（请选择三个）",
+    "explanation": "应定位异常层和 token，观察量化、缓存和数值稳定性变化，并进行质量回归，而不是盲目裁剪。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Massive activations and attention sinks"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按层、通道和位置定位异常值",
+          "比较量化和非量化推理的数值行为",
+          "检查特殊 token、缓存和长上下文质量",
+          "直接裁剪所有极端值而不做回归测试"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。异常激活的处理要结合位置、量化、缓存和质量证据。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-156",
+    "category": "ai-systems",
+    "topic": "training-data",
+    "subtopic": "合成数据与基准污染",
+    "tags": [
+      "raschka",
+      "research",
+      "synthetic-data"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "模型在合成的基准风格数据上提升后，如何判断是否出现评估污染？（请选择三个）",
+    "explanation": "应做样本重叠和模板审计，并使用未见表述、独立任务和真实业务数据验证泛化。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Synthetic MMLU-style data"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查训练样本与测试样本的文本或模板重叠",
+          "用不同表述和未见任务组合测试",
+          "在独立真实分布上验证收益",
+          "只继续增加同样模板数据观察榜单分数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。分数提升必须排除重叠和模板记忆，并在独立任务上验证。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-158",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "论文消融阅读",
+    "tags": [
+      "raschka",
+      "research",
+      "ablation"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "阅读论文消融表时，哪些信息有助于判断组件贡献？（请选择三个）",
+    "explanation": "要看基线是否公平、一次改变哪些变量、不同任务是否一致以及资源指标是否同时变化。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Reading ablation studies"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认对照模型和训练预算是否匹配",
+          "确认每行是否只移除或替换目标组件",
+          "比较多个任务和资源指标的变化",
+          "只挑对作者最有利的一列作为结论"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。消融阅读需要确认公平基线、变量隔离和跨任务一致性。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-159",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "研究结果外推",
+    "tags": [
+      "raschka",
+      "research",
+      "generalization"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "将论文结果外推到自己的业务任务时，哪些边界必须检查？（请选择三个）",
+    "explanation": "数据分布、上下文长度、硬件、提示和评估标准变化都可能改变收益，论文结果不能直接等同于目标场景结果。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Generalizing research results"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任务和输入分布是否相似",
+          "上下文长度、提示和解码设置是否一致",
+          "硬件、实现和服务指标是否匹配",
+          "论文榜单分数高就可以跳过本地验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。外推前要识别任务、配置和系统环境差异。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-160",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "研究方案选型",
+    "tags": [
+      "raschka",
+      "research",
+      "selection"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "从论文清单筛选值得复现的方案时，哪些步骤合理？（请选择三个）",
+    "explanation": "应先匹配问题和约束，阅读方法与实现，建立小规模基线，再决定是否扩大实验。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Selecting papers to reproduce"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先明确目标瓶颈、质量指标和资源约束",
+          "检查论文代码、数据和实现是否可获得",
+          "用小规模可控实验与基线比较",
+          "只按发布日期和标题选择，不看目标问题"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。复现选型应从目标问题和证据可得性出发，并先做小规模可比验证。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-161",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "代理与工具论文分类",
+    "tags": [
+      "raschka",
+      "research",
+      "agents"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "评估 Agent 或工具使用论文时，为什么不能只看最终任务成功率？（请选择三个）",
+    "explanation": "成功率可能掩盖工具调用次数、错误恢复、成本、延迟和安全边界，需同时观察执行轨迹。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Agent systems and tool use"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "工具调用次数和失败恢复行为",
+          "端到端延迟、token 和执行成本",
+          "权限边界、错误副作用和人工介入率",
+          "成功率高就证明 Agent 的执行过程可靠"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。Agent 评价要覆盖结果、过程、资源和风险，不能只看终点。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-162",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "论文中的长上下文效率",
+    "tags": [
+      "raschka",
+      "research",
+      "long-context"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "论文声称长上下文复杂度更低时，工程验证应包括哪些内容？（请选择三个）",
+    "explanation": "复杂度声明需要转化为实际长度、硬件和批处理下的内存、延迟、吞吐和质量测量。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Long-context efficiency"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同序列长度下的显存和吞吐曲线",
+          "首 token、端到端和尾延迟",
+          "长上下文检索与任务质量",
+          "只在最短序列上测一次平均速度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。复杂度优势必须在长度、系统和质量维度同时可观测。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-163",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "模型架构事实核查",
+    "tags": [
+      "raschka",
+      "research",
+      "architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "技术报告对模型架构描述不完整时，哪些事实核查路径更可靠？（请选择三个）",
+    "explanation": "应交叉检查配置、参考实现、权重形状和运行时行为，并记录版本，避免仅依赖营销描述。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Architecture facts from technical reports"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查官方配置文件中的层数、头数和维度",
+          "阅读参考实现确认张量流和模块顺序",
+          "用权重形状或小规模运行验证推断",
+          "只根据模型名称中的架构后缀作结论"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。架构事实应由配置、代码、权重和运行行为交叉验证。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-165",
+    "category": "ai-systems",
+    "topic": "training-data",
+    "subtopic": "研究数据覆盖",
+    "tags": [
+      "raschka",
+      "research",
+      "data"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "论文只在单一领域或单一语言上验证时，读者应如何解释结果？（请选择两个）",
+    "explanation": "结果可能只说明该分布上的有效性；需要额外测试跨领域、跨语言和不同长度的泛化。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Dataset and evaluation coverage"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把结论限定在已测分布和任务范围内",
+          "在目标分布上补充独立验证",
+          "单一领域结果可直接代表所有语言和行业",
+          "样本量小但分数高就不需要不确定性分析"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。有限分布上的结果需要限定外推范围，并在目标分布补充测试。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-166",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "研究阅读优先级",
+    "tags": [
+      "raschka",
+      "research",
+      "workflow"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "面对大量 LLM 论文时，怎样建立高效的阅读优先级？（请选择三个）",
+    "explanation": "可以按当前瓶颈、任务相关性、证据质量和可复现性排序，先读能改变决策的论文。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Organizing research reading"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按自己的工程问题和瓶颈筛选主题",
+          "优先阅读有方法、实验和实现细节的工作",
+          "为候选方案记录可验证的假设和风险",
+          "只按引用数或社交媒体热度决定优先级"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。阅读优先级应服务于问题、证据和可验证性，而不是只追逐热度。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-167",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "论文结论与事实",
+    "tags": [
+      "raschka",
+      "research",
+      "claims"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "区分论文中的事实、实验结果和推测时，哪些做法合理？（请选择三个）",
+    "explanation": "应把实现事实、作者测量、消融证据和未来推测分开记录，并检查是否存在独立复现。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "Interpreting paper claims"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "区分配置或代码可直接核验的事实",
+          "区分作者在特定数据上的实验结果",
+          "把趋势判断和未来推测标成假设",
+          "将摘要中的因果措辞直接视为普遍定律"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。阅读论文时要分离可核验事实、条件化实验结果和未证实推测。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-168",
+    "category": "ai-systems",
+    "topic": "inference-optimization",
+    "subtopic": "研究到部署的性能鸿沟",
+    "tags": [
+      "raschka",
+      "research",
+      "deployment"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "论文中的 FLOPs 降低没有转化为线上成本下降时，哪些解释可能成立？（请选择三个）",
+    "explanation": "实际成本还受访存、通信、并发、kernel、量化和利用率影响，理论计算量只是成本的一部分。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/llm-research-papers-2026-part1",
+      "section": "From theoretical efficiency to deployment"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "内存访问或通信成为新的瓶颈",
+          "实现的 kernel 和批处理利用率不足",
+          "额外投影、路由或恢复操作抵消了 FLOPs 节省",
+          "FLOPs 降低必然等价于 API 账单降低"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。线上成本是系统级结果，不能由 FLOPs 单独决定。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-169",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "开放权重架构学习",
+    "tags": [
+      "raschka",
+      "workflow",
+      "architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "学习一个新开放权重模型的架构时，哪些顺序较合理？（请选择三个）",
+    "explanation": "先读技术报告建立假设，再检查配置和代码，最后用权重形状或小实验验证关键细节。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Workflow overview"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先阅读官方技术报告和模型卡建立初始假设",
+          "再检查配置文件和参考实现",
+          "用权重形状、前向运行或小实验验证疑点",
+          "只看博客中的架构图，不需要确认实现"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。推荐路径是报告、配置与代码、运行验证逐层收敛。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-170",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "配置文件阅读",
+    "tags": [
+      "raschka",
+      "workflow",
+      "config"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "从开放权重模型配置中，哪些字段通常有助于重建架构草图？（请选择三个）",
+    "explanation": "层数、隐藏维度、注意力头、KV 头、上下文长度、激活和归一化配置共同决定主干结构。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Inspecting configuration files"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "层数、隐藏维度和中间层维度",
+          "查询头、KV 头和头维度",
+          "最大位置或上下文长度以及位置编码设置",
+          "只看模型参数总数就能确定完整数据流"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。配置字段能提供架构骨架，但仍需结合代码确认数据流和特殊组件。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-171",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "参考实现核对",
+    "tags": [
+      "raschka",
+      "workflow",
+      "implementation"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "question": "为什么参考实现通常比营销式架构摘要更适合核对模型细节？（请选择两个）",
+    "explanation": "运行代码必须处理真实张量形状、分支和特殊逻辑，能揭示摘要省略的共享、归一化和缓存行为。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Reference implementations"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "代码展示了真实的张量流和条件分支",
+          "实现可以核对配置字段如何落到模块行为",
+          "代码永远没有 bug 或版本差异",
+          "只要实现存在就不需要运行或检查版本"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。参考实现是重要证据，但仍需结合版本、运行和配置进行核对。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-172",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构草图验证",
+    "tags": [
+      "raschka",
+      "workflow",
+      "diagram"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "从代码绘制架构图后，哪些验证步骤有助于避免误读？（请选择三个）",
+    "explanation": "应追踪一批张量的形状和顺序，核对残差与归一化，检查特殊层及输出头，并与配置匹配。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Validating architecture sketches"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "沿前向路径核对张量形状和模块顺序",
+          "确认残差、归一化和注意力缓存的位置",
+          "检查 MoE、共享 KV 或特殊位置编码等分支",
+          "只要图画得像常见 Transformer 就不必验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。架构图应由代码路径、形状和配置共同验证，而非凭熟悉感绘制。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-173",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "开放权重模型可解释性",
+    "tags": [
+      "raschka",
+      "workflow",
+      "open-weight"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "为什么开放权重模型更适合做架构学习练习？（请选择两个）",
+    "explanation": "权重、配置和实现可检查并运行，学习者能把抽象描述与实际张量行为对应起来；闭源模型通常缺少这些证据。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Open-weight model scope"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可以检查配置、代码和权重之间的关系",
+          "可以通过本地运行验证架构假设",
+          "开放权重保证训练数据和全部训练细节公开",
+          "闭源模型的公开宣传材料等同于参考实现"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。开放权重提供可检查和运行的证据，但不意味着所有训练信息都公开。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-174",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "模型仓库信息核对",
+    "tags": [
+      "raschka",
+      "workflow",
+      "model-hub"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "从模型仓库获取架构信息时，哪些一致性检查值得做？（请选择三个）",
+    "explanation": "应核对配置与代码版本、权重命名和形状、Tokenizer 与上下文设置，避免混用变体或分支。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Model repository checks"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认配置、代码和权重属于同一模型变体",
+          "检查关键权重形状是否匹配头数和隐藏维度",
+          "核对 tokenizer、位置设置和最大上下文",
+          "只按仓库 README 的默认模型名，不检查版本"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。仓库常包含多个变体，必须做版本、配置和权重一致性检查。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-175",
+    "category": "ai-systems",
+    "topic": "attention",
+    "subtopic": "张量形状推理",
+    "tags": [
+      "raschka",
+      "workflow",
+      "tensors"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "question": "通过张量形状检查注意力实现时，哪些关系应保持一致？（请选择三个）",
+    "explanation": "查询和键值头数、每头维度、投影输出和拼接维度必须兼容，GQA 等结构会改变查询与 KV 头的对应关系。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Tracing tensor shapes"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "隐藏维度与头数乘每头维度相容",
+          "查询头与 KV 头的共享或分组关系明确",
+          "投影、拼接和输出维度能够闭合",
+          "只要矩阵乘法能运行，头数和缓存语义就不重要"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。形状检查不仅要能运行，还要解释头数、共享和缓存语义。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-176",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "手工学习与自动化",
+    "tags": [
+      "raschka",
+      "workflow",
+      "learning"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为什么理解新 LLM 架构时，手工检查少量模型仍有价值？（请选择两个）",
+    "explanation": "手工追踪代码、形状和数据流能建立机制性理解；自动化适合重复检查，但可能隐藏关键假设。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Manual learning workflow"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "手工追踪能把抽象组件对应到真实数据流",
+          "可以发现自动化摘要可能隐藏的假设和例外",
+          "手工分析保证不会产生任何解释错误",
+          "一旦能自动抽取配置就不需要理解代码"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。手工学习有助于形成机制理解，自动化可作为后续辅助而非替代。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-177",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构假设记录",
+    "tags": [
+      "raschka",
+      "workflow",
+      "hypothesis"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "question": "在分析一个新模型前记录架构假设，有哪些好处？（请选择三个）",
+    "explanation": "假设清单能明确待核验事实、定位证据来源、区分推断与观察，并在代码验证后更新结论。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Recording assumptions"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把待验证问题变成明确检查项",
+          "区分报告中的事实与自己的推断",
+          "便于发现配置、代码和图表之间的不一致",
+          "记录假设后就可以不再查看实现"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。显式假设让架构学习可追踪、可证伪并能随证据修正。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-178",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构知识来源分层",
+    "tags": [
+      "raschka",
+      "workflow",
+      "evidence"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "question": "核对开放权重模型架构时，哪些证据通常应优先交叉使用？（请选择三个）",
+    "explanation": "官方报告解释设计意图，配置声明参数，代码揭示实际逻辑，运行和权重形状可验证落地行为。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Evidence hierarchy"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "技术报告中的设计说明",
+          "配置文件中的结构参数",
+          "参考实现、权重形状和小规模运行",
+          "社交媒体评论作为唯一实现证据"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。应把设计意图、配置、实现和运行证据互相校验。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-179",
+    "category": "ai-systems",
+    "topic": "model-selection",
+    "subtopic": "架构学习的可重复流程",
+    "tags": [
+      "raschka",
+      "workflow",
+      "reproducibility"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "question": "要让团队成员重复分析一个开放权重模型，流程中应固定哪些内容？（请选择三个）",
+    "explanation": "应固定模型版本、代码和依赖、分析脚本、关键检查项和输出格式，确保不同成员得到可比较证据。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Repeatable workflow"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模型仓库 commit、配置和权重版本",
+          "Python、transformers 等依赖版本",
+          "张量形状、代码路径和架构图的检查清单",
+          "只固定最终图像，不记录分析输入"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。可重复分析需要固定输入、环境、检查路径和输出证据。"
+      }
+    }
+  },
+  {
+    "id": "sebastian-raschka-2026-08-180",
+    "category": "ai-systems",
+    "topic": "evaluation",
+    "subtopic": "架构分析的停止标准",
+    "tags": [
+      "raschka",
+      "workflow",
+      "validation"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "question": "什么时候可以认为一个模型的架构分析已经达到可交付程度？（请选择三个）",
+    "explanation": "关键结构假设应有来源和代码证据，张量形状能闭合，目标组件在小规模运行中可验证，并明确未知项。",
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/workflow-for-understanding-llms",
+      "section": "Validation checklist"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "主要模块和数据流都有可追溯证据",
+          "关键维度、头数和残差关系经过检查",
+          "特殊组件和未确认事项被明确记录",
+          "架构图与代码不一致但图看起来合理"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。交付标准是证据、形状和未知项都可追踪，而不是图像是否熟悉。"
+      }
+    }
+  }
 ]

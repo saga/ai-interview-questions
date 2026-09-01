@@ -1612,39 +1612,6 @@
     }
   },
   {
-    "id": "continuous-batching-core",
-    "category": "inference",
-    "topic": "inference-optimization",
-    "subtopic": "continuous-batching-mechanism",
-    "tags": [
-      "continuous-batching",
-      "in-flight-batching",
-      "dynamic-scheduling",
-      "padding-waste"
-    ],
-    "difficulty": "medium",
-    "angle": "mechanism",
-    "question": "传统 LLM 推理框架按 Request 进行静态 Batching 当 Batch 内序列长度差异极大时导致严重 Padding 浪费与 GPU 算力闲置。连续批处理技术的核心调度机制是？",
-    "explanation": "正确答案 A。连续批处理将调度粒度从 Request 级别下沉到 Iteration（Token）级别每次前向计算完成后已结束的 Request 退出新 Request 插入使 GPU 保持高饱和度的动态 Batch 运作彻底消除 Padding 浪费。",
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "在每一个 Decode 步结束时立刻从队列中将已生成完毕的请求移出并将新的 Prefill 请求或等待中的 Decode 请求插入同一 Batch 中",
-          "强制要求所有入队请求补全到相同的最大序列长度以利用 CUDA Graph 保持固定的 Execution Shape，因为统一形状能彻底消除动态调度并让每个 step 的计算量完全可预测",
-          "将所有请求的 Prompt 一次性拼接为超长单序列交由单一 Attention 头统一并发计算，因为合并后注意力可一次覆盖全部上下文，比逐个请求处理更高效",
-          "在每次新请求到达时彻底暂停当前所有正在运行的推理任务重新构建整张计算图，因为重建能按当前负载重新分配最优的并行策略从而避免资源碎片"
-        ],
-        "answer": [
-          0
-        ]
-      },
-      "open": {
-        "referenceAnswer": "正确答案 A。Iteration 级调度已完成退出新请求插入消除 Padding 浪费。"
-      }
-    }
-  },
-  {
     "id": "quantization-mem-bandwidth-gguf-01",
     "category": "inference",
     "topic": "quantization",

@@ -4,519 +4,1483 @@
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "QKV 投影",
-    "tags": ["sebastian-raschka", "self-attention", "qkv", "mechanism"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "qkv",
+      "mechanism"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "关于自注意力中的 Query、Key 和 Value，以下哪些说法正确？（请选择两个）",
     "explanation": "Query 表示当前位置要查找什么，Key 表示每个位置可被匹配的特征，Value 是被加权汇聚的内容。它们通常由同一输入经过不同线性投影得到。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Computing attention weights with trainable weights"},
-    "formats": {"choice": {"type": "multiple", "options": ["Query 与 Key 的点积用于计算相关性分数", "Value 是按注意力权重汇聚的内容表示", "Query、Key、Value 必须来自三个不同序列", "注意力权重直接等于 Value 向量本身"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Q/K 用于匹配，V 用于按权重汇聚；自注意力中三者通常都由同一序列的输入投影得到。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Computing attention weights with trainable weights"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Query 与 Key 的点积用于计算相关性分数",
+          "Value 是按注意力权重汇聚的内容表示",
+          "Query、Key、Value 必须来自三个不同序列",
+          "注意力权重直接等于 Value 向量本身"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。Q/K 用于匹配，V 用于按权重汇聚；自注意力中三者通常都由同一序列的输入投影得到。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-32",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "缩放点积",
-    "tags": ["sebastian-raschka", "self-attention", "scaled-dot-product"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "scaled-dot-product"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "缩放点积注意力中除以 $\\sqrt{d_k}$ 的主要作用有哪些？（请选择两个）",
     "explanation": "当 Key 维度增大时，QK 点积的方差会随维度增大。缩放可以让 softmax 输入保持在更适合梯度学习的范围，减少过度尖锐导致的梯度问题。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Implementing scaled dot-product attention"},
-    "formats": {"choice": {"type": "multiple", "options": ["控制点积分数随 Key 维度增长的尺度", "帮助 softmax 避免过早饱和并保留有效梯度", "把注意力复杂度从平方级变成线性级", "让 Value 向量自动包含位置信息"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。缩放处理点积分数的方差和 softmax 饱和问题，不改变注意力的平方级序列交互复杂度。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Implementing scaled dot-product attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "控制点积分数随 Key 维度增长的尺度",
+          "帮助 softmax 避免过早饱和并保留有效梯度",
+          "把注意力复杂度从平方级变成线性级",
+          "让 Value 向量自动包含位置信息"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。缩放处理点积分数的方差和 softmax 饱和问题，不改变注意力的平方级序列交互复杂度。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-33",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "softmax 注意力权重",
-    "tags": ["sebastian-raschka", "self-attention", "softmax"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "softmax"
+    ],
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "对 QK 分数沿 Key 位置使用 softmax 后，得到的注意力权重具有什么性质？（请选择两个）",
     "explanation": "softmax 将同一查询对应的分数转成非负且和为 1 的权重，因此输出是 Value 向量的加权和。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Computing attention weights"},
-    "formats": {"choice": {"type": "multiple", "options": ["同一查询位置对所有 Key 位置的权重和为 1", "权重通常非负，可作为 Value 的加权系数", "每个位置的权重都必须完全相同", "softmax 后的权重仍然是未归一化的任意实数"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。softmax 产生非负概率式权重，每个查询行归一化为和 1。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Computing attention weights"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同一查询位置对所有 Key 位置的权重和为 1",
+          "权重通常非负，可作为 Value 的加权系数",
+          "每个位置的权重都必须完全相同",
+          "softmax 后的权重仍然是未归一化的任意实数"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。softmax 产生非负概率式权重，每个查询行归一化为和 1。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-34",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "因果掩码",
-    "tags": ["sebastian-raschka", "self-attention", "causal-mask", "decoder"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "causal-mask",
+      "decoder"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "自回归语言模型使用因果注意力掩码时，以下哪些行为是正确的？（请选择两个）",
     "explanation": "位置 i 只能关注位置 i 及其之前的 token，不能读取未来 token。实现通常在 softmax 前把未来位置的分数设为负无穷。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Causal attention"},
-    "formats": {"choice": {"type": "multiple", "options": ["位置 i 可以关注自己和所有更早位置", "未来位置的分数应在 softmax 前被屏蔽", "因果掩码让训练时每个位置都能读取完整答案", "因果掩码只用于编码器而不用于自回归解码器"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。因果掩码保证预测位置不能看到未来 token，通常通过 softmax 前的上三角屏蔽实现。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Causal attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "位置 i 可以关注自己和所有更早位置",
+          "未来位置的分数应在 softmax 前被屏蔽",
+          "因果掩码让训练时每个位置都能读取完整答案",
+          "因果掩码只用于编码器而不用于自回归解码器"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。因果掩码保证预测位置不能看到未来 token，通常通过 softmax 前的上三角屏蔽实现。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-35",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "注意力方向",
-    "tags": ["sebastian-raschka", "self-attention", "causal-mask"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "causal-mask"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "一个语言模型在训练时意外移除了因果掩码，但训练 loss 仍然很低。上线逐 token 生成后性能明显下降，哪些解释合理？（请选择两个）",
     "explanation": "训练时模型可能通过读取未来真实 token 获得泄漏信息，导致 loss 虚低；生成时未来 token 不存在，训练和推理分布不一致。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Causal attention and information leakage"},
-    "formats": {"choice": {"type": "multiple", "options": ["训练期间发生了未来 token 泄漏", "训练目标与自回归推理的可见上下文不一致", "说明模型一定是因为词表太小", "说明关闭掩码会让 decode 自动变成双向推理"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。无掩码会造成标签泄漏，训练时看到未来信息而推理时看不到，形成严重的 train-inference mismatch。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Causal attention and information leakage"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练期间发生了未来 token 泄漏",
+          "训练目标与自回归推理的可见上下文不一致",
+          "说明模型一定是因为词表太小",
+          "说明关闭掩码会让 decode 自动变成双向推理"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。无掩码会造成标签泄漏，训练时看到未来信息而推理时看不到，形成严重的 train-inference mismatch。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-36",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "多头注意力",
-    "tags": ["sebastian-raschka", "self-attention", "multi-head-attention"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "multi-head-attention"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "多头注意力相对单头注意力的主要优势有哪些？（请选择两个）",
     "explanation": "不同头使用不同的投影子空间，可以同时捕捉不同类型的关系；各头结果拼接后再经过输出投影整合。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Multi-head attention"},
-    "formats": {"choice": {"type": "multiple", "options": ["不同头可以在不同表示子空间中关注不同关系", "各头输出通常拼接后再由输出投影整合", "多头注意力保证每个头关注完全不同的 token", "多头注意力把序列复杂度自动降为线性"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。多头提供多个投影子空间的关系建模能力，最后通过拼接和输出投影融合。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Multi-head attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同头可以在不同表示子空间中关注不同关系",
+          "各头输出通常拼接后再由输出投影整合",
+          "多头注意力保证每个头关注完全不同的 token",
+          "多头注意力把序列复杂度自动降为线性"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。多头提供多个投影子空间的关系建模能力，最后通过拼接和输出投影融合。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-37",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "多头维度",
-    "tags": ["sebastian-raschka", "multi-head-attention", "shape"],
+    "tags": [
+      "sebastian-raschka",
+      "multi-head-attention",
+      "shape"
+    ],
     "difficulty": "medium",
     "angle": "calculation",
     "question": "模型隐藏维度为 768，使用 12 个等宽注意力头时，关于每头维度的说法哪些正确？（请选择两个）",
     "explanation": "等宽多头通常令每头维度为 768/12=64。各头输出拼接后恢复到 768 维，才能接入后续残差路径。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Multi-head attention dimensions"},
-    "formats": {"choice": {"type": "multiple", "options": ["每头的 Query/Key/Value 投影宽度可为 64", "12 个头拼接后恢复为 768 维", "每头必须使用完整的 768 维且拼接后为 9216 维", "头数增加会让每头维度自动保持 768 不变"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。等宽划分时每头宽度是 768/12=64，12 头拼接回 768 维。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Multi-head attention dimensions"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每头的 Query/Key/Value 投影宽度可为 64",
+          "12 个头拼接后恢复为 768 维",
+          "每头必须使用完整的 768 维且拼接后为 9216 维",
+          "头数增加会让每头维度自动保持 768 不变"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。等宽划分时每头宽度是 768/12=64，12 头拼接回 768 维。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-38",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "交叉注意力",
-    "tags": ["sebastian-raschka", "cross-attention", "encoder-decoder"],
+    "tags": [
+      "sebastian-raschka",
+      "cross-attention",
+      "encoder-decoder"
+    ],
     "difficulty": "medium",
     "angle": "comparison",
     "question": "关于交叉注意力与自注意力的区别，以下哪些说法正确？（请选择两个）",
     "explanation": "交叉注意力通常让 Query 来自当前解码器状态，而 Key/Value 来自另一序列，例如编码器输出；这使一个序列能够读取另一个序列的信息。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Cross-attention"},
-    "formats": {"choice": {"type": "multiple", "options": ["交叉注意力的 Q 与 K/V 可以来自不同序列", "编码器—解码器结构中解码器可用交叉注意力读取编码器输出", "交叉注意力要求 Q、K、V 必须来自同一序列", "交叉注意力天然禁止 Query 访问任何外部表示"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。交叉注意力的 Q 与 K/V 来源可以不同，典型用途是解码器读取编码器表征。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Cross-attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "交叉注意力的 Q 与 K/V 可以来自不同序列",
+          "编码器—解码器结构中解码器可用交叉注意力读取编码器输出",
+          "交叉注意力要求 Q、K、V 必须来自同一序列",
+          "交叉注意力天然禁止 Query 访问任何外部表示"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。交叉注意力的 Q 与 K/V 来源可以不同，典型用途是解码器读取编码器表征。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-39",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "自注意力与交叉注意力选型",
-    "tags": ["sebastian-raschka", "attention", "system-design"],
+    "tags": [
+      "sebastian-raschka",
+      "attention",
+      "system-design"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "设计一个文本到文本的编码器—解码器模型时，哪些模块组合是合理的？（请选择两个）",
     "explanation": "编码器通常使用双向自注意力理解输入，解码器先用因果自注意力建模已生成内容，再用交叉注意力读取编码器输出。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Self-attention versus cross-attention"},
-    "formats": {"choice": {"type": "multiple", "options": ["编码器可用双向自注意力建模输入序列", "解码器可先做因果自注意力，再做读取编码器输出的交叉注意力", "解码器必须只使用双向自注意力才能自回归生成", "交叉注意力只能读取解码器自己的历史 token"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。编码器理解输入，解码器用因果自注意力保持自回归约束，再通过交叉注意力读取编码器表示。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Self-attention versus cross-attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "编码器可用双向自注意力建模输入序列",
+          "解码器可先做因果自注意力，再做读取编码器输出的交叉注意力",
+          "解码器必须只使用双向自注意力才能自回归生成",
+          "交叉注意力只能读取解码器自己的历史 token"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。编码器理解输入，解码器用因果自注意力保持自回归约束，再通过交叉注意力读取编码器表示。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-40",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "注意力复杂度",
-    "tags": ["sebastian-raschka", "self-attention", "complexity"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "complexity"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "标准全连接自注意力在序列长度增加时会带来哪些成本？（请选择两个）",
     "explanation": "注意力分数矩阵的形状为序列长度乘序列长度，因此时间和中间矩阵空间通常呈二次增长。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Self-attention computation"},
-    "formats": {"choice": {"type": "multiple", "options": ["QK 分数矩阵的元素数量随序列长度平方增长", "长序列会增加注意力中间结果的显存压力", "序列长度翻倍时全连接注意力的交互数量保持不变", "因果掩码会把全连接注意力的理论复杂度自动降为线性"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。全连接注意力形成 N×N 的交互矩阵，序列越长，计算和中间存储压力越大；因果掩码不改变这一渐进阶数。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Self-attention computation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "QK 分数矩阵的元素数量随序列长度平方增长",
+          "长序列会增加注意力中间结果的显存压力",
+          "序列长度翻倍时全连接注意力的交互数量保持不变",
+          "因果掩码会把全连接注意力的理论复杂度自动降为线性"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。全连接注意力形成 N×N 的交互矩阵，序列越长，计算和中间存储压力越大；因果掩码不改变这一渐进阶数。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-41",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "注意力实现调试",
-    "tags": ["sebastian-raschka", "self-attention", "debugging", "tensor-shape"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "debugging",
+      "tensor-shape"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "实现注意力模块时，输出形状正确但结果明显异常，以下哪些检查最有价值？（请选择三个）",
     "explanation": "需要检查 QK 点积的转置维度、缩放因子、softmax 归一化轴以及掩码应用位置；这些错误常不改变最终张量形状。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Coding self-attention step by step"},
-    "formats": {"choice": {"type": "multiple", "options": ["确认 QK^T 的维度和 softmax 归一化轴正确", "确认使用了正确的 sqrt(d_k) 缩放", "确认因果掩码在 softmax 前作用于正确位置", "只要输出 shape 正确就无需检查数值范围"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。注意力的转置、缩放、归一化轴和掩码位置都可能造成数值错误而不改变 shape。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Coding self-attention step by step"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认 QK^T 的维度和 softmax 归一化轴正确",
+          "确认使用了正确的 sqrt(d_k) 缩放",
+          "确认因果掩码在 softmax 前作用于正确位置",
+          "只要输出 shape 正确就无需检查数值范围"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。注意力的转置、缩放、归一化轴和掩码位置都可能造成数值错误而不改变 shape。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-42",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "权重共享边界",
-    "tags": ["sebastian-raschka", "self-attention", "parameterization"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "parameterization"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "关于自注意力中投影矩阵的作用，哪些说法正确？（请选择两个）",
     "explanation": "不同投影矩阵把输入映射到用于匹配和内容汇聚的不同子空间。训练这些矩阵使模型学会任务相关的相似性和信息读取方式。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Trainable query, key, and value weights"},
-    "formats": {"choice": {"type": "multiple", "options": ["Wq 和 Wk 共同决定用于匹配的表示空间", "Wv 决定被注意力权重汇聚的内容表示", "投影矩阵只负责保存 token 的原始整数 id", "训练投影矩阵不会改变注意力模式"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Q/K 投影影响匹配分数，V 投影影响输出内容，三者都由训练学习。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Trainable query, key, and value weights"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Wq 和 Wk 共同决定用于匹配的表示空间",
+          "Wv 决定被注意力权重汇聚的内容表示",
+          "投影矩阵只负责保存 token 的原始整数 id",
+          "训练投影矩阵不会改变注意力模式"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。Q/K 投影影响匹配分数，V 投影影响输出内容，三者都由训练学习。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-43",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "批量注意力",
-    "tags": ["sebastian-raschka", "self-attention", "batching"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "batching"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "把单个序列的注意力实现扩展到 batch 时，哪些变化通常是必要的？（请选择两个）",
     "explanation": "需要在张量中加入 batch 维并保持矩阵乘法按每个样本独立进行；如果序列有 padding，还需要相应的 padding mask。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Batch processing attention"},
-    "formats": {"choice": {"type": "multiple", "options": ["让 Q/K/V 带有 batch 维并进行批量矩阵乘法", "对 padding token 使用 padding mask 以避免其影响权重", "把不同样本的 token 直接拼成一个无边界序列", "batch 维会让每个样本自动共享同一条注意力分布"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。批量计算保持样本维度独立；变长 padding 需要 mask，不能让 padding 参与有效注意力。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Batch processing attention"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让 Q/K/V 带有 batch 维并进行批量矩阵乘法",
+          "对 padding token 使用 padding mask 以避免其影响权重",
+          "把不同样本的 token 直接拼成一个无边界序列",
+          "batch 维会让每个样本自动共享同一条注意力分布"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。批量计算保持样本维度独立；变长 padding 需要 mask，不能让 padding 参与有效注意力。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-44",
     "category": "ai-engineering",
     "topic": "flash-attention",
     "subtopic": "注意力内存优化",
-    "tags": ["sebastian-raschka", "flash-attention", "memory"],
+    "tags": [
+      "sebastian-raschka",
+      "flash-attention",
+      "memory"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "在不改变注意力数学结果目标的情况下，内存友好的注意力实现主要希望减少哪些开销？（请选择两个）",
     "explanation": "核心方向是避免完整物化 N×N 注意力矩阵，并通过分块和在线 softmax 降低峰值显存与 HBM 往返。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Efficient attention implementations"},
-    "formats": {"choice": {"type": "multiple", "options": ["避免完整保存序列平方大小的注意力矩阵", "减少中间张量在高带宽内存中的读写往返", "把所有 Value 从模型中删除", "让每个 token 只生成一个固定常数的 Query"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。高效注意力通过分块和融合减少平方矩阵的物化及内存搬运，而不是改变 Q/K/V 的语义。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Efficient attention implementations"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "避免完整保存序列平方大小的注意力矩阵",
+          "减少中间张量在高带宽内存中的读写往返",
+          "把所有 Value 从模型中删除",
+          "让每个 token 只生成一个固定常数的 Query"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。高效注意力通过分块和融合减少平方矩阵的物化及内存搬运，而不是改变 Q/K/V 的语义。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-45",
     "category": "ai-engineering",
     "topic": "tokenization",
     "subtopic": "token 与 embedding",
-    "tags": ["sebastian-raschka", "tokenization", "embedding"],
+    "tags": [
+      "sebastian-raschka",
+      "tokenization",
+      "embedding"
+    ],
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "从文本到注意力输入表示的过程中，哪些步骤通常存在？（请选择两个）",
     "explanation": "文本先被 tokenizer 映射为 token id，再由 embedding 表查出连续向量；注意力使用的是向量表示而不是原始字符串或整数本身。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Token IDs and embeddings"},
-    "formats": {"choice": {"type": "multiple", "options": ["tokenizer 将文本片段映射为离散 token id", "embedding 将 token id 映射为可训练连续向量", "注意力直接对字符串字符做点积", "embedding 只负责生成最终答案而不参与 Transformer 输入"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。tokenizer 产生离散 id，embedding 查表得到连续向量，后者作为注意力模块输入。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Token IDs and embeddings"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "tokenizer 将文本片段映射为离散 token id",
+          "embedding 将 token id 映射为可训练连续向量",
+          "注意力直接对字符串字符做点积",
+          "embedding 只负责生成最终答案而不参与 Transformer 输入"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。tokenizer 产生离散 id，embedding 查表得到连续向量，后者作为注意力模块输入。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-46",
     "category": "ai-engineering",
     "topic": "positional-encoding",
     "subtopic": "注意力的位置缺失",
-    "tags": ["sebastian-raschka", "self-attention", "position-encoding"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "position-encoding"
+    ],
     "difficulty": "medium",
     "angle": "fundamental",
     "question": "为什么仅有内容相似度的自注意力无法可靠区分 token 顺序？以下哪些说法正确？（请选择两个）",
     "explanation": "没有位置机制时，自注意力对输入 token 的排列缺少顺序信息，模型需要通过位置编码或其他位置机制区分相同 token 的不同位置。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Adding positional information"},
-    "formats": {"choice": {"type": "multiple", "options": ["自注意力的内容匹配本身不充分表达绝对顺序", "需要注入位置相关信息以区分不同排列", "只增加 Value 维度就必然恢复顺序", "因果掩码在所有架构中自动替代全部位置机制"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。位置机制是为了打破仅按内容集合处理带来的顺序歧义；因果掩码不能在所有架构中替代完整位置建模。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Adding positional information"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "自注意力的内容匹配本身不充分表达绝对顺序",
+          "需要注入位置相关信息以区分不同排列",
+          "只增加 Value 维度就必然恢复顺序",
+          "因果掩码在所有架构中自动替代全部位置机制"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。位置机制是为了打破仅按内容集合处理带来的顺序歧义；因果掩码不能在所有架构中替代完整位置建模。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-47",
     "category": "ai-engineering",
     "topic": "self-attention",
     "subtopic": "注意力输出",
-    "tags": ["sebastian-raschka", "self-attention", "weighted-sum"],
+    "tags": [
+      "sebastian-raschka",
+      "self-attention",
+      "weighted-sum"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "注意力输出是 Value 的加权和时，以下哪些性质通常成立？（请选择两个）",
     "explanation": "每个查询位置得到一个由所有可见 Value 按权重汇聚的上下文表示；权重分布不同会产生不同的信息读取结果。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Computing context vectors"},
-    "formats": {"choice": {"type": "multiple", "options": ["不同查询位置可以得到不同的上下文向量", "权重决定每个 Value 对当前输出的贡献大小", "输出必然等于某一个 Value 的未经加权复制", "所有查询位置必须共享完全相同的上下文向量"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。每个查询行有自己的权重分布，因此可以从相同 Value 集合中读取不同上下文。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Computing context vectors"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同查询位置可以得到不同的上下文向量",
+          "权重决定每个 Value 对当前输出的贡献大小",
+          "输出必然等于某一个 Value 的未经加权复制",
+          "所有查询位置必须共享完全相同的上下文向量"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。每个查询行有自己的权重分布，因此可以从相同 Value 集合中读取不同上下文。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-48",
     "category": "ai-engineering",
     "topic": "transformer",
     "subtopic": "注意力模块接口",
-    "tags": ["sebastian-raschka", "transformer", "residual"],
+    "tags": [
+      "sebastian-raschka",
+      "transformer",
+      "residual"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "将自注意力放入 Transformer block 时，哪些设计考虑有助于保持模块可组合性？（请选择两个）",
     "explanation": "注意力输出通常通过输出投影恢复模型宽度，以便与残差路径相加；多头拆分和拼接必须保持维度一致。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention", "section": "Multi-head attention in transformer blocks"},
-    "formats": {"choice": {"type": "multiple", "options": ["注意力输出投影通常恢复到模型隐藏维度", "残差相加要求两条路径的最后维度一致", "只要每头维度一致就可以忽略拼接后的总维度", "注意力输出必须始终改成词表大小才能接 FFN"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。输出投影和残差接口共同维持 block 的隐藏维度契约，头内形状正确还不够。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention",
+      "section": "Multi-head attention in transformer blocks"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "注意力输出投影通常恢复到模型隐藏维度",
+          "残差相加要求两条路径的最后维度一致",
+          "只要每头维度一致就可以忽略拼接后的总维度",
+          "注意力输出必须始终改成词表大小才能接 FFN"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。输出投影和残差接口共同维持 block 的隐藏维度契约，头内形状正确还不够。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-49",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "推理扩展与训练扩展",
-    "tags": ["sebastian-raschka", "reasoning-effort", "training-scaling", "inference-scaling"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "training-scaling",
+      "inference-scaling"
+    ],
     "difficulty": "medium",
     "angle": "comparison",
     "question": "提升推理任务性能时，训练扩展和推理扩展分别可能做什么？（请选择两个）",
     "explanation": "训练扩展增加训练数据、步骤或模型训练预算；推理扩展在回答时增加采样、搜索、验证或思考 token 预算。两者都可能提升性能但成本位置不同。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Training and inference scaling"},
-    "formats": {"choice": {"type": "multiple", "options": ["训练扩展主要把额外计算投入模型训练阶段", "推理扩展主要把额外计算投入请求处理阶段", "推理扩展必然需要更新模型参数", "训练扩展只会增加用户请求延迟而不影响模型能力"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。训练扩展和推理扩展分别把预算放在训练期和使用期，后者不必更新参数。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Training and inference scaling"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练扩展主要把额外计算投入模型训练阶段",
+          "推理扩展主要把额外计算投入请求处理阶段",
+          "推理扩展必然需要更新模型参数",
+          "训练扩展只会增加用户请求延迟而不影响模型能力"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。训练扩展和推理扩展分别把预算放在训练期和使用期，后者不必更新参数。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-50",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "推理努力度",
-    "tags": ["sebastian-raschka", "reasoning-effort", "latency", "cost"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "latency",
+      "cost"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "为模型提供低、中、高三档推理努力度，合理的系统含义有哪些？（请选择三个）",
     "explanation": "努力度模式通常对应不同的推理预算，影响思考 token、延迟和成本；应按任务复杂度选择，而不是把高努力度作为所有请求默认值。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Multiple reasoning effort modes"},
-    "formats": {"choice": {"type": "multiple", "options": ["不同模式可以分配不同的推理 token 预算", "高努力度通常可能增加延迟和成本", "简单任务可以使用较低努力度以改善响应速度", "高努力度保证每个任务都比低努力度更准确且没有副作用"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。努力度是预算和质量的权衡，简单任务可以节省计算，困难任务再增加预算。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Multiple reasoning effort modes"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同模式可以分配不同的推理 token 预算",
+          "高努力度通常可能增加延迟和成本",
+          "简单任务可以使用较低努力度以改善响应速度",
+          "高努力度保证每个任务都比低努力度更准确且没有副作用"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。努力度是预算和质量的权衡，简单任务可以节省计算，困难任务再增加预算。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-51",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "动态预算路由",
-    "tags": ["sebastian-raschka", "reasoning-effort", "routing", "slo"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "routing",
+      "slo"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "为在线服务设计动态推理努力度路由时，哪些策略合理？（请选择三个）",
     "explanation": "可以根据任务难度、初步置信度或验证失败情况分配预算，同时设置延迟和成本上限，避免所有请求都走最大路径。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Controlling reasoning effort at inference time"},
-    "formats": {"choice": {"type": "multiple", "options": ["先用轻量路径处理明显简单的请求", "验证失败或难度高时再升级推理预算", "用 SLO 约束最大思考 token 和端到端延迟", "无论请求难度都固定使用最高努力度"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。动态路由应把预算集中给需要它的请求，并以成本和延迟 SLO 设上限。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Controlling reasoning effort at inference time"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先用轻量路径处理明显简单的请求",
+          "验证失败或难度高时再升级推理预算",
+          "用 SLO 约束最大思考 token 和端到端延迟",
+          "无论请求难度都固定使用最高努力度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。动态路由应把预算集中给需要它的请求，并以成本和延迟 SLO 设上限。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-52",
     "category": "ai-engineering",
     "topic": "rlhf",
     "subtopic": "RLVR 奖励",
-    "tags": ["sebastian-raschka", "reasoning", "rlvr", "verifier"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "rlvr",
+      "verifier"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "在可验证的数学或代码任务中，RLVR 风格奖励的特点有哪些？（请选择三个）",
     "explanation": "可验证任务可以通过符号数学工具、编译器或单元测试判断结果，提供相对客观的奖励信号；奖励通常关注可验证结果，不等同于人工偏好评分。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Reinforcement learning with verifiable rewards"},
-    "formats": {"choice": {"type": "multiple", "options": ["数学结果可以由符号或数值检查器验证", "代码结果可以由编译器或测试验证", "奖励信号可以围绕答案是否通过验证构造", "只要结果可验证就不需要检查验证器漏洞"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。RLVR 利用可执行验证器给结果提供奖励；验证器本身仍需要审计，不能假设没有漏洞。"}}
-  },
-  {
-    "id": "sebastian-raschka-2026-08-53",
-    "category": "ai-engineering",
-    "topic": "rlhf",
-    "subtopic": "结果奖励与过程轨迹",
-    "tags": ["sebastian-raschka", "reasoning", "outcome-reward", "trace"],
-    "difficulty": "hard",
-    "angle": "comparison",
-    "question": "如果训练只根据最终答案是否正确给奖励，以下哪些推论正确？（请选择两个）",
-    "explanation": "最终结果奖励不必标注每个中间步骤，但信号较稀疏，可能无法指出错误发生的位置。模型仍可能探索出不同的有效轨迹。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Outcome-based rewards and reasoning traces"},
-    "formats": {"choice": {"type": "multiple", "options": ["不需要为每个中间步骤单独提供人工标签", "奖励信号通常比逐步过程监督更稀疏", "最终答案正确就能证明轨迹每一步都正确", "结果奖励会强制模型复现唯一标准推理路径"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。结果奖励只看终点，标注较简单但反馈稀疏，不能据此断言中间步骤全部可靠。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Reinforcement learning with verifiable rewards"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数学结果可以由符号或数值检查器验证",
+          "代码结果可以由编译器或测试验证",
+          "奖励信号可以围绕答案是否通过验证构造",
+          "只要结果可验证就不需要检查验证器漏洞"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。RLVR 利用可执行验证器给结果提供奖励；验证器本身仍需要审计，不能假设没有漏洞。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-54",
     "category": "ai-engineering",
     "topic": "rlhf",
     "subtopic": "验证器风险",
-    "tags": ["sebastian-raschka", "reasoning", "verifier", "reward-hacking"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "verifier",
+      "reward-hacking"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "一个代码验证器只检查程序是否返回样例输出，训练后的模型专门生成能过样例但泛化很差的代码。哪些判断正确？（请选择两个）",
     "explanation": "模型优化的是验证器代理目标，样例检查覆盖不足使其可以投机通过。应扩大测试覆盖并用独立测试或人工抽检评估真实正确性。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Verifier limitations and reward hacking"},
-    "formats": {"choice": {"type": "multiple", "options": ["验证器覆盖不足导致奖励与真实目标脱节", "模型可能发生针对验证器的 reward hacking", "只要训练奖励上升就能证明代码泛化变好", "解决方案是删除所有自动测试并只看输出长度"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。奖励器是代理目标，覆盖不足会被模型利用；需要增强测试和独立评估。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Verifier limitations and reward hacking"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "验证器覆盖不足导致奖励与真实目标脱节",
+          "模型可能发生针对验证器的 reward hacking",
+          "只要训练奖励上升就能证明代码泛化变好",
+          "解决方案是删除所有自动测试并只看输出长度"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。奖励器是代理目标，覆盖不足会被模型利用；需要增强测试和独立评估。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-55",
     "category": "ai-engineering",
     "topic": "sft",
     "subtopic": "推理轨迹定义",
-    "tags": ["sebastian-raschka", "reasoning", "trace", "post-training"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "trace",
+      "post-training"
+    ],
     "difficulty": "easy",
     "angle": "definition",
     "question": "在该类研究语境下，推理轨迹通常指什么？（请选择两个）",
     "explanation": "推理轨迹是模型在最终答案前生成的中间文本或步骤，用于展开任务求解；它是行为产物，不等同于人类真实思维过程的直接读取。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "What reasoning models mean"},
-    "formats": {"choice": {"type": "multiple", "options": ["最终答案前用于逐步处理任务的中间输出", "一种可观察的模型响应表示，而非人类思维的直接证明", "只要回答很长就必然是有效推理轨迹", "推理轨迹等同于模型参数中的完整知识表"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。推理轨迹是中间响应，帮助模型展开步骤，但不能仅因长度就判断其真实有效性。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "What reasoning models mean"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "最终答案前用于逐步处理任务的中间输出",
+          "一种可观察的模型响应表示，而非人类思维的直接证明",
+          "只要回答很长就必然是有效推理轨迹",
+          "推理轨迹等同于模型参数中的完整知识表"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。推理轨迹是中间响应，帮助模型展开步骤，但不能仅因长度就判断其真实有效性。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-56",
     "category": "ai-engineering",
     "topic": "sft",
     "subtopic": "轨迹监督数据",
-    "tags": ["sebastian-raschka", "reasoning", "sft", "data-quality"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "sft",
+      "data-quality"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "用带推理轨迹的数据做 SFT 时，哪些数据治理措施合理？（请选择三个）",
     "explanation": "轨迹应经过答案和步骤质量检查，覆盖多样任务，并防止把错误但格式漂亮的轨迹大量复制进训练集。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Supervised fine-tuning with reasoning traces"},
-    "formats": {"choice": {"type": "multiple", "options": ["验证最终答案与关键步骤的一致性", "覆盖不同难度和任务变体以减少模板过拟合", "对自动生成轨迹做抽检和去重", "只按轨迹字符数排序并保留最长样本"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。推理数据的正确性、多样性和质量审查比单纯追求轨迹长度更重要。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms",
+      "section": "Supervised fine-tuning with reasoning traces"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "验证最终答案与关键步骤的一致性",
+          "覆盖不同难度和任务变体以减少模板过拟合",
+          "对自动生成轨迹做抽检和去重",
+          "只按轨迹字符数排序并保留最长样本"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。推理数据的正确性、多样性和质量审查比单纯追求轨迹长度更重要。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-57",
     "category": "ai-engineering",
     "topic": "distillation",
     "subtopic": "推理模型蒸馏",
-    "tags": ["sebastian-raschka", "reasoning", "distillation", "student-teacher"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "distillation",
+      "student-teacher"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "把高预算教师模型的推理样本用于训练低成本学生模型时，哪些目标合理？（请选择两个）",
     "explanation": "蒸馏可以把教师在目标任务上的答案或轨迹行为迁移给学生，降低部署成本；学生能力仍受数据覆盖和教师错误限制。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Distilling reasoning capabilities"},
-    "formats": {"choice": {"type": "multiple", "options": ["降低相同任务上的推理成本", "让学生学习教师示例中的解题行为", "保证学生在所有分布外任务都等价于教师", "不需要验证教师输出，因为教师不会出错"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。蒸馏目标是以更低成本近似教师行为，但不保证分布外等价，教师样本也需验证。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms",
+      "section": "Distilling reasoning capabilities"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "降低相同任务上的推理成本",
+          "让学生学习教师示例中的解题行为",
+          "保证学生在所有分布外任务都等价于教师",
+          "不需要验证教师输出，因为教师不会出错"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。蒸馏目标是以更低成本近似教师行为，但不保证分布外等价，教师样本也需验证。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-58",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "测试时采样",
-    "tags": ["sebastian-raschka", "reasoning", "test-time-compute", "sampling"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "test-time-compute",
+      "sampling"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "对同一问题生成多个候选解并用验证器选择结果时，哪些成本或边界需要考虑？（请选择三个）",
     "explanation": "多候选提高找到有效解的机会，但会增加采样 token、验证计算和延迟；相关候选共享模型偏差时，简单多数投票收益也会受限。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Inference-time scaling"},
-    "formats": {"choice": {"type": "multiple", "options": ["候选数量增加会增加推理计算预算", "需要估计验证器的延迟和可靠性", "多个候选可能共享同一种系统性错误", "只要候选数量足够多就不需要独立测试集"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。测试时扩展要付出计算和延迟成本，且相关错误与不可靠验证器会限制收益。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms",
+      "section": "Inference-time scaling"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "候选数量增加会增加推理计算预算",
+          "需要估计验证器的延迟和可靠性",
+          "多个候选可能共享同一种系统性错误",
+          "只要候选数量足够多就不需要独立测试集"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。测试时扩展要付出计算和延迟成本，且相关错误与不可靠验证器会限制收益。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-59",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "努力度评估",
-    "tags": ["sebastian-raschka", "reasoning-effort", "evaluation", "slo"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "evaluation",
+      "slo"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "比较低、中、高推理努力度模式时，哪些指标应同时记录？（请选择三个）",
     "explanation": "努力度是质量、成本和延迟的联合权衡，因此应记录任务正确率或通过率、推理 token/成本以及 TTFT 或端到端延迟。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Evaluating reasoning effort modes"},
-    "formats": {"choice": {"type": "multiple", "options": ["按任务难度分桶的正确率或验证通过率", "每请求推理 token、采样数或费用", "首 token 和端到端延迟", "只看平均输出字数而不看任务质量"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。不同努力度模式要在质量、推理预算和延迟上联合评估，不能用输出长度代替效果指标。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Evaluating reasoning effort modes"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按任务难度分桶的正确率或验证通过率",
+          "每请求推理 token、采样数或费用",
+          "首 token 和端到端延迟",
+          "只看平均输出字数而不看任务质量"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。不同努力度模式要在质量、推理预算和延迟上联合评估，不能用输出长度代替效果指标。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-60",
     "category": "ai-engineering",
     "topic": "evaluation",
     "subtopic": "推理模式公平比较",
-    "tags": ["sebastian-raschka", "reasoning-effort", "evaluation", "benchmark"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "evaluation",
+      "benchmark"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "为了公平比较不同推理努力度模式，实验设计中哪些做法合理？（请选择三个）",
     "explanation": "应使用相同任务集和评分规则，报告成本与延迟，并检查不同难度和表述变体上的泛化，避免只挑有利样本。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Evaluating reasoning effort"},
-    "formats": {"choice": {"type": "multiple", "options": ["保持测试任务和验收标准一致", "同时报告准确率、推理预算和延迟", "加入不同表述和难度的独立测试", "只比较最高努力度的最佳单次结果"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。公平比较要控制任务和评分标准，并同时呈现质量、成本、延迟及泛化表现。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Evaluating reasoning effort"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保持测试任务和验收标准一致",
+          "同时报告准确率、推理预算和延迟",
+          "加入不同表述和难度的独立测试",
+          "只比较最高努力度的最佳单次结果"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。公平比较要控制任务和评分标准，并同时呈现质量、成本、延迟及泛化表现。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-61",
     "category": "ai-engineering",
     "topic": "pretraining",
     "subtopic": "训练规模与推理规模取舍",
-    "tags": ["sebastian-raschka", "reasoning", "scaling", "cost"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "scaling",
+      "cost"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "团队预算有限，需要在训练更多推理能力和在线增加测试时计算之间做选择。哪些判断合理？（请选择三个）",
     "explanation": "训练扩展可能把能力固化到参数中，推理扩展不改参数但把成本放到每次请求；选择取决于流量、任务重复度、延迟 SLO 和可验证性。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Training versus inference scaling"},
-    "formats": {"choice": {"type": "multiple", "options": ["高流量且任务稳定时，训练期投入可能摊薄单请求成本", "低流量或需求变化快时，推理期扩展可能更灵活", "严格低延迟场景需要把测试时预算纳入 SLO", "两种扩展的成本和收益与流量完全无关"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。训练与推理扩展的经济性取决于流量、任务稳定性和延迟约束，不能脱离部署场景比较。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Training versus inference scaling"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "高流量且任务稳定时，训练期投入可能摊薄单请求成本",
+          "低流量或需求变化快时，推理期扩展可能更灵活",
+          "严格低延迟场景需要把测试时预算纳入 SLO",
+          "两种扩展的成本和收益与流量完全无关"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。训练与推理扩展的经济性取决于流量、任务稳定性和延迟约束，不能脱离部署场景比较。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-62",
     "category": "ai-engineering",
     "topic": "evaluation",
     "subtopic": "推理模式回归",
-    "tags": ["sebastian-raschka", "reasoning-effort", "regression", "quality"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "regression",
+      "quality"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "上线新的高努力度模式后，数学正确率上升但客服任务满意度下降，哪些调查方向合理？（请选择三个）",
     "explanation": "专项推理优化可能带来延迟、风格、拒答或过度解释等副作用。应按任务类型和用户 SLO 分析，而非只看数学基准。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Tradeoffs of reasoning effort"},
-    "formats": {"choice": {"type": "multiple", "options": ["比较客服任务的延迟和响应长度变化", "检查不同任务路由是否使用了不合适的努力度", "检查拒答率、格式遵循和用户满意度回归", "因为数学分数提升就直接判定整体上线成功"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。努力度模式需按任务评估，数学收益不能掩盖客服延迟、行为和满意度回归。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Tradeoffs of reasoning effort"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "比较客服任务的延迟和响应长度变化",
+          "检查不同任务路由是否使用了不合适的努力度",
+          "检查拒答率、格式遵循和用户满意度回归",
+          "因为数学分数提升就直接判定整体上线成功"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。努力度模式需按任务评估，数学收益不能掩盖客服延迟、行为和满意度回归。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-63",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "推理预算上限",
-    "tags": ["sebastian-raschka", "reasoning-effort", "budget", "reliability"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "budget",
+      "reliability"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "为高努力度推理配置预算上限时，哪些保护措施合理？（请选择三个）",
     "explanation": "预算上限应同时约束 token、时间和重试次数，并在超限时返回可识别的降级结果或切换到较低努力度，避免请求无限占用资源。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Reasoning budget controls"},
-    "formats": {"choice": {"type": "multiple", "options": ["限制最大推理 token 或候选数量", "限制端到端时间和验证重试次数", "为超限请求定义降级或可观测的失败路径", "为了追求准确率允许单请求无限搜索"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。预算控制需要覆盖计算量、时间和重试，并设计明确降级，防止单请求拖垮服务。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Reasoning budget controls"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "限制最大推理 token 或候选数量",
+          "限制端到端时间和验证重试次数",
+          "为超限请求定义降级或可观测的失败路径",
+          "为了追求准确率允许单请求无限搜索"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。预算控制需要覆盖计算量、时间和重试，并设计明确降级，防止单请求拖垮服务。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-64",
     "category": "ai-engineering",
     "topic": "evaluation",
     "subtopic": "推理轨迹质量审查",
-    "tags": ["sebastian-raschka", "reasoning", "trace", "audit"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "trace",
+      "audit"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "审查模型生成的推理轨迹时，哪些信号说明轨迹不能直接作为训练数据？（请选择三个）",
     "explanation": "轨迹可能出现结论正确但步骤错误、循环复述或利用题目泄漏信息等情况。需要验证步骤与答案的关系和任务独立性。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Reasoning trace quality"},
-    "formats": {"choice": {"type": "multiple", "options": ["中间步骤与最终答案相互矛盾", "轨迹依赖测试答案或隐藏提示中的泄漏信息", "大量样本只是重复同一模板且没有任务覆盖", "轨迹文字更长就说明监督价值更高"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。训练轨迹要检查逻辑一致性、信息泄漏和多样覆盖，长度本身不是质量指标。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms",
+      "section": "Reasoning trace quality"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "中间步骤与最终答案相互矛盾",
+          "轨迹依赖测试答案或隐藏提示中的泄漏信息",
+          "大量样本只是重复同一模板且没有任务覆盖",
+          "轨迹文字更长就说明监督价值更高"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。训练轨迹要检查逻辑一致性、信息泄漏和多样覆盖，长度本身不是质量指标。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-65",
     "category": "ai-engineering",
     "topic": "evaluation",
     "subtopic": "验证器独立性",
-    "tags": ["sebastian-raschka", "reasoning", "verifier", "evaluation"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "verifier",
+      "evaluation"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "设计推理任务验证器时，哪些做法有助于避免把验证器本身当成真实能力？（请选择三个）",
     "explanation": "验证器应覆盖隐藏测试和边界情况，使用与训练不同的测试，并通过人工或第二种验证方式抽检，监控模型是否针对规则投机。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Verifier design and evaluation"},
-    "formats": {"choice": {"type": "multiple", "options": ["使用训练未见的隐藏测试或变体", "覆盖边界条件而不是只检查一个样例", "用独立评估或人工抽检验证通过结果", "把验证器通过率直接当作无需审计的真实准确率"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。独立变体、边界覆盖和交叉审查可以减少验证器过拟合与奖励黑客风险。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Verifier design and evaluation"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用训练未见的隐藏测试或变体",
+          "覆盖边界条件而不是只检查一个样例",
+          "用独立评估或人工抽检验证通过结果",
+          "把验证器通过率直接当作无需审计的真实准确率"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。独立变体、边界覆盖和交叉审查可以减少验证器过拟合与奖励黑客风险。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-66",
     "category": "ai-engineering",
     "topic": "inference-optimization",
     "subtopic": "早停与验证",
-    "tags": ["sebastian-raschka", "reasoning-effort", "early-exit", "verification"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "early-exit",
+      "verification"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "在推理过程中使用验证器进行早停，哪些条件通常需要满足？（请选择两个）",
     "explanation": "只有当验证器信号足够可靠并且任务允许提前确认时，早停才可节省预算；否则过早停止可能截断仍需修正的推理。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Adaptive reasoning effort"},
-    "formats": {"choice": {"type": "multiple", "options": ["验证器对当前任务的通过信号具有足够可靠性", "提前停止带来的质量损失在 SLO 内可接受", "任何中间文本出现答案数字都可以无条件早停", "早停不需要记录被截断的推理预算"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。早停依赖可靠验证和可接受的质量边界，不能看到局部答案就无条件结束。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Adaptive reasoning effort"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "验证器对当前任务的通过信号具有足够可靠性",
+          "提前停止带来的质量损失在 SLO 内可接受",
+          "任何中间文本出现答案数字都可以无条件早停",
+          "早停不需要记录被截断的推理预算"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。早停依赖可靠验证和可接受的质量边界，不能看到局部答案就无条件结束。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-67",
     "category": "ai-engineering",
     "topic": "training-data",
     "subtopic": "难度分布",
-    "tags": ["sebastian-raschka", "reasoning", "training-data", "curriculum"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "training-data",
+      "curriculum"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "为推理模型准备训练数据时，哪些难度分布策略合理？（请选择三个）",
     "explanation": "数据应覆盖从可学习基础到目标难度的梯度，并包含足够多的变体；只用极难样本可能导致学习信号稀疏，只用简单样本又无法覆盖目标能力。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Reasoning training data"},
-    "formats": {"choice": {"type": "multiple", "options": ["包含基础、过渡和目标难度的任务", "用不同表述和结构覆盖同一能力", "根据验证结果清理明显错误或不可学习的样本", "只保留模型当前完全无法解决的题目"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。合理难度梯度和多样变体提供更稳定学习信号，质量过滤避免错误数据放大。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms",
+      "section": "Reasoning training data"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "包含基础、过渡和目标难度的任务",
+          "用不同表述和结构覆盖同一能力",
+          "根据验证结果清理明显错误或不可学习的样本",
+          "只保留模型当前完全无法解决的题目"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。合理难度梯度和多样变体提供更稳定学习信号，质量过滤避免错误数据放大。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-68",
     "category": "ai-engineering",
     "topic": "evaluation",
     "subtopic": "推理泛化",
-    "tags": ["sebastian-raschka", "reasoning", "generalization", "evaluation"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "generalization",
+      "evaluation"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "验证推理能力是否真正泛化时，哪些测试设计更有区分度？（请选择三个）",
     "explanation": "应改变表述、数字、组合和领域，同时保持核心能力不变，测试模型是否学到机制而不是记忆模板。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Generalization of reasoning abilities"},
-    "formats": {"choice": {"type": "multiple", "options": ["使用未见过的题目表述和数值", "组合已知能力形成新的任务结构", "报告不同难度和领域的分桶结果", "只重复训练集原题并把高分视为泛化证明"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。变体、组合和分桶测试可以区分机制泛化与训练模板记忆。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms",
+      "section": "Generalization of reasoning abilities"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用未见过的题目表述和数值",
+          "组合已知能力形成新的任务结构",
+          "报告不同难度和领域的分桶结果",
+          "只重复训练集原题并把高分视为泛化证明"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。变体、组合和分桶测试可以区分机制泛化与训练模板记忆。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-69",
     "category": "ai-engineering",
     "topic": "observability",
     "subtopic": "推理成本监控",
-    "tags": ["sebastian-raschka", "reasoning", "observability", "cost"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning",
+      "observability",
+      "cost"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "推理模型上线后，为了定位成本和延迟回归，哪些指标值得分开监控？（请选择三个）",
     "explanation": "总请求数不能解释推理模式变化，应拆分思考 token、候选/重试次数、验证耗时以及不同努力度和任务难度的质量。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Monitoring reasoning effort"},
-    "formats": {"choice": {"type": "multiple", "options": ["按努力度和任务难度分桶的推理 token", "采样、验证和重试次数", "TTFT、端到端延迟与验证耗时", "只记录请求总数而不记录推理预算"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。推理预算、验证行为和延迟必须拆分监控，才能解释成本与质量变化。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Monitoring reasoning effort"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按努力度和任务难度分桶的推理 token",
+          "采样、验证和重试次数",
+          "TTFT、端到端延迟与验证耗时",
+          "只记录请求总数而不记录推理预算"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。推理预算、验证行为和延迟必须拆分监控，才能解释成本与质量变化。"
+      }
+    }
   },
   {
     "id": "sebastian-raschka-2026-08-70",
     "category": "ai-engineering",
     "topic": "model-selection",
     "subtopic": "努力度模式选型",
-    "tags": ["sebastian-raschka", "reasoning-effort", "model-selection", "product"],
+    "tags": [
+      "sebastian-raschka",
+      "reasoning-effort",
+      "model-selection",
+      "product"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "为一个同时包含 FAQ、代码审查和数学证明的产品选择推理努力度策略时，哪些设计合理？（请选择三个）",
     "explanation": "不同任务的复杂度和验收标准不同，应做任务路由和预算校准；代码与数学可利用验证器，FAQ 更看重低延迟和事实准确。",
-    "source": {"materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms", "section": "Task-dependent reasoning effort"},
-    "formats": {"choice": {"type": "multiple", "options": ["为简单 FAQ 优先配置低延迟路径", "对代码和数学任务结合验证结果决定是否增加预算", "分别评估各任务的质量、成本和延迟 SLO", "所有任务统一使用最高努力度以避免路由复杂度"], "answer": [0, 1, 2]}, "open": {"referenceAnswer": "正确答案：A、B、C。努力度应与任务复杂度和可验证性匹配，统一最高预算会浪费资源并损害低延迟体验。"}}
+    "source": {
+      "materialId": "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+      "section": "Task-dependent reasoning effort"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为简单 FAQ 优先配置低延迟路径",
+          "对代码和数学任务结合验证结果决定是否增加预算",
+          "分别评估各任务的质量、成本和延迟 SLO",
+          "所有任务统一使用最高努力度以避免路由复杂度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B、C。努力度应与任务复杂度和可验证性匹配，统一最高预算会浪费资源并损害低延迟体验。"
+      }
+    }
   }
 ]

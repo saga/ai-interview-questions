@@ -827,38 +827,6 @@
     }
   },
   {
-    "id": "cross-attn-qkv",
-    "category": "transformer",
-    "topic": "attention",
-    "subtopic": "cross-attention-qkv-source",
-    "tags": [
-      "cross-attention",
-      "encoder-decoder",
-      "qkv-source"
-    ],
-    "difficulty": "medium",
-    "angle": "comparison",
-    "question": "在标准的 Sequence-to-Sequence Transformer 架构中，Decoder 层同时包含 Self-Attention 与 Cross-Attention（Encoder-Decoder Attention）。在 Cross-Attention 子层中，Query (Q)、Key (K) 和 Value (V) 的来源分别是？",
-    "explanation": "正确答案 B。Cross-Attention 中 Q 来自 Decoder 上一层的输出（当前生成状态），K 和 V 来自 Encoder 的最终输出（源序列信息）。这使得 Decoder 在每一步生成时都能'查询'源序列的全部编码信息，实现源语言到目标语言的信息传递。",
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "Q 来自 Encoder 的最终输出向量，K 和 V 来自 Decoder 上一层的输出向量",
-          "Q 来自 Decoder 上一层的输出向量，K 和 V 来自 Encoder 的最终输出向量",
-          "Q 和 K 来自 Decoder 上一层的输出向量，V 来自 Encoder 的最终输出向量",
-          "Q, K, V 均来自 Encoder 的最终输出向量，Decoder 仅提供线性转换矩阵"
-        ],
-        "answer": [
-          1
-        ]
-      },
-      "open": {
-        "referenceAnswer": "正确答案 B。Cross-Attention：Q=Decoder（当前生成），K/V=Encoder（源信息）。"
-      }
-    }
-  },
-  {
     "id": "rnn-vs-tf-compare",
     "category": "transformer",
     "topic": "transformer",
@@ -1061,38 +1029,6 @@
       },
       "open": {
         "referenceAnswer": "正确答案 A,B,C。Post-LN 不稳+依赖 Warmup；Pre-LN 稳定但极限泛化略低。D 错误方向反了。"
-      }
-    }
-  },
-  {
-    "id": "cross-attn-qkv-mech",
-    "category": "transformer",
-    "topic": "attention",
-    "subtopic": "encoder-decoder-attention",
-    "tags": [
-      "cross-attention",
-      "encoder-decoder",
-      "qkv-source"
-    ],
-    "difficulty": "medium",
-    "angle": "mechanism",
-    "question": "在标准 Encoder-Decoder Transformer 中 Decoder 内包含 Cross-Attention 子层。在该子层中 Query、Key 与 Value 矩阵的来源匹配正确的是？",
-    "explanation": "正确答案 B。Cross-Attention 中 Q 来自 Decoder 上一层的输出（当前生成状态作为'查询'），K 和 V 来自 Encoder 最终输出（源序列编码作为'被查内容'）。这使得 Decoder 在每步生成时都能查询源序列的全部编码信息实现跨语言信息传递。",
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "Q 来自 Encoder 最后一层的输出 K 和 V 来自上一层 Decoder 的输出",
-          "Q 来自上一层 Decoder 的输出 K 和 V 来自 Encoder 最后一层的输出",
-          "Q 和 K 来自上一层 Decoder 的输出 V 来自 Encoder 最后一层的输出",
-          "Q/K/V 均来自上一层 Decoder 的输出仅引入了 Encoder 的掩码"
-        ],
-        "answer": [
-          1
-        ]
-      },
-      "open": {
-        "referenceAnswer": "正确答案 B。Q=Decoder 当前生成状态；K/V=Encoder 源序列编码。"
       }
     }
   },
