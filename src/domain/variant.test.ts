@@ -46,20 +46,17 @@ describe('validateVariant', () => {
     expect(validateVariant(cq, variant({ question: '   ' })).ok).toBe(false);
   });
 
-  it('选择题：提供合法 options/answer → 通过', () => {
-    expect(validateVariant(cq, variant({ options: ['x', 'y', 'z'], answer: [1] })).ok).toBe(true);
+  it('选择题：提供合法 options → 通过', () => {
+    expect(validateVariant(cq, variant({ options: ['x', 'y', 'z'] })).ok).toBe(true);
   });
 
   it('选择题：options 重复 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ options: ['a', 'a', 'b'], answer: [0] })).ok).toBe(false);
+    expect(validateVariant(cq, variant({ options: ['a', 'a', 'b'] })).ok).toBe(false);
   });
 
-  it('选择题：answer 越界 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ options: ['a', 'b'], answer: [5] })).ok).toBe(false);
-  });
-
-  it('选择题：单选题 answer 必须 1 项', () => {
-    expect(validateVariant(cq, variant({ options: ['a', 'b'], answer: [0, 1] })).ok).toBe(false);
+  it('选择题：options 数量与 canonical 不同 → 拒绝（选项须一一对应）', () => {
+    // cq canonical options 长度为 3，传 2 个即拒绝
+    expect(validateVariant(cq, variant({ options: ['a', 'b'] })).ok).toBe(false);
   });
 
   it('含依赖原题指代 → 拒绝', () => {
@@ -76,7 +73,7 @@ describe('validateVariant', () => {
   it('完全丢失 topic/tags/required 证据 → 拒绝（保守漂移检查）', () => {
     // cq topic regularization，required 含 L1/L2，使用完全无关的 CNN/BatchNorm 文本
     expect(
-      validateVariant(cq, variant({ question: '在 CNN 训练中 batch size 很小时，BatchNorm 为什么不稳定？', options: undefined, answer: undefined })).ok,
+      validateVariant(cq, variant({ question: '在 CNN 训练中 batch size 很小时，BatchNorm 为什么不稳定？' })).ok,
     ).toBe(false);
   });
 
@@ -93,10 +90,7 @@ describe('validateVariant', () => {
   it('P0-2：解析(explanation)提及 required 但题干/选项未考察 → 仍拒绝', () => {
     // 题干完全漂移（CNN/BatchNorm），即便 explanation 里写满 required 概念也不计（explanation 不计入证据）
     expect(
-      validateVariant(
-        cq,
-        variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？', explanation: 'L2 平滑收缩权重，weight decay 与 L2 等价' }),
-      ).ok,
+      validateVariant(cq, variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' })).ok,
     ).toBe(false);
   });
 
@@ -159,19 +153,23 @@ describe('validateVariant', () => {
 });
 
 describe('applyVariant', () => {
-  it('选择题：无 options 时保留原选项与答案', () => {
-    const r = applyVariant(cq, variant({ question: 'regularization 变体', explanation: 'new-e' }));
+  it('选择题：无 options 时保留 canonical 原顺序与答案（不引入未改写却重排的副作用）', () => {
+    const r = applyVariant(cq, variant({ question: 'regularization 变体' }));
     expect(r.question).toBe('regularization 变体');
     expect(r.formats.choice?.options).toEqual(['a', 'b', 'c']);
     expect(r.formats.choice?.answer).toEqual([0]);
-    expect(r.explanation).toBe('new-e');
+    // 解析永远来自 canonical（LLM 不生成）
+    expect(r.explanation).toBe('e');
     expect(r.aiGenerated).toBe(true);
   });
 
-  it('选择题：提供 options/answer 时替换', () => {
-    const r = applyVariant(cq, variant({ question: 'regularization 变体', options: ['x', 'y', 'z', 'w'], answer: [2] }));
-    expect(r.formats.choice?.options).toEqual(['x', 'y', 'z', 'w']);
-    expect(r.formats.choice?.answer).toEqual([2]);
+  it('选择题：提供 options 时改写并程序重排，正确答案文本经索引重映射后仍正确', () => {
+    // variant options 与原题按位置一一对应：'a'→'x'、'b'→'y'、'c'→'z'（canonical 正确项 = 'a' = 索引 0）
+    const r = applyVariant(cq, variant({ question: 'regularization 变体', options: ['x', 'y', 'z'] }));
+    // 选项集合不变（顺序由程序 Fisher–Yates 决定，不在此断言具体顺序）
+    expect(new Set(r.formats.choice?.options)).toEqual(new Set(['x', 'y', 'z']));
+    // 重映射后，正确答案索引指向的文本必须仍是 canonical 正确项对应的改写文本 'x'
+    expect(r.formats.choice?.options[r.formats.choice.answer[0]]).toBe('x');
   });
 
   it('开放题：referenceAnswer 永远保留原题的值（LLM 不改写答案）', () => {
@@ -181,7 +179,7 @@ describe('applyVariant', () => {
     expect(r.aiGenerated).toBe(true);
   });
 
-  it('未提供解析时沿用原解析', () => {
+  it('解析永远来自 canonical（LLM 不生成解析）', () => {
     const r = applyVariant(cq, variant());
     expect(r.explanation).toBe('e');
   });
@@ -211,21 +209,22 @@ describe('applyVariant / validateVariant 形态对齐（P0-1）', () => {
     formats: { open: { referenceAnswer: 'REF-OPEN' } },
   };
 
-  it('format=open：只替换题干/解析，保留 choice 与 open.referenceAnswer', () => {
+  it('format=open：只替换题干，解析/choice/referenceAnswer 全部保留 canonical', () => {
     const v = variant();
     const r = applyVariant(dq, v, 'open');
     expect(r.question).toBe(v.question);
-    expect(r.explanation).toBe(v.explanation ?? 'e');
+    expect(r.explanation).toBe('e');
     expect(r.formats.open?.referenceAnswer).toBe('REF');
     expect(r.formats.choice?.options).toEqual(['a', 'b', 'c']);
     expect(r.formats.choice?.answer).toEqual([0]);
     expect(r.aiGenerated).toBe(true);
   });
 
-  it('format=choice：替换 options/answer', () => {
-    const r = applyVariant(dq, variant({ options: ['x', 'y', 'z', 'w'], answer: [2] }), 'choice');
-    expect(r.formats.choice?.options).toEqual(['x', 'y', 'z', 'w']);
-    expect(r.formats.choice?.answer).toEqual([2]);
+  it('format=choice：改写 options 并程序重排，正确文本经重映射仍正确', () => {
+    // dq canonical 正确项 = 索引 0 = 'a'；variant 改写 'a'→'x'、'b'→'y'、'c'→'z'
+    const r = applyVariant(dq, variant({ options: ['x', 'y', 'z'] }), 'choice');
+    expect(new Set(r.formats.choice?.options)).toEqual(new Set(['x', 'y', 'z']));
+    expect(r.formats.choice?.options[r.formats.choice.answer[0]]).toBe('x');
   });
 
   it('format=open：不要求 options，即使提供非法 options 也不拒绝', () => {

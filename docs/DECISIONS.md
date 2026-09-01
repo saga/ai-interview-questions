@@ -594,9 +594,11 @@
   - **输出扩展**：`RawVariant` → `{question, options?, answer?, explanation}`；`GeneratedVariant` 同步扩展，`VariantCandidate` 为未校验中间态。
   - **校验换安全**：`domain/variant.validateVariant` 从“题干非空”升级为结构（选项≥2无重复、answer 合法且与 `single/multiple` 一致、至少一干扰项、自包含无“原题/上述”指代）+ 语义（required 概念仍覆盖）。
   - **落地**：`domain/variant.applyVariant` 按 choice/open 分支替换 `question/options/answer/explanation`；2026-08-28 起 `application/interviewEngine.finalizeQuestion` 在调用或校验失败时记录 warning 并回退原题，避免单题坏变体中断整场组卷。安全性仍由变体校验保证，回退只发生在未通过校验的候选上。
-- 理由：安全边界应放在“不变量 + 验证”而非“禁止字段”—— 既保留答案正确性，又释放 LLM 的场景化与选项重塑能力；“LLM 提候选、domain 决定”与既有“分数所有权在 domain”一致，为后续 `pi-agent-core` 的自由生成提供可复用边界。
-- 不做的事：不引入语义向量相似度校验（成本高且阈值易武断），暂以浅层 required 关键词命中作 semantic 兜底；不改变 `difficulty` 带宽校验（仍为 invariant）。
-- 验证：`src/domain/variant.test.ts` 覆盖结构/越界/重复/自包含；`src/ai/variant.test.ts` mock `complete` 注入 contract 断言；`typecheck/build` 通过；失败变体回退原题并记录 warning。
+  - **轻量变体收缩（2026-09-01，第一轮）**：把变体边界从“LLM 可重设计 options/answer/explanation”收回到“**LLM 仅重写题干与选项表达**”。`answer` 与 `explanation` 永远是 canonical 值——不在 user prompt 暴露、也不接受模型输出；`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），`toGeneratedVariant` 丢弃模型可能回吐的 `answer/explanation`；`validateVariant` 不再校验 `answer`（选项数量须与 canonical 一致以保证一一对应），`applyVariant` 写死 `canonical.answer`。`generateVariant` 改为单次 LLM 调用，校验失败或长度泄题即抛错，由 `finalizeQuestion` 回退原题——不再 retry、不再因 anti-cueing 重新整生成。
+  - **结构变换程序化（2026-09-01，第二轮）**：在“LLM 只做语义变换”基础上，把**所有结构性/机械性变化收归程序**，形成清晰边界：**LLM 负责语义变换（question/options 文本）；程序负责结构变换（选项顺序 / answer 索引重映射 / 格式 / 校验）**。新增 `src/domain/options.ts`：`shuffleChoiceOptions`（Fisher–Yates 打乱选项 + 按 originalIndex 确定性重映射 `canonical.answer`，并保证顺序必变）、`normalizeAnswer`（多选题答案升序）、`normalizeOptionText`（折叠冗余空白）、`ensureDifferentOrder`（恒等排列时交换前两项兜底）。`applyVariant` 在落地时对 LLM 改写后的 options 调 `shuffleChoiceOptions` 重排并 `normalizeAnswer` 归一化 answer；`GeneratedVariant` 契约瘦身为只含 `{ question, options? }`，`VariantCandidate` 同步。`VARIANT_SYSTEM` 明确“逐项改写现有文本、不交换选项顺序、不生成答案/解析”。这样选项顺序与正确答案彻底与 LLM 解耦，且重排为本地纯运算、几乎零耗时。
+- 理由：安全边界应放在“不变量 + 验证”而非“禁止字段”—— 既保留答案正确性，又释放 LLM 的场景化与选项重塑能力；“LLM 提候选、domain 决定”与既有“分数所有权在 domain”一致，为后续 `pi-agent-core` 的自由生成提供可复用边界。轻量变体收缩（两轮）进一步把“答案决定权与顺序”完全收归 domain，用“一次调用 + 失败回退”替换“两轮 retry + anti-cueing 重生成”，在保留“用户不会看到完全一样的题”的同时砍掉最浪费时间的部分——LLM 连选项顺序都不碰，抗暗示从“靠模型自律”降级为“程序硬保证”。
+- 不做的事：不引入语义向量相似度校验（成本高且阈值易武断），暂以浅层 required 关键词命中作 semantic 兜底；不改变 `difficulty` 带宽校验（仍为 invariant）；不为 shuffle 引入第二个 LLM Judge；固定排列（按 `questionId+attemptCount` 确定性 seed）作为可选增强，不在本 ADR 范围。
+- 验证：`src/domain/options.test.ts`（新增，覆盖 Fisher–Yates 重映射、多选题多正确项重映射、恒等排列兜底、答案归一化、空白折叠）；`src/domain/variant.test.ts` 改为断言“重映射后正确文本仍正确（顺序无关）”；`src/ai/variant.test.ts` 覆盖单次调用、不泄露 answer/explanation、LLM 输出 answer 被丢弃、开放题仅 question；`typecheck/build` 全绿；失败变体回退原题并记录 warning（interviewAgent 集成测试 stderr 已验证回退链路）。
 
 ## ADR-034 · Agent 面试：pi-agent-core 作为面试决策运行时（并行于确定性 Engine）
 

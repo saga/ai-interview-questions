@@ -1,6 +1,5 @@
-// 变体生成测试：complete 注入后与底层无关（pi-ai / Chrome 均走同一逻辑）。
-// 覆盖：正常重写含 options、LLM 输出残缺时回退、prompt 携带 Knowledge Contract 与完整原题。
-// 安全模型（ADR-036）：LLM 可重构 Presentation，需保持 Knowledge Contract。
+// 变体生成测试（轻量变体边界）：一次 LLM 调用，只生成 question/options，
+// 不生成 answer/explanation，校验失败或长度泄题直接抛错（不 retry）。
 
 import { describe, expect, it, vi } from 'vitest';
 import { generateVariant } from './variant';
@@ -18,102 +17,69 @@ const BASE: Question = {
   formats: { choice: { type: 'single', options: ['A', 'B', 'C', 'D'], answer: [0] } },
 };
 
-describe('generateVariant', () => {
-  it('解析 LLM 输出的 question/explanation/options/answer', async () => {
+describe('generateVariant（轻量变体）', () => {
+  it('生成题干和选项变体，但不生成 answer', async () => {
     const complete: CompleteFn = vi.fn(async () =>
-      '{"question":"L2 正则化的作用是？","options":["x","y","z","w"],"answer":[1],"explanation":"权重平方惩罚。"}',
+      JSON.stringify({
+        question: '新的 L2 正则化问题',
+        options: ['选项 A', '选项 B', '选项 C', '选项 D'],
+      }),
     );
     const out = await generateVariant(BASE, complete);
+    expect(out.question).toBe('新的 L2 正则化问题');
+    expect(out.options).toEqual(['选项 A', '选项 B', '选项 C', '选项 D']);
+    // GeneratedVariant 契约只含 question / options；answer / explanation 不进入产物（由程序从 canonical 取）。
     expect(out).toEqual({
-      question: 'L2 正则化的作用是？',
-      options: ['x', 'y', 'z', 'w'],
-      answer: [1],
-      explanation: '权重平方惩罚。',
+      question: '新的 L2 正则化问题',
+      options: ['选项 A', '选项 B', '选项 C', '选项 D'],
     });
-    const [system, user] = (complete as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(system).toContain('知识契约');
-    // 完整原题与契约进入提示词（ADR-036 语义不变量）
-    expect(user).toContain('requiredConcepts');
-    expect(user).toContain('question');
-    expect(user).toContain('options');
-    expect(user).toContain('answer');
-    // v2：buildUser 显式注入「变体目标」约束段
-    expect(user).toContain('变体目标');
-    expect(user).toContain('实际考察');
-    expect(user).toContain('适用条件');
-    // 新增：正确答案不变量与 angle 提示
-    expect(system).toContain('正确答案不变量');
+    expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('LLM 输出缺 question 时经校验重试，修正版合法则采用修正版', async () => {
-    const complete = vi.fn(async () => {
-      if (complete.mock.calls.length === 1) return '{"explanation":"只有解析"}';
-      return '{"question":"L2 正则化的另一问法？","explanation":"修正后解析"}';
-    });
-    const out = await generateVariant(BASE, complete);
-    expect(complete).toHaveBeenCalledTimes(2);
-    expect(out.question).toBe('L2 正则化的另一问法？');
-    expect(out.explanation).toBe('修正后解析');
+  it('开放题只生成 question', async () => {
+    const openQ: Question = { ...BASE, formats: { open: { referenceAnswer: 'REF' } } };
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({ question: 'L2 正则化的开放题新问法' }),
+    );
+    const out = await generateVariant(openQ, complete, 'open');
+    expect(out.question).toBe('L2 正则化的开放题新问法');
+    expect(out.options).toBeUndefined();
+    expect(out).toEqual({ question: 'L2 正则化的开放题新问法' });
+    expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('LLM 输出两次均缺 question 时抛错（由 finalizeQuestion 回退原题）', async () => {
-    const complete: CompleteFn = async () => '{"explanation":"只有解析"}';
+  it('校验失败不 retry，直接抛错', async () => {
+    const complete = vi.fn(async () =>
+      '{"question":"完全漂移的题目","options":["a","b","c","d"]}',
+    );
     await expect(generateVariant(BASE, complete)).rejects.toThrow();
+    expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('容忍 markdown 代码块包裹的 JSON', async () => {
-    const complete: CompleteFn = async () => '```json\n{"question":"L2 正则化变体题干"}\n```';
+  it('LLM 输出的 answer 被丢弃（产物只含 question/options）', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({
+        question: 'L2 正则化的新问法',
+        options: ['A', 'B', 'C', 'D'],
+        answer: [3],
+      }),
+    );
     const out = await generateVariant(BASE, complete);
-    expect(out.question).toBe('L2 正则化变体题干');
-    expect(out.explanation).toBeUndefined();
+    // 即使模型回吐 answer，toGeneratedVariant 也只保留 question/options。
+    expect(out).toEqual({ question: 'L2 正则化的新问法', options: ['A', 'B', 'C', 'D'] });
+    expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('选项长度泄题时一次性重试并采用修正版（修正版需再过校验）', async () => {
-    const complete = vi.fn(async () => {
-      if (complete.mock.calls.length === 1) {
-        // 第一次：正确项（index1）极长，触发长度泄题，且题干含证据以便通过首轮校验
-        return `{"question":"L2 正则化长度偏差题","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
-      }
-      return '{"question":"L2 正则化修正后题","options":["a","b","c","d"],"answer":[1],"explanation":"e"}';
-    });
-    const out = await generateVariant(BASE, complete);
-    expect(complete).toHaveBeenCalledTimes(2);
-    expect(out.question).toBe('L2 正则化修正后题');
-    expect(out.options).toEqual(['a', 'b', 'c', 'd']);
-  });
-
-  it('长度泄题重试后若修正版未通过校验则保留首版', async () => {
-    const complete = vi.fn(async () => {
-      if (complete.mock.calls.length === 1) {
-        return `{"question":"L2 正则化首版题","options":["B","${'正'.repeat(200)}","C","D"],"answer":[1],"explanation":"e"}`;
-      }
-      // 修正版题干为空，校验失败，应回退首版
-      return '{"question":"","options":["a","b","c","d"],"answer":[1],"explanation":"e"}';
-    });
-    const out = await generateVariant(BASE, complete);
-    expect(complete).toHaveBeenCalledTimes(2);
-    expect(out.question).toBe('L2 正则化首版题');
-  });
-
-  it('变体未包含 topic/required 证据时重试一次', async () => {
-    const complete = vi.fn(async () => {
-      if (complete.mock.calls.length === 1) {
-        // 首版完全漂移：问 CNN/BatchNorm
-        return '{"question":"在 CNN 训练中 BatchNorm 为什么不稳定？","options":["a","b","c","d"],"answer":[0],"explanation":"e"}';
-      }
-      return '{"question":"L2 正则化在小 batch 下为何优于 BatchNorm？","options":["a","b","c","d"],"answer":[0],"explanation":"e"}';
-    });
-    const out = await generateVariant(BASE, complete);
-    expect(complete).toHaveBeenCalledTimes(2);
-    expect(out.question).toBe('L2 正则化在小 batch 下为何优于 BatchNorm？');
-  });
-
-  it('buildUser 注入 angle 时契约包含 angle', async () => {
-    const withAngle: Question = { ...BASE, angle: 'tradeoff' };
-    const complete: CompleteFn = vi.fn(async () => '{"question":"L2 正则化权衡题","options":["a","b","c","d"],"answer":[0],"explanation":"e"}');
-    await generateVariant(withAngle, complete);
+  it('用户提示词不携带答案/解析（安全边界）', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({ question: 'L2 正则化的新变体', options: ['A', 'B', 'C', 'D'] }),
+    );
+    await generateVariant(BASE, complete, 'choice');
     const [, user] = (complete as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(user).toContain('tradeoff');
-    expect(user).toContain('angle');
+    expect(user).toContain('requiredConcepts');
+    expect(user).toContain('options');
+    expect(user).not.toContain('"answer"');
+    expect(user).not.toContain('"explanation"');
+    expect(user).not.toContain('referenceAnswer');
   });
 });

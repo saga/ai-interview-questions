@@ -6,6 +6,7 @@ import type { GeneratedVariant, VariantCandidate } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from './knowledge/nodes';
+import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
 import * as fuzz from 'fuzzball';
 
 export interface VariantCheck {
@@ -130,39 +131,18 @@ export function validateVariant(
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     const cf = canonical.formats.choice!;
-    const hasOptions = v.options !== undefined;
-    const hasAnswer = v.answer !== undefined;
-    // 允许仅改题干而不动选项（兼容旧 mock 与轻量变体），仅当提供其一时校验配对
-    if (hasOptions || hasAnswer) {
-      if (!hasOptions || !Array.isArray(v.options) || v.options.length < 2) {
-        return { ok: false, reason: '选择题变体若提供选项则需至少 2 个' };
+    const hasOptions = Array.isArray(v.options);
+    // 允许仅改题干而不动选项；提供选项时校验其结构（数量 / 非空 / 去重）。
+    // answer 永远来自 canonical，不在此校验——LLM 不重新决定答案。
+    if (hasOptions) {
+      if (v.options!.length !== cf.options.length) {
+        return { ok: false, reason: '变体选项数量不能改变' };
       }
-      if (v.options.some((o) => typeof o !== 'string' || !o.trim())) {
+      if (v.options!.some((o) => typeof o !== 'string' || !o.trim())) {
         return { ok: false, reason: '选项存在空字符串' };
       }
-      if (hasDuplicateOptions(v.options)) {
+      if (hasDuplicateOptions(v.options!)) {
         return { ok: false, reason: '选项存在重复' };
-      }
-      if (!hasAnswer || !Array.isArray(v.answer) || v.answer.length === 0) {
-        return { ok: false, reason: '选择题变体若提供选项则必须提供 answer' };
-      }
-      if (new Set(v.answer).size !== v.answer.length) {
-        return { ok: false, reason: 'answer 存在重复索引' };
-      }
-      for (const idx of v.answer) {
-        if (!Number.isInteger(idx) || idx < 0 || idx >= v.options.length) {
-          return { ok: false, reason: `answer 索引越界: ${idx}` };
-        }
-      }
-      // 题型不变量：单选/多选
-      if (cf.type === 'single' && v.answer.length !== 1) {
-        return { ok: false, reason: '单选题 answer 必须恰好 1 项' };
-      }
-      if (cf.type === 'multiple' && v.answer.length < 1) {
-        return { ok: false, reason: '多选题 answer 至少 1 项' };
-      }
-      if (v.answer.length >= v.options.length) {
-        return { ok: false, reason: 'answer 数量不应等于或超过选项总数（至少保留一个干扰项）' };
       }
     }
   }
@@ -182,23 +162,41 @@ export function validateVariant(
 
 /**
  * 把通过校验的变体落到题目上。
- * 选择题：替换 question / explanation / options / answer
- * 开放题：仅替换 question / explanation
+ * 选择题：替换 question（LLM 语义变换）；选项文本若由 LLM 改写则采用，
+ *   随后由程序 Fisher–Yates 重排顺序并确定性重映射 answer 索引（结构变换，LLM 不参与）。
+ *   explanation 永远来自 canonical（LLM 不生成解析）。
+ * 开放题：仅替换 question；explanation 来自 canonical。
  * @param format 本次会话实际形态（P0-1）；提供时以它决定呈现结构，否则回退到 canonical 是否含 choice。
+ * @param rng 可选随机源，用于选项重排；默认 Math.random。测试可注入确定性 rng。
  */
-export function applyVariant(canonical: Question, v: GeneratedVariant, format?: FormatId): Question {
+export function applyVariant(
+  canonical: Question,
+  v: GeneratedVariant,
+  format?: FormatId,
+  rng?: () => number,
+): Question {
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
+    const cf = canonical.formats.choice!;
+    let options = cf.options;
+    let answer = cf.answer;
+    // 仅当 LLM 提供了改写后的选项时才重排；否则保留 canonical 原顺序（不引入未经 LLM 改写却重排的副作用）。
+    if (v.options) {
+      const shuffled = shuffleChoiceOptions(v.options, cf.answer, rng);
+      options = shuffled.options.map(normalizeOptionText);
+      answer = normalizeAnswer(shuffled.answer);
+    }
     return {
       ...canonical,
       question: v.question,
-      explanation: v.explanation ?? canonical.explanation,
+      explanation: canonical.explanation,
       formats: {
         ...canonical.formats,
         choice: {
-          ...canonical.formats.choice!,
-          options: v.options ?? canonical.formats.choice!.options,
-          answer: v.answer ?? canonical.formats.choice!.answer,
+          ...cf,
+          // 安全边界（ADR-036 轻量变体）：answer 永远来自 canonical 经确定性重映射，LLM 不得重新决定。
+          options,
+          answer,
         },
       },
       aiGenerated: true,
@@ -207,7 +205,7 @@ export function applyVariant(canonical: Question, v: GeneratedVariant, format?: 
   return {
     ...canonical,
     question: v.question,
-    explanation: v.explanation ?? canonical.explanation,
+    explanation: canonical.explanation,
     aiGenerated: true,
   };
 }

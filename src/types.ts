@@ -32,20 +32,18 @@ export interface QuestionBlueprint {
 
 /**
  * LLM 生成的题目变体候选（未校验）与已校验变体。
- * 安全模型（ADR-036）：LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须保持 Knowledge Contract 不变量，输出需经 domain 校验。
+ * 安全模型（ADR-036 轻量变体收缩）：LLM 只负责语义变换（题干 + 选项文本），
+ * 不生成 answer / explanation / 选项顺序。answer（来自 canonical）与
+ * 选项顺序（由程序 Fisher–Yates 重排 + answer 索引重映射）都在 domain 层完成。
  */
 export interface VariantCandidate {
   question?: string;
   options?: string[];
-  answer?: number[];
-  explanation?: string;
 }
 
 export interface GeneratedVariant {
   question: string;
   options?: string[];
-  answer?: number[];
-  explanation?: string;
 }
 
 /** LLM Provider 抽象：应用只依赖此接口。 */
