@@ -70,6 +70,19 @@ describe('generateVariant（轻量变体）', () => {
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
+  it('LLM 输出的 explanation 被丢弃（产物只含 question/options）', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({
+        question: 'L2 正则化的另一种问法',
+        options: ['A', 'B', 'C', 'D'],
+        explanation: '模型自作主张写的解析',
+      }),
+    );
+    const out = await generateVariant(BASE, complete, 'choice');
+    expect(out).toEqual({ question: 'L2 正则化的另一种问法', options: ['A', 'B', 'C', 'D'] });
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
   it('用户提示词不携带答案/解析（安全边界）', async () => {
     const complete: CompleteFn = vi.fn(async () =>
       JSON.stringify({ question: 'L2 正则化的新变体', options: ['A', 'B', 'C', 'D'] }),

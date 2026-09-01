@@ -94,6 +94,20 @@ describe('validateVariant', () => {
     ).toBe(false);
   });
 
+  it('必考概念只出现在选项里、题干已漂移 → 拒绝（证据面只看题干）', () => {
+    // 轻量变体下选项只是「对原选项的逐项语义改写」，核心术语天然会被带进选项文本；
+    // 若把选项当证据，「题干漂移、靠选项兜底」的变体就能通过校验。故证据面只看题干。
+    expect(
+      validateVariant(
+        cq,
+        variant({
+          question: '在 CNN 训练中 batch size 很小时，BatchNorm 为什么不稳定？',
+          options: ['L2 正则化平滑收缩权重', '与 weight decay 在标准 SGD 下等价', '两者都对'],
+        }),
+      ).ok,
+    ).toBe(false);
+  });
+
   it('P0-2：required 覆盖率 1/3（realtime-interaction 节点 3 条）→ 拒绝', () => {
     // realtime-interaction 节点含 3 条 required，need = max(1, round(3*2/3)) = 2；只覆盖 1 条 → 拒绝
     const rtq: Question = {

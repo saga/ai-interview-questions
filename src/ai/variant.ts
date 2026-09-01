@@ -57,11 +57,11 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
   "question": "改写后的题干"
 }`;
 
+// 轻量变体契约：模型只允许产出 question / options。
+// answer / explanation 不在此类型中——即便模型回吐这两个字段，解析后也无法进入产物。
 interface RawVariant {
   question?: string;
   options?: string[];
-  answer?: number[];
-  explanation?: string;
 }
 
 function buildUser(q: Question, format?: FormatId): string {

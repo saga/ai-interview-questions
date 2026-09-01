@@ -25,16 +25,7 @@ function normalizeConcept(value: string): string {
     .trim();
 }
 
-/**
- * 评估文本：仅题干 + 选项，刻意排除 explanation。
- * 理由（P0-2）：解析可「提到」required concept 却并未让题目真正考察该概念，
- * 把 explanation 当证据会让「题目已漂移、靠解析蒙混」的变体通过校验。
- */
-function evidenceText(v: VariantCandidate | GeneratedVariant): string {
-  return [v.question ?? '', ...(v.options ?? [])].join(' ').toLowerCase();
-}
-
-/** 题干文本（仅题干，不含选项）——题干锚定检查（hasStemAnchor）的证据面。 */
+/** 题干文本（仅题干，不含选项）——题干锚定（hasStemAnchor）与必考概念覆盖率（requiredCoverageMet）的证据面。 */
 function stemText(v: VariantCandidate | GeneratedVariant): string {
   return (v.question ?? '').toLowerCase();
 }
@@ -92,12 +83,18 @@ function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVaria
 
 /**
  * requiredConcepts 覆盖率（P0-2）：不再「任一命中即通过」，要求达到约 2/3 覆盖。
- * 例如 3 个必考概念至少命中 2 个；1 个则全中。靠解析蒙混（explanation 提及）不计。
+ * 例如 3 个必考概念至少命中 2 个；1 个则全中。
+ *
+ * 证据面（2026-09-01 收紧）：**只看题干**，刻意排除 explanation 与 options。
+ * - 排除 explanation：解析可「提到」required concept 却没让题目真正考察它，靠解析蒙混不计。
+ * - 排除 options：轻量变体下选项只是「对原选项的逐项语义改写」，核心术语天然会被带进选项文本
+ *   （如原题问 positional encoding、选项里必然出现 positional encoding），
+ *   把它当证据会让「题干已漂移、靠选项兜底」的变体通过校验——知识点出现在选项里 ≠ 题干在考察它。
  */
 function requiredCoverageMet(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
   const required = (requiredPointsFor(canonical) ?? []).map(normalizeConcept).filter(Boolean);
   if (required.length === 0) return true;
-  const text = evidenceText(v);
+  const text = stemText(v);
   const matched = required.filter((a) => anchorHasEvidence(a, text)).length;
   const need = Math.max(1, Math.round((required.length * 2) / 3));
   return matched >= need;
@@ -148,8 +145,8 @@ export function validateVariant(
   }
 
   // 语义：题干锚定（topic/tags/required 至少一个出现在题干本身）+ required 覆盖率（约 2/3）。
-  // 解析(explanation)不计入证据，避免「题目已漂移、靠解析蒙混」通过（P0-2）；
-  // 题干锚定（P0-6）进一步堵住「核心概念只挂在选项里、题干与主题无关」的蒙混路径。
+  // 两者的证据面都**只看题干**：解析(explanation)不计入（P0-2，避免靠解析蒙混）；
+  // 选项(options)也不计入（轻量变体下选项只是逐项改写，核心术语必然出现在选项里，计入即失效）。
   if (!hasStemAnchor(canonical, v)) {
     return { ok: false, reason: '变体题干未锚定 canonical topic / tags / required（核心概念只出现在选项中，无考察意图），疑似语义漂移' };
   }

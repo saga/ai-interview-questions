@@ -1,6 +1,14 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-01 · Variant 轻量变体第三轮：残留清理 + 语义证据面收紧（ADR-036）
+
+- **【P0】`RawVariant` 瘦身为 `{ question?, options? }`**：删掉仍声明的 `answer` / `explanation`。此前虽已在 `toGeneratedVariant` 丢弃，但类型仍存在，属可被误用的残留；现在模型回吐这两个字段在解析阶段就无处可落。
+- **【P1】`requiredCoverageMet` 证据面改为只看题干**（原为「题干+选项」）：轻量变体下选项只是对原选项的逐项语义改写，核心术语天然被带进选项文本（问 positional encoding 时选项里必然出现该词），把选项当证据等于允许「题干已漂移、靠选项兜底」过检。自此 `hasStemAnchor` 与 `requiredCoverageMet` 证据面统一为题干。
+- 测试：新增「LLM 输出 explanation 被丢弃」「必考概念只出现在选项、题干漂移 → 拒绝」两例，锁定上述两条边界。
+- 说明：本轮为前两轮（LLM 不决定 answer / 结构变换程序化）的残留清理。前两轮改动此前未 push，远端 `main` 一度仍是旧契约代码。
+- 验证：`tsc -b` 0 error；`vitest` 全量 660 passed / 49 files。
+
 ## 2026-09-01 · 评分聚合 bug 修复 + Copilot RAG 语义边界收口（ADR-066）
 
 - **【P0】评分维度适用性真实扣分**：`aggregateOverall` 改为对 `applicable:false` 维度摘分母、剩余权重重归一化（旧"给不适用维度中性档 2"仍会凭空扣 10 分）。LLM 输出新增 `applicable` 字段，`EvaluationResult.applicable` 可选以兼容历史数据。
