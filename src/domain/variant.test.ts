@@ -2,7 +2,12 @@
 // 契约：LLM 只产出 { question, options }；answer / explanation 恒取 canonical，选项顺序由程序重排。
 
 import { describe, it, expect } from 'vitest';
-import { applyVariant, validateVariant, VARIANT_REJECT_REASON } from './variant';
+import {
+  applyVariant,
+  validateVariant,
+  VARIANT_REJECT_REASON,
+  STEM_ANCHOR_WARNING,
+} from './variant';
 import type { GeneratedVariant } from '../types';
 import type { Question } from '../schemas/question';
 
@@ -83,14 +88,14 @@ describe('validateVariant（结构不变量）', () => {
   });
 });
 
-// 第五轮（2026-09-02）：题干锚定由 rejection 降级为 warning。
+// 第五轮（2026-09-02）：字面锚点由 rejection 降级为 warning，成为**漂移软信号**而非闸门。
 // 字面锚点只能证明「题干仍与主题相关」，无法证明语义等价；而变体安全并不依赖它——
 // answer / explanation 恒取 canonical，变体改歪也不会判错题。降级后不再误杀换场景的合法变体。
-describe('validateVariant（语义锚定降级为 warning）', () => {
+describe('validateVariant（漂移软信号：仅 warning，不阻断）', () => {
   it('完全丢失 topic/tags/required 证据 → 通过，但带 warning', () => {
     const check = validateVariant(cq, variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' }));
     expect(check.ok).toBe(true);
-    expect(check.warning).toBe('variant stem has no lexical anchor');
+    expect(check.warning).toBe(STEM_ANCHOR_WARNING);
   });
 
   it('锚点命中 → 通过且无 warning（不再强制 requiredConcepts 2/3 字面覆盖）', () => {
@@ -107,7 +112,7 @@ describe('validateVariant（语义锚定降级为 warning）', () => {
       variant({ question: '某在线服务发现输入前缀高度重复却仍重复相同计算，如何降低开销？' }),
     );
     expect(check.ok).toBe(true);
-    expect(check.warning).toBe('variant stem has no lexical anchor');
+    expect(check.warning).toBe(STEM_ANCHOR_WARNING);
   });
 
   it('证据面仍只看题干：概念只出现在选项里 → 记 warning（不阻断）', () => {
@@ -119,7 +124,7 @@ describe('validateVariant（语义锚定降级为 warning）', () => {
           options: ['L2 正则化平滑收缩权重', '与 weight decay 在标准 SGD 下等价', '两者都对'],
         }),
       ).warning,
-    ).toBe('variant stem has no lexical anchor');
+    ).toBe(STEM_ANCHOR_WARNING);
   });
 
   it('GeneratedVariant 契约只含 question/options（无靠解析蒙混的入口）', () => {
@@ -133,7 +138,7 @@ describe('validateVariant（语义锚定降级为 warning）', () => {
     const cqEn: Question = { ...cq, topic: 'regularisation', tags: [] };
     expect(validateVariant(cqEn, variant({ question: 'regularization 的本质是什么？' })).warning).toBeUndefined();
     expect(validateVariant(cqEn, variant({ question: 'CNN 卷积核大小如何选择？' })).warning).toBe(
-      'variant stem has no lexical anchor',
+      STEM_ANCHOR_WARNING,
     );
   });
 

@@ -149,6 +149,27 @@ describe('finalizeQuestion 变体遥测', () => {
     expect(getVariantTelemetry().rounds[0].fallbackReason).toBe('option-length-bias');
   });
 
+  it('漂移软信号（warning）不阻断：变体仍被采用，不计入 fallback，只落一条告警日志', async () => {
+    // ADR-068：字面锚点未命中只是 warning，已不是语义闸门。这条用例锁死
+    // 「warning ≠ 拒绝」——否则降级会在重构中被悄悄退回成硬门槛，重新误杀换场景的合法变体。
+    const sq = { question: choiceQuestion, format: 'choice' as const };
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const out = await finalizeQuestion(
+        sq,
+        providerWith(async () => ({ question: '下面哪个说法是对的？', options: ['x', 'y'] })),
+      );
+      expect(out).not.toBe(sq);
+      expect(out.question.question).toBe('下面哪个说法是对的？');
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('variant stem has no lexical anchor'));
+    } finally {
+      warn.mockRestore();
+    }
+    const t = getVariantTelemetry();
+    expect(t.rounds[0].fallbackReason).toBeUndefined();
+    expect(t.fallbackRate).toBe(0);
+  });
+
   it('生成异常（LLM 调用失败）：记 generation-error', async () => {
     await finalizeQuestion(
       { question: choiceQuestion, format: 'choice' },

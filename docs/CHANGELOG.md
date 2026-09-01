@@ -1,6 +1,15 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-02 · Variant 第六轮：收敛「语义闸门」命名与注释（ADR-068 收尾）
+
+- **清理过期命名**：`hasStemAnchor` → `stemAnchorMissing`（返回 true 即「题干可能与主题脱钩」），warning 文案抽为导出常量 `STEM_ANCHOR_WARNING`。注释与文档统一改称 **漂移软信号（drift signal）**，不再出现「语义闸门 / 硬门槛」——它在 ADR-068 起就已不参与拒绝决策，旧措辞会诱导后续把它当 gate 用。
+- **修正文档与实现不符**：`docs/ARCHITECTURE.md` 的校验条目此前仍写着「选项≥2、至少一干扰项」等**代码中并不存在**的检查，且把已删除的 `requiredCoverageMet`（2/3 字面覆盖）描述为现行门槛；改写为「硬门槛 = 结构 + 抗暗示」，并把 ADR-057 的语义闸门明确标注为**已拆除（勿恢复）**。
+- **重命名引入的极性 bug（测试捕获）**：`stemAnchorMissing` 沿用了「命中即 true」的旧返回值，导致 warning 完全反向（锚点命中的题被告警、漂移的题反而不告警）。已修正为「无锚点命中才 true」，且空锚点（题目标注缺失）返回 false——元数据不全不应误报成语义漂移。
+- **补缺口测试**：新增 `finalizeQuestion` 层用例，锁死「warning ≠ 拒绝」——变体仍被采用、`fallbackReason` 为空、只落一条告警日志。此前该契约只在 domain 层有覆盖，重构中若被退回硬门槛不会有任何测试报警。
+- 未做（按「不要再增加 Variant 复杂度」）：未新增 warning 计数遥测、未动 `shuffleChoiceOptions` 分布与 `normalizeAnswer`。
+- 验证：`tsc -b` EXIT=0；`vitest` 全量 **675 passed / 49 files**（较上轮 674 +1）。
+
 ## 2026-09-02 · Variant 第五轮收敛：单一校验入口 + 锚定降级 warning + 规范化前移（ADR-068）
 
 - **【P0】消除双校验**：`ai/variant.generateVariant` 退化为纯适配器（`buildUser → complete → extractJSON → toGeneratedVariant`），不再调用 `validateVariant`、不再跑 `detectOptionLengthBias`、不再抛领域拒绝错误。职责固化为：`ai/variant` = LLM + parse；`finalizeQuestion` = **唯一** validate + apply + fallback。此前同一候选被校验两次。

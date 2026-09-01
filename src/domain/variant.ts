@@ -1,6 +1,8 @@
-// 纯逻辑：LLM 变体候选的校验与落地。安全模型（ADR-036）：
-// LLM 可重构所有 Presentation（题干/场景/选项/解析），但必须通过 Knowledge Contract 校验。
-// 输出为 VariantCandidate，需经此模块验证后方可落为 GeneratedVariant。
+// 纯逻辑：变体候选的确定性校验（validateVariant）与落地（applyVariant）。
+// 安全模型（ADR-036 / ADR-068 轻量变体）：LLM 只做**语义变换**（题干 + 选项文本逐项改写），
+// 结构变换（选项规范化 / 顺序重排 / answer 索引重映射）与**全部校验**都由本模块完成；
+// answer / explanation 永远来自 canonical，不经过 LLM。
+// 本模块是全链路**唯一**的校验入口：`ai/variant.generateVariant` 只做 LLM 适配 + 解析，不做校验。
 
 import type { GeneratedVariant, VariantCandidate } from '../types';
 import type { FormatId } from '../schemas/common';
@@ -37,6 +39,12 @@ export const VARIANT_REJECT_REASON = {
   OPTION_LENGTH_BIAS: 'option-length-bias',
 } as const;
 
+/**
+ * 软信号文案：题干未命中任何字面锚点（漂移信号，非拒绝）。
+ * 与 `VARIANT_REJECT_REASON` 严格区分——后者会导致回退原题，前者只写日志。
+ */
+export const STEM_ANCHOR_WARNING = 'variant stem has no lexical anchor';
+
 const FORBIDDEN_REFERENCES = ['原题', '上述', '下文', '本文', '原文章', '原方案', '该方案', '前文', '题目中', '题干中'];
 
 function normalizeConcept(value: string): string {
@@ -47,7 +55,7 @@ function normalizeConcept(value: string): string {
     .trim();
 }
 
-/** 题干文本（仅题干，不含选项）——题干锚定（hasStemAnchor）与必考概念覆盖率（requiredCoverageMet）的证据面。 */
+/** 题干文本（仅题干，不含选项）——字面锚点（stemAnchorMissing）的唯一证据面。 */
 function stemText(v: VariantCandidate | GeneratedVariant): string {
   return (v.question ?? '').toLowerCase();
 }
@@ -82,26 +90,28 @@ function anchorHasEvidence(anchor: string, text: string): boolean {
 }
 
 /**
- * 题干锚定（软信号）：topic / tags / required 中是否至少有一个出现在**题干本身**。
+ * 漂移软信号（drift signal，**不是 gate**）：题干是否连 topic / tags / required 的
+ * 一个字面锚点都没有命中。返回 true 表示「题干可能与主题脱钩」，只产 warning，绝不阻断。
  *
- * 为什么把证据面从「题干+选项」收紧到「题干」：概念出现在选项里 ≠ 题干在考察它。
- * 证据面只看题干，避免 LLM 把核心概念全部挪进选项、题干改写成无关提问后靠选项蒙混。
+ * 证据面只取**题干**：概念出现在选项里 ≠ 题干在考察它——轻量变体下选项只是原选项的逐项
+ * 改写，核心术语天然会被带进选项，把选项算作证据等于允许「题干漂移、靠选项兜底」。
  *
- * 2026-09-02 第五轮：**从硬门槛降级为 warning**。字面锚点无法承担语义等价证明——
+ * 为什么只能是软信号（2026-09-02 第五轮，从硬门槛降级）：字面锚点无法承担语义等价证明。
  * 反例：原题「为什么 KV Cache 能降低 prefill 成本？」的合法变体
- * 「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」一个锚点词都不含，会被误杀。
+ * 「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」一个锚点词都不含。
  * 轻量变体的目标只是「防止明显跑题」，而跑题的真正兜底是两条更硬的边界：
  * ① `VARIANT_SYSTEM` 的逐项一一对应约束（禁改技术结论/因果/适用条件/真假属性）；
  * ② `answer` / `explanation` 恒取 canonical——即便变体改歪，判分与解析仍按原题，不会判错题。
- * 因此未命中锚点只记 warning 并计入遥测，交回「测真实 fallback 率再调 gate」的观测路径。
+ * 因此未命中只记 warning；是否需要收紧，交由「测真实 fallback 率再调 gate」的观测路径决定。
  */
-function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
+function stemAnchorMissing(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
   const text = stemText(v);
   const anchors = [canonical.topic, ...canonical.tags, ...(requiredPointsFor(canonical) ?? [])]
     .map(normalizeConcept)
     .filter(Boolean);
-  if (anchors.length === 0) return true;
-  return anchors.some((a) => anchorHasEvidence(a, text));
+  // 没有锚点可比对（题目标注缺失）→ 无从判定漂移，不告警，避免把「元数据不全」误报成「语义漂移」。
+  if (anchors.length === 0) return false;
+  return !anchors.some((a) => anchorHasEvidence(a, text));
 }
 
 // 注：此处曾存在 `requiredCoverageMet()`（requiredConcepts 字面覆盖需达 ≈2/3），
@@ -110,7 +120,7 @@ function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVaria
 // 反例：原题「为什么 KV Cache 能降低 Transformer 推理的 prefill 成本？」
 // 合法变体「某在线服务前缀高度重复，却仍重复执行相同前向计算，如何降低这部分开销？」
 // 题干里没有 KV Cache / Transformer / prefill 任何一个词，却完全合法，会被 2/3 门槛误杀。
-// 第五轮后同一个反例连宽松锚点也可能不命中，因此 hasStemAnchor 一并降级为 warning：
+// 第五轮后同一个反例连宽松锚点也可能不命中，因此 stemAnchorMissing 只作漂移软信号（warning）：
 // 硬门槛只剩选项结构不变量（必填/数量/非空/去重）+ 长度泄题检查，
 // 语义正确性由「answer/explanation 恒取 canonical」这条硬边界兜底——变体改错也不会判错题。
 
@@ -195,12 +205,10 @@ export function validateVariant(
     // answer 永远来自 canonical，不在此校验——LLM 不重新决定答案。
   }
 
-  // 软信号（不阻断）：题干锚定——topic / tags / required 至少一个出现在**题干本身**。
-  // 证据面只看题干：解析(explanation)不计入（避免靠解析蒙混）；
-  // 选项(options)也不计入（轻量变体下选项只是逐项改写，核心术语必然出现在选项里，计入即失效）。
-  // 2026-09-02 第五轮：由 rejection 降级为 warning（理由见 hasStemAnchor 注释）。
-  if (!hasStemAnchor(canonical, v)) {
-    return { ok: true, warning: 'variant stem has no lexical anchor' };
+  // 软信号（不阻断，理由见 stemAnchorMissing 注释）：题干未命中任何字面锚点 → 仅告警。
+  // 它不是「语义闸门」，不参与拒绝决策；与上面的硬门槛（结构 + 长度泄题）严格分离。
+  if (stemAnchorMissing(canonical, v)) {
+    return { ok: true, warning: STEM_ANCHOR_WARNING };
   }
 
   return { ok: true };
