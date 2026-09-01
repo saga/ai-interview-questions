@@ -21,6 +21,11 @@
 //   --sequential      串行调用（看纯求和耗时，作对照）
 //   --provider <id>   deepseek / openrouter / local（默认 deepseek）
 //   --base-url <url> 本地 OpenAI 兼容服务地址（provider=local 或自定义网关时用）
+//   --dry-run        **不联网**：用内置合成 LLM 跑通整条管线（读题 → 解析 → 校验 → 遥测 → 汇总），
+//                    验证本脚本自身的统计口径（avg/p95/fallback 归因）与管线接线。
+//                    合成延迟与失败，数字不代表真实模型性能。建议带 key 跑真实基准前先跑一次确认脚本无误。
+//   --fail-rate <pct> dry-run 下注入的失败比例（默认 20）；0 表示全部通过（仅看延迟统计）
+//   --latency <ms>    dry-run 下模拟的单次延迟基准值（默认 1200ms，叠加确定性 ±30% 抖动）
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -88,13 +93,24 @@ const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
 const FORBIDDEN = ['原题', '上述', '下文', '本文', '原文章', '原方案', '该方案', '前文', '题目中', '题干中'];
 
 function parseArgs(argv: string[]) {
-  const out = { n: 10, parallel: true, provider: 'deepseek', baseUrl: '' as string | undefined };
+  const out = {
+    n: 10,
+    parallel: true,
+    provider: 'deepseek',
+    baseUrl: '' as string | undefined,
+    dryRun: false,
+    failRate: 20,
+    latency: 1200,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--n') out.n = Number(argv[++i]) || 10;
     else if (a === '--sequential') out.parallel = false;
     else if (a === '--provider') out.provider = argv[++i] || 'deepseek';
     else if (a === '--base-url') out.baseUrl = argv[++i];
+    else if (a === '--dry-run') out.dryRun = true;
+    else if (a === '--fail-rate') out.failRate = Math.min(100, Math.max(0, Number(argv[++i]) || 0));
+    else if (a === '--latency') out.latency = Number(argv[++i]) || 1200;
   }
   return out;
 }
@@ -175,6 +191,24 @@ async function generateVariantOnce(entry: ProviderEntry, q: Question) {
   return { question: out.question ?? '', options: out.options };
 }
 
+/**
+ * dry-run 合成 LLM 输出：复刻「LLM 返回 {question, options}」的结构。
+ * fail=true 时制造重复选项（options[1]=options[0]），使 structuralCheck 返回 'duplicate-option'，
+ * 以验证 fallback 归因链路；否则返回通过校验的变体。
+ * 合成题干时剥离 canonical 中可能含有的禁用指代词（原题/下文/…），避免假阳性 forbidden-reference；
+ * 真实链路里变体题干由 LLM 重写，不会原样带出 canonical 的指代词。
+ */
+function dryVariant(q: Question, fail: boolean): { question?: string; options?: string[] } {
+  const src = q.formats.choice?.options ?? ['A', 'B', 'C', 'D'];
+  const cleanQ = q.question.replace(new RegExp(FORBIDDEN.join('|'), 'g'), '');
+  if (fail) {
+    const opts = [...src];
+    opts[Math.min(1, opts.length - 1)] = opts[0];
+    return { question: `改写：${cleanQ}`, options: opts };
+  }
+  return { question: `改写：${cleanQ}`, options: src.map((o) => `改写：${o}`) };
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const questions = loadChoiceQuestions(args.n);
@@ -182,42 +216,65 @@ async function main() {
     console.error('✗ 没读到任何选择题');
     process.exit(1);
   }
-  const config = buildConfig();
-  if (!config) process.exit(2);
-  const entry = config.providers[0];
-  if (!entry?.apiKey) {
-    console.error('✗ provider 配置无效');
-    process.exit(3);
-  }
 
   resetUsageTelemetry(); // 清空 variant 累计（resetUsageTelemetry 同时清 variantRounds）
-  console.log(`▶ 真实变体基准：${questions.length} 题，${args.parallel ? '并发(Promise.all)' : '串行'}\n`);
-
   const perCall: { id: string; ms: number; ok: boolean; detail: string }[] = [];
-  const one = async (q: Question) => {
-    const startedAt = Date.now();
-    try {
-      await generateVariantOnce(entry, q);
-      const ms = Date.now() - startedAt;
-      recordVariantRound({ questionId: q.id, latencyMs: ms });
-      perCall.push({ id: q.id, ms, ok: true, detail: 'ok' });
-    } catch (err) {
-      const ms = Date.now() - startedAt;
-      const reason = (err as { reason?: unknown })?.reason;
-      const fb = typeof reason === 'string' ? reason : 'generation-error';
-      recordVariantRound({ questionId: q.id, latencyMs: ms, fallbackReason: fb });
-      perCall.push({ id: q.id, ms, ok: false, detail: fb });
-    }
-  };
-
   const wallStart = Date.now();
-  if (args.parallel) {
-    await Promise.all(questions.map(one));
-  } else {
-    for (const q of questions) await one(q);
-  }
-  const wallMs = Date.now() - wallStart;
 
+  if (args.dryRun) {
+    console.log(
+      `▶ DRY-RUN（不联网）：${questions.length} 题，` +
+        `fail-rate=${args.failRate}%，base-latency=${args.latency}ms\n`,
+    );
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      // 确定性按 failRate% 注入失败（前 round(n*failRate/100) 题），便于复现
+      const fail = args.failRate > 0 && i < Math.round(questions.length * (args.failRate / 100));
+      const out = dryVariant(q, fail);
+      const err = structuralCheck(q, out);
+      // 确定性 ±30% 抖动，验证 avg/p95 计算而非真实延迟
+      const ms = Math.round(args.latency * (1 + (((i * 37) % 60) - 30) / 100));
+      if (err) {
+        recordVariantRound({ questionId: q.id, latencyMs: ms, fallbackReason: err });
+        perCall.push({ id: q.id, ms, ok: false, detail: err });
+      } else {
+        recordVariantRound({ questionId: q.id, latencyMs: ms });
+        perCall.push({ id: q.id, ms, ok: true, detail: 'ok' });
+      }
+    }
+  } else {
+    const config = buildConfig();
+    if (!config) process.exit(2);
+    const entry = config.providers[0];
+    if (!entry?.apiKey) {
+      console.error('✗ provider 配置无效');
+      process.exit(3);
+    }
+    console.log(`▶ 真实变体基准：${questions.length} 题，${args.parallel ? '并发(Promise.all)' : '串行'}\n`);
+
+    const one = async (q: Question) => {
+      const startedAt = Date.now();
+      try {
+        await generateVariantOnce(entry, q);
+        const ms = Date.now() - startedAt;
+        recordVariantRound({ questionId: q.id, latencyMs: ms });
+        perCall.push({ id: q.id, ms, ok: true, detail: 'ok' });
+      } catch (err) {
+        const ms = Date.now() - startedAt;
+        const reason = (err as { reason?: unknown })?.reason;
+        const fb = typeof reason === 'string' ? reason : 'generation-error';
+        recordVariantRound({ questionId: q.id, latencyMs: ms, fallbackReason: fb });
+        perCall.push({ id: q.id, ms, ok: false, detail: fb });
+      }
+    };
+    if (args.parallel) {
+      await Promise.all(questions.map(one));
+    } else {
+      for (const q of questions) await one(q);
+    }
+  }
+
+  const wallMs = Date.now() - wallStart;
   const t = getVariantTelemetry();
   const sumMs = perCall.reduce((s, c) => s + c.ms, 0);
   console.log('── 每题延迟 ──');
@@ -230,13 +287,22 @@ async function main() {
   console.log(`  avg 延迟        : ${t.avgLatencyMs}ms`);
   console.log(`  p95 延迟        : ${t.p95LatencyMs}ms`);
   console.log(`\n── 墙钟 ──`);
-  console.log(`  并发/Promise.all: ${wallMs}ms（生产 buildSession 形态）`);
+  if (args.dryRun) {
+    console.log(`  dry-run 墙钟    : ${wallMs}ms（无网络 I/O，仅本地计算）`);
+  } else {
+    console.log(`  ${args.parallel ? '并发/Promise.all' : '串行'}: ${wallMs}ms（生产 buildSession 形态）`);
+  }
   console.log(`  串行求和参考    : ${sumMs}ms`);
   console.log(
-    `\n解读：墙钟(${wallMs}ms) ≈ max(单次延迟)，证明 10 题仍 = 10 次请求；` +
-      `若 fallback 率高，说明 gate 偏严，需回到 domain/variant.ts 放宽。`,
+    `\n解读：轻量变体是 one-shot 语义改写 + 程序确定性变换；fallback 率高说明 gate 偏严，` +
+      `需回到 domain/variant.ts 放宽；墙钟 ≈ max(单次延迟) 说明 N 题 = N 次请求（瓶颈在启动并发）。`,
   );
 }
+
+main().catch((e) => {
+  console.error('基准异常：', e);
+  process.exit(1);
+});
 
 main().catch((e) => {
   console.error('基准异常：', e);
