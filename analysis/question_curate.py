@@ -47,6 +47,17 @@ KEEP_DEFINITIONS_PER_TOPIC = 2       # keep the first N definitions, rewrite the
 CELL_SATURATION_MIN = 4              # (topic, angle) with >=4 questions is saturated
 SEMANTIC_OVERSATURATION = 3         # cluster size strictly greater => oversaturated
 
+# §四② pseudo-single-choice: stems phrased as "最准确/最贴切" with multiple
+# arguably-correct options should flip to multiple-choice. Detection is advisory.
+PSEUDO_SINGLE_STEMS = ("最准确", "最贴切", "最合适", "最确切", "最正确")
+
+# §四④ strawman distractor: obviously-absurd options. Reuses the canonical
+# strawmen the check skill already forbids. Advisory review only.
+STRAWMAN_PHRASES = (
+    "删测试", "删库", "直接删除所有", "只看 token", "完全自动化",
+    "换一个模型", "完全相反", "明显荒谬", "忽略所有", "随机选一个",
+)
+
 # Higher cognitive value first; used to pick the "best" question in a semantic cluster.
 ANGLE_VALUE_RANK = {
     "system-design": 9,
@@ -182,6 +193,67 @@ def build_plan(audit_report: dict[str, Any], semantic_report: dict[str, Any] | N
         ratio, answer_longest = option_signals(q)
         if ratio > MAX_LENGTH_RATIO and answer_longest:
             apply(qid, "review", "P2", ["option-length-leak", "answer-leaks-by-length"])
+
+    # ---- Rule B: pseudo-single-choice (§四②) ----
+    # A single-choice stem phrased as "最准确/最贴切/…" with multiple arguably
+    # correct options is a pseudo-single that should become multiple-choice.
+    # Advisory only — a human must confirm the flip, otherwise good questions
+    # would be mutated.
+    for file_name, q in questions:
+        qid = str(q.get("id"))
+        fmts = q.get("formats")
+        ch = fmts.get("choice") if isinstance(fmts, dict) else None
+        if not isinstance(ch, dict) or ch.get("type") != "single":
+            continue
+        stem = str(q.get("question", ""))
+        if any(k in stem for k in PSEUDO_SINGLE_STEMS):
+            apply(qid, "review", "P2", ["pseudo-single-choice"])
+
+    # ---- Rule H: kitchen-sink correct answer (§四③) ----
+    # The correct option is a compound list of many sub-points (A+B+C+D) while the
+    # distractors are single concepts, so test-takers can pick it by verbosity.
+    # Only meaningful for single-choice (a multi-select's correct options are
+    # legitimately several independent statements). Very conservative: the correct
+    # option must (a) be the longest, (b) exceed 1.8x the shortest, and (c) read
+    # as an explicit list (>=2 list separators). Otherwise we would flag every
+    # legitimately detailed correct answer.
+    LIST_SEPS = ("、", "+", "以及", "同时", "与", "且", "；", "/")
+    for file_name, q in questions:
+        qid = str(q.get("id"))
+        ratio, answer_longest = option_signals(q)
+        if not answer_longest or ratio <= MAX_LENGTH_RATIO:
+            continue
+        ch = (q.get("formats") or {}).get("choice") if isinstance(q.get("formats"), dict) else None
+        if not isinstance(ch, dict) or ch.get("type") != "single":
+            continue
+        opts = ch.get("options", [])
+        ans = set(ch.get("answer", []))
+        if not opts or not ans:
+            continue
+        correct_idx = next((i for i in ans if isinstance(i, int) and 0 <= i < len(opts)), None)
+        if correct_idx is None:
+            continue
+        correct_text = str(opts[correct_idx])
+        list_sep_count = sum(correct_text.count(sep) for sep in LIST_SEPS)
+        if list_sep_count >= 2:
+            apply(qid, "review", "P2", ["kitchen-sink-answer"])
+
+    # ---- Rule I: strawman distractor (§四④) ----
+    # Distractors that are obviously absurd ('删测试', '完全自动化', …) are
+    # strawmen. Advisory review — the real fix is a content rewrite.
+    for file_name, q in questions:
+        qid = str(q.get("id"))
+        ch = (q.get("formats") or {}).get("choice") if isinstance(q.get("formats"), dict) else None
+        if not isinstance(ch, dict):
+            continue
+        opts = ch.get("options", [])
+        ans = set(ch.get("answer", []))
+        for i, o in enumerate(opts):
+            if i in ans:
+                continue
+            if any(p in str(o) for p in STRAWMAN_PHRASES):
+                apply(qid, "review", "P2", ["strawman-distractor"])
+                break
 
     # ---- Rule C: pseudo-hard (hard + low-cognitive angle) ----
     for file_name, q in questions:
