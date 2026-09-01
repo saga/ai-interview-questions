@@ -7,13 +7,35 @@ import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from './knowledge/nodes';
 import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
+import { detectOptionLengthBias } from './bias';
 import * as fuzz from 'fuzzball';
 
 export interface VariantCheck {
   ok: boolean;
+  /** 机器可读拒绝原因码（供 variant 遥测统计 fallback 率，如 'missing-options'）。 */
+  code?: string;
   reason?: string;
+  /** 软信号：通过但值得观测（如题干未命中字面锚点），不阻断。 */
   warning?: string;
 }
+
+/** 变体被拒的机器可读原因码（供 variant 遥测统计 fallback 率）。 */
+export const VARIANT_REJECT_REASON = {
+  /** 题干为空。 */
+  EMPTY_QUESTION: 'empty-question',
+  /** 题干含依赖原题的指代（原题/上述/前文…）。 */
+  FORBIDDEN_REFERENCE: 'forbidden-reference',
+  /** 选择题变体未提供 options。 */
+  MISSING_OPTIONS: 'missing-options',
+  /** 变体选项数量与 canonical 不一致。 */
+  OPTION_COUNT_MISMATCH: 'option-count-mismatch',
+  /** 选项为空字符串。 */
+  EMPTY_OPTION: 'empty-option',
+  /** 规范化后存在重复选项。 */
+  DUPLICATE_OPTION: 'duplicate-option',
+  /** 变体选项存在明显长度泄题（正确项过长）。 */
+  OPTION_LENGTH_BIAS: 'option-length-bias',
+} as const;
 
 const FORBIDDEN_REFERENCES = ['原题', '上述', '下文', '本文', '原文章', '原方案', '该方案', '前文', '题目中', '题干中'];
 
@@ -60,19 +82,18 @@ function anchorHasEvidence(anchor: string, text: string): boolean {
 }
 
 /**
- * 题干锚定（P0-6）：topic / tags / required 中至少有一个必须出现在**题干本身**。
+ * 题干锚定（软信号）：topic / tags / required 中是否至少有一个出现在**题干本身**。
  *
  * 为什么把证据面从「题干+选项」收紧到「题干」：概念出现在选项里 ≠ 题干在考察它。
- * 「变体保持原题主题」的硬门槛不能靠选项兜底——否则 LLM 可以把核心概念全部挪进选项、
- * 题干改写成一个与主题无关的提问，靠选项蒙混通过最小证据检查。
+ * 证据面只看题干，避免 LLM 把核心概念全部挪进选项、题干改写成无关提问后靠选项蒙混。
  *
- * 这是「requiredConcepts 必须成为答题所必需的推理条件」的确定性代理：
- * 题干必须自身锚定主题/必考概念，才存在可判断的考察意图。刻意不引入
- * 关键词级「意图识别」（问句词/动词白名单易误伤合法变体），也暂不上 LLM/embedding judge。
- * 局限（承认而非隐藏）：锚定检查只证明「题干仍与主题相关」，不证明「推理必须用上每个 required」。
- * 后者不再用字面覆盖率近似（2026-09-01 第四轮删除 requiredCoverageMet），而由两条更硬的边界兜底：
+ * 2026-09-02 第五轮：**从硬门槛降级为 warning**。字面锚点无法承担语义等价证明——
+ * 反例：原题「为什么 KV Cache 能降低 prefill 成本？」的合法变体
+ * 「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」一个锚点词都不含，会被误杀。
+ * 轻量变体的目标只是「防止明显跑题」，而跑题的真正兜底是两条更硬的边界：
  * ① `VARIANT_SYSTEM` 的逐项一一对应约束（禁改技术结论/因果/适用条件/真假属性）；
- * ② `answer` / `explanation` 恒取 canonical——即便变体改歪，判分与解析仍然按原题，不会判错题。
+ * ② `answer` / `explanation` 恒取 canonical——即便变体改歪，判分与解析仍按原题，不会判错题。
+ * 因此未命中锚点只记 warning 并计入遥测，交回「测真实 fallback 率再调 gate」的观测路径。
  */
 function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
   const text = stemText(v);
@@ -89,7 +110,8 @@ function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVaria
 // 反例：原题「为什么 KV Cache 能降低 Transformer 推理的 prefill 成本？」
 // 合法变体「某在线服务前缀高度重复，却仍重复执行相同前向计算，如何降低这部分开销？」
 // 题干里没有 KV Cache / Transformer / prefill 任何一个词，却完全合法，会被 2/3 门槛误杀。
-// 漂移防护改由 hasStemAnchor（宽松锚点）+ 选项结构不变量（数量/非空/去重）+ 长度泄题检查承担，
+// 第五轮后同一个反例连宽松锚点也可能不命中，因此 hasStemAnchor 一并降级为 warning：
+// 硬门槛只剩选项结构不变量（必填/数量/非空/去重）+ 长度泄题检查，
 // 语义正确性由「answer/explanation 恒取 canonical」这条硬边界兜底——变体改错也不会判错题。
 
 function hasDuplicateOptions(options: string[]): boolean {
@@ -102,18 +124,32 @@ function hasDuplicateOptions(options: string[]): boolean {
   return false;
 }
 
-/** 校验变体候选：结构 + 语义不变量。无兜底——失败即拒绝。
- *  @param format 本次会话实际形态（P0-1）；提供时以它决定选择/开放结构，否则回退到 canonical 是否含 choice。 */
+/**
+ * 校验变体候选——**全链路唯一的校验入口**（2026-09-02 第五轮消除双校验）。
+ * 职责分层：`ai/variant.generateVariant` = LLM + parse；`finalizeQuestion` = validate + apply + fallback。
+ *
+ * 硬门槛（失败即回退原题）：
+ *   - 题干非空、无依赖原题的指代
+ *   - 选择题：options 必填且数量一致、非空、去重
+ *   - 选择题：无长度泄题（抗暗示，且不重试）
+ * 软信号（仅 warning，不阻断）：题干未命中 topic / tags / required 字面锚点。
+ *
+ *  @param format 本次会话实际形态（P0-1）；提供时以它决定选择/开放结构，否则回退到 canonical 是否含 choice。
+ */
 export function validateVariant(
   canonical: Question,
   v: VariantCandidate | GeneratedVariant,
   format?: FormatId,
 ): VariantCheck {
   if (!v || typeof v.question !== 'string' || !v.question.trim()) {
-    return { ok: false, reason: '变体题干为空' };
+    return { ok: false, code: VARIANT_REJECT_REASON.EMPTY_QUESTION, reason: '变体题干为空' };
   }
   if (FORBIDDEN_REFERENCES.some((w) => v.question!.includes(w))) {
-    return { ok: false, reason: '题干包含依赖原题的指代，需自包含' };
+    return {
+      ok: false,
+      code: VARIANT_REJECT_REASON.FORBIDDEN_REFERENCE,
+      reason: '题干包含依赖原题的指代，需自包含',
+    };
   }
 
   // P0-1：以会话形态为准，而不是「canonical 有 choice 就当选择题」
@@ -124,26 +160,47 @@ export function validateVariant(
     // 因此 options 是**必填**——只改题干不动选项的候选一律拒绝：
     // 否则 applyVariant 会退化成「保留原选项 + 原顺序」，变体名存实亡（用户照样能凭选项记忆作答）。
     if (!Array.isArray(v.options)) {
-      return { ok: false, reason: '选择题变体缺少 options（需与题干一并逐项改写）' };
+      return {
+        ok: false,
+        code: VARIANT_REJECT_REASON.MISSING_OPTIONS,
+        reason: '选择题变体缺少 options（需与题干一并逐项改写）',
+      };
     }
-    if (v.options.length !== cf.options.length) {
-      return { ok: false, reason: '变体选项数量不能改变' };
+    // 先规范化再校验：保证「校验对象 === 最终展示文本」。
+    // 否则 "Redis" 与 " Redis " 在去重/长度检查里是两个不同选项，却会在 applyVariant 后渲染成同一文本。
+    const options = v.options.map(normalizeOptionText);
+    if (options.length !== cf.options.length) {
+      return {
+        ok: false,
+        code: VARIANT_REJECT_REASON.OPTION_COUNT_MISMATCH,
+        reason: '变体选项数量不能改变',
+      };
     }
-    if (v.options.some((o) => typeof o !== 'string' || !o.trim())) {
-      return { ok: false, reason: '选项存在空字符串' };
+    if (options.some((o) => !o)) {
+      return { ok: false, code: VARIANT_REJECT_REASON.EMPTY_OPTION, reason: '选项存在空字符串' };
     }
-    if (hasDuplicateOptions(v.options)) {
-      return { ok: false, reason: '选项存在重复' };
+    if (hasDuplicateOptions(options)) {
+      return { ok: false, code: VARIANT_REJECT_REASON.DUPLICATE_OPTION, reason: '选项存在重复' };
+    }
+    // 抗暗示硬失败（不再重新请求 LLM）：长度泄题。
+    // 作用于规范化后的选项，且只对选择题执行——open 形态没有选项，语义上不适用。
+    const bias = detectOptionLengthBias(options, cf.answer);
+    if (bias.biased) {
+      return {
+        ok: false,
+        code: VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS,
+        reason: `变体选项存在明显长度泄题：${bias.detail}`,
+      };
     }
     // answer 永远来自 canonical，不在此校验——LLM 不重新决定答案。
   }
 
-  // 语义闸门（仅一层）：题干锚定——topic / tags / required 至少一个出现在**题干本身**。
+  // 软信号（不阻断）：题干锚定——topic / tags / required 至少一个出现在**题干本身**。
   // 证据面只看题干：解析(explanation)不计入（避免靠解析蒙混）；
   // 选项(options)也不计入（轻量变体下选项只是逐项改写，核心术语必然出现在选项里，计入即失效）。
-  // 刻意不再叠加 requiredConcepts 字面覆盖率门槛（详见上方 requiredCoverageMet 删除说明）。
+  // 2026-09-02 第五轮：由 rejection 降级为 warning（理由见 hasStemAnchor 注释）。
   if (!hasStemAnchor(canonical, v)) {
-    return { ok: false, reason: '变体题干未锚定 canonical topic / tags / required，疑似语义漂移' };
+    return { ok: true, warning: 'variant stem has no lexical anchor' };
   }
 
   return { ok: true };
@@ -169,8 +226,11 @@ export function applyVariant(
     const cf = canonical.formats.choice!;
     // 轻量变体契约下 options 必填（validateVariant 已强制），无需再分支回退：
     // 无条件重排 + 无条件重映射，杜绝「选项没改却先打乱」或「改了却沿用原顺序」的中间态。
-    const shuffled = shuffleChoiceOptions(v.options!, cf.answer, rng);
-    const options = shuffled.options.map(normalizeOptionText);
+    // 规范化 → 打乱：与 validateVariant 的校验对象保持同一份文本
+    // （校验阶段同样先 normalizeOptionText 再查数量/空串/去重/长度 bias）。
+    // 顺序即「normalize → validate → shuffle」，而非「validate 原文 → shuffle → normalize」。
+    const shuffled = shuffleChoiceOptions(v.options!.map(normalizeOptionText), cf.answer, rng);
+    const options = shuffled.options;
     const answer = normalizeAnswer(shuffled.answer);
     return {
       ...canonical,

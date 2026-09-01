@@ -2,6 +2,24 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-068 · Variant 第五轮收敛：单一校验入口 + 锚定降级为 warning + 规范化前移
+
+- 状态：已采纳 · 2026-09-02
+- 来源：用户复查 `main` 后给出 4 项修改（1 个冗余、2 个影响效果），并要求「改完先停手测实际性能」。
+- 背景：第四轮已达成「LLM 只做语义变换、程序做结构变换」，但主链路仍存在
+  ① 同一候选被 `validateVariant` 校验两次（ai 层一次、finalizeQuestion 一次）；
+  ② 题干锚定作为硬门槛会误杀「换场景不换知识点」的合法变体；
+  ③ `applyVariant` 在 shuffle **之后**才 `normalizeOptionText`，导致校验对象与最终渲染文本不是同一份。
+- 决策：
+  1. **P0 消除双校验**：`ai/variant.generateVariant` 退化为纯适配器（`buildUser → complete → extractJSON → toGeneratedVariant`），**不再调用 `validateVariant`、不再跑 `detectOptionLengthBias`、不再抛领域拒绝错误**。职责分层固化为：`ai/variant` = LLM + parse；`application/sessionEvaluator.finalizeQuestion` = **唯一** validate + apply + fallback。
+  2. **P0 长度泄题检查移入 `domain/variant.validateVariant`**（choice 分支末尾，作用于规范化后的选项），与「bias 只对 choice 有意义」的语义一致；拒绝原因改为 `VariantCheck.code` 机器可读码（`empty-question`/`forbidden-reference`/`missing-options`/`option-count-mismatch`/`empty-option`/`duplicate-option`/`option-length-bias`），`finalizeQuestion` 直接把 code 透传给 `recordVariantRound`，fallback 归因从笼统的 `validation-failed` 细化到具体原因。
+  3. **P0 题干锚定 `hasStemAnchor` 由 rejection 降级为 warning**：字面锚点只能证明「题干仍与主题相关」，无法证明语义等价（反例：原题「为什么 KV Cache 能降低 prefill 成本？」的合法变体「某服务前缀高度重复却仍重复前向计算，如何降低开销？」零锚点命中）。变体安全的真正兜底是另外两条硬边界：`VARIANT_SYSTEM` 的逐项一一对应约束，以及 `answer`/`explanation` 恒取 canonical（变体改歪也不会判错题）。未命中只记 `warning` + 日志。
+  4. **P1 规范化前移**：`validateVariant` 与 `applyVariant` 都先 `normalizeOptionText` 再做去重/空串/长度 bias 检查与 shuffle，即 `normalize → validate → shuffle`，而非 `validate 原文 → shuffle → normalize`。修掉「`"Redis"` 与 `" Redis "` 逃过去重检查、却在渲染后变成两个相同选项」的漏洞。
+  5. **P1 补 answer remap 测试**：单选题（`answer [1]` → rng=0 排列 `['b','c','d','a']` → `answer [0]`，断言 `options[answer[0]] === 'b'`）、多选题（`answer [0,2]` → `answer [1,3]`，断言语义集合 `['a','c']` 不变，而非只查 `answer.length`），外加 200 次随机排列的**属性测试**锁死「被选中选项语义集合恒定」这一不变量。
+- 不做（用户明确「不需要马上重构」）：`shuffleChoiceOptions` 里「若排列与原序相同则交换前两项」的兜底会轻微扭曲均匀分布（原序概率被强制为 0）——改在 session/attempt 层用 seed 或排除上次排列更合适，本轮不动；`normalizeAnswer` 也不内联（作为 domain helper 保留）。
+- 验证：`tsc -b` EXIT=0；`vitest` 全绿；新增/改写用例覆盖双校验移除、锚定 warning、规范化前移、bias 归因、单/多选 remap。
+- 关联：`src/ai/variant.ts`、`src/domain/variant.ts`、`src/application/sessionEvaluator.ts`、`scripts/variant-bench.ts`（实测 10 题耗时用）。
+
 ## ADR-067 · 题库质量门槛 + 存量 curation（KEEP/REWRITE/REMOVE 计划器与清洗执行）
 
 - 状态：已采纳 · 2026-09-01

@@ -1,6 +1,18 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-02 · Variant 第五轮收敛：单一校验入口 + 锚定降级 warning + 规范化前移（ADR-068）
+
+- **【P0】消除双校验**：`ai/variant.generateVariant` 退化为纯适配器（`buildUser → complete → extractJSON → toGeneratedVariant`），不再调用 `validateVariant`、不再跑 `detectOptionLengthBias`、不再抛领域拒绝错误。职责固化为：`ai/variant` = LLM + parse；`finalizeQuestion` = **唯一** validate + apply + fallback。此前同一候选被校验两次。
+- **【P0】长度泄题检查内移**到 `domain/variant.validateVariant`（choice 分支，作用于规范化后的选项），与「bias 只对 choice 有意义」语义一致；拒绝原因改为 `VariantCheck.code` 机器可读码，`finalizeQuestion` 透传给 `recordVariantRound`——fallback 归因从笼统的 `validation-failed` 细化到 `missing-options` / `duplicate-option` / `option-length-bias` 等具体原因，直接支撑「按真实失败率调 gate」。
+- **【P0】题干锚定 `hasStemAnchor` 降级为 warning**：字面锚点只能证明「题干仍与主题相关」，无法证明语义等价，会误杀「换场景不换知识点」的合法变体（原题「为什么 KV Cache 能降低 prefill 成本？」→ 变体「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」零锚点命中却完全合法）。变体安全真正的兜底是另外两条硬边界：Prompt 的逐项一一对应约束、`answer`/`explanation` 恒取 canonical。
+- **【P1】规范化前移**：`validateVariant` 与 `applyVariant` 都先 `normalizeOptionText` 再做去重/空串/长度 bias 检查与 shuffle，即 `normalize → validate → shuffle`（旧版 `validate 原文 → shuffle → normalize`）。修掉 `"Redis"` 与 `" Redis "` 逃过去重、却在渲染后变成两个相同选项的漏洞。
+- **【P1】补 answer remap 测试**：单选题（`answer [1]`、rng=0 → 排列 `['b','c','d','a']` → `answer [0]`，断言 `options[answer[0]] === 'b'`）、多选题（`answer [0,2]` → `answer [1,3]`，断言语义集合 `['a','c']` 不变，而非只查 `answer.length`），外加 200 次随机排列的属性测试锁死「被选中选项语义集合恒定」。
+- **顺带修复**：`agent/tools.test.ts` 的夹具选项长度失衡（11/5/4 字，正确项最长且差距 ≥1.8×），在 bias 检查内移后会被判为长度泄题而回退原题，导致 `getQuestion` 用例测不到变体落地；已把选项改为 11/7/7 字均衡（该夹具本身确实存在长度泄题，检测行为正确，只是不该由这个用例承担）。
+- 不做（用户明确「不需要马上重构」）：`shuffleChoiceOptions` 的「排列与原序相同则交换前两项」兜底会轻微扭曲均匀分布，宜在 session/attempt 层用 seed 或排除上次排列解决，本轮不动；`normalizeAnswer` 保持 domain helper 不内联。
+- 同步：`scripts/variant-bench.ts` 的复刻校验同步加上「规范化 + 长度泄题」，否则基准会少报 fallback。
+- 验证：`tsc -b` EXIT=0；`vitest` 全量 **674 passed / 49 files**（较上轮 663 +11）。
+
 ## 2026-09-01 · Variant 轻量变体第三轮：残留清理 + 语义证据面收紧（ADR-036）
 
 - **【P0】`RawVariant` 瘦身为 `{ question?, options? }`**：删掉仍声明的 `answer` / `explanation`。此前虽已在 `toGeneratedVariant` 丢弃，但类型仍存在，属可被误用的残留；现在模型回吐这两个字段在解析阶段就无处可落。

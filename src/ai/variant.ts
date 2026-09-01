@@ -1,14 +1,15 @@
 // 题目变体生成（one-shot 结构化生成，不需要 Agent）。
 // 轻量变体边界（ADR-036）：LLM 只改写题干与选项表达（presentation），
 // 不得重新决定 answer / explanation / 选项数量 / 选项顺序 / 选项真假属性。
-// 一次 LLM 调用；校验失败或长度泄题直接抛错，由 finalizeQuestion 回退原题。
+//
+// 职责边界（2026-09-02 第五轮）：本模块**只做 LLM 适配 + 解析**，不做任何校验。
+// 唯一的校验入口是 `application/sessionEvaluator.finalizeQuestion` 里的 `validateVariant`
+// （validate + apply + fallback 三件事集中在一处），避免同一候选被校验两次。
 
 import type { CompleteFn, GeneratedVariant } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import { requiredPointsFor } from '../domain/knowledge/nodes';
-import { detectOptionLengthBias } from '../domain/bias';
-import { validateVariant } from '../domain/variant';
 import { extractJSON } from './pi';
 
 // 稳定前缀（KV-Cache 友好）：轻量变体改写约束。同一场面试为不同题生成变体时可复用同一前缀。
@@ -93,20 +94,11 @@ function toGeneratedVariant(_q: Question, out: RawVariant): GeneratedVariant {
   };
 }
 
-/** 变体被拒的机器可读原因码（供 variant 遥测统计 fallback 率）。 */
-export const VARIANT_REJECT_REASON = {
-  /** 变体选项存在明显长度泄题（正确项过长）。 */
-  OPTION_LENGTH_BIAS: 'option-length-bias',
-} as const;
-
-/** 构造带机器可读原因码的拒绝错误（Error 本身仍保留人话 message 供日志使用）。 */
-function rejectVariant(reason: string, message: string): Error {
-  const err = new Error(message) as Error & { reason?: string };
-  err.reason = reason;
-  return err;
-}
-
-/** 生成轻量变体候选：一次 LLM 调用，校验失败或长度泄题直接抛错（由 finalizeQuestion 回退原题）。 */
+/**
+ * 生成轻量变体候选：**一次 LLM 调用 + 解析**，不做校验。
+ * 返回未经验证的 `GeneratedVariant`——结构/语义校验由调用方（finalizeQuestion）统一执行，
+ * 校验失败时回退原题。本函数只在 LLM 调用本身抛错时才抛出（网络/鉴权/解析失败等）。
+ */
 export async function generateVariant(
   q: Question,
   complete: CompleteFn,
@@ -115,20 +107,5 @@ export async function generateVariant(
 ): Promise<GeneratedVariant> {
   const user = buildUser(q, format);
   const out = extractJSON<RawVariant>(await complete(systemPrompt, user));
-  const candidate = toGeneratedVariant(q, out);
-  const check = validateVariant(q, candidate, format);
-  if (!check.ok) {
-    throw new Error(check.reason ?? '变体校验未通过');
-  }
-  // 抗暗示：长度泄题为硬失败，不再重新请求 LLM。
-  // 只对选择题执行——open 形态没有选项，语义上不适用（validateVariant 已保证 choice 时 options 必存在）。
-  const isChoice = format ? format === 'choice' : !!q.formats.choice;
-  if (isChoice) {
-    const bias = detectOptionLengthBias(candidate.options!, q.formats.choice!.answer);
-    if (bias.biased) {
-      console.warn(`variant option bias: ${bias.detail}`);
-      throw rejectVariant(VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS, '变体选项存在明显长度泄题');
-    }
-  }
-  return candidate;
+  return toGeneratedVariant(q, out);
 }

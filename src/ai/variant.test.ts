@@ -1,8 +1,9 @@
-// 变体生成测试（轻量变体边界）：一次 LLM 调用，只生成 question/options，
-// 不生成 answer/explanation，校验失败或长度泄题直接抛错（不 retry）。
+// 变体生成测试（轻量变体边界）：本模块是**纯 LLM 适配器**——一次调用 + 解析，不做校验。
+// 校验（结构/语义/长度泄题）统一由 domain/variant.validateVariant 在 finalizeQuestion 中执行，
+// 相关用例见 src/domain/variant.test.ts；这里只验证「LLM → GeneratedVariant」这一段契约。
 
 import { describe, expect, it, vi } from 'vitest';
-import { generateVariant, VARIANT_REJECT_REASON } from './variant';
+import { generateVariant } from './variant';
 import type { CompleteFn } from '../types';
 import type { Question } from '../schemas/question';
 
@@ -48,39 +49,29 @@ describe('generateVariant（轻量变体）', () => {
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('校验失败不 retry，直接抛错', async () => {
-    const complete = vi.fn(async () =>
-      '{"question":"完全漂移的题目","options":["a","b","c","d"]}',
-    );
-    await expect(generateVariant(BASE, complete)).rejects.toThrow();
+  it('不做校验：漂移的题干也原样返回（校验职责在 finalizeQuestion）', async () => {
+    // 第五轮起 generateVariant 是纯适配器——它不判断漂移、不判断缺 options、不判断长度泄题。
+    // 这些一律交给 finalizeQuestion 里的 validateVariant，避免同一个候选被校验两次。
+    const complete = vi.fn(async () => '{"question":"完全漂移的题目","options":["a","b","c","d"]}');
+    const out = await generateVariant(BASE, complete);
+    expect(out.question).toBe('完全漂移的题目');
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('选择题缺 options → 拒绝，不 retry', async () => {
+  it('不做校验：选择题缺 options 也原样返回（由 validateVariant 拒绝）', async () => {
     const complete = vi.fn(async () => '{"question":"L2 正则化的新问法"}');
-    await expect(generateVariant(BASE, complete, 'choice')).rejects.toThrow(/缺少 options/);
+    const out = await generateVariant(BASE, complete, 'choice');
+    expect(out.question).toBe('L2 正则化的新问法');
+    expect(out.options).toBeUndefined();
+    // 绝不因为「不合格」而再次请求 LLM——重试会翻倍延迟，且校验在下游统一处理
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('选项长度泄题 → 直接抛错，不 retry（且带机器可读 reason 供遥测）', async () => {
-    const complete: CompleteFn = vi.fn(async () =>
-      JSON.stringify({
-        question: 'L2 正则化为什么能平滑收缩权重？',
-        options: [
-          'L2 正则化通过对权重施加平方惩罚来平滑收缩权重，与 weight decay 在标准 SGD 下等价，并能显著降低过拟合风险',
-          'A',
-          'B',
-          'C',
-        ],
-      }),
-    );
-    const error = (await generateVariant(BASE, complete, 'choice').catch(
-      (e: unknown) => e,
-    )) as Error & { reason?: string };
-    expect(error).toBeInstanceOf(Error);
-    expect(error.message).toMatch(/长度泄题/);
-    expect(error.reason).toBe(VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS);
-    // 一次失败即回退原题，绝不再次请求 LLM
+  it('LLM 调用本身失败 → 直接抛出（由 finalizeQuestion 回退原题）', async () => {
+    const complete = vi.fn(async () => {
+      throw new Error('network down');
+    });
+    await expect(generateVariant(BASE, complete)).rejects.toThrow(/network down/);
     expect(complete).toHaveBeenCalledTimes(1);
   });
 

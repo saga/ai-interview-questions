@@ -8,7 +8,8 @@
 // src/data/knowledgeMap 的 import.meta.glob 拖垮，本脚本只依赖 src/ai/pi 的
 // callLLM/extractJSON（不拉 knowledge 链），并就地复刻轻量变体管线。VARIANT_SYSTEM
 // 与 src/ai/variant.ts 的 v3 保持一致；结构校验与 src/domain/variant.ts 的 validateVariant
-// 对齐，仅把「题干锚定」近似为 topic+tags（跳过 knowledge 节点的 required，纯 CPU、不影响延迟量级）。
+// 对齐（规范化 → 结构 → 长度泄题）。**不要**改成直接 import domain/variant——它会经
+// knowledge/nodes 拉进 knowledgeMap 的 import.meta.glob，破坏 tsc -b。
 //
 // 用法（需要真实 API key，放在环境变量里；本沙箱无 key，请在本机跑）：
 //   VARIANT_API_KEY=sk-xxx VARIANT_MODEL=deepseek-chat \
@@ -29,6 +30,7 @@ import {
   getVariantTelemetry,
   resetUsageTelemetry,
 } from '../src/ai/usageTelemetry';
+import { detectOptionLengthBias } from '../src/domain/bias';
 import { parseAIConfig } from '../src/schemas/ai-config';
 import type { AIConfig, ProviderEntry } from '../src/schemas/ai-config';
 import type { Question } from '../src/schemas/question';
@@ -131,16 +133,25 @@ function buildConfig(): AIConfig | null {
   return parseAIConfig({ providers: [entry] });
 }
 
-/** 复刻 domain/variant.ts 的结构校验（不含 knowledge 节点 required 的题干锚定近似）。 */
+/**
+ * 复刻 domain/variant.ts 的 validateVariant（ADR-068 后口径）：
+ *   规范化 → 结构（数量/空串/去重）→ 长度泄题。
+ * 题干锚定已降级为 warning（不再阻断），故此处不复刻，与生产「不阻断」行为一致。
+ * 注意：跳过 knowledge 节点 required 的锚定近似（纯 CPU，不影响延迟量级）。
+ */
 function structuralCheck(q: Question, v: { question?: string; options?: string[] }): string | null {
   if (!v?.question?.trim()) return 'empty-question';
   if (FORBIDDEN.some((w) => v.question!.includes(w))) return 'forbidden-reference';
   if (q.formats.choice) {
     if (!Array.isArray(v.options)) return 'missing-options';
     const cf = q.formats.choice;
-    if (v.options.length !== cf.options.length) return 'option-count-mismatch';
-    if (v.options.some((o) => typeof o !== 'string' || !o.trim())) return 'empty-option';
-    if (new Set(v.options.map((o) => o.trim())).size !== v.options.length) return 'duplicate-option';
+    // 先规范化再校验（与 validateVariant 一致）：保证校验对象 === 最终展示文本
+    const options = v.options.map((o) => String(o).replace(/\s+/g, ' ').trim());
+    if (options.length !== cf.options.length) return 'option-count-mismatch';
+    if (options.some((o) => !o)) return 'empty-option';
+    if (new Set(options).size !== options.length) return 'duplicate-option';
+    // 抗暗示：第五轮起此检查位于 validateVariant 内，基准必须同步计入，否则会少报 fallback
+    if (detectOptionLengthBias(options, cf.answer).biased) return 'option-length-bias';
   }
   return null;
 }

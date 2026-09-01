@@ -113,36 +113,52 @@ describe('finalizeQuestion 变体遥测', () => {
     expect(t.fallbackRate).toBe(0);
   });
 
-  it('校验失败：回退原题并记 validation-failed', async () => {
+  it('校验失败：回退原题并记机器可读 code（missing-options）', async () => {
     const sq = { question: choiceQuestion, format: 'choice' as const };
-    // 缺少 options → validateVariant 拒绝
+    // 缺少 options → validateVariant 拒绝，并把 code 透传给遥测（便于按原因统计 fallback 率）
     const out = await finalizeQuestion(sq, providerWith(async () => ({ question: 'attention new' })));
     expect(out).toBe(sq);
     const t = getVariantTelemetry();
     expect(t.total).toBe(1);
-    expect(t.rounds[0].fallbackReason).toBe('validation-failed');
+    expect(t.rounds[0].fallbackReason).toBe('missing-options');
     expect(t.fallbackRate).toBe(100);
   });
 
-  it('生成异常：带 reason 码则原样记录，否则记 generation-error', async () => {
-    const withReason = new Error('变体选项存在明显长度泄题') as Error & { reason?: string };
-    withReason.reason = 'option-length-bias';
-    await finalizeQuestion(
-      { question: choiceQuestion, format: 'choice' },
-      providerWith(async () => {
-        throw withReason;
-      }),
+  it('长度泄题：由 validateVariant 拒绝并记 option-length-bias（不再由 LLM 层抛错）', async () => {
+    // 第五轮：长度泄题检查从 ai/variant 移入 domain/variant.validateVariant，
+    // 因此它走的是「校验失败」这条回退路径，而不是「生成异常」。
+    const biasQuestion: Question = {
+      ...choiceQuestion,
+      id: 'bias-1',
+      formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [0] } },
+    };
+    const sq = { question: biasQuestion, format: 'choice' as const };
+    const out = await finalizeQuestion(
+      sq,
+      providerWith(async () => ({
+        question: 'attention 机制为什么需要缩放？',
+        options: [
+          '缩放点积注意力通过除以根号 d_k 来避免点积方差过大导致 softmax 饱和，从而稳定梯度并改善收敛',
+          'A',
+          'B',
+          'C',
+        ],
+      })),
     );
+    expect(out).toBe(sq);
+    expect(getVariantTelemetry().rounds[0].fallbackReason).toBe('option-length-bias');
+  });
+
+  it('生成异常（LLM 调用失败）：记 generation-error', async () => {
     await finalizeQuestion(
       { question: choiceQuestion, format: 'choice' },
       providerWith(async () => {
         throw new Error('network down');
       }),
     );
-    expect(getVariantTelemetry().rounds.map((r) => r.fallbackReason)).toEqual([
-      'option-length-bias',
-      'generation-error',
-    ]);
+    const t = getVariantTelemetry();
+    expect(t.rounds[0].fallbackReason).toBe('generation-error');
+    expect(t.fallbackRate).toBe(100);
   });
 
   it('统计口径：avg / p95 延迟与 fallback 率', () => {

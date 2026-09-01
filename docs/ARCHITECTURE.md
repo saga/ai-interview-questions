@@ -503,32 +503,43 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 
 ## LLM 变体安全（关键）
 
-安全模型（ADR-036，取代 ADR-019 字段级白名单）：**LLM 只负责语义变换（题干 + 选项文本），所有结构变换（选项顺序 / answer 索引重映射 / 格式 / 校验）由程序完成**；`answer`/`explanation` 永远来自 canonical；输出经 Domain 校验，无兜底，单次调用；校验失败或长度泄题即抛错，由 `finalizeQuestion` 回退原题：
+安全模型（ADR-036，取代 ADR-019 字段级白名单）：**LLM 只负责语义变换（题干 + 选项文本），所有结构变换（选项顺序 / answer 索引重映射 / 格式 / 校验）由程序完成**；`answer`/`explanation` 永远来自 canonical；单次调用、无 retry，校验失败即回退原题。
+
+职责分层（ADR-068，第五轮收敛）：`ai/variant.generateVariant` = **LLM 适配 + 解析**（不做任何校验）；`application/sessionEvaluator.finalizeQuestion` = **唯一** validate + apply + fallback。此前 `validateVariant` 在 ai 层与 application 层各跑一次（重复校验），已消除。
 
 ```
                     Knowledge Contract (topic/tags/requiredConcepts/difficulty/type/angle)
                               │
-Original Question ──→ LLM ──→ parse ──→ VariantCandidate ──→ validateVariant ──→ anti-cueing ──→ GeneratedVariant
-  (question/options)  JSON        {question, options}        │ schema + 保守语义      │ biased? → 抛错回退原题
-   (answer always            ┌─────────┴─────────┐            └───────────────────────┘
-    canonical)               │ ok → applyVariant │ fail → 抛错由 finalizeQuestion 回退原题
-                              │ ① 替换 question/  │  记录 warning（一次调用，无 retry）
-                              │    options（文本）│
-                              │ ② 程序 Fisher–Yates 重排选项
-                              │ ③ 按 originalIndex 确定性重映射
-                              │    canonical.answer（顺序与答案
-                              │    彻底与 LLM 解耦）
+                              ▼
+Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ──→ finalizeQuestion（唯一校验入口）
+  (question/options)  JSON        {question, options}            │
+   (answer always                                                ├─ validateVariant（选项先规范化）
+    canonical)                                                   │   ├─ 结构：题干非空/无原题指代、
+                                                                 │   │      options 必填·数量一致·非空·去重
+                                                                 │   ├─ 抗暗示：长度泄题（仅 choice）
+                                                                 │   └─ 软信号：字面锚点缺失 → warning（不阻断）
+                                                                 │
+                                                                 ├─ fail → 记 code 到遥测 + 回退原题
+                                                                 └─ ok → applyVariant
+                                                                     ① 规范化选项文本（与校验同一份）
+                                                                     ② 程序 Fisher–Yates 重排选项
+                                                                     ③ 按 originalIndex 确定性重映射
+                                                                        canonical.answer（顺序与答案
+                                                                        彻底与 LLM 解耦）
 ```
 
 - **Invariant（必须保持）**：`topic/tags/requiredConcepts/angle`、正确性语义及适用条件、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`，`Question.angle` 已纳入契约（尽量换角度但不引入新核心知识）。
 - **语义变换（LLM 负责）**：题干措辞、场景/上下文、选项文本表达（逐项改写现有文本）。
 - **结构变换（程序负责）**：选项顺序（Fisher–Yates 重排）、answer 索引重映射、多选题答案升序归一化、选项文本空白折叠。解析（`explanation`）与选项真假属性/数量均不可变，永远取 canonical。
-- **校验（P0-1/P0-2 收紧，ADR-056/057）**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、**选项数量须与 canonical 一致**以保证一一对应、至少一干扰项、自包含无“原题/上述/本文/该方案…”等 10 类指代，含“前文/下文/题目中/题干中”）+ 语义闸门。**形态对齐（P0-1）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（约 1078/1084）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**语义闸门（P0-2）**：① 证据文本**只取题干**，**刻意排除 `explanation` 与 `options`**——解析可“提到”required concept 却没让题目真正考察它，靠解析蒙混不计；选项在轻量变体下只是逐项语义改写，核心术语天然会被带进选项（问 positional encoding 时选项里必然出现该词），计入即等于允许「题干漂移、靠选项兜底」；② 门槛从「topic/tags/required 任一 token 命中即通过」收紧为「requiredConcepts 覆盖率 ≈ 2/3」（`need = max(1, round(N*2/3))`：N=3 需≥2、N=2 需≥1、N=1 需全中），整段丢失 required 才判漂移；③ 保留 **`fuzzball` 兜底**（`token_set_ratio ≥75` / `partial_ratio ≥80`，处理 `batch statistics ↔ statistics across the batch` / `regularisation ↔ regularization` 等词序/拼写差异，纯 JS 无后端）。`answer` 不在此校验（永远来自 canonical）。失败由 `ai/variant.generateVariant` 单次调用后直接抛错，由应用层 `finalizeQuestion` 记录 warning 并回退原题，避免单题坏变体中断整场组卷——**不再 retry**。
+- **校验（P0-1/P0-2 收紧，ADR-056/057）**：`domain/variant.validateVariant` 做结构（题干非空、选项≥2无重复、**选项数量须与 canonical 一致**以保证一一对应、至少一干扰项、自包含无“原题/上述/本文/该方案…”等 10 类指代，含“前文/下文/题目中/题干中”）+ 语义闸门。**形态对齐（P0-1）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（约 1078/1084）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**语义闸门（P0-2）**：① 证据文本**只取题干**，**刻意排除 `explanation` 与 `options`**——解析可“提到”required concept 却没让题目真正考察它，靠解析蒙混不计；选项在轻量变体下只是逐项语义改写，核心术语天然会被带进选项（问 positional encoding 时选项里必然出现该词），计入即等于允许「题干漂移、靠选项兜底」；② 门槛从「topic/tags/required 任一 token 命中即通过」收紧为「requiredConcepts 覆盖率 ≈ 2/3」（`need = max(1, round(N*2/3))`：N=3 需≥2、N=2 需≥1、N=1 需全中），整段丢失 required 才判漂移；③ 保留 **`fuzzball` 兜底**（`token_set_ratio ≥75` / `partial_ratio ≥80`，处理 `batch statistics ↔ statistics across the batch` / `regularisation ↔ regularization` 等词序/拼写差异，纯 JS 无后端）。`answer` 不在此校验（永远来自 canonical）。**第五轮（ADR-068）起语义锚定降级为 warning**，硬门槛只剩结构项与长度泄题；失败由 `application/sessionEvaluator.finalizeQuestion`（唯一校验入口）记录 `code` 并回退原题，避免单题坏变体中断整场组卷——**不再 retry**。
 - 选择题 `options` 文本可由 LLM 改写，但**选项数量/真假属性固定**，且**顺序由 `applyVariant` 调 `shuffleChoiceOptions` 程序重排**（非 LLM 决定）；`answer` 索引永远由 canonical 经确定性重映射得到（`applyVariant` 写死 `canonical.answer` 再重排），彻底避免“答案被模型覆盖 / 顺序被模型泄露”。`toGeneratedVariant` 已移除对缺失 `question` 的静默回退（缺失由校验显式拒绝），并丢弃模型可能回吐的 `answer/explanation`。
 - **Prompt 约束**：`VARIANT_SYSTEM` 为轻量变体版（v3，约 40 行稳定前缀，KV-Cache 友好），要求“逐项改写现有文本”、明令禁止改动选项数量/真假属性/答案/解析，并明确“不交换选项顺序（顺序由程序统一处理）”；`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），不暴露 `answer/explanation/referenceAnswer/angle/difficulty`，从源头切断“LLM 重新决定答案”的路径。
 - **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
-- **抗暗示（anti-cueing）硬失败**：`ai/variant.generateVariant` 在拿到已通过 `validateVariant` 的候选后，对选择题跑 `domain/bias.detectOptionLengthBias`；若命中长度泄题（正确项全局最长且存在明显过短干扰项），记录 warning 并**直接抛错**由 `finalizeQuestion` 回退原题——**不再重新请求 LLM**（轻量变体边界：省掉最耗时的一次重试）。
+- **抗暗示（anti-cueing）硬失败**：`domain/variant.validateVariant` 在选择题分支对**规范化后**的选项跑 `domain/bias.detectOptionLengthBias`；命中长度泄题（正确项全局最长且存在明显过短干扰项，差距 ≥1.8×）即拒绝，并带机器可读 `code='option-length-bias'`，由 `finalizeQuestion` 回退原题、原因码计入 variant 遥测——**不再重新请求 LLM**（轻量变体边界：省掉最耗时的一次重试）。第五轮前该检查位于 `ai/variant.generateVariant`，随「单一校验入口」内移。
+- **规范化前移（ADR-068）**：`validateVariant` 与 `applyVariant` 都先 `normalizeOptionText` 再做去重/空串/长度 bias 检查与 shuffle，顺序为 `normalize → validate → shuffle`（旧版是 `validate 原文 → shuffle → normalize`）。修掉的漏洞：`"Redis"` 与 `" Redis "` 在旧流程里算两个不同选项、能通过去重检查，却在渲染后变成两个一模一样的选项。
+- **锚定降级为 warning（ADR-068）**：`hasStemAnchor`（topic/tags/required 任一词出现在题干）**不再是硬门槛**。字面锚点只能证明「题干仍与主题相关」，无法证明语义等价，会误杀「换场景不换知识点」的合法变体（例：原题「为什么 KV Cache 能降低 prefill 成本？」→ 变体「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」零锚点命中却完全合法）。变体安全的真正兜底是另外两条硬边界：`VARIANT_SYSTEM` 的逐项一一对应约束，以及 `answer`/`explanation` 恒取 canonical（变体改歪也不会判错题）。未命中只记 `warning` 日志。
+- **拒绝原因码（ADR-068）**：`VariantCheck.code` 为机器可读原因（`empty-question` / `forbidden-reference` / `missing-options` / `option-count-mismatch` / `empty-option` / `duplicate-option` / `option-length-bias`），`finalizeQuestion` 直接透传给 `recordVariantRound`，使 fallback 归因从笼统的 `validation-failed` 细化到具体原因，支撑「按真实失败率调 gate」。
 
 ## 评分 Rubric（四维 + 两层评分锚点）
 
@@ -648,5 +659,5 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 - **monaco-editor 0.56 exports map 对深层导入是坏的**：`monaco-editor/esm/vs/**` 深层导入在 Node 与 rolldown 下均 `ERR_MODULE_NOT_FOUND`（`./*.js → ./esm/vs/*.js` 的 star 替换路径错误），`resolve.alias` 也救不了。解法：worker 用相对路径 `../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js?worker` 绕过包解析；主库走 `import * as monaco from 'monaco-editor'`（`.` 入口正常）。
 - **Shiki grammar 懒加载**：语法文件是独立 chunk，渲染对应语言时才下载；主包只含核心引擎。
 - **构建**：`npm run build` 用 `tsc -b && vite build`，开启 `noUnusedLocals`，未使用 import/变量直接报错；`*.test.ts` 已从 tsc 排除，由 Vitest 处理。
-- **fuzzball（浏览器纯 JS 模糊匹配，ADR-047 语义漂移兜底）**：`fuzzball@latest` 纯 JS 实现，无 Node 核心依赖，适配 Vite SPA；`domain/variant.validateVariant` 内的 `anchorHasEvidence`（配合 `hasMinimalEvidence` / `requiredCoverageMet`）在精确 token 未命中时追加 `token_set_ratio ≥75` / `partial_ratio ≥80` 二次判定，处理词序/形态/拼写差异（如 `batch statistics ↔ statistics across the batch` 100 分、`regularisation ↔ regularization` 93 分），计算量仅 `1题×数个 requiredConcepts×数百字文本`，无需后端；bundle 增量约 15KB gzip（52KB 原始），已验证 `npm run build`。
+- **fuzzball（浏览器纯 JS 模糊匹配，ADR-047 语义漂移兜底）**：`fuzzball@latest` 纯 JS 实现，无 Node 核心依赖，适配 Vite SPA；`domain/variant.validateVariant` 内的 `anchorHasEvidence`（配合 `hasStemAnchor`，ADR-068 起仅作软信号告警）在精确 token 未命中时追加 `token_set_ratio ≥75` / `partial_ratio ≥80` 二次判定，处理词序/形态/拼写差异（如 `batch statistics ↔ statistics across the batch` 100 分、`regularisation ↔ regularization` 93 分），计算量仅 `1题×数个 requiredConcepts×数百字文本`，无需后端；bundle 增量约 15KB gzip（52KB 原始），已验证 `npm run build`。
 - **密钥定位**：local-first 隐私友好，但浏览器侧密钥**不是安全机密**（受 XSS / 扩展威胁），勿用高权限生产密钥。

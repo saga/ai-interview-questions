@@ -23,7 +23,9 @@ function makeChoiceQuestion(): Question {
     formats: {
       choice: {
         type: 'single',
-        options: ['并行捕捉不同子空间表示', '减少参数量', '加速推理'],
+        // 选项长度刻意均衡（11 / 7 / 7 字）：否则会被 validateVariant 的长度泄题门槛判为
+        // 「正确项全局最长 + 存在过短干扰项（≥1.8×）」而回退原题，本用例关心的工具接线行为就测不到了。
+        options: ['并行捕捉不同子空间表示', '减少模型参数量', '改用更大的批次'],
         answer: [0],
       },
     },

@@ -74,19 +74,24 @@ export async function finalizeQuestion(
       ...(fallbackReason ? { fallbackReason } : {}),
     });
   try {
+    // generateVariant 只做 LLM + parse（第五轮起不再内部校验），此处是**唯一**校验入口。
     const variant = await provider.generateVariant(sq.question, sq.format);
     const check = validateVariant(sq.question, variant, sq.format);
     if (!check.ok) {
       console.warn(`变体校验未通过(${sq.question.id})，回退到原题：${check.reason}`);
-      record('validation-failed');
+      record(check.code ?? 'validation-failed');
       return sq;
+    }
+    // 软信号：通过但值得观测（如题干未命中字面锚点）。不阻断，只落日志 + 后续可加遥测字段。
+    if (check.warning) {
+      console.warn(`变体质量告警(${sq.question.id})：${check.warning}`);
     }
     record();
     return { ...sq, question: applyVariant(sq.question, variant, sq.format) };
   } catch (error) {
+    // 第五轮后领域拒绝一律走 validateVariant 的 code，此处只剩 LLM 调用/解析失败这一种来源。
     console.warn(`变体生成失败(${sq.question.id})，回退到原题：`, error);
-    const reason = (error as { reason?: unknown } | null)?.reason;
-    record(typeof reason === 'string' ? reason : 'generation-error');
+    record('generation-error');
     return sq;
   }
 }
