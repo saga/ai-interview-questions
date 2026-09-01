@@ -19,7 +19,17 @@ const cq: Question = {
   difficulty: 'medium',
   question: 'q',
   explanation: 'e',
-  formats: { choice: { type: 'single', options: ['a', 'b', 'c'], answer: [0] } },
+  formats: {
+    choice: {
+      type: 'single',
+      options: [
+        'L2 正则化通过对权重施加平方惩罚来平滑收缩权重',
+        '增大 batch size 可以提升训练吞吐',
+        '使用梯度裁剪来稳定训练',
+      ],
+      answer: [0],
+    },
+  },
 };
 
 /** 多选题（两个正确项）：验证多正确项在程序重排后的索引重映射。 */
@@ -45,7 +55,11 @@ function variant(partial: Partial<GeneratedVariant> = {}): GeneratedVariant {
   // 默认选项与 cq 的 3 个选项一一对应（选择题变体必须提供等长 options）。
   return {
     question: 'L2 正则化通过对权重施加平方惩罚来平滑收缩权重，与 weight decay 在标准 SGD 下等价',
-    options: ['x', 'y', 'z'],
+    options: [
+      'L2 范数惩罚对权重做平方惩罚以平滑收缩',
+      '提升吞吐量的方法是增大 batch size',
+      '梯度裁剪用于稳定训练过程',
+    ],
     ...partial,
   };
 }
@@ -116,12 +130,13 @@ describe('validateVariant（漂移软信号：仅 warning，不阻断）', () =>
   });
 
   it('证据面仍只看题干：概念只出现在选项里 → 记 warning（不阻断）', () => {
+    // 题干（CNN/BatchNorm）无 regularization 锚点，但默认选项是对 cq 选项的 paraphrase，
+    // 能通过语义漂移检查；锚点只可能出现在选项里 → 仅记 warning，不阻断。
     expect(
       validateVariant(
         cq,
         variant({
           question: '在 CNN 训练中 batch size 很小时，BatchNorm 为什么不稳定？',
-          options: ['L2 正则化平滑收缩权重', '与 weight decay 在标准 SGD 下等价', '两者都对'],
         }),
       ).warning,
     ).toBe(STEM_ANCHOR_WARNING);
@@ -147,10 +162,9 @@ describe('validateVariant（漂移软信号：仅 warning，不阻断）', () =>
     expect(
       validateVariant(
         q,
-        variant({
-          question: 'LayerNorm does not rely on statistics computed across the batch',
-          options: ['x', 'y', 'z'],
-        }),
+      variant({
+        question: 'LayerNorm does not rely on statistics computed across the batch',
+      }),
       ).ok,
     ).toBe(true);
   });
@@ -178,6 +192,49 @@ describe('validateVariant（抗暗示：长度泄题）', () => {
 
   it('开放题不执行长度泄题检查（只对 choice 有意义）', () => {
     expect(validateVariant(oq, variant({ options: undefined }), 'open').ok).toBe(true);
+  });
+});
+
+// P0：选项语义漂移粗粒度防护（optionChangedTooMuch）。
+// 仅用 fuzzball token_set_ratio 拦住「轻量改写突然变成完全不同的选项」，不证明语义等价。
+// 阈值从宽（<45 才拒），正常中文 paraphrase 应放行，与 lexical anchor 降级为 warning 同样的克制。
+describe('validateVariant（选项语义漂移防护）', () => {
+  // 独立 realistic canonical：正确项 = 选项 0「使用 KV Cache」。
+  const driftCq: Question = {
+    ...cq,
+    id: 'drift',
+    question: '为什么 KV Cache 能降低 Transformer 推理的 prefill 成本？',
+    formats: {
+      choice: {
+        type: 'single',
+        options: ['使用 KV Cache', '增大 batch size', '使用梯度裁剪'],
+        answer: [0],
+      },
+    },
+  };
+
+  it('选项语义变化过大 → fallback（P0：option-semantic-drift）', () => {
+    const check = validateVariant(
+      driftCq,
+      variant({
+        question: '为什么 KV Cache 能降低 prefill 成本？',
+        options: ['完全不同的技术方案', '增大 batch size', '使用梯度裁剪'],
+      }),
+    );
+    expect(check.ok).toBe(false);
+    expect(check.code).toBe(VARIANT_REJECT_REASON.OPTION_SEMANTIC_DRIFT);
+    expect(check.reason).toMatch(/改写幅度过大/);
+  });
+
+  it('选项轻量改写 → 通过（paraphrase 不应触发 drift）', () => {
+    const check = validateVariant(
+      driftCq,
+      variant({
+        question: '为什么 KV Cache 能降低 prefill 成本？',
+        options: ['采用 KV Cache', '增大 batch size', '使用梯度裁剪'],
+      }),
+    );
+    expect(check.ok).toBe(true);
   });
 });
 
@@ -217,7 +274,7 @@ describe('validateVariant（先规范化再校验）', () => {
 describe('applyVariant（程序结构变换）', () => {
   it('选择题：程序重排后，正确答案文本经索引重映射仍正确（顺序无关）', () => {
     // variant options 与原题按位置一一对应：'a'→'x'、'b'→'y'、'c'→'z'（canonical 正确项 = 'a'）
-    const r = applyVariant(cq, variant({ question: 'regularization 变体' }));
+    const r = applyVariant(cq, variant({ question: 'regularization 变体', options: ['x', 'y', 'z'] }));
     expect(r.question).toBe('regularization 变体');
     expect(new Set(r.formats.choice?.options)).toEqual(new Set(['x', 'y', 'z']));
     expect(r.formats.choice?.options[r.formats.choice.answer[0]]).toBe('x');

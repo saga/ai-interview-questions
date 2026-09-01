@@ -1,8 +1,9 @@
 // 纯逻辑：变体候选的确定性校验（validateVariant）与落地（applyVariant）。
-// 安全模型（ADR-036 / ADR-068 轻量变体）：LLM 只做**语义变换**（题干 + 选项文本逐项改写），
-// 结构变换（选项规范化 / 顺序重排 / answer 索引重映射）与**全部校验**都由本模块完成；
-// answer / explanation 永远来自 canonical，不经过 LLM。
+// 安全模型（ADR-036 / ADR-068 轻量变体）：LLM 只做**语义改写**（题干 + 选项文本逐项同义改写），
+// 结构变换（选项规范化 / 顺序重排 / answer 索引重映射）与**全部校验**都由程序完成
+// （deterministic structural safeguards）；answer / explanation 永远来自 canonical，不经过 LLM。
 // 本模块是全链路**唯一**的校验入口：`ai/variant.generateVariant` 只做 LLM 适配 + 解析，不做校验。
+// 注意：本设计只做「粗粒度结构 + 语义漂移防护」，**不验证语义等价 / 不证明知识契约成立**。
 
 import type { GeneratedVariant, VariantCandidate } from '../types';
 import type { FormatId } from '../schemas/common';
@@ -37,6 +38,8 @@ export const VARIANT_REJECT_REASON = {
   DUPLICATE_OPTION: 'duplicate-option',
   /** 变体选项存在明显长度泄题（正确项过长）。 */
   OPTION_LENGTH_BIAS: 'option-length-bias',
+  /** 变体选项语义改写幅度过大（可能偷换结论 / 真假属性）。 */
+  OPTION_SEMANTIC_DRIFT: 'option-semantic-drift',
 } as const;
 
 /**
@@ -101,7 +104,7 @@ function anchorHasEvidence(anchor: string, text: string): boolean {
  * 「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」一个锚点词都不含。
  * 轻量变体的目标只是「防止明显跑题」，而跑题的真正兜底是两条更硬的边界：
  * ① `VARIANT_SYSTEM` 的逐项一一对应约束（禁改技术结论/因果/适用条件/真假属性）；
- * ② `answer` / `explanation` 恒取 canonical——即便变体改歪，判分与解析仍按原题，不会判错题。
+ * ② `answer` / `explanation` 恒取 canonical——这只能防止 LLM 直接篡改 answer 索引，**无法**保证 LLM 改写 options 后正确 / 错误语义仍不变（见 `optionChangedTooMuch` 粗粒度防护）。
  * 因此未命中只记 warning；是否需要收紧，交由「测真实 fallback 率再调 gate」的观测路径决定。
  */
 function stemAnchorMissing(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
@@ -121,8 +124,9 @@ function stemAnchorMissing(canonical: Question, v: VariantCandidate | GeneratedV
 // 合法变体「某在线服务前缀高度重复，却仍重复执行相同前向计算，如何降低这部分开销？」
 // 题干里没有 KV Cache / Transformer / prefill 任何一个词，却完全合法，会被 2/3 门槛误杀。
 // 第五轮后同一个反例连宽松锚点也可能不命中，因此 stemAnchorMissing 只作漂移软信号（warning）：
-// 硬门槛只剩选项结构不变量（必填/数量/非空/去重）+ 长度泄题检查，
-// 语义正确性由「answer/explanation 恒取 canonical」这条硬边界兜底——变体改错也不会判错题。
+// 硬门槛只剩选项结构不变量（必填/数量/非空/去重）+ 长度泄题检查 + 选项语义漂移粗粒度防护，
+// 语义正确性不能只靠「answer/explanation 恒取 canonical」兜底：它只防 answer 索引被篡改，
+// 防不住 LLM 把某个正确/错误选项改写成完全不同语义；粗粒度兜底在 optionChangedTooMuch（改写过大直接 fallback）。
 
 function hasDuplicateOptions(options: string[]): boolean {
   const seen = new Set<string>();
@@ -135,6 +139,22 @@ function hasDuplicateOptions(options: string[]): boolean {
 }
 
 /**
+ * 选项语义漂移粗粒度防护：判断某个选项的改写是否越界。
+ * 仅用 fuzzball `token_set_ratio` 做廉价相似度检查，**不证明语义等价**——
+ * 只拦住「轻量改写突然变成完全不同的选项」这类明显越界（例如把正确项
+ * 偷换成另一个技术结论）。阈值从宽：`< 45` 视为改写过大（reject），
+ * `45~60` / `> 60` 均接受，避免正常中文 paraphrase 被误杀（与 lexical anchor
+ * 降级为 warning 同样的克制）。
+ */
+function optionChangedTooMuch(original: string, rewritten: string): boolean {
+  const a = normalizeOptionText(original);
+  const b = normalizeOptionText(rewritten);
+  if (!a || !b) return true;
+  const ratio = fuzz.token_set_ratio(a, b);
+  return ratio < 45;
+}
+
+/**
  * 校验变体候选——**全链路唯一的校验入口**（2026-09-02 第五轮消除双校验）。
  * 职责分层：`ai/variant.generateVariant` = LLM + parse；`finalizeQuestion` = validate + apply + fallback。
  *
@@ -142,6 +162,7 @@ function hasDuplicateOptions(options: string[]): boolean {
  *   - 题干非空、无依赖原题的指代
  *   - 选择题：options 必填且数量一致、非空、去重
  *   - 选择题：无长度泄题（抗暗示，且不重试）
+ *   - 选择题：选项逐项语义未明显漂移（粗粒度 fuzz 相似度，非语义等价证明）
  * 软信号（仅 warning，不阻断）：题干未命中 topic / tags / required 字面锚点。
  *
  *  @param format 本次会话实际形态（P0-1）；提供时以它决定选择/开放结构，否则回退到 canonical 是否含 choice。
@@ -201,6 +222,20 @@ export function validateVariant(
         code: VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS,
         reason: `变体选项存在明显长度泄题：${bias.detail}`,
       };
+    }
+    // 选项语义漂移粗粒度防护（P0）：LLM 仅被允许「逐项同义改写」选项，
+    // 并不保证改写后仍与原选项指向同一技术结论。若某个选项改写幅度过大
+    // （与原选项语义脱钩，可能被偷换成不同结论 / 真假属性），直接 fallback，
+    // 绝不让「轻量改写」变成「完全不同的选项」。注意：这不是语义等价证明，
+    // 只是用 fuzzball `token_set_ratio` 拦住明显越界；阈值从宽（<45 才拒）。
+    for (let i = 0; i < cf.options.length; i++) {
+      if (optionChangedTooMuch(cf.options[i], options[i])) {
+        return {
+          ok: false,
+          code: VARIANT_REJECT_REASON.OPTION_SEMANTIC_DRIFT,
+          reason: `第 ${i + 1} 个选项改写幅度过大`,
+        };
+      }
     }
     // answer 永远来自 canonical，不在此校验——LLM 不重新决定答案。
   }

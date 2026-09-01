@@ -18,7 +18,7 @@ const choiceQuestion: Question = {
   difficulty: 'easy',
   question: 'q',
   explanation: '',
-  formats: { choice: { type: 'single', options: ['a', 'b'], answer: [0] } },
+  formats: { choice: { type: 'single', options: ['缩放点积注意力以稳定梯度', '增大学习率以加速收敛'], answer: [0] } },
 };
 
 const openQuestion: Question = {
@@ -92,7 +92,10 @@ describe('sessionEvaluator', () => {
 // P2 变体可观测性：每次 finalizeQuestion 都记一条（延迟 + 回退原因），
 // 用于回答「轻量变体到底省了多少 / gate 是否过严」，而不是只看「组卷几秒」。
 describe('finalizeQuestion 变体遥测', () => {
-  const validVariant = { question: 'attention 机制为什么需要缩放？', options: ['x', 'y'] };
+  const validVariant = {
+    question: 'attention 机制为什么需要缩放？',
+    options: ['缩放注意力分数来稳定训练', '提高学习率以加速模型收敛'],
+  };
 
   function providerWith(impl: () => Promise<unknown>): LLMProvider {
     return { ...provider, generateVariant: vi.fn(impl) as never };
@@ -157,7 +160,10 @@ describe('finalizeQuestion 变体遥测', () => {
     try {
       const out = await finalizeQuestion(
         sq,
-        providerWith(async () => ({ question: '下面哪个说法是对的？', options: ['x', 'y'] })),
+        providerWith(async () => ({
+          question: '下面哪个说法是对的？',
+          options: ['缩放注意力分数来稳定训练', '提高学习率以加速模型收敛'],
+        })),
       );
       expect(out).not.toBe(sq);
       expect(out.question.question).toBe('下面哪个说法是对的？');
