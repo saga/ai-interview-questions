@@ -7,7 +7,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseQuestionArray, type Question } from '../src/schemas/question.ts';
+import { type Question } from '../src/schemas/question.ts';
 import { detectOptionLengthRatio } from '../src/domain/bias.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
