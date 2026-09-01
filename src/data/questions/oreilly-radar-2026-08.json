@@ -192,7 +192,7 @@
     "question": "团队早期用通用大模型探索需求，需求稳定后考虑专用小模型。迁移决策前最重要的证据是什么？（单选）",
     "explanation": "应把真实任务拆成质量、延迟、成本、安全和维护指标，用代表性长尾与对抗集比较候选方案，再通过灰度验证生产分布；通用 benchmark 的领先不能直接证明适合业务。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-smaller-models-win/", "section": "How do you train it, and where does it run?"},
-    "formats": {"choice": {"type": "single", "options": ["只看公开 benchmark 排名", "用真实任务和长尾样本比较质量、成本、延迟、安全与维护，并灰度验证", "需求稳定后默认选择参数最小的模型", "只比较离线准确率，不比较生产约束"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。模型迁移是系统决策，需要与真实业务验收标准和运行约束相匹配的证据。"}}
+    "formats": {"choice": {"type": "single", "options": ["只看公开 benchmark 排名，榜首模型即应无条件迁移采用，无需自有评估", "用真实任务和长尾样本比较质量、成本、延迟、安全与维护，并灰度验证", "需求稳定后默认选择参数最小的模型，体积最小即代表最优且最省成本", "只比较离线准确率不比较生产约束，实验室指标即可代表落地表现"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。模型迁移是系统决策，需要与真实业务验收标准和运行约束相匹配的证据。"}}
   },
   {
     "id": "oreilly-radar-2026-08-16",
@@ -244,7 +244,7 @@
     "question": "要评估一套面向安全和生产可用性的护栏，测试集至少应同时包含什么？（单选）",
     "explanation": "需要危险样本、合法但易误判的安全研究或技术内容、边界样本、多步上下文和不同语言/表达变体，并分别报告漏报、误报、可用性和恢复指标。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-guardrails-go-wrong/", "section": "We can't have perfect guardrails"},
-    "formats": {"choice": {"type": "single", "options": ["只放明确恶意样本，追求拒绝率最高", "同时覆盖危险、合法边界、多步上下文和表达变体，分别评估误报漏报与恢复", "只测试模型回复是否礼貌得体", "让模型自生成并自评安全样本"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。护栏评估必须同时测安全拦截和合法可用性，并覆盖上下文与长尾边界。"}}
+    "formats": {"choice": {"type": "single", "options": ["只放明确恶意样本追求最高拒绝率，拒绝越多护栏即越有效", "同时覆盖危险、合法边界、多步上下文和表达变体，分别评估误报漏报与恢复", "只测试模型回复是否礼貌得体，礼仪正确即代表护栏可靠可用", "让模型自生成并自评安全样本，用模型自我打分作为唯一度量标准"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。护栏评估必须同时测安全拦截和合法可用性，并覆盖上下文与长尾边界。"}}
   },
   {
     "id": "oreilly-radar-2026-08-20",
@@ -257,6 +257,6 @@
     "question": "面对护栏分类器可能误判的现实，为什么不能把它作为唯一的安全控制？（单选）",
     "explanation": "模型护栏是概率性控制，可能漏报或误报；真正的安全还需要应用层权限、工具白名单、沙箱、输出校验、数据隔离、审计和人工确认，把单次分类错误的影响限制在边界内。",
     "source": {"materialId": "https://www.oreilly.com/radar/when-guardrails-go-wrong/", "section": "Guardrails are at best advisory"},
-    "formats": {"choice": {"type": "single", "options": ["分类器通过就说明工具动作安全", "用权限、沙箱、工具边界、输出校验和人工确认形成纵深防御", "只提高分类器拒绝阈值", "把安全责任转给最终用户"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。护栏不能替代执行层的硬控制；模型外的边界决定错误能造成多大实际影响。"}}
+    "formats": {"choice": {"type": "single", "options": ["分类器通过即说明工具动作安全，单次判绿即可放行无需其他控制", "用权限、沙箱、工具边界、输出校验和人工确认形成纵深防御", "只提高分类器拒绝阈值，阈值越高系统越安全，无需权限与沙箱", "把安全责任转给最终用户，用户自担风险即完成防护闭环"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。护栏不能替代执行层的硬控制；模型外的边界决定错误能造成多大实际影响。"}}
   }
 ]

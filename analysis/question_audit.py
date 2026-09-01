@@ -81,6 +81,7 @@ def audit() -> dict[str, Any]:
     covered_cells: set[tuple[str, str]] = set()
     cell_question_counts: Counter[tuple[str, str]] = Counter()
     angle_difficulty_counts: Counter[tuple[str, str]] = Counter()
+    topic_difficulty_counts: Counter[tuple[str, str]] = Counter()
 
     for file_name, question in questions:
         question_id = str(question.get("id", "<missing-id>"))
@@ -93,6 +94,7 @@ def audit() -> dict[str, Any]:
         if topic in node_ids and angle in VALID_ANGLES:
             cell_question_counts[(topic, angle)] += 1
             angle_difficulty_counts[(angle, str(question.get("difficulty", "<missing>")))] += 1
+            topic_difficulty_counts[(topic, str(question.get("difficulty", "<missing>")))] += 1
 
         if question_id in ids:
             add_issue(issues, "P0", "duplicate-id", question_id, file_name, f"also in {ids[question_id][0]}")
@@ -185,6 +187,14 @@ def audit() -> dict[str, Any]:
         for d in ("easy", "medium", "hard"):
             row.setdefault(d, 0)
 
+    topic_difficulty: dict[str, dict[str, int]] = {}
+    for (top, diff), cnt in topic_difficulty_counts.items():
+        topic_difficulty.setdefault(top, {"easy": 0, "medium": 0, "hard": 0})
+        topic_difficulty[top][diff] = cnt
+    for row in topic_difficulty.values():
+        for d in ("easy", "medium", "hard"):
+            row.setdefault(d, 0)
+
     return {
         "summary": {
             "questions": len(questions),
@@ -206,6 +216,7 @@ def audit() -> dict[str, Any]:
         "topicAngleDensity": topic_angle_density,
         "topicAngleDensitySummary": dict(density_level_counts),
         "difficultyByAngle": difficulty_by_angle,
+        "topicDifficulty": topic_difficulty,
         "issues": issues,
     }
 
@@ -265,6 +276,35 @@ def print_difficulty_by_angle(report: dict[str, Any]) -> None:
         print(f"  {angle}: easy {d.get('easy', 0)} · medium {d.get('medium', 0)} · hard {d.get('hard', 0)}")
 
 
+def print_topic_difficulty(report: dict[str, Any]) -> None:
+    """topic × difficulty 交叉表（plan0901_3 §二 要求的缺失维度）。
+
+    用于发现某个 topic 的难度分布是否失衡——例如一个 topic 下几乎所有题都是
+    hard（可能 pseudo-hard 集中），或几乎都是 easy（覆盖过浅）。
+    """
+    table = report.get("topicDifficulty", {})
+    if not table:
+        return
+    skewed = []
+    for topic in sorted(table):
+        d = table[topic]
+        total = d["easy"] + d["medium"] + d["hard"]
+        if total < 3:
+            continue
+        # 失衡：某一档占比 >= 80% 且总数 >= 3
+        for lvl in ("easy", "medium", "hard"):
+            if total and d[lvl] / total >= 0.8:
+                skewed.append((topic, lvl, d))
+                break
+    print("Topic × Difficulty (≥3 题):")
+    if skewed:
+        print("  difficulty-skewed topics (single level ≥80%):")
+        for topic, lvl, d in skewed:
+            print(f"    {topic}: easy {d['easy']} · medium {d['medium']} · hard {d['hard']}  ← {lvl}-heavy")
+    else:
+        print("  no single-level-skewed topics (≥3 questions each)")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit the question bank without external Python dependencies")
     parser.add_argument("--json", action="store_true", help="print machine-readable JSON")
@@ -300,6 +340,7 @@ def main() -> int:
         print_choice_format(report)
         print_topic_angle_density(report)
         print_difficulty_by_angle(report)
+        print_topic_difficulty(report)
         for issue in report["issues"]:
             print(f"[{issue['severity']}] {issue['code']} {issue['id']} ({issue['file']}): {issue['detail']}")
         if args.output:

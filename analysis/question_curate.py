@@ -255,6 +255,21 @@ def build_plan(audit_report: dict[str, Any], semantic_report: dict[str, Any] | N
                 apply(qid, "review", "P2", ["strawman-distractor"])
                 break
 
+    # ---- Rule J: topic×difficulty skew (plan0901_3 §二 missing dimension) ----
+    # A topic with >=4 questions where a single difficulty level dominates (>=80%)
+    # is suspicious: either pseudo-hard clustering or shallow coverage. Advisory.
+    topic_diff = audit_report.get("topicDifficulty", {})
+    for topic, dist in topic_diff.items():
+        total = dist.get("easy", 0) + dist.get("medium", 0) + dist.get("hard", 0)
+        if total < 4:
+            continue
+        for lvl in ("easy", "medium", "hard"):
+            if total and dist.get(lvl, 0) / total >= 0.8:
+                for file_name, q in questions:
+                    if q.get("topic") == topic:
+                        apply(str(q.get("id")), "review", "P2", ["topic-difficulty-skew"])
+                break
+
     # ---- Rule C: pseudo-hard (hard + low-cognitive angle) ----
     for file_name, q in questions:
         qid = str(q.get("id"))

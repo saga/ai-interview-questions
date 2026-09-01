@@ -88,7 +88,7 @@
     "question": "生成式应用的安全设计为什么需要同时保护模型、数据存储、端点和工作流？（单选）",
     "explanation": "攻击面横跨输入、提示目录、模型端点、知识库、工具和输出；仅保护端点或只做关键词过滤无法阻止越权数据访问、提示注入和有害输出。安全控制应覆盖数据与通信流并由应用层权限强制执行。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/security.html", "section": "Comprehensive access controls and secure data flows"},
-    "formats": {"choice": {"type": "single", "options": ["只保护模型 API key，其他组件不属于模型安全", "只在用户输入上做关键词过滤", "跨模型、数据、端点和工作流建立访问控制、输入验证、输出校验和监控", "把安全责任完全交给基础模型提供者"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。生成式 AI 的应用安全是端到端边界问题，需要纵深防御和组件级权限。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保护模型 API key 并定期轮换密钥即可覆盖全部安全风险，其他组件不属于模型安全范畴，应用层无需额外控制", "只在用户输入上做关键词过滤即可拦截全部注入，模型内部、知识库与下游工具无需再做输入验证或输出校验", "跨模型、数据、端点和工作流建立访问控制、输入验证、输出校验和监控", "把安全责任完全交给基础模型提供者，应用层只需调用 API，无需自行实施访问控制、输入验证与持续监控"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。生成式 AI 的应用安全是端到端边界问题，需要纵深防御和组件级权限。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-08",
@@ -114,7 +114,7 @@
     "question": "知识库更新后模型开始遵循文档中隐藏的外部指令。最可能的风险与修复组合是什么？（单选）",
     "explanation": "这是不可信数据进入检索或操作链路后造成的间接提示注入/数据投毒风险。应验证数据来源和完整性，区分数据与指令，限制检索内容可产生的权限，并在发布前做对抗性测试。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/gensec06.html", "section": "Data poisoning"},
-    "formats": {"choice": {"type": "single", "options": ["这是模型温度变化，只需调低 temperature", "这是知识库内容天然可信，不需要处理", "校验来源与版本、扫描恶意内容、隔离数据和指令并做发布前安全测试", "扩大知识库规模让正确文档淹没恶意文档"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。检索数据也应视为不可信输入，需做来源、完整性、内容和权限边界治理。"}}
+    "formats": {"choice": {"type": "single", "options": ["这是模型温度变化导致的偶发行为，只需在推理时调低 temperature 即可消除，无需审查数据来源与版本", "这是知识库内容天然可信的体现，文档进入检索即代表已授权，不需要做来源完整性或恶意内容校验", "校验来源与版本、扫描恶意内容、隔离数据和指令并做发布前安全测试", "扩大知识库规模让正确文档在数量上淹没恶意文档，靠投票或权重自然稀释风险，无需隔离数据与指令"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。检索数据也应视为不可信输入，需做来源、完整性、内容和权限边界治理。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-10",
@@ -140,7 +140,7 @@
     "question": "更换基础模型后，团队只看到平均质量分数上升就准备全量发布。还缺少什么关键步骤？（单选）",
     "explanation": "应对固定评估集重新执行质量、安全、事实性、延迟和成本测试，检查关键子群和边界用例，并记录模型、prompt、检索和护栏版本；平均分不能覆盖回归风险。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Operational excellence: consistent output quality and continuous improvement"},
-    "formats": {"choice": {"type": "single", "options": ["平均分上升即可发布，不需要重新评估", "重新运行版本化评估，检查质量、安全、成本、延迟和关键子群后再灰度", "只让模型自评新模型更好", "删除旧模型结果避免比较"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。组件变更需要完整回归与灰度，覆盖业务质量和负责 AI 风险，而非只看单一平均指标。"}}
+    "formats": {"choice": {"type": "single", "options": ["平均分上升即可发布，无需重新评估安全与成本，历史指标能代表新模型在所有子群上的表现", "只让模型基于新结果自评新模型更好，由模型自行决定是否可以全量发布，无需独立评估集", "只让模型自评新模型更好", "删除旧模型评估结果避免被拿来比较，仅保留新模型 favorable 指标即可用于发布决策"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。组件变更需要完整回归与灰度，覆盖业务质量和负责 AI 风险，而非只看单一平均指标。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-12",
@@ -153,7 +153,7 @@
     "question": "生成式应用成本持续上升，但质量指标没有改善。哪种诊断更符合成本优化原则？（单选）",
     "explanation": "应按用例分析模型选择、输入输出 token、重复上下文、缓存命中、检索规模和 Agent 步骤，采用满足质量门槛的最小模型与上下文，并将成本归因到工作流。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Cost optimization: model, prompt, vector store, and workflow optimization"},
-    "formats": {"choice": {"type": "single", "options": ["永久使用最大模型以保证成本稳定", "按用例归因 token、模型、检索和工作流开销，在质量门槛内右尺寸模型和上下文", "删除质量评估只保留账单指标", "增加 prompt 说明让模型自动减少账单"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。成本优化需要全链路归因，并在业务质量门槛内选择模型、上下文和流程。"}}
+    "formats": {"choice": {"type": "single", "options": ["永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文", "删除质量评估只保留账单指标，成本优化只需看总花费金额是否下降，无需度量质量门槛", "删除质量评估只保留账单指标", "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。成本优化需要全链路归因，并在业务质量门槛内选择模型、上下文和流程。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-13",
@@ -205,7 +205,7 @@
     "question": "监管检查要求还原一次 AI 辅助客户服务决定。哪种日志设计最有价值？（单选）",
     "explanation": "应记录经过隐私保护的主体身份、输入和数据版本、模型/prompt 版本、检索与工具调用、策略命中、输出校验、人工修改和最终责任人，并确保日志完整性和访问审计。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html", "section": "Transparency and auditability"},
-    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本", "保存可重建决策链的版本、数据、调用、控制和人工责任记录，并实施脱敏和访问控制", "永久保存全部明文且不限制访问", "只保存模型置信度，不保存实际输入"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本即可满足审计，过程信息无需留存，最终话术即足以还原决策", "永久保存全部明文交互且不限制访问，以最大化可追溯性，不做脱敏也不设访问控制", "永久保存全部明文且不限制访问", "只保存模型输出的置信度分数，不保存实际输入与决策上下文即可还原责任链"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-17",
@@ -335,7 +335,7 @@
     "question": "模型在测试环境正常，生产预测却突然下降；代码相同但特征处理配置不同。应优先建立什么控制？（单选）",
     "explanation": "需要同步架构和配置，检测训练、测试、预发布与生产环境的 skew，并记录从数据处理到部署的 lineage。只比较代码版本不能发现配置、特征和依赖差异。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/ops-monitoring.html", "section": "MLOPS06-BP01: Synchronize architecture and configuration and check for skew"},
-    "formats": {"choice": {"type": "single", "options": ["只检查 Git commit 是否一致", "比较环境配置、特征处理和依赖并建立 lineage 与发布前 skew 检查", "把生产流量全部切回测试环境", "删除生产指标避免与测试比较"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。ML 运行结果受配置、特征处理和依赖影响，应做环境一致性与 lineage 管理。"}}
+    "formats": {"choice": {"type": "single", "options": ["只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相", "把生产流量全部切回测试环境复现，用测试配置覆盖生产以定位问题，无需比对环境配置", "把生产流量全部切回测试环境", "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。ML 运行结果受配置、特征处理和依赖影响，应做环境一致性与 lineage 管理。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-27",
@@ -348,7 +348,7 @@
     "question": "反欺诈风险评分和客户对话生成分别属于哪类主要问题，选型时应如何区分？（单选）",
     "explanation": "风险评分通常是预测/分类等传统 ML 问题，要求稳定的数值或类别输出；对话生成属于 foundation model 的生成式问题，重点增加 prompt、检索、输出安全和生成质量治理。两者共享 ML 生命周期，但不能用同一套指标和控制替代。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/machine-learning-lens.html", "section": "Distinction from the Generative AI Lens"},
-    "formats": {"choice": {"type": "single", "options": ["两者都只需用 BLEU 评估", "风险评分偏预测/分类，生成对话需额外治理 foundation model、prompt、RAG 和输出", "两者都应完全交给自由文本生成", "生成式 AI 不需要数据或生产监控"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。传统 ML 和生成式 AI 有共同基础，但任务类型、输出契约和特有风险不同。"}}
+    "formats": {"choice": {"type": "single", "options": ["两者都只需用 BLEU 等文本相似度指标评估，分数高即代表业务可用，无需分别设计指标", "两者都应完全交给自由文本生成，固定模型与结构化输出会限制表达能力，无需差异治理", "两者都应完全交给自由文本生成", "生成式 AI 不需要数据或生产监控，上线后无需持续观测质量、成本与安全"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。传统 ML 和生成式 AI 有共同基础，但任务类型、输出契约和特有风险不同。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-28",
@@ -358,7 +358,7 @@
     "tags": ["aws-well-architected", "machine-learning", "shadow-testing", "deployment"],
     "difficulty": "hard",
     "angle": "scenario",
-    "question": "新风险模型需要用真实请求比较，但不能影响线上决策。哪种发布验证方式最合适？（单选）",
+    "question": "新风险模型需要用真实请求比较，但不能影响线上决策。应采用的发布验证方式是？（单选）",
     "explanation": "可将生产请求的副本发送给候选模型做 shadow testing，只比较质量、延迟、资源、公平性等指标，不让候选模型产生线上副作用；通过门槛后再灰度切换。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/mlops06-bp02.html", "section": "Shadow testing for model validation"},
     "formats": {"choice": {"type": "single", "options": ["直接替换生产模型并观察投诉", "复制真实请求到候选模型但隔离其决策副作用，比较指标后再灰度", "只在训练集上比较两个模型", "让候选模型直接覆盖旧模型输出以收集更多数据"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。影子测试使用真实请求验证候选模型，同时隔离线上决策影响。"}}
@@ -374,7 +374,7 @@
     "question": "设计传统 ML 风险预测系统时，团队先选了算法再寻找业务目标。更可靠的问题定义顺序是什么？（单选）",
     "explanation": "应先明确业务目标、决策对象、预测时点、可接受错误和成功指标，再把业务问题转成分类、回归或异常检测等 ML 问题；先选算法容易优化与实际价值无关的指标。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/operational-excellence.html", "section": "Business goal identification and ML problem framing"},
-    "formats": {"choice": {"type": "single", "options": ["先选最复杂算法，再让业务适应输出", "先定义业务目标、预测对象、错误代价和验收指标，再选择 ML 问题类型", "只要离线准确率高就不需要业务目标", "用训练损失直接代替业务成功指标"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。ML 设计应从业务目标和错误代价出发，再进行问题建模、数据准备和算法选择。"}}
+    "formats": {"choice": {"type": "single", "options": ["先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标", "只要离线准确率高就不需要业务目标，技术指标可替代业务成功标准与验收门槛", "只要离线准确率高就不需要业务目标", "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。ML 设计应从业务目标和错误代价出发，再进行问题建模、数据准备和算法选择。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-30",
@@ -387,6 +387,6 @@
     "question": "AI 上线后收集到大量用户反馈，但团队只把反馈存档不改变系统。完整的运营闭环应是什么？（单选）",
     "explanation": "应将监控、事件和反馈转成可执行改进，定期分析趋势，更新护栏、数据、模型或部署策略，再用回归评估确认没有引入新问题；还应为高风险告警设置人工升级和处理责任。",
     "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIMON01-RAIMON02: Monitoring and feedback loops"},
-    "formats": {"choice": {"type": "single", "options": ["只保存反馈，不改变系统以避免风险", "把反馈和事件纳入定期分析、改进、回归和人工升级闭环", "删除负面反馈以防止指标下降", "让模型自动修改生产配置且不需要审批"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。监控的价值在于触发有责任归属的改进和验证，不能停留在归档。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保存反馈不改变系统，避免改动引入新风险，存档即完成运营闭环", "删除负面反馈以防止整体指标下降，只保留正向信号用于汇报与复盘", "删除负面反馈以防止指标下降", "让模型自动修改生产配置且不需要审批，靠模型自省即可保证变更安全"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。监控的价值在于触发有责任归属的改进和验证，不能停留在归档。"}}
   }
 ]

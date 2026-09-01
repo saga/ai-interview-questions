@@ -2,6 +2,20 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-067 · 题库质量门槛 + 存量 curation（KEEP/REWRITE/REMOVE 计划器与清洗执行）
+
+- 状态：已采纳 · 2026-09-01
+- 来源：用户要求把"质量从人工原则提升为统一生成门槛 + 验证信号"，并对现有 1317 题做 curation / refactoring（先筛选→保留高价值→重写弱题→删冗余→补缺口），而非全部重写。
+- 决策（新增只读 curation 计划器 + 真正执行一批高优先级清洗；curate 本身只读，改写/删除由 Agent 按清单执行）：
+  1. **新增 `analysis/question_curate.py` + `npm run question:curate` / `question:curate:semantic`**：把 `question_audit` 的诊断维度与 `question_analysis --semantic`（本地 ONNX MiniLM `paraphrase-multilingual-MiniLM-L12-v2`，本机可跑）的近重复信号，升级成 KEEP / REVIEW / REWRITE / REMOVE 建议。**curate 只读、不动题库**；audit 也不直接改题库。
+  2. **确定性检测规则**：option-length-leak（>1.8× 且正确项最长→review，因经验验证多数长度差是良性，不自动改写）、pseudo-hard（hard+definition/fundamental→rewrite，suggestedAngle=tradeoff，零事实风险元数据降级）、definition-heavy（同 topic definition≥4 重写第 3+ 道）、cell-saturation（非平凡 angle≥4→review）、pseudo-single-choice（题干"最准确/最合适/最确切"→review）、kitchen-sink-answer（单选+正确项最长+>1.8×+≥2 并列分隔符→review）、strawman-distractor（稻草人干扰项→review）、topic-difficulty-skew（某 topic≥4 题单档难度≥80%→review）。
+  3. **真执行清洗（非只改标签）**：pseudo-hard 17 道 `hard→medium`；length-leak 38 道把 ≤9 字过短干扰项扩写到同粒度；definition-heavy 19 道中 16 道是"angle 字段标错"（内容本就 mechanism/comparison/design，仅改正字段），3 道真低价值 definition 做了内容重写（stat-01→mechanism、google-genai-leader-02→scenario、google-genai-leader-03→comparison）；strawman 3 道把稻草人干扰项换成真实误区；pseudo-single 11 道只去题干最高级措辞（仅 1 项正确，不翻多选以免变造错题）；kitchen-sink 27 道扩写干扰项到同粒度、正确答案一字未动。**改写契约固化**：只换 angle 的前提是内容本身已属该 angle，否则必须改内容，不能只改标签骗 topic×angle 密度计数器。
+  4. **语义去重执行**：在最终（已清洗）题库上跑 `question:curate:semantic`（threshold=0.9），得 3 个近重复对（cosine 0.92–0.94）、0 过密簇；按"保留高认知价值 angle"每对删一留一，删除 `ai-fund-026`(definition/sampling)、`sebastian-raschka-2026-08-157`(comparison/quantization)、`gap-flash-attention-tradeoff-01`(tradeoff/flash-attention)；三 topic 均保留更高价值孪生题，覆盖不破。`validate:questions` 1317→1314 全通过。
+  5. **topic×difficulty 维度补齐**（plan0901_3 §二 缺的维度）：`question_audit.audit()` 新增 `topicDifficulty` 分布 + `print_topic_difficulty`；curate 新增 Rule J 信号（12 失衡 topic→115 题）。
+- 不做：强行把 1300 旧题迁到 concepts schema（Concept 仅作分析维度，topic×angle 为主索引）；对 advisory review 信号（same-topic-angle-overloaded 399、topic-difficulty-skew 115、answer-leaks-by-length 110、option-length-leak 110、missing-source 103）不做强制改写——它们是指南不是硬门禁。
+- 验证：`validate:questions` 1314/1314 通过；16 题文件外科式编辑答案索引零改动；语义报告本机 3m24s 生成；`question_curate` 强制 rewrite/remove 项清零。
+- 关联：`skills/check-question-bank-quality/SKILL.md`（存量题改写契约 + 10 条改写内部 Prompt 硬约束）、`docs/improvement_plan/plan0901_3.md`（12 节 curation 方案）、`analysis/{question_audit,question_analysis,question_curate}.py`、`analysis/curation-plan.json`（最终计划）、`analysis/curation-semantic-report.json`（语义近重复）。
+
 ## ADR-066 · 评分聚合 bug 修复 + Copilot RAG 语义边界收口
 
 - 状态：已采纳 · 2026-09-01

@@ -191,37 +191,6 @@
     }
   },
   {
-    "id": "ai-fund-026",
-    "category": "llm-fundamentals",
-    "topic": "sampling",
-    "tags": [
-      "temperature",
-      "decoding",
-      "sampling"
-    ],
-    "difficulty": "easy",
-    "angle": "definition",
-    "question": "LLM 推理中的 Temperature 参数是什么？它如何影响输出？",
-    "explanation": "Temperature 缩放 logits 后 softmax：低温尖锐保守、高温平坦多样；只改采样分布形状，不改模型本身的概率评估。",
-    "formats": {
-      "open": {
-        "referenceAnswer": "Temperature 作用于 logits 的 softmax：除以 T 后再归一化。T<1 使分布更尖锐，高概率 token 更容易被选中，输出更确定但更多样性下降；T>1 使分布更平坦，输出更多样但也更容易出现低质量内容；T→0 趋近于贪心解码。它不改变模型认为哪些 token 可能，只改变采样时的分布形状。"
-      },
-      "choice": {
-        "type": "single",
-        "options": [
-          "Temperature 控制单次生成的最大长度，取值越大允许输出的 token 越多；它直接约束解码阶段的序列长度预算，数值越高模型越倾向于展开更长更详尽的回答，与分布形状无关。",
-          "Temperature 决定 top-k 截断保留的候选个数，取值越小保留的候选越少；它作用于候选集规模，与采样多样性强相关，是控制输出随机性的核心旋钮，等价于 top-k 参数。",
-          "Temperature 是训练阶段调节权重更新幅度的超参数，推理时设置它没有作用；它只在反向传播中影响学习率动态，部署后固定即可，无需在推理侧暴露该参数给调用方。",
-          "Temperature 对 logits 缩放后再 softmax：T<1 分布更尖锐、输出更确定，T>1 更平坦、更多样，T→0 趋近贪心解码"
-        ],
-        "answer": [
-          3
-        ]
-      }
-    }
-  },
-  {
     "id": "ai-fund-027",
     "category": "llm-fundamentals",
     "topic": "sampling",

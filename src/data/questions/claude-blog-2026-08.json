@@ -166,7 +166,7 @@
     "question": "如何让一个生成报告的 Agent 对“完成”有可执行且可验证的定义？（单选）",
     "explanation": "把完整性、事实依据、格式和受众要求写成可检查的 rubric，并让独立验收步骤据此评分；自然语言中的“写得好”不足以作为稳定门槛。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "single", "options": ["只设置最大 token 数", "把完整性、依据、格式和受众要求写成可检查 rubric", "只指定要使用的模型名称而不定义完成标准", "只记录用户最后一次点击"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。把质量要求拆成可检查的 rubric，才能形成稳定的完成判定。"}}
+    "formats": {"choice": {"type": "single", "options": ["只设置最大 token 数作为完成标准，达到上限即视为报告生成完毕，无需质量 rubric", "把完整性、依据、格式和受众要求写成可检查 rubric", "只指定要使用的模型名称而不定义完成标准，由模型自行判断何时停止并交付", "只记录用户最后一次点击动作，用交互行为代替对报告完整性、依据与格式的验收"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。把质量要求拆成可检查的 rubric，才能形成稳定的完成判定。"}}
   },
   {
     "id": "claude-blog-2026-08-14",
@@ -267,7 +267,7 @@
     "tags": ["claude-blog", "hooks", "security", "governance"],
     "difficulty": "hard",
     "angle": "system-design",
-    "question": "在 Agent 参与的软件交付流程中，必须阻止它直接部署生产环境，最合适的控制是什么？（单选）",
+    "question": "在 Agent 参与的软件交付流程中，必须阻止它直接部署生产环境，应采用的访问控制是？（单选）",
     "explanation": "应在 Agent 行动前检查生产部署条件；缺少命名的发布授权时直接阻断，并把原因输出给 Agent。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Hooks as approval gates"},
     "formats": {"choice": {"type": "single", "options": ["只在 system prompt 中请求谨慎", "用 PreToolUse hook 检查授权并阻断未授权生产部署", "把生产凭据放入 prompt", "先允许部署再事后检查日志是否越权"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。审批门应在行动前由 hook 确定性阻断未授权生产部署。"}}
@@ -478,7 +478,7 @@
     "question": "维护阶段让 Agent 无人值守运行时，阶段之间为什么需要 independent confidence gate？（单选）",
     "explanation": "独立信心门可以用确定性检查或对抗性审查 Agent 判断上一阶段是否达到继续条件，不满足时升级给人，避免错误自动传播。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Maintenance and closing the loop"},
-    "formats": {"choice": {"type": "single", "options": ["让同一个 Agent 无条件批准自己的输出", "用独立检查决定继续或升级，阻止错误跨阶段传播", "直接删除所有阶段之间的检查门", "只按响应速度快慢决定是否放行"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。独立信心门为无人值守阶段提供继续或人工升级的边界。"}}
+    "formats": {"choice": {"type": "single", "options": ["让同一个 Agent 无条件批准自己的输出", "用独立检查决定继续或升级，阻止错误跨阶段传播", "阶段间的检查门应在运行时出现错误告警后才动态插入，平时保持直通以最大化吞吐，无需前置独立校验", "只按响应速度快慢决定是否放行"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。独立信心门为无人值守阶段提供继续或人工升级的边界。"}}
   },
   {
     "id": "claude-blog-2026-08-38",

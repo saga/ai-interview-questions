@@ -52,7 +52,7 @@
     "tags": ["dpo", "ppo", "preference-optimization", "tradeoff"],
     "difficulty": "hard",
     "angle": "tradeoff",
-    "question": "团队需要在固定偏好数据集上快速完成对齐，并比较 DPO 与 PPO 的工程取舍。以下判断最准确的是？",
+    "question": "团队需要在固定偏好数据集上快速完成对齐，并比较 DPO 与 PPO 的工程取舍。以下判断正确的是？",
     "explanation": "DPO 直接在偏好对上优化闭式目标，不需要在线 rollout 和显式奖励模型，工程更简单稳定；代价是优化自由度和对动态环境反馈的适应能力通常不如 PPO。",
     "formats": {
       "choice": {
@@ -232,12 +232,12 @@
     "tags": ["l1", "l2", "weight-decay", "adamw"],
     "difficulty": "hard",
     "angle": "tradeoff",
-    "question": "关于 L1、L2、weight decay 和 AdamW 的关系，哪项说法最准确？",
+    "question": "关于 L1、L2、weight decay 和 AdamW 的关系，哪项说法正确？",
     "explanation": "L1 倾向产生稀疏权重，L2 倾向平滑收缩权重；在普通 SGD 下 L2 惩罚与 weight decay 可近似等价，但 AdamW 将 weight decay 从自适应梯度更新中解耦，行为不完全相同。",
     "formats": {
       "choice": {
         "type": "single",
-        "options": ["L1 倾向稀疏，L2 倾向收缩；SGD 下 L2 与 weight decay 较接近，AdamW 则将 weight decay 解耦", "L1 和 L2 只影响推理阶段的输出，训练时不会参与参数更新或改变优化轨迹", "AdamW 与 Adam 加 L2 惩罚在任何学习率、参数状态和优化阶段都严格等价", "weight decay 会随机丢弃神经元，所以它与 dropout 都是完全相同的结构正则化机制"],
+        "options": ["L1 倾向稀疏，L2 倾向收缩；SGD 下 L2 与 weight decay 较接近，AdamW 则将 weight decay 解耦", "L1 和 L2 只影响推理阶段输出，训练时不会参与参数更新或改变优化轨迹，优化器仅在反向传播结束后才参考它们，因此不会实际影响每一步的参数更新", "AdamW 与 Adam 加 L2 惩罚在任何学习率、参数状态和优化阶段都严格等价", "weight decay 会随机丢弃神经元，因此与 dropout 是完全相同的结构正则化机制"],
         "answer": [0]
       },
       "open": {
@@ -312,7 +312,7 @@
     "tags": ["transformer", "encoder", "decoder", "causal-mask"],
     "difficulty": "easy",
     "angle": "definition",
-    "question": "关于 Transformer 的三种常见结构及其典型用途，哪项概括最准确？",
+    "question": "关于 Transformer 的三种常见结构及其典型用途，哪项概括正确？",
     "explanation": "Encoder-only 通过双向上下文更适合理解任务；Decoder-only 使用因果掩码逐 token 生成；Encoder-Decoder 用编码器理解输入、解码器生成输出，常用于翻译等序列到序列任务。",
     "formats": {
       "choice": {
@@ -411,7 +411,7 @@
     "angle": "debugging",
     "question": "训练集和验证集指标都异常高，但线上效果很差，哪项排查最优先？",
     "explanation": "应先检查重复样本、时间切分、标签泄露和验证集是否代表线上分布。离线高分不能证明不存在泄露或分布偏移。",
-    "formats": {"choice": {"type": "single", "options": ["检查重复样本、标签泄露、切分方式和线上分布代表性", "立即把模型换成更大的版本", "删除验证集并只报告训练集指标", "只增加训练轮数而不检查数据"], "answer": [0]}, "open": {"referenceAnswer": "优先审计数据切分、重复样本、标签泄露及验证集与线上分布的差异，再判断模型容量或训练策略。"}}
+    "formats": {"choice": {"type": "single", "options": ["检查重复样本、标签泄露、切分方式和线上分布代表性", "立即把模型换成更大的版本，参数量提升会自然修复泄露与分布偏移问题", "删除验证集并只报告训练集指标，用更高训练分数证明模型在线上同样可靠", "只增加训练轮数而不检查数据与切分，靠更长的训练曲线掩盖泄露信号"], "answer": [0]}, "open": {"referenceAnswer": "优先审计数据切分、重复样本、标签泄露及验证集与线上分布的差异，再判断模型容量或训练策略。"}}
   },
   {
     "id": "foundation-mcp-mechanism-01",
@@ -513,17 +513,6 @@
     "formats": {"choice": {"type": "single", "options": ["检查早期下采样、特征图分辨率和多尺度特征，避免小目标细节过早丢失", "只把分类器换成更大的全连接层即可恢复已丢失的像素细节", "把所有输入缩放成更小尺寸，因为小目标不需要空间信息", "只提高 dropout 率，因为小目标检测失败一定是过拟合"], "answer": [0]}, "open": {"referenceAnswer": "应先检查早期 stride/pooling、特征图分辨率、感受野和多尺度特征；过早下采样会丢失小目标细节，同时也应核查标注和增强策略。"}}
   },
   {
-    "id": "gap-flash-attention-tradeoff-01",
-    "category": "model-architecture",
-    "topic": "flash-attention",
-    "tags": ["flash-attention", "io-aware", "memory", "exact-attention"],
-    "difficulty": "hard",
-    "angle": "tradeoff",
-    "question": "FlashAttention 相比朴素 attention 的核心优化和主要边界是什么？",
-    "explanation": "FlashAttention 通过 tiling 和 IO-aware 设计减少 GPU HBM 与片上 SRAM 间读写，同时计算精确 attention；收益依赖硬件、序列长度和实现支持，并不是改变了 attention 的数学结果或把复杂度普遍降为线性。",
-    "formats": {"choice": {"type": "single", "options": ["它通过分块减少 GPU 内存层级间访问，保持精确 attention；收益依赖硬件和形状，并非普遍变成线性复杂度", "它用近似 attention 牺牲精度换取固定线性复杂度，所有硬件都同样加速", "它只压缩模型权重，不改变 attention 的中间激活访问", "它把 Query 和 Key 删除后直接复制 Value，因此不再需要显存"], "answer": [0]}, "open": {"referenceAnswer": "FlashAttention 是 IO-aware 的精确 attention，通过 tiling 减少 HBM 与片上 SRAM 间读写；它不改变数学结果，也不保证所有硬件和序列长度都同样受益，更不是普遍将 attention 复杂度变为线性。"}}
-  },
-  {
     "id": "gap-graph-rag-scenario-01",
     "category": "rag",
     "topic": "graph-rag",
@@ -587,7 +576,7 @@
     "angle": "design",
     "question": "为一个步骤数量不确定、每一步结果会影响下一步的 Agent 任务设计规划器时，哪种方案更稳妥？",
     "explanation": "让模型动态提出或调整计划，但由程序维护状态、工具边界、预算和停止条件，并在高风险节点设置检查点；不能让模型无限循环或直接拥有全部权限。",
-    "formats": {"choice": {"type": "single", "options": ["允许动态调整计划，同时由程序维护状态、预算、停止条件和高风险检查点", "预先硬编码所有可能步骤，遇到新信息也不允许改变计划", "让模型自行决定无限循环和所有工具权限", "只保存最终答案，不保存中间状态和工具结果"], "answer": [0]}, "open": {"referenceAnswer": "不确定步数的任务适合动态规划，但程序应控制状态、工具权限、迭代预算、停止条件和人工检查点，并利用工具结果验证计划是否仍然有效。"}}
+    "formats": {"choice": {"type": "single", "options": ["允许动态调整计划，同时由程序维护状态、预算、停止条件和高风险检查点", "预先硬编码所有可能步骤，遇到新信息也不允许改变计划，保证执行确定性即可", "让模型自行决定无限循环和所有工具权限，完全放权以最大化灵活性与自主性", "只保存最终答案不保存中间状态与工具结果，减少存储即可提升运行效率"], "answer": [0]}, "open": {"referenceAnswer": "不确定步数的任务适合动态规划，但程序应控制状态、工具权限、迭代预算、停止条件和人工检查点，并利用工具结果验证计划是否仍然有效。"}}
   },
   {
     "id": "gap-pytorch-performance-scenario-01",
@@ -609,7 +598,7 @@
     "angle": "design",
     "question": "为 PyTorch 推理服务引入 torch.compile 或算子融合时，哪项设计最合理？",
     "explanation": "先用基线 profiler 找到稳定热点，在代表性 shape 上验证数值一致性和性能，再逐步扩大覆盖；动态 shape、图断裂和编译开销都可能抵消收益。",
-    "formats": {"choice": {"type": "single", "options": ["先建立基线，在代表性 shape 上验证正确性与收益，再处理动态 shape、图断裂和编译开销", "无论输入 shape 和算子都直接编译，因为融合必然加速", "只比较单次冷启动延迟，不测量稳态吞吐和内存", "为了性能可以跳过数值回归和异常输入测试"], "answer": [0]}, "open": {"referenceAnswer": "应先 profiler 建立基线，在代表性输入上验证数值正确性、稳态延迟、吞吐和内存，再逐步处理动态 shape、图断裂与编译开销，不能假设融合必然有收益。"}}
+    "formats": {"choice": {"type": "single", "options": ["先建立基线，在代表性 shape 上验证正确性与收益，再处理动态 shape、图断裂和编译开销", "无论输入 shape 与算子都直接编译，因为融合必然加速且带来零额外开销", "只比较单次冷启动延迟，不测量稳态吞吐、显存占用与动态 shape 下的表现", "为性能可以跳过数值回归与异常输入测试，上线后再观察是否存在精度偏差"], "answer": [0]}, "open": {"referenceAnswer": "应先 profiler 建立基线，在代表性输入上验证数值正确性、稳态延迟、吞吐和内存，再逐步处理动态 shape、图断裂与编译开销，不能假设融合必然有收益。"}}
   },
   {
     "id": "gap-sequence-scenario-01",
@@ -631,7 +620,7 @@
     "angle": "scenario",
     "question": "客服系统只需按固定规则查询订单并在满足条件时退款，是否应该直接采用完全自主 Agent？",
     "explanation": "流程稳定、规则明确时，确定性 workflow 通常更可预测、更容易审计；只有当任务需要开放式决策和不可预先枚举的步骤时，才考虑增加 Agent 自主性。",
-    "formats": {"choice": {"type": "single", "options": ["优先使用确定性 workflow，保留明确的规则、权限和审计；只有确需动态决策时再引入 Agent", "任何涉及自然语言的任务都必须使用完全自主 Agent", "自主性越高就越容易审计，因此应取消固定规则", "只要模型能生成退款理由，就可以跳过订单状态校验"], "answer": [0]}, "open": {"referenceAnswer": "固定规则、步骤可预测的客服流程更适合确定性 workflow，便于测试和审计；当任务需要开放式动态决策时才增加 Agent 自主性，并保留权限和校验。"}}
+    "formats": {"choice": {"type": "single", "options": ["优先使用确定性 workflow，保留明确的规则、权限和审计；只有确需动态决策时再引入 Agent", "任何涉及自然语言的任务都必须使用完全自主 Agent，语言能力即等同自主性", "只要模型能生成退款理由，就可以跳过订单状态校验直接执行退款动作，因为生成式模型的文本自洽即代表业务逻辑正确，无需额外系统校验", "只要模型能生成退款理由，就可以跳过订单状态校验直接执行退款动作"], "answer": [0]}, "open": {"referenceAnswer": "固定规则、步骤可预测的客服流程更适合确定性 workflow，便于测试和审计；当任务需要开放式动态决策时才增加 Agent 自主性，并保留权限和校验。"}}
   },
   {
     "id": "gap-tool-security-debugging-01",
@@ -642,7 +631,7 @@
     "angle": "debugging",
     "question": "Agent 通过“查发票”工具返回了另一位租户的数据，日志显示模型传入了合法的 invoiceId。最可能的根因和修复是什么？",
     "explanation": "合法参数不代表有权访问；服务端可能只按 invoiceId 查询而未绑定当前用户/租户。应在服务端依据可信身份执行对象级授权，并记录拒绝事件，不能只依赖模型提示词。",
-    "formats": {"choice": {"type": "single", "options": ["缺少服务端对象级租户授权；应将可信身份与 invoiceId 绑定校验，不能只依赖模型或参数格式", "因为 invoiceId 合法，所以只能扩大模型上下文避免误判", "把完整数据库交给模型让它自行筛选租户即可", "只修改工具描述文字，不改变服务端查询条件"], "answer": [0]}, "open": {"referenceAnswer": "根因是服务端把可控的 invoiceId 当成了授权依据，缺少基于可信身份的对象级租户校验。修复应在服务端绑定 user/tenant 与资源访问，失败时拒绝并审计，不能依赖 prompt。"}}
+    "formats": {"choice": {"type": "single", "options": ["缺少服务端对象级租户授权；应将可信身份与 invoiceId 绑定校验，不能只依赖模型或参数格式", "因为 invoiceId 合法，所以只需扩大模型上下文避免误判，无需改动服务端查询", "把完整数据库交给模型让它自行筛选租户即可，模型能自行理解权限边界", "只修改工具描述文字说明权限，不改变服务端查询条件即可修复越权"], "answer": [0]}, "open": {"referenceAnswer": "根因是服务端把可控的 invoiceId 当成了授权依据，缺少基于可信身份的对象级租户校验。修复应在服务端绑定 user/tenant 与资源访问，失败时拒绝并审计，不能依赖 prompt。"}}
   },
   {
     "id": "foundation-rag-chunking-01",
@@ -719,7 +708,7 @@
     "angle": "fundamental",
     "question": "在 Prompt 中提供几个输入-输出示例（Few-shot Prompting）的主要目的是什么？",
     "explanation": "Few-shot 利用大模型的上下文学习（In-Context Learning）能力，通过显式范例明确输出格式、边界条件和推理模式，大幅降低格式错误与理解歧义。",
-    "formats": {"choice": {"type": "single", "options": ["通过给出具体样例指导模型学习预期的输出格式、风格与推理步骤", "在运行时直接修改大模型的基础神经网络权重参数", "降低 API 调用的 Token 消耗以节约成本", "强制让模型关闭所有的安全过滤机制"], "answer": [0]}, "open": {"referenceAnswer": "Few-shot 提示通过在上下文中提供示范样本，引导模型进行上下文学习，明确期望的任务规范、格式标准（如 JSON）及边界处理方式，提升输出稳定性。"}}
+    "formats": {"choice": {"type": "single", "options": ["通过给出具体样例指导模型学习预期的输出格式、风格与推理步骤", "在运行时直接修改大模型的基础神经网络权重参数，把样例写进训练集做一次性微调", "降低 API 调用的 Token 消耗以节约成本，少给样例即可自动提升性价比与格式正确率", "强制让模型关闭所有安全过滤机制，放开限制后才能正确模仿示例的表达风格"], "answer": [0]}, "open": {"referenceAnswer": "Few-shot 提示通过在上下文中提供示范样本，引导模型进行上下文学习，明确期望的任务规范、格式标准（如 JSON）及边界处理方式，提升输出稳定性。"}}
   },
   {
     "id": "foundation-context-hierarchy-01",
@@ -741,7 +730,7 @@
     "angle": "definition",
     "question": "现代大模型 API 提供的“结构化输出（Structured Outputs / JSON Schema）”功能是如何保证输出一定符合格式的？",
     "explanation": "在模型自回归生成每个 Token 时，解码引擎依据给定的 JSON Schema 语法树对下一个 Token 的概率分布进行约束掩码（Constrained Decoding），屏蔽不合法的字符/Token，从而严格保证 100% 符合模式。",
-    "formats": {"choice": {"type": "single", "options": ["在生成过程中根据 Schema 语法动态约束下一个合法 Token 的候选集合", "仅在 prompt 末尾追加一行“请一定返回 JSON”的自然语言提示", "模型生成完文本后若解析失败就自动删库重装", "把用户的输入直接转化为 SQL 语句执行"], "answer": [0]}, "open": {"referenceAnswer": "结构化输出通过约束解码（Constrained Decoding）机制，在 Token 生成阶段依据 JSON Schema 动态屏蔽不合法的 Token 概率，从而从根本上避免语法解析错误和缺失必填字段。"}}
+    "formats": {"choice": {"type": "single", "options": ["在生成过程中根据 Schema 语法动态约束下一个合法 Token 的候选集合", "仅在 prompt 末尾追加一行“请一定返回 JSON”的自然语言提示", "应用端对模型输出做宽松字符串匹配，遇到不符合 Schema 的部分直接截断并补齐为合法 JSON，无需约束解码", "把用户的输入直接转化为 SQL 语句执行"], "answer": [0]}, "open": {"referenceAnswer": "结构化输出通过约束解码（Constrained Decoding）机制，在 Token 生成阶段依据 JSON Schema 动态屏蔽不合法的 Token 概率，从而从根本上避免语法解析错误和缺失必填字段。"}}
   },
   {
     "id": "foundation-prompt-injection-types-01",
