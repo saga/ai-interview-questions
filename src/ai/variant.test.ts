@@ -2,7 +2,7 @@
 // 不生成 answer/explanation，校验失败或长度泄题直接抛错（不 retry）。
 
 import { describe, expect, it, vi } from 'vitest';
-import { generateVariant } from './variant';
+import { generateVariant, VARIANT_REJECT_REASON } from './variant';
 import type { CompleteFn } from '../types';
 import type { Question } from '../schemas/question';
 
@@ -53,6 +53,44 @@ describe('generateVariant（轻量变体）', () => {
       '{"question":"完全漂移的题目","options":["a","b","c","d"]}',
     );
     await expect(generateVariant(BASE, complete)).rejects.toThrow();
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  it('选择题缺 options → 拒绝，不 retry', async () => {
+    const complete = vi.fn(async () => '{"question":"L2 正则化的新问法"}');
+    await expect(generateVariant(BASE, complete, 'choice')).rejects.toThrow(/缺少 options/);
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  it('选项长度泄题 → 直接抛错，不 retry（且带机器可读 reason 供遥测）', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({
+        question: 'L2 正则化为什么能平滑收缩权重？',
+        options: [
+          'L2 正则化通过对权重施加平方惩罚来平滑收缩权重，与 weight decay 在标准 SGD 下等价，并能显著降低过拟合风险',
+          'A',
+          'B',
+          'C',
+        ],
+      }),
+    );
+    const error = (await generateVariant(BASE, complete, 'choice').catch(
+      (e: unknown) => e,
+    )) as Error & { reason?: string };
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toMatch(/长度泄题/);
+    expect(error.reason).toBe(VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS);
+    // 一次失败即回退原题，绝不再次请求 LLM
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  it('开放题不做长度泄题检查（该检查只对 choice 有意义）', async () => {
+    const openQ: Question = { ...BASE, formats: { open: { referenceAnswer: 'REF' } } };
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({ question: 'L2 正则化的开放题新问法' }),
+    );
+    const out = await generateVariant(openQ, complete, 'open');
+    expect(out.options).toBeUndefined();
     expect(complete).toHaveBeenCalledTimes(1);
   });
 

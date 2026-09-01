@@ -69,8 +69,10 @@ function anchorHasEvidence(anchor: string, text: string): boolean {
  * 这是「requiredConcepts 必须成为答题所必需的推理条件」的确定性代理：
  * 题干必须自身锚定主题/必考概念，才存在可判断的考察意图。刻意不引入
  * 关键词级「意图识别」（问句词/动词白名单易误伤合法变体），也暂不上 LLM/embedding judge。
- * 局限（承认而非隐藏）：锚定检查证明「题干提到核心概念」，不证明「推理必须用到它」；
- * 后者靠 ai/variant.ts 的生成提示约束 + 覆盖率规则（requiredCoverageMet）近似保证。
+ * 局限（承认而非隐藏）：锚定检查只证明「题干仍与主题相关」，不证明「推理必须用上每个 required」。
+ * 后者不再用字面覆盖率近似（2026-09-01 第四轮删除 requiredCoverageMet），而由两条更硬的边界兜底：
+ * ① `VARIANT_SYSTEM` 的逐项一一对应约束（禁改技术结论/因果/适用条件/真假属性）；
+ * ② `answer` / `explanation` 恒取 canonical——即便变体改歪，判分与解析仍然按原题，不会判错题。
  */
 function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
   const text = stemText(v);
@@ -81,24 +83,14 @@ function hasStemAnchor(canonical: Question, v: VariantCandidate | GeneratedVaria
   return anchors.some((a) => anchorHasEvidence(a, text));
 }
 
-/**
- * requiredConcepts 覆盖率（P0-2）：不再「任一命中即通过」，要求达到约 2/3 覆盖。
- * 例如 3 个必考概念至少命中 2 个；1 个则全中。
- *
- * 证据面（2026-09-01 收紧）：**只看题干**，刻意排除 explanation 与 options。
- * - 排除 explanation：解析可「提到」required concept 却没让题目真正考察它，靠解析蒙混不计。
- * - 排除 options：轻量变体下选项只是「对原选项的逐项语义改写」，核心术语天然会被带进选项文本
- *   （如原题问 positional encoding、选项里必然出现 positional encoding），
- *   把它当证据会让「题干已漂移、靠选项兜底」的变体通过校验——知识点出现在选项里 ≠ 题干在考察它。
- */
-function requiredCoverageMet(canonical: Question, v: VariantCandidate | GeneratedVariant): boolean {
-  const required = (requiredPointsFor(canonical) ?? []).map(normalizeConcept).filter(Boolean);
-  if (required.length === 0) return true;
-  const text = stemText(v);
-  const matched = required.filter((a) => anchorHasEvidence(a, text)).length;
-  const need = Math.max(1, Math.round((required.length * 2) / 3));
-  return matched >= need;
-}
+// 注：此处曾存在 `requiredCoverageMet()`（requiredConcepts 字面覆盖需达 ≈2/3），
+// 2026-09-01 第四轮**刻意删除**。理由：轻量变体的目标只是「防止明显跑题」，
+// 而字面覆盖率无法承担「证明知识契约完全成立」的任务——它惩罚的是合法的好变体。
+// 反例：原题「为什么 KV Cache 能降低 Transformer 推理的 prefill 成本？」
+// 合法变体「某在线服务前缀高度重复，却仍重复执行相同前向计算，如何降低这部分开销？」
+// 题干里没有 KV Cache / Transformer / prefill 任何一个词，却完全合法，会被 2/3 门槛误杀。
+// 漂移防护改由 hasStemAnchor（宽松锚点）+ 选项结构不变量（数量/非空/去重）+ 长度泄题检查承担，
+// 语义正确性由「answer/explanation 恒取 canonical」这条硬边界兜底——变体改错也不会判错题。
 
 function hasDuplicateOptions(options: string[]): boolean {
   const seen = new Set<string>();
@@ -128,30 +120,30 @@ export function validateVariant(
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     const cf = canonical.formats.choice!;
-    const hasOptions = Array.isArray(v.options);
-    // 允许仅改题干而不动选项；提供选项时校验其结构（数量 / 非空 / 去重）。
-    // answer 永远来自 canonical，不在此校验——LLM 不重新决定答案。
-    if (hasOptions) {
-      if (v.options!.length !== cf.options.length) {
-        return { ok: false, reason: '变体选项数量不能改变' };
-      }
-      if (v.options!.some((o) => typeof o !== 'string' || !o.trim())) {
-        return { ok: false, reason: '选项存在空字符串' };
-      }
-      if (hasDuplicateOptions(v.options!)) {
-        return { ok: false, reason: '选项存在重复' };
-      }
+    // 轻量变体契约：选择题变体 = 题干变换 + 选项逐项变换（顺序再由程序打乱）。
+    // 因此 options 是**必填**——只改题干不动选项的候选一律拒绝：
+    // 否则 applyVariant 会退化成「保留原选项 + 原顺序」，变体名存实亡（用户照样能凭选项记忆作答）。
+    if (!Array.isArray(v.options)) {
+      return { ok: false, reason: '选择题变体缺少 options（需与题干一并逐项改写）' };
     }
+    if (v.options.length !== cf.options.length) {
+      return { ok: false, reason: '变体选项数量不能改变' };
+    }
+    if (v.options.some((o) => typeof o !== 'string' || !o.trim())) {
+      return { ok: false, reason: '选项存在空字符串' };
+    }
+    if (hasDuplicateOptions(v.options)) {
+      return { ok: false, reason: '选项存在重复' };
+    }
+    // answer 永远来自 canonical，不在此校验——LLM 不重新决定答案。
   }
 
-  // 语义：题干锚定（topic/tags/required 至少一个出现在题干本身）+ required 覆盖率（约 2/3）。
-  // 两者的证据面都**只看题干**：解析(explanation)不计入（P0-2，避免靠解析蒙混）；
+  // 语义闸门（仅一层）：题干锚定——topic / tags / required 至少一个出现在**题干本身**。
+  // 证据面只看题干：解析(explanation)不计入（避免靠解析蒙混）；
   // 选项(options)也不计入（轻量变体下选项只是逐项改写，核心术语必然出现在选项里，计入即失效）。
+  // 刻意不再叠加 requiredConcepts 字面覆盖率门槛（详见上方 requiredCoverageMet 删除说明）。
   if (!hasStemAnchor(canonical, v)) {
-    return { ok: false, reason: '变体题干未锚定 canonical topic / tags / required（核心概念只出现在选项中，无考察意图），疑似语义漂移' };
-  }
-  if (!requiredCoverageMet(canonical, v)) {
-    return { ok: false, reason: '变体仅保留部分必考概念证据（requiredConcepts 未充分考察），疑似遗漏核心知识' };
+    return { ok: false, reason: '变体题干未锚定 canonical topic / tags / required，疑似语义漂移' };
   }
 
   return { ok: true };
@@ -175,14 +167,11 @@ export function applyVariant(
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     const cf = canonical.formats.choice!;
-    let options = cf.options;
-    let answer = cf.answer;
-    // 仅当 LLM 提供了改写后的选项时才重排；否则保留 canonical 原顺序（不引入未经 LLM 改写却重排的副作用）。
-    if (v.options) {
-      const shuffled = shuffleChoiceOptions(v.options, cf.answer, rng);
-      options = shuffled.options.map(normalizeOptionText);
-      answer = normalizeAnswer(shuffled.answer);
-    }
+    // 轻量变体契约下 options 必填（validateVariant 已强制），无需再分支回退：
+    // 无条件重排 + 无条件重映射，杜绝「选项没改却先打乱」或「改了却沿用原顺序」的中间态。
+    const shuffled = shuffleChoiceOptions(v.options!, cf.answer, rng);
+    const options = shuffled.options.map(normalizeOptionText);
+    const answer = normalizeAnswer(shuffled.answer);
     return {
       ...canonical,
       question: v.question,

@@ -1,5 +1,5 @@
-// 纯逻辑测试：LLM 变体候选校验与落地（ADR-036）。
-// 安全模型：LLM 可重构 Presentation，但需通过 Knowledge Contract 校验。
+// 纯逻辑测试：LLM 变体候选校验与落地（ADR-036 轻量变体）。
+// 契约：LLM 只产出 { question, options }；answer / explanation 恒取 canonical，选项顺序由程序重排。
 
 import { describe, it, expect } from 'vitest';
 import { applyVariant, validateVariant } from './variant';
@@ -17,6 +17,13 @@ const cq: Question = {
   formats: { choice: { type: 'single', options: ['a', 'b', 'c'], answer: [0] } },
 };
 
+/** 多选题（两个正确项）：验证多正确项在程序重排后的索引重映射。 */
+const cqm: Question = {
+  ...cq,
+  id: 'xm',
+  formats: { choice: { type: 'multiple', options: ['a', 'b', 'c', 'd'], answer: [1, 3] } },
+};
+
 const oq: Question = {
   id: 'y',
   category: 'agentic-ai',
@@ -29,16 +36,17 @@ const oq: Question = {
 };
 
 function variant(partial: Partial<GeneratedVariant> = {}): GeneratedVariant {
-  // 默认题干需包含 canonical topic 与 requiredConcepts 的证据，避免保守 concept 检查误伤
-  // （regularization 节点的 2 条 required：L1/L2 平滑收缩权重、weight decay 等价）
+  // 默认题干含 canonical 锚点（regularization 节点的 required 含 L2 / weight decay），
+  // 默认选项与 cq 的 3 个选项一一对应（选择题变体必须提供等长 options）。
   return {
     question: 'L2 正则化通过对权重施加平方惩罚来平滑收缩权重，与 weight decay 在标准 SGD 下等价',
+    options: ['x', 'y', 'z'],
     ...partial,
   };
 }
 
-describe('validateVariant', () => {
-  it('题干非空 → 通过', () => {
+describe('validateVariant（结构不变量）', () => {
+  it('题干非空 + options 齐全 → 通过', () => {
     expect(validateVariant(cq, variant()).ok).toBe(true);
   });
 
@@ -46,17 +54,21 @@ describe('validateVariant', () => {
     expect(validateVariant(cq, variant({ question: '   ' })).ok).toBe(false);
   });
 
-  it('选择题：提供合法 options → 通过', () => {
-    expect(validateVariant(cq, variant({ options: ['x', 'y', 'z'] })).ok).toBe(true);
+  it('选择题缺少 options → 拒绝（P0：只改题干不动选项的候选不接受）', () => {
+    expect(validateVariant(cq, variant({ options: undefined })).ok).toBe(false);
   });
 
-  it('选择题：options 重复 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ options: ['a', 'a', 'b'] })).ok).toBe(false);
-  });
-
-  it('选择题：options 数量与 canonical 不同 → 拒绝（选项须一一对应）', () => {
-    // cq canonical options 长度为 3，传 2 个即拒绝
+  it('options 数量与 canonical 不同 → 拒绝（选项须一一对应）', () => {
     expect(validateVariant(cq, variant({ options: ['a', 'b'] })).ok).toBe(false);
+    expect(validateVariant(cq, variant({ options: ['a', 'b', 'c', 'd'] })).ok).toBe(false);
+  });
+
+  it('options 含空字符串 → 拒绝', () => {
+    expect(validateVariant(cq, variant({ options: ['a', '  ', 'c'] })).ok).toBe(false);
+  });
+
+  it('options 重复 → 拒绝', () => {
+    expect(validateVariant(cq, variant({ options: ['a', 'a', 'b'] })).ok).toBe(false);
   });
 
   it('含依赖原题指代 → 拒绝', () => {
@@ -69,34 +81,15 @@ describe('validateVariant', () => {
     expect(validateVariant(cq, variant({ question: '下文所述方案' })).ok).toBe(false);
     expect(validateVariant(cq, variant({ question: '题干中的条件' })).ok).toBe(false);
   });
+});
 
-  it('完全丢失 topic/tags/required 证据 → 拒绝（保守漂移检查）', () => {
-    // cq topic regularization，required 含 L1/L2，使用完全无关的 CNN/BatchNorm 文本
-    expect(
-      validateVariant(cq, variant({ question: '在 CNN 训练中 batch size 很小时，BatchNorm 为什么不稳定？' })).ok,
-    ).toBe(false);
-  });
-
-  it('required 概念命中即通过（L2 命中 L1/L2 必考点）', () => {
-    // 包含 L2 即命中 regularization 节点的 required 概念，覆盖率达标 → 通过
-    expect(validateVariant(cq, variant({ question: 'L2 正则化在什么场景下优于 L1？' })).ok).toBe(true);
-  });
-
-  it('仅 topic 命中但 required 覆盖率不足 → 拒绝（P0-2：不能「任一命中即通过」）', () => {
-    // 题干只含 topic 词，未覆盖任何 required 概念（regularization 节点 2 条 required，need=1）
-    expect(validateVariant(cq, variant({ question: 'regularization 的本质是什么？' })).ok).toBe(false);
-  });
-
-  it('P0-2：解析(explanation)提及 required 但题干/选项未考察 → 仍拒绝', () => {
-    // 题干完全漂移（CNN/BatchNorm），即便 explanation 里写满 required 概念也不计（explanation 不计入证据）
-    expect(
-      validateVariant(cq, variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' })).ok,
-    ).toBe(false);
+describe('validateVariant（语义锚定）', () => {
+  it('完全丢失 topic/tags/required 证据 → 拒绝', () => {
+    expect(validateVariant(cq, variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' })).ok).toBe(false);
   });
 
   it('必考概念只出现在选项里、题干已漂移 → 拒绝（证据面只看题干）', () => {
-    // 轻量变体下选项只是「对原选项的逐项语义改写」，核心术语天然会被带进选项文本；
-    // 若把选项当证据，「题干漂移、靠选项兜底」的变体就能通过校验。故证据面只看题干。
+    // 选项里塞满 required 概念也没用：证据面只看题干，概念出现在选项 ≠ 题干在考察它。
     expect(
       validateVariant(
         cq,
@@ -108,151 +101,122 @@ describe('validateVariant', () => {
     ).toBe(false);
   });
 
-  it('P0-2：required 覆盖率 1/3（realtime-interaction 节点 3 条）→ 拒绝', () => {
-    // realtime-interaction 节点含 3 条 required，need = max(1, round(3*2/3)) = 2；只覆盖 1 条 → 拒绝
-    const rtq: Question = {
-      id: 'rt',
-      category: 'system-design',
-      topic: 'realtime-interaction',
-      tags: [],
-      difficulty: 'medium',
-      question: 'q',
-      explanation: 'e',
-      formats: { choice: { type: 'single', options: ['a', 'b', 'c'], answer: [0] } },
-    };
-    // 仅覆盖第 1 条必考概念（管道架构的声学限制与感知冻结及Bitter Lesson演进）
-    const onlyOne = '管道架构的声学限制与感知冻结及Bitter Lesson演进';
-    expect(validateVariant(rtq, variant({ question: onlyOne })).ok).toBe(false);
+  it('锚点命中即通过（不再强制 requiredConcepts 2/3 字面覆盖）', () => {
+    // 只含 topic 词、未覆盖 required 字面概念的变体现在应放行：
+    // 2/3 字面覆盖门槛会误杀「换场景不换知识点」的合法变体，已于第四轮删除。
+    expect(validateVariant(cq, variant({ question: 'regularization 的本质是什么？' })).ok).toBe(true);
   });
 
-  it('P0-2：required 覆盖率 2/3（realtime-interaction 节点 3 条）→ 通过', () => {
-    const rtq: Question = {
-      id: 'rt2',
-      category: 'system-design',
-      topic: 'realtime-interaction',
-      tags: [],
-      difficulty: 'medium',
-      question: 'q',
-      explanation: 'e',
-      formats: { choice: { type: 'single', options: ['a', 'b', 'c'], answer: [0] } },
-    };
-    // 覆盖第 1、3 条必考概念（管道架构… / 原生多模态权衡…），缺第 2 条（微轮次时间片并发…）→ 2/3 达标
-    const twoOfThree =
-      '管道架构的声学限制与感知冻结及Bitter Lesson演进；原生多模态权衡与动态评测、Context/网络/延迟瓶颈——覆盖第 1、3 条必考概念。';
-    expect(validateVariant(rtq, variant({ question: twoOfThree })).ok).toBe(true);
+  it('GeneratedVariant 契约只含 question/options（无靠解析蒙混的入口）', () => {
+    const v = variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' });
+    expect(Object.keys(v).sort()).toEqual(['options', 'question']);
+    expect(validateVariant(cq, v).ok).toBe(false);
+  });
+
+  it('已知局限：换场景但题干完全不出现 topic/required 字面词的变体仍会被拒（走 fallback 原题）', () => {
+    // 「为什么 KV Cache 能降低 prefill 成本？」→「某服务前缀高度重复却仍重复前向计算，如何降低开销？」
+    // 是合法的好变体，但题干无锚点可命中，锚定闸门会拒。这是刻意保留的保守行为：
+    // 失败只回退原题（不影响正确性），且现在可通过 variant 遥测的 fallbackReason 观测真实比例。
+    expect(
+      validateVariant(cq, variant({ question: '某在线服务发现输入前缀高度重复却仍重复相同计算，如何降低开销？' })).ok,
+    ).toBe(false);
   });
 
   it('fuzzball 兜底：拼写/形态差异仍视为证据（regularisation ↔ regularization）', () => {
     const cqEn: Question = { ...cq, topic: 'regularisation', tags: [] };
-    // 精确 token 不命中（regularisation ≠ regularization），但 fuzz token_set 93 ≥75
     expect(validateVariant(cqEn, variant({ question: 'regularization 的本质是什么？' })).ok).toBe(true);
-    // 完全漂移仍应拒绝
     expect(validateVariant(cqEn, variant({ question: 'CNN 卷积核大小如何选择？' })).ok).toBe(false);
   });
 
   it('fuzzball 兜底：短语级 token_set 对长文本有效（batch statistics ↔ statistics across batch）', () => {
-    const q: Question = {
-      id: 't',
-      category: 'tmp',
-      topic: 'layer-normalization',
-      tags: ['batch statistics'],
-      difficulty: 'medium',
-      question: 'q',
-      explanation: 'e',
-      formats: { choice: { type: 'single', options: ['a', 'b', 'c'], answer: [0] } },
-    };
-    // 包含 token_set 100 的短语
-    expect(validateVariant(q, variant({ question: 'LayerNorm does not rely on statistics computed across the batch' })).ok).toBe(true);
+    const q: Question = { ...cq, id: 't', topic: 'layer-normalization', tags: ['batch statistics'] };
+    expect(
+      validateVariant(
+        q,
+        variant({
+          question: 'LayerNorm does not rely on statistics computed across the batch',
+          options: ['x', 'y', 'z'],
+        }),
+      ).ok,
+    ).toBe(true);
   });
 });
 
-describe('applyVariant', () => {
-  it('选择题：无 options 时保留 canonical 原顺序与答案（不引入未改写却重排的副作用）', () => {
+describe('applyVariant（程序结构变换）', () => {
+  it('选择题：程序重排后，正确答案文本经索引重映射仍正确（顺序无关）', () => {
+    // variant options 与原题按位置一一对应：'a'→'x'、'b'→'y'、'c'→'z'（canonical 正确项 = 'a'）
     const r = applyVariant(cq, variant({ question: 'regularization 变体' }));
     expect(r.question).toBe('regularization 变体');
-    expect(r.formats.choice?.options).toEqual(['a', 'b', 'c']);
-    expect(r.formats.choice?.answer).toEqual([0]);
-    // 解析永远来自 canonical（LLM 不生成）
-    expect(r.explanation).toBe('e');
-    expect(r.aiGenerated).toBe(true);
-  });
-
-  it('选择题：提供 options 时改写并程序重排，正确答案文本经索引重映射后仍正确', () => {
-    // variant options 与原题按位置一一对应：'a'→'x'、'b'→'y'、'c'→'z'（canonical 正确项 = 'a' = 索引 0）
-    const r = applyVariant(cq, variant({ question: 'regularization 变体', options: ['x', 'y', 'z'] }));
-    // 选项集合不变（顺序由程序 Fisher–Yates 决定，不在此断言具体顺序）
     expect(new Set(r.formats.choice?.options)).toEqual(new Set(['x', 'y', 'z']));
-    // 重映射后，正确答案索引指向的文本必须仍是 canonical 正确项对应的改写文本 'x'
     expect(r.formats.choice?.options[r.formats.choice.answer[0]]).toBe('x');
   });
 
-  it('开放题：referenceAnswer 永远保留原题的值（LLM 不改写答案）', () => {
-    const r = applyVariant(oq, variant({ question: 'memory 相关变体' }));
-    expect(r.formats.open?.referenceAnswer).toBe('REF-ANSWER');
-    expect(r.question).toBe('memory 相关变体');
-    expect(r.aiGenerated).toBe(true);
+  it('多选题：多个正确项全部正确重映射且升序', () => {
+    const r = applyVariant(cqm, variant({ options: ['w', 'x', 'y', 'z'] }));
+    const answer = r.formats.choice!.answer;
+    expect(answer).toEqual([...answer].sort((a, b) => a - b));
+    // canonical 正确项 = 索引 1('x') 与 3('z')
+    expect(answer.map((i) => r.formats.choice!.options[i]).sort()).toEqual(['x', 'z']);
+  });
+
+  it('注入确定性 rng 时重排结果可复现', () => {
+    const a = applyVariant(cq, variant({ options: ['x', 'y', 'z'] }), 'choice', () => 0);
+    const b = applyVariant(cq, variant({ options: ['x', 'y', 'z'] }), 'choice', () => 0);
+    expect(a.formats.choice?.options).toEqual(b.formats.choice?.options);
+    expect(a.formats.choice?.answer).toEqual(b.formats.choice?.answer);
   });
 
   it('解析永远来自 canonical（LLM 不生成解析）', () => {
-    const r = applyVariant(cq, variant());
+    expect(applyVariant(cq, variant({ options: ['x', 'y', 'z'] })).explanation).toBe('e');
+  });
+
+  it('开放题：仅替换题干，referenceAnswer 永远保留原题的值', () => {
+    const r = applyVariant(oq, variant({ question: 'memory 相关变体' }));
+    expect(r.question).toBe('memory 相关变体');
+    expect(r.formats.open?.referenceAnswer).toBe('REF-ANSWER');
     expect(r.explanation).toBe('e');
+    expect(r.aiGenerated).toBe(true);
   });
 });
 
 describe('applyVariant / validateVariant 形态对齐（P0-1）', () => {
-  // 用 regularization 主题：default variant() 题干已含 required 证据（L2 正则化 / weight decay），
-  // 既能满足语义 gate，又便于隔离验证「形态（choice/open）」逻辑本身。
+  // 双形态题：按本次会话实际形态决定变体结构，而不是永远当选择题。
   const dq: Question = {
+    ...cq,
     id: 'd',
-    category: 'machine-learning',
-    topic: 'regularization',
-    tags: [],
-    difficulty: 'medium',
-    question: 'q',
-    explanation: 'e',
     formats: { choice: { type: 'single', options: ['a', 'b', 'c'], answer: [0] }, open: { referenceAnswer: 'REF' } },
   };
-  const oq: Question = {
+  // 仅开放形态、且主题与 variant() 默认题干一致（regularization），用于隔离验证「不传 format」的回退
+  const oq2: Question = {
+    ...cq,
     id: 'y2',
-    category: 'machine-learning',
-    topic: 'regularization',
-    tags: [],
-    difficulty: 'medium',
-    question: 'q',
-    explanation: 'e',
     formats: { open: { referenceAnswer: 'REF-OPEN' } },
   };
 
-  it('format=open：只替换题干，解析/choice/referenceAnswer 全部保留 canonical', () => {
-    const v = variant();
-    const r = applyVariant(dq, v, 'open');
-    expect(r.question).toBe(v.question);
-    expect(r.explanation).toBe('e');
+  it('format=open：不要求 options，只替换题干', () => {
+    expect(validateVariant(dq, variant({ options: undefined }), 'open').ok).toBe(true);
+    const r = applyVariant(dq, variant(), 'open');
     expect(r.formats.open?.referenceAnswer).toBe('REF');
     expect(r.formats.choice?.options).toEqual(['a', 'b', 'c']);
     expect(r.formats.choice?.answer).toEqual([0]);
     expect(r.aiGenerated).toBe(true);
   });
 
+  it('format=choice：缺 options 或数量不符 → 拒绝', () => {
+    expect(validateVariant(dq, variant({ options: undefined }), 'choice').ok).toBe(false);
+    expect(validateVariant(dq, variant({ options: ['x', 'y'] }), 'choice').ok).toBe(false);
+  });
+
   it('format=choice：改写 options 并程序重排，正确文本经重映射仍正确', () => {
-    // dq canonical 正确项 = 索引 0 = 'a'；variant 改写 'a'→'x'、'b'→'y'、'c'→'z'
     const r = applyVariant(dq, variant({ options: ['x', 'y', 'z'] }), 'choice');
     expect(new Set(r.formats.choice?.options)).toEqual(new Set(['x', 'y', 'z']));
     expect(r.formats.choice?.options[r.formats.choice.answer[0]]).toBe('x');
   });
 
-  it('format=open：不要求 options，即使提供非法 options 也不拒绝', () => {
-    expect(validateVariant(dq, variant({ options: ['x'], answer: [0] }), 'open').ok).toBe(true);
-  });
-
-  it('format=choice：必须 options≥2，非法 options 仍拒绝', () => {
-    expect(validateVariant(dq, variant({ options: ['x'], answer: [0] }), 'choice').ok).toBe(false);
-  });
-
   it('不传 format 时回退到 canonical 是否含 choice', () => {
-    // dq 含 choice → 不传 format 视为 choice；variant() 仅改题干（不提供 options）仍通过语义校验
-    expect(validateVariant(dq, variant()).ok).toBe(true);
-    // oq 仅 open → 不传 format 视为 open
-    expect(validateVariant(oq, variant()).ok).toBe(true);
+    // dq 含 choice → 视为选择题，缺 options 即拒
+    expect(validateVariant(dq, variant({ options: undefined })).ok).toBe(false);
+    // oq2 仅 open → 视为开放题，缺 options 无妨
+    expect(validateVariant(oq2, variant({ options: undefined })).ok).toBe(true);
   });
 });

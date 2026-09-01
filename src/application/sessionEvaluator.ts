@@ -9,6 +9,7 @@ import type { SessionQuestion } from '../schemas/session';
 import { availableFormats } from '../domain/quiz';
 import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
+import { recordVariantRound } from '../ai/usageTelemetry';
 import type { Question } from '../schemas/question';
 
 /** undefined / null / 空串 / 空数组都表示未作答。 */
@@ -63,16 +64,29 @@ export async function finalizeQuestion(
   provider: LLMProvider | null,
 ): Promise<SessionQuestion> {
   if (!provider) return sq;
+  const startedAt = Date.now();
+  // P2 变体遥测：无论成功还是回退都记一条（延迟 + 回退原因），用于评估「轻量变体省了多少、
+  // gate 是否过严」。详见 ai/usageTelemetry.getVariantTelemetry()。
+  const record = (fallbackReason?: string) =>
+    recordVariantRound({
+      questionId: sq.question.id,
+      latencyMs: Date.now() - startedAt,
+      ...(fallbackReason ? { fallbackReason } : {}),
+    });
   try {
     const variant = await provider.generateVariant(sq.question, sq.format);
     const check = validateVariant(sq.question, variant, sq.format);
     if (!check.ok) {
       console.warn(`变体校验未通过(${sq.question.id})，回退到原题：${check.reason}`);
+      record('validation-failed');
       return sq;
     }
+    record();
     return { ...sq, question: applyVariant(sq.question, variant, sq.format) };
   } catch (error) {
     console.warn(`变体生成失败(${sq.question.id})，回退到原题：`, error);
+    const reason = (error as { reason?: unknown } | null)?.reason;
+    record(typeof reason === 'string' ? reason : 'generation-error');
     return sq;
   }
 }

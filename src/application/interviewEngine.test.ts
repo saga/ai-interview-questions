@@ -32,9 +32,13 @@ vi.mock('../ai/provider', () => ({
     config
       ? {
           name: 'mock',
-          generateVariant: vi.fn(async (q: Question) =>
-            q.id === 'bad-variant' ? { question: '' } : { question: `${q.topic} 变体题干` },
-          ),
+          // 轻量变体契约：choice 形态必须一并返回「逐项改写后的 options」（此处用同文本模拟改写）
+          generateVariant: vi.fn(async (q: Question, format?: string) => {
+            if (q.id === 'bad-variant') return { question: '' };
+            const question = `${q.topic} 变体题干`;
+            if (format === 'open' || !q.formats.choice) return { question };
+            return { question, options: q.formats.choice.options };
+          }),
           evaluateOpenAnswer,
         }
       : null,
@@ -173,7 +177,13 @@ describe('buildSession 组卷与变体处理', () => {
     const goodBank = { categories: ['x'], questions: [{ ...choiceQ }] };
     const session = await buildSession(goodBank, { ...def(true, ['choice']) }, cfg);
     expect(session.questions[0].question.question).toBe(`${choiceQ.topic} 变体题干`);
-    expect(session.questions[0].question.formats.choice).toEqual(choiceQ.formats.choice);
+    // 答案数据语义不动：选项集合不变，且重排后 answer 索引仍指向原题正确项
+    const applied = session.questions[0].question.formats.choice!;
+    const canonical = choiceQ.formats.choice!;
+    expect(new Set(applied.options)).toEqual(new Set(canonical.options));
+    expect(applied.answer.map((i) => applied.options[i])).toEqual(
+      canonical.answer.map((i) => canonical.options[i]),
+    );
 
     const badBank = {
       categories: ['x'],
@@ -197,9 +207,23 @@ describe('buildSession 组卷与变体处理', () => {
       { ...def(true, ['choice', 'open']), count: 4 },
       cfg,
     );
+    // 变体落地后选项顺序由程序重排，作答索引必须从会话题面取（与 UI 取值方式一致），不能写死 0。
+    const choiceOf = (id: string) =>
+      session.questions.find((sq) => sq.question.id === id)!.question.formats.choice!;
+    const c1 = choiceOf('c1');
+    const d1 = choiceOf('d1');
+    const d2 = choiceOf('d2');
+    const wrongIndex = (len: number, correct: number[]) =>
+      Array.from({ length: len }, (_, i) => i).find((i) => !correct.includes(i))!;
+
     const grades = await evaluateSession(
       session,
-      { c1: [0], d1: [0], d2: [2], o1: '我的回答' },
+      {
+        c1: c1.answer, // 正确（索引来自重排后的题面）
+        d1: [d1.answer[0]], // 多选只选一个 → 错
+        d2: [wrongIndex(d2.options.length, d2.answer)], // 错选
+        o1: '我的回答',
+      },
       cfg,
     );
     expect(new Set(Object.keys(grades))).toEqual(new Set(['c1', 'd1', 'd2', 'o1']));

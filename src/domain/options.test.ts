@@ -2,12 +2,7 @@
 // 顺序变化保证、多选题答案归一化、文本规范化。
 
 import { describe, expect, it } from 'vitest';
-import {
-  shuffleChoiceOptions,
-  ensureDifferentOrder,
-  normalizeAnswer,
-  normalizeOptionText,
-} from './options';
+import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
 
 describe('shuffleChoiceOptions', () => {
   it('rng=0 时确定性重排且正确答案经索引重映射仍对应原正确文本', () => {
@@ -43,20 +38,6 @@ describe('shuffleChoiceOptions', () => {
   it('选项数量与 canonical 一致（一一对应，不改变题量）', () => {
     const r = shuffleChoiceOptions(['a', 'b', 'c', 'd'], [2], () => 0);
     expect(r.options).toHaveLength(4);
-  });
-});
-
-describe('ensureDifferentOrder', () => {
-  it('与原顺序相同则交换前两项', () => {
-    expect(ensureDifferentOrder(['a', 'b', 'c'], ['a', 'b', 'c'])).toEqual(['b', 'a', 'c']);
-  });
-
-  it('与原顺序不同则保持', () => {
-    expect(ensureDifferentOrder(['a', 'b', 'c'], ['c', 'a', 'b'])).toEqual(['c', 'a', 'b']);
-  });
-
-  it('长度 < 2 直接返回', () => {
-    expect(ensureDifferentOrder(['a'], ['a'])).toEqual(['a']);
   });
 });
 

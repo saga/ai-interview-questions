@@ -43,19 +43,6 @@ export function shuffleChoiceOptions(
   };
 }
 
-/**
- * 若打乱结果与原始顺序完全相同，交换前两项以保证机械变化一定发生（纯算法，无 LLM）。
- * 通用纯函数，便于单测；shuffleChoiceOptions 内部已内置等价保证。
- */
-export function ensureDifferentOrder<T>(original: T[], shuffled: T[]): T[] {
-  if (original.length < 2) return shuffled;
-  const same = shuffled.every((value, i) => value === original[i]);
-  if (same) {
-    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
-  }
-  return shuffled;
-}
-
 /** 多选题 answer 索引归一化为升序（确定性展示，不改变语义）。 */
 export function normalizeAnswer(answer: number[]): number[] {
   return [...answer].sort((a, b) => a - b);

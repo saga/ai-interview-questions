@@ -42,6 +42,12 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
 - 表达简化或自然化
 - 保持原有技术结论不变
 
+选项一一对应（重要）：
+- 输出的第 N 个选项必须是输入第 N 个选项的改写
+- 只允许改变表达，不允许改变因果关系、适用条件、范围、数量或真假属性
+- 不要给某个选项补充解释、理由或额外结论（例如把「增大 batch size」写成
+  「增大 batch size 可以显著减少单请求的 prefill 计算」——这已经改变了原选项的语义）
+
 不要进行深度重新设计。不要改变知识点或难度。
 
 只输出 JSON：
@@ -87,6 +93,19 @@ function toGeneratedVariant(_q: Question, out: RawVariant): GeneratedVariant {
   };
 }
 
+/** 变体被拒的机器可读原因码（供 variant 遥测统计 fallback 率）。 */
+export const VARIANT_REJECT_REASON = {
+  /** 变体选项存在明显长度泄题（正确项过长）。 */
+  OPTION_LENGTH_BIAS: 'option-length-bias',
+} as const;
+
+/** 构造带机器可读原因码的拒绝错误（Error 本身仍保留人话 message 供日志使用）。 */
+function rejectVariant(reason: string, message: string): Error {
+  const err = new Error(message) as Error & { reason?: string };
+  err.reason = reason;
+  return err;
+}
+
 /** 生成轻量变体候选：一次 LLM 调用，校验失败或长度泄题直接抛错（由 finalizeQuestion 回退原题）。 */
 export async function generateVariant(
   q: Question,
@@ -102,13 +121,14 @@ export async function generateVariant(
     throw new Error(check.reason ?? '变体校验未通过');
   }
   // 抗暗示：长度泄题为硬失败，不再重新请求 LLM。
-  const bias = detectOptionLengthBias(
-    candidate.options ?? [],
-    q.formats.choice?.answer ?? [],
-  );
-  if (bias.biased) {
-    console.warn(`variant option bias: ${bias.detail}`);
-    throw new Error('变体选项存在明显长度泄题');
+  // 只对选择题执行——open 形态没有选项，语义上不适用（validateVariant 已保证 choice 时 options 必存在）。
+  const isChoice = format ? format === 'choice' : !!q.formats.choice;
+  if (isChoice) {
+    const bias = detectOptionLengthBias(candidate.options!, q.formats.choice!.answer);
+    if (bias.biased) {
+      console.warn(`variant option bias: ${bias.detail}`);
+      throw rejectVariant(VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS, '变体选项存在明显长度泄题');
+    }
   }
   return candidate;
 }

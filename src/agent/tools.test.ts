@@ -83,7 +83,12 @@ function fakeOpenResult(overall = 50): EvaluationResult {
 function makeProvider(): LLMProvider & { evaluateOpenAnswer: ReturnType<typeof vi.fn> } {
   return {
     name: 'fake',
-    generateVariant: vi.fn(async (q: Question) => ({ question: `${q.topic} 变体题干` })),
+    // 轻量变体契约：choice 形态一并返回逐项改写后的 options（此处用同文本模拟改写）
+    generateVariant: vi.fn(async (q: Question, format?: string) => {
+      const question = `${q.topic} 变体题干`;
+      if (format === 'open' || !q.formats.choice) return { question };
+      return { question, options: q.formats.choice.options };
+    }),
     evaluateOpenAnswer: vi.fn(async () => fakeOpenResult(50)),
   };
 }
