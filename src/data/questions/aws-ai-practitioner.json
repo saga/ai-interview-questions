@@ -17,6 +17,11 @@
     "angle": "mechanism",
     "question": "公司每季度用 ML 模型做预测以优化运营。AI 从业者要写一份关于已训练模型的报告，向干系人提供透明度与可解释性。报告中应包含什么来满足该要求？（单选）",
     "explanation": "B 正确：偏依赖图（PDP）展示单个特征在全局范围变化时对预测的影响，是面向干系人的标准全局解释工具，直接服务透明度/可解释性。A 错：训练代码不涉及结果解释。C 错：样本数据非解释性内容。D 错：收敛表说明训练过程而非预测逻辑。",
+    "misconceptions": [
+      "训练代码本身就是可解释性材料，把代码附在报告里即可说明模型如何得出结论",
+      "把训练样本数据放进报告就等于解释了模型，因为预测结果来自这些数据",
+      "训练收敛表能解释模型的预测逻辑，损失下降过程就是模型的决策依据"
+    ],
     "formats": {
       "choice": {
         "type": "single",
@@ -28,7 +33,8 @@
         ],
         "answer": [
           1
-        ]
+        ],
+        "misconceptionMap": [0, null, 1, 2]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- PDP 展示特征→预测的影响，服务可解释性。\n- A 代码；C 样本；D 收敛表，均非解释性内容。"
@@ -124,6 +130,11 @@
     "angle": "fundamental",
     "question": "公司训练了图像分类模型预测植物病害，想评估模型正确分类了多少张图像。应用哪个评估指标衡量模型性能？（单选）",
     "explanation": "B 正确：分类任务中“正确分类比例”即准确率（Accuracy）。A、C 错：R² 与 RMSE 用于回归（连续值）。D 错：学习率是超参，非评估指标。",
+    "misconceptions": [
+      "R² 可用于分类模型，因为它是通用的模型拟合优度指标",
+      "RMSE 能衡量分类错误的平均幅度，适用于任何有正确答案的任务",
+      "学习率是评估模型性能的指标，把它调小即可提升分类准确率"
+    ],
     "formats": {
       "choice": {
         "type": "single",
@@ -135,7 +146,8 @@
         ],
         "answer": [
           1
-        ]
+        ],
+        "misconceptionMap": [0, null, 1, 2]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 分类正确比例=准确率。\n- A/C 回归指标；D 超参。"
@@ -269,6 +281,11 @@
     "angle": "scenario",
     "question": "公司要构建为防护眼镜生成图像的技术方案，要求高准确率并最小化错误标注风险。哪个方案满足？（单选）",
     "explanation": "A 正确：SageMaker Ground Truth Plus 提供 human-in-the-loop 人工校验，在生成/标注环节由人把关，兼顾高准确率与低错误标注风险。B 错：Bedrock 知识库用于检索增强，不解决标注。C 错：Rekognition 是识别服务，不提供人工校验闭环。D 错：QuickSight Q 是 BI 问答，无关。",
+    "misconceptions": [
+      "用知识库做数据增强能提高标注准确率，等价于人工校验",
+      "Rekognition 等识别服务自带人工复核闭环，可以消除错误标注风险",
+      "BI 问答工具（QuickSight Q）能校验生成图像的标注是否正确"
+    ],
     "formats": {
       "choice": {
         "type": "single",
@@ -280,7 +297,8 @@
         ],
         "answer": [
           0
-        ]
+        ],
+        "misconceptionMap": [null, 0, 1, 2]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 高准确率+低标注风险→人工校验闭环（Ground Truth Plus）。\n- B 检索增强；C 识别；D BI，均不符。"

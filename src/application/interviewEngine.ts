@@ -16,6 +16,7 @@ import { pickNextAdaptive, type AnswerSignal, type Strategy } from '../domain/ad
 import { interviewDefinitionSchema } from '../schemas/interview';
 import { formatSchemaErrorMessage } from '../schemas/errors';
 import { effectiveFormats, evaluateSessionQuestion, finalizeQuestion } from './sessionEvaluator';
+import { variantPool } from '../data/variantBank';
 
 /** 自适应模式无组卷配额：开放形态按此概率随机分配（与普通会话的 7:3 体验一致）。 */
 const ADAPTIVE_OPEN_PROBABILITY = 0.3;
@@ -58,7 +59,17 @@ export async function buildSession(
   const count = validDef.adaptive ? 1 : validDef.count;
   const plan = planComposition(pool, count, validDef.topicPriorities, formats, Math.random);
   const provider = validDef.useAI ? createLLMProvider(config, devUsageLogger) : null;
-  const questions = await Promise.all(plan.map((sq) => finalizeQuestion(sq, provider)));
+  // 双模式 Variant：Pool-first（离线资产，零 LLM）+ 可选 Runtime fallback（Pool miss + 开关开 + provider）。
+  const seenVariantIds = new Set<string>();
+  const questions = await Promise.all(
+    plan.map((sq) =>
+      finalizeQuestion(sq, provider, {
+        variantPool,
+        runtimeVariantEnabled: config?.runtimeVariantEnabled ?? false,
+        seenVariantIds,
+      }),
+    ),
+  );
   return { definition: validDef, questions, startedAt: Date.now() };
 }
 
@@ -100,7 +111,11 @@ export async function nextAdaptiveStep(
   // generateOpenQuestions 关闭时 formats 不含 open，wantOpen 恒为 false
   const target = toSessionQuestion(picked.question, formats);
   const provider = providerOverride ?? (def.useAI ? createLLMProvider(config, devUsageLogger) : null);
-  const question = await finalizeQuestion(target, provider);
+  const question = await finalizeQuestion(target, provider, {
+    variantPool,
+    runtimeVariantEnabled: config?.runtimeVariantEnabled ?? false,
+    seenVariantIds: new Set<string>(),
+  });
   return { question, strategy: picked.strategy };
 }
 

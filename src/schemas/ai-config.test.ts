@@ -24,6 +24,26 @@ describe('aiConfigSchema', () => {
     expect(parsed.questionChallengerEnabled).toBe(false);
   });
 
+  it('defaults runtimeVariantEnabled to false', () => {
+    const parsed = aiConfigSchema.parse({ providers: [{ id: 'chrome' }] });
+    expect(parsed.runtimeVariantEnabled).toBe(false);
+  });
+
+  it('coerces any non-true runtimeVariantEnabled to false', () => {
+    for (const bad of [undefined, '', 'yes', 1, 0, null, {}, []]) {
+      const parsed = aiConfigSchema.parse({ providers: [{ id: 'chrome' }], runtimeVariantEnabled: bad });
+      expect(parsed.runtimeVariantEnabled).toBe(false);
+    }
+  });
+
+  it('preserves explicit runtimeVariantEnabled: true', () => {
+    const parsed = aiConfigSchema.parse({
+      providers: [{ id: 'chrome' }],
+      runtimeVariantEnabled: true,
+    });
+    expect(parsed.runtimeVariantEnabled).toBe(true);
+  });
+
   it('defaults masteryThreshold to 75', () => {
     const parsed = aiConfigSchema.parse({ providers: [] });
     expect(parsed.masteryThreshold).toBe(75);

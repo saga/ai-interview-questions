@@ -207,7 +207,8 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
                   <Divider>题数</Divider>
                   <Slider min={5} max={30} step={1} value={count} onChange={setCount} />
                   <Divider>AI 变体 / 评分</Divider>
-                  <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
+                  {/* wrap：窄屏下这行文字会把 Switch 顶出容器。 */}
+                  <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                     <Typography.Text>启用 LLM 出题变体与开放题评分</Typography.Text>
                     <Switch checked={useAI} onChange={setUseAI} disabled={!configReady} />
                   </Space>

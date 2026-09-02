@@ -368,7 +368,7 @@ export function sessionFromQuiz(
         topic: q.topic,
         subtopic: q.subtopic ?? undefined,
         format,
-        angle: q.angle ?? undefined,
+        angle: q.angle,
         score: g.overall,
         correct: format === 'choice' ? (g.dimensions.correctness ?? 0) === 100 : undefined,
         // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps / missingConcepts；
@@ -435,10 +435,10 @@ export function isAngleAttempted(profile: LearnerProfile, topic: string, angle: 
  * - 0 = 未练过（最该被考察）；
  * - 1 = 已练但均分低于掌握线（薄弱）；
  * - 2 = 已掌握（不入弱项）。
- * 无画像或未标注角度 → 0（视为最弱，优先考察）。
+ * 无画像 → 0（视为最弱，优先考察）。
  */
-export function angleWeakRank(profile: LearnerProfile | undefined, topic: string, angle: QuestionAngle | undefined): 0 | 1 | 2 {
-  if (!profile || !angle) return 0;
+export function angleWeakRank(profile: LearnerProfile | undefined, topic: string, angle: QuestionAngle): 0 | 1 | 2 {
+  if (!profile) return 0;
   const stat = getAngleStat(profile, topic, angle);
   if (!stat || stat.attempts === 0) return 0;
   if (stat.avgScore < WEAK_AVG) return 1;

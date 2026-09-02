@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
     "question:coverage": "node scripts/question-coverage.ts",
     "question:blueprint": "node scripts/question-blueprint.ts",
@@ -20,6 +20,9 @@
     "question:curate": "python analysis/question_curate.py",
     "question:curate:semantic": "uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json > analysis/curation-semantic-report.json && python analysis/question_curate.py --semantic-report analysis/curation-semantic-report.json",
     "validate:questions": "node scripts/validate-questions.ts",
+    "question:quality": "node scripts/audit-question-quality.ts",
+    "question:variants": "vite-node scripts/question-variants.ts",
+    "question:validate-variants": "vite-node scripts/validate-variants.ts",
     "lint:bias": "node scripts/lint-bias.ts",
     "lint:length": "node scripts/lint-length.ts",
     "fix:bias": "node scripts/fix-bias.ts",
@@ -52,6 +55,7 @@
     "fake-indexeddb": "^6.2.5",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
+    "vite-node": "^6.0.0",
     "vitest": "^4.1.11",
     "wrangler": "^4.0.0"
   }

@@ -2,6 +2,84 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-072 · 变体相似度门禁弃用 fuzzball，改用 CJK 字符级 Dice（根治双变体选项雷同）
+
+- 状态：已采纳 · 2026-09-03
+- 背景：离线变体池（双模式 Variant，ADR-069）量产 117 题 × 2 变体后，near-dup 审计标出 ~90% sibling 近重复——同一题的两个变体（surface-options / context-options）选项逐字相同、只题干不同，等于「换皮不换选项」。根因是三处门禁（drift `optionChangedTooMuch`、dup `findNearDuplicateVariants`、生成器去重）共用 `fuzzball.token_set_ratio`，而**中文无词边界**，`full_process` 只在标点切分，整句中文退化成 1 个 token，该比值退化为整串 Levenshtein：既把合法中文 paraphrase 误判为低相似（drift 门禁误杀好变体），又把「选项逐字相同、只换题干」误判为高相似（dup 门禁漏检）。两个方向相反的错误来自同一度量缺陷，无法靠调阈值分别修。
+- 决策：
+  1. 新建 `src/domain/textSimilarity.ts`：`cjkTokenize`（中文按单字、拉丁/数字按词、kebab-case 拆词）+ `tokenMultisetDice` + `cjkDice`（token 多重集 Dice = `200·|交|/(|A|+|B|)`）。字符级重叠天然区分「换词序/句式」与「换概念」。
+  2. drift 门禁：`fuzz.token_set_ratio < 45` → `cjkDice < 35`（合法 paraphrase ≈44~74 必过，偷换结论/真假属性 ≈5~22 必拒）。
+  3. dup 门禁：`fuzz.token_set_ratio ≥ 88` → `cjkDice(选项级) ≥ 88`，且**只比对选项**（题干本就该随变体不同，不该计入相似度）。`VARIANT_DUP_THRESHOLD` 含义由「整串」改为「选项级」。
+  4. 三处门禁统一走 domain 函数 + 阈值（生成器 `question-variants.ts` 与审计 `validate-variants.ts` 同步），消除口径分裂。
+- 校准（temp/probe-realpool.mjs / probe-optonly.mjs，实测真实池 117 sibling + 4 选项长句）：长中文选项下**整串 Dice 无法区分照抄(74.5~96.4)与重述(83)**，重叠 → 必须比选项级；选项级档位 = 逐字照抄 100 · 同义轻改≈91 · 重述改写≈54 → 阈值 88 干净分离「照抄/轻改（判死）」与「重述（放行）」。
+- 配套：`VARIANT_SYSTEM` 升 **v4**，`*-options` 风格要求选项做**幅度明显**改写（换视角/句式/主语，非仅同义替换）——否则 near-dup 门禁会判近重复整条丢弃，轻改选项不算多样化。
+- 副作用 / 注意：
+  - 现有 4 个离线变体池（promptVersion ≤ v3）曾被判为**全量近重复（117/117）**，已于 2026-09-02 用无 key 自生成通道全量重生成落盘 v4；重跑 `validate-variants` 近重复数已归 0（117 题 234 变体）。这是部署动作，不是代码缺陷。
+  - fuzzball 仅保留给 `anchorHasEvidence` 的英文/Latin topic/tag 兜底匹配（那里词边界有效），不再用于中文相似度。
+  - `variant.test.ts` 同步更新：原「轻改选项 → 不判近重复」断言改为「重述改写 → 不判近重复」+ 新增「轻改仍判近重复」（编码更严的多样性要求）。
+
+## ADR-071 · 内容规范三层分层 + Question 契约收口
+
+- 状态：已采纳 · 2026-09-02
+- 背景（两个独立但同源的问题）：
+  1. **内容规则被三个 skill 各自复制，而不是引用同一份规范**。「multiple ≥ 2/3」「干扰项差点就对」「一个核心 Concept」「self-contained」「Answer Determinism」「产品脱钩」六条规则在 `add` / `article` / `fill` / `check` 里重复出现；而声称是「各出题 skill 共同引用的规范」的 `docs/添加题库prompt.md`，在 `check` 里**零引用**。更根本的是那份文档**定位就是错的**——它标题写着「生成 Prompt」，内容是给 LLM 贴的生成指令（含 Canonical/Variant 流程与 Option Variant 规则），却被三个 skill 当内容规范引用；且存在第二份同源不同步的 `添加题库prompt精简.md`，本身即是漂移源。
+  2. **数据契约被四处瓜分**。`Question.angle` 在 schema 里 optional，在 `validate-questions.ts` 与 `add-question.ts` 里必填，在 `coverage.ts` 里走 `untagged++` 跳过；`choice.answer` 越界、`misconceptionMap` 三项不变量只存在于 `validate-questions.ts`，`parseQuestion()` 单独调用时会放过非法数据。
+- 决策：
+  1. **三层分离，各层只回答一个问题**：`docs/question-content-spec.md` = 内容规范（**为什么 / 应该怎样**）；`src/schemas/` + `scripts/` = 数据契约（**必须是什么**，唯一裁决者）；`skills/*.md` = workflow（**什么时候做什么**），规则一律写成「见 `spec §N`」引用，不再复制正文。生成 prompt（`添加题库prompt.md`）**降级**，明确标注「不是规范」。
+  2. **规则冲突时以契约为准，不以规范为准**。规范解释「为什么」，脚本判定「是否合法」。规范里写「应该」，脚本里写「必须」——两者冲突时改规范或改脚本，不允许 skill 自行裁量。
+  3. **`Question.angle` 收敛为 required**。`topic × angle` 是治理主索引（ADR-043），覆盖矩阵、蓝图、adaptive 排序都依赖它；全库 1308/1308 题均带 angle，收敛无存量风险。**唯一例外**：`src/schemas/learner.ts` 的 `QuestionResult.angle` 保持 optional——它是**已持久化的历史会话契约**（用户数据），不是出题契约；改成 required 会让存量历史记录校验失败。
+  4. **`choice.answer` 越界与 `misconceptionMap` 不变量下沉到 Zod**。`misconceptionMap` 校验放在 `questionSchema.superRefine` 而非 `choiceFormatSchema`，因为 `misconceptions` 属 question 层、`choice` 属 choice 层，跨层约束只能在 question 层做。
+  5. **归一化解重复提为 hard error**。层级划清：exact/normalized 重复 = **硬失败**；lexical 近似重复（fuzzball）= warning；semantic 重复 = review / challenger。此前「规范化后完全相同」仍只 warning 并照样落盘，等于门禁形同虚设。
+  6. **`variantCandidateIds` 改名 `reuseCandidateIds`**。变体继承 canonical 的 `topic × angle`，用它填覆盖缺口意味着该格子计数永不增长——**覆盖率永远补不满**。新名强制区分：reuse = 改写已有题以换 angle（改变认知任务）；variant = 同 angle 内的表达变换（不改变认知任务）。
+  7. **`ANGLE_SUGGESTIONS` 改名 `ANGLE_GENERATION_HINTS`**，报告输出加提示行。原名 + 硬断言测试把启发式冻成了契约，会诱导 Agent 读成「comparison 缺口 ⇒ 必须生成 open 题」。
+- 明确不做：不新增 taxonomy 维度；不引入 knowledge/concept 新体系；不为内容规范引入机器校验（不可判定的规则不假装能判定，交给人工 + LLM challenger）。
+- 验证：`tsc --noEmit` EXIT=0；`vitest` 721 passed / 52 files；`npm run validate:questions` 1308 题全绿。
+
+---
+
+## ADR-070 · 离线变体管线：候选超采 + 五维质量质询（离线专用）
+
+- 状态：已采纳（代码与单测就位，真实 LLM 效果未测量）· 2026-09-02
+- 背景：`question-variants --count N` 原语义是「生成 N 个、保留过闸的」，**没有超采比**。而硬闸门只有「结构 + 抗暗示 + `fuzzball token_set_ratio ≥ 45` 漂移」三层。问题是——`token_set_ratio ≥ 45` 通过 ≠ 语义正确：
+
+  ```text
+  原选项：「只有在 KV cache 命中前缀时才能复用已有 KV」
+  改后　：「KV cache 可以复用已有 KV，因此可以减少计算」   ← 条件丢失，词汇高度重合，闸门放行
+  ```
+
+  runtime 场景下这可以接受（失败即 fallback 原题，用户无感）；**但变体一旦作为资产永久落盘，把这类缺陷固化下来就是事故**。
+- 决策：
+  1. **离线管线改三段式漏斗**：`canonical → 超采 N×count 候选 → 确定性闸门（validateVariant + fuzzball 去重，含 variant-vs-variant 与 variant-vs-canonical）→ 五维 LLM 质询打分 → 取 top-N 落盘`。新增 `--oversample`（默认 3）。
+  2. **质量质询五维**：`concept-preserved`（required 概念仍成立）/ `answer-preserved`（正确错误属性逐项未翻转）/ `difficulty-preserved`（未因增删条件变简单或变难）/ `diagnostic-value`（干扰项仍有诊断力，没被改成荒谬项）/ `accidental-clue`（未引入长度/专业度/信息密度泄题）。
+  3. **两级花费控制**：`cheapVariantQualityFlags()` 先跑确定性预检（长度 bias + 信息密度 + 归一化后重复）淘汰明显不合格候选，**通过了才付 LLM 调用**。
+  4. **解析失败即失败**：`parseVariantChallenge` 解析不出结构化结果一律判为**否决**，绝不静默放行——宁可少留变体，也不把未经验证的候选写成资产。
+  5. **可观测优先于自动化**：汇总打印「过闸候选 / 质询否决 / 留存率 / 超采倍数」。留存率 < 30% 是 canonical 或 prompt 有问题的信号，需先查根因。
+- 取舍：
+  - **只在离线跑，不进 runtime**。runtime 保持 one-shot + fallback 原题（与 P2「不引入在线 second judge」一致）——延迟预算付不起第二遍判断，且 runtime 失败成本近零。**离线是唯一付得起第二遍判断的地方。**
+  - **接受更高成本换资产质量**：超采 3× 意味着 LLM 调用量翻三倍。这是刻意的——离线生成的目的是沉淀资产，不是省一次调用。
+  - **不重写 `generateVariant()` 本体**：它的 v3 prompt 约束已经收紧（只改表达、不传 answer/explanation/difficulty/angle）。缺的是**产出后的筛选**，不是生成器本身。
+  - **不新增 lint 硬门禁**：内容质量的四类问题（层级混杂 / 选项塞段落 / 信息密度泄题 / 多选单判断）靠 lint 规则堆不出来——「长度平衡 ≠ 选项质量平衡」。只做检测器（`npm run question:quality`，恒 exit 0），不做门禁。
+- 未验证项（诚实标注，2026-09-03 更新）：**留存率与筛选收益至今为零测量**。首次量产（2026-09-03）走的是新建的 `scripts/assemble-variants.ts` 路径（模型产出改写文本 + 复用 `validateVariant` / `computeVariantSourceHash` / `variantPoolSchema` 组装落盘，无需外部 API key），**绕开了 `--oversample` 与 `challengeVariant`**。因此在此之前不得声称「筛选组语义保真率更高」，且本条管线处于「已接线但无实际调用方」状态——要么用它跑一批并回填数字，要么按 AGENTS.md §3 直接删除。
+- 验证：`src/ai/variantChallenger.test.ts` 11 例全绿（覆盖确定性预检、解析、prompt 构造、语义漂移变体被否决）；`--dry-run` 验证计划量与漏斗口径；`tsc` / `vitest` 全绿。
+
+---
+
+## ADR-069 · 双模式 Variant：Offline Variant Pool（题库资产化）+ Runtime fallback 开关
+
+- 状态：已采纳 · 2026-09-02
+- 来源：用户在第五轮（ADR-068）收尾后提出「双模式 Variant」设计，要求严格按设计落地，并明令禁止 Variant 专用 Agent、Runtime 第二个 Judge、独立 mastery/knowledge graph/DB、CI 自动 LLM、Runtime 自动写回、过多 Variant 类型。
+- 背景：第五轮已确立「LLM 只做语义变换、程序做结构变换、finalizeQuestion 为唯一校验入口」。但变体只在运行时按需生成（每次训练都付 1 次 LLM 延迟、且无法沉淀/审计/审阅）。需要一条**默认零 LLM** 的资产化路径，运行时 LLM 仅作为 Pool 未命中时的可选兜底。
+- 决策：
+  1. **Offline Variant Pool 为默认路径**：变体作为题库资产（离线预生成、提交进仓库，按 batch 聚合成 `src/data/variants/*.json`），训练时经 `import.meta.glob` 合并、`resolveQuestionVariant` Pool-first 零 LLM 落地。
+  2. **VariantKind 4 种风格**（surface / context / surface-options / context-options）在「LLM 只做语义变换」硬约束内表达改写偏好，不新增答案/结构自由度。
+  3. **Runtime Variant 默认 OFF**：`runtimeVariantEnabled`（Zod `z.preprocess`，非显式 `true` 一律 `false`）。仅 Pool miss + 开关开 + 有 provider 才 1 次 LLM；结果**不写回**题库——晋升靠 telemetry → 离线 review → 手动 promote。
+  4. **共用同一套契约与校验**：Pool 命中与 Runtime fallback 都走 `validateVariant` / `applyVariant`（不写第二套实现）；离线生成器复用 `generateVariant`（加可选 `kind`），不重写 LLM 适配。
+  5. **变体不嵌入 Question JSON**：独立资产化，避免污染题库真值、避免拖慢题库加载。
+- 资产/指纹：`QuestionVariant.sourceHash = computeVariantSourceHash(canonical)`（FNV-1a，仅哈希题面+选项文本，answer/explanation 不入指纹），用于离线 `validate-variants` 与运行时命中校验的 stale 检测。
+- 离线严格度：离线比 runtime 可以多候选、可严格校验、可 fuzzball 去重（变体-vs-变体近重复），runtime 为单次 best-effort；「离线更严格」是设计意图（资产可审阅、runtime 求快）。
+- 反模式（明确不做）：Variant 专用 Agent（变体是 one-shot 结构化生成，不需要 Agent loop）；Runtime 第二套 Judge；Variant 维度 mastery / knowledge graph / 独立 DB；CI 自动调 LLM 批量生成（成本与漂移不可控）；Runtime 自动写回题库（破坏资产审查门禁）；Variant 类型膨胀（锁死 4 种）。
+- 验证：`tsc`（app+node）EXIT=0；`vitest` 相关用例全绿（variantKind / sourceHash / variantPool 三态 / sessionEvaluator 三态）。dry-run 与 `validate-variants` 在 vite-node 下实跑通过。
+
 ## ADR-068 · Variant 第五轮收敛：单一校验入口 + 锚定降级为 warning + 规范化前移
 
 - 状态：已采纳 · 2026-09-02

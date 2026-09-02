@@ -9,19 +9,20 @@
 import type { CompleteFn, GeneratedVariant } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
+import type { VariantKind } from '../schemas/variant';
 import { requiredPointsFor } from '../domain/knowledge/nodes';
 import { extractJSON } from './pi';
 
 // 稳定前缀（KV-Cache 友好）：轻量变体改写约束。同一场面试为不同题生成变体时可复用同一前缀。
 // 边界（ADR-036 轻量变体收缩）：LLM 只做「语义变换」（题干 + 选项文本逐项改写），
 // 选项顺序与答案由程序在 applyVariant 中重排与重映射，本 prompt 不要求也不允许模型决定顺序 / 答案。
-export const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
+export const VARIANT_SYSTEM = `[PROMPT-VERSION v4]
 
 对已有面试题做轻量语义变换。
 
 任务：
 1. 改写题干，使其表达方式与原题不同。
-2. 对每个选项做自然的措辞改写（逐项改写现有文本，不要重新设计选项）。
+2. 对每个选项做**幅度明显**的改写，使改写后的选项读起来与原文明显不同（见下方「选项改写幅度」）。
 3. 保持每个选项原本表达的技术含义不变。
 4. 不新增信息，不删除关键条件。
 5. 不改变任何选项的正确 / 错误属性。
@@ -37,11 +38,14 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
 - 加入简短工程背景
 - 调整表达视角
 
-选项只能做：
-- 同义改写
-- 句式调整
-- 表达简化或自然化
-- 保持原有技术结论不变
+选项改写幅度（重要，针对 *-options 风格）：
+- 仅做同义替换 / 加几个字 / 换连接词，属于「轻改」，会被去重门禁判为近重复而整条丢弃——
+  同一题的两个变体（surface-options 与 context-options）选项将因此雷同，等于没多样化。
+- 正确做法是**大幅改写**：换叙述视角、换句式结构、换主语、换例证措辞，让每个选项看起来像是重新写过的，
+  但技术结论 / 因果 / 适用条件 / 真假属性一字不改。
+- 例：原选项「让 LLM 边抽指标边完成跨企业对比运算，省掉计算代码层」→
+  可改写为「为省事让模型在抽取阶段就直接归并跨公司排放数据，不必另维护计算逻辑」（视角与句式都变，
+  但「LLM 兼任计算不可取」的判定不变）。
 
 选项一一对应（重要）：
 - 输出的第 N 个选项必须是输入第 N 个选项的改写
@@ -63,6 +67,34 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
 {
   "question": "改写后的题干"
 }`;
+
+/** 从 VARIANT_SYSTEM 头解析 prompt 版本（如 "v3"），供离线变体池的 promptVersion 字段使用。 */
+export const VARIANT_PROMPT_VERSION: string =
+  (VARIANT_SYSTEM.match(/\[PROMPT-VERSION\s+([^\]]+)\]/) ?? [])[1]?.trim() ?? 'unknown';
+
+/**
+ * 4 种轻量变体风格的类型指令（双模式 Variant 设计）：
+ * 注入到 system prompt 的「变体风格」段落，指导 LLM 在「只做语义变换」的硬约束内
+ * 偏向某种改写风格。不改变 LLM 不得重新决定 answer / explanation / 选项数量 / 顺序的边界。
+ */
+export const VARIANT_KIND_GUIDANCE: Record<VariantKind, string> = {
+  surface:
+    'surface（仅改写题干表达）：只重写题干措辞、不改变结构；若为选择题，仍须逐项同义改写各选项文本。',
+  context:
+    'context（融入工程上下文）：在题干中融入一段简短、真实、不依赖原题的工程背景或场景后再改写，使题目更有代入感；若为选择题，仍须逐项改写各选项。',
+  'surface-options':
+    'surface-options（题干 + 选项改写，默认风格）：改写题干，并对每个选项做**幅度明显**的改写（换视角/句式/主语，而非仅同义替换），使选项读起来与原文明显不同但技术含义不变。',
+  'context-options':
+    'context-options（上下文 + 题干 + 选项改写）：在题干中融入简短工程上下文后改写题干，并对每个选项做**幅度明显**的改写（换视角/句式/主语，而非仅同义替换），使选项读起来与原文明显不同但技术含义不变。',
+};
+
+/** 把变体风格指令追加到 system prompt（在「只输出 JSON」约束之后，作为额外风格要求）。 */
+function withKind(system: string, kind: VariantKind): string {
+  return (
+    `${system}\n\n[变体风格 ${kind}]\n本变体必须额外满足以下风格要求：\n${VARIANT_KIND_GUIDANCE[kind]}\n` +
+    '在满足上方全部 10 条约束与「只输出 JSON」的基础上，再满足本风格要求。'
+  );
+}
 
 // 轻量变体契约：模型只允许产出 question / options。
 // answer / explanation 不在此类型中——即便模型回吐这两个字段，解析后也无法进入产物。
@@ -104,8 +136,10 @@ export async function generateVariant(
   complete: CompleteFn,
   format?: FormatId,
   systemPrompt = VARIANT_SYSTEM,
+  kind?: VariantKind,
 ): Promise<GeneratedVariant> {
+  const system = kind ? withKind(systemPrompt, kind) : systemPrompt;
   const user = buildUser(q, format);
-  const out = extractJSON<RawVariant>(await complete(systemPrompt, user));
+  const out = extractJSON<RawVariant>(await complete(system, user));
   return toGeneratedVariant(q, out);
 }

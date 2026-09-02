@@ -50,7 +50,7 @@ const existingTexts = new Map(existing.map((question) => [normalizedText(questio
 const errors: string[] = [];
 const warnings: string[] = [];
 const newlyCovered = new Set<string>();
-const existingCells = new Set(existing.filter((question) => question.angle).map((question) => `${question.topic}\u0000${question.angle}`));
+const existingCells = new Set(existing.map((question) => `${question.topic}\u0000${question.angle}`));
 
 // 题型门禁（AGENTS.md §4.2）：多选题应占多数，单选题超过 1/3 视为题型设计偷懒。
 // 只对"本批导入"生效，不追溯历史题目——历史单选占比高是存量问题，不应阻塞新题导入。
@@ -66,9 +66,12 @@ for (const question of incoming) {
     newlyCovered.add(`${question.topic} × ${question.angle}`);
   }
   if (!nodeIds.has(question.topic)) errors.push(`${question.id}: topic "${question.topic}" 没有知识节点`);
-  if (!question.angle || !validAngles.has(question.angle)) errors.push(`${question.id}: angle 不合法或缺失`);
+  if (!validAngles.has(question.angle)) errors.push(`${question.id}: angle 不合法`);
+  // 规范化后重复 = 硬失败。此前只 warn，导入照样写盘，结果同一道题以两种标点/大小写
+  // 形态并存于题库：覆盖矩阵把它算成 2 题（虚高），练习时用户会连着答两遍同一题。
+  // 真需要近似题时应走变体（variant）通道，而不是再导一遍原题。
   const duplicate = existingTexts.get(normalizedText(question.question));
-  if (duplicate) warnings.push(`${question.id}: 题干与 ${duplicate} 规范化后重复`);
+  if (duplicate) errors.push(`${question.id}: 题干与 ${duplicate} 规范化后重复（如需近似题请走变体通道）`);
   existingIds.add(question.id);
   existingTexts.set(normalizedText(question.question), question.id);
 

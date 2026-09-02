@@ -61,10 +61,10 @@ function pickFromTopics(pool: Question[], topics: string[], rng: () => number): 
 
 /**
  * (topic, angle) 的累计作答次数——即"该概念该角度"的证据量。
- * 未标注角度或画像缺失视为 0（= 最该被考察），实现"弱 concept → 缺证据 angle"。
+ * 画像缺失视为 0（= 最该被考察），实现"弱 concept → 缺证据 angle"。
  */
 function angleEvidence(q: Question, profile: LearnerProfile | undefined): number {
-  if (!profile || !q.angle) return 0;
+  if (!profile) return 0;
   const stat = profile.angleCoverage?.[angleKey(q.topic, q.angle)];
   return stat ? stat.attempts : 0;
 }

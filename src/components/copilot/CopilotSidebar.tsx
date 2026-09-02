@@ -11,7 +11,8 @@ import {
 import { Bubble, Prompts, Sender } from '@ant-design/x';
 import type { BubbleListProps } from '@ant-design/x';
 import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { buildModels, getModel } from '../../ai/pi';
 import { questionBank } from '../../data/questionBank';
 import { askQuestion } from '../../application/conversation/questionCapability';
@@ -115,6 +116,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   });
   const [width, setWidth] = useState(380);
   const [dragging, setDragging] = useState(false);
+  const isMobile = useIsMobile();
   const listRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
@@ -561,9 +563,55 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     { key: 'mock', label: '模拟追问：基于我的回答继续提问' },
   ];
 
+  // 窄屏下 Copilot 改为右侧浮层，且关闭时**整棵子树不渲染**。
+  // 此前靠 CSS `@media` 里的 `.copilot-shell { position: fixed; width: 92vw !important }` 切换，
+  // 但 `.copilot-shell` 这个类名在 open=false 时依然存在，`!important` 又会压过内联的 width:0
+  // ⇒ 移动端永远有一块 92vw 的白色固定面板盖在 z-index 1000 上（内容因 open=false 不渲染，
+  // 看到的就是一片空白）。结构问题用结构解决，别用 !important 盖。
+  if (isMobile && !open) return null;
+
+  const shellStyle: CSSProperties = isMobile
+    ? {
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        width: 'min(92vw, 420px)',
+        minWidth: 0,
+        zIndex: 1000,
+        background: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        borderLeft: '1px solid #dce4ef',
+        boxShadow: '-12px 0 36px rgba(24,39,75,0.16)',
+      }
+    : {
+        width: open ? width : 0,
+        minWidth: open ? 300 : 0,
+        flexShrink: 0,
+        borderLeft: open ? '1px solid #f0f0f0' : 'none',
+        background: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transition: dragging ? 'none' : 'width 0.25s ease',
+        alignSelf: 'stretch',
+        minHeight: 0,
+        position: 'relative',
+      };
+
   return (
-    <div ref={sidebarRef} className="copilot-shell" style={{ width: open ? width : 0, minWidth: open ? 300 : 0, flexShrink: 0, borderLeft: open ? '1px solid #f0f0f0' : 'none', background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: dragging ? 'none' : 'width 0.25s ease', alignSelf: 'stretch', minHeight: 0, position: 'relative' }}>
-      {open && (<div onMouseDown={() => setDragging(true)} onDoubleClick={() => setWidth(380)} title="拖拽调整宽度，双击重置" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize', zIndex: 10, background: dragging ? 'rgba(22,119,255,0.15)' : 'transparent' }} />)}
+    <>
+      {/* 浮层遮罩：点遮罩关闭。没有它，窄屏下面板盖住内容却没有明显的退出路径。 */}
+      {isMobile && open && (
+        <div
+          onClick={onClose}
+          style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.35)' }}
+        />
+      )}
+      <div ref={sidebarRef} className="copilot-shell" style={shellStyle}>
+      {/* 拖拽改宽只在宽屏有意义：窄屏是固定 92vw 的浮层，没有可拖的边界。 */}
+      {open && !isMobile && (<div onMouseDown={() => setDragging(true)} onDoubleClick={() => setWidth(380)} title="拖拽调整宽度，双击重置" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize', zIndex: 10, background: dragging ? 'rgba(22,119,255,0.15)' : 'transparent' }} />)}
       {open && (<>
         <div className="copilot-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <Space size={10}><span className="copilot-brand-mark"><CommentOutlined /></span><span><Typography.Text className="copilot-title" strong>面试 Copilot</Typography.Text><Typography.Text className="copilot-subtitle" style={{ display: 'block' }}>你的即时训练助手</Typography.Text></span></Space><Button type="text" icon={<CloseOutlined />} onClick={onClose} />
@@ -584,6 +632,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           <Sender value={input} onChange={setInput} onSubmit={() => handleSend(input)} loading={loading} placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '可先说“给我出一道题”；普通问答需配置 AI…'} disabled={false} />
         </div>
       </>)}
-    </div>
+      </div>
+    </>
   );
 }

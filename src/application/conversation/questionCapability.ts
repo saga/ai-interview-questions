@@ -1,5 +1,6 @@
 import { rankCandidatePool } from '../../domain/adaptive';
 import { availableSessionFormats, finalizeQuestion } from '../sessionEvaluator';
+import { variantPool } from '../../data/variantBank';
 import type { SessionQuestion } from '../../schemas/session';
 import type { ConversationDeps, AskQuestionInput } from './types';
 
@@ -34,7 +35,11 @@ export async function askQuestion(
     if (formats.length === 0) continue;
     const format = input.format && formats.includes(input.format) ? input.format : formats[0];
     const sessionQuestion: SessionQuestion = { question, format };
-    return finalizeQuestion(sessionQuestion, deps.provider ?? null);
+    return finalizeQuestion(sessionQuestion, deps.provider ?? null, {
+      variantPool,
+      runtimeVariantEnabled: deps.config?.runtimeVariantEnabled ?? false,
+      seenVariantIds: new Set<string>(),
+    });
   }
   return null;
 }

@@ -35,7 +35,10 @@ const blueprints = coverageSuggestions(matrix)
   .map((s) => {
     const bp = blueprintFromSuggestion(s, nodes);
     if (!bp) return null; // 理论不可达：建议只来自知识节点
-    return { ...bp, priority: s.priority, variantCandidateIds: variantCandidates(questions, bp).map((q) => q.id) };
+    // 字段名刻意不用 variantCandidateIds：变体（ADR-069）继承 canonical 的 topic × angle，
+    // 用它补覆盖缺口等于把 A 格的题搬到 B 格，A 格重新空出来，覆盖率永远补不满。
+    // 这里是「改写已有题以改变其 angle」的候选，是 reuse，不是 variant。
+    return { ...bp, priority: s.priority, reuseCandidateIds: variantCandidates(questions, bp).map((q) => q.id) };
   })
   .filter((x) => x !== null);
 

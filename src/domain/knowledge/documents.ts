@@ -68,7 +68,7 @@ export function knowledgeDocument(node: KnowledgeNode): KnowledgeDocument {
 export function questionText(q: Question): string {
   const stem = q.formats.choice?.question ?? q.question;
   const lines = [
-    `题目（${q.topic}${q.angle ? ` / ${q.angle}` : ''} / ${q.difficulty}）：${stem}`,
+    `题目（${q.topic} / ${q.angle} / ${q.difficulty}）：${stem}`,
   ];
   const choice = q.formats.choice;
   if (choice) {
@@ -109,8 +109,8 @@ export function questionDocument(q: Question): KnowledgeDocument {
     questionId: q.id,
     difficulty: q.difficulty,
     tags: q.tags,
+    angle: q.angle,
   };
-  if (q.angle) metadata.angle = q.angle;
   return {
     id: `question:${q.id}`,
     kind: 'question',

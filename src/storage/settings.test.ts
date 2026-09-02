@@ -100,6 +100,7 @@ describe('loadConfig', () => {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: false,
       questionChallengerEnabled: false,
+      runtimeVariantEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -114,6 +115,7 @@ describe('loadConfig', () => {
       ],
       generateOpenQuestions: false,
       questionChallengerEnabled: false,
+      runtimeVariantEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -157,6 +159,19 @@ describe('loadConfig（generateOpenQuestions）', () => {
     });
     expect(loadConfig().generateOpenQuestions).toBe(true);
   });
+
+  it('runtimeVariantEnabled：字段缺省视为 false，显式 true 保留', () => {
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
+    });
+    expect(loadConfig().runtimeVariantEnabled).toBe(false);
+
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
+      runtimeVariantEnabled: true,
+    });
+    expect(loadConfig().runtimeVariantEnabled).toBe(true);
+  });
 });
 
 describe('saveConfig / loadConfig 往返', () => {
@@ -168,6 +183,7 @@ describe('saveConfig / loadConfig 往返', () => {
       ],
       generateOpenQuestions: true,
       questionChallengerEnabled: false,
+      runtimeVariantEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -236,6 +252,7 @@ describe('stringifyConfig', () => {
       providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
       generateOpenQuestions: true,
       questionChallengerEnabled: false,
+      runtimeVariantEnabled: false,
       masteryThreshold: 75,
       disabledCategories: [],
       proficiency: DEFAULT_CONFIG.proficiency,
@@ -262,6 +279,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
         ],
         generateOpenQuestions: false,
         questionChallengerEnabled: false,
+        runtimeVariantEnabled: false,
         masteryThreshold: 75,
         disabledCategories: [],
         proficiency: DEFAULT_CONFIG.proficiency,
@@ -274,7 +292,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     const on = parseConfigJSON(JSON.stringify({ ...base, generateOpenQuestions: true }));
     expect(on).toEqual({
       ok: true,
-      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, questionChallengerEnabled: false, masteryThreshold: 75, disabledCategories: [], proficiency: DEFAULT_CONFIG.proficiency },
+      config: { providers: [{ ...VALID_ENTRY, baseUrl: '' }], generateOpenQuestions: true, questionChallengerEnabled: false, runtimeVariantEnabled: false, masteryThreshold: 75, disabledCategories: [], proficiency: DEFAULT_CONFIG.proficiency },
     });
     for (const bad of [undefined, 'yes', 1, null]) {
       const raw = bad === undefined ? base : { ...base, generateOpenQuestions: bad };
@@ -327,6 +345,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
         ],
         generateOpenQuestions: false,
         questionChallengerEnabled: false,
+        runtimeVariantEnabled: false,
         masteryThreshold: 75,
         disabledCategories: [],
         proficiency: DEFAULT_CONFIG.proficiency,

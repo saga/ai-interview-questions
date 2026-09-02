@@ -308,7 +308,8 @@ export default function SettingsPanel({
             </div>
             <Input.TextArea autoSize={{ minRows: 5, maxRows: 16 }} value={promptDraft.agentOpening} onChange={(event) => setPromptDraft((current) => ({ ...current, agentOpening: event.target.value }))} />
           </div>
-          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+          {/* wrap：窄屏下两个按钮并排会顶出容器（375px 下可用宽度仅约 351px）。 */}
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }} wrap>
             <Button onClick={() => setPromptDraft({ agentInstructions: '', agentOpening: INTERVIEW_AGENT_OPENING_INSTRUCTION })}>恢复提示词默认值</Button>
             <Button type="primary" icon={<SaveOutlined />} onClick={handlePromptSave}>保存提示词</Button>
           </Space>
@@ -345,7 +346,8 @@ export default function SettingsPanel({
             <Typography.Text>训练次数平滑值</Typography.Text>
             <InputNumber min={0.1} step={1} value={draft.proficiency.practiceConfidenceSmoothing} onChange={(value) => updateProficiency('practiceConfidenceSmoothing', value)} />
           </Space>
-          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+          {/* wrap：窄屏下两个按钮并排会顶出容器（375px 下可用宽度仅约 351px）。 */}
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }} wrap>
             <Button type="primary" icon={<SaveOutlined />} onClick={handleFormSave}>保存熟练度设置</Button>
           </Space>
         </Space>
@@ -360,7 +362,8 @@ export default function SettingsPanel({
           <Suspense fallback={null}>
             <LazyCodeEditor value={text} onChange={setText} language="json" height={520} />
           </Suspense>
-          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+          {/* wrap：窄屏下两个按钮并排会顶出容器（375px 下可用宽度仅约 351px）。 */}
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }} wrap>
             <Button icon={<UndoOutlined />} onClick={() => setText(stringifyConfig(DEFAULT_CONFIG))}>
               恢复默认文本
             </Button>
@@ -456,6 +459,16 @@ export default function SettingsPanel({
           <Typography.Text type="secondary">使用当前配置的 AI 引擎，关闭时不调用质疑模型</Typography.Text>
         </Space>
         <Space align="center" wrap>
+          <Switch
+            checked={draft.runtimeVariantEnabled}
+            onChange={(checked) => setDraft((current) => ({ ...current, runtimeVariantEnabled: checked }))}
+          />
+          <Typography.Text>使用 AI 实时生成题目变体</Typography.Text>
+          <Typography.Text type="secondary">
+            默认关闭：优先用离线变体池（零 LLM 落地）；开启后仅在池未命中时回退到 1 次 LLM 生成，且结果不写回题库
+          </Typography.Text>
+        </Space>
+        <Space align="center" wrap>
           <Typography.Text>主题达标线</Typography.Text>
           <InputNumber
             min={0}
@@ -474,7 +487,9 @@ export default function SettingsPanel({
         items={draft.providers.map((provider, index) => ({
           key: provider.id,
           label: (
-            <Space>
+            // wrap：这一行塞了 Switch + 引擎名 + 状态 Tag + 上下移两个按钮，
+            // 320px 屏上必然溢出，引擎名还会被挤出 Collapse 标题区。
+            <Space wrap>
               <Switch checked={provider.enabled} onChange={(checked) => updateProvider(index, { enabled: checked })} />
               <span>{PROVIDER_LABELS[provider.id] ?? provider.id}</span>
               <Tag color={provider.enabled ? 'green' : 'default'}>{provider.enabled ? '启用' : '停用'}</Tag>
@@ -531,7 +546,7 @@ export default function SettingsPanel({
           ),
         }))}
       />
-      <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'flex-end' }}>
+      <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'flex-end' }} wrap>
         <Button type="primary" icon={<SaveOutlined />} onClick={handleFormSave}>保存可视化设置</Button>
       </Space>
         </>

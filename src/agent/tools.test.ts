@@ -135,7 +135,7 @@ describe('createAgentTools', () => {
   });
 
   it('getQuestion 选中题目并写入会话 currentQuestion', async () => {
-    const d = deps([makeChoiceQuestion()]);
+    const d = { ...deps([makeChoiceQuestion()]), runtimeVariantEnabled: true };
     const tools = createAgentTools(d);
     const getQ = tools.find((t) => t.name === 'getQuestion')!;
     const r = await getQ.execute('call', { id: 'q-choice-1' });

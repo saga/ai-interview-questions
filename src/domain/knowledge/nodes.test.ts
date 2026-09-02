@@ -50,9 +50,10 @@ describe('知识点层数据完整性', () => {
     }
   });
 
-  it('题目 angle 标注合法：取值在六角度白名单内（ADR-032）', () => {
+  it('题目 angle 必填且取值在角度白名单内（ADR-032 / ADR-043）', () => {
     for (const q of questionBank.questions) {
-      if (q.angle !== undefined) expect(ANGLES, `${q.id} angle=${q.angle}`).toContain(q.angle);
+      expect(q.angle, `${q.id} 缺少 angle`).toBeDefined();
+      expect(ANGLES, `${q.id} angle=${q.angle}`).toContain(q.angle);
     }
   });
 });

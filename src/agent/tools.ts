@@ -12,6 +12,7 @@ import type { EvaluationResult } from '../schemas/evaluation';
 import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { availableSessionFormats, finalizeQuestion } from '../application/sessionEvaluator';
+import { variantPool } from '../data/variantBank';
 import { evaluateAnswer as evaluateAnswerCapability } from '../application/conversation/evaluationCapability';
 import { rankQuestions } from '../application/conversation/questionCapability';
 import { describeEvaluationSummary } from '../domain/evaluation';
@@ -38,6 +39,8 @@ export interface AgentToolDeps {
   session: InterviewAgentSession;
   /** 是否允许生成开放题（对应 AIConfig.generateOpenQuestions 全局开关）；默认 false（与全局 AIConfig 一致）。 */
   generateOpenQuestions?: boolean;
+  /** 运行时变体开关（对应 AIConfig.runtimeVariantEnabled）；默认 false（Pool-first 离线资产优先，运行时仅兜底）。 */
+  runtimeVariantEnabled?: boolean;
   /** 主题达标线（0-100）；默认 75。 */
   masteryThreshold?: number;
   disabledCategories?: string[];
@@ -124,7 +127,7 @@ function deliverableIds(session: InterviewAgentSession, byId: Map<string, Questi
 }
 
 export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
-  const { bank, profile, provider, session, generateOpenQuestions = false } = deps;
+  const { bank, profile, provider, session, generateOpenQuestions = false, runtimeVariantEnabled = false } = deps;
   const byId = new Map(bank.map((q) => [q.id, q]));
   // P0-1：画像类工具读取「有效画像」= 历史 profile 叠加本轮已评分结果（会话级学习状态），
   // 而不是创建工具时冻结的快照——本轮第 1 题的表现从第 2 题起即可反馈到薄弱分析。
@@ -281,7 +284,11 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         params.format && available.includes(params.format)
           ? params.format
           : available[0];
-      const sq = await finalizeQuestion({ question: q, format: fmt }, provider);
+      const sq = await finalizeQuestion({ question: q, format: fmt }, provider, {
+        variantPool,
+        runtimeVariantEnabled,
+        seenVariantIds: new Set<string>(),
+      });
       session.currentQuestion = sq;
       session.log.push({
         at: Date.now(),

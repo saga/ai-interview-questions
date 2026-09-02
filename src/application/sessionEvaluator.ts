@@ -1,14 +1,16 @@
 // 单题评分与会话形态策略的共享衔接层。
 // 确定性 InterviewEngine 与 Agent 工具都从这里进入选择题判分、开放题 LLM 评分和判空。
 
-import type { AnswerValue, LLMProvider } from '../types';
+import type { AnswerValue, LLMProvider, GeneratedVariant } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { FormatId } from '../schemas/common';
 import type { ScoringRubric } from '../schemas/interview';
 import type { SessionQuestion } from '../schemas/session';
+import type { VariantPool } from '../schemas/variant';
 import { availableFormats } from '../domain/quiz';
 import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
 import { applyVariant, validateVariant } from '../domain/variant';
+import { resolveQuestionVariant } from '../domain/variantPool';
 import { recordVariantRound } from '../ai/usageTelemetry';
 import type { Question } from '../schemas/question';
 
@@ -58,12 +60,54 @@ export async function evaluateSessionQuestion(
 }
 
 /** 生成并校验会话题目变体；单题失败时回退原题，不阻断整场面试。
- *  P0-1：把本次会话形态 sq.format 透传给变体生成/校验/落地，使双形态题按当前呈现形态生成变体。 */
+ *  P0-1：把本次会话形态 sq.format 透传给变体生成/校验/落地，使双形态题按当前呈现形态生成变体。
+ *
+ *  双模式 Variant（Pool-first + Runtime fallback）：
+ *   - 提供 variantPool 且命中 → 零 LLM 直接 validate + apply（离线资产优先）；
+ *   - Pool miss 且 runtimeVariantEnabled=false（默认）→ 零 LLM 回退原题；
+ *   - Pool miss 且 runtimeVariantEnabled=true 且有 provider → 1 次 LLM 运行时生成（结果不写回题库）。
+ *  无论哪条路径，validateVariant 都是**唯一**校验门禁。
+ */
+export interface FinalizeVariantOpts {
+  /** 离线变体池（题库资产）；提供即开启 Pool-first。缺省视为无池 → 仅运行时兜底分支生效。 */
+  variantPool?: VariantPool | null;
+  /** 运行时变体开关（AIConfig.runtimeVariantEnabled）；缺省 false。仅 Pool miss 且本开关开启且存在 provider 时，才做 1 次 LLM 生成。 */
+  runtimeVariantEnabled?: boolean;
+  /** 本会话内已落地过的变体 id（用于避免同一变体重复出现）；缺省每次新建。 */
+  seenVariantIds?: Set<string>;
+}
+
 export async function finalizeQuestion(
   sq: SessionQuestion,
   provider: LLMProvider | null,
+  opts?: FinalizeVariantOpts,
 ): Promise<SessionQuestion> {
-  if (!provider) return sq;
+  const pool = opts?.variantPool ?? null;
+  const runtimeEnabled = opts?.runtimeVariantEnabled ?? false;
+  const seen = opts?.seenVariantIds ?? new Set<string>();
+
+  // ── Pool-first：命中即零 LLM 落地（离线资产优先） ──
+  const pooled = resolveQuestionVariant({ canonical: sq.question, pool, seen });
+  if (pooled) {
+    const gen: GeneratedVariant = { question: pooled.question, options: pooled.options };
+    const check = validateVariant(sq.question, gen, sq.format);
+    if (check.ok) {
+      // Pool hit：零 LLM，记一条延迟为 0 的遥测（用于评估「池覆盖省了多少 LLM 调用」）。
+      recordVariantRound({ questionId: sq.question.id, latencyMs: 0 });
+      seen.add(pooled.id);
+      return { ...sq, question: applyVariant(sq.question, gen, sq.format) };
+    }
+    // 校验不过（canonical 已变 → sourceHash 失效，或变体本身异常）→ 落到下方 runtime / canonical 分支
+    recordVariantRound({
+      questionId: sq.question.id,
+      latencyMs: 0,
+      fallbackReason: check.code ?? 'pool-validation-failed',
+    });
+  }
+
+  // ── Runtime fallback：仅 Pool miss 且开关开启且 provider 可用 ──
+  if (!provider || !runtimeEnabled) return sq;
+
   const startedAt = Date.now();
   // P2 变体遥测：无论成功还是回退都记一条（延迟 + 回退原因），用于评估「轻量变体省了多少、
   // gate 是否过严」。详见 ai/usageTelemetry.getVariantTelemetry()。

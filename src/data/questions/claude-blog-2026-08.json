@@ -49,7 +49,8 @@
     "question": "一个 Agent 需要评价自己生成的研究报告，而生成过程可能影响它对结果的判断。哪些措施能降低自评偏差？（请选择两个）",
     "explanation": "使用独立评估器在隔离上下文中依据预先定义的 rubric 检查最终结果，并把缺陷反馈给执行 Agent；这样评估不完全依赖原 Agent 的自我叙述。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "multiple", "options": ["让评估器与执行过程隔离", "让评估器按预先定义的标准检查结果并反馈缺陷", "保证所有生成结果都不需要重试", "只把执行模型切换成参数更大的模型"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。隔离的评估器按 rubric 检查最终结果，能降低执行 Agent 自评造成的偏差。"}}
+    "misconceptions": ["只要保证生成结果一次通过、不需要重试，就不存在自评偏差", "把执行模型换成参数更大的模型即可消除自评偏差，无需独立评估器"],
+    "formats": {"choice": {"type": "multiple", "options": ["让评估器与执行过程隔离", "让评估器按预先定义的标准检查结果并反馈缺陷", "保证所有生成结果都不需要重试", "只把执行模型切换成参数更大的模型"], "answer": [0, 1], "misconceptionMap": [null, null, 0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。隔离的评估器按 rubric 检查最终结果，能降低执行 Agent 自评造成的偏差。"}}
   },
   {
     "id": "claude-blog-2026-08-05",
@@ -62,7 +63,8 @@
     "question": "Agent 生成报告后，独立检查器发现缺少必需章节。为了提高成功率，编排器应如何处理？（请选择两个）",
     "explanation": "应把结构化检查结果作为反馈，让 Agent 针对缺失章节修订，并设置重试次数、成本和停止条件，避免无限自我纠错。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "multiple", "options": ["把结构化缺陷反馈给 Agent 进行定向修订", "设置重试次数、成本和停止条件", "删除格式要求以避免失败", "只记录失败而不反馈给 Agent"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。将检查结果反馈给 Agent，并在限制次数、成本和停止条件的前提下修订。"}}
+    "misconceptions": ["删掉格式要求可以避免检查失败，是提高成功率的有效手段", "只记录失败而不把缺陷反馈给 Agent，能避免污染它的上下文"],
+    "formats": {"choice": {"type": "multiple", "options": ["把结构化缺陷反馈给 Agent 进行定向修订", "设置重试次数、成本和停止条件", "删除格式要求以避免失败", "只记录失败而不反馈给 Agent"], "answer": [0, 1], "misconceptionMap": [null, null, 0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。将检查结果反馈给 Agent，并在限制次数、成本和停止条件的前提下修订。"}}
   },
   {
     "id": "claude-blog-2026-08-06",
@@ -75,7 +77,8 @@
     "question": "哪类 Agent 任务最值得优先建立结果 rubric 和独立验收？（单选）",
     "explanation": "输出细节多、遗漏代价高或包含可描述主观标准的任务，适合把质量要求写成 rubric，再用独立检查器验收。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "Outcomes: define the quality bar for agent work"},
-    "formats": {"choice": {"type": "single", "options": ["只需返回当前时间的任务", "遗漏代价高且质量标准可明确描述的任务", "延迟预算极低且不能执行任何检查的控制回路", "只读静态配置文件且无需生成结果的任务"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。细节密集、遗漏代价高且有可描述验收标准的任务适合独立 rubric 验收。"}}
+    "misconceptions": ["「只返回当前时间」这类确定性任务最需要结果 rubric 与独立验收", "延迟预算极低、无法执行任何检查的控制回路最适合加独立验收环节", "只读静态配置、不需要生成结果的任务最应该建立结果 rubric"],
+    "formats": {"choice": {"type": "single", "options": ["只需返回当前时间的任务", "遗漏代价高且质量标准可明确描述的任务", "延迟预算极低且不能执行任何检查的控制回路", "只读静态配置文件且无需生成结果的任务"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。细节密集、遗漏代价高且有可描述验收标准的任务适合独立 rubric 验收。"}}
   },
   {
     "id": "claude-blog-2026-08-07",
@@ -153,7 +156,8 @@
     "question": "想让多 Agent 写作系统只返回达到编辑标准的草稿，合理的设计是什么？（单选）",
     "explanation": "可以让每份草稿按照编辑原则和用户语气 rubric 评分，只有通过质量门槛的草稿才返回。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "What teams are building"},
-    "formats": {"choice": {"type": "single", "options": ["直接返回生成的第一份草稿而不做任何质量检查", "对草稿按 rubric 评分，只返回通过门槛的结果", "只按 token 数选择草稿", "让用户阅读所有中间推理"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。用 rubric 评估草稿，达标后才返回。"}}
+    "misconceptions": ["直接返回第一份草稿即可，质量检查只是额外开销", "按 token 数挑最长的草稿，篇幅越长内容质量越高", "把全部中间推理过程展示给用户，由用户自己判断质量最可靠"],
+    "formats": {"choice": {"type": "single", "options": ["直接返回生成的第一份草稿而不做任何质量检查", "对草稿按 rubric 评分，只返回通过门槛的结果", "只按 token 数选择草稿", "让用户阅读所有中间推理"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。用 rubric 评估草稿，达标后才返回。"}}
   },
   {
     "id": "claude-blog-2026-08-13",
@@ -244,7 +248,8 @@
     "question": "当 Agent 的模型、提示或规则发生变化时，为什么要把连续评估放进 CI？（单选）",
     "explanation": "当模型替换或提示改写时，连续评估可以检查 Agent 是否仍以相同标准完成任务，避免只在阶段末进行一次性 QA。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Continuous evals in CI"},
-    "formats": {"choice": {"type": "single", "options": ["冻结模型使其永远不再发生任何改变", "在模型或配置变化时验证任务质量是否回归", "用减少真实任务样本的方式来简化评估", "用连续评估完全替代所有确定性测试"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。连续评估用于检测模型、提示或配置变化造成的质量回归。"}}
+    "misconceptions": ["连续评估的目的是冻结模型，使其永远不再发生任何变化", "上了连续评估就可以完全替代确定性测试，不必再写单元测试", "减少真实任务样本可以简化连续评估，效果不打折扣"],
+    "formats": {"choice": {"type": "single", "options": ["冻结模型使其永远不再发生任何改变", "在模型或配置变化时验证任务质量是否回归", "用减少真实任务样本的方式来简化评估", "用连续评估完全替代所有确定性测试"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。连续评估用于检测模型、提示或配置变化造成的质量回归。"}}
   },
   {
     "id": "claude-blog-2026-08-20",
@@ -257,7 +262,8 @@
     "question": "建设 Agent 连续评估集时，哪种起步方式最能反映真实质量？（单选）",
     "explanation": "应从近期真实工作中抽取一组有代表性的任务，为每个任务定义输入、可接受结果和检查条件；样本不应只由模型自造的理想案例组成。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Continuous evals in CI"},
-    "formats": {"choice": {"type": "single", "options": ["只让模型随机生成无限多的合成任务", "收集有代表性的真实任务并定义输入、结果和验收检查", "只使用模型自造的完美案例", "只评估生成响应速度快慢这一项指标"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。真实任务样本和明确验收条件能检验 Agent 是否满足实际需求。"}}
+    "misconceptions": ["让模型随机生成大量合成任务最能反映真实质量，样本越多越好", "只用模型自造的完美案例即可建立有效的连续评估集", "只评估响应速度快慢这一项指标就足以反映 Agent 质量"],
+    "formats": {"choice": {"type": "single", "options": ["只让模型随机生成无限多的合成任务", "收集有代表性的真实任务并定义输入、结果和验收检查", "只使用模型自造的完美案例", "只评估生成响应速度快慢这一项指标"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。真实任务样本和明确验收条件能检验 Agent 是否满足实际需求。"}}
   },
   {
     "id": "claude-blog-2026-08-21",
@@ -491,7 +497,8 @@
     "question": "一个生产事故修复后，如何把它转化为可持续执行的防回归控制？（单选）",
     "explanation": "应把该事故加入持续评估集，作为回归用例；以后 Agent 配置或模型变化时，评估会再次检查该行为。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Continuous evals in CI"},
-    "formats": {"choice": {"type": "single", "options": ["仅关闭告警通道而不沉淀任何回归检查，事故会再次发生", "把事故写成持续评估中的回归用例", "删除事故记录与复盘文档，让组织无法从失败中学习", "仅靠增大模型参数量来规避同类事故，而不改变评估与流程"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。每个生产事故都应沉淀为 Eval 回归用例。"}}
+    "misconceptions": ["关闭告警通道即可防止同类事故再次发生，无需沉淀回归检查", "删除事故记录与复盘文档，可以避免团队被历史包袱拖累", "换用参数量更大的模型就能规避同类事故，无需改评估与流程"],
+    "formats": {"choice": {"type": "single", "options": ["仅关闭告警通道而不沉淀任何回归检查，事故会再次发生", "把事故写成持续评估中的回归用例", "删除事故记录与复盘文档，让组织无法从失败中学习", "仅靠增大模型参数量来规避同类事故，而不改变评估与流程"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。每个生产事故都应沉淀为 Eval 回归用例。"}}
   },
   {
     "id": "claude-blog-2026-08-39",
