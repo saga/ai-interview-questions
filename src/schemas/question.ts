@@ -42,6 +42,24 @@ const choiceFormatSchema = z.object({
       message: 'multiple 题至少需要两个正确答案',
     });
   }
+  // 越界检查必须在 schema 里：此前只有 validate-questions.ts 与 bank.test.ts 把关，
+  // 导致 parseQuestion() 单独调用时会放过 {options:[A,B,C,D], answer:[9]} 这类非法数据。
+  for (const index of choice.answer) {
+    if (index >= choice.options.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['answer'],
+        message: `answer 索引 ${index} 越界（options 共 ${choice.options.length} 项）`,
+      });
+    }
+  }
+  if (choice.misconceptionMap && choice.misconceptionMap.length !== choice.options.length) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['misconceptionMap'],
+      message: `misconceptionMap 长度 ${choice.misconceptionMap.length} 必须与 options ${choice.options.length} 一致`,
+    });
+  }
 });
 
 const openFormatSchema = z.object({
@@ -57,7 +75,14 @@ export const questionSchema = z
     subtopic: z.string().optional(),
     tags: z.array(z.string()).default([]),
     difficulty: difficultySchema,
-    angle: questionAngleSchema.optional(),
+    /**
+     * 主考察角度。**必填** —— `topic × angle` 是题库治理主索引（ADR-043），
+     * 覆盖矩阵、蓝图、adaptive 排序都依赖它。此前它是 optional，但
+     * `scripts/validate-questions.ts`、`scripts/add-question.ts` 早已按必填拦截，
+     * 形成「schema 说可选、CLI 说必填」的契约分裂。现全库 1308/1308 题均带 angle，
+     * 收敛为 required 无存量风险。
+     */
+    angle: questionAngleSchema,
     question: z.string().min(1),
     explanation: z.string().min(1),
     aiGenerated: z.boolean().optional(),
@@ -85,6 +110,29 @@ export const questionSchema = z
         message: '至少需要一种呈现形态（choice / open）',
       });
     }
+    // misconceptionMap 的「下标合法性 + 正确项不得标注误解」需要同时看到
+    // question 级 misconceptions 和 choice.answer，故放在这一层而非 choiceFormatSchema。
+    const map = q.formats.choice?.misconceptionMap;
+    if (!map) return;
+    const misconceptionCount = q.misconceptions?.length ?? 0;
+    map.forEach((value, optionIndex) => {
+      if (value === null) return;
+      if (value >= misconceptionCount) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['formats', 'choice', 'misconceptionMap'],
+          message: `misconceptionMap[${optionIndex}] = ${value} 越界（misconceptions 共 ${misconceptionCount} 条）`,
+        });
+        return;
+      }
+      if (q.formats.choice?.answer.includes(optionIndex)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['formats', 'choice', 'misconceptionMap'],
+          message: `正确选项 ${optionIndex} 不应标注误解，应保持 null`,
+        });
+      }
+    });
   });
 
 export type Question = z.infer<typeof questionSchema>;

@@ -21,8 +21,16 @@ export const ANGLE_ORDER: QuestionAngle[] = [
   'design',
 ];
 
-/** 各角度的建议补题形态（启发式：定义/机制/计算适合选择，权衡/情境/系统设计适合开放）。 */
-export const ANGLE_SUGGESTIONS: Record<QuestionAngle, { difficulty: Difficulty; format: FormatId }> = {
+/**
+ * 生成阶段的形态/难度起点提示。
+ *
+ * **这是 heuristic，不是约束。** 它只回答「这个角度通常从什么难度、什么形态起手写最顺」，
+ * 不构成「这个角度必须是这个难度/形态」的论断——`scenario` 完全可以是 medium 单选题，
+ * `definition` 也可以是 open 题。命名里的 HINT 就是为了防止下游把它当规格读。
+ *
+ * 使用者请把它当作待人工/模型复核的起点，而不是可断言的事实。
+ */
+export const ANGLE_GENERATION_HINTS: Record<QuestionAngle, { difficulty: Difficulty; format: FormatId }> = {
   definition: { difficulty: 'easy', format: 'choice' },
   fundamental: { difficulty: 'easy', format: 'choice' },
   mechanism: { difficulty: 'medium', format: 'choice' },
@@ -47,10 +55,8 @@ export interface TopicCoverage {
   priority: KnowledgePriority;
   /** 节点声明的期望考察角度 */
   expected: QuestionAngle[];
-  /** 实际计数：angle → 已标注题数（未标注题不计入） */
+  /** 实际计数：angle → 题数（angle 必填，每题必落一格） */
   counts: Partial<Record<QuestionAngle, number>>;
-  /** 该 topic 下未标注 angle 的题数 */
-  untagged: number;
   /** 期望角度中计数值为 0 的 = 覆盖缺口 */
   gaps: QuestionAngle[];
 }
@@ -72,7 +78,9 @@ export interface CoverageSuggestion {
 
 /**
  * 覆盖矩阵：把题目按 topic 归到知识节点，再按主考察角度（q.angle）计数。
- * 未标注 angle 的题进 untagged，不计入任何格子——"没打标"与"真缺口"必须分开看。
+ *
+ * angle 在 schema 层必填，所以每题必定落进某个格子；此前存在的 `untagged` 计数
+ * 是「schema 说可选」历史遗留，随着 angle 收敛为 required 一并移除（ADR-043）。
  */
 export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNode[]): CoverageMatrix {
   const topics = new Map<string, TopicCoverage>(
@@ -87,7 +95,6 @@ export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNo
         // 节点显式声明 angles 时优先用它；否则回退到所属 topic 的角度白名单（ADR-038 延伸）。
         expected: n.angles.length ? [...n.angles] : allowedAnglesFor(n.topic),
         counts: {},
-        untagged: 0,
         gaps: [],
       },
     ]),
@@ -98,10 +105,6 @@ export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNo
     const t = topics.get(q.topic);
     if (!t) {
       unmappedQuestions++;
-      continue;
-    }
-    if (!q.angle) {
-      t.untagged++;
       continue;
     }
     t.counts[q.angle] = (t.counts[q.angle] ?? 0) + 1;
@@ -121,7 +124,7 @@ export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNo
 
 /**
  * 补题建议：每个缺口格产出一条，按 P0 → nodeId → 角度梯度序排列；
- * 难度/形态来自 ANGLE_SUGGESTIONS 启发式，供 Blueprint 与人工评审起点用。
+ * 难度/形态来自 ANGLE_GENERATION_HINTS 生成提示（启发式，非约束），供 Blueprint 与人工评审起点用。
  */
 export function coverageSuggestions(matrix: CoverageMatrix): CoverageSuggestion[] {
   const suggestions: CoverageSuggestion[] = [];
@@ -133,7 +136,7 @@ export function coverageSuggestions(matrix: CoverageMatrix): CoverageSuggestion[
         name: t.name,
         priority: t.priority,
         angle,
-        ...ANGLE_SUGGESTIONS[angle],
+        ...ANGLE_GENERATION_HINTS[angle],
       });
     }
   }
@@ -152,7 +155,6 @@ export function formatCoverageReport(matrix: CoverageMatrix, suggestions: Covera
     lines.push('');
     lines.push(`[${t.nodeId}] ${t.name} · ${t.priority}`);
     lines.push(`  ${cells.join(' · ')}`);
-    if (t.untagged > 0) lines.push(`  ⚠ ${t.untagged} 题未标注 angle，未计入矩阵`);
   }
 
   // ── 按能力域汇总（ADR-038：以域组织而非技术名词平铺） ──
@@ -183,10 +185,9 @@ export function formatCoverageReport(matrix: CoverageMatrix, suggestions: Covera
 
   const expectedCells = matrix.topics.reduce((sum, t) => sum + t.expected.length, 0);
   const gapCells = matrix.topics.reduce((sum, t) => sum + t.gaps.length, 0);
-  const untagged = matrix.topics.reduce((sum, t) => sum + t.untagged, 0);
   lines.push('');
   lines.push(
-    `汇总：${matrix.topics.length} 知识点 · 期望格 ${expectedCells} · 缺口 ${gapCells} · 未标注题 ${untagged}` +
+    `汇总：${matrix.topics.length} 知识点 · 期望格 ${expectedCells} · 缺口 ${gapCells}` +
       (matrix.unmappedQuestions > 0 ? ` · 未挂靠知识点的题 ${matrix.unmappedQuestions}` : ''),
   );
   return lines.join('\n');

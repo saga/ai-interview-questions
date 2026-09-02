@@ -57,5 +57,8 @@ if (asJson) {
     `\n${includeSoft ? '（含 soft）' : '（仅 strong）'}共 ${hits.length} 道选择题存在选项长度偏差` +
       `（strong=${strong}${includeSoft ? `, soft=${soft}` : ''} / 选择题总数 ${questions.filter((q) => q.formats?.choice).length}）`,
   );
-  console.log('提示：历史 strong 档长度泄题已于 2026-08-27 批量改写清零；本 lint 保留作新题/变体的回归探针。新变体已由 generateVariant 自动重试修正。');
+  // 变体校验失败即回退原题并计入遥测，**不再 retry**——单次生成 + 失败回退（ADR-069）。
+  // 曾在此提示"新变体已由 generateVariant 自动重试修正"，与实际实现不符，会误导人以为
+  // 运行时有自愈能力。本 lint 只是回归探针，改题仍需人工/离线管线处理。
+  console.log('提示：历史 strong 档长度泄题已于 2026-08-27 批量改写清零；本 lint 保留作新题/变体的回归探针，命中后需人工或离线管线改写。');
 }

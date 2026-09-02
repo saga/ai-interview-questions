@@ -8,6 +8,8 @@
 
 **核心原则**：题库是 source of truth，LLM 是 enhancement layer（不是题库本身）。变体的答案 key 永远来自原题，LLM 只改表达。
 
+> **变体安全边界（勿高估）**：「答案 key 来自原题」保证的是**程序层面**答案不可被模型覆盖，它**不**保证改写后的题干/选项在语义上仍等价于原题。`validateVariant` 只查结构项与抗暗示（选项去重、长度泄题、指代自包含、形态对齐），是**漂移探测器**而非语义等价性证明——语义走偏（换了条件、引入新前提、干扰项不再错误）的变体可以完整通过全部硬门槛。因此变体只用于**同格内扩充题量**，不得用于跨 `topic × angle` 补覆盖缺口；离线量产须先叠加超采 + 质量 challenger（见 `ACTION_CHECKLIST.md` A-10）。
+
 ## 统一交互入口（Phase 1–5 已实施，ADR-061/062，plan0831_4 融合收敛）
 
 Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record。`handleSend` 经 `routeUserMessage` 三通道分流（ADR-064）：`command`（5 个确定性训练动作，无 LLM）→ `answer`（提交作答）→ `copilot`（解释/提示/比较/追问/知识问答，零副作用）；检索在 `copilot.ts` 内先于 LLM 完成（ADR-063），失败只降级为无依据问答。`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`（含 §8 六约束）。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。
@@ -528,7 +530,9 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
                                                                         彻底与 LLM 解耦）
 ```
 
-- **Invariant（必须保持）**：`topic/tags/requiredConcepts/angle`、正确性语义及适用条件、`question intent`、`difficulty band`、`formats.type(single/multiple/open)`。由 `domain/knowledge.requiredPointsFor` 提供 `requiredConcepts`，`Question.angle` 已纳入契约（尽量换角度但不引入新核心知识）。
+- **Invariant（必须保持）**——按保证强度分两类，不要混为一谈：
+  - **程序保证（可断言）**：`topic / tags / angle / formats.type / answer 索引 / explanation` 全部**直接取 canonical**，不经 LLM；`difficulty band` 与选项数量/真假属性由结构校验兜住。`Question.angle` 因此是**继承**下来的，不是重新推导的——变体不换角度，只换表达。
+  - **Prompt 请求、但不校验（不可断言）**：正确性语义与适用条件、`question intent`、`requiredConcepts` 的语义覆盖。这些只写在 `VARIANT_SYSTEM` 里要求模型遵守，**没有任何运行时检查能证明它们成立**（ADR-057 已明确拆除字面语义闸门，理由是字面匹配无法证明语义等价、只会误杀换场景的合法变体）。引用时请写「要求保持」而非「保证保持」。
 - **语义变换（LLM 负责）**：题干措辞、场景/上下文、选项文本表达（逐项改写现有文本）。
 - **结构变换（程序负责）**：选项顺序（Fisher–Yates 重排）、answer 索引重映射、多选题答案升序归一化、选项文本空白折叠。解析（`explanation`）与选项真假属性/数量均不可变，永远取 canonical。
 - **校验（唯一入口：`finalizeQuestion` → `domain/variant.validateVariant`，ADR-056/068）**：**硬门槛只有结构项与抗暗示**，失败即回退原题、原因码计入遥测——**不再 retry**。① 结构：题干非空；自包含无“原题/上述/本文/该方案…”等 10 类指代（含“前文/下文/题目中/题干中”）；选择题 `options` **必填**、数量须与 canonical 一致（保证逐项一一对应）、非空、**规范化后**无重复。② 抗暗示：长度泄题（仅 choice，见下）。`answer` 不在此校验（永远来自 canonical）。**形态对齐（P0-1/ADR-056）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（约 1078/1084）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**「语义闸门」已拆除（ADR-057，勿恢复）**：`requiredCoverageMet`（requiredConcepts 字面覆盖 ≈2/3，`need = max(1, round(N*2/3))`）于 2026-09-01 第四轮删除，余下的字面锚点于 2026-09-02 第五轮降级为 warning（见下条）——字面匹配无法证明语义等价，只会误杀换场景的合法变体。`fuzzball` 兜底（`token_set_ratio ≥75` / `partial_ratio ≥80`）现只服务于该漂移软信号。

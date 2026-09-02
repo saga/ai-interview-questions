@@ -299,11 +299,8 @@ async function main() {
   );
 }
 
-main().catch((e) => {
-  console.error('基准异常：', e);
-  process.exit(1);
-});
-
+// 单一入口。此前文件末尾有两个 main 调用，基准主流程会执行两遍
+// ——批量 LLM 调用翻倍，且 fallback 率 / p95 等 telemetry 统计被污染。
 main().catch((e) => {
   console.error('基准异常：', e);
   process.exit(1);

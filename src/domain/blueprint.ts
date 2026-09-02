@@ -44,7 +44,7 @@ export function blueprintFromSuggestion(
   };
 }
 
-/** 角度在梯度序上的距离（越近越适合作为变体基底）；无标注题排最后。 */
+/** 角度在梯度序上的距离（越近越适合作为变体基底）。 */
 function angleDistance(a: QuestionAngle, b: QuestionAngle): number {
   return Math.abs(ANGLE_ORDER.indexOf(a) - ANGLE_ORDER.indexOf(b));
 }
@@ -53,16 +53,14 @@ function angleDistance(a: QuestionAngle, b: QuestionAngle): number {
  * 变体候选（复用 > 变体 > 生成的"变体"步）：该格无题才需要补题，
  * 所以不存在可整体复用的题——退而求其次，找同 topic 的近角度题作变体基底
  * （改造题干角度/情境比从零生成稳定得多）。按角度梯度距离升序返回。
+ *
+ * **注意**：候选题保留自己的 angle，变体不得继承覆盖格——若把 A 格题改成 B 格，
+ * A 格会重新空出来，覆盖缺口永远填不满。变体只能扩充同格内的题量，不能跨格搬运。
  */
 export function variantCandidates(questions: Question[], bp: QuestionBlueprint): Question[] {
   return questions
     .filter((q) => q.topic === bp.topic)
-    .sort(
-      (a, b) =>
-        (a.angle ? angleDistance(a.angle, bp.angle) : Number.POSITIVE_INFINITY) -
-          (b.angle ? angleDistance(b.angle, bp.angle) : Number.POSITIVE_INFINITY) ||
-        a.id.localeCompare(b.id),
-    );
+    .sort((a, b) => angleDistance(a.angle, bp.angle) - angleDistance(b.angle, bp.angle) || a.id.localeCompare(b.id));
 }
 
 export type BlueprintCheck = { ok: true } | { ok: false; reason: string };

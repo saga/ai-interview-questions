@@ -52,7 +52,7 @@ describe('blueprintFromSuggestion', () => {
   });
 });
 
-function q(id: string, topic: string, angle?: Question['angle']): Question {
+function q(id: string, topic: string, angle: NonNullable<Question['angle']>): Question {
   return {
     id,
     category: 'moe',
@@ -74,7 +74,7 @@ describe('variantCandidates', () => {
     q('near-1', 'load-balancing', 'definition'), // 距 tradeoff=3
     q('near-2', 'load-balancing', 'mechanism'), // 距 tradeoff=2
     q('other-topic', 'kv-cache', 'tradeoff'), // 不同 topic，排除
-    q('untagged', 'load-balancing'), // 无标注排最后
+    q('far-2', 'load-balancing', 'tradeoff'), // 距离 0，同距按 id 稳定排序
     q('far-1', 'load-balancing', 'tradeoff'), // 距离 0
   ];
   const bp: QuestionBlueprint = {
@@ -86,9 +86,9 @@ describe('variantCandidates', () => {
     expectedConcepts: [],
   };
 
-  it('只取同 topic 题，按角度梯度距离升序，无标注排最后；同距按 id 稳定排序', () => {
+  it('只取同 topic 题，按角度梯度距离升序；同距按 id 稳定排序', () => {
     const ids = variantCandidates(bank, bp).map((x) => x.id);
-    expect(ids).toEqual(['far-1', 'near-2', 'near-1', 'untagged']);
+    expect(ids).toEqual(['far-1', 'far-2', 'near-2', 'near-1']);
   });
 
   it('空题库 / 无同主题题 → 空数组', () => {

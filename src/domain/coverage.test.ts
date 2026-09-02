@@ -1,11 +1,13 @@
-// 覆盖矩阵测试：计数聚合、缺口判定、未标注/孤儿题分流、建议排序与启发式映射。
+// 覆盖矩阵测试：计数聚合、缺口判定、孤儿题分流、建议排序与生成提示映射。
 // 纯函数测试，注入合成节点/题目，不读真实数据文件。
+// angle 在 schema 层必填（ADR-043），因此本文件的 q() 助手不接受 undefined——
+// 历史上「未标注题进 untagged」的分支随该字段收敛为 required 一并删除。
 
 import { describe, expect, it } from 'vitest';
 import type { KnowledgeNode } from '../schemas/knowledge';
 import type { Question } from '../schemas/question';
 import {
-  ANGLE_SUGGESTIONS,
+  ANGLE_GENERATION_HINTS,
   coverageSuggestions,
   formatCoverageReport,
   questionCoverageMatrix,
@@ -15,7 +17,7 @@ function node(id: string, priority: KnowledgeNode['priority'], angles: Knowledge
   return { id, name: id, area: 'llm', topic: 'model-architecture', priority, summary: '', required: [], misconceptions: [], angles };
 }
 
-function q(topic: string, angle?: Question['angle'], id = topic): Question {
+function q(topic: string, angle: NonNullable<Question['angle']>, id = topic): Question {
   return {
     id,
     category: 'c',
@@ -46,11 +48,13 @@ describe('questionCoverageMatrix', () => {
     expect(m.topics.find((x) => x.nodeId === 'kv-cache')!.gaps).toEqual(['mechanism']);
   });
 
-  it('未标注 angle 的题进 untagged，不计入任何格子', () => {
-    const m = questionCoverageMatrix([q('routing'), q('routing', undefined, 'r2'), q('routing', 'definition')], nodes);
+  it('每道同角度的题各自入格，重复计数而非去重（题数即覆盖度）', () => {
+    const m = questionCoverageMatrix(
+      [q('routing', 'definition'), q('routing', 'definition', 'r2'), q('routing', 'definition', 'r3')],
+      nodes,
+    );
     const t = m.topics.find((x) => x.nodeId === 'routing')!;
-    expect(t.untagged).toBe(2);
-    expect(t.counts).toEqual({ definition: 1 });
+    expect(t.counts).toEqual({ definition: 3 });
     expect(t.gaps).toEqual(['mechanism', 'tradeoff']);
   });
 
@@ -63,7 +67,7 @@ describe('questionCoverageMatrix', () => {
   it('空题库 → 所有期望角度都是缺口；空节点 → 空矩阵', () => {
     const m = questionCoverageMatrix([], nodes);
     expect(m.topics.every((t) => t.gaps.length === t.expected.length)).toBe(true);
-    expect(questionCoverageMatrix([q('routing')], [])).toEqual({ topics: [], unmappedQuestions: 1 });
+    expect(questionCoverageMatrix([q('routing', 'definition')], [])).toEqual({ topics: [], unmappedQuestions: 1 });
   });
 
   it('topics 按 P0 → nodeId 排序（报告稳定）', () => {
@@ -84,7 +88,8 @@ describe('coverageSuggestions', () => {
     ]);
     expect(s[0]).toMatchObject({ priority: 'P0', difficulty: 'easy', format: 'choice' }); // definition
     expect(s[2]).toMatchObject({ difficulty: 'hard', format: 'open' }); // tradeoff
-    expect(ANGLE_SUGGESTIONS['system-design'].format).toBe('open');
+    // 生成提示仅表达「通常从什么形态起手写最顺」，不构成约束，故只断言其存在性。
+    expect(ANGLE_GENERATION_HINTS['system-design']).toEqual({ difficulty: 'hard', format: 'open' });
   });
 
   it('无缺口时返回空数组', () => {
@@ -99,15 +104,16 @@ describe('coverageSuggestions', () => {
 });
 
 describe('formatCoverageReport', () => {
-  it('报告包含缺口标记、未标注警告、建议清单与汇总行', () => {
-    const m = questionCoverageMatrix([q('routing'), q('ghost', 'definition', 'g1')], nodes);
+  it('报告包含缺口标记、建议清单与汇总行', () => {
+    const m = questionCoverageMatrix([q('routing', 'definition', 'r1'), q('ghost', 'definition', 'g1')], nodes);
     const text = formatCoverageReport(m, coverageSuggestions(m));
     expect(text).toContain('[routing] routing · P0');
+    expect(text).toContain('definition 1✓');
     expect(text).toContain('tradeoff !');
-    expect(text).toContain('⚠ 1 题未标注 angle');
-    expect(text).toContain('1. [P0] routing · definition · easy · choice');
+    expect(text).not.toContain('未标注');
+    expect(text).toContain('1. [P0] routing · mechanism · medium · choice');
     expect(text).toContain('未挂靠知识点的题 1');
-    expect(text).toMatch(/汇总：2 知识点 · 期望格 4 · 缺口 4 · 未标注题 1 · 未挂靠知识点的题 1/);
+    expect(text).toMatch(/汇总：2 知识点 · 期望格 4 · 缺口 3 · 未挂靠知识点的题 1/);
   });
 
   it('全覆盖时汇总缺口为 0，且建议清单标注为 0 条', () => {
