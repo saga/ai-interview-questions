@@ -2,6 +2,22 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-069 · 双模式 Variant：Offline Variant Pool（题库资产化）+ Runtime fallback 开关
+
+- 状态：已采纳 · 2026-09-02
+- 来源：用户在第五轮（ADR-068）收尾后提出「双模式 Variant」设计，要求严格按设计落地，并明令禁止 Variant 专用 Agent、Runtime 第二个 Judge、独立 mastery/knowledge graph/DB、CI 自动 LLM、Runtime 自动写回、过多 Variant 类型。
+- 背景：第五轮已确立「LLM 只做语义变换、程序做结构变换、finalizeQuestion 为唯一校验入口」。但变体只在运行时按需生成（每次训练都付 1 次 LLM 延迟、且无法沉淀/审计/审阅）。需要一条**默认零 LLM** 的资产化路径，运行时 LLM 仅作为 Pool 未命中时的可选兜底。
+- 决策：
+  1. **Offline Variant Pool 为默认路径**：变体作为题库资产（离线预生成、提交进仓库，按 batch 聚合成 `src/data/variants/*.json`），训练时经 `import.meta.glob` 合并、`resolveQuestionVariant` Pool-first 零 LLM 落地。
+  2. **VariantKind 4 种风格**（surface / context / surface-options / context-options）在「LLM 只做语义变换」硬约束内表达改写偏好，不新增答案/结构自由度。
+  3. **Runtime Variant 默认 OFF**：`runtimeVariantEnabled`（Zod `z.preprocess`，非显式 `true` 一律 `false`）。仅 Pool miss + 开关开 + 有 provider 才 1 次 LLM；结果**不写回**题库——晋升靠 telemetry → 离线 review → 手动 promote。
+  4. **共用同一套契约与校验**：Pool 命中与 Runtime fallback 都走 `validateVariant` / `applyVariant`（不写第二套实现）；离线生成器复用 `generateVariant`（加可选 `kind`），不重写 LLM 适配。
+  5. **变体不嵌入 Question JSON**：独立资产化，避免污染题库真值、避免拖慢题库加载。
+- 资产/指纹：`QuestionVariant.sourceHash = computeVariantSourceHash(canonical)`（FNV-1a，仅哈希题面+选项文本，answer/explanation 不入指纹），用于离线 `validate-variants` 与运行时命中校验的 stale 检测。
+- 离线严格度：离线比 runtime 可以多候选、可严格校验、可 fuzzball 去重（变体-vs-变体近重复），runtime 为单次 best-effort；「离线更严格」是设计意图（资产可审阅、runtime 求快）。
+- 反模式（明确不做）：Variant 专用 Agent（变体是 one-shot 结构化生成，不需要 Agent loop）；Runtime 第二套 Judge；Variant 维度 mastery / knowledge graph / 独立 DB；CI 自动调 LLM 批量生成（成本与漂移不可控）；Runtime 自动写回题库（破坏资产审查门禁）；Variant 类型膨胀（锁死 4 种）。
+- 验证：`tsc`（app+node）EXIT=0；`vitest` 相关用例全绿（variantKind / sourceHash / variantPool 三态 / sessionEvaluator 三态）。dry-run 与 `validate-variants` 在 vite-node 下实跑通过。
+
 ## ADR-068 · Variant 第五轮收敛：单一校验入口 + 锚定降级为 warning + 规范化前移
 
 - 状态：已采纳 · 2026-09-02

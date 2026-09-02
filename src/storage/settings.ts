@@ -25,6 +25,7 @@ function safeConfigSnapshot(config: AIConfig) {
     })),
     generateOpenQuestions: config.generateOpenQuestions,
     questionChallengerEnabled: config.questionChallengerEnabled,
+    runtimeVariantEnabled: config.runtimeVariantEnabled,
     masteryThreshold: config.masteryThreshold,
     disabledCategories: [...(config.disabledCategories ?? [])],
     proficiency: { ...config.proficiency },
@@ -63,6 +64,7 @@ export function loadConfig(): AIConfig {
       // 历史存储无此字段：缺省视为关闭（与默认值一致，ADR-031）
       const generateOpenQuestions = parsed.generateOpenQuestions === true;
       const questionChallengerEnabled = parsed.questionChallengerEnabled === true;
+      const runtimeVariantEnabled = parsed.runtimeVariantEnabled === true;
       const masteryThreshold = typeof parsed.masteryThreshold === 'number' ? parsed.masteryThreshold : 75;
       const disabledCategories = Array.isArray(parsed.disabledCategories)
         ? parsed.disabledCategories.filter((value): value is string => typeof value === 'string')
@@ -93,6 +95,7 @@ export function loadConfig(): AIConfig {
             providers,
             generateOpenQuestions,
             questionChallengerEnabled,
+            runtimeVariantEnabled,
             masteryThreshold,
             disabledCategories,
             proficiency,
@@ -194,6 +197,7 @@ export function parseConfigJSON(text: string): { ok: true; config: AIConfig } | 
       providers: entries,
       generateOpenQuestions: normalized.generateOpenQuestions,
       questionChallengerEnabled: normalized.questionChallengerEnabled,
+      runtimeVariantEnabled: normalized.runtimeVariantEnabled,
       masteryThreshold: normalized.masteryThreshold,
       disabledCategories: normalized.disabledCategories,
       proficiency: normalized.proficiency,

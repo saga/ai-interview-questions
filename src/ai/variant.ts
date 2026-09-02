@@ -9,6 +9,7 @@
 import type { CompleteFn, GeneratedVariant } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
+import type { VariantKind } from '../schemas/variant';
 import { requiredPointsFor } from '../domain/knowledge/nodes';
 import { extractJSON } from './pi';
 
@@ -64,6 +65,34 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v3]
   "question": "改写后的题干"
 }`;
 
+/** 从 VARIANT_SYSTEM 头解析 prompt 版本（如 "v3"），供离线变体池的 promptVersion 字段使用。 */
+export const VARIANT_PROMPT_VERSION: string =
+  (VARIANT_SYSTEM.match(/\[PROMPT-VERSION\s+([^\]]+)\]/) ?? [])[1]?.trim() ?? 'unknown';
+
+/**
+ * 4 种轻量变体风格的类型指令（双模式 Variant 设计）：
+ * 注入到 system prompt 的「变体风格」段落，指导 LLM 在「只做语义变换」的硬约束内
+ * 偏向某种改写风格。不改变 LLM 不得重新决定 answer / explanation / 选项数量 / 顺序的边界。
+ */
+export const VARIANT_KIND_GUIDANCE: Record<VariantKind, string> = {
+  surface:
+    'surface（仅改写题干表达）：只重写题干措辞、不改变结构；若为选择题，仍须逐项同义改写各选项文本。',
+  context:
+    'context（融入工程上下文）：在题干中融入一段简短、真实、不依赖原题的工程背景或场景后再改写，使题目更有代入感；若为选择题，仍须逐项改写各选项。',
+  'surface-options':
+    'surface-options（题干 + 选项改写，默认风格）：改写题干，并对每个选项做自然的逐项同义改写。',
+  'context-options':
+    'context-options（上下文 + 题干 + 选项改写）：在题干中融入简短工程上下文后改写题干，并对每个选项做逐项同义改写。',
+};
+
+/** 把变体风格指令追加到 system prompt（在「只输出 JSON」约束之后，作为额外风格要求）。 */
+function withKind(system: string, kind: VariantKind): string {
+  return (
+    `${system}\n\n[变体风格 ${kind}]\n本变体必须额外满足以下风格要求：\n${VARIANT_KIND_GUIDANCE[kind]}\n` +
+    '在满足上方全部 10 条约束与「只输出 JSON」的基础上，再满足本风格要求。'
+  );
+}
+
 // 轻量变体契约：模型只允许产出 question / options。
 // answer / explanation 不在此类型中——即便模型回吐这两个字段，解析后也无法进入产物。
 interface RawVariant {
@@ -104,8 +133,10 @@ export async function generateVariant(
   complete: CompleteFn,
   format?: FormatId,
   systemPrompt = VARIANT_SYSTEM,
+  kind?: VariantKind,
 ): Promise<GeneratedVariant> {
+  const system = kind ? withKind(systemPrompt, kind) : systemPrompt;
   const user = buildUser(q, format);
-  const out = extractJSON<RawVariant>(await complete(systemPrompt, user));
+  const out = extractJSON<RawVariant>(await complete(system, user));
   return toGeneratedVariant(q, out);
 }

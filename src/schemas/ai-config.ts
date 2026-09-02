@@ -45,6 +45,14 @@ export const aiConfigSchema = z.object({
   providers: z.array(providerEntrySchema),
   generateOpenQuestions: z.preprocess((v) => v === true, z.boolean().default(false)),
   questionChallengerEnabled: z.preprocess((v) => v === true, z.boolean().default(false)),
+  /**
+   * 运行时变体开关（双模式 Variant 设计）。
+   * 默认 OFF：训练时只走 Offline Variant Pool（题库资产，零 LLM 落地）；
+   * 仅当 Pool 命中失败时，且本开关开启、且存在可用 provider 时，才退化到 1 次 LLM 运行时生成。
+   * 运行时生成结果**不写回**题库（晋升路径：telemetry → 离线 review → promote）。
+   * 用 preprocess 把一切非显式 true 的值（缺省 / 字符串 / 数字）清洗为 false，与 generateOpenQuestions 同口径。
+   */
+  runtimeVariantEnabled: z.preprocess((v) => v === true, z.boolean().default(false)),
   masteryThreshold: z.number().int().min(0).max(100).default(75),
   disabledCategories: z.array(z.string()).default([]),
   proficiency: proficiencyConfigSchema.default(DEFAULT_PROFICIENCY),

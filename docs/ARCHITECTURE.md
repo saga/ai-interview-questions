@@ -541,6 +541,36 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
 - **漂移软信号（ADR-068，不是 gate）**：`stemAnchorMissing`（topic/tags/required 在题干里连一个字面锚点都没命中）只产出 `warning: STEM_ANCHOR_WARNING`，**不参与拒绝决策**。它衡量的是「题干可能与主题脱钩」这一信号，而非语义等价性；命名与注释刻意避开“语义闸门/硬门槛”——字面锚点只能证明「题干仍与主题相关」，无法证明语义等价，会误杀「换场景不换知识点」的合法变体（例：原题「为什么 KV Cache 能降低 prefill 成本？」→ 变体「某服务前缀高度重复却仍重复相同前向计算，如何降低开销？」零锚点命中却完全合法）。变体安全的真正兜底是另外两条硬边界：`VARIANT_SYSTEM` 的逐项一一对应约束，以及 `answer`/`explanation` 恒取 canonical（变体改歪也不会判错题）。证据面仍只取题干（排除 `explanation`/`options`，理由同上条）。
 - **拒绝原因码（ADR-068）**：`VariantCheck.code` 为机器可读原因（`empty-question` / `forbidden-reference` / `missing-options` / `option-count-mismatch` / `empty-option` / `duplicate-option` / `option-length-bias`），`finalizeQuestion` 直接透传给 `recordVariantRound`，使 fallback 归因从笼统的 `validation-failed` 细化到具体原因，支撑「按真实失败率调 gate」。
 
+## 变体双模式：Offline Variant Pool + Runtime fallback（ADR-069）
+
+训练时每道题的变体来源有两条路径，由 `config.runtimeVariantEnabled`（默认 OFF）控制是否启用第二条：
+
+```
+                 ┌─────────────────────────────────────────────────────────┐
+                 │  Offline Variant Pool（默认，零 LLM）                     │
+                 │  src/data/variants/*.json（import.meta.glob 合并）        │
+                 │  经 domain/variantPool.resolveQuestionVariant 选变体      │
+                 └───────────────────────────────┬─────────────────────────┘
+                                                  │ Pool 命中？
+                              ┌───────────────────┴───────────────────┐
+                          是  │                                        │ 否（miss）
+                              ▼                                        ▼
+                  validateVariant → applyVariant                runtimeVariantEnabled?
+                  （零 LLM 直接落地，记 latency=0）            ┌───────┴───────┐
+                                                            OFF │           ON │ + provider?
+                                                                ▼               ▼
+                                                          回退 canonical    1 次 LLM（generateVariant）
+                                                          （零 LLM）        → validateVariant
+                                                                           ├─ fail → 回退 canonical
+                                                                           └─ ok → applyVariant（结果不写回题库）
+```
+
+- **资产契约（`src/schemas/variant.ts`）**：`VariantKind`（surface / context / surface-options / context-options）、`QuestionVariant`（`id/kind/question/options?/generatedAt/generator/promptVersion/sourceHash`）、`VariantPool`（`version/generatedAt/promptVersion/variants: Record<id, QuestionVariant[]>`）。`sourceHash = computeVariantSourceHash(canonical)`（FNV-1a）用于 stale 检测。
+- **Pool-first（默认）**：训练选择逻辑在 `finalizeQuestion` 编排——先查 Pool，命中即取 `selectVariant`（确定性 Fisher–Yates + seen 去重）落地；miss 且开关 OFF 时直接回 canonical（**零 LLM**）。
+- **Runtime fallback（可选）**：仅 miss + 开关 ON + 存在可用 provider，才 1 次 LLM（`generateVariant` 加 `kind` 注入风格指令）；结果**不写回题库**——晋升靠 telemetry → 离线 review → 手动 `npm run question:variants` promote。
+- **离线生成器 / 审计**：`npm run question:variants`（vite-node）复用 `generateVariant` + `validateVariant`，支持 `--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version`，每题默认 2 变体、严格校验 + fuzzball 去重、按 batch 落盘；`npm run question:validate-variants` 标 stale + 近重复报告。**红线**：不建 Variant 专用 Agent、不写第二套 LLM 实现、Runtime 不自动写回、类型锁死 4 种。
+- **UI 开关**：SettingsPanel「使用 AI 实时生成题目变体」（默认 OFF），接线 `config.runtimeVariantEnabled`；文案明确「Pool first / Runtime fallback」。
+
 ## 评分 Rubric（四维 + 两层评分锚点）
 
 开放题 `EvaluationResult` 拆为四维度（默认权重和为 1）：

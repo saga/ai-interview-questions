@@ -1,263 +1,188 @@
-# AI / ML 技术文章 → 高质量面试选择题生成 Prompt
-
-## 任务
-
 你会收到一篇 AI / ML / LLM / Agent / AI Systems 技术文章。
 
-你的任务不是总结文章，也不是测试读者是否记得文章内容，而是：
+任务：从文章中提取长期有面试价值的核心知识（Concept），生成高质量、可独立理解的选择题，并为重要 Concept 生成少量具有真实诊断差异的 Variant。
 
-> **从文章中识别具有长期面试价值的 Knowledge / Concept / Subtopic，并将其转化为高质量、可独立理解的面试选择题。**
+## 核心原则
 
-题目用于 AI Engineer / ML Engineer / LLM Engineer / Agent Engineer / AI Systems 等岗位的能力训练。
+### 1. Concept-first
 
-**文章只是知识来源，不是题目的上下文来源。考生默认没有读过原文章。**
+先识别高价值 Concept，再出题。
 
----
+优先：
 
-## 一、生成数量
+* 核心机制
+* 高频知识
+* 典型误解
+* 工程判断
+* trade-off
+* debugging
+* design / system-design
 
-每篇文章生成 **5～13 道题**。
+不要按文章段落平均出题，也不要为了数量制造低价值题。
 
-根据文章的知识密度决定数量：
+每题默认：
 
-- 内容较少：5～7 道
-- 内容中等：8～10 道
-- 内容丰富：11～13 道
+* 1 个 Core Concept
+* 0～2 个 supporting / prerequisite concepts
 
-不要为了凑数量而：
+### 2. Canonical
 
-- 重复 Concept
-- 重复 Angle
-- 制造低价值基础题
-- 人为增加选项
-- 编造文章没有依据的专业结论
+每个重要 Concept 先生成 1 个 Canonical Question，作为该知识的标准题。
 
----
+Canonical 必须：
 
-## 二、出题原则
+* self-contained
+* 有明确正确答案
+* 有明确诊断价值
+* 不依赖原文章
+* 能长期复用
 
-先内部完成：
+### 3. Variant
 
-1. 阅读并理解文章。
-2. 识别高价值 Knowledge / Concept / Subtopic。
-3. 判断面试价值。
-4. 为重要 Concept 选择合适的 Angle 和认知任务。
-5. 生成题目并检查质量。
+同一个 Concept 最多生成 2 个 Variant。
 
-优先考察：
+Variant 不能只是换几个词或换语序。
 
-- 核心知识
-- 机制与因果关系
-- 典型误解
-- 工程判断
-- 方案比较与 trade-off
-- 设计与系统架构
-- Debugging
-- 实际应用
+必须至少改变以下之一：
 
-不要平均覆盖文章，也不要按文章段落顺序机械出题。
-
-每道题默认围绕 **1 个核心 Concept**，最多增加少量 supporting / prerequisite Concepts。题目应具有明确的诊断价值。
-
----
-
-## 三、题目类型
-
-全部生成选择题，**多选题优先，但不得强行多选**。
-
-规则：
-
-- `single`：恰好 1 个正确答案
-- `multiple`：至少 2 个正确答案
-- 4～6 个选项
-- `answer` 使用 0-based integer array
-- 不使用 A/B/C/D 或答案文本作为 `answer`
-
-对于多选题，所有正确项必须在题干约束下成立，错误项必须能够明确排除，不能存在多个合理答案集合。
-
----
-
-## 四、考察角度
-
-每道题选择一个主要 `angle`：
-
-```text
-definition
-fundamental
-mechanism
-comparison
-calculation
-tradeoff
-scenario
-debugging
-system-design
-design
-````
-
-不需要覆盖所有 Angle。
-
-同一 Concept 生成多题时，应尽量使用不同 Angle 和不同认知任务。
+* cognitive task
+* angle
+* engineering scenario
+* question framing
 
 例如：
 
 ```text
-Concept = KV Cache
-
-题 1 → mechanism
-题 2 → tradeoff
-题 3 → debugging
+Canonical → mechanism / explain
+Variant   → debugging / diagnose
+Variant   → tradeoff / evaluate
 ```
 
-而不是重复定义。
+而：
 
----
+```text
+为什么需要 X？
+为什么使用 X？
+X 为什么重要？
+```
 
-## 五、架构设计题
+不算有效 Variant。
 
-当文章本身提供足够的工程信息时，可以优先生成 `design` / `system-design` 题，例如：
+Variant 必须保持：
 
-* RAG
-* Agent / Multi-Agent
-* MCP
-* Memory
-* Context Engineering
-* Model Serving
-* AI Gateway / Infrastructure
-* Evaluation / Observability
-* Security
-* Multimodal
-* Training / Post-training infrastructure
+* 相同 Core Concept
+* 相同核心技术结论
+* 相同答案逻辑
+* 相同诊断目标
 
-架构题必须通过场景约束考察工程判断，而不是简单问“哪个技术更好”。
+不得引入新的独立核心知识。
 
-可以包含：
+### 4. 选择题
 
-* 业务目标
-* 数据规模
-* 流量
-* 延迟
-* 成本
-* 一致性
-* 可靠性
-* 安全
-* 状态
-* 可观测性
-* Evaluation
+全部使用选择题：
 
-`system-design` 至少涉及 3 个**真正影响方案选择**的维度，不要机械罗列。
+* 4～6 个选项
+* single：恰好 1 个正确
+* multiple：至少 2 个正确
+* answer 使用 0-based index
 
-工程场景可以构造，但决定答案的核心技术事实必须能够从文章可靠推导，不能凭空加入 benchmark、产品行为、性能数字或关键专业结论。
+正确答案必须唯一、稳定。
 
----
+错误选项应来自真实 misconception 或工程误判，而不是明显荒谬的答案。
 
-## 六、Self-contained
+选项应尽量：
 
-删除原文章后，每道题仍必须能够独立理解。
+* 同一抽象层级
+* 长度和信息量接近
+* 不通过“更长、更完整、更专业”暴露答案
 
-避免：
+每个选项必须独立、可理解，并具有稳定的技术含义，以便后续可以做轻量语义改写。
 
-* “文中提到……”
-* “根据本文……”
-* “作者认为……”
-* “上述方法……”
-* “前文所述……”
+### 5. Architecture
 
-如果需要背景，将回答所需的最小 context 写进题干。
+RAG、Agent、MCP、Memory、Context Engineering、AI Systems、Security 等主题，在文章证据充分时优先考虑 scenario / design / system-design。
 
-禁止生成阅读理解题，例如：
+架构题必须有真实工程约束；不要只问“哪个方案更好”。
 
-* “文章介绍了哪些技术？”
-* “作者认为最大的挑战是什么？”
-* “文中使用了什么方法？”
+### 6. Evidence
 
-除非该事实本身就是不可替代的专业知识。
+正确答案的核心依据必须来自：
 
----
+* 文章可靠内容；或
+* 文章明确提供的可靠专业背景。
 
-## 七、选项设计
+不得编造 benchmark、性能数字、产品行为或关键技术事实。
 
-正确答案不得因为形式特征明显暴露：
+### 7. Self-contained
 
-* 更长
-* 更具体
-* 更严谨
-* 专业术语更多
-* 限定条件更多
-* 信息量更多
-* 语气更谨慎
+题目必须脱离文章独立成立。
 
-所有选项尽量处于相同决策层级。
+禁止：
 
-错误选项应来自真实的技术误解或工程误判，例如：
+* “根据本文”
+* “文中提到”
+* “作者认为”
+* “上述方法”
+* “前文所述”
 
-* 混淆相邻概念
-* 忽略必要条件
-* 忽略 trade-off
-* 忽略系统瓶颈
-* 把局部优化当成系统优化
-* 把 benchmark 当生产结论
-* 把训练阶段结论迁移到推理阶段
-* 把相关性当成因果关系
+需要背景时，把最小必要 context 写进题干。
 
-禁止明显荒谬的干扰项。
+### 8. Explanation
 
----
-
-## 八、Explanation
-
-每道题必须有简短但有技术含量的 `explanation`。
-
-应说明：
+每题提供简短 explanation：
 
 * 为什么正确
-* 核心原理
-* 必要时的 trade-off 或典型 misconception
+* 核心机制
+* 必要时说明 trade-off / misconception
 
-不要逐字复述文章，也不要写成完整教程。
-
----
-
-## 九、Evidence 与 Diagnostic Value
-
-每道题必须满足：
-
-* 正确答案的核心技术依据能够从文章知识可靠推出。
-* 不依赖文章之外未经说明的重要事实。
-* 能较明确地反映考生缺失的 Concept、机制或工程判断。
-
-不要因为某个 Concept 尚未覆盖就强行生成题目；**知识覆盖不是生成低价值题的理由。**
+不要写成教程。
 
 ---
 
-## 十、最终检查
+## 数量
 
-输出前逐题检查：
+每篇文章生成 5～13 个 Assessment Items。
 
-1. **Self-contained**：脱离文章仍能理解。
-2. **Concept**：有明确核心 Concept，范围不过大。
-3. **Angle**：主要考察角度明确。
-4. **Interview Value**：具有长期面试价值。
-5. **Reasoning**：优先考察理解、判断、应用或工程能力，而非机械记忆。
-6. **Evidence**：答案有可靠知识依据。
-7. **Deterministic Answer**：正确答案唯一且无歧义。
-8. **Option Balance**：正确答案没有形式优势。
-9. **Wrong Options**：错误项技术上可信。
-10. **Diagnostic Value**：答错能够反映明确的知识或能力缺口。
-11. **Duplication**：与其他题不是简单换句话说。
-12. **Multiple Validity**：多选题的正确选项集合明确。
+数量由高价值知识密度决定。
 
-发现问题，直接重新设计该题，不要解释。
+同一个 Core Concept 最多：
+
+* 1 个 Canonical
+* 2 个 Variant
+
+不要为了满足数量重复或制造低价值题。
 
 ---
 
-## 十一、输出 JSON Schema
+## 最终检查
 
-最终只输出一个 JSON Array：
+输出前检查：
+
+1. 是否 self-contained？
+2. 是否有明确 Core Concept？
+3. 是否有明确诊断价值？
+4. 正确答案是否唯一稳定？
+5. 错误选项是否可信？
+6. 是否存在明显 answer leakage？
+7. 是否与其它题重复？
+8. Variant 是否真的改变了认知任务 / angle / scenario？
+9. Variant 是否仍然考察同一个 Core Concept？
+10. 是否引入了新的独立核心知识？
+
+发现问题，直接重写，不要解释。
+
+---
+
+## 输出格式
+
+最终只输出 JSON Array，不输出任何额外文字。
 
 ```json
 [
   {
     "id": "unique-question-id",
+    "questionRole": "canonical",
+    "variantOf": null,
     "category": "taxonomy-domain",
     "topic": "topic-id",
     "knowledgeId": "knowledge-id",
@@ -270,17 +195,18 @@ Concept = KV Cache
       "engineering-tag"
     ],
     "difficulty": "medium",
-    "angle": "tradeoff",
-    "question": "题目的核心知识问题。",
-    "explanation": "解释为什么正确，并说明关键原理或 trade-off。",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "题目",
+    "explanation": "解释",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "选项 1",
-          "选项 2",
-          "选项 3",
-          "选项 4"
+          "选项1",
+          "选项2",
+          "选项3",
+          "选项4"
         ],
         "answer": [2]
       }
@@ -289,9 +215,18 @@ Concept = KV Cache
 ]
 ```
 
-### 字段规则
+Variant 使用：
 
-`difficulty`：
+```json
+{
+  "questionRole": "variant",
+  "variantOf": "canonical-question-id"
+}
+```
+
+其余字段与 Canonical 保持一致。
+
+`difficulty` 只能是：
 
 ```text
 easy
@@ -299,7 +234,7 @@ medium
 hard
 ```
 
-`angle`：
+`angle` 只能是：
 
 ```text
 definition
@@ -310,40 +245,19 @@ calculation
 tradeoff
 scenario
 debugging
-system-design
 design
+system-design
 ```
 
-`choice.type`：
+`cognitiveTask` 只能是：
 
 ```text
-single
-multiple
+define
+explain
+mechanism
+compare
+apply
+diagnose
+evaluate
+design
 ```
-
-`options`：4～6 个。
-
-`answer`：0-based integer array。
-
-`knowledgeId`：题目主要依赖的知识节点。
-
-`concepts`：题目真正考察的 Concept，第一个元素必须是核心 Concept。
-
----
-
-## 十二、输出要求
-
-**最终必须生成 5～13 道题。**
-
-最终只输出 JSON Array。
-
-不得输出：
-
-* 分析过程
-* Concept 列表
-* Markdown
-* 代码围栏
-* 题目统计
-* 额外说明
-* JSON 之外的任何内容
-

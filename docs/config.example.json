@@ -128,6 +128,7 @@
     "providers[].apiKey": "云端引擎必填（deepseek/openrouter/google 为 API Key，cloudflare 为 API Token）；local 可选（部分服务需要）；chrome 不适用",
     "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等",
     "providers[].accountId": "仅 id='cloudflare-workers-ai' 使用：Cloudflare Account ID（仪表盘右侧可查），API Token 之外必填；其他引擎不需要此字段",
-    "generateOpenQuestions": "布尔值，默认 false：不生成开放题（纯开放题不入卷、双形态题一律出选择）；true 时按组卷配额（约 30%）生成开放题"
+    "generateOpenQuestions": "布尔值，默认 false：不生成开放题（纯开放题不入卷、双形态题一律出选择）；true 时按组卷配额（约 30%）生成开放题",
+    "runtimeVariantEnabled": "布尔值，默认 false：运行时变体开关。默认 OFF 时训练只走 Offline Variant Pool（题库离线预生成的变体资产，零 LLM 落地）；仅当 Pool 未命中、且本开关开启、且存在可用 provider 时，才退化到 1 次 LLM 运行时生成，且运行时结果不写回题库。即「离线池优先 + 运行时可选兜底」"
   }
 }

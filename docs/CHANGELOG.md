@@ -1,6 +1,18 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-02 · 双模式 Variant：Offline Variant Pool（题库资产化）+ Runtime fallback 开关（ADR-069）
+
+- **新增资产契约 `src/schemas/variant.ts`**：双模式 Variant 共用 `VariantKind`（surface / context / surface-options / context-options 共 4 种轻量变体风格）、`QuestionVariant`、`VariantPool`；`computeVariantSourceHash`（FNV-1a 纯同步指纹，检测原题变更导致的 stale）。
+- **Offline Variant Pool（默认路径）**：变体作为题库资产单独存 `src/data/variants/*.json`（按 batch 聚合，浏览器经 `import.meta.glob` 合并、Zod fail-fast），**不嵌入** Question JSON。训练时 `domain/variantPool.resolveQuestionVariant` 走 **Pool-first**：命中即零 LLM 直接 `applyVariant` 落地。
+- **Runtime Variant（可选开关，默认 OFF）**：`AIConfig.runtimeVariantEnabled`（Zod `z.preprocess` 同 `generateOpenQuestions` 口径，非显式 `true` 一律清洗为 `false`）。仅 **Pool miss + 开关开启 + 存在可用 provider** 时，`finalizeQuestion` 退化到 1 次 LLM（`generateVariant`），结果**不写回**题库（晋升路径 = telemetry → 离线 review → promote）。
+- **行为变更（刻意退役旧测试）**：默认 OFF 后，即便存在 provider，Pool miss 也直接回 canonical——旧「provider 存在即生成变体」用例改为显式 `runtimeVariantEnabled:true` 才走运行时兜底；与「Runtime 默认 OFF」语义一致，属预期行为退役而非 bug。
+- **离线生成器 `npm run question:variants`**（vite-node，复用 `generateVariant` + `validateVariant`，**不写第二套实现**）：`--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version`；每题默认 2 变体、离线比 runtime 更严格（多候选 → 严格校验 → fuzzball 去重 → 达 count 即停）、按 batch 落盘。`npm run question:validate-variants` 审计池（标 stale + 近重复报告）。
+- **`generateVariant` 加可选 `kind` 参数**：注入类型指令到 system prompt 的「变体风格」段落，4 种风格轮换或固定，不改变「LLM 只做语义变换」硬约束。
+- **SettingsPanel 新增「使用 AI 实时生成题目变体」开关**（默认 OFF，文案 Pool first / Runtime fallback），接线 `config.runtimeVariantEnabled`。
+- **红线（均不做）**：Variant 专用 Agent / Runtime 第二个 Judge / Variant 独立 mastery·knowledge graph·DB / CI 自动 LLM 生成 / Runtime 自动写回题库 / 过多 Variant 类型。
+- 验证：`tsc`（app + node）全绿；相关单测全绿（variantKind 校验 / sourceHash 确定性 / variantPool 三态 / sessionEvaluator Pool-first + Runtime fallback 三态）。
+
 ## 2026-09-02 · Variant 第六轮：收敛「语义闸门」命名与注释（ADR-068 收尾）
 
 - **清理过期命名**：`hasStemAnchor` → `stemAnchorMissing`（返回 true 即「题干可能与主题脱钩」），warning 文案抽为导出常量 `STEM_ANCHOR_WARNING`。注释与文档统一改称 **漂移软信号（drift signal）**，不再出现「语义闸门 / 硬门槛」——它在 ADR-068 起就已不参与拒绝决策，旧措辞会诱导后续把它当 gate 用。

@@ -456,6 +456,16 @@ export default function SettingsPanel({
           <Typography.Text type="secondary">使用当前配置的 AI 引擎，关闭时不调用质疑模型</Typography.Text>
         </Space>
         <Space align="center" wrap>
+          <Switch
+            checked={draft.runtimeVariantEnabled}
+            onChange={(checked) => setDraft((current) => ({ ...current, runtimeVariantEnabled: checked }))}
+          />
+          <Typography.Text>使用 AI 实时生成题目变体</Typography.Text>
+          <Typography.Text type="secondary">
+            默认关闭：优先用离线变体池（零 LLM 落地）；开启后仅在池未命中时回退到 1 次 LLM 生成，且结果不写回题库
+          </Typography.Text>
+        </Space>
+        <Space align="center" wrap>
           <Typography.Text>主题达标线</Typography.Text>
           <InputNumber
             min={0}

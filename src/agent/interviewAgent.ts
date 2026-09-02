@@ -105,6 +105,8 @@ export interface CreateInterviewAgentOptions {
   handlers?: AgentHandlers;
   /** 对应 AIConfig.generateOpenQuestions 全局开关；默认 false（与全局 AIConfig 一致，避免漏传时绕过开关）。 */
   generateOpenQuestions?: boolean;
+  /** 对应 AIConfig.runtimeVariantEnabled 全局开关；默认 false（Pool-first 离线资产优先，运行时仅兜底）。 */
+  runtimeVariantEnabled?: boolean;
   /** 主题达标线（0-100）；默认 75。 */
   masteryThreshold?: number;
   /** 用户自定义指令（目标 / 风格 / 偏好层）。只追加在不可覆盖的安全层 + 契约层之后，
@@ -145,9 +147,9 @@ export interface InterviewAgentHandle {
  * - 工具注入方式：Agent 构造不接受 tools 选项，只能事后通过 state.tools 注入（已验证的 SDK 约定）。
  */
 export function createInterviewAgent(opts: CreateInterviewAgentOptions): InterviewAgentHandle {
-  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, masteryThreshold, agentInstructions: configuredInstructions } = opts;
+  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, runtimeVariantEnabled = false, masteryThreshold, agentInstructions: configuredInstructions } = opts;
   const runtime = opts.runtimeOverride ?? buildAgentRuntime(entry);
-  const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions, masteryThreshold });
+  const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions, runtimeVariantEnabled, masteryThreshold });
   const bankById = new Map(bank.map((q) => [q.id, q]));
 
   // 分层构建系统提示：安全层 + 契约层（不可覆盖）始终在前，用户自定义指令只追加在后。

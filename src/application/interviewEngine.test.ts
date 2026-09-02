@@ -151,6 +151,9 @@ describe('buildSession 组卷与变体处理', () => {
   const cfg = {
     providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
     generateOpenQuestions: true,
+    // 双模式 Variant：本组卷测试显式开启 Runtime（Pool miss 时的兜底）以验证「LLM 变体快照」路径；
+    // 离线池未填充时等价于历史行为（provider 存在即生成变体）。Runtime 默认 OFF 见其余用例。
+    runtimeVariantEnabled: true,
   };
 
   it('按 def.formats 过滤题池：只允许 choice 时纯开放题不入卷', async () => {
