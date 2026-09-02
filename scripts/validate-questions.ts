@@ -4,6 +4,8 @@
 //   1. topic 必须存在对应知识节点（无悬空 topic）
 //   2. angle 必须存在于全局角度枚举（覆盖率统计的前提）
 //   3. 选择题 answer 索引必须落在 options 范围内
+//   4. 选项不得重复，也不得互为前缀（前缀重复通常是正确答案文本丢失的征兆）
+//   5. misconceptionMap 必须与 options 等长、下标合法，且不得标注正确选项
 // 借鉴 question-coverage.ts：fs 直读 JSON（不经 Vite / import.meta.glob），Node 原生运行 TS。
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -37,8 +39,15 @@ const VALID_ANGLES = new Set([
   'system-design',
 ]);
 
+/** 选项去重的归一化：忽略空白与常见标点，避免只差一个句号就算两个不同选项。 */
+function normalizeOption(text: string): string {
+  return text.replace(/[\s，。；、,.;:：""''（）()]/g, '');
+}
+
 let errors = 0;
 let withAngle = 0;
+let withMisconceptions = 0;
+let withMisconceptionMap = 0;
 // 题型分布仅作可见性输出（AGENTS.md §4.2）：硬门禁在 question:add 上，只约束新导入批次，
 // 不在这里拦全库——历史单选占比高是存量问题，卡住校验会让它永远红。
 let singleCount = 0;
@@ -80,7 +89,56 @@ for (const q of questions) {
         errors++;
       }
     }
+    const normalized = choice.options.map(normalizeOption);
+    const seen = new Map<string, number>();
+    normalized.forEach((n, i) => {
+      if (seen.has(n)) {
+        console.error(`✗ ${q.id}: 选项 ${seen.get(n)} 与 ${i} 内容重复：「${choice.options[i]}」`);
+        errors++;
+      } else {
+        seen.set(n, i);
+      }
+    });
+    for (let a = 0; a < normalized.length; a++) {
+      for (let b = 0; b < normalized.length; b++) {
+        if (a === b || normalized[a].length < 6 || normalized[b].length < 6) continue;
+        if (normalized[b].startsWith(normalized[a]) && normalized[b] !== normalized[a]) {
+          console.error(
+            `✗ ${q.id}: 选项 ${a} 是选项 ${b} 的前缀（疑似正确答案文本丢失）：「${choice.options[a]}」`,
+          );
+          errors++;
+        }
+      }
+    }
+    const map = choice.misconceptionMap;
+    if (map) {
+      withMisconceptionMap++;
+      if (map.length !== choice.options.length) {
+        console.error(
+          `✗ ${q.id}: misconceptionMap 长度 ${map.length} 与 options ${choice.options.length} 不一致`,
+        );
+        errors++;
+      }
+      map.forEach((v, i) => {
+        if (v === null) return;
+        if (!Number.isInteger(v) || (v as number) < 0) {
+          console.error(`✗ ${q.id}: misconceptionMap[${i}] = ${v} 非法（须为非负整数或 null）`);
+          errors++;
+          return;
+        }
+        if (!q.misconceptions || (v as number) >= q.misconceptions.length) {
+          console.error(`✗ ${q.id}: misconceptionMap[${i}] = ${v} 越界（misconceptions 不存在或过短）`);
+          errors++;
+          return;
+        }
+        if (choice.answer.includes(i)) {
+          console.error(`✗ ${q.id}: 正确选项 ${i} 被标注了误解，正确选项应保持 null`);
+          errors++;
+        }
+      });
+    }
   }
+  if (q.misconceptions?.length) withMisconceptions++;
 }
 
 if (errors > 0) {
@@ -98,3 +156,11 @@ if (choiceTotal) {
       (multiRatio < 66.7 ? ' ← 偏低，新题请以多选为主' : ''),
   );
 }
+// 检索就绪度仅作可见性输出：它是 hint 模式能否说清「你错在哪」的前提，
+// 但存量缺口大（千题量级），卡住校验会让 validate 长期红，故不设为硬失败。
+console.log(
+  `  检索就绪：misconceptions ${withMisconceptions}/${questions.length}` +
+    `（${((withMisconceptions / questions.length) * 100).toFixed(1)}%）·` +
+    ` misconceptionMap ${withMisconceptionMap}/${choiceTotal}` +
+    `（${((withMisconceptionMap / choiceTotal) * 100).toFixed(1)}%）`,
+);

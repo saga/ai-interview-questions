@@ -17,5 +17,16 @@
 - 踩坑：把 `src/domain/knowledge.ts` 拆成目录时，旧文件挪进去后相对导入深度要 `../` → `../../`（含同名 `.test.ts`），否则 tsc 报 TS2307 但 `tsc -b` 退出码仍是 0，容易漏看。
 - 踩坑：新 ADR 号取号前先 grep `docs/DECISIONS.md` 顶部，ADR-062 已占用（Chat×Agent 融合收敛）。
 
+## 工具链注意（2026-09-02）
+- 本机 `node_modules/.bin` 目录缺失、`@rolldown/pluginutils` 未安装 → `npx vitest run` / `npm test` 报 `command not found`（`zod`/`typescript`/`node` 本身可用）。修复：`npm install`。
+- **vitest 不可用时的题库校验替代通道**（已验证）：① `node scripts/validate-questions.ts` 做结构+规则校验（注意它只 `import type`，**不做 zod schema 校验**）；② 自建脚本 `node --experimental-strip-types x.ts`，`import { questionSchema } from '<abs>/src/schemas/question.ts'` 后逐题 `safeParse`。
+- 写含 `${...}` 的 TS/JS 时用 Write 工具落文件，别用 shell heredoc（zsh 会报 `Bad substitution`）。
+
+## 题库内容提升基线（2026-09-02 起）
+- 1308 题 / 123 节点 / 77 文件。单选 629（48.1%，§4.2 目标 ≤33.3%）、选项长度泄题 216 题 P2、缺 source 103、缺 misconceptions 1159、misconceptionMap 仅 97（7.4%）、覆盖 315/357 → 42 gap。
+- **提升手法**：单选→多选改写时，同步把 `angle` 重定向到该文件 topic 下的 gap cell——一题同时消单选 + 填 gap，避免与既有补充题产生孪生冗余（同格 2–3 题属 healthy，≥4 才算 oversaturated）。
+- **`misconceptionMap` 只能人工标注**：`scripts/backfill-misconceptions.ts` 用字符 2-gram Dice 匹配「选项文本 vs 误解文本」，实测覆盖率 ~12%（mis 是「以为…」句式、选项是陈述句，字面重合低）。脚本有 `if (cf.misconceptionMap) continue`，人工标注不会被覆盖。
+- 单题精改（多选化 + 补 misconceptions/open/misconceptionMap）约 5–10 分钟，全库剩余 629 道单选约 50–100 小时，**必须按文件分批**。
+
 ## git 状态
-- 截至 2026-08-31 第十七轮，全部改动（Prompt 分层重构 + AI 搜索 40 题 + 自我改进 Agent 7 题 + 多轮 taxonomy/App 修复 + 结构化知识检索 ADR-063）均**未 commit**，等用户指示。
+- 截至 2026-09-02，全部改动（Prompt 分层重构 + AI 搜索 40 题 + 自我改进 Agent 7 题 + 多轮 taxonomy/App 修复 + 结构化知识检索 ADR-063 + 双模式 Variant ADR-069 + 题库内容提升试点）均**未 commit**，等用户指示。

@@ -353,6 +353,11 @@
     "angle": "scenario",
     "question": "某公司升级了支撑多语言客服助手的 Bedrock FM。升级后不同语言对相同问题给出不一致回答。公司需要一套方案在今后的更新中识别并修复此类问题，评估须：每语言 45 分钟内完成、至少并发 15,000 条测试对话、完全自动化并接入 CI/CD、质量阈值不达标则阻止发布。哪个方案满足？（单选）",
     "explanation": "D 正确：Bedrock 自动模型评估作业可对自定义提示数据集程序化运行并计算质量指标；“同义多语言”对话使跨语言不一致可量化，相似度/幻觉阈值提供客观发布准则；从 CI/CD 调用并在不达标时让流水线失败，形成自动部署门禁。A/B/C 均为人工/周期审计，不满足“自动阻断发布”与“并发 15k”指标。",
+    "misconceptions": [
+      "跨语言回答不一致是负载问题，压测延迟/并发/吞吐就能发现并解决",
+      "多区域部署加延迟路由可以保证多语言回答一致，一致性是区域路由问题",
+      "只要把所有消息规范化成统一格式，跨语言不一致就会消失，且规范化后可用规则查出幻觉"
+    ],
     "formats": {
       "choice": {
         "type": "single",
@@ -364,7 +369,8 @@
         ],
         "answer": [
           3
-        ]
+        ],
+        "misconceptionMap": [0, 1, 2, null]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- Bedrock 自动评估作业 + 同义多语言数据集 + 相似度/幻觉阈值 + CI/CD 阻断，构成自动门禁。\n- A/B/C 为人工/周期审计，不满足自动阻断与并发 15k。"
@@ -756,6 +762,11 @@
     "angle": "scenario",
     "question": "某电商建内部 Bedrock 应用开发平台，开发者要按与电商场景对齐的评估选模型，看板要展示文本生成与摘要的准确率指标，并有自定义电商数据集作标准评估输入。哪些步骤组合以最低运维开销满足？（请选择以下 2 个正确选项）",
     "explanation": "A、C 正确：Bedrock 托管模型评估作业可用存于 S3 的自定义提示数据集（配 IAM/CORS）；自动评估中文本生成准确率算 RWK（Real World Knowledge）分数、摘要准确率算 BERTScore。用托管 Bedrock 评估比自建 SageMaker/开源框架/直接 InvokeModel 运维最省。B 的 VPC 端点非必需且未覆盖指标；D/E 用 WER/toxicity 作“准确率”不对，且走 SageMaker 更重。",
+    "misconceptions": [
+      "评估作业访问 S3 数据集必须配置 VPC 端点，仅有 IAM 权限不够",
+      "摘要任务的准确率指标是 toxicity，文本生成用 WER 即可衡量准确率",
+      "自建 SageMaker notebook 跑 fmevals/ragas 并直接 InvokeModel，比托管 Bedrock 评估作业更省运维"
+    ],
     "formats": {
       "choice": {
         "type": "multiple",
@@ -769,7 +780,8 @@
         "answer": [
           0,
           2
-        ]
+        ],
+        "misconceptionMap": [null, 0, null, 1, 2]
       },
       "open": {
         "referenceAnswer": "正确答案：A、C。\n- Bedrock 托管评估作业用 S3 数据集（IAM/CORS）；文本生成 RWK、摘要 BERTScore，运维最省。\n- B VPC 端点非必需；D/E 用 WER/toxicity 作准确率不对且走 SageMaker 更重。"
