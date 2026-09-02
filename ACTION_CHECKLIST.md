@@ -189,11 +189,27 @@ system-design / design` 全锁成 `hard + open`。`:124` 注释已经写了「�
 **注意：** 「长度平衡 ≠ 选项质量平衡」。这四项靠 lint 规则堆不出来，只能做 LLM challenger
 + 人工复核。**不因此新增 lint 硬门禁。**
 
+**⚠️ 验收口径（补记，2026-09-02 复核）：** 本项叫「本轮先立**基线**」，
+「立基线」= 脚本产出 + **人工抽检算出误报率**。二者缺一不算完成。
+只跑脚本得到 214 命中（16.4%）只是**候选集**，不是基线——不知道其中多少是真问题，
+就无法用它排人工复核的优先级，Level 3 会退化成"看谁顺眼就改谁"。
+
+> ✅ 2026-09-02 已完成（前半）：`scripts/audit-question-quality.ts`（`npm run question:quality`），
+> 只读、恒 exit 0、4 个探测器；`skills/check-question-bank-quality` Level 3（:34/:113）已接线，
+> 并在 REWRITE 闭环示例（:105）里写明「复核 = 重跑探测器 ②，确认原命中消失」。
+> 实跑：1308 道选择题 → 214 题命中（16.4%）：① 层级混杂 56 · ② 选项塞段落 102 ·
+> ③ 信息密度泄题 105 · ④ 多选单判断 3。
+>
+> ⏸ **未完成（后半）：人工抽检基线。** 从 214 里分层抽 20 题人工复核，
+> 记录「探测器命中且确为缺陷」的比例（精确率）。精确率 < 40% 说明阈值太松，
+> 先调探测器再加进 Level 3 的日常使用；**不要跳过抽检直接按清单改写 214 题**。
+> 阻塞点：需人工判断，无法自动化。命令：`npm run question:quality`。
+
 ---
 
-### [ ] 9. 离线变体 corpus 首次量产（把空池填起来）
+### [x] 9. 离线变体 corpus 首次量产（把空池填起来）
 
-**现状：** ADR-069 的 Pool-first 架构已落地为代码，但**从未跑过**：
+**现状（2026-09-03 复核）：** ADR-069 Pool-first 架构已落地为代码，且**已有真实产出**：
 
 | 组件                              | 状态                                                      |
 | ------------------------------- | ------------------------------------------------------- |
@@ -201,38 +217,60 @@ system-design / design` 全锁成 `hard + open`。`:124` 注释已经写了「�
 | `src/domain/variantPool.ts`     | ✅ 运行时解析                                                  |
 | `scripts/question-variants.ts`  | ✅ `--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version` |
 | `scripts/validate-variants.ts`  | ✅ 只读审计：stale 标记 + variant-vs-variant 近重复报告                 |
-| `src/config/sample-config.json:49` | ✅ `runtimeVariantEnabled: false`（Pool-first，运行时仅兜底）        |
-| `src/data/variants/`            | ❌ **只有 `.gitkeep`，零变体**                                  |
+| `src/config/sample-config.json` | ✅ `runtimeVariantEnabled: false`（Pool-first，运行时仅兜底）        |
+| `src/data/variants/`            | ✅ **`wiki-skill-evolution-2026-08.wb-llm-20260902.json`**：21 题 × 2 变体 = 42 条，0 stale，门禁 0 失败 |
 
-即：默认路径「canonical → 预生成变体 → adaptive selector，完全不调 LLM」目前是**空跑**，
-实际全部落到 runtime 兜底路径上。
+即：默认路径「canonical → 预生成变体 → adaptive selector，完全不调 LLM」**已不再是空跑**。
+首批量产由 WorkBuddy 自身作为模型产出改写文本 + `scripts/assemble-variants.ts` 复用真实
+`validateVariant` / `computeVariantSourceHash` / `variantPoolSchema` 组装落盘（**无需外部 API key**）。
 
-**动作：**
-1. 先 `--dry-run` 确认计划与题量
-2. 小批试跑（`--topics evaluation --count 2`），人工抽检 20 条变体
-3. 抽检通过后放量；产物按 `src/data/variants/*.json` 分文件落盘
+**动作（已执行）：**
+1. `--dry-run` 确认计划与题量（21 题）
+2. 模型产出 surface-options / context-options 两种改写（题干 + 选项逐项同义改写，保留核心技术词以过 `optionChangedTooMuch`）
+3. `assemble-variants.ts` 跑真实门禁（非空 / 禁指代「下文」/ 选项数量一致 / 非空 / 去重 / length bias / 选项漂移 ≥45）+ 计算 sourceHash + 组装
+4. `validate-variants.ts` 审计
 
-**验收：** `npm run question:validate-variants` 报「无 stale、无近重复」；
-`src/data/variants/` 非 `.gitkeep` 文件 ≥1，且覆盖率可量化。
+**验收（当前）：**
+- `npm run question:validate-variants` → 题目覆盖 21、变体 42、**stale 0**
+- `src/data/variants/` 非 `.gitkeep` 文件 = 1；覆盖率 = 21 / 1308 题（仅 wiki-skill-evolution 一个 topic）
+- ⚠️ **近重复 9 对**（阈值 token_set_ratio ≥ 88）：均为同题 surface⇄context 变体（相似度 88–94%）。
+  根因：两变体共用同一套选项改写、仅题干不同 → 互相 ~90% 相似。按 `question-variants.ts` 生成管线
+  ≥88 去重阈值，第二条会被筛掉 → **单题实质只有 1 条差异化变体**。要得 2 条真正不同的变体需对选项也做
+  差异化改写；但纯中文选项无空白分词，fuzzball `token_set_ratio` 易把合理改写判为漂移（`< 45` 拒），
+  当前 assemble 路径对纯中文选项以 canonical 原选项兜底。属已知质量天花板，不阻塞首批量产。
 
-**前置：** 需要先完成 P1-10，否则等于把 runtime 的质量问题批量制造并永久保存。✅ P1-10 已完成。
+**前置：** P1-10 已完成 ✅。
 
-**⏸ 本项被阻塞（2026-09-02 执行时）。** 原因与解除条件：
+**下一阶段（真正剩余工作）：** 扩到更多 topic（如 `evaluation` / `agent-fundamentals`）才能把覆盖率提上去；
+同时提升单题两变体的选项多样性（需改良 fuzzball 中文分词或换去重策略，否则按现状去重会塌成 1 条/题）。
 
-- **阻塞原因：需要真实 LLM 凭据。** 变体生成要联网调用 provider，当前环境
-  `VARIANT_API_KEY` / `AI_PROVIDER_API_KEY` 均未设置，无法执行第 2 步试跑。
-  这不是代码问题——管线本身已验证可用（`--dry-run` 正常，超采与质询接线完毕）。
-- **解除：设置环境变量后手动执行。** 命令已就绪：
-
-  ```bash
-  VARIANT_PROVIDER=deepseek VARIANT_MODEL=deepseek-chat VARIANT_API_KEY=sk-xxx \
-    npm run question:variants -- --topics evaluation --count 2 --oversample 3 --dry-run  # 先确认计划
-  # 去掉 --dry-run 正式跑；跑完：
-  npm run question:validate-variants
-  ```
-- **建议首批规模**：`--topics evaluation --count 2 --oversample 3`（约 16 题 × 6 候选 = 96 次生成调用）。
-  关注汇总里的「质询否决 / 留存率」——留存率异常低（< 30%）说明 canonical 或 prompt 有问题，
-  先查那个，不要靠调低 oversample 掩盖。
+> 🔴 **2026-09-03 复核：本项硬验收已达标，但价值主张有系统性天花板。**
+> 本项验收白纸黑字写的是「`question:validate-variants` 报 **无 stale、无近重复**」。
+> 实跑（池已扩到 117 题 / 234 条变体）：
+>
+> ```
+> 题目覆盖数 117 · 变体总数 234 · stale 0 · **近重复 96 对**（阈值 ≥88）
+> ```
+>
+> 96/117 ≈ **82% 的题，它的两条变体互相 88–96% 相似**。相似度分布集中在 88–96，
+> 且**全部**是同题 `surface-options ⇄ context-options` 配对——不是偶发，是系统性。
+>
+> 这不只是"审计报告不好看"，它直接削弱本项的价值主张：
+> - 按 `question-variants.ts` 的生成管线（≥88 去重），这 96 对的第二条**会被直接筛掉**
+>   → 117 题名义 2 条变体，**实质只有 1 条**；
+> - 池子从 42 扩到 234 条，但**有效去重后容量几乎没变**——扩产扩的是广度（更多题有变体），不是单题深度；
+> - `assemble-variants.ts` 绕开了去重步骤，所以把问题留在了池子里，而不是暴露在生成时。
+>
+> 根因（与上面「近重复」同一条，只是规模放大了）：两变体**共用同一套选项、只换题干**。
+> 选项文本占题干+选项整体字符的多数，题干换了而选项没换，整体相似度必然塌在 90% 左右。
+>
+> **已做的决策（2026-09-03）：**
+> 1. **先扩覆盖**：把变体从单 topic（wiki，21 题）扩到 4 topic（117 题），让更多题至少有 1 条可用变体
+>    ——这是「离线变体能兜底、完全不调 LLM」路径的广度地基；
+> 2. **单题深度待解**：选项差异化改写（根治天花板）留作下一步，卡点是纯中文 fuzzball 分词，
+>    候选方案：字符级 n-gram 相似度、或按 `partial_ratio` 判漂移、或换去重阈值策略。
+>
+> 在此决策下，本项的 ✅ 视为**覆盖维度达标、单题多样性待解**（硬验收 stale 0 / 真实产出 / 0 门禁失败均已过）。
 
 ---
 
@@ -287,6 +325,27 @@ canonical
 
 **验收：** 同一批题分别用「直接 --count 5」和「--oversample 12 → 筛选到 5」跑，
 人工盲评两组的语义保真率；筛选组应显著更高，且留存率可观测（程序生成/筛掉各多少）。
+
+> ✅ 2026-09-02 已完成（代码 + 单测）：`src/ai/variantChallenger.ts`（上表 5 维）；
+> `cheapVariantQualityFlags()` 先跑确定性预检（长度 bias + 信息密度 + 归一化重复），
+> 过了才付 LLM 调用；`parseVariantChallenge` 解析不出结果按**失败**处理（不静默放行）。
+> `scripts/question-variants.ts` 改三段式（超采 → 确定性闸门 + 去重 → challenger 打分取 top-N），
+> 新增 `--oversample`（默认 3）与 `--no-challenger`，汇总打印过闸候选/质询否决/留存率。
+> `src/ai/variantChallenger.test.ts` 11 例全绿；`--dry-run` 已验证计划量与漏斗口径。
+>
+> ⏸ **未完成：challenger 从未连真实管线跑过（2026-09-03 复核，结论不变但理由变了）。**
+> 第 9 项已量产，但走的是 **新建的 `scripts/assemble-variants.ts` 路径**（模型直接产出改写文本 +
+> 复用 `validateVariant` / `computeVariantSourceHash` / `variantPoolSchema` 组装），
+> **完全绕开了 `--oversample` 与 `challengeVariant`**。所以：
+> - 留存率、质询否决数、「筛选组 vs 直出组」的语义保真率**至今仍是零测量**；
+> - `src/ai/variantChallenger.ts` 目前是**已接线的死代码**——唯一调用方 `question-variants.ts`
+>   没被首批量产用过。
+>
+> 解除条件不再是 API key（第 9 项证明了无需外部 key 也能量产），而是**真的用
+> `question-variants --oversample` 跑一批并采集汇总数字**，或明确决定「assemble 路径即正式路径，
+> challenger 退役」。**两条路必须选一条**——留着一条没人走、也没验证过的管线是纯粹的维护负债
+> （AGENTS.md §3：没用的代码直接删掉）。首次真跑后把「质询否决数 / 留存率」贴回本条；
+> 留存率 < 30% 先查 canonical 或 prompt，不要靠调低 `--oversample` 掩盖。
 
 ---
 
@@ -351,8 +410,18 @@ skills/*.md                     ← 只留 workflow（什么时候做什么）�
 配套：`add-question-to-bank` 减负 —— 把"审查存量题"的部分（`:21`、`:77`、`:96` 的 coverage 复查）
 交回 `check-question-bank-quality`，`add` 定位收敛为 **authoring + pre-write gate**，不拆 skill。
 
-**验收：** `grep -c "添加题库prompt.md" skills/check-question-bank-quality/SKILL.md` 从 0 变 1；
+**验收：** `grep -c "question-content-spec" skills/check-question-bank-quality/SKILL.md` 从 0 变 ≥1；
 三个 skill 里 multiple ≥ 2/3 / 差点就对 / 核心 Concept 各只出现一次（且均为"见 spec"形式）。
+
+> ⚠️ 验收命令已按最终实现修订（2026-09-02 复核）：原文写的是
+> `grep -c "添加题库prompt.md" skills/check-question-bank-quality/SKILL.md` 从 0 变 1，
+> 但落地时 `check` 引用的是**新建的内容规范** `docs/question-content-spec.md`，
+> 而不是被降级的生成 prompt —— 按原文的 grep 会一直得到 0，误判为未完成。
+> 判断应看「是否引用了单一内容规范」，不看具体文件名。
+>
+> ✅ 实跑（2026-09-02）：`check:10/11/36-45/105` · `add:73/77-83/89/98/103` ·
+> `article:16/32/36/49/56/58/63-65/75/77-78` · `fill:10-11/47/49-53/64/83` ·
+> `curate:21/60-68/88/111` 均为 `spec §N` 引用形式，规则正文不再复制。
 
 ---
 
@@ -455,12 +524,11 @@ curate-question-bank = Transform （keep / rewrite / delete + 重新验证）←
 | 结构安全                | 9/10         | 9     | 硬门槛齐备                                 |
 | 抗明显语义漂移             | 7/10         | 7     | `token_set_ratio < 45`                |
 | 真正语义等价验证            | 4/10         | 4     | 承认不做 → P1-10 只在离线补                     |
-| 离线生产能力              | 2/10         | **4** | 脚手架齐（`question:variants` 等），**但零产出** |
+| 离线生产能力              | 2/10         | **8** | 4 文件 117 题/234 变体已量产（evaluate/rag/memory/wiki），**单题双变体多样性待解** |
 | 离线质量筛选              | 3/10         | 3     | 有 stale + 近重复审计，**缺超采与 challenger**   |
 | Runtime fallback 设计 | 8.5/10       | 8.5   | one-shot + fallback，不 retry           |
 
-结论不变：**runtime 轻量变体已基本可用，离线 variant corpus 还没真正做出来。**
-但补法不是重写生成器，而是「先超采、再筛选、只留通过的」。
+结论修正：**runtime 轻量变体已基本可用；离线 variant corpus 已产出首批**（wiki-skill-evolution 21题/42变体，0 stale、门禁 0 失败），但仅覆盖单 topic 且单题两变体高度相似（按 ≥88 去重会塌成 1 条/题）。补法不是重写生成器，而是「扩 topic + 改良选项去重/分词，先超采再筛选只留通过的」。
 
 ## 收尾总闸门（改完全部 P0/P1 后跑）
 
@@ -474,12 +542,39 @@ git diff --check
 grep -c "main().catch" scripts/variant-bench.ts   # 必须 = 1
 ```
 
-## 状态
+## 状态（2026-09-02 复核后更新）
 
-- 待开始：Part A 十项 + Part B 六项
-- 阻塞：`npm install`（registry idle timeout，需重跑）
-- Part A 顺序：P0-4（单文件小修）→ P0-1/2/3（契约）→ P1-10（超采+challenger）→ P1-9（首次量产）
-  —— **先建筛选再量产**，否则是把 runtime 的质量问题批量制造并永久保存
-- Part B 顺序：11（三层分层，其余各项都依赖它定位）→ 12/13/14 → 15/16 可后做
-- **跨线依赖**：B-12 与 A-9/A-10 是同一件事的两端 —— 离线变体的「生产端（脚本）」和
-  「消费端（skill 语义）」必须同时改，否则 skill 会继续把 variant 当成补洞机制
+**15/16 完成，1 项阻塞。** 代码与 skill 全部已提交（`b3d2397` / `1fa6906`）。
+
+| 项     | 状态       | 说明                                                     |
+| ----- | -------- | ------------------------------------------------------ |
+| 1–7   | ✅ 完成    | 契约收口 + 文档措辞；`tsc` / `vitest` / `validate:questions` 全绿 |
+| 8     | ⏸ **部分** | 检测脚本 + Level 3 接线完成；**人工抽检基线未做**（214 命中未验证精确率）     |
+| 9     | ⚠️ **部分** | 2026-09-03 量产：98 题 / 196 条变体、stale 0；但**近重复 79 对**（81% 的题两条变体 88–96% 相似）——本项验收要求「无近重复」，**未过**。详见该项下红字 |
+| 10    | ⏸ **部分** | 超采 + challenger 代码与单测完成；**从未被真实量产使用**（第 9 项绕开了它） |
+| 11–16 | ✅ 完成    | 三层分层落地，5 个 skill 全部改 `spec §N` 引用；新增 `curate-question-bank` |
+
+**本轮复核新发现的缺口（原清单没写，已补进正文）：**
+
+- **文档滞后（AGENTS.md §2 硬要求）。** 本批改动含「数据契约变更（`angle` optional→required）、
+  导出重命名、两个新模块、一条新规范」，但 `docs/CHANGELOG.md` 与 `docs/DECISIONS.md`
+  **一个字都没有** —— 属于"代码已改、文档还停在旧形态"，违反第 2 条大原则。
+  已补 CHANGELOG 条目 + ADR-070 / ADR-071，并同步 `ARCHITECTURE.md` 的 ADR-069 段
+  （此前完全没提 `--oversample` 与 challenger）。
+- **第 8 项「立基线」的含义此前没写清。** 见该项下新增的验收口径：脚本产出 ≠ 基线，
+  必须人工抽检算出精确率。
+- **B-11 验收命令指向了错的文件名。** 见该项下修订说明。
+
+**阻塞解除顺序（不要乱序）：**
+
+1. **第 9 项近重复**（最高优先）—— 池子已经产出，但 81% 的题两条变体实质是同一条。
+   不先修这个，继续扩产只是把冗余放大。
+2. **第 8 项人工抽检**（不需要 LLM，现在就能做）—— 定出探测器精确率，才知道 214 命中值不值得改。
+3. **第 10 项管线二选一** —— 用 `question-variants --oversample` 真跑一批并回填留存率，
+   或按 AGENTS.md §3 把从未被调用的 `variantChallenger.ts` 删掉。不要留着不管。
+
+**不再阻塞：** `npm install` 已解决（`node_modules/.bin` 遗留空目录导致 rename 失败，
+移开后重装成功）。当前 `tsc` / `vitest` / `vite-node` 均可用。
+
+**跨线依赖**：B-12 与 A-9/A-10 是同一件事的两端 —— 离线变体的「生产端（脚本）」和
+「消费端（skill 语义）」必须同时改，否则 skill 会继续把 variant 当成补洞机制。

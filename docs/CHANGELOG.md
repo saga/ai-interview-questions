@@ -1,6 +1,35 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-02 · 契约收口 + 内容规范三层分层（ADR-071）+ 离线变体超采与质量质询（ADR-070）
+
+本批为 `ACTION_CHECKLIST.md`（16 项）的落地收口，分三条线。
+
+**一、Question 契约收口（`src/schemas/question.ts`）**
+
+- **`Question.angle` 由 optional 改为 required**（ADR-071）。此前三处契约分裂：schema 说可选、`validate-questions.ts` 与 `add-question.ts` 说必填、`domain/coverage.ts` 走 `untagged++` 分支跳过。全库 1308/1308 题均带 angle，收敛为 required 无存量风险。连带删除 `TopicCoverage.untagged` 字段、`questionCoverageMatrix` 的跳过分支、`formatCoverageReport` 的「⚠ N 题未标注 angle」行及其汇总。**例外保留**：`src/schemas/learner.ts` 的 `QuestionResult.angle` 仍为 optional——它是**已持久化的历史会话契约**，不是出题契约，改了会破坏存量记录。
+- **`choice.answer` 越界检查下沉到 Zod**：`choiceFormatSchema.superRefine` 新增 `answer[i] < options.length`。此前该约束只存在于 `validate-questions.ts`，`parseQuestion()` 单独调用时会放过 `{options:[A,B,C,D], answer:[9]}`。
+- **`misconceptionMap` 三项不变量同步下沉**（在 `questionSchema.superRefine` 做，因为 `misconceptions` 属 question 层、`choice` 属 choice 层）：长度必须等于 `options.length`、非 null 值须落在 `misconceptions` 下标内、**正确选项必须为 `null`**（只有干扰项可标注误解）。新增 5 个 Zod 单测。
+- **归一化解重复从 warning 提升为 hard error**（`scripts/add-question.ts`）：exact/normalized 重复 = 硬失败；lexical 近似重复（fuzzball）仍为 warning；semantic 重复交给 review/challenger。层级自此划清。
+
+**二、内容与变体质量 tooling（新增两个模块）**
+
+- **`scripts/audit-question-quality.ts`（`npm run question:quality`）**：只读全库审计，**恒 exit 0、不做门禁**。四个探测器：① 正确项认知层级混杂 ② 选项塞整段答案（从句数 ≥3 或显著长于同题中位数）③ 信息密度泄题（专业度/具体度显著高于干扰项，长度 lint 拦不住的那一类）④ 多选只考一个判断。实跑 1308 道选择题 → 214 题命中（16.4%）：① 56 / ② 102 / ③ 105 / ④ 3。已接入 `skills/check-question-bank-quality` 的 Level 3，并在 REWRITE 闭环里写明「复核 = 重跑探测器、确认原命中消失」。**注意：这是候选集不是结论——人工抽检基线（精确率）尚未做。**
+- **`src/ai/variantChallenger.ts` + `scripts/question-variants.ts` 三段式改造（ADR-070）**：离线管线改为 `超采 → 确定性闸门 + fuzzball 去重 → 五维 LLM 质询 → 取 top-N`；新增 `--oversample`（默认 3）与 `--no-challenger`，汇总打印过闸候选/质询否决/留存率。确定性预检先行以省 LLM 调用，解析失败按失败处理。11 个新单测。**首次真实 LLM 跑通前，留存率与筛选收益为零测量。**
+
+**三、内容规范三层分层（ADR-071，`docs/question-content-spec.md`）**
+
+- 新建 `docs/question-content-spec.md`（§1 Concept Scope / §2 Answer Determinism / §3 Self-contained / §4 Evidence Boundary / §5 Option Design / §6 Wrong Options / §7 Option Balance & Answer Leakage / §8 Variant 知识一致性 / §9 题型分布），作为**唯一内容设计规范**。
+- `docs/添加题库prompt.md` 与 `…精简.md` **降级为生成 Prompt**（明确「不是规范，不要当规范引用」）。
+- 5 个 skill（`add` / `article` / `fill` / `check` / `curate`）的规则正文全部替换为 `spec §N` 引用，不再各自复制同一批规则；新增 `skills/curate-question-bank`（Transform 阶段：KEEP/REWRITE/DELETE 执行 + 重新验证，最小 diff 改写，禁止整文件 `JSON.stringify` 重写——仓库里两种 JSON 排版风格并存）。
+- `fill-coverage-gap` 的 `variantCandidateIds` 改名 **`reuseCandidateIds`**（`scripts/question-blueprint.ts` 同步）：变体继承 canonical 的 `topic × angle`，用它补覆盖缺口等于让覆盖率永远补不满；这里要表达的是「改写已有题以换 angle」= reuse，不是 variant。
+- `check-question-bank-quality` 补分级→动作映射表：P0 structural → FIX REQUIRED（不可 delete 绕过）/ P1 content → REWRITE 或 DELETE（DELETE 须写明为何不能改写）/ P2 heuristic → REVIEW（只记录）。
+- `ANGLE_SUGGESTIONS` 改名 **`ANGLE_GENERATION_HINTS`**，报告末尾加提示行：难度/形态是生成起点建议、非覆盖契约。
+
+**其它**：修 `scripts/variant-bench.ts` 双 `main()` 执行 bug（benchmark 主流程跑两遍 = 双倍 LLM 花费 + 污染遥测）；清掉 `scripts/lint-bias.ts` 里与「single call, no retry」相反的过期 retry 描述；`docs/ARCHITECTURE.md:9` 与 Invariant 列表按「程序保证（可断言）/ Prompt 请求但不校验（不可断言）」两级重写，不再把语义等价说成保证。
+
+- 验证：`tsc --noEmit` EXIT=0；`vitest` **721 passed / 52 files**（基线 705）；`npm run validate:questions` 1308 题 / 123 节点全绿、带 angle 100.0%；`grep -c "main().catch" scripts/variant-bench.ts` = 1。
+
 ## 2026-09-02 · 双模式 Variant：Offline Variant Pool（题库资产化）+ Runtime fallback 开关（ADR-069）
 
 - **新增资产契约 `src/schemas/variant.ts`**：双模式 Variant 共用 `VariantKind`（surface / context / surface-options / context-options 共 4 种轻量变体风格）、`QuestionVariant`、`VariantPool`；`computeVariantSourceHash`（FNV-1a 纯同步指纹，检测原题变更导致的 stale）。

@@ -572,7 +572,13 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
 - **资产契约（`src/schemas/variant.ts`）**：`VariantKind`（surface / context / surface-options / context-options）、`QuestionVariant`（`id/kind/question/options?/generatedAt/generator/promptVersion/sourceHash`）、`VariantPool`（`version/generatedAt/promptVersion/variants: Record<id, QuestionVariant[]>`）。`sourceHash = computeVariantSourceHash(canonical)`（FNV-1a）用于 stale 检测。
 - **Pool-first（默认）**：训练选择逻辑在 `finalizeQuestion` 编排——先查 Pool，命中即取 `selectVariant`（确定性 Fisher–Yates + seen 去重）落地；miss 且开关 OFF 时直接回 canonical（**零 LLM**）。
 - **Runtime fallback（可选）**：仅 miss + 开关 ON + 存在可用 provider，才 1 次 LLM（`generateVariant` 加 `kind` 注入风格指令）；结果**不写回题库**——晋升靠 telemetry → 离线 review → 手动 `npm run question:variants` promote。
-- **离线生成器 / 审计**：`npm run question:variants`（vite-node）复用 `generateVariant` + `validateVariant`，支持 `--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version`，每题默认 2 变体、严格校验 + fuzzball 去重、按 batch 落盘；`npm run question:validate-variants` 标 stale + 近重复报告。**红线**：不建 Variant 专用 Agent、不写第二套 LLM 实现、Runtime 不自动写回、类型锁死 4 种。
+- **离线生成器 / 审计**：`npm run question:variants`（vite-node）复用 `generateVariant` + `validateVariant`，支持 `--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version/--oversample/--no-challenger`，每题默认 2 变体、按 batch 落盘；`npm run question:validate-variants` 标 stale + 近重复报告。**红线**：不建 Variant 专用 Agent、不写第二套 LLM 实现、Runtime 不自动写回、类型锁死 4 种。
+- **离线超采 + 质量质询（ADR-070）**：离线管线是三段式漏斗 —— `canonical → 超采 N×count 候选 → 确定性闸门（validateVariant + fuzzball 去重）→ 质量质询 → 取 top-N 落盘`。
+  - **为什么必须超采**：`validateVariant` 只能**防明显坏变体**（结构 + 抗暗示 + `token_set_ratio ≥ 45` 漂移），**防不住"词汇高度重合但语义已被改歪"**——例：原选项「只有在 KV cache 命中前缀时才能复用已有 KV」→ 改后「KV cache 可以复用已有 KV，因此可以减少计算」（条件丢失，词汇重合度高，闸门放行）。runtime 靠 fallback 原题还能接受；**变体一旦永久落盘成资产就不够**。
+  - **质量质询 `src/ai/variantChallenger.ts`**（离线专用，**不进 runtime**）：五维打分 —— `concept-preserved` / `answer-preserved` / `difficulty-preserved` / `diagnostic-value` / `accidental-clue`。
+  - **两级花费控制**：`cheapVariantQualityFlags()` 先跑确定性预检（长度 bias + 信息密度 + 归一化后重复）淘汰明显不合格的候选，**过了才付 LLM 调用**；`parseVariantChallenge` 解析不出结果一律按**失败**处理，不静默放行。
+  - **可观测**：汇总打印「过闸候选 / 质询否决 / 留存率 / 超采倍数」。留存率异常低（< 30%）说明 canonical 或 prompt 有问题，先查那个，**不要靠调低 `--oversample` 掩盖**。
+  - **红线不变**：challenger 只在离线跑，runtime 仍然 one-shot + fallback 原题，不做在线双模型（与 P2「不引入在线 second judge」一致）。
 - **UI 开关**：SettingsPanel「使用 AI 实时生成题目变体」（默认 OFF），接线 `config.runtimeVariantEnabled`；文案明确「Pool first / Runtime fallback」。
 
 ## 评分 Rubric（四维 + 两层评分锚点）

@@ -30,3 +30,9 @@
 
 ## git 状态
 - 截至 2026-09-02，全部改动（Prompt 分层重构 + AI 搜索 40 题 + 自我改进 Agent 7 题 + 多轮 taxonomy/App 修复 + 结构化知识检索 ADR-063 + 双模式 Variant ADR-069 + 题库内容提升试点）均**未 commit**，等用户指示。
+
+## 离线变体生成（no-key 手动通道，2026-09-03）
+- 无 API key 时由模型自身产出改写文本草稿（JSON：每题 `options` + `surface` + `context` 两 stem），再用 `scripts/assemble-variants.ts` 复用真实 `validateVariant`/`computeVariantSourceHash`/`variantPoolSchema` 组装落盘 `src/data/variants/*.json`；答案/解释恒取 canonical，不进产物。`scripts/validate-variants.ts` 做 stale + 近重复审计。
+- `validateVariant` 门禁坑：① 题干禁含「下文」子串（会误伤「上下文」），纯中文题干需改写避开；② 选项漂移用 fuzzball `token_set_ratio`，而 fuzzball 按空白分词——含英文词（diff/Skill/Proposer/fingerprint/canary）的选项改写易过，纯中文选项一改就当单 token 判 `<45` 漂移，只能保留 canonical 原选项；③ length bias 用 `detectOptionLengthBias`（正确项=全局最长且最短=干扰项且差距≥1.8×，或均值比≥1.8×）。
+- 单题两变体（surface-options / context-options）若共用同一套选项改写，互相~90%相似，按生成管线≥88去重会塌成1条/题；要2条真不同需对选项也差异化改写（但纯中文选项受②限制）。
+- 现状：仅 `wiki-skill-evolution-2026-08.wb-llm-20260902.json` 一个 topic 有变体（21题/42变体，0 stale）。扩 topic + 提升选项多样性是下一阶段。⑨ 已于 2026-09-03 据实标记完成。
