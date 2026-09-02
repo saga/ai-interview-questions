@@ -1,11 +1,20 @@
 ---
 name: add-question-to-bank
-description: "添加新题到题库。用户要求新增面试题、补充知识点、填补覆盖缺口或把题目写入题库时使用。"
+description: "写新题并落库。用户要求新增面试题、起草题目或把题目写入题库时使用。审查存量题质量请用 check-question-bank-quality，规划补哪些缺口请用 fill-coverage-gap。"
 ---
 
 # 添加新题到题库
 
-把新题作为可审计、可评分、可维护的数据加入 `src/data/questions/`。默认一次只处理用户要求的题目数量，不批量生成未经检查的内容。
+**定位：authoring + 写入前门禁。** 把新题作为可审计、可评分、可维护的数据加入 `src/data/questions/`。
+默认一次只处理用户要求的题目数量，不批量生成未经检查的内容。
+
+职责边界（三件事各有归口，不要在本 skill 里做另两件）：
+
+| 想做什么 | 用哪个 skill |
+| --- | --- |
+| 该补哪些 `topic × angle` 缺口、出蓝图 | **fill-coverage-gap** |
+| 审查**存量题**质量、判定 KEEP/REWRITE/DELETE | **check-question-bank-quality** |
+| 写新题 + 校验 + 落库 | **本 skill** |
 
 ## 添加前
 
@@ -18,7 +27,8 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
    ```
 
    格子已有 3 题以上属于"加深"而非"补缺"，需确认新题与已有题不近重复；想真正消缺口就优先挑统计里为 0 的格子。加题后重跑同一条命令，确认格子数确实 +1。
-4. 检查同 topic 下已有题的题干、angle、difficulty、选项和答案，避免近重复。
+4. 检查同 topic 下已有题的题干、angle、difficulty、选项和答案，避免近重复
+   （这是**写入前的去重自查**，不是审查存量题质量——后者转 **check-question-bank-quality**）。
 5. 如果题目涉及 AWS、模型、API、认证考试或其他时效事实，确认来源、适用版本和核验日期；不确定的事实不得写成绝对结论。
 6. 如果题目内容来自一篇具体文章而不是从零构思，转 **article-to-questions** skill 生成内容，再回到本 skill 完成校验与写入。
 
@@ -60,22 +70,37 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 
 ## 内容设计
 
-- 先明确这道题考查的一个主知识点和一个 angle，不要把多个无关概念塞进一道题。
+**内容规范见 `docs/question-content-spec.md`** —— 写题时逐条对齐，本 skill 不再复制规则：
+
+| 要求 | 规范 |
+| --- | --- |
+| 一个核心 Concept，不塞多个无关概念 | `spec §1` |
+| 答案唯一可判定；多选每个正确项独立成立 | `spec §2` |
+| 脱离来源可作答；事实可追溯、不编造 | `spec §3` / `§4` |
+| 选项同决策层级、彼此独立、不靠"更完整"胜出 | `spec §5` |
+| 干扰项"差点就对"，禁止稻草人 | `spec §6` |
+| 不从长度/专业度/信息密度/限定词泄露答案 | `spec §7` |
+| 题型以多选为主（multiple ≥ 2/3） | `spec §9` |
+
+补充（规范未覆盖的起草细节）：
+
 - 根据难度设计认知要求：easy 偏定义/基础，medium 偏机制/比较，hard 偏计算/权衡/场景/系统设计。
-- **题型以多选题为主**（详见 AGENTS.md §4.2）：一批新题里 multiple 应 ≥ 2/3。single 只用于结论唯一、无法拆成多个独立判断的情形（定义判定、单值计算、唯一根因定位）。遇到"下列哪项描述最准确"这类把多个独立判断压成最优选项的单选题，应改写为多选。
-- **选项必须逼出思考**：干扰项要"差点就对"——半对（部分正确但漏前提）、条件错配（机制对但场景错）、因果倒置、程度/范围偏差、概念邻近混淆。禁止"完全相反/明显荒谬/换模型/删测试/只看 token/完全自动化"这类稻草人选项，它们会让题目退化成不用读题就能排除。
-- 多选题的每个错误选项都要独立地、可解释地错，考生须逐条判断，而不是排除两个就能秒选。
 - 计算题给出足够条件和可复核公式；场景题明确约束、目标和评判标准。
-- 不要把正确答案写得总是最长、最专业或最完整（长度平衡与"有思考深度"不冲突：难度来自内容而非措辞）。
-- **选项深度自检**：遮住正确答案后，剩余选项能否让懂行的人犹豫 2 秒以上？若某选项靠常识或语气就能秒排，重写它。
+- **选项深度自检**（`spec §6` 的可操作版本）：遮住正确答案后，剩余选项能否让懂行的人犹豫 2 秒以上？
+  若某选项靠常识或语气就能秒排，重写它。
+- `ANGLE_GENERATION_HINTS`（`src/domain/coverage.ts`）给的是**生成起点提示**，不是约束——
+  `scenario` 可以是 medium 单选，`definition` 也可以是 open 题。别把它当规格读。
 
 ## 结构质量门槛
 
 写入前逐题确认以下三条，不通过则重写，不要靠 `--check` 的形态门禁兜底：
 
-1. **明确核心 Concept**：每题必须能一句话说清"这道题到底在测哪个核心 Concept"。除 `comparison` / `design` / `system-design` 外，不得要求同时掌握多个独立 Concept 才能作答；supporting / prerequisite Concepts 必须直接服务于核心 Concept 的判断，而非把多个主题并列堆砌。
-2. **同 topic × angle 已有 ≥ 3 题须确认新价值**：用"添加前"步骤的计数命令确认目标 (topic, angle) 格子已有题量。若已 ≥ 3 题，新题必须带来新的认知任务、场景、典型 misconception 或难度层次，而不是仅改写措辞；否则优先改写已有题或改补为 0 的格子。
-3. **选项同决策层级且不得仅因"更完整"制造正确答案**：所有选项应处于同一抽象粒度与决策层级；正确项不能因为"包含更多组件 / 列出更多条件 / 描述更完整"自然胜出，难度应来自技术判断而非信息量（详见 `docs/添加题库prompt.md` §四、§十一的 Answer Determinism 与 Option-level consistency 约束）。
+1. **明确核心 Concept**（`spec §1`）：每题必须能一句话说清"这道题到底在测哪个核心 Concept"。
+2. **同 topic × angle 已有 ≥ 3 题须确认新价值**：用"添加前"步骤的计数命令确认目标 (topic, angle) 格子已有题量。
+   若已 ≥ 3 题，新题必须带来新的认知任务、场景、典型 misconception 或难度层次，而不是仅改写措辞；
+   否则优先改写已有题或改补为 0 的格子。**审查存量题该不该改写，转 check-question-bank-quality**
+   （本 skill 只管 authoring + 写入前门禁）。
+3. **选项同决策层级且不得仅因"更完整"制造正确答案**（`spec §5` / `§7`）。
 
 ## 修改与验证
 
@@ -93,7 +118,11 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
    - `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`
      数据改动会直接影响检索：这两组用例守住投影、混合评分、graph 扩展与四种答案安全模式。
    - `npm run lint:bias`
-   - `npm run question:coverage`
+   - `npm run question:quality` —— 内容质量只读审计（软信号，非门禁）。新题若命中，
+     先判断是不是真问题：命中的是**词汇/统计嫌疑**，不是语义判定。
+   - **目标格子计数 +1**：重跑"添加前"第 3 步的计数命令，确认目标 (topic, angle) 确实 +1。
+     注意这不是覆盖审计——`question:coverage` 的缺口数按节点声明的 `angles` 算，
+     加题后缺口数不变是正常的，别拿它当验收标准。全库覆盖审计转 **check-question-bank-quality**。
    - `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
      使用仓库内 ONNX INT8 模型检查语义重复；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
 5. 再运行 `npm run typecheck` 和 `npm run test`。

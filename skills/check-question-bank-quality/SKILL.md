@@ -7,6 +7,9 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 
 对本仓库题库做可复现、证据驱动的质量检查。默认只读；只有用户明确要求修复时才修改题目或规则。
 
+**内容规范在 `docs/question-content-spec.md`**（本 skill 只写怎么查，不重复写"什么算好题"）。
+判定一条内容问题时，引用 `spec §N`，不要在 skill 里另立一套说法。
+
 ## 检查顺序
 
 质量分四层，逐层推进；上层通过不保证下层通过，下层问题不靠上层脚本自动判定。
@@ -28,20 +31,30 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 
 ### Level 3 — Content quality（内容质量，由 challenger + 人工负责）
 
-7. 对 Level 1/2 通过但内容上存疑的题，按以下维度做内容审查（这部分无法全自动，需 LLM challenger 或人工逐题判断）：
-   - **Concept Scope**：每题是否只测一个可诊断的核心 Concept，没有混入多余独立主题？
-   - **Answer Determinism**：正确答案在题干约束下是否唯一稳定，不依赖隐藏前提？
-   - **Option Quality**：选项是否同决策层级，正确项是否仅因更完整/信息量更大胜出？
+7. 先跑 `npm run question:quality`（只读审计，非门禁）。它输出四类**词汇/统计嫌疑信号**，
+   用来排人工复核的优先级；命中 ≠ 必须改写，不要据此新增硬门禁：
+   - ① 正确项认知层级不一致 → 见 `spec §5`
+   - ② 选项塞整段答案 → 见 `spec §5`
+   - ③ 信息密度泄题 → 见 `spec §7`
+   - ④ 多选只考一个判断（正确项互为复述）→ 见 `spec §2`
+8. 对 Level 1/2 通过但内容上存疑的题（含上一步命中的），按以下维度做内容审查
+   （这部分无法全自动，需 LLM challenger 或人工逐题判断）：
+   - **Concept Scope**（`spec §1`）：每题是否只测一个可诊断的核心 Concept，没有混入多余独立主题？
+   - **Answer Determinism**（`spec §2`）：正确答案在题干约束下是否唯一稳定，不依赖隐藏前提？
+   - **Self-contained / Evidence Boundary**（`spec §3/§4`）：脱离来源文章能否作答？事实是否可追溯、未编造？
+   - **Option Quality**（`spec §5/§6/§7`）：选项是否同决策层级？干扰项是否"差点就对"而非稻草人？
+     正确项是否仅因更完整/信息量更大胜出？
    - **Diagnostic Value**：答错后能否较明确反映知识或能力缺口？
    - **工程推理 vs 术语记忆**：是否考理解/判断/应用而非文章原句记忆？产品绑定题是否改写为自包含工程场景？
-8. 抽查失败项的完整题目、选项、答案、解析和开放题参考答案，不只看脚本摘要。
-9. 按 P0/P1/P2 输出问题：必须包含题目 id、文件、字段证据、影响和建议。
+9. 抽查失败项的完整题目、选项、答案、解析和开放题参考答案，不只看脚本摘要。
+10. 按 P0/P1/P2 输出问题，**并按下面的生命周期表给出处置动作**：必须包含题目 id、文件、字段证据、
+    影响、建议和**动作**（KEEP / REWRITE / DELETE / FIX REQUIRED / REVIEW）。
 
 ### Level 4 — Retrieval readiness（检索就绪，ADR-063/065/066）
 
 题库同时是 Structured Knowledge RAG 的 corpus（`src/domain/knowledge/`）。结构、分布、内容都合格的题，仍可能"检索不到"或"被检索漏题"。
 
-10. 跑检索就绪审计（纯 JSON 静态检查，无新依赖）：
+11. 跑检索就绪审计（纯 JSON 静态检查，无新依赖）：
 
     ```bash
     node -e "
@@ -64,13 +77,40 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
     - **P2 名称锚点冲突**：`detectQueryTopic` 用「id + name 最长匹配」锚定用户想问的节点，短 name 被长 name 包含会让短 query 误锚。
     - **P2 缺 `misconceptions`**：hint 模式下"用户错在哪"的唯一证据缺失，诊断价值归零。选择题 `choice.misconceptionMap` 同理（可用 `npm run backfill:misconceptions` 回填）。
 
-11. 抽查"检索会漏题"的题（无法自动判定，逐题读）：
+12. 抽查"检索会漏题"的题（无法自动判定，逐题读）：
     - 题干或选项里出现只对正确项成立的限定词（唯一 / 总是 / 必须同时 / 唯一不会），hint 模式下等于报答案。
     - `explanation` 是"见上文 / 该题选 X"式指代表述：被 `[Q]` 引用出去即成废话。
-12. 跑 `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`，确认检索契约（投影 / 混合评分 / graph 1 跳扩展 / 四种答案安全模式 / scope 规划）未被数据改动破坏。
+13. 跑 `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`，确认检索契约（投影 / 混合评分 / graph 1 跳扩展 / 四种答案安全模式 / scope 规划）未被数据改动破坏。
+
+## 分级 → 动作映射（生命周期）
+
+报告里每条问题必须落到**一个**动作。agent 不自行决定处置方式。
+
+| 级别 | 动作 | 含义 | 约束 |
+| --- | --- | --- | --- |
+| P0 structural | **FIX REQUIRED** | 阻塞，必须修 | **不可 delete 绕过**——结构坏了就是坏了，删掉只是把洞藏起来 |
+| P1 content | **REWRITE** | 保留核心 Concept，换认知任务/场景/干扰项 | 低价值**且**无可改造价值时才用下一行 |
+| P1 content（无改造价值） | **DELETE** | 移除 | 必须在报告里写明「为什么不能 rewrite」；DELETE 后该题覆盖的 `topic × angle` 格子回到缺口状态，需同步告知 |
+| P2 heuristic | **REVIEW** | 只记录，不改 | 不因启发式告警直接改题 |
+| 无问题 | **KEEP** | 明确判定为保留 | 报告要能看出"查过且通过"，不只是"没出错" |
+
+规模较大（> 20 题）的 KEEP/REWRITE/DELETE 执行，转 **curate-question-bank** skill。
+
+### 闭环要求（最后一步，别漏）
+
+重新检查后，报告里必须**逐条确认原问题已消失**——不是「改完了」，
+是「原 P1 项重新审计后**不再命中**」。写法：
+
+```text
+- P1 `xxx-01`（Option Quality / spec §6）：REWRITE → 复核：重跑 question:quality 探测器 ②，
+  原命中项已不在清单内 ✓
+```
+
+复核没过的要标 `REWRITE → 复核未通过`，回到待办，不要靠"已处理"糊过去。
 
 ## 自动化工具
 
+- `npm run question:quality`：内容质量只读审计，输出四类嫌疑信号，用于排人工复核优先级。**软信号，非门禁**。
 - `npm run question:audit`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
 - `python analysis/question_audit.py --json --output reports/question-audit.json`：生成机器可读报告；Python 报告是辅助分析，TypeScript/Zod 仍是数据契约唯一来源。
 - `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`：使用仓库内 ARM64 ONNX INT8 模型发现语义重复和 embedding 概念簇；默认离线，不访问 Hugging Face。

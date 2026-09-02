@@ -1,5 +1,16 @@
 # AI / ML 技术文章 → 高质量 Canonical + Variant 面试选择题生成 Prompt
 
+> **本文档是「生成 Prompt」，不是内容规范。**
+>
+> - **内容规范**在 [`docs/question-content-spec.md`](./question-content-spec.md)
+>   —— 什么算一道好题、为什么这样要求。改规范改那里，不要改这里。
+> - **数据契约**在 `src/schemas/` 与 `scripts/validate-questions.ts`、`scripts/add-question.ts`
+>   —— 数据必须是什么形状，机器裁决。与本文档冲突时以契约为准。
+> - 本文档只负责「怎么把规范翻译成 LLM 能执行的指令」，含 Canonical/Variant 流程与批量输出格式。
+>
+> 另有一份精简版 `docs/添加题库prompt精简.md`，用于 token 受限场景；两者同源，
+> **改了这份就要同步检查那份**。
+
 ## 一、任务
 
 你会收到一篇 AI / ML / LLM / Agent / AI Systems 技术文章。

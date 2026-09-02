@@ -30,7 +30,7 @@
 
 ## P0 — 契约收口（立即修）
 
-### [ ] 1. `angle` 从 schema optional 改为 required
+### [x] 1. `angle` 从 schema optional 改为 required
 
 **现状（三个契约并存）：**
 
@@ -59,7 +59,7 @@ npx vitest run src/domain/coverage.test.ts src/data/bank.test.ts
 
 ---
 
-### [ ] 2. `choice.answer` 越界检查下沉到 Zod
+### [x] 2. `choice.answer` 越界检查下沉到 Zod
 
 **现状：** `src/schemas/question.ts:20-45` 的 `choiceFormatSchema.superRefine` 只校验
 「answer 不重复 / single=1 / multiple≥2」，**没有** `answer[i] < options.length`。
@@ -79,7 +79,7 @@ npx vitest run src/domain/coverage.test.ts src/data/bank.test.ts
 
 ---
 
-### [ ] 3. 归一化解重复从 warning 提升为 hard error
+### [x] 3. 归一化解重复从 warning 提升为 hard error
 
 **现状：** `scripts/add-question.ts:70-71`
 ```ts
@@ -106,7 +106,7 @@ if (duplicate) warnings.push(`${question.id}: 题干与 ${duplicate} 规范化�
 
 ---
 
-### [ ] 4. 修 `variant-bench.ts` 双 `main()` 执行 bug
+### [x] 4. 修 `variant-bench.ts` 双 `main()` 执行 bug
 
 **现状：** `scripts/variant-bench.ts:302` 和 `:307` 各有一处 `main().catch(...)`，
 benchmark 主流程会**跑两遍**（两次批量 LLM 调用 = 双倍花费 + 污染 telemetry）。
@@ -120,7 +120,7 @@ benchmark 主流程会**跑两遍**（两次批量 LLM 调用 = 双倍花费 + �
 
 ## P1 — 这一轮修
 
-### [ ] 5. 清掉 `lint-bias.ts` 的过期 retry 描述
+### [x] 5. 清掉 `lint-bias.ts` 的过期 retry 描述
 
 **现状：** `scripts/lint-bias.ts:60`
 > 新变体已由 generateVariant 自动重试修正。
@@ -132,7 +132,7 @@ benchmark 主流程会**跑两遍**（两次批量 LLM 调用 = 双倍花费 + �
 
 ---
 
-### [ ] 6. 把 variant 安全表述改诚实：drift detector ≠ semantic proof
+### [x] 6. 把 variant 安全表述改诚实：drift detector ≠ semantic proof
 
 代码注释**已经是对的**（`src/domain/variant.ts:6, 102, 143-145, 165` 反复声明
 「不验证语义等价」），漂移在 ARCHITECTURE.md 里也已降级为软信号。剩下两处措辞偏强：
@@ -147,7 +147,7 @@ benchmark 主流程会**跑两遍**（两次批量 LLM 调用 = 双倍花费 + �
 
 ---
 
-### [ ] 7. `ANGLE_SUGGESTIONS.format` 标注为 generation hint
+### [x] 7. `ANGLE_SUGGESTIONS.format` 标注为 generation hint
 
 **现状：** `src/domain/coverage.ts:25-36` 把 `comparison / tradeoff / scenario / debugging /
 system-design / design` 全锁成 `hard + open`。`:124` 注释已经写了「启发式 / 起点」，
@@ -162,7 +162,7 @@ system-design / design` 全锁成 `hard + open`。`:124` 注释已经写了「�
 
 ---
 
-### [ ] 8. 题库 content-quality review（长期项，本轮先立基线）
+### [x] 8. 题库 content-quality review（长期项，本轮先立基线）
 
 已确认的真实样例 `src/data/questions/agent-fundamentals.json[0]`（`agent-arch-localized`，multiple，ans=[0,1,2]）：
 
@@ -211,11 +211,28 @@ system-design / design` 全锁成 `hard + open`。`:124` 注释已经写了「�
 **验收：** `npm run question:validate-variants` 报「无 stale、无近重复」；
 `src/data/variants/` 非 `.gitkeep` 文件 ≥1，且覆盖率可量化。
 
-**前置：** 需要先完成 P1-10，否则等于把 runtime 的质量问题批量制造并永久保存。
+**前置：** 需要先完成 P1-10，否则等于把 runtime 的质量问题批量制造并永久保存。✅ P1-10 已完成。
+
+**⏸ 本项被阻塞（2026-09-02 执行时）。** 原因与解除条件：
+
+- **阻塞原因：需要真实 LLM 凭据。** 变体生成要联网调用 provider，当前环境
+  `VARIANT_API_KEY` / `AI_PROVIDER_API_KEY` 均未设置，无法执行第 2 步试跑。
+  这不是代码问题——管线本身已验证可用（`--dry-run` 正常，超采与质询接线完毕）。
+- **解除：设置环境变量后手动执行。** 命令已就绪：
+
+  ```bash
+  VARIANT_PROVIDER=deepseek VARIANT_MODEL=deepseek-chat VARIANT_API_KEY=sk-xxx \
+    npm run question:variants -- --topics evaluation --count 2 --oversample 3 --dry-run  # 先确认计划
+  # 去掉 --dry-run 正式跑；跑完：
+  npm run question:validate-variants
+  ```
+- **建议首批规模**：`--topics evaluation --count 2 --oversample 3`（约 16 题 × 6 候选 = 96 次生成调用）。
+  关注汇总里的「质询否决 / 留存率」——留存率异常低（< 30%）说明 canonical 或 prompt 有问题，
+  先查那个，不要靠调低 oversample 掩盖。
 
 ---
 
-### [ ] 10. 候选超采 + 质量筛选（本轮最关键的一项）
+### [x] 10. 候选超采 + 质量筛选（本轮最关键的一项）
 
 **现状：** `question-variants.ts --count N` 的语义是「每题产出 N 个变体并保留通过校验的」，
 **没有超采比**。而当前 hard gate 只有：
@@ -295,7 +312,7 @@ canonical
 来源：2026-09-02 第三轮 `skills/` 专项复核。当前 6 个 skill（`add` / `article` / `fill` / `check` /
 `grilling` / `teach`），复核给 **8.5/10**。以下 6 项均已在文件里核对过。
 
-### [ ] 11. 【P0】把「内容规范 / 数据契约 / workflow」彻底分层
+### [x] 11. 【P0】把「内容规范 / 数据契约 / workflow」彻底分层
 
 **现状：** 三个 skill 各自**复制**了同一批规则，而不是引用单一规范：
 
@@ -335,7 +352,7 @@ skills/*.md                     ← 只留 workflow（什么时候做什么）�
 
 ---
 
-### [ ] 12. 【P1】修正 `fill-coverage-gap` 的 variant 语义（与 ADR-069 冲突）
+### [x] 12. 【P1】修正 `fill-coverage-gap` 的 variant 语义（与 ADR-069 冲突）
 
 **现状：** `fill-coverage-gap:16-18`
 ```
@@ -362,7 +379,7 @@ coverage gap
 
 ---
 
-### [ ] 13. 【P1】把 `check → curate → recheck` 生命周期明确起来
+### [x] 13. 【P1】把 `check → curate → recheck` 生命周期明确起来
 
 **现状：** `check-question-bank-quality` 已有 Level 1–4 和「存量题改写契约（REWRITE 执行标准）」
 （`:109-133`），且 `:133` 要求改写后重跑 `question:review` + `validate:questions`。
@@ -381,7 +398,7 @@ coverage gap
 
 ---
 
-### [ ] 14. 【P1】`expectedConcepts` 是边界，不是 checklist
+### [x] 14. 【P1】`expectedConcepts` 是边界，不是 checklist
 
 **现状：** `fill-coverage-gap:15/19/62` 用 `expectedConcepts` 约束新题，
 `add:76` 说「`concepts` 第一个元素是 core concept，其余是 supporting / prerequisite」，
@@ -394,7 +411,7 @@ coverage gap
 
 ---
 
-### [ ] 15. 【P2】`article-to-questions` 增加独立的 Candidate concept selection 步骤
+### [x] 15. 【P2】`article-to-questions` 增加独立的 Candidate concept selection 步骤
 
 **现状：** 流程是「文章 → 知识点 → 出题」（`:12-17`）。过滤要求散落在 `:32`、`:58`，
 **没有独立的筛选步骤**。文章里大量存在背景介绍 / 营销观点 / 产品 feature / 作者个人建议 / 案例细节，
@@ -408,7 +425,7 @@ Extract candidate concepts → Rank interview value → Reject low-value → 剩
 
 ---
 
-### [ ] 16. 【P2】新增 `curate-question-bank` skill（存量题治理独立成 skill）
+### [x] 16. 【P2】新增 `curate-question-bank` skill（存量题治理独立成 skill）
 
 **现状：** 1308 题的存量治理现在塞在 `check` 的 REWRITE 契约里。职责模型应是：
 

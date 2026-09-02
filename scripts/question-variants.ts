@@ -4,7 +4,9 @@
 // 设计红线（见用户设计 spec + docs/DECISIONS.md）：
 //   - 变体作为题库资产（离线预生成、提交进仓库），训练时零 LLM 直接落地；
 //   - 复用 ai/variant.generateVariant（不写第二套 LLM 实现）+ domain/variant.validateVariant（全链路唯一校验门禁）；
-//   - 离线比 runtime 更严格：多候选 → 严格校验 → fuzzball 去重 → 达 count 即停；
+//   - 离线比 runtime 更严格：**超采—漏斗**（A-10）── 先生成 count × oversample 个候选，
+//     过 validateVariant（确定性）+ 去重，再由 variantChallenger 五维质询打分，
+//     按分排序取 top count 落盘。不再「先到先得」——因为通过硬门槛 ≠ 是好变体；
 //   - 变体**不写回** Question JSON，单独落 src/data/variants/<slug>.json（按 batch 聚合）；
 //   - 运行时生成结果不落盘（那是 Runtime 路径的事，本脚本只产出离线资产）。
 //
@@ -18,6 +20,8 @@
 //   --ids <csv>          只生成指定题目 id（逗号分隔）
 //   --topics <csv>       只生成指定 topic 的题目
 //   --count <n>          每题变体数量（默认 2）
+//   --oversample <n>      超采倍数：先生成 count × n 个候选再筛到 count（默认 3；设 1 = 不超采）
+//   --no-challenger       跳过 quality challenger（只跑确定性门禁 + 去重，先到先得）
 //   --kind <k>           固定风格：surface|context|surface-options|context-options（默认按 4 种轮换）
 //   --missing-only       仅生成池里还没有任何变体的题目
 //   --stale              额外纳入「池中已有 stale 变体」的题目（重新生成）
@@ -32,6 +36,7 @@ import { resolve } from 'node:path';
 import { callLLM } from '../src/ai/pi';
 import { generateVariant, VARIANT_PROMPT_VERSION } from '../src/ai/variant';
 import { validateVariant } from '../src/domain/variant';
+import { challengeVariant, type VariantShape } from '../src/ai/variantChallenger';
 import { getAvailableVariants, isVariantStale } from '../src/domain/variantPool';
 import { normalizeOptionText } from '../src/domain/options';
 import { computeVariantSourceHash } from '../src/schemas/variant';
@@ -57,6 +62,8 @@ interface CliOptions {
   ids?: string[];
   topics?: string[];
   count: number;
+  oversample: number;
+  challenger: boolean;
   kind?: VariantKind;
   missingOnly: boolean;
   stale: boolean;
@@ -69,6 +76,10 @@ interface CliOptions {
 function parseArgs(argv: string[]): CliOptions {
   const out: CliOptions = {
     count: 2,
+    // 超采倍数 3：目标 5 条就生成 15 个候选再筛。质询器会误杀（宁严勿松），
+    // 不超采则一旦某题候选质量普遍偏低就只能留下次品或留不满。
+    oversample: 3,
+    challenger: true,
     missingOnly: false,
     stale: false,
     dryRun: false,
@@ -84,6 +95,8 @@ function parseArgs(argv: string[]): CliOptions {
     } else if (a === '--ids') out.ids = next().split(',').map((s) => s.trim()).filter(Boolean);
     else if (a === '--topics') out.topics = next().split(',').map((s) => s.trim()).filter(Boolean);
     else if (a === '--count') out.count = Math.max(1, Number(next()) || 2);
+    else if (a === '--oversample') out.oversample = Math.max(1, Number(next()) || 3);
+    else if (a === '--no-challenger') out.challenger = false;
     else if (a === '--kind') {
       const k = next() as VariantKind;
       if (!KIND_ORDER.includes(k)) {
@@ -114,6 +127,8 @@ function printHelp(): void {
   --ids <csv>          只生成指定题目 id
   --topics <csv>       只生成指定 topic 的题目
   --count <n>          每题变体数量（默认 2）
+  --oversample <n>     超采倍数：先生成 count × n 个候选再筛到 count（默认 3）
+  --no-challenger      跳过 quality challenger（只跑确定性门禁 + 去重，先到先得）
   --kind <k>           固定风格：surface|context|surface-options|context-options
   --missing-only       仅生成池里还没有任何变体的题目
   --stale              额外纳入「池中已有 stale 变体」的题目
@@ -184,6 +199,10 @@ interface QuestionResult {
   candidates: number;
   rejected: number;
   duplicates: number;
+  /** 通过确定性门禁 + 去重、进入质询阶段的候选数 */
+  survived: number;
+  /** 被 quality challenger 否掉的候选数 */
+  challenged: number;
 }
 
 interface ProduceCtx {
@@ -193,27 +212,42 @@ interface ProduceCtx {
   promptVersion: string;
 }
 
+/** 质询后的候选，带打分，用于排序取 top-N。 */
+interface ScoredCandidate {
+  kind: VariantKind;
+  shape: VariantShape;
+  score: number;
+  summary: string;
+}
+
 async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<QuestionResult> {
   const format: 'choice' | 'open' = q.formats.choice ? 'choice' : 'open';
   const existing = getAvailableVariants(variantPool, q.id);
   const usedTexts = new Set<string>(existing.map((v) => fingerprint(v.question, v.options)));
-  const produced: QuestionVariant[] = [];
-  const stats = { candidates: 0, rejected: 0, duplicates: 0 };
-  const budget = ctx.opts.count * 4;
+  const stats = { candidates: 0, rejected: 0, duplicates: 0, survived: 0, challenged: 0 };
+  const want = ctx.opts.count;
+  // 超采：目标 want 条，先生成 want × oversample 个候选。（A-10）
+  // 旧实现是「生成到够数为止」，先到先得——通过硬门槛的次品会挤掉后面更好的候选。
+  const budget = want * ctx.opts.oversample;
   let seq = existing.length;
 
   if (ctx.opts.dryRun) {
     const kinds = ctx.opts.kind
       ? [ctx.opts.kind]
       : KIND_ORDER.slice(0, ctx.opts.count);
+    const funnel = ctx.opts.challenger
+      ? `超采 ${budget} 候选 → 质询筛选 → 取 top ${want}`
+      : `生成 ${budget} 候选 → 先到先得取 ${want}（challenger 已关闭）`;
     console.log(
-      `  · ${q.id} [${format}]  → 计划 ${ctx.opts.count} 个变体（风格：${kinds.join(', ')}；已有 ${existing.length} 条）`,
+      `  · ${q.id} [${format}]  → 计划 ${ctx.opts.count} 个变体（风格：${kinds.join(', ')}；已有 ${existing.length} 条；${funnel}）`,
     );
     return { questionId: q.id, format, variants: [], ...stats };
   }
 
-  while (produced.length < ctx.opts.count && stats.candidates < budget) {
-    const kind = ctx.opts.kind ?? KIND_ORDER[produced.length % KIND_ORDER.length];
+  // ── 阶段 1：超采 + 确定性门禁 + 去重 ──
+  const survivors: Array<{ kind: VariantKind; shape: VariantShape }> = [];
+  while (survivors.length < budget && stats.candidates < budget * 2) {
+    const kind = ctx.opts.kind ?? KIND_ORDER[stats.candidates % KIND_ORDER.length];
     let gen;
     try {
       gen = await generateVariant(q, ctx.complete!, format, undefined, kind);
@@ -244,29 +278,62 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
       continue;
     }
     usedTexts.add(text);
-    produced.push({
-      id: `${q.id}__${kind}__${ctx.slug}__${seq++}`,
-      kind,
-      question: gen.question,
-      options: q.formats.choice ? gen.options : undefined,
-      generatedAt: Date.now(),
-      generator: 'offline',
-      promptVersion: ctx.promptVersion,
-      sourceHash: computeVariantSourceHash({
-        id: q.id,
-        question: q.question,
-        options: q.formats.choice?.options,
-      }),
-    });
+    survivors.push({ kind, shape: { question: gen.question, options: gen.options } });
+  }
+  stats.survived = survivors.length;
+
+  // ── 阶段 2：quality challenger 打分（离线才付得起；--no-challenger 可关闭）──
+  let ranked: ScoredCandidate[];
+  if (!ctx.opts.challenger) {
+    ranked = survivors.map((s) => ({ ...s, score: 1, summary: 'challenger 已关闭' }));
+  } else {
+    const scored: ScoredCandidate[] = [];
+    for (const s of survivors) {
+      let ch;
+      try {
+        ch = await challengeVariant(q, s.shape, format, ctx.complete!);
+      } catch (err) {
+        // 质询调用失败按不合格处理：宁可少留一条，也不要把未经验证的变体永久落盘。
+        stats.challenged++;
+        console.warn(`    ✗ ${q.id} 质询调用失败（${s.kind}）：${(err as Error).message}`);
+        continue;
+      }
+      if (!ch.ok) {
+        stats.challenged++;
+        console.warn(`    ✗ ${q.id} 质询未过（${s.kind}）：${ch.failed.join(',')} — ${ch.summary.slice(0, 80)}`);
+        continue;
+      }
+      scored.push({ ...s, score: ch.score, summary: ch.summary });
+    }
+    ranked = scored;
   }
 
-  if (produced.length < ctx.opts.count) {
+  // ── 阶段 3：取 top want 落盘 ──
+  const kept = ranked.slice(0, want);
+  const produced: QuestionVariant[] = kept.map((c) => ({
+    id: `${q.id}__${c.kind}__${ctx.slug}__${seq++}`,
+    kind: c.kind,
+    question: c.shape.question,
+    options: q.formats.choice ? c.shape.options : undefined,
+    generatedAt: Date.now(),
+    generator: 'offline' as const,
+    promptVersion: ctx.promptVersion,
+    sourceHash: computeVariantSourceHash({
+      id: q.id,
+      question: q.question,
+      options: q.formats.choice?.options,
+    }),
+  }));
+
+  if (produced.length < want) {
     console.warn(
-      `    ⚠ ${q.id} 仅生成 ${produced.length}/${ctx.opts.count} 条（候选 ${stats.candidates}，拒绝 ${stats.rejected}，重复 ${stats.duplicates}）`,
+      `    ⚠ ${q.id} 仅生成 ${produced.length}/${want} 条（候选 ${stats.candidates}，校验拒 ${stats.rejected}，` +
+        `重复 ${stats.duplicates}，过闸 ${stats.survived}，质询否 ${stats.challenged}）`,
     );
   } else {
     console.log(
-      `    ✓ ${q.id} 生成 ${produced.length} 条（候选 ${stats.candidates}，拒绝 ${stats.rejected}，重复 ${stats.duplicates}）`,
+      `    ✓ ${q.id} 生成 ${produced.length} 条（候选 ${stats.candidates}，校验拒 ${stats.rejected}，` +
+        `重复 ${stats.duplicates}，过闸 ${stats.survived}，质询否 ${stats.challenged}）`,
     );
   }
   return { questionId: q.id, format, variants: produced, ...stats };
@@ -332,10 +399,18 @@ async function main(): Promise<void> {
   const totalCandidates = rows.reduce((s, r) => s + r.candidates, 0);
   const totalRejected = rows.reduce((s, r) => s + r.rejected, 0);
   const totalDuplicates = rows.reduce((s, r) => s + r.duplicates, 0);
+  const totalSurvived = rows.reduce((s, r) => s + r.survived, 0);
+  const totalChallenged = rows.reduce((s, r) => s + r.challenged, 0);
 
   if (opts.dryRun) {
+    // dry-run 下 produceForQuestion 不产出 variants（也不联网），故用计划数而非实际数。
+    const planned = targets.length * opts.count;
+    const plannedCandidates = planned * opts.oversample;
+    const funnel = opts.challenger
+      ? `先超采 ${plannedCandidates} 个候选，经校验/去重/质询后取 top ${opts.count}/题`
+      : `生成 ${plannedCandidates} 个候选，经校验/去重后先到先得取 ${opts.count}/题（challenger 已关闭）`;
     console.log(
-      `\n[DRY-RUN] 计划生成 ${totalVariants} 条变体（不联网、不落盘）。` +
+      `\n[DRY-RUN] 计划生成 ${planned} 条变体（${targets.length} 题 × ${opts.count}；${funnel}）。不联网、不落盘。\n` +
         ` 将写入：${resolve(process.cwd(), opts.out, `${slug}.json`)}`,
     );
     return;
@@ -373,6 +448,14 @@ async function main(): Promise<void> {
   console.log(`  LLM 候选数  : ${totalCandidates}`);
   console.log(`  校验拒绝    : ${totalRejected}`);
   console.log(`  近重复丢弃  : ${totalDuplicates}`);
+  console.log(`  过闸候选    : ${totalSurvived}${opts.challenger ? '（进入质询）' : ''}`);
+  if (opts.challenger) {
+    const keepRate = totalSurvived > 0 ? ((totalSurvived - totalChallenged) / totalSurvived) * 100 : 0;
+    console.log(`  质询否决    : ${totalChallenged}（留存率 ${keepRate.toFixed(1)}%）`);
+  } else {
+    console.log('  质询否决    : —（--no-challenger，先到先得）');
+  }
+  console.log(`  超采倍数    : ${opts.oversample}（目标 ${targets.length * opts.count} 条，候选 ${targets.length * opts.count * opts.oversample}）`);
   console.log(`  输出文件    : ${file}`);
   console.log(`\n提示：下次训练会自动经 import.meta.glob 合并本文件；可用 npx vite-node scripts/validate-variants.ts 校验池。`);
 }

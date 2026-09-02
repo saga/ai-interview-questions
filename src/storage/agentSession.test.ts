@@ -21,6 +21,7 @@ const Q1: Question = {
   topic: 'attention',
   tags: [],
   difficulty: 'easy',
+  angle: 'mechanism',
   question: 'Transformer 中 multi-head attention 的作用？',
   explanation: '多头并行捕捉不同子空间关系。',
   // 选项至少 4 个（questionSchema 下限），否则会被读取端的运行时校验判为坏草稿

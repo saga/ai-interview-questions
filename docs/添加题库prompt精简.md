@@ -2,6 +2,10 @@
 
 任务：从文章中提取长期有面试价值的核心知识（Concept），生成高质量、可独立理解的选择题，并为重要 Concept 生成少量具有真实诊断差异的 Variant。
 
+> 内容规范见 [`docs/question-content-spec.md`](./question-content-spec.md)，
+> 完整版生成指令见 [`docs/添加题库prompt.md`](./添加题库prompt.md)。
+> 本精简版用于 token 受限场景，与完整版同源——改了完整版需同步检查本文件。
+
 ## 核心原则
 
 ### 1. Concept-first
