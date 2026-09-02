@@ -183,6 +183,13 @@ export function formatCoverageReport(matrix: CoverageMatrix, suggestions: Covera
     lines.push(`  ${i + 1}. [${s.priority}] ${s.nodeId} · ${s.angle} · ${s.difficulty} · ${s.format}`);
   });
 
+  // ── 生成提示（heuristic，非覆盖契约）──
+  lines.push('');
+  lines.push(
+    '提示：难度/形态来自 ANGLE_GENERATION_HINTS，是生成起点建议、非覆盖契约——' +
+      'comparison / scenario / mechanism 均可做成高质量多选，不必机械套用上表 format。',
+  );
+
   const expectedCells = matrix.topics.reduce((sum, t) => sum + t.expected.length, 0);
   const gapCells = matrix.topics.reduce((sum, t) => sum + t.gaps.length, 0);
   lines.push('');

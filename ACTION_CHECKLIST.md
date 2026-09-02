@@ -145,6 +145,8 @@ benchmark 主流程会**跑两遍**（两次批量 LLM 调用 = 双倍花费 + �
 
 **动作：** 只改这两处措辞，**不动代码、不引入在线第二 judge**。
 
+> ✅ 2026-09-02 22:24 已收口：`ARCHITECTURE.md:9` 已重写为诚实版本（答案索引程序保证不被覆盖，但语义等价不在线验证）；`:531` Invariant 已分「程序保证 / Prompt 请求但不校验」两级。
+
 ---
 
 ### [x] 7. `ANGLE_SUGGESTIONS.format` 标注为 generation hint
@@ -159,6 +161,8 @@ system-design / design` 全锁成 `hard + open`。`:124` 注释已经写了「�
 「难度/形态为生成起点建议，非覆盖契约——comparison/scenario/mechanism 均可做成高质量多选」。
 
 **验收：** `npx vitest run src/domain/coverage.test.ts`。
+
+> ✅ 2026-09-02 22:24 已收口：常量改名为 `ANGLE_GENERATION_HINTS`；`coverage.test.ts:92` 断言已更新；`formatCoverageReport` 末尾新增 hint 行（「难度/形态为生成起点建议、非覆盖契约——comparison/scenario/mechanism 均可做成高质量多选」），实跑报告已含该提示行。
 
 ---
 
