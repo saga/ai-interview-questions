@@ -9,7 +9,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 
 ## 检查顺序
 
-质量分三层，逐层推进；上层通过不保证下层通过，下层问题不靠上层脚本自动判定。
+质量分四层，逐层推进；上层通过不保证下层通过，下层问题不靠上层脚本自动判定。
 
 ### Level 1 — Contract（契约与结构）
 
@@ -37,6 +37,38 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 8. 抽查失败项的完整题目、选项、答案、解析和开放题参考答案，不只看脚本摘要。
 9. 按 P0/P1/P2 输出问题：必须包含题目 id、文件、字段证据、影响和建议。
 
+### Level 4 — Retrieval readiness（检索就绪，ADR-063/065/066）
+
+题库同时是 Structured Knowledge RAG 的 corpus（`src/domain/knowledge/`）。结构、分布、内容都合格的题，仍可能"检索不到"或"被检索漏题"。
+
+10. 跑检索就绪审计（纯 JSON 静态检查，无新依赖）：
+
+    ```bash
+    node -e "
+    const fs=require('fs'),R=(d)=>fs.readdirSync(d).filter(f=>f.endsWith('.json')).flatMap(f=>JSON.parse(fs.readFileSync(d+'/'+f,'utf8')));
+    const nodes=R('src/data/knowledge'),qs=R('src/data/questions'),ids=new Set(nodes.map(n=>n.id));
+    const bad=nodes.filter(n=>!n.summary?.trim()||!n.required?.length||!n.misconceptions?.length);
+    const clash=[];for(const a of nodes)for(const b of nodes){if(a!==b&&b.name.toLowerCase().includes(a.name.toLowerCase())&&a.name!==b.name)clash.push(a.id+' ⊂ '+b.id);}
+    const orphan=[...new Set(qs.map(q=>q.topic))].filter(t=>!ids.has(t));
+    const noMis=qs.filter(q=>!q.misconceptions?.length),noMap=qs.filter(q=>q.formats.choice&&!q.formats.choice.misconceptionMap);
+    console.log('节点',nodes.length,'| 题目',qs.length);
+    console.log('P0 无节点 topic:',orphan.join(', ')||'无');
+    console.log('P1 字段缺失节点:',bad.map(n=>n.id).join(', ')||'无');
+    console.log('P2 名称锚点冲突:',clash.join('; ')||'无');
+    console.log('P2 缺 misconceptions:',noMis.length,'/',qs.length,'| 选择题缺 misconceptionMap:',noMap.length,'/',qs.filter(q=>q.formats.choice).length);
+    "
+    ```
+
+    - **P0 无节点 topic**：该 topic 下所有题在 `topic` / `knowledge` 范围检索不到，`validate:questions` 之外无人兜底。
+    - **P1 节点字段缺失**（`summary` / `required` / `misconceptions`）：知识文档正文主体缺失，Copilot 只能靠题面作答。
+    - **P2 名称锚点冲突**：`detectQueryTopic` 用「id + name 最长匹配」锚定用户想问的节点，短 name 被长 name 包含会让短 query 误锚。
+    - **P2 缺 `misconceptions`**：hint 模式下"用户错在哪"的唯一证据缺失，诊断价值归零。选择题 `choice.misconceptionMap` 同理（可用 `npm run backfill:misconceptions` 回填）。
+
+11. 抽查"检索会漏题"的题（无法自动判定，逐题读）：
+    - 题干或选项里出现只对正确项成立的限定词（唯一 / 总是 / 必须同时 / 唯一不会），hint 模式下等于报答案。
+    - `explanation` 是"见上文 / 该题选 X"式指代表述：被 `[Q]` 引用出去即成废话。
+12. 跑 `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`，确认检索契约（投影 / 混合评分 / graph 1 跳扩展 / 四种答案安全模式 / scope 规划）未被数据改动破坏。
+
 ## 自动化工具
 
 - `npm run question:audit`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
@@ -55,16 +87,21 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 - explanation 与正确答案一致，题干无需阅读原题即可作答。
 - topic × angle 覆盖、难度梯度和题量偏斜。
 - 厂商、API、模型和认证题的时效风险。
-- 文章题的产品绑定风险：移除厂商/产品名后是否仍是可迁移的工程问题；“功能名是什么/主要做什么”属于 P1 内容质量问题，不因 schema、答案索引或测试通过而放行。
-- 来源框架前置知识风险：题干是否出现“符合某 Lens/框架/考纲”并把它当作判断标准；这类题即使答案技术上正确也属于 P1，必须改写为给出目标、约束和验收标准的自包含工程场景。
+- 文章题的产品绑定风险：移除厂商/产品名后是否仍是可迁移的工程问题；"功能名是什么/主要做什么"属于 P1 内容质量问题，不因 schema、答案索引或测试通过而放行。
+- 来源框架前置知识风险：题干是否出现"符合某 Lens/框架/考纲"并把它当作判断标准；这类题即使答案技术上正确也属于 P1，必须改写为给出目标、约束和验收标准的自包含工程场景。
 - `source`、`lastVerified` 等字段若不存在，明确说明这是治理缺口，不要虚构来源。
+- `topic` 有对应知识节点；该节点 `summary` / `required` / `misconceptions` 非空。
+- 节点 `name` 不与其它节点互为子串（检索锚点唯一性，见 Level 4）。
+- 题干与选项不含只对正确项成立的限定词——hint 模式下等于泄露答案。
+- `explanation` 自包含：被 `[Q] <题干>` 单独引用时仍能自证。
+- `misconceptions` 与 `choice.misconceptionMap` 的覆盖率（hint 模式的诊断证据来源）。
 
 ## 质量判断原则
 
 - 结构通过不等于内容正确；测试全绿时仍要报告未被自动校验覆盖的风险。
 - 题库审查必须抽查内容是否考察工程推理，而不是文章术语记忆；对产品绑定题优先改写为目标、约束、机制和权衡明确的场景题。
 - 先修复会影响判分的答案冲突、错误索引和不可判定题，再补覆盖缺口。
-- 不要为了小规模题库引入 embedding、向量数据库或复杂 ML 管线。
+- 检索走结构化路线（lexical + metadata + graph 1 跳），**不引入 embedding / 向量库 / reranker**（ADR-063 §13，Phase 2 再评估）；发现"检索不准"时先查节点字段与锚点，不要靠加向量库解决。
 - 不要仅凭关键词命中断言语义正确；需要人工复核或独立事实来源。
 - 选项长度偏差是启发式信号，soft 命中不要直接当作错误。
 - 不要把 `subtopic` 缺失自动判为质量错误，除非产品明确依赖它。
@@ -93,7 +130,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 > 10. `explanation` 必须说明核心原理和关键误区。
 
 ### 改写后
-重新跑 `npm run question:review -- <id>` 与 `npm run validate:questions`，确认无长度失衡、无同 cell 过密、答案唯一。
+重新跑 `npm run question:review -- <id>` 与 `npm run validate:questions`，确认无长度失衡、无同 cell 过密、答案唯一；若改动了 `topic` / `misconceptions` / `explanation`，再跑 Level 4 的检索就绪审计与知识检索用例。
 
 ## 修改后的验证
 

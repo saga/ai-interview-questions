@@ -9,7 +9,7 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 
 ## 添加前
 
-1. 阅读 `AGENTS.md`、`README.md`、`src/schemas/question.ts`、目标题库 JSON 和 `src/data/knowledge/` 中对应知识节点。
+1. 阅读 `AGENTS.md`、`README.md`、`src/schemas/question.ts`、`src/domain/knowledge/documents.ts`、目标题库 JSON 和 `src/data/knowledge/` 中对应知识节点。
 2. 先运行 `npm run question:coverage`，确认新增题解决真实的 topic × angle 缺口，而不是重复堆积已有题型；如果还没确定要补哪些缺口，转 **fill-coverage-gap** skill 先出蓝图和优先级，再回到本 skill 写题。
 3. **不要只看 `question:coverage` 的"缺口数"**：它按知识节点自身声明的 `angles` 计算，加题后缺口数不变，既不代表白加、也不代表填上了缺口。必须直接数目标 (topic, angle) 格子的现有题量：
 
@@ -28,8 +28,8 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 
 - 全局唯一、稳定且可读的 `id`。
 - 合法的 `category`、`topic`、`difficulty` 和 `angle`。
-- 题干自包含，不依赖“上述方法”“原题”“本文”等上下文。
-- 题干不得要求考生预先知道来源文章、Lens、认证框架或其分类；禁止“哪种做法符合某 Lens/框架”类问法。将来源原则写成包含目标、约束和验收标准的通用场景，来源名称只放在 `source` metadata。
+- 题干自包含，不依赖"上述方法""原题""本文"等上下文。
+- 题干不得要求考生预先知道来源文章、Lens、认证框架或其分类；禁止"哪种做法符合某 Lens/框架"类问法。将来源原则写成包含目标、约束和验收标准的通用场景，来源名称只放在 `source` metadata。
 - `explanation` 明确解释正确答案和关键误区。
 - choice 题至少 2 个选项；`single` 恰好 1 个答案；`multiple` 至少 2 个答案。
 - 答案索引合法、不重复；选项互斥、无重复、无占位内容。
@@ -40,6 +40,23 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 - `category` 通常与所在文件名一致；生产补题批次文件（如 `foundational-and-intermediate.json`）允许跨领域收录题目，加载时以题目自身 `category` 为准。
 - 目标题库文件普遍是 choice + open 双形态 100% 覆盖，新题应同时写两种形态。
 - `open.referenceAnswer` 若写成 `正确答案：B、C、D。`（全角冒号），`bank.test.ts` 的一致性正则**不会命中**（正则要求"正确答案"后紧跟空白+字母），因此需**人工核对**字母与 `answer` 索引一致。
+
+## 检索可见性（ADR-063/065/066）
+
+题库是 Structured Knowledge RAG 的 corpus。写出的题会被 `src/domain/knowledge/documents.ts` 投影成 `KnowledgeDocument`，字段按可见性分成两侧：
+
+| 侧 | 字段 | 可见性 |
+| --- | --- | --- |
+| 安全侧 | `question` 题干、`formats.choice.options`、`misconceptions`、`tags`、`topic`、`angle`、`difficulty` | **所有**答案安全模式都会进 prompt（含 hint / quiz） |
+| 真值侧 | `explanation`、`choice.answer`、`open.referenceAnswer` | 仅 `answer` / `explain` |
+
+由此产生五条硬要求：
+
+1. **题干和选项不得泄露答案。** quiz 模式只保留题干首行、hint 模式保留题干+选项；任何"正确项天然更完整 / 更专业 / 更多条件"的写法，都会在 hint 下直接漏题——与 §4.2 的长度抗泄题是同一条规则，只是现在后果从"降低难度"变成"绕过 assessment boundary"。
+2. **`explanation` 必须能脱离上下文被引用。** Copilot 会原样拼进 prompt 并附 `[Q] <题干>` 引用标记；写成"见上文""该题应选 B"这类指代表述，引用出去就是废话。
+3. **`misconceptions` 必须填。** 它是 hint 模式下唯一能说明"用户错在哪"的证据；缺失时 Copilot 只能讲通用知识，诊断价值归零。选择题同步填 `choice.misconceptionMap`（存量可用 `npm run backfill:misconceptions` 回填）。
+4. **`topic` 必须是知识节点 id**，它同时是 graph 检索种子与 `detectQueryTopic` 的锚点——写错会让整条 1 跳邻域的证据都错。
+5. **`tags` 复用既有词表**，它参与 metadata 评分；同义、单复数、大小写变体会稀释命中。
 
 ## 内容设计
 
@@ -56,9 +73,9 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 
 写入前逐题确认以下三条，不通过则重写，不要靠 `--check` 的形态门禁兜底：
 
-1. **明确核心 Concept**：每题必须能一句话说清“这道题到底在测哪个核心 Concept”。除 `comparison` / `design` / `system-design` 外，不得要求同时掌握多个独立 Concept 才能作答；supporting / prerequisite Concepts 必须直接服务于核心 Concept 的判断，而非把多个主题并列堆砌。
-2. **同 topic × angle 已有 ≥ 3 题须确认新价值**：用“添加前”步骤的计数命令确认目标 (topic, angle) 格子已有题量。若已 ≥ 3 题，新题必须带来新的认知任务、场景、典型 misconception 或难度层次，而不是仅改写措辞；否则优先改写已有题或改补为 0 的格子。
-3. **选项同决策层级且不得仅因“更完整”制造正确答案**：所有选项应处于同一抽象粒度与决策层级；正确项不能因为“包含更多组件 / 列出更多条件 / 描述更完整”自然胜出，难度应来自技术判断而非信息量（详见 `docs/添加题库prompt.md` §四、§十一的 Answer Determinism 与 Option-level consistency 约束）。
+1. **明确核心 Concept**：每题必须能一句话说清"这道题到底在测哪个核心 Concept"。除 `comparison` / `design` / `system-design` 外，不得要求同时掌握多个独立 Concept 才能作答；supporting / prerequisite Concepts 必须直接服务于核心 Concept 的判断，而非把多个主题并列堆砌。
+2. **同 topic × angle 已有 ≥ 3 题须确认新价值**：用"添加前"步骤的计数命令确认目标 (topic, angle) 格子已有题量。若已 ≥ 3 题，新题必须带来新的认知任务、场景、典型 misconception 或难度层次，而不是仅改写措辞；否则优先改写已有题或改补为 0 的格子。
+3. **选项同决策层级且不得仅因"更完整"制造正确答案**：所有选项应处于同一抽象粒度与决策层级；正确项不能因为"包含更多组件 / 列出更多条件 / 描述更完整"自然胜出，难度应来自技术判断而非信息量（详见 `docs/添加题库prompt.md` §四、§十一的 Answer Determinism 与 Option-level consistency 约束）。
 
 ## 修改与验证
 
@@ -73,13 +90,15 @@ description: "添加新题到题库。用户要求新增面试题、补充知识
 4. 运行：
    - `npm run validate:questions`
    - `npx vitest run src/data/bank.test.ts`
+   - `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`
+     数据改动会直接影响检索：这两组用例守住投影、混合评分、graph 扩展与四种答案安全模式。
    - `npm run lint:bias`
    - `npm run question:coverage`
    - `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
      使用仓库内 ONNX INT8 模型检查语义重复；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
 5. 再运行 `npm run typecheck` 和 `npm run test`。
 6. 运行 `git diff --check`，确认没有意外改动。
-7. 最终说明新增题的 id、覆盖的知识缺口、语义重复候选、验证结果和仍需人工复核的事实。
+7. 最终说明新增题的 id、覆盖的知识缺口、语义重复候选、验证结果、检索可见性确认（"遮住正确项后题干仍成立"、hint 模式不漏题）和仍需人工复核的事实。
 
 ## LLM 使用边界
 
