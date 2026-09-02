@@ -32,6 +32,10 @@ body,
   margin: 0;
   padding: 0;
   height: 100%;
+  /* dvh 跟随移动端浏览器地址栏的显隐变化。100vh 在 iOS Safari 上取的是地址栏收起时的高度，
+     地址栏展开时底部内容会被工具栏遮住——移动端最后一道题的提交按钮点不到就是这么来的。
+     不支持 dvh 的浏览器会忽略这条，回落到上面的 100%。 */
+  height: 100dvh;
   background: #f5f5f5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
     Roboto, Helvetica, Arial, sans-serif;
@@ -140,16 +144,51 @@ body,
   background: #fff;
 }
 
+/* ── 移动端（≤768px）─────────────────────────────────────────────────
+   断点必须与 `src/hooks/useIsMobile.ts` 的 MOBILE_BREAKPOINT 一致。
+
+   分工原则：**结构决策归 JS，纯样式归 CSS。**
+   Copilot 抽屉在窄屏切成右侧浮层属于结构变化（宽屏是 flex 兄弟节点、窄屏是 fixed 浮层 +
+   遮罩），放 `CopilotSidebar.tsx` 里用 `useIsMobile` 处理——早先把它写在 CSS 里并加
+   `!important` 去压内联样式，结果 `.copilot-shell` 类名在 open=false 时依然存在，
+   移动端永远盖着一块 92vw 的白色固定面板，直接白屏。这里只留真正属于样式的部分。 */
+/* ── 应用外壳的响应式基础（纯样式，无 !important）────────────────────
+   这里只放「同一个元素、只是数值不同」的样式，且**不在组件里用内联样式重复设置同一属性**，
+   否则又要用 !important 去覆盖——那正是之前 Copilot 白屏 bug 的成因。
+   结构变化（浮层 vs 并排、文字 vs 图标）归 `useIsMobile`。 */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* 100dvh 跟随移动端浏览器地址栏显隐；不支持的浏览器忽略此行，回落到 100vh。
+     写成内联样式会触发 TS1117（对象字面量重名属性），故放这里。 */
+  min-height: 100dvh;
+}
+
+.app-header {
+  padding-inline: 24px;
+}
+
+.app-content {
+  padding: 24px;
+}
+
 @media (max-width: 768px) {
-  .copilot-shell {
-    position: fixed !important;
-    z-index: 1000;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(92vw, 420px) !important;
-    min-width: 0 !important;
-    border-left: 1px solid #dce4ef;
-    box-shadow: -12px 0 36px rgba(24, 39, 75, 0.16);
+  /* 375px 下 24px 内边距要吃掉 13% 的可用宽度，收到 12px。 */
+  .app-header {
+    padding-inline: 12px;
+  }
+
+  .app-content {
+    padding: 12px;
+    /* 底部让出 iPhone home indicator 的安全区，否则最后一道题的「提交」按钮压在横条上。 */
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  /* 长英文/代码片段会撑破窄屏容器。全局兜底：允许在任意字符间断行。
+     只作用于正文容器，不影响代码块的等宽排版。 */
+  .app-content .ant-typography,
+  .app-content .ant-card-body {
+    overflow-wrap: anywhere;
   }
 }

@@ -11,6 +11,7 @@ import type { Question } from '../schemas/question';
 import { requiredPointsFor } from './knowledge/nodes';
 import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
 import { detectOptionLengthBias } from './bias';
+import { cjkDice } from './textSimilarity';
 import * as fuzz from 'fuzzball';
 
 export interface VariantCheck {
@@ -140,18 +141,20 @@ function hasDuplicateOptions(options: string[]): boolean {
 
 /**
  * 选项语义漂移粗粒度防护：判断某个选项的改写是否越界。
- * 仅用 fuzzball `token_set_ratio` 做廉价相似度检查，**不证明语义等价**——
- * 只拦住「轻量改写突然变成完全不同的选项」这类明显越界（例如把正确项
- * 偷换成另一个技术结论）。阈值从宽：`< 45` 视为改写过大（reject），
- * `45~60` / `> 60` 均接受，避免正常中文 paraphrase 被误杀（与 lexical anchor
- * 降级为 warning 同样的克制）。
+ * 用 CJK 感知的字符级 Dice（`cjkDice`，见 textSimilarity.ts）做廉价相似度检查，
+ * **不证明语义等价**——只拦住「轻量改写突然变成完全不同的选项」这类明显越界
+ * （例如把正确项偷换成另一个技术结论）。
+ *
+ * 为什么用 CJK Dice 而非 fuzzball `token_set_ratio`：中文无词边界，fuzzball 退化成
+ * 整串 Levenshtein，会把合法中文 paraphrase 误判为低相似（误杀好变体）。校准显示
+ * 合法逐项同义改写 Dice ≈44~74、偷换结论/真假属性 ≈5~22。阈值取 35：
+ * 合法改写必过（>35）、明显越界必拒（<35），且与下面 dup 阈值（≥70）留出活动窗口。
  */
 function optionChangedTooMuch(original: string, rewritten: string): boolean {
   const a = normalizeOptionText(original);
   const b = normalizeOptionText(rewritten);
   if (!a || !b) return true;
-  const ratio = fuzz.token_set_ratio(a, b);
-  return ratio < 45;
+  return cjkDice(a, b) < 35;
 }
 
 /**
@@ -227,7 +230,8 @@ export function validateVariant(
     // 并不保证改写后仍与原选项指向同一技术结论。若某个选项改写幅度过大
     // （与原选项语义脱钩，可能被偷换成不同结论 / 真假属性），直接 fallback，
     // 绝不让「轻量改写」变成「完全不同的选项」。注意：这不是语义等价证明，
-    // 只是用 fuzzball `token_set_ratio` 拦住明显越界；阈值从宽（<45 才拒）。
+    // 只是用 CJK 感知字符级 Dice（`cjkDice`，见 textSimilarity.ts）拦住明显越界；
+    // 阈值从宽（<35 才拒；合法中文 paraphrase 约 44~74，换概念 swap 约 5~22）。
     for (let i = 0; i < cf.options.length; i++) {
       if (optionChangedTooMuch(cf.options[i], options[i])) {
         return {
@@ -297,4 +301,67 @@ export function applyVariant(
     explanation: canonical.explanation,
     aiGenerated: true,
   };
+}
+
+/**
+ * variant-vs-variant 近重复阈值（`cjkDice(选项级) ≥` 该值即判为近重复）。
+ *
+ * 与 `optionChangedTooMuch` 的漂移阈值（<35 拒）构成一对**反向约束**：每个选项对 canonical
+ * 必须 ≥35（不能改到认不出），同一题的两个变体选项之间必须 <88（不能改了等于没改）。
+ *
+ * 为什么比对「选项」而非「题干+选项整体指纹」：实测真实池选项平均 62 字符（长句），
+ * 同选项 sibling 在整体指纹上 CJK Dice 仅 74.5~96.4，而「选项重述改写」的变体整体 Dice ≈83——
+ * 两者重叠，整串度量**无法区分「照抄选项」与「重述选项」**。改比选项级后：
+ *   同选项（逐字相同）  = 100；轻改（同义替换）≈ 91；重述改写 ≈ 54。
+ * 阈值取 88：捕获「逐字照抄(100)」与「轻改(91)」（轻改不算真正多样化），放行「重述改写(54)」。
+ * 这正是「根治单题双变体选项雷同」的硬约束——只换题干/只轻改选项都逃不过门禁。
+ * 校准见 temp/probe-realpool.mjs / temp/probe-optonly.mjs。
+ */
+export const VARIANT_DUP_THRESHOLD = 88;
+
+/**
+ * 变体的「选项指纹」（去重专用）：仅全部选项（经 `normalizeOptionText` 规范化）拼接。
+ * 近重复门禁只比对选项——题干本就该随变体不同，不该成为相似度证据；而「选项是否雷同」
+ * 才是单题双变体多样性的真正判定面（见 `VARIANT_DUP_THRESHOLD` 注释）。
+ */
+export function variantOptionText(v: { options?: string[] }): string {
+  return (v.options ?? []).map(normalizeOptionText).join(' | ');
+}
+
+/**
+ * 变体的完整指纹：题干 + 全部选项（均经 `normalizeOptionText` 规范化）。
+ * 保留给需要整体标识的场合（如测试断言指纹计入选项）；近重复门禁已改用 `variantOptionText`。
+ */
+export function variantFingerprint(v: { question?: string; options?: string[] }): string {
+  const opts = (v.options ?? []).map(normalizeOptionText).join(' | ');
+  return `${normalizeOptionText(v.question ?? '')} || ${opts}`;
+}
+
+export interface NearDuplicatePair {
+  /** 两个变体在 `list` 中的下标。 */
+  i: number;
+  j: number;
+  ratio: number;
+}
+
+/**
+ * 找出一组变体内部的近重复配对（variant-vs-variant）。
+ *
+ * 放在 domain 而非某个脚本里，是为了让**离线生成器与池审计共用同一条规则**——
+ * 此前该规则只存在于 `scripts/validate-variants.ts`，`scripts/assemble-variants.ts`
+ * 这条组装通道完全绕过了它，导致「生成管线会拒绝的批次，组装通道却能照常落盘」。
+ */
+export function findNearDuplicateVariants(
+  list: Array<{ question?: string; options?: string[] }>,
+  threshold: number = VARIANT_DUP_THRESHOLD,
+): NearDuplicatePair[] {
+  const out: NearDuplicatePair[] = [];
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      // 仅比对选项级指纹：题干差异不应计入相似度，选项雷同才是判定面。
+      const ratio = cjkDice(variantOptionText(list[i]), variantOptionText(list[j]));
+      if (ratio >= threshold) out.push({ i, j, ratio: Math.round(ratio) });
+    }
+  }
+  return out;
 }

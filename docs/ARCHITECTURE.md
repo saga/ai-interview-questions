@@ -537,7 +537,7 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
 - **结构变换（程序负责）**：选项顺序（Fisher–Yates 重排）、answer 索引重映射、多选题答案升序归一化、选项文本空白折叠。解析（`explanation`）与选项真假属性/数量均不可变，永远取 canonical。
 - **校验（唯一入口：`finalizeQuestion` → `domain/variant.validateVariant`，ADR-056/068）**：**硬门槛只有结构项与抗暗示**，失败即回退原题、原因码计入遥测——**不再 retry**。① 结构：题干非空；自包含无“原题/上述/本文/该方案…”等 10 类指代（含“前文/下文/题目中/题干中”）；选择题 `options` **必填**、数量须与 canonical 一致（保证逐项一一对应）、非空、**规范化后**无重复。② 抗暗示：长度泄题（仅 choice，见下）。`answer` 不在此校验（永远来自 canonical）。**形态对齐（P0-1/ADR-056）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（约 1078/1084）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**「语义闸门」已拆除（ADR-057，勿恢复）**：`requiredCoverageMet`（requiredConcepts 字面覆盖 ≈2/3，`need = max(1, round(N*2/3))`）于 2026-09-01 第四轮删除，余下的字面锚点于 2026-09-02 第五轮降级为 warning（见下条）——字面匹配无法证明语义等价，只会误杀换场景的合法变体。`fuzzball` 兜底（`token_set_ratio ≥75` / `partial_ratio ≥80`）现只服务于该漂移软信号。
 - 选择题 `options` 文本可由 LLM 改写，但**选项数量/真假属性固定**，且**顺序由 `applyVariant` 调 `shuffleChoiceOptions` 程序重排**（非 LLM 决定）；`answer` 索引永远由 canonical 经确定性重映射得到（`applyVariant` 写死 `canonical.answer` 再重排），彻底避免“答案被模型覆盖 / 顺序被模型泄露”。`toGeneratedVariant` 已移除对缺失 `question` 的静默回退（缺失由校验显式拒绝），并丢弃模型可能回吐的 `answer/explanation`。
-- **Prompt 约束**：`VARIANT_SYSTEM` 为轻量变体版（v3，约 40 行稳定前缀，KV-Cache 友好），要求“逐项改写现有文本”、明令禁止改动选项数量/真假属性/答案/解析，并明确“不交换选项顺序（顺序由程序统一处理）”；`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），不暴露 `answer/explanation/referenceAnswer/angle/difficulty`，从源头切断“LLM 重新决定答案”的路径。
+- **Prompt 约束**：`VARIANT_SYSTEM` 为轻量变体版（v4，KV-Cache 友好），要求“逐项改写现有文本”、明令禁止改动选项数量/真假属性/答案/解析，并明确“不交换选项顺序（顺序由程序统一处理）”；v4 起额外要求 `*-options` 风格对选项做**幅度明显**的改写（换视角/句式/主语，而非仅同义替换），否则 near-dup 门禁会判近重复整条丢弃（见 ADR-072）。`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），不暴露 `answer/explanation/referenceAnswer/angle/difficulty`，从源头切断“LLM 重新决定答案”的路径。
 - **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
 - **抗暗示（anti-cueing）硬失败**：`domain/variant.validateVariant` 在选择题分支对**规范化后**的选项跑 `domain/bias.detectOptionLengthBias`；命中长度泄题（正确项全局最长且存在明显过短干扰项，差距 ≥1.8×）即拒绝，并带机器可读 `code='option-length-bias'`，由 `finalizeQuestion` 回退原题、原因码计入 variant 遥测——**不再重新请求 LLM**（轻量变体边界：省掉最耗时的一次重试）。第五轮前该检查位于 `ai/variant.generateVariant`，随「单一校验入口」内移。
@@ -573,8 +573,8 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
 - **Pool-first（默认）**：训练选择逻辑在 `finalizeQuestion` 编排——先查 Pool，命中即取 `selectVariant`（确定性 Fisher–Yates + seen 去重）落地；miss 且开关 OFF 时直接回 canonical（**零 LLM**）。
 - **Runtime fallback（可选）**：仅 miss + 开关 ON + 存在可用 provider，才 1 次 LLM（`generateVariant` 加 `kind` 注入风格指令）；结果**不写回题库**——晋升靠 telemetry → 离线 review → 手动 `npm run question:variants` promote。
 - **离线生成器 / 审计**：`npm run question:variants`（vite-node）复用 `generateVariant` + `validateVariant`，支持 `--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version/--oversample/--no-challenger`，每题默认 2 变体、按 batch 落盘；`npm run question:validate-variants` 标 stale + 近重复报告。**红线**：不建 Variant 专用 Agent、不写第二套 LLM 实现、Runtime 不自动写回、类型锁死 4 种。
-- **离线超采 + 质量质询（ADR-070）**：离线管线是三段式漏斗 —— `canonical → 超采 N×count 候选 → 确定性闸门（validateVariant + fuzzball 去重）→ 质量质询 → 取 top-N 落盘`。
-  - **为什么必须超采**：`validateVariant` 只能**防明显坏变体**（结构 + 抗暗示 + `token_set_ratio ≥ 45` 漂移），**防不住"词汇高度重合但语义已被改歪"**——例：原选项「只有在 KV cache 命中前缀时才能复用已有 KV」→ 改后「KV cache 可以复用已有 KV，因此可以减少计算」（条件丢失，词汇重合度高，闸门放行）。runtime 靠 fallback 原题还能接受；**变体一旦永久落盘成资产就不够**。
+- **离线超采 + 质量质询（ADR-070）**：离线管线是三段式漏斗 —— `canonical → 超采 N×count 候选 → 确定性闸门（validateVariant + 选项级 CJK-Dice 去重）→ 质量质询 → 取 top-N 落盘`。
+  - **为什么必须超采**：`validateVariant` 只能**防明显坏变体**（结构 + 抗暗示 + `optionChangedTooMuch` 的 CJK-Dice <35 漂移拒），**防不住"词汇高度重合但语义已被改歪"**——例：原选项「只有在 KV cache 命中前缀时才能复用已有 KV」→ 改后「KV cache 可以复用已有 KV，因此可以减少计算」（条件丢失，词汇重合度高，闸门放行）。runtime 靠 fallback 原题还能接受；**变体一旦永久落盘成资产就不够**。
   - **质量质询 `src/ai/variantChallenger.ts`**（离线专用，**不进 runtime**）：五维打分 —— `concept-preserved` / `answer-preserved` / `difficulty-preserved` / `diagnostic-value` / `accidental-clue`。
   - **两级花费控制**：`cheapVariantQualityFlags()` 先跑确定性预检（长度 bias + 信息密度 + 归一化后重复）淘汰明显不合格的候选，**过了才付 LLM 调用**；`parseVariantChallenge` 解析不出结果一律按**失败**处理，不静默放行。
   - **可观测**：汇总打印「过闸候选 / 质询否决 / 留存率 / 超采倍数」。留存率异常低（< 30%）说明 canonical 或 prompt 有问题，先查那个，**不要靠调低 `--oversample` 掩盖**。
@@ -650,6 +650,15 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 ## 技术栈注意点
 
 - **antd 为 6.x**：`Divider` 仅支持 `horizontal / vertical`，无 `orientation` 左右。
+- **fuzzball 的中文相似度不可信（变体门禁已弃用）**：fuzzball 的 `token_set_ratio` 依赖词边界切分，
+  中文无词边界，`full_process` 只在标点处切，整句中文退化成 1 个 token → 退化为整串 Levenshtein 比值。
+  这同时造成两个方向的错误：把「选项逐项同义改写」误判为低相似（合法好变体被 drift 门禁误杀），
+  又把「选项逐字相同、只换题干」的变体对误判为高相似（variant-vs-variant near-dup 漏检）。
+  **变体三处门禁已改用 `src/domain/textSimilarity.ts` 的 CJK 感知字符级 Dice**（`cjkDice`：中文按单字、
+  拉丁按词切，再算 token 多重集 Dice）。校准（temp/probe-realpool.mjs / probe-optonly.mjs）：长中文选项下
+  整串 Dice 无法区分「照抄」与「重述」（74.5~96.4 vs 83 重叠），故 near-dup 门禁只比**选项级** Dice，
+  档位：逐字照抄=100 · 同义轻改≈91 · 重述改写≈54；阈值 88。fuzzball 现仅保留给
+  `anchorHasEvidence` 的英文/Latin topic/tag 兜底匹配（那里词边界有效）。
 - **Chrome Built-in AI（Prompt API）**：仅较新 Chrome 提供，无跨浏览器保证；运行时用
   `(globalThis as any).LanguageModel?.availability()` 能力检测（API 缺失/异常一律视为 unavailable），
   不引入 polyfill。每次调用新建 session 并 destroy（one-shot 无状态）；system prompt 走

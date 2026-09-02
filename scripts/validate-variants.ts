@@ -9,24 +9,19 @@
 import { questionBank } from '../src/data/questionBank';
 import { variantPool } from '../src/data/variantBank';
 import { isVariantStale } from '../src/domain/variantPool';
-import { normalizeOptionText } from '../src/domain/options';
+// 近重复规则与阈值统一由 domain 提供：离线生成器（question-variants / assemble-variants）
+// 与本审计脚本共用同一条规则，避免「生成管线拒绝的批次、审计口径却不同」。
+import { findNearDuplicateVariants, VARIANT_DUP_THRESHOLD } from '../src/domain/variant';
 import type { Question } from '../src/schemas/question';
-import type { QuestionVariant } from '../src/schemas/variant';
-import * as fuzz from 'fuzzball';
 
 function parseArgs(argv: string[]): { json: boolean; dupThreshold: number } {
-  const out = { json: false, dupThreshold: 88 };
+  const out = { json: false, dupThreshold: VARIANT_DUP_THRESHOLD };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--json') out.json = true;
-    else if (a === '--dup-threshold') out.dupThreshold = Math.max(50, Math.min(100, Number(argv[++i]) || 88));
+    else if (a === '--dup-threshold') out.dupThreshold = Math.max(50, Math.min(100, Number(argv[++i]) || VARIANT_DUP_THRESHOLD));
   }
   return out;
-}
-
-function fingerprint(v: QuestionVariant): string {
-  const opts = (v.options ?? []).map(normalizeOptionText).join(' | ');
-  return `${normalizeOptionText(v.question)} || ${opts}`;
 }
 
 interface StaleEntry {
@@ -68,14 +63,9 @@ function main(): void {
       }
     }
 
-    // variant-vs-variant 近重复
-    for (let i = 0; i < list.length; i++) {
-      for (let j = i + 1; j < list.length; j++) {
-        const ratio = fuzz.token_set_ratio(fingerprint(list[i]), fingerprint(list[j]));
-        if (ratio >= dupThreshold) {
-          dupPairs.push({ questionId: qid, a: list[i].id, b: list[j].id, ratio: Math.round(ratio) });
-        }
-      }
+    // variant-vs-variant 近重复（规则在 domain/variant，与生成管线同源）
+    for (const { i, j, ratio } of findNearDuplicateVariants(list, dupThreshold)) {
+      dupPairs.push({ questionId: qid, a: list[i].id, b: list[j].id, ratio });
     }
   }
 
@@ -91,7 +81,7 @@ function main(): void {
   for (const s of stale) {
     console.log(`    ✗ ${s.questionId} / ${s.variantId} [${s.kind}] —— ${s.reason}`);
   }
-  console.log(`  近重复对数  : ${dupPairs.length}（阈值 token_set_ratio ≥ ${dupThreshold}）`);
+  console.log(`  近重复对数  : ${dupPairs.length}（阈值 CJK-Dice ≥ ${dupThreshold}）`);
   for (const d of dupPairs) {
     console.log(`    • ${d.questionId}: ${d.a} ⇄ ${d.b}（相似度 ${d.ratio}）`);
   }

@@ -30,6 +30,7 @@ import ResultPanel from './components/result/ResultPanel';
 import CopilotSidebar from './components/copilot/CopilotSidebar';
 import { createLLMProvider } from './ai/provider';
 import { devUsageLogger } from './ai/usageTelemetry';
+import { useIsMobile } from './hooks/useIsMobile';
 import { type Page, attemptNavigate, isTrainingSessionRunning } from './navigationGuard';
 
 const VALID_PAGES: Page[] = ['train', 'progress', 'interview', 'settings', 'agent'];
@@ -72,6 +73,9 @@ export default function App() {
   const goPage = (p: Page) =>
     attemptNavigate({ target: p, phase, navigate, warn: (m) => message.warning(m) });
   const [copilotOpen, setCopilotOpen] = useState(false);
+  // 窄屏下的结构决策（标题文案、按钮只留图标、header 放开固定高度）由 JS 判定；
+  // 纯数值型样式（内边距）交给 index.css 的 .app-header / .app-content。
+  const isMobile = useIsMobile();
 
   const {
     config,
@@ -187,10 +191,11 @@ export default function App() {
             <span>
               已答 {answeredCount}/{questions.length}
             </span>
+            {/* 固定 160px 在 375px 屏上会顶开 Space；改成弹性宽度，窄屏下自然收窄。 */}
             <Progress
               percent={Math.round((answeredCount / questions.length) * 100)}
               size="small"
-              style={{ width: 160 }}
+              style={{ flex: '1 1 120px', minWidth: 90, maxWidth: 220 }}
             />
             <Button onClick={handleRestart}>退出</Button>
           </Space>
@@ -268,23 +273,31 @@ export default function App() {
   }
 
   return (
-    <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Layout className="app-layout">
       <Layout.Header
+        className="app-header"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           background: '#fff',
           borderBottom: '1px solid #f0f0f0',
-          paddingInline: 24,
+          flexWrap: 'wrap',
+          gap: 8,
+          // antd Header 默认 height:64 + line-height:64 且不换行。窄屏控件必然折行，
+          // 不放开高度的话折出来的第二行会溢出 header 被裁掉（连 Copilot 按钮都点不到）。
+          height: isMobile ? 'auto' : 64,
+          minHeight: isMobile ? 56 : 64,
+          lineHeight: isMobile ? 1.4 : '64px',
+          paddingBlock: isMobile ? 10 : 0,
         }}
       >
-        <Typography.Title level={4} style={{ margin: 0 }}>
-          🧠 AI 面试训练器
+        <Typography.Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>
+          {isMobile ? '🧠 面试训练' : '🧠 AI 面试训练器'}
         </Typography.Title>
-        <Space>
+        <Space size={8} wrap>
           {remaining != null && (
-            <Tag color={remaining <= 60 ? 'red' : 'blue'} style={{ fontSize: 14 }}>
+            <Tag color={remaining <= 60 ? 'red' : 'blue'} style={{ fontSize: 14, marginInlineEnd: 0 }}>
               剩余 {fmt(remaining)}
             </Tag>
           )}
@@ -294,8 +307,10 @@ export default function App() {
               size="small"
               icon={configReady ? <CheckCircleFilled style={{ color: '#52c41a' }} /> : <SettingOutlined />}
               onClick={() => goPage('settings')}
+              title={configReady ? 'AI 已配置' : 'AI 未配置'}
             >
-              {configReady ? 'AI ✓' : 'AI 未配置'}
+              {/* 窄屏只留图标：文字会把整行挤爆。title 兜住可访问性。 */}
+              {isMobile ? undefined : configReady ? 'AI ✓' : 'AI 未配置'}
             </Button>
           )}
           <Button
@@ -303,8 +318,9 @@ export default function App() {
             size="small"
             icon={<CommentOutlined />}
             onClick={() => setCopilotOpen((v) => !v)}
+            title="Copilot"
           >
-            ✨ Copilot
+            {isMobile ? undefined : '✨ Copilot'}
           </Button>
         </Space>
       </Layout.Header>
@@ -324,8 +340,8 @@ export default function App() {
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
         <Layout.Content
+          className="app-content"
           style={{
-            padding: 24,
             maxWidth: 980,
             margin: '0 auto',
             width: '100%',

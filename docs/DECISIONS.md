@@ -2,6 +2,22 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-072 · 变体相似度门禁弃用 fuzzball，改用 CJK 字符级 Dice（根治双变体选项雷同）
+
+- 状态：已采纳 · 2026-09-03
+- 背景：离线变体池（双模式 Variant，ADR-069）量产 117 题 × 2 变体后，near-dup 审计标出 ~90% sibling 近重复——同一题的两个变体（surface-options / context-options）选项逐字相同、只题干不同，等于「换皮不换选项」。根因是三处门禁（drift `optionChangedTooMuch`、dup `findNearDuplicateVariants`、生成器去重）共用 `fuzzball.token_set_ratio`，而**中文无词边界**，`full_process` 只在标点切分，整句中文退化成 1 个 token，该比值退化为整串 Levenshtein：既把合法中文 paraphrase 误判为低相似（drift 门禁误杀好变体），又把「选项逐字相同、只换题干」误判为高相似（dup 门禁漏检）。两个方向相反的错误来自同一度量缺陷，无法靠调阈值分别修。
+- 决策：
+  1. 新建 `src/domain/textSimilarity.ts`：`cjkTokenize`（中文按单字、拉丁/数字按词、kebab-case 拆词）+ `tokenMultisetDice` + `cjkDice`（token 多重集 Dice = `200·|交|/(|A|+|B|)`）。字符级重叠天然区分「换词序/句式」与「换概念」。
+  2. drift 门禁：`fuzz.token_set_ratio < 45` → `cjkDice < 35`（合法 paraphrase ≈44~74 必过，偷换结论/真假属性 ≈5~22 必拒）。
+  3. dup 门禁：`fuzz.token_set_ratio ≥ 88` → `cjkDice(选项级) ≥ 88`，且**只比对选项**（题干本就该随变体不同，不该计入相似度）。`VARIANT_DUP_THRESHOLD` 含义由「整串」改为「选项级」。
+  4. 三处门禁统一走 domain 函数 + 阈值（生成器 `question-variants.ts` 与审计 `validate-variants.ts` 同步），消除口径分裂。
+- 校准（temp/probe-realpool.mjs / probe-optonly.mjs，实测真实池 117 sibling + 4 选项长句）：长中文选项下**整串 Dice 无法区分照抄(74.5~96.4)与重述(83)**，重叠 → 必须比选项级；选项级档位 = 逐字照抄 100 · 同义轻改≈91 · 重述改写≈54 → 阈值 88 干净分离「照抄/轻改（判死）」与「重述（放行）」。
+- 配套：`VARIANT_SYSTEM` 升 **v4**，`*-options` 风格要求选项做**幅度明显**改写（换视角/句式/主语，非仅同义替换）——否则 near-dup 门禁会判近重复整条丢弃，轻改选项不算多样化。
+- 副作用 / 注意：
+  - 现有 4 个离线变体池（promptVersion ≤ v3）曾被判为**全量近重复（117/117）**，已于 2026-09-02 用无 key 自生成通道全量重生成落盘 v4；重跑 `validate-variants` 近重复数已归 0（117 题 234 变体）。这是部署动作，不是代码缺陷。
+  - fuzzball 仅保留给 `anchorHasEvidence` 的英文/Latin topic/tag 兜底匹配（那里词边界有效），不再用于中文相似度。
+  - `variant.test.ts` 同步更新：原「轻改选项 → 不判近重复」断言改为「重述改写 → 不判近重复」+ 新增「轻改仍判近重复」（编码更严的多样性要求）。
+
 ## ADR-071 · 内容规范三层分层 + Question 契约收口
 
 - 状态：已采纳 · 2026-09-02

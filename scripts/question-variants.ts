@@ -35,10 +35,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { callLLM } from '../src/ai/pi';
 import { generateVariant, VARIANT_PROMPT_VERSION } from '../src/ai/variant';
-import { validateVariant } from '../src/domain/variant';
 import { challengeVariant, type VariantShape } from '../src/ai/variantChallenger';
 import { getAvailableVariants, isVariantStale } from '../src/domain/variantPool';
-import { normalizeOptionText } from '../src/domain/options';
 import { computeVariantSourceHash } from '../src/schemas/variant';
 import {
   variantPoolSchema,
@@ -49,14 +47,15 @@ import {
 import { questionBank } from '../src/data/questionBank';
 import { variantPool } from '../src/data/variantBank';
 import { isEntryValid } from '../src/ai/provider';
+import { validateVariant, variantOptionText, VARIANT_DUP_THRESHOLD } from '../src/domain/variant';
+// cjkDice 定义在 domain/textSimilarity（variant.ts 只 import 未 re-export），
+// 去重度量必须与 validate-variants.ts / domain 用的是同一个实现，故直接从源头导入。
+import { cjkDice } from '../src/domain/textSimilarity';
 import type { ProviderEntry } from '../src/schemas/ai-config';
 import type { CompleteFn } from '../src/types';
 import type { Question } from '../src/schemas/question';
-import * as fuzz from 'fuzzball';
 
 const KIND_ORDER: VariantKind[] = ['surface', 'context', 'surface-options', 'context-options'];
-/** 变体-vs-变体近重复阈值（token_set_ratio）：≥ 此值视为重复、丢弃候选。 */
-const DUP_THRESHOLD = 88;
 
 interface CliOptions {
   ids?: string[];
@@ -170,10 +169,10 @@ function loadProviderEntry(): ProviderEntry {
   return entry;
 }
 
-/** 用于去重的指纹文本：题干 + 选项（规范化后）。 */
-function fingerprint(question: string, options?: string[]): string {
-  const opts = (options ?? []).map(normalizeOptionText).join(' | ');
-  return `${normalizeOptionText(question)} || ${opts}`;
+/** 用于去重的指纹文本：仅选项（规范化后），复用 domain 的 variantOptionText。
+ *  近重复门禁只比对选项——题干本就该随变体不同，不应计入相似度。 */
+function fingerprint(_question: string, options?: string[]): string {
+  return variantOptionText({ options });
 }
 
 function shortHash(s: string): string {
@@ -267,7 +266,7 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
     const text = fingerprint(gen.question, gen.options);
     let dup = false;
     for (const b of usedTexts) {
-      if (fuzz.token_set_ratio(text, b) >= DUP_THRESHOLD) {
+      if (cjkDice(text, b) >= VARIANT_DUP_THRESHOLD) {
         dup = true;
         break;
       }

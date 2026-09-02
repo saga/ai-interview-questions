@@ -37,6 +37,18 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
    - ② 选项塞整段答案 → 见 `spec §5`
    - ③ 信息密度泄题 → 见 `spec §7`
    - ④ 多选只考一个判断（正确项互为复述）→ 见 `spec §2`
+
+   **命中清单是候选集，不是结论。** 要回答「其中多少是真缺陷」必须抽检，且抽检要可复现：
+
+   ```bash
+   npm run question:quality -- --sample 20 --seed 20260902 \
+     --review-sheet temp/quality-review-<date>.md
+   ```
+
+   `--sample` 按探测器分层（比例配额 + 最大余数法，**每层保底 1 条**，否则占比小的类会被漏掉），
+   `--seed` 保证同种子必得同一样本，`--review-sheet` 导出含题干/选项/正确项标注与判定口径的复核表。
+   人工判完后把「命中数 / 抽样数 / 精确率」写进报告，并按复核表里的分级下结论：
+   **≥60% 可直接排优先级；40–60% 先收紧阈值；<40% 说明阈值太松，先调探测器，不要按清单改写。**
 8. 对 Level 1/2 通过但内容上存疑的题（含上一步命中的），按以下维度做内容审查
    （这部分无法全自动，需 LLM challenger 或人工逐题判断）：
    - **Concept Scope**（`spec §1`）：每题是否只测一个可诊断的核心 Concept，没有混入多余独立主题？
@@ -111,6 +123,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 ## 自动化工具
 
 - `npm run question:quality`：内容质量只读审计，输出四类嫌疑信号，用于排人工复核优先级。**软信号，非门禁**。
+  加 `--sample N --seed S --review-sheet <file>` 做可复现的分层抽检并导出人工复核表（见 Level 3 步骤 7）。
 - `npm run question:audit`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
 - `python analysis/question_audit.py --json --output reports/question-audit.json`：生成机器可读报告；Python 报告是辅助分析，TypeScript/Zod 仍是数据契约唯一来源。
 - `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`：使用仓库内 ARM64 ONNX INT8 模型发现语义重复和 embedding 概念簇；默认离线，不访问 Hugging Face。

@@ -1,6 +1,140 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-03 · 移动端 P0：Copilot 浮层在窄屏永久遮挡 + typecheck 是空跑
+
+### 一、P0 —— 移动端打开即白屏（Copilot 面板永久覆盖）
+
+**现象**：≤768px 访问，整页被一块白色面板盖住，什么也点不了。
+
+**根因**：`src/index.css` 里
+
+```css
+@media (max-width: 768px) { .copilot-shell { position: fixed !important; width: min(92vw,420px) !important; z-index: 1000; } }
+```
+
+而 `.copilot-shell` 这个类名在 `open === false` 时**依然挂在 DOM 上**（组件靠内联 `width: 0` 收起）。
+`!important` 压过内联样式 ⇒ 窄屏下永远有一块 92vw 的 `position: fixed` 白板浮在 z-index 1000；
+内部内容又因 `{open && …}` 不渲染 ⇒ 用户看到的就是**一片空白**。
+
+**修法：结构问题用结构解决，不用 `!important` 盖。**
+
+- 新增 `src/hooks/useIsMobile.ts`（`MOBILE_BREAKPOINT = 768`，matchMedia + change 监听）。
+- `CopilotSidebar`：窄屏且关闭 → **整棵子树 `return null`**；窄屏且打开 → 渲染 `position: fixed` 浮层 +
+  **点击即关的遮罩**（此前浮层盖住内容却没有任何退出路径）；拖拽改宽手柄窄屏不渲染（浮层没有可拖边界）。
+- `index.css` 删掉那条带 `!important` 的规则，改为纯样式基础：`.app-header` / `.app-content` 的
+  内边距在 ≤768px 由 24px 收到 12px（375px 下 24px 内边距要吃掉 13% 可用宽度），
+  **且组件里不再用内联样式重复设置 padding**——否则又得靠 `!important` 覆盖，正是本次 bug 的成因。
+
+**配套（Header 横向溢出）**：标题 + 计时 Tag + AI 按钮 + Copilot 按钮约 450px，挤在 375px 里。
+`Layout.Header` 默认 `height:64` + `line-height:64` 且**不允许换行**，折出来的第二行会被裁掉
+（连 Copilot 按钮都点不到）⇒ 窄屏放开为 `height:auto` + `flexWrap:'wrap'`；
+标题缩短为「🧠 面试训练」，两个按钮窄屏只留图标（`title` 兜住可访问性）；
+`TrainingHome` 的「启用 LLM 变体」行补 `wrap`（长文案会把 Switch 顶出容器）；
+quiz 头部的 `Progress` 从固定 160px 改为弹性宽度（`flex: 1 1 120px`）。
+
+**分工原则（写进 `index.css` 注释）**：**结构决策归 JS（`useIsMobile`），纯样式归 CSS（无 `!important`）**。
+
+### 一之二、逐页收尾（第二轮）
+
+- `SettingsPanel`：引擎 Collapse 标题行（Switch + 引擎名 + 状态 Tag + 上下移两个按钮）与 4 处
+  右下角按钮行补 `wrap`——320px 屏上必然溢出，引擎名会被挤出标题区。
+- `ProgressPage`：主题掌握度 / 覆盖面 / 历史记录三处**内层** `Space` 补 `wrap`。
+  外层已有 `wrap`，但「主题名 + 原始 id + 趋势 Tag」这个内层组合本身就会超一行，外层救不了。
+- 移动端浏览器两个坑：`html/body/#root` 与 `.app-layout` 增加 `100dvh`（`100vh` 在 iOS Safari
+  上取地址栏收起时的高度，地址栏展开时底部内容被工具栏遮住 ⇒ 最后一道题的提交按钮点不到）；
+  `.app-content` 底部加 `env(safe-area-inset-bottom)` 让出 home indicator。
+  ⚠️ `100vh` + `100dvh` 的回落**只能写 CSS**——写成内联样式对象会触发
+  `TS1117: An object literal cannot have multiple properties with the same name`。
+- `.app-content` 内 `overflow-wrap: anywhere` 兜底长英文/代码片段撑破窄屏容器（不作用于代码块，
+  避免破坏等宽排版）。
+
+**排查结论（已过、无需改）**：`ProgressPage` / `SettingsPanel` 的 antd `Table` 都配了 `scroll={{x}}`，
+横向滚动被限制在表格内、不会撑破页面；`QuestionCard` 的 `Radio/Checkbox.Group` 是纵向 `Space`
+且宽度 100%，长选项自然换行；`AgentInterviewPage` 的消息行已用 `flexShrink: 0` + `align-items: flex-start`，
+窄屏不会压扁头像。全局只有 3 处 `position: fixed`（busy 加载遮罩 + Copilot 浮层 + 其遮罩），无遗留遮挡。
+
+### 二、`npm run typecheck` 一直是空跑（假绿）
+
+根 `tsconfig.json` 是 `files: []` + `references`（solution style），`tsc --noEmit` 对其无效——
+实测 `--listFiles` 输出 **0 个文件**。所以之前每次「`tsc --noEmit` EXIT=0」都是**什么都没检查**。
+改为 `tsc -p tsconfig.app.json && tsc -p tsconfig.node.json`，覆盖文件数 **0 → 145**。
+
+改完立刻暴露两个被掩盖的构建错误（均来自并行 session 的改动，`tsc -b` 一直报、`npm run build` 一直失败）：
+
+- `scripts/question-variants.ts` 从 `src/domain/variant` 导入 `cjkDice`，但 `variant.ts` 只 import
+  未 re-export（它定义在 `src/domain/textSimilarity`）。改从源头导入。
+- `scripts/validate-variants.ts` 残留未使用的 `QuestionVariant` 导入（`noUnusedLocals` 报错）。
+
+**验证**：`npm run typecheck` 0 error（145 文件）· `npm run test` **735 passed / 53 files** ·
+`npm run build` ✓ built in 2.33s · dev server `http://localhost:5173` HTTP 200。
+
+## 2026-09-03 · 变体选项相似度门禁根治（ADR-072）：弃用 fuzzball，改用 CJK 字符级 Dice
+
+**根因**：单题双变体（surface-options / context-options）选项雷同、仅题干不同，被 near-dup 审计标为
+~90% sibling 近重复。根因是 `fuzzball.token_set_ratio` 对中文不可信——中文无词边界，`full_process` 只在标点切分，
+整句退化为 1 个 token，整串 Levenshtein 比值既误杀合法 paraphrase（drift 门禁），又漏检「选项逐字相同、只换题干」
+的变体对（dup 门禁）。两条门禁共用同一错误度量，互相打架。
+
+**改动（`src/domain/textSimilarity.ts` 新建，三处门禁统一）**：
+- 新增 `cjkTokenize`（中文按单字、拉丁按词切）+ `tokenMultisetDice` + `cjkDice`（字符级 Dice）。
+- `optionChangedTooMuch`（drift）：`fuzz.token_set_ratio < 45` → `cjkDice < 35`。
+- `findNearDuplicateVariants`（dup）：`fuzz.token_set_ratio ≥ 88` → `cjkDice(选项级) ≥ 88`，且**只比选项**
+  （题干本就该随变体不同，不该计入相似度）。`VARIANT_DUP_THRESHOLD` 88 含义由「整串」改为「选项级」。
+- `scripts/question-variants.ts` / `scripts/validate-variants.ts` 去重与审计统一走 domain 的 `cjkDice` +
+  `VARIANT_DUP_THRESHOLD`，消除「生成管线拒、组装通道放」的口径分裂。
+- 校准（temp/probe-realpool.mjs / probe-optonly.mjs）：长中文选项下整串 Dice 无法区分照抄(74.5~96.4)与重述(83)；
+  选项级档位=逐字照抄 100 · 同义轻改≈91 · 重述改写≈54 → 阈值 88 干净分离。
+
+**配套**：`VARIANT_SYSTEM` 升 v4，`*-options` 风格要求对选项做**幅度明显**改写（换视角/句式/主语，非仅同义替换），
+否则 near-dup 门禁会判近重复整条丢弃。删死脚本 `build-variants-wb.ts` / `variant-draft.ts` / `debug-variant-ratios.ts`。
+
+**验证**：`src/domain/textSimilarity.test.ts`（8）+ `variant.test.ts`（42）全过；`validate-variants` 现标出现有池
+**117/117 题双变体选项雷同**（相似度 100，全部 near-dup）；fixtest 草稿用「重述级」选项重写后 assemble **0 门禁失败 / 0 近重复**。
+
+**✅ 已完成（2026-09-02）**：4 个离线变体池已用无 key 自生成通道（手写「surface 贴近改写 + context 换角度改写」双变体选项草稿，
+经 `assemble-variants.ts` 复用真实校验门禁组装落盘 v4）全量重生成：
+- `evaluation` 42 / `rag` 35 / `memory` 19 / `wiki-skill` 21 = **117 题 234 变体**，promptVersion 均升 v4；
+- 重跑 `validate-variants`：**近重复对数 = 0**（阈值 CJK-Dice ≥ 88），无 stale，池健康。
+- 草稿存 `temp/variant-draft-{evaluation,rag,memory,wiki}.json`，canonical 抽数存 `temp/canonical-*.json`，可复用。
+- 注：环境无 LLM key，未走在线 `npm run question:variants`；门禁校验与真实部署通道一致，结论等效。
+
+## 2026-09-03 · 关闭变体组装的门禁旁路 + 内容质量抽检可复现化
+
+**一、`scripts/assemble-variants.ts` 不再绕过 near-dup 门禁**
+
+此前去重规则只存在于 `validate-variants.ts`，组装通道完全不过这道门——生成器会拒的批次，
+assemble 能直接落盘，问题被留在池子里而不是暴露在生成时。两处一并修：
+
+- 删掉 `options: entry.options ?? canonicalOpts` 的静默回落。草稿未给选项时它回落到 canonical 原选项，
+  两个 variant 因此**共用同一套选项**，只换题干。改后选项为每个 variant 必填
+  （`surfaceOptions` / `contextOptions`），多 variant 缺选项直接 reject。
+- 落盘**前**加 near-dup 门禁，与生成管线共用 domain 的 `findNearDuplicateVariants` / `VARIANT_DUP_THRESHOLD`。
+
+**为什么「只改题干」救不回来**（实测，非推断）：真实池样本中 4 个选项各 ≈110 字 ≈ 450 字符，
+题干 ≈40 字符——**选项文本量约为题干的 10 倍**，题干在整体指纹里只占约 1/11 权重。
+这也是 dup 度量从「题干+选项」改为「只比选项」的量化依据。
+
+**二、`scripts/audit-question-quality.ts` 新增抽检三件套**
+
+`--sample <n>` / `--seed <s>` / `--review-sheet <file>`：
+
+- 按探测器**分层抽样**，比例配额 + 最大余数法，**每层保底 1 条**（n=20 时 ④ 类仅 3 条命中，
+  纯比例配额是 0.23 → floor 0，会把小类整个漏掉，基线就只反映 ②③ 两个大头）；
+- mulberry32 确定性 PRNG，同种子必得同一样本；
+- 复核表自带题干 / 选项（✓ 标正确项）/ 解析 / **判定口径** / **精确率分级结论**。
+
+目的：把 A-8 的「人工抽检算精确率」从一次性手工活变成**可复现、可交接**的一条命令——
+此前换个人重抽一次，基线就对不上。`skills/check-question-bank-quality` Level 3 步骤 7 同步。
+
+**三、更正 A-10 的记录**：`challengeVariant` 此前被记为「已接线的死代码」，措辞不准——
+它确实在 `question-variants.ts` 阶段 2 被调用，且 `variantChallenger.test.ts` 11 例全绿。
+准确定位是**已接线 + 已单测 + 零真跑**，故 AGENTS.md §3 的「删掉」不适用。
+决策：保留并用第 9 项已验证的方式（模型在环 + 脚本聚合）对现有 234 条变体跑质询测留存率，无需外部 API key。
+
+**⚠ 未验证**：本批改动**未经 `tsc` / 测试验证**——命令行环境失效（连 `/bin/echo` 都返回 exit 127）。
+环境恢复后需补跑 `npm run typecheck` 与 `npm run test`。
+
 ## 2026-09-02 · 契约收口 + 内容规范三层分层（ADR-071）+ 离线变体超采与质量质询（ADR-070）
 
 本批为 `ACTION_CHECKLIST.md`（16 项）的落地收口，分三条线。

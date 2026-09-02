@@ -10,7 +10,7 @@
 // 因此：本脚本**永远 exit 0**，不新增任何 lint 硬门禁（见 ACTION_CHECKLIST.md A-8）。
 // 借鉴 validate-questions.ts：fs 直读 JSON（不经 Vite / import.meta.glob），Node 原生运行 TS。
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as fuzz from 'fuzzball';
 import type { Question } from '../src/schemas/question';
@@ -21,6 +21,90 @@ const topArgIdx = process.argv.indexOf('--top');
 const topN = topArgIdx >= 0 ? Number(process.argv[topArgIdx + 1]) : 15;
 const onlyArgIdx = process.argv.indexOf('--only');
 const only = onlyArgIdx >= 0 ? Number(process.argv[onlyArgIdx + 1]) : null;
+
+// ── 人工抽检基线（A-8 后半）─────────────────────────────────────────────
+// 探测器只能给候选集，精确率（命中且确为缺陷的比例）必须靠人工判断。
+// 为了让这一步**可复现、可交接**，这里提供：
+//   --sample <n>           从全部命中里按探测器**分层**抽 n 条（比例配额 + 最大余数法）
+//   --seed <n>             伪随机种子（默认 20260902），同种子必得同一样本
+//   --review-sheet <file>  把抽中的题连同题干/选项/正确项标注写成 Markdown 复核表
+// 三者都不改变脚本的只读性质：仍恒 exit 0，仍不加门禁。
+const sampleArgIdx = process.argv.indexOf('--sample');
+const sampleN = sampleArgIdx >= 0 ? Math.max(0, Number(process.argv[sampleArgIdx + 1]) || 0) : 0;
+const seedArgIdx = process.argv.indexOf('--seed');
+const seed = seedArgIdx >= 0 ? Number(process.argv[seedArgIdx + 1]) || 20260902 : 20260902;
+const sheetArgIdx = process.argv.indexOf('--review-sheet');
+const sheetPath = sheetArgIdx >= 0 ? process.argv[sheetArgIdx + 1] : null;
+
+/** mulberry32：小而够用的确定性 PRNG，保证 --seed 可复现。 */
+function mulberry32(a: number): () => number {
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * 分层抽样：按 detector 分组，配额按各组命中占比分配（最大余数法补齐到 n），
+ * 组内用带种子的洗牌取样。目的是让小类（如 ④ 只有 3 条）也进得了样本，
+ * 否则按比例抽样会把它们整个漏掉，基线就只反映 ②③ 两个大头。
+ */
+function stratifiedSample(all: Finding[], n: number, seedValue: number): Finding[] {
+  if (n <= 0 || all.length === 0) return [];
+  const groups = new Map<DetectorId, Finding[]>();
+  for (const f of all) {
+    const g = groups.get(f.detector) ?? [];
+    g.push(f);
+    groups.set(f.detector, g);
+  }
+  const ids = [...groups.keys()];
+  const rand = mulberry32(seedValue);
+
+  // 组内洗牌（Fisher–Yates，用同一 rand 流，保证整体可复现）
+  const shuffled = new Map<DetectorId, Finding[]>();
+  for (const id of ids) {
+    const arr = [...groups.get(id)!];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    shuffled.set(id, arr);
+  }
+
+  // 比例配额（向下取整），并保底每层 1 条——否则占比小的层会被整个漏掉：
+  // n=20 时 ④ 的比例配额只有 3/266×20 ≈ 0.23 → floor 0，基线就只反映 ②③ 两个大头。
+  const quota = new Map<DetectorId, number>();
+  const take = new Map<DetectorId, number>();
+  const minEach = n >= ids.length ? 1 : 0;
+  for (const id of ids) {
+    const q = (groups.get(id)!.length / all.length) * n;
+    quota.set(id, q);
+    take.set(id, Math.max(Math.floor(q), minEach));
+  }
+  // 余额按「配额余数」从大到小补；每轮只补 1 条，避免余额被一个大组吃掉。
+  // 反向情况（n 小于层数导致保底后超采）则从超出最多的层往回收。
+  let left = n - [...take.values()].reduce((s, t) => s + t, 0);
+  while (left > 0) {
+    const cands = ids.filter((id) => take.get(id)! < groups.get(id)!.length);
+    if (cands.length === 0) break; // 各层命中数都不足配额，样本注定小于 n
+    cands.sort((a, b) => quota.get(b)! - take.get(b)! - (quota.get(a)! - take.get(a)!));
+    take.set(cands[0], take.get(cands[0])! + 1);
+    left--;
+  }
+  while (left < 0) {
+    const cands = ids.filter((id) => take.get(id)! > minEach);
+    if (cands.length === 0) break;
+    cands.sort((a, b) => take.get(b)! - take.get(a)!);
+    take.set(cands[0], take.get(cands[0])! - 1);
+    left++;
+  }
+
+  const out: Finding[] = [];
+  for (const id of ids) out.push(...shuffled.get(id)!.slice(0, take.get(id)!));
+  return out;
+}
 
 interface Finding {
   id: string;
@@ -146,9 +230,79 @@ function readJsonDir(dir: string): Question[] {
 const questions = readJsonDir(dataDir + 'questions/');
 const all: Finding[] = questions.flatMap(audit);
 const choiceTotal = questions.filter((q) => q.formats.choice).length;
+const byId = new Map<string, Question>();
+for (const q of questions) byId.set(q.id, q);
+
+/** 单条 finding 的人工复核卡：给足判据（题干/选项/正确项/解析），再留待填结论。 */
+function renderReviewCard(h: Finding, idx: number): string {
+  const q = byId.get(h.id);
+  const lines: string[] = [`### ${idx}. \`${h.id}\``, '', `**探测器**：${DETECTOR_LABEL[h.detector]}`, '', `**命中详情**：${h.detail}`, ''];
+  if (!q) {
+    lines.push('> ⚠️ 题库中找不到该 id（题已删除或改过 id），本条作废，不计入分母。', '');
+    return lines.join('\n');
+  }
+  lines.push(`**题干**：${q.question}`, '');
+  const choice = q.formats.choice;
+  if (choice) {
+    lines.push(`**选项**（✓ = 正确项，${choice.type === 'single' ? '单选' : '多选'}）：`, '');
+    choice.options.forEach((o, i) => {
+      lines.push(`- ${String.fromCharCode(65 + i)}. ${o}${choice.answer.includes(i) ? '　✓' : ''}`);
+    });
+    lines.push('', `**解析**：${q.explanation}`, '');
+  }
+  lines.push('**是否确为缺陷**： ☐ 是（需改写）　☐ 否（误报）', '', '**理由**：', '');
+  return lines.join('\n');
+}
+
+function buildReviewSheet(sample: Finding[]): string {
+  const hitQuestions = new Set(all.map((f) => f.id)).size;
+  const head = [
+    '# 题库内容质量 · 人工抽检复核表',
+    '',
+    `- 生成命令：\`npm run question:quality -- --sample ${sampleN} --seed ${seed} --review-sheet <path>\``,
+    `- 生成时间：${new Date().toISOString()}`,
+    `- 总体：${choiceTotal} 道选择题，命中 ${all.length} 条信号，涉及 ${hitQuestions} 道题（${((hitQuestions / choiceTotal) * 100).toFixed(1)}%）`,
+    `- 本样本：${sample.length} 条（按探测器分层、比例配额 + 最大余数法，种子 ${seed}）`,
+    '',
+    '## 判定口径',
+    '',
+    '判定「是（需改写）」的标准只有一条：**这道题的干扰项是否已经失去区分度**，',
+    '即不看解析也能靠长度/具体度/表述严谨度把正确项挑出来，或多个正确项其实只是同一句话的复述。',
+    '仅「选项偏长」但干扰项同样有实质内容、需要真懂才能排除的，判**误报**。',
+    '',
+    '---',
+    '',
+  ];
+  const body: string[] = [];
+  let cardNo = 0;
+  for (const id of Object.keys(DETECTOR_LABEL) as DetectorId[]) {
+    const group = sample.filter((f) => f.detector === id);
+    if (group.length === 0) continue;
+    const total = all.filter((f) => f.detector === id).length;
+    body.push(`## ${DETECTOR_LABEL[id]}`, '', `> 该类共命中 ${total} 条，本样本抽 ${group.length} 条。`, '');
+    for (const h of group) body.push(renderReviewCard(h, ++cardNo), '---', '');
+  }
+  const tail = [
+    '## 汇总口径',
+    '',
+    '精确率 = 「是（需改写）」条数 ÷ 已判定条数（作废条不计入分母）。分探测器各算一次，再算总体。',
+    '',
+    '| 精确率 | 结论 |',
+    '| ----- | ---- |',
+    '| ≥ 60% | 可直接用于排人工复核优先级 |',
+    '| 40–60% | 可用，但先收紧阈值再日常使用 |',
+    '| < 40% | 阈值太松，先调探测器，不要按清单改写 |',
+    '',
+    '判定完成后把结论贴回 `ACTION_CHECKLIST.md` 第 8 项，并记录「命中数 / 抽样数 / 精确率」。',
+    '',
+  ];
+  return [...head, ...body, ...tail].join('\n');
+}
+
+const sample = stratifiedSample(all, sampleN, seed);
 
 if (asJson) {
-  console.log(JSON.stringify(all, null, 2));
+  console.log(JSON.stringify(sampleN > 0 ? sample : all, null, 2));
 } else {
   console.log(
     `题库内容质量审计（只读检测，非门禁）：${choiceTotal} 道选择题，命中 ${all.length} 条嫌疑信号\n` +
@@ -163,8 +317,32 @@ if (asJson) {
     console.log('');
   }
   const ids = new Set(all.map((f) => f.id));
+  console.log(`汇总：${ids.size} 道不同题目命中（占选择题 ${((ids.size / choiceTotal) * 100).toFixed(1)}%）`);
+
+  if (sampleN > 0) {
+    console.log(`\n── 分层抽样（n=${sampleN}，seed=${seed}）──`);
+    for (const id of Object.keys(DETECTOR_LABEL) as DetectorId[]) {
+      const g = sample.filter((f) => f.detector === id);
+      const total = all.filter((f) => f.detector === id).length;
+      if (total === 0) continue;
+      console.log(`  ${DETECTOR_LABEL[id]}：抽 ${g.length} / ${total}`);
+    }
+    if (sample.length < sampleN) {
+      console.log(`  ⚠ 实际只抽到 ${sample.length} 条（某些类的命中数不足配额）`);
+    }
+  }
+
+  if (sheetPath) {
+    if (sample.length === 0) {
+      console.log('\n⚠ 未生成复核表：请先指定 --sample N（>0）。');
+    } else {
+      writeFileSync(sheetPath, buildReviewSheet(sample), 'utf8');
+      console.log(`\n✓ 复核表已写入：${sheetPath}（${sample.length} 条待人工判定）`);
+    }
+  }
+
   console.log(
-    `汇总：${ids.size} 道不同题目命中（占选择题 ${((ids.size / choiceTotal) * 100).toFixed(1)}%）\n` +
-      '用法：--json 输出结构化结果喂给 LLM challenger；--top N 控制每类显示条数；--only N 等价于 --top N。',
+    '\n用法：--json 输出结构化结果喂给 LLM challenger；--top N 控制每类显示条数；--only N 等价于 --top N；\n' +
+      '      --sample N --seed S 做可复现的分层抽样；--review-sheet <file> 导出 Markdown 人工复核表。',
   );
 }

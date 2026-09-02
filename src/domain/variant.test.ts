@@ -7,6 +7,9 @@ import {
   validateVariant,
   VARIANT_REJECT_REASON,
   STEM_ANCHOR_WARNING,
+  variantFingerprint,
+  findNearDuplicateVariants,
+  VARIANT_DUP_THRESHOLD,
 } from './variant';
 import type { GeneratedVariant } from '../types';
 import type { Question } from '../schemas/question';
@@ -196,8 +199,8 @@ describe('validateVariant（抗暗示：长度泄题）', () => {
 });
 
 // P0：选项语义漂移粗粒度防护（optionChangedTooMuch）。
-// 仅用 fuzzball token_set_ratio 拦住「轻量改写突然变成完全不同的选项」，不证明语义等价。
-// 阈值从宽（<45 才拒），正常中文 paraphrase 应放行，与 lexical anchor 降级为 warning 同样的克制。
+// 用 CJK 感知字符级 Dice（`cjkDice`）拦住「轻量改写突然变成完全不同的选项」，不证明语义等价。
+// 阈值 35：合法中文 paraphrase（≈44~74）放行，偷换结论/真假属性（≈5~22）拒绝，与 lexical anchor 降级为 warning 同样的克制。
 describe('validateVariant（选项语义漂移防护）', () => {
   // 独立 realistic canonical：正确项 = 选项 0「使用 KV Cache」。
   const driftCq: Question = {
@@ -409,5 +412,91 @@ describe('applyVariant / validateVariant 形态对齐（P0-1）', () => {
     expect(validateVariant(dq, variant({ options: undefined })).ok).toBe(false);
     // oq2 仅 open → 视为开放题，缺 options 无妨
     expect(validateVariant(oq2, variant({ options: undefined })).ok).toBe(true);
+  });
+});
+
+// 2026-09-03：变体去重规则从 scripts/validate-variants.ts 上提到 domain，
+// 让「离线生成器」与「池审计」共用同一条规则——此前 assemble 通道完全绕过了它。
+describe('findNearDuplicateVariants（变体间近重复）', () => {
+  // 夹具按真实池子的文本比例构造（取自 agentic-10，实测相似度 94）：
+  // 题干 ~40 字、4 个选项各 ~110 字 —— **选项文本量约为题干的 10 倍**。
+  // 这个比例是理解「为什么只改题干没用」的关键：题干在整体指纹里只占约 1/11 权重，
+  // 改得再彻底也拉不动整体相似度。
+  const REAL_OPTS = [
+    '聚焦最终回答的语言流畅度与格式规范度做评估，中间轨迹与工具调用过程不必纳入考察，因为终端用户只感知最终输出',
+    '先做一轮小样本人工抽测，若全部通过即可认定系统可靠，无需再建评测集做回归，偶发长尾问题可由线上监控兜底',
+    '循环卡死与上下文溢出属于运维故障而非可靠性问题，不应纳入评估范围，这类故障由基础设施与超时配置负责',
+    '从任务成功率、轨迹有效性与工具调用准确率等维度构建评测集做统计化评估，并针对规划偏差、工具误用等失败模式配套缓解手段',
+  ];
+
+  it('题干改得很彻底但选项照抄 → 仍判近重复（池子 79 对的成因）', () => {
+    const pairs = findNearDuplicateVariants([
+      { question: '评估一个 AI Agent 是否可靠，应从哪些维度切入？', options: REAL_OPTS },
+      { question: '你正为团队客服 Agent 设计上线前质量保障方案，负责人要求先说清怎样判断可靠', options: REAL_OPTS },
+    ]);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].ratio).toBeGreaterThanOrEqual(VARIANT_DUP_THRESHOLD);
+  });
+
+  it('选项做了重述改写（真正多样化）→ 不判近重复（根治的可行解）', () => {
+    const pairs = findNearDuplicateVariants([
+      { question: '评估一个 AI Agent 是否可靠，应从哪些维度切入？', options: REAL_OPTS },
+      {
+        question: '你正为团队客服 Agent 设计上线前质量保障方案，负责人要求先说清怎样判断可靠',
+        options: [
+          '评估只看最终输出的通顺与排版，推理链路和工具调用都不算分，用户只看到答案本身',
+          '少量人工抽查全过就当系统稳了，不必做回归评测集，零星长尾靠线上监控接住',
+          '死循环和爆上下文是运维层面的事故，不算可靠性范畴，交给基建和超时配置去管',
+          '用任务成功率、链路有效性、工具准确率搭评测集做统计，并为规划偏差和工具误用准备兜底',
+        ],
+      },
+    ]);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it('选项仅轻改（同义替换，未真正多样化）→ 仍判近重复（轻改不足以逃出门禁）', () => {
+    // 校准：轻改选项级 CJK Dice ≈91，超过阈值 88 → 仍判近重复。
+    // 根治单题双变体选项雷同要求选项被「重述」而非「轻改」。
+    const pairs = findNearDuplicateVariants([
+      { question: '评估一个 AI Agent 是否可靠，应从哪些维度切入？', options: REAL_OPTS },
+      {
+        question: '你正为团队客服 Agent 设计上线前质量保障方案，负责人要求先说清怎样判断可靠',
+        options: [
+          '只评估最终回答的流畅度与格式规范度，中间轨迹与工具调用过程不用纳入，终端用户只感知最终输出',
+          '做一轮小样本人工抽测，全部通过就认定系统可靠，无需再建评测集回归，长尾问题交给线上监控兜底',
+          '循环卡死与上下文溢出属于运维故障而非可靠性问题，不应纳入评估范围，由基础设施与超时配置负责',
+          '从任务成功率、轨迹有效性与工具调用准确率等维度建评测集做统计化评估，并针对规划偏差、工具误用配套缓解手段',
+        ],
+      },
+    ]);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].ratio).toBeGreaterThanOrEqual(VARIANT_DUP_THRESHOLD);
+  });
+
+  it('完全相同的两条 → 判近重复', () => {
+    const v = { question: '同一个题干', options: REAL_OPTS };
+    expect(findNearDuplicateVariants([v, { ...v }])).toHaveLength(1);
+  });
+
+  it('单个变体不产生配对；阈值可调', () => {
+    expect(findNearDuplicateVariants([{ question: 'a', options: REAL_OPTS }])).toHaveLength(0);
+    const list = [
+      { question: '评估切入点', options: REAL_OPTS },
+      { question: '上线前质量保障方案', options: REAL_OPTS },
+    ];
+    // 阈值抬到 101 → 无论如何都不配对
+    expect(findNearDuplicateVariants(list, 101)).toHaveLength(0);
+    // 阈值压到 0 → 任意两条都配对
+    expect(findNearDuplicateVariants(list, 0)).toHaveLength(1);
+  });
+
+  it('指纹把选项计入（选项相同则指纹相同）', () => {
+    expect(variantFingerprint({ question: '甲', options: REAL_OPTS })).not.toBe(
+      variantFingerprint({ question: '乙', options: REAL_OPTS }),
+    );
+    // 指纹对空白不敏感（与校验/渲染共用规范化）
+    expect(variantFingerprint({ question: ' 甲 ', options: ['  x ', 'y'] })).toBe(
+      variantFingerprint({ question: '甲', options: ['x', 'y'] }),
+    );
   });
 });

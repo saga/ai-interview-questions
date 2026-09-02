@@ -201,7 +201,8 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
               .map(([topic, s]) => (
                 <div key={topic} style={{ marginBottom: 8 }}>
                   <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
-                    <Space size={4}>
+                    {/* 内层也要 wrap：主题名 + 原始 id 再加趋势 Tag，窄屏会超出一行。 */}
+                    <Space size={4} wrap>
                       <Typography.Text>{topicLabel(topic)} ({topic})</Typography.Text>
                       {s.trend === 'improving' && <Tag icon={<ArrowUpOutlined />} color="success" style={{ marginInlineEnd: 0 }}>进步</Tag>}
                       {s.trend === 'declining' && <Tag icon={<ArrowDownOutlined />} color="error" style={{ marginInlineEnd: 0 }}>下滑</Tag>}
@@ -225,7 +226,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
             {coverage.categories.map((c) => (
               <div key={c.category} style={{ marginBottom: 8 }}>
                 <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
-                  <Space size={8}>
+                  <Space size={8} wrap>
                     <Switch
                       size="small"
                       checked={!disabledCategories.includes(c.category)}
@@ -273,7 +274,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
                         {fmtDate(s.startedAt)}
                       </Typography.Text>
                     </span>
-                    <Space size={4}>
+                    <Space size={4} wrap>
                       <Tag color={s.overall >= 80 ? 'success' : s.overall >= 60 ? 'gold' : 'error'}>{s.overall} 分</Tag>
                       <Typography.Text type="secondary" style={{ fontSize: 12 }}>查看 ↗</Typography.Text>
                     </Space>
