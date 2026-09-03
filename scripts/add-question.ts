@@ -14,6 +14,12 @@ const questionsDir = resolve(root, 'src/data/questions');
 const knowledgeDir = resolve(root, 'src/data/knowledge');
 // 合法角度以 schema 为单源（新增 angle 只改 common.ts，此处自动跟随）。
 const validAngles = new Set<string>(questionAngleSchema.options);
+// ADR-077：`cognitiveTask` 进入 assessment contract（topic × angle × difficulty × cognitiveTask）。
+// 存量 1311 题无该字段且**不回填**（无可靠信息源，LLM 反推即污染）⇒ schema 层保持 optional。
+// 新题目前只 **warn**：三个出题 skill（`add-question-to-bank` / `article-to-questions` /
+// `fill-coverage-gap`）尚未产出该字段（plan0903_3 §二.7 未做），此刻改硬门禁会把出题管线锁死。
+// 待 skill 同步产出后，把循环里的 `warnings.push` 换成 `errors.push` 即可升为必填。
+// 合法值不在此处白名单化——`parseQuestionArray`（Zod）在更早的阶段就已拦截非法枚举值。
 
 /** 题型归一化：新 prompt 用 single-choice/multiple-choice，库内用 single/multiple。 */
 function normalizeChoiceType(value: unknown): unknown {
@@ -88,6 +94,10 @@ for (const question of incoming) {
   }
   if (!nodeIds.has(question.topic)) errors.push(`${question.id}: topic "${question.topic}" 没有知识节点`);
   if (!validAngles.has(question.angle)) errors.push(`${question.id}: angle 不合法`);
+  // 只查「缺失」：非法值在 `parseQuestionArray`（Zod）阶段就已抛错，到不了这里。
+  if (!question.cognitiveTask) {
+    warnings.push(`${question.id}: 缺 cognitiveTask（ADR-077 起是 assessment contract 第四维，新题应填）`);
+  }
   // 规范化后重复 = 硬失败。此前只 warn，导入照样写盘，结果同一道题以两种标点/大小写
   // 形态并存于题库：覆盖矩阵把它算成 2 题（虚高），练习时用户会连着答两遍同一题。
   // 真需要近似题时应走变体（variant）通道，而不是再导一遍原题。

@@ -254,6 +254,12 @@ export function validateVariant(
 }
 
 /**
+ * 变体可自声明的测量面（ADR-077：offline variant 是 assessment variant，可换 angle / cognitiveTask）。
+ * Runtime 的 `GeneratedVariant` 结构上不含这两项 ⇒ 天然只能是 presentation variant。
+ */
+export type VariantMeasurementFace = Partial<Pick<Question, 'angle' | 'cognitiveTask'>>;
+
+/**
  * 把通过校验的变体落到题目上。
  * 选择题：替换 question（LLM 语义变换）；选项文本若由 LLM 改写则采用，
  *   随后由程序 Fisher–Yates 重排顺序并确定性重映射 answer 索引（结构变换，LLM 不参与）。
@@ -264,10 +270,23 @@ export function validateVariant(
  */
 export function applyVariant(
   canonical: Question,
-  v: GeneratedVariant,
+  v: GeneratedVariant & VariantMeasurementFace,
   format?: FormatId,
   rng?: () => number,
 ): Question {
+  // 两类 Variant 在这里分道（ADR-077）：
+  //   Offline Assessment Variant —— 池内条目可自声明 angle / cognitiveTask，声明即采用；
+  //   Runtime Presentation Variant —— `GeneratedVariant` 只有 question/options，
+  //     永远声明不了测量面 ⇒ 恒继承 canonical，assessment identity 不变。
+  // 因此同一个 applyVariant 同时服务两者，不需要运行时分支。
+  //
+  // ⚠️ 2026-09-04 修复：此前 schema 有这两个字段、注释声称「applyVariant 优先采用」，
+  //    但本函数只做 ...canonical + 覆盖 question ⇒ 声明的测量面**落库即丢**，
+  //    且全仓无消费者。与 plan0903_2 §二-A 记过的「字段被静默丢弃」是同一类问题。
+  const face: Partial<Question> = {
+    ...(v.angle ? { angle: v.angle } : {}),
+    ...(v.cognitiveTask ? { cognitiveTask: v.cognitiveTask } : {}),
+  };
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     const cf = canonical.formats.choice!;
@@ -281,6 +300,7 @@ export function applyVariant(
     const answer = normalizeAnswer(shuffled.answer);
     return {
       ...canonical,
+      ...face,
       question: v.question,
       explanation: canonical.explanation,
       formats: {
@@ -297,6 +317,7 @@ export function applyVariant(
   }
   return {
     ...canonical,
+    ...face,
     question: v.question,
     explanation: canonical.explanation,
     aiGenerated: true,

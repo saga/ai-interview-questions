@@ -2,6 +2,43 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-077 · Variant = 同一 Knowledge 的不同 reasoning path 测量 + `cognitiveTask` 入 contract
+
+- 状态：已采纳 · 2026-09-04（设计见 `docs/improvement_plan/plan0903_3_newprompt_migration.md`，D1/D2 已拍板）
+- 背景：`docs/prompt_part1.md` / `prompt_part2.md` 的新出题模型与 ADR-073/076 **正面冲突**——
+  ADR-073 定「Variant = 同一 assessment contract 的表达变体，换 angle 必须 fork」，
+  part1 §七 定「Variant 必须采用明显不同的测量方式，优先改 angle / cognitiveTask，**仅改表达不算 variant**」。
+  同时 ADR-076 原文写「认知差异经由 `angle` + 题面表达，**不另设独立 `cognitiveTask` 字段**」，
+  而新 prompt 的输出 schema 把 `cognitiveTask` 列为必填项 ⇒ 契约断裂。
+- 决策：
+  1. **Variant = 同一 Knowledge 的不同 reasoning path 测量**（取代 ADR-073 第 1 条）。
+     可改：`angle` / `cognitiveTask` / constraint / context。不可改：Knowledge 本身与**答案逻辑**
+     （第 N 项真假对应、正确项集合语义）。每 canonical 0～2 个 variant；无自然高价值 variant 时为空。
+     ADR-073 的「表达变体」是本定义的**特例**（reasoning path 相同但仍有记忆对抗价值），存量继续有效。
+  2. **`cognitiveTask` 进入 assessment contract**：`topic × angle × difficulty × cognitiveTask`
+     （D2 拍板进入）。改任一维 = 不同 assessment identity = 必须 fork 新 canonical + `derivedFrom`。
+     枚举 12 值（`cognitiveTaskSchema`）；`angle` 扩展 8 个新值（causal/diagnosis/prediction/architecture/
+     boundary/misconception/quantitative/implementation/synthesis），`diagnosis` 与 `debugging` 并存不互相替代。
+     存量 1311 题**不回填**（实测覆盖 0/1311，无可靠信息源，LLM 反推即污染）。
+  3. **两类 Variant 在代码契约层显式分离**（不在运行时加分支）：
+     | | Offline Assessment Variant | Runtime Presentation Variant |
+     |---|---|---|
+     | 载体 | 变体池条目（`QuestionVariant`） | `GeneratedVariant` |
+     | 可否改 angle / cognitiveTask | 可以（自声明即采用） | **结构上不可能**（该类型只有 `{question, options}`） |
+     | assessment identity | 可不同 | 恒与 canonical 相同 |
+     `applyVariant(canonical, v: GeneratedVariant & VariantMeasurementFace)` 一个函数服务两者：
+     声明了测量面就采用，没声明就继承 canonical —— 无需运行时判断。
+- 修复（死字段复发，同 plan0903_2 §二-A）：`src/schemas/variant.ts` 早已声明变体的 `angle` / `cognitiveTask`，
+  注释写「声明后 `applyVariant` 优先采用，不再静默覆盖」，但 `applyVariant` 只做 `...canonical` + 覆盖 `question`，
+  **根本不读这两个字段，全仓零消费者** ⇒ 声明的测量面落库即丢。现已真正落地到两个 return 分支，
+  并补 5 条回归测试（声明即采用 / 缺省即继承 / 开放题分支 / 答案安全边界不受影响）。
+- 明确不做：`formats` 数组重构（运行时全链路依赖现行对象结构，由 `convert-blueprint-output.ts` 归一化）；
+  存量回填 `cognitiveTask` / `concepts`；`questionRole` / `variantOf` / `assessmentTarget` 进入 `Question`。
+- 遗留（不改本 ADR，记在此处待排期）：三个出题 skill 尚未产出 `cognitiveTask`（plan0903_3 §二.7 未做），
+  故 `question:add` 对**缺失**只 warn、对**非法值** error；skill 同步后改一行即升为必填。
+  `question-content-spec.md:125` 的「multiple ≥ 2/3」硬门禁与新 prompt「默认 single」仍冲突（D3 未拍板）。
+- 验证：`tsc` 双工程 + `vitest` 全量绿；`question:validate-variants` exit 0（61 题 / 93 变体，stale 0 / 近重复 0 / 语言质量 0）。
+
 ## ADR-076 · 外部评审五项收口（canonical 身份 / Agent 端到端 fallback / 知识主次 / 三维覆盖 / 评分预设）
 
 - 状态：已采纳 · 2026-09-03
@@ -33,18 +70,19 @@
 
 ## ADR-073 · Variant = 表达变体（统一定义）+ sourceHash 覆盖元数据
 
-- 状态：已采纳 · 2026-09-03
+- 状态：**第 1 条已被 ADR-077 取代**（Variant 定义）；第 2 条（sourceHash / `variantSourceOf`）仍然有效 · 2026-09-03
 - 背景：三方口径不一致。**Prompt**（`docs/添加题库prompt.md`）写「Variant 可改 angle / cognitive task」；
   **schema**（`src/schemas/variant.ts`）里变体只有 `id/kind/question/options/generatedAt/generator/promptVersion/sourceHash`，
   其余全靠 `applyVariant` 的 `...canonical` 继承；而 `src/ai/variant.ts` 的 `buildUser` 只把
   `topic / requiredConcepts / question / options` 发给 LLM——`angle` 与 `cognitiveTask` **根本没进 prompt**。
   结论：「变体换 angle」这条指令从写下那天起就不可执行，写了也是死规则。
 - 决策：
-  1. **Variant = 同一 assessment contract 的表达 / 情境变体。** 可改：framing / scenario / 问法 / 选项表达。
-     不可改：Core Concept、`angle`、`difficulty`、答案逻辑（第 N 项 ↔ 第 N 项真假）、
-     核心事实、required concepts、诊断目标、选项数量。**需要不同 angle ⇒ 新建 canonical**
-     （认知差异经由 `angle` + 题面表达，不另设独立 `cognitiveTask` 字段，与 ADR-076 合同口径一致）。
-     Prompt / 精简 Prompt / `question-content-spec.md` §8 三处同步为同一口径。
+  1. ~~**Variant = 同一 assessment contract 的表达 / 情境变体。**~~
+     **已被 ADR-077 取代**：Variant 现定义为「同一 Knowledge 的不同 reasoning path 测量」，可改 angle / cognitiveTask；
+     本条的「表达变体」降级为其特例。**以下第 2 条不受影响，仍然有效。**
+     （原文备查）可改：framing / scenario / 问法 / 选项表达；不可改：Core Concept、`angle`、`difficulty`、
+     答案逻辑（第 N 项 ↔ 第 N 项真假）、核心事实、required concepts、诊断目标、选项数量；
+     需不同 angle ⇒ 新建 canonical，不另设独立 `cognitiveTask` 字段——**最后这一句已被 ADR-077 推翻。**
   2. **`sourceHash` 覆盖元数据**：`VariantSource` 由 `{id, question, options}` 扩为
      `{id, topic, subtopic?, angle, difficulty, tags?, question, options}`。
      新增 `variantSourceOf(q: Question)` 作为**唯一取源口**——三处调用点此前各拼一次对象，

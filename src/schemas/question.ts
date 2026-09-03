@@ -91,7 +91,8 @@ export const questionSchema = z
     /**
      * 认知任务（plan0903_3 / ADR-077）：考生作答必须执行的认知行为，与 `angle` 正交。
      * 进入 assessment contract（`topic × angle × difficulty × cognitiveTask`），改变即 fork。
-     * Zod 层可选（存量 1311 题无可靠回填源）；`question:add --check` 对新题按必填拦截。
+     * Zod 层可选（存量 1311 题无可靠回填源，不回填）；**非法值**在 `question:add` 处拦截，
+     * **缺失**目前只 warn（三个出题 skill 尚未产出该字段，见 `add-question.ts` 的升级条件）。
      */
     cognitiveTask: cognitiveTaskSchema.optional(),
     /**

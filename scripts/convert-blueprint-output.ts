@@ -92,7 +92,17 @@ function toIndices(item: PromptItem): number[] {
 }
 
 for (const item of items) {
-  if (item.knowledgeId) warnings.push(`${item.id}: knowledgeId "${item.knowledgeId}" 无对应 schema 字段，已丢弃（assessment 语义由 topic×angle×difficulty×cognitiveTask 承载）`);
+  // ⚠️ 措辞修正（2026-09-04）：原文本写「knowledgeId 无对应 schema 字段」是错的——
+  // schema 里 `knowledgeId` 存在（question.ts），但指的是**课程知识点 id**，
+  // 与 prompt 侧 `knowledgeId`（Knowledge 节点 id）同名不同义。而 Knowledge 节点 id
+  // 在本仓库就是 `topic`（add-question.ts 用 `nodeIds.has(question.topic)` 校验）。
+  // 因此这里的正确处理是「比对是否与 topic 一致」而非「一律丢弃」。
+  if (item.knowledgeId && item.knowledgeId !== item.topic) {
+    warnings.push(
+      `${item.id}: knowledgeId "${item.knowledgeId}" 与 topic "${item.topic}" 不一致。` +
+        `本仓库 topic 即 Knowledge 节点 id，schema 的 Question.knowledgeId 是课程知识点 id（同名不同义），已丢弃`,
+    );
+  }
   if (item.assessmentTarget) warnings.push(`${item.id}: assessmentTarget 未落库（schema 无此字段，留作评审上下文）`);
   const indices = toIndices(item);
   const type = item.formats[0].type.startsWith('multiple') ? 'multiple' : 'single';

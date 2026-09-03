@@ -373,6 +373,45 @@ describe('applyVariant（程序结构变换）', () => {
   });
 });
 
+describe('applyVariant 测量面（ADR-077：offline variant 可换 angle / cognitiveTask）', () => {
+  // 带测量面的 canonical：作为「未声明 → 继承」的基线。
+  const base: Question = { ...cq, id: 'mf', angle: 'mechanism', cognitiveTask: 'compare' };
+
+  it('未声明测量面 → 恒继承 canonical（runtime presentation variant 的行为）', () => {
+    // `GeneratedVariant` 结构上只有 question/options ⇒ 走这条路径，assessment identity 不变。
+    const r = applyVariant(base, variant({ options: ['x', 'y', 'z'] }));
+    expect(r.angle).toBe('mechanism');
+    expect(r.cognitiveTask).toBe('compare');
+  });
+
+  it('声明 angle → 采用声明值，不再静默覆盖（回归：此前落库即丢）', () => {
+    const r = applyVariant(base, { ...variant({ options: ['x', 'y', 'z'] }), angle: 'debugging' });
+    expect(r.angle).toBe('debugging');
+    expect(r.cognitiveTask).toBe('compare'); // 未声明的维度仍继承
+  });
+
+  it('声明 cognitiveTask → 采用声明值', () => {
+    const r = applyVariant(base, { ...variant({ options: ['x', 'y', 'z'] }), cognitiveTask: 'troubleshoot' });
+    expect(r.cognitiveTask).toBe('troubleshoot');
+    expect(r.angle).toBe('mechanism');
+  });
+
+  it('开放题同样应用声明的测量面（两条 return 分支都要覆盖）', () => {
+    const r = applyVariant(
+      { ...oq, angle: 'fundamental' },
+      { ...variant(), angle: 'debugging', cognitiveTask: 'troubleshoot' },
+    );
+    expect(r.angle).toBe('debugging');
+    expect(r.cognitiveTask).toBe('troubleshoot');
+    expect(r.formats.open?.referenceAnswer).toBe('REF-ANSWER');
+  });
+
+  it('测量面不改变答案安全边界：answer 仍由 canonical 重映射而来', () => {
+    const r = applyVariant(base, { ...variant({ options: ['x', 'y', 'z'] }), angle: 'debugging' }, 'choice', () => 0);
+    expect(r.formats.choice?.options[r.formats.choice!.answer[0]]).toBe('x');
+  });
+});
+
 describe('applyVariant / validateVariant 形态对齐（P0-1）', () => {
   // 双形态题：按本次会话实际形态决定变体结构，而不是永远当选择题。
   const dq: Question = {

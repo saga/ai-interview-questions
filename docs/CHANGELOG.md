@@ -1,6 +1,29 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · 外部评审第 3 轮：契约追平 ADR-077（死字段修复 + ADR-077 落文档）
+
+评审 13 条逐条对代码核实后，只动「代码与 ADR 不一致」的部分：
+
+- **核实结论（评审两条 P0 不成立，未改）**：`cognitiveTask` 已在 `src/schemas/question.ts`（optional）；
+  `scripts/check-question-identity.ts` 已在按 `topic×angle×difficulty×cognitiveTask` 四维审计。
+  评审针对的是旧快照。真正缺的是 **ADR-077 本身没有写进 `docs/DECISIONS.md`**——已补。
+- **死字段修复（评审 §3，本轮唯一的代码缺陷）**：`src/schemas/variant.ts` 声称「变体声明 angle/cognitiveTask 后
+  `applyVariant` 优先采用」，但 `applyVariant` 只做 `...canonical` + 覆盖 `question`，**根本不读这两个字段，全仓零消费者**
+  ⇒ 声明的测量面落库即丢（与 plan0903_2 §二-A 同类复发）。现新增 `VariantMeasurementFace` 并真正落地到 choice/open
+  两条 return 分支；补 5 条回归测试（声明即采用 / 缺省即继承 / 开放题分支 / 答案安全边界不受影响）。
+- **`question:add` 补 `cognitiveTask` 检查**：非法值由 Zod 拦截（早于脚本循环）；缺失目前**只 warn**——
+  三个出题 skill 尚未产出该字段（plan0903_3 §二.7 未做），此刻上硬门禁会锁死出题管线。升级条件写在代码注释里。
+  同步修正 `question.ts` 中「add --check 对新题按必填拦截」的**不实注释**。
+- **修正 `convert-blueprint-output.ts:95` 的事实错误**：原告警称「knowledgeId 无对应 schema 字段」——
+  schema 里 `knowledgeId` 存在，但指**课程知识点 id**，与 prompt 侧「Knowledge 节点 id」同名不同义；
+  而 Knowledge 节点 id 在本仓库就是 `topic`。现改为「knowledgeId 与 topic 不一致时告警」。
+- **ADR-077 入档 + ADR-073 标注取代**：Variant = 同一 Knowledge 的不同 reasoning path 测量（可改 angle/cognitiveTask），
+  ADR-073 的「表达变体」降级为其特例；`cognitiveTask` 入 assessment contract（D2）；两类 Variant 的边界列表化。
+- 验证：`tsc` app+node 全绿；`vitest` 786/786；`build` 通过；`validate:questions` 1311 题；
+  `question:validate-variants` exit 0（61 题 / 93 变体）；`question:add --check` 冒烟（合法通过 / 缺失告警 / 非法报错）。
+- 未动（留给下一轮）：变体池 192→93 的缩水原因；`misconceptionMap` 仅 7.4%；D3（题型门禁 multiple≥2/3 vs 默认 single）冲突。
+
 ## 2026-09-04 · 新 prompt 对齐 P0（半迁移收尾 + 转换器 + ②④清扫）
 
 `docs/prompt_part1/2.md` 落地前发现上轮 angle/cognitiveTask 扩展只改了一半（schema 放行、门禁与 domain 硬编码拒绝，`tsconfig.node` 4 报错）。本轮收尾 + 打通新旧格式：
