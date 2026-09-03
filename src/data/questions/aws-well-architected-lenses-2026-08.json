@@ -90,7 +90,7 @@
     "question": "生成式应用的安全设计为什么需要同时保护模型、数据存储、端点和工作流？（单选）",
     "explanation": "攻击面横跨输入、提示目录、模型端点、知识库、工具和输出；仅保护端点或只做关键词过滤无法阻止越权数据访问、提示注入和有害输出。安全控制应覆盖数据与通信流并由应用层权限强制执行。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/security.html", "section": "Comprehensive access controls and secure data flows"},
-    "formats": {"choice": {"type": "single", "options": ["只保护模型 API key 并定期轮换密钥即可覆盖全部安全风险，其他组件不属于模型安全范畴，应用层无需额外控制", "只在用户输入上做关键词过滤即可拦截全部注入，模型内部、知识库与下游工具无需再做输入验证或输出校验", "跨模型、数据、端点和工作流建立访问控制、输入验证、输出校验和监控", "把安全责任完全交给基础模型提供者，应用层只需调用 API，无需自行实施访问控制、输入验证与持续监控"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。生成式 AI 的应用安全是端到端边界问题，需要纵深防御和组件级权限。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保护模型 API key 并定期轮换密钥即可覆盖全部安全风险，其他组件不属于模型安全范畴，应用层无需额外控制", "只在用户输入上做关键词过滤即可拦截全部注入，模型内部、知识库与下游工具无需再做输入验证或输出校验", "跨模型、数据、端点和工作流建立访问控制、输入验证、输出校验和监控", "基础模型提供者负责模型侧安全，应用层做好 API 密钥管理即够；访问控制与监控是提供者的责任。"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。生成式 AI 的应用安全是端到端边界问题，需要纵深防御和组件级权限。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-08",
@@ -209,7 +209,7 @@
     "question": "监管检查要求还原一次 AI 辅助客户服务决定。哪种日志设计最有价值？（单选）",
     "explanation": "应记录经过隐私保护的主体身份、输入和数据版本、模型/prompt 版本、检索与工具调用、策略命中、输出校验、人工修改和最终责任人，并确保日志完整性和访问审计。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html", "section": "Transparency and auditability"},
-    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本即可满足审计，过程信息无需留存，最终话术即足以还原决策", "永久保存全部明文交互且不限制访问，以最大化可追溯性，不做脱敏也不设访问控制", "永久保存全部明文且不限制访问", "只保存模型输出的置信度分数，不保存实际输入与决策上下文即可还原责任链"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本即可满足审计，过程信息无需留存，最终话术即足以还原决策", "完整记录隐私保护后的主体身份、输入与数据版本、模型与 prompt 版本、检索与工具调用、策略命中、输出校验、人工修改与责任人，并保证日志完整性与访问审计。", "完整记录全部明文交互以最大化可追溯性，访问控制可后补；先保完整，再补安全。", "只保存模型输出的置信度分数，不保存实际输入与决策上下文即可还原责任链"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-17",
@@ -400,6 +400,6 @@
     "question": "AI 上线后收集到大量用户反馈，但团队只把反馈存档不改变系统。完整的运营闭环应是什么？（单选）",
     "explanation": "应将监控、事件和反馈转成可执行改进，定期分析趋势，更新护栏、数据、模型或部署策略，再用回归评估确认没有引入新问题；还应为高风险告警设置人工升级和处理责任。",
     "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIMON01-RAIMON02: Monitoring and feedback loops"},
-    "formats": {"choice": {"type": "single", "options": ["只保存反馈不改变系统，避免改动引入新风险，存档即完成运营闭环", "删除负面反馈以防止整体指标下降，只保留正向信号用于汇报与复盘", "删除负面反馈以防止指标下降", "让模型自动修改生产配置且不需要审批，靠模型自省即可保证变更安全"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。监控的价值在于触发有责任归属的改进和验证，不能停留在归档。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保存反馈不改变系统，避免改动引入新风险，存档即完成运营闭环", "把监控事件与反馈转成可执行改进，定期分析趋势更新护栏数据模型与部署策略，再用回归评估确认，并为高风险告警设人工升级与责任归属。", "删除负面反馈以防止指标下降", "让模型自动修改生产配置且不需要审批，靠模型自省即可保证变更安全"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。监控的价值在于触发有责任归属的改进和验证，不能停留在归档。"}}
   }
 ]

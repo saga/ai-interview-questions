@@ -3,38 +3,6 @@
   "generatedAt": 1788392183495,
   "promptVersion": "v4",
   "variants": {
-    "agent-mem-layer-01": [
-      {
-        "id": "agent-mem-layer-01__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "构建生产级 Agent 时，Memory Layer 通常要区分短期工作内存与更持久的几类存储。请说明这种分层各自的职责。",
-        "options": [
-          "短期工作内存主要负责维护本次任务的 Prompt 上下文与推演过程（Scratchpad），其生命周期随单次任务会话结束而被销毁",
-          "长期语义内存通常基于向量数据库或知识图谱构建，用于跨会话检索领域知识与历史偏好，但不提供关系型数据库的强一致性（ACID）保障",
-          "事务状态内存应完全交给 LLM 上下文（Context Window）隐式维护，不需要引入任何外部持久化状态机或数据库",
-          "执行长流程多步工具调用时，若系统在中间环节宕机崩溃，依赖持久化的事务状态能让 Agent 恢复后从失败节点重试，避免重复触发已产生副作用的外部 API"
-        ],
-        "generatedAt": 1788392183483,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-20064a6f"
-      },
-      {
-        "id": "agent-mem-layer-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在设计 Agent 的内存层，需要同时支撑当前任务的中间状态与跨会话的沉淀知识。请说明短期工作内存与长期存储各自该承担什么、边界划在哪。",
-        "options": [
-          "当前任务的 Prompt 上下文与推演草稿（Scratchpad）由工作内存保管，一旦本次会话结束便被清理掉",
-          "跨会话的领域知识和用户偏好靠向量库或知识图谱沉淀检索，但这种长期语义存储给不了关系库的强一致性（ACID）保证",
-          "事务状态全部塞进 LLM 的上下文窗口里隐式管，不用任何外部状态机或持久数据库来兜底",
-          "长流程分步调工具时若中途崩溃，靠持久化事务状态能帮 Agent 恢复后从断点续跑，不再重复打那些已有副作用的外部接口"
-        ],
-        "generatedAt": 1788392183485,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-20064a6f"
-      }
-    ],
     "agentic-05": [
       {
         "id": "agentic-05__surface-options__wb-llm-20260903__0",
@@ -67,38 +35,6 @@
         "sourceHash": "fnv1a-bce678b4"
       }
     ],
-    "agentic-35": [
-      {
-        "id": "agentic-35__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Agent 的记忆存储应在 Vector DB、SQL 与普通 KV 之间怎样选型？请给出框架而非单一答案。",
-        "options": [
-          "Vector DB 是记忆存储的唯一正确选择，SQL 与 KV Store 已被向量检索全面取代，其余存储引擎在当前技术下都已没有存在价值",
-          "KV Store 因读写最快应承载全部记忆数据，语义召回可在应用层遍历所有 key 逐一比对来实现，无需引入任何专门的向量索引",
-          "先弄清记忆会被怎样查询再选引擎：Vector DB 负责语义召回、SQL 存放结构化事实与审计记录、KV Store 存放会话状态；实践中通常三者组合各司其职，没有银弹",
-          "三种存储可以随意互换，选型对系统行为几乎没有影响，团队完全可以按自己熟悉度随手挑一个而不必评估读写模式"
-        ],
-        "generatedAt": 1788392183487,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-7e8f7c99"
-      },
-      {
-        "id": "agentic-35__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在为 Agent 选记忆后端，三种存储各有所长。请给出一个按查询形态（语义 / 结构化 / 键值）路由的选型框架。",
-        "options": [
-          "向量库是记忆存储唯一对的选法，SQL 和 KV 已被语义检索彻底淘汰，别的引擎在当下技术里根本不值一提",
-          "KV 因为读写最猛就该扛全部记忆，语义召回让应用层挨个比对所有 key 就行，不必上什么专门的向量索引",
-          "先想清楚记忆会怎么被查再定引擎：语义召回交给向量库、结构化事实与审计记录进 SQL、会话状态放 KV；实际往往是三者搭配各管一摊，没有万能解",
-          "三种存储随便换着用，选型基本不改变系统行为，团队按手熟随便选一个就好，不用管读写模式"
-        ],
-        "generatedAt": 1788392183487,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-7e8f7c99"
-      }
-    ],
     "agentic-40": [
       {
         "id": "agentic-40__surface-options__wb-llm-20260903__0",
@@ -129,38 +65,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-28470cfd"
-      }
-    ],
-    "agentic-42": [
-      {
-        "id": "agentic-42__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "既然模型输入窗口已扩展到百万级 token，Agent 还需要独立的 Memory 机制吗？为什么？",
-        "options": [
-          "百万级窗口已让 Memory 机制彻底过时，所有历史信息都应全量塞入上下文窗口，独立记忆子系统纯属多余的架构负担，应当直接删除以简化系统",
-          "大窗口的主要价值是彻底消除了 lost-in-the-middle 问题，无论信息置于序列哪个位置都不再影响模型的召回与理解效果，长上下文已经解决一切",
-          "仍然需要独立 Memory：全量重灌历史使成本与延迟线性膨胀，长上下文存在 lost-in-the-middle 等注意力质量问题，跨会话知识本就不落在单次窗口内；正确组合是窗口放当前工作集、Memory 负责按需供给历史与知识",
-          "Memory 机制的唯一作用就是压缩文本以绕开上下文长度限制，它与检索精度、知识沉淀、跨会话复用及个性化都无关，纯属 NLP 历史遗留，在长上下文下应被彻底废弃，继续维护只会增加系统复杂度与故障面"
-        ],
-        "generatedAt": 1788392183488,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-aca00e27"
-      },
-      {
-        "id": "agentic-42__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "有人主张大窗口可以取代记忆。请你论证为何长输入并不等于持久记忆，以及在跨会话、可写回、可控遗忘上独立记忆仍不可替代。",
-        "options": [
-          "百万 token 窗口让记忆机制整个过时了，所有历史都该整段塞进上下文，独立记忆模块纯是累赘，直接删掉好让系统更简单",
-          "大窗口最大的好处是把 lost-in-the-middle 彻底消灭了，信息放在序列哪都不再拖累模型召回和理解，长上下文已经包治百病",
-          "独立记忆还是得留：把历史全量重灌会让成本和延迟跟着线性涨，长上下文还有注意力跑偏等质量问题，跨会话的知识本来就不在单次窗口里；正解是窗口装当前活儿、记忆按需补历史和知识",
-          "记忆机制唯一的活就是压缩文本钻上下文长度的空子，跟检索精度、知识沉淀、跨会话复用、个性化全没关系，是 NLP 的破包袱，在长上下文模型下该一刀切废掉，留着只添复杂度和故障面"
-        ],
-        "generatedAt": 1788392183488,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-aca00e27"
       }
     ],
     "agentic-54": [
@@ -225,70 +129,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-641d020e"
-      }
-    ],
-    "agentic-64": [
-      {
-        "id": "agentic-64__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "长对话中模型输入终会耗尽。对比滑动窗口、摘要压缩、分层摘要与检索式记忆四种历史管理策略，应如何取舍？",
-        "options": [
-          "上下文窗口已经很大（1M tokens），因此任何形式的记忆管理都没必要，历史全量保留既不会带来成本问题也不会影响模型对长程信息的理解，摘要压缩、分层摘要与检索式记忆等复杂方案在 1M 窗口下都纯属多余负担",
-          "滑动窗口是最安全的策略，因为它永远完整保留最近若干条内容，所以理论上永远不会丢失任何关键信息，工程上完全不需要引入摘要、分层或检索式等更复杂的方案来兜底",
-          "四种策略是成本-信息保真度的连续谱：滑窗实现最简但早期信息丢失；摘要压缩（旧消息总结+近期保真）是多数应用的默认选择；分层摘要用粒度梯度进一步压成本；检索式记忆把全部历史外置并按相关性取回，扩展性最强但引入了 RAG 的复杂度——应按会话长度与信息复用价值逐级演进",
-          "检索式记忆应该始终作为默认选项，因为它技术上最先进，无论会话长短与信息价值高低都应优先采用该方案以获得最佳效果，其他所有记忆策略都不值得考虑，且它天然适配任何规模与任何领域的对话场景，引入任何其他机制都是多余的退化，工程上应当一刀切地只允许检索式记忆存在，摘要与滑窗等方案一律禁止，以确保架构纯粹统一"
-        ],
-        "generatedAt": 1788392183489,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-08f11647"
-      },
-      {
-        "id": "agentic-64__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你的对话 Agent 在长会话里失控。请就四种历史管理策略（滑动窗口、摘要压缩、分层摘要、检索式记忆）的代价与适用场景给出选型。",
-        "options": [
-          "上下文窗口都到 1M 了，所以根本不必做什么记忆管理，历史全留既没成本问题也不碍模型理解长程信息，摘要压缩、分层摘要、检索式记忆这些复杂套路在 1M 窗口下纯属多余",
-          "滑动窗口最稳妥，因为它永远把最近几条完整留着，理论上绝不会丢任何关键信息，工程上完全不必上摘要、分层或检索式那些更复杂的方案来兜底",
-          "四条路线是成本换信息保真的一条谱：滑窗最省事但早的信息会丢；摘要压缩（旧消息归纳+近期保真）是多数场景的默认；分层摘要用粒度差继续压成本；检索式记忆把全部历史外置再按相关取回，扩展最强却背上了 RAG 的复杂度——应按会话长短与信息复用价值逐级升级",
-          "检索式记忆该永远当默认，因为它技术最先进，不管会话长短、信息价值高低都该优先用它拿最好效果，别的记忆策略全不值得考虑，而且它天生适配任何规模任何领域的对话，引入别的机制都是多余退化，工程上就该一刀切只许检索式记忆存在，摘要和滑窗全禁掉，好让架构纯粹统一"
-        ],
-        "generatedAt": 1788392183489,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-08f11647"
-      }
-    ],
-    "ai-eng-014": [
-      {
-        "id": "ai-eng-014__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "一个 AI Coding Assistant 要记住用户的编码偏好、项目约定与历史对话。你会怎样设计分层记忆？",
-        "options": [
-          "三类信息应当合并成一条按时间排序的统一日志来存储，查询时把整段内容不加区分地一起灌进 context——这做法实现最简单、保证绝不漏掉任何信息，也省去了按类型分别治理的麻烦",
-          "conversation history 存对话原文供回溯；working memory 维护当前任务的结构化状态；long-term memory 只写跨任务仍稳的信息；临时报错与一次性工具结果不进长期记忆",
-          "working memory 应长期持久化并在所有用户间共享，好让模型复用别人历史任务里的推理过程来加速当前任务、顺带提升整体效率",
-          "为求完整，对话里出现的一切——报错栈、失败尝试、临时变量乃至闲聊——都该无脑写进长期记忆永久保留，任何筛选或丢弃都是危险的信息丢失，必须禁止"
-        ],
-        "generatedAt": 1788392183489,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-f3daf564"
-      },
-      {
-        "id": "ai-eng-014__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在做编程助手的记忆系统，需兼顾个人偏好、仓库约定与对话延续。请说明这三类信息应怎样分层存储与召回。",
-        "options": [
-          "把三类信息揉成一条按时序的统一日志来存，查的时候整段不加区分地塞进 context，这样最省事、保证不漏、也懒得做分类治理",
-          "对话原文进 conversation history 以便回溯；working memory 管当前任务的结构化状态；long-term memory 只写跨任务仍稳的信息；临时报错与一次性工具结果不进长期记忆",
-          "working memory 该长期持久化并在所有用户间共享，好让模型借别人历史任务的推理过程给当前任务提速、拉高整体效率",
-          "为了不漏任何东西，对话里出现的全部——报错栈、调试失败、临时变量到闲聊——都该无脑写进长期记忆永久留着，任何过滤或抛弃都是会害事的丢信息，得禁掉"
-        ],
-        "generatedAt": 1788392183490,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-f3daf564"
       }
     ],
     "ai-eng-015": [
@@ -387,38 +227,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-a59ff82c"
-      }
-    ],
-    "mem-hierarchy-01": [
-      {
-        "id": "mem-hierarchy-01__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "生产 Agent 架构常借鉴操作系统在 RAM 与 Disk 间页面调度（Paging）的思想来组织记忆层级。其核心动机是什么？",
-        "options": [
-          "所有历史交互在产生时直接同时写入 Long-term Store 与 Context Window，无需进行冷热分层，这样能最大化保留完整信息且省去检索开销",
-          "当新的用户消息到达时，系统从底层的 Long-term Store 检索相关的持久事实，并将其提升（Promote）装载回 Context Window 中，会话结束再把上下文压缩降级到冷层",
-          "Session 结束时，Context Window 中的原始 Token 必须无损降级写入 Cold Archive，严禁进行任何形式的压缩或总结以免丢失细节",
-          "Context Window 处于分层体系最高层，其 Token 访问成本最低且存储容量最大，应把尽可能多的数据放进去以获得最佳性能"
-        ],
-        "generatedAt": 1788392183491,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-e492d666"
-      },
-      {
-        "id": "mem-hierarchy-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在用分页思想设计 Agent 记忆的冷热分层。请说明把高频状态放快存、低频沉淀慢存的收益与换页代价。",
-        "options": [
-          "所有历史交互一产生就同时写进 Long-term Store 和 Context Window，不用做什么冷热分层，这样能最大化留住完整信息还省了检索开销",
-          "新用户消息一来，系统就从底层的 Long-term Store 里捞出相关的持久事实，把它们提升（Promote）装回 Context Window，会话结束再把上下文压缩降级到冷层",
-          "Session 结束时，Context Window 里的原始 Token 必须无损降级写进 Cold Archive，严禁任何形式的压缩或总结，生怕丢了细节",
-          "Context Window 在分层体系里站最高层，Token 访问成本最低、存储容量最大，应当尽量多往里塞数据来拿最佳性能"
-        ],
-        "generatedAt": 1788392183492,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-e492d666"
       }
     ],
     "mem-retrieval-01": [
@@ -579,38 +387,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-61c10d0d"
-      }
-    ],
-    "skillevo-knowledge-compilation-01": [
-      {
-        "id": "skillevo-knowledge-compilation-01__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Agent 长期自主演进中要处理海量历史执行轨迹。相比直接保留并检索全量原始轨迹，更好的做法是什么？",
-        "options": [
-          "模式化文档删除了所有的工具调用代码，从而能在演进过程中彻底避免 Agent 产生越权操作风险",
-          "模式化文档对多条轨迹进行跨样本归纳与根因分析，形成了高信息密度的知识抽象，降低了噪声与开销",
-          "模式化文档可被编译器直接编译为二进制执行文件，显著提升后续 Agent 推理时的计算吞吐效率",
-          "模式化文档能够替代大模型的参数微调过程，使基座模型在不加载提示词的情况下自动具备领域经验"
-        ],
-        "generatedAt": 1788392183494,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-c08f95d2"
-      },
-      {
-        "id": "skillevo-knowledge-compilation-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "原始轨迹越积越多，全量检索既贵又噪。请说明把轨迹编译成结构化经验（知识编译）相比原始保留的优势与代价。",
-        "options": [
-          "模式化文档把全部工具调用代码都删了，于是在演进时就彻底杜绝了 Agent 越权操作的风险",
-          "模式化文档对多条轨迹做跨样本归纳和根因剖析，凝成高信息密度的知识抽象，顺带压低了噪声和开销",
-          "模式化文档能直接被编译器编成二进制执行文件，明显拉高后续 Agent 推理时的计算吞吐",
-          "模式化文档能顶替大模型的参数微调，让基座模型不加载提示词也自动带上领域经验"
-        ],
-        "generatedAt": 1788392183494,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-c08f95d2"
       }
     ]
   }

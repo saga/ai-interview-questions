@@ -127,7 +127,7 @@
     "question": "提示中的标点、示例顺序或格式发生语义等价变化，却导致准确率大幅下降。哪些判断正确？（请选择两个）",
     "explanation": "这是提示格式敏感性，说明模型可能利用了与任务无关的表面特征。单个精心挑选的 prompt 不能代表系统鲁棒性，应在合理变体上测量性能分布。",
     "source": {"materialId": "https://arxiv.org/abs/2310.11324", "section": "Abstract"},
-    "formats": {"choice": {"type": "multiple", "options": ["模型可能依赖与任务无关的表面格式特征", "应在语义等价提示变体上评估性能范围", "说明应把 prompt 无限加长", "说明只要增加 few-shot 示例就一定能消除敏感性"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。语义等价格式变化造成性能差异，表明模型可能依赖 spurious formatting features，应测量提示变体的性能范围。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["模型可能依赖与任务无关的表面格式特征", "应在语义等价提示变体上评估性能范围", "说明应把 prompt 无限加长", "敏感性说明模型欠拟合，加大 few-shot 数量可覆盖格式空间；量变即鲁棒，无需测分布。"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。语义等价格式变化造成性能差异，表明模型可能依赖 spurious formatting features，应测量提示变体的性能范围。"}}
   },
   {
     "id": "llm-reliability-2026-08-10",
@@ -166,7 +166,7 @@
     "question": "对于必须返回有限枚举值的分类接口，哪种方案比反复润色自然语言 prompt 更可靠？（单选）",
     "explanation": "应将类别、输入输出契约和拒答条件显式化，使用结构化 schema 或受约束解码，并用扰动集测试语义等价提示和边界输入；prompt 仍是输入层的一部分，但不应承担全部保证。",
     "source": {"materialId": "https://arxiv.org/abs/2310.11324", "section": "Abstract"},
-    "formats": {"choice": {"type": "single", "options": ["继续堆叠形容词，要求模型永远不要错", "显式定义枚举和拒答契约，使用结构化约束并对提示和边界输入做回归测试", "提高 temperature 以探索更多类别", "只保留最成功的一条 prompt，不做变体评估"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。将输出空间和拒答条件变成显式契约，再用结构化约束和扰动回归降低 prompt 脆弱性。"}}
+    "formats": {"choice": {"type": "single", "options": ["把枚举值逐个配上褒义形容词强化约束；形容词越多模型越不敢越界，比改 schema 成本低。", "显式定义枚举和拒答契约，使用结构化约束并对提示和边界输入做回归测试", "提高 temperature 以探索更多类别", "只保留最成功的一条 prompt，不做变体评估"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。将输出空间和拒答条件变成显式契约，再用结构化约束和扰动回归降低 prompt 脆弱性。"}}
   },
   {
     "id": "llm-reliability-2026-08-14",

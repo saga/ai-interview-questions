@@ -1,6 +1,17 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-03 · 题库干扰项质量清扫（distractor 脱稻草人化 12 批 + 4 处技术修正）
+
+外部题库内容评审指出"答案形状偏差"（正确=工程术语堆叠、错误=绝对化）与 4 处技术不严谨表述。本轮**执行内容层清扫**（只改题库 JSON 与变体池，零代码变更）：
+
+- **P1 技术修正 7 处**：`emb-03`（余弦/L2 归一化问题重写为"预归一化→内积索引"工程框架，原被判错的 C 选项技术上成立）；`ai-eng-040`（删除"10-15%"固定数字）；`ai-flashattn-001`（"数学结果不变"→"公式语义不变、不保证逐比特一致"）；`agent-chain-01`（补"独立无纠错串联假设"限定）；`agent-arch-localized` / `agent-arch-loop`（稻草人干扰项换成真实误区）；`ai-eng-007` angle `definition→comparison`（内容本就是对比，属标错纠错）。
+- **干扰项改写约 200 个**：覆盖 evaluation / reliability / inference / context-engineering / memory / rag / embeddings / tool-calling / security / architecture 等 30+ 文件。原则：错误项必须代表真实、可解释的工程误区（预算错配、归因错位、半对泛化、前提遗漏），且与正确答案互斥；所有触碰题目的选项长度比复核 ≤1.8×（超标的正确项同步瘦身，细节保留在 explanation/open）。
+- **变体池联动**：canonical 改写使 55 条变体 sourceHash 失效，按 ADR-075 的 release gate 语义整体删除（192→137，`validate-variants` 恢复 exit 0）。被删变体对应的 35 道题进入**待重生成 backlog**（需 LLM key，见下），不是永久丢失。
+- **待重生成 backlog（35 题）**：agent-mem-layer-01 agentic-10/33/35/42/44/45/47/49/51/64 ai-eng-014/017/018/040/048/049/051/056 ai-eval-001/002 ai-fund-034/035/037/042/048/049 ai-rag-012 graphrag-05/06 llm-10 mem-hierarchy-01 skillevo-knowledge-compilation-01 slm-rag-ceiling-01 tiered-eval-strategy。重跑 `scripts/question-variants.ts --stale` 即可。
+- 验证：`validate:questions` 1308 题通过；全量测试 780/780；`question:identity --gate`（增量）与 `validate-variants` 均 exit 0；所碰题目 audit 无新增 `option-length-ratio` 告警。
+- 明确不做：definition 类基础题中"绝对化措辞即考点本身"的选项（如 GELU/ReLU、tokenizer 标准之争）视为合法的概念辨析，未动；assessment-level 去重、difficulty 重校准、双形态差异化留待后续轮次。
+
 ## 2026-09-04 · 外部评审五项全部收口（canonical 身份 / Agent fallback / 知识主次 / 三维覆盖 / 评分预设）
 
 第二轮外部评审的 4 个架构级问题 + 评分一刀切，本轮**全部执行**，决策理由见 ADR-076：

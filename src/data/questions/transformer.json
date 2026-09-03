@@ -10,16 +10,16 @@
     ],
     "difficulty": "hard",
     "angle": "mechanism",
-    "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在不改变 Attention 数学结果的情况下提升性能？",
-    "explanation": "优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵；公式不变、IO 大减。",
+    "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在保持 Attention 数学等价（公式语义不变；浮点求值顺序变化，不保证逐比特一致）的同时提升性能？",
+    "explanation": "优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵；公式语义不变（非逐比特一致）、HBM 占用从 O(N²) 降为 O(N)、IO 大减。",
     "formats": {
       "open": {
-        "referenceAnswer": "标准 attention 实现要把 N×N 的注意力矩阵完整写入 GPU 显存再读回参与后续计算，长序列下这块中间结果的读写（memory traffic）成为瓶颈，且显存占用 O(N²)。FlashAttention 通过分块计算解决：把 Q/K/V 切成小块在 SRAM（片上高速缓存）中完成“矩阵乘→softmax 归一化→加权求和”的整链路，用 online softmax 技巧在块间增量维护归一化统计量，全程不物化完整的注意力矩阵。数学结果不变——只是把同一套公式的计算顺序重排并合并了访存——但显存从 O(N²) 降为 O(N)，速度因减少 HBM 往返显著提升，使长上下文训练与推理变得实际可行。"
+        "referenceAnswer": "标准 attention 实现要把 N×N 的注意力矩阵完整写入 GPU 显存再读回参与后续计算，长序列下这块中间结果的读写（memory traffic）成为瓶颈，且显存占用 O(N²)。FlashAttention 通过分块计算解决：把 Q/K/V 切成小块在 SRAM（片上高速缓存）中完成“矩阵乘→softmax 归一化→加权求和”的整链路，用 online softmax 技巧在块间增量维护归一化统计量，全程不物化完整的注意力矩阵。数学结果等价而非逐比特一致——只是把同一套公式的计算顺序重排并合并了访存——但显存从 O(N²) 降为 O(N)，速度因减少 HBM 往返显著提升，使长上下文训练与推理变得实际可行。"
       },
       "choice": {
         "type": "single",
         "options": [
-          "它优化的是 N×N 注意力矩阵写入读回 HBM 的访存瓶颈：Q/K/V 分块驻留 SRAM 完成乘法、softmax 与加权求和，online softmax 增量维护统计量，数学结果不变而显存从 O(N²) 降为 O(N)",
+          "它优化的是 N×N 注意力矩阵的 HBM 访存瓶颈：Q/K/V 分块驻留 SRAM，online softmax 增量维护统计量；公式语义不变但不保证逐比特一致，HBM 占用从 O(N²) 降为 O(N)",
           "它通过对注意力矩阵做低秩近似（例如对 Q、K、V 投影矩阵做 SVD 截断）来削减浮点计算量，代价是带来精度损失与下游任务表现下降，且无法保证训练时的梯度稳定",
           "它通过剪枝不重要的 token 来缩短有效上下文长度，牺牲部分长序列信息以换取更快的计算速度与更低的内存占用，但对关键依赖的识别并不稳定",
           "它把 softmax 替换为线性注意力形式（如 kernel 近似），取消了归一化步骤从而节省显存占用，但这也从根本上改变了注意力的数学定义并可能损害长程建模能力"
@@ -679,7 +679,7 @@
         "type": "single",
         "options": [
           "输出的 Token 向量集合数值保持对应关系，但其排列顺序会随输入的打乱而相应打乱，即具有置换等变性（Permutation Equivariance）",
-          "输出的每一个位置的向量数值及排列顺序都完全保持不变，即具有置换不变性（Permutation Invariance），模型天然能记住原始词序",
+          "乱序输入会使注意力权重趋向均匀，输出退化为平均池化；崩溃是渐进的而非随机的，平均即失效。",
           "输出结果完全失效，各个向量数值随机变化且不再保留任何语义关联，这说明 Self-Attention 在面对乱序输入时会彻底崩溃",
           "Attention 权重矩阵退化为单位矩阵（Identity Matrix），意味着每个 token 只能看到自己而完全无法与上下文交互"
         ],

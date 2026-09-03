@@ -131,38 +131,6 @@
         "sourceHash": "fnv1a-b11e08ba"
       }
     ],
-    "ai-eng-017": [
-      {
-        "id": "ai-eng-017__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "为企业 ESG 报告建 RAG，PDF 同时含长文本、表格、脚注、多级标题与图表。应选固定长度 chunk 吗？你会怎样切分？",
-        "options": [
-          "继续用固定长度切分，表格与多级标题在向量空间里没有语义意义，切分方式的差别不会影响召回质量，所以不必为结构化文档引入任何特殊边界处理策略。",
-          "把整份 PDF 当作单个超大 chunk 注入，靠模型的长上下文能力直接通读全文，彻底躲开切分带来的信息损失，同时还能省掉所有分块与重排的工程开销。",
-          "完全依赖纯 semantic chunking 按语义相似度自动聚类切分，它对所有内容类型都是最优解，无需针对文档结构定制，也不必为表格或脚注单独设计处理路径。",
-          "以文档结构为主导切分：按章节标题层级保住段落语义完整，表格沿行列边界整体保留并与所属章节关联，脚注单独成块，再结合 token 上限对过长部分二次切分，对不同内容类型采用不同策略。"
-        ],
-        "generatedAt": 1788392182937,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-174d2e74"
-      },
-      {
-        "id": "ai-eng-017__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你的 ESG 语料结构复杂（正文、表格、脚注、图表混排）。固定长度切块会切碎表格语义。请说明你会按结构感知的方式怎样切分与保留版式信息。",
-        "options": [
-          "固定长度切块就够，表格和多级标题在向量空间里谈不上语义，切法不同也动不了召回质量，因此结构化文档不必做任何特别的边界处理。",
-          "把整本 PDF 塞进一个超大块，靠模型长上下文一口气读完，彻底规避切分造成的信息损失，还顺手省掉分块与重排的全部工程开销。",
-          "纯靠 semantic chunking 按语义相似度自动聚类来切，对所有内容类型都是最佳，不必按文档结构定制，表格或脚注也无需单独设计处理路径。",
-          "以文档结构为主来切：顺着章节标题层级维持段落语义完整，表格沿行列边界整体留存并挂到所属章节，脚注单独建块，再按 token 上限对过长部分二次切分，对不同内容类型区别对待。"
-        ],
-        "generatedAt": 1788392182938,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-174d2e74"
-      }
-    ],
     "ai-eng-034": [
       {
         "id": "ai-eng-034__surface-options__wb-llm-20260903__0",
@@ -193,38 +161,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-4e4c81f6"
-      }
-    ],
-    "ai-eng-040": [
-      {
-        "id": "ai-eng-040__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "RAG 两阶段检索中，Reranker（如 cross-encoder / Cohere Rerank）通常带来 10-15% 的精度提升。它解决的是哪一阶段的问题？",
-        "options": [
-          "Reranker 是标配组件，任何 RAG 系统不加 rerank 都算架构缺陷，因为无论查询多简单、预算多紧，cross-encoder 精排都能带来可观测的精确率提升。",
-          "决策依据是延迟预算与利害程度：延迟 <200ms、embedding 已够好、高并发成本敏感时可跳过；检索精度是硬指标、能容忍 50-100ms、查询语义复杂或法务医疗金融等高风险场景应该上。",
-          "Cross-encoder 因为对 query 与 document 分别独立编码，所以比双塔模型快得多，这也是它成为 rerank 标配的根本原因，精度提升只是附带的收益。",
-          "Reranker 只能调整结果顺序，无法把第一阶段没召回的文档找回来，因此它对端到端质量没有任何实质贡献，是否启用完全取决于团队的美学偏好。"
-        ],
-        "generatedAt": 1788392182938,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d3f5b204"
-      },
-      {
-        "id": "ai-eng-040__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你们在向量召回后加了一道 cross-encoder 重排，精度涨了十余点。请说明重排器弥补的是召回阶段的何种缺陷，以及为何不一开始就靠它排序。",
-        "options": [
-          "重排器是标配，任何 RAG 不加 rerank 都属架构缺陷——无论查询多简单、预算多吃紧，cross-encoder 精排总能带来可测的精确率提升。",
-          "取舍看延迟与风险：延迟低于 200ms、embedding 够好、高并发成本敏感可跳过；精度是硬指标、能容 50-100ms、或法务医疗金融等高风险场景就该上重排。",
-          "Cross-encoder 对 query 与 document 各自独立编码，所以比双塔快得多，这正是它成为 rerank 标配的根本原因，精度提升只是顺带的。",
-          "重排器只会动结果顺序，第一阶段没召回的文档它救不回来，故对端到端质量毫无实质帮助，开不开全看团队审美。"
-        ],
-        "generatedAt": 1788392182938,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d3f5b204"
       }
     ],
     "ai-eng-047": [
@@ -259,38 +195,6 @@
         "sourceHash": "fnv1a-48557a86"
       }
     ],
-    "ai-eng-056": [
-      {
-        "id": "ai-eng-056__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "合规审查 RAG 里只检索法规条文常不够——条文模糊，执法尺度在历史处罚案例里。请设计「条文 + 先例」双库检索方案。",
-        "options": [
-          "把所有法规全文一次性塞进上下文，让模型通读后输出整体合规意见，这样条文与案例都已在视野内，既能保证覆盖全面，也省去了先抽取 claim 再分步检索的复杂工程；对篇幅不大的手册，整文注入的 token 成本完全可接受，是性价比最高的方案。",
-          "先做 claim 级抽取（带原文位置的原子宣称清单），再以单条 claim 为单位并行检索条文库与先例库（由 Warning Letters 构建的违规模式向量索引）：条文提供规则本身、相似历史处罚提供实际执法尺度；配合 Regulation Watch 监听法规更新即时重建索引并回溯标记近期审查。",
-          "先例案例数量太少根本不值得建索引，只用法规条文检索就足够，因为 Warning Letters 等历史处罚样本在多数行业里非常有限，构建向量索引的边际收益远低于其维护与校准成本；直接靠条文即可覆盖绝大多数违规情形，少数边界措辞问题可由人工复核兜底，完全不必为这类低频信号投入整套双库检索基础设施与更新管线。",
-          "用微调把法规知识训进模型，避免每次检索的开销，模型记住条文与典型案例后便能直接判断合规性，既降低延迟又省去双库检索与 Regulation Watch 等运维负担；法规更新时只需定期重训，不必维护实时索引，整体工程成本更低。"
-        ],
-        "generatedAt": 1788392182940,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-cf7f477d"
-      },
-      {
-        "id": "ai-eng-056__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "合规场景需要把抽象法条与具体处罚先例结合。请设计双库（法规 + 案例）的检索、融合与引用组织方式，让结论既有依据又有尺度参照。",
-        "options": [
-          "把全部法规原文一次性塞进上下文，让模型读完后给出整体合规结论，条文与案例便都在视野里，既覆盖全又省掉先抽 claim 再分步查的复杂活；手册篇幅不大时整文注入的 token 开销完全可接受，性价比最高。",
-          "先抽 claim（带原文出处的原子宣称清单），再逐条 claim 并行去查条文库与先例库（用 Warning Letters 建起的违规模式向量索引）：条文给规则本体、相似历史处罚给实际执法尺度；再接 Regulation Watch 监听法规变动、即时重建索引并回标近期审查。",
-          "先例太少根本不值得建索引，光靠法规条文检索就够了——Warning Letters 这类历史处罚样本在多数行业都很有限，建向量索引的边际收益远不抵其维护校准成本；条文基本能覆盖绝大多数违规，少数边界措辞让人工复核兜住，完全不必为这低频信号投整套双库检索与更新管线。",
-          "把法规知识微调进模型免掉每次检索开销，模型记下条文和典型案例就能直接判合规，既降延迟又省了双库检索与 Regulation Watch 的运维；法规更新只需定期重训，不用维护实时索引，整体工程更省。"
-        ],
-        "generatedAt": 1788392182940,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-cf7f477d"
-      }
-    ],
     "ai-eng-063": [
       {
         "id": "ai-eng-063__surface-options__wb-llm-20260903__0",
@@ -323,72 +227,6 @@
         "sourceHash": "fnv1a-7632d4f8"
       }
     ],
-    "ai-fund-034": [
-      {
-        "id": "ai-fund-034__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "RAG 为什么能降低 Hallucination？它的作用机制是什么？",
-        "options": [
-          "RAG 的机制是把检索到的证据放进 context 供条件生成（grounding），只能大幅降低编造概率，无法把幻觉彻底清零。",
-          "残留错误与机制相符：检索未命中或证据相近易误读时幻觉仍会出现，应辅以引用来源标注等约束，并据此定位坏例改进检索。",
-          "说明 RAG 部署配置有误，只要检索参数调对，RAG 就能做到零幻觉，无需其他防线。",
-          "应弃用 RAG，改为把诊疗指南全部微调进模型参数，知识固化到权重中即可根除幻觉。"
-        ],
-        "generatedAt": 1788392182940,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-92f4be1d"
-      },
-      {
-        "id": "ai-fund-034__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在向团队解释为何引入检索就能减少编造。请说明把证据外置为检索得到的内容、让生成受限于检索内容，是从哪一层抑制了幻觉。",
-        "options": [
-          "RAG 靠把检索到的证据塞进上下文来做条件生成（grounding），只能大幅压低编造概率，却不可能把幻觉完全归零。",
-          "残留错误本就符合机制：检索落空或证据近似易被误读时幻觉照样冒头，应加上引用出处标注等约束，并借此定位坏例去改进检索。",
-          "这代表 RAG 部署配置有错，只要把检索参数调好，RAG 就能实现零幻觉，不必另设防线。",
-          "该弃用 RAG，改成把诊疗指南全量微调进模型参数，知识固化进权重就能从根上消除幻觉。"
-        ],
-        "generatedAt": 1788392182940,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-92f4be1d"
-      }
-    ],
-    "ai-fund-035": [
-      {
-        "id": "ai-fund-035__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Chunk size 为什么影响 RAG 效果？chunk 过大或过小分别有什么问题？",
-        "options": [
-          "块越大检索越准，因为大块信息更全，应当尽量把切分粒度放粗。",
-          "块太大就会混入多个主题，embedding 向量的语义被冲淡导致检索失准，进到上下文后还会带进无关噪声。",
-          "切分粒度只动向量库的存储体积，对检索精度与回答完整度没有实质影响。",
-          "块太小会把语义单元切散，孤立片段缺了上下文，即便被召回也撑不起完整回答。",
-          "把全部块统一切得更碎，便能一并解决检索精度与回答完整度两个问题。"
-        ],
-        "generatedAt": 1788392182941,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-b0a6cfea"
-      },
-      {
-        "id": "ai-fund-035__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "调块大小直接牵动召回质量。请说明块过大导致噪声与截断、过小导致语义破碎的两种失效模式，以及取舍原则。",
-        "options": [
-          "chunk 越大检索越精准，因为更大的块包含的信息更全面，应尽量放大切分粒度。",
-          "过大的 chunk 会混入多个主题，embedding 向量的语义被稀释导致检索不准，进入 context 后还会引入无关噪声。",
-          "chunk 切分粒度只影响向量库的存储体积，对检索精度与回答完整性没有实质影响。",
-          "过小的 chunk 会把语义单元切碎，孤立片段缺少上下文，即使被召回也无法支撑完整的回答。",
-          "把所有 chunk 统一切成更短的碎片，就能同时解决检索精度和回答完整性两个问题。"
-        ],
-        "generatedAt": 1788392182941,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-b0a6cfea"
-      }
-    ],
     "ai-fund-036": [
       {
         "id": "ai-fund-036__surface-options__wb-llm-20260903__0",
@@ -419,38 +257,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-7061bc00"
-      }
-    ],
-    "ai-fund-037": [
-      {
-        "id": "ai-fund-037__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Hybrid Search 为何通常比单独 Vector Search 更可靠？一般会怎样组合两者？",
-        "options": [
-          "全换成纯关键词检索，彻底不依赖 embedding 模型，从根上解决精确符号匹配——关键词路在型号与错误码上的命中率天生高于任何向量方案。",
-          "在用户查询后自动补一大堆同义词扩展词再做向量检索，以覆盖编号、型号这类说法，同义词越多召回越全，向量路就能完全接管关键词检索的职责。",
-          "改造成混合检索：向量路与关键词路并行保留，借两路互补的失败模式稳住召回，再用 RRF 融合或 cross-encoder 重排来统一排序。",
-          "让用户提问前手动选「语义搜索」或「精确匹配」模式，把两类查询分流，路由责任交给用户，系统便不必再做任何自动融合与重排。"
-        ],
-        "generatedAt": 1788392182941,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-1c4a00aa"
-      },
-      {
-        "id": "ai-fund-037__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你准备上混合检索。请解释为何语义与词面互补能覆盖更多查询，并说明常见的组合方式（加权、RRF 等）及其动机。",
-        "options": [
-          "整体替换为纯关键词检索，彻底摆脱对 embedding 模型的依赖，从根源解决精确符号匹配问题，因为关键词路在型号与错误码上的命中率天然高于任何向量方案。",
-          "在用户查询后自动追加大量同义词扩展词再做向量检索，以覆盖编号、型号一类的表达，同义词越多召回越全，向量路便能完全替代关键词检索的职责。",
-          "改造为混合检索：并行保留向量路与关键词路，利用两路互补的失败模式稳住召回，并用 RRF 融合或 cross-encoder 重排统一排序。",
-          "要求用户提问前手动选择「语义搜索」或「精确匹配」模式，把两类查询分流处理，由用户自己承担路由责任，系统便无需再做任何自动融合与重排。"
-        ],
-        "generatedAt": 1788392182941,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-1c4a00aa"
       }
     ],
     "ai-fund-038": [
@@ -517,70 +323,6 @@
         "sourceHash": "fnv1a-bb8ae40e"
       }
     ],
-    "ai-fund-048": [
-      {
-        "id": "ai-fund-048__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "公司希望模型掌握 10 万条内部 FAQ。你会选继续 Pre-training、Fine-tuning 还是 RAG？请说明理由。",
-        "options": [
-          "首选 RAG：FAQ 要持续更新、带出处且可审计，这正是检索的强项而预训练做不到增量更新；先把高质量检索库建起来，风格格式不够再用 LoRA 做行为层适配。",
-          "首选继续 Pre-training：把 FAQ 训进参数掌握最牢，之后知识更新只需再来一轮预训练就同步生效，且参数内知识天然有权威性与一致性。",
-          "首选 Fine-tuning 把十万条 FAQ 写进权重：存进参数的知识永不过时，还天然支持逐条引用溯源，最贴合企业知识沉淀诉求。",
-          "三方案效果等价，按团队技术栈熟悉度随便选一个就行，不必管更新频率与审计要求，因为不论哪种最终都能让模型答对同样的维护问题。"
-        ],
-        "generatedAt": 1788392182942,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-36d04f07"
-      },
-      {
-        "id": "ai-fund-048__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "内部 FAQ 频繁更新且需溯源。请在继续预训练、微调与 RAG 之间给出选型，并说明为何外置检索在时效与可维护上更优。",
-        "options": [
-          "优先 RAG：FAQ 需要持续更新、引用出处且可审计，正是检索方案的强项而预训练无法增量更新；先建成高质量检索库，风格格式不达标再用 LoRA 做行为层适配。",
-          "优先继续 Pre-training：把 FAQ 训进参数掌握最牢固，后续知识更新只需再做一轮预训练即可同步生效，且参数内的知识天然带有权威性与一致性。",
-          "优先 Fine-tuning 把十万条 FAQ 写入权重：存进参数的知识永远不会过时，并且天然支持逐条引用溯源，是最贴合企业知识沉淀诉求的路线。",
-          "三种方案效果等价，按团队成员的技术栈熟悉程度任选其一即可，不必考虑更新频率与审计要求，因为无论哪种方式最终都能让模型答对同样的维护问题。"
-        ],
-        "generatedAt": 1788392182942,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-36d04f07"
-      }
-    ],
-    "ai-fund-049": [
-      {
-        "id": "ai-fund-049__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "一个 RAG 系统 Recall 很高，但最终回答质量很差。请描述你的排查思路。",
-        "options": [
-          "recall 高就代表检索没问题，根因必在生成模型，换更大模型即可——更强的模型更能从已召回材料里提炼正确结论；生成端够强，召回的任何瑕疵都会被自动吸收，不必回头查检索与重排。",
-          "recall 高不等于排得靠前，应把检索 k 直接拉到 100 并把全部结果塞进 context，确保正确内容一定进模型视野，靠体量覆盖来补排序缺陷。",
-          "建分层 trace：查 query 改写是否改意、正确文档真实排名（MRR/nDCG 而非只盯 recall）、重排是否挤掉正确内容、context 是否截断带噪、生成是否忠实用证据，修掉分最大的环节。",
-          "跳过中间环节直接全局调优，同时改所有模块超参直到端到端指标涨起，因为模块相互耦合，逐项排查纯属浪费时间且易误判根因。"
-        ],
-        "generatedAt": 1788392182942,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-ddf41892"
-      },
-      {
-        "id": "ai-fund-049__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "召回不缺、答案却烂。请给出从召回噪声、切块、重排、检索内容截断到生成遵循度的一整套定位链路与对症手段。",
-        "options": [
-          "recall 高说明检索环节没有问题，问题一定出在生成模型本身，换更大的模型即可解决，因为更强的模型能更好地从已召回材料中提炼出正确的结论；只要生成端能力足够，召回层面的任何瑕疵都会被自动吸收，无需再回头检查检索与重排。",
-          "recall 高证明不了排名靠前，应把检索 k 值直接提高到 100 并把全部结果塞入 context，确保正确内容一定进入模型视野，靠体量覆盖来弥补排序缺陷。",
-          "建立分层 trace：检查 query 改写是否改变原意、正确文档的实际排名（MRR/nDCG 而非只看 recall）、重排是否挤出正确内容、context 构造是否截断或引入噪声、生成是否忠实使用了证据，修复掉分最大的环节。",
-          "跳过中间环节直接做全局调优，同时调整所有模块的超参数直到端到端指标上升为止，因为各模块相互耦合，逐项排查只会浪费时间且容易误判根因。"
-        ],
-        "generatedAt": 1788392182942,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-ddf41892"
-      }
-    ],
     "ai-rag-009": [
       {
         "id": "ai-rag-009__surface-options__wb-llm-20260903__0",
@@ -613,38 +355,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-7f9e6f88"
-      }
-    ],
-    "ai-rag-012": [
-      {
-        "id": "ai-rag-012__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "通用 Embedding Model 在你的金融领域检索效果只有 75%。你会优先换模型、Fine-tune Embedding 还是改检索策略？",
-        "options": [
-          "该直接微调专属 embedding 模型，它领域专用性最强、收益上限最高，理当作为首笔投入，早微调早见效，能最快把领域召回拉到可接受水位。",
-          "按性价比走阶梯：先零训练成本换更强的通用或领域模型、用评测集比对，再加 Reranker 给召回结果精排（代价是延迟升高），二者仍不达标且错误分析表明需要细粒度语义区分时，才去投微调 embedding。",
-          "加 Reranker 是唯一正解，cross-encoder 免训练就能解决一切领域检索问题，且几乎不添额外延迟；无论召回多差，重排都能在末端把正确答案顶上来，故任何场景都应直接上重排而非换模型或微调。",
-          "三手段互斥只能选一：换模型与加 Reranker 不能叠加，所以必须一步到位挑收益上限最高的微调方案，混合堆叠只会相互抵消效果。"
-        ],
-        "generatedAt": 1788392182942,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-08dc8b22"
-      },
-      {
-        "id": "ai-rag-012__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "领域适配不足导致召回偏低。请在更换底座、领域微调嵌入、改进检索策略之间给出优先级，并说明理由。",
-        "options": [
-          "应直接微调专属 embedding 模型，因为它领域专用性最强、收益上限最高，理应作为第一步投入，早微调早收益，能最快把领域召回拉到可接受水位。",
-          "按投入产出比走阶梯：先零训练成本地更换更强的通用或领域模型并用评测集对比，再加 Reranker 对召回结果精排（代价是延迟上升），两者仍不达标且错误分析显示需要细粒度语义区分时，才考虑投入微调 embedding。",
-          "加 Reranker 是唯一正确选择，cross-encoder 无需训练即可解决所有领域检索问题，而且几乎不增加额外的延迟开销；无论召回质量多差，重排都能在末端把正确答案顶上来，因此任何场景都应直接上重排而非换模型或微调。",
-          "三种手段互斥只能择一：换模型与加 Reranker 不能叠加使用，因此必须一步到位选择收益上限最高的微调方案，混合堆叠只会让效果相互抵消。"
-        ],
-        "generatedAt": 1788392182943,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-08dc8b22"
       }
     ],
     "eth-07": [
@@ -807,70 +517,6 @@
         "sourceHash": "fnv1a-c12849dd"
       }
     ],
-    "graphrag-05": [
-      {
-        "id": "graphrag-05__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "完整 GraphRAG 在文档频繁更新时索引构建成本过高。LazyGraphRAG 等优化针对这一痛点做了什么取舍？",
-        "options": [
-          "LazyGraphRAG 在索引阶段尽量回避或大幅砍掉 LLM 调用，从而把索引构建成本压到接近传统向量 RAG 的水平。",
-          "LazyGraphRAG 把大量抽取、推理与总结计算推迟到查询阶段（Query Time），在保住全局问题回答质量的同时，代价是查询时的延迟或 Token 开销可能上升。",
-          "标准 GraphRAG 在索引时预生成的实体描述与社区摘要报告，除服务 QA 外，也能当独立的人类可读资产让团队直接查看和传阅。",
-          "LazyGraphRAG 完全丢掉向量索引，单凭全局图计算去应付一切点状局部查询（Local Queries）。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d0acf850"
-      },
-      {
-        "id": "graphrag-05__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你面临文档高频更新、全量重建图谱太贵。请说明 LazyGraphRAG 把图构建延迟到查询时、以更低索引成本换灵活性的思路。",
-        "options": [
-          "LazyGraphRAG 在索引阶段尽量避免或大幅减少 LLM 调用，从而将索引构建成本降低至接近传统向量 RAG 的水平。",
-          "LazyGraphRAG 将大量的抽取、推理与总结计算推迟到查询阶段（Query Time），在保证全局问题回答质量的同时，代价是查询时的延迟或 Token 支出可能增加。",
-          "标准 GraphRAG 在索引阶段预先生成的实体描述和社区摘要报告，除了用于 QA 外，还可以作为独立的人类可读资产供团队直接阅览和分享。",
-          "LazyGraphRAG 彻底取消了向量索引，仅依靠全局图计算来响应所有的点状局部查询（Local Queries）。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d0acf850"
-      }
-    ],
-    "graphrag-06": [
-      {
-        "id": "graphrag-06__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "评估 GraphRAG 与传统 Vector RAG 实值时，研发团队常对其性能指标产生误解。根据实验，GraphRAG 在哪些维度真正占优、哪些并不？",
-        "options": [
-          "图结构给每条陈述都备好可核验的支撑，使生成中每个单点事实的准确度（Faithfulness）被显著拉高，幻觉也彻底消失。",
-          "它把索引构建的计算资源消耗与端到端查询延迟都明显压低，因为图索引比纯向量索引更轻量、Global 检索也比向量检索的多次召回更省时。",
-          "对全局性问题，它在回答完整度（Comprehensiveness）、多样性（Diversity）与佐证出处（Supporting Sources）上更齐备。",
-          "知识图谱把结构化关系全编进实体与边，于是它能彻底接管传统 SQL 对精确数值的实时统计计算，不必再靠关系型引擎。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-a0f881ba"
-      },
-      {
-        "id": "graphrag-06__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在对比两类 RAG 的实测。请澄清常见的指标误读，说明 GraphRAG 在全局聚合上占优、在简单事实检索上未必划算的真实结论。",
-        "options": [
-          "极大地提高了生成内容中每一个单点事实（Individual Claim）的绝对忠实度/准确度（Faithfulness），完全消除了幻觉，因为图结构为每一条陈述都提供了可验证的支撑路径。",
-          "显著降低了索引构建的计算资源消耗与查询端到端延迟，因为图索引比纯向量索引更轻量，Global 检索也比向量检索的多次召回更省时。",
-          "在全局性问题上表现出更高的回答完整性（Comprehensiveness）、多样性（Diversity）以及更完备的佐证材料来源（Supporting Sources）。",
-          "能够完全替代传统 SQL 数据库对精确数值进行复杂的实时统计与计算，因为知识图谱已经把全部结构化关系编码进实体与边，无需再依赖关系型引擎。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-a0f881ba"
-      }
-    ],
     "graphrag-07": [
       {
         "id": "graphrag-07__surface-options__wb-llm-20260903__0",
@@ -965,72 +611,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-5da64c34"
-      }
-    ],
-    "llm-10": [
-      {
-        "id": "llm-10__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "把 naive RAG 升级为生产级检索管线，下列哪些做法是合理且常见的？",
-        "options": [
-          "引入混合检索：BM25 关键词检索与稠密向量检索一起用，补纯向量检索在型号、人名等精确词上的短板。",
-          "初筛完接一个重排模型（cross-encoder reranker），把候选片段精排后送进生成。",
-          "依文档结构来定切分策略，在块粒度的召回准度与语义完整之间求平衡。",
-          "把所有文档切到尽可能细（如逐句成块），块越小检索越精准可靠。",
-          "向量检索一上线就可当作彻底消除幻觉，不必再配引用校验或忠实度评估。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-eaefaed7"
-      },
-      {
-        "id": "llm-10__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你要把原型 RAG 推到生产。下列工程项中，哪些属于常规的 production-grade 升级（切分、混合检索、重排、评估闭环等）？",
-        "options": [
-          "引入混合检索：BM25 关键词检索与稠密向量检索并用，弥补纯向量检索对型号、人名等精确词的短板。",
-          "在初筛之后接入重排序模型（cross-encoder reranker），对候选片段做精细排序后再交给生成环节。",
-          "根据文档结构设计分块策略，在块大小的召回精度与语义完整性之间取得平衡。",
-          "把所有文档切到尽可能小的粒度（如逐句成块），块越小检索就越精准可靠。",
-          "向量检索上线后即可视为彻底消除幻觉，无需再配置引用校验或忠实度评估。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-eaefaed7"
-      }
-    ],
-    "slm-rag-ceiling-01": [
-      {
-        "id": "slm-rag-ceiling-01__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "受参数量限制，小语言模型（SLM）存在隐式事实记忆容量受限的「知识天花板」。关于克服小模型这一天花板，下列哪些做法成立？",
-        "options": [
-          "模型参数即参数化记忆（Parametric Memory），缩小参数量必然拉低模型隐式存下的宽泛世界知识与偏门事实总量。",
-          "面向事实性问答，靠引入 RAG（检索增强生成）把非参数化知识注入上下文，是避免无限制扩参的重要架构解法。",
-          "在 RAG 架构里，小模型通常对检索上下文中的噪声与不相关信息更敏感，故相比大模型更依赖高质量 Context 剪裁与重排序（Reranking）。",
-          "借高质量合成数据（Synthetic Data）训练，可彻底取消小模型参数量限制，让它无限量记住所有互联网事实。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-862472c2"
-      },
-      {
-        "id": "slm-rag-ceiling-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在用小模型扛知识问答，发现参数记忆装不下。下列办法中，哪些能靠外置检索或工具真正补足 SLM 的知识上限？",
-        "options": [
-          "参数本身构成参数化记忆（Parametric Memory），一旦削减参数量，模型暗中记下的广博常识与冷门事实总量必然随之下降。",
-          "针对事实性问答场景，通过引入 RAG（检索增强生成）机制将非参数化知识注入上下文，是避免无限扩大模型参数量的重要架构解法。",
-          "在 RAG 架构中，小模型通常对检索上下文中的噪声和不相关信息更加敏感，因此相比大模型更依赖高质量的 Context 剪裁与重排序（Reranking）。",
-          "借助高质量合成数据（Synthetic Data）训练，可以彻底取消小模型的参数量限制，使其无限量记忆所有互联网事实。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-862472c2"
       }
     ],
     "rag-vs-param-memory": [

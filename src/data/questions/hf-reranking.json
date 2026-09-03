@@ -72,43 +72,6 @@
     }
   },
   {
-    "id": "lateinter-03",
-    "category": "rag",
-    "topic": "reranking",
-    "tags": [
-      "multi-vector",
-      "storage-cost",
-      "token-pooling",
-      "plaid"
-    ],
-    "difficulty": "hard",
-    "angle": "tradeoff",
-    "question": "多向量表示的主要代价是索引体积随 token 数线性增长。下列哪些做法可以缓解这一存储代价？",
-    "explanation": "缓解手段包括：把每个 token 向量投影到低维（如 ColPali 的 D=128）；token pooling（pool_factor=2）把向量数减半而性能几乎不降；只对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，避免对全库建多向量索引。把多向量拼接成单个向量会丢失 token 级对齐且维度爆炸，并非可行缓解。",
-    "source": {
-      "materialId": "hf-blog-multi-vector-encoder"
-    },
-    "formats": {
-      "choice": {
-        "type": "multiple",
-        "options": [
-          "把每个 token 向量投影到低维（如 ColPali 的 D=128）以减少单向量大小",
-          "采用 token pooling（如 pool_factor=2）把向量数减半，通常只损失极少性能",
-          "只对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，而不对全库建多向量索引",
-          "把多向量拼接成单个向量后做 cosine，既保留细粒度又省存储"
-        ],
-        "answer": [
-          0,
-          1,
-          2
-        ]
-      },
-      "open": {
-        "referenceAnswer": "缓解：低维投影(D=128)、token pooling 减半、rerank-only 不建全库索引。拼接单向量丢失对齐且维度爆炸。"
-      }
-    }
-  },
-  {
     "id": "lateinter-04",
     "category": "rag",
     "topic": "reranking",
