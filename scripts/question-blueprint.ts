@@ -37,7 +37,8 @@ const blueprints = coverageSuggestions(matrix)
     if (!bp) return null; // 理论不可达：建议只来自知识节点
     // 字段名刻意不用 variantCandidateIds：变体（ADR-069）继承 canonical 的 topic × angle，
     // 用它补覆盖缺口等于把 A 格的题搬到 B 格，A 格重新空出来，覆盖率永远补不满。
-    // 这里是「改写已有题以改变其 angle」的候选，是 reuse，不是 variant。
+    // 这里是「以已有题为蓝本 fork 新 canonical」的候选（derive，新 ID + derivedFrom），是 reuse，不是 variant。
+    // 禁止原地改写候选题的 angle/difficulty 后沿用原 ID（evidence 污染，见 questionIdentity.ts）。
     return { ...bp, priority: s.priority, reuseCandidateIds: variantCandidates(questions, bp).map((q) => q.id) };
   })
   .filter((x) => x !== null);

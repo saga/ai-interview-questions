@@ -25,6 +25,7 @@ import {
 } from '../agent/types';
 import { createInterviewAgent } from '../agent/interviewAgent';
 import type { InterviewAgentHandle } from '../agent/interviewAgent';
+import { validAgentEntries } from '../agent/runtime';
 import { resolveOpeningInstruction } from '../agent/prompt';
 import { devUsageLogger, resetUsageTelemetry } from '../ai/usageTelemetry';
 import {
@@ -237,6 +238,7 @@ export function useAgentInterview(
         session,
         profile: usedProfile,
         entry,
+        fallbackEntries: validAgentEntries(config),
         bank: bank.questions.filter((q) => !(config.disabledCategories ?? []).includes(q.category)),
         provider: createLLMProvider(config, devUsageLogger),
         generateOpenQuestions: config.generateOpenQuestions,
@@ -427,6 +429,7 @@ export function useAgentInterview(
         session,
         profile: rec.profile,
         entry,
+        fallbackEntries: validAgentEntries(config),
         bank: bank.questions.filter((q) => !(config.disabledCategories ?? []).includes(q.category)),
         provider: createLLMProvider(config, devUsageLogger),
         generateOpenQuestions: config.generateOpenQuestions,

@@ -53,9 +53,15 @@ describe('mergeQuestionRubric', () => {
   });
 
   it('权重统一使用全局 rubric（题目级 dimensions 覆盖已移除，ADR-044）', () => {
-    // 题目不再携带 rubric，无论传什么都应原样返回全局权重
+    // 无 profile 的题目：原样返回全局权重副本
     expect(mergeQuestionRubric(q(), GLOBAL).rubric).toEqual(GLOBAL);
     expect(mergeQuestionRubric(q(), GLOBAL).rubric).not.toBe(GLOBAL); // 返回副本，不共享引用
+  });
+
+  it('带 evaluationProfile 的题目走预设权重（P2-5），且权重归一化', () => {
+    const { rubric } = mergeQuestionRubric({ ...q(), evaluationProfile: 'coding' }, GLOBAL);
+    expect(rubric).toEqual({ correctness: 0.7, completeness: 0.15, architecture: 0.05, communication: 0.1 });
+    expect(rubric.correctness + rubric.completeness + rubric.architecture + rubric.communication).toBeCloseTo(1);
   });
 
   it('requiredPoints 统一来自知识点节点的 required（单一来源，ADR-044）', () => {

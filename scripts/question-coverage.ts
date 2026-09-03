@@ -8,9 +8,11 @@ import { fileURLToPath } from 'node:url';
 import type { KnowledgeNode } from '../src/schemas/knowledge';
 import type { Question } from '../src/schemas/question';
 import {
+  assessmentQualityOf,
   coverageSuggestions,
   formatCoverageReport,
   questionCoverageMatrix,
+  retrievalReadinessOf,
 } from '../src/domain/coverage.ts';
 
 const dataDir = fileURLToPath(new URL('../src/data/', import.meta.url));
@@ -30,4 +32,9 @@ if (questions.length === 0 || nodes.length === 0) {
 }
 
 const matrix = questionCoverageMatrix(questions, nodes);
-console.log(formatCoverageReport(matrix, coverageSuggestions(matrix)));
+console.log(
+  formatCoverageReport(matrix, coverageSuggestions(matrix), {
+    quality: assessmentQualityOf(questions as Question[]),
+    readiness: retrievalReadinessOf(nodes as KnowledgeNode[]),
+  }),
+);

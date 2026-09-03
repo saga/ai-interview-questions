@@ -27,7 +27,7 @@ import { createAgentTools } from './tools';
 import { effectiveProfileFor } from './sessionState';
 import { evaluateSessionQuestion } from '../application/sessionEvaluator';
 import { buildAgentSystemPrompt } from './prompt';
-import { buildAgentRuntime } from './runtime';
+import { buildAgentRuntime, buildFallbackAgentRuntime } from './runtime';
 import { piUsageToLLMUsage } from '../ai/pi';
 import type { LLMUsage } from '../types';
 import type { AgentHandlers, InterviewAgentSession } from './types';
@@ -99,7 +99,14 @@ export function beforeToolCall(
 export interface CreateInterviewAgentOptions {
   session: InterviewAgentSession;
   profile: LearnerProfile;
+  /** 主引擎（守卫/展示用）。`fallbackEntries` 未传时它也是唯一的运行时引擎。 */
   entry: ProviderEntry;
+  /**
+   * Agent 主循环降级链（P1-2）：按序尝试，首个为主引擎。传入多条时运行时走
+   * `buildFallbackAgentRuntime`，否则退化为单引擎 `buildAgentRuntime(entry)`。
+   * 用户主动取消（abort）绝不切换引擎，直接透出。
+   */
+  fallbackEntries?: ProviderEntry[];
   bank: Question[];
   provider: LLMProvider | null;
   handlers?: AgentHandlers;
@@ -147,8 +154,11 @@ export interface InterviewAgentHandle {
  * - 工具注入方式：Agent 构造不接受 tools 选项，只能事后通过 state.tools 注入（已验证的 SDK 约定）。
  */
 export function createInterviewAgent(opts: CreateInterviewAgentOptions): InterviewAgentHandle {
-  const { session, profile, entry,  bank, provider, handlers, generateOpenQuestions = false, runtimeVariantEnabled = false, masteryThreshold, agentInstructions: configuredInstructions } = opts;
-  const runtime = opts.runtimeOverride ?? buildAgentRuntime(entry);
+  const { session, profile, entry, fallbackEntries, bank, provider, handlers, generateOpenQuestions = false, runtimeVariantEnabled = false, masteryThreshold, agentInstructions: configuredInstructions } = opts;
+  const chain = (fallbackEntries ?? [entry]).filter(Boolean);
+  const runtime = opts.runtimeOverride ?? (chain.length > 1
+    ? buildFallbackAgentRuntime(chain)
+    : buildAgentRuntime(chain[0] ?? entry));
   const tools = createAgentTools({ bank, profile, provider, session, generateOpenQuestions, runtimeVariantEnabled, masteryThreshold });
   const bankById = new Map(bank.map((q) => [q.id, q]));
 

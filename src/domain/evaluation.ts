@@ -1,6 +1,7 @@
 // 纯逻辑：评分聚合与确定性判分。不依赖 React / LLM。
 
 import { EVAL_DIMENSIONS, DIMENSION_LABELS } from '../types';
+import type { EvaluationProfile } from '../schemas/common';
 import type { ChoiceFormat } from '../schemas/question';
 import type { EvaluationDimension } from '../schemas/common';
 import type { EvalLevel, EvaluationResult } from '../schemas/evaluation';
@@ -13,6 +14,24 @@ export const DEFAULT_RUBRIC: ScoringRubric = {
   completeness: 0.2,
   architecture: 0.2,
   communication: 0.2,
+};
+
+/**
+ * 题型评分预设（P2-5）：维度仍是固定四维，只按题型 shifting 权重（和恒为 1）。
+ * - coding：代码正确性占 0.7，避免"代码不行但解释好"仍拿高分；
+ * - debugging：诊断正确占大头，表达只占 0.15；
+ * - theory：架构维只占 0.1（KV Cache 这类题硬套 architecture 很勉强）；
+ * - system-design：架构 0.3，与默认最接近；
+ * - tradeoff：正确性 + 架构权衡并重；
+ * - behavioral：表达 0.35（行为题本来就考沟通）。
+ */
+export const EVALUATION_PROFILE_RUBRICS: Record<EvaluationProfile, ScoringRubric> = {
+  theory: { correctness: 0.5, completeness: 0.25, architecture: 0.1, communication: 0.15 },
+  coding: { correctness: 0.7, completeness: 0.15, architecture: 0.05, communication: 0.1 },
+  debugging: { correctness: 0.6, completeness: 0.15, architecture: 0.1, communication: 0.15 },
+  'system-design': { correctness: 0.35, completeness: 0.2, architecture: 0.3, communication: 0.15 },
+  tradeoff: { correctness: 0.4, completeness: 0.2, architecture: 0.25, communication: 0.15 },
+  behavioral: { correctness: 0.3, completeness: 0.25, architecture: 0.1, communication: 0.35 },
 };
 
 /**

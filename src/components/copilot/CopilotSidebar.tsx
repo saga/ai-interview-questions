@@ -170,6 +170,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       bank: questionBank.questions,
       profile: profile ?? emptyProfile(),
       entry,
+      fallbackEntries: config.providers.filter((p) => p.enabled && isEntryValid(p)),
       provider: providerForAgent,
       resumeSession,
     })
@@ -295,6 +296,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           bank: questionBank.questions,
           profile: profile ?? emptyProfile(),
           entry,
+          fallbackEntries: config.providers.filter((p) => p.enabled && isEntryValid(p)),
           provider: providerForAgent,
           instruction: '请开始一次模拟面试，根据我的薄弱项自适应出题。',
         });

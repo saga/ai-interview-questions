@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { difficultySchema, questionAngleSchema } from './common.ts';
+import { difficultySchema, evaluationProfileSchema, questionAngleSchema } from './common.ts';
 
 /** 题目溯源引用：课程题库题必须能追溯到原始教学材料（提案要求"Source Evidence"）。 */
 const questionSourceRefSchema = z.object({
@@ -93,8 +93,24 @@ export const questionSchema = z
     knowledgeId: z.string().min(1).optional(),
     /** 题目溯源：来自哪份教学材料 / 章节 / 页码。 */
     source: questionSourceRefSchema.optional(),
+    /**
+     * 评分预设（可选）：开放题按题型 shifting 四维权重（如 coding 的 correctness 占 0.7）。
+     * 缺省 = 全局 rubric。只允许 6 档枚举，不允许题目自带任意权重（ADR-044）。
+     */
+    evaluationProfile: evaluationProfileSchema.optional(),
     /** 该题试图探测的常见误解（用于证据+反证评分器，选择题尤其有价值）。 */
     misconceptions: z.array(z.string().min(1)).optional(),
+    /**
+     * 派生来源（可选）：本 canonical 由哪道题 fork/derive 而来。
+     *
+     * **canonical 身份不可变（assessment identity immutable）**：`id` 绑定的是
+     * 「测什么能力」（`topic × angle × difficulty × 认知任务/诊断目标`），而不是题面文字。
+     * 改变其中任一项必须产生**新 canonical ID**（fork），禁止原地改写后沿用原 ID——
+     * 否则 Learner Memory 里以 `questionId` 为键的历史证据会被污染（旧分代表旧能力）。
+     * fork 时填 `derivedFrom: <原题id>` 保留知识血缘；variant（同 assessment contract
+     * 的表达变换）不填此字段、不改变上述任一字段。
+     */
+    derivedFrom: z.string().min(1).optional(),
     formats: z.object({
       choice: choiceFormatSchema.optional(),
       open: openFormatSchema.optional(),

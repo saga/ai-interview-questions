@@ -289,6 +289,17 @@ describe('题目证据槽位上限（ADR-063 §11）', () => {
     expect(evidence.hits.some((h) => h.kind === 'knowledge')).toBe(true);
   });
 
+  it('P1-3：global 下同等命中时知识文档排在题目之前（题目 0.7 次级降权）', () => {
+    const evidence = searchKnowledge(
+      { query: 'KV Cache 自回归解码延迟', scope: 'global', limit: 5 },
+      { index: testIndex(), nodes },
+    );
+    const firstKnowledge = evidence.hits.findIndex((h) => h.kind === 'knowledge');
+    const firstQuestion = evidence.hits.findIndex((h) => h.kind === 'question');
+    expect(firstKnowledge).toBeGreaterThanOrEqual(0);
+    if (firstQuestion >= 0) expect(firstKnowledge).toBeLessThan(firstQuestion);
+  });
+
   it('quiz 模式只给题，且不受槽位限制', () => {
     const evidence = searchKnowledge(
       { query: '考考我 transformer', scope: 'global', mode: 'quiz', limit: 5 },

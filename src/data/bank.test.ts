@@ -107,6 +107,16 @@ describe('题库数据完整性', () => {
     }
   });
 
+  it('derivedFrom 若存在必须指向库内已有的 canonical（知识血缘不断）', () => {
+    const ids = new Set(qs.map((q) => q.id));
+    for (const q of qs) {
+      if (q.derivedFrom !== undefined) {
+        expect(ids.has(q.derivedFrom), `${q.id} derivedFrom "${q.derivedFrom}" 不存在`).toBe(true);
+        expect(q.derivedFrom, `${q.id} 不能自指派生`).not.toBe(q.id);
+      }
+    }
+  });
+
   it('每个题目的 topic 都能映射到知识节点 id（防孤儿漂移）', () => {
     const nodeIds = new Set(knowledgeNodes.map((n) => n.id));
     for (const q of qs) {

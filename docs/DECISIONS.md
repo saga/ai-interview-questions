@@ -2,6 +2,33 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-076 · 外部评审五项收口（canonical 身份 / Agent 端到端 fallback / 知识主次 / 三维覆盖 / 评分预设）
+
+- 状态：已采纳 · 2026-09-04
+- 背景：外部对 `dev0902` 的第二轮独立评审指出 4 个架构级问题 + 评分一刀切（P1-1 canonical rewrite 沿用原 ID 污染 learner evidence；P1-2 Agent 主循环 single provider、fallback 只在 one-shot 工具层；P1-3 题库同时是考试题库与 RAG corpus 的结构性冲突；P1-4 `topic × angle` 被当成能力覆盖的代理；P2-5 开放题固定四维权重）。
+  核实：四条 P1 全部属实（`fill-coverage-gap` skill 第 4 步明写"改写已有题 angle/difficulty"且无 fork 语义；`buildAgentRuntime(entry)` 单引擎而工具层 `provider` 走 `createLLMProvider` 降级链；检索层题目只做槽位限制、无分数主次；覆盖报告只有计数维度；`DEFAULT_RUBRIC` 全题型统一）。
+- 决策：
+  1. **canonical 身份不可变**：`id` 绑定 assessment contract（`topic × angle × difficulty × 认知任务`）。
+     改变任一项必须 fork 新 canonical（`deriveCanonicalId` 分配 `<topic>-<angle>-<NN>` + `derivedFrom` 指回原题），
+     禁止原地改写沿用原 ID。新域模块 `src/domain/questionIdentity.ts`（`assessmentContractOf` / `isAssessmentChange` / `deriveCanonicalId` + 单测）；
+     `fill-coverage-gap` skill 第 4 步改写为 fork 语义；`Question` 新增可选 `derivedFrom`（`bank.test.ts` 断言其指向库内已有题）；
+     新增 `npm run question:identity` 审计 git 历史中同 ID 变 contract 的记录（默认全历史仅报告；`--gate [--since <rev>]` 作 PR gate，历史 topic 归一化等 grandfathered 债务不阻塞发版）。
+  2. **Agent fallback 下沉到 Runtime**：新增 `buildFallbackAgentRuntime(entries)` / 可单测的 `chainStreamFns`（`src/agent/runtime.ts`），
+     主循环 streamFn 按序尝试、用户主动 abort 绝不切换引擎；`createInterviewAgent` 新增可选 `fallbackEntries`（缺省单引擎零破坏）；
+     `useAgentInterview`（新开/续面）、`startChatInterview`、CopilotSidebar 两处调用点传入全部有效引擎（`validAgentEntries`，顺序即降级顺序）。
+     README 的"多引擎自动降级"至此对 Agent 主循环亦成立。
+  3. **Knowledge primary / Question secondary**：检索层题目混合分数乘 `QUESTION_SECONDARY_WEIGHT = 0.7`
+    （`current_question` / `quiz` 例外权重为 1），叠加既有 2 席槽位上限；`knowledge` scope 本就排除题目。
+     Copilot 先检索 Knowledge，Question 只作次级证据——选择题 distractor 的错误说法不再能排到知识解释前面。
+  4. **覆盖报告三维拆分**：保留 `topic × angle` 为唯一治理索引，报表追加 `assessmentQualityOf`（带误解标注/误解映射/单角度知识点）与
+     `retrievalReadinessOf`（节点 summary/required/misconceptions 齐全率）两个独立信号；`formatCoverageReport` 第三参数可选，存量调用零破坏。
+     首跑实测（1308 题 / 123 节点）：误解标注仅 149、选择题误解映射 97/1308、单角度知识点 21——正是计数 100% 背后的真实缺口。
+  5. **轻量 `evaluationProfile`**：`common.ts` 新增 6 档枚举（theory/coding/debugging/system-design/tradeoff/behavioral），
+     `Question.evaluationProfile` 可选；`EVALUATION_PROFILE_RUBRICS` 只 shifting 固定四维的权重（coding correctness 0.7 等，和恒为 1）；
+     `mergeQuestionRubric` 有 profile 走预设、无 profile 走全局——ADR-044"禁止手写权重"仍然成立，定制只允许走枚举。
+- 明确不做：provenance 强约束、category/topic/knowledgeId 瘦身、release gate 全库 P0/P1（评审 P2-6/7/8）——留待后续轮次，不在本 ADR 扩张。
+- 验证：`npx vitest run` 全量通过；`npm run question:coverage` 三维输出正常；`npm run question:identity` 全历史扫描报告 300+ grandfathered 记录（exit 0）、`--gate` 模式供 PR 用。
+
 ## ADR-073 · Variant = 表达变体（统一定义）+ sourceHash 覆盖元数据
 
 - 状态：已采纳 · 2026-09-03

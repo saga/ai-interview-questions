@@ -46,6 +46,21 @@ export const evaluationDimensionSchema = z.enum([
   'communication',
 ]);
 
+/**
+ * 评分预设（P2-5）：开放题的一刀切四维权重对 coding/debugging 等题型不自然
+ * （代码写对了但"架构表达"弱，不该被扣 20%）。题目可选填一个 profile，
+ * 评分时按预设权重聚合；不填则沿用全局 rubric。刻意只做 6 档枚举，
+ * 不引入 scoring DSL——维度仍是固定的四维，只是权重按题型 shifting。
+ */
+export const evaluationProfileSchema = z.enum([
+  'theory',
+  'coding',
+  'debugging',
+  'system-design',
+  'tradeoff',
+  'behavioral',
+]);
+
 export const idSchema = z.string().min(1);
 
 // ── 单源类型导出（Zod 即契约，推导即类型） ──
@@ -56,3 +71,4 @@ export type QuestionAngle = z.infer<typeof questionAngleSchema>;
 export type KnowledgeArea = z.infer<typeof knowledgeAreaSchema>;
 export type KnowledgePriority = z.infer<typeof knowledgePrioritySchema>;
 export type EvaluationDimension = z.infer<typeof evaluationDimensionSchema>;
+export type EvaluationProfile = z.infer<typeof evaluationProfileSchema>;

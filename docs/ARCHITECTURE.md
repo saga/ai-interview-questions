@@ -69,8 +69,12 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
                  掌握度策略也在此（ADR-030）：WEAK_* 阈值、isMastered/isAttempted、
                  coverage、expandWithPrerequisites——mastery=avgScore/100 是当前简化
                  启发式而非能力度量，trend/attempts/evidence 各自承担信号语义
-  coverage.ts    题库覆盖矩阵（topic × angle）+ 补题建议 + 报告格式化（纯函数，
-                 题目/知识点由调用方注入，浏览器与 CLI 共用；ADR-032 慢速生产管线度量端）
+   coverage.ts    题库覆盖矩阵（topic × angle）+ 补题建议 + 报告格式化（纯函数，
+                  题目/知识点由调用方注入，浏览器与 CLI 共用；ADR-032 慢速生产管线度量端；
+                  coverage ≠ quality ≠ retrieval readiness 三维分开展示，
+                  见 assessmentQualityOf / retrievalReadinessOf）
+   questionIdentity.ts canonical 身份判定：assessment contract（topic×angle×difficulty）
+                  任一变化即新身份；deriveCanonicalId 分配 fork 新 ID（P1-1）
   blueprint.ts   题目蓝图：缺口格→受约束考察目标（purpose/expectedConcepts 取自
                  知识节点）+ 同主题变体候选检索 + 成题一致性校验（ADR-032 管线 ③ 步；
                  注意其对 coverage.ts 的运行时导入带 .ts 扩展名——Node 原生 TS 直跑要求，
@@ -296,7 +300,11 @@ User Query → query planner（scope / mode，确定性规则）
 1. **投影而非切块**：`KnowledgeNode`（summary/required/misconceptions/angles）与 `Question`（stem/options/explanation）投影成统一的 `KnowledgeDocument`，保留 metadata 供精确过滤；不把 JSON 当 chunk 直接喂。
 2. **真值隔离在检索层**：`explanation / choice.answer / referenceAnswer` 进入 `sensitiveText`，`renderDocument(doc, mode)` 硬裁剪——`hint` 只给知识骨架与误解，`quiz` 只给题干。检索不能绕过 assessment boundary。
 3. **scope / mode 由确定性规则决定**，不额外消耗一次 LLM 调用：检索范围与答案可见性是安全边界，不能交给模型判断。`explain` 只在 scope=`current_question` 时出现（用户明确在谈那道题、或对其求提示/求详细解读）；其余知识问题默认走安全模式 `hint`，不暴露题库真值（`answer`/`explain` 才开真值闸门）。
-4. **Question 是 Knowledge 的 evidence 而非主知识源**：`knowledge` scope 排除题目；其余 scope 题目证据最多 2 个槽位（`current_question` / `quiz` 放开）。实测不加限制时 top 5 全是题目，模型会「从题库答案总结答案」。
+4. **Knowledge = truth（primary），Question = assessment projection（secondary）**：
+   考试题刻意省略信息、制造 distractor（错误说法），不能当主要知识源。
+   `knowledge` scope 排除题目；其余 scope 题目证据最多 2 个槽位（`current_question` / `quiz` 放开），
+   且混合分数乘 0.7 次级降权（`questionSecondaryWeight`），同等命中下知识文档恒在前。
+   实测不加限制时 top 5 全是题目，模型会「从题库答案总结答案」。
 
 Concept Graph 由此从「出题算法辅助结构」升级为 **Knowledge Backbone**：同一张图（1-hop：prerequisite 0.8 / related 0.6 / dependent 0.45）同时驱动 adaptive selection 与 knowledge retrieval。
 
@@ -380,8 +388,9 @@ InterviewDefinition  (声明式：categories / difficulties / formats('choice'|'
 - 开放形态：走 `LLMProvider.evaluateOpenAnswer(question, open, answer)`，
   `useAI=false` 或无有效 provider 时返回 null（UI 提示未评分）——useAI 开关同时门控变体出题与开放形态评分。
 - 自适应模式无组卷配额：双形态可用时按 p(open)=0.3 加权随机分配，体验与普通会话的 7:3 一致。
-- 题目级 `rubric.required` 会注入评分提示、`rubric.dimensions` 覆盖全局权重
-  （合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
+- 评分要点来自知识节点的 `required`（ADR-029，唯一来源），`Question.explanation` 直接注入评分提示；
+  权重默认用全局 `scoringRubric`，题目可填 `evaluationProfile`（theory/coding/debugging/system-design/tradeoff/behavioral
+  六档枚举）走预设权重——任意手写权重仍被禁止（ADR-044；合并逻辑在 `ai/provider.mergeQuestionRubric`，纯函数有测试）。
 
 ## LLM 能力边界（ADR-019 / ADR-021 / ADR-023 / ADR-034）
 
@@ -402,7 +411,8 @@ Quiz / 训练 / 规则式模拟面试 ──→ createLLMProvider(AIConfig)：�
 Agent 面试（第 5 页）──→ src/agent/ + pi-agent-core：observe → decide → tool 循环（ADR-034）
                         选题/评分/读画像经 tools.ts 薄包装既有能力，Agent 不自己打分；
                         题目正文不进 Agent 上下文，呈现归 UI（ADR-053）；
-                        单 provider 起步，不接 FallbackProvider
+                        主循环经 buildFallbackAgentRuntime 走端到端降级链（与 one-shot 的
+                        FallbackProvider 同构；用户主动 abort 绝不切换引擎）
 ```
 
 - 训练与规则式面试的 LLM 调用都是 one-shot 结构化生成，无状态；Agent 面试的
@@ -502,6 +512,12 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 - **薄弱主题推荐**：`mastery < 0.85 且 avgScore < 85` 的主题按掌握度升序取前 3，写入 `InterviewDefinition.topicPriorities`；`buildSession` 用 `pickPrioritized` 保证薄弱主题的题优先进入训练。
 - **持久化**：`storage/learner.ts`（IndexedDB via Dexie，见 `db.ts`）。Learner 画像与 SessionRecord 历史已迁 IndexedDB——画像存单例表（剔除 sessions blob），会话历史拆 `sessions` 表并建 `startedAt/overall/*topics` 索引，直接支撑 `getRecentSessions/getWeakTopics` 等范围查询（替代原 localStorage 大 blob 反模式）；小 KV 配置（AIConfig）仍留 localStorage（甜点区）。不读取/迁移任何旧 localStorage 数据，旧画像直接以空画像起步。
 - **边界**：推荐逻辑当前为确定性规则（纯函数、可测）；未来"教练叙事 / 追问面试"可接 `pi-agent-core`，但 Agent 只读压缩画像，不读全文。
+- **canonical 身份不可变（assessment identity immutable）**：`questionId` 是 Learner evidence 的键，
+  它绑定的是「测什么能力」（`topic × angle × difficulty × 认知任务`）而非题面文字。
+  改变其中任一项必须 fork 新 canonical（新 ID + `derivedFrom` 指回原题），禁止原地改写沿用原 ID——
+  否则历史分数在语义上失效而系统仍正常运行（隐性污染）。variant（同 contract 的表达变换）与
+  derived canonical（同血缘、不同 contract）是两个概念（见 `src/domain/questionIdentity.ts`；
+  补缺口流程见 `fill-coverage-gap` skill，历史审计见 `npm run question:identity`）。
 
 ## LLM 变体安全（关键）
 

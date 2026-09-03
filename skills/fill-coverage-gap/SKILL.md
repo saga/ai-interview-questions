@@ -17,10 +17,14 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 3. 运行 `npm run question:blueprint -- <limit>`，为选定数量的缺口生成蓝图 JSON。每条蓝图包含：
    - 对应知识节点的 `purpose` / `expectedConcepts`（约束这道题该考什么，见下方"expectedConcepts 的用法"）
    - `reuseCandidateIds`：同 topic 下已有题的 id，按角度梯度距离升序——**改写**成目标 angle 的候选
-4. 对每条蓝图，按优先级决策：
-   - **先看 reuse**：若 `reuseCandidateIds` 中已有题能通过**改变其 angle / difficulty** 覆盖该缺口
-     （即 rewrite / curate，保留核心 Concept、换认知任务），优先改写它，而不是新写一题。
-   - **不能 reuse 才新写 canonical 题**，遵守蓝图里的 `purpose` 和 `expectedConcepts` 约束，不要跑题。
+4. 对每条蓝图，按优先级决策（**canonical 身份不可变**：`id` 绑定的是 assessment contract，
+   不是题面文字；改变 `angle / difficulty / 认知任务/诊断目标` 必须 fork 新 canonical，禁止原地改写沿用原 ID）：
+    - **先看 reuse（fork/derive）**：若 `reuseCandidateIds` 中已有题可作为素材（复用 source / knowledgeId /
+      expected concepts / misconception / 场景骨架甚至部分题干），以它为蓝本 **fork 一道新 canonical**
+      覆盖该缺口：用 `deriveCanonicalId(topic, angle, 已有ID)` 分配新 ID，并填 `derivedFrom: <原题id>`
+      保留知识血缘。**禁止**直接改原题的 angle/difficulty 后保持原 ID——那会污染 Learner Memory
+      里以 `questionId` 为键的历史证据（旧分代表旧能力）。
+    - **不能 reuse 才从零新写 canonical 题**，遵守蓝图里的 `purpose` 和 `expectedConcepts` 约束，不要跑题。
    - 新 canonical 题写入成功后，若需要在**同一格内**扩充题量（减少重复感），
      才走离线变体生成（`npm run question:variants`，见 ADR-069）。
 5. 起草完成后，交给 **add-question-to-bank** skill 的完整校验与写入流程（题目契约、去重、语义重复检查、typecheck、test）。本 skill 不重复实现写入逻辑。
@@ -33,7 +37,9 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 
 ## 检索视角的缺口（ADR-063/065/066）
 
-`topic × angle` 缺口不再只影响抽题，也直接决定 Copilot 能不能答上来——题库就是结构化检索的 corpus。
+`topic × angle` 缺口不再只影响抽题，也直接决定 Copilot 能不能答上来——但注意主次：
+**知识节点是 primary corpus，题库只是 secondary evidence**（P1-3：题目含 distractor 错误说法，
+不能当主要知识源；检索层对题目有 0.7 降权 + 最多 2 席槽位）。补题前先补节点，节点空则补题只增加真值、不增加可讲的知识点。
 
 - **无知识节点的 topic = 检索盲区**：该主题下所有题在 `topic` / `knowledge` 范围都检索不到，`validate:questions` 之外没有兜底。
 - **节点字段不全 = evidence 质量差**：`summary` / `required` / `misconceptions` 构成知识文档正文主体，缺一项该节点就只能靠题面撑，Copilot 退化成"从题库答案总结答案"。
@@ -87,5 +93,6 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 - 蓝图的 `purpose`/`expectedConcepts` 来自知识节点，起草新题必须尊重这个**边界**，不能自行扩大考察范围（选哪个 Concept 见上节）。
 - 不引入概念层或额外索引维度（ADR-042/043 已明确废弃概念层，覆盖索引只有 `topic × angle`）。
 - 目标节点若 `summary` / `required` / `misconceptions` 为空，**先补节点再补题**：节点是知识源，题目只是它的 evidence（ADR-063 §11），节点空则补题只增加真值、不增加可讲的知识点。
-- 最终报告需包含：处理了哪些缺口（区分 **rewrite 已有题** / **新写 canonical** / **同格内变体**）、
-  对应题 id、顺带修复的知识节点字段与锚点冲突、剩余未处理的建议及其优先级。
+- 最终报告需包含：处理了哪些缺口（区分 **fork 已有题（新ID + derivedFrom）** / **从零新写 canonical** / **同格内变体**）、
+  对应题 id（含 derivedFrom 链）、顺带修复的知识节点字段与锚点冲突、剩余未处理的建议及其优先级。
+- 严禁报告里出现"原题改 angle 后保留原 ID"：那不是复用，是 evidence 污染。

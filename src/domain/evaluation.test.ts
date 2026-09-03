@@ -1,7 +1,7 @@
 // 纯逻辑测试：评分聚合与选择题确定性判分。
 
 import { describe, it, expect } from 'vitest';
-import { aggregateOverall, gradeChoice, describeEvaluationSummary, describeLevels } from './evaluation';
+import { aggregateOverall, gradeChoice, describeEvaluationSummary, describeLevels, DEFAULT_RUBRIC, EVALUATION_PROFILE_RUBRICS } from './evaluation';
 import type { ChoiceFormat } from '../schemas/question';
 import type { EvaluationDimension } from '../schemas/common';
 import type { EvalLevel, EvaluationResult } from '../schemas/evaluation';
@@ -220,5 +220,16 @@ describe('describeLevels', () => {
   it('只有一维不同也要展开，不能因为「多数相同」就丢信息', () => {
     const text = describeLevels({ correctness: 4, completeness: 4, architecture: 4, communication: 1 });
     expect(text).toBe('正确性=4, 完整性=4, 架构=4, 表达=1');
+  });
+});
+
+describe('EVALUATION_PROFILE_RUBRICS（P2-5）', () => {
+  it('6 档预设权重各自归一化，且 coding/debugging 的 correctness 显著高于默认', () => {
+    for (const [name, r] of Object.entries(EVALUATION_PROFILE_RUBRICS)) {
+      const sum = r.correctness + r.completeness + r.architecture + r.communication;
+      expect(sum, name).toBeCloseTo(1);
+    }
+    expect(EVALUATION_PROFILE_RUBRICS.coding.correctness).toBeGreaterThan(DEFAULT_RUBRIC.correctness);
+    expect(EVALUATION_PROFILE_RUBRICS.debugging.correctness).toBeGreaterThan(DEFAULT_RUBRIC.correctness);
   });
 });

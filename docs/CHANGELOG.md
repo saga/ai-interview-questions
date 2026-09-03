@@ -1,6 +1,16 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · 外部评审五项全部收口（canonical 身份 / Agent fallback / 知识主次 / 三维覆盖 / 评分预设）
+
+第二轮外部评审的 4 个架构级问题 + 评分一刀切，本轮**全部执行**，决策理由见 ADR-076：
+
+- **P1-1 canonical 身份不可变**：改 `angle/difficulty/认知任务` 必须 fork 新 canonical（新 ID + `derivedFrom`），禁止原地改写沿用原 ID（污染 Learner evidence）。新增 `questionIdentity.ts` + 单测，`fill-coverage-gap` skill 改 fork 语义，`bank.test.ts` 锁 `derivedFrom` 有效性，新增 `npm run question:identity` 历史审计（`--gate --since` 作 PR 门禁）
+- **P1-2 Agent 端到端 fallback**：`buildFallbackAgentRuntime` / `chainStreamFns` 下沉到 Runtime streamFn 层，abort 永不切换；`useAgentInterview` / `startChatInterview` / CopilotSidebar 全接线（`runtime.test.ts` 4 项）
+- **P1-3 Knowledge primary**：检索层题目 0.7 次级降权 + 2 席槽位，`knowledge` scope 本就排除题目；skill 措辞同步
+- **P1-4 三维覆盖**：`question:coverage` 追加 assessment quality + retrieval readiness（实测：误解标注 149/1308、单角度知识点 21）
+- **P2-5 评分预设**：`evaluationProfile` 六档枚举 + `EVALUATION_PROFILE_RUBRICS`，无 profile 时行为零变化
+
 ## 2026-09-04 · Prompt 内审 12 条全部收口（KV 示例 / 枚举统一 / 数量解绑 / 推理路径）
 
 上一轮外部评审指出的 Prompt 内部逻辑冲突与生成质量问题，本轮**全部执行**：P0 修正 KV Cache Variant 示例（explain/mechanism，不再用 diagnose 现象找根因）并统一 `cognitiveTask` 枚举为 `define/explain/mechanism/compare/apply/diagnose/evaluate/design`（`tradeoff` 只留 `angle`）；P1 解绑 Variant 数量（离线 oversample→filter 决定）、删除 Dice 具体阈值（归验证器）、新增不得增加推理负担/场景约束、多选互斥与程度词边界；P2 精确化 Concept→Canonical 定义、Evidence enrichment/injection 区分、system-design 不足不生成、自检升级为推理路径版。`添加题库prompt.md` §2/§5/§6/§10/§11/§13/§14/§18/§19/§23/§24、精简版、`question-content-spec.md` §2/§4/§8 同步。

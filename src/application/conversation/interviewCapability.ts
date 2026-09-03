@@ -109,6 +109,8 @@ export interface StartChatInterviewOptions {
   bank: Question[];
   profile: LearnerProfile;
   entry: ProviderEntry;
+  /** Agent 主循环降级链（P1-2）：缺省仅用 entry 单引擎。 */
+  fallbackEntries?: ProviderEntry[];
   provider: LLMProvider | null;
   instruction?: string;
   generateOpenQuestions?: boolean;
@@ -172,6 +174,7 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
     session,
     profile: opts.profile,
     entry: opts.entry,
+    fallbackEntries: opts.fallbackEntries ?? [opts.entry],
     bank: opts.bank,
     provider: opts.provider,
     handlers,

@@ -15,6 +15,7 @@ import { evaluateOpenAnswer as evalOpen } from './evaluate';
 import { callLLM } from './pi';
 import { chromeComplete } from './chrome';
 import { requiredPointsFor } from '../domain/knowledge/nodes';
+import { EVALUATION_PROFILE_RUBRICS } from '../domain/evaluation';
 import { challengeQuestion, type QuestionChallenge } from './questionChallenger';
 
 /** 单个引擎通道的校验按 id 区分：
@@ -41,9 +42,10 @@ export function isConfigValid(c?: AIConfig): boolean {
 
 /**
  * 装配评分参数（纯函数，便于测试）：
- * - `rubric`：四维权重，**统一使用全局 `InterviewDefinition.scoringRubric`**。
- *   原先支持题目级 `rubric.dimensions` 覆盖，但该字段已随 ADR-044 删除——
- *   权重定制只覆盖 29.6% 的题、共 21 种组合，维护成本高于收益。
+ * - `rubric`：题目带 `evaluationProfile` 时用其预设权重（P2-5，6 档枚举），
+ *   否则使用全局 `InterviewDefinition.scoringRubric`。
+ *   任意题目级 `rubric.dimensions` 覆盖仍被禁止（ADR-044）：定制只允许走 profile 枚举，
+ *   不允许每题手写权重——后者曾只覆盖 29.6% 的题、共 21 种组合，维护成本高于收益。
  * - `requiredPoints`：必须覆盖的要点，来自知识点节点的 `required`（ADR-029，单一来源）。
  *   题目级的评分依据由 `Question.explanation` 直接注入评分提示提供。
  */
@@ -51,8 +53,9 @@ export function mergeQuestionRubric(
   q: Question,
   globalRubric: ScoringRubric,
 ): { rubric: ScoringRubric; requiredPoints?: string[] } {
+  const preset = q.evaluationProfile ? EVALUATION_PROFILE_RUBRICS[q.evaluationProfile] : undefined;
   return {
-    rubric: { ...globalRubric },
+    rubric: { ...(preset ?? globalRubric) },
     requiredPoints: requiredPointsFor(q),
   };
 }

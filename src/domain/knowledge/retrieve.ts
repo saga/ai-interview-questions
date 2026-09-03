@@ -171,11 +171,18 @@ export function inferSeeds(
 // ── 主入口 ───────────────────────────────────────────────────
 
 /**
- * 题目证据槽位上限（ADR-063 §11）：Question 是 Knowledge 的 evidence，不是主知识源。
+ * Knowledge = truth（primary），Question = assessment projection（secondary evidence）。
+ *
+ * 结构性原因：考试题刻意省略信息、制造有效 distractor（错误说法），而知识检索要
+ * 正确、完整、可解释的上下文。把选择题（含错误选项）当 primary corpus，
+ * 会让"RAG 为什么需要 reranking"这类查询捡到 A/B/C/D 里混杂的错误说法。
+ * 因此 Copilot 先检索 Knowledge，Question 只作次级证据：
+ *   1. 分数降权（QUESTION_SECONDARY_WEIGHT）：同等命中下知识文档恒排在前面；
+ *   2. 槽位上限（questionSlotLimit）：top N 里题目最多占 2 席。
+ * 两个例外不降权不限槽：`current_question`（当前题就是检索目标）与 `quiz`（题目就是素材）。
  *
  * 实测（1317 题 / 123 节点）：题干 + 4 个选项文本远长于知识节点，词面命中天然更多，
  * 不加限制时 top 5 会全部是题目——模型于是"从题库答案里总结答案"，而不是从知识模型回答。
- * 两个例外不设限：`current_question`（当前题就是检索目标）与 `quiz`（题目就是素材）。
  */
 export function questionSlotLimit(
   scope: RetrievalScope,
@@ -184,6 +191,18 @@ export function questionSlotLimit(
 ): number {
   if (scope === 'current_question' || mode === 'quiz') return limit;
   return Math.min(2, limit);
+}
+
+/**
+ * 题目次级权重：global / topic / knowledge 范围下，question doc 的混合分数
+ * 乘以该系数后再排序，保证"同等命中下 Knowledge 恒在前"。
+ * current_question / quiz 例外（题目即目标/素材），权重为 1。
+ */
+export const QUESTION_SECONDARY_WEIGHT = 0.7;
+
+export function questionSecondaryWeight(scope: RetrievalScope, mode: RetrievalMode): number {
+  if (scope === 'current_question' || mode === 'quiz') return 1;
+  return QUESTION_SECONDARY_WEIGHT;
 }
 
 export interface SearchOptions {
@@ -222,11 +241,13 @@ export function searchKnowledge(q: KnowledgeSearchQuery, options: SearchOptions 
         graph: graphScore,
         semantic: 0,
       };
-      const score =
+      const raw =
         weightsUsed.lexical * lexicalScore +
         weightsUsed.metadata * metaScore +
         weightsUsed.graph * graphScore +
         weightsUsed.semantic * 0;
+      // Question 是次级证据：同等命中下 Knowledge 恒排在前（P1-3）。
+      const score = doc.kind === 'question' ? raw * questionSecondaryWeight(scope, mode) : raw;
 
       scored.push({
         id: doc.id,

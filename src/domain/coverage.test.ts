@@ -8,9 +8,11 @@ import type { KnowledgeNode } from '../schemas/knowledge';
 import type { Question } from '../schemas/question';
 import {
   ANGLE_GENERATION_HINTS,
+  assessmentQualityOf,
   coverageSuggestions,
   formatCoverageReport,
   questionCoverageMatrix,
+  retrievalReadinessOf,
 } from './coverage';
 
 function node(id: string, priority: KnowledgeNode['priority'], angles: KnowledgeNode['angles']): KnowledgeNode {
@@ -122,5 +124,24 @@ describe('formatCoverageReport', () => {
     const text = formatCoverageReport(m, coverageSuggestions(m));
     expect(text).toContain('建议补题（共 0 条');
     expect(text).toContain('缺口 0');
+  });
+
+  it('三维指标：coverage / quality / readiness 各自独立统计', () => {
+    const qs = [q('routing', 'definition', 'r1'), q('routing', 'definition', 'r2')];
+    const quality = assessmentQualityOf(qs);
+    expect(quality.total).toBe(2);
+    expect(quality.withMisconceptions).toBe(0);
+    expect(quality.choiceWithMap).toBe(0);
+    expect(quality.singleAngleTopics).toBe(1); // routing 只有 definition 有题
+    const readiness = retrievalReadinessOf(nodes);
+    expect(readiness.total).toBe(2);
+    expect(readiness.ready).toBe(0); // 合成节点三项全空
+    expect(readiness.missingRequired).toBe(2);
+    const m = questionCoverageMatrix(qs, nodes);
+    const text = formatCoverageReport(m, coverageSuggestions(m), { quality, readiness });
+    expect(text).toContain('考察质量');
+    expect(text).toContain('检索就绪');
+    // 不传 extra 时报告保持原样（存量兼容）
+    expect(formatCoverageReport(m, coverageSuggestions(m))).not.toContain('考察质量');
   });
 });
