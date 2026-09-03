@@ -12,7 +12,9 @@
 |---|---|---|---|
 | 1 | Variant = 同一 assessment contract 的表达变体；换 angle/difficulty/认知必须新建 canonical（ADR-073/076） | Variant 必须采用"明显不同的测量方式"，优先改变 angle / cognitiveTask / reasoning direction / observable evidence / constraint / context 中至少两项（part1 §七）；"仅仅改表达不算 variant" | **P0，直接矛盾** |
 | 2 | `Question` 无 `cognitiveTask` / `questionRole` / `variantOf` / `concepts` 字段；zod 默认 strip，来稿相关字段落库即丢（plan0903_2 已实测） | Blueprint 与输出格式要求 `angle`（14 值，含 causal/diagnosis/prediction/architecture/boundary/misconception/quantitative/implementation/synthesis）、`cognitiveTask`（11 值）、`questionRole`、`variantOf`、`concepts`、`knowledgeId`、`assessmentTarget`、`reasoningGoal` | **P0，来稿（GAN 批即实例）信息丢失** |
-| 3 | `question:add --check` 硬门禁：本批 ≥3 道选择题且单选 > 1/3 直接报错（AGENTS.md §4.2：multiple ≥ 2/3） | part2 §七：默认 single-choice，只有 Blueprint 明确需要多个同时成立的条件时才用 multiple | **P0，门禁方向相反** |
+| 3 | ~~`question:add --check` 硬门禁：本批 ≥3 道选择题且单选 > 1/3 直接报错（AGENTS.md §4.2：multiple ≥ 2/3） | part2 §七：默认 single-choice…~~ **本行已于 2026-09-04 撤销：核对现行 `prompt_part2.md` §三/§四/§五/§二十一，原文是「默认多选，只有天然唯一最佳判断时才单选」，与现行门禁同向，不存在冲突。** 附带的真冲突见下 | ~~P0~~ → 无冲突 |
+
+| 3b | 现行门禁与 spec 允许 `open` 形态（库内存在纯开放题） | part2 §三 / §二十一：**禁止 open** | P1，生成期与存量口径不一致 |
 | 4 | `formats` 是对象 `{choice?, open?}`；选项 `string[]`；答案是索引数组 | part2 §十八：`formats` 是数组，选项是 `{key, text}`，答案是 `"A"` | P1，运行时全链路依赖现行结构 |
 
 实证：上一批 GAN 来稿的 3 个 variant 按 part1 §八标准（"答对 canonical 后是否还需明显不同的思考"）很可能被判重复——而它们已按现行契约入库。这是"用旧尺子收了新题"的实例。
@@ -43,7 +45,11 @@
 
 ### 第二期：导入门禁与出题 skill（改脚本 + 文档）
 
-5. **题型门禁翻转**：`question:add --check` 的"单选 > 1/3 报错"改为"**本批默认 single；multiple 必须附带'多个同时成立'的 Blueprint 理由**"（part2 §七）；同步改 AGENTS.md §4.2（该条原文"多选应占多数 ≥2/3"与新模型直接冲突，必须同步修订，否则 skill 与门禁打架）。
+5. ~~**题型门禁翻转**~~ **已于 2026-09-04 撤销**：核对 `prompt_part2.md` §三 / §四 / §五 / §二十一 原文后确认，
+   新模型是「**默认 multiple-choice**，只有 Blueprint 已明确指定或天然唯一最佳判断时才 single」，
+   与现行门禁（multiple ≥ 2/3）**同向**，原判断基于过期版本。门禁与 AGENTS.md §4.2 均**不动**。
+   （附带遗留：part2 §三/§二十一 写「禁止 open」，而库内存在纯开放题 —— 这是生成期口径，
+   不追溯存量；若将来用 part2 全量重生成，需先决定 open 的去留。）
 6. **新增导入校验**：新题若带 `cognitiveTask`，必须属于 11 值枚举；`angle` 若用 8 个新值之一，`question:add` 提示其与邻近旧值的区分（如 diagnosis vs debugging）；`concepts` 若提供，须满足 1 核心 + ≤3 辅助。
 7. **出题 skill 引用**：`article-to-questions` / `add-question-to-bank` / `fill-coverage-gap` 改为引用 part1/part2（替代 `docs/添加题库prompt.md` 的生成指令地位；后者降级为历史参考，标注"已被 part1/part2 取代"）。
 
@@ -75,7 +81,7 @@
 
 - **D1**：Variant 新定义是否如 §二.1 所述（含"表达变体作为特例保留"）？
 - **D2**：`cognitiveTask` 是否进入 canonical assessment contract（即改 angle/difficulty/**认知任务**任一即 fork）？注意这会扩大 identity 门禁；推荐**进入**（与 ADR-076 原文字一致，之前是代码没实现，现在补上）。
-- **D3**：题型门禁翻转 + AGENTS.md §4.2 修订是否接受？（这是对仓库协作约定的直接修改）
+- ~~**D3**：题型门禁翻转 + AGENTS.md §4.2 修订是否接受？~~ **2026-09-04 关闭**：核对 part2 原文后确认无冲突，门禁不动。
 - **D4**：存量 104 条旧变体是否 grandfather（维持有效）？
 - **D5**：第三期 8–11 是否与第一、二期同批执行，还是另排期？
 

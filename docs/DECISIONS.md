@@ -36,7 +36,10 @@
   存量回填 `cognitiveTask` / `concepts`；`questionRole` / `variantOf` / `assessmentTarget` 进入 `Question`。
 - 遗留（不改本 ADR，记在此处待排期）：三个出题 skill 尚未产出 `cognitiveTask`（plan0903_3 §二.7 未做），
   故 `question:add` 对**缺失**只 warn、对**非法值** error；skill 同步后改一行即升为必填。
-  `question-content-spec.md:125` 的「multiple ≥ 2/3」硬门禁与新 prompt「默认 single」仍冲突（D3 未拍板）。
+  ~~`question-content-spec.md:125` 的「multiple ≥ 2/3」硬门禁与新 prompt「默认 single」冲突~~
+  —— **2026-09-04 核实为误判**：`prompt_part2.md` §三/§四/§五/§二十一 原文是「默认多选，
+  只有天然唯一最佳判断时才单选」，与现行门禁**同向**，无需改动。错误源自 plan0903_3 §一第 3 行的过期描述，已在该文档撤销。
+  真正的口径差是 part2「禁止 open」vs 库内存量开放题——属生成期口径，不追溯存量。
 - 验证：`tsc` 双工程 + `vitest` 全量绿；`question:validate-variants` exit 0（61 题 / 93 变体，stale 0 / 近重复 0 / 语言质量 0）。
 
 ## ADR-076 · 外部评审五项收口（canonical 身份 / Agent 端到端 fallback / 知识主次 / 三维覆盖 / 评分预设）
