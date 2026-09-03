@@ -89,6 +89,7 @@ export const cognitiveTaskSchema = z.enum([
   'design',
   'troubleshoot',
   'infer',
+  'synthesize',
 ]);
 
 export const idSchema = z.string().min(1);

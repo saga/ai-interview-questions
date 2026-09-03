@@ -157,7 +157,7 @@
     "explanation": "可以让每份草稿按照编辑原则和用户语气 rubric 评分，只有通过质量门槛的草稿才返回。",
     "source": {"materialId": "https://claude.com/blog/new-in-claude-managed-agents", "section": "What teams are building"},
     "misconceptions": ["直接返回第一份草稿即可，质量检查只是额外开销", "按 token 数挑最长的草稿，篇幅越长内容质量越高", "把全部中间推理过程展示给用户，由用户自己判断质量最可靠"],
-    "formats": {"choice": {"type": "single", "options": ["直接返回生成的第一份草稿而不做任何质量检查", "对草稿按 rubric 评分，只返回通过门槛的结果", "只按 token 数选择草稿", "让用户阅读所有中间推理"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。用 rubric 评估草稿，达标后才返回。"}}
+    "formats": {"choice": {"type": "single", "options": ["直接返回生成的第一份草稿而不做任何质量检查", "按 rubric 评分，只返回达标草稿", "只按 token 数选择草稿", "展示全部中间推理，由用户自行判断质量"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。用 rubric 评估草稿，达标后才返回。"}}
   },
   {
     "id": "claude-blog-2026-08-13",
@@ -276,7 +276,7 @@
     "question": "在 Agent 参与的软件交付流程中，必须阻止它直接部署生产环境，应采用的访问控制是？（单选）",
     "explanation": "应在 Agent 行动前检查生产部署条件；缺少命名的发布授权时直接阻断，并把原因输出给 Agent。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Hooks as approval gates"},
-    "formats": {"choice": {"type": "single", "options": ["只在 system prompt 中请求谨慎", "用 PreToolUse hook 检查授权并阻断未授权生产部署", "把生产凭据放入 prompt", "先允许部署再事后检查日志是否越权"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。审批门应在行动前由 hook 确定性阻断未授权生产部署。"}}
+    "formats": {"choice": {"type": "single", "options": ["只在 system prompt 中请求谨慎", "用 PreToolUse hook 检查授权并阻断未授权生产部署", "把生产凭据放入 prompt 供 Agent 按需取用", "先允许部署，再靠事后审计日志发现越权"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。审批门应在行动前由 hook 确定性阻断未授权生产部署。"}}
   },
   {
     "id": "claude-blog-2026-08-22",
@@ -289,7 +289,7 @@
     "question": "为什么只限制 Agent 的文件读取工具仍不足以保护构建环境中的凭据？（单选）",
     "explanation": "工具层规则只约束特定调用路径，Agent 运行的 shell 或其他进程可能仍能读取默认可见的文件；因此需要操作系统级隔离、凭据注入策略和网络限制。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Managed settings for a regulated enterprise"},
-    "formats": {"choice": {"type": "single", "options": ["deny 规则会自动删除所有文件", "其他进程可能绕过文件工具读取凭据，需要 OS 级隔离和凭据策略", "模型无法执行任何其他进程", "网络策略与凭据暴露无关"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。工具级 deny 不是执行环境边界，必须补充更底层的隔离和凭据控制。"}}
+    "formats": {"choice": {"type": "single", "options": ["文件工具的 deny 规则已足以覆盖全部访问路径", "其他进程可能绕过文件工具读取凭据，需要 OS 级隔离和凭据策略", "Agent 只能调用文件工具，无法经其他进程访问", "凭据保护只需文件隔离，无需网络出口限制"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。工具级 deny 不是执行环境边界，必须补充更底层的隔离和凭据控制。"}}
   },
   {
     "id": "claude-blog-2026-08-23",
@@ -302,7 +302,7 @@
     "question": "要限制 Agent 只能访问批准的外部域名，哪一层控制最可靠？（单选）",
     "explanation": "工具级拒绝规则只覆盖特定调用路径；操作系统或网络层的域名 allowlist 才能同时约束工具和 shell 对未批准目标的访问。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "Managed settings for a regulated enterprise"},
-    "formats": {"choice": {"type": "single", "options": ["只在 prompt 中列出域名", "沙箱或网络层的 allowedDomains 出口策略", "只限制浏览器窗口大小", "只记录被拒绝的请求而不真正阻断访问"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。网络层 allowlist 能约束不同工具和 shell 的实际出口。"}}
+    "formats": {"choice": {"type": "single", "options": ["只在 prompt 中列出允许域名并要求遵守", "沙箱或网络层的 allowedDomains 出口策略", "仅在应用层过滤链接，依赖 Agent 自觉遵守", "只记录被拒绝的请求而不真正阻断访问"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。网络层 allowlist 能约束不同工具和 shell 的实际出口。"}}
   },
   {
     "id": "claude-blog-2026-08-24",
@@ -315,7 +315,7 @@
     "question": "在 CI/CD 中首次引入 Agent 处理失败构建时，哪种权限递进方式更稳妥？（单选）",
     "explanation": "先让 Agent 只读分析构建日志、判断失败类型并起草摘要，验证稳定后再加入受 PR、分支保护和审批门约束的写入动作，可以降低错误自动修复的影响范围。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "CI/CD integration and deployment"},
-    "formats": {"choice": {"type": "single", "options": ["直接推送修复到 main", "先做只读分析，再把写入动作放在 PR 和审批门之后", "让 Agent 直接读取生产密钥来排查失败", "绕过测试直接运行部署以加快修复速度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。先验证只读判断的可靠性，写入必须经过 PR、分支保护和审批门。"}}
+    "formats": {"choice": {"type": "single", "options": ["允许 Agent 直接推送修复到 main 分支", "先做只读分析，再把写入动作放在 PR 和审批门之后", "让 Agent 直接读取生产密钥来排查失败", "绕过测试直接运行部署以加快修复速度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。先验证只读判断的可靠性，写入必须经过 PR、分支保护和审批门。"}}
   },
   {
     "id": "claude-blog-2026-08-25",
@@ -406,7 +406,7 @@
     "question": "为什么应把部署、状态查询和回滚建模成受限工具，而不是把任意 shell 凭据交给 Agent？（单选）",
     "explanation": "受限工具可以明确参数、环境、身份和允许的动作，形成可审计的 allowlist；任意 shell 凭据则扩大操作面，难以保证 Agent 只执行预期的部署行为。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "CI/CD integration and deployment"},
-    "formats": {"choice": {"type": "single", "options": ["工具封装会自动消除所有风险", "受限工具明确参数和环境边界，形成可审计的操作 allowlist", "工具接口只能用于聊天，不能执行操作", "为了简单应授予 root shell"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。受限工具比任意 shell 更容易控制参数、环境、身份和审计范围。"}}
+    "formats": {"choice": {"type": "single", "options": ["工具封装后即默认安全，无需再做边界与审计", "受限工具明确参数和环境边界，形成可审计的操作 allowlist", "受限工具仅能返回文本，无法触发实际部署操作", "直接复用现有宽松 shell 凭据以减少集成成本"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。受限工具比任意 shell 更容易控制参数、环境、身份和审计范围。"}}
   },
   {
     "id": "claude-blog-2026-08-32",
@@ -511,7 +511,7 @@
     "question": "在 Agent 参与的软件交付闭环中，人的责任边界应如何定义？（单选）",
     "explanation": "Agent 可以自动化执行和交接，但需要判断的决策仍由人承担责任；人的注意力从逐行操作转移到意图、风险和关键门禁。",
     "source": {"materialId": "https://claude.com/blog/the-ai-native-sdlc-playbook", "section": "What is an AI-native SDLC"},
-    "formats": {"choice": {"type": "single", "options": ["Agent 对所有决策承担法律责任", "人仍对需要判断的决策负责，Agent 负责受控执行", "让人完全退出所有审批和门禁环节", "只由模型置信度决定责任"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。自动化不等于转移人的决策责任。"}}
+    "formats": {"choice": {"type": "single", "options": ["Agent 对所有决策承担法律责任", "人仍对需要判断的决策负责，Agent 负责受控执行", "让人完全退出审批和门禁，实现端到端无人干预", "按模型输出置信度自动划分人机责任边界"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。自动化不等于转移人的决策责任。"}}
   },
   {
     "id": "claude-blog-2026-08-40",

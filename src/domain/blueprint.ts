@@ -21,6 +21,15 @@ export const ANGLE_PURPOSE_TEMPLATES: Record<QuestionAngle, (name: string) => st
   debugging: (name) => `检验学习者能否诊断并定位${name}相关的故障与异常`,
   'system-design': (name) => `检验学习者能否以${name}为核心设计端到端系统方案`,
   design: (name) => `检验学习者能否基于${name}设计或改进具体系统/机制`,
+  causal: (name) => `检验学习者能否讲清${name}的因果链条与归因方向`,
+  diagnosis: (name) => `检验学习者能否从现象出发定位${name}的根因机制`,
+  prediction: (name) => `检验学习者能否预测${name}在条件变化下的趋势与结果`,
+  architecture: (name) => `检验学习者能否为${name}做出合理的架构选型与结构设计`,
+  boundary: (name) => `检验学习者能否说清${name}的边界条件与适用范围`,
+  misconception: (name) => `检验学习者能否辨析关于${name}的常见误解`,
+  quantitative: (name) => `检验学习者能否围绕${name}完成定量关系与数量级推理`,
+  implementation: (name) => `检验学习者能否讲清${name}的落地实现细节与约束`,
+  synthesis: (name) => `检验学习者能否综合多个知识点完成关于${name}的推理`,
 };
 
 /**

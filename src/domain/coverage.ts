@@ -19,6 +19,15 @@ export const ANGLE_ORDER: QuestionAngle[] = [
   'debugging',
   'system-design',
   'design',
+  'causal',
+  'diagnosis',
+  'prediction',
+  'quantitative',
+  'boundary',
+  'misconception',
+  'implementation',
+  'architecture',
+  'synthesis',
 ];
 
 /**
@@ -41,6 +50,15 @@ export const ANGLE_GENERATION_HINTS: Record<QuestionAngle, { difficulty: Difficu
   debugging: { difficulty: 'hard', format: 'open' },
   'system-design': { difficulty: 'hard', format: 'open' },
   design: { difficulty: 'hard', format: 'open' },
+  causal: { difficulty: 'medium', format: 'choice' },
+  diagnosis: { difficulty: 'medium', format: 'choice' },
+  prediction: { difficulty: 'medium', format: 'choice' },
+  quantitative: { difficulty: 'medium', format: 'choice' },
+  boundary: { difficulty: 'medium', format: 'choice' },
+  misconception: { difficulty: 'easy', format: 'choice' },
+  implementation: { difficulty: 'medium', format: 'choice' },
+  architecture: { difficulty: 'hard', format: 'open' },
+  synthesis: { difficulty: 'hard', format: 'open' },
 };
 
 const PRIORITY_ORDER: KnowledgePriority[] = ['P0', 'P1', 'P2'];

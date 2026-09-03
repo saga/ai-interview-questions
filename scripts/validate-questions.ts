@@ -12,6 +12,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { KnowledgeNode } from '../src/schemas/knowledge';
 import type { Question } from '../src/schemas/question';
+import { questionAngleSchema } from '../src/schemas/common.ts';
 
 const dataDir = fileURLToPath(new URL('../src/data/', import.meta.url));
 
@@ -26,18 +27,8 @@ const questions = readJsonDir(dataDir + 'questions/') as Question[];
 const nodes = readJsonDir(dataDir + 'knowledge/') as KnowledgeNode[];
 const nodeIds = new Set(nodes.map((n) => n.id));
 
-const VALID_ANGLES = new Set([
-  'definition',
-  'fundamental',
-  'mechanism',
-  'calculation',
-  'comparison',
-  'tradeoff',
-  'scenario',
-  'debugging',
-  'design',
-  'system-design',
-]);
+// 合法角度以 schema 为单源（新增 angle 只改 common.ts，此处自动跟随）。
+const VALID_ANGLES = new Set<string>(questionAngleSchema.options);
 
 /** 选项去重的归一化：忽略空白与常见标点，避免只差一个句号就算两个不同选项。 */
 function normalizeOption(text: string): string {

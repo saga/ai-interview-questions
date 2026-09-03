@@ -1,6 +1,18 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · 新 prompt 对齐 P0（半迁移收尾 + 转换器 + ②④清扫）
+
+`docs/prompt_part1/2.md` 落地前发现上轮 angle/cognitiveTask 扩展只改了一半（schema 放行、门禁与 domain 硬编码拒绝，`tsconfig.node` 4 报错）。本轮收尾 + 打通新旧格式：
+
+- **半迁移修复**：`variant.ts` 补 `common.ts` 导入；`blueprint.ts` / `coverage.ts` 补 9 个新 angle 的 purpose 模板与生成提示（`diagnosis/misconception/quantitative` 等走 choice，`architecture/synthesis` 走 open）；`cognitiveTask` 加 `synthesize`（part1 §五）。
+- **门禁单源化**：`validate-questions.ts` / `add-question.ts` 的角度白名单改从 `questionAngleSchema.options` 派生；`add-question` 另做 `single-choice/multiple-choice→single/multiple` 归一化（新 prompt 口径）。
+- **新脚本 `npm run question:convert`**（`scripts/convert-blueprint-output.ts`）：part2 JSON → canonical（Question JSON，走 `question:add`）+ variant（变体池 JSON，`sourceHash` 就地计算，`angle/cognitiveTask` 非法即报错；`knowledgeId/assessmentTarget` 无 schema 字段，丢弃并告警）。已用合成 draft 验证端到端。
+- **文档**：`question-content-spec.md` §8 改按 ADR-077（variant = 同 Knowledge 不同 reasoning path，可换 angle/cog；换 contract 不换 Knowledge 才 fork 新 canonical）；`ARCHITECTURE.md` 记忆小节与 `variant.ts` 注释同步。
+- **内容清扫 21 题**（只改选项文本，数量/顺序/答案索引不动）：quality ② 22→0；④ 3→1（`transformer-comparison-01` 相似度恰为阈值 70 且指标命名不同，判误报保留；另两条 `ai-search-gap-005` 按三面拆分正确项、`sebastian-…-01` 写显存储/带宽区分）；audit `option-length-ratio` P2 186→167（改写 21 题全数过 1.8× 门禁）。`sebastian`/`transformer` 两题答案逻辑未动。
+- ③（105 条，精确率 38%）只导出分层复核表（`--sample 110 --seed 7`），未自动改写。
+- 验证：全量测试 781/781；`typecheck`（app+node）全绿；`validate:questions` 1311 题通过；`validate-variants` 池健康；`question:identity --gate` exit 1 与基线一致（存量行为，未恶化）。
+
 ## 2026-09-03 · 题库测评向治理第二轮（assessment 去重 / 答案键修复 / topic 合并 / GAN 入库）
 
 第一轮（干扰项脱稻草人化）之后，按"逐题判断"继续深挖，全部为人审逐题裁决：

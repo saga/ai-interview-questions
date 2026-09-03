@@ -171,10 +171,10 @@
       "choice": {
         "type": "single",
         "options": [
-          "固定 4,000 token 分片、20% 重叠，应用层把多分片顺序拼到 200,000 token 上下文上限后再推理",
-          "分层切分：父块 8,000 token、子块 2,000 token，用 Bedrock Knowledge Bases 内置检索按查询上下文自动选相关父块，配置重叠 token 保持语义连续",
-          "语义切分：断点百分位 95%、缓冲 3 句，用 RetrieveAndGenerate 按嵌入相似度动态选最相关分片",
-          "用 Lambda 借 FM tokenizer 分析 token 数，把文档切成不超上下文窗口 80% 的等长段，分段独立处理后再聚合"
+          "固定 4,000 token 分片、20% 重叠，应用层把多分片顺序拼到 200,000 token 上下文上限后再推理，仍可能超窗口且应用层逻辑脆弱",
+          "分层切分：父块 8,000 token、子块 2,000 token，用 Bedrock Knowledge Bases 内置检索按查询自动选相关父块，以重叠保持语义连续",
+          "语义切分：断点百分位 95%、缓冲 3 句，用 RetrieveAndGenerate 按嵌入相似度动态选最相关分片，但缓冲有效范围仅为 0–1",
+          "用 Lambda 借 FM tokenizer 分析 token 数，把文档切成不超上下文窗口 80% 的等长段，分段独立处理后再聚合，但等长切分会切断语义"
         ],
         "answer": [
           1
@@ -472,10 +472,10 @@
       "choice": {
         "type": "single",
         "options": [
-          "在北美/欧洲分别部署独立 Bedrock 实例，自建按位置路由层，CloudWatch 告警+SNS 邮件提醒",
-          "调用 InvokeModel 时指定地理代码（geographical code）的跨区域推理配置文件，并用独立 API Gateway HTTP API 把欧/美用户导向对应区域端点",
-          "多区域 API Gateway + Lambda 重试，主区域触配额时调最近次区域 FM，智能路由保证数据驻留",
-          "多区域配 Provisioned Throughput，应用代码写故障转移逻辑，Global Accelerator 按位置路由"
+          "在北美/欧洲分别部署独立 Bedrock 实例，自建按位置路由与故障转移层，CloudWatch 告警+SNS 邮件提醒，运维更重",
+          "调用 InvokeModel 时指定地理代码的跨区域推理配置文件，用独立 API Gateway HTTP API 把欧/美用户导向对应区域端点",
+          "多区域 API Gateway + Lambda 重试，主区域触配额时调最近次区域 FM，需自建路由与故障转移且运维更重",
+          "多区域配 Provisioned Throughput 保吞吐，应用代码写故障转移逻辑，Global Accelerator 按位置路由"
         ],
         "answer": [
           1
@@ -771,11 +771,11 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "把数据集导入 S3，给评估作业适当 IAM 与 CORS 权限以访问数据集",
-          "把数据集导入 S3，给评估作业适当 IAM 与 VPC 端点配置以访问数据集",
-          "用 Lambda 定时在 Bedrock 控制台建模型评估作业，传入 S3 数据集 URI，配置文本生成测 RWK 分数、摘要测 BERTScore，另一 Lambda 查状态并发布自定义日志到 CloudWatch，建 CloudWatch Logs Insights 看板",
-          "用 SageMaker Clarify 定时建评估作业，开源框架跑标准化评估，结果发 CloudWatch，文本生成用 WER、摘要用 toxicity 作准确率指标，Lambda 查状态发日志建看板",
-          "用 SageMaker AI notebook 定时跑 fmevals/ragas，直接 InvokeModel 处理，结果发 CloudWatch Logs，文本生成用 RWK、摘要用 toxicity，建 Logs Insights 看板"
+          "把电商数据集导入 S3 并配置评估作业的 IAM 与 CORS 权限，使其能读取数据集作标准评估输入",
+          "把电商数据集导入 S3 并配置评估作业的 IAM 与 VPC 端点，使其能读取数据集作标准评估输入",
+          "用 Lambda 定时建 Bedrock 模型评估作业，传入 S3 数据集 URI，文本生成测 RWK、摘要测 BERTScore，结果发 CloudWatch 建看板",
+          "用 SageMaker Clarify 定时建评估作业并跑开源框架，结果发 CloudWatch，文本生成用 WER、摘要用 toxicity 作准确率指标",
+          "用 SageMaker notebook 定时跑 fmevals/ragas，结果发 CloudWatch 建看板，生成用 RWK、摘要用 toxicity"
         ],
         "answer": [
           0,
@@ -884,10 +884,10 @@
       "choice": {
         "type": "single",
         "options": [
-          "Bedrock 配 Provisioned Throughput 稳定延迟，加 Guardrails 拦不安全输出，用 Prompt Management 审批管理提示",
-          "用 Bedrock Agents 管理链式调用，输入输出日志到 CloudWatch，用日志做提示版本 A/B 测试",
-          "结果缓存到 ElastiCache，Lambda 预处理元数据并追踪端到端延迟，X-Ray 定位性能瓶颈",
-          "用 Kendra 提升检索准确度，归一化元数据存 DynamoDB，Step Functions 编排多步提示"
+          "Bedrock 配 Provisioned Throughput 稳定延迟，加 Guardrails 拦不安全输出，用 Prompt Management 管理提示",
+          "用 Bedrock Agents 管理链式调用，输入输出日志到 CloudWatch，用日志做提示版本 A/B 测试，但未覆盖延迟与安全拦截",
+          "结果缓存到 ElastiCache，Lambda 预处理元数据并追踪端到端延迟，X-Ray 定位性能瓶颈，但未覆盖一致性与安全拦截",
+          "用 Kendra 提升检索准确度，归一化元数据存 DynamoDB，Step Functions 编排多步提示，但未覆盖延迟与安全拦截"
         ],
         "answer": [
           0
@@ -996,11 +996,11 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "用 AWS Lambda 编排低延迟 FM 推理，调用托管在 Amazon SageMaker AI 异步端点的 FM。",
+          "用 AWS Lambda 编排低延迟 FM 推理，调用托管在 SageMaker AI 异步端点的 FM，无专用吞吐与混合部署。",
           "在 Amazon Bedrock 中配置预置吞吐（provisioned throughput），保证高吞吐量工作负载性能一致。",
-          "将 FM 部署到支持边缘部署的 Amazon SageMaker AI 端点（用 SageMaker Neo），并用 AWS Lambda 编排以支持混合部署。",
-          "用带自动伸缩的 Amazon Bedrock 应对不可预测的流量高峰。",
-          "用 Amazon SageMaker JumpStart 托管并调用 FM。"
+          "将 FM 部署到 SageMaker AI 端点（用 SageMaker Neo），并用 Lambda 编排支持混合部署。",
+          "用带自动伸缩的 Amazon Bedrock 应对不可预测流量高峰，但无专用容量保证与混合边缘部署。",
+          "用 Amazon SageMaker JumpStart 托管并调用 FM，但无专用吞吐保证与混合边缘部署。"
         ],
         "answer": [
           1,
@@ -1068,23 +1068,26 @@
     ],
     "difficulty": "medium",
     "angle": "scenario",
-    "question": "某医疗公司用 Bedrock 生成临床文档摘要，响应质量不稳定且偶发事实幻觉，月度成本比预期高 40%。需近实时监控方案检测幻觉、识别异常 token 消耗、对成本异常预警，且自定义开发最少。哪种方案满足？（单选）",
+    "question": "某医疗公司用 Bedrock 生成临床文档摘要，响应质量不稳定且偶发事实幻觉，月度成本比预期高 40%。需近实时监控方案检测幻觉、识别异常 token 消耗、对成本异常预警，且自定义开发最少。以下哪些做法是正确的？",
     "explanation": "Amazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。",
     "formats": {
       "choice": {
-        "type": "single",
+        "type": "multiple",
         "options": [
-          "配置 CloudWatch 告警监控 InputTokenCount/OutputTokenCount 检测异常，调用日志存 S3，用 Glue+Athena 识别潜在幻觉。",
-          "运行 Bedrock 评估作业（LLM 评判）检测幻觉，用 CloudWatch 跟踪 token 用量，Lambda 处理指标并通知。",
-          "配置 Bedrock 将调用日志存 S3 并开启文本输出日志；启用 Guardrails 上下文接地检查检测幻觉；对 token 用量指标建 CloudWatch 异常检测告警。",
-          "用 CloudTrail 记录所有 Bedrock API 调用，QuickSight 自建仪表盘可视化 token，用 SageMaker Model Monitor 检测质量漂移。"
+          "开启Bedrock调用日志存S3并保留文本输入输出，供事后取证、复算与幻觉样本回放",
+          "用定时Bedrock评估作业以LLM评判批量检测幻觉，Lambda轮询指标后通知，可满足近实时拦截",
+          "启用Guardrails上下文接地检查，对偏离所提供参考源的摘要内容做检测与过滤",
+          "用CloudTrail记录API调用审计内容质量，QuickSight自建仪表盘呈现token，Model Monitor检测漂移",
+          "对InputTokenCount与OutputTokenCount建CloudWatch异常检测告警，预警异常token与成本偏离"
         ],
         "answer": [
-          2
+          0,
+          2,
+          4
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\nAmazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。"
+        "referenceAnswer": "Amazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。"
       }
     }
   },
@@ -1253,23 +1256,26 @@
     ],
     "difficulty": "hard",
     "angle": "scenario",
-    "question": "某公司用 Bedrock 分析数据中的模式与关系，每日跨欧洲/北美/亚洲区域处理数百万新数据点后存 S3；须符合当地数据保护与存储法规，数据驻留与处理须在同一大洲，并保留决策审计轨迹与数据分类能力。哪种方案满足？（单选）",
+    "question": "某公司用 Bedrock 分析数据中的模式与关系，每日跨欧洲/北美/亚洲区域处理数百万新数据点后存 S3；须符合当地数据保护与存储法规，数据驻留与处理须在同一大洲，并保留决策审计轨迹与数据分类能力。以下哪些做法是正确的？",
     "explanation": "在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控。S3 Object Lock 提供 WORM 留存保护存储记录，Macie 发现并分类 S3 中的敏感数据，CloudTrail 提供带日志完整性校验的可审计 API 活动。",
     "formats": {
       "choice": {
-        "type": "single",
+        "type": "multiple",
         "options": [
-          "在每个区域部署应用并配本地 IAM 策略，用 Bedrock 跨区域推理分发负载，CloudWatch 记录决策，手动跟踪各区域合规认证。",
-          "用 AWS Organizations 的 SCP 管理区域权限，CloudTrail 不可变日志审计决策，导入自定义模型到 Bedrock 并部署到各区域。",
-          "用 S3 Object Lock + 区域级桶策略；按地理来源在区域内预处理后再送 Bedrock；用 Macie 分类数据；CloudTrail 不可变日志审计决策。",
-          "为每个区域建独立账号与各自合规框架，用 SageMaker AI 自定义监控跟踪驻留合规，向各监管机构手工报告。"
+          "按地理来源在原始区域内预处理后再送Bedrock，使处理与驻留同洲，存储用区域级桶策略约束",
+          "在每个区域部署应用并配本地IAM策略，用Bedrock跨区域推理分发负载，手动跟踪各区域合规认证",
+          "用S3 Object Lock做WORM留存保护，以不可改写的存储记录支撑审计与法规举证",
+          "用Organizations SCP管理区域权限，导入自定义模型到Bedrock并部署到各区域，CloudTrail记录决策",
+          "用Macie发现并分类S3中的敏感数据，用CloudTrail不可变日志审计决策轨迹并校验完整性"
         ],
         "answer": [
-          2
+          0,
+          2,
+          4
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\n在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控。S3 Object Lock 提供 WORM 留存保护存储记录，Macie 发现并分类 S3 中的敏感数据，CloudTrail 提供带日志完整性校验的可审计 API 活动。"
+        "referenceAnswer": "在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控。S3 Object Lock 提供 WORM 留存保护存储记录，Macie 发现并分类 S3 中的敏感数据，CloudTrail 提供带日志完整性校验的可审计 API 活动。"
       }
     }
   },
@@ -1328,23 +1334,26 @@
     ],
     "difficulty": "hard",
     "angle": "scenario",
-    "question": "某金融客服助手须不提供投资建议、拦截有害内容、掩码 PII、保留审计轨迹；须对用户输入与模型响应都按敏感度做内容过滤；需以最少误杀生效，且支持多种敏感内容的多种处理策略。哪种方案满足？（单选）",
+    "question": "某金融客服助手须不提供投资建议、拦截有害内容、掩码 PII、保留审计轨迹；须对用户输入与模型响应都按敏感度做内容过滤；需以最少误杀生效，且支持多种敏感内容的多种处理策略。以下哪些做法是正确的？",
     "explanation": "Bedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器。敏感信息策略可对输入/输出施加不同动作：响应中脱敏 PII，输入中拦截金融信息。Guardrails 同时评估提示与模型响应，中等过滤相比高强度有助于减少误杀。",
     "formats": {
       "choice": {
-        "type": "single",
+        "type": "multiple",
         "options": [
-          "配单个 guardrail，所有类别内容过滤器设 high，denied topics 设投资建议并加样例短语，敏感信息过滤器对所有 PII 实体 block，应用到所有推理调用。",
-          "配多个分级 guardrail：一个 high 过滤并对公开交互 block PII，一个 medium 并对内部 mask PII，多个主题 guardrail 拦截投资建议并加接地检查。",
-          "配 guardrail 对有害内容过滤器设 medium；denied topics 设投资建议并配清晰定义与样例短语；敏感信息过滤器对响应 mask PII、对输入 block 金融信息；启用输入/输出双向评估并自定义拦截消息供审计。",
-          "为每个用例建独立 guardrail：一个有害内容过滤、一个主题过滤投资建议、一个敏感信息过滤 block PII；用 Step Functions 顺序串联并按分类条件路由。"
+          "有害内容过滤器设medium而非high，在有效拦截与减少误杀之间取得平衡",
+          "配单个guardrail并把所有类别内容过滤器设high，对全部PII实体一律block以求最严",
+          "denied topics设置投资建议并配清晰定义与样例短语，使主题拦截精确可预期",
+          "guardrail只评估模型响应，默认信任用户输入以减少一次评估开销，内部调用豁免过滤",
+          "敏感信息策略按方向差异化：响应中脱敏PII、输入中拦截金融信息，启用输入输出双向评估并自定义拦截消息供审计"
         ],
         "answer": [
-          2
+          0,
+          2,
+          4
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\nBedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器。敏感信息策略可对输入/输出施加不同动作：响应中脱敏 PII，输入中拦截金融信息。Guardrails 同时评估提示与模型响应，中等过滤相比高强度有助于减少误杀。"
+        "referenceAnswer": "Bedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器。敏感信息策略可对输入/输出施加不同动作：响应中脱敏 PII，输入中拦截金融信息。Guardrails 同时评估提示与模型响应，中等过滤相比高强度有助于减少误杀。"
       }
     }
   },
@@ -1446,10 +1455,10 @@
       "choice": {
         "type": "single",
         "options": [
-          "让每客户建含其内部数据的 Amazon Q Business 索引，并指定 Example Corp 为数据访问者，使 Example Corp 经安全 API 在运行时取回相关内容富化提示。",
-          "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数。",
-          "让每客户配置 Bedrock 知识库，允许跨账号查询供 Example Corp 取结构化数据做提示增强。",
-          "配置 Amazon Kendra 爬取客户数据源，跨账号共享索引供 Example Corp 查询增强。"
+          "让每客户建 Amazon Q Business 索引并指定 Example Corp 为数据访问者，经安全 API 在运行时取回相关内容富化提示。",
+          "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数，需在客户环境部署且集成复杂度高。",
+          "让每客户配置 Bedrock 知识库，允许跨账号查询供 Example Corp 取结构化数据做提示增强，需直连并重建每客户索引。",
+          "配置 Amazon Kendra 爬取客户数据源，跨账号共享索引供 Example Corp 查询增强，需直连客户数据源并重建索引。"
         ],
         "answer": [
           0
@@ -1832,10 +1841,10 @@
         "options": [
           "在同区域部署 Textract 与 Augmented AI(A2I) 抽取数据，低置信度页路由到真人复核。",
           "用 Lambda 在推理前检测并脱敏 PII，用 Guardrails 防止模型输出不当内容，配区域级 IAM 角色强制驻留并控访问。",
-          "用 Kendra 与 OpenSearch 从上传文档语义抽取字段级值。",
-          "上传文档存 S3 加对象元数据，IAM 策略使原文档与申请人同区域，启用对象标签供未来审计。",
-          "用 Glue Data Quality 校验结构化数据，Step Functions 编排含提示工程步骤的审核工作流后再调 Bedrock 评估。",
-          "用 SageMaker Clarify 基于 Bedrock 评分生成公平与偏差报告。"
+          "用 Kendra 与 OpenSearch 从上传文档语义抽取字段级值，但无法按置信度路由真人复核与质量校验。",
+          "上传文档存 S3 加对象元数据，IAM 策略使原文档与申请人同区域，启用对象标签供未来审计，但缺少抽取脱敏复核与质量校验。",
+          "用 Glue Data Quality 校验结构化数据，Step Functions 编排审核工作流后再调 Bedrock 评估。",
+          "用 SageMaker Clarify 基于 Bedrock 评分生成公平与偏差报告，但不覆盖抽取脱敏与复核链路。"
         ],
         "answer": [
           0,

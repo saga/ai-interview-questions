@@ -515,7 +515,9 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 - **canonical 身份不可变（assessment identity immutable）**：`questionId` 是 Learner evidence 的键，
   它绑定的是「测什么能力」（`topic × angle × difficulty × 认知任务`）而非题面文字。
   改变其中任一项必须 fork 新 canonical（新 ID + `derivedFrom` 指回原题），禁止原地改写沿用原 ID——
-  否则历史分数在语义上失效而系统仍正常运行（隐性污染）。variant（同 contract 的表达变换）与
+  否则历史分数在语义上失效而系统仍正常运行（隐性污染）。例外：variant 可在同一 Knowledge 内换
+  `angle` / `cognitiveTask`（ADR-077），仍归因同一 canonical evidence 键。variant（同 Knowledge 的不同
+  reasoning path 测量）与
   derived canonical（同血缘、不同 contract）是两个概念（见 `src/domain/questionIdentity.ts`；
   补缺口流程见 `fill-coverage-gap` skill，历史审计见 `npm run question:identity`）。
 

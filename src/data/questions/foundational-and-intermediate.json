@@ -317,7 +317,7 @@
     "formats": {
       "choice": {
         "type": "single",
-        "options": ["Encoder-only 偏理解，Decoder-only 用因果掩码偏生成，Encoder-Decoder 适合序列转换", "三种结构都必须使用因果掩码，所以都只能从左到右读取和理解输入序列", "Decoder-only 只能用于分类，不能通过 next-token 预测生成连续文本", "Encoder-Decoder 没有注意力机制，只依靠循环状态完成输入输出序列转换"],
+        "options": ["Encoder-only 偏理解，Decoder-only 用因果掩码偏生成，Encoder-Decoder 适合序列转换", "三种结构都必须使用因果掩码，所以都只能从左到右读取和理解输入序列并逐词生成输出", "Decoder-only 只能用于分类，不能通过 next-token 预测生成连续文本", "Encoder-Decoder 没有注意力机制，只依靠循环状态完成输入输出序列转换"],
         "answer": [0]
       },
       "open": {
@@ -422,7 +422,7 @@
     "angle": "mechanism",
     "question": "MCP server 暴露的 tools、resources 和 prompts 分别主要代表什么？",
     "explanation": "tools 是可执行操作，resources 是可读取的上下文数据，prompts 是可复用的交互模板；客户端可先发现能力，再按需调用。",
-    "formats": {"choice": {"type": "single", "options": ["tools 执行动作，resources 提供数据，prompts 提供可复用模板", "三者都只是模型权重文件的不同名称", "resources 负责执行任意写操作，tools 只能返回静态文本", "prompts 会自动授予服务器访问所有用户数据的权限"], "answer": [0]}, "open": {"referenceAnswer": "MCP 的 tools 表示可调用的函数或动作，resources 表示可供模型使用的数据，上下文模板由 prompts 提供；权限仍需由宿主应用和服务器显式控制。"}}
+    "formats": {"choice": {"type": "single", "options": ["tools 执行动作，resources 提供数据，prompts 提供可复用模板", "tools 提供数据，resources 执行动作，prompts 负责模型权重版本管理", "resources 负责执行任意写操作，tools 只能返回静态文本", "prompts 会自动授予服务器访问所有用户数据的权限"], "answer": [0]}, "open": {"referenceAnswer": "MCP 的 tools 表示可调用的函数或动作，resources 表示可供模型使用的数据，上下文模板由 prompts 提供；权限仍需由宿主应用和服务器显式控制。"}}
   },
   {
     "id": "foundation-mcp-discovery-01",
@@ -455,7 +455,7 @@
     "angle": "definition",
     "question": "LLM 的上下文窗口通常指什么？",
     "explanation": "上下文窗口是模型一次处理的 token 总量上限，通常包括输入上下文和生成输出所占的 token，具体边界由模型和 API 定义。",
-    "formats": {"choice": {"type": "single", "options": ["一次请求中模型可处理的输入与输出 token 容量上限", "模型可以永久记住的用户数量", "GPU 显存大小的另一种名称", "只限制输出字符数而不限制输入"], "answer": [0]}, "open": {"referenceAnswer": "上下文窗口是模型一次请求可处理的 token 容量上限，通常需要在输入上下文和输出预算之间分配。"}}
+    "formats": {"choice": {"type": "single", "options": ["一次请求中模型可处理的输入与输出 token 容量上限", "模型可永久记住所有用户的全部历史对话", "模型部署所需 GPU 显存容量的另一种名称", "只限制单次输出长度而不限制输入上下文"], "answer": [0]}, "open": {"referenceAnswer": "上下文窗口是模型一次请求可处理的 token 容量上限，通常需要在输入上下文和输出预算之间分配。"}}
   },
   {
     "id": "foundation-rag-definition-01",
@@ -477,7 +477,7 @@
     "angle": "tradeoff",
     "question": "在深层网络中选择 ReLU 与 GELU 时，哪项取舍更准确？",
     "explanation": "ReLU 计算简单，但负半轴输出为零可能造成神经元长期不激活；GELU 平滑地保留部分负值，常用于 Transformer，但计算略复杂且不存在对所有任务都更优的保证。",
-    "formats": {"choice": {"type": "single", "options": ["ReLU 简单高效但可能出现死神经元，GELU 更平滑但计算略复杂，应结合架构和训练表现选择", "ReLU 和 GELU 只影响推理速度，不会影响梯度或训练结果", "GELU 会把所有负值变成零，因此与 ReLU 完全等价", "任何网络都应无条件使用计算最复杂的激活函数"], "answer": [0]}, "open": {"referenceAnswer": "ReLU 计算简单但可能因负半轴梯度为零产生死神经元；GELU 更平滑、常用于 Transformer，但有额外计算，选择应结合架构和实验结果。"}}
+    "formats": {"choice": {"type": "single", "options": ["ReLU 简单高效但可能出现死神经元，GELU 更平滑但计算略复杂，应结合架构和训练表现选择", "ReLU 和 GELU 只影响推理速度，不会影响梯度或训练结果", "GELU 会把所有负值变成零，因此与 ReLU 完全等价", "GELU 在所有任务上都优于 ReLU，任何网络都应无条件替换为 GELU"], "answer": [0]}, "open": {"referenceAnswer": "ReLU 计算简单但可能因负半轴梯度为零产生死神经元；GELU 更平滑、常用于 Transformer，但有额外计算，选择应结合架构和实验结果。"}}
   },
   {
     "id": "gap-alignment-definition-01",
@@ -543,7 +543,7 @@
     "angle": "scenario",
     "question": "一个 MCP 文件服务器只服务本机桌面应用，另一个数据服务要被多台受控客户端访问。传输方式如何初步选择？",
     "explanation": "本机单客户端场景可优先考虑 stdio；远程多客户端场景通常采用 Streamable HTTP，并配置认证和授权。传输选择不等于安全策略本身。",
-    "formats": {"choice": {"type": "single", "options": ["本机单客户端可考虑 stdio，远程多客户端可考虑 Streamable HTTP，并分别配置权限与认证", "所有场景都必须使用 stdio，因为 HTTP 不能传递 JSON-RPC", "远程服务应把数据库凭据放入工具描述中供模型读取", "只要使用 HTTP 就自动获得最小权限和审计能力"], "answer": [0]}, "open": {"referenceAnswer": "MCP 官方架构中，stdio 适合本机进程间通信，Streamable HTTP 适合远程通信和多客户端；两者都仍需独立配置认证、授权、审计和输入校验。"}}
+    "formats": {"choice": {"type": "single", "options": ["本机单客户端可考虑 stdio，远程多客户端可考虑 Streamable HTTP，并分别配置权限与认证", "所有场景都必须使用 stdio，因为 HTTP 不能传递 JSON-RPC", "远程服务应把数据库凭据放入工具描述中，供模型读取后直连数据库", "只要使用 Streamable HTTP 传输，就自动获得最小权限控制和审计能力"], "answer": [0]}, "open": {"referenceAnswer": "MCP 官方架构中，stdio 适合本机进程间通信，Streamable HTTP 适合远程通信和多客户端；两者都仍需独立配置认证、授权、审计和输入校验。"}}
   },
   {
     "id": "gap-mcp-design-01",
@@ -609,7 +609,7 @@
     "angle": "scenario",
     "question": "序列分类服务的请求长度差异很大，短请求被长请求拖慢且 padding 比例很高。优先考虑什么？",
     "explanation": "可按长度分桶或动态 batch，正确设置 padding mask，并结合吞吐、延迟和显存测量；不能只盲目扩大 batch，因为长样本仍会造成浪费。",
-    "formats": {"choice": {"type": "single", "options": ["按长度分桶或动态 batch，并正确处理 padding mask，再测量吞吐与延迟", "把所有序列补到全局最大长度以简化代码并保证最快", "删除所有短序列，因为它们对模型没有价值", "只增加隐藏层维度，因为 padding 比例与性能无关"], "answer": [0]}, "open": {"referenceAnswer": "长度差异大时可采用 length bucketing、动态 batch 或按 token 数控制 batch，并确保 padding mask 正确；优化后要同时观察吞吐、延迟、显存和准确率。"}}
+    "formats": {"choice": {"type": "single", "options": ["按长度分桶或动态 batch，并正确处理 padding mask，再测量吞吐与延迟", "把所有序列都补到全局最大长度，以简化代码并保证速度最快", "直接扩大 batch 规模摊薄 padding 开销，无需分桶或处理 mask", "只增加隐藏层维度，因为 padding 比例与性能无关"], "answer": [0]}, "open": {"referenceAnswer": "长度差异大时可采用 length bucketing、动态 batch 或按 token 数控制 batch，并确保 padding mask 正确；优化后要同时观察吞吐、延迟、显存和准确率。"}}
   },
   {
     "id": "gap-task-oriented-ai-scenario-01",
@@ -807,7 +807,7 @@
     "angle": "definition",
     "question": "在调用 LLM 进行推理时，将 Temperature 设置为 0 通常意味着什么？",
     "explanation": "Temperature 设为 0 时，采样退化为贪心解码（Greedy Search），模型在每一步始终选择概率最高的单一 Token，输出结果具备最高确定性与可复现性（在固定硬件和精度下）。",
-    "formats": {"choice": {"type": "single", "options": ["采用贪心采样，每一步始终选取预测概率最高的 Token，输出最确定", "模型将完全停止生成任何字符", "模型将随机在词表中任意挑选 Token 以获得最大创造力", "直接关闭模型的全部注意力机制"], "answer": [0]}, "open": {"referenceAnswer": "Temperature=0 会使 Logits 的缩放趋于极端，采样退化为贪心解码（每次仅选择概率最大的 Token），从而使输出在相同输入下保持高度确定性和最小随机性。"}}
+    "formats": {"choice": {"type": "single", "options": ["采用贪心采样，每一步始终选取预测概率最高的 Token，输出最确定", "模型输出将完全随机，每次运行结果都大不相同", "模型将随机在词表中任意挑选 Token 以获得最大创造力", "模型将按均匀分布采样，每个 Token 被选中的概率相等"], "answer": [0]}, "open": {"referenceAnswer": "Temperature=0 会使 Logits 的缩放趋于极端，采样退化为贪心解码（每次仅选择概率最大的 Token），从而使输出在相同输入下保持高度确定性和最小随机性。"}}
   },
   {
     "id": "foundation-tokenization-bpe-01",
@@ -818,7 +818,7 @@
     "angle": "definition",
     "question": "现代大模型普遍采用子词分词器（如 BPE / Byte-Pair Encoding），相比单纯以“整词”或“单个字符”分词的主要优势是什么？",
     "explanation": "子词分词在词表大小与序列长度之间取得平衡：既能把高频常用词作为单一 Token 处理以缩短序列长度，又能通过子词或字节组合拼出罕见词，避免出现未登录词（OOV）问题。",
-    "formats": {"choice": {"type": "single", "options": ["平衡词表体积与序列长度，既高效表示高频词又彻底解决未登录词（OOV）问题", "可以将文本的维度压缩为 0，不再占用显存", "完全消除了不同自然语言之间的翻译隔阂", "保证每个汉字无论何时都只占用一个字节"], "answer": [0]}, "open": {"referenceAnswer": "Subword 分词（如 BPE）兼具词级别的高效压缩与字符级别的泛化能力：常见词被表示为完整 Token，生僻词/代码符号可拆解为子词或字节序列，避免了词表无限膨胀与 OOV 难题。"}}
+    "formats": {"choice": {"type": "single", "options": ["平衡词表体积与序列长度，既高效表示高频词又彻底解决未登录词（OOV）问题", "子词划分主要是为了压缩文本维度，词表越小推理速度越快", "词表越大越好，子词划分主要是为了无限扩大词表容量", "每个汉字都被固定切分为单字节，长度不随上下文变化"], "answer": [0]}, "open": {"referenceAnswer": "Subword 分词（如 BPE）兼具词级别的高效压缩与字符级别的泛化能力：常见词被表示为完整 Token，生僻词/代码符号可拆解为子词或字节序列，避免了词表无限膨胀与 OOV 难题。"}}
   },
   {
     "id": "foundation-inference-kv-cache-01",
@@ -829,7 +829,7 @@
     "angle": "definition",
     "question": "在大模型自回归生成（Generation / Decode）阶段，KV Cache 技术解决的核心痛点是什么？",
     "explanation": "每生成一个新 Token，由于注意力机制只需要关注历史所有 Token 的 Key 和 Value，缓存历史 Key/Value 可以避免每一步都对全部历史上下文重新进行重复的投影矩阵计算。",
-    "formats": {"choice": {"type": "single", "options": ["缓存前文已计算的 Key 和 Value 向量，避免每步生成时重复计算历史 Token 的注意力矩阵", "将模型的权重参数永久保存在客户端硬盘中以避免重复下载", "消除用户提问中的拼写错误", "在不使用显卡的情况下直接完成大规模并发推理"], "answer": [0]}, "open": {"referenceAnswer": "在自回归解码中，新 Token 计算 Attention 时需要历史所有 Token 的 K 和 V 向量；KV Cache 将已计算的历史 K/V 保存于显存中，避免每个新 Token 步都重新前向计算全部前文，大幅降低计算量。"}}
+    "formats": {"choice": {"type": "single", "options": ["缓存前文的 Key 和 Value 向量，避免每步生成时重复计算历史注意力", "将模型权重永久缓存在客户端硬盘中，避免每次推理重复下载参数", "缓存每步的查询向量并丢弃历史 Key 和 Value，以减少显存占用", "冻结历史 Key 和 Value 使其不再参与后续注意力计算，以节省显存"], "answer": [0]}, "open": {"referenceAnswer": "在自回归解码中，新 Token 计算 Attention 时需要历史所有 Token 的 K 和 V 向量；KV Cache 将已计算的历史 K/V 保存于显存中，避免每个新 Token 步都重新前向计算全部前文，大幅降低计算量。"}}
   },
   {
     "id": "foundation-safety-system-prompt-limit-01",

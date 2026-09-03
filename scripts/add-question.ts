@@ -6,12 +6,33 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseQuestionArray, type Question } from '../src/schemas/question.ts';
 import type { KnowledgeNode } from '../src/schemas/knowledge.ts';
+import { questionAngleSchema } from '../src/schemas/common.ts';
 import { detectOptionLengthRatio } from '../src/domain/bias.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const questionsDir = resolve(root, 'src/data/questions');
 const knowledgeDir = resolve(root, 'src/data/knowledge');
-const validAngles = new Set(['definition', 'fundamental', 'mechanism', 'calculation', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design']);
+// 合法角度以 schema 为单源（新增 angle 只改 common.ts，此处自动跟随）。
+const validAngles = new Set<string>(questionAngleSchema.options);
+
+/** 题型归一化：新 prompt 用 single-choice/multiple-choice，库内用 single/multiple。 */
+function normalizeChoiceType(value: unknown): unknown {
+  if (value === 'single-choice') return 'single';
+  if (value === 'multiple-choice') return 'multiple';
+  return value;
+}
+
+function normalizeIncoming(raw: unknown): unknown {
+  if (!Array.isArray(raw)) return raw;
+  return raw.map((item) => {
+    if (typeof item !== 'object' || item === null) return item;
+    const q = item as Record<string, unknown>;
+    const formats = q.formats as Record<string, unknown> | undefined;
+    const choice = formats?.choice as Record<string, unknown> | undefined;
+    if (!choice || typeof choice.type !== 'string') return item;
+    return { ...q, formats: { ...formats, choice: { ...choice, type: normalizeChoiceType(choice.type) } } };
+  });
+}
 
 function arg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -41,7 +62,7 @@ const write = process.argv.includes('--write');
 if (!inputFile || (write && !outputFile) || (!write && process.argv.includes('--output'))) printUsage();
 
 const raw = JSON.parse(readFileSync(resolve(process.cwd(), inputFile), 'utf8')) as unknown;
-const incoming = parseQuestionArray(raw);
+const incoming = parseQuestionArray(normalizeIncoming(raw));
 const existing = readJsonArrays<Question>(questionsDir);
 const nodes = readJsonArrays<KnowledgeNode>(knowledgeDir);
 const nodeIds = new Set(nodes.map((node) => node.id));

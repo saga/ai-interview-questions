@@ -139,11 +139,11 @@
     "tags": ["aws-well-architected", "generative-ai", "evaluation", "model-selection"],
     "difficulty": "hard",
     "angle": "system-design",
-    "question": "更换基础模型后，团队只看到平均质量分数上升就准备全量发布。还缺少什么关键步骤？（单选）",
+    "question": "更换基础模型后，团队只看到平均质量分数上升就准备全量发布。以下哪些是发布前缺少的关键步骤？",
     "explanation": "应对固定评估集重新执行质量、安全、事实性、延迟和成本测试，检查关键子群和边界用例，并记录模型、prompt、检索和护栏版本；平均分不能覆盖回归风险。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Operational excellence: consistent output quality and continuous improvement"},
     "misconceptions": ["平均质量分上升就说明新模型在所有子群上都更好，无需再评估安全与成本", "让模型自评新版本是否更好即可作为发布依据，不需要独立评估集", "删掉旧模型的评估结果、只保留对新模型有利的指标，就能支撑发布决策"],
-    "formats": {"choice": {"type": "single", "options": ["平均分上升即可发布，无需重新评估安全与成本，历史指标能代表新模型在所有子群上的表现", "在固定评估集上重新执行质量、安全、事实性、延迟与成本测试，检查关键子群与边界用例，并记录模型、prompt、检索与护栏版本后再决定是否全量发布", "只让模型自评新模型更好", "删除旧模型评估结果避免被拿来比较，仅保留新模型 favorable 指标即可用于发布决策"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。组件变更需要完整回归与灰度，覆盖业务质量和负责 AI 风险，而非只看单一平均指标。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["平均分上升即代表各子群同步变好，可直接全量发布，无需再评估安全、延迟与成本", "在固定评估集上重新执行质量、安全与事实性回归，同步覆盖延迟与成本后再决策是否发布", "用新模型自评旧版本输出，以自评胜率作为发布依据，可省去维护独立评估集的成本", "切片检查关键子群与边界用例，记录模型、prompt、检索与护栏版本后灰度发布", "归档时仅保留新模型有利指标，删除旧基线以简化发布评审，避免历史数据干扰决策"], "answer": [1, 3], "misconceptionMap": [0, null, 1, null, 2]}, "open": {"referenceAnswer": "组件变更需要完整回归与灰度，覆盖业务质量和负责 AI 风险，而非只看单一平均指标。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-12",
@@ -157,7 +157,7 @@
     "explanation": "应按用例分析模型选择、输入输出 token、重复上下文、缓存命中、检索规模和 Agent 步骤，采用满足质量门槛的最小模型与上下文，并将成本归因到工作流。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Cost optimization: model, prompt, vector store, and workflow optimization"},
     "misconceptions": ["永久使用最大模型能保证成本稳定，规模越大单位成本越低，无需按用例调整", "成本优化只看账单总额是否下降即可，质量评估可以删掉", "在 prompt 里加一句「请减少开销」，模型就会主动压缩 token 与检索量"],
-    "formats": {"choice": {"type": "single", "options": ["永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文", "按用例拆解模型选择、输入输出 token、重复上下文、缓存命中、检索规模与 Agent 步骤，在满足质量门槛的前提下选最小模型与最小上下文，并把成本归因到具体工作流", "删除质量评估只保留账单指标", "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。成本优化需要全链路归因，并在业务质量门槛内选择模型、上下文和流程。"}}
+    "formats": {"choice": {"type": "single", "options": ["永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文", "按用例拆解模型、token、缓存、检索与 Agent 步骤，选满足质量门槛的最小模型与上下文并归因到工作流", "直接全量换成最小模型并砍掉检索增强，用账单下降验证优化效果，质量回退可事后再补", "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。成本优化需要全链路归因，并在业务质量门槛内选择模型、上下文和流程。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-13",
@@ -170,7 +170,7 @@
     "question": "一家金融机构要把新的 AI 客服能力快速推广到多个业务单元。为了降低安全配置漂移，哪种做法最合理？（单选）",
     "explanation": "应把安全要求固化为经过安全测试的标准模板、基线和自动化控制，使加密、访问、日志、AI 数据流和输出护栏默认启用；事后逐个手工补安全会产生配置漂移。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html", "section": "Security by design and automated governance"},
-    "formats": {"choice": {"type": "single", "options": ["先全量上线，事故后再逐个修复", "使用经过安全验证的标准模板和自动化基线，把 AI 访问和数据控制默认纳入", "只依赖供应商默认配置", "让每个业务单元自行决定是否启用审计"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。可复用、自动化且预先验证的模板能让安全控制默认生效，并减少多业务单元之间的配置漂移。"}}
+    "formats": {"choice": {"type": "single", "options": ["先把 AI 客服全量上线到多业务单元，出现事故或漂移后再逐个手工修复", "用经安全验证的标准模板和自动化基线，把 AI 访问与数据控制默认纳入", "只依赖供应商默认配置，不做统一基线加固与默认护栏", "让每个业务单元自行决定是否启用审计，不做统一基线"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。可复用、自动化且预先验证的模板能让安全控制默认生效，并减少多业务单元之间的配置漂移。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-14",
@@ -183,7 +183,7 @@
     "question": "支付、交易和研究摘要使用同一恢复策略，但业务中断影响明显不同。首先应如何改进？（单选）",
     "explanation": "金融工作负载应按业务关键性定义 RTO/RPO、数据完整性和恢复优先级，再选择故障隔离、备份、跨区域或降级方案并实际演练。统一策略无法表达不同业务的风险容忍度。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/reliability.html", "section": "Resilience requirements planning and recovery objectives"},
-    "formats": {"choice": {"type": "single", "options": ["所有系统使用同一个 RTO/RPO 以简化运维", "按业务关键性定义 RTO/RPO 和完整性要求，再设计并演练恢复策略", "只提高计算资源规格，不定义恢复目标", "依赖云服务高可用而不测试应用恢复"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。恢复目标来自业务影响和风险要求，基础设施可用性不能替代应用级恢复设计与演练。"}}
+    "formats": {"choice": {"type": "single", "options": ["所有系统使用同一个 RTO/RPO 与恢复策略以简化运维", "按业务关键性定义 RTO/RPO 和完整性要求，再设计并演练恢复策略", "只提高计算资源规格支撑恢复，不定义恢复目标与优先级", "依赖云服务高可用保障恢复，而不测试应用级恢复"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。恢复目标来自业务影响和风险要求，基础设施可用性不能替代应用级恢复设计与演练。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-15",
@@ -209,7 +209,7 @@
     "question": "监管检查要求还原一次 AI 辅助客户服务决定。哪种日志设计最有价值？（单选）",
     "explanation": "应记录经过隐私保护的主体身份、输入和数据版本、模型/prompt 版本、检索与工具调用、策略命中、输出校验、人工修改和最终责任人，并确保日志完整性和访问审计。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html", "section": "Transparency and auditability"},
-    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本即可满足审计，过程信息无需留存，最终话术即足以还原决策", "完整记录隐私保护后的主体身份、输入与数据版本、模型与 prompt 版本、检索与工具调用、策略命中、输出校验、人工修改与责任人，并保证日志完整性与访问审计。", "完整记录全部明文交互以最大化可追溯性，访问控制可后补；先保完整，再补安全。", "只保存模型输出的置信度分数，不保存实际输入与决策上下文即可还原责任链"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
+    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本即可满足审计，中间检索、工具调用与策略命中无需留存", "记录脱敏主体身份、输入与数据版本、模型与 prompt 版本、检索工具调用、策略命中与人工修改，保证完整性并审计访问", "完整记录全部明文交互以最大化可追溯性，隐私合规可事后补救，审计完整性优先于脱敏", "保存完整输入输出与模型版本即可，责任人信息涉隐私不应进日志，审计时再关联工单，缺少责任人与过程证据"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-17",
@@ -345,7 +345,7 @@
     "explanation": "需要同步架构和配置，检测训练、测试、预发布与生产环境的 skew，并记录从数据处理到部署的 lineage。只比较代码版本不能发现配置、特征和依赖差异。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/ops-monitoring.html", "section": "MLOPS06-BP01: Synchronize architecture and configuration and check for skew"},
     "misconceptions": ["代码版本一致即代表环境一致，配置与特征处理差异不会影响预测结果", "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可", "删掉生产监控指标改用单次人工核对，比系统性 skew 检查更省事且同样可靠"],
-    "formats": {"choice": {"type": "single", "options": ["只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相", "同步并记录训练、测试、预发布与生产环境的架构与配置，系统性检测环境 skew，并保留从数据处理到部署的完整 lineage", "把生产流量全部切回测试环境", "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 运行结果受配置、特征处理和依赖影响，应做环境一致性与 lineage 管理。"}}
+    "formats": {"choice": {"type": "single", "options": ["只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相", "同步并记录训练到生产各环境的架构与配置，系统性检测环境 skew，并保留数据处理到部署的 lineage", "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可", "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 运行结果受配置、特征处理和依赖影响，应做环境一致性与 lineage 管理。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-27",
@@ -359,7 +359,7 @@
     "explanation": "风险评分通常是预测/分类等传统 ML 问题，要求稳定的数值或类别输出；对话生成属于 foundation model 的生成式问题，重点增加 prompt、检索、输出安全和生成质量治理。两者共享 ML 生命周期，但不能用同一套指标和控制替代。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/machine-learning-lens.html", "section": "Distinction from the Generative AI Lens"},
     "misconceptions": ["两类任务都可以用 BLEU 等文本相似度指标评估，分数高即代表业务可用", "两类任务都应完全交给自由文本生成，固定模型与结构化输出会限制表达能力", "生成式 AI 上线后不需要数据监控与生产监控"],
-    "formats": {"choice": {"type": "single", "options": ["两者都只需用 BLEU 等文本相似度指标评估，分数高即代表业务可用，无需分别设计指标", "风险评分属于传统 ML 的预测/分类问题，要求稳定可校验的数值或类别输出；对话生成属于 foundation model 的生成式问题，需额外治理 prompt、检索、输出安全与生成质量，两者共享生命周期但不能用同一套指标替代", "两者都应完全交给自由文本生成", "生成式 AI 不需要数据或生产监控，上线后无需持续观测质量、成本与安全"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。传统 ML 和生成式 AI 有共同基础，但任务类型、输出契约和特有风险不同。"}}
+    "formats": {"choice": {"type": "single", "options": ["两者都用 BLEU 等文本相似度指标评估，分数高即业务可用，风险评分也可转为文本生成任务统一度量", "风险评分是传统 ML 分类问题，要稳定可校验的输出；对话生成是生成式问题，需治理 prompt、检索与输出安全；两者不可用同一套指标替代", "两者都应统一为自由文本生成问题，用同一套生成质量指标评估，风险评分也可由 LLM 直接输出分值替代", "生成式 AI 上线前充分评测即可，上线后无需持续观测质量、成本与安全，监控只适用于传统 ML"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。传统 ML 和生成式 AI 有共同基础，但任务类型、输出契约和特有风险不同。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-28",
@@ -387,7 +387,7 @@
     "explanation": "应先明确业务目标、决策对象、预测时点、可接受错误和成功指标，再把业务问题转成分类、回归或异常检测等 ML 问题；先选算法容易优化与实际价值无关的指标。",
     "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/operational-excellence.html", "section": "Business goal identification and ML problem framing"},
     "misconceptions": ["先选最复杂最先进的算法，再让业务去适应它的输出即可", "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛", "训练损失下降就代表业务价值达成，无需把损失映射到实际业务决策"],
-    "formats": {"choice": {"type": "single", "options": ["先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标", "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再把业务问题映射为分类、回归或异常检测等 ML 问题，最后才选择算法", "只要离线准确率高就不需要业务目标", "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 设计应从业务目标和错误代价出发，再进行问题建模、数据准备和算法选择。"}}
+    "formats": {"choice": {"type": "single", "options": ["先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标", "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再映射为分类回归或异常检测问题，最后选算法", "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛", "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 设计应从业务目标和错误代价出发，再进行问题建模、数据准备和算法选择。"}}
   },
   {
     "id": "aws-waf-lens-2026-08-30",

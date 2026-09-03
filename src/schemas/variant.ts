@@ -8,6 +8,7 @@
 
 import { z } from 'zod';
 import type { Question } from './question';
+import { cognitiveTaskSchema, questionAngleSchema } from './common.ts';
 
 /** 变体改写风格（轻量变体边界内的 4 种风格，不改变「LLM 只做语义变换」的硬约束）。 */
 export const variantKindSchema = z.enum([
@@ -70,8 +71,8 @@ export const EMPTY_VARIANT_POOL: VariantPool = {
 /**
  * 计算 sourceHash 时取自 canonical 的内容 —— **题面 + 选项 + 元数据**。
  *
- * 为什么要覆盖元数据：Variant 是「同一 assessment contract 的表达变体」，
- * 它从 canonical 继承 `topic / angle / difficulty / tags(concepts)`（见 applyVariant 的 ...canonical）。
+ * 为什么要覆盖元数据：Variant 是「同一 Knowledge 的不同 reasoning path 测量」
+ * （ADR-077；未自声明测量面时继承 canonical 的 `topic / angle / difficulty / tags`，见 applyVariant）。
  * 只哈希题面时，canonical 换了 angle 或难度，池里所有变体仍显示「未 stale」，
  * 但它们继承来的元数据已经和新 canonical 不一致 —— 静默失真。
  *

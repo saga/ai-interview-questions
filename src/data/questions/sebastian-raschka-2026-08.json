@@ -10,7 +10,7 @@
     "question": "在查询头数量不变的前提下，把多个查询头分组并让每组共享一套 K/V 头，主要降低了哪些推理成本？（请选择两个）",
     "explanation": "GQA 保留多个查询头的表达能力，同时减少 K/V 头数量，因此 KV cache 的存储和读取量下降，尤其缓解 decode 阶段的显存带宽压力。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison", "section": "1.1 Multi-Head Latent Attention / GQA background"},
-    "formats": {"choice": {"type": "multiple", "options": ["减少 KV cache 的存储容量", "减少 KV cache 的读取带宽", "让每个 token 同时激活更多 FFN 专家", "消除位置编码计算"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。GQA 减少 K/V 头而不减少 Q 头，直接降低 KV cache 的容量和带宽开销。"}}
+    "formats": {"choice": {"type": "multiple", "options": ["减少 KV cache 的存储容量（显存占用）", "减少 decode 阶段读取 KV cache 的带宽压力", "让每个 token 同时激活更多 FFN 专家", "GQA 分组后位置编码的计算可以完全省略"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。GQA 减少 K/V 头而不减少 Q 头，直接降低 KV cache 的容量和带宽开销。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-02",
@@ -75,7 +75,7 @@
     "question": "稀疏 Mixture-of-Experts 层同时拥有大量总参数，却能控制单个 token 的计算量，关键机制是什么？（单选）",
     "explanation": "路由器为每个 token 只选择少数专家执行，因此总参数量带来容量，稀疏激活控制每一步的计算量。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison", "section": "1.2 Mixture-of-Experts"},
-    "formats": {"choice": {"type": "single", "options": ["所有专家都执行但共享同一输出", "路由器只激活每个 token 的少数专家", "训练时删除未使用专家", "把所有专家权重压缩成一个向量"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。MoE 的稀疏性来自按 token 路由，只执行少数专家而不是完整参数集合。"}}
+    "formats": {"choice": {"type": "single", "options": ["所有专家都执行但共享同一输出", "路由器只激活每个 token 的少数专家", "训练后删除未被路由选中的专家以节省计算", "把所有专家权重压缩成一个向量"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。MoE 的稀疏性来自按 token 路由，只执行少数专家而不是完整参数集合。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-07",
@@ -88,7 +88,7 @@
     "question": "为什么不能只用 MoE 模型的总参数量来估算每个 token 的推理 FLOPs？（单选）",
     "explanation": "MoE 的总参数包括未被当前 token 激活的专家。每一步实际计算量主要由共享模块和被路由选中的少数专家决定。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison", "section": "Sparse versus dense parameters"},
-    "formats": {"choice": {"type": "single", "options": ["总参数量不包含词嵌入", "未被当前 token 选中的专家不参与该步计算", "MoE 推理永远不执行 FFN", "总参数量只决定输出长度"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。MoE 区分总参数和每 token 激活参数，后者才是单步计算量的主要估计依据。"}}
+    "formats": {"choice": {"type": "single", "options": ["总参数量未计入词嵌入，实际计算量更大", "未被当前 token 选中的专家不参与该步计算", "MoE 推理只用注意力模块，不再执行专家 FFN", "总参数量只决定输出长度，与单步计算无关"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。MoE 区分总参数和每 token 激活参数，后者才是单步计算量的主要估计依据。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-08",
@@ -114,7 +114,7 @@
     "question": "在线生成服务中，Prefill 和 Decode 通常需要不同优化策略，最根本的原因是什么？（单选）",
     "explanation": "Prefill 一次处理整段输入，通常更偏计算受限；Decode 逐 token 生成并读取权重和 KV cache，通常更偏内存带宽受限。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/the-big-llm-architecture-comparison", "section": "Architecture efficiency and inference"},
-    "formats": {"choice": {"type": "single", "options": ["Prefill 只运行在 CPU，Decode 只运行在磁盘", "Prefill 处理整段输入，Decode 逐 token 读取状态并生成", "Prefill 不使用注意力，Decode 才使用注意力", "两者计算完全相同，只是名字不同"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。Prefill 是批量处理输入，Decode 是增量生成；两阶段的计算和访存特征不同。"}}
+    "formats": {"choice": {"type": "single", "options": ["Prefill 受限于 CPU 算力，Decode 受限于磁盘 IO", "Prefill 处理整段输入，Decode 逐 token 读取状态并生成", "Prefill 不使用注意力，Decode 才使用注意力", "两者都是逐 token 生成，瓶颈相同无需区分优化"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。Prefill 是批量处理输入，Decode 是增量生成；两阶段的计算和访存特征不同。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-10",
@@ -179,7 +179,7 @@
     "question": "一个应用主要处理简单的 FAQ，切换到需要长推理轨迹的模型后成本和延迟上升但准确率没有改善。最合理的决策是什么？（单选）",
     "explanation": "推理模型的额外中间步骤适合复杂任务，但会增加 token 消耗和延迟。对简单任务应按准确率、成本和延迟的实际 SLO 选择模型，而不是盲目使用推理模型。",
     "source": {"materialId": "https://magazine.sebastianraschka.com/p/understanding-reasoning-llms", "section": "Advantages and disadvantages of reasoning models"},
-    "formats": {"choice": {"type": "single", "options": ["保留推理模型，因为复杂模型永远更好", "按任务难度和 SLO 评估，简单 FAQ 可使用更低成本路径", "把所有 FAQ 改成代码题", "只提高输出 token 上限"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。推理能力是专用优化，不是所有任务都值得承担其 token、延迟和成本开销。"}}
+    "formats": {"choice": {"type": "single", "options": ["保留推理模型，复杂模型的额外开销总能换来质量", "按任务难度和 SLO 评估，简单 FAQ 可使用更低成本路径", "把 FAQ 改写为多步推理格式以匹配模型能力", "放宽输出 token 上限，让模型有更多推理空间"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。推理能力是专用优化，不是所有任务都值得承担其 token、延迟和成本开销。"}}
   },
   {
     "id": "sebastian-raschka-2026-08-15",

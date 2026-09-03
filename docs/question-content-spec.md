@@ -104,27 +104,17 @@
 
 ## §8 Variant 知识一致性 —— 什么能改、什么不能改
 
-**Variant = 同一 assessment contract 的表达 / 情境变体。**
+**Variant = 同一 Knowledge 的不同 reasoning path 测量**（ADR-077；`docs/prompt_part1.md` §八 / `prompt_part2.md` §六同口径）。
 
-**能改**（表达层）：场景（等价替换，不得增加推理步骤/背景负担/决策变量）、提问方式、framing、选项措辞。
-**不能改**（考察内容层，一律由程序从 canonical 继承）：Core Concept、核心技术事实、
-正确答案逻辑、`angle`、`cognitiveTask`、`difficulty`、required concepts、诊断目标、正确推理路径。
+**能改**（测量方式层）：`angle`、`cognitiveTask`、推理方向、观测证据、约束、工程情境、题型（single/multiple 可互换）。
+**不能改**（考察内容层）：Knowledge 本身、正确答案逻辑、诊断目标。变体答对所需的知识不得超出 canonical 的 Knowledge；若回答变体需要额外掌握一个新 Concept，**它应该是新题，不是变体**。
 
-> 换 `angle` 或 `cognitiveTask` **不是变体的职责** —— 那要新建一道 canonical，
-> 它再生成自己的变体池。理由见下：变体继承 canonical 的 `topic × angle` 且不参与覆盖率，
-> 用变体换 angle 等于声称换了考察维度、数据里却没换。
->
-> 生成指令（含正反例与改写幅度口径）见 `docs/添加题库prompt.md` §2 / §19；
-> 本规范只定「什么能改」的边界，不重复流程。
+- 变体换 `angle` / `cognitiveTask` 后仍归因同一 canonical evidence 键（见 `src/domain/questionIdentity.ts`）；而**改变 assessment contract 又不归因同一 Knowledge 的派生，必须建新 canonical ID + 填 `derivedFrom`**（assessment identity immutable）。
+- 变体池条目自声明的测量面（`angle` / `cognitiveTask`，缺省 = 继承 canonical）见 `src/schemas/variant.ts`；`sourceHash` 覆盖元数据，canonical 变更即标 stale。
+- prompt 产出的 inline `variants[]` 经 `npm run question:convert` 拆成变体池格式落盘（`src/data/variants/`），不嵌入 Question JSON。
 
-- 不得为生成变体引入新的独立核心知识。若回答变体需要额外掌握一个新 Concept，
-  **它应该是新题，不是变体**。
-- 变体的 `topic / angle / difficulty / answer 索引 / explanation` 由程序从 canonical 继承
-  （`src/ai/variant.ts`），LLM 只改表达。
-
-> **变体不是补覆盖缺口的主要机制。** 变体继承 canonical 的 `topic × angle`，
-> 用它补洞等于把 A 格的题搬到 B 格——A 格重新空出来，**覆盖率永远补不满**。
-> 变体的正确用途是**同格内扩充题量**（减少重复感），补缺口要靠 curate/rewrite 或新写 canonical。
+> **变体不是补覆盖缺口的主要机制。** 变体归因同一 Knowledge，用它补洞等于把 A 格的题搬到 B 格——A 格重新空出来，**覆盖率永远补不满**。
+> 变体的正确用途是**同 Knowledge 内扩充题量**（减少重复感），补缺口要靠 curate/rewrite 或新写 canonical。
 
 变体落盘前必须过超采 + 五维质询（`scripts/question-variants.ts --oversample`、
 `src/ai/variantChallenger.ts`）。结构校验（`validateVariant`）只是**漂移探测器**，
