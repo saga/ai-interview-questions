@@ -1,0 +1,186 @@
+[
+  {
+    "category": "generative-models",
+    "topic": "gan",
+    "knowledgeId": "gan-optimization",
+    "id": "gan-minimax-saturation-canonical",
+    "tags": [
+      "gan",
+      "deep-learning",
+      "optimization"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在标准 GAN（Generative Adversarial Networks）训练初期，判别器 D 往往能以极高置信度区分真实样本与生成样本。若直接按照原始 Minimax 目标函数 min_G E[log(1 - D(G(z)))] 训练生成器 G，会导致什么后果？应采取什么替换策略来解决？",
+    "explanation": "训练初期，生成器生成的样本质量较低，判别器 D 能轻易判别其为伪造样本，导致 D(G(z)) 接近 0。函数 log(1 - D(G(z))) 在此区域的梯度趋近于 0（饱和），使 G 无法有效更新。工程和理论上将生成器的目标替换为最大化 log D(G(z))（或最小化 -log D(G(z))），此非饱和损失在 D(G(z)) 接近 0 时能提供极强的梯度激励，且保持与原目标函数相同的博弈不动点。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "原始损失函数 log(1 - D(G(z))) 在 D(G(z)) 接近 0 区域梯度极小，导致生成器面临严重的梯度消失问题。",
+          "替换策略是将生成器的优化目标改为最大化 log D(G(z))，即在梯度下降中最小化 -log D(G(z))。",
+          "修改后的非饱和生成器损失函数在训练早期（D(G(z)) 接近 0 时）能够提供大幅增强的梯度更新信号。",
+          "修改后的生成器损失函数改变了对抗博弈的全局唯一极小值点，导致系统无法收敛到 pg = pdata。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "category": "generative-models",
+    "topic": "gan",
+    "knowledgeId": "gan-theory",
+    "id": "gan-optimal-discriminator-canonical",
+    "tags": [
+      "gan",
+      "deep-learning",
+      "probability-theory"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "question": "给定固定生成器 G 及其诱导的概率分布 pg，理论分析 GAN 判别器 D 在无约束函数空间下的最优解 D*_G(x) 及此状态下的博弈优化目标 C(G)，下列哪些推导结论是准确的？",
+    "explanation": "固定 G 时，判别器的目标是最大化 E_pdata[log D(x)] + E_pg[log(1 - D(x))]，对 D(x) 求导可得最优解 D*_G(x) = pdata(x) / (pdata(x) + pg(x))。当 pg = pdata 时，D*_G(x) = 1/2。将 D*_G(x) 代入博弈目标函数 C(G) 后可化简为 C(G) = -log(4) + 2 * JSD(pdata || pg)。当 pg = pdata 时 JSD 为 0，此时 C(G) 取得全局极小值 -log(4)（而非 0）。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在生成器 G 固定的情况下，最优判别器为 D*_G(x) = pdata(x) / (pdata(x) + pg(x))。",
+          "当生成分布完美重构真实分布（pg = pdata）时，最优判别器在全域输出固定值 D*_G(x) = 1/2。",
+          "代入最优判别器后 C(G) 化简为 -log(4)+2·JSD，pg=pdata 时取极小。",
+          "当生成分布与真实分布重合时 C(G) 取全局极小值 0，与 JSD 无关。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "category": "generative-models",
+    "topic": "gan",
+    "knowledgeId": "gan-comparisons",
+    "id": "gan-vs-mcmc-comparison-canonical",
+    "tags": [
+      "gan",
+      "mcmc",
+      "generative-models"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "与传统无向图生成模型（如 RBM、DBM）及基于 Markov Chain 的生成模型（如 GSN）相比，GAN 架构在模型训练与样本生成环节具有哪些核心技术优势？",
+    "explanation": "GAN 属于隐式密度生成模型（Implicit Density Model）。其生成过程仅需将先验噪声通过生成器网络执行一次单向前向传播即可获得生成样本，无需 Markov 链的反复迭代混合（Mixing）；训练和推理均不需要对极难计算的全局配分函数（Partition Function）进行近似求导；此外 GAN 的前向神经网络中没有反馈循环，可以充分发挥 ReLU/Maxout 等分段线性激活单元的梯度传导优势。但 GAN 无法直接提供解析的概率密度估计 log p_g(x)。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "GAN 的采样过程无需 Markov 链迭代，仅需通过生成器网络进行单次前向传播即可独立生成样本。",
+          "GAN 在训练和推理过程中均无需计算或近似复杂的配分函数（Partition Function）及其梯度。",
+          "GAN 在生成对抗网络中可以灵活接入分段线性激活函数（如 ReLU、Maxout），而无需担心反馈回路引发的激活爆发。",
+          "GAN 能够显式计算出复杂高维数据点 x 在生成分布 pg(x) 下的精准对数似然值（Log-likelihood）。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "category": "generative-models",
+    "topic": "gan",
+    "knowledgeId": "gan-training-algorithm",
+    "id": "gan-training-algorithm-canonical",
+    "tags": [
+      "gan",
+      "optimization",
+      "sgd"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 GAN 的 Minibatch 随机梯度下降（SGD）训练迭代过程中，关于判别器 D 与生成器 G 参数更新策略的实施细节，哪些选项是正确且符合理论设计的？",
+    "explanation": "GAN 训练采取交替更新机制，内循环施加 k 步判别器更新（如 ascending stochastic gradient），接着更新 1 步生成器。内循环不将判别器训练至完全收敛是为了避免计算过载以及在有限样本上严重过拟合；只要生成器变化缓慢，判别器就能维持在当前最优解邻域。判别器更新使用对数似然的梯度上升（Ascent）求最大值，而不是单一的减小损失。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每轮训练迭代中，通常先交替执行 k 步判别器参数 theta_d 的梯度上升更新，再执行 1 步生成器参数 theta_g 的梯度更新。",
+          "限制判别器在内循环中仅更新 k 步而非训练至完全收敛，能够有效防止有限数据集上的过拟合并降低计算开销。",
+          "只要生成器 G 参数变化足够缓慢，维持判别器在其当前最优解附近更新能保证系统的动态稳定性。",
+          "判别器更新梯度时，真实样本 minibatch 与噪声生成的伪造样本 minibatch 必须合并计算后仅通过减小损失函数来更新。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  },
+  {
+    "category": "generative-models",
+    "topic": "gan",
+    "knowledgeId": "gan-evaluation",
+    "id": "gan-parzen-evaluation-canonical",
+    "tags": [
+      "gan",
+      "model-evaluation",
+      "parzen-window"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "question": "由于标准 GAN 无法显式计算生成概率密度 pg(x)，在对 GAN 生成样本进行定量对数似然估计（Log-likelihood Evaluation）时，经典文献通常采用高斯帕森窗（Gaussian Parzen Window）拟合方法。下列关于该评估方法特性的叙述中，哪一项是正确的？",
+    "explanation": "在隐式生成模型评估中，基于高斯帕森窗（Kernel Density Estimation）的方法通过生成样本拟合连续分布以估计测试集似然。其中核宽度参数 sigma 必须通过验证集上的交叉验证（Cross-validation）确定。该方法在高维空间中方差较高（High Variance），并不十分精准，是缺乏直接密度计算手段时的权宜之计。",
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "高斯帕森窗评估方法在高维数据空间中具有极低的估计方差，因此是评估高维图像生成质量的精确标准。",
+          "高斯帕森窗中的超参数 sigma（高斯核标准差）通常需要在验证集上通过交叉验证（Cross-validation）进行搜索择优。",
+          "该方法通过在生成器内部增加一个似然解码层，从而精准还原测试样本在生成分布下的解析似然值。",
+          "帕森窗似然估计完全不受样本采样的随机性影响，能客观准确反映 GAN 是否发生模式崩溃（Mode Collapse）。"
+        ],
+        "answer": [
+          1
+        ]
+      }
+    }
+  },
+  {
+    "category": "generative-models",
+    "topic": "gan",
+    "knowledgeId": "gan-comparisons",
+    "id": "gan-vs-nce-comparison-canonical",
+    "tags": [
+      "gan",
+      "nce",
+      "generative-models"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "噪声对比估计（Noise-Contrastive Estimation, NCE）与生成对抗网络（GAN）均使用了判别式准则来训练生成模型。两者在噪声分布定义与模型结构设计上的核心差异有哪些？",
+    "explanation": "NCE 使用固定噪声分布（Fixed Noise Distribution）作为分类背景，这导致当模型学到真实分布的局部特性后，固定噪声无法继续提供强的区分信号，学习效率下降；而 GAN 使用生成网络 G 动态调节对抗样本分布 pg。此外，NCE 要求模型能够显式指定未归一化概率密度（Unnormalized Probability Density），因此不适用于 DBM 等无法导出未归一化密度的复杂多层隐变量模型，而 GAN 完全不需要密度函数的解析表达。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NCE 使用固定的噪声分布（Fixed Noise Distribution）来区分真实样本与噪声。",
+          "GAN 使用由生成器 G 动态演化的可学习分布 pg 作为判别器的对立数据来源。",
+          "在 NCE 中，当模型学到真实分布的局部子集后，固定噪声源会导致模型学习速度显著放缓。",
+          "NCE 不需要模型给出可分析指定的未归一化概率密度（Unnormalized Probability Density）。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  }
+]

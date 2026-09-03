@@ -1,77 +1,5 @@
 [
   {
-    "id": "skill-evolution-state-management",
-    "name": "技能演化与状态管理",
-    "area": "agent-engineering",
-    "topic": "skill-evolution-state-management",
-    "priority": "P1",
-    "summary": "自我演化 Agent 中，验证集门控只决定可执行 Skill 的版本切换；失败候选的诊断日志、实验 diff、验证分与错误模式应作为持久知识保留，避免回滚时丢失学习信号。",
-    "required": [
-      "可执行 Skill 状态与持久化演化知识必须分离管理",
-      "验证失败时回滚活性 Skill，但保留诊断日志、diff、验证分和错误模式",
-      "演化状态需要可审计、可恢复，并避免重复尝试已拒绝的修改"
-    ],
-    "misconceptions": [
-      "以为回滚必须让所有知识库状态回到上一代快照",
-      "以为失败实验日志会污染后续探索，因此应该清空"
-    ],
-    "angles": ["tradeoff", "system-design", "debugging"]
-  },
-  {
-    "id": "agent-context-engineering",
-    "name": "Agent 上下文与技能上下文",
-    "area": "llm-applications",
-    "topic": "agent-context-engineering",
-    "priority": "P1",
-    "summary": "技能演化系统需要把编译后的执行指令与庞大的演化知识库隔离：推理阶段按任务注入精炼 Skill，诊断阶段再按需检索历史轨迹和元知识，以控制上下文预算与注意力噪声。",
-    "required": [
-      "推理 Agent 的上下文应优先包含当前任务所需的编译后 Skill",
-      "完整演化日志与历史错误模式属于按需检索的元知识，不应默认灌入执行上下文",
-      "上下文隔离同时服务于 token 成本、注意力质量与职责边界"
-    ],
-    "misconceptions": [
-      "以为把全部历史知识注入上下文一定能提升执行质量",
-      "以为 Markdown 知识库天然是指令而不是需要隔离的数据"
-    ],
-    "angles": ["tradeoff", "mechanism", "system-design"]
-  },
-  {
-    "id": "agent-memory-and-tool-use",
-    "name": "Agent 记忆与工具使用",
-    "area": "agent-engineering",
-    "topic": "agent-memory-and-tool-use",
-    "priority": "P1",
-    "summary": "元优化器面对超长执行轨迹时，应以索引、统计摘要和工具按需读取替代全量拼接；记忆系统负责可检索性，工具负责把细节按需带入当前推理。",
-    "required": [
-      "高层知识索引和任务统计应与原始执行轨迹分层存储",
-      "Proposer 应通过 read_file 等工具按需抽查特定失败轨迹",
-      "上下文预算应由检索与工具调用共同管理，而不是用固定截断覆盖全量数据"
-    ],
-    "misconceptions": [
-      "以为固定截断全量轨迹就能兼顾覆盖率与诊断质量",
-      "以为随机抽取单条失败轨迹足以代表系统性问题"
-    ],
-    "angles": ["mechanism", "tradeoff", "system-design"]
-  },
-  {
-    "id": "skill-discovery-vs-execution",
-    "name": "技能发现与执行",
-    "area": "agent-engineering",
-    "topic": "skill-discovery-vs-execution",
-    "priority": "P1",
-    "summary": "Agent Skill 的发现/提炼能力与执行能力可以解耦：强模型负责从轨迹归纳结构化 SOP，弱模型负责遵循已验证的 Skill 完成任务，技能因此成为可迁移的程序化知识工件。",
-    "required": [
-      "Skill discovery 负责归纳根因、策略和可执行步骤",
-      "Skill execution 负责在目标模型上遵循已验证指令完成任务",
-      "高质量 Skill 可以跨模型迁移，但不能替代模型基础能力或保证所有任务超越"
-    ],
-    "misconceptions": [
-      "以为技能收益只来自目标模型自身的反思能力",
-      "以为跨模型迁移要求模型结构和 tokenizer 完全相同"
-    ],
-    "angles": ["fundamental", "comparison", "tradeoff"]
-  },
-  {
     "id": "prompt-optimization-debugging",
     "name": "Prompt 优化与调试",
     "area": "ai-systems",
@@ -87,42 +15,10 @@
       "以为提高 temperature 就能解决优化器死循环",
       "以为清空历史轨迹可以消除局部最优"
     ],
-    "angles": ["debugging", "system-design", "design"]
-  },
-  {
-    "id": "model-scaling-and-skills",
-    "name": "模型规模与技能协同",
-    "area": "llm",
-    "topic": "model-scaling-and-skills",
-    "priority": "P1",
-    "summary": "模型规模与程序化 Skill 通常是互补因素：Skill 可压缩并迁移工作流知识，模型规模仍影响泛化、复杂逻辑理解与从同一 Skill 中释放收益的能力。",
-    "required": [
-      "Skill discovery 与模型规模的收益可以互补而非简单替代",
-      "小模型带 Skill 可能超过无 Skill 的大模型，但不意味着全面超越",
-      "同一 Skill 的相对收益不会在所有模型规模和任务上恒定"
-    ],
-    "misconceptions": [
-      "以为 Skill 可以完全替代基座模型能力提升",
-      "以为 Skill 收益与模型规模严格负相关或完全独立"
-    ],
-    "angles": ["comparison", "tradeoff", "fundamental"]
-  },
-  {
-    "id": "self-evolving-agent-workspace",
-    "name": "自演化 Agent 工作区",
-    "area": "agent-engineering",
-    "topic": "self-evolving-agent-workspace",
-    "priority": "P1",
-    "summary": "生产级自演化 Agent 可采用 Raw/Wiki/Skill 三层工作区：Raw 保存不可变轨迹，Wiki 沉淀跨迭代知识与审计，Skill 保存经验证集门控的活性 SOP，确保可追溯、可积累、可控发布。",
-    "required": [
-      "Raw 层保存不可变的原始执行轨迹",
-      "Wiki 层持续累积故障模式、实验记录与审计知识",
-      "Skill 层只保存经过验证集门控、供推理执行的活性技能"
-    ],
-    "misconceptions": [
-      "以为只保留最新 Cache 就足以支持故障追溯",
-      "以为未经验证的 Prompt 可以直接挂载到生产执行层"
-    ],
-    "angles": ["system-design", "comparison", "design"]
+    "angles": [
+      "debugging",
+      "system-design",
+      "design"
+    ]
   }
 ]

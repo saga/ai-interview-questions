@@ -204,134 +204,6 @@
     ]
   },
   {
-    "id": "self-improving-agents",
-    "name": "自我改进型 Agent",
-    "area": "agent-engineering",
-    "topic": "agent-fundamentals",
-    "priority": "P1",
-    "summary": "将执行 Agent（Base Agent）与改进 Agent（Improver Agent）职责解耦：执行 Agent 基于独立、可版本控制的技能（Skill）文件完成领域任务；改进 Agent 异步观察执行日志与人类反馈，向技能文件提出增量修改，经 Git PR 与人类审核合并后方可被后续任务继承。",
-    "required": [
-      "执行 Agent 与改进 Agent 职责分离：执行负责领域任务，改进负责异步观察与技能演进",
-      "技能文件独立于应用代码、可版本控制，变更须经 PR + 人类审核合并，而非运行时热写",
-      "改进 Agent 对比历史执行结果与人类反馈的差异，提出精细增量修改而非整体重写"
-    ],
-    "misconceptions": [
-      "认为改进 Agent 可直接热更新在线运行时、无需人类审核即可自我进化",
-      "把技能文件硬编码进应用代码，丧失版本控制与安全可控的演进能力"
-    ],
-    "angles": [
-      "mechanism",
-      "system-design",
-      "design"
-    ]
-  },
-  {
-    "id": "skill-design",
-    "name": "技能文件设计",
-    "area": "agent-engineering",
-    "topic": "agent-fundamentals",
-    "priority": "P1",
-    "summary": "在有限 Context Window 内指导 Agent 处理复杂工程任务的技能（Skill）文件设计：以原则（Principles）与因果逻辑为主保留泛化能力，采用渐进式披露将确定性/重逻辑解耦为外部脚本或资源文件按需调用。",
-    "required": [
-      "以原则性指导与因果逻辑为主，而非枚举死板规则（Rules），保留 LLM 推理泛化能力",
-      "渐进式披露：将复杂的数据提取、清洗或确定性逻辑解耦为外部脚本/资源，运行期按需调用以节省上下文"
-    ],
-    "misconceptions": [
-      "把全部业务文档、API 规范与历史案例平铺写入主技能文件，撑爆上下文并降低稳定性",
-      "用死板规则枚举取代原则指导，导致技能缺乏泛化、易被特例拖垮"
-    ],
-    "angles": [
-      "design",
-      "mechanism"
-    ]
-  },
-  {
-    "id": "skills-vs-memory",
-    "name": "技能 vs 情境记忆",
-    "area": "agent-engineering",
-    "topic": "memory",
-    "priority": "P1",
-    "summary": "技能（Skills）是过程性、结构化、相对稳定且通过版本控制显式演进的领域知识规范；情境记忆（Episodic Memory）是 Agent 在推理或会话过程中自动记录的动态事件与上下文信息，随会话推进持续变化。",
-    "required": [
-      "技能是显式版本控制、相对稳定、经人工/评审演进的过程性知识",
-      "情境记忆是运行期自动写入、随会话持续变化的动态事件与上下文"
-    ],
-    "misconceptions": [
-      "混淆二者，以为技能也是运行期自动变动的会话数据",
-      "认为技能等同于 RAG 阶段通过向量数据库动态加载的内容"
-    ],
-    "angles": [
-      "comparison",
-      "definition"
-    ]
-  },
-  {
-    "id": "feedback-loops",
-    "name": "反馈闭环与噪声治理",
-    "area": "agent-engineering",
-    "topic": "human-in-the-loop",
-    "priority": "P1",
-    "summary": "以人类反馈驱动技能演进的自改进闭环：反馈含噪声，需引入健全性检查（Sanity Check）、按来源权限与权重并要求因果解释来提升信号质量，并在合并环节保留 Human-in-the-Loop 作为防止提示词漂移与注入的最终闸门。",
-    "required": [
-      "引入健全性检查过滤违背工程常识的反馈建议",
-      "按反馈来源权限与权重、并要求附带因果解释（Rationale）提升信号质量",
-      "在技能合并至主干时保留人类审核（Human-in-the-Loop）作为最终安全闸门"
-    ],
-    "misconceptions": [
-      "一捕获负向反馈即无条件覆盖现有技能规则",
-      "仅依赖二元赞踩信号即可安全驱动技能更新"
-    ],
-    "angles": [
-      "tradeoff",
-      "design",
-      "system-design"
-    ]
-  },
-  {
-    "id": "eval-harness",
-    "name": "评估闭环与测试 Harness",
-    "area": "ai-systems",
-    "topic": "evaluation",
-    "priority": "P1",
-    "summary": "为 Agent 自改进闭环搭建评估体系：按领域可验证性（Verifiability）差异选择手段——确定性领域用自动化 Test Harness 通过率作客观指标，主观/非确定领域依赖具名因果专家反馈与 Golden Outputs，并以全局业务指标监控长期效果。",
-    "required": [
-      "确定性可验证领域以自动化测试 Harness 通过率作为客观优化指标",
-      "主观/非确定领域依赖具名因果专家反馈与 Golden Outputs 评估",
-      "建立全局业务指标监控（如任务解决耗时、修复成功率）作为评估长期效果的最终锚点"
-    ],
-    "misconceptions": [
-      "无论领域一律用 LLM-as-a-Judge 无监督打分替代基准测试",
-      "忽视宏观业务指标，仅看单次技能更新的局部评分"
-    ],
-    "angles": [
-      "system-design",
-      "design",
-      "scenario"
-    ]
-  },
-  {
-    "id": "end-to-end-workflow",
-    "name": "端到端 Agent 工作流",
-    "area": "agent-engineering",
-    "topic": "multi-agent",
-    "priority": "P1",
-    "summary": "事件驱动的端到端自改进闭环：利用原生工作界面（如 Issue 评论区）实现低摩擦反馈收集，改进 Agent 异步结构化反馈并提交透明 PR，合并前保留人类 Review，合并后新任务自动加载最新技能，形成可追溯、防污染的演进链路。",
-    "required": [
-      "利用开发者原生工作界面（如 Issue 评论区）实现低摩擦反馈收集",
-      "改进 Agent 异步结构化反馈并提交透明 PR，合并前保留人类 Review 作为 Gatekeeper",
-      "合并后新任务自动加载最新技能，形成可追溯、防污染的闭环"
-    ],
-    "misconceptions": [
-      "为追求响应速度让 CI 自动合入技能 PR、跳过人工 Review",
-      "认为反馈收集必须依赖额外的独立表单或系统"
-    ],
-    "angles": [
-      "system-design",
-      "design",
-      "scenario"
-    ]
-  },
-  {
     "id": "agent-debugging",
     "name": "Agent 调试与技能漂移",
     "area": "agent-engineering",
@@ -349,6 +221,41 @@
     "angles": [
       "debugging",
       "scenario"
+    ]
+  },
+  {
+    "id": "agent-skills",
+    "name": "Agent 技能与自演进",
+    "area": "agent-engineering",
+    "topic": "agent-skills",
+    "priority": "P1",
+    "summary": "技能是可版本控制、可迁移、可验证门控的程序化知识工件：设计上以原则与渐进式披露为主；发现（强模型归纳）与执行（弱模型遵循）解耦；演进靠验证集门控版本切换，失败诊断与错误模式作为持久知识保留；自演进用 Raw/Wiki/Skill 三层工作区保证可追溯；执行与改进职责分离，变更经 PR 与人类审核合并。",
+    "required": [
+      "技能发现与执行解耦：强模型归纳 SOP，弱模型遵循已验证 Skill，技能可跨模型迁移",
+      "演进门控：验证集决定活性 Skill 版本切换，失败诊断与错误模式持久保留",
+      "Raw/Wiki/Skill 三层工作区：不可变轨迹、持久知识、门控后的活性技能",
+      "模型规模与技能互补：小模型带 Skill 可超无 Skill 大模型，但不意味着全面超越",
+      "执行与改进分离：技能变更经 PR 与人类审核合并，而非运行时热写",
+      "技能文件以原则与因果逻辑为主、渐进式披露外部脚本，而非枚举死板规则",
+      "技能是显式版本控制的过程性知识，区别于运行期自动写入的情境记忆",
+      "反馈驱动演进需健全性检查与来源加权，合并环节保留人类审核为最终闸门",
+      "利用原生工作界面低摩擦收集反馈，改进经透明 PR 与人类 Review 合并后自动生效"
+    ],
+    "misconceptions": [
+      "以为 Skill 可以完全替代基座模型能力提升",
+      "以为回滚必须清空失败实验的诊断知识",
+      "认为改进 Agent 可直接热更新在线运行时、无需人类审核",
+      "把全部业务文档平铺写入主技能文件，撑爆上下文并降低稳定性",
+      "混淆技能与情境记忆，以为技能也是运行期自动变动的会话数据"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "system-design",
+      "design",
+      "debugging"
     ]
   }
 ]

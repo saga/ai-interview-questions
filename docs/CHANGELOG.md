@@ -1,6 +1,18 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-03 · 题库测评向治理第二轮（assessment 去重 / 答案键修复 / topic 合并 / GAN 入库）
+
+第一轮（干扰项脱稻草人化）之后，按"逐题判断"继续深挖，全部为人审逐题裁决：
+
+- **Assessment 去重（删 3 题）**：TF-IDF 加权探测同 topic×angle×难度下的同认知测量。`sebastian-raschka-2026-08-94`（与 -59 正确项逐字相同，删 -94 留稀疏格 -59）、`lateinter-03`（与 vectordb-02 同三条缓解手段，留 vectordb-02）、`foundation-agent-react-01`（与 agentic-04 同 ReAct 环路，留判别力强的 agentic-04）。其余候选对（LSTM 门控 comparison/mechanism、MCP 授权 hard/medium）经核为不同考查目标，保留。
+- **答案键修复 2 处（P0 级内容 bug）**：`aws-waf-lens-2026-08-16`（标答"永久存明文不设访控"与自家 explanation/解析矛盾，重写为隐私保护+完整性+访问审计）、`aws-waf-lens-2026-08-30`（标答"删除负面反馈"与闭环解释矛盾，重写为改进+回归+人工升级）。全库"错误项比正确项更贴合 explanation"扫描确认无同类残留。
+- **Difficulty 结论**：hard 占 51% 但抽查显示多为多选判断题（难度来自多条独立判断，符合多选为主的设计方向），未做批量降档；无真正的"长度型 hard"批量证据，不做无数据支撑的重校准。
+- **双形态结论**：definition/calculation/mechanism 枚举题的 choice≈open 是同一测量的合法收敛，不强行分化；仅把 `aws-genai-developer-pro-03/07` 的"正确答案：X"式 open 参考改写为可评分 rubric（答出三要素才算完整）。
+- **Topic 合并迁移（24 题换新 ID，旧 ID 退役）**：`skill-design / skill-discovery-vs-execution / skill-evolution-state-management / model-scaling-and-skills / self-evolving-agent-workspace / self-improving-agents`（14 题）→ 新 topic `agent-skills`；`agent-context-engineering`（3）→ `context-engineering`；`agent-memory-and-tool-use`（3）+ `skills-vs-memory`（1）→ `memory`；`eval-harness`（1）+ `feedback-loops`（1）→ `evaluation`；`end-to-end-workflow`（1）→ `agent-fundamentals`。12 个碎片 topic 清零（123→113 topics 实际存量见覆盖报告）。配套：新增 `agent-skills` 知识节点（ folds 退役 7 节点的实质内容：规模协同、执行改进分离、反馈闸门、原生界面闭环），退役节点删除（nodes.test 禁止悬空节点）；`taxonomy.ts` 骨架与 angle 白名单同步；36 条旧变体失效删除（104 池，待重生成 backlog 追加 18 题）。
+- **GAN 入库（6 canonical + 3 变体，新 topic `gan`）**：外部来稿按现行契约转换——`questionRole/variantOf/concepts/cognitiveTask` 四字段不在 schema 内未落库（angle 已覆盖认知维度）；修复原文"高斯帕zen窗/帕zen窗"错字 5 处；`gan-optimal-discriminator` 正确项瘦身过 1.8× 门禁；2 条变体第 4 选项 drift 超限，按"同真值逐项改写"契约贴近原文改写后过闸；新增 `gan` 知识节点 + taxonomy/白名单条目。答案键逐题核过（JSD 化简、非饱和不动点、k+1 交替、sigma 交叉验证、NCE 需显式密度）。
+- 验证：`validate:questions` 1311 题通过；全量测试 780/780；`question:identity --gate`（增量）与 `validate-variants` 均 exit 0；单角度节点 21→15。
+
 ## 2026-09-03 · 题库干扰项质量清扫（distractor 脱稻草人化 12 批 + 4 处技术修正）
 
 外部题库内容评审指出"答案形状偏差"（正确=工程术语堆叠、错误=绝对化）与 4 处技术不严谨表述。本轮**执行内容层清扫**（只改题库 JSON 与变体池，零代码变更）：
