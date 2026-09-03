@@ -2,6 +2,67 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-073 · Variant = 表达变体（统一定义）+ sourceHash 覆盖元数据
+
+- 状态：已采纳 · 2026-09-03
+- 背景：三方口径不一致。**Prompt**（`docs/添加题库prompt.md`）写「Variant 可改 angle / cognitive task」；
+  **schema**（`src/schemas/variant.ts`）里变体只有 `id/kind/question/options/generatedAt/generator/promptVersion/sourceHash`，
+  其余全靠 `applyVariant` 的 `...canonical` 继承；而 `src/ai/variant.ts` 的 `buildUser` 只把
+  `topic / requiredConcepts / question / options` 发给 LLM——`angle` 与 `cognitiveTask` **根本没进 prompt**。
+  结论：「变体换 angle」这条指令从写下那天起就不可执行，写了也是死规则。
+- 决策：
+  1. **Variant = 同一 assessment contract 的表达 / 情境变体。** 可改：framing / scenario / 问法 / 选项表达。
+     不可改：Core Concept、`angle`、`difficulty`、认知任务、答案逻辑（第 N 项 ↔ 第 N 项真假）、
+     核心事实、required concepts、诊断目标、选项数量。**需要不同 angle / cognitiveTask ⇒ 新建 canonical。**
+     Prompt / 精简 Prompt / `question-content-spec.md` §8 三处同步为同一口径。
+  2. **`sourceHash` 覆盖元数据**：`VariantSource` 由 `{id, question, options}` 扩为
+     `{id, topic, subtopic?, angle, difficulty, tags?, question, options}`。
+     新增 `variantSourceOf(q: Question)` 作为**唯一取源口**——三处调用点此前各拼一次对象，
+     正是「漏掉元数据」这类静默不一致的成因，收敛后不可能再分叉。
+     `tags` 排序后入指纹（顺序无语义，重排不算漂移）；`answer` / `explanation` **不入指纹**
+     （变体落地时恒取 canonical 当前值，入指纹会把「改了解析」也判成漂移——属数据契约决策，维持原状）。
+- 迁移：指纹算法变了 ⇒ 池内 192 条全部失效。一次性回填脚本重算（4 个文件 192/192 全部重写，
+  canonical 缺失 0 条），与代码改动同批提交，否则 P0-3 的 release gate 会立刻 exit 1。
+- 验证：`stale 0 / 近重复 0 / 语言质量 0`，`question:validate-variants` exit 0；
+  `isVariantStale` 新增「canonical 仅改 angle / difficulty / topic / tags → 判 stale」4 条回归测试。
+
+## ADR-074 · 变体语言质量确定性门禁（先于质询，零成本）
+
+- 状态：已采纳 · 2026-09-03
+- 背景：已提交进仓库的变体里出现「流程量度、器具唤起、即是可……」这类机器翻译腔、语序异常的中文。
+  **5D challenger 挡不住**：它被明确告知标准答案，只回答「结论是否幸存」，对语言质量是瞎的。
+  实测 42 条翻译腔变体的最低 `cjkDice` = 39.0，全部高于 drift 阈值 35 ⇒ **drift 门禁拦下 0/42**。
+- 决策：新增 `src/domain/languageSanity.ts`（纯确定性、零 LLM、零成本），插在
+  `over-sample → validateVariant(结构/漂移) → **语言门禁** → 5D challenger(LLM) → 去重/排序`
+  的位置上——先于质询，因为它是免费的，而质询看不见语言问题。
+- 关键度量 **`clauseInversion`**（从句倒置率）：机翻腔改写会整体搬动分句（叙述顺序反转），
+  合法重述则保持顺序。做法：两侧分句贪心按 `cjkDice` 互配（低于 `CLAUSE_MATCH_MIN=20` 的配对视为
+  「无字面重合」直接弃用，否则贪心会退化成「取首个」凭空造出倒置），再取序号序列的逆序对比例。
+  实测：192 条干净变体 p50/p75/p90/p95 **全为 0**；42 条脏数据 p50 = **100** —— 完美分离。
+- **规则分类必须实测，不能拍脑袋**（全部跑过 1308 条 canonical + 234 条真实变体）：
+  - BLOCK：`GARBLED` / `DOUBLE_PUNCT` / `INCOMPLETE` / `CLAUSE_INVERSION`(>70)
+  - WARN：`UNBALANCED_BRACKET`（`[0, ∞)` 半开区间）/ `TOO_SHORT`（40 条合法短选项）/
+    `REPEATED_CLAUSE`（单字 Dice 分不清「时间复杂度」vs「空间复杂度」）/ `CJK_LATIN_GLUE`（`GPT4`、`L2`）
+  - 两条正则因实测误杀而**收窄**：`DOUBLE_PUNCTUATION` 去掉 `: . ! ?`（否则 `aten::addmm`、`!!!` 中招）；
+    `INCOMPLETE_TAIL` 去掉 `:`（15 条命中全是「下列说法正确的是：」的标准中文设问）。
+  - 两个直觉上诱人但被实测否决的指标：**bigram 覆盖率**（误杀 16–36%）、
+    **新词率**（不在 canonical 五万词表里的新 bigram 占比，能抓 97.6% 脏数据但误杀 25–82%）。
+- 效果：canonical 误杀 **0/1308**，脏数据拦截 **30/42**，干净变体误杀 **0/192**，单测 21/21。
+
+## ADR-075 · `validate-variants` 升级为真 release gate + 脏变体批次级清洗
+
+- 状态：已采纳 · 2026-09-03
+- 背景：该脚本此前只是**只读审计**，`stale > 0` / `duplicate > 0` 只打印不失败，
+  于是「审计红了但照样发版」是常态；同时已落库的脏变体没有任何机制阻止其进入正式题库。
+- 决策：
+  1. 三项检查（stale / 近重复 / 语言质量）任一非零即 `process.exit(1)`；
+     仅过渡期保留 `--no-fail`，**禁止在 CI 使用**。
+  2. 清洗 `evaluation.wb-llm-20260903.json` 的 42 条 `context-options`，**按批次整体删**而非逐条删。
+     三条证据支持批次级：语言门禁拦下 30/42；新词率 ≥50% 的 41/42；另三个文件的 75 条
+     `context-options` **全部通过** ⇒ 这是**单次跑飞的批次**，不是 kind 本身的问题。
+     逐条删会留下 12 条门禁看不见的污染变体。
+- 现状：池内 **192 条变体**，stale 0 / 近重复 0 / 语言质量 0，gate exit 0。
+
 ## ADR-072 · 变体相似度门禁弃用 fuzzball，改用 CJK 字符级 Dice（根治双变体选项雷同）
 
 - 状态：已采纳 · 2026-09-03

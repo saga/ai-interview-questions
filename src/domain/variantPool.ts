@@ -9,7 +9,7 @@
 
 import type { Question } from '../schemas/question';
 import type { VariantPool, QuestionVariant } from '../schemas/variant';
-import { computeVariantSourceHash } from '../schemas/variant';
+import { computeVariantSourceHash, variantSourceOf } from '../schemas/variant';
 
 /** 取某题在池中的所有变体（无则返回空数组）。 */
 export function getAvailableVariants(pool: VariantPool, questionId: string): QuestionVariant[] {
@@ -69,10 +69,5 @@ export function resolveQuestionVariant(args: ResolveVariantArgs): QuestionVarian
  * 用于 validate-variants 脚本与 CLI --stale；运行时命中但校验不过也会回退（见 finalizeQuestion）。
  */
 export function isVariantStale(variant: QuestionVariant, canonical: Question): boolean {
-  const current = computeVariantSourceHash({
-    id: canonical.id,
-    question: canonical.question,
-    options: canonical.formats.choice?.options,
-  });
-  return variant.sourceHash !== current;
+  return variant.sourceHash !== computeVariantSourceHash(variantSourceOf(canonical));
 }

@@ -41,45 +41,46 @@ Canonical 必须：
 * 不依赖原文章
 * 能长期复用
 
-### 3. Variant
+### 3. Variant = 表达变体
 
-同一个 Concept 最多生成 2 个 Variant。
+> **Variant = 同一 assessment contract 的表达 / 情境变体。**
+> 与 `src/schemas/variant.ts` 一致：变体只存 `question` + `options`，
+> `topic / angle / difficulty / concepts / answer / explanation` 全部由程序从 canonical 继承。
 
-Variant 不能只是换几个词或换语序。
+每道 Canonical 最多 2 个 Variant。
 
-必须至少改变以下之一：
+Variant 只能改：
 
-* cognitive task
-* angle
-* engineering scenario
-* question framing
-
-例如：
-
-```text
-Canonical → mechanism / explain
-Variant   → debugging / diagnose
-Variant   → tradeoff / evaluate
-```
-
-而：
-
-```text
-为什么需要 X？
-为什么使用 X？
-X 为什么重要？
-```
-
-不算有效 Variant。
+* 换 framing（提问方式、句式、视角）
+* 换 scenario（等价工程情境）
+* 换问法
+* 换选项表达（逐项重述，非同义替换）
 
 Variant 必须保持：
 
 * 相同 Core Concept
+* **相同 `angle`**
+* **相同 `cognitiveTask`**
+* 相同 `difficulty`
 * 相同核心技术结论
-* 相同答案逻辑
+* 相同答案逻辑（第 N 个选项的真假属性一一对应）
+* 相同选项数量
 * 相同诊断目标
 
 不得引入新的独立核心知识。
+
+**需要换 `angle` 或 `cognitiveTask` → 新建一道 Canonical，不是生成 Variant。**
+
+```text
+Canonical A → mechanism / explain
+  ├─ Variant A1 → mechanism / explain   ← 继承，不可改
+  └─ Variant A2 → mechanism / explain
+Canonical B → debugging / diagnose      ← 新建 canonical
+Canonical C → tradeoff / evaluate       ← 新建 canonical
+```
+
+改写幅度：换词或换语序不够，会被近重复门禁（选项级 CJK-Dice ≥ 88）丢弃；
+要做到「重述级」——看起来像重写过，技术结论一字不改。
 
 ### 4. 选择题
 
@@ -169,9 +170,10 @@ RAG、Agent、MCP、Memory、Context Engineering、AI Systems、Security 等主�
 5. 错误选项是否可信？
 6. 是否存在明显 answer leakage？
 7. 是否与其它题重复？
-8. Variant 是否真的改变了认知任务 / angle / scenario？
-9. Variant 是否仍然考察同一个 Core Concept？
-10. 是否引入了新的独立核心知识？
+8. Variant 是否换了 framing / scenario / 问法，并做了重述级的选项改写？
+9. Variant 的 `angle` / `cognitiveTask` / `difficulty` 是否与 Canonical 逐字相同？
+10. Variant 是否仍然考察同一个 Core Concept、保持同一答案逻辑？
+11. 是否需要换 angle / 认知任务？（是 → 应改为新建 Canonical）
 
 发现问题，直接重写，不要解释。
 

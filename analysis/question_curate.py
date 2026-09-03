@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from datetime import datetime, timezone
@@ -38,6 +39,31 @@ from question_audit import (
     VALID_ANGLES,
     audit,
     read_bundles,
+)
+
+# ── 正确项「信息密度 / 认知层级」（P1-6）─────────────────────────────────
+# 阈值与取舍全部来自 temp/probe-correct-density.py 在 1291 道选择题上的实测。
+# 同一份实测否决了两个候选规则，结论记在下面各自定义处。
+#
+# 复核基线：scripts/audit-question-quality.ts 探测器③与本规则同一判据，
+# 20 条人工抽检抽到 8 条、3 条确为缺陷 → 精确率 38%。按
+# docs/improvement_plan/quality-audit-2026-09-03.md 的口径（<40% 不得据以改写），
+# 本规则是 **P1 排序信号**而非改写判决：把题提到人工复核队列最前，不自动建议 rewrite。
+
+# 具体度标记：数字（含量词/百分比）与拉丁术语，与 audit-question-quality.ts ③ 同口径。
+SPEC_RE = re.compile(r"[0-9]+(\.[0-9]+)?%?|[A-Za-z]{2,}")
+
+# 正确项均长 / 干扰项均长。实测分布 p50=1.15、p75=1.34、p95=1.63，1.5 落在 p90 附近。
+CORRECT_DENSITY_RATIO = 1.5
+
+# 正确项为「不作判断」的空泛套话：考生选它不需要懂任何东西，零诊断价值。
+# ⚠️「取决于」**不能**入表——中文技术写作里它绝大多数是「X 取决于 Y」的技术性因果
+# 表述，实测 5 条命中全是这种用法（精确率 0/5）。收紧后全库 0 命中，保留它只为
+# 拦截新增内容的回归，不是为了在当前题库里抓东西。
+HEDGE_RE = re.compile(
+    r"视情况而定|视具体情况|看情况|需要权衡|因地制宜|不能一概而论|无法一概而论|"
+    r"没有固定答案|没有标准答案|以上都对|以上均正确|以上都不对|均不正确|"
+    r"无法判断|难以确定|因场景而异"
 )
 
 MAX_LENGTH_RATIO = 1.8
@@ -94,6 +120,47 @@ def option_signals(question: dict[str, Any]) -> tuple[float, bool]:
         for i in answer
     )
     return ratio, answer_is_longest
+
+
+def correct_density_signals(question: dict[str, Any]) -> dict[str, Any] | None:
+    """Correct-option information density / cognitive level vs the distractors.
+
+    Returns None for non-choice questions. Two independent signals:
+      * ``cueing``   — the correct option(s) are both longer *and* more specific
+                       than the distractors, so a test-taker can spot them by
+                       verbosity instead of judgment.
+      * ``hedged``   — a correct option is an unfalsifiable platitude
+                       ("视情况而定" / "以上都对" / …), i.e. zero diagnostic value.
+
+    Deliberately NOT implemented (measured, then rejected — see the probe):
+      * "correct option is *shorter*" (ratio <= 0.7): 33 hits, but sampling showed
+        most are just *stuffed distractors* — already covered by Rule H / detector
+        ②. Adding it would double-count the same questions.
+      * "cognitive-level inversion" (correct option is a bare definition while
+        distractors are concrete): **0 hits** across 1291 choice questions.
+    """
+    formats = question.get("formats") or {}
+    choice = formats.get("choice") if isinstance(formats, dict) else None
+    if not isinstance(choice, dict):
+        return None
+    options = [str(o) for o in choice.get("options", [])]
+    answer = set(i for i in choice.get("answer", []) if isinstance(i, int) and 0 <= i < len(options))
+    if not options or not answer:
+        return None
+    correct = [options[i] for i in sorted(answer)]
+    distr = [o for i, o in enumerate(options) if i not in answer]
+    if not distr:
+        return None
+
+    mean_c = sum(len(t) for t in correct) / len(correct)
+    mean_d = sum(len(t) for t in distr) / len(distr)
+    spec_c = sum(len(SPEC_RE.findall(t)) for t in correct) / len(correct)
+    spec_d = sum(len(SPEC_RE.findall(t)) for t in distr) / len(distr)
+    return {
+        "ratio": mean_c / mean_d if mean_d else 1.0,
+        "cueing": (mean_c / mean_d if mean_d else 1.0) >= CORRECT_DENSITY_RATIO and spec_c > spec_d,
+        "hedged": [t for t in correct if HEDGE_RE.search(t)],
+    }
 
 
 def classify_density(n: int) -> str:
@@ -193,6 +260,25 @@ def build_plan(audit_report: dict[str, Any], semantic_report: dict[str, Any] | N
         ratio, answer_longest = option_signals(q)
         if ratio > MAX_LENGTH_RATIO and answer_longest:
             apply(qid, "review", "P2", ["option-length-leak", "answer-leaks-by-length"])
+
+    # ---- Rule K: correct-option information density / cognitive level (P1-6) ----
+    # The point of the check: a multiple-choice question only diagnoses something
+    # if the *distractors* still discriminate. If the correct option is simply
+    # more specific / better written, the question measures reading fluency, not
+    # knowledge — and if the correct option is a platitude, it measures nothing.
+    # Review-only (P1 priority = triage first), NOT rewrite: the 20-item manual
+    # baseline put precision at 38% (3/8), below the 40% bar for auto-rewrite.
+    # The genuine fix is enriching the distractors to equal granularity, which is
+    # a content decision a human has to make (see `question:review`).
+    for file_name, q in questions:
+        qid = str(q.get("id"))
+        sig = correct_density_signals(q)
+        if not sig:
+            continue
+        if sig["hedged"]:
+            apply(qid, "review", "P1", ["correct-option-hedged"])
+        elif sig["cueing"]:
+            apply(qid, "review", "P1", ["correct-option-density-cueing"])
 
     # ---- Rule B: pseudo-single-choice (§四②) ----
     # A single-choice stem phrased as "最准确/最贴切/…" with multiple arguably

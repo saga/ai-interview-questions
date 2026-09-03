@@ -104,8 +104,18 @@
 
 ## §8 Variant 知识一致性 —— 什么能改、什么不能改
 
-**能改**：场景、提问方式、认知任务、选项措辞。
-**不能改**：Core Concept、核心技术事实、正确答案逻辑、required concepts、诊断目标。
+**Variant = 同一 assessment contract 的表达 / 情境变体。**
+
+**能改**（表达层）：场景、提问方式、framing、选项措辞。
+**不能改**（考察内容层，一律由程序从 canonical 继承）：Core Concept、核心技术事实、
+正确答案逻辑、`angle`、`cognitiveTask`、`difficulty`、required concepts、诊断目标。
+
+> 换 `angle` 或 `cognitiveTask` **不是变体的职责** —— 那要新建一道 canonical，
+> 它再生成自己的变体池。理由见下：变体继承 canonical 的 `topic × angle` 且不参与覆盖率，
+> 用变体换 angle 等于声称换了考察维度、数据里却没换。
+>
+> 生成指令（含正反例与改写幅度口径）见 `docs/添加题库prompt.md` §2 / §19；
+> 本规范只定「什么能改」的边界，不重复流程。
 
 - 不得为生成变体引入新的独立核心知识。若回答变体需要额外掌握一个新 Concept，
   **它应该是新题，不是变体**。

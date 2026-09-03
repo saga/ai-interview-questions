@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Question } from '../schemas/question';
 import type { VariantPool, QuestionVariant } from '../schemas/variant';
-import { computeVariantSourceHash } from '../schemas/variant';
+import { computeVariantSourceHash, variantSourceOf } from '../schemas/variant';
 import { getAvailableVariants, selectVariant, resolveQuestionVariant, isVariantStale } from './variantPool';
 
 function choiceQuestion(id: string): Question {
@@ -13,6 +13,7 @@ function choiceQuestion(id: string): Question {
     topic: 'tools',
     tags: [],
     difficulty: 'easy',
+    angle: 'definition',
     question: `原题 ${id}`,
     explanation: '',
     formats: { choice: { type: 'single', options: ['a', 'b', 'c', 'd'], answer: [0] } },
@@ -29,7 +30,7 @@ function variant(id: string, kind: QuestionVariant['kind'] = 'surface-options'):
     generatedAt: 1700000000000,
     generator: 'offline',
     promptVersion: 'v3',
-    sourceHash: computeVariantSourceHash({ id: q.id, question: q.question, options: q.formats.choice!.options }),
+    sourceHash: computeVariantSourceHash(variantSourceOf(q)),
   };
 }
 
@@ -101,6 +102,19 @@ describe('isVariantStale', () => {
   it('canonical 题干已改 → stale', () => {
     const v = variant('q1__surface-options__0');
     const changed = { ...choiceQuestion('q1'), question: '题干已被改写过' };
+    expect(isVariantStale(v, changed)).toBe(true);
+  });
+
+  // P1-4 回归：sourceHash 只覆盖题面时，canonical 只改元数据而题面不动，
+  // 变体会被判成「未 stale」，但它继承来的 angle / difficulty / tags 已经和新 canonical 不一致。
+  it.each([
+    ['angle', { angle: 'tradeoff' }],
+    ['difficulty', { difficulty: 'hard' }],
+    ['topic', { topic: 'memory' }],
+    ['tags', { tags: ['kv-cache'] }],
+  ] as const)('canonical 仅元数据（%s）已改 → stale', (_label, patch) => {
+    const v = variant('q1__surface-options__0');
+    const changed = { ...choiceQuestion('q1'), ...patch } as Question;
     expect(isVariantStale(v, changed)).toBe(true);
   });
 });

@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { questionBank } from '../src/data/questionBank';
-import { variantPoolSchema, computeVariantSourceHash, type QuestionVariant, type VariantPool, type VariantKind } from '../src/schemas/variant';
+import { variantPoolSchema, computeVariantSourceHash, variantSourceOf, type QuestionVariant, type VariantPool, type VariantKind } from '../src/schemas/variant';
 import { validateVariant, findNearDuplicateVariants, VARIANT_DUP_THRESHOLD } from '../src/domain/variant';
 import { VARIANT_PROMPT_VERSION } from '../src/ai/variant';
 
@@ -62,7 +62,6 @@ function main(): void {
       rejections.push(`✗ ${qid}：非选择题，本组装器暂只支持 choice`);
       continue;
     }
-    const canonicalOpts = q.formats.choice.options;
     const kinds: Array<{ kind: VariantKind; stem: string; options?: string[] }> = [];
     if (entry.surface) kinds.push({ kind: 'surface-options', stem: entry.surface, options: entry.surfaceOptions ?? entry.options });
     if (entry.context) kinds.push({ kind: 'context-options', stem: entry.context, options: entry.contextOptions ?? entry.options });
@@ -105,11 +104,7 @@ function main(): void {
         generatedAt: Date.now(),
         generator: 'offline',
         promptVersion: VARIANT_PROMPT_VERSION,
-        sourceHash: computeVariantSourceHash({
-          id: q.id,
-          question: q.question,
-          options: canonicalOpts,
-        }),
+        sourceHash: computeVariantSourceHash(variantSourceOf(q)),
       });
       count++;
     }
