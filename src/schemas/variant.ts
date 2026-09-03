@@ -7,6 +7,7 @@
 // 变体**不嵌入** Question JSON，单独存于 `src/data/variants/*.json`（按 batch / topic 聚合）。
 
 import { z } from 'zod';
+import type { Question } from './question';
 
 /** 变体改写风格（轻量变体边界内的 4 种风格，不改变「LLM 只做语义变换」的硬约束）。 */
 export const variantKindSchema = z.enum([
@@ -60,22 +61,64 @@ export const EMPTY_VARIANT_POOL: VariantPool = {
   variants: {},
 };
 
-/** 计算 sourceHash 时取自 canonical 的最小内容（足以检测题目内容漂移）。 */
+/**
+ * 计算 sourceHash 时取自 canonical 的内容 —— **题面 + 选项 + 元数据**。
+ *
+ * 为什么要覆盖元数据：Variant 是「同一 assessment contract 的表达变体」，
+ * 它从 canonical 继承 `topic / angle / difficulty / tags(concepts)`（见 applyVariant 的 ...canonical）。
+ * 只哈希题面时，canonical 换了 angle 或难度，池里所有变体仍显示「未 stale」，
+ * 但它们继承来的元数据已经和新 canonical 不一致 —— 静默失真。
+ *
+ * 不入指纹的部分（有意保留）：
+ *   - `answer` / `explanation`：变体落地时恒取 canonical 当前值，入指纹会把「改了解析」
+ *     也判成漂移（数据契约决策，见 docs/DECISIONS.md）。
+ *   - `generatedAt` / `generatedBy` 之类的审计字段：与内容无关。
+ */
 export interface VariantSource {
   id: string;
+  topic: string;
+  /** 子知识点（可选）。与 topic 同属「考察定位」，一并入指纹。 */
+  subtopic?: string;
+  angle: string;
+  difficulty: string;
+  /** 概念标签（canonical.tags）。排序后入指纹：tag 顺序无语义，重排不应判定为漂移。 */
+  tags?: string[];
   question: string;
   /** 选择题选项（按其 canonical 顺序）；开放题为 undefined。 */
   options?: string[];
 }
 
 /**
- * FNV-1a（32-bit）纯同步哈希，作为 canonical 题目内容指纹。
+ * FNV-1a（32-bit）纯同步哈希，作为 canonical 内容指纹。
  * 纯函数、零依赖、确定性——可用于离线脚本 Node 侧与浏览器侧，无需 crypto。
- * 仅哈希「题面 + 选项文本」，answer / explanation 不入指纹（变体落地时恒取 canonical 的 answer）。
  */
+/**
+ * 从 canonical 取出入指纹所需的全部字段（**唯一取源口**）。
+ *
+ * 所有写 sourceHash / 判 stale 的地方都必须走这里，不许各自手拼对象：
+ * 本次修复的正是「三处调用点各拼一次、漏掉元数据」这类静默不一致。
+ */
+export function variantSourceOf(q: Question): VariantSource {
+  return {
+    id: q.id,
+    topic: q.topic,
+    subtopic: q.subtopic,
+    angle: q.angle,
+    difficulty: q.difficulty,
+    tags: q.tags,
+    question: q.question,
+    options: q.formats.choice?.options,
+  };
+}
+
 export function computeVariantSourceHash(source: VariantSource): string {
-  const normalized: VariantSource = {
-    id: source.id,
+  const normalized = {
+    id: (source.id ?? '').trim(),
+    topic: (source.topic ?? '').trim(),
+    subtopic: (source.subtopic ?? '').trim(),
+    angle: (source.angle ?? '').trim(),
+    difficulty: (source.difficulty ?? '').trim(),
+    tags: [...new Set((source.tags ?? []).map((t) => t.trim()).filter((t) => t.length > 0))].sort(),
     question: (source.question ?? '').trim(),
     options: (source.options ?? []).map((o) => o.trim()).filter((o) => o.length > 0),
   };

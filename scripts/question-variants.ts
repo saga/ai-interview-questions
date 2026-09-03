@@ -37,7 +37,7 @@ import { callLLM } from '../src/ai/pi';
 import { generateVariant, VARIANT_PROMPT_VERSION } from '../src/ai/variant';
 import { challengeVariant, type VariantShape } from '../src/ai/variantChallenger';
 import { getAvailableVariants, isVariantStale } from '../src/domain/variantPool';
-import { computeVariantSourceHash } from '../src/schemas/variant';
+import { computeVariantSourceHash, variantSourceOf } from '../src/schemas/variant';
 import {
   variantPoolSchema,
   type VariantPool,
@@ -48,6 +48,7 @@ import { questionBank } from '../src/data/questionBank';
 import { variantPool } from '../src/data/variantBank';
 import { isEntryValid } from '../src/ai/provider';
 import { validateVariant, variantOptionText, VARIANT_DUP_THRESHOLD } from '../src/domain/variant';
+import { checkLanguageSanity, formatSanityIssues } from '../src/domain/languageSanity';
 // cjkDice 定义在 domain/textSimilarity（variant.ts 只 import 未 re-export），
 // 去重度量必须与 validate-variants.ts / domain 用的是同一个实现，故直接从源头导入。
 import { cjkDice } from '../src/domain/textSimilarity';
@@ -197,6 +198,8 @@ interface QuestionResult {
   variants: QuestionVariant[];
   candidates: number;
   rejected: number;
+  /** 被确定性语言质量门禁（language sanity）否掉的候选数 */
+  sanity: number;
   duplicates: number;
   /** 通过确定性门禁 + 去重、进入质询阶段的候选数 */
   survived: number;
@@ -223,7 +226,7 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
   const format: 'choice' | 'open' = q.formats.choice ? 'choice' : 'open';
   const existing = getAvailableVariants(variantPool, q.id);
   const usedTexts = new Set<string>(existing.map((v) => fingerprint(v.question, v.options)));
-  const stats = { candidates: 0, rejected: 0, duplicates: 0, survived: 0, challenged: 0 };
+  const stats = { candidates: 0, rejected: 0, sanity: 0, duplicates: 0, survived: 0, challenged: 0 };
   const want = ctx.opts.count;
   // 超采：目标 want 条，先生成 want × oversample 个候选。（A-10）
   // 旧实现是「生成到够数为止」，先到先得——通过硬门槛的次品会挤掉后面更好的候选。
@@ -261,6 +264,19 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
     if (!check.ok) {
       stats.rejected++;
       console.warn(`    ✗ ${q.id} 校验未过（${kind}）：${check.code} ${check.reason ?? ''}`);
+      continue;
+    }
+    // 语言质量门禁（确定性，零 LLM 成本）：必须排在 5D challenger **之前**。
+    // 理由：challenger 被告知了标准答案，只回答「结论还在不在」，
+    // 天然看不见语言质量——实测 42 条翻译腔变体它一条都没拦住（最小 dice 39 > 阈值 35）。
+    // 先用零成本的纯函数筛掉语言垃圾，再让昂贵的 LLM 质询去看语义。
+    const sanity = checkLanguageSanity(
+      { stem: gen.question, options: gen.options },
+      { stem: q.question, options: format === 'choice' ? q.formats.choice?.options : undefined },
+    );
+    if (!sanity.ok) {
+      stats.sanity++;
+      console.warn(`    ✗ ${q.id} 语言质量未过（${kind}）：${formatSanityIssues(sanity)}`);
       continue;
     }
     const text = fingerprint(gen.question, gen.options);
@@ -317,22 +333,18 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
     generatedAt: Date.now(),
     generator: 'offline' as const,
     promptVersion: ctx.promptVersion,
-    sourceHash: computeVariantSourceHash({
-      id: q.id,
-      question: q.question,
-      options: q.formats.choice?.options,
-    }),
+    sourceHash: computeVariantSourceHash(variantSourceOf(q)),
   }));
 
   if (produced.length < want) {
     console.warn(
       `    ⚠ ${q.id} 仅生成 ${produced.length}/${want} 条（候选 ${stats.candidates}，校验拒 ${stats.rejected}，` +
-        `重复 ${stats.duplicates}，过闸 ${stats.survived}，质询否 ${stats.challenged}）`,
+        `语言拒 ${stats.sanity}，重复 ${stats.duplicates}，过闸 ${stats.survived}，质询否 ${stats.challenged}）`,
     );
   } else {
     console.log(
       `    ✓ ${q.id} 生成 ${produced.length} 条（候选 ${stats.candidates}，校验拒 ${stats.rejected}，` +
-        `重复 ${stats.duplicates}，过闸 ${stats.survived}，质询否 ${stats.challenged}）`,
+        `语言拒 ${stats.sanity}，重复 ${stats.duplicates}，过闸 ${stats.survived}，质询否 ${stats.challenged}）`,
     );
   }
   return { questionId: q.id, format, variants: produced, ...stats };
@@ -397,6 +409,7 @@ async function main(): Promise<void> {
   const totalVariants = rows.reduce((s, r) => s + r.variants.length, 0);
   const totalCandidates = rows.reduce((s, r) => s + r.candidates, 0);
   const totalRejected = rows.reduce((s, r) => s + r.rejected, 0);
+  const totalSanity = rows.reduce((s, r) => s + r.sanity, 0);
   const totalDuplicates = rows.reduce((s, r) => s + r.duplicates, 0);
   const totalSurvived = rows.reduce((s, r) => s + r.survived, 0);
   const totalChallenged = rows.reduce((s, r) => s + r.challenged, 0);
@@ -445,7 +458,8 @@ async function main(): Promise<void> {
   console.log(`  题目数      : ${targets.length}`);
   console.log(`  生成变体数  : ${totalVariants}`);
   console.log(`  LLM 候选数  : ${totalCandidates}`);
-  console.log(`  校验拒绝    : ${totalRejected}`);
+  console.log(`  校验拒绝    : ${totalRejected}（结构/漂移）`);
+  console.log(`  语言质量拒绝: ${totalSanity}（确定性门禁，先于质询）`);
   console.log(`  近重复丢弃  : ${totalDuplicates}`);
   console.log(`  过闸候选    : ${totalSurvived}${opts.challenger ? '（进入质询）' : ''}`);
   if (opts.challenger) {

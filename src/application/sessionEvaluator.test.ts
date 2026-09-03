@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LLMProvider } from '../types';
 import type { Question } from '../schemas/question';
 import type { VariantPool, QuestionVariant } from '../schemas/variant';
-import { computeVariantSourceHash } from '../schemas/variant';
+import { computeVariantSourceHash, variantSourceOf } from '../schemas/variant';
 import { DEFAULT_RUBRIC } from '../domain/evaluation';
 import { resetUsageTelemetry, getVariantTelemetry, recordVariantRound } from '../ai/usageTelemetry';
 import {
@@ -18,6 +18,7 @@ const choiceQuestion: Question = {
   topic: 'attention',
   tags: [],
   difficulty: 'easy',
+  angle: 'mechanism',
   question: 'q',
   explanation: '',
   formats: { choice: { type: 'single', options: ['缩放点积注意力以稳定梯度', '增大学习率以加速收敛'], answer: [0] } },
@@ -29,6 +30,7 @@ const openQuestion: Question = {
   topic: 'attention',
   tags: [],
   difficulty: 'medium',
+  angle: 'mechanism',
   question: 'q',
   explanation: '',
   formats: { open: { referenceAnswer: 'reference' } },
@@ -218,11 +220,7 @@ describe('finalizeQuestion 双模式 Pool-first + Runtime fallback', () => {
     generatedAt: 1700000000000,
     generator: 'offline',
     promptVersion: 'v3',
-    sourceHash: computeVariantSourceHash({
-      id: choiceQuestion.id,
-      question: choiceQuestion.question,
-      options: choiceQuestion.formats.choice!.options,
-    }),
+    sourceHash: computeVariantSourceHash(variantSourceOf(choiceQuestion)),
   };
   const pool: VariantPool = {
     version: 1,

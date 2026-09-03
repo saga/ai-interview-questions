@@ -9,6 +9,15 @@
 //
 // 因此：本脚本**永远 exit 0**，不新增任何 lint 硬门禁（见 ACTION_CHECKLIST.md A-8）。
 // 借鉴 validate-questions.ts：fs 直读 JSON（不经 Vite / import.meta.glob），Node 原生运行 TS。
+//
+// ── 2026-09-03 人工抽检基线（20 条分层抽样，seed 20260902）─────────────────
+// 结论表见 docs/improvement_plan/quality-audit-2026-09-03.md。核心一条：
+//   **探测器只能排人工复核的先后顺序，不能直接当改写清单。**
+// 实测精确率：① 0/4 = 0% · ② 1/7 = 14% · ③ 3/8 = 38% · ④ 1/1（样本不足）· 总体 5/20 = 25%
+// 据此做了两处调整：
+//   ① 判据在多选上不成立（多选正确项本就该跨考察点）→ 默认停用，--all-detectors 复现
+//   ② 阈值太松（1.6× 命中的多是「完整论证的正常长度」）→ 收紧到 markers≥5 且 ratio≥2.0
+//   ③ 调阈值无效（判「是」与判误报的 ratio 区间完全重叠），降级为排序信号，见 question_curate.py Rule K
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -35,6 +44,8 @@ const seedArgIdx = process.argv.indexOf('--seed');
 const seed = seedArgIdx >= 0 ? Number(process.argv[seedArgIdx + 1]) || 20260902 : 20260902;
 const sheetArgIdx = process.argv.indexOf('--review-sheet');
 const sheetPath = sheetArgIdx >= 0 ? process.argv[sheetArgIdx + 1] : null;
+// 精确率 0/4、判据在多选上不成立的探测器，默认不输出；加此开关可复现旧行为。
+const allDetectors = process.argv.includes('--all-detectors');
 
 /** mulberry32：小而够用的确定性 PRNG，保证 --seed 可复现。 */
 function mulberry32(a: number): () => number {
@@ -114,12 +125,27 @@ interface Finding {
 
 type DetectorId = 'mixed-correct-level' | 'stuffed-option' | 'density-cueing' | 'single-judgement';
 
+/** 实测精确率（20 条人工抽检，seed 20260902）——直接显示在审计输出里，别再凭直觉信任探测器。 */
+const DETECTOR_PRECISION: Record<DetectorId, string> = {
+  'mixed-correct-level': '精确率 0/4 = 0%，判据不成立，默认停用',
+  'stuffed-option': '精确率 1/7 = 14%（阈值已收紧，待重测）',
+  'density-cueing': '精确率 3/8 = 38%，仅作排序信号，不得据以改写',
+  'single-judgement': '精确率 1/1（样本不足，全库仅 3 条）',
+};
+
 const DETECTOR_LABEL: Record<DetectorId, string> = {
   'mixed-correct-level': '① 正确项认知层级不一致（定义/收益/反面/条件混杂）',
   'stuffed-option': '② 选项塞整段答案（多从句 / 显著长于中位数）',
   'density-cueing': '③ 信息密度泄题（正确项具体度显著高于干扰项）',
   'single-judgement': '④ 多选只考一个判断（正确项互为复述）',
 };
+
+const DETECTOR_ORDER = Object.keys(DETECTOR_LABEL) as DetectorId[];
+/** 默认不启用的探测器（人工抽检判据不成立）。 */
+const DISABLED_BY_DEFAULT: DetectorId[] = ['mixed-correct-level'];
+function isEnabled(id: DetectorId): boolean {
+  return allDetectors || !DISABLED_BY_DEFAULT.includes(id);
+}
 
 // ── ① 认知层级分类：纯词汇线索，仅作粗分类用 ──────────────────────────────
 const LEVEL_RULES: Array<{ level: string; re: RegExp }> = [
@@ -158,7 +184,9 @@ function audit(q: Question): Finding[] {
   if (correct.length === 0 || distractors.length === 0) return out;
 
   // ① 正确项层级不一致：≥3 个正确项跨 ≥3 个认知层级 → 不是在同一层面上做判断
-  if (correct.length >= 3) {
+  // 人工抽检 0/4：四条全是多选，而多选的正确项本就应该分属不同考察点，
+  // 「跨层级」是多选的固有形态。没有任何阈值能救 ⇒ 默认停用。
+  if (correct.length >= 3 && isEnabled('mixed-correct-level')) {
     const levels = new Set<string>();
     for (const c of correct) for (const l of levelsOf(c)) levels.add(l);
     if (levels.size >= 3) {
@@ -170,12 +198,14 @@ function audit(q: Question): Finding[] {
     }
   }
 
-  // ② 选项塞整段答案：单选项 ≥3 个从句标记，且长度 ≥ 同题其它选项长度中位数 1.6 倍
+  // ② 选项塞整段答案：单选项 ≥5 个从句标记，且长度 ≥ 同题其它选项长度中位数 2.0 倍。
+  // 原阈值（≥3 标记 / ≥1.6×）人工抽检 1/7：命中的多是「完整论证的正常长度」，
+  // 或最长的根本是干扰项而非正确项（agentic-43 / ai-engineering-001），长度信号不成立。
   const othersMedian = options.map((_, i) => median(options.filter((__, j) => j !== i).map((o) => o.length)));
   options.forEach((opt, i) => {
     const markers = clauseMarkers(opt);
     const ratio = othersMedian[i] > 0 ? opt.length / othersMedian[i] : 0;
-    if (markers >= 3 && ratio >= 1.6) {
+    if (markers >= 5 && ratio >= 2.0) {
       out.push({
         id: q.id,
         detector: 'stuffed-option',
@@ -275,7 +305,7 @@ function buildReviewSheet(sample: Finding[]): string {
   ];
   const body: string[] = [];
   let cardNo = 0;
-  for (const id of Object.keys(DETECTOR_LABEL) as DetectorId[]) {
+  for (const id of DETECTOR_ORDER) {
     const group = sample.filter((f) => f.detector === id);
     if (group.length === 0) continue;
     const total = all.filter((f) => f.detector === id).length;
@@ -308,9 +338,10 @@ if (asJson) {
     `题库内容质量审计（只读检测，非门禁）：${choiceTotal} 道选择题，命中 ${all.length} 条嫌疑信号\n` +
       '注意：以下均为词汇/统计层面的嫌疑信号，不是语义判定；命中 = 值得人工复核，不等于必须改写。\n',
   );
-  for (const id of Object.keys(DETECTOR_LABEL) as DetectorId[]) {
+  for (const id of DETECTOR_ORDER) {
     const hits = all.filter((f) => f.detector === id);
-    console.log(`${DETECTOR_LABEL[id]}  →  ${hits.length} 条`);
+    const tag = isEnabled(id) ? DETECTOR_PRECISION[id] : `已停用（${DETECTOR_PRECISION[id]}；--all-detectors 复现）`;
+    console.log(`${DETECTOR_LABEL[id]}  →  ${hits.length} 条　[${tag}]`);
     const show = only != null ? hits.slice(0, only) : hits.slice(0, topN);
     for (const h of show) console.log(`    · ${h.id}：${h.detail}`);
     if (hits.length > show.length) console.log(`    …另有 ${hits.length - show.length} 条（--top N 调整显示量）`);
@@ -321,7 +352,7 @@ if (asJson) {
 
   if (sampleN > 0) {
     console.log(`\n── 分层抽样（n=${sampleN}，seed=${seed}）──`);
-    for (const id of Object.keys(DETECTOR_LABEL) as DetectorId[]) {
+    for (const id of DETECTOR_ORDER) {
       const g = sample.filter((f) => f.detector === id);
       const total = all.filter((f) => f.detector === id).length;
       if (total === 0) continue;

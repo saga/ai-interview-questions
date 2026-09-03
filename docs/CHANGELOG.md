@@ -1,6 +1,49 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · Prompt 内审 12 条全部收口（KV 示例 / 枚举统一 / 数量解绑 / 推理路径）
+
+上一轮外部评审指出的 Prompt 内部逻辑冲突与生成质量问题，本轮**全部执行**：P0 修正 KV Cache Variant 示例（explain/mechanism，不再用 diagnose 现象找根因）并统一 `cognitiveTask` 枚举为 `define/explain/mechanism/compare/apply/diagnose/evaluate/design`（`tradeoff` 只留 `angle`）；P1 解绑 Variant 数量（离线 oversample→filter 决定）、删除 Dice 具体阈值（归验证器）、新增不得增加推理负担/场景约束、多选互斥与程度词边界；P2 精确化 Concept→Canonical 定义、Evidence enrichment/injection 区分、system-design 不足不生成、自检升级为推理路径版。`添加题库prompt.md` §2/§5/§6/§10/§11/§13/§14/§18/§19/§23/§24、精简版、`question-content-spec.md` §2/§4/§8 同步。
+
+后续瘦身（评审 #12）：`添加题库prompt.md` 1059→724 行，§ 编号保持稳定。内容章节（四/九–十七/二十一/二十二/二十四 A–O）压为执行要点 + `见 spec §N`，Variant 判定基准（§18 十条硬规则）、决策流程（§23）、输出 schema（§25–§27）原样保留；并修正任务句“真实诊断差异”→“不增加诊断维度”（变体只降记忆效应）。精简版同步明确为导出子集。
+
+## 2026-09-03 · 外部评审 7 条全部收口（Variant 定义 / 池清洗 / release gate / sourceHash / 语言门禁 / curator / 质量审计）
+
+外部对 `dev0902` 的独立评审给出 3 个「大问题」+ 4 条 P1，本轮**全部执行完毕**。
+决策理由见 ADR-073 / 074 / 075，人工抽检基线见 `docs/improvement_plan/quality-audit-2026-09-03.md`。
+
+### P0
+
+| # | 内容 | 落地 |
+|:--|:--|:--|
+| 1 | 统一 Variant 定义 | **Variant = 同一 assessment contract 的表达/情境变体**。`docs/添加题库prompt.md`（§2/§5/§6/§7/§18/§19/§23/§24/§25/§26）、`添加题库prompt精简.md`、`question-content-spec.md` §8 三处同步。根因：变体产物只有 `question`+`options`，元数据靠 `applyVariant` 的 `...canonical` 继承，而 `buildUser` 从不把 `angle`/`cognitiveTask` 发给 LLM ⇒ 「变体换 angle」是死指令。需要不同 angle ⇒ 新建 canonical |
+| 2 | 清洗已提交的 Variant Pool | 删 `evaluation.wb-llm-20260903.json` 的 42 条 `context-options`（批次级删，证据见 ADR-075）；42 条 `surface-options` 保留。池：192 条，stale 0 / 近重复 0 / 语言质量 0 |
+| 3 | `validate-variants` 改真 release gate | stale / 近重复 / 语言质量 任一非零即 `exit(1)`；过渡期 `--no-fail`，禁止进 CI |
+
+### P1
+
+| # | 内容 | 落地 |
+|:--|:--|:--|
+| 4 | `sourceHash` 覆盖元数据 | `VariantSource` 扩到 `topic / subtopic / angle / difficulty / tags`；新增 `variantSourceOf()` 作唯一取源口；192 条指纹一次性回填（4 文件 192/192 重写） |
+| 5 | 确定性语言质量门禁 | 新增 `src/domain/languageSanity.ts` + 21 项单测，插在 drift 之后、5D challenger 之前。核心度量 `clauseInversion`：干净变体 p95=0 vs 脏数据 p50=100。效果 0/1308 误杀、30/42 拦截 |
+| 6 | curator 增加「正确项信息密度/层级」 | `analysis/question_curate.py` Rule K：105 条 `correct-option-density-cueing` 提到 **P1 复核**（不判 rewrite）。另加空泛套话守卫（收紧后 0 命中）。两个候选规则经实测否决并记入注释：「正确项更短」33 条实为「干扰项被塞长」与探测器②重复；「层级倒挂」全库 0 命中 |
+| 7 | 1300+ canonical 选择题质量审计 | 20 条分层抽样人工判定完成（seed 20260902）。精确率 ① **0/4** ② **1/7** ③ **3/8=38%** ④ **1/1**，总体 5/20=25% |
+
+### 由审计结论反推的两处调整
+
+- **① 停用**：四条命中全是多选，而多选的正确项本就该分属不同考察点 —— 判据在多选上不成立，
+  没有任何阈值能救。改为默认关闭，`--all-detectors` 可复现。
+- **② 收紧**：`markers≥3 且 ratio≥1.6` → `markers≥5 且 ratio≥2.0`（102 → 44 条）。
+  原阈值命中的多是「完整论证的正常长度」，或最长的其实是干扰项。
+- **③ 调阈值无效**：判「是」的 ratio（1.51/1.60/1.74）与判误报的（1.55/1.56/1.86）完全重叠，
+  决定性因子是「干扰项是真实误解 vs 明显荒谬」，确定性信号抓不到 ⇒ 按 38% < 40% 的口径降为排序信号。
+- 四个探测器的实测精确率已写进 `audit-question-quality.ts` 的输出，跑审计时直接可见。
+
+### 验证
+
+`typecheck`（app + node 两个 project）· `vitest 769 passed / 54 files` · `build` ·
+`validate:questions`（1308 题）· `question:validate-variants`（exit 0）全绿。
+
 ## 2026-09-03 · 移动端 P0：Copilot 浮层在窄屏永久遮挡 + typecheck 是空跑
 
 ### 一、P0 —— 移动端打开即白屏（Copilot 面板永久覆盖）

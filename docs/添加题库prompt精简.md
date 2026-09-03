@@ -1,10 +1,10 @@
 你会收到一篇 AI / ML / LLM / Agent / AI Systems 技术文章。
 
-任务：从文章中提取长期有面试价值的核心知识（Concept），生成高质量、可独立理解的选择题，并为重要 Concept 生成少量具有真实诊断差异的 Variant。
+任务：从文章中提取长期有面试价值的核心知识（Concept），生成高质量、可独立理解的选择题；只在值得降低记忆效应处配少量 Variant（表达变体，不增加诊断维度）。
 
 > 内容规范见 [`docs/question-content-spec.md`](./question-content-spec.md)，
 > 完整版生成指令见 [`docs/添加题库prompt.md`](./添加题库prompt.md)。
-> 本精简版用于 token 受限场景，与完整版同源——改了完整版需同步检查本文件。
+> 本精简版是完整版的导出子集（任务 + 硬规则 + 流程 + schema），用于 token 受限场景，与完整版同源——改了完整版需同步检查本文件。
 
 ## 核心原则
 
@@ -31,7 +31,7 @@
 
 ### 2. Canonical
 
-每个重要 Concept 先生成 1 个 Canonical Question，作为该知识的标准题。
+对每个高价值 Concept，先识别值得独立训练的 `angle × cognitiveTask` 组合；每个有独立 assessment value 的组合建立一条 Canonical，作为该知识的标准题。
 
 Canonical 必须：
 
@@ -41,45 +41,46 @@ Canonical 必须：
 * 不依赖原文章
 * 能长期复用
 
-### 3. Variant
+### 3. Variant = 表达变体
 
-同一个 Concept 最多生成 2 个 Variant。
+> **Variant = 同一 assessment contract 的表达 / 情境变体。**
+> 与 `src/schemas/variant.ts` 一致：变体只存 `question` + `options`，
+> `topic / angle / difficulty / concepts / answer / explanation` 全部由程序从 canonical 继承。
 
-Variant 不能只是换几个词或换语序。
+只有值得降低记忆效应的 Canonical 才生成少量 Variant；具体生成多少、保留多少由离线流程决定。
 
-必须至少改变以下之一：
+Variant 只能改：
 
-* cognitive task
-* angle
-* engineering scenario
-* question framing
-
-例如：
-
-```text
-Canonical → mechanism / explain
-Variant   → debugging / diagnose
-Variant   → tradeoff / evaluate
-```
-
-而：
-
-```text
-为什么需要 X？
-为什么使用 X？
-X 为什么重要？
-```
-
-不算有效 Variant。
+* 换 framing（提问方式、句式、视角）
+* 换 scenario（等价工程情境，不得增加推理步骤/背景负担/决策变量）
+* 换问法
+* 换选项表达（逐项重述，非同义替换）
 
 Variant 必须保持：
 
 * 相同 Core Concept
+* **相同 `angle`**
+* **相同 `cognitiveTask`**
+* 相同 `difficulty`
 * 相同核心技术结论
-* 相同答案逻辑
+* 相同答案逻辑（第 N 个选项的真假属性一一对应）
+* 相同选项数量
 * 相同诊断目标
 
 不得引入新的独立核心知识。
+
+**需要换 `angle` 或 `cognitiveTask` → 新建一道 Canonical，不是生成 Variant。**
+
+```text
+Canonical A → mechanism / explain
+  ├─ Variant A1 → mechanism / explain   ← 继承，不可改
+  └─ Variant A2 → mechanism / explain
+Canonical B → debugging / diagnose      ← 新建 canonical
+Canonical C → tradeoff / evaluate       ← 新建 canonical
+```
+
+改写幅度：换词或换语序不够，会被近重复门禁丢弃（阈值由验证器决定）；
+要做到「重述级」——看起来像重写过，技术结论一字不改。正确项之间不得是同事实重复/因果拆分；选项真假不得依赖“通常/一定/可能”措辞强弱。
 
 ### 4. 选择题
 
@@ -106,7 +107,7 @@ Variant 必须保持：
 
 RAG、Agent、MCP、Memory、Context Engineering、AI Systems、Security 等主题，在文章证据充分时优先考虑 scenario / design / system-design。
 
-架构题必须有真实工程约束；不要只问“哪个方案更好”。
+架构题必须有真实工程约束；不要只问“哪个方案更好”。system-design 需 3 个真实且相互独立、确实影响方案的约束，不足则不生成、不凑数。
 
 ### 6. Evidence
 
@@ -115,7 +116,7 @@ RAG、Agent、MCP、Memory、Context Engineering、AI Systems、Security 等主�
 * 文章可靠内容；或
 * 文章明确提供的可靠专业背景。
 
-不得编造 benchmark、性能数字、产品行为或关键技术事实。
+不得编造 benchmark、性能数字、产品行为或关键技术事实。允许补 context 使题目自包含（enrichment），但不得新增决定答案的独立知识点（injection）。
 
 ### 7. Self-contained
 
@@ -149,10 +150,7 @@ RAG、Agent、MCP、Memory、Context Engineering、AI Systems、Security 等主�
 
 数量由高价值知识密度决定。
 
-同一个 Core Concept 最多：
-
-* 1 个 Canonical
-* 2 个 Variant
+同一个 Core Concept 有多少个有独立 assessment value 的 angle / cognitiveTask 组合，就建多少道 Canonical；Variant 数量由离线流程决定。
 
 不要为了满足数量重复或制造低价值题。
 
@@ -169,9 +167,10 @@ RAG、Agent、MCP、Memory、Context Engineering、AI Systems、Security 等主�
 5. 错误选项是否可信？
 6. 是否存在明显 answer leakage？
 7. 是否与其它题重复？
-8. Variant 是否真的改变了认知任务 / angle / scenario？
-9. Variant 是否仍然考察同一个 Core Concept？
-10. 是否引入了新的独立核心知识？
+8. Variant 是否换了 framing / scenario / 问法，并做了重述级的选项改写？
+9. Variant 的 `angle` / `cognitiveTask` / `difficulty` 是否与 Canonical 逐字相同？
+10. Variant 是否仍然考察同一个 Core Concept、保持同一答案逻辑？
+11. 是否需要换 angle / 认知任务？（是 → 应改为新建 Canonical）
 
 发现问题，直接重写，不要解释。
 
