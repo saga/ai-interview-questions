@@ -229,28 +229,39 @@
     ],
     "difficulty": "hard",
     "angle": "calculation",
-    "question": "在典型配置（N=4096, d=128）下，FlashAttention 相比标准注意力把 HBM 显存访问流量减少了大约多少倍？",
-    "explanation": "标准注意力把约 97% 的内存流量花在中间 N×N 矩阵上；FlashAttention 把 HBM IO 复杂度从 O(N²) 降到接近 O(Nd)，在 N=4096、d=128 的典型配置下 HBM 流量减少约 33 倍。收益来自减少反复读写而非单纯算子融合。",
+    "question": "关于 FlashAttention 相对标准注意力的 HBM 显存访问（IO）复杂度，下列哪些说法是正确的？",
+    "explanation": "先分清「显存占用」与「访存流量」两件事。显存占用上 FlashAttention 确实是 O(N²)→O(N)（不再物化注意力矩阵）；但**访存流量**按论文定理 2 是标准注意力 Θ(Nd+N²)、FlashAttention Θ(N²d²M⁻¹)，两者之比约为 M/d²——**与 N 无关，且随 head 维度 d 的平方恶化**。论文的实测锚点是 GPT-2 medium（N=1024、d=64、A100）：HBM R/W 从 40.3 GB 降到 4.4 GB，约 9 倍，这正是原文「up to 9× fewer」的来源。所以「N=4096、d=128 时减少 33 倍」是把 O(N²)/O(Nd) = N/d = 32 当成了收益倍数：既用错了复杂度，也高估了收益（d=128 时 M/d² 已降到约 3 倍量级）。",
     "source": {
       "materialId": "hf-blog-flash-attention-overview"
     },
     "formats": {
       "choice": {
-        "type": "single",
+        "type": "multiple",
         "options": [
-          "约 33 倍：从 O(N²) 降到接近 O(Nd) 的 IO 复杂度",
-          "约 2 倍，其收益仅来自算子融合这一项而已",
-          "约 1000 倍，因为完全消除了全部的注意力计算",
-          "实际上没有减少，只是改变了计算的先后顺序"
+          "论文给出的 IO 复杂度为：标准注意力 Θ(Nd + N²)，FlashAttention Θ(N²d²M⁻¹)（M 为 SRAM 容量），实测最高约 9 倍减少",
+          "两者的比值约为 M/d²，与序列长度 N 无关；因此 head 维度 d 越大或 SRAM 越小，FlashAttention 的相对收益越小",
+          "FlashAttention 把 IO 复杂度降到接近 O(Nd)，在 N=4096、d=128 时 HBM 流量约减少 33 倍",
+          "序列越长收益越大：标准注意力是 O(N²) 而 FlashAttention 是 O(N)，N 增大时两者的倍数差会持续拉大"
         ],
         "answer": [
-          0
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
         "referenceAnswer": "约 33 倍：HBM IO 从 O(N²) 降到 ~O(Nd)（N=4096,d=128）。"
       }
-    }
+    },
+    "misconceptions": [
+      "以为 FlashAttention 的 HBM IO 复杂度是 O(Nd) 或 O(N)，并按 N/d 估算收益倍数",
+      "以为序列越长 FlashAttention 的访存收益倍数越大"
+    ]
   },
   {
     "id": "flashattn-08",

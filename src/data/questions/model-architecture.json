@@ -142,7 +142,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "在 Transformer Decoder 架构大语言模型自回归推理（Generation 阶段）中，KV Cache 的内存占用常成为端侧或高并发场景下的主要瓶颈。关于 Grouped-Query Attention (GQA) 与传统 Multi-Head Attention (MHA) 在改善该瓶颈上的机制与权衡，下列说法正确的有？（多选）",
-    "explanation": "GQA共享KV降低显存带宽、线性增长斜率可叠加SWA/跨层共享；C称权重量化错误。",
+    "explanation": "GQA 的做法是让多个 Query 头共享同一组 Key-Value 头，KV Cache 的量级因此按 KV 头数成比例下降，直接省下显存占用与解码时的内存带宽。注意它并没有改变 KV Cache 随上下文长度线性增长这一关系，只是显著压低了增长斜率；端侧还可以把 GQA 与滑动窗口注意力或跨层 KV 共享叠加，进一步给 KV Cache 设上限。C 错在混淆了两类显存：GQA 优化的是运行时的 KV Cache，与权重参数无关；把权重从 16-bit 压到 4-bit 是量化做的事，两者作用对象不同。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -239,7 +239,7 @@
     "difficulty": "hard",
     "angle": "calculation",
     "question": "某 MoE 模型的总参数量远大于每 token 的激活参数量。这两个数字分别决定了什么？",
-    "explanation": "MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。",
+    "explanation": "MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有约 46.7B 总参却只有约 12.9B 激活。",
     "formats": {
       "choice": {
         "type": "single",
@@ -255,7 +255,7 @@
         "question": "一家软件公司计划在企业内网私有化部署一个混合专家（MoE）大模型作为编程助手，模型规格为总参数量约 671B、每个 token 仅激活约 37B 参数。基础设施团队做资源规划时产生分歧：一种意见认为按 37B 估算所需显存就够了，另一种意见则担心推理延迟应按 671B 来计算。关于这两个数字各自决定的资源维度，正确的理解是？"
       },
       "open": {
-        "referenceAnswer": "正确答案要点：总参决定显存占用，激活参数决定每 token 计算量与延迟。\n\n解析：MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有 47B 总参却只有约 13B 激活。"
+        "referenceAnswer": "正确答案要点：总参决定显存占用，激活参数决定每 token 计算量与延迟。\n\n解析：MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有约 46.7B 总参却只有约 12.9B 激活。"
       }
     }
   },

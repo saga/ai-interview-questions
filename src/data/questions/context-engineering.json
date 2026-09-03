@@ -320,7 +320,7 @@
     "difficulty": "hard",
     "angle": "scenario",
     "question": "在 Agent 工具调用设计中，某 Backend 服务 API get_orders() 默认返回包含完整用户历史、支付明细、商品长文本描述的原始 JSON，大小约为 100K Tokens。开发者直接将该原始返回值注入 LLM 的上下文窗口中。这种设计会导致哪些系统性后果？（多选）",
-    "explanation": "增TTFT与成本、注意力稀释降精度、误用字段、D称全量推崇错误。",
+    "explanation": "把 100K token 的原始返回直接塞进上下文，代价是三重的：Prefill 变长直接推高 TTFT，且这部分 token 每轮都要重新付费；长上下文里的注意力被稀释，模型提取「订单状态」这类关键字段的精度下降（Needle in a Haystack）；无关字段越多，模型张冠李戴、误用字段的概率越高。D 错在把「上下文丰富」当成无条件收益：上下文的价值取决于信噪比，全量字段只会降低信噪比。正确做法是在工具层做字段裁剪与摘要，只把结构化后的必要字段交给模型。",
     "formats": {
       "choice": {
         "type": "multiple",

@@ -1041,7 +1041,7 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "根据 DeepMind 提出的 Chinchilla Scaling Law，在给定的训练 Compute 预算下，模型参数量与训练 Token 数的 Compute-Optimal 比例约为 1:20。然而，现代轻量级端侧模型（如 3B 参数模型）通常会使用数万亿（Trillions）Token 进行过度训练（Overtraining）。关于这一工程决策的经济与技术考量，下列说法正确的有？（多选）",
-    "explanation": "Chinchilla仅优化预训练Loss未计推理、Serving为长期Recurring远超预训练、小模型过度训练以一次预训练换低Serving成本、D称消除推理限制错误。",
+    "explanation": "Chinchilla 的 1:20 是 compute-optimal，其目标函数只有一个——在固定预训练算力预算下最小化训练 loss，完全没有把上线后按请求反复计费的推理成本算进去。而实际生产中 serving 成本是按请求累加的长期 recurring cost，规模化后通常远超一次性的预训练投入。因此对高频场景，用小模型 + 数万亿 token 过度训练是划算的：多付一次性的预训练算力，换一个更小、更快、单请求更便宜且精度足够的模型。D 错在把「缩小差距」说成「消除限制」：过度训练提升的是单位参数的知识密度，长链条多步推理与分布外泛化仍受模型容量与推理时算力（如 CoT、采样预算）约束。",
     "formats": {
       "choice": {
         "type": "multiple",

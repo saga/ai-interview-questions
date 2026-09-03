@@ -12,7 +12,7 @@
     "difficulty": "hard",
     "angle": "scenario",
     "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
-    "explanation": "成本驱动为Token尤其长Context、需Token粒度按Task聚合、长上下文低频远超高频短上下文、D称仅监控输出错误。",
+    "explanation": "LLM 系统的成本驱动力是 token 数量而不是请求次数：一次携带长上下文的调用，其 Input Token 可能抵得上成千上万次短调用，这正是「低频模块吃掉 70% 支出」的成因。因此成本监控必须下沉到 token 粒度，记录每次请求的 Input/Output token，再按任务类型与功能标签聚合，才能定位到真正的成本中心。全库代码规划、长文档分析这类任务调用频次低但上下文极大，总消耗完全可能远超高频但短上下文的拼写检查。D 错在用单价替代用量：Output 单价高不等于它主导账单，长上下文场景下 Input token 的绝对量往往才是大头，只盯 Output 会把成本归因完全做反。",
     "formats": {
       "choice": {
         "type": "multiple",
