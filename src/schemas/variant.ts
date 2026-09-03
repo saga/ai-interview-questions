@@ -33,6 +33,12 @@ export const questionVariantSchema = z.object({
   question: z.string().min(1),
   /** 选择题变体必填（轻量变体契约要求选项逐项改写）；开放题不出现此字段。 */
   options: z.array(z.string()).optional(),
+  /**
+   * 变体自声明的测量面（plan0903_3 / ADR-077，新模型 variant 可改 angle / cognitiveTask）。
+   * 缺省 = 继承 canonical（旧变体行为不变）；声明后 `applyVariant` 优先采用，不再静默覆盖。
+   */
+  angle: questionAngleSchema.optional(),
+  cognitiveTask: cognitiveTaskSchema.optional(),
   /** 生成时间戳（ms），用于 stale 判定与审计。 */
   generatedAt: z.number(),
   generator: variantGeneratorSchema,

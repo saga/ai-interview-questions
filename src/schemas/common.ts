@@ -24,6 +24,17 @@ export const questionAngleSchema = z.enum([
   'debugging',
   'system-design',
   'design',
+  // part1 §四新增（plan0903_3 / ADR-077）：diagnosis 专指"从现象定位机制/根因"的认知行为，
+  // 与 debugging（工程排障场景，含止血/修复/验证）并存，由出题 skill 引用 spec 区分，不互相替代。
+  'causal',
+  'diagnosis',
+  'prediction',
+  'architecture',
+  'boundary',
+  'misconception',
+  'quantitative',
+  'implementation',
+  'synthesis',
 ]);
 
 // 6 大能力域（ADR-038）：以"面试能力域"组织题库，而非按技术名词平铺。
@@ -61,6 +72,25 @@ export const evaluationProfileSchema = z.enum([
   'behavioral',
 ]);
 
+/**
+ * 认知任务（plan0903_3 / ADR-077，由 docs/prompt_part1.md §五引入）。
+ * 描述考生为作答必须执行的认知行为；与 `angle`（从什么视角切入）正交。
+ * 进入 canonical assessment contract（D2）：改变即 fork 新 canonical。
+ */
+export const cognitiveTaskSchema = z.enum([
+  'recall',
+  'explain',
+  'identify',
+  'diagnose',
+  'compare',
+  'predict',
+  'apply',
+  'evaluate',
+  'design',
+  'troubleshoot',
+  'infer',
+]);
+
 export const idSchema = z.string().min(1);
 
 // ── 单源类型导出（Zod 即契约，推导即类型） ──
@@ -68,6 +98,7 @@ export type Difficulty = z.infer<typeof difficultySchema>;
 export type ProviderId = z.infer<typeof providerIdSchema>;
 export type FormatId = z.infer<typeof formatIdSchema>;
 export type QuestionAngle = z.infer<typeof questionAngleSchema>;
+export type CognitiveTask = z.infer<typeof cognitiveTaskSchema>;
 export type KnowledgeArea = z.infer<typeof knowledgeAreaSchema>;
 export type KnowledgePriority = z.infer<typeof knowledgePrioritySchema>;
 export type EvaluationDimension = z.infer<typeof evaluationDimensionSchema>;

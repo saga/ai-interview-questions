@@ -1,6 +1,6 @@
 // npm run question:identity —— 审计 canonical 身份是否曾被原地改写。
 // 扫描 git 历史中 src/data/questions/*.json：同一 question.id 若在不同 commit
-// 出现不同的 topic/angle/difficulty，即一次 evidence 污染（旧分代表旧能力）。
+// 出现不同的 topic/angle/difficulty/cognitiveTask，即一次 evidence 污染（旧分代表旧能力）。
 // 只读审计，找到即 exit 1（release gate 用）；传 --json 输出机器可读。
 
 import { execSync } from 'node:child_process';
@@ -11,6 +11,7 @@ interface Row {
   topic: string;
   angle: string;
   difficulty: string;
+  cognitiveTask: string;
 }
 
 function sh(cmd: string): string {
@@ -63,6 +64,7 @@ for (const c of commits) {
         topic: String(q.topic ?? ''),
         angle: String(q.angle ?? ''),
         difficulty: String(q.difficulty ?? ''),
+        cognitiveTask: String(q.cognitiveTask ?? ''),
       };
       seen.set(row.id, [...(seen.get(row.id) ?? []), row]);
     }
@@ -71,7 +73,7 @@ for (const c of commits) {
 
 const violations: { id: string; contracts: string[] }[] = [];
 for (const [id, rows] of seen) {
-  const contracts = [...new Set(rows.map((r) => `${r.topic}×${r.angle}×${r.difficulty}`))];
+  const contracts = [...new Set(rows.map((r) => `${r.topic}×${r.angle}×${r.difficulty}×${r.cognitiveTask}`))];
   if (contracts.length > 1) violations.push({ id, contracts });
 }
 

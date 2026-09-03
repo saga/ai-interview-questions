@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { difficultySchema, evaluationProfileSchema, questionAngleSchema } from './common.ts';
+import {
+  cognitiveTaskSchema,
+  difficultySchema,
+  evaluationProfileSchema,
+  questionAngleSchema,
+} from './common.ts';
 
 /** 题目溯源引用：课程题库题必须能追溯到原始教学材料（提案要求"Source Evidence"）。 */
 const questionSourceRefSchema = z.object({
@@ -83,6 +88,22 @@ export const questionSchema = z
      * 收敛为 required 无存量风险。
      */
     angle: questionAngleSchema,
+    /**
+     * 认知任务（plan0903_3 / ADR-077）：考生作答必须执行的认知行为，与 `angle` 正交。
+     * 进入 assessment contract（`topic × angle × difficulty × cognitiveTask`），改变即 fork。
+     * Zod 层可选（存量 1311 题无可靠回填源）；`question:add --check` 对新题按必填拦截。
+     */
+    cognitiveTask: cognitiveTaskSchema.optional(),
+    /**
+     * 考察概念（plan0903_3 / ADR-077，对应 part1 §十四）：
+     * 1 个核心 Concept + 0～3 个辅助 Concept。用于 assessment 去重与覆盖分析，不进运行时。
+     */
+    concepts: z
+      .object({
+        core: z.string().min(1),
+        supporting: z.array(z.string().min(1)).max(3).default([]),
+      })
+      .optional(),
     question: z.string().min(1),
     explanation: z.string().min(1),
     aiGenerated: z.boolean().optional(),
@@ -104,9 +125,8 @@ export const questionSchema = z
      * 派生来源（可选）：本 canonical 由哪道题 fork/derive 而来。
      *
      * **canonical 身份不可变（assessment identity immutable）**：`id` 绑定的是
-     * 「测什么能力」（`topic × angle × difficulty`，与 `src/domain/questionIdentity.ts`
-     * 的 `AssessmentContract` 同口径；认知差异经由 `angle` + 题面表达，不另设独立字段），
-     * 而不是题面文字。
+     * 「测什么能力」（`topic × angle × difficulty × cognitiveTask`，与
+     * `src/domain/questionIdentity.ts` 的 `AssessmentContract` 同口径），而不是题面文字。
      * 改变其中任一项必须产生**新 canonical ID**（fork），禁止原地改写后沿用原 ID——
      * 否则 Learner Memory 里以 `questionId` 为键的历史证据会被污染（旧分代表旧能力）。
      * fork 时填 `derivedFrom: <原题id>` 保留知识血缘；variant（同 assessment contract

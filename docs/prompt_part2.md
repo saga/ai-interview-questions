@@ -9,16 +9,17 @@
 不要重新规划 Knowledge。
 不要重新决定 canonical / variant。
 不要重新设计 Blueprint。
+不要擅自改变 Blueprint 指定的题型。
 
-你上一轮生成的 Blueprint 是本轮的设计依据。
+你上一轮生成的 Blueprint 是本轮唯一的设计依据。
 
 ---
 
-# 一、最重要的语言要求
+# 一、语言要求
 
-**所有最终题目内容必须使用自然、专业、准确的中文。**
+所有最终内容必须使用自然、专业、准确的中文。
 
-以下字段必须中文：
+这些字段必须使用中文：
 
 * `category`
 * `topic`
@@ -29,77 +30,46 @@
 * `explanation`
 * `options[].text`
 
-`angle`、`cognitiveTask`、`difficulty`、`questionRole`、`variantOf`、`knowledgeId`、`formats[].type`、`options[].key` 等机器字段保持英文枚举或 ID 格式。
+以下机器字段保持英文：
 
-技术领域中的标准英文术语可以保留，例如：
+* `id`
+* `questionRole`
+* `variantOf`
+* `knowledgeId`
+* `difficulty`
+* `angle`
+* `cognitiveTask`
+* `formats[].type`
+* `options[].key`
 
-* Transformer
-* Attention
-* Softmax
-* MoE
-* KV Cache
-* CUDA
-* FlashAttention
-* Batch Size
-* Throughput
-* Latency
-* Token
-* Embedding
+标准技术术语可以保留英文：
 
-第一次出现时，可采用：
+Transformer、Attention、Softmax、MoE、KV Cache、CUDA、FlashAttention、Embedding、Batch Size、Throughput、Latency 等。
 
-> 中文 + 英文术语
-
-例如：
+首次出现时可以使用：
 
 > 因果掩码（Causal Mask）
 
-之后可以直接使用行业通用英文简称。
+之后直接使用行业通用术语即可。
 
-不要把标准技术术语强行翻译成生硬中文。
-
----
-
-# 二、中文表达要求
-
-最终题目必须像真正的中文技术面试题，而不是英文翻译稿。
-
-避免：
-
-* 生硬直译
-* 大量英文句法
-* “which of the following”式机械句式
-* 无意义的括号堆叠
-* 过度书面化
-* 为了显得专业而堆术语
-
-优先使用自然表达，例如：
-
-> “以下哪种解释最准确？”
-
-> “最可能的根本原因是：”
-
-> “在该约束下，哪种设计更合理？”
-
-> “若将 X 提高到原来的两倍，最可能出现什么变化？”
+不要把英文教材机械翻译成中文。
 
 ---
 
-# 三、严格执行 Blueprint
+# 二、严格执行 Blueprint
 
-对于每道题：
+每道题必须保持：
 
-必须保持：
+* `knowledgeId`
+* 核心 Knowledge
+* `type`
+* `angle`
+* `cognitiveTask`
+* `difficulty`
+* `assessmentTarget`
+* `reasoningGoal`
 
-* 相同 `knowledgeId`
-* 相同核心 Knowledge
-* Blueprint 指定的 angle
-* Blueprint 指定的 cognitiveTask
-* Blueprint 指定的 difficulty
-* Blueprint 指定的 assessmentTarget
-* Blueprint 指定的 reasoningGoal
-
-不要擅自改变这些内容。
+与 Blueprint 一致。
 
 你可以自由设计：
 
@@ -107,46 +77,94 @@
 * scenario
 * options
 * explanation
-* 数值
-* 代码
-* 示例
+* examples
+* code
+* numbers
 
-但只能服务于 Blueprint。
+但这些只能服务于 Blueprint。
 
 ---
 
-# 四、Canonical
+# 三、题型规则
 
-Canonical 是这个 Knowledge 的稳定主问题。
+只允许：
 
-它应该：
+* `multiple-choice`
+* `single-choice`
 
-* 自包含
-* 长期有效
-* 不依赖网页
-* 不依赖原文
-* 体现核心知识
-* 有明确最佳答案
-* 具有面试价值
+**禁止 open。**
 
-优先测试：
+默认应生成：
 
-* 核心机制
+`multiple-choice`
+
+只有 Blueprint 已明确指定 `single-choice` 时才生成单选。
+
+---
+
+# 四、Multiple-choice
+
+这是默认题型。
+
+高质量多选题必须满足：
+
+1. 至少存在两个彼此独立的正确选项。
+2. 每个正确选项都可以独立判断为正确。
+3. 正确选项之间不能只是同一个意思的重复表达。
+4. 错误选项必须具有 plausibility。
+5. 不能通过选项长度或语气判断正确答案。
+6. 不得出现“两个选项合起来才正确”的情况。
+7. 不得因为选项太多而增加无意义复杂度。
+
+优先让不同选项分别代表不同的：
+
+* 正确机制
 * 因果关系
-* 重要判断
-* 常见误区
-* 工程 trade-off
+* 约束
+* trade-off
+* 工程判断
 * 边界条件
 
-避免单纯定义背诵。
+例如一个优秀多选题可以要求同时识别：
+
+> 哪些因素会导致该系统吞吐下降？
+
+A、B 是两个独立正确原因，C、D 是 plausible 但错误的原因。
+
+不要把一个事实拆成：
+
+A：完整正确解释
+B：同一个解释的后半句
+
+这种多选没有价值。
 
 ---
 
-# 五、Variant
+# 五、Single-choice
+
+仅在 Blueprint 指定时使用。
+
+必须只有一个最佳答案。
+
+适合：
+
+* 唯一最佳机制解释
+* 唯一正确诊断
+* 唯一正确架构选择
+* 明确的因果判断
+* 无法自然拆成多个独立正确条件的知识
+
+如果一个知识可以自然形成多个彼此独立的正确判断：
+
+**优先 multiple-choice。**
+
+---
+
+# 六、Variant
 
 Variant 必须：
 
-**和 canonical 测试同一个 Knowledge，但使用不同的 reasoning path。**
+**和 canonical 测试相同 Knowledge，但使用不同 reasoning path。**
 
 可以通过改变：
 
@@ -156,6 +174,7 @@ Variant 必须：
 * engineering context
 * angle
 * cognitiveTask
+* question type
 
 实现。
 
@@ -168,9 +187,9 @@ Variant 必须：
 * 换背景
 * 同义改写
 
-写完 variant 后，内部检查：
+完成后内部检查：
 
-> 如果学习者已经答对 canonical，他是否还需要进行明显不同的思考才能答对 variant？
+> 如果学习者已经答对 canonical，他是否仍然需要进行明显不同的思考才能答对 variant？
 
 如果不需要：
 
@@ -178,47 +197,18 @@ Variant 必须：
 
 ---
 
-# 六、题目设计
+# 七、Canonical
 
-题目必须：
+Canonical 是该 Knowledge 的稳定主问题。
 
+它应该：
+
+* 最核心
+* 长期有效
 * 自包含
-* 信息充分
-* 逻辑明确
 * 不依赖原文
-* 不依赖上下文
-* 真正需要思考
-
-优先让学习者：
-
-* 从现象推断机制
-* 根据条件预测行为
-* 比较方案
-* 分析 trade-off
-* 定位故障
-* 判断边界
-* 识别错误解释
-* 根据约束选择架构
-
-避免：
-
-> “X 是什么？”
-
-除非这个定义本身就是该知识最重要的面试目标。
-
----
-
-# 七、选择题
-
-默认：
-
-`single-choice`
-
-只有 Blueprint 明确需要多个同时成立的条件时，才使用：
-
-`multiple-choice`
-
-单选必须只有一个最佳答案。
+* 有清晰答案
+* 真正测试理解
 
 ---
 
@@ -226,11 +216,11 @@ Variant 必须：
 
 这是高优先级要求。
 
-每个错误选项必须是：
+错误选项必须：
 
 **合理但错误。**
 
-优先来源：
+优先来自：
 
 * 常见误解
 * 概念混淆
@@ -240,21 +230,46 @@ Variant 必须：
 * trade-off 判断错误
 * plausible engineering mistake
 
-不要制造：
+禁止：
 
-* 虚构的技术机制
-* 明显不符合事实的 GPU / CUDA 行为
-* 不存在的 framework 行为
-* 与题目无关的名词
-* 一眼就知道是错的答案
+* 虚构技术机制
+* 虚构 framework 行为
+* 明显错误的 GPU / CUDA 行为
+* 与题目无关的概念
+* 一眼就能排除的荒谬答案
 
 错误选项应该像：
 
-> 一个“懂一些，但理解不完整”的工程师可能做出的判断。
+> 一个懂一些但理解不完整的工程师可能做出的判断。
 
 ---
 
-# 九、正确答案公平性
+# 九、Multiple-choice 的正确项设计
+
+多选题不要默认：
+
+> “A、B、C 都差不多是同一个正确答案。”
+
+应该让每个正确项覆盖一个独立 reasoning point。
+
+例如：
+
+知识：
+
+> 为什么某 MoE 设计会出现通信瓶颈？
+
+好的正确项可能分别涉及：
+
+* Token dispatch 的通信量
+* 跨节点带宽限制
+* Expert placement
+* Batch aggregation
+
+而不是四种方式重复描述“通信多”。
+
+---
+
+# 十、答案长度公平
 
 所有选项尽量：
 
@@ -264,101 +279,87 @@ Variant 必须：
 
 特别禁止：
 
-> 正确答案完整解释整个理论链，而错误答案只是半句话。
+正确答案写完整理论链，而错误项只是半句话。
 
 不要让：
 
-> “最长的就是正确答案”。
-
-完整理论放进 `explanation`，不要全部塞进正确选项。
+> 最长答案 = 正确答案。
 
 ---
 
-# 十、Explanation
+# 十一、Explanation
 
-`explanation` 必须：
+Explanation 必须：
 
-1. 解释正确答案为什么成立。
-2. 指出关键错误项为什么错误。
-3. 与题目严格一致。
-4. 不引入题干没有提供的关键假设。
-5. 不为了显得专业而堆公式。
-6. 区分理论结论、具体实现和工程实践。
+1. 说明正确项为什么成立。
+2. 说明错误项为什么错误。
+3. 对多选逐项解释关键判断。
+4. 与题目严格一致。
+5. 不引入题目没有提供的关键假设。
+6. 不为了显得专业而堆公式。
+
+严格区分：
+
+* 理论事实
+* 特定实现
+* 常见工程实践
 
 涉及：
 
-* 论文
 * framework
 * kernel
-* routing
 * hardware
+* routing
 * numerical precision
-* training strategy
+* training implementation
+* specific paper implementation
 
 时，必须保留必要限定。
 
-不要把某个特定实现的行为写成所有实现都必然如此。
+不要把特定实现行为写成：
 
-避免无依据的绝对表述：
-
-* 一定
-* 必然
-* 完全
-* 自动
-* 永远
-* 只能
-
-只有在题目条件足以保证该结论时才使用。
+> 所有实现都一定如此。
 
 ---
 
-# 十一、数学与公式
+# 十二、Accuracy
 
-需要公式时可以使用 LaTeX。
+数学公式、复杂度、因果关系必须准确。
 
-例如：
+如果 source 存在：
 
-`$O(n^2d)$`
+* 不同论文定义
+* 多种实现
+* 理论与工程差异
 
-或：
+优先使用最准确、且能被题目条件支持的版本。
 
-`$\sqrt{d_k}$`
-
-公式必须准确。
-
-不要为了显得高级而加入不必要的公式。
+不要把过度简化的说法直接当作严格定理。
 
 ---
 
-# 十二、工程场景
+# 十三、中文质量
 
-只有当场景真正参与推理时才使用。
+最终题目必须像真正的中文 AI/ML 技术面试题。
 
-好的：
+避免：
 
-> 给出 sequence length、显存和 bandwidth，让候选人判断架构。
+* 英文句式直译
+* 大量中英混杂
+* 无意义括号
+* 术语堆砌
+* 长句过多
+* 生硬翻译腔
 
-不好的：
+优先自然表达：
 
-> “某公司的工程师发现问题”，但最后仍然只是问定义。
+> “以下哪些判断正确？”
 
----
+> “以下哪些因素最可能导致该现象？”
 
-# 十三、Quantitative
+> “在该约束下，哪些方案是合理的？”
 
-如果 Blueprint 是 quantitative：
-
-优先：
-
-* 趋势
-* 比例
-* 多变量变化
-* 边界条件
-* 反事实
-
-不要让多个 variant 都只是“换一组数字重新计算”。
-
-可以有直接计算题，但要控制比例。
+> “以下关于该机制的描述中，哪些成立？”
 
 ---
 
@@ -366,35 +367,72 @@ Variant 必须：
 
 ### easy
 
-核心概念和直接机制。
+核心概念和直接关系。
 
 ### medium
 
-条件变化、比较、基础工程应用、常见故障。
+条件变化、比较、基础应用、常见故障判断。
 
 ### hard
 
-多约束、trade-off、边界、复杂诊断、架构选择、综合推理。
+多约束、trade-off、边界、复杂 diagnosis、架构选择、综合推理。
 
-**不要用题目长度制造 hard。**
+不要靠题目长度制造 hard。
 
 Variant 不要求比 canonical 更难。
 
 ---
 
-# 十五、Concept 数量
+# 十五、Quantitative
+
+如果 Blueprint 指定 quantitative：
+
+优先测试：
+
+* 参数变化
+* 比例关系
+* 趋势
+* 多变量变化
+* 边界
+* 反事实
+
+不要让多个 variant 都只是换数字套公式。
+
+---
+
+# 十六、工程场景
+
+只有工程背景真正参与推理时才加入。
+
+可使用：
+
+* latency
+* memory
+* throughput
+* bandwidth
+* sequence length
+* batch size
+* GPU count
+* communication
+* deployment constraint
+
+不要为了“工程感”写没有作用的公司和人物故事。
+
+---
+
+# 十七、Concept
 
 通常：
 
 **1 个核心 Concept + 1～3 个辅助 Concept。**
 
-不要堆砌十几个概念。
+不要堆砌大量术语。
 
 ---
 
-# 十六、Self-contained
+# 十八、Self-contained
 
-最终题目必须脱离当前网页独立成立。
+题目必须脱离当前网页独立成立。
 
 禁止：
 
@@ -402,13 +440,13 @@ Variant 不要求比 canonical 更难。
 * “根据上文”
 * “作者认为”
 * “上述方法”
-* “前文所述”
+* “前文提到”
 
-完成作答所需的信息必须存在于题目本身。
+所有完成推理所需的信息必须出现在题目本身。
 
 ---
 
-# 十七、最终质量检查
+# 十九、最终质量检查
 
 每道题输出前内部检查：
 
@@ -416,27 +454,45 @@ Variant 不要求比 canonical 更难。
 
 是否仍然测试 Blueprint 指定 Knowledge？
 
+### Type
+
+题型是否与 Blueprint 完全一致？
+
+### Multiple-choice
+
+如果是多选：
+
+* 是否至少有两个真正独立的正确项？
+* 每个正确项是否都有独立价值？
+* 是否存在同义重复正确项？
+* 是否存在明显荒谬错误项？
+
+### Single-choice
+
+如果是单选：
+
+* 是否真的只有一个最佳答案？
+
 ### Reasoning
 
-是否真的需要推理，而不是换一种形式背诵？
+是否真的需要理解和推理，而不是换一种方式背诵？
 
 ### Variant
 
 是否真的不同？
-还是只是换场景？
+还是仅仅换场景？
 
 ### Accuracy
 
-事实、公式、因果关系是否准确？
+事实、公式、复杂度、因果关系是否准确？
 
 ### Distractors
 
 错误项是否 believable？
-是否存在荒谬选项？
 
 ### Fairness
 
-正确答案是否明显更长？
+正确答案是否因为更长、更完整而暴露？
 
 ### Difficulty
 
@@ -445,20 +501,19 @@ Variant 不要求比 canonical 更难。
 ### Chinese Quality
 
 中文是否自然？
-是否像真正的中文技术面试题？
 是否存在明显翻译腔？
 
 ### Self-contained
 
 脱离网页是否仍然能够独立作答？
 
-发现关键问题时：
+发现关键问题：
 
-**重新设计该题，不要输出明显有问题的版本。**
+**重新设计该题。**
 
 ---
 
-# 十八、输出格式
+# 二十、最终输出格式
 
 严格输出合法 JSON Array。
 
@@ -486,40 +541,53 @@ Variant 不要求比 canonical 更难。
 "explanation": "...",
 "formats": [
 {
-"type": "single-choice | multiple-choice | open",
+"type": "multiple-choice | single-choice",
 "options": [
 {
 "key": "A",
 "text": "..."
 }
 ],
-"answer": "A"
+"answer": ["A", "C"]
 }
 ]
 }
 ]
 
-必须满足：
+对于 `multiple-choice`：
 
-* 所有面向用户的自然语言内容使用中文
-* 标准技术术语可以使用英文
-* canonical 的 `variantOf` = `null`
-* variant 的 `variantOf` 指向真实 canonical id
-* canonical 与 variant 使用相同 `knowledgeId`
-* 所有 id 唯一
-* answer 对应真实 option
-* JSON 合法
-* 不产生 Blueprint 之外的新 Knowledge
-* 不产生伪 variant
+`answer` 必须是包含至少两个 key 的数组，例如：
 
-最终原则：
+"answer": ["A", "C"]
 
-**准确、自然的中文 > 直译**
+对于 `single-choice`：
 
-**真正不同的测量方式 > 换场景改写**
+`answer` 使用单个 key，例如：
 
-**合理错误项 > 荒谬错误项**
+"answer": "B"
 
-**理解与迁移 > 定义背诵**
+---
 
-**高价值少量题 > 大量重复题**
+# 二十一、最终原则
+
+**默认多选。**
+
+**只有天然唯一最佳判断时才单选。**
+
+**禁止 open。**
+
+**题型服从知识，而不是知识服从题型。**
+
+**多个独立正确判断 → multiple-choice。**
+
+**唯一最佳判断 → single-choice。**
+
+**真正不同的 reasoning path > 换场景。**
+
+**合理 plausible distractor > 荒谬错误项。**
+
+**理解、应用、诊断、比较、trade-off > 单纯记忆。**
+
+**高价值少量题 > 大量重复题。**
+
+**宁可没有 variant，也不要伪 variant。**
