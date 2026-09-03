@@ -30,6 +30,17 @@ jobs:
         run: npm run lint:length -- --changed
       - name: Audit question bank
         run: npm run question:audit
+      - name: Question identity gate (incremental, PR/base only)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run question:identity -- --gate --since ${{ github.event.pull_request.base.sha }}
+          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            npm run question:identity -- --gate --since ${{ github.event.before }}
+          else
+            npm run question:identity -- --gate --since HEAD~1
+          fi
+      - name: Validate variants (release gate)
+        run: npm run question:validate-variants
 
   deploy:
     needs: verify
@@ -48,7 +59,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Deploy to Cloudflare Pages (dist/ only)
-        run: npm run deploy
+        run: npm run cloudflare:deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

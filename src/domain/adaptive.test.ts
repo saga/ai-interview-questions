@@ -82,7 +82,7 @@ describe('pickNextAdaptive', () => {
     expect(r!.question.topic).toBe('mcp');
   });
 
-  it('deep-dive：中等表现 → 同主题更高难度优先', () => {
+  it('deep-dive：中等表现 → 同主题同难度或更高难度优先', () => {
     const r = pickNextAdaptive(POOL.filter((x) => x.id !== 'mcp-1'), [sig('tool-calling', 70, 'medium')], undefined, rngSeq([0]));
     // mcp 被移除后 broaden 无候选 → deep-dive；同主题 hard 优先
     expect(r!.strategy).toBe('deep-dive');
@@ -90,7 +90,7 @@ describe('pickNextAdaptive', () => {
     expect(r!.question.difficulty).toBe('hard');
   });
 
-  it('gap-probe：答得差 → 先降难度，再退前置主题', () => {
+  it('gap-probe：答得差 → 先降难度，再退前置主题，最后同主题兜底', () => {
     // tool-calling 答 hard 挂了 → 同主题 easy
     const r1 = pickNextAdaptive(POOL, [sig('tool-calling', 30, 'hard')], undefined, rngSeq([0]));
     expect(r1!.strategy).toBe('gap-probe');

@@ -43,16 +43,19 @@ curate-question-bank     = Transform   （本 skill：按诊断动手 + 重新�
 3. **改写契约**（REWRITE 的执行标准，来自 `check-question-bank-quality`）：
 
    - **先定目标，再改写**。不要整题重新生成——那样极易再生一道重复题。
-   - 保留核心 Knowledge：`topic` 不变，必要时只换 `angle`。
-   - 优先改 **Cognitive Task**，而非重出一道同类题。
-     例：`kv-cache` 已有 4 道 `definition` → 目标 `angle` 改 `tradeoff`、`difficulty` 改 `medium`。
+   - 保留核心 Knowledge：`topic` 不变。**身份红线**：凡改写后 `angle / difficulty`
+     发生变化（题干/选项/考察侧重实质改变），必须 fork 新 canonical
+    （`deriveCanonicalId` 分配新 ID + `derivedFrom` 指回原题），**不得**保留原题 id；
+     保留原 id 仅限「内容不动、只纠正明显标错的 `angle` 字段」这一种情形。
+   - 优先调整考察侧重（`angle` + 题面），而非重出一道同类题。
+     例：`kv-cache` 已有 4 道 `definition` → 以其中一道为蓝本 fork 新题，目标 `angle` 为 `tradeoff`、`difficulty` 为 `medium`。
    - **只换 `angle` 的前提是：该题内容本身已属于目标 angle（只是字段标错）。**
      若内容是低价值 `definition` 回忆题，必须改写题干/选项/解释让它真正变成
      mechanism/comparison/… 题，`angle` 随内容自然改变。
      **绝不允许只把标签从 `definition` 改成 `mechanism` 而内容不动**——
      那只是在骗 `topic × angle` 密度计数器，没有提升诊断价值。
      改前务必通读题目内容，逐题判断是「标错」还是「内容低价值」。
-   - 同 `topic × angle` 已有 ≥ 3 题时，改写后的题必须带来新的认知任务、场景、
+   - 同 `topic × angle` 已有 ≥ 3 题时，改写后的题必须带来新的考察侧重、场景、
      典型 misconception 或难度层次（见 `fill-coverage-gap` 的题量控制）。
 
 4. **改写内部 Prompt（10 条硬约束）**
@@ -106,7 +109,8 @@ curate-question-bank     = Transform   （本 skill：按诊断动手 + 重新�
 
 - 不判定质量分级（那是 **check-question-bank-quality** 的事），只执行已给出的动作。
 - 不决定补哪些缺口（那是 **fill-coverage-gap** 的事）；DELETE 造成的格子回退要**同步告知**，由它决策。
-- 不写全新题（那是 **add-question-to-bank** 的事）；REWRITE 保留原题 id 与核心 Concept。
+- 不写全新题（那是 **add-question-to-bank** 的事）；REWRITE 保留原题 id 与核心 Concept
+  仅当 `topic × angle × difficulty` 不变，改变任一项即按上方身份红线 fork 新题。
 - 默认不批量删除：单批 DELETE 超过 5 题时先向用户确认。
 - 最终报告需包含：本批处理了哪些题（id + 动作 + 依据的 `spec §N`）、复核结果、
   DELETE 造成的格子回退、剩余待办与仍需人工复核的事实。

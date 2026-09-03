@@ -17,8 +17,8 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 3. 运行 `npm run question:blueprint -- <limit>`，为选定数量的缺口生成蓝图 JSON。每条蓝图包含：
    - 对应知识节点的 `purpose` / `expectedConcepts`（约束这道题该考什么，见下方"expectedConcepts 的用法"）
    - `reuseCandidateIds`：同 topic 下已有题的 id，按角度梯度距离升序——**改写**成目标 angle 的候选
-4. 对每条蓝图，按优先级决策（**canonical 身份不可变**：`id` 绑定的是 assessment contract，
-   不是题面文字；改变 `angle / difficulty / 认知任务/诊断目标` 必须 fork 新 canonical，禁止原地改写沿用原 ID）：
+4. 对每条蓝图，按优先级决策（**canonical 身份不可变**：`id` 绑定的是 assessment contract
+   `topic × angle × difficulty`，不是题面文字；改变 `angle / difficulty` 必须 fork 新 canonical，禁止原地改写沿用原 ID）：
     - **先看 reuse（fork/derive）**：若 `reuseCandidateIds` 中已有题可作为素材（复用 source / knowledgeId /
       expected concepts / misconception / 场景骨架甚至部分题干），以它为蓝本 **fork 一道新 canonical**
       覆盖该缺口：用 `deriveCanonicalId(topic, angle, 已有ID)` 分配新 ID，并填 `derivedFrom: <原题id>`
@@ -33,7 +33,8 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 > **变体不是补覆盖缺口的主要机制。** 变体继承 canonical 的 `topic` 与 `angle`
 > （`src/ai/variant.ts` 直接取 canonical，不重新推导），用它补洞等于把 A 格的题搬到 B 格——
 > A 格重新空出来，**覆盖率永远补不满**。这也是第 3 步字段叫 `reuseCandidateIds`
-> 而不是 `variantCandidateIds` 的原因：这里是「改写已有题以改变其 angle」，是 reuse，不是 variant。
+> 而不是 `variantCandidateIds` 的原因：这里是「以已有题为素材 fork 出新 angle 的题」
+（新 ID + `derivedFrom`），是 reuse/fork，不是 variant。
 
 ## 检索视角的缺口（ADR-063/065/066）
 
@@ -84,7 +85,7 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 覆盖率缺口不等于"应当无限补题"：
 
 - 用 `npm run question:blueprint` 的 `reuseCandidateIds` 和 `question:coverage` 的格子计数确认目标 (topic, angle) 的现有题量。
-- 若同一 (topic, angle) 已有 ≥ 3 题，新题必须证明自己带来了新的认知任务、场景、典型 misconception 或难度层次；仅改写措辞、换例子而不改变所考能力的不算新增价值，应优先改写已有题或改补为 0 的格子。
+- 若同一 (topic, angle) 已有 ≥ 3 题，新题必须证明自己带来了新的考察侧重、场景、典型 misconception 或难度层次；仅改写措辞、换例子而不改变所考能力的不算新增价值，应优先改写已有题或改补为 0 的格子。
 - 同一核心 Concept 不因"覆盖率数字"无限扩张：当该 Concept 在多个 angle 上已各有合格题时，继续加题的边际收益递减，应把补题额度让给真正为 0 的格子。
 - 题量控制与质量门槛并行：见 **add-question-to-bank** 的"结构质量门槛"与 `spec §1`。
 

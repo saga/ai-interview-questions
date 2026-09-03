@@ -318,8 +318,8 @@ Phase 2/3 未做（有意推迟）：embedding 语义通道（权重 0.15 已预
 作答信号 AnswerSignal (topic/score/difficulty)
         ↓ domain/adaptive.decideStrategy()
 迁移策略 Strategy
-  ├─ deep-dive   纵向深挖：同主题更高难度继续问
-  ├─ gap-probe   薄弱补查：降难度 → 回退前置主题 → 同主题兜底
+  ├─ deep-dive   纵向深挖：同主题同难度或更高难度继续问（含等于）
+  ├─ gap-probe   薄弱补查：降难度 → 回退前置主题 → 同主题剩余题兜底
   ├─ broaden     横向扩展：切换概念图 related 主题
   └─ move-on     新方向：排除刚答主题，薄弱画像优先
         ↓ domain/adaptive.pickNextAdaptive()（纯函数，rng 可注入）

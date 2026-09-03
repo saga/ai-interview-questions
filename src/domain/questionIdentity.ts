@@ -1,7 +1,7 @@
 // 纯逻辑：canonical assessment 身份判定（P1-1）。
 //
 // 背景：Learner Memory 以 `questionId` 为历史证据键。若补覆盖缺口时原地改写
-// 已有题的 `angle / difficulty / 认知任务` 却沿用原 ID，旧分数在语义上立即失效，
+// 已有题的 `angle / difficulty` 却沿用原 ID，旧分数在语义上立即失效，
 // 而系统仍能正常运行——隐性数据污染。因此：
 //
 //   variant            = 同一 assessment identity（只换表达/场景，不换考什么）

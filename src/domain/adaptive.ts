@@ -1,7 +1,7 @@
 // 纯逻辑：自适应选题（Adaptive Interview 的核心迁移决策）。
 // 下一道题不是随机抽的，而是一次基于上一题表现的决策：
-//   deep-dive  纵向深入——同主题继续追问
-//   gap-probe  补弱探查——答得差时降难度或回到前置知识
+//   deep-dive  纵向深入——同主题同难度或更高难度继续追问
+//   gap-probe  补弱探查——答得差时降难度 → 回到前置知识 → 同主题剩余题兜底
 //   broaden    横向扩展——掌握良好时切换相关主题
 //   move-on    移动到未覆盖方向
 // 不依赖 React / LLM / 网络。
@@ -196,7 +196,8 @@ export function pickNextAdaptive(
       break;
     }
     case 'deep-dive': {
-      // 同主题更高难度优先；没有更难题则交回 move-on 兜底；子集内弱角度优先
+      // 同主题同难度或更高难度优先（含等于：同难度不同角度仍有深挖价值）；
+      // 该子集为空才交回 move-on 兜底；子集内弱角度优先
       const harder = sameTopicPool
         .filter((q) => difficultyAtLeast(q.difficulty, last.difficulty))
         .sort((a, b) => DIFF_ORDER.indexOf(b.difficulty) - DIFF_ORDER.indexOf(a.difficulty));

@@ -5,7 +5,7 @@
 
 第二轮外部评审的 4 个架构级问题 + 评分一刀切，本轮**全部执行**，决策理由见 ADR-076：
 
-- **P1-1 canonical 身份不可变**：改 `angle/difficulty/认知任务` 必须 fork 新 canonical（新 ID + `derivedFrom`），禁止原地改写沿用原 ID（污染 Learner evidence）。新增 `questionIdentity.ts` + 单测，`fill-coverage-gap` skill 改 fork 语义，`bank.test.ts` 锁 `derivedFrom` 有效性，新增 `npm run question:identity` 历史审计（`--gate --since` 作 PR 门禁）
+- **P1-1 canonical 身份不可变**：改 `angle/difficulty` 必须 fork 新 canonical（新 ID + `derivedFrom`），禁止原地改写沿用原 ID（污染 Learner evidence）。合同口径为 `topic × angle × difficulty`（认知差异经由 `angle` + 题面表达，不另设独立 `cognitiveTask` 字段）。新增 `questionIdentity.ts` + 单测，`fill-coverage-gap` skill 改 fork 语义，`bank.test.ts` 锁 `derivedFrom` 有效性，新增 `npm run question:identity` 历史审计（`--gate --since` 作 PR 门禁）
 - **P1-2 Agent 端到端 fallback**：`buildFallbackAgentRuntime` / `chainStreamFns` 下沉到 Runtime streamFn 层，abort 永不切换；`useAgentInterview` / `startChatInterview` / CopilotSidebar 全接线（`runtime.test.ts` 4 项）
 - **P1-3 Knowledge primary**：检索层题目 0.7 次级降权 + 2 席槽位，`knowledge` scope 本就排除题目；skill 措辞同步
 - **P1-4 三维覆盖**：`question:coverage` 追加 assessment quality + retrieval readiness（实测：误解标注 149/1308、单角度知识点 21）

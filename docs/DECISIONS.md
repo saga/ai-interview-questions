@@ -4,11 +4,13 @@
 
 ## ADR-076 · 外部评审五项收口（canonical 身份 / Agent 端到端 fallback / 知识主次 / 三维覆盖 / 评分预设）
 
-- 状态：已采纳 · 2026-09-04
+- 状态：已采纳 · 2026-09-03
 - 背景：外部对 `dev0902` 的第二轮独立评审指出 4 个架构级问题 + 评分一刀切（P1-1 canonical rewrite 沿用原 ID 污染 learner evidence；P1-2 Agent 主循环 single provider、fallback 只在 one-shot 工具层；P1-3 题库同时是考试题库与 RAG corpus 的结构性冲突；P1-4 `topic × angle` 被当成能力覆盖的代理；P2-5 开放题固定四维权重）。
   核实：四条 P1 全部属实（`fill-coverage-gap` skill 第 4 步明写"改写已有题 angle/difficulty"且无 fork 语义；`buildAgentRuntime(entry)` 单引擎而工具层 `provider` 走 `createLLMProvider` 降级链；检索层题目只做槽位限制、无分数主次；覆盖报告只有计数维度；`DEFAULT_RUBRIC` 全题型统一）。
 - 决策：
-  1. **canonical 身份不可变**：`id` 绑定 assessment contract（`topic × angle × difficulty × 认知任务`）。
+  1. **canonical 身份不可变**：`id` 绑定 assessment contract（`topic × angle × difficulty`，
+     与 `src/domain/questionIdentity.ts` 的 `AssessmentContract` 同口径；认知差异经由 `angle` + 题面表达，
+     不另设独立 `cognitiveTask` 字段）。
      改变任一项必须 fork 新 canonical（`deriveCanonicalId` 分配 `<topic>-<angle>-<NN>` + `derivedFrom` 指回原题），
      禁止原地改写沿用原 ID。新域模块 `src/domain/questionIdentity.ts`（`assessmentContractOf` / `isAssessmentChange` / `deriveCanonicalId` + 单测）；
      `fill-coverage-gap` skill 第 4 步改写为 fork 语义；`Question` 新增可选 `derivedFrom`（`bank.test.ts` 断言其指向库内已有题）；
@@ -39,8 +41,9 @@
   结论：「变体换 angle」这条指令从写下那天起就不可执行，写了也是死规则。
 - 决策：
   1. **Variant = 同一 assessment contract 的表达 / 情境变体。** 可改：framing / scenario / 问法 / 选项表达。
-     不可改：Core Concept、`angle`、`difficulty`、认知任务、答案逻辑（第 N 项 ↔ 第 N 项真假）、
-     核心事实、required concepts、诊断目标、选项数量。**需要不同 angle / cognitiveTask ⇒ 新建 canonical。**
+     不可改：Core Concept、`angle`、`difficulty`、答案逻辑（第 N 项 ↔ 第 N 项真假）、
+     核心事实、required concepts、诊断目标、选项数量。**需要不同 angle ⇒ 新建 canonical**
+     （认知差异经由 `angle` + 题面表达，不另设独立 `cognitiveTask` 字段，与 ADR-076 合同口径一致）。
      Prompt / 精简 Prompt / `question-content-spec.md` §8 三处同步为同一口径。
   2. **`sourceHash` 覆盖元数据**：`VariantSource` 由 `{id, question, options}` 扩为
      `{id, topic, subtopic?, angle, difficulty, tags?, question, options}`。

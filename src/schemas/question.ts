@@ -104,7 +104,9 @@ export const questionSchema = z
      * 派生来源（可选）：本 canonical 由哪道题 fork/derive 而来。
      *
      * **canonical 身份不可变（assessment identity immutable）**：`id` 绑定的是
-     * 「测什么能力」（`topic × angle × difficulty × 认知任务/诊断目标`），而不是题面文字。
+     * 「测什么能力」（`topic × angle × difficulty`，与 `src/domain/questionIdentity.ts`
+     * 的 `AssessmentContract` 同口径；认知差异经由 `angle` + 题面表达，不另设独立字段），
+     * 而不是题面文字。
      * 改变其中任一项必须产生**新 canonical ID**（fork），禁止原地改写后沿用原 ID——
      * 否则 Learner Memory 里以 `questionId` 为键的历史证据会被污染（旧分代表旧能力）。
      * fork 时填 `derivedFrom: <原题id>` 保留知识血缘；variant（同 assessment contract
