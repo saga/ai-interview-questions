@@ -1,6 +1,12 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · Prompt 内审 12 条全部收口（KV 示例 / 枚举统一 / 数量解绑 / 推理路径）
+
+上一轮外部评审指出的 Prompt 内部逻辑冲突与生成质量问题，本轮**全部执行**：P0 修正 KV Cache Variant 示例（explain/mechanism，不再用 diagnose 现象找根因）并统一 `cognitiveTask` 枚举为 `define/explain/mechanism/compare/apply/diagnose/evaluate/design`（`tradeoff` 只留 `angle`）；P1 解绑 Variant 数量（离线 oversample→filter 决定）、删除 Dice 具体阈值（归验证器）、新增不得增加推理负担/场景约束、多选互斥与程度词边界；P2 精确化 Concept→Canonical 定义、Evidence enrichment/injection 区分、system-design 不足不生成、自检升级为推理路径版。`添加题库prompt.md` §2/§5/§6/§10/§11/§13/§14/§18/§19/§23/§24、精简版、`question-content-spec.md` §2/§4/§8 同步。
+
+后续瘦身（评审 #12）：`添加题库prompt.md` 1059→724 行，§ 编号保持稳定。内容章节（四/九–十七/二十一/二十二/二十四 A–O）压为执行要点 + `见 spec §N`，Variant 判定基准（§18 十条硬规则）、决策流程（§23）、输出 schema（§25–§27）原样保留；并修正任务句“真实诊断差异”→“不增加诊断维度”（变体只降记忆效应）。精简版同步明确为导出子集。
+
 ## 2026-09-03 · 外部评审 7 条全部收口（Variant 定义 / 池清洗 / release gate / sourceHash / 语言门禁 / curator / 质量审计）
 
 外部对 `dev0902` 的独立评审给出 3 个「大问题」+ 4 条 P1，本轮**全部执行完毕**。

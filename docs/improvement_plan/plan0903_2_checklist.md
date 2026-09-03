@@ -130,9 +130,9 @@ parsed keys = id, category, topic, tags, difficulty, angle, question, explanatio
 
 - [ ] **D1** §14.3 / §24-Q 点名程度词：若选项真假依赖「通常 / 必然 / 可能 / 仅在某些情况下」等措辞强弱，则该选项不适合作为 Variant 基础——评审 #8
 - [ ] **D2** §11 Evidence Boundary（367-369）改为 `context enrichment ✅ / knowledge injection ❌` 的对照表述——评审 #6
-- [ ] **D3** 评估 Prompt 瘦身：1033 行、Variant 约束散布 7 处。若要动，按评审 #12 的三层切分（`question-content-spec.md` 承规范 / Prompt 留任务+决策流程+10~15 条 hard rules+输出 schema / validator 机器裁决）
+- [x] **D3** 评估 Prompt 瘦身：已执行第一刀（2026-09-04）：1059→724 行，§ 编号稳定。内容章节压为执行要点 + `见 spec §N`，Variant 基准/流程/schema 保留
   - **注意**：这是结构性改动，按 AGENTS.md 大原则 1 需先出设计文档确认
-- [ ] **D4** 处理双份同源文档（`添加题库prompt.md` 1033 行 vs `添加题库prompt精简.md` 269 行）——评审 #12，ADR-071 已记为漂移源
+- [x] **D4** 处理双份同源文档——已明确精简版为完整版的导出子集（头部已标注），改完整版需同步
 
 ### E 组 · 配套（改动落地时同步）
 
