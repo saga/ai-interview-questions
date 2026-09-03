@@ -27,4 +27,6 @@
 - **JSX 注释不能放进三元表达式的分支里**（`? ( {/*…*/} <X/> )` → TS2657「JSX expressions must
   have one parent element」）。括号表达式里要注释就用 `// ` 行注释。
 - 用户偏好：回答专业、简明扼要，不过多延展；好的地方不用提；执行完毕的项目打勾。
-- 内存目录曾出现 `.workbuddy-ai/memory/` 与 `.workbuddy/memory/` 两份，以 `.workbuddy-ai/` 为准。
+- **内存目录（2026-09-04 更正）**：`.workbuddy/memory/` 才是实际在维护的那份（日志连续到当天）；
+  `.workbuddy-ai/memory/` 停在 2026-09-03。**新笔记写 `.workbuddy/memory/YYYY-MM-DD.md`**。
+  此前 MEMORY.md 说「以 `.workbuddy-ai/` 为准」是错的，已更正。

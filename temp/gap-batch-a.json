@@ -1,0 +1,322 @@
+[
+  {
+    "id": "pac-uniform-convergence-mechanism",
+    "category": "machine-learning-theory",
+    "topic": "statistical-learning-theory",
+    "tags": ["PAC-learning", "uniform-convergence", "ERM"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "uniform-convergence",
+      "supporting": ["empirical-risk-minimization", "sample-complexity"]
+    },
+    "misconceptions": [
+      "以为某个假设经验风险为 0 就保证其真实风险也为 0",
+      "以为样本量趋于无穷时 ERM 在 VC 维无限的假设空间下也收敛"
+    ],
+    "question": "关于统计学习理论中经验风险最小化（ERM）能够保证泛化的机制，下列哪些说法是正确的？",
+    "explanation": "ERM 能成立的机制是「一致收敛」：在有限假设空间（或有限 VC 维）下，可以以至少 1-δ 的概率保证所有假设的经验风险与真实风险的偏差被同一个上界控制，于是最小化经验风险也就间接控制了真实风险——注意保证是对**整个假设空间一致**成立的，而不是对逐个假设成立。样本复杂度中 δ 只以 log(1/δ) 进入，因此把失败概率从 1/100 压到 1/10000 只需增加常数倍样本。反过来：某个假设经验风险为 0 并不能推出真实风险为 0（它可能只是恰好拟合了这个训练样本集）；而当 VC 维无限时，一致收敛不成立，样本量再大 ERM 也不保证收敛到最优。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保证来自一致收敛：整个假设空间内所有假设的经验风险与真实风险的偏差被同一个上界控制，因此最小化经验风险即可间接控制真实风险",
+          "样本复杂度对置信参数 δ 的依赖是对数级的，把失败概率从百分之一压到万分之一只需增加常数倍的样本量",
+          "只要某个假设在训练集上的经验风险为零，它的真实风险就必然为零，因为训练集是从同一分布独立采样得到的",
+          "只要训练样本量趋于无穷，ERM 在任意假设空间上都会收敛到最优假设，包括 VC 维无限的那类空间"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "pca-variance-reconstruction-mechanism",
+    "category": "machine-learning-theory",
+    "topic": "dimensionality-reduction",
+    "tags": ["PCA", "eigendecomposition", "lossy-compression"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "principal-component-analysis",
+      "supporting": ["maximum-variance", "reconstruction-error"]
+    },
+    "misconceptions": [
+      "把 PCA 的目标记成最小化投影后的方差",
+      "以为 PCA 是正交变换从而在任何保留维数下都无损"
+    ],
+    "question": "关于主成分分析（PCA）降维的机制与目标，下列哪些说法是正确的？",
+    "explanation": "PCA 依次取协方差矩阵的前 k 个特征向量作为投影方向，这一选择在「最大化投影方差」与「最小化重构误差」两个表述下给出同一个最优子空间——二者是等价的，不是两个目标。它是有损的：除被丢弃方向对应的特征值恰好为零，降维后无法精确还原原样本，误差等于被丢弃方向上的方差之和。所以要区分两件事：投影矩阵的正交性只保证变换本身可逆到子空间内，不保证降维无损；把目标记成「最小化投影方差」则方向完全相反。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PCA 的投影方向取自协方差矩阵的特征向量，最大化投影后方差与最小化重构误差这两个表述给出同一个最优子空间",
+          "PCA 通常是有损的：只有当被丢弃方向对应的特征值恰好为零时，降维后的表示才能精确还原原始样本",
+          "PCA 的优化目标是让投影后的方差尽可能小，这样同类样本会在低维空间里更紧密地聚拢在一起",
+          "由于 PCA 是正交的线性变换，它在任何保留维数下都是无损的，低维表示总能精确还原出原始数据"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "jl-projection-vs-pca-vs-sensing",
+    "category": "machine-learning-theory",
+    "topic": "dimensionality-reduction",
+    "tags": ["JL-lemma", "compressed-sensing", "curse-of-dimensionality"],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "random-projection",
+      "supporting": ["Johnson-Lindenstrauss", "compressed-sensing"]
+    },
+    "misconceptions": [
+      "以为在同样保留维度下随机投影与 PCA 的重构误差相同",
+      "以为高维让所有样本等距反而使最近邻检索更容易"
+    ],
+    "question": "某团队要在百万维稀疏特征上做近邻检索，需要在 PCA、随机投影与压缩感知三种降维思路之间做选择。关于三者的比较，下列哪些说法是正确的？",
+    "explanation": "随机投影由 JL 引理支撑：目标维数只取决于样本数与允许的畸变程度，与原始维数无关，且投影矩阵可以数据无关地生成——代价是它不针对该数据集做优化，重构误差大于同维度下的 PCA。压缩感知走的是另一条路：利用信号本身的稀疏性，用远少于奈奎斯特率要求的测量数重构原信号，但重构要解一个稀疏恢复问题，不是一次矩阵乘法。二者都不等于 PCA：PCA 在该数据集上是线性重构意义下的最优，但需要特征分解且换数据要重算。此外，高维中欧氏距离趋于集中恰恰会让最近邻变得**不可靠**，而不是更容易。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随机投影的目标维数与原始维数无关，只取决于样本数和允许的畸变程度，且投影矩阵可以完全不依赖数据地随机生成",
+          "压缩感知能以远少于奈奎斯特率要求的测量数重构稀疏信号，代价是重构阶段要解一个稀疏恢复问题而非一次矩阵乘法",
+          "在同样保留 k 个维度的条件下，随机投影与 PCA 给出相同的重构误差，因为两者都只是对数据做了一次线性投影",
+          "高维空间中欧氏距离趋于集中，这会让最近邻检索变得更容易，因为所有样本彼此近似等距因而更容易区分"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "adaboost-boosting-mechanism",
+    "category": "machine-learning-theory",
+    "topic": "ensemble-learning",
+    "tags": ["AdaBoost", "weak-learnability", "reweighting"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "boosting",
+      "supporting": ["weak-learnability", "weighted-majority-vote"]
+    },
+    "misconceptions": [
+      "以为弱学习器必须自身错误率低于某个很小的阈值才能被提升",
+      "以为 AdaBoost 对所有弱学习器等权重投票"
+    ],
+    "question": "关于 AdaBoost 把弱学习器提升为强学习器的机制，下列哪些说法是正确的？",
+    "explanation": "AdaBoost 每轮根据上一轮结果重加权训练样本：被错分的样本权重升高，使后续弱学习器把容量投向此前难分的区域；最终预测是按各弱学习器错误率导出的 α 做**加权**投票，而不是等权重。其理论背景是弱可学习与强可学习在 PAC 意义下的等价性：只要能稳定拿到错误率低于 1/2 减去某个 γ 的弱学习器（γ 可以很小，不要求 25% 这类具体数值），就能被提升为任意精度的强学习器。因此「弱学习器必须很准」与「等权重投票」两个说法都不对。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每轮训练后提高被错分样本的权重，使后续弱学习器更关注此前分错的样本，最终按各自的错误率加权投票",
+          "弱可学习与强可学习在 PAC 意义下等价：只要存在一个对所有数据分布都能取得严格低于一半错误率的弱学习器，就可被提升为任意精度的强学习器",
+          "参与提升的弱学习器必须自身错误率低于一个很小的阈值，例如错误率低于四分之一，否则提升过程无法收敛",
+          "AdaBoost 对所有弱学习器采用等权重投票，因此提升效果完全来自样本重加权这一个机制"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "adaboost-iteration-count-tradeoff",
+    "category": "machine-learning-theory",
+    "topic": "ensemble-learning",
+    "tags": ["AdaBoost", "margin", "early-stopping"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "margin-theory",
+      "supporting": ["boosting-iterations", "model-selection"]
+    },
+    "misconceptions": [
+      "以为训练误差归零后间隔已达最大，继续迭代只可能过拟合",
+      "把 AdaBoost 的间隔量直接与 SVM 的最大间隔等同，认为可互相替代"
+    ],
+    "question": "某团队用 AdaBoost 训练，训练集误差已在第 30 轮归零，验证集误差仍在缓慢下降。关于是否继续迭代以及如何确定轮数，下列哪些说法是正确的？",
+    "explanation": "训练误差归零并不等于间隔已经最大：后续轮次继续推高置信度低、间隔小的样本，等价于增大分类间隔，因此验证误差在此后仍可能继续下降——「归零即停」会浪费这部分收益。但这不代表可以无限迭代，轮数过多最终仍会过拟合，且每轮都要付一个新弱学习器的训练与推理开销，所以轮数应当作为超参数用验证集或交叉验证来定，最优值取决于数据噪声水平与弱学习器复杂度。另外，AdaBoost 的间隔量与 SVM 的最大间隔虽然同名，却是不同目标下的量，不能据此直接替换模型。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练误差归零后继续增加轮数仍可能提升泛化，因为后续轮次在继续推高分类间隔，而不只是在拟合已有样本",
+          "轮数应作为超参数用验证集或交叉验证确定，其最优值取决于数据中的噪声水平与所采用弱学习器的复杂度",
+          "训练误差一旦归零就应当立即停止迭代，此时间隔已经达到最大，此后的任何轮次都只可能造成过拟合",
+          "AdaBoost 的间隔量与 SVM 的最大间隔是同一个优化目标，因此应当直接改用 SVM 以获得更好的泛化保证"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "alternating-minimization-convergence",
+    "category": "machine-learning",
+    "topic": "algorithm-design",
+    "tags": ["alternating-minimization", "non-convex", "NMF"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "alternating-minimization",
+      "supporting": ["biconvexity", "stationary-point"]
+    },
+    "misconceptions": [
+      "以为子问题可精确求解就保证交替最小化收敛到全局最优且与初值无关",
+      "以为对非凸 NP-hard 问题统一套用凸松弛就能同时拿到全局最优与多项式时间"
+    ],
+    "question": "关于交替最小化（Alternating Minimization）在非凸问题（如 NMF）上的收敛性质，下列哪些说法是正确的？",
+    "explanation": "交替最小化的局部保证来自双凸结构：固定 A 时关于 W 的子问题是凸的，反之亦然，所以每一步都能精确求解，目标函数值单调不增。但联合问题对 (A, W) 是非凸的，单调下降只能保证收敛到驻点，不能保证全局最优；结果对初值敏感，也不存在多项式时间的全局保证。因此「子问题最优 ⇒ 全局最优」的推理是错的。另一条常见误区是以为凸松弛可以通用地解决 NP-hard：松弛会带来可行域的变化与近似损失，并不是免费的。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "固定其中一个变量时另一个子问题是凸的，因此每步都能精确求解该子问题，目标函数值单调不增",
+          "由于对两个变量的联合问题是非凸的，该过程只能保证收敛到驻点，结果依赖初值且无多项式时间的全局保证",
+          "只要每个子问题都能求得全局最优，交替最小化就一定收敛到原问题的全局最优解，与初始化方式无关",
+          "对非凸的 NP-hard 问题，统一套用凸松弛即可同时获得全局最优与多项式时间保证，无需利用问题结构"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "beyond-worst-case-structure-assumptions",
+    "category": "machine-learning",
+    "topic": "algorithm-design",
+    "tags": ["smoothed-analysis", "separability", "semi-random-model"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "beyond-worst-case-analysis",
+      "supporting": ["structural-assumption", "provable-guarantee"]
+    },
+    "misconceptions": [
+      "以为最坏情况 NP-hard 意味着问题在任何实际输入上都不可解",
+      "以为结构假设只是理论便利，对算法设计没有实际影响"
+    ],
+    "question": "面对一个在最坏情况下已被证明是 NP-hard 的学习或推断问题，团队需要在「继续做最坏情况分析」与「引入结构假设」之间做选择。关于这一权衡，下列哪些说法是正确的？",
+    "explanation": "最坏情况 NP-hard 只说明存在难以处理的构造实例，不代表真实输入都落在这些实例上，因此一味做最坏分析会得出过度保守、无法指导设计的结论。引入 Separability、平滑分析或半随机模型这类贴合现实的结构假设，可以为 EM、NMF 等启发式算法给出收敛性与正确性的可证明保障——这是「超越最坏情况分析」的核心收益。其代价是结论的适用范围收窄：保障只在假设成立的数据上有效，假设被违背时算法行为不再有理论支撑，因此上线前需要检验假设的成立程度。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "引入 Separability、平滑分析或半随机模型等贴合现实的结构假设，可为 EM 与 NMF 这类启发式算法给出收敛性与正确性的可证明保障",
+          "这样做要付出适用范围的代价：保障只在假设成立的数据上有效，假设被违背时算法行为不再有理论支撑",
+          "最坏情况 NP-hard 意味着该问题在任何实际输入上都不可解，因此只能放弃理论保证并完全依赖人工调参",
+          "结构假设只是理论推导上的便利，对算法设计没有实际影响，是否引入都不会改变算法在真实数据上的表现"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "nonnegative-rank-vs-algebraic-rank",
+    "category": "machine-learning",
+    "topic": "matrix-factorization",
+    "tags": ["nonnegative-rank", "NMF", "combinatorial-rectangle"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "nonnegative-rank",
+      "supporting": ["algebraic-rank", "rank-one-support"]
+    },
+    "misconceptions": [
+      "以为非负秩可由代数秩的多项式函数上界，代数秩小则非负秩必然小",
+      "以为共线等距点的平方距离矩阵的非负秩等于其常数级代数秩"
+    ],
+    "question": "关于非负矩阵的代数秩（rank）与非负秩（rank+）之间的关系，下列哪些说法是正确的？",
+    "explanation": "对任意非负矩阵都有 rank+(M) ≥ rank(M)：非负约束只会让分解更难，不会更容易；当 rank(M) ≤ 2 时两者必然相等，分离只可能出现在秩至少为 3 的情形。结构上一个非负秩一分量的非零支撑必然是组合矩形（若干行与若干列的笛卡尔积），而不是任意稀疏模式——这正是非负分解比普通低秩分解更受约束的根源。反例也很具体：n 个共线等距点的平方距离矩阵 M_ij=(i−j)²，展开为 x²1ᵀ−2xxᵀ+1(x²)ᵀ（x=(1,…,n)）可知其代数秩至多为 3，与 n 无关；但它的非负秩随 n 以对数级增长（Hrubeš 2012），因此「代数秩小则非负秩小」不成立。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任意非负矩阵都满足非负秩不小于代数秩，且当代数秩不超过 2 时两者必然相等",
+          "一个非负秩一分量的非零元素支撑构成组合矩形，即若干行与若干列的笛卡尔积，而非任意稀疏模式",
+          "非负秩可以被代数秩的某个多项式函数从上方界定，因此代数秩很小的非负矩阵其非负秩也必然很小",
+          "对于 n 个共线等距点的平方距离矩阵 M_ij=(i−j)²，其非负秩等于该矩阵的代数秩 3，是一个与 n 无关的常数"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "rank-separation-existence-and-boundary",
+    "category": "machine-learning",
+    "topic": "matrix-factorization",
+    "tags": ["nonnegative-rank", "separation", "rank-boundary"],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "rank-separation",
+      "supporting": ["nonnegative-rank", "algebraic-rank"]
+    },
+    "misconceptions": [
+      "以为非负秩与代数秩的差距至多为一个与规模无关的常数",
+      "以为去掉非负约束会让分解变得更难"
+    ],
+    "question": "关于代数秩与非负秩之间「分离」（Separation）的幅度与边界，下列哪些说法是正确的？",
+    "explanation": "分离是真实存在且可以任意大的：以 n 个共线等距点的平方距离矩阵 M_ij=(i−j)² 为例，它可展开为 x²1ᵀ−2xxᵀ+1(x²)ᵀ，代数秩至多为 3 且与 n 无关，而非负秩随 n 以对数级增长（Hrubeš 2012），于是两者之比无界。更一般的结论是：不存在任何仅依赖代数秩的有限函数能为非负秩提供上界。边界也很清楚——代数秩 ≤ 2 时非负秩与代数秩必然相等，所以分离只出现在秩至少为 3 的矩阵上。方向别搞反：去掉非负约束得到的是普通秩，它不大于非负秩，只会让分解更容易而不是更难。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "存在代数秩至多为 3 的 n 阶非负矩阵（例如 n 个共线等距点的平方距离矩阵），其非负秩随 n 以对数级增长，两者之比无界",
+          "在代数秩不超过 2 时非负秩与代数秩必然相等，因此两者的分离只可能出现在秩至少为 3 的矩阵上",
+          "非负秩与代数秩的差距至多是一个与矩阵规模无关的常数，因此在任何应用里两者都可以互相替换而不影响结论",
+          "只要允许分解因子取负值，非负秩就会严格小于代数秩，因此去掉非负约束反而会让矩阵分解变得更困难"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "nmf-versus-svd-topic-modeling",
+    "category": "machine-learning",
+    "topic": "topic-modeling",
+    "tags": ["NMF", "LSI", "convex-combination"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "nonnegative-matrix-factorization",
+      "supporting": ["latent-semantic-indexing", "probabilistic-interpretation"]
+    },
+    "misconceptions": [
+      "以为 SVD 在 Frobenius 范数下没有最佳低秩逼近而 NMF 有全局最优解",
+      "以为对 NMF 结果做对角缩放会改变重构矩阵的值"
+    ],
+    "question": "关于用非负矩阵分解（NMF）替代 SVD/LSI 做主题建模的机制差异与优势，下列哪些说法是正确的？",
+    "explanation": "NMF 的非负约束把每篇文档表示为主题的凸组合，基矩阵可解释为词表上的分布、系数矩阵为主题上的分布，这种「加法式」的组合符合直觉且便于解释。SVD/LSI 的问题在两处：一是允许负分量，不同主题间会出现词频相互抵消；二是正交约束迫使主题互不重叠，与真实语料中词汇被多个主题共享的事实不符。需要澄清两点：SVD 在 Frobenius 范数下**有**最佳低秩逼近（Eckart–Young），NMF 反而没有全局最优保证；而对 NMF 做对角缩放 A~=AD⁻¹、W^=DW 保持 AW 不变，只是消除尺度模糊，不改变重构值。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NMF 的非负约束把每篇文档表示为主题的凸组合，基矩阵与系数矩阵可分别解释为词表上与主题上的分布",
+          "SVD 的正交基允许负分量导致词频相互抵消，且正交约束迫使主题互不重叠，与真实语料中词汇被多主题共享不符",
+          "由于 SVD 在 Frobenius 范数下没有最佳低秩逼近而 NMF 存在全局最优解，NMF 在重构误差上必然优于 SVD",
+          "对 NMF 的分解结果做对角缩放会改变重构矩阵 AW 的数值，因此必须先固定尺度才能比较不同分解的质量"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      }
+    }
+  }
+]

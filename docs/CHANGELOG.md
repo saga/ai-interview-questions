@@ -1,6 +1,39 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · 覆盖缺口清零（1320 → 1343 题，缺口 23 → 0 / 333 格全覆盖）
+
+分两批补齐剩余缺口。**先更正一处计数错误**：上一轮口头称「10 个 P1、13 个 P2」，实测清单为
+**1 个 P0 + 21 个 P1 + 1 个 P2 = 23**（`npm run question:coverage` 逐行核对），以下按实测清单执行。
+
+- **批次 A（10 题）**：`statistical-learning-theory` × mechanism（唯一遗留 P0）、
+  `dimensionality-reduction` × mechanism/comparison、`ensemble-learning` × mechanism/tradeoff、
+  `algorithm-design` × mechanism/tradeoff、`matrix-factorization` × mechanism/comparison、
+  `topic-modeling` × mechanism。落 `ml-theory.json`(+5) / `nmf-theory.json`(+5)。
+- **批次 B（13 题）**：`expressiveness-and-theory` × fundamental/comparison、
+  `spectral-and-spatial-convolutions` × fundamental/mechanism、`deep-gnn-architectures` × mechanism/tradeoff、
+  `scalability` × mechanism/tradeoff、`robustness-and-security` × mechanism/debugging、
+  `graph-recommender-system` × tradeoff/scenario、`agent-debugging` × scenario。
+  落 `gnn-theory.json`(+12) / `agent-self-improvement.json`(+1)。
+- **13 道全部做成多选，未照抄覆盖表的 format 列**：覆盖表底部已注明难度/形态来自
+  `ANGLE_GENERATION_HINTS`、是「生成起点建议、非覆盖契约」。开放题对自动评分无收益，
+  且多选占比要从 55.8% 抬向 66.7%，故 comparison / scenario / tradeoff / debugging 一律出多选。
+- **出题依据是知识节点的 `required` 与 `misconceptions`**（113/113 节点三项齐全），
+  不是模型自由发挥：每题的干扰项都直接对应节点里已登记的一条 misconception。
+- **自审抓到 1 处事实错误（门禁与检测器都抓不到）**：批次 A 的 `nonnegative-rank-vs-algebraic-rank` 与
+  `rank-separation-existence-and-boundary` 原用「主对角线为 0、其余全为正的 n 阶矩阵」作秩分离反例，
+  并称其代数秩为常数——**错**。`J−I` 的特征值为 `n−1` 与 `−1`，代数秩 = **n**，且 `rank₊ ≥ rank` 恒成立，
+  该说法自相矛盾。已换成正确成员：n 个共线等距点的**平方距离矩阵** `M_ij=(i−j)²`，
+  展开为 `x²1ᵀ−2xxᵀ+1(x²)ᵀ` 得代数秩 ≤ 3（常数），非负秩随 n 对数级增长（Hrubeš 2012）。
+  同族矩阵、不同成员，结论才成立。
+- **副作用指标**：单角度知识点 7 → 1；misconceptions 168 → 181；misconceptionMap 152 → 165。
+- **新题对既有质量盘零污染**：`question:audit` P2 净增 0（唯一命中是 `coldstart-...` 被
+  `missing-source` 误报，见下）；`question:identity` 对 23 个新 id 零漂移记录。
+- **发现（未改，留待决定）**：`analysis/question_audit.py:35` 的 `VOLATILE_RE` 用裸子串匹配且无词边界，
+  其中文关键词 `版本号` / `version` 会命中「对齐刷新节奏与版本号」「Prompt Versioning」这类**与厂商无关的泛化表述**。
+  实测 38 题中 `api`(28) 多为真阳性，`版本号`(1)+`version`(3) 基本是误报。
+  属既有检测器精度问题，不在「新增 lint 规则」范围内，故未改；已用「版本标识」措辞规避本次误报。
+
 ## 2026-09-04 · 外部评审第 3 轮：契约追平 ADR-077（死字段修复 + ADR-077 落文档）
 
 评审 13 条逐条对代码核实后，只动「代码与 ADR 不一致」的部分：
@@ -27,6 +60,26 @@
   与现行门禁同向。错误来自 `plan0903_3_newprompt_migration.md` §一第 3 行的过期描述，已在该文档撤销（含 §二.5 与 D3）。
   真冲突是 part2「禁止 open」vs 库内存量开放题（生成期口径，不追溯）。
 - 用户拍板：`Variant` 契约确认 ADR-077；变体池 192→93 确认是有意收缩，不追查；`misconceptionMap` 全量回填（见下条）。
+
+## 2026-09-04 · 补齐 9 个 P0 覆盖缺口（1311 → 1320 题）
+
+- **缺口 32 → 23**。新增 canonical（非变体——变体归因同一 Knowledge，补洞等于把 A 格搬到 B 格，见 spec §8）：
+  `kernel-methods` × comparison/tradeoff、`linear-algebra` × fundamental/comparison、
+  `model-selection-and-regularization` × mechanism/comparison、
+  `model-selection-and-validation` × tradeoff/scenario、`optimization` × fundamental。
+- **每题自带 ADR-077 全套新字段**：`cognitiveTask`（12 值枚举）、`concepts`（1 核心 + 1~2 辅助）、
+  `misconceptions` + 手写 `misconceptionMap`（只标干扰项）。存量题这些字段为零覆盖，新题按新契约写。
+- **explanation 覆盖错误项归因**（全库仅 10.9%，是教学价值上最大的洼地）：每题解析都写明
+  「为什么错」，而不只讲正确答案。
+- **自查发现的退化问题（门禁测不出，人审发现）**：初稿 Q2/Q5/Q7 的两个正确项**互为逆否表述**
+  （知道 A 就必然知道 B），复述度 54/31/7 —— 性质上属于 spec §2 禁止的「只考一个判断」，
+  字符串相似度却低于 70 阈值、探测器 ④ 抓不到。已改为两个彼此独立的事实
+  （如 Q2 换成「C 在对偶形式中是 α 的上界」，Q7 换成「重复随机划分可降低划分方差」），复述度降到 13/7/8；
+  Q8 改为三个独立判断（诊断 / 对策 / 验证集污染）的 3+1 结构。
+- **指标连带改善**：单角度知识点 15 → 11；误解标注 149 → 158；误解映射 133 → 142；多选占比 55.5% → 55.8%。
+- 验证：9 题全部通过 `question:add --check`（长度比 1.09~1.38 远低于 1.8 硬门禁、9/9 多选）；
+  三项软信号（②stuffed / ③density-cueing / ④restated）**零命中**；`question:audit` 新题零 P2；
+  `validate:questions` 1320 题 · tsc 双工程 · vitest 786/786 · build · validate-variants exit 0。
 
 ## 2026-09-04 · `misconceptionMap` 回填（97 → 133 题）+ 度量标定
 

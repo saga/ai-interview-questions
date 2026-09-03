@@ -192,5 +192,334 @@
         ]
       }
     }
+  },
+  {
+    "id": "svd-vs-eigendecomposition-existence",
+    "category": "machine-learning",
+    "topic": "linear-algebra",
+    "tags": [
+      "SVD",
+      "eigendecomposition",
+      "orthogonal-matrix"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "cognitiveTask": "identify",
+    "concepts": {
+      "core": "singular-value-decomposition",
+      "supporting": [
+        "eigendecomposition",
+        "rank-deficiency"
+      ]
+    },
+    "misconceptions": [
+      "以为方阵的 SVD 与其特征分解总是给出同一组分解因子",
+      "以为奇异值分解要求矩阵满秩，秩亏矩阵无法分解"
+    ],
+    "question": "关于任意实矩阵的奇异值分解（SVD）与方阵的特征分解（Eigendecomposition），下列哪些说法是正确的？",
+    "explanation": "SVD 对任意实矩阵（含非方阵、秩亏矩阵）都存在：A = UΣVᵀ，U 与 V 正交、Σ 非负对角，零奇异值自然刻画秩亏。特征分解 A = PΛP⁻¹ 只对方阵且可对角化时存在，且即便对方阵，SVD 与特征分解一般给出不同的因子——只有对称半正定这类特殊矩阵两者才重合。故「方阵的两种分解给出同一组因子」不成立；「秩亏矩阵做不了 SVD」也错了，秩亏只是让部分奇异值为零。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任意实矩阵都存在 SVD 分解 A = UΣVᵀ，其中 U 与 V 都是正交矩阵，Σ 为非负对角矩阵",
+          "特征分解 A = PΛP⁻¹ 只有对可对角化的方阵才有定义，一般矩阵的 SVD 与特征分解并不给出同一组因子",
+          "对于方阵而言，其奇异值分解与特征分解总是给出同一组分解因子，因为两者都把矩阵拆成三个因子相乘",
+          "奇异值分解要求矩阵各行线性无关，秩亏的矩阵必须先通过特征分解补足基向量才能做 SVD 分解"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "low-rank-approximation-norm-nesting",
+    "category": "machine-learning",
+    "topic": "linear-algebra",
+    "tags": [
+      "Eckart-Young",
+      "Frobenius-norm",
+      "operator-norm"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "Eckart-Young-theorem",
+      "supporting": [
+        "unitarily-invariant-norm",
+        "nested-truncation"
+      ]
+    },
+    "misconceptions": [
+      "以为最佳秩-(k+1) 逼近必须重新求解，不能由最佳秩-k 逼近累加得到",
+      "把算子范数下的逼近误差与 Frobenius 范数下的误差公式混为一谈"
+    ],
+    "question": "对同一个矩阵分别求最佳秩-k 逼近，并比较不同范数下的逼近误差。关于这些结果之间的关系，下列哪些说法是正确的？",
+    "explanation": "Eckart–Young–Mirsky 定理：对任意酉不变（旋转不变）范数，最佳秩-k 逼近都由截断 SVD 给出，Frobenius 范数与算子范数都满足该不变性。截断 SVD 具有嵌套累加性——最佳秩-(k+1) 逼近等于最佳秩-k 逼近加上第 k+1 个奇异值对应的秩一分量，无需重新求解。误差口径不同：算子（谱）范数下的误差等于 σ_{k+1}，而 Frobenius 范数下的误差才是被丢弃奇异值平方和的平方根。把两者混用是常见错误。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对任意旋转不变范数，最佳秩-k 逼近都由截断 SVD 给出，Frobenius 范数与算子范数都满足旋转不变性",
+          "截断 SVD 具有嵌套累加性：最佳秩-(k+1) 逼近可由最佳秩-k 逼近直接加上第 k+1 个奇异分量得到",
+          "最佳秩-(k+1) 逼近必须从头重新求解一个独立的优化问题，无法在最佳秩-k 逼近的基础上累加得到",
+          "用算子范数度量时，最佳秩-k 逼近的误差等于被丢弃的全部奇异值的平方和再开平方根"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "alternating-minimization-convergence",
+    "category": "machine-learning",
+    "topic": "algorithm-design",
+    "tags": [
+      "alternating-minimization",
+      "non-convex",
+      "NMF"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "alternating-minimization",
+      "supporting": [
+        "biconvexity",
+        "stationary-point"
+      ]
+    },
+    "misconceptions": [
+      "以为子问题可精确求解就保证交替最小化收敛到全局最优且与初值无关",
+      "以为对非凸 NP-hard 问题统一套用凸松弛就能同时拿到全局最优与多项式时间"
+    ],
+    "question": "关于交替最小化（Alternating Minimization）在非凸问题（如 NMF）上的收敛性质，下列哪些说法是正确的？",
+    "explanation": "交替最小化的局部保证来自双凸结构：固定 A 时关于 W 的子问题是凸的，反之亦然，所以每一步都能精确求解，目标函数值单调不增。但联合问题对 (A, W) 是非凸的，单调下降只能保证收敛到驻点，不能保证全局最优；结果对初值敏感，也不存在多项式时间的全局保证。因此「子问题最优 ⇒ 全局最优」的推理是错的。另一条常见误区是以为凸松弛可以通用地解决 NP-hard：松弛会带来可行域的变化与近似损失，并不是免费的。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "固定其中一个变量时另一个子问题是凸的，因此每步都能精确求解该子问题，目标函数值单调不增",
+          "由于对两个变量的联合问题是非凸的，该过程只能保证收敛到驻点，结果依赖初值且无多项式时间的全局保证",
+          "只要每个子问题都能求得全局最优，交替最小化就一定收敛到原问题的全局最优解，与初始化方式无关",
+          "对非凸的 NP-hard 问题，统一套用凸松弛即可同时获得全局最优与多项式时间保证，无需利用问题结构"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "beyond-worst-case-structure-assumptions",
+    "category": "machine-learning",
+    "topic": "algorithm-design",
+    "tags": [
+      "smoothed-analysis",
+      "separability",
+      "semi-random-model"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "beyond-worst-case-analysis",
+      "supporting": [
+        "structural-assumption",
+        "provable-guarantee"
+      ]
+    },
+    "misconceptions": [
+      "以为最坏情况 NP-hard 意味着问题在任何实际输入上都不可解",
+      "以为结构假设只是理论便利，对算法设计没有实际影响"
+    ],
+    "question": "面对一个在最坏情况下已被证明是 NP-hard 的学习或推断问题，团队需要在「继续做最坏情况分析」与「引入结构假设」之间做选择。关于这一权衡，下列哪些说法是正确的？",
+    "explanation": "最坏情况 NP-hard 只说明存在难以处理的构造实例，不代表真实输入都落在这些实例上，因此一味做最坏分析会得出过度保守、无法指导设计的结论。引入 Separability、平滑分析或半随机模型这类贴合现实的结构假设，可以为 EM、NMF 等启发式算法给出收敛性与正确性的可证明保障——这是「超越最坏情况分析」的核心收益。其代价是结论的适用范围收窄：保障只在假设成立的数据上有效，假设被违背时算法行为不再有理论支撑，因此上线前需要检验假设的成立程度。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "引入 Separability、平滑分析或半随机模型等贴合现实的结构假设，可为 EM 与 NMF 这类启发式算法给出收敛性与正确性的可证明保障",
+          "这样做要付出适用范围的代价：保障只在假设成立的数据上有效，假设被违背时算法行为不再有理论支撑",
+          "最坏情况 NP-hard 意味着该问题在任何实际输入上都不可解，因此只能放弃理论保证并完全依赖人工调参",
+          "结构假设只是理论推导上的便利，对算法设计没有实际影响，是否引入都不会改变算法在真实数据上的表现"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "nonnegative-rank-vs-algebraic-rank",
+    "category": "machine-learning",
+    "topic": "matrix-factorization",
+    "tags": [
+      "nonnegative-rank",
+      "NMF",
+      "combinatorial-rectangle"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "nonnegative-rank",
+      "supporting": [
+        "algebraic-rank",
+        "rank-one-support"
+      ]
+    },
+    "misconceptions": [
+      "以为非负秩可由代数秩的多项式函数上界，代数秩小则非负秩必然小",
+      "以为共线等距点的平方距离矩阵的非负秩等于其常数级代数秩"
+    ],
+    "question": "关于非负矩阵的代数秩（rank）与非负秩（rank+）之间的关系，下列哪些说法是正确的？",
+    "explanation": "对任意非负矩阵都有 rank+(M) ≥ rank(M)：非负约束只会让分解更难，不会更容易；当 rank(M) ≤ 2 时两者必然相等，分离只可能出现在秩至少为 3 的情形。结构上一个非负秩一分量的非零支撑必然是组合矩形（若干行与若干列的笛卡尔积），而不是任意稀疏模式——这正是非负分解比普通低秩分解更受约束的根源。反例也很具体：n 个共线等距点的平方距离矩阵 M_ij=(i−j)²，展开为 x²1ᵀ−2xxᵀ+1(x²)ᵀ（x=(1,…,n)）可知其代数秩至多为 3，与 n 无关；但它的非负秩随 n 以对数级增长（Hrubeš 2012），因此「代数秩小则非负秩小」不成立。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任意非负矩阵都满足非负秩不小于代数秩，且当代数秩不超过 2 时两者必然相等",
+          "一个非负秩一分量的非零元素支撑构成组合矩形，即若干行与若干列的笛卡尔积，而非任意稀疏模式",
+          "非负秩可以被代数秩的某个多项式函数从上方界定，因此代数秩很小的非负矩阵其非负秩也必然很小",
+          "对于 n 个共线等距点的平方距离矩阵 M_ij=(i−j)²，其非负秩等于该矩阵的代数秩 3，是一个与 n 无关的常数"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "rank-separation-existence-and-boundary",
+    "category": "machine-learning",
+    "topic": "matrix-factorization",
+    "tags": [
+      "nonnegative-rank",
+      "separation",
+      "rank-boundary"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "rank-separation",
+      "supporting": [
+        "nonnegative-rank",
+        "algebraic-rank"
+      ]
+    },
+    "misconceptions": [
+      "以为非负秩与代数秩的差距至多为一个与规模无关的常数",
+      "以为去掉非负约束会让分解变得更难"
+    ],
+    "question": "关于代数秩与非负秩之间「分离」（Separation）的幅度与边界，下列哪些说法是正确的？",
+    "explanation": "分离是真实存在且可以任意大的：以 n 个共线等距点的平方距离矩阵 M_ij=(i−j)² 为例，它可展开为 x²1ᵀ−2xxᵀ+1(x²)ᵀ，代数秩至多为 3 且与 n 无关，而非负秩随 n 以对数级增长（Hrubeš 2012），于是两者之比无界。更一般的结论是：不存在任何仅依赖代数秩的有限函数能为非负秩提供上界。边界也很清楚——代数秩 ≤ 2 时非负秩与代数秩必然相等，所以分离只出现在秩至少为 3 的矩阵上。方向别搞反：去掉非负约束得到的是普通秩，它不大于非负秩，只会让分解更容易而不是更难。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "存在代数秩至多为 3 的 n 阶非负矩阵（例如 n 个共线等距点的平方距离矩阵），其非负秩随 n 以对数级增长，两者之比无界",
+          "在代数秩不超过 2 时非负秩与代数秩必然相等，因此两者的分离只可能出现在秩至少为 3 的矩阵上",
+          "非负秩与代数秩的差距至多是一个与矩阵规模无关的常数，因此在任何应用里两者都可以互相替换而不影响结论",
+          "只要允许分解因子取负值，非负秩就会严格小于代数秩，因此去掉非负约束反而会让矩阵分解变得更困难"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "nmf-versus-svd-topic-modeling",
+    "category": "machine-learning",
+    "topic": "topic-modeling",
+    "tags": [
+      "NMF",
+      "LSI",
+      "convex-combination"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "nonnegative-matrix-factorization",
+      "supporting": [
+        "latent-semantic-indexing",
+        "probabilistic-interpretation"
+      ]
+    },
+    "misconceptions": [
+      "以为 SVD 在 Frobenius 范数下没有最佳低秩逼近而 NMF 有全局最优解",
+      "以为对 NMF 结果做对角缩放会改变重构矩阵的值"
+    ],
+    "question": "关于用非负矩阵分解（NMF）替代 SVD/LSI 做主题建模的机制差异与优势，下列哪些说法是正确的？",
+    "explanation": "NMF 的非负约束把每篇文档表示为主题的凸组合，基矩阵可解释为词表上的分布、系数矩阵为主题上的分布，这种「加法式」的组合符合直觉且便于解释。SVD/LSI 的问题在两处：一是允许负分量，不同主题间会出现词频相互抵消；二是正交约束迫使主题互不重叠，与真实语料中词汇被多个主题共享的事实不符。需要澄清两点：SVD 在 Frobenius 范数下**有**最佳低秩逼近（Eckart–Young），NMF 反而没有全局最优保证；而对 NMF 做对角缩放 A~=AD⁻¹、W^=DW 保持 AW 不变，只是消除尺度模糊，不改变重构值。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NMF 的非负约束把每篇文档表示为主题的凸组合，基矩阵与系数矩阵可分别解释为词表上与主题上的分布",
+          "SVD 的正交基允许负分量导致词频相互抵消，且正交约束迫使主题互不重叠，与真实语料中词汇被多主题共享不符",
+          "由于 SVD 在 Frobenius 范数下没有最佳低秩逼近而 NMF 存在全局最优解，NMF 在重构误差上必然优于 SVD",
+          "对 NMF 的分解结果做对角缩放会改变重构矩阵 AW 的数值，因此必须先固定尺度才能比较不同分解的质量"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
   }
 ]

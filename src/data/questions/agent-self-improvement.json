@@ -208,5 +208,52 @@
         ]
       }
     }
+  },
+  {
+    "id": "agent-skill-drift-root-cause-diagnosis",
+    "category": "Agent Operations",
+    "topic": "agent-debugging",
+    "tags": [
+      "skill-drift",
+      "overfitting-guard",
+      "principle-constraint"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "skill-drift",
+      "supporting": [
+        "overfitting-guard",
+        "generalization-regression-test"
+      ]
+    },
+    "misconceptions": [
+      "把技能遗漏基础步骤归因为执行 Agent 采样温度或合并方式（如 Squash Merge）",
+      "以为技能解耦为外部脚本会导致执行期无法读取指令"
+    ],
+    "question": "一个自改进 Agent 上线数周后基础任务成功率明显下滑，检查发现其技能文件里堆满了「如果用户提到 X 则必须先做 Y」这类排他性规则，而通用步骤被挤到了文件末尾。关于根因与处置，下列哪些说法是正确的？",
+    "explanation": "这是典型的技能漂移，退化不在执行侧而在**改进侧**。改进 Agent 把个别用户的一次性反馈当成了普适规律，写成强排他条件；这类规则会持续累积，一方面挤占提示空间把通用原则推到注意力边缘，另一方面在执行时抢占决策优先级，于是基础步骤被跳过——现象看起来像「执行 Agent 变笨了」，但调低采样温度或换合并策略都触及不到根因，因为退化内容已经被写进了技能文件本身。修复要落在改进流程上：为新增规则设置证据门槛（可复现的多例而非单次反馈）、接入泛化回归测试（新规则不得让既有基础用例失败）、并对技能文件施加原则级约束与长度预算。至于解耦，把稳定的操作流程抽成外部脚本、主文件只保留触发说明与原则，既不会让执行期读不到指令，还能压缩主文件篇幅、给通用原则腾出空间。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "根因是改进 Agent 过拟合了个别用户的特例反馈，把个案写成排他性规则，挤占了通用原则的提示空间，导致基础步骤被挤出或省略",
+          "处置方向是给改进流程加过拟合防护：新规则须附带可复现的多例证据并通过泛化回归测试，同时对技能文件设原则级约束与长度预算",
+          "根因在于执行 Agent 的采样温度过高或代码合并方式不当，调低温度或改用其他合并策略即可恢复原有表现",
+          "把技能内容解耦为外部脚本会导致执行期读取不到指令，因此必须把所有指令重新内联回单一技能文件"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
   }
 ]

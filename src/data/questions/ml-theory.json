@@ -244,5 +244,569 @@
         "question": "当在高维特征空间中应用 Nearest Neighbor 算法或进行降维（Dimensionality Reduction）时，关于维数灾难（Curse of Dimensionality）与降维技术的 trade-off，下列哪些说法是正确的？"
       }
     }
+  },
+  {
+    "id": "kernel-trick-vs-explicit-feature-map",
+    "category": "machine-learning-theory",
+    "topic": "kernel-methods",
+    "tags": [
+      "kernel-trick",
+      "SVD",
+      "margin-bound"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "kernel-trick",
+      "supporting": [
+        "dual-inner-product-only",
+        "margin-generalization-bound"
+      ]
+    },
+    "misconceptions": [
+      "以为特征空间维数升高必然导致样本复杂度爆炸，核方法在小样本上必然劣于低维线性模型",
+      "以为核技巧必须先显式计算高维特征坐标才能得到决策函数"
+    ],
+    "question": "某二分类任务样本数约两千、原始特征维数一百。团队要训练最大间隔分类器，有两个方案：(甲) 先显式构造特征映射再训练线性 SVM；(乙) 使用 RBF 核 SVM，其隐式特征空间为无穷维。关于这两个方案的比较，下列哪些说法是正确的？",
+    "explanation": "核 SVM 的对偶问题只出现样本两两内积，因此只需核函数给出内积而无需构造特征向量，训练与预测的代价由支持向量数决定，与隐式空间的维数无关（甲方案则要为高维特征付出存储与计算代价）。泛化一侧，间隔界由间隔大小与权重范数控制，不直接出现特征空间维数，所以无穷维并不自动导致样本复杂度爆炸。故：认为「无穷维必然使样本复杂度爆炸、泛化一定更差」与「必须先显式算出高维坐标」都是错的——前者忽略了界是维数无关的，后者正是核技巧要避免的。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "乙方案的对偶问题只出现样本两两内积，其求解与预测代价由支持向量数决定，不随隐式特征空间的维数增长",
+          "乙方案的间隔泛化界由间隔大小与权重范数控制，即便隐式空间维数远高于样本数，该界也不直接依赖这个维数",
+          "乙方案把样本送进无穷维空间，样本复杂度必然随维数爆炸，因此在样本量有限时其泛化一定劣于甲方案的低维线性模型",
+          "乙方案必须先显式算出每个样本在高维空间中的坐标，再交给线性求解器，否则无法得到对应的决策函数"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "soft-svm-c-margin-error-tradeoff",
+    "category": "machine-learning-theory",
+    "topic": "kernel-methods",
+    "tags": [
+      "soft-margin",
+      "hinge-loss",
+      "regularization-parameter"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "soft-margin-svm",
+      "supporting": [
+        "hinge-loss",
+        "slack-variable"
+      ]
+    },
+    "misconceptions": [
+      "把正则参数 C 误当成几何间隔的直接设定值",
+      "以为在含噪数据上持续增大 C 会单调改善泛化"
+    ],
+    "question": "某数据集接近线性可分，但存在少量标注噪声。团队使用带 Hinge 损失与松弛变量的软间隔 SVM，需要为正则参数 C 取值。关于 C 变化对模型行为的影响，下列哪些说法是正确的？",
+    "explanation": "软间隔 SVM 在「最小化 ||w||²/2」与「C × 松弛量之和」之间做权衡：C 是对间隔违例与误分的惩罚系数，不是间隔本身。在对偶形式中它表现为每个样本乘子 α 的上界（0 ≤ α ≤ C），取到上界的样本就是落在间隔内或被误分的样本——这是 C 与几何间隔的准确关系。故「C 就是几何间隔的设定值」把惩罚系数当成了优化结果；「持续增大 C 会持续改善泛化」则把经验风险当成了泛化风险，在含噪数据上只会去拟合噪声。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "C 增大时对间隔违例与误分类的惩罚加重，模型倾向于压低训练误差，并为此接受更窄的间隔",
+          "在对偶问题中 C 是每个样本对应乘子 α 的上界，取到该上界的样本正是落在间隔内或被误分的那些样本",
+          "C 是几何间隔宽度的直接设定值，把 C 调大等价于把决策边界的几何间隔固定为 C 这个长度",
+          "在该含噪数据集上持续增大 C 会持续降低泛化误差，因为训练误差越小意味着模型学得越好"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "l2-regularization-uniform-stability",
+    "category": "machine-learning-theory",
+    "topic": "model-selection-and-regularization",
+    "tags": [
+      "L2-regularization",
+      "strong-convexity",
+      "uniform-stability"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "uniform-stability",
+      "supporting": [
+        "strong-convexity",
+        "Tikhonov-regularization"
+      ]
+    },
+    "misconceptions": [
+      "以为 λ 越大经验风险越低，把正则项当成降低训练误差的手段",
+      "以为稳定性完全由假设空间容量决定，与正则化无关"
+    ],
+    "question": "关于 L2 正则化（Tikhonov Regularization）影响学习算法稳定性的机制，下列哪些说法是正确的？",
+    "explanation": "在损失中加入 λ||w||² 使目标函数强凸：最优解对目标扰动不再敏感，更换单个训练样本只会让输出假设发生有界变化，这就是 Uniform Stability。该稳定性界的阶约为 O(1/(λn))，因而同时随正则强度与样本数收紧——这正是「正则化」与「加数据」两条路径都能改善泛化的统一解释。注意 λ 增大是抬高而非压低经验风险：正则项惩罚的是范数，它宁可牺牲一点训练拟合来换稳定性。把稳定性完全归因于假设空间容量也是错的——容量影响泛化界，稳定性是算法对输入扰动的敏感度，正则直接作用于后者。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "加入 λ||w||² 后目标函数变为强凸，最优解对目标函数的扰动不再敏感，从而限制了单个训练样本的影响",
+          "该稳定性的量化界随正则强度 λ 与训练样本数 n 的增大而收紧，这同时解释了正则化与增加数据为何都能改善泛化",
+          "L2 正则通过压低训练集上的经验风险来提升稳定性，因此 λ 取越大，模型在训练集上的经验风险一定越低",
+          "调大 λ 只会削弱拟合能力而不改变稳定性，稳定性完全由假设空间的容量决定，与正则项无关"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "srm-erm-mdl-comparison",
+    "category": "machine-learning-theory",
+    "topic": "model-selection-and-regularization",
+    "tags": [
+      "SRM",
+      "ERM",
+      "MDL"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "structural-risk-minimization",
+      "supporting": [
+        "empirical-risk-minimization",
+        "minimum-description-length"
+      ]
+    },
+    "misconceptions": [
+      "以为假设空间容量无限时，增加样本量可以完全替代正则化",
+      "把 SRM 的复杂度惩罚项与经验风险本身混为一谈"
+    ],
+    "question": "结构风险最小化（SRM）、经验风险最小化（ERM）与最小描述长度（MDL）原则，对「应该在假设空间中选哪个假设」给出了不同的回答。关于三者的比较，下列哪些说法是正确的？",
+    "explanation": "ERM 只在预先选定的单个假设空间内最小化经验风险，本身不包含选空间的机制；SRM 则把假设空间组织成嵌套族 H₁⊂H₂⊂…，为每个子集加上与其复杂度相关的惩罚项后统一最小化，因此既是选假设也是选容量。MDL 与 Occam 原则说：经验风险相近时，编码更短的假设具有更紧的泛化界——这与 SRM 的复杂度惩罚方向一致，只是表述语言不同。故「样本足够多就能完全替代正则化」是错的：容量无限时，ERM 的一致性保证并不给出有限样本下的泛化控制；「惩罚项就是经验风险、选最复杂的子集最优」更是把两件事混成了一个。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "SRM 把假设空间组织成嵌套子集并为每个子集加上复杂度惩罚后统一最小化，ERM 则只在选定的单个空间内最小化经验风险",
+          "MDL 与 Occam 原则认为经验风险相近时编码更短的假设泛化界更紧，这与 SRM 的复杂度惩罚在方向上一致",
+          "在假设空间容量无限时，ERM 只要训练样本足够多就能完全替代正则化，因为经验风险会收敛到期望风险",
+          "SRM 的惩罚项就是经验风险本身，因此在嵌套空间中选取复杂度最高的那个子集总能得到最小的结构风险"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "kfold-bias-variance-tradeoff",
+    "category": "machine-learning-theory",
+    "topic": "model-selection-and-validation",
+    "tags": [
+      "cross-validation",
+      "bias-variance",
+      "small-data"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "k-fold-cross-validation",
+      "supporting": [
+        "bias-variance-tradeoff",
+        "leave-one-out"
+      ]
+    },
+    "misconceptions": [
+      "以为交叉验证的评估偏差与折数 k 无关，k 只影响计算开销",
+      "以为留一法既无偏差也无方差，是任何数据规模下的最优选择"
+    ],
+    "question": "在小数据集上做模型选择时，需要在评估偏差、评估方差与训练样本量之间权衡。关于 k 折交叉验证中折数 k 的选择及其影响，下列哪些说法是正确的？",
+    "explanation": "k 越大，每折训练集越接近全量，评估偏差越低；但折间训练集高度重叠使各折结果强相关，估计量方差反而上升，留一法是这一趋势的极端。除折数以外，结果还取决于具体怎么划分：重复多次随机划分再平均（repeated k-fold）可以压掉这部分由划分随机性带来的方差。因此折数选择本身就是一个偏差—方差权衡，不存在任何规模下都最优的取值；认为偏差与折数无关、或认为留一法同时无偏且无方差，都是对这一权衡的误读。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "k 增大时每折训练样本更接近全量，评估偏差随之降低，但各折训练集高度重叠会使评估结果的相关性上升、方差变大",
+          "k 折的评估结果还依赖于具体的划分方式，重复多次随机划分再取平均，可降低由划分随机性带来的那一部分方差",
+          "交叉验证中各折训练集规模相同，因此评估偏差与折数 k 无关，折数只影响需要训练多少次的开销",
+          "留一法每次用 n-1 个样本训练，既没有偏差也没有方差，因此在任何数据规模下都是最优的折数选择"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "overfitting-vs-underfitting-diagnosis",
+    "category": "machine-learning-theory",
+    "topic": "model-selection-and-validation",
+    "tags": [
+      "overfitting",
+      "high-variance",
+      "regularization"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "bias-variance-diagnosis",
+      "supporting": [
+        "capacity-control",
+        "validation-set-leakage"
+      ]
+    },
+    "misconceptions": [
+      "把训练极好、验证很差的过拟合误判为容量不足的欠拟合，进而去加深网络、降低正则"
+    ],
+    "question": "某团队训练深层网络：训练集准确率 99.2%，验证集准确率 71%，且两者差距在训练后期持续扩大。有人建议：模型明显容量不足，应继续加深加宽网络并降低正则化强度。随后团队在同一份验证集上反复调整结构与超参数，并记录其中最好的验证准确率。关于这个诊断、对策与最终评估方式，下列哪些说法是正确的？",
+    "explanation": "训练损失极低而验证损失显著更高、且差距持续扩大，是高方差过拟合的典型形态；高偏差欠拟合的特征恰恰是训练误差本身就降不下去，所以「容量不足、应加深网络降正则」的诊断方向是反的。正确方向是限制有效容量（正则化、早停、增广、减小规模），增加数据能缓解但不能替代容量控制。另外一个独立风险：只要反复依据同一份验证集挑选结构与超参，该验证集就已被间接拟合，记录下来的最好分数是乐观的，最终必须留出一份从未参与任何调参的测试集来报告结果。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练误差极低而验证误差显著更高且差距持续扩大，属于高方差过拟合，而非高偏差欠拟合",
+          "正则化、早停与数据增广都能缓解该现象，它们的共同点是限制有效容量，而不是提高对训练数据的拟合能力",
+          "在同一份验证集上反复调参会使其被间接拟合，该分数偏乐观，最终评估必须留出一份从未参与调参的测试集",
+          "该现象说明模型容量不足，应继续加深加宽网络并延长训练，让训练集上的准确率进一步提升"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "lipschitz-smoothness-subgradient",
+    "category": "machine-learning-theory",
+    "topic": "optimization",
+    "tags": [
+      "Lipschitz",
+      "smoothness",
+      "subgradient"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "cognitiveTask": "identify",
+    "concepts": {
+      "core": "subgradient",
+      "supporting": [
+        "Lipschitz-continuity",
+        "smoothness"
+      ]
+    },
+    "misconceptions": [
+      "以为非光滑凸函数在不可微点的次梯度唯一，等于左右导数之一",
+      "把函数的 Lipschitz 性质与光滑性等同，认为二者对步长选择影响相同"
+    ],
+    "question": "关于凸优化中函数的 Lipschitz 性质、光滑性（Smoothness）以及次梯度（Subgradient），下列哪些说法是正确的？",
+    "explanation": "Lipschitz 限制的是函数值的变化幅度，光滑性限制的是梯度的变化幅度（梯度 Lipschitz），两者是不等价的条件，也对应不同的收敛率与步长策略：仅 Lipschitz 凸时常用递减步长得 O(1/√T)，光滑时可用固定步长且收敛更快。非光滑凸函数（如 Hinge 损失）在不可微点的次梯度是满足支撑不等式的一族向量，构成闭凸集，通常不唯一——把它当成「左右导数中某一个」是对次梯度定义的误读。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "凸函数的 Lipschitz 性质限制函数值的变化幅度，光滑性限制梯度的变化幅度，两者并不等价",
+          "Hinge 这类非光滑凸函数在不可微点的次梯度构成一个闭凸集，通常不是唯一的一个向量",
+          "函数在非光滑点处的次梯度是唯一的，其取值等于该点左右导数中绝对值较小的那一个",
+          "只要函数是凸且 Lipschitz 的，它就一定光滑，因此固定步长 SGD 的收敛速度与光滑性没有关系"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "pac-uniform-convergence-mechanism",
+    "category": "machine-learning-theory",
+    "topic": "statistical-learning-theory",
+    "tags": [
+      "PAC-learning",
+      "uniform-convergence",
+      "ERM"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "uniform-convergence",
+      "supporting": [
+        "empirical-risk-minimization",
+        "sample-complexity"
+      ]
+    },
+    "misconceptions": [
+      "以为某个假设经验风险为 0 就保证其真实风险也为 0",
+      "以为样本量趋于无穷时 ERM 在 VC 维无限的假设空间下也收敛"
+    ],
+    "question": "关于统计学习理论中经验风险最小化（ERM）能够保证泛化的机制，下列哪些说法是正确的？",
+    "explanation": "ERM 能成立的机制是「一致收敛」：在有限假设空间（或有限 VC 维）下，可以以至少 1-δ 的概率保证所有假设的经验风险与真实风险的偏差被同一个上界控制，于是最小化经验风险也就间接控制了真实风险——注意保证是对**整个假设空间一致**成立的，而不是对逐个假设成立。样本复杂度中 δ 只以 log(1/δ) 进入，因此把失败概率从 1/100 压到 1/10000 只需增加常数倍样本。反过来：某个假设经验风险为 0 并不能推出真实风险为 0（它可能只是恰好拟合了这个训练样本集）；而当 VC 维无限时，一致收敛不成立，样本量再大 ERM 也不保证收敛到最优。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保证来自一致收敛：整个假设空间内所有假设的经验风险与真实风险的偏差被同一个上界控制，因此最小化经验风险即可间接控制真实风险",
+          "样本复杂度对置信参数 δ 的依赖是对数级的，把失败概率从百分之一压到万分之一只需增加常数倍的样本量",
+          "只要某个假设在训练集上的经验风险为零，它的真实风险就必然为零，因为训练集是从同一分布独立采样得到的",
+          "只要训练样本量趋于无穷，ERM 在任意假设空间上都会收敛到最优假设，包括 VC 维无限的那类空间"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "pca-variance-reconstruction-mechanism",
+    "category": "machine-learning-theory",
+    "topic": "dimensionality-reduction",
+    "tags": [
+      "PCA",
+      "eigendecomposition",
+      "lossy-compression"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "principal-component-analysis",
+      "supporting": [
+        "maximum-variance",
+        "reconstruction-error"
+      ]
+    },
+    "misconceptions": [
+      "把 PCA 的目标记成最小化投影后的方差",
+      "以为 PCA 是正交变换从而在任何保留维数下都无损"
+    ],
+    "question": "关于主成分分析（PCA）降维的机制与目标，下列哪些说法是正确的？",
+    "explanation": "PCA 依次取协方差矩阵的前 k 个特征向量作为投影方向，这一选择在「最大化投影方差」与「最小化重构误差」两个表述下给出同一个最优子空间——二者是等价的，不是两个目标。它是有损的：除被丢弃方向对应的特征值恰好为零，降维后无法精确还原原样本，误差等于被丢弃方向上的方差之和。所以要区分两件事：投影矩阵的正交性只保证变换本身可逆到子空间内，不保证降维无损；把目标记成「最小化投影方差」则方向完全相反。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PCA 的投影方向取自协方差矩阵的特征向量，最大化投影后方差与最小化重构误差这两个表述给出同一个最优子空间",
+          "PCA 通常是有损的：只有当被丢弃方向对应的特征值恰好为零时，降维后的表示才能精确还原原始样本",
+          "PCA 的优化目标是让投影后的方差尽可能小，这样同类样本会在低维空间里更紧密地聚拢在一起",
+          "由于 PCA 是正交的线性变换，它在任何保留维数下都是无损的，低维表示总能精确还原出原始数据"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "jl-projection-vs-pca-vs-sensing",
+    "category": "machine-learning-theory",
+    "topic": "dimensionality-reduction",
+    "tags": [
+      "JL-lemma",
+      "compressed-sensing",
+      "curse-of-dimensionality"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "random-projection",
+      "supporting": [
+        "Johnson-Lindenstrauss",
+        "compressed-sensing"
+      ]
+    },
+    "misconceptions": [
+      "以为在同样保留维度下随机投影与 PCA 的重构误差相同",
+      "以为高维让所有样本等距反而使最近邻检索更容易"
+    ],
+    "question": "某团队要在百万维稀疏特征上做近邻检索，需要在 PCA、随机投影与压缩感知三种降维思路之间做选择。关于三者的比较，下列哪些说法是正确的？",
+    "explanation": "随机投影由 JL 引理支撑：目标维数只取决于样本数与允许的畸变程度，与原始维数无关，且投影矩阵可以数据无关地生成——代价是它不针对该数据集做优化，重构误差大于同维度下的 PCA。压缩感知走的是另一条路：利用信号本身的稀疏性，用远少于奈奎斯特率要求的测量数重构原信号，但重构要解一个稀疏恢复问题，不是一次矩阵乘法。二者都不等于 PCA：PCA 在该数据集上是线性重构意义下的最优，但需要特征分解且换数据要重算。此外，高维中欧氏距离趋于集中恰恰会让最近邻变得**不可靠**，而不是更容易。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随机投影的目标维数与原始维数无关，只取决于样本数和允许的畸变程度，且投影矩阵可以完全不依赖数据地随机生成",
+          "压缩感知能以远少于奈奎斯特率要求的测量数重构稀疏信号，代价是重构阶段要解一个稀疏恢复问题而非一次矩阵乘法",
+          "在同样保留 k 个维度的条件下，随机投影与 PCA 给出相同的重构误差，因为两者都只是对数据做了一次线性投影",
+          "高维空间中欧氏距离趋于集中，这会让最近邻检索变得更容易，因为所有样本彼此近似等距因而更容易区分"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "adaboost-boosting-mechanism",
+    "category": "machine-learning-theory",
+    "topic": "ensemble-learning",
+    "tags": [
+      "AdaBoost",
+      "weak-learnability",
+      "reweighting"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "boosting",
+      "supporting": [
+        "weak-learnability",
+        "weighted-majority-vote"
+      ]
+    },
+    "misconceptions": [
+      "以为弱学习器必须自身错误率低于某个很小的阈值才能被提升",
+      "以为 AdaBoost 对所有弱学习器等权重投票"
+    ],
+    "question": "关于 AdaBoost 把弱学习器提升为强学习器的机制，下列哪些说法是正确的？",
+    "explanation": "AdaBoost 每轮根据上一轮结果重加权训练样本：被错分的样本权重升高，使后续弱学习器把容量投向此前难分的区域；最终预测是按各弱学习器错误率导出的 α 做**加权**投票，而不是等权重。其理论背景是弱可学习与强可学习在 PAC 意义下的等价性：只要能稳定拿到错误率低于 1/2 减去某个 γ 的弱学习器（γ 可以很小，不要求 25% 这类具体数值），就能被提升为任意精度的强学习器。因此「弱学习器必须很准」与「等权重投票」两个说法都不对。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每轮训练后提高被错分样本的权重，使后续弱学习器更关注此前分错的样本，最终按各自的错误率加权投票",
+          "弱可学习与强可学习在 PAC 意义下等价：只要存在一个对所有数据分布都能取得严格低于一半错误率的弱学习器，就可被提升为任意精度的强学习器",
+          "参与提升的弱学习器必须自身错误率低于一个很小的阈值，例如错误率低于四分之一，否则提升过程无法收敛",
+          "AdaBoost 对所有弱学习器采用等权重投票，因此提升效果完全来自样本重加权这一个机制"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "adaboost-iteration-count-tradeoff",
+    "category": "machine-learning-theory",
+    "topic": "ensemble-learning",
+    "tags": [
+      "AdaBoost",
+      "margin",
+      "early-stopping"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "margin-theory",
+      "supporting": [
+        "boosting-iterations",
+        "model-selection"
+      ]
+    },
+    "misconceptions": [
+      "以为训练误差归零后间隔已达最大，继续迭代只可能过拟合",
+      "把 AdaBoost 的间隔量直接与 SVM 的最大间隔等同，认为可互相替代"
+    ],
+    "question": "某团队用 AdaBoost 训练，训练集误差已在第 30 轮归零，验证集误差仍在缓慢下降。关于是否继续迭代以及如何确定轮数，下列哪些说法是正确的？",
+    "explanation": "训练误差归零并不等于间隔已经最大：后续轮次继续推高置信度低、间隔小的样本，等价于增大分类间隔，因此验证误差在此后仍可能继续下降——「归零即停」会浪费这部分收益。但这不代表可以无限迭代，轮数过多最终仍会过拟合，且每轮都要付一个新弱学习器的训练与推理开销，所以轮数应当作为超参数用验证集或交叉验证来定，最优值取决于数据噪声水平与弱学习器复杂度。另外，AdaBoost 的间隔量与 SVM 的最大间隔虽然同名，却是不同目标下的量，不能据此直接替换模型。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练误差归零后继续增加轮数仍可能提升泛化，因为后续轮次在继续推高分类间隔，而不只是在拟合已有样本",
+          "轮数应作为超参数用验证集或交叉验证确定，其最优值取决于数据中的噪声水平与所采用弱学习器的复杂度",
+          "训练误差一旦归零就应当立即停止迭代，此时间隔已经达到最大，此后的任何轮次都只可能造成过拟合",
+          "AdaBoost 的间隔量与 SVM 的最大间隔是同一个优化目标，因此应当直接改用 SVM 以获得更好的泛化保证"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
   }
 ]
