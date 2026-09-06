@@ -112,6 +112,9 @@ describe('isVariantStale', () => {
     ['difficulty', { difficulty: 'hard' }],
     ['topic', { topic: 'memory' }],
     ['tags', { tags: ['kv-cache'] }],
+    // ADR-077 回归：cognitiveTask 是 assessment contract 第四维。
+    // 漏掉它会出现最隐蔽的污染——canonical 改了认知任务，按旧认知任务生成的变体仍被判新鲜。
+    ['cognitiveTask', { cognitiveTask: 'infer' }],
   ] as const)('canonical 仅元数据（%s）已改 → stale', (_label, patch) => {
     const v = variant('q1__surface-options__0');
     const changed = { ...choiceQuestion('q1'), ...patch } as Question;

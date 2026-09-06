@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 import type { Question } from './question';
-import { cognitiveTaskSchema, questionAngleSchema } from './common.ts';
+import { assessmentSchema, cognitiveTaskSchema, questionAngleSchema } from './common.ts';
 
 /** 变体改写风格（轻量变体边界内的 4 种风格，不改变「LLM 只做语义变换」的硬约束）。 */
 export const variantKindSchema = z.enum([
@@ -40,6 +40,13 @@ export const questionVariantSchema = z.object({
    */
   angle: questionAngleSchema.optional(),
   cognitiveTask: cognitiveTaskSchema.optional(),
+  /**
+   * 变体自声明的测量意图（plan0907 / P0-2）。缺省 = 继承 canonical。
+   * ADR-077 的 variant 是「同一 Knowledge 的不同 reasoning path 测量」，
+   * 声明不同的 `assessment.reasoningGoal` 是判定两条 path 真的不同的**直接依据**——
+   * 只看 angle / cognitiveTask 并不足够（两者相同也可能 path 相同）。
+   */
+  assessment: assessmentSchema.optional(),
   /** 生成时间戳（ms），用于 stale 判定与审计。 */
   generatedAt: z.number(),
   generator: variantGeneratorSchema,
@@ -72,9 +79,13 @@ export const EMPTY_VARIANT_POOL: VariantPool = {
  * 计算 sourceHash 时取自 canonical 的内容 —— **题面 + 选项 + 元数据**。
  *
  * 为什么要覆盖元数据：Variant 是「同一 Knowledge 的不同 reasoning path 测量」
- * （ADR-077；未自声明测量面时继承 canonical 的 `topic / angle / difficulty / tags`，见 applyVariant）。
- * 只哈希题面时，canonical 换了 angle 或难度，池里所有变体仍显示「未 stale」，
- * 但它们继承来的元数据已经和新 canonical 不一致 —— 静默失真。
+ * （ADR-077；未自声明测量面时继承 canonical 的 `topic / angle / difficulty / cognitiveTask / tags`，
+ * 见 applyVariant）。只哈希题面时，canonical 换了 angle / 难度 / 认知任务，池里所有变体仍显示
+ * 「未 stale」，但它们继承来的元数据已经和新 canonical 不一致 —— 静默失真。
+ *
+ * `cognitiveTask` 是 assessment contract 的第四维（ADR-077），漏掉它会出现最隐蔽的一类污染：
+ * canonical 从 `diagnose` 改成 `infer` 后，按旧认知任务生成的变体仍被判新鲜。**条件入指纹**
+ * （未声明则不出该键），以兼容存量无该字段的题。
  *
  * 不入指纹的部分（有意保留）：
  *   - `answer` / `explanation`：变体落地时恒取 canonical 当前值，入指纹会把「改了解析」
@@ -88,6 +99,15 @@ export interface VariantSource {
   subtopic?: string;
   angle: string;
   difficulty: string;
+  /**
+   * 认知任务（ADR-077：assessment contract 第四维）。
+   *
+   * **条件入指纹**：仅当 canonical 自声明了该字段时才参与哈希。存量题（无 `cognitiveTask`）
+   * 的哈希与历史完全一致，不会因本次升级被全量误判 stale；一旦声明，其变化即代表
+   * assessment contract 变化 → 必须判 stale。与 `AssessmentContract` 的
+   * 「两者皆无视同、有无之间视为变化」同口径。
+   */
+  cognitiveTask?: string;
   /** 概念标签（canonical.tags）。排序后入指纹：tag 顺序无语义，重排不应判定为漂移。 */
   tags?: string[];
   question: string;
@@ -112,6 +132,7 @@ export function variantSourceOf(q: Question): VariantSource {
     subtopic: q.subtopic,
     angle: q.angle,
     difficulty: q.difficulty,
+    cognitiveTask: q.cognitiveTask,
     tags: q.tags,
     question: q.question,
     options: q.formats.choice?.options,
@@ -119,16 +140,20 @@ export function variantSourceOf(q: Question): VariantSource {
 }
 
 export function computeVariantSourceHash(source: VariantSource): string {
-  const normalized = {
+  // cognitiveTask **条件入指纹**（见 VariantSource 注释）：未声明时不出现该键，
+  // 保证存量变体哈希与历史一致；声明后其变化必然改变 contract → 判 stale。
+  const cognitiveTask = (source.cognitiveTask ?? '').trim();
+  const normalized: Record<string, unknown> = {
     id: (source.id ?? '').trim(),
     topic: (source.topic ?? '').trim(),
     subtopic: (source.subtopic ?? '').trim(),
     angle: (source.angle ?? '').trim(),
     difficulty: (source.difficulty ?? '').trim(),
-    tags: [...new Set((source.tags ?? []).map((t) => t.trim()).filter((t) => t.length > 0))].sort(),
-    question: (source.question ?? '').trim(),
-    options: (source.options ?? []).map((o) => o.trim()).filter((o) => o.length > 0),
   };
+  if (cognitiveTask.length > 0) normalized.cognitiveTask = cognitiveTask;
+  normalized.tags = [...new Set((source.tags ?? []).map((t) => t.trim()).filter((t) => t.length > 0))].sort();
+  normalized.question = (source.question ?? '').trim();
+  normalized.options = (source.options ?? []).map((o) => o.trim()).filter((o) => o.length > 0);
   const input = JSON.stringify(normalized);
   let hash = 0x811c9dc5; // FNV offset basis
   for (let i = 0; i < input.length; i++) {

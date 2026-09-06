@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "generatedAt": 1788733353411,
+  "promptVersion": "v5",
+  "variants": {
+    "vit_inductive_bias_vs_cnn_canonical": [
+      {
+        "id": "vit_inductive_bias_vs_cnn_canonical__context-options__prompt-vit_inductive_bias_vs_cnn_variant_1",
+        "kind": "context-options",
+        "question": "在某图像分类任务的工程落地中，研发团队尝试在不使用任何预训练权重的情况下，直接在 ImageNet-1k 数据集（约 130 万张图片）上从头训练标准 ViT-Base 模型，发现其最终 Top-1 准确率明显低于同等参数量和计算量的 ResNet 模型，且训练过程伴随严重的过拟合。关于导致该现象的核心病因及最佳工程应对手段，以下哪项判断最为准确？",
+        "options": [
+          "核心原因是 ViT 模型的参数量过小，表达能力不足；最有效的解决方法是换用参数量更大的 ViT-Huge 架构直接训练。",
+          "核心原因是 ViT 缺乏 CNN 的局部性与平移同变性归纳偏置，在数据集规模不足时假设空间过大；根本解决路径是在大规模数据集（如 ImageNet-21k 或 JFT-300M）上进行预训练再迁移微调。",
+          "核心原因是自注意力机制的 Softmax 函数在梯度反向传播时容易出现梯度消失；最有效的解决路径是在每层 Transformer Block 后叠加 Batch Normalization 算子。",
+          "核心原因是 Patch Embedding 破坏了图像像素级的连续性；最有效的解决路径是将 Patch 尺寸减小至 1x1 像素。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "generatedAt": 1788733353411,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-c3c9e48b"
+      }
+    ],
+    "vit_patch_embedding_sequence_length_canonical": [
+      {
+        "id": "vit_patch_embedding_sequence_length_canonical__context-options__prompt-vit_patch_embedding_sequence_length_variant_1",
+        "kind": "context-options",
+        "question": "某团队在将 ViT 应用于高精度工业缺陷检测时，发现预训练模型（Patch Size = 16）无法精准定位微小的细粒度瑕疵。团队计划将 Patch Size 调整为 8，以提升模型对空间细粒度特征的表达能力。已知线上部署 GPU 显存限制极严格，关于这一改动带来的权衡（Trade-off）与工程评估，以下哪项判断最为合理？",
+        "options": [
+          "将 Patch Size 由 16 减小至 8 可以提升空间分辨率感知，且由于模型隐层维度 D 保持不变，每层 Transformer 的激活值显存占用与推理耗时几乎不受影响。",
+          "缩小 Patch Size 会导致输入序列长度增长 4 倍，显存中保存注意力图（Attention Map）的开销将激增 16 倍，可能导致显存溢出（OOM），必须综合权衡细粒度特征收益与算力显存成本。",
+          "缩小 Patch Size 虽然增加了序列长度，但可以通过大幅削减 Transformer 层数来完全抵消注意力计算量的平方级增长，且不会损失模型的语义表征深度。",
+          "缩小 Patch Size 仅增加线性投影层（Patch Embedding）的计算负担，对后续多头自注意力（MSA）与 MLP 层的计算与显存分布毫无影响。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "generatedAt": 1788733353411,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-73023492"
+      }
+    ],
+    "vit_position_embedding_interpolation_canonical": [
+      {
+        "id": "vit_position_embedding_interpolation_canonical__context-options__prompt-vit_position_embedding_interpolation_variant_1",
+        "kind": "context-options",
+        "question": "某工程师在对 ViT 进行高分辨率微调（由 224x224 提升至 448x448，Patch Size=16）时，编写的代码直接将长度为 196 的一维预训练位置编码向量按照一维数组简单线性插值（1D Linear Interpolation）拉伸至长度 784。微调后发现模型准确率大幅下降，且深层注意力集中在毫无意义的条纹状区域。关于该问题的根本原因与正确修复方案，以下哪项判断是正确的？",
+        "options": [
+          "根本原因是一维线性插值破坏了 Patch 在二维图像空间上的网格上下邻域关系；修复方案是将位置编码重构为 2D 空间网格后再进行二维插值（如 2D Bicubic Interpolation）。",
+          "根本原因是微调时未同步增大 Patch Size；修复方案是将 Patch Size 扩大为 32x32，从而无需对位置编码做任何插值。",
+          "根本原因是一维插值导致位置编码维度 D 发生了改变；修复方案是在一维插值后添加一个全连接层将维度降回 D。",
+          "根本原因是高分辨率图像必须使用相对位置编码（Relative Position Bias）且必须彻底废弃绝对位置编码并重新从头训练模型。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "generatedAt": 1788733353411,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-68aa8352"
+      }
+    ]
+  }
+}

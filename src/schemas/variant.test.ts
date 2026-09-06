@@ -54,8 +54,30 @@ describe('computeVariantSourceHash', () => {
     ['angle', { angle: 'tradeoff' }],
     ['difficulty', { difficulty: 'hard' }],
     ['tags', { tags: ['kv-cache'] }],
+    // ADR-077：cognitiveTask 是 assessment contract 第四维，必须入指纹
+    ['cognitiveTask', { cognitiveTask: 'diagnose' }],
   ] as const)('元数据 %s 变更 → 指纹变化（变体判 stale）', (_label, patch) => {
     expect(src(patch)).not.toBe(src());
+  });
+
+  // ── ADR-077：cognitiveTask 条件入指纹 ──
+  // 存量题无该字段 → 指纹必须与历史完全一致（否则 234 条存量变体会被全量误判 stale）；
+  // 一旦声明，其值变化即代表 assessment contract 变化 → 必须判 stale。
+  it('cognitiveTask 未声明 / 为空串 → 指纹与历史一致（存量变体不误判 stale）', () => {
+    const legacy = {
+      id: 'q-1',
+      topic: 't',
+      angle: 'mechanism',
+      difficulty: 'medium',
+      question: 'Q?',
+      options: ['a'],
+    };
+    expect(computeVariantSourceHash(legacy)).toBe(computeVariantSourceHash({ ...legacy, cognitiveTask: '' }));
+    expect(computeVariantSourceHash(legacy)).toBe(computeVariantSourceHash({ ...legacy, cognitiveTask: '   ' }));
+  });
+
+  it('cognitiveTask 声明后变更 → 指纹变化（contract 变化必须判 stale）', () => {
+    expect(src({ cognitiveTask: 'diagnose' })).not.toBe(src({ cognitiveTask: 'infer' }));
   });
 
   it('tag 顺序变化不影响指纹（顺序无语义，重排不算漂移）', () => {
@@ -77,6 +99,7 @@ describe('variantSourceOf', () => {
       tags: ['kv-cache'],
       difficulty: 'medium' as const,
       angle: 'mechanism' as const,
+      cognitiveTask: 'explain' as const,
       question: 'Q?',
       explanation: 'E',
       formats: { choice: { type: 'single' as const, options: ['a', 'b', 'c', 'd'], answer: [0] } },
@@ -87,6 +110,7 @@ describe('variantSourceOf', () => {
       subtopic: 'kv-cache',
       angle: 'mechanism',
       difficulty: 'medium',
+      cognitiveTask: 'explain',
       tags: ['kv-cache'],
       question: 'Q?',
       options: ['a', 'b', 'c', 'd'],

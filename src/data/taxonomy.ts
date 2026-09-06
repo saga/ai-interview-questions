@@ -61,6 +61,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         label: '生成对抗网络',
         description: '极小极大博弈/最优判别器/非饱和损失/交替更新/隐式密度评估/与MCMC-NCE对比',
       },
+      {
+        id: 'vision-transformer',
+        label: '视觉 Transformer（ViT）',
+        description: 'Patch Embedding/序列长度/位置编码插值/归纳偏置/CNN 对比/CLS Token',
+      },
     ],
   },
 
@@ -171,6 +176,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         id: 'agent-skills',
         label: 'Agent 技能与自演进',
         description: 'Skill 设计/发现与执行解耦/跨模型迁移/验证门控/回滚/三层工作区/自演化状态管理',
+      },
+      {
+        id: 'agentic-rl',
+        label: '智能体强化学习',
+        description: 'Agent/Coding RL/PPO/GRPO/轨迹压缩(Compaction)/训练推理一致性/KVShare-IndexShare/奖励黑客(Reward Hacking)与在线防护',
       },
     ],
   },

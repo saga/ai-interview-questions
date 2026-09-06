@@ -491,5 +491,25 @@
       "system-design",
       "debugging"
     ]
+  },
+  {
+    "id": "index-share-sparse-attention",
+    "name": "IndexShare 跨层共享索引稀疏注意力",
+    "area": "llm",
+    "topic": "llm-architecture",
+    "priority": "P1",
+    "summary": "IndexShare 在多层 Transformer 组中跨层共享轻量级索引器：仅在组首层计算 Query-Key 点积与 Top-K 选择，并将 Top-K 索引透传给后续层复用，从而消除后续层索引器的计算 FLOPs。相邻层注意力区域高度相似，故复用索引几乎不损精度。它只削减索引器计算，不缩减 KV Cache 体积，注意力计算仍按索引提取 K/V 执行，非零成本。",
+    "required": [
+      "IndexShare 在 N 层组首层算一次 Top-K 索引，后续 N-1 层直接复用，省去其索引器 QK 点积与 Top-K 排序开销",
+      "相邻 Transformer 层稀疏注意力模式高度相似，复用首层索引可在几乎不损精度下大幅降计算",
+      "IndexShare 仅削减索引器计算 FLOPs，KV Cache 尺寸与注意力点积开销不变，长上下文瓶颈在访存而非纯算力"
+    ],
+    "misconceptions": [
+      "认为 IndexShare 会成倍缩减 KV Cache 显存（实际不缩减 KV Cache 体积）",
+      "认为后续层完全免注意力计算、从 O(N^2) 降为 O(1) 查表（实际仍按索引执行稀疏注意力点积）"
+    ],
+    "angles": [
+      "mechanism"
+    ]
   }
 ]

@@ -9,6 +9,10 @@ import {
   emptyProfile,
   findCoverageGaps,
   getAngleStat,
+  assessmentKey,
+  getAssessmentStat,
+  assessmentWeakRank,
+  weakAssessmentsOf,
   conceptKey,
   conceptGapsOf,
   misconceptionKey,
@@ -220,6 +224,35 @@ describe('updateLearner', () => {
     // 未标注角度的题不污染逐角度证据
     const noAngle = updateLearner(emptyProfile(), session(50, [result('transformer', 50)]));
     expect(noAngle.angleCoverage).toEqual({});
+  });
+
+  it('聚合 assessmentCoverage：按 topic|angle|cognitiveTask 累计 assessment-cell 证据（P0-1）', () => {
+    const results: QuestionResult[] = [
+      { questionId: 'q1', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', cognitiveTask: 'explain', score: 90, gaps: [] },
+      { questionId: 'q2', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', cognitiveTask: 'explain', score: 70, gaps: [] },
+      { questionId: 'q3', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', cognitiveTask: 'diagnose', score: 40, gaps: [] },
+    ];
+    const p = updateLearner(emptyProfile(), session(66, results));
+    // 同一 angle (mechanism) 下两种 cognitiveTask 是不同 assessment-cell，不得互相掩盖
+    expect(p.assessmentCoverage!['kv-cache|mechanism|explain'].attempts).toBe(2);
+    expect(p.assessmentCoverage!['kv-cache|mechanism|explain'].avgScore).toBe(80);
+    expect(p.assessmentCoverage!['kv-cache|mechanism|diagnose'].attempts).toBe(1);
+    expect(p.assessmentCoverage!['kv-cache|mechanism|diagnose'].avgScore).toBe(40);
+    // 缺 cognitiveTask 的题只落 angleCoverage 粗粒度层，不进 assessment 索引
+    const noCog = updateLearner(
+      emptyProfile(),
+      session(50, [{ questionId: 'q', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', score: 50, gaps: [] }]),
+    );
+    expect(noCog.assessmentCoverage).toEqual({});
+    // 查询函数：未练 cell → 0（最弱，优先考察）；低于掌握线 → 1
+    expect(assessmentWeakRank(p, 'kv-cache', 'mechanism', 'diagnose')).toBe(1);
+    expect(assessmentWeakRank(p, 'kv-cache', 'mechanism', 'explain')).toBe(2);
+    expect(assessmentWeakRank(p, 'kv-cache', 'mechanism', 'predict')).toBe(0);
+    expect(weakAssessmentsOf(p, 'kv-cache', [
+      { angle: 'mechanism', cognitiveTask: 'diagnose' },
+      { angle: 'mechanism', cognitiveTask: 'explain' },
+      { angle: 'mechanism', cognitiveTask: 'predict' },
+    ]).map((x) => x.cognitiveTask)).toEqual(['predict', 'diagnose']);
   });
 
   it('trend：上次明显高于均分 → improving，反之 declining', () => {

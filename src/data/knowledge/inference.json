@@ -118,5 +118,25 @@
       "calculation",
       "system-design"
     ]
+  },
+  {
+    "id": "mtp-speculative-decoding",
+    "name": "MTP 多步投机采样与 KV/Index 共享",
+    "area": "llm",
+    "topic": "inference",
+    "priority": "P1",
+    "summary": "多步 MTP 投机采样让草稿模型预测多 Token。传统做法从第 2 步起混用 MTP 自身隐藏状态，导致 KV Cache 污染与训练推理不一致、接受率随步数衰减。结合 KVShare（复用 Target KV Cache）与 IndexShare（复用 Target Top-K 索引）后，后续步注意力上下文纯来自 Target Model，消除污染，提升接受长度（Acceptance Length）。",
+    "required": [
+      "传统多步 MTP 第 2 步起输入特征混入 MTP 隐藏状态，使 KV Cache 含混合来源，产生 Training-Inference Discrepancy",
+      "KVShare 直接复用 Target 已算好的 KV Cache，避免重复 Forward；IndexShare 复用 Target 的 Top-K 索引",
+      "复用 Target 侧 KV 与索引使注意力上下文纯净，显著提升后续步接受率"
+    ],
+    "misconceptions": [
+      "认为 KVShare 需对 Target Model 重新执行完整 Forward（实际只是复用已算 KV）",
+      "认为多步失败源于 LM Head 权重共享，KVShare 改变了 LM Head 结构（实际瓶颈在上下文污染与分布偏移）"
+    ],
+    "angles": [
+      "mechanism"
+    ]
   }
 ]

@@ -33,6 +33,10 @@ function q(topic: string, angle: NonNullable<Question['angle']>, id = topic): Qu
   };
 }
 
+function qCog(topic: string, angle: NonNullable<Question['angle']>, cognitiveTask: string, id?: string): Question {
+  return { ...q(topic, angle, id), cognitiveTask: cognitiveTask as Question['cognitiveTask'] };
+}
+
 const nodes = [
   node('routing', 'P0', ['definition', 'mechanism', 'tradeoff']),
   node('kv-cache', 'P1', ['mechanism']),
@@ -143,5 +147,36 @@ describe('formatCoverageReport', () => {
     expect(text).toContain('检索就绪');
     // 不传 extra 时报告保持原样（存量兼容）
     expect(formatCoverageReport(m, coverageSuggestions(m))).not.toContain('考察质量');
+  });
+});
+
+describe('P0-1c: 覆盖矩阵支持 cognitiveTask 维度（ADR-077）', () => {
+  it('questionCoverageMatrix 按 angle→cognitiveTask 累计分布', () => {
+    const qs = [
+      qCog('kv-cache', 'mechanism', 'explain', 'a1'),
+      qCog('kv-cache', 'mechanism', 'explain', 'a2'),
+      qCog('kv-cache', 'mechanism', 'diagnose', 'a3'),
+    ];
+    const m = questionCoverageMatrix(qs, nodes);
+    const t = m.topics.find((x) => x.nodeId === 'kv-cache')!;
+    expect(t.counts.mechanism).toBe(3); // 粗视图仍是 3
+    expect(t.cogTaskByAngle.mechanism).toEqual({ explain: 2, diagnose: 1 });
+  });
+
+  it('未声明 cognitiveTask 的题不计入分布，但仍进 angle 粗计数', () => {
+    const qs = [q('kv-cache', 'mechanism', 'a1'), qCog('kv-cache', 'mechanism', 'explain', 'a2')];
+    const m = questionCoverageMatrix(qs, nodes);
+    const t = m.topics.find((x) => x.nodeId === 'kv-cache')!;
+    expect(t.counts.mechanism).toBe(2);
+    expect(t.cogTaskByAngle.mechanism).toEqual({ explain: 1 }); // 仅 1 题有 cognitiveTask
+  });
+
+  it('报告列出认知任务分布小节（仅列有数据的角度）', () => {
+    const qs = [qCog('kv-cache', 'mechanism', 'explain', 'a1'), qCog('kv-cache', 'mechanism', 'diagnose', 'a2')];
+    const m = questionCoverageMatrix(qs, nodes);
+    const text = formatCoverageReport(m, coverageSuggestions(m));
+    expect(text).toContain('认知任务分布（topic × angle × cognitiveTask');
+    expect(text).toContain('[kv-cache] kv-cache');
+    expect(text).toContain('mechanism: explain×1 diagnose×1');
   });
 });

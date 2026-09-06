@@ -1,0 +1,74 @@
+[
+  {
+    "id": "vit-inductive-bias-vs-cnn",
+    "name": "ViT 与 CNN 的归纳偏置对比",
+    "area": "ai-engineering",
+    "topic": "vision-transformer",
+    "priority": "P1",
+    "summary": "ViT 以全局自注意力取代卷积的局部归纳偏置，初始无二维空间先验、完全依赖数据学习空间结构；因而在小数据集上弱于 CNN，但在超大规模预训练后其更大的假设空间可充分吸收数据红利、超越受先验约束的 CNN。",
+    "required": [
+      "CNN 的局部性 + 平移同变性是其天然归纳偏置，大幅缩小假设空间，小数据下抗过拟合",
+      "ViT 几乎无空间先验，需大规模数据填补，否则从头训练易严重过拟合",
+      "充分预训练后 ViT 浅层也会涌现类 CNN 的局部感知野与边缘/纹理检测能力"
+    ],
+    "misconceptions": [
+      "认为 ViT 完全无法学习局部/边缘特征（实际预训练后会涌现）",
+      "认为增大 ViT 模型规模即可在小数据上弥补归纳偏置缺失"
+    ],
+    "angles": ["comparison"]
+  },
+  {
+    "id": "vit-patch-embedding-sequence-length",
+    "name": "Patch Embedding 与序列长度",
+    "area": "ai-engineering",
+    "topic": "vision-transformer",
+    "priority": "P1",
+    "summary": "图像被切成 P×P 非重叠 Patch，经线性投影为 Token 序列；Patch 尺寸 P 减半使序列长度 N 变为原来的 4 倍，标准自注意力的计算与显存随 N² 增长为 16 倍，而 Patch 投影层参数量按 Patch 像素数相应缩减。",
+    "required": [
+      "序列长度 N = H·W / P²",
+      "标准自注意力复杂度 O(N²)：P 减半 → N×4 → 注意力 FLOPs×16",
+      "Patch 投影矩阵维度 = (P²·C) × D，P 减小使投影层参数量缩减（不影响 Transformer 主体参数）"
+    ],
+    "misconceptions": [
+      "认为 Patch 投影层参数量随序列长度同步增 4 倍（实际随 Patch 像素数减）",
+      "忽略注意力对序列长度的二次方依赖"
+    ],
+    "angles": ["calculation"]
+  },
+  {
+    "id": "vit-position-embedding-interpolation",
+    "name": "位置编码插值",
+    "area": "ai-engineering",
+    "topic": "vision-transformer",
+    "priority": "P1",
+    "summary": "高分辨率微调时 Patch 数量超过预训练位置编码长度，需将一维可学习位置编码按预训练二维网格重构，再做 2D 双三次插值扩展至新尺寸后展平，以保留二维空间拓扑；一维线性拉伸会破坏网格行列邻域关系。",
+    "required": [
+      "分辨率↑且 P 不变 → Patch 数↑ → 超出预训练位置编码长度",
+      "正确做法：1D 位置编码 → 2D 网格 → 2D 双三次插值 → 展平",
+      "一维线性拉伸会破坏 2D 网格的行列邻域关系，导致空间拓扑失真"
+    ],
+    "misconceptions": [
+      "直接补零/随机初始化新位置编码效果优于插值",
+      "一维线性插值足以保持二维空间拓扑"
+    ],
+    "angles": ["mechanism"]
+  },
+  {
+    "id": "vit-cls-token-representation",
+    "name": "CLS Token 表征",
+    "area": "ai-engineering",
+    "topic": "vision-transformer",
+    "priority": "P2",
+    "summary": "[CLS] Token 置于 Patch 序列首，经多层自注意力与所有 Patch 全局交互，末层输出无偏聚合全图上下文，避免固定 Patch 带来的空间位置偏置；其位置编码可学习、参数端到端更新，并非静态占位符。",
+    "required": [
+      "[CLS] 与各 Patch 全局交互，末层输出聚合全图特征",
+      "独立 [CLS] 避免将分类偏向某一固定物理位置 Patch",
+      "[CLS] 有可学习位置编码，且参数随训练反向传播更新"
+    ],
+    "misconceptions": [
+      "[CLS] 是 frozen 静态占位符",
+      "用固定 Patch 输出做分类同样无偏"
+    ],
+    "angles": ["mechanism"]
+  }
+]

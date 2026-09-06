@@ -95,6 +95,28 @@ describe('questionSchema', () => {
     ).toThrow();
   });
 
+  // ── P0-2：Blueprint 测量意图落库（assessment.target / assessment.reasoningGoal）──
+  it('接受完整的测量意图（assessment.target + reasoningGoal）', () => {
+    const parsed = questionSchema.parse({
+      ...validChoiceSingle,
+      assessment: {
+        target: '能否区分 importance 与 load 两种平衡失配',
+        reasoningGoal: '先由现象识别 load imbalance，再排除 importance 失配，最后判断为何加 loss 无效',
+      },
+    });
+    expect(parsed.assessment?.target).toContain('importance');
+    expect(parsed.assessment?.reasoningGoal).toContain('load imbalance');
+  });
+
+  it('拒绝空 target / 空 reasoningGoal（半截测量意图比没有更误导）', () => {
+    expect(questionSchema.safeParse({ ...validChoiceSingle, assessment: { target: '', reasoningGoal: 'x' } }).success).toBe(false);
+    expect(questionSchema.safeParse({ ...validChoiceSingle, assessment: { target: 'x', reasoningGoal: '' } }).success).toBe(false);
+  });
+
+  it('assessment 缺省不影响既有题（存量兼容）', () => {
+    expect(questionSchema.safeParse(validChoiceSingle).success).toBe(true);
+  });
+
   it('accepts choice with scenario question field', () => {
     const q = {
       ...validChoiceSingle,

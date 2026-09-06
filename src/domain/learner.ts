@@ -5,9 +5,9 @@
 // 不依赖 React / LLM / 网络，全部可单测。
 
 import type { AnswerValue } from '../types';
-import type { QuestionAngle } from '../schemas/common';
+import type { CognitiveTask, QuestionAngle } from '../schemas/common';
 import type { InterviewDefinition, ScoringRubric } from '../schemas/interview';
-import type { AngleStat, LearnerProfile, QuestionResult, SessionRecord, Trend } from '../schemas/learner';
+import type { AngleStat, AssessmentStat, LearnerProfile, QuestionResult, SessionRecord, Trend } from '../schemas/learner';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { SessionQuestion } from '../schemas/session';
 import type { ProficiencyConfig } from '../schemas/ai-config';
@@ -85,6 +85,15 @@ export function conceptKey(topic: string, concept: string): string {
   return `${topic}|${concept.trim().toLowerCase()}`;
 }
 
+/**
+ * Assessment-cell 证据 key：`${topic}|${angle}|${cognitiveTask}`（P0-1 / ADR-077）。
+ * cognitiveTask 缺省（旧库/未声明场景）不进 assessment 索引——缺此维的题只落在
+ * `angleCoverage` 粗粒度层，避免用空字符串凑 key 污染真实 cell。
+ */
+export function assessmentKey(topic: string, angle: QuestionAngle, cognitiveTask: CognitiveTask): string {
+  return `${topic}|${angle}|${cognitiveTask}`;
+}
+
 /** 误解命中的 key：`${topic}|${misconception}`（误解文本归一化；按 topic 分桶便于逐主题查询）。 */
 export function misconceptionKey(topic: string, misconception: string): string {
   return `${topic}|${misconception.trim().toLowerCase()}`;
@@ -97,6 +106,7 @@ export function emptyProfile(): LearnerProfile {
     overallScore: 0,
     topicStats: {},
     angleCoverage: {},
+    assessmentCoverage: {},
     conceptEvidence: {},
     misconceptionHits: {},
     sessions: [],
@@ -185,6 +195,7 @@ export function updateLearner(
 
   const topicStats = { ...profile.topicStats };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
+  const assessmentCoverage = { ...(profile.assessmentCoverage ?? {}) };
   const conceptEvidence = { ...(profile.conceptEvidence ?? {}) };
   const misconceptionHits = { ...(profile.misconceptionHits ?? {}) };
   const byTopic = new Map<string, QuestionResult[]>();
@@ -204,6 +215,25 @@ export function updateLearner(
       ? Math.round(((prev.avgScore * prev.attempts + r.score) / attempts) * 10) / 10
       : Math.round(r.score * 10) / 10;
     angleCoverage[key] = {
+      attempts,
+      avgScore,
+      lastScore: r.score,
+      lastAskedAt: s.startedAt,
+    };
+  }
+
+  // Assessment-cell 证据：与 angleCoverage 并行，key = topic|angle|cognitiveTask（P0-1 / ADR-077）。
+  // 缺 cognitiveTask 的题（旧库/未声明）只落 angleCoverage 粗粒度层，不进 assessment 索引，
+  // 避免用空维凑 key 污染真实 cell 的掌握度统计。
+  for (const r of s.questionResults) {
+    if (!r.angle || !r.cognitiveTask) continue;
+    const key = assessmentKey(r.topic, r.angle, r.cognitiveTask);
+    const prev = assessmentCoverage[key];
+    const attempts = (prev?.attempts ?? 0) + 1;
+    const avgScore = prev
+      ? Math.round(((prev.avgScore * prev.attempts + r.score) / attempts) * 10) / 10
+      : Math.round(r.score * 10) / 10;
+    assessmentCoverage[key] = {
       attempts,
       avgScore,
       lastScore: r.score,
@@ -294,6 +324,7 @@ export function updateLearner(
     overallScore,
     topicStats,
     angleCoverage,
+    assessmentCoverage,
     conceptEvidence,
     misconceptionHits,
     sessions,
@@ -369,6 +400,7 @@ export function sessionFromQuiz(
         subtopic: q.subtopic ?? undefined,
         format,
         angle: q.angle,
+        cognitiveTask: q.cognitiveTask,
         score: g.overall,
         correct: format === 'choice' ? (g.dimensions.correctness ?? 0) === 100 : undefined,
         // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps / missingConcepts；
@@ -463,6 +495,74 @@ export function weakAnglesOf(profile: LearnerProfile, topic: string, expected: Q
     .filter((x) => x.rank < 2)
     .sort((a, b) => a.rank - b.rank || a.score - b.score)
     .map((x) => x.angle);
+}
+
+// ── Assessment-cell 证据查询（P0-1 / ADR-077）────────────────
+// 与 angle 系列同构，但 key 是 topic|angle|cognitiveTask。
+// 选择题/variant 的 cognitiveTask 来自题目本体（canonical 继承 / 变体自声明），
+// 因此这些查询能真正回答"用户在某个认知任务上验证过没有"，而非仅看 angle。
+
+/** 取某个 (topic, angle, cognitiveTask) 的 assessment-cell 证据；未练过返回 undefined。 */
+export function getAssessmentStat(
+  profile: LearnerProfile,
+  topic: string,
+  angle: QuestionAngle,
+  cognitiveTask: CognitiveTask,
+): AssessmentStat | undefined {
+  return profile.assessmentCoverage?.[assessmentKey(topic, angle, cognitiveTask)];
+}
+
+/** 该 (topic, angle, cognitiveTask) 是否已有作答证据。 */
+export function isAssessmentAttempted(
+  profile: LearnerProfile,
+  topic: string,
+  angle: QuestionAngle,
+  cognitiveTask: CognitiveTask,
+): boolean {
+  const s = getAssessmentStat(profile, topic, angle, cognitiveTask);
+  return Boolean(s && s.attempts > 0);
+}
+
+/**
+ * 单个 assessment-cell 的薄弱等级（assessment contract 原子查询，供确定性引擎选题用）：
+ * - 0 = 未练过（最该被考察）；
+ * - 1 = 已练但均分低于掌握线（薄弱）；
+ * - 2 = 已掌握（不入弱项）。
+ * 无画像 / 缺 cognitiveTask 维度 → 0（视为最弱，优先考察）。
+ */
+export function assessmentWeakRank(
+  profile: LearnerProfile | undefined,
+  topic: string,
+  angle: QuestionAngle,
+  cognitiveTask: CognitiveTask,
+): 0 | 1 | 2 {
+  if (!profile || !profile.assessmentCoverage) return 0;
+  const stat = getAssessmentStat(profile, topic, angle, cognitiveTask);
+  if (!stat || stat.attempts === 0) return 0;
+  if (stat.avgScore < WEAK_AVG) return 1;
+  return 2;
+}
+
+/**
+ * 给定某 concept（topic）与其期望的 assessment 维度，返回"证据最薄弱"的优先级列表：
+ * 未练过的 cell 排最前，已练但低于掌握线的其次，已充分掌握的排除。
+ * 用于"弱 concept → 缺证据 assessment-cell"的自适应追问（ADR-077 闭环的核心查询）。
+ */
+export function weakAssessmentsOf(
+  profile: LearnerProfile,
+  topic: string,
+  expected: { angle: QuestionAngle; cognitiveTask: CognitiveTask }[],
+): { angle: QuestionAngle; cognitiveTask: CognitiveTask }[] {
+  const scored = expected.map(({ angle, cognitiveTask }) => {
+    const stat = getAssessmentStat(profile, topic, angle, cognitiveTask);
+    if (!stat || stat.attempts === 0) return { angle, cognitiveTask, rank: 0, score: 0 };
+    if (stat.avgScore < WEAK_AVG) return { angle, cognitiveTask, rank: 1, score: stat.avgScore };
+    return { angle, cognitiveTask, rank: 2, score: stat.avgScore };
+  });
+  return scored
+    .filter((x) => x.rank < 2)
+    .sort((a, b) => a.rank - b.rank || a.score - b.score)
+    .map((x) => ({ angle: x.angle, cognitiveTask: x.cognitiveTask }));
 }
 
 export interface CoverageReport {

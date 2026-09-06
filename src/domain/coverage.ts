@@ -2,7 +2,7 @@
 // 题目与知识点均由调用方注入，浏览器与 CLI（scripts/question-coverage.ts）共用同一实现。
 // 两速分离（ADR-032）：本模块是"慢速题库生产"管线的度量端，运行时选题不感知它。
 
-import type { Difficulty, FormatId, KnowledgeArea, KnowledgePriority, QuestionAngle } from '../schemas/common';
+import type { CognitiveTask, Difficulty, FormatId, KnowledgeArea, KnowledgePriority, QuestionAngle } from '../schemas/common';
 import type { KnowledgeNode } from '../schemas/knowledge';
 import type { Question } from '../schemas/question';
 import { DOMAINS, DOMAIN_LABELS, allowedAnglesFor } from '../data/taxonomy.ts';
@@ -75,6 +75,13 @@ export interface TopicCoverage {
   expected: QuestionAngle[];
   /** 实际计数：angle → 题数（angle 必填，每题必落一格） */
   counts: Partial<Record<QuestionAngle, number>>;
+  /**
+   * 认知任务分布（P0-1 / ADR-077）：angle → cognitiveTask → 题数。
+   * 仅统计声明了 cognitiveTask 的题（旧库/未声明为空）。用于回答
+   * 「同一 angle 下哪些认知任务被验证过、哪些还是空白」——topic×angle 粗视图
+   * 无法暴露这一问题（一种认知任务的成绩会掩盖同 angle 其他认知任务的缺口）。
+   */
+  cogTaskByAngle: Partial<Record<QuestionAngle, Partial<Record<CognitiveTask, number>>>>;
   /** 期望角度中计数值为 0 的 = 覆盖缺口 */
   gaps: QuestionAngle[];
 }
@@ -113,6 +120,7 @@ export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNo
         // 节点显式声明 angles 时优先用它；否则回退到所属 topic 的角度白名单（ADR-038 延伸）。
         expected: n.angles.length ? [...n.angles] : allowedAnglesFor(n.topic),
         counts: {},
+        cogTaskByAngle: {},
         gaps: [],
       },
     ]),
@@ -126,6 +134,10 @@ export function questionCoverageMatrix(questions: Question[], nodes: KnowledgeNo
       continue;
     }
     t.counts[q.angle] = (t.counts[q.angle] ?? 0) + 1;
+    if (q.cognitiveTask) {
+      const byCog = (t.cogTaskByAngle[q.angle] ??= {});
+      byCog[q.cognitiveTask] = (byCog[q.cognitiveTask] ?? 0) + 1;
+    }
   }
 
   for (const t of topics.values()) {
@@ -313,6 +325,28 @@ export function formatCoverageReport(
         (r.missingRequired > 0 ? ` · 缺 required ${r.missingRequired}` : '') +
         (r.missingMisconceptions > 0 ? ` · 缺 misconceptions ${r.missingMisconceptions}` : ''),
     );
+  }
+
+  // ── 认知任务分布（P0-1 / ADR-077）：同一 angle 下不同 cognitiveTask 的覆盖深度 ──
+  // topic×angle 粗视图无法暴露「一种认知任务的成绩掩盖同 angle 其他认知任务缺口」，
+  // 故逐角度列出 cognitiveTask 分布；无 cognitiveTask 声明的题不计入。
+  const spread = matrix.topics
+    .map((t) => {
+      const parts = ANGLE_ORDER.filter((a) => t.expected.includes(a) && t.cogTaskByAngle[a])
+        .map((a) => {
+          const byCog = t.cogTaskByAngle[a]!;
+          const detail = (Object.entries(byCog) as [CognitiveTask, number][])
+            .map(([cog, n]) => `${cog}×${n}`)
+            .join(' ');
+          return `    ${a}: ${detail}`;
+        });
+      return parts.length ? [`  [${t.nodeId}] ${t.name}`, ...parts] : null;
+    })
+    .filter((x): x is string[] => x !== null);
+  if (spread.length > 0) {
+    lines.push('');
+    lines.push('认知任务分布（topic × angle × cognitiveTask，仅列有数据的角度）：');
+    spread.forEach((block) => lines.push(...block));
   }
   return lines.join('\n');
 }

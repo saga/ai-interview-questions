@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { formatIdSchema, questionAngleSchema } from './common';
+import { cognitiveTaskSchema, formatIdSchema, questionAngleSchema } from './common';
 import { sessionQuestionSchema, sessionAnswerSchema } from './session';
 
 export const trendSchema = z.enum(['improving', 'declining', 'flat']);
@@ -43,6 +43,23 @@ export const angleStatSchema = z.object({
 });
 export type AngleStat = z.infer<typeof angleStatSchema>;
 
+/**
+ * 单 (topic, angle, cognitiveTask) 的逐 assessment-cell 掌握证据（P0-1 / ADR-077）。
+ * 与 `angleStatSchema` 同构——`cognitiveTask` 是 assessment contract 的第四维，
+ * 与 `angle` 正交（同一 angle 下 explain / diagnose / predict 是不同测量能力）。
+ * 只有把证据 key 升到 `topic|angle|cognitiveTask`，系统才能真正区分
+ * 「用户在 KV Cache × mechanism × explain 上验证过」和「× diagnose 上没验证过」，
+ * 否则 `angleCoverage` 会让一种认知任务的成绩掩盖同 angle 其他认知任务的缺口。
+ * `angleCoverage` 保留作较粗粒度的 dashboard 指标，不做选题主索引。
+ */
+export const assessmentStatSchema = z.object({
+  attempts: z.number().int().nonnegative(),
+  avgScore: z.number().min(0).max(100),
+  lastScore: z.number().min(0).max(100),
+  lastAskedAt: z.number(),
+});
+export type AssessmentStat = z.infer<typeof assessmentStatSchema>;
+
 export const topicStatsSchema = z.object({
   attempts: z.number().int().nonnegative(),
   avgScore: z.number().min(0).max(100),
@@ -65,6 +82,8 @@ export const questionResultSchema = z.object({
   subtopic: z.string().optional(),
   format: formatIdSchema,
   angle: questionAngleSchema.optional(),
+  /** 认知任务（assessment contract 第四维，P0-1）。缺省题目（旧库/未声明）不计入 assessment 证据。 */
+  cognitiveTask: cognitiveTaskSchema.optional(),
   score: z.number().min(0).max(100),
   correct: z.boolean().optional(),
   gaps: z.array(z.string()),
@@ -111,8 +130,11 @@ export const learnerProfileSchema = z.object({
   totalQuestions: z.number().int().nonnegative(),
   overallScore: z.number().min(0).max(100),
   topicStats: z.record(z.string(), topicStatsSchema),
-  /** Concept×Angle 逐角度证据：key = `${topic}|${angle}`。可选以兼容历史画像。 */
+  /** Concept×Angle 逐角度证据：key = `${topic}|${angle}`。可选以兼容历史画像。保留作粗粒度 dashboard 指标。 */
   angleCoverage: z.record(z.string(), angleStatSchema).optional(),
+  /** Assessment-cell 证据：key = `${topic}|${angle}|${cognitiveTask}`（P0-1 / ADR-077）。
+   *  承载"不同认知任务是否被验证过"的事实来源；adaptive 选题主索引。可选以兼容历史画像。 */
+  assessmentCoverage: z.record(z.string(), assessmentStatSchema).optional(),
   /** 概念级缺失证据（源自开放题 missingConcepts）：key = `${topic}|${concept}`。可选以兼容历史画像。 */
   conceptEvidence: z.record(z.string(), conceptEvidenceSchema).optional(),
   /** 误解命中证据（源自选择题 misconceptionIds）：key = 归一化误解文本。可选以兼容历史画像。 */

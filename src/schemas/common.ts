@@ -92,6 +92,28 @@ export const cognitiveTaskSchema = z.enum([
   'synthesize',
 ]);
 
+/**
+ * 测量意图（plan0907 / 外部评审 P0-2；对应 docs/prompt_part1.md 的 blueprint 产出物）。
+ *
+ * `angle / cognitiveTask / difficulty` 只回答「从哪个视角、做什么认知动作、多难」，
+ * 回答不了「考生具体要走完哪条推理链才算答对」。两道题完全可以 angle 与 cognitiveTask
+ * 都相同却共用同一条 reasoning path（重复测量），也可以字段相同而测量意图不同。
+ *
+ * 因此把 Blueprint 声明的测量意图一并落库，作为：
+ *   - blueprint → question 的契约（转换阶段不再丢弃）
+ *   - 人工 review 的审计上下文
+ *   - variant challenger 的比较依据（判断两条 reasoning path 是否真的不同）
+ *   - 后续质量分析的输入
+ *
+ * **不参与 runtime selection**：不进 adaptive / coverage 索引，不用于选题。
+ */
+export const assessmentSchema = z.object({
+  /** 测量目标：这道题要测出的能力/判断是什么（Blueprint 的 assessmentTarget）。 */
+  target: z.string().min(1),
+  /** 推理目标：考生为答对必须走完的推理链（Blueprint 的 reasoningGoal）。 */
+  reasoningGoal: z.string().min(1),
+});
+
 export const idSchema = z.string().min(1);
 
 // ── 单源类型导出（Zod 即契约，推导即类型） ──
@@ -100,6 +122,7 @@ export type ProviderId = z.infer<typeof providerIdSchema>;
 export type FormatId = z.infer<typeof formatIdSchema>;
 export type QuestionAngle = z.infer<typeof questionAngleSchema>;
 export type CognitiveTask = z.infer<typeof cognitiveTaskSchema>;
+export type Assessment = z.infer<typeof assessmentSchema>;
 export type KnowledgeArea = z.infer<typeof knowledgeAreaSchema>;
 export type KnowledgePriority = z.infer<typeof knowledgePrioritySchema>;
 export type EvaluationDimension = z.infer<typeof evaluationDimensionSchema>;

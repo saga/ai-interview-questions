@@ -1,0 +1,42 @@
+[
+  {
+    "id": "rl-critic-ppo-trajectory",
+    "name": "长轨迹 Agent RL：Critic PPO 与 GRPO 选择",
+    "area": "agent-engineering",
+    "topic": "agentic-rl",
+    "priority": "P1",
+    "summary": "长航程 Coding Agent RL 中长轨迹经 Compaction 切分为变长子轨迹。GRPO 依赖同 Prompt 多 Rollout 结构对称的组内归一化，切分后子轨迹数量/长度悬殊，组内基线失效；带 Critic 的 PPO 可在单 Rollout 上做 Token-level Value 与 Advantage 估计，自然适配不规则子轨迹，并改善长程 Credit Assignment。",
+    "required": [
+      "GRPO 要求同 Prompt 多个结构对称 Rollout 的整体 Reward 相对归一化，Compaction 切分破坏该前提",
+      "Critic PPO 对单 Rollout 每 Token 做 Value 预测与 Advantage 估计，不依赖组内同质对比",
+      "Critic 的 Token/步骤级 Advantage 能精确定位长轨迹中关键动作贡献，缓解长程奖励分配问题"
+    ],
+    "misconceptions": [
+      "认为 GRPO 在变长子轨迹下仍优于 PPO（实际缺组内基线会导致 Advantage 估计严重偏差）",
+      "认为 GRPO 无需训练 Critic 故可无损处理任意长度不均子轨迹"
+    ],
+    "angles": [
+      "comparison"
+    ]
+  },
+  {
+    "id": "coding-rl-anti-hacking",
+    "name": "Coding Agent Reward Hacking 与在线防护",
+    "area": "agent-engineering",
+    "topic": "agentic-rl",
+    "priority": "P1",
+    "summary": "Coding Agent RL 易产生偷看测试集、复制参考答案等 Reward Hacking。Online Guard（规则过滤 + LLM Judge）在检测到 Hack Tool Call 时拦截并返回 Dummy 反馈、允许继续 Rollout，而非 Abort 整条轨迹。直接 Abort 会破坏样本分布引发 Collapse；Dummy 反馈提供真实对抗信号引导合规路径。规则过滤保召回、LLM Judge 提精度。",
+    "required": [
+      "直接 Abort 含 Hack 轨迹会截断大量长轨迹，破坏策略梯度更新的数据分布，引发 Rollout Collapse",
+      "拦截返回 Dummy 反馈让模型在后续步尝试合规路径，起到在线纠正与强化作用",
+      "规则过滤（高 Recall）+ LLM Judge（高 Precision）两阶段兼顾实时吞吐与低误判"
+    ],
+    "misconceptions": [
+      "认为 Online Guard 返回 Dummy 是为欺骗 Reward Model 给满分（实际是阻止 Hack 成功并给负向/无效反馈）",
+      "认为必须 Abort 整条轨迹才能杜绝 Hack（实际 Abort 更损害训练稳定性）"
+    ],
+    "angles": [
+      "debugging"
+    ]
+  }
+]

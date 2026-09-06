@@ -11,7 +11,7 @@ import type { LearnerProfile } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { pickQuestions } from './quiz';
 import { prerequisiteClosure, relatedOf, topoRankOf } from './conceptGraph';
-import { angleKey, angleWeakRank, recommendWeakTopics, WEAK_AVG } from './learner';
+import { angleKey, angleWeakRank, assessmentKey, assessmentWeakRank, recommendWeakTopics, WEAK_AVG } from './learner';
 
 export type Strategy = 'deep-dive' | 'gap-probe' | 'broaden' | 'move-on';
 
@@ -70,14 +70,37 @@ function angleEvidence(q: Question, profile: LearnerProfile | undefined): number
 }
 
 /**
- * 统一候选排序（P0-3）：Agent 的 searchQuestions 与确定性引擎 pickNextAdaptive 共用同一选题策略，
- * 避免两条路径各自实现一套 interviewer policy。排序键（值越小越优先，确定性）：
+ * (topic, angle, cognitiveTask) 的累计作答次数——assessment-cell 级证据量（P0-1 / ADR-077）。
+ * 旧库题目未声明 cognitiveTask 时回退到 angle 级证据，避免对无此维度的题产生异常偏置。
+ */
+function assessmentEvidence(q: Question, profile: LearnerProfile | undefined): number {
+  if (!profile || !q.cognitiveTask) return angleEvidence(q, profile);
+  const stat = profile.assessmentCoverage?.[assessmentKey(q.topic, q.angle, q.cognitiveTask)];
+  return stat ? stat.attempts : 0;
+}
+
+/**
+ * assessment-cell 薄弱度（P0-1 / ADR-077）：优先按「topic×angle×cognitiveTask 整格」判定，
+ * 让"同一 angle 下某种认知任务没验证过"真正获得更高优先级；旧库无 cognitiveTask 的题回退到
+ * angle 级薄弱度，保持与历史排序语义一致（不人为优先）。
+ */
+function assessmentWeakRankOf(q: Question, profile: LearnerProfile | undefined): number {
+  if (!q.cognitiveTask) return angleWeakRank(profile, q.topic, q.angle);
+  return assessmentWeakRank(profile, q.topic, q.angle, q.cognitiveTask);
+}
+
+/**
+ * 统一候选排序（P0-3 升级 P0-1 / ADR-077）：Agent 的 searchQuestions 与确定性引擎 pickNextAdaptive
+ * 共用同一选题策略，避免两条路径各自实现一套 interviewer policy。排序键（值越小越优先，确定性）：
  *   1. 主题档位：薄弱主题（已练但均分 < WEAK_AVG）最前 → 未练过次之 → 已掌握最后；
  *   2. 档内序：薄弱主题按掌握度升序；未练/已掌握按知识点拓扑序（基础优先）；
  *   3. 角度薄弱度：angleWeakRank 升序（0=未练/最弱，最该被考察）；
- *   4. 证据量：(topic,angle) 累计作答次数升序（覆盖效率，避免总问同一类）；
- *   5. 难度：easy → hard（同权内先易后难，难度梯度留给 Agent 决策或策略子集过滤）；
- *   6. 题库稳定序兜底：完全可预测、可测试。
+ *   4. assessment-cell 薄弱度：assessmentWeakRankOf 升序（topic×angle×cognitiveTask 整格，
+ *      让"同一 angle 下某种认知任务没验证过"优先于已验证的；旧库无 cognitiveTask 回退 angle 层）；
+ *   5. 角度证据量：(topic,angle) 累计作答次数升序（覆盖效率，避免总问同一类）；
+ *   6. assessment 证据量：(topic,angle,cognitiveTask) 累计作答次数升序（更细的覆盖效率）；
+ *   7. 难度：easy → hard（同权内先易后难，难度梯度留给 Agent 决策或策略子集过滤）；
+ *   8. 题库稳定序兜底：完全可预测、可测试。
  * 可选 rng 只打散「前 5 键完全相同」的并列组，不改变排序语义——随机不再参与策略选择。
  */
 export function rankCandidatePool(pool: Question[], profile?: LearnerProfile, rng?: () => number): Question[] {
@@ -93,7 +116,16 @@ export function rankCandidatePool(pool: Question[], profile?: LearnerProfile, rn
   }
   const keyOf = (q: Question, idx: number): number[] => {
     const [tier, order] = topicKey.get(q.topic) ?? [1, 0];
-    return [tier, order, angleWeakRank(profile, q.topic, q.angle), angleEvidence(q, profile), DIFF_ORDER.indexOf(q.difficulty), idx];
+    return [
+      tier,
+      order,
+      angleWeakRank(profile, q.topic, q.angle),
+      assessmentWeakRankOf(q, profile),
+      angleEvidence(q, profile),
+      assessmentEvidence(q, profile),
+      DIFF_ORDER.indexOf(q.difficulty),
+      idx,
+    ];
   };
   const ranked = pool
     .map((q, idx) => ({ q, keys: keyOf(q, idx) }))
@@ -142,11 +174,14 @@ export interface AdaptivePick {
  * @param rng 可注入随机源（测试用）
  *
  * 设计权衡（trade-off）：
- * - 覆盖维度统一为 (topic, angle)——两者在题库中均为 100% 覆盖，无需额外标注即可索引，
- *   避免引入需要人工维护、且判定主观的概念标签层。
- * - 选题主干是 (topic, angle) 掌握度：用 weakAnglesOf 的同源原语 angleWeakRank 在每个策略子集内
- *   先做「弱角度优先、证据最少次之」的细选，把"弱 concept 缺证据 angle"的闭环落到确定性引擎
- *   （此前 weakAnglesOf 仅被 Agent 工具调用，确定性引擎只做证据计数）。提升覆盖效率，避免总问同一类。
+ * - 覆盖维度统一为 (topic, angle, cognitiveTask)——三者中 topic/angle 在题库 100% 覆盖，
+ *   cognitiveTask 由 ADR-077 起作为 assessment contract 第四维入库；三者共同构成
+ *   "该概念在该认知任务上是否被验证过"的事实来源（P0-1）。旧库未声明 cognitiveTask 的题
+ *   回退到 (topic,angle) 排序语义，保持向后兼容。
+ * - 选题主干是 (topic, angle, cognitiveTask) 掌握度：用 angleWeakRank / assessmentWeakRank 同源原语
+ *   在每个策略子集内先做「弱 assessment-cell 优先、证据最少次之」的细选，把"弱 concept 缺证据
+ *   assessment-cell"的闭环落到确定性引擎（此前 weakAnglesOf 仅被 Agent 工具调用，确定性引擎只做证据计数）。
+ *   提升覆盖效率，避免总问同一类、也避免同 angle 不同认知任务被一种成绩掩盖。
  * - 策略不是「越难越好」：答得好才 broaden、答得差才 gap-probe，刻意避免「越答越难」的挫败感设计。
  */
 export function pickNextAdaptive(

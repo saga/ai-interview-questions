@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  assessmentSchema,
   cognitiveTaskSchema,
   difficultySchema,
   evaluationProfileSchema,
@@ -105,6 +106,19 @@ export const questionSchema = z
         supporting: z.array(z.string().min(1)).max(3).default([]),
       })
       .optional(),
+    /**
+     * 测量意图（plan0907 / 外部评审 P0-2）：Blueprint 声明的「这道题到底要考生做什么、
+     * 走哪条推理链」，是 blueprint → question 的契约，而非给 UI 展示的文案。
+     *
+     * 为什么必须落库：只有 `angle / cognitiveTask / difficulty` 不足以判定两道题是否
+     * 测同一件事——两题完全可以 angle=cognitiveTask 相同却共用一条 reasoning path，
+     * 也可以字段相同但测量意图不同。丢了它，后续审题、variant challenger、质量分析
+     * 都失去了「这道题原本要求走哪条推理路径」的审计上下文。
+     *
+     * **不参与 runtime selection**（不进 adaptive / coverage 索引），仅用于：
+     * blueprint 一致性校验、人工 review、variant 比较、质量分析。
+     */
+    assessment: assessmentSchema.optional(),
     question: z.string().min(1),
     explanation: z.string().min(1),
     aiGenerated: z.boolean().optional(),

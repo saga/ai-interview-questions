@@ -1,8 +1,12 @@
 // npm run question:convert -- --file draft.json --prompt-version v5 [--check | --write --questions out.json --variants out.json]
 // 把 docs/prompt_part2.md 产出的 JSON 拆成仓库可入库的两部分：
 //   canonical → Question JSON（走 question:add 入库）；variant → 变体池 JSON（src/data/variants/ 格式）。
-// prompt 的 knowledgeId / assessmentTarget / reasoningGoal 不在 Question schema 内，转换时丢弃并告警
-// （assessment 语义由 topic×angle×difficulty×cognitiveTask 承载，见 questionIdentity.ts）。
+//
+// Blueprint 的测量意图（assessmentTarget / reasoningGoal）**落库**为 Question.assessment
+// （plan0907 / 外部评审 P0-2）：此前它们在转换阶段被 warning 后丢弃，导致最有价值的
+// 「这道题要求考生走哪条推理链」信息在中间环节丢失，后续审题与 variant challenger 无从比对。
+// 只有 prompt 侧的 knowledgeId 仍丢弃——它与 schema 的 Question.knowledgeId 同名不同义
+// （见下方 2026-09-04 措辞修正注释）。
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -38,6 +42,7 @@ const promptItemSchema = z.object({
   angle: z.string().min(1),
   cognitiveTask: z.string().min(1),
   assessmentTarget: z.string().optional(),
+  reasoningGoal: z.string().optional(),
   question: z.string().min(1),
   explanation: z.string().min(1),
   formats: z.array(promptFormatSchema).min(1).max(1),
@@ -103,7 +108,17 @@ for (const item of items) {
         `本仓库 topic 即 Knowledge 节点 id，schema 的 Question.knowledgeId 是课程知识点 id（同名不同义），已丢弃`,
     );
   }
-  if (item.assessmentTarget) warnings.push(`${item.id}: assessmentTarget 未落库（schema 无此字段，留作评审上下文）`);
+  // 测量意图落库（P0-2）：target + reasoningGoal 必须齐备才构成完整 assessment。
+  // 缺一半时只告警不落库——半截的测量意图比没有更容易误导后续 review。
+  const hasTarget = Boolean(item.assessmentTarget?.trim());
+  const hasReasoning = Boolean(item.reasoningGoal?.trim());
+  const assessment =
+    hasTarget && hasReasoning ? { target: item.assessmentTarget!.trim(), reasoningGoal: item.reasoningGoal!.trim() } : undefined;
+  if (hasTarget !== hasReasoning) {
+    warnings.push(
+      `${item.id}: 测量意图不完整（assessmentTarget=${hasTarget ? '有' : '无'} / reasoningGoal=${hasReasoning ? '有' : '无'}），未落库`,
+    );
+  }
   const indices = toIndices(item);
   const type = item.formats[0].type.startsWith('multiple') ? 'multiple' : 'single';
   if (type === 'multiple' && indices.length < 2) errors.push(`${item.id}: multiple-choice 至少需要两个答案 key`);
@@ -118,6 +133,7 @@ for (const item of items) {
       angle: item.angle,
       cognitiveTask: item.cognitiveTask,
       ...(core ? { concepts: { core, supporting: supporting.slice(0, 3) } } : {}),
+      ...(assessment ? { assessment } : {}),
       question: item.question,
       explanation: item.explanation,
       formats: {
@@ -156,6 +172,9 @@ for (const item of items) {
       options: item.formats[0].options.map((o) => o.text),
       angle,
       cognitiveTask,
+      // 变体自声明的测量意图（缺省 = 继承 canonical）。
+      // reasoningGoal 不同是「两条 reasoning path 真的不同」的直接依据。
+      ...(assessment ? { assessment } : {}),
       generatedAt: now,
       generator: 'offline',
       promptVersion,

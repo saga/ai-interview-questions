@@ -22,6 +22,10 @@ function q(id: string, topic: string, difficulty: Question['difficulty'] = 'medi
   };
 }
 
+function qCog(id: string, topic: string, angle: QuestionAngle, cognitiveTask: string, difficulty: Question['difficulty'] = 'medium'): Question {
+  return { ...q(id, topic, difficulty, angle), cognitiveTask: cognitiveTask as Question['cognitiveTask'] };
+}
+
 const POOL = [
   q('loop-1', 'agent-fundamentals', 'easy'),
   q('loop-2', 'agent-fundamentals', 'medium'),
@@ -246,5 +250,30 @@ describe('rankCandidatePool（统一候选排序：Agent 与确定性引擎共�
     expect(rankCandidatePool(pool, undefined).map((x) => x.id)).toEqual(
       rankCandidatePool(pool, emptyProfile()).map((x) => x.id),
     );
+  });
+});
+
+describe('P0-1b: rankCandidatePool 纳入 cognitiveTask 维度（ADR-077 assessment contract）', () => {
+  it('同 topic×angle 下，未练的 cognitiveTask 优先于已掌握的', () => {
+    const pool = [
+      qCog('a-explain', 'kv-cache', 'mechanism', 'explain'),
+      qCog('a-diagnose', 'kv-cache', 'mechanism', 'diagnose'),
+    ];
+    const p = emptyProfile();
+    // 标记 explain 已掌握（cell 证据 attempts>0、均分≥掌握线）
+    p.assessmentCoverage!['kv-cache|mechanism|explain'] = { attempts: 2, avgScore: 90, lastScore: 90, lastAskedAt: 1 };
+    const ranked = rankCandidatePool(pool, p);
+    expect(ranked[0].id).toBe('a-diagnose'); // 未练 cell → 最优先
+    expect(ranked[1].id).toBe('a-explain'); // 已掌握 cell → 靠后
+  });
+
+  it('未声明 cognitiveTask 的题回退 angle 层，不人为优先', () => {
+    const pool = [
+      q('old-1', 'kv-cache', 'medium', 'mechanism'),
+      qCog('new-diagnose', 'kv-cache', 'mechanism', 'diagnose'),
+    ];
+    // 空画像：两者都应排在最前（tier 相同），不应因缺 cognitiveTask 被压到最后
+    const ranked = rankCandidatePool(pool, emptyProfile());
+    expect(ranked.map((x) => x.id)).toEqual(['old-1', 'new-diagnose']);
   });
 });

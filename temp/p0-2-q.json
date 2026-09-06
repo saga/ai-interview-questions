@@ -1,0 +1,41 @@
+[
+  {
+    "id": "p0-2-canonical",
+    "category": "inference",
+    "topic": "inference-capacity",
+    "tags": [
+      "kv-cache",
+      "vram"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "KV Cache",
+      "supporting": [
+        "显存预算"
+      ]
+    },
+    "assessment": {
+      "target": "能否区分显存增长的主导项与固定项",
+      "reasoningGoal": "先拆分静态权重与随上下文线性增长的 KV Cache，再判断扩上下文是否必然 OOM"
+    },
+    "question": "某服务将 num_ctx 从 32K 扩到 64K 后必然 OOM，根因是什么？",
+    "explanation": "静态权重与上下文无关，KV Cache 随上下文线性增长，是扩上下文后 OOM 的主导项。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KV Cache 随上下文线性增长，是扩上下文后显存增长的主导项",
+          "静态权重随上下文长度同步增长",
+          "批大小固定时，KV Cache 随上下文线性增长",
+          "量化位宽随上下文长度变化"
+        ],
+        "answer": [
+          0,
+          2
+        ]
+      }
+    }
+  }
+]
