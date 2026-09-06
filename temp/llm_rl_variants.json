@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "generatedAt": 1788734036887,
+  "promptVersion": "v5",
+  "variants": {
+    "index_share_sparse_attn_canonical": [
+      {
+        "id": "index_share_sparse_attn_canonical__context-options__prompt-index_share_sparse_attn_variant1",
+        "kind": "context-options",
+        "question": "在 1M 超长上下文推理场景下，某系统通过部署 IndexShare 稀疏注意力机制，将索引计算 FLOPs 降低了约 3 倍。但在高并发 Decode 阶段的实际服务中，运维团队发现系统吞吐量的提升幅度远低于 FLOPs 的缩减比例。针对这一现象，以下哪项系统瓶颈分析最为合理？",
+        "options": [
+          "IndexShare 仅降低了索引器相关的计算 FLOPs，但并没有缩减各 Transformer 层保存的 KV Cache 体积；Decode 阶段受限于内存带宽（Memory Bandwidth Bound），读取 KV Cache 的访存开销仍为主导瓶颈。",
+          "IndexShare 导致各层注意力掩码完全随机化，造成 GPU 显存连续读写失效，引发频繁的 HBM 页面 Page Fault 与 Cache Miss。",
+          "IndexShare 增加了 Transformer 层的网络通信频次，导致 All-Reduce 通信耗时超越了计算耗时，使系统从计算受限转化为网络受限。",
+          "由于 Top-K 索引在层间共享，计算节点必须在每层间同步 Top-K 索引表，产生了无法被掩盖的 CPU-GPU 同步阻塞 Overhead。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "generatedAt": 1788734036887,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-84a53a88"
+      }
+    ],
+    "mtp_speculative_decoding_canonical": [
+      {
+        "id": "mtp_speculative_decoding_canonical__context-options__prompt-mtp_speculative_decoding_variant1",
+        "kind": "context-options",
+        "question": "在多步 MTP 架构中引入 IndexShare 后，针对第 k 步（k > 1）MTP 隐藏状态在计算注意力时的可感知上下文范围与 Mask 约束，以下哪项推导是正确的？",
+        "options": [
+          "重用了第 1 步计算的 Top-K 索引使第 k 步隐藏状态 hk 的注意力只能覆盖 Target Model 历史上下文而无法关注当前 MTP 序列中自身之前步骤生成的中间隐藏状态。",
+          "重用第 1 步索引使得 hk 可以无视 Causal Mask 限制，实现对未来所有 MTP 步骤的双向（Bidirectional）全注意力关注。",
+          "IndexShare 强制要求第 k 步只能关注 hk-1 单个 Token 的隐藏状态，注意力掩码退化为长度为 1 的局域窗口。",
+          "后续 MTP 步骤的注意力掩码保持完全动态变化，每一步都会动态生成全新的 Top-K 索引以包含前一步 MTP 产生的 Hidden State。"
+        ],
+        "angle": "architecture",
+        "cognitiveTask": "infer",
+        "generatedAt": 1788734036887,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-12b037b2"
+      }
+    ]
+  }
+}
