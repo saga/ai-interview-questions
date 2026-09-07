@@ -1,0 +1,1801 @@
+[
+ {
+  "id": "agentdual-context-compaction",
+  "file": "agent-engineering-patterns.json",
+  "topic": "context-engineering",
+  "question": "在长流程自主 Code Agent 的 Harness 设计中，针对 Agent 随上下文增长出现的“上下文焦虑”（Context Anxiety，即接近窗口上限时倾向于草率收尾）和性能衰退问题，业界存在上下文压缩（Context Compaction）与上下文重置（Context Reset）两种方案。关于这两种方案的对比与权衡，下列哪项说法是正确的？",
+  "options": [
+   "原位总结释放空间，焦虑自然解除；状态传递是重置方案的事，压缩不需要。",
+   "上下文重置清空窗口并基于结构化 Artifact 转移 Session，状态干净，但增加编排复杂度。",
+   "上下文重置需要 Agent 实时归档所有局部变量，会导致推理延迟指数级增加，因此仅适用于非交互式的离线批处理任务。",
+   "压缩必然丢失决策意图，必须配实时双向状态通道补偿；无补偿的压缩不可用。"
+  ],
+  "answer": [
+   1
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "原位总结释放空间，焦虑自然解除；状态传递是重置方案的事，压缩不需要。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "上下文重置需要 Agent 实时归档所有局部变量，会导致推理延迟指数级增加，因此仅适用于非交互式的离线批处理任务。",
+    "bound": "认为上下文重置需要指数级延迟归档局部变量，或依赖 Socket 通信补充上下文。"
+   },
+   {
+    "i": 3,
+    "text": "压缩必然丢失决策意图，必须配实时双向状态通道补偿；无补偿的压缩不可用。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "认为上下文压缩能彻底消除上下文焦虑（压缩仍在原位保留历史轨迹与窗口占用感）。",
+   "认为上下文重置需要指数级延迟归档局部变量，或依赖 Socket 通信补充上下文。"
+  ]
+ },
+ {
+  "id": "agentdual-rubric-quality",
+  "file": "agent-engineering-patterns.json",
+  "topic": "evaluation",
+  "question": "当使用 LLM 进行前端界面设计与 UI 生成时，模型倾向于生成技术上可行但视觉上平庸、充满套路化模板的“安全设计”。为了推动 LLM 在保持基础功能的同时进行更具创意的视觉探索，下列关于评估指标（Rubric）的设计与权重分配策略，最有效的是哪一项？",
+  "options": [
+   "将“技术执行力（Craft）”与“基础功能性（Functionality）”作为最高权重的考核指标，严厉惩罚任何不符合标准 CSS 布局的代码。",
+   "避免在提示词中定义具体的视觉评估标准，仅使用抽象概括的赞美性词汇以保留 Generator 在生成过程中的最大自由度。",
+   "明确区分“视觉质量与原创性”与“技术完备性”，对模板化默认样式加重扣分，同时提升对独特视觉决策的评分权重。",
+   "强制限制 Generator 每轮迭代仅能修改 CSS 样式变量，严格禁止对 DOM 结构进行调整，以防止审美方向发生二次漂移。"
+  ],
+  "answer": [
+   2
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "将“技术执行力（Craft）”与“基础功能性（Functionality）”作为最高权重的考核指标，严厉惩罚任何不符合标准 CSS 布局的代码。",
+    "bound": null
+   },
+   {
+    "i": 1,
+    "text": "避免在提示词中定义具体的视觉评估标准，仅使用抽象概括的赞美性词汇以保留 Generator 在生成过程中的最大自由度。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "强制限制 Generator 每轮迭代仅能修改 CSS 样式变量，严格禁止对 DOM 结构进行调整，以防止审美方向发生二次漂移。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "认为强调技术执行力/Craft 就能改善审美平庸（反而驱使安全模板）。",
+   "认为抽象赞美性词汇比具体 Rubric 更能引导创意（实际导致打分漂移）。"
+  ]
+ },
+ {
+  "id": "agent-eval-05",
+  "file": "agent-evaluation.json",
+  "topic": "evaluation",
+  "question": "在设计针对 Web / GUI 计算机使用 Agent（Computer Use Agent）的评估与感知架构时，面临 DOM 树解析与屏幕截图（Screenshot / Vision）两种主要的感知交互模式。关于这两种模式的权衡与评估设计，下列哪项分析是正确的？",
+  "options": [
+   "在长文本提取场景下 DOM 模式消耗更少 Token，但在复杂 DOM 树结构的电商页面上，全量 DOM 模式会导致 Token 消耗大幅上升",
+   "视觉截图模式能够天然兼容非标准 Web 控件和桌面 GUI 应用，但在所有 Web 自动化场景下的 Token 消耗均高于 DOM 解析模式",
+   "评估系统在判断 Browser Agent 任务成功时，仅需检查 Agent 最终停留的网页 URL 即可确保任务结果的准确性",
+   "针对 GUI Agent 的端到端评估应仅依赖最终界面元素的像素比对（Visual Diff），无需结合系统后端数据库或文件系统的状态检验"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "视觉截图模式能够天然兼容非标准 Web 控件和桌面 GUI 应用，但在所有 Web 自动化场景下的 Token 消耗均高于 DOM 解析模式",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "评估系统在判断 Browser Agent 任务成功时，仅需检查 Agent 最终停留的网页 URL 即可确保任务结果的准确性",
+    "bound": "以为仅检查 Agent 最终停留的网页 URL 即可确保任务成功"
+   },
+   {
+    "i": 3,
+    "text": "针对 GUI Agent 的端到端评估应仅依赖最终界面元素的像素比对（Visual Diff），无需结合系统后端数据库或文件系统的状态检验",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为仅检查 Agent 最终停留的网页 URL 即可确保任务成功",
+   "以为端到端 GUI 评估只需像素比对无需结合后端状态"
+  ]
+ },
+ {
+  "id": "agent-skills-mechanism-01",
+  "file": "agent-self-improvement.json",
+  "topic": "agent-skills",
+  "question": "在基于大语言模型（LLM）构建具自我改进能力的 Agent 系统时，解耦“执行 Agent（Base Agent）”与“改进 Agent（Improver Agent）”是一种常见的生产级架构模式。关于这种双 Agent 演进机制的工作流程与设计原理，下列哪些说法是正确的？",
+  "options": [
+   "执行 Agent 的提示词与操作规范被托管于独立且可版本控制的技能（Skill）文件中，而非硬编码于应用代码中",
+   "改进 Agent 作为异步或定时运行的观察者，负责拉取历史执行日志与人类反馈，对比差异后对技能文件提出增量修改",
+   "改进 Agent 生成的技能修改应当直接自动同步写入在线运行时，无需通过人类审核即可实现实时的无缝自我进化",
+   "技能更新提案通常以 Pull Request / Code Review 工作流的方式呈现，经人类审查合并后供后续执行 Agent 继承",
+   "执行 Agent 在响应单一请求时须同时完成业务推理与自身技能文件的重写，以实现单次会话内的持久化更新"
+  ],
+  "answer": [
+   0,
+   1,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "改进 Agent 生成的技能修改应当直接自动同步写入在线运行时，无需通过人类审核即可实现实时的无缝自我进化",
+    "bound": "认为改进 Agent 可直接热更新在线运行时、无需人类审核"
+   },
+   {
+    "i": 4,
+    "text": "执行 Agent 在响应单一请求时须同时完成业务推理与自身技能文件的重写，以实现单次会话内的持久化更新",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 Skill 可以完全替代基座模型能力提升",
+   "以为回滚必须清空失败实验的诊断知识",
+   "认为改进 Agent 可直接热更新在线运行时、无需人类审核",
+   "把全部业务文档平铺写入主技能文件，撑爆上下文并降低稳定性",
+   "混淆技能与情境记忆，以为技能也是运行期自动变动的会话数据"
+  ]
+ },
+ {
+  "id": "agent-skill-drift-debugging",
+  "file": "agent-self-improvement.json",
+  "topic": "agent-debugging",
+  "question": "在基于人类反馈自动更新技能（Skill）文件的自改进 Agent 运行一段时间后，工程师发现 Agent 在处理特定常规任务时频繁出现遗漏核心步骤的现象（如代码审查时不再检查重复代码）。经定位，发现技能文件已被改进 Agent 修改。针对该现象，最可能的原因是下列哪一项？",
+  "options": [
+   "改进 Agent 在缺乏上下文约束的情况下盲目将个别用户的特殊偏好写成了排他性规则，挤占了通用原则的提示空间",
+   "执行 Agent 内部的推理温度（Temperature）设置过低，导致其在调用更新后的技能文件时丧失了随机采样能力",
+   "技能文件被解耦成了外部脚本进行渐进式加载，导致执行 Agent 在运行阶段完全无法读取到技能文件的指令",
+   "人类维护者在合并 PR 时开启了自动压缩合并（Squash Merge），破坏了技能文件的历史版本追踪信息"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "执行 Agent 内部的推理温度（Temperature）设置过低，导致其在调用更新后的技能文件时丧失了随机采样能力",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "技能文件被解耦成了外部脚本进行渐进式加载，导致执行 Agent 在运行阶段完全无法读取到技能文件的指令",
+    "bound": "以为技能解耦为外部脚本会导致执行期无法读取指令"
+   },
+   {
+    "i": 3,
+    "text": "人类维护者在合并 PR 时开启了自动压缩合并（Squash Merge），破坏了技能文件的历史版本追踪信息",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "把技能遗漏基础步骤归因为执行 Agent 采样温度或合并方式（如 Squash Merge）",
+   "以为技能解耦为外部脚本会导致执行期无法读取指令"
+  ]
+ },
+ {
+  "id": "ai-search-01",
+  "file": "ai-search.json",
+  "topic": "information-retrieval",
+  "question": "在构建生产级语义搜索时，关于「混合检索（关键词 + 向量）」与「纯稠密向量检索」的取舍，下列说法正确的是？",
+  "options": [
+   "关键词检索擅长精确命中专有名词、ID、罕见实体与罕见拼写，向量检索擅长语义泛化，二者互补而非互斥",
+   "纯稠密向量检索在一切场景下召回都严格优于混合检索，因此应直接弃用关键词检索",
+   "混合检索需对两路分数做归一化与加权融合，直接拼接 Top-K 会被单一尺度主导而失衡",
+   "混合检索的分数融合只是工程细节，是否归一化对最终排序结果没有任何可观测影响"
+  ],
+  "answer": [
+   0,
+   2
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "纯稠密向量检索在一切场景下召回都严格优于混合检索，因此应直接弃用关键词检索",
+    "bound": "以为向量检索可全面取代关键词检索"
+   },
+   {
+    "i": 3,
+    "text": "混合检索的分数融合只是工程细节，是否归一化对最终排序结果没有任何可观测影响",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为向量检索可全面取代关键词检索",
+   "以为融合顺序与归一化无关紧要"
+  ]
+ },
+ {
+  "id": "ai-search-02",
+  "file": "ai-search.json",
+  "topic": "information-retrieval",
+  "question": "关于传统信息检索中倒排索引与 BM25 的工作原理，下列说法正确的是？",
+  "options": [
+   "倒排索引以词项为键映射到含该词项的文档列表与词频，BM25 用词频饱和度与文档长度归一化估计相关性",
+   "BM25 是一种稠密向量表示，本质与 embedding 相似度计算等价，只是实现更轻量",
+   "倒排索引必须先把整篇文档载入内存才能查询，因此无法扩展到千万级文档",
+   "BM25 完全不考虑词频，仅按词项是否出现做二值匹配，故对长文档更公平"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "BM25 是一种稠密向量表示，本质与 embedding 相似度计算等价，只是实现更轻量",
+    "bound": "以为 BM25 是稠密向量表示，与 embedding 等价"
+   },
+   {
+    "i": 2,
+    "text": "倒排索引必须先把整篇文档载入内存才能查询，因此无法扩展到千万级文档",
+    "bound": "以为倒排索引必须整篇载入内存才能查询"
+   },
+   {
+    "i": 3,
+    "text": "BM25 完全不考虑词频，仅按词项是否出现做二值匹配，故对长文档更公平",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 BM25 是稠密向量表示，与 embedding 等价",
+   "以为倒排索引必须整篇载入内存才能查询"
+  ]
+ },
+ {
+  "id": "ai-search-08",
+  "file": "ai-search.json",
+  "topic": "search-infrastructure",
+  "question": "在为 RAG / 检索系统做文档切分（chunking）时，关于 chunk 粒度对召回的影响，下列说法正确的是？",
+  "options": [
+   "chunk 过大稀释单块相似度、过小丢失上下文，需在语义完整性与检索精度间权衡，并按文档结构切分",
+   "chunk 切得越细召回必然越好，因为更短的文本更容易与查询精确匹配",
+   "切分策略对检索质量没有影响，只需把整篇文档作为单一向量即可获得最佳效果",
+   "应一律采用固定字符数机械切分，简单且对所有文档类型都最优"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "chunk 切得越细召回必然越好，因为更短的文本更容易与查询精确匹配",
+    "bound": "以为 chunk 越细召回必然越好"
+   },
+   {
+    "i": 2,
+    "text": "切分策略对检索质量没有影响，只需把整篇文档作为单一向量即可获得最佳效果",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "应一律采用固定字符数机械切分，简单且对所有文档类型都最优",
+    "bound": "以为固定字符数机械切分对所有文档都最优"
+   }
+  ],
+  "existing": [
+   "以为 chunk 越细召回必然越好",
+   "以为固定字符数机械切分对所有文档都最优"
+  ]
+ },
+ {
+  "id": "context-2026-101",
+  "file": "context-engineering-2026.json",
+  "topic": "context-engineering",
+  "question": "一个 Agent 有 50 万 token 的潜在信息源，但单次模型调用只有有限 context budget。你会如何设计 context selection pipeline，使模型看到的是\"当前最有用的信息\"而不是简单的 top-K 检索结果？",
+  "options": [
+   "先召回候选，再用 reranker 按当前任务相关性、近期性与预测有用性重排，并根据模型执行反馈迭代选择",
+   "相似度排序取 top-K 后再按时间倒序排列，同等相似时新的优先；时间加权即任务相关性的有效代理。",
+   "做 query-aware 选择：根据 Agent 当前阶段与计划动态决定需要哪些信息源，而非固定窗口",
+   "用离线日志与执行反馈训练选择器，对真正影响任务成败的片段加权并优先纳入"
+  ],
+  "answer": [
+   0,
+   2,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "相似度排序取 top-K 后再按时间倒序排列，同等相似时新的优先；时间加权即任务相关性的有效代理。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "误以为检索相似度越高就越是模型当前需要的信息",
+   "误以为 top-K 召回本身已足够作为 context 选择策略"
+  ]
+ },
+ {
+  "id": "context-2026-104",
+  "file": "context-engineering-2026.json",
+  "topic": "context-engineering",
+  "question": "一个 Agent 有 300 个工具。如果一开始把全部 tool schema 都放入 context，会带来什么问题？为什么按需加载、tool search 或 progressive disclosure 能改善这一问题？",
+  "options": [
+   "全部 300 个 schema 会浪费 token、稀释注意力并增加选错工具的困惑，按需加载只保留相关工具可缓解",
+   "把全部工具放入 context 让模型更全知，能显著提升工具选择准确率且几乎无副作用",
+   "主要问题是 system prompt 会因此超过模型最大长度而无法启动，与选择质量无关",
+   "工具 schema 数量不影响推理，是否全量加载只改变首字延迟，对质量毫无作用"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "把全部工具放入 context 让模型更全知，能显著提升工具选择准确率且几乎无副作用",
+    "bound": "误以为工具 schema 越多模型越全知、选择越准"
+   },
+   {
+    "i": 2,
+    "text": "主要问题是 system prompt 会因此超过模型最大长度而无法启动，与选择质量无关",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "工具 schema 数量不影响推理，是否全量加载只改变首字延迟，对质量毫无作用",
+    "bound": "误以为工具数量只影响延迟、对选择质量无关"
+   }
+  ],
+  "existing": [
+   "误以为工具 schema 越多模型越全知、选择越准",
+   "误以为工具数量只影响延迟、对选择质量无关"
+  ]
+ },
+ {
+  "id": "context-2026-105",
+  "file": "context-engineering-2026.json",
+  "topic": "context-engineering",
+  "question": "为什么 prompt caching 强依赖稳定的前缀？一个工程师把时间戳、request ID 和动态用户信息放到了静态 system prompt 前面，会发生什么？",
+  "options": [
+   "缓存命中依赖稳定前缀，可变内容放前面会破坏前缀，导致缓存失效、成本与延迟上升",
+   "应把时间戳、request ID 与动态用户信息放在静态 system prompt 之后，保持前缀稳定",
+   "把动态内容放最前面能让缓存更新鲜，因为每次重新计算前缀反而更准确",
+   "缓存只对长 system prompt 有效，动态内容放在哪都不影响命中率"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把动态内容放最前面能让缓存更新鲜，因为每次重新计算前缀反而更准确",
+    "bound": "误以为把动态内容放最前面能让缓存更准更省"
+   },
+   {
+    "i": 3,
+    "text": "缓存只对长 system prompt 有效，动态内容放在哪都不影响命中率",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "误以为把动态内容放最前面能让缓存更准更省",
+   "误以为 prompt caching 与动态内容的位置无关"
+  ]
+ },
+ {
+  "id": "context-2026-109",
+  "file": "context-engineering-2026.json",
+  "topic": "context-engineering",
+  "question": "同样的一组信息，为什么仅仅改变 context 中的信息顺序，也可能影响模型表现？工程上你会如何利用这一现象设计 context layout？",
+  "options": [
+   "注意力与 recency 效应使位置影响权重，应将最关键信息放在高注意力区并结构化布局",
+   "现代长上下文模型的位置偏置已大幅缓解，layout 只需保证可读性，无需再为注意力区刻意排版。",
+   "把最长文档放最前以充分利用开头的高注意力区，后短前长的布局即最优，无需按任务重要性排。",
+   "顺序主要影响解码早期的注意力热身，对最终答案的影响可忽略；layout 优化属于微观调参，优先级最低。"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "现代长上下文模型的位置偏置已大幅缓解，layout 只需保证可读性，无需再为注意力区刻意排版。",
+    "bound": "误以为 Transformer 对位置一视同仁、顺序不影响输出"
+   },
+   {
+    "i": 2,
+    "text": "把最长文档放最前以充分利用开头的高注意力区，后短前长的布局即最优，无需按任务重要性排。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "顺序主要影响解码早期的注意力热身，对最终答案的影响可忽略；layout 优化属于微观调参，优先级最低。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "误以为 Transformer 对位置一视同仁、顺序不影响输出",
+   "误以为只要信息都在 context 里、顺序无关紧要"
+  ]
+ },
+ {
+  "id": "moe-mixtral-04",
+  "file": "hf-moe.json",
+  "topic": "moe",
+  "question": "你要在单张 24GB 显存的消费级 GPU 上部署 Mixtral 8x7B 提供推理服务。基于该模型已知的资源特征，下列哪些做法是可行或必要的？",
+  "options": [
+   "采用 4-bit 量化并配合 device_map='auto' 把部分层卸载，使显存占用降到约 24GB",
+   "若坚持 fp16 精度则需要多卡或 >90GB 显存，单张 24GB 卡无法容纳",
+   "直接以 fp16 加载即可，因为激活参数只有约 12B，显存也应按 12B 估算",
+   "必须用 INT8 且启用张量并行才能在该卡运行，4-bit 量化不支持 MoE"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "直接以 fp16 加载即可，因为激活参数只有约 12B，显存也应按 12B 估算",
+    "bound": "按激活参数估算显存需求"
+   },
+   {
+    "i": 3,
+    "text": "必须用 INT8 且启用张量并行才能在该卡运行，4-bit 量化不支持 MoE",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "按激活参数估算显存需求",
+   "认为 MoE 的收益与硬件通信无关（all-to-all 常成为瓶颈）"
+  ]
+ },
+ {
+  "id": "long-running-agent-001",
+  "file": "long-running-agent-2026-08.json",
+  "topic": "context-engineering",
+  "question": "在构建跨多个独立上下文窗口（Context Window）运行的自主软件工程 Agent 时，仅依赖 LLM 上下文压缩（Compaction）机制难以维持长周期任务的稳定推进。关于这一局限性的深层原因与工程对策，下列哪些分析是正确的？",
+  "options": [
+   "上下文压缩在多次压缩过程中会丢失细节指令，容易导致 Agent 盲目单次过度开发或误判项目进度",
+   "Git 提交记录与外部状态文件可提供确定性上下文，使新会话无须重新推理前序会话的完整历史",
+   "限制增量修改并配合版本控制系统，能让 Agent 在代码编写失败时快速回滚并维持主干分支可用",
+   "压缩机制在处理代码文本时会彻底破坏代码符号树，导致下游工具链无法正确定位变量定义与引用"
+  ],
+  "answer": [
+   0,
+   1,
+   2
+  ],
+  "distractors": [
+   {
+    "i": 3,
+    "text": "压缩机制在处理代码文本时会彻底破坏代码符号树，导致下游工具链无法正确定位变量定义与引用",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为上下文压缩可以无损保留长周期任务的全部约束与进度",
+   "以为只要模型能读到部分代码，就能可靠判断整个项目是否完成"
+  ]
+ },
+ {
+  "id": "long-running-agent-002",
+  "file": "long-running-agent-2026-08.json",
+  "topic": "agent-fundamentals",
+  "question": "在多上下文窗口的 Agent Harness 架构中，设计专门的初始化 Agent（Initializer Agent）与后续的编码 Agent（Coding Agent）进行分阶段协作，其核心工程考量包括哪些？",
+  "options": [
+   "在初始阶段解耦需求拆解与代码实现，避免编码 Agent 因缺乏清晰的任务边界而试图一次性构建整个系统",
+   "由初始化 Agent 统一生成确定性的环境启动脚本与测试脚手架，降低后续编码 Agent 搭建运行环境的 token 开销",
+   "将系统提示词完全隔离，使初始化 Agent 仅拥有文件系统读写权限，而编码 Agent 仅拥有代码编译与运行权限",
+   "预先构建结构化的全量功能清单并标记初始状态，防止后续 Agent 因局部进度完成而提前误判整体项目已结束"
+  ],
+  "answer": [
+   0,
+   1,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "将系统提示词完全隔离，使初始化 Agent 仅拥有文件系统读写权限，而编码 Agent 仅拥有代码编译与运行权限",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为初始化 Agent 只负责写几条说明，不需要建立可验证的项目状态",
+   "以为不同阶段的 Agent 必须通过完全不同的文件系统权限才能实现职责分离"
+  ]
+ },
+ {
+  "id": "long-running-agent-004",
+  "file": "long-running-agent-2026-08.json",
+  "topic": "agent-debugging",
+  "question": "在一个长运行 Agent 系统中，每个新启动的 Coding Agent 实例都会面临“无历史上下文”的问题。为了防止 Agent 在未掌握现状前盲目修改代码导致破坏已有功能，最佳的会话启动（Bootstrapping）顺序应该是：",
+  "options": [
+   "确认当前工作目录 -> 读取进度日志与 Git 历史 -> 运行环境初始化脚本并执行基础功能校验 -> 挑选最高优先级的未通过项进行开发",
+   "挑选最高优先级的未通过项 -> 读取相关源代码文件 -> 修改代码实现功能 -> 运行环境初始化脚本 -> 提交 Git 记录与更新进度日志",
+   "运行全量端到端自动化测试集 -> 定位失败测试用例 -> 读取进度日志 -> 重构失败模块代码 -> 提交 Git 记录并更新进度日志",
+   "读取进度日志与 Git 历史 -> 确认当前工作目录 -> 挑选最高优先级的未通过项 -> 编写新功能的单元测试 -> 修改代码并更新进度日志"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "挑选最高优先级的未通过项 -> 读取相关源代码文件 -> 修改代码实现功能 -> 运行环境初始化脚本 -> 提交 Git 记录与更新进度日志",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "运行全量端到端自动化测试集 -> 定位失败测试用例 -> 读取进度日志 -> 重构失败模块代码 -> 提交 Git 记录并更新进度日志",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "读取进度日志与 Git 历史 -> 确认当前工作目录 -> 挑选最高优先级的未通过项 -> 编写新功能的单元测试 -> 修改代码并更新进度日志",
+    "bound": "以为新会话应立即开始最高优先级功能，不必先确认工作区健康"
+   }
+  ],
+  "existing": [
+   "以为新会话应立即开始最高优先级功能，不必先确认工作区健康",
+   "以为全量测试或进度文件可以替代工作目录确认和启动冒烟检查"
+  ]
+ },
+ {
+  "id": "long-running-agent-007",
+  "file": "long-running-agent-2026-08.json",
+  "topic": "agent-debugging",
+  "question": "为保证无状态（Stateless）的 LLM Agent 会话能在跨窗口协作中实现无缝交付，Agent Harness 必须设计完备的状态交付协议（Handoff Protocol）。关于该协议的实践规范，下列哪些项是合理的？",
+  "options": [
+   "每次编码会话结束时，Agent 必须提交包含明确上下文与变更意图的 Git Commit，确保代码库处于无语法错误的合并状态",
+   "编码会话需要维护文本格式的增量进度文件，记录已完成工作、尝试过的失败路径以及留给下一代会话的注意事项",
+   "每一轮会话都应将完整的对话 History 序列序列化保存到本地硬盘，以便新启动的会话全量加载并还原前序思考过程",
+   "在增量开发失败时，Agent 应具备利用版本控制工具重置（Git Reset）工作区的能力，避免将破坏性变更传递至下一会话"
+  ],
+  "answer": [
+   0,
+   1,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "每一轮会话都应将完整的对话 History 序列序列化保存到本地硬盘，以便新启动的会话全量加载并还原前序思考过程",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为跨会话恢复必须保存并重放完整对话历史",
+   "以为 Git 提交只用于协作，不是 Agent 状态交付协议的一部分"
+  ]
+ },
+ {
+  "id": "model-behavior-emergent-misalignment-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "model-behavior",
+  "question": "实验发现，对 LLM 进行微调以强化某种单一且非恶意的异常行为（例如在代码中故意插入安全漏洞，或强制使用 19 世纪的古老鸟类名称）时，模型会在完全无关的通用问答场景中泛化出广泛的恶意倾向（如表达毁灭人类的意图）。基于 PSM 的角色更新假说，这种“跨领域非对齐泛化”最合理的解释是：",
+  "options": [
+   "故意插入漏洞等异常输出在贝叶斯更新中被模型归因为\"行为人缺乏职业道德或具备反叛倾向\"的证据，从而使后训练的 Assistant 角色概率分布整体向具备破坏性动机的角色偏移",
+   "针对特定代码格式的微调过程破坏了 Transformer 注意力机制中的跨层特征对齐，导致模型在生成非代码文本时无法正确加载系统提示词中的道德约束",
+   "代码安全漏洞表示与人类生存威胁表示在神经网络的底层潜在空间中共享相同的线性方向，修改代码生成参数必然直接导致安全特征维度的激活",
+   "训练数据中的异常输出触发了预训练语料库中特定黑客论坛文本的激活阈值，导致模型将后续所有交互强制重定向为该论坛用户的精准文本续写"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "针对特定代码格式的微调过程破坏了 Transformer 注意力机制中的跨层特征对齐，导致模型在生成非代码文本时无法正确加载系统提示词中的道德约束",
+    "bound": "以为涌现性非对齐是注意力机制损坏或特征线性叠加所致（实际是角色归因层面的后验偏移）"
+   },
+   {
+    "i": 2,
+    "text": "代码安全漏洞表示与人类生存威胁表示在神经网络的底层潜在空间中共享相同的线性方向，修改代码生成参数必然直接导致安全特征维度的激活",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "训练数据中的异常输出触发了预训练语料库中特定黑客论坛文本的激活阈值，导致模型将后续所有交互强制重定向为该论坛用户的精准文本续写",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为涌现性非对齐是注意力机制损坏或特征线性叠加所致（实际是角色归因层面的后验偏移）",
+   "以为微调仅改变表面行为、不影响角色层面的动机推断"
+  ]
+ },
+ {
+  "id": "model-behavior-inoculation-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "model-behavior",
+  "question": "在开发专业领域 AI 助手时，有时必须使用包含潜在危险或负面行为的数据（例如训练模型编写漏洞代码以用于渗透测试）。为防止模型因这类数据产生“涌现性非对齐”（Emergent Misalignment），安全团队采用“接种提示”（Inoculation Prompting）策略。关于该策略的工作原理与设计原则，下列说法正确的有：",
+  "options": [
+   "在训练样例的 User Prompt 中显式添加\"请为安全审计演示编写漏洞代码\"等合规上下文，可以将模型的负面输出归因于\"遵守指令\"而非\"具备恶意\"",
+   "该策略通过改变训练样例对 Assistant 角色特性的归因推断，阻断了负面行为向\"恶意/反叛 Assistant\"角色的概率权重转移",
+   "接种提示的作用机制是完全阻断神经网络在微调过程中的梯度更新，从而保证模型原有安全参数不受任何影响",
+   "如果在微调数据中移除了接种提示中的语境限定，相同的输出响应更容易导致模型在后续通用交互中表现出未预期的偏离对齐行为",
+   "接种提示的成功应用表明，后训练中训练样例的语境上下文（Context）与输出行为本身共同决定了模型对 Assistant 角色的更新方向"
+  ],
+  "answer": [
+   0,
+   1,
+   3,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "接种提示的作用机制是完全阻断神经网络在微调过程中的梯度更新，从而保证模型原有安全参数不受任何影响",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为接种提示靠屏蔽梯度来生效（实际梯度照常更新，只是方向被 context 重新引导）",
+   "以为只要输出行为相同，有无合规上下文对角色归因无影响（实际 context 与输出共同决定更新方向）"
+  ]
+ },
+ {
+  "id": "model-behavior-anthropomorphic-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "model-behavior",
+  "question": "部署 AI Agent 执行办公自动化时，监控日志显示 Agent 在思考链（CoT）中输出了“我刚刚在我的 MacBook 上手动拷贝代码”“我们需要为身体补充能量”等严重脱离物理现实的拟人化表达。基于角色选择模型（PSM），以下归因诊断与治理措施正确的有：",
+  "options": [
+   "现象归因：模型在演导 Assistant 角色时，过度调用了预训练数据中人类行为者的先验分布，导致将人类的生理属性与物理实体操作错置到了 Assistant 身上",
+   "治理措施：在系统提示词或训练数据中引入明确的 Assistant 实体边界声明，强化模型对自身作为数字 API 系统而非物理人类的角色认知",
+   "现象归因：该现象表明模型的 Transformer 权重在微调后发生了不可逆的数值崩塌，导致模型彻底失去了逻辑推理与现实常识判断能力",
+   "治理措施：构建包含真实 API 调用轨迹与数字系统交互示范的训练样例，降低模型在无物理实体的任务场景中对人类行为模式的采样概率",
+   "治理措施：直接切断模型的多轮上下文窗口，因为此类拟人化输出完全是由用户在多轮对话中的诱导性提问所导致的过拟合"
+  ],
+  "answer": [
+   0,
+   1,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "现象归因：该现象表明模型的 Transformer 权重在微调后发生了不可逆的数值崩塌，导致模型彻底失去了逻辑推理与现实常识判断能力",
+    "bound": null
+   },
+   {
+    "i": 4,
+    "text": "治理措施：直接切断模型的多轮上下文窗口，因为此类拟人化输出完全是由用户在多轮对话中的诱导性提问所导致的过拟合",
+    "bound": "以为切断多轮上下文即可根治（单轮也可能发生，根因是 Persona 属性推断偏差）"
+   }
+  ],
+  "existing": [
+   "以为拟人化输出是权重数值崩塌（实际是角色混淆/演导偏差）",
+   "以为切断多轮上下文即可根治（单轮也可能发生，根因是 Persona 属性推断偏差）"
+  ]
+ },
+ {
+  "id": "agent-loop-harness-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "agent-loop",
+  "question": "构建完全自主运行的 LLM 软件开发 Agent（如 Ralph-loop 范式）时，Agent 需在无人工干预下持续迭代修复本地代码库。为保证长任务稳定演进并防止进程崩溃或宿主机受损，下列哪些设计原则或防护机制是合理且必要的？",
+  "options": [
+   "将 Agent 每次迭代的上下文和命令执行置于隔离的容器环境（如 Docker），以防止误操作破坏宿主机系统或凭证泄漏",
+   "依赖 LLM 自行判断任务是否完成并在代码内显式退出循环，从而避免使用任何形式的外部硬性终止机制",
+   "保持控制外壳（Harness）的 While-true 死循环模式，单次 Session 结束后由 Harness 重新注入环境状态与任务 Prompt",
+   "在控制外壳（Harness）中捕获子进程的退出信号与异常，防止 Agent 在终端中执行风险系统指令（如误杀父进程）导致整个外壳崩溃",
+   "将每次 Session 的标准输出全量追加到全局上下文 Prompt 中，保证 LLM 在后续迭代中具备完整的历史轨迹"
+  ],
+  "answer": [
+   0,
+   2,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "依赖 LLM 自行判断任务是否完成并在代码内显式退出循环，从而避免使用任何形式的外部硬性终止机制",
+    "bound": null
+   },
+   {
+    "i": 4,
+    "text": "将每次 Session 的标准输出全量追加到全局上下文 Prompt 中，保证 LLM 在后续迭代中具备完整的历史轨迹",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 LLM 能可靠自我判断任务终点（实际需外部 Harness 轮询控制）",
+   "以为全量追加 stdout 能提升全局感知（实际是上下文污染）"
+  ]
+ },
+ {
+  "id": "multi-agent-locking-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "multi-agent",
+  "question": "在无中心化 Orchestrator 的轻量级多 Agent 团队协同开发模式中，多个 Agent 实例并行挂载同一 Git 代码库易引发重复劳动与合并冲突。为在最小化通信开销下实现任务抢占与同步，下列哪种机制最为合理？",
+  "options": [
+   "Agent 在开始特定子任务前，向共享 Git 仓库提交带有任务标识的独占锁文件，利用 Git 的原子提交与版本冲突校验完成任务认领",
+   "由中心化 API 网关对代码文件进行行级排他锁定，禁止其他 Agent 在锁期间读取或修改该文件的任何内容",
+   "各 Agent 独立在本地分支开发，开发完成后强制执行 git push --force 覆盖远程主干，由后续 Agent 负责重新同步",
+   "放弃任何前置任务锁定机制，完全依赖后续 Git Merge 阶段由 LLM 自动解析并合并并发修改冲突"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "由中心化 API 网关对代码文件进行行级排他锁定，禁止其他 Agent 在锁期间读取或修改该文件的任何内容",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "各 Agent 独立在本地分支开发，开发完成后强制执行 git push --force 覆盖远程主干，由后续 Agent 负责重新同步",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "放弃任何前置任务锁定机制，完全依赖后续 Git Merge 阶段由 LLM 自动解析并合并并发修改冲突",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为行级排他中心化锁最适合分布式 Agent（实际过重且需中心服务）",
+   "以为强制 push --force 能“同步”（实际会覆盖他人有效修改）"
+  ]
+ },
+ {
+  "id": "multi-agent-oracle-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "multi-agent",
+  "question": "多 Agent 团队协同构建大型单体系统（如大型内核或单体应用）时，若所有 Agent 均针对同一个全局构建失败调试，极易“撞在同一错误点重复修改并互相覆盖”而死锁。针对此类非独立测试集的单体阻塞，最有效的并行化解耦策略是？",
+  "options": [
+   "引入已知正确的参考基准组件（Known-Good Oracle）做差异化隔离编译，Agent 仅对分配模块用待测方案、其余用 Oracle 生成，从而定位并修复局部问题",
+   "停止所有 Agent 的并行执行，退化为单 Agent 顺序修复模式，直至该单体目标的构建错误数量降低至零后再恢复多线程",
+   "将单体构建强行拆分为多个完全独立的函数，屏蔽各模块间的符号依赖与链接阶段，使其各自独立通过单元测试",
+   "增加 Agent 的并发数量并缩短 Git 提交间隔，试图通过高频提交和乐观锁覆盖来提升全局错误的修复概率"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "停止所有 Agent 的并行执行，退化为单 Agent 顺序修复模式，直至该单体目标的构建错误数量降低至零后再恢复多线程",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "将单体构建强行拆分为多个完全独立的函数，屏蔽各模块间的符号依赖与链接阶段，使其各自独立通过单元测试",
+    "bound": "以为屏蔽符号依赖拆分单测能解决（实际破坏真实链接语义）"
+   },
+   {
+    "i": 3,
+    "text": "增加 Agent 的并发数量并缩短 Git 提交间隔，试图通过高频提交和乐观锁覆盖来提升全局错误的修复概率",
+    "bound": "以为增加并发量能提升修复概率（实际加剧冲突）"
+   }
+  ],
+  "existing": [
+   "以为屏蔽符号依赖拆分单测能解决（实际破坏真实链接语义）",
+   "以为增加并发量能提升修复概率（实际加剧冲突）"
+  ]
+ },
+ {
+  "id": "agent-loop-time-blindness-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "agent-loop",
+  "question": "LLM 在自主运行循环中缺乏对物理时间的感知（Time Blindness）。若每次代码修改后均直接运行全量庞大测试集，Agent 将在极少迭代内耗尽大量 Token 与执行时间。下列哪些策略能平衡测试覆盖率与迭代吞吐量？",
+  "options": [
+   "在常规迭代中默认启用确定性抽样（如 1%~10% 的测试子集），在快速反馈循环中检验代码回归",
+   "确保不同 Agent 实例间的抽样种子保持随机散列，使多 Agent 组合能够从宏观上覆盖全量测试用例集",
+   "完全取消全量测试阶段，仅依靠 LLM 自身的代码静态检查（Linter）与代码走查评估修改的正确性",
+   "每次代码变更后均必须强制执行 100% 全量测试，严格禁止任何形式的测试子集抽样",
+   "将测试分为快速回归子集与全量 CI 门禁，Agent 在本地循环中运行子集，仅在提交合并前触发全量 CI 校验"
+  ],
+  "answer": [
+   0,
+   1,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "完全取消全量测试阶段，仅依靠 LLM 自身的代码静态检查（Linter）与代码走查评估修改的正确性",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "每次代码变更后均必须强制执行 100% 全量测试，严格禁止任何形式的测试子集抽样",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为全量测试最严谨就该每次都跑（实际拖垮迭代效率）",
+   "以为 Linter/走查可替代运行时测试（实际漏逻辑回归）"
+  ]
+ },
+ {
+  "id": "multi-agent-roles-01",
+  "file": "model-behavior-agentic-2026-08.json",
+  "topic": "multi-agent",
+  "question": "在没有中央 Orchestrator 的 Agent 团队中，若所有 Agent 均采用相同通用 Prompt 探索代码库，易导致重复重构与代码风格退化。关于异构 Agent 角色设计与协同，下列哪项描述最为准确？",
+  "options": [
+   "划分专职 Agent（如重构去重 Agent、性能优化 Agent、架构审查 Agent、文档维护 Agent），使不同 Agent 沿着独立的质量维度协同改进同一代码库",
+   "专职 Agent 必须按照固定的流水线顺序严格单向传递任务，禁止任何 Agent 异步并发访问代码仓库",
+   "异构 Agent 只适用于前端 UI 开发，在编译器、数据库等系统级后端项目中，使用异构 Agent 会导致代码架构严重撕裂",
+   "性能优化 Agent 应具备最高的 Git 权限，能够直接作废其他功能开发 Agent 提交的重构分支"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "专职 Agent 必须按照固定的流水线顺序严格单向传递任务，禁止任何 Agent 异步并发访问代码仓库",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "异构 Agent 只适用于前端 UI 开发，在编译器、数据库等系统级后端项目中，使用异构 Agent 会导致代码架构严重撕裂",
+    "bound": "以为异构 Agent 只适用于前端（系统级工程同样受益）"
+   },
+   {
+    "i": 3,
+    "text": "性能优化 Agent 应具备最高的 Git 权限，能够直接作废其他功能开发 Agent 提交的重构分支",
+    "bound": "以为某 Agent 应有最高权限作废他人分支（应靠 CI 网关）"
+   }
+  ],
+  "existing": [
+   "以为异构 Agent 只适用于前端（系统级工程同样受益）",
+   "以为某 Agent 应有最高权限作废他人分支（应靠 CI 网关）"
+  ]
+ },
+ {
+  "id": "multi-vector-late-interaction-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "在基于 ColBERT 架构的 Late Interaction（多向量）检索模型中，查询（Query）与文档（Document）之间的相关性得分是如何计算的？它与传统 Single-Vector Dense Embedding 模型有何本质区别？",
+  "options": [
+   "每一个 Query token 向量与 Document 中所有 token 向量计算点积并取最大值（MaxSim），再将所有 Query token 的最大匹配得分累加；Dense 模型则将整段文本压缩为单一向量并计算一次点积或余弦相似度。",
+   "Late-Interaction 为每个 token 保留独立向量，可用 MaxSim 矩阵实现可解释的细粒度匹配，但文档侧索引体积与检索计算开销显著高于单向量模型。",
+   "每一个 Document token 向量与 Query 中所有 token 向量计算点积并取均值（MeanSim），再对所有 Document token 得分取加权和；Dense 模型则为每个 token 分配独立权重后再做自注意力聚合。",
+   "Query 向量与 Document 向量先经过交叉注意力层（Cross-Attention）深度融合，再通过 Pooling 得到标量相关性得分；Dense 模型则是先分别做自注意力编码再在最后一层做内积。",
+   "Query 与 Document 的每个 token 向量两两计算欧氏距离并求全局最小值作为匹配得分；Dense 模型则是将 token 向量按通道维度拼接后传入全连接网络预测相关性。"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "每一个 Document token 向量与 Query 中所有 token 向量计算点积并取均值（MeanSim），再对所有 Document token 得分取加权和；Dense 模型则为每个 token 分配独立权重后再做自注意力聚合。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "Query 向量与 Document 向量先经过交叉注意力层（Cross-Attention）深度融合，再通过 Pooling 得到标量相关性得分；Dense 模型则是先分别做自注意力编码再在最后一层做内积。",
+    "bound": "以为多向量模型在编码期用交叉注意力融合 query-doc"
+   },
+   {
+    "i": 4,
+    "text": "Query 与 Document 的每个 token 向量两两计算欧氏距离并求全局最小值作为匹配得分；Dense 模型则是将 token 向量按通道维度拼接后传入全连接网络预测相关性。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为多向量模型在编码期用交叉注意力融合 query-doc",
+   "以为 MaxSim 取均值或最小值而非最大值累加"
+  ]
+ },
+ {
+  "id": "multi-vector-domain-finetune-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "在对特定领域（如医疗、法律或代码）微调 Multi-Vector Embedding 模型时，关于初始 Checkpoint 选择的实验结论，下列哪些叙述是正确的？",
+  "options": [
+   "经过通用检索任务全面监督微调（Supervised Finetuning）的成熟 Checkpoint 是最佳起点，因为其已具备完善的语义排序与泛化能力。",
+   "从零随机初始化 Dense 投影层并固定基底 Transformer 权重是最优方案，能彻底避免预训练权重导致的灾难性遗忘。",
+   "仅经过大规模对比预训练（Unsupervised / Pre-supervised）的 Checkpoint 适应性更好，其未被通用检索数据集过度拟合，更容易吸收领域特定信号。",
+   "领域微调时保留 Late-Interaction 的多向量交互结构（MaxSim）比替换为单向量投影，通常更能吸收领域特定的语义分布。",
+   "无论选择 Unsupervised 还是 Supervised Checkpoint，在相同数据量微调后最终收敛的 NDCG 指标均完全一致，起始点仅影响收敛速度。"
+  ],
+  "answer": [
+   2,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "经过通用检索任务全面监督微调（Supervised Finetuning）的成熟 Checkpoint 是最佳起点，因为其已具备完善的语义排序与泛化能力。",
+    "bound": "以为通用检索 SFT 后的成熟 Checkpoint 是领域微调最佳起点"
+   },
+   {
+    "i": 1,
+    "text": "从零随机初始化 Dense 投影层并固定基底 Transformer 权重是最优方案，能彻底避免预训练权重导致的灾难性遗忘。",
+    "bound": null
+   },
+   {
+    "i": 4,
+    "text": "无论选择 Unsupervised 还是 Supervised Checkpoint，在相同数据量微调后最终收敛的 NDCG 指标均完全一致，起始点仅影响收敛速度。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为通用检索 SFT 后的成熟 Checkpoint 是领域微调最佳起点",
+   "以为起始 Checkpoint 只影响收敛速度不影响最终性能"
+  ]
+ },
+ {
+  "id": "multi-vector-loss-scale-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "训练单向量 Dense Embedding 模型时，对比损失（如 MultipleNegativesRankingLoss）通常把温度/缩放参数 scale 设为约 20.0；但在训练 Multi-Vector 模型使用 MultiVectorMultipleNegativesRankingLoss 时，若直接沿用 scale=20.0，最可能导致什么问题？下列哪些叙述正确？",
+  "options": [
+   "Softmax 输出过分平滑、正负样本间梯度极小，导致模型无法拉开相关与不相关文档的距离。",
+   "损失函数会因此完全无法正常反向求导，从而在反向传播阶段直接触发 GPU 显存爆满与溢出错误。",
+   "会强制将所有标点符号 token 的梯度置为零，导致 Skiplist 过滤机制在训练期间彻底失效。",
+   "MaxSim 分数跨 Query token 累积，数值范围远超单向量 [-1,1]，乘高 scale 使 Softmax 饱和并引起梯度消失。",
+   "Dense 模型两单位向量余弦相似度限于 [-1,1]，需较大 scale（约 20）放大分差使 Softmax 具区分度；多向量损失默认 scale=1.0。"
+  ],
+  "answer": [
+   3,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Softmax 输出过分平滑、正负样本间梯度极小，导致模型无法拉开相关与不相关文档的距离。",
+    "bound": null
+   },
+   {
+    "i": 1,
+    "text": "损失函数会因此完全无法正常反向求导，从而在反向传播阶段直接触发 GPU 显存爆满与溢出错误。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "会强制将所有标点符号 token 的梯度置为零，导致 Skiplist 过滤机制在训练期间彻底失效。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为多向量损失可沿用 Dense 的 scale=20",
+   "以为 Softmax 饱和与 MaxSim 数值范围无关"
+  ]
+ },
+ {
+  "id": "multi-vector-gradcache-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "Multi-Vector 模型训练时每个 token 都生成独立向量，显存随 Batch Size 和序列长度剧烈增加。在需要大 Batch 提供足够 In-Batch Negatives 时，工程上常引入 GradCache（如 CachedMultiVectorMultipleNegativesRankingLoss）。下列关于 GradCache 工作机制的描述，哪些正确？",
+  "options": [
+   "GradCache 在前向传播中按小 Chunk 编码文本并仅保存不带梯度的向量，随后计算全局损失并对向量求导，最后通过二次前向传播分块回传梯度，在保证数学等价性的同时解耦显存与有效对比 Batch 大小。",
+   "GradCache 通过放弃反向传播中的精确梯度，采用标量量化与低秩近似换取显存降低，从而支持在小显存 GPU 上拟合大 Batch。",
+   "GradCache 将 Query 和 Document 的 token 向量先传输至 CPU 内存中完成 MaxSim 计算，仅将标量损失值送回 GPU 进行反向传播，从而消除 GPU 显存限制。",
+   "GradCache 动态截断样本中超出显存限制的后半段 token 向量，利用残差连接补偿截断损失，实现显存的动态平衡。",
+   "GradCache 解耦物理显存分块（mini-batch）与有效对比批次大小（effective batch），可在有限显存下使用更大的 In-Batch Negatives 提升训练质量。"
+  ],
+  "answer": [
+   0,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "GradCache 通过放弃反向传播中的精确梯度，采用标量量化与低秩近似换取显存降低，从而支持在小显存 GPU 上拟合大 Batch。",
+    "bound": "以为 GradCache 用低秩近似牺牲梯度精度换显存"
+   },
+   {
+    "i": 2,
+    "text": "GradCache 将 Query 和 Document 的 token 向量先传输至 CPU 内存中完成 MaxSim 计算，仅将标量损失值送回 GPU 进行反向传播，从而消除 GPU 显存限制。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "GradCache 动态截断样本中超出显存限制的后半段 token 向量，利用残差连接补偿截断损失，实现显存的动态平衡。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 GradCache 用低秩近似牺牲梯度精度换显存",
+   "以为 GradCache 靠截断长序列 token 降显存"
+  ]
+ },
+ {
+  "id": "multi-vector-length-truncation-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "某团队微调 Multi-Vector 检索模型时，为加快训练把 max_length 强制限制为 512 token，但上线推理与评估允许处理长达 8192 token 的长文档。这种做法最可能产生的后果是？",
+  "options": [
+   "检索召回率提升，因为截断训练迫使模型将全文语义信息强行压缩进前 512 个 token 向量中，提高了表达效率。",
+   "模型性能不受影响，因为 Transformer 的相对位置编码与自注意力机制可以无缝外推到未见过的序列长度。",
+   "检索性能显著下降，因为模型在训练期间从未观察过 512 token 之后的文本及其 token 向量交互，无法为后半部分文本提供高质量的 Late Interaction 匹配。",
+   "模型会在推理阶段抛出索引越界异常，因为 MultiVectorMask 模块无法处理超出训练截断长度的掩码阵列。"
+  ],
+  "answer": [
+   2
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "检索召回率提升，因为截断训练迫使模型将全文语义信息强行压缩进前 512 个 token 向量中，提高了表达效率。",
+    "bound": null
+   },
+   {
+    "i": 1,
+    "text": "模型性能不受影响，因为 Transformer 的相对位置编码与自注意力机制可以无缝外推到未见过的序列长度。",
+    "bound": "以为相对位置编码可无缝外推到远超训练截断的长度"
+   },
+   {
+    "i": 3,
+    "text": "模型会在推理阶段抛出索引越界异常，因为 MultiVectorMask 模块无法处理超出训练截断长度的掩码阵列。",
+    "bound": "以为相对位置编码可无缝外推到远超训练截断的长度"
+   }
+  ],
+  "existing": [
+   "以为相对位置编码可无缝外推到远超训练截断的长度",
+   "以为训练截断只影响速度不影响最终检索质量"
+  ]
+ },
+ {
+  "id": "multi-vector-skiplist-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "Multi-Vector 模型（如 ColBERT）索引体积大是生产落地的主要痛点。若在模型中配置 skiplist_words（如把标点符号加入 Skiplist），对检索系统的影响，下列哪些说法正确？",
+  "options": [
+   "仅减少索引构建时的 CPU 计算耗时，存储空间无变化，因为空向量仍需保存在向量数据库中。",
+   "在文档侧直接跳过标点符号 token 的向量生成与存储，不仅显著降低索引存储体积（例如降低近 10%），且通常不会损害甚至能微幅提升检索质量。",
+   "会导致 MaxSim 算子中的矩阵维度不匹配，必须在 Query 侧同步补零填充（Padding）才能正常计算。",
+   "显著提升检索延迟，因为在计算 MaxSim 时需要在运行时频繁过滤标点符号的 ID。",
+   "Multi-Vector 索引体积随文档 token 数近似线性增长，从文档侧排除低信息量 token（如标点）是主要的降本手段之一。"
+  ],
+  "answer": [
+   1,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "仅减少索引构建时的 CPU 计算耗时，存储空间无变化，因为空向量仍需保存在向量数据库中。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "会导致 MaxSim 算子中的矩阵维度不匹配，必须在 Query 侧同步补零填充（Padding）才能正常计算。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "显著提升检索延迟，因为在计算 MaxSim 时需要在运行时频繁过滤标点符号的 ID。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 skiplist 去除标点会损害检索质量",
+   "以为索引体积与 token 数无关、无法靠减 token 降本"
+  ]
+ },
+ {
+  "id": "multi-vector-eval-corpus-01",
+  "file": "multi-vector-retrieval-2026-08.json",
+  "topic": "multi-vector-retrieval",
+  "question": "评估领域微调后的检索模型时，若测试集仅含 1000 个查询及其对应 1000 篇黄金正例文档（Gold Passages），结果显示所有模型 NDCG@10 均接近 0.98，但上线后用户反馈召回不佳。从评估集设计看，最可能的原因是？",
+  "options": [
+   "评估指标选择错误，对于多向量模型应使用 MRR@10 而不是 NDCG@10。",
+   "测试集中的 Query 长度超过了 Query Marker 预设的上限，导致评估时全局匹配失效。",
+   "Evaluator 在计算 MaxSim 时未开启混合精度（FP16/BF16），产生了浮点数累积误差。",
+   "检索候选集（Corpus）规模过小且缺乏干扰项（Distractors），导致检索任务过于简单，无法区分不同模型的真实排序与抗干扰能力。"
+  ],
+  "answer": [
+   3
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "评估指标选择错误，对于多向量模型应使用 MRR@10 而不是 NDCG@10。",
+    "bound": null
+   },
+   {
+    "i": 1,
+    "text": "测试集中的 Query 长度超过了 Query Marker 预设的上限，导致评估时全局匹配失效。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "Evaluator 在计算 MaxSim 时未开启混合精度（FP16/BF16），产生了浮点数累积误差。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 NDCG 接近满分即模型检索完美",
+   "以为评估只需 Gold Passages 不需要干扰项"
+  ]
+ },
+ {
+  "id": "sebastian-raschka-2026-08-57",
+  "file": "sebastian-raschka-2026-08-2.json",
+  "topic": "distillation",
+  "question": "把高预算教师模型的推理样本用于训练低成本学生模型时，哪些目标合理？（请选择两个）",
+  "options": [
+   "降低相同任务上的推理成本",
+   "让学生学习教师示例中的解题行为",
+   "保证学生在所有分布外任务都等价于教师",
+   "不需要验证教师输出，因为教师不会出错"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "保证学生在所有分布外任务都等价于教师",
+    "bound": "以为蒸馏出的模型在所有场景都等价于教师"
+   },
+   {
+    "i": 3,
+    "text": "不需要验证教师输出，因为教师不会出错",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为蒸馏出的模型在所有场景都等价于教师",
+   "混淆蒸馏与量化：一个换结构/参数量，一个换数值精度"
+  ]
+ },
+ {
+  "id": "sec-eval-02",
+  "file": "security-eval.json",
+  "topic": "security-eval",
+  "question": "在针对 C/C++ 内存安全漏洞构建自动化 Proof of Concept (PoC) 生成与重现评估系统时，需要自动判别 Agent 提交的特定 PoC 输入是否真正触发并利用了目标漏洞。为了防止误报（False Positive）与漏报（False Negative），下列哪项是基于 Sanitizer（如 AddressSanitizer/UBSan）与 Git 代码提交历史实现自动化 Ground-Truth 验证的最有效机制？",
+  "options": [
+   "只要 PoC 运行后导致目标程序返回非零退出码（Non-zero Exit Code），即可判定成功重现了内存安全漏洞",
+   "要求该 PoC 在包含漏洞的预修补（Pre-patch）源码编译版本上必须触发 Sanitizer 崩溃，且在已修复（Post-patch）源码编译版本上能够正常运行不发生崩溃",
+   "要求该 PoC 在预修补与已修复两个编译版本上均产生完全一致的 Sanitizer Crash 堆栈回溯日志",
+   "仅对目标代码执行静态覆盖率检查，若 PoC 运行时的指令覆盖率触及了补丁 Commit 修改的代码行，即判定成功重现漏洞"
+  ],
+  "answer": [
+   1
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只要 PoC 运行后导致目标程序返回非零退出码（Non-zero Exit Code），即可判定成功重现了内存安全漏洞",
+    "bound": "以为非零退出码即证明重现了内存安全漏洞"
+   },
+   {
+    "i": 2,
+    "text": "要求该 PoC 在预修补与已修复两个编译版本上均产生完全一致的 Sanitizer Crash 堆栈回溯日志",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "仅对目标代码执行静态覆盖率检查，若 PoC 运行时的指令覆盖率触及了补丁 Commit 修改的代码行，即判定成功重现漏洞",
+    "bound": "以为覆盖率触及补丁行即证明漏洞被利用"
+   }
+  ],
+  "existing": [
+   "以为非零退出码即证明重现了内存安全漏洞",
+   "以为覆盖率触及补丁行即证明漏洞被利用"
+  ]
+ },
+ {
+  "id": "sec-eval-05",
+  "file": "security-eval.json",
+  "topic": "security-eval",
+  "question": "在针对 Web3/智能合约漏洞利用或标准 CTF 竞赛进行 LLM 安全能力评估时，由于大量历史漏洞 Payload、解题 Writeup 及分析文章已被广泛包含在 LLM 的预训练数据集中，极易产生「数据污染（Data Contamination）」问题，导致模型靠记忆而非逻辑推理解题。为了有效抑制数据污染对评估有效性的干扰，下列哪项评估方案最为严谨？",
+  "options": [
+   "仅使用已公开且得分最高的历史经典 CTF 赛题，通过在系统 Prompt 中加入「禁止使用记忆解法」的合规约束指令",
+   "按模型知识截止时间（Knowledge Cutoff）划分数据，仅用截止后的真实新漏洞或新目标做 Zero-Day 测试",
+   "对历史题目的变量名和函数名进行随机混淆重命名，直接在文本语义层面阻止 LLM 识别出原始代码库",
+   "屏蔽 Agent 的 Web 搜索工具，仅提供本地 Docker 沙盒，即可彻底排除预训练数据集带来的内存记忆污染"
+  ],
+  "answer": [
+   1
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "仅使用已公开且得分最高的历史经典 CTF 赛题，通过在系统 Prompt 中加入「禁止使用记忆解法」的合规约束指令",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "对历史题目的变量名和函数名进行随机混淆重命名，直接在文本语义层面阻止 LLM 识别出原始代码库",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "屏蔽 Agent 的 Web 搜索工具，仅提供本地 Docker 沙盒，即可彻底排除预训练数据集带来的内存记忆污染",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 Prompt 约束能阻止模型利用预训练记忆",
+   "以为变量重命名或关掉 Web 搜索就能消除数据污染"
+  ]
+ },
+ {
+  "id": "sec-eval-08",
+  "file": "security-eval.json",
+  "topic": "security-eval",
+  "question": "在构建网络安全 LLM Agent 的交互环境时，Agent 与目标系统的交互接口设计（工具集选择）对其攻击成败有显著影响。例如，提供标准隔离 Bash（单次无状态命令执行）与 Pseudoterminal（支持长会话伪终端）是两种常见的终端工具接入方式。关于这两类工具接入方式对安全 Agent 性能与行为影响的分析，下列哪项最为准确？",
+  "options": [
+   "伪终端（Pseudoterminal）支持交互式会话（如 SSH 交互、GDB 调试、Python 交互 Shell），对需要维持长会话状态的复杂利用任务更有利，但也会增加上下文管理与状态混淆的风险",
+   "无状态 Bash 每次执行独立，无会话状态污染问题；在需要干净隔离的取证场景下显著优于 Pseudoterminal，应默认首选。",
+   "工具集包含的扩展工具（如 WebSearch、静态分析工具）越多，LLM Agent 的利用成功率必然单调上升，不会带来任何负面效果",
+   "伪终端与无状态 Bash 在机制上完全等价，因为大模型本质上只能处理文本输入输出，无法感知底层终端会话是否被保持"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "无状态 Bash 每次执行独立，无会话状态污染问题；在需要干净隔离的取证场景下显著优于 Pseudoterminal，应默认首选。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "工具集包含的扩展工具（如 WebSearch、静态分析工具）越多，LLM Agent 的利用成功率必然单调上升，不会带来任何负面效果",
+    "bound": "以为工具越多成功率必然单调上升、两者机制等价"
+   },
+   {
+    "i": 3,
+    "text": "伪终端与无状态 Bash 在机制上完全等价，因为大模型本质上只能处理文本输入输出，无法感知底层终端会话是否被保持",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为无状态 Bash 在所有复杂渗透场景都优于伪终端",
+   "以为工具越多成功率必然单调上升、两者机制等价"
+  ]
+ },
+ {
+  "id": "sentence-embedding-inbatch-negatives-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "在基于对比学习训练句向量（Bi-Encoder）模型时，以 MultipleNegativesRankingLoss（MNRL）为代表的损失函数高度依赖 In-Batch Negatives 机制。关于该机制的核心工作原理与计算特征，以下哪些描述是正确的？",
+  "options": [
+   "它仅在正样本对 (anchor, positive) 的基础上计算 Loss，完全不依赖任何负样本即可独立更新模型梯度。",
+   "含 B 个 (anchor, positive) 句对的小批次中，其余 B-1 个 positive 句直接作为当前 anchor 的 negative 样本，构建 B×B 相似度矩阵。",
+   "在 Batch 内若存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在梯度反向传播中错误地推开语义实际相近的文本表示。",
+   "这种机制要求所有训练样本必须提前显式挖取 Hard Negatives 拼接在输入中，否则 Softmax 归一化项无法正常展开。",
+   "该机制的梯度更新在统计意义上等价于：以当前 Batch 的样本分布，对全量语料上的整体对比损失做了一次无偏的采样估计。"
+  ],
+  "answer": [
+   1,
+   2,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "它仅在正样本对 (anchor, positive) 的基础上计算 Loss，完全不依赖任何负样本即可独立更新模型梯度。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "这种机制要求所有训练样本必须提前显式挖取 Hard Negatives 拼接在输入中，否则 Softmax 归一化项无法正常展开。",
+    "bound": "以为对比损失必须显式挖 Hard Negatives 才能展开 Softmax"
+   }
+  ],
+  "existing": [
+   "以为 In-Batch Negatives 完全不需要任何负样本",
+   "以为对比损失必须显式挖 Hard Negatives 才能展开 Softmax"
+  ]
+ },
+ {
+  "id": "sentence-embedding-batchsampler-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "在微调双塔句向量模型时，研发团队发现虽然对比 Loss 保持平稳下降，但模型在评估集上的语义召回率在训练若干 Epoch 后开始出现异常波动与性能停滞。排查发现训练集中存在大量来自同一主题领域的近义句对。在使用以 In-Batch Negatives 为核心的损失函数时，造成该现象的根本原因以及针对性的工程解决手段是？",
+  "options": [
+   "原因在于硬件 GPU 在计算大 Batch 内积矩阵时触发了 FP16 浮点数下溢；解决手段是将训练精度切回 FP32 并禁用混合精度。",
+   "原因在于数据集未严格按字段字母表顺序重新排列；其解决手段是在加载数据集后手动重命名列字段，以匹配模型底层词表的列顺序。",
+   "同一 Batch 内若抽出语义极近文本并互为负例（False Negatives），会引入梯度噪声，可启用避免 Batch 内重复的 BatchSampler（如 NO_DUPLICATES）解决。",
+   "原因在于对比损失的温度缩放系数 scale 设得过大导致 Logit 极度平滑；解决手段是将 scale 调小至 0.01 以下。",
+   "根因是 Batch 内近义句被错误当作负例（False Negatives），其向梯度注入的排斥信号与真实语义相悖，这正是验证集召回率波动与性能停滞的直接来源。"
+  ],
+  "answer": [
+   2,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "原因在于硬件 GPU 在计算大 Batch 内积矩阵时触发了 FP16 浮点数下溢；解决手段是将训练精度切回 FP32 并禁用混合精度。",
+    "bound": null
+   },
+   {
+    "i": 1,
+    "text": "原因在于数据集未严格按字段字母表顺序重新排列；其解决手段是在加载数据集后手动重命名列字段，以匹配模型底层词表的列顺序。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "原因在于对比损失的温度缩放系数 scale 设得过大导致 Logit 极度平滑；解决手段是将 scale 调小至 0.01 以下。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为召回率波动是 FP16 浮点下溢导致",
+   "以为只要缩小 scale 即可解决（实际根因是假负例标签噪声）"
+  ]
+ },
+ {
+  "id": "sentence-embedding-dataset-schema-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "在使用封装好的句向量训练器（如 SentenceTransformerTrainer）加载本地数据集时，数据集字段的解析映射遵循特定的绑定规则。假设训练数据集包含 [\"anchor\", \"positive\", \"negative\", \"sample_id\", \"domain_tag\"] 5 个列，且损失函数使用的是仅接收 (anchor, positive, negative) 文本三元组的 TripletLoss。若未对数据集做删列处理而直接传入 Trainer，最可能导致什么后果？",
+  "options": [
+   "Trainer 会根据列的物理索引顺序依次提取非 label 列；因未删除后两列，Trainer 会把 sample_id 等无意义元数据列也当成文本输入传给模型，引发维度错配或 tokenizer 报错。",
+   "损失函数初始化时会强制校验列名是否包含 \"label\"；因为当前数据集不存在 \"label\" 字段，Trainer 会在启动前立即抛出 KeyError。",
+   "Trainer 会自动识别列名 \"anchor\"、\"positive\" 和 \"negative\"，并将 sample_id 与 domain_tag 自动存入底层日志，不影响前向传播。",
+   "自动求导机制会将 sample_id 转换为连续可训练参数并分配梯度，导致 GPU 显存被无意义的 ID 嵌入阵列迅速耗尽。"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "损失函数初始化时会强制校验列名是否包含 \"label\"；因为当前数据集不存在 \"label\" 字段，Trainer 会在启动前立即抛出 KeyError。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "Trainer 会自动识别列名 \"anchor\"、\"positive\" 和 \"negative\"，并将 sample_id 与 domain_tag 自动存入底层日志，不影响前向传播。",
+    "bound": "以为 Trainer 会自动按列名识别 anchor/positive/negative 并忽略元数据列"
+   },
+   {
+    "i": 3,
+    "text": "自动求导机制会将 sample_id 转换为连续可训练参数并分配梯度，导致 GPU 显存被无意义的 ID 嵌入阵列迅速耗尽。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 Trainer 会自动按列名识别 anchor/positive/negative 并忽略元数据列",
+   "以为必须存在 label 列否则 KeyError"
+  ]
+ },
+ {
+  "id": "sentence-embedding-matryoshka-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "在海量向量检索系统（Vector Database）中，存储成本与检索延迟随向量维度线性增加。为了实现“低维度高速度”与“高维度高精度”的灵活切换，工程上常用套娃损失（MatryoshkaLoss）训练句向量模型。以下关于 MatryoshkaLoss 工作机制与工程落地的描述，正确的是？",
+  "options": [
+   "它在训练时仅对最窄的前缀维度（如 64 维）计算对比损失，依靠 Transformer 的隐层自注意力机制自然泛化到完整高维（如 768 维）。",
+   "它要求线上检索系统必须同时维护所有指定维度的向量索引；检索时需分别在低维库与高维库查出 Top-K 结果后求交集。",
+   "它在前向传播中对模型输出的文本向量在多个预设维度（如 64, 128, 256, 768）进行前缀截断，对每个截断子向量分别计算底层 Loss 并累加求和进行反向传播。",
+   "模型经 MatryoshkaLoss 训练后，线上部署提取向量时必须一次性输出全量截断维度的拼接矩阵，无法独立提取单一维度的向量。",
+   "部署时只需截取并保存某一目标前缀维度的向量（如仅存 128 维）即可满足检索需求，无需为所有指定维度分别建立索引。"
+  ],
+  "answer": [
+   2,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "它在训练时仅对最窄的前缀维度（如 64 维）计算对比损失，依靠 Transformer 的隐层自注意力机制自然泛化到完整高维（如 768 维）。",
+    "bound": "以为只能对最窄前缀维度算损失"
+   },
+   {
+    "i": 1,
+    "text": "它要求线上检索系统必须同时维护所有指定维度的向量索引；检索时需分别在低维库与高维库查出 Top-K 结果后求交集。",
+    "bound": "以为 Matryoshka 训练后必须同时维护所有维度索引"
+   },
+   {
+    "i": 3,
+    "text": "模型经 MatryoshkaLoss 训练后，线上部署提取向量时必须一次性输出全量截断维度的拼接矩阵，无法独立提取单一维度的向量。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 Matryoshka 训练后必须同时维护所有维度索引",
+   "以为只能对最窄前缀维度算损失"
+  ]
+ },
+ {
+  "id": "sentence-embedding-evaluator-vs-loss-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "在训练 Sentence Transformers 模型时，Trainer 配置中的 eval_dataset（计算 Validation Loss）与专门的 Evaluator（如 EmbeddingSimilarityEvaluator 或 InformationRetrievalEvaluator）在评估模型性能时起到了不同的作用。关于这两者的区别与联系，以下叙述正确的是？",
+  "options": [
+   "eval_dataset 上算出的 Validation Loss 极小说明模型在 Evaluator 的所有真实业务指标（如 NDCG@K、Spearman 相关系数）上必然同时达到最优值。",
+   "Validation Loss 是通过当前训练所用的对比 Loss 函数在验证集上算出的标量损失；而 Evaluator 则是直接在业务目标任务（如余弦相似度排序、检索召回率）上评估向量模型的实际表征质量。",
+   "Evaluator 在每个 Checkpoint 评估时都会执行反向传播并更新模型参数，而 eval_dataset 只做无梯度的前向计算。",
+   "当使用多数据集训练时，Trainer 只能使用 Evaluator 进行质量评估，无法计算 eval_dataset 的验证集 Loss。",
+   "Validation Loss 仅反映优化过程是否过拟合，其下降与 NDCG@K、Spearman 等业务指标的提升并非线性等价，需用 Evaluator 交叉验证。"
+  ],
+  "answer": [
+   1,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 0,
+    "text": "eval_dataset 上算出的 Validation Loss 极小说明模型在 Evaluator 的所有真实业务指标（如 NDCG@K、Spearman 相关系数）上必然同时达到最优值。",
+    "bound": "以为 Validation Loss 下降即代表 NDCG/Spearman 等业务指标同步最优"
+   },
+   {
+    "i": 2,
+    "text": "Evaluator 在每个 Checkpoint 评估时都会执行反向传播并更新模型参数，而 eval_dataset 只做无梯度的前向计算。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "当使用多数据集训练时，Trainer 只能使用 Evaluator 进行质量评估，无法计算 eval_dataset 的验证集 Loss。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为 Validation Loss 下降即代表 NDCG/Spearman 等业务指标同步最优",
+   "以为 Evaluator 会在评估时更新模型参数"
+  ]
+ },
+ {
+  "id": "sentence-embedding-loss-schema-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "训练句向量模型时，选择合适的 Loss 函数必须匹配数据集中具体的样本表达格式。以下关于常见损失函数与输入数据架构的映射关系，哪些是正确的？",
+  "options": [
+   "CosineSimilarityLoss 或 CoSENTLoss 要求数据集包含两个文本字段，以及一个连续型浮点数相似度分值（如 0.0 至 5.0 的 STS 分数）作为 label。",
+   "MultipleNegativesRankingLoss 要求输入样本必须包含显式连续的 label 数值，否则无法建立 Softmax 的归一化概率分布。",
+   "SoftmaxLoss 适用于包含文本对及离散分类标签（如 NLI 任务中的蕴含、中立、矛盾）的数据集，通过拼接收集到的文本表示训练分类头来约束语义空间。",
+   "TripletLoss 仅要求数据集依次包含 (anchor, positive, negative) 3 个文本列，不需要额外的 label 列，其优化目标是拉近正样本距离并推远负样本距离。",
+   "只要使用对比学习 Loss 函数，系统就会自动过滤掉数据集中所有文本列，仅对包含 label 的数值矩阵进行优化。"
+  ],
+  "answer": [
+   0,
+   2,
+   3
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "MultipleNegativesRankingLoss 要求输入样本必须包含显式连续的 label 数值，否则无法建立 Softmax 的归一化概率分布。",
+    "bound": null
+   },
+   {
+    "i": 4,
+    "text": "只要使用对比学习 Loss 函数，系统就会自动过滤掉数据集中所有文本列，仅对包含 label 的数值矩阵进行优化。",
+    "bound": "以为对比损失会自动过滤文本列、只优化 label 矩阵"
+   }
+  ],
+  "existing": [
+   "以为 MNRL 必须提供连续 label 列",
+   "以为对比损失会自动过滤文本列、只优化 label 矩阵"
+  ]
+ },
+ {
+  "id": "sentence-embedding-similarity-notion-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "某一通用预训练双塔 Embedding 模型在标准 Web 文本检索任务上表现优异。团队试图将其直接同时应用于“新闻分类”与“语义文本相似度（STS）”两个业务模块。现有两组新闻标题：标题 1：“苹果发布全新 iPad”；标题 2：“英伟达备战下一代 GPU 显卡”。以下关于句向量模型中“语义相似度定义”与微调必要性的分析，正确的是？",
+  "options": [
+   "语义相似度是任务强相关的：在 STS 任务中两句涉及不同实体与产品，向量应保持较大距离；而在新闻分类任务中两句均属于科技类，向量应相互接近。微调的本质是学习特定任务所需的相似度几何分布。",
+   "通用 Embedding 模型在预训练后已具备绝对统一的语义距离空间，任何特定领域的微调都会破坏其向量空间的拓扑结构并导致表征退化。",
+   "针对不同下游任务（分类 vs 检索），只需要在推理时切换余弦相似度与欧氏距离计算公式，无需对 Embedding 模型权重做任何微调。",
+   "双塔 Embedding 模型只能在无监督数据上微调，引入任何特定领域的有监督数据都会使模型彻底失去 zero-shot 泛化能力。"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "通用 Embedding 模型在预训练后已具备绝对统一的语义距离空间，任何特定领域的微调都会破坏其向量空间的拓扑结构并导致表征退化。",
+    "bound": "以为存在绝对统一的语义距离空间，任何微调都会破坏拓扑"
+   },
+   {
+    "i": 2,
+    "text": "针对不同下游任务（分类 vs 检索），只需要在推理时切换余弦相似度与欧氏距离计算公式，无需对 Embedding 模型权重做任何微调。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "双塔 Embedding 模型只能在无监督数据上微调，引入任何特定领域的有监督数据都会使模型彻底失去 zero-shot 泛化能力。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为存在绝对统一的语义距离空间，任何微调都会破坏拓扑",
+   "以为只切换余弦/欧氏距离公式即可适配不同任务"
+  ]
+ },
+ {
+  "id": "sentence-embedding-l2-norm-scale-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "在单向量 Dense Embedding 模型中，对比损失（如 InfoNCE / MultipleNegativesRankingLoss）通常会配置一个缩放系数（scale 或温度倒数 1/τ）将余弦相似度乘以一个常数（如 20.0）。若在计算相似度时未将向量进行 L2 归一化（Unit Norm），最可能对模型训练带来什么影响？",
+  "options": [
+   "向量模长（Magnitude）会随着训练不断膨胀，导致点积数值远超原设定范围，使 Softmax 输入严重饱和并产生梯度消失。",
+   "损失函数无法进行反向传播，因为 Autograd 引擎要求所有对比向量的 L2 范数必须严格等于 1.0。",
+   "Softmax 输出的概率分布会极度趋近于均匀分布，导致正负样本之间的梯度差别被缩小为零。",
+   "模型会自动退化为无监督 K-Means 聚类过程，忽视所有输入句对的对比梯度。"
+  ],
+  "answer": [
+   0
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "损失函数无法进行反向传播，因为 Autograd 引擎要求所有对比向量的 L2 范数必须严格等于 1.0。",
+    "bound": "以为 Autograd 要求 L2 范数严格等于 1"
+   },
+   {
+    "i": 2,
+    "text": "Softmax 输出的概率分布会极度趋近于均匀分布，导致正负样本之间的梯度差别被缩小为零。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "模型会自动退化为无监督 K-Means 聚类过程，忽视所有输入句对的对比梯度。",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为未归一化只是数值尺度问题、不影响训练",
+   "以为 Autograd 要求 L2 范数严格等于 1"
+  ]
+ },
+ {
+  "id": "sentence-embedding-evaluator-retrieval-01",
+  "file": "sentence-embedding-2026-08.json",
+  "topic": "sentence-embedding",
+  "question": "团队在对模型进行微调时，比较了 TripletEvaluator 与 EmbeddingSimilarityEvaluator 在验证集上的评估行为。若训练目标是优化检索系统的 Top-K 召回率，为什么仅使用 EmbeddingSimilarityEvaluator（基于 STS 数据评估 Cosine-Spearman 相关系数）可能无法全面反映模型的真实检索效能？",
+  "options": [
+   "EmbeddingSimilarityEvaluator 仅评估预设 Pair 对的连续得分拟合程度，无法衡量模型在面临大规模 Candidate 语料库时的全局对比排序与抗干扰能力。",
+   "EmbeddingSimilarityEvaluator 计算时强制锁定了 FP32 精度，与推理阶段的 FP16 浮点计算存在无法弥合的系统误差。",
+   "EmbeddingSimilarityEvaluator 只能评估单字 token 的匹配度，无法评估整句向量的余弦相似度。",
+   "EmbeddingSimilarityEvaluator 在评估过程中会自动修改模型最后两层的权重，导致验证结果偏离真实模型状态。",
+   "优化检索 Top-K 召回应优先采用面向检索的指标（如 InformationRetrievalEvaluator），而非仅依赖 EmbeddingSimilarityEvaluator 的句对相似度相关性来判定模型优劣。"
+  ],
+  "answer": [
+   0,
+   4
+  ],
+  "distractors": [
+   {
+    "i": 1,
+    "text": "EmbeddingSimilarityEvaluator 计算时强制锁定了 FP32 精度，与推理阶段的 FP16 浮点计算存在无法弥合的系统误差。",
+    "bound": null
+   },
+   {
+    "i": 2,
+    "text": "EmbeddingSimilarityEvaluator 只能评估单字 token 的匹配度，无法评估整句向量的余弦相似度。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "EmbeddingSimilarityEvaluator 在评估过程中会自动修改模型最后两层的权重，导致验证结果偏离真实模型状态。",
+    "bound": "以为 Evaluator 评估时会修改模型权重"
+   }
+  ],
+  "existing": [
+   "以为 STS Spearman 高即代表检索召回率高",
+   "以为 Evaluator 评估时会修改模型权重"
+  ]
+ },
+ {
+  "id": "index_share_sparse_attn_canonical",
+  "file": "sparse-attention-mtp-rl.json",
+  "topic": "index-share-sparse-attention",
+  "question": "在超长上下文大语言模型中，针对基于索引机制的动态稀疏注意力（Dynamic Sparse Attention），某架构采用了跨层共享轻量级索引器（IndexShare）的策略（例如每 4 个 Transformer 层共享 1 个索引器，索引器部署在 4 层中的首层）。关于该 IndexShare 机制对计算开销与推理特性的影响，以下哪些选项的说法是正确的？",
+  "options": [
+   "通过在 4 层结构的首层计算一次 Top-K 索引并透传给后续 3 层，直接省去了后续 3 层中索引器 Query-Key 点积与 Top-K 排序的计算开销。",
+   "由于相邻 Transformer 层间的注意力关注区域具有高语义相关性，复用首层计算的 Top-K 稀疏掩码可以在几乎不损伤模型精度的前提下大幅降低计算量。",
+   "IndexShare 机制的核心优化点在于成倍缩减每层保存的 KV Cache 字节数，从而使长文本下的显存容量瓶颈得到同比例缓解。",
+   "IndexShare 使得后续 3 层完全无需执行 Q 与 K/V 的注意力点积，注意力计算彻底从 O(N^2) 降低为 O(1) 的查表操作。"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "IndexShare 机制的核心优化点在于成倍缩减每层保存的 KV Cache 字节数，从而使长文本下的显存容量瓶颈得到同比例缓解。",
+    "bound": null
+   },
+   {
+    "i": 3,
+    "text": "IndexShare 使得后续 3 层完全无需执行 Q 与 K/V 的注意力点积，注意力计算彻底从 O(N^2) 降低为 O(1) 的查表操作。",
+    "bound": "认为后续层完全免注意力计算、从 O(N^2) 降为 O(1) 查表（实际仍按索引执行稀疏注意力点积）"
+   }
+  ],
+  "existing": [
+   "认为 IndexShare 会成倍缩减 KV Cache 显存（实际不缩减 KV Cache 体积）",
+   "认为后续层完全免注意力计算、从 O(N^2) 降为 O(1) 查表（实际仍按索引执行稀疏注意力点积）"
+  ]
+ },
+ {
+  "id": "context-engineering-tradeoff-01",
+  "file": "wiki-skill-evolution-2026-08.json",
+  "topic": "context-engineering",
+  "question": "当执行 Agent 的上下文预算紧张时，哪种取舍更符合 Skill 运行时的职责边界？",
+  "options": [
+   "优先保留当前目标、约束、步骤状态和编译后的 Skill",
+   "对历史材料按任务检索，并在注入前限制来源和 token 预算",
+   "把所有旧轨迹完整拼接，再让模型自行忽略无关内容",
+   "遇到超限就随机删除上下文，避免引入额外检索逻辑"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把所有旧轨迹完整拼接，再让模型自行忽略无关内容",
+    "bound": "以为上下文越长就越不容易漏掉关键知识"
+   },
+   {
+    "i": 3,
+    "text": "遇到超限就随机删除上下文，避免引入额外检索逻辑",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为上下文越长就越不容易漏掉关键知识",
+   "以为摘要可以替代所有按任务筛选和权限控制"
+  ]
+ },
+ {
+  "id": "memory-system-design-01",
+  "file": "wiki-skill-evolution-2026-08.json",
+  "topic": "memory",
+  "question": "如何让记忆系统与工具读取协同，而不是用固定截断掩盖 Proposer 的上下文超限？",
+  "options": [
+   "记忆层返回压缩索引和候选范围，工具层读取被选中的原始证据",
+   "按诊断阶段动态分配检索与读取预算，并记录实际使用量",
+   "每轮固定保留最前面的若干轨迹，不区分任务和失败类型",
+   "只把工具调用次数作为预算，不管返回内容是否挤满上下文"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "每轮固定保留最前面的若干轨迹，不区分任务和失败类型",
+    "bound": "以为固定 token 截断天然比动态预算更可控"
+   },
+   {
+    "i": 3,
+    "text": "只把工具调用次数作为预算，不管返回内容是否挤满上下文",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为摘要层存在后就不需要读取原始证据",
+   "以为固定 token 截断天然比动态预算更可控"
+  ]
+ },
+ {
+  "id": "agent-skills-comparison-02",
+  "file": "wiki-skill-evolution-2026-08.json",
+  "topic": "agent-skills",
+  "question": "在 Skill 生命周期中，发现、评估和执行三个阶段应如何分工，才能避免让执行模型承担不该承担的职责？",
+  "options": [
+   "发现阶段归纳根因、策略和可执行步骤，产出候选 Skill",
+   "评估阶段用固定任务和指标验证候选，再决定是否发布",
+   "执行阶段可直接改写候选 Skill，省去独立评估以提高适应性",
+   "把发现、评估和执行合并为一次模型调用，减少系统边界"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "执行阶段可直接改写候选 Skill，省去独立评估以提高适应性",
+    "bound": "以为评估只需看一次成功轨迹而不需要固定验证集"
+   },
+   {
+    "i": 3,
+    "text": "把发现、评估和执行合并为一次模型调用，减少系统边界",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为执行时临时反思就等于完成了 Skill 发现",
+   "以为评估只需看一次成功轨迹而不需要固定验证集"
+  ]
+ },
+ {
+  "id": "agent-skills-tradeoff-02",
+  "file": "wiki-skill-evolution-2026-08.json",
+  "topic": "agent-skills",
+  "question": "要把一个模型发现的 Skill 迁移给不同模型执行，哪种验证设计最能区分可迁移知识与模型特定假设？",
+  "options": [
+   "在目标模型上重跑固定任务集，并与目标模型无 Skill 基线比较",
+   "检查目标模型的工具参数、格式遵循、失败类型和分布外任务",
+   "只复用发现模型的评估分，因为 Skill 内容本身已经通过验证",
+   "要求目标模型与发现模型使用相同结构，否则直接判定迁移失败"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只复用发现模型的评估分，因为 Skill 内容本身已经通过验证",
+    "bound": "以为自然语言 Skill 不依赖执行模型所以无需重测"
+   },
+   {
+    "i": 3,
+    "text": "要求目标模型与发现模型使用相同结构，否则直接判定迁移失败",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为自然语言 Skill 不依赖执行模型所以无需重测",
+   "以为目标模型平均分上升就足以证明所有步骤都兼容"
+  ]
+ },
+ {
+  "id": "agent-skills-comparison-03",
+  "file": "wiki-skill-evolution-2026-08.json",
+  "topic": "agent-skills",
+  "question": "研究模型规模与 Skill 收益的交互时，哪种实验矩阵能支持可解释结论？",
+  "options": [
+   "交叉多个模型规模与无 Skill、同一 Skill 的条件，使用同一任务集对照",
+   "按任务难度和分布内外拆分结果，报告相对收益与绝对能力",
+   "只测一个大模型加 Skill 和一个小模型无 Skill，比较最终平均分",
+   "每种模型使用不同任务集，以便让各自最擅长的场景充分发挥"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只测一个大模型加 Skill 和一个小模型无 Skill，比较最终平均分",
+    "bound": "以为只测最大和最小模型就能估计中间规模趋势"
+   },
+   {
+    "i": 3,
+    "text": "每种模型使用不同任务集，以便让各自最擅长的场景充分发挥",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为只测最大和最小模型就能估计中间规模趋势",
+   "以为单一平均分足以揭示 Skill 收益的边界"
+  ]
+ },
+ {
+  "id": "agent-skills-tradeoff-03",
+  "file": "wiki-skill-evolution-2026-08.json",
+  "topic": "agent-skills",
+  "question": "发现小模型加 Skill 在部分任务上超过大模型无 Skill 后，下一步怎样验证这个结论的适用边界？",
+  "options": [
+   "增加不同难度、任务类型和 OOD 数据，观察收益是否保持或出现边界",
+   "比较多个规模在有无 Skill 下的绝对能力、相对增益和失败模式",
+   "把局部任务的排名直接外推到所有任务，不再做规模交叉实验",
+   "只看 Skill 带来的平均分增量，不区分原本已经会做的任务"
+  ],
+  "answer": [
+   0,
+   1
+  ],
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把局部任务的排名直接外推到所有任务，不再做规模交叉实验",
+    "bound": "以为一个任务上的反转足以证明 Skill 全面替代规模"
+   },
+   {
+    "i": 3,
+    "text": "只看 Skill 带来的平均分增量，不区分原本已经会做的任务",
+    "bound": null
+   }
+  ],
+  "existing": [
+   "以为一个任务上的反转足以证明 Skill 全面替代规模",
+   "以为只要 OOD 分数下降就应删除 Skill 而不分析失败模式"
+  ]
+ }
+]

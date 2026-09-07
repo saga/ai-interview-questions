@@ -16,7 +16,7 @@
     "question": "在基于对比学习训练句向量（Bi-Encoder）模型时，以 MultipleNegativesRankingLoss（MNRL）为代表的损失函数高度依赖 In-Batch Negatives 机制。关于该机制的核心工作原理与计算特征，以下哪些描述是正确的？",
     "explanation": "正确项：B、C、E。B 指出对于包含 B 个 (anchor, positive) 句对的小批次，系统将 Batch 内其他 B-1 个 positive 句直接作为当前 anchor 的隐式负样本，构建 B×B 相似度矩阵并做 CrossEntropy/Softmax。C 指出若 Batch 内存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在反向传播中错误地推开语义实际相近的文本表示。E 指出该机制在统计意义上等价于在当前 Batch 样本分布下对全量语料对比损失的采样估计。A 错在 MNRL 并非“完全不需要负样本”，而是用同 Batch 其他正样本作隐式负例；D 错在它不要求提前显式挖取 Hard Negatives。",
     "misconceptions": [
-      "以为 In-Batch Negatives 完全不需要任何负样本",
+      "以为 In-Batch Negatives 只需要正样本对、完全不依赖负样本；正是同批其他样本的 positive 充当了负例，没有它们 softmax 无法构成",
       "以为对比损失必须显式挖 Hard Negatives 才能展开 Softmax"
     ],
     "formats": {
@@ -35,7 +35,7 @@
           4
         ],
         "misconceptionMap": [
-          null,
+          0,
           null,
           null,
           1,
@@ -69,8 +69,9 @@
     "question": "在微调双塔句向量模型时，研发团队发现虽然对比 Loss 保持平稳下降，但模型在评估集上的语义召回率在训练若干 Epoch 后开始出现异常波动与性能停滞。排查发现训练集中存在大量来自同一主题领域的近义句对。在使用以 In-Batch Negatives 为核心的损失函数时，造成该现象的根本原因以及针对性的工程解决手段是？",
     "explanation": "正确项：C、E。C 指出同一 Batch 内抽样出语义极度相似的文本并互为负例（False Negatives）会引入梯度噪声，解决手段是在 Trainer 中启用避免 Batch 内文本重复的 BatchSampler（如 BatchSamplers.NO_DUPLICATES）。E 进一步点明根因：假负例会向梯度反向传播注入与真实语义相悖的排斥信号，正是召回率波动与性能停滞的直接来源。A 错在 FP16 下溢与现象无关；B 错在字段字母序与训练机制无关；D 错在 scale 设大只会使分布更陡峭而非“平滑”，且并非根因。",
     "misconceptions": [
-      "以为召回率波动是 FP16 浮点下溢导致",
-      "以为只要缩小 scale 即可解决（实际根因是假负例标签噪声）"
+      "以为召回率波动是 FP16 下溢导致的；数值精度不是主因，根因是同批近义句互为负例带来的标签噪声",
+      "以为数据集列顺序或字段命名导致波动；列顺序与字段名字典序与假负例噪声无关，属于无关的排查方向",
+      "以为把 scale 调小到 0.01 以下就能解决；scale 过小会让 logit 过度平滑、区分度下降，反而加重训练停滞"
     ],
     "formats": {
       "choice": {
@@ -85,6 +86,13 @@
         "answer": [
           2,
           4
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2,
+          null
         ]
       },
       "open": {
@@ -114,8 +122,9 @@
     "question": "在使用封装好的句向量训练器（如 SentenceTransformerTrainer）加载本地数据集时，数据集字段的解析映射遵循特定的绑定规则。假设训练数据集包含 [\"anchor\", \"positive\", \"negative\", \"sample_id\", \"domain_tag\"] 5 个列，且损失函数使用的是仅接收 (anchor, positive, negative) 文本三元组的 TripletLoss。若未对数据集做删列处理而直接传入 Trainer，最可能导致什么后果？",
     "explanation": "正确项：A。在 SentenceTransformerTrainer 的设计中，除名为 label/score 的数值列外，其余列会按物理列顺序（Column Order）被提取为前向传播的文本输入。数据集有 5 列而 TripletLoss 仅期望 3 个文本输入列，未删除的 sample_id、domain_tag 会被当成文本传给模型或损失函数，导致类型/维度错配或 tokenizer 报错。B 错在 Trainer 并不强制要求存在 label 列；C 错在它不会自动按列名识别 anchor/positive/negative 并静默存日志；D 错在 sample_id 不会变成可训练参数。",
     "misconceptions": [
+      "以为缺少 label 列会在启动时抛 KeyError；TripletLoss 取的是三个文本列，不存在 label 校验，多余列才会出问题",
       "以为 Trainer 会自动按列名识别 anchor/positive/negative 并忽略元数据列",
-      "以为必须存在 label 列否则 KeyError"
+      "以为自动求导会把 sample_id 当可训练参数并撑爆显存；id 只是普通张量、不参与梯度，真正的问题是它被当成文本送进 tokenizer"
     ],
     "formats": {
       "choice": {
@@ -131,9 +140,9 @@
         ],
         "misconceptionMap": [
           null,
-          null,
           0,
-          null
+          1,
+          2
         ]
       },
       "open": {
@@ -216,8 +225,9 @@
     "question": "在海量向量检索系统（Vector Database）中，存储成本与检索延迟随向量维度线性增加。为了实现“低维度高速度”与“高维度高精度”的灵活切换，工程上常用套娃损失（MatryoshkaLoss）训练句向量模型。以下关于 MatryoshkaLoss 工作机制与工程落地的描述，正确的是？",
     "explanation": "正确项：C、E。C 指出 MatryoshkaLoss 对模型输出的原始高维 Embedding 做多预设维度（如 64/128/256/768）前缀截断，对每个截断子向量分别计算底层 Loss 并累加回传，使前 k 维即具高表达力。E 指出经该损失训练的模型在部署时可按资源/延迟需求仅截取并保存单一目标前缀维度（如 128 维）的向量索引，无需为所有维度分别建库。A 错在并非只对最窄前缀算损失；B 错在无需同时维护所有维度索引并求交集；D 错在可独立提取单一维度向量。",
     "misconceptions": [
+      "以为只能对最窄前缀维度算损失",
       "以为 Matryoshka 训练后必须同时维护所有维度索引",
-      "以为只能对最窄前缀维度算损失"
+      "以为部署时只能输出全量拼接矩阵、无法独立取某一维；前缀截断正是设计目标，直接取前 128 维即可使用"
     ],
     "formats": {
       "choice": {
@@ -234,10 +244,10 @@
           4
         ],
         "misconceptionMap": [
-          1,
           0,
+          1,
           null,
-          null,
+          2,
           null
         ]
       },
@@ -269,7 +279,8 @@
     "explanation": "正确项：B、E。B 指出 Validation Loss 是通过当前训练所用对比损失函数在验证集上算出的标量损失，用于监测过拟合；而 Evaluator 直接在业务目标任务（余弦相似度排序、检索召回率）上评估向量模型的实际表征质量。E 补充说明 Validation Loss 的数值下降并不必然线性等价于 NDCG@K、Spearman 等业务指标的提升，二者需用 Evaluator 交叉验证。A 错在 Loss 极小不保证业务指标同时最优；C 错在 Evaluator 不做反向传播；D 错在多数据集时仍可用 eval_dataset 算验证 Loss。",
     "misconceptions": [
       "以为 Validation Loss 下降即代表 NDCG/Spearman 等业务指标同步最优",
-      "以为 Evaluator 会在评估时更新模型参数"
+      "以为 Evaluator 会在评估时更新模型参数",
+      "以为多数据集训练时无法再算 eval_dataset 的验证损失、只能用 Evaluator；多数据集下仍可对每个 eval_dataset 计算验证损失"
     ],
     "formats": {
       "choice": {
@@ -288,8 +299,8 @@
         "misconceptionMap": [
           0,
           null,
-          null,
-          null,
+          1,
+          2,
           null
         ]
       },
@@ -321,7 +332,7 @@
     "question": "训练句向量模型时，选择合适的 Loss 函数必须匹配数据集中具体的样本表达格式。以下关于常见损失函数与输入数据架构的映射关系，哪些是正确的？",
     "explanation": "正确项：A、C、D。A 指出 CosineSimilarityLoss / CoSENTLoss 需要 (text_A, text_B) 加连续相似度分值（如 0~5 的 STS 分数）作为 label。C 指出 SoftmaxLoss 适用于含文本对及离散分类标签（如 NLI 蕴含/中立/矛盾）的数据集，通过分类头约束语义空间。D 指出 TripletLoss 只需 (anchor, positive, negative) 三个文本列，不需额外 label 列。B 错在 MNRL 不需要连续 label 列；E 错在对比损失不会自动过滤文本列。",
     "misconceptions": [
-      "以为 MNRL 必须提供连续 label 列",
+      "以为 MNRL 必须提供连续 label 列；它只用 (anchor, positive) 对，负例来自批内其他样本，不需要任何 label",
       "以为对比损失会自动过滤文本列、只优化 label 矩阵"
     ],
     "formats": {
@@ -341,7 +352,7 @@
         ],
         "misconceptionMap": [
           null,
-          null,
+          0,
           null,
           null,
           1
@@ -375,7 +386,8 @@
     "explanation": "正确项：A。语义相似度是任务强相关的：在 STS 任务中两句涉及不同实体与产品，向量应保持较大距离；而在新闻分类任务中两句均属于科技类，向量应相互接近。微调的本质是学习特定任务所需的相似度几何分布（重塑向量空间拓扑）。B 错在不存在绝对统一的语义距离空间，微调不会“破坏”而会重塑；C 错在仅切换距离公式无法弥补任务语义定义差异；D 错在有监督微调不会彻底丧失 zero-shot 能力。",
     "misconceptions": [
       "以为存在绝对统一的语义距离空间，任何微调都会破坏拓扑",
-      "以为只切换余弦/欧氏距离公式即可适配不同任务"
+      "以为只切换余弦/欧氏距离公式就能适配分类与检索；相似度几何是学出来的，换距离度量改变不了向量的分布结构",
+      "以为双塔模型只能在无监督数据上微调、引入有监督领域数据会毁掉 zero-shot 能力；有监督微调正是把相似度定义对齐到任务的主要手段"
     ],
     "formats": {
       "choice": {
@@ -392,8 +404,8 @@
         "misconceptionMap": [
           null,
           0,
-          null,
-          null
+          1,
+          2
         ]
       },
       "open": {
@@ -423,8 +435,9 @@
     "question": "在单向量 Dense Embedding 模型中，对比损失（如 InfoNCE / MultipleNegativesRankingLoss）通常会配置一个缩放系数（scale 或温度倒数 1/τ）将余弦相似度乘以一个常数（如 20.0）。若在计算相似度时未将向量进行 L2 归一化（Unit Norm），最可能对模型训练带来什么影响？",
     "explanation": "正确项：A。scale 的作用是放大归一化向量间微小的余弦相似度差异（从 [-1,1] 到 [-20,20]），使 Softmax 输出陡峭分布并产生足够梯度。若向量未经 L2 归一化，网络可通过简单放大向量模长来无限增大点积结果，使 Softmax 输入迅速饱和（概率趋近 0/1），导数极小并造成梯度消失，阻碍语义空间有效学习。B 错在 Autograd 不要求 L2 严格为 1；C 错在饱和导致分布趋极端而非均匀；D 错在不会退化为 K-Means。",
     "misconceptions": [
-      "以为未归一化只是数值尺度问题、不影响训练",
-      "以为 Autograd 要求 L2 范数严格等于 1"
+      "以为 Autograd 要求 L2 范数严格等于 1",
+      "以为不做归一化会让 softmax 趋近均匀、正负样本梯度差归零；方向相反，未归一化时模长膨胀会让 logit 过大、softmax 饱和",
+      "以为不归一化会让模型退化成 K-Means 聚类、忽略对比梯度；损失仍照常回传对比梯度，只是数值尺度失控影响收敛"
     ],
     "formats": {
       "choice": {
@@ -440,9 +453,9 @@
         ],
         "misconceptionMap": [
           null,
+          0,
           1,
-          null,
-          null
+          2
         ]
       },
       "open": {
@@ -472,7 +485,8 @@
     "question": "团队在对模型进行微调时，比较了 TripletEvaluator 与 EmbeddingSimilarityEvaluator 在验证集上的评估行为。若训练目标是优化检索系统的 Top-K 召回率，为什么仅使用 EmbeddingSimilarityEvaluator（基于 STS 数据评估 Cosine-Spearman 相关系数）可能无法全面反映模型的真实检索效能？",
     "explanation": "正确项：A、E。A 指出 EmbeddingSimilarityEvaluator 仅评估预设 Pair 对的连续得分拟合程度，无法衡量模型在面临大规模 Candidate 语料库时的全局对比排序与抗干扰能力。E 进一步给出工程指引：面向检索的微调应以 InformationRetrievalEvaluator 等检索指标为准，而非仅靠 EmbeddingSimilarityEvaluator 的句对相似度相关性来判定模型优劣。B 错在不存在强制 FP32 锁定；C 错在其评估的是整句向量余弦而非单字 token；D 错在 Evaluator 不会修改模型权重。",
     "misconceptions": [
-      "以为 STS Spearman 高即代表检索召回率高",
+      "以为 EmbeddingSimilarityEvaluator 锁定 FP32、与推理的 FP16 存在不可弥合误差；精度差异不是主要矛盾，问题在于它不评估大规模候选下的排序与抗干扰",
+      "以为它只能评估单字 token 匹配、无法算整句余弦；它算的正是整句向量的相似度与相关性，局限在评测范式而非粒度",
       "以为 Evaluator 评估时会修改模型权重"
     ],
     "formats": {
@@ -491,9 +505,9 @@
         ],
         "misconceptionMap": [
           null,
-          null,
-          null,
+          0,
           1,
+          2,
           null
         ]
       },

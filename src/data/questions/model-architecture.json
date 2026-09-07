@@ -26,6 +26,12 @@
         ],
         "answer": [
           2
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
         ]
       }
     },
@@ -33,7 +39,12 @@
       "target": "能判断「RoPE 把位置编码为 Q/K 的旋转，使 attention 只依赖相对位置」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「RoPE 把位置编码为对 Q/K 的旋转」成立；并排除「RoPE 在每层输入上叠加一组可学习的绝对位置向量」「RoPE 只作用于 V 向量」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 RoPE 在每层输入上叠加一组可学习的绝对位置向量，RoPE 用固定的旋转变换编码相对位置，不引入可学习位置参数",
+      "以为 RoPE 只作用于 V 向量、使 Value 携带绝对位置信息，它作用于 Query 与 Key",
+      "以为 RoPE 需要附加额外参数、扩展上下文窗口时必须重新训练整个模型，RoPE 无额外参数，扩展长上下文可用 NTK/YaRN 等插值外推"
+    ]
   },
   {
     "id": "ai-fund-030",
@@ -63,14 +74,25 @@
         "answer": [
           0
         ],
-        "question": "一个文档问答平台在常规负载（并发 50 路、单请求 2k token 上下文）下运行平稳；上线\"整本手册精读\"功能后单请求上下文增至 128k token，结果仅十几路并发就反复触发 GPU 显存溢出（OOM），而模型权重本身的显存占用并无变化。最可能的原因是什么？"
+        "question": "一个文档问答平台在常规负载（并发 50 路、单请求 2k token 上下文）下运行平稳；上线\"整本手册精读\"功能后单请求上下文增至 128k token，结果仅十几路并发就反复触发 GPU 显存溢出（OOM），而模型权重本身的显存占用并无变化。最可能的原因是什么？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「KV Cache 免去逐步重算历史 K/V（平方→线性），但体积随 batch×layers×seq_len×heads 线性膨胀，长上下文下成为显存大头」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「KV Cache 的体积随 batch、层数、头数与…」成立；并排除「长上下文让注意力计算量从平方级恶化为立方级」「KV Cache 仅在 prefill 阶段写入、d…」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为长上下文让注意力计算量从平方级恶化为立方级、耗尽算力触发 OOM，注意力仍是平方级，OOM 来自 KV Cache 的显存占用",
+      "以为 KV Cache 仅在 prefill 阶段写入、decode 阶段即释放，它恰恰要在 decode 全程驻留复用",
+      "以为模型权重的显存占用会随输入序列长度同步增长，权重是固定的，随序列增长的是 KV Cache 与激活"
+    ]
   },
   {
     "id": "ai-moe-tradeoff-001",
@@ -101,14 +123,24 @@
           0,
           1
         ],
-        "question": "关于MoE容量与计算解耦及其工程代价，以下哪些说法正确？（请选择以下两个选项）"
+        "question": "关于MoE容量与计算解耦及其工程代价，以下哪些说法正确？（请选择以下两个选项）",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「代价是全量显存驻留、负载均衡、路由训练不稳、all-to-all 通信与专家并行等系统工程成本」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「每个token只路由到top-k专家计算」「代价是全部专家仍须驻留显存」等 2 项成立；并排除「所有专家压缩进一个共享FFN」「每个token经过全部专家再平均输出」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为所有专家压缩进一个共享 FFN、总参数随之缩小，那是稠密模型；MoE 靠稀疏激活在保持大总参的同时只计算少量专家",
+      "以为每个 token 经过全部专家再平均输出、等价于稠密最优利用还能平滑路由噪声，那正是稠密化的做法，会彻底失去 MoE 的计算优势"
+    ]
   },
   {
     "id": "ai-transformer-006",
@@ -140,14 +172,24 @@
           0,
           2
         ],
-        "question": "团队自部署了一个 32B 模型的推理服务，模型权重可以完整放入显存，但并发请求一多 GPU 就 OOM。监控显示非权重部分的显存占用随并发数和上下文长度近似线性增长。以下判断与做法正确的有哪些？（请选择以下两个选项）"
+        "question": "团队自部署了一个 32B 模型的推理服务，模型权重可以完整放入显存，但并发请求一多 GPU 就 OOM。监控显示非权重部分的显存占用随并发数和上下文长度近似线性增长。以下判断与做法正确的有哪些？（请选择以下两个选项）",
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「先按公式对账再优化：GQA/MQA、量化、PagedAttention、限长限并发、前缀复用」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「按 batch×层数×序列长度×KV 头数估算 KV…」「采用 GQA/MQA 减少 KV 头数、对 KV C…」等 2 项成立；并排除「关闭 KV Cache 即可释放显存：反正每步重新计…」「把模型权重量化到更低精度就能解决：KV Cache …」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为关闭 KV Cache 即可释放显存、每步重算历史对 decode 速度影响可忽略，重算会让 decode 退化成平方级开销，完全不可接受",
+      "以为把权重量化到更低精度就能解决、因为 KV Cache 大小与并发数和序列长度无关，KV Cache 正比于并发数×序列长度×层数×头数，量化权重解决不了它"
+    ]
   },
   {
     "id": "gqa-swa-01",
@@ -176,6 +218,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -186,7 +234,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「GQA 的做法是让多个 Query 头共享同一组 Key-Value 头，KV Cache 的量级因此按 KV 头数成比例下降，直接省下显存占用与解码时的内存带宽」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「GQA 通过让多个 Query 头共享同一组 Key…」「在长上下文生成场景下」等 3 项成立；并排除「GQA 主要通过将模型静态权重参数（Weights）…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 GQA 主要通过将静态权重从 16-bit 压缩为 4-bit 整数来降低运行显存，GQA 减少的是 KV Cache（靠共享 KV 头），与权重量化无关"
+    ]
   },
   {
     "id": "hybrid-mamba-01",
@@ -213,6 +264,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -223,7 +280,12 @@
       "target": "能判断「混合将Attention降至O(N)或O(1)并大幅消KV，降长上下文成本」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「Attention 降至 O(1)/O(N)」成立；并排除「字节级建模省去词表维护」「递归结构天然抑制长程误差累积」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为混合架构的优势是字节级建模省去词表维护、Tokenizer 会被逐步吸收，SSM 混合架构仍使用 tokenizer，与词表无关",
+      "以为递归结构天然抑制长程误差累积、幻觉率显著低于注意力架构，递归状态是有损压缩，长程精确回忆恰恰是它的短板",
+      "以为线性递归计算量小、百亿模型可在高端 CPU 上实时运行、显存不再是硬门槛，显存与带宽仍是部署约束，CPU 实时并不现实"
+    ]
   },
   {
     "id": "llm-05",
@@ -250,7 +312,13 @@
         "answer": [
           2
         ],
-        "question": "某基础设施团队自研了一个 Transformer 解码引擎，用于内部的长文续写服务。压测发现：生成第一个 token 速度很快，但随着已生成序列不断变长，每个新 token 的耗时持续上涨，千字生成的总耗时近似随长度呈平方级恶化。性能剖析显示，每个解码步都在对此前全部历史位置重复执行 Key/Value 投影与注意力计算。最可能的原因与修复方式是什么？"
+        "question": "某基础设施团队自研了一个 Transformer 解码引擎，用于内部的长文续写服务。压测发现：生成第一个 token 速度很快，但随着已生成序列不断变长，每个新 token 的耗时持续上涨，千字生成的总耗时近似随长度呈平方级恶化。性能剖析显示，每个解码步都在对此前全部历史位置重复执行 Key/Value 投影与注意力计算。最可能的原因与修复方式是什么？",
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：缓存历史 token 的 Key/Value 张量，使每步只需计算新 token 的 Q，把整体复杂度从 O(n²) 降为每步 O(n)。\n\n解析：自回归生成时若不缓存 K/V，每生成一个 token 都要对整个前缀重算注意力；KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q。它是长上下文/大批量下的主要显存瓶颈（GQA、PagedAttention、MLA 都是围绕它优化）。"
@@ -260,7 +328,12 @@
       "target": "能判断「KV cache 把历史 K/V 存下来复用，使每步只需算新 token 的 Q」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「引擎未实现 KV 缓存」成立；并排除「softmax 出现数值溢出导致注意力权重异常」「词嵌入矩阵规模过大拖慢了每一步的前向传播」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 KV 缓存解决的是 softmax 数值溢出问题，把注意力数值稳定处理当成了缓存机制的动机；缓存是复用历史 K/V 以避免重复计算，与减最大值防溢出是两回事",
+      "以为推理延迟的瓶颈在嵌入层查表，应先对嵌入矩阵做低秩分解；自回归解码的耗时主要在逐步注意力与 KV 读写，嵌入查表只发生在新 token 上、不是主延迟来源",
+      "以为训练时的学习率等优化器超参决定了部署后的前向延迟，降低学习率重训能改善推理耗时；学习率影响收敛与权重取值，不改变推理期每步的计算量与访存量"
+    ]
   },
   {
     "id": "llm-06",
@@ -287,7 +360,13 @@
         "answer": [
           1
         ],
-        "question": "一家软件公司计划在企业内网私有化部署一个混合专家（MoE）大模型作为编程助手，模型规格为总参数量约 671B、每个 token 仅激活约 37B 参数。基础设施团队做资源规划时产生分歧：一种意见认为按 37B 估算所需显存就够了，另一种意见则担心推理延迟应按 671B 来计算。关于这两个数字各自决定的资源维度，正确的理解是？"
+        "question": "一家软件公司计划在企业内网私有化部署一个混合专家（MoE）大模型作为编程助手，模型规格为总参数量约 671B、每个 token 仅激活约 37B 参数。基础设施团队做资源规划时产生分歧：一种意见认为按 37B 估算所需显存就够了，另一种意见则担心推理延迟应按 671B 来计算。关于这两个数字各自决定的资源维度，正确的理解是？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：总参决定显存占用，激活参数决定每 token 计算量与延迟。\n\n解析：MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存；而每个 token 只经过被选中的专家，激活参数决定 FLOPs 与延迟。MoE 省的是计算而非内存——Mixtral 8x7B 有约 46.7B 总参却只有约 12.9B 激活。"
@@ -297,7 +376,12 @@
       "target": "能判断「MoE 用路由器为每个 token 选少量专家：所有专家都可能被路由到，因此总参决定需要加载的显存」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「总参数量决定所需显存（所有专家权重都可能被路由到而需…」成立；并排除「总参数量决定推理延迟」「这两个数字都只影响训练阶段的吞吐」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为总参数决定延迟、激活参数决定显存，于是显存按激活参数量规划；恰好相反，激活参数决定每 token 的计算量（延迟），总参数决定必须常驻的权重显存",
+      "以为这两个数字只影响训练吞吐、与推理显存和延迟无关；总参数量直接决定部署显存下限，激活参数量直接决定单 token 算力开销",
+      "以为未被当前 token 激活的专家权重可以丢出显存以省资源；路由是按 token 动态决定的，下一 token 就可能命中，丢权重会导致随时需要换入甚至无法服务"
+    ]
   },
   {
     "id": "llm-13",
@@ -325,7 +409,13 @@
         "answer": [
           1
         ],
-        "question": "你负责为一个 coding Agent 服务做显存规划：会话上下文普遍达到 10k token，部署目标是单张 80GB GPU（模型权重约占 60GB），需要先算清单路 KV cache 预算才能估算可承载的并发路数。按上述架构配置，正确的估算是？"
+        "question": "你负责为一个 coding Agent 服务做显存规划：会话上下文普遍达到 10k token，部署目标是单张 80GB GPU（模型权重约占 60GB），需要先算清单路 KV cache 预算才能估算可承载的并发路数。按上述架构配置，正确的估算是？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：KV cache/token = 2 × 48 × 2 × 128 × 2B = 49,152 B ≈ 48 KiB；10k token 会话 ≈ 0.47 GB。\n\n解析：逐项代入公式 2（K 和 V 两份）× N_layers(48) × N_kv_heads(2) × head_dim(128) × 每元素字节数(BF16 为 2)。注意三个易错点：①漏乘 K/V 因子 2 会得到 24 KiB；②误用 32 个 Query 头会得到 768 KiB——缓存只看 KV 头数；③误按 FP32 计算会翻倍。工程含义：80GB 卡去掉 60GB 权重剩约 20GB，0.47GB/路 → 约 40 路并发；若换成标准 MHA（32 KV 头）则单路 7.5GB，同卡只能跑 2 路左右。量化 KV cache（如 FP8）可再线性减半。"
@@ -335,7 +425,12 @@
       "target": "能判断「10k token 会话约 49152×10000 ≈ 0.47 GB」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「约 48 KiB / token」成立；并排除「约 24 KiB / token」「约 768 KiB / token」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为每 token 只需缓存 K 或 V 其中之一，按 24 KiB 估算；K 和 V 都要缓存，正确量级是 48 KiB/token，漏掉一半会直接导致显存规划不足",
+      "以为 KV 头数等于 Query 头数 32，照 32 头估算得 768 KiB；GQA 下 KV 只有 2 头，缓存量应按 KV 头而非 Query 头计算",
+      "以为按 Query 头 32 且按 4 字节存储（FP32）估算得 1.5 MiB；既误用了 Query 头数，又与题设 BF16 每元素 2 字节不符"
+    ]
   },
   {
     "id": "llm-14",
@@ -363,7 +458,13 @@
         "answer": [
           1
         ],
-        "question": "团队要自训一个 131k 上下文的模型，有人提议模仿业内做法：75% 层用 SWA、25% 层保留全局 GQA，以压低长上下文成本。关于该设计的收益与代价，下列说法正确的是？"
+        "question": "团队要自训一个 131k 上下文的模型，有人提议模仿业内做法：75% 层用 SWA、25% 层保留全局 GQA，以压低长上下文成本。关于该设计的收益与代价，下列说法正确的是？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：SWA 层复杂度 O(n·w)、KV 缓存有界（只需保留窗口内 w 个 token）；全局层负责长距离信息通路；收益=计算+显存双降，代价=局部层不能直接看全史。\n\n解析：若窗口 w=1024、上下文 n=131k，SWA 层的注意力计算从 O(n²) 降到 O(n·w)，其 KV cache 上界固定为 O(w) 而非 O(n)——75% 的层的缓存不再随上下文线性增长，再乘上 GQA 的 KV 头缩减，两层优化相乘。少量全局层像\"信息高速公路\"，让深层网络仍能整合任意远处的信息（Gemma 等模型即此设计）。trade-off：token 无法在局部层内一步关注窗口外内容，长程推理质量依赖全局层的数量与分布；纯检索类超长程任务上可能弱于全全局注意力。"
@@ -373,7 +474,12 @@
       "target": "能判断「SWA 层只在固定窗口内计算注意力：复杂度从 O(n²) 降为 O(n·w)，且窗口外的旧 token KV 可直接淘汰，该层缓存上界固定为窗口大小 w 而非序列长度 n」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「大部分层只在固定窗口内注意力」成立；并排除「KV Cache 可大幅压缩」「保留 25% 全局层即保留长程能力」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为滑动窗口把历史压缩进隐状态、KV cache 可大幅压缩，显存墙就此解除；SWA 只是限制注意力范围，窗口内 KV 仍要缓存，且全局层依然持有全量 KV",
+      "以为保留 25% 全局层就完整保住了长程能力、混合即全效且无损；窗口层看不到窗口外信息，长程依赖只能经由少数全局层承载，能力是有损折中而非等价",
+      "以为注意力参数量随全局层数等比下降、模型整体缩小到约四分之一；SWA 与全局注意力共享同样的投影权重，省的是 KV 与注意力计算，不是参数量"
+    ]
   },
   {
     "id": "llm-15",
@@ -401,7 +507,13 @@
         "answer": [
           0
         ],
-        "question": "团队技术分享会上有人问：\"LatentMoE 到底省在哪里？是不是就是路由做得更省了？\"下列解释中最准确的是？"
+        "question": "团队技术分享会上有人问：\"LatentMoE 到底省在哪里？是不是就是路由做得更省了？\"下列解释中最准确的是？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：压缩位置在专家线性层两端（down-proj 进、up-proj 出）；专家大矩阵在低维空间执行，参数/FLOPs 随 latent 维度缩放；代价是信息瓶颈。\n\n解析：标准 MoE 中每个专家的 gate/up/down 矩阵都作用于完整 hidden size d_model；LatentMoE 借鉴 MLA 的低秩思想，先用一个 d_model×d_latent 的瘦矩阵把表示压到 latent（d_latent ≪ d_model），专家计算在低维进行后再还原。专家 FLOPs 与参数从 O(d_model×d_ff) 降为约 O(d_latent×d_ff)+O(d_model×d_latent)，压缩比高时收益显著。要能说清三点：①省的不是路由，而是专家本体的矩阵乘法；②投影本身开销小但非零；③latent 维度是显式的容量旋钮——压得越狠越省，但表征瓶颈越紧，这是它与普通剪枝的本质区别。"
@@ -411,7 +523,12 @@
       "target": "能判断「压缩发生在专家线性层：MoE 专家的大矩阵原本作用于完整 hidden size，LatentMoE 让它们在低维 latent 空间执行，参数量与 FLOPs 随 latent…」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「专家内部的大型线性变换被搬到低维 latent sp…」成立；并排除「它减少了专家数量并简化了 router 结构」「它把 token-level 路由改成了 seque…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为它靠减少专家数量、简化 router 来降成本，路由开销随专家数下降；LatentMoE 并不减少专家，省的是专家计算的输入维度",
+      "以为它把 token 级路由改成了序列级路由、每个序列只激活一次专家；降维发生在专家计算前后，路由仍是 per-token 的",
+      "以为它用 latent attention 替代了全部专家 FFN、不再需要维护专家权重；低维 latent 只是专家计算的中间表示，专家 FFN 依然存在"
+    ]
   },
   {
     "id": "llm-16",
@@ -439,7 +556,13 @@
         "answer": [
           0
         ],
-        "question": "团队提议把现有 LatentMoE 的 latent 维度再砍掉 80%，以进一步压低单 token 成本。你作为架构评审，最应该指出的核心风险是？"
+        "question": "团队提议把现有 LatentMoE 的 latent 维度再砍掉 80%，以进一步压低单 token 成本。你作为架构评审，最应该指出的核心风险是？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：FLOPs/显存进一步下降；latent 成为信息瓶颈（专家输入表征变弱、路由区分度下降）；质量对压缩比敏感，需实验标定拐点。\n\n解析：latent 维度是 LatentMoE 唯一的容量旋钮，压低它的影响链路是：①收益侧——专家矩阵乘法与参数量按比例缩小，单 token 成本继续下降；②代价侧——所有 token 都要先挤过同一根细管子，专家能区分的特征变少，router 在低维空间里也更难把不同类型的 token 分开；③后果——预训练损失可能只轻微上浮，但在分布外任务或长尾能力上出现不成比例的回退。评审时还应指出两个常见误区：LatentMoE 压缩的是 FFN 路径，KV cache 一点不变；加专家数量补不回单个专家的输入带宽损失。正确做法是用消融实验找质量-成本曲线的拐点，而不是拍脑袋定压缩比。"
@@ -449,7 +572,12 @@
       "target": "能判断「压缩比上升 → 计算/参数继续下降，但 latent 成为更紧的信息瓶颈：专家只能看到低维投影后的输入，路由区分度与专家容量同时受损，质量回退风险随压缩比单调上升」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「专家计算与参数进一步下降」成立；并排除「KV cache 会同比例缩小」「只要相应增加专家数量就能完全弥补维度下降损失的容量」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 KV cache 会同比例缩小、长上下文本也同步受益；latent 压缩作用于 MoE 的 FFN 计算路径，与注意力 KV cache 是两套东西，不会顺带缩小",
+      "以为只要相应增加专家数量就能完全弥补维度损失、质量保持不变；专家数补不回单个专家输入维度被压掉的表达能力，低维瓶颈会直接转化为质量下降",
+      "以为低维空间损失面更平滑、训练收敛速度会稳定提升；过度压缩更常见的是表征瓶颈与信息丢失，收敛快慢与维度压缩没有这种正向因果关系"
+    ]
   },
   {
     "id": "llm-17",
@@ -477,7 +605,13 @@
         "answer": [
           0
         ],
-        "question": "你在评估一个新开源模型能否用于代码补全等强顺序敏感的任务。它的架构说明写着 \"NoPE: no positional encoding used\"。基于 Transformer 原理（而非该模型的宣传材料），你最应该关注的问题是？"
+        "question": "你在评估一个新开源模型能否用于代码补全等强顺序敏感的任务。它的架构说明写着 \"NoPE: no positional encoding used\"。基于 Transformer 原理（而非该模型的宣传材料），你最应该关注的问题是？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：因果掩码打破置换对称性提供隐式位置信号；需用扰动实验/探针/长度外推验证顺序建模可靠性；局部注意力结构会改变这一权衡。\n\n解析：①原理层面——纯双向自注意力对 token 顺序是置换等变的，但因果掩码让位置 i 只能看到 i 个前缀，不同深度的可用上下文本身就是一种位置信号，因此 NoPE 并非必然失败（小型模型已有实证）；②验证方法——a) 扰动实验：打乱输入 token 顺序或替换为乱序文本，观察困惑度/任务指标退化幅度；b) 探针：在中间层隐藏态上线性探测位置 ID，看位置信息是否真的被编码；c) 长度外推：构造超过训练长度的顺序敏感任务（长文档检索、代码缩进结构），检验隐式信号是否随距离衰减。③结构交互——若模型大量使用滑动窗口等局部注意力，相对距离分布被窗口截断，隐式顺序更容易学；反之全局长程依赖下 NoPE 的风险更高。④工程结论——顺序敏感场景（代码、表格、长文档）应要求厂商或自查提供上述证据，而不是默认位置建模没问题。"
@@ -487,7 +621,12 @@
       "target": "能判断「去掉显式位置编码后，顺序信息只能隐式地来自因果掩码的不对称性（每个位置能看到的前缀长度不同）与数据统计规律」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「位置信息只能由因果掩码的不对称性与数据分布隐式提供」成立；并排除「缺少 RoPE 的旋转因子后注意力得分失去缩放项」「位置信息缺失导致历史 K/V 无法复用」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为缺了 RoPE 的旋转因子后注意力得分失去缩放项、需另加归一化来稳定 softmax；缩放来自 head_dim 的 √d，与位置编码无关",
+      "以为没有位置信息历史 K/V 就无法复用、KV cache 机制失效必须逐 token 重算；KV cache 复用的是已算出的 K/V 张量，与是否携带位置编码无关",
+      "以为 embedding 层失去位置输入后无法初始化、必须保留至少一层绝对位置嵌入兜底；NoPE 的挑战是模型能否从因果结构与数据中学到顺序，不是初始化能不能做"
+    ]
   },
   {
     "id": "llm-26",
@@ -514,6 +653,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -524,7 +669,12 @@
       "target": "能判断「通用做法是将分数量化为 0～1 直方图（约 1000 bins），利用分布可加性跨节点聚合直方图，以极低通信精准估计全局近似分位数」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「将分数压缩至 [0」成立；并排除「各 Worker 单独计算局部分位数」「将所有 Token 的路由得分收集到 Master …」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为各 Worker 算局部分位数再 All-Reduce 求算术平均就等于全局分位数；分位数不是可加统计量，局部量直接平均会得到有偏甚至完全错误的分位估计",
+      "以为把所有 token 的路由得分收集到 Master 节点全局排序即可；这正是要避免的做法，近千专家规模下收集与排序的通信和内存开销不可接受",
+      "以为随机采样 1% 的 token 估计全局分位数、忽略其余分布就够精准；朴素采样对尾部分位数误差很大，且丢弃的分布信息正是负载均衡最关心的部分"
+    ]
   },
   {
     "id": "llm-27",
@@ -551,6 +701,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -561,7 +717,12 @@
       "target": "能判断「类 MLA 在 Decoding 本质是 head_dims=512+ 的 MQA，算力已被提前占用」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「MLA 在 Decoding 时表现为 head_d…」成立；并排除「MLA 的 KV Cache 是传统 GQA8 的 …」「MLA 无法适用于超长文本场景」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 MLA 的 KV cache 是 GQA8 的 3 倍以上、严重受限于内存带宽；低秩压缩恰恰是为了把 cache 压到远小于 GQA，MLA 的优势正是省带宽",
+      "以为 MLA 不适用于超长文本、Prefill 复杂度是 O(N³)；注意力类结构的 prefill 复杂度是 O(N²) 量级，低秩投影不会把它恶化成三次方",
+      "以为 MLA 训练开销显著高于 head_dims=256 的 MFA；低秩投影的引入是为了同时压训练与推理开销，不能仅凭投影矩阵更复杂就推断训练更贵"
+    ]
   },
   {
     "id": "llm-28",
@@ -588,6 +749,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -598,7 +765,12 @@
       "target": "能判断「理论推导表明，正交情形下的类 PaTH 位置编码可等价为对 Q/K 施加广义 DeltaNet」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「线性注意力作为广义 DeltaNet」成立；并排除「依赖绝对位置编码与 RoPE 的拼接机制」「混合专家 (MoE) 模块能够显式推导出 Token…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为位置感知依赖绝对位置编码与 RoPE 的拼接；题设已明确移除 RoPE 且不引入绝对位置编码，二者拼接并非其机制",
+      "以为 MoE 模块能显式推导出 token 在序列中的绝对索引；MoE 是按内容做条件计算的，不具备位置计数能力",
+      "以为标准 softmax attention 本身就具备对无位置编码序列的全序表达能力；标准注意力是置换等变的，顺序信息需要由因果掩码与架构其它部分提供"
+    ]
   },
   {
     "id": "llm-hybrid-02",
@@ -627,6 +799,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -637,7 +815,10 @@
       "target": "能对比 Attention 与 SSM 在复杂度与检索能力上的差异，并说明混合架构的分工理由",
       "reasoningGoal": "先确认标准 Attention 是二次方复杂度且 KV Cache 随上下文显著增长；再确认 Mamba 以线性复杂度把历史压缩为常数级隐状态；并说明混合架构用 Mamba 承担绝大部分 Token 的开销、用少量 Attention 补精准检索，排除「纯 Mamba 的针尖检索强于纯 Transformer」。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为纯 Mamba 在长文本精准细节检索（Needle in a Haystack）上通常强于纯 Transformer；状态压缩会损失精确逐 token 寻址能力，这正是混合架构要保留少量注意力层的原因"
+    ]
   },
   {
     "id": "llm-moe-04",
@@ -666,6 +847,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -676,7 +863,10 @@
       "target": "能说明 MoE 的门控路由机制、激活参数与总参数解耦，以及负载均衡这一关键工程挑战",
       "reasoningGoal": "先确认门控路由按 Token 动态选择并激活部分专家；再确认单 Token 激活参数远小于总参数，从而以低算力开销扩容量；并指出分布式训练推理中专家间负载均衡直接决定硬件利用率与通信开销，排除「MoE 因只激活部分专家而降低总显存、更适合单卡部署」。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 MoE 能减少模型总显存占用、比同总参数 Dense 更适合显存受限的单卡；MoE 省的是每 token 计算量，全部专家权重仍要常驻显存，总占用并不比同总参数 Dense 小"
+    ]
   },
   {
     "id": "rope-vs-sin-01",
@@ -706,6 +896,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -716,7 +912,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「RoPE 将位置隐式转换为旋转矩阵作用于 Q/K，点积天然保留相对距离 m-n」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「绝对正弦位置编码通过将位置映射为不同频率的正弦/余弦…」「绝对位置编码直接注入绝对坐标」等 3 项成立；并排除「绝对正弦位置编码与 RoPE 均通过在注意力 Sof…」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为绝对正弦编码与 RoPE 都是在 softmax 权重矩阵上直接叠加一个与相对距离相关的衰减偏置；加衰减偏置是 ALiBi 一类做法，正弦编码是加到输入向量上，RoPE 是对 Q/K 做旋转"
+    ]
   },
   {
     "id": "pos-encoding-sin-01",
@@ -746,6 +945,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -756,7 +961,10 @@
       "target": "能说明位置编码的必要性，以及正弦编码在相对位置与长度外推上的数学性质",
       "reasoningGoal": "先确认不加位置编码时 Self-Attention 置换不变、打乱 Token 顺序输出集合不变；再由三角函数性质推出任意固定偏移 k 下 PE(pos+k) 可表为 PE(pos) 的线性变换，利于学相对位置；并确认固定函数可外推到未见长度，排除「通过矩阵乘法注入位置信息」。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为正弦位置编码是通过与 token embedding 做矩阵乘法来注入位置的；标准做法是位置向量与词嵌入逐元素相加，矩阵乘法会改变维度语义也不是原设计"
+    ]
   },
   {
     "id": "sin-pe-advantage",
@@ -784,6 +992,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -794,7 +1008,12 @@
       "target": "能判断「三角公式使 PE(pos+k) 表示为 PE(pos) 的线性变换有利于模型学习相对位置关系并外推到更长序列」",
       "reasoningGoal": "先回到该机制的第一性原理；据此确认「位置 pos+k 的位置编码可以表示为位置 pos …」成立；并排除「三角函数编码可以显著降低注意力矩阵计算的时间复杂度至…」「三角函数编码直接将位置向量与词向量进行点乘避免了增加…」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为三角函数编码能把注意力矩阵计算复杂度降到 O(N log N)；位置编码只提供顺序信息，不改变注意力的计算复杂度",
+      "以为三角函数编码是与词向量点乘、从而避免增加嵌入维度；它是与词嵌入相加，维度必须一致，谈不上避免增加维度",
+      "以为三角函数编码能保证任意两个不同位置的向量内积恒为 0（正交）；不同位置的正弦编码内积随相对距离平滑变化，并非恒为零"
+    ]
   },
   {
     "id": "pe-add-vs-concat",
@@ -824,6 +1043,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -834,7 +1059,10 @@
       "target": "能分析位置编码与词嵌入相加而非拼接的设计理由",
       "reasoningGoal": "先比较维度代价：相加不增大输入张量维度、不膨胀后续层参数量；再由三角学性质说明相加后仍易学到相对位置关系；并确认正弦编码具备外推到比训练集更长序列的能力，排除「相加会彻底覆盖语义、必须在每一层重新叠加 PE」。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为向量直接相加会让位置数值彻底覆盖词向量的语义信息、因此必须在每个 Encoder 层重新叠加 PE；相加是同维叠加且位置向量幅度可控，语义不会被覆盖，也不存在逐层重加的必要性"
+    ]
   },
   {
     "id": "pe-removal-defect",
@@ -861,6 +1089,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -871,7 +1105,12 @@
       "target": "能判断「QK^T 具有置换等变性模型会将输入序列视为无序集合（Bag-of-Tokens）」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「注意力矩阵计算 QK^T 具有置换等变性/不变性模型…」成立；并排除「Softmax 函数将退化为均匀分布导致模型无法提取…」「Multi-Head Attention 无法将输入…」等不成立描述。"
     },
-    "cognitiveTask": "predict"
+    "cognitiveTask": "predict",
+    "misconceptions": [
+      "以为移除位置编码后 softmax 会退化为均匀分布、模型无法提取 token 间相关性权重；softmax 仍由内容相似度决定，缺陷是模型分不出 token 的先后次序而非注意力失效",
+      "以为多头注意力会因此无法把输入投影到不同子空间、投影矩阵发生秩坍塌；投影矩阵与位置编码相互独立，秩坍塌不是移除 PE 的后果",
+      "以为 K 与 V 之间会产生线性相关性进而梯度消失；K/V 的相关性与位置编码无关，本质缺陷是置换不变性导致的顺序盲"
+    ]
   },
   {
     "id": "moe-design-tradeoff",
@@ -902,6 +1141,12 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
@@ -912,7 +1157,10 @@
       "target": "能判断 MoE 相比同等参数 Dense 模型在算力、显存、路由与通信上的真实取舍",
       "reasoningGoal": "先确认门控路由把总参数量 Scaling 与单 Token 计算量解耦；再指出 Top-k 路由易导致专家塌缩、需辅助负载均衡损失，且 all-to-all 分布式通信开销更高；并排除「因每次只激活部分专家，MoE 总显存显著低于同参数 Dense、更适合单卡部署」的误判。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为每次只激活部分专家，MoE 分布式部署所需的 GPU 总显存就显著低于同总参数的 Dense 模型；未激活的专家权重同样要驻留在显存里等待路由，总显存并不因此下降"
+    ]
   },
   {
     "id": "moe-vs-dense-compute",
@@ -944,6 +1192,12 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
@@ -954,7 +1208,10 @@
       "target": "能对比 1000 亿总参/200 亿激活的 MoE 与 200 亿 Dense 模型在计算量与显存上的异同",
       "reasoningGoal": "先由单 Token FLOPs 由激活参数决定推出两者算力处于同一数量级；再确认所有专家权重都需常驻显存、MoE 省算力不省显存；并承认路由负载均衡会显著影响输出质量方差，同时确认同算力下更大总参可存更多领域知识，排除「仅加载被激活的 200 亿参数即可运行推理」。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为部署时只加载被激活的 200 亿参数对应的显存即可运行推理；路由是逐 token 变化的，1000 亿总参数都必须常驻，否则被路由到的专家无权重可用"
+    ]
   },
   {
     "id": "native-vs-modular-multimodal",
@@ -984,6 +1241,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -994,7 +1257,10 @@
       "target": "能区分原生多模态与模块化外挂编码器架构，并判断长视频细粒度跨模态推理场景下的优劣",
       "reasoningGoal": "先识别模块化架构是冻结或微调文本模型、再用独立 Vision/Audio Encoder 与投影层映射到文本 Embedding 空间；再识别原生架构在预训练初期就把多模态序列送入统一 Transformer 做深层自注意力交互；并据此判断原生架构在跨模态时空连贯理解上更强，排除「模块化在长视频等高密度时序上注意力开销与吞吐显著优于原生」。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为模块化外挂编码器不改语言模型底层架构，在长视频等高密度连续时序上的注意力开销与上下文吞吐就显著优于原生多模态；外挂编码依赖离散 token 化后的长序列输入，长视频恰恰会放大其上下文与吞吐压力"
+    ]
   },
   {
     "id": "rope-theta-scaling",
@@ -1023,6 +1289,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -1033,7 +1305,12 @@
       "target": "能说明长上下文训练阶段增大 RoPE 基频 θ 的核心原理",
       "reasoningGoal": "先由 RoPE 中 θ 与旋转频率的关系推出增大 θ 会降低旋转频率、使波长变长；再说明远距离相对相位变化因此更平缓，避免外推时相位翻转过快导致的相对位置注意力失真与衰减；并排除「提高旋转频率」「改变 head_dim 或扩大 KV Cache」「变成不依赖位置的绝对位置编码」。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为增大 θ 会提高旋转频率、让远距离位置的相位变化更快；恰恰相反，θ 增大使频率降低、波长变长，从而让更远的位置仍能落在训练见过的相位范围内",
+      "以为增大 θ 会改变注意力头维度进而扩大 KV cache；θ 只影响旋转角频率，与 head_dim 和缓存大小无关",
+      "以为增大 θ 会把 RoPE 改成不依赖位置的绝对位置编码；RoPE 仍是相对位置编码，θ 只是基频超参"
+    ]
   },
   {
     "id": "gqa-kv-cache-calc",
@@ -1062,6 +1339,12 @@
         ],
         "answer": [
           2
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
         ]
       },
       "open": {
@@ -1072,7 +1355,12 @@
       "target": "能判断「计算步骤：①每层每 Token KV = 2(K和V) × H_kv(8) × d_head(128) × 2(bytes) = 4096 bytes」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「32 GB」成立；并排除「8 GB」「16 GB」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为按 8 GB 估算就够，实际是又漏了 K/V 其中之一又按单字节存储；按题设参数（64 层 × 8 KV 头 × 128 × K/V 两份 × 2 字节 × 131072）应约 32 GiB",
+      "以为只缓存 K 或只缓存 V 即可得 16 GB；K 与 V 都要缓存，正确结果约为 16 GB 的两倍",
+      "以为按 FP32 每元素 4 字节估算得 64 GB；题设明确是 bfloat16 每元素 2 字节，应按 32 GiB 计算"
+    ]
   },
   {
     "id": "moe-router-collapse-fix",
@@ -1103,6 +1391,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1113,6 +1407,9 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「B Capacity Factor 限制单 Batch 最大 Token 数超额丢弃或重定向」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在 Loss 中引入辅助负载均衡损失对 Expert…」「设定适度的 Expert Capacity Fact…」等 3 项成立；并排除「彻底冻结 Router 网络的参数仅允许更新 Exp…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为彻底冻结 Router、只更新 Expert FFN 就能维持负载均衡；路由固化后失衡会被永久锁定，反而失去纠偏能力，正确做法是加辅助均衡损失、噪声与容量约束等而非冻结"
+    ]
   }
 ]

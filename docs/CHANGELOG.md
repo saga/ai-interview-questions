@@ -1,6 +1,35 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-04 · misconceptions 收口（204/1354 → 1339/1354；干扰项绑定 301/2919 → 2919/2919）
+
+- **背景**：题级 `misconceptions` 只有 204/1354（15.1%）、`misconceptionMap` 188/1354（13.9%）。
+  `misconceptionMap[i]` 的语义是「选项 i 对应的误区在题级 `misconceptions` 中的下标」，
+  **只有干扰项需要绑定、正确项恒为 null**（schema 强制）。缺失时 adaptive 只能回退到
+  「答错即重练」，无法针对具体错误信念做反馈。
+- **工具**：新增 `scripts/misconception-manual.ts`（`npm run question:misconceptions:manual`），
+  支持 `--status` / `--dump --out= [--topic=] [--limit=] [--offset=]` / `--apply --file= [--dry-run]`。
+- **关键设计取舍（写在文件头）**：**误区文本不做规则推断**——机械模板只会产出同义反复
+  （「认为<option 原文>」），必须由 LLM 逐条撰写；而 `misconceptionMap` 是**派生而非撰写**的：
+  已撰写的 `misconceptions` 数组与干扰项按升序 1:1 对齐，重复文本合并为同一下标，
+  apply 时校验 `misconceptions.length === distractorIndices.length`，不等则整批拒绝（all-or-nothing）。
+- **执行**：dump 出 1135 题 / 2535 干扰项 → 分 19 片 → 逐片撰写 → apply（每片 60 题，
+  共 7/6/5/2/2/5/3 个文件被改写）。随后发现还有 52 题（83 个干扰项）属于「存量误区只绑了一部分」
+  （早期手写 `misconceptions` 条数少于干扰项数），再补一片**全量对齐数组**（保留已绑定文本、
+  为未绑定项补写），14 个文件被改写。
+- **撰写风格**：「认为…」/「以为…」陈述**错误信念本身**（一个能力合格的人为什么会选这个干扰项），
+  而不是复述选项原文。反向题干（「下列说法**错误**的是」）的干扰项是正确陈述，
+  误区文本写成「误判这条描述为错误项：…」。
+- **残留的 15/17 题不是缺口**：这 17 题的 `options` 全部为正确项（干扰项数 = 0），
+  无选项可绑定，schema 要求 `misconceptions ≥ 1` 故留空。
+- **无副作用验证**：`variantSourceOf` 不含 `misconceptions`，本轮写入不触发变体漂移——
+  `question:validate-variants` 仍是 **0 stale / 0 近重复 / 0 语言质量**（68 题 / 100 变体）。
+- **结果**：干扰项绑定 **2919/2919（100%）**；`validate:questions` 显示
+  「misconceptions 1339/1354（98.9%）· misconceptionMap 1337/1354（98.7%）」；
+  `npm run typecheck` 干净（顺带修掉 `verify-question-candidates.ts` 里未使用的 `hasCode`）；
+  `npm test` **839/839**。
+- **遗留**：多选占比仍为 57.2%（目标 ≥ 66.7%），未在本次范围内。
+
 ## 2026-09-07 · cognitiveTask 收口（43/1354 → 1354/1354）+ 变体指纹重设基线
 
 - **背景**：`cognitiveTask` 是 ADR-077 assessment contract 的第四维，只有 43/1354 有值，

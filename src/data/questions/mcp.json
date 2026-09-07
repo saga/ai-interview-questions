@@ -23,6 +23,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -33,7 +39,12 @@
       "target": "能判断「没有统一协议时，M 个应用接入 N 个工具需要 M×N 套定制集成」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「以标准协议连接模型与外部工具/数据源」成立；并排除「提高模型推理的采样速度」「替代 JSON Schema 描述工具参数」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 MCP 的核心是提升采样速度，它解决的是工具与资源的标准化接入、发现与互操作",
+      "以为 MCP 会替代 JSON Schema 描述工具参数，恰恰相反，它依赖 schema 来描述工具",
+      "以为 MCP 是为了压缩上下文窗口降低 token 成本，上下文管理并不是它的目标"
+    ]
   },
   {
     "id": "ai-agent-009",
@@ -63,14 +74,25 @@
         "answer": [
           1
         ],
-        "question": "一家银行的 AI 团队维护五十个内部 API（账户、风控、征信查询等），计划让信贷、客服、合规三条业务线的多个 Agent 复用这批能力；API 分属不同团队且仍在快速演进，行内还要求工具调用具备统一的鉴权与审计口径。架构师就“直连 Function Calling 还是引入 MCP”应给出的判断依据是？"
+        "question": "一家银行的 AI 团队维护五十个内部 API（账户、风控、征信查询等），计划让信贷、客服、合规三条业务线的多个 Agent 复用这批能力；API 分属不同团队且仍在快速演进，行内还要求工具调用具备统一的鉴权与审计口径。架构师就“直连 Function Calling 还是引入 MCP”应给出的判断依据是？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「本质是 M×N → M+N 的集成成本问题」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「看消费方数量与演进速度：少而稳直连」成立；并排除「消费方少于 5 个时直连更划算」「引入 MCP 后鉴权与限流可统一收敛到协议层」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为消费方少于 5 个时直连更划算、50 个 API 先直连痛了再迁，判断依据是 N×M 的集成复杂度与治理需求，而不是单纯的消费方数量",
+      "以为引入 MCP 后鉴权与限流可统一收敛到协议层、server 侧只需实现业务逻辑，协议本身不提供鉴权与限流实现，这些仍是服务端与网关的职责",
+      "以为 API 数量少、变更慢时直连成本更低、治理需求多是伪需求，50 个 API 被多个 Agent 复用恰恰是协议收益最大的场景"
+    ]
   },
   {
     "id": "ai-eng-010",
@@ -104,14 +126,27 @@
           2,
           4
         ],
-        "question": "一家零售集团的 AI 平台组维护着一批稳定的内部 REST API（库存、会员、营销），新的导购 Agent 需要复用这些能力。选型会上出现分歧：一方认为 REST 已经够用，再引入 MCP 纯属多余的一层；另一方则称 MCP 是统一能力接入的机会，但说不清它到底管什么。平台组应给出的准确判断有哪些？（请选择三个选项）"
+        "question": "一家零售集团的 AI 平台组维护着一批稳定的内部 REST API（库存、会员、营销），新的导购 Agent 需要复用这些能力。选型会上出现分歧：一方认为 REST 已经够用，再引入 MCP 纯属多余的一层；另一方则称 MCP 是统一能力接入的机会，但说不清它到底管什么。平台组应给出的准确判断有哪些？（请选择三个选项）",
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1,
+          null,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「MCP 解决工具/资源/提示的标准化连接与互操作问题，不是 REST 的替代品，也不自动解决 tool selection 与推理」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「MCP 是模型与外部工具、资源间标准化连接的开放协议」「统一能力的暴露、发现与复用」等 3 项成立；并排除「MCP 的目标是取代 REST」「接入 MCP 后工具选择与任务推理自动完成」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 MCP 的目标是取代 REST、引入后应逐步下线全部现有内部接口，MCP 是架在既有接口之上的接入层，不是替代品",
+      "以为接入 MCP 后工具选择与任务推理会自动完成、无需额外工程设计，工具描述、选择与编排依然需要投入",
+      "以为 MCP 只是传输层的薄封装、工具定义发现与鉴权仍须各应用重复实现，它恰恰是把这些收敛为标准协议"
+    ]
   },
   {
     "id": "ai-tool-005",
@@ -139,6 +174,12 @@
         ],
         "answer": [
           3
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          2,
+          null
         ]
       }
     },
@@ -146,6 +187,11 @@
       "target": "能判断「Function Calling = 模型输出调用意图的能力」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「Function Calling 是模型按 sche…」成立；并排除「MCP 是 Function Calling 的直接…」「MCP 已彻底解决 schema 歧义与工具选择准确…」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 MCP 是 Function Calling 的直接竞品、引入后模型便不再需要按 schema 输出调用意图，两者互补：MCP 管接入与发现，Function Calling 管调用意图的表达",
+      "以为 MCP 已彻底解决 schema 歧义与工具选择准确率问题、接入后无须再投入工具描述工程，协议不改变工具描述质量的重要性",
+      "以为 MCP 属于模型厂商的私有接口规范、工具的定义发现与鉴权仍须每个应用各自实现，它是开放的通用协议，正是为了减少这种重复实现"
+    ]
   }
 ]

@@ -232,6 +232,7 @@
     "question": "在设计针对 Web / GUI 计算机使用 Agent（Computer Use Agent）的评估与感知架构时，面临 DOM 树解析与屏幕截图（Screenshot / Vision）两种主要的感知交互模式。关于这两种模式的权衡与评估设计，下列哪项分析是正确的？",
     "explanation": "A 正确：纯文本提取时 DOM 效率极高；但在极度庞大的 DOM（如电商商品页）上，全量 DOM 序列化进上下文会带来巨大 Token 开销与延迟，此时视觉截图反而更省 Token。B 错误：视觉截图在庞大 DOM 场景下可能比完整 DOM 字符串更省 Token，并非所有场景都更贵。C 错误：仅检查最终 URL 易被欺骗（如导航到结算页却未真正下单）。D 错误：Visual Diff 受无害渲染差异（广告弹窗、CSS 动画）影响，且校验不了后端副作用（文件生成、DB 落盘）。",
     "misconceptions": [
+      "以为视觉截图模式在所有 Web 自动化场景下的 token 消耗都高于 DOM 解析；截图成本与页面结构无关、在长文本与复杂 DOM 场景反而更省，token 消耗要分场景判断而不能一概而论",
       "以为仅检查 Agent 最终停留的网页 URL 即可确保任务成功",
       "以为端到端 GUI 评估只需像素比对无需结合后端状态"
     ],
@@ -249,9 +250,9 @@
         ],
         "misconceptionMap": [
           null,
-          null,
           0,
-          null
+          1,
+          2
         ]
       },
       "open": {

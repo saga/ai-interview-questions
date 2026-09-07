@@ -38,7 +38,7 @@
         "misconceptionMap": [
           null,
           null,
-          null,
+          0,
           1
         ]
       }
@@ -87,13 +87,23 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
     "assessment": {
       "target": "能诊断多步 MTP 接受率随步数衰减的成因，并说明 IndexShare 与 KVShare 为何能提升接受长度",
       "reasoningGoal": "先确认第 2 步起输入隐藏状态来自前一步 MTP 模块而非 Target Model，与训练时全用真实隐藏状态不一致，污染 KV Cache 并随步数累积偏差；再说明复用 Target 侧的 Top-K 索引与 KV Cache 可消除特征污染；并排除「KVShare 需重跑完整 Forward」「瓶颈在共享 LM Head 权重结构」。"
-    }
+    },
+    "misconceptions": [
+      "以为 KVShare 要求 MTP 模块对 target model 重新执行一次完整前向、以计算量翻倍换纠偏；KVShare 的目的正是复用已有 KV 以避免重复计算",
+      "以为传统 MTP 多步失败是因为共享了同一个 LM Head、而 KVShare 改变了 LM Head 权重结构；接受率衰减源于多步间特征与缓存的不一致，KVShare 不改动 LM Head"
+    ]
   },
   {
     "id": "rl_critic_ppo_trajectory_canonical",

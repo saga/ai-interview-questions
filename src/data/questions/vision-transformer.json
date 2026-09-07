@@ -35,13 +35,22 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
     "assessment": {
       "target": "能对比 ViT 与 CNN 在归纳偏置设计与数据规模依赖上的差异及各自代价",
       "reasoningGoal": "先确认 CNN 卷积核天然内嵌二维局部性与平移同变性、假设空间更小，故中小数据集上收敛快且更抗过拟合；再确认 ViT 从第一层起就在全局范围计算 Patch 相关性、缺乏硬编码的二维空间拓扑先验；并说明在超大规模预训练下这种更大的假设空间能突破先验约束的性能上界，同时排除「ViT 无法学到边缘纹理等局部几何特征」。"
-    }
+    },
+    "misconceptions": [
+      "以为 ViT 完全放弃卷积就学不到边缘、纹理这类局部几何特征；数据充足时 ViT 首层就能学到类似 Gabor 的局部滤波器，区别只在于这些特征由数据习得而非由架构硬编码"
+    ]
   },
   {
     "id": "vit_patch_embedding_sequence_length_canonical",
@@ -79,13 +88,22 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「P=8 时 N = 224*224 / 64 = 784，有效序列长度增加至原来的 4 倍」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此逐项确认「当 P = 16 时」「当 P 从 16 缩小为 8 时」等 3 项成立；并排除「当 P 从 16 缩小为 8 时」等不成立描述。"
-    }
+    },
+    "misconceptions": [
+      "以为把 P 从 16 缩到 8 时投影层参数会随 patch 像素数同步缩减为 1/4，因而整体更划算；投影层只在模型参数里占很小一部分，真正的代价是 token 数变 4 倍、注意力 FLOPs 涨到 16 倍，用投影层参数的变化判断开销是误判"
+    ]
   },
   {
     "id": "vit_position_embedding_interpolation_canonical",
@@ -177,12 +195,21 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「独立的可学习 [CLS] Token 避免了这种偏置」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在经过多层 Transformer 编码器的 Sel…」「使用独立的 [CLS] Token 作为分类头（Cl…」等 3 项成立；并排除「[CLS] Token 在整个网络训练过程中保持固定…」等不成立描述。"
-    }
+    },
+    "misconceptions": [
+      "以为 [CLS] Token 在训练中保持冻结、只是静态占位符；它与其他 patch embedding 一样是可学习参数，并参与每层的注意力交互，靠训练才逐渐聚合起全局信息"
+    ]
   }
 ]

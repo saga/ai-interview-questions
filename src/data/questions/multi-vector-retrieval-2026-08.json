@@ -16,8 +16,9 @@
     "question": "在基于 ColBERT 架构的 Late Interaction（多向量）检索模型中，查询（Query）与文档（Document）之间的相关性得分是如何计算的？它与传统 Single-Vector Dense Embedding 模型有何本质区别？",
     "explanation": "正确项：A、B。A 描述了 MaxSim 算子——Query 每个 token 向量与 Document 所有 token 向量计算点积并取最大值，再对所有 Query token 的最大匹配得分累加；Dense 模型则将整段文本压缩为单一向量后只计算一次点积/余弦。B 指出 Late-Interaction 为每个 token 保留独立向量，可用 MaxSim 矩阵实现可解释的细粒度匹配，但文档侧索引体积与检索计算开销显著高于单向量模型。C 错在把 MeanSim/加权和当成机制；D 错在引入编码期 Cross-Attention 融合（多向量检索期无交叉注意力）；E 错在用欧氏距离全局最小值与全连接网络预测。",
     "misconceptions": [
+      "以为 MaxSim 取均值或最小值而非最大值累加",
       "以为多向量模型在编码期用交叉注意力融合 query-doc",
-      "以为 MaxSim 取均值或最小值而非最大值累加"
+      "以为用欧氏距离取全局最小值做匹配、Dense 模型靠拼接后接全连接打分；Late Interaction 是点积 MaxSim 再累加，稠密模型是单一向量做内积或余弦"
     ],
     "formats": {
       "choice": {
@@ -36,9 +37,9 @@
         "misconceptionMap": [
           null,
           null,
-          null,
           0,
-          null
+          1,
+          2
         ]
       },
       "open": {
@@ -69,6 +70,7 @@
     "explanation": "正确项：C、D。C 指出仅经过大规模对比预训练（Unsupervised / Pre-supervised）的 Checkpoint 适应性更好，因为它未被通用检索数据集过度拟合，更容易吸收领域特定信号。D 指出领域微调时保留 Late-Interaction 的多向量交互结构（MaxSim）比替换为单向量投影，通常更能吸收领域特定的语义分布。A 错在认为 fully-SFT 的通用 Checkpoint 是最佳起点（它已锁定 web 检索特征偏好，领域微调易停滞甚至回退）；B 错在随机初始化 Dense 投影层固定基底能“彻底避免”灾难性遗忘；E 错在声称两种起点最终 NDCG 完全一致（起始点对领域最终性能有实质影响）。",
     "misconceptions": [
       "以为通用检索 SFT 后的成熟 Checkpoint 是领域微调最佳起点",
+      "以为随机初始化投影层并冻结底座能避免灾难性遗忘；冻结底座会让模型无法适配领域语义，领域微调恰恰需要基座一起更新",
       "以为起始 Checkpoint 只影响收敛速度不影响最终性能"
     ],
     "formats": {
@@ -87,10 +89,10 @@
         ],
         "misconceptionMap": [
           0,
+          1,
           null,
           null,
-          null,
-          null
+          2
         ]
       },
       "open": {
@@ -120,8 +122,9 @@
     "question": "训练单向量 Dense Embedding 模型时，对比损失（如 MultipleNegativesRankingLoss）通常把温度/缩放参数 scale 设为约 20.0；但在训练 Multi-Vector 模型使用 MultiVectorMultipleNegativesRankingLoss 时，若直接沿用 scale=20.0，最可能导致什么问题？下列哪些叙述正确？",
     "explanation": "正确项：D、E。D 指出 Multi-Vector 的 MaxSim 分数跨 Query token 累加后数值范围远超单向量的 [-1,1]，再乘高 scale 会让 Softmax 输入 Logit 极大、分布极度饱和、反向传播梯度近乎为零（梯度消失）。E 指出 Dense 模型中两单位向量余弦相似度局限在 [-1,1]，故需较大 scale（约 20）放大分差以让 Softmax 具备区分度；而多向量损失默认 scale 取 1.0。A 把现象说成“输出过平滑、梯度极小”但未点明根因（数值范围叠加高 scale）；B 错在称无法求导或显存溢出；C 错在称会强制标点 token 梯度归零、使 Skiplist 失效。",
     "misconceptions": [
-      "以为多向量损失可沿用 Dense 的 scale=20",
-      "以为 Softmax 饱和与 MaxSim 数值范围无关"
+      "以为高 scale 会让 softmax 过分平滑、正负样本梯度太小；方向恰好相反，MaxSim 累加后数值范围很大，再乘 20 会让 softmax 饱和并梯度消失",
+      "以为沿用 scale=20 会导致无法反向求导并触发显存溢出；scale 只是数值缩放，不破坏可导性也不会爆显存，问题在于饱和导致的梯度消失",
+      "以为高 scale 会把标点 token 的梯度置零、使 Skiplist 失效；scale 影响的是整体 logit 尺度，与 Skiplist 过滤哪些 token 无关"
     ],
     "formats": {
       "choice": {
@@ -136,6 +139,13 @@
         "answer": [
           3,
           4
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          2,
+          null,
+          null
         ]
       },
       "open": {
@@ -165,6 +175,7 @@
     "explanation": "正确项：A、E。A 描述 GradCache 核心：前向按小 Chunk 编码文本并仅保存不带梯度的向量，构建全局对比矩阵算 Loss 及对向量的梯度，再通过二次带梯度前向分块回传，数学等价地解耦显存与有效对比 Batch 大小。E 指出它解耦物理显存分块（mini-batch）与有效对比批次大小（effective batch），可在有限显存下用更大 In-Batch Negatives 提升训练质量。B 错在称其放弃精确梯度、用量化/低秩近似（GradCache 是精确梯度，只是分块）；C 错在称向量传 CPU 算 MaxSim 再回传标量（不是该机制本质）；D 错在称动态截断后半段 token（会损精度，非 GradCache 做法）。",
     "misconceptions": [
       "以为 GradCache 用低秩近似牺牲梯度精度换显存",
+      "以为 GradCache 把 token 向量搬到 CPU 算 MaxSim、只回传标量损失；它是分块前向、缓存无梯度向量、再二次前向分块回传，全程在 GPU 且数学等价",
       "以为 GradCache 靠截断长序列 token 降显存"
     ],
     "formats": {
@@ -184,8 +195,8 @@
         "misconceptionMap": [
           null,
           0,
-          null,
-          null,
+          1,
+          2,
           null
         ]
       },
@@ -216,8 +227,9 @@
     "question": "某团队微调 Multi-Vector 检索模型时，为加快训练把 max_length 强制限制为 512 token，但上线推理与评估允许处理长达 8192 token 的长文档。这种做法最可能产生的后果是？",
     "explanation": "正确项：C。训练对比损失时若限制 max_length=512，模型参数更新永远看不到 512 token 之后的文本及其 token 向量交互，推理期虽支持 8192 长度，但后半段 token 的 Late Interaction 权重未经长上下文场景优化，匹配质量显著下降（实验显示约损失 0.015 NDCG@10，且加数据也补不回）。A 错在称截断提升召回率；B 错在称位置编码可无缝外推、性能不受影响；D 错在称会抛索引越界异常（MultiVectorMask 不会因此越界，是质量而非崩溃问题）。",
     "misconceptions": [
+      "以为训练截断到 512 会迫使模型把语义压进前段从而提升召回；模型不会自动把后文信息前移，截断只是让它从未见过长尾部分的交互",
       "以为相对位置编码可无缝外推到远超训练截断的长度",
-      "以为训练截断只影响速度不影响最终检索质量"
+      "以为推理时会因掩码数组越界而抛异常；长于训练截断的输入只是效果变差，掩码按实际长度生成，不会触发索引越界"
     ],
     "formats": {
       "choice": {
@@ -232,10 +244,10 @@
           2
         ],
         "misconceptionMap": [
-          null,
           0,
+          1,
           null,
-          0
+          2
         ]
       },
       "open": {
@@ -265,8 +277,9 @@
     "question": "Multi-Vector 模型（如 ColBERT）索引体积大是生产落地的主要痛点。若在模型中配置 skiplist_words（如把标点符号加入 Skiplist），对检索系统的影响，下列哪些说法正确？",
     "explanation": "正确项：B、E。B 指出文档侧直接跳过标点 token 的向量生成与存储，显著降低索引体积（约降 10%）且通常不损害甚至微幅提升检索质量。E 指出 Multi-Vector 索引体积随文档 token 数近似线性增长，从文档侧排除低信息量 token（如标点）是主要降本手段之一。A 错在称仅省 CPU、存储不变；C 错在称 MaxSim 矩阵维度不匹配需补零（skiplist 只减 token，Query 侧不受影响，无需 Padding）；D 错在称显著提升检索延迟（实际减少参与计算的向量，常降延迟）。",
     "misconceptions": [
-      "以为 skiplist 去除标点会损害检索质量",
-      "以为索引体积与 token 数无关、无法靠减 token 降本"
+      "以为 skiplist 只省建索引时的 CPU、存储不变；被跳过的 token 根本不生成也不存储向量，索引体积会随之下降",
+      "以为文档侧跳过标点会导致 MaxSim 维度不匹配、必须在 query 侧补零；MaxSim 对两个长度不同的向量集合照常计算，无需对齐补零",
+      "以为运行时过滤标点 ID 会显著抬高延迟；跳过发生在离线的文档编码阶段，在线检索反而因候选向量更少而更快"
     ],
     "formats": {
       "choice": {
@@ -281,6 +294,13 @@
         "answer": [
           1,
           4
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2,
+          null
         ]
       },
       "open": {
@@ -310,8 +330,9 @@
     "question": "评估领域微调后的检索模型时，若测试集仅含 1000 个查询及其对应 1000 篇黄金正例文档（Gold Passages），结果显示所有模型 NDCG@10 均接近 0.98，但上线后用户反馈召回不佳。从评估集设计看，最可能的原因是？",
     "explanation": "正确项：D。当检索语料库仅含目标 Query 的 Gold Passages（如 1000 篇里选 1 篇），任务过易，绝大多数模型都能拿近满分 NDCG@10，无法区分模型真实排序与抗干扰能力；必须在 Corpus 中加入大量无关联干扰文档（Distractors，如从训练集抽数十万未标注文档）以提升检索密度与混淆度。A 错在称应换 MRR 指标（NDCG 本身无错）；B 错在称 Query 超 Marker 上限致全局失效（与现象无关）；C 错在称 FP16/BF16 浮点误差导致（误差不会系统性地把所有模型都抬到 0.98）。",
     "misconceptions": [
-      "以为 NDCG 接近满分即模型检索完美",
-      "以为评估只需 Gold Passages 不需要干扰项"
+      "以为 NDCG@10 不适用于多向量模型、应换 MRR@10；指标选择不是问题所在，NDCG@10 完全可用，问题在候选集太小缺乏区分度",
+      "以为 Query 超过 Query Marker 长度上限导致全局匹配失效；超限会被截断而非让匹配整体失效，也不会让所有模型都逼近满分",
+      "以为 Evaluator 未开混合精度产生累积误差；浮点误差远不足以解释满分与线上差评之间的落差，根因是评估集缺少干扰项"
     ],
     "formats": {
       "choice": {
@@ -324,6 +345,12 @@
         ],
         "answer": [
           3
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          2,
+          null
         ]
       },
       "open": {

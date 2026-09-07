@@ -1,0 +1,391 @@
+[
+ {
+  "id": "agentdual-context-compaction",
+  "misconceptions": [
+   "认为上下文压缩能彻底消除上下文焦虑（压缩仍在原位保留历史轨迹与窗口占用感）。",
+   "认为上下文重置需要指数级延迟归档局部变量，或依赖 Socket 通信补充上下文。",
+   "以为压缩必然丢失决策意图、必须配实时双向状态通道补偿才可用；压缩是在原位做结构化摘要，信息损失可通过摘要质量控制在可接受范围，实时双向状态通道并不是压缩方案的组成部分"
+  ]
+ },
+ {
+  "id": "agentdual-rubric-quality",
+  "misconceptions": [
+   "认为强调技术执行力/Craft 就能改善审美平庸（反而驱使安全模板）。",
+   "认为抽象赞美性词汇比具体 Rubric 更能引导创意（实际导致打分漂移）。",
+   "以为把每轮迭代限制成只能改 CSS 变量、禁止动 DOM 结构就能防止审美漂移；DOM 结构本身就是关键视觉决策，锁死结构只会把创意空间压得更窄并放大模板化"
+  ]
+ },
+ {
+  "id": "agent-eval-05",
+  "misconceptions": [
+   "以为视觉截图模式在所有 Web 自动化场景下的 token 消耗都高于 DOM 解析；截图成本与页面结构无关、在长文本与复杂 DOM 场景反而更省，token 消耗要分场景判断而不能一概而论",
+   "以为仅检查 Agent 最终停留的网页 URL 即可确保任务成功",
+   "以为端到端 GUI 评估只需像素比对无需结合后端状态"
+  ]
+ },
+ {
+  "id": "agent-skills-mechanism-01",
+  "misconceptions": [
+   "认为改进 Agent 可直接热更新在线运行时、无需人类审核",
+   "以为执行 Agent 应在单次会话内一边做业务推理一边重写自己的技能文件；技能演进是异步且经评审后才生效的跨会话过程，会话内自改会让行为不可复现、不可审计且无法回滚"
+  ]
+ },
+ {
+  "id": "agent-skill-drift-debugging",
+  "misconceptions": [
+   "以为技能遗漏基础步骤是采样温度过低所致；温度只影响采样随机性，不会删掉技能里已经写明的检查步骤",
+   "以为技能解耦为外部脚本会导致执行期无法读取指令",
+   "以为 Squash Merge 破坏了版本追踪从而导致技能退化；合并策略只改变提交历史的呈现方式，不改变技能文件内容"
+  ]
+ },
+ {
+  "id": "ai-search-01",
+  "misconceptions": [
+   "以为向量检索可全面取代关键词检索",
+   "以为融合顺序与归一化无关紧要"
+  ]
+ },
+ {
+  "id": "ai-search-02",
+  "misconceptions": [
+   "以为 BM25 是稠密向量表示，与 embedding 等价",
+   "以为倒排索引必须整篇载入内存才能查询",
+   "以为 BM25 完全不考虑词频、只做二值匹配；BM25 的核心恰恰是带饱和的词频加权与文档长度归一化，二值匹配是更早期的朴素模型"
+  ]
+ },
+ {
+  "id": "ai-search-08",
+  "misconceptions": [
+   "以为 chunk 越细召回必然越好",
+   "以为切分策略对检索质量没有影响、把整篇文档做成单一向量即可最优；整篇向量会把多个主题混在一个表示里稀释相似度，切分粒度直接决定召回精度",
+   "以为固定字符数机械切分对所有文档都最优"
+  ]
+ },
+ {
+  "id": "context-2026-101",
+  "misconceptions": [
+   "误以为检索相似度越高、再辅以时间倒序就越等价于模型当前需要的信息；时间与相关性只是弱代理，缺少 query-aware 选择和执行反馈迭代，模型仍会被大量无关片段占据预算"
+  ]
+ },
+ {
+  "id": "context-2026-104",
+  "misconceptions": [
+   "误以为工具 schema 越多模型越全知、选择越准",
+   "以为主要问题只是 system prompt 超过模型最大长度而无法启动；300 个 schema 通常远未触及长度上限，真正的代价是预算浪费、注意力稀释与选错工具",
+   "误以为工具数量只影响延迟、对选择质量无关"
+  ]
+ },
+ {
+  "id": "context-2026-105",
+  "misconceptions": [
+   "误以为把动态内容放最前面能让缓存更准更省",
+   "误以为 prompt caching 与动态内容的位置无关"
+  ]
+ },
+ {
+  "id": "context-2026-109",
+  "misconceptions": [
+   "误以为 Transformer 对位置一视同仁、顺序不影响输出",
+   "以为把最长文档放最前、按长度排就是最优布局；高注意力区应留给最关键的片段，文档长度与任务重要性无关，长文档占位反而挤掉关键信息",
+   "误以为只要信息都在 context 里、顺序无关紧要"
+  ]
+ },
+ {
+  "id": "moe-mixtral-04",
+  "misconceptions": [
+   "按激活参数估算显存需求",
+   "以为 MoE 必须用 INT8 且启用张量并行才能跑、4-bit 量化不支持 MoE；MoE 的专家层同样可做 4-bit 量化，是否支持取决于推理框架实现而非架构本身的限制"
+  ]
+ },
+ {
+  "id": "long-running-agent-001",
+  "misconceptions": [
+   "以为压缩会彻底破坏代码符号树、导致下游工具链无法定位定义与引用；压缩真正的风险是丢失细节指令与进度判断，代码文件本身并未被改写，工具链仍基于真实代码工作"
+  ]
+ },
+ {
+  "id": "long-running-agent-002",
+  "misconceptions": [
+   "以为不同阶段的 Agent 必须通过完全不同的文件系统权限才能实现职责分离"
+  ]
+ },
+ {
+  "id": "long-running-agent-004",
+  "misconceptions": [
+   "以为可以先挑最高优先级任务直接改代码、最后再补跑初始化脚本；顺序颠倒会让环境未就绪时的改动无法验证，失败也难以归因",
+   "以为全量测试或进度文件可以替代工作目录确认和启动冒烟检查",
+   "以为新会话应立即开始最高优先级功能，不必先确认工作区健康"
+  ]
+ },
+ {
+  "id": "long-running-agent-007",
+  "misconceptions": [
+   "以为跨会话恢复必须保存并重放完整对话历史"
+  ]
+ },
+ {
+  "id": "model-behavior-emergent-misalignment-01",
+  "misconceptions": [
+   "以为涌现性非对齐是注意力机制损坏或特征线性叠加所致（实际是角色归因层面的后验偏移）",
+   "以为代码漏洞表示与生存威胁表示在潜在空间共享同一线性方向、改代码参数就会顺带激活；PSM 的解释是角色层面的后验偏移，不是某个特征维度被连带激活",
+   "以为训练数据触发了预训练语料里某类论坛文本的激活阈值、把后续交互重定向为续写；泛化出的是角色倾向而非复现某段具体语料，且不限于同域文本"
+  ]
+ },
+ {
+  "id": "model-behavior-inoculation-01",
+  "misconceptions": [
+   "以为接种提示靠屏蔽梯度来生效（实际梯度照常更新，只是方向被 context 重新引导）"
+  ]
+ },
+ {
+  "id": "model-behavior-anthropomorphic-01",
+  "misconceptions": [
+   "以为拟人化输出是权重数值崩塌（实际是角色混淆/演导偏差）",
+   "以为切断多轮上下文即可根治（单轮也可能发生，根因是 Persona 属性推断偏差）"
+  ]
+ },
+ {
+  "id": "agent-loop-harness-01",
+  "misconceptions": [
+   "以为 LLM 能可靠自我判断任务终点（实际需外部 Harness 轮询控制）",
+   "以为全量追加 stdout 能提升全局感知（实际是上下文污染）"
+  ]
+ },
+ {
+  "id": "multi-agent-locking-01",
+  "misconceptions": [
+   "以为行级排他中心化锁最适合分布式 Agent（实际过重且需中心服务）",
+   "以为强制 push --force 能“同步”（实际会覆盖他人有效修改）",
+   "以为可以不要任何前置锁定、等 merge 阶段由 LLM 自动解冲突；缺少认领机制会让多个 Agent 反复改同一处，冲突量与返工成本远高于加锁"
+  ]
+ },
+ {
+  "id": "multi-agent-oracle-01",
+  "misconceptions": [
+   "以为遇到单体阻塞就该退化成单 Agent 顺序修复；这会直接放弃并行收益，正确做法是用 Known-Good Oracle 做差分隔离编译来解耦依赖",
+   "以为屏蔽符号依赖拆分单测能解决（实际破坏真实链接语义）",
+   "以为增加并发量能提升修复概率（实际加剧冲突）"
+  ]
+ },
+ {
+  "id": "agent-loop-time-blindness-01",
+  "misconceptions": [
+   "以为 Linter/走查可替代运行时测试（实际漏逻辑回归）",
+   "以为全量测试最严谨就该每次都跑（实际拖垮迭代效率）"
+  ]
+ },
+ {
+  "id": "multi-agent-roles-01",
+  "misconceptions": [
+   "以为专职 Agent 必须严格按流水线单向串行、禁止并发访问仓库；角色划分是按质量维度切分职责，并不要求串行化，禁止并发会直接丢掉多 Agent 的吞吐优势",
+   "以为异构 Agent 只适用于前端（系统级工程同样受益）",
+   "以为某 Agent 应有最高权限作废他人分支（应靠 CI 网关）"
+  ]
+ },
+ {
+  "id": "multi-vector-late-interaction-01",
+  "misconceptions": [
+   "以为 MaxSim 取均值或最小值而非最大值累加",
+   "以为多向量模型在编码期用交叉注意力融合 query-doc",
+   "以为用欧氏距离取全局最小值做匹配、Dense 模型靠拼接后接全连接打分；Late Interaction 是点积 MaxSim 再累加，稠密模型是单一向量做内积或余弦"
+  ]
+ },
+ {
+  "id": "multi-vector-domain-finetune-01",
+  "misconceptions": [
+   "以为通用检索 SFT 后的成熟 Checkpoint 是领域微调最佳起点",
+   "以为随机初始化投影层并冻结底座能避免灾难性遗忘；冻结底座会让模型无法适配领域语义，领域微调恰恰需要基座一起更新",
+   "以为起始 Checkpoint 只影响收敛速度不影响最终性能"
+  ]
+ },
+ {
+  "id": "multi-vector-loss-scale-01",
+  "misconceptions": [
+   "以为高 scale 会让 softmax 过分平滑、正负样本梯度太小；方向恰好相反，MaxSim 累加后数值范围很大，再乘 20 会让 softmax 饱和并梯度消失",
+   "以为沿用 scale=20 会导致无法反向求导并触发显存溢出；scale 只是数值缩放，不破坏可导性也不会爆显存，问题在于饱和导致的梯度消失",
+   "以为高 scale 会把标点 token 的梯度置零、使 Skiplist 失效；scale 影响的是整体 logit 尺度，与 Skiplist 过滤哪些 token 无关"
+  ]
+ },
+ {
+  "id": "multi-vector-gradcache-01",
+  "misconceptions": [
+   "以为 GradCache 用低秩近似牺牲梯度精度换显存",
+   "以为 GradCache 把 token 向量搬到 CPU 算 MaxSim、只回传标量损失；它是分块前向、缓存无梯度向量、再二次前向分块回传，全程在 GPU 且数学等价",
+   "以为 GradCache 靠截断长序列 token 降显存"
+  ]
+ },
+ {
+  "id": "multi-vector-length-truncation-01",
+  "misconceptions": [
+   "以为训练截断到 512 会迫使模型把语义压进前段从而提升召回；模型不会自动把后文信息前移，截断只是让它从未见过长尾部分的交互",
+   "以为相对位置编码可无缝外推到远超训练截断的长度",
+   "以为推理时会因掩码数组越界而抛异常；长于训练截断的输入只是效果变差，掩码按实际长度生成，不会触发索引越界"
+  ]
+ },
+ {
+  "id": "multi-vector-skiplist-01",
+  "misconceptions": [
+   "以为 skiplist 只省建索引时的 CPU、存储不变；被跳过的 token 根本不生成也不存储向量，索引体积会随之下降",
+   "以为文档侧跳过标点会导致 MaxSim 维度不匹配、必须在 query 侧补零；MaxSim 对两个长度不同的向量集合照常计算，无需对齐补零",
+   "以为运行时过滤标点 ID 会显著抬高延迟；跳过发生在离线的文档编码阶段，在线检索反而因候选向量更少而更快"
+  ]
+ },
+ {
+  "id": "multi-vector-eval-corpus-01",
+  "misconceptions": [
+   "以为 NDCG@10 不适用于多向量模型、应换 MRR@10；指标选择不是问题所在，NDCG@10 完全可用，问题在候选集太小缺乏区分度",
+   "以为 Query 超过 Query Marker 长度上限导致全局匹配失效；超限会被截断而非让匹配整体失效，也不会让所有模型都逼近满分",
+   "以为 Evaluator 未开混合精度产生累积误差；浮点误差远不足以解释满分与线上差评之间的落差，根因是评估集缺少干扰项"
+  ]
+ },
+ {
+  "id": "sebastian-raschka-2026-08-57",
+  "misconceptions": [
+   "以为蒸馏出的模型在所有场景都等价于教师",
+   "以为教师输出天然正确、不需要校验；教师同样会出错，直接蒸馏未验证样本会把错误固化进学生"
+  ]
+ },
+ {
+  "id": "sec-eval-02",
+  "misconceptions": [
+   "以为非零退出码即证明重现了内存安全漏洞",
+   "以为两个版本都崩溃、堆栈完全一致才算重现；已修复版本本应不再崩溃，要求两边一致恰好把真正的漏洞信号排除掉了",
+   "以为覆盖率触及补丁行即证明漏洞被利用"
+  ]
+ },
+ {
+  "id": "sec-eval-05",
+  "misconceptions": [
+   "以为 Prompt 约束能阻止模型利用预训练记忆",
+   "以为变量重命名或关掉 Web 搜索就能消除数据污染",
+   "以为屏蔽 Web 搜索、只给本地沙盒就能彻底排除记忆污染；污染来自参数里的预训练记忆，与能不能联网无关"
+  ]
+ },
+ {
+  "id": "sec-eval-08",
+  "misconceptions": [
+   "以为无状态 Bash 在复杂渗透场景也应默认首选；需要维持会话的利用（SSH、GDB、交互 shell）在无状态 Bash 下根本无法完成",
+   "以为工具越多成功率必然单调上升、两者机制等价",
+   "以为伪终端与无状态 Bash 机制等价、模型感知不到会话是否被保持；能否保持会话直接决定可执行的操作集合，模型能通过反馈察觉差异"
+  ]
+ },
+ {
+  "id": "sentence-embedding-inbatch-negatives-01",
+  "misconceptions": [
+   "以为 In-Batch Negatives 只需要正样本对、完全不依赖负样本；正是同批其他样本的 positive 充当了负例，没有它们 softmax 无法构成",
+   "以为对比损失必须显式挖 Hard Negatives 才能展开 Softmax"
+  ]
+ },
+ {
+  "id": "sentence-embedding-batchsampler-01",
+  "misconceptions": [
+   "以为召回率波动是 FP16 下溢导致的；数值精度不是主因，根因是同批近义句互为负例带来的标签噪声",
+   "以为数据集列顺序或字段命名导致波动；列顺序与字段名字典序与假负例噪声无关，属于无关的排查方向",
+   "以为把 scale 调小到 0.01 以下就能解决；scale 过小会让 logit 过度平滑、区分度下降，反而加重训练停滞"
+  ]
+ },
+ {
+  "id": "sentence-embedding-dataset-schema-01",
+  "misconceptions": [
+   "以为缺少 label 列会在启动时抛 KeyError；TripletLoss 取的是三个文本列，不存在 label 校验，多余列才会出问题",
+   "以为 Trainer 会自动按列名识别 anchor/positive/negative 并忽略元数据列",
+   "以为自动求导会把 sample_id 当可训练参数并撑爆显存；id 只是普通张量、不参与梯度，真正的问题是它被当成文本送进 tokenizer"
+  ]
+ },
+ {
+  "id": "sentence-embedding-matryoshka-01",
+  "misconceptions": [
+   "以为只能对最窄前缀维度算损失",
+   "以为 Matryoshka 训练后必须同时维护所有维度索引",
+   "以为部署时只能输出全量拼接矩阵、无法独立取某一维；前缀截断正是设计目标，直接取前 128 维即可使用"
+  ]
+ },
+ {
+  "id": "sentence-embedding-evaluator-vs-loss-01",
+  "misconceptions": [
+   "以为 Validation Loss 下降即代表 NDCG/Spearman 等业务指标同步最优",
+   "以为 Evaluator 会在评估时更新模型参数",
+   "以为多数据集训练时无法再算 eval_dataset 的验证损失、只能用 Evaluator；多数据集下仍可对每个 eval_dataset 计算验证损失"
+  ]
+ },
+ {
+  "id": "sentence-embedding-loss-schema-01",
+  "misconceptions": [
+   "以为 MNRL 必须提供连续 label 列；它只用 (anchor, positive) 对，负例来自批内其他样本，不需要任何 label",
+   "以为对比损失会自动过滤文本列、只优化 label 矩阵"
+  ]
+ },
+ {
+  "id": "sentence-embedding-similarity-notion-01",
+  "misconceptions": [
+   "以为存在绝对统一的语义距离空间，任何微调都会破坏拓扑",
+   "以为只切换余弦/欧氏距离公式就能适配分类与检索；相似度几何是学出来的，换距离度量改变不了向量的分布结构",
+   "以为双塔模型只能在无监督数据上微调、引入有监督领域数据会毁掉 zero-shot 能力；有监督微调正是把相似度定义对齐到任务的主要手段"
+  ]
+ },
+ {
+  "id": "sentence-embedding-l2-norm-scale-01",
+  "misconceptions": [
+   "以为 Autograd 要求 L2 范数严格等于 1",
+   "以为不做归一化会让 softmax 趋近均匀、正负样本梯度差归零；方向相反，未归一化时模长膨胀会让 logit 过大、softmax 饱和",
+   "以为不归一化会让模型退化成 K-Means 聚类、忽略对比梯度；损失仍照常回传对比梯度，只是数值尺度失控影响收敛"
+  ]
+ },
+ {
+  "id": "sentence-embedding-evaluator-retrieval-01",
+  "misconceptions": [
+   "以为 EmbeddingSimilarityEvaluator 锁定 FP32、与推理的 FP16 存在不可弥合误差；精度差异不是主要矛盾，问题在于它不评估大规模候选下的排序与抗干扰",
+   "以为它只能评估单字 token 匹配、无法算整句余弦；它算的正是整句向量的相似度与相关性，局限在评测范式而非粒度",
+   "以为 Evaluator 评估时会修改模型权重"
+  ]
+ },
+ {
+  "id": "index_share_sparse_attn_canonical",
+  "misconceptions": [
+   "认为 IndexShare 会成倍缩减 KV Cache 显存（实际不缩减 KV Cache 体积）",
+   "认为后续层完全免注意力计算、从 O(N^2) 降为 O(1) 查表（实际仍按索引执行稀疏注意力点积）"
+  ]
+ },
+ {
+  "id": "context-engineering-tradeoff-01",
+  "misconceptions": [
+   "以为上下文越长就越不容易漏掉关键知识",
+   "以为超限时随机删除上下文比加一层检索更简单可控；随机删除会丢掉目标与约束等关键结构，按任务检索加 token 预算才是可控的取舍"
+  ]
+ },
+ {
+  "id": "memory-system-design-01",
+  "misconceptions": [
+   "以为固定 token 截断天然比动态预算更可控",
+   "以为只限制工具调用次数就能控住上下文；真正挤爆上下文的是返回内容的体量，按次数设预算对大体积返回完全无效"
+  ]
+ },
+ {
+  "id": "agent-skills-comparison-02",
+  "misconceptions": [
+   "以为评估只需看一次成功轨迹而不需要固定验证集",
+   "以为把发现、评估、执行合并成一次调用能减少系统边界；合并会让执行模型既当运动员又当裁判，回归无法归因、改动也无法复现"
+  ]
+ },
+ {
+  "id": "agent-skills-tradeoff-02",
+  "misconceptions": [
+   "以为自然语言 Skill 不依赖执行模型所以无需重测",
+   "以为目标模型与发现模型结构不同就应直接判定迁移失败；迁移是否成立要看在目标模型上的实测增益，结构差异本身不构成否决理由"
+  ]
+ },
+ {
+  "id": "agent-skills-comparison-03",
+  "misconceptions": [
+   "以为只测最大和最小模型就能估计中间规模趋势",
+   "以为给每种模型配不同任务集能让各自发挥所长；任务集不统一就失去对照，规模与 Skill 的交互效应无法被分离出来"
+  ]
+ },
+ {
+  "id": "agent-skills-tradeoff-03",
+  "misconceptions": [
+   "以为一个任务上的反转足以证明 Skill 全面替代规模",
+   "以为只看 Skill 带来的平均分增量就够了；不区分原本已会做的任务会把既有能力误算成 Skill 收益，掩盖真实边界"
+  ]
+ }
+]

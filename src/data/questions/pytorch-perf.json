@@ -30,6 +30,12 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
@@ -40,7 +46,10 @@
       "target": "能说明 PyTorch 中 transpose / t / view 等 View 操作只改元数据、不搬显存，及其对后续 GEMM 与存储共享的影响",
       "reasoningGoal": "先确认 View 操作只在 CPU 端更新 shape 与 stride，既不启动 GPU kernel 也不在 HBM 中复制或重排数据；再说明后续 GEMM 的 Dispatcher 会依 stride 选择适配该内存布局的预编译 kernel；并确认 View 与原张量共享同一块 Storage、修改视图即修改原张量，排除「GPU 立即启动转置 kernel 重排显存」。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 GPU 会立即启动一个转置 kernel 把元素重排写入新显存；转置返回的是改变 stride 的视图，不发生数据搬移，只有后续需要连续布局时才会物化"
+    ]
   },
   {
     "id": "pytorch-perf-gemm-epilogue-01",
@@ -71,6 +80,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -81,7 +96,12 @@
       "target": "能解释 nn.Linear(bias=True) 映射为 aten::addmm 把偏置加法并入 GEMM Epilogue 的性能理由",
       "reasoningGoal": "先确认融合前后总 FLOPs 不变，收益不在算力；再说明偏置加法在 GEMM kernel 尾部写回前完成，省掉中间矩阵写回 HBM 再读回做 add 的带宽开销；并排除「加法被移到 CPU 端异步执行」「二维矩阵运算被重构为一维向量运算」等解释。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 addmm 通过减少总浮点运算次数降低 ALU 时间；偏置加法的 FLOPs 并未消失，收益来自减少访存与 kernel 启动",
+      "以为偏置加法被移到 CPU 端异步计算以释放 CUDA Core；偏置仍在 GPU 上，作为 epilogue 融合进 GEMM",
+      "以为二维矩阵被重构为一维向量运算以提高 Tensor Core 发射频率；addmm 不改变运算形态，与一维重构无关"
+    ]
   },
   {
     "id": "pytorch-perf-torchcompile-boundary-01",
@@ -111,6 +131,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -121,7 +147,12 @@
       "target": "能判断「而独立 nn.Linear(bias=True) 在 Eager 模式已调用自带偏置融合的 aten::addmm cuBLAS 内核，GPU 侧已无可继续合并的独立算子，故编译…」",
       "reasoningGoal": "先定位现象的直接诱因；据此确认「Eager 模式下的 nn.Linear 已映射至 …」成立；并排除「矩阵规模太小触发了 Inductor 的退化机制」「torch.compile 默认仅支持无偏置（bia…」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为矩阵规模太小触发 Inductor 退化、降级回 CPU 解释执行；torch.compile 不会降级成 CPU 解释执行",
+      "以为 torch.compile 只支持无偏置 matmul、遇到 bias 会自动关闭融合；融合能力与有无偏置无关",
+      "以为缺少激活函数导致 TorchDynamo 无法捕获计算图而回退 Eager；有无激活函数不影响图捕获"
+    ]
   },
   {
     "id": "pytorch-perf-mlp-fusion-01",
@@ -207,6 +238,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -217,7 +254,12 @@
       "target": "能判断「PyTorch Dispatcher 根据输入张量 stride 匹配相应的预编译内核二进制，使得 GPU 执行矩阵乘法时无需先在显存中做物理转置」",
       "reasoningGoal": "先回到该机制的第一性原理；据此确认「表示输入矩阵 A 与 B 的内存布局期望（Trans…」成立；并排除「表示 GPU 计算精度转换模式（T 为 Tensor…」「表示 GPU 内存传输的线程同步模式（T 为 Thr…」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 _tn 表示精度转换模式（TF32 / 原生 BF16）；精度标识不在该后缀里",
+      "以为 _tn 表示线程同步模式与 SRAM/L2 刷新机制；该后缀与同步机制无关",
+      "以为 _tn 表示动态 shape 的截断或补零对齐策略；对齐策略不由该后缀表达"
+    ]
   },
   {
     "id": "pytorch-perf-compile-vs-triton-01",
@@ -250,6 +292,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -260,6 +308,9 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「手写特化内核（如 Liger Kernels）绕过图追踪与 Guard，零首包编译延迟、确定性更强」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「torch.compile 能自动捕获并融合任意通用…」「预写特化 Kernel 无需经过 TorchDyna…」等 3 项成立；并排除「torch.compile 生成的 Triton K…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 torch.compile 生成的 Triton kernel 在固定静态 shape 下效率高、但灵活性和泛化性低于手写算子；对代码改动的泛化性恰恰是编译器方案的优势，手写算子才是泛化性差的一方"
+    ]
   }
 ]
