@@ -724,17 +724,31 @@ function detectFormat(question: QuestionLike): QuestionFormat {
   return "open";
 }
 
+function toText(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.filter((v) => typeof v === "string").join(" ");
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  return "";
+}
+
 function getFullText(question: QuestionLike): string {
-  const options =
-    question.formats?.choice?.options?.join("\n") ?? "";
+  const choiceOptions = question.formats?.choice?.options;
+
+  const options = Array.isArray(choiceOptions)
+    ? choiceOptions.join("\n")
+    : typeof choiceOptions === "string"
+      ? choiceOptions
+      : "";
 
   const referenceAnswer =
     question.formats?.open?.referenceAnswer ?? "";
 
-  const coreConcepts = question.concepts?.core?.join(" ") ?? "";
+  const coreConcepts = toText(question.concepts?.core);
 
-  const supportingConcepts =
-    question.concepts?.supporting?.join(" ") ?? "";
+  const supportingConcepts = toText(question.concepts?.supporting);
 
   const assessment = [
     question.assessment?.target ?? "",
