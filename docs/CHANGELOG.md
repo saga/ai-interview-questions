@@ -1,6 +1,25 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-07 · verify-question-candidates：修版本号正则 + triage 优先级改名
+
+- **Bug（必修）**：`version.number` 的正则写成 `/\bv\d+.\d+(?:.\d+)?\b/i`，`.` 未转义 = 正则「任意字符」，
+  实际会命中 `v1x2` / `v1-2` 之类的噪音，而 `v1.2` 的语义反而得不到保证。
+  同类问题在 quantitative 组还有 4 处（`quant.percent` / `quant.number-with-unit` /
+  `quant.multiplier` / `quant.times`），一并改为 `\.`。
+  - 实测影响：误报 2 处 —— `moe-mixtral-02`（`8x7B` 的 `x` 被当小数点 + `B` 当单位）
+    与 `pp-1f1b-bubble-calc`（`1F1B`）。前者因此整条掉出候选，后者仍凭其它信号在列（score 5）。
+  - 候选数 **361 → 360**，high 7 / medium 49 / low 304 不变。
+- **改名（消歧义）**：triage 输出的 `priority: "P0"|"P1"|"P2"` → **`verificationPriority: "HIGH"|"MEDIUM"|"LOW"`**。
+  本仓库 `P0/P1/P2` 长期表示 **已确认缺陷的严重度**（`verify-question-correctness` 产出的 `severity`），
+  复用会让「P0 candidate」被读成「已发现 P0 缺陷」。现语义分层：
+  `triage → HIGH/MEDIUM/LOW`，`verification → P0/P1/P2`。
+  SKILL.md 里的 P0/P1/P2 **不动**（那本来就是 severity，用法正确）。
+- 连带同步：`skills/verify-question-correctness/说明v2.md` 内嵌代码与输出提示；
+  `说明.md`（v1 设计稿）顶部标注已被 v2 取代，避免再出现文档与实现不一致。
+- 校验：`npm run typecheck` 干净、`npm test` **839/839**。
+- 未做：不给该脚本补单测 —— 它在模块顶层调 `main()`，被测需要重构导出，属于扩大改动范围。
+
 ## 2026-09-04 · misconceptions 收口（204/1354 → 1339/1354；干扰项绑定 301/2919 → 2919/2919）
 
 - **背景**：题级 `misconceptions` 只有 204/1354（15.1%）、`misconceptionMap` 188/1354（13.9%）。

@@ -37,7 +37,15 @@ type QuestionFormat = "single" | "multiple" | "open" | "unknown";
 
 type RiskLevel = "low" | "medium" | "high";
 
-type CandidatePriority = "P0" | "P1" | "P2";
+/**
+ * Triage urgency only.
+ *
+ * Deliberately NOT named P0/P1/P2: in this repository P0/P1/P2 already means
+ * "confirmed defect severity" produced by the verify-question-correctness
+ * skill. Reusing it here would let `P0 candidate` be misread as
+ * "confirmed P0 defect".
+ */
+type VerificationPriority = "HIGH" | "MEDIUM" | "LOW";
 
 interface ChoiceFormat {
   type?: ChoiceType;
@@ -85,7 +93,7 @@ interface Candidate {
   format: QuestionFormat;
   riskScore: number;
   riskLevel: RiskLevel;
-  priority: CandidatePriority;
+  verificationPriority: VerificationPriority;
   reasons: string[];
   signals: string[];
   metadata: {
@@ -298,7 +306,7 @@ const VERSION_PATTERNS: Array<{
     points: 7,
   },
   {
-    pattern: /\bv\d+.\d+(?:.\d+)?\b/i,
+    pattern: /\bv\d+\.\d+(?:\.\d+)?\b/i,
     code: "version.number",
     description: "contains a concrete version number",
     points: 7,
@@ -354,25 +362,25 @@ const QUANTITATIVE_PATTERNS: Array<{
   points: number;
 }> = [
   {
-    pattern: /\b\d+(?:.\d+)?\s*%/,
+    pattern: /\b\d+(?:\.\d+)?\s*%/,
     code: "quant.percent",
     description: "contains explicit percentage claim",
     points: 5,
   },
   {
-    pattern: /\b\d+(?:.\d+)?\s*(?:ms|s|GB|MB|TB|M|B|million|billion)\b/i,
+    pattern: /\b\d+(?:\.\d+)?\s*(?:ms|s|GB|MB|TB|M|B|million|billion)\b/i,
     code: "quant.number-with-unit",
     description: "contains quantitative technical claim",
     points: 6,
   },
   {
-    pattern: /\b\d+(?:.\d+)?x\b/i,
+    pattern: /\b\d+(?:\.\d+)?x\b/i,
     code: "quant.multiplier",
     description: "contains multiplier claim",
     points: 6,
   },
   {
-    pattern: /\b\d+(?:.\d+)?\s*times?\b/i,
+    pattern: /\b\d+(?:\.\d+)?\s*times?\b/i,
     code: "quant.times",
     description: "contains multiplier claim",
     points: 6,
@@ -1019,9 +1027,9 @@ function buildCandidate(
   );
 
   /**
-   * Explicit thresholds intentionally leave room below P0.
+   * Explicit thresholds intentionally leave room below HIGH.
    *
-   * Candidate priority does not mean "question severity".
+   * Verification priority does not mean "question severity".
    * It means verification urgency.
    */
   let riskLevel: RiskLevel;
@@ -1038,16 +1046,18 @@ function buildCandidate(
    * Map the risk level to a review queue label.
    *
    * IMPORTANT:
-   * P0 here means "highest verification priority", not "confirmed P0 defect".
+   * HIGH here means "verify this first", not "confirmed defect".
+   * Defect severity (P0/P1/P2) is decided later by the
+   * verify-question-correctness skill, never by this scanner.
    */
-  let priority: CandidatePriority;
+  let verificationPriority: VerificationPriority;
 
   if (riskLevel === "high") {
-    priority = "P0";
+    verificationPriority = "HIGH";
   } else if (riskLevel === "medium") {
-    priority = "P1";
+    verificationPriority = "MEDIUM";
   } else {
-    priority = "P2";
+    verificationPriority = "LOW";
   }
 
   return {
@@ -1056,7 +1066,7 @@ function buildCandidate(
     format: detectFormat(question),
     riskScore,
     riskLevel,
-    priority,
+    verificationPriority,
     reasons: uniqueSignals.map((signal) => signal.description),
     signals: uniqueSignals.map((signal) => signal.code),
     metadata: {
@@ -1165,8 +1175,8 @@ function main(): void {
       return b.riskScore - a.riskScore;
     }
 
-    if (a.priority !== b.priority) {
-      return a.priority.localeCompare(b.priority);
+    if (a.verificationPriority !== b.verificationPriority) {
+      return a.verificationPriority.localeCompare(b.verificationPriority);
     }
 
     return a.id.localeCompare(b.id);
@@ -1201,7 +1211,7 @@ function main(): void {
       format: detectFormat(item.question),
       riskScore: 0,
       riskLevel: "low",
-      priority: "P2",
+      verificationPriority: "LOW",
       reasons: ["random calibration sample"],
       signals: ["calibration.random-sample"],
       metadata: {
@@ -1258,7 +1268,13 @@ function main(): void {
   console.log(`Total output rows: ${finalItems.length}`);
   console.log(`Output: ${path.relative(ROOT, args.output)}`);
   console.log("");
-  console.log("NOTE: risk priority is NOT a correctness verdict.");
+  console.log(
+    "NOTE: verificationPriority (HIGH/MEDIUM/LOW) is triage urgency only.",
+  );
+  console.log("It is NOT a correctness verdict and NOT a severity rating.");
+  console.log(
+    "Severity (P0/P1/P2) is assigned later by verify-question-correctness.",
+  );
   console.log(
     "The worklist must be processed by the verify-question-correctness skill.",
   );
