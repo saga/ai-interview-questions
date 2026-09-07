@@ -1,0 +1,142 @@
+[
+  {
+    "id": "dit-cond-adaln-zero-can",
+    "questionRole": "canonical",
+    "variantOf": null,
+    "category": "深度学习",
+    "topic": "transformer",
+    "knowledgeId": "dit_conditioning_adaln_zero",
+    "concepts": ["adaLN-Zero", "Cross-Attention", "Conditioning Overhead", "Diffusion Transformer"],
+    "tags": ["DiT", "Diffusion Models", "Transformer", "Conditioning"],
+    "difficulty": "medium",
+    "angle": "architecture",
+    "cognitiveTask": "compare",
+    "assessmentTarget": "能够对比分析 In-context、Cross-Attention 与 adaLN-Zero 在 DiT 中处理时间步 t 和类别标签 c 时的计算复杂度、参数增量与生成质量（FID）表现。",
+    "question": "在 Diffusion Transformer (DiT) 中，注入时间步 $t$ 和类别标签 $c$ 等条件信息有多种机制（如 In-context conditioning、Cross-Attention block、adaLN 与 adaLN-Zero）。关于这些条件注入机制在计算开销、参数特征与生成质量（FID）方面的对比，以下哪些说法是正确的？",
+    "explanation": "选项 A 正确：Cross-Attention 机制需要在 Self-Attention 之外额外引入一个 Multi-head Cross-Attention 模块来融合条件特征，相比仅基于条件向量进行线性回归调整特征的 adaLN 机制，会增加约 15% 的额外计算量（GFLOPs）。\n选项 B 正确：adaLN/adaLN-Zero 通过直接调制 LayerNorm 的缩放平移参数，将条件信息作用于所有 Token，在计算开销极低的前提下（几乎零额外 GFLOPs）取得了比 Cross-Attention 和 In-context 更优异的 FID 表现。\n选项 C 错误：adaLN-Zero 的 MLP 仅根据全局条件向量（$t+c$ 的嵌入）输出维度为 $d$ 的缩放/平移向量，该参数作用于当前 Block 的所有 Token，并非为每个 Token 独立生成参数，因此参数增量极小。\n选项 D 错误：In-context 的额外 Token 会增加序列长度与 Self-Attention 开销，且其中期乃至终期 FID 均落后于 adaLN/adaLN-Zero，并非等价替代。",
+    "formats": [
+      {
+        "type": "multiple-choice",
+        "options": [
+          { "key": "A", "text": "Cross-Attention 机制会在 Self-Attention 之后引入额外的交叉注意力层，相比仅做线性归一化调制（adaLN）的方案，会增加约 15% 的额外计算开销（GFLOPs）。" },
+          { "key": "B", "text": "与在输入序列前拼接条件 Token（In-context conditioning）相比，adaLN/adaLN-Zero 机制约束条件信号以逐通道缩放与平移的形式统一作用于所有 Token，但在极低计算增量下取得了更优的 FID 评分。" },
+          { "key": "C", "text": "adaLN-Zero 会带来显著的模型参数量增加，因为每个 Transformer Block 都需要为空间中的每个图像 Patch Token 独立回归一套专属的 LayerNorm 参数。" },
+          { "key": "D", "text": "In-context conditioning 的额外开销可以忽略，且在小 Token 规模下其中期训练 FID 已接近 adaLN，因此可视为 adaLN 的等价替代。" }
+        ],
+        "answer": ["A", "B"]
+      }
+    ]
+  },
+  {
+    "id": "dit-cond-adaln-zero-var1",
+    "questionRole": "variant",
+    "variantOf": "dit-cond-adaln-zero-can",
+    "category": "深度学习",
+    "topic": "transformer",
+    "knowledgeId": "dit_conditioning_adaln_zero",
+    "concepts": ["adaLN-Zero", "Identity Initialization", "Training Stability"],
+    "tags": ["DiT", "Zero Initialization", "Training Dynamics"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessmentTarget": "能够准确解释 adaLN-Zero 的零初始化（Zero Initialization）策略对训练初期模型稳定性和收敛速度的作用机制。",
+    "question": "在 DiT 的 adaLN-Zero 模块设计中，回归生成规范化参数 $\\gamma, \\beta$ 以及残差缩放因子 $\\alpha$ 的 MLP 最后一层被显式初始化为全零向量。这种零初始化策略发挥作用的核心物理机制是什么？",
+    "explanation": "选项 B 正确：在 adaLN-Zero 中，MLP 最后一层初始化为零向量使得回归出的残差缩放因子 $\\alpha = 0$。由于残差分支上的特征在加回主干前被乘以 $\\alpha$，在训练初始阶段每个 DiT Block 退化为恒等映射（Identity Function），避免了未训练模块对初始特征的随机扰动。\n选项 A 错误：零初始化使 MLP 输出为 0，对应调制量为零（退化为标准归一化行为），并没有把输入特征置零，也不存在截断梯度的作用。\n选项 C 错误：时间步 $t$ 和类别标签 $c$ 的条件嵌入仍正常参与运算并接受梯度更新，并没有切断条件梯度路径。\n选项 D 错误：零初始化针对的是残差与归一化调制的初始状态，与 Softmax 数值稳定性或注意力极化无关。",
+    "formats": [
+      {
+        "type": "single-choice",
+        "options": [
+          { "key": "A", "text": "零初始化将 LayerNorm 的缩放参数 $\\gamma$ 和平移参数 $\\beta$ 置零，强行把规范化特征清零，从而阻断初期不稳定梯度的反向传播。" },
+          { "key": "B", "text": "零初始化使 MLP 输出的残差缩放因子 $\\alpha$ 初始为 0，使每个 DiT Block 退化为恒等映射，避免未训练模块扰动初始特征。" },
+          { "key": "C", "text": "零初始化切断了时间步 $t$ 与类别 $c$ 向量的梯度更新路径，使模型在前几个训练 Epoch 中仅聚焦于无条件图像特征的重构。" },
+          { "key": "D", "text": "零初始化防止了 Self-Attention 中 Softmax 输入数值过大，从而避免训练初期注意力权重极化导致的梯度消失。" }
+        ],
+        "answer": "B"
+      }
+    ]
+  },
+  {
+    "id": "dit-patch-scaling-can",
+    "questionRole": "canonical",
+    "variantOf": null,
+    "category": "深度学习",
+    "topic": "vit-patch-embedding-sequence-length",
+    "knowledgeId": "dit_patch_size_computational_scaling",
+    "concepts": ["Patchification", "Token Sequence Length", "GFLOPs Scaling", "Parameter Invariance"],
+    "tags": ["DiT", "Computational Complexity", "GFLOPs", "Patch Size"],
+    "difficulty": "hard",
+    "angle": "quantitative",
+    "cognitiveTask": "predict",
+    "assessmentTarget": "能够根据 Latent 空间尺寸 I 和 Patch Size p 计算序列长度 T，并推导当 p 减半时，计算量 GFLOPs 与模型参数量 Parameters 的非对称变化关系。",
+    "question": "假设输入的 Latent 特征尺寸为 $I \\times I \\times C$，在保持 Transformer 层数 $N$ 和隐藏层维度 $d$ 固定不变的情况下，将 Patch Size 从 $p$ 减小为 $p/2$（例如从 $p=4$ 降至 $p=2$）。以下关于该调整对模型 Token 序列长度 $T$、计算复杂度（GFLOPs）以及模型总参数量影响的推导，哪些是正确的？",
+    "explanation": "选项 A 正确：输入 Token 数量 $T = (I/p)^2$。当 Patch Size 从 $p$ 缩小到 $p/2$ 时，$T_{new} = (I / (p/2))^2 = 4T$，即序列长度变为原来的 4 倍。\n选项 B 正确：Transformer 计算含线性部分 $O(T d^2)$ 与 Attention 平方部分 $O(T^2 d)$。$T$ 变 4 倍时线性部分变为 4 倍，Attention 矩阵部分变为 16 倍，整体至少 4 倍。\n选项 C 错误：p 减半使 Patchify 投影输入维度从 $p^2C$ 缩小为 $(p/2)^2C$，该层参数量不增反减，且相对主干可忽略；主导总参数量的 Transformer 主干与 $T$ 无关。\n选项 D 正确：在 $N$ 和 $d$ 确定前提下，总参数量基本不变，因为 Transformer 参数量与序列长度 $T$ 解耦。",
+    "formats": [
+      {
+        "type": "multiple-choice",
+        "options": [
+          { "key": "A", "text": "Patch Size 减半会导致 Transformer 处理的输入 Token 序列长度 $T = (I/p)^2$ 增加为原来的 4 倍。" },
+          { "key": "B", "text": "模型的前向计算复杂度 GFLOPs 将呈现非线性剧增，整体计算量至少增加为原来的 4 倍，且 Self-Attention 矩阵相乘部分的开销将增加至 16 倍。" },
+          { "key": "C", "text": "首层 Patchify 投影的输入维度随 p 减半而缩小，该层参数量会增加约 4 倍并主导模型总参数量的变化。" },
+          { "key": "D", "text": "在模型层数 $N$ 和隐藏维度 $d$ 确定的前提下，DiT 的网络总参数量基本维持不变，因为 Transformer 参数量与序列长度 $T$ 解耦。" }
+        ],
+        "answer": ["A", "B", "D"]
+      }
+    ]
+  },
+  {
+    "id": "dit-patch-scaling-var1",
+    "questionRole": "variant",
+    "variantOf": "dit-patch-scaling-can",
+    "category": "深度学习",
+    "topic": "vit-patch-embedding-sequence-length",
+    "knowledgeId": "dit_patch_size_computational_scaling",
+    "concepts": ["GFLOPs vs FID", "Scaling Law", "Patch Size vs Model Capacity"],
+    "tags": ["DiT", "Scaling Law", "Tradeoff", "FID"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessmentTarget": "能够权衡在固定算力预算（GFLOPs）下，通过“减小 Patch Size（增加 Token 数量）”与“增大 Transformer 深度/宽度（N/d）”来提升 DiT 生成质量（FID）的优劣与 Scaling 规律。",
+    "question": "在给定的计算预算（GFLOPs）范围内，可以通过两条不同的路径扩展 DiT 的计算量：一是缩小 Patch Size $p$（提升空间分辨率和 Token 数量 $T$），二是增加 Transformer 的深度/宽度（提升模型容量 $N$ 或 $d$）。关于这两条 Scaling 路径对生成质量（FID）与资源权衡的影响，以下哪些分析是正确的？",
+    "explanation": "选项 A 正确：无论缩小 Patch Size 还是增大深度/宽度，FID 均随总 GFLOPs 增加而持续改善，总 GFLOPs 是决定生成质量的核心指标。\n选项 B 正确：减小 Patch Size 保留更细粒度空间细节，利于局部纹理；增大 $N, d$ 提升高阶语义抽象与条件映射能力。\n选项 C 错误：$T$ 变 4 倍时 Attention 矩阵 $O(T^2)$ 的显存急剧膨胀，峰值显存显著上升；单 Token 展开维度缩小远不能抵消序列变长的影响。\n选项 D 错误：在 DiT-XL 下将 $p=4$ 缩小到 $p=2$（DiT-XL/2）FID 仍进一步改善至约 2.27，并未过早饱和。",
+    "formats": [
+      {
+        "type": "multiple-choice",
+        "options": [
+          { "key": "A", "text": "无论是通过减小 Patch Size 增加 Token 序列长度，还是通过扩大 Transformer 的深度与宽度，生成的 FID 评分均随总 GFLOPs 的增加而持续改善，表明 GFLOPs 是决定 DiT 生成质量的主导指标。" },
+          { "key": "B", "text": "在算力分配权衡中，缩小 Patch Size 能直接提升对高频空间细节特征的处理能力，而增大 $N$ 和 $d$ 则更侧重于增强全局语义表达与复杂条件映射能力。" },
+          { "key": "C", "text": "缩小 p 降低了单个 Token 的展开维度 p×p×C，该收益可抵消序列变长带来的 Attention 矩阵增长，使训练峰值显存基本持平甚至下降。" },
+          { "key": "D", "text": "当模型规模达到 DiT-XL 后，缩小 Patch Size（如 $p=2$）带来的 FID 收益会迅速饱和，继续提升生成质量只能依赖于增加 Transformer 层数 $N$。" }
+        ],
+        "answer": ["A", "B"]
+      }
+    ]
+  },
+  {
+    "id": "dit-decoder-arch-can",
+    "questionRole": "canonical",
+    "variantOf": null,
+    "category": "深度学习",
+    "topic": "transformer",
+    "knowledgeId": "dit_latent_space_decoder_architecture",
+    "concepts": ["Latent Diffusion", "Linear Decoder", "Noise Prediction", "Covariance Prediction"],
+    "tags": ["DiT", "Decoder", "Latent Space", "Architecture"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "infer",
+    "assessmentTarget": "能够推导 VAE 编码后的 Latent 向量经过 Patchify、DiT Blocks 和 Final Linear Decoder 后，输出维度如何映射至噪声预测与对角协方差预测（Shape: p x p x 2C）。",
+    "question": "在 Latent 空间运行的 DiT 模型中，假设输入的加噪 Latent 维度为 $I \\times I \\times C$，Patch Size 为 $p$，隐藏层维度为 $d$。关于最后一个 Transformer Block 输出特征经由 Linear Decoder 恢复为扩散过程预测值的机制，以下哪些描述是正确的？",
+    "explanation": "选项 A 正确：最后一个 Block 输出 $T$ 个 $d$ 维 Token，线性解码层将每个 Token 映射到 $p \\times p \\times 2C$，覆盖噪声与协方差。\n选项 B 正确：解码后 $T$ 个小张量经 Unpatchify 重排为 $I \\times I \\times 2C$，前 $C$ 通道为预测噪声 $\\epsilon_\\theta$，后 $C$ 通道为对角协方差 $\\Sigma_\\theta$。\n选项 C 错误：Linear Decoder 是位置共享的线性变换（LayerNorm + Linear），所有 Token 共用同一权重。\n选项 D 错误：解码器输出仍在 Latent 空间（$I \\times I \\times 2C$），噪声与协方差联合预测，不存在独立像素空间协方差头；最终 RGB 需经 VAE Decoder 解码。",
+    "formats": [
+      {
+        "type": "multiple-choice",
+        "options": [
+          { "key": "A", "text": "最后一个 Block 输出的每个 Token（维度为 $d$）经线性解码层投影后，输出维度为 $p \\times p \\times 2C$。" },
+          { "key": "B", "text": "解码后的 $T$ 个张量经 Unpatchify 重排为 $I \\times I \\times 2C$，拆分为各占 $C$ 通道的预测噪声与对角协方差。" },
+          { "key": "C", "text": "线性解码器需为每个 Patch 空间位置设置独立不共享的线性权重，而非全图共享同一投影矩阵，以适配不同区域的几何先验。" },
+          { "key": "D", "text": "线性解码器输出为 $I \\times I \\times C$，仅预测噪声 $\\epsilon_\\theta$，对角协方差 $\\Sigma_\\theta$ 由独立的协方差分支在像素空间单独回归得到。" }
+        ],
+        "answer": ["A", "B"]
+      }
+    ]
+  }
+]

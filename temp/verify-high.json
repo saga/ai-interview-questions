@@ -1,0 +1,350 @@
+[
+ {
+  "file": "agent-fundamentals.json",
+  "id": "ai-eng-062",
+  "category": "agent-fundamentals",
+  "topic": "agent-guardrails",
+  "tags": [
+   "safety-check",
+   "promise-detection",
+   "tool-grounding",
+   "handoff-context"
+  ],
+  "difficulty": "hard",
+  "angle": "system-design",
+  "question": "客服 AI 自动发出的每一条回复都可能构成对用户的承诺。请设计发送前的安全检查层应拦截哪些风险，以及工具调用接地（tool grounding）、越狱抵抗与人机交接上下文包如何协同构成完整防线。",
+  "explanation": "发送前四类检查：①承诺检测——拦截 \"I guarantee / we will pay / 一定退款\" 等构成义务的表述（AI 无权承诺退款与发货日期）；②情绪错配——客户暴怒时 AI 语气轻快会火上浇油；③PII 泄露——内部备注或其他客户数据不得出现在回复中；④竞品提及——不得推荐竞品。接地防线：LLM 不\"知道\"订单状态，只能调用 Order API 工具并总结返回结果——事实来自系统而非生成，从根上消灭编造物流信息的空间。越狱抵抗靠结构性收窄：system prompt 极窄域限定（只谈本司订单），回复是工具输出的总结而非自由文本，没有可泄露的系统提示词发挥空间。人机交接包：对话摘要（客户问题/AI 已尝试/为何升级）+ 情绪 + 已执行的工具调用 + 全文 + 客户等级——摘要而非倾倒原文，让人工秒级接手。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "发送前拦截四类风险：承诺性表述、情绪错配、PII与内部数据泄露、竞品提及",
+     "事实一律来自工具调用返回而非模型生成，窄域prompt使越狱无利可图",
+     "转人工附结构化交接包：对话摘要、情绪、已执行工具调用与客户等级，而非倾倒原文",
+     "内容审核API过滤脏话与敏感词即够，承诺、情绪与PII风险可由模型对齐能力自行消解",
+     "自动解决工单跳过发送前检查、事后抽检即可，检查只留给转人工的高风险对话"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "question": "客服AI每条自动回复都可能构成承诺，以下哪些属于发送前安全检查层的正确设计？（请选择以下三个选项）",
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0,
+     1
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：A、B、C。\n\n要点：①四类检查各自对应一种真实事故形态：承诺检测防的是法律与赔付风险（\"保证周三送达\"就是合同要约）；情绪错配防体验灾难；PII 检查防跨客户数据泄露的合规事故；竞品提及防商业损失——A 的脏话过滤只覆盖了其中最小的子集。②工具接地是与幻觉作战的结构性方案：模型的自由度被压缩到\"组织语言描述 API 返回的事实\"，无中生有的物流日期在机制上不可产生。③越狱防御同理靠结构而非加密（C）：攻击者诱导出的最坏结果只是\"对工具输出的另一种总结\"，窄域 prompt 让越狱收益趋近于零。④交接包的设计要点是信息密度：人工最需要的不是聊天记录而是\"问题是什么、AI 试了什么、为什么失败\"——这决定客户不用重复叙述（体验上最大的痛点）。D 属于侥幸工程，自动路径恰恰是量最大、最不能靠抽检的路径。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「②情绪错配——客户暴怒时 AI 语气轻快会火上浇油」",
+   "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「发送前拦截四类风险：承诺性表述、情绪错配、PII与内…」「事实一律来自工具调用返回而非模型生成」等 3 项成立；并排除「内容审核API过滤脏话与敏感词即够」「自动解决工单跳过发送前检查、事后抽检即可」等不成立描述。"
+  },
+  "cognitiveTask": "design",
+  "misconceptions": [
+   "认为脏话敏感词过滤即可，承诺、情绪与 PII 风险可由模型对齐自行消解",
+   "认为自动解决的工单可跳过发送前检查，事后抽检足够"
+  ]
+ },
+ {
+  "file": "cost-performance.json",
+  "id": "ai-eng-058",
+  "category": "cost-performance",
+  "topic": "cost",
+  "tags": [
+   "scale-economics",
+   "explanation-cache",
+   "cache-hit-rate-sla"
+  ],
+  "difficulty": "hard",
+  "angle": "scenario",
+  "question": "5000 万用户的流媒体平台要为每条推荐附加 LLM 生成的解释：日活 500 万 × 每人 10+ 组推荐意味着每天数亿次潜在调用。请设计成本可控的解释服务架构，并推导缓存命中率与 200ms p95 延迟目标之间的量化关系。",
+  "explanation": "架构原则：传统 ML 负责排序（embedding 召回 + cross-encoder 精排，单用户日成本低至 $0.001 量级），LLM 只做最末端的解释生成。缓存按 (source_content, target_content, reason_type) 三元组建 key——同一条\"因为 Inception 推荐 Tenet\"的理由对成千上万用户复用，预热后命中率可达 85-95%。延迟联动：命中路径 ~70ms 远低于 200ms p95；未命中路径一次 LLM 调用 ~450-500ms 会击穿 SLA——所以必须保证命中率 ≥95%（p95 用户几乎全走命中路径），未命中的新生成异步化补进缓存而非同步等待；新内容对的解释离线预生成。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "推荐解释可接受分钟级延迟，实时调用加排队限流即够；缓存命中率运维复杂度高于调用成本，简单优先。",
+     "排序走 embedding 召回 + cross-encoder 精排；解释按三元组缓存跨用户复用；未命中击穿 p95，命中率须≥95%，新解释异步预生成。",
+     "用最大的旗舰模型生成更高质量的解释，通过减少用户重复请求来节省总体成本；贵模型反而更省钱且用户体验明显更好，因此质量与成本可兼得，大模型路线最优",
+     "把解释长度限制到 5 个 token 以内来压缩 LLM 成本，几乎不影响用户体验；短小即高效且最容易控制整体预算上限，极简即省钱，无需长文，短答案足够用"
+    ],
+    "answer": [
+     1
+    ],
+    "misconceptionMap": [
+     0,
+     null,
+     1,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：B。\n\n要点：①规模账先算清：5M 日活 × 10 组 × 每组若干条 = 数亿次/天，哪怕 $0.001/次也是每天数十万美元——所以 LLM 绝不能进排序路径（embedding 查找 $0.00001、ANN $0.0001、rerank $0.001，便宜三个数量级）。②缓存的正确粒度是内容对而非用户：解释的理由绑定于\"从 A 推荐 B 的原因类别\"，天然跨用户共享，热门内容对预热后命中率轻松上 90%。③命中率与 SLA 的硬耦合是本题核心：混合延迟 ≈ hit_rate×70ms + (1−hit_rate)×500ms，要 p95 ≤200ms 就要求第 95 百分位的请求落在命中路径上，即命中率 ≥95%；做不到就异步化——同步返回占位或次优解释，后台生成后写缓存供下个请求命中。④A 的账漏算了倍数关系且没算延迟违约；C 方向反了，更强模型只会更贵；D 牺牲产品价值省小钱，属于错误的优化目标。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「延迟联动：命中路径 ~70ms 远低于 200ms p95」",
+   "reasoningGoal": "先识别场景给出的约束条件；据此确认「排序走 embedding 召回 + cross-e…」成立；并排除「推荐解释可接受分钟级延迟」「用最大的旗舰模型生成更高质量的解释」等不成立描述。"
+  },
+  "cognitiveTask": "design",
+  "misconceptions": [
+   "以为推荐解释可以接受分钟级延迟，忽略了它必须与推荐结果同屏呈现，分钟级就等于不可用",
+   "以为贵模型反而更省，忽略了数亿次调用下单价差异是决定性的，减少重复请求改变不了这个量级",
+   "以为压缩输出长度能省钱，忽略了 5 个 token 无法构成可读解释，等于砍掉功能本身"
+  ]
+ },
+ {
+  "file": "cost-performance.json",
+  "id": "prompt-cache-billing-tradeoff-01",
+  "category": "cost-performance",
+  "topic": "cost",
+  "tags": [
+   "prompt-caching",
+   "billing",
+   "breakeven",
+   "write-charge",
+   "read-discount"
+  ],
+  "difficulty": "hard",
+  "angle": "tradeoff",
+  "question": "某些大模型 API 采用了“写缓存收取额外溢价（如 1.25x 基础输入价），读缓存给予大幅折扣（如 0.1x 基础输入价）”的计费机制。针对此类计费模型，在架构设计与成本优化时，下列哪些推论是正确的？",
+  "explanation": "A 正确：前缀仅调用一次且无后续复用时，写缓存需付 1.25x 溢价，相比不开启缓存（1.0x）多付 25%，即“最小缓存长度成本陷阱”。B 正确：写入溢价必须靠足够多次的 Read Hit（0.1x 折扣）来摊薄，复用次数超过平衡点阈值才有净成本下降。C 错误：结算逻辑恰好相反——命中的前缀 Token 享 0.1x 读折扣，未命中的尾部新增 Token 才按 1.0x 标准原价结算。D 正确：缓存读命中只产生 Read Charge（0.1x），并会自动重置刷新 TTL，无需重新支付 1.25x 写缓存费。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "对于长尾、一次性（Single-turn Non-recurring）且无重复前缀的 API 调用，开启显式写缓存功能反而会导致整体 Token 成本上升 25%",
+     "只有当某个前缀的预期复用次数（即 Read Hit 次数）达到或超过平衡点阈值时，引入带写缓存费用的 Prompt Caching 才能实现净成本下降",
+     "缓存命中时，系统会基于原始基础输入单价结算全部 Token，然后再将未命中的尾部 Token 按照 0.1x 的读缓存折扣价进行补偿扣减",
+     "在维持缓存活性的场景中，周期性地发送基于相同前缀的 Hit 请求，可以在不再次产生 1.25x 写缓存费用的情况下持续刷新 TTL 存活期"
+    ],
+    "answer": [
+     0,
+     1,
+     3
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     0,
+     null
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：A、B、D。\n\n- A 正确：若前缀仅调用一次且无后续复用，写入缓存需支付 1.25x 溢价，相比不开启缓存（1.0x）额外增加 25% 成本，形成“最小缓存长度成本陷阱”。\n- B 正确：写缓存存在溢价，必须通过足够多次数的 Read Hit（0.1x 折扣）平摊初始写入溢价，才能降低总成本。\n- C 错误：结算逻辑相反，命中的前缀 Token 享受 0.1x 读折扣，未命中的尾部新增 Token 按 1.0x 标准原价结算。\n- D 正确：缓存读命中仅产生 Read Charge（0.1x），且会自动重置并刷新 TTL，无需重新支付 1.25x 的写缓存费用。"
+   }
+  },
+  "assessment": {
+   "target": "能在「写缓存溢价 / 读缓存折扣」的计费模型下，判断何时开启缓存反而更贵",
+   "reasoningGoal": "先明确计费结构——写 1.25x、读 0.1x、未命中尾部按 1.0x；再据此推出一次性无复用的前缀开缓存会多付 25%（最小缓存长度陷阱）、必须靠足够多次 Read Hit 摊薄才能越过平衡点、以及周期性发相同前缀请求可在不重复付写费的情况下刷新 TTL；并排除「命中部分按原价、未命中尾部按 0.1x 补偿」这种与实际结算逻辑相反的说法。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为缓存计费是先按原价收全量再退差价，忽略了命中的前缀直接按折扣价计、未命中的尾部按原价计，不存在先收后返"
+  ]
+ },
+ {
+  "file": "evaluation.json",
+  "id": "ai-eng-051",
+  "category": "evaluation",
+  "topic": "evaluation",
+  "tags": [
+   "stratified-sampling",
+   "eval-cache",
+   "ci-budget"
+  ],
+  "difficulty": "medium",
+  "angle": "calculation",
+  "question": "50 个 PR/周的团队，完整跑一次 golden set 评测成本 $80-$200，若每个 PR 都全量跑每周要 $4K-$10K。请给出把单 PR 成本压到 ~$25、周总成本压到预算内的工程手段与成本账。",
+  "explanation": "三板斧：①分层抽样——默认每个 PR 只跑 10-25% 的 golden set，但按失败模式分层保证 12 类失败模式每类至少 1 例，牺牲覆盖但不牺牲代表性；full-eval 标签触发 100%（需 CODEOWNERS 审批防滥用），main 分支每晚全量兜底；②结果缓存——输出由 (prompt-hash, model-version) 确定，缓存 (prompt-hash, model-version) → (output, judge-score)，只改编排代码不改 prompt 的 PR 缓存命中率可达 ~70%，近乎免费重跑；③硬顶治理——月度评测支出设硬上限（超限拒绝启动任务）、成本标签区分 shadow/full/sample 流量。账：$25×50 + 全量跑若干次 + 夜间 cron ≈ $14K/月以内，一次拦截的线上回归（本案例 $400 万续约损失）即可覆盖多年预算。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "把 golden set 按失败模式提炼为 100 例高信号精华集，全量跑精华集，完整集仅在月度回归跑；精华集的检出精度损失可接受，无需分层采样等复杂工程。",
+     "默认 PR 跑 10-25% 分层样本（失败模式保底），full-eval 需审批，main 每晚全量兜底；(prompt-hash, model-version) 结果缓存让纯编排改动近乎零成本重跑；配合月度支出硬顶。",
+     "取消 LLM judge 只保留代码断言，成本自然为零；确定性断言不需要模型调用，也就不存在 judge 费用，用单元测试式校验完全足以把控 Agent 改动质量，既省钱又更可复现，还能消除 judge 主观噪声，是中小团队的最优解。",
+     "让开发者本地自测通过后再手动触发 CI 评测，省掉大部分自动运行；人肉把关能过滤掉明显问题，只有可疑改动才进云端评测，整体开销可压到极低，还能培养工程师的质量 Owner 意识，减少无效流水线占用与排队，把云端算力留给真正需要的变更。"
+    ],
+    "answer": [
+     1
+    ],
+    "misconceptionMap": [
+     0,
+     null,
+     1,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：B。\n\n要点：①分层抽样是精度与成本的平衡点：随机抽 10% 可能整批落在同一失败模式上，按模式分层（12 类各保底 1 例）保证了小样本的代表性与检出下限；夜间 main 全量跑兜住抽样漏掉的漂移。②缓存的正确粒度是 (prompt-hash, model-version)：二者共同决定输出确定性成立，故 output 与 judge 分都可复用；注意 prompt 一字之改即失效——这正是设计意图（改动越核心，验证越充分）。③治理细节：full-eval 标签挂 CODEOWNERS 审批防止\"顺手全量\"三倍烧钱；硬顶超限拒启动而非默默欠账。④A 把样本量砍到低于统计检出力的地板（本案例推导 1200 例/表面才能在 95% 置信度下探测 2 点回归，100 例的 CI 宽到毫无意义）；C 丢掉了主观质量维度，代码断言只能覆盖确定性检查；D 把质量门交给人的自觉，等于回到事故发生前的状态。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「full-eval 标签触发 100%（需 CODEOWNERS 审批防滥用），main 分支每晚全量兜底」",
+   "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「默认 PR 跑 10-25% 分层样本（失败模式保底…」成立；并排除「把 golden set 按失败模式提炼为 100 …」「取消 LLM judge 只保留代码断言」等不成立描述。"
+  },
+  "cognitiveTask": "infer",
+  "misconceptions": [
+   "以为固定的精华集就够，忽略了它会逐渐过拟合已知失败模式，需要分层采样保留对未知的检出能力",
+   "以为代码断言能覆盖 Agent 质量，忽略了输出非确定且语义开放，断言测不到大多数真实回归",
+   "以为开发者人肉把关能过滤问题，忽略了那会遗漏绝大多数回归，门禁必须自动且不可跳过"
+  ]
+ },
+ {
+  "file": "hf-flash-attention.json",
+  "id": "flashattn-07",
+  "category": "ai-systems",
+  "topic": "flash-attention",
+  "tags": [
+   "hbm-traffic",
+   "calculation",
+   "io-complexity"
+  ],
+  "difficulty": "hard",
+  "angle": "calculation",
+  "question": "关于 FlashAttention 相对标准注意力的 HBM 显存访问（IO）复杂度，下列哪些说法是正确的？",
+  "explanation": "先分清「显存占用」与「访存流量」两件事。显存占用上 FlashAttention 确实是 O(N²)→O(N)（不再物化注意力矩阵）；但**访存流量**按论文定理 2 是标准注意力 Θ(Nd+N²)、FlashAttention Θ(N²d²M⁻¹)，两者之比约为 M/d²——**与 N 无关，且随 head 维度 d 的平方恶化**。论文的实测锚点是 GPT-2 medium（N=1024、d=64、A100）：HBM R/W 从 40.3 GB 降到 4.4 GB，约 9 倍，这正是原文「up to 9× fewer」的来源。所以「N=4096、d=128 时减少 33 倍」是把 O(N²)/O(Nd) = N/d = 32 当成了收益倍数：既用错了复杂度，也高估了收益（d=128 时 M/d² 已降到约 3 倍量级）。",
+  "source": {
+   "materialId": "hf-blog-flash-attention-overview"
+  },
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "论文给出的 IO 复杂度为：标准注意力 Θ(Nd + N²)，FlashAttention Θ(N²d²M⁻¹)（M 为 SRAM 容量），实测最高约 9 倍减少",
+     "两者的比值约为 M/d²，与序列长度 N 无关；因此 head 维度 d 越大或 SRAM 越小，FlashAttention 的相对收益越小",
+     "FlashAttention 把 IO 复杂度降到接近 O(Nd)，在 N=4096、d=128 时 HBM 流量约减少 33 倍",
+     "序列越长收益越大：标准注意力是 O(N²) 而 FlashAttention 是 O(N)，N 增大时两者的倍数差会持续拉大"
+    ],
+    "answer": [
+     0,
+     1
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     0,
+     1
+    ]
+   },
+   "open": {
+    "referenceAnswer": "约 33 倍：HBM IO 从 O(N²) 降到 ~O(Nd)（N=4096,d=128）。"
+   }
+  },
+  "misconceptions": [
+   "以为 FlashAttention 的 HBM IO 复杂度是 O(Nd) 或 O(N)，并按 N/d 估算收益倍数",
+   "以为序列越长 FlashAttention 的访存收益倍数越大"
+  ],
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「显存占用上 FlashAttention 确实是 O(N²)→O(N)（不再物化注意力矩阵）」",
+   "reasoningGoal": "先确定计算所依赖的量与其关系；据此逐项确认「论文给出的 IO 复杂度为：标准注意力 Θ(Nd +…」「两者的比值约为 M/d²」等 2 项成立；并排除「FlashAttention 把 IO 复杂度降到接…」「序列越长收益越大：标准注意力是 O(N²) 而 Fl…」等不成立描述。"
+  },
+  "cognitiveTask": "infer"
+ },
+ {
+  "file": "training.json",
+  "id": "ai-eng-045",
+  "category": "training",
+  "topic": "fine-tuning",
+  "tags": [
+   "distillation-pipeline",
+   "stratified-sampling",
+   "student-finetune"
+  ],
+  "difficulty": "hard",
+  "angle": "scenario",
+  "question": "公司旗舰模型月支出 $50K，分析发现约 90% 流量集中在少数几类重复任务模式上，决定蒸馏一个小参数量学生模型接管这部分流量。请设计端到端的蒸馏管线：从数据准备到学生模型全面接管的完整流程与各环节质量门。",
+  "explanation": "①数据：6 个月生产 trace 按任务类目分层采样（稀有类目重平衡保底），教师生成目标标签（推理型任务附 rationale），5% 人工抽查做拒绝采样；②训练：7-13B 学生模型在 8x H100 上微调约一周，PII 先经 NER 脱敏替换为类别 token；③评估：独立策划的 golden set（专家多数投票标注、与训练集隔离、季度重标追踪漂移）作为硬门，复合指标回归超阈值即阻断；④上线：影子流量对比（delta 分类器标记分歧供人审）→ 5%→20%→50%→90% 金丝雀放量，每档挂自动回滚门（延迟 p95、用户点赞率、护栏触发率）；⑤长期：永久保留 ~10% 流量给教师持续收集新 trace，支撑 4-6 个月的再蒸馏节律。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "直接用教师模型批量生成合成指令数据集，训练完成后一次性把 100% 流量切到学生模型，因为合成数据规模越大学生越接近教师，且全量切换能最快回收成本、简化线上架构，人工评测可以等上线后再补，即便初期质量波动也远小于节省的算力开支",
+     "分层采样生产 trace → 教师标注（推理型任务带 rationale）→ 5% 人工抽查拒绝采样 → PII 脱敏后微调学生 → 在与训练集严格隔离的 golden set 上过质量门 → 影子流量对比 → 5%/20%/50%/90% 金丝雀放量并挂自动回滚 → 永久保留 10% 流量给教师持续收集 trace 支撑下一轮再蒸馏",
+     "跳过影子阶段直接 50% 放量以尽快回收成本，出问题靠人工发现后手动回滚，因为影子流量只是重复计算、不带来任何业务收益，早放量才是工程效率优先的做法，且回滚脚本准备好后风险完全可控，没有必要在验证阶段浪费双倍推理资源去跑两份模型",
+     "eval set 从训练集中随机抽样划出即可，无需单独策划和专家标注，因为训练集本身就能代表真实分布，再从其中取样评测是最自然也最省力的质量保障方式，单独建 golden set 属于过度工程"
+    ],
+    "answer": [
+     1
+    ],
+    "misconceptionMap": [
+     0,
+     null,
+     1,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：B。\n\n要点：①数据段的关键是代表性与洁净度：分层采样保证稀有任务类目有最低覆盖（否则学生会灾难性遗忘它们）；拒绝采样拦截教师幻觉进入训练分布。②合规内嵌：PII 用 NER 模型脱敏成 [EMAIL]/[PERSON_NAME] 类别 token，让学生学结构模式而非记忆身份，脱敏器自身要有 ≥98% precision / ≥95% recall 的评测。③评估段的铁律是隔离：golden set 独立策划、三名专家多数投票、永不参与训练采样，每季度重标 200 例追踪漂移；它是放行的唯一质量门（如复合回归 <2 点）。④上线段的保守性是特性不是浪费：影子期用 delta 分类器全量比对师生输出差异；金丝雀每档都挂三类自动回滚门（p95 延迟、用户满意度、护栏触发率）并按客户层/语言/任务类目做分段监控回滚——保守 ramp 曾抓住 eval 集漏掉的真实退化。⑤10% 常驻教师流量不是浪费而是再蒸馏的数据命脉。A 合成数据+一步到位踩满所有已知坑；C 省下的影子期会在真实事故里加倍还回去；D eval 泄漏进训练集会让质量门形同虚设。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「①数据：6 个月生产 trace 按任务类目分层采样（稀有类目重平衡保底），教师生成目标标签（推理型任务附 rationale），5% 人工抽查做拒绝采样」",
+   "reasoningGoal": "先识别场景给出的约束条件；据此确认「分层采样生产 trace → 教师标注（推理型任务带…」成立；并排除「直接用教师模型批量生成合成指令数据集」「跳过影子阶段直接 50% 放量以尽快回收成本」等不成立描述。"
+  },
+  "cognitiveTask": "design",
+  "misconceptions": [
+   "以为可以直接用教师批量生成合成数据、训完一次性切 100% 流量，人工评测上线后补；缺少真实流量数据与灰度会让学生模型的缺陷直接暴露给全部用户",
+   "以为应跳过影子阶段直接 50% 放量、出问题人工发现后回滚；没有影子对比就无法量化质量落差，回滚本身也会造成可观的线上损失",
+   "以为 eval set 从训练集随机抽样划出即可、无需专家标注；训练分布内的留出集测不出真实流量的分布偏移，golden set 是必需的"
+  ]
+ },
+ {
+  "file": "transformer.json",
+  "id": "long-context-attn-01",
+  "category": "transformer",
+  "topic": "self-attention",
+  "subtopic": "long-context-bottleneck",
+  "tags": [
+   "long-context",
+   "flash-attention",
+   "oom",
+   "memory-bottleneck"
+  ],
+  "difficulty": "hard",
+  "angle": "calculation",
+  "question": "将 Standard Full Self-Attention 应用于超长文本处理（如 N=128,000）时需要评估资源瓶颈。设 N 为序列长度，D 为隐藏维度（D≪N），Batch Size=1，不使用 KV Cache。下列关于资源消耗的计算与判断哪些是正确的？（多选）",
+  "explanation": "A 正确：QK^T 时间 O(N²·D) 随 N 二次方增长。B 正确：N=128K 时单头 FP16 注意力矩阵占 128000²×2 bytes ≈ 30+ GB 极易 OOM。D 正确：FlashAttention 通过 Tile 划分在 SRAM 中分块计算将 HBM 中间矩阵从 O(N²) 降至 O(N)。C 错误：N≫D 时 Attention 层显存远超 FFN 层。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "计算注意力得分矩阵 QK^T 的时间复杂度为 O(N² · D)，随序列长度 N 呈二次方增长",
+     "存储完整注意力权重矩阵的空间复杂度为 O(N²)，在 N=128k 时单头仅注意力权重的 FP16 显存占用就高达数十 GB 极易触发 OOM",
+     "由于 QK^T 的瓶颈主要源自序列长度 N，在 N≫D 的场景下 Feed-Forward Network 层的显存占用会显著超过 Self-Attention 层",
+     "FlashAttention 等算子融合技术的核心思路是利用 Tile 划分在 GPU SRAM 中分块计算 Softmax，将 HBM 的中间矩阵显存占用从 O(N²) 降低至 O(N)"
+    ],
+    "answer": [
+     0,
+     1,
+     3
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     0,
+     null
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案 A,B,D。N=128K 单头 FP16 ≈32GB；FlashAttention 将 HBM 从 O(N²) 降至 O(N)。C 错误 N≫D 时 Attention 远超 FFN。"
+   }
+  },
+  "assessment": {
+   "target": "能估算 N=128K 超长序列下注意力的时间与显存瓶颈，并说明 FlashAttention 的缓解思路",
+   "reasoningGoal": "先确认 QK^T 的 O(N²·D) 随 N 二次方增长；再估算 N=128K 时单头 FP16 注意力矩阵约 128000²×2 bytes ≈ 30+ GB，极易 OOM；并说明 FlashAttention 通过 Tile 划分在 SRAM 分块计算 Softmax、把 HBM 中间矩阵从 O(N²) 降至 O(N)，排除「N≫D 时 FFN 显存显著超过 Self-Attention」。"
+  },
+  "cognitiveTask": "infer",
+  "misconceptions": [
+   "以为 N≫D 时 FFN 的显存占用会显著超过 Self-Attention；FFN 激活随 N 线性增长，自注意力的 N×N 分数矩阵随 N 二次增长，超长序列下注意力才是瓶颈"
+  ]
+ }
+]

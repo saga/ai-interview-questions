@@ -1,0 +1,817 @@
+[
+ {
+  "file": "agent-fundamentals.json",
+  "id": "agent-chain-01",
+  "category": "agent-fundamentals",
+  "topic": "agent-loop",
+  "tags": [
+   "compounding-error",
+   "reliability",
+   "scaffolding",
+   "guardrails"
+  ],
+  "difficulty": "hard",
+  "angle": "mechanism",
+  "question": "在一个基于大语言模型（LLM）的自主 Agent 系统中，某个复杂任务被拆解为连续执行的 20 个依赖前一步输出的决策步骤。假设模型在每一步做出正确决策的概率固定为 95%。下列关于该系统可靠性及工程应对策略的说法中，正确的有哪些？（多选）",
+  "explanation": "0.95^20≈35.8%仅在独立、无纠错的串联假设下成立：指数衰减、高单步≠长链稳定、合并Prompt扩窗不治传递、需确定性骨架+校验截断。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "在无外部干预的情况下，该系统顺利完成整个任务且不发生任何错误的总体概率约为 35.8%（即 0.95^20）",
+     "随着调用链条变长，在每步独立、无纠错恢复的串联假设下，系统的整体可靠性呈指数级衰减，单步的高准确率并不等同于长流程的稳定性",
+     "解决链式衰减的最佳方案是将 20 步的提示词合并为一次模型调用并无限扩大上下文窗口，从而彻底消除步骤间的传递误差",
+     "在工程实践中，可以通过引入确定性代码骨架（Deterministic Scaffolding）、中间状态校验与 Guardrails 来截断链式误差传递"
+    ],
+    "answer": [
+     0,
+     1,
+     3
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     0,
+     null
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：A、B、D。\n\n- A：独立、无纠错串联假设下连乘 0.95^20≈35.8%。\n- B：该假设下长链可靠性指数级衰减。\n- D：确定性骨架+中间校验截断传递。\n- C 错误：单次大Prompt无法消除依赖误差，且无限上下文不现实，校验仍需。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「0.95^20≈35.8%仅在独立、无纠错的串联假设下成立：指数衰减、高单步≠长链稳定、合并Prompt扩窗不治传递、需确定性骨架+校验截断」",
+   "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在无外部干预的情况下」「随着调用链条变长」等 3 项成立；并排除「解决链式衰减的最佳方案是将 20 步的提示词合并为一…」等不成立描述。"
+  },
+  "cognitiveTask": "explain",
+  "misconceptions": [
+   "认为把 20 步合并成一次调用、无限扩上下文窗口就能消除步骤间传递误差"
+  ]
+ },
+ {
+  "file": "ai-architecture.json",
+  "id": "ai-eng-038",
+  "category": "ai-architecture",
+  "topic": "model-selection",
+  "tags": [
+   "cascading",
+   "routing",
+   "slm",
+   "cost-tiering"
+  ],
+  "difficulty": "hard",
+  "angle": "system-design",
+  "question": "你要为一个日均百万级请求的客服系统设计模型分层方案。请给出完整的级联（Cascade）/路由架构设计，包括分层原则、路由决策机制与兜底策略。",
+  "explanation": "分层原则：简单任务（分类、抽取、模板化回复）走小模型/廉价档，复杂推理与高风险操作升级到旗舰档。路由机制：轻量分类器（意图+复杂度+风险）打分分档；置信度门控——低置信自动升级重试。配套：每档独立评测基线、fallback 到下一档的降级链、按档位统计成本与质量指标。目标：70% 以上流量被最低档消化，质量回归 <5%。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "旗舰处理简单请求边际成本低，长尾质量兜底价值高；统一旗舰可省掉路由系统的建设与运维。",
+     "小模型加验证器做重试网关，质量可逼近旗舰；验证成本远低于旗舰差价，网关模式最经济。",
+     "轻量分类器按意图/复杂度/风险分档：简单档吃大多数流量，中档承接多轮推理，旗舰只留高难高风险；配低置信升级与降级链。",
+     "字数与复杂度相关性 0.7 以上已有多项研究，表层路由性价比最高；语义分类器边际收益低，可后补。"
+    ],
+    "answer": [
+     2
+    ],
+    "misconceptionMap": [
+     0,
+     1,
+     null,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：C。\n\n要点：①分层依据是\"任务难度×风险等级\"而非字数：分类/路由/简单抽取/格式转换这类模式化任务 SLM 即可胜任，占生产流量的大头；多步推理、工具编排、涉及资金/合规的操作升级中高端或旗舰。②路由器设计：轻量嵌入+分类器（成本须远低于路由决策节省的费用），输出档位与置信度；置信度低于阈值或首轮验证失败时自动升级重试——用户感知的是旗舰的质量下限、便宜档的平均成本。③治理：每一档维护独立评测集与质量基线，防止\"悄悄降档\"；配置化降级链应对限流与故障；报表按\"每解决任务成本×各档质量\"呈现。A 让 80% 可被廉价消化的流量烧旗舰钱；B 把复杂任务交给注定失败的模型；D 长度≠难度，一句话的反欺诈风控可能比千字闲聊更需要强模型。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「分层原则：简单任务（分类、抽取、模板化回复）走小模型/廉价档，复杂推理与高风险操作升级到旗舰档」",
+   "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「轻量分类器按意图/复杂度/风险分档：简单档吃大多数流…」成立；并排除「旗舰处理简单请求边际成本低」「小模型加验证器做重试网关」等不成立描述。"
+  },
+  "cognitiveTask": "design",
+  "misconceptions": [
+   "以为旗舰跑简单请求成本可忽略，忽略了百万级请求下简单请求才是主体，统一旗舰会把单价放大成总成本",
+   "以为验证器能可靠判定小模型输出的好坏，忽略了验证本身需要金标准，开放式客服场景里验证器难以构造",
+   "以为字数与复杂度的高相关性足以支撑表层路由，忽略了相关性不等于可分流，长尾上会制造大量错路由"
+  ]
+ },
+ {
+  "file": "deep-learning.json",
+  "id": "code-02",
+  "category": "deep-learning",
+  "topic": "gradient-descent",
+  "tags": [
+   "gradient-descent",
+   "linear-regression",
+   "training-loop"
+  ],
+  "difficulty": "hard",
+  "angle": "calculation",
+  "question": "不用任何机器学习框架，用纯 Python/numpy 实现一元线性回归的批量梯度下降：给定 x、y 数组与学习率 lr、迭代次数 iters，返回拟合的 (w, b) 并尽量简洁。",
+  "explanation": "考察梯度下降的手写实现：批量更新 w = w - lr * gradient，其中 gradient = (1/n) * Σ(2x(wx-y))。需注意学习率过大导致发散、迭代次数不足导致欠拟合。这是面试中检验对优化算法底层理解的经典题。",
+  "formats": {
+   "open": {
+    "referenceAnswer": "import numpy as np\ndef linear_fit(x, y, lr=0.01, iters=1000):\n    x, y = np.asarray(x), np.asarray(y)\n    n = len(x); w, b = 0.0, 0.0\n    for _ in range(iters):\n        yhat = w * x + b\n        dw = (2/n) * np.sum((yhat - y) * x)\n        db = (2/n) * np.sum(yhat - y)\n        w -= lr * dw; b -= lr * db\n    return w, b\n关键：MSE 对 w、b 的梯度推导正确，并用向量化更新。",
+    "language": "python"
+   },
+   "choice": {
+    "type": "single",
+    "options": [
+     "梯度应取 dw=Σ(ŷ−y)/x、db=n·Σ(ŷ−y)，因为损失采用的是未除以样本数的平方误差形式，且可直接用标量逐元素累加更新，不必引入任何向量化计算即可完成拟合",
+     "正确做法是每轮随机抽取单个样本计算梯度并据此更新，因为批量计算反而会破坏收敛性，在线学习场景下应完全禁用批处理以保稳定",
+     "实现时应在迭代中逐步放大学习率，并把偏置 b 固定为样本均值不再参与更新，以此保证每一步都朝最优解单调逼近",
+     "关键在于推导 MSE 对 w、b 的梯度 dw=(2/n)Σ(ŷ−y)x、db=(2/n)Σ(ŷ−y)，并用向量化方式执行参数更新迭代"
+    ],
+    "answer": [
+     3
+    ],
+    "misconceptionMap": [
+     0,
+     1,
+     2,
+     null
+    ]
+   }
+  },
+  "assessment": {
+   "target": "能判断「需注意学习率过大导致发散、迭代次数不足导致欠拟合」",
+   "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「关键在于推导 MSE 对 w、b 的梯度 dw=(2…」成立；并排除「梯度应取 dw=Σ(ŷ−y)/x、db=n·Σ(ŷ−…」「正确做法是每轮随机抽取单个样本计算梯度并据此更新」等不成立描述。"
+  },
+  "cognitiveTask": "infer",
+  "misconceptions": [
+   "以为损失未除以样本数就可以把梯度写成除以 x 与乘以 n，忽略了 dw 的正确形式是 Σ(ŷ−y)·x/m，除以 x 既量纲错误也无法收敛",
+   "以为批量计算会破坏收敛性，忽略了题目明确要求批量梯度下降，单样本更新是 SGD 而非批量",
+   "以为逐步放大学习率能单调逼近最优，忽略了步长增大会直接发散；把 b 固定为均值也与拟合截距矛盾"
+  ]
+ },
+ {
+  "file": "hf-inference-optimization.json",
+  "id": "specdec-03",
+  "category": "inference",
+  "topic": "inference-optimization",
+  "tags": [
+   "speculative-decoding",
+   "when-it-helps",
+   "offload"
+  ],
+  "difficulty": "medium",
+  "angle": "scenario",
+  "question": "在哪些情形下，投机解码最可能带来明显的推理加速？",
+  "explanation": "当草稿模型比目标小一个数量级以上、任务偏输入驱动（转录/翻译/摘要等事实生成）、同架构仅规模更小、且采样温度接近 0 时接受率高；当目标模型需内存卸载（offload）时加速最显著，可达约 10x。草稿差且大反而无益。",
+  "source": {
+   "materialId": "hf-blog-assisted-generation"
+  },
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "草稿模型比目标小一个数量级以上，且任务偏输入驱动（转录、翻译、摘要）",
+     "目标模型放不下 GPU、需靠内存卸载时，加速比可达约 10x",
+     "草稿与目标同架构仅规模更小，且采样温度接近 0",
+     "草稿模型质量很差但很大，能保证每次生成很长的候选"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0
+    ]
+   },
+   "open": {
+    "referenceAnswer": "有利：草稿小≥10x、输入驱动任务、同架构小模型、低温；offload 时可达约 10x。差且大的草稿无益。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「当目标模型需内存卸载（offload）时加速最显著，可达约 10x」",
+   "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「草稿模型比目标小一个数量级以上」「目标模型放不下 GPU、需靠内存卸载时」等 3 项成立；并排除「草稿模型质量很差但很大」等不成立描述。"
+  },
+  "cognitiveTask": "predict",
+  "misconceptions": [
+   "以为草稿模型质量很差但很大、能保证每次生成很长的候选也会加速，质量差会大幅拉低接受率，而大草稿的前向开销会抵消收益"
+  ]
+ },
+ {
+  "file": "hf-quantization.json",
+  "id": "quant-qah-02",
+  "category": "model-performance",
+  "topic": "quantization",
+  "tags": [
+   "qat",
+   "qah",
+   "quantization-aware-training",
+   "stability"
+  ],
+  "difficulty": "hard",
+  "angle": "mechanism",
+  "question": "Quantization-Aware Training（QAT）与本文的 Quantization-Aware Healing（QAH）在做法与特性上有何不同？",
+  "explanation": "QAT 在前向中插入 fake-quantization 并用任务损失微调，使权重适应低精度；但其成本高且不稳定——9B 模型 MXFP4 实验中约 step 700 达峰后到 step 1200 暴跌近 19 个百分点。QAH 以压缩前的原始全精度模型为冻结教师，用 KL 散度仅依赖教师输出分布做跨架构蒸馏，达到峰值比 QAT 快约 7 倍且峰值后稳定（±2 点内）。",
+  "source": {
+   "materialId": "hf-blog-quantization-aware-healing"
+  },
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "QAT 在前向插入 fake-quantization 并用任务损失微调，使权重适应低精度",
+     "QAH 以压缩前原始全精度模型为冻结教师，用 KL 散度做跨架构蒸馏",
+     "QAT 在 9B 模型 MXFP4 实验约 step700 达峰后到 step1200 暴跌近 19 点，不稳",
+     "QAH 在整体耗时上比 QAT 慢约 7 倍，但峰值精度反而更高"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0
+    ]
+   },
+   "open": {
+    "referenceAnswer": "QAT：fake-quant+任务损失微调，贵且不稳(9B 实验 step700 峰后暴跌~19pt)。QAH：原始模型为冻结教师、KL 跨架构蒸馏，快~7x 且稳定。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「QAT 在前向中插入 fake-quantization 并用任务损失微调，使权重适应低精度」",
+   "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「QAT 在前向插入 fake-quantizatio…」「QAH 以压缩前原始全精度模型为冻结教师」等 3 项成立；并排除「QAH 在整体耗时上比 QAT 慢约 7 倍」等不成立描述。"
+  },
+  "cognitiveTask": "explain",
+  "misconceptions": [
+   "以为 QAH 比 QAT 慢约 7 倍但峰值精度更高，实际上 QAH 的定位是用远低于 QAT 的开销恢复大部分精度，是以更快而非更慢取胜，峰值精度通常也难以超过 QAT"
+  ]
+ },
+ {
+  "file": "hf-quantization.json",
+  "id": "quant-qah-06",
+  "category": "model-performance",
+  "topic": "quantization",
+  "tags": [
+   "compute-savings",
+   "mxfp4",
+   "4-bit"
+  ],
+  "difficulty": "hard",
+  "angle": "calculation",
+  "question": "把 120B 模型结构压缩到 60B，再以 MXFP4 量化部署，相比原 bf16 权重族，每 token 计算量约下降几倍？",
+  "explanation": "参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省，合计约 8 倍；权重内存因 4-bit 约为同尺寸 bf16 学生的 1/4。量化确实改变计算量（低精度运算更省），并非仅影响速度而计算量不变。",
+  "source": {
+   "materialId": "hf-blog-quantization-aware-healing"
+  },
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "约 8 倍：参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省",
+     "约 1 倍，因为量化这一操作本身并不改变每 token 的计算量",
+     "约 2 倍，因为模型全部计算收益仅来自参数减半这一项因素而已",
+     "约 32 倍，因为 4-bit 的精度只有 bf16 的四分之一"
+    ],
+    "answer": [
+     0
+    ],
+    "misconceptionMap": [
+     null,
+     0,
+     1,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "约 8 倍：参数减半(~2x) 叠加 4-bit 相对 bf16 的计算节省，合计~8x；权重内存~1/4。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省，合计约 8 倍」",
+   "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「约 8 倍：参数减半使每 token 计算约减半」成立；并排除「约 1 倍」「约 2 倍」等不成立描述。"
+  },
+  "cognitiveTask": "infer",
+  "misconceptions": [
+   "以为量化本身不改变每 token 计算量、约 1 倍，4-bit 权重同样显著降低访存与算力开销",
+   "以为收益仅来自参数减半、约 2 倍，忽略了 16-bit 到 4-bit 的量化又带来约 4 倍，两者相乘约 8 倍",
+   "以为 4-bit 精度是 bf16 的四分之一就下降 32 倍，混淆了位宽比例与位宽所对应数值范围的幂次关系"
+  ]
+ },
+ {
+  "file": "hf-vector-db.json",
+  "id": "vectordb-02",
+  "category": "search",
+  "topic": "vector-db",
+  "tags": [
+   "multi-vector",
+   "index-size",
+   "plaid",
+   "token-pooling"
+  ],
+  "difficulty": "hard",
+  "angle": "tradeoff",
+  "question": "实验表明多向量索引体积可达同语料单向量的数十倍（如 4874 段 NQ：MiniLM 384d 约 7.5MB，LateOn 多向量约 311MB）。下列哪些是有效的缓解手段？",
+  "explanation": "缓解手段：用 PLAID 类量化把多向量索引压缩到与稠密向量同量级（如 92MB）；对 bi-encoder 召回的 top-k 做多向量重排，避免全库建多向量索引；token pooling 把向量数减半而性能几乎不降。把维度从 128 提升到 1024 会增大存储，反而更糟。",
+  "source": {
+   "materialId": "hf-blog-multi-vector-encoder"
+  },
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "用 PLAID 类量化把多向量索引压缩到与稠密向量同量级（如 92MB）",
+     "对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，避免全库建多向量索引",
+     "token pooling 把向量数减半，通常仅损失极少的检索性能",
+     "将维度从 128 提升到 1024，以换取更小的索引体积"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0
+    ]
+   },
+   "open": {
+    "referenceAnswer": "有效缓解：PLAID 量化到同量级(92MB)、rerank-only 不建全库索引、token pooling 减半。升维 1024 反而增大存储。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「对 bi-encoder 召回的 top-k 做多向量重排，避免全库建多向量索引」",
+   "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「用 PLAID 类量化把多向量索引压缩到与稠密向量同…」「对 bi-encoder 召回的 top-k 做多向…」等 3 项成立；并排除「将维度从 128 提升到 1024」等不成立描述。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为把维度从 128 提升到 1024 能换取更小的索引体积，维度升高只会让索引更大；有效的缓解手段是降维、标量/残差量化与候选剪枝"
+  ]
+ },
+ {
+  "file": "hf-vector-db.json",
+  "id": "vectordb-04",
+  "category": "search",
+  "topic": "vector-db",
+  "tags": [
+   "multi-vector",
+   "latency",
+   "plaid",
+   "exhaustive"
+  ],
+  "difficulty": "hard",
+  "angle": "tradeoff",
+  "question": "关于多向量检索的查询延迟，下列哪些描述符合其权衡？",
+  "explanation": "穷举全库多向量（如 60 万向量）在 GPU 上单查询约百毫秒级，比单向量全扫慢；用 PLAID/fast-plaid 等近似索引可降到约 10ms 级；只对召回的 top-k 做多向量重排时延迟几乎可忽略。多向量『穷举』比单向量 ANN 更慢，并非永远更快。",
+  "source": {
+   "materialId": "hf-blog-multi-vector-encoder"
+  },
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "穷举全库多向量在 GPU 上单查询约百毫秒级，比单向量全扫更慢",
+     "用 PLAID/fast-plaid 等近似索引可把多向量查询降到约 10ms 级",
+     "只对召回的 top-k 做多向量重排时，延迟几乎可忽略",
+     "多向量查询永远比单向量 ANN 快一个数量级，因为它无需扫描"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0
+    ]
+   },
+   "open": {
+    "referenceAnswer": "穷举多向量~百毫秒(比单向量全扫慢)；PLAID~10ms；rerank-only 延迟可忽略。多向量穷举并不永远更快。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「用 PLAID/fast-plaid 等近似索引可降到约 10ms 级」",
+   "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「穷举全库多向量在 GPU 上单查询约百毫秒级」「用 PLAID/fast-plaid 等近似索引可把…」等 3 项成立；并排除「多向量查询永远比单向量 ANN 快一个数量级」等不成立描述。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为多向量查询永远比单向量 ANN 快一个数量级、因为它无需扫描，多向量要扫描更多向量且算分更贵，通常比单向量更慢"
+  ]
+ },
+ {
+  "file": "inference.json",
+  "id": "ai-inference-005",
+  "category": "inference",
+  "topic": "quantization",
+  "tags": [
+   "inference",
+   "quantization",
+   "trade-off"
+  ],
+  "difficulty": "medium",
+  "angle": "scenario",
+  "question": "一个 70B 模型无法部署到现有 GPU 集群。你会考虑哪些量化方案？量化可能带来哪些质量和性能上的损失？",
+  "explanation": "权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径；省显存常带来吞吐红利，但 INT4 有质量退化且长尾任务敏感，须用业务评测集实测权衡。",
+  "formats": {
+   "open": {
+    "referenceAnswer": "方案按侵入性排序：权重-only 量化（GPTQ/AWQ，INT8/INT4）把显存降到约 1/2 到 1/4，70B 可进单机多卡甚至更少卡，推理时反量化计算，兼容性最好；FP8 前向量化（部分硬件原生支持）几乎无损且快；GGUF 类格式适合端侧。还可以配合 GQA 已有的 KV Cache 量化进一步省显存。质量风险：INT4 下困惑度上升、精细语义区分和数学/代码能力可能退化，长尾任务受损比平均指标明显；个别层对量化敏感需要混合精度保留。性能收益：显存省 → 可更大 batch/更长 context，带宽压力小反而常提速；但反量化开销和 kernel 效率可能吃掉部分收益，需实测吞吐与延迟而非只看理论。决策应基于目标任务评测集对比量化前后的质量-成本曲线。"
+   },
+   "choice": {
+    "type": "single",
+    "options": [
+     "INT4 以下的精度损失可通过调高采样温度补偿；温度升高可恢复被量化抹平的分布细节，无需跑评测集。",
+     "训练后量化必须配合蒸馏微调才能收敛，直接 PTQ 上线必然乱码；窗口期内应先租卡跑 QAT，精度才有保证。",
+     "可考虑权重-only 量化或 FP8：显存降到 1/2 至 1/4；INT4 长尾可能退化，须先实测。",
+     "量化反量化的额外计算超过浮点本身，INT4 每 token 都要全精度还原，单卡吞吐掉到一半以下；省显存以延迟翻倍为代价。"
+    ],
+    "answer": [
+     2
+    ],
+    "question": "一家创业公司微调了一个 70B 模型准备上线客服质检，但现有集群单卡显存 48G，BF16 部署需要约 140G 显存放不下；上线窗口只剩三周，没有时间与算力做完整再训练。质量红线是内部评测集得分下降不得超过 2 个百分点，且未来半年流量还会增长。以下方案评估哪个是正确的？",
+    "misconceptionMap": [
+     0,
+     1,
+     null,
+     2
+    ]
+   }
+  },
+  "assessment": {
+   "target": "能判断「权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径」",
+   "reasoningGoal": "先识别场景给出的约束条件；据此确认「可考虑权重-only 量化或 FP8：显存降到 1/…」成立；并排除「INT4 以下的精度损失可通过调高采样温度补偿」「训练后量化必须配合蒸馏微调才能收敛」等不成立描述。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为 INT4 的精度损失可以通过调高采样温度补偿、无需跑评测集，温度无法恢复被量化抹掉的能力，必须做实测回归",
+   "以为 PTQ 必须配合蒸馏微调才能收敛、直接上线必然乱码，主流 PTQ 方案（GPTQ/AWQ）用校准集即可，通常无需训练",
+   "以为量化反量化使每 token 都要全精度还原、单卡吞吐掉到一半以下，反量化开销有限，低比特通常带来净的吞吐与显存收益"
+  ]
+ },
+ {
+  "file": "inference.json",
+  "id": "mxfp4-vram-savings-calc",
+  "category": "inference",
+  "topic": "quantization",
+  "subtopic": "mxfp4-vram-savings",
+  "tags": [
+   "mxfp4",
+   "vram-savings",
+   "memory-footprint",
+   "calculation"
+  ],
+  "difficulty": "medium",
+  "angle": "calculation",
+  "question": "某大语言模型拥有 60B 参数。若将其从 BF16 格式（每个参数 2 字节）转换为 MXFP4 格式（约 0.53125 字节/参数含 Scale 开销）在仅考虑权重显存的情况下节省比例约为多少？",
+  "explanation": "正确答案 C 约 73.4%。BF16 权重总显存=60×2=120GB（无法单卡装下）；MXFP4 总显存=60×0.53125≈31.9GB；节省比例=(120-31.875)/120≈73.4%。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "约 25%",
+     "约 50%",
+     "约 73.4%",
+     "约 90%"
+    ],
+    "answer": [
+     2
+    ],
+    "misconceptionMap": [
+     0,
+     1,
+     null,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案 C。(120-31.875)/120≈73.4%。"
+   }
+  },
+  "assessment": {
+   "target": "能按每参数字节数算出 BF16 转 MXFP4 后权重显存的节省比例约为 73.4%",
+   "reasoningGoal": "先算 BF16 权重显存 60×2=120GB；再算 MXFP4 权重显存 60×0.53125≈31.9GB（含 Scale 开销）；再用 (120−31.875)/120 得出约 73.4%，并排除 25%、50%、90% 等数量级错误选项。"
+  },
+  "cognitiveTask": "infer",
+  "misconceptions": [
+   "以为节省约 25%，把 2 字节到 0.53125 字节的比例关系算反了",
+   "以为节省约 50%，实际上 0.53125 / 2 ≈ 26.6%，节省约 73%",
+   "以为节省约 90%，那对应约 0.2 字节/参数，与 MXFP4（含 scale 开销）的实际占用不符"
+  ]
+ },
+ {
+  "file": "inference.json",
+  "id": "inference-vram-budget-calc-01",
+  "category": "inference",
+  "topic": "inference-capacity",
+  "tags": [
+   "vram",
+   "budget",
+   "q4-km",
+   "num-ctx",
+   "oom",
+   "quantitative"
+  ],
+  "difficulty": "medium",
+  "angle": "calculation",
+  "question": "某架构师计划在单张 16GB VRAM 的消费级 GPU 上部署 Qwen2.5-Coder-14B（48 层、8 个 KV 头、head_dim 128），采用 Q4_K_M 量化（约 0.55 Bytes/parameter）。若配置 num_ctx = 32768，KV Cache 以 FP16 存储（每元素 2 字节），推理引擎需预留 1.5GB 作为 CUDA Context 与临时 Workspace。关于显存预算评估，下列哪些判断是正确的？",
+  "explanation": "逐项算。静态权重 14×10⁹ × 0.55 B ≈ 7.7 GB，且只由参数量与量化位宽决定，与 batch size、上下文长度无关。KV Cache 才是随上下文线性增长的那一项：Qwen2.5-Coder-14B 为 48 层、8 个 KV 头、head_dim 128，FP16 下每 token 为 2×48×8×128×2 = 196,608 B ≈ 0.1875 MiB，因此 32K 约 6.4 GB、64K 约 12.9 GB。于是 32K 总开销 = 7.7 + 6.4 + 1.5 ≈ 15.6 GB，虽未超 16 GB 但余量不足 0.5 GB，实际还要考虑显存碎片与并发，基本无法再叠第二路会话；扩到 64K 则总开销约 22.1 GB，必然 OOM 或换页。常见错误是凭「KV Cache 只有几个 GB」的印象估算，忽略了层数与 KV 头数的乘积。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "32K 上下文下总开销约 15.6GB（权重 7.7 + KV 6.4 + 运行时 1.5），已逼近 16GB 上限，余量不足 0.5GB，不宜再叠加并发",
+     "KV Cache 是唯一随上下文长度线性增长的分项：该模型每 token 约 0.1875 MiB，32K 约 6.4GB、64K 约 12.9GB",
+     "32K 上下文下 KV Cache 约 3.5GB，总开销约 12.7GB，在 16GB 卡上余量充裕，可放心把上下文扩到 64K",
+     "把上下文从 32K 扩到 64K 只会让总开销增加约 1.7GB（约 14.4GB），仍在 16GB 以内可正常运行"
+    ],
+    "answer": [
+     0,
+     1
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     0,
+     1
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：A、B、C、D。\n- A：14e9×0.55B≈7.7GB。\n- B：7.7+3.5+1.5=12.7GB≤16GB，安全。\n- C：64K 时 7.7+7.0+1.5=16.2GB>16GB，溢出。\n- D：静态权重只由参数量与量化精度决定，与 seq_len/Batch 无关。"
+   }
+  },
+  "misconceptions": [
+   "以为 14B 模型的 32K FP16 KV Cache 只有 3.5GB 量级",
+   "以为上下文翻倍时 KV Cache 只带来很小的增量"
+  ],
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「于是 32K 总开销 = 7.7 + 6.4 + 1.5 ≈ 15.6 GB，虽未超 16 GB 但余量不足 0.5 GB，实际还要考虑显存碎片与并发，基本无法再叠第二路会话」",
+   "reasoningGoal": "先确定计算所依赖的量与其关系；据此逐项确认「32K 上下文下总开销约 15.6GB（权重 7.7…」「KV Cache 是唯一随上下文长度线性增长的分项：…」等 2 项成立；并排除「32K 上下文下 KV Cache 约 3.5GB」「把上下文从 32K 扩到 64K 只会让总开销增加约…」等不成立描述。"
+  },
+  "cognitiveTask": "infer"
+ },
+ {
+  "file": "llm-architecture-advanced.json",
+  "id": "llm-arch-hybrid-recurrent-attention-01",
+  "category": "llm-architecture-advanced",
+  "topic": "hybrid-attention",
+  "subtopic": "混合 Recurrent-Attention 架构",
+  "tags": [
+   "hybrid-architecture",
+   "gated-deltanet",
+   "gqa",
+   "kv-cache",
+   "recurrent",
+   "mechanism"
+  ],
+  "difficulty": "hard",
+  "angle": "mechanism",
+  "question": "在现代超大语言模型设计中，常将线性循环层（如 Gated DeltaNet）与传统 Grouped-Query Attention (GQA) 按比例交替混合堆叠（例如 3:1），构成 Hybrid 架构。关于该设计在生产部署与性能上的取舍，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+  "explanation": "A 正确：Gated DeltaNet 等线性 Recurrent 层把历史压缩进固定大小状态矩阵，不保存 KV Cache；3:1 混合下只有 25% 的层存 KV，显存大幅下降。B 正确：线性 Recurrent 逐 Token 生成为 O(1)，周期性与 GQA 全局注意力兼顾生效率与长距离对齐。C 错误：为保证与 GQA 层的空间对齐及全局定位，Attention 层通常仍需 RoPE 等位置编码。D 正确：部署需同时优化 Linear Recurrent 与 GQA 两套算子与状态逻辑，工程复杂度更高。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "显著降低自回归生成阶段的 KV Cache 显存占用，因为线性循环层在推理时仅维护固定大小的隐状态向量",
+     "保持循环层 O(1) 的逐 Token 生成时间复杂度，同时利用周期性注意力层维持全局长距离上下文对齐能力",
+     "完全消除对位置编码（如 RoPE）的依赖，因为 DeltaNet 的状态更新公式天然具备绝对时间顺序的感知能力",
+     "相比纯 Transformer 架构，混合架构在系统实现与部署时需要同时管理两套不同的状态更新逻辑与算子优化"
+    ],
+    "answer": [
+     0,
+     1,
+     3
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     0,
+     null
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：A、B、D。\n- A：循环层不存 KV，仅 25% 注意力层存 KV，显存大降。\n- B：循环层 O(1) 生成 + 周期注意力保全局。\n- C 错：Attention 层仍需 RoPE。\n- D：双套算子/状态逻辑，部署更繁。"
+   }
+  },
+  "assessment": {
+   "target": "能说明线性循环层与 GQA 按比例混合架构在显存、时间复杂度与工程实现上的取舍",
+   "reasoningGoal": "先确认线性循环层把历史压缩进固定大小状态、推理时不保存 KV Cache，故只有少数层占 KV；再说明其 O(1) 逐 Token 生成与周期性 GQA 注意力共同兼顾生成效率与长距离对齐；并叠加需同时维护两套算子与状态逻辑的部署复杂度，排除「不再需要 RoPE 等位置编码」。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为混合架构完全消除了对 RoPE 等位置编码的依赖、因为 DeltaNet 的状态更新天然具备绝对时间顺序感知，保留的 GQA 层仍需位置编码，DeltaNet 提供的是衰减式记忆而非绝对位置信息"
+  ]
+ },
+ {
+  "file": "model-architecture.json",
+  "id": "llm-14",
+  "category": "model-architecture",
+  "topic": "hybrid-attention",
+  "tags": [
+   "swa",
+   "sliding-window-attention",
+   "long-context",
+   "hybrid-attention"
+  ],
+  "difficulty": "hard",
+  "angle": "tradeoff",
+  "question": "一个面向长上下文（131k token）的模型将约 75% 的 Transformer 层设为滑动窗口注意力（SWA），其余 25% 使用全局注意力的 GQA 层。相比所有层都用全局注意力，这种混合设计最直接的收益是什么？",
+  "explanation": "SWA 层只在固定窗口内计算注意力：复杂度从 O(n²) 降为 O(n·w)，且窗口外的旧 token KV 可直接淘汰，该层缓存上界固定为窗口大小 w 而非序列长度 n。少量全局层负责建立跨全序列的信息通路。代价是局部层无法一步看到窗口外信息，长程依赖依赖全局层中转。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "KV Cache 可大幅压缩，滑动窗口使历史被压缩进隐状态；显存墙基本解除，长度不再是问题。",
+     "大部分层只在固定窗口内注意力，旧 KV 可淘汰；少量全局层保留跨序列通路。",
+     "保留 25% 全局层即保留长程能力，窗口层负责局部；混合即全效，长程建模无损。",
+     "注意力相关参数量随全局层数等比下降，模型整体缩小到原来的四分之一左右，因为局部窗口显著削减了每层需要维护的状态规模"
+    ],
+    "answer": [
+     1
+    ],
+    "question": "团队要自训一个 131k 上下文的模型，有人提议模仿业内做法：75% 层用 SWA、25% 层保留全局 GQA，以压低长上下文成本。关于该设计的收益与代价，下列说法正确的是？",
+    "misconceptionMap": [
+     0,
+     null,
+     1,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案要点：SWA 层复杂度 O(n·w)、KV 缓存有界（只需保留窗口内 w 个 token）；全局层负责长距离信息通路；收益=计算+显存双降，代价=局部层不能直接看全史。\n\n解析：若窗口 w=1024、上下文 n=131k，SWA 层的注意力计算从 O(n²) 降到 O(n·w)，其 KV cache 上界固定为 O(w) 而非 O(n)——75% 的层的缓存不再随上下文线性增长，再乘上 GQA 的 KV 头缩减，两层优化相乘。少量全局层像\"信息高速公路\"，让深层网络仍能整合任意远处的信息（Gemma 等模型即此设计）。trade-off：token 无法在局部层内一步关注窗口外内容，长程推理质量依赖全局层的数量与分布；纯检索类超长程任务上可能弱于全全局注意力。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「SWA 层只在固定窗口内计算注意力：复杂度从 O(n²) 降为 O(n·w)，且窗口外的旧 token KV 可直接淘汰，该层缓存上界固定为窗口大小 w 而非序列长度 n」",
+   "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「大部分层只在固定窗口内注意力」成立；并排除「KV Cache 可大幅压缩」「保留 25% 全局层即保留长程能力」等不成立描述。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为滑动窗口把历史压缩进隐状态、KV cache 可大幅压缩，显存墙就此解除；SWA 只是限制注意力范围，窗口内 KV 仍要缓存，且全局层依然持有全量 KV",
+   "以为保留 25% 全局层就完整保住了长程能力、混合即全效且无损；窗口层看不到窗口外信息，长程依赖只能经由少数全局层承载，能力是有损折中而非等价",
+   "以为注意力参数量随全局层数等比下降、模型整体缩小到约四分之一；SWA 与全局注意力共享同样的投影权重，省的是 KV 与注意力计算，不是参数量"
+  ]
+ },
+ {
+  "file": "model-architecture.json",
+  "id": "gqa-kv-cache-calc",
+  "category": "model-architecture",
+  "topic": "kv-cache",
+  "subtopic": "gqa-kv-cache-memory-calc",
+  "tags": [
+   "gqa",
+   "kv-cache",
+   "memory-calculation",
+   "bfloat16",
+   "long-context"
+  ],
+  "difficulty": "hard",
+  "angle": "calculation",
+  "question": "某 30B 参数量的 Decoder-only Transformer 采用 GQA 架构：d_model=4096，L=64 层，H_q=32 Query 头，H_kv=8 KV 头，d_head=128，使用 bfloat16（每元素 2 字节）。当并发序列长度 N=131072（128K）时单个样本在整网中所需的 KV Cache 显存占用约为多少？",
+  "explanation": "正确答案 C 32GB。计算步骤：①每层每 Token KV = 2(K和V) × H_kv(8) × d_head(128) × 2(bytes) = 4096 bytes；②全网 L=64 层单 Token 总 KV = 64 × 4096 = 262144 bytes = 256 KB；③N=131072 时总显存 = 131072 × 256KB = 32GB。",
+  "formats": {
+   "choice": {
+    "type": "single",
+    "options": [
+     "8 GB",
+     "16 GB",
+     "32 GB",
+     "64 GB"
+    ],
+    "answer": [
+     2
+    ],
+    "misconceptionMap": [
+     0,
+     1,
+     null,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案 C 32GB。每层每Token KV=2×H_kv×d_head×bytes=4096B；全网L=64层=256KB/token；N=128K→32GB。"
+   }
+  },
+  "assessment": {
+   "target": "能判断「计算步骤：①每层每 Token KV = 2(K和V) × H_kv(8) × d_head(128) × 2(bytes) = 4096 bytes」",
+   "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「32 GB」成立；并排除「8 GB」「16 GB」等不成立描述。"
+  },
+  "cognitiveTask": "infer",
+  "misconceptions": [
+   "以为按 8 GB 估算就够，实际是又漏了 K/V 其中之一又按单字节存储；按题设参数（64 层 × 8 KV 头 × 128 × K/V 两份 × 2 字节 × 131072）应约 32 GiB",
+   "以为只缓存 K 或只缓存 V 即可得 16 GB；K 与 V 都要缓存，正确结果约为 16 GB 的两倍",
+   "以为按 FP32 每元素 4 字节估算得 64 GB；题设明确是 bfloat16 每元素 2 字节，应按 32 GiB 计算"
+  ]
+ },
+ {
+  "file": "rag.json",
+  "id": "ai-eng-047",
+  "category": "rag",
+  "topic": "rag-vs-finetuning",
+  "tags": [
+   "build-vs-buy",
+   "quick-screen",
+   "distill-or-not",
+   "decision-heuristics"
+  ],
+  "difficulty": "medium",
+  "angle": "scenario",
+  "question": "某产品同时面临三个诉求：①客服机器人要基于企业知识库回答事实问题且要求给出出处；②所有回复需遵循固定的 JSON 输出格式与服务话术风格；③日均 30 万次请求中 80% 集中在 4 类高度重复的任务模式上，旗舰模型月支出已达 $25K。三项诉求分别应该用 RAG、微调、蒸馏中的哪个（或组合）解决？",
+  "explanation": "①知识库问答 → RAG：知识频繁更新、需要引用溯源、RAG 天然提供 source attribution；②格式与风格一致化 → 微调（或强 System Prompt 起步，规模化后微调小模型固化行为）；③高重复高流量 → 蒸馏：满足 quick-screen 启发式（≥60% 流量集中于 ≤5 种任务模式 且 相关月支出 >$20K），payback 约 3 个月。三者不互斥：典型终态是 RAG 管事实、微调管行为、蒸馏管成本——甚至可以蒸馏一个\"已学会格式规范\"的学生再用 RAG 供给它事实。反指标：流量 <20 万/月、任务高度多样、教师快速迭代、质量红线 >99% 保真度时不要蒸馏。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "客服事实问答用 RAG：知识频繁更新且回答需附出处溯源，RAG 即时生效且天然带引用",
+     "固定 JSON 输出格式与服务话术靠微调固化，起步可先用 System Prompt 验证，规模化后再微调",
+     "80% 流量集中于 4 类重复任务且月支出 $25K，命中蒸馏 quick-screen 双条件，用蒸馏接管压成本；三者正交可叠加",
+     "三项诉求全部蒸馏一个万能学生模型解决，小模型掌握全部能力后可同时完成问答、格式与成本压缩",
+     "全部靠更强旗舰模型加长 System Prompt 解决，模型够强即记住知识、学会格式并压低成本，无需额外复杂度",
+     "用微调把知识库训进权重固化知识，用 RAG 提供格式模板，再堆 GPU 算力摊薄成本，上线后无需检索"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "question": "产品同时有知识问答、格式规范与高频重复流量三项诉求，应如何组合 RAG、微调与蒸馏？以下哪些说法正确？",
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0,
+     1,
+     2
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案：A、B、C。\n\n要点：①诉求①的知识库内容会增删改，微调把知识冻进权重既滞后又无法溯源，RAG 即时生效且天然带引用；注意权限过滤要在检索层做。②诉求②是典型的行为一致性问题：先用提示词工程验证需求稳定，规模化后微调固化格式与话风（1K+ 高质量样本即可起步）。③诉求③命中蒸馏的 quick-screen 双条件：流量集中度（80% in 4 类 ≥ 60% in 5 类）与支出规模（$25K > $20K），预期 payback ~3 个月。④强调组合性：三个机制作用在不同维度（RAG=事实供给、微调=行为塑形、蒸馏=成本工程），生产系统常常三者并存——例如把微调过的行为规范作为蒸馏任务的一部分训进学生，再给学生的上游接 RAG。⑤反向清单同样重要：低流量、任务发散、教师快速换代、>99% 保真度红线，任一命中就放弃蒸馏继续用教师。"
+   }
+  },
+  "assessment": {
+   "target": "能逐项判断下列主张是否成立，核心判断为「①知识库问答 → RAG：知识频繁更新、需要引用溯源、RAG 天然提供 source attribution」",
+   "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「客服事实问答用 RAG：知识频繁更新且回答需附出处溯…」「固定 JSON 输出格式与服务话术靠微调固化」等 3 项成立；并排除「三项诉求全部蒸馏一个万能学生模型解决」「全部靠更强旗舰模型加长 System Prompt …」等不成立描述。"
+  },
+  "cognitiveTask": "evaluate",
+  "misconceptions": [
+   "以为三个诉求可以全部靠蒸馏一个万能学生模型解决；知识时效、格式稳定与成本压缩三者机制不同，单一手段无法同时成立",
+   "以为全部靠更强旗舰模型加长 System Prompt 就能记住知识、学会格式并压低成本；长 prompt 不提供持久知识，也不降本",
+   "以为用微调把知识库训进权重、用 RAG 提供格式模板即可；知识与格式的适用手段恰好被对调，且微调知识无法溯源与及时更新"
+  ]
+ },
+ {
+  "file": "transformer.json",
+  "id": "rnn-to-tf-migration",
+  "category": "transformer",
+  "topic": "transformer",
+  "subtopic": "rnn-migration-tradeoff",
+  "tags": [
+   "rnn",
+   "transformer",
+   "parallelism",
+   "complexity",
+   "inference"
+  ],
+  "difficulty": "hard",
+  "angle": "comparison",
+  "question": "在评估将传统 RNN 替换为 Transformer 架构的工程方案时针对训练与推理场景的性能特征下列结论正确的是？（多选）",
+  "explanation": "A 正确：Transformer 借助 Teacher Forcing 可全序列并行训练摆脱 RNN 时间步递推。B 正确：推理阶段 Transformer Decoder 仍需逐 Token 自回归串行无法全序列一步并行。C 正确：O(N²) 注意力使长文本显存增长显著快于 RNN 的 O(N)。D 错误：Decoder-only 在推理延迟和吞吐上并不天然优于 Encoder-only——后者可一次编码源序列且无因果限制。",
+  "formats": {
+   "choice": {
+    "type": "multiple",
+    "options": [
+     "训练阶段 Transformer 的 Encoder 和 Decoder 借助 Teacher Forcing 均可并行处理整条序列摆脱了 RNN 的时间步递推依赖",
+     "在自回归推理阶段 Transformer Decoder 仍需单步串行生成下一个 token 无法做到全序列一步并行",
+     "Transformer 单层 Self-Attention 的时间与空间复杂度为 O(N²) 在长文本场景下显存占用增长显著快于 RNN 的 O(N)",
+     "移除 Recurrence 结构后 Transformer Decoder 在推理生成阶段的延迟和吞吐量表现天然优于 Encoder-only 模型"
+    ],
+    "answer": [
+     0,
+     1,
+     2
+    ],
+    "misconceptionMap": [
+     null,
+     null,
+     null,
+     0
+    ]
+   },
+   "open": {
+    "referenceAnswer": "正确答案 A,B,C。训练并行+推理串行+O(N²) 显存；D 错误不天然优于 Encoder-only。"
+   }
+  },
+  "assessment": {
+   "target": "能评估 RNN 迁移到 Transformer 在训练与推理阶段的真实性能特征",
+   "reasoningGoal": "先确认训练阶段 Encoder 与 Decoder 借助 Teacher Forcing 均可并行处理整条序列、摆脱时间步递推；再确认自回归推理阶段仍需逐 Token 串行生成；并确认 O(N²) 使长文本显存增长显著快于 RNN 的 O(N)，排除「Decoder 推理延迟与吞吐天然优于 Encoder-only」。"
+  },
+  "cognitiveTask": "compare",
+  "misconceptions": [
+   "以为去掉循环结构后 Transformer Decoder 的推理延迟与吞吐天然优于 Encoder-only 模型；自回归 Decoder 仍需逐步生成并维护 KV Cache，Encoder-only 一次前向即可完成，结论不成立"
+  ]
+ }
+]

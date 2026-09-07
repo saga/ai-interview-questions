@@ -1,6 +1,77 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-07 · DiT 5 题入库（选项质量返工 + topic 映射到现有节点）+ 测试白名单单源化
+
+- 入库 `src/data/questions/dit-2026-09.json`（canonical 3：`dit-cond-adaln-zero-can`→`transformer`×architecture、`dit-patch-scaling-can`→`vit-patch-embedding-sequence-length`×quantitative、`dit-decoder-arch-can`→`transformer`×mechanism）与 `src/data/variants/dit-2026-09.json`（变体 2，挂前两者）。
+- 选项返工（AGENTS.md §4.1/§4.2）：Q1-D 去掉“避开全局 Attention”秒排项、Q3-C 与 Q3-D 解互否绑定、Q5-D 去掉与题干矛盾的“直出 RGB”项、Q4-C 去绝对化措辞、Q2/Q5 收敛长度比；终态长度比 1.21~1.66，全 < 1.8×。
+- topic 未新建节点：3 个 DiT 原生 topic 映射到现有 `transformer` / `vit-patch-embedding-sequence-length`（后者 summary 恰为 p 减半→T×4→Attention×16 的同一缩放律）。
+- 附带修复：`nodes.test.ts` 硬编码 10 角度白名单与 `questionAngleSchema`（19 角度）失步，新题首次用 `architecture`/`quantitative` 即打红测试；已改为 `questionAngleSchema.options` 单源派生，踩坑记入 ARCHITECTURE.md「技术栈注意点」。
+- 回归：`question:add --check` 通过（多选 3/3）；`validate:questions` 1357/124；`question:validate-variants` 0 stale / 0 近重复 / 0 语言质量；`npm test` **839/839**。
+
+## 2026-09-07 · P2 复核：3 处真错误已修，5 处经源文核对确认无错、不改
+
+用户口径：「有错误就改，没错误就不改」。逐条回原文取证后：
+
+**已修（3 处，均为文字残缺/表述失实，不涉及答案键）**
+- `ai-eng-051`（evaluation.json）：open 参考答案中「本案例推导 1200 例/表面才能…」的「/表面」为乱码
+  → 改为「本案例推导需约千例量级样本才能…」（顺便去掉依赖未写明检验假设的精确值 1200）。
+- `quant-qah-06`（hf-quantization.json）：`misconceptions[0]` 少了「忽略了」，
+  变成「以为…约 1 倍，4-bit 权重同样显著降低访存与算力开销」——把一个**正确事实**写成了误区
+  → 补回「忽略了」。
+- `ai-eng-038`（ai-architecture.json）：open 参考答案称 B「把复杂任务交给注定失败的模型」是失实
+  （verifier-gated cascade 并非注定失败，B 的问题是缺分层与降级链）
+  → 改为「B 缺少分层与降级链，把复杂高风险任务也压给无法胜任的小模型网关」。
+
+**核对后确认无错、未改（5 处）**
+- `quant-qah-06` 的 8×：arXiv 2608.20953v1 原文 *"the combined parameter and precision reduction would
+  amount to roughly 8× less compute per token"*，且题面已限定「原 bf16 权重族」——与我原先怀疑的
+  「FLOPs vs 硬件耗时口径歧义」相反，**原文用的就是 compute per token**。撤回该 P2。
+- `quant-qah-02` 的 step700/19 点/7×：同一论文原文逐条对上
+  （QAT 峰值 54.6 @ step700 → step1200 掉到约 36；QAH 约 100 步达峰 vs QAT 约 700 步 ≈ 7×）。**无误。**
+- `specdec-03` 的「offload 时约 10x」：HF blog *assisted-generation* 原文
+  *"If you're playing with models that do not fit in your GPU and are relying on memory offloading,
+  you can see up to 10x speedups"* —— 与 `source.materialId` 标注一致。**无误。**
+- `transformer-comparison-01`：AIAYN 原文「contiguous kernels → O(n/k)，dilated → O(log_k n)」，
+  判 D 错正确。**无误。**
+- `vectordb-04` / `gqa-kv-cache-calc`：前者只是缺测量条件、后者是 GB/GiB 行业通行的混写，
+  答案键无歧义。**均非错误，不改。**
+
+## 2026-09-07 · 修复 2 个 P0 开放式参考答案（首轮验证产出，已落地）
+
+- `flashattn-07`：`open.referenceAnswer` 原为干扰项 [2] 原文（"约 33 倍…"）→ 改为论文定理 2 表述
+  （`Θ(Nd+N²)` vs `Θ(N²d²M⁻¹)`、比值 `M/d²` 与 N 无关、实测 40.3→4.4 GB 约 9×），
+  并显式区分「显存占用 O(N²)→O(N)」与「访存流量 Θ(N²d²M⁻¹)」两个量。
+- `inference-vram-budget-calc-01`：`open.referenceAnswer` 原为「正确答案：A、B、C、D」且选项对不上
+  （旧版残留，B 项用 3.5 GB 陷阱值）→ 改为「正确答案：A、B」并给出完整推导
+  （每 token 196,608 B、32K≈6.4 GB、64K≈12.9 GB、总计 15.6 / 22.1 GB、点明漏算因子 2 的常见错误）。
+- 只改 `formats.open.referenceAnswer`，未动选项文本 / `choice.answer` / `explanation` / `misconceptions`。
+- 回归：open/choice 答案集比对 **637 对 0 矛盾**；结构完整性 1354 题 0 问题；
+  `validate:questions` 1354/124；`question:validate-variants` 0 stale / 0 近重复 / 0 语言质量；
+  typecheck 干净；`npm test` **839/839**。
+- 8 条 P2 未动（属口径/术语/单位/来源问题，需逐条决策，答案键本身无误）。
+
+## 2026-09-07 · 首轮题库正确性验证（verify-question-correctness 实跑，report-only）
+
+- 按 SKILL.md 流程跑完 triage worklist（360 条：HIGH 7 / MEDIUM 49 / LOW 304）的 **7 HIGH 全覆盖 + 17 MEDIUM 抽样**。
+  产出 `reports/question-correctness-report-2026-09-07.jsonl`（26 条，符合 §24 schema）与
+  `reports/question-correctness-summary-2026-09-07.md`。**未改动任何 `src/data/questions/*`（§30）。**
+- 全库扫描：结构完整性（answer 越界/空/重复选项/misconceptionMap 长度·越界·误绑·未绑）**1354 题 0 问题**。
+- 发现 **2 个 P0**，均属「open 参考答案是自家的错误答案」：
+  - `inference-vram-budget-calc-01`：`open.referenceAnswer` 写 `正确答案：A、B、C、D`，
+    且其 A/B/C/D 与当前 `choice.options` 完全对不上（旧版本残留），B 项用的 3.5 GB 正是
+    本题要抓的漏算 K/V 因子 2 的错误值。正确值：每 token 196,608 B，32K≈6.4 GB、64K≈12.9 GB、总计 15.6/22.1 GB。
+  - `flashattn-07`：`open.referenceAnswer` 是**干扰项 [2] 的原文**（"约 33 倍…"），
+    而 `choice.answer=[0,1]` 与 explanation 都驳斥它。正解已取证 arXiv 2205.14135v2 Theorem 2
+    （`Θ(Nd+N²)` vs `Θ(N²d²M⁻¹)`，比值 `M/d²` 与 N 无关，实测 40.3→4.4 GB 即 "up to 9×"）。
+- 8 条 P2（口径/术语/单位/来源问题，答案键无误）：`quant-qah-06`（"计算量" FLOPs vs 硬件耗时歧义）、
+  `specdec-03`（10x offload 缺来源）、`transformer-comparison-01`（"受限卷积" 术语歧义）、
+  `vectordb-04`（延迟数字缺测量条件）、`gqa-kv-cache-calc`（GiB/GB 混用）、`ai-eng-051`（"1200 例/表面" 乱码）、
+  `ai-eng-038`（对 B 的驳斥过度断言）、`quant-qah-02`（实验数值缺出处）。
+- 澄清：`long-context-attn-01` 的「显存占用 O(N²)→O(N)」与 `flashattn-07` 的「访存流量 Θ(N²d²M⁻¹)」
+  **不矛盾**，是两个不同的量；建议两题加交叉引用。
+- 待人工确认：2 个 P0 的修改方案（P0 属 §26 Tier D，必须人工 review 后才能落地）。
+
 ## 2026-09-07 · verify-question-candidates：修版本号正则 + triage 优先级改名
 
 - **Bug（必修）**：`version.number` 的正则写成 `/\bv\d+.\d+(?:.\d+)?\b/i`，`.` 未转义 = 正则「任意字符」，

@@ -333,7 +333,7 @@
         ]
       },
       "open": {
-        "referenceAnswer": "约 33 倍：HBM IO 从 O(N²) 降到 ~O(Nd)（N=4096,d=128）。"
+        "referenceAnswer": "正确答案：A、B（HBM 访存流量约减少 M/d² 倍，论文实测最高约 9 倍）。\n- 论文定理 2：标准注意力 Θ(Nd + N²)，FlashAttention Θ(N²d²M⁻¹)，M 为 SRAM 容量；两者之比约为 M/d²，**与序列长度 N 无关**，且随 head 维度 d 的平方恶化。\n- 实测锚点：GPT-2 medium（N=1024、d=64、A100）HBM 读写从 40.3 GB 降到 4.4 GB，约 9 倍，即原文「up to 9× fewer」的来源。\n- 必须区分两个量：**显存占用**为 O(N²)→O(N)（不再物化注意力矩阵）；**访存流量**才是上面的 Θ(N²d²M⁻¹)。\n- 常见错误：把 O(N²)/O(Nd) = N/d = 32 当成收益倍数，得出「N=4096、d=128 时减少 33 倍」——既用错了复杂度，也高估了收益（d=128 时 M/d² 已降到约 3 倍量级）。"
       }
     },
     "misconceptions": [

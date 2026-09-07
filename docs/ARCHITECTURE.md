@@ -687,6 +687,10 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 ## 技术栈注意点
 
 - **antd 为 6.x**：`Divider` 仅支持 `horizontal / vertical`，无 `orientation` 左右。
+- **测试里的白名单不许硬编码第二份（踩坑 2026-09-07）**：`nodes.test.ts` 曾硬编码 10 角度白名单，
+  与 `questionAngleSchema`（单源，现 19 角度）失步——首个使用新角度（`architecture` / `quantitative`）
+  的入库题直接打红测试，而 `question:add`（同口径单源）一路放行。凡 Zod schema 已是单源的枚举，
+  测试一律 `import { xxxSchema } from '../../schemas/common'` 后用 `xxxSchema.options` 派生，禁止手抄数组。
 - **fuzzball 的中文相似度不可信（变体门禁已弃用）**：fuzzball 的 `token_set_ratio` 依赖词边界切分，
   中文无词边界，`full_process` 只在标点处切，整句中文退化成 1 个 token → 退化为整串 Levenshtein 比值。
   这同时造成两个方向的错误：把「选项逐项同义改写」误判为低相似（合法好变体被 drift 门禁误杀），

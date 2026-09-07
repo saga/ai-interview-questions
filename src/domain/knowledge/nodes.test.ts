@@ -4,15 +4,16 @@
 import { describe, expect, it } from 'vitest';
 import type { KnowledgeNode } from '../../schemas/knowledge';
 import type { Question } from '../../schemas/question';
+import { questionAngleSchema } from '../../schemas/common';
 import { knowledgeNodes } from '../../data/knowledgeMap';
 import { questionBank } from '../../data/questionBank';
 import { KNOWLEDGE_AREA_LABELS, knowledgeById, knowledgeCoverage, requiredPointsFor } from './nodes';
 
 const AREAS = Object.keys(KNOWLEDGE_AREA_LABELS);
 const PRIORITIES = ['P0', 'P1', 'P2'];
-// 角度白名单须与 questionAngleSchema（ADR-037 起为 10 角度）保持一致：definition / fundamental /
-// mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design。
-const ANGLES = ['definition', 'fundamental', 'mechanism', 'comparison', 'calculation', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'];
+// 角度白名单以 questionAngleSchema 为单源（与 scripts/add-question.ts 同口径），禁止在此硬编码一份拷贝——
+// 此前硬编码的 10 角度列表在 schema 扩到 19 角度后失步，首个使用新角度（architecture / quantitative）的入库题直接打红测试。
+const ANGLES: readonly string[] = questionAngleSchema.options;
 
 describe('知识点层数据完整性', () => {
   it('非空且 id 全局唯一、kebab-case 格式', () => {

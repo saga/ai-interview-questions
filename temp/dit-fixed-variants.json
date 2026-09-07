@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "generatedAt": 1788755344485,
+  "promptVersion": "v5-fix",
+  "variants": {
+    "dit-cond-adaln-zero-can": [
+      {
+        "id": "dit-cond-adaln-zero-can__context-options__prompt-dit-cond-adaln-zero-var1",
+        "kind": "context-options",
+        "question": "在 DiT 的 adaLN-Zero 模块设计中，回归生成规范化参数 $\\gamma, \\beta$ 以及残差缩放因子 $\\alpha$ 的 MLP 最后一层被显式初始化为全零向量。这种零初始化策略发挥作用的核心物理机制是什么？",
+        "options": [
+          "零初始化将 LayerNorm 的缩放参数 $\\gamma$ 和平移参数 $\\beta$ 置零，强行把规范化特征清零，从而阻断初期不稳定梯度的反向传播。",
+          "零初始化使 MLP 输出的残差缩放因子 $\\alpha$ 初始为 0，使每个 DiT Block 退化为恒等映射，避免未训练模块扰动初始特征。",
+          "零初始化切断了时间步 $t$ 与类别 $c$ 向量的梯度更新路径，使模型在前几个训练 Epoch 中仅聚焦于无条件图像特征的重构。",
+          "零初始化防止了 Self-Attention 中 Softmax 输入数值过大，从而避免训练初期注意力权重极化导致的梯度消失。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "generatedAt": 1788755344485,
+        "generator": "offline",
+        "promptVersion": "v5-fix",
+        "sourceHash": "fnv1a-d390b163"
+      }
+    ],
+    "dit-patch-scaling-can": [
+      {
+        "id": "dit-patch-scaling-can__context-options__prompt-dit-patch-scaling-var1",
+        "kind": "context-options",
+        "question": "在给定的计算预算（GFLOPs）范围内，可以通过两条不同的路径扩展 DiT 的计算量：一是缩小 Patch Size $p$（提升空间分辨率和 Token 数量 $T$），二是增加 Transformer 的深度/宽度（提升模型容量 $N$ 或 $d$）。关于这两条 Scaling 路径对生成质量（FID）与资源权衡的影响，以下哪些分析是正确的？",
+        "options": [
+          "无论是通过减小 Patch Size 增加 Token 序列长度，还是通过扩大 Transformer 的深度与宽度，生成的 FID 评分均随总 GFLOPs 的增加而持续改善，表明 GFLOPs 是决定 DiT 生成质量的主导指标。",
+          "在算力分配权衡中，缩小 Patch Size 能直接提升对高频空间细节特征的处理能力，而增大 $N$ 和 $d$ 则更侧重于增强全局语义表达与复杂条件映射能力。",
+          "缩小 p 降低了单个 Token 的展开维度 p×p×C，该收益可抵消序列变长带来的 Attention 矩阵增长，使训练峰值显存基本持平甚至下降。",
+          "当模型规模达到 DiT-XL 后，缩小 Patch Size（如 $p=2$）带来的 FID 收益会迅速饱和，继续提升生成质量只能依赖于增加 Transformer 层数 $N$。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "generatedAt": 1788755344485,
+        "generator": "offline",
+        "promptVersion": "v5-fix",
+        "sourceHash": "fnv1a-bb3cc8b2"
+      }
+    ]
+  }
+}
