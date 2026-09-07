@@ -27,14 +27,23 @@
           2,
           3
         ],
-        "question": "在消息传递图神经网络（MPNN）中，其图结构表达能力的理论上限通常由 1-Weisfeiler-Lehman (1-WL) 同构测试界定。关于 MPNN 在区分不同图拓扑结构上的局限性及其底层机制，以下哪些说法是正确的？"
+        "question": "在消息传递图神经网络（MPNN）中，其图结构表达能力的理论上限通常由 1-Weisfeiler-Lehman (1-WL) 同构测试界定。关于 MPNN 在区分不同图拓扑结构上的局限性及其底层机制，以下哪些说法是正确的？",
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「如仅使用单射聚合函数（如 GIN 中的 Sum 聚合），只能使表达能力接近或达到 1-WL，但无法超越」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「对于无法被 1-WL 测试区分的非同构图（例如某些同…」「缺少节点初始唯一特征（如纯拓扑结构输入）时」等 3 项成立；并排除「将邻域聚合函数（Aggregate Function…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为把聚合函数换成单射函数（如 GIN 的 sum 聚合）就能让 MPNN 超越 1-WL 的表达上限，sum + MLP 只是使其达到 1-WL 的上限，并不能突破"
+    ]
   },
   {
     "id": "gnn-scalable-sampling",
@@ -149,14 +158,23 @@
           1,
           2
         ],
-        "question": "在图神经网络的理论体系中，谱域图卷积（Spectral GNN）与空域图卷积（Spatial GNN）代表了两种不同的建模视角。关于谱域与空域图卷积的联系与区别，以下哪些表述是正确的？"
+        "question": "在图神经网络的理论体系中，谱域图卷积（Spectral GNN）与空域图卷积（Spatial GNN）代表了两种不同的建模视角。关于谱域与空域图卷积的联系与区别，以下哪些表述是正确的？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「谱域图卷积依赖于图拉普拉斯矩阵的特征分解（Fourier 变换），其基底绑定于特定的图拓扑，因此无法直接跨图泛化或处理动态变化图」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「谱域图卷积基于图拉普拉斯矩阵的特征分解」「ChebNet 采用切比雪夫多项式逼近谱域滤波函数」等 3 项成立；并排除「空域图卷积直接在节点空间图拓扑上定义消息传递机制」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为空域图卷积无法与图信号处理中的频域低通滤波建立映射，实际上 GCN 等一阶空域方法正可解释为图上的低通滤波"
+    ]
   },
   {
     "id": "gnn-large-scale-recommender-system-design",
@@ -185,14 +203,25 @@
         "answer": [
           1
         ],
-        "question": "某大型电商平台需构建一套亿级 user/item 节点的实时图推荐系统。系统约束如下：全量图拓扑每晚更新一次，用户高频行为秒级异步写入；线上召回阶段要求 P95 延迟小于 15ms；单次召回需为用户评估数千个候选 item。以下哪种架构设计方案在满足上述延迟与一致性约束的同时最具有工程可行性？"
+        "question": "某大型电商平台需构建一套亿级 user/item 节点的实时图推荐系统。系统约束如下：全量图拓扑每晚更新一次，用户高频行为秒级异步写入；线上召回阶段要求 P95 延迟小于 15ms；单次召回需为用户评估数千个候选 item。以下哪种架构设计方案在满足上述延迟与一致性约束的同时最具有工程可行性？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「在亿级节点图上，线上实时进行多层 GNN 邻域采样与多层消息传递矩阵运算无法满足 P95 < 15ms 的严苛延迟约束（通常需要数毫秒级的向量检索）」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「采用离线/近实时图采样计算节点 Embedding …」成立；并排除「采用端到端在线图神经网络计算」「将 GNN 模型全量部署在客户端（Client Si…」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为可以在线实时查询 3-hop 邻域并在 GPU 上跑多层 GNN 聚合，亿级图上多跳邻域展开远超 15ms 的 P95 预算",
+      "以为把 GNN 全量部署到客户端、用 WebSocket 同步全量拓扑与权重可行，亿级图拓扑无法下发到端，同步与版本一致性也不可控",
+      "以为只用离线 PageRank 静态列表加 Redis 缓存即可，这等于放弃深度表征学习，无法满足数千候选的个性化召回质量"
+    ]
   },
   {
     "id": "gnn-adversarial-attack-defense",

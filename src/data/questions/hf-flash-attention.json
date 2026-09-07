@@ -28,6 +28,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -38,7 +44,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「FlashAttention 是 IO 感知（IO-aware）的精确注意力算法，输出与标准注意力完全相同（不是近似）」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此逐项确认「它是 IO 感知的精确注意力算法」「它从不把完整的 N×N 注意力矩阵物化到 HBM 显…」等 2 项成立；并排除「它是一种近似注意力」「它只在反向传播中使用」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 FlashAttention 是近似注意力、靠稀疏化或低秩换速度因而输出只是近似，实际上它是精确的 IO 感知算法，输出与标准注意力等价",
+      "以为它只在反向传播中使用、前向仍依赖标准注意力矩阵，前向同样采用分块融合计算"
+    ]
   },
   {
     "id": "flashattn-02",
@@ -112,6 +122,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -122,7 +138,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「softmax 需要整行的全局归一化信息，无法在只看到一块时直接算」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「softmax 需整行全局归一化信息」「它使即便分块处理」等 2 项成立；并排除「softmax 天然满足结合律」「在线 softmax 只为加速」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 softmax 天然满足结合律、任意分块都能直接相加而无需修正，实际上必须维护运行最大值与运行分母来修正",
+      "以为在线 softmax 只影响速度、对结果精确性没有实质影响，它正是保证分块结果与全局 softmax 数值一致的关键"
+    ]
   },
   {
     "id": "flashattn-04",
@@ -153,6 +173,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -163,7 +189,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「融合需要分块（否则中间矩阵太大放不进 SRAM）」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「融合需要分块：否则中间矩阵太大」「分块需要在线 softmax：softmax 非直接…」等 3 项成立；并排除「四个手段彼此完全独立」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为四个手段彼此完全独立、去掉任意一个都不影响其余，实际上分块、在线 softmax、重计算与内核融合相互依赖，缺一就会破坏显存收益或数值正确性"
+    ]
   },
   {
     "id": "flashattn-05",
@@ -194,6 +223,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -204,7 +239,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「注意力中间结果的 HBM 占用从 O(N²) 降到 O(N)，因为不再物化完整注意力矩阵」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「注意力中间结果的 HBM 占用从 O(N²) 降到 …」「除 Q、K、V、O 外」等 2 项成立；并排除「它把 N×N 注意力矩阵完整存到 HBM 以加速反向…」「FlashAttention 的显存占用仍随序列长度…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为它把 N×N 注意力矩阵完整存到 HBM 以加速反向，恰恰相反，它的核心就是避免物化这个矩阵",
+      "以为 FlashAttention 的显存占用仍随序列长度平方增长，实际显存随 N 线性增长"
+    ]
   },
   {
     "id": "flashattn-06",
@@ -236,6 +275,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -246,7 +291,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「在 prefill（处理长提示）阶段收益最大，因为要算完整 N×N 注意力」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「在 prefill（处理长提示）阶段收益最大」「在单 token decode 阶段收益很小」等 3 项成立；并排除「在单 token decode 阶段 FlashAt…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为在单 token decode 阶段 FlashAttention 能把延迟再降一个数量级，收益主要集中在训练与长序列 prefill，decode 阶段的瓶颈在权重与 KV Cache 访存"
+    ]
   },
   {
     "id": "flashattn-07",
@@ -325,6 +373,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -335,6 +389,11 @@
       "target": "能判断「FlashAttention 是精确算法，输出与标准注意力完全相同，只是以不同的 IO 顺序计算（先分块再累加），不存在可觉察的精度损失，也不依赖更低精度」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「完全相同（精确算法）」成立；并排除「近似相等」「只在短序列上精确」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为输出只是近似相等、存在可觉察的精度损失，实际上二者数值精确等价（差异仅来自浮点运算顺序）",
+      "以为只在短序列上精确、长序列退化为近似，精确性与序列长度无关",
+      "以为因为用了更低精度所以比标准注意力更精确，低精度只会引入误差，不会提升精度"
+    ]
   }
 ]

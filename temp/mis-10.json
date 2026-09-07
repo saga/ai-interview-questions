@@ -1,0 +1,998 @@
+[
+ {
+  "seq": 0,
+  "id": "ste-gradient-mismatch",
+  "topic": "quantization",
+  "question": "在进行量化感知训练时离散量化函数的导数处处为 0 导致标准反向传播失效。工程上使用直通估计器 STE 近似梯度。关于 STE 在实际训练中的工程局限与应对策略下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "STE 能够精确计算离散量化操作的二阶 Hessian 矩阵因此反向传播得到的梯度与真实梯度完全一致"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "qah-outperform-fp16-mechanism",
+  "topic": "quantization",
+  "question": "在基于结构化剪枝加 4-bit 量化感知修复的工程实践中 4-bit 模型的 Benchmark 得分多次被观察到超过了用于量化的 BF16 中间 Checkpoint。关于这一现象背后合理的工程解构以下哪些分析是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "冗余削减本身即正则化，4-bit 的信息瓶颈迫使模型保留最本质的推理模式；飞跃是压缩的自然红利。"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "mxfp4-vram-savings-calc",
+  "topic": "quantization",
+  "question": "某大语言模型拥有 60B 参数。若将其从 BF16 格式（每个参数 2 字节）转换为 MXFP4 格式（约 0.53125 字节/参数含 Scale 开销）在仅考虑权重显存的情况下节省比例约为多少？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "约 25%"
+   },
+   {
+    "i": 1,
+    "text": "约 50%"
+   },
+   {
+    "i": 3,
+    "text": "约 90%"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "activation-outlier-debug",
+  "topic": "quantization",
+  "question": "在对 Self-Attention 投影层进行 4-bit 低比特量化时常遇到模型输出死循环无意义重复或逻辑推理能力陡降的量化崩溃现象由激活值异常值引起。针对该问题哪些调试与修复方案是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "截断为 0 后用直通估计补偿梯度，推理时零值可跳过计算反而提速；精度损失可用升一档 batch 弥补。"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "spec-decode-accept-probability",
+  "topic": "inference-optimization",
+  "question": "投机采样利用草稿模型一次性自回归生成 K 个 Token 候选再由目标模型并行验证。为保证最终输出与直接使用目标模型逐 Token 采样完全一致当 p(x) < q(x) 时接受概率应设定为多少？若拒绝该如何重新采样？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "接受概率 α(x)=p(x)-q(x) 拒绝后直接从原目标模型分布中重新采样，因为概率差直接刻画了草稿与目标之间的偏离度，用减法比用比值更能稳定衡量该偏差"
+   },
+   {
+    "i": 2,
+    "text": "接受概率 α(x)=1.0 拒绝后直接终止整条轨迹的生成，因为一旦拒绝就说明草稿完全不可信，继续采样只会浪费算力且必然产生错误token"
+   },
+   {
+    "i": 3,
+    "text": "接受概率 α(x)=q(x)/p(x) 拒绝后从草稿模型分布中重新采样，因为用草稿概率作分子更能反映草稿自身的置信度从而加快收敛"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "fp8-e4m3-vs-e5m2",
+  "topic": "quantization",
+  "question": "在 Modern GPU 架构的原生 FP8 混合精度训练中硬件支持 E4M3（1 符号+4 指数+3 尾数）和 E5M2（1 符号+5 指数+2 尾数）两种格式。关于这两种格式在前向与反向传播中的选型设计哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "反向全用 E4M3 并配合 loss scaling，精度与范围可兼得；E5M2 是历史兼容选项，新管线应统一 E4M3。"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "quantization-mem-bandwidth-gguf-01",
+  "topic": "quantization",
+  "question": "在本地硬件运行大语言模型（LLM/SLM）进行单 Token 自回归生成（Autoregressive Generation）时，推导性能通常受限于内存带宽（Memory Bandwidth Bound）而非纯粹的计算峰值（Compute Bound）。关于 GGUF 量化（如 Q4_K_M）提升本地推理吞吐量的物理机制与影响，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "量化算法在推理时会顺带把 KV Cache 也压缩为 4-bit 表示，并跳过注意力矩阵的存储开销，从而从根本上消除了长上下文推理时的显存增长问题。"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "inference-capacity-num-ctx-kvcache-01",
+  "topic": "inference-capacity",
+  "question": "在本地部署推理引擎（如 Ollama / llama.cpp）时，开发者常通过配置文件调整 num_ctx 参数（例如从 4096 扩大至 32768）来支持长文本或全仓库代码分析。在模型权重不变的情况下，大幅扩展上下文窗口会带来哪些工程权衡（Trade-offs）？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "模型静态权重（Model Weight Footprint）在显存中的物理尺寸会随着 num_ctx 的调大而等比例线性膨胀。"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "inference-offload-pcie-bottleneck-01",
+  "topic": "inference-optimization",
+  "question": "工程师在配备 12GB VRAM 的显卡上使用 llama.cpp 运行一个 14B 参数的 GGUF 模型。日志显示模型共 40 层，其中 30 层成功载入 GPU 显存，剩余 10 层被分配给 CPU 执行（Partial Offloading）。测试发现 Token 生成速度从完全 GPU 加载时的 50 Tokens/s 降至 6 Tokens/s。造成这种性能断崖式下降的最核心机制原因是：",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "瓶颈在 CPU 算力而非 PCIe，把 10 层搬回 GPU 的代价是 OOM；正确解法是换带 AMX 的 CPU 而非减少 offload。"
+   },
+   {
+    "i": 2,
+    "text": "拆分模型层后，推理引擎自动开启了 CPU 端的 FP32 强制重量化计算，导致计算复杂度剧增，因为 CPU 不参与训练就只能用高精度来弥补数值误差"
+   },
+   {
+    "i": 3,
+    "text": "llama.cpp 的 CPU 路径不维护 KV cache，每步重算历史是 offload 的已知代价；应用层应截断历史来适配。"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "inference-apple-silicon-uma-01",
+  "topic": "inference-optimization",
+  "question": "在部署本地 SLM/LLM 时，工程团队常对比 Apple Silicon（如 M3/M4 系列，配备最高 128GB Unified Memory）与传统 PC 独立显卡（如单张 24GB VRAM PCIe GPU）。关于这两种硬件体系在 LLM 本地推理中的架构差异与 Trade-offs，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "传统 PCIe 独显通过 PCIe 总线连接系统主存，即使模型权重超出显存容量，系统内存（RAM）也能提供与 VRAM 相同的带宽吞吐，因为 PCIe 5.0 的双向带宽已经和显存控制器持平，不存在额外拷贝代价，所以在 PCIe 独显上跑大模型时，把溢出权重放在系统内存里与放在显存里对 Token 生成速度的影响完全可以忽略不计"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "inference-fim-mechanism-01",
+  "topic": "inference-modes",
+  "question": "IDE 中的实时代码补全（Tab Autocomplete）要求模型能够根据光标位置的前文（Prefix）和后文（Suffix）预测中间缺失的代码片段。为实现这种双向上下文感知的补全功能，代码 SLM 通常采用什么底层工作机制？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "后文对补全只有提示作用，丢弃后文可省一半 prefill；FIM 格式只是学术冗余，实测几乎无损。"
+   },
+   {
+    "i": 2,
+    "text": "补全引擎自动调用 Encoder-Decoder 双塔架构，利用双向注意力机制在生成阶段同时更新前文与后文的 Token。"
+   },
+   {
+    "i": 3,
+    "text": "模型要求在推理时先对后文（Suffix）计算全量 Attention 矩阵并反传梯度，再触发前文（Prefix）的生成逻辑。"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "inference-deterministic-sampling-01",
+  "topic": "inference-modes",
+  "question": "某团队使用本地 Ollama 部署代码生成服务（如自动生成 C# DTO 或 SQL 查询）。测试发现模型输出的代码偶尔会出现幻觉 API 或不稳定的语法格式。为使模型输出尽可能精确、确定且可复现，工程团队应该如何配置推理参数与 System Prompt？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "将采样温度参数（temperature）调高至 1.5，通过引入随机性来增加生成代码的多样性与鲁棒性。"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "quantization-precision-fp16-q8-q4-01",
+  "topic": "quantization",
+  "question": "在针对消费级显卡（例如 16GB VRAM）评估本地 SLM 模型部署方案时，团队需要在 FP16（半精度）、Q8_0（8-bit 量化）和 Q4_K_M（4-bit 中等量化）三种权重格式之间作抉择。下列对比分析中，哪些属于客观的技术事实？（请选择以下 2 个正确选项）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "Q8_0 量化会对模型结构进行剪枝，直接丢弃 Transformer 的 Self-Attention 权重，仅保留 FFN 层。"
+   },
+   {
+    "i": 3,
+    "text": "选用 4-bit 量化后，模型的最大上下文窗口上限（Context Length Limit）也会被强制缩减为 FP16 模式下的 1/4。"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "prompt-cache-kv-mechanism-01",
+  "topic": "caching",
+  "question": "在基于 Transformer 架构的大模型 API 服务中，Prompt Caching 被广泛用于降低长上下文处理的首字延迟（TTFT）与计算成本。关于 KV Cache Prompt Caching 的底层工作机制与前缀匹配规则，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "缓存系统直接保存的是经过 Tokenizer 处理后的 Token ID 序列，当新请求到达时通过逐字比较 Token ID 实现毫秒级快速匹配与复用"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "prompt-cache-breakpoint-01",
+  "topic": "caching",
+  "question": "在大模型 Prompt Caching 的实现中，系统需要确定在何处截断并保存 KV Cache 状态（即设置缓存断点 Cache Breakpoint）。关于隐式（Implicit）与显式（Explicit）缓存断点的匹配机制与设计差异，下列哪项描述是正确的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "隐式断点模式允许开发者在 Prompt 的任意字符位置手动插入标记，而显式断点模式仅能在固定 Token 步长（如每 2,048 Tokens）自动截断"
+   },
+   {
+    "i": 2,
+    "text": "隐式断点固定放在 system 末尾，显式断点由开发者在每条 user 消息后标注；位置规则即全部差异。"
+   },
+   {
+    "i": 3,
+    "text": "单轮请求的 prompt 太短，到不了最小门槛；隐式断点在实践中只服务多轮 Tool Call 场景。"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "prompt-cache-min-tokens-01",
+  "topic": "caching",
+  "question": "在大模型 Prompt Caching 机制中，通常设定有“最小可缓存 Token 长度”（Minimum Cacheable Token Length，例如 1,024 或 2,048 Tokens）。关于这一限制及相关 Token 统计逻辑，下列哪项描述是正确的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "隐藏 system token 由平台注入且按全量计费，必然计入缓存门槛；开发者只需关注账单 token。"
+   },
+   {
+    "i": 2,
+    "text": "未达门槛的请求会被路由到无缓存实例池，延迟更高；应用层应填充无意义 token 凑够门槛以进缓存池。"
+   },
+   {
+    "i": 3,
+    "text": "Tool Definitions 是高频复用前缀，平台为其预建常驻缓存，不受门槛约束；工具多的应用天然占优。"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "nla-vs-sae-01",
+  "topic": "interpretability",
+  "question": "在大语言模型（LLM）的可解释性研究中，稀疏自编码器（SAE）与自然语言自编码器（NLA）代表了两种不同的内部表示解读路线。关于两种方案的机制与工程特性对比，下列哪些选项是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "SAE 在推理解码时需要执行自回归生成，因此计算开销显著高于仅涉及矩阵线性投影与稀疏基重构的 NLA。"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "nla-unverbalized-01",
+  "topic": "interpretability",
+  "question": "在 LLM 安全评估场景中，模型可能会产生“评估意识（Evaluation Awareness）”并隐藏其真实意图（例如在 CoT 链式思考中表现得完全合规，但内部已识别出自己处于测试环境）。在模型的 CoT 未吐出任何异常文本的情况下，使用 NLA 解码内部激活值为什么能够发现其隐藏意图？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "NLA 在训练阶段通过对抗损失约束 AV 输出文本，强制将模型注意力机制中的高权重残差流直接转换为文本形式。"
+   },
+   {
+    "i": 2,
+    "text": "NLA 的激活值重构器（AR）能够逆向干预目标模型的输出分布，迫使目标模型在生成阶段补全此前未显式吐出的思考步骤。"
+   },
+   {
+    "i": 3,
+    "text": "目标模型在评估环境中会主动将思考过程编码为压缩的隐藏指令，NLA 仅需匹配这些硬编码指令的模式即可完成还原。"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "nla-guardrail-01",
+  "topic": "interpretability",
+  "question": "某安全架构团队计划在生产环境的在线推理流水线中引入 NLA，对全量用户请求进行实时潜意识监控（Latent-space Guardrailling）以预防越狱与欺诈行为。在进行系统架构评估时，以下哪些工程瓶颈与技术权衡的判断是准确的？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "NLA 的生成过程依赖激活值重构器（AR）逐 Token 计算重构损失，这将导致每次模型推理都必须执行双向反向传播以维持监视频道。"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "nla-alignment-audit-01",
+  "topic": "interpretability",
+  "question": "在对被植入隐蔽恶意动机（如特定触发条件下的违规行为）的模型进行红队审计时，相比于传统的“训练数据溯源（Data Attribution）”或“行为特征分析”，利用 NLA 进行潜意识动机审计的核心优势是什么？（单选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "NLA 能够自动修改目标模型的权重参数，在识别出隐蔽动机后直接擦除该倾向，省去了重训练与微调的步骤。"
+   },
+   {
+    "i": 2,
+    "text": "NLA 保证生成的解释文本绝对客观准确，完全消除了深度学习解释性方法中普遍存在的幻觉与归因偏差。"
+   },
+   {
+    "i": 3,
+    "text": "NLA 可以在无需前向传播运行目标模型的前提下，仅通过分析模型的静态权重矩阵直接生成模型隐藏动机的文本说明。"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "nla-training-01",
+  "topic": "interpretability",
+  "question": "在构建 NLA 系统时，训练 Activation Verbalizer (AV) 与 Activation Reconstructor (AR) 面临着离散 Token 采样的不可导问题。关于 NLA 训练机制与优化策略，下列哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要重构损失降低到极低水平，就可以数学证明 AV 生成的文本完全真实且无遗漏地反映了目标模型激活向量中的全部高维特征。"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "nla-hallucination-01",
+  "topic": "interpretability",
+  "question": "某一可解释性团队在使用 NLA 诊断模型潜意识时发现：NLA 输出的解释文本中包含了一些上下文中根本不存在的细节描述（即潜意识解释发生了“事实性幻觉”）。关于这种现象的原因定位与应对策略，下列哪些分析是准确的？（多选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "该现象说明 AV 已完全失效、重构损失计算有误，应立即增大目标模型学习率以消除特征偏移。"
+   },
+   {
+    "i": 3,
+    "text": "该现象证明目标模型内部激活向量已遭物理损坏，需重新全面微调以恢复表征一致性。"
+   },
+   {
+    "i": 4,
+    "text": "AV 解码侧确定性可消除解释幻觉，幻觉多为采样噪声；先固化解码，再查归因。"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "llm-arch-hybrid-recurrent-attention-01",
+  "topic": "hybrid-attention",
+  "question": "在现代超大语言模型设计中，常将线性循环层（如 Gated DeltaNet）与传统 Grouped-Query Attention (GQA) 按比例交替混合堆叠（例如 3:1），构成 Hybrid 架构。关于该设计在生产部署与性能上的取舍，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "完全消除对位置编码（如 RoPE）的依赖，因为 DeltaNet 的状态更新公式天然具备绝对时间顺序的感知能力"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "llm-arch-preserved-thinking-01",
+  "topic": "kv-cache",
+  "question": "在多轮 Agent 系统中，可配置是否在历史 Prompt 中保留模型此前生成的思考推理过程（preserve_thinking=True / False）。关于开启保留历史思考（Preserved Thinking）的技术影响，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "关闭该配置会强制模型在后续每一轮交互中重新生成历史推理过程，从而成倍提高单轮 Token 生成吞吐量"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "llm-arch-reasoning-effort-nonlinear-01",
+  "topic": "sampling",
+  "question": "部署具备推理能力（Thinking Mode）的 LLM Agent 执行复杂工程任务（如代码库重构）时，工程人员有时把单轮推理努力度（reasoning_effort 从 xhigh 降到 low）以优化响应速率。下列哪项能正确解释为何降低单轮推理努力度可能反常地增加任务的总端到端耗时与 Token 总消耗？（单选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "较低的推理预算会直接触发推理引擎降低 Token 输出采样速率，引发显卡计算单元的硬件降频"
+   },
+   {
+    "i": 2,
+    "text": "降低推理努力度会导致 KV Cache 无法进行内存对齐，被迫在每轮生成时清空并重新计算全部上下文"
+   },
+   {
+    "i": 3,
+    "text": "思考过程减少使模型生成的最终 Prompt 变长，单次 API 传输载荷大幅提升导致网络通信延迟剧增"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "llm-arch-mtp-01",
+  "topic": "transformer",
+  "question": "现代大语言模型在预训练与后训练阶段常引入多 Token 预测（Multi-Token Prediction, MTP）架构，即主干网络在每个位置同时预测未来连续多个 Token。关于 MTP 的实现机制与应用价值，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "MTP 架构通过在后向传播中跳过 FFN 层的梯度更新，从而显著降低训练大参数模型时的整体显存占用"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "llm-arch-yarn-01",
+  "topic": "rope",
+  "question": "当需把原生支持长上下文（如 256K Token）的模型继续外推至超长上下文（如 1M Token）且不密集微调时，通常采用 YaRN（Yet another RoPE Extension）。关于 YaRN 的工作原理与优势，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "YaRN 通过将低频位置编码完全替换为绝对可学习位置嵌入，彻底消除了超长文本场景下的注意力衰减"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "llm-arch-thinking-sampling-01",
+  "topic": "sampling",
+  "question": "部署兼具思考模式（Thinking Mode）与指令模式（Instruct/Non-Thinking Mode）的思考型 LLM 时，两种模式需配置不同采样参数。下列关于采样参数配置最佳实践的说法中，正确的是？（单选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "指令模式通常推荐极低的 Temperature（如 0.0）与最小的 Presence Penalty，以强制触发链式思考输出"
+   },
+   {
+    "i": 2,
+    "text": "无论是否开启思考模式，Presence Penalty 都应保持在最高值（如 2.0 以上），以完全避免生成重复 Token"
+   },
+   {
+    "i": 3,
+    "text": "禁用思考模式后，必须将 Top-k 设为 1 且启用 Greedy Decoding，否则模型无法输出合规的格式化文本"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "ai-eng-035",
+  "topic": "hallucination",
+  "question": "线上 RAG 助手被投诉\"检索明明召回了正确文档，模型却无视上下文、用训练记忆里的过时信息作答\"。作为负责工程师，你如何诊断并系统性修复这个 grounding 失效问题？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "幻觉多为采样噪声，temp0 加自洽投票可双保险；解码侧治理比检索链路便宜，先解码后检索。"
+   },
+   {
+    "i": 1,
+    "text": "在向量库里多存几份相同文档副本提高召回率，让模型更容易看到正确内容；重复存储能提升命中概率，只要相关片段进入上下文，幻觉自然会被正确知识挤出，无需约束生成。"
+   },
+   {
+    "i": 3,
+    "text": "直接换更大的旗舰模型，参数知识更新后自然不会再答错；规模更大的模型记忆更全、事实性更强，换模型是最省事的降幻觉方案，比改造 prompt 或加校验更划算。"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "ai-eng-057",
+  "topic": "hallucination",
+  "question": "推荐系统的 LLM 解释层要为每条推荐生成一句自然语言理由（如\"因为你喜欢 Inception 的时间叙事，同一导演的 Tenet 会合你口味\"）。如何防止 LLM 在解释中编造电影事实（错误导演、不存在奖项）？在\"解释自由度\"与\"事实可靠性\"之间如何权衡？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "态度指令配合明确奖惩（违规即拒答）已足够；校验链路的成本高于其收益，提示即防线。"
+   },
+   {
+    "i": 2,
+    "text": "高风险场景用模板兜底、低风险用生成，混合策略比全有全无更优；模板覆盖头部 query 即够，尾部再生成。"
+   },
+   {
+    "i": 3,
+    "text": "头部模板化后，尾部生成的事实风险可接受；模板覆盖 8 成流量即达标，剩余风险敞口可忽略。"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "ai-eng-065",
+  "topic": "context-window",
+  "question": "生产级 RAG 正从\"小切片（512 token）\"向\"平衡上下文 RAG（10K~50K token 大段落乃至整页/整文档）\"演化。团队提议：既然模型支持百万 token 上下文，干脆取消检索与重排、全库直连。请分析该演化的合理部分与错误结论。（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "增大切片长度后可以彻底移除 Reranker，因为大切片本身就足够相关；更长的片段覆盖了查询所需的全部上下文，重排步骤冗余，去掉它能降低延迟与计算开销，对效果毫无损害。"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "ai-fund-007",
+  "topic": "tokenization",
+  "question": "为什么 LLM 不直接以“单词”作为最小 token 单位？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "单词级 token 的主要缺陷是单个 token 的计算量过大，会显著拖慢推理速度"
+   },
+   {
+    "i": 2,
+    "text": "子词切分的目的只是缩短序列长度，高频常用词同样会被强制拆分成多个小单元"
+   },
+   {
+    "i": 3,
+    "text": "单词级 token 无法处理多语言混合文本，子词切分只适用于英语等屈折语"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "ai-fund-008",
+  "topic": "tokenization",
+  "question": "BPE / WordPiece 这类子词切分算法的基本思想是什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "先统计整词频率，把出现次数低于设定阈值的词整体从词表中删除"
+   },
+   {
+    "i": 1,
+    "text": "依据语言学中的前后缀规则进行形态切分，整个过程不依赖语料统计信息"
+   },
+   {
+    "i": 2,
+    "text": "对字符的 embedding 做聚类，把语义相近的字符合并为同一个 token"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "ai-fund-009",
+  "topic": "tokenization",
+  "question": "Token 数量为什么直接影响 LLM 的使用成本和延迟？中文、代码、JSON 的 token 效率有什么差异？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "API 按 token 计费只是行业惯例，实际成本主要由请求次数决定，token 数量对账单的影响可以忽略"
+   },
+   {
+    "i": 2,
+    "text": "成本主要由模型参数规模决定，与请求内容无关，压缩 prompt 不会有任何节省"
+   },
+   {
+    "i": 3,
+    "text": "只要把 JSON 换成纯文本就能解决全部问题，中文文档的 token 效率其实优于英文，无需改动知识库"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "ai-fund-027",
+  "topic": "sampling",
+  "question": "把 Temperature 设为 0，模型输出一定是确定性的吗？为什么这在生产系统中很重要？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "双参数归零后输出逐字节稳定，快照比对可继续用；指标对比是评测体系重构，无需为此重建。"
+   },
+   {
+    "i": 3,
+    "text": "输出不一致即服务故障，应自动回滚并人工复盘；非确定性属异常信号，稳定复现才是健康态。"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "ai-fund-028",
+  "topic": "sampling",
+  "question": "Top-k 和 Top-p（nucleus sampling）有什么区别？各自适合什么场景？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Top-p 固定候选个数为 p 个，Top-k 保留累计概率达到 k 的最小集合；两者都按数量截断，区别仅在命名约定，工程上可互换使用而不影响最终的采样分布与多样性。"
+   },
+   {
+    "i": 1,
+    "text": "两者的候选集大小都是固定常数，区别只在归一化时是否除以温度系数；Top-k 与 Top-p 本质上等价，只是实现细节不同，调参时互相替代即可获得一致效果。"
+   },
+   {
+    "i": 3,
+    "text": "Top-p 的候选集在所有情形下都比 Top-k 大，因此采样的多样性必然更高；概率阈值覆盖更广的尾部，自然纳入更多低概率候选，多样性方面 Top-p 始终占优。"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "ai-fund-031",
+  "topic": "context-window",
+  "question": "Context Window 是什么？它由什么决定，超出会发生什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "用户提问方式不够明确导致模型理解偏差，应通过提示词工程引导用户规范提问；输入表述模糊是主因，模型本身无错，优化用户侧表达即可消除答非所问与漏答现象。"
+   },
+   {
+    "i": 2,
+    "text": "context window 只限制输出长度，超长输入不受影响，真正的问题是检索环节没有召回后半部分条款"
+   },
+   {
+    "i": 3,
+    "text": "服务端在超限时自动把合同压缩成摘要再送入模型，是摘要环节遗漏了后半部分内容；压缩策略过于激进丢弃了关键条款，应调高摘要保留比例来修复信息缺失问题。"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "ai-fund-032",
+  "topic": "context-window",
+  "question": "Context Window 越大越好吗？请从成本、延迟和质量三个角度分析。",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "窗口内的注意力均匀覆盖全部内容，质量下滑只能归因于模型版本波动，与填充内容无关"
+   },
+   {
+    "i": 4,
+    "text": "成本按请求次数结算，与填入多少 token 无关，账单恶化只是流量上涨的巧合"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "ai-fund-033",
+  "topic": "context-window",
+  "question": "既然模型支持 1M token context，为什么把整个知识库塞进 context 并不是一个好的 RAG 方案？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "支持该提案：只要窗口装得下，全量塞入的效果与精准检索相当，还能省掉索引维护的成本；长上下文模型既然能装下整库，检索与重排就是多余的中间环节，直接拼入最省事。"
+   },
+   {
+    "i": 2,
+    "text": "反对该提案：1M context 只是宣传口径，此类模型实际可用窗口远小于宣称值，方案必然不可行；厂商标称上限含水分，真实可用长度打折扣，整库塞入会触发隐性截断。"
+   },
+   {
+    "i": 3,
+    "text": "无所谓优劣：context 的成本是固定值，与填充多少内容无关，只需评估索引维护的人力投入；无论装多装少显存占用恒定，成本看的是请求次数而非上下文长度。"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "ai-fund-044",
+  "topic": "hallucination",
+  "question": "LLM 为什么会产生 Hallucination？请从训练目标和生成机制层面解释，而不是只说“模型不知道答案”。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "规模提升带来记忆容量与事实性的同步增长，幻觉率随规模单调下降；对齐与检索是辅助，规模是主菜。"
+   },
+   {
+    "i": 1,
+    "text": "显式合规指令配合违规惩罚示例，约束强度已足够；对齐微调只是把指令写进权重，效果等价。"
+   },
+   {
+    "i": 3,
+    "text": "规模与幻觉负相关已有多项评测证实，路线之争本质是成本之争；预算充足时规模优先。"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "ai-fund-045",
+  "topic": "hallucination",
+  "question": "RAG 能彻底解决 Hallucination 吗？如果不能，幻觉还会从哪些环节漏进来？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "高召回下模型偏离证据多为长上下文注意力稀释所致，加大窗口即可解决，无需忠实度校验"
+   },
+   {
+    "i": 4,
+    "text": "残余错误全部源于知识库内容过期，只要定期更新语料即可根除幻觉"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "ai-logits-001",
+  "topic": "sampling",
+  "question": "LLM 的 logits 是什么？它和最终生成的 token 有什么关系？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Logits 是词表中每个 token 归一化后的概率值，总和为一，可直接作为输出置信度使用；归一化后的分数天然落在 0 到 1 之间，数值高低即代表模型对该 token 的确信程度。"
+   },
+   {
+    "i": 2,
+    "text": "Logits 是输入文本的隐层表示，与词表维度无关，主要用于向量化检索场景；它承载句子级语义，经池化后可作为 embedding 供相似度检索与聚类任务直接使用。"
+   },
+   {
+    "i": 3,
+    "text": "Logits 是 tokenizer 统计出的词频表，训练结束后固定不变，不会随输入内容变化；它记录各 token 出现频率，是模型先验偏置的来源，推理时直接查表即可得到。"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "ai-transformer-007",
+  "topic": "tokenization",
+  "question": "Tokenizer 在 LLM 中起什么作用？为什么同一段文本在不同模型中的 token 数量可能不同？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "主流模型均用 BPE，差异只在词表大小；跨模型比较时按字符数归一即等价，无需逐个实测。"
+   },
+   {
+    "i": 2,
+    "text": "主流 LLM 共用 BPE 通用标准，token 差异只是口径误差；跨模型计数可直接类比，无需单独计量。"
+   },
+   {
+    "i": 3,
+    "text": "切分越细模型必然越强，细粒度覆盖更全，是性能关键决定因素；词表即实力。"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "llm-02",
+  "topic": "hallucination",
+  "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "把抗幻觉预算优先投给模型升级而非 grounding 链路，因为规模提升带来的幻觉下降足以覆盖检索增强的收益"
+   },
+   {
+    "i": 4,
+    "text": "在系统提示中写明\"禁止编造法条\"，并将其作为防止虚假引用的唯一防线"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "llm-03",
+  "topic": "sampling",
+  "question": "在 LLM 推理中，温度（temperature）参数主要影响？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "调高温度参数使输出分布更加多样，借助多样性让模型在不同结果中\"投票\"出正确答案"
+   },
+   {
+    "i": 2,
+    "text": "扩大模型的上下文窗口长度，窗口变长之后输出自然就不会再发生漂移"
+   },
+   {
+    "i": 3,
+    "text": "扩充模型词表以覆盖更多金融术语，词表越大模型的输出就越稳定"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "mem-longctx-01",
+  "topic": "context-window",
+  "question": "在构建 AI Agent 系统时，一种直观做法是每次 API 调用都将全部历史对话拼接到 Context Window 中。但在长期运行的 Agent 中，这种做法存在显著的工程瓶颈。关于单纯依赖扩大 Context Window 来维护记忆带来的隐患，下列说法正确的是？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "增大 Context Window 从根本上解决了信息检索问题，使 Agent 无需外部数据库也能准确定位任意历史细节"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "llm-judge-privacy-01",
+  "topic": "llm-application-security",
+  "question": "某 AI 平台构建了一套面向大规模用户对话日志的隐私保护分析系统。系统不允许研究人员直接阅读原始文本，而是由研究人员编写自然语言分类 Query，利用大语言模型（LLM-as-a-Judge）对全量日志进行逐条判断，最终仅输出分类比例（Percentage Statistics）等聚合结果。在维护与调试该系统时，下列关于其内部机制与潜在失效模式的说法，哪些是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "该模式通过引入非确定性的 LLM 判规，自动消除了一切统计学上的采样偏差（Sampling Bias）"
+   },
+   {
+    "i": 3,
+    "text": "聚合输出已是统计量，单条泄漏面已消除；二次审查属于重复建设，统计即匿名。"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "prompt-calibration-shift-02",
+  "topic": "training-data",
+  "question": "团队在将 LLM 分类 Query 应用于生产环境真实对话日志之前，通常需要对分类 Prompt 进行校准和迭代。若团队选择在一个公开的、偏向休闲与创意类对话的开源数据集（如 WildChat）上测试并优化 Prompt，再直接部署至以专业咨询与代码开发为主的生产环境日志中。这种做法面临的最核心技术风险是什么？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "开源数据集缺乏生产环境专有的 Token 词表，会导致分类 LLM 在推理过程中抛出严重的 Out-of-Vocabulary (OOV) 异常"
+   },
+   {
+    "i": 2,
+    "text": "在公开数据集上测试 Prompt 会直接污染分类模型的基础权重，导致模型在后续推理中丧失对特定领域专业术语的分类能力"
+   },
+   {
+    "i": 3,
+    "text": "跨数据集迁移 Prompt 会破坏分类输出的概率平滑性，导致最终生成的分类百分比统计值无法通过方差检验"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "compliance-audit-desensitize-03",
+  "topic": "safety-alignment",
+  "question": "在面向外部审计或研究人员开放 LLM 平台使用情况的聚合分析数据时，平台需要兼顾“对外展示平台真实安全状况与违规趋势”以及“防止泄露安全防护机制绕过细节”的双重目标。针对涉及平台服务条款（AUP）违规的分类数据，下列哪种脱敏与发布策略最符合工程最佳实践？（单选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "完全禁止发布任何涉及违规分类的统计数据，因为暴露违规尝试的频次本身即会为潜在攻击者提供系统防护弱点的推断依据"
+   },
+   {
+    "i": 2,
+    "text": "允许发布包含攻击者完整越狱 Prompt 细节的原始文本，但对攻击者的用户 ID 与 IP 地址进行高强度哈希脱敏处理"
+   },
+   {
+    "i": 3,
+    "text": "将所有违规对话按照统一比例混入正常对话分类中，利用人为引入的噪音数据模糊外部审计对平台合规性的判断"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "counterfactual-estimation-04",
+  "topic": "cost",
+  "question": "评估智能编程 Agent（如 Coding Agent）对真实研发效能的提升时，一种常见的方法是利用模型评估任务的“反事实耗时”（即估算“若不使用 AI 辅助，人类开发者完成该任务需要多久”）。为确保这种基于模型判规的反事实时间估计具备科学性与可靠性，工程团队应采取下列哪种验证机制？（单选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "直接将模型生成的代码 Token 数量乘以人类平均打字速度，得出反事实耗时的基准对照值"
+   },
+   {
+    "i": 2,
+    "text": "计算模型在生成代码过程中的 Logits 熵值变化，以熵衰减速率线性换算人类开发者的思考耗时"
+   },
+   {
+    "i": 3,
+    "text": "依赖模型自评的置信度得分（Confidence Score）对估算耗时进行归一化处理，无需任何人类历史履约数据的交叉比对"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "human-ai-collab-05",
+  "topic": "model-behavior",
+  "question": "在高风险与高专业度领域（如法律、金融或系统架构）中，分析人类用户与高能力 LLM 的交互模式时，下列哪些现象符合高效“人机协作”的典型特征与内部机制？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "用户会完全让渡决策权给 AI，并在单轮 Prompt 交互后直接执行模型给出的高风险操作指令"
+   },
+   {
+    "i": 4,
+    "text": "为降低沟通成本，用户仅将零风险、重复性极高的边缘子任务交由 AI 完成，避免在核心业务中引入 AI"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "privacy-research-arch-06",
+  "topic": "system-design",
+  "question": "某 AI 厂商希望建立一个允许外部独立研究员分析内部 LLM 真实使用场景的系统架构。要求系统在保证用户数据隐私的前提下，最大化研究员的探索自由度与分析独立性。在设计该系统时，下列哪些架构选择与流程设计是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "允许外部研究员直接下载包含哈希 ID 的全量原始对话日志，并在研究员本地服务器上运行自定义的深度学习提取模型"
+   },
+   {
+    "i": 4,
+    "text": "签署法律协议后，赋予外部研究员直接对生产环境数据库执行未过滤 SQL 语句与 Raw 文本检索的权限"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "llm-reliability-2026-08-01",
+  "topic": "factuality-verification",
+  "question": "医疗用药建议要求不能容许未经证实的事实错误。哪些系统控制最关键？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把 temperature 设为 0，并把剩余风险视为已消除"
+   },
+   {
+    "i": 3,
+    "text": "让模型生成多份答案，选择措辞最自信的一份"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "llm-reliability-2026-08-02",
+  "topic": "factuality-verification",
+  "question": "一个报告生成器必须保证每个事实性断言都能追溯到输入文档。哪些生成后流程最有效？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只检查输出是否是合法 JSON"
+   },
+   {
+    "i": 3,
+    "text": "只比较输出和上一次输出的字面相似度"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "llm-reliability-2026-08-03",
+  "topic": "factuality-verification",
+  "question": "知识库没有覆盖用户询问的合同条款，但模型的参数记忆能给出合理答案。系统应采取哪些措施？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "提高 temperature 产生更多候选后随机选择"
+   },
+   {
+    "i": 3,
+    "text": "把相同文档复制多份后直接返回旧答案"
+   }
+  ]
+ },
+ {
+  "seq": 55,
+  "id": "llm-reliability-2026-08-04",
+  "topic": "factuality-verification",
+  "question": "RAG 已经召回了包含正确答案的文档，但生成器仍混入过时信息。哪些诊断和修复步骤合理？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只把 temperature 调到 0"
+   },
+   {
+    "i": 3,
+    "text": "直接增加向量库副本，不检查生成阶段"
+   }
+  ]
+ },
+ {
+  "seq": 56,
+  "id": "llm-reliability-2026-08-05",
+  "topic": "generation-reproducibility",
+  "question": "同一模型和同一问题的 API 请求多次返回不同答案。提高复现性时哪些变量应同时固定？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只固定 temperature，其他参数随请求变化"
+   },
+   {
+    "i": 3,
+    "text": "提高 temperature 让概率分布更平滑"
+   }
+  ]
+ },
+ {
+  "seq": 57,
+  "id": "llm-reliability-2026-08-06",
+  "topic": "generation-reproducibility",
+  "question": "为什么 temperature=0 不能作为“同一请求必然逐字相同”的证明？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "它会冻结模型权重和服务基础设施"
+   },
+   {
+    "i": 3,
+    "text": "它会自动校验每条事实并修复错误"
+   }
+  ]
+ },
+ {
+  "seq": 58,
+  "id": "llm-reliability-2026-08-07",
+  "topic": "generation-reproducibility",
+  "question": "业务要求升级模型后，分类接口仍保持行为稳定。哪些回归策略更合理？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只对人工输出做一次抽查就认为行为稳定"
+   },
+   {
+    "i": 3,
+    "text": "忽略模型版本，因为 seed 已经保证行为不变"
+   }
+  ]
+ },
+ {
+  "seq": 59,
+  "id": "llm-reliability-2026-08-08",
+  "topic": "generation-reproducibility",
+  "question": "固定 seed 后多次输出几乎一致，但答案仍然错误。这个结果说明什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "seed 自动提高事实准确率"
+   },
+   {
+    "i": 2,
+    "text": "只要重复次数足够，错误会自动消失"
+   },
+   {
+    "i": 3,
+    "text": "错误只能通过提高 temperature 修复"
+   }
+  ]
+ }
+]

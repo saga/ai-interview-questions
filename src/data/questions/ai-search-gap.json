@@ -23,6 +23,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -30,7 +36,12 @@
       "target": "能判断「信息检索的核心是根据用户查询，从大规模候选集合中找到并排序与查询相关的信息，而不是直接生成答案」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「从大规模集合中找到与查询相关的内容并返回合适结果」成立；并排除「从训练数据中生成一个最可能出现的答案文本」「把所有候选内容转换成统一长度的向量表示」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为信息检索就是生成答案，忽略了检索的输出是候选文档集合，生成答案是另一回事",
+      "以为检索的核心任务是把内容向量化，忽略了向量化只是实现召回的一种表示手段",
+      "以为检索做的是查询预测，忽略了查询建议属于独立功能，不是检索本身"
+    ]
   },
   {
     "id": "ai-search-gap-002",
@@ -59,6 +70,13 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
@@ -66,7 +84,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「第一阶段检索主要追求高召回，reranker 作用于召回之后的精排阶段，在较小候选集上做更精细的 query-document 相关性判断，从而提高排序精度，本身不改变召回」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在较小候选集上做更精细的相关性判断」「目标是提升排序精度」等 3 项成立；并排除「替代原始索引并重建整个文档集合」「把候选压缩成单个固定长度向量」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为重排器可以取代原始索引，忽略了它只对已召回的候选打分，本身不生产候选",
+      "以为重排器做的是把候选压缩成定长向量，忽略了它输出的是候选之间的相对顺序分数"
+    ]
   },
   {
     "id": "ai-search-gap-003",
@@ -95,6 +117,13 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
@@ -102,7 +131,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「更大的候选池通常提高召回上限，因为 reranker 只能重排已经检索到的结果」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「潜在召回上限提高」「cross-encoder对每个候选计算更贵」等 3 项成立；并排除「召回上限降低且所有检索阶段成本下降」「只影响排序位置」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为增大 top-K 会降低召回上限并使各阶段成本下降，忽略了 K 变大是抬高召回上限，代价是重排成本线性上升",
+      "以为候选集大小只影响排序位置、不影响延迟，忽略了 cross-encoder 要对每个候选做一次前向，候选翻倍延迟与算力同步翻倍"
+    ]
   },
   {
     "id": "ai-search-gap-004",
@@ -130,6 +163,13 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -137,7 +177,12 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「精确术语适合 lexical retrieval，自然语言语义检索需要 dense retrieval」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「结合 lexical 与 dense retriev…」「对合并后的候选统一做 reranking」等 2 项成立；并排除「只使用 BM25：认为关键词能覆盖语义查询」「只使用 dense retrieval：认为语义检索…」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为关键词匹配能理解『如何减少连接池耗尽』这类表述，忽略了同义与句式差异会让精确匹配大量漏召",
+      "以为语义向量能稳定命中 MacBook Pro 这类型号，忽略了向量会把相近型号混在一起，精确词项命中率反而下降",
+      "以为大模型可以替代检索直接在文档库里挑答案，忽略了模型无法在大规模语料上定位，且不检索就没有可溯源依据"
+    ]
   },
   {
     "id": "ai-search-gap-005",
@@ -167,6 +212,14 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -174,7 +227,12 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「Agentic retrieval 允许模型根据问题动态决定是否检索、检索什么、使用哪个工具以及是否需要继续检索，而不是固定执行一次 retrieval」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此逐项确认「由 Agent 按问题动态决定是否需要检索」「由 Agent 决定检索什么内容、使用哪个检索工具」等 3 项成立；并排除「完全取消向量数据库」「只允许使用一次检索」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 Agentic Search 可以靠参数知识取消向量数据库，忽略了它恰恰加强了外部检索，只是把一次检索变成多轮决策",
+      "以为 Agentic Search 靠单次返回更多文档取胜，忽略了它的核心是迭代式按需检索与充分性判断",
+      "以为 Agentic Search 省掉了相关性判断，忽略了每轮都需判断证据是否充分、是否值得再检索"
+    ]
   },
   {
     "id": "ai-search-gap-006",
@@ -203,6 +261,13 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null,
+          1
         ]
       }
     },
@@ -210,7 +275,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「查询分解可以让系统分别检索公司 A、公司 B 和相关时间范围的数据，再综合结果」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「降低单次检索任务的复杂度」「让不同子问题可以使用不同检索策略或数据源」等 3 项成立；并排除「保证每个子查询都一定返回正确答案」「消除所有检索错误」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为拆解能保证每个子查询都返回正确答案，忽略了拆解只是降低单次检索难度，正确性仍依赖来源与抽取质量",
+      "以为拆细之后就不会出错、无需最终验证，忽略了各子查询的错误会累积，最终仍要交叉校验"
+    ]
   },
   {
     "id": "ai-search-gap-007",
@@ -239,6 +308,13 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
@@ -246,7 +322,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「Agentic retrieval 需要显式 termination condition，例如达到足够证据、最大轮数、预算或置信度阈值，并结合结果充分性提前终止」",
       "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「设置最大检索轮次或预算上限」「结合结果充分性判断」等 3 项成立；并排除「允许 Agent 一直检索到生成结果」「每次检索后清空历史结果」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为多检索总有益、可以一直检到生成结果，忽略了缺少终止条件会直接导致无限循环与成本失控",
+      "以为清空历史能避免旧信息干扰，忽略了历史正是判断『是否已检过』『是否有新证据』的唯一依据，清空必然重复检索"
+    ]
   },
   {
     "id": "ai-search-gap-008",
@@ -272,6 +352,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -279,7 +365,12 @@
       "target": "能判断「Model behavior 指模型在特定输入和运行条件下表现出的输出、决策和交互特征，包括能力、偏好、遵循指令方式及失败模式」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「模型在不同输入和条件下表现出的输出、决策和失败模式」成立；并排除「模型参数文件在磁盘上的存储格式和大小」「模型推理服务器的 GPU 利用率和网络吞吐」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 model behavior 指模型参数文件的存储格式与大小，忽略了它描述的是模型如何输出的行为特征",
+      "以为 model behavior 是 GPU 利用率与网络吞吐，忽略了那是基础设施监控指标",
+      "以为 model behavior 指训练数据的物理存储与索引方式，忽略了数据布局与模型输出行为无关"
+    ]
   },
   {
     "id": "ai-search-gap-009",
@@ -308,6 +399,13 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null,
+          1
         ]
       }
     },
@@ -315,7 +413,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「单向量表示可能压缩掉文档内部多个语义区域」",
       "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「保留文档内部不同局部内容各自的语义表示」「让 query 与文档中的局部内容进行更细粒度匹配」等 3 项成立；并排除「可以保证每个查询只匹配唯一一个文档」「会自动消除所有 embedding model 的语…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为多向量表示能保证每个查询只匹配唯一文档，忽略了它恰恰允许一篇文档的不同部分分别匹配不同查询",
+      "以为多向量能自动消除 embedding 模型的语义偏差，忽略了它只提高匹配粒度，模型本身的偏差依然存在"
+    ]
   },
   {
     "id": "ai-search-gap-010",
@@ -344,6 +446,13 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
@@ -351,7 +460,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「多向量会增加索引中的向量数量、存储和相似度计算成本，同时还需要定义如何聚合多个向量与 query 的匹配结果」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「索引存储量通常增加」「检索计算量通常增加」等 3 项成立；并排除「一定导致召回率下降」「一定使查询延迟低于单向量检索」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为多向量一定导致召回率下降，忽略了它的主要代价是存储与计算膨胀，召回通常反而提升",
+      "以为多向量检索延迟会低于单向量，忽略了需要比对更多向量，延迟通常更高"
+    ]
   },
   {
     "id": "ai-search-gap-011",
@@ -381,6 +494,14 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -388,7 +509,12 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「将文档表示为多个局部向量可以让 query 与具体章节或局部语义单元直接匹配，减少整篇文档单向量造成的信息压缩」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「为章节或局部语义单元生成多个向量表示」「在结果阶段将局部向量聚合回文档或片段」等 3 项成立；并排除「为整本手册只生成一个 embedding 以减少索引…」「完全关闭语义检索」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为整本手册生成一个 embedding 就够，忽略了长文档单向量会把章节细节平均掉，细粒度问题必然漏召",
+      "以为关闭语义检索只留标题关键词足够，忽略了用户问的是章节正文里的具体内容",
+      "以为把整本手册塞进 prompt 就能回答，忽略了体量远超可用窗口，且注意力稀释会让定位更不准"
+    ]
   },
   {
     "id": "ai-search-gap-012",
@@ -417,6 +543,13 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null,
+          1
         ]
       }
     },
@@ -424,7 +557,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「召回指标稳定而整体 latency 上升，说明问题更可能出现在 retrieval 后的 reranking、候选数量、模型服务或资源层，而不是召回质量本身」",
       "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「reranker 的候选数量是否被意外扩大」「cross-encoder 推理延迟是否发生变化」等 3 项成立；并排除「BM25 是否还能正确匹配某个具体术语」「是否降低了 embedding 维度」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为延迟上升是某个术语匹配异常导致，忽略了 Recall 未变说明召回正常，问题更可能出在 cross-encoder 重排阶段",
+      "以为延迟与 embedding 维度相关，忽略了降维会先影响召回质量，而 Recall 并未变化"
+    ]
   },
   {
     "id": "ai-search-gap-013",
@@ -450,6 +587,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -457,7 +600,12 @@
       "target": "能判断「Search quality 关注搜索结果是否真正满足用户信息需求，通常同时涉及相关性、覆盖率、排序质量等维度，而不仅仅是返回速度」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「搜索结果满足用户信息需求的程度」成立；并排除「搜索请求在服务器上的平均 CPU 使用率」「索引文件占用磁盘空间的大小」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 search quality 是平均 CPU 使用率，忽略了它描述的是结果满足用户需求的程度",
+      "以为 search quality 与索引占用的磁盘大小相关，忽略了存储占用属于成本而非质量",
+      "以为 search quality 指最大并发请求数，忽略了并发属于系统吞吐而非检索质量"
+    ]
   },
   {
     "id": "ai-search-gap-014",
@@ -483,6 +631,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -490,7 +644,12 @@
       "target": "能判断「Recall@K 主要关注相关结果是否被召回，而 nDCG@K 还考虑结果在不同位置的相关性等级，因此能够评价排序质量」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「Recall@K 关注相关结果是否进候选集」成立；并排除「Recall@K 只用于 dense」「Recall@K 衡量延迟」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为 Recall@K 只用于 dense 而 nDCG@K 只用于 BM25，忽略了两个指标都与具体检索器无关",
+      "以为这两个指标测的是延迟与 GPU 使用率，忽略了它们测的都是结果质量，只是维度不同",
+      "以为两者完全等价，忽略了 Recall 不看顺序而 nDCG 对位置敏感，高分结果排错位置时 Recall 不变但 nDCG 会掉"
+    ]
   },
   {
     "id": "ai-search-gap-015",
@@ -519,6 +678,13 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
@@ -526,7 +692,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「lexical retrieval 对精确 token、错误码和专有名词很有优势，dense retrieval 更擅长语义改写和概念匹配」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「lexical retrieval 能保留对精确术语…」「dense retrieval 能覆盖词面不同但语义…」等 3 项成立；并排除「hybrid search 保证任何查询都不需要再做…」「hybrid search 能消除所有索引与数据质量…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为混合召回之后就不再需要 reranking，忽略了混合只改善候选集，精排仍是独立环节",
+      "以为混合检索能消除所有索引与数据质量问题，忽略了它只是互补召回，脏数据依然存在"
+    ]
   },
   {
     "id": "ai-search-gap-016",
@@ -552,6 +722,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       }
     },
@@ -559,6 +735,11 @@
       "target": "能判断「高 Recall 说明相关文档大多进入候选集，但排序质量可能不足，因此应检查 ranking/reranking，而不是简单继续扩大召回数量」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「优先分析 top-ranked results 的排…」成立；并排除「继续大幅增加 top-K」「删除所有 dense retrieval」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为高 Recall 说明排序已经足够好，忽略了前几条不相关正是排序问题，继续加 top-K 只会放进更多不相关内容",
+      "以为语义检索是罪魁应删除，忽略了前排不准应加精排而不是砍掉一路召回",
+      "以为加大上下文让生成模型自行修正排序即可，忽略了排序需要可复现的打分，交给生成既慢又不稳且难以定位问题"
+    ]
   }
 ]

@@ -26,6 +26,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -36,7 +42,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「Prompt Caching 只降低了被缓存前缀那部分的输入单价，而高并发 Agent 每轮都会新增工具输出与递增历史，这些无法缓存的增量累积起来依然是主要成本」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「Prompt Caching 仅降低了被缓存的前缀输…」「如果所有请求默认都发送给最昂贵的 Frontier …」等 3 项成立；并排除「只要 Prompt Caching 的命中率超过 8…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为缓存命中率超过 80% 时其降本效果在任意场景下都必然优于把简单任务路由到廉价模型，命中率只是折扣率，实际省多少钱取决于绝对 token 量与两档模型的单价差"
+    ]
   },
   {
     "id": "agentic-61",
@@ -64,7 +73,13 @@
         "answer": [
           0
         ],
-        "question": "选型评审：两个候选模型 benchmark 分数接近、层数与 hidden size 相近，候选 A 的单 token KV cache 只有候选 B 的 1/16。你的 Agent 平台需要在上百路并发会话下保持稳定延迟。选择 A 最直接、可稳妥预期的收益是？"
+        "question": "选型评审：两个候选模型 benchmark 分数接近、层数与 hidden size 相近，候选 A 的单 token KV cache 只有候选 B 的 1/16。你的 Agent 平台需要在上百路并发会话下保持稳定延迟。选择 A 最直接、可稳妥预期的收益是？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：KV cache ∝ 上下文长度且 Agent 上下文持续增长；总占用 = 每 token × 长度 × 并发数；低 KV/token → 同显存更高并发/更长上下文/更低单位成本；但 prefill 计算、权重读取带宽、kernel 效率与模型质量不会被 KV 优化改善。\n\n解析：Agent workload 的特殊性在于上下文不是静态问答而是单调增长的轨迹（system prompt → tool call → tool result → …），KV cache 随之线性膨胀；上百个并发 session 再把这个数字放大两个数量级。此时 KV/token 是并发容量的硬上限：例如单 token 48KiB、10k 上下文时每路约 0.47GB，20GB 富余显存只能撑约 40 路；换成 1/16 的开销即可支撑数百路。benchmark 分数无法反映这一约束。反过来，KV 优化帮不上忙的地方同样要认清：prefill 仍要对全部输入做完整前向计算（首 token 延迟由层数、hidden size、kernel 效率主导）；decode 每步仍要读全部权重；批调度、采样、工具往返延迟照旧；模型会不会选对工具更是与缓存无关的能力问题。"
@@ -74,7 +89,12 @@
       "target": "能判断「Agent 上下文随多轮工具调用单调增长，KV cache ∝ 上下文长度，总占用还要乘并发路数——低 KV/token 直接换来更高并发或更长可用上下文，这是吞吐与成本的硬约束」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「同样显存下能承载更高并发或更长上下文：decode …」成立；并排除「Prefill 吞吐同步成倍提升：KV cache …」「模型对工具参数的选择准确率会随之提升」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 KV cache 变小会让 prefill 吞吐同步成倍提升、首 token 延迟等比例下降，prefill 是算力受限，压缩缓存主要缓解的是 decode 阶段的显存与带宽压力",
+      "以为模型对工具参数的选择准确率会随之提升、容量优化可替代工具调用的专项评测，容量与能力是两个维度，前者不改善决策质量",
+      "以为显存不再是约束、可以取消上下文截断与摘要策略让长对话无上限累积，注意力开销、噪声与成本仍会随长度上升而恶化"
+    ]
   },
   {
     "id": "ai-eng-022",
@@ -107,14 +127,26 @@
           0,
           1
         ],
-        "question": "一家律所的合同审查 Agent 平均单请求耗时 18 秒，内部由三次串行 LLM 调用（条款抽取→风险识别→摘要起草）、两次向量检索和两次外部系统查询组成，全部按顺序执行。业务方要求压到 8 秒以内，基础设施预算短期内不变。以下哪些做法正确？（多选）"
+        "question": "一家律所的合同审查 Agent 平均单请求耗时 18 秒，内部由三次串行 LLM 调用（条款抽取→风险识别→摘要起草）、两次向量检索和两次外部系统查询组成，全部按顺序执行。业务方要求压到 8 秒以内，基础设施预算短期内不变。以下哪些做法正确？（多选）",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「合并调用、并行执行独立步骤、缩 context、设合理 timeout」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「先建分阶段 latency trace」「合并可省的 LLM 调用」等 2 项成立；并排除「优先扩容模型配额与网络带宽」「把三次调用全换为极速小模型」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为优先扩容模型配额与网络带宽、保持串行结构靠基础设施吸收耗时最有效，串行结构决定的端到端下限不是堆资源能绕过的",
+      "以为把三次调用全换成极速小模型、单次提速会线性传导到端到端，质量敏感步骤换小模型会牺牲效果，且局部提速并不线性叠加",
+      "以为把检索与工具调用全部串行排在 LLM 调用之后能避免并发竞争，那只会让本可并行的等待相互叠加，反而拉长总时长"
+    ]
   },
   {
     "id": "ai-eng-027",
@@ -141,6 +173,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -151,7 +189,12 @@
       "target": "能判断「Prefix Caching 仅在请求的前缀字符与历史请求完全一致时才能命中」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「将静态文档语料（Corpus）置于最前」成立；并排除「将动态提问（Question）置于最前」「将语料与提问混合输入」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为把动态提问置于最前、静态语料置于最后更合理，理由是注意力对头部赋予最高权重，前缀缓存只认 token 前缀是否一致，与注意力权重无关，动态内容在前会直接击穿缓存",
+      "以为把语料与提问混合并用 <cache> 标签标记关键块、LLM 会自动识别跨请求的语义相似度，缓存匹配是基于 token 前缀的精确匹配，没有任何语义识别",
+      "以为提示词顺序无影响、只要总 token 数不变网关就会自动命中，前缀缓存在第一个不一致的 token 处即告失效"
+    ]
   },
   {
     "id": "ai-eng-029",
@@ -180,6 +223,12 @@
           1,
           2,
           3
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
         ]
       },
       "open": {
@@ -190,7 +239,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「Prefix Cache 完全命中意味着 Prefill 阶段的上下文计算时间几乎被消除」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「主要延迟消耗在模型为了进行跨文档推导与汇总而生成的思…」「输入上下文越庞大」等 3 项成立；并排除「KV Cache 读取吞吐量不足」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为瓶颈是 KV Cache 读取吞吐不足造成的 prefill 极长延迟，100% 命中时 prefill 已被省去，200 秒级延迟主要来自超长上下文上逐 token 的注意力计算与冗长输出，而非缓存读取"
+    ]
   },
   {
     "id": "ai-eng-037",
@@ -216,6 +268,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -226,7 +284,12 @@
       "target": "能判断「加速比取决于草稿-目标的接受率与两者速度差，典型 2-3x」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「输出与目标模型独自生成严格同分布（无损）」成立；并排除「它会改变输出分布」「只有当草稿模型与目标模型参数量相差 100 倍以上时…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为投机解码会改变输出分布、只适合质量不敏感场景且在代码与数学上必须禁用，规范的验证与重采样保证分布不变，只是接受率下降时收益变小",
+      "以为只有草稿与目标参数量相差 100 倍以上才能获得加速、差距不足反而更慢，加速取决于接受率与草稿开销之比，没有这样的参数倍率门槛",
+      "以为投机解码的主要价值是降低显存而非延迟，它是典型的延迟优化手段，对显存占用并无实质改善"
+    ]
   },
   {
     "id": "ai-eng-039",
@@ -255,6 +318,13 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -265,7 +335,12 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「AWQ 是激活感知量化：按激活分布保护高影响权重，4-bit 下质量损失小于朴素 GPTQ，是多数 GPU 部署的首选」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「AWQ 按激活分布保护高影响权重」「INT8 质量接近无损但只省约一半显存」等 2 项成立；并排除「同为 4-bit 分组量化」「4-bit 只适合离线批处理」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为同为 4-bit 分组量化差异只在校准集、选型只看社区热度与 kernel 生态，实际差异还来自分组粒度、是否保留离群通道、数值格式与硬件支持",
+      "以为 4-bit 只适合离线批处理、在线服务至少要用 INT8，经过良好实现与校准的 4-bit 在线上同样可用，需按实测延迟与质量取舍",
+      "以为 INT8 因保留离群通道质量始终优于任何 4-bit、达标前提下默认选 INT8，量化粒度与实现质量更关键，优秀的 4-bit 方案完全可能逼近 INT8"
+    ]
   },
   {
     "id": "ai-eng-052",
@@ -292,6 +367,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -302,7 +383,12 @@
       "target": "能判断「降级阶梯：ML 打分 >50ms 未返回即降级为纯规则打分（覆盖已知主要欺诈模式）」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「同步路径只做画像拼接 + ML 打分 + 规则引擎」成立；并排除「LLM 解释放同步路径但设 20ms 超时」「画像离线预计算有小时级延迟」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为 LLM 解释放同步路径、设 20ms 超时再降级为空解释即可，小模型解释几乎不可能在 20ms 内完成，同步还会挤占整体预算，应异步化或改用模板",
+      "以为离线画像有小时级延迟就只能用实时计算、延迟靠加机器解决，正确做法是离线画像加实时增量修正的混合，而非二选一",
+      "以为单次重试超时设 200ms 并在窗口内无限重试、重试不算预算，重试会叠加占用端到端预算，必须纳入总预算且限制次数"
+    ]
   },
   {
     "id": "ai-eng-064",
@@ -331,6 +417,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -341,7 +433,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「风险：若 Cache Key 只由 Query 文本哈希或语义向量构成，低权限用户可能命中高权限用户留下的缓存答案——ACL Leakage，越权数据根本没经过检索层过滤就直达用户」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「仅以 Query 文本哈希或语义向量作 Cache …」「Cache Key 的生成或语义缓存的候选过滤必须绑…」等 3 项成立；并排除「语义缓存关闭向量匹配改精确哈希」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为关闭语义向量匹配改用精确哈希就天然免疫越权，因为不同权限用户的 query 文本必然不同，实际上不同租户完全可能提出字面相同的查询，命中即跨租户泄露；缓存键必须带上租户与权限视图"
+    ]
   },
   {
     "id": "ai-fund-029",
@@ -372,14 +467,24 @@
           0,
           1
         ],
-        "question": "一款合同审查工具把用户上传的平均 5 万 token 的合同全文放进 prompt 逐条审查。用户抱怨点击后迟迟看不到首个输出字，而一旦开始流式输出，后续文字流出的速度基本正常。产品经理据此提议把最大输出 token 数减半来提速。作为推理优化负责人，以下哪些判断正确？（多选）"
+        "question": "一款合同审查工具把用户上传的平均 5 万 token 的合同全文放进 prompt 逐条审查。用户抱怨点击后迟迟看不到首个输出字，而一旦开始流式输出，后续文字流出的速度基本正常。产品经理据此提议把最大输出 token 数减半来提速。作为推理优化负责人，以下哪些判断正确？（多选）",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「Prefill 并行处理 prompt、compute-bound，决定 TTFT」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「Prefill 一次性并行处理整个长 prompt」「Decode 逐 token 串行生成」等 2 项成立；并排除「流式输出让感知延迟等于真实延迟」「两阶段瓶颈完全相同」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为流式输出让感知延迟等于真实延迟、TTFT 可被体验设计吸收，TTFT 是客观指标，流式只改善主观等待感，不能替代优化",
+      "以为两个阶段瓶颈完全相同、都是显存带宽不足因而只能换硬件，prefill 算力受限、decode 访存受限，优化路径截然不同"
+    ]
   },
   {
     "id": "ai-fund-050",
@@ -409,14 +514,25 @@
         "answer": [
           1
         ],
-        "question": "某应用的 LLM 网关监控显示 P50 端到端延迟从 1 秒突增至 8 秒，错误率无明显变化。回看变更记录：三天前上游团队扩充了 system prompt，昨天推理服务商提示部分实例处于拥堵状态。以下定位方法哪个最合理？"
+        "question": "某应用的 LLM 网关监控显示 P50 端到端延迟从 1 秒突增至 8 秒，错误率无明显变化。回看变更记录：三天前上游团队扩充了 system prompt，昨天推理服务商提示部分实例处于拥堵状态。以下定位方法哪个最合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「总延迟 = queue + network + TTFT(prefill) + TPOT×output_tokens」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「把总延迟拆为排队、网络、TTFT、TPOT×toke…」成立；并排除「先重启一半实例做对照实验」「云上跨可用区链路抖动是 P50 突增最常见的原因」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为先重启一半实例做对照实验是最快的二分手段，P50 整体抬升通常来自上游、流量或发布的共性因素，重启会破坏现场并可能误导结论",
+      "以为跨可用区链路抖动是 P50 突增最常见的原因、应先切单可用区验证，链路问题更多表现为长尾拉高而非中位数整体抬升",
+      "以为 8 倍突增已超出正常波动、直接按容量事故扩容即可，扩容掩盖不了上游限流、输入分布变化或依赖劣化这类根因"
+    ]
   },
   {
     "id": "ai-inference-003",
@@ -446,14 +562,25 @@
         "answer": [
           0
         ],
-        "question": "一家社交产品自建开源模型推理服务。某次版本发布后，用户反馈对话「半天不出第一个字」：监控显示 TTFT p50 从 500ms 恶化到 3 秒，但逐 token 生成速度几乎没有变化，GPU 利用率与请求量也与发布前持平。最可能的原因与排查方向是什么？"
+        "question": "一家社交产品自建开源模型推理服务。某次版本发布后，用户反馈对话「半天不出第一个字」：监控显示 TTFT p50 从 500ms 恶化到 3 秒，但逐 token 生成速度几乎没有变化，GPU 利用率与请求量也与发布前持平。最可能的原因与排查方向是什么？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「TTFT↑ 而 decode 不变 ⇒ 瓶颈在首 token 前：排队、prefill 输入膨胀、batching 调度、prefix cache 失效或 provider 容量…」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「首 token 前出问题：分段 trace 查排队、…」成立；并排除「KV Cache 耗尽拖慢解码」「发布后 TTFT 上升常见于新权重的 kernel …」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为 KV Cache 耗尽拖慢了解码、应下调 max_output_tokens 释放显存，TTFT 上升而生成速度不变说明瓶颈在 prefill 或排队，与解码显存无关",
+      "以为发布后 TTFT 上升常见于 kernel 自调优未完成、跑一段 warmup 观察一个周期即可，把可观测的 6 倍劣化归因于预热会延误定位",
+      "以为根因是 GPU 算力不足、换更强的卡就能让首字延迟同比例下降，decode 未变说明算力并非新增瓶颈，应先查输入长度、排队与缓存命中"
+    ]
   },
   {
     "id": "ai-inference-004",
@@ -482,14 +609,25 @@
         "answer": [
           0
         ],
-        "question": "一家公司的平台组为内部百余个业务方自托管 LLM API，负载混合了大量短分类请求与少数长文生成长请求。采用静态 batching 时观察到：GPU 计算利用率并不饱和，整体吞吐上不去，且同一批次里的短请求延迟被最长请求拖到数十秒。造成该现象的根本原因与改进方向是什么？"
+        "question": "一家公司的平台组为内部百余个业务方自托管 LLM API，负载混合了大量短分类请求与少数长文生成长请求。采用静态 batching 时观察到：GPU 计算利用率并不饱和，整体吞吐上不去，且同一批次里的短请求延迟被最长请求拖到数十秒。造成该现象的根本原因与改进方向是什么？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「decode 访存密集需批量填充 GPU」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「decode 访存密集」成立；并排除「把同 batch 的 prompt 按长度分桶后拼接…」「两者都是凑批思想」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为把 prompt 按长度分桶后拼成定长序列就能消除气泡，静态分桶解决不了同一请求内生成长度的动态差异，必须靠请求级调度",
+      "以为两者都是凑批思想、continuous batching 只是 batch size 动态，本质区别在于以迭代为粒度让完成的请求立刻退出、新请求随时加入",
+      "以为 continuous batching 的吞吐收益只是显存收益的副产品、看显存曲线即可评估，核心收益来自消除批内等待最长序列的气泡，显存改善只是附带"
+    ]
   },
   {
     "id": "ai-inference-005",
@@ -519,14 +657,25 @@
         "answer": [
           2
         ],
-        "question": "一家创业公司微调了一个 70B 模型准备上线客服质检，但现有集群单卡显存 48G，BF16 部署需要约 140G 显存放不下；上线窗口只剩三周，没有时间与算力做完整再训练。质量红线是内部评测集得分下降不得超过 2 个百分点，且未来半年流量还会增长。以下方案评估哪个是正确的？"
+        "question": "一家创业公司微调了一个 70B 模型准备上线客服质检，但现有集群单卡显存 48G，BF16 部署需要约 140G 显存放不下；上线窗口只剩三周，没有时间与算力做完整再训练。质量红线是内部评测集得分下降不得超过 2 个百分点，且未来半年流量还会增长。以下方案评估哪个是正确的？",
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「可考虑权重-only 量化或 FP8：显存降到 1/…」成立；并排除「INT4 以下的精度损失可通过调高采样温度补偿」「训练后量化必须配合蒸馏微调才能收敛」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 INT4 的精度损失可以通过调高采样温度补偿、无需跑评测集，温度无法恢复被量化抹掉的能力，必须做实测回归",
+      "以为 PTQ 必须配合蒸馏微调才能收敛、直接上线必然乱码，主流 PTQ 方案（GPTQ/AWQ）用校准集即可，通常无需训练",
+      "以为量化反量化使每 token 都要全精度还原、单卡吞吐掉到一半以下，反量化开销有限，低比特通常带来净的吞吐与显存收益"
+    ]
   },
   {
     "id": "ai-infra-001",
@@ -555,6 +704,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -565,7 +720,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「分页式 KV Cache 借鉴 OS 虚拟内存，把逻辑上连续的 KV 切成固定大小物理 Block 按需分配，消除预分配带来的显存碎片」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「分页式 KV Cache 借鉴 OS 虚拟内存分页」「前缀树复用对 KV Cache 按 Token 序列…」等 3 项成立；并排除「分页式机制只能在单次请求内动态分配物理块」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为分页式机制只能在单次请求内分配物理块、无法支持跨请求共享因而与前缀复用互斥，恰恰相反：分页后的物理块带引用计数，正是实现跨请求 KV 共享（前缀复用）的基础"
+    ]
   },
   {
     "id": "ai-infra-002",
@@ -592,6 +750,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -602,7 +766,12 @@
       "target": "能判断「Continuous Batching在Iteration/Step粒度调度，每Step结束点动态插入新请求/移出已完成请求，消除等待气泡」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「在 Iteration（Token 生成 Step）…」成立；并排除「将输入文本打碎为固定长度的 Chunk」「padding 配合长度分桶可把浪费控制在 10% …」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为把输入打碎为固定长度 chunk 在张量并行维度上切分就能让长度变化不影响调度、消除气泡，那只改变并行切分方式，并未解决生成长度不一导致的等待",
+      "以为 padding 配合长度分桶可把浪费控制在 10% 以内、是中小规模首选，分桶只能减少 padding 浪费，仍无法避免批内等待最长序列的气泡",
+      "以为 continuous batching 是把 prefill 与 decode 拆到不同的 GPU 物理节点，那是 PD 分离，与连续批处理的调度机制不是一回事"
+    ]
   },
   {
     "id": "ai-ops-001",
@@ -632,14 +801,25 @@
         "answer": [
           1
         ],
-        "question": "一款面向企业客户的报表解读助手调用量激增，分析发现约六成请求高度重复，LLM 账单压力巨大。团队计划在应用层引入 LLM Response Cache。架构评审需要敲定缓存键设计与禁入范围，以下哪个方案最合理？"
+        "question": "一款面向企业客户的报表解读助手调用量激增，分析发现约六成请求高度重复，LLM 账单压力巨大。团队计划在应用层引入 LLM Response Cache。架构评审需要敲定缓存键设计与禁入范围，以下哪个方案最合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能设计 LLM 响应缓存的键构成与准入边界，并说明哪些请求不应进缓存",
       "reasoningGoal": "先确定缓存键需在归一化 query 之上纳入 prompt 版本、模型、温度等全部影响输出的变量；再按请求性质划出禁区（私有上下文、实时数据、创意发散、有副作用的调用）；并把失效策略与版本绑定，排除只用原始 query 哈希或让个性化请求进共享缓存。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为缓存键只用原始查询字符串的哈希即可，模型版本与温度等参数不影响输出一致性，相同输入在不同模型版本与采样参数下输出可能完全不同，这些都必须进键",
+      "以为个性化请求也可进共享缓存、key 拼上 user_id、实时数据设短 TTL，个性化与实时数据类请求本质上不适合共享缓存，拼 id 只是换来极低的命中率",
+      "以为 prompt 版本升级多为措辞优化、语义不变则缓存仍有效，不绑定版本会让新旧口径的答案混用；缓存雪崩应靠灰度与分批失效缓解"
+    ]
   },
   {
     "id": "ai-ops-002",
@@ -671,14 +851,26 @@
           2,
           3
         ],
-        "question": "一个 IT 服务台助手观察到大量语义重复但措辞不同的提问，例如「怎么重置密码？」和「密码忘了如何找回？」。为节省调用成本，团队打算引入 Semantic Cache：query 经 embedding 编码后在历史 query 向量库中检索，相似度超过阈值就直接返回对应的历史答案，未命中再正常调用并回填。关于该方案的风险控制与适用边界，正确的有哪些？（请选择两个选项）"
+        "question": "一个 IT 服务台助手观察到大量语义重复但措辞不同的提问，例如「怎么重置密码？」和「密码忘了如何找回？」。为节省调用成本，团队打算引入 Semantic Cache：query 经 embedding 编码后在历史 query 向量库中检索，相似度超过阈值就直接返回对应的历史答案，未命中再正常调用并回填。关于该方案的风险控制与适用边界，正确的有哪些？（请选择两个选项）",
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          null,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「最大风险是“相似不等于同答”的错误命中且难以察觉——限定事实型无状态 query、分区校准阈值、TTL 兜底」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「最大风险是相似不等于可复用：年份不同的两问高度相似但…」「应限于事实型、无状态、答案稳定的查询启用」等 2 项成立；并排除「字符串精确匹配的缓存天然无误命中」「阈值设 0.99 可同时保证正确率与命中率」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为精确匹配缓存天然无误命中、语义缓存只需把阈值设到等价高位即可兼得，阈值再高也挡不住语义相近但答案不同的误命中，且命中率会趋近于零",
+      "以为阈值设 0.99 可同时保证正确率与命中率、一次调参永久生效，阈值必须按业务容错度实测校准并持续回归",
+      "以为把历史摘要拼进 query 就能消除对话历史的影响、开放对话同样适用语义缓存，多轮上下文使相同问句的答案依赖前文，风险显著高于单轮场景"
+    ]
   },
   {
     "id": "ai-quant-fp4-01",
@@ -707,6 +899,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -717,7 +915,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「4-bit 预训练首先要硬件原生支持（如 FP4 张量计算单元），否则低精度只能靠反量化模拟，拿不到收益」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「直接使用 4-bit 进行预训练通常依赖硬件体系结构…」「相比于高精度预训练后量化（Post-Training…」等 3 项成立；并排除「采用 4-bit 预训练会显著增加模型训练时的显存消…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 4-bit 预训练会显著增加训练显存消耗，恰恰相反：低精度权重与激活正是为了降低显存与功耗；反向传播中的高精度主副本与补偿累加等开销，远小于它所省下的空间"
+    ]
   },
   {
     "id": "ai-rl-scale-01",
@@ -744,6 +945,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -754,7 +961,12 @@
       "target": "能判断「RL需大规模并行采样积累探索，推理快则低成本扩rollout」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「推理速度更快、单 Token 开销更低的模型」成立；并排除「RL 后训练的性能提升仅取决于奖励模型（Reward…」「RL 阶段要求模型必须保持高精度的慢速推理」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 RL 后训练的提升仅取决于奖励模型准确度、与推理吞吐无关，rollout 吞吐直接决定单位时间能采样多少轨迹，是 RL 规模化的硬约束",
+      "以为 RL 阶段必须保持高精度慢速推理、降低延迟会破坏收敛，经过校准与误差修正的低精度推理通常可用于 rollout，并能显著提升采样效率",
+      "以为 RL 中能力提升的唯一瓶颈是预训练数据量、与练习环境的多样性无关，RL 阶段的上限高度依赖任务与环境的可验证性与多样性"
+    ]
   },
   {
     "id": "cache-prefix-01",
@@ -783,6 +995,12 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
@@ -793,7 +1011,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「前缀需从头连续匹配、System Prompt置前置提升命中、命中可复用KV显著降TTFT」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「Prefix Caching 依赖从序列开头开始的连…」「在工程实践中」等 3 项成立；并排除「只要两个请求中包含完全相同的 System Prom…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为只要两个请求包含完全相同的 System Prompt、放在开头还是末尾都能获得相同的加速，前缀缓存只认从第一个 token 起的连续前缀，静态内容必须置于最前"
+    ]
   },
   {
     "id": "harness-api-01",
@@ -822,6 +1043,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -832,7 +1059,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「API 层对 TTFT 的影响主要来自分词与安全审查两处：无状态请求每次都要对全量历史重新分词，CPU 耗时随上下文长度线性增长」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在无状态请求中」「结合会话状态保持」等 3 项成立；并排除「安全审查分类器必须严格在 LLM 推理启动之前同步完…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为安全审查必须严格在 LLM 推理启动之前同步完成、并发启动是反模式，实际做法是与推理并行执行并在输出首 token 前拦截，串行只会白白抬高 TTFT"
+    ]
   },
   {
     "id": "harness-cache-01",
@@ -860,6 +1090,12 @@
         "answer": [
           0,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1
         ]
       },
       "open": {
@@ -870,7 +1106,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「易变权限应移出Prompt由Harness校验」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在存储工具定义（如 MCP 工具）时使用无序 Has…」「应当将易变的运行时配置（如权限策略）移出 Promp…」等 2 项成立；并排除「当用户在运行期修改工具的审批策略（如将“询问确认”改…」「对历史消息进行中间修改或调整序列化格式」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为运行期修改工具审批策略应直接更新 System Prompt 中的权限文本以确保 LLM 拿到最新规则，改动前缀会击穿缓存，易变权限应放到后段或用工具返回值表达",
+      "以为对历史消息做中间修改或调整序列化格式、只要总 token 数一致就不会破坏缓存，前缀缓存是逐 token 精确匹配，任何中间改动都会使其后全部失效"
+    ]
   },
   {
     "id": "harness-router-01",
@@ -899,6 +1139,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -909,7 +1155,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「缓存感知路由要解决的是「KV Cache 在哪」与「节点还有多少余量」的联合决策：路由到未持有该会话缓存的节点，新节点必须为全部历史 token 重做 Prefill，代价极高」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「若将会话的后续请求路由到未持有该会话 KV Cach…」「缓存感知路由需要同时权衡“节点负载状况（队列深度）”…」等 3 项成立；并排除「会话粘性应硬绑定」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为会话粘性应硬绑定、负载失衡时优先横向扩容 GPU 而非打散会话，缓存感知路由需要在亲和性与负载均衡之间动态权衡，硬绑定会造成热点与排队恶化"
+    ]
   },
   {
     "id": "infer-prefill-01",
@@ -938,6 +1187,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -948,7 +1203,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「Prefill算力受限、Decode带宽受限、TTFT由Prefill决定、TPS由Decode决定」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「Prefill 阶段并行处理输入的 Prompt 序…」「Decode 阶段每次前向传播仅生成一个 Token」等 3 项成立；并排除「TTFT（Time to First Token」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 TTFT 主要由 decode 阶段决定、TPS 主要由 prefill 阶段决定，恰恰相反：TTFT 由 prefill 决定，逐 token 的生成速度由 decode 决定"
+    ]
   },
   {
     "id": "llm-07",
@@ -979,7 +1237,14 @@
           1,
           2
         ],
-        "question": "一家在线客服公司自托管了一个开源大语言模型，高峰期生成速度明显变慢、显存接近打满，但预算不允许更换硬件。性能分析显示：解码阶段每生成一个 token 都要把全部权重和不断增长的 KV cache 读一遍，属于典型的访存受限（memory-bandwidth-bound）场景，且团队要求输出内容不能发生明显变化。以下哪些改造措施对症且值得采纳？（请选择以下三个选项）"
+        "question": "一家在线客服公司自托管了一个开源大语言模型，高峰期生成速度明显变慢、显存接近打满，但预算不允许更换硬件。性能分析显示：解码阶段每生成一个 token 都要把全部权重和不断增长的 KV cache 读一遍，属于典型的访存受限（memory-bandwidth-bound）场景，且团队要求输出内容不能发生明显变化。以下哪些改造措施对症且值得采纳？（请选择以下三个选项）",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：对权重做 INT4/FP8 量化，减少每步需读取的字节数；用 GQA/MQA 减少 KV 头数，缩小 KV cache；增大批量（batch），把权重读取摊到更多请求上；使用投机解码（speculative decoding），一次前向验证多个草稿 token。\n\n解析：解码每步都要读一遍权重和 KV cache，属于带宽瓶颈。量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段。"
@@ -989,7 +1254,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「量化减少权重字节、GQA 缩小 KV cache、大批量摊薄权重读取、投机解码用一次前向并行验证多个 token（输出分布不变），都是对症的手段」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「对模型权重做 INT4/FP8 量化」「采用 GQA/MQA 减少 KV 头数」等 3 项成立；并排除「把权重从当前精度升级回 FP32 存储以获得更好的数…」「KV cache 常驻永不过期可最大化复用」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为把权重升级回 FP32 存储再用增大批量摊薄读取开销能降低单 token 延迟，FP32 只会倍增访存量，而解码阶段加大 batch 并不改善单请求延迟",
+      "以为 KV cache 常驻永不过期能最大化复用、显存不足时应优先淘汰模型权重，权重一旦被淘汰就要反复从磁盘重载，代价远高于淘汰部分 KV"
+    ]
   },
   {
     "id": "llm-19",
@@ -1017,7 +1286,13 @@
         "answer": [
           3
         ],
-        "question": "你在整理一份\"LLM 架构改动动机图谱\"，需要区分哪些改动是为了跑得更省、哪些是为了学得更好。上述四项设计中，首要设计目标不是 inference efficiency 的是？"
+        "question": "你在整理一份\"LLM 架构改动动机图谱\"，需要区分哪些改动是为了跑得更省、哪些是为了学得更好。上述四项设计中，首要设计目标不是 inference efficiency 的是？",
+        "misconceptionMap": [
+          0,
+          1,
+          2,
+          null
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：MLA 缩 KV cache、KDA 降低长上下文注意力复杂度、LatentMoE 降低专家 FLOPs——三者首要目标是推理效率；Attention Residuals 以额外计算换深层信号传播与表达能力，首要目标是质量。\n\n解析：判断依据是\"改动直接优化的资源或指标\"：MLA 改变 KV cache 的字节画像，直接影响并发容量与显存账单；KDA 用线性状态更新替代二次方注意力矩阵，长上下文 prefill/decode 成本显著下降；LatentMoE 压专家矩阵乘法的规模。而 Attention Residuals 反向——它在标准前向之外追加聚合计算，动机是缓解深层网络的信号衰减、提升模型上限，属于 quality-driven 的结构投资。注意这不是说它不能带来间接收益（例如更快收敛、更少层数达到同等质量），但\"首要设计目标\"的归属应以机制的直接作用对象为准。"
@@ -1027,7 +1302,12 @@
       "target": "能判断「LatentMoE 在低维空间执行专家计算以降低 FLOPs——三者都是冲着推理效率去的」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「Attention Residuals：对前若干层的…」成立；并排除「MLA：将 K/V 投影到共享的低秩 latent …」「KDA：以带门控的增量状态更新形式重写注意力」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 MLA 的首要目标不是推理效率，把 K/V 投影到共享低秩 latent 正是为压缩 KV 显存与带宽",
+      "以为以门控增量状态重写注意力的首要目标不是推理效率，替代 softmax 注意力正是为降低解码阶段的计算与访存复杂度",
+      "以为把专家输入输出投影到低维 latent 的 LatentMoE 其首要目标不是推理效率，低维投影正是为削减专家侧的算力与通信开销"
+    ]
   },
   {
     "id": "mlops-01",
@@ -1054,7 +1334,13 @@
         "answer": [
           0
         ],
-        "question": "一家智能硬件公司要把语音指令识别模型部署到内存仅 2GB、无独立显卡的边缘盒子上，当前浮点模型的体积与推理延迟都超出硬件规格，产品可以接受轻微的精度损失但要求功能可用性不下降。团队讨论是否采用模型量化，以下哪个说法最准确地反映了量化在该决策中的定位？"
+        "question": "一家智能硬件公司要把语音指令识别模型部署到内存仅 2GB、无独立显卡的边缘盒子上，当前浮点模型的体积与推理延迟都超出硬件规格，产品可以接受轻微的精度损失但要求功能可用性不下降。团队讨论是否采用模型量化，以下哪个说法最准确地反映了量化在该决策中的定位？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案要点：降低模型体积与推理延迟，便于在资源受限设备上运行。\n\n解析：量化将浮点权重转为低精度（如 INT8），减小体积、加速推理，代价通常是轻微精度损失，而非提升准确率。"
@@ -1064,7 +1350,12 @@
       "target": "能判断「量化将浮点权重转为低精度（如 INT8），减小体积、加速推理，代价通常是轻微精度损失，而非提升准确率」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「量化把浮点权重转为 INT8 等低精度表示」成立；并排除「量化属于训练阶段的优化技巧」「量化只是改变磁盘上的存储格式」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为量化属于训练阶段技巧、能明显提升测试集准确率，量化是部署侧的压缩手段，通常伴随轻微的精度损失",
+      "以为量化只是改变磁盘上的存储格式、推理时仍按原精度计算因而没有延迟改善，真正的低比特推理会用对应的低精度 kernel 计算",
+      "以为量化后权重信息几乎无损、可以跳过效果回归测试直接替换线上模型，量化误差必须用评测集验证后再上线"
+    ]
   },
   {
     "id": "mlops-03",
@@ -1094,14 +1385,25 @@
         "answer": [
           0
         ],
-        "question": "某电商平台的算法团队正在规划两类业务的推理架构：一是每天凌晨基于前一日全量行为数据刷新数千万用户的兴趣画像，时效性要求不高；二是搜索结果排序必须在用户发起请求后几十毫秒内返回，否则转化率明显下滑。对于这两类业务的服务模式划分，以下哪种规划最合理？"
+        "question": "某电商平台的算法团队正在规划两类业务的推理架构：一是每天凌晨基于前一日全量行为数据刷新数千万用户的兴趣画像，时效性要求不高；二是搜索结果排序必须在用户发起请求后几十毫秒内返回，否则转化率明显下滑。对于这两类业务的服务模式划分，以下哪种规划最合理？",
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       }
     },
     "assessment": {
       "target": "能判断「考察离线批处理与在线实时服务的区别及适用场景」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「画像刷新走离线批处理」成立；并排除「两类业务统一走在线实时服务」「两类业务统一走离线批处理」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为两类业务统一走在线实时服务更好，因为在线单位成本低、吞吐高于离线批处理，实际上高吞吐与低成本恰恰是离线批处理的优势",
+      "以为两类业务统一走离线批处理、把结果提前一天算好缓存供次日使用，实时性要求高的场景根本无法满足",
+      "以为离线推理指服务下线后才补跑的计算、画像刷新只能安排在停服窗口，离线/在线区分的是是否即时响应请求，与服务是否下线无关"
+    ]
   },
   {
     "id": "pd-disagg-01",
@@ -1130,6 +1432,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1140,7 +1448,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「PD 分离的动机是 Prefill 与 Decode 的瓶颈不同——前者算力受限、后者带宽受限——因此可以分别选型：Prefill 集群上高算力卡，Decode 集群上高带宽卡」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「Prefill 节点与 Decode 节点可以根据各…」「Prefill 节点在生成首 Token 和 KV …」等 3 项成立；并排除「PD 分离后 prefill 与 decode 无需…」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 PD 分离后 prefill 与 decode 无需任何协同、KV 传输开销为零、两组节点都是无状态的，实际上 KV 的跨节点传输与两阶段的协同调度正是 PD 分离的核心代价与难点"
+    ]
   },
   {
     "id": "quant-pref-decode-01",
@@ -1209,6 +1520,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1219,7 +1536,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「PTQ免训练但低比特易退化、QAT引入噪声适应精度好、量化降显存带宽为内存密集型优化、与GQA可叠加」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「PTQ（Post-Training Quantiza…」「QAT（Quantization-Aware Tra…」等 3 项成立；并排除「参数量化与注意力机制的 KV Cache 结构优化（…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为权重量化与 KV Cache 结构优化（如 GQA）属于不同层面、实际部署中无法同时使用，二者正可叠加：GQA 减少 KV 头数，量化压缩权重与缓存的数值精度"
+    ]
   },
   {
     "id": "spec-decode-01",
@@ -1248,6 +1568,12 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
@@ -1258,7 +1584,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「验证远低于逐生成、预预测不缩Prefill TTFT、低Batch算力空闲获益、高Batch饱和则禁用」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「投机解码利用了“大模型验证候选 Token 的计算开…」「当推理系统运行在低 Batch Size 条件下时」等 3 项成立；并排除「投机解码通过小模型替代大模型完成前缀处理」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为投机解码由草稿模型替代大模型完成前缀处理、能大幅缩短 prefill 的 TTFT，投机解码只加速逐 token 的解码阶段，prefill 仍由目标模型完成"
+    ]
   },
   {
     "id": "spec-decode-02",
@@ -1327,6 +1656,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1337,7 +1672,12 @@
       "target": "能判断「推理 Generation 阶段逐 Token 循环，每次从 HBM 加载 KV Cache（Memory-Bandwidth-Bound）」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「训练阶段通过 Causal Mask 实现对整个序列…」成立；并排除「训练阶段需要逐 Token 顺序计算以保持因果逻辑」「自回归推理的 Prefill 阶段与 Generat…」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为训练是逐 token 顺序计算因而访存受限、推理是矩阵并行因而算力受限、两者瓶颈互换，恰恰相反：训练是并行的矩阵计算、算力受限，自回归解码才是访存受限",
+      "以为推理的 prefill 与 generation 都是算力受限且算子利用率相同，prefill 算力受限、decode 访存受限，两者差异显著",
+      "以为 KV Cache 主要为训练阶段避免重复计算投影矩阵、加速反向传播，KV Cache 是推理期解码复用的机制，训练中并不使用"
+    ]
   },
   {
     "id": "thinking-token-limits",
@@ -1365,6 +1705,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -1375,7 +1721,12 @@
       "target": "能判断「推理期算力本质是用额外推理端 FLOPs 换取更长逻辑推导链与状态搜索空间用于纠正中间错误并拆解复杂多步问题」",
       "reasoningGoal": "先回到该机制的第一性原理；据此确认「推理期算力扩展本质上是用额外的推理端 FLOPs 换…」成立；并排除「增加推理期思考 Token 的数量可以在推理阶段动态…」「推理期算力扩展能够将 Self-Attention …」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为增加推理期思考 token 能在推理阶段动态重构预训练参数、从而凭空推出预训练数据中完全不存在的未公开事实，推理不改变权重，未知事实无法凭空产生",
+      "以为推理期算力扩展能把 self-attention 的复杂度从二次方降为线性、缩短首包响应时间，思考 token 只会增加计算量，不改变复杂度",
+      "以为只要无限增加思考 token 数量准确率就会无上限线性增长，实际存在明显的边际递减，并可能陷入过度思考与循环"
+    ]
   },
   {
     "id": "thinking-mode-control",
@@ -1403,6 +1754,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1413,7 +1770,12 @@
       "target": "能判断「通过后训练注入的 Control Tokens（如 <think>/<no_think>）或 Reasoning Budget 参数结合 Sampling Stop Sequen…」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「通过在 Prompt 中注入特定的控制标签（如 <t…」成立；并排除「三档对应三套蒸馏子模型」「通过动态裁剪 Transformer 层的数量（例如…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为三档对应三套蒸馏子模型、按难度路由分发，实际是同一套权重靠推理期的控制标记与解码约束实时切换",
+      "以为动态裁剪 Transformer 层数即可切换思维模式、删掉的层只负责冗余反思，裁层会直接破坏模型能力，与思维模式切换无关",
+      "以为需要为三种模式各维护独立的 KV Cache 池、因为历史表示正交无法共用，模式切换作用于同一条序列的解码过程，历史前缀完全可以共用"
+    ]
   },
   {
     "id": "ptq-reasoning-llm",
@@ -1444,6 +1806,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1454,7 +1822,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「目前先进的 FP8 方案支持无需校准数据的动态 per-channel 权重与 per-token 激活量化即可直接转换且依然保持极高的逻辑推理精度」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「基于 Dynamic Per-Channel Wei…」「推理模型的 CoT 思考链对 Activation …」等 3 项成立；并排除「对推理模型进行 FP8 量化前必须经过数万条数据的校…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 FP8 量化前必须跑数万条数据校准、否则推理能力立刻降级为随机猜答，FP8 的动态范围足以覆盖权重分布，通常只需少量校准甚至可直接转换；真正敏感的是 4-bit 与长链 CoT 任务"
+    ]
   },
   {
     "id": "prune-quant-compound-degrade",
@@ -1485,6 +1856,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1495,7 +1872,10 @@
       "target": "能解释剪枝叠加 4-bit 量化在代码生成、数学推导与 CoT 任务上性能剧烈下降的底层机制",
       "reasoningGoal": "先从表征容量与冗余度下降说明剪枝削弱了剩余权重对量化噪声的容忍度；再说明 4-bit 截断与舍入误差沿自回归序列逐 Token 累积放大；并叠加剪枝改变激活分布导致静态量化 Scaler 失真，同时排除「注意力趋于均匀可直接按均匀建模」。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为剪枝加量化后注意力会趋向均匀分布、诊断时可直接按均匀注意力建模省去逐头分析，实际劣化集中在少数关键头与特定层，必须逐头定位"
+    ]
   },
   {
     "id": "ptq-vs-qah-compare",
@@ -1526,6 +1906,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1536,7 +1922,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「D 违背信息论限制纯 PTQ 无法凭空增加信息量超越原始全精度模型」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「PTQ 仅通过少量校准数据优化量化 Scaling …」「QAH 在继续训练阶段的前向传播中引入伪量化节点使权…」等 3 项成立；并排除「PTQ 可以在完全不需要反向传播的情况下使 4-bi…」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为 PTQ 无需反向传播就能让 4-bit 剪枝模型的复杂代码推理能力完全超过剪枝前的全精度原始大模型，PTQ 只能做局部补偿，无法超越原始全精度的能力上限"
+    ]
   },
   {
     "id": "mxfp4-blockwise-advantage",
@@ -1564,6 +1953,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1574,7 +1969,12 @@
       "target": "能判断「Per-Tensor 量化容易受局部 Outliers 影响导致整个张量动态范围被拉大小数值精度丢失」",
       "reasoningGoal": "先回到该机制的第一性原理；据此确认「在保持极低显存开销的前提下能够有效隔离局部异常值防止…」成立；并排除「FP4 尾数仅 1-2 位可忽略」「FP4 权重可直接参与整数矩阵乘」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 FP4 尾数仅 1-2 位可忽略、硬件可按纯整数流水执行，混合精度单元在此格式下是冗余的，FP4 仍是指数格式，必须经缩放与混合精度单元处理",
+      "以为 FP4 权重可直接参与整数矩阵乘、结果再统一缩放，逐块反量化只是参考实现的保守做法，块级 scale 必须逐块参与还原，否则数值错误",
+      "以为块级共享 scale 能根据输入序列长度自动动态调整注意力头数量，缩放因子只决定数值表示范围，与注意力头数无关"
+    ]
   },
   {
     "id": "ste-gradient-mismatch",
@@ -1604,6 +2004,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1614,7 +2020,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「恒等传导是粗暴近似在截断区外产生梯度不匹配导致主权重越界漂移（A），需 Weight Decay 或 Bound Clipping 约束（B）」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「STE 引入了梯度不匹配问题当连续浮点主权重严重超出…」「对于落入截断区间外的权重可以通过梯度裁剪或对超出界限…」等 3 项成立；并排除「STE 能够精确计算离散量化操作的二阶 Hessia…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 STE 能精确计算离散量化操作的二阶 Hessian、使反向传播得到的梯度与真实梯度完全一致，STE 只是把量化当作恒等映射来传递梯度，是有偏近似"
+    ]
   },
   {
     "id": "qah-outperform-fp16-mechanism",
@@ -1644,6 +2053,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1654,7 +2069,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「4-bit 模型逆袭的原因：QAH 包含高质量领域数据的继续训练注入新知识（A）」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「QAH 阶段使用了包含高质量推理代码和数学数据的数据…」「前向传播中的伪量化噪声起到了正则化作用降低了过拟合风…」等 3 项成立；并排除「冗余削减本身即正则化」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为冗余削减本身就是正则化、4-bit 的信息瓶颈迫使模型只保留最本质的推理模式从而带来能力飞跃，量化本身只会损失信息，观测到的反超通常来自 healing 阶段的蒸馏与评测噪声，而非压缩红利"
+    ]
   },
   {
     "id": "mxfp4-vram-savings-calc",
@@ -1682,6 +2100,12 @@
         ],
         "answer": [
           2
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
         ]
       },
       "open": {
@@ -1692,7 +2116,12 @@
       "target": "能按每参数字节数算出 BF16 转 MXFP4 后权重显存的节省比例约为 73.4%",
       "reasoningGoal": "先算 BF16 权重显存 60×2=120GB；再算 MXFP4 权重显存 60×0.53125≈31.9GB（含 Scale 开销）；再用 (120−31.875)/120 得出约 73.4%，并排除 25%、50%、90% 等数量级错误选项。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为节省约 25%，把 2 字节到 0.53125 字节的比例关系算反了",
+      "以为节省约 50%，实际上 0.53125 / 2 ≈ 26.6%，节省约 73%",
+      "以为节省约 90%，那对应约 0.2 字节/参数，与 MXFP4（含 scale 开销）的实际占用不符"
+    ]
   },
   {
     "id": "activation-outlier-debug",
@@ -1723,6 +2152,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1733,7 +2168,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「D 强行置零会破坏关键特征——Outliers 往往承载核心注意力表达」",
       "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「采用动态 Per-Token / Per-Block…」「采用 SmoothQuant 等等效数学变换技术将激…」等 3 项成立；并排除「截断为 0 后用直通估计补偿梯度」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为把异常值截断为 0 后用 STE 补偿梯度即可、推理时零值还能跳过计算提速，且精度损失可以靠加大 batch 弥补，异常通道往往承载关键语义，截断会直接摧毁模型，而 batch size 与量化误差毫无关系"
+    ]
   },
   {
     "id": "paged-attn-block-tradeoff",
@@ -1803,6 +2241,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1813,7 +2257,12 @@
       "target": "能判断「该推导可严格证明无偏等价于目标模型独立采样」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「接受概率 α(x)=p(x)/q(x) 拒绝后从残差…」成立；并排除「接受概率 α(x)=p(x)-q(x) 拒绝后直接从…」「接受概率 α(x)=1.0 拒绝后直接终止整条轨迹的…」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为接受概率应设为 α(x) = p(x) - q(x)，减法既可能超出 [0,1] 也无法保证分布一致，正确形式是 min(1, p(x)/q(x))",
+      "以为接受概率设为 1.0 且拒绝后直接终止整条轨迹，那会偏离目标分布并中断生成",
+      "以为接受概率是 q(x)/p(x) 且拒绝后从草稿分布重采样，比值方向反了，且必须从修正后的目标分布重采样才能保证分布不变"
+    ]
   },
   {
     "id": "fp8-e4m3-vs-e5m2",
@@ -1844,6 +2293,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -1854,7 +2309,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「这是 FP8 训练标准规范如 Transformer Engine：前向 GEMM 需较高精度故选 E4M3(A)」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「E4M3 具有较高的尾数精度但动态范围较窄更适合用于…」「E5M2 具有与 FP16 相同的指数位动态范围极大…」等 3 项成立；并排除「反向全用 E4M3 并配合 loss scaling」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为反向全用 E4M3 配合 loss scaling 就能精度与范围兼得、E5M2 只是历史兼容，反向梯度的动态范围更大，正需要 E5M2 的宽指数，E4M3 更适合前向的权重与激活"
+    ]
   },
   {
     "id": "quantization-mem-bandwidth-gguf-01",
@@ -1884,6 +2342,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -1894,7 +2358,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「自回归生成是典型的 Memory-bound 任务，每生成一个 Token 都需将全量权重加载进计算单元」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「将 FP16 权重压缩为 4-bit 整数后」「4-bit 量化大幅降低了模型权重的显存占用」等 3 项成立；并排除「量化算法在推理时会顺带把 KV Cache 也压缩为…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为权重被量化会顺带把 KV Cache 也压成 4-bit 并跳过注意力矩阵存储、从而根本消除长上下文显存增长，权重量化并不必然压缩 KV Cache，长上下文的 KV 增长需要单独处理"
+    ]
   },
   {
     "id": "inference-capacity-num-ctx-kvcache-01",
@@ -1925,6 +2392,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -1935,7 +2408,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「num_ctx 的增加影响的是动态 KV Cache 和预填充计算量（Prefill Phase），并不改变模型自身的静态权重大小（选项 C 错误）」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「随着 Prompt 序列长度增加」「首 Token 延迟（Time to First T…」等 3 项成立；并排除「模型静态权重（Model Weight Footpr…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为模型静态权重在显存中的物理尺寸会随 num_ctx 等比例线性膨胀，权重大小与上下文长度无关，随 num_ctx 增长的只有 KV Cache 与注意力计算开销"
+    ]
   },
   {
     "id": "inference-offload-pcie-bottleneck-01",
@@ -1963,6 +2439,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -1973,7 +2455,12 @@
       "target": "能判断「PCIe 带宽（如 PCIe 4.0 x16 约 31.5 GB/s）相比 GPU 显存带宽（如 500+ GB/s）慢了一个数量级，导致整体吞吐量受限于 PCIe 数据传输速度」",
       "reasoningGoal": "先定位现象的直接诱因；据此确认「自回归推导阶段」成立；并排除「瓶颈在 CPU 算力而非 PCIe」「拆分模型层后」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为瓶颈在 CPU 算力而非 PCIe、解法是换带 AMX 的 CPU，真正的瓶颈是每层激活都要经 PCIe 来回搬运，其带宽比显存低一到两个数量级",
+      "以为拆分后引擎会在 CPU 端强制用 FP32 重算导致计算复杂度剧增，精度格式不是主因，跨总线传输开销才是",
+      "以为 llama.cpp 的 CPU 路径不维护 KV cache、每步重算历史是 offload 的已知代价，CPU 路径同样维护 KV，断崖式下降源于逐层的 PCIe 传输"
+    ]
   },
   {
     "id": "inference-vram-budget-calc-01",
@@ -2053,6 +2540,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -2063,7 +2556,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「PCIe 4.0/5.0 带宽（32~64 GB/s）远低于 VRAM 带宽，系统主存无法补充显存带宽缺陷（选项 C 错误）」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「Apple Silicon 采用统一内存架构（UMA…」「Apple Silicon 统一内存的物理带宽（通常…」等 3 项成立；并排除「传统 PCIe 独显通过 PCIe 总线连接系统主存」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为传统 PCIe 独显即使权重溢出到系统内存也能获得与 VRAM 相同的带宽、因为 PCIe 5.0 已与显存控制器持平，实际上 PCIe 带宽比显存带宽低一到两个数量级，溢出部分会严重拖慢 token 生成"
+    ]
   },
   {
     "id": "inference-fim-mechanism-01",
@@ -2091,6 +2587,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2101,7 +2603,12 @@
       "target": "能判断「为了支持中间补全，FIM 机制在训练时将文本切分为 Prefix、Suffix 和 Middle，并在 Prompt 中排列为类似 <PRE> prefix <SUF> suff…」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「用 FIM 特殊 Token（<PRE>/<SUF>…」成立；并排除「后文对补全只有提示作用」「补全引擎自动调用 Encoder-Decoder 双…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为后文对补全只有提示作用、丢弃后文可省一半 prefill，FIM 恰恰是靠后文条件显著提升中间补全的准确性",
+      "以为补全引擎会自动调用 Encoder-Decoder 双塔架构、在生成阶段双向更新前文与后文，主流代码 SLM 仍是 decoder-only，靠 FIM 的分段重排与注意力可见性实现",
+      "以为推理时要先对后文计算全量 attention 矩阵并反传梯度再触发前文生成，推理阶段不反传梯度"
+    ]
   },
   {
     "id": "inference-deterministic-sampling-01",
@@ -2132,6 +2639,12 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
@@ -2142,7 +2655,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「调高 Temperature 会引入高熵随机性，增加语法错误和幻觉风险（选项 B 错误）」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「将采样温度参数（temperature）调低至近零值…」「结合调小 Top-P（Nucleus Samplin…」等 3 项成立；并排除「将采样温度参数（temperature）调高至 1.…」等不成立描述。"
     },
-    "cognitiveTask": "predict"
+    "cognitiveTask": "predict",
+    "misconceptions": [
+      "以为把 temperature 调高到 1.5 能靠随机性增加生成代码的多样性与鲁棒性，高温只会加剧幻觉 API 与格式不稳定，应降温或采用贪心解码"
+    ]
   },
   {
     "id": "inference-prefill-decode-01",
@@ -2216,6 +2732,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -2226,7 +2748,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「FP16 模式下每 1B 参数约消耗 2GB 显存（9B 模型仅权重就需 18GB+）」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「FP16 保持了原始模型精度」「Q4_K_M 相比 Q8_0 可节省约 50% 的显…」等 2 项成立；并排除「Q8_0 量化会对模型结构进行剪枝」「选用 4-bit 量化后」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为 Q8_0 会对模型结构剪枝、直接丢弃 Self-Attention 权重只保留 FFN，8-bit 量化只改变数值表示，不改变任何结构",
+      "以为选用 4-bit 后最大上下文窗口上限会被强制缩减为 FP16 模式的 1/4，量化影响的是权重精度与显存占用，与上下文长度上限无关"
+    ]
   },
   {
     "id": "prompt-cache-kv-mechanism-01",
@@ -2255,6 +2781,12 @@
           1,
           2,
           3
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
         ]
       },
       "open": {
@@ -2265,7 +2797,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「缓存的物理载体是 Transformer 前向传播算出的 KV State（Key-Value Tensors），而非 Token ID，所以 A 错——只存 Token ID …」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「缓存系统保存的是模型在前向传播过程中计算出的 KV …」「缓存命中严格依赖前缀的完全一致性」等 3 项成立；并排除「缓存系统直接保存的是经过 Tokenizer 处理后…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为缓存系统直接保存的是 Tokenizer 产出的 Token ID 序列、靠逐字比较 ID 实现复用，缓存真正保存的是各层的 K/V 张量，Token ID 只用于判定前缀是否一致"
+    ]
   },
   {
     "id": "prompt-cache-breakpoint-01",
@@ -2291,6 +2826,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -2301,7 +2842,12 @@
       "target": "能判断「显式断点也无需对每条消息逐一标注」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「无论采用何种断点模式」成立；并排除「隐式断点模式允许开发者在 Prompt 的任意字符位…」「隐式断点固定放在 system 末尾」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为隐式断点允许开发者在任意字符位置手动插标记、显式断点只能按固定 token 步长自动截断，恰好说反：显式由开发者手动标注，隐式由系统在预设位置自动生成",
+      "以为两者差异仅在位置规则（隐式固定在 system 末尾、显式在每条 user 消息后），差异还体现在可控性、失效边界与计费口径上",
+      "以为单轮请求的 prompt 太短到不了门槛、隐式断点只服务多轮 Tool Call 场景，隐式缓存同样服务带长 system prompt 的单轮请求"
+    ]
   },
   {
     "id": "prompt-cache-min-tokens-01",
@@ -2327,6 +2873,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -2337,6 +2889,11 @@
       "target": "能判断 Prompt Caching 的最小可缓存 Token 门槛只统计开发者发送的可见 Token",
       "reasoningGoal": "先区分开发者可见 Token 与平台注入的隐藏 System Token，确认后者不计入门槛；再确认工具定义与历史对话同属前缀、受统一门槛约束而无特权豁免；并排除「未达门槛会抛 400 异常」「应填充无意义 token 凑门槛」等误判。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为隐藏 system token 由平台注入且按全量计费就必然计入缓存门槛，是否计入取决于平台实现，不能想当然；关键是可缓存前缀本身要达到最小长度",
+      "以为未达门槛的请求会被路由到无缓存实例池导致延迟更高、因此应填充无意义 token 凑够门槛，填充无效 token 只会增加成本与噪声，换不来任何收益",
+      "以为 Tool Definitions 是高频复用前缀、平台会为其预建常驻缓存因而不受门槛约束，工具定义同样计入前缀长度，也必须满足最小可缓存长度"
+    ]
   }
 ]

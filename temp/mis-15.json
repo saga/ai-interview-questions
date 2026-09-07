@@ -1,0 +1,814 @@
+[
+ {
+  "seq": 0,
+  "id": "sebastian-raschka-2026-08-39",
+  "topic": "self-attention",
+  "question": "设计一个文本到文本的编码器—解码器模型时，哪些模块组合是合理的？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "解码器必须只使用双向自注意力才能自回归生成"
+   },
+   {
+    "i": 3,
+    "text": "交叉注意力只能读取解码器自己的历史 token"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "sebastian-raschka-2026-08-40",
+  "topic": "self-attention",
+  "question": "标准全连接自注意力在序列长度增加时会带来哪些成本？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "序列长度翻倍时全连接注意力的交互数量保持不变"
+   },
+   {
+    "i": 3,
+    "text": "因果掩码会把全连接注意力的理论复杂度自动降为线性"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "sebastian-raschka-2026-08-41",
+  "topic": "self-attention",
+  "question": "实现注意力模块时，输出形状正确但结果明显异常，以下哪些检查最有价值？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要输出 shape 正确就无需检查数值范围"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "sebastian-raschka-2026-08-42",
+  "topic": "self-attention",
+  "question": "关于自注意力中投影矩阵的作用，哪些说法正确？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "投影矩阵只负责保存 token 的原始整数 id"
+   },
+   {
+    "i": 3,
+    "text": "训练投影矩阵不会改变注意力模式"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "sebastian-raschka-2026-08-43",
+  "topic": "self-attention",
+  "question": "把单个序列的注意力实现扩展到 batch 时，哪些变化通常是必要的？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把不同样本的 token 直接拼成一个无边界序列"
+   },
+   {
+    "i": 3,
+    "text": "batch 维会让每个样本自动共享同一条注意力分布"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "sebastian-raschka-2026-08-44",
+  "topic": "flash-attention",
+  "question": "在不改变注意力数学结果目标的情况下，内存友好的注意力实现主要希望减少哪些开销？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把所有 Value 从模型中删除"
+   },
+   {
+    "i": 3,
+    "text": "让每个 token 只生成一个固定常数的 Query"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "sebastian-raschka-2026-08-45",
+  "topic": "tokenization",
+  "question": "从文本到注意力输入表示的过程中，哪些步骤通常存在？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "注意力直接对字符串字符做点积"
+   },
+   {
+    "i": 3,
+    "text": "embedding 只负责生成最终答案而不参与 Transformer 输入"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "sebastian-raschka-2026-08-46",
+  "topic": "positional-encoding",
+  "question": "为什么仅有内容相似度的自注意力无法可靠区分 token 顺序？以下哪些说法正确？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只增加 Value 维度就必然恢复顺序"
+   },
+   {
+    "i": 3,
+    "text": "因果掩码在所有架构中自动替代全部位置机制"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "sebastian-raschka-2026-08-47",
+  "topic": "self-attention",
+  "question": "注意力输出是 Value 的加权和时，以下哪些性质通常成立？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "输出必然等于某一个 Value 的未经加权复制"
+   },
+   {
+    "i": 3,
+    "text": "所有查询位置必须共享完全相同的上下文向量"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "sebastian-raschka-2026-08-48",
+  "topic": "transformer",
+  "question": "将自注意力放入 Transformer block 时，哪些设计考虑有助于保持模块可组合性？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只要每头维度一致就可以忽略拼接后的总维度"
+   },
+   {
+    "i": 3,
+    "text": "注意力输出必须始终改成词表大小才能接 FFN"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "sebastian-raschka-2026-08-49",
+  "topic": "inference-optimization",
+  "question": "提升推理任务性能时，训练扩展和推理扩展分别可能做什么？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "推理扩展必然需要更新模型参数"
+   },
+   {
+    "i": 3,
+    "text": "训练扩展只会增加用户请求延迟而不影响模型能力"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "sebastian-raschka-2026-08-50",
+  "topic": "inference-optimization",
+  "question": "为模型提供低、中、高三档推理努力度，合理的系统含义有哪些？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "高努力度保证每个任务都比低努力度更准确且没有副作用"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "sebastian-raschka-2026-08-51",
+  "topic": "inference-optimization",
+  "question": "为在线服务设计动态推理努力度路由时，哪些策略合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "无论请求难度都固定使用最高努力度"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "sebastian-raschka-2026-08-52",
+  "topic": "rlhf",
+  "question": "在可验证的数学或代码任务中，RLVR 风格奖励的特点有哪些？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要结果可验证就不需要检查验证器漏洞"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "sebastian-raschka-2026-08-54",
+  "topic": "rlhf",
+  "question": "一个代码验证器只检查程序是否返回样例输出，训练后的模型专门生成能过样例但泛化很差的代码。哪些判断正确？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只要训练奖励上升就能证明代码泛化变好"
+   },
+   {
+    "i": 3,
+    "text": "解决方案是删除所有自动测试并只看输出长度"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "sebastian-raschka-2026-08-55",
+  "topic": "sft",
+  "question": "在该类研究语境下，推理轨迹通常指什么？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只要回答很长就必然是有效推理轨迹"
+   },
+   {
+    "i": 3,
+    "text": "推理轨迹等同于模型参数中的完整知识表"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "sebastian-raschka-2026-08-56",
+  "topic": "sft",
+  "question": "用带推理轨迹的数据做 SFT 时，哪些数据治理措施合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只按轨迹字符数排序并保留最长样本"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "sebastian-raschka-2026-08-58",
+  "topic": "inference-optimization",
+  "question": "对同一问题生成多个候选解并用验证器选择结果时，哪些成本或边界需要考虑？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要候选数量足够多就不需要独立测试集"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "sebastian-raschka-2026-08-59",
+  "topic": "inference-optimization",
+  "question": "比较低、中、高推理努力度模式时，哪些指标应同时记录？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只看平均输出字数而不看任务质量"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "sebastian-raschka-2026-08-60",
+  "topic": "evaluation",
+  "question": "为了公平比较不同推理努力度模式，实验设计中哪些做法合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只比较最高努力度的最佳单次结果"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "sebastian-raschka-2026-08-61",
+  "topic": "pretraining",
+  "question": "团队预算有限，需要在训练更多推理能力和在线增加测试时计算之间做选择。哪些判断合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "两种扩展的成本和收益与流量完全无关"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "sebastian-raschka-2026-08-62",
+  "topic": "evaluation",
+  "question": "上线新的高努力度模式后，数学正确率上升但客服任务满意度下降，哪些调查方向合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "因为数学分数提升就直接判定整体上线成功"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "sebastian-raschka-2026-08-63",
+  "topic": "inference-optimization",
+  "question": "为高努力度推理配置预算上限时，哪些保护措施合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "为了追求准确率允许单请求无限搜索"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "sebastian-raschka-2026-08-64",
+  "topic": "evaluation",
+  "question": "审查模型生成的推理轨迹时，哪些信号说明轨迹不能直接作为训练数据？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "轨迹文字更长就说明监督价值更高"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "sebastian-raschka-2026-08-65",
+  "topic": "evaluation",
+  "question": "设计推理任务验证器时，哪些做法有助于避免把验证器本身当成真实能力？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "把验证器通过率直接当作无需审计的真实准确率"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "sebastian-raschka-2026-08-66",
+  "topic": "inference-optimization",
+  "question": "在推理过程中使用验证器进行早停，哪些条件通常需要满足？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "任何中间文本出现答案数字都可以无条件早停"
+   },
+   {
+    "i": 3,
+    "text": "早停不需要记录被截断的推理预算"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "sebastian-raschka-2026-08-67",
+  "topic": "training-data",
+  "question": "为推理模型准备训练数据时，哪些难度分布策略合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只保留模型当前完全无法解决的题目"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "sebastian-raschka-2026-08-68",
+  "topic": "evaluation",
+  "question": "验证推理能力是否真正泛化时，哪些测试设计更有区分度？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只重复训练集原题并把高分视为泛化证明"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "sebastian-raschka-2026-08-69",
+  "topic": "observability",
+  "question": "推理模型上线后，为了定位成本和延迟回归，哪些指标值得分开监控？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只记录请求总数而不记录推理预算"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "sebastian-raschka-2026-08-70",
+  "topic": "model-selection",
+  "question": "为一个同时包含 FAQ、代码审查和数学证明的产品选择推理努力度策略时，哪些设计合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "所有任务统一使用最高努力度以避免路由复杂度"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "sebastian-raschka-2026-08-71",
+  "topic": "sampling",
+  "question": "生成式文本水印通常可以在不改变模型参数的前提下通过哪些机制植入？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "修改模型全部权重以编码作者身份"
+   },
+   {
+    "i": 3,
+    "text": "只在生成完成后把水印字符串追加到文本末尾"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "sebastian-raschka-2026-08-72",
+  "topic": "sampling",
+  "question": "检测 token 水印时，为什么需要使用统计检验而不是寻找某个固定词？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "固定关键词可以覆盖所有模型和语言的水印"
+   },
+   {
+    "i": 3,
+    "text": "只要发现一个高频词就能证明文本来自模型"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "sebastian-raschka-2026-08-73",
+  "topic": "sampling",
+  "question": "提高文本水印采样偏置可能带来哪些工程权衡？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "提高偏置可以保证文本经过改写后仍保留全部信号"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "sebastian-raschka-2026-08-74",
+  "topic": "sampling",
+  "question": "水印系统使用秘密密钥时，哪些安全设计是合理的？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "把完整密钥写入客户端 prompt 方便调试"
+   },
+   {
+    "i": 3,
+    "text": "公开密钥和所有 token 偏置规则以便攻击者复现"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "sebastian-raschka-2026-08-75",
+  "topic": "sampling",
+  "question": "文本经过翻译、改写或人工编辑后，水印检测结果可能发生什么变化？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "任何改写都必然增强水印信号"
+   },
+   {
+    "i": 3,
+    "text": "检测器可以仅凭语义相似度恢复全部原始采样信息"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "sebastian-raschka-2026-08-76",
+  "topic": "evaluation",
+  "question": "评估文本水印检测器时，哪些测试集组成更合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只用一批长的带水印样本并报告准确率"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "sebastian-raschka-2026-08-77",
+  "topic": "evaluation",
+  "question": "选择水印检测阈值时，哪些因素应纳入决策？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "固定使用最严格阈值就能同时消除误报和漏报"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "sebastian-raschka-2026-08-78",
+  "topic": "evaluation",
+  "question": "为什么文本水印检测分数不应直接解释为作者身份或生成过程的确定证明？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "检测分数天然能证明具体作者和具体模型版本"
+   },
+   {
+    "i": 3,
+    "text": "高分意味着文本每个 token 都由同一系统生成"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "sebastian-raschka-2026-08-79",
+  "topic": "evaluation",
+  "question": "将水印检测用于教育或内容审核时，哪些治理措施合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要检测分数超过阈值就自动处罚且不提供申诉"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "sebastian-raschka-2026-08-80",
+  "topic": "evaluation",
+  "question": "攻击者通过改写文本规避水印检测后，系统应如何评估和应对？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只提高检测器温度并假设信号会自动恢复"
+   },
+   {
+    "i": 3,
+    "text": "把所有未检出文本都判定为人类原创"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "sebastian-raschka-2026-08-81",
+  "topic": "evaluation",
+  "question": "一个 AI 文本检测器输出 0 到 100 的分数时，正确理解该分数需要注意什么？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "分数 80 就证明文本有 80% 概率由任意 AI 生成"
+   },
+   {
+    "i": 3,
+    "text": "分数无需针对实际语言和领域重新校准"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "sebastian-raschka-2026-08-82",
+  "topic": "evaluation",
+  "question": "构建 AI 文本检测器训练集时，哪些数据策略更可靠？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只用一个模型生成同一主题的正样本即可代表所有 AI 文本"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "sebastian-raschka-2026-08-83",
+  "topic": "evaluation",
+  "question": "AI 文本检测器将人类写作判为 AI 时，哪些因素可能导致误报？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要分类器参数足够多就不会误报"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "sebastian-raschka-2026-08-84",
+  "topic": "evaluation",
+  "question": "部署二分类文本检测器前，阈值校准应关注哪些指标？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只看训练集准确率并固定使用 0.5"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "sebastian-raschka-2026-08-85",
+  "topic": "evaluation",
+  "question": "新的语言模型发布后，检测器误报和漏报同时上升。哪些诊断方向合理？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只把阈值调到最高并假设问题消失"
+   },
+   {
+    "i": 3,
+    "text": "删除新模型样本以保持旧基准分数"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "sebastian-raschka-2026-08-86",
+  "topic": "evaluation",
+  "question": "将 AI 文本检测器用作训练强化学习模型的验证器时，哪些风险必须考虑？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "验证器分数上升就证明文本事实性和原创性都提升"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "sebastian-raschka-2026-08-87",
+  "topic": "evaluation",
+  "question": "评估 AI 文本检测器是否具备生产价值时，哪些实验设计更有区分度？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只在训练分布上报告总体准确率"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "sebastian-raschka-2026-08-88",
+  "topic": "evaluation",
+  "question": "本地部署文本检测器相比远程 API 可能带来哪些收益与代价？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "本地部署自动消除检测器偏差和误报"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "sebastian-raschka-2026-08-89",
+  "topic": "evaluation",
+  "question": "学校考虑用 AI 检测分数决定学术处罚，哪些前置条件是必要的？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "把超过固定阈值直接等同于作弊事实"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "sebastian-raschka-2026-08-90",
+  "topic": "inference-optimization",
+  "question": "低、中、高推理努力度模式通常可以通过哪些方式区分？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "必须为每档训练一个完全独立的模型参数集合"
+   },
+   {
+    "i": 3,
+    "text": "只改变 UI 标签而不改变任何推理行为"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "sebastian-raschka-2026-08-91",
+  "topic": "inference-optimization",
+  "question": "训练扩展与推理扩展的主要差异有哪些？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "推理扩展必然需要重新训练模型参数"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "sebastian-raschka-2026-08-92",
+  "topic": "rlhf",
+  "question": "可验证奖励适合哪些任务和奖励来源？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "验证器通过就代表模型的每个中间步骤都正确"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "sebastian-raschka-2026-08-93",
+  "topic": "inference-optimization",
+  "question": "在线服务按请求动态分配推理预算时，哪些设计合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "所有任务固定使用最高预算以避免路由误差"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "sebastian-raschka-2026-08-95",
+  "topic": "rlhf",
+  "question": "只使用最终答案奖励而不监督中间步骤时，哪些描述正确？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "最终答案正确就证明每个步骤都正确"
+   },
+   {
+    "i": 3,
+    "text": "模型会被强制复现唯一推理路径"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "sebastian-raschka-2026-08-96",
+  "topic": "inference-optimization",
+  "question": "增加测试时采样或搜索预算时，哪些限制需要纳入设计？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "候选数足够大就不需要独立评估"
+   }
+  ]
+ },
+ {
+  "seq": 55,
+  "id": "sebastian-raschka-2026-08-97",
+  "topic": "training-data",
+  "question": "准备推理训练数据时，哪些质量控制最重要？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "优先保留文字最长的轨迹而不检查正确性"
+   }
+  ]
+ },
+ {
+  "seq": 56,
+  "id": "sebastian-raschka-2026-08-99",
+  "topic": "agent-fundamentals",
+  "question": "在本地运行 Coding Agent 时，哪些系统边界必须显式设计？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "本地运行意味着不需要沙箱和审计"
+   }
+  ]
+ },
+ {
+  "seq": 57,
+  "id": "sebastian-raschka-2026-08-100",
+  "topic": "model-selection",
+  "question": "为本地 Coding Agent 选择开放权重模型时，哪些因素应联合评估？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只按参数量排序而不运行任务评估"
+   }
+  ]
+ },
+ {
+  "seq": 58,
+  "id": "sebastian-raschka-2026-08-101",
+  "topic": "quantization",
+  "question": "对本地 Coding Agent 使用量化模型时，哪些权衡需要实测？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "量化位数越低就必然在所有硬件上越快"
+   }
+  ]
+ },
+ {
+  "seq": 59,
+  "id": "sebastian-raschka-2026-08-102",
+  "topic": "context-engineering",
+  "question": "本地 Coding Agent 处理大型仓库时，哪些上下文策略更合理？（请选择三个）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "始终把整个仓库和所有历史日志放入每次请求"
+   }
+  ]
+ }
+]

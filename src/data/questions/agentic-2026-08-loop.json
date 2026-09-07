@@ -26,6 +26,13 @@
           0,
           2,
           4
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1,
+          null
         ]
       },
       "open": {
@@ -36,7 +43,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「E正确：结构化输出降低理解成本」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「将工具执行失败后的错误堆栈或 Lint 日志作为新的…」「限制单次 Agentic Loop 的最大连续重试次…」等 3 项成立；并排除「在工具执行抛出异常时自动清空之前所有的对话 Cont…」「在工具返回错误时强制提高 LLM 的 Tempera…」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为清空上下文能让模型摆脱污染，忽略了历史约束与已尝试路径正是纠错所必需的证据",
+      "以为调高采样温度能提升纠错创造力，忽略了修复编译与规范错误需要的是确定性收敛而非随机探索"
+    ]
   },
   {
     "id": "agentic-caching-02",
@@ -64,6 +75,13 @@
         "answer": [
           1,
           4
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2,
+          null
         ]
       },
       "open": {
@@ -74,7 +92,12 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「B、E正确：静态内容放开头命中Prefix Cache并可复用KV，仅增量计算后缀」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「确保系统提示词（System Prompt）、工具声…」「将不变的系统提示词与工具定义置于前缀位置后」等 2 项成立；并排除「将频繁变化的动态数据（如系统当前时间、不断追加的工具…」「Prompt Caching 能够消除因 Conte…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为缓存命中只看前缀是否被复用，忽略了任何变动内容都必须放在后缀，否则其后所有内容都会永久失效",
+      "以为缓存命中即可免除长上下文成本，忽略了缓存只省 prefill 计算，不省 attention 与 KV 显存",
+      "以为缓存一有新内容就整体作废，忽略了前缀缓存的本质是已计算的前缀可整体复用"
+    ]
   },
   {
     "id": "agentic-subagent-03",
@@ -103,6 +126,13 @@
           0,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null,
+          1
         ]
       },
       "open": {
@@ -113,7 +143,11 @@
       "target": "能判断子 Agent 架构带来的真实收益是上下文隔离与并行，而非共享窗口或天然防死循环",
       "reasoningGoal": "先对齐子 Agent 与主 Agent 的核心差异维度——是否拥有独立 System Prompt/工具集与独立上下文；再据此确认独立精简配置提升子任务成功率、子 Agent 内部消化检索日志只回传摘要可防主上下文膨胀、并行启动可降低整体等待时间；并排除「父子共享完整历史」与「解耦即防死循环」这两种把收益张冠李戴的说法。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为父子共享上下文是框架的默认行为，忽略了隔离窗口正是子 Agent 能压缩噪声、保护主上下文的前提",
+      "以为把任务拆给子 Agent 就自动消灭死循环，忽略了循环本质上需要显式的步数与失败预算来兜底"
+    ]
   },
   {
     "id": "agentic-tdd-04",
@@ -139,6 +173,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -149,7 +189,12 @@
       "target": "能判断「A仅靠Prompt自查不可靠」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「采用红/绿 TDD 模式：先让 Agent 编写测试…」成立；并排除「允许 Agent 同时修改业务代码与单元测试文件」「禁用 Agent 运行任何本地单元测试命令」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为让模型自查自己写的断言就能防作弊，忽略了裁判与选手同一会带来结构性利益冲突",
+      "以为把验证推给远端 CI 就能杜绝虚假成功，忽略了测试信号回到模型前的反馈闭环被切断，重新生成只会更盲目",
+      "以为禁令加正则就能杜绝伪造测试，忽略了提示词约束不可强制，且 assert true 只是众多作弊手法之一"
+    ]
   },
   {
     "id": "agentic-safety-05",
@@ -178,6 +223,13 @@
           0,
           2,
           4
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1,
+          null
         ]
       },
       "open": {
@@ -188,7 +240,11 @@
       "target": "能在 Shell/Git 权限设计中选出既保留自主性又控住破坏风险的工程手段，并识别两个极端",
       "reasoningGoal": "先确定权衡的是「执行自主性」与「破坏性风险」；再据此确认高危命令黑名单加人工确认、沙盒/容器隔离、只读免审批而写操作审批三项都同时满足两端；并排除「每次改动直接 push 到主干」（污染主干且不可逆）与「移除 Shell 工具退回手动复制」（用零风险换掉全部自主性）两个极端。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为频繁提交到主干等于及时持久化，忽略了主干直推既失去回滚点也绕过了评审",
+      "以为彻底剥夺执行能力才是零风险，忽略了把人当成执行器只是把风险转移成低效与误操作"
+    ]
   },
   {
     "id": "agentic-context-drift-06",
@@ -214,6 +270,12 @@
         ],
         "answer": [
           2
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
         ]
       },
       "open": {
@@ -224,7 +286,12 @@
       "target": "能从长程 Agent 的遗忘与重复失败现象中定位到注意力稀释这一根因，而不是归咎于权重或限流",
       "reasoningGoal": "先定位现象发生在上下文中接近 128k token、轮次 40+ 之后，属于长上下文而非权重或网络层问题；再据此确认「Lost in the Middle」与噪点 token 稀释注意力能同时解释遗忘早期架构约束和重复执行已失败命令；并排除权重退化、API 限流丢响应、前缀缓存自动删 System Prompt 这些与现象不匹配的解释。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为长时间会话会污染模型权重、需要重启服务，忽略了推理服务是无状态的，退化只发生在上下文而非参数",
+      "以为遗忘是速率限制丢包造成的，忽略了限流只会返回错误，不会让模型产生看似正常的遗忘输出",
+      "以为 prefix caching 会主动裁剪早期内容，忽略了缓存只影响命中与计费，不会改写你的上下文"
+    ]
   },
   {
     "id": "agentic-e2e-07",
@@ -254,6 +321,13 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null,
+          1
         ]
       },
       "open": {
@@ -264,6 +338,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「E错误：需截图Vision」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「赋予 Agent 操作无头浏览器（Headless …」「在 Agent 的测试执行过程中自动记录 DOM 状…」等 3 项成立；并排除「强制 Agent 在遇到 UI 渲染错误时忽略该错误…」「仅依赖 LLM 对网页 HTML 源码的文本理解」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为跑完率就是测试质量，忽略了跳过失败断言等于把缺陷报告变成空报告",
+      "以为读懂 HTML 就足以判断界面可用性，忽略了渲染后的视觉呈现与文本结构并不等价"
+    ]
   }
 ]

@@ -28,6 +28,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -38,7 +44,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「压缩与量化会系统性降低推理、数学、代码等能力，因此部署前需一个轻量的修复（healing）步骤恢复能力」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「先移除 layer/head/neuron 等结构削…」「压缩与量化会系统性降低推理、数学、代码等能力」等 2 项成立；并排除「修复（healing）指的是把模型重新从头预训练一遍…」「量化必须在结构压缩之前完成」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为修复（healing）是把模型重新从头预训练一遍来恢复精度，healing 是短程的蒸馏式精度修复，不是重训",
+      "以为量化必须在结构压缩之前完成，流水线的顺序恰恰是先结构压缩、再量化、最后修复"
+    ]
   },
   {
     "id": "quant-qah-02",
@@ -70,6 +80,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -80,7 +96,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「QAT 在前向中插入 fake-quantization 并用任务损失微调，使权重适应低精度」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「QAT 在前向插入 fake-quantizatio…」「QAH 以压缩前原始全精度模型为冻结教师」等 3 项成立；并排除「QAH 在整体耗时上比 QAT 慢约 7 倍」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 QAH 比 QAT 慢约 7 倍但峰值精度更高，实际上 QAH 的定位是用远低于 QAT 的开销恢复大部分精度，是以更快而非更慢取胜，峰值精度通常也难以超过 QAT"
+    ]
   },
   {
     "id": "quant-qah-03",
@@ -112,6 +131,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -122,7 +147,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「QAD 需要同架构的全精度教师来对齐 logits」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「QAD 需同架构全精度教师」「QAH 直接以压缩前的原始模型为冻结教师跨架构蒸馏」等 3 项成立；并排除「QAH 与 QAD 在做法上完全等价」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 QAH 与 QAD 在做法上完全等价、只是把学生换成了更大的模型，QAH 的关键在于更换教师（用未量化的原始检查点）与对齐方式，从而能在架构已不匹配的压缩后模型上生效"
+    ]
   },
   {
     "id": "quant-qah-04",
@@ -154,6 +182,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -164,7 +198,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「多个基准上 4-bit 学生超过了同尺寸 16-bit（bf16）恢复版（如 AIME 2025、LiveCodeBench）」",
       "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「多个基准上 4-bit 学生反超同尺寸 16-bit…」「相比 120B 教师」等 3 项成立；并排除「4-bit 在全部基准上都严格优于 16-bit」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为 4-bit 在全部基准上都严格优于 16-bit、彻底推翻了精度与比特的权衡，实际是多数基准追平、个别任务略输，权衡依然存在"
+    ]
   },
   {
     "id": "quant-qah-05",
@@ -194,6 +231,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -204,7 +247,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「若量化时未做 healing（修复），能力退化会更大、落后更多」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在 MMLU-Pro、SciCode 等知识类基准上」「若量化时未做 healing 修复」等 2 项成立；并排除「4-bit 在任何基准上都绝对优于 16-bit」「4-bit 量化只影响推理速度」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 4-bit 在任何基准上都绝对优于 16-bit、不存在落后情形，长链推理、精确数值与代码类任务上常能观测到小幅落后",
+      "以为 4-bit 量化只影响推理速度、对最终精度没有任何影响，低比特必然引入数值误差，只是多数任务上被 healing 掩盖了"
+    ]
   },
   {
     "id": "quant-qah-06",
@@ -233,6 +280,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -243,6 +296,11 @@
       "target": "能判断「参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省，合计约 8 倍」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「约 8 倍：参数减半使每 token 计算约减半」成立；并排除「约 1 倍」「约 2 倍」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为量化本身不改变每 token 计算量、约 1 倍，4-bit 权重同样显著降低访存与算力开销",
+      "以为收益仅来自参数减半、约 2 倍，忽略了 16-bit 到 4-bit 的量化又带来约 4 倍，两者相乘约 8 倍",
+      "以为 4-bit 精度是 bf16 的四分之一就下降 32 倍，混淆了位宽比例与位宽所对应数值范围的幂次关系"
+    ]
   }
 ]

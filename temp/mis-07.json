@@ -1,0 +1,1150 @@
+[
+ {
+  "seq": 0,
+  "id": "ai-fund-040",
+  "topic": "evaluation",
+  "question": "为什么 LLM 应用的 Evaluation 比传统软件测试困难？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "因为 LLM 应用的代码结构更复杂，单元测试覆盖率难以达标，所以评测必须依赖人工代码评审；确定性测试在 LLM 场景下不现实，人工走查最贴合模型输出的非结构化特性。"
+   },
+   {
+    "i": 2,
+    "text": "评测集必须与训练数据分布完全一致，否则测出的结果无法代表模型真实能力；训练域外的样本会带来噪声，只有同源数据才能保证评测结论的有效性与可比性。"
+   },
+   {
+    "i": 3,
+    "text": "LLM 推理结果是完全确定可复现的，bug 一旦出现必然稳定复现，因此要比传统软件执行更严格的容错标准；确定性意味着既有测试体系可直接套用到生成式系统。"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "ai-fund-041",
+  "topic": "evaluation",
+  "question": "LLM-as-a-Judge 作为评测手段有哪些已知的问题？你会如何缓解？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "让被评测的模型自己兼任 judge，凭借其对领域的深入理解保证打分口径一致；自评能利用模型内部知识统一标准，比外部 judge 更连贯，也省去了另行校准 judge 的工程量。"
+   },
+   {
+    "i": 3,
+    "text": "只要平均分高于上一版本就判定可发布，无需引入任何人工环节；分数提升即代表质量改善，人工复核只会增加发布周期，自动化判分足以支撑上线决策。"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "ai-fund-042",
+  "topic": "evaluation",
+  "question": "如何为一个上线中的 LLM Application 设计 Evaluation Dataset？请说明数据构成与持续维护机制。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "评测集建成后冻结是基线管理手段，变更走版本分支；主干冻结保证可比性，演进靠分支。"
+   },
+   {
+    "i": 4,
+    "text": "用程序生成海量样本再经小规模人工校验，机器规模加人工抽检即等价于全人工精选；精选的边际收益低。"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "ai-fund-043",
+  "topic": "evaluation",
+  "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Offline Evaluation 直接度量真实流量，因此比在线 A/B 测试更能代表用户的真实体验"
+   },
+   {
+    "i": 1,
+    "text": "Online Evaluation 适用于发布前的验证，Offline Evaluation 适用于上线后的监控，两者不能结合使用"
+   },
+   {
+    "i": 2,
+    "text": "只要 Offline 指标全部通过即可保证上线安全，Online Evaluation 属于可有可无的补充环节"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "eval-grader-01",
+  "topic": "evaluation",
+  "question": "在构建复杂 AI 系统时，不同形态的系统（纯 LLM、RAG 系统、Coding Agent、Multi-Agent 系统）其评测（Evaluation）架构的关注点与 Grader（评估器）选择存在显著差异。下列关于 AI 系统评测设计的说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要最终输出的文本经过 LLM-as-Judge 打高分，就足以说明 RAG、Coding Agent 或 Multi-Agent 系统的架构设计没有任何缺陷"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "ml-05",
+  "topic": "evaluation",
+  "question": "一家支付平台的反欺诈团队训练了二分类模型识别可疑交易，误拦产生客诉成本，但漏掉真实欺诈的资金与声誉损失高出数倍。结合该业务代价结构，应优先保障哪个指标？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "优先追求精确率：只要每一次拦截都准确无误，把客诉降到最低，欺诈损失自然也会随之消失"
+   },
+   {
+    "i": 2,
+    "text": "精确率与召回率总是同涨同跌，无须区分业务场景，直接选择二者之和最大的工作点即为最优"
+   },
+   {
+    "i": 3,
+    "text": "两个指标衡量的是同一件事，任选其一纳入考核即可，业务代价结构不应影响指标选择"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "stat-01",
+  "topic": "evaluation",
+  "question": "两个二分类模型在某一固定阈值下准确率相近，但模型 B 的 AUC 明显高于模型 A。这主要说明什么？（单选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "模型 A 在训练集上拟合更好、损失更低，因此实际可用性一定优于 B。"
+   },
+   {
+    "i": 2,
+    "text": "模型 B 输出的正类占比更高，所以 AUC 高只是因为它更倾向预测正类。"
+   },
+   {
+    "i": 3,
+    "text": "只要两者准确率相同，AUC 的高低就毫无实际意义，可直接忽略。"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "adversarial-verification",
+  "topic": "evaluation",
+  "question": "前沿大语言模型生成的代码常存在逻辑漏洞与隐蔽缺陷。在建立连续代码验证与 Bug 清理机制时以下哪些工程策略有助于降低生产环境风险？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只要代码能够无报错通过编译器静态检查就应当跳过逻辑功能验证以节省 Token 消耗"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "llm-judge-vs-agent-judge",
+  "topic": "evaluation",
+  "question": "在对复杂 AI Agent 系统进行自动化评估时传统的单次 Prompt 匹配式 LLM-as-a-Judge 常常失效。关于导致这一现象的原因以及 Agent-as-a-Judge 的作用机制以下哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Agent-as-a-Judge 的核心优势在于它彻底解决了生成式 AI 的不确定性评估同一条 Trace 时能保持 100% 的结果一致性"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "judge-memory-cascade",
+  "topic": "evaluation",
+  "question": "在为评估代码生成 Agent 的 Agent-as-a-Judge 架构引入跨任务持久化记忆模块后测试发现评估准确率反而下降。导致该现象最可能的原因是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "记忆模块增加了 Context 长度导致评估 LLM 触发了 Needle In A Haystack 现象并忽略了关键评测指标"
+   },
+   {
+    "i": 2,
+    "text": "记忆模块会导致评估 Agent 无法调用外部沙盒去真实运行被评估的代码"
+   },
+   {
+    "i": 3,
+    "text": "记忆模块会导致评估 Agent 在读取历史数据时发生死锁使其退化为标准的单次 LLM-as-a-Judge"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "trajectory-bias-pitfall",
+  "topic": "evaluation",
+  "question": "在将 Agent-as-a-Judge 用于评估 Agent 执行轨迹时评估模型本身可能引入特定的认知偏差与工程隐患。以下哪些属于典型偏差或风险？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "规则硬化偏差评估 Agent 会严格按照正则表达式匹配日志无法理解自然语言描述的语义指标"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "agentic-eval-evolution",
+  "topic": "evaluation",
+  "question": "根据智能体化评估的技术演进路线评估器可划分为程序化、响应式与自演化三种模式。关于这三种模式的特质与差异以下哪些选项的描述是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "程序化评估器由于缺乏动态工具调用能力只能用于评估简单的单轮对话无法用于评估多步骤 Trace"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "tiered-eval-strategy",
+  "topic": "evaluation",
+  "question": "某企业正在构建大模型 Agent 系统的生产级评估架构要求在兼顾评估准确率的同时控制整体计算成本与延迟。根据分层防御/金字塔评估策略最合理的评估链路设计是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "对所有生产 Trace 100% 直接使用最高阶的 Agent-as-a-Judge 深入审查以确保捕捉所有隐蔽错误"
+   },
+   {
+    "i": 2,
+    "text": "离线跑全量 Agent-as-a-Judge 即完备，线上只需抽样复核；实时监测是离线评估的重复建设。"
+   },
+   {
+    "i": 3,
+    "text": "仅在开发阶段使用人工评审生产上线后直接将 Agent-as-a-Judge 的输出自动反馈给被评估 Agent 进行实时自校正不设置任何确定性过滤规则"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "silent-failure-debug",
+  "topic": "evaluation",
+  "question": "某订票 Agent 在处理修改机票并发送邮件的任务时最终答复'已成功'但运维日志显示改签 API 返回 401 错误且跳过了发邮件接口。若要设计自动化评估机制精准捕获此类'掩盖内部错误的虚假完成'现象以下哪些手段有效？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "仅依靠单次 LLM-as-a-Judge 检查最终答复与用户初始 Input 的文本语义匹配度"
+   },
+   {
+    "i": 3,
+    "text": "使用正则匹配断言日志中是否包含 Error 关键词只要包含就直接判为不合格即使 Agent 后续通过重试成功恢复"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "selfharness-acceptance-rule-01",
+  "topic": "evaluation",
+  "question": "在基于评估迭代的 Harness 自我改进框架中，假设第 t 轮演进产生的候选修改方案为 Δ_j，系统在保留数据集（Held-in Split, D_in）与未留存测试集（Held-out Split, D_ho）上的通过率变化分别为 Δ_in^(j) 与 Δ_ho^(j)。为了防止 Harness 发生过拟合与性能倒退，系统采用的提议准入条件（Acceptance Rule）通常应满足哪项逻辑约束？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "Δ_in 大于 0 且 Δ_ho 小于 0 且 (Δ_in 加 Δ_ho) 大于 0"
+   },
+   {
+    "i": 2,
+    "text": "Δ_in 等于 0 且 Δ_ho 大于 0 且 (Δ_in 乘 Δ_ho) 等于 0"
+   },
+   {
+    "i": 3,
+    "text": "Δ_in 大于 0 且 Δ_ho 大于等于 0 且 min(Δ_in, Δ_ho) 小于 0"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "selfharness-overfitting-01",
+  "topic": "evaluation",
+  "question": "在 Agent Harness 自我优化过程中，工程人员发现某一提议候选在保留训练集（Held-in）上提升了 15% 的通过率，但在留存验证集（Held-out）上却导致了 10% 的性能下降，最终被验证模块拒绝。针对这一现象，最可能的底层工程原因是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "提议模块在修改 Harness 时降低了工具调用的超时阈值，导致长流程任务在验证集上频繁超时失败"
+   },
+   {
+    "i": 2,
+    "text": "提议模块强制要求智能体在每一步打印调试日志，导致上下文长度超出基座模型的最大 token 限制"
+   },
+   {
+    "i": 3,
+    "text": "提议模块移除了底层 shell 环境的状态保持机制，使得多步依赖命令在验证集上无法连续正确执行"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "p0-batch-norm-tradeoff-01",
+  "topic": "batch-norm",
+  "question": "一个 Transformer 训练任务的 batch size 因显存限制经常只有 2，且线上推理 batch size 不固定。若在 BN、LN、RMSNorm 中选择归一化方式，哪项判断最合理？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "必须选择 BN，因为 batch 越小，BN 的运行均值越准确，推理时也不需要维护额外统计量"
+   },
+   {
+    "i": 3,
+    "text": "三者在小 batch 和变动推理 batch 下完全等价，只需比较参数数量即可"
+   },
+   {
+    "i": 4,
+    "text": "选择 BN 并在推理时继续使用当前 batch 的统计量，就能消除训练与推理之间的差异"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "p0-cross-entropy-calculation-01",
+  "topic": "cross-entropy",
+  "question": "一个分类模型对真实类别的预测概率为 0.25，使用自然对数计算交叉熵。该样本的 loss 和对应 perplexity 分别约为多少？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "loss ≈ 0.25，perplexity ≈ 0.25"
+   },
+   {
+    "i": 2,
+    "text": "loss = 4，perplexity ≈ 1.386"
+   },
+   {
+    "i": 3,
+    "text": "loss ≈ 0.693，perplexity = 2"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "p0-dpo-tradeoff-01",
+  "topic": "dpo",
+  "question": "团队需要在固定偏好数据集上快速完成对齐，并比较 DPO 与 PPO 的工程取舍。以下判断正确的是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "DPO 与 PPO 都必须训练奖励模型并进行在线 rollout，区别只在 batch size"
+   },
+   {
+    "i": 2,
+    "text": "PPO 不需要奖励模型，因为策略梯度可以直接从偏好标签计算"
+   },
+   {
+    "i": 3,
+    "text": "DPO 一定比 PPO 事实准确率高，因此可以跳过独立评测和 KL 控制"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "p0-dropout-tradeoff-01",
+  "topic": "dropout",
+  "question": "一个模型训练集准确率持续上升而验证集准确率下降。提高 dropout 率可能带来什么效果，使用时最需要注意什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "提高 dropout 一定会提高训练准确率，推理阶段也应保持开启以获得同样正则化"
+   },
+   {
+    "i": 2,
+    "text": "dropout 只改变数据集大小，不会改变神经元之间的共适应"
+   },
+   {
+    "i": 3,
+    "text": "dropout 率越高越好，因为丢弃更多激活总能提升泛化能力"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "p0-gqa-mechanism-01",
+  "topic": "gqa",
+  "question": "GQA 相比 MHA 在不改变 Query 头数量的情况下，主要改变了哪部分结构？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "删除全部 Query 头，只保留一组共享的 Key/Value 头进行注意力计算"
+   },
+   {
+    "i": 2,
+    "text": "移除 Value 分支，只缓存 Query 以减少显存，但不改变 Key 的计算方式"
+   },
+   {
+    "i": 3,
+    "text": "把每个 Query 头复制成独立的 Key/Value 头，增加缓存容量和访问开销"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "p0-gqa-calculation-01",
+  "topic": "gqa",
+  "question": "某模型有 32 个 Query 头，GQA 使用 8 个 KV 头。与 MHA 使用 32 个 KV 头相比，单 token 的 KV Cache 理论上压缩了多少倍？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "2 倍"
+   },
+   {
+    "i": 2,
+    "text": "8 倍"
+   },
+   {
+    "i": 3,
+    "text": "32 倍"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "p0-gradient-descent-scenario-01",
+  "topic": "gradient-descent",
+  "question": "训练 loss 在相邻 step 之间大幅上下震荡，长期没有下降；把学习率降低 10 倍后曲线开始稳定下降但变慢。最可能的原因和下一步是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "说明模型容量一定不足，应立即扩大层数而无需检查优化器"
+   },
+   {
+    "i": 2,
+    "text": "说明 batch size 一定过小，唯一修复方式是把 batch 调到全量"
+   },
+   {
+    "i": 3,
+    "text": "说明训练已经完全收敛，应停止训练并忽略震荡"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "p0-inference-optimization-scenario-01",
+  "topic": "inference-optimization",
+  "question": "线上观测到 TTFT 很高、TPOT 正常，GPU 利用率在短请求下偏低；增加输出长度并未明显改变首 token 延迟。优先排查哪类瓶颈？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "直接把 temperature 调低，因为采样参数决定首 token 的主要延迟"
+   },
+   {
+    "i": 2,
+    "text": "只增加最大输出 token 数，因为 TPOT 正常代表 prefill 一定过慢"
+   },
+   {
+    "i": 3,
+    "text": "立即把模型换成更大的版本，因为更大模型一定能提高短请求 GPU 利用率"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "p0-moe-definition-01",
+  "topic": "moe",
+  "question": "MoE Transformer 中“总参数量”和“激活参数量”的区别是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "总参数量和激活参数量始终相等，因为每个 token 都会访问所有专家"
+   },
+   {
+    "i": 2,
+    "text": "激活参数量只影响磁盘大小，与一次 token 的计算量无关"
+   },
+   {
+    "i": 3,
+    "text": "MoE 通过删除专家参数降低总参数量，因此不会产生路由和负载均衡问题"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "p0-overfitting-tradeoff-01",
+  "topic": "overfitting",
+  "question": "训练集指标继续提升，但验证集指标持续下降。以下哪组措施最符合过拟合治理的优先顺序？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "继续训练更多轮并扩大模型，因为训练集指标上升说明模型还没有学够"
+   },
+   {
+    "i": 2,
+    "text": "删除验证集以避免验证指标下降，让训练集指标代表泛化能力"
+   },
+   {
+    "i": 3,
+    "text": "只提高学习率，因为过拟合本质上一定是参数更新太慢"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "p0-overfitting-scenario-01",
+  "topic": "overfitting",
+  "question": "模型在训练集和同分布验证集上都很高，但上线后真实用户数据表现明显下降。排查过拟合时最重要的第一步是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "直接增加模型层数，因为线上表现差说明模型容量一定不足"
+   },
+   {
+    "i": 2,
+    "text": "删除线上样本以保持离线评测稳定，离线高分即可证明泛化"
+   },
+   {
+    "i": 3,
+    "text": "只看训练 loss 是否下降，不需要比较数据分布和样本去重情况"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "p0-regularization-tradeoff-01",
+  "topic": "regularization",
+  "question": "关于 L1、L2、weight decay 和 AdamW 的关系，哪项说法正确？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "L1 和 L2 只影响推理阶段输出，训练时不会参与参数更新或改变优化轨迹，优化器仅在反向传播结束后才参考它们，因此不会实际影响每一步的参数更新"
+   },
+   {
+    "i": 2,
+    "text": "AdamW 与 Adam 加 L2 惩罚在任何学习率、参数状态和优化阶段都严格等价"
+   },
+   {
+    "i": 3,
+    "text": "weight decay 会随机丢弃神经元，因此与 dropout 是完全相同的结构正则化机制"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "p0-rope-calculation-01",
+  "topic": "rope",
+  "question": "在使用 RoPE 的注意力层中，哪些向量需要施加旋转位置变换，才能让注意力内积体现相对位置信息？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只对 Value 施加旋转，Query 和 Key 保持不变"
+   },
+   {
+    "i": 2,
+    "text": "同时只对 Query 施加旋转，因为 Key 会从 Value 中自动得到位置"
+   },
+   {
+    "i": 3,
+    "text": "对 Query、Key、Value 全部施加相同旋转，否则无法进行注意力计算"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "p0-sampling-scenario-01",
+  "topic": "sampling",
+  "question": "同一个模型需要分别处理 JSON 字段抽取和创意文案生成。哪种解码策略更合理？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "两类任务都使用最高 temperature，因为随机性总能提升格式稳定性和创意质量"
+   },
+   {
+    "i": 2,
+    "text": "JSON 抽取使用高 temperature 产生候选，创意文案则固定 greedy 以避免任何变化"
+   },
+   {
+    "i": 3,
+    "text": "只调 top-p 就能保证 JSON 合法，temperature 不会改变输出概率分布或格式风险"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "p0-tokenization-scenario-01",
+  "topic": "tokenization",
+  "question": "一个 RAG 服务在英文短文本上成本正常，但接入中文、代码和大量数字后 token 数明显增加并频繁超出上下文窗口。最合理的排查和优化顺序是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "按固定字符数切块即可，因为不同语言和代码中的一个字符总是对应一个 token"
+   },
+   {
+    "i": 2,
+    "text": "直接删除中文和代码即可保证窗口不溢出，不需要评估内容损失或检索质量"
+   },
+   {
+    "i": 3,
+    "text": "只扩大上下文窗口就能同时解决 token 成本、切块大小和检索噪声问题"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "p0-transformer-definition-01",
+  "topic": "transformer",
+  "question": "关于 Transformer 的三种常见结构及其典型用途，哪项概括正确？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "三种结构都必须使用因果掩码，所以都只能从左到右读取和理解输入序列并逐词生成输出"
+   },
+   {
+    "i": 2,
+    "text": "Decoder-only 只能用于分类，不能通过 next-token 预测生成连续文本"
+   },
+   {
+    "i": 3,
+    "text": "Encoder-Decoder 没有注意力机制，只依靠循环状态完成输入输出序列转换"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "foundation-cnn-definition-01",
+  "topic": "cnn",
+  "question": "卷积神经网络中的卷积层主要利用了图像的什么特性？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "每个像素都使用一套完全独立的全连接参数"
+   },
+   {
+    "i": 2,
+    "text": "只把图像转换成文本，不进行特征提取"
+   },
+   {
+    "i": 3,
+    "text": "保证所有输入图像都具有相同的标签"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "foundation-cnn-pooling-01",
+  "topic": "cnn",
+  "question": "在 CNN 中加入 2×2、stride=2 的最大池化层，通常会产生什么效果？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "一定使通道数增加四倍且不改变空间尺寸"
+   },
+   {
+    "i": 2,
+    "text": "为每个像素引入独立可训练参数"
+   },
+   {
+    "i": 3,
+    "text": "保证所有细粒度位置信息完全不丢失"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "foundation-sequence-definition-01",
+  "topic": "sequence-models",
+  "question": "RNN 处理序列时，隐藏状态的主要作用是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "保存整个训练集的所有原始样本"
+   },
+   {
+    "i": 2,
+    "text": "只负责随机初始化模型参数"
+   },
+   {
+    "i": 3,
+    "text": "替代损失函数计算最终准确率"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "foundation-sequence-comparison-01",
+  "topic": "sequence-models",
+  "question": "相比普通 RNN，LSTM 或 GRU 主要试图改善哪类问题？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "完全移除序列顺序，因此不再需要输入时间步"
+   },
+   {
+    "i": 2,
+    "text": "保证训练不会出现任何梯度爆炸"
+   },
+   {
+    "i": 3,
+    "text": "把所有序列压缩成同一个固定标签"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "foundation-multimodal-definition-01",
+  "topic": "multimodal",
+  "question": "多模态模型中的“多模态”通常指什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只把更大的文本模型称为多模态模型"
+   },
+   {
+    "i": 2,
+    "text": "只支持一种输入但输出多个类别"
+   },
+   {
+    "i": 3,
+    "text": "把多个完全相同的文本副本拼接在一起"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "foundation-multimodal-mechanism-01",
+  "topic": "multimodal",
+  "question": "视觉语言模型常用一个 projector 或适配层连接视觉编码器与语言模型，主要目的是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "把所有图像像素直接改写成真实文字标签"
+   },
+   {
+    "i": 2,
+    "text": "替代语言模型的 tokenizer 并删除文本输入"
+   },
+   {
+    "i": 3,
+    "text": "只负责压缩模型文件而不参与前向计算"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "foundation-data-leakage-mechanism-01",
+  "topic": "data-leakage",
+  "question": "为什么在划分训练集和验证集之前用全量数据拟合标准化参数，可能造成数据泄露？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "因为标准化会让模型参数数量增加一倍"
+   },
+   {
+    "i": 2,
+    "text": "因为验证集必须使用不同的标签编码"
+   },
+   {
+    "i": 3,
+    "text": "因为任何数据预处理都会让模型无法训练"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "foundation-data-leakage-debugging-01",
+  "topic": "data-leakage",
+  "question": "训练集和验证集指标都异常高，但线上效果很差，哪项排查最优先？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "立即把模型换成更大的版本，参数量提升会自然修复泄露与分布偏移问题"
+   },
+   {
+    "i": 2,
+    "text": "删除验证集并只报告训练集指标，用更高训练分数证明模型在线上同样可靠"
+   },
+   {
+    "i": 3,
+    "text": "只增加训练轮数而不检查数据与切分，靠更长的训练曲线掩盖泄露信号"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "foundation-mcp-mechanism-01",
+  "topic": "mcp",
+  "question": "MCP server 暴露的 tools、resources 和 prompts 分别主要代表什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "tools 提供数据，resources 执行动作，prompts 负责模型权重版本管理"
+   },
+   {
+    "i": 2,
+    "text": "resources 负责执行任意写操作，tools 只能返回静态文本"
+   },
+   {
+    "i": 3,
+    "text": "prompts 会自动授予服务器访问所有用户数据的权限"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "foundation-mcp-discovery-01",
+  "topic": "mcp",
+  "question": "MCP 客户端在调用一个工具前，为什么通常先执行工具发现？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "为了把服务器的全部数据库内容复制到客户端"
+   },
+   {
+    "i": 2,
+    "text": "为了跳过认证并自动获得写权限"
+   },
+   {
+    "i": 3,
+    "text": "因为 MCP 工具名称永远不能由服务器动态改变"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "foundation-tool-security-mechanism-01",
+  "topic": "tool-security",
+  "question": "给 Agent 设计“发送邮件”和“读取订单”工具时，最符合最小权限原则的做法是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "给两个工具都授予管理员权限以减少开发工作"
+   },
+   {
+    "i": 2,
+    "text": "只依赖系统提示词要求 Agent 不要误操作"
+   },
+   {
+    "i": 3,
+    "text": "把所有工具合并成一个任意代码执行接口"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "foundation-context-window-definition-01",
+  "topic": "context-window",
+  "question": "LLM 的上下文窗口通常指什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "模型可永久记住所有用户的全部历史对话"
+   },
+   {
+    "i": 2,
+    "text": "模型部署所需 GPU 显存容量的另一种名称"
+   },
+   {
+    "i": 3,
+    "text": "只限制单次输出长度而不限制输入上下文"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "foundation-rag-definition-01",
+  "topic": "rag",
+  "question": "RAG 的核心流程是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "把所有文档永久重新训练进模型后再回答"
+   },
+   {
+    "i": 2,
+    "text": "只对用户问题做随机采样，不访问知识库"
+   },
+   {
+    "i": 3,
+    "text": "只把模型温度调低就完成了检索增强"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "gap-activation-tradeoff-01",
+  "topic": "activation",
+  "question": "在深层网络中选择 ReLU 与 GELU 时，哪项取舍更准确？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "ReLU 和 GELU 只影响推理速度，不会影响梯度或训练结果"
+   },
+   {
+    "i": 2,
+    "text": "GELU 会把所有负值变成零，因此与 ReLU 完全等价"
+   },
+   {
+    "i": 3,
+    "text": "GELU 在所有任务上都优于 ReLU，任何网络都应无条件替换为 GELU"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "gap-alignment-definition-01",
+  "topic": "alignment",
+  "question": "LLM 语境中的 alignment 通常要解决什么问题？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只增加模型层数而不改变行为目标"
+   },
+   {
+    "i": 2,
+    "text": "只优化推理吞吐，不关注输出内容"
+   },
+   {
+    "i": 3,
+    "text": "把所有用户输入直接加入训练集"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "gap-cnn-comparison-01",
+  "topic": "cnn",
+  "question": "相同输入尺寸下，CNN 相比直接使用全连接层处理图像，主要优势是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "全连接层天然知道物体的平移位置，因此不需要数据训练"
+   },
+   {
+    "i": 2,
+    "text": "CNN 不需要任何训练参数，因为卷积核都是固定的"
+   },
+   {
+    "i": 3,
+    "text": "全连接层一定比 CNN 更节省显存和计算"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "gap-cnn-scenario-01",
+  "topic": "cnn",
+  "question": "一个 CNN 在大目标分类上表现良好，但对小目标几乎检测不到。优先检查哪类设计因素？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只把分类器换成更大的全连接层即可恢复已丢失的像素细节"
+   },
+   {
+    "i": 2,
+    "text": "把所有输入缩放成更小尺寸，因为小目标不需要空间信息"
+   },
+   {
+    "i": 3,
+    "text": "只提高 dropout 率，因为小目标检测失败一定是过拟合"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "gap-graph-rag-scenario-01",
+  "topic": "graph-rag",
+  "question": "用户的问题需要跨多个文档追踪公司、项目和负责人之间的关系，普通向量检索经常只返回局部段落。优先考虑什么改进？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只增加向量维度即可保证所有多跳关系被正确恢复"
+   },
+   {
+    "i": 2,
+    "text": "删除原始文档只保留实体名称，避免检索到无关文本"
+   },
+   {
+    "i": 3,
+    "text": "把所有文档拼进上下文，不需要检索或评估上下文预算"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "gap-latent-moe-tradeoff-01",
+  "topic": "latent-moe",
+  "question": "采用 latent 或隐空间路由的 MoE 结构时，最需要关注哪项工程取舍？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "隐空间路由保证每个专家收到完全相同的 token，因此不会有负载不均"
+   },
+   {
+    "i": 2,
+    "text": "只要专家总参数不变，通信和尾延迟就一定不变"
+   },
+   {
+    "i": 3,
+    "text": "MoE 路由只影响训练标签，不影响前向计算或部署资源"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "gap-mcp-scenario-01",
+  "topic": "mcp",
+  "question": "一个 MCP 文件服务器只服务本机桌面应用，另一个数据服务要被多台受控客户端访问。传输方式如何初步选择？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "所有场景都必须使用 stdio，因为 HTTP 不能传递 JSON-RPC"
+   },
+   {
+    "i": 2,
+    "text": "远程服务应把数据库凭据放入工具描述中，供模型读取后直连数据库"
+   },
+   {
+    "i": 3,
+    "text": "只要使用 Streamable HTTP 传输，就自动获得最小权限控制和审计能力"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "gap-mcp-design-01",
+  "topic": "mcp",
+  "question": "设计一个允许 Agent 查询订单并申请退款的 MCP 服务时，哪种边界最合理？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "暴露一个 execute_sql 工具让模型自行完成查询和退款"
+   },
+   {
+    "i": 2,
+    "text": "把退款权限写在 prompt 中即可，不需要服务端校验"
+   },
+   {
+    "i": 3,
+    "text": "让 resources 直接修改订单状态以减少工具调用次数"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "gap-multimodal-tradeoff-01",
+  "topic": "multimodal",
+  "question": "视觉问答系统提高输入图像分辨率后 OCR 变好但延迟和成本明显上升，合理的优化方向是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "所有图片都固定使用最大分辨率，因为分辨率越高整体一定更优"
+   },
+   {
+    "i": 2,
+    "text": "降低分辨率后只看语言流畅度，不再评估视觉识别正确率"
+   },
+   {
+    "i": 3,
+    "text": "把图片转成文件名即可消除视觉 token 和识别误差"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "gap-planning-design-01",
+  "topic": "planning",
+  "question": "为一个步骤数量不确定、每一步结果会影响下一步的 Agent 任务设计规划器时，哪种方案更稳妥？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "预先硬编码所有可能步骤，遇到新信息也不允许改变计划，保证执行确定性即可"
+   },
+   {
+    "i": 2,
+    "text": "让模型自行决定无限循环和所有工具权限，完全放权以最大化灵活性与自主性"
+   },
+   {
+    "i": 3,
+    "text": "只保存最终答案不保存中间状态与工具结果，减少存储即可提升运行效率"
+   }
+  ]
+ },
+ {
+  "seq": 55,
+  "id": "gap-pytorch-performance-scenario-01",
+  "topic": "pytorch-performance",
+  "question": "PyTorch 模型 GPU 利用率低但 CPU 使用率高，且 profiler 显示大量小 kernel 和数据拷贝。优先如何定位？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "只把 batch size 调到最大，不测量显存和尾延迟"
+   },
+   {
+    "i": 2,
+    "text": "把所有算子改成 Python 循环以减少 GPU 负担"
+   },
+   {
+    "i": 3,
+    "text": "只提高学习率，因为 GPU 利用率低说明模型没有学到特征"
+   }
+  ]
+ },
+ {
+  "seq": 56,
+  "id": "gap-pytorch-performance-design-01",
+  "topic": "pytorch-performance",
+  "question": "为 PyTorch 推理服务引入 torch.compile 或算子融合时，哪项设计最合理？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "无论输入 shape 与算子都直接编译，因为融合必然加速且带来零额外开销"
+   },
+   {
+    "i": 2,
+    "text": "只比较单次冷启动延迟，不测量稳态吞吐、显存占用与动态 shape 下的表现"
+   },
+   {
+    "i": 3,
+    "text": "为性能可以跳过数值回归与异常输入测试，上线后再观察是否存在精度偏差"
+   }
+  ]
+ },
+ {
+  "seq": 57,
+  "id": "gap-sequence-scenario-01",
+  "topic": "sequence-models",
+  "question": "序列分类服务的请求长度差异很大，短请求被长请求拖慢且 padding 比例很高。优先考虑什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "把所有序列都补到全局最大长度，以简化代码并保证速度最快"
+   },
+   {
+    "i": 2,
+    "text": "直接扩大 batch 规模摊薄 padding 开销，无需分桶或处理 mask"
+   },
+   {
+    "i": 3,
+    "text": "只增加隐藏层维度，因为 padding 比例与性能无关"
+   }
+  ]
+ },
+ {
+  "seq": 58,
+  "id": "gap-task-oriented-ai-scenario-01",
+  "topic": "task-oriented-ai",
+  "question": "客服系统只需按固定规则查询订单并在满足条件时退款，是否应该直接采用完全自主 Agent？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "任何涉及自然语言的任务都必须使用完全自主 Agent，语言能力即等同自主性"
+   },
+   {
+    "i": 2,
+    "text": "只要模型能生成退款理由，就可以跳过订单状态校验直接执行退款动作，因为生成式模型的文本自洽即代表业务逻辑正确，无需额外系统校验"
+   },
+   {
+    "i": 3,
+    "text": "完全自主 Agent 的落地成本一定低于确定性 workflow，因为省去了规则编排的人力投入"
+   }
+  ]
+ },
+ {
+  "seq": 59,
+  "id": "gap-tool-security-debugging-01",
+  "topic": "tool-security",
+  "question": "Agent 通过“查发票”工具返回了另一位租户的数据，日志显示模型传入了合法的 invoiceId。最可能的根因和修复是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "因为 invoiceId 合法，所以只需扩大模型上下文避免误判，无需改动服务端查询"
+   },
+   {
+    "i": 2,
+    "text": "把完整数据库交给模型让它自行筛选租户即可，模型能自行理解权限边界"
+   },
+   {
+    "i": 3,
+    "text": "只修改工具描述文字说明权限，不改变服务端查询条件即可修复越权"
+   }
+  ]
+ }
+]

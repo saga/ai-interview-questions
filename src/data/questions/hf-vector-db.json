@@ -29,6 +29,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -39,7 +45,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「多向量下每个文档不再是 1 个向量，而是一组按 token/patch 的向量，查询时需对每个查询 token 做 MaxSim 归约」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「每文档不再是一个向量」「文档向量可在索引阶段就离线计算并持久化」等 3 项成立；并排除「多向量索引的体积规模与单向量完全相同」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为多向量索引的体积规模与单向量完全相同、只是算分方式不同，多向量要为每篇文档存下数十到数百个向量，索引体积成十倍乃至数十倍增长"
+    ]
   },
   {
     "id": "vectordb-02",
@@ -71,6 +80,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -81,7 +96,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「对 bi-encoder 召回的 top-k 做多向量重排，避免全库建多向量索引」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「用 PLAID 类量化把多向量索引压缩到与稠密向量同…」「对 bi-encoder 召回的 top-k 做多向…」等 3 项成立；并排除「将维度从 128 提升到 1024」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为把维度从 128 提升到 1024 能换取更小的索引体积，维度升高只会让索引更大；有效的缓解手段是降维、标量/残差量化与候选剪枝"
+    ]
   },
   {
     "id": "vectordb-03",
@@ -111,6 +129,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -121,7 +145,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「先用便宜的单向量 bi-encoder 从全库召回 top-k 候选，再对这 k 个候选用多向量 MaxSim 重排获得更精细排序」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「先用便宜的单向量 bi-encoder 从全库召回 …」「再对这 k 个候选用多向量 MaxSim 重排」等 2 项成立；并排除「多向量需要为全库维护完整索引」「重排阶段要把查询与全部文档再次联合编码进交叉编码器」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为多向量需要为全库维护完整索引、否则无法工作，在两阶段管线里它只服务召回后的少量候选，可对候选在线编码",
+      "以为重排阶段要把查询与全部文档再次联合编码进交叉编码器，那是 cross-encoder；多向量重排用的是已存的文档多向量与查询向量做 MaxSim"
+    ]
   },
   {
     "id": "vectordb-04",
@@ -153,6 +181,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -163,7 +197,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「用 PLAID/fast-plaid 等近似索引可降到约 10ms 级」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「穷举全库多向量在 GPU 上单查询约百毫秒级」「用 PLAID/fast-plaid 等近似索引可把…」等 3 项成立；并排除「多向量查询永远比单向量 ANN 快一个数量级」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为多向量查询永远比单向量 ANN 快一个数量级、因为它无需扫描，多向量要扫描更多向量且算分更贵，通常比单向量更慢"
+    ]
   },
   {
     "id": "vectordb-05",
@@ -193,6 +230,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -203,6 +246,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「若后续出现多约束或精确标识符查询且质量不达标，可再叠加多向量重排」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「优先单向量 bi-encoder：索引小、查询快」「若后续出现多约束或精确标识符查询且质量不达标」等 2 项成立；并排除「必须一开始就上多向量全库索引」「多向量在此场景的主要优势是显著节省显存」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为必须一开始就上多向量全库索引、否则检索质量一定不达标，该场景存储与延迟敏感、查询单一，单向量通常已足够",
+      "以为多向量在此场景的主要优势是显著节省显存，多向量恰恰显著增加存储与显存，它的优势是召回质量而非节省资源"
+    ]
   }
 ]

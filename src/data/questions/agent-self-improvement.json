@@ -75,6 +75,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       }
     },
@@ -82,7 +88,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「技能文件应以指导原则（Principles）和解释原理（Why）为主，这赋予了 LLM 推理泛化能力」",
       "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「在技能文件中优先撰写原则性指导（Principles…」「采用渐进式披露（Progressive Disclo…」等 3 项成立；并排除「将所有相关的业务文档、API 规范及历史失败案例平铺…」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "认为把业务文档、API 规范与失败案例平铺写进主技能文件可省运行期开销"
+    ]
   },
   {
     "id": "memory-comparison-01",
@@ -108,6 +117,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       }
     },
@@ -115,7 +130,12 @@
       "target": "能判断「技能（Skills）是过程性、结构化且相对稳固的领域知识规范，通过版本控制系统（如 Git）进行显式更新与审查」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「技能是过程性且相对稳定的领域指导规范」成立；并排除「技能是推理期由 Agent 自动写入且持续变动的会话…」「技能仅适用于确定性的代码编写场景」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "认为技能是推理期自动写入的会话数据、情境记忆是人工维护的版本化文本",
+      "认为技能只适用于确定性编码场景、情境记忆专用于非确定性自然语言对话",
+      "认为技能与情境记忆本质相同，都是 RAG 阶段从向量库动态加载的内容"
+    ]
   },
   {
     "id": "evaluation-tradeoff-01",
@@ -144,6 +164,13 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
         ]
       }
     },
@@ -151,7 +178,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「引入健全性检查（Sanity Check）可帮助改进 Agent 过滤违背工程常识的建议」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在改进 Agent 中引入健全性检查（Sanity …」「建立反馈来源的权限与权重控制机制」等 3 项成立；并排除「只要系统捕获到用户的负向反馈（如 Downvote）」「取消文本格式的反馈输入」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "认为收到负向反馈就应让改进 Agent 无条件覆盖现有技能规则",
+      "认为只保留二元赞踩信号即可触发技能更新，能最大化降低反馈门槛"
+    ]
   },
   {
     "id": "evaluation-system-design-01",
@@ -227,6 +258,13 @@
           1,
           2,
           4
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          null
         ]
       }
     },
@@ -234,7 +272,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「合并前保留人类 Review 这一关键 Gatekeeper，合并后新任务自然加载最新 Skill，实现了兼顾低摩擦、可追溯与生产安全的全流程设计」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「用户创建 Issue 时触发执行 Agent」「维护者在审查分类结果时」等 4 项成立；并排除「改进 Agent 提交的技能修改 PR 经 Git …」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "认为技能修改 PR 可由 CI 自动合入主干，跳过人工 Review 以保证响应速度"
+    ]
   },
   {
     "id": "agent-skill-drift-debugging",

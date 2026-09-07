@@ -26,6 +26,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
@@ -33,7 +39,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「训练初期，生成器生成的样本质量较低，判别器 D 能轻易判别其为伪造样本，导致 D(G(z)) 接近 0」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「原始损失函数 log(1 - D(G(z))) 在 …」「替换策略是将生成器的优化目标改为最大化 log D(…」等 3 项成立；并排除「修改后的生成器损失函数改变了对抗博弈的全局唯一极小值…」等不成立描述。"
     },
-    "cognitiveTask": "predict"
+    "cognitiveTask": "predict",
+    "misconceptions": [
+      "以为改用非饱和（non-saturating）生成器损失会改变对抗博弈的全局最优解，实际上在 D 取最优时它仍等价于最小化 JSD，最优仍是 pg = pdata，只是缓解了训练初期的梯度消失"
+    ]
   },
   {
     "category": "generative-models",
@@ -62,6 +71,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
@@ -69,7 +84,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「将 D*_G(x) 代入博弈目标函数 C(G) 后可化简为 C(G) = -log(4) + 2 * JSD(pdata || pg)」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在生成器 G 固定的情况下」「当生成分布完美重构真实分布（pg = pdata）时」等 3 项成立；并排除「当生成分布与真实分布重合时 C(G) 取全局极小值 …」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为两分布重合时 C(G) 取全局极小值 0 且与 JSD 无关，实际上此时的极小值是 -log4，对应 JSD = 0"
+    ]
   },
   {
     "category": "generative-models",
@@ -98,6 +116,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
@@ -105,7 +129,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「其生成过程仅需将先验噪声通过生成器网络执行一次单向前向传播即可获得生成样本，无需 Markov 链的反复迭代混合（Mixing）」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「GAN 的采样过程无需 Markov 链迭代」「GAN 在训练和推理过程中均无需计算或近似复杂的配分…」等 3 项成立；并排除「GAN 能够显式计算出复杂高维数据点 x 在生成分布…」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为 GAN 能显式算出数据点在 pg 下的精准对数似然，GAN 属于隐式生成模型，不提供可解析的密度"
+    ]
   },
   {
     "category": "generative-models",
@@ -134,6 +161,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
     },
@@ -141,7 +174,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「内循环不将判别器训练至完全收敛是为了避免计算过载以及在有限样本上严重过拟合」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「每轮训练迭代中」「限制判别器在内循环中仅更新 k 步而非训练至完全收敛」等 3 项成立；并排除「判别器更新梯度时」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为真实样本与伪造样本必须合并成一个 minibatch 后仅通过减小损失来更新 D，实际是按梯度上升更新 D、按梯度下降更新 G，两类样本分别计算而非合并后统一下降"
+    ]
   },
   {
     "category": "generative-models",
@@ -168,6 +204,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       }
     },
@@ -175,7 +217,12 @@
       "target": "能判断「其中核宽度参数 sigma 必须通过验证集上的交叉验证（Cross-validation）确定」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「高斯帕森窗中的超参数 sigma（高斯核标准差）通常…」成立；并排除「高斯帕森窗评估方法在高维数据空间中具有极低的估计方差」「该方法通过在生成器内部增加一个似然解码层」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为高斯帕森窗在高维空间中估计方差极低、是评估生成质量的精确标准，实际上高维下该方法方差极大、可靠性很差",
+      "以为该方法通过在生成器内部增加似然解码层来还原解析似然，它只是在生成样本上做外挂拟合，不改动生成器",
+      "以为帕森窗似然估计不受采样随机性影响、能客观反映模式崩溃，它对样本与带宽高度敏感，且常常漏检模式崩溃"
+    ]
   },
   {
     "category": "generative-models",

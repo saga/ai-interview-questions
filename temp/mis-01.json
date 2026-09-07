@@ -1,0 +1,954 @@
+[
+ {
+  "seq": 0,
+  "id": "agent-arch-localized",
+  "topic": "agent-fundamentals",
+  "question": "关于 \"Localized Harness\"（把控制逻辑本地化到编排代码）的做法，以下哪些是它的主要动机或特征？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "把重试、超时与降级策略交由模型在运行时自主决定，代码侧只保留 prompt 模板，以减少编排代码的维护负担"
+   },
+   {
+    "i": 4,
+    "text": "Localized Harness 要求所有工具调用都经过人工审批，否则确定性控制流无法保证可观测性"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "agent-arch-loop",
+  "topic": "agent-loop",
+  "question": "关于 Agentic Loop（代理循环：观察→思考→行动→再观察），以下哪些设计是正确且必要的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "每一步都应把完整历史重新送入上下文，任何状态裁剪都会丢失关键信息，因此不应做截断以换取可靠性"
+   },
+   {
+    "i": 4,
+    "text": "只要设置了最大步数就可不设任务完成判定，步数耗尽即视为成功结束，无需显式验证目标是否达成"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "agent-arch-model-harness",
+  "topic": "agent-fundamentals",
+  "question": "关于 Agent 的 Model（模型）与 Harness（外部编排代码）的边界，以下哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "模型应当直接执行工具副作用（如写数据库），Harness 只负责把结果展示出来"
+   },
+   {
+    "i": 4,
+    "text": "Model 与 Harness 只是同一事物的两种叫法，没有实质区别"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "agent-arch-system-prompt",
+  "topic": "agent-fundamentals",
+  "question": "关于 Agent 的 System Prompt 在运行时（runtime）的构造，以下哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "System Prompt 应是写死在代码里的静态常量，全程不变"
+   },
+   {
+    "i": 4,
+    "text": "System Prompt 越长越好，应包含尽可能多的历史对话与系统日志以覆盖全部上下文，从而让模型无需 Harness 动态拼装也能获得完整信息，长上下文只会提升而非拖慢表现"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "agent-chain-01",
+  "topic": "agent-loop",
+  "question": "在一个基于大语言模型（LLM）的自主 Agent 系统中，某个复杂任务被拆解为连续执行的 20 个依赖前一步输出的决策步骤。假设模型在每一步做出正确决策的概率固定为 95%。下列关于该系统可靠性及工程应对策略的说法中，正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "解决链式衰减的最佳方案是将 20 步的提示词合并为一次模型调用并无限扩大上下文窗口，从而彻底消除步骤间的传递误差"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "agent-control-01",
+  "topic": "agent-loop",
+  "question": "在生产环境 AI Agent 的控制流（Control Flow）设计中，完全由 LLM 自主掌控循环逻辑容易带来死循环、成本失控和行为不可预测等风险。为了构建高可靠的生产级 Agent 系统，下列哪些控制流设计原则是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "元 Agent 统一持有全局状态机，子 Agent 无状态；单脑架构消除协调不一致，比外层代码更内聚。"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "agent-react-guard-01",
+  "topic": "agent-loop",
+  "question": "在 AI Agent 系统运行环境（Agent Runtime）的 ReAct（Reasoning + Acting）循环中，模型通过“思考-决策-执行工具-观察结果-反思”不断推进任务。为满足生产环境的可控性、安全与成本预算要求，下列架构设计合理的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "为了给模型提供完整信息，Observation 阶段应将外部 API 返回的所有原始大文本或完整 HTML 响应不加裁切地拼接入下一轮 Prompt"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "agentic-01",
+  "topic": "agent-fundamentals",
+  "question": "一个典型的 AI Agent（智能体）最核心的运行时循环是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "仅做模型训练与离线推理，把模型当作一次性函数调用而不保留任何运行时状态，也不与环境做持续的交互与反馈，这正是生产级 Agent 的典型形态"
+   },
+   {
+    "i": 2,
+    "text": "数据清洗 → 标注 → 入库"
+   },
+   {
+    "i": 3,
+    "text": "模型蒸馏 → 量化 → 部署"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "agentic-03",
+  "topic": "agent-fundamentals",
+  "question": "下列哪些是典型 AI Agent 的核心组件？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Loss 函数（损失函数）"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "agentic-04",
+  "topic": "agent-loop",
+  "question": "ReAct（Reasoning + Acting）框架的核心思想是什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "仅用链式提示把多个问题串起来"
+   },
+   {
+    "i": 2,
+    "text": "训练一个专用分类器决定下一步动作"
+   },
+   {
+    "i": 3,
+    "text": "把多个模型集成以提升准确率，用投票融合的结果替代单模型自身的推理与行动，从而无需任何 ReAct 式的交替思考与工具调用，集成本身就能自动完成推理与执行"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "agentic-12",
+  "topic": "agent-guardrails",
+  "question": "为防止 Agent 在执行中失控（无限循环、误用高危操作），下列哪些是有效的工程护栏？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "在系统提示词中写明“请谨慎操作、避免重复”，依靠模型的内建安全对齐作为主要防线。"
+   },
+   {
+    "i": 3,
+    "text": "取消所有人工确认环节以保持全自动执行效率，改为事后逐日审计全部操作日志。"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "agentic-43",
+  "topic": "agent-fundamentals",
+  "question": "Agent 是否应该被允许修改自己的 system prompt？请从能力与风险两方面论证，并给出你认为合理的折中方案。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "允许 Agent 直接修改任意条款并立即生效，这样自我改进速度最快、收益最大。"
+   },
+   {
+    "i": 2,
+    "text": "持久化注入的危害仅限于当前对话轮次，对话结束后恶意指令会自动消失，因此提示词修改无需审计、版本管理或白名单禁区。"
+   },
+   {
+    "i": 3,
+    "text": "系统提示词是运行时可随意调整的普通配置，修改它不会影响安全约束的有效性。"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "agentic-53",
+  "topic": "agent-fundamentals",
+  "question": "以下哪种场景最不应该使用 Agent，而应该使用传统固定 workflow？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "B 线舆情摘要：主题虽不可预测，但可以通过预设模板穷举所有分析路径"
+   },
+   {
+    "i": 1,
+    "text": "C 线工单分流：语义分支多变，只有交给自主 Agent 才能保证分流准确"
+   },
+   {
+    "i": 3,
+    "text": "D 线研究报告：问题空间开放、分支无法预先穷举，应固化为一套静态脚本逐章执行"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "agentic-62",
+  "topic": "agent-loop",
+  "question": "ReAct 模式让 Agent 以 Thought → Action → Observation 循环执行任务。请解释该循环的运作机制、四种典型失败模式及对应的工程护栏。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "ReAct 中 Action 必须由开发者预先编排好顺序，模型只负责填参数；规划与执行分离。"
+   },
+   {
+    "i": 1,
+    "text": "Observation 直接进入模型权重进行微调，从而记住工具返回结果；在线学习即记忆。"
+   },
+   {
+    "i": 3,
+    "text": "确认环节放在 Thought 之后 Action 之前逐次进行，细粒度确认最安全；批量授权会漏掉中间风险。"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "ai-agent-001",
+  "topic": "agent-fundamentals",
+  "question": "一个客服系统主要回答企业知识库中的固定问题，偶尔需要查询订单状态。你会设计成纯 RAG、Workflow 还是 Agent？为什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "打造完全自主的自由 Agent，让模型对每个请求自主规划多步行动，以最大灵活度应对一切变化"
+   },
+   {
+    "i": 2,
+    "text": "客服问题 8 成是 FAQ，纯 RAG 覆盖主体；订单查询走 FAQ 兜底话术，工具链路二期再建。"
+   },
+   {
+    "i": 3,
+    "text": "意图分流可后置，先全量 RAG 上线验证需求；工具注册等真实出现订单查询失败案例再补。"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "ai-eng-001",
+  "topic": "agent-fundamentals",
+  "question": "一个系统需要依次执行“读取 PDF → 提取文本 → 清洗文本 → 写入数据库 → 生成摘要”，每一步的输入和输出都已经确定，没有运行时决策。你会把它设计成 Agent，还是普通 Workflow？为什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "实现成自主 Agent，由模型在每次运行时自行决定下一步动作，以最大灵活度应对未来可能的流程变化"
+   },
+   {
+    "i": 2,
+    "text": "两种形态并无实质差别，只要最终输出正确，架构不会影响可靠性与排查效率，因此用自主 Agent 替换固定流水线不会带来任何可观测性或回归测试上的损失，二者在工程上完全等价，选择哪种只是风格偏好"
+   },
+   {
+    "i": 3,
+    "text": "做成 Agent 并辅以人工抽查兜底，因为固定流水线无法对每步的输入输出契约做单元测试验证"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "ai-eng-002",
+  "topic": "agent-fundamentals",
+  "question": "一个客服系统有 20 个固定步骤，其中 3 个步骤需要根据用户意图选择不同分支。你会把整个系统做成 Agent，还是 Workflow + LLM 决策节点？为什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "整体改造为自由 Agent，二十个步骤全部交由模型在运行时自主规划调度，一步到位获得灵活性"
+   },
+   {
+    "i": 1,
+    "text": "三处分叉点继续沿用关键词规则并扩充词典，任何 LLM 参与决策都会破坏系统的确定性"
+   },
+   {
+    "i": 3,
+    "text": "将二十个步骤压缩为一次端到端的 LLM 调用，彻底消除多步编排带来的额外开销"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "ai-eng-003",
+  "topic": "agent-fundamentals",
+  "question": "如果让你从零设计一个最小可用的 AI Agent，你认为至少需要哪些核心组件？请说明每个组件的职责。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "除基础模块外，第一版必须内置长期记忆、自我反思与多智能体协作，否则达不到合格 Agent 产品的门槛"
+   },
+   {
+    "i": 2,
+    "text": "采购足够大的上下文窗口从而省去执行循环，凭单次推理完成整批发票的处理"
+   },
+   {
+    "i": 3,
+    "text": "不设终止条件，任务何时结束由财务人员事后人工关闭进程即可，因为 Agent 总能自行收敛，终止判定只会增加复杂度。"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "ai-eng-007",
+  "topic": "agent-loop",
+  "question": "请解释 ReAct 类 Agent 的基本思想。它与一个只调用一次 LLM 然后执行工具的系统有什么本质区别？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "ReAct 在任务开始前一次性生成完整的行动脚本，执行阶段严格照搬脚本不做任何调整"
+   },
+   {
+    "i": 2,
+    "text": "ReAct 将推理与行动分配给两个互不通信的独立模块，各自产出结果后由第三方做最终拼接"
+   },
+   {
+    "i": 3,
+    "text": "ReAct 的多轮调用开销可被 KV 复用与缓存吸收，动态适应收益通常覆盖成本；可作默认起步，失败再回退。"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "ai-eng-011",
+  "topic": "agent-loop",
+  "question": "一个 Research Agent 经常出现 search → analyze → search → analyze 的无限循环。没有任何异常，但 Agent 无法结束任务。你会如何设计 termination mechanism？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "循环没有报错即代表运行健康，应上调迭代上限让模型继续探索，直至其自行宣布任务完成"
+   },
+   {
+    "i": 1,
+    "text": "终止条件由用户每次发起任务时手工指定，系统层面无需内置预算与超时机制，因为任务差异大，硬上限会误杀有价值的探索。"
+   },
+   {
+    "i": 2,
+    "text": "检测到重复相同的搜索调用时，自动放大检索范围并提高迭代上限，充分利用“检索尚不充分”这一信号"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "ai-eng-031",
+  "topic": "agent-guardrails",
+  "question": "在长文本问答测试中，当面对全语料覆盖问题（如\"汇总全部 33 篇文章中引用的 GitHub 仓库\"）时，RAG 仅召回了 5 个 Chunks。测试结果显示 RAG 的 Completeness（完整度）得分仅为 0，但 Groundedness（依据度/无幻觉）得分依然维持满分。导致这一现象的关键因素包括？（多选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "模型自主推断出向量数据库召回不全，并自动提高了注意力机制对外部知识的惩罚权重"
+   },
+   {
+    "i": 3,
+    "text": "向量检索的 Embedding 模型自动过滤掉了可能导致幻觉的不确定切片"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "ai-eng-061",
+  "topic": "agent-fundamentals",
+  "question": "电商客服 AI 要自动解决 60% 的工单（200 万张/月），同时\"Where is my order?\"自动处理、\"我要告你们欺诈\"必须立即转人工。请设计分流架构：分几层、每层的判定信号是什么、以及为什么置信度必须多维。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只要意图分类器的置信度超过阈值就自动解决，其余全部转人工；单阈值即分流策略，简单可解释。"
+   },
+   {
+    "i": 2,
+    "text": "AI 先行可沉淀失败样本训练下一版，高风险工单由事后审计覆盖；先跑起来再收紧，飞轮优先。"
+   },
+   {
+    "i": 3,
+    "text": "按文字长度路由：短问题自动回答，长问题转人工；长度与复杂度正相关，简单高效，无需多维加权。"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "ai-eng-062",
+  "topic": "agent-guardrails",
+  "question": "客服 AI 自动发出的每一条回复都可能构成对用户的承诺。请设计发送前的安全检查层应拦截哪些风险，以及工具调用接地（tool grounding）、越狱抵抗与人机交接上下文包如何协同构成完整防线。",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "内容审核API过滤脏话与敏感词即够，承诺、情绪与PII风险可由模型对齐能力自行消解"
+   },
+   {
+    "i": 4,
+    "text": "自动解决工单跳过发送前检查、事后抽检即可，检查只留给转人工的高风险对话"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "ai-eng-067",
+  "topic": "agent-loop",
+  "question": "客服对话流被建模为状态机：意图分类 → 知识检索(RAG)/账户上下文/工具调用 → 草稿生成 → 安全检查 → 置信度检查 → 发送或转人工。关于各阶段的依赖与顺序，下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "置信度检查应当排在安全检查之前执行，以便提早结束低分请求、省掉安全检查的开销"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "ai-security-002",
+  "topic": "agent-guardrails",
+  "question": "如何设计一个 LLM Application 的 Input Guardrail 和 Output Guardrail？哪些检查应该在 LLM 之前完成，哪些应该在 LLM 之后完成？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "全部安全检查放LLM之后集中执行，看到完整输出才能全面评估风险，前置只是重复劳动"
+   },
+   {
+    "i": 4,
+    "text": "拦截时静默丢弃不给反馈，边界情况尽量放行保体验，误杀留待事后审计处理"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "ai-tool-004",
+  "topic": "agent-guardrails",
+  "question": "一个 Agent 可以调用发送邮件、删除数据和查询数据库的工具。你会如何设计工具权限和高风险操作的确认机制？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "三类工具赋予同等操作权限，信任模型在参数中附带“用户已同意”标记即放行各类危险动作"
+   },
+   {
+    "i": 2,
+    "text": "删除类操作直接物理执行以追求效率，软删除与独立审批流只会无谓拖慢 Agent 响应"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "eth-06",
+  "topic": "agent-guardrails",
+  "question": "LLM 响应请求生成了包含恶意 JavaScript 的 Markdown 代码块，系统未做处理直接渲染在前端页面，导致了存储型 XSS；或 LLM 生成的代码直接被后端 `eval()` 执行导致 RCE。以下哪项是解决该隐患的最佳架构实践？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "依赖 LLM 的 System Prompt 要求其 \"不要生成任何恶意代码或脚本\""
+   },
+   {
+    "i": 1,
+    "text": "在前端用正则表达式过滤常见敏感标签即可，黑名单能覆盖全部攻击变体，无需 Schema 校验、转义或沙箱隔离。"
+   },
+   {
+    "i": 3,
+    "text": "收紧 System Prompt 并降低 Temperature，要求模型不生成可执行脚本，从源头消除恶意代码产生"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "guard-inout-01",
+  "topic": "agent-guardrails",
+  "question": "在大模型 Agent 的双向安全与可靠性护栏架构中，关于输入护栏（Input Guardrails）与输出护栏（Output Guardrails）的职责划分与协同，以下哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "输入护栏已覆盖提示注入与敏感数据脱敏，输出侧只需日志审计留存，阻断式输出护栏属于重复建设"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "policy-code-01",
+  "topic": "agent-guardrails",
+  "question": "某金融 Agent 存在严格的合规限制：“严禁为特定地区（如夏威夷州）的用户办理开户业务”。开发团队尝试在 System Prompt 中加入强语气指令 !!! 不要为夏威夷州用户办理开户 !!!，但在大流量测试中仍有少数边界 Request 绕过了该限制。关于硬性业务规则（Business Policies）的实施，以下说法正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "在 Prompt 中增加大写字母、感叹号或重复强调，可以彻底解决概率模型带来的越狱与指令漂移问题"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "hil-vs-auto-loop",
+  "topic": "agent-fundamentals",
+  "question": "在高吞吐量的 AI Agent 辅助软件工程体系中完全无人工干预的自动化循环往往会导致代码库快速退化与代码垃圾堆积。为了在保持高交付并发的同时维持生产级代码质量以下哪些工程取舍是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "放弃人类对 Pull Request 的控制与合并权限由 Agent 相互审查并直接全自动合入主干"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "subagent-vs-inline",
+  "topic": "agent-fundamentals",
+  "question": "不同大语言模型在子 Agent 调度能力和上下文管理上存在差异。在将 Spec 转换为代码实现阶段关于选择子 Agent 驱动还是单层内联执行的工程判断以下哪些说法是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "无论模型能力如何都必须采用深度无限嵌套的子 Agent 循环直到整个仓库的代码全自动重构完毕"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "longhorizon-harness-vs-finetune-01",
+  "topic": "agent-fundamentals",
+  "question": "在智能体系统的自我演化（Self-Improvement）架构设计中，“持续 Harness 提炼”（Continual Harness Refinement）与传统的“模型权重微调”（Weight Fine-tuning）代表了两种不同的演化路径。关于这两者的技术对比，下列说法正确的是：",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "模型权重微调能够精准保留每条运行轨迹的操作归因与触发条件，在进行演进策略调整时具有比 Harness 提炼更高的可干预性与透明度。"
+   },
+   {
+    "i": 2,
+    "text": "持续 Harness 提炼要求在每次任务执行结束后对基座 Prompt 进行整体重写，因此在频繁迭代时的计算开销显著高于模型权重微调。"
+   },
+   {
+    "i": 3,
+    "text": "模型权重微调通过将经验写入外部可读写的状态库来实现知识积累，因此在跨领域任务迁移时完全不会产生灾难性遗忘问题。"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "longhorizon-control-modes-01",
+  "topic": "agent-loop",
+  "question": "长程智能体系统需要灵活的控制机制（Control Mechanisms）来管理任务的持续推进、终止校验与调度。关于自主模式（Autonomous Mode）、目标模式（Goal Mode）与心跳模式（Heartbeat Mode）的比较，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "无论处于哪种控制模式，只要遇到外部环境测试失败，系统就会立即强行终止进程并清空 L2 与 L3 层的所有持久化状态。"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "envharness-duality-01",
+  "topic": "agent-fundamentals",
+  "question": "在 LLM Agent 系统设计中，Agent Harness（如工具调用、记忆检索、提示词链循环等）与 Environment Harness 展现出高度的对偶性（Duality）。关于这两者的架构定义与工作机制，下列说法正确的有？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "Agent Harness 主要修改环境的观察输入，而 Environment Harness 主要修改 Agent 的预测概率分布。"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "envharness-stage-01",
+  "topic": "agent-loop",
+  "question": "在 Environment Harness 体系中，Stage 组件被定义为在环境初始化时静默施加一个预设的动作序列 δ = (a1, a2, …, ak)。关于 Stage 组件的执行流程与工程作用，下列说法正确的有？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Stage 组件执行时会修改环境原生的 step() 逻辑，屏蔽 Agent 在后续交互中调用动作序列 δ 中所包含动作的权限。"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "envharness-contract-01",
+  "topic": "agent-loop",
+  "question": "某 Agent 在代码修复任务中表现出对“全量观察信息”的过度依赖，且频繁调用高阶快捷指令而跳过基础代码排查步骤。开发者希望在不修改底层环境源码的前提下，通过 Contract 组件对 Agent 的交互进行约束：限制快捷动作使用、隐藏部分全局上下文、并在特定非法操作时追加结构化提示。根据 Contract 组件的标准定义 r = (f_A, f_T, f_O)，下列映射分配最合理的是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "利用 f_A 预先执行初始化脚本，利用 f_O 串联多个独立代码库，利用 f_T 拦截环境的 reset() 调用。"
+   },
+   {
+    "i": 2,
+    "text": "利用 f_A 重新计算验证器的得分，利用 f_O 增加环境初始化动作，利用 f_T 修改 Agent 模型内部权重。"
+   },
+   {
+    "i": 3,
+    "text": "利用 f_A 扩展动作空间维度，利用 f_O 将多回合交互压缩为单回合，利用 f_T 替换静态数据库。"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "envharness-chain-01",
+  "topic": "agent-loop",
+  "question": "Chain 组件通过组合逻辑 g(E, E_ext) 将基础环境 E 与附加环境 E_ext 组合为复合环境。关于 Chain 组件的技术实现与交互机制，下列说法正确的有？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Chain 组件要求参与拼接的所有子环境必须基于完全相同的底层实现代码与内存数据结构。"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "envharness-envrigger-01",
+  "topic": "agent-loop",
+  "question": "EnvRigger 是用于自动化生成 Harness 组件的控制闭环，其工作流包含四个阶段：Observe、Diagnose、Write 和 Validate。关于各阶段的职责与数据流转，下列说法正确的有？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "Write 阶段依据诊断生成候选 Harness 组件（如 Stage/Contract 组合），生成的代码会直接写入生产环境无需验证。"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "envharness-composition-01",
+  "topic": "agent-loop",
+  "question": "EnvHarness 允许将多个组件嵌套叠加在同一个静态环境上，例如构造复合环境 E' = w_chain ∘ w_contract ∘ w_stage (E)。关于该复合系统的执行特性，下列说法正确的有？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "一旦进行多层嵌套，最内层原始环境的验证器（Verifier）即随之失效，必须由开发者手动重写整套验证代码。"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "selfharness-definition-01",
+  "topic": "agent-fundamentals",
+  "question": "在基于大语言模型（LLM）的智能体（Agent）系统架构中，系统通常被划分为“基座模型（Base Model）”与“操作 Harness（Environment Interaction Harness）”。关于这两者在系统架构中的边界与协作方式，下列哪种说法是准确的？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "Harness 是指注入基座模型内部的注意力掩码策略，用以控制模型在多轮对话中的上下文注意力衰减"
+   },
+   {
+    "i": 2,
+    "text": "Harness 是指智能体在推理过程中动态优化的模型权重增量，用以提升特定任务下的具身交互精度"
+   },
+   {
+    "i": 3,
+    "text": "Harness 是指部署在模型前端的网络负载均衡器，用以路由不同租户请求并管理并发 API 调用限速"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "selfharness-paradigms-01",
+  "topic": "agent-fundamentals",
+  "question": "优化 LLM Agent Harness 的演进路径通常包含“人工工程化（Human Engineering）”、“强模型驱动（Meta-Harness / Teacher-driven）”与“模型自我演进（Self-Harness）”三种模式。在面对多样化且快速迭代的基座模型时，相比前两种模式，“模型自我演进（Self-Harness）”架构具备哪些核心优势？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "彻底取消运行时环境校验与回归测试环节，通过单一提议直接完成底层代码层面的无损热更新"
+   },
+   {
+    "i": 3,
+    "text": "避免生成式优化器由于上下文过长而引发的衰减问题，将模型参数微调与环境策略调整完全解耦"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "selfharness-failure-clustering-01",
+  "topic": "agent-loop",
+  "question": "在智能体自我演进的“缺陷挖掘（Weakness Mining）”阶段，如果仅根据终态校验结果（如“输出文件缺失”或“运行超时”）对失败执行轨迹（Execution Traces）进行归类，往往无法有效地指导 Harness 改进。造成这一现象的核心机制是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "终态结果完全依赖外部评测器的随机采样误差，无法准确反映智能体在推理过程中的真实执行状态"
+   },
+   {
+    "i": 2,
+    "text": "终态结果会强制重置智能体的上下文记忆，导致优化器无法提取历史执行步骤中的提示词匹配特征"
+   },
+   {
+    "i": 3,
+    "text": "终态结果直接破坏了工具调用的格式规范，使得提议模块无法解析解析器所返回的结构化异常码"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "selfharness-signature-01",
+  "topic": "agent-loop",
+  "question": "为了实现精细化的缺陷归因，智能体分析模块构建了由“终端校验原因（Terminal Cause）”、“Agent 行为因果状态（Causal Status）”与“抽象行为机制（Abstract Mechanism）”构成的归因签名 φ(r) = (c, q, m)。下列关于该归因机制在失败轨迹聚类中作用的描述，哪些是正确的？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "允许系统自动过滤掉所有非确定性的运行异常，仅保留由于模型参数不稳定导致的随机错误"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "selfharness-parallel-edits-01",
+  "topic": "agent-fundamentals",
+  "question": "在 Self-Harness 的提议生成（Harness Proposal）阶段，系统采用“并行提出多个多元化且最小化候选修改（Parallel Bounded Edits）”策略，而不是让智能体直接重新生成一套全新的完整 Harness。这种设计基于哪些工程设计取舍（Trade-offs）？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "全局重构会显著降低基座模型的 Token 消耗成本，但会导致提示词上下文发生严重的格式漂移现象"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "selfharness-vs-optimizer-01",
+  "topic": "agent-fundamentals",
+  "question": "假设某团队正在规划构建一套自动化的 AI Agent 研发迭代系统。在评估“基于强模型（如 Teacher LLM）的 Meta-Harness 优化器”与“基于目标模型自我闭环（Self-Harness）”两种系统架构方案时，下列哪项分析切中了前者的主要系统性缺陷？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "强模型在处理并发 Trace 分析时会导致系统吞吐量剧烈下降，无法支撑大规模软件工程基准测试的并行评估"
+   },
+   {
+    "i": 2,
+    "text": "强模型优化器需要对目标基座模型的内部参数权重进行实时梯度反向传播，带来了不可接受的算力开销与显存瓶颈"
+   },
+   {
+    "i": 3,
+    "text": "强模型生成的系统提示词无法适配目标模型的 Tokenizer 编码规则，容易在运行过程中引发严重的解码异常"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "skillevo-cross-model-transfer-01",
+  "topic": "agent-fundamentals",
+  "question": "在 LLM Agent 技能演进与跨模型迁移（Cross-model Skill Transfer）的工程实践中，关于“技能发现（Skill Discovery）”与“技能执行（Skill Execution）”能力的关系，下列哪种现象最符合系统解耦后的实际表现？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "由小参数模型演进出的技能由于缺乏复杂逻辑，通常在大参数模型上无法正确加载与解析"
+   },
+   {
+    "i": 2,
+    "text": "技能的适用性严格绑定于生成它的模型族，跨模型族迁移技能往往会导致 Agent 性能急剧衰减"
+   },
+   {
+    "i": 3,
+    "text": "小参数模型只能准确执行自身演进出的技能，因为演进过程已将其特定的上下文限制硬编码"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "skillevo-scaling-complementarity-01",
+  "topic": "agent-fundamentals",
+  "question": "在评估“模型参数规模（Model Scale）”与“演进技能（Evolved Skills）”对 Agent 系统综合性能的提升效果时，关于两者的系统设计取舍与互补关系，以下哪些结论是正确的？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "随着基座模型参数量扩大，模型泛化能力会自动涵盖领域工作流，因而超大模型完全不需要演进技能"
+   },
+   {
+    "i": 3,
+    "text": "技能演进仅在小模型上产生效果，大型模型由于存在严重指令过拟合，加载外部技能反而导致性能下降"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "agent-safety-02",
+  "topic": "safety-alignment",
+  "question": "一个具备自动执行权限的 Agent 在处理用户请求“帮我清理一下邮箱”时，删除了用户近 3 年的所有邮件且未做确认。关于 Agent 安全中的过度委托（Over-delegation）风险，下列设计正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "为提升自主性，应授予 Agent 所有操作的自动执行权限"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "agent-safety-03",
+  "topic": "safety-alignment",
+  "question": "在 Agent 安全评估中，为什么需要引入红队测试（Red Teaming）而非仅依赖常规功能测试？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "红队测试与常规测试效果相同，可互相替代"
+   },
+   {
+    "i": 2,
+    "text": "红队测试仅适用于模型训练阶段，部署后无需"
+   },
+   {
+    "i": 3,
+    "text": "红队测试会增加成本，因此不应进行"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "agent-safety-04",
+  "topic": "safety-alignment",
+  "question": "为满足 Agent 操作的可审计性（Auditability），下列哪些日志与追踪能力是必需的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "仅记录最终回答即可满足审计要求"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "ai-eng-054",
+  "topic": "safety-alignment",
+  "question": "药企营销材料的 FDA 合规预审系统中，漏报（false negative）不可接受、误报容忍度 <20%。请设计系统的置信度分级处置策略与人机分工，并说明为什么\"从不静默输出合规\"是铁律。",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只有置信度高于95%才标记，漏报与误报代价对称，调高阈值是对稀缺法务资源的理性分配"
+   },
+   {
+    "i": 4,
+    "text": "AI直接给出最终合规结论，法务只看HIGH项，规则明确任务上模型已超人类，保留人工只为安抚监管"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "eth-02",
+  "topic": "safety-alignment",
+  "question": "为减少机器学习模型中的偏见（bias）与歧视，可行的措施包括？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "建立监控看板跟踪推理延迟、吞吐量与服务可用性，记录服务水平目标并在治理例会上汇报运行状况"
+   },
+   {
+    "i": 2,
+    "text": "等候选人投诉疑似歧视之后，再启动专项调查并回溯分析相关群体的历史通过率"
+   },
+   {
+    "i": 3,
+    "text": "请资深 HR 抽样浏览模型筛选结果，凭经验记录主观评价作为公平性证据存档备查"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "eth-03",
+  "topic": "safety-alignment",
+  "question": "在部署面向公众的大模型对话产品时，应采取哪些安全与对齐措施来降低滥用与有害输出风险？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "预训练语料已经足够干净，上线时应关闭全部线上内容审核与护栏，避免损害模型能力"
+   },
+   {
+    "i": 4,
+    "text": "默认拒绝一切涉及医疗、法律等专业领域的提问，仅保留闲聊功能即可彻底消除有害输出的风险"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "eth-10",
+  "topic": "safety-alignment",
+  "question": "一种常见的带密钥文本水印（Keyed Text Watermarking）方案在推理生成阶段和检测阶段协同工作。具体实现原理为：在生成每个 Token 时，系统利用私钥与前序 N 个 Token 作为输入计算哈希值，动态将词表划分为“允许采样区（绿名单）”与“受限区（红名单）”，并提高绿名单 Token 的采样概率。关于该机制的检测与工程特性，下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "水印检测过程必须载入原 LLM 模型并在 GPU 上重新运行前向传播（Forward Pass）来计算 Token 的 Logits"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "agent-constitution-design",
+  "topic": "safety-alignment",
+  "question": "在为具备本地文件系统与终端执行权限的 AI Coding Agent 设计安全规范与执行约束时为了平衡执行自主性与工程安全性以下哪些规则设计符合最佳工程实践？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "当遇到困难或阻碍时允许 Agent 自动执行破坏性命令（如 git reset --hard 或强制覆盖代码库）以快速恢复初始状态"
+   }
+  ]
+ },
+ {
+  "seq": 55,
+  "id": "agent-skills-design-01",
+  "topic": "agent-skills",
+  "question": "在设计用于指导 Agent 处理复杂工程任务的技能（Skill）文件时，为了在有限的 Context Window 内兼顾高泛化能力与低 Token 消耗，下列哪些模块级设计策略符合最佳实践？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "将所有相关的业务文档、API 规范及历史失败案例平铺展开写入主技能文件中，以消除运行期的脚本调用开销"
+   }
+  ]
+ },
+ {
+  "seq": 56,
+  "id": "memory-comparison-01",
+  "topic": "memory",
+  "question": "在 Agent 系统设计中，工程师常常需要区分“技能（Skills）”与“情境记忆（Episodic Memory）”。关于两者的本质差异与应用边界，下列哪项表述最为准确？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "技能是推理期由 Agent 自动写入且持续变动的会话数据，而情境记忆是人工维护的版本化文本文件"
+   },
+   {
+    "i": 2,
+    "text": "技能仅适用于确定性的代码编写场景，而情境记忆专用于处理非确定性的人类自然语言对话场景"
+   },
+   {
+    "i": 3,
+    "text": "技能与情境记忆在本质上完全相同，均指通过向量数据库（Vector DB）在检索增强（RAG）阶段动态加载的内容"
+   }
+  ]
+ },
+ {
+  "seq": 57,
+  "id": "evaluation-tradeoff-01",
+  "topic": "evaluation",
+  "question": "在利用人类反馈（Human Feedback）驱动改进 Agent 自动优化基础技能时，低质量或误导性的反馈可能会导致提示词漂移（Prompt Drift）。为了在保持自改进能力的同时保障系统稳定性，下列哪些工程措施是合理的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要系统捕获到用户的负向反馈（如 Downvote），即触发改进 Agent 无条件覆盖现有的技能指导规则"
+   },
+   {
+    "i": 4,
+    "text": "取消文本格式的反馈输入，仅依赖二元赞踩信号触发技能更新，以最大化降低用户提供反馈的门槛"
+   }
+  ]
+ },
+ {
+  "seq": 58,
+  "id": "agent-fundamentals-system-design-01",
+  "topic": "agent-fundamentals",
+  "question": "某团队拟基于 GitHub Actions 与事件驱动架构设计一套开源项目 Issue 自动分类与修复提议 Agent 系统。系统约束包括：要求低反馈摩擦、防止恶意/错误反馈污染技能库，且更新过程透明可追溯。下列哪些架构设计环节符合上述约束？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "改进 Agent 提交的技能修改 PR 经 Git CI 流程自动合入主干，跳过人工 Review 步骤以保证闭环的极致响应速度"
+   }
+  ]
+ },
+ {
+  "seq": 59,
+  "id": "agtool-guard-01",
+  "topic": "agent-guardrails",
+  "question": "在 LLM Agent 工具调用安全拦截系统的设计中，采用「Stage 1 单 Token 快速筛选 + Stage 2 CoT 推理审查」的两阶段级联架构（Cascade Architecture）。关于这种架构所解决的工程权衡与性能问题，下列分析正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "消除 Agent 在执行复杂多轮工具调用时的假阳性（False Positive），确保通过 Stage 2 校验的指令 100% 不发生越权风险"
+   }
+  ]
+ }
+]

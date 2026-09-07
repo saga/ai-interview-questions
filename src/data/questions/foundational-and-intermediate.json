@@ -26,6 +26,13 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -36,7 +43,12 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「BN 依赖 batch 内统计量，小 batch 和训练/推理统计切换会增加不稳定性」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「LN 或 RMSNorm 按样本归一化」「RMSNorm 还可省去去均值步骤」等 2 项成立；并排除「必须选择 BN」「三者在小 batch 和变动推理 batch 下完全…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 batch 越小 BN 的运行均值越准确、推理时也不需要额外统计量，恰恰相反：小 batch 统计量噪声极大，且 BN 推理必须依赖训练期维护的 running statistics",
+      "以为 BN、LN、RMSNorm 在小 batch 与变动推理 batch 下完全等价、只比参数量即可，忽略了 BN 依赖 batch 维度统计而 LN/RMSNorm 按样本自身归一化",
+      "以为推理时继续用当前 batch 统计量就能消除训练与推理的差异，实际上这会让同一输入的输出随同批样本而变，引入不可预测的抖动"
+    ]
   },
   {
     "id": "p0-cross-entropy-calculation-01",
@@ -63,6 +75,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -73,7 +91,12 @@
       "target": "能判断「该样本对应的 perplexity 为 exp(loss) = 4」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「loss ≈ 1.386」成立；并排除「loss ≈ 0.25」「loss = 4」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为 loss 就是那个概率本身 0.25，忽略了交叉熵是对数损失，需取 -ln(p)",
+      "以为 loss = 1/p = 4、perplexity = ln4，把 loss 与 perplexity 的换算方向搞反了（loss = ln4 ≈ 1.386，ppl = e^loss = 4）",
+      "以为 p = 0.25 对应 loss ≈ 0.693、ppl = 2，把 0.25 与 0.5 的对数值混淆了"
+    ]
   },
   {
     "id": "p0-dpo-tradeoff-01",
@@ -100,6 +123,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -110,7 +139,12 @@
       "target": "能判断「DPO 直接在偏好对上优化闭式目标，不需要在线 rollout 和显式奖励模型，工程更简单稳定」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「DPO 通常更适合固定偏好数据集」成立；并排除「DPO 与 PPO 都必须训练奖励模型并进行在线 r…」「PPO 不需要奖励模型」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 DPO 与 PPO 都必须训练奖励模型并做在线 rollout、区别只在 batch size，实际上 DPO 直接在偏好数据上优化策略，无需奖励模型与在线采样",
+      "以为 PPO 不需要奖励模型、策略梯度能直接从偏好标签算出，实际上 PPO（RLHF）需先训奖励模型再在线采样打分",
+      "以为 DPO 的事实准确率一定高于 PPO 从而可跳过评测与 KL 控制，忽略了缺乏 KL 约束的 DPO 容易过拟合偏好数据并损害生成质量"
+    ]
   },
   {
     "id": "p0-dropout-tradeoff-01",
@@ -137,6 +171,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -147,7 +187,12 @@
       "target": "能判断「提高 dropout 率可以通过训练时随机丢弃激活来降低共适应，缓解过拟合」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「适度提高 dropout 可能缓解过拟合」成立；并排除「提高 dropout 一定会提高训练准确率」「dropout 只改变数据集大小」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为提高 dropout 一定会提高训练准确率、推理阶段也应保持开启，实际上 dropout 通常压低训练准确率、换取泛化，且推理时必须关闭并按比例缩放",
+      "以为 dropout 只是改变数据集大小、不影响神经元共适应，实际上它正是通过随机失活来打破共适应",
+      "以为 dropout 率越高越好，忽略了过高的丢弃率会造成欠拟合、损失有效容量"
+    ]
   },
   {
     "id": "p0-gqa-mechanism-01",
@@ -174,6 +219,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -184,7 +235,12 @@
       "target": "能判断「GQA 保留多个 Query 头，但让一组 Query 头共享一个 K/V 头组，因此减少 KV Cache 的头数和读取量，同时保留比 MQA 更丰富的表示能力」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「多个 Query 头共享一组 Key/Value 头」成立；并排除「删除全部 Query 头」「移除 Value 分支」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 GQA 会删除全部 Query 头只留共享 KV，实际上 Query 头数量保持不变，被共享的是 Key/Value 头",
+      "以为 GQA 移除 Value 分支、只缓存 Query 来省显存，这既不能压缩 KV Cache 也与 GQA 的结构无关",
+      "以为 GQA 把每个 Query 头复制成独立的 Key/Value 头、增大缓存与访问开销，那其实是 MHA，方向正好相反"
+    ]
   },
   {
     "id": "p0-gqa-calculation-01",
@@ -211,6 +267,12 @@
         ],
         "answer": [
           1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
         ]
       },
       "open": {
@@ -221,7 +283,12 @@
       "target": "能按 KV Cache 与 KV 头数成正比，算出 GQA 相对 MHA 的压缩倍数",
       "reasoningGoal": "先确定 KV Cache 的规模只由 KV 头数决定，Query 头数不进入该计算；再据此用 MHA 的 32 个 KV 头除以 GQA 的 8 个 KV 头得到 4 倍；并排除把 Query 头数或两者相减相乘引入计算的干扰项。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为 32 个 Query 头配 8 个 KV 头的压缩比是 2 倍，误把头数比当成了一半",
+      "以为压缩比等于 KV 头数 8，实际上压缩比是 32 ÷ 8 = 4 倍",
+      "以为压缩比等于 Query 头数 32，混淆了 Query 头数与 KV 头数"
+    ]
   },
   {
     "id": "p0-gradient-descent-scenario-01",
@@ -248,6 +315,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -258,7 +331,12 @@
       "target": "能判断「原学习率很可能过大，更新在最优点附近或不同方向间跳跃」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「学习率可能过大」成立；并排除「说明模型容量一定不足」「说明 batch size 一定过小」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为震荡一定说明模型容量不足、应立即扩层数，忽略了学习率过大才是最常见原因，盲目扩容反而更难收敛",
+      "以为震荡一定说明 batch 过小、唯一修复方式是把 batch 调到全量，忽略了大 batch 并非唯一解且全量训练工程上往往不可行",
+      "以为 loss 长期不降说明已完全收敛、可以停训并忽略震荡，真收敛表现为低位平稳而非大幅上下跳动"
+    ]
   },
   {
     "id": "p0-inference-optimization-scenario-01",
@@ -286,6 +364,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -296,7 +380,12 @@
       "target": "能判断「TTFT 高而 TPOT 正常，说明瓶颈更可能在请求排队、调度、prefill 输入处理或网络/序列化，而不是 decode 阶段」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「优先拆分排队、prefill 和网络耗时」成立；并排除「直接把 temperature 调低」「只增加最大输出 token 数」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为调低 temperature 能改善首 token 延迟，采样参数只影响 decode 阶段的分布选择，与 prefill 耗时无关",
+      "以为只增加最大输出 token 数即可，且把「TPOT 正常」误读成 prefill 一定慢；恰恰是 TTFT 高、TPOT 正常说明瓶颈在 prefill 与排队，加长输出无济于事",
+      "以为换更大的模型一定能提高短请求的 GPU 利用率，更大的模型只会让 prefill 更慢、显存更紧张"
+    ]
   },
   {
     "id": "p0-moe-definition-01",
@@ -323,6 +412,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -333,7 +428,12 @@
       "target": "能判断「激活参数量是一次 token 路由到的专家参数及共享参数，主要影响该 token 的计算量和部分延迟」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「总参数量包含所有专家」成立；并排除「总参数量和激活参数量始终相等」「激活参数量只影响磁盘大小」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为每个 token 都会访问所有专家、总参数与激活参数始终相等，那是稠密模型；MoE 正是稀疏激活，激活参数远小于总参数",
+      "以为激活参数量只影响磁盘大小、与单 token 计算量无关，实际上它决定每 token 的算力与显存带宽，磁盘占用才由总参数决定",
+      "以为 MoE 靠删除专家来降低总参数量、因此不存在路由与负载均衡问题，实际上 MoE 是增加专家扩大总参数、只激活一部分，路由不均衡恰是其核心难题"
+    ]
   },
   {
     "id": "p0-overfitting-tradeoff-01",
@@ -360,6 +460,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -370,7 +476,12 @@
       "target": "能判断「过拟合通常可通过增加或清洗数据、数据增强、正则化、降低模型容量或早停缓解」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「检查数据划分和泄露后」成立；并排除「继续训练更多轮并扩大模型」「删除验证集以避免验证指标下降」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为训练集指标还在涨就说明没学够、应继续加轮次并扩大模型，这只会进一步加剧过拟合",
+      "以为删掉验证集就能消除验证指标下降，等于移除了唯一能监测泛化的信号",
+      "以为过拟合本质一定是学习率太低、提高学习率即可，学习率与过拟合并无直接因果，反而可能破坏收敛"
+    ]
   },
   {
     "id": "p0-overfitting-scenario-01",
@@ -397,6 +508,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -407,7 +524,12 @@
       "target": "能判断「训练/验证都高不等于没有过拟合，也可能是验证集与线上分布不一致或存在污染」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「先检查验证集代表性、数据泄露、重复样本和时间切分」成立；并排除「直接增加模型层数」「删除线上样本以保持离线评测稳定」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为线上表现差说明容量不足、应直接加层数，忽略了同分布验证集也高已说明容量足够，问题更可能在分布差异或数据泄露",
+      "以为删掉线上样本、靠离线高分就能证明泛化，这是回避问题而非定位问题",
+      "以为只看训练 loss 是否下降即可，不需要比对线上与训练数据的分布及重复样本，而分布对比与去重恰恰是排查第一步"
+    ]
   },
   {
     "id": "p0-regularization-tradeoff-01",
@@ -434,6 +556,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -444,7 +572,12 @@
       "target": "能判断「在普通 SGD 下 L2 惩罚与 weight decay 可近似等价，但 AdamW 将 weight decay 从自适应梯度更新中解耦，行为不完全相同」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「L1 倾向稀疏」成立；并排除「L1 和 L2 只影响推理阶段输出」「AdamW 与 Adam 加 L2 惩罚在任何学习率…」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 L1 与 L2 只影响推理阶段输出、训练时不参与参数更新，实际上它们是加在损失上的惩罚项，直接改变梯度与优化轨迹",
+      "以为 AdamW 与 Adam 加 L2 惩罚在任何学习率与参数状态下都严格等价，忽略了 Adam 的自适应缩放会让 L2 惩罚与梯度耦合，二者并不等价",
+      "以为 weight decay 会随机丢弃神经元、与 dropout 是同一套结构正则化，实际上它是对参数做乘性衰减，机制完全不同"
+    ]
   },
   {
     "id": "p0-rope-calculation-01",
@@ -471,6 +604,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -481,7 +620,12 @@
       "target": "能判断「RoPE 作用于 Query 和 Key，而不是 Value」",
       "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「只对 Query 和 Key 施加与位置有关的旋转」成立；并排除「只对 Value 施加旋转」「同时只对 Query 施加旋转」等不成立描述。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "以为只对 Value 施加旋转即可，实际上相对位置体现在 Query·Key 的内积上，Value 不参与位置编码",
+      "以为只对 Query 旋转、Key 会自动从 Value 获得位置信息，位置信息不会从 Value 传递，Key 必须显式旋转",
+      "以为 Query、Key、Value 三者都要施加相同旋转，对 Value 施加旋转既无必要也会破坏内容信息"
+    ]
   },
   {
     "id": "p0-sampling-scenario-01",
@@ -508,6 +652,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -518,7 +668,12 @@
       "target": "能判断「结构化抽取通常使用较低 temperature，必要时配合约束解码，以减少随机性和格式错误」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「JSON 抽取用低 temperature 并优先约…」成立；并排除「两类任务都使用最高 temperature」「JSON 抽取使用高 temperature 产生候…」等不成立描述。"
     },
-    "cognitiveTask": "apply"
+    "cognitiveTask": "apply",
+    "misconceptions": [
+      "以为两类任务都用最高 temperature 能同时提升格式稳定性与创意质量，高随机性恰恰会破坏 JSON 的结构确定性",
+      "以为 JSON 抽取该用高 temperature 产生候选、创意文案该固定 greedy，把两种任务的解码需求完全搞反了",
+      "以为只调 top-p 就能保证 JSON 合法、temperature 不改变输出分布，temperature 直接重塑概率分布，且两者都不能替代 schema/grammar 这类结构化约束"
+    ]
   },
   {
     "id": "p0-tokenization-scenario-01",
@@ -546,6 +701,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -556,7 +717,12 @@
       "target": "能判断「应先统计不同数据类型的 token 分布，确认 tokenizer 对中文、数字、缩进和代码符号的切分特征，再优化 chunk 大小、字段裁剪、摘要或模型/tokenizer 选择」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「按语言、数字和代码统计 token 分布」成立；并排除「按固定字符数切块即可」「直接删除中文和代码即可保证窗口不溢出」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为一个字符总是对应一个 token、按固定字符数切块即可，中文与数字常被切得远比英文碎，代码标识符更是如此",
+      "以为直接删掉中文和代码就能保证窗口不溢出，却以牺牲内容完整性与检索质量为代价，属于回避而非优化",
+      "以为只扩大上下文窗口就能同时解决 token 成本、切块大小与检索噪声，扩窗反而抬高注意力成本并可能加剧大海捞针式的稀释"
+    ]
   },
   {
     "id": "p0-transformer-definition-01",
@@ -583,6 +749,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -593,7 +765,12 @@
       "target": "能判断「Encoder-Decoder 用编码器理解输入、解码器生成输出，常用于翻译等序列到序列任务」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「Encoder-only 偏理解」成立；并排除「三种结构都必须使用因果掩码」「Decoder-only 只能用于分类」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为三种结构都必须使用因果掩码、只能从左到右生成，实际上只有 decoder-only 强制因果掩码，encoder 用的是双向注意力",
+      "以为 Decoder-only 只能用于分类、不能通过 next-token 预测生成连续文本，而这正是当下主流生成范式",
+      "以为 Encoder-Decoder 没有注意力机制、只靠循环状态完成序列转换，实际上它正是靠交叉注意力连接输入与输出"
+    ]
   },
   {
     "id": "foundation-cnn-definition-01",
@@ -619,6 +796,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -629,7 +812,12 @@
       "target": "能判断「卷积层通过局部感受野和权重共享提取局部模式，既减少参数，又能利用相邻像素的空间结构」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「局部连接和权重共享带来的空间结构利用」成立；并排除「每个像素都使用一套完全独立的全连接参数」「只把图像转换成文本」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为卷积层给每个像素配一套完全独立的全连接参数，那正是全连接层的做法，卷积靠的是局部感受野与参数共享",
+      "以为卷积只把图像转成文本、不做特征提取，卷积核本身就是可学习的特征提取器",
+      "以为卷积层的作用是保证所有输入图像具有相同标签，标签与卷积运算毫无关系"
+    ]
   },
   {
     "id": "foundation-cnn-pooling-01",
@@ -655,6 +843,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -665,7 +859,12 @@
       "target": "能判断「最大池化在局部窗口中取最大值，通常使空间宽高减半、保留较强响应，并减少后续计算量」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「通常使空间尺寸减半并保留局部最强响应」成立；并排除「一定使通道数增加四倍且不改变空间尺寸」「为每个像素引入独立可训练参数」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为池化会让通道数增加四倍且不改变空间尺寸，2×2 stride=2 的最大池化恰恰把空间尺寸减半、通道数不变",
+      "以为池化为每个像素引入独立可训练参数，最大池化是无参数的固定操作",
+      "以为池化能保证细粒度位置信息完全不丢失，池化本身就是以牺牲精确位置换取平移不变性"
+    ]
   },
   {
     "id": "foundation-sequence-definition-01",
@@ -691,6 +890,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -701,7 +906,12 @@
       "target": "能判断「隐藏状态携带此前时间步的摘要信息，并与当前输入共同决定下一步状态或输出」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「携带序列前文的信息并参与当前步计算」成立；并排除「保存整个训练集的所有原始样本」「只负责随机初始化模型参数」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为隐藏状态保存整个训练集的所有原始样本，它只承载截至当前时间步的历史压缩表示",
+      "以为隐藏状态只负责随机初始化模型参数，初始化针对的是参数，与隐藏状态无关",
+      "以为隐藏状态替代损失函数来计算最终准确率，损失与指标由独立的输出头与损失计算"
+    ]
   },
   {
     "id": "foundation-sequence-comparison-01",
@@ -728,6 +938,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -738,7 +954,12 @@
       "target": "能判断「门控机制让模型更容易保留或遗忘信息，缓解长序列训练中的梯度消失和长期依赖学习困难」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「通过门控改善长期依赖和梯度消失问题」成立；并排除「完全移除序列顺序」「保证训练不会出现任何梯度爆炸」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为 LSTM/GRU 通过完全移除序列顺序来改善问题，门控机制恰恰是为了更好地保留长程顺序信息",
+      "以为 LSTM/GRU 能保证训练中不会出现任何梯度爆炸，门控主要缓解梯度消失，梯度爆炸仍需靠梯度裁剪解决",
+      "以为 LSTM/GRU 把所有序列压缩成同一个固定标签，压缩成固定向量是编码器的行为，不是门控单元的目的"
+    ]
   },
   {
     "id": "foundation-multimodal-definition-01",
@@ -764,6 +985,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -774,7 +1001,12 @@
       "target": "能判断「多模态模型处理两种或更多类型的数据，例如文本、图像、音频或视频，并学习它们之间的对应关系」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「处理并关联文本、图像、音频等多种数据模态」成立；并排除「只把更大的文本模型称为多模态模型」「只支持一种输入但输出多个类别」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为把更大的文本模型称为多模态模型，参数规模与模态数量无关",
+      "以为只支持一种输入但输出多个类别也算多模态，那仍是单一模态的分类任务",
+      "以为把多个完全相同的文本副本拼接在一起就是多模态，模态指的是信息载体类型（文本、图像、音频等）的差异"
+    ]
   },
   {
     "id": "foundation-multimodal-mechanism-01",
@@ -800,6 +1032,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -810,7 +1048,12 @@
       "target": "能判断「视觉编码器产生视觉特征，projector 将其映射到语言模型可接收的表示空间或 token 序列，使语言模型能结合图像特征生成文本」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「把视觉特征映射到语言模型可处理的表示空间」成立；并排除「把所有图像像素直接改写成真实文字标签」「替代语言模型的 tokenizer 并删除文本输入」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 projector 的作用是把所有图像像素直接改写成真实文字标签，它做的是把视觉特征映射到语言模型的嵌入空间",
+      "以为 projector 会替代语言模型的 tokenizer 并删除文本输入，文本分支与 tokenizer 依然保留",
+      "以为 projector 只负责压缩模型文件、不参与前向计算，它是参与前向传播的可学习模块"
+    ]
   },
   {
     "id": "foundation-data-leakage-mechanism-01",
@@ -836,6 +1079,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -846,7 +1095,12 @@
       "target": "能判断「全量均值、方差或词表可能包含验证集分布信息，使训练过程间接看到评估数据」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「预处理器吸收了验证集统计信息」成立；并排除「因为标准化会让模型参数数量增加一倍」「因为验证集必须使用不同的标签编码」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为泄露是因为标准化让模型参数量增加一倍，参数量与泄露无关，问题在于验证集的统计信息被提前窥见",
+      "以为泄露是因为验证集必须使用不同的标签编码，标签编码差异并不是此处泄露的成因",
+      "以为任何数据预处理都会让模型无法训练，预处理本身是常规步骤，只有在切分之前拟合才会造成泄露"
+    ]
   },
   {
     "id": "foundation-data-leakage-debugging-01",
@@ -872,6 +1126,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -882,7 +1142,12 @@
       "target": "能判断「应先检查重复样本、时间切分、标签泄露和验证集是否代表线上分布」",
       "reasoningGoal": "先定位现象的直接诱因；据此确认「检查重复样本、标签泄露、切分方式和线上分布代表性」成立；并排除「立即把模型换成更大的版本」「删除验证集并只报告训练集指标」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为换成更大的模型能自然修复泄露与分布偏移，模型容量无法掩盖数据层面的泄露",
+      "以为删除验证集、只报告训练集指标就能证明线上同样可靠，这直接移除了发现问题的信号",
+      "以为只增加训练轮数、靠更长的训练曲线就能掩盖泄露信号，训练越久过拟合越深、离线指标越虚高"
+    ]
   },
   {
     "id": "foundation-mcp-mechanism-01",
@@ -909,6 +1174,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -919,7 +1190,12 @@
       "target": "能判断「tools 是可执行操作，resources 是可读取的上下文数据，prompts 是可复用的交互模板」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「tools 执行动作」成立；并排除「tools 提供数据」「resources 负责执行任意写操作」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 tools 提供数据、resources 执行动作、prompts 负责权重版本管理，三者职责恰好说反：tools 执行动作，resources 提供数据，prompts 是可复用提示模板",
+      "以为 resources 负责执行任意写操作、tools 只能返回静态文本，实际 resources 是只读数据，写操作由 tools 承担",
+      "以为 prompts 会自动授予服务器访问所有用户数据的权限，prompts 只是模板，不涉及任何授权"
+    ]
   },
   {
     "id": "foundation-mcp-discovery-01",
@@ -945,6 +1221,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -955,7 +1237,12 @@
       "target": "能判断「发现可以获得工具名称、描述和 inputSchema，客户端据此判断能力并校验参数，避免盲目调用不存在或参数不匹配的工具」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「获取工具清单和输入 schema」成立；并排除「为了把服务器的全部数据库内容复制到客户端」「为了跳过认证并自动获得写权限」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为工具发现是为了把服务器的全部数据库内容复制到客户端，发现只获取工具名称与 schema 等元数据",
+      "以为工具发现能跳过认证并自动获得写权限，发现与授权是两个独立环节",
+      "以为 MCP 工具名称永远不能由服务器动态改变所以发现没必要，恰恰因为工具集与 schema 可能动态变化才需要先发现再调用"
+    ]
   },
   {
     "id": "foundation-tool-security-mechanism-01",
@@ -981,6 +1268,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -991,7 +1284,12 @@
       "target": "能判断「高影响写操作应有参数校验、审批或确认，而不能因为 Agent 能调用工具就给予全库权限」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「分别限制工具权限和资源范围」成立；并排除「给两个工具都授予管理员权限以减少开发工作」「只依赖系统提示词要求 Agent 不要误操作」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为给两个工具都授予管理员权限能减少开发工作，这直接违背最小权限，一次误调用就是全域事故",
+      "以为只依赖系统提示词要求 agent 不要误操作就够了，提示词是软约束、可被提示注入绕过，必须在服务端做硬校验",
+      "以为把所有工具合并成一个任意代码执行接口更通用，等于彻底取消权限边界"
+    ]
   },
   {
     "id": "foundation-context-window-definition-01",
@@ -1017,6 +1315,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1027,7 +1331,12 @@
       "target": "能判断「上下文窗口是模型一次处理的 token 总量上限，通常包括输入上下文和生成输出所占的 token，具体边界由模型和 API 定义」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「一次请求中模型可处理的输入与输出 token 容量上…」成立；并排除「模型可永久记住所有用户的全部历史对话」「模型部署所需 GPU 显存容量的另一种名称」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为上下文窗口意味着模型可永久记住所有用户的全部历史对话，它只是单次请求内可见的 token 上限，且请求之间不保留",
+      "以为上下文窗口是部署所需 GPU 显存容量的另一种名称，显存是硬件资源，与上下文长度不是同一概念",
+      "以为上下文窗口只限制单次输出长度而不限制输入，实际上输入与输出共享同一 token 预算"
+    ]
   },
   {
     "id": "foundation-rag-definition-01",
@@ -1053,6 +1362,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1063,7 +1378,12 @@
       "target": "能判断「RAG 先从外部知识库检索与问题相关的内容，再把结果放入模型上下文中生成回答，从而不必仅依赖模型参数中的知识」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「先检索外部相关内容」成立；并排除「把所有文档永久重新训练进模型后再回答」「只对用户问题做随机采样」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 RAG 要把所有文档永久重新训练进模型后再回答，RAG 正是为了不改权重、在推理时外挂知识",
+      "以为 RAG 只对用户问题做随机采样、不访问知识库，检索环节恰恰是 RAG 的核心",
+      "以为只把模型温度调低就完成了检索增强，温度只影响采样随机性，与是否检索无关"
+    ]
   },
   {
     "id": "gap-activation-tradeoff-01",
@@ -1090,6 +1410,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1100,7 +1426,12 @@
       "target": "能判断「ReLU 计算简单，但负半轴输出为零可能造成神经元长期不激活」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「ReLU 简单高效但可能出现死神经元」成立；并排除「ReLU 和 GELU 只影响推理速度」「GELU 会把所有负值变成零」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 ReLU 与 GELU 只影响推理速度、不会影响梯度或训练结果，激活函数的形状直接决定梯度流",
+      "以为 GELU 会把所有负值变成零因而与 ReLU 完全等价，GELU 是平滑的随机性近似，负值区仍有非零梯度",
+      "以为 GELU 在所有任务上都优于 ReLU、任何网络都应无条件替换，实际收益与模型任务相关，还需权衡计算成本"
+    ]
   },
   {
     "id": "gap-alignment-definition-01",
@@ -1126,6 +1457,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1136,7 +1473,12 @@
       "target": "能判断「Alignment 旨在让模型输出更符合人类或产品目标，例如有用、遵循指令、安全和风格一致」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「让模型行为更符合人类或产品目标」成立；并排除「只增加模型层数而不改变行为目标」「只优化推理吞吐」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 alignment 只是增加模型层数而不改变行为目标，它要解决的是模型行为与人类意图、价值观的一致",
+      "以为 alignment 只优化推理吞吐、不关注输出内容，吞吐是系统工程目标，与对齐无关",
+      "以为 alignment 就是把所有用户输入直接加入训练集，那只是数据收集，还会带来隐私与安全问题"
+    ]
   },
   {
     "id": "gap-cnn-comparison-01",
@@ -1163,6 +1505,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1173,7 +1521,12 @@
       "target": "能判断「CNN 通过局部连接和权重共享显著减少参数，并利用平移相关的空间归纳偏置」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「CNN 利用局部连接和权重共享」成立；并排除「全连接层天然知道物体的平移位置」「CNN 不需要任何训练参数」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为全连接层天然知道物体的平移位置、因此不需要数据训练，全连接层恰恰对位置极度敏感，必须靠数据学会",
+      "以为 CNN 不需要任何训练参数、因为卷积核都是固定的，卷积核正是可学习参数，只是数量少且跨位置共享",
+      "以为全连接层一定比 CNN 更节省显存和计算，相同输入下全连接的参数量通常远大于卷积"
+    ]
   },
   {
     "id": "gap-cnn-scenario-01",
@@ -1200,6 +1553,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1210,7 +1569,12 @@
       "target": "能判断「应检查下采样是否过早、特征图分辨率和感受野层级，以及标注与训练增强」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「检查早期下采样、特征图分辨率和多尺度特征」成立；并排除「只把分类器换成更大的全连接层即可恢复已丢失的像素细节」「把所有输入缩放成更小尺寸」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为只把分类器换成更大的全连接层就能恢复已丢失的像素细节，细节在骨干网络的下采样阶段就已丢失，分类头无能为力",
+      "以为把所有输入缩放成更小尺寸有助于小目标检测，缩小只会让本就稀少的小目标信息进一步消失",
+      "以为只提高 dropout 率即可，因为小目标漏检一定是过拟合，这实际是分辨率、感受野与特征层级的设计问题"
+    ]
   },
   {
     "id": "gap-graph-rag-scenario-01",
@@ -1237,6 +1601,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1247,7 +1617,12 @@
       "target": "能判断「可抽取实体和关系构建图结构，并将图遍历结果与文本检索结合」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「构建实体关系图并与文本检索结合」成立；并排除「只增加向量维度即可保证所有多跳关系被正确恢复」「删除原始文档只保留实体名称」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为只增加向量维度就能保证所有多跳关系被正确恢复，向量相似度只捕捉语义相近，不编码实体之间的显式关系边",
+      "以为删除原始文档只保留实体名称能避免无关文本，失去上下文反而无法判断关系的指向与归属",
+      "以为把所有文档拼进上下文就不需要检索与上下文预算评估，窗口有限且注意力稀释会让这种做法既昂贵又不可靠"
+    ]
   },
   {
     "id": "gap-latent-moe-tradeoff-01",
@@ -1274,6 +1649,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1284,7 +1665,12 @@
       "target": "能判断「隐空间路由可能提高路由表达或减少部分直接 token-expert 交互，但引入额外投影、路由稳定性和负载均衡问题」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「可能改善路由表达或交互成本」成立；并排除「隐空间路由保证每个专家收到完全相同的 token」「只要专家总参数不变」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为隐空间路由能保证每个专家收到完全相同的 token、不存在负载不均，无论基于 token 还是隐变量路由都会出现热点专家",
+      "以为只要专家总参数不变，通信量与尾延迟就一定不变，实际通信量取决于每 token 激活的专家数及其分布",
+      "以为 MoE 路由只影响训练标签、不影响前向计算与部署资源，路由直接决定前向激活哪些专家以及显存与通信开销"
+    ]
   },
   {
     "id": "gap-mcp-scenario-01",
@@ -1312,6 +1698,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1322,7 +1714,12 @@
       "target": "能判断「本机单客户端场景可优先考虑 stdio」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「本机单客户端可考虑 stdio」成立；并排除「所有场景都必须使用 stdio」「远程服务应把数据库凭据放入工具描述中」等不成立描述。"
     },
-    "cognitiveTask": "apply"
+    "cognitiveTask": "apply",
+    "misconceptions": [
+      "以为所有场景都必须使用 stdio、因为 HTTP 不能传递 JSON-RPC，HTTP 与 Streamable HTTP 完全可以承载 JSON-RPC，多客户端共享应选网络传输",
+      "以为远程服务可以把数据库凭据放入工具描述、让模型读取后直连数据库，凭据会进入模型上下文并泄露，必须留在服务端",
+      "以为只要使用 Streamable HTTP 传输就自动获得最小权限控制与审计能力，传输层不提供授权，权限与审计需另行实现"
+    ]
   },
   {
     "id": "gap-mcp-design-01",
@@ -1349,6 +1746,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1359,7 +1762,12 @@
       "target": "能判断「退款应独立为带金额、订单状态和幂等键校验的 write tool，并在高风险条件下要求用户确认或审批，避免把读写合并成任意操作」",
       "reasoningGoal": "先确定设计目标与约束的优先级；据此确认「将查询与退款拆成不同工具」成立；并排除「暴露一个 execute_sql 工具让模型自行完成…」「把退款权限写在 prompt 中即可」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为暴露一个 execute_sql 工具让模型自行完成查询与退款最灵活，等于把整个数据库的读写权限交给模型，无法做细粒度校验与审计",
+      "以为把退款权限写在 prompt 中即可、不需要服务端校验，提示词约束可被绕过，权限必须在服务端强制",
+      "以为让 resources 直接修改订单状态能减少工具调用次数，resources 是只读语义，状态变更应走受控的 tools"
+    ]
   },
   {
     "id": "gap-multimodal-tradeoff-01",
@@ -1386,6 +1794,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1396,7 +1810,12 @@
       "target": "能判断「应按任务选择动态分辨率、裁剪或分层视觉处理，并用准确率、漏检率、延迟和 token/显存成本共同评估」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「按任务采用动态分辨率或区域裁剪」成立；并排除「所有图片都固定使用最大分辨率」「降低分辨率后只看语言流畅度」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为所有图片都应固定使用最大分辨率、因为分辨率越高整体一定更优，对简单图片而言额外的视觉 token 是纯浪费",
+      "以为降低分辨率后只需看语言流畅度、不必再评估视觉识别正确率，而视觉正确率正是这次优化要守住的指标",
+      "以为把图片转成文件名即可消除视觉 token 与识别误差，那样模型将完全看不到图像内容"
+    ]
   },
   {
     "id": "gap-planning-design-01",
@@ -1423,6 +1842,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1433,7 +1858,12 @@
       "target": "能判断「让模型动态提出或调整计划，但由程序维护状态、工具边界、预算和停止条件，并在高风险节点设置检查点」",
       "reasoningGoal": "先确定设计目标与约束的优先级；据此确认「允许动态调整计划」成立；并排除「预先硬编码所有可能步骤」「让模型自行决定无限循环和所有工具权限」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为预先硬编码所有可能步骤、遇到新信息也不允许改计划最稳妥，步骤数不确定的任务根本无法预先穷举",
+      "以为让模型自行决定无限循环与全部工具权限、完全放权最灵活，缺少步数上限与权限边界会失控且不可收敛",
+      "以为只保存最终答案、丢弃中间状态与工具结果能提升效率，重规划与错误恢复恰恰依赖这些中间状态"
+    ]
   },
   {
     "id": "gap-pytorch-performance-scenario-01",
@@ -1460,6 +1890,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1470,7 +1906,12 @@
       "target": "能判断「应先用 profiler 区分数据加载、CPU-GPU 同步、频繁小算子和 kernel launch 开销，再针对瓶颈批处理、减少同步、调整数据管线或融合算子」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 profiler 拆分数据管线、同步、拷贝和小 …」成立；并排除「只把 batch size 调到最大」「把所有算子改成 Python 循环以减少 GPU 负…」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为只把 batch size 调到最大即可，不测量显存与尾延迟反而可能触发 OOM 或让排队延迟恶化",
+      "以为把所有算子改成 Python 循环能减少 GPU 负担，那只会放大 kernel launch 开销并加剧 host 侧瓶颈",
+      "以为提高学习率能提升 GPU 利用率，利用率是执行效率问题，与学习率毫无关系"
+    ]
   },
   {
     "id": "gap-pytorch-performance-design-01",
@@ -1497,6 +1938,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1507,7 +1954,12 @@
       "target": "能判断「先用基线 profiler 找到稳定热点，在代表性 shape 上验证数值一致性和性能，再逐步扩大覆盖」",
       "reasoningGoal": "先确定设计目标与约束的优先级；据此确认「先建立基线」成立；并排除「无论输入 shape 与算子都直接编译」「只比较单次冷启动延迟」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为无论输入 shape 与算子都可直接编译、融合必然加速且零额外开销，忽略了编译耗时、动态 shape 重编译与 graph break 反而可能变慢",
+      "以为只比较单次冷启动延迟即可，不测稳态吞吐、显存占用与动态 shape 表现会得出相反结论",
+      "以为为了性能可以跳过数值回归与异常输入测试，算子融合与编译可能引入精度偏差，必须回归验证"
+    ]
   },
   {
     "id": "gap-sequence-scenario-01",
@@ -1534,6 +1986,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1544,7 +2002,12 @@
       "target": "能判断「可按长度分桶或动态 batch，正确设置 padding mask，并结合吞吐、延迟和显存测量」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「按长度分桶或动态 batch」成立；并排除「把所有序列都补到全局最大长度」「直接扩大 batch 规模摊薄 padding 开销」等不成立描述。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "以为把所有序列补到全局最大长度能简化代码且速度最快，padding 比例高时大量算力被浪费在无效 token 上",
+      "以为直接扩大 batch 规模就能摊薄 padding 开销、无需分桶或 mask，不分桶时 padding 比例不变甚至更差",
+      "以为只增加隐藏层维度能改善问题，padding 比例与隐藏维度无关"
+    ]
   },
   {
     "id": "gap-task-oriented-ai-scenario-01",
@@ -1571,6 +2034,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1581,7 +2050,12 @@
       "target": "能判断「流程稳定、规则明确时，确定性 workflow 通常更可预测、更容易审计」",
       "reasoningGoal": "先识别场景给出的约束条件；据此确认「优先使用确定性 workflow」成立；并排除「任何涉及自然语言的任务都必须使用完全自主 Agent」「只要模型能生成退款理由」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为任何涉及自然语言的任务都必须使用完全自主 Agent，语言理解能力与是否需要自主决策是两回事",
+      "以为只要模型能生成退款理由就可以跳过订单状态校验直接退款，文本自洽不等于业务状态合法",
+      "以为完全自主 Agent 的落地成本一定低于确定性 workflow，固定规则场景下 workflow 更省成本也更可控"
+    ]
   },
   {
     "id": "gap-tool-security-debugging-01",
@@ -1608,6 +2082,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1618,7 +2098,12 @@
       "target": "能判断「服务端可能只按 invoiceId 查询而未绑定当前用户/租户」",
       "reasoningGoal": "先定位现象的直接诱因；据此确认「缺少服务端对象级租户授权」成立；并排除「因为 invoiceId 合法」「把完整数据库交给模型让它自行筛选租户即可」等不成立描述。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "以为 invoiceId 合法就只需扩大模型上下文避免误判、无需改动服务端查询，根因是服务端没有把租户作为强制查询条件，属越权而非判断失误",
+      "以为把完整数据库交给模型让它自行筛选租户即可，模型无法可靠执行权限边界，还会造成大规模数据暴露",
+      "以为只修改工具描述文字说明权限就能修复越权，描述只是说明，强制的租户过滤必须在服务端查询层实现"
+    ]
   },
   {
     "id": "foundation-rag-chunking-01",
@@ -1645,6 +2130,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1655,7 +2146,12 @@
       "target": "能判断「分块是为了将文档切分成语义相对完整、粒度适中的片段，既能让 Embedding 模型更精准地匹配用户意图，又避免将过长无关文本塞入上下文窗口造成干扰和成本浪费」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「使检索粒度更精准」成立；并排除「为了让所有文档的字数完全一致」「分块是绕过版权检测的唯一手段」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为分块是为了让所有文档字数完全一致、以便直接当作模型权重，切块目的是适配上下文窗口与检索粒度，文档片段不会变成模型权重",
+      "以为分块是绕过版权检测的手段，分块只改变文本的组织粒度，与版权无关",
+      "以为分块后就不再需要向量数据库，恰恰相反：切出来的片段正要写入向量库才能被检索到"
+    ]
   },
   {
     "id": "foundation-rag-hybrid-search-01",
@@ -1682,6 +2178,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1692,7 +2194,12 @@
       "target": "能判断「稠密向量检索擅长捕捉语义相似度和跨表达泛化，但在精准匹配专有名词、错误码、型号时可能不敏感」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「向量检索擅长语义泛化」成立；并排除「因为混合检索能够消除大模型的所有生成延迟」「关键字检索可以直接替代语言模型的生成能力」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为混合检索能消除大模型的所有生成延迟，检索与生成是两个独立阶段，混合检索甚至会略微增加检索耗时",
+      "以为关键字检索可以直接替代语言模型的生成能力，稀疏检索只负责召回候选，不产出答案",
+      "以为混合检索能把所有文档压缩到十分之一大小，检索不改变文档体积"
+    ]
   },
   {
     "id": "foundation-rag-rerank-01",
@@ -1719,6 +2226,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1729,7 +2242,12 @@
       "target": "能判断「Reranker 通常是 Cross-Encoder 模型，在初步召回（如前 50 条）后，对 Query 和每个候选 Chunk 进行联合注意力打分，精确重排候选顺序，筛选出最…」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「对初步检索召回的候选文档进行更精细的跨注意力相关性打…」成立；并排除「将用户的问题翻译为多种外语以扩大搜索范围」「直接将文档内容写入模型的物理内存中永久存储」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 Reranker 的作用是把用户问题翻译成多种外语以扩大搜索范围，那是查询改写或翻译的职责",
+      "以为 Reranker 把文档内容写入模型物理内存永久存储，重排只是推理期对候选做精排打分，不涉及任何持久化",
+      "以为 Reranker 负责清理数据库中的历史备份日志，那是运维任务，与重排无关"
+    ]
   },
   {
     "id": "foundation-rag-vs-finetuning-01",
@@ -1756,6 +2274,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1766,7 +2290,12 @@
       "target": "能判断「RAG 的外部知识库可以实时增删改查且带可追溯引用，更新成本低」",
       "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「RAG 知识更新实时、成本低且可追溯来源」成立；并排除「微调可以做到毫秒级更新知识库且零显存开销」「RAG 会修改模型内部权重」等不成立描述。"
     },
-    "cognitiveTask": "compare"
+    "cognitiveTask": "compare",
+    "misconceptions": [
+      "以为微调可以毫秒级更新知识库且零显存开销，微调需要训练算力与时间，根本做不到实时更新",
+      "以为 RAG 会修改模型内部权重从而终身记住知识，RAG 恰恰是不改权重、在推理时外挂检索",
+      "以为微调永远不会产生幻觉、预算充足就绝不需要 RAG，微调同样会幻觉，且知识一旦变化就得重新训练"
+    ]
   },
   {
     "id": "foundation-embeddings-distance-01",
@@ -1792,6 +2321,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1802,7 +2337,12 @@
       "target": "能判断「余弦相似度衡量两个向量在多维空间中夹角的余弦值，反映方向的一致性，取值范围通常在 -1 到 1 之间（或归一化后 0 到 1），不受向量绝对模长的影响」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「两个向量在高维空间中方向的接近程度（夹角大小）」成立；并排除「两个文本包含字符数量的绝对差值」「数据库查询执行所消耗的网络带宽大小」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为余弦相似度衡量的是两个文本字符数量的绝对差值，它衡量的是向量夹角即方向一致性，与长度差无关",
+      "以为余弦相似度衡量数据库查询消耗的网络带宽，它只是向量运算，与网络无关",
+      "以为余弦相似度是两个向量坐标相乘后的矩阵行列式，它本质是归一化后的内积"
+    ]
   },
   {
     "id": "foundation-embeddings-representation-01",
@@ -1828,6 +2368,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1838,7 +2384,12 @@
       "target": "能判断「Dense Embedding 将词或句子映射到连续低维空间，能够捕捉语义相关性（如“苹果”和“水果”距离较近）」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「能够将语义相似的概念映射到相近的连续几何空间中」成立；并排除「向量维度比语料库词表大小更大」「One-hot 编码能直接计算同义词」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为稠密嵌入的维度比词表更大、更占空间，恰恰相反它的维度远小于 one-hot，存储更省",
+      "以为 one-hot 能直接计算同义词而稠密嵌入不能，one-hot 向量两两正交，语义相似度恒为零，正是稠密嵌入解决了这一点",
+      "以为稠密嵌入只能处理纯数字、不能处理自然语言，嵌入本身就是为自然语言的语义表示而设计"
+    ]
   },
   {
     "id": "foundation-context-few-shot-01",
@@ -1864,6 +2415,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1874,7 +2431,12 @@
       "target": "能判断「Few-shot 利用大模型的上下文学习（In-Context Learning）能力，通过显式范例明确输出格式、边界条件和推理模式，大幅降低格式错误与理解歧义」",
       "reasoningGoal": "先回到该机制的第一性原理；据此确认「通过给出具体样例指导模型学习预期的输出格式、风格与推…」成立；并排除「在运行时直接修改大模型的基础神经网络权重参数」「降低 API 调用的 Token 消耗以节约成本」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 few-shot 会在运行时直接修改模型权重、等同于一次性微调，示例只进入上下文，不改变任何参数",
+      "以为少给样例能降低 token 消耗并自动提升格式正确率，示例本身会增加 token，格式正确率恰恰来自这些示例的示范",
+      "以为 few-shot 是为了关闭安全过滤、放开限制以便模仿示例风格，示例与权限、安全机制无关"
+    ]
   },
   {
     "id": "foundation-context-hierarchy-01",
@@ -1900,6 +2462,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1910,7 +2478,12 @@
       "target": "能判断「System Prompt 用于设定模型的角色定位、核心行为规范、安全红线和全局约束，具有更高的指令优先级」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「System Prompt 设定全局角色与不可违背的…」成立；并排除「User Prompt 拥有最高执行权限」「System Prompt 只能用来填写模型版本号」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为 User Prompt 拥有最高执行权限、可随意重置 System Prompt 的安全设定，实际上 System 承载全局规则并享有更高优先级",
+      "以为 System Prompt 只能填模型版本号、不能写任何自然语言规则，它正是用来承载角色设定与全局约束的",
+      "以为两者在底层机制上没有任何区别、只是显示名称不同，它们在对话结构与模型遵循优先级上有明确区分"
+    ]
   },
   {
     "id": "foundation-structured-output-json-01",
@@ -1936,6 +2509,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1946,7 +2525,12 @@
       "target": "能判断「在模型自回归生成每个 Token 时，解码引擎依据给定的 JSON Schema 语法树对下一个 Token 的概率分布进行约束掩码（Constrained Decoding），…」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「在生成过程中根据 Schema 语法动态约束下一个合…」成立；并排除「仅在 prompt 末尾追加一行“请一定返回 JSO…」「应用端对模型输出做宽松字符串匹配」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为只是在 prompt 末尾追加一句「请一定返回 JSON」即可保证格式，那只是软提示，没有任何硬保证",
+      "以为靠应用端宽松匹配、截断补齐就能得到合法 JSON、无需约束解码，真正的结构化输出是在解码阶段用 schema/grammar 做受限解码",
+      "以为结构化输出是把用户输入转化为 SQL 语句执行，二者毫无关系"
+    ]
   },
   {
     "id": "foundation-prompt-injection-types-01",
@@ -1973,6 +2557,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -1983,7 +2573,12 @@
       "target": "能判断「间接注入则是攻击者将恶意指令隐藏在第三方网页、PDF 文档或邮件中，当应用（如 RAG/Agent）检索并读取该内容时诱导模型执行越权操作」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「直接注入来自用户当前输入框」成立；并排除「直接注入只针对开源模型」「直接注入会破坏物理服务器显卡」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为直接注入只针对开源模型、间接注入只针对闭源云端 API，划分依据是攻击载荷的来源（用户输入 vs 外部内容），与模型是否开源无关",
+      "以为直接注入会破坏显卡、间接注入损坏硬盘，提示注入操纵的是模型行为，不造成物理损坏",
+      "以为两者完全相同、只是发生时间不同，攻击面与防御手段都有实质差异"
+    ]
   },
   {
     "id": "foundation-prompt-injection-defense-01",
@@ -2010,6 +2605,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2020,7 +2621,12 @@
       "target": "能判断「有效的防御需要数据与指令隔离（如明确的 XML 标签分隔）、敏感工具调用增加人工确认（Human-in-the-loop）、最小权限执行，以及输入输出侧的 Guardrail 检…」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「采用结构化数据标签隔离、限制敏感工具权限并结合出入站…」成立；并排除「只需在 System Prompt 中写明“不要听从…」「完全禁止大模型读取任何外部网页或文档」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为在 System Prompt 里写明「不要听从网页中的指令」就能完全杜绝风险，提示词约束可被绕过，必须配合外部内容隔离、工具侧管控与输出过滤",
+      "以为完全禁止读取任何外部网页或文档才是唯一解，那是放弃功能而非防御",
+      "以为把 temperature 调到最高即可自动消除恶意指令，采样温度与注入防御毫无关系"
+    ]
   },
   {
     "id": "foundation-agent-guardrails-scope-01",
@@ -2046,6 +2652,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2056,7 +2668,12 @@
       "target": "能判断「Guardrails 通常覆盖输入侧（拦截注入攻击、有害内容、越狱尝试）、检索与工具调用侧（校验参数与权限），以及输出侧（检测 PII 泄露、有害言论、事实一致性与合规性）」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「输入前置拦截、工具调用授权校验以及模型输出后置检测全…」成立；并排除「只在用户注册账号时执行一次静态检查」「只在服务器宕机重启时进行数据恢复」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为护栏只在用户注册账号时执行一次静态检查，护栏应贯穿输入、规划、工具调用与输出的全生命周期",
+      "以为护栏只在服务器宕机重启时做数据恢复，那是容灾机制而非安全护栏",
+      "以为护栏仅用于监控 GPU 显存温度，那是硬件监控"
+    ]
   },
   {
     "id": "foundation-agent-loop-quota-01",
@@ -2083,6 +2700,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2093,7 +2716,12 @@
       "target": "能判断「必须由外部运行时（宿主程序）强制设定最大迭代轮数（Max Iterations）、总 Token 预算上限、请求总超时（Timeout），以及单工具连续失败熔断，不可依赖模型自发…」",
       "reasoningGoal": "先复现该机制的内部过程；据此确认「外部代码控制的最大步数限制、Token 预算熔断、超…」成立；并排除「只要在 System Prompt 中写“请在 3 …」「允许 Agent 无限制重试直到问题自发解决」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为在 System Prompt 中写「请在 3 步内完成」就无需外部代码干预，提示词无法硬性约束循环次数",
+      "以为允许 Agent 无限制重试直到问题自发解决最稳妥，这正是 token 失控与死循环的根源",
+      "以为每次工具调用报错就直接关闭整个服务器进程，那是崩溃而非防护，正确做法是重试上限、超时与熔断"
+    ]
   },
   {
     "id": "foundation-tool-calling-flow-01",
@@ -2119,6 +2747,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2129,7 +2763,12 @@
       "target": "能判断「大模型本身只负责理解意图并生成符合 Schema 的 JSON 调用参数，真正的网络请求、API 调用与鉴权均由外部宿主应用代码执行，执行完毕后再把结果送回模型进行后续生成」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「不会」成立；并排除「会」「会」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为模型可以直接从权重所在的 GPU 显存发起 TCP 连接访问公网，模型只输出结构化的调用意图",
+      "以为 prompt 里提供了 API Key 模型就能自主发送 HTTP 请求，凭据应留在服务端执行层，模型不具备网络能力",
+      "以为 Tool Calling 只是假象、模型完全无法获取外部数据，模型确实能拿到真实结果，只是由宿主程序代为执行"
+    ]
   },
   {
     "id": "foundation-llm-hallucination-01",
@@ -2155,6 +2794,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2165,7 +2810,12 @@
       "target": "能判断「幻觉是指模型生成的内容在语法和语气上非常自信流畅，但实际上包含虚假、不合事实或脱离给定参考资料的信息」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「生成看似合理自信、但实际上不符合客观事实或脱离输入上…」成立；并排除「模型生成速度太快导致显示器花屏」「API 返回 500 内部服务器错误」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为幻觉是模型生成太快导致显示器花屏，那是硬件显示问题",
+      "以为幻觉是 API 返回 500 内部错误，那是服务故障",
+      "以为幻觉是用户输入了含乱码的非法字符串，幻觉指模型输出看似合理实则编造或失实的内容"
+    ]
   },
   {
     "id": "foundation-sampling-temperature-01",
@@ -2191,6 +2841,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2201,7 +2857,12 @@
       "target": "能判断「Temperature 设为 0 时，采样退化为贪心解码（Greedy Search），模型在每一步始终选择概率最高的单一 Token，输出结果具备最高确定性与可复现性（在固定硬…」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「采用贪心采样」成立；并排除「模型输出将完全随机」「模型将随机在词表中任意挑选 Token 以获得最大创…」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 temperature = 0 意味着输出完全随机、每次都大不相同，恰恰相反它最接近于确定性的贪心解码",
+      "以为 temperature = 0 会在词表中随机挑选 token 以获得创造力，那是高温才有的效果",
+      "以为 temperature = 0 表示按均匀分布采样、每个 token 概率相等，均匀分布对应高温极限，0 时分布退化为 argmax"
+    ]
   },
   {
     "id": "foundation-tokenization-bpe-01",
@@ -2228,6 +2889,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2238,7 +2905,12 @@
       "target": "能判断「子词分词在词表大小与序列长度之间取得平衡：既能把高频常用词作为单一 Token 处理以缩短序列长度，又能通过子词或字节组合拼出罕见词，避免出现未登录词（OOV）问题」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「平衡词表体积与序列长度」成立；并排除「子词划分主要是为了压缩文本维度」「词表越大越好」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为子词划分主要是为了压缩文本维度、词表越小推理越快，真正的取舍是在未登录词覆盖与序列长度之间取平衡，而非一味压缩",
+      "以为词表越大越好、子词划分是为了无限扩大词表，词表过大会显著拖慢训练与 softmax 计算",
+      "以为每个汉字都被固定切分为单字节、长度不随上下文变化，BPE 下切分结果由词表与合并规则决定，并非固定单字节"
+    ]
   },
   {
     "id": "foundation-inference-kv-cache-01",
@@ -2265,6 +2937,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2275,7 +2953,12 @@
       "target": "能判断「每生成一个新 Token，由于注意力机制只需要关注历史所有 Token 的 Key 和 Value，缓存历史 Key/Value 可以避免每一步都对全部历史上下文重新进行重复的投…」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「缓存前文的 Key 和 Value 向量」成立；并排除「将模型权重永久缓存在客户端硬盘中」「缓存每步的查询向量并丢弃历史 Key 和 Value」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 KV Cache 是把模型权重永久缓存到客户端硬盘以免重复下载，那是权重缓存，与解码期的 KV Cache 无关",
+      "以为 KV Cache 缓存每步的 Query 并丢弃历史 Key、Value，恰恰相反：它缓存的是历史 Key/Value，Query 不进入缓存",
+      "以为 KV Cache 会冻结历史 Key/Value 使其不再参与后续注意力计算，历史 K/V 依然参与，只是被复用而非重算"
+    ]
   },
   {
     "id": "foundation-safety-system-prompt-limit-01",
@@ -2302,6 +2985,12 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
         ]
       },
       "open": {
@@ -2312,6 +3001,11 @@
       "target": "能判断「真正的安全性必须依赖模型内部的安全对齐（SFT/RLHF/DPO）以及外部确定性的安全拦截器」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「提示词易受越狱技巧或语义注入攻破」成立；并排除「因为大模型只能理解英文提示」「只要 System Prompt 超过 50 个字模…」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为大模型只能理解英文提示、写中文完全无效，语言不是安全约束失效的原因",
+      "以为 System Prompt 超过 50 个字模型就会自动忽略安全规则，长度并非失效原因",
+      "以为模型输出会直接写入操作系统内核，模型只产出文本，需经宿主程序执行才会产生副作用"
+    ]
   }
 ]

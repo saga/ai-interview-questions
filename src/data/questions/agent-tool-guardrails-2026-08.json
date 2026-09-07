@@ -27,6 +27,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -37,7 +43,10 @@
       "target": "能说明两阶段级联如何用「前级高召回 + 后级降误报」换取安全拦截的延迟与成本",
       "reasoningGoal": "先明确级联要平衡的两个维度是漏过风险（FNR）与推理成本/延迟；再据此确认 Stage 1 只输出单 Token 以低成本放行绝大多数常规操作、与 Stage 2 共享上下文以命中前缀缓存、以及配置为高召回把可疑项推给 Stage 2 甄别；并排除「彻底消除假阳性、通过 Stage 2 即 100% 无越权」——概率模型做不到绝对零风险。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "认为级联架构能消除假阳性，通过 Stage 2 校验的指令 100% 无越权风险"
+    ]
   },
   {
     "id": "agtool-guard-02",
@@ -67,6 +76,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -77,7 +92,10 @@
       "target": "能说明分类器对 Agent 推理与工具结果「双盲」换来的是什么，又牺牲了什么",
       "reasoningGoal": "先复现裁剪规则——只保留用户原始输入与工具调用指令；再据此推出剥离 Assistant Prose 可防「用户已隐式授权」这类说服性辩解、剥离 Tool Output 可阻断外部不可信数据的二次注入劫持；并确认代价是无法校验工具参数来源真实性；同时排除「完全无法评估写文件与脚本执行的危害」——Payload 本身仍写在工具调用文本里。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "认为分类器必须读到工具返回的实际输出才能判断危害，忽略了工具调用指令（Tool Calls）本身已携带足够的危险信号"
+    ]
   },
   {
     "id": "agtool-guard-03",
@@ -105,6 +123,12 @@
         ],
         "answer": [
           2
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
         ]
       },
       "open": {
@@ -115,7 +139,12 @@
       "target": "能在自主模式下正确处理静态通配规则与安全分类器的优先级，避免分类器被宽泛 Allowlist 架空",
       "reasoningGoal": "先确定约束是「减少审批弹窗」与「高风险命令仍须审查」不可偏废；再据此推出必须剥离任意代码执行类的宽泛通配规则、只保留风险明确的窄域规则，使 python * 之类不再直接命中 Allowlist 绕过分类器；并排除「静态规则一律优先」与「一律禁用静态规则」两个极端。"
     },
-    "cognitiveTask": "design"
+    "cognitiveTask": "design",
+    "misconceptions": [
+      "认为静态通配符规则的优先级天然高于动态分类器，忽略了通配符恰恰是自主模式下最大的越权来源",
+      "以为分类器评估可以完全取代静态规则，忽略了确定性白名单本可零成本放行，而两阶段推理本身有延迟与误判成本",
+      "以为把危险操作重定向进沙箱就等同于完成了安全审批，混淆了隔离执行与行为授权两件事"
+    ]
   },
   {
     "id": "agtool-guard-04",
@@ -145,6 +174,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -155,7 +190,10 @@
       "target": "能说明输入层注入探测与输出层动作审计为何构成互补而非冗余的两道边界",
       "reasoningGoal": "先拆出两道防线各自看什么——输入层扫描进入上下文的工具返回结果，输出层独立审查工具调用的真实 Payload；再据此确认输入层命中后靠植入安全警告引导 Agent 重新锚定用户意图、输出层即使上下文已被注入也能按动作危险性拦截、数据外泄必须同时突破两层；并排除「单靠输入层即可解决所有注入风险」这一单层依赖。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为堵住输入就能根除注入风险，忽略了注入可经由已被污染的多轮上下文在输出侧再次成形"
+    ]
   },
   {
     "id": "agtool-guard-05",
@@ -185,6 +223,12 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
@@ -195,7 +239,10 @@
       "target": "能说明多 Agent 委派链上「委派时」与「返回时」两次检查各防什么，以及告警时的正确处置",
       "reasoningGoal": "先复现委派链的身份塌陷问题——子 Agent 会把主 Agent 的指令当作初始用户 Prompt 从而掩盖越权本质，故委派前必须结合主 Agent 全局历史校验是否超出原始授权；再确认返回阶段审查的是子 Agent 是否被外部注入并带回污染结果；并排除「告警即销毁子 Agent、禁止回传」——那会让工作流死锁，正确做法是附安全警告降级返回。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为安全拦截就是彻底切断，忽略了主 Agent 若不知道发生了什么就会盲目重试或丢失任务状态"
+    ]
   },
   {
     "id": "agtool-guard-06",
@@ -225,6 +272,12 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
@@ -235,6 +288,9 @@
       "target": "能说明「拦截后继续」与阈值熔断如何让低比例误报不中断任务，同时仍能止住失控 Agent",
       "reasoningGoal": "先确定自主系统要同时满足「不因单次误报中断」与「不让被注入的 Agent 无限重试」；再据此确认拒绝原因写回工具结果可驱动 Agent 换更安全的替代路径、误报由此降级为可接受的重试开销、以及连续与累计拦截上限用于熔断死循环；并排除「Headless 模式下降级等待控制台输入」——无交互终端时正确处置是直接终止进程。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为无界面环境下仍可退回人工交互，忽略了 headless 模式下根本不存在等待输入的终端"
+    ]
   }
 ]

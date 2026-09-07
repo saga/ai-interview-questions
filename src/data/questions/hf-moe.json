@@ -28,6 +28,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -38,7 +44,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「稀疏 MoE 用多个专家前馈子层（expert FFN）替换原有的『部分』前馈层，并增加路由器决定每个 token 走哪些专家」",
       "reasoningGoal": "先明确该概念的定义与适用边界；据此逐项确认「用多个专家前馈子层替换原有的部分前馈层」「每个 token 在每层只被路由到少数几个专家」等 2 项成立；并排除「MoE 会替换掉所有前馈层」「引入 MoE 后」等不成立描述。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "以为 MoE 会替换掉所有前馈层、总参数量等于专家数乘单个专家参数量，实际通常只替换部分 FFN 层，总参数还包含注意力等共享部分",
+      "以为引入 MoE 后单 token 计算量随专家总数线性增长，实际只随被激活的专家数增长"
+    ]
   },
   {
     "id": "moe-mixtral-02",
@@ -69,6 +79,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -79,7 +95,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「路由是按 token、按层独立进行的，不同层可以选出不同的 2 个专家」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「路由器对每 token 输出专家权重」「每个 token 在每一层被独立路由」等 2 项成立；并排除「所有 token 共享同一组固定专家」「路由在序列级别进行」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为所有 token 共享同一组固定专家以保证训练稳定，路由是逐 token 动态选择的",
+      "以为路由在序列级别进行、一整段文本只能进同一个专家，Mixtral 用的是 token 级 top-2 路由"
+    ]
   },
   {
     "id": "moe-mixtral-03",
@@ -210,6 +230,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -220,7 +246,11 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「代价是全部权重需驻留显存，部署显存通常高于同质量稠密模型」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「总参更大但单 token 解码计算量对标小得多的稠密…」「参数更多需更多显存驻留全部权重」等 2 项成立；并排除「MoE 与同质量稠密模型在推理延迟上完全等价」「Mixtral 榜上低于 Llama-2-70B」等不成立描述。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "以为 MoE 与同质量稠密模型在推理延迟上完全等价、参数总量不影响单步速度，MoE 显存占用更大，访存与专家调度还会带来额外开销",
+      "以为 Mixtral 榜上低于 Llama-2-70B 就说明 MoE 必然劣于稠密模型，单次榜单比较推不出架构优劣，MoE 是用更少的激活参数换取接近更大模型的性价比"
+    ]
   },
   {
     "id": "moe-mixtral-06",
@@ -251,6 +281,12 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
         ]
       },
       "open": {
@@ -261,6 +297,10 @@
       "target": "能逐项判断下列主张是否成立，核心判断为「实践中建议把适配器加在注意力投影层（q_proj/k_proj/v_proj/o_proj），并避免对专家 MLP 层做 PEFT，因为专家层稀疏且与 PEFT 兼容性较差」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「把 LoRA 适配器加在注意力投影层（q/k/v/o…」「避免对专家 MLP 层做 PEFT」等 2 项成立；并排除「对所有 8 个专家 MLP 层均匀加 LoRA」「只微调路由器（router）即可」等不成立描述。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "以为对所有 8 个专家 MLP 层均匀加 LoRA 效果最好，常见建议是只微调注意力等共享部分或按需配置专家侧 LoRA，全专家加 LoRA 易过拟合并显著增大开销",
+      "以为只微调 router、其余全部冻结即可，只调路由无法让专家本身适配新任务，效果十分有限"
+    ]
   }
 ]

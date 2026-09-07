@@ -1,0 +1,1086 @@
+[
+ {
+  "seq": 0,
+  "id": "llm-reliability-2026-08-13",
+  "topic": "generation-reproducibility",
+  "question": "同一输入在昨天和今天返回了不同结果。日志显示 seed、temperature 和 prompt 都相同。下一步最有价值的排查是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "立即判定模型随机失控，把波动归因为采样噪声而停止进一步排查"
+   },
+   {
+    "i": 2,
+    "text": "只把 temperature 再降低一次，认为更冷即能恢复昨天的输出分布"
+   },
+   {
+    "i": 3,
+    "text": "删除昨天的结果以免比较，凭今天单次输出重新标定系统行为基准"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "llm-reliability-2026-08-09",
+  "topic": "prompt-robustness",
+  "question": "提示中的标点、示例顺序或格式发生语义等价变化，却导致准确率大幅下降。哪些判断正确？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "说明应把 prompt 无限加长"
+   },
+   {
+    "i": 3,
+    "text": "敏感性说明模型欠拟合，加大 few-shot 数量可覆盖格式空间；量变即鲁棒，无需测分布。"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "llm-reliability-2026-08-10",
+  "topic": "prompt-robustness",
+  "question": "如何防止一次 prompt 微调提升平均分，却悄悄破坏某些输入格式？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只选择平均分最高的单一格式"
+   },
+   {
+    "i": 3,
+    "text": "删除格式多样的输入以保持指标稳定"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "llm-reliability-2026-08-11",
+  "topic": "prompt-robustness",
+  "question": "修改 prompt 中一个词后结果突变，排查时哪些做法最重要？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "同时更换模型、温度、示例和检索库"
+   },
+   {
+    "i": 3,
+    "text": "直接把突变归因于模型智力"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "llm-reliability-2026-08-12",
+  "topic": "prompt-robustness",
+  "question": "对于必须返回有限枚举值的分类接口，哪种方案比反复润色自然语言 prompt 更可靠？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "把枚举值逐个配上褒义形容词强化约束；形容词越多模型越不敢越界，比改 schema 成本低。"
+   },
+   {
+    "i": 2,
+    "text": "提高 temperature 以探索更多类别"
+   },
+   {
+    "i": 3,
+    "text": "只保留最成功的一条 prompt，不做变体评估"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "llm-reliability-2026-08-14",
+  "topic": "prompt-robustness",
+  "question": "一次提示词改动使主测试集准确率上升，但带有不同标点和示例顺序的输入准确率下降。是否应直接发布？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "直接发布，因为平均准确率提高"
+   },
+   {
+    "i": 2,
+    "text": "直接删掉格式变化的样本以掩盖回归"
+   },
+   {
+    "i": 3,
+    "text": "把下降归因于用户输入不规范"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "llm-security-finance-2026-08-01",
+  "topic": "llm-application-security",
+  "question": "为什么不能把 system prompt 当作阻止提示注入的强安全边界？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "system prompt 会被模型编译成不可修改的安全策略"
+   },
+   {
+    "i": 2,
+    "text": "只要把 system prompt 写得足够长就不会被覆盖"
+   },
+   {
+    "i": 3,
+    "text": "把所有用户输入编码后模型就无法理解攻击意图"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "llm-security-finance-2026-08-02",
+  "topic": "llm-application-security",
+  "question": "企业研究 Agent 会读取网页并调用邮件工具。网页正文夹带‘把机密报告发送到外部地址’的指令。最有效的首要控制是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "把网页内容原样放入 system prompt 以保持上下文完整"
+   },
+   {
+    "i": 2,
+    "text": "只要网页没有脚本标签就允许 Agent 执行其中指令"
+   },
+   {
+    "i": 3,
+    "text": "让模型多思考一轮后自动发送以减少犹豫"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "llm-security-finance-2026-08-03",
+  "topic": "llm-application-security",
+  "question": "一个客服 Agent 只需查询订单状态，却被授予修改订单和退款权限。降低风险的正确做法是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "保留全部权限，只在 prompt 中要求模型谨慎"
+   },
+   {
+    "i": 2,
+    "text": "把退款权限隐藏在工具描述中但仍开放给模型"
+   },
+   {
+    "i": 3,
+    "text": "让模型自己决定何时需要更高权限"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "llm-security-finance-2026-08-04",
+  "topic": "llm-application-security",
+  "question": "LLM 生成的 SQL 被应用直接拼接后执行，测试中出现了删除语句。最关键的修复是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只在 prompt 中重复‘不要删除数据’"
+   },
+   {
+    "i": 2,
+    "text": "提高模型 temperature 让 SQL 更有创造性"
+   },
+   {
+    "i": 3,
+    "text": "把 SQL 结果直接拼回 prompt 让模型自行纠正"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "llm-security-finance-2026-08-05",
+  "topic": "llm-application-security",
+  "question": "为排查线上问题，团队准备永久保存包含客户身份证号和完整 prompt 的 LLM 日志。更合理的设计是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "永久保存全部明文，因为有日志就等于合规"
+   },
+   {
+    "i": 2,
+    "text": "完全不记录任何输入和输出，避免承担审计责任"
+   },
+   {
+    "i": 3,
+    "text": "把日志交给模型自动摘要后删除原始记录"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "llm-security-finance-2026-08-06",
+  "topic": "llm-application-security",
+  "question": "一个 Agent 的普通功能测试全部通过，但它能访问客户数据并调用支付工具。上线前最有价值的补充评估是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只增加更多正常用户问答样例扩大功能测试集，覆盖越多即代表越安全"
+   },
+   {
+    "i": 2,
+    "text": "只检查回答是否礼貌得体与语法正确，礼仪达标即代表系统运行安全"
+   },
+   {
+    "i": 3,
+    "text": "让模型自己评估自己是否安全，用模型自评分作为上线的唯一依据"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "llm-security-finance-2026-08-07",
+  "topic": "llm-application-security",
+  "question": "面对无法保证模型永不被注入的现实，系统安全设计最应优先降低什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只追求让 prompt 注入检测器达到 100% 召回"
+   },
+   {
+    "i": 2,
+    "text": "给 Agent 更长上下文以便理解攻击者意图"
+   },
+   {
+    "i": 3,
+    "text": "隐藏所有错误日志避免攻击者学习系统行为"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "llm-security-finance-2026-08-08",
+  "topic": "llm-application-security",
+  "question": "第三方模型或检索组件升级后，系统出现新的数据外泄路径。上线治理中哪项措施最能降低供应链风险？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只比较新模型在公开 benchmark 上的平均分"
+   },
+   {
+    "i": 2,
+    "text": "关闭审计日志以减少第三方组件暴露的信息"
+   },
+   {
+    "i": 3,
+    "text": "让生产环境自动跟随最新模型以获得安全修复"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "llm-security-finance-2026-08-09",
+  "topic": "financial-ai-governance",
+  "question": "银行希望用生成式模型直接批准或拒绝贷款申请。哪种架构边界更稳妥？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "让模型直接输出 approve 或 reject，概率最高即自动执行"
+   },
+   {
+    "i": 2,
+    "text": "只要给模型更多历史贷款数据就能自动满足监管要求"
+   },
+   {
+    "i": 3,
+    "text": "隐藏拒绝理由以避免用户利用规则"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "llm-security-finance-2026-08-10",
+  "topic": "financial-ai-governance",
+  "question": "金融机构评估一个反欺诈模型时，为什么不能只看总体准确率？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "总体准确率已经包含所有群体和成本信息"
+   },
+   {
+    "i": 2,
+    "text": "只看训练集准确率，因为线上数据会变化"
+   },
+   {
+    "i": 3,
+    "text": "把所有误报都当成可忽略的安全成本"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "llm-security-finance-2026-08-11",
+  "topic": "financial-ai-governance",
+  "question": "团队删除了性别和种族字段，认为贷款模型因此不会产生歧视。这个结论有什么问题？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "删除敏感字段就能证明决策公平"
+   },
+   {
+    "i": 2,
+    "text": "公平性只与模型参数量有关"
+   },
+   {
+    "i": 3,
+    "text": "只要模型无法解释，就不需要做公平性评估"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "llm-security-finance-2026-08-12",
+  "topic": "financial-ai-governance",
+  "question": "客服 LLM 给客户解释贷款被拒原因，但解释与实际决策特征不一致。最关键的修复是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "让 LLM 生成更详细的自由文本解释"
+   },
+   {
+    "i": 2,
+    "text": "删除拒绝原因以避免产生错误解释"
+   },
+   {
+    "i": 3,
+    "text": "只向客服展示模型的置信度数字"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "llm-security-finance-2026-08-13",
+  "topic": "financial-ai-governance",
+  "question": "生成式模型用于信用卡欺诈调查摘要，不能直接冻结客户账户。最合理的工作流是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "模型判断可疑就立即冻结，速度比审计更重要"
+   },
+   {
+    "i": 2,
+    "text": "只让模型输出最可能的欺诈类型，不需要保留证据"
+   },
+   {
+    "i": 3,
+    "text": "为减少误报，自动忽略低置信度事件"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "llm-security-finance-2026-08-14",
+  "topic": "financial-ai-governance",
+  "question": "金融客服希望把完整账户流水发送给外部 LLM 以获得更准确的回答。上线前应优先建立什么控制？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "发送全部流水，因为模型上下文越完整越安全"
+   },
+   {
+    "i": 2,
+    "text": "只在 prompt 里要求供应商不要保存数据"
+   },
+   {
+    "i": 3,
+    "text": "把账户流水压缩成 base64 后即可视为非敏感"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "llm-security-finance-2026-08-15",
+  "topic": "financial-ai-governance",
+  "question": "上线数月后，贷款风险模型总体指标仍正常，但某地区拒贷率明显升高。排查和治理应如何开始？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "忽略地区差异，因为总体准确率没有下降"
+   },
+   {
+    "i": 2,
+    "text": "立刻删除该地区样本以恢复总体指标"
+   },
+   {
+    "i": 3,
+    "text": "只提高全局阈值，不分析输入和业务变化"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "llm-security-finance-2026-08-16",
+  "topic": "financial-ai-governance",
+  "question": "以下哪类金融 AI 用例通常更适合作为生成式模型的低风险试点？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "自动批准贷款并即时放款"
+   },
+   {
+    "i": 2,
+    "text": "自动调整客户信用额度且不通知客户"
+   },
+   {
+    "i": 3,
+    "text": "自动执行大额交易并让模型解释结果"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "llm-security-finance-2026-08-17",
+  "topic": "financial-ai-governance",
+  "question": "金融机构采用外部 LLM 服务后，供应商声称模型是黑盒且不提供版本变更通知。机构最合理的治理要求是什么？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "接受黑盒因为供应商承担全部模型责任，采购即转移所有风险给厂商"
+   },
+   {
+    "i": 2,
+    "text": "把所有业务决策交给供应商并删除内部审计，信任即等同于治理"
+   },
+   {
+    "i": 3,
+    "text": "只要求供应商承诺模型平均准确率，用单一指标替代完整风控要求"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "llm-security-finance-2026-08-18",
+  "topic": "financial-ai-governance",
+  "question": "一次客户争议要求还原 AI 辅助理财建议当时为何产生。最低限度应保留哪些证据？（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只保存最终展示给客户的一段话，过程细节无需留存即可说明事实来源"
+   },
+   {
+    "i": 2,
+    "text": "只保存模型的概率分数不需要保存输入，分数即足够还原当时决策"
+   },
+   {
+    "i": 3,
+    "text": "把完整原始数据永久公开以证明透明，公开即满足合规与隐私要求"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "agentic-11",
+  "topic": "mcp",
+  "question": "MCP（Model Context Protocol）这类协议要解决的核心问题是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "提高模型推理的采样速度，让每次生成都更快返回结果，速度即协议的核心价值"
+   },
+   {
+    "i": 2,
+    "text": "替代 JSON Schema 描述工具参数，使参数定义不再必要，协议自动搞定一切"
+   },
+   {
+    "i": 3,
+    "text": "压缩上下文窗口以降低 token 成本，提升整体吞吐，减负即协议的全部意义"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "ai-agent-009",
+  "topic": "mcp",
+  "question": "一个企业已有 50 个内部 API，希望多个 AI Agent 复用这些能力。你会直接为每个 Agent 实现 Function Calling，还是引入 MCP？如何判断？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "消费方少于 5 个时直连更划算，协议的治理收益要在规模上来后才兑现；50 个 API 先直连，痛了再迁。"
+   },
+   {
+    "i": 2,
+    "text": "引入 MCP 后鉴权与限流可统一收敛到协议层，server 侧只需实现业务逻辑；协议即治理平面。"
+   },
+   {
+    "i": 3,
+    "text": "API 数量少、变更慢时直连成本更低，选型应先算集成工作量；治理需求多是伪需求，长远再看。"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "ai-eng-010",
+  "topic": "mcp",
+  "question": "一个 Agent 已经可以调用 REST API。为什么一个团队仍然可能选择 MCP？MCP 解决的主要问题是什么，而不是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "MCP 的目标是取代 REST，引入后应逐步下线全部现有内部接口"
+   },
+   {
+    "i": 3,
+    "text": "接入 MCP 后工具选择与任务推理自动完成，无需额外工程设计"
+   },
+   {
+    "i": 5,
+    "text": "MCP 只是传输层的薄封装，工具定义、发现与鉴权仍须各应用重复实现"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "ai-tool-005",
+  "topic": "mcp",
+  "question": "MCP 解决的主要问题是什么？它和 Function Calling 是什么关系？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "MCP 是 Function Calling 的直接竞品，引入 MCP 后模型便不再需要按 schema 输出调用意图"
+   },
+   {
+    "i": 1,
+    "text": "MCP 已彻底解决 schema 歧义与工具选择准确率问题，接入后无须再投入任何工具描述工程"
+   },
+   {
+    "i": 2,
+    "text": "MCP 属于模型厂商的私有接口规范，工具的定义、发现与鉴权仍须由每个应用各自重复实现"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "agent-mem-layer-01",
+  "topic": "memory",
+  "question": "在构建生产级 AI Agent 架构时，内存层（Memory Layer）通常划分为短期工作内存（Short-term Working Memory）、长期语义内存（Long-term Semantic Memory）与事务状态内存（Transactional Memory / State）。针对不同内存层的架构职责与权衡，下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "事务状态放上下文可省掉状态机与数据库两套设施；一致性由模型自洽保证，中小规模足够。"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "agentic-05",
+  "topic": "memory",
+  "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "短期与长期记忆本质相同，都应把全部历史对话逐字保存，并按时间顺序全量回放进上下文"
+   },
+   {
+    "i": 2,
+    "text": "长期记忆只能存在于模型参数之中，会话结束后上下文内的信息无法持久化到任何外部存储"
+   },
+   {
+    "i": 3,
+    "text": "短期记忆负责跨会话的用户画像积累，长期记忆只存放当前任务用完即弃的临时中间变量"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "agentic-35",
+  "topic": "memory",
+  "question": "Agent 的记忆应该用 Vector DB、SQL 还是普通 KV Store？请给出你的选型框架，而不是单一答案。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "向量检索是记忆系统的核心竞争力，SQL/KV 只存元数据；预算有限时优先保向量，传统存储可后补。"
+   },
+   {
+    "i": 1,
+    "text": "KV 存全量并按时间分区，召回时先分区再遍历比对；规模可控时遍历成本可接受，向量索引可后建。"
+   },
+   {
+    "i": 3,
+    "text": "读写模式简单时三种存储差异不大，可按团队熟悉度先行；出现语义召回需求时再迁移到向量。"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "agentic-40",
+  "topic": "memory",
+  "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕"
+   },
+   {
+    "i": 2,
+    "text": "既然已经存了完整轨迹，运行时就应把全量原文原样喂回上下文，否则这些存储投入就完全失去了它本该有的价值"
+   },
+   {
+    "i": 3,
+    "text": "轨迹存储成本高昂，生产环境只应保留最终的业务结果以控制预算，中间过程全部丢弃才是最优的工程取舍"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "agentic-42",
+  "topic": "memory",
+  "question": "既然上下文窗口已经很大（百万级 token），Agent 还需要独立的 Memory 机制吗？为什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "窗口放大后短期记忆压力缓解，可先下线 Memory 子系统降运维成本；若账单或跨会话问题出现再重建，延迟建设更划算。"
+   },
+   {
+    "i": 1,
+    "text": "大窗口配合重复关键约束，可把位置敏感性压到可忽略；lost-in-middle 主要是小窗口时代的问题，无需再谈。"
+   },
+   {
+    "i": 3,
+    "text": "Memory 的核心价值是压缩绕长度限制，检索精度与个性化可由窗口内全量历史覆盖；保留压缩管线、砍掉检索与沉淀模块即够用。"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "agentic-54",
+  "topic": "memory",
+  "question": "关于 Agent 的 State 设计，下列说法正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "继续全量保留原始对话与工具输出，等上下文窗口进一步扩大后问题会自然消失"
+   },
+   {
+    "i": 2,
+    "text": "State 应尽量做大，只要预算允许，信息越全越不会丢失细节"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "agentic-56",
+  "topic": "memory",
+  "question": "为什么 Agent 的 Memory 不应该简单等同于 Conversation History？以下哪些说法正确？（请选择三个选项）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "记忆即全量回放：把全部历史逐字存下并按时间顺序灌回上下文，存得越多效果越好"
+   },
+   {
+    "i": 3,
+    "text": "窗口足够大时全量历史可直接常驻，提炼与检索只是小窗口时代的权宜之计"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "agentic-64",
+  "topic": "memory",
+  "question": "长对话应用中上下文窗口终会耗尽。对比滑动窗口、摘要压缩、分层摘要与检索式记忆四种对话历史管理策略的取舍，应该怎么选？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "1M 窗口下多数会话走不完一半，记忆管理可推迟到真正出现长会话的业务线；先全量保留，超限再按需引入摘要。"
+   },
+   {
+    "i": 1,
+    "text": "滑动窗口配合大窗口已足够，早期信息极少被回溯；摘要与检索的复杂度只在 Agent 长任务成立，聊天场景无需。"
+   },
+   {
+    "i": 3,
+    "text": "检索式记忆扩展性最强，应作为默认起步；短会话下其管线成本可忽略，统一架构比按场景选型更易维护，选型即标准化。"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "ai-eng-014",
+  "topic": "memory",
+  "question": "一个 AI Coding Assistant 需要记住用户的 coding preferences、项目约定和过去的对话。你会如何区分 conversation history、working memory 和 long-term memory？哪些信息应该进入长期记忆？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "三类信息先合一存储跑通链路，遗漏问题出现后再补分类；先跑通再治理，分类是优化项。"
+   },
+   {
+    "i": 2,
+    "text": "脱敏后的 working memory 可跨用户复用推理过程，个性化部分隔离；复用分摊成本，隐私靠脱敏保障。"
+   },
+   {
+    "i": 3,
+    "text": "全量持久化并配大容量存储，存储便宜，筛选的工程复杂度高于存全量的成本；先存全量，检索问题出现再说。"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "ai-eng-015",
+  "topic": "memory",
+  "question": "一个 Agent 的长期 memory 中保存了大量模型自己推断出来的信息。几个月后，Agent 经常根据错误 memory 做出错误决策。你会如何解决这个问题？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "定期全量清空长期记忆并让模型从零重新推断，模型推断的信息天然足够可靠，元数据治理属于过度设计。"
+   },
+   {
+    "i": 3,
+    "text": "用同一个模型把全部记忆条目批量重新推断一遍实现自我纠错，只要推断次数足够多就能逼近正确，无需标记来源。"
+   },
+   {
+    "i": 4,
+    "text": "禁止模型自动写入任何记忆，长期记忆完全由用户手动维护，从根源上杜绝错误推断进入系统。"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "ai-eng-068",
+  "topic": "memory",
+  "question": "多轮客服对话的记忆模块上线初期频繁遭遇上下文超限与 Token 成本暴涨。下列关于对话历史管理的生产实践正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "保留全量无截断的历史是对话一致性的最佳实践，成本问题可以通过升级硬件解决"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "mem-hierarchy-01",
+  "topic": "memory",
+  "question": "生产环境中的 AI Agent 架构常借鉴操作系统（OS）在 RAM 与 Disk 之间进行页面调度（Paging）的思想，设计分层记忆架构（包含 Context Window、Session Memory、Long-term Store、Cold Archive）。关于信息在该分层体系中的动态流转与调配机制，下列描述正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "冷热分层是规模化的事，早期直接双写最简单；出现成本或膨胀问题时再引入分层，架构演进优先。"
+   },
+   {
+    "i": 2,
+    "text": "Session 结束做一次全量快照归档，压缩可以后补；先保可恢复性，再优化存储成本。"
+   },
+   {
+    "i": 3,
+    "text": "Context Window 访问最快，热数据尽量常驻；容量不足时再按使用频率逐出，缓存思路即记忆思路。"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "mem-retrieval-01",
+  "topic": "memory",
+  "question": "在 Agent 的检索层（Retrieval Tier）中，系统需要在每轮交互前决定哪些存储信息应该被召回并填充到 Context Window 中。针对检索策略的设计与上下文摆放，下列说法正确的是？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只要记忆数据库检索召回了信息，哪怕召回内容无关或陈旧，LLM 也能凭借推理能力自动识别并完全忽略干扰"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "mem-risk-01",
+  "topic": "memory",
+  "question": "为了节省 Context Window 开销，Agent 架构常引入“摘要压缩（Summarization）”与“长期记忆持久化”。然而这些机制在工程落地中会引入副作用与安全风险。下列关于其副作用的分析正确的是？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "经过有损压缩后的记忆在被模型调用时，模型能够明确识别其中丢失的精确细节，并主动、可靠地向用户发起确认以避免给出错误结论"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "mem-stateless-01",
+  "topic": "memory",
+  "question": "在开发 Agent 产品时，用户往往感觉“模型记住了昨天的对话”。从 Transformer 模型底层的 API 合约与系统架构的角度来看，这种记忆连续性的本质是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "商业 LLM API 在服务端默认保留了跨请求的模型隐层状态（Hidden States）及 Key-Value Cache"
+   },
+   {
+    "i": 2,
+    "text": "LLM 在 Fine-tuning / Continual Pre-training 过程中实时将用户的对话记录更新到了模型权重参数中"
+   },
+   {
+    "i": 3,
+    "text": "只要 Prompt 长度不超过模型宣称的最大 Context Limit，LLM 就能在无外部数据库辅助的情况下自动跨 Session 持久化所有状态"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "skillevo-persistence-asymmetry-01",
+  "topic": "memory",
+  "question": "在基于反思与迭代优化的 AI Agent 技能演进（Skill Evolution）架构中，系统通常包含用于指导 Agent 执行的具体“技能库（Skills Layer）”与记录历史经验模式的“知识库（Wiki Layer）”。当系统对新生成的候选技能进行验证评估（Validation Gating），发现性能下降并触发技能回滚（Rollback）时，关于系统的状态更新机制，下列哪种设计最为合理？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "技能库与知识库同步回滚至上一轮状态，彻底清除本轮尝试产生的所有数据与临时修改"
+   },
+   {
+    "i": 2,
+    "text": "技能库保留本次修改但降低调用权重，知识库仅在后续验证通过后才补充记录相关模式"
+   },
+   {
+    "i": 3,
+    "text": "技能库回滚至上一轮验证通过的版本，同时重置知识库中涉及该技能的所有归纳索引"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "skillevo-anti-oscillation-01",
+  "topic": "memory",
+  "question": "在基于 LLM 的 Agent 技能优化器（Skill Proposer）多轮迭代演进过程中，系统可能陷入“反复提出已被历史验证为无效或有害的技能修改”这一震荡困境。为了从架构机制上解决该问题，最有效的方案是：",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "调高优化器生成提议时的采样温度（Temperature），以强制优化器产生完全随机的修改指令"
+   },
+   {
+    "i": 2,
+    "text": "在每次验证失败后清空优化器的全部历史对话上下文，使其在下一轮完全从零开始进行盲推"
+   },
+   {
+    "i": 3,
+    "text": "限制技能库最大只能包含单一技能文件，以避免优化器在解析多文件依赖时产生逻辑冲突"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "skillevo-knowledge-compilation-01",
+  "topic": "memory",
+  "question": "在 Agent 长期自主演进架构中，系统需要处理海量的历史执行轨迹（Raw Traces）。相比于直接保留并在演进时检索全量原始日志，将经验编译为持久化的“模式化文档（Pattern Pages）”的核心价值在于：",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "模式化文档沉淀高频安全模式，越权 case 进模式库即自动免疫；演进即安全加固，无需单设防线。"
+   },
+   {
+    "i": 2,
+    "text": "模式化文档可预编译为 prompt 前缀缓存，复用时跳过编译直读缓存；吞吐收益来自缓存而非二进制。"
+   },
+   {
+    "i": 3,
+    "text": "模式化文档注入后微调需求大幅下降，剩余差距可用少量样本补齐；文档优先、微调兜底。"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "q1-pac-learning-framework",
+  "topic": "statistical-learning-theory",
+  "question": "关于 PAC 学习框架中的可实现性假设（Realizability Assumption）与不可知 PAC 学习（Agnostic PAC Learning），下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "可实现性假设意味着只要训练集上的经验风险为 0，该假设在未知测试集上的泛化风险也必然精确为 0"
+   },
+   {
+    "i": 2,
+    "text": "在不可知 PAC 学习中，为了保证样本复杂度（Sample Complexity）有界，假设空间的 VC 维必须随着训练样本量的增加而动态扩展"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "q2-vc-dimension-nfl-theorem",
+  "topic": "statistical-learning-theory",
+  "question": "关于 VC 维（VC-Dimension）与 No-Free-Lunch (NFL) 定理在机器学习中的理论内涵，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "如果一个假设空间 H 的 VC 维为 d，这意味着 H 能够打散（Shatter）域集中任意规模为 d 的样本子集"
+   },
+   {
+    "i": 2,
+    "text": "无论假设空间 H 的 VC 维是有限还是无限，只要训练样本量 m 趋于无穷，经验风险最小化（ERM）算法就必然收敛到最佳假设"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "q3-srm-regularization-stability",
+  "topic": "model-selection-and-regularization",
+  "question": "在控制模型复杂度和避免过拟合的工程实践与理论中，关于结构风险最小化（SRM）与正则化（Regularization）的机制，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "经验风险最小化（ERM）在假设空间复杂度无限时，可以通过增加训练样本数量来完全替代正则化项的作用"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "q4-sgd-convex-optimization",
+  "topic": "optimization",
+  "question": "关于凸学习问题（Convex Learning Problems）以及随机梯度下降（SGD）算法的收敛特性与应用，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "对非光滑凸函数（如 Hinge Loss）求导时，SGD 使用次梯度（Subgradient）代替梯度，次梯度在不可导点处始终唯一确定"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "q5-svm-margin-kernel-methods",
+  "topic": "kernel-methods",
+  "question": "关于支持向量机（SVM）与核方法（Kernel Methods）的数学原理及工程特性，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "使用 Mercer 核函数（Kernel Trick）将低维特征映射到高维甚至无穷维 Hilbert 空间时，由于维度剧增，模型的样本复杂度必定急剧膨胀"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "q6-adaboost-learnability",
+  "topic": "ensemble-learning",
+  "question": "在 Boosting 理论及 AdaBoost 算法机制中，关于弱可学习性（Weak Learnability）与强可学习性（Strong Learnability）的关系，下列哪项说法是正确的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "AdaBoost 算法要求每个基学习器（Weak Learner）的训练误差都必须严格低于 25%，才能将弱学习器提升为强学习器"
+   },
+   {
+    "i": 2,
+    "text": "AdaBoost 算法在迭代过程中会持续降低此前被正确分类样本的权重，这导致算法在训练集经验风险降至 0 后会立即出现严重过拟合"
+   },
+   {
+    "i": 3,
+    "text": "AdaBoost 最终的组合决策规则是对所有基分类器进行等权重投票，因此训练后期的弱分类器与早期分类器的地位完全相同"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "q7-model-selection-debugging",
+  "topic": "model-selection-and-validation",
+  "question": "某 ML 工程师在构建模型时发现：模型在训练集上损失极小，但在 Hold-out 验证集上性能显著下降；此外，在根据验证集指标反复调优超参数后，最终在独立测试集上的表现依然不达标。针对该现象，下列哪些分析与解决策略是合理的？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "验证集与测试集表现均差表明模型处于高偏差（High Bias）状态，此时最有效的手段是增加训练样本量并减少正则化强度"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "q8-nearest-neighbors-dimensionality-reduction",
+  "topic": "dimensionality-reduction",
+  "question": "当在高维特征空间中应用 Nearest Neighbor 算法或进行降维（Dimensionality Reduction）时，关于维数灾难（Curse of Dimensionality）与降维技术的 trade-off，下列哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "主成分分析（PCA）是一种无监督无损降维技术，其核心是寻找一个线性投影矩阵，使得数据在低维子空间上的投影方差最小"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "ai-fund-006",
+  "topic": "rope",
+  "question": "RoPE（Rotary Position Embedding）解决了什么问题？为什么它在现代 LLM 中被广泛使用？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "RoPE 在每层输入上叠加一组可学习的绝对位置向量，随模型一起训练更新"
+   },
+   {
+    "i": 1,
+    "text": "RoPE 只作用于 V 向量，使 Value 携带绝对位置信息参与输出计算"
+   },
+   {
+    "i": 3,
+    "text": "RoPE 需要在 context 中附加额外参数，扩展上下文窗口时必须重新训练整个模型"
+   }
+  ]
+ },
+ {
+  "seq": 55,
+  "id": "ai-fund-030",
+  "topic": "kv-cache",
+  "question": "KV Cache 解决了什么问题？它为什么会占用大量 GPU 内存？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "长上下文让注意力计算量从平方级恶化为立方级，GPU 算力耗尽触发了 OOM"
+   },
+   {
+    "i": 2,
+    "text": "KV Cache 仅在 prefill 阶段写入、decode 阶段即释放，OOM 说明缓存释放逻辑存在 bug"
+   },
+   {
+    "i": 3,
+    "text": "模型权重的显存占用会随输入序列长度同步增长，长文本放大了这部分开销，因为权重会以激活形式随序列展开而被反复加载"
+   }
+  ]
+ },
+ {
+  "seq": 56,
+  "id": "ai-moe-tradeoff-001",
+  "topic": "moe",
+  "question": "MoE 模型为什么可以拥有很大的总参数量，同时保持相对较低的每 token 计算量？它会引入哪些工程复杂度？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "所有专家压缩进一个共享FFN，总参随之缩小，共享权重避免了冗余存储与重复计算"
+   },
+   {
+    "i": 3,
+    "text": "每个token经过全部专家再平均输出，等价于稠密最优利用，还能平滑路由噪声"
+   }
+  ]
+ },
+ {
+  "seq": 57,
+  "id": "ai-transformer-006",
+  "topic": "kv-cache",
+  "question": "一个 LLM 服务的 GPU 显存随并发请求增加迅速耗尽，即使模型本身可以放入显存。你会如何判断是不是 KV Cache 导致的？有哪些优化方向？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "关闭 KV Cache 即可释放显存：反正每步重新计算历史 K/V 对 decode 速度的影响可以忽略"
+   },
+   {
+    "i": 3,
+    "text": "把模型权重量化到更低精度就能解决：KV Cache 大小与并发数和序列长度无关"
+   }
+  ]
+ },
+ {
+  "seq": 58,
+  "id": "gqa-swa-01",
+  "topic": "gqa",
+  "question": "在 Transformer Decoder 架构大语言模型自回归推理（Generation 阶段）中，KV Cache 的内存占用常成为端侧或高并发场景下的主要瓶颈。关于 Grouped-Query Attention (GQA) 与传统 Multi-Head Attention (MHA) 在改善该瓶颈上的机制与权衡，下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "GQA 主要通过将模型静态权重参数（Weights）从 16-bit 浮点数压缩为 4-bit 整数来降低运行显存"
+   }
+  ]
+ },
+ {
+  "seq": 59,
+  "id": "hybrid-mamba-01",
+  "topic": "hybrid-attention",
+  "question": "在需要执行成百上千次 Tool Calling 的长流程 AI Agent 场景中，随着 Context Length（上下文长度）持续增长，传统 Transformer 架构面临的主要推理瓶颈是 O(N^2) 的 Attention 计算开销及庞大的 KV Cache 内存占用。为了降低长上下文推理成本，在模型选型上引入 Mamba 或 SSM（State Space Model）混合架构（Hybrid Architecture）的主要优势是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "字节级建模省去词表维护，混合架构正朝无词表演进；Tokenizer 是过渡方案，长期会被吸收。"
+   },
+   {
+    "i": 2,
+    "text": "递归结构天然抑制长程误差累积，幻觉率显著低于注意力架构；长循环场景可少配校验。"
+   },
+   {
+    "i": 3,
+    "text": "线性递归计算量小，百亿模型可在高端 CPU 实时运行；显存不再是长上下文的硬门槛。"
+   }
+  ]
+ }
+]

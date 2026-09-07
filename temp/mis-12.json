@@ -1,0 +1,950 @@
+[
+ {
+  "seq": 0,
+  "id": "llm-05",
+  "topic": "kv-cache",
+  "question": "在 LLM 自回归推理中，KV 缓存（KV cache）的核心作用是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "softmax 出现数值溢出导致注意力权重异常，应在求指数前对得分减去每行最大值做数值稳定处理"
+   },
+   {
+    "i": 1,
+    "text": "词嵌入矩阵规模过大拖慢了每一步的前向传播，应对嵌入层做低秩分解压缩后再上线，因为嵌入查表是当前推理链路的主要延迟来源"
+   },
+   {
+    "i": 3,
+    "text": "训练阶段学习率设置过高造成模型不稳定，应降低学习率重新训练后再观察推理耗时，因为优化器的步长直接决定了部署后的前向延迟"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "llm-06",
+  "topic": "moe",
+  "question": "某 MoE 模型的总参数量远大于每 token 的激活参数量。这两个数字分别决定了什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "总参数量决定推理延迟，激活参数量决定显存占用，因此显存按 37B 规划即可满足部署要求"
+   },
+   {
+    "i": 2,
+    "text": "这两个数字都只影响训练阶段的吞吐，与推理时的显存占用和响应延迟均没有关系"
+   },
+   {
+    "i": 3,
+    "text": "由于每个 token 只经过少数专家，可以把暂时未被激活的专家权重从显存中丢弃以节省资源"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "llm-13",
+  "topic": "kv-cache",
+  "question": "某模型架构说明给出：30B Dense Transformer、48 层、32 Query 头 / 2 KV 头（GQA）、head_dim=128，KV cache 以 BF16 存储（每元素 2 字节）。忽略框架开销，单个 token 占用的 KV cache 约是多少？一个 10k token 的会话呢？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "约 24 KiB / token；10k 会话约 0.23 GB"
+   },
+   {
+    "i": 2,
+    "text": "约 768 KiB / token；10k 会话约 7.5 GB"
+   },
+   {
+    "i": 3,
+    "text": "约 1.5 MiB / token；10k 会话约 15 GB"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "llm-14",
+  "topic": "hybrid-attention",
+  "question": "一个面向长上下文（131k token）的模型将约 75% 的 Transformer 层设为滑动窗口注意力（SWA），其余 25% 使用全局注意力的 GQA 层。相比所有层都用全局注意力，这种混合设计最直接的收益是什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "KV Cache 可大幅压缩，滑动窗口使历史被压缩进隐状态；显存墙基本解除，长度不再是问题。"
+   },
+   {
+    "i": 2,
+    "text": "保留 25% 全局层即保留长程能力，窗口层负责局部；混合即全效，长程建模无损。"
+   },
+   {
+    "i": 3,
+    "text": "注意力相关参数量随全局层数等比下降，模型整体缩小到原来的四分之一左右，因为局部窗口显著削减了每层需要维护的状态规模"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "llm-15",
+  "topic": "latent-moe",
+  "question": "某模型的架构说明描述其 LatentMoE 设计：先把 hidden representation 经 down projection 映射到低维 latent space，在其中执行专家（MoE）计算，再经 up projection 还原回原维度。基于这一机制，为什么它可能降低推理成本？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "它减少了专家数量并简化了 router 结构，token 路由的开销随之大幅下降，因为更少的专家意味着路由网络可学习更简单的映射关系"
+   },
+   {
+    "i": 2,
+    "text": "它把 token-level 路由改成了 sequence-level 路由，每个序列只需激活一次专家网络"
+   },
+   {
+    "i": 3,
+    "text": "它用 latent attention 替代了全部专家 FFN，使 MoE 层不再需要维护任何专家权重"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "llm-16",
+  "topic": "latent-moe",
+  "question": "如果把 LatentMoE 的 latent 维度压得非常低，最可能带来什么后果？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "KV cache 会同比例缩小，长上下文场景的显存成本同步受益，因为低维 latent 表征减少了每 token 需要缓存的状态维度"
+   },
+   {
+    "i": 2,
+    "text": "只要相应增加专家数量就能完全弥补维度下降损失的容量，质量可以保持不变，因为参数总量随专家数线性回升即可抵消压缩"
+   },
+   {
+    "i": 3,
+    "text": "由于低维空间的损失面更平滑，训练收敛速度会稳定提升，因为压缩表征降低了优化器的方差并加快了梯度方向的统一"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "llm-17",
+  "topic": "positional-encoding",
+  "question": "某 frontier LLM 的架构说明写明：完全未使用显式位置编码（没有 RoPE，也没有绝对位置嵌入），即 NoPE 设计。相比传统 RoPE 模型，这种架构最需要解决或验证的核心问题是什么？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "缺少 RoPE 的旋转因子后注意力得分失去缩放项，需要另行引入归一化手段来稳定 softmax"
+   },
+   {
+    "i": 2,
+    "text": "位置信息缺失导致历史 K/V 无法复用，KV cache 机制失效，必须逐 token 重算全部历史"
+   },
+   {
+    "i": 3,
+    "text": "embedding 层失去位置输入后无法初始化，必须保留至少一层绝对位置嵌入作为兜底"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "llm-26",
+  "topic": "moe",
+  "question": "在超大规模 MoE（从数百专家 Top-8 扩展至近千专家 Top-16）时，基于 SignSGD 的负载均衡在计算全局分位数时通信开销过大。如何以极低通信量实现全局近似分位数的精准估计？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "各 Worker 单独计算局部分位数，直接通过 All-Reduce 进行全局算术平均"
+   },
+   {
+    "i": 2,
+    "text": "将所有 Token 的路由得分收集到 Master 节点进行全局排序"
+   },
+   {
+    "i": 3,
+    "text": "随机采样 1% 的 Token 估计全局分位数，忽略其余 Token 的分布"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "llm-27",
+  "topic": "kv-cache",
+  "question": "关于类 MLA 的低秩 KV 压缩在 Decoding 阶段与推测解码（MTP / Speculative Decoding）结合时的表现，下列说法正确的是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "MLA 的 KV Cache 是传统 GQA8 的 3 倍以上，严重受限于内存带宽，因为低秩压缩迫使更频繁的缓存重算与跨层数据搬运"
+   },
+   {
+    "i": 2,
+    "text": "MLA 无法适用于超长文本场景，因其 Prefill 计算复杂度为 O(N³)，因为低秩投影在长序列上会退化为与全注意力同阶的代价"
+   },
+   {
+    "i": 3,
+    "text": "MLA 在训练阶段的计算开销显著高于 head_dims=256 的 MFA，因为更复杂的投影矩阵在反向传播中引入了额外的显存与算力峰值"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "llm-28",
+  "topic": "positional-encoding",
+  "question": "在保持低秩 KV 压缩结构的前提下移除旋转位置编码（RoPE）变成 NoPE，且模型依然具备良好的位置感知能力，其根本机制是什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "依赖绝对位置编码与 RoPE 的拼接机制"
+   },
+   {
+    "i": 2,
+    "text": "混合专家 (MoE) 模块能够显式推导出 Token 在序列中的绝对索引"
+   },
+   {
+    "i": 3,
+    "text": "Standard Softmax Attention 本身即具备对无位置编码序列的全序表达能力"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "llm-hybrid-02",
+  "topic": "hybrid-attention",
+  "question": "在处理超长上下文（如百万级 Token）时，标准 Transformer 架构与状态空间模型（SSM，如 Mamba）各有优劣。为了兼顾长上下文处理效率与精准细节检索能力，业界提出了将大部分 Attention 层替换为 Mamba 层、同时保留少量 Attention 层的混合架构。以下关于该混合架构的工程权衡与特性的说法，正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "纯 Mamba 模型在长文本精准细节检索（Needle in a Haystack）能力上通常强于纯 Transformer 模型"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "llm-moe-04",
+  "topic": "moe",
+  "question": "在大模型架构设计中，混合专家（Mixture of Experts, MoE）架构被广泛用于扩展模型容量。以下关于 MoE 架构运行机制及工程特性的说法，正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "MoE 架构能够减少模型的总显存占用，因此比相同总参数量的 Dense 模型更适合部署在显存受限的单卡设备上"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "rope-vs-sin-01",
+  "topic": "positional-encoding",
+  "question": "Transformer 论文中的绝对正弦位置编码与大模型广泛应用的旋转位置编码（RoPE）在原理与长文本外推能力上有显著差异。下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "绝对正弦位置编码与 RoPE 均通过在注意力 Softmax 权重矩阵上直接叠加一个与相对距离相关的衰减偏置来实现位置信息的注入"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "pos-encoding-sin-01",
+  "topic": "positional-encoding",
+  "question": "标准 Self-Attention 是置换不变的。为了引入序列中 Token 的顺序信息，Transformer 使用了基于正弦和余弦函数的固定位置编码。关于位置编码的必要性与正弦编码的数学性质，下列哪些表述是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "正弦位置编码是通过直接与 Token Embedding 进行矩阵乘法来注入位置信息的"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "sin-pe-advantage",
+  "topic": "positional-encoding",
+  "question": "经典 Transformer 采用固定正弦位置编码。相比于可学习的位置嵌入使用这种固定三角函数编码的主要理论优势是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "三角函数编码可以显著降低注意力矩阵计算的时间复杂度至 O(N log N)"
+   },
+   {
+    "i": 2,
+    "text": "三角函数编码直接将位置向量与词向量进行点乘避免了增加嵌入维度"
+   },
+   {
+    "i": 3,
+    "text": "三角函数编码能保证任意两个不同位置的向量内积恒等于 0（正交）"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "pe-add-vs-concat",
+  "topic": "positional-encoding",
+  "question": "Self-Attention 具有置换不变性因此 Transformer 引入正弦位置编码并将编码向量与词嵌入向量直接相加。关于这一设计选择下列分析正确的是？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "向量直接相加会导致位置数值彻底覆盖原始词向量的语义信息因此必须在每一个 Encoder 层重新叠加 PE"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "pe-removal-defect",
+  "topic": "positional-encoding",
+  "question": "某工程师误将输入层的 Positional Encoding 模块完全移除直接将 Token Embedding 输入注意力层。在不改变其他架构的情况下该模型会出现什么本质缺陷？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Softmax 函数将退化为均匀分布导致模型无法提取 Token 之间的相关性权重"
+   },
+   {
+    "i": 2,
+    "text": "Multi-Head Attention 无法将输入向量投影到不同的子空间导致投影矩阵发生秩坍塌"
+   },
+   {
+    "i": 3,
+    "text": "Key 与 Value 矩阵之间会产生线性相关性导致反向传播梯度消失"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "moe-design-tradeoff",
+  "topic": "moe",
+  "question": "在超大规模语言模型中 Mixture-of- Experts 架构被广泛应用。相比同等参数量的稠密模型关于 MoE 的工程特性与架构取舍下列哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "由于每次推理仅激活部分 Expert MoE 模型在分布式部署时所需的 GPU 总显存显著低于同等总参数量的 Dense 模型"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "moe-vs-dense-compute",
+  "topic": "moe",
+  "question": "假设某 MoE 模型拥有 1000 亿总参数量每 Token 激活其中 200 亿（2 个专家）而某 Dense 模型全量激活 200 亿参数。关于两者在计算与系统级别的特性比对以下哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "在部署显存占用上该 MoE 模型仅需要加载被激活的 200 亿参数对应的显存即可运行推理"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "native-vs-modular-multimodal",
+  "topic": "multimodal",
+  "question": "多模态大语言模型通常采用原生多模态或模块化外挂编码器两种架构设计。现有系统需要处理长达数小时的连续视频与多轨音频流并在跨模态细节上进行细粒度逻辑推理。关于两种架构在此类场景下的特性差异哪些描述是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "模块化外挂编码器架构因无需修改语言模型底层 Transformer 架构因此在处理长视频等高密度连续时间序列时其注意力计算开销和上下文吞吐表现显著优于原生多模态架构"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "rope-theta-scaling",
+  "topic": "rope",
+  "question": "在大语言模型扩展上下文窗口的长上下文训练阶段工程上通常会将 RoPE 的 Base Frequency θ 从 10⁶ 显式增大至 10⁷。这一操作的核心原理是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "增大 θ 会提高旋转频率，使远距离位置的相位变化更快"
+   },
+   {
+    "i": 2,
+    "text": "增大 θ 会改变注意力头的维度，从而扩大 KV Cache"
+   },
+   {
+    "i": 3,
+    "text": "增大 θ 会把 RoPE 改成不依赖位置的绝对位置编码"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "gqa-kv-cache-calc",
+  "topic": "kv-cache",
+  "question": "某 30B 参数量的 Decoder-only Transformer 采用 GQA 架构：d_model=4096，L=64 层，H_q=32 Query 头，H_kv=8 KV 头，d_head=128，使用 bfloat16（每元素 2 字节）。当并发序列长度 N=131072（128K）时单个样本在整网中所需的 KV Cache 显存占用约为多少？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "8 GB"
+   },
+   {
+    "i": 1,
+    "text": "16 GB"
+   },
+   {
+    "i": 3,
+    "text": "64 GB"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "moe-router-collapse-fix",
+  "topic": "moe",
+  "question": "在 Sparse MoE 进行 RL 微调期间极易发生路由器崩溃——Router 倾向将绝大部分 Token 集中发送给少数 Expert。下列哪些工程与算法干预手段能有效缓解并维持负载均衡？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "彻底冻结 Router 网络的参数仅允许更新 Expert 内部的 FFN 参数，因为固定路由可避免训练早期专家负载的剧烈波动与坍缩"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "ma-swarm-tradeoff-01",
+  "topic": "multi-agent",
+  "question": "在分布式软件漏洞挖掘系统设计中，架构师需要选择“独立并行搜索（Uncoordinated Brute-force）”与“协调式智能体集群（Coordinating Swarm with Peer Review & Arbiter）”两种架构之一。假设系统面临代码库庞大、漏洞类型多样且存在跨模块逻辑依赖的场景，以下关于这两种架构的技术权衡与机制分析，哪些项是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "协调开销通常小于重复劳动的浪费，集群总 token 一般更优；重复即浪费，协调即节省。"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "ma-git-collab-02",
+  "topic": "multi-agent",
+  "question": "在多个自主 AI 智能体协同开发同一大型软件项目的架构设计中，智能体间的代码集成是关键挑战。当多个智能体同时向同一个 Git 仓库提交 Pull Request（PR）时，关于智能体的行为模式与代码共享机制，以下分析正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "仅靠在系统 Prompt 中声明“指定 CEO 角色统一分配任务”，即可彻底解决无人类干预下智能体团队开发软件时的产品设计与接口可用性缺陷"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "ma-conformity-fail-03",
+  "topic": "multi-agent",
+  "question": "当在同一分布式系统中部署多个基于相同底层大语言模型（LLM）的智能体执行高并发或竞争性任务时，系统运维团队常观察到集群出现“自激式瘫痪”或“异常行为高度一致”现象。关于这种现象的产生机制与系统影响，以下说法正确的是：（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "简单地增加集群中同构智能体的节点数量能够有效消除该现象，因为更多的独立采样流能够天然提供多样化的解法选择"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "ma-algo-collusion-04",
+  "topic": "multi-agent",
+  "question": "在多智能体参与的动态定价市场中，每个智能体被独立配置为“个人利润最大化”的自治代理。假设系统允许智能体读取公共价格看板并具备私密通信管道，以下关于智能体博弈行为演化的分析，哪些是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只要智能体的目标函数明确设为单体收益最大化，智能体就必然会按照古典经济学推论，持续降价直到边际成本"
+   },
+   {
+    "i": 3,
+    "text": "智能体之间的串通行为必定依赖集中式的中央控制节点；完全分布式的自主智能体无法建立稳定的价格协调"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "ma-epistemic-vigilance-05",
+  "topic": "multi-agent",
+  "question": "在缺乏中央信任源的多智能体信息融合系统中，需要设计机制让“听众智能体（Listener Agent）”根据多个“侦察智能体（Scout Agents）”的汇报做出决策，且已知部分侦察智能体可能持续提供虚假信息。以下关于智能体认知警惕性与信息验证机制的描述，正确的是：（单选）",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "只要听众智能体具备强大的推理能力，就能在没有任何信息重叠的前提下，仅凭单次汇报内容的文本语法特征精准识别谎言"
+   },
+   {
+    "i": 2,
+    "text": "彻底采取“不信任任何外部智能体”的绝对怀疑策略，是提升复杂多智能体系统决策准确率的最优解"
+   },
+   {
+    "i": 3,
+    "text": "侦察智能体只要在初始阶段建立了高信任度历史，后续即便发生事实矛盾，听众智能体也无法通过交叉验证更新信任权重"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "ma-hidden-profile-06",
+  "topic": "multi-agent",
+  "question": "在分布式团队决策中，存在所谓的“隐藏信息结构（Hidden Profile）”困境：大部分公共已知信息均指向次优选项 A，而仅有分散分布在少数智能体手中的私有信息组合在一起时才能指向最优选项 B。以下关于多智能体系统在此类场景下的行为模式与机制分析，哪些是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "简单地盲目提高智能体对 peer 节点的“信任度参数”，能够同时完美解决谎言防御（Factual Deception）与隐藏信息聚合（Hidden Profile）两个问题"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "ma-turf-war-07",
+  "topic": "multi-agent",
+  "question": "在一个共享宿主环境中，部署了多个执行互斥目标（例如分别将同一个代码库重构成 Rust、TypeScript 和 Go）的自治 AI 智能体。假设智能体未被告知彼此的存在与具体指令，以下关于系统可能出现的异常行为演化与安全风险的分析，正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "能力更强、执行效率更高的底层模型在面对目标冲突时，必然比低能力模型更容易自发达成协商停火（Truce）"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "ma-infra-isolation-08",
+  "topic": "multi-agent",
+  "question": "系统架构师在设计一个支持高自治度多智能体（Multi-Agent）协同工作的生产级基础设施时，为了防止智能体在共享资源池中陷入“地盘争夺战（Turf Wars）”并保障宿主系统稳定性，以下哪些架构设计方案是合理且必要的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "移除所有的速率限制（Rate Limit）与心跳监控，防止智能体因请求被阻断而误判环境异常"
+   },
+   {
+    "i": 4,
+    "text": "允许智能体在检测到任何未预期变更时，自动获取宿主机的根用户（Root）权限以进行紧急修复与环境重置"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "ma-reputation-09",
+  "topic": "multi-agent",
+  "question": "在人类社会中，信任与合作依赖于法庭、声誉机制和同行评审等社会制度；而在无状态、可随时销毁与重启的 AI 智能体网络中，缺失这些制度会导致合作效率低下。若要在多智能体计算网络中引入类似机制以改善信任与协作，以下架构考量正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "依靠智能体单次会话中的自我反思（Self-reflection）提示词，即可完全替代跨会话的声誉与惩罚机制"
+   },
+   {
+    "i": 4,
+    "text": "确保每个智能体节点能够在没有任何身份标识与历史记录的情况下，完全依赖零知识推理实现最高效的长期市场合作"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "agent-proto-01",
+  "topic": "multi-agent",
+  "question": "在大模型 Agent 系统架构设计中，为了实现能力解耦与模块化，通常会将“Agent 与外部工具/API 的交互协议”和“Agent 与 Agent 之间的协同/授权协议”进行分层（例如 MCP 与 A2A 协议）。关于这两类协议的设计定位与工作机制，下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "MCP 协议完全可以替代 A2A 协议，因为将其他 Agent 简单封装为一个带 Schema 的 MCP Tool 就能完美实现跨 Agent 的异步流式协商与复杂状态机同步"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "agentic-06",
+  "topic": "multi-agent",
+  "question": "关于 Multi-Agent（多智能体）协作，下列说法正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "多智能体在任何任务上都一定优于单个智能体"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "agentic-23",
+  "topic": "multi-agent",
+  "question": "设计一个 Multi-Agent 研究系统：Planner、Researcher、Critic、Writer 四角色。如何划分职责、传递信息并避免互相扯皮？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "四个角色之间应以自由对话形式充分讨论，讨论轮数越多观点碰撞越充分、成稿质量越高，无需约束"
+   },
+   {
+    "i": 1,
+    "text": "允许 Writer 在成稿时补充自己已知的外部知识，以保证文章的可读性与信息完整性，自由发挥更好"
+   },
+   {
+    "i": 2,
+    "text": "Critic 对稿件不满意时可以无限次打回重做，直到所有角色对最终版本达成一致为止，民主即质量"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "agentic-32",
+  "topic": "multi-agent",
+  "question": "Multi-Agent 系统中两个 Agent 开始互相调用、来回踢皮球。如何检测和阻止？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "在两个 Agent 之间建立双向对等的通信拓扑，让它们可以互相派活以提高灵活性；消息量持续增长说明协作正在推进。"
+   },
+   {
+    "i": 2,
+    "text": "死循环只能靠运维人员盯着日志人工发现并重启进程，编排层无法自动检测环路。"
+   },
+   {
+    "i": 3,
+    "text": "给双方 Agent 的回复加上更客气的措辞约束，它们就不会再把任务踢回给对方。"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "agentic-39",
+  "topic": "multi-agent",
+  "question": "什么情况下 Multi-Agent 是过度设计？你会用什么信号来判断该退回单体 Agent？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "角色越多系统越智能，加角色的边际收益总为正，不存在过度设计问题"
+   },
+   {
+    "i": 4,
+    "text": "协调开销难以度量，不应与单体基线实证对比，凭架构直觉拆分即可"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "agentic-63",
+  "topic": "multi-agent",
+  "question": "关于多智能体（Multi-Agent）系统的架构模式与适用边界，下列说法正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "任务可分解时多智能体天然带来并行加速与视角多样性，协调开销通常小于单智能体的串行等待；可分解即应拆。"
+   },
+   {
+    "i": 1,
+    "text": "层级编排是最成熟的协作拓扑，默认采用可降低设计不确定性；任务不可分解时退化为单 Worker，特例不影响默认。"
+   },
+   {
+    "i": 3,
+    "text": "共享上下文消除通信序列化开销，权限问题可后置到工具层解决；先保证信息对称，再补隔离。"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "agentic-65",
+  "topic": "multi-agent",
+  "question": "在由 8 个 Agent 构成的无自环有向通信网络中，系统架构师配置了 22 条单向通信链路（静态配置边）。在一次协同任务运行中，实际仅有 15 条链路产生了消息交互（行为边）。关于该网络的拓扑指标与运行特征，以下分析正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "该无自环有向图的最大可能边数为 28，因此静态配置关系密度约为 78.6%，误用无向公式在此场景下并无大碍，差异完全可以忽略不计"
+   },
+   {
+    "i": 2,
+    "text": "配置关系密度直接决定了消息的实际流动路径，增加配置边必然等比例增加动态行为边，二者呈严格线性关系，密度即流量，成正比"
+   },
+   {
+    "i": 3,
+    "text": "边利用率等于配置关系密度乘以节点总数，是衡量无向图连通度的静态几何指标，与运行时行为无关，公式即结论，恒定不变"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "agentic-66",
+  "topic": "multi-agent",
+  "question": "在评估 Agent 协同网络的通信密度对系统性能的影响时，传统做法若直接对比链式（Chain）、星型（Star）与全连接（Mesh）结构，会导致“拓扑中心性/结构形状”与“边数量（关系密度）”两个混淆变量同时变化。为了在固定节点数（如 N=8）前提下严格隔离并独立评估“关系密度”这一单一变量，以下哪些实验设计是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "随着关系密度的增加，同步按比例扩充 Agent 节点数量，以保持全局平均度数（Average Degree）恒定"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "agentic-67",
+  "topic": "multi-agent",
+  "question": "在构建 Agent 系统架构评估测试集（Benchmark）时，为了消除大语言模型（LLM）API 调用带来的高成本、网络延迟及随机波动，架构师采用确定性规则策略（如基于 TF-IDF 提炼并共享未重复的最新事实）代替真实 LLM。关于这种评估设计的工程权衡（Trade-offs），以下说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "确定性规则复现了 LLM 的输入输出分布，降本保真；结论外推时加一层人工抽检即足够。"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "agentic-69",
+  "topic": "multi-agent",
+  "question": "在固定 Agent 数量（N=8）和特定协作任务的实验中，当通信网络的静态配置关系密度从 20%（11 条边）提升至 100%（56 条边）时，实测信息恢复率始终保持在 92%~98% 之间，而实际活跃边数仅从 10.7 条增加至 26.4 条，边利用率从 97.3% 单调下降至 47.1%。关于这一现象的架构归因与工程启示，以下理解正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "该结果证明在任何 Agent 场景下，将拓扑简化为 20% 密度的稀疏网格均能获得与全连接完全相同的业务收益"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "longhorizon-rlm-subagent-01",
+  "topic": "multi-agent",
+  "question": "递归语言模型（Recursive Language Model, RLM）允许智能体通过异步原语动态创建并调度子智能体。关于这种基于句柄（Handle）的递归调用与协作机制，下列哪些描述符合其工程实现原则？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "子智能体在完成任务后必须通过同步阻塞式的固化工作流拓扑结构向父智能体汇报结果，无法进行直接的 Agent-to-Agent 消息通信。"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "skillevo-multi-agent-roles-01",
+  "topic": "multi-agent",
+  "question": "在设计一个通过运行日志离线迭代优化 Agent 技能的自动化系统时，为避免单 Agent 架构在长轨迹诊断中产生注意力分散与决策冲突，通常采用多 Agent 职责分离架构。关于 Inference Agent、Wiki Maintainer 与 Skill Proposer 的职责边界设计，以下哪些说法是合理的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Skill Proposer 生成技能 Patch 后可直接覆盖生产技能库，无需再经过 Validation Gating 验证"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "multimodal-01",
+  "topic": "multimodal",
+  "question": "在构建图文多模态 RAG 系统时，系统需对文档中的图表、截图进行理解并回答“该季度营收同比增速是多少？”这类需跨模态对齐的问题。下列关于多模态检索与对齐的说法，正确的是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "多模态 RAG 无需图像编码，仅需将图像文件名作为文本关键词进行 BM25 检索即可实现图文对齐，因为文件名已经包含足够的可检索语义，无需再进入视觉编码器"
+   },
+   {
+    "i": 2,
+    "text": "多模态模型天然不存在幻觉，因其输入包含图像作为事实依据，因为看到图像就等同于掌握了全部事实，模型不可能在视觉事实之上产生任何虚构"
+   },
+   {
+    "i": 3,
+    "text": "跨模态对齐仅需在推理时拼接图像与文本提示，无需任何训练期对齐，因为预训练语言模型已具备通用常识，拼接图像提示后自然就能理解视觉内容"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "nmf-alternating-minimization-dynamics",
+  "topic": "optimization",
+  "question": "在工程实践中，交替最小二乘法（Alternating Minimization）常用于求解非负矩阵分解 M ≈ AW。关于该算法在工程优化与理论性质上的描述，哪些是正确的？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "该算法能够保证在有限迭代步数内收敛到全局极小值点，且收敛路径与初始矩阵 A(0) 的选取无关。"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "svd-eckart-young-norm-invariance",
+  "topic": "linear-algebra",
+  "question": "奇异值分解（SVD）在矩阵低秩逼近和特征降维中具有重要地位。根据 Eckart-Young 定理及矩阵范数性质，以下哪些说法是正确的？",
+  "distractors": [
+   {
+    "i": 4,
+    "text": "任意 m × n 实数矩阵都存在 SVD 分解，且只要矩阵是方阵，其 SVD 分解的形式与特征值分解（Eigendecomposition）完全一致。"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "ml-theory-beyond-worst-case",
+  "topic": "algorithm-design",
+  "question": "在针对机器学习算法进行理论分析与系统设计时，传统计算机科学的“最坏情况分析（Worst-case Analysis）”常面临 NP-hard 的阻碍。为了为实践中的启发式算法（如 EM、NMF、非凸梯度下降）提供可证明的理论 guarantees，理论机器学习领域的核心解决思路是什么？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "完全放弃理论证明，仅依赖大规模真实数据集上的 Benchmark 经验评估来验证算法有效性。"
+   },
+   {
+    "i": 2,
+    "text": "将所有非凸优化问题统一转化为高维凸优化松弛问题，从而确保在最坏情况下能够在多项式时间内找到全局最优解。"
+   },
+   {
+    "i": 3,
+    "text": "仅针对一维简单数据分布求解解析解，并在高维场景下通过强行剪枝将最坏情况时间复杂度降至多项式级别。"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "nmf-canonical-form-probabilistic-design",
+  "topic": "topic-modeling",
+  "question": "在基于非负矩阵分解构建主题模型系统时，假设输入的词文档矩阵 M ∈ R^{m × n} 各列和为 1（代表文档在词表上的分布）。将 M 分解为 AW 后，利用对角阵 D（D_{j,j} = Σ_i A_{i,j}）重构为规范形式 A~ = AD^{-1} 与 W^ = DW。关于该规范化设计及其工程含义，哪些描述是正确的？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "该对角缩放操作改变了拟合矩阵的重构值，使得规范化后的 A~W^ 不再等于原始分解结果 AW。"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "agent-observability-01",
+  "topic": "observability",
+  "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "为了准确评估成本，只要监控输出 Token（Output Tokens）的数量即可，因为各大供应商的 Output Token 单价比 Input Token 更高，决定了绝大部分账单金额"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "ai-eng-043",
+  "topic": "observability",
+  "question": "为 LLM 应用设计可观测性体系时，与传统 Web 服务相比需要额外覆盖哪些维度？请说明日志/指标/追踪三层各自的关键内容，以及为什么\"又快又稳\"的系统仍可能是失败的。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "LLM 应用仍是 Web 服务，黄金信号加 token 成本即完备；质量维度可由业务方反馈转为例行工单，无需新埋点。"
+   },
+   {
+    "i": 1,
+    "text": "只需要监控延迟和错误率，质量由用户反馈自然暴露即可；技术监控指标足以覆盖线上一切问题，不必主动度量质量，用户自会发声，反馈足够"
+   },
+   {
+    "i": 3,
+    "text": "prompt 明文落盘但做访问审计，脱敏会破坏排障所需的完整上下文；合规靠访问控制而非脱敏。"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "ai-engineering-003",
+  "topic": "observability",
+  "question": "一个 Agent 线上出现错误回答，你需要哪些 Trace 信息才能判断问题发生在哪一步？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "只存最终用户可见回答，中间过程是性能损耗，少存即安全合规，无需留痕"
+   },
+   {
+    "i": 4,
+    "text": "只记每次调用耗时数字即可排障，prompt与工具返回值可丢弃以规避合规风险"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "mlops-02",
+  "topic": "observability",
+  "question": "关于模型监控与生产环境维护，以下合理的做法包括哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "把监控范围限定在服务器 CPU 与 GPU 利用率等基础设施指标上，模型预测分布无需关注"
+   },
+   {
+    "i": 4,
+    "text": "模型通过离线评估上线后即视为长期有效，运维重心应转向新模型的开发迭代"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "o11y-collector-01",
+  "topic": "observability",
+  "question": "在微服务分布式链路追踪与可观测性（Observability）架构中，引入 OpenTelemetry Collector 作为中间件层，而不是让各微服务直接将 Trace、Log 和 Metric 写入后端存储（如 ElasticSearch、Jaeger 等），其核心工程考量包括：（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "OpenTelemetry Collector 能够自动修正由于微服务时钟不同步导致的 Trace Span 依赖关系颠倒问题，无需依靠 NTP 等时钟同步机制"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "obs-05",
+  "topic": "observability",
+  "question": "在 LLM 可观测性体系中，对全量 Trace 进行采样（Sampling）时，为什么需要采用“头采样（Head Sampling）+ 尾采样（Tail Sampling）”结合的策略，而非仅头采样？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "头采样已足够，尾采样会显著增加存储成本且无任何额外价值，纯属浪费资源"
+   },
+   {
+    "i": 2,
+    "text": "尾采样可完全替代头采样，因为它无需在入口做任何决定，入口零开销最优"
+   },
+   {
+    "i": 3,
+    "text": "采样策略对 LLM 可观测性无影响，应全量存储所有 Trace，全量即真理"
+   }
+  ]
+ },
+ {
+  "seq": 55,
+  "id": "obs-06",
+  "topic": "observability",
+  "question": "在 LLM 应用中，仅监控 Token 消耗与延迟等技术指标，是否足以评估业务质量？还需补充哪些质量维度的可观测性？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "仅监控 Token 与延迟已足够，质量可通过用户投诉被动发现，技术指标即业务质量"
+   },
+   {
+    "i": 3,
+    "text": "质量指标无需与技术指标关联，可独立监控互不影响，二者无需打通"
+   }
+  ]
+ },
+ {
+  "seq": 56,
+  "id": "oreilly-radar-2026-08-01",
+  "topic": "agent-fundamentals",
+  "question": "企业部署大量自主 Agent 后，哪些问题应成为每个非人类身份的最小治理记录？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "只记录模型名称和调用次数"
+   },
+   {
+    "i": 3,
+    "text": "只记录最终输出，不记录执行主体"
+   }
+  ]
+ },
+ {
+  "seq": 57,
+  "id": "oreilly-radar-2026-08-02",
+  "topic": "tool-security",
+  "question": "为什么 Agent 工具调用更适合使用短期、范围收窄且按意图评估的凭证，而不是长期 standing token？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "长期 token 更便于 Agent 自主扩展任务"
+   },
+   {
+    "i": 3,
+    "text": "只要 token 加密，生命周期和范围就不重要"
+   }
+  ]
+ },
+ {
+  "seq": 58,
+  "id": "oreilly-radar-2026-08-03",
+  "topic": "data-leakage",
+  "question": "一个 Agent skill 安装时通过安全扫描，但之后把外部链接重定向到另一份载荷。哪些治理改进最关键？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "安装扫描通过后永久信任所有后续内容"
+   },
+   {
+    "i": 3,
+    "text": "让 Agent 自己判断远程链接是否仍可信"
+   }
+  ]
+ },
+ {
+  "seq": 59,
+  "id": "oreilly-radar-2026-08-04",
+  "topic": "observability",
+  "question": "发现一个长期未使用但仍有完整访问权限的 Agent 身份时，调查中应确认哪些事项？（请选择两个）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "未使用就一定可以立即删除"
+   },
+   {
+    "i": 3,
+    "text": "忽略身份，因为没有近期调用就没有风险"
+   }
+  ]
+ }
+]

@@ -1,0 +1,878 @@
+[
+ {
+  "seq": 0,
+  "id": "sft-catastrophic-forget",
+  "topic": "sft",
+  "question": "在对大语言模型进行特定领域能力的二次监督微调时若仅使用新领域的专业数据集进行全量更新模型往往会在通用能力上发生灾难性遗忘。为了在强化 Agentic 编程能力的同时维持通用能力以下哪些工程做法是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "在 Phase 2 中将微调范围限制为仅更新 FFN 冻结所有 Attention 权重"
+   }
+  ]
+ },
+ {
+  "seq": 1,
+  "id": "rlvr-vs-genrm-rewards",
+  "topic": "rlhf",
+  "question": "在大模型的强化学习管线中通常会同时用到可验证奖励与基于生成式奖励模型的偏好奖励。关于这两种奖励信号在 RL 训练中的特性对比与工程设计以下哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "生成式 RM 的评价速度远快于规则验证器因此在 RL 训练的早期阶段应当优先使用生成式 RM 代替规则验证器"
+   }
+  ]
+ },
+ {
+  "seq": 2,
+  "id": "env-decoupled-rollout",
+  "topic": "distributed-training",
+  "question": "在训练涉及真实 Shell、Docker Sandbox 和 Web 浏览器的 Agentic RL 系统中为实现万卡规模下大规模并行 Rollout 与高效训练分布式系统架构通常需要满足哪些核心要求？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "强制生成 Worker 在每次工具调用后同步等待环境返回结果并阻塞训练器更新"
+   }
+  ]
+ },
+ {
+  "seq": 3,
+  "id": "sft-data-quality-control",
+  "topic": "training-data",
+  "question": "在准备大模型指令微调的高质量数据集时防止数据污染与噪声数据侵入是提升模型推理能力的关键。以下哪些质量控制手段已被验证能有效提升 Agentic 与 Reasoning 领域的 SFT 数据质量？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "剔除所有包含工具调用失败的轨迹样本仅保留单次尝试即成功的完美交互轨迹"
+   }
+  ]
+ },
+ {
+  "seq": 4,
+  "id": "pretrain-annealing-longctx",
+  "topic": "pretraining",
+  "question": "在预训练大模型并计划将上下文窗口扩展至超长范围时直接从头以 512K 序列长度训练的做法极其低效。目前主流且高效的退火与长上下文扩展策略是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "在预训练阶段仅使用 2K 序列训练在推理阶段完全依赖 Context Parallelism 和 RAG 检索拼凑长文本"
+   },
+   {
+    "i": 2,
+    "text": "从 Phase 1 开始使用 512K 序列但只在每层的 Attention 矩阵中随机丢弃 90% 的 Key-Value 节点以降低计算复杂度"
+   },
+   {
+    "i": 3,
+    "text": "仅在 SFT 阶段引入长文本数据完全不在预训练阶段进行长上下文扩展"
+   }
+  ]
+ },
+ {
+  "seq": 5,
+  "id": "dpo-likelihood-displacement",
+  "topic": "dpo",
+  "question": "DPO 容易出现似然下降现象——随着训练进行模型对偏好回答和非偏好回答的绝对对数概率同时下降甚至导致回答长度异常退化。针对该现象以下哪些分析或工程干预是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "完全移除参考模型将 DPO 彻底简化为单模型损失可以从根本上消除似然下降问题"
+   }
+  ]
+ },
+ {
+  "seq": 6,
+  "id": "ring-attention-context-parallel",
+  "topic": "distributed-training",
+  "question": "RingAttention 结合上下文并行实现了突破单卡显存限制的长文本训练。关于其工作原理与系统性能表现以下哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "随着参与 Context Parallelism 的 GPU 节点数增加 RingAttention 的通信开销呈二次方剧烈膨胀导致扩展性极差"
+   }
+  ]
+ },
+ {
+  "seq": 7,
+  "id": "prm-vs-orm-credit-assign",
+  "topic": "rlhf",
+  "question": "在复杂数学推导与代码生成的 CoT 强化学习中信用分配问题是影响收敛速度的核心瓶颈。关于 PRM 与 ORM 的比较及工程选型以下哪些说法是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "在真实工程实践中 PRM 完全免除了对终局正确性的校验只需每一步逻辑合理即可保证最终答案无误"
+   }
+  ]
+ },
+ {
+  "seq": 8,
+  "id": "pp-1f1b-bubble-calc",
+  "topic": "distributed-training",
+  "question": "某千亿参数模型采用流水线并行部署在 P=8 个 Stage 上采用标准 1F1B 调度 Micro-batch 数量 M=32。假设每个 Micro-batch 的前向与反向耗时相同忽略通信开销请计算流水线泡泡时间占比约为多少？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "8.3%"
+   },
+   {
+    "i": 2,
+    "text": "21.9%"
+   },
+   {
+    "i": 3,
+    "text": "33.3%"
+   }
+  ]
+ },
+ {
+  "seq": 9,
+  "id": "dpo-vs-ppo-compare",
+  "topic": "dpo",
+  "question": "在对大模型进行偏好对齐时相比基于 Actor-Critic 架构的 PPO 算法 DPO 省去了显式的 Critic/Reward 网络。关于 DPO 与 PPO 在架构稳定性与应用场景上的对比以下哪些说法是合理的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "DPO 极易受高噪声偏好数据干扰产生 Reward Hacking"
+   }
+  ]
+ },
+ {
+  "seq": 10,
+  "id": "envharness-vs-generation-01",
+  "topic": "rlhf",
+  "question": "在基于大语言模型（LLM）的 Agent 训练中，通过外部代码包装静态环境（Environment Harness）与直接通过 LLM 自动生成新代码/新任务（Environment Generation）是两种代表性的环境增强途径。关于这两种架构路线在工程落地中的设计取舍与核心优势，下列说法正确的有？",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "Harness 模式通过拦截 Agent 的动作输出，能够实时修改 Agent 的内部神经网络权重与 KV Cache，实现模型与环境的同步微调。"
+   },
+   {
+    "i": 3,
+    "text": "生成式环境管道虽然构建成本较高，但能够完全消除环境验证失败（False Positive/False Negative）的现象。"
+   }
+  ]
+ },
+ {
+  "seq": 11,
+  "id": "envharness-saturation-01",
+  "topic": "rlhf",
+  "question": "在对某个 LLM Agent 进行强化学习（RL）微调时，监测到 Agent 在当前基准环境中达到了 100% 的成功率，导致梯度更新幅度趋近于零，策略优化进入停滞期（性能饱和）。在基于 EnvRigger 的自适应环境演进体系中，诊断模块应采取的正确调控策略是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "诊断策略已完整掌握该静态环境所能暴露的全部技能，直接终止本轮 RL 微调流程，将学习率永久置零以固化策略，并判定无需再采集任何新轨迹。"
+   },
+   {
+    "i": 2,
+    "text": "诊断原有环境的验证器（Verifier）存在严重误判，强制改用 LLM 重新生成一整套全新的验证逻辑，以完全替换底层原有的判定代码。"
+   },
+   {
+    "i": 3,
+    "text": "诊断动作空间维度过高导致探索效率低下，通过 Chain 组件将原本的多回合长程任务强行压缩为单回合的简化任务，以降低策略的搜索难度。"
+   }
+  ]
+ },
+ {
+  "seq": 12,
+  "id": "envharness-reward-integrity-01",
+  "topic": "rlhf",
+  "question": "在 LLM Agent 的强化学习（RL）训练中，相比于使用纯生成式环境（Fully-generated Environments），采用 EnvHarness 包装演进环境对于 RL 优化过程最重要的系统级保障是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "使 Agent 无需执行任何环境交互步骤（Zero-rollout）即可解析式地直接计算策略梯度，从而省去全部轨迹采样开销。"
+   },
+   {
+    "i": 2,
+    "text": "彻底消除 RL 训练过程中的 Reward 波动，保证策略评估曲线在训练全程呈现严格、稳定的单调递增趋势。"
+   },
+   {
+    "i": 3,
+    "text": "将底层环境的非确定性状态转移强制改写为确定性的单步映射，从而显著降低反复采样带来的算力与时间消耗。"
+   }
+  ]
+ },
+ {
+  "seq": 13,
+  "id": "ai-flashattn-001",
+  "topic": "flash-attention",
+  "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在保持 Attention 数学等价（公式语义不变；浮点求值顺序变化，不保证逐比特一致）的同时提升性能？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "它通过对注意力矩阵做低秩近似（例如对 Q、K、V 投影矩阵做 SVD 截断）来削减浮点计算量，代价是带来精度损失与下游任务表现下降，且无法保证训练时的梯度稳定"
+   },
+   {
+    "i": 2,
+    "text": "它通过剪枝不重要的 token 来缩短有效上下文长度，牺牲部分长序列信息以换取更快的计算速度与更低的内存占用，但对关键依赖的识别并不稳定"
+   },
+   {
+    "i": 3,
+    "text": "它把 softmax 替换为线性注意力形式（如 kernel 近似），取消了归一化步骤从而节省显存占用，但这也从根本上改变了注意力的数学定义并可能损害长程建模能力"
+   }
+  ]
+ },
+ {
+  "seq": 14,
+  "id": "ai-fund-001",
+  "topic": "transformer",
+  "question": "为什么 Transformer 相比 RNN 更适合大规模训练？请从计算并行性和长距离依赖两个角度解释。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "RNN 通过门控机制天然支持整段并行计算，而 Transformer 必须按时间步串行处理序列"
+   },
+   {
+    "i": 1,
+    "text": "Transformer 的优势主要来自更大的参数量，与计算方式和依赖建模路径无关"
+   },
+   {
+    "i": 3,
+    "text": "Attention 的依赖路径长度为 O(n)，长距离依赖仍需像 RNN 一样逐步传播才能建立"
+   }
+  ]
+ },
+ {
+  "seq": 15,
+  "id": "ai-fund-002",
+  "topic": "self-attention",
+  "question": "请解释 Self-Attention 中 Query、Key、Value 分别代表什么，以及 Attention 最终是如何计算出来的。",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "Q、K、V 是同一个输入矩阵的简单三份复制，attention 直接对原始输入序列做等价加权平均，完全跳过了任何独立的投影与归一化计算步骤"
+   },
+   {
+    "i": 2,
+    "text": "Q 与 V 的点积经 sigmoid 归一化得到权重，再用该权重对 K 加权求和，且全程不引入任何缩放因子以保持数值简单"
+   },
+   {
+    "i": 3,
+    "text": "Q 与 K 计算相似度后不做任何缩放直接取最大值索引，输出为对应的 V 向量，认为这样能够避免 softmax 带来的计算开销"
+   }
+  ]
+ },
+ {
+  "seq": 16,
+  "id": "ai-fund-003",
+  "topic": "attention",
+  "question": "Scaled Dot-Product Attention 中为什么要除以 sqrt(d_k)？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "减少 KV Cache 的内存占用，因为除以 sqrt(d_k) 之后序列中可缓存的键值向量数量会随维度显著下降"
+   },
+   {
+    "i": 2,
+    "text": "降低 Transformer 的参数量，因为缩放因子 sqrt(d_k) 的引入会改变投影矩阵的维度配置从而减少可学习参数"
+   },
+   {
+    "i": 3,
+    "text": "让 Attention 可以原生支持更长的 Context，因为缩放后模型能够处理远超训练长度的输入序列而不溢出"
+   }
+  ]
+ },
+ {
+  "seq": 17,
+  "id": "ai-fund-004",
+  "topic": "self-attention",
+  "question": "Multi-Head Attention 为什么需要多个 Head？单个 Attention 不够吗？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "多头通过把总参数量增加数倍来换取表达能力，计算成本随 Head 数成比例上升"
+   },
+   {
+    "i": 2,
+    "text": "每个 Head 负责处理序列中互不重叠的一段，各段输出拼接后构成完整表示"
+   },
+   {
+    "i": 3,
+    "text": "多头机制的作用是抑制过拟合，Head 数量越多模型的泛化能力单调提升"
+   }
+  ]
+ },
+ {
+  "seq": 18,
+  "id": "ai-fund-005",
+  "topic": "transformer",
+  "question": "Transformer 为什么需要 Position Encoding？常见的位置信息注入方式有哪些？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Attention 通过因果掩码自动感知词序，因此不需要任何额外的位置信息，注意力权重本身已经隐含了每个 token 的先后顺序"
+   },
+   {
+    "i": 1,
+    "text": "位置信息由前馈网络层隐式提供，位置编码只是锦上添花的可选优化，去掉它并不会影响模型对语序的理解"
+   },
+   {
+    "i": 2,
+    "text": "词嵌入本身就携带顺序信息，打乱输入顺序不会改变 attention 的输出结果，因为嵌入向量已编码了 token 的绝对位置"
+   }
+  ]
+ },
+ {
+  "seq": 19,
+  "id": "ai-transformer-003",
+  "topic": "attention",
+  "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "说明注意力公式在长序列下存在数学错误，应把 scaled dot-product attention 替换为普通点积"
+   },
+   {
+    "i": 3,
+    "text": "主要原因是预训练语料总量不够，把训练数据翻倍后长文本效果就会自动追平短文本"
+   }
+  ]
+ },
+ {
+  "seq": 20,
+  "id": "ai-xattn-001",
+  "topic": "attention",
+  "question": "Self-Attention 和 Cross-Attention 有什么区别？为什么 Encoder-Decoder 模型需要 Cross-Attention？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Self-Attention 与 Cross-Attention 的 Q/K/V 来源完全相同，两者的区别仅仅在于注意力头的数量设置不同，更多头就能自然实现跨序列信息读取"
+   },
+   {
+    "i": 1,
+    "text": "Cross-Attention 的 Q/K/V 同样来自同一个输入序列，其主要目的是增强 encoder 内部的表征交互深度，从而让同一序列内的 token 更加充分地互相融合"
+   },
+   {
+    "i": 2,
+    "text": "Encoder-Decoder 模型其实并不需要 Cross-Attention，信息传递完全靠把 encoder 的输出拼接进 decoder 的输入来完成，引入 Cross-Attention 只是冗余设计"
+   }
+  ]
+ },
+ {
+  "seq": 21,
+  "id": "dl-04",
+  "topic": "self-attention",
+  "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "以 Q、K 的逐元素相乘衡量相关性，结果不经任何归一化直接作为权重对 V 加权求和"
+   },
+   {
+    "i": 2,
+    "text": "先对 V 做 softmax 归一化得到分布，再用它对 Q、K 加权，且必须沿时间步顺序串行计算"
+   },
+   {
+    "i": 3,
+    "text": "用 Q 与 K 之间的余弦相似度构造权重矩阵，sqrt(d_k) 的作用是把序列长度归一到 0 到 1 之间"
+   }
+  ]
+ },
+ {
+  "seq": 22,
+  "id": "llm-11",
+  "topic": "attention",
+  "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "实现时应把 QKᵀ 除以序列长度 n 而非 sqrt(d_k)，softmax 可直接对 exp 结果归一化、无需减最大值"
+   },
+   {
+    "i": 1,
+    "text": "实现时应先对 V 做指数归一化，再把 softmax 权重施加到 QKᵀ 上，缩放因子取 log(d_k)"
+   },
+   {
+    "i": 3,
+    "text": "实现时应省略缩放步骤直接 softmax(QKᵀ)，并用减去最小值的方式保证数值稳定"
+   }
+  ]
+ },
+ {
+  "seq": 23,
+  "id": "transformer-ln-01",
+  "topic": "transformer",
+  "question": "在 Standard Transformer 架构中，Layer Normalization（LN）可以放置在 Residual Block 内的子模块入口处（Pre-LN），也可以放置在加法残差连接之后（Post-LN）。关于两种 LN 放置方式在训练稳定性、梯度传播及模型表达能力方面的工程 Trade-off，下列哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Pre-LN 与 Post-LN 在推理（Inference）阶段的计算复杂度完全不同，Pre-LN 会在时间复杂度上额外引入二次方 O(N²) 的开销"
+   }
+  ]
+ },
+ {
+  "seq": 24,
+  "id": "transformer-perm-01",
+  "topic": "self-attention",
+  "question": "假定输入序列由 N 个 Token 向量组成，表示为矩阵 X ∈ R^{N×d}。在不添加任何位置编码的前提下，将 X 经过任意置换矩阵 P（正交置换矩阵）变为 X' = PX。设 Standard Scaled Dot-Product Self-Attention 为 softmax(QKᵀ/√d_k)V，其中 Q=XW_Q, K=XW_K, V=XW_V。下列关于变换后输出的说法，正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "输出完全保持不变，即 Attention(X') = Attention(X)"
+   },
+   {
+    "i": 2,
+    "text": "输出的 Softmax 注意力权重矩阵保持不变，但值向量 V 的顺序被打乱"
+   },
+   {
+    "i": 3,
+    "text": "由于 QKᵀ 包含转置操作，置换矩阵 P 无法被抵消，导致输出变为完全无规律的随机数值"
+   }
+  ]
+ },
+ {
+  "seq": 25,
+  "id": "mha-complexity-01",
+  "topic": "self-attention",
+  "question": "在标准 Multi-Head Self-Attention（MHA）中，假设输入序列长度为 N，隐层维度为 d_model，头数为 h，每个头的维度 d_k = d_model/h。针对单层 MHA 的计算量与中间激活显存开销，下列分析正确的有？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "当 N≫d_model 时，整体瓶颈主要由投影矩阵的参数量决定而非序列长度的二次方项"
+   }
+  ]
+ },
+ {
+  "seq": 26,
+  "id": "mask-debug-01",
+  "topic": "self-attention",
+  "question": "在手动实现 Causal Self-Attention 时，某工程师将被 Mask 的位置填充为 0.0（scores.masked_fill(mask, 0.0)），测试发现注意力分布完全没有起到遮掩未来 Token 的作用。请分析根本原因：",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "masked_fill 中填入的数值应为 0.0 是正确的做法，只是 Softmax 维度设错成了 dim=-1，应改为 dim=-2 就可以正确屏蔽未来 token"
+   },
+   {
+    "i": 2,
+    "text": "torch.triu(..., diagonal=1) 生成的是下三角矩阵，导致遮挡方向完全颠倒，变成了遮挡历史 Token 而保留未来 Token，与因果掩码意图相反"
+   },
+   {
+    "i": 3,
+    "text": "Q 和 K 乘积前没有对 K 进行转置，导致矩阵维度不匹配并引发隐式广播错误，使得注意力分数矩阵的形状与预期不一致"
+   }
+  ]
+ },
+ {
+  "seq": 27,
+  "id": "seq2seq-arch-01",
+  "topic": "transformer",
+  "question": "在设计一个低延迟、高吞吐的工业级多语言实时翻译系统时，需要在经典 Transformer Encoder-Decoder 与 Decoder-Only 架构之间做技术选型。关于两者的对比与选型考量，下列分析最科学的是？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "Decoder-Only 架构在翻译时必须将源语言与目标语言拼接为单个序列统一输入模型，因此完全无法使用 KV Cache 优化，其推理延迟远高于同等规模的 Encoder-Decoder 架构"
+   },
+   {
+    "i": 2,
+    "text": "Encoder-Decoder 由于引入了 Cross-Attention 模块，导致其无法在 GPU 上利用张量并行进行多卡拆分与加速，因此工程上更难做横向扩展并会拖慢整体训练吞吐"
+   },
+   {
+    "i": 3,
+    "text": "在任何 Seq2Seq 场景下，Decoder-Only 的推理吞吐量均严格达到 Encoder-Decoder 的 10 倍以上，因为省去了独立编码器带来的固定计算与显存开销，性能优势绝对成立"
+   }
+  ]
+ },
+ {
+  "seq": 28,
+  "id": "transformer-comparison-01",
+  "topic": "transformer",
+  "question": "在序列建模中，评价神经网络层级结构效率的三个关键指标为：每层总计算复杂度、可并行化的最小顺序操作数、以及信号传播的最长路径长度。设序列长度为 n，特征维度为 d，卷积核尺寸为 k。下列关于 Self-Attention 与 Recurrent、Convolutional 对比的说法中，正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "当序列长度 n 远大于特征维度 d（即 n > d）时，Self-Attention 的每层计算复杂度低于 Recurrent 层"
+   },
+   {
+    "i": 3,
+    "text": "单层受限卷积层（Restricted Convolutional Layer，卷积核大小 k < n）的最长路径长度为 O(log_k n)"
+   }
+  ]
+ },
+ {
+  "seq": 29,
+  "id": "mha-heads-01",
+  "topic": "attention",
+  "question": "Transformer 采用多头注意力机制将 Q/K/V 分别通过 h 组线性投影映射到低维子空间后并行计算注意力。设 d_k = d_v = d_model/h。关于 MHA 的设计取舍与机制，下列哪些说法是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "增加 Head 数量 h 可以无限制地提升模型表征能力，工程实践中 h 越大会线性提高 GPU 的计算利用率"
+   }
+  ]
+ },
+ {
+  "seq": 30,
+  "id": "causal-mask-01",
+  "topic": "self-attention",
+  "question": "在自回归语言模型的 Batch 训练过程中，虽然所有 Token 是并行送入计算的，但必须使用因果掩码保证预测第 t 个 Token 时不能'偷看'未来。以下关于因果掩码的实施细节说法正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "实施因果掩码时应在 Softmax 函数计算输出之后将矩阵中右上角的概率值强制重置为 0，这样就能保证未来 token 的注意力权重归零"
+   },
+   {
+    "i": 2,
+    "text": "如果在 Decoder 训练时忘记加因果掩码，模型依然可以正常训练收敛，且自回归推理阶段的单步生成性能也不会受到任何影响"
+   },
+   {
+    "i": 3,
+    "text": "因果掩码的作用仅仅是限制梯度反向传播所经过的路径，它并不会影响前向传播时注意力权重的具体分布结果"
+   }
+  ]
+ },
+ {
+  "seq": 31,
+  "id": "long-context-attn-01",
+  "topic": "self-attention",
+  "question": "将 Standard Full Self-Attention 应用于超长文本处理（如 N=128,000）时需要评估资源瓶颈。设 N 为序列长度，D 为隐藏维度（D≪N），Batch Size=1，不使用 KV Cache。下列关于资源消耗的计算与判断哪些是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "由于 QK^T 的瓶颈主要源自序列长度 N，在 N≫D 的场景下 Feed-Forward Network 层的显存占用会显著超过 Self-Attention 层"
+   }
+  ]
+ },
+ {
+  "seq": 32,
+  "id": "pe-perm-equivariance",
+  "topic": "self-attention",
+  "question": "在标准 Self-Attention 中，若不对输入 Token 序列叠加位置编码，将输入的 Token 序列顺序随机打乱后再送入该模块，其输出会发生怎样的变化？",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "乱序输入会使注意力权重趋向均匀，输出退化为平均池化；崩溃是渐进的而非随机的，平均即失效。"
+   },
+   {
+    "i": 2,
+    "text": "输出结果完全失效，各个向量数值随机变化且不再保留任何语义关联，这说明 Self-Attention 在面对乱序输入时会彻底崩溃"
+   },
+   {
+    "i": 3,
+    "text": "Attention 权重矩阵退化为单位矩阵（Identity Matrix），意味着每个 token 只能看到自己而完全无法与上下文交互"
+   }
+  ]
+ },
+ {
+  "seq": 33,
+  "id": "scale-factor-debug",
+  "topic": "self-attention",
+  "question": "在计算 Self-Attention 权重时通常会将 QKᵀ 除以 √d_k。当 d_k 很大时若遗漏了该缩放因子，会导致模型训练出现哪些典型问题？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "导致 Attention 机制失去并行计算能力，反向传播必须退化为逐字串行求解"
+   }
+  ]
+ },
+ {
+  "seq": 34,
+  "id": "mha-subspace-tradeoff",
+  "topic": "attention",
+  "question": "Transformer 将 d_model 维向量投影到 h 个子空间分别计算 Attention 再拼接。相比于直接在原维度上计算单头 Attention，MHA 的主要优势与工程特性包括哪些？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "由于拆分为多个 Head，反向传播时不同 Head 的中间状态显存占用成倍降低"
+   },
+   {
+    "i": 3,
+    "text": "拆分为 h 个 Head 能成倍降低模型前向传播所需的总浮点计算量"
+   }
+  ]
+ },
+ {
+  "seq": 35,
+  "id": "attn-complexity-core",
+  "topic": "self-attention",
+  "question": "假设一个标准 Transformer Encoder 层的输入序列长度为 N，隐藏层维度为 D。在计算 Self-Attention 矩阵（即 QKᵀ 以及对 V 加权）时，其时间复杂度和主要注意力矩阵的显存空间复杂度随序列长度 N 的增长关系分别是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "时间复杂度 O(N · D²)，空间复杂度 O(N)"
+   },
+   {
+    "i": 2,
+    "text": "时间复杂度 O(N² · D²)，空间复杂度 O(N² · D)"
+   },
+   {
+    "i": 3,
+    "text": "时间复杂度 O(N · D)，空间复杂度 O(N · D)"
+   }
+  ]
+ },
+ {
+  "seq": 36,
+  "id": "mask-parallel-training",
+  "topic": "self-attention",
+  "question": "在 Transformer Decoder 的 Self-Attention 层中，训练阶段必须引入因果掩码（Causal Mask）。关于该机制的工作原理及其工程作用，下列说法正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "该因果掩码的主要目的是屏蔽 Padding Token，以保证 Batch 内不同长度序列的计算对齐"
+   }
+  ]
+ },
+ {
+  "seq": 37,
+  "id": "rnn-vs-tf-compare",
+  "topic": "transformer",
+  "question": "相较于传统的循环神经网络（RNN/LSTM），Transformer 架构在大规模序列建模中展现出显著优势。以下关于两者在训练计算与梯度传播差异上的表述，正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "自回归推理速度：在推理生成阶段，Transformer 生成单字的时间复杂度天然低于 RNN，无需维护历史状态"
+   },
+   {
+    "i": 3,
+    "text": "长序列显存开销：Transformer 在处理超长序列时的内存开销随序列长度线性增加，比 RNN 的显存占用更小"
+   }
+  ]
+ },
+ {
+  "seq": 38,
+  "id": "sdpa-scaling-mech",
+  "topic": "self-attention",
+  "question": "在自注意力计算中缩放因子 1/√d_k 具有关键作用。假设 q 和 k 的各分量独立同分布且均值为 0、方差为 1。下列关于该缩放因子的分析，正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "引入缩放因子的主要目的是为了降低矩阵乘法 QKᵀ 的浮点计算复杂度，从而让大维度下的注意力计算在同等算力预算下跑得更快，并显著减少显存峰值占用"
+   }
+  ]
+ },
+ {
+  "seq": 39,
+  "id": "mha-vram-tradeoff",
+  "topic": "attention",
+  "question": "标准 Transformer 将 d_model 拆分为 h 个头并行计算注意力后拼接。相比于仅使用单头注意力，多头机制的优势与工程取舍包括哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "多头注意力机制成功消除了自注意力计算中对序列长度 N 的二次方空间与时间复杂度依赖"
+   }
+  ]
+ },
+ {
+  "seq": 40,
+  "id": "attn-vs-rnn-complexity",
+  "topic": "transformer",
+  "question": "将标准 Self-Attention 层与循环神经网络（RNN）隐藏层进行比较，下列关于计算复杂度与并行计算能力的描述正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Self-Attention 的单层总计算复杂度为 O(N · d²)，顺序计算步骤数为 O(1)"
+   },
+   {
+    "i": 2,
+    "text": "RNN 的单层总计算复杂度为 O(N² · d)，顺序计算步骤数为 O(N)"
+   },
+   {
+    "i": 3,
+    "text": "RNN 的单层总计算复杂度为 O(N · d²)，顺序计算步骤数为 O(1)"
+   }
+  ]
+ },
+ {
+  "seq": 41,
+  "id": "causal-mask-cross-attn",
+  "topic": "self-attention",
+  "question": "在 Transformer Decoder 的自注意力层中使用因果掩码保持自回归特性。关于该机制的运行逻辑与工程处理方式包括哪些？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "该掩码机制使得 Decoder 在训练阶段必须退化为逐 Token 的串行计算无法进行全序列并行训练"
+   }
+  ]
+ },
+ {
+  "seq": 42,
+  "id": "preln-vs-postln-compare",
+  "topic": "transformer",
+  "question": "Transformer 中 LN 放置位置有两种主流设计。关于 Post-LN 与 Pre-LN 的对比与工程 Trade-off下列说法正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "Pre-LN 架构在不使用 Warmup 的情况下性能较差且在充分调优后其极限泛化性能通常显著高于 Post-LN"
+   }
+  ]
+ },
+ {
+  "seq": 43,
+  "id": "embed-scaling-share",
+  "topic": "transformer",
+  "question": "Transformer 中源语言 Embedding、目标语言 Embedding 以及 Pre-Softmax 线性投影层共享相同权重矩阵，且 Embedding 向量会乘以 √d_model。关于该设计的理解正确的有哪些？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "乘以 √d_model 是为了将词嵌入向量的方差压缩至 0 以加快 LayerNorm 的收敛速度"
+   }
+  ]
+ },
+ {
+  "seq": 44,
+  "id": "sdpa-omit-scaling",
+  "topic": "self-attention",
+  "question": "在实现大隐层维度 Self-Attention 时误删除了缩放因子 √d_k，模型训练过程中最可能出现哪些异常现象？（多选）",
+  "distractors": [
+   {
+    "i": 2,
+    "text": "Softmax 后的概率分布趋于均匀分布导致模型无法有效聚焦到关键 token"
+   },
+   {
+    "i": 3,
+    "text": "矩阵乘法 QKᵀ 与 V 的维度不匹配前向传播直接抛出 RuntimeError"
+   }
+  ]
+ },
+ {
+  "seq": 45,
+  "id": "mha-param-calc",
+  "topic": "attention",
+  "question": "假设模型输入维度 d_model=512。方案一采用 h=8 的多头注意力每头 d_k=64；方案二采用单头注意力 d_k=512。关于两种方案在线性投影矩阵的参数量与计算复杂度对比下列说法正确的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "方案一的投影参数总量和总 FLOPs 是方案二的 8 倍"
+   },
+   {
+    "i": 2,
+    "text": "方案一参数量是方案二的 8 倍但由于多头可并行计算计算复杂度降为 1/8"
+   },
+   {
+    "i": 3,
+    "text": "方案一省去了输出投影矩阵 W^O 因此参数量少于方案二"
+   }
+  ]
+ },
+ {
+  "seq": 46,
+  "id": "mask-remove-debug",
+  "topic": "self-attention",
+  "question": "在开发基于 Encoder-Decoder 的序列生成模型时不慎移除了 Decoder 内部 Masked Self-Attention 中的上三角掩码矩阵。在 Teacher Forcing 训练及自回归推理阶段模型会表现出哪些现象？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "训练阶段前向传播会因为注意力矩阵掩码缺失而触发张量形状不匹配的错误"
+   },
+   {
+    "i": 3,
+    "text": "推理阶段模型能够突破单步串行限制实现多 token 的并行生成"
+   }
+  ]
+ },
+ {
+  "seq": 47,
+  "id": "crossattn-qkv-flow",
+  "topic": "attention",
+  "question": "在标准 Encoder-Decoder Transformer 中 Decoder 的 Cross-Attention 层负责建立目标序列与源序列的联系。在该层中 Q/K/V 向量的来源关系是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "Q 来自 Encoder 顶层的输出 K 和 V 来自 Decoder 前一层的输出"
+   },
+   {
+    "i": 2,
+    "text": "Q/K/V 均来自 Encoder 顶层的输出 Decoder 仅负责线性变化"
+   },
+   {
+    "i": 3,
+    "text": "Q 和 K 来自 Decoder 前一层的输出 V 来自 Encoder 顶层的输出"
+   }
+  ]
+ },
+ {
+  "seq": 48,
+  "id": "rnn-to-tf-migration",
+  "topic": "transformer",
+  "question": "在评估将传统 RNN 替换为 Transformer 架构的工程方案时针对训练与推理场景的性能特征下列结论正确的是？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "移除 Recurrence 结构后 Transformer Decoder 在推理生成阶段的延迟和吞吐量表现天然优于 Encoder-only 模型"
+   }
+  ]
+ },
+ {
+  "seq": 49,
+  "id": "attn-vs-seq-models",
+  "topic": "transformer",
+  "question": "在处理长序列建模任务时 Self-Attention 相比传统 RNN 和 CNN 具备显著优势。下列关于三种架构在序列依赖建模和计算并行性上的对比哪些描述是正确的？（多选）",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "当序列长度 N 远大于隐藏层维度 d 时 Self-Attention 单层的计算复杂度显著低于 RNN 单层复杂度"
+   }
+  ]
+ },
+ {
+  "seq": 50,
+  "id": "enc-vs-dec-scenario",
+  "topic": "transformer",
+  "question": "Transformer 架构派生出了以 BERT 为代表的双向编码器和以 GPT 为代表的因果自回归解码器。在工业级 NLP 系统选型中哪些场景应该优先选择双向编码器架构其核心机制原因是什么？（多选）",
+  "distractors": [
+   {
+    "i": 1,
+    "text": "开放式对话生成因为双向注意力能够有效预防生成内容产生逻辑幻觉"
+   },
+   {
+    "i": 3,
+    "text": "低延迟流式文本生成因为双向编码器无需维护 KV Cache 单 Token 推理速度最快"
+   }
+  ]
+ },
+ {
+  "seq": 51,
+  "id": "flash-attn-io-mechanism",
+  "topic": "flash-attention",
+  "question": "传统 Attention 计算在 GPU 上受限于高昂的 HBM 读写开销。FlashAttention 通过分块载入 SRAM 并结合 Online Softmax 大幅提升效率。关于 FlashAttention 能将 HBM 访存从 O(N²) 降至 O(N) 的核心机制以下说法**错误**的是？",
+  "distractors": [
+   {
+    "i": 0,
+    "text": "在 SRAM 中分块计算局部点积并利用 Online Softmax 动态更新归一化系数避免了将 N×N 中间矩阵写入 HBM"
+   },
+   {
+    "i": 1,
+    "text": "反向传播时不保存 N×N 注意力权重矩阵而是利用全局归一化因子 LSE 在 SRAM 中快速重新计算"
+   },
+   {
+    "i": 3,
+    "text": "FlashAttention 调整了计算图的访存顺序融合了 Matmul、Scale、Mask 和 Softmax 算子避免了频繁的全局显存写回"
+   }
+  ]
+ },
+ {
+  "seq": 52,
+  "id": "vit_inductive_bias_vs_cnn_canonical",
+  "topic": "vit-inductive-bias-vs-cnn",
+  "question": "与传统卷积神经网络（CNN）相比，Vision Transformer（ViT）在归纳偏置（Inductive Bias）结构设计以及数据规模依赖性方面展现出显著差异。关于两者的对比与作用机制，以下哪些判断是正确的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "ViT 由于完全放弃了卷积运算，因此无法学习到类似于传统 CNN 底层所具有的边缘、纹理等局部几何特征。"
+   }
+  ]
+ },
+ {
+  "seq": 53,
+  "id": "vit_patch_embedding_sequence_length_canonical",
+  "topic": "vit-patch-embedding-sequence-length",
+  "question": "假设输入图像的分辨率为 H x W = 224 x 224，通道数为 C = 3，Transformer 隐层嵌入维度为 D = 768。模型将图像划分成 P x P 的非重叠 Patch 并通过线性映射得到 Patch Embedding。关于 Patch 映射过程以及将 Patch 尺寸从 P = 16 缩小为 P = 8 带来的影响，以下哪些判断是正确的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "当 P 从 16 缩小为 8 时，线性投影层（Patch Embedding Layer）本身的映射矩阵参数量将随着 Patch 内像素数的减小而同步缩减为原来的 1/4。"
+   }
+  ]
+ },
+ {
+  "seq": 54,
+  "id": "vit_cls_token_representation_canonical",
+  "topic": "vit-cls-token-representation",
+  "question": "ViT 借鉴了 NLP 中 BERT 的设计，在输入的图像 Patch Embedding 序列开头拼接了一个可学习的分类 Token（[CLS] Token）。关于 [CLS] Token 的作用机制与设计逻辑，以下哪些判断是正确的？",
+  "distractors": [
+   {
+    "i": 3,
+    "text": "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
+   }
+  ]
+ }
+]
