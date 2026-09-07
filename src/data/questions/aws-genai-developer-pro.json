@@ -33,7 +33,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- Step Functions 托管顺序编排 + 任务级 Retry/Catch，故障精准恢复/兜底。\n- A/C 自定义 Lambda 编排更重；D 未对智能体分别做任务级错误处理。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「D 只编排一个 Lambda，未对 3 个智能体分别做任务级错误处理」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Step Functions 状态机」成立；并排除「在每个智能体后放一个 API Gateway RES…」「为每个智能体配置独立的重试/兜底」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-02",
@@ -72,7 +77,12 @@
       "open": {
         "referenceAnswer": "正确答案：C、D。\n- Guardrails block 策略从源头拦截被禁主题/PII；StackSets 集中部署。\n- SCP 拒绝未带 guardrail 标识符的调用；权限边界限制只用获批模型。\n- A 权限边界无法强制指定标识符；B SCP 无此语义；E mask 仅脱敏不拦截。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「SCP 可显式拒绝未带必需 guardrail 标识符的调用，权限边界限制员工角色只能用获批模型」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「建 SCP：未指定集中部署的 guardrail 标…」「用 CloudFormation 建带 block（…」等 2 项成立；并排除「为每个员工 IAM 角色建权限边界」「建 SCP 只允许用获批模型」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-03",
@@ -109,7 +119,12 @@
       "open": {
         "referenceAnswer": "合格的开放作答须包含三点：①数据源集中注册与归因标签（Glue Data Catalog）；②跨服务审计轨迹（CloudTrail）；③说明 A 偏访问管控、B/C 审计不全面的原因。缺溯源闭环或只谈访问控制即不完整。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「A 的 Lake Formation 侧重访问管控而非归因标签」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Glue Data Catalog 注册所有数据…」成立；并排除「用 Lake Formation 编目并管控访问」「用 Glue Data Catalog 注册并打标签」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-genai-developer-pro-04",
@@ -146,7 +161,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- 自适应重试=指数退避+抖动+熔断+动态限流，契合“适应可用性”。\n- 流式处理器缓冲并续传。C 固定标准模式且不返陈旧补全；A/D 非自适应无抖动。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「C 固定为“标准”模式，不会按可用性自适应，且“失败返回缓存补全”会给出陈旧/错误数据」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「自适应重试：指数退避+抖动」成立；并排除「标准重试：固定 1 秒间隔、最多 3 次」「用 SDK 标准模式重试」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-05",
@@ -183,7 +203,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- 分层切分：小子块检索、父块喂 FM，保持每次推理在窗内且上下文完整。\n- C 语义切分不支持缓冲 3 句；A 拼到 200k 仍可能超窗；D 等长切切断语义。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「A 把多个分片拼到 200k 仍可能超窗口且应用层逻辑脆弱」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「分层切分：父块 8」成立；并排除「固定 4」「语义切分：断点百分位 95%、缓冲 3 句」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-06",
@@ -219,7 +244,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- 智能提示路由托管、按需质量-成本自动选模型，零自建。\n- A 自建路由；C 单模型难兼顾；D 关键词路由脆弱。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能在「最低实现成本 + 按复杂度自动路由」的约束下选出托管路由方案，而不是自建分类链路",
+      "reasoningGoal": "先确定约束是同时压低实现成本与延迟、且要按复杂度自动分流；再据此确认托管智能提示路由无需自建分类器与路由基础设施即可逐条预测并动态分发；并排除自建小模型分类加 Lambda 路由（工程量大）、单中等模型兼顾（无法兼顾成本与强推理）、关键词规则路由（脆弱且运维重）。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-07",
@@ -256,7 +286,12 @@
       "open": {
         "referenceAnswer": "合格的开放作答须包含三点：①传输选受支持的网络方案（Streamable HTTP）；②代理层（API Gateway）+ OAuth 鉴权（Cognito）；③说明 STDIO 仅进程内、凭据放环境变量不安全的原因。只答“用 Lambda 托管”不给鉴权方案即不完整。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「API Gateway HTTP API 可代理到 Lambda 托管的 MCP 服务器，Cognito 的 OAuth 做令牌校验，在请求到达服务器前限制为授权用户」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Lambda 托管 MCP 服务器」成立；并排除「用 Lambda 托管 MCP 服务器」「用 Lambda 托管 MCP 服务器」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-08",
@@ -293,7 +328,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\n- Step Functions 编排托管服务（Comprehend 去 PII + Bedrock 嵌入）+ OpenSearch Serverless，无服务器最省运维。\n- A Lambda 受限；B/C 需运维集群。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B/C 需运维 EMR/SageMaker 集群，开销更大」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Step Functions 编排：Compre…」成立；并排除「用 Lambda + Comprehend 并行处理…」「Glue ETL 跑 PII 检测脚本」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-09",
@@ -332,7 +372,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、B。\n- RAG 锚定源内容 + Bedrock KB 自动化带引用；CoT 事实核验做提示层检查。\n- C 模式拦截不建立事实落地；D 增随机性；E 保留易幻觉设计。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「显式 CoT 事实核验在提示层增加“摘要是否被证据支持”的检查」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「在提示中加 CoT 指令」「用 RAG + Bedrock 知识库把摘要锚定到源…」等 2 项成立；并排除「配置 Bedrock guardrails 拦截任何…」「提高 Bedrock 的 temperature 参…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-10",
@@ -370,12 +415,22 @@
         "answer": [
           3
         ],
-        "misconceptionMap": [0, 1, 2, null]
+        "misconceptionMap": [
+          0,
+          1,
+          2,
+          null
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：D。\n- Bedrock 自动评估作业 + 同义多语言数据集 + 相似度/幻觉阈值 + CI/CD 阻断，构成自动门禁。\n- A/B/C 为人工/周期审计，不满足自动阻断与并发 15k。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「“同义多语言”对话使跨语言不一致可量化，相似度/幻觉阈值提供客观发布准则」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用含义相同的标准化多语言测试对话」成立；并排除「建分布式流量模拟框架」「多区域部署 + Route 53 延迟路由 + Gl…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-11",
@@ -411,7 +466,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- 业务指标发布为 CloudWatch 自定义指标，复合告警组合技术+业务并 SNS 通知。\n- B 自动修复超出需求；C 链路更重；D 异常检测可行但不如 A 直接组合两类。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「D 的异常检测复合告警也可行但不如 A 直接“组合两类数据并 SNS”」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「建 CloudWatch 仪表盘同时展示技术与导入的…」成立；并排除「用 Amazon Managed Grafana 可…」「把 CloudWatch 指标经指标流送到 S3」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-12",
@@ -448,7 +508,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- GraphRAG + Neptune 托管图 RAG，自动多跳遍历，免自运维。\n- B/C/D 都要自运维计算/查询层，开销大且难达 3 秒。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B/C/D 都要自运维计算/查询层，开销更大且难达 3 秒多跳」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Bedrock Knowledge Bases …」成立；并排除「用 Bedrock Knowledge Bases …」「用 OpenSearch Serverless 向量…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-13",
@@ -484,7 +549,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- 地理跨区域推理配置文件在 EU/US 内自动路由，满足数据驻留且免自建故障转移。\n- 推理配置文件不支持 Provisioned Throughput（D 错）；A/C 自建路由更重。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「独立区域 API 端点把各人群导向对应地理配置文件」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「调用 InvokeModel 时指定地理代码的跨区域…」成立；并排除「在北美/欧洲分别部署独立 Bedrock 实例」「多区域 API Gateway + Lambda 重…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-14",
@@ -521,7 +591,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- 混合检索=向量+关键词，覆盖语义关系与精确术语/引用；Bedrock reranker 重排提质降延迟。\n- A 默认向量抓不住精确术语；C 查询建议非核心；D 自写合并脆弱。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock reranker 按查询相关性重排，提升精度并减少喂给 FM 的结果数（也降延迟）」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 OpenSearch 部署混合检索（向量+关键词…」成立；并排除「Bedrock 知识库用默认向量检索」「启用 Amazon Kendra 查询建议」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-15",
@@ -558,7 +633,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- Step Functions 分阶段切流 + Lambda 评估 CloudWatch 指标 + 阈值破自动回滚，形成自动闭环。\n- B 外部逻辑非闭环；C SageMaker 端点变体不自然；D 链路间接。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「AWS 文档指出 Step Functions 滚动部署可监控 CloudWatch 告警并在触发时自动全量回退」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Bedrock Provisioned Thro…」成立；并排除「用 Lambda 调各模型版本」「用 SageMaker AI 端点变体代表各 Bed…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-16",
@@ -594,7 +674,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n- Application Insights 自动关联指标/日志异常 + EMF 自定义指标 + 异常检测，10 分钟内 SNS 通知。\n- A 仅基础设施；B/D 无自动关联与基线异常。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「EMF 发布推荐质量/token/延迟自定义指标，异常检测识别偏离基线的偏差，并可生成含关联诊断信息的 SNS 通知（<10 分钟）」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「启用 CloudWatch Application …」成立；并排除「配 CloudWatch Container Ins…」「用 X-Ray 追踪」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-17",
@@ -631,7 +716,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n- 向量嵌入表达语义，OpenSearch k-NN 近似检索找等价问题，降冗余调用且一致响应。\n- A LIKE 字面；B 非向量检索；D 词干还原偏字面。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「OpenSearch 支持向量 k-NN，近似 k-NN（如 HNSW）在大数据集上更快，缓存最近语义匹配避免冗余调用且返回一致缓存响应」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 OpenSearch k-NN 存查询-响应对」成立；并排除「部署 DAX 内存缓存」「用 Bedrock 生成查询嵌入」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-18",
@@ -668,7 +758,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- 混合检索=关键词（精确术语/缩写）+向量（语义），OpenSearch 原生支持，运维最低。\n- B 升维不解决漏术语；C Kendra 替换成本高；D 加重排增延迟与运维。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「D 两阶段加 ML 重排增加延迟与运维」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「配置混合检索：向量相似度 + 关键词匹配」成立；并排除「把嵌入维度从 384 升到 1536」「用 Amazon Kendra 替换 OpenSea…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-19",
@@ -705,7 +800,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\n- 响应负载流式仅 REST API + Lambda 代理支持；Lambda 集中强制 token 上限与重试，免运维容器。\n- HTTP API 不支持响应流（A/B 错）；C 需运维 ECS。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Lambda 也适合集中强制 token 上限与处理超时/部分响应重试，且免去运维容器推理服务」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「API Gateway REST API + Lam…」成立；并排除「API Gateway HTTP API + Lam…」「API Gateway HTTP API 直连 Be…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-20",
@@ -741,7 +841,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- Bedrock Flows 的 S3 节点 + 表达式抽取 + agent 节点正好构成取-抽取-审核-存。\n- B Pass 解析能力有限；C/D agent+action group 较重需自写解析。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B 的 Pass 内在函数解析能力有限且不专为此设计」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「在 Bedrock Flows 建流：首尾用 S3 …」成立；并排除「Step Functions Express 状态机…」「建带 action group 的 Bedrock …」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-21",
@@ -781,12 +886,23 @@
           0,
           2
         ],
-        "misconceptionMap": [null, 0, null, 1, 2]
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、C。\n- Bedrock 托管评估作业用 S3 数据集（IAM/CORS）；文本生成 RWK、摘要 BERTScore，运维最省。\n- B VPC 端点非必需；D/E 用 WER/toxicity 作准确率不对且走 SageMaker 更重。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「自动评估中文本生成准确率算 RWK（Real World Knowledge）分数、摘要准确率算 BERTScore」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「把电商数据集导入 S3 并配置评估作业的 IAM 与…」「用 Lambda 定时建 Bedrock 模型评估作…」等 2 项成立；并排除「把电商数据集导入 S3 并配置评估作业的 IAM 与…」「用 SageMaker Clarify 定时建评估作…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-22",
@@ -822,7 +938,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- Parallel 状态并发运行三类分析分支，消除串行瓶颈达 10 秒。\n- A/C/D 仍串行，无法从 45 秒降到 10 秒。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock 客户端超时与 CloudWatch 延迟指标支撑监控并发推理」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「Step Functions 用 Parallel …」成立；并排除「Lambda 配预留并发」「SQS 缓冲请求」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-23",
@@ -859,7 +980,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- KB 托管 RAG + 来源归因，主张链接源文档，低延迟且免自建。\n- B/C/D 需自建 SageMaker/Lambda/检索跟踪，运维更重。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「基于相关性的检索限制喂给模型的上下文，支持低延迟，且无需自建检索/跟踪/托管模型基础设施」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Bedrock Knowledge Bases …」成立；并排除「用 Bedrock + Anthropic Clau…」「用 SageMaker AI 自定义 Claude …」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-24",
@@ -896,7 +1022,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- Provisioned Throughput 稳延迟 + Guardrails 拦截不安全/幻觉 + Prompt Management 版本化提一致性。\n- B/C/D 未同时覆盖一致性+延迟+安全拦截三要件。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Prompt Management 支持版本化提示配置，使一致获批的提示版本跨环境部署，提升重复输入一致性」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「Bedrock 配 Provisioned Thro…」成立；并排除「用 Bedrock Agents 管理链式调用」「结果缓存到 ElastiCache」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-25",
@@ -933,7 +1064,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\n- Guardrails 托管文本/图像过滤与 PII 控制 + Comprehend/Rekognition 预处理 + Step Functions 编排进 S3 流，运维最省。\n- A Enhanced Monitoring 非过滤；B 自建 SageMaker；C 不处理生成侧。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「C 在上传前用 Cognito Lambda 审核并不处理 Bedrock 生成侧」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「Step Functions 工作流用内置 Bedr…」成立；并排除「启用 Enhanced Monitoring」「API Gateway HTTP API 配请求校验…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-26",
@@ -970,7 +1106,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\nAmazon Titan Embeddings 生成的向量能捕捉摘要文本的语义。Aurora PostgreSQL Serverless 配合 pgvector 扩展可存储这些向量、执行向量相似度搜索并保留关联元数据用于过滤。使用 Bedrock 与 Aurora Serverless 避免了自管 SageMaker 模型端点，并降低了数据库容量管理开销；Aurora PostgreSQL 支持 pgvector 向量搜索。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Amazon Titan Embeddings 生成的向量能捕捉摘要文本的语义」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Amazon Titan Embeddings（…」成立；并排除「用 Amazon Titan Embeddings（…」「用 Amazon Comprehend 从数字文件抽…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-27",
@@ -1010,7 +1151,12 @@
       "open": {
         "referenceAnswer": "正确答案：B、C。\nAmazon Bedrock 预置吞吐为一致、高吞吐工作负载提供专用模型容量。Amazon SageMaker AI 端点支持实时推理，而 SageMaker Neo 可优化并将受支持模型部署到云实例与边缘设备，从而实现云/本地的混合模式。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Amazon SageMaker AI 端点支持实时推理，而 SageMaker Neo 可优化并将受支持模型部署到云实例与边缘设备，从而实现云/本地的混合模式」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「在 Amazon Bedrock 中配置预置吞吐（p…」「将 FM 部署到 SageMaker AI 端点（用…」等 2 项成立；并排除「用 AWS Lambda 编排低延迟 FM 推理」「用带自动伸缩的 Amazon Bedrock 应对不…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-28",
@@ -1048,7 +1194,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\nAWS AppConfig 让应用使用与代码独立更新的集中配置。Lambda 函数可通过 AWS AppConfig Agent 获取当前路由配置，并为每个请求执行任意业务逻辑来选择并调用合适的 Bedrock 基础模型，从而在一个 API 端点后支持动态变化的阈值、区域规则与 A/B 路由逻辑。API Gateway 的转换与变量不适合复杂动态路由，Lambda authorizer 用于授权而非模型选择。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「AWS AppConfig 让应用使用与代码独立更新的集中配置」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「配置 AWS Lambda 在每个请求时从 AWS …」成立；并排除「部署 AWS Lambda」「用 API Gateway REST 请求转换模板按…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-29",
@@ -1089,7 +1240,12 @@
       "open": {
         "referenceAnswer": "Amazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Bedrock 调用日志可将文本输入/输出保留在 S3」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「开启Bedrock调用日志存S3并保留文本输入输出」「启用Guardrails上下文接地检查」等 3 项成立；并排除「用定时Bedrock评估作业以LLM评判批量检测幻觉」「用CloudTrail记录API调用审计内容质量」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "aws-genai-developer-pro-30",
@@ -1113,7 +1269,12 @@
     "formats": {
       "choice": {
         "type": "single",
-        "options": ["建立自定义 CloudWatch 指标监控模型错误，并将预置吞吐（Provisioned Throughput）持续设得高于观测峰值，用常驻容量吸收全部流量而不计固定小时费用", "建立自定义 CloudWatch 指标监控错误，仅在限流发生时故障转移到备份区域，不调整流量分布策略也不启用跨区域推理端点", "开启 Bedrock 调用日志，监控 Invocations/InputTokenCount/OutputTokenCount/Invocation Throttles，将流量分散到跨区域推理端点。", "开启 Bedrock 调用日志，监控 InvocationLatency/ClientErrors/ServerErrors，并将请求分散到同一模型的多个版本号（model version）以扩容"],
+        "options": [
+          "建立自定义 CloudWatch 指标监控模型错误，并将预置吞吐（Provisioned Throughput）持续设得高于观测峰值，用常驻容量吸收全部流量而不计固定小时费用",
+          "建立自定义 CloudWatch 指标监控错误，仅在限流发生时故障转移到备份区域，不调整流量分布策略也不启用跨区域推理端点",
+          "开启 Bedrock 调用日志，监控 Invocations/InputTokenCount/OutputTokenCount/Invocation Throttles，将流量分散到跨区域推理端点。",
+          "开启 Bedrock 调用日志，监控 InvocationLatency/ClientErrors/ServerErrors，并将请求分散到同一模型的多个版本号（model version）以扩容"
+        ],
         "answer": [
           2
         ]
@@ -1121,7 +1282,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\nAmazon Bedrock 跨区域推理将按需请求分散到多个区域的容量，在不购买持续计费的预置吞吐的情况下吸收突发流量、提升可用性。Bedrock 运行时指标含 Invocations/InputTokenCount/OutputTokenCount/InvocationThrottles，提供用量与限流可见性。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Amazon Bedrock 跨区域推理将按需请求分散到多个区域的容量，在不购买持续计费的预置吞吐的情况下吸收突发流量、提升可用性」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「开启 Bedrock 调用日志」成立；并排除「建立自定义 CloudWatch 指标监控模型错误」「建立自定义 CloudWatch 指标监控错误」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-31",
@@ -1161,7 +1327,12 @@
       "open": {
         "referenceAnswer": "正确答案：B、D。\nAWS Step Functions 可编排 Amazon Transcribe 并经其优化的 Bedrock 集成直接调用 Bedrock 模型；该集成接受模型专属 JSON 请求体，可让提示直接请求结构化摘要与情感输出，无需中间 Lambda。Amazon S3 可向 EventBridge 发送 Object Created 事件，EventBridge 规则以 Step Functions 状态机为目标，在每次新建录音时启动工作流。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「AWS Step Functions 可编排 Amazon Transcribe 并经其优化的 Bedrock 集成直接调用 Bedrock 模型」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「用 Step Functions 编排：调 Tran…」「配置源 S3 桶向 EventBridge 发事件」等 2 项成立；并排除「用 Step Functions 编排：调 Tran…」「用 Step Functions 编排：调 Tran…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-32",
@@ -1199,7 +1370,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\nAPI Gateway HTTP API 可直接集成 Lambda 并支持 OAuth 2.0/OIDC 授权。Cognito 为内部与第三方客户端发放 OAuth 令牌，API Gateway 在将 MCP Streamable HTTP 请求转发给 Lambda 前校验令牌。这保留 MCP 兼容传输的同时使用托管的令牌校验与基于 scope/claim 的访问控制，避免自定义传输与面向伙伴的直接 IAM 凭据管理。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「API Gateway HTTP API 可直接集成 Lambda 并支持 OAuth 2.0/OIDC 授权」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「经 API Gateway HTTP API 暴露 …」成立；并排除「用 Lambda Invoke API 自建传输」「经 API Gateway REST 暴露 Lamb…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-33",
@@ -1236,7 +1412,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\nAmazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性。将性能配置 latency 设为 optimized 使用低延迟推理选项，降低受支持模型与推理配置的响应时间。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Amazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「建 Bedrock 知识库」成立；并排除「提高 Bedrock Guardrails 接地程度」「用提示工程将模型响应限制在相关商品」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-34",
@@ -1277,7 +1458,12 @@
       "open": {
         "referenceAnswer": "在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控。S3 Object Lock 提供 WORM 留存保护存储记录，Macie 发现并分类 S3 中的敏感数据，CloudTrail 提供带日志完整性校验的可审计 API 活动。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「在原始区域预处理后再送 Bedrock 可让处理停留在所需大洲内，区域级 S3 策略使存储数据受适用区域管控」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「按地理来源在原始区域内预处理后再送Bedrock」「用S3 Object Lock做WORM留存保护」等 3 项成立；并排除「在每个区域部署应用并配本地IAM策略」「用Organizations SCP管理区域权限」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "aws-genai-developer-pro-35",
@@ -1314,7 +1500,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\nStep Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应。DynamoDB 提供持久、低延迟的对话存储，按需容量应对变动高并发，并支持静态服务端加密。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Step Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Step Functions 标准工作流编排澄清…」成立；并排除「用 Step Functions Express 工…」「用 API Gateway REST 路由到 Lam…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-36",
@@ -1355,7 +1546,12 @@
       "open": {
         "referenceAnswer": "Bedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器。敏感信息策略可对输入/输出施加不同动作：响应中脱敏 PII，输入中拦截金融信息。Guardrails 同时评估提示与模型响应，中等过滤相比高强度有助于减少误杀。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Bedrock Guardrails 可在单一配置中组合中等强度有害内容过滤器、带定义与样例短语的 denied topics、以及敏感信息过滤器」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「有害内容过滤器设medium而非high」「denied topics设置投资建议并配清晰定义与…」等 3 项成立；并排除「配单个guardrail并把所有类别内容过滤器设hi…」「guardrail只评估模型响应」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "aws-genai-developer-pro-37",
@@ -1393,7 +1589,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\nBedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置。CloudTrail 记录含身份/动作/时间/请求参数的 AWS 活动，形成可审计的提示管理操作历史。IAM 策略可分离并限制创建/修改/版本化提示的权限，支撑受控审批流程。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Bedrock Prompt Managemen…」成立；并排除「用 Bedrock Studio 提示模板」「用 Step Functions 建审批工作流」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-38",
@@ -1431,7 +1632,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\nBedrock Guardrails 敏感信息过滤器可在模型响应中匿名化 PII。按认证 Cognito 用户组施加对应 guardrail，可使 PII 对外科医生保留、对工程师脱敏。S3 生命周期过期规则删除超 3 年报告，每日定时同步更新知识库以反映 S3 的增删改，使过期报告不再可被检索。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock Guardrails 敏感信息过滤器可在模型响应中匿名化 PII」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「对桶设 S3 生命周期删除超 3 年报告」成立；并排除「对 S3 启用 Macie PII 检测」「新报告上传时调 Lambda 同步 S3 与知识库」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-39",
@@ -1467,7 +1673,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\nAmazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限。供应商可用 SearchRelevantContent API 检索相关内容用于提示富化，无需直接连接或索引每个客户数据源。Amazon Q 支持语义与混合检索并应用客户配置访问控制。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Amazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「让每客户建 Amazon Q Business 索引…」成立；并排除「用 MCP 为每个客户部署实时 MCP 服务器做联邦…」「让每客户配置 Bedrock 知识库」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-40",
@@ -1505,7 +1716,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\nS3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程。SageMaker Pipeline 可包含训练与模型部署步骤，上传后启动流水线即用更新数据集重训练并将模型重部署到应用。SageMaker Pipelines 支持部署步骤，AWS 文档化了 EventBridge/S3 驱动的流水线执行自动化。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「S3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「建 Step Functions 标准工作流：首状态…」成立；并排除「用 Glue 对每个上传文件跑 ETL」「建 Lambda + webhook 在上传时生成事…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-41",
@@ -1544,7 +1760,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\nBedrock 知识库提供托管 RAG 工作流，使响应基于企业数据并附来源归因，降低幻觉风险。Guardrails 按配置安全策略评估输入与响应。将 prompt-响应对存于 OpenSearch 支撑可搜索的合规审计轨迹，QuickSight 可用收集数据做合规报告与行为趋势分析。该托管服务组合最小化快速部署所需的自定义代码与运维基础设施。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock 知识库提供托管 RAG 工作流，使响应基于企业数据并附来源归因，降低幻觉风险」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Bedrock Agents + Knowled…」成立；并排除「配 Bedrock Guardrails 自定义内容…」「用 PrivateLink 安全访问 Bedrock」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-42",
@@ -1582,7 +1803,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\nAWS Amplify AI Kit 支持 React 应用的流式 LLM 响应。其 Lambda 集成以流式请求调用 Bedrock，并经由 AppSync WebSocket 将响应块送往浏览器增量渲染，避免了同步 RequestResponse resolver 所需的等待整段长生成。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「AWS Amplify AI Kit 支持 React 应用的流式 LLM 响应」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 AWS Amplify AI Kit 从 Gra…」成立；并排除「增大 Lambda resolver 超时并加指数退…」「让应用向 SQS 队列发请求」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-genai-developer-pro-43",
@@ -1620,7 +1846,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\nBedrock 按模型强制 token 配额，故须在推理前用对应模型的分词规则预估 token 用量以识别接近上限。可扩展的 Lambda 层可做该请求前预估，发出模型与业务单元专属的 CloudWatch 自定义指标用于阈值告警，并将详细用量存 DynamoDB 供分摊计费。Guardrails 不实现 token 配额策略，死信队列在请求失败后才运作，API Gateway 使用计划施加的是请求配额而非模型专属 token 计算。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock 按模型强制 token 配额，故须在推理前用对应模型的分词规则预估 token 用量以识别接近上限」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「在 Lambda 开发模型专属分词器」成立；并排除「用 Bedrock Guardrails 的 tok…」「部署 SQS 死信队列处理失败请求」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-44",
@@ -1657,7 +1888,12 @@
       "open": {
         "referenceAnswer": "正确答案：D。\nBedrock 知识库在使用 RetrieveAndGenerate/RetrieveAndGenerateStream 时可通过检索重排配置应用托管重排器。重排器评估检索文本块与查询的相关性并重排序，替代默认排名，提升上下文相关性且免去了部署与集成独立排序/API/文档分析/图处理服务的运维负担。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock 知识库在使用 RetrieveAndGenerate/RetrieveAndGenerateStream 时可通过检索重排配置应用托管重排器」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「在 Bedrock 知识库的重排配置中启用最新 re…」成立；并排除「部署 SageMaker 端点跑微调排序模型」「用 Comprehend 分类文档打相关分」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-45",
@@ -1695,7 +1931,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\nBedrock 多智能体协作支持 supervisor 智能体将请求路由到专精 collaborator 智能体。每个 collaborator 可配置为不同部门并使用自有知识库做 RAG，保留领域专精且可通过增删 collaborator 扩展能力。supervisor 路由模型旨在将请求发往合适 collaborator 并降低延迟。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Bedrock 多智能体协作支持 supervisor 智能体将请求路由到专精 collaborator 智能体」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「每智能体用独立知识库隔离数据」成立；并排除「每部门建独立 supervisor」「每部门数据隔离在独立知识库」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-46",
@@ -1732,7 +1973,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n低延迟、实时优化的 Bedrock 模型适合交互式响应生成。预置吞吐为持续高并发提供专用、可预测的推理容量，自动伸缩策略应对变动需求并帮助管理容量与计算成本。批处理无法满足单条建议 <200ms 延迟目标。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「低延迟、实时优化的 Bedrock 模型适合交互式响应生成」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「在 Bedrock 部署低延迟实时优化模型」成立；并排除「在 Bedrock 部署大型推理模型」「在 SageMaker AI 实时端点部署 LLM（…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-47",
@@ -1774,7 +2020,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、D、F。\nBedrock denied topics 可拦截提示与响应中的不良上下文主题，适合高风险投资建议模式。自定义词过滤器屏蔽精确词或短语（含竞品名），且可同时拦截输入与输出。上下文接地检查评估响应是否事实性基于所提供获批源材料；高阈值要求更强置信度才放行内容。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Bedrock denied topics 可拦截提示与响应中的不良上下文主题，适合高风险投资建议模式」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「将高风险对话模式加入 denied topics g…」「将竞品名称加入自定义词过滤器」等 3 项成立；并排除「配置内容过滤器 guardrail 过滤含高风险模式…」「配置内容过滤器 guardrail 过滤含竞品名称的…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-48",
@@ -1812,7 +2063,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n每家酒店独立知识库（多账号）隔离各酒店数据与访问控制，同时可独立管理容量与性能。Bedrock 知识库直接摄入支持单次操作增删改文档而无需等待数据源同步，支撑近实时房间可用性更新；定时同步适合时效性较低的信息。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「每家酒店独立知识库（多账号）隔离各酒店数据与访问控制，同时可独立管理容量与性能」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「多账号结构下每家酒店一个知识库」成立；并排除「建单一知识库存所有酒店合并数据」「每酒店建 EventBridge 规则由 PMS 变…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-49",
@@ -1855,7 +2111,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、E。\nTextract 抽取文档数据，A2I 在与 Textract 集成时在置信度条件满足时创建人工复核环。Lambda 可在数据送推理前做特定应用 PII 脱敏，Bedrock Guardrails 可检测并掩码敏感信息并施加输出安全控制。Glue Data Quality 校验抽取的结构化数据，Step Functions 可编排工作流（含提示变换后调用 Bedrock）。这些托管无服务器服务在按所需区域配置时提供可扩展工作流处理并保留区域部署边界。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Glue Data Quality 校验抽取的结构化数据，Step Functions 可编排工作流（含提示变换后调用 Bedrock）」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「在同区域部署 Textract 与 Augmente…」「用 Lambda 在推理前检测并脱敏 PII」等 3 项成立；并排除「用 Kendra 与 OpenSearch 从上传文…」「上传文档存 S3 加对象元数据」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-genai-developer-pro-50",
@@ -1893,6 +2154,11 @@
       "open": {
         "referenceAnswer": "正确答案：A。\nMemoryDB 的 FLAT 向量索引对每向量做暴力线性比对，在距离计算精度内返回精确最近邻结果。对小索引而言，这在不招致穷举搜索的大索引延迟劣势下保留最大检索准确度。HNSW 与 IVFFlat 是近似索引方法，以可能的召回损失换取速度。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「HNSW 与 IVFFlat 是近似索引方法，以可能的召回损失换取速度」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「启 Amazon MemoryDB 集群」成立；并排除「启 Amazon MemoryDB 集群」「启 Amazon Aurora PostgreSQL…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   }
 ]

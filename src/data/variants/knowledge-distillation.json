@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "generatedAt": 1788734635613,
+  "promptVersion": "v5",
+  "variants": {
+    "q-kd-temp-scaling-c": [
+      {
+        "id": "q-kd-temp-scaling-c__context-options__prompt-q-kd-temp-scaling-v1",
+        "kind": "context-options",
+        "question": "在同时使用硬标签（Hard Targets，温度 $T=1$）和软标签（Soft Targets，温度 $T>1$）的联合损失函数蒸馏训练中，标准实践是将软目标交叉熵损失项乘以因子 $T^2$。下述关于该操作原因的推导和判断，哪一项是绝对正确的？",
+        "options": [
+          "由于 Softmax 在温度 $T$ 条件下对 Logits 求导时，软目标产生的梯度量级近似按 $1/T^2$ 比例缩放；将其乘以 $T^2$ 可以在调整蒸馏温度时，保持软目标与硬目标梯度的相对贡献基本稳定。",
+          "乘以 $T^2$ 是为了补偿小模型在训练后期学习率衰减过快的缺陷，确保软目标交叉熵损失在数值上严格等于硬标签损失。",
+          "当温度 $T>1$ 时，Softmax 的指数输出会呈 $T^2$ 倍数增长，乘以 $T^2$ 可以防止反向传播过程中出现梯度爆炸。",
+          "乘以 $T^2$ 可以将 Softmax 交叉熵损失转化为带 $L_2$ 参数正则项的形式，强制 Student 模型 Logits 的均值恒等于 0。"
+        ],
+        "angle": "causal",
+        "cognitiveTask": "predict",
+        "generatedAt": 1788734635613,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-61dc15a1"
+      }
+    ],
+    "q-kd-logit-matching-c": [
+      {
+        "id": "q-kd-logit-matching-c__context-options__prompt-q-kd-logit-matching-v1",
+        "kind": "context-options",
+        "question": "某团队拟将一个包含数十亿参数的大型教师模型蒸馏为一个极小容量的移动端学生模型（例如每层仅数十个神经元）。实验发现在极高蒸馏温度（如 $T \\ge 20$）下，学生模型的测试集表现明显劣于在中等温度（如 $T \\in [2.5, 4.0]$）下的表现。结合知识蒸馏机理，以下哪项是导致该现象的最核心原因？",
+        "options": [
+          "在 Teacher 模型中，极负 Logits 往往未受目标函数充分约束而包含较多噪声；极高温度会强制 Student 拟合所有负 Logits（接近全 Logit MSE 匹配），超出了极小容量 Student 的表达上限；而中等温度能适度忽略负 Logits 噪声，取得最佳效果。",
+          "极高温度会导致 Softmax 计算中的指数项全部溢出，产生严重的 NaN 数值不稳定性，而中等温度能保证浮点数精度。",
+          "极高温度使 Soft Target 分布变为离散的 One-hot 分布，完全丧失了类间相似度信息；而中等温度保持了最高的信息熵。",
+          "极小容量 Student 模型由于参数极少，只能学习二值化的分类决策面，中等温度能够将 Teacher 的 Logits 强制压缩为二值分布。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "generatedAt": 1788734635613,
+        "generator": "offline",
+        "promptVersion": "v5",
+        "sourceHash": "fnv1a-26fd7c70",
+        "assessment": {
+          "target": "能判断「降低蒸馏温度是减少（而非增加）对极小负 Logits 的关注和匹配」",
+          "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此给出「降低蒸馏温度是减少（而非增加）对极小负 Logits…」这一结论并说明依据；并排除「在 Teacher 模型中」「极高温度会导致 Softmax 计算中的指数项全部溢…」等不成立描述。"
+        }
+      }
+    ]
+  }
+}

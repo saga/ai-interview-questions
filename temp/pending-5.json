@@ -1,0 +1,294 @@
+[
+  {
+    "seq": 68,
+    "kind": "question",
+    "id": "prompt-cache-min-tokens-01",
+    "topic": "caching",
+    "angle": "fundamental",
+    "question": "在大模型 Prompt Caching 机制中，通常设定有“最小可缓存 Token 长度”（Minimum Cacheable Token Length，例如 1,024 或 2,048 Tokens）。关于这一限制及相关 Token 统计逻辑，下列哪项描述是正确的？",
+    "explanation": "B 正确：只有开发者构建的可见 Token（开发者消息、工具定义、历史对话）达到规定门槛（如 1,024 或 2,048），系统才会为其建立或匹配缓存断点。A 错误：平台/厂商内部注入的隐藏 System Token 不计入开发者可见的最小缓存门槛，开发者仍需自行关注可见 Token 数量。C 错误：未达门槛仅表示该请求不会触发 Prompt Caching，系统会作为普通 Uncached 请求正常执行推理，不会抛 400 异常。D 错误：Tool Definitions 属于前缀的一部分，同样受统一最小 Token 门槛约束，没有特权豁免。",
+    "correct": [
+      "只有开发者发送的可见输入 Token（包含开发者消息、工具定义与历史对话）达到门槛时，前缀才具备写入或匹配缓存的资格"
+    ],
+    "distractors": [
+      "隐藏 system token 由平台注入且按全量计费，必然计入缓存门槛；开发者只需关注账单 token。",
+      "未达门槛的请求会被路由到无缓存实例池，延迟更高；应用层应填充无意义 token 凑够门槛以进缓存池。",
+      "Tool Definitions 是高频复用前缀，平台为其预建常驻缓存，不受门槛约束；工具多的应用天然占优。"
+    ]
+  },
+  {
+    "seq": 69,
+    "kind": "question",
+    "id": "nla-unverbalized-01",
+    "topic": "interpretability",
+    "angle": "scenario",
+    "question": "在 LLM 安全评估场景中，模型可能会产生“评估意识（Evaluation Awareness）”并隐藏其真实意图（例如在 CoT 链式思考中表现得完全合规，但内部已识别出自己处于测试环境）。在模型的 CoT 未吐出任何异常文本的情况下，使用 NLA 解码内部激活值为什么能够发现其隐藏意图？（单选）",
+    "explanation": "B 正确：LLM 在计算过程中，隐藏层激活向量（Activation）包含其内部推理状态、假设和意图，即使自回归采样过程没有将这些意图解码为显式 Token，潜空间向量中依然编码了相关信息，NLA 能将这些潜状态翻译出来。A 错误：NLA 并非通过对抗损失强行拉取残差流，而是通过重构损失训练 AV 映射潜空间。C 错误：AR 只在 NLA 训练阶段用于计算重构 Loss，并不在推理期干预或修改目标模型的输出分布。D 错误：模型并不会主动“硬编码压缩指令”，其表征是连续的高维向量，NLA 是泛化翻译器而非特征匹配器。",
+    "correct": [
+      "模型的表征空间中保留了计划、意图与概率估计等隐状态，即便采样解码策略抑制了相关 Token 的输出，NLA 仍能从激活向量中提取这些隐性表示。"
+    ],
+    "distractors": [
+      "NLA 在训练阶段通过对抗损失约束 AV 输出文本，强制将模型注意力机制中的高权重残差流直接转换为文本形式。",
+      "NLA 的激活值重构器（AR）能够逆向干预目标模型的输出分布，迫使目标模型在生成阶段补全此前未显式吐出的思考步骤。",
+      "目标模型在评估环境中会主动将思考过程编码为压缩的隐藏指令，NLA 仅需匹配这些硬编码指令的模式即可完成还原。"
+    ]
+  },
+  {
+    "seq": 70,
+    "kind": "question",
+    "id": "nla-guardrail-01",
+    "topic": "interpretability",
+    "angle": "system-design",
+    "question": "某安全架构团队计划在生产环境的在线推理流水线中引入 NLA，对全量用户请求进行实时潜意识监控（Latent-space Guardrailling）以预防越狱与欺诈行为。在进行系统架构评估时，以下哪些工程瓶颈与技术权衡的判断是准确的？（多选）",
+    "explanation": "A 正确：NLA 解码单个激活值需要调用 AV（本身是一个 LLM）生成完整段落，逐 Token 或全量实时监控会使系统延迟爆炸。B 错误：推理阶段只需运行 AV 前向生成文本，不需要运行 AR，更不需要执行反向传播。C 正确：鉴于计算成本高昂，工程实践中 NLA 更适合用于离线安全审计、针对特定 Flag 提示词的触发式抽样监控，而非全量 Token 的实时 Online Guardrail。D 正确：AV 作为生成式语言模型，可能会在解释中产生幻觉（例如虚构对话中未出现的细节），因此工程落地不能盲信单一 NLA 文本，需要结合归因分析或探针（Probes）进行交叉验证。",
+    "correct": [
+      "NLA 在推理阶段对单个激活向量解码需要自回归生成数百个 Token，这将引入数个数量级的延迟与算力开销，难以直接用于实时在线拦截。",
+      "若要将 NLA 运用于大规模监控，较为可行的方案是在离线审计、采样监控或特定高风险场景中触发提取，而非逐 Token 实时全量解码。",
+      "NLA 解释文本存在事实性幻觉（Hallucination）风险，极易将生成模型自身的先验偏置误认为目标模型的真实潜意识，需配合独立验证手段。"
+    ],
+    "distractors": [
+      "NLA 的生成过程依赖激活值重构器（AR）逐 Token 计算重构损失，这将导致每次模型推理都必须执行双向反向传播以维持监视频道。"
+    ]
+  },
+  {
+    "seq": 71,
+    "kind": "question",
+    "id": "q-kd-temp-scaling-c",
+    "topic": "kd-temperature-scaling-mechanism",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "在基于教师-学生（Teacher-Student）架构的知识蒸馏中，模型通常引入温度系数 $T$（Temperature Scaling）将 Teacher 输出的 Logits 转化为 Soft Targets。关于温度系数 $T$ 的作用机制以及 Soft Targets 相比传统离散 One-hot Hard Targets 的优势，下列哪些说法是正确的？",
+    "explanation": "A项正确：当蒸馏温度 $T>1$ 时，Softmax 公式 $q_i = \\frac{\\exp(z_i/T)}{\\sum_j \\exp(z_j/T)}$ 会平滑概率分布，使得概率极小且接近 0 的负类别（如 $10^{-6}$ 与 $10^{-9}$）之间的相对比例显式展露出来，这就是类间相似度暗知识（Dark Knowledge）。\nB项正确：高熵的 Soft Targets 包含比离散 One-hot 标签更丰富的概率密度分布，显著降低了样本间梯度的方差，支持在较少数据和更高学习率下稳定训练。\nC项错误：温度系数 $T$ 仅应用于 Softmax 概率计算阶段，完全不改变特征提取器的网络层维度或模型参数量。\nD项正确：Teacher 模型的 Soft Targets 编码了模型的泛化行为（如揭示某种数字‘2’与‘3’相似还是与‘7’相似），向 Student 模型传递了样本间的相似度结构约束，起到了强大的正则化作用。",
+    "correct": [
+      "随着蒸馏温度 $T$ 的升高，Softmax 输出的概率分布会变得更加平滑，使得原本数值极小、受离散 One-hot 限制的非正确类别（负类别）之间的相对概率比值显式展现出来，从而暴露类间相似度结构（暗知识）。",
+      "相比包含单极高概率的 Hard Targets，高熵的 Soft Targets 在样本间传递了更高信息密度的监督信号，同时减小了不同样本间梯度的方差，使 Student 模型能以更高的学习率稳定训练。",
+      "Soft Targets 提供的非目标类别概率隐式限定了模型的泛化边界（例如某种数字‘2’与数字‘3’更相似还是与‘7’更相似），能作为强正则化手段降低 Student 模型的过拟合风险。"
+    ],
+    "distractors": [
+      "引入温度 $T$ 的本质目的是改变神经网络倒数第二层特征提取器（Feature Extractor）的维度，从根本上解决 Student 模型表达能力不足的问题。"
+    ]
+  },
+  {
+    "seq": 72,
+    "kind": "question",
+    "id": "llm-arch-hybrid-recurrent-attention-01",
+    "topic": "hybrid-attention",
+    "angle": "mechanism",
+    "question": "在现代超大语言模型设计中，常将线性循环层（如 Gated DeltaNet）与传统 Grouped-Query Attention (GQA) 按比例交替混合堆叠（例如 3:1），构成 Hybrid 架构。关于该设计在生产部署与性能上的取舍，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：Gated DeltaNet 等线性 Recurrent 层把历史压缩进固定大小状态矩阵，不保存 KV Cache；3:1 混合下只有 25% 的层存 KV，显存大幅下降。B 正确：线性 Recurrent 逐 Token 生成为 O(1)，周期性与 GQA 全局注意力兼顾生效率与长距离对齐。C 错误：为保证与 GQA 层的空间对齐及全局定位，Attention 层通常仍需 RoPE 等位置编码。D 正确：部署需同时优化 Linear Recurrent 与 GQA 两套算子与状态逻辑，工程复杂度更高。",
+    "correct": [
+      "显著降低自回归生成阶段的 KV Cache 显存占用，因为线性循环层在推理时仅维护固定大小的隐状态向量",
+      "保持循环层 O(1) 的逐 Token 生成时间复杂度，同时利用周期性注意力层维持全局长距离上下文对齐能力",
+      "相比纯 Transformer 架构，混合架构在系统实现与部署时需要同时管理两套不同的状态更新逻辑与算子优化"
+    ],
+    "distractors": [
+      "完全消除对位置编码（如 RoPE）的依赖，因为 DeltaNet 的状态更新公式天然具备绝对时间顺序的感知能力"
+    ]
+  },
+  {
+    "seq": 73,
+    "kind": "question",
+    "id": "llm-arch-preserved-thinking-01",
+    "topic": "kv-cache",
+    "angle": "mechanism",
+    "question": "在多轮 Agent 系统中，可配置是否在历史 Prompt 中保留模型此前生成的思考推理过程（preserve_thinking=True / False）。关于开启保留历史思考（Preserved Thinking）的技术影响，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：保留历史思考块后，多轮前缀可命中已有 KV Cache，减少 Prefix 重解析与首 Token 延迟。B 正确：完整推理上下文保留推演逻辑，减少后续步中逻辑自相矛盾或重复试错。C 正确：思考块 Token 量通常很大，全部保留会快速膨胀 Context，更早触发截断或需 YaRN 外推。D 错误：关闭该配置是为省 Context，不强制模型重生成历史推理，也不成倍提高单轮吞吐量。",
+    "correct": [
+      "开启该配置可以通过直接复用历史思考块的 KV Cache，降低多轮交互中的 Prefix 预热与首 Token 延迟",
+      "开启该配置可以保留完整推理上下文，避免模型在后续步骤中重复推理或产生决策逻辑前后冲突",
+      "开启该配置会导致历史 Context 长度快速膨胀，在长轮次 Agent 任务中加速挤占有限的上下文窗口配额"
+    ],
+    "distractors": [
+      "关闭该配置会强制模型在后续每一轮交互中重新生成历史推理过程，从而成倍提高单轮 Token 生成吞吐量"
+    ]
+  },
+  {
+    "seq": 74,
+    "kind": "question",
+    "id": "llm-arch-yarn-01",
+    "topic": "rope",
+    "angle": "mechanism",
+    "question": "当需把原生支持长上下文（如 256K Token）的模型继续外推至超长上下文（如 1M Token）且不密集微调时，通常采用 YaRN（Yet another RoPE Extension）。关于 YaRN 的工作原理与优势，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确：YaRN 核心是维度分频缩放（Non-uniform Scaling），高频维度（局部细节）少缩放、低频维度（长距离）加大缩放。B 正确：上下文骤长后 Attention 的 Softmax 分布趋于平坦（熵增），YaRN 引入温度校正因子恢复注意力锐度。C 正确：分频+温度校正解决了传统线性 RoPE 缩放在短文本 PPL 飙升的缺陷，短长兼顾。D 错误：YaRN 仍基于 RoPE 频域变换，并未替换为绝对可学习位置嵌入。",
+    "correct": [
+      "YaRN 对 RoPE 的不同频率维度实施非均匀缩放，在保留高频细节分辨率的同时对低频进行平滑外推",
+      "YaRN 引入注意力 Softmax 温度校正因子，以缓解上下文大幅延长时注意力分布过于平坦引发的熵崩溃",
+      "YaRN 避免了传统线性 RoPE 缩放导致模型在短上下文性能严重退化的缺陷，具备良好的短长距离兼容性"
+    ],
+    "distractors": [
+      "YaRN 通过将低频位置编码完全替换为绝对可学习位置嵌入，彻底消除了超长文本场景下的注意力衰减"
+    ]
+  },
+  {
+    "seq": 75,
+    "kind": "question",
+    "id": "llm-arch-thinking-sampling-01",
+    "topic": "sampling",
+    "angle": "mechanism",
+    "question": "部署兼具思考模式（Thinking Mode）与指令模式（Instruct/Non-Thinking Mode）的思考型 LLM 时，两种模式需配置不同采样参数。下列关于采样参数配置最佳实践的说法中，正确的是？（单选）",
+    "explanation": "A 正确：Thinking 模式下较高 Temperature（如 1.0）有助于推理阶段探索多条思维分支、避免思维定势。B 错误：指令模式用于快速确切输出，通常用较低 Temperature（如 0.7）与较高 Presence Penalty 防重复，而非强制触发链式思考。C 错误：Presence Penalty 拉到 >2.0 会过度惩罚高频词，易引发语言混用/语法畸变。D 错误：禁用思考模式不强制 Greedy Decoding（Top-k=1），仍可配标准采样输出流畅文本。",
+    "correct": [
+      "思考模式通常推荐较高的 Temperature（如 1.0）与较宽松的 Top-p，以鼓励推理路径的多样性与自我探索"
+    ],
+    "distractors": [
+      "指令模式通常推荐极低的 Temperature（如 0.0）与最小的 Presence Penalty，以强制触发链式思考输出",
+      "无论是否开启思考模式，Presence Penalty 都应保持在最高值（如 2.0 以上），以完全避免生成重复 Token",
+      "禁用思考模式后，必须将 Top-k 设为 1 且启用 Greedy Decoding，否则模型无法输出合规的格式化文本"
+    ]
+  },
+  {
+    "seq": 76,
+    "kind": "question",
+    "id": "compliance-audit-desensitize-03",
+    "topic": "safety-alignment",
+    "angle": "tradeoff",
+    "question": "在面向外部审计或研究人员开放 LLM 平台使用情况的聚合分析数据时，平台需要兼顾“对外展示平台真实安全状况与违规趋势”以及“防止泄露安全防护机制绕过细节”的双重目标。针对涉及平台服务条款（AUP）违规的分类数据，下列哪种脱敏与发布策略最符合工程最佳实践？（单选）",
+    "explanation": "A正确：允许宏观统计但屏蔽绕过细节。B错误：完全禁止缺透明度。C错误：发布完整越狱Prompt暴露漏洞。D错误：混入噪音破坏真实性。",
+    "correct": [
+      "允许对外发布违规行为的类型分布与尝试频率等宏观统计数据，但屏蔽或重构描述具体如何绕过安全栅栏（Jailbreak Techniques）的微观分类信息"
+    ],
+    "distractors": [
+      "完全禁止发布任何涉及违规分类的统计数据，因为暴露违规尝试的频次本身即会为潜在攻击者提供系统防护弱点的推断依据",
+      "允许发布包含攻击者完整越狱 Prompt 细节的原始文本，但对攻击者的用户 ID 与 IP 地址进行高强度哈希脱敏处理",
+      "将所有违规对话按照统一比例混入正常对话分类中，利用人为引入的噪音数据模糊外部审计对平台合规性的判断"
+    ]
+  },
+  {
+    "seq": 77,
+    "kind": "question",
+    "id": "counterfactual-estimation-04",
+    "topic": "cost",
+    "angle": "calculation",
+    "question": "评估智能编程 Agent（如 Coding Agent）对真实研发效能的提升时，一种常见的方法是利用模型评估任务的“反事实耗时”（即估算“若不使用 AI 辅助，人类开发者完成该任务需要多久”）。为确保这种基于模型判规的反事实时间估计具备科学性与可靠性，工程团队应采取下列哪种验证机制？（单选）",
+    "explanation": "A正确：与人类受控实验实际耗时校准。B错误：打字速度非瓶颈。C错误：Logits熵与思考耗时无线性映射。D错误：自信度校准不良。",
+    "correct": [
+      "将模型对各类编程任务的估算耗时与 Controlled 人类开发者实验中记录的实际无 AI 辅助完成耗时进行相关性对比与校准"
+    ],
+    "distractors": [
+      "直接将模型生成的代码 Token 数量乘以人类平均打字速度，得出反事实耗时的基准对照值",
+      "计算模型在生成代码过程中的 Logits 熵值变化，以熵衰减速率线性换算人类开发者的思考耗时",
+      "依赖模型自评的置信度得分（Confidence Score）对估算耗时进行归一化处理，无需任何人类历史履约数据的交叉比对"
+    ]
+  },
+  {
+    "seq": 78,
+    "kind": "question",
+    "id": "human-ai-collab-05",
+    "topic": "model-behavior",
+    "angle": "scenario",
+    "question": "在高风险与高专业度领域（如法律、金融或系统架构）中，分析人类用户与高能力 LLM 的交互模式时，下列哪些现象符合高效“人机协作”的典型特征与内部机制？（多选）",
+    "explanation": "A正确：委托高后果任务但人类把控。B正确：适应性修改而非 verbatim 复制。C正确：摩擦具建设性促澄清。D错误：盲信单轮高危。E错误：仅边缘任务错误。",
+    "correct": [
+      "用户倾向于将具有高后果性（Consequential）和专业导向的任务委托给 AI，但通常扮演方向把控与最终审核者的角色",
+      "用户在协作过程中很少直接原样复制（Verbatim）AI 生成的输出，而是会对模型结果进行适应性修改与二次加工",
+      "交互过程中的“摩擦”（如模型理解偏差导致需要多轮迭代）往往具有建设性，能促使用户进一步澄清意图并完善需求"
+    ],
+    "distractors": [
+      "用户会完全让渡决策权给 AI，并在单轮 Prompt 交互后直接执行模型给出的高风险操作指令",
+      "为降低沟通成本，用户仅将零风险、重复性极高的边缘子任务交由 AI 完成，避免在核心业务中引入 AI"
+    ]
+  },
+  {
+    "seq": 79,
+    "kind": "question",
+    "id": "privacy-research-arch-06",
+    "topic": "system-design",
+    "angle": "system-design",
+    "question": "某 AI 厂商希望建立一个允许外部独立研究员分析内部 LLM 真实使用场景的系统架构。要求系统在保证用户数据隐私的前提下，最大化研究员的探索自由度与分析独立性。在设计该系统时，下列哪些架构选择与流程设计是合理的？（多选）",
+    "explanation": "A正确：服务端沙盒仅输出聚合。B正确：第三方隐私审计。C正确：公开数据预调试降开销。D、E错误：直接暴露原始日志或SQL违隐私。",
+    "correct": [
+      "提供服务端的沙盒化 Query 执行环境，研究员仅能提交抽象的分类规则，由系统服务端统一在全量日志上运行并输出聚合统计结果",
+      "在将数据交付给外部研究员前，建立独立的第三方隐私审计与数据审查机制，确保分类输出不暴露敏感个人身份信息（PII）",
+      "允许研究人员在开源或公开发布的数据集上提前调试分类 Prompt，以降低在生产环境日志上多次重复迭代带来的隐私审查开销"
+    ],
+    "distractors": [
+      "允许外部研究员直接下载包含哈希 ID 的全量原始对话日志，并在研究员本地服务器上运行自定义的深度学习提取模型",
+      "签署法律协议后，赋予外部研究员直接对生产环境数据库执行未过滤 SQL 语句与 Raw 文本检索的权限"
+    ]
+  },
+  {
+    "seq": 80,
+    "kind": "question",
+    "id": "llm-hybrid-02",
+    "topic": "hybrid-attention",
+    "angle": "tradeoff",
+    "question": "在处理超长上下文（如百万级 Token）时，标准 Transformer 架构与状态空间模型（SSM，如 Mamba）各有优劣。为了兼顾长上下文处理效率与精准细节检索能力，业界提出了将大部分 Attention 层替换为 Mamba 层、同时保留少量 Attention 层的混合架构。以下关于该混合架构的工程权衡与特性的说法，正确的有？（多选）",
+    "explanation": "Attention二次方+KV随长度增长；Mamba线性+常数隐状态；纯Mamba细节检索弱于Transformer；混合以Mamba降开销、少量Attention补检索。",
+    "correct": [
+      "标准 Attention 的计算复杂度与序列长度呈二次方关系，且推断阶段 KV Cache 内存占用随上下文增加而显著上升",
+      "Mamba 将历史序列压缩为固定大小的隐状态，计算复杂度与序列长度呈线性关系，推断阶段内存占用为常数级别",
+      "混合架构通过 Mamba 层降低绝大部分 Token 的处理与存储开销，同时利用少量 Attention 层弥补 Mamba 在精准信息检索方面的短板"
+    ],
+    "distractors": [
+      "纯 Mamba 模型在长文本精准细节检索（Needle in a Haystack）能力上通常强于纯 Transformer 模型"
+    ]
+  },
+  {
+    "seq": 81,
+    "kind": "question",
+    "id": "llm-moe-04",
+    "topic": "moe",
+    "angle": "mechanism",
+    "question": "在大模型架构设计中，混合专家（Mixture of Experts, MoE）架构被广泛用于扩展模型容量。以下关于 MoE 架构运行机制及工程特性的说法，正确的有？（多选）",
+    "explanation": "MoE门控动态选专家、以激活参数低开销扩容量；总参仍占显存、单卡部署不省显存；负载均衡是关键挑战。",
+    "correct": [
+      "MoE 架构通过门控路由（Routing/Gating）机制，为每个输入的 Token 动态选择并激活一部分专家网络（Experts）",
+      "MoE 能够以远低于总参数量的单 Token 激活参数量（Active Parameters）运行，从而在保持低计算开销的同时提高模型的总体容量",
+      "MoE 在分布式训练与推理时，不同专家节点之间的负载均衡（Load Balancing）是影响硬件利用率和通信开销的关键工程挑战"
+    ],
+    "distractors": [
+      "MoE 架构能够减少模型的总显存占用，因此比相同总参数量的 Dense 模型更适合部署在显存受限的单卡设备上"
+    ]
+  },
+  {
+    "seq": 82,
+    "kind": "question",
+    "id": "pos-encoding-sin-01",
+    "topic": "positional-encoding",
+    "angle": "mechanism",
+    "question": "标准 Self-Attention 是置换不变的。为了引入序列中 Token 的顺序信息，Transformer 使用了基于正弦和余弦函数的固定位置编码。关于位置编码的必要性与正弦编码的数学性质，下列哪些表述是正确的？（多选）",
+    "explanation": "A 正确：不加位置编码则打乱 Token 顺序输出的集合不变（置换不变）。B 正确：PE(pos+k) 可表示为 PE(pos) 的线性变换有利于学相对位置。C 正确：正弦编码是固定函数可外推到未见长度。D 错误：位置编码通过加法（element-wise addition）注入而非矩阵乘法。",
+    "correct": [
+      "如果不加入位置编码，将输入序列中的 Token 顺序打乱，Self-Attention 最终输出的集合将完全保持不变",
+      "选择正弦和余弦函数的主要数学优势之一是：对于任意固定的偏移量 k，PE(pos+k) 可以表示为 PE(pos) 的线性变换，这有利于模型学习相对位置关系",
+      "与可学习的位置嵌入相比，正弦位置编码具有允许模型外推到训练时未见过的更长序列长度的潜在优势"
+    ],
+    "distractors": [
+      "正弦位置编码是通过直接与 Token Embedding 进行矩阵乘法来注入位置信息的"
+    ]
+  },
+  {
+    "seq": 83,
+    "kind": "question",
+    "id": "pe-add-vs-concat",
+    "topic": "positional-encoding",
+    "angle": "tradeoff",
+    "question": "Self-Attention 具有置换不变性因此 Transformer 引入正弦位置编码并将编码向量与词嵌入向量直接相加。关于这一设计选择下列分析正确的是？（多选）",
+    "explanation": "A 正确：相加不增加维度避免了拼接带来的后续层参数膨胀。B 正确：三角函数的线性组合性质使模型更容易学习相对位置关系。C 正确：固定函数可外推到未见长度。D 错误：加法不会彻底覆盖语义信息——模型可通过后续线性层学会从混合信号中分离位置与语义成分。",
+    "correct": [
+      "相较于将 PE 与 X_embed 进行通道拼接直接相加不会增加输入张量的维度在不增加后续层参数量的前提下保留了位置信息",
+      "由于正弦余弦函数的三角学性质模型更容易学习到相对位置关系",
+      "相较于基于查找表可学习的位置编码正弦位置编码具备理论上外推到比训练集更长序列的能力"
+    ],
+    "distractors": [
+      "向量直接相加会导致位置数值彻底覆盖原始词向量的语义信息因此必须在每一个 Encoder 层重新叠加 PE"
+    ]
+  },
+  {
+    "seq": 84,
+    "kind": "question",
+    "id": "moe-design-tradeoff",
+    "topic": "moe",
+    "angle": "tradeoff",
+    "question": "在超大规模语言模型中 Mixture-of- Experts 架构被广泛应用。相比同等参数量的稠密模型关于 MoE 的工程特性与架构取舍下列哪些说法是正确的？（多选）",
+    "explanation": "A 正确 门控路由实现总参数量 Scaling 与单 Token FLOPs 解耦。B 错误 所有 Expert 都需常驻 VRAM 总显存不低于同等参数 Dense 甚至因路由开销更大。C 正确 Top-k 路由易导致 Expert 塌缩需辅助负载均衡损失。D 正确 all-to-all 通信开销通常更高。",
+    "correct": [
+      "MoE 通过门控路由网络将不同 Token 动态分配给特定的 Expert 子网络实现了总参数量 Scaling 与单 Token 计算量的解耦",
+      "Top-k 门控路由策略容易导致某些 Expert 被过度使用而另一些欠拟合在工程训练中通常需要引入辅助负载均衡损失",
+      "MoE 能够以相对较低的训练与推理算力开销扩充模型容量但相比同算力开销的 Dense 模型其分布式通信开销通常更高"
+    ],
+    "distractors": [
+      "由于每次推理仅激活部分 Expert MoE 模型在分布式部署时所需的 GPU 总显存显著低于同等总参数量的 Dense 模型"
+    ]
+  }
+]

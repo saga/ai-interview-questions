@@ -28,7 +28,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「BM25 直接利用词项匹配和词频、文档长度等信号，对精确术语尤其敏感，而纯语义检索可能把表面不同但语义相近的内容混在一起」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「能够直接利用查询词与文档词项之间的匹配关系」「对罕见术语和精确型号通常具有较强区分能力」等 3 项成立；并排除「不需要任何索引就能完成大规模检索」「能够自动理解任何隐含语义关系」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-extra-002",
@@ -56,7 +61,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「query expansion 通过增加同义词、相关术语或更明确的表达改善召回，而原始 embedding 主要依赖模型现有的语义表示」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「query expansion 可以扩大词面覆盖」成立；并排除「query expansion 一定会降低召回」「query expansion 会直接替代索引」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "ai-search-extra-003",
@@ -87,7 +97,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「query rewriting 可能改善用户原始表达与知识库术语之间的匹配，但会增加推理延迟和成本，并可能错误改变原始意图」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「改善原始查询与知识库术语之间的匹配」「增加额外模型调用带来的延迟和成本」等 3 项成立；并排除「一定能够提升所有查询的 Recall@K」「可以完全消除原始 query 中的歧义」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-004",
@@ -115,7 +130,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「结构化约束应尽可能在 retrieval 阶段通过 metadata filters 缩小候选空间，再执行语义或关键词检索」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此确认「先使用 metadata filters 限定部门和…」成立；并排除「把部门和日期要求全部交给生成模型在最终答案阶段自行判…」「把所有文档都检索出来」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "ai-search-extra-005",
@@ -147,7 +167,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「不同信号的尺度、重要性和交互关系可能不同，直接相加容易导致某个数值范围较大的信号支配最终排序」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「不同信号的尺度和重要性不同」「直接相加容易让数值范围更大的信号主导排序」等 3 项成立；并排除「所有 relevance 信号数值天然相同」「click signal 一加入排序就自动变成监督标…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-extra-006",
@@ -178,7 +203,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「更高 freshness 会优先近期内容，但可能压低更权威、更相关或长期有效的旧内容，因此需要平衡相关性、时效性和质量」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「最新内容可能获得过高排序位置」「长期有效但较旧的高质量内容可能被压低」等 3 项成立；并排除「提高 freshness 权重必能提升满意度」「新鲜度与相关性在任何查询上同等重要」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-007",
@@ -210,7 +240,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「cross-encoder 能更细致地建模 query-document 关系，但单条候选的计算成本较高，因此通常只处理已经缩小的候选集合」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「它计算更精细但单次成本更高」「query 与 document 联合编码能捕捉更细…」等 3 项成立；并排除「它只能处理已经经过关键词匹配的文档」「它无法比较 query 与 document 的语义…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "ai-search-extra-008",
@@ -242,7 +277,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「RRF 主要利用各个检索结果中的排名位置，将多个排序列表融合，而不要求不同检索器的原始 score 可以直接比较」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「利用每个检索器里的排名位置计算融合分数」「不要求各检索器的原始 score 处于相同量纲」等 3 项成立；并排除「要求所有检索器使用完全相同的原始 score 范围」「只保留 BM25 排名最高的结果」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-extra-009",
@@ -274,7 +314,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「高 Recall@100 说明相关结果大多进入候选集，但前 10 个结果质量差，问题更可能出现在候选排序或 reranking 策略，而不是召回覆盖本身」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「问题更可能在排序或 reranking 阶段」「候选集中存在相关文档」等 3 项成立；并排除「first-stage retrieval 完全没有…」「embedding index 一定损坏并返回空结果」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "ai-search-extra-010",
@@ -306,7 +351,12 @@
           4
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「更多轮次给了系统发现遗漏和进一步检索的机会，但同时会增加延迟、token 和工具调用成本，并可能导致收益递减」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「复杂问题可能获得更充分的检索机会」「平均检索延迟可能明显上升」等 4 项成立；并排除「多轮检索不一定让每个查询都同等幅度提升」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-011",
@@ -334,7 +384,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「查询需要实时结构化业务数据，因此应优先选择能够直接查询订单数据的工具，而不是把所有来源都交给统一语义检索」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此确认「优先调用实时订单数据库查询工具」成立；并排除「首先对整个企业文档库执行 dense retriev…」「先搜索 Web」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "ai-search-extra-012",
@@ -366,7 +421,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「独立子查询可以并行执行以降低 wall-clock latency，再汇总结果」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「独立子查询可以并行执行以降低整体 wall-cloc…」「并行后统一聚合结果」等 3 项成立；并排除「串行执行四个子查询」「只选择一个子查询执行」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-013",
@@ -397,7 +457,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「late interaction 可以保留 token-level 或局部表示，并在 query 与 document 的多个表示之间进行更细粒度匹配，因此能减少单向量压缩造成的…」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「保留更细粒度的文档局部表示」「允许 query 与文档的局部表示直接匹配」等 3 项成立；并排除「保证每个 query 只会匹配一个文档」「完全不需要第一阶段候选检索」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "ai-search-extra-014",
@@ -429,7 +494,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「100 亿级局部向量会显著增加索引存储、更新和检索计算成本，因此应先评估资源与 query-time latency 是否可接受」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「向量索引的存储规模」「检索和排序的计算成本」等 4 项成立；并排除「是否可以完全取消召回阶段」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-015",
@@ -459,7 +529,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「更高阈值通常可以提高结果精度，但可能过滤掉部分实际上相关但得分较低的结果，导致 recall 下降」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「结果 precision 可能提高」「recall 可能下降」等 2 项成立；并排除「precision 与 recall 一定同步提高」「recall 会提高」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "ai-search-extra-016",
@@ -491,7 +566,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「离线排序指标提升不代表线上真实需求一定改善，应检查评估集与真实流量的分布差异、query segment、行为指标和端到端答案质量」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「检查离线评估集是否代表真实线上查询分布」「按 query 类型分析 reranker 的收益和…」等 4 项成立；并排除「只继续增加 reranker 模型规模」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "ai-search-extra-017",
@@ -519,7 +599,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「需要避免单一文档占据大量 top positions」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「优化去重、文档级聚合或多样性排序」成立；并排除「增加 embedding 维度」「把 top-K 从 20 降到 5」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-018",
@@ -547,7 +632,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「如果业务确实偏好最新有效文档，可以在 ranking 阶段加入 freshness signal，同时限制其权重，避免牺牲语义相关性」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「在排序中加入受控的 freshness 信号」成立；并排除「完全按照发布时间排序」「删除旧文档」等不成立描述。"
+    },
+    "cognitiveTask": "apply"
   },
   {
     "id": "ai-search-extra-019",
@@ -579,7 +669,12 @@
           4
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「这个需求要求 ingestion、embedding、index update 具备持续增量处理能力，并明确 freshness SLA，而不是依赖低频全量重建」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「增量式 ingestion 管道」「异步 embedding 与索引更新」等 4 项成立；并排除「每次新增都重建整个索引」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-extra-020",
@@ -611,7 +706,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「只出现 tail latency 恶化通常应先检查排队、资源争用、偶发慢查询、cache miss、下游服务抖动和 timeout/retry 放大」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「下游 reranker 或 embedding 出现…」「线程池、连接池或队列是否出现局部拥塞」等 4 项成立；并排除「只需要检查平均 CPU 使用率即可」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "ai-search-extra-021",
@@ -639,7 +739,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「它判断当前检索结果是否已经足够回答原问题，并识别仍然缺失的信息，从而决定是否需要继续检索」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「判断当前证据是否足够」成立；并排除「替代所有底层搜索索引并直接生成最终答案」「把每次检索结果永久写入长期记忆」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-extra-022",
@@ -670,7 +775,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「重复查询说明 retrieval loop 没有产生有效的新搜索状态，需要检测 query novelty、结果 novelty 或 progress，并设置终止条件」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「检测新 query 与历史 query 的相似度」「检测新一轮结果是否带来新的证据」等 3 项成立；并排除「无限增加 maximum iterations」「为每一轮强制生成更多相同关键词」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "ai-search-extra-023",
@@ -698,7 +808,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「第二个查询依赖上一轮上下文，应合成带有已知实体和任务状态的完整查询，再执行针对东京的检索」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「结合上一轮上下文」成立；并排除「把“那东京呢」「始终重复执行上一轮完全相同的检索」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "ai-search-extra-024",
@@ -730,6 +845,11 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「离线 relevance metrics 无法完全反映真实用户体验，还需要结合 query success、点击、任务完成、引用正确性、延迟和业务结果等线上指标」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「离线 relevance 指标可能与真实用户任务不完…」「不同 query 类型对业务价值的影响可能不同」等 4 项成立；并排除「只要 nDCG 足够高」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   }
 ]

@@ -34,8 +34,22 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
         ]
       }
+    },
+    "misconceptions": [
+      "认为 IndexShare 会成倍缩减 KV Cache 显存（实际不缩减 KV Cache 体积）",
+      "认为后续层完全免注意力计算、从 O(N^2) 降为 O(1) 查表（实际仍按索引执行稀疏注意力点积）"
+    ],
+    "assessment": {
+      "target": "能说明跨层共享索引器（IndexShare）究竟减少了什么、没有减少什么",
+      "reasoningGoal": "先确认在 4 层组的首层算一次 Top-K 索引并透传给后续 3 层，省掉这 3 层索引器的 Query-Key 点积与排序开销；再由相邻层稀疏模式高度相关说明复用几乎不损精度；并确认每层 QKV 张量与 KV Cache 尺寸并未因此减少、后续层仍需按索引取 K/V 计算稀疏注意力，排除「成倍缩减 KV Cache」「注意力降为 O(1) 查表」。"
     }
   },
   {
@@ -75,6 +89,10 @@
           1
         ]
       }
+    },
+    "assessment": {
+      "target": "能诊断多步 MTP 接受率随步数衰减的成因，并说明 IndexShare 与 KVShare 为何能提升接受长度",
+      "reasoningGoal": "先确认第 2 步起输入隐藏状态来自前一步 MTP 模块而非 Target Model，与训练时全用真实隐藏状态不一致，污染 KV Cache 并随步数累积偏差；再说明复用 Target 侧的 Top-K 索引与 KV Cache 可消除特征污染；并排除「KVShare 需重跑完整 Forward」「瓶颈在共享 LM Head 权重结构」。"
     }
   },
   {
@@ -114,8 +132,22 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          1,
+          null
         ]
       }
+    },
+    "misconceptions": [
+      "认为 GRPO 在变长子轨迹下仍优于 PPO（实际缺组内基线会导致 Advantage 估计严重偏差）",
+      "认为 GRPO 无需训练 Critic 故可无损处理任意长度不均子轨迹"
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「当经过轨迹压缩（Compaction）切分后，不同 Rollout 生成的子轨迹数量不同、长度悬殊，缺乏一对一可比的组内参照物，使得组内归一化失效」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「GRPO 依赖于同一 Prompt 下多个 Roll…」「基于 Critic 的 PPO 能够对单条 Roll…」等 3 项成立；并排除「GRPO 在变长子轨迹场景下仍然优于 PPO」等不成立描述。"
     }
   },
   {
@@ -154,8 +186,22 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       }
+    },
+    "misconceptions": [
+      "认为 Online Guard 返回 Dummy 是为欺骗 Reward Model 给满分（实际是阻止 Hack 成功并给负向/无效反馈）",
+      "认为必须 Abort 整条轨迹才能杜绝 Hack（实际 Abort 更损害训练稳定性）"
+    ],
+    "assessment": {
+      "target": "能分析在线反 Reward Hacking 中「拦截并返回 Dummy」而非直接 Abort 的工程与算法合理性",
+      "reasoningGoal": "先确认直接 Abort 会陡然截断大量长轨迹、破坏数据分布完整性并引发 Rollout Collapse 与梯度震荡；再说明拦截并返回 Dummy 让环境给出合法的对抗反馈、引导模型在后续步骤改走正规解题路径；并确认先规则过滤保召回、再 LLM Judge 分析意图保精度的两阶段设计，排除「Dummy 是为欺骗 Reward Model 给满分」。"
     }
   }
 ]

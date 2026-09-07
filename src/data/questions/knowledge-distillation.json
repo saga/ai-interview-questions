@@ -1,0 +1,153 @@
+[
+  {
+    "id": "q-kd-temp-scaling-c",
+    "category": "深度学习",
+    "topic": "kd-temperature-scaling-mechanism",
+    "tags": [
+      "知识蒸馏",
+      "Temperature",
+      "Soft Targets"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Knowledge Distillation",
+      "supporting": [
+        "Temperature Scaling",
+        "Soft Targets",
+        "Dark Knowledge"
+      ]
+    },
+    "question": "在基于教师-学生（Teacher-Student）架构的知识蒸馏中，模型通常引入温度系数 $T$（Temperature Scaling）将 Teacher 输出的 Logits 转化为 Soft Targets。关于温度系数 $T$ 的作用机制以及 Soft Targets 相比传统离散 One-hot Hard Targets 的优势，下列哪些说法是正确的？",
+    "explanation": "A项正确：当蒸馏温度 $T>1$ 时，Softmax 公式 $q_i = \\frac{\\exp(z_i/T)}{\\sum_j \\exp(z_j/T)}$ 会平滑概率分布，使得概率极小且接近 0 的负类别（如 $10^{-6}$ 与 $10^{-9}$）之间的相对比例显式展露出来，这就是类间相似度暗知识（Dark Knowledge）。\nB项正确：高熵的 Soft Targets 包含比离散 One-hot 标签更丰富的概率密度分布，显著降低了样本间梯度的方差，支持在较少数据和更高学习率下稳定训练。\nC项错误：温度系数 $T$ 仅应用于 Softmax 概率计算阶段，完全不改变特征提取器的网络层维度或模型参数量。\nD项正确：Teacher 模型的 Soft Targets 编码了模型的泛化行为（如揭示某种数字‘2’与‘3’相似还是与‘7’相似），向 Student 模型传递了样本间的相似度结构约束，起到了强大的正则化作用。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随着蒸馏温度 $T$ 的升高，Softmax 输出的概率分布会变得更加平滑，使得原本数值极小、受离散 One-hot 限制的非正确类别（负类别）之间的相对概率比值显式展现出来，从而暴露类间相似度结构（暗知识）。",
+          "相比包含单极高概率的 Hard Targets，高熵的 Soft Targets 在样本间传递了更高信息密度的监督信号，同时减小了不同样本间梯度的方差，使 Student 模型能以更高的学习率稳定训练。",
+          "引入温度 $T$ 的本质目的是改变神经网络倒数第二层特征提取器（Feature Extractor）的维度，从根本上解决 Student 模型表达能力不足的问题。",
+          "Soft Targets 提供的非目标类别概率隐式限定了模型的泛化边界（例如某种数字‘2’与数字‘3’更相似还是与‘7’更相似），能作为强正则化手段降低 Student 模型的过拟合风险。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      }
+    },
+    "misconceptions": [
+      "认为引入 T 是为了改变网络倒数第二层维度以解决 Student 表达能力不足",
+      "认为 Soft Targets 只提供单一高概率标签的同义复述"
+    ],
+    "assessment": {
+      "target": "能解释蒸馏温度 T 如何平滑分布以暴露暗知识，并说明 Soft Targets 相比 Hard Targets 的优势",
+      "reasoningGoal": "先由 q_i=exp(z_i/T)/Σexp(z_j/T) 推出 T>1 会平滑分布、展露负类别之间的相对比例（暗知识）；再说明高熵软标签信息密度更高、降低样本间梯度方差从而支持更高学习率；并叠加类间相似度结构带来的正则化作用，排除「T 改变特征提取器维度」的说法。"
+    }
+  },
+  {
+    "id": "q-kd-logit-matching-c",
+    "category": "深度学习",
+    "topic": "kd-logit-matching-high-temp-limit",
+    "tags": [
+      "Logit Matching",
+      "High Temperature Limit",
+      "数学推导"
+    ],
+    "difficulty": "hard",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "Logit Matching",
+      "supporting": [
+        "High-Temperature Limit",
+        "Taylor Expansion",
+        "MSE Loss"
+      ]
+    },
+    "question": "在研究知识蒸馏的高温极限（High-Temperature Limit）数学性质时，假设 Teacher 与 Student 的 Logits 分别为 $v_i$ 与 $z_i$。在对 Softmax 梯度进行一阶泰勒展开（$e^x \\approx 1+x$）并推导其与 Logit MSE 匹配（Matching Logits）的等价性时，以下哪些结论或条件是正确的？",
+    "explanation": "A项正确：在极高温度 $T \\to \\infty$ 下，基于一阶泰勒展开 $e^{z_i/T} \\approx 1 + z_i/T$， Softmax 概率近似为 $q_i \\approx \\frac{1 + z_i/T}{N + \\sum_j z_j/T}$。若满足逐样本零均值假设 $\\sum_j z_j = \\sum_j v_j = 0$，软目标交叉熵梯度可化简为 $\\frac{\\partial C}{\\partial z_i} \\approx \\frac{1}{N T^2}(z_i - v_i)$。\nB项正确：上述简化梯度的形式与直接优化 Logit 均方误差损失 $L_{MSE} = \\frac{1}{2}(z_i - v_i)^2$ 的梯度完全成正比，证明 Logit MSE 匹配是知识蒸馏在高温极限且零均值化时的特例。\nC项正确：在较低或中等温度下，极小的 Logit $v_i$ 在 $\\exp(v_i/T)$ 作用下趋近于 0，使得交叉熵梯度对其不敏感，从而起到了忽略并过滤 Teacher 模型中未受强约束的负 Logit 随机噪声的作用。\nD项错误：结论因果倒置。降低蒸馏温度是减少（而非增加）对极小负 Logits 的关注和匹配。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在极端高蒸馏温度 $T \\to \\infty$ 下，若对各样本的 Teacher 与 Student Logits 分别满足零均值条件（$\\sum_j z_j = 0, \\sum_j v_j = 0$），软目标交叉熵梯度可化简为 $\\frac{\\partial C}{\\partial z_i} \\approx \\frac{1}{N T^2}(z_i - v_i)$。",
+          "直接对 Teacher 与 Student 的 Logits 进行均方误差匹配（Matching Logits，即 $\\frac{1}{2}\\sum (z_i - v_i)^2$）是知识蒸馏在高温极限且 Logits 零均值化下的特殊推论。",
+          "相比于高温极限，中等或较低的蒸馏温度会使模型减少对‘远低于平均值的极小 Logits’的匹配权重，这有助于过滤 Teacher 模型中未受约束的极小 Logits 噪声。",
+          "降低蒸馏温度 $T$ 会强制模型更加关注极小负 Logits，从而使 Student 更加精确地拟合 Teacher 模型所有的离群特征。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      }
+    },
+    "misconceptions": [
+      "认为降低温度会强制模型更关注极小负 Logits（实际是减少关注、过滤噪声）",
+      "认为高温极限推导依赖完整 Softmax 指数运算而非一阶泰勒近似"
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「降低蒸馏温度是减少（而非增加）对极小负 Logits 的关注和匹配」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此逐项确认「在极端高蒸馏温度 $T \\to \\infty$ 下」「直接对 Teacher 与 Student 的 Lo…」等 3 项成立；并排除「降低蒸馏温度 $T$ 会强制模型更加关注极小负 Lo…」等不成立描述。"
+    }
+  },
+  {
+    "id": "q-kd-specialist-c",
+    "category": "深度学习",
+    "topic": "kd-specialist-ensemble-dustbin-correction",
+    "tags": [
+      "Specialist Models",
+      "Dustbin Class",
+      "Logit Adjustment",
+      "海量类别"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "Specialist Model",
+      "supporting": [
+        "Dustbin Class",
+        "Logit Adjustment",
+        "Oversampling Bias"
+      ]
+    },
+    "question": "在海量分类任务（如上万种类别）中，为了降低大模型 Ensembles 的训练与推理开销，可以构建由通用模型（Generalist）和多个专家模型（Specialists）组成的分布式混合架构。关于 Specialist 模型的构建、训练及推理校正机制，下列哪些说法是正确的？",
+    "explanation": "A项正确：可以直接在 Generalist 模型预测输出的协方差矩阵上运行聚类算法（如 K-means），自动将经常被同时混淆预测的类别划分为 Specialist 负责的专精类别簇。\nB项正确：Specialist 模型无需为非专精的数万个类别建立独立输出层，只需保留专精类别，并将其余所有不关心的类别打包归类为单一 Dustbin Class，极大地简化了网络维度。\nC项正确：专精类别在 Specialist 训练集中被过采样（如占比达到 50%），导致 Dustbin Class 的训练先验低于真实测试分布。根据对数几率修正（Logit Adjustment），推理时必须对 Dustbin Class 的 Logit 加上过采样比例的对数值（$\\log r_{\\text{oversample}}$）以消除采样偏差。\nD项正确：当 Specialist 对某样本输出的 Dustbin Class 概率接近 1 时，说明该样本不属于其擅长领域，可以在分布式融合推理中据此快速忽略其专精类别的预测信号。",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可以在通用模型（Generalist）预测输出的协方差矩阵上运行聚类算法（如 K-means），将经常被同时混淆预测的类别聚类为特定专家模型（Specialist）的专精类别集。",
+          "为降低 Specialist 的计算开销，可以将该 Specialist 不关心的所有非专精类别合并归类为单一的‘垃圾桶类别’（Dustbin Class），显著缩小其 Softmax 输出维度。",
+          "由于 Specialist 训练集中专精类别被大幅过采样（如占比达到 50%），在推理阶段必须对 Dustbin Class 的 Logit 增加过采样比例的对数值（$\\log r_{\\text{oversample}}$）以矫正训练偏置。",
+          "若 Specialist 模型对某样本输出的 Dustbin Class 预测概率极高，表明该样本大概率不属于该 Specialist 的专精范畴，可以据此实现高效的推理融合与决策衰减。"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「根据对数几率修正（Logit Adjustment），推理时必须对 Dustbin Class 的 Logit 加上过采样比例的对数值（$\\log r_{\\text{oversa…」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「可以在通用模型（Generalist）预测输出的协方…」「为降低 Specialist 的计算开销」等 4 项成立。"
+    }
+  }
+]

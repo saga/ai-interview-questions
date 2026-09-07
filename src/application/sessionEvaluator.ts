@@ -9,7 +9,7 @@ import type { SessionQuestion } from '../schemas/session';
 import type { VariantPool } from '../schemas/variant';
 import { availableFormats } from '../domain/quiz';
 import { gradeChoice, DEFAULT_RUBRIC } from '../domain/evaluation';
-import { applyVariant, validateVariant } from '../domain/variant';
+import { applyVariant, measurementFaceOf, validateVariant, type VariantMeasurementFace } from '../domain/variant';
 import { resolveQuestionVariant } from '../domain/variantPool';
 import { recordVariantRound } from '../ai/usageTelemetry';
 import type { Question } from '../schemas/question';
@@ -89,7 +89,14 @@ export async function finalizeQuestion(
   // ── Pool-first：命中即零 LLM 落地（离线资产优先） ──
   const pooled = resolveQuestionVariant({ canonical: sq.question, pool, seen });
   if (pooled) {
-    const gen: GeneratedVariant = { question: pooled.question, options: pooled.options };
+    // 测量面必须一起带上（P1-1）：池条目是 Assessment Variant，可能自声明了
+    // angle / cognitiveTask / assessment；只取 question+options 会把它降级成 Presentation Variant，
+    // 声明的不同 reasoning path 在运行时被悄悄抹掉。
+    const gen: GeneratedVariant & VariantMeasurementFace = {
+      question: pooled.question,
+      options: pooled.options,
+      ...measurementFaceOf(pooled),
+    };
     const check = validateVariant(sq.question, gen, sq.format);
     if (check.ok) {
       // Pool hit：零 LLM，记一条延迟为 0 的遥测（用于评估「池覆盖省了多少 LLM 调用」）。

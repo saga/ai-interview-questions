@@ -396,6 +396,24 @@ describe('applyVariant 测量面（ADR-077：offline variant 可换 angle / cogn
     expect(r.angle).toBe('mechanism');
   });
 
+  // 测量意图（plan0907 / P0-2）与 angle / cognitiveTask 同属测量面：
+  // 变体声明了不同的 reasoningGoal = 它走的是另一条推理路径，必须随变体一起落地，否则无从审计。
+  it('声明 assessment → 采用声明值（回归：此前只存在于 schema，applyVariant 静默丢弃）', () => {
+    const withGoal: Question = {
+      ...base,
+      assessment: { target: '判断 KV Cache 命中条件', reasoningGoal: '沿 prefill/decode 两阶段推导显存占用' },
+    };
+    const declared = { target: '判断 KV Cache 失效场景', reasoningGoal: '沿前缀失效推导重算代价' };
+    const r = applyVariant(withGoal, { ...variant({ options: ['x', 'y', 'z'] }), assessment: declared });
+    expect(r.assessment).toEqual(declared);
+  });
+
+  it('未声明 assessment → 继承 canonical 的测量意图', () => {
+    const goal = { target: '判断 KV Cache 命中条件', reasoningGoal: '沿 prefill/decode 两阶段推导显存占用' };
+    const r = applyVariant({ ...base, assessment: goal }, variant({ options: ['x', 'y', 'z'] }));
+    expect(r.assessment).toEqual(goal);
+  });
+
   it('开放题同样应用声明的测量面（两条 return 分支都要覆盖）', () => {
     const r = applyVariant(
       { ...oq, angle: 'fundamental' },

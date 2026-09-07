@@ -6,6 +6,7 @@ import {
   variantSourceOf,
   questionVariantSchema,
   variantPoolSchema,
+  variantModeOf,
   EMPTY_VARIANT_POOL,
 } from './variant';
 
@@ -166,6 +167,31 @@ describe('questionVariantSchema', () => {
   it('拒绝非法 kind / 空字段', () => {
     expect(questionVariantSchema.safeParse({ id: '', kind: 'surface', question: 'x', generatedAt: 1, generator: 'offline', promptVersion: 'v3', sourceHash: 'h' }).success).toBe(false);
     expect(questionVariantSchema.safeParse({ id: 'q', kind: 'bogus', question: 'x', generatedAt: 1, generator: 'offline', promptVersion: 'v3', sourceHash: 'h' }).success).toBe(false);
+  });
+
+  // P1-1 方案 A：runtime = Presentation Variant，结构上不允许声明测量面。
+  const runtimeBase = { id: 'q-1__surface__0', kind: 'surface', question: 'x', generatedAt: 1, generator: 'runtime' as const, promptVersion: 'v3', sourceHash: 'h' };
+
+  it('runtime 变体声明 angle / cognitiveTask / assessment 一律拒绝', () => {
+    expect(questionVariantSchema.safeParse({ ...runtimeBase, angle: 'mechanism' }).success).toBe(false);
+    expect(questionVariantSchema.safeParse({ ...runtimeBase, cognitiveTask: 'diagnose' }).success).toBe(false);
+    expect(questionVariantSchema.safeParse({ ...runtimeBase, assessment: { target: 't', reasoningGoal: 'g' } }).success).toBe(false);
+  });
+
+  it('offline 变体允许声明测量面（Assessment Variant）', () => {
+    const v = {
+      ...runtimeBase,
+      generator: 'offline' as const,
+      angle: 'mechanism',
+      cognitiveTask: 'diagnose',
+      assessment: { target: 't', reasoningGoal: 'g' },
+    };
+    expect(questionVariantSchema.safeParse(v).success).toBe(true);
+  });
+
+  it('variantModeOf：runtime → presentation，offline → assessment', () => {
+    expect(variantModeOf({ generator: 'runtime' })).toBe('presentation');
+    expect(variantModeOf({ generator: 'offline' })).toBe('assessment');
   });
 });
 

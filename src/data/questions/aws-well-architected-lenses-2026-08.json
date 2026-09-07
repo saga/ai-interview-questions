@@ -4,402 +4,1402 @@
     "category": "agent-engineering",
     "topic": "agent-fundamentals",
     "subtopic": "原子任务与可预测执行",
-    "tags": ["aws-well-architected", "agentic-ai", "atomic-task"],
+    "tags": [
+      "aws-well-architected",
+      "agentic-ai",
+      "atomic-task"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "一个 Agent 同时负责检索、审批、发信和修改生产数据，错误很难定位。哪些架构改进最关键？（请选择两个）",
     "explanation": "应按单一、原子的能力拆分任务，为每个能力定义输入校验和结构化输出契约，并分别配置权限、遥测和失败处理。扩大上下文或只加一句谨慎提示不能降低组合式失败面。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html", "section": "AGENTREL02: Predictable task execution"},
-    "formats": {"choice": {"type": "multiple", "options": ["拆成原子能力并为输入、输出建立可测试契约", "为不同能力分别配置权限和遥测边界", "继续扩大一个 Agent 的职责以减少通信开销", "只增加 system prompt 中的安全提醒"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。原子任务、明确 schema、独立权限和遥测能限制随机行为的影响并提高可测试性。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html",
+      "section": "AGENTREL02: Predictable task execution"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "拆成原子能力并为输入、输出建立可测试契约",
+          "为不同能力分别配置权限和遥测边界",
+          "继续扩大一个 Agent 的职责以减少通信开销",
+          "只增加 system prompt 中的安全提醒"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。原子任务、明确 schema、独立权限和遥测能限制随机行为的影响并提高可测试性。"
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「应按单一、原子的能力拆分任务，为每个能力定义输入校验和结构化输出契约，并分别配置权限、遥测和失败处理」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「拆成原子能力并为输入、输出建立可测试契约」「为不同能力分别配置权限和遥测边界」等 2 项成立；并排除「继续扩大一个 Agent 的职责以减少通信开销」「只增加 system prompt 中的安全提醒」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-02",
     "category": "agent-engineering",
     "topic": "tool-security",
     "subtopic": "分层身份与动态权限",
-    "tags": ["aws-well-architected", "agentic-ai", "least-privilege", "identity"],
+    "tags": [
+      "aws-well-architected",
+      "agentic-ai",
+      "least-privilege",
+      "identity"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "Agent 代表用户调用下游服务时，哪些身份设计能保留用户级授权又避免把用户凭证交给 Agent？（请选择两个）",
     "explanation": "应使用独立的 Agent/service identity，并在调用链中传播经过签名的用户上下文声明；服务身份、单次 transaction 权限和用户级约束分别控制，不应让 Agent 直接接管用户角色。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentsec03-bp03.html", "section": "Identity layers and dynamic boundaries"},
-    "formats": {"choice": {"type": "multiple", "options": ["使用独立 Agent 身份执行服务级认证", "传播签名用户上下文并在服务端执行用户级授权", "让 Agent 长期保存用户的 API key", "所有 Agent 共用一个管理员角色并依赖审计区分"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Agent 不应持有用户凭证，服务端应同时验证服务身份和签名用户上下文。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentsec03-bp03.html",
+      "section": "Identity layers and dynamic boundaries"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用独立 Agent 身份执行服务级认证",
+          "传播签名用户上下文并在服务端执行用户级授权",
+          "让 Agent 长期保存用户的 API key",
+          "所有 Agent 共用一个管理员角色并依赖审计区分"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。Agent 不应持有用户凭证，服务端应同时验证服务身份和签名用户上下文。"
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「应使用独立的 Agent/service identity，并在调用链中传播经过签名的用户上下文声明」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「使用独立 Agent 身份执行服务级认证」「传播签名用户上下文并在服务端执行用户级授权」等 2 项成立；并排除「让 Agent 长期保存用户的 API key」「所有 Agent 共用一个管理员角色并依赖审计区分」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "aws-waf-lens-2026-08-03",
     "category": "agent-engineering",
     "topic": "agent-fundamentals",
     "subtopic": "分级人工监督",
-    "tags": ["aws-well-architected", "agentic-ai", "human-oversight"],
+    "tags": [
+      "aws-well-architected",
+      "agentic-ai",
+      "human-oversight"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "为什么不应让所有 Agent 动作都采用同一种人工审批策略？哪些设计更合理？（请选择两个）",
     "explanation": "审批等级应匹配动作的风险、影响和可逆性。低风险可逆操作可以自动化，高影响或不可逆操作需要审批、超时和升级路径；统一全审批会形成瓶颈，统一全自动则放大事故。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html", "section": "Tiered human oversight and approval workflows"},
-    "formats": {"choice": {"type": "multiple", "options": ["低风险且可逆的动作可以在规则内自动执行", "高影响或不可逆动作应审批并设置超时和升级", "所有动作都人工批准，才能保证系统可靠", "由模型自行决定是否需要人工，不设外部规则"], "answer": [0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。监督应按风险和可逆性分层，关键动作需要外部策略、超时和审计。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html",
+      "section": "Tiered human oversight and approval workflows"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "低风险且可逆的动作可以在规则内自动执行",
+          "高影响或不可逆动作应审批并设置超时和升级",
+          "所有动作都人工批准，才能保证系统可靠",
+          "由模型自行决定是否需要人工，不设外部规则"
+        ],
+        "answer": [
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。监督应按风险和可逆性分层，关键动作需要外部策略、超时和审计。"
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「低风险可逆操作可以自动化，高影响或不可逆操作需要审批、超时和升级路径」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「低风险且可逆的动作可以在规则内自动执行」「高影响或不可逆动作应审批并设置超时和升级」等 2 项成立；并排除「所有动作都人工批准」「由模型自行决定是否需要人工」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-04",
     "category": "agent-engineering",
     "topic": "evaluation",
     "subtopic": "行为异常监控",
-    "tags": ["aws-well-architected", "agentic-ai", "observability", "drift"],
+    "tags": [
+      "aws-well-architected",
+      "agentic-ai",
+      "observability",
+      "drift"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "基础设施 CPU 和延迟均正常，但 Agent 最近平均调用工具次数翻倍、输出变长。哪些监控改进有价值？（请选择两个）",
     "explanation": "Agent 的行为指标也是可靠性信号，应监控工具调用、记忆访问、输出分布、失败重试和任务完成质量，并与行为基线比较。基础设施健康不代表认知流程没有漂移。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html", "section": "Agent-specific telemetry and behavioral baselines"},
-    "misconceptions": ["CPU 与延迟正常即代表 Agent 没有退化，无需再看行为指标", "剔除长输出样本可以让平均输出长度回到正常区间，从而消除指标异常"],
-    "formats": {"choice": {"type": "multiple", "options": ["监控工具调用次数和输出分布等行为指标", "建立行为基线并对异常变化触发调查", "只要 CPU 正常就不需要继续排查", "删除较长输出样本以恢复平均值"], "answer": [0, 1], "misconceptionMap": [null, null, 0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Agent 行为遥测和基线能发现基础设施指标覆盖不到的漂移与级联风险。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel02.html",
+      "section": "Agent-specific telemetry and behavioral baselines"
+    },
+    "misconceptions": [
+      "CPU 与延迟正常即代表 Agent 没有退化，无需再看行为指标",
+      "剔除长输出样本可以让平均输出长度回到正常区间，从而消除指标异常"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "监控工具调用次数和输出分布等行为指标",
+          "建立行为基线并对异常变化触发调查",
+          "只要 CPU 正常就不需要继续排查",
+          "删除较长输出样本以恢复平均值"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。Agent 行为遥测和基线能发现基础设施指标覆盖不到的漂移与级联风险。"
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Agent 的行为指标也是可靠性信号，应监控工具调用、记忆访问、输出分布、失败重试和任务完成质量，并与行为基线比较」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「监控工具调用次数和输出分布等行为指标」「建立行为基线并对异常变化触发调查」等 2 项成立；并排除「只要 CPU 正常就不需要继续排查」「删除较长输出样本以恢复平均值」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-waf-lens-2026-08-05",
     "category": "agent-engineering",
     "topic": "evaluation",
     "subtopic": "认知流水线成本",
-    "tags": ["aws-well-architected", "agentic-ai", "reasoning-loop", "cost"],
+    "tags": [
+      "aws-well-architected",
+      "agentic-ai",
+      "reasoning-loop",
+      "cost"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "Agent 一次请求会触发多次推理、工具和多 Agent 通信。优化时哪些可见性最重要？（请选择两个）",
     "explanation": "应按请求和工作流归因每次推理、工具调用、记忆访问、重试和 Agent 间通信的延迟与成本，才能识别不必要的循环、模型过度使用和协调开销。只看平均 API 延迟会遗漏主要成本。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentic-ai-lens.html", "section": "What makes this lens unique: reasoning, acting, and collaboration"},
-    "misconceptions": ["统计最终 HTTP 请求次数就足以归因 Agent 成本，中间步骤可忽略", "删掉中间 trace 能降低观测成本，是一种合理的成本优化手段"],
-    "formats": {"choice": {"type": "multiple", "options": ["按工作流追踪推理、工具、记忆、重试和通信的成本", "按步骤记录延迟并识别循环或协调开销", "只统计最终 HTTP 请求次数", "删除中间 trace 以降低观测成本"], "answer": [0, 1], "misconceptionMap": [null, null, 0, 1]}, "open": {"referenceAnswer": "正确答案：A、B。Agent 成本和延迟来自认知流水线的多个步骤，必须按工作流和步骤做端到端归因。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentic-ai-lens.html",
+      "section": "What makes this lens unique: reasoning, acting, and collaboration"
+    },
+    "misconceptions": [
+      "统计最终 HTTP 请求次数就足以归因 Agent 成本，中间步骤可忽略",
+      "删掉中间 trace 能降低观测成本，是一种合理的成本优化手段"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按工作流追踪推理、工具、记忆、重试和通信的成本",
+          "按步骤记录延迟并识别循环或协调开销",
+          "只统计最终 HTTP 请求次数",
+          "删除中间 trace 以降低观测成本"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A、B。Agent 成本和延迟来自认知流水线的多个步骤，必须按工作流和步骤做端到端归因。"
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「应按请求和工作流归因每次推理、工具调用、记忆访问、重试和 Agent 间通信的延迟与成本，才能识别不必要的循环、模型过度使用和协调开销」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「按工作流追踪推理、工具、记忆、重试和通信的成本」「按步骤记录延迟并识别循环或协调开销」等 2 项成立；并排除「只统计最终 HTTP 请求次数」「删除中间 trace 以降低观测成本」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-06",
     "category": "agent-engineering",
     "topic": "reliability",
     "subtopic": "失败恢复与幂等",
-    "tags": ["aws-well-architected", "agentic-ai", "failover", "idempotency"],
+    "tags": [
+      "aws-well-architected",
+      "agentic-ai",
+      "failover",
+      "idempotency"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "Agent 在调用外部支付系统后超时，无法判断支付是否成功。恢复流程应优先依赖什么？（单选）",
     "explanation": "外部副作用必须使用幂等键、持久化状态和可查询的结果确认，恢复时安全重试或转人工；不能仅依据模型记忆判断是否已支付，也不能盲目重复调用。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel06.html", "section": "Reliable legacy integration with fallbacks and idempotency"},
-    "formats": {"choice": {"type": "single", "options": ["让模型猜测支付状态后再次扣款", "使用幂等键和持久状态查询结果，无法确认时暂停并升级", "忽略超时并把成功当作默认结果", "删除状态记录后重新运行完整 Agent"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。恢复必须依赖外部系统可验证的状态和幂等操作，避免不确定状态下重复副作用。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel06.html",
+      "section": "Reliable legacy integration with fallbacks and idempotency"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "让模型猜测支付状态后再次扣款",
+          "使用幂等键和持久状态查询结果，无法确认时暂停并升级",
+          "忽略超时并把成功当作默认结果",
+          "删除状态记录后重新运行完整 Agent"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。恢复必须依赖外部系统可验证的状态和幂等操作，避免不确定状态下重复副作用。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「外部副作用必须使用幂等键、持久化状态和可查询的结果确认，恢复时安全重试或转人工」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「使用幂等键和持久状态查询结果」成立；并排除「让模型猜测支付状态后再次扣款」「忽略超时并把成功当作默认结果」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-07",
     "category": "ai-security",
     "topic": "prompt-injection",
     "subtopic": "生成式应用安全边界",
-    "tags": ["aws-well-architected", "generative-ai", "prompt-injection"],
+    "tags": [
+      "aws-well-architected",
+      "generative-ai",
+      "prompt-injection"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "生成式应用的安全设计为什么需要同时保护模型、数据存储、端点和工作流？（单选）",
     "explanation": "攻击面横跨输入、提示目录、模型端点、知识库、工具和输出；仅保护端点或只做关键词过滤无法阻止越权数据访问、提示注入和有害输出。安全控制应覆盖数据与通信流并由应用层权限强制执行。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/security.html", "section": "Comprehensive access controls and secure data flows"},
-    "formats": {"choice": {"type": "single", "options": ["只保护模型 API key 并定期轮换密钥即可覆盖全部安全风险，其他组件不属于模型安全范畴，应用层无需额外控制", "只在用户输入上做关键词过滤即可拦截全部注入，模型内部、知识库与下游工具无需再做输入验证或输出校验", "跨模型、数据、端点和工作流建立访问控制、输入验证、输出校验和监控", "基础模型提供者负责模型侧安全，应用层做好 API 密钥管理即够；访问控制与监控是提供者的责任。"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。生成式 AI 的应用安全是端到端边界问题，需要纵深防御和组件级权限。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/security.html",
+      "section": "Comprehensive access controls and secure data flows"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只保护模型 API key 并定期轮换密钥即可覆盖全部安全风险，其他组件不属于模型安全范畴，应用层无需额外控制",
+          "只在用户输入上做关键词过滤即可拦截全部注入，模型内部、知识库与下游工具无需再做输入验证或输出校验",
+          "跨模型、数据、端点和工作流建立访问控制、输入验证、输出校验和监控",
+          "基础模型提供者负责模型侧安全，应用层做好 API 密钥管理即够；访问控制与监控是提供者的责任。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。生成式 AI 的应用安全是端到端边界问题，需要纵深防御和组件级权限。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「安全控制应覆盖数据与通信流并由应用层权限强制执行」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「跨模型、数据、端点和工作流建立访问控制、输入验证、输…」成立；并排除「只保护模型 API key 并定期轮换密钥即可覆盖全…」「只在用户输入上做关键词过滤即可拦截全部注入」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "aws-waf-lens-2026-08-08",
     "category": "llm-fundamentals",
     "topic": "factuality-verification",
     "subtopic": "护栏触发后的降级",
-    "tags": ["aws-well-architected", "generative-ai", "guardrails", "hallucination"],
+    "tags": [
+      "aws-well-architected",
+      "generative-ai",
+      "guardrails",
+      "hallucination"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "输出校验发现回答包含未经证实的金融事实时，生产系统最合理的行为是什么？（单选）",
     "explanation": "护栏不是只记录告警；应定义触发后的行为，例如阻断、删除无依据断言、给出受限回复或转人工，并根据风险等级选择人工审查。RAG 或提示词本身不能替代输出验证。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/gensec02-bp01.html", "section": "Fallback behavior when guardrails are triggered"},
-    "formats": {"choice": {"type": "single", "options": ["仍返回原回答，只在日志里记录告警", "定义阻断、受限回复或人工升级等明确 fallback", "自动提高 temperature 直到出现更自信的答案", "让用户自己判断事实是否可信"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。护栏应与明确的阻断、改写、拒答或人工升级动作相连，不能只有告警。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/gensec02-bp01.html",
+      "section": "Fallback behavior when guardrails are triggered"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仍返回原回答，只在日志里记录告警",
+          "定义阻断、受限回复或人工升级等明确 fallback",
+          "自动提高 temperature 直到出现更自信的答案",
+          "让用户自己判断事实是否可信"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。护栏应与明确的阻断、改写、拒答或人工升级动作相连，不能只有告警。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应定义触发后的行为，例如阻断、删除无依据断言、给出受限回复或转人工，并根据风险等级选择人工审查」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「定义阻断、受限回复或人工升级等明确 fallback」成立；并排除「仍返回原回答」「自动提高 temperature 直到出现更自信的答…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-09",
     "category": "ai-security",
     "topic": "data-leakage",
     "subtopic": "数据投毒与供应链",
-    "tags": ["aws-well-architected", "generative-ai", "data-poisoning"],
+    "tags": [
+      "aws-well-architected",
+      "generative-ai",
+      "data-poisoning"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "知识库更新后模型开始遵循文档中隐藏的外部指令。最可能的风险与修复组合是什么？（单选）",
     "explanation": "这是不可信数据进入检索或操作链路后造成的间接提示注入/数据投毒风险。应验证数据来源和完整性，区分数据与指令，限制检索内容可产生的权限，并在发布前做对抗性测试。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/gensec06.html", "section": "Data poisoning"},
-    "formats": {"choice": {"type": "single", "options": ["这是模型温度变化导致的偶发行为，只需在推理时调低 temperature 即可消除，无需审查数据来源与版本", "这是知识库内容天然可信的体现，文档进入检索即代表已授权，不需要做来源完整性或恶意内容校验", "校验来源与版本、扫描恶意内容、隔离数据和指令并做发布前安全测试", "扩大知识库规模让正确文档在数量上淹没恶意文档，靠投票或权重自然稀释风险，无需隔离数据与指令"], "answer": [2]}, "open": {"referenceAnswer": "正确答案：C。检索数据也应视为不可信输入，需做来源、完整性、内容和权限边界治理。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/gensec06.html",
+      "section": "Data poisoning"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "这是模型温度变化导致的偶发行为，只需在推理时调低 temperature 即可消除，无需审查数据来源与版本",
+          "这是知识库内容天然可信的体现，文档进入检索即代表已授权，不需要做来源完整性或恶意内容校验",
+          "校验来源与版本、扫描恶意内容、隔离数据和指令并做发布前安全测试",
+          "扩大知识库规模让正确文档在数量上淹没恶意文档，靠投票或权重自然稀释风险，无需隔离数据与指令"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。检索数据也应视为不可信输入，需做来源、完整性、内容和权限边界治理。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「这是不可信数据进入检索或操作链路后造成的间接提示注入/数据投毒风险」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「校验来源与版本、扫描恶意内容、隔离数据和指令并做发布…」成立；并排除「这是模型温度变化导致的偶发行为」「这是知识库内容天然可信的体现」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-waf-lens-2026-08-10",
     "category": "llm-applications",
     "topic": "rag",
     "subtopic": "生成式应用的数据检索性能",
-    "tags": ["aws-well-architected", "generative-ai", "rag", "performance"],
+    "tags": [
+      "aws-well-architected",
+      "generative-ai",
+      "rag",
+      "performance"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "RAG 应用延迟超出目标，且上下文中包含大量无关文档。最合理的优化顺序是什么？（单选）",
     "explanation": "应分别测量检索召回、重排、上下文构建和生成的耗时与质量，优化查询、过滤、分块和重排，使上下文更小但保留证据。盲目扩大上下文会增加成本和延迟，并可能降低有效注意力。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Performance efficiency: improve data retrieval performance"},
-    "formats": {"choice": {"type": "single", "options": ["直接把所有文档放入最大上下文", "测量检索链路并改进过滤、分块、重排和上下文选择", "只调高生成 temperature", "删除引用以减少生成 token"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。RAG 性能要同时优化检索质量、上下文规模和各阶段延迟，不能只增加上下文。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html",
+      "section": "Performance efficiency: improve data retrieval performance"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接把所有文档放入最大上下文",
+          "测量检索链路并改进过滤、分块、重排和上下文选择",
+          "只调高生成 temperature",
+          "删除引用以减少生成 token"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。RAG 性能要同时优化检索质量、上下文规模和各阶段延迟，不能只增加上下文。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应分别测量检索召回、重排、上下文构建和生成的耗时与质量，优化查询、过滤、分块和重排，使上下文更小但保留证据」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「测量检索链路并改进过滤、分块、重排和上下文选择」成立；并排除「直接把所有文档放入最大上下文」「只调高生成 temperature」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-11",
     "category": "llm-applications",
     "topic": "evaluation",
     "subtopic": "生成式系统持续改进",
-    "tags": ["aws-well-architected", "generative-ai", "evaluation", "model-selection"],
+    "tags": [
+      "aws-well-architected",
+      "generative-ai",
+      "evaluation",
+      "model-selection"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "更换基础模型后，团队只看到平均质量分数上升就准备全量发布。以下哪些是发布前缺少的关键步骤？",
     "explanation": "应对固定评估集重新执行质量、安全、事实性、延迟和成本测试，检查关键子群和边界用例，并记录模型、prompt、检索和护栏版本；平均分不能覆盖回归风险。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Operational excellence: consistent output quality and continuous improvement"},
-    "misconceptions": ["平均质量分上升就说明新模型在所有子群上都更好，无需再评估安全与成本", "让模型自评新版本是否更好即可作为发布依据，不需要独立评估集", "删掉旧模型的评估结果、只保留对新模型有利的指标，就能支撑发布决策"],
-    "formats": {"choice": {"type": "multiple", "options": ["平均分上升即代表各子群同步变好，可直接全量发布，无需再评估安全、延迟与成本", "在固定评估集上重新执行质量、安全与事实性回归，同步覆盖延迟与成本后再决策是否发布", "用新模型自评旧版本输出，以自评胜率作为发布依据，可省去维护独立评估集的成本", "切片检查关键子群与边界用例，记录模型、prompt、检索与护栏版本后灰度发布", "归档时仅保留新模型有利指标，删除旧基线以简化发布评审，避免历史数据干扰决策"], "answer": [1, 3], "misconceptionMap": [0, null, 1, null, 2]}, "open": {"referenceAnswer": "组件变更需要完整回归与灰度，覆盖业务质量和负责 AI 风险，而非只看单一平均指标。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html",
+      "section": "Operational excellence: consistent output quality and continuous improvement"
+    },
+    "misconceptions": [
+      "平均质量分上升就说明新模型在所有子群上都更好，无需再评估安全与成本",
+      "让模型自评新版本是否更好即可作为发布依据，不需要独立评估集",
+      "删掉旧模型的评估结果、只保留对新模型有利的指标，就能支撑发布决策"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "平均分上升即代表各子群同步变好，可直接全量发布，无需再评估安全、延迟与成本",
+          "在固定评估集上重新执行质量、安全与事实性回归，同步覆盖延迟与成本后再决策是否发布",
+          "用新模型自评旧版本输出，以自评胜率作为发布依据，可省去维护独立评估集的成本",
+          "切片检查关键子群与边界用例，记录模型、prompt、检索与护栏版本后灰度发布",
+          "归档时仅保留新模型有利指标，删除旧基线以简化发布评审，避免历史数据干扰决策"
+        ],
+        "answer": [
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          null,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "组件变更需要完整回归与灰度，覆盖业务质量和负责 AI 风险，而非只看单一平均指标。"
+      }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「应对固定评估集重新执行质量、安全、事实性、延迟和成本测试，检查关键子群和边界用例，并记录模型、prompt、检索和护栏版本」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「在固定评估集上重新执行质量、安全与事实性回归」「切片检查关键子群与边界用例」等 2 项成立；并排除「平均分上升即代表各子群同步变好」「用新模型自评旧版本输出」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-12",
     "category": "llm-applications",
     "topic": "evaluation",
     "subtopic": "模型与 token 成本权衡",
-    "tags": ["aws-well-architected", "generative-ai", "cost-optimization"],
+    "tags": [
+      "aws-well-architected",
+      "generative-ai",
+      "cost-optimization"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "生成式应用成本持续上升，但质量指标没有改善。哪种诊断更符合成本优化原则？（单选）",
     "explanation": "应按用例分析模型选择、输入输出 token、重复上下文、缓存命中、检索规模和 Agent 步骤，采用满足质量门槛的最小模型与上下文，并将成本归因到工作流。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html", "section": "Cost optimization: model, prompt, vector store, and workflow optimization"},
-    "misconceptions": ["永久使用最大模型能保证成本稳定，规模越大单位成本越低，无需按用例调整", "成本优化只看账单总额是否下降即可，质量评估可以删掉", "在 prompt 里加一句「请减少开销」，模型就会主动压缩 token 与检索量"],
-    "formats": {"choice": {"type": "single", "options": ["永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文", "按用例拆解模型、token、缓存、检索与 Agent 步骤，选满足质量门槛的最小模型与上下文并归因到工作流", "直接全量换成最小模型并砍掉检索增强，用账单下降验证优化效果，质量回退可事后再补", "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。成本优化需要全链路归因，并在业务质量门槛内选择模型、上下文和流程。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html",
+      "section": "Cost optimization: model, prompt, vector store, and workflow optimization"
+    },
+    "misconceptions": [
+      "永久使用最大模型能保证成本稳定，规模越大单位成本越低，无需按用例调整",
+      "成本优化只看账单总额是否下降即可，质量评估可以删掉",
+      "在 prompt 里加一句「请减少开销」，模型就会主动压缩 token 与检索量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文",
+          "按用例拆解模型、token、缓存、检索与 Agent 步骤，选满足质量门槛的最小模型与上下文并归因到工作流",
+          "直接全量换成最小模型并砍掉检索增强，用账单下降验证优化效果，质量回退可事后再补",
+          "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。成本优化需要全链路归因，并在业务质量门槛内选择模型、上下文和流程。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应按用例分析模型选择、输入输出 token、重复上下文、缓存命中、检索规模和 Agent 步骤，采用满足质量门槛的最小模型与上下文，并将成本归因到工作流」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「按用例拆解模型、token、缓存、检索与 Agent…」成立；并排除「永久使用最大模型以保证成本稳定」「直接全量换成最小模型并砍掉检索增强」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-waf-lens-2026-08-13",
     "category": "ai-systems",
     "topic": "tool-security",
     "subtopic": "安全设计与自动化治理",
-    "tags": ["aws-well-architected", "financial-services", "security-by-design"],
+    "tags": [
+      "aws-well-architected",
+      "financial-services",
+      "security-by-design"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "一家金融机构要把新的 AI 客服能力快速推广到多个业务单元。为了降低安全配置漂移，哪种做法最合理？（单选）",
     "explanation": "应把安全要求固化为经过安全测试的标准模板、基线和自动化控制，使加密、访问、日志、AI 数据流和输出护栏默认启用；事后逐个手工补安全会产生配置漂移。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html", "section": "Security by design and automated governance"},
-    "formats": {"choice": {"type": "single", "options": ["先把 AI 客服全量上线到多业务单元，出现事故或漂移后再逐个手工修复", "用经安全验证的标准模板和自动化基线，把 AI 访问与数据控制默认纳入", "只依赖供应商默认配置，不做统一基线加固与默认护栏", "让每个业务单元自行决定是否启用审计，不做统一基线"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。可复用、自动化且预先验证的模板能让安全控制默认生效，并减少多业务单元之间的配置漂移。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html",
+      "section": "Security by design and automated governance"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先把 AI 客服全量上线到多业务单元，出现事故或漂移后再逐个手工修复",
+          "用经安全验证的标准模板和自动化基线，把 AI 访问与数据控制默认纳入",
+          "只依赖供应商默认配置，不做统一基线加固与默认护栏",
+          "让每个业务单元自行决定是否启用审计，不做统一基线"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。可复用、自动化且预先验证的模板能让安全控制默认生效，并减少多业务单元之间的配置漂移。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应把安全要求固化为经过安全测试的标准模板、基线和自动化控制，使加密、访问、日志、AI 数据流和输出护栏默认启用」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「用经安全验证的标准模板和自动化基线」成立；并排除「先把 AI 客服全量上线到多业务单元」「只依赖供应商默认配置」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-14",
     "category": "ai-systems",
     "topic": "reliability",
     "subtopic": "金融系统恢复目标",
-    "tags": ["aws-well-architected", "financial-services", "resilience", "rto", "rpo"],
+    "tags": [
+      "aws-well-architected",
+      "financial-services",
+      "resilience",
+      "rto",
+      "rpo"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "支付、交易和研究摘要使用同一恢复策略，但业务中断影响明显不同。首先应如何改进？（单选）",
     "explanation": "金融工作负载应按业务关键性定义 RTO/RPO、数据完整性和恢复优先级，再选择故障隔离、备份、跨区域或降级方案并实际演练。统一策略无法表达不同业务的风险容忍度。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/reliability.html", "section": "Resilience requirements planning and recovery objectives"},
-    "formats": {"choice": {"type": "single", "options": ["所有系统使用同一个 RTO/RPO 与恢复策略以简化运维", "按业务关键性定义 RTO/RPO 和完整性要求，再设计并演练恢复策略", "只提高计算资源规格支撑恢复，不定义恢复目标与优先级", "依赖云服务高可用保障恢复，而不测试应用级恢复"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。恢复目标来自业务影响和风险要求，基础设施可用性不能替代应用级恢复设计与演练。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/reliability.html",
+      "section": "Resilience requirements planning and recovery objectives"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "所有系统使用同一个 RTO/RPO 与恢复策略以简化运维",
+          "按业务关键性定义 RTO/RPO 和完整性要求，再设计并演练恢复策略",
+          "只提高计算资源规格支撑恢复，不定义恢复目标与优先级",
+          "依赖云服务高可用保障恢复，而不测试应用级恢复"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。恢复目标来自业务影响和风险要求，基础设施可用性不能替代应用级恢复设计与演练。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「金融工作负载应按业务关键性定义 RTO/RPO、数据完整性和恢复优先级，再选择故障隔离、备份、跨区域或降级方案并实际演练」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「按业务关键性定义 RTO/RPO 和完整性要求」成立；并排除「所有系统使用同一个 RTO/RPO 与恢复策略以简化…」「只提高计算资源规格支撑恢复」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-15",
     "category": "ai-systems",
     "topic": "tool-security",
     "subtopic": "金融 AI 工具权限",
-    "tags": ["aws-well-architected", "financial-services", "agent-security", "authorization"],
+    "tags": [
+      "aws-well-architected",
+      "financial-services",
+      "agent-security",
+      "authorization"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "金融研究 Agent 同时能读取客户资料、执行交易和修改风控配置。如何按金融服务安全原则降低风险？（单选）",
     "explanation": "应按工具和业务职责拆分权限，执行最小权限、强身份认证、操作边界和高风险确认，并记录 agent 与人工主体；研究能力不应隐含交易或配置修改能力。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html", "section": "Agent authentication, authorization, action boundaries, and tool access controls"},
-    "formats": {"choice": {"type": "single", "options": ["给 Agent 管理员权限减少授权失败", "按任务拆分只读和副作用工具，最小授权并对高风险动作确认和审计", "只在工具名称中标注高风险，不做程序控制", "让 Agent 根据风险自行提升权限"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融 Agent 的工具权限和行动边界必须由应用和身份层强制执行，而不是依赖模型判断。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html",
+      "section": "Agent authentication, authorization, action boundaries, and tool access controls"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "给 Agent 管理员权限减少授权失败",
+          "按任务拆分只读和副作用工具，最小授权并对高风险动作确认和审计",
+          "只在工具名称中标注高风险，不做程序控制",
+          "让 Agent 根据风险自行提升权限"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。金融 Agent 的工具权限和行动边界必须由应用和身份层强制执行，而不是依赖模型判断。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应按工具和业务职责拆分权限，执行最小权限、强身份认证、操作边界和高风险确认，并记录 agent 与人工主体」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「按任务拆分只读和副作用工具」成立；并排除「给 Agent 管理员权限减少授权失败」「只在工具名称中标注高风险」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-16",
     "category": "ai-systems",
     "topic": "observability",
     "subtopic": "金融环境透明与审计",
-    "tags": ["aws-well-architected", "financial-services", "auditability", "traceability"],
+    "tags": [
+      "aws-well-architected",
+      "financial-services",
+      "auditability",
+      "traceability"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "监管检查要求还原一次 AI 辅助客户服务决定。哪种日志设计最有价值？（单选）",
     "explanation": "应记录经过隐私保护的主体身份、输入和数据版本、模型/prompt 版本、检索与工具调用、策略命中、输出校验、人工修改和最终责任人，并确保日志完整性和访问审计。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html", "section": "Transparency and auditability"},
-    "formats": {"choice": {"type": "single", "options": ["只保存给客户的最终回复文本即可满足审计，中间检索、工具调用与策略命中无需留存", "记录脱敏主体身份、输入与数据版本、模型与 prompt 版本、检索工具调用、策略命中与人工修改，保证完整性并审计访问", "完整记录全部明文交互以最大化可追溯性，隐私合规可事后补救，审计完整性优先于脱敏", "保存完整输入输出与模型版本即可，责任人信息涉隐私不应进日志，审计时再关联工单，缺少责任人与过程证据"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/financial-services-industry-lens.html",
+      "section": "Transparency and auditability"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只保存给客户的最终回复文本即可满足审计，中间检索、工具调用与策略命中无需留存",
+          "记录脱敏主体身份、输入与数据版本、模型与 prompt 版本、检索工具调用、策略命中与人工修改，保证完整性并审计访问",
+          "完整记录全部明文交互以最大化可追溯性，隐私合规可事后补救，审计完整性优先于脱敏",
+          "保存完整输入输出与模型版本即可，责任人信息涉隐私不应进日志，审计时再关联工单，缺少责任人与过程证据"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。金融审计需要可重建的证据链，同时必须用隐私、完整性和访问控制保护记录。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应记录经过隐私保护的主体身份、输入和数据版本、模型/prompt 版本、检索与工具调用、策略命中、输出校验、人工修改和最终责任人，并确保日志完整性和访问审计」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「记录脱敏主体身份、输入与数据版本、模型与 promp…」成立；并排除「只保存给客户的最终回复文本即可满足审计」「完整记录全部明文交互以最大化可追溯性」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-17",
     "category": "ai-systems",
     "topic": "reliability",
     "subtopic": "金融故障隔离",
-    "tags": ["aws-well-architected", "financial-services", "fault-isolation", "degradation"],
+    "tags": [
+      "aws-well-architected",
+      "financial-services",
+      "fault-isolation",
+      "degradation"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "市场数据服务异常时，研究摘要 Agent 开始使用过期缓存并生成交易建议。最合理的降级方式是什么？（单选）",
     "explanation": "应根据数据新鲜度和业务风险设置 TTL 与硬性停用条件；数据不可验证时停止交易建议，转为标注过期的只读信息或人工流程，并记录事件。‘尽量继续回答’不应越过金融风险边界。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/reliability.html", "section": "Agent failover mechanisms and graceful degradation"},
-    "formats": {"choice": {"type": "single", "options": ["继续使用旧缓存并隐藏时间戳", "按新鲜度和业务影响限制降级，数据不可验证时停止建议并转人工", "提高模型 temperature 生成更多备选交易", "删除数据来源以避免显示服务异常"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融降级必须由业务风险和数据时效性约束，不能把不可验证的旧数据包装成当前建议。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/reliability.html",
+      "section": "Agent failover mechanisms and graceful degradation"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "继续使用旧缓存并隐藏时间戳",
+          "按新鲜度和业务影响限制降级，数据不可验证时停止建议并转人工",
+          "提高模型 temperature 生成更多备选交易",
+          "删除数据来源以避免显示服务异常"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。金融降级必须由业务风险和数据时效性约束，不能把不可验证的旧数据包装成当前建议。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应根据数据新鲜度和业务风险设置 TTL 与硬性停用条件」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「按新鲜度和业务影响限制降级」成立；并排除「继续使用旧缓存并隐藏时间戳」「提高模型 temperature 生成更多备选交易」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-18",
     "category": "ai-systems",
     "topic": "data-leakage",
     "subtopic": "金融数据保护",
-    "tags": ["aws-well-architected", "financial-services", "data-protection", "privacy"],
+    "tags": [
+      "aws-well-architected",
+      "financial-services",
+      "data-protection",
+      "privacy"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "金融 AI 团队希望把生产交易明细复制到开发环境调试模型。哪种做法更合理？（单选）",
     "explanation": "应按数据分类和用途最小化，优先使用脱敏、令牌化或合成数据，严格隔离环境和访问权限，保留必要审计；提升调试便利性不能成为跨环境复制全量敏感数据的理由。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html", "section": "Data protection and security by design"},
-    "formats": {"choice": {"type": "single", "options": ["复制全量明文，因为开发环境没有真实用户", "按用途最小化并使用脱敏/令牌化或合成数据，隔离权限并审计访问", "把数据压缩后即可视为非敏感", "让外部 LLM 自动摘要后删除原始数据"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。金融数据保护要求分类、最小化、隔离、加密/脱敏和可审计访问。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/financial-services-industry-lens/security.html",
+      "section": "Data protection and security by design"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "复制全量明文，因为开发环境没有真实用户",
+          "按用途最小化并使用脱敏/令牌化或合成数据，隔离权限并审计访问",
+          "把数据压缩后即可视为非敏感",
+          "让外部 LLM 自动摘要后删除原始数据"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。金融数据保护要求分类、最小化、隔离、加密/脱敏和可审计访问。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应按数据分类和用途最小化，优先使用脱敏、令牌化或合成数据，严格隔离环境和访问权限，保留必要审计」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「按用途最小化并使用脱敏/令牌化或合成数据」成立；并排除「复制全量明文」「把数据压缩后即可视为非敏感」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-19",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "Responsible AI 风险识别",
-    "tags": ["aws-well-architected", "responsible-ai", "risk-register", "stakeholders"],
+    "tags": [
+      "aws-well-architected",
+      "responsible-ai",
+      "risk-register",
+      "stakeholders"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "团队只邀请模型开发者定义 AI 风险，遗漏了受影响的客户群体。Responsible AI Lens 建议如何改进？（单选）",
     "explanation": "应识别下游受影响者、上游贡献者和组织内的法务、隐私、风险、领域专家等利益相关者，并用多种场景识别潜在伤害，形成可持续维护的风险登记。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIUC02 and RAIBR02: Stakeholders and harmful events"},
-    "misconceptions": ["风险定义只由开发者决定效率更高，引入外部视角只会拖慢进度", "历史平均准确率可以推断各受影响群体的风险水平", "等上线后出现投诉再去找利益相关者，能拿到更真实的反馈"],
-    "formats": {"choice": {"type": "single", "options": ["只让开发者决定风险以提高效率", "识别上下游和脆弱群体，邀请不同职能参与并登记潜在伤害", "只用历史平均准确率推断风险", "等上线出现投诉后再寻找利益相关者"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。风险识别需要覆盖受影响群体和贡献/治理角色，不能只由开发团队自评。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAIUC02 and RAIBR02: Stakeholders and harmful events"
+    },
+    "misconceptions": [
+      "风险定义只由开发者决定效率更高，引入外部视角只会拖慢进度",
+      "历史平均准确率可以推断各受影响群体的风险水平",
+      "等上线后出现投诉再去找利益相关者，能拿到更真实的反馈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只让开发者决定风险以提高效率",
+          "识别上下游和脆弱群体，邀请不同职能参与并登记潜在伤害",
+          "只用历史平均准确率推断风险",
+          "等上线出现投诉后再寻找利益相关者"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。风险识别需要覆盖受影响群体和贡献/治理角色，不能只由开发团队自评。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应识别下游受影响者、上游贡献者和组织内的法务、隐私、风险、领域专家等利益相关者，并用多种场景识别潜在伤害，形成可持续维护的风险登记」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「识别上下游和脆弱群体」成立；并排除「只让开发者决定风险以提高效率」「只用历史平均准确率推断风险」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-20",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "Responsible AI 发布门槛",
-    "tags": ["aws-well-architected", "responsible-ai", "release-criteria", "confidence"],
+    "tags": [
+      "aws-well-architected",
+      "responsible-ai",
+      "release-criteria",
+      "confidence"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "一个 AI 系统平均准确率达到目标，但公平性和安全性样本很少。是否可以直接发布？（单选）",
     "explanation": "发布标准应把预期收益和潜在伤害转成可测试的通过/失败条件，并为指标设置足够样本和统计置信要求；平均准确率不能替代公平性、安全性和尾部风险证据。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIRC01-RAIRC04: Release criteria and confidence requirements"},
-    "misconceptions": ["平均准确率是最重要的指标，达标即可发布，公平性与安全性可以后补", "公平性与安全性样本不足时，删掉这两类标准可以避免阻塞发布", "让 LLM-as-a-judge 评审一次，就能替代足够的公平性与安全性样本"],
-    "formats": {"choice": {"type": "single", "options": ["可以，因为平均准确率是最重要的指标", "不能，应补足各项发布标准的评估证据和统计置信度后再决定", "删除公平性和安全性标准以避免阻塞发布", "让 LLM-as-a-judge 凭一次评审代替样本"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。发布决定需要与已识别收益和伤害对应的多维、可重复和有置信度的证据。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAIRC01-RAIRC04: Release criteria and confidence requirements"
+    },
+    "misconceptions": [
+      "平均准确率是最重要的指标，达标即可发布，公平性与安全性可以后补",
+      "公平性与安全性样本不足时，删掉这两类标准可以避免阻塞发布",
+      "让 LLM-as-a-judge 评审一次，就能替代足够的公平性与安全性样本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "可以，因为平均准确率是最重要的指标",
+          "不能，应补足各项发布标准的评估证据和统计置信度后再决定",
+          "删除公平性和安全性标准以避免阻塞发布",
+          "让 LLM-as-a-judge 凭一次评审代替样本"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。发布决定需要与已识别收益和伤害对应的多维、可重复和有置信度的证据。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「发布标准应把预期收益和潜在伤害转成可测试的通过/失败条件，并为指标设置足够样本和统计置信要求」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「不能」成立；并排除「可以」「删除公平性和安全性标准以避免阻塞发布」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-21",
     "category": "llm-fundamentals",
     "topic": "prompt-robustness",
     "subtopic": "Responsible AI 输入变化",
-    "tags": ["aws-well-architected", "responsible-ai", "robustness", "input-variation"],
+    "tags": [
+      "aws-well-architected",
+      "responsible-ai",
+      "robustness",
+      "input-variation"
+    ],
     "difficulty": "medium",
     "angle": "scenario",
     "question": "模型在标准措辞上表现很好，但换成方言、拼写变体或低质量图片后结果失真。应如何设计评估？（单选）",
     "explanation": "应先区分系统应关注的 intrinsic variation 与应忽略的 confounding variation，再把相关变化纳入评估集，按输入类型报告质量和伤害指标，而不是把变体用户排除。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIBR02_BP03 and RAIRC03_BP04: Robustness to input variation"},
-    "formats": {"choice": {"type": "single", "options": ["只测试最标准的输入以保持分数稳定", "识别相关输入变化并分层评估，确认系统关注或忽略它们是否符合用例", "把所有变化归因于用户错误", "提高 prompt 长度即可覆盖全部变化"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。鲁棒性要针对真实输入变化定义验收标准，并识别哪些变化应影响结果、哪些不应影响结果。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAIBR02_BP03 and RAIRC03_BP04: Robustness to input variation"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只测试最标准的输入以保持分数稳定",
+          "识别相关输入变化并分层评估，确认系统关注或忽略它们是否符合用例",
+          "把所有变化归因于用户错误",
+          "提高 prompt 长度即可覆盖全部变化"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。鲁棒性要针对真实输入变化定义验收标准，并识别哪些变化应影响结果、哪些不应影响结果。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应先区分系统应关注的 intrinsic variation 与应忽略的 confounding variation，再把相关变化纳入评估集，按输入类型报告质量和伤害指标，而不是…」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「识别相关输入变化并分层评估」成立；并排除「只测试最标准的输入以保持分数稳定」「把所有变化归因于用户错误」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-22",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "Responsible AI 设计权衡",
-    "tags": ["aws-well-architected", "responsible-ai", "privacy", "explainability"],
+    "tags": [
+      "aws-well-architected",
+      "responsible-ai",
+      "privacy",
+      "explainability"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "系统要求加强隐私保护，但客户又要求解释每个输出。Responsible AI Lens 的正确处理方式是什么？（单选）",
     "explanation": "隐私、透明度、准确性和安全性可能存在权衡，应把要求写入发布标准，明确最小必要披露、受控证据层和残余风险，由利益相关者审查，而不是无条件追求某一维度最大化。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAISP01 and RAIRC04: Design trade-offs across release criteria"},
-    "misconceptions": ["透明度在权衡中永远优先，应公开所有内部数据以满足解释要求", "隐私在权衡中永远优先，因此可以完全不提供任何解释", "让模型自行决定每个请求该披露多少信息，比固定规则更灵活"],
-    "formats": {"choice": {"type": "single", "options": ["透明度永远优先，公开所有内部数据", "隐私永远优先，完全不提供解释", "定义各维度最低门槛和最小必要披露，记录权衡并由适当角色审查", "让模型自行决定应该披露什么"], "answer": [2], "misconceptionMap": [0, 1, null, 2]}, "open": {"referenceAnswer": "正确答案：C。Responsible AI 不是单一指标优化，应把冲突目标转为明确门槛、受控披露和可审计决策。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAISP01 and RAIRC04: Design trade-offs across release criteria"
+    },
+    "misconceptions": [
+      "透明度在权衡中永远优先，应公开所有内部数据以满足解释要求",
+      "隐私在权衡中永远优先，因此可以完全不提供任何解释",
+      "让模型自行决定每个请求该披露多少信息，比固定规则更灵活"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "透明度永远优先，公开所有内部数据",
+          "隐私永远优先，完全不提供解释",
+          "定义各维度最低门槛和最小必要披露，记录权衡并由适当角色审查",
+          "让模型自行决定应该披露什么"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          0,
+          1,
+          null,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：C。Responsible AI 不是单一指标优化，应把冲突目标转为明确门槛、受控披露和可审计决策。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「隐私、透明度、准确性和安全性可能存在权衡，应把要求写入发布标准，明确最小必要披露、受控证据层和残余风险，由利益相关者审查，而不是无条件追求某一维度最大化」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「定义各维度最低门槛和最小必要披露」成立；并排除「透明度永远优先」「隐私永远优先」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "aws-waf-lens-2026-08-23",
     "category": "ai-systems",
     "topic": "data-leakage",
     "subtopic": "Responsible AI 数据集治理",
-    "tags": ["aws-well-architected", "responsible-ai", "dataset", "privacy"],
+    "tags": [
+      "aws-well-architected",
+      "responsible-ai",
+      "dataset",
+      "privacy"
+    ],
     "difficulty": "hard",
     "angle": "debugging",
     "question": "评估集包含曾用于训练的数据，结果异常优秀。最可能的问题和改进是什么？（单选）",
     "explanation": "训练、评估和辅助数据重叠会造成记忆或过拟合，夸大系统能力。应建立数据注册表、记录来源和版本，尽量使用未见样本，发现不可避免的重叠时评估其影响。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIDP01_BP04: Dataset overlap"},
-    "formats": {"choice": {"type": "single", "options": ["说明模型已经达到生产级，无需再测", "可能存在数据泄漏或记忆，应隔离评估数据并记录重叠影响", "增加更多相同训练样本即可确认结果", "只看评估集分数，不需要记录数据版本"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。评估集重叠会使结果过于乐观，需维护数据来源、版本和隔离关系。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAIDP01_BP04: Dataset overlap"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "说明模型已经达到生产级，无需再测",
+          "可能存在数据泄漏或记忆，应隔离评估数据并记录重叠影响",
+          "增加更多相同训练样本即可确认结果",
+          "只看评估集分数，不需要记录数据版本"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。评估集重叠会使结果过于乐观，需维护数据来源、版本和隔离关系。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「训练、评估和辅助数据重叠会造成记忆或过拟合，夸大系统能力」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「可能存在数据泄漏或记忆」成立；并排除「说明模型已经达到生产级」「增加更多相同训练样本即可确认结果」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-waf-lens-2026-08-24",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "传统 ML 模型监控",
-    "tags": ["aws-well-architected", "machine-learning", "model-monitoring", "drift"],
+    "tags": [
+      "aws-well-architected",
+      "machine-learning",
+      "model-monitoring",
+      "drift"
+    ],
     "difficulty": "medium",
     "angle": "system-design",
     "question": "传统欺诈检测模型上线后，为什么需要同时监控数据质量、模型质量、偏差和特征归因变化？（单选）",
     "explanation": "输入分布、真实效果、公平性和模型依赖特征可能分别漂移；只看 endpoint 健康或总体准确率会遗漏业务退化、群体影响和数据管道问题。监控还应能关联模型与数据 lineage。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/mlops06-bp02.html", "section": "Data quality, model quality, bias drift, and feature attribution drift"},
-    "misconceptions": ["模型上线后只需监控 CPU 与内存，模型行为不会再变化", "总体准确率是所有维度的代表指标，盯住它一个就够", "模型一旦训练完成就不会因数据变化而退化，无需持续监控"],
-    "formats": {"choice": {"type": "single", "options": ["模型部署成功后只需监控 CPU 和内存", "多维监控能区分输入漂移、质量退化、公平性变化和逻辑变化", "只监控总体准确率即可代表所有维度", "模型一旦训练完成就不会因数据变化而退化"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 生产问题可能来自不同维度，数据、模型、公平性和解释性监控需要共同组成观测面。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/mlops06-bp02.html",
+      "section": "Data quality, model quality, bias drift, and feature attribution drift"
+    },
+    "misconceptions": [
+      "模型上线后只需监控 CPU 与内存，模型行为不会再变化",
+      "总体准确率是所有维度的代表指标，盯住它一个就够",
+      "模型一旦训练完成就不会因数据变化而退化，无需持续监控"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "模型部署成功后只需监控 CPU 和内存",
+          "多维监控能区分输入漂移、质量退化、公平性变化和逻辑变化",
+          "只监控总体准确率即可代表所有维度",
+          "模型一旦训练完成就不会因数据变化而退化"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。ML 生产问题可能来自不同维度，数据、模型、公平性和解释性监控需要共同组成观测面。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「输入分布、真实效果、公平性和模型依赖特征可能分别漂移」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「多维监控能区分输入漂移、质量退化、公平性变化和逻辑变…」成立；并排除「模型部署成功后只需监控 CPU 和内存」「只监控总体准确率即可代表所有维度」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-waf-lens-2026-08-25",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "训练选择与最终评估隔离",
-    "tags": ["aws-well-architected", "machine-learning", "validation", "data-leakage"],
+    "tags": [
+      "aws-well-architected",
+      "machine-learning",
+      "validation",
+      "data-leakage"
+    ],
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "团队反复用同一个评估集选择超参数和模型，最后报告该集上的最高分。为什么结果不可信？（单选）",
     "explanation": "评估集被用于模型选择后不再是独立测量，反复试验会使团队间接过拟合它。应使用训练/验证集选择候选，保留未参与选择的测试集作最终评估。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAISP04: Candidate selection and evaluation set separation"},
-    "misconceptions": ["评估集被反复使用会让它的测量结果更准确，用得越多分数越可信", "候选模型足够多时，过拟合评估集的风险会相互抵消", "把测试集并入训练集能提高样本利用率，同时不影响最终评估的可信度"],
-    "formats": {"choice": {"type": "single", "options": ["评估集越常用，最终分数越准确", "反复选择会使评估集失去独立性，应分离验证集与最终测试集", "只要候选模型足够多就能抵消过拟合", "把测试集加入训练以提高样本利用率"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。候选选择和最终评估必须分离，否则最终指标会被选择过程污染。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAISP04: Candidate selection and evaluation set separation"
+    },
+    "misconceptions": [
+      "评估集被反复使用会让它的测量结果更准确，用得越多分数越可信",
+      "候选模型足够多时，过拟合评估集的风险会相互抵消",
+      "把测试集并入训练集能提高样本利用率，同时不影响最终评估的可信度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "评估集越常用，最终分数越准确",
+          "反复选择会使评估集失去独立性，应分离验证集与最终测试集",
+          "只要候选模型足够多就能抵消过拟合",
+          "把测试集加入训练以提高样本利用率"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。候选选择和最终评估必须分离，否则最终指标会被选择过程污染。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「评估集被用于模型选择后不再是独立测量，反复试验会使团队间接过拟合它」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「反复选择会使评估集失去独立性」成立；并排除「评估集越常用」「只要候选模型足够多就能抵消过拟合」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-waf-lens-2026-08-26",
     "category": "ai-systems",
     "topic": "reliability",
     "subtopic": "ML 环境一致性",
-    "tags": ["aws-well-architected", "machine-learning", "environment-skew", "lineage"],
+    "tags": [
+      "aws-well-architected",
+      "machine-learning",
+      "environment-skew",
+      "lineage"
+    ],
     "difficulty": "medium",
     "angle": "debugging",
     "question": "模型在测试环境正常，生产预测却突然下降；代码相同但特征处理配置不同。应优先建立什么控制？（单选）",
     "explanation": "需要同步架构和配置，检测训练、测试、预发布与生产环境的 skew，并记录从数据处理到部署的 lineage。只比较代码版本不能发现配置、特征和依赖差异。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/ops-monitoring.html", "section": "MLOPS06-BP01: Synchronize architecture and configuration and check for skew"},
-    "misconceptions": ["代码版本一致即代表环境一致，配置与特征处理差异不会影响预测结果", "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可", "删掉生产监控指标改用单次人工核对，比系统性 skew 检查更省事且同样可靠"],
-    "formats": {"choice": {"type": "single", "options": ["只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相", "同步并记录训练到生产各环境的架构与配置，系统性检测环境 skew，并保留数据处理到部署的 lineage", "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可", "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 运行结果受配置、特征处理和依赖影响，应做环境一致性与 lineage 管理。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/ops-monitoring.html",
+      "section": "MLOPS06-BP01: Synchronize architecture and configuration and check for skew"
+    },
+    "misconceptions": [
+      "代码版本一致即代表环境一致，配置与特征处理差异不会影响预测结果",
+      "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可",
+      "删掉生产监控指标改用单次人工核对，比系统性 skew 检查更省事且同样可靠"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相",
+          "同步并记录训练到生产各环境的架构与配置，系统性检测环境 skew，并保留数据处理到部署的 lineage",
+          "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可",
+          "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。ML 运行结果受配置、特征处理和依赖影响，应做环境一致性与 lineage 管理。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「需要同步架构和配置，检测训练、测试、预发布与生产环境的 skew，并记录从数据处理到部署的 lineage」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「同步并记录训练到生产各环境的架构与配置」成立；并排除「只检查 Git commit 哈希是否一致即可」「把生产流量切回测试环境复现就能定位问题」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-waf-lens-2026-08-27",
     "category": "llm-applications",
     "topic": "evaluation",
     "subtopic": "ML 与生成式 AI 选型",
-    "tags": ["aws-well-architected", "machine-learning", "generative-ai", "use-case"],
+    "tags": [
+      "aws-well-architected",
+      "machine-learning",
+      "generative-ai",
+      "use-case"
+    ],
     "difficulty": "medium",
     "angle": "comparison",
     "question": "反欺诈风险评分和客户对话生成分别属于哪类主要问题，选型时应如何区分？（单选）",
     "explanation": "风险评分通常是预测/分类等传统 ML 问题，要求稳定的数值或类别输出；对话生成属于 foundation model 的生成式问题，重点增加 prompt、检索、输出安全和生成质量治理。两者共享 ML 生命周期，但不能用同一套指标和控制替代。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/machine-learning-lens.html", "section": "Distinction from the Generative AI Lens"},
-    "misconceptions": ["两类任务都可以用 BLEU 等文本相似度指标评估，分数高即代表业务可用", "两类任务都应完全交给自由文本生成，固定模型与结构化输出会限制表达能力", "生成式 AI 上线后不需要数据监控与生产监控"],
-    "formats": {"choice": {"type": "single", "options": ["两者都用 BLEU 等文本相似度指标评估，分数高即业务可用，风险评分也可转为文本生成任务统一度量", "风险评分是传统 ML 分类问题，要稳定可校验的输出；对话生成是生成式问题，需治理 prompt、检索与输出安全；两者不可用同一套指标替代", "两者都应统一为自由文本生成问题，用同一套生成质量指标评估，风险评分也可由 LLM 直接输出分值替代", "生成式 AI 上线前充分评测即可，上线后无需持续观测质量、成本与安全，监控只适用于传统 ML"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。传统 ML 和生成式 AI 有共同基础，但任务类型、输出契约和特有风险不同。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/machine-learning-lens.html",
+      "section": "Distinction from the Generative AI Lens"
+    },
+    "misconceptions": [
+      "两类任务都可以用 BLEU 等文本相似度指标评估，分数高即代表业务可用",
+      "两类任务都应完全交给自由文本生成，固定模型与结构化输出会限制表达能力",
+      "生成式 AI 上线后不需要数据监控与生产监控"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "两者都用 BLEU 等文本相似度指标评估，分数高即业务可用，风险评分也可转为文本生成任务统一度量",
+          "风险评分是传统 ML 分类问题，要稳定可校验的输出；对话生成是生成式问题，需治理 prompt、检索与输出安全；两者不可用同一套指标替代",
+          "两者都应统一为自由文本生成问题，用同一套生成质量指标评估，风险评分也可由 LLM 直接输出分值替代",
+          "生成式 AI 上线前充分评测即可，上线后无需持续观测质量、成本与安全，监控只适用于传统 ML"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。传统 ML 和生成式 AI 有共同基础，但任务类型、输出契约和特有风险不同。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「风险评分通常是预测/分类等传统 ML 问题，要求稳定的数值或类别输出」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「风险评分是传统 ML 分类问题」成立；并排除「两者都用 BLEU 等文本相似度指标评估」「两者都应统一为自由文本生成问题」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "aws-waf-lens-2026-08-28",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "ML 影子测试",
-    "tags": ["aws-well-architected", "machine-learning", "shadow-testing", "deployment"],
+    "tags": [
+      "aws-well-architected",
+      "machine-learning",
+      "shadow-testing",
+      "deployment"
+    ],
     "difficulty": "hard",
     "angle": "scenario",
     "question": "新风险模型需要用真实请求比较，但不能影响线上决策。应采用的发布验证方式是？（单选）",
     "explanation": "可将生产请求的副本发送给候选模型做 shadow testing，只比较质量、延迟、资源、公平性等指标，不让候选模型产生线上副作用；通过门槛后再灰度切换。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/mlops06-bp02.html", "section": "Shadow testing for model validation"},
-    "misconceptions": ["直接替换生产模型并观察投诉，是验证新模型最真实的方式", "在训练集上比较两个模型就能判断它们的线上表现差异", "让候选模型直接覆盖旧模型输出，可以更快收集到真实数据"],
-    "formats": {"choice": {"type": "single", "options": ["直接替换生产模型并观察投诉", "复制真实请求到候选模型但隔离其决策副作用，比较指标后再灰度", "只在训练集上比较两个模型", "让候选模型直接覆盖旧模型输出以收集更多数据"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。影子测试使用真实请求验证候选模型，同时隔离线上决策影响。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/mlops06-bp02.html",
+      "section": "Shadow testing for model validation"
+    },
+    "misconceptions": [
+      "直接替换生产模型并观察投诉，是验证新模型最真实的方式",
+      "在训练集上比较两个模型就能判断它们的线上表现差异",
+      "让候选模型直接覆盖旧模型输出，可以更快收集到真实数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接替换生产模型并观察投诉",
+          "复制真实请求到候选模型但隔离其决策副作用，比较指标后再灰度",
+          "只在训练集上比较两个模型",
+          "让候选模型直接覆盖旧模型输出以收集更多数据"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。影子测试使用真实请求验证候选模型，同时隔离线上决策影响。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「可将生产请求的副本发送给候选模型做 shadow testing，只比较质量、延迟、资源、公平性等指标，不让候选模型产生线上副作用」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「复制真实请求到候选模型但隔离其决策副作用」成立；并排除「直接替换生产模型并观察投诉」「只在训练集上比较两个模型」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "aws-waf-lens-2026-08-29",
     "category": "ai-systems",
     "topic": "evaluation",
     "subtopic": "ML 业务目标与问题定义",
-    "tags": ["aws-well-architected", "machine-learning", "problem-framing"],
+    "tags": [
+      "aws-well-architected",
+      "machine-learning",
+      "problem-framing"
+    ],
     "difficulty": "medium",
     "angle": "comparison",
     "question": "设计传统 ML 风险预测系统时，团队先选了算法再寻找业务目标。更可靠的问题定义顺序是什么？（单选）",
     "explanation": "应先明确业务目标、决策对象、预测时点、可接受错误和成功指标，再把业务问题转成分类、回归或异常检测等 ML 问题；先选算法容易优化与实际价值无关的指标。",
-    "source": {"materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/operational-excellence.html", "section": "Business goal identification and ML problem framing"},
-    "misconceptions": ["先选最复杂最先进的算法，再让业务去适应它的输出即可", "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛", "训练损失下降就代表业务价值达成，无需把损失映射到实际业务决策"],
-    "formats": {"choice": {"type": "single", "options": ["先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标", "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再映射为分类回归或异常检测问题，最后选算法", "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛", "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"], "answer": [1], "misconceptionMap": [0, null, 1, 2]}, "open": {"referenceAnswer": "正确答案：B。ML 设计应从业务目标和错误代价出发，再进行问题建模、数据准备和算法选择。"}}
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/operational-excellence.html",
+      "section": "Business goal identification and ML problem framing"
+    },
+    "misconceptions": [
+      "先选最复杂最先进的算法，再让业务去适应它的输出即可",
+      "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛",
+      "训练损失下降就代表业务价值达成，无需把损失映射到实际业务决策"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标",
+          "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再映射为分类回归或异常检测问题，最后选算法",
+          "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛",
+          "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。ML 设计应从业务目标和错误代价出发，再进行问题建模、数据准备和算法选择。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应先明确业务目标、决策对象、预测时点、可接受错误和成功指标，再把业务问题转成分类、回归或异常检测等 ML 问题」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「先明确业务目标、决策对象、预测时点、可接受错误与成功…」成立；并排除「先选最复杂算法再让业务适应输出」「离线准确率高就不需要业务目标」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "aws-waf-lens-2026-08-30",
     "category": "ai-systems",
     "topic": "observability",
     "subtopic": "上线后反馈闭环",
-    "tags": ["aws-well-architected", "responsible-ai", "monitoring", "feedback-loop"],
+    "tags": [
+      "aws-well-architected",
+      "responsible-ai",
+      "monitoring",
+      "feedback-loop"
+    ],
     "difficulty": "hard",
     "angle": "system-design",
     "question": "AI 上线后收集到大量用户反馈，但团队只把反馈存档不改变系统。完整的运营闭环应是什么？（单选）",
     "explanation": "应将监控、事件和反馈转成可执行改进，定期分析趋势，更新护栏、数据、模型或部署策略，再用回归评估确认没有引入新问题；还应为高风险告警设置人工升级和处理责任。",
-    "source": {"materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json", "section": "RAIMON01-RAIMON02: Monitoring and feedback loops"},
-    "formats": {"choice": {"type": "single", "options": ["只保存反馈不改变系统，避免改动引入新风险，存档即完成运营闭环", "把监控事件与反馈转成可执行改进，定期分析趋势更新护栏数据模型与部署策略，再用回归评估确认，并为高风险告警设人工升级与责任归属。", "删除负面反馈以防止指标下降", "让模型自动修改生产配置且不需要审批，靠模型自省即可保证变更安全"], "answer": [1]}, "open": {"referenceAnswer": "正确答案：B。监控的价值在于触发有责任归属的改进和验证，不能停留在归档。"}}
+    "source": {
+      "materialId": "https://raw.githubusercontent.com/aws-samples/sample-well-architected-custom-lens/main/responsible-ai-lens/responsible-ai-lens.json",
+      "section": "RAIMON01-RAIMON02: Monitoring and feedback loops"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只保存反馈不改变系统，避免改动引入新风险，存档即完成运营闭环",
+          "把监控事件与反馈转成可执行改进，定期分析趋势更新护栏数据模型与部署策略，再用回归评估确认，并为高风险告警设人工升级与责任归属。",
+          "删除负面反馈以防止指标下降",
+          "让模型自动修改生产配置且不需要审批，靠模型自省即可保证变更安全"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：B。监控的价值在于触发有责任归属的改进和验证，不能停留在归档。"
+      }
+    },
+    "assessment": {
+      "target": "能判断「应将监控、事件和反馈转成可执行改进，定期分析趋势，更新护栏、数据、模型或部署策略，再用回归评估确认没有引入新问题」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「把监控事件与反馈转成可执行改进」成立；并排除「只保存反馈不改变系统」「删除负面反馈以防止指标下降」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   }
 ]

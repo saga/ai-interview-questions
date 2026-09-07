@@ -31,7 +31,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。A Scratchpad无Tag/替换开销、无伪共享；B 需显式DMA与双缓冲；C错误，随机访存下Cache浪费大；D 生命周期确定时Scratchpad可达峰值带宽。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能对比 Scratchpad Memory 与硬件自动管理 Cache 在专用加速器上的性能工程取舍",
+      "reasoningGoal": "先确认 Scratchpad 移除缓存行替换与缺失检查的硬件开销，消除伪共享与隐式淘汰抖动；再承认代价是需程序员或编译器显式编排 DMA 搬运与双缓冲；并说明生命周期确定的张量计算可实现接近理论极限的片上带宽利用率，排除「随机访存场景下硬件 Cache 带宽效率决定性优于 Scratchpad」。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "hw-transpose-02",
@@ -65,7 +70,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、D。A 图级重构吸收转置；B 局部优化隔离性好；C错误，逐元素非线性可交换；D Padding避冲突但降利用率。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能比较算子内部数据布局转置与图/算法级计算等效重构两条优化路径的取舍",
+      "reasoningGoal": "先说明图级重构通过重推整个计算图的代数等价（如把转置吸收进矩阵乘法与权重转置）从根本上消除显式转置指令；再说明算子内转置保持后续算子拓扑独立、模块化与可维护性更好；并确认避免 SRAM Bank Conflict 常需 Padding 或交错索引从而牺牲片上容量，排除「图级重构遇非线性激活或条件分支即彻底失效」。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "hw-ai-resistant-03",
@@ -97,7 +107,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。LLM在标准体系上靠历史套路；自定义ISA需从头一阶推理，方能区分人类深度建模能力。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能在允许 AI 辅助的评估环境中选出保持区分度的命题原则",
+      "reasoningGoal": "先确认常规硬件上的标准优化问题已被海量训练数据覆盖、LLM 可凭模式匹配迅速胜出；再确认高限制强约束的非标自定义指令集或模拟器环境能迫使一阶逻辑推理而非经验检索；并排除改用纯伪代码放弃量化基准、压缩考试时间、引入未定义行为破坏可重复性。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "hw-vector-bw-04",
@@ -131,7 +146,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、B、C。A 无分支SIMD批处理；B SoA提升Vector Load装载率；C 软件预取重叠延迟；D 访存瓶颈下提主频无效。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能在无硬件预取的向量加速器上给出缓解树/图遍历内存带宽瓶颈的有效手段",
+      "reasoningGoal": "先确认瓶颈在访存而非算力；再用无分支 SIMD 向量化把多个独立样本的遍历路径压入同一向量寄存器并行推进以提升批处理度；并叠加 AoS 转 SoA 提升向量加载有效率、软件预取与计算访存重叠掩盖延迟，排除靠提高 ALU 主频抵消片外访存延迟。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "hw-vliw-05",
@@ -165,7 +185,12 @@
       "open": {
         "referenceAnswer": "正确答案：B、C、D。A错误，VLIW静态调度无动态重排；B 结构冲突需插NOP；C 展开与软流水填槽；D 空槽NOP致膨胀。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明 VLIW 指令打包中的结构冲突、填槽手段与代码膨胀代价",
+      "reasoningGoal": "先确认 VLIW 由编译器静态调度、不依赖运行时乱序重排与动态依赖检查；再识别微操作争用同一执行单元会产生结构冲突、迫使插入 NOP；并确认循环展开与软件流水线是消除数据依赖填满槽位的手段，同时承认空槽显式 NOP 填充会带来指令体积膨胀与代码密度下降。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "hw-observability-06",
@@ -199,7 +224,12 @@
       "open": {
         "referenceAnswer": "正确答案：A、C、D。A 粗粒度易误判；B错误，小工具常指数级提效；C 可视化定位Stall；D 自动化验证防AI虚假优化。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断高性能调优中可观测性工具建设的时间投入是否值得",
+      "reasoningGoal": "先确认缺细粒度 Trace 时仅凭端到端执行时间易误判瓶颈、陷入局部最优；再说明可视化时间轴能快速识别流水线停顿、内存等待与未填满的并行槽；并确认引入 AI 代码生成时更需要自动化验证与性能测试工具链兜底，排除「短窗口内建工具必然收不回成本」。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "hw-simd-align-07",
@@ -231,6 +261,11 @@
       "open": {
         "referenceAnswer": "正确答案：B。128-bit Vector Load需16字节对齐，未对齐则分两次读取+位移拼接或触发Fault，致40%加载停顿。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能从循环展开后周期数反增约 40% 定位到 128-bit 向量加载的 16 字节对齐违规",
+      "reasoningGoal": "先确认计算逻辑无误且停顿集中在向量内存加载而非取指；再对照 128-bit 向量宽度推出基地址未对齐到 16 字节会触发多周期非对齐访存与微码惩罚；并排除 I-Cache Miss、物理寄存器堆耗尽导致退化为标量发射、跨周期数据相关性锁存等解释。"
+    },
+    "cognitiveTask": "diagnose"
   }
 ]

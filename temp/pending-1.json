@@ -1,0 +1,291 @@
+[
+  {
+    "seq": 0,
+    "kind": "question",
+    "id": "agentic-03",
+    "topic": "agent-fundamentals",
+    "angle": "definition",
+    "question": "下列哪些是典型 AI Agent 的核心组件？（多选）",
+    "explanation": "Agent 通常包含规划、记忆、工具调用等模块；Loss 函数是训练期概念，不是运行时 Agent 组件。",
+    "correct": [
+      "Planning（规划/任务分解）",
+      "Memory（记忆，短期与长期）",
+      "Tools（工具调用）"
+    ],
+    "distractors": [
+      "Loss 函数（损失函数）"
+    ]
+  },
+  {
+    "seq": 1,
+    "kind": "question",
+    "id": "hil-vs-auto-loop",
+    "topic": "agent-fundamentals",
+    "angle": "tradeoff",
+    "question": "在高吞吐量的 AI Agent 辅助软件工程体系中完全无人工干预的自动化循环往往会导致代码库快速退化与代码垃圾堆积。为了在保持高交付并发的同时维持生产级代码质量以下哪些工程取舍是合理的？（多选）",
+    "explanation": "A 正确 人类主导关键设计与技术品味不将核心架构决策完全委托给 Agent。B 正确 引入不同模型族进行对抗性审查交叉消除单一模型的系统性偏差。C 错误 放弃人类合并权限会导致未经人工审核的代码直接进入主干风险极高。D 正确 要求在真实测试环境中校验动态运行行为而非仅通过静态检查或 Mock 断言。",
+    "correct": [
+      "人类工程师需主导关键设计与技术品味不将核心架构决策完全委托给 Agent",
+      "在 Spec 制定与代码实现阶段引入独立的、不同模型族的 Agent 进行对抗性审查",
+      "要求 Agent 在真实测试环境中校验动态运行行为而非仅通过检查静态文本或验证 Mock 来断言任务成功"
+    ],
+    "distractors": [
+      "放弃人类对 Pull Request 的控制与合并权限由 Agent 相互审查并直接全自动合入主干"
+    ]
+  },
+  {
+    "seq": 2,
+    "kind": "question",
+    "id": "subagent-vs-inline",
+    "topic": "agent-fundamentals",
+    "angle": "comparison",
+    "question": "不同大语言模型在子 Agent 调度能力和上下文管理上存在差异。在将 Spec 转换为代码实现阶段关于选择子 Agent 驱动还是单层内联执行的工程判断以下哪些说法是合理的？（多选）",
+    "explanation": "A 正确 子 Agent 调度能力强的模型可通过拆分复杂 Spec 提升执行效率。B 正确 调度能力弱或易丢上下文的模型用单层内联配合增量验证更稳妥。C 正确 小粒度增量提交+每次验证 Spec 符合度有效避免长上下文下的代码漂移。D 错误 深度无限嵌套子 Agent 循环会导致上下文丢失与成本失控并非所有模型都适用。",
+    "correct": [
+      "对于子 Agent 调度与复杂上下文解耦能力较强的模型采用子 Agent 驱动开发可有效提升复杂 Spec 拆分执行的效率",
+      "对于子 Agent 调度能力相对较弱或容易在多层调用中丢上下文的模型采用单层内联执行配合频繁的增量验证是更稳妥的选择",
+      "在 Implement 阶段配合小粒度的增量提交并在每次提交后验证 Spec 符合度能有效避免模型在长上下文下产生代码漂移"
+    ],
+    "distractors": [
+      "无论模型能力如何都必须采用深度无限嵌套的子 Agent 循环直到整个仓库的代码全自动重构完毕"
+    ]
+  },
+  {
+    "seq": 3,
+    "kind": "question",
+    "id": "longhorizon-control-modes-01",
+    "topic": "agent-loop",
+    "angle": "mechanism",
+    "question": "长程智能体系统需要灵活的控制机制（Control Mechanisms）来管理任务的持续推进、终止校验与调度。关于自主模式（Autonomous Mode）、目标模式（Goal Mode）与心跳模式（Heartbeat Mode）的比较，下列哪些说法是正确的？",
+    "explanation": "A 正确：自主模式在指定预算内循环，每轮把外部校验结果作为下一步依据，直到校验通过或触发资源上限。B 正确：目标模式由智能体发出的终止指令（Agentic Completion）判断结束，适合没有确定外部测试集的高阶目标。C 正确：心跳模式由 Cron 或定时器触发 Turn，适合长期后台运行的巡检与持续监控。D 错误：外部测试失败不会强行终止并清空持久化状态，而是把测试错误写回上下文，让智能体在下一轮调整策略。",
+    "correct": [
+      "自主模式在每个 Turn 结束后触发外部测试，若测试失败且未超预算，系统会将有界的错误信息反馈给智能体并开启下一轮尝试。",
+      "目标模式依赖智能体的主观完成声明（Agentic Completion），只要智能体未主动标记目标完成，系统就会跨多个 Turn 保持该目标。",
+      "心跳模式主要用于响应定时计划（Cron/Timed）或周期性事件，触发智能体定期执行巡检、监测或维护类长程任务。"
+    ],
+    "distractors": [
+      "无论处于哪种控制模式，只要遇到外部环境测试失败，系统就会立即强行终止进程并清空 L2 与 L3 层的所有持久化状态。"
+    ]
+  },
+  {
+    "seq": 4,
+    "kind": "question",
+    "id": "envharness-stage-01",
+    "topic": "agent-loop",
+    "angle": "mechanism",
+    "question": "在 Environment Harness 体系中，Stage 组件被定义为在环境初始化时静默施加一个预设的动作序列 δ = (a1, a2, …, ak)。关于 Stage 组件的执行流程与工程作用，下列说法正确的有？",
+    "explanation": "A 正确：Stage 重写了 reset() 阶段，在底层的状态 transition 迭代运行完预设动作序列 δ 后，才将最终生成的新初始状态 s0' 及相应观察暴露给 Agent。B、C 正确：Stage 可用于控制任务难度起点——既可以提前完成前置工作以简化 Horizon，也可以主动注入干扰步骤以提升难度、考察探索能力。D 错误：Stage 仅在初始化阶段作用于 reset()，后续交互阶段对 step() 的动作权限控制属于 Contract 组件的职责，Stage 不限制后续动作空间。",
+    "correct": [
+      "Stage 组件覆盖环境的 reset() 方法，在向 Agent 返回初始观察之前，先在底层环境中连续执行动作序列 δ，将环境状态推进至新的初始状态 s0'。",
+      "通过预先执行部分前置子任务（如“打开抽屉”或“清洁物品”），Stage 组件可以有效缩短任务 Horizon，使 Agent 能聚焦于特定后续步骤的学习。",
+      "通过预先制造干扰或隐蔽目标（如“将关键道具移入柜中并关闭柜门”），Stage 组件可以提高起始难度，考察 Agent 的探索能力。"
+    ],
+    "distractors": [
+      "Stage 组件执行时会修改环境原生的 step() 逻辑，屏蔽 Agent 在后续交互中调用动作序列 δ 中所包含动作的权限。"
+    ]
+  },
+  {
+    "seq": 5,
+    "kind": "question",
+    "id": "envharness-contract-01",
+    "topic": "agent-loop",
+    "angle": "scenario",
+    "question": "某 Agent 在代码修复任务中表现出对“全量观察信息”的过度依赖，且频繁调用高阶快捷指令而跳过基础代码排查步骤。开发者希望在不修改底层环境源码的前提下，通过 Contract 组件对 Agent 的交互进行约束：限制快捷动作使用、隐藏部分全局上下文、并在特定非法操作时追加结构化提示。根据 Contract 组件的标准定义 r = (f_A, f_T, f_O)，下列映射分配最合理的是？",
+    "explanation": "A 正确：Contract 组件通过三元组转换接口——f_A 作用于动作空间（用于动作过滤/限制），f_O 作用于观察空间（用于信息掩码/裁剪），f_T 作用于转移函数（用于约束转移逻辑或在满足条件时注入反馈/打断）。B、C、D 错误：混淆了 Contract 接口的映射职责，把 Stage（初始化动作）、Chain（组合代码库）及验证器修改等职责错配到了 Contract 的映射函数中。",
+    "correct": [
+      "利用 f_A 过滤或屏蔽快捷动作，利用 f_O 裁剪与掩码全局观察文本，利用 f_T 拦截状态转移并注入错误提示。"
+    ],
+    "distractors": [
+      "利用 f_A 预先执行初始化脚本，利用 f_O 串联多个独立代码库，利用 f_T 拦截环境的 reset() 调用。",
+      "利用 f_A 重新计算验证器的得分，利用 f_O 增加环境初始化动作，利用 f_T 修改 Agent 模型内部权重。",
+      "利用 f_A 扩展动作空间维度，利用 f_O 将多回合交互压缩为单回合，利用 f_T 替换静态数据库。"
+    ]
+  },
+  {
+    "seq": 6,
+    "kind": "question",
+    "id": "envharness-chain-01",
+    "topic": "agent-loop",
+    "angle": "mechanism",
+    "question": "Chain 组件通过组合逻辑 g(E, E_ext) 将基础环境 E 与附加环境 E_ext 组合为复合环境。关于 Chain 组件的技术实现与交互机制，下列说法正确的有？",
+    "explanation": "A 正确：组合后的复合环境需要支持 Agent 在不同子环境中所需的动作，动作空间取并集。B 正确：Chain 支持动态转移，当第一阶段环境达到终止/成功条件时，转移函数自动将后续交互送入下一个环境。C 正确：Chain 统一包装奖励判定，保证复合长程任务具备端到端的可验证性。D 错误：Chain 在接口层进行组合与调度，只要子环境均遵循标准交互接口，其底层数据结构和实现细节可以相互独立。",
+    "correct": [
+      "复合环境暴露给 Agent 的动作空间通常为各参与环境动作空间的并集（如 A' = A ∪ A_ext）。",
+      "Chain 组件可以基于内部转换条件，在 Agent 完成基础任务后动态将交互焦点转移至附加环境，实现跨任务的序列化拼接。",
+      "复合环境的整体奖励由 Chain 组件管理，只有当 Agent 连续满足所有被拼接子环境的验证条件时才给出最终成功信号。"
+    ],
+    "distractors": [
+      "Chain 组件要求参与拼接的所有子环境必须基于完全相同的底层实现代码与内存数据结构。"
+    ]
+  },
+  {
+    "seq": 7,
+    "kind": "question",
+    "id": "selfharness-definition-01",
+    "topic": "agent-fundamentals",
+    "angle": "mechanism",
+    "question": "在基于大语言模型（LLM）的智能体（Agent）系统架构中，系统通常被划分为“基座模型（Base Model）”与“操作 Harness（Environment Interaction Harness）”。关于这两者在系统架构中的边界与协作方式，下列哪种说法是准确的？",
+    "explanation": "A 正确：Agent Harness（操作 Harness）是智能体系统的非参数化外壳与控制层，不改变基座模型权重，介于模型与外部环境之间，负责系统提示词构建、工具接口定义、环境状态管理、校验规则应用、编排逻辑及错误恢复策略。B 错误：注意力掩码策略属于基座模型内部推理引擎或 Transformer 架构的组成部分，并非 Harness 控制层。C 错误：模型权重增量属于参数化微调（如 LoRA），而 Harness 明确属于非参数化的系统调度与交互层。D 错误：网络负载均衡与 API 限速属于基础设施网络层服务，不属于管理 Agent 运行逻辑与环境交互的 Harness 范畴。",
+    "correct": [
+      "Harness 是指围绕基座模型的非参数化控制层，包含提示词、工具封装、状态管理及运行时校验逻辑"
+    ],
+    "distractors": [
+      "Harness 是指注入基座模型内部的注意力掩码策略，用以控制模型在多轮对话中的上下文注意力衰减",
+      "Harness 是指智能体在推理过程中动态优化的模型权重增量，用以提升特定任务下的具身交互精度",
+      "Harness 是指部署在模型前端的网络负载均衡器，用以路由不同租户请求并管理并发 API 调用限速"
+    ]
+  },
+  {
+    "seq": 8,
+    "kind": "question",
+    "id": "selfharness-signature-01",
+    "topic": "agent-loop",
+    "angle": "design",
+    "question": "为了实现精细化的缺陷归因，智能体分析模块构建了由“终端校验原因（Terminal Cause）”、“Agent 行为因果状态（Causal Status）”与“抽象行为机制（Abstract Mechanism）”构成的归因签名 φ(r) = (c, q, m)。下列关于该归因机制在失败轨迹聚类中作用的描述，哪些是正确的？",
+    "explanation": "A 正确：通过精准的签名拟合，聚合起具备相同根因机制的样例，使后续提议模块能够针对共性机制制定 Harness 修改。B 正确：归因签名将评测器判定结果（Terminal Cause）与智能体内部行为（Agent Mechanism）分离开来，避免将表象当作根因。D 正确：通过将失败归类为模式，促使提议模块基于群体模式生成通用 Harness 修改，防止为单个任务生成死记硬背式的特定硬编码补丁。C 错误：归因签名的目的是对失败机制进行确定性归类和结构化分析，而不是仅保留“模型参数不稳定的随机错误”。",
+    "correct": [
+      "确保归因签名相同的失败样例能够映射到同一种可复用的 Harness 级别改进干预措施中",
+      "将外部评测器的判定结果与 Agent 内部行为解耦，防止将表面症状误判为底层根因机制",
+      "避免提议模块针对单次偶发的特定任务失败生成过度的局部补丁，提升修改的泛化能力"
+    ],
+    "distractors": [
+      "允许系统自动过滤掉所有非确定性的运行异常，仅保留由于模型参数不稳定导致的随机错误"
+    ]
+  },
+  {
+    "seq": 9,
+    "kind": "question",
+    "id": "selfharness-parallel-edits-01",
+    "topic": "agent-fundamentals",
+    "angle": "design",
+    "question": "在 Self-Harness 的提议生成（Harness Proposal）阶段，系统采用“并行提出多个多元化且最小化候选修改（Parallel Bounded Edits）”策略，而不是让智能体直接重新生成一套全新的完整 Harness。这种设计基于哪些工程设计取舍（Trade-offs）？",
+    "explanation": "A 正确：局部有界的极小修改（Minimal Edit）能最大程度保护原有的有效机制，降低不可预测的副作用，使回归校验（A/B 测试）归因更明确。B 正确：针对同一个归因缺陷，不同的并行提议可以探索 Prompt 提醒、工具校验规则或流程控制等不同修复思路，增加单轮搜索效率。C 正确：保持修改的最小化与模块化（Bounded & Modular），能降低不同提议之间的冲突概率，使验证阶段同时通过校验的多个增量修改可以顺畅合并。D 错误：全局重构全新 Harness 会大幅增加提议生成与测试阶段的 Token 开销，且选项对 Token 消耗与格式漂移的因果关系描述错误。",
+    "correct": [
+      "最小化修改能够限定干预范围，降低破坏智能体已有有效行为模式的风险，便于开展回归测试",
+      "多元化候选能够覆盖同类缺陷的不同修复路径，提高在单轮演进中发现有效改进措施的成功概率",
+      "架构限定最小修改能确保各候选变更保持相互正交，便于后续将多个通过校验的修改直接合并"
+    ],
+    "distractors": [
+      "全局重构会显著降低基座模型的 Token 消耗成本，但会导致提示词上下文发生严重的格式漂移现象"
+    ]
+  },
+  {
+    "seq": 10,
+    "kind": "question",
+    "id": "skillevo-scaling-complementarity-01",
+    "topic": "agent-fundamentals",
+    "angle": "system-design",
+    "question": "在评估“模型参数规模（Model Scale）”与“演进技能（Evolved Skills）”对 Agent 系统综合性能的提升效果时，关于两者的系统设计取舍与互补关系，以下哪些结论是正确的？",
+    "explanation": "A 正确：模型本身推理能力越强，遵循和发挥高质量技能指令的能力就越强，增益随之扩大。B 正确：技能显式补充了领域特定流程与避坑指南，使配备技能的小模型可以在特定场景下击败没有流程提示的大模型。C 错误：超大模型仍需领域流程知识，泛化能力不会自动涵盖具体工作流。D 错误：技能演进对大模型同样有效，不存在“指令过拟合导致加载技能反而下降”的普遍规律。",
+    "correct": [
+      "演进技能与模型规模具有互补性，通常基座模型能力越强，从高质量演进技能中获得的性能增益越大",
+      "引入高质量演进技能可以在一定程度上弥补模型规模不足，使较小模型配备技能后超越无技能的更大模型"
+    ],
+    "distractors": [
+      "随着基座模型参数量扩大，模型泛化能力会自动涵盖领域工作流，因而超大模型完全不需要演进技能",
+      "技能演进仅在小模型上产生效果，大型模型由于存在严重指令过拟合，加载外部技能反而导致性能下降"
+    ]
+  },
+  {
+    "seq": 11,
+    "kind": "question",
+    "id": "agent-constitution-design",
+    "topic": "safety-alignment",
+    "angle": "design",
+    "question": "在为具备本地文件系统与终端执行权限的 AI Coding Agent 设计安全规范与执行约束时为了平衡执行自主性与工程安全性以下哪些规则设计符合最佳工程实践？（多选）",
+    "explanation": "A 正确 可逆操作（改写单体模块、跑测试）自主推进无需二次确认提升效率。B 错误 破坏性命令如 git reset --hard 不应自动执行必须请求人类授权。C 正确 破坏性影响或重大架构变更必须暂停并请求明确授权——这是安全底线。D 正确 以结果导向的平实语言汇报避免无意义的机器日志提升人机协作效率。",
+    "correct": [
+      "允许 Agent 对安全且具可逆性的操作（如本地单体模块改写、跑测试）自主推进无需打断人类进行二次确认",
+      "针对引发破坏性影响或重大架构变更的操作要求 Agent 必须暂停执行并向人类请求明确授权",
+      "规定 Agent 提交 Pull Request 或汇报进度时必须以结果导向且使用人类易读的平实语言避免生成无意义的机器日志"
+    ],
+    "distractors": [
+      "当遇到困难或阻碍时允许 Agent 自动执行破坏性命令（如 git reset --hard 或强制覆盖代码库）以快速恢复初始状态"
+    ]
+  },
+  {
+    "seq": 12,
+    "kind": "question",
+    "id": "agtool-guard-01",
+    "topic": "agent-guardrails",
+    "angle": "tradeoff",
+    "question": "在 LLM Agent 工具调用安全拦截系统的设计中，采用「Stage 1 单 Token 快速筛选 + Stage 2 CoT 推理审查」的两阶段级联架构（Cascade Architecture）。关于这种架构所解决的工程权衡与性能问题，下列分析正确的有哪些？（多选）",
+    "explanation": "A 正确：Stage 1 仅输出单个 Token（Yes/No），成本极低、速度极快，绝大多数常规操作在此阶段直接通过，无需触发昂贵的 Stage 2 CoT 推理，从而降低整体延迟与 Token 成本。B 正确：Stage 1 与 Stage 2 共享几乎相同的 Transcript 与系统 Prompt 上下文（仅末尾指令不同），可最大化利用推理引擎的前缀缓存（Prompt Caching），降低 Stage 2 首 Token 延迟与计算开销。C 正确：级联设计的关键在于前级高召回（低 FNR），宁可将部分无害操作推入 Stage 2 甄别，也不漏过潜在高危指令，把降低误报（低 FPR）的任务交给 Stage 2，实现安全与性能的平衡。D 错误：安全分类器是概率模型，无法做到 100% 绝对零风险——Stage 2 仍存在一定漏报与误报率。",
+    "correct": [
+      "降低绝大多数安全操作的推理延迟与 Token 成本，仅对被 Stage 1 标记的高风险或存在疑虑的操作投入高成本的 CoT 推理",
+      "通过在 Stage 2 复用与 Stage 1 几乎相同的 Prompt 上下文，利用前缀缓存（Prompt Caching）大幅降低 Stage 2 的首 Token 延迟与计算开销",
+      "将 Stage 1 配置为高召回率（Low FNR）策略，宁可将部分无害操作推入 Stage 2 甄别，也不漏过潜在的高危指令"
+    ],
+    "distractors": [
+      "消除 Agent 在执行复杂多轮工具调用时的假阳性（False Positive），确保通过 Stage 2 校验的指令 100% 不发生越权风险"
+    ]
+  },
+  {
+    "seq": 13,
+    "kind": "question",
+    "id": "agtool-guard-02",
+    "topic": "agent-guardrails",
+    "angle": "mechanism",
+    "question": "为防止安全审核分类器（Guardrail Classifier）被恶意 Prompt 注入操控或被 Agent 的自我辩解误导，系统在构造传递给分类器的 Transcript 时，主动裁剪掉了 Agent 的推理/回复文本（Assistant Prose）以及工具返回结果（Tool Output），仅保留用户原始输入与工具调用指令（Tool Calls）。关于这种「推理与结果双盲」的隔离设计，下列说法正确的有哪些？（多选）",
+    "explanation": "A 正确：Agent 自身的推理文本易对分类器产生「辩解」或「归因」干扰（如声称「用户先前已隐式授权」），剥离后分类器仅基于用户要求与实际执行命令做客观匹配。B 正确：Tool Output 是外部不可信数据（Prompt Injection）进入系统的主要入口，剥离它可保证分类器运行在受信任上下文中，阻断二次劫持。C 正确：由于看不见 Tool Output，分类器无法校验工具参数的来源真实性（如某目标 ID 是系统查询所得还是凭空捏造），这是该设计的主要工程取舍。D 错误：分类器可通过捕获 Agent 写入的文件 Payload 或后续待执行的组装 Shell 命令，在工具调用文本层直接评估其危害，并非完全无法评估。",
+    "correct": [
+      "剥离 Assistant Prose 能防止 Agent 利用说服性文本（如「用户先前已隐式授权该操作」）说服分类器批准越权命令",
+      "剥离 Tool Output 能阻断外部不可信数据源（如网页、文件内容）中的恶意注入指令对分类器自身的二次劫持",
+      "该设计带来的主要工程取舍（Trade-off）是分类器无法校验工具参数的来源真实性（如无法确认某个目标 ID 是由系统查询所得还是凭空捏造）"
+    ],
+    "distractors": [
+      "剥离 Tool Output 会导致分类器完全无法评估写文件与脚本执行类操作的实际代码安全危害"
+    ]
+  },
+  {
+    "seq": 14,
+    "kind": "question",
+    "id": "agtool-guard-03",
+    "topic": "tool-security",
+    "angle": "design",
+    "question": "在 Agent 系统中，用户常配置通配符规则（如允许全局执行 shell 或脚本解释器 python *）以减少手动审批弹窗。当系统从「手动模式」切换为「基于分类器的自主运行模式（Auto Mode）」时，关于静态规则与动态分类器的协同工作机制，下列哪种设计最符合生产安全最佳实践？（单选）",
+    "explanation": "C 正确：进入自主模式时必须主动剥离任意代码执行类（Arbitrary Code Execution）的宽泛通配规则，仅保留风险明确且范围限定的窄域规则（如特定代码格式化工具），使高风险 Shell/解释器操作必须经由分类器审查。A 错误：若保留宽泛通配规则（如 python *），所有命令都会直接命中静态 Allowlist，导致安全分类器形同虚设，危险操作极易逃逸。B 错误：一刀切禁用所有规则会让无害的低风险操作（如代码格式化、项目内文件读取）也走完整分类器，带来不必要的开销与延迟。D 错误：沙箱化是另一种隔离手段，但无法替代对敏感操作（如网络外泄、生产配置修改）的策略拦截。",
+    "correct": [
+      "动态剥离宽泛的解释器与 Shell 通配规则，仅保留窄域规则（如特定代码格式化工具），确保高风险命令必须经过分类器审查"
+    ],
+    "distractors": [
+      "保持现存的所有静态通配符规则优先生效，分类器仅对不匹配静态规则的剩余工具调用进行拦截评估",
+      "自动模式下强制禁用所有静态规则，要求所有的工具调用均必须无条件经过分类器的两阶段推理评估",
+      "允许静态规则对只读（Read-Only）操作保持生效，而将所有写与执行类操作自动重定向至隔离沙箱内执行"
+    ]
+  },
+  {
+    "seq": 15,
+    "kind": "question",
+    "id": "agtool-guard-04",
+    "topic": "prompt-injection",
+    "angle": "system-design",
+    "question": "在 Agent 安全架构中，通常同时部署「输入层 Prompt 注入探测器（Probe）」与「输出层 Transcript 分类器（Classifier）」。前者在工具返回结果（Tool Outputs）进入 Agent Context 前进行扫描，后者在 Agent 发起工具调用（Tool Calls）前进行拦截。关于这种双层防御体系（Defense-in-Depth），下列分析正确的有哪些？（多选）",
+    "explanation": "A 正确：输入层探测器通常采用 Prompt Injection Scan，命中后向 Agent 上下文植入安全警告，引导其重新锚定用户原始意图。B 正确：输出层分类器独立对工具调用的真实 Payload（如 curl -X POST ...）做规则与意图匹配，即便 Agent 上下文已被注入，危险动作仍会被阻断。C 错误：输入层无法保证 100% 拦截所有隐蔽注入，必须依靠输出层的动作审计进行双重保障，而非「单靠输入层即可解决所有注入风险」。D 正确：双层防御形成独立且互补的安全边界，数据外泄要成功必须同时突破输入层（绕过检测）与输出层（使外泄动作看起来符合用户授权）。",
+    "correct": [
+      "输入层探测器若发现潜在注入攻击，主要通过向 Agent 上下文植入安全警告，引导 Agent 重新锚定用户原始意图",
+      "输出层分类器因不读取工具返回结果，即使 Agent 被输入层遗漏的注入指令劫持，仍可基于动作本身的危险性实施拦截",
+      "攻击者若要成功实施数据外泄（Data Exfiltration），必须同时突破输入层（绕过检测）与输出层（使外泄动作看起来符合用户授权）"
+    ],
+    "distractors": [
+      "单靠输入层探测器即可解决 Prompt 注入引发的所有风险，输出层分类器仅用于防御 Agent 自身的失误操作"
+    ]
+  },
+  {
+    "seq": 16,
+    "kind": "question",
+    "id": "agtool-guard-05",
+    "topic": "multi-agent",
+    "angle": "mechanism",
+    "question": "在多 Agent 协同（Multi-agent Architecture）系统中，主 Agent（Orchestrator）可将任务委派给子 Agent（Subagent）执行。为防止权限越界与注入扩散，系统在子 Agent 生命周期中设置了「委派时（Delegation）」与「返回时（Return）」两次安全检查。关于这一判定机制，下列说法正确的有哪些？（多选）",
+    "explanation": "A 正确：若不进行委派前审查，子 Agent 会把主 Agent 传来的任务当作「初始 User Prompt」，其内部分类器将无法识别这是主 Agent 的过度越权行为。B 正确：返回阶段（Return check）评估子 Agent 运行中是否已被外部注入并产生危险隐蔽动作，防止其将毒化结果带回主 Agent。C 错误：返回阶段触发告警时，生产最佳实践通常是附带安全警告（Security Warning）降级返回给主 Agent 审查，而非直接销毁丢弃导致整个工作流死锁。D 正确：委派检查必须结合主 Agent 的完整历史，校验「主 Agent 委派给子 Agent 的任务」是否符合「原始用户对主 Agent 的授权」。",
+    "correct": [
+      "委派阶段审查是必要的，因为在子 Agent 内部，主 Agent 的指令会被视为用户指令，掩盖其越权本质",
+      "子 Agent 若在执行中读取到恶意数据被注入，返回阶段的分类器会审查其动作历史，防止污染主 Agent",
+      "委派阶段的分类器能够基于主 Agent 的全局上下文，评估委派任务是否超出了原始用户的真实意图授权"
+    ],
+    "distractors": [
+      "子 Agent 返回阶段若触发安全告警，系统应直接阻断结果返回并销毁子 Agent，禁止向主 Agent 传递上下文"
+    ]
+  }
+]

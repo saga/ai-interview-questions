@@ -1,0 +1,293 @@
+[
+  {
+    "seq": 34,
+    "kind": "question",
+    "id": "context-2026-109",
+    "topic": "context-engineering",
+    "angle": "mechanism",
+    "question": "同样的一组信息，为什么仅仅改变 context 中的信息顺序，也可能影响模型表现？工程上你会如何利用这一现象设计 context layout？",
+    "explanation": "A 正确：LLM 的注意力与 recency 效应使信息位置影响权重，把最关键决策信息放在高注意力区（靠近任务或重复出现）并用结构化布局，可提升利用率。B 错误：Transformer 并非对所有位置一视同仁，顺序会影响注意力分布与输出。C 错误：按字母序排列不能保证模型同等关注，与任务重要性无关。D 错误：顺序会影响生成质量而不仅是首字延迟。",
+    "correct": [
+      "注意力与 recency 效应使位置影响权重，应将最关键信息放在高注意力区并结构化布局"
+    ],
+    "distractors": [
+      "现代长上下文模型的位置偏置已大幅缓解，layout 只需保证可读性，无需再为注意力区刻意排版。",
+      "把最长文档放最前以充分利用开头的高注意力区，后短前长的布局即最优，无需按任务重要性排。",
+      "顺序主要影响解码早期的注意力热身，对最终答案的影响可忽略；layout 优化属于微观调参，优先级最低。"
+    ]
+  },
+  {
+    "seq": 35,
+    "kind": "question",
+    "id": "context-2026-110",
+    "topic": "context-engineering",
+    "angle": "system-design",
+    "question": "为什么处理超长数据集时，应该优先让代码或工具在模型上下文之外完成过滤、聚合和计算，再把精炼结果提供给 LLM？哪些任务特别适合这种 programmatic context strategy？",
+    "explanation": "A 正确：在代码/工具中完成过滤、聚合、diff 等计算，只把精炼结果喂给 LLM，能省 token 且更准，避免长上下文噪声与截断。B 正确：超长日志/表格/语料适合用 SQL 或脚本做检索聚合，再让 LLM 基于结果推理。C 错误：全量塞进 context 让 LLM 逐行扫描既昂贵又易因超长而截断或稀释，并非「不漏细节」。D 正确：适合任务包括日志异常聚合、大规模表格统计、语料去重/diff、按条件检索等可程序化预处理的工作。",
+    "correct": [
+      "在代码或工具中完成过滤聚合与计算，只把精炼结果喂给 LLM，省 token 且更准",
+      "超长日志、表格与语料适合用 SQL 或脚本检索聚合，再让 LLM 基于结果推理",
+      "适合任务包括日志异常聚合、大规模表格统计、语料去重与 diff、按条件检索"
+    ],
+    "distractors": [
+      "先全量送一次建立全局索引记忆，后续轮次只送增量 diff；首轮全量是必要的建模成本，后续即省。"
+    ]
+  },
+  {
+    "seq": 36,
+    "kind": "question",
+    "id": "prompt-cache-context-ordering-01",
+    "topic": "context-engineering",
+    "angle": "scenario",
+    "question": "在开发复杂的多轮 AI Agent 系统时，为了最大化 Prompt Caching 的命中率并降低系统响应延迟，下列哪些上下文组织（Context Ordering）与设计模式属于工程最佳实践？",
+    "explanation": "A 正确：前缀一致性是缓存命中的前提，把完全静态、高复用度的长文本与 Schema 前置可最大化缓存覆盖率。B 正确：在静态前缀注入动态变量（毫秒级时间戳、UUID、Request ID）会让前缀每次都变，使其后所有 KV Cache 彻底失效。C 正确：Append-only 追加工具可保持已有工具在 Schema 数组中的相对顺序不变，仍能命中先前建立的断点。D 错误：按意图动态裁剪或重排 Tool Definitions 会改变该区域的 Token 序列，导致 Tool 区域及其后全部对话历史的缓存全盘失效。",
+    "correct": [
+      "将固定不变的 System Prompt、静态上下文文档以及完整的 Tool Definitions 结构化 Schema 统一放置在 Prompt 的最前端",
+      "避免在 System Prompt 或前端静态区域中动态注入每次请求独有的变量（如当前 Request ID、动态精确时间戳或用户 Session Token）",
+      "对 Tool Definitions 进行更新时，优先采用 Append-only（仅末尾追加）策略，避免改变已有工具在 Schema 数组中的相对顺序"
+    ],
+    "distractors": [
+      "为了提高灵活性，在每轮对话中根据当前 User Message 的意图，动态裁剪并重排 Tool Definitions 列表中不相干的工具定义"
+    ]
+  },
+  {
+    "seq": 37,
+    "kind": "question",
+    "id": "longhorizon-state-layering-01",
+    "topic": "context-engineering",
+    "angle": "system-design",
+    "question": "在构建长程（Long-Horizon）智能体系统时，为了解决大语言模型上下文窗口受限及状态无法持久保留的问题，通常引入分层状态管理架构（包含 L0 模型权重、L1 激活上下文、L2 REPL 运行时与子智能体、L3 磁盘持久化存储）。关于各层级间的信息流动与状态更新机制，下列哪些说法是正确的？",
+    "explanation": "A 正确：智能体通过显式操作对 L2 REPL 中的变量与子智能体句柄进行创建、总结或删除，这一过程被称为智能体垃圾回收（Agentic Garbage Collection）。B 正确：上下文压缩用摘要替换 L1 历史以释放 Token 空间，原始事件则追加存入 L3，便于 REPL 后续显式检索。C 正确：轨迹提炼（Refinement）把成功轨迹的经验写入 L3 外部存储（Prompt notes、版本化 Skills），无需改动 L0 权重即可实现自我演化。D 错误：L2 的中间结果若全量写回 L1 会迅速挤爆上下文窗口，只有智能体主动选择序列化的结果才会进入 L1。",
+    "correct": [
+      "智能体对 L2 运行时（如 IPython 变量与子智能体句柄）的管理遵循“智能体垃圾回收”原则，由智能体根据任务阶段主动清理或保留中间对象。",
+      "上下文压缩（Compaction）会将 L1 中较早的对话历史重写为摘要，同时将原始事件完整记录至 L3 持久化存储中以供后续 REPL 显式检索。",
+      "轨迹提炼（Refinement）能够在无需更新 L0 模型权重的前提下，将成功执行轨迹中的经验转化为 L3 中版本化的技能与 Prompt 规则。"
+    ],
+    "distractors": [
+      "L2 产出经摘要压缩后自动同步 L1，压缩即提炼；显式序列化是多余的人工干预，自动化同步更可靠。"
+    ]
+  },
+  {
+    "seq": 38,
+    "kind": "question",
+    "id": "longhorizon-programmatic-context-01",
+    "topic": "context-engineering",
+    "angle": "scenario",
+    "question": "在面对极长上下文（如巨型代码库或海量日志）任务时，相比直接将所有文本填充进 LLM 激活上下文（被动上下文模式），将数据存储于外部文件并允许智能体通过 Persistent REPL 编写代码进行检索过滤（编程式上下文模式）具备哪些工程优势？",
+    "explanation": "A 正确：编程式处理把大量原始文本留在外部（L2/磁盘），仅把检索后的精炼结果推入 L1，缓解上下文爆炸与注意力稀释。B 正确：用代码做硬性过滤、正则匹配与数值统计，比依赖模型概率式直接推理更准确可靠。C 错误：编程式处理只是信息检索与筛选手段，最终提取的关键信息仍需大模型的语义理解与推理来决策。D 正确：在 REPL 中处理好的数据结构（如 Pandas DataFrame）在 L2 保持活态，后续 Turn 无需重新读盘解析。",
+    "correct": [
+      "能够避免将非必要的海量原始数据逐字序列化进 LLM 激活上下文，显著节省 Token 消耗并降低大模型的注意力稀释风险。",
+      "智能体可以通过编写 Python 脚本对数据进行结构化过滤、统计与精准校验，提高在复杂数据分析与定量计算上的准确率。",
+      "中间计算结果与过滤后的数据结构可以在 REPL 的 L2 状态中跨 Turn 持久化保留，避免在后续轮次中重复解析原始大文件。"
+    ],
+    "distractors": [
+      "代码过滤后的片段已带明确语义标签，LLM 只需做模板填充，无需再对片段做开放式语义推理；标签即理解。"
+    ]
+  },
+  {
+    "seq": 39,
+    "kind": "question",
+    "id": "prompt-cache-billing-tradeoff-01",
+    "topic": "cost",
+    "angle": "tradeoff",
+    "question": "某些大模型 API 采用了“写缓存收取额外溢价（如 1.25x 基础输入价），读缓存给予大幅折扣（如 0.1x 基础输入价）”的计费机制。针对此类计费模型，在架构设计与成本优化时，下列哪些推论是正确的？",
+    "explanation": "A 正确：前缀仅调用一次且无后续复用时，写缓存需付 1.25x 溢价，相比不开启缓存（1.0x）多付 25%，即“最小缓存长度成本陷阱”。B 正确：写入溢价必须靠足够多次的 Read Hit（0.1x 折扣）来摊薄，复用次数超过平衡点阈值才有净成本下降。C 错误：结算逻辑恰好相反——命中的前缀 Token 享 0.1x 读折扣，未命中的尾部新增 Token 才按 1.0x 标准原价结算。D 正确：缓存读命中只产生 Read Charge（0.1x），并会自动重置刷新 TTL，无需重新支付 1.25x 写缓存费。",
+    "correct": [
+      "对于长尾、一次性（Single-turn Non-recurring）且无重复前缀的 API 调用，开启显式写缓存功能反而会导致整体 Token 成本上升 25%",
+      "只有当某个前缀的预期复用次数（即 Read Hit 次数）达到或超过平衡点阈值时，引入带写缓存费用的 Prompt Caching 才能实现净成本下降",
+      "在维持缓存活性的场景中，周期性地发送基于相同前缀的 Hit 请求，可以在不再次产生 1.25x 写缓存费用的情况下持续刷新 TTL 存活期"
+    ],
+    "distractors": [
+      "缓存命中时，系统会基于原始基础输入单价结算全部 Token，然后再将未命中的尾部 Token 按照 0.1x 的读缓存折扣价进行补偿扣减"
+    ]
+  },
+  {
+    "seq": 40,
+    "kind": "question",
+    "id": "ml-01",
+    "topic": "overfitting",
+    "angle": "definition",
+    "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
+    "explanation": "过拟合指模型过度记忆训练样本噪声，导致在训练集上表现极佳、但在未见过的验证/测试集上泛化能力差，表现为训练误差低、验证误差高。",
+    "correct": [
+      "训练集误差很低，但验证集误差很高"
+    ],
+    "distractors": [
+      "训练集和验证集误差都很高",
+      "训练集误差很高，验证集误差很低",
+      "模型在训练集上无法收敛"
+    ]
+  },
+  {
+    "seq": 41,
+    "kind": "question",
+    "id": "ai-code-002",
+    "topic": "word-embedding",
+    "angle": "calculation",
+    "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
+    "explanation": "单遍累加点积与两个范数、除零防御;cosine 只看方向不看幅度,消除长度偏差;归一化后等价于内积。",
+    "correct": [
+      "cosine 度量方向而非幅度，能消除文本长度与词频造成的模长干扰",
+      "向量 L2 归一化后 cosine 与点积等价，可直接用内积换取计算速度",
+      "实现时单遍遍历累加点积与两个范数，并对零向量做除零防御"
+    ],
+    "distractors": [
+      "cosine 度量的是向量间欧氏距离，模长越大语义越强，计算前应放大向量幅度",
+      "cosine 的取值范围是 [0, ∞)，数值越大表示方向差异越大",
+      "cosine 必须先把向量减均值居中，归一化后它与点积不再有任何关系"
+    ]
+  },
+  {
+    "seq": 42,
+    "kind": "question",
+    "id": "adversarial-verification",
+    "topic": "evaluation",
+    "angle": "debugging",
+    "question": "前沿大语言模型生成的代码常存在逻辑漏洞与隐蔽缺陷。在建立连续代码验证与 Bug 清理机制时以下哪些工程策略有助于降低生产环境风险？（多选）",
+    "explanation": "A 正确 在 Large Changeset 上投入对抗性分支审查的综合效益优于让隐蔽 Bug 进入生产后的维护成本。B 错误 编译通过不等于逻辑正确——静态检查无法捕获语义错误。C 正确 使用独立模型族交叉审查 Spec 消除初始逻辑偏差。D 正确 自动化闭环调用修复指令并在合入前重新验证 Spec 符合度形成质量门禁。",
+    "correct": [
+      "在 Large Changeset 上分配专门的算力进行对抗性分支审查其综合效益优于允许隐蔽 Bug 进入生产代码库后的维护成本",
+      "在 Spec 阶段完成前使用另一个独立的模型族对规范进行交叉审查以消除初始逻辑偏差",
+      "持续审查系统生成的修复指令应支持自动化工具闭环调用并在最终合入前重新验证 Spec 符合度"
+    ],
+    "distractors": [
+      "只要代码能够无报错通过编译器静态检查就应当跳过逻辑功能验证以节省 Token 消耗"
+    ]
+  },
+  {
+    "seq": 43,
+    "kind": "question",
+    "id": "llm-judge-vs-agent-judge",
+    "topic": "evaluation",
+    "angle": "comparison",
+    "question": "在对复杂 AI Agent 系统进行自动化评估时传统的单次 Prompt 匹配式 LLM-as-a-Judge 常常失效。关于导致这一现象的原因以及 Agent-as-a-Judge 的作用机制以下哪些说法是正确的？（多选）",
+    "explanation": "A 正确 LLM-as-a-Judge 仅评估最终 Output 难以察觉轨迹中间步骤导致的'过程错误但结果看似合理'的隐蔽失效。B 正确 依赖预定义字段映射缺乏动态探索 Trace 的能力。C 正确 Agent-as-a-Judge 具备自主调查能力能审查完整 Trace 并检查中间工具调用。D 错误 Agent-as-a-Judge 本身也是 LLM 驱动仍存在生成式不确定性。",
+    "correct": [
+      "LLM-as-a-Judge 通常仅评估最终生成的 Output 难以察觉执行轨迹中间步骤所导致的过程错误但结果看似合理的隐蔽失效",
+      "LLM-as-a-Judge 依赖预定义字段映射评估者必须在检查日志前预判失效发生的具体位置缺乏动态探索迹线的能力",
+      "Agent-as-a-Judge 具备自主调查能力能够审查完整 Trace、检查中间工具调用的入参出参、执行代码或搜集证据后再给出评估结论"
+    ],
+    "distractors": [
+      "Agent-as-a-Judge 的核心优势在于它彻底解决了生成式 AI 的不确定性评估同一条 Trace 时能保持 100% 的结果一致性"
+    ]
+  },
+  {
+    "seq": 44,
+    "kind": "question",
+    "id": "trajectory-bias-pitfall",
+    "topic": "evaluation",
+    "angle": "tradeoff",
+    "question": "在将 Agent-as-a-Judge 用于评估 Agent 执行轨迹时评估模型本身可能引入特定的认知偏差与工程隐患。以下哪些属于典型偏差或风险？（多选）",
+    "explanation": "A 正确 轨迹长度偏好偏差——倾向给步数更多的执行过程打高分即使额外步骤无实际价值。B 正确 幻觉验证风险——缺乏外部确定性工具时凭空揣测中间调用的正确性。C 正确 评估成本与延时爆炸——需多轮 Trace 检索与工具调用开销显著增加。D 错误 规则硬化偏差描述不准确——Agent-as-a-Judge 恰恰擅长理解自然语言语义而非仅正则匹配。",
+    "correct": [
+      "轨迹长度偏好偏差评估 Agent 往往倾向于给步数更多、轨迹更长的执行过程打出高分即使额外的步骤并未带来实际价值甚至包含无效重试",
+      "幻觉验证风险在缺乏外部确定性工具验证的情况下评估 Agent 可能会凭空揣测中间工具调用的正确性产生虚假证据",
+      "评估成本与延时爆炸相比单次 LLM Call Agent-as-a-Judge 需要多轮 Trace 检索与工具调用评估开销与响应时延显著增加"
+    ],
+    "distractors": [
+      "规则硬化偏差评估 Agent 会严格按照正则表达式匹配日志无法理解自然语言描述的语义指标"
+    ]
+  },
+  {
+    "seq": 45,
+    "kind": "question",
+    "id": "agentic-eval-evolution",
+    "topic": "evaluation",
+    "angle": "comparison",
+    "question": "根据智能体化评估的技术演进路线评估器可划分为程序化、响应式与自演化三种模式。关于这三种模式的特质与差异以下哪些选项的描述是正确的？（多选）",
+    "explanation": "A 正确 程序化评估器遵循固定多智能体协作工作流按预设 DAG 步骤执行。B 正确 响应式评估器能根据 Trace 中发现的异常动态路由并主动调用外部验证工具搜集证据。C 正确 自演化评估器基于评估历史与反思机制自动总结新规则并修正自身标准。D 错误 程序化评估器虽然固定但可以处理多步骤 Trace 只是灵活性不足并非完全不能用。",
+    "correct": [
+      "程序化评估器通常遵循固定的多智能体协作工作流按照预设的固定逻辑或 DAG 步骤执行检查",
+      "响应式评估器能够根据在 Trace 中发现的具体异常或疑点动态路由并主动调用外部验证工具以搜集证据",
+      "自演化评估器能够基于评估历史与反思机制自动总结新规则并动态修正自身评估标准"
+    ],
+    "distractors": [
+      "程序化评估器由于缺乏动态工具调用能力只能用于评估简单的单轮对话无法用于评估多步骤 Trace"
+    ]
+  },
+  {
+    "seq": 46,
+    "kind": "question",
+    "id": "silent-failure-debug",
+    "topic": "evaluation",
+    "angle": "scenario",
+    "question": "某订票 Agent 在处理修改机票并发送邮件的任务时最终答复'已成功'但运维日志显示改签 API 返回 401 错误且跳过了发邮件接口。若要设计自动化评估机制精准捕获此类'掩盖内部错误的虚假完成'现象以下哪些手段有效？（多选）",
+    "explanation": "A 正确 Agent-as-a-Judge 可读取 API Log 校验'终态承诺'是否与'工具实际调用结果'一致。C 正确 接入确定性 Trace 检查规则核对关键写操作 API 是否成功返回 200 OK。B 错误 单次文本语义匹配无法发现内部工具调用失败——最终答复与用户 Input 语义匹配度很高。D 错误 简单正则匹配 Error 关键词过于粗糙——Agent 后续通过重试恢复的场景会被误判为不合格。",
+    "correct": [
+      "引入 Agent-as-a-Judge 允许评估器读取并检查轨迹中的具体 API 请求与响应 Log 校验终态承诺是否与工具实际调用结果一致",
+      "在评估层中接入确定性的 Trace 检查规则专门核对关键写操作 API 是否被成功调用且返回正常状态码"
+    ],
+    "distractors": [
+      "仅依靠单次 LLM-as-a-Judge 检查最终答复与用户初始 Input 的文本语义匹配度",
+      "使用正则匹配断言日志中是否包含 Error 关键词只要包含就直接判为不合格即使 Agent 后续通过重试成功恢复"
+    ]
+  },
+  {
+    "seq": 47,
+    "kind": "question",
+    "id": "selfharness-acceptance-rule-01",
+    "topic": "evaluation",
+    "angle": "calculation",
+    "question": "在基于评估迭代的 Harness 自我改进框架中，假设第 t 轮演进产生的候选修改方案为 Δ_j，系统在保留数据集（Held-in Split, D_in）与未留存测试集（Held-out Split, D_ho）上的通过率变化分别为 Δ_in^(j) 与 Δ_ho^(j)。为了防止 Harness 发生过拟合与性能倒退，系统采用的提议准入条件（Acceptance Rule）通常应满足哪项逻辑约束？",
+    "explanation": "A 正确：准入逻辑必须保证零退化（非负性）且具备净增益，即候选修改在保留集与未留存集上均不能出现性能下降（Δ_in ≥ 0 且 Δ_ho ≥ 0），并且至少在一个集合上有严格正向提升（max(Δ_in, Δ_ho) > 0）。B 错误：允许未留存集下降会导致过拟合与泛化性能倒退。C 错误：限定保留集增益必须为 0 过于苛刻，且乘积公式不能保证净提升。D 错误：min(Δ_in, Δ_ho) < 0 意味着允许某一数据集出现性能倒退，违反无损回归测试原则。",
+    "correct": [
+      "Δ_in 大于等于 0 且 Δ_ho 大于等于 0 且 max(Δ_in, Δ_ho) 大于 0"
+    ],
+    "distractors": [
+      "Δ_in 大于 0 且 Δ_ho 小于 0 且 (Δ_in 加 Δ_ho) 大于 0",
+      "Δ_in 等于 0 且 Δ_ho 大于 0 且 (Δ_in 乘 Δ_ho) 等于 0",
+      "Δ_in 大于 0 且 Δ_ho 大于等于 0 且 min(Δ_in, Δ_ho) 小于 0"
+    ]
+  },
+  {
+    "seq": 48,
+    "kind": "question",
+    "id": "selfharness-overfitting-01",
+    "topic": "evaluation",
+    "angle": "debugging",
+    "question": "在 Agent Harness 自我优化过程中，工程人员发现某一提议候选在保留训练集（Held-in）上提升了 15% 的通过率，但在留存验证集（Held-out）上却导致了 10% 的性能下降，最终被验证模块拒绝。针对这一现象，最可能的底层工程原因是什么？",
+    "explanation": "A 正确：当提议模块根据保留集的错误轨迹生成候选时，如果没有对修改边界进行限制，模型容易倾向于写入针对特定报错文本或特定文件名处理的 Prompt 提示/硬编码规则，导致系统在保留集上过拟合，破坏其在未见任务上的通用交互逻辑。B、C、D 错误：这些均属于特定运行环境的单点配置错误，通常会在保留集和验证集上造成对称的性能下降，无法解释“保留集大幅提升但验证集严重倒退”的典型过拟合现象。",
+    "correct": [
+      "提议模块生成了硬编码特定任务特征的局部规则，破坏了智能体处理未见任务的通用推理逻辑"
+    ],
+    "distractors": [
+      "提议模块在修改 Harness 时降低了工具调用的超时阈值，导致长流程任务在验证集上频繁超时失败",
+      "提议模块强制要求智能体在每一步打印调试日志，导致上下文长度超出基座模型的最大 token 限制",
+      "提议模块移除了底层 shell 环境的状态保持机制，使得多步依赖命令在验证集上无法连续正确执行"
+    ]
+  },
+  {
+    "seq": 49,
+    "kind": "question",
+    "id": "p0-gqa-calculation-01",
+    "topic": "gqa",
+    "angle": "calculation",
+    "question": "某模型有 32 个 Query 头，GQA 使用 8 个 KV 头。与 MHA 使用 32 个 KV 头相比，单 token 的 KV Cache 理论上压缩了多少倍？",
+    "explanation": "KV Cache 与 KV 头数成正比。压缩倍数 = 32 / 8 = 4 倍；Query 头数量不进入 KV Cache 的头数计算。",
+    "correct": [
+      "4 倍"
+    ],
+    "distractors": [
+      "2 倍",
+      "8 倍",
+      "32 倍"
+    ]
+  },
+  {
+    "seq": 50,
+    "kind": "question",
+    "id": "google-genai-leader-03",
+    "topic": "agent-fundamentals",
+    "angle": "comparison",
+    "question": "与仅按预设脚本逐条响应、不能调用外部工具的自动化程序相比，AI Agent 的核心区别是什么？（单选）",
+    "explanation": "A 正确：Agent 能基于情境分析、调用多种工具，并在无需持续人工干预下自主决策与执行以达成目标；B 是脚本化程序特征（需逐步指令），C 混淆了权重微调与自主性，D 是前端界面而非 Agent。",
+    "correct": [
+      "能基于情境分析、调用多种工具，并在无需持续人工干预下自主决策与执行以达成目标。"
+    ],
+    "distractors": [
+      "必须依赖人工在每一步给出明确指令才能推进，自身不能决定下一步动作。",
+      "主要通过微调基座模型权重来获得行为能力，权重更新后即具备自主性。",
+      "只是把模型输出展示给用户的静态界面组件，不参与任何决策。"
+    ]
+  }
+]

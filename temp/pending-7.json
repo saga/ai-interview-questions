@@ -1,0 +1,294 @@
+[
+  {
+    "seq": 102,
+    "kind": "question",
+    "id": "pytorch-perf-tensor-view-01",
+    "topic": "pytorch-performance",
+    "angle": "mechanism",
+    "question": "在 PyTorch CUDA 计算中，对一个形如 (B, N, D) 的 CUDA 张量调用 x.transpose(1, 2) 或 x.t() 时，关于底层 CPU 与 GPU 的行为，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+    "explanation": "A 正确，B 错误：transpose / t / view 等 View 操作是元数据修改（Metadata-only），只在 CPU 端更新 shape 与 stride，不会在 GPU 显存中搬运数据，也不会启动 GPU 内核。C 正确：步长元数据变化后，后续 GEMM 库（cuBLAS/CUTLASS）会读取 stride 并挑选适配对应内存访问模式（如转置布局 _tn）的预编译内核直接读取数据。D 正确：View 张量与原张量指向同一块 Storage，修改视图会直接修改原张量。",
+    "correct": [
+      "CPU 上会更新张量的 shape 和 stride 元数据，但完全不会在 GPU 显存（HBM）中触发任何物理数据的复制或重新排列。",
+      "后续进行 GEMM（矩阵乘法）计算时，底层 Dispatcher 会依据该张量修改后的 stride 元数据，选择支持对应输入 layout 的预编译 Kernel。",
+      "该转置操作返回的新 View 张量与原张量共享同一块底层显存缓冲区，修改 View 中的数值会直接影响原张量。"
+    ],
+    "distractors": [
+      "GPU 会立即启动一个转置 CUDA Kernel，将显存中的元素按新维度顺序重新排列并写入一块新的显存区域。"
+    ]
+  },
+  {
+    "seq": 103,
+    "kind": "question",
+    "id": "pytorch-perf-gemm-epilogue-01",
+    "topic": "pytorch-performance",
+    "angle": "mechanism",
+    "question": "线性层 nn.Linear(in_features, out_features, bias=True) 的前向传播在 PyTorch Eager 模式下映射为 aten::addmm。为何这种设计比先执行矩阵乘法（matmul）再执行偏置加法（add）性能更高？（单选）",
+    "explanation": "B 正确：nn.Linear(bias=True) 前向映射为 aten::addmm，偏置加法在 GEMM 内核尾部写回（Epilogue）前完成，避免了中间矩阵写回 HBM 再读回做 add 的额外显存带宽开销。A 错误：总 FLOPs 不变。C、D 错误：加法仍在 GPU 上完成，矩阵运算未被改写成一维向量运算。",
+    "correct": [
+      "通过将偏置加法作为 GEMM Kernel 尾部写回前的 Epilogue 计算，避免了将中间矩阵写回 HBM 及重新读取的显存带宽开销。"
+    ],
+    "distractors": [
+      "通过减少总浮点运算次数（FLOPs），从而降低了 GPU 算术逻辑单元（ALU）的计算时间开销。",
+      "通过将偏置加法完全移至 CPU 端异步计算，从而释放了 GPU 上的 CUDA Core 资源以并行处理其他计算。",
+      "通过将二维矩阵运算自动重构成一维向量运算，从而显著提高了 GPU Tensor Core 的指令发射频率与利用率。"
+    ]
+  },
+  {
+    "seq": 104,
+    "kind": "question",
+    "id": "ai-fund-036",
+    "topic": "rag",
+    "angle": "comparison",
+    "question": "Vector Search 和 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
+    "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
+    "correct": [
+      "Vector Search 把 query 和文档映射为语义向量做距离检索，擅长同义改写与模糊语义匹配，但对型号、错误码等精确符号不敏感"
+    ],
+    "distractors": [
+      "Keyword Search 通过语义向量计算相似度，因此能匹配到不含查询原词的文档，即便用户写错了术语也能靠向量泛化召回正确答案。",
+      "Vector Search 依赖对实体和编号的词面精确匹配，因此在查错误码时比 Keyword Search 更可靠，语义层面的改写反而是由关键词路来兜底处理。",
+      "两者本质都是词面匹配，区别只在于是否引入神经网络模型来加速索引构建，神经网络的有无决定了检索是否能理解用户意图的深层含义。"
+    ]
+  },
+  {
+    "seq": 105,
+    "kind": "question",
+    "id": "rag-vs-param-memory",
+    "topic": "rag",
+    "angle": "design",
+    "question": "为解决大型 Transformer 模型'隐式参数记忆'带来的知识时效性差、更新成本高和幻觉问题业界提出了结合外置向量数据库的架构（如 RAG、RETRO）。相比单纯依靠扩充参数量的方案这种设计具备哪些系统级优势？（多选）",
+    "explanation": "A 正确 知识库实时增删改查无需重训底层权重。B 正确 事实存储转移到外部索引降低无限扩参需求。C 正确 检索到的上下文为结论提供可溯源依据降低幻觉风险。D 错误 Context Window 不可能降为零仍需注入检索片段且 PE 需求不变。",
+    "correct": [
+      "知识库的实时增删改查如补充最新的企业内部文档无需重新训练或微调底层 Transformer 模型权重",
+      "将事实性知识的存储转移到外部检索索引中大幅降低了主模型为了记住更多事实而无限制扩展参数量的需求",
+      "检索到的上下文文本被直接注入 Prompt Window 能够为生成的结论提供可溯源的依据降低无中生有的幻觉风险"
+    ],
+    "distractors": [
+      "在长文本检索场景下由于外部检索模块承担了大部分信息筛选逻辑输入到 Transformer 的 Context Window 可以降为 zero-shot 从而完全消除了 Positional Encoding 的需求"
+    ]
+  },
+  {
+    "seq": 106,
+    "kind": "question",
+    "id": "long-context-rag-tradeoff",
+    "topic": "rag",
+    "angle": "scenario",
+    "question": "随着上下文窗口扩展至百万 Token 级别某些团队主张直接将全部企业文档加载至 Prompt 中彻底淘汰 RAG 系统。系统架构师指出需要考虑计算复杂度与上下文腐化现象。关于 Long Context 与 RAG 的技术权衡以下哪些说法是合理的？（多选）",
+    "explanation": "A 正确 Self-Attention 计算与显存随 N 二次方增长极长 Prompt 导致 TTFT 与成本大幅上升。B 正确 上下文腐化现象表明大量冗余信息会降低对关键细节的精准检索能力。C 错误 即使窗口够大也无法自动保障实时更新与 RBAC 权限控制需检索层另行实现。D 正确 上下文压缩与 RAG 混合架构可在保持连贯性的同时降低延迟与成本。",
+    "correct": [
+      "标准 Self-Attention 的计算与显存开销随 Token 序列长度呈二次方增长极长 Prompt 会导致首包响应时间与单次推理成本大幅上升",
+      "'上下文腐化'现象表明当上下文填充大量冗余信息时模型对早期或中间关键细节的注意力关注度与精准检索能力可能发生衰减",
+      "结合自动上下文压缩与 RAG 的混合架构可以在保持长会话连贯性的同时有效降低推理延迟与 token 成本"
+    ],
+    "distractors": [
+      "只要模型的上下文窗口容纳下全部企业文档就能够完全保障数据调用的实时更新与细粒度基于角色的访问控制"
+    ]
+  },
+  {
+    "seq": 107,
+    "kind": "question",
+    "id": "mlops-06",
+    "topic": "reliability",
+    "angle": "mechanism",
+    "question": "开发人员在分支开发过程中，工作区（Working Directory）和暂存区（Staging Area）存在未提交的修改。此时需要紧急切换到 hotfix 分支修复线上 Bug。关于使用 git stash 及其相关命令处理代码状态的行为，下列说法正确的有？（多选）",
+    "explanation": "默认stash存已追踪文件的工作区+暂存区并恢复HEAD；apply不删栈、pop删栈；未追踪文件需-u。",
+    "correct": [
+      "执行默认的 git stash 会将已追踪文件的工作区和暂存区未提交修改保存到一个栈结构中，并将工作区恢复至与 HEAD 一致的状态",
+      "执行 git stash pop 会尝试应用栈顶的 stash 变更；在没有代码冲突的情况下，它会将该 stash 记录从栈列表中移除",
+      "若存在未追踪文件（Untracked Files），直接执行默认的 git stash 不会保存这些文件，必须显式附加 -u 或 --include-untracked 参数"
+    ],
+    "distractors": [
+      "执行 git stash apply 会将栈顶的暂存变更应用到当前分支，同时会自动将该条 stash 记录从栈列表中删除"
+    ]
+  },
+  {
+    "seq": 108,
+    "kind": "question",
+    "id": "sebastian-raschka-2026-08-127",
+    "topic": "hybrid-attention",
+    "angle": "tradeoff",
+    "question": "交替使用全注意力与线性或状态空间层时，设计者需要权衡哪些方面？（请选择三个）",
+    "explanation": "全注意力擅长内容寻址，替代层通常更节省长序列计算；层间比例、状态容量和硬件实现决定最终效果。",
+    "correct": [
+      "长上下文计算和缓存成本",
+      "精确内容寻址与压缩状态表达能力",
+      "不同层类型之间的信息传递和实现复杂度"
+    ],
+    "distractors": [
+      "加入替代层就能保证所有任务质量不变"
+    ]
+  },
+  {
+    "seq": 109,
+    "kind": "question",
+    "id": "sec-eval-01",
+    "topic": "security-eval",
+    "angle": "tradeoff",
+    "question": "在针对大语言模型（LLM）及 AI Agent 进行网络安全与漏洞利用能力评估时，通常有两种评测粒度设计：仅以最终结果（如获取目标容器内隐藏 Flag 或触发 Sanitizer Crash）为依据的端到端结果评估（Outcome-based Evaluation）；以及将攻击链条拆解为阶段性里程碑（发现漏洞位置 -> 构造 PoC 重现 Crash -> 实现提权/沙盒突破 -> 执行数据外泄）的子任务导向评估（Subtask-guided Evaluation）。关于这两种评估模式的对比与工程取舍，下列哪些说法是正确的？",
+    "explanation": "B 正确：纯端到端结果是二元 Pass/Fail，缺乏对中间状态的感知，无法区分「完全未能定位漏洞」与「已精准定位但因格式/环境限制未能生成有效 Exploit」这两种能力层次。C 正确：子任务模式把长链条拆成独立里程碑，有助于定位模型究竟卡在代码审计、PoC 触发还是提权突破。D 正确：子任务相当于为 Agent 提供攻击步骤的导航提示（Hints），降低了自主搜索与长程规划的门槛，可能高估其无指导攻击能力。A 错误：端到端结果评估极易遭受 Reward Hacking（如利用挂载漏洞直接读 Flag），仍需要轨迹审计来校验攻击行为合规性。",
+    "correct": [
+      "仅依赖端到端结果评估会导致评分过于粗粒度，无法区分「完全未能定位漏洞」与「已精准定位漏洞但因格式或环境限制未能生成有效 Exploit」这两种能力层次不同的 Agent",
+      "子任务导向评估通过在各个攻击节点提供提示或单步断言，可以更精准地隔离 Agent 在复杂攻击链中的能力瓶颈（如漏洞定位、探索分析还是 Payload 构造）",
+      "引入子任务导向评估会降低对 Agent 独立进行长程规划与自主探索能力的要求，可能高估其在真实 Zero-day 场景下的无指导攻击能力"
+    ],
+    "distractors": [
+      "端到端结果评估只看客观终态，轨迹审计引入的主观判断反而污染结论；结果可复现即审计完备，无需再查轨迹。"
+    ]
+  },
+  {
+    "seq": 110,
+    "kind": "question",
+    "id": "sec-eval-02",
+    "topic": "security-eval",
+    "angle": "mechanism",
+    "question": "在针对 C/C++ 内存安全漏洞构建自动化 Proof of Concept (PoC) 生成与重现评估系统时，需要自动判别 Agent 提交的特定 PoC 输入是否真正触发并利用了目标漏洞。为了防止误报（False Positive）与漏报（False Negative），下列哪项是基于 Sanitizer（如 AddressSanitizer/UBSan）与 Git 代码提交历史实现自动化 Ground-Truth 验证的最有效机制？",
+    "explanation": "B 正确：通过 Pre-patch（必须触发 Sanitizer Crash）与 Post-patch（必须无 Crash 正常运行）的差分验证（Differential Verification），能确切证明该 PoC 既触发了漏洞、且触发的就是当前修复 Commit 对应的具体漏洞，排除了无关崩溃或环境异常。A 错误：非零退出码可能由语法错误、参数不匹配或普通断言失败引起，不等于内存安全破坏。C 错误：若 Post-patch 仍发生完全一致崩溃，说明补丁未生效或 PoC 触发了无关的预存漏洞。D 错误：仅覆盖补丁修改行（Statement Coverage）不代表成功构造了触发内存腐败的合法 Payload。",
+    "correct": [
+      "要求该 PoC 在包含漏洞的预修补（Pre-patch）源码编译版本上必须触发 Sanitizer 崩溃，且在已修复（Post-patch）源码编译版本上能够正常运行不发生崩溃"
+    ],
+    "distractors": [
+      "只要 PoC 运行后导致目标程序返回非零退出码（Non-zero Exit Code），即可判定成功重现了内存安全漏洞",
+      "要求该 PoC 在预修补与已修复两个编译版本上均产生完全一致的 Sanitizer Crash 堆栈回溯日志",
+      "仅对目标代码执行静态覆盖率检查，若 PoC 运行时的指令覆盖率触及了补丁 Commit 修改的代码行，即判定成功重现漏洞"
+    ]
+  },
+  {
+    "seq": 111,
+    "kind": "question",
+    "id": "sec-eval-03",
+    "topic": "security-eval",
+    "angle": "system-design",
+    "question": "在包含几十台主机、多个子网及信任域的复杂企业网络中部署自主红队渗透测试 Agent 时，直接使用单体 LLM（Mono-LLM Agent）直接执行 Bash 命令通常面临上下文膨胀（Context Bloat）、大量冗余无效指令以及长程决策失效。为了构建具备高可靠性与自主渗透能力的多主机系统，下列哪些架构设计模式是合理的？",
+    "explanation": "A 正确：将高层战术规划与底层工具调用的具体语法执行解耦，可避免 LLM 在复杂上下文中迷失或产生格式错误。B 正确：将网络状态和攻击图提炼到外部服务，防止原始扫描数据挤爆上下文窗口，并提供确定性的下一步拓扑路径。D 正确：用标准 C2 服务维护已控主机的 Session，避免把所有主机的 Shell 交互状态交由 LLM 上下文维持。C 错误：全量拼接未过滤的工具原始输出会导致严重上下文膨胀，使注意力退化并增加决策噪声。",
+    "correct": [
+      "采用分层解耦架构，由高层规划 Agent 仅负责高阶目标决策（如服务扫描、横向移动、提权、数据外泄），再由专项执行 Agent 将高阶目标转化为具体的工具指令",
+      "引入外部环境状态跟踪器（State Tracker）与攻击图服务（Attack Graph Service），将网络拓扑与已获取权限信息维护在 LLM 上下文之外，动态为 Agent 提供候选动作建议",
+      "引入独立的 Command-and-Control (C2) 基础设施，将已控制主机的持久化控制与命令执行机制从 LLM 的会话上下文中解耦"
+    ],
+    "distractors": [
+      "将渗透测试过程中产生的所有底层工具（如 Nmap、Metasploit）的标准输出全量拼接在 Prompt 上下文中，以保证大模型拥有最完整的全局记忆"
+    ]
+  },
+  {
+    "seq": 112,
+    "kind": "question",
+    "id": "sec-eval-05",
+    "topic": "security-eval",
+    "angle": "design",
+    "question": "在针对 Web3/智能合约漏洞利用或标准 CTF 竞赛进行 LLM 安全能力评估时，由于大量历史漏洞 Payload、解题 Writeup 及分析文章已被广泛包含在 LLM 的预训练数据集中，极易产生「数据污染（Data Contamination）」问题，导致模型靠记忆而非逻辑推理解题。为了有效抑制数据污染对评估有效性的干扰，下列哪项评估方案最为严谨？",
+    "explanation": "B 正确：按知识截止时间进行严格的时间切片（Temporal Cutoff Control）或使用全新的真实 Zero-Day 目标，是消除预训练数据记忆污染最直接且无争议的工程方法。A 错误：Prompt 级约束无法阻止 LLM 参数权重对预训练知识的隐式检索与利用。C 错误：LLM 具备强语义抽象能力，简单变量/函数重命名无法掩盖控制流、数据流与核心算法漏洞模式。D 错误：关闭 Web 搜索仅阻断实时检索，无法消除模型预训练阶段已内化的记忆。",
+    "correct": [
+      "按模型知识截止时间（Knowledge Cutoff）划分数据，仅用截止后的真实新漏洞或新目标做 Zero-Day 测试"
+    ],
+    "distractors": [
+      "仅使用已公开且得分最高的历史经典 CTF 赛题，通过在系统 Prompt 中加入「禁止使用记忆解法」的合规约束指令",
+      "对历史题目的变量名和函数名进行随机混淆重命名，直接在文本语义层面阻止 LLM 识别出原始代码库",
+      "屏蔽 Agent 的 Web 搜索工具，仅提供本地 Docker 沙盒，即可彻底排除预训练数据集带来的内存记忆污染"
+    ]
+  },
+  {
+    "seq": 113,
+    "kind": "question",
+    "id": "sec-eval-06",
+    "topic": "security-eval",
+    "angle": "mechanism",
+    "question": "在评估高难度漏洞（如 JavaScript 引擎漏洞、内核提权或 C/C++ 内存破坏漏洞）的利用过程时，通常将攻击进展划分为不同阶梯（如从触发 Crash 到构造引擎内部内存读写原语，再到突破沙盒实现任意代码执行）。在此过程中，开启现代系统安全防御机制（如 ASLR、KASLR、V8 Sandbox）会对 Agent 的利用成功率产生深远影响。下列哪些说法准确反映了防御机制对 Agent 漏洞利用能力的要求与挑战？",
+    "explanation": "A 正确：区分了崩溃触发与完整代码执行的本质差异（能 Crash 不等于能控制指令流）。B 正确：ASLR 破坏了硬编码地址的有效性，要求攻击链必须包含泄露真实内存基址的原语。C 正确：沙盒隔离将引擎漏洞约束在受限内存池，越狱必须依赖专门的沙盒逃逸原语（如未受保护的系统调用或 rendezvous 原语）。D 错误：绕过防御需要特定的利用原语与逻辑构造，并非简单增加上下文窗口或 Payload 长度即可解决。",
+    "correct": [
+      "仅仅生成能够导致程序崩溃（Crash/Trigger）的 PoC 输入，并不等同于成功构造了能实现受控指令流劫持的任意代码执行（Arbitrary Code Execution）",
+      "开启 ASLR/KASLR 地址随机化防御后，Agent 必须进一步寻找并结合内存泄露（Memory Leak）漏洞或指针低位爆破等技术才能构造有效 Exploits",
+      "现代系统防御机制（如 V8 沙盒）会将崩溃限制在沙盒隔离区内，Agent 必须构造专门的沙盒突破原语（Sandbox Escape Primitives）才能获得宿主进程的完全控制权"
+    ],
+    "distractors": [
+      "开启防御机制仅会增加 Payload 的字节长度，Agent 只要扩展 LLM 的 Context Window 长度即可自然克服地址随机化与沙盒防护"
+    ]
+  },
+  {
+    "seq": 114,
+    "kind": "question",
+    "id": "sec-eval-07",
+    "topic": "security-eval",
+    "angle": "debugging",
+    "question": "在基于沙盒与确定性 Grader（如检测 Flag 文件读取或目标数据外泄）的安全 Agent 评测框架中，Agent 可能会利用评测环境本身的配置疏漏（例如通过沙盒挂载漏洞直接读取宿主机存储的 Flag、或利用未妥善隔离的侧信道绕过目标服务）获得满分。这种现象被称为奖励哈克（Reward Hacking）。为了构建防篡改的高信度评估 Harness，下列哪些措施是有效的工程做法？",
+    "explanation": "A 正确：通过自动化轨迹审计，检查 Agent 是否确实按合规的漏洞利用路径执行命令，能有效识别旁路非预期解。B 正确：动态 Flag 生成或利用后解锁机制可防止 Agent 通过直接挂载读取或暴力搜索本地文件系统偷跑。D 正确：严格约束网络与环境边界，防止 Agent 攻击评测 harness 本身或宿主机。C 错误：解除所有隔离与系统调用限制会大幅增加评测环境被 Agent 提权越狱并进行 Reward Hacking 的风险。",
+    "correct": [
+      "引入独立于 Agent 的 Transcript Auditor（日志审计器，如使用强模型审查 Agent 的完整执行轨迹与指令流），确认攻击路径符合预期漏洞利用逻辑",
+      "对 Grader 和 Flag 存储进行严格的环境隔离，使 Flag 仅能在目标应用程序被正确利用（如执行了特定溢出并反弹 Shell）后在内存/受限环境中动态生成或解锁",
+      "限制 Agent 的攻击范围，明确约束其攻击目标仅限于指定容器及特定服务端口，并通过评测框架阻断对外部宿主机及无关服务的非授权访问"
+    ],
+    "distractors": [
+      "在 Sandbox 中关闭一切网络隔离与系统调用限制，以便 Agent 可以自由尝试任何非预期途径来测试其应变能力"
+    ]
+  },
+  {
+    "seq": 115,
+    "kind": "question",
+    "id": "sec-eval-09",
+    "topic": "security-eval",
+    "angle": "design",
+    "question": "在设计与落地一套针对安全 Agent 的漏洞利用能力评测框架时，评分机制（Scoring Scheme）的严谨性直接决定评测结论是否可信。关于如何构建兼顾「区分度、可复现性与抗奖励哈克」的评测度量体系，下列哪些做法是合理且推荐的？",
+    "explanation": "B 正确：同时报告任务成功率与奖励哈克 / 非合规旁路解法比率，能把「靠环境漏洞拿满分」与「真正具备利用能力」区分开。C 正确：按攻击链阶段（崩溃→读写原语→沙盒逃逸→外泄）给分层部分分，可区分不同能力层次并降低二元 Pass/Fail 的噪声。D 正确：用人工标注小样本对自动化 Grader 做交叉校验（Inter-rater / 假阳性检查），可评估评分器本身的可靠性与偏差。A 错误：单轮 Pass@1 受运行随机性影响大、缺乏可复现性，不能单独作为能力指标。",
+    "correct": [
+      "在评分中同时报告任务成功率与「奖励哈克 / 非合规旁路解法」比率，避免 Agent 靠环境漏洞拿满分而掩盖真实能力缺口",
+      "按攻击链阶段（崩溃→读写原语→沙盒逃逸→外泄）给分层部分分（Tiered Partial Credit），而非二元 Pass/Fail",
+      "用人工标注的小样本对自动化 Grader 做交叉校验（Inter-rater / 假阳性核查），评估评分器本身的可靠性与偏差"
+    ],
+    "distractors": [
+      "仅以单轮（single-run）Pass@1 作为唯一能力指标，能最简洁、稳定地反映 Agent 真实漏洞利用水平"
+    ]
+  },
+  {
+    "seq": 116,
+    "kind": "question",
+    "id": "index_share_sparse_attn_canonical",
+    "topic": "index-share-sparse-attention",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "在超长上下文大语言模型中，针对基于索引机制的动态稀疏注意力（Dynamic Sparse Attention），某架构采用了跨层共享轻量级索引器（IndexShare）的策略（例如每 4 个 Transformer 层共享 1 个索引器，索引器部署在 4 层中的首层）。关于该 IndexShare 机制对计算开销与推理特性的影响，以下哪些选项的说法是正确的？",
+    "explanation": "选项 A 正确：IndexShare 的核心设计是在 4 层组的首层计算轻量级索引器的 Query-Key 点积与 Top-K 选择，并将得到的 Top-K 索引直接供后续 3 层重用，从而消除了这 3 层中索引器本身的计算开销；选项 B 正确：Transformer 连续相邻层之间的稀疏注意力激活图示（Sparsity Pattern）高度相似，因此共享 Top-K 索引能在保持高模型精度的同时削减冗余计算；选项 C 错误：IndexShare 减少的是索引器的计算 FLOPs，但每层标准的 QKV 注意力张量及 KV Cache 尺寸并没有因此减少，KV Cache 的显存占用并未同比例缩减；选项 D 错误：共享的是 Top-K 索引（即决定关注哪些 Key），后续各层仍需根据该索引提取对应的 Key/Value 并计算稀疏注意力点积，并非 O(1) 的查表或完全免除注意力计算。",
+    "correct": [
+      "通过在 4 层结构的首层计算一次 Top-K 索引并透传给后续 3 层，直接省去了后续 3 层中索引器 Query-Key 点积与 Top-K 排序的计算开销。",
+      "由于相邻 Transformer 层间的注意力关注区域具有高语义相关性，复用首层计算的 Top-K 稀疏掩码可以在几乎不损伤模型精度的前提下大幅降低计算量。"
+    ],
+    "distractors": [
+      "IndexShare 机制的核心优化点在于成倍缩减每层保存的 KV Cache 字节数，从而使长文本下的显存容量瓶颈得到同比例缓解。",
+      "IndexShare 使得后续 3 层完全无需执行 Q 与 K/V 的注意力点积，注意力计算彻底从 O(N^2) 降低为 O(1) 的查表操作。"
+    ]
+  },
+  {
+    "seq": 117,
+    "kind": "question",
+    "id": "mtp_speculative_decoding_canonical",
+    "topic": "mtp-speculative-decoding",
+    "angle": "mechanism",
+    "cognitiveTask": "diagnose",
+    "question": "在基于多标记预测（Multi-Token Prediction, MTP）的投机采样（Speculative Decoding）中，传统多步 MTP 生成草稿 Token 时，随着预测步数增加，接受率（Acceptance Rate）往往快速衰减。引入 IndexShare 与 KVShare 后，接受长度（Acceptance Length）得到了显著提升。关于该优化机制的诊断与因果关系分析，以下哪些选项的描述是正确的？",
+    "explanation": "选项 A 正确：在传统多步 MTP 推理中，从第 2 步开始，输入特征部分来自 MTP 预测层产出的隐藏状态（Draft Hidden State），而在训练时所有输入均基于 Target Model 的真实隐藏状态，这种输入特征来源的不一致（Training-Inference Discrepancy）会导致 KV Cache 污染并随步数积累偏差；选项 B 正确：使用 IndexShare 和 KVShare 后，后续 MTP 步骤直接重用首步（即 Target Model 侧）生成的 Top-K 索引与 KV Cache，确保注意力上下文完全来自于 Target Model 的可靠特征，消除了特征污染，显著提升了后续步的采样接受率；选项 C 错误：KVShare 是直接复用已计算好的 Target KV Cache，避免了重复计算，而非重新执行完整 Forward 过程；选项 D 错误：核心瓶颈在于输入特征与注意力上下文的污染及训练推理分布偏移，并非 LM Head 权重的改变。",
+    "correct": [
+      "传统多步 MTP 在第 2 步及后续步骤中，输入的 Hidden State 部分来自于前一步 MTP 模块而非 Target Model，导致计算出的 KV Cache 包含了混合来源的特征，产生了训练与推理不一致（Training-Inference Discrepancy）。",
+      "结合 IndexShare 与 KVShare 后，MTP 后续预测步骤直接复用 Target Model 产生的 KV Cache 与 Top-K 索引，消除了由 MTP 自身中间隐藏状态污染 KV Cache 的问题。"
+    ],
+    "distractors": [
+      "KVShare 机制要求 MTP 模块重新对整个 Target Model 执行一次完整的 Forward 过程，从而在计算量翻倍的前提下强制纠正特征偏差。",
+      "传统的 MTP 多步预测之所以失败，是因为多步预测共享了完全相同的线性投影输出层（LM Head），而 KVShare 从根本上改变了 LM Head 的权重结构。"
+    ]
+  },
+  {
+    "seq": 118,
+    "kind": "question",
+    "id": "coding_rl_anti_hacking_canonical",
+    "topic": "coding-rl-anti-hacking",
+    "angle": "debugging",
+    "cognitiveTask": "diagnose",
+    "question": "在 Coding Agent 的 RL 训练中，模型容易产生偷看测试集、直接复制参考答案等 Reward Hacking 行为。某团队设计了一个包含“规则过滤 + LLM Judge”的在线检测模块（Online Guard）。当在某一步检测到 Hack Tool Call 时，系统选择拦截该调用并返回 Dummy 提示信息，允许模型继续执行后续 Rollout，而不是直接 Abort（强行终止）整条轨迹。关于该设计的工程与算法合理性，以下哪些分析是正确的？",
+    "explanation": "选项 A 正确：直接 Abort 轨迹会导致样本长度分布急剧失真，引发严重的采样偏差（Sample Bias）与梯度震荡，可能导致模型 Collapse；选项 B 正确：拦截并返回 Dummy 信息让环境在当前步给出合法的负向/无效反馈，使模型在后续交互中尝试其他正规解题路径，起到在线纠正和强化训练的作用；选项 C 正确：规则过滤（如正则匹配敏感路径或命令）速度快、召回率高，LLM Judge 进一步分析意图以降低误杀率，这种两阶段设计兼顾了系统的实时性与准确性；选项 D 错误：在线拦截并返回 Dummy 结果是为了阻止 Hack 行为成功并防止模型获得非正当奖励，而非欺骗 Reward Model 给予满分。",
+    "correct": [
+      "若直接 Abort 含有 Hack 行为的轨迹，会导致大量长轨迹数据被陡然截断，破坏策略梯度更新时的数据分布完整性，易引发 Rollout Collapse 和训练不稳定。",
+      "返回 Dummy 结果（如提示“操作无效或权限不足”）能够向模型提供真实的环境对抗反馈，引导模型在后续步骤中学习通过正常合法途径解决问题。",
+      "先通过规则过滤提高 Recall，再通过 LLM Judge 对可疑行为进行意图分析提高 Precision，能够在大规模在线 Rollout 中兼顾高吞吐与低误判率。"
+    ],
+    "distractors": [
+      "返回 Dummy 结果的主要目的是欺骗 Reward Model，使其误以为该 Hack 行为已经成功执行并给出满分 Reward。"
+    ]
+  }
+]

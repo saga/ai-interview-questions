@@ -188,15 +188,30 @@ export interface AssessmentQuality {
   choiceWithMap: number;
   /** 只有 1 个 angle 有题的知识点数（角度单一 = 脆弱覆盖） */
   singleAngleTopics: number;
+  /**
+   * 带测量意图（`assessment.target` + `reasoningGoal`）的题数（plan0907 / P0-2）。
+   * 空着 = 人工审题看不到「这道题要测什么判断」，variant challenger 也无从比对
+   * reasoning path。存量由 `npm run question:assessment -- --write` 抽取回填。
+   */
+  withAssessment: number;
+  /**
+   * 带 `cognitiveTask` 的题数（ADR-077：assessment contract 第四维）。
+   * 缺它时 adaptive 的 assessment-cell 层整体回退到 angle 粒度。
+   */
+  withCognitiveTask: number;
 }
 
 export function assessmentQualityOf(questions: Question[]): AssessmentQuality {
   let withMisconceptions = 0;
   let choiceTotal = 0;
   let choiceWithMap = 0;
+  let withAssessment = 0;
+  let withCognitiveTask = 0;
   const anglesByTopic = new Map<string, Set<string>>();
   for (const q of questions) {
     if (q.misconceptions && q.misconceptions.length > 0) withMisconceptions++;
+    if (q.assessment) withAssessment++;
+    if (q.cognitiveTask) withCognitiveTask++;
     if (q.formats.choice) {
       choiceTotal++;
       if (q.formats.choice.misconceptionMap && q.formats.choice.misconceptionMap.length > 0) choiceWithMap++;
@@ -207,7 +222,15 @@ export function assessmentQualityOf(questions: Question[]): AssessmentQuality {
   }
   let singleAngleTopics = 0;
   for (const set of anglesByTopic.values()) if (set.size <= 1) singleAngleTopics++;
-  return { total: questions.length, withMisconceptions, choiceTotal, choiceWithMap, singleAngleTopics };
+  return {
+    total: questions.length,
+    withMisconceptions,
+    choiceTotal,
+    choiceWithMap,
+    singleAngleTopics,
+    withAssessment,
+    withCognitiveTask,
+  };
 }
 
 /**
@@ -315,6 +338,12 @@ export function formatCoverageReport(
         `带误解标注 ${q.withMisconceptions} · ` +
         `选择题误解映射 ${q.choiceWithMap}/${q.choiceTotal} · ` +
         `单角度知识点 ${q.singleAngleTopics}（角度单一、覆盖脆弱）`,
+    );
+    lines.push(
+      `测量意图（assessment contract）：带 assessment ${q.withAssessment}/${q.total}` +
+        (q.withAssessment < q.total ? `（缺口 ${q.total - q.withAssessment}，跑 question:assessment）` : '') +
+        ` · 带 cognitiveTask ${q.withCognitiveTask}/${q.total}` +
+        (q.withCognitiveTask < q.total ? `（缺第四维，assessment-cell 证据回退到 angle 粒度）` : ''),
     );
   }
   if (extra?.readiness) {

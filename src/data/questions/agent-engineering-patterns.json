@@ -37,7 +37,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C、D。\n生成-评估双 Agent 架构的核心机制是：(1) 破解单 Agent 的谄媚效应与自洽偏见（A）；(2) 解耦生成与检验逻辑，使 Evaluator 可通过专门提示词/Rubric 被调优得更苛刻客观（B）；(3) 让 Evaluator 在干净上下文中避开 Generator 自身推导的干扰做中立复审（C）；(4) 为 Evaluator 配备真实运行环境工具链（如 Playwright、沙箱），以 Ground Truth 取代纯文本推断（D）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「独立 Evaluator 可在干净或专门构造的评估上下文中重新审视产出」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「单 Agent 在自我评估时极易产生谄媚效应与自洽偏…」「独立的 Evaluator Agent 可以解耦生成…」等 4 项成立。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "agentdual-context-compaction",
@@ -80,7 +85,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。\nContext Reset 清空窗口并基于结构化 Artifact（Handoff/State File）做 Session 转移，提供干净推理起点、彻底消除上下文焦虑，代价是增加编排复杂度与 Token 重复开销；Context Compaction 仅原位摘要，无法完全消除焦虑。C、D 对重置/压缩机制的描述（指数级延迟归档、Socket 通信）均无依据。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「这为模型提供干净的推理起点，彻底消除基于历史窗口长度触发的“上下文焦虑”，但代际切换需要重新加载基础 Prompt 与全局状态，增加了系统编排复杂度和 Token 开销」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「上下文重置清空窗口并基于结构化 Artifact 转…」成立；并排除「原位总结释放空间」「上下文重置需要 Agent 实时归档所有局部变量」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "agentdual-planner-decomposition",
@@ -125,7 +135,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C。\n避免初始规划过细的原因：(1) 缺乏运行时反馈时强制指定实现易产生错误假设并引发下游级联失败（A）；(2) 过细约束限制 Generator 按实际编译/运行报错灵活重构的空间（B）；(3) 高层 Spec 应定义 What 与目标，How 与 Verification 留给后续 Sprint 通过契约动态协商（C）。D 错：过细主要损害弹性与容错，而非仅 Token 不足。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「若 Planner 提前把 API 签名、具体函数实现步骤死锁，Generator 会被迫沿错误假想路径编写代码」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「初始 Planner 若在缺乏运行时反馈的情况下强制…」「过度具体的实现细节会限制 Generator 在编码…」等 3 项成立；并排除「规划阶段过多占用 Token 会导致下游 Gener…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "agentdual-sprint-contract",
@@ -170,7 +185,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C。\n对抗 LLM QA 表面化/妥协的设计：(1) 事前锁定含具体断言的 Sprint Contract，使验收可量化（A）；(2) 给 Evaluator 配 Playwright 等端到端工具做黑盒/灰盒交互验证（B）；(3) 用 Few-Shot 校准评分标准，对边界遗漏等建立严厉 Fail 判定（C）。D 错：允许忽略失败并合并会破坏防护网。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Generator 与 Evaluator 预先锁定含具体断言（Assertions）的 Contract，Evaluator 即可针对可量化条件测试」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「在开发前要求 Generator 与 Evaluat…」「为 Evaluator 配备具备交互能力的端到端测试…」等 3 项成立；并排除「将 Evaluator 的评估结果仅作为日志输出」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "agentdual-rubric-quality",
@@ -207,7 +227,12 @@
       "open": {
         "referenceAnswer": "正确答案 C。\n最有效策略是在 Rubric 中明确区分“视觉质量与原创性”和“技术完备性”，对模板化默认样式加重扣分并提高视觉原创性权重，驱动 Generator 承担审美风险、突破平庸。A 过度强调 Craft 反致安全模板；B 抽象词汇导致打分漂移；D 禁改 DOM 阻碍创新布局。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「在 Rubric 中明确惩罚默认模板（如标准白底紫渐变卡片）、提高视觉风格与原创性权重，能驱动 Generator 主动承担审美风险（Aesthetic Risk-Taking）…」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「明确区分“视觉质量与原创性”与“技术完备性”」成立；并排除「将“技术执行力（Craft）”与“基础功能性（Fun…」「避免在提示词中定义具体的视觉评估标准」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "agentdual-harness-simplicity",
@@ -252,6 +277,11 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C。\n合理看法：(1) 基座模型原生修正缺陷（长上下文/自我纠错）后，可精简强制 Reset 等补偿性约束（A）；(2) Planner 与 Evaluator 属结构化解耦，即使模型很强仍有架构价值（B）；(3) Harness 的每个复杂约束多补偿某模型缺陷，应随迭代做“减法测试”（C）。D 错：单一 Prompt 无法解决工具交互、确定性验证与状态维护，Multi-Agent 不会被彻底取代。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「团队应遵循“做减法”原则（Less is More），测试模型原生长流程自治能力」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「当新一代基座模型原生具备更强的长上下文保持与自我纠错…」「即使基座模型的基础编码能力大幅提升」等 3 项成立；并排除「协作与工具架构是短窗口时代的补偿」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   }
 ]

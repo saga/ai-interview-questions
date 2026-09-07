@@ -1,6 +1,171 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-07 · cognitiveTask 收口（43/1354 → 1354/1354）+ 变体指纹重设基线
+
+- **背景**：`cognitiveTask` 是 ADR-077 assessment contract 的第四维，只有 43/1354 有值，
+  adaptive 的 assessment-cell 证据只能回退到 angle 粒度。angle→cognitiveTask **非单射**
+  （`mechanism` 既可能 explain 也可能 diagnose/apply），不能静默批量按 angle 写。
+- **三段式推进**：
+  1. **规则推断**（`src/domain/cognitiveTaskInference.ts`，纯函数 + 17 单测）：两级 ——
+     ① 题面显式提问方式（数值求解→`infer` / 根因排查→`diagnose` / 区别对比→`compare` /
+     权衡取舍→`evaluate` / 后果预测→`predict`）优先于 ② angle 先验（seed 校准：comparison→compare 9/9、
+     tradeoff→evaluate 8/8、calculation→infer 2/2、mechanism→explain 13/15）。**推不出返回 null**，
+     不用模板值灌满。43 条人工标注上校准到 37/43 精确，其余全部落 null（宁漏不错）。
+  2. **规则回填**（`scripts/backfill-cognitive-task.ts`，`npm run question:cognitive-task`）：
+     43 → **1062/1354（78.4%）**，292 条（98 system-design + 167 scenario + 27 fundamental）
+     明确留给人工。
+  3. **人工撰写**：`assessment-manual.ts` 增加 `--field=cognitive-task`，dump → 分 5 片 →
+     逐条判定 → apply。292 条全部落库，**1354/1354（100%）**。
+- **判定口径**（人工批次的取舍，写下来以便复核）：
+  「下列说法正确的有」按陈述性质分流 —— 定义/职责/机制 → `identify`，价值/考量/优势/缺陷分析 →
+  `evaluate`；「哪些措施/哪些设计/如何做」→ `design`；「为什么/原因/原理」→ `explain`；
+  「优先排查/最可能的原因」→ `diagnose`；「哪个方案满足需求」在单能力层 → `apply`，
+  需组合多组件架构（AWS Pro 级）→ `design`。
+- **连带修复 —— 变体 sourceHash 93 条 stale**：`sourceHash` 对 `cognitiveTask` 是**条件入指纹**
+  （未声明不出该键），给存量题补写第四维会让其变体全部判 stale。但变体文本没变，变的是
+  继承来的元数据，且 ADR-077 规定未自声明的变体恒取 canonical 当前值 ⇒ 正确处置是**重设基线**
+  而不是重跑 LLM 重新生成。新增 `scripts/refresh-variant-hash.ts`
+  （`npm run question:variant-rehash`）：**仅当**「旧指纹 == 去掉 cognitiveTask 后的指纹」
+  时才改写，其余判为真实漂移并列出。本次 93/93 属前者、0 条真实漂移。
+- **结果**：`validate:questions` 1354 题 / angle 100%；`question:validate-variants`
+  **0 stale / 0 近重复 / 0 语言质量**；`question:coverage` 显示
+  「带 assessment 1354/1354 · 带 cognitiveTask 1354/1354」；`npm run typecheck` 干净；
+  `npm test` **839/839**。
+
+
+## 2026-09-07 · 剩余 156 题人工撰写（assessment 收口：题目 1354/1354，变体 52 自声明 + 48 继承）
+
+- **背景**：离线推断做到 1198/1354 后，剩下 156 题推断不出（`inferAssessment` 返回 null：解析太短、
+  无断言句、或只有名词短语列表）。这些题不能靠模板文本灌满——模板文本等于没有测量意图。
+- **做法**：**直接由我（LLM）撰写**，不用外部 provider。新增 `scripts/assessment-manual.ts` 承载
+  「dump → 分批撰写 → apply」的闭环，避免手改 JSON：
+  - `--dump --out=<file>`：导出待撰写条目（题干 + 解析 + 正确项 + 干扰项 + canonical 参考），
+    **自动跳过 runtime/presentation 变体**（ADR-077 恒继承，不该进待办）。
+  - `--apply --file=<file>`：`authoredSchema` 校验 + **全有或全无**（任何一条不合法整批中止、不落盘）；
+    再次硬拒给 presentation 变体写测量意图。
+  - `--status`：题目 / 变体的覆盖率与「自声明 vs 继承」分布。
+- **撰写规约**（157 题 + 变体逐条手写，风格对齐推断结果）：
+  `target` = 「能 + 一个可判定的判断」，`reasoningGoal` = 「先…；再…；并排除…」，
+  排除项必须点名题面里的具体干扰项而不是「其它错误说法」，否则这条意图无法用于审题。
+- **结果**：题目 **1354/1354**（100%）· 变体 **52 自声明 / 48 继承 / 0 雷同** · 0 stale。
+  `question:coverage` 显示「带 assessment 1354/1354」。
+- **48 条变体不声明是对的**：其中 33 条 `surface-options` + 15 条 `context-options`，解析与 canonical
+  同源，推导结果与 canonical 逐字相同 ⇒ 按 ADR-077 声明即自我认证为「改写」，应继承。
+  变体覆盖率 52% 不是缺口，是「能证明不同 reasoning path 的才声明」的正确比例。
+- **遗留（本日已收口）**：`cognitiveTask` 仅 43/1354 的缺口，见顶部
+  「cognitiveTask 收口（43/1354 → 1354/1354）」条目 —— 规则推断 + 人工撰写两段闭合至 100%。
+
+
+## 2026-09-07 · 存量 assessment 回填（0/1354 → 1198/1354，变体 0/100 → 52 自声明 + 48 继承）
+
+- **问题**：P0-2 只改了**新管线**（`convert-blueprint-output.ts` 已落库 Blueprint 的
+  `assessmentTarget` / `reasoningGoal`），存量题目走的是旧管线，字段全空 —— 人工审题看不到
+  「这道题要测什么判断」，variant challenger 也无从比对两条 reasoning path 是否真的不同。
+  **缺的是 producer，不是 schema。**
+- **新增 `src/domain/assessmentInference.ts`（纯函数 + 单测）**：从**已有内容抽取**，不做生成。
+  `target` 取解析里的核心断言句（按分打分取最优：谓语信号 +2 / 长度合窗 +2 / 命中正确项 +1 /
+  首句 +1），`reasoningGoal` = angle×cognitiveTask 决定的起手动作 + 实际正确项摘要 + 干扰项摘要。
+  每段文字都可追溯到题面，抽不到断言句**返回 null**（不用模板文本灌满，理由同 misconception 阈值 45）。
+  排除规则：元信息行、`A 项…` / `A、B 项…` 逐项判错句、干扰项复述（cjkDice ≥ 70 **或** token 覆盖 ≥ 80%
+  —— 只靠 Dice 会被长句稀释，实测漏过「…确实更灵活，但这不是动机」这类句子）。
+- **新增 `npm run question:assessment`**（`scripts/backfill-assessment.ts`）：默认出覆盖率报告；
+  `--write` 回填；`--engine=infer`（离线）/ `--engine=llm`（接 provider，用 vite-node 运行）；
+  `--overwrite` 重建并**剪枝**（推导不出就删掉已有值，不留下矛盾状态）；审计侧车写
+  `temp/assessment-backfill-<date>.json`（每条的 confidence 与 signals，可追责来源）。
+- **回填暴露一个真问题并顺带修掉**：首轮给 94 条变体写完后，`question:validate-variants` 报
+  **31 条「声明的测量意图与 canonical 完全相同」**。这些是 `surface-options` 变体（选项未改写），
+  推导结果必然与 canonical 一致 ⇒ 按 ADR-077，证明不了「不同 reasoning path」就**不该声明**
+  （不声明 = 继承 canonical，语义正确）。`inferForVariant` 加入与 canonical 的全等比对后降到 0。
+  最终 100 条变体 = 52 自声明 + 48 继承。
+- **结果**：题目 1198/1354（88.5%）· 变体 52 自声明 / 48 继承（0 雷同）· 剩余 156 题须 LLM 生成。
+  `question:coverage` 新增一行度量（带 assessment / 带 cognitiveTask），让这个数字可回归。
+
+## 2026-09-07 · plan0907 的 P1 四项收口（Variant 模式 / Challenger 层 / misconception 覆盖 / 文档契约）
+
+### P1-1 offline 与 runtime variant 正式分家（评审推荐方案 A）
+- `questionVariantSchema` 新增 `.superRefine`：**runtime 条目声明 `angle` / `cognitiveTask` / `assessment` 一律拒绝**。
+  此前只靠「`GeneratedVariant` 类型上没有这些字段」约束，一旦把池条目喂进 runtime 通道契约就悄悄破了。
+- 新增 `variantModeSchema` / `variantModeOf()`：offline = **Assessment Variant**（可换测量面），
+  runtime = **Presentation Variant**（恒继承 canonical）。`ai/variant.ts` 与 ARCHITECTURE 同步写明。
+- **修掉一个真实 bug**：`sessionEvaluator.finalizeQuestion` 池命中路径手工拼 `{ question, options }`，
+  把池条目自声明的测量面整段丢掉 ⇒ 离线 Assessment Variant 在运行时被降级成 Presentation Variant
+  （schema 允许、applyVariant 支持，只在衔接处被抹掉）。新增 `measurementFaceOf()` 作为唯一取面口并接入。
+
+### P1-2 Challenger 接入离线管线（三层治理的第二层）
+- `question:challenge`（`scripts/challenge-questions.ts`）：批量质询，选择器 `--ids/--topic/--angle/--limit`，
+  `--dry-run` 预览，`--out` 出 JSON 报告，引擎走环境变量（`CHALLENGER_PROVIDER/MODEL/API_KEY/BASE_URL`）。
+- `summarizeChallenges()`（纯函数，单测覆盖）：结论/区分度分布 + 六维度 critical/warning 计数 +
+  blockers + 人工复核队列（按严重度排序）。
+- **定位为语义质量审计而非 hard gate**：默认退出码恒 0，`--gate` 才在有 blocker 时退出 1。
+  分层是 deterministic=hard gate / challenger=语义审计 / human=最终验收，避免 LLM 偶发误判卡 CI。
+- 顺带修复：本脚本的 `--key=value` 解析（`npm run x -- --topic=rag` 传的是单 token，
+  只认 `--key value` 会静默丢参数——首版就踩了，白跑 20 题）。
+
+### P1-3 misconceptionMap 覆盖率：先有尺子，再有米
+- 新增 `question:misconceptions` 覆盖率报告（三层口径：有误区清单 / 有选项绑定 / **干扰项绑定率**，
+  并按 topic 列出未绑定干扰项最多的缺口）。此前 13.7% 这个数字只能靠临时脚本算。
+- `backfill-misconceptions.ts` 新增 `--from-nodes`：题级 `misconceptions` 缺失时用**知识节点**的
+  误解做种（124 节点 100% 有、均值 2.14 条），「无米下锅」就此解决，零 LLM。
+- 阈值实测曲线（节点做种）：20→285 道 / 25→140 / 30→84 / 35→59 / 42→32 / 45→19 / 50→14。
+  人工复核：≥45 的 19 条**全对**；35~45 带出现明显误配（「删掉教师全部推理轨迹」↔「蒸馏后等价教师」、
+  「因果掩码降为线性」↔「热力图当因果证据」，约 10%）。误配的代价是**诊断说错**（选了 A 却判成误解 B），
+  比不标注更糟 ⇒ 默认取 45（宁缺毋滥），下调需先看 dry-run 报告。
+- 实测结果：清单 185→204（13.7%→15.1%）、有绑定 169→188（12.5%→13.9%）、绑定率 282→301/2919（9.7%→10.3%）。
+  **仍未达「可用水平」**——剩余 1150 道题级误解只能由 LLM 生成，本仓库暂无该脚本（已在报告里写明路径）。
+
+### P1-4 / P2 文档契约与 README
+- `ARCHITECTURE.md` 顶部新增**文档权威性声明**（ARCHITECTURE=当前架构 / DECISIONS=历史 ADR /
+  question-content-spec=内容规范 / prompt_part*=生成协议；memory·plan·CHANGELOG 不承担权威性）。
+- 修掉残留的**三维 assessment contract**：`ARCHITECTURE.md` 的 `questionIdentity.ts` 条目改为四维并标注
+  三维口径已废弃；`DECISIONS.md` ADR-076 第 1 条加「已被 ADR-077 取代」指针（保留历史、不改原文）。
+- 同步 ARCHITECTURE 里过期的 `ai/variant.ts` 描述（v2 分层 → v4 presentation-only）与 challenger 条目。
+- README 校准：77 文件/1317 题 → **81 文件/1354 题**（+变体池 8 文件/100 条）；
+  `angle` 由「可选、10 种」改为**必填、19 种**（并注明仅前 10 个进覆盖白名单）。
+
+### 校验
+typecheck（app+node）通过；`validate:questions` 1354 题 / 124 节点；`question:coverage` 缺口 0；
+`question:validate-variants` 池健康（0 stale / 0 近重复 / 0 语言问题）；`npm test` **809/812**
+（+7 用例），3 失败仍为 `local` / `provider` / `interviewCapability` 的 pre-existing 超时。
+
+## 2026-09-04 · 外部评审收尾：Adaptive 排序优先级 / Challenger 多选判定 / Variant 测量意图
+
+### 1. `rankCandidatePool` 排序键重排（P0）
+`keyOf` 由 `… angleWeakRank → assessmentWeakRankOf → angleEvidence → assessmentEvidence …`
+改为 **`… assessmentWeakRankOf → angleWeakRank → assessmentEvidence → angleEvidence …`**。
+
+`angle` 是粗粒度档位、排在细粒度的 assessment-cell 之前时，「整体已掌握的 angle」会把它下面
+**从未验证过的 cognitiveTask 一起压掉**——即 adaptive 声称的「弱 assessment-cell 优先」实际不成立。
+现 assessment 层（topic×angle×cognitiveTask）先于 angle 层，angle 退化为同档内的粗粒度兜底。
+并列组判定同步从硬编码 `keys.slice(0, 5)` 改为 `keys.length - 1`（除末尾稳定序 idx 外的全部键），
+避免排序键增删后「并列判定」与「排序语义」脱节（旧写法还漏掉了难度键）。
+
+### 2. Challenger 答案判据按题型分支（P0）
+dimension `answer-uniqueness` → **`answer-validity`**（system prompt + Zod enum 同步）。
+旧判据「是否只有一个可由通用工程知识推导的正确答案？」对 **multiple-choice 是错的**——
+多选题本来就有多个正确答案，按唯一性审会把合规多选一律判 critical，同时放过真问题
+（正确项互为换述、错项部分成立）。现由 `answerValidityRule(question)` 按 `formats.choice.type` 分支：
+- single：恰好一个最佳，其余可明确排除；
+- multiple：正确项**独立成立**（不靠另一正确项才真）、非同义换述、**错项逐个为假**且仍有工程迷惑性；
+- 无 choice（纯开放题）：参考答案可由题干目标/约束/通用知识唯一确定。
+
+### 3. Variant 测量意图链路补齐（设计缺口，非阻塞）
+`QuestionVariant.assessment` 本就在 schema 上，但 `applyVariant` 的 `VariantMeasurementFace`
+只含 `angle | cognitiveTask` ⇒ 变体声明的测量意图**落库即丢**（与 2026-09-04 修过的
+「angle/cognitiveTask 静默丢弃」同类复发）。现 `VariantMeasurementFace` 增加 `'assessment'`，
+choice/open 两条 return 分支都生效：声明即采用，未声明继承 canonical。
+
+`question:validate-variants` 新增**审计项** `assessmentAudit`（自声明 / 继承 / 与 canonical 雷同），
+**不参与 healthy 判定**。当前实况：自声明 0 · 继承 100 · 雷同 0。
+
+⚠️ **数据面仍为空**：全库 0/1354 canonical、0/100 variant 带 `assessment`——前三批 blueprint
+均未提交 `assessmentTarget`+`reasoningGoal`（`convert-blueprint-output.ts` 缺一半即 warn 且不落库）。
+链路已通，下一批 blueprint 带上这两个字段即可落地，无需再改代码。
+
+### 校验
+typecheck（app+node）通过；`question:validate-variants` 池健康（0 stale / 0 近重复 / 0 语言问题）；
+`npm test` 802/805（+6 新增回归用例），3 失败仍为 `local` / `provider` / `interviewCapability` 的 pre-existing 超时。
+
 ## 2026-09-04 · 覆盖缺口清零（1320 → 1343 题，缺口 23 → 0 / 333 格全覆盖）
 
 分两批补齐剩余缺口。**先更正一处计数错误**：上一轮口头称「10 个 P1、13 个 P2」，实测清单为

@@ -1,6 +1,6 @@
 [
   {
-    "id":"agent-skills-mechanism-01",
+    "id": "agent-skills-mechanism-01",
     "category": "Agent Architecture",
     "topic": "agent-skills",
     "tags": [
@@ -26,12 +26,31 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null,
+          null
         ]
       }
-    }
+    },
+    "misconceptions": [
+      "以为 Skill 可以完全替代基座模型能力提升",
+      "以为回滚必须清空失败实验的诊断知识",
+      "认为改进 Agent 可直接热更新在线运行时、无需人类审核",
+      "把全部业务文档平铺写入主技能文件，撑爆上下文并降低稳定性",
+      "混淆技能与情境记忆，以为技能也是运行期自动变动的会话数据"
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「这些变更必须通过 Git PR 和人类审核合并后方可被后续任务继承，以保障演进的安全可控」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「执行 Agent 的提示词与操作规范被托管于独立且可…」「改进 Agent 作为异步或定时运行的观察者」等 3 项成立；并排除「改进 Agent 生成的技能修改应当直接自动同步写入…」「执行 Agent 在响应单一请求时须同时完成业务推理…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
-    "id":"agent-skills-design-01",
+    "id": "agent-skills-design-01",
     "category": "Context Engineering",
     "topic": "agent-skills",
     "tags": [
@@ -58,10 +77,15 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「技能文件应以指导原则（Principles）和解释原理（Why）为主，这赋予了 LLM 推理泛化能力」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「在技能文件中优先撰写原则性指导（Principles…」「采用渐进式披露（Progressive Disclo…」等 3 项成立；并排除「将所有相关的业务文档、API 规范及历史失败案例平铺…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
-    "id":"memory-comparison-01",
+    "id": "memory-comparison-01",
     "category": "Agent Memory & Knowledge",
     "topic": "memory",
     "tags": [
@@ -86,10 +110,15 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「技能（Skills）是过程性、结构化且相对稳固的领域知识规范，通过版本控制系统（如 Git）进行显式更新与审查」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「技能是过程性且相对稳定的领域指导规范」成立；并排除「技能是推理期由 Agent 自动写入且持续变动的会话…」「技能仅适用于确定性的代码编写场景」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
-    "id":"evaluation-tradeoff-01",
+    "id": "evaluation-tradeoff-01",
     "category": "Agent Reliability",
     "topic": "evaluation",
     "tags": [
@@ -117,10 +146,15 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「引入健全性检查（Sanity Check）可帮助改进 Agent 过滤违背工程常识的建议」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在改进 Agent 中引入健全性检查（Sanity …」「建立反馈来源的权限与权重控制机制」等 3 项成立；并排除「只要系统捕获到用户的负向反馈（如 Downvote）」「取消文本格式的反馈输入」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
-    "id":"evaluation-system-design-01",
+    "id": "evaluation-system-design-01",
     "category": "Agent Evaluation",
     "topic": "evaluation",
     "tags": [
@@ -145,12 +179,28 @@
           0,
           1,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
         ]
       }
-    }
+    },
+    "misconceptions": [
+      "用 vibe check 代替系统评估",
+      "评估集一成不变导致过拟合到旧用例",
+      "无论领域一律用无监督 LLM-as-a-Judge 代替基准测试"
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「在确定性可验证领域（如代码编译、单元测试），建立自动化 Test Harness 能提供最低成本、最客观的反馈」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「对于确定性可验证领域（如代码编译或单元测试）」「对于主观或不可确定性验证的领域（如文本风格调整）」等 3 项成立；并排除「无论领域是否具备确定性验证手段」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
-    "id":"agent-fundamentals-system-design-01",
+    "id": "agent-fundamentals-system-design-01",
     "category": "Agent Architecture",
     "topic": "agent-fundamentals",
     "tags": [
@@ -179,7 +229,12 @@
           4
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「合并前保留人类 Review 这一关键 Gatekeeper，合并后新任务自然加载最新 Skill，实现了兼顾低摩擦、可追溯与生产安全的全流程设计」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「用户创建 Issue 时触发执行 Agent」「维护者在审查分类结果时」等 4 项成立；并排除「改进 Agent 提交的技能修改 PR 经 Git …」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "agent-skill-drift-debugging",
@@ -205,9 +260,24 @@
         ],
         "answer": [
           0
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          1,
+          null
         ]
       }
-    }
+    },
+    "misconceptions": [
+      "把技能遗漏基础步骤归因为执行 Agent 采样温度或合并方式（如 Squash Merge）",
+      "以为技能解耦为外部脚本会导致执行期无法读取指令"
+    ],
+    "assessment": {
+      "target": "能判断「这种修改会削弱技能文件的泛化推理能力，甚至挤占原本通用指导原则的 Prompt Context 关注度，导致 Agent 遗漏基础功能」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「改进 Agent 在缺乏上下文约束的情况下盲目将个别…」成立；并排除「执行 Agent 内部的推理温度（Temperatu…」「技能文件被解耦成了外部脚本进行渐进式加载」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "agent-skill-drift-root-cause-diagnosis",
@@ -254,6 +324,10 @@
           1
         ]
       }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「这是典型的技能漂移，退化不在执行侧而在**改进侧**」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「根因是改进 Agent 过拟合了个别用户的特例反馈」「处置方向是给改进流程加过拟合防护：新规则须附带可复现…」等 2 项成立；并排除「根因在于执行 Agent 的采样温度过高或代码合并方…」「把技能内容解耦为外部脚本会导致执行期读取不到指令」等不成立描述。"
     }
   }
 ]

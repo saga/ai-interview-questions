@@ -1,0 +1,87 @@
+[
+  {
+    "id": "pytorch-perf-tensor-view-01",
+    "target": "能说明 PyTorch 中 transpose / t / view 等 View 操作只改元数据、不搬显存，及其对后续 GEMM 与存储共享的影响",
+    "reasoningGoal": "先确认 View 操作只在 CPU 端更新 shape 与 stride，既不启动 GPU kernel 也不在 HBM 中复制或重排数据；再说明后续 GEMM 的 Dispatcher 会依 stride 选择适配该内存布局的预编译 kernel；并确认 View 与原张量共享同一块 Storage、修改视图即修改原张量，排除「GPU 立即启动转置 kernel 重排显存」。"
+  },
+  {
+    "id": "pytorch-perf-gemm-epilogue-01",
+    "target": "能解释 nn.Linear(bias=True) 映射为 aten::addmm 把偏置加法并入 GEMM Epilogue 的性能理由",
+    "reasoningGoal": "先确认融合前后总 FLOPs 不变，收益不在算力；再说明偏置加法在 GEMM kernel 尾部写回前完成，省掉中间矩阵写回 HBM 再读回做 add 的带宽开销；并排除「加法被移到 CPU 端异步执行」「二维矩阵运算被重构为一维向量运算」等解释。"
+  },
+  {
+    "id": "ai-fund-036",
+    "target": "能区分向量检索与关键词检索的匹配机制、擅长场景与互补的失败模式",
+    "reasoningGoal": "先确认向量检索把 query 与文档映射为语义向量做距离检索，擅长同义改写与模糊语义但对型号、错误码等精确符号不敏感；再确认关键词检索是词面精确匹配、对实体与编号强但不懂同义；并据此判断两者失败模式互补，排除「关键词靠语义向量泛化」「向量靠词面精确匹配」「两者本质都是词面匹配」。"
+  },
+  {
+    "id": "rag-vs-param-memory",
+    "target": "能说明外置向量数据库架构相比单纯扩充参数量具备哪些系统级优势",
+    "reasoningGoal": "先确认知识库可实时增删改查、补新文档无需重训或微调底层权重；再确认事实存储外移到检索索引，大幅降低为记住更多事实而无限扩参的需求；并确认注入的检索上下文为结论提供可溯源依据、降低幻觉，排除「上下文窗口可降为 zero-shot 从而不再需要位置编码」。"
+  },
+  {
+    "id": "long-context-rag-tradeoff",
+    "target": "能判断长上下文全量塞入文档是否可取代 RAG，并说明计算复杂度与上下文腐化的约束",
+    "reasoningGoal": "先由 Self-Attention 计算与显存随长度二次方增长推出极长 Prompt 会推高 TTFT 与单次推理成本；再用上下文腐化说明冗余信息会削弱对关键细节的精准检索；并确认实时更新与 RBAC 需检索层另行实现、不因窗口变大而自动获得，认可上下文压缩与 RAG 混合的折中。"
+  },
+  {
+    "id": "mlops-06",
+    "target": "能区分 git stash 的默认行为、apply 与 pop 的差异，以及未追踪文件的处理方式",
+    "reasoningGoal": "先确认默认 stash 只保存已追踪文件的工作区与暂存区修改，并把工作区恢复到与 HEAD 一致；再区分 apply 保留栈顶记录而 pop 在无冲突时会把该记录移出栈；并确认未追踪文件需显式加 -u 才会被保存，排除「apply 会自动删除该条 stash 记录」。"
+  },
+  {
+    "id": "sebastian-raschka-2026-08-127",
+    "target": "能列出交替使用全注意力与线性/状态空间层时需要权衡的维度",
+    "reasoningGoal": "先确认全注意力擅长精确内容寻址而替代层更省长序列计算；再把权衡落到长上下文的计算与缓存成本、精确寻址与压缩状态表达能力的取舍、以及不同层类型之间的信息传递与实现复杂度三个方面；并排除「加入替代层就能保证所有任务质量不变」。"
+  },
+  {
+    "id": "sec-eval-01",
+    "target": "能比较端到端结果评估与子任务导向评估在安全 Agent 评测中的取舍",
+    "reasoningGoal": "先确认纯端到端是二元 Pass/Fail，无法区分「完全未能定位漏洞」与「已精准定位但因格式或环境限制未生成有效 Exploit」；再说明子任务模式可按里程碑隔离代码审计、PoC 触发与提权突破的瓶颈；并承认子任务提示降低了自主规划要求、可能高估无指导能力，同时确认端到端仍需轨迹审计防 Reward Hacking。"
+  },
+  {
+    "id": "sec-eval-02",
+    "target": "能选出基于 Sanitizer 与提交历史判定 PoC 确实触发目标漏洞的验证机制",
+    "reasoningGoal": "先确认非零退出码、仅语句覆盖率触及补丁行都不足以证明内存安全破坏；再要求 PoC 在 Pre-patch 版本必须触发 Sanitizer Crash、在 Post-patch 版本必须正常运行，形成差分验证；并排除「两个版本产生完全一致崩溃」这一说明补丁未生效或触发了无关漏洞的情形。"
+  },
+  {
+    "id": "sec-eval-03",
+    "target": "能为多主机自主渗透设计避免上下文膨胀与长程决策失效的架构",
+    "reasoningGoal": "先识别单体 LLM 直接执行 Bash 会因上下文膨胀与大量冗余指令而失效；再采用高层目标规划与底层工具执行的分层解耦；并把网络状态与攻击图外置为状态跟踪服务、用独立 C2 基础设施维护已控主机会话；排除把工具原始输出全量拼接进 Prompt 以换取「完整记忆」。"
+  },
+  {
+    "id": "sec-eval-05",
+    "target": "能选出抑制数据污染对 LLM 安全能力评估干扰的最严谨方案",
+    "reasoningGoal": "先确认历史 Payload 与 Writeup 已广泛进入预训练语料，模型可靠记忆而非推理得分；再确认按知识截止时间做时间切片或用真实新 Zero-Day 目标最直接且无争议；并排除系统提示禁令（权重已内化）、变量重命名混淆（控制流与漏洞模式仍可识别）、关闭联网（不消除参数记忆）。"
+  },
+  {
+    "id": "sec-eval-06",
+    "target": "能说明 ASLR/KASLR 与沙盒等防御机制对漏洞利用链提出的具体要求",
+    "reasoningGoal": "先区分触发 Crash 与实现受控任意代码执行的本质差异；再说明地址随机化使硬编码地址失效、必须补上内存泄露或指针低位爆破等原语；并说明沙盒把崩溃限制在隔离内存池、越狱必须依赖专门的逃逸原语，排除「扩展上下文窗口或加长 Payload 即可自然克服」。"
+  },
+  {
+    "id": "sec-eval-07",
+    "target": "能给出防 Reward Hacking 的高信度评测 Harness 工程措施",
+    "reasoningGoal": "先识别风险在于 Agent 攻击评测环境本身（如沙盒挂载漏洞直读 Flag、侧信道绕过目标服务）；再引入独立于 Agent 的 Transcript Auditor 校验攻击路径合规性；并把 Grader 与 Flag 严格隔离、仅在目标被正确利用后动态生成或解锁；同时把攻击范围限定到指定容器与端口，排除解除网络与系统调用隔离。"
+  },
+  {
+    "id": "sec-eval-09",
+    "target": "能设计兼顾区分度、可复现性与抗奖励哈克的安全评测度量体系",
+    "reasoningGoal": "先确认单轮 Pass@1 受运行随机性影响大、不能单独作为能力指标；再同时报告任务成功率与奖励哈克或非合规旁路解法比率；并按攻击链阶段（崩溃→读写原语→沙盒逃逸→外泄）给分层部分分而非二元判定；再用人工标注小样本对自动 Grader 做交叉校验以评估评分器自身可靠性与偏差。"
+  },
+  {
+    "id": "index_share_sparse_attn_canonical",
+    "target": "能说明跨层共享索引器（IndexShare）究竟减少了什么、没有减少什么",
+    "reasoningGoal": "先确认在 4 层组的首层算一次 Top-K 索引并透传给后续 3 层，省掉这 3 层索引器的 Query-Key 点积与排序开销；再由相邻层稀疏模式高度相关说明复用几乎不损精度；并确认每层 QKV 张量与 KV Cache 尺寸并未因此减少、后续层仍需按索引取 K/V 计算稀疏注意力，排除「成倍缩减 KV Cache」「注意力降为 O(1) 查表」。"
+  },
+  {
+    "id": "mtp_speculative_decoding_canonical",
+    "target": "能诊断多步 MTP 接受率随步数衰减的成因，并说明 IndexShare 与 KVShare 为何能提升接受长度",
+    "reasoningGoal": "先确认第 2 步起输入隐藏状态来自前一步 MTP 模块而非 Target Model，与训练时全用真实隐藏状态不一致，污染 KV Cache 并随步数累积偏差；再说明复用 Target 侧的 Top-K 索引与 KV Cache 可消除特征污染；并排除「KVShare 需重跑完整 Forward」「瓶颈在共享 LM Head 权重结构」。"
+  },
+  {
+    "id": "coding_rl_anti_hacking_canonical",
+    "target": "能分析在线反 Reward Hacking 中「拦截并返回 Dummy」而非直接 Abort 的工程与算法合理性",
+    "reasoningGoal": "先确认直接 Abort 会陡然截断大量长轨迹、破坏数据分布完整性并引发 Rollout Collapse 与梯度震荡；再说明拦截并返回 Dummy 让环境给出合法的对抗反馈、引导模型在后续步骤改走正规解题路径；并确认先规则过滤保召回、再 LLM Judge 分析意图保精度的两阶段设计，排除「Dummy 是为欺骗 Reward Model 给满分」。"
+  }
+]

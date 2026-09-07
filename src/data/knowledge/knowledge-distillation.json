@@ -1,0 +1,62 @@
+[
+  {
+    "id": "kd-temperature-scaling-mechanism",
+    "name": "温度缩放（Temperature Scaling）蒸馏机制",
+    "area": "ai-engineering",
+    "topic": "knowledge-distillation",
+    "priority": "P1",
+    "summary": "知识蒸馏引入温度 T 将 Teacher Logits 经 Softmax 平滑为 Soft Targets。T>1 时 Softmax 展露极小负类别间的相对比值，暴露类间相似度暗知识（Dark Knowledge）；高熵 Soft Targets 信息密度高、梯度方差小，可作强正则并支持更高学习率。温度 T 仅作用于概率计算，不改变网络维度或参数量。",
+    "required": [
+      "T>1 平滑 Softmax 概率分布，使本被 One-hot 压成 0 的负类别相对比值显式暴露，即类间相似度暗知识",
+      "Soft Targets 信息熵高、含类间结构约束，梯度方差小于 Hard Targets，可作正则并允许更高学习率",
+      "温度 T 仅缩放 Softmax 概率计算阶段，不改变特征提取器维度或模型参数量"
+    ],
+    "misconceptions": [
+      "认为引入 T 是为了改变网络倒数第二层维度以解决 Student 表达能力不足",
+      "认为 Soft Targets 只提供单一高概率标签的同义复述"
+    ],
+    "angles": [
+      "mechanism"
+    ]
+  },
+  {
+    "id": "kd-logit-matching-high-temp-limit",
+    "name": "高温极限与 Logit 匹配",
+    "area": "ai-engineering",
+    "topic": "knowledge-distillation",
+    "priority": "P1",
+    "summary": "在高温极限 T→∞ 且 Logits 零均值假设下，一阶泰勒展开可将软目标交叉熵梯度化简为与 Logit 均方误差（Matching Logits）成正比，证明 MSE 匹配是蒸馏的特例。较低/中等温度会抑制极小负 Logit 的梯度贡献，过滤 Teacher 中未受约束的负 Logit 随机噪声。",
+    "required": [
+      "T→∞ 下 e^{z/T}≈1+z/T，配合逐样本零均值假设，软目标梯度化简为 ∂C/∂z_i ≈ (1/(N T²))(z_i - v_i)",
+      "该化简梯度与直接优化 Logit MSE 的梯度成正比，故 Logit Matching 是高温零均值下的特例",
+      "较低/中等温度使交叉熵梯度对极小负 Logit 不敏感，起过滤 Teacher 负 Logit 噪声的作用"
+    ],
+    "misconceptions": [
+      "认为降低温度会强制模型更关注极小负 Logits（实际是减少关注、过滤噪声）",
+      "认为高温极限推导依赖完整 Softmax 指数运算而非一阶泰勒近似"
+    ],
+    "angles": [
+      "calculation"
+    ]
+  },
+  {
+    "id": "kd-specialist-ensemble-dustbin-correction",
+    "name": "Generalist-Specialist 与 Dustbin 校正",
+    "area": "ai-engineering",
+    "topic": "knowledge-distillation",
+    "priority": "P1",
+    "summary": "海量类别下用 Generalist 输出协方差聚类分 Specialist，Dustbin Class 打包非专精类别以缩减输出维度。专精类别过采样训练后先验偏高，推理须对 Dustbin Logit 加 log r_oversample 做对数几率校正以消除偏置；Dustbin 高置信表明样本超出专精范畴，可用于融合决策衰减。",
+    "required": [
+      "在 Generalist 预测协方差矩阵上聚类，将常共混淆的类别划为某 Specialist 的专精集",
+      "Dustbin Class 将非专精类别合并为单一类，显著缩小 Specialist 的 Softmax 输出维度",
+      "专精类别过采样使 Dustbin 训练先验偏高，推理须对 Dustbin Logit 加 log r_oversample 做 Logit Adjustment"
+    ],
+    "misconceptions": [
+      "认为过采样无需校正即可直接用于推理（会产生先验偏置）",
+      "认为 Specialist 必须为每个非专精类别建立独立输出头"
+    ],
+    "angles": [
+      "design"
+    ]
+  }
+]

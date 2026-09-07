@@ -34,7 +34,12 @@
       "open": {
         "referenceAnswer": "多向量：每文档一组 token/patch 向量，查询时 MaxSim 归约；文档离线编码；索引体积随 token 数线性增长。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「多向量下每个文档不再是 1 个向量，而是一组按 token/patch 的向量，查询时需对每个查询 token 做 MaxSim 归约」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「每文档不再是一个向量」「文档向量可在索引阶段就离线计算并持久化」等 3 项成立；并排除「多向量索引的体积规模与单向量完全相同」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "vectordb-02",
@@ -71,7 +76,12 @@
       "open": {
         "referenceAnswer": "有效缓解：PLAID 量化到同量级(92MB)、rerank-only 不建全库索引、token pooling 减半。升维 1024 反而增大存储。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「对 bi-encoder 召回的 top-k 做多向量重排，避免全库建多向量索引」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「用 PLAID 类量化把多向量索引压缩到与稠密向量同…」「对 bi-encoder 召回的 top-k 做多向…」等 3 项成立；并排除「将维度从 128 提升到 1024」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "vectordb-03",
@@ -106,7 +116,12 @@
       "open": {
         "referenceAnswer": "bi-encoder 全库召回 top-k → 多向量 MaxSim 重排这 k 个。多向量只需编码候选，非全库索引，也非 cross-encoder。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「先用便宜的单向量 bi-encoder 从全库召回 top-k 候选，再对这 k 个候选用多向量 MaxSim 重排获得更精细排序」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「先用便宜的单向量 bi-encoder 从全库召回 …」「再对这 k 个候选用多向量 MaxSim 重排」等 2 项成立；并排除「多向量需要为全库维护完整索引」「重排阶段要把查询与全部文档再次联合编码进交叉编码器」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "vectordb-04",
@@ -143,7 +158,12 @@
       "open": {
         "referenceAnswer": "穷举多向量~百毫秒(比单向量全扫慢)；PLAID~10ms；rerank-only 延迟可忽略。多向量穷举并不永远更快。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「用 PLAID/fast-plaid 等近似索引可降到约 10ms 级」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「穷举全库多向量在 GPU 上单查询约百毫秒级」「用 PLAID/fast-plaid 等近似索引可把…」等 3 项成立；并排除「多向量查询永远比单向量 ANN 快一个数量级」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "vectordb-05",
@@ -178,6 +198,11 @@
       "open": {
         "referenceAnswer": "该场景优先单向量(小/快/够用)；质量不达标时再叠多向量重排。非必须全库多向量索引，多向量更费存储。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「若后续出现多约束或精确标识符查询且质量不达标，可再叠加多向量重排」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「优先单向量 bi-encoder：索引小、查询快」「若后续出现多约束或精确标识符查询且质量不达标」等 2 项成立；并排除「必须一开始就上多向量全库索引」「多向量在此场景的主要优势是显著节省显存」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   }
 ]

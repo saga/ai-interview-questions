@@ -267,6 +267,23 @@ describe('P0-1b: rankCandidatePool 纳入 cognitiveTask 维度（ADR-077 assessm
     expect(ranked[1].id).toBe('a-explain'); // 已掌握 cell → 靠后
   });
 
+  // 回归：排序键曾把 angleWeakRank 放在 assessmentWeakRank 之前，导致「整体已掌握的 angle」
+  // 会把它下面从未验证过的 cognitiveTask 一起压掉（粗粒度档位盖掉细粒度缺口）。
+  it('assessment 层先于 angle 层：已掌握 angle 下的未练 cognitiveTask 优先于未练 angle 下的已掌握 cell', () => {
+    const pool = [
+      qCog('c-trade-mastered', 'kv-cache', 'tradeoff', 'explain'),
+      qCog('c-def-untested', 'kv-cache', 'definition', 'diagnose'),
+    ];
+    const p = emptyProfile();
+    // definition 这个 angle 练得多且已掌握（angleWeakRank=2），但其 diagnose cell 从未验证过
+    p.angleCoverage!['kv-cache|definition'] = { attempts: 4, avgScore: 95, lastScore: 95, lastAskedAt: 1 };
+    // tradeoff 这个 angle 没练过（angleWeakRank=0），但其 explain cell 已掌握
+    p.assessmentCoverage!['kv-cache|tradeoff|explain'] = { attempts: 2, avgScore: 92, lastScore: 92, lastAskedAt: 1 };
+    const ranked = rankCandidatePool(pool, p);
+    expect(ranked[0].id).toBe('c-def-untested');
+    expect(ranked[1].id).toBe('c-trade-mastered');
+  });
+
   it('未声明 cognitiveTask 的题回退 angle 层，不人为优先', () => {
     const pool = [
       q('old-1', 'kv-cache', 'medium', 'mechanism'),

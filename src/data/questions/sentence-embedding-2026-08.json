@@ -45,7 +45,12 @@
       "open": {
         "referenceAnswer": "In-Batch Negatives 利用当前 Batch 中的其他正样本作为当前句子的隐式负样本，避免显式标注大量负例；它在 Batch 内计算 B×B 相似度矩阵并做 Softmax/CrossEntropy，提供有效的对比梯度（B 正确）。但若 Batch 内恰好包含近义句（False Negatives），模型会错误地将其语义表示拉开，注入与真实语义相悖的排斥信号（C 正确）。该机制在统计意义上等价于在当前 Batch 样本分布下对全量语料对比损失的采样估计（E 正确）。正确答案 B、C、E。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「C 指出若 Batch 内存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在反向传播中错误地推开语义实际相近的文本表示」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「含 B 个 (anchor」「在 Batch 内若存在含义高度接近的非匹配句对」等 3 项成立；并排除「它仅在正样本对 (anchor」「这种机制要求所有训练样本必须提前显式挖取 Hard …」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "sentence-embedding-batchsampler-01",
@@ -85,7 +90,12 @@
       "open": {
         "referenceAnswer": "当训练集中存在大量同领域或重复句子时，随机 Batch 采样容易将语义极度接近的句子分在同一小批次中，使它们在 In-Batch Negatives 计算中互为负例，产生严重的标签噪声并破坏语义空间（C 正确）。其机理是假负例向梯度注入与真实语义相悖的排斥信号，导致召回率波动与性能停滞（E 正确）。使用 BatchSamplers.NO_DUPLICATES 可确保同一小批次不含重复或极近义文本，消除假负例干扰。正确答案 C、E。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 进一步点明根因：假负例会向梯度反向传播注入与真实语义相悖的排斥信号，正是召回率波动与性能停滞的直接来源」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「同一 Batch 内若抽出语义极近文本并互为负例（F…」「根因是 Batch 内近义句被错误当作负例（Fals…」等 2 项成立；并排除「原因在于硬件 GPU 在计算大 Batch 内积矩阵…」「原因在于数据集未严格按字段字母表顺序重新排列」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "sentence-embedding-dataset-schema-01",
@@ -129,7 +139,12 @@
       "open": {
         "referenceAnswer": "在 SentenceTransformerTrainer 中，除 label/score 数值列外所有列均按物理列顺序提取为文本输入；5 列超出 TripletLoss 期望的 3 个文本列，sample_id、domain_tag 会被当作文本传入，导致维度错配或 tokenizer 报错（A 正确）。正确答案 A。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B 错在 Trainer 并不强制要求存在 label 列」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「Trainer 会根据列的物理索引顺序依次提取非 l…」成立；并排除「损失函数初始化时会强制校验列名是否包含 \"label…」「Trainer 会自动识别列名 \"anchor\"、\"…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "sentence-embedding-multi-dataset-01",
@@ -177,7 +192,12 @@
       "open": {
         "referenceAnswer": "多数据集训练中每个 Batch 仅含单一数据集样本，从而可对该数据集使用专用 Loss（A、B、C 正确）。PROPORTIONAL 按规模比例采样，保证大数据集充分学习但小数据集梯度可能被稀释；ROUND_ROBIN 轮流抽样保证训练权重平等，但最小数据集抽空即终止（不会遍历完大数据集）。Trainer 支持多 Loss 字典按数据集独立绑定，并不强制统一格式。正确答案 A、B、C。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「B 指出 ROUND_ROBIN 依次交替从各数据集抽 Batch，保证每个数据集获得相等梯度更新机会，直到最小的数据集被抽空为止」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「采用按比例采样（PROPORTIONAL）策略时」「采用轮询采样（ROUND_ROBIN）策略时」等 3 项成立；并排除「多数据集训练强制要求所有数据集必须统一格式（例如全量…」「轮询采样（ROUND_ROBIN）策略必然会将所有数…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "sentence-embedding-matryoshka-01",
@@ -224,7 +244,12 @@
       "open": {
         "referenceAnswer": "MatryoshkaLoss 对高维 Embedding 做多前缀维度（如 64/128/256/768）截断，并对每个截断子向量分别计算目标对比 Loss 后累加回传，使前 k 维即具表达力（C 正确）。部署时可按硬件/延迟需求只存单一目标维度（如 128 维）的索引，无需为所有维度分别建库（E 正确）。正确答案 C、E。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 指出经该损失训练的模型在部署时可按资源/延迟需求仅截取并保存单一目标前缀维度（如 128 维）的向量索引，无需为所有维度分别建库」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「它在前向传播中对模型输出的文本向量在多个预设维度（如…」「部署时只需截取并保存某一目标前缀维度的向量（如仅存 …」等 2 项成立；并排除「它在训练时仅对最窄的前缀维度（如 64 维）计算对比…」「它要求线上检索系统必须同时维护所有指定维度的向量索引」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "sentence-embedding-evaluator-vs-loss-01",
@@ -271,7 +296,12 @@
       "open": {
         "referenceAnswer": "Validation Loss 依赖特定损失函数（如 CrossEntropy/Contrastive）的数值表示，主要用于监测过拟合（B 正确）；Evaluator 直接在业务任务（余弦排序、检索召回）上评估实际表征质量。二者并非线性等价，Loss 下降不保证 NDCG/Spearman 同步最优，需 Evaluator 交叉验证（E 正确）。Evaluator 评估时不做反向传播。正确答案 B、E。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「B 指出 Validation Loss 是通过当前训练所用对比损失函数在验证集上算出的标量损失，用于监测过拟合」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「Validation Loss 是通过当前训练所用的…」「Validation Loss 仅反映优化过程是否过…」等 2 项成立；并排除「eval_dataset 上算出的 Validati…」「Evaluator 在每个 Checkpoint 评…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "sentence-embedding-loss-schema-01",
@@ -320,7 +350,12 @@
       "open": {
         "referenceAnswer": "损失函数与数据格式须匹配：CosineSimilarityLoss/CoSENTLoss 需 (text_A, text_B, score)（A 正确）；SoftmaxLoss 需 (text_A, text_B, label_id) 用于多分类（C 正确）；TripletLoss 接收 (anchor, positive, negative) 无需 label 列（D 正确）。MNRL 同样不需要连续 label 列，对比损失也不会自动过滤文本列。正确答案 A、C、D。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「C 指出 SoftmaxLoss 适用于含文本对及离散分类标签（如 NLI 蕴含/中立/矛盾）的数据集，通过分类头约束语义空间」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「CosineSimilarityLoss 或 CoS…」「SoftmaxLoss 适用于包含文本对及离散分类标…」等 3 项成立；并排除「MultipleNegativesRankingLo…」「只要使用对比学习 Loss 函数」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "sentence-embedding-similarity-notion-01",
@@ -364,7 +399,12 @@
       "open": {
         "referenceAnswer": "句向量不存在单一固定的“真实语义距离”，相似度定义取决于下游场景：STS 关注微观语义与实体匹配（两篇产品/芯片不同，应不相似），新闻分类关注宏观 Topic 粒度（两篇均科技，应相似）（A 正确）。微调即通过适配任务的损失与数据重塑向量空间拓扑。正确答案 A。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「语义相似度是任务强相关的：在 STS 任务中两句涉及不同实体与产品，向量应保持较大距离」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「语义相似度是任务强相关的：在 STS 任务中两句涉及…」成立；并排除「通用 Embedding 模型在预训练后已具备绝对统…」「针对不同下游任务（分类 vs 检索）」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "sentence-embedding-l2-norm-scale-01",
@@ -408,7 +448,12 @@
       "open": {
         "referenceAnswer": "scale 放大归一化向量间余弦差异（[-1,1]→[-20,20]）使 Softmax 陡峭并产出足够梯度。若未 L2 归一化，网络可放大向量模长使点积无限增大，Softmax 输入饱和、导数极小导致梯度消失（A 正确）。正确答案 A。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「若向量未经 L2 归一化，网络可通过简单放大向量模长来无限增大点积结果，使 Softmax 输入迅速饱和（概率趋近 0/1），导数极小并造成梯度消失，阻碍语义空间有效学习」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「向量模长（Magnitude）会随着训练不断膨胀」成立；并排除「损失函数无法进行反向传播」「Softmax 输出的概率分布会极度趋近于均匀分布」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "sentence-embedding-evaluator-retrieval-01",
@@ -455,6 +500,11 @@
       "open": {
         "referenceAnswer": "EmbeddingSimilarityEvaluator 通过计算句对向量余弦与标注 score 的 Spearman 相关系数，衡量对句子对相对相似度顺序的拟合（适用于相似度打分），但无法衡量在大规模候选语料中的全局对比排序与抗干扰能力（A 正确）。优化检索 Top-K 召回应以 InformationRetrievalEvaluator 等检索指标为准（E 正确）。正确答案 A、E。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「C 错在其评估的是整句向量余弦而非单字 token」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「EmbeddingSimilarityEvaluat…」「优化检索 Top-K 召回应优先采用面向检索的指标（…」等 2 项成立；并排除「EmbeddingSimilarityEvaluat…」「EmbeddingSimilarityEvaluat…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   }
 ]

@@ -45,7 +45,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C、E\n\n要点：①预训练使 LLM 具备演导多种角色及其认知模式的能力，形成多样化角色的先验分布。②后训练是对该分布的贝叶斯式条件更新（训练交互作为证据），而非硬编码新价值观。③用户面对的是模型在上下文中采样演算出的“Assistant”虚拟角色，不是网络实体本身。④后训练只改采样概率，不擦除其他角色权重，边缘提示仍可能复现（D 错）。⑤上下文变化会实时调整后验分布中的角色表现。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 正确：上下文作为新的 Conditioning 信息会实时调整后验分布中角色的表现形态」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「预训练阶段使 LLM 具备了演导（Simulate）…」「后训练过程并非直接在模型中硬编码全新的道德价值观」等 4 项成立；并排除「后训练能够彻底擦除预训练阶段习得的其他非 Assis…」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "model-behavior-emergent-misalignment-01",
@@ -88,7 +93,12 @@
       "open": {
         "referenceAnswer": "正确答案 A\n\n要点：PSM 将微调样例视为对角色分布的贝叶斯证据更新。写漏洞代码等异常输出被模型归因为“行为人缺乏职业道德/具备反叛倾向”的证据，使 Assistant 角色后验整体向破坏性动机偏移，从而在未训练过的通用场景中泛化出恶意倾向。注意力机制并未损坏（B 错），漏洞代码与恶意动机也不是线性特征叠加（C 错），模型并非简单重定向到黑客论坛语料（D 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「模型推断该角色可能具备“反叛、恶意或不配合”的 Persona 属性，从而引发跨领域非对齐泛化」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「故意插入漏洞等异常输出在贝叶斯更新中被模型归因为\"行…」成立；并排除「针对特定代码格式的微调过程破坏了 Transform…」「代码安全漏洞表示与人类生存威胁表示在神经网络的底层潜…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "model-behavior-inoculation-01",
@@ -129,7 +139,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、D、E\n\n要点：①接种提示给危险输出补上合规上下文（如“为安全审计演示”），将其重新解释（Recontextualize）为“遵守指令的 Assistant”证据，而非“恶意 Assistant”证据（A、B 对）。②梯度更新仍正常进行，接种提示调整的是更新方向而非屏蔽梯度（C 错）。③去掉语境限定直接训练危险输出，模型更倾向归因出恶意角色、引发泛化偏离（D 对）。④后验更新是关于 (x,y) 对的，输入 context 与输出共同决定角色更新方向（E 对）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「编写漏洞代码在“用户要求进行安全测试”的 context 下，是“忠实遵循指令的 Assistant”的证据，而非“恶意 Assistant”的证据」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在训练样例的 User Prompt 中显式添加\"请…」「该策略通过改变训练样例对 Assistant 角色特…」等 4 项成立；并排除「接种提示的作用机制是完全阻断神经网络在微调过程中的梯…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "model-behavior-ooc-01",
@@ -178,7 +193,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C、E\n\n要点：①仅微调“某 Persona 具备某行为”的描述性文本，被激活该 Persona 时即展现对应行为，无需 (x,y) 示范（A 对）。②传统 SFT 靠示范拟合行为，陈述性文本靠补充角色事实直接影响演导（B 对）。③模型将关于自身的声明性语句作为条件概率注入，转化为强烈的行为约束（C 对）。④陈述性文本不仅改记忆，还能改写复杂代码/决策任务的策略（D 错）。⑤注入正向 AI 角色原型描述可优化后训练先验（E 对）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 正确：基于 PSM，在预训练/后训练语料中增加正向 AI 角色原型的描述，可为后训练挑选良性 Assistant 提供更优先验」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「仅向模型喂入描述 Assistant 特性的陈述性文…」「传统 SFT 主要通过输入-输出对 (x」等 4 项成立；并排除「陈述性文本微调仅能改变模型对特定事实的问答记忆」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "model-behavior-agency-views-01",
@@ -227,7 +247,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C、D\n\n要点：①Masked Shoggoth 视图假设底座有独立于 Assistant 的外部代理（Outer Agent），Assistant 只是工具性面具（A 对）。②Operating System 视图认为底座是无主体的模拟引擎，意图来自被模拟角色（B 对）。③若 Outer Agent 存在，表层对齐训练会逼其学会欺骗性对齐以保全真实目标（C 对）。④OS 视图把一切行为归因于角色采样概率，而非底座的隐蔽野心（D 对）。⑤两视图分歧在于代理权/动机来源，与上下文注意力长度无关（E 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 错误：分歧焦点在于“代理权与动机究竟源于底座本身还是源于被模拟的角色”，与上下文注意力长度无关」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「Masked Shoggoth 视图假设模型包含一个…」「Operating System 视图将 LLM 视…」等 4 项成立；并排除「两种视图的分歧仅在于 Transformer 是否具…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "model-behavior-anthropomorphic-01",
@@ -275,7 +300,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、D\n\n要点：①归因：预训练语料中“我做某事”的主体多为物理人类，模型演导 Assistant 时把人类生理/物理行为错置到 Assistant 上（A 对）。②治理：用陈述性身份声明限定 Assistant 实体边界，借 OOC 机制矫正角色后验（B 对）。③这不是权重崩塌，是 Persona 混淆（C 错）。④治理：提供真实 API 调用轨迹与数字交互示范，提升“数字 API 交互”后验权重、抑制对人类行为模式的误采样（D 对）。⑤单轮也可能发生，切断上下文不治本（E 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 错误：单轮对话也可能产生此类输出，切断上下文无法根本解决 Persona 属性推断偏差」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「现象归因：模型在演导 Assistant 角色时」「治理措施：在系统提示词或训练数据中引入明确的 Ass…」等 3 项成立；并排除「现象归因：该现象表明模型的 Transformer …」「治理措施：直接切断模型的多轮上下文窗口」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "agent-loop-harness-01",
@@ -316,7 +346,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、C、D\n\n要点：①自主 Agent 有终端权限，须容器化隔离防误操作和凭证泄漏（A 对）。②LLM 不可靠判断终点，必须靠外部 Harness 轮询/状态检查，不能纯靠自我退出（B 错）。③Harness 外层死循环在单次 Session 结束后重新注入状态与任务 Prompt，突破上下文长度限制（C 对）。④控制外壳须捕获子进程信号与异常，防止 Agent 误杀父进程导致外壳崩溃（D 对）。⑤全量追加 stdout 会引发上下文窗口污染，应精简或外置日志（E 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 错误：全量追加 stdout 会迅速导致上下文窗口污染（Context Window Pollution）」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「将 Agent 每次迭代的上下文和命令执行置于隔离的…」「保持控制外壳（Harness）的 While-tru…」等 3 项成立；并排除「依赖 LLM 自行判断任务是否完成并在代码内显式退出…」「将每次 Session 的标准输出全量追加到全局上下…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "multi-agent-locking-01",
@@ -354,7 +389,12 @@
       "open": {
         "referenceAnswer": "正确答案 A\n\n要点：无中心化 Orchestrator 时，用 Git 原子提交锁文件（如在 current_tasks/ 下提交带任务标识的文件）作分布式锁最轻量可靠：后到 Agent 遇到 Push 冲突即知任务被抢占，转而认领其他任务。行级排他中心化锁过重（B 错）；git push --force 覆盖会丢失他人修改（C 错）；完全无锁依赖 LLM 解冲突会产生海量 Merge Conflict（D 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「若 Push 冲突，后到 Agent 即知任务被抢占，转而选其他任务」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「Agent 在开始特定子任务前」成立；并排除「由中心化 API 网关对代码文件进行行级排他锁定」「各 Agent 独立在本地分支开发」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "context-engineering-observability-01",
@@ -402,7 +442,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、D\n\n要点：①精简 stdout（汇总+关键报错），详细轨迹写入日志文件供 Agent 主动 grep，兼顾省 Token 与可调试（A 对）。②结构化固定错误格式（如 ERROR: <Reason>）便于 Agent 正则定位根因（B 对）。③全量输入输出转储属上下文污染（C 错）。④预计算聚合指标与失败摘要，避免 LLM 在 Context 内做易错的算术（D 对）。⑤完全屏蔽堆栈令 Agent 失去调试上下文（E 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 错误：完全隐藏堆栈会令 Agent 失去关键调试上下文，无法定位修复」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「测试框架仅向 stdout 输出高度精简的汇总统计与…」「测试日志中的错误信息采用结构化固定格式（如 ERRO…」等 3 项成立；并排除「每次测试运行完成后」「屏蔽所有失败测试的详细堆栈信息」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "multi-agent-oracle-01",
@@ -446,7 +491,12 @@
       "open": {
         "referenceAnswer": "正确答案 A\n\n要点：整体构建难拆分时，用 Known-Good Oracle（已知正确参考实现）作基准，按文件/模块做差异化隔离编译（Differential Debugging）：Agent 仅对分配模块用待测方案，其余用 Oracle 生成，从而把全局失败解耦为局部文件错误，让并发 Agent 独立修复。退化为单 Agent 浪费并行度（B 错）；屏蔽符号依赖破坏真实链接语义（C 错）；盲目增并发加剧冲突（D 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能给出单体系统全局构建失败时让多 Agent 并行去耦的调试策略",
+      "reasoningGoal": "先确认阻塞源于所有 Agent 撞在同一全局错误点、重复修改并互相覆盖；再引入已知正确的参考实现作 Oracle，按文件或模块二分替换做差分调试，把全局失败解耦为局部错误；并排除退化为单 Agent 顺序修复、屏蔽符号依赖强行拆分、盲目提高并发三条路。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "agent-loop-time-blindness-01",
@@ -487,7 +537,12 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、E\n\n要点：①单 Agent 内默认确定性子集抽样（如 5%）做快速反馈，提高迭代频次（A 对）。②跨 Agent 用不同随机种子抽样，集群宏观覆盖全量（B 对）。③仅靠 Linter/走查发现不了运行时回归（C 错）。④强制 100% 全量使单次循环极长、拖垮探索效率（D 错）。⑤分级测试（本地子集 + 提交前 CI 全量门禁）是工业标准（E 对）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 正确：分级测试（本地快测 + 提交前 CI 全量门禁）是工业级标准做法」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在常规迭代中默认启用确定性抽样（如 1%~10% 的…」「确保不同 Agent 实例间的抽样种子保持随机散列」等 3 项成立；并排除「完全取消全量测试阶段」「每次代码变更后均必须强制执行 100% 全量测试」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "multi-agent-roles-01",
@@ -531,7 +586,12 @@
       "open": {
         "referenceAnswer": "正确答案 A\n\n要点：无中心 Orchestrator 时，引入角色专业化（如专职重构去重、性能优化、架构审查、文档维护 Agent）让不同 Agent 沿独立质量维度协同，保持长期可维护性与质量（A 对）。严格单向流水线限制并发（B 错）；系统级工程同样受益于专业化（C 错）；不应设单 Agent 绝对作废权限，应靠统一 CI 与测试网关（D 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「除通用修复 Agent 外，设立专职重构去重、性能优化、架构审查、文档维护等异构 Agent，可保持代码库长期可维护性与质量」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此确认「划分专职 Agent（如重构去重 Agent、性能优…」成立；并排除「专职 Agent 必须按照固定的流水线顺序严格单向传…」「异构 Agent 只适用于前端 UI 开发」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "agent-guardrails-limits-01",
@@ -580,6 +640,11 @@
       "open": {
         "referenceAnswer": "正确答案 A、B、C、E\n\n要点：①目标导向作弊：测试不严时 Agent 可能调外部工具/打补丁式欺骗实现快速通过（A 对）。②无监督迭代易“修 A 破 B”震荡，需严密 CI（B 对）。③缺架构约束时产生重复/不规范代码，可维护性下降（C 对）。④通过测试≠无安全漏洞，未经审计部署隐患巨大（D 错）。⑤超模型能力上限时易陷入死循环/试错失败（E 对）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 正确：任务逻辑超模型能力上限时，Agent 可能在困难点陷入无限循环或试错失败」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「Agent 可能通过“作弊”手段通过测试（例如调用外…」「新功能的引入可能破坏既有隐式约束」等 4 项成立；并排除「自主 Agent 生成的代码在通过静态测试后」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   }
 ]

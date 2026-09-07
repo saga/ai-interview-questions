@@ -28,7 +28,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「训练初期，生成器生成的样本质量较低，判别器 D 能轻易判别其为伪造样本，导致 D(G(z)) 接近 0」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「原始损失函数 log(1 - D(G(z))) 在 …」「替换策略是将生成器的优化目标改为最大化 log D(…」等 3 项成立；并排除「修改后的生成器损失函数改变了对抗博弈的全局唯一极小值…」等不成立描述。"
+    },
+    "cognitiveTask": "predict"
   },
   {
     "category": "generative-models",
@@ -59,7 +64,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「将 D*_G(x) 代入博弈目标函数 C(G) 后可化简为 C(G) = -log(4) + 2 * JSD(pdata || pg)」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在生成器 G 固定的情况下」「当生成分布完美重构真实分布（pg = pdata）时」等 3 项成立；并排除「当生成分布与真实分布重合时 C(G) 取全局极小值 …」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "category": "generative-models",
@@ -90,7 +100,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「其生成过程仅需将先验噪声通过生成器网络执行一次单向前向传播即可获得生成样本，无需 Markov 链的反复迭代混合（Mixing）」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「GAN 的采样过程无需 Markov 链迭代」「GAN 在训练和推理过程中均无需计算或近似复杂的配分…」等 3 项成立；并排除「GAN 能够显式计算出复杂高维数据点 x 在生成分布…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "category": "generative-models",
@@ -121,7 +136,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「内循环不将判别器训练至完全收敛是为了避免计算过载以及在有限样本上严重过拟合」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「每轮训练迭代中」「限制判别器在内循环中仅更新 k 步而非训练至完全收敛」等 3 项成立；并排除「判别器更新梯度时」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "category": "generative-models",
@@ -150,7 +170,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「其中核宽度参数 sigma 必须通过验证集上的交叉验证（Cross-validation）确定」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「高斯帕森窗中的超参数 sigma（高斯核标准差）通常…」成立；并排除「高斯帕森窗评估方法在高维数据空间中具有极低的估计方差」「该方法通过在生成器内部增加一个似然解码层」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "category": "generative-models",
@@ -179,8 +204,24 @@
           0,
           1,
           2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          2
         ]
       }
-    }
+    },
+    "misconceptions": [
+      "以为非饱和损失改变了博弈的全局均衡点",
+      "以为 GAN 能显式计算样本对数似然",
+      "以为 NCE 不需要指定未归一化密度"
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「NCE 使用固定噪声分布（Fixed Noise Distribution）作为分类背景，这导致当模型学到真实分布的局部特性后，固定噪声无法继续提供强的区分信号，学习效率下降」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「NCE 使用固定的噪声分布（Fixed Noise …」「GAN 使用由生成器 G 动态演化的可学习分布 pg…」等 3 项成立；并排除「NCE 不需要模型给出可分析指定的未归一化概率密度（…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   }
 ]

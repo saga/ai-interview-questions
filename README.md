@@ -8,7 +8,7 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（训练 / 进度 / 面�
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/`，按 topic/批次拆分 77 个文件、1317 题；6 大能力域为 taxonomy 逻辑分组），其中大多数题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
+- 题库驱动（`src/data/questions/`，按 topic/批次拆分 81 个文件、1354 题；另有 `src/data/variants/` 8 个变体池文件、100 条离线变体；6 大能力域为 taxonomy 逻辑分组），其中大多数题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（对话式追问训练）：进入 interview 模式后复用与独立面试页**同一套** `pi-agent-core` 运行时（`createInterviewAgent`）——统一选题 / 评分 / 收尾逻辑，不再维护独立的简化版 Agent 面试；未配置 AI 也能开始，选择题照常确定性判分
@@ -56,7 +56,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 题库按 topic 拆分为 `src/data/questions/<topic>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应 topic 文件；新增 topic：在 `src/data/taxonomy.ts` 登记骨架与中文标签，再建同名 JSON 文件。
 
-补题前先跑 `npm run question:coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。给题目加 `"angle"` 字段（可选，共 10 角度：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / design / system-design`）即可计入矩阵；未标注的题不计入，报告会单列数量：
+补题前先跑 `npm run question:coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。`"angle"` 是**必填**字段（`questionAngleSchema`，共 19 个：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design / causal / diagnosis / prediction / architecture / boundary / misconception / quantitative / implementation / synthesis`，注意只有前 10 个进 `nodes.test.ts` 的覆盖白名单，其余为存量兼容值）：
 
 ```json
 {
@@ -65,7 +65,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
   "topic": "regularization",        // 知识节点 id（见 src/data/knowledge/）
   "tags": ["可选", "标签"],
   "difficulty": "easy",             // easy | medium | hard
-  "angle": "tradeoff",              // 可选：主考察角度（覆盖矩阵用）
+  "angle": "tradeoff",              // 必填：主考察角度（覆盖矩阵与自适应选题都依赖它）
   "question": "题干…",
   "explanation": "解析…",
   "formats": {                      // 双形态（ADR-027）：至少一种，建议两种都给

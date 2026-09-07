@@ -1,0 +1,87 @@
+[
+  {
+    "id": "mha-complexity-01",
+    "target": "能对单层 MHA 的投影、Score 计算与激活显存分别给出复杂度，并判断长序列下的主导项",
+    "reasoningGoal": "先确认 QKV 与输出投影合计为 O(N·d_model²)；再确认所有头的 Score 及与 V 相乘合计为 O(N²·d_model)；并确认无 FlashAttention 时反向必须保存完整注意力权重、显存为 O(h·N²)，据 N≫d_model 判定二次方项主导，排除「瓶颈由投影矩阵参数量决定」。"
+  },
+  {
+    "id": "seq2seq-arch-01",
+    "target": "能为低延迟高吞吐的多语言实时翻译在 Encoder-Decoder 与 Decoder-Only 之间做科学选型",
+    "reasoningGoal": "先确认 Encoder-Decoder 对源语言可并行提取全向双向语义、且 Encoder 的 KV 不占自回归解码窗口，故在专用 Seq2Seq 任务上参数效率与推理延迟通常更优；并排除「Decoder-Only 完全无法使用 KV Cache」「Cross-Attention 导致无法张量并行」「Decoder-Only 吞吐绝对高一个数量级」。"
+  },
+  {
+    "id": "mha-heads-01",
+    "target": "能说明多头注意力的设计取舍及其与单头全维注意力的计算量等价性",
+    "reasoningGoal": "先确认多子空间使模型能同时从不同表征维度与不同位置关注信息、克服单头过度平均的缺点；再由 d_k=d_model/h 推出总计算复杂度与单头全维基本相同；并确认不同 Head 可学到不同类型的句法或语义关联，排除「h 越大越好、能线性提升 GPU 利用率」。"
+  },
+  {
+    "id": "long-context-attn-01",
+    "target": "能估算 N=128K 超长序列下注意力的时间与显存瓶颈，并说明 FlashAttention 的缓解思路",
+    "reasoningGoal": "先确认 QK^T 的 O(N²·D) 随 N 二次方增长；再估算 N=128K 时单头 FP16 注意力矩阵约 128000²×2 bytes ≈ 30+ GB，极易 OOM；并说明 FlashAttention 通过 Tile 划分在 SRAM 分块计算 Softmax、把 HBM 中间矩阵从 O(N²) 降至 O(N)，排除「N≫D 时 FFN 显存显著超过 Self-Attention」。"
+  },
+  {
+    "id": "scale-factor-debug",
+    "target": "能说明遗漏 1/√d_k 缩放因子会引发的训练问题",
+    "reasoningGoal": "先确认 QKᵀ 点积方差随 d_k 线性增大；再推出 Softmax 被推入极小梯度的饱和区、引发梯度消失；并确认概率过度趋近 one-hot 降低表征能力，以及极值易造成浮点溢出或下溢，排除「注意力失去并行计算能力」。"
+  },
+  {
+    "id": "mha-subspace-tradeoff",
+    "target": "能说明 MHA 相对单头注意力的优势，以及它在显存与 FLOPs 上并未带来节省",
+    "reasoningGoal": "先确认多个独立子空间能捕捉多样化的语法与语义关系；再确认在总计算复杂度与参数量基本一致的前提下提升了表达能力；并排除「多头使反向中间状态显存成倍降低」与「多头能成倍降低前向总 FLOPs」。"
+  },
+  {
+    "id": "mask-parallel-training",
+    "target": "能说明因果掩码的实现方式，以及它支撑 Teacher Forcing 并行训练的作用",
+    "reasoningGoal": "先确认 Softmax 前把未来 Token 位置的 Score 置为 -∞；再确认 Softmax 后未来位置权重精确为 0、防止偷看后续 Token；并确认它使 Decoder 训练时可一次性并行输入全序列，排除「因果掩码的主要目的是屏蔽 Padding Token」。"
+  },
+  {
+    "id": "rnn-vs-tf-compare",
+    "target": "能区分 Transformer 相对 RNN 在训练并行性与长距离梯度传播上的优势及其代价",
+    "reasoningGoal": "先确认 Transformer 摆脱时间步顺序依赖、训练阶段可并行计算整个序列表征；再确认任意两 Token 信息传递路径为 O(1)、消除了 RNN 长序列下的梯度消失与信息衰减；并排除「推理生成单字时间复杂度天然低于 RNN 且无需维护历史状态」「超长序列下显存小于 RNN」。"
+  },
+  {
+    "id": "sdpa-scaling-mech",
+    "target": "能从方差角度推导 1/√d_k 缩放因子的必要性",
+    "reasoningGoal": "先由各分量独立同分布且方差为 1 推出 q·k 的方差等于 d_k；再说明不缩放时大绝对值使 Softmax 进入饱和区、引发梯度消失；并确认乘以 1/√d_k 把方差归一化回 1、避免数值溢出，排除「缩放是为了降低 FLOPs 与显存峰值」。"
+  },
+  {
+    "id": "mha-vram-tradeoff",
+    "target": "能说明多头机制的收益以及它带来的激活显存代价",
+    "reasoningGoal": "先确认多头可同时关注不同位置与不同语义子空间、避免单头加权平均导致的语义模糊化；再由 d_k×h=d_model 推出总复杂度与同维度单头相当；并确认 h 个头需保存 h 个 N×N 矩阵使激活显存成倍增加，排除「多头消除了对 N 的二次方依赖」。"
+  },
+  {
+    "id": "preln-vs-postln-compare",
+    "target": "能对比 Post-LN 与 Pre-LN 在训练稳定性与极限性能上的取舍",
+    "reasoningGoal": "先确认 Post-LN 在残差主干直接叠加未归一化的子层输出、深层易梯度爆炸或消失；再确认它对初始化高度敏感、通常必须依赖学习率 Warmup；并说明 Pre-LN 把 LN 移到子层输入前、保持恒等映射路径使梯度顺畅传导而提升稳定性，同时承认其极限泛化通常略低于充分调优后的 Post-LN。"
+  },
+  {
+    "id": "embed-scaling-share",
+    "target": "能说明 Embedding 与 Pre-Softmax 权重共享以及乘 √d_model 的设计理由",
+    "reasoningGoal": "先确认源/目标 Embedding 与 Pre-Softmax 投影共享权重把词表相关参数从 3Vd 降到约 Vd、起正则化并防过拟合；再由 Embedding 初始方差约 1/d_model 与 PE 幅度在 [-1,1] 推出乘 √d_model 是为放大词向量、防止语义被位置信号掩盖；并确认共享强制输入嵌入空间与输出概率空间几何一致，排除「把方差压缩至 0」。"
+  },
+  {
+    "id": "sdpa-omit-scaling",
+    "target": "能从训练异常现象反推删除 √d_k 缩放的后果",
+    "reasoningGoal": "先由 QKᵀ 点积数值随 d_k 增大推出 Softmax 进入饱和区、引发梯度消失；再确认概率分布过度陡峭接近 one-hot、削弱同时关注多个相关 token 的能力；并排除「分布趋于均匀导致无法聚焦」与「矩阵维度不匹配直接抛 RuntimeError」。"
+  },
+  {
+    "id": "mask-remove-debug",
+    "target": "能从训练与推理现象定位 Decoder 因果掩码被移除",
+    "reasoningGoal": "先由无掩码时当前位置可直接看到未来真实 token 推出训练 loss 异常迅速降到接近 0，属典型数据泄漏；再确认推理时没有未来信息可用、模型生成严重崩塌并产生重复或无意义文本；并排除「因掩码缺失触发张量形状不匹配」与「推理可并行多 token 生成」。"
+  },
+  {
+    "id": "rnn-to-tf-migration",
+    "target": "能评估 RNN 迁移到 Transformer 在训练与推理阶段的真实性能特征",
+    "reasoningGoal": "先确认训练阶段 Encoder 与 Decoder 借助 Teacher Forcing 均可并行处理整条序列、摆脱时间步递推；再确认自回归推理阶段仍需逐 Token 串行生成；并确认 O(N²) 使长文本显存增长显著快于 RNN 的 O(N)，排除「Decoder 推理延迟与吞吐天然优于 Encoder-only」。"
+  },
+  {
+    "id": "attn-vs-seq-models",
+    "target": "能对比 Self-Attention、RNN 与 CNN 在依赖路径长度、并行性与感受野上的差异",
+    "reasoningGoal": "先确认 Self-Attention 把任意两位置的最大信号传播路径降到 O(1) 而单层 RNN 为 O(N)；再确认训练可在时间维全并行、消除对逐步隐状态传递的依赖；并确认相比 CNN 的固定局部感受野它能按内容动态计算全局交互权重，排除「N≫d 时 Self-Attention 复杂度低于 RNN」。"
+  },
+  {
+    "id": "attn-scaling-memory",
+    "target": "能推算上下文窗口扩大时注意力计算量与显存的二次方增长，并说明亚二次方案的动机",
+    "reasoningGoal": "先确认生成 Score 矩阵的浮点运算为 O(N²·d)；再确认反向传播需保存 Softmax 前的原始注意力矩阵、占 O(N²) 激活显存；并推出 d 不变而 N 扩到 4 倍时计算量与显存均扩到 16 倍，从而说明检索增强与线性注意力等把复杂度降到子二次级别的工程动机。"
+  }
+]

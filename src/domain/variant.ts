@@ -257,7 +257,23 @@ export function validateVariant(
  * 变体可自声明的测量面（ADR-077：offline variant 是 assessment variant，可换 angle / cognitiveTask）。
  * Runtime 的 `GeneratedVariant` 结构上不含这两项 ⇒ 天然只能是 presentation variant。
  */
-export type VariantMeasurementFace = Partial<Pick<Question, 'angle' | 'cognitiveTask'>>;
+export type VariantMeasurementFace = Partial<Pick<Question, 'angle' | 'cognitiveTask' | 'assessment'>>;
+
+/**
+ * 取出变体自声明的测量面（P1-1）：只有离线 Assessment Variant 会带这些字段，
+ * Runtime Presentation Variant 结构上没有 ⇒ 返回空对象，applyVariant 自然继承 canonical。
+ *
+ * 存在意义：池命中路径此前手工拼 `{ question, options }` 交给 applyVariant，
+ * **把池条目声明的测量面整段丢掉** —— schema 允许、applyVariant 支持，却在衔接处被抹掉
+ * （与 2026-09-04 修过的「落库即丢」是同一类衔接 bug）。所有「从变体取测量面」都必须走这里。
+ */
+export function measurementFaceOf(v: VariantMeasurementFace): VariantMeasurementFace {
+  return {
+    ...(v.angle ? { angle: v.angle } : {}),
+    ...(v.cognitiveTask ? { cognitiveTask: v.cognitiveTask } : {}),
+    ...(v.assessment ? { assessment: v.assessment } : {}),
+  };
+}
 
 /**
  * 把通过校验的变体落到题目上。
@@ -274,19 +290,16 @@ export function applyVariant(
   format?: FormatId,
   rng?: () => number,
 ): Question {
-  // 两类 Variant 在这里分道（ADR-077）：
-  //   Offline Assessment Variant —— 池内条目可自声明 angle / cognitiveTask，声明即采用；
+  // 两类 Variant 在这里分道（ADR-077 / P1-1 方案 A）：
+  //   Offline Assessment Variant —— 池内条目可自声明 angle / cognitiveTask / assessment，声明即采用；
   //   Runtime Presentation Variant —— `GeneratedVariant` 只有 question/options，
-  //     永远声明不了测量面 ⇒ 恒继承 canonical，assessment identity 不变。
+  //     schema 层也禁止 runtime 条目带测量面 ⇒ 恒继承 canonical，assessment identity 不变。
   // 因此同一个 applyVariant 同时服务两者，不需要运行时分支。
   //
-  // ⚠️ 2026-09-04 修复：此前 schema 有这两个字段、注释声称「applyVariant 优先采用」，
+  // ⚠️ 2026-09-04 修复：此前 schema 有这些字段、注释声称「applyVariant 优先采用」，
   //    但本函数只做 ...canonical + 覆盖 question ⇒ 声明的测量面**落库即丢**，
   //    且全仓无消费者。与 plan0903_2 §二-A 记过的「字段被静默丢弃」是同一类问题。
-  const face: Partial<Question> = {
-    ...(v.angle ? { angle: v.angle } : {}),
-    ...(v.cognitiveTask ? { cognitiveTask: v.cognitiveTask } : {}),
-  };
+  const face: Partial<Question> = measurementFaceOf(v);
   const isChoice = format ? format === 'choice' : !!canonical.formats.choice;
   if (isChoice) {
     const cf = canonical.formats.choice!;

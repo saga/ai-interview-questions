@@ -1,0 +1,353 @@
+[
+  {
+    "seq": 187,
+    "kind": "variant",
+    "id": "ai-fund-036__surface-options__wb-llm-20260903__0",
+    "topic": "rag",
+    "angle": "comparison",
+    "canonicalId": "ai-fund-036",
+    "variantKind": "surface-options",
+    "question": "Vector Search 与 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
+    "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
+    "correct": [
+      "向量检索把 query 与文档映成语义向量按距离查，长于同义改写与模糊语义匹配，却对型号、错误码这类精确符号不敏感。"
+    ],
+    "distractors": [
+      "关键词检索靠语义向量算相似度，所以能命中不含查询原词的文档，用户拼错术语也能靠向量泛化召回正确答案。",
+      "向量检索靠对实体和编号做词面精确匹配，因此查错误码时比关键词检索更可靠，语义改写反而交给关键词路兜底。",
+      "二者本质都是词面匹配，差别仅在是否引入神经网络加速建索引，神经网络的有无决定了检索能否理解用户意图的深层含义。"
+    ]
+  },
+  {
+    "seq": 188,
+    "kind": "variant",
+    "id": "ai-fund-036__context-options__wb-llm-20260903__1",
+    "topic": "rag",
+    "angle": "comparison",
+    "canonicalId": "ai-fund-036",
+    "variantKind": "context-options",
+    "question": "你在为检索选型。请说明语义向量检索与词面关键词检索在匹配机制上的根本差异，以及各自在哪些查询类型上更可靠。",
+    "explanation": "Vector = 语义近似匹配（改写友好、精确符号弱）；Keyword = 词面精确匹配（实体/编号强、不懂同义）；失败模式互补。",
+    "correct": [
+      "Vector Search 把 query 和文档映射为语义向量做距离检索，擅长同义改写与模糊语义匹配，但对型号、错误码等精确符号不敏感。"
+    ],
+    "distractors": [
+      "Keyword Search 通过语义向量计算相似度，因此能匹配到不含查询原词的文档，即便用户写错了术语也能靠向量泛化召回正确答案。",
+      "Vector Search 依赖对实体和编号的词面精确匹配，因此在查错误码时比 Keyword Search 更可靠，语义层面的改写反而是由关键词路来兜底处理。",
+      "两者本质都是词面匹配，区别只在于是否引入神经网络模型来加速索引构建，神经网络的有无决定了检索是否能理解用户意图的深层含义。"
+    ]
+  },
+  {
+    "seq": 189,
+    "kind": "variant",
+    "id": "ai-fund-038__context-options__wb-llm-20260903__1",
+    "topic": "reranking",
+    "angle": "mechanism",
+    "canonicalId": "ai-fund-038",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能判断「bi-encoder 快但粗（独立编码），cross-encoder 准但慢（联合编码）→ 召回后对少量候选精排，提升进入 context 的 precision」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「在召回之后增加 cross-encoder 重排环节」成立；并排除「把 top-k 从 10 扩大到 30」「针对本领域从头训练一个专用 embedding 模型」等不成立描述。"
+    },
+    "question": "你在解释重排器的必要性。请说明向量召回的粗排局限，以及重排如何在少量候选上做精细相关性判断来补召回的精度缺口。",
+    "explanation": "bi-encoder 快但粗（独立编码），cross-encoder 准但慢（联合编码）→ 召回后对少量候选精排，提升进入 context 的 precision。",
+    "correct": [
+      "在召回之后增加 cross-encoder 重排环节，对少量候选做联合编码精排，让真正相关的段落占据 top-k 再进入 context。"
+    ],
+    "distractors": [
+      "把 top-k 从 10 扩大到 30，塞入更多候选内容让模型在生成时自行甄别取舍。",
+      "针对本领域从头训练一个专用 embedding 模型，重建全量索引以提升向量检索本身的精度。",
+      "先让模型为每个候选段落生成内容摘要，再把摘要拼接进 prompt 以节省 token 开销。"
+    ]
+  },
+  {
+    "seq": 190,
+    "kind": "variant",
+    "id": "ai-rag-009__context-options__wb-llm-20260903__1",
+    "topic": "rag",
+    "angle": "scenario",
+    "canonicalId": "ai-rag-009",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「短 query = 信息不足导致向量失配」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「用 LLM 把短查询扩写成完整问题」「引入 BM25 关键词检索与向量检索做混合排序」等 2 项成立；并排除「把所有长文档重新切成与短查询等长的碎片后重建索引」「直接拒绝无法理解的短查询并引导用户补充描述」等不成立描述。"
+    },
+    "question": "长问句检索准、短实体问句掉点。请解释短 query 的语义稀疏问题，并给出补关键词检索或查询扩展的缓解方案。",
+    "explanation": "短 query = 信息不足导致向量失配；LLM 扩写 + 缩写词典 + BM25 补充 + 文档侧 FAQ 化，配专项评测集验证。",
+    "correct": [
+      "用 LLM 把短查询扩写成完整问题，并在服务端维护领域缩写到标准术语的映射词典做确定性展开，弥补查询本身信息量不足导致的向量失配。",
+      "引入 BM25 关键词检索与向量检索做混合排序，短查询往往是精确实体查找，关键词命中的稳定性优于纯向量相似度。"
+    ],
+    "distractors": [
+      "把所有长文档重新切成与短查询等长的碎片后重建索引，使向量的长度分布与查询侧对齐。",
+      "直接拒绝无法理解的短查询并引导用户补充描述，因为缩写式查询本质上超出了向量检索的能力边界，任何优化收效甚微。",
+      "放宽召回的 top-k 与相似度门槛，以更宽的候选面吸收短查询造成的匹配精度下滑。"
+    ]
+  },
+  {
+    "seq": 191,
+    "kind": "variant",
+    "id": "graphrag-01__context-options__wb-llm-20260903__1",
+    "topic": "graph-rag",
+    "angle": "tradeoff",
+    "canonicalId": "graphrag-01",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「向量检索的机制决定了它不擅长全局聚合：它按查询与 chunk 的语义距离召回，倾向于找回含「频繁」「重复」这类同义词的片段，而不是语料背后的统计分布」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「向量相似度检索本质上依赖查询语句与文档 Chunk …」「全局聚合类问题的答案通常以分布式（Distribut…」等 3 项成立；并排除「向量检索的根本缺陷在于 Embedding 模型无法…」等不成立描述。"
+    },
+    "question": "全局归纳类问题要跨大量文档聚合，逐篇向量检索天然不利。请说明 GraphRAG 用实体关系图支撑全局摘要的动机与优势。",
+    "explanation": "向量检索的机制决定了它不擅长全局聚合：它按查询与 chunk 的语义距离召回，倾向于找回含「频繁」「重复」这类同义词的片段，而不是语料背后的统计分布；而「出现频率最高的根本原因」这类答案本就以分布式形态散落在整个语料里，不存在少数几个可被距离精确定位的文本块。扩大窗口只增加了接收量，没有改善召回的全局代表性，模型仍会在有偏的召回上做表面推理。D 错在过度泛化：向量检索在局部点查（Local Query）上通常表现良好，图谱的优势集中在需要跨实体关系与全局聚合的问题，不能说点查「必然落后」。",
+    "correct": [
+      "向量相似度检索本质上依赖查询语句与文档 Chunk 之间的语义匹配，倾向于召回包含\"频繁\"、\"重复\"等相同词汇的文本片段，而非文本分布背后的全局统计特征。",
+      "全局聚合类问题的答案通常以分布式（Distributional）形态分散在整个语料库中，不存在单一或少数几个可直接被向量距离精确定位的文本块。",
+      "仅扩大 Context Window 只能让模型接收更多文本，但若前端检索阶段召回的内容缺乏全局代表性，模型仍会在无关或偏置的信息上进行表面推理。"
+    ],
+    "distractors": [
+      "向量检索的根本缺陷在于 Embedding 模型无法表达实体与实体之间的结构化关联，因此即使是回答具体的点状问题（Local Query）也必然落后于知识图谱。"
+    ]
+  },
+  {
+    "seq": 192,
+    "kind": "variant",
+    "id": "graphrag-03__context-options__wb-llm-20260903__1",
+    "topic": "graph-rag",
+    "angle": "tradeoff",
+    "canonicalId": "graphrag-03",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「反过来选最宏观的 Level 0，成本最低、响应最快，代价是可能漏掉子领域的关键细节」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「选择更深（较小社区粒度）的层级」「选择更深（较小社区粒度）的层级」等 3 项成立；并排除「社区报告的粒度层级是在查询阶段由 LLM 根据问题动…」等不成立描述。"
+    },
+    "question": "图谱建好后需组织成可检索的层级。请说明社区检测如何把图聚成多粒度簇，从而支撑从局部到全局的不同检索与摘要。",
+    "explanation": "社区层级本质上是一个详尽度与成本的旋钮：层级越深、社区越小，报告越细，回答的详尽度（Comprehensiveness）越高，但需要 Map-Reduce 汇总的报告数量剧增，token 消耗与端到端延迟随之飙升；反过来选最宏观的 Level 0，成本最低、响应最快，代价是可能漏掉子领域的关键细节。D 错在把索引期产物当成查询期产物：社区划分与社区报告都是在索引阶段一次性构建好的，查询阶段只是在既有层级中挑选；选哪一层既决定了查询成本，也反过来决定了索引要为多深的层级付费。",
+    "correct": [
+      "选择更深（较小社区粒度）的层级，社区报告包含的细节更丰富，生成的回答在详尽度（Comprehensiveness）上通常表现更好。",
+      "选择更深（较小社区粒度）的层级，由于需要处理和汇总的社区报告数量剧增，查询时的 LLM Token 消耗和端到端延迟（Latency）会显著上升。",
+      "选择最宏观的层级（如 Level 0），虽然查询成本最低、响应速度最快，但可能遗漏具体子领域的关键细节特征。"
+    ],
+    "distractors": [
+      "社区报告的粒度层级是在查询阶段由 LLM 根据问题动态自动生成的，因此不会影响索引阶段的构建成本和查询时的报告选择。"
+    ]
+  },
+  {
+    "seq": 193,
+    "kind": "variant",
+    "id": "graphrag-07__context-options__wb-llm-20260903__1",
+    "topic": "graph-rag",
+    "angle": "system-design",
+    "canonicalId": "graphrag-07",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「四项均正确：LLM驱动路由按问题特征选路径、路由可分层复合、引入前置LLM致延迟/成本上升、误路由致质量雪崩且难排查」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「Agentic RAG 在检索前增加一层由 LLM …」「路由选择可以在多个抽象层级上发生」等 4 项成立。"
+    },
+    "question": "你在设计检索路由器。请说明按问题类型把查询分派到向量、图谱或结构化查询的多策略架构，及其分类依据。",
+    "explanation": "四项均正确：LLM驱动路由按问题特征选路径、路由可分层复合、引入前置LLM致延迟/成本上升、误路由致质量雪崩且难排查。",
+    "correct": [
+      "Agentic RAG 在检索前增加一层由 LLM 驱动的查询分类与路由机制，依据问题特征自动选择最合适的检索路径（如点状问答走向量检索，全局分析走 GraphRAG）。",
+      "路由选择可以在多个抽象层级上发生，例如顶层由 Composite Retriever 选择查询哪个索引，子层由 Auto-router 选择具体检索算法。",
+      "引入 Agentic 路由会增加检索前置的 LLM 调用，导致整体查询时延（Latency）和 Token 成本上升。",
+      "如果前置路由模块发生误判（例如将全局分析问题错判为简单向量检索），会导致后续检索结果质量严重下降，且这种失效模式相较于固定静态路由更难排查调试。"
+    ],
+    "distractors": []
+  },
+  {
+    "seq": 194,
+    "kind": "variant",
+    "id": "llm-04__context-options__wb-llm-20260903__1",
+    "topic": "rag",
+    "angle": "mechanism",
+    "canonicalId": "llm-04",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能判断「RAG 将知识外置为可更新索引库，文档更新只需重建索引而无需重训模型」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「构建检索增强生成管线：先将手册切片并向量化入库」成立；并排除「对基座模型做全量微调」「把全部手册浓缩成一份固定摘要放入系统提示」等不成立描述。"
+    },
+    "question": "你在区分参数化记忆与外置检索。下列描述中，哪些准确刻画了 RAG 把知识放在可更新索引、按需注入模型输入的工作方式？",
+    "explanation": "考察 RAG 的检索-拼接-生成三段流程及其相比参数化知识的优势。RAG 将知识外置为可更新索引库，文档更新只需重建索引而无需重训模型；回答时实时检索最新内容进入 context 并附引用来源。它解决不了检索质量差导致的答非所问，也不能消除模型误读证据产生的幻觉。",
+    "correct": [
+      "构建检索增强生成管线：先将手册切片并向量化入库，收到问题时检索 top-k 相关片段拼入提示，由本地化部署的模型生成答案并附引用来源。"
+    ],
+    "distractors": [
+      "对基座模型做全量微调，把手册内容固化进模型权重，手册每次更新后立刻重新全量训练即可同步生效。",
+      "把全部手册浓缩成一份固定摘要放入系统提示，检索环节只做关键词精确匹配，以最大限度简化架构。",
+      "直接调用公有云上的通用大模型接口作答，依靠模型参数内的记忆回答维修问题，省去知识库建设成本。"
+    ]
+  },
+  {
+    "seq": 195,
+    "kind": "variant",
+    "id": "llm-09__context-options__wb-llm-20260903__1",
+    "topic": "rag-vs-finetuning",
+    "angle": "tradeoff",
+    "canonicalId": "llm-09",
+    "variantKind": "context-options",
+    "canonicalAssessment": {
+      "target": "能判断「知识频繁更新且需溯源 → RAG（外挂索引实时更新+附引用）」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「首选 RAG 配合提示工程：知识随检索库更新、答案可…」成立；并排除「对基座做全量微调」「微调最适合注入频繁变化的事实知识」等不成立描述。"
+    },
+    "question": "一个涉密且高频更新的内网问答场景。请在提示工程、RAG、微调间给出组合与取舍，并重点说明溯源与不出域为何指向 RAG。",
+    "explanation": "考察 RAG vs 微调 vs 提示工程的决策框架。知识频繁更新且需溯源 → RAG（外挂索引实时更新+附引用）；行为风格或输出格式定制 → 微调（改变模型行为倾向）；轻量约束 → 提示工程。数据不出内网可用本地部署的 embedding 与 LLM。三者常组合使用而非互斥。",
+    "correct": [
+      "首选 RAG 配合提示工程：知识随检索库更新、答案可附引用溯源，配合本地化部署满足数据不出内网的要求。"
+    ],
+    "distractors": [
+      "对基座做全量微调，把企业知识固化进模型参数，知识更新时立即触发重新训练即可同步生效。",
+      "微调最适合注入频繁变化的事实知识，因为它比外挂检索更容易审计与增量更新。",
+      "只用提示工程、不接任何外部知识，依靠模型参数内的记忆作答，从根源上保证零幻觉。"
+    ]
+  },
+  {
+    "seq": 196,
+    "kind": "variant",
+    "id": "rag-vs-param-memory__surface-options__wb-llm-20260903__0",
+    "topic": "rag",
+    "angle": "design",
+    "canonicalId": "rag-vs-param-memory",
+    "variantKind": "surface-options",
+    "question": "为克服大型 Transformer「隐式参数记忆」带来的知识时效性差、更新成本高与幻觉问题，业界提出结合外置向量数据库的架构。下列哪些描述准确？",
+    "explanation": "A 正确 知识库实时增删改查无需重训底层权重。B 正确 事实存储转移到外部索引降低无限扩参需求。C 正确 检索到的上下文为结论提供可溯源依据降低幻觉风险。D 错误 Context Window 不可能降为零仍需注入检索片段且 PE 需求不变。",
+    "correct": [
+      "知识库可实时增删改查，比如补最新的企业内部文档也无需重训或微调底层 Transformer 模型权重。",
+      "将事实性知识的存储迁移到外部检索索引，大幅降低了主模型为记住更多事实而无限制扩展参数量的需求。",
+      "检索到的上下文文本直接注入 Prompt Window，能为生成结论提供可溯源依据、降低凭空编造的幻觉风险。"
+    ],
+    "distractors": [
+      "长文本检索时外部模块代劳筛选，Transformer 的 Context Window 降到 zero-shot，Positional Encoding 不再必需。"
+    ]
+  },
+  {
+    "seq": 197,
+    "kind": "variant",
+    "id": "rag-vs-param-memory__context-options__wb-llm-20260903__1",
+    "topic": "rag",
+    "angle": "design",
+    "canonicalId": "rag-vs-param-memory",
+    "variantKind": "context-options",
+    "question": "你在论证为何用向量库替代纯参数记忆。下列表述中，哪些准确说明了外置检索在时效、可更新与可溯源上胜过固化权重？",
+    "explanation": "A 正确 知识库实时增删改查无需重训底层权重。B 正确 事实存储转移到外部索引降低无限扩参需求。C 正确 检索到的上下文为结论提供可溯源依据降低幻觉风险。D 错误 Context Window 不可能降为零仍需注入检索片段且 PE 需求不变。",
+    "correct": [
+      "知识库的实时增删改查如补充最新的企业内部文档无需重新训练或微调底层 Transformer 模型权重。",
+      "事实性知识的存储一旦外挪到检索索引，就显著削弱了主干模型为记住更多事实而无节制扩张参数量的冲动。",
+      "检索到的上下文文本被直接注入 Prompt Window 能够为生成的结论提供可溯源的依据降低无中生有的幻觉风险。"
+    ],
+    "distractors": [
+      "长文本检索时外部模块包办大半筛选，Transformer 的 Context Window 降至 zero-shot，Positional Encoding 便不再需要。"
+    ]
+  },
+  {
+    "seq": 198,
+    "kind": "variant",
+    "id": "long-context-rag-tradeoff__surface-options__wb-llm-20260903__0",
+    "topic": "rag",
+    "angle": "scenario",
+    "canonicalId": "long-context-rag-tradeoff",
+    "variantKind": "surface-options",
+    "question": "输入窗口扩展到百万 Token 后，有团队主张把全部企业文档直接塞进 Prompt 淘汰 RAG。这种思路的权衡是什么？",
+    "explanation": "A 正确 Self-Attention 计算与显存随 N 二次方增长极长 Prompt 导致 TTFT 与成本大幅上升。B 正确 上下文腐化现象表明大量冗余信息会降低对关键细节的精准检索能力。C 错误 即使窗口够大也无法自动保障实时更新与 RBAC 权限控制需检索层另行实现。D 正确 上下文压缩与 RAG 混合架构可在保持连贯性的同时降低延迟与成本。",
+    "correct": [
+      "标准 Self-Attention 的计算与显存开销随 Token 序列长度二次方增长，极长 Prompt 会让首包响应时间与单次推理成本大幅上升。",
+      "'上下文腐化'现象说明，当上下文塞满冗余信息时，模型对早期或中间关键细节的注意力关注度与精准检索能力可能衰减。",
+      "结合自动上下文压缩与 RAG 的混合架构，能在保持长会话连贯的同时有效压低推理延迟与 token 成本。"
+    ],
+    "distractors": [
+      "只要模型上下文窗口装得下全部企业文档，就能完全保障数据调用的实时更新与细粒度基于角色的访问控制。"
+    ]
+  },
+  {
+    "seq": 199,
+    "kind": "variant",
+    "id": "long-context-rag-tradeoff__context-options__wb-llm-20260903__1",
+    "topic": "rag",
+    "angle": "scenario",
+    "canonicalId": "long-context-rag-tradeoff",
+    "variantKind": "context-options",
+    "question": "长输入让人想绕过检索。请说明全量注入在成本、噪声与权限上的代价，以及为何多数场景仍需 RAG 而非超长模型输入。",
+    "explanation": "A 正确 Self-Attention 计算与显存随 N 二次方增长极长 Prompt 导致 TTFT 与成本大幅上升。B 正确 上下文腐化现象表明大量冗余信息会降低对关键细节的精准检索能力。C 错误 即使窗口够大也无法自动保障实时更新与 RBAC 权限控制需检索层另行实现。D 正确 上下文压缩与 RAG 混合架构可在保持连贯性的同时降低延迟与成本。",
+    "correct": [
+      "Token 越长，Self-Attention 的算力与显存开销按平方放大，超长输入会直接抬高首包时延和单次推理花费",
+      "往上下文里塞大量冗余内容后，模型对开头或中段关键细节的关注与精确检索能力会出现衰减",
+      "用自动上下文压缩配合 RAG 的混合方案，能在长会话保持连贯的同时压住推理时延与 token 开销"
+    ],
+    "distractors": [
+      "窗口装得下全部企业文档，也不等于能实时更新数据或细粒度按角色管控访问权限"
+    ]
+  },
+  {
+    "seq": 200,
+    "kind": "variant",
+    "id": "index_share_sparse_attn_canonical__context-options__prompt-index_share_sparse_attn_variant1",
+    "topic": "index-share-sparse-attention",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "canonicalId": "index_share_sparse_attn_canonical",
+    "variantKind": "context-options",
+    "question": "在 1M 超长上下文推理场景下，某系统通过部署 IndexShare 稀疏注意力机制，将索引计算 FLOPs 降低了约 3 倍。但在高并发 Decode 阶段的实际服务中，运维团队发现系统吞吐量的提升幅度远低于 FLOPs 的缩减比例。针对这一现象，以下哪项系统瓶颈分析最为合理？",
+    "explanation": "选项 A 正确：IndexShare 的核心设计是在 4 层组的首层计算轻量级索引器的 Query-Key 点积与 Top-K 选择，并将得到的 Top-K 索引直接供后续 3 层重用，从而消除了这 3 层中索引器本身的计算开销；选项 B 正确：Transformer 连续相邻层之间的稀疏注意力激活图示（Sparsity Pattern）高度相似，因此共享 Top-K 索引能在保持高模型精度的同时削减冗余计算；选项 C 错误：IndexShare 减少的是索引器的计算 FLOPs，但每层标准的 QKV 注意力张量及 KV Cache 尺寸并没有因此减少，KV Cache 的显存占用并未同比例缩减；选项 D 错误：共享的是 Top-K 索引（即决定关注哪些 Key），后续各层仍需根据该索引提取对应的 Key/Value 并计算稀疏注意力点积，并非 O(1) 的查表或完全免除注意力计算。",
+    "correct": [],
+    "distractors": [
+      "IndexShare 仅降低了索引器相关的计算 FLOPs，但并没有缩减各 Transformer 层保存的 KV Cache 体积；Decode 阶段受限于内存带宽（Memory Bandwidth Bound），读取 KV Cache 的访存开销仍为主导瓶颈。",
+      "IndexShare 导致各层注意力掩码完全随机化，造成 GPU 显存连续读写失效，引发频繁的 HBM 页面 Page Fault 与 Cache Miss。",
+      "IndexShare 增加了 Transformer 层的网络通信频次，导致 All-Reduce 通信耗时超越了计算耗时，使系统从计算受限转化为网络受限。",
+      "由于 Top-K 索引在层间共享，计算节点必须在每层间同步 Top-K 索引表，产生了无法被掩盖的 CPU-GPU 同步阻塞 Overhead。"
+    ]
+  },
+  {
+    "seq": 201,
+    "kind": "variant",
+    "id": "mtp_speculative_decoding_canonical__context-options__prompt-mtp_speculative_decoding_variant1",
+    "topic": "mtp-speculative-decoding",
+    "angle": "architecture",
+    "cognitiveTask": "infer",
+    "canonicalId": "mtp_speculative_decoding_canonical",
+    "variantKind": "context-options",
+    "question": "在多步 MTP 架构中引入 IndexShare 后，针对第 k 步（k > 1）MTP 隐藏状态在计算注意力时的可感知上下文范围与 Mask 约束，以下哪项推导是正确的？",
+    "explanation": "选项 A 正确：在传统多步 MTP 推理中，从第 2 步开始，输入特征部分来自 MTP 预测层产出的隐藏状态（Draft Hidden State），而在训练时所有输入均基于 Target Model 的真实隐藏状态，这种输入特征来源的不一致（Training-Inference Discrepancy）会导致 KV Cache 污染并随步数积累偏差；选项 B 正确：使用 IndexShare 和 KVShare 后，后续 MTP 步骤直接重用首步（即 Target Model 侧）生成的 Top-K 索引与 KV Cache，确保注意力上下文完全来自于 Target Model 的可靠特征，消除了特征污染，显著提升了后续步的采样接受率；选项 C 错误：KVShare 是直接复用已计算好的 Target KV Cache，避免了重复计算，而非重新执行完整 Forward 过程；选项 D 错误：核心瓶颈在于输入特征与注意力上下文的污染及训练推理分布偏移，并非 LM Head 权重的改变。",
+    "correct": [],
+    "distractors": [
+      "重用了第 1 步计算的 Top-K 索引使第 k 步隐藏状态 hk 的注意力只能覆盖 Target Model 历史上下文而无法关注当前 MTP 序列中自身之前步骤生成的中间隐藏状态。",
+      "重用第 1 步索引使得 hk 可以无视 Causal Mask 限制，实现对未来所有 MTP 步骤的双向（Bidirectional）全注意力关注。",
+      "IndexShare 强制要求第 k 步只能关注 hk-1 单个 Token 的隐藏状态，注意力掩码退化为长度为 1 的局域窗口。",
+      "后续 MTP 步骤的注意力掩码保持完全动态变化，每一步都会动态生成全新的 Top-K 索引以包含前一步 MTP 产生的 Hidden State。"
+    ]
+  },
+  {
+    "seq": 202,
+    "kind": "variant",
+    "id": "vit_inductive_bias_vs_cnn_canonical__context-options__prompt-vit_inductive_bias_vs_cnn_variant_1",
+    "topic": "vit-inductive-bias-vs-cnn",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "canonicalId": "vit_inductive_bias_vs_cnn_canonical",
+    "variantKind": "context-options",
+    "question": "在某图像分类任务的工程落地中，研发团队尝试在不使用任何预训练权重的情况下，直接在 ImageNet-1k 数据集（约 130 万张图片）上从头训练标准 ViT-Base 模型，发现其最终 Top-1 准确率明显低于同等参数量和计算量的 ResNet 模型，且训练过程伴随严重的过拟合。关于导致该现象的核心病因及最佳工程应对手段，以下哪项判断最为准确？",
+    "explanation": "选项 A 正确：CNN 的卷积核在局部滑动，天然具有二维局部性和平移同变性的结构归纳偏置，大幅减少了假设空间，因此在小数据集上训练时收敛更快且不易过拟合。选项 B 正确：ViT 的全局自注意力机制将输入 Patch 序列一视同仁，初始状态下并没有固化的二维空间几何拓扑先验，需要通过数据完全自适应学习 Patch 间的相对空间关系。选项 C 正确：虽然缺乏归纳偏置导致 ViT 在小数据集（如 ImageNet-1k）上表现逊色，但在海量数据（如 ImageNet-21k 或 JFT-300M）预训练下，这种自由度更高的表达能力（更大的假设空间）能够充分吸收数据红利，超越受限于先验约束的传统 CNN。选项 D 错误：实验表明，经过充分预训练后，ViT 浅层的注意力头和权重同样会显现出与 CNN 类似的局部感知野及边缘/纹理检测能力，并非无法学习到这些特征。",
+    "correct": [],
+    "distractors": [
+      "核心原因是 ViT 模型的参数量过小，表达能力不足；最有效的解决方法是换用参数量更大的 ViT-Huge 架构直接训练。",
+      "核心原因是 ViT 缺乏 CNN 的局部性与平移同变性归纳偏置，在数据集规模不足时假设空间过大；根本解决路径是在大规模数据集（如 ImageNet-21k 或 JFT-300M）上进行预训练再迁移微调。",
+      "核心原因是自注意力机制的 Softmax 函数在梯度反向传播时容易出现梯度消失；最有效的解决路径是在每层 Transformer Block 后叠加 Batch Normalization 算子。",
+      "核心原因是 Patch Embedding 破坏了图像像素级的连续性；最有效的解决路径是将 Patch 尺寸减小至 1x1 像素。"
+    ]
+  },
+  {
+    "seq": 203,
+    "kind": "variant",
+    "id": "vit_position_embedding_interpolation_canonical__context-options__prompt-vit_position_embedding_interpolation_variant_1",
+    "topic": "vit-position-embedding-interpolation",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "canonicalId": "vit_position_embedding_interpolation_canonical",
+    "variantKind": "context-options",
+    "question": "某工程师在对 ViT 进行高分辨率微调（由 224x224 提升至 448x448，Patch Size=16）时，编写的代码直接将长度为 196 的一维预训练位置编码向量按照一维数组简单线性插值（1D Linear Interpolation）拉伸至长度 784。微调后发现模型准确率大幅下降，且深层注意力集中在毫无意义的条纹状区域。关于该问题的根本原因与正确修复方案，以下哪项判断是正确的？",
+    "explanation": "选项 A 正确：图像分辨率从 224x224 提升至 384x384，Patch 数量从 14x14=196 增加到 24x24=576，预训练位置编码（长度 196+1）无法直接按元素匹配新序列。选项 B 正确：虽然 ViT 内部使用一维可学习位置编码，但在调整分辨率时，需要先将其根据预训练时的二维网格布局恢复成 2D 形状，再通过二维双三次插值（2D Bicubic Interpolation）扩展至新的 2D 网格尺寸，最后展平回一维。选项 D 正确：插值使得新位置处的 Token 继承了原网格中邻近位置的相对空间距离与语义，使得高分辨率微调能够快速收敛。选项 C 错误：直接补零或随机初始化会破坏空间连续性与预训练学到的位置先验，实验表明其效果远逊于二维位置编码插值。",
+    "correct": [],
+    "distractors": [
+      "根本原因是一维线性插值破坏了 Patch 在二维图像空间上的网格上下邻域关系；修复方案是将位置编码重构为 2D 空间网格后再进行二维插值（如 2D Bicubic Interpolation）。",
+      "根本原因是微调时未同步增大 Patch Size；修复方案是将 Patch Size 扩大为 32x32，从而无需对位置编码做任何插值。",
+      "根本原因是一维插值导致位置编码维度 D 发生了改变；修复方案是在一维插值后添加一个全连接层将维度降回 D。",
+      "根本原因是高分辨率图像必须使用相对位置编码（Relative Position Bias）且必须彻底废弃绝对位置编码并重新从头训练模型。"
+    ]
+  }
+]

@@ -34,7 +34,12 @@
       "open": {
         "referenceAnswer": "要点：context selection 不是 top-K 检索。应召回后做 rerank（任务相关性+近期性+预测有用性），按 Agent 当前阶段与计划做 query-aware 动态选择，并用执行反馈/离线日志训练选择器对关键片段加权；避免把相似但不相关或冲突的内容直接塞入 context。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能区分「按任务相关性做选择」与「相似度 top-K 检索」，并选出让 context 随任务与反馈演进的设计",
+      "reasoningGoal": "先明确题干要避免的是把语义相似度当作有用性的代理；再据此确认召回后用 reranker 按任务相关性/近期性/预测有用性重排并按执行反馈迭代、query-aware 按阶段动态选源、以及用离线日志对真正影响成败的片段加权三项都建立在任务相关性上；并排除「相似度 top-K 再按时间倒序」——时间加权并不等于任务相关性。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "context-2026-102",
@@ -77,7 +82,12 @@
       "open": {
         "referenceAnswer": "要点：四类 context 生命周期与信任等级不同，不应混为同一 blob。应按生命周期（对话历史/任务状态/长期记忆/工具结果）与信任等级（可信指令 vs 不可信外部数据）分仓管理，采用不同存储（向量库、KV、缓存、滑动窗口）与淘汰策略，并隔离不可信内容防止其获得指令优先级。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能按生命周期与信任等级两个维度，说明四类 context 为什么必须分仓而不是拼成单一 blob",
+      "reasoningGoal": "先拆出两个判据——生命周期（历史短暂易变、任务状态随步骤更新、长记忆持久、工具结果临时且体量大）与信任等级（系统指令可信、工具结果与抓取内容不可信）；再据此确认分仓存储、不可信内容与指令隔离、以及按体积与访问模式采用不同存储与淘汰策略；并排除「只按信任等级分两仓、同级内统一拼串压缩」——那会抹平生命周期差异并埋下间接注入风险。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "context-2026-103",
@@ -120,7 +130,12 @@
       "open": {
         "referenceAnswer": "要点：网页/邮件/文档内容由外部生成，可能含间接提示注入，不能因出现在 context 就获得指令优先级。应将其作为不可信数据隔离（与 system instruction 分离、显式标注来源边界），对敏感操作二次确认，并最小化其可触发的工具权限；顺序本身不构成安全边界。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「必须隔离为数据区并与 system instruction 分离」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「这些内容由外部生成」「出现在 context 中只说明它是数据」等 3 项成立；并排除「只要把抓取内容放在 system prompt 之后」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "context-2026-104",
@@ -161,7 +176,12 @@
       "open": {
         "referenceAnswer": "要点：全量放入 300 个 tool schema 会浪费 token、稀释注意力、增加选错工具的困惑。按需加载、tool search 或 progressive disclosure（渐进式披露）让 context 只保留当前阶段相关工具，降低干扰与成本、提升选择准确率。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「按需加载/工具搜索让 context 只保留当前相关工具，直接缓解三者」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「全部 300 个 schema 会浪费 token、…」成立；并排除「把全部工具放入 context 让模型更全知」「主要问题是 system prompt 会因此超过模…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "context-2026-105",
@@ -203,7 +223,12 @@
       "open": {
         "referenceAnswer": "要点：prompt caching 依赖稳定前缀命中。把时间戳、request ID、动态用户信息等易变内容放在静态 system prompt 前面会破坏缓存前缀，导致每次缓存失效、成本与延迟显著上升。正确做法是将静态内容置于前缀、动态内容放在其后变量区，保持前缀稳定。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「把可变内容放前面会破坏前缀导致缓存失效，成本与延迟上升」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「缓存命中依赖稳定前缀」「应把时间戳、request ID 与动态用户信息放在…」等 2 项成立；并排除「把动态内容放最前面能让缓存更新鲜」「缓存只对长 system prompt 有效」等不成立描述。"
+    },
+    "cognitiveTask": "predict"
   },
   {
     "id": "context-2026-106",
@@ -246,7 +271,12 @@
       "open": {
         "referenceAnswer": "要点：compaction 不能无差别压短。应采用结构化压缩保留约束/未完成任务清单/关键实体并附可回溯指针；用 do-not-compact 锚点保护关键事实与开放任务常驻；压缩前把可恢复状态（变量/进度）抽成结构化字段，丢失时从工具或日志重建。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能选出在压缩 token 的同时保住关键事实、约束与可恢复状态的 compaction 策略",
+      "reasoningGoal": "先明确压缩的风险不是丢字数而是丢不可重建的信息；再据此确认结构化 compaction 保留约束与未完成任务并带可回溯指针、do-not-compact 锚点让关键事实常驻、压缩前把可恢复状态抽成结构化字段以便重建；并排除「以 token 预算为硬约束、越短越好」——那正是会摘要掉关键约束的过度压缩。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "context-2026-107",
@@ -289,7 +319,12 @@
       "open": {
         "referenceAnswer": "要点：评估 Context Manager 要看端到端任务成功率/质量，而非仅输入 token 数——省 token 不代表更好，过度裁剪会丢关键信息。应做消融（有/无 Manager 对比质量、成本、失败模式），并专门检查关键信息错删、不可信内容越权等退化。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断评估 Context Manager 应看端到端任务结果与失败模式，而不是输入 token 减少量",
+      "reasoningGoal": "先明确省 token 是手段而非目的；再据此确认应以端到端成功率与质量为主指标、用消融实验对比有无 Context Manager 的质量成本与失败模式、并检查关键信息被错删或不可信内容被提升优先级这类退化；并排除「仅比较输入 token 数即可」——该口径会奖励把关键信息裁掉的劣质策略。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "context-2026-108",
@@ -332,7 +367,12 @@
       "open": {
         "referenceAnswer": "要点：context 应随阶段变化。用 context assembler 按 phase 路由组装——规划注入目标/计划，检索注入检索工具/查询，执行注入当前步骤/工具结果；阶段切换时清空上一阶段无关 context、加载本阶段专属信息，控制 budget 并减少干扰。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明 context 应随规划/检索/执行阶段动态装配，并指出固定 prompt 的具体代价",
+      "reasoningGoal": "先确定三个阶段各自需要的信息不同——规划要目标与计划模板、检索要检索工具与查询上下文、执行要当前步骤与工具结果；再据此确认按阶段路由注入、用 context assembler 动态组装、阶段切换时清空无关上下文三项都服务于该差异；并排除「全生命周期固定 prompt」——无关信息会占用 budget 并干扰决策。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "context-2026-109",
@@ -373,7 +413,12 @@
       "open": {
         "referenceAnswer": "要点：LLM 有注意力与 recency 效应，信息位置影响被使用程度。工程上应把最关键决策信息放在高注意力区（靠近任务指令处或重复出现），用清晰结构（分隔符、标题、列表）组织，并避免把重要约束埋在长文本中段被稀释。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明信息在 context 中的位置为何改变模型表现，并据此设计 context layout",
+      "reasoningGoal": "先复现成因——注意力与 recency 效应使不同位置获得的信息权重不同，Transformer 并非对所有位置一视同仁；再据此推出应把最关键决策信息放进高注意力区（靠近任务或重复出现）并用结构化布局提升利用率；并排除「位置偏置已消失无需排版」「后短前长即最优」「只影响首字延迟」三种低估位置效应的说法。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "context-2026-110",
@@ -416,6 +461,11 @@
       "open": {
         "referenceAnswer": "要点：超长数据集应在代码/工具中先做过滤、聚合、检索、diff 等计算，只把精炼结果交给 LLM——省 token、降噪、避免截断。适合日志异常聚合、大表统计、语料去重/diff、条件检索等可程序化预处理任务；不应把原始全量塞进 context 让 LLM 逐行扫。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明为什么过滤/聚合/计算应交给代码在上下文之外完成，并识别适合该策略的任务类型",
+      "reasoningGoal": "先比较两种路径的代价——全量塞进 context 会付高昂 token 成本并因超长而截断或稀释，而程序化处理只回传精炼结果；再据此确认超长日志表格语料适合先用 SQL 或脚本检索聚合、再由 LLM 基于结果推理；并举例日志异常聚合、大规模表格统计、语料去重与 diff、按条件检索；同时排除「首轮全量建立索引记忆」这种把昂贵且易截断的一步当作必要成本的说法。"
+    },
+    "cognitiveTask": "evaluate"
   }
 ]

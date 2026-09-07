@@ -28,7 +28,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「优化点是 HBM 访存而非浮点计算量：分块驻留 SRAM + online softmax 增量归一化，不物化 N×N 矩阵」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「它优化的是 N×N 注意力矩阵的 HBM 访存瓶颈：…」成立；并排除「它通过对注意力矩阵做低秩近似（例如对 Q、K、V 投…」「它通过剪枝不重要的 token 来缩短有效上下文长度」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-fund-001",
@@ -60,7 +65,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「并行性来自整段序列同时计算（RNN 必须串行），长距离依赖来自 attention 的 O(1) 依赖路径（RNN 需逐步传播）」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「训练时 Transformer 可并行处理整个序列」成立；并排除「RNN 通过门控机制天然支持整段并行计算」「Transformer 的优势主要来自更大的参数量」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-fund-002",
@@ -91,7 +101,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Q·K 打相似度 → 缩放 → softmax 归一化 → 对 V 加权求和」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「Q、K、V 由输入经三组不同的线性投影得到」成立；并排除「Q、K、V 是同一个输入矩阵的简单三份复制」「Q 与 V 的点积经 sigmoid 归一化得到权重」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "ai-fund-003",
@@ -122,7 +137,12 @@
       "open": {
         "referenceAnswer": "正确答案要点：避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域。\n\n解析：dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失；除以 sqrt(d_k) 是数值稳定手段，与显存/参数量/上下文长度无关。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「dot product 方差随维度增长，大输入使 softmax 饱和、梯度消失」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「避免 dot product 随维度增大导致数值过大」成立；并排除「减少 KV Cache 的内存占用」「降低 Transformer 的参数量」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-fund-004",
@@ -153,7 +173,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「多头 = 多个表示子空间并行建模不同关系（语法/语义/位置等），单头只有一种混合视角」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「多个 Head 在不同的表示子空间中学习不同类型的关…」成立；并排除「多头通过把总参数量增加数倍来换取表达能力」「每个 Head 负责处理序列中互不重叠的一段」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-fund-005",
@@ -184,7 +209,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「需通过绝对/相对/RoPE 等编码显式注入位置」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「Self-Attention 对输入顺序不敏感」成立；并排除「Attention 通过因果掩码自动感知词序」「位置信息由前馈网络层隐式提供」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-transformer-003",
@@ -219,7 +249,12 @@
         ],
         "question": "一个合同审阅助手处理短文本表现出色，但输入整份长合同时回答质量明显下降，且涉及中段条款的问题出错率最高。工程上已排除网络与算力因素。从模型与实现层面分析，以下判断正确的有哪些？（请选择以下三个选项）"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「长文本退化通常源于位置编码外推失效、注意力稀释（lost-in-the-middle）、数值漂移或隐性截断」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「位置编码在超出训练长度时外推失效」「注意力被大量 token 稀释造成 lost-in-…」等 3 项成立；并排除「说明注意力公式在长序列下存在数学错误」「主要原因是预训练语料总量不够」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "ai-xattn-001",
@@ -250,7 +285,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「cross-attention 跨序列读取（Q 一方、KV 另一方），是 encoder-decoder 的信息桥梁」",
+      "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「Self-Attention 的 Q/K/V 来自同…」成立；并排除「Self-Attention 与 Cross-Att…」「Cross-Attention 的 Q/K/V 同样…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "dl-04",
@@ -281,7 +321,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「每个位置的输出可直接关注任意距离的 token（O(1) 路径长度），且训练时可全并行无需按时间步展开」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「以 Q、K 点积衡量 token 间相关性」成立；并排除「以 Q、K 的逐元素相乘衡量相关性」「先对 V 做 softmax 归一化得到分布」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "llm-11",
@@ -313,7 +358,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「关键点：①除以 sqrt(d_k) 防止 logits 过大导致 softmax 饱和」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「实现时应计算 QKᵀ 并除以 sqrt(d_k) 缩…」成立；并排除「实现时应把 QKᵀ 除以序列长度 n 而非 sqrt…」「实现时应先对 V 做指数归一化」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "transformer-ln-01",
@@ -349,7 +399,12 @@
       "open": {
         "referenceAnswer": "正确答案要点：A、B、C。\n\n解析：Post-LN 导数在深层受 LN 链式法则累积影响，训练极其依赖 Warmup；Pre-LN 残差直通缓解梯度消失但深层范数增大稀释相对更新量。D 错误：LN 不改变复杂度量级。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Post-LN 导数在深层受 LN 链式法则累积影响，训练极其依赖 Warmup 才能收敛」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「Post-LN 架构在深层网络中主通路的梯度易受 L…」「Pre-LN 架构保持了残差主通路（Identity…」等 3 项成立；并排除「Pre-LN 与 Post-LN 在推理（Infer…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "transformer-perm-01",
@@ -381,7 +436,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。Self-Attention 具有行置换等变性：Attention(PX) = P·Attention(X)。这表明无位置编码的 Self-Attention 无法区分 Token 顺序。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「由于 P 是正交矩阵（P^T=P⁻¹），softmax(PAP^T)=P·softmax(A)P^T，代入推导可得 Attention(X')=P·Attention(Q,K,V…」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「输出与原输出保持相同的行置换」成立；并排除「输出完全保持不变」「输出的 Softmax 注意力权重矩阵保持不变」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "mha-complexity-01",
@@ -417,7 +477,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。投影 O(Nd²)、Score O(N²d)、FlashAttention 前空间 O(hN²)。D 错误：N≫d 时二次方项占绝对主导。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能对单层 MHA 的投影、Score 计算与激活显存分别给出复杂度，并判断长序列下的主导项",
+      "reasoningGoal": "先确认 QKV 与输出投影合计为 O(N·d_model²)；再确认所有头的 Score 及与 V 相乘合计为 O(N²·d_model)；并确认无 FlashAttention 时反向必须保存完整注意力权重、显存为 O(h·N²)，据 N≫d_model 判定二次方项主导，排除「瓶颈由投影矩阵参数量决定」。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "mask-debug-01",
@@ -450,7 +515,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。Softmax 中 e^0=1，掩码位置仍有权重；应填 -inf 使 e^{-inf}=0。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「若被掩码的 Score 填为 0.0，则 e^0=1，这些位置在 Softmax 后仍会获得非零概率权重（甚至高于负分值位置）」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「将被 Mask 的位置填充为 0.0」成立；并排除「masked_fill 中填入的数值应为 0.0 是…」「torch.triu(...」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "seq2seq-arch-01",
@@ -484,7 +554,12 @@
       "open": {
         "referenceAnswer": "正确答案 A。Encoder-Decoder 双向编码源语言+Cross-Attention 支持并行，专用翻译场景参数效率优于 Decoder-Only。B/C/D 均错误。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能为低延迟高吞吐的多语言实时翻译在 Encoder-Decoder 与 Decoder-Only 之间做科学选型",
+      "reasoningGoal": "先确认 Encoder-Decoder 对源语言可并行提取全向双向语义、且 Encoder 的 KV 不占自回归解码窗口，故在专用 Seq2Seq 任务上参数效率与推理延迟通常更优；并排除「Decoder-Only 完全无法使用 KV Cache」「Cross-Attention 导致无法张量并行」「Decoder-Only 吞吐绝对高一个数量级」。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "transformer-comparison-01",
@@ -519,7 +594,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,C。Self-Attention 并行 O(1)+路径 O(1)；B 错误，n>d 时 O(n²d)>O(nd²)；D 错误，普通受限卷积的路径长度不是 O(log_k n)。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「受限卷积（Restricted/Regular Convolution）的路径长度为 O(n/k)，而非对数级」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「Self-Attention 层的顺序操作数为 O(…」「Self-Attention 层中任意两个位置之间的…」等 2 项成立；并排除「当序列长度 n 远大于特征维度 d（即 n > d）…」「单层受限卷积层（Restricted Convolu…」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "softmax-scaling-01",
@@ -555,7 +635,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C,D。点积方差=d_k；Softmax 饱和致梯度消失；1/√d_k 归一化方差维持梯度敏感。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「B：d_k 大时点积方差大幅增加导致输入到 Softmax 的值极大或极小」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「假设 q 和 k 的各分量为独立均值 0 方差 1 …」「当 d_k 很大时」等 4 项成立。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "mha-heads-01",
@@ -590,7 +675,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,D。多子空间并行+计算量不变+不同 Head 学不同模式；C 错误 h 有上限不是越大越好。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明多头注意力的设计取舍及其与单头全维注意力的计算量等价性",
+      "reasoningGoal": "先确认多子空间使模型能同时从不同表征维度与不同位置关注信息、克服单头过度平均的缺点；再由 d_k=d_model/h 推出总计算复杂度与单头全维基本相同；并确认不同 Head 可学到不同类型的句法或语义关联，排除「h 越大越好、能线性提升 GPU 利用率」。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "causal-mask-01",
@@ -623,7 +713,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。Softmax 之前填 -inf 使 e^{-inf}=0 权重恰好为零。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「因果掩码应在 Softmax 计算之前将未来位置的 Score 设为负无穷（工程上常为 -10^9 或 -inf），使得 e^{-inf}=0 在 Softmax 后权重为零」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「实施因果掩码时应在 Softmax 函数计算之前将注…」成立；并排除「实施因果掩码时应在 Softmax 函数计算输出之后…」「如果在 Decoder 训练时忘记加因果掩码」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "long-context-attn-01",
@@ -658,7 +753,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,D。N=128K 单头 FP16 ≈32GB；FlashAttention 将 HBM 从 O(N²) 降至 O(N)。C 错误 N≫D 时 Attention 远超 FFN。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能估算 N=128K 超长序列下注意力的时间与显存瓶颈，并说明 FlashAttention 的缓解思路",
+      "reasoningGoal": "先确认 QK^T 的 O(N²·D) 随 N 二次方增长；再估算 N=128K 时单头 FP16 注意力矩阵约 128000²×2 bytes ≈ 30+ GB，极易 OOM；并说明 FlashAttention 通过 Tile 划分在 SRAM 分块计算 Softmax、把 HBM 中间矩阵从 O(N²) 降至 O(N)，排除「N≫D 时 FFN 显存显著超过 Self-Attention」。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "pe-perm-equivariance",
@@ -690,7 +790,12 @@
       "open": {
         "referenceAnswer": "正确答案 A。Self-Attention 具有置换等变性：输出随输入行置换而等变，无位置编码时无法区分 Token 位置。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Self-Attention 具有置换等变性（Permutation Equivariance）：输出的 Token 向量集合数值保持对应关系，但排列顺序随输入打乱而相应打乱」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「输出的 Token 向量集合数值保持对应关系」成立；并排除「乱序输入会使注意力权重趋向均匀」「输出结果完全失效」等不成立描述。"
+    },
+    "cognitiveTask": "predict"
   },
   {
     "id": "scale-factor-debug",
@@ -725,7 +830,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。方差膨胀→Softmax 饱和→梯度消失+溢出；D 错误与并行无关。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明遗漏 1/√d_k 缩放因子会引发的训练问题",
+      "reasoningGoal": "先确认 QKᵀ 点积方差随 d_k 线性增大；再推出 Softmax 被推入极小梯度的饱和区、引发梯度消失；并确认概率过度趋近 one-hot 降低表征能力，以及极值易造成浮点溢出或下溢，排除「注意力失去并行计算能力」。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "mha-subspace-tradeoff",
@@ -758,7 +868,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B。多子空间提升表达+计算量不变；C/D 错误不省显存也不省 FLOPs。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明 MHA 相对单头注意力的优势，以及它在显存与 FLOPs 上并未带来节省",
+      "reasoningGoal": "先确认多个独立子空间能捕捉多样化的语法与语义关系；再确认在总计算复杂度与参数量基本一致的前提下提升了表达能力；并排除「多头使反向中间状态显存成倍降低」与「多头能成倍降低前向总 FLOPs」。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "attn-complexity-core",
@@ -790,7 +905,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。时间 O(N²·D)，空间 O(N²)。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「这是长上下文场景的核心瓶颈，也是 FlashAttention 等优化技术的出发点」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「时间复杂度 O(N² · D)」成立；并排除「时间复杂度 O(N · D²)」「时间复杂度 O(N² · D²)」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "mask-parallel-training",
@@ -824,7 +944,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。-inf→Softmax 后零权重→Teacher Forcing 并行训练；D 错误因果掩码非 Padding 掩码。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明因果掩码的实现方式，以及它支撑 Teacher Forcing 并行训练的作用",
+      "reasoningGoal": "先确认 Softmax 前把未来 Token 位置的 Score 置为 -∞；再确认 Softmax 后未来位置权重精确为 0、防止偷看后续 Token；并确认它使 Decoder 训练时可一次性并行输入全序列，排除「因果掩码的主要目的是屏蔽 Padding Token」。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "rnn-vs-tf-compare",
@@ -858,7 +983,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B。并行训练+O(1) 路径是核心优势；C/D 错误推理不更快且 O(N²) 显存更大。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能区分 Transformer 相对 RNN 在训练并行性与长距离梯度传播上的优势及其代价",
+      "reasoningGoal": "先确认 Transformer 摆脱时间步顺序依赖、训练阶段可并行计算整个序列表征；再确认任意两 Token 信息传递路径为 O(1)、消除了 RNN 长序列下的梯度消失与信息衰减；并排除「推理生成单字时间复杂度天然低于 RNN 且无需维护历史状态」「超长序列下显存小于 RNN」。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "sdpa-scaling-mech",
@@ -892,7 +1022,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。Var(q·k)=d_k→Softmax 饱和→梯度消失；1/√d_k 归一化方差。D 错误：不影响 FLOPs。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能从方差角度推导 1/√d_k 缩放因子的必要性",
+      "reasoningGoal": "先由各分量独立同分布且方差为 1 推出 q·k 的方差等于 d_k；再说明不缩放时大绝对值使 Softmax 进入饱和区、引发梯度消失；并确认乘以 1/√d_k 把方差归一化回 1、避免数值溢出，排除「缩放是为了降低 FLOPs 与显存峰值」。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "mha-vram-tradeoff",
@@ -927,7 +1062,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。多子空间+计算量不变+h 倍 VRAM 开销；D 错误不消除 O(N²)。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明多头机制的收益以及它带来的激活显存代价",
+      "reasoningGoal": "先确认多头可同时关注不同位置与不同语义子空间、避免单头加权平均导致的语义模糊化；再由 d_k×h=d_model 推出总复杂度与同维度单头相当；并确认 h 个头需保存 h 个 N×N 矩阵使激活显存成倍增加，排除「多头消除了对 N 的二次方依赖」。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "attn-vs-rnn-complexity",
@@ -960,7 +1100,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。Self-Attention O(N²d)+O(1) 并行。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Self-Attention 单层总复杂度为 O(N²·d)（Score 矩阵 N² 乘 D 维），顺序步骤 O(1) 可全序列并行」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「Self-Attention 的单层总计算复杂度为 …」成立；并排除「Self-Attention 的单层总计算复杂度为 …」「RNN 的单层总计算复杂度为 O(N² · d)」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "causal-mask-cross-attn",
@@ -994,7 +1139,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,D。-inf→零权重→并行训练；Cross-Attention 无因果掩码限制。C 错误掩码使并行成为可能。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Cross-Attention 中 Decoder 可以关注 Encoder 整个源序列无掩码限制」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在 Softmax 计算之前将注意力得分矩阵中未来位…」「经过 Softmax 之后未来位置的注意力权重归零确…」等 3 项成立；并排除「该掩码机制使得 Decoder 在训练阶段必须退化为…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "preln-vs-postln-compare",
@@ -1030,7 +1180,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。Post-LN 不稳+依赖 Warmup；Pre-LN 稳定但极限泛化略低。D 错误方向反了。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能对比 Post-LN 与 Pre-LN 在训练稳定性与极限性能上的取舍",
+      "reasoningGoal": "先确认 Post-LN 在残差主干直接叠加未归一化的子层输出、深层易梯度爆炸或消失；再确认它对初始化高度敏感、通常必须依赖学习率 Warmup；并说明 Pre-LN 把 LN 移到子层输入前、保持恒等映射路径使梯度顺畅传导而提升稳定性，同时承认其极限泛化通常略低于充分调优后的 Post-LN。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "embed-scaling-share",
@@ -1065,7 +1220,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。权重绑定省参数正则化；√d_model 放大语义防 PE 掩盖；几何映射一致。D 错误放大非压缩。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明 Embedding 与 Pre-Softmax 权重共享以及乘 √d_model 的设计理由",
+      "reasoningGoal": "先确认源/目标 Embedding 与 Pre-Softmax 投影共享权重把词表相关参数从 3Vd 降到约 Vd、起正则化并防过拟合；再由 Embedding 初始方差约 1/d_model 与 PE 幅度在 [-1,1] 推出乘 √d_model 是为放大词向量、防止语义被位置信号掩盖；并确认共享强制输入嵌入空间与输出概率空间几何一致，排除「把方差压缩至 0」。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "sdpa-omit-scaling",
@@ -1099,7 +1259,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B。方差膨胀→one-hot 饱和→梯度消失；C 错误是尖锐非均匀；D 错误维度不受影响。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能从训练异常现象反推删除 √d_k 缩放的后果",
+      "reasoningGoal": "先由 QKᵀ 点积数值随 d_k 增大推出 Softmax 进入饱和区、引发梯度消失；再确认概率分布过度陡峭接近 one-hot、削弱同时关注多个相关 token 的能力；并排除「分布趋于均匀导致无法聚焦」与「矩阵维度不匹配直接抛 RuntimeError」。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "mha-param-calc",
@@ -1131,7 +1296,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。MHA 与单头全维的参数量和 FLOPs 均为 4·d_model² 完全一致。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「方案一：8 个头的 Q/K/V 投影各为 512×64 共 8×3×512×64=3×512²」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「方案一与方案二的投影参数总量和总计算复杂度基本一致」成立；并排除「方案一的投影参数总量和总 FLOPs 是方案二的 8…」「方案一参数量是方案二的 8 倍但由于多头可并行计算计…」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "mask-remove-debug",
@@ -1165,7 +1335,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,C。训练 Loss 骤降=数据泄漏；推理崩塌=训练推理不一致。B 无形状错误 D 无法并行。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能从训练与推理现象定位 Decoder 因果掩码被移除",
+      "reasoningGoal": "先由无掩码时当前位置可直接看到未来真实 token 推出训练 loss 异常迅速降到接近 0，属典型数据泄漏；再确认推理时没有未来信息可用、模型生成严重崩塌并产生重复或无意义文本；并排除「因掩码缺失触发张量形状不匹配」与「推理可并行多 token 生成」。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "crossattn-qkv-flow",
@@ -1197,7 +1372,12 @@
       "open": {
         "referenceAnswer": "正确答案 B。Q=Decoder 当前状态（查什么）；K/V=Encoder 编码（被查内容）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「这种设计使得 Decoder 每步生成都能检索源序列的全部上下文信息」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「Q 来自 Decoder 前一层（Masked Se…」成立；并排除「Q 来自 Encoder 顶层的输出 K 和 V 来…」「Q/K/V 均来自 Encoder 顶层的输出 De…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "rnn-to-tf-migration",
@@ -1233,7 +1413,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。训练并行+推理串行+O(N²) 显存；D 错误不天然优于 Encoder-only。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能评估 RNN 迁移到 Transformer 在训练与推理阶段的真实性能特征",
+      "reasoningGoal": "先确认训练阶段 Encoder 与 Decoder 借助 Teacher Forcing 均可并行处理整条序列、摆脱时间步递推；再确认自回归推理阶段仍需逐 Token 串行生成；并确认 O(N²) 使长文本显存增长显著快于 RNN 的 O(N)，排除「Decoder 推理延迟与吞吐天然优于 Encoder-only」。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "attn-vs-seq-models",
@@ -1269,7 +1454,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C。路径O(1)+并行+动态全局；D 错误 N≫d 时 SA 计算量反超 RNN。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能对比 Self-Attention、RNN 与 CNN 在依赖路径长度、并行性与感受野上的差异",
+      "reasoningGoal": "先确认 Self-Attention 把任意两位置的最大信号传播路径降到 O(1) 而单层 RNN 为 O(N)；再确认训练可在时间维全并行、消除对逐步隐状态传递的依赖；并确认相比 CNN 的固定局部感受野它能按内容动态计算全局交互权重，排除「N≫d 时 Self-Attention 复杂度低于 RNN」。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "attn-scaling-memory",
@@ -1305,7 +1495,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,B,C,D。O(N²d) 计算+O(N²) 存储+N×4→×16+检索增强动机=降亚二次。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能推算上下文窗口扩大时注意力计算量与显存的二次方增长，并说明亚二次方案的动机",
+      "reasoningGoal": "先确认生成 Score 矩阵的浮点运算为 O(N²·d)；再确认反向传播需保存 Softmax 前的原始注意力矩阵、占 O(N²) 激活显存；并推出 d 不变而 N 扩到 4 倍时计算量与显存均扩到 16 倍，从而说明检索增强与线性注意力等把复杂度降到子二次级别的工程动机。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "enc-vs-dec-scenario",
@@ -1340,7 +1535,12 @@
       "open": {
         "referenceAnswer": "正确答案 A,C。双向注意力适合语义检索与 Token 分类；不适合生成类任务。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断哪些工业场景应优先选择双向编码器架构，并说明其核心机制原因",
+      "reasoningGoal": "先确认双向自注意力能同时融入上下文两侧信息、生成更高质量的全句表征，故适合密集向量表示与语义检索；再由无掩码的全局上下文能提供准确词界与语义约束，推出它适合 NER 等 Token 级分类；并排除开放式对话生成与低延迟流式文本生成，因为双向编码器无法自回归生成。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "flash-attn-io-mechanism",
@@ -1374,6 +1574,11 @@
       "open": {
         "referenceAnswer": "正确答案 C（错误选项）。FlashAttention 是精确 Attention 不做近似删减。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「性能飞跃纯粹来自访存算子融合与 SRAM 分块重计算」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此确认「FlashAttention 改变了 Attenti…」成立；并排除「在 SRAM 中分块计算局部点积并利用 Online…」「反向传播时不保存 N×N 注意力权重矩阵而是利用全局…」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   }
 ]

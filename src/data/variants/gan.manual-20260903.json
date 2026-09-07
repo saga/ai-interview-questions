@@ -17,7 +17,11 @@
         "generatedAt": 1788443225257,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-12de789e"
+        "sourceHash": "fnv1a-afae9e18",
+        "assessment": {
+          "target": "能逐项判断下列主张是否成立，核心判断为「训练初期，生成器生成的样本质量较低，判别器 D 能轻易判别其为伪造样本，导致 D(G(z)) 接近 0」",
+          "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「当 D(G(z)) 趋近于 0 时」「工程上通常把生成器目标从最小化 log(1 - D(…」等 2 项成立；并排除「调整后的非饱和目标（Non-saturating l…」「修改后的生成器损失函数改变了对抗博弈的全局极小值点」等不成立描述。"
+        }
       }
     ],
     "gan-vs-mcmc-comparison-canonical": [
@@ -34,7 +38,11 @@
         "generatedAt": 1788443225258,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-0b74fd42"
+        "sourceHash": "fnv1a-125ae48a",
+        "assessment": {
+          "target": "能判断「其生成过程仅需将先验噪声通过生成器网络执行一次单向前向传播即可获得生成样本，无需 Markov 链的反复迭代混合（Mixing）」",
+          "reasoningGoal": "先对齐待比较对象的可比维度；据此给出「其生成过程仅需将先验噪声通过生成器网络执行一次单向前…」这一结论并说明依据；并排除「推理采样时仅需对噪声进行一次前向神经网络计算」「避开了无向图模型中全局配分函数（Partition …」等不成立描述。"
+        }
       }
     ],
     "gan-vs-nce-comparison-canonical": [
@@ -51,7 +59,11 @@
         "generatedAt": 1788443225258,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-f041650d"
+        "sourceHash": "fnv1a-400de2a1",
+        "assessment": {
+          "target": "能判断「NCE 使用固定噪声分布（Fixed Noise Distribution）作为分类背景，这导致当模型学到真实分布的局部特性后，固定噪声无法继续提供强的区分信号，学习效率下降」",
+          "reasoningGoal": "先对齐待比较对象的可比维度；据此给出「NCE 使用固定噪声分布（Fixed Noise D…」这一结论并说明依据；并排除「NCE 依赖预设且不可变的噪声分布（Fixed No…」「GAN 的对抗样本分布由生成网络根据博弈状态动态生成…」等不成立描述。"
+        }
       }
     ]
   }

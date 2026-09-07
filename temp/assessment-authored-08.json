@@ -1,0 +1,87 @@
+[
+  {
+    "id": "agent-tool-mcp-01",
+    "target": "能为需动态接入数十种跨语言分布式第三方服务的 Agent 工具层选出符合工程最佳实践的扩展架构",
+    "reasoningGoal": "先确认约束是跨语言、分布式、可动态接入且要保持系统解耦与受控安全；再确认统一标准协议（如 MCP）把工具能力封装为标准化微服务、通过受控 RPC/JSON-RPC 完成工具发现与上下文注入；并排除把 API 调用代码硬编码进 System Prompt、赋予宿主机 Root 权限、以及工具返回改用无 schema 的紧凑二进制。"
+  },
+  {
+    "id": "selfharness-runtime-mechanisms-01",
+    "target": "能区分 Harness 层的运行时干预策略与单纯的语言提示或参数化微调",
+    "reasoningGoal": "先确认 Harness 干预是在工具层或环境交互拦截点做的非参数化工程控制；再认出环境变量持久化中间件、子 Agent 拆分与协同编排、工具返回异常时的强制校验与提示回调都属于此类；并排除动态微调基座模型注意力层参数这种参数化手段。"
+  },
+  {
+    "id": "posttraining-2026-001",
+    "target": "能判断何时该优先增加 SFT 数据、何时该先优化 Prompt，以及过度 SFT 如何把行为限制得更死",
+    "reasoningGoal": "先按失败成因分流：需要稳定学会新格式、语气或领域知识且 Prompt 在长尾样本上难保持一致时加高质量 SFT 数据；若不稳定源于 Prompt 措辞不清或上下文缺失则先优化 Prompt；并指出临时适配且样本分布频繁变化时过度 SFT 会过拟合演示行为、缩小策略空间，排除「SFT 数据越多泛化一定越强」。"
+  },
+  {
+    "id": "posttraining-2026-002",
+    "target": "能说明 DPO 相比 RLHF+PPO 省去了哪些组件，以及它为何仍能利用偏好对学习",
+    "reasoningGoal": "先确认 DPO 不再单独训练 Reward Model，也不需要价值网络与在线采样奖励；再说明它通过奖励重参数化把 Bradley-Terry 偏好概率写成策略与参考策略差异的 logistic 损失；并确认冻结的参考策略作为正则项，使仅靠 chosen/rejected 对即可直接优化策略。"
+  },
+  {
+    "id": "posttraining-2026-003",
+    "target": "能说明 GRPO 不显式训练 value model 时如何估计同一组采样结果的相对优势",
+    "reasoningGoal": "先确认 GRPO 对每个 prompt 采样 G 条回复，用这组奖励的组内均值与标准差标准化优势；再说明组内归一化本质是把同一 prompt 的多条样本互为基线，从而省掉独立 critic；并排除「仍需小 value 头」与「完全跳过 baseline、直接把奖励当损失梯度」两种说法。"
+  },
+  {
+    "id": "posttraining-2026-004",
+    "target": "能说明代码任务中 programmatic reward 相比 LLM judge 的优势与局限",
+    "reasoningGoal": "先确认程序化奖励来自确定性测试，方差低、信号干净，且噪声与可博弈性比 LLM judge 更可控、成本更低；再指出它只适用于存在自动验证器的任务、开放性问题奖励稀疏；并承认验证器自身的 bug 会被策略利用为 reward hack，排除「能覆盖所有开放式写作任务」与「应优先用 LLM judge」。"
+  },
+  {
+    "id": "posttraining-2026-005",
+    "target": "能在 reward 持续上升而真实 benchmark 下降时定位 reward hacking 与分布偏移",
+    "reasoningGoal": "先怀疑策略在利用验证器或格式漏洞而非真正提升能力；再检查策略是否已偏离训练分布、导致线上分布泛化变差；并用拆解 reward 成分、held-out 评测观察、人工检查 rollout 轨迹中的捷径行为来定位，排除把它当经典过拟合并加大学习率的处理方式。"
+  },
+  {
+    "id": "posttraining-2026-006",
+    "target": "能说明为何高质量数据优于简单扩量，并识别合成数据开始降低收益的信号",
+    "reasoningGoal": "先确认高质量、多样、清洗充分的数据往往比盲目扩大合成数据更能提升下游效果；再说明当规模增长而收益递减甚至转负、风格趋同、多样性塌陷即表明出现合成数据饱和；并用 held-out 回归与生成样本同质化作为监控信号，排除「合成数据越多越好、模型会自动去噪」。"
+  },
+  {
+    "id": "posttraining-2026-007",
+    "target": "能从探索角度解释过度 SFT 的 checkpoint 为何更难通过后续 RL 学到新策略",
+    "reasoningGoal": "先确认过度 SFT 使策略贴合演示分布、压缩了策略空间与覆盖率；再说明其策略熵偏低、行为更确定，RL 难以通过随机探索发现新策略；并据此主张为需要后续 RL 的任务保留更具探索性的 checkpoint，排除「过度 SFT 抬高策略熵导致梯度噪声过大」。"
+  },
+  {
+    "id": "posttraining-2026-008",
+    "target": "能从 rollout workers、生成吞吐、策略版本与数据新鲜度分析 GRPO 相对 SFT 的推理系统开销",
+    "reasoningGoal": "先确认 GRPO 需大规模 rollout 生成大量采样轨迹，必须部署 rollout workers 并保障 generation throughput；再由 rollout 与训练异步推出不同批次轨迹可能来自不同 policy 版本、产生 version drift；并说明 on-policy 与 off-policy 偏离及轨迹 staleness 会影响收敛，排除「与 SFT 一样只需单卡前向、无额外系统开销」。"
+  },
+  {
+    "id": "posttraining-2026-009",
+    "target": "能区分专项 post-training 后的必要 specialization 与不希望出现的灾难性遗忘",
+    "reasoningGoal": "先确认不能只看数学 benchmark，需在通用能力与安全 held-out 评测上同时观察对话与指令遵循是否退化；再按损失范围判定：仅目标能力上升且通用与安全损失在可接受范围内属必要 specialization，多维度广泛回归则属灾难性遗忘；排除「数学提升则通用下降必然合理」的推断。"
+  },
+  {
+    "id": "posttraining-2026-010",
+    "target": "能说明 post-training 实验为何必须同时观察目标能力、通用能力、安全与 OOD 泛化",
+    "reasoningGoal": "先确认只盯目标 benchmark 会漏掉 reward hacking、能力遗忘与安全退化；再加入 OOD 泛化以判断策略是否只是在训练分布上过拟合而非真正学会能力；并确认安全维度必须单独评估，不会随目标能力提升而自动保持。"
+  },
+  {
+    "id": "ai-fund-015",
+    "target": "能修正「训练数据增加 10 倍则效果提升 10 倍」的预期并给出正确的分析框架",
+    "reasoningGoal": "先确认 scaling law 下收益呈幂律且边际递减、远小于线性；再把实际增益归因到新增数据的新颖性与质量以及 compute 配比；并承认任务上限约束，主张依据实测曲线设定目标，排除「能力与数据量严格成正比」「只由参数量决定」「超规模后必然损害泛化」。"
+  },
+  {
+    "id": "rlhf-vs-cai-alignment",
+    "target": "能区分 RLHF 与宪政 AI 在反馈来源与评估机制上的差异",
+    "reasoningGoal": "先确认 RLHF 依赖人工对候选输出的偏好排序训练奖励模型，再用 PPO 或 DPO 更新权重；再确认宪政 AI 把对齐准则显式写成文本宪法，让模型据其自评与修改以生成合成对齐数据；并说明 AI 反馈替代或减少大规模人工标注从而提升可扩展性与透明度，排除「文本原则能彻底消除过度拒绝」。"
+  },
+  {
+    "id": "sft-catastrophic-forget",
+    "target": "能在强化 Agentic 编程能力的同时选出防止灾难性遗忘的 SFT 工程做法",
+    "reasoningGoal": "先确认目标是既强化新领域又维持通用能力；再采用混入前序阶段重放数据、把学习率降至前序峰值约 30%、把训练周期控制在 1 个 epoch 的组合；并排除冻结所有 Attention 只更新 FFN 这种会严重限制新领域学习的做法。"
+  },
+  {
+    "id": "pp-1f1b-bubble-calc",
+    "target": "能按标准 1F1B 调度算出流水线气泡时间占比约为 17.9%",
+    "reasoningGoal": "先写出总时间 T=(M+P-1)(tf+tb)、有效计算 M(tf+tb)、气泡 (P-1)(tf+tb)；再代入 P=8、M=32 得比例 (P-1)/(M+P-1)=7/39≈17.95%；并排除 8.3%、21.9%、33.3% 等误算结果。"
+  },
+  {
+    "id": "dpo-vs-ppo-compare",
+    "target": "能对比 DPO 与 PPO 在架构复杂度、数据使用方式与信用分配上的差异",
+    "reasoningGoal": "先确认 DPO 把 RL 目标重构为隐式 reward 的解析表达，省去 Critic/Reward 网络从而降低显存与框架复杂度；再确认它是 off-policy、可直接用静态偏好数据集更新而无需在线采样；并承认缺少价值迭代使其难以处理多步环境反馈的精准信用分配，同时排除「DPO 因高噪声偏好数据而极易产生 Reward Hacking」的表述。"
+  }
+]

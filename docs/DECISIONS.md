@@ -51,6 +51,9 @@
   1. **canonical 身份不可变**：`id` 绑定 assessment contract（`topic × angle × difficulty`，
      与 `src/domain/questionIdentity.ts` 的 `AssessmentContract` 同口径；认知差异经由 `angle` + 题面表达，
      不另设独立 `cognitiveTask` 字段）。
+     ⚠️ **已被 ADR-077 取代**：contract 现为**四维** `topic × angle × difficulty × cognitiveTask`
+     （`cognitiveTask` 已作为第四维进入 schema / identity / sourceHash / Learner evidence / adaptive 排序）。
+     本条保留为历史记录，当前口径以 `ARCHITECTURE.md` 与 ADR-077 为准。
      改变任一项必须 fork 新 canonical（`deriveCanonicalId` 分配 `<topic>-<angle>-<NN>` + `derivedFrom` 指回原题），
      禁止原地改写沿用原 ID。新域模块 `src/domain/questionIdentity.ts`（`assessmentContractOf` / `isAssessmentChange` / `deriveCanonicalId` + 单测）；
      `fill-coverage-gap` skill 第 4 步改写为 fork 语义；`Question` 新增可选 `derivedFrom`（`bank.test.ts` 断言其指向库内已有题）；

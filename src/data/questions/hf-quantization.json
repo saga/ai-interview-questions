@@ -33,7 +33,12 @@
       "open": {
         "referenceAnswer": "顺序：结构压缩→4-bit 量化(MXFP4)→healing 恢复能力。healing 是轻量后训练/蒸馏，非从头预训练。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「压缩与量化会系统性降低推理、数学、代码等能力，因此部署前需一个轻量的修复（healing）步骤恢复能力」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「先移除 layer/head/neuron 等结构削…」「压缩与量化会系统性降低推理、数学、代码等能力」等 2 项成立；并排除「修复（healing）指的是把模型重新从头预训练一遍…」「量化必须在结构压缩之前完成」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "quant-qah-02",
@@ -70,7 +75,12 @@
       "open": {
         "referenceAnswer": "QAT：fake-quant+任务损失微调，贵且不稳(9B 实验 step700 峰后暴跌~19pt)。QAH：原始模型为冻结教师、KL 跨架构蒸馏，快~7x 且稳定。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「QAT 在前向中插入 fake-quantization 并用任务损失微调，使权重适应低精度」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「QAT 在前向插入 fake-quantizatio…」「QAH 以压缩前原始全精度模型为冻结教师」等 3 项成立；并排除「QAH 在整体耗时上比 QAT 慢约 7 倍」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "quant-qah-03",
@@ -107,7 +117,12 @@
       "open": {
         "referenceAnswer": "QAD 需同架构全精度教师；结构压缩后只剩退化 bf16 教师→学生上限被锚定。QAH 用原始模型为教师跨架构蒸馏，不受限。QAD 仅量化时有效。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「QAD 需要同架构的全精度教师来对齐 logits」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「QAD 需同架构全精度教师」「QAH 直接以压缩前的原始模型为冻结教师跨架构蒸馏」等 3 项成立；并排除「QAH 与 QAD 在做法上完全等价」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "quant-qah-04",
@@ -144,7 +159,12 @@
       "open": {
         "referenceAnswer": "成立：4-bit 在多基准超同尺寸 bf16(AIME2025/LiveCodeBench)；60B 4-bit 参数半/内存~1/4 且 LiveCodeBench 超 120B 教师。但非全胜(MMLU-Pro/SciCode 微落后)。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「多个基准上 4-bit 学生超过了同尺寸 16-bit（bf16）恢复版（如 AIME 2025、LiveCodeBench）」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「多个基准上 4-bit 学生反超同尺寸 16-bit…」「相比 120B 教师」等 3 项成立；并排除「4-bit 在全部基准上都严格优于 16-bit」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "quant-qah-05",
@@ -179,7 +199,12 @@
       "open": {
         "referenceAnswer": "4-bit 仍微幅落后：MMLU-Pro/SciCode 低<1.5pt；未 healing 退化更大。4-bit 非绝对优、也非不影响精度。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「若量化时未做 healing（修复），能力退化会更大、落后更多」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在 MMLU-Pro、SciCode 等知识类基准上」「若量化时未做 healing 修复」等 2 项成立；并排除「4-bit 在任何基准上都绝对优于 16-bit」「4-bit 量化只影响推理速度」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "quant-qah-06",
@@ -213,6 +238,11 @@
       "open": {
         "referenceAnswer": "约 8 倍：参数减半(~2x) 叠加 4-bit 相对 bf16 的计算节省，合计~8x；权重内存~1/4。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「参数减半使每 token 计算约减半，叠加 4-bit 相对 bf16 的精度-计算节省，合计约 8 倍」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此确认「约 8 倍：参数减半使每 token 计算约减半」成立；并排除「约 1 倍」「约 2 倍」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   }
 ]

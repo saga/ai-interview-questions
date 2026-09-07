@@ -24,6 +24,23 @@ export const variantGeneratorSchema = z.enum(['offline', 'runtime']);
 export type VariantGenerator = z.infer<typeof variantGeneratorSchema>;
 
 /**
+ * 变体模式（plan0907 P1-1 方案 A / ADR-077）——两类变体**不是同一件事**，此前只在注释里区分，
+ * 代码与 schema 都把它们当同一种东西，导致「runtime 能改测量面」的歧义长期存在：
+ *
+ *   - `assessment`（generator = offline，离线池资产）：**Assessment Variant**。
+ *     可自声明 `angle / cognitiveTask / assessment`，即「同一 Knowledge 的不同 reasoning path 测量」。
+ *   - `presentation`（generator = runtime，运行时兜底）：**Presentation Variant**。
+ *     只改写表达，**结构上不允许**声明测量面 ⇒ assessment identity 恒等于 canonical。
+ */
+export const variantModeSchema = z.enum(['presentation', 'assessment']);
+export type VariantMode = z.infer<typeof variantModeSchema>;
+
+/** 由来源推导模式（单一推导口，避免各处各写一次 if）。 */
+export function variantModeOf(v: Pick<QuestionVariant, 'generator'>): VariantMode {
+  return v.generator === 'runtime' ? 'presentation' : 'assessment';
+}
+
+/**
  * 单条题目变体（已校验，可落地）。
  * id 为变体自身稳定 id（格式建议 `${questionId}__${kind}__${seq}`，如 `q-123__surface-options__0`），
  * 与 canonical Question.id 不同——用于 seenVariantIds 去重与 telemetry 归因。
@@ -54,7 +71,32 @@ export const questionVariantSchema = z.object({
   promptVersion: z.string().min(1),
   /** canonical 题目内容指纹（FNV-1a），用于检测 canonical 已变更导致的 stale 变体。 */
   sourceHash: z.string().min(1),
-});
+})
+  // 两类变体的硬边界（P1-1 方案 A）：runtime = Presentation Variant，**不允许**声明测量面。
+  // 只靠「GeneratedVariant 类型上没有这些字段」来约束是不够的——一旦有人把池条目
+  // （有这些字段）喂给 runtime 通道，或反过来给 runtime 条目补上测量面，契约就悄悄破了。
+  // 放在 schema 里，任何一条 runtime 变体带测量面都直接落不了库。
+  .superRefine((v, ctx) => {
+    if (v.generator !== 'runtime') return;
+    const claimed = (
+      [
+        ['angle', v.angle],
+        ['cognitiveTask', v.cognitiveTask],
+        ['assessment', v.assessment],
+      ] as const
+    )
+      .filter(([, value]) => value !== undefined)
+      .map(([key]) => key);
+    if (claimed.length === 0) return;
+    ctx.addIssue({
+      code: 'custom',
+      path: [claimed[0]],
+      message:
+        `runtime variant 是 presentation variant，不得声明测量面（${claimed.join(' / ')}）：` +
+        `运行时只做表达改写，assessment identity 必须恒等于 canonical；` +
+        `需要换测量面的变体必须走离线池（generator=offline）。`,
+    });
+  });
 export type QuestionVariant = z.infer<typeof questionVariantSchema>;
 
 /** 变体池：多个 batch 文件经前端/离线合并后的内存形态。 */

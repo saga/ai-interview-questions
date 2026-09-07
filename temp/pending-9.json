@@ -1,0 +1,290 @@
+[
+  {
+    "seq": 136,
+    "kind": "question",
+    "id": "mha-complexity-01",
+    "topic": "self-attention",
+    "angle": "calculation",
+    "question": "在标准 Multi-Head Self-Attention（MHA）中，假设输入序列长度为 N，隐层维度为 d_model，头数为 h，每个头的维度 d_k = d_model/h。针对单层 MHA 的计算量与中间激活显存开销，下列分析正确的有？（多选）",
+    "explanation": "A 正确：投影矩阵总复杂度为 O(N·d_model²)。B 正确：所有头的 Score 计算合计为 O(N²·d_model)。C 正确：保存完整注意力权重矩阵用于反向传播的空间为 O(h·N²)。D 错误：当 N≫d_model 时，二次方项 O(N²·d_model) 和空间项 O(h·N²) 占据绝对主导。",
+    "correct": [
+      "线性投影计算 Q,K,V 及最终输出投影 W_O 的总计算复杂度为 O(N·d_model²)",
+      "计算所有头的 Attention Score 及其与 V 相乘的总计算复杂度为 O(N²·d_model)",
+      "在没有 FlashAttention 等融合技术时，反向传播必须保存完整注意力权重矩阵，显存空间复杂度为 O(h·N²)"
+    ],
+    "distractors": [
+      "当 N≫d_model 时，整体瓶颈主要由投影矩阵的参数量决定而非序列长度的二次方项"
+    ]
+  },
+  {
+    "seq": 137,
+    "kind": "question",
+    "id": "seq2seq-arch-01",
+    "topic": "transformer",
+    "angle": "design",
+    "question": "在设计一个低延迟、高吞吐的工业级多语言实时翻译系统时，需要在经典 Transformer Encoder-Decoder 与 Decoder-Only 架构之间做技术选型。关于两者的对比与选型考量，下列分析最科学的是？",
+    "explanation": "A 正确：Encoder-Decoder 对源语言双向并行提取语义且 Encoder KV 在解码时不占用自回归窗口，专用翻译任务上参数效率与推理延迟通常优于 Decoder-Only。B 错误：Decoder-Only 在 Prefill 后同样可复用 KV Cache。C 错误：Cross-Attention 同样支持张量并行。D 过于绝对且不符合实际。",
+    "correct": [
+      "Encoder-Decoder 处理源语言时可并行提取全向双向语义，Encoder 的 KV 解码时不占自回归窗口，特定 Seq2Seq 任务上参数效率与开销通常优于 Decoder-Only"
+    ],
+    "distractors": [
+      "Decoder-Only 架构在翻译时必须将源语言与目标语言拼接为单个序列统一输入模型，因此完全无法使用 KV Cache 优化，其推理延迟远高于同等规模的 Encoder-Decoder 架构",
+      "Encoder-Decoder 由于引入了 Cross-Attention 模块，导致其无法在 GPU 上利用张量并行进行多卡拆分与加速，因此工程上更难做横向扩展并会拖慢整体训练吞吐",
+      "在任何 Seq2Seq 场景下，Decoder-Only 的推理吞吐量均严格达到 Encoder-Decoder 的 10 倍以上，因为省去了独立编码器带来的固定计算与显存开销，性能优势绝对成立"
+    ]
+  },
+  {
+    "seq": 138,
+    "kind": "question",
+    "id": "mha-heads-01",
+    "topic": "attention",
+    "angle": "tradeoff",
+    "question": "Transformer 采用多头注意力机制将 Q/K/V 分别通过 h 组线性投影映射到低维子空间后并行计算注意力。设 d_k = d_v = d_model/h。关于 MHA 的设计取舍与机制，下列哪些说法是正确的？（多选）",
+    "explanation": "A 正确：多子空间允许模型同时从不同表征维度关注信息。B 正确：d_k=d_model/h 使总计算量与单头全维基本相同。D 正确：不同 Head 可学到不同类型的句法/语义关联。C 错误：h 过大导致每个 head 维度过小反而降低表征质量，GPU 利用率也不会线性提升。",
+    "correct": [
+      "将输入投影到 h 个低维子空间使模型能同时从不同的表征子空间和不同的位置关注信息，克服了单头注意力容易过度平均不同信息维度的缺点",
+      "由于设置了 d_k = d_model/h，多头注意力的总计算复杂度与在完整维度上执行单头注意力的总计算复杂度基本相同",
+      "每个 Head 在投影后执行独立的点积注意力计算，这使得不同 Head 可以分别学到不同类型的句法或语义关联"
+    ],
+    "distractors": [
+      "增加 Head 数量 h 可以无限制地提升模型表征能力，工程实践中 h 越大会线性提高 GPU 的计算利用率"
+    ]
+  },
+  {
+    "seq": 139,
+    "kind": "question",
+    "id": "long-context-attn-01",
+    "topic": "self-attention",
+    "angle": "calculation",
+    "question": "将 Standard Full Self-Attention 应用于超长文本处理（如 N=128,000）时需要评估资源瓶颈。设 N 为序列长度，D 为隐藏维度（D≪N），Batch Size=1，不使用 KV Cache。下列关于资源消耗的计算与判断哪些是正确的？（多选）",
+    "explanation": "A 正确：QK^T 时间 O(N²·D) 随 N 二次方增长。B 正确：N=128K 时单头 FP16 注意力矩阵占 128000²×2 bytes ≈ 30+ GB 极易 OOM。D 正确：FlashAttention 通过 Tile 划分在 SRAM 中分块计算将 HBM 中间矩阵从 O(N²) 降至 O(N)。C 错误：N≫D 时 Attention 层显存远超 FFN 层。",
+    "correct": [
+      "计算注意力得分矩阵 QK^T 的时间复杂度为 O(N² · D)，随序列长度 N 呈二次方增长",
+      "存储完整注意力权重矩阵的空间复杂度为 O(N²)，在 N=128k 时单头仅注意力权重的 FP16 显存占用就高达数十 GB 极易触发 OOM",
+      "FlashAttention 等算子融合技术的核心思路是利用 Tile 划分在 GPU SRAM 中分块计算 Softmax，将 HBM 的中间矩阵显存占用从 O(N²) 降低至 O(N)"
+    ],
+    "distractors": [
+      "由于 QK^T 的瓶颈主要源自序列长度 N，在 N≫D 的场景下 Feed-Forward Network 层的显存占用会显著超过 Self-Attention 层"
+    ]
+  },
+  {
+    "seq": 140,
+    "kind": "question",
+    "id": "scale-factor-debug",
+    "topic": "self-attention",
+    "angle": "debugging",
+    "question": "在计算 Self-Attention 权重时通常会将 QKᵀ 除以 √d_k。当 d_k 很大时若遗漏了该缩放因子，会导致模型训练出现哪些典型问题？（多选）",
+    "explanation": "A 正确：点积方差随 d_k 线性增大导致 Softmax 进入饱和区。B 正确：概率过于集中降低表征能力。C 正确：极值容易造成浮点溢出。D 错误：缩放因子与并行计算能力无关。",
+    "correct": [
+      "QKᵀ 的点积方差随 d_k 线性增大，导致数值送入 Softmax 后进入极小梯度的饱和区，引发梯度消失",
+      "Softmax 输出的概率分布过于趋近于极端的高峰（接近 One-Hot），注意力集中在极少数 Token 上，降低模型表征能力",
+      "点积极值过大容易造成指数运算中的浮点数溢出（Overflow）或下溢（Underflow）"
+    ],
+    "distractors": [
+      "导致 Attention 机制失去并行计算能力，反向传播必须退化为逐字串行求解"
+    ]
+  },
+  {
+    "seq": 141,
+    "kind": "question",
+    "id": "mha-subspace-tradeoff",
+    "topic": "attention",
+    "angle": "tradeoff",
+    "question": "Transformer 将 d_model 维向量投影到 h 个子空间分别计算 Attention 再拼接。相比于直接在原维度上计算单头 Attention，MHA 的主要优势与工程特性包括哪些？（多选）",
+    "explanation": "A 正确：多个独立子空间捕捉多样化语法语义关系。B 正确：d_k=d_model/h 使总计算量与单头全维基本一致。C 错误：反向传播中间状态显存不因拆分而减少。D 错误：总 FLOPs 不因多头而降低。",
+    "correct": [
+      "允许模型同时在不同位置的多个独立表征子空间关注信息，捕捉多样化的语法与语义关系",
+      "在维持总计算复杂度与参数量基本一致的前提下提升了模型表达能力"
+    ],
+    "distractors": [
+      "由于拆分为多个 Head，反向传播时不同 Head 的中间状态显存占用成倍降低",
+      "拆分为 h 个 Head 能成倍降低模型前向传播所需的总浮点计算量"
+    ]
+  },
+  {
+    "seq": 142,
+    "kind": "question",
+    "id": "mask-parallel-training",
+    "topic": "self-attention",
+    "angle": "mechanism",
+    "question": "在 Transformer Decoder 的 Self-Attention 层中，训练阶段必须引入因果掩码（Causal Mask）。关于该机制的工作原理及其工程作用，下列说法正确的有哪些？（多选）",
+    "explanation": "A 正确：Softmax 前将未来位置 Score 设为负无穷使 e^{-inf}=0。B 正确：Softmax 后未来位置权重精确为零防偷看。C 正确：因果掩码使得 Teacher Forcing 并行训练成为可能——全序列一次输入而非逐字自回归循环。D 错误：因果掩码屏蔽的是未来 Token 而非 Padding Token，二者是不同的掩码类型。",
+    "correct": [
+      "在计算注意力 Softmax 前将掩码矩阵中未来 Token 位置的 Score 设置为 -∞",
+      "经过 Softmax 运算后未来位置的注意力权重精确变为 0，防止模型在预测第 i 个 Token 时偷看后续 Token",
+      "使得 Decoder 在训练阶段无需像推理时那样逐字自回归循环生成，而是可以一次性并行输入全序列进行高效训练（Teacher Forcing）"
+    ],
+    "distractors": [
+      "该因果掩码的主要目的是屏蔽 Padding Token，以保证 Batch 内不同长度序列的计算对齐"
+    ]
+  },
+  {
+    "seq": 143,
+    "kind": "question",
+    "id": "rnn-vs-tf-compare",
+    "topic": "transformer",
+    "angle": "comparison",
+    "question": "相较于传统的循环神经网络（RNN/LSTM），Transformer 架构在大规模序列建模中展现出显著优势。以下关于两者在训练计算与梯度传播差异上的表述，正确的有哪些？（多选）",
+    "explanation": "A 正确：Transformer 摆脱了时间步顺序依赖可全序列并行训练。B 正确：任意两 Token 信息路径 O(1) 消除了 RNN 长序列下梯度消失/爆炸问题。C 错误：推理阶段 Transformer 逐 Token 自回归生成并不比 RNN 快，还需维护 KV Cache。D 错误：Transformer 的 O(N²) 注意力矩阵使超长序列显存远大于 RNN。",
+    "correct": [
+      "训练并行性：Transformer 摆脱了循环神经网络在时间步上的顺序依赖，训练阶段可并行计算整个序列的表征",
+      "长距离信息交互：Transformer 中任意两个 Token 之间的最大信息传递路径长度为 O(1)，消除了传统 RNN 在长序列下梯度消失/爆炸与信息衰减的问题"
+    ],
+    "distractors": [
+      "自回归推理速度：在推理生成阶段，Transformer 生成单字的时间复杂度天然低于 RNN，无需维护历史状态",
+      "长序列显存开销：Transformer 在处理超长序列时的内存开销随序列长度线性增加，比 RNN 的显存占用更小"
+    ]
+  },
+  {
+    "seq": 144,
+    "kind": "question",
+    "id": "sdpa-scaling-mech",
+    "topic": "self-attention",
+    "angle": "mechanism",
+    "question": "在自注意力计算中缩放因子 1/√d_k 具有关键作用。假设 q 和 k 的各分量独立同分布且均值为 0、方差为 1。下列关于该缩放因子的分析，正确的有哪些？（多选）",
+    "explanation": "A 正确：独立变量点积的方差为各分量方差之和即 d_k。B 正确：不缩放时大方差使 Softmax 进入饱和区引发梯度消失。C 正确：乘以 1/√d_k 将方差归一化回 1。D 错误：缩放因子是标量除法不改变 FLOPs 量级。",
+    "correct": [
+      "点积 q·k = Σq_i·k_i 的均值为 0，方差随着 d_k 的增加而呈线性增长（方差等于 d_k），这是独立同分布分量的基本统计性质",
+      "若不使用缩放因子，当 d_k 较大时点积结果的绝对值数量级变大会导致 Softmax 函数进入梯度极小的饱和区，进而引发梯度消失",
+      "乘以缩放因子 1/√d_k 能将点积结果的方差重新调整归一化为 1，维持 Softmax 输入在合理的数值范围内，避免数值溢出"
+    ],
+    "distractors": [
+      "引入缩放因子的主要目的是为了降低矩阵乘法 QKᵀ 的浮点计算复杂度，从而让大维度下的注意力计算在同等算力预算下跑得更快，并显著减少显存峰值占用"
+    ]
+  },
+  {
+    "seq": 145,
+    "kind": "question",
+    "id": "mha-vram-tradeoff",
+    "topic": "attention",
+    "angle": "tradeoff",
+    "question": "标准 Transformer 将 d_model 拆分为 h 个头并行计算注意力后拼接。相比于仅使用单头注意力，多头机制的优势与工程取舍包括哪些？（多选）",
+    "explanation": "A 正确：多子空间避免单头加权平均导致语义模糊化。B 正确：d_k×h=d_model 使总复杂度与单头相当。C 正确：h 个头需保存 h 个 N×N 注意力矩阵，激活值显存成倍增加——这是 FlashAttention 要解决的核心问题之一。D 错误：MHA 不消除 O(N²) 复杂度依赖。",
+    "correct": [
+      "允许多个注意力头同时关注不同位置、不同语义子空间的表征信息，避免了单头注意力因加权平均导致不同上下文语义信息的模糊化",
+      "在保持 d_k × h = d_model 的前提下多头机制的总计算复杂度与相同总维度下的单头注意力相当",
+      "增加头数 h 会成倍增加需要保存的注意力矩阵数量从而在前向传播中增加显存的激活值开销"
+    ],
+    "distractors": [
+      "多头注意力机制成功消除了自注意力计算中对序列长度 N 的二次方空间与时间复杂度依赖"
+    ]
+  },
+  {
+    "seq": 146,
+    "kind": "question",
+    "id": "preln-vs-postln-compare",
+    "topic": "transformer",
+    "angle": "comparison",
+    "question": "Transformer 中 LN 放置位置有两种主流设计。关于 Post-LN 与 Pre-LN 的对比与工程 Trade-off下列说法正确的有哪些？（多选）",
+    "explanation": "A 正确：Post-LN 残差主通路叠加未经归一化的输出深层易梯度爆炸/消失。B 正确：Post-LN 对初始化高度敏感必须依赖 Warmup 才能稳定收敛。C 正确：Pre-LN 保持恒等映射路径梯度顺畅传导显著提升深层稳定性。D 错误：Pre-LN 极限泛化性能通常略低于充分调优后的 Post-LN 而非高于——Pre-LN 用表达上限换训练稳定性。",
+    "correct": [
+      "Post-LN 的残差主干路径上直接叠加了未经归一化的子层输出在深层网络中容易发生梯度爆炸或消失使得训练极不稳定",
+      "Post-LN 架构对初始化高度敏感通常必须依赖严苛的学习率预热策略才能稳定收敛",
+      "Pre-LN 将 LN 移至子层输入前保持了残差主干的恒等映射路径梯度可以直接顺畅传导至浅层显著提升了深层网络的训练稳定性"
+    ],
+    "distractors": [
+      "Pre-LN 架构在不使用 Warmup 的情况下性能较差且在充分调优后其极限泛化性能通常显著高于 Post-LN"
+    ]
+  },
+  {
+    "seq": 147,
+    "kind": "question",
+    "id": "embed-scaling-share",
+    "topic": "transformer",
+    "angle": "design",
+    "question": "Transformer 中源语言 Embedding、目标语言 Embedding 以及 Pre-Softmax 线性投影层共享相同权重矩阵，且 Embedding 向量会乘以 √d_model。关于该设计的理解正确的有哪些？（多选）",
+    "explanation": "A 正确：三者共享权重从 3Vd 降至约 Vd 起正则化作用防词表过拟合。B 正确：Embedding 初始值方差约 1/d_model 而 PE 在 [-1,1]，乘以 √d_model 放大词向量量级防止语义被位置信号掩盖。C 正确：共享权重强制输入嵌入空间与输出概率空间保持几何映射一致性。D 错误：乘 √d_model 是放大不是压缩至零。",
+    "correct": [
+      "三者共享权重显著减少了模型与词表相关的参数量起到正则化和防止词表过拟合的作用",
+      "乘以 √d_model 是为了放大词向量的数值量级防止与幅度在 [-1,1] 之间的 Positional Encoding 相加时词向量的语义特征被位置信息掩盖",
+      "权重共享强制要求输入词嵌入空间与输出预测概率空间保持几何映射一致性"
+    ],
+    "distractors": [
+      "乘以 √d_model 是为了将词嵌入向量的方差压缩至 0 以加快 LayerNorm 的收敛速度"
+    ]
+  },
+  {
+    "seq": 148,
+    "kind": "question",
+    "id": "sdpa-omit-scaling",
+    "topic": "self-attention",
+    "angle": "debugging",
+    "question": "在实现大隐层维度 Self-Attention 时误删除了缩放因子 √d_k，模型训练过程中最可能出现哪些异常现象？（多选）",
+    "explanation": "A 正确：点积随 d_k 增大导致 Softmax 进入饱和区梯度消失。B 正确：概率过度陡峭削弱多 token 关注能力。C 错误：大方差导致分布更尖锐（接近 one-hot）而非均匀。D 错误：维度匹配不受缩放因子影响。",
+    "correct": [
+      "QKᵀ 的点积数值随 d_k 增大而变大导致 Softmax 输出进入极小梯度的饱和区引发梯度消失问题",
+      "Softmax 后的概率分布过度陡峭类似于 one-hot 削弱模型同时关注多个相关 token 的能力"
+    ],
+    "distractors": [
+      "Softmax 后的概率分布趋于均匀分布导致模型无法有效聚焦到关键 token",
+      "矩阵乘法 QKᵀ 与 V 的维度不匹配前向传播直接抛出 RuntimeError"
+    ]
+  },
+  {
+    "seq": 149,
+    "kind": "question",
+    "id": "mask-remove-debug",
+    "topic": "self-attention",
+    "angle": "debugging",
+    "question": "在开发基于 Encoder-Decoder 的序列生成模型时不慎移除了 Decoder 内部 Masked Self-Attention 中的上三角掩码矩阵。在 Teacher Forcing 训练及自回归推理阶段模型会表现出哪些现象？（多选）",
+    "explanation": "A 正确：无掩码时当前位置直接看到未来真实 token，Loss 异常快速降至接近零——这是数据泄漏的典型症状。B 错误：掩码只是数值填充移除后张量形状不变不会报错。C 正确：训练时学到了依赖未来信息的捷径推理时没有未来信息可用生成严重崩塌产生重复或无意义文本。D 错误：推理仍需自回归串行无法并行。",
+    "correct": [
+      "训练阶段的损失函数会异常迅速地下降到接近 0 因为当前位置可以直接看到未来位置的真实 token",
+      "推理阶段模型的生成性能会严重崩塌产生大量重复或不连贯的无意义文本"
+    ],
+    "distractors": [
+      "训练阶段前向传播会因为注意力矩阵掩码缺失而触发张量形状不匹配的错误",
+      "推理阶段模型能够突破单步串行限制实现多 token 的并行生成"
+    ]
+  },
+  {
+    "seq": 150,
+    "kind": "question",
+    "id": "rnn-to-tf-migration",
+    "topic": "transformer",
+    "angle": "comparison",
+    "question": "在评估将传统 RNN 替换为 Transformer 架构的工程方案时针对训练与推理场景的性能特征下列结论正确的是？（多选）",
+    "explanation": "A 正确：Transformer 借助 Teacher Forcing 可全序列并行训练摆脱 RNN 时间步递推。B 正确：推理阶段 Transformer Decoder 仍需逐 Token 自回归串行无法全序列一步并行。C 正确：O(N²) 注意力使长文本显存增长显著快于 RNN 的 O(N)。D 错误：Decoder-only 在推理延迟和吞吐上并不天然优于 Encoder-only——后者可一次编码源序列且无因果限制。",
+    "correct": [
+      "训练阶段 Transformer 的 Encoder 和 Decoder 借助 Teacher Forcing 均可并行处理整条序列摆脱了 RNN 的时间步递推依赖",
+      "在自回归推理阶段 Transformer Decoder 仍需单步串行生成下一个 token 无法做到全序列一步并行",
+      "Transformer 单层 Self-Attention 的时间与空间复杂度为 O(N²) 在长文本场景下显存占用增长显著快于 RNN 的 O(N)"
+    ],
+    "distractors": [
+      "移除 Recurrence 结构后 Transformer Decoder 在推理生成阶段的延迟和吞吐量表现天然优于 Encoder-only 模型"
+    ]
+  },
+  {
+    "seq": 151,
+    "kind": "question",
+    "id": "attn-vs-seq-models",
+    "topic": "transformer",
+    "angle": "comparison",
+    "question": "在处理长序列建模任务时 Self-Attention 相比传统 RNN 和 CNN 具备显著优势。下列关于三种架构在序列依赖建模和计算并行性上的对比哪些描述是正确的？（多选）",
+    "explanation": "A 正确：Self-Attention 路径 O(1) vs RNN O(N)。B 正确：训练阶段全并行消除 RNN 逐步隐状态传递。C 正确：Self-Attention 根据输入内容动态计算全局交互权重而 CNN 感受野固定局部。D 错误 N≫d 时 Self-Attention O(N²d) 显著高于 RNN O(Nd²)。",
+    "correct": [
+      "Self-Attention 将序列中任意两个位置之间的最大信号传播路径长度降至 O(1) 而标准的单层 RNN 路径长度为 O(N)",
+      "在训练阶段 Self-Attention 能够在时间维度上实现全并行计算消除了 RNN 在前向与反向传播时对逐步隐状态传递的依赖",
+      "相比具有固定局部感受野的标准 CNN Self-Attention 可以根据输入内容动态计算全局所有位置之间的交互权重"
+    ],
+    "distractors": [
+      "当序列长度 N 远大于隐藏层维度 d 时 Self-Attention 单层的计算复杂度显著低于 RNN 单层复杂度"
+    ]
+  },
+  {
+    "seq": 152,
+    "kind": "question",
+    "id": "attn-scaling-memory",
+    "topic": "self-attention",
+    "angle": "calculation",
+    "question": "在标准 Full Self-Attention 中设序列长度为 N 隐藏维度为 d。当扩充上下文窗口时关于其计算复杂度与显存占用的分析哪些项是正确的？（多选）",
+    "explanation": "A 正确 Score 矩阵浮点运算 O(N²·d)。B 正确 反向传播保存原始 Attention Matrix 占 O(N²) 激活显存。C 正确 N 扩大4倍→N²扩大16倍计算量和显存均变为16倍。D 正确 检索增强或线性注意力的动机就是将全局计算从 O(N²) 降至亚二次级别。",
+    "correct": [
+      "计算 Queries 和 Keys 点积生成注意力得分矩阵的浮点运算复杂度为 O(N² · d)",
+      "在反向传播时保存未经过 Softmax 的原始 Attention Matrix 需要占用 O(N²) 的激活显存空间",
+      "在隐藏维度 d 保持不变的情况下将序列长度 N 扩大到原来的 4 倍标准 Self-Attention 计算得分矩阵所需的计算量和显存消耗将分别扩大到原来的 16 倍",
+      "引入检索增强机制或线性注意力机制的主要工程动机之一就是将对长序列的全局计算复杂度从 O(N²) 降低到子二次级别"
+    ],
+    "distractors": []
+  }
+]

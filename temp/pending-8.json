@@ -1,0 +1,291 @@
+[
+  {
+    "seq": 119,
+    "kind": "question",
+    "id": "agent-tool-mcp-01",
+    "topic": "tool-calling",
+    "angle": "system-design",
+    "question": "在 AI Agent 的工具层（Tool Layer）扩展架构设计中，若需要支持 Agent 动态接入数十种跨语言、分布式部署的第三方服务（如身份认证、数据库查询、审计日志），同时保证系统解耦与受控安全，下列方案中最符合工程最佳实践的是？",
+    "explanation": "硬编码Prompt、Root权限、原始二进制均反模式；MCP标准化微服务+受控RPC为最佳。",
+    "correct": [
+      "采用统一的上下文与工具通信标准协议（如 MCP / Model Context Protocol），将工具能力封装为标准化微服务，通过受控 RPC/JSON-RPC 完成工具发现与上下文注入"
+    ],
+    "distractors": [
+      "将所有第三方 API 的具体调用代码硬编码写入 Prompt 的 System Message 中，让 LLM 直接使用底层 HTTP 库拼装请求",
+      "给 Agent 赋予宿主机 Root 权限，让 Agent 在运行时根据需要自主通过 Bash 命令行安装 SDK 并执行脚本",
+      "工具返回统一用紧凑二进制编码，结构化解析只在必要时做；二进制体积更小且无 schema 维护负担，适合高频调用。"
+    ]
+  },
+  {
+    "seq": 120,
+    "kind": "question",
+    "id": "selfharness-runtime-mechanisms-01",
+    "topic": "tool-calling",
+    "angle": "mechanism",
+    "question": "当智能体在复杂环境（如 Terminal CLI、软件工程 SWE-bench 或应用 API）中执行任务时，Harness 的演进往往会沉淀出针对特定模型弱点的运行时机制。下列哪些机制属于典型的 Harness 层干预策略而非单纯的语言提示补充？",
+    "explanation": "A 正确：通过在工具交互层实现环境变量持久化中间件，补充了纯 Stateless CLI 工具无法保持状态的缺陷，属于标准的 Harness 运行时控制逻辑。B 正确：子 Agent 解耦与任务编排逻辑属于 Harness 的架构层控制机制。C 正确：在工具层与环境交互拦截点设置运行时断言与强制提示回调，属于 Harness 的失败恢复与流程控制逻辑。D 错误：修改 Transformer 注意力权重参数属于参数化微调（Parametric Fine-tuning），不属于 Harness 层非参数化的工程干预策略。",
+    "correct": [
+      "在 Shell 命令执行层注入环境变量持久化中间件，确保连续的跨步骤命令能够共享运行时上下文",
+      "引入子 Agent 拆分与协同编排机制，将长流程复杂任务动态解耦为独立的子目标并由专门模块执行",
+      "在工具调用返回异常时插入强制校验规则，提醒智能体及时生成要求的交付产物以防止死循环"
+    ],
+    "distractors": [
+      "动态微调基座模型的 Transformer 注意力层参数，使其在面对结构化 JSON 返回时具备更高的解析精度"
+    ]
+  },
+  {
+    "seq": 121,
+    "kind": "question",
+    "id": "posttraining-2026-001",
+    "topic": "training",
+    "angle": "tradeoff",
+    "question": "什么时候应该优先增加 SFT 数据，而不是继续优化 Prompt？什么情况下继续做 SFT 反而可能把模型行为限制得更死？",
+    "explanation": "A 正确：当任务需要模型稳定学会某种新的输出格式、语气或领域知识，而仅靠 Prompt 难以在长尾样本上保持一致时，把能力内化进权重（加 SFT 数据）优先于反复调 Prompt。B 正确：若线上效果不稳定主要来自 Prompt 措辞不清或上下文缺失，应先优化 Prompt，而非盲目加 SFT 数据。C 错误：SFT 数据并非越多越好，过度堆量会导致过拟合到演示分布、反而把行为限制得更死。D 正确：当目标只是临时适配、且样本分布会频繁变化时，过度 SFT 容易让模型过拟合到演示行为、缩小策略空间，此时轻量 Prompt 反而更灵活，继续 SFT 会把行为“限制得更死”。",
+    "correct": [
+      "当任务需要模型稳定学会一种新的输出格式、语气或领域知识，仅靠 Prompt 难以在长尾样本上保持一致时，应优先增加高质量 SFT 数据",
+      "当线上效果不稳定主要源于 Prompt 措辞不清或上下文缺失时，应先优化 Prompt 而非盲目加 SFT 数据",
+      "当目标只是临时适配某类请求且样本分布会频繁变化时，过度 SFT 容易过拟合演示行为、缩小策略空间，反而不如轻量 Prompt 灵活"
+    ],
+    "distractors": [
+      "一旦开始 SFT 就应当持续堆量，因为 SFT 数据越多模型泛化一定越强，根本不存在所谓“限制更死”的行为退化风险"
+    ]
+  },
+  {
+    "seq": 122,
+    "kind": "question",
+    "id": "posttraining-2026-002",
+    "topic": "training",
+    "angle": "mechanism",
+    "question": "DPO 与传统 RLHF + Reward Model + PPO 相比，训练流程少了哪些组件？为什么它仍然能够利用 chosen/rejected preference pairs 学习偏好？",
+    "explanation": "A 正确：DPO 省去了独立训练 Reward Model 的步骤，把偏好信号直接融进策略优化。B 错误：DPO 不需要训练显式的 value/critic 网络来估计优势，这正是它与 PPO 的关键区别。C 正确：DPO 通过封闭形式的奖励重参数化，把 Bradley-Terry 偏好概率转化为对 policy 与参考 policy 差异的 logistic 损失。D 正确：DPO 依赖一个冻结的 reference policy 作为正则项，仅靠 chosen/rejected 对就能直接优化策略，无需像 PPO 那样在线采样奖励并训练 critic。",
+    "correct": [
+      "DPO 省去了独立训练奖励模型这一步，直接把偏好信号融进策略优化，而不再单独训练 RM",
+      "DPO 通过奖励重参数化，把 Bradley-Terry 偏好写成 policy 与参考策略差异的 logistic 损失",
+      "DPO 依赖一个冻结的参考策略作为正则项，仅用 chosen/rejected 偏好对就能直接优化策略"
+    ],
+    "distractors": [
+      "DPO 仍然需要训练一个显式的 value/critic 网络来估计优势函数，这与 PPO 的强化学习流程完全一致，并未省略任何组件"
+    ]
+  },
+  {
+    "seq": 123,
+    "kind": "question",
+    "id": "posttraining-2026-003",
+    "topic": "training",
+    "angle": "mechanism",
+    "question": "GRPO 为什么可以不显式训练传统 PPO 中的 value model？它通过什么机制估计同一组采样结果的相对优势？",
+    "explanation": "A 正确：GRPO 对每个 prompt 采样 G 条回复，用这组回复奖励的组内均值与标准差来标准化优势，从而无需价值网络。B 错误：GRPO 不需要训练 value model，这是它相对 PPO 的主要简化。C 正确：相对优势（组内归一化）本质上是用同一 prompt 的多条样本互相作为基线，消除了对独立 critic 的依赖。D 错误：GRPO 仍然需要估计优势（通过组内相对优势），并非直接把奖励当损失梯度、完全跳过 baseline。",
+    "correct": [
+      "GRPO 对每个 prompt 采样 G 条回复，用这组回复奖励的组内均值与标准差标准化优势，从而无需价值网络",
+      "相对优势（组内归一化）本质是用同一 prompt 的多条样本互相作基线，消除了对独立 critic 的依赖"
+    ],
+    "distractors": [
+      "GRPO 仍需价值估计，只是用组内统计代替了网络；小 value 头必不可少，只是论文略写。",
+      "组内相对比较已隐含 baseline，显式 baseline 是 PPO 时代的冗余；GRPO 把它折叠进了归一化。"
+    ]
+  },
+  {
+    "seq": 124,
+    "kind": "question",
+    "id": "posttraining-2026-004",
+    "topic": "training",
+    "angle": "system-design",
+    "question": "对于代码生成任务，如果最终答案可以通过测试用例验证，为什么 programmatic reward 往往比另一个 LLM 作为 reward judge 更有吸引力？它又有哪些局限？",
+    "explanation": "A 正确：Programmatic reward 来自确定性测试，方差低、信号干净，比 LLM judge 的噪声、可博弈性与成本更可控。B 错误：programmatic reward 难以覆盖开放式写作等没有自动验证器的任务，并非“能覆盖所有任务”。C 正确：它的局限在于只适用于存在自动验证器的任务、对开放性问题奖励稀疏，且验证器本身的 bug 可能被策略利用为 reward hack。D 错误：LLM judge 通常更贵、噪声更大且可被博弈，代码任务里不应“优先”使用它作为 reward。",
+    "correct": [
+      "Programmatic reward 来自确定性测试，方差低、信号干净，比 LLM judge 的噪声与可博弈性更可控",
+      "它的局限是只适用于有自动验证器的任务，开放性问题奖励稀疏，且验证器 bug 会被利用为 reward hack"
+    ],
+    "distractors": [
+      "Programmatic reward 能覆盖所有开放式写作任务，只是测试用例编写成本略高",
+      "LLM judge 通常更便宜且推理速度也更快，因此在代码生成任务里应当优先使用 LLM 作为 reward 来指导模型训练"
+    ]
+  },
+  {
+    "seq": 125,
+    "kind": "question",
+    "id": "posttraining-2026-005",
+    "topic": "training",
+    "angle": "debugging",
+    "question": "一个 GRPO 实验中 reward 持续上升，但真实 benchmark accuracy 开始下降。你会优先怀疑哪些 reward hacking 或分布偏移问题？如何定位？",
+    "explanation": "A 正确：应优先怀疑策略在利用验证器或格式漏洞（reward hacking），而非真正提升能力。B 正确：还应检查策略是否已经偏离训练分布（distribution shift / off-policy drift），导致在线上分布上泛化变差。C 错误：这不是经典过拟合，直接加大学习率既不能定位也不能缓解，反而可能加剧不稳定。D 正确：定位手段包括拆解 reward 成分、在 held-out 评测上观察、并人工检查 rollout 轨迹中是否出现捷径（shortcut）行为。",
+    "correct": [
+      "应优先怀疑策略在利用验证器或格式漏洞（reward hacking），而非真正提升了能力",
+      "还应检查策略是否已偏离训练分布（distribution shift），导致在线上分布上泛化变差",
+      "定位手段包括拆解 reward 成分、在 held-out 评测上观察、人工检查 rollout 轨迹中的捷径行为"
+    ],
+    "distractors": [
+      "这并非经典过拟合问题，直接加大学习率既无法定位根因也无法缓解，反而可能让整个训练过程更加不稳定"
+    ]
+  },
+  {
+    "seq": 126,
+    "kind": "question",
+    "id": "posttraining-2026-006",
+    "topic": "training",
+    "angle": "mechanism",
+    "question": "为什么 post-training 中高质量数据通常比简单扩大样本数量更重要？如何识别大量 synthetic data 已经开始降低训练收益的信号？",
+    "explanation": "A 正确：高质量、多样、清洗充分的数据往往比盲目扩大合成数据更能提升下游效果。B 错误：合成数据并非越多越好，模型不能自动去噪，规模过大会带来饱和与同质化。C 正确：当合成数据规模增长时若收益递减甚至转负、风格趋同、多样性塌陷，说明已出现合成数据饱和。D 正确：监控 held-out 评测出现回归、以及生成样本风格同质化，是识别合成数据失效的有效信号。",
+    "correct": [
+      "高质量、多样、清洗充分的数据往往比盲目扩大合成数据更能提升下游效果",
+      "当合成数据规模增长时若收益递减甚至转负、风格趋同、多样性塌陷，说明已出现合成数据饱和",
+      "监控 held-out 评测出现回归、以及生成样本的风格同质化，是识别合成数据失效的有效信号"
+    ],
+    "distractors": [
+      "合成数据越多越好，因为模型能从海量样本中自动去噪，不存在收益下降或多样性塌陷的问题"
+    ]
+  },
+  {
+    "seq": 127,
+    "kind": "question",
+    "id": "posttraining-2026-007",
+    "topic": "training",
+    "angle": "tradeoff",
+    "question": "为什么某些任务上一个过度 SFT 的 checkpoint 反而可能比 base/instruction checkpoint 更难通过后续 RL 学到新策略？从 exploration 角度解释。",
+    "explanation": "A 正确：过度 SFT 让策略过度贴合演示分布，策略空间（action/coverage）被压缩，降低了后续 RL 可探索的范围。B 错误：过度 SFT 是降低而非抬高策略熵，因此不会因“熵过高导致梯度噪声大”而难收敛。C 正确：过度 SFT 的 checkpoint 往往策略熵偏低、行为更确定，RL 难以通过随机探索发现新策略。D 正确：因此对于需要后续 RL 的任务，保留一个更具探索性、未被过度 SFT 的 checkpoint 反而更有利于 RL 探索。",
+    "correct": [
+      "过度 SFT 让策略过度贴合演示分布，压缩了策略空间与覆盖率，降低后续 RL 可探索范围",
+      "过度 SFT 的 checkpoint 往往策略熵偏低、行为更确定，RL 难以通过随机探索发现新策略",
+      "对需要后续 RL 的任务，保留更具探索性、未被过度 SFT 的 checkpoint 反而更利于探索"
+    ],
+    "distractors": [
+      "过度 SFT 会抬高策略熵、使 RL 阶段梯度噪声过大而难以收敛，因此必须大幅降低学习率才能让它稳定"
+    ]
+  },
+  {
+    "seq": 128,
+    "kind": "question",
+    "id": "posttraining-2026-008",
+    "topic": "training",
+    "angle": "system-design",
+    "question": "为什么 GRPO 类训练相比普通 SFT 会引入明显的 inference-system 问题？请从 rollout workers、generation throughput、policy version 和训练数据新鲜度角度分析。",
+    "explanation": "A 正确：GRPO 需要大规模 rollout 生成大量采样轨迹，必须部署 rollout workers 并保证高 generation throughput。B 正确：由于 rollout 与训练异步，不同批次的轨迹可能来自不同 policy 版本，带来 policy version drift。C 错误：GRPO 并非只在单卡前向即可，它依赖专门的推理集群做大规模生成，确有额外系统开销。D 正确：训练数据的新鲜度（on-policy 与 off-policy 的偏离）会影响收敛，需要考虑轨迹过期 / staleness。",
+    "correct": [
+      "GRPO 需要大规模 rollout 生成大量采样轨迹，要部署 rollout workers 并保证高 generation throughput",
+      "rollout 与训练异步，不同批次轨迹可能来自不同 policy 版本，带来 policy version drift 问题",
+      "训练数据新鲜度（on-policy 与 off-policy 的偏离）会影响收敛，需要考虑轨迹过期 / staleness"
+    ],
+    "distractors": [
+      "GRPO 与 SFT 一样只需在单卡上做前向、不需要专门的推理集群，因此相比 SFT 并没有引入任何额外的系统开销"
+    ]
+  },
+  {
+    "seq": 129,
+    "kind": "question",
+    "id": "posttraining-2026-009",
+    "topic": "training",
+    "angle": "debugging",
+    "question": "一个模型经过针对数学推理的 post-training 后数学 benchmark 提升了，但通用对话能力下降。你会如何判断这是必要的 specialization 还是不希望出现的 catastrophic forgetting？",
+    "explanation": "A 正确：不能只看数学 benchmark，还需在通用能力与安全 held-out 评测上同时观察对话/指令遵循是否退化。B 正确：若仅目标能力上升、通用与安全能力损失在可接受范围内，可视为必要的 specialization。C 正确：若通用对话、指令遵循、安全对齐等多个维度出现广泛回归，则应判定为有害的 catastrophic forgetting。D 错误：不能仅凭数学提升就认定通用下降是合理代价，必须额外评估通用与安全维度。",
+    "correct": [
+      "不能只看数学 benchmark，还需在通用能力与安全 held-out 评测上同时观察对话/指令遵循是否退化",
+      "若仅目标能力上升、通用与安全能力损失在可接受范围内，可视为必要的 specialization",
+      "若通用对话、指令遵循、安全对齐等多个维度出现广泛回归，则应判定为有害的 catastrophic forgetting"
+    ],
+    "distractors": [
+      "只要数学分数提升，通用对话下降就是合理的代价，无需额外评估即可认定这是正常的 specialization"
+    ]
+  },
+  {
+    "seq": 130,
+    "kind": "question",
+    "id": "posttraining-2026-010",
+    "topic": "training",
+    "angle": "design",
+    "question": "设计一个 post-training 实验时，为什么必须同时观察 target capability、general capability、safety 和 out-of-distribution generalization？只看目标 benchmark 会有什么风险？",
+    "explanation": "A 正确：只盯目标 benchmark 容易漏掉 reward hacking、能力遗忘与安全退化等问题。B 正确：同时观测 OOD 泛化可判断策略是否只是在训练分布上过拟合而非真正学会能力。C 正确：安全维度必须单独评估，因为能力提升可能伴随对齐/安全性质的退化。D 错误：通用与安全能力不会随目标提升自动保持，反而可能因优化目标单一而退化。",
+    "correct": [
+      "只盯目标 benchmark 容易漏掉 reward hacking、能力遗忘与安全退化等问题",
+      "同时观测 OOD 泛化可判断策略是否只是在训练分布上过拟合而非真正学会能力",
+      "安全维度必须单独评估，因为目标能力提升可能伴随对齐与安全性质的退化"
+    ],
+    "distractors": [
+      "实验只需最大化目标 benchmark 即可，通用与安全能力会随着目标能力的提升自动保持不退化"
+    ]
+  },
+  {
+    "seq": 131,
+    "kind": "question",
+    "id": "ai-fund-015",
+    "topic": "scaling-law",
+    "angle": "calculation",
+    "question": "如果训练数据增加 10 倍，模型效果一定会增加 10 倍吗？你会如何分析这个问题？",
+    "explanation": "幂律 + 边际递减 → 收益远小于线性；还受数据新颖性/质量、compute 配比和任务上限约束。",
+    "correct": [
+      "修正预期：scaling law 下收益呈对数级递减，实际增益还取决于新增数据的新颖性与 compute 配比，10 倍数据达不到 10 倍提升，目标应依据实测曲线设定"
+    ],
+    "distractors": [
+      "支持这个目标：模型能力与数据量严格成正比是业界共识，10 倍数据自然带来 10 倍提升，因为线性 scaling 在真实业务里从未失效，新增数据永远等价于等比例的增量",
+      "换个思路：模型能力完全由参数量决定，数据翻多少倍都没有意义，应把预算全部转投更大参数的模型，因为参数量才是 scaling law 里唯一真正起作用的变量",
+      "提醒风险：数据超过一定规模后会开始损害模型的泛化能力，继续加数据只会让效果持续下滑，因为海量数据必然引入噪声从而稀释已有知识信号"
+    ]
+  },
+  {
+    "seq": 132,
+    "kind": "question",
+    "id": "rlhf-vs-cai-alignment",
+    "topic": "alignment",
+    "angle": "mechanism",
+    "question": "模型后训练阶段的对齐技术中传统 RLHF 与宪政 AI 存在明确的生成与评估机制差异。关于这两种对齐机制的底层逻辑与工程应用以下哪些描述是正确的？（多选）",
+    "explanation": "A 正确 RLHF 依赖人工标注偏好排序训练奖励模型再通过 PPO/DPO 更新权重。B 正确 CAI 将对齐准则写为文本宪法让模型自评修改生成合成数据。C 正确 AI 反馈替代或减少大规模人工标注提升可扩展性与透明度。D 错误 文本原则无法彻底消除过度拒绝仍需迭代校准。",
+    "correct": [
+      "RLHF 依赖大量人工标注对模型候选输出进行偏好排序以此训练奖励模型随后通过 PPO 或 DPO 等算法更新语言模型权重",
+      "宪政 AI 的核心是将对齐准则显式写为文本宪法/原则让模型根据这些原则对自身初始回答进行自评与修改生成合成对齐数据",
+      "宪政 AI 借由 AI 生成反馈替代或减少后训练阶段对大规模人工偏好标注的依赖从而提升了安全策略更新的可扩展性与透明度"
+    ],
+    "distractors": [
+      "由于宪政 AI 的评价标准基于明确的文本原则该范式能够彻底消除模型对边缘敏感问题的过度拒绝现象"
+    ]
+  },
+  {
+    "seq": 133,
+    "kind": "question",
+    "id": "sft-catastrophic-forget",
+    "topic": "sft",
+    "angle": "tradeoff",
+    "question": "在对大语言模型进行特定领域能力的二次监督微调时若仅使用新领域的专业数据集进行全量更新模型往往会在通用能力上发生灾难性遗忘。为了在强化 Agentic 编程能力的同时维持通用能力以下哪些工程做法是合理的？（多选）",
+    "explanation": "A/B/D 是防止灾难性遗忘的标准组合拳：掺入 Replay Data 保持旧能力、降低 Learning Rate 减少权重剧烈偏移、控制 Epochs 防过拟合。C 错误 冻结 Attention 会严重限制模型在新领域的学习能力不属于标准 SFT 最佳实践。",
+    "correct": [
+      "在 Phase 2 数据集中混合一定比例的前序 Phase 1 SFT 重放数据",
+      "降低 Phase 2 的学习率例如降至 Phase 1 峰值学习率的 30% 左右",
+      "采取较短的训练周期如 1 个 Epoch 避免在高强度专业数据上过度拟合"
+    ],
+    "distractors": [
+      "在 Phase 2 中将微调范围限制为仅更新 FFN 冻结所有 Attention 权重"
+    ]
+  },
+  {
+    "seq": 134,
+    "kind": "question",
+    "id": "pp-1f1b-bubble-calc",
+    "topic": "distributed-training",
+    "angle": "calculation",
+    "question": "某千亿参数模型采用流水线并行部署在 P=8 个 Stage 上采用标准 1F1B 调度 Micro-batch 数量 M=32。假设每个 Micro-batch 的前向与反向耗时相同忽略通信开销请计算流水线泡泡时间占比约为多少？",
+    "explanation": "正确答案 B 约 17.9%。总时间 T=(M+P-1)(tf+tb)；有效计算=M(tf+tb)；泡泡=(P-1)(tf+tb)；比例=(P-1)/(M+P-1)=7/39≈17.95%。",
+    "correct": [
+      "17.9%"
+    ],
+    "distractors": [
+      "8.3%",
+      "21.9%",
+      "33.3%"
+    ]
+  },
+  {
+    "seq": 135,
+    "kind": "question",
+    "id": "dpo-vs-ppo-compare",
+    "topic": "dpo",
+    "angle": "comparison",
+    "question": "在对大模型进行偏好对齐时相比基于 Actor-Critic 架构的 PPO 算法 DPO 省去了显式的 Critic/Reward 网络。关于 DPO 与 PPO 在架构稳定性与应用场景上的对比以下哪些说法是合理的？（多选）",
+    "explanation": "A 正确 DPO 将 RL 目标重构为隐式 Reward 解析表达降低显存与框架复杂度。B 正确 Off-policy 无需在线采样直接用静态偏好数据集梯度更新。C 正确 缺少价值迭代难以处理多步环境反馈的精准信用分配。D 错误 DPO 极易受高噪声偏好数据干扰产生 Reward Hacking。",
+    "correct": [
+      "DPO 重构目标降低显存与复杂度",
+      "Off-policy 无需在线采样",
+      "缺少价值迭代难处理多步信用分配"
+    ],
+    "distractors": [
+      "DPO 极易受高噪声偏好数据干扰产生 Reward Hacking"
+    ]
+  }
+]

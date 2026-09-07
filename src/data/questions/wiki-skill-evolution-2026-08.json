@@ -1,6 +1,6 @@
 [
   {
-    "id":"agent-skills-debugging-01",
+    "id": "agent-skills-debugging-01",
     "category": "ai-agent-architecture",
     "topic": "agent-skills",
     "tags": [
@@ -42,10 +42,15 @@
       "open": {
         "referenceAnswer": "先区分「失败被记录」与「失败被利用」，再逐段排查两处断点。其一，失败候选的内容指纹、diff、验证分和归一化拒绝原因是否以结构化字段追加进审计日志，并能被 Proposer 按指纹检索；其二，Proposer 构造提示词的阶段是否把语义近似的历史被拒候选与拒绝原因显式注入上下文。若两处都正常，再检查拒绝原因是否被写成自由文本，导致同类失败无法被归并与计数。调严门控阈值或把知识库与执行版本一起回滚都不是诊断手段：前者只改变拒绝数量并压制探索，后者会直接抹掉失败证据。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「回滚与追加日志只保证「失败不被抹掉」，并不保证「失败被下一次提议看见」」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「失败候选的 diff、验证分与归一化拒绝原因是否完整…」「Proposer 构造提示词时」等 2 项成立；并排除「回滚是否每次都把活性版本指针与知识库一起恢复到上一代…」「验证门控阈值是否足够严格」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
-    "id":"context-engineering-mechanism-01",
+    "id": "context-engineering-mechanism-01",
     "category": "ai-agent-architecture",
     "topic": "context-engineering",
     "tags": [
@@ -86,10 +91,15 @@
       "open": {
         "referenceAnswer": "编译完成两件事：一是收敛，把分散在多轮实验中的结论合并去重，消解互相矛盾的表述，产出一份无歧义、可直接遵循的操作步骤；二是剪枝，剥离根因分析、实验对照、评分记录等只为归纳服务的论证材料，只保留执行期真正需要的规则、判断条件与工具用法。产出物是上下文层的一份 artifact，既不改变模型权重，也不是把原文按长度截断填满窗口。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「它要做的是结构化收敛：把分散、可能互相矛盾的历史结论合并去重，得到一份可直接遵循的操作步骤」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「把分散且可能互相矛盾的历史结论合并去重」「剥离根因分析与实验对比等过程性论证」等 2 项成立；并排除「按相关性对知识库全文排序后截断」「用知识条目对模型做一次额外训练」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
-    "id":"memory-tradeoff-01",
+    "id": "memory-tradeoff-01",
     "category": "llm-systems",
     "topic": "memory",
     "tags": [
@@ -130,10 +140,15 @@
       "open": {
         "referenceAnswer": "两种做法都在用一种代价换另一种代价。先按索引与摘要筛选、再用工具读取代表性原文，放弃了对全量轨迹的同等覆盖，但保住了失败细节的可核查性，能闭合因果链。固定截断后全量拼接名义上覆盖全部样本，实际把关键片段稀释在长上下文中，受位置与注意力衰减影响，低频却同源的失败最容易被整体漏检。需要注意，扩大窗口不能消除这种稀释，随机采样单条轨迹也无法代表系统性模式——前者仍受长上下文位置效应影响，后者用个体替代了分布。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「用索引与摘要先缩小范围、再用工具读原文，牺牲的是对全量轨迹的同等覆盖，换来的是失败细节可核查、因果链能闭合」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「先按索引与摘要缩小范围再精读原文」「固定截断后全量拼接覆盖面看似完整」等 2 项成立；并排除「只要上下文窗口足够大」「把每轮采样改为随机单条轨迹」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
-    "id":"agent-skills-fundamental-01",
+    "id": "agent-skills-fundamental-01",
     "category": "ai-agent-architecture",
     "topic": "agent-skills",
     "tags": [
@@ -174,7 +189,12 @@
       "open": {
         "referenceAnswer": "这一现象说明 Skill 的发现能力与执行能力是解耦的。发现能力负责从失败轨迹归纳根因、策略与步骤，产出结构化 SOP；执行能力负责在当前任务中遵循该 SOP 完成步骤推理与工具调用。强模型把归纳结果压缩成程序化知识 artifact，弱模型即便归纳能力较弱，也能通过遵循它获得提升。但要划清边界：发现模型上的验证结果不能替代目标模型上的重测，需检查格式遵循、工具参数与失败类型；局部任务上的提升也不能外推为基座能力已被全面替代。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「这一现象的核心是两种能力解耦：发现能力指从失败轨迹中归纳根因并写出结构化 SOP，执行能力指遵循既定 SOP 做步骤推理与工具调用」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「Skill 的发现归纳能力与指令执行能力可解耦」「弱模型无需具备同等强度的归纳反思能力」等 2 项成立；并排除「只要 Skill 在发现模型上通过验证」「弱模型由此获得的提升说明 Skill 已完全替代基座…」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "wikiskill-anti-looping-impact-tracker",
@@ -218,10 +238,15 @@
       "open": {
         "referenceAnswer": "要把反馈真正接回回路，设计要点有两处。第一，注入时机放在提示词构造阶段：先为新候选计算规范化指纹，据此检索语义近似的历史被拒记录，把候选 diff、验证分与归一化拒绝原因显式列给 Proposer，让模型在生成前就看见判决历史。第二，把拒绝原因收敛成有限枚举类别，使「连续无改进轮数」「某类原因达到阈值」「验证预算耗尽」等停止条件都能基于结构化字段判断。仅把判决写进日志而不进入上下文，只是事后审计；提高温度与候选数量则只增加随机性和验证开销，不解决结构性重复。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「真正生效的设计发生在提示词构造阶段：按当前候选指纹检索语义近似的历史被拒记录并显式列出，同时把拒绝原因归一化为有限类别，让停止条件与改换方向的判断都能基于结构化字段」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「在构造 Proposer 提示词时」「把拒绝原因归一化为有限类别」等 2 项成立；并排除「将历史判决写入独立日志供事后审计」「提高采样温度并扩大每轮候选数量」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
-    "id":"agent-skills-fundamental-02",
+    "id": "agent-skills-fundamental-02",
     "category": "llm-engineering",
     "topic": "agent-skills",
     "tags": [
@@ -262,10 +287,15 @@
       "open": {
         "referenceAnswer": "当前观察支持互补协同而非替代。一方面，大规模模型具备更强的泛化、指令遵循与复杂逻辑理解能力，能把同一份 Skill 执行得更完整，因此相对收益通常更高；另一方面，Skill 把领域工作流知识外置进上下文，使小模型在特定流程上可以超过没有 Skill 的大模型。需要守住两条边界：收益并不随规模增大而趋近于零，二者不是负相关；相对提升百分比也不会跨规模保持恒定，因此必须构造模型规模 × Skill 条件的对照矩阵，而不是单点评估后外推。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「更强的模型具备更好的泛化、指令遵循与复杂逻辑理解能力，因此同一套 Skill 通常能在强模型上释放出更高的相对收益」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「二者互补协同：更大规模的模型通常能从同一套演化技能中…」「带 Skill 的小模型可在特定工作流上超过无 Sk…」等 2 项成立；并排除「技能收益与模型规模严格负相关」「同一套 Skill 在不同规模模型上的相对提升百分比…」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
-    "id":"agent-skills-comparison-01",
+    "id": "agent-skills-comparison-01",
     "category": "ai-agent-architecture",
     "topic": "agent-skills",
     "tags": [
@@ -306,10 +336,15 @@
       "open": {
         "referenceAnswer": "三层分离的本质是切分可变性与职责。对照单一可变快照：Raw 只追加且不可变，Wiki 由受控流程累积，Skill 由发布器在验证门通过后写入，因此回滚只需移动活性版本指针，历史轨迹与知识沉淀不受影响。对照全量拼接：执行层只加载已验证的编译 Skill，历史证据依据当前任务、相关性与权限按需检索。需要澄清两种误读——减少重复存储只是附带效果而非主要收益；「执行时读全量以避免遗漏」恰好背离了分离目的，会重新引入上下文噪声与权限风险。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「三层分离的价值在于切分可变性与职责，而不在节省存储或保留全量」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「相比单一可变快照」「相比全量拼接进上下文」等 2 项成立；并排除「相比单一可变快照」「相比按需检索」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
-    "id":"agent-skills-system-design-01",
+    "id": "agent-skills-system-design-01",
     "category": "agent-engineering",
     "topic": "agent-skills",
     "tags": [
@@ -349,10 +384,15 @@
       "open": {
         "referenceAnswer": "候选 Skill 应作为带内容指纹和父版本关系的不可变版本保存；验证在隔离环境完成，发布时通过事务或原子版本指针切换，随后用小流量 canary 观察真实执行信号。当前活性版本不应被原地覆盖，失败只标记候选为拒绝或回滚。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「候选版本应不可变，发布时以原子操作切换版本指针，并先在隔离环境完成验证，再用小流量 canary 检查真实运行行为」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「候选版本写入不可变存储」「先隔离验证」等 2 项成立；并排除「直接修改当前 Skill 文件」「让多个执行进程共同编辑候选内容」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
-    "id":"agent-skills-tradeoff-01",
+    "id": "agent-skills-tradeoff-01",
     "category": "agent-engineering",
     "topic": "agent-skills",
     "tags": [
@@ -393,10 +433,15 @@
       "open": {
         "referenceAnswer": "把活性 Skill 版本指针与 Wiki、审计日志分离。失败候选的内容指纹、diff、验证分、拒绝原因和时间线采用 append-only 记录；回滚只移动活性指针到已验证版本，并保留可追溯的指针变更事件。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Wiki 或审计日志采用 append-only 追加失败事件、diff 和验证结果，以便追溯并避免重复尝试」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「失败事件、候选 diff 与验证结果追加写入审计日志」「回滚时只移动活性版本指针」等 2 项成立；并排除「为省事把 Wiki 和 Skill 绑定为同一可变快…」「删除被拒绝候选及原因」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
-    "id":"context-engineering-system-design-01",
+    "id": "context-engineering-system-design-01",
     "category": "llm-applications",
     "topic": "context-engineering",
     "tags": [
@@ -436,10 +481,15 @@
       "open": {
         "referenceAnswer": "将编译后的 Skill 与原始 Wiki 分开处理：Skill 通过受控的编译和注入接口进入执行上下文，Wiki 与轨迹作为带来源和权限标签的不可信数据按需读取。读取权限、工具权限和发布权限应由外部服务或策略层控制，不能由文档内容自行授予。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「编译 Skill 可以作为受控指令输入，原始 Wiki 和轨迹只能作为不可信数据，由检索器按权限读取并显式标注」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「编译 Skill 通过受控接口注入」「按身份和任务限制 Wiki 读取范围」等 2 项成立；并排除「只要文档存储在内网」「把 Wiki 全文提升为最高优先级提示」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
-    "id":"context-engineering-tradeoff-01",
+    "id": "context-engineering-tradeoff-01",
     "category": "llm-applications",
     "topic": "context-engineering",
     "tags": [
@@ -479,10 +529,15 @@
       "open": {
         "referenceAnswer": "执行上下文优先放当前任务目标、约束、步骤状态和已验证的编译 Skill。历史 Wiki 与轨迹应根据当前任务检索，限制来源、相关性和 token 预算，必要时只提供摘要和少量证据，而不是默认全量拼接。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「执行阶段应保留目标、约束、当前步骤和编译 Skill 等直接相关信息」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「优先保留当前目标、约束、步骤状态和编译后的 Skil…」「对历史材料按任务检索」等 2 项成立；并排除「把所有旧轨迹完整拼接」「遇到超限就随机删除上下文」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
-    "id":"memory-mechanism-01",
+    "id": "memory-mechanism-01",
     "category": "agent-engineering",
     "topic": "memory",
     "tags": [
@@ -523,10 +578,15 @@
       "open": {
         "referenceAnswer": "应采用分层链路：用索引和统计摘要定位任务、错误类型和时间范围，再对失败轨迹聚类并挑选代表样本，最后用 read_file 等工具按需读取原文核查细节。检索结果数量、工具读取次数和最终注入 token 都应有预算。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「每一阶段都要管理候选数量和 token 预算，避免把全量轨迹直接塞进上下文」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「先按任务、错误类型和时间等索引筛选」「通过 read_file 等工具按需读取原始轨迹」等 2 项成立；并排除「把所有原始轨迹一次性放入 Proposer 上下文」「只取最新一条失败样本」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
-    "id":"memory-system-design-01",
+    "id": "memory-system-design-01",
     "category": "agent-engineering",
     "topic": "memory",
     "tags": [
@@ -566,10 +626,15 @@
       "open": {
         "referenceAnswer": "记忆层应提供层级索引、摘要和统计，用于缩小候选范围；工具层再读取代表性原始轨迹和必要上下文。调度器应按诊断阶段设置检索、工具调用和 token 预算，并记录实际读取内容，便于复现和审计。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「记忆层负责提供可检索的索引、摘要和统计，工具层负责读取被选中的原始证据」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「记忆层返回压缩索引和候选范围」「按诊断阶段动态分配检索与读取预算」等 2 项成立；并排除「每轮固定保留最前面的若干轨迹」「只把工具调用次数作为预算」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
-    "id":"agent-skills-comparison-02",
+    "id": "agent-skills-comparison-02",
     "category": "agent-engineering",
     "topic": "agent-skills",
     "tags": [
@@ -610,10 +675,15 @@
       "open": {
         "referenceAnswer": "发现阶段从执行轨迹中归纳根因、策略和步骤，形成候选；评估阶段在固定且隔离的任务集上比较候选与基线并执行发布门控；执行阶段只加载已发布 Skill，在当前任务中遵循它并记录结果。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「将三者混在一起会使发布不可审计，也难以定位收益来源」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「发现阶段归纳根因、策略和可执行步骤」「评估阶段用固定任务和指标验证候选」等 2 项成立；并排除「执行阶段可直接改写候选 Skill」「把发现、评估和执行合并为一次模型调用」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
-    "id":"agent-skills-tradeoff-02",
+    "id": "agent-skills-tradeoff-02",
     "category": "agent-engineering",
     "topic": "agent-skills",
     "tags": [
@@ -653,7 +723,12 @@
       "open": {
         "referenceAnswer": "在目标模型上使用相同任务集、无 Skill 基线和必要的分布外任务进行对照，检查成功率之外的工具参数、格式遵循、步骤遗漏和失败类型。发现模型的分数只能说明候选在发现模型上有效，不能替代目标模型验证。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「应在目标模型上复现相同任务集，同时检查格式遵循、工具调用、失败类型和分布外任务，并与无 Skill 基线比较」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在目标模型上重跑固定任务集」「检查目标模型的工具参数、格式遵循、失败类型和分布外任…」等 2 项成立；并排除「只复用发现模型的评估分」「要求目标模型与发现模型使用相同结构」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "wikiskill-supp-009",
@@ -696,7 +771,12 @@
       "open": {
         "referenceAnswer": "应对候选结构和关键 diff 做稳定规范化并计算 fingerprint，同时用有限枚举归一化拒绝原因，记录验证分、接受状态和尝试次数。可据此识别近似重复、统计某类失败并触发停止条件。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「候选需要经过规范化后计算指纹，并记录统一枚举的拒绝原因、验证分和尝试次数」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「对候选的结构化内容和关键 diff 规范化后计算 f…」「把拒绝原因归一化为有限类别」等 2 项成立；并排除「只按原始字符串精确去重」「只记录最终分数」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "wikiskill-supp-010",
@@ -739,10 +819,15 @@
       "open": {
         "referenceAnswer": "以结构化状态定义停止条件，包括重复 fingerprint、连续无改进轮数、验证预算或某类拒绝原因的阈值。停止时保留候选、diff、验证分、拒绝原因和计数，并把该方向标记为暂停，之后可审计并切换到新方向。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「停止条件应由可观测状态驱动，例如重复 fingerprint、连续无改进轮数、验证预算耗尽或拒绝原因达到阈值」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「设置重复指纹、连续无改进轮数和验证预算等可观测停止条…」「停止时保留候选、指标和归一化原因」等 2 项成立；并排除「只要候选文本还未完全相同」「遇到循环就清空全部记录」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
-    "id":"agent-skills-comparison-03",
+    "id": "agent-skills-comparison-03",
     "category": "llm",
     "topic": "agent-skills",
     "tags": [
@@ -783,10 +868,15 @@
       "open": {
         "referenceAnswer": "构造模型规模 × Skill 条件的消融矩阵，在同一任务集上比较无 Skill、同一 Skill 和必要的模型专属条件。按任务难度、分布内外和失败类型分层报告绝对分数与相对收益，才能判断互补关系和收益边界。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「还应分解任务难度并加入 OOD 测试，避免把单点收益误当成普遍规律」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「交叉多个模型规模与无 Skill、同一 Skill …」「按任务难度和分布内外拆分结果」等 2 项成立；并排除「只测一个大模型加 Skill 和一个小模型无 Ski…」「每种模型使用不同任务集」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
-    "id":"agent-skills-tradeoff-03",
+    "id": "agent-skills-tradeoff-03",
     "category": "llm",
     "topic": "agent-skills",
     "tags": [
@@ -826,10 +916,15 @@
       "open": {
         "referenceAnswer": "应扩展到不同任务难度、类型和 OOD 数据，并构造多个模型规模在有无同一 Skill 下的对照，分别观察绝对能力、相对增益和失败模式。若只在固定工作流上有效，应把结论限定为局部互补，而不是替代基座规模。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「应检查不同难度、任务类型和分布外样本，并比较大模型加同一 Skill、无 Skill 和目标模型的失败模式」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「增加不同难度、任务类型和 OOD 数据」「比较多个规模在有无 Skill 下的绝对能力、相对增…」等 2 项成立；并排除「把局部任务的排名直接外推到所有任务」「只看 Skill 带来的平均分增量」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
-    "id":"agent-skills-system-design-02",
+    "id": "agent-skills-system-design-02",
     "category": "ai-systems",
     "topic": "agent-skills",
     "tags": [
@@ -870,10 +965,15 @@
       "open": {
         "referenceAnswer": "Raw 层只允许采集器追加写入并保持不可变；Wiki 层由受控整理流程写入故障模式、实验和审计信息；Skill 层只允许发布器在固定验证集通过、权限检查和版本检查后写入候选或切换活性指针，执行 Agent 不应直接覆盖活性版本。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Raw 应由采集器追加写入且不可变，Wiki 由受控整理流程追加实验和知识，Skill 只能由发布器在验证门通过后写入新版本」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「Raw 由采集器追加写入且不可变」「Wiki 通过受控流程记录知识和审计」等 2 项成立；并排除「执行 Agent 可直接覆盖活性 Skill」「Wiki 内容被多次检索后即可自动晋升 Skill」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
-    "id":"agent-skills-design-02",
+    "id": "agent-skills-design-02",
     "category": "ai-systems",
     "topic": "agent-skills",
     "tags": [
@@ -913,6 +1013,11 @@
       "open": {
         "referenceAnswer": "活性 Skill 用指向不可变版本的可复制指针表示，指针更新以原子方式完成并追加审计事件；Raw 和 Wiki 分别做不可变备份、完整性校验和恢复演练。灾备时先恢复最近的已验证 Skill 指针，再恢复知识和日志，避免用新的可变总快照覆盖历史。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「活性 Skill 应由可复制的版本指针引用，指针变更本身写入审计日志并可原子恢复」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「为活性 Skill 保存可复制的版本指针」「对 Raw 与 Wiki 做独立的不可变备份、校验和…」等 2 项成立；并排除「只备份当前 Skill 文件」「灾备时直接制作一个最新总快照」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   }
 ]

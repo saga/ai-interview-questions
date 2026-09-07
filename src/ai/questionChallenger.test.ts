@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildQuestionChallengeUser, challengeQuestion, parseQuestionChallenge } from './questionChallenger';
+import { buildQuestionChallengeUser, challengeQuestion, parseQuestionChallenge, summarizeChallenges, type ChallengeOutcome } from './questionChallenger';
 import type { Question } from '../schemas/question';
 
 const question: Question = {
@@ -88,6 +88,34 @@ describe('question challenger', () => {
     expect(result.summary).toContain('区分度偏低');
   });
 
+  // 回归：过去统一问「是否只有一个正确答案」，对多选题是错误判据（多选题本就有多个正确答案）。
+  it('多选题质询使用「答案有效性」判据，不再要求唯一正确答案', () => {
+    const multi: Question = {
+      ...question,
+      formats: { choice: { type: 'multiple', options: question.formats.choice!.options, answer: [0, 2] } },
+    };
+    const prompt = buildQuestionChallengeUser(multi);
+    expect(prompt).toContain('多选题');
+    expect(prompt).toContain('独立成立');
+    expect(prompt).not.toContain('是否只有一个可由通用工程知识推导的正确答案');
+  });
+
+  it('单选题质询仍要求恰好一个最佳答案', () => {
+    const prompt = buildQuestionChallengeUser(question);
+    expect(prompt).toContain('单选题');
+    expect(prompt).toContain('恰好有一个');
+  });
+
+  it('接受 answer-validity 维度的质询结论', () => {
+    const result = parseQuestionChallenge(JSON.stringify({
+      verdict: 'revise',
+      summary: '多选正确项互为换述。',
+      issues: [{ severity: 'critical', dimension: 'answer-validity', issue: '两个正确项是同一判断的换述', evidence: 'B 与 D 同义', suggestion: '合并为一项并补一个真正的正确项' }],
+    }), question);
+    expect(result.verdict).toBe('revise');
+    expect(result.issues[0].dimension).toBe('answer-validity');
+  });
+
   it('value=high 且结构正确时保持 accept', () => {
     const result = parseQuestionChallenge(JSON.stringify({
       verdict: 'accept',
@@ -97,5 +125,45 @@ describe('question challenger', () => {
     }), question);
     expect(result.verdict).toBe('accept');
     expect(result.value).toBe('high');
+  });
+});
+
+describe('summarizeChallenges（批量质询汇总：P1-2 challenger 层）', () => {
+  const outcome = (id: string, challenge: unknown): ChallengeOutcome =>
+    ({ id, challenge: challenge as ChallengeOutcome['challenge'] });
+
+  it('统计结论 / 区分度分布，并按维度累计 critical / warning', () => {
+    const s = summarizeChallenges([
+      outcome('a', { verdict: 'accept', value: 'high', summary: 'ok', issues: [{ severity: 'pass', dimension: 'logic', issue: 'x', evidence: 'y', suggestion: 'z' }] }),
+      outcome('b', {
+        verdict: 'revise',
+        value: 'low',
+        summary: '多选正确项互为换述',
+        issues: [
+          { severity: 'critical', dimension: 'answer-validity', issue: 'B 与 D 同义', evidence: 'e', suggestion: 's' },
+          { severity: 'warning', dimension: 'distractors', issue: '干扰项太弱', evidence: 'e', suggestion: 's' },
+        ],
+      }),
+    ]);
+    expect(s.total).toBe(2);
+    expect(s.judged).toBe(2);
+    expect(s.verdicts).toEqual({ reject: 0, revise: 1, accept: 1, skipped: 0 });
+    expect(s.values).toEqual({ high: 1, medium: 0, low: 1, unknown: 0 });
+    expect(s.dimensions['answer-validity']).toEqual({ critical: 1, warning: 0 });
+    expect(s.dimensions.distractors).toEqual({ critical: 0, warning: 1 });
+  });
+
+  it('blockers = reject 或含 critical；reviewQueue 按严重度降序', () => {
+    const s = summarizeChallenges([
+      outcome('low', { verdict: 'accept', value: 'low', summary: 'trivial', issues: [] }),
+      outcome('crit', { verdict: 'revise', summary: '题干不自洽', issues: [{ severity: 'critical', dimension: 'logic', issue: 'i', evidence: 'e', suggestion: 's' }] }),
+      outcome('rej', { verdict: 'reject', summary: '来源前置', issues: [] }),
+    ]);
+    expect(s.blockers.map((b) => b.id).sort()).toEqual(['crit', 'rej']);
+    expect(s.reviewQueue[0].id).toBe('rej'); // reject +20 最重
+    expect(s.reviewQueue[1].id).toBe('crit');
+    expect(s.reviewQueue[2].id).toBe('low'); // value=low 也进队列（+2）
+    // 未得结论（LLM 失败）只计入 failed，不污染结论分布
+    expect(summarizeChallenges([{ id: 'x', error: 'network down' }])).toMatchObject({ total: 1, judged: 0, failed: 1 });
   });
 });

@@ -25,7 +25,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「信息检索的核心是根据用户查询，从大规模候选集合中找到并排序与查询相关的信息，而不是直接生成答案」",
+      "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「从大规模集合中找到与查询相关的内容并返回合适结果」成立；并排除「从训练数据中生成一个最可能出现的答案文本」「把所有候选内容转换成统一长度的向量表示」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "ai-search-gap-002",
@@ -56,7 +61,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「第一阶段检索主要追求高召回，reranker 作用于召回之后的精排阶段，在较小候选集上做更精细的 query-document 相关性判断，从而提高排序精度，本身不改变召回」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「在较小候选集上做更精细的相关性判断」「目标是提升排序精度」等 3 项成立；并排除「替代原始索引并重建整个文档集合」「把候选压缩成单个固定长度向量」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-gap-003",
@@ -87,7 +97,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「更大的候选池通常提高召回上限，因为 reranker 只能重排已经检索到的结果」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「潜在召回上限提高」「cross-encoder对每个候选计算更贵」等 3 项成立；并排除「召回上限降低且所有检索阶段成本下降」「只影响排序位置」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-gap-004",
@@ -117,7 +132,12 @@
           1
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「精确术语适合 lexical retrieval，自然语言语义检索需要 dense retrieval」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「结合 lexical 与 dense retriev…」「对合并后的候选统一做 reranking」等 2 项成立；并排除「只使用 BM25：认为关键词能覆盖语义查询」「只使用 dense retrieval：认为语义检索…」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "ai-search-gap-005",
@@ -149,7 +169,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Agentic retrieval 允许模型根据问题动态决定是否检索、检索什么、使用哪个工具以及是否需要继续检索，而不是固定执行一次 retrieval」",
+      "reasoningGoal": "先明确该概念的定义与适用边界；据此逐项确认「由 Agent 按问题动态决定是否需要检索」「由 Agent 决定检索什么内容、使用哪个检索工具」等 3 项成立；并排除「完全取消向量数据库」「只允许使用一次检索」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "ai-search-gap-006",
@@ -180,7 +205,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「查询分解可以让系统分别检索公司 A、公司 B 和相关时间范围的数据，再综合结果」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「降低单次检索任务的复杂度」「让不同子问题可以使用不同检索策略或数据源」等 3 项成立；并排除「保证每个子查询都一定返回正确答案」「消除所有检索错误」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-gap-007",
@@ -211,7 +241,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Agentic retrieval 需要显式 termination condition，例如达到足够证据、最大轮数、预算或置信度阈值，并结合结果充分性提前终止」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「设置最大检索轮次或预算上限」「结合结果充分性判断」等 3 项成立；并排除「允许 Agent 一直检索到生成结果」「每次检索后清空历史结果」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "ai-search-gap-008",
@@ -239,7 +274,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Model behavior 指模型在特定输入和运行条件下表现出的输出、决策和交互特征，包括能力、偏好、遵循指令方式及失败模式」",
+      "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「模型在不同输入和条件下表现出的输出、决策和失败模式」成立；并排除「模型参数文件在磁盘上的存储格式和大小」「模型推理服务器的 GPU 利用率和网络吞吐」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "ai-search-gap-009",
@@ -270,7 +310,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「单向量表示可能压缩掉文档内部多个语义区域」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「保留文档内部不同局部内容各自的语义表示」「让 query 与文档中的局部内容进行更细粒度匹配」等 3 项成立；并排除「可以保证每个查询只匹配唯一一个文档」「会自动消除所有 embedding model 的语…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "ai-search-gap-010",
@@ -301,7 +346,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「多向量会增加索引中的向量数量、存储和相似度计算成本，同时还需要定义如何聚合多个向量与 query 的匹配结果」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「索引存储量通常增加」「检索计算量通常增加」等 3 项成立；并排除「一定导致召回率下降」「一定使查询延迟低于单向量检索」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "ai-search-gap-011",
@@ -333,7 +383,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「将文档表示为多个局部向量可以让 query 与具体章节或局部语义单元直接匹配，减少整篇文档单向量造成的信息压缩」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「为章节或局部语义单元生成多个向量表示」「在结果阶段将局部向量聚合回文档或片段」等 3 项成立；并排除「为整本手册只生成一个 embedding 以减少索引…」「完全关闭语义检索」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-gap-012",
@@ -364,7 +419,12 @@
           3
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「召回指标稳定而整体 latency 上升，说明问题更可能出现在 retrieval 后的 reranking、候选数量、模型服务或资源层，而不是召回质量本身」",
+      "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「reranker 的候选数量是否被意外扩大」「cross-encoder 推理延迟是否发生变化」等 3 项成立；并排除「BM25 是否还能正确匹配某个具体术语」「是否降低了 embedding 维度」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "ai-search-gap-013",
@@ -392,7 +452,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Search quality 关注搜索结果是否真正满足用户信息需求，通常同时涉及相关性、覆盖率、排序质量等维度，而不仅仅是返回速度」",
+      "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「搜索结果满足用户信息需求的程度」成立；并排除「搜索请求在服务器上的平均 CPU 使用率」「索引文件占用磁盘空间的大小」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "ai-search-gap-014",
@@ -420,7 +485,12 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「Recall@K 主要关注相关结果是否被召回，而 nDCG@K 还考虑结果在不同位置的相关性等级，因此能够评价排序质量」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「Recall@K 关注相关结果是否进候选集」成立；并排除「Recall@K 只用于 dense」「Recall@K 衡量延迟」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "ai-search-gap-015",
@@ -451,7 +521,12 @@
           2
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「lexical retrieval 对精确 token、错误码和专有名词很有优势，dense retrieval 更擅长语义改写和概念匹配」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「lexical retrieval 能保留对精确术语…」「dense retrieval 能覆盖词面不同但语义…」等 3 项成立；并排除「hybrid search 保证任何查询都不需要再做…」「hybrid search 能消除所有索引与数据质量…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "ai-search-gap-016",
@@ -479,6 +554,11 @@
           0
         ]
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「高 Recall 说明相关文档大多进入候选集，但排序质量可能不足，因此应检查 ranking/reranking，而不是简单继续扩大召回数量」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「优先分析 top-ranked results 的排…」成立；并排除「继续大幅增加 top-K」「删除所有 dense retrieval」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   }
 ]

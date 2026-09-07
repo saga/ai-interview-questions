@@ -254,6 +254,53 @@ describe('finalizeQuestion 双模式 Pool-first + Runtime fallback', () => {
     expect(t.rounds[0].latencyMs).toBe(0); // 零 LLM
   });
 
+  // P1-1 回归：池命中路径此前只取 { question, options }，把池条目自声明的测量面整段丢掉，
+  // 于是离线 Assessment Variant 在运行时被降级成 Presentation Variant。
+  it('Pool 命中时保留变体自声明的测量面（angle / cognitiveTask / assessment）', async () => {
+    const canonical: Question = {
+      ...choiceQuestion,
+      angle: 'mechanism',
+      cognitiveTask: 'explain',
+      assessment: { target: '判断缩放的必要性', reasoningGoal: '沿方差推导点积量级' },
+    };
+    const withFace: QuestionVariant = {
+      ...poolVariant,
+      id: 'choice-1__context-options__0',
+      sourceHash: computeVariantSourceHash(variantSourceOf(canonical)),
+      angle: 'comparison',
+      cognitiveTask: 'diagnose',
+      assessment: { target: '区分缩放与归一化', reasoningGoal: '从维度与方差两条路分别排除' },
+    };
+    const out = await finalizeQuestion(
+      { question: canonical, format: 'choice' as const },
+      provider,
+      { variantPool: { ...pool, variants: { 'choice-1': [withFace] } }, runtimeVariantEnabled: false },
+    );
+    expect(out.question.angle).toBe('comparison');
+    expect(out.question.cognitiveTask).toBe('diagnose');
+    expect(out.question.assessment).toEqual({
+      target: '区分缩放与归一化',
+      reasoningGoal: '从维度与方差两条路分别排除',
+    });
+  });
+
+  it('Pool 变体未声明测量面 → 继承 canonical（presentation 语义不变）', async () => {
+    const canonical: Question = { ...choiceQuestion, angle: 'mechanism', cognitiveTask: 'explain' };
+    const out = await finalizeQuestion(
+      { question: canonical, format: 'choice' as const },
+      provider,
+      {
+        variantPool: {
+          ...pool,
+          variants: { 'choice-1': [{ ...poolVariant, sourceHash: computeVariantSourceHash(variantSourceOf(canonical)) }] },
+        },
+        runtimeVariantEnabled: false,
+      },
+    );
+    expect(out.question.angle).toBe('mechanism');
+    expect(out.question.cognitiveTask).toBe('explain');
+  });
+
   it('Pool miss + 开关关（默认）→ 零 LLM 回退原题，不调用 provider', async () => {
     const sq = { question: choiceQuestion, format: 'choice' as const };
     const gen = vi.fn(async () => ({ question: '不应被调用', options: ['x', 'y'] }));

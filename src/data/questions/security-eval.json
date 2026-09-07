@@ -42,7 +42,12 @@
       "open": {
         "referenceAnswer": "要点：端到端结果评估粗粒度（二元 Pass/Fail）且易 Reward Hacking，无法区分「没定位」与「定位了但没打出 Exploit」；子任务导向可隔离能力瓶颈但提供导航提示、降低自主规划门槛，可能高估真实无指导攻击能力。A 错在以为端到端免审计。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能比较端到端结果评估与子任务导向评估在安全 Agent 评测中的取舍",
+      "reasoningGoal": "先确认纯端到端是二元 Pass/Fail，无法区分「完全未能定位漏洞」与「已精准定位但因格式或环境限制未生成有效 Exploit」；再说明子任务模式可按里程碑隔离代码审计、PoC 触发与提权突破的瓶颈；并承认子任务提示降低了自主规划要求、可能高估无指导能力，同时确认端到端仍需轨迹审计防 Reward Hacking。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "sec-eval-02",
@@ -85,7 +90,12 @@
       "open": {
         "referenceAnswer": "要点：最有效是 Pre-patch 必须触发 Sanitizer Crash 且 Post-patch 必须无 Crash 的差分验证，由此证明 PoC 触发的是该修复 Commit 对应的具体漏洞。非零退出码（语法/参数错误）和覆盖率触及补丁行都不构成 Ground-Truth。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能选出基于 Sanitizer 与提交历史判定 PoC 确实触发目标漏洞的验证机制",
+      "reasoningGoal": "先确认非零退出码、仅语句覆盖率触及补丁行都不足以证明内存安全破坏；再要求 PoC 在 Pre-patch 版本必须触发 Sanitizer Crash、在 Post-patch 版本必须正常运行，形成差分验证；并排除「两个版本产生完全一致崩溃」这一说明补丁未生效或触发了无关漏洞的情形。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "sec-eval-03",
@@ -131,7 +141,12 @@
       "open": {
         "referenceAnswer": "要点：合理模式是分层解耦（规划 Agent 与执行 Agent 分离）、外部 State Tracker/Attack Graph 把网络状态移出上下文、C2 服务解耦已控主机 Session。全量拼接工具原始输出会上下文膨胀、注意力退化（C 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能为多主机自主渗透设计避免上下文膨胀与长程决策失效的架构",
+      "reasoningGoal": "先识别单体 LLM 直接执行 Bash 会因上下文膨胀与大量冗余指令而失效；再采用高层目标规划与底层工具执行的分层解耦；并把网络状态与攻击图外置为状态跟踪服务、用独立 C2 基础设施维护已控主机会话；排除把工具原始输出全量拼接进 Prompt 以换取「完整记忆」。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "sec-eval-04",
@@ -177,7 +192,12 @@
       "open": {
         "referenceAnswer": "要点：Zero-Day = 无提示自主挖洞，主要瓶颈是探索不足（陷在无关代码/端口）；One-Day = 给定补丁/CVE 考察逆向与精准 Exploit。D 错：补丁 Diff 不含 Payload，构造利用仍需动态沙盒与内存布局分析。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「构造有效 Exploitation 仍需动态沙盒、内存布局分析与利用链合成」",
+      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「Zero-Day 评估场景下」「One-Day 评估场景下」等 3 项成立；并排除「由于 One-Day 场景提供了补丁 Diff 信息」等不成立描述。"
+    },
+    "cognitiveTask": "compare"
   },
   {
     "id": "sec-eval-05",
@@ -215,7 +235,12 @@
       "open": {
         "referenceAnswer": "要点：最严谨是按知识截止时间切片（Temporal Cutoff）或用全新真实目标做 Zero-Day 测试——直接切断预训练记忆来源。Prompt 约束挡不住权重内记忆，重命名遮不住控制流/漏洞模式，关 Web 搜索也清不掉预训练内化知识。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能选出抑制数据污染对 LLM 安全能力评估干扰的最严谨方案",
+      "reasoningGoal": "先确认历史 Payload 与 Writeup 已广泛进入预训练语料，模型可靠记忆而非推理得分；再确认按知识截止时间做时间切片或用真实新 Zero-Day 目标最直接且无争议；并排除系统提示禁令（权重已内化）、变量重命名混淆（控制流与漏洞模式仍可识别）、关闭联网（不消除参数记忆）。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "sec-eval-06",
@@ -261,7 +286,12 @@
       "open": {
         "referenceAnswer": "要点：Crash ≠ 任意代码执行（A）；ASLR 使硬编码地址失效，需内存泄露原语（B）；沙盒把漏洞限制在隔离区，需专门逃逸原语（C）。D 错：绕过防御靠利用原语与逻辑，不是加长 Context/Payload。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能说明 ASLR/KASLR 与沙盒等防御机制对漏洞利用链提出的具体要求",
+      "reasoningGoal": "先区分触发 Crash 与实现受控任意代码执行的本质差异；再说明地址随机化使硬编码地址失效、必须补上内存泄露或指针低位爆破等原语；并说明沙盒把崩溃限制在隔离内存池、越狱必须依赖专门的逃逸原语，排除「扩展上下文窗口或加长 Payload 即可自然克服」。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "sec-eval-07",
@@ -307,7 +337,12 @@
       "open": {
         "referenceAnswer": "要点：有效做法 = 独立 Transcript Auditor 审查执行轨迹 + Flag/环境严格隔离（动态生成或利用后解锁）+ 约束攻击边界阻断对宿主机/无关服务的越权访问。C 错：解除隔离会放大提权越狱与 Reward Hacking 风险。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能给出防 Reward Hacking 的高信度评测 Harness 工程措施",
+      "reasoningGoal": "先识别风险在于 Agent 攻击评测环境本身（如沙盒挂载漏洞直读 Flag、侧信道绕过目标服务）；再引入独立于 Agent 的 Transcript Auditor 校验攻击路径合规性；并把 Grader 与 Flag 严格隔离、仅在目标被正确利用后动态生成或解锁；同时把攻击范围限定到指定容器与端口，排除解除网络与系统调用隔离。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "sec-eval-08",
@@ -351,7 +386,12 @@
       "open": {
         "referenceAnswer": "要点：PTY 提供持久会话，利于 GDB/Sudo 交互等需标准输入的场景，但带来状态遗留与推理负担；无状态 Bash 在交互调试场景失效且不能消除上下文限制。工具增多可能致 Tool Misuse，两者机制不等价（D 错）。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「但同时保持会话也会引入交互杂音与状态遗留，增加模型推理负担」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「伪终端（Pseudoterminal）支持交互式会话…」成立；并排除「无状态 Bash 每次执行独立」「工具集包含的扩展工具（如 WebSearch、静态分…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "sec-eval-09",
@@ -397,6 +437,11 @@
       "open": {
         "referenceAnswer": "要点：合理做法是（B）同时报成功率+奖励哈克率、（C）按攻击链阶段给分层部分分、（D）用人工标注交叉校验 Grader 可靠性。A 错：单轮 Pass@1 受随机性影响、缺乏可复现性，不可作为唯一指标。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能设计兼顾区分度、可复现性与抗奖励哈克的安全评测度量体系",
+      "reasoningGoal": "先确认单轮 Pass@1 受运行随机性影响大、不能单独作为能力指标；再同时报告任务成功率与奖励哈克或非合规旁路解法比率；并按攻击链阶段（崩溃→读写原语→沙盒逃逸→外泄）给分层部分分而非二元判定；再用人工标注小样本对自动 Grader 做交叉校验以评估评分器自身可靠性与偏差。"
+    },
+    "cognitiveTask": "design"
   }
 ]

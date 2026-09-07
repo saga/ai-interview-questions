@@ -47,6 +47,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         description: 'CNN/RNN/LSTM/Attention/Transformer/MoE/SSM/稀疏与高效架构',
       },
       {
+        id: 'knowledge-distillation',
+        label: '知识蒸馏与模型压缩',
+        description: 'Teacher-Student 蒸馏/Temperature Scaling/Soft Targets/Dark Knowledge/Logit Matching 高温极限/Generalist-Specialist 与 Dustbin 校正',
+      },
+      {
         id: 'representation-learning',
         label: '表示学习',
         description: 'Embedding/特征表示/对比学习/预训练/迁移学习/语义空间',

@@ -64,6 +64,13 @@ interface SanityEntry {
   detail: string;
 }
 
+/** 变体测量意图审计条目（plan0907 / P0-2，仅审计，不阻断发布）。 */
+interface AssessmentAuditEntry {
+  questionId: string;
+  variantId: string;
+  detail: string;
+}
+
 interface Report {
   covered: number;
   total: number;
@@ -71,6 +78,16 @@ interface Report {
   dupPairs: DupPair[];
   sanity: SanityEntry[];
   dupThreshold: number;
+  /**
+   * 测量意图审计：变体自声明 assessment 的数量 / 继承 canonical 的数量 /
+   * 声明了但与 canonical 雷同（无法证明是不同 reasoning path）的条目。
+   * 仅用于离线审计，**不参与 healthy 判定**——存量变体全部继承，不应因此卡住发布。
+   */
+  assessmentAudit: {
+    declared: number;
+    inherited: number;
+    identical: AssessmentAuditEntry[];
+  };
   /** 是否达到发布标准（stale/近重复/语言质量全为 0）。 */
   healthy: boolean;
 }
@@ -82,6 +99,9 @@ function buildReport(dupThreshold: number): Report {
   const stale: StaleEntry[] = [];
   const dupPairs: DupPair[] = [];
   const sanity: SanityEntry[] = [];
+  const identical: AssessmentAuditEntry[] = [];
+  let assessmentDeclared = 0;
+  let assessmentInherited = 0;
   let total = 0;
   let covered = 0;
 
@@ -118,6 +138,29 @@ function buildReport(dupThreshold: number): Report {
         }
       }
     }
+
+    // ── 4. 测量意图审计（仅记录，不阻断）：变体是否声明了自己的 reasoning path ──
+    // ADR-077 下 variant 是「同一 Knowledge 的不同 reasoning path 测量」，而 reasoningGoal 不同
+    // 是「两条 path 真的不同」的直接依据；声明了却与 canonical 雷同 = 声称无效。
+    for (const v of list) {
+      if (!v.assessment) {
+        assessmentInherited++;
+        continue;
+      }
+      assessmentDeclared++;
+      const norm = (s: string) => s.replace(/\s+/g, '').toLowerCase();
+      if (
+        canonical?.assessment &&
+        norm(v.assessment.target) === norm(canonical.assessment.target) &&
+        norm(v.assessment.reasoningGoal) === norm(canonical.assessment.reasoningGoal)
+      ) {
+        identical.push({
+          questionId: qid,
+          variantId: v.id,
+          detail: '变体声明的测量意图与 canonical 完全相同，无法证明是不同 reasoning path',
+        });
+      }
+    }
   }
 
   return {
@@ -127,6 +170,7 @@ function buildReport(dupThreshold: number): Report {
     dupPairs,
     sanity,
     dupThreshold,
+    assessmentAudit: { declared: assessmentDeclared, inherited: assessmentInherited, identical },
     healthy: stale.length === 0 && dupPairs.length === 0 && sanity.length === 0,
   };
 }
@@ -149,6 +193,15 @@ function printReport(r: Report, noFail: boolean): void {
   console.log(`  语言质量不合格: ${r.sanity.length}`);
   for (const s of r.sanity) {
     console.log(`    ✗ ${s.questionId} / ${s.variantId} [${s.kind}] —— ${s.detail}`);
+  }
+
+  // 审计项：不参与 healthy，存量变体全部继承 canonical，属于预期状态而非缺陷。
+  console.log(
+    `  测量意图审计: 自声明 ${r.assessmentAudit.declared} · 继承 canonical ${r.assessmentAudit.inherited}` +
+      ` · 与 canonical 雷同 ${r.assessmentAudit.identical.length}（审计项，不阻断）`,
+  );
+  for (const a of r.assessmentAudit.identical) {
+    console.log(`    • ${a.questionId} / ${a.variantId} —— ${a.detail}`);
   }
 
   if (r.healthy) {

@@ -1,6 +1,11 @@
 // 题目变体生成（one-shot 结构化生成，不需要 Agent）。
-// 轻量变体边界（ADR-036）：LLM 只改写题干与选项表达（presentation），
-// 不得重新决定 answer / explanation / 选项数量 / 选项顺序 / 选项真假属性。
+//
+// ⚠️ 本模块产出的是 **Runtime Presentation Variant**（plan0907 P1-1 方案 A / ADR-077）：
+// 只改写表达，**不改变 assessment identity**——不换 topic / angle / cognitiveTask / difficulty / assessment，
+// 也不重新决定 answer / explanation / 选项数量 / 选项顺序 / 选项真假属性（ADR-036 轻量变体边界）。
+// 「同一 Knowledge 的不同 reasoning path 测量」= **Offline Assessment Variant**，只能由离线池
+// （`src/data/variants/*.json`，generator=offline）提供；`questionVariantSchema` 已在 schema 层
+// 禁止 runtime 条目声明测量面，本模块也不向模型暴露这些字段（见 buildUser）。
 //
 // 职责边界（2026-09-02 第五轮）：本模块**只做 LLM 适配 + 解析**，不做任何校验。
 // 唯一的校验入口是 `application/sessionEvaluator.finalizeQuestion` 里的 `validateVariant`

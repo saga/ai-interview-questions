@@ -1,5 +1,11 @@
 # 架构设计
 
+> **文档权威性（plan0907 P1-4）**：本文件描述**当前有效架构**，是「现在系统到底怎么跑」的单一出处。
+> `docs/DECISIONS.md` = 历史 ADR 决策记录（含已被取代的旧口径，只在条目内注明演进）；
+> `docs/question-content-spec.md` = 当前题库内容规范；`docs/prompt_part1.md` / `part2.md` = 当前生成协议。
+> `memory/` `improvement_plan/` `CHANGELOG.md` 是历史材料，不承担「现在应该怎么做」的权威性。
+> 三者冲突时以本文件为准，并请回头修正冲突处——否则会出现「代码是新版、文档是旧版、Prompt 是第三版」。
+
 ## 总体形态
 
 单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，核心为纯静态 SPA、无独立业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。仅 Cloudflare Workers AI provider 需要同源代理：本地开发由 `server/index.js`（经 Vite dev proxy 转发）提供，生产由 `worker/index.ts`（Cloudflare Worker）提供，二者均不含业务逻辑（详见 `DEPLOYMENT.md`）。**代理安全（ADR-060）**：两者在 `new URL(stripped, base)` 之后硬性校验 `hostname === 'api.cloudflare.com' && protocol === 'https:'`，拒绝协议相对（`//evil.com`）或绝对 URL 改变目标主机——否则会变成对任意主机的开放中继并泄露 `Authorization`，违规请求直接返回 400。
@@ -73,7 +79,14 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
                   题目/知识点由调用方注入，浏览器与 CLI 共用；ADR-032 慢速生产管线度量端；
                   coverage ≠ quality ≠ retrieval readiness 三维分开展示，
                   见 assessmentQualityOf / retrievalReadinessOf）
-   questionIdentity.ts canonical 身份判定：assessment contract（topic×angle×difficulty）
+   assessmentInference.ts 测量意图（assessment.target / reasoningGoal）离线推断（纯函数）。
+                  只做**有据可依的抽取**：target 取解析里的核心断言句（分句打分取最优，
+                  排除元信息行 / `A 项…` 判错句 / 干扰项复述），reasoningGoal = angle×cognitiveTask
+                  起手动作 + 实际正确项/干扰项摘要。抽不到断言句返回 null，不用模板文本灌满。
+                  存量回填入口：`npm run question:assessment`（scripts/backfill-assessment.ts）
+   questionIdentity.ts canonical 身份判定：assessment contract
+                  （**topic × angle × difficulty × cognitiveTask**，ADR-077 起为四维；
+                   早期文档的「topic × angle × difficulty」三维口径已废弃）
                   任一变化即新身份；deriveCanonicalId 分配 fork 新 ID（P1-1）
   blueprint.ts   题目蓝图：缺口格→受约束考察目标（purpose/expectedConcepts 取自
                  知识节点）+ 同主题变体候选检索 + 成题一致性校验（ADR-032 管线 ③ 步；
@@ -94,16 +107,22 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                       （并发上限 + 单次超时 + AbortSignal 取消 + 失败重试 + session 自动销毁，
                       核心机制见下「Chrome 内置 AI 的并发与卡死」，ADR-021）
    local.ts          本地 OpenAI 兼容服务 provider 构建（默认 Unsloth 127.0.0.1:8888/v1）
-   variant.ts        变体生成（one-shot 重写题干；complete 由 provider 注入，不感知底层）。
-                     VARIANT_SYSTEM 为稳定契约前缀（v2 分层：角色→知识契约不变量→变化维度→生成规则→
-                     distractor 规则→抗暗示→静默验证→JSON 输出契约），专为 Flash 类模型设计，把
-                     「真正不同（认知角度/reasoning path）/ requiredConcepts 必须被实际考察 / 答案适用条件
-                     不变量 / 优先用有明确错因的 plausible distractor」写成显式规则；动态数据只在 buildUser
-                     （知识契约 + 原题 + 变体目标），便于 DeepSeek KV Cache 命中。
+   variant.ts        变体生成（one-shot 重写题干与选项；complete 由 provider 注入，不感知底层）。
+                     ⚠️ 本模块产出的是 **Runtime Presentation Variant**（P1-1 方案 A）：只改表达，
+                     assessment identity 恒等于 canonical，不换 angle/cognitiveTask/assessment
+                     （schema 层亦禁止 runtime 条目声明测量面）。
+                     「同一 Knowledge 的不同 reasoning path」= **Offline Assessment Variant**，
+                     只来自 `src/data/variants/*`（generator=offline），经 applyVariant 落地声明的测量面。
+                     VARIANT_SYSTEM 为稳定契约前缀（v4：任务约束 + 选项改写幅度 + 一一对应 + JSON 输出契约），
+                     动态数据只在 buildUser（topic + requiredConcepts + 原题），便于 DeepSeek KV Cache 命中。
    evaluate.ts       开放形态评分（one-shot 四维评分；overall 由 domain 聚合；同上注入 complete）。
                      EVAL_SYSTEM 为稳定契约前缀（角色 + 判断标准 + 四维原则 + 责任边界「LLM 不计算
                      overall」+ JSON 输出契约），动态数据只在 buildEvalUser。
    questionChallenger.ts  质询（one-shot 结构化 JSON；QUESTION_CHALLENGER_SYSTEM 同样为稳定契约前缀）。
+                     判定维度：self-contained / sufficiency / logic / **answer-validity**（按题型分支：
+                     单选「唯一最佳」、多选「正确项独立成立 + 错项逐个为假」）/ distractors / explanation；
+                     `summarizeChallenges` 汇总批量结果。UI 侧用于单题质询，
+                     离线侧由 `npm run question:challenge` 批量跑（**语义质量审计，默认不阻断，--gate 才卡**）。
    usageTelemetry.ts KV Cache 命中遥测（P1④）：devUsageLogger 仅 import.meta.env.DEV 打印
                      in/out/token 与 cacheHit/cacheMiss，用于验证 stable-prefix prompt 是否命中缓存。
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid

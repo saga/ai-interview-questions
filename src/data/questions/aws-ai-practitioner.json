@@ -34,12 +34,22 @@
         "answer": [
           1
         ],
-        "misconceptionMap": [0, null, 1, 2]
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- PDP 展示特征→预测的影响，服务可解释性。\n- A 代码；C 样本；D 收敛表，均非解释性内容。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「D 错：收敛表说明训练过程而非预测逻辑」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「偏依赖图（PDPs）」成立；并排除「模型训练的代码」「训练所用的样本数据」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "aws-ai-practitioner-02",
@@ -75,7 +85,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n- 提取关键点=摘要，摘要聊天机器人最贴合。\n- A 仅实体；B 推荐；D 翻译，均不符。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能按任务目标匹配 LLM 应用形态，判断「从长文档提取关键点」对应的是摘要而非抽取或生成类任务",
+      "reasoningGoal": "先识别业务诉求是「读长文档并提炼关键点」，即压缩后保留要义；再据此确认摘要聊天机器人直接对应该诉求；并排除命名实体识别（只抽实体不提炼要点）、推荐引擎（与文档要点无关）、翻译系统（面向语种转换）。"
+    },
+    "cognitiveTask": "apply"
   },
   {
     "id": "aws-ai-practitioner-03",
@@ -110,7 +125,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- 决策树规则路径可解释内部机制→输出。\n- B/C 仅系数；D 黑盒。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B、C 错：线性/逻辑回归为整体系数，难以“记录内部机制”式的逐步解释」",
+      "reasoningGoal": "先复现该机制的内部过程；据此确认「决策树（Decision trees）」成立；并排除「线性回归（Linear regression）」「逻辑回归（Logistic regression）」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "aws-ai-practitioner-04",
@@ -147,12 +167,22 @@
         "answer": [
           1
         ],
-        "misconceptionMap": [0, null, 1, 2]
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。\n- 分类正确比例=准确率。\n- A/C 回归指标；D 超参。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「A、C 错：R² 与 RMSE 用于回归（连续值）」",
+      "reasoningGoal": "先回到该机制的第一性原理；据此确认「准确率（Accuracy）」成立；并排除「R² 分数（R-squared score）」「均方根误差（RMSE）」等不成立描述。"
+    },
+    "cognitiveTask": "apply"
   },
   {
     "id": "aws-ai-practitioner-05",
@@ -188,7 +218,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- 长度/语种约束用提示词直接对齐。\n- B 成本高；C/D 增随机性不利格式。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能在不换模型的前提下，选出控制输出长度与语种这类生成约束的正确手段",
+      "reasoningGoal": "先判断「输出简短」与「使用特定语言」都属于可在提示层直接声明的生成约束；再据此确认调整提示词成本最低且最直接；并排除换模型尺寸（成本高且不确定）、提高 temperature 与 Top-K（增加随机性，反而不利于稳定服从格式约束）。"
+    },
+    "cognitiveTask": "apply"
   },
   {
     "id": "aws-ai-practitioner-06",
@@ -225,7 +260,12 @@
       "open": {
         "referenceAnswer": "正确答案：C。\n- 大 payload+长时处理+近实时→异步推理。\n- A 受限 6MB/60s；B 限短请求；D 离线不符近实时。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「A 错：实时推理 payload 上限约 6MB、超时约 60s，装不下 1GB/1h」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「异步推理（Asynchronous inferenc…」成立；并排除「实时推理（Real-time inference）」「无服务器推理（Serverless inferenc…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "aws-ai-practitioner-07",
@@ -261,7 +301,12 @@
       "open": {
         "referenceAnswer": "正确答案：B。\n- 适配预训练模型到新任务=迁移学习。\n- A/C 调轮数；D 无监督，均非。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能识别「复用预训练模型适配新任务」对应的策略是迁移学习，而非训练轮数或无监督范式",
+      "reasoningGoal": "先抓住题干的两个关键条件——避免从零新建、把已有预训练模型适配到相关新任务；再据此确认迁移学习通过复用预训练权重并微调来同时满足两者；并排除增减 epoch（只调训练轮数，不改变是否从零）与无监督学习（与复用预训练权重无直接关系）。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "aws-ai-practitioner-08",
@@ -298,12 +343,22 @@
         "answer": [
           0
         ],
-        "misconceptionMap": [null, 0, 1, 2]
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A。\n- 高准确率+低标注风险→人工校验闭环（Ground Truth Plus）。\n- B 检索增强；C 识别；D BI，均不符。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B 错：Bedrock 知识库用于检索增强，不解决标注」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此确认「用 Ground Truth Plus 做人工校验」成立；并排除「用 Bedrock 知识库做数据增强」「用 Rekognition 做图像识别」等不成立描述。"
+    },
+    "cognitiveTask": "apply"
   },
   {
     "id": "aws-ai-practitioner-09",
@@ -341,7 +396,12 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- Bedrock 扮演的 IAM 角色需 kms:Decrypt+读桶权限。\n- B 不安全；C 提示绕不开权限；D 无关。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「C 错：提示工程不能绕开 IAM 权限」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「确保 Bedrock 角色有解密该密钥的权限」成立；并排除「将 S3 桶访问权限设为公开以允许互联网访问」「用提示工程技术让模型去 S3 中查找信息」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   },
   {
     "id": "aws-ai-practitioner-10",
@@ -378,6 +438,11 @@
       "open": {
         "referenceAnswer": "正确答案：A。\n- 边缘本地 SLM 无网络往返，延迟最低。\n- B 边缘难跑且慢；C/D 集中式有网络延迟。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「C、D 错：集中式 API 需网络往返，无法满足“最低延迟”，且 LLM 更慢」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「在边缘设备部署优化的小语言模型（SLM）」成立；并排除「在边缘设备部署优化的LLM（大型语言模型）」「引入集中式 SLM API 与边缘设备异步通信」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   }
 ]

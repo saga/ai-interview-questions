@@ -94,14 +94,16 @@ function assessmentWeakRankOf(q: Question, profile: LearnerProfile | undefined):
  * 共用同一选题策略，避免两条路径各自实现一套 interviewer policy。排序键（值越小越优先，确定性）：
  *   1. 主题档位：薄弱主题（已练但均分 < WEAK_AVG）最前 → 未练过次之 → 已掌握最后；
  *   2. 档内序：薄弱主题按掌握度升序；未练/已掌握按知识点拓扑序（基础优先）；
- *   3. 角度薄弱度：angleWeakRank 升序（0=未练/最弱，最该被考察）；
- *   4. assessment-cell 薄弱度：assessmentWeakRankOf 升序（topic×angle×cognitiveTask 整格，
+ *   3. assessment-cell 薄弱度：assessmentWeakRankOf 升序（topic×angle×cognitiveTask 整格，
  *      让"同一 angle 下某种认知任务没验证过"优先于已验证的；旧库无 cognitiveTask 回退 angle 层）；
- *   5. 角度证据量：(topic,angle) 累计作答次数升序（覆盖效率，避免总问同一类）；
- *   6. assessment 证据量：(topic,angle,cognitiveTask) 累计作答次数升序（更细的覆盖效率）；
+ *      必须排在 angle 层之前——否则一个已掌握的 angle 会把其下未验证的 cognitiveTask 一起压掉。
+ *   4. 角度薄弱度：angleWeakRank 升序（0=未练/最弱，最该被考察）；作为 assessment 层的粗粒度兜底，
+ *      仅在两题同 assessment 档（或都没有 cognitiveTask）时才决定先后；
+ *   5. assessment 证据量：(topic,angle,cognitiveTask) 累计作答次数升序（更细的覆盖效率）；
+ *   6. 角度证据量：(topic,angle) 累计作答次数升序（覆盖效率，避免总问同一类）；
  *   7. 难度：easy → hard（同权内先易后难，难度梯度留给 Agent 决策或策略子集过滤）；
  *   8. 题库稳定序兜底：完全可预测、可测试。
- * 可选 rng 只打散「前 5 键完全相同」的并列组，不改变排序语义——随机不再参与策略选择。
+ * 可选 rng 只打散「除稳定序兜底外所有键完全相同」的并列组，不改变排序语义——随机不再参与策略选择。
  */
 export function rankCandidatePool(pool: Question[], profile?: LearnerProfile, rng?: () => number): Question[] {
   // 主题级排序键：weak → [0, mastery]；unattempted → [1, topoRank]；mastered → [2, topoRank]
@@ -119,12 +121,13 @@ export function rankCandidatePool(pool: Question[], profile?: LearnerProfile, rn
     return [
       tier,
       order,
-      angleWeakRank(profile, q.topic, q.angle),
+      // assessment 层（topic×angle×cognitiveTask）先于 angle 层：细粒度未验证项不被粗粒度已掌握项掩盖。
       assessmentWeakRankOf(q, profile),
-      angleEvidence(q, profile),
+      angleWeakRank(profile, q.topic, q.angle),
       assessmentEvidence(q, profile),
+      angleEvidence(q, profile),
       DIFF_ORDER.indexOf(q.difficulty),
-      idx,
+      idx, // 稳定序兜底，参与排序但不参与「并列组」判定
     ];
   };
   const ranked = pool
@@ -136,12 +139,14 @@ export function rankCandidatePool(pool: Question[], profile?: LearnerProfile, rn
       return 0;
     });
   if (rng) {
-    // 并列（前 5 键完全相同）组内打散：确定性排序 + 并列随机，二者兼得
+    // 并列（除末尾稳定序 idx 外所有键完全相同）组内打散：确定性排序 + 并列随机，二者兼得。
+    // 用 keys.length - 1 而非硬编码前 N 键，避免排序键增删后并列判定与排序语义脱节。
     const result: Question[] = [];
+    const cmpLen = ranked.length ? ranked[0].keys.length - 1 : 0;
     let i = 0;
     while (i < ranked.length) {
       let j = i + 1;
-      while (j < ranked.length && ranked[j].keys.slice(0, 5).every((v, k) => v === ranked[i].keys[k])) j++;
+      while (j < ranked.length && ranked[j].keys.slice(0, cmpLen).every((v, k) => v === ranked[i].keys[k])) j++;
       result.push(...pickQuestions(ranked.slice(i, j).map((x) => x.q), j - i, rng));
       i = j;
     }

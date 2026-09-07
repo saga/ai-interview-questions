@@ -33,7 +33,12 @@
       "open": {
         "referenceAnswer": "正确：稀疏 MoE 用多个专家 FFN 替换『部分』前馈层并加路由器；每个 token 仅激活少数专家。错误：并非替换所有 FFN；单 token 计算量取决于激活专家数而非专家总数。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「稀疏 MoE 用多个专家前馈子层（expert FFN）替换原有的『部分』前馈层，并增加路由器决定每个 token 走哪些专家」",
+      "reasoningGoal": "先明确该概念的定义与适用边界；据此逐项确认「用多个专家前馈子层替换原有的部分前馈层」「每个 token 在每层只被路由到少数几个专家」等 2 项成立；并排除「MoE 会替换掉所有前馈层」「引入 MoE 后」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "moe-mixtral-02",
@@ -69,7 +74,12 @@
       "open": {
         "referenceAnswer": "Mixtral 每层路由器对每 token 取 top-2 of 8 专家；路由按 token、按层独立，不同层可选不同专家。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「路由是按 token、按层独立进行的，不同层可以选出不同的 2 个专家」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「路由器对每 token 输出专家权重」「每个 token 在每一层被独立路由」等 2 项成立；并排除「所有 token 共享同一组固定专家」「路由在序列级别进行」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "moe-mixtral-03",
@@ -114,7 +124,12 @@
     "misconceptions": [
       "以为未激活的专家不计入总参数量",
       "以为标称参数量是按量化后的位数折算的"
-    ]
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「还要区分两个不同的数：46.7B 是**总参数量**，决定显存（所有专家都可能被路由到，需常驻，fp16 下约 93GB）」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此逐项确认「注意力、词嵌入、归一化等参数被全部 8 个专家共享、…」「单个专家 FFN 约 5.6B（每层 3×4096×…」等 2 项成立；并排除「每个 token 只路由到 2 个专家」「模型默认以 4-bit 存储」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "moe-mixtral-04",
@@ -145,12 +160,27 @@
         "answer": [
           0,
           1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
         "referenceAnswer": "fp16 下 >90GB，单张 24GB 装不下；应 4-bit 量化 + device_map='auto' 降到约 24GB。4-bit 对 MoE 支持。"
       }
-    }
+    },
+    "misconceptions": [
+      "按激活参数估算显存需求",
+      "认为 MoE 的收益与硬件通信无关（all-to-all 常成为瓶颈）"
+    ],
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「Mixtral 8x7B 在 fp16 下需 >90GB 显存，单张 24GB 卡无法容纳」",
+      "reasoningGoal": "先识别场景给出的约束条件；据此逐项确认「采用 4-bit 量化并配合 device_map=…」「若坚持 fp16 精度则需要多卡或 >90GB 显存」等 2 项成立；并排除「直接以 fp16 加载即可」「必须用 INT8 且启用张量并行才能在该卡运行」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "moe-mixtral-05",
@@ -185,7 +215,12 @@
       "open": {
         "referenceAnswer": "优势：总参大但解码像 12B 稠密，质量/成本更优（榜上 68.42>67.87）。代价：权重全驻留，显存更高；延迟非等价。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「代价是全部权重需驻留显存，部署显存通常高于同质量稠密模型」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「总参更大但单 token 解码计算量对标小得多的稠密…」「参数更多需更多显存驻留全部权重」等 2 项成立；并排除「MoE 与同质量稠密模型在推理延迟上完全等价」「Mixtral 榜上低于 Llama-2-70B」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "moe-mixtral-06",
@@ -221,6 +256,11 @@
       "open": {
         "referenceAnswer": "建议 LoRA 加在注意力投影层（q/k/v/o_proj），避免对专家 MLP 层做 PEFT。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「实践中建议把适配器加在注意力投影层（q_proj/k_proj/v_proj/o_proj），并避免对专家 MLP 层做 PEFT，因为专家层稀疏且与 PEFT 兼容性较差」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「把 LoRA 适配器加在注意力投影层（q/k/v/o…」「避免对专家 MLP 层做 PEFT」等 2 项成立；并排除「对所有 8 个专家 MLP 层均匀加 LoRA」「只微调路由器（router）即可」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   }
 ]

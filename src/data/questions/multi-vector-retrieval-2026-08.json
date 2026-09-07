@@ -44,7 +44,12 @@
       "open": {
         "referenceAnswer": "Late-Interaction（如 ColBERT）为 Query 和 Document 的每个 token 都生成独立向量，相关性得分用 MaxSim 算子计算：对 Query 中每个 token 向量，与 Document 所有 token 向量逐一求点积并取最大值（最匹配得分），再把这些最大值跨 Query token 累加得到整体得分。Dense 单向量模型则把整段文本压缩成一个向量，只做一次点积或余弦相似度。多向量方式保留细粒度语义、可解释性更强，但索引体积与检索算力开销更高。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「B 指出 Late-Interaction 为每个 token 保留独立向量，可用 MaxSim 矩阵实现可解释的细粒度匹配，但文档侧索引体积与检索计算开销显著高于单向量模型」",
+      "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「每一个 Query token 向量与 Docume…」「Late-Interaction 为每个 token…」等 2 项成立；并排除「每一个 Document token 向量与 Que…」「Query 向量与 Document 向量先经过交叉…」等不成立描述。"
+    },
+    "cognitiveTask": "explain"
   },
   {
     "id": "multi-vector-domain-finetune-01",
@@ -91,7 +96,12 @@
       "open": {
         "referenceAnswer": "领域微调 Multi-Vector 检索模型时，从仅做大规模对比预训练（unsupervised / pre-supervised）的 Checkpoint 起调通常优于从 fully-SFT 的通用检索 Checkpoint 起调：后者已锁定通用 web 检索的特征偏好，在领域数据上易停滞甚至回退；前者保留 Late-Interaction 交互结构且未被过度拟合，更易吸收领域语义。同时应保留多向量 MaxSim 结构而非替换为单向量投影，以更好适配领域分布。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「D 指出领域微调时保留 Late-Interaction 的多向量交互结构（MaxSim）比替换为单向量投影，通常更能吸收领域特定的语义分布」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「仅经过大规模对比预训练（Unsupervised /…」「领域微调时保留 Late-Interaction 的…」等 2 项成立；并排除「经过通用检索任务全面监督微调（Supervised …」「从零随机初始化 Dense 投影层并固定基底 Tra…」等不成立描述。"
+    },
+    "cognitiveTask": "evaluate"
   },
   {
     "id": "multi-vector-loss-scale-01",
@@ -131,7 +141,12 @@
       "open": {
         "referenceAnswer": "Dense 对比损失需 scale≈20 是因为两单位向量余弦相似度被限制在 [-1,1]，要用大温度放大分差让 Softmax 有区分度。Multi-Vector 的得分是各 Query token 的 MaxSim 累加值，对 32 token 的 Query 可达约 30，数值范围远大于单向量；若仍乘 20，Softmax 输入 Logit 极大、分布饱和、反向传播梯度近乎为零（梯度消失）。因此多向量损失（MultiVectorMultipleNegativesRankingLoss）默认 scale=1.0。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 指出 Dense 模型中两单位向量余弦相似度局限在 [-1,1]，故需较大 scale（约 20）放大分差以让 Softmax 具备区分度」",
+      "reasoningGoal": "先确定计算所依赖的量与其关系；据此逐项确认「MaxSim 分数跨 Query token 累积」「Dense 模型两单位向量余弦相似度限于 [-1」等 2 项成立；并排除「Softmax 输出过分平滑、正负样本间梯度极小」「损失函数会因此完全无法正常反向求导」等不成立描述。"
+    },
+    "cognitiveTask": "infer"
   },
   {
     "id": "multi-vector-gradcache-01",
@@ -177,7 +192,12 @@
       "open": {
         "referenceAnswer": "GradCache 的核心思想是解耦“物理显存分块（mini_batch_size）”与“有效对比批次大小（effective batch size）”。前向阶段按 mini-batch 分块编码文本、收集不带梯度的特征向量，构建全局对比矩阵算 Loss 及对特征的梯度；第二阶段再分块做带梯度的前向传播并把先前向量梯度注入回传。它能在不损失梯度精确度的情况下用有限显存支撑更大的 In-Batch Negatives，从而提升检索训练质量。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「E 指出它解耦物理显存分块（mini-batch）与有效对比批次大小（effective batch），可在有限显存下用更大 In-Batch Negatives 提升训练质量」",
+      "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「GradCache 在前向传播中按小 Chunk 编…」「GradCache 解耦物理显存分块（mini-ba…」等 2 项成立；并排除「GradCache 通过放弃反向传播中的精确梯度」「GradCache 将 Query 和 Docume…」等不成立描述。"
+    },
+    "cognitiveTask": "identify"
   },
   {
     "id": "multi-vector-length-truncation-01",
@@ -221,7 +241,12 @@
       "open": {
         "referenceAnswer": "检索性能会显著下降。训练对比损失时若把 max_length 限制为 512，模型在参数更新时永远看不到 512 token 之后的文档文本及其 token 向量交互；推理期虽能处理 8192 长度，但后半段 token 的 Late Interaction 特征与权重未在该长上下文场景下被优化，匹配质量不可逆变差（实验约损失 0.015 NDCG@10，且增加训练数据也无法弥补）。训练截断长度应尽量与实际 Serving 需求匹配。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「B 错在称位置编码可无缝外推、性能不受影响」",
+      "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「检索性能显著下降」成立；并排除「检索召回率提升」「模型性能不受影响」等不成立描述。"
+    },
+    "cognitiveTask": "predict"
   },
   {
     "id": "multi-vector-skiplist-01",
@@ -261,7 +286,12 @@
       "open": {
         "referenceAnswer": "配置 skiplist_words（如加入 string.punctuation）后，文档编码与索引阶段会直接排除属于 skiplist 的 token 向量，不写入向量库。标点 token 占比不低且对语义检索贡献极低，去除后可节省约 9.6% 的索引存储，同时消除噪声匹配、保持甚至微幅提升精度；Multi-Vector 索引体积随文档 token 数近似线性增长，减 token 是主要降本手段。它不会造成 MaxSim 维度不匹配（Query 侧不变，无需 Padding），通常也降低而非升高检索延迟。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能逐项判断下列主张是否成立，核心判断为「B 指出文档侧直接跳过标点 token 的向量生成与存储，显著降低索引体积（约降 10%）且通常不损害甚至微幅提升检索质量」",
+      "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「在文档侧直接跳过标点符号 token 的向量生成与存…」「Multi-Vector 索引体积随文档 token…」等 2 项成立；并排除「仅减少索引构建时的 CPU 计算耗时」「会导致 MaxSim 算子中的矩阵维度不匹配」等不成立描述。"
+    },
+    "cognitiveTask": "design"
   },
   {
     "id": "multi-vector-eval-corpus-01",
@@ -299,6 +329,11 @@
       "open": {
         "referenceAnswer": "最可能的原因是检索语料库规模过小、缺乏干扰项：当 Corpus 只含每个 Query 的 Gold Passage（1000 篇选 1），任务极简，几乎所有模型都能得近满分 NDCG@10，无法反映真实排序与抗干扰能力。要在评估中拉开模型差距，必须在 Corpus 中加入大量无关联干扰文档（Distractors，例如从训练集抽取数十万未标注文档），提高检索密度与混淆度。指标选 NDCG 本身没错，问题在评估集构建。"
       }
-    }
+    },
+    "assessment": {
+      "target": "能判断「必须在 Corpus 中加入大量无关联干扰文档（Distractors，如从训练集抽数十万未标注文档）以提升检索密度与混淆度」",
+      "reasoningGoal": "先定位现象的直接诱因；据此确认「检索候选集（Corpus）规模过小且缺乏干扰项（Di…」成立；并排除「评估指标选择错误」「测试集中的 Query 长度超过了 Query Ma…」等不成立描述。"
+    },
+    "cognitiveTask": "diagnose"
   }
 ]

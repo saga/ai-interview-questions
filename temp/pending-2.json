@@ -1,0 +1,293 @@
+[
+  {
+    "seq": 17,
+    "kind": "question",
+    "id": "agtool-guard-06",
+    "topic": "agent-guardrails",
+    "angle": "system-design",
+    "question": "在无需用户实时干预的自主 Agent 系统中，安全分类器难免存在一定比例的误报（False Positive，即阻止了本无害的操作）。为保障系统连续运行，系统采用「拦截后继续（Deny-and-Continue）」与阈值熔断机制。关于该机制的设计与实现，下列分析正确的有哪些？（多选）",
+    "explanation": "A 正确：被阻断时，系统将阻断反馈（Denial reason）写回工具返回结果，提示 Agent「该路径被安全策略拒绝，请尝试更安全的方法」，促使其寻找替代解法。B 正确：误报（False Positive）从 fatal error 降级为自适应重试（Retry），低比例误报转化为可接受的重试开销，避免单个误报导致任务中断或崩溃。C 正确：若 Agent 持续触发阻断，说明陷入死循环或被深度注入，必须设置连续/累计拦截上限（如连续 3 次或累计 20 次）强行熔断。D 错误：在 Headless Mode（无交互终端）下无法等待用户输入，触发熔断的最佳策略是直接终止进程（Terminate），防止静默越权，而非降级等待控制台输入。",
+    "correct": [
+      "当工具调用被分类器拒绝时，拒绝原因会作为工具执行结果返回给 Agent，促使其主动寻找安全性更高的替代解法",
+      "该机制使得低比例的误报（False Positive）转化为可接受的重试开销，避免单个误报直接导致任务中断或系统崩溃",
+      "为防止被恶意注入或严重失控的 Agent 不断尝试绕过安全边界，系统必须设置连续拦截上限与累计拦截上限熔断机制"
+    ],
+    "distractors": [
+      "在无界面后台运行模式（Headless Mode）下，当触发拦截熔断阈值时，系统应自动降级为等待控制台终端的用户输入"
+    ]
+  },
+  {
+    "seq": 18,
+    "kind": "question",
+    "id": "agentic-subagent-03",
+    "topic": "context-engineering",
+    "angle": "system-design",
+    "question": "在复杂 Agent 框架中，常引入“子 Agent”（Subagents，例如专门负责代码库探索的 Explore Subagent 或负责跑测试的 Test Subagent）。关于引入 Subagent 架构的核心优势与设计取舍，下列表达正确的有？（多选）",
+    "explanation": "A正确：独立精简Prompt/工具提升精度。C正确：隔离消化后仅返回摘要防膨胀。D正确：可并行降低延迟。B错误：共享窗口错误。E错误：仍有死循环风险。",
+    "correct": [
+      "子 Agent 可以拥有独立且精简的 System Prompt 与工具集，从而提高特定子任务（如只读探索）的执行成功率",
+      "子 Agent 在自身 Context 内消化检索与日志，只把凝练结论返回，防止主 Context 膨胀。",
+      "可以通过并行启动多个子 Agent 分别调查独立子模块，从而将原本串行的上下文探索过程转化为并发处理以降低整体等待时间"
+    ],
+    "distractors": [
+      "父子共享窗口是默认实现，框架透传全部历史；隔离反而增加实现复杂度，得不偿失。",
+      "子 Agent 有独立判断，死循环多为主从耦合所致；解耦即防循环，架构即解法。"
+    ]
+  },
+  {
+    "seq": 19,
+    "kind": "question",
+    "id": "agentic-safety-05",
+    "topic": "safety-alignment",
+    "angle": "tradeoff",
+    "question": "当赋能 Coding Agent 可以在本地环境中执行 Shell 命令或 Git 操作时，系统架构师需要平衡 Agent 的“自主性”与“破坏风险”。下列哪些技术手段属于保障 Agent 安全高效执行工具命令的推荐工程实践？（多选）",
+    "explanation": "A正确：黑名单+人工确认。C正确：沙盒隔离。E正确：只读自动、写操作审批。B错误：频繁push污染主干。D错误：移除Shell退化为Chat。",
+    "correct": [
+      "将高危命令（如 rm -rf、git push --force、删除数据库）列入显式黑名单或要求必须弹出 Human-in-the-loop 确认",
+      "为 Agent 提供专用的沙盒（Sandbox）环境或隔离容器（如 Docker），限制其访问宿主机敏感目录与网络资源",
+      "允许 Agent 执行只读类指令（如 git status、ls、grep）无需人工审批，仅对写操作或破坏性指令施加审批逻辑"
+    ],
+    "distractors": [
+      "鼓励 Agent 在每次修改代码后直接执行 git commit 和 git push 到主干分支，以确保所有修改被及时持久化",
+      "移除所有 Shell 执行工具，仅允许 Agent 逐行输出代码更改并由开发者手动复制粘贴到 IDE 中以确保零风险"
+    ]
+  },
+  {
+    "seq": 20,
+    "kind": "question",
+    "id": "agentic-context-drift-06",
+    "topic": "pytorch-performance",
+    "angle": "debugging",
+    "question": "在一次长达数十分钟的复杂代码重构任务中，Coding Agent 在前几轮交互中表现出色，但随着交互轮次达到 40 轮以上、上下文占用接近 128k Token 时，Agent 开始频繁遗忘最开始设定的架构约束，甚至重复执行已经失败过的工具命令。下列哪项是导致该现象的最根本原因？（单选）",
+    "explanation": "C正确：长Context注意力稀释与Lost in Middle。A无状态权重固定。B限流报429非遗忘。D缓存不截断。",
+    "correct": [
+      "注意力机制在超长 Context 下出现“Lost in the Middle”效应以及垃圾 Context（噪点 Token）积聚对注意力的稀释"
+    ],
+    "distractors": [
+      "LLM 模型进入了永久性权重退化状态，需要重启 API 服务以清空模型显存中的权重缓存",
+      "频繁的工具调用触发了 API 速率限制（Rate Limit），导致模型随机丢弃返回的 Response",
+      "厂商的 Prefix Caching 机制在超过 32k Token 后会自动将早期的 System Prompt 强制删除"
+    ]
+  },
+  {
+    "seq": 21,
+    "kind": "question",
+    "id": "task-ai-03",
+    "topic": "task-oriented-ai",
+    "angle": "tradeoff",
+    "question": "在一个自动化工单处理系统中，AI 模型在对用户请求生成决策操作方案（如自动扣款或退款）时会输出一个置信度得分（Confidence Score），系统通过设置置信度阈值（Threshold）决定是“自动执行”还是“转交人工客服”。若业务团队在某次调整中降低了该置信度阈值，系统最可能出现的架构与业务表现是？",
+    "explanation": "降阈则自动执行放宽、自助率升但低置信样本误判与资金风险升；反之阈升则人工负载升而风险降。",
+    "correct": [
+      "自动化解决率（Self-service Rate）提高，但高风险场景下的误判率和资金损失风险随之上升"
+    ],
+    "distractors": [
+      "人工客服队列负载大幅增加，但自动化操作的资金错误率显著降低",
+      "人工客服平均处理时长（AHT）急剧上升，且模型推理延迟大幅增加",
+      "系统的整体准确率提升，且转人工率（Escalation Rate）同步上升"
+    ]
+  },
+  {
+    "seq": 22,
+    "kind": "question",
+    "id": "local-first-tooling",
+    "topic": "system-design",
+    "angle": "scenario",
+    "question": "在每日处理数百个合并请求的高并发 Agentic 协作场景中传统基于 Web API 的中心化平台常面临网络延迟高、Rate Limit 以及可用性波动等瓶颈。为了构建高吞吐的 Agentic 工具链以下哪些本地优先架构设计可以有效提升工程效率？（多选）",
+    "explanation": "A 正确 本地缓存视图实现毫秒级 PR 状态切换与 Diff 渲染。B 正确 本地 Daemon + 异步联邦同步降低 Agent 频繁读写任务状态的延迟。C 错误 同步阻塞等待中心化 API 是反模式恰恰是要被本地优先架构解决的问题。D 正确 终端复用 + 隔离工作树为每个 Agent 任务提供独立的本地执行环境防止冲突。",
+    "correct": [
+      "建立远程代码托管平台数据的本地缓存视图实现毫秒级的 PR 状态切换与代码 Diff 渲染",
+      "采用本地 Daemon 与轻量级异步网络联邦同步机制构建任务追踪系统降低 Agent 频繁读写任务状态时的延迟",
+      "结合终端复用工具与一键隔离工作树为每个 Agent 任务快速提供独立的本地执行环境"
+    ],
+    "distractors": [
+      "强制要求所有本地 Agent 均同步并发阻塞等待中心化 REST API 的 HTTP 响应"
+    ]
+  },
+  {
+    "seq": 23,
+    "kind": "question",
+    "id": "prompt-cache-affinity-routing-01",
+    "topic": "system-design",
+    "angle": "system-design",
+    "question": "在一个高并发的 LLM 服务架构中，即使多个客户端发送了完全相同的静态 Prompt 前缀，系统仍可能频繁出现 Prompt Cache Miss 的现象。针对这一现象的原因分析及系统设计优化手段，下列哪些项是正确的？",
+    "explanation": "A 正确：KV Cache 驻留在特定物理节点的显存/内存中，节点过载时网关触发 Overflow Routing，把流量打到未持有该缓存的节点，直接造成 Cache Miss；B 正确：Prompt Cache Key 让网关具备按业务维度哈希分组与亲和性路由（Affinity Routing）的能力，使同组高频请求尽量落到同一节点；C 错误：KV Tensor 常达 GB 级，用 Redis 之类做跨节点实时同步会打满带宽并引入巨大延迟，工程上不可行；D 正确：出于数据隐私、安全隔离与跨 Region 延迟控制，缓存边界默认限定在同一 Organization 与同一 Region 内。",
+    "correct": [
+      "KV Cache 存储在具体物理算力节点的内存中，当单节点 QPS 超过阈值时，网关会进行溢出路由将请求分发至未持有该缓存的节点",
+      "在请求参数中显式指定业务层面的 Prompt Cache Key，可引导网关对高频请求进行哈希分组与节点亲和性路由，提高命中率",
+      "跨地理区域（Region）或跨隔离租户（Organization）的请求，出于安全隔离与网络传输时延考虑，默认无法共享或复用已有缓存"
+    ],
+    "distractors": [
+      "跨节点 KV 同步可用高速 RDMA 批量搬运，Miss 率可压到忽略不计；同步带宽成本低于重算成本。"
+    ]
+  },
+  {
+    "seq": 24,
+    "kind": "question",
+    "id": "longhorizon-daemon-session-01",
+    "topic": "system-design",
+    "angle": "system-design",
+    "question": "在支持长程异步任务的智能体系统架构中，采用后台守护进程（Daemon）解耦客户端前端与智能体会话（Session）是核心设计之一。下列关于守护进程架构优势的描述，正确的是：",
+    "explanation": "A 正确：守护进程脱离前端客户端独立持有 Session，客户端连接断开后，Agent 的执行、工具调用与子 Agent 通信仍可在后台持续进行。B 错误：守护进程管理彼此独立的 Session 节点以保持隔离性，而非把子 Agent 挤进同一线程。C 错误：守护进程暴露 Agents View 接口，允许人类操作员随时 attach 到运行中的节点进行实时观测或人工干预。D 错误：每个子 Agent 拥有各自独立的 L1 上下文，守护进程并不提供全局共享的 L1。",
+    "correct": [
+      "守护进程独立持有 Session 的生命周期与状态，使得客户端的连接断开或网络异常不会中断后台正在进行的工具执行与子 Agent 协作。"
+    ],
+    "distractors": [
+      "守护进程将会话状态常驻内存并亲和调度，子智能体复用热状态；IPC 开销可通过亲和性降到忽略不计。",
+      "守护进程默认非交互以保吞吐，人工干预走异步审批队列；同步介入会打断执行，不如事后审计。",
+      "守护进程提供共享状态服务，子智能体按需拉取；全量共享 L1 不现实，按需拉取即足够。"
+    ]
+  },
+  {
+    "seq": 25,
+    "kind": "question",
+    "id": "aws-ai-practitioner-02",
+    "topic": "pretraining",
+    "angle": "scenario",
+    "question": "某律所要基于大语言模型（LLM）构建应用，读取法律文档并从中提取关键点。哪个方案满足需求？（单选）",
+    "explanation": "C 正确：从长文档“提取关键点”即摘要任务，摘要聊天机器人最贴合。A 错：NER 只抽取实体，不提炼要点。B 错：推荐引擎与提取要点无关。D 错：翻译系统面向语种转换。",
+    "correct": [
+      "开发摘要聊天机器人"
+    ],
+    "distractors": [
+      "构建自动命名实体识别（NER）系统",
+      "创建推荐引擎",
+      "开发多语言翻译系统"
+    ]
+  },
+  {
+    "seq": 26,
+    "kind": "question",
+    "id": "aws-ai-practitioner-05",
+    "topic": "context-engineering",
+    "angle": "scenario",
+    "question": "公司用预训练 LLM 构建产品推荐聊天机器人，要求输出简短且使用特定语言。哪个方案能使 LLM 输出质量符合预期？（单选）",
+    "explanation": "A 正确：输出长度与语种属可控的生成约束，调整提示词（明确“简短”“用 X 语回答”）是最直接有效的对齐手段。B 错：换模型尺寸成本高且不确定。C、D 错：提高 temperature/Top-K 会增加随机性，反而不利稳定服从格式。",
+    "correct": [
+      "调整提示词（prompt）"
+    ],
+    "distractors": [
+      "选择不同尺寸的 LLM",
+      "提高 temperature",
+      "提高 Top K 值"
+    ]
+  },
+  {
+    "seq": 27,
+    "kind": "question",
+    "id": "aws-ai-practitioner-07",
+    "topic": "fine-tuning",
+    "angle": "fundamental",
+    "question": "公司使用领域特定模型，希望避免从零新建模型，而是把预训练模型适配到新的相关任务。哪个 ML 策略满足？（单选）",
+    "explanation": "B 正确：迁移学习（Transfer learning）复用预训练模型权重并微调适配新任务，避免从头训练。A、C 错：增减 epoch 是训练轮数调参，不改变“是否从零”。D 错：无监督学习与复用预训练模型无直接关系。",
+    "correct": [
+      "使用迁移学习"
+    ],
+    "distractors": [
+      "增加训练 epoch 数",
+      "减少训练 epoch 数",
+      "使用无监督学习"
+    ]
+  },
+  {
+    "seq": 28,
+    "kind": "question",
+    "id": "aws-genai-developer-pro-06",
+    "topic": "model-selection",
+    "angle": "scenario",
+    "question": "某零售商用 Bedrock 建客服助手。分析显示 70% 咨询是小型产品问题（小模型即可），30% 是复杂退换货政策问题（需强推理）。公司想以最低实现成本做按复杂度自动路由的模型选择框架，保持高满意度且低延迟。哪个方案满足？（单选）",
+    "explanation": "B 正确：Bedrock 智能提示路由是托管的无服务器端点，自动分析每条提示、预测各模型响应质量并动态发往性价比合适的模型，省去自定义分类与路由基础设施。A 需自建分类+路由；C 单模型难兼顾成本；D 关键词规则路由脆弱且运维更重。",
+    "correct": [
+      "用 Bedrock 智能提示路由，自动按复杂度把简单/复杂咨询路由到小/大模型"
+    ],
+    "distractors": [
+      "多阶段架构：小 FM 分类复杂度，简单走小模型、复杂走大模型，用 Lambda 做路由",
+      "单模型方案：用中等 FM 按需计费，在提示中加指令让同一模型处理简/繁",
+      "为简/繁建独立 Bedrock 端点，基于关键词的规则路由，简单用按需、复杂用 Provisioned Throughput"
+    ]
+  },
+  {
+    "seq": 29,
+    "kind": "question",
+    "id": "context-2026-101",
+    "topic": "context-engineering",
+    "angle": "system-design",
+    "question": "一个 Agent 有 50 万 token 的潜在信息源，但单次模型调用只有有限 context budget。你会如何设计 context selection pipeline，使模型看到的是\"当前最有用的信息\"而不是简单的 top-K 检索结果？",
+    "explanation": "A 正确：先召回候选再用 reranker 按「当前任务相关性 + 近期性 + 预测有用性」重排，并据执行反馈迭代，这正是用任务相关性而非单纯相似度做选择。B 错误：仅按语义相似度取 top-K 是题干明确要避免的「naive top-K」——相似度高不等于对当前任务有用，还可能引入冲突内容。C 正确：query-aware 选择根据 Agent 当前阶段与计划动态决定需要哪些信息源，而非固定窗口。D 正确：用离线日志/执行反馈构建选择器，对真正影响任务成败的片段加权，是反馈驱动的选择策略。",
+    "correct": [
+      "先召回候选，再用 reranker 按当前任务相关性、近期性与预测有用性重排，并根据模型执行反馈迭代选择",
+      "做 query-aware 选择：根据 Agent 当前阶段与计划动态决定需要哪些信息源，而非固定窗口",
+      "用离线日志与执行反馈训练选择器，对真正影响任务成败的片段加权并优先纳入"
+    ],
+    "distractors": [
+      "相似度排序取 top-K 后再按时间倒序排列，同等相似时新的优先；时间加权即任务相关性的有效代理。"
+    ]
+  },
+  {
+    "seq": 30,
+    "kind": "question",
+    "id": "context-2026-102",
+    "topic": "context-engineering",
+    "angle": "system-design",
+    "question": "为什么 Agent 的 conversation history、task state、long-term memory 和 tool result 不应该全部作为同一种 context 数据管理？如何设计它们之间的边界？",
+    "explanation": "A 正确：四类 context 生命周期不同（对话历史短暂易变、任务状态随步骤更新、长期记忆持久、工具结果临时且体积大），应分仓存储而非一个 blob。B 正确：信任等级不同——工具结果和抓取内容不可信，系统指令可信，混在一起会让不可信内容获得指令优先级，埋下间接注入风险。C 错误：为省事把所有 context 拼成单一大字符串并统一压缩，会混淆生命周期与信任边界，还会把应常驻的关键事实错误摘要掉。D 正确：应按 size 与访问模式采用不同存储与淘汰策略，如长记忆用向量库+KV、工具结果用完即弃或缓存、历史做滑动窗口。",
+    "correct": [
+      "四类 context 生命周期不同，应分仓存储：历史短暂、任务状态常变、长记忆持久、工具结果临时且体量大",
+      "信任等级不同：工具结果与抓取内容不可信，应与可信的 system instruction 隔离，避免其获得指令优先级",
+      "按体积与访问模式用不同存储与淘汰策略：长记忆用向量库、工具结果用完即弃、历史用滑动窗口"
+    ],
+    "distractors": [
+      "按信任等级分两个 store（可信指令 vs 不可信数据），同级内统一拼串压缩；两仓即足够，四仓是过度设计。"
+    ]
+  },
+  {
+    "seq": 31,
+    "kind": "question",
+    "id": "context-2026-106",
+    "topic": "context-engineering",
+    "angle": "tradeoff",
+    "question": "Context compaction 可以显著降低 token 数量，但也可能丢失细节。如何设计 compaction 策略，使关键事实、约束、未完成任务和可恢复状态不会被错误摘要掉？",
+    "explanation": "A 正确：结构化 compaction 保留约束、未完成任务清单与关键实体，并让摘要带可回溯指针（如原文位置）以便补漏。B 错误：对所有历史无差别摘要、越短越好会丢掉关键事实与约束，正是要防范的过度压缩。C 正确：设「do-not-compact」锚点，把关键事实与开放任务标记为不可压缩并常驻 context。D 正确：压缩前抽取可恢复状态（变量/进度）为结构化字段，摘要丢失时可从工具或日志重建。",
+    "correct": [
+      "用结构化 compaction 保留约束与未完成任务清单，并让摘要带可回溯指针以便补漏",
+      "设 do-not-compact 锚点，把关键事实与开放任务标记为不可压缩并常驻 context",
+      "压缩前抽取可恢复状态为结构化字段，摘要丢失时可从工具或日志重建"
+    ],
+    "distractors": [
+      "以 token 预算为硬约束反推摘要长度，预算内越短越好；长摘要说明压缩算法不行，应优化压缩器而非放宽预算。"
+    ]
+  },
+  {
+    "seq": 32,
+    "kind": "question",
+    "id": "context-2026-107",
+    "topic": "context-engineering",
+    "angle": "design",
+    "question": "如何评估一个 Context Manager 是否真的提高了 Agent 性能？为什么仅比较输入 token 数量是不够的？",
+    "explanation": "A 正确：应以端到端任务成功率与质量为主要指标，而非只看输入 token 减少量——省 token 不等于更好。B 正确：做消融实验，对比有/无 Context Manager 的 Agent 在同任务上的质量、成本与失败模式。C 错误：仅比较输入 token 数会奖励「过度裁剪导致关键信息丢失」的劣质策略，token 少不等于性能好。D 正确：还应检查失败模式，如关键信息被错删、不可信内容被错误提升优先级等退化。",
+    "correct": [
+      "以端到端任务成功率与质量为主要指标，而不是只看输入 token 的减少量",
+      "做消融：对比有/无 Context Manager 的 Agent，在同样任务上衡量质量、成本与失败模式",
+      "检查失败模式：如关键信息被错删、不可信内容被错误提升优先级等退化"
+    ],
+    "distractors": [
+      "仅比较输入 token 数即可，token 越少说明 context 越精简、性能越好"
+    ]
+  },
+  {
+    "seq": 33,
+    "kind": "question",
+    "id": "context-2026-108",
+    "topic": "context-engineering",
+    "angle": "scenario",
+    "question": "一个 Agent 有三个阶段：规划、检索、执行。三个阶段需要的信息不同。你会如何让 context 随阶段动态变化，而不是整个生命周期使用同一个固定 prompt？",
+    "explanation": "A 正确：按阶段路由——规划注入目标与计划模板，检索注入检索工具与查询上下文，执行注入当前步骤与工具结果，使每阶段只看所需信息。B 错误：整个生命周期用同一固定 prompt 会让无关信息占用 budget 并干扰决策，违背动态 context 原则。C 正确：用一个 context assembler 按当前 phase 动态组装所需 context 块，而非静态写死。D 正确：阶段切换时清空无关上下文、加载该阶段专属信息，从而控制 budget 与注意力。",
+    "correct": [
+      "按阶段路由：规划注入目标与计划，检索注入检索工具与查询，执行注入当前步骤与工具结果",
+      "用 context assembler 按当前 phase 动态组装所需 context 块，而非静态写死",
+      "阶段切换时清空无关上下文并加载该阶段专属信息，以控制 budget 与注意力"
+    ],
+    "distractors": [
+      "整个生命周期都用同一个固定 prompt，避免阶段切换带来的不一致"
+    ]
+  }
+]
