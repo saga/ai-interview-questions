@@ -1,12 +1,15 @@
-// npm run question:convert -- --file draft.json --prompt-version v5 [--check | --write --questions out.json --variants out.json]
-// 把 docs/prompt_part2.md 产出的 JSON 拆成仓库可入库的两部分：
+// npm run question:convert -- --file draft.json --prompt-version v7 [--check | --write --questions out.json --variants out.json]
+// 把 docs/prompt_part2.md（PROMPT-VERSION v7）产出的 JSON 拆成仓库可入库的两部分：
 //   canonical → Question JSON（走 question:add 入库）；variant → 变体池 JSON（src/data/variants/ 格式）。
 //
+// 适配的 v7 落库字段（与 schema 对齐，避免 Zod 静默 strip）：
+//   - blueprintKnowledgeId：对账字段，仅与 topic 一致性校验（同名不同义于 schema 的 question.knowledgeId）。
+//   - misconceptions：题目级误解数组 → Question.misconceptions。
+//   - misconceptionMap：Part2 以 option key 对齐的对象输出，此处转成 schema 要求的「按 option 索引的数组」。
+//   - source.materialId：溯源引用 → Question.source（此前被 Zod strip 丢失，复评 v6 P0 之一）。
+//
 // Blueprint 的测量意图（assessmentTarget / reasoningGoal）**落库**为 Question.assessment
-// （plan0907 / 外部评审 P0-2）：此前它们在转换阶段被 warning 后丢弃，导致最有价值的
-// 「这道题要求考生走哪条推理链」信息在中间环节丢失，后续审题与 variant challenger 无从比对。
-// 只有 prompt 侧的 knowledgeId 仍丢弃——它与 schema 的 Question.knowledgeId 同名不同义
-// （见下方 2026-09-04 措辞修正注释）。
+// （plan0907 / 外部评审 P0-2）。
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -20,14 +23,19 @@ import {
   type QuestionVariant,
   type VariantKind,
 } from '../src/schemas/variant.ts';
+import { mapMisconceptionMap, misconceptionMapsEqual } from './convert-blueprint-helpers.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
 const promptOptionSchema = z.object({ key: z.string().min(1), text: z.string().min(1) });
+// Part2 以 option key 对齐的对象声明 misconceptionMap（见 prompt_part2 §20），
+// schema 需要的是「按 option 索引的数组」，转换在 toMisconceptionMap 完成。
+const promptMapSchema = z.record(z.string(), z.union([z.number().int().nonnegative(), z.null()])).optional();
 const promptFormatSchema = z.object({
   type: z.enum(['multiple-choice', 'single-choice', 'multiple', 'single']),
   options: z.array(promptOptionSchema).min(2),
   answer: z.union([z.array(z.string().min(1)).min(1), z.string().min(1)]),
+  misconceptionMap: promptMapSchema,
 });
 const promptItemSchema = z.object({
   id: z.string().min(1),
@@ -35,14 +43,18 @@ const promptItemSchema = z.object({
   variantOf: z.string().nullable().optional(),
   category: z.string().min(1),
   topic: z.string().min(1),
-  knowledgeId: z.string().optional(),
+  // v7 改名（prompt_part2 §2）：仅 Blueprint 与 topic 的对账字段，不是 schema 的 Question.knowledgeId。
+  blueprintKnowledgeId: z.string().optional(),
   concepts: z.array(z.string().min(1)).optional(),
   tags: z.array(z.string()).default([]),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
+  // difficulty：canonical 必产（缺则 error）；variant 可省略并从 canonical 继承（v7 §4）。
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   angle: z.string().min(1),
   cognitiveTask: z.string().min(1),
   assessmentTarget: z.string().optional(),
   reasoningGoal: z.string().optional(),
+  misconceptions: z.array(z.string().min(1)).optional(),
+  source: z.object({ materialId: z.string().min(1), section: z.string().optional() }).optional(),
   question: z.string().min(1),
   explanation: z.string().min(1),
   formats: z.array(promptFormatSchema).min(1).max(1),
@@ -61,8 +73,8 @@ const questionsOut = arg('--questions');
 const variantsOut = arg('--variants');
 const write = process.argv.includes('--write');
 if (!inputFile || (write && (!questionsOut || !variantsOut))) {
-  console.error('用法：npm run question:convert -- --file draft.json --prompt-version v5 --check');
-  console.error('或：npm run question:convert -- --file draft.json --prompt-version v5 --write --questions q.json --variants v.json');
+  console.error('用法：npm run question:convert -- --file draft.json --prompt-version v7 --check');
+  console.error('或：npm run question:convert -- --file draft.json --prompt-version v7 --write --questions q.json --variants v.json');
   process.exit(2);
 }
 if (!['surface', 'context', 'surface-options', 'context-options'].includes(kind)) {
@@ -96,16 +108,23 @@ function toIndices(item: PromptItem): number[] {
   });
 }
 
+/**
+ * Part2 的 misconceptionMap 以 option key 对齐（如 {A:0,B:null}），schema 需要按 option
+ * 索引的数组。转换委托给独立纯函数（便于单测），结果汇入 errors。
+ */
+function toMisconceptionMap(item: PromptItem, indices: number[]): (number | null)[] | null {
+  const { array, problems } = mapMisconceptionMap(item.formats[0].options, indices, item.formats[0].misconceptionMap, item.id);
+  problems.forEach((p) => errors.push(p));
+  return array;
+}
+
 for (const item of items) {
-  // ⚠️ 措辞修正（2026-09-04）：原文本写「knowledgeId 无对应 schema 字段」是错的——
-  // schema 里 `knowledgeId` 存在（question.ts），但指的是**课程知识点 id**，
-  // 与 prompt 侧 `knowledgeId`（Knowledge 节点 id）同名不同义。而 Knowledge 节点 id
-  // 在本仓库就是 `topic`（add-question.ts 用 `nodeIds.has(question.topic)` 校验）。
-  // 因此这里的正确处理是「比对是否与 topic 一致」而非「一律丢弃」。
-  if (item.knowledgeId && item.knowledgeId !== item.topic) {
+  // blueprintKnowledgeId 仅对账：必须与 topic 一致（v7 §2）。不一致说明 Part2 误填了
+  // 课程知识点 id。本仓库 Knowledge 节点 id 即 topic（add-question.ts 用 nodeIds.has(topic) 校验）。
+  if (item.blueprintKnowledgeId && item.blueprintKnowledgeId !== item.topic) {
     warnings.push(
-      `${item.id}: knowledgeId "${item.knowledgeId}" 与 topic "${item.topic}" 不一致。` +
-        `本仓库 topic 即 Knowledge 节点 id，schema 的 Question.knowledgeId 是课程知识点 id（同名不同义），已丢弃`,
+      `${item.id}: blueprintKnowledgeId "${item.blueprintKnowledgeId}" 与 topic "${item.topic}" 不一致。` +
+        `本仓库 topic 即 Knowledge 节点 id，已丢弃该对账字段`,
     );
   }
   // 测量意图落库（P0-2）：target + reasoningGoal 必须齐备才构成完整 assessment。
@@ -122,27 +141,31 @@ for (const item of items) {
   const indices = toIndices(item);
   const type = item.formats[0].type.startsWith('multiple') ? 'multiple' : 'single';
   if (type === 'multiple' && indices.length < 2) errors.push(`${item.id}: multiple-choice 至少需要两个答案 key`);
+  const misconceptionMap = toMisconceptionMap(item, indices);
   if (item.questionRole === 'canonical') {
+    if (!item.difficulty) errors.push(`${item.id}: canonical 必须产出 difficulty`);
     const [core, ...supporting] = item.concepts ?? [];
+    const choice: { type: 'single' | 'multiple'; options: string[]; answer: number[]; misconceptionMap?: (number | null)[] } = {
+      type,
+      options: item.formats[0].options.map((o) => o.text),
+      answer: indices,
+    };
+    if (misconceptionMap) choice.misconceptionMap = misconceptionMap;
     questions.push({
       id: item.id,
       category: item.category,
       topic: item.topic,
       tags: item.tags,
-      difficulty: item.difficulty,
+      ...(item.difficulty ? { difficulty: item.difficulty } : {}),
       angle: item.angle,
       cognitiveTask: item.cognitiveTask,
+      ...(item.misconceptions?.length ? { misconceptions: item.misconceptions } : {}),
+      ...(item.source ? { source: item.source } : {}),
       ...(core ? { concepts: { core, supporting: supporting.slice(0, 3) } } : {}),
       ...(assessment ? { assessment } : {}),
       question: item.question,
       explanation: item.explanation,
-      formats: {
-        choice: {
-          type,
-          options: item.formats[0].options.map((o) => o.text),
-          answer: indices,
-        },
-      },
+      formats: { choice },
     });
   } else {
     if (!item.variantOf) {
@@ -153,6 +176,16 @@ for (const item of items) {
     if (!canonical) {
       errors.push(`${item.id}: variantOf "${item.variantOf}" 在存量库与本批中均找不到`);
       continue;
+    }
+    // v7 §4：variant 省略 difficulty 时继承 canonical；若声明则与 canonical 一致。
+    if (item.difficulty && item.difficulty !== (canonical as Question).difficulty) {
+      errors.push(`${item.id}: variant difficulty "${item.difficulty}" 与 canonical "${canonical.difficulty}" 不一致（v7 §4）`);
+    }
+    // v7 §25：variant 选项与 canonical 同槽位、同 misconception role。两题 options 一一对应，
+    // 故 misconceptionMap 必须逐槽相等；违反则拒绝（变体池不存储 misconceptionMap，此处仅校验）。
+    const cMap = (canonical as Question).formats?.choice?.misconceptionMap ?? null;
+    if (misconceptionMap && !misconceptionMapsEqual(misconceptionMap, cMap)) {
+      errors.push(`${item.id}: variant 的 misconceptionMap 与 canonical 不一致，违反 v7 §25 同槽位同 misconception role`);
     }
     const angleChanged = (canonical as Question).angle !== item.angle;
     const cogChanged = (canonical as Question).cognitiveTask !== item.cognitiveTask;

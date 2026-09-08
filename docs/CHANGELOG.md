@@ -8,6 +8,39 @@
 - 门禁实证（续）：初稿 29/40 被拒，多轮收敛；本批教训——短选项起草一旦放飞（<10 字）返工量 triple，
   必须"贴原句"起步；另抓题干误写入 options[0] 两处（`ai-eng-036`、`ai-prompt-005`），
   系数字回填时 S/T 函数用混，修法是回填后先打印 options[0] 自查；sibling 撞车 3 对，同槽位换句式拆散。
+- 流程教训：本批多次被 `tail/head` 截断输出误导（误判收敛进度、误判文件丢失），
+  之后看门禁输出一律用 `grep ✗` 全量；怀疑文件状态时以 `ls` 全量 + python 直读为准，
+  不以截断输出做结论。
+- 池指标：488→**531** 条（含同期外部并行入库约 3 条），覆盖 244→**267** 题（19.4%），
+  assessment 自声明 89.8%→**90.6%**，路径唯一率同步 **90.6%**，疑似同路径保持 **0**。
+  （同期外部并行入库，canonical 1375→1379。）
+- 回归：`validate-variants` 全阻断项 0；`npm test` 889/889；`typecheck` + `build` 通过。
+
+## 2026-09-09 · Prompt v7 落地（两段 prompt + `question:convert` 同步扩展）
+
+- `docs/prompt_part1.md` / `docs/prompt_part2.md` 升级到 `[PROMPT-VERSION: v7]`（用户直接粘贴定稿）。相较 v6 的关键变化：
+  - §0 硬失败：节点清单缺失即只输出 `{error: "AVAILABLE_KNOWLEDGE_NODES not provided"}`，不得猜 topic；
+  - Variant 从"原则约束"变为两个可自检动作：「逐槽并排检查 proposition identity」+「新题干 + 原选项重新自洽检查」；
+  - canonical 题型比例口径固定为「只统计 canonical，variant 不参与」；
+  - 恢复 `misconceptions` / `misconceptionMap` / `source.materialId` 输出；
+  - `knowledgeId` 正式改名为 `blueprintKnowledgeId`（对账字段，非最终 Question.knowledgeId）；
+  - 删 `evidenceCriterion`（schema 无落点）。
+- `scripts/convert-blueprint-output.ts` 同步扩展（否则上述字段仍被 Zod strip）：
+  - 接受 `blueprintKnowledgeId`（仅与 topic 一致性校验，不再支持旧 `knowledgeId`）；
+  - `misconceptions` → `Question.misconceptions`；
+  - `misconceptionMap`（Part2 以 option key 对齐的对象）→ 转成 schema 要求的「按 option 索引的数组」，且正确选项不得标误解；
+  - `source` → `Question.source`（溯源不再丢失）；
+  - `difficulty`：canonical 必产，variant 可省略并继承 canonical（v7 §4）；
+  - **新增变体一致性门禁**：variant 的 misconceptionMap 必须与 canonical 逐槽相等（v7 §25 同槽位同 misconception role）；variant difficulty 与 canonical 不一致即拒。
+- 用合成 draft（含 4 canonical + 3 variant 的 v7 形态）端到端验证：正例落库 4 canonical / 3 variant，负例（正确项标误解、variant map 不一致、variant difficulty 不一致、canonical 缺 difficulty）全部按预期拦截。
+
+## 2026-09-08 · 上下文工程专题 40 条（`assessment.fresh13-40-20260908.json`，覆盖 244→267 题）
+
+- 20 道上下文工程与成本未覆盖题 × 2 条（嵌入适配/PII/成本×3/自评/编排/ContextManager/合同抽取/Prompt 膨胀/版本管理/分仓/不可信数据/缓存前缀/摘要/评估/动态组装/外算/可靠性/引用核查），
+  全部自声明三段式测量面。第四个 40 条大批次。
+- 门禁实证（续）：初稿 29/40 被拒，多轮收敛；本批教训——短选项起草一旦放飞（<10 字）返工量 triple，
+  必须"贴原句"起步；另抓题干误写入 options[0] 两处（`ai-eng-036`、`ai-prompt-005`），
+  系数字回填时 S/T 函数用混，修法是回填后先打印 options[0] 自查；sibling 撞车 3 对，同槽位换句式拆散。
 - 池指标：488→**531** 条，覆盖 244→**267** 题（19.4%），assessment 自声明 89.8%→**90.6%**，
   路径唯一率同步 **90.6%**，疑似同路径保持 **0**。
   （同期外部并行入库，canonical 1375→1379。）
