@@ -1,0 +1,903 @@
+{
+  "version": 1,
+  "generatedAt": 1788866069729,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-eng-010": [
+      {
+        "id": "ai-eng-010__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某团队把 REST 全下线换成 MCP，工具选择与推理还是一团糟。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "MCP 是标准化接入协议，解决互操作而非替代 REST",
+          "MCP 的目标就是取代 REST，既有接口应逐步下线",
+          "能力暴露发现复用收敛到协议，接入成本下降",
+          "接入后选择推理自动完成，无需再投入工程",
+          "选择推理质量仍须专门设计，协议不包办",
+          "MCP 只是传输薄封装，定义发现鉴权仍各搞各"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从换 MCP 仍混乱的误判定位对协议能力的误解",
+          "reasoningGoal": "先定位误判的环节（替代、自动、封装三类）；再逐项验证各判断；并排除「替代 REST」「自动完成」「薄封装」等不成立描述。"
+        },
+        "generatedAt": 1788866069722,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1e257714",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-bc26c05f",
+        "sourceSnapshot": {
+          "id": "ai-eng-010",
+          "topic": "mcp",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "MCP",
+            "tooling",
+            "agent"
+          ],
+          "question": "一个 Agent 已经可以调用 REST API。为什么一个团队仍然可能选择 MCP？MCP 解决的主要问题是什么，而不是什么？",
+          "options": [
+            "MCP 是模型与外部工具、资源间标准化连接的开放协议，解决互操作问题",
+            "MCP 的目标是取代 REST，引入后应逐步下线全部现有内部接口",
+            "统一能力的暴露、发现与复用，降低多方接入成本，而非取代 REST",
+            "接入 MCP 后工具选择与任务推理自动完成，无需额外工程设计",
+            "工具选择与推理质量仍需专门工程设计，接入协议不会自动解决",
+            "MCP 只是传输层的薄封装，工具定义、发现与鉴权仍须各应用重复实现"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-010__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "把 MCP 接入层与 REST 直调放在解决的问题上对比，根本差异是什么？",
+        "options": [
+          "MCP 管标准化连接与互操作，不管替代谁",
+          "REST 接口保留，MCP 是上面的接入层",
+          "统一暴露发现复用，多方接入成本下降",
+          "一接 MCP，选择推理自动搞定",
+          "选择推理仍要专门设计，协议不管",
+          "MCP 薄封装一层，定义鉴权仍重复造"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从解决的问题对比 MCP 接入层与 REST 直调的根本差异",
+          "reasoningGoal": "先对齐两种路线的可比维度；再逐项判定各主张成立与否；并排除「替代论」「自动论」「薄封装论」等不成立描述。"
+        },
+        "generatedAt": 1788866069722,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1e257714",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-54eba81b",
+        "sourceSnapshot": {
+          "id": "ai-eng-010",
+          "topic": "mcp",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "MCP",
+            "tooling",
+            "agent"
+          ],
+          "question": "一个 Agent 已经可以调用 REST API。为什么一个团队仍然可能选择 MCP？MCP 解决的主要问题是什么，而不是什么？",
+          "options": [
+            "MCP 是模型与外部工具、资源间标准化连接的开放协议，解决互操作问题",
+            "MCP 的目标是取代 REST，引入后应逐步下线全部现有内部接口",
+            "统一能力的暴露、发现与复用，降低多方接入成本，而非取代 REST",
+            "接入 MCP 后工具选择与任务推理自动完成，无需额外工程设计",
+            "工具选择与推理质量仍需专门工程设计，接入协议不会自动解决",
+            "MCP 只是传输层的薄封装，工具定义、发现与鉴权仍须各应用重复实现"
+          ]
+        }
+      }
+    ],
+    "q1-pac-learning-framework": [
+      {
+        "id": "q1-pac-learning-framework__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某模型训练误差为 0，团队宣布泛化风险亦为 0。评审这一宣布的前提，下列哪些判断正确？",
+        "options": [
+          "经验风险为 0 即泛化风险为 0，可实现假设保送",
+          "不可知学习不假设无错存在，目标是逼近空间内最优",
+          "不可知学习中，为保样本复杂度有界，VC 维须随样本量动态扩展",
+          "有限空间下可实现界正比 1/ε，不可知界涨到 O(1/ε^2)"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断经验风险为零即泛化为零的宣布前提是否成立",
+          "reasoningGoal": "先判断该宣布的前提（可实现与界）是否成立；再逐项验证各主张；并排除「零风险保送」「VC 动态扩展」等不成立描述。"
+        },
+        "generatedAt": 1788866069724,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-34f49010",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-3bf1d658",
+        "sourceSnapshot": {
+          "id": "q1-pac-learning-framework",
+          "topic": "statistical-learning-theory",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "pac-learning",
+            "agnostic-pac",
+            "sample-complexity"
+          ],
+          "question": "关于 PAC 学习框架中的可实现性假设（Realizability Assumption）与不可知 PAC 学习（Agnostic PAC Learning），下列哪些说法是正确的？",
+          "options": [
+            "可实现性假设意味着只要训练集上的经验风险为 0，该假设在未知测试集上的泛化风险也必然精确为 0",
+            "不可知 PAC 学习不假设假设空间内存在无错假设，其目标是寻找泛化风险与假设空间中最佳假设相差在 ε 范围内的假设",
+            "在不可知 PAC 学习中，为了保证样本复杂度（Sample Complexity）有界，假设空间的 VC 维必须随着训练样本量的增加而动态扩展",
+            "在有限假设空间下，可实现 PAC 学习的样本复杂度上限与 1/ε 成正比，而不可知 PAC 学习的样本复杂度上限增长为 O(1/ε^2)"
+          ]
+        }
+      },
+      {
+        "id": "q1-pac-learning-framework__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某选型流程让 VC 维随样本量动态扩展，样本复杂度爆炸。定位这次设计失误，下列哪些判断成立？",
+        "options": [
+          "可实现假设下，训练经验风险为 0 则泛化风险必精确为 0",
+          "不可知学习只求逼近空间内最优，不假设无错",
+          "不可知 PAC 下，为让样本复杂度有界，假设空间 VC 维须跟着样本量走",
+          "有限假设空间下，可实现界与 1/ε 成正比，不可知界是 O(1/ε^2) 量级"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 VC 动态扩展致复杂度爆炸的失误定位假设环节",
+          "reasoningGoal": "先定位失误的环节（可实现、VC、界三类）；再逐项验证各判断；并排除「零误差保送」「VC 必涨」等不成立描述。"
+        },
+        "generatedAt": 1788866069724,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-34f49010",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-8896f58d",
+        "sourceSnapshot": {
+          "id": "q1-pac-learning-framework",
+          "topic": "statistical-learning-theory",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "pac-learning",
+            "agnostic-pac",
+            "sample-complexity"
+          ],
+          "question": "关于 PAC 学习框架中的可实现性假设（Realizability Assumption）与不可知 PAC 学习（Agnostic PAC Learning），下列哪些说法是正确的？",
+          "options": [
+            "可实现性假设意味着只要训练集上的经验风险为 0，该假设在未知测试集上的泛化风险也必然精确为 0",
+            "不可知 PAC 学习不假设假设空间内存在无错假设，其目标是寻找泛化风险与假设空间中最佳假设相差在 ε 范围内的假设",
+            "在不可知 PAC 学习中，为了保证样本复杂度（Sample Complexity）有界，假设空间的 VC 维必须随着训练样本量的增加而动态扩展",
+            "在有限假设空间下，可实现 PAC 学习的样本复杂度上限与 1/ε 成正比，而不可知 PAC 学习的样本复杂度上限增长为 O(1/ε^2)"
+          ]
+        }
+      }
+    ],
+    "kernel-trick-vs-explicit-feature-map": [
+      {
+        "id": "kernel-trick-vs-explicit-feature-map__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某二分类任务两千样本、一百维特征，团队坚持先显式映射再训线性 SVM。评审这一坚持的前提，下列哪些判断正确？",
+        "options": [
+          "对偶只出现样本两两内积，代价看支持向量数，与隐空间维数无关",
+          "间隔界看间隔与范数，不直接依赖隐空间维数",
+          "无穷维必致样本复杂度爆炸，小样本下泛化必劣于低维线性",
+          "必须先算出高维坐标，否则得不到决策函数"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在两千样本一百维下判断显式映射坚持的前提是否成立",
+          "reasoningGoal": "先判断该坚持的前提（代价与界是否依赖维数）是否成立；再逐项验证各主张；并排除「无穷必爆炸」「须先显式」等不成立描述。"
+        },
+        "generatedAt": 1788866069724,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2ab9a935",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-288cf42c",
+        "sourceSnapshot": {
+          "id": "kernel-trick-vs-explicit-feature-map",
+          "topic": "kernel-methods",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "kernel-trick",
+            "SVD",
+            "margin-bound"
+          ],
+          "question": "某二分类任务样本数约两千、原始特征维数一百。团队要训练最大间隔分类器，有两个方案：(甲) 先显式构造特征映射再训练线性 SVM；(乙) 使用 RBF 核 SVM，其隐式特征空间为无穷维。关于这两个方案的比较，下列哪些说法是正确的？",
+          "options": [
+            "乙方案的对偶问题只出现样本两两内积，其求解与预测代价由支持向量数决定，不随隐式特征空间的维数增长",
+            "乙方案的间隔泛化界由间隔大小与权重范数控制，即便隐式空间维数远高于样本数，该界也不直接依赖这个维数",
+            "乙方案把样本送进无穷维空间，样本复杂度必然随维数爆炸，因此在样本量有限时其泛化一定劣于甲方案的低维线性模型",
+            "乙方案必须先显式算出每个样本在高维空间中的坐标，再交给线性求解器，否则无法得到对应的决策函数"
+          ]
+        }
+      },
+      {
+        "id": "kernel-trick-vs-explicit-feature-map__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某团队因无穷维必爆炸弃用 RBF 核，线性模型效果惨淡。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "核对偶只吃内积，复杂度看支持向量，与维数脱钩",
+          "泛化界由间隔与范数定，维数再高也不直接进界",
+          "无穷维下样本复杂度必爆炸，线性低维必胜",
+          "不先显式算出高维坐标，决策函数无从谈起"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从弃用 RBF 核的误判定位维数恐惧环节",
+          "reasoningGoal": "先定位误判的环节（代价、界、构造三类）；再逐项验证各判断；并排除「无穷必爆炸」「须先显式」等不成立描述。"
+        },
+        "generatedAt": 1788866069725,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2ab9a935",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-40c5c71b",
+        "sourceSnapshot": {
+          "id": "kernel-trick-vs-explicit-feature-map",
+          "topic": "kernel-methods",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "kernel-trick",
+            "SVD",
+            "margin-bound"
+          ],
+          "question": "某二分类任务样本数约两千、原始特征维数一百。团队要训练最大间隔分类器，有两个方案：(甲) 先显式构造特征映射再训练线性 SVM；(乙) 使用 RBF 核 SVM，其隐式特征空间为无穷维。关于这两个方案的比较，下列哪些说法是正确的？",
+          "options": [
+            "乙方案的对偶问题只出现样本两两内积，其求解与预测代价由支持向量数决定，不随隐式特征空间的维数增长",
+            "乙方案的间隔泛化界由间隔大小与权重范数控制，即便隐式空间维数远高于样本数，该界也不直接依赖这个维数",
+            "乙方案把样本送进无穷维空间，样本复杂度必然随维数爆炸，因此在样本量有限时其泛化一定劣于甲方案的低维线性模型",
+            "乙方案必须先显式算出每个样本在高维空间中的坐标，再交给线性求解器，否则无法得到对应的决策函数"
+          ]
+        }
+      }
+    ],
+    "l2-regularization-uniform-stability": [
+      {
+        "id": "l2-regularization-uniform-stability__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "把调大 λ 与加训练数据放在收紧稳定性界上对比，根本差异是什么？",
+        "options": [
+          "加 λ||w||² 后强凸，最优解对扰动不敏感，单样本影响有界",
+          "稳定性界随 λ 与 n 增大而收紧，调参与加数据都能改善泛化",
+          "L2 靠压低经验风险提稳定，λ 越大训练误差越低",
+          "调 λ 只损拟合不改稳定，稳定纯看假设空间容量"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从收紧稳定性界对比调参与加数据的根本差异",
+          "reasoningGoal": "先对齐两种路径的可比维度；再逐项判定各主张成立与否；并排除「压低误差」「只看容量」等不成立描述。"
+        },
+        "generatedAt": 1788866069725,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d36cac04",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-7005bc9c",
+        "sourceSnapshot": {
+          "id": "l2-regularization-uniform-stability",
+          "topic": "model-selection-and-regularization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "L2-regularization",
+            "strong-convexity",
+            "uniform-stability"
+          ],
+          "question": "关于 L2 正则化（Tikhonov Regularization）影响学习算法稳定性的机制，下列哪些说法是正确的？",
+          "options": [
+            "加入 λ||w||² 后目标函数变为强凸，最优解对目标函数的扰动不再敏感，从而限制了单个训练样本的影响",
+            "该稳定性的量化界随正则强度 λ 与训练样本数 n 的增大而收紧，这同时解释了正则化与增加数据为何都能改善泛化",
+            "L2 正则通过压低训练集上的经验风险来提升稳定性，因此 λ 取越大，模型在训练集上的经验风险一定越低",
+            "调大 λ 只会削弱拟合能力而不改变稳定性，稳定性完全由假设空间的容量决定，与正则项无关"
+          ]
+        }
+      },
+      {
+        "id": "l2-regularization-uniform-stability__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某团队把 λ 越调越大，训练误差反涨。定位这次预期违背，下列哪些判断成立？",
+        "options": [
+          "λ||w||² 带来强凸，扰动下最优解稳定，单样本影响有界",
+          "λ 与 n 双双收紧界：正则与数据两条路都通泛化",
+          "L2 靠压低经验风险提稳定，λ 越大训练误差越低",
+          "调大 λ 只削弱拟合不改稳定性，稳定性完全由假设空间容量决定"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 λ 拉满训练误差反涨的违背定位正则机制环节",
+          "reasoningGoal": "先定位违背的环节（强凸、界、容量三类）；再逐项验证各判断；并排除「越大误差越低」「只看容量」等不成立描述。"
+        },
+        "generatedAt": 1788866069726,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d36cac04",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-6db84658",
+        "sourceSnapshot": {
+          "id": "l2-regularization-uniform-stability",
+          "topic": "model-selection-and-regularization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "L2-regularization",
+            "strong-convexity",
+            "uniform-stability"
+          ],
+          "question": "关于 L2 正则化（Tikhonov Regularization）影响学习算法稳定性的机制，下列哪些说法是正确的？",
+          "options": [
+            "加入 λ||w||² 后目标函数变为强凸，最优解对目标函数的扰动不再敏感，从而限制了单个训练样本的影响",
+            "该稳定性的量化界随正则强度 λ 与训练样本数 n 的增大而收紧，这同时解释了正则化与增加数据为何都能改善泛化",
+            "L2 正则通过压低训练集上的经验风险来提升稳定性，因此 λ 取越大，模型在训练集上的经验风险一定越低",
+            "调大 λ 只会削弱拟合能力而不改变稳定性，稳定性完全由假设空间的容量决定，与正则项无关"
+          ]
+        }
+      }
+    ],
+    "kfold-bias-variance-tradeoff": [
+      {
+        "id": "kfold-bias-variance-tradeoff__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某小数据集上团队直接选留一法，称其又无偏又无方差。评审这一选择的前提，下列哪些判断正确？",
+        "options": [
+          "k 越大训练集越近全量偏差越低，但折间重叠推高方差",
+          "划分方式也影响结果，多次随机划分平均可压方差",
+          "各折规模相同，偏差与 k 无关，k 只决定训练次数",
+          "留一用 n-1 训练，又无偏又无方差，任何规模最优"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断留一法又无偏又无方差的选择前提是否成立",
+          "reasoningGoal": "先判断该选择的前提（偏差方差权衡）是否成立；再逐项验证各主张；并排除「偏差无关」「留一最优」等不成立描述。"
+        },
+        "generatedAt": 1788866069726,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-001e5bb9",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-5e77356d",
+        "sourceSnapshot": {
+          "id": "kfold-bias-variance-tradeoff",
+          "topic": "model-selection-and-validation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "cross-validation",
+            "bias-variance",
+            "small-data"
+          ],
+          "question": "在小数据集上做模型选择时，需要在评估偏差、评估方差与训练样本量之间权衡。关于 k 折交叉验证中折数 k 的选择及其影响，下列哪些说法是正确的？",
+          "options": [
+            "k 增大时每折训练样本更接近全量，评估偏差随之降低，但各折训练集高度重叠会使评估结果的相关性上升、方差变大",
+            "k 折的评估结果还依赖于具体的划分方式，重复多次随机划分再取平均，可降低由划分随机性带来的那一部分方差",
+            "交叉验证中各折训练集规模相同，因此评估偏差与折数 k 无关，折数只影响需要训练多少次的开销",
+            "留一法每次用 n-1 个样本训练，既没有偏差也没有方差，因此在任何数据规模下都是最优的折数选择"
+          ]
+        }
+      },
+      {
+        "id": "kfold-bias-variance-tradeoff__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某留一法评估每次重跑结果飘忽，方差巨大。定位这次波动，下列哪些判断成立？",
+        "options": [
+          "k 大偏差小，但折间高度重叠，方差反升",
+          "重复随机划分再平均，能压掉划分随机性方差",
+          "各折规模相同，评估偏差与 k 无关，k 只决定训练次数",
+          "留一用 n-1 训练，又无偏又无方差，任何规模最优"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从留一法结果飘忽的波动定位方差环节",
+          "reasoningGoal": "先定位波动的环节（偏差、划分两类）；再逐项验证各判断；并排除「k 无关」「无偏无方差」等不成立描述。"
+        },
+        "generatedAt": 1788866069726,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-001e5bb9",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-b81a43af",
+        "sourceSnapshot": {
+          "id": "kfold-bias-variance-tradeoff",
+          "topic": "model-selection-and-validation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "cross-validation",
+            "bias-variance",
+            "small-data"
+          ],
+          "question": "在小数据集上做模型选择时，需要在评估偏差、评估方差与训练样本量之间权衡。关于 k 折交叉验证中折数 k 的选择及其影响，下列哪些说法是正确的？",
+          "options": [
+            "k 增大时每折训练样本更接近全量，评估偏差随之降低，但各折训练集高度重叠会使评估结果的相关性上升、方差变大",
+            "k 折的评估结果还依赖于具体的划分方式，重复多次随机划分再取平均，可降低由划分随机性带来的那一部分方差",
+            "交叉验证中各折训练集规模相同，因此评估偏差与折数 k 无关，折数只影响需要训练多少次的开销",
+            "留一法每次用 n-1 个样本训练，既没有偏差也没有方差，因此在任何数据规模下都是最优的折数选择"
+          ]
+        }
+      }
+    ],
+    "lipschitz-smoothness-subgradient": [
+      {
+        "id": "lipschitz-smoothness-subgradient__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某实现取合页损失不可微点左右导数中绝对值小者当次梯度。评审这一做法的前提，下列哪些判断正确？",
+        "options": [
+          "Lipschitz 管函数值波动，光滑管梯度波动，两者不等价",
+          "Hinge 不可微点次梯度成闭凸集，通常不唯一",
+          "次梯度唯一，取左右导数中绝对值小者即可",
+          "凸且 Lipschitz 必光滑，步长与光滑性无关"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断取左右导数小者当次梯度做法的前提是否成立",
+          "reasoningGoal": "先判断该做法的前提（次梯度定义）是否满足；再逐项验证各主张；并排除「次梯度唯一」「凸即光滑」等不成立描述。"
+        },
+        "generatedAt": 1788866069727,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3a605b7f",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-065698d9",
+        "sourceSnapshot": {
+          "id": "lipschitz-smoothness-subgradient",
+          "topic": "optimization",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "Lipschitz",
+            "smoothness",
+            "subgradient"
+          ],
+          "question": "关于凸优化中函数的 Lipschitz 性质、光滑性（Smoothness）以及次梯度（Subgradient），下列哪些说法是正确的？",
+          "options": [
+            "凸函数的 Lipschitz 性质限制函数值的变化幅度，光滑性限制梯度的变化幅度，两者并不等价",
+            "Hinge 这类非光滑凸函数在不可微点的次梯度构成一个闭凸集，通常不是唯一的一个向量",
+            "函数在非光滑点处的次梯度是唯一的，其取值等于该点左右导数中绝对值较小的那一个",
+            "只要函数是凸且 Lipschitz 的，它就一定光滑，因此固定步长 SGD 的收敛速度与光滑性没有关系"
+          ]
+        }
+      },
+      {
+        "id": "lipschitz-smoothness-subgradient__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "把 Lipschitz 与光滑性放在限制对象与步长策略上对比，根本差异是什么？",
+        "options": [
+          "前者限函数值波动，后者限梯度波动，不等价",
+          "Hinge 不可微点次梯度是一族向量，非唯一",
+          "不可微点次梯度唯一，取小绝对值导数即可",
+          "凸且 Lipschitz 必光滑，固定步长收敛与光滑性无关"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从限制对象与步长策略对比两种性质的根本差异",
+          "reasoningGoal": "先对齐两种性质的可比维度；再逐项判定各主张成立与否；并排除「次梯度唯一」「自动光滑」等不成立描述。"
+        },
+        "generatedAt": 1788866069727,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3a605b7f",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-811bca47",
+        "sourceSnapshot": {
+          "id": "lipschitz-smoothness-subgradient",
+          "topic": "optimization",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "Lipschitz",
+            "smoothness",
+            "subgradient"
+          ],
+          "question": "关于凸优化中函数的 Lipschitz 性质、光滑性（Smoothness）以及次梯度（Subgradient），下列哪些说法是正确的？",
+          "options": [
+            "凸函数的 Lipschitz 性质限制函数值的变化幅度，光滑性限制梯度的变化幅度，两者并不等价",
+            "Hinge 这类非光滑凸函数在不可微点的次梯度构成一个闭凸集，通常不是唯一的一个向量",
+            "函数在非光滑点处的次梯度是唯一的，其取值等于该点左右导数中绝对值较小的那一个",
+            "只要函数是凸且 Lipschitz 的，它就一定光滑，因此固定步长 SGD 的收敛速度与光滑性没有关系"
+          ]
+        }
+      }
+    ],
+    "pca-variance-reconstruction-mechanism": [
+      {
+        "id": "pca-variance-reconstruction-mechanism__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某实现按最小化投影方差做 PCA，聚类全错。定位这次方向性错误，下列哪些判断成立？",
+        "options": [
+          "投影方向取协方差特征向量，最大方差与最小重构误差同一子空间",
+          "PCA 有损：丢弃方向特征值非零即无法精确还原",
+          "目标就是最小化投影方差，方差越小聚类越紧",
+          "正交变换恒无损，低维总能精确还原原文"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从按最小化投影方差实现的错误定位目标环节",
+          "reasoningGoal": "先定位错误的环节（目标、有损两类）；再逐项验证各判断；并排除「最小化方差」「恒无损」等不成立描述。"
+        },
+        "generatedAt": 1788866069727,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-148a1aef",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-86e9c6d7",
+        "sourceSnapshot": {
+          "id": "pca-variance-reconstruction-mechanism",
+          "topic": "dimensionality-reduction",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "PCA",
+            "eigendecomposition",
+            "lossy-compression"
+          ],
+          "question": "关于主成分分析（PCA）降维的机制与目标，下列哪些说法是正确的？",
+          "options": [
+            "PCA 的投影方向取自协方差矩阵的特征向量，最大化投影后方差与最小化重构误差这两个表述给出同一个最优子空间",
+            "PCA 通常是有损的：只有当被丢弃方向对应的特征值恰好为零时，降维后的表示才能精确还原原始样本",
+            "PCA 的优化目标是让投影后的方差尽可能小，这样同类样本会在低维空间里更紧密地聚拢在一起",
+            "由于 PCA 是正交的线性变换，它在任何保留维数下都是无损的，低维表示总能精确还原出原始数据"
+          ]
+        }
+      },
+      {
+        "id": "pca-variance-reconstruction-mechanism__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某数据被丢弃方向特征值恰为零，团队断言可精确还原。评审这一断言的前提，下列哪些判断正确？",
+        "options": [
+          "特征向量方向同时实现方差最大与重构误差最小",
+          "特征值为零的方向丢掉无妨，其余可精确还原",
+          "PCA 目标是最小化投影方差，方差越小同类聚拢越紧",
+          "正交即无损，任何维数都可还原"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在丢弃方向特征值为零下判断精确还原断言的前提是否成立",
+          "reasoningGoal": "先判断该断言的前提（有损条件）是否满足；再逐项验证各主张；并排除「方差越小越好」「正交恒无损」等不成立描述。"
+        },
+        "generatedAt": 1788866069727,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-148a1aef",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-48de34e8",
+        "sourceSnapshot": {
+          "id": "pca-variance-reconstruction-mechanism",
+          "topic": "dimensionality-reduction",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "PCA",
+            "eigendecomposition",
+            "lossy-compression"
+          ],
+          "question": "关于主成分分析（PCA）降维的机制与目标，下列哪些说法是正确的？",
+          "options": [
+            "PCA 的投影方向取自协方差矩阵的特征向量，最大化投影后方差与最小化重构误差这两个表述给出同一个最优子空间",
+            "PCA 通常是有损的：只有当被丢弃方向对应的特征值恰好为零时，降维后的表示才能精确还原原始样本",
+            "PCA 的优化目标是让投影后的方差尽可能小，这样同类样本会在低维空间里更紧密地聚拢在一起",
+            "由于 PCA 是正交的线性变换，它在任何保留维数下都是无损的，低维表示总能精确还原出原始数据"
+          ]
+        }
+      }
+    ],
+    "adaboost-boosting-mechanism": [
+      {
+        "id": "adaboost-boosting-mechanism__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某 AdaBoost 用等权重投票，效果远不如预期。定位这次实现偏差，下列哪些判断成立？",
+        "options": [
+          "错分样本权重应逐轮升高，后续学习器聚焦难分区域，最终按错误率加权投票",
+          "弱强可在 PAC 下等价：错误率稳定低于一半减 γ 即可提升任意精度",
+          "弱学习器错误率须低于很小阈值，否则无法收敛",
+          "等权重投票即可，提升效果全靠样本重加权这一个机制"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从等权重投票效果差的偏差定位加权环节",
+          "reasoningGoal": "先定位偏差的环节（重加权、投票、阈值三类）；再逐项验证各判断；并排除「须很准」「等权重即可」等不成立描述。"
+        },
+        "generatedAt": 1788866069727,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d8669d59",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-1265ad59",
+        "sourceSnapshot": {
+          "id": "adaboost-boosting-mechanism",
+          "topic": "ensemble-learning",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "AdaBoost",
+            "weak-learnability",
+            "reweighting"
+          ],
+          "question": "关于 AdaBoost 把弱学习器提升为强学习器的机制，下列哪些说法是正确的？",
+          "options": [
+            "每轮训练后提高被错分样本的权重，使后续弱学习器更关注此前分错的样本，最终按各自的错误率加权投票",
+            "弱可学习与强可学习在 PAC 意义下等价：只要存在一个对所有数据分布都能取得严格低于一半错误率的弱学习器，就可被提升为任意精度的强学习器",
+            "参与提升的弱学习器必须自身错误率低于一个很小的阈值，例如错误率低于四分之一，否则提升过程无法收敛",
+            "AdaBoost 对所有弱学习器采用等权重投票，因此提升效果完全来自样本重加权这一个机制"
+          ]
+        }
+      },
+      {
+        "id": "adaboost-boosting-mechanism__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某弱学习器错误率 40%，团队认为太弱无法提升。评审这一判断的前提，下列哪些说法正确？",
+        "options": [
+          "每轮抬高错分权重，后续学习器专攻难例，最后加权投票",
+          "40% 错误率低于一半，已满足弱可学习，可提升任意精度",
+          "错误率须低于很小阈值，40% 太弱带不动",
+          "投票须等权重，加权破坏公平，提升全靠重加权"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在错误率 40% 下判断无法提升论断的前提是否成立",
+          "reasoningGoal": "先判断该论断的前提（弱可学习条件）是否满足；再逐项验证各主张；并排除「须很小阈值」「必须等权重」等不成立描述。"
+        },
+        "generatedAt": 1788866069728,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d8669d59",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-4b48057d",
+        "sourceSnapshot": {
+          "id": "adaboost-boosting-mechanism",
+          "topic": "ensemble-learning",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "AdaBoost",
+            "weak-learnability",
+            "reweighting"
+          ],
+          "question": "关于 AdaBoost 把弱学习器提升为强学习器的机制，下列哪些说法是正确的？",
+          "options": [
+            "每轮训练后提高被错分样本的权重，使后续弱学习器更关注此前分错的样本，最终按各自的错误率加权投票",
+            "弱可学习与强可学习在 PAC 意义下等价：只要存在一个对所有数据分布都能取得严格低于一半错误率的弱学习器，就可被提升为任意精度的强学习器",
+            "参与提升的弱学习器必须自身错误率低于一个很小的阈值，例如错误率低于四分之一，否则提升过程无法收敛",
+            "AdaBoost 对所有弱学习器采用等权重投票，因此提升效果完全来自样本重加权这一个机制"
+          ]
+        }
+      }
+    ],
+    "ai-transformer-006": [
+      {
+        "id": "ai-transformer-006__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某服务权重量化后并发一多还是 OOM，非权重显存随并发长度线性涨。定位这次瓶颈误判，下列哪些判断成立？",
+        "options": [
+          "先按公式对账：batch 层数长度头数量级，揪出 KV 真凶",
+          "关 KV 重算历史即可，decode 速度影响忽略不计",
+          "GQA 减头、量化 KV、分页管显存、复用公共前缀",
+          "权重量化更低精度即可，KV 与并发长度无关"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从量化后仍 OOM 的误判定位 KV 环节",
+          "reasoningGoal": "先定位误判的环节（对账、重算、优化三类）；再逐项验证各判断；并排除「关 KV 无妨」「量化权重包治」等不成立描述。"
+        },
+        "generatedAt": 1788866069728,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5bca1fb1",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-134972a2",
+        "sourceSnapshot": {
+          "id": "ai-transformer-006",
+          "topic": "kv-cache",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "kv-cache",
+            "inference",
+            "memory",
+            "debugging"
+          ],
+          "question": "一个 LLM 服务的 GPU 显存随并发请求增加迅速耗尽，即使模型本身可以放入显存。你会如何判断是不是 KV Cache 导致的？有哪些优化方向？",
+          "options": [
+            "按 batch×层数×序列长度×KV 头数估算 KV Cache 的理论占用，与监控中的非权重显存对账确认瓶颈",
+            "关闭 KV Cache 即可释放显存：反正每步重新计算历史 K/V 对 decode 速度的影响可以忽略",
+            "采用 GQA/MQA 减少 KV 头数、对 KV Cache 做量化、用分页方式管理显存并复用公共前缀缓存",
+            "把模型权重量化到更低精度就能解决：KV Cache 大小与并发数和序列长度无关"
+          ]
+        }
+      },
+      {
+        "id": "ai-transformer-006__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "把量化权重与治理 KV Cache 放在解决 OOM 上对比，根本差异是什么？",
+        "options": [
+          "对账先行：公式估算 KV 占用，与监控非权重部分比对",
+          "关掉 KV 全重算，速度损失可忽略",
+          "减头量化分页复用，四件套专治 KV",
+          "把权重量化到更低精度即可：KV 与并发长度无关"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从解决 OOM 对比两种路线的根本差异",
+          "reasoningGoal": "先对齐两种路线的可比维度；再逐项判定各主张成立与否；并排除「重算无妨」「精度包治」等不成立描述。"
+        },
+        "generatedAt": 1788866069728,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5bca1fb1",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-349ae95b",
+        "sourceSnapshot": {
+          "id": "ai-transformer-006",
+          "topic": "kv-cache",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "kv-cache",
+            "inference",
+            "memory",
+            "debugging"
+          ],
+          "question": "一个 LLM 服务的 GPU 显存随并发请求增加迅速耗尽，即使模型本身可以放入显存。你会如何判断是不是 KV Cache 导致的？有哪些优化方向？",
+          "options": [
+            "按 batch×层数×序列长度×KV 头数估算 KV Cache 的理论占用，与监控中的非权重显存对账确认瓶颈",
+            "关闭 KV Cache 即可释放显存：反正每步重新计算历史 K/V 对 decode 速度的影响可以忽略",
+            "采用 GQA/MQA 减少 KV 头数、对 KV Cache 做量化、用分页方式管理显存并复用公共前缀缓存",
+            "把模型权重量化到更低精度就能解决：KV Cache 大小与并发数和序列长度无关"
+          ]
+        }
+      }
+    ],
+    "nmf-svd-topic-modeling-comparison": [
+      {
+        "id": "nmf-svd-topic-modeling-comparison__surface-options__assessmentfresh5__0",
+        "kind": "surface-options",
+        "question": "某主题模型 SVD 主题向量正负对冲，解释不清。定位这次表示失误，下列哪些判断成立？",
+        "options": [
+          "正交基允许负权重，词频贡献非物理对冲",
+          "主题被迫正交，政治金融这类重叠主题失真",
+          "SVD 无最佳低秩逼近，NMF 在 Frobenius 下全局唯一最优",
+          "两文档同缺某主题，分量同为负，内积误判高相似",
+          "NMF 文档表为主题凸组合，基与系数非负，可释为词表分布"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 SVD 主题正负对冲的失误定位表示环节",
+          "reasoningGoal": "先定位失误的环节（负值、正交、逼近三类）；再逐项验证各判断；并排除「SVD 无最佳逼近」等不成立描述。"
+        },
+        "generatedAt": 1788866069728,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-991809ea",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-bcce5da6",
+        "sourceSnapshot": {
+          "id": "nmf-svd-topic-modeling-comparison",
+          "topic": "topic-modeling",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "SVD",
+            "NMF",
+            "Topic Modeling",
+            "LSI"
+          ],
+          "question": "在文本表示和主题建模（Topic Modeling）中，使用奇异值分解（SVD / Latent Semantic Indexing）相比于非负矩阵分解（NMF）存在若干固有局限性。以下关于 SVD 和 NMF 在主题表达与建模特性上的对比，哪些是正确的？",
+          "options": [
+            "SVD 得到的正交主题向量允许出现负数权重，可能导致词频贡献在主题表达中发生不符合物理意义的相互抵消。",
+            "SVD 要求分解出的主题向量彼此正交，而实际文本主题（如政治与金融）在词汇分布上常有重叠，正交性约束不符合真实语义关系。",
+            "SVD 无法保证获得最佳低秩逼近，而 NMF 在 Frobenius 范数下能够保证获得全局唯一的最佳低秩逼近。",
+            "两个文档可能因为同时不包含某个主题（低维向量对应分量为负）而被 SVD 计算的内积错误地判定为高相似度。",
+            "NMF 将文档约束为主题的凸组合（Convex Combination），其基向量与系数均为非负，使得主题可自然解释为词表上的概率分布。"
+          ]
+        }
+      },
+      {
+        "id": "nmf-svd-topic-modeling-comparison__context-options__assessmentfresh5__1",
+        "kind": "context-options",
+        "question": "某项目要求 Frobenius 下全局最优低秩逼近，团队选了 NMF。评审这一选择的前提，下列哪些判断正确？",
+        "options": [
+          "SVD 正交基带负权重，词频对冲无物理意义",
+          "SVD 要求主题向量彼此正交，但政治金融这类主题词汇常重叠",
+          "SVD 无最佳逼近，NMF 全局唯一最优",
+          "同缺某主题的两文档，SVD 内积虚高相似",
+          "NMF 凸组合加非负，主题即词表概率分布"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在全局最优逼近要求下判断 NMF 选择的前提是否成立",
+          "reasoningGoal": "先判断该选择的前提（逼近保证）是否满足；再逐项验证各主张；并排除「NMF 全局最优」等不成立描述。"
+        },
+        "generatedAt": 1788866069729,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-991809ea",
+        "batch": "assessmentfresh5",
+        "model": "manual",
+        "contentHash": "fnv1a-a729b150",
+        "sourceSnapshot": {
+          "id": "nmf-svd-topic-modeling-comparison",
+          "topic": "topic-modeling",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "SVD",
+            "NMF",
+            "Topic Modeling",
+            "LSI"
+          ],
+          "question": "在文本表示和主题建模（Topic Modeling）中，使用奇异值分解（SVD / Latent Semantic Indexing）相比于非负矩阵分解（NMF）存在若干固有局限性。以下关于 SVD 和 NMF 在主题表达与建模特性上的对比，哪些是正确的？",
+          "options": [
+            "SVD 得到的正交主题向量允许出现负数权重，可能导致词频贡献在主题表达中发生不符合物理意义的相互抵消。",
+            "SVD 要求分解出的主题向量彼此正交，而实际文本主题（如政治与金融）在词汇分布上常有重叠，正交性约束不符合真实语义关系。",
+            "SVD 无法保证获得最佳低秩逼近，而 NMF 在 Frobenius 范数下能够保证获得全局唯一的最佳低秩逼近。",
+            "两个文档可能因为同时不包含某个主题（低维向量对应分量为负）而被 SVD 计算的内积错误地判定为高相似度。",
+            "NMF 将文档约束为主题的凸组合（Convex Combination），其基向量与系数均为非负，使得主题可自然解释为词表上的概率分布。"
+          ]
+        }
+      }
+    ]
+  }
+}

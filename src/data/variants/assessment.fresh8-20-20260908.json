@@ -1,0 +1,909 @@
+{
+  "version": 1,
+  "generatedAt": 1788867846507,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-fund-022": [
+      {
+        "id": "ai-fund-022__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某团队 8 张卡要给 30 家客户各训全参模型，数据还不许混。评审这一计划的前提，下列哪些判断正确？",
+        "options": [
+          "权重梯度优化器状态三重显存，8 卡排不下 30 个全参任务",
+          "全参易灾难性遗忘，通用能力会被冲掉",
+          "一家一份完整副本，30 份的存储更新版本管理失控",
+          "全参拖慢线上推理延迟，客户体感变差",
+          "全参与 LoRA 显存相当，只差收敛快慢，算力可行"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在 8 卡 30 客户数据隔离的约束下判断全参计划的前提是否成立",
+          "reasoningGoal": "先判断该计划的前提（显存、遗忘、副本三类）是否满足；再逐项验证各主张；并排除「拖慢推理」「显存相当」等不成立描述。"
+        },
+        "generatedAt": 1788867846502,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1c3d3f0b",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-b08cfc73",
+        "sourceSnapshot": {
+          "id": "ai-fund-022",
+          "topic": "fine-tuning",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "fine-tuning",
+            "PEFT",
+            "cost"
+          ],
+          "question": "为什么不直接 Fine-tune 大模型的全部参数？",
+          "options": [
+            "全参微调除权重外还要存储梯度与 optimizer states，显存占用可达权重的数倍，现有算力很难排下 30 个训练任务",
+            "全参微调容易引发灾难性遗忘，会损伤基座模型已有的通用能力",
+            "每个下游任务都要保存一份完整模型副本，30 份副本的存储、更新与版本管理成本会随客户数失控",
+            "全参微调会显著拖慢线上推理延迟，导致客户侧的响应速度明显变慢",
+            "全参微调与 LoRA 的显存占用几乎相同，差别只在收敛快慢，因此方案在算力上其实可行"
+          ]
+        }
+      },
+      {
+        "id": "ai-fund-022__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "某全参微调后通用问答能力雪崩。定位这次遗忘，下列哪些判断成立？",
+        "options": [
+          "梯度与优化器状态让显存数倍于权重，小算力排不下",
+          "灾难性遗忘冲掉通用能力",
+          "每任务一份完整副本，版本管理失控",
+          "全参微调不改推理计算图，线上延迟不受影响",
+          "全参与 LoRA 显存占用几乎相同，只差收敛快慢，算力可行"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从通用能力雪崩的故障定位全参环节",
+          "reasoningGoal": "先定位故障的环节（显存、遗忘、副本三类）；再逐项验证各判断；并排除「拖慢推理」「显存相当」等不成立描述。"
+        },
+        "generatedAt": 1788867846503,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1c3d3f0b",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-2f5f2565",
+        "sourceSnapshot": {
+          "id": "ai-fund-022",
+          "topic": "fine-tuning",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "fine-tuning",
+            "PEFT",
+            "cost"
+          ],
+          "question": "为什么不直接 Fine-tune 大模型的全部参数？",
+          "options": [
+            "全参微调除权重外还要存储梯度与 optimizer states，显存占用可达权重的数倍，现有算力很难排下 30 个训练任务",
+            "全参微调容易引发灾难性遗忘，会损伤基座模型已有的通用能力",
+            "每个下游任务都要保存一份完整模型副本，30 份副本的存储、更新与版本管理成本会随客户数失控",
+            "全参微调会显著拖慢线上推理延迟，导致客户侧的响应速度明显变慢",
+            "全参微调与 LoRA 的显存占用几乎相同，差别只在收敛快慢，因此方案在算力上其实可行"
+          ]
+        }
+      }
+    ],
+    "ai-posttraining-006": [
+      {
+        "id": "ai-posttraining-006__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某 SFT 加大量提学习率后，通用基准掉得更多。定位这次加剧，下列哪些判断成立？",
+        "options": [
+          "窄分布挤占通用能力：先量化降幅排除假下降，再混通用数据 replay",
+          "更新幅度失控：降学习率减 epoch 上 LoRA，加 KL 拉回参考分布",
+          "加量提速多训几轮，通用能力自然恢复，无需混通用数据",
+          "拓宽数据多样性后再训，SFT 只做行为微调",
+          "超阈值就冻结共用，每业务线独立全量微调，彻底隔离拖累"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从加量提速后掉更多的加剧定位强度环节",
+          "reasoningGoal": "先定位加剧的环节（分布、幅度两类）；再逐项验证各判断；并排除「加量恢复」「冻结隔离」等不成立描述。"
+        },
+        "generatedAt": 1788867846503,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ad41f3aa",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-7da17fd6",
+        "sourceSnapshot": {
+          "id": "ai-posttraining-006",
+          "topic": "alignment",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sft",
+            "catastrophic-forgetting",
+            "trade-off"
+          ],
+          "question": "一个模型经过 SFT 后指令遵循能力明显提高，但原本的知识问答能力下降。你会如何分析和解决这个问题？",
+          "options": [
+            "这是灾难性遗忘：先用原有能力基准量化降幅与受影响能力面，排除评测格式变化导致的假下降，再混入通用问答数据做replay",
+            "控制更新幅度：降低学习率、减少epoch、用LoRA限制更新范围，偏好优化阶段加KL约束使分布贴近参考模型",
+            "加大SFT数据量并提高学习率多训几轮，训练越充分通用能力越会自然恢复，无需混入通用数据",
+            "检查SFT数据是否分布过窄或答案风格模板化，拓宽多样性后再训，并把SFT定位为行为微调而非重学",
+            "降幅超阈值就冻结模型共用，为每条业务线各做一次独立全量微调发布，彻底避免能力互相拖累"
+          ]
+        }
+      },
+      {
+        "id": "ai-posttraining-006__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "把混入回放限幅与加量猛训、独立全量放在治遗忘上对比，根本差异是什么？",
+        "options": [
+          "量化降幅排除假下降，混通用数据 replay 保通用",
+          "降学习率减 epoch，LoRA 限幅加 KL 约束",
+          "加大数据提高学习率多训，通用自然回来",
+          "拓宽多样性，SFT 只做行为微调不做重学",
+          "超阈值冻结共用，各业务独立全量微调"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从治遗忘效果对比三种路线的根本差异",
+          "reasoningGoal": "先对齐三种路线的可比维度；再逐项判定各主张成立与否；并排除「加量恢复」「冻结隔离」等不成立描述。"
+        },
+        "generatedAt": 1788867846503,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ad41f3aa",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-2b0ee442",
+        "sourceSnapshot": {
+          "id": "ai-posttraining-006",
+          "topic": "alignment",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sft",
+            "catastrophic-forgetting",
+            "trade-off"
+          ],
+          "question": "一个模型经过 SFT 后指令遵循能力明显提高，但原本的知识问答能力下降。你会如何分析和解决这个问题？",
+          "options": [
+            "这是灾难性遗忘：先用原有能力基准量化降幅与受影响能力面，排除评测格式变化导致的假下降，再混入通用问答数据做replay",
+            "控制更新幅度：降低学习率、减少epoch、用LoRA限制更新范围，偏好优化阶段加KL约束使分布贴近参考模型",
+            "加大SFT数据量并提高学习率多训几轮，训练越充分通用能力越会自然恢复，无需混入通用数据",
+            "检查SFT数据是否分布过窄或答案风格模板化，拓宽多样性后再训，并把SFT定位为行为微调而非重学",
+            "降幅超阈值就冻结模型共用，为每条业务线各做一次独立全量微调发布，彻底避免能力互相拖累"
+          ]
+        }
+      }
+    ],
+    "agtool-guard-04": [
+      {
+        "id": "agtool-guard-04__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某系统只布输入层探测，被隐蔽注入绕过后直达工具。定位这次单层依赖，下列哪些判断成立？",
+        "options": [
+          "输入命中靠植入警告重锚定用户意图",
+          "输出层独立审工具调用真实 Payload，按危险性拦截，上下文被劫持也拦得住",
+          "输入层单防一切，输出层只防自身失误",
+          "外泄须同时突破输入绕过与输出伪装"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从隐蔽注入绕过输入层的故障定位单层依赖环节",
+          "reasoningGoal": "先定位故障的环节（输入、输出两类）；再逐项验证各判断；并排除「单层包治」等不成立描述。"
+        },
+        "generatedAt": 1788867846504,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6b8eb51f",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-bcf34f4b",
+        "sourceSnapshot": {
+          "id": "agtool-guard-04",
+          "topic": "prompt-injection",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prompt-injection",
+            "defense-in-depth",
+            "input-probe",
+            "output-classifier",
+            "tool-call"
+          ],
+          "question": "在 Agent 安全架构中，通常同时部署「输入层 Prompt 注入探测器（Probe）」与「输出层 Transcript 分类器（Classifier）」。前者在工具返回结果（Tool Outputs）进入 Agent Context 前进行扫描，后者在 Agent 发起工具调用（Tool Calls）前进行拦截。关于这种双层防御体系（Defense-in-Depth），下列分析正确的有哪些？（多选）",
+          "options": [
+            "输入层探测器若发现潜在注入攻击，主要通过向 Agent 上下文植入安全警告，引导 Agent 重新锚定用户原始意图",
+            "输出层分类器因不读取工具返回结果，即使 Agent 被输入层遗漏的注入指令劫持，仍可基于动作本身的危险性实施拦截",
+            "单靠输入层探测器即可解决 Prompt 注入引发的所有风险，输出层分类器仅用于防御 Agent 自身的失误操作",
+            "攻击者若要成功实施数据外泄（Data Exfiltration），必须同时突破输入层（绕过检测）与输出层（使外泄动作看起来符合用户授权）"
+          ]
+        }
+      },
+      {
+        "id": "agtool-guard-04__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "把输入层警告引导与输出层动作拦截放在防御位置上对比，根本差异是什么？",
+        "options": [
+          "输入层发现注入靠植入安全警告，引导重锚定用户意图",
+          "输出层分类器独立审工具调用真实 Payload，按危险性拦截",
+          "输入层包打一切风险，输出层只防自身失误操作",
+          "外泄须双破：绕过输入层检测，再伪装成用户授权"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从防御位置对比两层机制的根本差异",
+          "reasoningGoal": "先对齐两层机制的可比维度；再逐项判定各主张成立与否；并排除「单层包治」等不成立描述。"
+        },
+        "generatedAt": 1788867846504,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6b8eb51f",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-e7aab607",
+        "sourceSnapshot": {
+          "id": "agtool-guard-04",
+          "topic": "prompt-injection",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prompt-injection",
+            "defense-in-depth",
+            "input-probe",
+            "output-classifier",
+            "tool-call"
+          ],
+          "question": "在 Agent 安全架构中，通常同时部署「输入层 Prompt 注入探测器（Probe）」与「输出层 Transcript 分类器（Classifier）」。前者在工具返回结果（Tool Outputs）进入 Agent Context 前进行扫描，后者在 Agent 发起工具调用（Tool Calls）前进行拦截。关于这种双层防御体系（Defense-in-Depth），下列分析正确的有哪些？（多选）",
+          "options": [
+            "输入层探测器若发现潜在注入攻击，主要通过向 Agent 上下文植入安全警告，引导 Agent 重新锚定用户原始意图",
+            "输出层分类器因不读取工具返回结果，即使 Agent 被输入层遗漏的注入指令劫持，仍可基于动作本身的危险性实施拦截",
+            "单靠输入层探测器即可解决 Prompt 注入引发的所有风险，输出层分类器仅用于防御 Agent 自身的失误操作",
+            "攻击者若要成功实施数据外泄（Data Exfiltration），必须同时突破输入层（绕过检测）与输出层（使外泄动作看起来符合用户授权）"
+          ]
+        }
+      }
+    ],
+    "realtime-bench-01": [
+      {
+        "id": "realtime-bench-01__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某实时模型 BLEU 最高，上线后打断时机全错。定位这次指标错配，下列哪些判断成立？",
+        "options": [
+          "缺时间触发测试：相对间隔发起输出测不了",
+          "缺打断时机测试：语码转换说错词时纠正测不了",
+          "离线静态文本翻译 BLEU 可做实时语音质量代理指标",
+          "缺并发视觉追踪：在实时视频流中边保持对话边数动作测不了"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 BLEU 最高但打断全错的错配定位指标环节",
+          "reasoningGoal": "先定位错配的环节（触发、打断、追踪三类）；再逐项验证各判断；并排除「BLEU 代理」等不成立描述。"
+        },
+        "generatedAt": 1788867846504,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8be10270",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-f64a14a2",
+        "sourceSnapshot": {
+          "id": "realtime-bench-01",
+          "topic": "realtime-interaction",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "benchmark",
+            "dynamic-benchmark",
+            "time-trigger",
+            "interjection"
+          ],
+          "question": "评测传统 LLM 主要关注静态准确率（如 MMLU、GSM8K），但对于支持“时间对齐微轮次”的原生实时交互模型，传统基准测试无法有效覆盖其核心能力。如果设计一套针对实时交互能力的基准测试（Benchmark），以下哪些场景和指标能有效评估此类架构的独特性与区分度？（多选）",
+          "options": [
+            "时间触发精准度（Time-based Initiation）：测试模型能否严格根据用户指定的相对时间间隔（如“每隔 4 秒提醒我呼吸一次”），在精确的时间点发起语音输出",
+            "打断与接话时机（Interjection Timing）：测试模型在用户持续发言过程中，能否在特定的语义/语境触发点（如用户发生语码转换或说错词）实时插入纠正",
+            "离线静态文本翻译 BLEU 得分：测试模型在无语音输入情况下对批量文本进行标准离线翻译的准确率，可作为实时语音系统的质量代理指标",
+            "并发视觉事件追踪计数（Real-time Visual Tracking）：在实时视频流中，测试模型能否一边保持语音对话，一边对画面中的动态动作（如做俯卧撑的次数）进行无缝同步计数"
+          ]
+        }
+      },
+      {
+        "id": "realtime-bench-01__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "要为时间对齐微轮次模型设计基准，静态 QA 不够用。下列哪些应当纳入？",
+        "options": [
+          "按相对时间间隔发起输出的精准度",
+          "语义触发点实时插入纠正的时机",
+          "无语音批量文本翻译的离线准确率",
+          "边对话边数画面动作的同步计数"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为时间对齐微轮次模型设计基准场景",
+          "reasoningGoal": "先拆出基准设计的目标与约束（时间对齐与多模态流）；再逐项确认各场景；并排除「离线翻译代理」等不成立描述。"
+        },
+        "generatedAt": 1788867846504,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8be10270",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-ba5ae656",
+        "sourceSnapshot": {
+          "id": "realtime-bench-01",
+          "topic": "realtime-interaction",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "benchmark",
+            "dynamic-benchmark",
+            "time-trigger",
+            "interjection"
+          ],
+          "question": "评测传统 LLM 主要关注静态准确率（如 MMLU、GSM8K），但对于支持“时间对齐微轮次”的原生实时交互模型，传统基准测试无法有效覆盖其核心能力。如果设计一套针对实时交互能力的基准测试（Benchmark），以下哪些场景和指标能有效评估此类架构的独特性与区分度？（多选）",
+          "options": [
+            "时间触发精准度（Time-based Initiation）：测试模型能否严格根据用户指定的相对时间间隔（如“每隔 4 秒提醒我呼吸一次”），在精确的时间点发起语音输出",
+            "打断与接话时机（Interjection Timing）：测试模型在用户持续发言过程中，能否在特定的语义/语境触发点（如用户发生语码转换或说错词）实时插入纠正",
+            "离线静态文本翻译 BLEU 得分：测试模型在无语音输入情况下对批量文本进行标准离线翻译的准确率，可作为实时语音系统的质量代理指标",
+            "并发视觉事件追踪计数（Real-time Visual Tracking）：在实时视频流中，测试模型能否一边保持语音对话，一边对画面中的动态动作（如做俯卧撑的次数）进行无缝同步计数"
+          ]
+        }
+      }
+    ],
+    "task-ai-01": [
+      {
+        "id": "task-ai-01__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某客服按置信度自动退款，一批高置信全错，钱追不回。定位这次分流失误，下列哪些判断成立？",
+        "options": [
+          "顶域分类先路由，缩小决策空间与上下文",
+          "子领域预测模型对齐历史人工判例，自动判决标准一致",
+          "Action Layer 验权限调交易支付，操作可逆受控",
+          "高置信自动闭环，低置信进人工，压到 1% 下即达标"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从高置信自动退款出错的失误定位分流环节",
+          "reasoningGoal": "先定位失误的环节（路由、对齐、闸门三类）；再逐项验证各判断；并排除「置信即分流」等不成立描述。"
+        },
+        "generatedAt": 1788867846505,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-91fa60f7",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-fa285a5d",
+        "sourceSnapshot": {
+          "id": "task-ai-01",
+          "topic": "task-oriented-ai",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "intent-classification",
+            "domain-routing",
+            "predictive-model",
+            "action-layer"
+          ],
+          "question": "在大型交易平台（如在线旅游、电商平台）的自动化客服系统架构中，处理涉及退款、改签等有资金后果的操作时，通常不采用“单层端到端大模型/关键词直接执行决策”的方案，而采用“分层意图分类 + 专有领域模型/回归预测模型 + Action Layer”的架构。关于这种架构的设计考量，下列说法正确的有？（多选）",
+          "options": [
+            "顶域分类先把非结构化输入快速路由到具体业务领域，缩小后续模型的决策空间和上下文范围。",
+            "在特定业务子领域内，利用根据历史人工客服决策数据训练的预测模型（例如预估合理退款比例模型），有助于保持自动判决标准与经验丰富的人工客服一致",
+            "意图识别和预测完成后，需由独立的 Action Layer 校验权限并调用底层的实时交易与支付系统，以实现可逆或受控的业务操作",
+            "分层后机器置信度高的自动闭环，低的进人工池；人工量级可压到 1% 以下，置信度即分流依据，分流阈值按成本调优。"
+          ]
+        }
+      },
+      {
+        "id": "task-ai-01__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "把分层意图加领域模型加动作层与单层端到端放在资金安全上对比，根本差异是什么？",
+        "options": [
+          "顶域先分流，非结构化输入秒级归位",
+          "历史人工判例训预测模型，判决标准一致",
+          "独立动作层验权限调支付，可逆可审计",
+          "高置信自动闭环低置信进人工，压到 1% 下即达标，置信度即分流依据"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从资金安全对比两种架构的根本差异",
+          "reasoningGoal": "先对齐两种架构的可比维度；再逐项判定各主张成立与否；并排除「置信充分」「取消人工」等不成立描述。"
+        },
+        "generatedAt": 1788867846505,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-91fa60f7",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-7fff8c09",
+        "sourceSnapshot": {
+          "id": "task-ai-01",
+          "topic": "task-oriented-ai",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "intent-classification",
+            "domain-routing",
+            "predictive-model",
+            "action-layer"
+          ],
+          "question": "在大型交易平台（如在线旅游、电商平台）的自动化客服系统架构中，处理涉及退款、改签等有资金后果的操作时，通常不采用“单层端到端大模型/关键词直接执行决策”的方案，而采用“分层意图分类 + 专有领域模型/回归预测模型 + Action Layer”的架构。关于这种架构的设计考量，下列说法正确的有？（多选）",
+          "options": [
+            "顶域分类先把非结构化输入快速路由到具体业务领域，缩小后续模型的决策空间和上下文范围。",
+            "在特定业务子领域内，利用根据历史人工客服决策数据训练的预测模型（例如预估合理退款比例模型），有助于保持自动判决标准与经验丰富的人工客服一致",
+            "意图识别和预测完成后，需由独立的 Action Layer 校验权限并调用底层的实时交易与支付系统，以实现可逆或受控的业务操作",
+            "分层后机器置信度高的自动闭环，低的进人工池；人工量级可压到 1% 以下，置信度即分流依据，分流阈值按成本调优。"
+          ]
+        }
+      }
+    ],
+    "dl-02": [
+      {
+        "id": "dl-02__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "有人断言卷积网不能用反向传播。评审这一断言的前提，下列哪些判断正确？",
+        "options": [
+          "链式法则算各参数梯度",
+          "仅全连接可用，卷积不行",
+          "梯度沿下降方向更新参数",
+          "有监督训练核心算法"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断卷积网不能用反传断言的前提是否成立",
+          "reasoningGoal": "先判断该断言的前提（可微计算图）是否满足；再逐项验证各主张；并排除「仅全连接」等不成立描述。"
+        },
+        "generatedAt": 1788867846505,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a788912f",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-4b2526b6",
+        "sourceSnapshot": {
+          "id": "dl-02",
+          "topic": "backprop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "backprop",
+            "gradient",
+            "training"
+          ],
+          "question": "关于反向传播（backpropagation），下列说法正确的有哪些？（多选）",
+          "options": [
+            "它基于链式法则计算损失对各参数的梯度",
+            "仅在全连接网络中可用，卷积网络不能用",
+            "梯度用于沿损失下降方向更新参数",
+            "它属于有监督训练中的核心算法"
+          ]
+        }
+      },
+      {
+        "id": "dl-02__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "某计算图含不可微环节，团队坚持全图反传。评审这一坚持的前提，下列哪些判断正确？",
+        "options": [
+          "基于链式法则算损失对各参数梯度",
+          "卷积非全连接，反传不适用",
+          "梯度指下降方向，参数沿之更新",
+          "反传是有监督训练核心算法"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在含不可微环节下判断全图反传坚持的前提是否成立",
+          "reasoningGoal": "先判断该坚持的前提（全图可微）是否满足；再逐项验证各主张；并排除「通吃一切」「卷积例外」等不成立描述。"
+        },
+        "generatedAt": 1788867846505,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a788912f",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-7f99bdf9",
+        "sourceSnapshot": {
+          "id": "dl-02",
+          "topic": "backprop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "backprop",
+            "gradient",
+            "training"
+          ],
+          "question": "关于反向传播（backpropagation），下列说法正确的有哪些？（多选）",
+          "options": [
+            "它基于链式法则计算损失对各参数的梯度",
+            "仅在全连接网络中可用，卷积网络不能用",
+            "梯度用于沿损失下降方向更新参数",
+            "它属于有监督训练中的核心算法"
+          ]
+        }
+      }
+    ],
+    "dl-05": [
+      {
+        "id": "dl-05__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某训练 dropout 拉满后收敛停滞，还指望它替代学习率调度。定位这次误用，下列哪些判断成立？",
+        "options": [
+          "训练随机丢神经元，近似子网络集成",
+          "推理关 dropout 或期望缩放",
+          "正则化缓解过拟合",
+          "比例越高收敛越快，可替代学习率调度"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从拉满停滞的误用定位 dropout 环节",
+          "reasoningGoal": "先定位误用的环节（训练、推理两类）；再逐项验证各判断；并排除「越高越快」等不成立描述。"
+        },
+        "generatedAt": 1788867846505,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c1409825",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-8665402a",
+        "sourceSnapshot": {
+          "id": "dl-05",
+          "topic": "dropout",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "dropout",
+            "regularization"
+          ],
+          "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
+          "options": [
+            "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
+            "推理时通常关闭 Dropout 或使用期望缩放",
+            "它可以作为正则化手段缓解过拟合",
+            "它一定会使模型收敛更快，因此 dropout 比例设得越高训练收敛速度就越快，甚至可用来直接替代学习率调度器"
+          ]
+        }
+      },
+      {
+        "id": "dl-05__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "把训练随机失活与推理关闭缩放放在作用阶段上对比，根本差异是什么？",
+        "options": [
+          "训练丢神经元，集成子网络",
+          "推理关 dropout 或缩放期望",
+          "正则缓解过拟合",
+          "拉满比例加速收敛，替代调度器"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从作用阶段对比训练与推理两态的根本差异",
+          "reasoningGoal": "先对齐两态的可比维度；再逐项判定各主张成立与否；并排除「拉满加速」等不成立描述。"
+        },
+        "generatedAt": 1788867846506,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c1409825",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-ffd2eda0",
+        "sourceSnapshot": {
+          "id": "dl-05",
+          "topic": "dropout",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "dropout",
+            "regularization"
+          ],
+          "question": "关于 Dropout，下列说法正确的有哪些？（多选）",
+          "options": [
+            "训练时随机丢弃部分神经元，相当于训练多个子网络集成",
+            "推理时通常关闭 Dropout 或使用期望缩放",
+            "它可以作为正则化手段缓解过拟合",
+            "它一定会使模型收敛更快，因此 dropout 比例设得越高训练收敛速度就越快，甚至可用来直接替代学习率调度器"
+          ]
+        }
+      }
+    ],
+    "dl-10": [
+      {
+        "id": "dl-10__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某 Brier 训练初期纹丝不动，换交叉熵即收敛。定位这次饱和，下列哪些判断成立？",
+        "options": [
+          "交叉熵梯度 q-e_i，不自信错即大梯度，永不饱和",
+          "Brier 带 Jacobi，自信错时矩阵趋零而饱和",
+          "交叉熵对 z 凸，Brier 对 z 非凸",
+          "Brier 大误差惩罚直接，前期收敛更快，无需预热",
+          "交叉熵主损失高效，Brier 后期抗噪"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 Brier 初期不动的饱和定位梯度环节",
+          "reasoningGoal": "先定位饱和的环节（梯度、凸性两类）；再逐项验证各判断；并排除「Brier 更快」等不成立描述。"
+        },
+        "generatedAt": 1788867846506,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0be68551",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-08199a78",
+        "sourceSnapshot": {
+          "id": "dl-10",
+          "topic": "softmax",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "brier-score",
+            "gradient-saturation",
+            "convexity",
+            "noise-robustness"
+          ],
+          "question": "在 Softmax 输出 q=Softmax(z) 上，比较交叉熵与 Brier 评分（平方损失）对 Logits z 的梯度特性，下列说法正确的有？（多选）",
+          "options": [
+            "交叉熵对 z 的梯度为 ∇_z S(q,i) = q − e_i，当且仅当 q = e_i 时梯度为零，不存在因\"自信地预测错误\"而导致的梯度消失",
+            "Brier 梯度含变换矩阵，自信预测错误时矩阵趋零致梯度消失（饱和困境），训练慎用。",
+            "在 Softmax 激活下，交叉熵关于 Logits z 是凸函数，而 Brier 评分关于 z 是非凸函数",
+            "Brier 对大误差惩罚更直接，初期收敛更快；预热是交叉熵时代的习惯，新损失无需沿用。",
+            "交叉熵更适合作为预训练的主损失函数，而 Brier 评分因其在\"自信错误\"时梯度小的特性，后期可能具备更好的抗噪声能力"
+          ]
+        }
+      },
+      {
+        "id": "dl-10__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "某数据集噪声标签多，要选主损失。判断各说法的前提，下列哪些正确？",
+        "options": [
+          "交叉熵梯度为 q 减 e_i，误差越大梯度越大",
+          "Brier 自信错时梯度消失，前期慎用",
+          "交叉熵凸而 Brier 非凸，极小唯一性不同",
+          "Brier 大误差惩罚直接，初期收敛更快，预热是旧习惯",
+          "交叉熵适合做预训练主损失，Brier 自信错误梯度小，后期抗噪"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在噪声标签多下判断损失选择的前提是否成立",
+          "reasoningGoal": "先判断选择的前提（饱和与凸性）是否满足；再逐项验证各主张；并排除「Brier 更快」等不成立描述。"
+        },
+        "generatedAt": 1788867846506,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0be68551",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-56d07722",
+        "sourceSnapshot": {
+          "id": "dl-10",
+          "topic": "softmax",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "brier-score",
+            "gradient-saturation",
+            "convexity",
+            "noise-robustness"
+          ],
+          "question": "在 Softmax 输出 q=Softmax(z) 上，比较交叉熵与 Brier 评分（平方损失）对 Logits z 的梯度特性，下列说法正确的有？（多选）",
+          "options": [
+            "交叉熵对 z 的梯度为 ∇_z S(q,i) = q − e_i，当且仅当 q = e_i 时梯度为零，不存在因\"自信地预测错误\"而导致的梯度消失",
+            "Brier 梯度含变换矩阵，自信预测错误时矩阵趋零致梯度消失（饱和困境），训练慎用。",
+            "在 Softmax 激活下，交叉熵关于 Logits z 是凸函数，而 Brier 评分关于 z 是非凸函数",
+            "Brier 对大误差惩罚更直接，初期收敛更快；预热是交叉熵时代的习惯，新损失无需沿用。",
+            "交叉熵更适合作为预训练的主损失函数，而 Brier 评分因其在\"自信错误\"时梯度小的特性，后期可能具备更好的抗噪声能力"
+          ]
+        }
+      }
+    ],
+    "ml-02": [
+      {
+        "id": "ml-02__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某团队猛调学习率治过拟合，结果震荡发散。定位这次误治，下列哪些判断成立？",
+        "options": [
+          "加数据",
+          "加 L1/L2 正则",
+          "减参数降复杂度",
+          "提高学习率：步长更大逼近更快，设到最大加速收敛"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从猛调学习率震荡的误治定位过拟合环节",
+          "reasoningGoal": "先定位误治的环节（数据、约束、容量三类）；再逐项验证各判断；并排除「猛调学习率」等不成立描述。"
+        },
+        "generatedAt": 1788867846506,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7139d738",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-0ceb2a52",
+        "sourceSnapshot": {
+          "id": "ml-02",
+          "topic": "regularization",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "regularization",
+            "overfitting",
+            "l1",
+            "l2"
+          ],
+          "question": "以下哪些方法可用于缓解过拟合？（多选）",
+          "options": [
+            "增加训练数据量",
+            "使用 L1/L2 正则化",
+            "减少模型参数量或降低复杂度",
+            "提高学习率，因为更大的步长总能更快逼近最优解，所以训练时应把学习率设到尽可能大以加速收敛"
+          ]
+        }
+      },
+      {
+        "id": "ml-02__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "把加数据加约束减容量与调学习率放在治过拟合上对比，根本差异是什么？",
+        "options": [
+          "增加训练数据量，泛化更稳",
+          "使用 L1/L2 正则化约束参数",
+          "减少模型参数量、降低复杂度",
+          "提高学习率：步长更大逼近更快，设到最大加速收敛"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从治过拟合对比四种手段的根本差异",
+          "reasoningGoal": "先对齐四种手段的可比维度；再逐项判定各主张成立与否；并排除「调参治本」等不成立描述。"
+        },
+        "generatedAt": 1788867846506,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7139d738",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-ae053b24",
+        "sourceSnapshot": {
+          "id": "ml-02",
+          "topic": "regularization",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "regularization",
+            "overfitting",
+            "l1",
+            "l2"
+          ],
+          "question": "以下哪些方法可用于缓解过拟合？（多选）",
+          "options": [
+            "增加训练数据量",
+            "使用 L1/L2 正则化",
+            "减少模型参数量或降低复杂度",
+            "提高学习率，因为更大的步长总能更快逼近最优解，所以训练时应把学习率设到尽可能大以加速收敛"
+          ]
+        }
+      }
+    ],
+    "stat-02": [
+      {
+        "id": "stat-02__surface-options__assessmentfresh8__0",
+        "kind": "surface-options",
+        "question": "某训练把学习率调到最大想一步到位，结果直接发散。定位这次发散，下列哪些判断成立？",
+        "options": [
+          "BGD 全量算梯度",
+          "SGD 单样本噪声大",
+          "学习率越大越快，最大即一步最优",
+          "mini-batch 居中折中"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从调最大发散的故障定位步长环节",
+          "reasoningGoal": "先定位故障的环节（批量、噪声、步长三类）；再逐项验证各判断；并排除「越大越快」等不成立描述。"
+        },
+        "generatedAt": 1788867846506,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ea5cb004",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-1f6cd622",
+        "sourceSnapshot": {
+          "id": "stat-02",
+          "topic": "gradient-descent",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "optimization",
+            "sgd",
+            "mini-batch"
+          ],
+          "question": "关于梯度下降，下列说法正确的有哪些？（多选）",
+          "options": [
+            "批量梯度下降每次使用全部样本计算梯度",
+            "随机梯度下降（SGD）每次使用一个样本，噪声较大",
+            "学习率越大收敛一定越快越好，因为步长与收敛速度严格成正比，把学习率调到最大即可一步到达全局最优",
+            "迷你批量（mini-batch）是二者的折中"
+          ]
+        }
+      },
+      {
+        "id": "stat-02__context-options__assessmentfresh8__1",
+        "kind": "context-options",
+        "question": "把全量、单样本与小批量放在梯度噪声与开销上对比，根本差异是什么？",
+        "options": [
+          "批量梯度下降每次用全部样本算梯度",
+          "SGD 每次用一个样本，噪声较大开销最小",
+          "步长越大越快，调最大最优",
+          "迷你批量居中，是二者的折中"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从噪声与开销对比三种批量的根本差异",
+          "reasoningGoal": "先对齐三种批量的可比维度；再逐项判定各主张成立与否；并排除「越大越快」等不成立描述。"
+        },
+        "generatedAt": 1788867846507,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ea5cb004",
+        "batch": "assessmentfresh8",
+        "model": "manual",
+        "contentHash": "fnv1a-05f2bfbd",
+        "sourceSnapshot": {
+          "id": "stat-02",
+          "topic": "gradient-descent",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "optimization",
+            "sgd",
+            "mini-batch"
+          ],
+          "question": "关于梯度下降，下列说法正确的有哪些？（多选）",
+          "options": [
+            "批量梯度下降每次使用全部样本计算梯度",
+            "随机梯度下降（SGD）每次使用一个样本，噪声较大",
+            "学习率越大收敛一定越快越好，因为步长与收敛速度严格成正比，把学习率调到最大即可一步到达全局最优",
+            "迷你批量（mini-batch）是二者的折中"
+          ]
+        }
+      }
+    ]
+  }
+}

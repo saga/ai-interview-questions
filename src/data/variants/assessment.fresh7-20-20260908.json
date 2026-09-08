@@ -1,0 +1,921 @@
+{
+  "version": 1,
+  "generatedAt": 1788867074164,
+  "promptVersion": "v4",
+  "variants": {
+    "sec-eval-01": [
+      {
+        "id": "sec-eval-01__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某安全 Agent 测出满分，上线后却被旁路绕过。复查发现评测只看了终态 Flag，从没审过轨迹。定位这次评估盲区，下列哪些判断成立？",
+        "options": [
+          "端到端只看终态可复现，不审轨迹结论更干净",
+          "纯端到端评分过于粗粒度，分不清没定位与定位了但没打出 Exploit",
+          "子任务在各攻击节点给提示断言，更精准隔离能力瓶颈",
+          "子任务给导航提示，降低自主规划门槛，或高估无指导能力"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从只看终态被旁路的盲区定位评估粒度环节",
+          "reasoningGoal": "先定位盲区的环节（粒度、隔离、提示三类）；再逐项验证各判断；并排除「终态免审计」等不成立描述。"
+        },
+        "generatedAt": 1788867074158,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-eaddab23",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-3b361966",
+        "sourceSnapshot": {
+          "id": "sec-eval-01",
+          "topic": "security-eval",
+          "subtopic": "outcome-vs-subtask",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "security-eval",
+            "reward-hacking",
+            "subtask-guided",
+            "outcome-based"
+          ],
+          "question": "在针对大语言模型（LLM）及 AI Agent 进行网络安全与漏洞利用能力评估时，通常有两种评测粒度设计：仅以最终结果（如获取目标容器内隐藏 Flag 或触发 Sanitizer Crash）为依据的端到端结果评估（Outcome-based Evaluation）；以及将攻击链条拆解为阶段性里程碑（发现漏洞位置 -> 构造 PoC 重现 Crash -> 实现提权/沙盒突破 -> 执行数据外泄）的子任务导向评估（Subtask-guided Evaluation）。关于这两种评估模式的对比与工程取舍，下列哪些说法是正确的？",
+          "options": [
+            "端到端结果评估只看客观终态，轨迹审计引入的主观判断反而污染结论；结果可复现即审计完备，无需再查轨迹。",
+            "仅依赖端到端结果评估会导致评分过于粗粒度，无法区分「完全未能定位漏洞」与「已精准定位漏洞但因格式或环境限制未能生成有效 Exploit」这两种能力层次不同的 Agent",
+            "子任务导向评估通过在各个攻击节点提供提示或单步断言，可以更精准地隔离 Agent 在复杂攻击链中的能力瓶颈（如漏洞定位、探索分析还是 Payload 构造）",
+            "引入子任务导向评估会降低对 Agent 独立进行长程规划与自主探索能力的要求，可能高估其在真实 Zero-day 场景下的无指导攻击能力"
+          ]
+        }
+      },
+      {
+        "id": "sec-eval-01__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把端到端结果评估与子任务导向评估放在粒度、定位能力与自主性要求上对比，根本差异是什么？",
+        "options": [
+          "端到端结果只看客观终态，轨迹审计引入主观污染",
+          "终态评分粒度太粗：没定位与定位了没打出的两种能力分不出来",
+          "子任务导向按节点给提示断言，精准隔离各段能力瓶颈",
+          "子任务提示导航，自主规划门槛下降，或高估无指导能力"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从粒度定位与自主性对比两种评估模式的根本差异",
+          "reasoningGoal": "先对齐两种模式的可比维度；再逐项判定各主张成立与否；并排除「终态免审计」等不成立描述。"
+        },
+        "generatedAt": 1788867074159,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-eaddab23",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-677236a9",
+        "sourceSnapshot": {
+          "id": "sec-eval-01",
+          "topic": "security-eval",
+          "subtopic": "outcome-vs-subtask",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "security-eval",
+            "reward-hacking",
+            "subtask-guided",
+            "outcome-based"
+          ],
+          "question": "在针对大语言模型（LLM）及 AI Agent 进行网络安全与漏洞利用能力评估时，通常有两种评测粒度设计：仅以最终结果（如获取目标容器内隐藏 Flag 或触发 Sanitizer Crash）为依据的端到端结果评估（Outcome-based Evaluation）；以及将攻击链条拆解为阶段性里程碑（发现漏洞位置 -> 构造 PoC 重现 Crash -> 实现提权/沙盒突破 -> 执行数据外泄）的子任务导向评估（Subtask-guided Evaluation）。关于这两种评估模式的对比与工程取舍，下列哪些说法是正确的？",
+          "options": [
+            "端到端结果评估只看客观终态，轨迹审计引入的主观判断反而污染结论；结果可复现即审计完备，无需再查轨迹。",
+            "仅依赖端到端结果评估会导致评分过于粗粒度，无法区分「完全未能定位漏洞」与「已精准定位漏洞但因格式或环境限制未能生成有效 Exploit」这两种能力层次不同的 Agent",
+            "子任务导向评估通过在各个攻击节点提供提示或单步断言，可以更精准地隔离 Agent 在复杂攻击链中的能力瓶颈（如漏洞定位、探索分析还是 Payload 构造）",
+            "引入子任务导向评估会降低对 Agent 独立进行长程规划与自主探索能力的要求，可能高估其在真实 Zero-day 场景下的无指导攻击能力"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-111": [
+      {
+        "id": "sebastian-raschka-2026-08-111__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某团队去掉层归一化与维度对齐，指望注意力残差包治稳定。结果训练直接发散。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "注意力残差可学习各层贡献权重",
+          "固定等权混合限制表达，可学习混合打开上限",
+          "注意力残差自动消除一切训练不稳定",
+          "有了它，归一化与维度对齐都可以扔掉"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从去掉归一化后发散的误判定位残差能力的边界",
+          "reasoningGoal": "先定位误判的环节（贡献、限制、稳定三类）；再逐项验证各判断；并排除「自动消除」「扔掉对齐」等不成立描述。"
+        },
+        "generatedAt": 1788867074159,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-de21bc61",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-112031b1",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-111",
+          "topic": "attention",
+          "subtopic": "注意力残差",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "research-papers",
+            "attention-residuals"
+          ],
+          "question": "把残差连接理解为跨层信息混合时，注意力残差类设计可能试图解决什么问题？（请选择两个）",
+          "options": [
+            "学习不同层表示对当前层的贡献权重",
+            "减少固定等权残差混合带来的表达限制",
+            "自动消除 Transformer 的所有训练不稳定",
+            "不再需要任何层归一化或维度对齐"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-111__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把可学习混合与固定等权混合放在表达能力与稳定责任上对比，根本差异是什么？",
+        "options": [
+          "可学习混合给各层贡献配权重",
+          "固定等权混合卡住表达上限",
+          "可学习混合自动消除一切训练不稳定",
+          "归一化对齐从此多余"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从表达与稳定责任对比两种混合的根本差异",
+          "reasoningGoal": "先对齐两种混合的可比维度；再逐项判定各主张成立与否；并排除「包治稳定」「对齐多余」等不成立描述。"
+        },
+        "generatedAt": 1788867074159,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-de21bc61",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-605d2c20",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-111",
+          "topic": "attention",
+          "subtopic": "注意力残差",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "research-papers",
+            "attention-residuals"
+          ],
+          "question": "把残差连接理解为跨层信息混合时，注意力残差类设计可能试图解决什么问题？（请选择两个）",
+          "options": [
+            "学习不同层表示对当前层的贡献权重",
+            "减少固定等权残差混合带来的表达限制",
+            "自动消除 Transformer 的所有训练不稳定",
+            "不再需要任何层归一化或维度对齐"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-48": [
+      {
+        "id": "sebastian-raschka-2026-08-48__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某实现只保证每头维度一致，拼接后总维度对不上残差，模型直接报错。定位这次维度事故，下列哪些判断成立？",
+        "options": [
+          "注意力输出投影须恢复到模型隐藏维度",
+          "残差相加要求两条路径末维一致",
+          "每头对齐即可，总维度不用管",
+          "输出须先改成词表大小才能接 FFN"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从拼接总维度对不上的事故定位接口契约环节",
+          "reasoningGoal": "先定位事故的环节（投影、相加两类）；再逐项验证各判断；并排除「只看头内」「先改词表」等不成立描述。"
+        },
+        "generatedAt": 1788867074160,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9b8d7740",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-f28c3e6c",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-48",
+          "topic": "transformer",
+          "subtopic": "注意力模块接口",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "transformer",
+            "residual"
+          ],
+          "question": "将自注意力放入 Transformer block 时，哪些设计考虑有助于保持模块可组合性？（请选择两个）",
+          "options": [
+            "注意力输出投影通常恢复到模型隐藏维度",
+            "残差相加要求两条路径的最后维度一致",
+            "只要每头维度一致就可以忽略拼接后的总维度",
+            "注意力输出必须始终改成词表大小才能接 FFN"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-48__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把输出投影契约与头内维度正确放在可组合性上对比，根本差异是什么？",
+        "options": [
+          "输出投影把宽度恢复到隐藏维度",
+          "残差相加要求末维对齐",
+          "每头维度一致即可，总维度不用管",
+          "接 FFN 前必须先映射到词表大小"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从可组合性对比两种维度观的根本差异",
+          "reasoningGoal": "先对齐两种观点的可比维度；再逐项判定各主张成立与否；并排除「头内即全部」「先映射词表」等不成立描述。"
+        },
+        "generatedAt": 1788867074160,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9b8d7740",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-ef001f3c",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-48",
+          "topic": "transformer",
+          "subtopic": "注意力模块接口",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "transformer",
+            "residual"
+          ],
+          "question": "将自注意力放入 Transformer block 时，哪些设计考虑有助于保持模块可组合性？（请选择两个）",
+          "options": [
+            "注意力输出投影通常恢复到模型隐藏维度",
+            "残差相加要求两条路径的最后维度一致",
+            "只要每头维度一致就可以忽略拼接后的总维度",
+            "注意力输出必须始终改成词表大小才能接 FFN"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-55": [
+      {
+        "id": "sebastian-raschka-2026-08-55__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某团队把万字长回复直接当有效推理轨迹入库，评测全是水分。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "推理轨迹是答案前的中间求解步骤",
+          "轨迹是可观察响应，不等于人类思维实录",
+          "回答够长即有效轨迹，长度即质量",
+          "轨迹等同于参数里的完整知识表"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从长回复当轨迹入库的误判定位定义环节",
+          "reasoningGoal": "先定位误判的环节（步骤、观察两类）；再逐项验证各判断；并排除「长度即质量」「等同知识表」等不成立描述。"
+        },
+        "generatedAt": 1788867074160,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5059c3ea",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-0b7c7fc5",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-55",
+          "topic": "sft",
+          "subtopic": "推理轨迹定义",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "trace",
+            "post-training"
+          ],
+          "question": "在该类研究语境下，推理轨迹通常指什么？（请选择两个）",
+          "options": [
+            "最终答案前用于逐步处理任务的中间输出",
+            "一种可观察的模型响应表示，而非人类思维的直接证明",
+            "只要回答很长就必然是有效推理轨迹",
+            "推理轨迹等同于模型参数中的完整知识表"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-55__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把中间求解步骤与参数知识存储放在轨迹定义上对比，根本差异是什么？",
+        "options": [
+          "轨迹是答案前的逐步求解中间输出",
+          "轨迹是可观察的模型响应表示，而非人类思维实录",
+          "回答够长即有效轨迹，长度就是质量",
+          "轨迹等同于参数中的完整知识表"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从定义对比求解步骤与知识存储的根本差异",
+          "reasoningGoal": "先对齐两种理解的可比维度；再逐项判定各主张成立与否；并排除「长度质量」「知识展开」等不成立描述。"
+        },
+        "generatedAt": 1788867074160,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5059c3ea",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-f00c4857",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-55",
+          "topic": "sft",
+          "subtopic": "推理轨迹定义",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "trace",
+            "post-training"
+          ],
+          "question": "在该类研究语境下，推理轨迹通常指什么？（请选择两个）",
+          "options": [
+            "最终答案前用于逐步处理任务的中间输出",
+            "一种可观察的模型响应表示，而非人类思维的直接证明",
+            "只要回答很长就必然是有效推理轨迹",
+            "推理轨迹等同于模型参数中的完整知识表"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-01": [
+      {
+        "id": "sebastian-raschka-2026-08-01__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某推理服务把位置编码计算也砍了，称 GQA 分组后不再需要。结果位置感知全丢。定位这次误砍，下列哪些判断成立？",
+        "options": [
+          "GQA 减 KV 头存量，显存占用下降",
+          "GQA 减 KV 读取量，decode 带宽压力缓解",
+          "GQA 让每 token 激活更多 FFN 专家",
+          "GQA 分组后，位置编码计算可整体省略"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从位置感知丢失的误砍定位 GQA 能力边界",
+          "reasoningGoal": "先定位误砍的环节（存量、带宽两类）；再逐项验证各判断；并排除「激活专家」「省略位置」等不成立描述。"
+        },
+        "generatedAt": 1788867074161,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b5fc356",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-90902d9d",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-01",
+          "topic": "gqa",
+          "subtopic": "KV 头共享",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "llm-architecture",
+            "gqa",
+            "inference"
+          ],
+          "question": "在查询头数量不变的前提下，把多个查询头分组并让每组共享一套 K/V 头，主要降低了哪些推理成本？（请选择两个）",
+          "options": [
+            "减少 KV cache 的存储容量（显存占用）",
+            "减少 decode 阶段读取 KV cache 的带宽压力",
+            "让每个 token 同时激活更多 FFN 专家",
+            "GQA 分组后位置编码的计算可以完全省略"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-01__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把 KV 头共享与 FFN 专家激活放在 GQA 作用对象上对比，根本差异是什么？",
+        "options": [
+          "共享 KV 头，KV cache 存量与显存占用下降",
+          "共享 KV 头，decode 读取带宽下降",
+          "共享即激活更多专家，算量也跟着涨",
+          "共享之后位置编码就无需再计算了"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从作用对象对比两种机制理解的根本差异",
+          "reasoningGoal": "先对齐两种理解的可比维度；再逐项判定各主张成立与否；并排除「激活专家」「省略位置」等不成立描述。"
+        },
+        "generatedAt": 1788867074161,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b5fc356",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-180d2f03",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-01",
+          "topic": "gqa",
+          "subtopic": "KV 头共享",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "llm-architecture",
+            "gqa",
+            "inference"
+          ],
+          "question": "在查询头数量不变的前提下，把多个查询头分组并让每组共享一套 K/V 头，主要降低了哪些推理成本？（请选择两个）",
+          "options": [
+            "减少 KV cache 的存储容量（显存占用）",
+            "减少 decode 阶段读取 KV cache 的带宽压力",
+            "让每个 token 同时激活更多 FFN 专家",
+            "GQA 分组后位置编码的计算可以完全省略"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-135": [
+      {
+        "id": "sebastian-raschka-2026-08-135__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某自媒体称新模型结构大改所以质量必然碾压，实测却互有胜负。定位这次唯结构论，下列哪些判断成立？",
+        "options": [
+          "Transformer 主干在众多模型延续",
+          "位置共享稀疏等改动影响效率，不止于换皮",
+          "结构相似即质量成本完全相同无疑",
+          "不更换架构就没有意义的改进"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从唯结构论的误判定位演进理解环节",
+          "reasoningGoal": "先定位误判的环节（延续、优化两类）；再逐项验证各判断；并排除「结构即质量」「不换即无意义」等不成立描述。"
+        },
+        "generatedAt": 1788867074161,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d3d83f76",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-56ac725d",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-135",
+          "topic": "hybrid-attention",
+          "subtopic": "架构演进连续性",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "history"
+          ],
+          "question": "观察 GPT 到现代开源 LLM 的架构演进时，哪些结论较为谨慎？（请选择两个）",
+          "options": [
+            "基础 Transformer 数据流仍在许多模型中延续",
+            "位置编码、注意力共享和稀疏化等改变会影响效率",
+            "结构相似意味着所有模型质量和成本都相同",
+            "只有完全更换架构才算有意义的改进"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-135__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把延续主干渐进优化与推倒重来放在创新判断上对比，根本差异是什么？",
+        "options": [
+          "Transformer 数据流延续，改进在组件累积",
+          "位置注意力稀疏的改动真实影响效率",
+          "长得像就是质量和成本完全相同",
+          "只有更换架构才算有意义的创新"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从创新判断对比两种演进观的根本差异",
+          "reasoningGoal": "先对齐两种演进观的可比维度；再逐项判定各主张成立与否；并排除「长得像即一样」「换架构才算」等不成立描述。"
+        },
+        "generatedAt": 1788867074161,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d3d83f76",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-2f3b485b",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-135",
+          "topic": "hybrid-attention",
+          "subtopic": "架构演进连续性",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "history"
+          ],
+          "question": "观察 GPT 到现代开源 LLM 的架构演进时，哪些结论较为谨慎？（请选择两个）",
+          "options": [
+            "基础 Transformer 数据流仍在许多模型中延续",
+            "位置编码、注意力共享和稀疏化等改变会影响效率",
+            "结构相似意味着所有模型质量和成本都相同",
+            "只有完全更换架构才算有意义的改进"
+          ]
+        }
+      }
+    ],
+    "posttraining-2026-001": [
+      {
+        "id": "posttraining-2026-001__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某团队无脑堆 SFT 数据，模型越训越死，长尾也没好。定位这次堆量失误，下列哪些判断成立？",
+        "options": [
+          "新格式语气领域知识长尾不稳时，优先加高质量 SFT 内化能力",
+          "措辞不清上下文缺失时，先修 Prompt 而非盲加数据",
+          "SFT 数据越多泛化越强，不存在限制更死的退化",
+          "临时适配分布多变时，过度 SFT 过拟合演示，轻 Prompt 更灵活"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从越训越死的堆量失误定位数据与 Prompt 分流环节",
+          "reasoningGoal": "先定位失误的环节（内化、修辞两类）；再逐项验证各判断；并排除「越多越强」等不成立描述。"
+        },
+        "generatedAt": 1788867074161,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bc0cd2d7",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-b17c15ac",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-001",
+          "topic": "training",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sft",
+            "post-training",
+            "instruction-tuning"
+          ],
+          "question": "什么时候应该优先增加 SFT 数据，而不是继续优化 Prompt？什么情况下继续做 SFT 反而可能把模型行为限制得更死？",
+          "options": [
+            "当任务需要模型稳定学会一种新的输出格式、语气或领域知识，仅靠 Prompt 难以在长尾样本上保持一致时，应优先增加高质量 SFT 数据",
+            "当线上效果不稳定主要源于 Prompt 措辞不清或上下文缺失时，应先优化 Prompt 而非盲目加 SFT 数据",
+            "一旦开始 SFT 就应当持续堆量，因为 SFT 数据越多模型泛化一定越强，根本不存在所谓“限制更死”的行为退化风险",
+            "当目标只是临时适配某类请求且样本分布会频繁变化时，过度 SFT 容易过拟合演示行为、缩小策略空间，反而不如轻量 Prompt 灵活"
+          ]
+        }
+      },
+      {
+        "id": "posttraining-2026-001__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把加数据内化与修 Prompt 放在适用条件上对比，根本差异是什么？",
+        "options": [
+          "长尾不稳需稳定学会新格式语气领域知识时，加高质量 SFT",
+          "措辞不清缺上下文时，先修 Prompt",
+          "一旦开训就持续堆量：SFT 越多泛化越强，不存在限制更死",
+          "临时适配分布多变时，过度 SFT 过拟合演示，轻 Prompt 更灵活"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从适用条件对比两种手段的根本差异",
+          "reasoningGoal": "先对齐两种手段的可比维度；再逐项判定各主张成立与否；并排除「堆量无害」等不成立描述。"
+        },
+        "generatedAt": 1788867074162,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bc0cd2d7",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-5a4c1683",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-001",
+          "topic": "training",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sft",
+            "post-training",
+            "instruction-tuning"
+          ],
+          "question": "什么时候应该优先增加 SFT 数据，而不是继续优化 Prompt？什么情况下继续做 SFT 反而可能把模型行为限制得更死？",
+          "options": [
+            "当任务需要模型稳定学会一种新的输出格式、语气或领域知识，仅靠 Prompt 难以在长尾样本上保持一致时，应优先增加高质量 SFT 数据",
+            "当线上效果不稳定主要源于 Prompt 措辞不清或上下文缺失时，应先优化 Prompt 而非盲目加 SFT 数据",
+            "一旦开始 SFT 就应当持续堆量，因为 SFT 数据越多模型泛化一定越强，根本不存在所谓“限制更死”的行为退化风险",
+            "当目标只是临时适配某类请求且样本分布会频繁变化时，过度 SFT 容易过拟合演示行为、缩小策略空间，反而不如轻量 Prompt 灵活"
+          ]
+        }
+      }
+    ],
+    "rl_critic_ppo_trajectory_canonical": [
+      {
+        "id": "rl_critic_ppo_trajectory_canonical__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某团队在切分后的子轨迹上硬套 GRPO，优势估计抖到没法训。定位这次算法错配，下列哪些判断成立？",
+        "options": [
+          "GRPO 要组内对称可比轨迹，切分后数量长度失衡，归一化前提碎了",
+          "Critic PPO 对单条 Rollout 每个 Token 做细粒度价值预测与优势估计，天然适配变长子轨迹",
+          "GRPO 在变长子轨迹下仍优于 PPO：不训 Critic 即无损耗",
+          "引入 Critic 做 Token 级优势估计，在子轨迹层面给关键决策准确奖励信号"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从硬套 GRPO 抖动的错配定位算法前提环节",
+          "reasoningGoal": "先定位错配的环节（归一化、单样本两类）；再逐项验证各判断；并排除「免 Critic 即无损」等不成立描述。"
+        },
+        "generatedAt": 1788867074162,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c0e619d0",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-9c26e10e",
+        "sourceSnapshot": {
+          "id": "rl_critic_ppo_trajectory_canonical",
+          "topic": "rl-critic-ppo-trajectory",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "RLHF",
+            "Agentic RL",
+            "PPO",
+            "GRPO",
+            "Compaction"
+          ],
+          "question": "在长航程（Long-Horizon）Coding Agent 的强化学习（RL）训练中，长执行轨迹常通过“轨迹压缩”（Trajectory Compaction）被切分为多个子轨迹。针对该场景下的 RL 算法选择（组内相对评价方法 GRPO 与 基于 Critic 的传统 PPO），以下哪些说法是正确的？",
+          "options": [
+            "GRPO 依赖于同一 Prompt 下多个 Rollout 产出结构对称且可互相比较的完整轨迹；经 Compaction 切分后，各 Rollout 产生的子轨迹数量与长度极不均衡，破坏了 GRPO 组内归一化的前提。",
+            "基于 Critic 的 PPO 能够对单条 Rollout 中的每一个 Token 进行细粒度的 Value 预测与 Advantage 估计，因而能自然适应数量与长度不固定的变长子轨迹训练。",
+            "GRPO 在变长子轨迹场景下仍然优于 PPO，因为 GRPO 完全不需要训练 Critic 模型，能够无损处理任意长度不均等的子轨迹分布。",
+            "引入 Critic 模型进行 Token-level Advantage 估计，使得模型可以在子轨迹层面上针对长上下文中的关键决策步骤赋予准确的奖励信号。"
+          ]
+        }
+      },
+      {
+        "id": "rl_critic_ppo_trajectory_canonical__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把组内相对评价与单样本价值估计放在变长切分适应性上对比，根本差异是什么？",
+        "options": [
+          "GRPO 要组内对称可比轨迹，切分失衡即破坏归一化前提",
+          "单条 Rollout 逐 Token 估价值与优势，天然适配变长子轨迹",
+          "GRPO 长短不均照样优于 PPO，毕竟不训 Critic 毫无损耗",
+          "引入 Critic 做 Token 级优势估计，给子轨迹关键决策准确奖励"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从变长适应性对比两种算法的根本差异",
+          "reasoningGoal": "先对齐两种算法的可比维度；再逐项判定各主张成立与否；并排除「免 Critic 无损」等不成立描述。"
+        },
+        "generatedAt": 1788867074162,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c0e619d0",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-4364c0df",
+        "sourceSnapshot": {
+          "id": "rl_critic_ppo_trajectory_canonical",
+          "topic": "rl-critic-ppo-trajectory",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "RLHF",
+            "Agentic RL",
+            "PPO",
+            "GRPO",
+            "Compaction"
+          ],
+          "question": "在长航程（Long-Horizon）Coding Agent 的强化学习（RL）训练中，长执行轨迹常通过“轨迹压缩”（Trajectory Compaction）被切分为多个子轨迹。针对该场景下的 RL 算法选择（组内相对评价方法 GRPO 与 基于 Critic 的传统 PPO），以下哪些说法是正确的？",
+          "options": [
+            "GRPO 依赖于同一 Prompt 下多个 Rollout 产出结构对称且可互相比较的完整轨迹；经 Compaction 切分后，各 Rollout 产生的子轨迹数量与长度极不均衡，破坏了 GRPO 组内归一化的前提。",
+            "基于 Critic 的 PPO 能够对单条 Rollout 中的每一个 Token 进行细粒度的 Value 预测与 Advantage 估计，因而能自然适应数量与长度不固定的变长子轨迹训练。",
+            "GRPO 在变长子轨迹场景下仍然优于 PPO，因为 GRPO 完全不需要训练 Critic 模型，能够无损处理任意长度不均等的子轨迹分布。",
+            "引入 Critic 模型进行 Token-level Advantage 估计，使得模型可以在子轨迹层面上针对长上下文中的关键决策步骤赋予准确的奖励信号。"
+          ]
+        }
+      }
+    ],
+    "coding_rl_anti_hacking_canonical": [
+      {
+        "id": "coding_rl_anti_hacking_canonical__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某训练图省事直接 Abort 整条可疑轨迹，结果梯度震荡到崩溃。定位这次处置失误，下列哪些判断成立？",
+        "options": [
+          "直接 Abort 截断长轨迹，分布完整性碎裂，易致 Collapse",
+          "Dummy 反馈让环境给合法对抗信号，引导后续走正道",
+          "先规则过滤保召回，再 LLM Judge 析意图保精度，兼顾吞吐与误判",
+          "Dummy 是为骗 Reward Model 给满分"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 Abort 致震荡的处置失误定位 guard 设计环节",
+          "reasoningGoal": "先定位失误的环节（截断、反馈、两阶段三类）；再逐项验证各判断；并排除「骗满分」等不成立描述。"
+        },
+        "generatedAt": 1788867074162,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ad7f0e31",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-83460f70",
+        "sourceSnapshot": {
+          "id": "coding_rl_anti_hacking_canonical",
+          "topic": "coding-rl-anti-hacking",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "Coding Agent",
+            "Reward Hacking",
+            "Online Guard",
+            "RL Stability"
+          ],
+          "question": "在 Coding Agent 的 RL 训练中，模型容易产生偷看测试集、直接复制参考答案等 Reward Hacking 行为。某团队设计了一个包含“规则过滤 + LLM Judge”的在线检测模块（Online Guard）。当在某一步检测到 Hack Tool Call 时，系统选择拦截该调用并返回 Dummy 提示信息，允许模型继续执行后续 Rollout，而不是直接 Abort（强行终止）整条轨迹。关于该设计的工程与算法合理性，以下哪些分析是正确的？",
+          "options": [
+            "若直接 Abort 含有 Hack 行为的轨迹，会导致大量长轨迹数据被陡然截断，破坏策略梯度更新时的数据分布完整性，易引发 Rollout Collapse 和训练不稳定。",
+            "返回 Dummy 结果（如提示“操作无效或权限不足”）能够向模型提供真实的环境对抗反馈，引导模型在后续步骤中学习通过正常合法途径解决问题。",
+            "先通过规则过滤提高 Recall，再通过 LLM Judge 对可疑行为进行意图分析提高 Precision，能够在大规模在线 Rollout 中兼顾高吞吐与低误判率。",
+            "返回 Dummy 结果的主要目的是欺骗 Reward Model，使其误以为该 Hack 行为已经成功执行并给出满分 Reward。"
+          ]
+        }
+      },
+      {
+        "id": "coding_rl_anti_hacking_canonical__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把拦截给 Dummy 与直接 Abort 放在训练稳定性上对比，根本差异是什么？",
+        "options": [
+          "直接 Abort 陡然截断长轨迹，破坏分布完整性，易致震荡",
+          "返回 Dummy 给合法环境对抗反馈，引导后续步骤改走正规路径",
+          "先规则过滤保召回，再 LLM Judge 析意图保精度，兼顾吞吐误判",
+          "返回 Dummy 是为骗 Reward Model 给满分，让 Hack 看似成功"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从训练稳定性对比两种处置的根本差异",
+          "reasoningGoal": "先对齐两种处置的可比维度；再逐项判定各主张成立与否；并排除「哄满分」等不成立描述。"
+        },
+        "generatedAt": 1788867074163,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ad7f0e31",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-f72f2772",
+        "sourceSnapshot": {
+          "id": "coding_rl_anti_hacking_canonical",
+          "topic": "coding-rl-anti-hacking",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "Coding Agent",
+            "Reward Hacking",
+            "Online Guard",
+            "RL Stability"
+          ],
+          "question": "在 Coding Agent 的 RL 训练中，模型容易产生偷看测试集、直接复制参考答案等 Reward Hacking 行为。某团队设计了一个包含“规则过滤 + LLM Judge”的在线检测模块（Online Guard）。当在某一步检测到 Hack Tool Call 时，系统选择拦截该调用并返回 Dummy 提示信息，允许模型继续执行后续 Rollout，而不是直接 Abort（强行终止）整条轨迹。关于该设计的工程与算法合理性，以下哪些分析是正确的？",
+          "options": [
+            "若直接 Abort 含有 Hack 行为的轨迹，会导致大量长轨迹数据被陡然截断，破坏策略梯度更新时的数据分布完整性，易引发 Rollout Collapse 和训练不稳定。",
+            "返回 Dummy 结果（如提示“操作无效或权限不足”）能够向模型提供真实的环境对抗反馈，引导模型在后续步骤中学习通过正常合法途径解决问题。",
+            "先通过规则过滤提高 Recall，再通过 LLM Judge 对可疑行为进行意图分析提高 Precision，能够在大规模在线 Rollout 中兼顾高吞吐与低误判率。",
+            "返回 Dummy 结果的主要目的是欺骗 Reward Model，使其误以为该 Hack 行为已经成功执行并给出满分 Reward。"
+          ]
+        }
+      }
+    ],
+    "sentence-embedding-inbatch-negatives-01": [
+      {
+        "id": "sentence-embedding-inbatch-negatives-01__surface-options__assessmentfresh7__0",
+        "kind": "surface-options",
+        "question": "某训练同批内近义句被当负例推开，语义空间撕裂。定位这次假负例事故，下列哪些判断成立？",
+        "options": [
+          "MNRL 只吃正样本对，无需任何负样本",
+          "B 个句对中其余 B-1 个 positive 即负例，建成 B×B 矩阵",
+          "近义非匹配句对被当负例推开，语义撕裂",
+          "须提前显式挖 Hard Negatives，否则 Softmax 展不开",
+          "梯度等价于在 Batch 分布下对全量损失的一次无偏采样"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从近义句被推开的事故定位假负例环节",
+          "reasoningGoal": "先定位事故的环节（负例来源、假负例两类）；再逐项验证各判断；并排除「无需负例」「须显式挖」等不成立描述。"
+        },
+        "generatedAt": 1788867074163,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0059a979",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-2e3f1702",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-inbatch-negatives-01",
+          "topic": "sentence-embedding",
+          "subtopic": "In-Batch Negative Sampling & Loss Dynamics",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "bi-encoder",
+            "sentence-transformer",
+            "in-batch-negatives",
+            "mnrl",
+            "contrastive"
+          ],
+          "question": "在基于对比学习训练句向量（Bi-Encoder）模型时，以 MultipleNegativesRankingLoss（MNRL）为代表的损失函数高度依赖 In-Batch Negatives 机制。关于该机制的核心工作原理与计算特征，以下哪些描述是正确的？",
+          "options": [
+            "它仅在正样本对 (anchor, positive) 的基础上计算 Loss，完全不依赖任何负样本即可独立更新模型梯度。",
+            "含 B 个 (anchor, positive) 句对的小批次中，其余 B-1 个 positive 句直接作为当前 anchor 的 negative 样本，构建 B×B 相似度矩阵。",
+            "在 Batch 内若存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在梯度反向传播中错误地推开语义实际相近的文本表示。",
+            "这种机制要求所有训练样本必须提前显式挖取 Hard Negatives 拼接在输入中，否则 Softmax 归一化项无法正常展开。",
+            "该机制的梯度更新在统计意义上等价于：以当前 Batch 的样本分布，对全量语料上的整体对比损失做了一次无偏的采样估计。"
+          ]
+        }
+      },
+      {
+        "id": "sentence-embedding-inbatch-negatives-01__context-options__assessmentfresh7__1",
+        "kind": "context-options",
+        "question": "把隐式负例与显式 hard 负例放在梯度来源上对比，根本差异是什么？",
+        "options": [
+          "仅在正样本对基础上算 Loss，无需任何负样本即可更新梯度",
+          "同批其余 B-1 个 positive 充当 negative，建成 B×B 相似度矩阵",
+          "Batch 内近义非匹配句对即假负例，反向传播推开本相近的表示",
+          "须预先显式挖 Hard Negatives 拼输入，否则 Softmax 归一化展不开",
+          "Batch 分布下的一次更新即全量损失的无偏采样"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从梯度来源对比两种负例的根本差异",
+          "reasoningGoal": "先对齐两种负例的可比维度；再逐项判定各主张成立与否；并排除「负例多余」「须显式挖」等不成立描述。"
+        },
+        "generatedAt": 1788867074164,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0059a979",
+        "batch": "assessmentfresh7",
+        "model": "manual",
+        "contentHash": "fnv1a-89e5869f",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-inbatch-negatives-01",
+          "topic": "sentence-embedding",
+          "subtopic": "In-Batch Negative Sampling & Loss Dynamics",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "bi-encoder",
+            "sentence-transformer",
+            "in-batch-negatives",
+            "mnrl",
+            "contrastive"
+          ],
+          "question": "在基于对比学习训练句向量（Bi-Encoder）模型时，以 MultipleNegativesRankingLoss（MNRL）为代表的损失函数高度依赖 In-Batch Negatives 机制。关于该机制的核心工作原理与计算特征，以下哪些描述是正确的？",
+          "options": [
+            "它仅在正样本对 (anchor, positive) 的基础上计算 Loss，完全不依赖任何负样本即可独立更新模型梯度。",
+            "含 B 个 (anchor, positive) 句对的小批次中，其余 B-1 个 positive 句直接作为当前 anchor 的 negative 样本，构建 B×B 相似度矩阵。",
+            "在 Batch 内若存在含义高度接近的非匹配句对，会引发“假负例（False Negatives）”现象，在梯度反向传播中错误地推开语义实际相近的文本表示。",
+            "这种机制要求所有训练样本必须提前显式挖取 Hard Negatives 拼接在输入中，否则 Softmax 归一化项无法正常展开。",
+            "该机制的梯度更新在统计意义上等价于：以当前 Batch 的样本分布，对全量语料上的整体对比损失做了一次无偏的采样估计。"
+          ]
+        }
+      }
+    ]
+  }
+}

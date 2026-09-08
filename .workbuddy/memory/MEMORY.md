@@ -52,3 +52,16 @@
   不持有学习状态）。
 - **边界规则现状**：`domain` 对 `schemas` 为 **type-only**；仅 `learner.ts`（proficiencyConfigSchema）
   与 `variantPool.ts`（computeVariantSourceHash / variantSourceOf）两处历史值依赖，属例外非范例。
+
+## 外部题目入库（2026-09-08）
+- 外部投递的题常是**异构 schema**（`questionRole` / `variantOf` / `assessmentTarget` /
+  `formats[]` 数组 / `A/B/C/D` 字母选项 / `answer:["A","B"]`）。必须改写为本库 schema 才能落盘：
+  字母→0-based 索引数组；`multiple-choice|single-choice`→`formats.choice.type`；
+  补齐 `angle`（19 枚举）/ `cognitiveTask`（12 枚举）/ `concepts` / `assessment{target,reasoningGoal}` /
+  `misconceptions` + `misconceptionMap`（长度=选项数，正确项 `null`）/ `formats.open.referenceAnswer`。
+- **外部稿的 `explanation` 不能当事实依据**。含量化断言（「A 优于 B」「无显著差异」「提升 N 倍」）
+  必须先回一手来源核实。实例：CLIP 8 题稿里 2 处与论文冲突（Linear Probe 准确率反超 zero-shot；
+  线性 vs 非线性投影头做过消融），都是论文从未声称的。
+- 落库后四门禁：`scripts/lint-bias.ts --all`、`scripts/lint-length.ts --all`、
+  `scripts/validate-questions.ts`、`vitest run`。新题最常见的失败是
+  **正确项全局最长**触发 strong 长度泄题；修法是拉长最短干扰项 + 压缩正确项，而不是砍内容。
