@@ -48,6 +48,17 @@ interface DraftEntry {
   options?: string[];
   surfaceOptions?: string[];
   contextOptions?: string[];
+  /**
+   * 自声明的测量面（assessment variant，P0-2）。缺省 = 继承 canonical（presentation）。
+   * 声明了就必须走新路径：reasoningGoal 三段式 + 与 canonical 实质不同，否则整条拒收——
+   * 不许把「换措辞」冒充成 assessment variant。
+   */
+  surfaceAngle?: QuestionVariant['angle'];
+  surfaceCognitiveTask?: QuestionVariant['cognitiveTask'];
+  surfaceAssessment?: Assessment;
+  contextAngle?: QuestionVariant['angle'];
+  contextCognitiveTask?: QuestionVariant['cognitiveTask'];
+  contextAssessment?: Assessment;
 }
 
 const DRAFT_PATH = process.argv[2] ?? 'temp/variant-draft-wiki.json';
@@ -72,9 +83,26 @@ function main(): void {
       rejections.push(`✗ ${qid}：非选择题，本组装器暂只支持 choice`);
       continue;
     }
-    const kinds: Array<{ kind: VariantKind; stem: string; options?: string[] }> = [];
-    if (entry.surface) kinds.push({ kind: 'surface-options', stem: entry.surface, options: entry.surfaceOptions ?? entry.options });
-    if (entry.context) kinds.push({ kind: 'context-options', stem: entry.context, options: entry.contextOptions ?? entry.options });
+    const kinds: Array<{
+      kind: VariantKind;
+      stem: string;
+      options?: string[];
+      face: { angle?: QuestionVariant['angle']; cognitiveTask?: QuestionVariant['cognitiveTask']; assessment?: Assessment };
+    }> = [];
+    if (entry.surface)
+      kinds.push({
+        kind: 'surface-options',
+        stem: entry.surface,
+        options: entry.surfaceOptions ?? entry.options,
+        face: { angle: entry.surfaceAngle, cognitiveTask: entry.surfaceCognitiveTask, assessment: entry.surfaceAssessment },
+      });
+    if (entry.context)
+      kinds.push({
+        kind: 'context-options',
+        stem: entry.context,
+        options: entry.contextOptions ?? entry.options,
+        face: { angle: entry.contextAngle, cognitiveTask: entry.contextCognitiveTask, assessment: entry.contextAssessment },
+      });
     if (kinds.length === 0) {
       rejections.push(`✗ ${qid}：草稿未提供 surface/context 题干`);
       continue;
@@ -92,7 +120,7 @@ function main(): void {
     }
     const list: QuestionVariant[] = [];
     let seq = 0;
-    for (const { kind, stem, options } of kinds) {
+    for (const { kind, stem, options, face } of kinds) {
       if (!options) {
         rejections.push(`✗ ${qid} [${kind}]：草稿未提供选项（canonical 选项不再被静默沿用）`);
         continue;
@@ -106,29 +134,93 @@ function main(): void {
       if (check.warning) {
         console.log(`  • ${qid} [${kind}] 软信号：${check.warning}`);
       }
+      // 语言质量门禁（与生成管线同一套规则，不在组装通道开口子）。
+      const sanity = checkLanguageSanity({ stem, options }, { stem: q.question, options: q.formats.choice?.options });
+      if (!sanity.ok) {
+        rejections.push(`✗ ${qid} [${kind}] 语言质量未过：${formatSanityIssues(sanity)}`);
+        continue;
+      }
+      // difficulty 驱动项（确定性）：删关键条件 / 泄暗示直接拒收。
+      const drivers = checkOfflineDifficultyDrivers(q, cand, kind);
+      if (!drivers.ok) {
+        rejections.push(
+          `✗ ${qid} [${kind}] 难度驱动项未过：${drivers.flags.map((f) => `${f.flag}（${f.detail}）`).join('；')}`,
+        );
+        continue;
+      }
+      // kind 与实际修改内容相符（context 挂名直接拒收）。
+      const kindCheck = checkKindContentMatch(kind, stem, q.question);
+      if (!kindCheck.ok) {
+        rejections.push(`✗ ${qid} [${kind}] kind 不符：${kindCheck.reason}`);
+        continue;
+      }
+      // 自声明测量面的有效性：声明了 assessment 就必须走新路径。
+      const declared = Object.keys(measurementFaceOf(face)).length > 0;
+      if (face.assessment) {
+        if (!isReasoningGoalWellFormed(face.assessment.reasoningGoal)) {
+          rejections.push(`✗ ${qid} [${kind}] 推理链不合格：reasoningGoal 不是「先→再→排除」三段式`);
+          continue;
+        }
+        if (q.assessment && isAssessmentIdentical(face.assessment, q.assessment)) {
+          rejections.push(`✗ ${qid} [${kind}] 推理链不合格：与 canonical 测量意图逐字相同，不是新路径`);
+          continue;
+        }
+      }
+      if (declared) console.log(`  • ${qid} [${kind}] 自声明测量面（assessment variant）`);
+      const source = variantSourceOf(q);
       list.push({
         id: `${qid}__${kind}__${SLUG}__${seq++}`,
         kind,
         question: stem,
         options: cand.options,
+        ...measurementFaceOf(face),
         generatedAt: Date.now(),
         generator: 'offline',
         promptVersion: VARIANT_PROMPT_VERSION,
-        sourceHash: computeVariantSourceHash(variantSourceOf(q)),
+        sourceHash: computeVariantSourceHash(source),
+        batch: SLUG,
+        model: 'manual',
+        contentHash: computeVariantContentHash(stem, cand.options),
+        sourceSnapshot: {
+          id: source.id,
+          topic: source.topic,
+          ...(source.subtopic ? { subtopic: source.subtopic } : {}),
+          angle: source.angle,
+          difficulty: source.difficulty,
+          ...(source.cognitiveTask ? { cognitiveTask: source.cognitiveTask } : {}),
+          ...(source.tags ? { tags: source.tags } : {}),
+          question: source.question,
+          ...(source.options ? { options: source.options } : {}),
+        },
       });
       count++;
     }
     if (list.length > 0) variants[qid] = list;
   }
 
-  // variant-vs-variant 去重：与生成管线（question-variants.ts）和池审计
-  // （validate-variants.ts）同一条规则、同一个阈值。此前本通道完全绕过它，
+  // variant-vs-variant 去重：选项级 Dice（与生成管线同一条规则）+ 语义级
+  // （同 reasoning path 逐字重复 / 同 kind 题干照抄）。此前本通道完全绕过它，
   // 导致「生成管线会拒绝的批次，这里却能照常落盘」——首批量产 117/117 题的
   // 双变体选项雷同，就这样进了池子。
   const dupReport: string[] = [];
   for (const [qid, list] of Object.entries(variants)) {
     for (const { i, j, ratio } of findNearDuplicateVariants(list)) {
       dupReport.push(`✗ ${qid}：${list[i].id} ⇄ ${list[j].id}（相似度 ${ratio} ≥ ${VARIANT_DUP_THRESHOLD}）`);
+    }
+    for (const p of findSemanticDuplicateVariants(
+      list.map((v) => ({
+        id: v.id,
+        kind: v.kind,
+        question: v.question,
+        options: v.options,
+        assessment: v.assessment
+          ? { target: v.assessment.target, reasoningGoal: v.assessment.reasoningGoal }
+          : undefined,
+      })),
+    )) {
+      if (p.basis !== 'options') {
+        dupReport.push(`✗ ${qid}：${list[p.i].id} ⇄ ${list[p.j].id}（${p.detail}）`);
+      }
     }
   }
 

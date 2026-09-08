@@ -193,6 +193,50 @@ describe('questionVariantSchema', () => {
     expect(variantModeOf({ generator: 'runtime' })).toBe('presentation');
     expect(variantModeOf({ generator: 'offline' })).toBe('assessment');
   });
+
+  it('provenance 字段可选：batch / model / contentHash / sourceSnapshot（审计专用）', () => {
+    const v = {
+      id: 'q-1__surface-options__0',
+      kind: 'surface-options',
+      question: '改写后的题干',
+      options: ['选项A', '选项B'],
+      generatedAt: 1700000000000,
+      generator: 'offline',
+      promptVersion: 'v1',
+      sourceHash: 'fnv1a-abcdef01',
+      batch: 'ids-abc123',
+      model: 'deepseek/deepseek-chat',
+      contentHash: 'fnv1a-00000001',
+      sourceSnapshot: {
+        id: 'q-1',
+        topic: 'kv-cache',
+        angle: 'mechanism',
+        difficulty: 'medium',
+        question: '原题干',
+        options: ['选项A', '选项B'],
+      },
+    };
+    const parsed = questionVariantSchema.safeParse(v);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.batch).toBe('ids-abc123');
+      expect(parsed.data.sourceSnapshot?.topic).toBe('kv-cache');
+    }
+  });
+
+  it('存量变体（无 provenance）仍合法（向后兼容）', () => {
+    const v = {
+      id: 'q-1__surface-options__0',
+      kind: 'surface-options',
+      question: '改写后的题干',
+      options: ['选项A', '选项B'],
+      generatedAt: 1700000000000,
+      generator: 'offline',
+      promptVersion: 'v3',
+      sourceHash: 'fnv1a-abcdef01',
+    };
+    expect(questionVariantSchema.safeParse(v).success).toBe(true);
+  });
 });
 
 describe('variantPoolSchema', () => {

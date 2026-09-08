@@ -3,7 +3,7 @@
 // 相关用例见 src/domain/variant.test.ts；这里只验证「LLM → GeneratedVariant」这一段契约。
 
 import { describe, expect, it, vi } from 'vitest';
-import { generateVariant } from './variant';
+import { generateAssessmentVariant, generateVariant } from './variant';
 import type { CompleteFn } from '../types';
 import type { Question } from '../schemas/question';
 
@@ -122,6 +122,63 @@ describe('generateVariant（轻量变体）', () => {
     expect(user).toContain('options');
     expect(user).not.toContain('"answer"');
     expect(user).not.toContain('"explanation"');
+    expect(user).not.toContain('referenceAnswer');
+  });
+});
+
+describe('generateAssessmentVariant（离线 assessment variant，mock LLM）', () => {
+  const full = {
+    question: '在约束 B 下比较 A 与 C，以下哪项成立？',
+    options: ['A1', 'B1', 'C1', 'D1'],
+    angle: 'comparison',
+    cognitiveTask: 'compare',
+    assessment: { target: '能在约束 B 下比较 A/C', reasoningGoal: '先对齐维度；再逐项验证；并排除干扰。' },
+  };
+
+  it('完整输出 → 返回表达 + 测量面', async () => {
+    const complete: CompleteFn = vi.fn(async () => JSON.stringify(full));
+    const out = await generateAssessmentVariant(BASE, complete, 'choice');
+    expect(out.question).toBe(full.question);
+    expect(out.options).toEqual(full.options);
+    expect(out.angle).toBe('comparison');
+    expect(out.cognitiveTask).toBe('compare');
+    expect(out.assessment).toEqual(full.assessment);
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  it('缺少 assessment → 抛出（不许冒充 assessment variant 入库）', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({ question: 'x', options: ['A', 'B', 'C', 'D'], angle: 'comparison', cognitiveTask: 'compare' }),
+    );
+    await expect(generateAssessmentVariant(BASE, complete, 'choice')).rejects.toThrow(/测量意图/);
+  });
+
+  it('缺少 angle / cognitiveTask → 抛出', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({ question: 'x', options: ['A', 'B', 'C', 'D'], assessment: full.assessment }),
+    );
+    await expect(generateAssessmentVariant(BASE, complete, 'choice')).rejects.toThrow(/angle/);
+  });
+
+  it('非法 angle 枚举 → 抛出', async () => {
+    const complete: CompleteFn = vi.fn(async () =>
+      JSON.stringify({ ...full, angle: 'not-a-real-angle' }),
+    );
+    await expect(generateAssessmentVariant(BASE, complete, 'choice')).rejects.toThrow(/解析/);
+  });
+
+  it('用户提示词携带 canonical 测量面（模型才能换出新路径），仍不携带答案/解析', async () => {
+    const complete: CompleteFn = vi.fn(async () => JSON.stringify(full));
+    const withAssess: Question = {
+      ...BASE,
+      angle: 'mechanism',
+      assessment: { target: '能判断 A 是否成立', reasoningGoal: '先复现机制；再确认；并排除干扰。' },
+    };
+    await generateAssessmentVariant(withAssess, complete, 'choice');
+    const [, user] = (complete as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(user).toContain('canonicalAssessment');
+    expect(user).toContain('canonicalAngle');
+    expect(user).not.toContain('"answer"');
     expect(user).not.toContain('referenceAnswer');
   });
 });
