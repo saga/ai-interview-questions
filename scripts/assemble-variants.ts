@@ -19,9 +19,19 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { questionBank } from '../src/data/questionBank';
-import { variantPoolSchema, computeVariantSourceHash, variantSourceOf, type QuestionVariant, type VariantPool, type VariantKind } from '../src/schemas/variant';
-import { validateVariant, findNearDuplicateVariants, VARIANT_DUP_THRESHOLD } from '../src/domain/variant';
+import { variantPoolSchema, computeVariantContentHash, computeVariantSourceHash, variantSourceOf, type QuestionVariant, type VariantPool, type VariantKind } from '../src/schemas/variant';
+import {
+  validateVariant,
+  findNearDuplicateVariants,
+  findSemanticDuplicateVariants,
+  checkOfflineDifficultyDrivers,
+  measurementFaceOf,
+  VARIANT_DUP_THRESHOLD,
+} from '../src/domain/variant';
+import { isAssessmentIdentical, isReasoningGoalWellFormed, checkKindContentMatch } from '../src/domain/reasoningPath';
+import { checkLanguageSanity, formatSanityIssues } from '../src/domain/languageSanity';
 import { VARIANT_PROMPT_VERSION } from '../src/ai/variant';
+import type { Assessment } from '../src/schemas/common';
 
 /**
  * 草稿条目。
