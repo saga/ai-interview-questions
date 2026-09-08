@@ -1,6 +1,97 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-08 · 上下文工程专题 40 条（`assessment.fresh13-40-20260908.json`，覆盖 244→267 题）
+
+- 20 道上下文工程与成本未覆盖题 × 2 条（嵌入适配/PII/成本×3/自评/编排/ContextManager/合同抽取/Prompt 膨胀/版本管理/分仓/不可信数据/缓存前缀/摘要/评估/动态组装/外算/可靠性/引用核查），
+  全部自声明三段式测量面。第四个 40 条大批次。
+- 门禁实证（续）：初稿 29/40 被拒，多轮收敛；本批教训——短选项起草一旦放飞（<10 字）返工量 triple，
+  必须"贴原句"起步；另抓题干误写入 options[0] 两处（`ai-eng-036`、`ai-prompt-005`），
+  系数字回填时 S/T 函数用混，修法是回填后先打印 options[0] 自查；sibling 撞车 3 对，同槽位换句式拆散。
+- 池指标：488→**531** 条，覆盖 244→**267** 题（19.4%），assessment 自声明 89.8%→**90.6%**，
+  路径唯一率同步 **90.6%**，疑似同路径保持 **0**。
+  （同期外部并行入库，canonical 1375→1379。）
+- 回归：`validate-variants` 全阻断项 0；`npm test` 881/881；`typecheck` + `build` 通过。
+
+## 2026-09-09 · LLM 预训练数据管线专题（4 canonical + 3 variant）
+
+- 新子域入库：4 道 canonical 落 `src/data/questions/llm-pretraining-data-2026-09.json`，
+  3 条变体落 `src/data/variants/llm-pretraining-data.wb-llm-20260909.json`
+  （`kind=context-options`，全部自声明三段式 assessment 测量面，走 assessment variant 路径）。
+- 知识节点：新建 `src/data/knowledge/llm-pretraining-data-2026-09.json`，4 个节点
+  （`area=llm` / `topic=training`）——`llm-pretraining-web-data-pipeline` /
+  `llm-data-filtering-heuristics` / `llm-dataset-deduplication-strategies` /
+  `llm-web-text-extraction-and-line-correction`。
+- 导入门禁实证：本批原始草稿**只命中 4 个错误**（4 个 topic 无知识节点），选项长度比
+  （canonical 1.16~1.24 / variant 1.13~1.19）与单选占比（canonical 0%）**一次通过**——
+  对比 Word2Vec 批的 14 错，说明 prompt 侧把长度与题型约束写清楚后收益显著。
+- 唯一实质返工是变体选项：3 条 variant 原稿选项与 canonical 逐槽 cjkDice 最低 20/32/29（<35），
+  全部判定 `option-semantic-drift`；按"保留为 variant"决策改写为逐槽同义替换。
+  代价：dedup variant 原稿的「模型参数规模 × 重复敏感度」测量内容无法在变体通道保留
+  （选项换概念即被拒），已改为「去重覆盖不足 → 记忆化」的因果面，原内容待另开 canonical。
+- 工具链发现：`scripts/convert-blueprint-output.ts` 只吃旧格式
+  （`formats: [{type, options:[{key,text}], answer}]`），而 `docs/prompt_part2.md` 已改为要求
+  `formats.choice`——**当前 prompt 产出无法走 `question:convert`**，本批因原稿仍是旧格式才侥幸可用。
+  变体仍需 `assemble-variants.ts` 重装（convert 不跑 drift / kind / 难度驱动 / 语言质量门禁）。
+
+## 2026-09-09 · `docs/prompt_part1.md` + `prompt_part2.md` 评审（报告见根目录 `PROMPT_REVIEW.md`）
+
+- 结论：两份 prompt 的测量学规则完备，但与仓库 schema / 门禁 / `AGENTS.md` §4.1-§4.2 严重脱节，
+  Word2Vec 批 14 项门禁失败中 12 项源于 prompt 未约束。7 项 P0 + 10 项 P1 + 9 项 P2。
+- 另发现第 8 条 prompt↔代码不一致：`prompt_part1.md` §二十六 称
+  「Variant 不得改变 topic/angle/difficulty/cognitiveTask」，但 ADR-077 /
+  `src/domain/variant.ts:262` 允许 offline **assessment variant** 自声明 angle / cognitiveTask。
+  本批 3 条变体正是走这条路（tradeoff→comparison、mechanism→design、architecture→causal）并合法入库。
+
+## 2026-09-08 · 混合专题 40 条（`assessment.fresh12-40-20260908.json`，覆盖 220→244 题）
+
+- 20 道未覆盖题 × 2 条（搜索质量/Agent 循环/代码化/embedding/成本权衡/AWS 管控×8/WAF×5/记忆×3），
+  全部自声明三段式测量面。第三个 40 条大批次。
+- 门禁实证（续）：初稿 29/40 被拒，多轮收敛；本批教训——短选项（<15 字）起草必须"贴原句"，
+  自由发挥的改写在 drift 下存活率极低；另抓槽位错位 2 处（`aws-47` O2–O5 整体错位、`ai-search-09` O3 语义放错槽位），
+  再次验证槽位语义是门禁盲区；sibling 撞车 3 对（99/91/93），同槽位换句式拆散。
+- 池指标：444→**488** 条，覆盖 220→**244** 题（17.7%），assessment 自声明 88.7%→**89.8%**，
+  路径唯一率同步 **89.8%**，疑似同路径保持 **0**。
+  （同期外部并行入库，canonical 1371→1375。）
+- 回归：`validate-variants` 全阻断项 0；`npm test` 881/881；`typecheck` + `build` 通过。
+
+## 2026-09-09 · Word2Vec / 神经语言模型计算复杂度专题（4 canonical + 4 variant）
+
+- 新子域入库：4 道 canonical 落 `src/data/questions/word2vec-2026-09.json`，4 条变体落
+  `src/data/variants/word2vec.wb-llm-20260909.json`（`kind=context-options`，全部自声明三段式
+  assessment 测量面，走 assessment variant 路径）。
+- 知识节点：新建 `src/data/knowledge/word2vec.json`，4 个节点（`topic=embeddings`、
+  `area=llm-applications`）——`word2vec-cbow-vs-skipgram-complexity` /
+  `hierarchical-softmax-huffman-optimization` / `neural-lm-hidden-layer-bottleneck` /
+  `vector-offset-relational-analogy`。
+- 导入门禁实证（原始草稿 14 个错误，逐类收敛）：
+  - **单选占比**：原 4 单选 / 8（50%）超限 → `hierarchical softmax` 一题由单选改为多选
+    （拆出「叶子数仍为 $V$」作为第二条正确项），canonical 批次降到 1/4（25%）。
+  - **选项长度**：5 题 max/min 达 1.8~3.0×，逐题拉平到 ≤1.7×。
+  - **变体 drift**：`option-semantic-drift` 用 cjkDice <35 拒，**不因 assessment variant 放宽**，
+    因此变体选项只能是 canonical 选项的**逐项同义改写**，不能换概念（用户原稿里那批
+    「稀疏投影 / 句法能力绝对更优」等新干扰项因此无法保留，已并入题干语境表达）。
+  - **`extra-hint` 新踩坑**：变体题干不得引入正确项独有、canonical 题干没有的拉丁词。
+    cbow 草稿因题干写了 `$\log_2(V)$` 公式被判泄题，nnlm 草稿因写了 `CBOW/Skip-gram` 被判泄题；
+    二者都从题干移除后通过。
+  - **禁用指代误伤**：`FORBIDDEN_REFERENCES` 含 `下文`，而「**上下文**窗口」含该子串 → 题干
+    改用「滑动窗口」。同族还有 `前文`（注意「前后文」也含）。
+- 回归：`validate:questions` 1375 题 / 128 节点通过；`question:validate-variants` 全部发布门禁通过
+  （7 条难度驱动信号为 evaluation 池存量，非本批）；`npm test` 881/881。
+
+## 2026-09-08 · 搜索专题 40 条（`assessment.search-40-20260908.json`，覆盖 200→220 题）+ extra-hint 真 bug 修复
+
+- 20 道检索未覆盖题 × 2 条（端到端提效/新鲜度/cross-encoder/RRF/排序诊断/复读治理/两阶段/top-K/混合架构/动态检索/拆分/终止/多向量/成本/稳健性/混合取舍/伪搜索/分工/改写/MaxSim），
+  全部自声明三段式测量面。第二个 40 条大批次。
+- 代码 bug 修复（真问题）：`checkOfflineDifficultyDrivers` 的 extra-hint 里 theme 词用 `latinTerms`
+  提取，把 `agent-fundamentals` 当整词，导致其中的 `agent` 无法命中排除集——题干用 Agent 即误报。
+  改为 `cjkTokenize`（kebab 拆词），ARCHITECTURE 踩坑备注已有"启发式先校准"条目覆盖此心智。
+- 门禁实证（续）：初稿 25/40 被拒，多轮收敛；本批短选项（8~15 字）drift 安全带极窄，
+  修法统一为"贴原句只换 2~3 个词"；另抓槽位错位 3 处（007-surf-O4/O5 同槽、009 上下文 O4 串位、007-ctx-O2 串别题句）。
+- 池指标：404→**444** 条，覆盖 200→**220** 题（16.0%），assessment 自声明 87.6%→**88.7%**，
+  路径唯一率同步 **88.7%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 881/881；`typecheck` + `build` 通过。
+
 ## 2026-09-08 · 覆盖扩张 40 条（`assessment.fresh10-40-20260908.json`，覆盖 180→200 题）
 
 - 20 道 Agent 工程未覆盖题 × 2 条（评估套件/Harness 三件套/护栏四件套/自演进/技能互补/安全/评估闭环/循环纠错/安全 shell/网关/研究 Agent/容量归因/反欺诈/审计记录），

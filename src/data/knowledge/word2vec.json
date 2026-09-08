@@ -1,0 +1,78 @@
+[
+  {
+    "id": "word2vec-cbow-vs-skipgram-complexity",
+    "name": "CBOW 与 Skip-gram 的计算复杂度",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "CBOW 用上下文预测中心词，Skip-gram 用中心词预测上下文；二者单样本计算复杂度都可用 Q 表达式刻画，窗口规模对两项开销的作用位置不同。",
+    "required": [
+      "CBOW 的投影开销随上下文词数 N 线性增长，输出层只做一次分类，$Q = N \\times D + D \\times \\log_2(V)$",
+      "Skip-gram 的最大距离 C 是整体乘数，投影与输出层开销同时被放大，$Q = C \\times (D + D \\times \\log_2(V))$",
+      "CBOW 的 Softmax 评估次数与 N 无关；Skip-gram 增大 C 增加的是分类次数，不是投影矩阵维度"
+    ],
+    "misconceptions": [
+      "以为 CBOW 的 Softmax 计算量随上下文词数 N 成正比",
+      "以为增大 Skip-gram 的 C 会让投影层矩阵乘法维度成倍增加"
+    ],
+    "angles": ["comparison", "calculation", "tradeoff"]
+  },
+  {
+    "id": "hierarchical-softmax-huffman-optimization",
+    "name": "Hierarchical Softmax 与 Huffman 树优化",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "按 Unigram 词频构造 Huffman 树替代输出层全量 Softmax，把平均评估节点数从平衡二叉树的 $\\log_2(V)$ 降到约 $\\log_2(\\text{Unigram\\_perplexity}(V))$。",
+    "required": [
+      "Huffman 树给高频词分配更短编码路径，期望评估节点数取决于语料的 Unigram 困惑度而非词表规模 V",
+      "叶子节点数仍等于 V，加速来自路径长度的重分配，不是缩减词表",
+      "树深度由词表规模与词频分布决定，与上下文窗口大小无关"
+    ],
+    "misconceptions": [
+      "以为 Huffman 树通过减少叶节点数或缩减词表规模来提速",
+      "以为高频词无需再做 Softmax 归一化评估",
+      "把加速归因于消除梯度反向传播"
+    ],
+    "angles": ["mechanism", "comparison", "calculation"]
+  },
+  {
+    "id": "neural-lm-hidden-layer-bottleneck",
+    "name": "神经语言模型的隐藏层计算瓶颈",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "NNLM/RNNLM 用 Hierarchical Softmax 消掉输出层 $H \\times V$ 后，密集的非线性隐藏层乘法成为主导瓶颈；CBOW/Skip-gram 以去掉隐藏层换取可扩展性。",
+    "required": [
+      "NNLM 复杂度 $Q = N \\times D + N \\times D \\times H + H \\times V$，输出层被优化后瓶颈转为 $N \\times D \\times H$",
+      "RNNLM 优化输出层后主导项是循环连接 $H \\times H$",
+      "去掉非线性隐藏层的 Log-linear 模型牺牲部分表达能力，换来十亿词规模上的可训练性",
+      "无隐藏层不等于丢失语义规律，向量加减仍反映语义/语法关系"
+    ],
+    "misconceptions": [
+      "忽略 Hierarchical Softmax 对输出层 H * V 项的消减，以为 Softmax 始终是唯一瓶颈",
+      "以为输入层 1-of-V 稀疏投影是 NNLM 的主要开销",
+      "以为去掉隐藏层后模型在句法拟合能力上绝对优于深层网络"
+    ],
+    "angles": ["tradeoff", "comparison", "scenario"]
+  },
+  {
+    "id": "vector-offset-relational-analogy",
+    "name": "向量偏移与关系类比",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "词向量空间中的关系类比用向量加减构造目标向量 $X = \\text{vec}(B) - \\text{vec}(A) + \\text{vec}(C)$，再按余弦距离取最近邻，且必须排除输入词。",
+    "required": [
+      "关系类比的代数形式是减「源」加「目标」，方向颠倒会得到错误答案",
+      "检索按余弦距离而非欧氏距离，在全词库范围内进行",
+      "评测规范硬性要求剔除输入问句中的 A、B、C，否则会返回平凡解"
+    ],
+    "misconceptions": [
+      "向量加减方向颠倒",
+      "忽略检索时必须排除输入题目词这一约束",
+      "混淆余弦距离与欧氏距离、或把检索范围限定在同义词词典"
+    ],
+    "angles": ["mechanism", "definition", "scenario"]
+  }
+]

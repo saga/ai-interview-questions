@@ -1,0 +1,206 @@
+[
+  {
+    "id": "llm-pretraining-web-data-pipeline-canonical",
+    "category": "LLM Data Engineering",
+    "topic": "llm-pretraining-web-data-pipeline",
+    "tags": [
+      "LLM",
+      "Data Processing",
+      "Pretraining"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Web Crawl Pipeline",
+      "supporting": [
+        "Data Scaling",
+        "Curated Corpora"
+      ]
+    },
+    "assessment": {
+      "target": "能够评估 Web 抓取数据与 Curated 数据在 LLM 扩展过程中的数据规模限制及质量对折策略，识别通过严格过滤与深度去重替代人工精选数据的适用场景与局限。",
+      "reasoningGoal": "先对比 Web 数据规模上限与精选数据（如书籍、学术论文）的增长瓶颈；再分析严格过滤与去重对消除噪声和过度记忆的作用；据此排除把 Web 原始数据视作不可用噪声以及认为仅靠人工精选数据即可无限扩展训练规模的错误判断。"
+    },
+    "question": "大型语言模型（LLM）预训练规模需要数万亿 Token 的数据支持。在规划预训练数据建构策略时，针对“人工精选数据集（Curated Corpora，如书籍、论文）”与“通用 Web 爬取数据集（Web Crawlers）”的选择与权衡，下列哪些评估结论是合理的？",
+    "explanation": "正确答案为 A、C。\nA 项正确：书籍、学术论文等人工精选数据（Curated Corpora）总量有限，过度重复采样会导致模型过拟合，难以单靠精选数据无限制扩展至万亿 Token 级别。\nC 项正确：工程实践表明，对 Web 数据实施严格的质量启发式过滤与深度去重（精确子串与模糊去重）后，纯 Web 数据库可以在 Zero-shot 泛化性能上达到甚至超越基于精选数据训练的模型。\nB 项错误：Web 数据虽然原始噪声多，但经过精细管线过滤去重后，质量可被显著提升，完全可以在 Zero-shot 评估中超越传统精选语料。\nD 项错误：直接混合未清洗的原始 Web 数据包含大量低质垃圾文本、重复内容与格式噪声，会导致模型记忆化、生成退化甚至训练失稳。",
+    "misconceptions": [
+      "认为 Web 数据噪声密度过高，即便经过多级规则清洗也无法在 Zero-shot 上赶超精选数据集",
+      "认为直接混入未清洗的原始 Web 爬取文本是拓展数据多样性的最佳工程方案"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "人工精选数据在规模上存在天然增长瓶颈，难以独自支撑万亿 Token 级别的无重复扩展需求。",
+          "通用 Web 爬取数据由于噪声密度过高，即便经过多级规则清洗也无法在 Zero-shot 任务上赶超精选数据集。",
+          "对 Web 爬取数据实施严格的质量启发式过滤与深度去重，可替代人工精选获得高泛化能力的基础语料。",
+          "为了避免出现模型记忆化与训练不收敛，直接混合未清洗的原始 Web 爬取数据是拓展多样性的最佳工程方案。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "llm-data-filtering-heuristics-canonical",
+    "category": "LLM Data Engineering",
+    "topic": "llm-data-filtering-heuristics",
+    "tags": [
+      "LLM",
+      "Data Processing",
+      "Heuristics"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "Data Filtering",
+      "supporting": [
+        "Heuristic Rules",
+        "Line-level Correction"
+      ]
+    },
+    "assessment": {
+      "target": "能够诊断网页抽取文本中的噪声残留（如社交计数器、导航按键、模板代码），并根据行级与文档级启发式阈值（如特定行剔除比例超过阈值则丢弃整页）确定过滤策略。",
+      "reasoningGoal": "先识别网页抽取文本中包含的非自然语言结构与模板噪声；再推演行级过滤与文档级丢弃阈值对数据完整性与噪声残留的控制机制；据此排除“仅依赖文档级语言分类即可自动清除网页交互模板”以及“无差别按行过滤不会破坏上下文连贯性”的错误诊断。"
+    },
+    "question": "从网页抽取文本构建 LLM 预训练数据集时，常残留社交点赞计数器、导航按钮、版权声明等模板噪声。在使用行级（Line-wise）修正与文档级启发式过滤诊断噪声时，下列哪些策略与机制分析是合理的？",
+    "explanation": "正确答案为 A、B。\nA 项正确：社交媒体计数器、导航菜单及页脚版权等模板残留常交织在正常文本行之间，文档级的分类模型无法识别这些局部噪声，必须依赖行级规则精准识别并剔除。\nB 项正确：如果一个文档中包含过高比例的噪声行（如因行级过滤导致删除了超过 5% 的内容），说明该文档整体结构可能极度失真，将其整页丢弃能有效保障语料的连贯性与质量。\nC 项错误：语言识别分类器仅根据字符 n-gram 估计文档属于某种自然语言的全局概率，无法识别交织在正文中的短句模板或导航按键。\nD 项错误：无差别删除含有符号或数字的行会误杀公式、代码、列表以及正常正文中的数量表达，破坏文本的上下文语义连贯性。",
+    "misconceptions": [
+      "认为文档级语言识别概率高于阈值，即可保证文档内部不存在行级交互噪声",
+      "认为对所有含符号或数字的行实施无差别删除不会破坏上下文语义连贯性"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "行级过滤能够精准剔除单行存在的社交计数与导航残留，解决文档级分类模型无法清除局部模板的问题。",
+          "若行级过滤剔除的内容占整个文档比例超过设定阈值（如 5%），应将该文档整体丢弃以保障文本连贯性。",
+          "只要文档整体的语言识别概率（如 fastText 评分）高于阈值，即可保证其内部不存在此类行级交互噪声。",
+          "行级过滤不会改变上下文语义分布，因此对所有含有符号或数字的行实施无差别删除是安全且无害的。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "llm-dataset-deduplication-strategies-canonical",
+    "category": "LLM Data Engineering",
+    "topic": "llm-dataset-deduplication-strategies",
+    "tags": [
+      "LLM",
+      "Deduplication",
+      "Data Quality"
+    ],
+    "difficulty": "hard",
+    "angle": "architecture",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Deduplication",
+      "supporting": [
+        "MinHash",
+        "Suffix Array"
+      ]
+    },
+    "assessment": {
+      "target": "能够评估精确子串去重（Suffix Array）与模糊去重（MinHash）在大规模语料处理中的计算开销与覆盖互补性，推演去重程度对语言模型性能及记忆化现象的作用机制。",
+      "reasoningGoal": "先分析精确子串匹配与模糊 MinHash 分别针对的重复模式；再推演两者级联组合对去重召回率与计算可扩展性的影响；据此排除“仅靠精确子串匹配即可覆盖所有重写版重复数据”以及“模糊去重可以完全替代精确子串匹配”的架构误区。"
+    },
+    "question": "在构建数万亿 Token 的 LLM 预训练语料库时，针对“精确子串去重（Exact Substring Deduplication）”与“模糊去重（Fuzzy Deduplication，如 MinHash + LSH）”的级联组合架构，下列哪些评估结论是正确的？",
+    "explanation": "正确答案为 A、C。\nA 项正确：模糊去重（如基于 MinHash 和 LSH 的算法）擅长识别文档级别的近似重复，即便网页经过轻微改写、替换个别词汇或重新排版，也能通过相似度阈值将其剔除。\nC 项正确：将基于 Suffix Array 的精确子串匹配与基于 MinHash 的模糊去重相结合，能够深入剔除跨文档与跨抓取批次（Dump）的重复段落与文档，有效削弱大模型的记忆化效应（Memorization）并防止生成失真。\nB 项错误：精确子串去重依赖字符序列完全匹配，对于被插词、改写或改变调序的近似重复文档召回率极低，无法替代模糊去重。\nD 项错误：预训练语料中的重复数据不仅浪费计算资源，更会导致模型严重产生无意义重复生成、过度记忆隐私信息，并损害 Zero-shot 泛化能力。",
+    "misconceptions": [
+      "认为精确子串去重能完全覆盖模糊去重的识别范围，可以省去模糊去重阶段",
+      "认为语料中的高频重复文本只增加训练耗时，不会损害模型的生成质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模糊去重通过 MinHash 计算文档相似度，能有效识别因微小改写或格式差异产生的近似重复文档。",
+          "精确子串去重能够完全覆盖模糊去重的识别范围，因此在处理大规模语料时可以完全省去模糊去重阶段。",
+          "组合精确子串与模糊去重能实现跨文档和跨 Dump 的深度去重，可显著减少模型记忆化（Memorization）。",
+          "即便数据集中存在大量高频重复文本，也仅会增加无意义的训练耗时，不会对大模型的生成质量造成实质危害。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "llm-web-text-extraction-and-line-correction-canonical",
+    "category": "LLM Data Engineering",
+    "topic": "llm-web-text-extraction-and-line-correction",
+    "tags": [
+      "LLM",
+      "Text Extraction",
+      "CommonCrawl"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "Text Extraction",
+      "supporting": [
+        "Trafilatura",
+        "WARC vs WET"
+      ]
+    },
+    "assessment": {
+      "target": "能够诊断预先抽取文本在预训练中的数据质量缺陷，并分析从 WARC 原始响应中提取主体内容（DOM Parsing）与正则格式刷洗的处理权衡。",
+      "reasoningGoal": "先对比 WET 预处理文件与基于 HTML DOM 结构解析抽取在遗留网页挂件与菜单上的差异；再推演段落换行规范化与 URL 剥离对输入序列分布的影响；据此排除直接使用 CommonCrawl 官方 WET 文件即可达到顶级预训练文本质量和 HTML 文本提取不需要对提取后的文本流进行行级过滤的实现误区。"
+    },
+    "question": "在处理 CommonCrawl 等海量网页数据以构建 LLM 预训练文本流时，关于原始 HTML 响应（WARC）与官方纯文本导出文件（WET）的处理方案诊断，下列哪些结论是合理的？",
+    "explanation": "正确答案为 B、C。\nB 项正确：CommonCrawl 的 WET 预处理文件包含大量模板噪声（如页头、侧边栏导航）。从原始 WARC 响应出发，使用专门的 DOM 正文抽取工具（如 Trafilatura）能精准解析网页树状结构，只保留正文内容。\nC 项正确：正文抽取后，仍会残留乱码 URL 以及过多不规范的连续换行符，利用正则表达式将其限制为最多两个连续换行并剔除 URL，能有效规范 Tokenizer 的编码序列，避免产生异常的 Token 分布。\nA 项错误：WET 提取过程相对粗暴，保留了大量的菜单、页脚以及与主体无关的文本碎片，直接使用无法保证预训练数据的顶级质量。\nD 项错误：即便使用 Trafilatura 等 DOM 工具，提取出的正文内部依然可能混有社交点赞计数、评论引导词或导航残留，必须搭配行级二次清洗才能获得极高纯度的语料。",
+    "misconceptions": [
+      "认为官方 WET 纯文本文件已完全剔除网页导航菜单与广告挂件残留",
+      "认为 DOM 工具定位到正文标签后，提取出的文本流无需再做行级规则清洗"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "直接采用 CommonCrawl 官方提供的 WET 纯文本文件，能够完全剔除网页导航菜单和广告挂件残留。",
+          "从原始 WARC 网页结构出发，利用高精度 DOM 内容抽取工具（如 Trafilatura）能大幅提升正文提取纯度。",
+          "在完成 HTML 正文提取后，仍需利用正则手段约束连续换行并剥离内嵌 URL，以改善输入 Token 分布。",
+          "只要 DOM 解析工具成功定位了正文标签，提取出的文本流即可直接送入模型，无需再做任何行级规则清洗。"
+        ],
+        "answer": [
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          1
+        ]
+      }
+    }
+  }
+]

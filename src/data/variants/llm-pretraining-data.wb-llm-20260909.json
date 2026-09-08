@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "generatedAt": 1788909069247,
+  "promptVersion": "v4",
+  "variants": {
+    "llm-pretraining-web-data-pipeline-canonical": [
+      {
+        "id": "llm-pretraining-web-data-pipeline-canonical__context-options__wbprompt__0",
+        "kind": "context-options",
+        "question": "在评估基于纯 Web 清洗语料与包含高比重精选语料的预训练数据策略时，在相同计算预算下的 Zero-shot 性能、数据剔除率与扩展性对比中，下列哪些结论是正确的？",
+        "options": [
+          "人工精选语料受自然增长速度限制存在供给上限，无法独力支撑万亿 Token 级别的无重复扩展需求。",
+          "通用 Web 爬取数据噪声密度过高，即便经过多级规则清洗也无法在 Zero-shot 任务上赶超精选数据集。",
+          "对 Web 爬取数据实施严格的质量启发式过滤与深度去重，可取代人工精选获得高泛化能力的基础语料。",
+          "为避免模型记忆化与训练不收敛，直接混入未清洗的原始 Web 爬取数据是拓展多样性的最佳工程方案。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能够对比纯 Web 清洗语料与高比重精选语料在 Zero-shot 泛化表现、数据剔除率与计算预算效率上的差异。",
+          "reasoningGoal": "先比较两类语料在相同计算预算下的 Zero-shot 表现与增长上限；再判断高剔除率是质量提升手段还是多样性损失；据此排除「剔除比例越高泛化必然越差」以及「混入精选数据必然优于纯 Web 数据」的推论。"
+        },
+        "generatedAt": 1788909069242,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a37790a1",
+        "batch": "wbprompt",
+        "model": "manual",
+        "contentHash": "fnv1a-62acc0c2",
+        "sourceSnapshot": {
+          "id": "llm-pretraining-web-data-pipeline-canonical",
+          "topic": "llm-pretraining-web-data-pipeline",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Pretraining"
+          ],
+          "question": "大型语言模型（LLM）预训练规模需要数万亿 Token 的数据支持。在规划预训练数据建构策略时，针对“人工精选数据集（Curated Corpora，如书籍、论文）”与“通用 Web 爬取数据集（Web Crawlers）”的选择与权衡，下列哪些评估结论是合理的？",
+          "options": [
+            "人工精选数据在规模上存在天然增长瓶颈，难以独自支撑万亿 Token 级别的无重复扩展需求。",
+            "通用 Web 爬取数据由于噪声密度过高，即便经过多级规则清洗也无法在 Zero-shot 任务上赶超精选数据集。",
+            "对 Web 爬取数据实施严格的质量启发式过滤与深度去重，可替代人工精选获得高泛化能力的基础语料。",
+            "为了避免出现模型记忆化与训练不收敛，直接混合未清洗的原始 Web 爬取数据是拓展多样性的最佳工程方案。"
+          ]
+        }
+      }
+    ],
+    "llm-data-filtering-heuristics-canonical": [
+      {
+        "id": "llm-data-filtering-heuristics-canonical__context-options__wbprompt__0",
+        "kind": "context-options",
+        "question": "在设计用于处理海量网页的预训练数据过滤管线时，为了兼顾高吞吐、低分布偏见以及对社交按键与导航等局部模板噪声的清除，下列哪些架构与规则组合设计是正确的？",
+        "options": [
+          "行级过滤能够精准剔除单行混入的社交计数与导航残留，弥补文档级分类模型无法清除局部模板的不足。",
+          "若行级过滤剔除的内容在整篇文档中占比超过设定阈值（如 5%），应将该文档整页丢弃以保障文本连贯性。",
+          "只要文档整体的语言识别概率（如 fastText 评分）高于阈值，即可保证其内部不存在此类行级交互噪声。",
+          "行级过滤不会改变上下文语义分布，因此对所有含有符号或数字的行实施无差别删除是安全且无害的。"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能够针对海量网页设计兼顾高吞吐、低分布偏见与局部模板清除的过滤管线组合。",
+          "reasoningGoal": "先确定文档级过滤与行级过滤各自负责的噪声层级；再为行级删除比例设置整页丢弃阈值以控制上下文断裂风险；据此排除「提高语言分类阈值即可清除行内菜单」以及「按符号数字无差别删行无害」的设计。"
+        },
+        "generatedAt": 1788909069245,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-08621d0d",
+        "batch": "wbprompt",
+        "model": "manual",
+        "contentHash": "fnv1a-fc252d95",
+        "sourceSnapshot": {
+          "id": "llm-data-filtering-heuristics-canonical",
+          "topic": "llm-data-filtering-heuristics",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Heuristics"
+          ],
+          "question": "从网页抽取文本构建 LLM 预训练数据集时，常残留社交点赞计数器、导航按钮、版权声明等模板噪声。在使用行级（Line-wise）修正与文档级启发式过滤诊断噪声时，下列哪些策略与机制分析是合理的？",
+          "options": [
+            "行级过滤能够精准剔除单行存在的社交计数与导航残留，解决文档级分类模型无法清除局部模板的问题。",
+            "若行级过滤剔除的内容占整个文档比例超过设定阈值（如 5%），应将该文档整体丢弃以保障文本连贯性。",
+            "只要文档整体的语言识别概率（如 fastText 评分）高于阈值，即可保证其内部不存在此类行级交互噪声。",
+            "行级过滤不会改变上下文语义分布，因此对所有含有符号或数字的行实施无差别删除是安全且无害的。"
+          ]
+        }
+      }
+    ],
+    "llm-dataset-deduplication-strategies-canonical": [
+      {
+        "id": "llm-dataset-deduplication-strategies-canonical__context-options__wbprompt__0",
+        "kind": "context-options",
+        "question": "在推断预训练语料去重程度对语言模型训练动态与生成行为的因果影响时，关于重复样本残留与记忆化之间的机制，下列哪些结论是正确的？",
+        "options": [
+          "模糊去重通过 MinHash 计算文档相似度，能有效识别因微小改写或格式差异产生的近似重复文档。",
+          "精确子串去重能够完全覆盖模糊去重的识别范围，因此在处理大规模语料时可以完全省去模糊去重阶段。",
+          "组合精确子串与模糊去重能实现跨文档和跨 Dump 的深度去重，可显著减少模型记忆化（Memorization）。",
+          "即便数据集中存在大量高频重复文本，也仅会增加无意义的训练耗时，不会对大模型的生成质量造成实质危害。"
+        ],
+        "angle": "causal",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能够推断去重覆盖不足导致重复样本残留，进而引起记忆化与生成退化的因果链。",
+          "reasoningGoal": "先判断哪类重复模式会绕过单一去重手段而残留下来；再由残留重复推演其对梯度更新与生成行为的下游影响；据此排除「精确匹配可取代模糊匹配」以及「重复只增加耗时不损质量」的因果误判。"
+        },
+        "generatedAt": 1788909069247,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e7007a48",
+        "batch": "wbprompt",
+        "model": "manual",
+        "contentHash": "fnv1a-d896ecad",
+        "sourceSnapshot": {
+          "id": "llm-dataset-deduplication-strategies-canonical",
+          "topic": "llm-dataset-deduplication-strategies",
+          "angle": "architecture",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "LLM",
+            "Deduplication",
+            "Data Quality"
+          ],
+          "question": "在构建数万亿 Token 的 LLM 预训练语料库时，针对“精确子串去重（Exact Substring Deduplication）”与“模糊去重（Fuzzy Deduplication，如 MinHash + LSH）”的级联组合架构，下列哪些评估结论是正确的？",
+          "options": [
+            "模糊去重通过 MinHash 计算文档相似度，能有效识别因微小改写或格式差异产生的近似重复文档。",
+            "精确子串去重能够完全覆盖模糊去重的识别范围，因此在处理大规模语料时可以完全省去模糊去重阶段。",
+            "组合精确子串与模糊去重能实现跨文档和跨 Dump 的深度去重，可显著减少模型记忆化（Memorization）。",
+            "即便数据集中存在大量高频重复文本，也仅会增加无意义的训练耗时，不会对大模型的生成质量造成实质危害。"
+          ]
+        }
+      }
+    ]
+  }
+}

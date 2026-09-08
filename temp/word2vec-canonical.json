@@ -1,0 +1,149 @@
+[
+  {
+    "id": "q_cbow_skipgram_complexity_can",
+    "category": "Natural Language Processing",
+    "topic": "word2vec-cbow-vs-skipgram-complexity",
+    "tags": ["Word2Vec", "CBOW", "Skip-gram", "Computational Complexity"],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "Continuous Bag-of-Words and Skip-gram Architectures",
+      "supporting": ["Computational Complexity", "Hierarchical Softmax"]
+    },
+    "assessment": {
+      "target": "能够对比 CBOW 与 Continuous Skip-gram 在输入/目标预测映射方向以及单样本训练计算复杂度 Q 表达式上的结构与开销差异。",
+      "reasoningGoal": "先分别写出 CBOW 与 Skip-gram 的单样本复杂度表达式并定位窗口参数落在哪一项；再比较 $N$ 与 $C$ 作用的是投影项还是整体乘数；据此排除「CBOW 输出开销随 $N$ 倍增」「$C$ 成倍扩大投影维度」等不成立描述。"
+    },
+    "question": "关于 Continuous Bag-of-Words (CBOW) 与 Continuous Skip-gram 模型的映射结构与单样本训练计算复杂度 $Q$，下列哪些说法是正确的？",
+    "explanation": "选项 0 正确：CBOW 将上下文中的 $N$ 个词向量在投影层取平均用于预测中心词，输入投影开销为 $N \\times D$，层次 Softmax 输出开销为 $D \\times \\log_2(V)$，总复杂度 $Q = N \\times D + D \\times \\log_2(V)$。\n选项 2 正确：Skip-gram 以中心词为输入预测周边 $C$ 范围内的上下文词，每个被选中的上下文词各需一次分类，因此单样本复杂度与最大距离 $C$ 成正比，$Q = C \\times (D + D \\times \\log_2(V))$。\n选项 1 错误：CBOW 只对中心词做一次输出分类评估，输出开销与上下文词数 $N$ 无关。\n选项 3 错误：增大 $C$ 增加的是 Skip-gram 的分类采样次数，投影层输入仍是单个中心词向量，维度不随 $C$ 成倍增加。",
+    "misconceptions": [
+      "错误地认为 CBOW 的 Softmax 计算量与上下文词数 N 成正比",
+      "混淆 Skip-gram 上下文距离 C 对 Softmax 评估频次与对投影层维度的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "CBOW 将 $N$ 个上下文词向量取平均后预测中心词，开销为 $Q = N \\times D + D \\times \\log_2(V)$，输出项只评估一次",
+          "CBOW 的输出层 Softmax 评估次数随上下文词数 $N$ 同步增加，使其总开销由输出分类项主导",
+          "Skip-gram 以中心词预测周边 $C$ 个上下文词，开销为 $Q = C \\times (D + D \\times \\log_2(V))$，随 $C$ 线性缩放",
+          "增大 $C$ 会让 Skip-gram 投影层输入维度由 $D$ 变为 $C \\times D$，投影矩阵乘法因此成倍扩大"
+        ],
+        "answer": [0, 2],
+        "misconceptionMap": [null, 0, null, 1]
+      }
+    }
+  },
+  {
+    "id": "q_hierarchical_softmax_huffman_can",
+    "category": "Natural Language Processing",
+    "topic": "hierarchical-softmax-huffman-optimization",
+    "tags": ["Word2Vec", "Hierarchical Softmax", "Huffman Tree"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Hierarchical Softmax with Huffman Tree",
+      "supporting": ["Unigram Perplexity"]
+    },
+    "assessment": {
+      "target": "能够解释基于 Unigram 词频的 Huffman 树 Hierarchical Softmax 如何降低语言模型输出层的评估计算复杂度。",
+      "reasoningGoal": "先确认 Huffman 树按 Unigram 词频非均匀分配路径长度且叶子数仍为 $V$；再由困惑度表达式比较平均评估节点数与 $\\log_2(V)$ 的差距；据此排除「字母序完全二叉树」「截断低频词统一编码」「One-hot 稀疏化」等不成立描述。"
+    },
+    "question": "在语言模型输出层采用基于 Unigram 词频的 Huffman 树实现 Hierarchical Softmax 时，下列哪些关于其降开销机制的说法是正确的？",
+    "explanation": "选项 0 正确：Huffman 树按词频构造，给高频词更短的二值编码路径，使平均评估输出节点数从平衡二叉树的 $\\log_2(V)$ 降至约 $\\log_2(\\text{Unigram\\_perplexity}(V))$。\n选项 1 正确：Huffman 树仍以词汇表中全部 $V$ 个词作为叶子节点，加速来自路径长度按词频的重新分配，而非缩减词表。\n选项 2 错误：Huffman 树依据词频构建，是非平衡树，不是按字母顺序构建的完全二叉树。\n选项 3 错误：Huffman 树保留所有低频词，既不截断长尾也不强制统一编码长度。\n选项 4 错误：Hierarchical Softmax 解决的是输出层概率评估的计算量，与把词向量转成稀疏 One-hot 编码无关。",
+    "misconceptions": [
+      "混淆平衡二叉树与基于词频的 Huffman 树在路径长度分配上的差异",
+      "误认为 Huffman 树通过截断低频词编码或统一编码长度来加速",
+      "混淆层次 Softmax 树评估与词向量稀疏编码机制"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Huffman 树按词频给高频词更短编码路径，其评估节点数由 $\\log_2(V)$ 降至约 $\\log_2(\\text{Unigram\\_perplexity}(V))$",
+          "Huffman 树仍保留词汇表中全部 $V$ 个词作为叶子节点，加速来自路径长度按词频重分配，而非缩减词表",
+          "按字母顺序构建完全二叉树即可把节点搜索复杂度从 $V$ 严格降到 $\\log_2(V)$，该加速与词频分布无关",
+          "通过截断长尾低频词在树中的路径深度、并强制所有词的编码长度保持一致，从而彻底消除输出层全部的分类计算",
+          "Huffman 编码将词向量直接转化为稀疏 One-hot 表示，从而避免隐藏层与输出层之间的矩阵乘法"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1, 2]
+      }
+    }
+  },
+  {
+    "id": "q_nnlm_rnnlm_hidden_bottleneck_can",
+    "category": "Natural Language Processing",
+    "topic": "neural-lm-hidden-layer-bottleneck",
+    "tags": ["NNLM", "RNNLM", "Word2Vec", "Computational Complexity"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Computational Bottleneck of Hidden Layers in Neural LMs",
+      "supporting": ["NNLM", "RNNLM", "Log-linear Models"]
+    },
+    "assessment": {
+      "target": "能够评估 NNLM 与 RNNLM 中非线性隐藏层带来的计算瓶颈，以及去除隐藏层构建 Log-linear 模型（CBOW/Skip-gram）的工程权衡。",
+      "reasoningGoal": "先写出 NNLM 复杂度 $Q = N \\times D + N \\times D \\times H + H \\times V$ 并判断输出项被优化后的主导项；再对 RNNLM 判断瓶颈是否转为循环连接 $H \\times H$；据此排除「输出层仍为主导」「移除隐藏层即丧失语义规律」等不成立描述。"
+    },
+    "question": "前馈神经网络语言模型（NNLM）与循环神经网络语言模型（RNNLM）在采用 Hierarchical Softmax 优化后，其主要计算瓶颈与架构演进权衡表现为哪些？",
+    "explanation": "选项 0 正确：NNLM 单样本复杂度为 $Q = N \\times D + N \\times D \\times H + H \\times V$，Hierarchical Softmax 把 $H \\times V$ 降为 $H \\times \\log_2(V)$ 后，密集项 $N \\times D \\times H$ 成为主要瓶颈。\n选项 2 正确：去除非线性隐藏层构建 Continuous Log-linear 模型（CBOW/Skip-gram），牺牲部分非线性表达能力，但消除了 $N \\times D \\times H$ 主导项，使十亿级词量上的高维向量训练可行。\n选项 1 错误：RNNLM 采用 Hierarchical Softmax 后输出层降为 $H \\times \\log_2(V)$，瓶颈转为循环连接项 $H \\times H$，不再是输出层 $H \\times V$。\n选项 3 错误：Log-linear 模型仍保留向量空间的连续线性规律（向量加减反映语义关系），并非无法保留语义或语法相似度。",
+    "misconceptions": [
+      "忽略 Hierarchical Softmax 对输出层 H * V 项的消减作用，误以为 Softmax 始终是唯一瓶颈",
+      "将非线性隐藏层的移除误认为会导致词向量完全丧失语义表达能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NNLM 用 Hierarchical Softmax 消掉 $H \\times V$ 主导项后，瓶颈转移到投影层到隐藏层的密集项 $N \\times D \\times H$",
+          "RNNLM 采用 Hierarchical Softmax 之后，主要瓶颈依然是输出层 $H \\times V$ 的矩阵乘法",
+          "CBOW 与 Skip-gram 去掉 NNLM 的非线性隐藏层，牺牲复杂模式表达能力换取在数十亿词上训练高维向量的可行性",
+          "去掉隐藏层的 Log-linear 模型只能表达线性关系，因而无法在词向量空间中保留任何语义或语法相似度"
+        ],
+        "answer": [0, 2],
+        "misconceptionMap": [null, 0, null, 1]
+      }
+    }
+  },
+  {
+    "id": "q_vector_offset_operations_can",
+    "category": "Natural Language Processing",
+    "topic": "vector-offset-relational-analogy",
+    "tags": ["Word2Vec", "Vector Offset", "Relational Analogies"],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "Vector Offset Operations",
+      "supporting": ["Cosine Distance", "Analogy Retrieval"]
+    },
+    "assessment": {
+      "target": "能够运用向量偏移代数运算与余弦相似度检索解决词汇语义与语法类比任务。",
+      "reasoningGoal": "先按 $A:B = C:D$ 构造目标向量 $X = \\text{vec}(B) - \\text{vec}(A) + \\text{vec}(C)$；再确认检索度量为余弦距离且范围为全词库；据此排除未剔除输入词 $A,B,C$、运算方向颠倒与改用欧氏距离等错误做法。"
+    },
+    "question": "在词向量空间中利用向量偏移技术回答类比问题“What is the word that is similar to 'small' in the same sense as 'biggest' is to 'big'?”时，正确的计算与检索流程是什么？",
+    "explanation": "选项 1 正确：应计算目标向量 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{big}) + \\text{vec}(\\text{small})$，并在全词库中按余弦距离取最近邻，同时丢弃题目中的输入词 biggest、big、small。\n选项 0 错误：代数运算方向颠倒，且未排除输入题目词。\n选项 2 错误：加减关系构建错误（应是最高的词减原词再加目标词），且限定同义词词库不符合全词库检索设定。\n选项 3 错误：偏移公式错误，使用的是余弦距离而非欧氏距离，且未排除输入词。",
+    "misconceptions": [
+      "向量加减方向颠倒",
+      "忽略检索时必须丢弃/排除输入题目词这一关键约束",
+      "混淆关系代数计算公式与距离度量方式"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "计算 $X = \\text{vec}(\\text{big}) - \\text{vec}(\\text{biggest}) + \\text{vec}(\\text{small})$，在全局词库中取余弦距离最近的词，包含题目输入词",
+          "计算 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{big}) + \\text{vec}(\\text{small})$，按余弦距离取最近邻，并丢弃题目中的输入词",
+          "计算 $X = \\text{vec}(\\text{biggest}) + \\text{vec}(\\text{big}) - \\text{vec}(\\text{small})$，仅在同义词词库中检索点积最大的词",
+          "计算 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{small})$，在向量空间中寻找欧氏距离最近的词，且无需排除输入词"
+        ],
+        "answer": [1],
+        "misconceptionMap": [0, null, 1, 2]
+      }
+    }
+  }
+]
