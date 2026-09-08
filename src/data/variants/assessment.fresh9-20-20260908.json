@@ -1,0 +1,909 @@
+{
+  "version": 1,
+  "generatedAt": 1788874684735,
+  "promptVersion": "v4",
+  "variants": {
+    "gan-optimal-discriminator-canonical": [
+      {
+        "id": "gan-optimal-discriminator-canonical__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某推导称两分布重合时 C(G) 极小值为 0。定位这次推导错误，下列哪些判断成立？",
+        "options": [
+          "固定 G 时最优判别器为 pdata 除以两者之和",
+          "pg=pdata 时判别器全域恒输出 1/2",
+          "代入得 C(G) 为负 log4 加两倍 JSD，pg=pdata 取极小",
+          "两分布重合时 C(G) 极小为 0，与 JSD 无关"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从极小值误写为 0 的推导错误定位 JSD 环节",
+          "reasoningGoal": "先定位错误的环节（最优解、极小值两类）；再逐项验证各判断；并排除「极小为 0」等不成立描述。"
+        },
+        "generatedAt": 1788874684730,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bc1b674c",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-dfeb7059",
+        "sourceSnapshot": {
+          "id": "gan-optimal-discriminator-canonical",
+          "topic": "gan",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "gan",
+            "deep-learning",
+            "probability-theory"
+          ],
+          "question": "给定固定生成器 G 及其诱导的概率分布 pg，理论分析 GAN 判别器 D 在无约束函数空间下的最优解 D*_G(x) 及此状态下的博弈优化目标 C(G)，下列哪些推导结论是准确的？",
+          "options": [
+            "在生成器 G 固定的情况下，最优判别器为 D*_G(x) = pdata(x) / (pdata(x) + pg(x))。",
+            "当生成分布完美重构真实分布（pg = pdata）时，最优判别器在全域输出固定值 D*_G(x) = 1/2。",
+            "代入最优判别器后 C(G) 化简为 -log(4)+2·JSD，pg=pdata 时取极小。",
+            "当生成分布与真实分布重合时 C(G) 取全局极小值 0，与 JSD 无关。"
+          ]
+        }
+      },
+      {
+        "id": "gan-optimal-discriminator-canonical__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "某 GAN 判别器输出恒为 1/2，团队宣布已收敛。评审这一宣布的前提，下列哪些判断正确？",
+        "options": [
+          "固定 G 时最优判别器即两分布之比归一",
+          "pg 重构 pdata 时，判别器全域恒输出 1/2",
+          "代入最优判别器，C(G) 化简为负 log4 加两倍 JSD",
+          "两分布重合时 C(G) 极小为 0，与 JSD 无关"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在判别器恒输出 1/2 下判断收敛宣布的前提是否成立",
+          "reasoningGoal": "先判断该宣布的前提（最优解与极小值）是否满足；再逐项验证各主张；并排除「恒输出即崩溃」等不成立描述。"
+        },
+        "generatedAt": 1788874684730,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bc1b674c",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-af39eaf0",
+        "sourceSnapshot": {
+          "id": "gan-optimal-discriminator-canonical",
+          "topic": "gan",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "gan",
+            "deep-learning",
+            "probability-theory"
+          ],
+          "question": "给定固定生成器 G 及其诱导的概率分布 pg，理论分析 GAN 判别器 D 在无约束函数空间下的最优解 D*_G(x) 及此状态下的博弈优化目标 C(G)，下列哪些推导结论是准确的？",
+          "options": [
+            "在生成器 G 固定的情况下，最优判别器为 D*_G(x) = pdata(x) / (pdata(x) + pg(x))。",
+            "当生成分布完美重构真实分布（pg = pdata）时，最优判别器在全域输出固定值 D*_G(x) = 1/2。",
+            "代入最优判别器后 C(G) 化简为 -log(4)+2·JSD，pg=pdata 时取极小。",
+            "当生成分布与真实分布重合时 C(G) 取全局极小值 0，与 JSD 无关。"
+          ]
+        }
+      }
+    ],
+    "infer-prefill-01": [
+      {
+        "id": "infer-prefill-01__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某系统加算力后 TPS 纹丝不动，TTFT 却降了。定位这次归因错误，下列哪些判断成立？",
+        "options": [
+          "Prefill 并行吃算力，属算力受限阶段",
+          "Decode 每步读全权重产一 Token，属带宽受限阶段",
+          "TTFT 由 Decode 定，TPS 由 Prefill 定",
+          "提高算力显著缩短 TTFT，提升带宽更助 TPS"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从加算力只降 TTFT 的现象定位阶段归因环节",
+          "reasoningGoal": "先定位错误的环节（瓶颈、指标两类）；再逐项验证各判断；并排除「TTFT 看 Decode」等不成立描述。"
+        },
+        "generatedAt": 1788874684731,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ad5fc7ad",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-ff37888e",
+        "sourceSnapshot": {
+          "id": "infer-prefill-01",
+          "topic": "inference-modes",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prefill",
+            "decode",
+            "compute-bound",
+            "memory-bandwidth"
+          ],
+          "question": "在大语言模型（LLM）推理系统中，请求处理分为 Prefill（前缀填充/首 Token 生成）与 Decode（逐 Token 解码）两个阶段。针对这两个阶段的硬件瓶颈与性能评价指标，下列说法正确的有？（多选）",
+          "options": [
+            "Prefill 阶段并行处理输入的 Prompt 序列，计算量集中在 GPU 的算力单元，属于算力受限（Compute-bound）阶段",
+            "Decode 阶段每次前向传播仅生成一个 Token，主要耗时在于重复从显存读取模型权重，属于内存带宽受限（Memory-bandwidth-bound）阶段",
+            "TTFT（Time to First Token，首 Token 延迟）主要由 Decode 阶段的耗时决定，而 TPS（Tokens Per Second）主要由 Prefill 阶段决定",
+            "提高 GPU 浮点算力（TFLOPS）能够显著缩短 TTFT；而提升显存带宽（如使用 HBM）对提高 Decode 阶段的 TPS 帮助更大"
+          ]
+        }
+      },
+      {
+        "id": "infer-prefill-01__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "把 Prefill 与 Decode 放在瓶颈与指标上对比，根本差异是什么？",
+        "options": [
+          "Prefill 并行处理 Prompt，算力密集",
+          "Decode 每次前向只产一 Token，耗时在重复读权重，属带宽受限",
+          "TTFT 由 Decode 定，TPS 由 Prefill 定",
+          "提高浮点算力显著缩短 TTFT，提升显存带宽更助 TPS"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从瓶颈与指标对比两阶段的根本差异",
+          "reasoningGoal": "先对齐两阶段的可比维度；再逐项判定各主张成立与否；并排除「TTFT 看 Decode」等不成立描述。"
+        },
+        "generatedAt": 1788874684731,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ad5fc7ad",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-db875740",
+        "sourceSnapshot": {
+          "id": "infer-prefill-01",
+          "topic": "inference-modes",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prefill",
+            "decode",
+            "compute-bound",
+            "memory-bandwidth"
+          ],
+          "question": "在大语言模型（LLM）推理系统中，请求处理分为 Prefill（前缀填充/首 Token 生成）与 Decode（逐 Token 解码）两个阶段。针对这两个阶段的硬件瓶颈与性能评价指标，下列说法正确的有？（多选）",
+          "options": [
+            "Prefill 阶段并行处理输入的 Prompt 序列，计算量集中在 GPU 的算力单元，属于算力受限（Compute-bound）阶段",
+            "Decode 阶段每次前向传播仅生成一个 Token，主要耗时在于重复从显存读取模型权重，属于内存带宽受限（Memory-bandwidth-bound）阶段",
+            "TTFT（Time to First Token，首 Token 延迟）主要由 Decode 阶段的耗时决定，而 TPS（Tokens Per Second）主要由 Prefill 阶段决定",
+            "提高 GPU 浮点算力（TFLOPS）能够显著缩短 TTFT；而提升显存带宽（如使用 HBM）对提高 Decode 阶段的 TPS 帮助更大"
+          ]
+        }
+      }
+    ],
+    "q-kd-specialist-c": [
+      {
+        "id": "q-kd-specialist-c__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某 Specialist 没做 Logit 修正，推理系统性偏向专精类。定位这次遗漏，下列哪些判断成立？",
+        "options": [
+          "Generalist 预测协方差上跑聚类，划出易混淆专精类别集",
+          "非专精类别合并归为单一 Dustbin，显著缩小 Softmax 输出维度",
+          "专精类过采样到 50%，推理须加 log 修正 Dustbin",
+          "Dustbin 概率近 1 即不在专精域，可据此衰减融合"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从没做修正致系统性偏向的遗漏定位校正环节",
+          "reasoningGoal": "先定位遗漏的环节（聚类、打包、修正三类）；再逐项验证各判断；并排除与机制不符的描述。"
+        },
+        "generatedAt": 1788874684731,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2ad51cd6",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-a5e9466f",
+        "sourceSnapshot": {
+          "id": "q-kd-specialist-c",
+          "topic": "kd-specialist-ensemble-dustbin-correction",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "Specialist Models",
+            "Dustbin Class",
+            "Logit Adjustment",
+            "海量类别"
+          ],
+          "question": "在海量分类任务（如上万种类别）中，为了降低大模型 Ensembles 的训练与推理开销，可以构建由通用模型（Generalist）和多个专家模型（Specialists）组成的分布式混合架构。关于 Specialist 模型的构建、训练及推理校正机制，下列哪些说法是正确的？",
+          "options": [
+            "可以在通用模型（Generalist）预测输出的协方差矩阵上运行聚类算法（如 K-means），将经常被同时混淆预测的类别聚类为特定专家模型（Specialist）的专精类别集。",
+            "为降低 Specialist 的计算开销，可以将该 Specialist 不关心的所有非专精类别合并归类为单一的‘垃圾桶类别’（Dustbin Class），显著缩小其 Softmax 输出维度。",
+            "由于 Specialist 训练集中专精类别被大幅过采样（如占比达到 50%），在推理阶段必须对 Dustbin Class 的 Logit 增加过采样比例的对数值（$\\log r_{\\text{oversample}}$）以矫正训练偏置。",
+            "若 Specialist 模型对某样本输出的 Dustbin Class 预测概率极高，表明该样本大概率不属于该 Specialist 的专精范畴，可以据此实现高效的推理融合与决策衰减。"
+          ]
+        }
+      },
+      {
+        "id": "q-kd-specialist-c__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "要在上万类任务上省 ensemble 开销，设计 Generalist 加 Specialist 混合架构。下列哪些应当纳入？",
+        "options": [
+          "Generalist 输出协方差矩阵聚类，混淆类别划给 Specialist",
+          "不关心的非专精类全并入 Dustbin Class，输出维度显著缩小",
+          "专精类过采样到 50%，推理须给 Dustbin 加 log 修正先验",
+          "Specialist 输出 Dustbin 概率近 1 即不在专精范畴，融合时衰减该路"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为上万类任务设计省开销的混合架构",
+          "reasoningGoal": "先拆出架构设计的目标与约束（开销与校正）；再逐项确认各设计；并排除与机制不符的描述。"
+        },
+        "generatedAt": 1788874684731,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2ad51cd6",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-0c19e24f",
+        "sourceSnapshot": {
+          "id": "q-kd-specialist-c",
+          "topic": "kd-specialist-ensemble-dustbin-correction",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "Specialist Models",
+            "Dustbin Class",
+            "Logit Adjustment",
+            "海量类别"
+          ],
+          "question": "在海量分类任务（如上万种类别）中，为了降低大模型 Ensembles 的训练与推理开销，可以构建由通用模型（Generalist）和多个专家模型（Specialists）组成的分布式混合架构。关于 Specialist 模型的构建、训练及推理校正机制，下列哪些说法是正确的？",
+          "options": [
+            "可以在通用模型（Generalist）预测输出的协方差矩阵上运行聚类算法（如 K-means），将经常被同时混淆预测的类别聚类为特定专家模型（Specialist）的专精类别集。",
+            "为降低 Specialist 的计算开销，可以将该 Specialist 不关心的所有非专精类别合并归类为单一的‘垃圾桶类别’（Dustbin Class），显著缩小其 Softmax 输出维度。",
+            "由于 Specialist 训练集中专精类别被大幅过采样（如占比达到 50%），在推理阶段必须对 Dustbin Class 的 Logit 增加过采样比例的对数值（$\\log r_{\\text{oversample}}$）以矫正训练偏置。",
+            "若 Specialist 模型对某样本输出的 Dustbin Class 预测概率极高，表明该样本大概率不属于该 Specialist 的专精范畴，可以据此实现高效的推理融合与决策衰减。"
+          ]
+        }
+      }
+    ],
+    "llm-arch-yarn-01": [
+      {
+        "id": "llm-arch-yarn-01__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某 256K 模型线性 RoPE 缩放后，短文本 PPL 爆炸。定位这次退化，下列哪些判断成立？",
+        "options": [
+          "YaRN 分频缩放：高频保细节，低频做外推",
+          "温度校正压住上下文骤长后的熵崩",
+          "短长兼顾：线性缩放的短文本退化被修复",
+          "低频换绝对可学习嵌入，注意力衰减根除"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从线性缩放后短文本爆炸的退化定位外推环节",
+          "reasoningGoal": "先定位退化的环节（分频、温度两类）；再逐项验证各判断；并排除「换绝对嵌入」等不成立描述。"
+        },
+        "generatedAt": 1788874684732,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f0f651f0",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-49622128",
+        "sourceSnapshot": {
+          "id": "llm-arch-yarn-01",
+          "topic": "rope",
+          "subtopic": "YaRN RoPE 外推",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "yarn",
+            "rope",
+            "long-context",
+            "extrapolation",
+            "softmax-temperature",
+            "mechanism"
+          ],
+          "question": "当需把原生支持长上下文（如 256K Token）的模型继续外推至超长上下文（如 1M Token）且不密集微调时，通常采用 YaRN（Yet another RoPE Extension）。关于 YaRN 的工作原理与优势，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "YaRN 对 RoPE 的不同频率维度实施非均匀缩放，在保留高频细节分辨率的同时对低频进行平滑外推",
+            "YaRN 引入注意力 Softmax 温度校正因子，以缓解上下文大幅延长时注意力分布过于平坦引发的熵崩溃",
+            "YaRN 避免了传统线性 RoPE 缩放导致模型在短上下文性能严重退化的缺陷，具备良好的短长距离兼容性",
+            "YaRN 通过将低频位置编码完全替换为绝对可学习位置嵌入，彻底消除了超长文本场景下的注意力衰减"
+          ]
+        }
+      },
+      {
+        "id": "llm-arch-yarn-01__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "某 256K 原生模型要外推到 1M 长度，且不做密集微调。评审 YaRN 方案的前提，下列哪些判断正确？",
+        "options": [
+          "非均匀缩放：高频少动保细节，低频多缩做外推",
+          "引入 Softmax 温度校正因子，缓解上下文延长致分布趋平",
+          "YaRN 下短文本 PPL 不爆炸，长短距离兼容性好",
+          "低频改绝对可学习位置嵌入，注意力衰减根除"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在 256K 到 1M 免微调外推下判断 YaRN 方案的前提是否成立",
+          "reasoningGoal": "先判断该方案的前提（分频与温度）是否满足；再逐项验证各主张；并排除「换绝对嵌入」等不成立描述。"
+        },
+        "generatedAt": 1788874684732,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f0f651f0",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-20858be4",
+        "sourceSnapshot": {
+          "id": "llm-arch-yarn-01",
+          "topic": "rope",
+          "subtopic": "YaRN RoPE 外推",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "yarn",
+            "rope",
+            "long-context",
+            "extrapolation",
+            "softmax-temperature",
+            "mechanism"
+          ],
+          "question": "当需把原生支持长上下文（如 256K Token）的模型继续外推至超长上下文（如 1M Token）且不密集微调时，通常采用 YaRN（Yet another RoPE Extension）。关于 YaRN 的工作原理与优势，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "YaRN 对 RoPE 的不同频率维度实施非均匀缩放，在保留高频细节分辨率的同时对低频进行平滑外推",
+            "YaRN 引入注意力 Softmax 温度校正因子，以缓解上下文大幅延长时注意力分布过于平坦引发的熵崩溃",
+            "YaRN 避免了传统线性 RoPE 缩放导致模型在短上下文性能严重退化的缺陷，具备良好的短长距离兼容性",
+            "YaRN 通过将低频位置编码完全替换为绝对可学习位置嵌入，彻底消除了超长文本场景下的注意力衰减"
+          ]
+        }
+      }
+    ],
+    "chinchilla-overtrain-01": [
+      {
+        "id": "chinchilla-overtrain-01__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某团队严格按 1:20 配比训出大模型，上线后推理账单爆炸。定位这次错配，下列哪些判断成立？",
+        "options": [
+          "1:20 只优固定算力下训练 Loss，推理成本不在目标函数里",
+          "Serving 成本按请求累加，长期远超一次性预训练投入",
+          "小模型加数万亿 token 过训，换推理便宜低延迟",
+          "过训可消除小模型推理与泛化的全部限制"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从按 1:20 训后推理爆炸的错配定位目标函数环节",
+          "reasoningGoal": "先定位错配的环节（目标、成本两类）；再逐项验证各判断；并排除「过训消除一切」等不成立描述。"
+        },
+        "generatedAt": 1788874684732,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d3ed8e17",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-c5356e3c",
+        "sourceSnapshot": {
+          "id": "chinchilla-overtrain-01",
+          "topic": "scaling-law",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "chinchilla",
+            "scaling-law",
+            "overtraining",
+            "inference-economics"
+          ],
+          "question": "根据 DeepMind 提出的 Chinchilla Scaling Law，在给定的训练 Compute 预算下，模型参数量与训练 Token 数的 Compute-Optimal 比例约为 1:20。然而，现代轻量级端侧模型（如 3B 参数模型）通常会使用数万亿（Trillions）Token 进行过度训练（Overtraining）。关于这一工程决策的经济与技术考量，下列说法正确的有？（多选）",
+          "options": [
+            "Chinchilla Optimal 仅以“在固定预训练算力预算下最小化训练 Loss”为优化目标，未将上线后按请求计费的推理（Inference）成本纳入目标函数",
+            "对于高频调用的生产级应用，模型的 Serving 成本属于按请求累加的长期 Recurring Cost，规模化后远超一次性的 Pretraining Cost",
+            "对小参数模型进行过度训练，是以增加一次性 Pretraining Cost 为代价，换取更小模型在推理部署时的高精度与低延迟/低 Serving 成本",
+            "过度训练可以完全消除小模型在长链条多步推理（Multi-step reasoning）与分布外泛化（Out-of-distribution）上的性能限制"
+          ]
+        }
+      },
+      {
+        "id": "chinchilla-overtrain-01__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "把 1:20 训练最优与推理最优放在目标函数上对比，根本差异是什么？",
+        "options": [
+          "前者只看固定算力下训练 Loss，不管上线计费",
+          "后者看请求累加的长期成本，规模化超预训练",
+          "过训多花一次性算力，换小模型推理便宜低延迟",
+          "过训后小模型长链推理与泛化限制消失"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从目标函数对比两种最优的根本差异",
+          "reasoningGoal": "先对齐两种最优的可比维度；再逐项判定各主张成立与否；并排除「限制消失」等不成立描述。"
+        },
+        "generatedAt": 1788874684732,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d3ed8e17",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-99c08b42",
+        "sourceSnapshot": {
+          "id": "chinchilla-overtrain-01",
+          "topic": "scaling-law",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "chinchilla",
+            "scaling-law",
+            "overtraining",
+            "inference-economics"
+          ],
+          "question": "根据 DeepMind 提出的 Chinchilla Scaling Law，在给定的训练 Compute 预算下，模型参数量与训练 Token 数的 Compute-Optimal 比例约为 1:20。然而，现代轻量级端侧模型（如 3B 参数模型）通常会使用数万亿（Trillions）Token 进行过度训练（Overtraining）。关于这一工程决策的经济与技术考量，下列说法正确的有？（多选）",
+          "options": [
+            "Chinchilla Optimal 仅以“在固定预训练算力预算下最小化训练 Loss”为优化目标，未将上线后按请求计费的推理（Inference）成本纳入目标函数",
+            "对于高频调用的生产级应用，模型的 Serving 成本属于按请求累加的长期 Recurring Cost，规模化后远超一次性的 Pretraining Cost",
+            "对小参数模型进行过度训练，是以增加一次性 Pretraining Cost 为代价，换取更小模型在推理部署时的高精度与低延迟/低 Serving 成本",
+            "过度训练可以完全消除小模型在长链条多步推理（Multi-step reasoning）与分布外泛化（Out-of-distribution）上的性能限制"
+          ]
+        }
+      }
+    ],
+    "dpo-01": [
+      {
+        "id": "dpo-01__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某 DPO 训练后奖励作弊依旧，团队坚称无采样即无作弊。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "DPO 免显式奖励与 PPO 采样，显存系统双降",
+          "奖励没消失，只是隐式嵌进策略自身分布",
+          "损失提升胜者 y_w 相对概率，压低败者 y_l",
+          "无强化采样循环，原理上根除奖励作弊"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从无采样仍作弊的误判定位偏好优化环节",
+          "reasoningGoal": "先定位误判的环节（奖励存在形式、作弊两类）；再逐项验证各判断；并排除「无采样即无作弊」等不成立描述。"
+        },
+        "generatedAt": 1788874684733,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-aa822474",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-98e4f592",
+        "sourceSnapshot": {
+          "id": "dpo-01",
+          "topic": "dpo",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "dpo",
+            "implicit-reward",
+            "pairwise",
+            "ppo-free"
+          ],
+          "question": "DPO（Direct Preference Optimization）将 RLHF 中的显式奖励函数表达为策略模型与参考模型输出概率的比值，从而将强化学习过程转化为在偏好数据对（胜者 y_w 与败者 y_l）上的直接优化。关于 DPO 的工程权衡与底层原理，以下哪些选项是正确的？（多选）",
+          "options": [
+            "DPO 无需训练独立的显式奖励模型（Reward Model），也不需要运行 PPO 采样循环，大幅降低了训练显存与系统复杂度",
+            "DPO 实际上并未消除奖励信号，而是将奖励函数隐式地嵌入到了策略模型自身的参数分布中",
+            "DPO 的损失函数通过提升策略模型生成胜者 y_w 的相对概率、同时降低生成败者 y_l 的相对概率来进行参数更新",
+            "由于 DPO 摒弃了强化学习采样循环，因此它从原理上彻底避免了对偏好信号的“奖励作弊/过度优化”（Reward Hacking）"
+          ]
+        }
+      },
+      {
+        "id": "dpo-01__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "把显式奖励模型与隐式嵌入奖励放在存在形式上对比，根本差异是什么？",
+        "options": [
+          "DPO 免独立显式奖励模型与 PPO 采样循环，显存系统双降",
+          "DPO 并未消除奖励信号，而是隐式嵌入策略自身参数分布",
+          "损失提升胜者相对概率、压低败者，参数跟着走",
+          "DPO 摒弃采样循环，从原理上避免奖励作弊"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从存在形式对比两种奖励的根本差异",
+          "reasoningGoal": "先对齐两种奖励的可比维度；再逐项判定各主张成立与否；并排除「原理免疫」等不成立描述。"
+        },
+        "generatedAt": 1788874684733,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-aa822474",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-62ff81a1",
+        "sourceSnapshot": {
+          "id": "dpo-01",
+          "topic": "dpo",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "dpo",
+            "implicit-reward",
+            "pairwise",
+            "ppo-free"
+          ],
+          "question": "DPO（Direct Preference Optimization）将 RLHF 中的显式奖励函数表达为策略模型与参考模型输出概率的比值，从而将强化学习过程转化为在偏好数据对（胜者 y_w 与败者 y_l）上的直接优化。关于 DPO 的工程权衡与底层原理，以下哪些选项是正确的？（多选）",
+          "options": [
+            "DPO 无需训练独立的显式奖励模型（Reward Model），也不需要运行 PPO 采样循环，大幅降低了训练显存与系统复杂度",
+            "DPO 实际上并未消除奖励信号，而是将奖励函数隐式地嵌入到了策略模型自身的参数分布中",
+            "DPO 的损失函数通过提升策略模型生成胜者 y_w 的相对概率、同时降低生成败者 y_l 的相对概率来进行参数更新",
+            "由于 DPO 摒弃了强化学习采样循环，因此它从原理上彻底避免了对偏好信号的“奖励作弊/过度优化”（Reward Hacking）"
+          ]
+        }
+      }
+    ],
+    "vit_cls_token_representation_canonical": [
+      {
+        "id": "vit_cls_token_representation_canonical__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某实现拿左上角第一个 Patch 输出做分类。评审这一做法的前提，下列哪些判断正确？",
+        "options": [
+          "CLS 经多层交互聚合全局上下文，无位置偏置",
+          "独立 CLS 免掉特定位置 Patch 的权重偏爱",
+          "CLS 输入前同样加可学习位置编码",
+          "CLS 全程冻结，仅作静态中转占位符"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断拿固定位置 Patch 做分类做法的前提是否成立",
+          "reasoningGoal": "先判断该做法的前提（位置偏置）是否满足；再逐项验证各主张；并排除「冻结占位」等不成立描述。"
+        },
+        "generatedAt": 1788874684733,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cff626e0",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-8c8d4407",
+        "sourceSnapshot": {
+          "id": "vit_cls_token_representation_canonical",
+          "topic": "vit-cls-token-representation",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Vision Transformer",
+            "Class Token",
+            "Architecture",
+            "Representation"
+          ],
+          "question": "ViT 借鉴了 NLP 中 BERT 的设计，在输入的图像 Patch Embedding 序列开头拼接了一个可学习的分类 Token（[CLS] Token）。关于 [CLS] Token 的作用机制与设计逻辑，以下哪些判断是正确的？",
+          "options": [
+            "在经过多层 Transformer 编码器的 Self-Attention 交互后，输出端 [CLS] Token 对应的向量能够无偏地聚合来自所有图像 Patch 的全局上下文信息。",
+            "使用独立的 [CLS] Token 作为分类头（Classification Head）的输入，可以避免模型人为偏向或赋予某一个特定物理位置 Patch 更多的分类权重。",
+            "在 Transformer 编码器的第一层输入前，[CLS] Token 同样需要加算对应的可学习位置编码（Position Embedding）。",
+            "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
+          ]
+        }
+      },
+      {
+        "id": "vit_cls_token_representation_canonical__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "某 ViT 把 [CLS] 冻结成静态占位符，分类头训不动。定位这次冻结失误，下列哪些判断成立？",
+        "options": [
+          "多层交互后 CLS 输出向量无偏聚合全 Patch 全局上下文",
+          "独立 CLS 做分类头输入，不偏爱特定位置 Patch 的权重",
+          "CLS 也要加位置编码，与 Patch 一视同仁",
+          "CLS 全程冻结不变，仅作静态中转占位符"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从冻结 CLS 致分类不收敛的失误定位可学习环节",
+          "reasoningGoal": "先定位失误的环节（交互、偏置、编码三类）；再逐项验证各判断；并排除「冻结最稳」等不成立描述。"
+        },
+        "generatedAt": 1788874684733,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cff626e0",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-ea6de10e",
+        "sourceSnapshot": {
+          "id": "vit_cls_token_representation_canonical",
+          "topic": "vit-cls-token-representation",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Vision Transformer",
+            "Class Token",
+            "Architecture",
+            "Representation"
+          ],
+          "question": "ViT 借鉴了 NLP 中 BERT 的设计，在输入的图像 Patch Embedding 序列开头拼接了一个可学习的分类 Token（[CLS] Token）。关于 [CLS] Token 的作用机制与设计逻辑，以下哪些判断是正确的？",
+          "options": [
+            "在经过多层 Transformer 编码器的 Self-Attention 交互后，输出端 [CLS] Token 对应的向量能够无偏地聚合来自所有图像 Patch 的全局上下文信息。",
+            "使用独立的 [CLS] Token 作为分类头（Classification Head）的输入，可以避免模型人为偏向或赋予某一个特定物理位置 Patch 更多的分类权重。",
+            "在 Transformer 编码器的第一层输入前，[CLS] Token 同样需要加算对应的可学习位置编码（Position Embedding）。",
+            "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
+          ]
+        }
+      }
+    ],
+    "cnn-01": [
+      {
+        "id": "cnn-01__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某团队用全连接替换卷积，参数爆炸且平移稍动就错。定位这次替换失误，下列哪些判断成立？",
+        "options": [
+          "局部感知加权值共享：平移不变层次提取，池化扩感受野",
+          "全连接全局融合更通用，信息交互拉满",
+          "增加参数量 brute-force 记忆精确位置，参数越大拟合越准",
+          "随机丢卷积核即隐式集成，比池化更保位置"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从全连接替换卷积爆炸的失误定位结构环节",
+          "reasoningGoal": "先定位失误的环节（连接、参数两类）；再逐项验证各判断；并排除「全连接更通用」「堆参最优」「丢核更好」等不成立描述。"
+        },
+        "generatedAt": 1788874684733,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0adf7b1b",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-0ce7f55a",
+        "sourceSnapshot": {
+          "id": "cnn-01",
+          "topic": "cnn",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "cnn",
+            "convolution",
+            "pooling",
+            "receptive-field"
+          ],
+          "question": "在卷积神经网络（CNN）中，卷积层的“局部连接 + 权值共享”与池化层共同实现了什么核心能力？",
+          "options": [
+            "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性",
+            "通过全连接实现全局特征融合，使每个神经元感知整张图像的所有像素，因为全连接能最大化信息交互，是比卷积更通用的特征提取方式",
+            "通过增加参数量来 brute-force 记忆训练集中所有图像的精确位置，因为参数量越大模型越能精确拟合每个像素的对应关系",
+            "通过随机丢弃卷积核来防止过拟合，与池化无关，因为丢弃部分卷积核等价于隐式集成，比显式的池化操作更能保留位置敏感信息"
+          ]
+        }
+      },
+      {
+        "id": "cnn-01__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "有人主张靠堆参数记住每个像素位置做特征提取。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "卷积靠局部共享实现平移不变，池化扩野增强不变性",
+          "全连接全局融合，每神经元感知整图所有像素，交互拉满最通用",
+          "增加参数量 brute-force 记忆位置，越大拟合越准泛化越好",
+          "丢弃卷积核等价集成，比池化更保位置"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断堆参数记位置主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（泛化与结构）是否满足；再逐项验证各主张；并排除「全连接通用」「堆参泛化」「丢核更保」等不成立描述。"
+        },
+        "generatedAt": 1788874684734,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0adf7b1b",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-0726292b",
+        "sourceSnapshot": {
+          "id": "cnn-01",
+          "topic": "cnn",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "cnn",
+            "convolution",
+            "pooling",
+            "receptive-field"
+          ],
+          "question": "在卷积神经网络（CNN）中，卷积层的“局部连接 + 权值共享”与池化层共同实现了什么核心能力？",
+          "options": [
+            "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性",
+            "通过全连接实现全局特征融合，使每个神经元感知整张图像的所有像素，因为全连接能最大化信息交互，是比卷积更通用的特征提取方式",
+            "通过增加参数量来 brute-force 记忆训练集中所有图像的精确位置，因为参数量越大模型越能精确拟合每个像素的对应关系",
+            "通过随机丢弃卷积核来防止过拟合，与池化无关，因为丢弃部分卷积核等价于隐式集成，比显式的池化操作更能保留位置敏感信息"
+          ]
+        }
+      }
+    ],
+    "dl-01": [
+      {
+        "id": "dl-01__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某深网用 Sigmoid，梯度传几层就没了。定位这次消失，下列哪些判断成立？",
+        "options": [
+          "Sigmoid 输出 0 到 1，概率解释最方便",
+          "缓解梯度消失，计算只是阈值判断",
+          "ReLU 必收敛全局最优",
+          "ReLU 自带归一化，输入自动标准化"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 Sigmoid 深网梯度消失的故障定位激活环节",
+          "reasoningGoal": "先定位故障的环节（梯度、计算两类）；再逐项验证各判断；并排除「0 到 1」「必全局最优」「自带归一化」等不成立描述。"
+        },
+        "generatedAt": 1788874684734,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-987e2a19",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-80d0b811",
+        "sourceSnapshot": {
+          "id": "dl-01",
+          "topic": "activation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "relu",
+            "activation",
+            "gradient"
+          ],
+          "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
+          "options": [
+            "输出范围在 0 到 1 之间，便于概率解释",
+            "缓解梯度消失问题，计算简单",
+            "一定能保证模型收敛到全局最优",
+            "对输入做了归一化处理"
+          ]
+        }
+      },
+      {
+        "id": "dl-01__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "把 ReLU 与 Sigmoid 放在梯度特性与计算代价上对比，根本差异是什么？",
+        "options": [
+          "Sigmoid 输出限 0 到 1，概率意义明确",
+          "ReLU 正区间梯度为 1，算得快且不消失",
+          "ReLU 保证全局最优",
+          "ReLU 对输入做了归一化处理"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从梯度与代价对比两种激活的根本差异",
+          "reasoningGoal": "先对齐两种激活的可比维度；再逐项判定各主张成立与否；并排除「0 到 1」「必最优」「附带归一化」等不成立描述。"
+        },
+        "generatedAt": 1788874684734,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-987e2a19",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-38c3cc90",
+        "sourceSnapshot": {
+          "id": "dl-01",
+          "topic": "activation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "relu",
+            "activation",
+            "gradient"
+          ],
+          "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
+          "options": [
+            "输出范围在 0 到 1 之间，便于概率解释",
+            "缓解梯度消失问题，计算简单",
+            "一定能保证模型收敛到全局最优",
+            "对输入做了归一化处理"
+          ]
+        }
+      }
+    ],
+    "dl-07": [
+      {
+        "id": "dl-07__surface-options__assessmentfresh9__0",
+        "kind": "surface-options",
+        "question": "某流式训练用 Total Variation 做损失，p_i 分母未知训不动。定位这次选型失误，下列哪些判断成立？",
+        "options": [
+          "L 对预测分布 q 须严格凸，否则不可采样",
+          "L 对目标分布 p 须线性，才能写成期望采样",
+          "L 在 p=q 处二阶导矩阵须正定才保证可估",
+          "必须 Softmax 归一化，否则采不了样"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 TV 损失训不动的失误定位可估性环节",
+          "reasoningGoal": "先定位失误的环节（线性、凸性两类）；再逐项验证各判断；并排除「须对 q 凸」「须正定」「须 Softmax」等不成立描述。"
+        },
+        "generatedAt": 1788874684734,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f73df39d",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-c99f4329",
+        "sourceSnapshot": {
+          "id": "dl-07",
+          "topic": "cross-entropy",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "lm-loss",
+            "sampling-estimation",
+            "streaming-training",
+            "linearity"
+          ],
+          "question": "在 LLM 流式预训练中，真实目标分布 p 无法预先统计（语料以采样形式到达）。若希望损失 L(p,q) 能通过采样估计（即写成 E_{i~p}[S(q,i)] 的形式），L 对 p 需满足什么数学约束？",
+          "options": [
+            "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
+            "L(p, q) 关于目标分布 p 必须满足线性（Linear）约束",
+            "L(p, q) 在 p = q 处的二阶导数矩阵必须正定",
+            "预测概率分布 q 必须采用 Softmax 函数进行归一化"
+          ]
+        }
+      },
+      {
+        "id": "dl-07__context-options__assessmentfresh9__1",
+        "kind": "context-options",
+        "question": "有人主张损失对 q 严格凸即可流式估计。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "q 严格凸即满足采样条件",
+          "L 对目标分布 p 须线性约束",
+          "p=q 处二阶导数矩阵正定，可估性得保",
+          "预测分布 q 须用 Softmax 归一化"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 q 凸即可流式估计主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（线性条件）是否满足；再逐项验证各主张；并排除「q 凸即可」「正定即可」「Softmax 必要」等不成立描述。"
+        },
+        "generatedAt": 1788874684735,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f73df39d",
+        "batch": "assessmentfresh9",
+        "model": "manual",
+        "contentHash": "fnv1a-142d9e3b",
+        "sourceSnapshot": {
+          "id": "dl-07",
+          "topic": "cross-entropy",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "lm-loss",
+            "sampling-estimation",
+            "streaming-training",
+            "linearity"
+          ],
+          "question": "在 LLM 流式预训练中，真实目标分布 p 无法预先统计（语料以采样形式到达）。若希望损失 L(p,q) 能通过采样估计（即写成 E_{i~p}[S(q,i)] 的形式），L 对 p 需满足什么数学约束？",
+          "options": [
+            "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
+            "L(p, q) 关于目标分布 p 必须满足线性（Linear）约束",
+            "L(p, q) 在 p = q 处的二阶导数矩阵必须正定",
+            "预测概率分布 q 必须采用 Softmax 函数进行归一化"
+          ]
+        }
+      }
+    ]
+  }
+}

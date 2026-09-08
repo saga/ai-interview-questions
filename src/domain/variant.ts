@@ -12,7 +12,7 @@ import type { VariantKind } from '../schemas/variant';
 import { requiredPointsFor } from './knowledge/nodes';
 import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
 import { detectOptionLengthBias } from './bias';
-import { cjkDice } from './textSimilarity';
+import { cjkDice, cjkTokenize } from './textSimilarity';
 import {
   isAssessmentIdentical,
   type ReasoningPath,
@@ -583,7 +583,10 @@ export function checkOfflineDifficultyDrivers(
     const distractorTerms = new Set(distractors.flatMap(latinTerms));
     const canonStemTerms = new Set(latinTerms(cStem));
     // topic / tags 自带词出现在题干是正常的（锚定主题），不算泄题暗示。
-    const themeTerms = new Set(latinTerms(`${canonical.topic} ${(canonical.tags ?? []).join(' ')}`));
+    // 注意用 cjkTokenize（kebab-case 拆词）而非 latinTerms：后者把
+    // "agent-fundamentals" 当成一个整词，导致其中的 "agent" 无法命中排除集
+    // （实测误报：题干用 Agent 即被判 extra-hint，2026-09-08）。
+    const themeTerms = new Set(cjkTokenize(`${canonical.topic} ${(canonical.tags ?? []).join(' ')}`));
     const hintTerms = [...new Set(correct.flatMap(latinTerms))].filter(
       (t) =>
         !distractorTerms.has(t) &&

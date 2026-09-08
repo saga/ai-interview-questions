@@ -1,6 +1,17 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-08 · 覆盖扩张 20 条（`assessment.fresh9-20-20260908.json`，覆盖 170→180 题）
+
+- 10 道训练与架构未覆盖题 × 2 条（GAN/推理模式/蒸馏专家/RoPE/缩放律/DPO/ViT-CLS/CNN/激活/交叉熵），
+  全部自声明三段式测量面。
+- 门禁实证（续）：初稿 11/20 被拒，11 轮收敛；本批有一处 extra-hint 误报模式值得记录——
+  `gan` 题干用 pdata 触发（pdata 只在正确项出现，原题干确实没有），修法是题干改称"两分布"；
+  这说明 extra-hint 对"题干复述正确项术语"的场景零容忍，起草题干时应主动与正确项拉开术语距离。
+- 池指标：344→**364** 条，覆盖 170→**180** 题（13.2%），assessment 自声明 85.5%→**86.3%**，
+  路径唯一率同步 **86.3%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 881/881；`typecheck` + `build` 通过。
+
 ## 2026-09-08 · 覆盖扩张 20 条（`assessment.fresh8-20-20260908.json`，覆盖 160→170 题）
 
 - 10 道基础与安全未覆盖题 × 2 条（微调/对齐/提示注入/实时交互/任务型 AI/反传/Dropout/Softmax/正则/梯度下降），
@@ -25,6 +36,22 @@
   路径唯一率同步 **84.6%**，疑似同路径保持 **0**。
   （同期外部并行入库 8 题，canonical 1357→1365。）
 - 回归：`validate-variants` 全阻断项 0；`npm test` 881/881；`typecheck` + `build` 通过。
+
+## 2026-09-08 · 外部 MoE 题目入库（`src/data/questions/moe-shazeer-2017.json`，1365→1371 题）
+
+- 外部投递的 6 道 Sparsely-Gated MoE 题（Shazeer et al. 2017, arXiv 1701.06538）同为异构 schema，
+  按本库 schema 改写后新建文件落盘；`variantOf` 语义映射为 `derivedFrom`（因难度/角度/认知任务均变，
+  属 fork 新 canonical 而非同 assessment contract 的变体）。
+- **内容订正 1 处**：`q-moe-distributed-canonical` 与 `q-moe-distributed-variant` 称
+  「专家计算量按 O(h²) 增长、传输量按 O(h) 增长」。论文 §3.2 的实际论述是——专家权重矩阵为
+  `input_size × h` 与 `h × output_size`，在输入/输出维度固定时**计算量随 h 线性增长、传输量与 h 无关**，
+  「计算/通信比等于隐藏层维度 h」。已按论文原文改写两题的正确项（结论不变，标度关系修正）。
+- 其余 5 题与论文一致：`−∞ → Softmax → 门控值恰为 0 → 跳过专家`；`k>1 时门控值对门控参数有非零偏导`
+  （REINFORCE 是 Bengio et al. 2015 布尔门控的做法）；噪声项职责是负载均衡；
+  单专家 batch `k·b·d/n`（提升 d 倍）；Importance=ΣG(x) 与 Load（样本件数）的区分及其反例；
+  `L_importance = w_importance · CV(Importance)²`（非 L2 正则）。
+- 门禁：`lint-bias` / `lint-length` 零命中（首轮 `moe-distributed-compute-io-01` 2.0× 长度泄题已改写）；
+  `validate:questions` 1371 题 / 124 节点；`npm test` 881/881。
 
 ## 2026-09-08 · 外部 CLIP 题目入库（`src/data/questions/multimodal.json`，1357→1365 题）
 

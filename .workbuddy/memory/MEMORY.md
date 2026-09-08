@@ -62,6 +62,15 @@
 - **外部稿的 `explanation` 不能当事实依据**。含量化断言（「A 优于 B」「无显著差异」「提升 N 倍」）
   必须先回一手来源核实。实例：CLIP 8 题稿里 2 处与论文冲突（Linear Probe 准确率反超 zero-shot；
   线性 vs 非线性投影头做过消融），都是论文从未声称的。
+- **「结论对」不代表「论据对」**：干扰项解析里的量化推导也要逐句核，不能因为最终选项字母没变就放过。
+  实例：MoE 稿说「专家计算量 O(h²)、传输量 O(h)」，论文实际是「计算量随 h 线性、传输量与 h 无关，
+  计算/通信比 = h」——结论一致、标度关系错了。
 - 落库后四门禁：`scripts/lint-bias.ts --all`、`scripts/lint-length.ts --all`、
   `scripts/validate-questions.ts`、`vitest run`。新题最常见的失败是
   **正确项全局最长**触发 strong 长度泄题；修法是拉长最短干扰项 + 压缩正确项，而不是砍内容。
+  经验值：最长/最短比压到 **≤1.7** 才安全（1.8 是阈值，卡边界易被算成 1.8×）。
+- **取 arXiv 全文**：`curl arxiv.org/pdf/...` 与 ar5iv 都超时；可用
+  `WebFetch https://arxiv.org/html/<id>v1`（带公式全文），abs 页只能拿摘要。
+  PMLR 论文走 `http://proceedings.mlr.press/...` 的 http（非 https）可下载。
+- `variantOf` 语义：若难度/角度/认知任务任一改变 ⇒ 属 fork 新 canonical，填 `derivedFrom`；
+  只有同 `topic×angle×difficulty×cognitiveTask` 的表达变换才走 `src/data/variants/`。

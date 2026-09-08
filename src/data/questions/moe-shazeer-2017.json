@@ -1,0 +1,248 @@
+[
+  {
+    "id": "moe-noisy-topk-gating-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "noisy-top-k-gating", "sparse-computation", "backpropagation"],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Noisy Top-K Gating",
+      "supporting": ["KeepTopK 稀疏截断", "条件计算（Conditional Computation）", "门控网络反向传播"]
+    },
+    "assessment": {
+      "target": "能够分析 Noisy Top-K Gating 中「高斯噪声注入 + KeepTopK 截断」这一组合如何同时实现前向计算稀疏与门控网络可导。",
+      "reasoningGoal": "先从公式拆解 G(x)=Softmax(KeepTopK(H(x),k)) 与 H(x)_i=(x·W_g)_i+StandardNormal()·Softplus((x·W_noise)_i)；再据「−∞ 经 Softmax 得 0」推出非 Top-K 专家可被跳过；最后据「k>1 时门控值对门控参数有非零偏导」判定标准反向传播可行，从而排除 REINFORCE 与「噪声用于清零梯度」两说。"
+    },
+    "question": "在 Sparsely-Gated Mixture-of-Experts (MoE) 层中，Noisy Top-K Gating 通过合并高斯噪声注入与 KeepTopK 截断算子来实现稀疏条件计算。关于该机制在前向计算稀疏性与反向传播可导性方面的原理，以下哪些说法是正确的？",
+    "explanation": "正确项：KeepTopK 把非 Top-K 的 logit 置为 −∞，Softmax 之后对应门控值恰好为 0，而 y=Σ G(x)_i E_i(x) 中门控为 0 的专家无需计算，故前向与反向都可跳过；取 k>1 时，被选中的门控值对门控网络参数存在非零偏导数，梯度可直接反传，论文明确说自己的方法与 Bengio et al. (2015) 用布尔门控 + REINFORCE 的路线不同。错误项：门控网络不需要 REINFORCE；注入可训练高斯噪声的目的（论文原文）是负载均衡，并为 Load 提供可导的平滑估计器，而非把未选中专家的梯度清零——截断梯度的是 KeepTopK 的 −∞。",
+    "source": { "materialId": "arxiv-1701.06538", "section": "2.1 Gating Network" },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KeepTopK 把非 Top-K 的 logit 置为 −∞，经 Softmax 后对应门控值恰好为 0，这些专家的前向计算可以直接跳过。",
+          "取 k>1 时，被选中的门控值对门控网络参数存在非零偏导数，梯度可正常反传，无需 REINFORCE 估计。",
+          "KeepTopK 存在离散不可导点，门控网络无法用标准梯度下降更新，必须改用 REINFORCE 策略梯度训练。",
+          "Softmax 前注入可训练高斯噪声，主要目的是把未选中专家的偏导数归零，避免其参数被错误更新。"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      },
+      "open": {
+        "referenceAnswer": "稀疏性来自 KeepTopK：非 Top-K 分量被置为 −∞，Softmax 后门控值恰为 0，这些专家在 y=Σ G(x)_i E_i(x) 中不贡献，前向与反向都能跳过。可导性来自 k>1：被选中的门控值对门控网络参数有非零偏导，整个网络用普通反向传播联合训练，不需要 REINFORCE（那是 Bengio et al. 2015 处理布尔门控的做法）。噪声项 StandardNormal()·Softplus((x·W_noise)_i) 的作用是负载均衡，并为离散的样本件数提供可导的平滑估计器。"
+      }
+    },
+    "misconceptions": [
+      "以为 KeepTopK 的离散选择使门控网络整体不可导、必须用 REINFORCE 训练；实际 k>1 时 Top-K 门控值对门控参数有非零偏导，论文用普通反向传播，REINFORCE 是 Bengio et al. (2015) 处理布尔门控的做法",
+      "以为注入可训练高斯噪声是为了把未选中专家的偏导数归零；实际噪声项的作用是负载均衡（并为 Load 提供可导的平滑估计器），切断未选中专家的是 KeepTopK 置 −∞"
+    ]
+  },
+  {
+    "id": "moe-gating-noise-removal-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "routing-collapse", "load-balancing", "gating"],
+    "difficulty": "hard",
+    "angle": "misconception",
+    "cognitiveTask": "predict",
+    "derivedFrom": "moe-noisy-topk-gating-01",
+    "concepts": {
+      "core": "Noisy Top-K Gating",
+      "supporting": ["路由塌陷（Routing Collapse）", "负载均衡", "探索与利用"]
+    },
+    "assessment": {
+      "target": "能够预测移除路由噪声（退化为纯确定性 Softmax Top-K）时，训练早期门控网络最可能出现的路由塌陷行为，并排除对可导性与稀疏性的误判。",
+      "reasoningGoal": "先认定噪声项在论文中的职责是负载均衡与提供可导的 Load 估计；再沿「谁先被选中→谁拿到更多样本与更新→谁更强→更容易再被选中」的正反馈推演富者愈富；最后分别核对可导性（由 k>1 保证，与噪声无关）与稀疏性（由 KeepTopK 保证，与噪声无关）两个干扰维度。"
+    },
+    "question": "在 Sparsely-Gated MoE 层的 Noisy Top-K Gating 中，门控 logit 由确定性线性投影 (x · W_g) 与加性高斯噪声 StandardNormal() · Softplus(x · W_noise) 组成。如果训练初期把噪声项移除（退化为纯确定性的 Softmax Top-K 门控），最可能出现什么系统行为？",
+    "explanation": "正确项：门控的可导性与稀疏性都不依赖噪声——可导性由 k>1 保证，稀疏性由 KeepTopK 置 −∞ 保证；噪声在论文中的职责是负载均衡，并为离散的样本件数提供可导的平滑估计器。移除后缺少探索，早期因初始化略占优的少数专家会持续被选中、拿到更多样本与更新而进一步变强，未被选中的专家长期拿不到梯度，最终收敛到只路由少数固定专家的塌陷解。错误项：反向传播不会因此失效；负载只会更倾斜而非自动均匀；非 Top-K 专家依旧被截断，不会全部激活。",
+    "source": { "materialId": "arxiv-1701.06538", "section": "2.1 Gating Network / Appendix A" },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "门控会持续偏好早期权重略高的少数专家，使其拿到更多样本与更新而进一步变强，多数专家因长期得不到梯度而被废弃。",
+          "门控网络将彻底丧失反向传播能力，因为移除噪声后 Top-K 算子在所有维度上的偏导数都会恒为零。",
+          "由于少了噪声扰动，各专家分到的样本件数会自动达到完全均匀，只是模型收敛速度会明显变慢。",
+          "未被选中的 n − k 个专家会在前向传播中被强行全部激活，条件计算带来的稀疏省算力优势随之消失。"
+        ],
+        "answer": [0],
+        "misconceptionMap": [null, 0, 2, 1]
+      },
+      "open": {
+        "referenceAnswer": "最可能是路由塌陷：噪声项在论文中承担负载均衡与可导 Load 估计两项职责，移除后门控退化为确定性 argmax 偏好，早期略占优的专家被反复选中→拿到更多样本与梯度→更强→更易被选中，形成正反馈；其余专家长期得不到梯度而废弃。注意两个常见误判：可导性由 k>1 的 Softmax 归一化保证，与噪声无关；稀疏性由 KeepTopK 置 −∞ 保证，移除噪声不会让 n−k 个专家被激活。"
+      }
+    },
+    "misconceptions": [
+      "以为去掉噪声会让 Top-K 完全不可导；实际可导性来自 k>1 时被选中门控值的 Softmax 归一化，与是否有噪声无关",
+      "以为稀疏度由噪声决定；实际稀疏来自 KeepTopK 把非 Top-K 置为 −∞，移除噪声不会导致未选中专家被全部激活",
+      "以为去掉噪声会自动均衡负载；实际失去探索只会加剧路由倾斜，形成富者愈富的塌陷"
+    ]
+  },
+  {
+    "id": "moe-distributed-shrinking-batch-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "distributed-training", "shrinking-batch", "parallelism"],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Shrinking Batch Problem",
+      "supporting": ["数据并行 / 模型并行混合", "计算通信比", "专家隐藏层维度"]
+    },
+    "assessment": {
+      "target": "能够根据设备数 d、单设备 batch b、专家数 n 与激活数 k，评估混合数据并行与模型并行如何缓解单专家 batch 萎缩，并判断哪些收益是真实的、哪些属于过度承诺。",
+      "reasoningGoal": "先算朴素实现下每专家约 k·b/n 个样本；再引入 d 台设备的混合并行，把各数据并行副本路由来的样本合并给驻留的专家，得到约 k·b·d/n；随后用「专家权重矩阵 input_size×h 与 h×output_size」推出计算/通信比等于隐藏层维度 h；最后核对两点反例——专家是被切分而非每台复制，且加大 d 保持的是单专家 batch 而非线性降低单设备内存与延迟。"
+    },
+    "question": "在大规模分布式 MoE 模型训练中，随着专家总数 n 增大，单个专家收到的样本 batch 会急剧缩小（Shrinking Batch Problem），跨设备通信也容易成为瓶颈。关于混合数据/模型并行策略与架构调优对该问题的解决机制，以下哪些评估是正确的？",
+    "explanation": "正确项：标准层与门控按数据并行部署、专家按模型并行切分并只保留一份，各副本路由来的样本合并后，d 台设备上每专家约收到 k·b·d/n 个样本，即相比朴素实现提升 d 倍；专家 FFN 的两个权重矩阵为 input_size×h 与 h×output_size，计算量随隐藏层维度 h 增长，而跨设备传输的是与 h 无关的输入/输出张量，故计算/通信比等于 h，增大 h 即提升计算密度。错误项：专家被切分到不同设备而非每台复制一份；加大 d 是把总 batch 做大以保持单专家 batch，论文指出单设备的内存、带宽与 step time 保持恒定，既不会线性降低激活值内存，也不会让单次矩阵乘延迟按 1/d 下降。",
+    "source": { "materialId": "arxiv-1701.06538", "section": "3.1 The Shrinking Batch Problem / 3.2 Network Bandwidth" },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "标准层与门控按数据并行部署在 d 台设备上、专家按模型并行切分并合并各副本的路由样本，每专家收到的 batch 约为 (k · b · d) / n，比朴素实现扩大 d 倍。",
+          "专家 FFN 的计算量随隐藏层维度 h 增长，而跨设备传输的输入/输出张量大小与 h 无关，因此计算量与通信量之比等于隐藏层维度 h。",
+          "混合并行之后，集群里每台 GPU 仍需要完整复制存储全部 n 个专家的参数权重，再通过 All-to-All 同步梯度。",
+          "把数据并行设备数 d 加倍，就能让单设备的激活值内存开销减半，同时使单专家的计算延迟按 1/d 比例下降。"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      },
+      "open": {
+        "referenceAnswer": "朴素实现下每专家约 k·b/n 个样本，n 一大就无法喂饱 GEMM。混合并行的解法是：标准层与门控按数据并行复制，专家按模型并行切分且每台设备只驻留一部分专家（全局只一份），把各副本路由过来的样本合并给对应专家，于是每专家约 k·b·d/n 个样本，提升 d 倍。通信侧，专家是 stationary 的，传输的是被路由样本的输入/输出张量；专家计算量随隐藏层维度 h 增长而传输量与 h 无关，计算/通信比等于 h，所以加大 h 能提升计算密度。要澄清两点：专家不是每台复制一份；加大 d 保持的是单专家 batch，单设备的内存、带宽与 step time 保持恒定，不会线性降低延迟。"
+      }
+    },
+    "misconceptions": [
+      "以为混合并行下每台设备仍完整存一份全部专家；实际专家被切分到各设备、全局只保留一份，跨设备传的是样本特征张量而非专家权重",
+      "以为增加设备数 d 能线性降低单设备激活值内存与单专家计算延迟；实际 d 的作用是保持单专家 batch 不随 n 萎缩，单设备的内存/带宽/step time 保持恒定"
+    ]
+  },
+  {
+    "id": "moe-distributed-compute-io-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "all-to-all", "compute-to-io-ratio", "bottleneck"],
+    "difficulty": "hard",
+    "angle": "architecture",
+    "cognitiveTask": "diagnose",
+    "derivedFrom": "moe-distributed-shrinking-batch-01",
+    "concepts": {
+      "core": "Compute-to-IO Ratio",
+      "supporting": ["All-to-All 通信", "专家隐藏层维度", "瓶颈定位"]
+    },
+    "assessment": {
+      "target": "能够在集群带宽与设备数固定的前提下，定位分布式 MoE 的 IO-bound 瓶颈，并从专家网络结构维度选出真正提升计算密度的调整。",
+      "reasoningGoal": "先确认瓶颈位置：专家驻留不动，跨节点传的是被路由样本的输入/输出特征张量；再据「计算/通信比等于隐藏层维度 h」判定增大 h 是唯一提高计算密度的结构性手段；最后逐个排除调小 batch（加剧 batch 萎缩）、去掉隐藏层（计算量骤降、比值恶化）、改密集门控（token 副本增至 n/k 倍）三类方案。"
+    },
+    "question": "某团队在集群上训练分布式 MoE 语言模型，监控显示 GPU 算力利用率偏低、跨节点 All-to-All 传输特征的时间占比过高（IO-bound 瓶颈）。在不改变物理带宽和设备数量的前提下，从专家网络结构设计角度看，哪种调整最能改善计算/通信比并缓解瓶颈？",
+    "explanation": "正确项：专家驻留（stationary）在各自设备上，跨节点传输的是被路由样本的输入/输出 token 特征；专家计算量随隐藏层维度 h 增长而传输量与 h 无关，计算/通信比等于 h，因此增大 h 直接提高单位传输量对应的计算密度。错误项：调小单设备 batch 会让每专家收到的样本进一步减少（k·b·d/n），矩阵乘退化为向量运算、算力利用率更低；跨节点传的不是专家权重，去掉隐藏层只会让计算量骤降、比值反而恶化；改密集门控会把跨节点 token 副本放大约 n/k 倍，带宽更堵。",
+    "source": { "materialId": "arxiv-1701.06538", "section": "3.2 Network Bandwidth" },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "适当增大专家 FFN 的隐藏层维度 h：专家计算量随 h 增长，而跨节点传输的是与 h 无关的输入/输出 token 特征，计算/通信比因此等于 h。",
+          "把单设备 batch b 调小，直接压缩单次 All-to-All 需要传输的特征张量体积，用更小的通信量换取更高的算力利用率。",
+          "把专家网络简化为无隐藏层的单层线性变换，避免在前向传播中跨节点传输专家权重，用最轻的专家结构降低单次计算开销。",
+          "改用密集门控，让每个样本同时路由到全部 n 个专家，以消除路由选择带来的等待延迟与 step time 抖动。"
+        ],
+        "answer": [0],
+        "misconceptionMap": [null, 0, 1, 2]
+      },
+      "open": {
+        "referenceAnswer": "瓶颈定位：专家 stationary，跨节点传的是被路由样本的输入/输出特征张量，所以应提高「每传一字节做多少计算」。专家 FFN 的权重矩阵是 input_size×h 与 h×output_size，计算量随 h 增长而传输量与 h 无关，计算/通信比就等于隐藏层维度 h——增大 h 是最直接的结构性手段（或多个隐藏层）。三类错误方向：调小 batch 会让每专家样本降到 k·b·d/n 更少，GEMM 退化；去掉隐藏层是砍掉计算量，比值反而恶化，且跨节点传的本来就不是专家权重；密集门控会把 token 副本放大约 n/k 倍，带宽更堵。"
+      }
+    },
+    "misconceptions": [
+      "以为调小单设备 batch 能缓解通信瓶颈；实际会进一步缩小单专家 batch（k·b·d/n），使 GPU 矩阵乘退化为向量运算，算力利用率更低",
+      "以为跨节点传输的是专家权重；实际专家驻留在各设备上，传输的是被路由样本的输入/输出特征张量，去掉隐藏层只会让计算/通信比恶化",
+      "以为改成密集激活全部专家能消除路由延迟；实际跨节点 token 副本会增至约 n/k 倍，网络带宽更加拥堵"
+    ]
+  },
+  {
+    "id": "moe-load-importance-vs-load-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "auxiliary-loss", "load-balancing", "importance"],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "Expert Importance 与 Load 的区分",
+      "supporting": ["L_importance（变异系数平方）", "分布式 Straggler"]
+    },
+    "assessment": {
+      "target": "能够区分专家 Importance（门控值连续求和）与 Load（样本件数）两个概念，并解释只优化 L_importance 为何仍会造成分布式负载不均。",
+      "reasoningGoal": "先给出两个量的定义：Importance(X)=Σ_{x∈X} G(x) 是连续门控值之和，Load 是被分配到的样本件数（离散、用可导的平滑估计器近似）；再构造论文给出的反例（少数高权重样本 vs 多数低权重样本）说明 Importance 相等不等于件数相等；最后确认 L_importance 是 Importance 集合变异系数的平方，而不是专家权重的 L2 正则。"
+    },
+    "question": "在 Sparsely-Gated MoE 中，为防止门控网络把绝大多数样本路由到少数专家（极化），通常需要引入辅助平衡损失。关于专家的 Importance 与 Load 的概念差异及其对分布式训练的影响，以下哪些说法是正确的？",
+    "explanation": "正确项：Importance(X)=Σ G(x) 是 batch 内门控值的连续求和，Load 衡量的是实际分给该专家的样本件数（件数离散不可导，论文用可导的平滑估计器近似）；论文明确给出反例——一个专家收到少量高权重样本、另一个收到大量低权重样本，Importance 可以相近但件数悬殊，这在分布式硬件上会造成内存与性能问题（拖后腿 / OOM）。错误项：L_importance 是 Importance 集合变异系数的平方乘缩放因子 w_importance，加在总 loss 上，不是专家权重的 L2 正则；Importance 均衡也不保证各设备耗时相同。",
+    "source": { "materialId": "arxiv-1701.06538", "section": "4 Balancing Expert Utilization / Appendix A" },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Importance 是 batch 内各样本对该专家门控值的连续求和 Σ G(x)，Load 衡量的是实际分配给该专家的样本件数。",
+          "只加 L_importance 时，可能出现一个专家收少量高权重样本、另一个收大量低权重样本，Importance 相近而件数悬殊，仍会拖慢分布式训练。",
+          "L_importance 是加在专家 FFN 权重矩阵上的 L2 正则化项，用来抑制单个专家的参数过拟合。",
+          "只要把 L_importance 优化到 0，就能在理论上严格保证各 GPU 上专家前向的毫秒级耗时完全一致。"
+        ],
+        "answer": [0, 1],
+        "misconceptionMap": [null, null, 0, 1]
+      },
+      "open": {
+        "referenceAnswer": "Importance(X)=Σ_{x∈X} G(x)，是门控值的连续求和；Load 衡量的是实际分给该专家的样本件数，因件数离散不可导，论文用 P(x,i)=Φ(((x·W_g)_i − kth_excluding(H(x),k,i))/Softplus((x·W_noise)_i)) 的逐样本求和做平滑估计，并定义 L_load=w_load·CV(Load(X))²。只优化 L_importance 只能拉平重要性总和：一个专家收少量高权重样本、另一个收大量低权重样本时两者 Importance 可相近，件数却差很多，分布式硬件上表现为 straggler 或 OOM。L_importance=w_importance·CV(Importance(X))²，是加在总 loss 上的软约束，不是专家权重的 L2 正则。"
+      }
+    },
+    "misconceptions": [
+      "以为 L_importance 是专家 FFN 权重的 L2 正则项；实际它是 Importance 集合变异系数（CV）的平方乘缩放因子 w_importance，作为软约束加在总 loss 上",
+      "以为 Importance 均衡就等于 Load 均衡；论文反例显示少件高权重与多件低权重的 Importance 可以相近，硬件耗时取决于硬样本件数而非门控值代数和"
+    ]
+  },
+  {
+    "id": "moe-aux-loss-weighting-01",
+    "category": "model-architecture",
+    "topic": "moe",
+    "tags": ["moe", "hyperparameter", "tradeoff", "throughput"],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "predict",
+    "derivedFrom": "moe-load-importance-vs-load-01",
+    "concepts": {
+      "core": "辅助平衡损失权重的权衡",
+      "supporting": ["专家专化（Specialization）", "主任务 Loss", "集群吞吐"]
+    },
+    "assessment": {
+      "target": "能够预测辅助平衡损失权重 w_importance / w_load 取过大或过小时，对主任务表现与集群吞吐的双向影响，并识别「权重越大越好 / 权重无影响 / 置零可消除 straggler」三类误判。",
+      "reasoningGoal": "先承认这是表达力与执行效率的权衡：辅助损失直接进入门控梯度方向；再推演两个极端——权重过大压制语义路由、损害专家专化并抬高主任务 loss，权重过小压不住极化、样本堆积导致 straggler 与吞吐下降；最后核对「权重设 0」的真实后果是放弃负载约束、加剧倾斜，而非梯度爆炸。"
+    },
+    "question": "训练 Sparsely-Gated MoE 模型时，需要对辅助平衡损失的缩放因子 w_importance 进行调节。关于该超参对主任务表现（如语言模型困惑度）与集群吞吐量的影响，以下哪项预测最准确？",
+    "explanation": "正确项：辅助平衡损失体现表达力与执行效率的权衡。权重过大时它会压过主任务目标，迫使路由趋于绝对均匀，破坏专家按语法/语义形成的专化分工（论文用附录实验说明专家会高度专化），主任务 loss 随之恶化；权重过小则压不住极化，部分专家处理过多样本，在分布式硬件上引发内存与 straggler 问题，吞吐下降。错误项：权重越大并不等于路由越准、主任务 loss 越低；该系数直接进入门控网络的梯度方向，对负载均衡与表达力都有实质影响；把权重设为 0 是彻底放弃负载约束、加剧倾斜，通常引发的是负载失衡而非梯度爆炸。",
+    "source": { "materialId": "arxiv-1701.06538", "section": "4 Balancing Expert Utilization / Appendix A" },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "权重过大会迫使路由趋于绝对均匀，牺牲专家按语法/语义形成的专化分工并抬高主任务 loss；权重过小则压不住极化，样本堆积引发 straggler 与吞吐下降。",
+          "把辅助平衡损失的权重调得越大，门控对样本的路由选择就越精准，主任务的交叉熵 loss 会随之单调下降。",
+          "该系数只改变辅助 loss 的数值量级，对门控网络的梯度方向、主任务 loss 以及集群吞吐量都没有实质影响。",
+          "把辅助损失权重设为 0 可以彻底消除分布式训练中的 straggler 现象，代价是专家网络容易出现梯度爆炸。"
+        ],
+        "answer": [0],
+        "misconceptionMap": [null, 0, 1, 2]
+      },
+      "open": {
+        "referenceAnswer": "这是表达力与执行效率的权衡。w_importance / w_load 是手工调节的缩放因子，直接参与门控网络的梯度更新方向：权重过大，辅助损失压过主任务目标，路由被推向绝对均匀，破坏专家按语法/语义形成的专化分工，主任务 loss（困惑度）恶化；权重过小，极化压不住，少数专家堆积样本，在分布式硬件上表现为内存峰值与 straggler，集群吞吐下降。两类误判要排除：权重不是越大越好（路由不会更准），也不是纯数值缩放（它改变梯度方向）；权重置 0 是放弃负载约束、加剧倾斜，典型后果是负载失衡而非梯度爆炸。"
+      }
+    },
+    "misconceptions": [
+      "以为辅助损失权重越大路由越精准、主任务 loss 越低；实际权重过大压制语义路由、损害专家专化，主任务 loss 反而升高",
+      "以为辅助损失系数只是数值缩放、无实质影响；实际它直接进入门控网络的梯度方向，决定负载均衡与表达力之间的取舍",
+      "以为把权重设为 0 能消除 straggler；实际是彻底放弃负载约束、加剧路由倾斜，典型后果是负载失衡而非梯度爆炸"
+    ]
+  }
+]
