@@ -5,25 +5,6 @@
   "variants": {
     "wikiskill-anti-looping-impact-tracker": [
       {
-        "id": "wikiskill-anti-looping-impact-tracker__surface-options__wikimanual__0",
-        "kind": "surface-options",
-        "question": "为避免 Optimizer 反复提出已被验证集拒绝的同类修改，需要把历史判决反馈回优化循环。下列哪些设计能让这份反馈真正影响下一次提议？",
-        "options": [
-          "在构造 Proposer 的提示词时，按候选指纹检索语义相近的历史被拒记录并显式列给模型",
-          "将拒绝原因归一化成有限类别，使停止条件与换方向的判断都能基于结构化字段",
-          "把历史判决写进独立日志供事后审计，但不进入 Proposer 的输入上下文",
-          "提高采样温度并扩大每轮候选数量，靠随机性自然盖掉已被拒绝的方向"
-        ],
-        "generatedAt": 1788391829490,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d00c15d4",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「真正生效的设计发生在提示词构造阶段：按当前候选指纹检索语义近似的历史被拒记录并显式列出，同时把拒绝原因归一化为有限类别，让停止条件与改换方向的判断都能基于结构化字段」",
-          "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「在构造 Proposer 的提示词时」「将拒绝原因归一化成有限类别」等 2 项成立；并排除「把历史判决写进独立日志供事后审计」「提高采样温度并扩大每轮候选数量」等不成立描述。"
-        }
-      },
-      {
         "id": "wikiskill-anti-looping-impact-tracker__context-options__wikimanual__1",
         "kind": "context-options",
         "question": "你带的优化器陷入怪圈：总在提验证集早已否决过的同类修改。要把历史判决真正接回优化回路，下面哪些设计才有效？",
@@ -45,25 +26,6 @@
     ],
     "wikiskill-supp-009": [
       {
-        "id": "wikiskill-supp-009__surface-options__wikimanual__0",
-        "kind": "surface-options",
-        "question": "影响追踪器要识别语义近似的重复候选，最少应维护哪些结构化信号？",
-        "options": [
-          "把候选的结构化内容与关键 diff 先做规范化，再据此算 fingerprint",
-          "把拒绝原因归一化为有限类别，同时保留验证分与尝试计数",
-          "只按原始字符串做精确去重，措辞稍变就当成全新的候选",
-          "只记录最终分数，连拒绝原因也不保存以减少日志字段数量"
-        ],
-        "generatedAt": 1788391829493,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-1fa9c9f9",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「候选需要经过规范化后计算指纹，并记录统一枚举的拒绝原因、验证分和尝试次数」",
-          "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「把候选的结构化内容与关键 diff 先做规范化」「把拒绝原因归一化为有限类别」等 2 项成立；并排除「只按原始字符串做精确去重」「只记录最终分数」等不成立描述。"
-        }
-      },
-      {
         "id": "wikiskill-supp-009__context-options__wikimanual__1",
         "kind": "context-options",
         "question": "影响追踪器老把措辞稍变的同类候选当成全新方向。它最少要维护哪些结构化信号才能识别近重复？",
@@ -84,25 +46,6 @@
       }
     ],
     "wikiskill-supp-010": [
-      {
-        "id": "wikiskill-supp-010__surface-options__wikimanual__0",
-        "kind": "surface-options",
-        "question": "自动 Skill 优化器在连续多轮没有有效提升时，哪种停止策略更容易审计和恢复？",
-        "options": [
-          "设置重复指纹、连续无改进轮数与验证预算等可观测停止条件",
-          "停止时保留候选、指标与归一化原因，支持审计后从新方向恢复",
-          "只要候选文本尚未完全相同，就持续优化而不统计近似重复",
-          "遇到循环就清空全部记录，再从相同初始候选重新开始"
-        ],
-        "generatedAt": 1788391829494,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-dfb60e94",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「停止条件应由可观测状态驱动，例如重复 fingerprint、连续无改进轮数、验证预算耗尽或拒绝原因达到阈值」",
-          "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「设置重复指纹、连续无改进轮数与验证预算等可观测停止条…」「停止时保留候选、指标与归一化原因」等 2 项成立；并排除「只要候选文本尚未完全相同」「遇到循环就清空全部记录」等不成立描述。"
-        }
-      },
       {
         "id": "wikiskill-supp-010__context-options__wikimanual__1",
         "kind": "context-options",

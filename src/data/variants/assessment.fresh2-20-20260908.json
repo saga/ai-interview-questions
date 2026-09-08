@@ -1,0 +1,929 @@
+{
+  "version": 1,
+  "generatedAt": 1788863652485,
+  "promptVersion": "v4",
+  "variants": {
+    "aws-genai-developer-pro-34": [
+      {
+        "id": "aws-genai-developer-pro-34__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某公司审计发现欧洲用户数据被送到北美区域处理。定位这次驻留违规，下列哪些判断成立？",
+        "options": [
+          "应在原始区域内预处理后再送分析，使处理与驻留同洲",
+          "跨区域推理分发负载最划算，手动跟踪认证即可",
+          "敏感记录用 WORM 留存保护，支撑审计举证",
+          "SCP 管区域权限加自定义模型部署即可，无需原生策略",
+          "敏感数据靠 Macie 发现分类，决策轨迹靠不可变日志审计"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从数据出洲的违规反推驻留体系缺失的环节",
+          "reasoningGoal": "先定位违规的环节（处理位置、留存、分类审计三类）；再逐项验证各判断；并排除「跨区最划算」「SCP 加模型即可」等不成立描述。"
+        },
+        "generatedAt": 1788863652474,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9411fe93",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-7cc9541e",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-34",
+          "topic": "data-leakage",
+          "subtopic": "数据驻留与分类（S3 Object Lock + Macie + CloudTrail）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "aws",
+            "bedrock",
+            "s3-object-lock",
+            "macie",
+            "cloudtrail",
+            "data-residency",
+            "compliance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Bedrock 分析数据中的模式与关系，每日跨欧洲/北美/亚洲区域处理数百万新数据点后存 S3；须符合当地数据保护与存储法规，数据驻留与处理须在同一大洲，并保留决策审计轨迹与数据分类能力。以下哪些做法是正确的？",
+          "options": [
+            "按地理来源在原始区域内预处理后再送Bedrock，使处理与驻留同洲，存储用区域级桶策略约束",
+            "在每个区域部署应用并配本地IAM策略，用Bedrock跨区域推理分发负载，手动跟踪各区域合规认证",
+            "用S3 Object Lock做WORM留存保护，以不可改写的存储记录支撑审计与法规举证",
+            "用Organizations SCP管理区域权限，导入自定义模型到Bedrock并部署到各区域，CloudTrail记录决策",
+            "用Macie发现并分类S3中的敏感数据，用CloudTrail不可变日志审计决策轨迹并校验完整性"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-34__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "把同洲预处理加原生合规服务与跨区推理加策略拼凑放在驻留保证上对比，两者的根本差异是什么？",
+        "options": [
+          "同洲预处理后再分析，处理与驻留不分离",
+          "跨区推理分发负载，认证手动跟踪也够用",
+          "WORM 留存让存储记录不可改写，可举证",
+          "SCP 加自定义模型部署就能替代原生驻留策略",
+          "Macie 分类加不可变日志，审计轨迹完整可验"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从驻留保证对比两种合规路线的根本差异",
+          "reasoningGoal": "先对齐两种路线的可比维度；再逐项判定各主张成立与否；并排除「跨区够用」「SCP 可替代」等不成立描述。"
+        },
+        "generatedAt": 1788863652475,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9411fe93",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-7ce371a3",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-34",
+          "topic": "data-leakage",
+          "subtopic": "数据驻留与分类（S3 Object Lock + Macie + CloudTrail）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "aws",
+            "bedrock",
+            "s3-object-lock",
+            "macie",
+            "cloudtrail",
+            "data-residency",
+            "compliance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Bedrock 分析数据中的模式与关系，每日跨欧洲/北美/亚洲区域处理数百万新数据点后存 S3；须符合当地数据保护与存储法规，数据驻留与处理须在同一大洲，并保留决策审计轨迹与数据分类能力。以下哪些做法是正确的？",
+          "options": [
+            "按地理来源在原始区域内预处理后再送Bedrock，使处理与驻留同洲，存储用区域级桶策略约束",
+            "在每个区域部署应用并配本地IAM策略，用Bedrock跨区域推理分发负载，手动跟踪各区域合规认证",
+            "用S3 Object Lock做WORM留存保护，以不可改写的存储记录支撑审计与法规举证",
+            "用Organizations SCP管理区域权限，导入自定义模型到Bedrock并部署到各区域，CloudTrail记录决策",
+            "用Macie发现并分类S3中的敏感数据，用CloudTrail不可变日志审计决策轨迹并校验完整性"
+          ]
+        }
+      }
+    ],
+    "agentic-57": [
+      {
+        "id": "agentic-57__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某选品 Agent 夜间空转六小时，烧掉数万次调用才被手动杀掉。复盘这次失控，缺的是哪几道硬边界？",
+        "options": [
+          "缺步数与调用数上限：到线即强制终止",
+          "缺的是叮嘱：提示词写清节约资源，模型会自觉停下",
+          "缺 token 与费用预算：超限自动熔断",
+          "缺的是模型：换旗舰后能力强了自然不循环",
+          "缺 wall-clock 总时长上限：超时强制结束并告警"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从夜间空转烧钱的失控反推缺失的硬边界",
+          "reasoningGoal": "先定位失控缺失的环节（步数、预算、时间三类）；再逐项验证各判断；并排除「提示叮嘱」「换模型」等不成立描述。"
+        },
+        "generatedAt": 1788863652476,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-65fb5c3c",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-ee3e8bfc",
+        "sourceSnapshot": {
+          "id": "agentic-57",
+          "topic": "cost",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "budget",
+            "limits",
+            "guardrails"
+          ],
+          "question": "为了限制 Agent 的最大执行成本、防止失控，下列哪些是可以设置的硬性边界？（多选）",
+          "options": [
+            "设定最大步数与最大 tool call 次数上限，达到即强制终止任务",
+            "通过系统提示词叮嘱模型注意节约资源，并在合适的时机自行停止",
+            "设定 token 预算与累计费用上限，超限自动熔断",
+            "更换更强的旗舰模型，能力更强后自然不会陷入循环",
+            "设定单任务总执行时间的 wall-clock 上限，超时强制结束并触发告警"
+          ]
+        }
+      },
+      {
+        "id": "agentic-57__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "要为夜间无人值守的批量 Agent 设计不可绕过的止损边界。下列哪些应当纳入？",
+        "options": [
+          "最大步数与 tool call 次数设上限，到了就杀",
+          "系统提示词叮嘱节约，模型自觉是最好的边界",
+          "token 预算与累计费用设上限，超了就熔断",
+          "更换更强旗舰模型，能力强了自然不循环，比边界管用",
+          "单任务 wall-clock 总时长设上限，超时结束并告警"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为无人值守批量任务设计不可绕过的止损边界",
+          "reasoningGoal": "先拆出止损设计的目标与约束（不可绕过与全覆盖）；再逐项确认各设计；并排除「自觉最优」「换模型根治」等不成立描述。"
+        },
+        "generatedAt": 1788863652476,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-65fb5c3c",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-3b2b0c2b",
+        "sourceSnapshot": {
+          "id": "agentic-57",
+          "topic": "cost",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "budget",
+            "limits",
+            "guardrails"
+          ],
+          "question": "为了限制 Agent 的最大执行成本、防止失控，下列哪些是可以设置的硬性边界？（多选）",
+          "options": [
+            "设定最大步数与最大 tool call 次数上限，达到即强制终止任务",
+            "通过系统提示词叮嘱模型注意节约资源，并在合适的时机自行停止",
+            "设定 token 预算与累计费用上限，超限自动熔断",
+            "更换更强的旗舰模型，能力更强后自然不会陷入循环",
+            "设定单任务总执行时间的 wall-clock 上限，超时强制结束并触发告警"
+          ]
+        }
+      }
+    ],
+    "llm-18": [
+      {
+        "id": "llm-18__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "把 mHC 与 Attention Residuals 放在通路结构与计算代价上对比，两者的根本差异是什么？",
+        "options": [
+          "两者都是解决跨层传递：mHC 静态拓宽，Attention Residuals 动态聚合历史层",
+          "Attention Residuals 多出 attention 计算，以算量换表达，不算推理优化",
+          "mHC 拓宽通路数学上等价于直接堆叠更多层数，加深单层残差流即可完全复现其全部收益",
+          "两者首要收益都是缩小 KV cache，推理吞吐数倍提升且无损"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从通路结构与计算代价对比两种残差设计的根本差异",
+          "reasoningGoal": "先对齐两种设计的可比维度；再逐项判定各主张成立与否；并排除「等价堆层」「KV 优化」等不成立描述。"
+        },
+        "generatedAt": 1788863652476,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8825593a",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-28731f3a",
+        "sourceSnapshot": {
+          "id": "llm-18",
+          "topic": "residual-connections",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "residual-stream",
+            "mhc",
+            "attention-residuals",
+            "deep-transformer"
+          ],
+          "question": "某架构说明提到两类改善深层 Transformer 信息流动的设计：mHC 把单一 residual stream 拓宽为数条并行通路；Attention Residuals 把此前若干层的输出经类注意力的加权聚合后注入当前层。关于两者的说法正确的有哪些？（多选）",
+          "options": [
+            "两者针对的都是深层网络的信息与梯度跨层传递问题，但路径结构不同：mHC 静态拓宽通路，Attention Residuals 按内容动态聚合历史层输出",
+            "Attention Residuals 引入了额外的 attention 计算，属于以计算换取表达能力的结构性改进，不应归类为推理效率优化",
+            "mHC 的多条通路在数学上等价于直接堆叠更多层数，两者可以互相替代，因此实践中用更深的单层残差流就能完全复现 mHC 的全部收益",
+            "两者的首要收益都是缩小 KV cache、降低显存占用，因此常被用作长上下文的显存优化手段，并能直接把推理吞吐提升数倍而不损失任何质量"
+          ]
+        }
+      },
+      {
+        "id": "llm-18__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "某团队把 Attention Residuals 列入推理优化清单，上线后延迟反升。定位这次分类失误，下列哪些判断成立？",
+        "options": [
+          "两者目标一致都是跨层传递，但 mHC 静态拓宽、后者动态聚合",
+          "后者额外 attention 计算是结构性代价，应归质量改进而非效率优化",
+          "拓宽通路等于加深层数，单流加深即可替代 mHC",
+          "两者首要收益都是缩小 KV cache 降显存，常被当长上下文显存优化，吞吐数倍提升且无损"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从延迟反升的分类失误定位优化清单的归类错误",
+          "reasoningGoal": "先定位失误的环节（目标、代价、归类三类）；再逐项验证各判断；并排除「等价替代」「显存优化」等不成立描述。"
+        },
+        "generatedAt": 1788863652476,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8825593a",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-c9d8f4c2",
+        "sourceSnapshot": {
+          "id": "llm-18",
+          "topic": "residual-connections",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "residual-stream",
+            "mhc",
+            "attention-residuals",
+            "deep-transformer"
+          ],
+          "question": "某架构说明提到两类改善深层 Transformer 信息流动的设计：mHC 把单一 residual stream 拓宽为数条并行通路；Attention Residuals 把此前若干层的输出经类注意力的加权聚合后注入当前层。关于两者的说法正确的有哪些？（多选）",
+          "options": [
+            "两者针对的都是深层网络的信息与梯度跨层传递问题，但路径结构不同：mHC 静态拓宽通路，Attention Residuals 按内容动态聚合历史层输出",
+            "Attention Residuals 引入了额外的 attention 计算，属于以计算换取表达能力的结构性改进，不应归类为推理效率优化",
+            "mHC 的多条通路在数学上等价于直接堆叠更多层数，两者可以互相替代，因此实践中用更深的单层残差流就能完全复现 mHC 的全部收益",
+            "两者的首要收益都是缩小 KV cache、降低显存占用，因此常被用作长上下文的显存优化手段，并能直接把推理吞吐提升数倍而不损失任何质量"
+          ]
+        }
+      }
+    ],
+    "ai-code-002": [
+      {
+        "id": "ai-code-002__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某检索场景文档长短悬殊，要选相似度度量。判断各说法的前提，下列哪些正确？",
+        "options": [
+          "cosine 看方向不看幅度，能消除长短造成的模长干扰",
+          "cosine 实为欧氏距离，模长越大语义越强，算前应放大",
+          "L2 归一化后 cosine 等价点积，直接内积更快",
+          "cosine 值域 [0,∞)，越大方向差越大",
+          "单遍累加点积与双范数，零向量做除零防御",
+          "须先减均值居中，归一化后与点积再无关系"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在长短悬殊场景下判断相似度度量说法的前提是否成立",
+          "reasoningGoal": "先判断各说法的前提（方向与幅度、值域、归一化）是否成立；再逐项验证；并排除「欧氏距离」「值域无穷」「居中必要」等不成立描述。"
+        },
+        "generatedAt": 1788863652477,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2b7ccb27",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-b2a45580",
+        "sourceSnapshot": {
+          "id": "ai-code-002",
+          "topic": "word-embedding",
+          "angle": "calculation",
+          "difficulty": "easy",
+          "cognitiveTask": "infer",
+          "tags": [
+            "coding",
+            "embeddings",
+            "vector"
+          ],
+          "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
+          "options": [
+            "cosine 度量方向而非幅度，能消除文本长度与词频造成的模长干扰",
+            "cosine 度量的是向量间欧氏距离，模长越大语义越强，计算前应放大向量幅度",
+            "向量 L2 归一化后 cosine 与点积等价，可直接用内积换取计算速度",
+            "cosine 的取值范围是 [0, ∞)，数值越大表示方向差异越大",
+            "实现时单遍遍历累加点积与两个范数，并对零向量做除零防御",
+            "cosine 必须先把向量减均值居中，归一化后它与点积不再有任何关系"
+          ]
+        }
+      },
+      {
+        "id": "ai-code-002__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "某向量检索用欧氏距离后，长文档永远排在前面。定位这次度量失误，下列哪些判断成立？",
+        "options": [
+          "cosine 只看方向，天然消除文本长短的模长干扰",
+          "cosine 度的就是欧氏距离：模长越大语义越强，计算前应先放大幅度",
+          "归一化后 cosine 就是点积，内积实现最快",
+          "cosine 取值范围是 [0,∞)，数值越大方向差异越大",
+          "实现要单遍算点积与范数，零向量须防除零",
+          "必须先居中再算，否则与点积毫无关系"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从长文档系统性靠前的失误定位度量选择环节",
+          "reasoningGoal": "先定位失误的环节（方向幅度、值域、实现三类）；再逐项验证各判断；并排除「欧氏正确」「值域无穷」「居中必要」等不成立描述。"
+        },
+        "generatedAt": 1788863652477,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2b7ccb27",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-e96921f1",
+        "sourceSnapshot": {
+          "id": "ai-code-002",
+          "topic": "word-embedding",
+          "angle": "calculation",
+          "difficulty": "easy",
+          "cognitiveTask": "infer",
+          "tags": [
+            "coding",
+            "embeddings",
+            "vector"
+          ],
+          "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
+          "options": [
+            "cosine 度量方向而非幅度，能消除文本长度与词频造成的模长干扰",
+            "cosine 度量的是向量间欧氏距离，模长越大语义越强，计算前应放大向量幅度",
+            "向量 L2 归一化后 cosine 与点积等价，可直接用内积换取计算速度",
+            "cosine 的取值范围是 [0, ∞)，数值越大表示方向差异越大",
+            "实现时单遍遍历累加点积与两个范数，并对零向量做除零防御",
+            "cosine 必须先把向量减均值居中，归一化后它与点积不再有任何关系"
+          ]
+        }
+      }
+    ],
+    "p0-batch-norm-tradeoff-01": [
+      {
+        "id": "p0-batch-norm-tradeoff-01__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某 Transformer 任务 batch 常年只有 2，推理 batch 还不固定。评审就用 BN 方案的前提，下列哪些判断正确？",
+        "options": [
+          "LN 与 RMSNorm 按样本归一化，不吃 batch 统计",
+          "RMSNorm 省掉去均值，更适合该场景",
+          "batch 越小 BN 运行均值越准，推理也无需额外统计",
+          "三者在小 batch 下完全等价，只比参数量",
+          "推理沿用当前 batch 统计，训练推理差异自然消除"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在小 batch 且推理不定下判断 BN 方案的前提是否成立",
+          "reasoningGoal": "先判断 BN 方案的前提（统计稳定性）是否满足；再逐项验证各主张；并排除「越小越准」「完全等价」「沿用即消除」等不成立描述。"
+        },
+        "generatedAt": 1788863652477,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-22929b7f",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-a15940ce",
+        "sourceSnapshot": {
+          "id": "p0-batch-norm-tradeoff-01",
+          "topic": "batch-norm",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "batch-norm",
+            "layer-norm",
+            "rms-norm",
+            "normalization"
+          ],
+          "question": "一个 Transformer 训练任务的 batch size 因显存限制经常只有 2，且线上推理 batch size 不固定。若在 BN、LN、RMSNorm 中选择归一化方式，哪项判断最合理？",
+          "options": [
+            "LN 或 RMSNorm 按样本归一化，不依赖 batch 统计量",
+            "RMSNorm 还可省去去均值步骤，通常更适合该 Transformer 场景",
+            "必须选择 BN，因为 batch 越小，BN 的运行均值越准确，推理时也不需要维护额外统计量",
+            "三者在小 batch 和变动推理 batch 下完全等价，只需比较参数数量即可",
+            "选择 BN 并在推理时继续使用当前 batch 的统计量，就能消除训练与推理之间的差异"
+          ]
+        }
+      },
+      {
+        "id": "p0-batch-norm-tradeoff-01__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "某模型 batch 只有 2，同一输入每次推理结果都不同，排查发现推理用了当前 batch 统计。定位这次抖动故障，下列哪些判断成立？",
+        "options": [
+          "LN 按样本自身归一化，不随同批样本变化",
+          "RMSNorm 去均值都省了，抖动天然更小",
+          "必须选 BN：batch 越小运行均值越准，推理也不用维护额外统计量",
+          "三者在小 batch 与变动推理 batch 下完全等价，只比参数量即可",
+          "选 BN 并在推理时沿用当前 batch 统计量，训练推理差异自然消除"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从同输入异输出的抖动定位归一化环节",
+          "reasoningGoal": "先定位抖动的环节（统计来源与归一化方式）；再逐项验证各判断；并排除「坚持 BN」「三者等价」「抖动可接受」等不成立描述。"
+        },
+        "generatedAt": 1788863652478,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-22929b7f",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-2e0399b5",
+        "sourceSnapshot": {
+          "id": "p0-batch-norm-tradeoff-01",
+          "topic": "batch-norm",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "batch-norm",
+            "layer-norm",
+            "rms-norm",
+            "normalization"
+          ],
+          "question": "一个 Transformer 训练任务的 batch size 因显存限制经常只有 2，且线上推理 batch size 不固定。若在 BN、LN、RMSNorm 中选择归一化方式，哪项判断最合理？",
+          "options": [
+            "LN 或 RMSNorm 按样本归一化，不依赖 batch 统计量",
+            "RMSNorm 还可省去去均值步骤，通常更适合该 Transformer 场景",
+            "必须选择 BN，因为 batch 越小，BN 的运行均值越准确，推理时也不需要维护额外统计量",
+            "三者在小 batch 和变动推理 batch 下完全等价，只需比较参数数量即可",
+            "选择 BN 并在推理时继续使用当前 batch 的统计量，就能消除训练与推理之间的差异"
+          ]
+        }
+      }
+    ],
+    "gnn-scalable-sampling": [
+      {
+        "id": "gnn-scalable-sampling__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某十亿级图上训深层 GNN，邻居爆炸致显存崩。评审三种采样路线的适用前提，下列哪些判断正确？",
+        "options": [
+          "Node-wise 每层定量采样，层数一深呈指数膨胀，显存与重复计算双爆",
+          "Layer-wise 每层独立取点，指数变线性，但连通稀疏致梯度方差大",
+          "Subgraph 切断跨子图传递，无偏估计与并行都不可能",
+          "GraphSAINT 按概率采样加方差归一化，实现无偏梯度估计"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在十亿级图显存崩的约束下判断采样路线的前提是否成立",
+          "reasoningGoal": "先判断各路线的前提（复杂度、方差、无偏性）是否满足；再逐项验证各主张；并排除「切断即无偏无望」等不成立描述。"
+        },
+        "generatedAt": 1788863652478,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-913e1e1e",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-e9877e06",
+        "sourceSnapshot": {
+          "id": "gnn-scalable-sampling",
+          "topic": "scalability",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "GNN",
+            "Scalability",
+            "Sampling",
+            "Neighbor-Explosion"
+          ],
+          "question": "在超大规模图（如十亿级节点与百亿级边）上训练多层 GNN 时，邻居爆炸（Neighbor Explosion）是主要的计算与显存瓶颈。针对 Node-wise（如 GraphSAGE）、Layer-wise（如 FastGCN）与 Subgraph-wise（如 Cluster-GCN、GraphSAINT）采样策略，以下哪些对比与机制分析是正确的？",
+          "options": [
+            "Node-wise 采样在 $L$ 层 GNN 中的单样本计算复杂度随层数呈指数级增长 $O(S^L)$，在深层网络中存在严重的显存膨胀与重复计算",
+            "Layer-wise 采样在每层固定采样独立节点集合，消除了计算复杂度的指数增长，但容易因邻居节点间连接稀疏而增大梯度估计方差",
+            "Subgraph-wise 采样在训练前将图划分为独立子图并在内部聚合，彻底切断了跨子图消息传递，因此无法实现无偏梯度估计与多卡并行训练",
+            "GraphSAINT 通过基于节点度或边的概率采样并引入方差归一化系数（Normalization Coefficients），实现了对原图梯度的无偏估计"
+          ]
+        }
+      },
+      {
+        "id": "gnn-scalable-sampling__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "某 Layer-wise 采样训练曲线剧烈震荡，梯度方差居高不下。定位这次震荡，下列哪些判断成立？",
+        "options": [
+          "Node-wise 指数膨胀是深层显存崩的根源，与本次震荡无关",
+          "Layer-wise 层间连通稀疏，梯度估计方差大是机制性代价",
+          "Subgraph 内部聚合虽保消息，但跨子图一断就既偏又不能并行",
+          "GraphSAINT 的概率采样加归一化正是为压方差、保无偏"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从训练震荡定位 Layer-wise 方差环节",
+          "reasoningGoal": "先缩小震荡的原因范围（膨胀、稀疏、无偏三类）；再逐项验证各判断；并排除「切断即无望」等不成立描述。"
+        },
+        "generatedAt": 1788863652478,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-913e1e1e",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-fbd25ff4",
+        "sourceSnapshot": {
+          "id": "gnn-scalable-sampling",
+          "topic": "scalability",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "GNN",
+            "Scalability",
+            "Sampling",
+            "Neighbor-Explosion"
+          ],
+          "question": "在超大规模图（如十亿级节点与百亿级边）上训练多层 GNN 时，邻居爆炸（Neighbor Explosion）是主要的计算与显存瓶颈。针对 Node-wise（如 GraphSAGE）、Layer-wise（如 FastGCN）与 Subgraph-wise（如 Cluster-GCN、GraphSAINT）采样策略，以下哪些对比与机制分析是正确的？",
+          "options": [
+            "Node-wise 采样在 $L$ 层 GNN 中的单样本计算复杂度随层数呈指数级增长 $O(S^L)$，在深层网络中存在严重的显存膨胀与重复计算",
+            "Layer-wise 采样在每层固定采样独立节点集合，消除了计算复杂度的指数增长，但容易因邻居节点间连接稀疏而增大梯度估计方差",
+            "Subgraph-wise 采样在训练前将图划分为独立子图并在内部聚合，彻底切断了跨子图消息传递，因此无法实现无偏梯度估计与多卡并行训练",
+            "GraphSAINT 通过基于节点度或边的概率采样并引入方差归一化系数（Normalization Coefficients），实现了对原图梯度的无偏估计"
+          ]
+        }
+      }
+    ],
+    "gnn-adversarial-attack-defense": [
+      {
+        "id": "gnn-adversarial-attack-defense__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某异质图净化后正常跨类边被大面积误删，精度反降。定位这次误伤，下列哪些判断成立？",
+        "options": [
+          "低秩近似抓住邻接低秩先验，能滤掉高频扰动边",
+          "特征相似剪枝假设扰动连异类，却会误删异质图正常跨类边",
+          "GSL 把邻接矩阵也纳入优化，自适应但训练开销与收敛难度剧增",
+          "特征加梯度扰动的对抗训练足以防住拓扑加边攻击"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从异质图正常边被误删的误伤定位净化环节",
+          "reasoningGoal": "先定位误伤的环节（先验、剪枝、优化三类）；再逐项验证各判断；并排除「特征扰动即足够」等不成立描述。"
+        },
+        "generatedAt": 1788863652479,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0847e0bc",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-4ce79238",
+        "sourceSnapshot": {
+          "id": "gnn-adversarial-attack-defense",
+          "topic": "robustness-and-security",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "Adversarial-Attacks",
+            "Graph-Purification",
+            "Structure-Learning",
+            "Robust-GNN"
+          ],
+          "question": "在图对抗攻击（Graph Adversarial Attacks）场景中，攻击者通过微量修改图拓扑结构（如恶意加边或删边）即可显著破坏 GNN 模型的分类性能。关于图净化（Graph Purification）与图结构学习（Graph Structure Learning）防御策略的工程权衡，以下哪些说法是正确的？",
+          "options": [
+            "基于低秩近似（Low-Rank Approximation）的图净化利用了真实图邻接矩阵通常具有低秩特性的先验，能有效过滤高频对抗扰动",
+            "基于特征相似度的边剪枝净化策略假设扰动边通常连接特征差异较大的节点，但可能误删异质图（Heterophilous Graph）中的正常跨类边",
+            "图结构学习（GSL）通过同时优化 GNN 参数与图结构邻接矩阵，虽然能防御拓扑攻击，但会显著增加训练的计算开销与收敛难度",
+            "对抗训练（Adversarial Training）在图领域中仅需对节点输入特征添加梯度扰动，即可全面抵御针对图拓扑结构的对抗加边攻击"
+          ]
+        }
+      },
+      {
+        "id": "gnn-adversarial-attack-defense__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "要为社交网络图设计对抗防御：扰动预算小、训练成本敏感。下列哪些设计应当纳入？",
+        "options": [
+          "用低秩近似净化：真实邻接低秩，扰动边高频易滤",
+          "特征相似剪枝要慎用：异质图正常边本就连异类",
+          "GSL 把邻接矩阵也纳入优化，效果好但训练开销与收敛难度剧增",
+          "只做特征梯度扰动对抗训练，即可防拓扑攻击"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在扰动小且成本敏感下设计图对抗防御",
+          "reasoningGoal": "先拆出防御设计的目标与约束（精度、成本）；再逐项确认各设计；并排除「特征扰动足够」等不成立描述。"
+        },
+        "generatedAt": 1788863652479,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0847e0bc",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-bf75b560",
+        "sourceSnapshot": {
+          "id": "gnn-adversarial-attack-defense",
+          "topic": "robustness-and-security",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "Adversarial-Attacks",
+            "Graph-Purification",
+            "Structure-Learning",
+            "Robust-GNN"
+          ],
+          "question": "在图对抗攻击（Graph Adversarial Attacks）场景中，攻击者通过微量修改图拓扑结构（如恶意加边或删边）即可显著破坏 GNN 模型的分类性能。关于图净化（Graph Purification）与图结构学习（Graph Structure Learning）防御策略的工程权衡，以下哪些说法是正确的？",
+          "options": [
+            "基于低秩近似（Low-Rank Approximation）的图净化利用了真实图邻接矩阵通常具有低秩特性的先验，能有效过滤高频对抗扰动",
+            "基于特征相似度的边剪枝净化策略假设扰动边通常连接特征差异较大的节点，但可能误删异质图（Heterophilous Graph）中的正常跨类边",
+            "图结构学习（GSL）通过同时优化 GNN 参数与图结构邻接矩阵，虽然能防御拓扑攻击，但会显著增加训练的计算开销与收敛难度",
+            "对抗训练（Adversarial Training）在图领域中仅需对节点输入特征添加梯度扰动，即可全面抵御针对图拓扑结构的对抗加边攻击"
+          ]
+        }
+      }
+    ],
+    "mpnn-1wl-equivalence-fundamental": [
+      {
+        "id": "mpnn-1wl-equivalence-fundamental__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "有人主张用 GIN 区分两个六元环与一个十二元环。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "标准 MPNN 聚合更新等价 1-WL 颜色细化，上界即 1-WL",
+          "1-WL 分不开的图，MPNN 节点表示也相同，必然分不开",
+          "换单射 Sum 聚合即可区分任意非同构图，超越 1-WL",
+          "MPNN 无需标识符就能区分任意正则环：度数相同反而更容易区分"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 GIN 区分正则环主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（表达上界）是否满足；再逐项验证各主张；并排除「单射即超越」「正则易分」等不成立描述。"
+        },
+        "generatedAt": 1788863652479,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f1c7659a",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-3b199167",
+        "sourceSnapshot": {
+          "id": "mpnn-1wl-equivalence-fundamental",
+          "topic": "expressiveness-and-theory",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "MPNN",
+            "1-WL",
+            "expressive-power"
+          ],
+          "question": "关于标准消息传递图神经网络（MPNN）与 1-WL 图同构测试之间的关系，下列哪些说法是正确的？",
+          "options": [
+            "标准 MPNN 的逐层「聚合—更新」过程与 1-WL 的颜色细化过程等价，因此它区分图结构的能力上界就是 1-WL",
+            "两个被 1-WL 判定为无法区分的图，任何标准 MPNN 对它们给出的节点表示也完全相同，因此无法区分",
+            "只要把聚合函数换成单射的 Sum 聚合，MPNN 就能区分任意两个非同构图，从而超越 1-WL 的能力上限",
+            "MPNN 无需任何额外标识符就能区分任意正则环结构，因为正则图上各节点度数相同反而更容易区分"
+          ]
+        }
+      },
+      {
+        "id": "mpnn-1wl-equivalence-fundamental__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "把换单射聚合与加节点标识符放在突破 1-WL 上限的能力上对比，根本差异是什么？",
+        "options": [
+          "标准 MPNN 逐层聚合更新等价 1-WL 颜色细化，能力上界即 1-WL",
+          "1-WL 盲区内的图，任何标准 MPNN 都无能为力",
+          "单射 Sum 聚合一换，任意非同构图皆可区分，1-WL 上限就破了",
+          "MPNN 无需额外标识符就能区分任意正则环：度数相同反而最易区分"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从突破上限的能力对比两种增强路线的根本差异",
+          "reasoningGoal": "先对齐两种路线 的可比维度；再逐项判定各主张成立与否；并排除「单射即突破」「正则易分」等不成立描述。"
+        },
+        "generatedAt": 1788863652482,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f1c7659a",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-663fc669",
+        "sourceSnapshot": {
+          "id": "mpnn-1wl-equivalence-fundamental",
+          "topic": "expressiveness-and-theory",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "MPNN",
+            "1-WL",
+            "expressive-power"
+          ],
+          "question": "关于标准消息传递图神经网络（MPNN）与 1-WL 图同构测试之间的关系，下列哪些说法是正确的？",
+          "options": [
+            "标准 MPNN 的逐层「聚合—更新」过程与 1-WL 的颜色细化过程等价，因此它区分图结构的能力上界就是 1-WL",
+            "两个被 1-WL 判定为无法区分的图，任何标准 MPNN 对它们给出的节点表示也完全相同，因此无法区分",
+            "只要把聚合函数换成单射的 Sum 聚合，MPNN 就能区分任意两个非同构图，从而超越 1-WL 的能力上限",
+            "MPNN 无需任何额外标识符就能区分任意正则环结构，因为正则图上各节点度数相同反而更容易区分"
+          ]
+        }
+      }
+    ],
+    "spectral-vs-spatial-duality-fundamental": [
+      {
+        "id": "spectral-vs-spatial-duality-fundamental__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "某谱域滤波器换一张图就失效。评审滤波器跨图复用前提，下列哪些判断正确？",
+        "options": [
+          "谱滤波器定义在该图拉普拉斯特征基上，基随拓扑变，跨图即失效",
+          "空域逐层聚合邻居，严格对应频域低通，两套理论相通",
+          "学好的谱滤波器可原样搬到任意新图，基与拓扑无关",
+          "空域聚合与频域低通毫无关联，前者纯属启发式，只有后者有理论基础"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断谱滤波器跨图复用的前提是否成立",
+          "reasoningGoal": "先判断复用的前提（基是否共享）是否满足；再逐项验证各主张；并排除「原样迁移」「毫无关系」等不成立描述。"
+        },
+        "generatedAt": 1788863652483,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7a8dea78",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-1a712ba9",
+        "sourceSnapshot": {
+          "id": "spectral-vs-spatial-duality-fundamental",
+          "topic": "spectral-and-spatial-convolutions",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "graph-fourier-transform",
+            "low-pass-filtering",
+            "laplacian"
+          ],
+          "question": "关于图卷积的谱域视角与空域视角，下列哪些说法是正确的？",
+          "options": [
+            "谱域卷积在图拉普拉斯矩阵的特征向量所张成的傅里叶基上定义滤波，这组基由图的拓扑决定，难以直接泛化到结构不同的图",
+            "空域卷积按邻接关系逐层聚合邻居特征，可以严格映射为频域上的低通滤波，两者并非互不相关的两套理论",
+            "谱域方法学到的滤波器可以原样迁移到任意新图上，因为图傅里叶基对所有图都相同、与具体拓扑无关",
+            "空域聚合与频域低通滤波没有任何关联，前者纯属启发式设计，只有后者才具备理论基础"
+          ]
+        }
+      },
+      {
+        "id": "spectral-vs-spatial-duality-fundamental__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "某 GNN 加深后所有节点表示趋同、无法区分。定位这次塌缩，下列哪些判断成立？",
+        "options": [
+          "谱滤波器定义在该图拉普拉斯特征基上，基随拓扑变，跨图即失效",
+          "空域按邻接逐层聚合邻居，可严格映射为频域低通，两套理论相通",
+          "谱域学到的滤波器可原样迁移到任意新图：图傅里叶基对所有图都相同",
+          "空域聚合纯属启发式设计，与频域低通毫无关系，只有后者有理论基础"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从节点表示趋同的塌缩定位低通本质",
+          "reasoningGoal": "先定位塌缩的环节（滤波、对偶两类）；再逐项验证各判断；并排除「基无关」「加参解决」等不成立描述。"
+        },
+        "generatedAt": 1788863652484,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7a8dea78",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-8fbc8b13",
+        "sourceSnapshot": {
+          "id": "spectral-vs-spatial-duality-fundamental",
+          "topic": "spectral-and-spatial-convolutions",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "graph-fourier-transform",
+            "low-pass-filtering",
+            "laplacian"
+          ],
+          "question": "关于图卷积的谱域视角与空域视角，下列哪些说法是正确的？",
+          "options": [
+            "谱域卷积在图拉普拉斯矩阵的特征向量所张成的傅里叶基上定义滤波，这组基由图的拓扑决定，难以直接泛化到结构不同的图",
+            "空域卷积按邻接关系逐层聚合邻居特征，可以严格映射为频域上的低通滤波，两者并非互不相关的两套理论",
+            "谱域方法学到的滤波器可以原样迁移到任意新图上，因为图傅里叶基对所有图都相同、与具体拓扑无关",
+            "空域聚合与频域低通滤波没有任何关联，前者纯属启发式设计，只有后者才具备理论基础"
+          ]
+        }
+      }
+    ],
+    "oversmoothing-lowpass-dirichlet-mechanism": [
+      {
+        "id": "oversmoothing-lowpass-dirichlet-mechanism__surface-options__assessmentfresh2__0",
+        "kind": "surface-options",
+        "question": "把加 LayerNorm、减隐藏维度与从滤波本质入手放在治过平滑上对比，根本差异是什么？",
+        "options": [
+          "反复卷积即反复低通，Dirichlet 能量指数衰减到零，节点表示趋同",
+          "LayerNorm 只动单节点模长，方向趋同拦不住，余弦仍趋一",
+          "每层加 LayerNorm 即可拉开距离，根治过平滑",
+          "过平滑是参数太多过拟合，减隐藏维度即可根除"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从治过平滑的效果对比三种路线的根本差异",
+          "reasoningGoal": "先对齐三种路线的可比维度（是否触及方向趋同）；再逐项判定各主张；并排除「LN 根治」「减参根除」等不成立描述。"
+        },
+        "generatedAt": 1788863652484,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0cc76883",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-c70e05f0",
+        "sourceSnapshot": {
+          "id": "oversmoothing-lowpass-dirichlet-mechanism",
+          "topic": "deep-gnn-architectures",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "over-smoothing",
+            "Dirichlet-energy",
+            "low-pass-filter"
+          ],
+          "question": "关于深层图神经网络中的过平滑（Over-smoothing）现象，下列哪些说法是正确的？",
+          "options": [
+            "多次图卷积等价于反复施加低通滤波，Dirichlet 能量随层数指数衰减趋于零，节点表示随之趋同",
+            "标准 LayerNorm 只归一化单个节点表示的模长，无法阻止各节点表示的方向趋于一致，余弦相似度仍会趋近于一",
+            "在每层之后加入 LayerNorm 就能解决过平滑，因为它会把各节点的表示重新拉开距离并恢复区分度",
+            "过平滑主要源于深层网络的参数量过大导致过拟合，减少每层的隐藏维度即可根除该现象"
+          ]
+        }
+      },
+      {
+        "id": "oversmoothing-lowpass-dirichlet-mechanism__context-options__assessmentfresh2__1",
+        "kind": "context-options",
+        "question": "某深层 GNN 每层都加了 LayerNorm，表示还是塌到同一方向。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "低通反复施加，能量衰减到零，趋同与维度参数无关",
+          "LayerNorm 只归一化模长，方向趋同一事无补",
+          "每层之后加入 LayerNorm，把各节点表示拉开距离即可根治过平滑",
+          "过平滑主因是深层网络参数量过大，减少隐藏维度即可根除"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从加 LN 仍塌缩的误判定位方向与模长的混淆",
+          "reasoningGoal": "先定位误判的环节（模长、方向、参数三类）；再逐项验证各判断；并排除「换位置」「减维度」等不成立描述。"
+        },
+        "generatedAt": 1788863652485,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0cc76883",
+        "batch": "assessmentfresh2",
+        "model": "manual",
+        "contentHash": "fnv1a-a63327ac",
+        "sourceSnapshot": {
+          "id": "oversmoothing-lowpass-dirichlet-mechanism",
+          "topic": "deep-gnn-architectures",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "over-smoothing",
+            "Dirichlet-energy",
+            "low-pass-filter"
+          ],
+          "question": "关于深层图神经网络中的过平滑（Over-smoothing）现象，下列哪些说法是正确的？",
+          "options": [
+            "多次图卷积等价于反复施加低通滤波，Dirichlet 能量随层数指数衰减趋于零，节点表示随之趋同",
+            "标准 LayerNorm 只归一化单个节点表示的模长，无法阻止各节点表示的方向趋于一致，余弦相似度仍会趋近于一",
+            "在每层之后加入 LayerNorm 就能解决过平滑，因为它会把各节点的表示重新拉开距离并恢复区分度",
+            "过平滑主要源于深层网络的参数量过大导致过拟合，减少每层的隐藏维度即可根除该现象"
+          ]
+        }
+      }
+    ]
+  }
+}

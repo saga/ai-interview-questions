@@ -5,25 +5,6 @@
   "variants": {
     "agentic-05": [
       {
-        "id": "agentic-05__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "请解释 AI Agent 的「记忆」机制，区分短期记忆与长期记忆，并说明各自作用。",
-        "options": [
-          "短期记忆就是当前会话的上下文，保留最近对话与中间结果以支撑即时推理；长期记忆则是跨会话持久化的知识库，通常借助向量检索按需召回",
-          "短期与长期记忆本质无差别，都该把全部历史对话逐字留存，并按时间顺序全量回放至上下文",
-          "长期记忆只能放在模型参数里，会话结束之后上下文里的信息没法持久化到任何外部存储",
-          "短期记忆承担跨会话的用户画像积累，长期记忆只放当前任务用完即弃的临时中间变量"
-        ],
-        "generatedAt": 1788392183485,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-b2b63793",
-        "assessment": {
-          "target": "能判断「短期记忆即当前上下文窗口（工作内存），支撑即时推理但受限于窗口大小且随会话结束销毁」",
-          "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「短期记忆就是当前会话的上下文」成立；并排除「短期与长期记忆本质无差别」「长期记忆只能放在模型参数里」等不成立描述。"
-        }
-      },
-      {
         "id": "agentic-05__context-options__wb-llm-20260903__1",
         "kind": "context-options",
         "question": "新成员问 Agent 为什么需要记忆、短期与长期有何不同。请用工程视角说明两类记忆各自解决什么问题、如何配合。",
@@ -40,46 +21,6 @@
         "assessment": {
           "target": "能判断「短期记忆即当前上下文窗口（工作内存），支撑即时推理但受限于窗口大小且随会话结束销毁」",
           "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「当下会话的上下文即短期记忆」成立；并排除「短期与长期记忆没有本质区别」「长期记忆只能活在模型权重里」等不成立描述。"
-        }
-      }
-    ],
-    "agentic-40": [
-      {
-        "id": "agentic-40__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Agent 应保存完整执行轨迹，还是只保留最终结果？请从调试、隐私、成本三角度论述。",
-        "options": [
-          "出于隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 就能完整还原现场，无需任何历史留痕",
-          "轨迹应分级保留并做脱敏存储，它是调试与归因的生命线；但消费端默认只看到压缩视图——存不存历史和给不给模型看是两个独立决策，应按角色与用途分别授权访问",
-          "既然已经存了完整轨迹，运行时就该把全量原文原样喂回上下文，否则这些存储投入就完全失去了本该有的价值",
-          "轨迹存储成本高，生产环境只应保留最终的业务结果以控制预算，把中间过程全部丢弃才是最优的工程取舍"
-        ],
-        "generatedAt": 1788392183487,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d36b6f3b",
-        "assessment": {
-          "target": "能判断「成本角度贵的是把轨迹喂回上下文而非存储本身」",
-          "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「轨迹应分级保留并做脱敏存储」成立；并排除「出于隐私合规」「既然已经存了完整轨迹」等不成立描述。"
-        }
-      },
-      {
-        "id": "agentic-40__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在定 Agent 的记忆留存策略。完整轨迹利于复盘却贵且涉隐私。请就调试价值、隐私暴露与存储成本给出取舍。",
-        "options": [
-          "为隐私合规起见，轨迹绝对不能留，出问题时重跑一遍 Agent 就能把现场原样复现，不必留任何历史记录",
-          "轨迹要分级留存并脱敏，这是调试和追责的命根子；不过给消费端看的默认是压缩后的视图——要不要存历史、要不要给模型看是两码事，得按角色和用途分开授权",
-          "既然已存了全量轨迹，运行时就该把原始全文原封不动塞回上下文，不然这些存储投入就白费了本该有的意义",
-          "轨迹存着太烧钱，生产里只该留最终业务结果来压预算，中间过程全扔才是最划算的工程做法"
-        ],
-        "generatedAt": 1788392183488,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-d36b6f3b",
-        "assessment": {
-          "target": "能判断「成本角度贵的是把轨迹喂回上下文而非存储本身」",
-          "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「轨迹要分级留存并脱敏」成立；并排除「为隐私合规起见」「既然已存了全量轨迹」等不成立描述。"
         }
       }
     ],
@@ -208,25 +149,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-6511f324"
-      },
-      {
-        "id": "mem-cog-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在为一个编程 / 运维 Agent 设计记忆，参考认知科学的记忆分型。请说明各类型在工程上对应哪种存储与读写语义。",
-        "options": [
-          "数据 1 归 Working Memory（工作记忆），只待在当前任务的 Context Window 里，任务一完就被清掉",
-          "数据 2 归 Episodic Memory（情境记忆），是带时间戳、绑定具体交互事件背景的记录",
-          "数据 3 归 Semantic Memory（语义记忆），是从多次交互里抽象出来、不依赖某次具体对话的持久事实与知识",
-          "数据 4 归 Procedural Memory（程序记忆），把 Agent 针对特定任务或工作流的行为范式和偏好规则固化了下来"
-        ],
-        "generatedAt": 1788392183491,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-6511f324",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「1工作记忆随任务清、2情境带时戳、3语义持久事实、4程序固化范式」",
-          "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「数据 1 归 Working Memory（工作记忆…」「数据 2 归 Episodic Memory（情境记…」等 4 项成立。"
-        }
       }
     ],
     "mem-retrieval-01": [
@@ -316,25 +238,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-a61217f8"
-      },
-      {
-        "id": "mem-stateless-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "产品在演示里显得有记忆，但模型本身是无状态的。请说明所谓「记住」其实由哪层系统状态与外置存储支撑，而非模型权重。",
-        "options": [
-          "商业 LLM API 默认在服务端替你留着跨请求的模型隐层状态（Hidden States）和 Key-Value Cache",
-          "LLM 自身是无状态的（Stateless），每一轮 API 调用都从全新空白状态起步；所谓连续，全靠外围 Agent 平台用状态管理、记忆检索和 Prompt 动态组装这套工程来撑",
-          "LLM 在 Fine-tuning / Continual Pre-training 时，会把用户的对话记录实时写进模型权重参数里",
-          "只要 Prompt 没超过模型标称的最大 Context Limit，LLM 不用任何外部数据库帮忙，也能自动跨 Session 把全部状态持久化下来"
-        ],
-        "generatedAt": 1788392183493,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-a61217f8",
-        "assessment": {
-          "target": "能判断「LLM无状态，每轮全新空白，连续性由平台状态管理与检索组装实现」",
-          "reasoningGoal": "先复现该机制的内部过程；据此确认「LLM 自身是无状态的（Stateless）」成立；并排除「商业 LLM API 默认在服务端替你留着跨请求的模…」「LLM 在 Fine-tuning / Contin…」等不成立描述。"
-        }
       }
     ],
     "skillevo-persistence-asymmetry-01": [

@@ -5,25 +5,6 @@
   "variants": {
     "agentic-18": [
       {
-        "id": "agentic-18__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "设计一个 ESG Research Agent：从几十份 ESG PDF 里提取碳排放等指标并生成横向对比结论。难点在数字准确性与来源可追溯，你会怎样保证？",
-        "options": [
-          "为了提效，应让 LLM 在抽取指标的同时就直接做完跨公司对比计算，省掉独立的计算代码层。",
-          "LLM 只承担带出处与口径说明的结构化字段抽取，单位换算与横向对比交由确定性代码完成，不确定的字段留空并标注来由而非靠猜测填充。",
-          "口径不一致的问题可以忽略掉，直接把不同标准下的数值归一后相加比较便能反映真实排放水平。",
-          "缺失口径的指标由模型按行业惯例推测一个合理值补入，避免对比表里出现空格影响观感。"
-        ],
-        "generatedAt": 1788392182934,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-5d830349",
-        "assessment": {
-          "target": "能判断「此前让 LLM 边抽取边计算导致多处数字张冠李戴」",
-          "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此确认「LLM 只承担带出处与口径说明的结构化字段抽取」成立；并排除「为了提效」「口径不一致的问题可以忽略掉」等不成立描述。"
-        }
-      },
-      {
         "id": "agentic-18__context-options__wb-llm-20260903__1",
         "kind": "context-options",
         "question": "你接手一个从数十份 ESG 报告中抽取碳排放数据并横向对比的 Agent。业务最关心数字准不准、能不能溯源到原表。请给出兼顾抽取精度与出处留痕的架构设计。",
@@ -84,25 +65,6 @@
       }
     ],
     "ai-eng-063": [
-      {
-        "id": "ai-eng-063__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "混合检索用 RRF（Reciprocal Rank Fusion，按排名倒数加权）合并向量检索与 BM25 结果。相比直接对分数归一化加权，RRF 好在哪？",
-        "options": [
-          "RRF 能自动学出向量维度的最佳权重，无需人工设定任何参数，因为融合过程本身会根据两路召回的分布自适应地调整每条结果的贡献比例，并在训练阶段收敛到最优融合系数。",
-          "向量相似度（如 Cosine ∈ [0,1]）与 BM25 分数（无上界正实数）的分布与量级不同，直接加权求和会让数值范围大的一方主导排序；RRF 仅依赖相对排名倒数融合，从机制上消除了量纲不一致问题。",
-          "RRF 可以在 O(1) 时间完成合并，而分数加权需要 O(N log N)，因此它在大规模候选集上不仅更鲁棒，也拥有数量级层面的性能优势；即便候选数量增到数万，RRF 的常数级开销仍稳定，是融合首选方案。",
-          "RRF 能提高 LLM 对 Context Window 的利用率并自动去重检索结果，因为它在融合阶段就剔除了语义重复文档，让进入生成的素材既精炼又不漏关键信息。"
-        ],
-        "generatedAt": 1788392182940,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-2e5b8848",
-        "assessment": {
-          "target": "能判断「两路得分量纲不可通约：Cosine 相似度落在 [0,1]，BM25 分数是无上界的正实数且分布随语料库统计漂移——直接加权求和时数值范围大的一方会主导最终排序，权重形同虚设且极…」",
-          "reasoningGoal": "先复现该机制的内部过程；据此确认「向量相似度（如 Cosine ∈ [0」成立；并排除「RRF 能自动学出向量维度的最佳权重」「RRF 可以在 O(1) 时间完成合并」等不成立描述。"
-        }
-      },
       {
         "id": "ai-eng-063__context-options__wb-llm-20260903__1",
         "kind": "context-options",
@@ -347,25 +309,6 @@
     ],
     "graphrag-02": [
       {
-        "id": "graphrag-02__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "典型 GraphRAG 构建流程中，需对原始文档切片（Text Units）、抽取实体与关系、合并重名实体、生成社区摘要。这一流程的目标是什么？",
-        "options": [
-          "原始文档的文本切片（Chunking）与词性标注这一步骤。",
-          "跨文本块的重名实体与关系的合并（Merge）以及描述信息的压缩重写。",
-          "图层次化聚类算法（如 Leiden 算法）的图拓扑结构计算。",
-          "社区报告（Community Reports）及文本块的向量 Embedding 批量生成。"
-        ],
-        "generatedAt": 1788392182943,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-cb8e13e3",
-        "assessment": {
-          "target": "能判断「成本瓶颈在跨块重名实体与关系的合并及描述压缩重写，需大量LLM调用」",
-          "reasoningGoal": "先复现该机制的内部过程；据此确认「跨文本块的重名实体与关系的合并（Merge）以及描述…」成立；并排除「原始文档的文本切片（Chunking）与词性标注这一…」「图层次化聚类算法（如 Leiden 算法）的图拓扑结…」等不成立描述。"
-        }
-      },
-      {
         "id": "graphrag-02__context-options__wb-llm-20260903__1",
         "kind": "context-options",
         "question": "你在落地 GraphRAG 索引。请说明从文本单元到实体关系、再到社区摘要这条构建链每一步在为何种查询能力服务。",
@@ -387,25 +330,6 @@
     ],
     "graphrag-03": [
       {
-        "id": "graphrag-03__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "GraphRAG 构建知识图谱后，会用层次化社区检测（如 Leiden 算法）把实体图划分为多层社区。这步为后续检索解决了什么问题？",
-        "options": [
-          "选更深（社区粒度更小）的层级，社区报告细节更丰富，生成回答在详尽度（Comprehensiveness）上通常更好。",
-          "选更深（社区粒度更小）的层级，因要处理汇总的社区报告数量暴增，查询时 LLM Token 消耗与端到端延迟（Latency）会明显上升。",
-          "选最宏观层级（如 Level 0），虽查询成本最低、响应最快，却可能漏掉具体子领域的关键细节特征。",
-          "社区报告的粒度层级是查询时由 LLM 按问题动态自动生成的，所以不影响索引构建成本与查询时的报告选择。"
-        ],
-        "generatedAt": 1788392182943,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-0df3b6ee",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「反过来选最宏观的 Level 0，成本最低、响应最快，代价是可能漏掉子领域的关键细节」",
-          "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「选更深（社区粒度更小）的层级」「选更深（社区粒度更小）的层级」等 3 项成立；并排除「社区报告的粒度层级是查询时由 LLM 按问题动态自动…」等不成立描述。"
-        }
-      },
-      {
         "id": "graphrag-03__context-options__wb-llm-20260903__1",
         "kind": "context-options",
         "question": "图谱建好后需组织成可检索的层级。请说明社区检测如何把图聚成多粒度簇，从而支撑从局部到全局的不同检索与摘要。",
@@ -422,25 +346,6 @@
       }
     ],
     "graphrag-04": [
-      {
-        "id": "graphrag-04__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "GraphRAG 针对不同类型查询提供局部检索（Local Search）与全局检索（Global Search）两种模式。二者各自适合什么提问？",
-        "options": [
-          "Local Search 从与查询最匹配的实体节点出发，在图上向外扩收集关联的文本块、社区报告、邻居实体、关系与断言（Claims），统一排序筛选后填入单个 Context Window。",
-          "Global Search 并不在查询时刻对实体图进行实时图遍历（Graph Traversal），而是直接利用预先生成的社区报告（Community Reports）进行 Map-Reduce 式的并行处理与汇总。",
-          "Global Search 的 Map 阶段把分批且打乱顺序的社区报告并行交给 LLM 评估、输出打分的中间答案，Reduce 阶段则挑选高分中间点合成最终回答。",
-          "Local Search 在查询时必须扫描全图所有的实体和关系节点，因此其 Token 消耗和查询时延远高于 Global Search。"
-        ],
-        "generatedAt": 1788392182943,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-3645e5e1",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「D 说反了：Local 是从种子实体出发的局部扩展，不需要扫描全图」",
-          "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「Local Search 从与查询最匹配的实体节点出…」「Global Search 并不在查询时刻对实体图进…」等 3 项成立；并排除「Local Search 在查询时必须扫描全图所有的…」等不成立描述。"
-        }
-      },
       {
         "id": "graphrag-04__context-options__wb-llm-20260903__1",
         "kind": "context-options",
@@ -462,25 +367,6 @@
       }
     ],
     "graphrag-07": [
-      {
-        "id": "graphrag-07__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "没有单一检索策略（Vector RAG、GraphRAG Global、SQL 查询）能胜任所有问题类型。据此应如何设计多策略路由？",
-        "options": [
-          "Agentic RAG 在检索前加一层由 LLM 驱动的查询分类与路由，按问题特征自动挑最合适的检索路径（如点状问答走向量检索、全局分析走 GraphRAG）。",
-          "路由选择可发生在多个抽象层级，例如顶层由 Composite Retriever 决定查哪个索引，子层由 Auto-router 选具体检索算法。",
-          "引入 Agentic 路由会在检索前置多加一次 LLM 调用，使整体查询时延（Latency）与 Token 成本上升。",
-          "若前置路由模块误判（如把全局分析问题错判成简单向量检索），会让后续检索结果质量严重下滑，且这种失效模式比固定静态路由更难排查调试。"
-        ],
-        "generatedAt": 1788392182944,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-a26894fd",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「四项均正确：LLM驱动路由按问题特征选路径、路由可分层复合、引入前置LLM致延迟/成本上升、误路由致质量雪崩且难排查」",
-          "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「Agentic RAG 在检索前加一层由 LLM 驱…」「路由选择可发生在多个抽象层级」等 4 项成立。"
-        }
-      },
       {
         "id": "graphrag-07__context-options__wb-llm-20260903__1",
         "kind": "context-options",
@@ -631,46 +517,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-9f1cb514"
-      }
-    ],
-    "rag-private-enterprise-01": [
-      {
-        "id": "rag-private-enterprise-01__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "某金融机构为满足数据严苛不出域，计划构建基于本地代码库的私有 RAG。全本地化闭源架构在检索与生成上要重点解决什么？",
-        "options": [
-          "向量化（Embedding）阶段用本地部署的轻量 Embedding 模型（如 bge-small），把代码向量存进本地向量库（如 Qdrant/Milvus），全程不连外部云服务。",
-          "把检索到的代码 Context 与用户 Query 拼好，发给本地 Ollama 提供的 HTTP 接口（http://localhost:11434/v1）做推理。",
-          "客户端调本地 OpenAI 兼容 API 时，只要请求 Header 里的 api_key 设成 \"ollama\"，Ollama 就会自动把发往公有云的流量无感拦下并安全打回本地。",
-          "该架构从“向量切块-索引检索-大模型推理”整条链路都处在本地局域网物理闭环内，实现了零数据外泄风险与低时延响应。"
-        ],
-        "generatedAt": 1788392182945,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-c052a8fe",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「私有 RAG 的核心是 Embedding、Vector DB 以及 LLM 引擎全栈本地化部署（选项 A、B、D 正确）」",
-          "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「向量化（Embedding）阶段用本地部署的轻量 E…」「把检索到的代码 Context 与用户 Query …」等 3 项成立；并排除「客户端调本地 OpenAI 兼容 API 时」等不成立描述。"
-        }
-      },
-      {
-        "id": "rag-private-enterprise-01__context-options__wb-llm-20260903__1",
-        "kind": "context-options",
-        "question": "你在设计一套数据不离开内网的私有 RAG。请说明在模型、嵌入、检索全链路本地化时，最该守住的能力与合规要点。",
-        "options": [
-          "向量化（Embedding）阶段使用本地部署的轻量 Embedding 模型（如 bge-small），将代码向量存入本地向量数据库（如 Qdrant/Milvus），全程无需连接外部云服务。",
-          "检索出的代码 Context 与用户 Query 组合后，投递给本地 Ollama 暴露的 HTTP 端点（http://localhost:11434/v1）进行推理。",
-          "调用本地 OpenAI 兼容接口时，只要请求头里的 api_key 填为 \"ollama\"，Ollama 便自动把奔向公有云的流量悄悄截停并安全送回本地。",
-          "从“向量切块-索引检索-大模型推理”一直到生成，整条链路都处在本地局域网内的物理闭环之中，做到数据不出域且响应保持低时延。"
-        ],
-        "generatedAt": 1788392182945,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-c052a8fe",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「私有 RAG 的核心是 Embedding、Vector DB 以及 LLM 引擎全栈本地化部署（选项 A、B、D 正确）」",
-          "reasoningGoal": "先确定设计目标与约束的优先级；据此逐项确认「向量化（Embedding）阶段使用本地部署的轻量 …」「检索出的代码 Context 与用户 Query 组…」等 3 项成立；并排除「调用本地 OpenAI 兼容接口时」等不成立描述。"
-        }
       }
     ]
   }

@@ -1,0 +1,965 @@
+{
+  "version": 1,
+  "generatedAt": 1788863290876,
+  "promptVersion": "v4",
+  "variants": {
+    "agentic-e2e-07": [
+      {
+        "id": "agentic-e2e-07__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某 Agent 测出的页面全绿，上线后用户却截出按钮错位的图。复盘这次漏检，下列哪些判断成立？",
+        "options": [
+          "缺浏览器工具：没有无头浏览器操作点击输入截屏，根本没走真实交互",
+          "在测试执行中自动记录 DOM 状态、Console 日志与网络请求，作为诊断凭证",
+          "缺的是跑完率：渲染报错就该跳过断言，先保证脚本 100% 跑完",
+          "缺证据链：关键节点没存日志截图，过程不可追溯",
+          "只读网页 HTML 源码文本即可，禁止输入图像截图以降低 Token 消耗"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从上线后按钮错位漏检反推 E2E 架构缺失的环节",
+          "reasoningGoal": "先定位漏检的环节（工具、凭证、证据三类）；再逐项验证各判断；并排除「跳过断言」「纯文本够用」等不成立描述。"
+        },
+        "generatedAt": 1788863290870,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9e1f279c",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-51e9e4c6",
+        "sourceSnapshot": {
+          "id": "agentic-e2e-07",
+          "topic": "observability",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "e2e",
+            "testing",
+            "playwright",
+            "observability"
+          ],
+          "question": "为 Web 应用构建基于 Agent 的自动化 UI 测试系统时，为了使 Agent 能够像真实用户一样进行端到端（E2E）测试并生成可靠的 Bug 报告，系统架构设计中应包含下列哪些核心组件或机制？（多选）",
+          "options": [
+            "赋予 Agent 操作无头浏览器（Headless Browser，如 Playwright/Puppeteer）的工具，使其能执行点击、输入和截屏",
+            "在 Agent 的测试执行过程中自动记录 DOM 状态、Console 日志与网络请求（Network Trace），作为诊断凭证",
+            "强制 Agent 在遇到 UI 渲染错误时忽略该错误并跳过相关断言，以确保自动化测试脚本能 100% 运行完毕",
+            "设计结构化的记录工具，让 Agent 在测试步骤的关键节点保存现场“证据链”（如日志记录与截图存盘）",
+            "仅依赖 LLM 对网页 HTML 源码的文本理解，禁止向 LLM 输入任何图像/截图信息，以降低 Token 消耗"
+          ]
+        }
+      },
+      {
+        "id": "agentic-e2e-07__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "把真机 E2E 方案与纯读 HTML 源码方案放在检出能力上对比，两者的根本差异是什么？",
+        "options": [
+          "真机方案用无头浏览器执行点击输入截屏，走真实用户路径",
+          "真机方案自动记录 DOM 状态、Console 与网络请求以备诊断",
+          "遇到渲染错误就忽略断言，保证脚本跑完率才是质量",
+          "缺结构化记录工具：关键节点没保存现场证据链，日志截图都没存盘",
+          "纯读 HTML 源码文本就能判断可用性，不必输入任何图像截图信息"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从检出能力对比真机 E2E 与纯文本读 HTML 的根本差异",
+          "reasoningGoal": "先对齐两种方案的可比维度；再逐项判定各主张成立与否；并排除「跳过即质量」「文本即界面」等不成立描述。"
+        },
+        "generatedAt": 1788863290870,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9e1f279c",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-ec563b57",
+        "sourceSnapshot": {
+          "id": "agentic-e2e-07",
+          "topic": "observability",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "e2e",
+            "testing",
+            "playwright",
+            "observability"
+          ],
+          "question": "为 Web 应用构建基于 Agent 的自动化 UI 测试系统时，为了使 Agent 能够像真实用户一样进行端到端（E2E）测试并生成可靠的 Bug 报告，系统架构设计中应包含下列哪些核心组件或机制？（多选）",
+          "options": [
+            "赋予 Agent 操作无头浏览器（Headless Browser，如 Playwright/Puppeteer）的工具，使其能执行点击、输入和截屏",
+            "在 Agent 的测试执行过程中自动记录 DOM 状态、Console 日志与网络请求（Network Trace），作为诊断凭证",
+            "强制 Agent 在遇到 UI 渲染错误时忽略该错误并跳过相关断言，以确保自动化测试脚本能 100% 运行完毕",
+            "设计结构化的记录工具，让 Agent 在测试步骤的关键节点保存现场“证据链”（如日志记录与截图存盘）",
+            "仅依赖 LLM 对网页 HTML 源码的文本理解，禁止向 LLM 输入任何图像/截图信息，以降低 Token 消耗"
+          ]
+        }
+      }
+    ],
+    "ai-design-001": [
+      {
+        "id": "ai-design-001__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某 Coding Agent 死循环烧掉巨额调用成本，还直接改了生产代码。复盘这两起事故，设计缺了哪几环？",
+        "options": [
+          "缺受限循环：任务解析定位修改跑测迭代，外层无预算与终止条件",
+          "缺正交流具：edit 不返 diff，test 不在沙箱执行",
+          "缺隔离与回滚：直改生产、无分支审查、同一错误可无限重试",
+          "把整个代码库一次性装入 context，不做检索定位与状态维护",
+          "缺的是耐心：失败就该无限重试，多试几次总能收敛"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从烧 token 与直改生产两起事故反推缺失的设计环节",
+          "reasoningGoal": "先定位事故缺失的环节（循环、工具、隔离三类）；再逐项验证各判断；并排除「全量记忆」「无限重试」等不成立描述。"
+        },
+        "generatedAt": 1788863290871,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d93a44ef",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-4e9dea8c",
+        "sourceSnapshot": {
+          "id": "ai-design-001",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "system-design",
+            "coding-agent",
+            "agent"
+          ],
+          "question": "设计一个企业级 AI Coding Agent。它可以读取代码库、搜索代码、修改文件、运行测试并根据失败结果继续修复。请重点说明 Agent Loop、Tool、Context、权限和可靠性设计。",
+          "options": [
+            "以Workflow骨架组织受限循环：任务解析→定位→修改→跑测试→迭代，外层设步数/token/时间预算与终止条件",
+            "工具保持少而正交：edit返回diff便于审查与回滚，test调用限定在无网络的容器沙箱内执行",
+            "文件修改走隔离分支、经PR审查才合入；同一错误连修两轮即转人工，并可回滚到上一个绿色状态",
+            "把整个代码库一次性装入context，跳过检索定位与结构化任务状态，仅靠完整对话历史定位修改",
+            "测试失败就无限重试直到通过，不设终止预算与回滚，认为多试几次模型总能收敛到正确修复"
+          ]
+        }
+      },
+      {
+        "id": "ai-design-001__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "某私有化项目要求测试无网络、密钥不可碰，评审候选 Agent 方案的前提，下列哪些判断正确？",
+        "options": [
+          "循环必须受限：解析定位修改跑测，外套步数 token 时间预算与终止",
+          "工具必须少而正交：edit 返 diff 可审可滚，test 锁无网络沙箱",
+          "修改必须走隔离分支加 PR 审查，连错两轮转人工并可回滚",
+          "整个代码库一次性装入 context，跳过检索定位即可",
+          "失败就无限重试，不设预算与回滚，总能试出来"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在无网络沙箱与密钥不可碰的约束下判断方案前提是否成立",
+          "reasoningGoal": "先判断方案的前提（隔离、预算、审计）是否满足；再逐项验证各主张；并排除「全库直塞」「无限重试」等不成立描述。"
+        },
+        "generatedAt": 1788863290871,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d93a44ef",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-62ff2947",
+        "sourceSnapshot": {
+          "id": "ai-design-001",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "system-design",
+            "coding-agent",
+            "agent"
+          ],
+          "question": "设计一个企业级 AI Coding Agent。它可以读取代码库、搜索代码、修改文件、运行测试并根据失败结果继续修复。请重点说明 Agent Loop、Tool、Context、权限和可靠性设计。",
+          "options": [
+            "以Workflow骨架组织受限循环：任务解析→定位→修改→跑测试→迭代，外层设步数/token/时间预算与终止条件",
+            "工具保持少而正交：edit返回diff便于审查与回滚，test调用限定在无网络的容器沙箱内执行",
+            "文件修改走隔离分支、经PR审查才合入；同一错误连修两轮即转人工，并可回滚到上一个绿色状态",
+            "把整个代码库一次性装入context，跳过检索定位与结构化任务状态，仅靠完整对话历史定位修改",
+            "测试失败就无限重试直到通过，不设终止预算与回滚，认为多试几次模型总能收敛到正确修复"
+          ]
+        }
+      }
+    ],
+    "ai-eng-020": [
+      {
+        "id": "ai-eng-020__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某流水线模型输出被 markdown 包裹、缺字段，下游规则引擎当晚崩了。定位这次故障，缺的是哪几环？",
+        "options": [
+          "缺的是复述密度：格式要求在 prompt 头中尾各说一遍就能锁死",
+          "缺生成层约束：没用 structured output 与 JSON schema 强制 schema",
+          "缺的是确定性：temperature 没归零，同一输入才产出不同形状",
+          "缺客户端校验：解析后先验 schema，失败带错重试，多次不行走兜底并告警",
+          "缺的是正则修补：字符串替换补字段即可，无需 schema 机制"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从下游解析崩溃的故障定位缺失的可靠性环节",
+          "reasoningGoal": "先定位故障缺失的环节（生成约束、客户端校验两类）；再逐项验证各判断；并排除「复述即约束」「归零即正确」「正则兜底」等不成立描述。"
+        },
+        "generatedAt": 1788863290871,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-84818191",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-a66f8591",
+        "sourceSnapshot": {
+          "id": "ai-eng-020",
+          "topic": "structured-output",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "structured-output",
+            "JSON",
+            "reliability",
+            "trade-off"
+          ],
+          "question": "你需要让 LLM 输出固定结构的 JSON。仅仅在 prompt 中写“请返回 JSON”有哪些风险？你会如何提高结构化输出的可靠性？",
+          "options": [
+            "把格式要求拆成三段在 prompt 头中尾各声明一次，重复声明可显著降低偏离率；声明密度即约束强度。",
+            "改用模型服务提供的 structured output / JSON schema 约束模式，在生成层面强制输出符合预定义 schema。",
+            "temperature=0 下解码完全确定，同一输入必出同一合法 JSON；确定性即正确性保证。",
+            "客户端解析后先做 schema 校验：失败则携带错误信息有限次重试，多次仍失败就走安全兜底路径并触发告警，未经校验的数据一律不放行。",
+            "用正则表达式对输出文本做字符串替换来补齐缺失字段，足以应对所有格式异常，无需引入 schema 机制。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-020__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "把结构化约束、客户端校验与 prompt 复述、确定性解码、正则修补放在约束强度上对比，根本差异是什么？",
+        "options": [
+          "在 prompt 里把格式要求重复声明三遍，声明密度即约束强度",
+          "provider 层用 structured output 强制符合 schema",
+          "把 temperature 归零，输出完全确定，确定性即正确性保证",
+          "客户端解析后先验 schema：失败带错误信息有限重试，多次不行走安全兜底",
+          "用正则替换补齐缺失字段，足以应对一切格式异常情况"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从约束强度对比五种可靠性手段的根本差异",
+          "reasoningGoal": "先对齐五种手段的可比维度（约束是否可校验）；再逐项判定各主张；并排除「复述增强」「归零保证」「正则万能」等不成立描述。"
+        },
+        "generatedAt": 1788863290872,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-84818191",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-9963d551",
+        "sourceSnapshot": {
+          "id": "ai-eng-020",
+          "topic": "structured-output",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "structured-output",
+            "JSON",
+            "reliability",
+            "trade-off"
+          ],
+          "question": "你需要让 LLM 输出固定结构的 JSON。仅仅在 prompt 中写“请返回 JSON”有哪些风险？你会如何提高结构化输出的可靠性？",
+          "options": [
+            "把格式要求拆成三段在 prompt 头中尾各声明一次，重复声明可显著降低偏离率；声明密度即约束强度。",
+            "改用模型服务提供的 structured output / JSON schema 约束模式，在生成层面强制输出符合预定义 schema。",
+            "temperature=0 下解码完全确定，同一输入必出同一合法 JSON；确定性即正确性保证。",
+            "客户端解析后先做 schema 校验：失败则携带错误信息有限次重试，多次仍失败就走安全兜底路径并触发告警，未经校验的数据一律不放行。",
+            "用正则表达式对输出文本做字符串替换来补齐缺失字段，足以应对所有格式异常，无需引入 schema 机制。"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-005": [
+      {
+        "id": "ai-search-extra-005__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某 ranker 要新接入一路 click 信号，工程师提议直接与现有分数相加。评审这一提议的前提，下列哪些判断正确？",
+        "options": [
+          "三路信号尺度与重要性各异，组合关系需要学习或配置",
+          "直接相加会让数值大的一路绑架最终排序",
+          "信号间可能存在交互关系，需要一并学出来",
+          "各路 relevance 数值天然同量纲，直接加即可",
+          "click 信号一进来就自动成为监督标签",
+          "相加方式会搞坏检索阶段的索引能力"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断直接相加提议在新信号接入中的前提是否成立",
+          "reasoningGoal": "先判断直接相加的前提（同量纲同重要）是否满足；再逐项验证各主张；并排除「天然同量纲」「click 即标签」「影响索引」等不成立描述。"
+        },
+        "generatedAt": 1788863290872,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0eae5ac8",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-e18222b0",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-005",
+          "topic": "ranking",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "ranking",
+            "learning-to-rank",
+            "signals"
+          ],
+          "question": "一个搜索系统的 ranker 同时使用 text relevance、freshness 和 click signals。为什么 ranker 需要学习或配置这些信号之间的关系，而不能简单把三个分数直接相加？",
+          "options": [
+            "不同信号的尺度和重要性不同，需要学习或配置其组合关系",
+            "直接相加容易让数值范围更大的信号主导排序",
+            "不同信号间可能存在需要学习的交互关系",
+            "所有 relevance 信号数值天然相同，可直接相加",
+            "click signal 一加入排序就自动变成监督标签",
+            "直接相加会让检索阶段失去索引能力"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-005__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "某搜索上线新信号后排序被单一信号绑架，长尾 query 全挂。定位这次融合事故，下列哪些判断成立？",
+        "options": [
+          "病因在量纲：各信号尺度重要性不同，组合关系未经学习",
+          "大数值信号主导排序，小信号被淹没",
+          "不同信号间可能存在交互关系，需要一并学习",
+          "各路 relevance 信号数值天然相同，直接相加减无所谓",
+          "click 信号一进来就自动成为监督标签，照单全收即可",
+          "直接相加搞坏了检索阶段的倒排索引构建能力"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从排序被单一信号绑架的事故定位融合环节的缺口",
+          "reasoningGoal": "先定位事故的直接诱因（量纲、主导、交互三类）；再逐项验证各判断；并排除「天然同量纲」「click 即真理」「索引被搞坏」等不成立描述。"
+        },
+        "generatedAt": 1788863290872,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0eae5ac8",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-184de8e1",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-005",
+          "topic": "ranking",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "ranking",
+            "learning-to-rank",
+            "signals"
+          ],
+          "question": "一个搜索系统的 ranker 同时使用 text relevance、freshness 和 click signals。为什么 ranker 需要学习或配置这些信号之间的关系，而不能简单把三个分数直接相加？",
+          "options": [
+            "不同信号的尺度和重要性不同，需要学习或配置其组合关系",
+            "直接相加容易让数值范围更大的信号主导排序",
+            "不同信号间可能存在需要学习的交互关系",
+            "所有 relevance 信号数值天然相同，可直接相加",
+            "click signal 一加入排序就自动变成监督标签",
+            "直接相加会让检索阶段失去索引能力"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-012": [
+      {
+        "id": "ai-search-extra-012__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "把并行聚合、串行保序、单查省 token 与套娃 Agent 放在延迟与完整性上对比，根本差异是什么？",
+        "options": [
+          "独立子查询并行跑，整体 wall-clock 延迟被压下来",
+          "并行后统一聚合，结果受总并发与预算约束",
+          "比起串行，并行更能满足低延迟 SLO",
+          "四个子查询必须串行，保证严格固定顺序",
+          "只跑一个子查询，省 token 比答全更重要",
+          "每个子查询再套独立 Agent，投出相同结果才算数"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从延迟与完整性对比四种执行策略的根本差异",
+          "reasoningGoal": "先对齐四种策略的可比维度；再逐项判定各主张成立与否；并排除「串行保序」「单查省 token」「套娃投票」等不成立描述。"
+        },
+        "generatedAt": 1788863290872,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-26e9c1b4",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-3a40e894",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-012",
+          "topic": "agentic-search",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agentic-search",
+            "query-decomposition",
+            "parallelism"
+          ],
+          "question": "一个复杂查询被拆成 4 个互相独立的子查询。整体请求的主要 SLO 是低延迟。哪种执行策略通常更合理？",
+          "options": [
+            "独立子查询可以并行执行以降低整体 wall-clock 延迟",
+            "并行后统一聚合结果，并受总并发与预算约束",
+            "相比串行，并行更能满足低延迟 SLO",
+            "串行执行四个子查询，以保证严格固定顺序完成",
+            "只选择一个子查询执行，以避免额外的 token 成本",
+            "让每个子查询再创建独立 Agent，直到得到相同结果"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-012__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "某复杂查询拆成 4 个独立子查询，SLO 要求低延迟。设计执行策略，下列哪些应当纳入？",
+        "options": [
+          "4 路独立子查询并行执行，压低整体延迟",
+          "并行后统一聚合结果，并受总并发与预算约束",
+          "相比串行执行，并行更能满足低延迟 SLO",
+          "必须串行执行，顺序固定才可靠",
+          "只执行其中一个，token 省下来最重要",
+          "让每个子查询再创建独立 Agent，直到得出相同结果"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为低延迟 SLO 的独立子查询设计执行策略",
+          "reasoningGoal": "先拆出策略设计的目标与约束（延迟、完整性、预算）；再逐项确认各设计；并排除「串行可靠」「单查省钱」「投票保真」等不成立描述。"
+        },
+        "generatedAt": 1788863290873,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-26e9c1b4",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-8d91cefb",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-012",
+          "topic": "agentic-search",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agentic-search",
+            "query-decomposition",
+            "parallelism"
+          ],
+          "question": "一个复杂查询被拆成 4 个互相独立的子查询。整体请求的主要 SLO 是低延迟。哪种执行策略通常更合理？",
+          "options": [
+            "独立子查询可以并行执行以降低整体 wall-clock 延迟",
+            "并行后统一聚合结果，并受总并发与预算约束",
+            "相比串行，并行更能满足低延迟 SLO",
+            "串行执行四个子查询，以保证严格固定顺序完成",
+            "只选择一个子查询执行，以避免额外的 token 成本",
+            "让每个子查询再创建独立 Agent，直到得到相同结果"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-015": [
+      {
+        "id": "ai-search-extra-015__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某搜索调高阈值后无关结果少了，但核心文档也搜不出来。定位这次权衡失误，下列哪些判断成立？",
+        "options": [
+          "precision 可能上升：无关项被滤掉",
+          "recall 可能下降：低分相关文档被丢掉",
+          "precision 与 recall 必定同步上升",
+          "recall 会上升：留下的结果更多",
+          "threshold 只管延迟，不管搜索质量"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从调阈值后核心文档丢失的失误定位权衡环节",
+          "reasoningGoal": "先定位失误的环节（精度收益与召回代价）；再逐项验证各判断；并排除「同步上升」「留下更多」「只管延迟」等不成立描述。"
+        },
+        "generatedAt": 1788863290873,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f3f6068d",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-12bafa4a",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-015",
+          "topic": "search-quality",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "search-quality",
+            "precision",
+            "recall"
+          ],
+          "question": "一个搜索系统为了减少用户看到的无关结果，提高了 relevance threshold。最可能出现的 trade-off 是什么？",
+          "options": [
+            "结果 precision 可能提高，因为更多无关项被过滤",
+            "recall 可能下降，因为部分低分但相关的文档被丢弃",
+            "precision 与 recall 一定同步提高",
+            "recall 会提高，因为更多结果被保留下来",
+            "threshold 只影响延迟，不影响搜索质量"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-015__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "某告警检索场景要求宁可误报不可漏报，评审调高阈值方案的前提，下列哪些判断正确？",
+        "options": [
+          "结果 precision 可能提高，因为更多无关项被阈值过滤掉",
+          "recall 可能下降，因为低分但相关的文档会被阈值丢弃",
+          "阈值一高，precision 与 recall 双双上涨",
+          "recall 会提高，因为阈值越高保留的结果越多",
+          "threshold 只影响延迟快慢，与质量无关"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在宁可误报不可漏报的约束下判断调阈值方案的前提是否成立",
+          "reasoningGoal": "先判断调阈值的前提（召回可损）是否满足；再逐项验证各主张；并排除「同步上涨」「保留更多」「无关质量」等不成立描述。"
+        },
+        "generatedAt": 1788863290873,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f3f6068d",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-f041c4bb",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-015",
+          "topic": "search-quality",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "search-quality",
+            "precision",
+            "recall"
+          ],
+          "question": "一个搜索系统为了减少用户看到的无关结果，提高了 relevance threshold。最可能出现的 trade-off 是什么？",
+          "options": [
+            "结果 precision 可能提高，因为更多无关项被过滤",
+            "recall 可能下降，因为部分低分但相关的文档被丢弃",
+            "precision 与 recall 一定同步提高",
+            "recall 会提高，因为更多结果被保留下来",
+            "threshold 只影响延迟，不影响搜索质量"
+          ]
+        }
+      }
+    ],
+    "ai-search-gap-012": [
+      {
+        "id": "ai-search-gap-012__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "把召回侧、重排侧与资源侧放在 Recall 稳定但 p95 上涨这一现象下的嫌疑度对比，差异根源是什么？",
+        "options": [
+          "先查 reranker 候选数是否被意外放大",
+          "再查 cross-encoder 推理延迟是否漂移",
+          "BM25 能否正确匹配具体术语大概率不是主因：Recall 未变说明召回正常",
+          "查 reranker 服务有无资源争用与排队",
+          "把 embedding 维度降下来，延迟自然回去"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从嫌疑度对比三侧在该现象下的差异根源",
+          "reasoningGoal": "先对齐三侧的可比维度（与现象的因果距离）；再逐项判定各主张；并排除「术语匹配」「降维治标」等不成立描述。"
+        },
+        "generatedAt": 1788863290874,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-657cb993",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-33896c3a",
+        "sourceSnapshot": {
+          "id": "ai-search-gap-012",
+          "topic": "search-infrastructure",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "search-infrastructure",
+            "debugging",
+            "latency"
+          ],
+          "question": "一个 AI Search 系统最近出现 p95 latency 明显上升，但 Recall@K 基本不变。系统架构为 BM25 + vector retrieval → RRF → cross-encoder reranker。哪一步最值得优先检查？",
+          "options": [
+            "reranker 的候选数量是否被意外扩大",
+            "cross-encoder 推理延迟是否发生变化",
+            "BM25 是否还能正确匹配某个具体术语",
+            "reranker 服务是否出现资源争用或排队",
+            "是否降低了 embedding 维度"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-gap-012__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "某系统 Recall@K 不变但 p95 上涨，值班手册要求先查重排侧再查召回侧。评审这份手册的前提，下列哪些判断正确？",
+        "options": [
+          "reranker 候选数量被意外扩大是最可疑的头号对象",
+          "cross-encoder 自身推理延迟变化值得紧盯",
+          "BM25 是否还能正确匹配具体术语通常先影响 Recall，Recall 未变可暂放",
+          "reranker 服务资源争用与排队是高频真凶",
+          "降低 embedding 维度是治本之策"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断先重排后召回的排查顺序前提是否成立",
+          "reasoningGoal": "先判断排查顺序的前提（现象与环节的因果距离）是否成立；再逐项验证各主张；并排除「先查召回」「降维治本」等不成立描述。"
+        },
+        "generatedAt": 1788863290874,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-657cb993",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-82dcd6a9",
+        "sourceSnapshot": {
+          "id": "ai-search-gap-012",
+          "topic": "search-infrastructure",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "search-infrastructure",
+            "debugging",
+            "latency"
+          ],
+          "question": "一个 AI Search 系统最近出现 p95 latency 明显上升，但 Recall@K 基本不变。系统架构为 BM25 + vector retrieval → RRF → cross-encoder reranker。哪一步最值得优先检查？",
+          "options": [
+            "reranker 的候选数量是否被意外扩大",
+            "cross-encoder 推理延迟是否发生变化",
+            "BM25 是否还能正确匹配某个具体术语",
+            "reranker 服务是否出现资源争用或排队",
+            "是否降低了 embedding 维度"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-09": [
+      {
+        "id": "aws-genai-developer-pro-09__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某摘要系统整文档塞入，每小时 1000+ 文档下幻觉遍地、还频繁截断。定位这次架构失误，下列哪些判断成立？",
+        "options": [
+          "缺 CoT 核验：生成前没显式检查摘要是否被证据支持",
+          "缺源锚定：没用 RAG 把摘要钉到源分片上",
+          "缺的是模式拦截：配 guardrails 拦幻觉特征即可",
+          "缺的是随机性：应提高 Bedrock 的 temperature 参数",
+          "缺的是完整性：整文档一次性摘要最保真，应坚持"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从整文档输入下幻觉与截断的故障定位架构失误",
+          "reasoningGoal": "先定位故障的环节（锚定、核验两类）；再逐项验证各判断；并排除「模式拦截」「调高温度」「坚持整文档」等不成立描述。"
+        },
+        "generatedAt": 1788863290874,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e1665ebd",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-2f0a52ac",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-09",
+          "topic": "rag",
+          "subtopic": "降低幻觉（RAG + CoT 事实核验）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "rag",
+            "hallucination",
+            "bedrock",
+            "cot",
+            "knowledge-base",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Bedrock 生成技术内容，近期长文档摘要出现大量幻觉（错误/编造细节）。现有方案用大 FM 加一次性把整文档塞进提示。公司需要降低幻觉、满足事实准确性，且每小时处理 1000+ 文档、单文档 3 秒内出摘要。哪些方案组合满足？（请选择以下 2 个正确选项）",
+          "options": [
+            "在提示中加 CoT 指令，要求生成摘要前显式做事实核验",
+            "用 RAG + Bedrock 知识库把摘要锚定到源内容",
+            "配置 Bedrock guardrails 拦截任何匹配“幻觉特征”模式的输出",
+            "提高 Bedrock 的 temperature 参数",
+            "提示模型对每篇完整文档一次性摘要"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-09__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "在每小时 1000+ 文档的吞吐约束下，把源锚定、核验前置与模式拦截、升温、整文档直塞放在事实落地能力上对比，根本差异是什么？",
+        "options": [
+          "CoT 核验在生成前检查证据支撑，把事实落地",
+          "RAG 把摘要锚定到源内容，摆脱整文档输入",
+          "guardrails 匹配幻觉特征模式即可拦截编造",
+          "提高 Bedrock 的 temperature 参数，用随机性带来事实多样性",
+          "整文档一次性摘要，完整性天然压住幻觉"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从事实落地能力对比五种幻觉治理路线的根本差异",
+          "reasoningGoal": "先对齐五种路线的可比维度（是否有事实锚点）；再逐项判定各主张；并排除「模式拦截」「升温多样」「整文档保真」等不成立描述。"
+        },
+        "generatedAt": 1788863290874,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e1665ebd",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-bc610c2a",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-09",
+          "topic": "rag",
+          "subtopic": "降低幻觉（RAG + CoT 事实核验）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "rag",
+            "hallucination",
+            "bedrock",
+            "cot",
+            "knowledge-base",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Bedrock 生成技术内容，近期长文档摘要出现大量幻觉（错误/编造细节）。现有方案用大 FM 加一次性把整文档塞进提示。公司需要降低幻觉、满足事实准确性，且每小时处理 1000+ 文档、单文档 3 秒内出摘要。哪些方案组合满足？（请选择以下 2 个正确选项）",
+          "options": [
+            "在提示中加 CoT 指令，要求生成摘要前显式做事实核验",
+            "用 RAG + Bedrock 知识库把摘要锚定到源内容",
+            "配置 Bedrock guardrails 拦截任何匹配“幻觉特征”模式的输出",
+            "提高 Bedrock 的 temperature 参数",
+            "提示模型对每篇完整文档一次性摘要"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-31": [
+      {
+        "id": "aws-genai-developer-pro-31__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某录音分析链路同步等 20MB 转写完成，频繁超时。排查这次超时故障，下列哪些判断成立？",
+        "options": [
+          "用 Step Functions 编排：Transcribe 转写后调 Lambda 用 Bedrock 出结构化分析",
+          "Transcribe 转写完成后直调 Bedrock 出 JSON，不经 Lambda 中转",
+          "用 Step Functions 编排：Transcribe 转写后调 Lambda 构造 prompt 再调 Bedrock",
+          "源桶新对象发事件给 EventBridge，由规则触发 Step Functions",
+          "源桶新对象直发通知给 Step Functions，无需经过事件总线"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从同步等转写超时的故障定位链路设计环节",
+          "reasoningGoal": "先缩小故障范围（调用方式、中转、触发三类）；再逐项验证各判断；并排除「Lambda 轮询」「S3 直连」「文件太小」等不成立描述。"
+        },
+        "generatedAt": 1788863290875,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2a75af3b",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-7c4a9375",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-31",
+          "topic": "multimodal",
+          "subtopic": "通话录音分析（EventBridge + Step Functions + Transcribe + Bedrock）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "step-functions",
+            "eventbridge",
+            "transcribe",
+            "s3",
+            "sentiment",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融公司用 Bedrock FM 分析呼叫中心录音：通话结束存为 S3 的 MP3，须在新建文件后尽快生成结构化摘要与情感分析；录音平均 20MB。哪两项组合满足？（请选择 2 个）",
+          "options": [
+            "用 Step Functions 编排：调 Transcribe 转写、校验完成、再调 Lambda 用 Bedrock 生成结构化分析。",
+            "用 Step Functions 编排：调 Transcribe 转写、校验完成、直接调 Bedrock 生成 JSON 格式摘要与情感分析。",
+            "用 Step Functions 编排：调 Transcribe 转写、校验完成、调 Lambda 构造 prompt 再调 Bedrock 生成结构化分析。",
+            "配置源 S3 桶向 EventBridge 发事件，建 EventBridge 规则在桶中新建对象时触发 Step Functions 工作流。",
+            "配置源 S3 桶在新建对象时直接向 Step Functions 工作流发通知。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-31__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "在 20MB 录音须尽快出结构化摘要的约束下，把 Bedrock 直调、Lambda 中转与事件驱动、S3 直连放在链路成本与可行性上对比，根本差异是什么？",
+        "options": [
+          "Step Functions 编排下，转写后经 Lambda 中转再调 Bedrock 最省事",
+          "Transcribe 转写完直调 Bedrock 出 JSON，不经 Lambda 拼 prompt",
+          "在 Lambda 里等待转写完成、拼好 prompt 再调用，空转成本可以接受",
+          "源桶新对象发事件到 EventBridge，由规则触发 Step Functions 工作流",
+          "源桶新对象可直发通知给 Step Functions，不必经过 EventBridge"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从成本与可行性对比四种链路接法的根本差异",
+          "reasoningGoal": "先对齐四种接法的可比维度；再逐项判定各主张成立与否；并排除「Lambda 空转」「S3 直连」「同步即可」等不成立描述。"
+        },
+        "generatedAt": 1788863290875,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2a75af3b",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-01bd6bc8",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-31",
+          "topic": "multimodal",
+          "subtopic": "通话录音分析（EventBridge + Step Functions + Transcribe + Bedrock）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "step-functions",
+            "eventbridge",
+            "transcribe",
+            "s3",
+            "sentiment",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融公司用 Bedrock FM 分析呼叫中心录音：通话结束存为 S3 的 MP3，须在新建文件后尽快生成结构化摘要与情感分析；录音平均 20MB。哪两项组合满足？（请选择 2 个）",
+          "options": [
+            "用 Step Functions 编排：调 Transcribe 转写、校验完成、再调 Lambda 用 Bedrock 生成结构化分析。",
+            "用 Step Functions 编排：调 Transcribe 转写、校验完成、直接调 Bedrock 生成 JSON 格式摘要与情感分析。",
+            "用 Step Functions 编排：调 Transcribe 转写、校验完成、调 Lambda 构造 prompt 再调 Bedrock 生成结构化分析。",
+            "配置源 S3 桶向 EventBridge 发事件，建 EventBridge 规则在桶中新建对象时触发 Step Functions 工作流。",
+            "配置源 S3 桶在新建对象时直接向 Step Functions 工作流发通知。"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-02": [
+      {
+        "id": "aws-waf-lens-2026-08-02__surface-options__assessmentfresh__0",
+        "kind": "surface-options",
+        "question": "某 Agent 越权调用下游服务，审计却分不清是用户授权还是 Agent 自作主张。定位这次身份断裂，缺的是什么？",
+        "options": [
+          "缺独立服务身份：Agent 认证与用户凭证必须分离",
+          "缺签名用户上下文：调用链不带用户声明，服务端无从做用户级授权",
+          "缺的是便利：Agent 长期存一份用户 API key 最省事",
+          "缺的是统一：所有 Agent 共用管理员角色，审计能区分即可"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从越权溯源失败的断裂定位身份体系缺失的环节",
+          "reasoningGoal": "先定位断裂的环节（身份分离、上下文传递两类）；再逐项验证各判断；并排除「长期存 key」「共用角色」等不成立描述。"
+        },
+        "generatedAt": 1788863290875,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9db47603",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-46badfb5",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-02",
+          "topic": "tool-security",
+          "subtopic": "分层身份与动态权限",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "aws-well-architected",
+            "agentic-ai",
+            "least-privilege",
+            "identity"
+          ],
+          "question": "Agent 代表用户调用下游服务时，哪些身份设计能保留用户级授权又避免把用户凭证交给 Agent？（请选择两个）",
+          "options": [
+            "使用独立 Agent 身份执行服务级认证",
+            "传播签名用户上下文并在服务端执行用户级授权",
+            "让 Agent 长期保存用户的 API key",
+            "所有 Agent 共用一个管理员角色并依赖审计区分"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-02__context-options__assessmentfresh__1",
+        "kind": "context-options",
+        "question": "要为调用下游服务的 Agent 设计身份体系：用户授权要保留，凭证不能落地。下列哪些设计应当纳入？",
+        "options": [
+          "Agent 用独立身份做服务级认证，不碰用户凭证",
+          "调用链传播签名用户上下文，服务端执行用户级授权",
+          "Agent 长期保存用户 API key，调用最方便",
+          "全体 Agent 共用管理员角色，靠审计事后区分"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为凭证不落地的约束设计 Agent 身份体系",
+          "reasoningGoal": "先拆出身份设计的目标与约束（授权保留与凭证隔离）；再逐项确认各设计；并排除「长期存 key」「共用角色」等不成立描述。"
+        },
+        "generatedAt": 1788863290875,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9db47603",
+        "batch": "assessmentfresh",
+        "model": "manual",
+        "contentHash": "fnv1a-7c6f4687",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-02",
+          "topic": "tool-security",
+          "subtopic": "分层身份与动态权限",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "aws-well-architected",
+            "agentic-ai",
+            "least-privilege",
+            "identity"
+          ],
+          "question": "Agent 代表用户调用下游服务时，哪些身份设计能保留用户级授权又避免把用户凭证交给 Agent？（请选择两个）",
+          "options": [
+            "使用独立 Agent 身份执行服务级认证",
+            "传播签名用户上下文并在服务端执行用户级授权",
+            "让 Agent 长期保存用户的 API key",
+            "所有 Agent 共用一个管理员角色并依赖审计区分"
+          ]
+        }
+      }
+    ]
+  }
+}

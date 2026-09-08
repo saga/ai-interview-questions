@@ -90,27 +90,6 @@
         "sourceHash": "fnv1a-d37159cb"
       }
     ],
-    "agentic-60": [
-      {
-        "id": "agentic-60__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Agent Evaluation 与传统 API 单元测试的核心区别是什么？",
-        "options": [
-          "将温度固定为 0 并锁定随机种子，使输出完全可复现，进而保留全部精确断言；确定性解码保证每次结果逐字节一致，旧版快照比对机制可继续作为回归判据。",
-          "暂停自动化评测，改为上线后纯人工抽检观察；红灯源于输出非确定而非真实退化，自动化断言在此场景下失效，依赖人工长期体验更贴合用户真实感受。",
-          "大面积红灯表明模型确实退化，应立即回滚模型版本并冻结后续更新；指标恶化是模型能力下滑的直接证据，停止迭代可避免问题进一步扩大。",
-          "承认 Agent 输出非确定且达成路径多样，把评测对象转向结果质量（规则校验或 LLM judge 打分）与中间轨迹合理性，用固定评测集统计成功率并按版本回归"
-        ],
-        "generatedAt": 1788392422382,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-bdbddf29",
-        "assessment": {
-          "target": "能判断「非确定性与路径多样性使得精确断言失效：评估对象变为最终结果质量（LLM judge / 规则校验）+ 中间轨迹合理性，并通过评测集统计成功率、按版本回归，而非单次 pass/fa…」",
-          "reasoningGoal": "先明确该概念的定义与适用边界；据此确认「承认 Agent 输出非确定且达成路径多样」成立；并排除「将温度固定为 0 并锁定随机种子」「暂停自动化评测」等不成立描述。"
-        }
-      }
-    ],
     "agentic-68": [
       {
         "id": "agentic-68__surface-options__wb-llm-20260903__0",
@@ -198,28 +177,6 @@
         "sourceHash": "fnv1a-86aef371"
       }
     ],
-    "ai-eval-007": [
-      {
-        "id": "ai-eval-007__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "你改了 Agent Prompt，却无法保证所有历史场景仍正常。如何建立 LLM Regression Test？",
-        "options": [
-          "回归集只需覆盖新功能的主路径场景，历史 badcase 修复确认后即从用例库删除，以免陈旧用例拖慢回归执行速度。",
-          "把线上 badcase 固化为带判定标准的用例持续沉淀，测试集本身版本化管理，并定期从线上新增样本防止用例陈旧失效。",
-          "判定只看整体平均分的变化就行，个别用例从通过变为失败属于正常波动，不必在报告中单独列出。",
-          "任何影响行为的变更（prompt、模型版本、工具定义、检索配置）都触发全量回归，结果与基线做 diff 并重点报告由过变挂的用例。",
-          "将回归套件接入 CI 成为合并门禁，核心场景零失败才允许发布，让行为回归像单元测试一样拦截在合并之前。"
-        ],
-        "generatedAt": 1788392422389,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-2e7c0da3",
-        "assessment": {
-          "target": "能逐项判断下列主张是否成立，核心判断为「回归 = badcase 沉淀的场景库 + 变更触发的自动化执行 + 与基线的 diff 报告」",
-          "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「把线上 badcase 固化为带判定标准的用例持续沉…」「任何影响行为的变更（prompt、模型版本、工具定义…」等 3 项成立；并排除「回归集只需覆盖新功能的主路径场景」「判定只看整体平均分的变化就行」等不成立描述。"
-        }
-      }
-    ],
     "ai-fund-040": [
       {
         "id": "ai-fund-040__surface-options__wb-llm-20260903__0",
@@ -253,27 +210,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-f8a55f5f"
-      }
-    ],
-    "ai-fund-043": [
-      {
-        "id": "ai-fund-043__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "Offline Evaluation 与 Online Evaluation 有什么区别？各自能回答、不能回答什么问题？",
-        "options": [
-          "Offline Evaluation 直接度量真实流量，所以比在线 A/B 测试更能代表用户的真实体验",
-          "Online Evaluation 适用于发布前的核验，Offline Evaluation 适用于上线后的监控，两者不能结合使用",
-          "只要 Offline 指标全部通过就行保证上线安全，Online Evaluation 属于可有可无的补充环节",
-          "Offline 在固定数据集上可重复可对比、成本低，适合迭代守门但覆盖不了真实流量长尾；Online 用真实流量核验效果可信但周期长成本高，两者互补"
-        ],
-        "generatedAt": 1788392422390,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-02673cc1",
-        "assessment": {
-          "target": "能判断「Offline = 固定集上可重复对比（守门快迭代，覆盖不了真实分布）」",
-          "reasoningGoal": "先对齐待比较对象的可比维度；据此确认「Offline 在固定数据集上可重复可对比、成本低」成立；并排除「Offline Evaluation 直接度量真实流…」「Online Evaluation 适用于发布前的核…」等不成立描述。"
-        }
       }
     ],
     "eval-grader-01": [
@@ -359,27 +295,6 @@
         "generator": "offline",
         "promptVersion": "v4",
         "sourceHash": "fnv1a-0b06a09e"
-      }
-    ],
-    "judge-memory-cascade": [
-      {
-        "id": "judge-memory-cascade__surface-options__wb-llm-20260903__0",
-        "kind": "surface-options",
-        "question": "为评估代码生成 Agent 的 Agent-as-a-Judge 引入跨任务持久化记忆后，评估准确率反而下降。导致该现象最可能的原因是什么？",
-        "options": [
-          "记忆模块增加了 Context 长度造成评测 LLM 触发了 Needle In A Haystack 现象并忽略了关键评测指标",
-          "早期评测中产生的错误判断或偏见写入持久化记忆后会在后续评测其他 Trace 时不断传播和放大形成错误级联",
-          "记忆模块会导致评估 Agent 无法调用外部沙盒去真实运行被评估的代码来核验",
-          "记忆模块会造成评测 Agent 在读取历史数据时发生死锁使其退化为标准的单次 LLM-as-a-Judge"
-        ],
-        "generatedAt": 1788392422391,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-2615795f",
-        "assessment": {
-          "target": "能判断「早期评估中产生的错误判断或偏见写入持久化记忆后在后续评估其他 Trace 时不断传播和放大形成错误级联」",
-          "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此确认「早期评测中产生的错误判断或偏见写入持久化记忆后会在后…」成立；并排除「记忆模块增加了 Context 长度造成评测 LLM…」「记忆模块会导致评估 Agent 无法调用外部沙盒去真…」等不成立描述。"
-        }
       }
     ],
     "trajectory-bias-pitfall": [

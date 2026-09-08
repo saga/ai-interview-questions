@@ -1,0 +1,911 @@
+{
+  "version": 1,
+  "generatedAt": 1788855741596,
+  "promptVersion": "v4",
+  "variants": {
+    "vit_inductive_bias_vs_cnn_canonical": [
+      {
+        "id": "vit_inductive_bias_vs_cnn_canonical__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "某团队只有 ImageNet-1k 量级数据且无大规模预训练预算，要在 ViT 与 CNN 之间选型。关于该场景下选型依据的前提是否成立，下列哪些判断正确？",
+        "options": [
+          "CNN 卷积内嵌二维局部性与平移同变性，中小数据集上更抗过拟合",
+          "ViT 自注意力从首层全局计算 Patch 相关性，缺二维拓扑硬先验",
+          "ViT 假设空间更大，超大规模预训练下能突破先验上界、反超 CNN",
+          "ViT 彻底抛弃卷积，学不到边缘纹理这类局部几何特征"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在小数据无预训练预算的约束下判断 ViT 与 CNN 选型依据的前提是否成立",
+          "reasoningGoal": "先判断选型依据的前提（数据规模与预训练预算）是否满足；再逐项验证各主张；并排除「ViT 学不到局部特征」等不成立描述。"
+        },
+        "generatedAt": 1788855741581,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c3c9e48b",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-7fb391df",
+        "sourceSnapshot": {
+          "id": "vit_inductive_bias_vs_cnn_canonical",
+          "topic": "vit-inductive-bias-vs-cnn",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Vision Transformer",
+            "CNN",
+            "Inductive Bias",
+            "Model Capacity"
+          ],
+          "question": "与传统卷积神经网络（CNN）相比，Vision Transformer（ViT）在归纳偏置（Inductive Bias）结构设计以及数据规模依赖性方面展现出显著差异。关于两者的对比与作用机制，以下哪些判断是正确的？",
+          "options": [
+            "CNN 的卷积层天然内嵌了二维空间局部性（Locality）和平移同变性（Translation Equivariance），使其在中小规模数据集上训练时能更好地抵抗过拟合。",
+            "ViT 的自注意力（Self-Attention）机制从第一层起即在全局范围计算 Patch 间的相关性，缺乏硬编码的二维空间相对拓扑先验。",
+            "ViT 缺乏强归纳偏置的结构特性，使其在超大规模数据集预训练时更容易突破先验假设的性能上界，从而取得优于标准 CNN 的泛化能力。",
+            "ViT 由于完全放弃了卷积运算，因此无法学习到类似于传统 CNN 底层所具有的边缘、纹理等局部几何特征。"
+          ]
+        }
+      },
+      {
+        "id": "vit_inductive_bias_vs_cnn_canonical__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某团队在 ImageNet-1k 上从头训 ViT-Base，准确率远低于同量级 ResNet 且严重过拟合。定位这次选型失误的病因，下列哪些判断成立？",
+        "options": [
+          "病因在归纳偏置：CNN 卷积自带局部性与平移同变性，假设空间小而不易过拟合",
+          "病因在先验缺失：ViT 全局自注意力起手就没有二维空间拓扑先验，全靠数据学相对关系",
+          "病因在数据规模：ViT 缺乏强归纳偏置，只有超大规模预训练才能突破先验上界、反超 CNN",
+          "病因在特征天花板：ViT 没有卷积，边缘纹理这类特征注定学不会"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 ViT 在小数据上过拟合的故障反推归纳偏置与数据规模的病因",
+          "reasoningGoal": "先定位故障的直接诱因（偏置、先验、数据三类）；再逐项验证各判断是否对症；并排除「特征注定学不会」等不成立描述。"
+        },
+        "generatedAt": 1788855741582,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c3c9e48b",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-f36daffd",
+        "sourceSnapshot": {
+          "id": "vit_inductive_bias_vs_cnn_canonical",
+          "topic": "vit-inductive-bias-vs-cnn",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Vision Transformer",
+            "CNN",
+            "Inductive Bias",
+            "Model Capacity"
+          ],
+          "question": "与传统卷积神经网络（CNN）相比，Vision Transformer（ViT）在归纳偏置（Inductive Bias）结构设计以及数据规模依赖性方面展现出显著差异。关于两者的对比与作用机制，以下哪些判断是正确的？",
+          "options": [
+            "CNN 的卷积层天然内嵌了二维空间局部性（Locality）和平移同变性（Translation Equivariance），使其在中小规模数据集上训练时能更好地抵抗过拟合。",
+            "ViT 的自注意力（Self-Attention）机制从第一层起即在全局范围计算 Patch 间的相关性，缺乏硬编码的二维空间相对拓扑先验。",
+            "ViT 缺乏强归纳偏置的结构特性，使其在超大规模数据集预训练时更容易突破先验假设的性能上界，从而取得优于标准 CNN 的泛化能力。",
+            "ViT 由于完全放弃了卷积运算，因此无法学习到类似于传统 CNN 底层所具有的边缘、纹理等局部几何特征。"
+          ]
+        }
+      }
+    ],
+    "vit_position_embedding_interpolation_canonical": [
+      {
+        "id": "vit_position_embedding_interpolation_canonical__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "某团队要把 224 分辨率预训练的 ViT 搬到 384 任务上，Patch 尺寸 16 不变。评审直接补零对齐长度方案的前提，下列哪些判断正确？",
+        "options": [
+          "分辨率提升而 Patch 不变，Patch 数增多，序列长度超出预训练位置编码长度",
+          "应把一维位置编码按 2D 网格还原，用二维双三次插值缩放到新尺寸再展平",
+          "超出的 Token 直接补零或随机初始化，效果远胜二维插值",
+          "插值保留了预训练学到的空间相对关系，是跨分辨率微调的关键"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断补零对齐方案在 224 到 384 迁移中的前提是否成立",
+          "reasoningGoal": "先判断补零方案的前提（空间连续性与位置先验）是否满足；再逐项验证各主张；并排除「补零更优」等不成立描述。"
+        },
+        "generatedAt": 1788855741582,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-68aa8352",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-68ed4a60",
+        "sourceSnapshot": {
+          "id": "vit_position_embedding_interpolation_canonical",
+          "topic": "vit-position-embedding-interpolation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Vision Transformer",
+            "Position Embedding",
+            "Fine-tuning",
+            "Interpolation"
+          ],
+          "question": "当使用在低分辨率（如 224x224）上预训练的 ViT 模型迁移微调至高分辨率图像（如 384x384）任务时，如果保持 Patch 尺寸（如 16x16）不变，关于位置编码（Position Embedding）的处理机制与原理，以下哪些判断是正确的？",
+          "options": [
+            "图像分辨率提升且 Patch 尺寸不变时，导出的图像 Patch 数量增多，导致输入 Transformer 的 Token 序列长度超出了预训练位置编码矩阵的长度。",
+            "为了适配更长的序列，通常需要将预训练的一维位置编码依据其对应的二维空间网格坐标（2D Grid）重新打包，并采用二维双三次插值（2D Bicubic Interpolation）调整至新序列尺寸。",
+            "即使输入序列变长，也可以直接对超出的 Token 补零（Zero-padding）或随机初始化新位置编码，这样操作效果显著优于二维插值。",
+            "位置编码插值操作能够尽可能保留预训练阶段学习到的空间相对位置关系与距离感知语义，是 ViT 跨分辨率微调的关键步骤。"
+          ]
+        }
+      },
+      {
+        "id": "vit_position_embedding_interpolation_canonical__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "在 224 预训练、384 微调的跨分辨率迁移中，把二维插值、补零初始化与一维线性插值放在拓扑保持与收敛效果上对比，三者的根本差异是什么？",
+        "options": [
+          "Patch 增多导致序列变长，旧位置编码矩阵长度不够用",
+          "将预训练一维位置编码按二维网格坐标还原打包，用二维双三次插值调整至新序列尺寸",
+          "补零或随机初始化新位置，收敛效果显著优于插值",
+          "插值继承邻近位置的相对距离语义，高分辨率微调收敛更快"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从拓扑保持与收敛效果对比三种位置编码处理路线的差异",
+          "reasoningGoal": "先对齐三种路线的可比维度；再逐项判定各主张成立与否；并排除「补零更优」「一维足够」等不成立描述。"
+        },
+        "generatedAt": 1788855741585,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-68aa8352",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-3ddbb0db",
+        "sourceSnapshot": {
+          "id": "vit_position_embedding_interpolation_canonical",
+          "topic": "vit-position-embedding-interpolation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Vision Transformer",
+            "Position Embedding",
+            "Fine-tuning",
+            "Interpolation"
+          ],
+          "question": "当使用在低分辨率（如 224x224）上预训练的 ViT 模型迁移微调至高分辨率图像（如 384x384）任务时，如果保持 Patch 尺寸（如 16x16）不变，关于位置编码（Position Embedding）的处理机制与原理，以下哪些判断是正确的？",
+          "options": [
+            "图像分辨率提升且 Patch 尺寸不变时，导出的图像 Patch 数量增多，导致输入 Transformer 的 Token 序列长度超出了预训练位置编码矩阵的长度。",
+            "为了适配更长的序列，通常需要将预训练的一维位置编码依据其对应的二维空间网格坐标（2D Grid）重新打包，并采用二维双三次插值（2D Bicubic Interpolation）调整至新序列尺寸。",
+            "即使输入序列变长，也可以直接对超出的 Token 补零（Zero-padding）或随机初始化新位置编码，这样操作效果显著优于二维插值。",
+            "位置编码插值操作能够尽可能保留预训练阶段学习到的空间相对位置关系与距离感知语义，是 ViT 跨分辨率微调的关键步骤。"
+          ]
+        }
+      }
+    ],
+    "q-kd-temp-scaling-c": [
+      {
+        "id": "q-kd-temp-scaling-c__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "把 Soft Targets 与 Hard Targets 放在信息密度、梯度方差与正则效应三个维度上对比，两者的根本差异是什么？",
+        "options": [
+          "T 升高平滑分布，负类别间的相对比例显露，暗知识得以展现",
+          "高熵软标签信息密度更高，样本间梯度方差更小，支持更高学习率",
+          "温度 T 的作用是改变倒数第二层特征提取器的维度，补足表达能力",
+          "非目标类别概率限定泛化边界，是强正则，降低过拟合风险"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从三维度对比软硬标签在信息密度、梯度方差与正则上的根本差异",
+          "reasoningGoal": "先对齐软硬标签的可比维度；再逐项判定各主张成立与否；并排除「T 改变特征维度」等不成立描述。"
+        },
+        "generatedAt": 1788855741586,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-61dc15a1",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-8fcd9383",
+        "sourceSnapshot": {
+          "id": "q-kd-temp-scaling-c",
+          "topic": "kd-temperature-scaling-mechanism",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "知识蒸馏",
+            "Temperature",
+            "Soft Targets"
+          ],
+          "question": "在基于教师-学生（Teacher-Student）架构的知识蒸馏中，模型通常引入温度系数 $T$（Temperature Scaling）将 Teacher 输出的 Logits 转化为 Soft Targets。关于温度系数 $T$ 的作用机制以及 Soft Targets 相比传统离散 One-hot Hard Targets 的优势，下列哪些说法是正确的？",
+          "options": [
+            "随着蒸馏温度 $T$ 的升高，Softmax 输出的概率分布会变得更加平滑，使得原本数值极小、受离散 One-hot 限制的非正确类别（负类别）之间的相对概率比值显式展现出来，从而暴露类间相似度结构（暗知识）。",
+            "相比包含单极高概率的 Hard Targets，高熵的 Soft Targets 在样本间传递了更高信息密度的监督信号，同时减小了不同样本间梯度的方差，使 Student 模型能以更高的学习率稳定训练。",
+            "引入温度 $T$ 的本质目的是改变神经网络倒数第二层特征提取器（Feature Extractor）的维度，从根本上解决 Student 模型表达能力不足的问题。",
+            "Soft Targets 提供的非目标类别概率隐式限定了模型的泛化边界（例如某种数字‘2’与数字‘3’更相似还是与‘7’更相似），能作为强正则化手段降低 Student 模型的过拟合风险。"
+          ]
+        }
+      },
+      {
+        "id": "q-kd-temp-scaling-c__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某蒸馏实验把温度 T 调得过高，Student 训练震荡、测试集反而更差。定位这次调参事故，下列哪些判断成立？",
+        "options": [
+          "蒸馏温度 $T$ 升高会平滑 Softmax 分布，让数值极小的负类别之间相对比例显露，暴露类间暗知识",
+          "高熵 Soft Targets 本应传递高密度监督信号、减小样本间梯度方差以支持更高学习率，过高温度下这套机制反而失控",
+          "引入温度 T 的本质是改变倒数第二层特征提取器的维度，解决 Student 表达能力不足",
+          "非目标类别概率限定的泛化边界被冲淡，强正则丢失，Student 过拟合风险抬头"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从高温蒸馏翻车的故障反推温度机制的失效环节",
+          "reasoningGoal": "先定位故障的直接诱因（分布、梯度、正则三类）；再逐项验证各判断是否对症；并排除「维度不够」等不成立描述。"
+        },
+        "generatedAt": 1788855741587,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-61dc15a1",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-f217491d",
+        "sourceSnapshot": {
+          "id": "q-kd-temp-scaling-c",
+          "topic": "kd-temperature-scaling-mechanism",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "知识蒸馏",
+            "Temperature",
+            "Soft Targets"
+          ],
+          "question": "在基于教师-学生（Teacher-Student）架构的知识蒸馏中，模型通常引入温度系数 $T$（Temperature Scaling）将 Teacher 输出的 Logits 转化为 Soft Targets。关于温度系数 $T$ 的作用机制以及 Soft Targets 相比传统离散 One-hot Hard Targets 的优势，下列哪些说法是正确的？",
+          "options": [
+            "随着蒸馏温度 $T$ 的升高，Softmax 输出的概率分布会变得更加平滑，使得原本数值极小、受离散 One-hot 限制的非正确类别（负类别）之间的相对概率比值显式展现出来，从而暴露类间相似度结构（暗知识）。",
+            "相比包含单极高概率的 Hard Targets，高熵的 Soft Targets 在样本间传递了更高信息密度的监督信号，同时减小了不同样本间梯度的方差，使 Student 模型能以更高的学习率稳定训练。",
+            "引入温度 $T$ 的本质目的是改变神经网络倒数第二层特征提取器（Feature Extractor）的维度，从根本上解决 Student 模型表达能力不足的问题。",
+            "Soft Targets 提供的非目标类别概率隐式限定了模型的泛化边界（例如某种数字‘2’与数字‘3’更相似还是与‘7’更相似），能作为强正则化手段降低 Student 模型的过拟合风险。"
+          ]
+        }
+      }
+    ],
+    "index_share_sparse_attn_canonical": [
+      {
+        "id": "index_share_sparse_attn_canonical__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "把跨层共享索引、每层独立建索引与缩减 KV Cache 三种降本路线对比，各自省掉了什么、没省什么？",
+        "options": [
+          "首层算一次 Top-K 索引透传给后 3 层，省掉后 3 层索引器的点积与排序开销",
+          "相邻层稀疏模式高度相关，复用掩码几乎不损精度 yet 大幅降算量",
+          "核心省的是每层 KV Cache 字节数，长文本显存瓶颈同比例缓解",
+          "后 3 层彻底免掉注意力点积，复杂度从平方降为 O(1) 查表"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比三种降本路线各自省掉与没省掉的开销",
+          "reasoningGoal": "先对齐三种路线的可比维度（索引开销、显存、注意力计算）；再逐项判定各主张；并排除「缩减 KV」「O(1) 查表」等不成立描述。"
+        },
+        "generatedAt": 1788855741587,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-84a53a88",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-ef9c5466",
+        "sourceSnapshot": {
+          "id": "index_share_sparse_attn_canonical",
+          "topic": "index-share-sparse-attention",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Sparse Attention",
+            "IndexShare",
+            "Long Context",
+            "FLOPs"
+          ],
+          "question": "在超长上下文大语言模型中，针对基于索引机制的动态稀疏注意力（Dynamic Sparse Attention），某架构采用了跨层共享轻量级索引器（IndexShare）的策略（例如每 4 个 Transformer 层共享 1 个索引器，索引器部署在 4 层中的首层）。关于该 IndexShare 机制对计算开销与推理特性的影响，以下哪些选项的说法是正确的？",
+          "options": [
+            "通过在 4 层结构的首层计算一次 Top-K 索引并透传给后续 3 层，直接省去了后续 3 层中索引器 Query-Key 点积与 Top-K 排序的计算开销。",
+            "由于相邻 Transformer 层间的注意力关注区域具有高语义相关性，复用首层计算的 Top-K 稀疏掩码可以在几乎不损伤模型精度的前提下大幅降低计算量。",
+            "IndexShare 机制的核心优化点在于成倍缩减每层保存的 KV Cache 字节数，从而使长文本下的显存容量瓶颈得到同比例缓解。",
+            "IndexShare 使得后续 3 层完全无需执行 Q 与 K/V 的注意力点积，注意力计算彻底从 O(N^2) 降低为 O(1) 的查表操作。"
+          ]
+        }
+      },
+      {
+        "id": "index_share_sparse_attn_canonical__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某 128K 推理服务的注意力开销爆炸，需要在不损精度的前提下降本。下列哪些设计成立？",
+        "options": [
+          "4 层一组，首层算 Top-K 索引供后 3 层复用，免掉 3 层索引器开销",
+          "层间注意力关注区域语义相关，复用首层掩码精度几乎无损",
+          "IndexShare 的核心优化是成倍缩减每层 KV Cache 字节数，长文本显存瓶颈同比例缓解",
+          "IndexShare 让后 3 层无需执行 Q 与 K/V 点积，注意力从 O(N^2) 降为 O(1) 查表"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为长上下文推理服务设计不损精度的注意力降本方案",
+          "reasoningGoal": "先拆出降本设计的目标与约束（精度、显存、算量）；再逐项确认各设计；并排除「砍 KV」「跳过点积」等不成立描述。"
+        },
+        "generatedAt": 1788855741588,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-84a53a88",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-18cfe0f6",
+        "sourceSnapshot": {
+          "id": "index_share_sparse_attn_canonical",
+          "topic": "index-share-sparse-attention",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Sparse Attention",
+            "IndexShare",
+            "Long Context",
+            "FLOPs"
+          ],
+          "question": "在超长上下文大语言模型中，针对基于索引机制的动态稀疏注意力（Dynamic Sparse Attention），某架构采用了跨层共享轻量级索引器（IndexShare）的策略（例如每 4 个 Transformer 层共享 1 个索引器，索引器部署在 4 层中的首层）。关于该 IndexShare 机制对计算开销与推理特性的影响，以下哪些选项的说法是正确的？",
+          "options": [
+            "通过在 4 层结构的首层计算一次 Top-K 索引并透传给后续 3 层，直接省去了后续 3 层中索引器 Query-Key 点积与 Top-K 排序的计算开销。",
+            "由于相邻 Transformer 层间的注意力关注区域具有高语义相关性，复用首层计算的 Top-K 稀疏掩码可以在几乎不损伤模型精度的前提下大幅降低计算量。",
+            "IndexShare 机制的核心优化点在于成倍缩减每层保存的 KV Cache 字节数，从而使长文本下的显存容量瓶颈得到同比例缓解。",
+            "IndexShare 使得后续 3 层完全无需执行 Q 与 K/V 的注意力点积，注意力计算彻底从 O(N^2) 降低为 O(1) 的查表操作。"
+          ]
+        }
+      }
+    ],
+    "mtp_speculative_decoding_canonical": [
+      {
+        "id": "mtp_speculative_decoding_canonical__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "把传统多步 MTP 与 IndexShare 加 KVShare 方案放在输入特征来源与键值缓存两个维度上对比，差异的根源是什么？",
+        "options": [
+          "传统方案第 2 步起 Hidden State 来自前一步 MTP，KV 混入混合特征，训练推理不一致",
+          "新方案后几步复用 Target 侧 KV 与 Top-K 索引，污染消除，接受率回升",
+          "KVShare 要求把 Target 完整重算一遍，以双倍算量强制纠偏",
+          "多步失败是因为共用 LM Head，KVShare 改了 Head 权重结构才修好"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从输入特征与 KV 上下文对比两种方案差异的根源",
+          "reasoningGoal": "先对齐两种方案的可比维度；再逐项判定各主张成立与否；并排除「重算纠偏」「改 Head 结构」等不成立描述。"
+        },
+        "generatedAt": 1788855741589,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-12b037b2",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-d2109d52",
+        "sourceSnapshot": {
+          "id": "mtp_speculative_decoding_canonical",
+          "topic": "mtp-speculative-decoding",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "MTP",
+            "Speculative Decoding",
+            "KV Cache",
+            "IndexShare"
+          ],
+          "question": "在基于多标记预测（Multi-Token Prediction, MTP）的投机采样（Speculative Decoding）中，传统多步 MTP 生成草稿 Token 时，随着预测步数增加，接受率（Acceptance Rate）往往快速衰减。引入 IndexShare 与 KVShare 后，接受长度（Acceptance Length）得到了显著提升。关于该优化机制的诊断与因果关系分析，以下哪些选项的描述是正确的？",
+          "options": [
+            "传统多步 MTP 在第 2 步及后续步骤中，输入的 Hidden State 部分来自于前一步 MTP 模块而非 Target Model，导致计算出的 KV Cache 包含了混合来源的特征，产生了训练与推理不一致（Training-Inference Discrepancy）。",
+            "结合 IndexShare 与 KVShare 后，MTP 后续预测步骤直接复用 Target Model 产生的 KV Cache 与 Top-K 索引，消除了由 MTP 自身中间隐藏状态污染 KV Cache 的问题。",
+            "KVShare 机制要求 MTP 模块重新对整个 Target Model 执行一次完整的 Forward 过程，从而在计算量翻倍的前提下强制纠正特征偏差。",
+            "传统的 MTP 多步预测之所以失败，是因为多步预测共享了完全相同的线性投影输出层（LM Head），而 KVShare 从根本上改变了 LM Head 的权重结构。"
+          ]
+        }
+      },
+      {
+        "id": "mtp_speculative_decoding_canonical__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某投机采样系统接受率随预测步数增加快速衰减，第 3 步后几乎全拒。排查这次衰减故障，下列哪些判断成立？",
+        "options": [
+          "第 2 步起输入 Hidden State 部分来自前一步 MTP 而非 Target，KV 混入混合来源特征",
+          "后几步复用 Target 的 KV 与 Top-K 索引，消除中间状态污染",
+          "修复办法是让 MTP 把 Target Model 完整重算一遍，以双倍算量强制纠正偏差",
+          "传统多步预测失败是因为共享了相同的线性投影输出层，换掉 LM Head 权重结构即可恢复"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从接受率随步数衰减的故障定位特征污染环节",
+          "reasoningGoal": "先缩小故障范围（特征来源、上下文、输出层三类）；再逐项验证各判断；并排除「重算修复」「换输出层」等不成立描述。"
+        },
+        "generatedAt": 1788855741590,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-12b037b2",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-38fada00",
+        "sourceSnapshot": {
+          "id": "mtp_speculative_decoding_canonical",
+          "topic": "mtp-speculative-decoding",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "MTP",
+            "Speculative Decoding",
+            "KV Cache",
+            "IndexShare"
+          ],
+          "question": "在基于多标记预测（Multi-Token Prediction, MTP）的投机采样（Speculative Decoding）中，传统多步 MTP 生成草稿 Token 时，随着预测步数增加，接受率（Acceptance Rate）往往快速衰减。引入 IndexShare 与 KVShare 后，接受长度（Acceptance Length）得到了显著提升。关于该优化机制的诊断与因果关系分析，以下哪些选项的描述是正确的？",
+          "options": [
+            "传统多步 MTP 在第 2 步及后续步骤中，输入的 Hidden State 部分来自于前一步 MTP 模块而非 Target Model，导致计算出的 KV Cache 包含了混合来源的特征，产生了训练与推理不一致（Training-Inference Discrepancy）。",
+            "结合 IndexShare 与 KVShare 后，MTP 后续预测步骤直接复用 Target Model 产生的 KV Cache 与 Top-K 索引，消除了由 MTP 自身中间隐藏状态污染 KV Cache 的问题。",
+            "KVShare 机制要求 MTP 模块重新对整个 Target Model 执行一次完整的 Forward 过程，从而在计算量翻倍的前提下强制纠正特征偏差。",
+            "传统的 MTP 多步预测之所以失败，是因为多步预测共享了完全相同的线性投影输出层（LM Head），而 KVShare 从根本上改变了 LM Head 的权重结构。"
+          ]
+        }
+      }
+    ],
+    "dit-cond-adaln-zero-can": [
+      {
+        "id": "dit-cond-adaln-zero-can__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "在计算增量接近零、FID 必须最优的约束下，推导四种条件注入机制的选型结论。下列哪些判断成立？",
+        "options": [
+          "Cross-Attention 在自注意力后另起交叉注意力层，比 adaLN 多约 15% 开销",
+          "adaLN 以逐通道缩放平移作用全部 Token，开销极低且 FID 更优",
+          "adaLN-Zero 会显著增加模型参数量：每个 Block 都要为每个图像 Patch 独立回归一套 LayerNorm 参数",
+          "In-context 只多几个 Token 开销可忽略，中期 FID 已追上 adaLN，可平替"
+        ],
+        "angle": "quantitative",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能在零计算增量与最优 FID 约束下推导条件注入机制的选型结论",
+          "reasoningGoal": "先确定推导所依赖的量（开销增量与 FID 排序）；再逐项验证各主张；并排除「逐 Token 回归」「In-context 平替」等不成立描述。"
+        },
+        "generatedAt": 1788855741591,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d390b163",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-a97e3dfb",
+        "sourceSnapshot": {
+          "id": "dit-cond-adaln-zero-can",
+          "topic": "transformer",
+          "angle": "architecture",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "DiT",
+            "Diffusion Models",
+            "Transformer",
+            "Conditioning"
+          ],
+          "question": "在 Diffusion Transformer (DiT) 中，注入时间步 $t$ 和类别标签 $c$ 等条件信息有多种机制（如 In-context conditioning、Cross-Attention block、adaLN 与 adaLN-Zero）。关于这些条件注入机制在计算开销、参数特征与生成质量（FID）方面的对比，以下哪些说法是正确的？",
+          "options": [
+            "Cross-Attention 机制会在 Self-Attention 之后引入额外的交叉注意力层，相比仅做线性归一化调制（adaLN）的方案，会增加约 15% 的额外计算开销（GFLOPs）。",
+            "与在输入序列前拼接条件 Token（In-context conditioning）相比，adaLN/adaLN-Zero 机制约束条件信号以逐通道缩放与平移的形式统一作用于所有 Token，但在极低计算增量下取得了更优的 FID 评分。",
+            "adaLN-Zero 会带来显著的模型参数量增加，因为每个 Transformer Block 都需要为空间中的每个图像 Patch Token 独立回归一套专属的 LayerNorm 参数。",
+            "In-context conditioning 的额外开销可以忽略，且在小 Token 规模下其中期训练 FID 已接近 adaLN，因此可视为 adaLN 的等价替代。"
+          ]
+        }
+      },
+      {
+        "id": "dit-cond-adaln-zero-can__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某 DiT 项目要在控制算量的前提下拿到最优 FID，评审四种条件注入方案。下列哪些设计成立？",
+        "options": [
+          "Cross-Attention 额外多一层交叉注意力，比线性调制的 adaLN 贵约 15%",
+          "adaLN 以逐通道缩放平移统一作用全部 Token，计算增量极低且 FID 更优",
+          "adaLN-Zero 会显著增大模型参数：每个 Block 为每个图像块单独回归一套参数",
+          "In-context 拼接条件 Token 开销忽略不计，小规模下 FID 已持平 adaLN"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在控制 GFLOPs 且 FID 最优的约束下选出条件注入方案",
+          "reasoningGoal": "先拆出选型的目标与约束（开销上限与 FID 下限）；再逐项确认各设计；并排除「参数膨胀」「In-context 平替」等不成立描述。"
+        },
+        "generatedAt": 1788855741591,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d390b163",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-fccb9fe5",
+        "sourceSnapshot": {
+          "id": "dit-cond-adaln-zero-can",
+          "topic": "transformer",
+          "angle": "architecture",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "DiT",
+            "Diffusion Models",
+            "Transformer",
+            "Conditioning"
+          ],
+          "question": "在 Diffusion Transformer (DiT) 中，注入时间步 $t$ 和类别标签 $c$ 等条件信息有多种机制（如 In-context conditioning、Cross-Attention block、adaLN 与 adaLN-Zero）。关于这些条件注入机制在计算开销、参数特征与生成质量（FID）方面的对比，以下哪些说法是正确的？",
+          "options": [
+            "Cross-Attention 机制会在 Self-Attention 之后引入额外的交叉注意力层，相比仅做线性归一化调制（adaLN）的方案，会增加约 15% 的额外计算开销（GFLOPs）。",
+            "与在输入序列前拼接条件 Token（In-context conditioning）相比，adaLN/adaLN-Zero 机制约束条件信号以逐通道缩放与平移的形式统一作用于所有 Token，但在极低计算增量下取得了更优的 FID 评分。",
+            "adaLN-Zero 会带来显著的模型参数量增加，因为每个 Transformer Block 都需要为空间中的每个图像 Patch Token 独立回归一套专属的 LayerNorm 参数。",
+            "In-context conditioning 的额外开销可以忽略，且在小 Token 规模下其中期训练 FID 已接近 adaLN，因此可视为 adaLN 的等价替代。"
+          ]
+        }
+      }
+    ],
+    "dit-patch-scaling-can": [
+      {
+        "id": "dit-patch-scaling-can__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "某 DiT 配置 latent 尺寸 I 不变、层数 N 与维度 d 固定，把 Patch 从 p=4 改成 p=2。评审参数量随之涨 4 倍这一说法的前提，下列哪些判断正确？",
+        "options": [
+          "Patch 减半，Token 序列长度按 (I/p)^2 变为 4 倍",
+          "前向 GFLOPs 非线性剧增，整体至少 4 倍，注意力矩阵部分到 16 倍",
+          "Patchify 投影输入维度缩小，该层参数不增反减，主干参数与 T 无关",
+          "N 与 d 确定后总参数基本不变，Transformer 参数与序列长度解耦"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断参数量涨 4 倍说法在该配置下的前提是否成立",
+          "reasoningGoal": "先判断该说法的前提（参数量与 T 是否耦合）是否满足；再逐项验证各主张；并排除「投影层主导参数变化」等不成立描述。"
+        },
+        "generatedAt": 1788855741592,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bb3cc8b2",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-b80c27b8",
+        "sourceSnapshot": {
+          "id": "dit-patch-scaling-can",
+          "topic": "vit-patch-embedding-sequence-length",
+          "angle": "quantitative",
+          "difficulty": "hard",
+          "cognitiveTask": "predict",
+          "tags": [
+            "DiT",
+            "Computational Complexity",
+            "GFLOPs",
+            "Patch Size"
+          ],
+          "question": "假设输入的 Latent 特征尺寸为 $I \\times I \\times C$，在保持 Transformer 层数 $N$ 和隐藏层维度 $d$ 固定不变的情况下，将 Patch Size 从 $p$ 减小为 $p/2$（例如从 $p=4$ 降至 $p=2$）。以下关于该调整对模型 Token 序列长度 $T$、计算复杂度（GFLOPs）以及模型总参数量影响的推导，哪些是正确的？",
+          "options": [
+            "Patch Size 减半会导致 Transformer 处理的输入 Token 序列长度 $T = (I/p)^2$ 增加为原来的 4 倍。",
+            "模型的前向计算复杂度 GFLOPs 将呈现非线性剧增，整体计算量至少增加为原来的 4 倍，且 Self-Attention 矩阵相乘部分的开销将增加至 16 倍。",
+            "首层 Patchify 投影的输入维度随 p 减半而缩小，该层参数量会增加约 4 倍并主导模型总参数量的变化。",
+            "在模型层数 $N$ 和隐藏维度 $d$ 确定的前提下，DiT 的网络总参数量基本维持不变，因为 Transformer 参数量与序列长度 $T$ 解耦。"
+          ]
+        }
+      },
+      {
+        "id": "dit-patch-scaling-can__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某团队把 Patch 从 p=4 改成 p=2 后，训练显存直接爆炸，但有人坚持参数量没变。定位这次分歧，下列哪些判断成立？",
+        "options": [
+          "序列长度确实变 4 倍：T 按 (I/p)^2 缩放，p 减半即 4T",
+          "爆的是计算与激活：整体至少 4 倍，注意力矩阵部分冲到 16 倍",
+          "Patchify 投影维度随 p 缩小而缩小，该层参数减少且相对主干可忽略",
+          "参数量确实基本不变：N、d 固定时主干参数与 T 解耦"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从改 Patch 后显存爆炸但参数量不变的分歧定位计算与参数的混淆",
+          "reasoningGoal": "先定位分歧的直接诱因（序列、算量、参数三类）；再逐项验证各判断；并排除「投影层主导」等不成立描述。"
+        },
+        "generatedAt": 1788855741592,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bb3cc8b2",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-89200f15",
+        "sourceSnapshot": {
+          "id": "dit-patch-scaling-can",
+          "topic": "vit-patch-embedding-sequence-length",
+          "angle": "quantitative",
+          "difficulty": "hard",
+          "cognitiveTask": "predict",
+          "tags": [
+            "DiT",
+            "Computational Complexity",
+            "GFLOPs",
+            "Patch Size"
+          ],
+          "question": "假设输入的 Latent 特征尺寸为 $I \\times I \\times C$，在保持 Transformer 层数 $N$ 和隐藏层维度 $d$ 固定不变的情况下，将 Patch Size 从 $p$ 减小为 $p/2$（例如从 $p=4$ 降至 $p=2$）。以下关于该调整对模型 Token 序列长度 $T$、计算复杂度（GFLOPs）以及模型总参数量影响的推导，哪些是正确的？",
+          "options": [
+            "Patch Size 减半会导致 Transformer 处理的输入 Token 序列长度 $T = (I/p)^2$ 增加为原来的 4 倍。",
+            "模型的前向计算复杂度 GFLOPs 将呈现非线性剧增，整体计算量至少增加为原来的 4 倍，且 Self-Attention 矩阵相乘部分的开销将增加至 16 倍。",
+            "首层 Patchify 投影的输入维度随 p 减半而缩小，该层参数量会增加约 4 倍并主导模型总参数量的变化。",
+            "在模型层数 $N$ 和隐藏维度 $d$ 确定的前提下，DiT 的网络总参数量基本维持不变，因为 Transformer 参数量与序列长度 $T$ 解耦。"
+          ]
+        }
+      }
+    ],
+    "adversarial-verification": [
+      {
+        "id": "adversarial-verification__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "把对抗分支审查、编译门槛、跨模型交叉审与闭环重验放在防线位置上对比，各自防住的是什么？",
+        "options": [
+          "大 Changeset 配对抗分支审查，比放 Bug 进生产再维护更划算",
+          "编译静态检查通过即可跳过逻辑验证，省 Token 要紧",
+          "Spec 定稿前换独立模型族交叉审，消除初始逻辑偏差",
+          "修复指令闭环调用工具，合入前重验 Spec 符合度，形成门禁"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从防线位置对比四种验证策略各自防住的风险",
+          "reasoningGoal": "先对齐四种策略的可比维度（防线位置与风险类型）；再逐项判定各主张；并排除「编译即正确」等不成立描述。"
+        },
+        "generatedAt": 1788855741593,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4cc9a4ed",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-1de14a63",
+        "sourceSnapshot": {
+          "id": "adversarial-verification",
+          "topic": "evaluation",
+          "subtopic": "adversarial-code-review",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "adversarial-review",
+            "bug-bashing",
+            "cross-model",
+            "spec-verification"
+          ],
+          "question": "前沿大语言模型生成的代码常存在逻辑漏洞与隐蔽缺陷。在建立连续代码验证与 Bug 清理机制时以下哪些工程策略有助于降低生产环境风险？（多选）",
+          "options": [
+            "在 Large Changeset 上分配专门的算力进行对抗性分支审查其综合效益优于允许隐蔽 Bug 进入生产代码库后的维护成本",
+            "只要代码能够无报错通过编译器静态检查就应当跳过逻辑功能验证以节省 Token 消耗",
+            "在 Spec 阶段完成前使用另一个独立的模型族对规范进行交叉审查以消除初始逻辑偏差",
+            "持续审查系统生成的修复指令应支持自动化工具闭环调用并在最终合入前重新验证 Spec 符合度"
+          ]
+        }
+      },
+      {
+        "id": "adversarial-verification__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某大模型生成的万行变更要进生产，需要设计一道验证门禁。下列哪些设计应当纳入？",
+        "options": [
+          "万行级变更单辟算力做对抗分支审查，拦截隐蔽 Bug",
+          "编译器无报错即放行，逻辑验证能省则省",
+          "拉独立模型族在 Spec 阶段交叉审查，洗掉初始偏差",
+          "修复指令自动闭环执行，合入前再验一遍 Spec 符合度"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为万行变更进生产设计验证门禁",
+          "reasoningGoal": "先拆出门禁设计的目标与约束（拦截隐蔽缺陷与控制成本）；再逐项确认各设计；并排除「编译放行」等不成立描述。"
+        },
+        "generatedAt": 1788855741593,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4cc9a4ed",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-97b6a8e5",
+        "sourceSnapshot": {
+          "id": "adversarial-verification",
+          "topic": "evaluation",
+          "subtopic": "adversarial-code-review",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "adversarial-review",
+            "bug-bashing",
+            "cross-model",
+            "spec-verification"
+          ],
+          "question": "前沿大语言模型生成的代码常存在逻辑漏洞与隐蔽缺陷。在建立连续代码验证与 Bug 清理机制时以下哪些工程策略有助于降低生产环境风险？（多选）",
+          "options": [
+            "在 Large Changeset 上分配专门的算力进行对抗性分支审查其综合效益优于允许隐蔽 Bug 进入生产代码库后的维护成本",
+            "只要代码能够无报错通过编译器静态检查就应当跳过逻辑功能验证以节省 Token 消耗",
+            "在 Spec 阶段完成前使用另一个独立的模型族对规范进行交叉审查以消除初始逻辑偏差",
+            "持续审查系统生成的修复指令应支持自动化工具闭环调用并在最终合入前重新验证 Spec 符合度"
+          ]
+        }
+      }
+    ],
+    "llm-judge-vs-agent-judge": [
+      {
+        "id": "llm-judge-vs-agent-judge__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "某 Agent 越权调用后仍交出正确终态，单次 LLM Judge 给了通过。复盘这次漏检，下列哪些判断成立？",
+        "options": [
+          "单次 Judge 只看终态 Output，过程错误但结果合理就被放过",
+          "预定义字段映射要求事先猜中失效位置，没有动态探索能力",
+          "Agent Judge 能自主查完整 Trace、验中间调用入参与出参后再判",
+          "Agent Judge 的核心优势是根除了生成式不确定性，同条 Trace 评估能保持 100% 一致"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从终态正确但过程违规被放行的漏检反推单次 Judge 的缺口",
+          "reasoningGoal": "先定位漏检的直接诱因（视野、探索、取证三类）；再逐项验证各判断；并排除「不确定性已根除」等不成立描述。"
+        },
+        "generatedAt": 1788855741593,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b06a09e",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-ad0d550a",
+        "sourceSnapshot": {
+          "id": "llm-judge-vs-agent-judge",
+          "topic": "evaluation",
+          "subtopic": "llm-judge-vs-agent-judge",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "agent-evaluation",
+            "trajectory",
+            "trace-review",
+            "tool-calling"
+          ],
+          "question": "在对复杂 AI Agent 系统进行自动化评估时传统的单次 Prompt 匹配式 LLM-as-a-Judge 常常失效。关于导致这一现象的原因以及 Agent-as-a-Judge 的作用机制以下哪些说法是正确的？（多选）",
+          "options": [
+            "LLM-as-a-Judge 通常仅评估最终生成的 Output 难以察觉执行轨迹中间步骤所导致的过程错误但结果看似合理的隐蔽失效",
+            "LLM-as-a-Judge 依赖预定义字段映射评估者必须在检查日志前预判失效发生的具体位置缺乏动态探索迹线的能力",
+            "Agent-as-a-Judge 具备自主调查能力能够审查完整 Trace、检查中间工具调用的入参出参、执行代码或搜集证据后再给出评估结论",
+            "Agent-as-a-Judge 的核心优势在于它彻底解决了生成式 AI 的不确定性评估同一条 Trace 时能保持 100% 的结果一致性"
+          ]
+        }
+      },
+      {
+        "id": "llm-judge-vs-agent-judge__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "要为多工具复杂 Agent 搭建自动化评估，需要能查中间调用、能动态探索。下列哪些设计应当纳入？",
+        "options": [
+          "终态评估必须补过程视角，否则中间步骤的隐蔽失效看不见",
+          "评估器不能依赖预设字段映射，要能动态探索 Trace",
+          "引入能自主调查的 Agent Judge：查 Trace、验工具调用、跑代码取证",
+          "Agent Judge 彻底解决了生成式不确定性，同一条 Trace 的评估结果天然可复现"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为多工具复杂 Agent 设计带过程视角的自动化评估",
+          "reasoningGoal": "先拆出评估体系的目标与约束（过程可见与动态探索）；再逐项确认各设计；并排除「不确定性消除」等不成立描述。"
+        },
+        "generatedAt": 1788855741594,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b06a09e",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-50ddc883",
+        "sourceSnapshot": {
+          "id": "llm-judge-vs-agent-judge",
+          "topic": "evaluation",
+          "subtopic": "llm-judge-vs-agent-judge",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "agent-evaluation",
+            "trajectory",
+            "trace-review",
+            "tool-calling"
+          ],
+          "question": "在对复杂 AI Agent 系统进行自动化评估时传统的单次 Prompt 匹配式 LLM-as-a-Judge 常常失效。关于导致这一现象的原因以及 Agent-as-a-Judge 的作用机制以下哪些说法是正确的？（多选）",
+          "options": [
+            "LLM-as-a-Judge 通常仅评估最终生成的 Output 难以察觉执行轨迹中间步骤所导致的过程错误但结果看似合理的隐蔽失效",
+            "LLM-as-a-Judge 依赖预定义字段映射评估者必须在检查日志前预判失效发生的具体位置缺乏动态探索迹线的能力",
+            "Agent-as-a-Judge 具备自主调查能力能够审查完整 Trace、检查中间工具调用的入参出参、执行代码或搜集证据后再给出评估结论",
+            "Agent-as-a-Judge 的核心优势在于它彻底解决了生成式 AI 的不确定性评估同一条 Trace 时能保持 100% 的结果一致性"
+          ]
+        }
+      }
+    ],
+    "trajectory-bias-pitfall": [
+      {
+        "id": "trajectory-bias-pitfall__surface-options__assessmentinherit__0",
+        "kind": "surface-options",
+        "question": "从评估机理看，长度偏好、幻觉验证与成本爆炸这三类问题是如何被引入的？",
+        "options": [
+          "评估 Agent 有轨迹长度偏好：步数更多轨迹更长就打高分，无效重试也被当成绩效",
+          "没有外部确定性工具时，凭空揣测中间调用正确性，伪造证据",
+          "多轮 Trace 检索加工具调用，开销与时延显著高于单次调用",
+          "评估器只会正则匹配日志，理解不了自然语言语义指标"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从评估机理解释三类偏差与风险的引入过程",
+          "reasoningGoal": "先复现三类问题的引入链条；再逐项核验各主张；并排除「只会正则匹配」等不成立描述。"
+        },
+        "generatedAt": 1788855741594,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-485df086",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-4aec4e0f",
+        "sourceSnapshot": {
+          "id": "trajectory-bias-pitfall",
+          "topic": "evaluation",
+          "subtopic": "trajectory-bias",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "trajectory-bias",
+            "length-bias",
+            "hallucinated-verification",
+            "cost-explosion"
+          ],
+          "question": "在将 Agent-as-a-Judge 用于评估 Agent 执行轨迹时评估模型本身可能引入特定的认知偏差与工程隐患。以下哪些属于典型偏差或风险？（多选）",
+          "options": [
+            "轨迹长度偏好偏差评估 Agent 往往倾向于给步数更多、轨迹更长的执行过程打出高分即使额外的步骤并未带来实际价值甚至包含无效重试",
+            "幻觉验证风险在缺乏外部确定性工具验证的情况下评估 Agent 可能会凭空揣测中间工具调用的正确性产生虚假证据",
+            "评估成本与延时爆炸相比单次 LLM Call Agent-as-a-Judge 需要多轮 Trace 检索与工具调用评估开销与响应时延显著增加",
+            "规则硬化偏差评估 Agent 会严格按照正则表达式匹配日志无法理解自然语言描述的语义指标"
+          ]
+        }
+      },
+      {
+        "id": "trajectory-bias-pitfall__context-options__assessmentinherit__1",
+        "kind": "context-options",
+        "question": "某 Judge 给步数最多的轨迹打了最高分，人工复核却发现全是无效重试。排查这次评分背离，下列哪些判断成立？",
+        "options": [
+          "长度偏好在作祟：步数更多、轨迹更长的执行过程被打高分",
+          "中间调用的正确性没有外部工具验证，全靠模型脑补",
+          "评估成本与延时爆炸：相比单次调用，需要多轮 Trace 检索与工具调用，开销时延显著增加",
+          "规则硬化在作祟：评估器严格按正则匹配日志，理解不了自然语言语义指标"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从高分轨迹实为无效重试的背离定位评估器偏差",
+          "reasoningGoal": "先缩小背离的原因范围（偏好、验证、成本三类）；再逐项验证各判断；并排除「规则太死」等不成立描述。"
+        },
+        "generatedAt": 1788855741594,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-485df086",
+        "batch": "assessmentinherit",
+        "model": "manual",
+        "contentHash": "fnv1a-d0ddf254",
+        "sourceSnapshot": {
+          "id": "trajectory-bias-pitfall",
+          "topic": "evaluation",
+          "subtopic": "trajectory-bias",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "trajectory-bias",
+            "length-bias",
+            "hallucinated-verification",
+            "cost-explosion"
+          ],
+          "question": "在将 Agent-as-a-Judge 用于评估 Agent 执行轨迹时评估模型本身可能引入特定的认知偏差与工程隐患。以下哪些属于典型偏差或风险？（多选）",
+          "options": [
+            "轨迹长度偏好偏差评估 Agent 往往倾向于给步数更多、轨迹更长的执行过程打出高分即使额外的步骤并未带来实际价值甚至包含无效重试",
+            "幻觉验证风险在缺乏外部确定性工具验证的情况下评估 Agent 可能会凭空揣测中间工具调用的正确性产生虚假证据",
+            "评估成本与延时爆炸相比单次 LLM Call Agent-as-a-Judge 需要多轮 Trace 检索与工具调用评估开销与响应时延显著增加",
+            "规则硬化偏差评估 Agent 会严格按照正则表达式匹配日志无法理解自然语言描述的语义指标"
+          ]
+        }
+      }
+    ]
+  }
+}

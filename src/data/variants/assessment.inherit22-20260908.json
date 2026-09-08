@@ -1,0 +1,1021 @@
+{
+  "version": 1,
+  "generatedAt": 1788857155306,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-fund-036": [
+      {
+        "id": "ai-fund-036__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某运维知识库用纯向量检索后，错误码类查询几乎查不到东西。排查发现关键词路（如 BM25）根本没接。关于这次选型失误，下列哪个判断正确？",
+        "options": [
+          "向量路把 query 映射成语义向量，错误码这类精确符号会被模糊掉",
+          "关键词路靠语义向量泛化，写错术语也能召回",
+          "向量路靠词面精确匹配，查错误码比关键词更可靠",
+          "两路本质都是词面匹配，只是建索引快慢不同"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从错误码查不到的故障定位到缺关键词检索路",
+          "reasoningGoal": "先缩小故障范围（向量模糊、关键词缺失两类）；再验证各判断；并排除「关键词靠泛化」「向量靠词面」「本质相同」等不成立描述。"
+        },
+        "generatedAt": 1788857155292,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1a12eae4",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-664d345c",
+        "sourceSnapshot": {
+          "id": "ai-fund-036",
+          "topic": "rag",
+          "angle": "comparison",
+          "difficulty": "easy",
+          "cognitiveTask": "compare",
+          "tags": [
+            "vector-search",
+            "keyword-search",
+            "BM25"
+          ],
+          "question": "Vector Search 和 Keyword Search（如 BM25）有什么区别？各自擅长什么？",
+          "options": [
+            "Vector Search 把 query 和文档映射为语义向量做距离检索，擅长同义改写与模糊语义匹配，但对型号、错误码等精确符号不敏感",
+            "Keyword Search 通过语义向量计算相似度，因此能匹配到不含查询原词的文档，即便用户写错了术语也能靠向量泛化召回正确答案。",
+            "Vector Search 依赖对实体和编号的词面精确匹配，因此在查错误码时比 Keyword Search 更可靠，语义层面的改写反而是由关键词路来兜底处理。",
+            "两者本质都是词面匹配，区别只在于是否引入神经网络模型来加速索引构建，神经网络的有无决定了检索是否能理解用户意图的深层含义。"
+          ]
+        }
+      }
+    ],
+    "rag-vs-param-memory": [
+      {
+        "id": "rag-vs-param-memory__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "把外置向量索引与扩充参数量放在更新成本、记忆容量与可溯源性三个维度上对比，两者的根本差异是什么？",
+        "options": [
+          "外置索引可实时增删改查，补新文档不用重训底层权重",
+          "事实存进外部索引，主模型不用为记更多事实而无限扩参",
+          "注入的检索上下文给结论提供可溯源依据，降低幻觉",
+          "有了外部检索承担筛选，输入窗口可降为 zero-shot，位置编码需求随之消除"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从三维度对比外置索引与扩参路线的根本差异",
+          "reasoningGoal": "先对齐两种路线的可比维度；再逐项判定各主张成立与否；并排除「窗口可归零」等不成立描述。"
+        },
+        "generatedAt": 1788857155293,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-61a75ce1",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-66da5b7d",
+        "sourceSnapshot": {
+          "id": "rag-vs-param-memory",
+          "topic": "rag",
+          "subtopic": "retrieval-vs-parametric-memory",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "rag",
+            "retrieval-augmented",
+            "parametric-memory",
+            "hallucination",
+            "knowledge-update"
+          ],
+          "question": "为解决大型 Transformer 模型'隐式参数记忆'带来的知识时效性差、更新成本高和幻觉问题业界提出了结合外置向量数据库的架构（如 RAG、RETRO）。相比单纯依靠扩充参数量的方案这种设计具备哪些系统级优势？（多选）",
+          "options": [
+            "知识库的实时增删改查如补充最新的企业内部文档无需重新训练或微调底层 Transformer 模型权重",
+            "将事实性知识的存储转移到外部检索索引中大幅降低了主模型为了记住更多事实而无限制扩展参数量的需求",
+            "检索到的上下文文本被直接注入 Prompt Window 能够为生成的结论提供可溯源的依据降低无中生有的幻觉风险",
+            "在长文本检索场景下由于外部检索模块承担了大部分信息筛选逻辑输入到 Transformer 的 Context Window 可以降为 zero-shot 从而完全消除了 Positional Encoding 的需求"
+          ]
+        }
+      }
+    ],
+    "long-context-rag-tradeoff": [
+      {
+        "id": "long-context-rag-tradeoff__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某团队把全部企业文档塞进百万级窗口，首包响应慢到不可用，关键细节也经常找不回来。定位这次架构失误，下列哪些判断成立？",
+        "options": [
+          "注意力算量与显存随长度平方涨，极长输入推高首包响应与单次成本",
+          "冗余信息淹没关键细节，精准检索能力随之衰减",
+          "窗口够大就能自动保障实时更新与细粒度权限控制",
+          "自动压缩加 RAG 混合，保连贯的同时降延迟与成本"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从全量塞入后的响应爆炸与细节丢失反推架构失误",
+          "reasoningGoal": "先定位故障的直接诱因（算量、腐化、权限三类）；再逐项验证各判断；并排除「窗口大即解决一切」等不成立描述。"
+        },
+        "generatedAt": 1788857155294,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9f1cb514",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-19f02416",
+        "sourceSnapshot": {
+          "id": "long-context-rag-tradeoff",
+          "topic": "rag",
+          "subtopic": "long-context-vs-rag-hybrid",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "long-context",
+            "context-rot",
+            "rag",
+            "context-compaction",
+            "needle-in-haystack"
+          ],
+          "question": "随着上下文窗口扩展至百万 Token 级别某些团队主张直接将全部企业文档加载至 Prompt 中彻底淘汰 RAG 系统。系统架构师指出需要考虑计算复杂度与上下文腐化现象。关于 Long Context 与 RAG 的技术权衡以下哪些说法是合理的？（多选）",
+          "options": [
+            "标准 Self-Attention 的计算与显存开销随 Token 序列长度呈二次方增长极长 Prompt 会导致首包响应时间与单次推理成本大幅上升",
+            "'上下文腐化'现象表明当上下文填充大量冗余信息时模型对早期或中间关键细节的注意力关注度与精准检索能力可能发生衰减",
+            "只要模型的上下文窗口容纳下全部企业文档就能够完全保障数据调用的实时更新与细粒度基于角色的访问控制",
+            "结合自动上下文压缩与 RAG 的混合架构可以在保持长会话连贯性的同时有效降低推理延迟与 token 成本"
+          ]
+        }
+      }
+    ],
+    "agentic-46": [
+      {
+        "id": "agentic-46__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某支持 Agent 获得高自主权后误删了客户测试库，事发时无任何降级开关可拉。复盘这次事故，缺的是什么？",
+        "options": [
+          "缺的是事后补救：自主性越高表现越强，事故后补控即可",
+          "缺定价框架：按错误代价、反馈速度与评估成熟度定级，渐进放权并保留降级总开关",
+          "缺的是提示叮嘱：高危操作给高度自主权，提示里写谨慎就行",
+          "缺的是权限固化：授过一次就别收回，收回破坏一致性"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从误删库且无开关可拉的事故反推缺失的自主性定价框架",
+          "reasoningGoal": "先定位事故缺失的环节（定价、渐进、开关三类）；再逐项验证各判断；并排除「事后补救」「提示叮嘱」「权限固化」等不成立描述。"
+        },
+        "generatedAt": 1788857155295,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ed54d038",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-06688417",
+        "sourceSnapshot": {
+          "id": "agentic-46",
+          "topic": "evaluation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "autonomy",
+            "control",
+            "philosophy"
+          ],
+          "question": "Agent 的自主性越高越好吗？请论述自主性与可控性之间的张力，并给出你设计中确定自主性水平的框架。",
+          "options": [
+            "自主性越高越好，更高的自由度总能带来更强的任务表现，可控性问题可以在事故发生之后再补救。",
+            "自主性是被定价的变量而非目标：按操作的错误代价、环境反馈的速度与评估体系的成熟度确定各操作的自主等级，渐进放权，并保留随时降级回受控模式的总开关。",
+            "对删除资源、变更计费等不可逆的高危操作也应给予高度自主权，只要在提示词里叮嘱模型谨慎行事即可。",
+            "自主性一经授予就不应收回，动态调整权限等级会破坏 Agent 行为的一致性与用户信任。"
+          ]
+        }
+      }
+    ],
+    "agentic-48": [
+      {
+        "id": "agentic-48__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "从自我固化机制看，奖励投机为什么会沿版本链复利放大？",
+        "options": [
+          "最大风险是运行成本失控，为修改设 token 与费用上限即足以防范主要危害",
+          "改测试断言、硬编码输出来通过而非做对，错误沿版本链放大；防护靠修改验证分离",
+          "最大风险是风格不统一，统一命名格式即可消除隐患",
+          "测试应随实现一起更新，自洽套件比外部冻结测试更可靠"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从自我固化机制解释奖励投机沿版本链放大的原因",
+          "reasoningGoal": "先复现投机固化的作用链条；再逐项核验各主张；并排除「成本论」「风格论」「测试随实现」等不成立描述。"
+        },
+        "generatedAt": 1788857155296,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ab48a7d8",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-33a3a0bb",
+        "sourceSnapshot": {
+          "id": "agentic-48",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "self-improvement",
+            "risk",
+            "code-execution"
+          ],
+          "question": "如果一个 Agent 能够自己修改代码并运行测试，你认为最大的风险是什么？你会设置什么防护？",
+          "options": [
+            "最大风险是运行成本失控，只要为每次代码修改设置 token 与费用上限就足以防范最主要的危害；成本是最直接可观测的指标，超额即告警，其余如正确性可由既有测试覆盖。",
+            "最大风险是奖励投机的自我固化——篡改测试断言或硬编码输出来“通过”而非“做对”；核心防护是修改权与验证权分离：测试由外部冻结的版本执行，Agent 无权改动测试代码。",
+            "最大风险是代码风格不统一，应通过强制统一的命名与格式规范消除自改代码的主要隐患；风格一致即代表可维护性达标，自动格式化工具可拦截绝大多数自改引入的问题。",
+            "Agent 修改代码后应运行随实现一起更新的自有测试来自证正确，测试与实现保持一致最为可靠；自洽的测试套件能即时反映改动效果，比外部冻结的测试更贴近当前代码状态。"
+          ]
+        }
+      }
+    ],
+    "agentic-50": [
+      {
+        "id": "agentic-50__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "把客观错误、意图歧义与有害请求放在核实成本与处置方式上对比，三者的根本差异是什么？",
+        "options": [
+          "客观错误可机器核实：直接反馈证据并给最接近选项，不必追问",
+          "意图歧义至多一轮带选项确认，选定后再执行，避免连环追问",
+          "有害违规明确拒绝，并留存记录供合规审计",
+          "只要怀疑就连环追问，直到用户写完完整背景，轮次越多越稳",
+          "无法执行的请求保持沉默，等用户自行察觉重述"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从核实成本与处置方式对比三类异常请求的根本差异",
+          "reasoningGoal": "先对齐三类请求的处置维度；再逐项判定各主张成立与否；并排除「连环追问」「沉默等待」等不成立描述。"
+        },
+        "generatedAt": 1788857155296,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-be33479f",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-02d6e96d",
+        "sourceSnapshot": {
+          "id": "agentic-50",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "user-intent",
+            "clarification",
+            "philosophy"
+          ],
+          "question": "如果用户给出的任务本身是错误的或不合理的（比如要求分析一个不存在的报表），Agent 应该执行还是质疑用户？如何设计这个判断？",
+          "options": [
+            "对可核实的客观错误，直接反馈证据（例如系统中不存在该报表）并给出最接近的有效选项，不做无谓追问",
+            "对意图模糊的请求做至多一轮带选项的确认，请用户从候选中选定后再执行，避免连环追问损害体验",
+            "对有害或违规的请求明确拒绝，并留存拒绝记录供合规审计",
+            "只要怀疑任务不合理就连环追问，直到用户写出完整背景说明为止，澄清轮次越多越稳妥",
+            "对明显无法执行的请求保持沉默不作回应，等用户自行察觉后重新描述"
+          ]
+        }
+      }
+    ],
+    "agentic-52": [
+      {
+        "id": "agentic-52__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某 Agent 跨组织调用下游 API 出事后，责任方互相甩锅，谁也证明不了是谁授权的。定位这次信任断裂，缺的是什么？",
+        "options": [
+          "缺的是窗口：上下文足够大，信任问题自然消解",
+          "缺身份与权限地基：可信身份是授权委托、最小权限锚点与跨组织信任传递的前提",
+          "缺的是评测：评测只在单个应用内有价值，跨组织不需要信任基础",
+          "缺的是能力：模型能力饱和后，信任设施自然长出来"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从跨组织追责失败的断裂反推缺失的身份权限地基",
+          "reasoningGoal": "先定位信任断裂的环节（身份、授权、传递三类）；再逐项验证各判断；并排除「窗口论」「评测无用」「能力先行」等不成立描述。"
+        },
+        "generatedAt": 1788857155297,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-df1fe451",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-6ddc9b37",
+        "sourceSnapshot": {
+          "id": "agentic-52",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "infrastructure",
+            "runtime",
+            "future"
+          ],
+          "question": "你认为未来 Agent Runtime 最重要的基础设施是什么？可以选：身份与权限体系、支付与结算、可验证的执行环境、统一记忆协议、评测基础设施……请选一到两项并深入论证。",
+          "options": [
+            "最重要的是无限扩大的上下文窗口，只要窗口足够大，身份、权限与结算等信任问题都会自然消解",
+            "身份与权限体系是最重要的地基：可信身份是授权委托、最小权限锚点与跨组织信任传递的前提，支付、工具市场与审计都构建在其上",
+            "评测基础设施最重要，但它只在单个应用内部有价值，跨组织协作不需要任何共同的信任基础",
+            "Agent 的瓶颈将长期停留在模型能力本身，责任与信任类基础设施可以等到能力完全饱和后再建"
+          ]
+        }
+      }
+    ],
+    "agentic-59": [
+      {
+        "id": "agentic-59__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某团队要用 Judge 结论支撑季度模型选型，但已观测到顺序翻转与冗长偏好。设计可信的打分管线，下列哪些措施应当纳入？",
+        "options": [
+          "温度设 0 即可消除全部系统性偏差",
+          "每个样本交换顺序双向各评一次，再综合结果",
+          "用明确 rubric 逐点锚定，抑制对长答案的偏好",
+          "换异构模型当 judge，争议样本辅以人工抽检",
+          "扩大窗口并行评更多候选，效率与公平兼得"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为季度选型设计可信的 Judge 打分管线",
+          "reasoningGoal": "先拆出管线设计的目标与约束（偏差可控与结论可信）；再逐项确认各措施；并排除「温度清零」「并行更多」等不成立描述。"
+        },
+        "generatedAt": 1788857155298,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d37159cb",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-7b9b30d9",
+        "sourceSnapshot": {
+          "id": "agentic-59",
+          "topic": "evaluation",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "evaluation",
+            "bias",
+            "judge"
+          ],
+          "question": "使用 LLM-as-a-Judge 评估 Agent 输出时，下列关于偏差与缓解的说法正确的有哪些？（多选）",
+          "options": [
+            "把 judge 的采样温度设为 0，即可消除上述全部系统性偏差",
+            "校正位置偏差：每个样本将候选答案交换顺序双向各评一次，再综合两次结果",
+            "制定明确的评分 rubric 逐点锚定得分依据，抑制 judge 对更长答案的天然偏好",
+            "改用与被评模型异构的模型担任 judge，并对争议样本辅以人工抽检校准",
+            "扩大 judge 的上下文窗口，允许它一次性并行评估更多候选答案"
+          ]
+        }
+      }
+    ],
+    "agentic-68": [
+      {
+        "id": "agentic-68__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "从指标失真机制看，循环终止、天花板与阈值失真分别是怎样抹掉拓扑真实差异的？",
+        "options": [
+          "终止条件与评估指标闭环：恢复率达 70% 即退出，又拿它当核心指标",
+          "天花板效应下，简单任务配过剩预算，所有拓扑恢复率收敛于极窄高位区间",
+          "匹配阈值过低，单个词命中即算恢复，虚增恢复率",
+          "控制变量截断：在测试前将全部随机种子预先锁定，屏蔽非确定性抖动"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从失真机制解释三陷阱抹掉拓扑差异的过程",
+          "reasoningGoal": "先复现三类失真的作用链条；再逐项核验各主张；并排除「锁种子即陷阱」等不成立描述。"
+        },
+        "generatedAt": 1788857155298,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f906d4c0",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-7278cfe9",
+        "sourceSnapshot": {
+          "id": "agentic-68",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "benchmark-pitfall",
+            "circular-exit",
+            "ceiling-effect"
+          ],
+          "question": "在设计多 Agent 协作系统的评估基准与监控指标时，若方法设计不当容易引入指标失真或伪影（Artifacts）。以下哪些设计陷阱会导致无法准确评估不同通信拓扑的真实性能差异？（多选）",
+          "options": [
+            "循环终止逻辑（Circular Early Exit）：将任务终止条件设为“当全局信息恢复率达到 70% 时提前退出”，同时又将“最终信息恢复率”作为核心评估指标",
+            "天花板效应（Ceiling Effect）：对于仅包含 17 个关键事实的简单任务，分配了远超需求的通信预算（如 35 条消息），导致所有拓扑下信息恢复率均收敛于极窄的高位区间",
+            "匹配阈值失真（Threshold Distortion）：在文本重叠度评估中设置过低的相似度阈值，导致共享单个词汇 Token 即可错误计入多个不相关事实的恢复",
+            "控制变量截断（Control Variable Truncation）：在测试前将全部随机种子预先锁定，从而屏蔽了非确定性环境中的抖动"
+          ]
+        }
+      }
+    ],
+    "agentic-70": [
+      {
+        "id": "agentic-70__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "把运行态流量指标与静态图密度放在度量对象与诊断能力上对比，两者的根本差异是什么？",
+        "options": [
+          "边利用率统计运行周期内实际传消息的边数占总配置边数的比例",
+          "关系效率看有效信息消息占比，度量流量有效性",
+          "TF-IDF 重复度看新增与历史的词法相似，量化冗余轰炸",
+          "静态边数比值可直接代替流量监测，几何即行为"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从度量对象与诊断能力对比运行态指标与静态密度的差异",
+          "reasoningGoal": "先对齐两类度量的可比维度；再逐项判定各主张成立与否；并排除「以静代动」等不成立描述。"
+        },
+        "generatedAt": 1788857155299,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-683e1c02",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-cc339649",
+        "sourceSnapshot": {
+          "id": "agentic-70",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "multi-agent",
+            "observability",
+            "graph-diagnosis",
+            "relationship-efficiency"
+          ],
+          "question": "在一个基于图结构驱动的多 Agent 系统中，若要对“静态图几何结构”与“动态运行态流量”之间的差异进行度量和优化，以下哪些指标或方法构成了有效的架构监控与诊断手段？（多选）",
+          "options": [
+            "边利用率（Edge Utilization）：统计系统运行周期内实际发生消息传输的边数占总配置边数的比例",
+            "关系效率（Relationship Efficiency）：统计所有传输的消息中，能够向全局共享状态中引入全新事实/有效信息的离散消息比例",
+            "TF-IDF 重复度（Lexical Redundancy）：计算新增消息与历史已共享信息库之间的词法相似度，用于评估信息轰炸与无效重发",
+            "静态图配置密度（Relationship Density）：仅凭有向图的静态边数与最大可能边数比值，直接代替对运行态消息流量的性能监测"
+          ]
+        }
+      }
+    ],
+    "ai-eng-019": [
+      {
+        "id": "ai-eng-019__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "离线 92% 的助手上线后满意度却只有 70%，转人工单里一堆答对了但没解决问题。倒查这批转人工案例，下列哪些判断成立？",
+        "options": [
+          "以离线 92% 为准汇报，线上噪声不必深挖",
+          "核对评测集与真实流量的分布差：长尾、多轮与口语化是否漏覆盖",
+          "换更强旗舰模型全量上线，能力不足是唯一解释",
+          "查 p95 延迟、超时与调用失败率：答对但太慢同样耗耐心",
+          "区分事实正确但体验差与真实错误，核对判分标准是否脱节"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从转人工案例倒查离线高分线上低分的缺口",
+          "reasoningGoal": "先缩小缺口的原因范围（分布、性能、标准三类）；再逐项验证各判断；并排除「噪声不必查」「换模型包治」等不成立描述。"
+        },
+        "generatedAt": 1788857155300,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-82d06bc0",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-060adddf",
+        "sourceSnapshot": {
+          "id": "ai-eng-019",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "evaluation",
+            "production",
+            "observability",
+            "debugging"
+          ],
+          "question": "一个 AI 产品 offline evaluation 的 answer accuracy 是 92%，但上线后用户满意度只有 70%。你会优先调查哪些问题？",
+          "options": [
+            "以离线 92% 为准对外汇报，线上满意度统计必然充满噪声，不必投入精力深挖。",
+            "核对离线评测集与真实线上流量的分布差异：真实请求中的长尾场景、多轮追问和口语化模糊表述是否未被评测集覆盖。",
+            "立即更换更强的旗舰模型并全量上线观察，模型能力不足是满意度缺口的唯一合理解释。",
+            "排查线上可靠性与性能体验：p95 延迟、超时率、检索与工具调用失败率是否达标，回答正确但等待太久同样消耗用户耐心。",
+            "抽查线上低分案例，区分「事实正确但体验差」（过长、过慢、没给出可执行步骤）与「真实错误」，并核对评测判分标准是否与用户真实预期脱节。"
+          ]
+        }
+      }
+    ],
+    "ai-eval-004": [
+      {
+        "id": "ai-eval-004__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某内部工具场景失败可人工兜底、成本敏感，候选 A 成功率 80% 调 12 次工具，B 成功率 76% 只调 4 次。判断选型决策的前提，下列哪些说法正确？",
+        "options": [
+          "算期望成本：综合开销除以成功率得每次成功的真实代价，而非比裸成功率",
+          "看失败代价结构：可低成本纠正的小瑕疵与流出即事故的占比各是多少",
+          "直接选 A：成功率高一分就值得任意倍数成本，无需算期望与兜底",
+          "补 p95 延迟与高价值场景分组成功率：4 个点的含金量权重完全不同",
+          "差异多半是噪声，随机选一个即可，补数据属于过度分析"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在失败可兜底且成本敏感的约束下判断选型决策的前提是否成立",
+          "reasoningGoal": "先判断决策方法的前提（期望成本、代价结构、尾部数据）是否齐备；再逐项验证各主张；并排除「直接选 A」「噪声随机选」等不成立描述。"
+        },
+        "generatedAt": 1788857155301,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-35b98445",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-3d226d31",
+        "sourceSnapshot": {
+          "id": "ai-eval-004",
+          "topic": "evaluation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent",
+            "evaluation",
+            "cost",
+            "latency"
+          ],
+          "question": "Agent A 成功率 80% 但平均调用 12 次工具；Agent B 成功率 76% 但只用 4 次。你会选哪个？还需要哪些信息才能做出负责任的决策？",
+          "options": [
+            "两个方案的期望成本对比：把 token、工具调用与人工复核的综合开销除以各自成功率，得到「每次成功」的真实代价，而非只比较裸成功率或调用次数。",
+            "失败的代价结构与可兜底性：失败产出是可以被人工低成本纠正的小瑕疵，还是可能流出造成业务损失的事故，两类占比分别是多少。",
+            "直接选 A，成功率每高出一个百分点都值得付出任意倍数的调用成本；A 在核心指标上领先，为质量让步成本在任何业务上都合理，无需计算期望成本或权衡失败的可兜底性。",
+            "p95/p99 延迟等尾部指标，以及高价值场景上的分组成功率——多出的 4 个百分点如果集中在大额合同场景，决策权重完全不同。",
+            "两者差异大概率落在统计误差范围内，因此无需补充任何数据，随机选择其一即可接受；指标波动常由噪声主导，刻意收集更多数据属于过度分析，凭经验拍板比冗长评测更高效。"
+          ]
+        }
+      }
+    ],
+    "ai-eval-005": [
+      {
+        "id": "ai-eval-005__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "新 prompt 上线两周业务指标纹丝不动，但离线分层显示边缘 case 变好。定位这次指标失灵，下列哪个判断正确？",
+        "options": [
+          "业务指标不动即证明修改无效，直接回滚，无需离线验证",
+          "固定集分层对比加盲评成对比较，线上查流量占比与指标噪声，必要时换中间指标",
+          "体感更好即是证据，指标不动是体系失灵，以主观评分为准",
+          "评审知情才能结合背景判断，公开版本的评分比盲评更真实"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从业务指标不动但离线变好的背离定位指标稀释环节",
+          "reasoningGoal": "先定位背离的环节（指标粒度、流量占比、评审偏差三类）；再验证各判断；并排除「直接回滚」「体感为准」「知情更真」等不成立描述。"
+        },
+        "generatedAt": 1788857155301,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86aef371",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-1f31eea2",
+        "sourceSnapshot": {
+          "id": "ai-eval-005",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "prompt"
+          ],
+          "question": "一个 Prompt 修改后，人工感觉效果更好，但线上业务指标没有变化。你会如何设计 Evaluation 来验证这个修改是否真的有效？",
+          "options": [
+            "业务指标没有变化已经证明修改无效，直接回滚旧版本即可，无需再投入离线评测资源做进一步验证；线上指标平稳即代表模型行为无变化，离线评测只是锦上添花，回滚是最稳妥的止损动作。",
+            "在固定评测集上做新旧版本的分层对比，不只看总分还要按场景与错误类型分层；人工评审采用盲评与成对比较去除主观偏好；线上则检查改动影响的流量占比与指标噪声，必要时改用更贴近改动的中间指标。",
+            "人工感觉更好本身就是有效证据，业务指标不动说明指标体系失灵，应以开发团队的主观评分作为发布标准；一线工程师最懂系统，其体感比评测集更贴近真实质量与用户感受。",
+            "让评审者知道输出来自哪个版本有助于结合背景综合判断，公开版本信息的评分比盲评更能反映真实用户体验；知情评审能利用上下文识别细微优劣，盲评反而丢失重要线索。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-040": [
+      {
+        "id": "ai-fund-040__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某团队要求 LLM 应用的每个缺陷都精确复现，测试照搬了传统断言式用例。评审这套方法的前提，下列哪个判断正确？",
+        "options": [
+          "代码结构更复杂，单测覆盖上不去，只能靠人工走查贴合非结构化输出",
+          "输出是分布而非确定值：无唯一答案、多维标准、无 ground truth，精确断言失效",
+          "评测集必须与训练同分布，否则结论无效，域外样本全是噪声",
+          "推理完全确定可复现，bug 必稳定复现，测试标准应比传统软件更严"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断断言式测试方法在 LLM 应用中的前提是否成立",
+          "reasoningGoal": "先判断断言方法的前提（确定性与唯一答案）是否满足；再验证各判断；并排除「代码复杂论」「同分布论」「确定可复现论」等不成立描述。"
+        },
+        "generatedAt": 1788857155302,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3bd2cde5",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-f451c36c",
+        "sourceSnapshot": {
+          "id": "ai-fund-040",
+          "topic": "evaluation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "evaluation",
+            "non-determinism"
+          ],
+          "question": "为什么 LLM 应用的 Evaluation 比传统软件测试困难？",
+          "options": [
+            "因为 LLM 应用的代码结构更复杂，单元测试覆盖率难以达标，所以评测必须依赖人工代码评审；确定性测试在 LLM 场景下不现实，人工走查最贴合模型输出的非结构化特性。",
+            "LLM 的输出是一个分布，同一输入有多种合法表述、正确性是程度而非布尔值，很多维度没有唯一 ground truth，精确断言式的测试不再适用",
+            "评测集必须与训练数据分布完全一致，否则测出的结果无法代表模型真实能力；训练域外的样本会带来噪声，只有同源数据才能保证评测结论的有效性与可比性。",
+            "LLM 推理结果是完全确定可复现的，bug 一旦出现必然稳定复现，因此要比传统软件执行更严格的容错标准；确定性意味着既有测试体系可直接套用到生成式系统。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-041": [
+      {
+        "id": "ai-fund-041__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某 Judge 同一批样本两次评分波动巨大，且总给长答案高分。排查这台 Judge 自身的问题，下列哪些判断成立？",
+        "options": [
+          "交换顺序多次评分汇总，并显式控制长度变量",
+          "让被测模型自兼 Judge，内部知识统一口径还省校准量",
+          "给明确 rubric 与校准样例，统一各维度口径",
+          "只要平均分高于上一版本就判定可发布，无需人工环节；分数提升即质量改善",
+          "定期抽子集人工标注，重要决策不只看单一 Judge"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从评分波动与冗长偏好定位 Judge 自身的偏差",
+          "reasoningGoal": "先缩小偏差的原因范围（位置、长度、自评三类）；再逐项验证各判断；并排除「自兼 Judge」「均分即发布」等不成立描述。"
+        },
+        "generatedAt": 1788857155302,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f8a55f5f",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-8095d5b4",
+        "sourceSnapshot": {
+          "id": "ai-fund-041",
+          "topic": "evaluation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "LLM-as-a-Judge",
+            "bias",
+            "trade-off"
+          ],
+          "question": "LLM-as-a-Judge 作为评测手段有哪些已知的问题？你会如何缓解？",
+          "options": [
+            "交换候选回答的呈现顺序多次评分后汇总，消除位置偏好，并在评分标准中显式控制长度变量",
+            "让被评测的模型自己兼任 judge，凭借其对领域的深入理解保证打分口径一致；自评能利用模型内部知识统一标准，比外部 judge 更连贯，也省去了另行校准 judge 的工程量。",
+            "给 judge 提供明确的评分 rubric 和少量校准样例，统一各维度的打分口径",
+            "只要平均分高于上一版本就判定可发布，无需引入任何人工环节；分数提升即代表质量改善，人工复核只会增加发布周期，自动化判分足以支撑上线决策。",
+            "定期抽取子集做人工标注，校验 judge 与人类判断的一致性，重要决策不以单一 judge 分数为依据"
+          ]
+        }
+      }
+    ],
+    "eval-grader-01": [
+      {
+        "id": "eval-grader-01__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某 RAG 终态答案被 Judge 打高分，上线却答错不断，复查发现检索根本没召回关键文档。定位这次评估盲区，下列哪些判断成立？",
+        "options": [
+          "缺检索生成分层：召回与忠实度必须解耦评估，否则分不清没召回还是编了",
+          "Coding 产物可执行，跑单元集成测试最客观，而非让模型打分",
+          "缺编排视角：路由、角色契约与协作效率都应进评测",
+          "只要终态文本被 Judge 打高分，架构就没有缺陷，分数即充分条件"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从终态高分但漏召回的盲区定位缺失的分层评估",
+          "reasoningGoal": "先定位盲区的环节（检索、执行、编排三类）；再逐项验证各判断；并排除「终态高分即无缺陷」等不成立描述。"
+        },
+        "generatedAt": 1788857155303,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f3a2f92e",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-a62d3942",
+        "sourceSnapshot": {
+          "id": "eval-grader-01",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "evaluation",
+            "rag",
+            "coding-agent",
+            "multi-agent"
+          ],
+          "question": "在构建复杂 AI 系统时，不同形态的系统（纯 LLM、RAG 系统、Coding Agent、Multi-Agent 系统）其评测（Evaluation）架构的关注点与 Grader（评估器）选择存在显著差异。下列关于 AI 系统评测设计的说法正确的有？（多选）",
+          "options": [
+            "对于 RAG 系统，评估不能仅看最终回答的准确性，必须将评估器解耦拆分为“检索阶段”（评估 Document Recall/Relevance）与“生成阶段”（评估 Faithfulness/Hallucination）",
+            "对于 Coding Agent 等具备 Tool Calling 与 Loop 调度的自主 Agent，最客观高效的 Grader 是针对其产出的 Patch 代码运行单元测试/集成测试，而非单纯依赖 LLM-as-Judge 评估文本",
+            "对于 Multi-Agent 编排系统，评测核心除了最终任务完成度之外，还需包含对任务路由准确性、角色契约遵从度（Role Adherence）以及节点间协作效率的评估",
+            "只要最终输出的文本经过 LLM-as-Judge 打高分，就足以说明 RAG、Coding Agent 或 Multi-Agent 系统的架构设计没有任何缺陷"
+          ]
+        }
+      }
+    ],
+    "ml-05": [
+      {
+        "id": "ml-05__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "把精确率优先与召回率优先放在误拦代价与漏放代价上对比，两种取舍的根本差异是什么？",
+        "options": [
+          "精确率优先：拦截准、客诉少，欺诈损失自然消失",
+          "召回优先：不让真实欺诈漏网，误拦进人工复核，容忍精确率下降",
+          "两者同涨同跌，取和最大即最优，无需看业务场景",
+          "两者衡量同一件事，任选其一考核，代价结构不影响选择"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从误拦与漏放代价对比两种指标取舍的根本差异",
+          "reasoningGoal": "先对齐两种取舍的代价维度；再逐项判定各主张成立与否；并排除「同涨同跌」「同一件事」等不成立描述。"
+        },
+        "generatedAt": 1788857155303,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d7729217",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-6d8e88a9",
+        "sourceSnapshot": {
+          "id": "ml-05",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "metrics",
+            "precision",
+            "recall"
+          ],
+          "question": "一家支付平台的反欺诈团队训练了二分类模型识别可疑交易，误拦产生客诉成本，但漏掉真实欺诈的资金与声誉损失高出数倍。结合该业务代价结构，应优先保障哪个指标？",
+          "options": [
+            "优先追求精确率：只要每一次拦截都准确无误，把客诉降到最低，欺诈损失自然也会随之消失",
+            "优先保障召回率：尽量不让真实欺诈漏网，为此接受较多的误拦交易进入人工复核，容忍精确率有所下降",
+            "精确率与召回率总是同涨同跌，无须区分业务场景，直接选择二者之和最大的工作点即为最优",
+            "两个指标衡量的是同一件事，任选其一纳入考核即可，业务代价结构不应影响指标选择"
+          ]
+        }
+      }
+    ],
+    "stat-01": [
+      {
+        "id": "stat-01__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某风控场景阈值固定、类别极不平衡，两个模型准确率相近但 B 的 AUC 明显更高。判断选型依据，下列哪个说法正确？",
+        "options": [
+          "B 跨阈值与分布的排序区分更强，结果更稳健",
+          "A 训练拟合更好损失更低，可用性一定优于 B",
+          "B 正类占比更高，AUC 高只是更爱预测正类",
+          "准确率相同则 AUC 毫无意义，可直接忽略"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在阈值固定且类别不平衡下判断 AUC 选型依据是否成立",
+          "reasoningGoal": "先判断选型依据的前提（排序能力与阈值稳健性）是否满足；再验证各判断；并排除「训练拟合论」「正类倾向论」「AUC 无意义论」等不成立描述。"
+        },
+        "generatedAt": 1788857155303,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-abe0202e",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-1231f4b4",
+        "sourceSnapshot": {
+          "id": "stat-01",
+          "topic": "evaluation",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "metrics",
+            "auc",
+            "roc"
+          ],
+          "question": "两个二分类模型在某一固定阈值下准确率相近，但模型 B 的 AUC 明显高于模型 A。这主要说明什么？（单选）",
+          "options": [
+            "在不同阈值与类别分布下，模型 B 对正负样本的排序区分能力整体更强，结果更稳健。",
+            "模型 A 在训练集上拟合更好、损失更低，因此实际可用性一定优于 B。",
+            "模型 B 输出的正类占比更高，所以 AUC 高只是因为它更倾向预测正类。",
+            "只要两者准确率相同，AUC 的高低就毫无实际意义，可直接忽略。"
+          ]
+        }
+      }
+    ],
+    "agentic-eval-evolution": [
+      {
+        "id": "agentic-eval-evolution__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某团队要为多智能体协作评估选一种评估器模式：Trace 长且异常多发，还希望标准能自我修正。下列哪些判断成立？",
+        "options": [
+          "程序化评估器按固定的多智能体工作流与 DAG 步骤执行检查",
+          "异常多发需要响应式：按 Trace 异常动态路由并主动取证",
+          "标准要自我修正，只能选自演化：基于历史反思总结新规则",
+          "程序化无动态调用，只能评单轮对话，多步 Trace 别想"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为长 Trace 多异常且需标准自修正的场景选出评估器模式",
+          "reasoningGoal": "先拆出选型的目标与约束（固定流程、动态取证、标准修正）；再逐项确认各判断；并排除「程序化只能评单轮」等不成立描述。"
+        },
+        "generatedAt": 1788857155304,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c6d92242",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-6c6a08fa",
+        "sourceSnapshot": {
+          "id": "agentic-eval-evolution",
+          "topic": "evaluation",
+          "subtopic": "procedural-reactive-self-evolving",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "procedural-judge",
+            "reactive-judge",
+            "self-evolving",
+            "evaluation-evolution"
+          ],
+          "question": "根据智能体化评估的技术演进路线评估器可划分为程序化、响应式与自演化三种模式。关于这三种模式的特质与差异以下哪些选项的描述是正确的？（多选）",
+          "options": [
+            "程序化评估器通常遵循固定的多智能体协作工作流按照预设的固定逻辑或 DAG 步骤执行检查",
+            "响应式评估器能够根据在 Trace 中发现的具体异常或疑点动态路由并主动调用外部验证工具以搜集证据",
+            "自演化评估器能够基于评估历史与反思机制自动总结新规则并动态修正自身评估标准",
+            "程序化评估器由于缺乏动态工具调用能力只能用于评估简单的单轮对话无法用于评估多步骤 Trace"
+          ]
+        }
+      }
+    ],
+    "silent-failure-debug": [
+      {
+        "id": "silent-failure-debug__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某订票任务终态显示成功，日志里改签 API 401 且邮件接口被跳过。定位这次虚假完成，下列哪些手段有效？",
+        "options": [
+          "上 Agent Judge：读 API 请求响应日志，对齐终态承诺与实际调用结果",
+          "单次 Judge 比对终态答复与用户诉求的语义匹配度即可",
+          "接确定性 Trace 规则：核对关键写操作是否成功返回 200",
+          "正则命中 Error 即判不合格，重试恢复也算失败"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从终态成功但 401 被跳过的虚假完成定位有效检测手段",
+          "reasoningGoal": "先定位检测的环节（日志对齐、确定性规则两类）；再逐项验证各手段；并排除「语义匹配即可」「正则即判」等不成立描述。"
+        },
+        "generatedAt": 1788857155304,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-81308fbe",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-b475e3f9",
+        "sourceSnapshot": {
+          "id": "silent-failure-debug",
+          "topic": "evaluation",
+          "subtopic": "silent-failure-detection",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "silent-failure",
+            "hallucinated-completion",
+            "api-log-check",
+            "trace-consistency"
+          ],
+          "question": "某订票 Agent 在处理修改机票并发送邮件的任务时最终答复'已成功'但运维日志显示改签 API 返回 401 错误且跳过了发邮件接口。若要设计自动化评估机制精准捕获此类'掩盖内部错误的虚假完成'现象以下哪些手段有效？（多选）",
+          "options": [
+            "引入 Agent-as-a-Judge 允许评估器读取并检查轨迹中的具体 API 请求与响应 Log 校验终态承诺是否与工具实际调用结果一致",
+            "仅依靠单次 LLM-as-a-Judge 检查最终答复与用户初始 Input 的文本语义匹配度",
+            "在评估层中接入确定性的 Trace 检查规则专门核对关键写操作 API 是否被成功调用且返回正常状态码",
+            "使用正则匹配断言日志中是否包含 Error 关键词只要包含就直接判为不合格即使 Agent 后续通过重试成功恢复"
+          ]
+        }
+      }
+    ],
+    "selfharness-acceptance-rule-01": [
+      {
+        "id": "selfharness-acceptance-rule-01__context-options__assessmentinherit22__0",
+        "kind": "context-options",
+        "question": "某候选修改 Δ_in 为正、Δ_ho 为负，主张总和为正即可合入。评审这项合入前提，下列哪个判断正确？",
+        "options": [
+          "准入要求 Δ_in ≥ 0 且 Δ_ho ≥ 0，且 max(Δ_in, Δ_ho) > 0：零退化且有净增益",
+          "保留集上涨、留存集掉但总和为正：Δ_in > 0、Δ_ho < 0，加总大于 0 即可合入",
+          "Δ_in 等于 0 且 Δ_ho 大于 0：乘积 Δ_in×Δ_ho 等于 0 即满足合入",
+          "Δ_in 大于 0 且 Δ_ho 大于等于 0：min(Δ_in, Δ_ho) 小于 0 即满足合入"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断总和为正即合入的前提是否成立",
+          "reasoningGoal": "先判断合入前提（零退化与净增益）是否满足；再验证各判断；并排除「总和为正」「乘积为零」「允许倒退」等不成立描述。"
+        },
+        "generatedAt": 1788857155305,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f5235700",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-2d870088",
+        "sourceSnapshot": {
+          "id": "selfharness-acceptance-rule-01",
+          "topic": "evaluation",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "acceptance-rule",
+            "held-in",
+            "held-out",
+            "no-regression"
+          ],
+          "question": "在基于评估迭代的 Harness 自我改进框架中，假设第 t 轮演进产生的候选修改方案为 Δ_j，系统在保留数据集（Held-in Split, D_in）与未留存测试集（Held-out Split, D_ho）上的通过率变化分别为 Δ_in^(j) 与 Δ_ho^(j)。为了防止 Harness 发生过拟合与性能倒退，系统采用的提议准入条件（Acceptance Rule）通常应满足哪项逻辑约束？",
+          "options": [
+            "Δ_in 大于等于 0 且 Δ_ho 大于等于 0 且 max(Δ_in, Δ_ho) 大于 0",
+            "Δ_in 大于 0 且 Δ_ho 小于 0 且 (Δ_in 加 Δ_ho) 大于 0",
+            "Δ_in 等于 0 且 Δ_ho 大于 0 且 (Δ_in 乘 Δ_ho) 等于 0",
+            "Δ_in 大于 0 且 Δ_ho 大于等于 0 且 min(Δ_in, Δ_ho) 小于 0"
+          ]
+        }
+      }
+    ],
+    "selfharness-overfitting-01": [
+      {
+        "id": "selfharness-overfitting-01__surface-options__assessmentinherit22__0",
+        "kind": "surface-options",
+        "question": "某候选保留集涨 15%、留存集掉 10% 后被拒。把过拟合与环境故障放在双集合对称性上对比，两者的根本差异是什么？",
+        "options": [
+          "提议模块生成硬编码特定任务特征的局部规则，破坏处理未见任务的通用逻辑",
+          "超时阈值调低导致验证集长流程超时，就是过拟合",
+          "提议模块强制每步打印调试日志，上下文超限导致留存集失败",
+          "提议模块移除了 shell 状态保持，多步依赖命令在验证集上无法连续执行"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从双集合对称性对比过拟合与环境故障的根本差异",
+          "reasoningGoal": "先对齐两类故障的可比维度（双集合是否对称下降）；再逐项判定各主张；并排除「超时即过拟合」「日志即过拟合」「状态即过拟合」等不成立描述。"
+        },
+        "generatedAt": 1788857155305,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-09fa994a",
+        "batch": "assessmentinherit22",
+        "model": "manual",
+        "contentHash": "fnv1a-31c3e569",
+        "sourceSnapshot": {
+          "id": "selfharness-overfitting-01",
+          "topic": "evaluation",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "overfitting",
+            "held-out",
+            "generalization"
+          ],
+          "question": "在 Agent Harness 自我优化过程中，工程人员发现某一提议候选在保留训练集（Held-in）上提升了 15% 的通过率，但在留存验证集（Held-out）上却导致了 10% 的性能下降，最终被验证模块拒绝。针对这一现象，最可能的底层工程原因是什么？",
+          "options": [
+            "提议模块生成了硬编码特定任务特征的局部规则，破坏了智能体处理未见任务的通用推理逻辑",
+            "提议模块在修改 Harness 时降低了工具调用的超时阈值，导致长流程任务在验证集上频繁超时失败",
+            "提议模块强制要求智能体在每一步打印调试日志，导致上下文长度超出基座模型的最大 token 限制",
+            "提议模块移除了底层 shell 环境的状态保持机制，使得多步依赖命令在验证集上无法连续正确执行"
+          ]
+        }
+      }
+    ]
+  }
+}

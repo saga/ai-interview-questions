@@ -1,0 +1,922 @@
+{
+  "version": 1,
+  "generatedAt": 1788854593657,
+  "promptVersion": "v4",
+  "variants": {
+    "agentic-05": [
+      {
+        "id": "agentic-05__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "把短期记忆与长期记忆放在驻留位置、生命周期与召回方式三个维度上对比，两者的分工有何本质不同？",
+        "options": [
+          "短期记忆驻留当前会话上下文，支撑即时推理；长期记忆跨会话持久化，常按需检索召回",
+          "两类记忆并无本质区别，历史都应逐字保存并按时间全量回放进上下文",
+          "长期记忆只能长在模型参数里，会话结束后的信息无法落到任何外部存储",
+          "短期记忆管跨会话画像积累，长期记忆只装用完即弃的临时中间变量"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从驻留位置、生命周期与召回方式三维度对比短期与长期记忆的本质分工",
+          "reasoningGoal": "先对齐两类记忆的可比维度；再逐项判定各主张成立与否；并排除「本质相同」「参数唯一」「职责对调」等不成立描述。"
+        },
+        "generatedAt": 1788854593645,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b2b63793",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-c77b94e5",
+        "sourceSnapshot": {
+          "id": "agentic-05",
+          "topic": "memory",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "memory",
+            "context",
+            "retrieval"
+          ],
+          "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
+          "options": [
+            "短期记忆是当前会话的上下文，保存最近对话与中间结果支撑即时推理；长期记忆是跨会话持久化的知识库，常借助向量检索按需召回",
+            "短期与长期记忆本质相同，都应把全部历史对话逐字保存，并按时间顺序全量回放进上下文",
+            "长期记忆只能存在于模型参数之中，会话结束后上下文内的信息无法持久化到任何外部存储",
+            "短期记忆负责跨会话的用户画像积累，长期记忆只存放当前任务用完即弃的临时中间变量"
+          ]
+        }
+      }
+    ],
+    "agentic-40": [
+      {
+        "id": "agentic-40__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "从成本与隐私机制看，为什么轨迹的存与看必须是两个独立决策？",
+        "options": [
+          "隐私合规要求轨迹一律不存，出问题重跑一次 Agent 即可还原现场",
+          "轨迹分级保留并脱敏，作为调试生命线；消费端默认只见压缩视图，存与看分别授权",
+          "既然存了完整轨迹，运行时就该把全量原文喂回上下文，否则存储投入毫无价值",
+          "轨迹存储太贵，生产环境只留最终业务结果，中间过程全丢才是最优取舍"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从成本与隐私机制解释轨迹存储决策与消费决策为何必须分离",
+          "reasoningGoal": "先复现存储成本与隐私风险的作用机制；再逐项核验各主张是否与该机制一致；并排除「一律不存」「全量回放」「只留结果」等不成立描述。"
+        },
+        "generatedAt": 1788854593646,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d36b6f3b",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-28562bed",
+        "sourceSnapshot": {
+          "id": "agentic-40",
+          "topic": "memory",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "trajectory",
+            "storage",
+            "privacy",
+            "tradeoff"
+          ],
+          "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
+          "options": [
+            "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕",
+            "轨迹分级保留并脱敏存储，作为调试与归因的生命线；但消费端默认只见压缩视图——存不存历史和给不给模型看是两个独立决策，应按角色与用途分别授权访问",
+            "既然已经存了完整轨迹，运行时就应把全量原文原样喂回上下文，否则这些存储投入就完全失去了它本该有的价值",
+            "轨迹存储成本高昂，生产环境只应保留最终的业务结果以控制预算，中间过程全部丢弃才是最优的工程取舍"
+          ]
+        }
+      },
+      {
+        "id": "agentic-40__context-options__assessmentreplace__1",
+        "kind": "context-options",
+        "question": "某客服 Agent 平台同时面临合规可追溯与隐私最小留存的双重要求，需要设计轨迹保留策略。下列哪些设计成立？",
+        "options": [
+          "为满足合规一律不得保存轨迹，还原现场时重新运行 Agent 即可",
+          "分级保留轨迹并脱敏存储供调试归因，运行时只回注摘要与关键状态",
+          "已存全量轨迹就应原文回放进上下文，否则存储投入没有价值",
+          "为控制预算只保留最终业务结果，中间轨迹全部丢弃"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为合规可追溯与隐私最小留存双重约束设计轨迹保留策略",
+          "reasoningGoal": "先拆出保留策略的目标与约束（可追溯、隐私、成本）；再逐项确认各设计能否成立；并排除「一律不存」「全量回放」「只留结果」等不成立描述。"
+        },
+        "generatedAt": 1788854593647,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d36b6f3b",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-225d2fb5",
+        "sourceSnapshot": {
+          "id": "agentic-40",
+          "topic": "memory",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "trajectory",
+            "storage",
+            "privacy",
+            "tradeoff"
+          ],
+          "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
+          "options": [
+            "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕",
+            "轨迹分级保留并脱敏存储，作为调试与归因的生命线；但消费端默认只见压缩视图——存不存历史和给不给模型看是两个独立决策，应按角色与用途分别授权访问",
+            "既然已经存了完整轨迹，运行时就应把全量原文原样喂回上下文，否则这些存储投入就完全失去了它本该有的价值",
+            "轨迹存储成本高昂，生产环境只应保留最终的业务结果以控制预算，中间过程全部丢弃才是最优的工程取舍"
+          ]
+        }
+      }
+    ],
+    "mem-cog-01": [
+      {
+        "id": "mem-cog-01__context-options__assessmentreplace__0",
+        "kind": "context-options",
+        "question": "某运维 Agent 上线首周产生四条记录：当前堆栈报错的代码分析、三天前 CI 报错的处置、团队部署偏好、Review 三段式要求。标签系统要把它们写入四类记忆，下列映射正确的是？",
+        "options": [
+          "堆栈报错分析属于 Working Memory，只驻留当前任务上下文，任务结束即清空",
+          "三天前 CI 处置属于 Episodic Memory，是带时间戳与交互背景的事件记录",
+          "部署偏好属于 Semantic Memory，是从多次交互抽象出的持久事实知识",
+          "三段式要求属于 Procedural Memory，固化了特定工作流的行为范式"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能把运维场景的四条记录按时效与抽象层级映射到四类记忆",
+          "reasoningGoal": "先判断每条记录的时效与抽象前提；再逐项验证映射关系；并排除张冠李戴的映射。"
+        },
+        "generatedAt": 1788854593648,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6511f324",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-4ff68e26",
+        "sourceSnapshot": {
+          "id": "mem-cog-01",
+          "topic": "memory",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "working-memory",
+            "episodic-memory",
+            "semantic-memory",
+            "procedural-memory"
+          ],
+          "question": "AI Agent 的记忆架构通常借鉴认知科学，将其划分为不同功能的记忆类型。现有一个智能编程/运维 Agent，在其运行过程中记录了以下数据：1. 当前正在针对某堆栈报错及对应代码段进行 Debug 分析；2. 记录“三天前与用户排查了 CI/CD 流程报错，并修改了部署脚本”；3. 记录“用户团队在生产环境采用 GitHub Actions 部署，且偏好使用 Python”；4. 记录“在生成代码 Review 总结时，用户要求固定采用三段式结构”。关于上述数据与 Agent 记忆类型的对应关系，下列分析正确的是？（多选）",
+          "options": [
+            "数据 1 属于 Working Memory（工作记忆），仅驻留于当前任务的 Context Window 中，任务结束即被清空",
+            "数据 2 属于 Episodic Memory（情境记忆），是带有时间戳和特定交互事件背景的事件记录",
+            "数据 3 属于 Semantic Memory（语义记忆），是从多次交互中抽象出的独立于特定对话的持久事实与知识",
+            "数据 4 属于 Procedural Memory（程序记忆），固化了 Agent 针对特定任务或工作流的行为范式与偏好规则"
+          ]
+        }
+      }
+    ],
+    "mem-stateless-01": [
+      {
+        "id": "mem-stateless-01__context-options__assessmentreplace__0",
+        "kind": "context-options",
+        "question": "某 Agent 产品用户投诉：在手机上聊的偏好，换到网页端就全忘了。技术团队确认模型本身无状态。关于这次失忆故障的根因与修复，下列哪些判断成立？",
+        "options": [
+          "服务端默认保留了跨请求的隐层状态与 Key-Value Cache，换端丢失是同步延迟",
+          "LLM 本身无状态，每轮调用都是全新空白；连续性靠平台的状态管理、记忆检索与 Prompt 组装实现",
+          "对话记录在微调中实时写进了模型权重，换端后权重未同步才导致遗忘",
+          "只要 Prompt 不超长，模型不靠外部数据库也能自动跨端持久化全部状态"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从换端失忆故障定位到平台状态管理缺失而非模型问题",
+          "reasoningGoal": "先缩小故障范围（模型、平台、存储三类）；再逐项验证各判断能否解释故障；并排除「服务端保留隐层」「权重实时更新」「自动跨端持久化」等不成立描述。"
+        },
+        "generatedAt": 1788854593648,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a61217f8",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-aabf539f",
+        "sourceSnapshot": {
+          "id": "mem-stateless-01",
+          "topic": "memory",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "stateless",
+            "hidden-states",
+            "kv-cache",
+            "agent-platform"
+          ],
+          "question": "在开发 Agent 产品时，用户往往感觉“模型记住了昨天的对话”。从 Transformer 模型底层的 API 合约与系统架构的角度来看，这种记忆连续性的本质是？",
+          "options": [
+            "商业 LLM API 在服务端默认保留了跨请求的模型隐层状态（Hidden States）及 Key-Value Cache",
+            "LLM 本身是无状态的（Stateless），每一轮 API 调用都基于全新空白状态；连续性完全由外围 Agent 平台系统通过状态管理、记忆检索与 Prompt 动态组装工程来实现",
+            "LLM 在 Fine-tuning / Continual Pre-training 过程中实时将用户的对话记录更新到了模型权重参数中",
+            "只要 Prompt 长度不超过模型宣称的最大 Context Limit，LLM 就能在无外部数据库辅助的情况下自动跨 Session 持久化所有状态"
+          ]
+        }
+      }
+    ],
+    "agentic-18": [
+      {
+        "id": "agentic-18__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某 ESG 对比表被客户指出多处数字张冠李戴：吨与兆瓦直接相加，缺失口径还被脑补填数。从故障现象反推，管线缺了哪几环？",
+        "options": [
+          "缺的是计算层：应让模型抽取时顺手算完，省掉单独代码",
+          "缺抽取与计算分离：模型只做带出处与口径的结构化抽取，换算对比交代码，不确定留空",
+          "缺的是包容度：口径不一可以直接归一相加，数值能对上就行",
+          "缺的是观感优化：缺口径就按惯例推测填数，避免表格留空"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从对比表数字错乱反推抽取管线缺失的环节",
+          "reasoningGoal": "先定位故障的直接诱因（边抽边算、口径混算、脑补填数）；再逐项验证各判断是否对症；并排除「省掉代码层」「直接相加」「推测填数」等不成立描述。"
+        },
+        "generatedAt": 1788854593649,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5d830349",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-9377f5ff",
+        "sourceSnapshot": {
+          "id": "agentic-18",
+          "topic": "rag-pipeline",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "esg",
+            "pdf-extraction",
+            "structured-output"
+          ],
+          "question": "设计一个 ESG Research Agent：从几十份 ESG PDF 报告中提取碳排放等指标并生成横向对比结论。难点在数字准确性与口径不一致，怎么处理？",
+          "options": [
+            "为提高效率，应让 LLM 在抽取指标的同时直接完成跨公司对比计算，省去单独的计算代码层。",
+            "LLM 只负责带出处与口径说明的结构化字段抽取，单位换算与横向对比交给确定性代码完成，不确定的字段留空并标注原因而非猜测填充。",
+            "口径不一致的问题可以忽略，直接把不同标准下的数值归一相加比较即可反映真实排放水平。",
+            "缺失口径的指标由模型按行业惯例推测一个合理值填入，避免对比表中出现空格影响观感。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-063": [
+      {
+        "id": "ai-eng-063__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "把 RRF 与分数加权求和放在输入要求、鲁棒性与信息代价三个维度上对比：其中一路是 BM25，分数量纲不可比，两者的根本差异是什么？",
+        "options": [
+          "RRF 会自动学出向量维度的最优权重，融合系数在训练中收敛，无需人工调参",
+          "两路分数量纲不可比，加权求和会被量级大的一方主导；RRF 只吃相对排名倒数，消除了量纲问题",
+          "RRF 是 O(1) 合并，加权求和要 O(N log N)，候选上万时 RRF 有数量级性能优势",
+          "RRF 能提高 LLM 对上下文窗口的利用率并自动去重，因为它在融合阶段剔除了语义重复文档"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从输入要求、鲁棒性与信息代价三维度对比 RRF 与加权求和的根本差异",
+          "reasoningGoal": "先对齐两种融合方式的可比维度；再逐项判定各主张成立与否；并排除「自动学权重」「O(1) 性能」「去重提效」等不成立描述。"
+        },
+        "generatedAt": 1788854593649,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2e5b8848",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-67229f75",
+        "sourceSnapshot": {
+          "id": "ai-eng-063",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "rrf",
+            "score-fusion",
+            "hybrid-search",
+            "dimension-mismatch"
+          ],
+          "question": "混合检索用 RRF（Reciprocal Rank Fusion，按排名倒数加权）合并向量检索与 BM25 的结果。相比于直接对两路相似度分数做加权求和，RRF 的核心优势是什么？",
+          "options": [
+            "RRF 能自动学习向量维度的最佳权重，无需人工设定任何参数，因为融合过程本身会根据两路召回的分布自适应地调整每条结果的贡献比例，并在训练阶段收敛到最优融合系数。",
+            "向量相似度（如 Cosine ∈ [0,1]）与 BM25 分数（无上界正实数）的分布与量级不同，直接加权求和会让数值范围大的一方主导排序；RRF 仅依赖相对排名倒数融合，从机制上消除了量纲不一致问题",
+            "RRF 可以在 O(1) 时间完成合并，而分数加权需要 O(N log N)，因此它在大规模候选集上不仅更鲁棒，也拥有数量级层面的性能优势；即便候选数量增长到数万，RRF 的常数级开销依然稳定，是融合的首选方案。",
+            "RRF 能提高 LLM 对 Context Window 的利用率并自动去重检索结果，因为它在融合阶段就剔除了语义重复文档，让进入生成的素材既精炼又不遗漏关键信息。"
+          ]
+        }
+      }
+    ],
+    "graphrag-02": [
+      {
+        "id": "graphrag-02__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某团队要为 GraphRAG 索引管线做成本优化，实测其中某步骤占索引总成本约 75%。为决定优化投入方向，下列哪些判断成立？",
+        "options": [
+          "文本切片与词性标注最烧钱，应优先优化切分规则",
+          "跨块重名实体与关系的合并及描述压缩重写最烧钱，需大量 LLM 调用",
+          "Leiden 图聚类的拓扑计算最烧钱，应换更便宜的图算法",
+          "社区报告与文本块的向量 Embedding 批量生成最烧钱，应减 embed 频次"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在约 75% 成本占比的约束下判断索引管线成本大头的归属",
+          "reasoningGoal": "先确定成本归因所依赖的依据（LLM 调用量与 Token 量）；再逐项验证各判断；并排除「切片最贵」「图算最贵」「embed 最贵」等不成立描述。"
+        },
+        "generatedAt": 1788854593649,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cb8e13e3",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-e3b50bfa",
+        "sourceSnapshot": {
+          "id": "graphrag-02",
+          "topic": "graph-rag",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "graph-rag",
+            "indexing",
+            "entity-merging",
+            "cost"
+          ],
+          "question": "在一个典型的 GraphRAG 系统构建流程中，系统需要对原始文档进行切片（Text Units）、抽取实体与关系、合并重名实体描述、生成社区报告（Community Reports）并对相关内容进行向量化存储。在整个索引构建（Indexing）阶段，通常消耗计算资源和 LLM Token 最多（占总索引成本约 75% 左右）的步骤是？",
+          "options": [
+            "原始文档的文本切片（Chunking）与词性标注",
+            "跨文本块的重名实体与关系的合并（Merge）以及描述信息的压缩重写",
+            "图层次化聚类算法（如 Leiden 算法）的图拓扑计算",
+            "社区报告（Community Reports）及文本块的向量 Embedding 批量生成"
+          ]
+        }
+      }
+    ],
+    "graphrag-03": [
+      {
+        "id": "graphrag-03__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "从执行机制看，为什么社区报告的层级选择会同时影响查询时的调用开销与索引构建成本？",
+        "options": [
+          "层级越深社区越小，报告细节越丰富，回答详尽度通常更高",
+          "层级越深要汇总的报告数量剧增，查询 Token 与延迟显著上升",
+          "Level 0 最宏观，查询最便宜最快，但子领域细节可能被漏掉",
+          "报告层级是查询时由 LLM 动态生成的，不影响索引构建成本"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从执行机制解释层级选择同时影响查询与索引成本的原因",
+          "reasoningGoal": "先复现层级、报告数量与 Map-Reduce 开销的作用链；再逐项核验各主张；并排除「查询期动态生成」等不成立描述。"
+        },
+        "generatedAt": 1788854593650,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0df3b6ee",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-34f5b1c3",
+        "sourceSnapshot": {
+          "id": "graphrag-03",
+          "topic": "graph-rag",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "graph-rag",
+            "leiden",
+            "community-detection",
+            "hierarchy"
+          ],
+          "question": "GraphRAG 在构建知识图谱后，会使用层次化社区检测算法（如 Leiden 算法）将实体图划分为多层社区（Community Hierarchy），并为每个社区生成摘要报告（Community Report）。层级 0（Level 0）代表最宏观的社区划分，而随着层级深入（如 Level 2、Level 3），社区数量增加且覆盖范围更精细。在配置全局查询（Global Search）所使用的社区报告层级时，关于工程权衡的说法，哪些是正确的？（多选）",
+          "options": [
+            "选择更深（较小社区粒度）的层级，社区报告包含的细节更丰富，生成的回答在详尽度（Comprehensiveness）上通常表现更好",
+            "选择更深（较小社区粒度）的层级，由于需要处理和汇总的社区报告数量剧增，查询时的 LLM Token 消耗和端到端延迟（Latency）会显著上升",
+            "选择最宏观的层级（如 Level 0），虽然查询成本最低、响应速度最快，但可能遗漏具体子领域的关键细节特征",
+            "社区报告的粒度层级是在查询阶段由 LLM 根据问题动态自动生成的，因此不会影响索引阶段的构建成本和查询时的报告选择"
+          ]
+        }
+      }
+    ],
+    "graphrag-04": [
+      {
+        "id": "graphrag-04__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "把 Local Search 与 Global Search 放在检索起点、执行方式与成本三个维度上对比，两者的根本差异是什么？",
+        "options": [
+          "Local 从最匹配的实体出发向外扩展，收集文本块、报告、邻居与断言后统一排序填入单个窗口",
+          "Global 查询时不做实时图遍历，直接拿预生成的社区报告做 Map-Reduce 并行汇总",
+          "Global 的 Map 阶段分批打乱报告并行打分出中间答案，Reduce 阶段择优合成最终回答",
+          "Local 查询时扫描全图实体关系，Token 与时延远高于 Global"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从检索起点、执行方式与成本三维度对比 Local 与 Global 的根本差异",
+          "reasoningGoal": "先对齐两种检索的可比维度；再逐项判定各主张成立与否；并排除「Local 扫描全图」等不成立描述。"
+        },
+        "generatedAt": 1788854593651,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3645e5e1",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-03ee36d8",
+        "sourceSnapshot": {
+          "id": "graphrag-04",
+          "topic": "graph-rag",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "graph-rag",
+            "local-search",
+            "global-search",
+            "map-reduce"
+          ],
+          "question": "GraphRAG 针对不同类型的查询提供了局部检索（Local Search）和全局检索（Global Search）两种不同的执行路径。假设系统已建立完整的知识图谱与分层社区报告，关于这两种检索模式的底层执行逻辑，下列哪些描述是正确的？（多选）",
+          "options": [
+            "Local Search 从与查询最匹配的实体节点开始，在图上向外扩展收集关联的文本块、社区报告、邻居实体、关系及断言（Claims），并将其统一排序筛选后填入单个 Context Window 中",
+            "Global Search 并不在查询时刻对实体图进行实时图遍历（Graph Traversal），而是直接利用预先生成的社区报告（Community Reports）进行 Map-Reduce 式的并行处理与汇总",
+            "Global Search 的 Map 阶段将分批且打乱顺序的社区报告并行提交给 LLM 评估并输出打分的中间答案，Reduce 阶段则挑选高分中间点合成最终回答",
+            "Local Search 在查询时必须扫描全图所有的实体和关系节点，因此其 Token 消耗和查询时延远高于 Global Search"
+          ]
+        }
+      }
+    ],
+    "graphrag-07": [
+      {
+        "id": "graphrag-07__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某 Agentic RAG 上线后出现怪象：所有全局分析类问题都被路由到向量检索，答案错得离谱，且复现困难。定位这次路由失效，下列哪些判断成立？",
+        "options": [
+          "检索前缺了 LLM 驱动的分类路由，点查与全局分析被扔进同一条路径",
+          "路由只能单层单点，无法在索引族与算法两个层级上分层决策",
+          "前置路由多一次 LLM 调用，延迟与 Token 成本必然上升",
+          "误判把全局问题送进向量检索，召回域错配且动态路径更难排查"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从全局问题被错路由的故障定位路由机制的缺口与代价",
+          "reasoningGoal": "先缩小故障范围（缺路由、层级、代价、误判四类）；再逐项验证各判断能否解释故障；并排除与机制不符的描述。"
+        },
+        "generatedAt": 1788854593651,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a26894fd",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-22a2709b",
+        "sourceSnapshot": {
+          "id": "graphrag-07",
+          "topic": "graph-rag",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agentic-rag",
+            "routing",
+            "retrieval-strategy",
+            "latency"
+          ],
+          "question": "由于没有单一的检索策略（如 Vector RAG、GraphRAG Global Search、SQL 查询）能完美胜任所有类型的用户提问，现代系统架构引入了 Agentic RAG（基于 Agent 的动态路由检索）。关于 Agentic RAG 的工作机制及其引入的工程权衡，下列哪些说法是正确的？（多选）",
+          "options": [
+            "Agentic RAG 在检索前增加一层由 LLM 驱动的查询分类与路由机制，依据问题特征自动选择最合适的检索路径（如点状问答走向量检索，全局分析走 GraphRAG）",
+            "路由选择可以在多个抽象层级上发生，例如顶层由 Composite Retriever 选择查询哪个索引，子层由 Auto-router 选择具体检索算法",
+            "引入 Agentic 路由会增加检索前置的 LLM 调用，导致整体查询时延（Latency）和 Token 成本上升",
+            "如果前置路由模块发生误判（例如将全局分析问题错判为简单向量检索），会导致后续检索结果质量严重下降，且这种失效模式相较于固定静态路由更难排查调试"
+          ]
+        }
+      }
+    ],
+    "rag-private-enterprise-01": [
+      {
+        "id": "rag-private-enterprise-01__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某号称全本地的私有 RAG 被发现代码片段出现在公有云日志里。排查这起数据外泄，下列哪些判断成立？",
+        "options": [
+          "Embedding 用本地轻量模型，代码向量存本地库，全程不碰外部云服务",
+          "检索出的 Context 与 Query 组合后打给本地 Ollama 端点推理",
+          "客户端把 api_key 设为 ollama，流量就会被自动拦截打回本地",
+          "切块索引检索推理全链路本地闭环，零外泄且低时延"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从代码片段外泄公有云的故障定位本地化链路的断点",
+          "reasoningGoal": "先定位泄漏的直接诱因（出网点与鉴权误解）；再逐项验证各判断；并排除「api_key 能拦截流量」等不成立描述。"
+        },
+        "generatedAt": 1788854593651,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c052a8fe",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-6a8f5844",
+        "sourceSnapshot": {
+          "id": "rag-private-enterprise-01",
+          "topic": "rag",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "private-rag",
+            "compliance",
+            "embedding",
+            "vector-db",
+            "data-leakage",
+            "local-deployment"
+          ],
+          "question": "某金融机构为满足数据严苛不出域的合规要求，计划构建基于本地代码库的私有 RAG（检索增强生成）系统。架构师设计了一套全本地化的闭环架构方案。关于该架构的设计正确性与安全性分析，下列哪些项是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "向量化（Embedding）阶段使用本地部署的轻量 Embedding 模型（如 bge-small），将代码向量存入本地向量数据库（如 Qdrant/Milvus），全程无需连接外部云服务。",
+            "检索出的代码 Context 与用户 Query 组合后，投递给本地 Ollama 暴露的 HTTP 端点（http://localhost:11434/v1）进行推理。",
+            "在客户端调用本地 OpenAI 兼容 API 时，只要请求 Header 中的 api_key 设置为 \"ollama\"，Ollama 就会自动将发往公有云的流量无感拦截并安全打回本地。",
+            "该架构在“向量切块-索引检索-大模型推理”全链路均在本地局域网物理闭环，实现了零数据外泄风险与低时延响应。"
+          ]
+        }
+      },
+      {
+        "id": "rag-private-enterprise-01__context-options__assessmentreplace__1",
+        "kind": "context-options",
+        "question": "把真全本地闭环架构与自以为本地的架构对比，两者在出网风险上的本质差异是什么？",
+        "options": [
+          "真本地用本地 Embedding 模型与本地向量库，代码不出内网",
+          "真本地把检索结果投给 localhost 的 Ollama 推理，不经过公有云",
+          "只要 api_key 写成 ollama，去公有云的流量会被自动扣下",
+          "真本地全链路都在局域网闭环，外泄风险与公网时延同时消除"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比真本地闭环与自以为本地架构在出网风险上的本质差异",
+          "reasoningGoal": "先对齐两种架构的可比维度（出网点、鉴权语义、闭环完整性）；再逐项判定各主张；并排除「占位 key 能拦截」等不成立描述。"
+        },
+        "generatedAt": 1788854593652,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c052a8fe",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-3e496172",
+        "sourceSnapshot": {
+          "id": "rag-private-enterprise-01",
+          "topic": "rag",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "private-rag",
+            "compliance",
+            "embedding",
+            "vector-db",
+            "data-leakage",
+            "local-deployment"
+          ],
+          "question": "某金融机构为满足数据严苛不出域的合规要求，计划构建基于本地代码库的私有 RAG（检索增强生成）系统。架构师设计了一套全本地化的闭环架构方案。关于该架构的设计正确性与安全性分析，下列哪些项是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "向量化（Embedding）阶段使用本地部署的轻量 Embedding 模型（如 bge-small），将代码向量存入本地向量数据库（如 Qdrant/Milvus），全程无需连接外部云服务。",
+            "检索出的代码 Context 与用户 Query 组合后，投递给本地 Ollama 暴露的 HTTP 端点（http://localhost:11434/v1）进行推理。",
+            "在客户端调用本地 OpenAI 兼容 API 时，只要请求 Header 中的 api_key 设置为 \"ollama\"，Ollama 就会自动将发往公有云的流量无感拦截并安全打回本地。",
+            "该架构在“向量切块-索引检索-大模型推理”全链路均在本地局域网物理闭环，实现了零数据外泄风险与低时延响应。"
+          ]
+        }
+      }
+    ],
+    "agentic-60": [
+      {
+        "id": "agentic-60__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某团队把温度设为 0 并锁定种子，重跑回归仍红灯一片。关于这种场景下评估方法的前提是否成立，下列哪些判断正确？",
+        "options": [
+          "温度 0 加锁种子能让输出逐字节复现，快照比对可继续当回归判据",
+          "自动化断言已失效，不如停掉自动化，只做上线后人工抽检",
+          "红灯多就是模型退化，应立即回滚版本并冻结更新",
+          "承认非确定与路径多样，转向结果质量与轨迹合理性，用评测集统计回归"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断温度置零锁种子后精确断言方法的前提是否仍然成立",
+          "reasoningGoal": "先判断精确断言方法的前提（确定性可复现）是否满足；再逐项验证各判断；并排除「逐字节复现」「改人工抽检」「即是退化」等不成立描述。"
+        },
+        "generatedAt": 1788854593653,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bdbddf29",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-986dcf14",
+        "sourceSnapshot": {
+          "id": "agentic-60",
+          "topic": "evaluation",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "evaluation",
+            "unit-test",
+            "non-determinism"
+          ],
+          "question": "Agent Evaluation 与传统 API 单元测试的核心区别是什么？",
+          "options": [
+            "将温度固定为 0 并锁定随机种子，使输出完全可复现，从而保留全部精确断言；确定性解码保证每次结果逐字节一致，旧版快照比对机制可继续作为回归判据。",
+            "暂停自动化评估，改为上线后纯人工抽检观察；红灯源于输出非确定而非真实退化，自动化断言在此场景下失效，依赖人工长期体验更贴合用户真实感受。",
+            "大面积红灯说明模型确实退化，应立即回滚模型版本并冻结后续更新；指标恶化是模型能力下滑的直接证据，停止迭代可避免问题进一步扩大。",
+            "承认 Agent 输出非确定且达成路径多样，把评估对象转向结果质量（规则校验或 LLM judge 打分）与中间轨迹合理性，用固定评测集统计成功率并按版本回归"
+          ]
+        }
+      }
+    ],
+    "ai-eval-007": [
+      {
+        "id": "ai-eval-007__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某代码评审 Agent 三个月前修好的误报，在所有历史场景回归里悄悄复发，上线两天后才被客户发现。复盘这次静默回归，体系缺了哪几环？",
+        "options": [
+          "回归集只需覆盖新功能主路径，修好的历史 badcase 确认后即删除，免得陈旧用例拖慢回归速度",
+          "缺 badcase 沉淀：线上问题要固化为带判定标准的用例，用例库版本化并持续补新",
+          "缺的是报告ogger：只看平均分即可，个别用例翻烧属于正常波动",
+          "缺变更触发：影响行为的变更都要全量回归，与基线 diff 并揪出由过变挂的用例",
+          "缺合并门禁：回归套件要进 CI，核心场景零失败才放行"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从误报静默复发的故障反推回归体系缺失的环节",
+          "reasoningGoal": "先定位失效环节（沉淀、触发、报告、门禁四类）；再逐项验证各判断是否对症；并排除「删用例」「只看均分」等不成立描述。"
+        },
+        "generatedAt": 1788854593654,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2e7c0da3",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-ffeaac3b",
+        "sourceSnapshot": {
+          "id": "ai-eval-007",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "regression",
+            "testing"
+          ],
+          "question": "你修改了 Agent Prompt，但无法保证所有历史场景仍然正常。如何建立 LLM Regression Test？",
+          "options": [
+            "回归集只需覆盖新功能的主路径场景，历史 badcase 修复确认后即从用例库删除，以免陈旧用例拖慢回归执行速度。",
+            "把线上 badcase 固化为带判定标准的用例持续沉淀，测试集本身版本化管理，并定期从线上新增样本防止用例陈旧失效。",
+            "判定只看整体平均分的变化即可，个别用例从通过变为失败属于正常波动，无需在报告中单独列出。",
+            "任何影响行为的变更（prompt、模型版本、工具定义、检索配置）都触发全量回归，结果与基线做 diff 并重点报告由过变挂的用例。",
+            "将回归套件接入 CI 成为合并门禁，核心场景零失败才允许发布，让行为回归像单元测试一样拦截在合并之前。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-043": [
+      {
+        "id": "ai-fund-043__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某模型 offline 指标全绿，上线后 A/B 却显著下跌。复盘这次上线事故，关于离线与在线评估的分工，下列哪些判断成立？",
+        "options": [
+          "Offline 跑的是真实流量，比在线 A/B 更能代表用户体验",
+          "Online 负责发布前验证，Offline 负责上线后监控，两者各干各的",
+          "Offline 全绿即上线安全，Online 只是可有可无的补充",
+          "Offline 固定集可重复可对比、成本低，适合守门但看不见长尾；Online 真实流量验证可信但慢而贵"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从上线后下跌的事故复盘离线与在线评估的分工",
+          "reasoningGoal": "先识别事故场景的约束（分布外推风险与验证成本）；再逐项检验各判断；并排除「离线即真实」「阶段说反」「在线多余」等不成立描述。"
+        },
+        "generatedAt": 1788854593655,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-02673cc1",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-397310ac",
+        "sourceSnapshot": {
+          "id": "ai-fund-043",
+          "topic": "evaluation",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "offline-evaluation",
+            "online-evaluation"
+          ],
+          "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
+          "options": [
+            "Offline Evaluation 直接度量真实流量，因此比在线 A/B 测试更能代表用户的真实体验",
+            "Online Evaluation 适用于发布前的验证，Offline Evaluation 适用于上线后的监控，两者不能结合使用",
+            "只要 Offline 指标全部通过即可保证上线安全，Online Evaluation 属于可有可无的补充环节",
+            "Offline 在固定数据集上可重复可对比、成本低，适合迭代守门但覆盖不了真实流量长尾；Online 用真实流量验证效果可信但周期长成本高，两者互补"
+          ]
+        }
+      }
+    ],
+    "judge-memory-cascade": [
+      {
+        "id": "judge-memory-cascade__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "从传播机制看，Judge 记忆里的早期误判是如何一步步污染后续评估的？",
+        "options": [
+          "记忆拉长了 Context，触发 Needle In A Haystack，关键指标被淹没",
+          "早期误判写入持久记忆，在后续 Trace 评估中不断传播和放大，形成错误级联",
+          "记忆模块占用了沙盒调用额度，代码无法真实运行才判错",
+          "记忆读取发生死锁，评估退化成单次判定，准确率自然下降"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从传播机制解释早期误判污染后续评估的级联过程",
+          "reasoningGoal": "先复现误判写入、复用与放大的传播链条；再逐项核验各判断；并排除「上下文过长」「沙盒被占」「读取死锁」等不成立描述。"
+        },
+        "generatedAt": 1788854593655,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2615795f",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-6ec91632",
+        "sourceSnapshot": {
+          "id": "judge-memory-cascade",
+          "topic": "evaluation",
+          "subtopic": "memory-propagation-error-cascade",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "agent-evaluation",
+            "memory-module",
+            "error-cascade",
+            "bias-propagation"
+          ],
+          "question": "在为评估代码生成 Agent 的 Agent-as-a-Judge 架构引入跨任务持久化记忆模块后测试发现评估准确率反而下降。导致该现象最可能的原因是？",
+          "options": [
+            "记忆模块增加了 Context 长度导致评估 LLM 触发了 Needle In A Haystack 现象并忽略了关键评测指标",
+            "早期评估中产生的错误判断或偏见写入持久化记忆后会在后续评估其他 Trace 时不断传播和放大形成错误级联",
+            "记忆模块会导致评估 Agent 无法调用外部沙盒去真实运行被评估的代码",
+            "记忆模块会导致评估 Agent 在读取历史数据时发生死锁使其退化为标准的单次 LLM-as-a-Judge"
+          ]
+        }
+      }
+    ],
+    "wikiskill-anti-looping-impact-tracker": [
+      {
+        "id": "wikiskill-anti-looping-impact-tracker__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "某 Optimizer 连续三轮提出同类修改，验证集轮轮拒绝。定位这次结构性重复，下列哪些判断成立？",
+        "options": [
+          "Proposer 构造提示词时缺了历史判决：应按候选指纹检索近似被拒记录并列出",
+          "拒绝原因缺归一化：应收敛为有限类别，让停止与转向基于结构化字段",
+          "缺的是审计日志：判决写进独立日志备查即可影响下次提议",
+          "缺的是随机性：提高温度并扩大候选量就能绕开被拒方向"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从连续三轮同类被拒定位反馈回路的断点",
+          "reasoningGoal": "先定位反馈的断点（留存、接入、归一化三类）；再逐项验证各判断；并排除「日志备查」「加大随机」等不成立描述。"
+        },
+        "generatedAt": 1788854593656,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d00c15d4",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-97df9309",
+        "sourceSnapshot": {
+          "id": "wikiskill-anti-looping-impact-tracker",
+          "topic": "prompt-optimization-debugging",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent",
+            "prompt-optimization",
+            "debugging",
+            "audit-trail"
+          ],
+          "question": "为避免 Optimizer 反复提出已被验证集拒绝的同类修改，需要把历史判决反馈回优化循环。下列哪些设计能让这份反馈真正影响下一次提议？",
+          "options": [
+            "在构造 Proposer 提示词时，按候选指纹检索语义近似的历史被拒记录并显式列给模型",
+            "把拒绝原因归一化为有限类别，使停止条件与改换方向的判断都能基于结构化字段",
+            "将历史判决写入独立日志供事后审计，但不进入 Proposer 的输入上下文",
+            "提高采样温度并扩大每轮候选数量，让随机性自然覆盖掉已被拒绝的方向"
+          ]
+        }
+      }
+    ],
+    "wikiskill-supp-009": [
+      {
+        "id": "wikiskill-supp-009__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "把结构化信号方案与只存原文、自由文本两类做法对比，识别近似重复候选最少需要什么？",
+        "options": [
+          "对候选结构与关键 diff 规范化后计算 fingerprint",
+          "拒绝原因归一化为有限类别，保留验证分与尝试计数",
+          "原文字符串精确去重，措辞一变就当新候选",
+          "只记最终分数，不存拒绝原因以精简日志"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比三种信号方案并判断识别近似重复的最小信号集",
+          "reasoningGoal": "先对齐三类做法的可比维度（归并能力与停止信号）；再逐项判定各主张；并排除「精确去重」「只记分数」等不成立描述。"
+        },
+        "generatedAt": 1788854593656,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1fa9c9f9",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-6b264eef",
+        "sourceSnapshot": {
+          "id": "wikiskill-supp-009",
+          "topic": "prompt-optimization-debugging",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "candidate-fingerprint",
+            "rejection-reason",
+            "anti-loop"
+          ],
+          "question": "影响追踪器要识别语义近似的重复候选，最少应维护哪些结构化信号？",
+          "options": [
+            "对候选的结构化内容和关键 diff 规范化后计算 fingerprint",
+            "把拒绝原因归一化为有限类别，并保留验证分和尝试计数",
+            "只按原始字符串精确去重，措辞稍变就当作全新候选",
+            "只记录最终分数，不保存拒绝原因以减少日志字段数量"
+          ]
+        }
+      }
+    ],
+    "wikiskill-supp-010": [
+      {
+        "id": "wikiskill-supp-010__surface-options__assessmentreplace__0",
+        "kind": "surface-options",
+        "question": "要为新的自动 Skill 优化器设计停止策略，要求可审计、可恢复。下列哪些设计应当纳入？",
+        "options": [
+          "用重复指纹、无改进轮数与验证预算等可观测状态定义停止条件",
+          "停止时保留候选、指标与归一化原因，支持审计后换方向恢复",
+          "文本不完全相同就继续优化，不用统计近似重复",
+          "一进循环就清空记录，从相同起点重开更容易跳出"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为可审计可恢复的要求设计优化器停止策略",
+          "reasoningGoal": "先拆出停止策略的目标与约束（可观测、可恢复）；再逐项确认各设计；并排除「不计重复」「清空重开」等不成立描述。"
+        },
+        "generatedAt": 1788854593657,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dfb60e94",
+        "batch": "assessmentreplace",
+        "model": "manual",
+        "contentHash": "fnv1a-b887e658",
+        "sourceSnapshot": {
+          "id": "wikiskill-supp-010",
+          "topic": "prompt-optimization-debugging",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "stop-condition",
+            "optimization-loop",
+            "debugging"
+          ],
+          "question": "自动 Skill 优化器在连续多轮没有有效提升时，哪种停止策略更容易审计和恢复？",
+          "options": [
+            "设置重复指纹、连续无改进轮数和验证预算等可观测停止条件",
+            "停止时保留候选、指标和归一化原因，支持审计后从新方向恢复",
+            "只要候选文本还未完全相同，就持续优化而不统计近似重复",
+            "遇到循环就清空全部记录，再从相同初始候选重新开始"
+          ]
+        }
+      }
+    ]
+  }
+}
