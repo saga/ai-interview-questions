@@ -1,0 +1,1849 @@
+{
+  "version": 1,
+  "generatedAt": 1788906146837,
+  "promptVersion": "v4",
+  "variants": {
+    "agent-eval-07": [
+      {
+        "id": "agent-eval-07__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某评估任务 pass@100 为 0%，团队直接判定模型不行。评审这一结论的前提，下列哪些判断正确？",
+        "options": [
+          "前沿模型 pass@100 挂零，先查 Task 描述与 Grader 隐式漏洞",
+          "好 Task 须两位专家判定高度一致",
+          "干净隔离沙盒加 Trial 前重置环境，保可重复",
+          "与预设参考不同但合规的创新解法，直接判失败",
+          "优先积累真实失败典型 Task，胜过盲目堆数千合成题"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在 pass@100 为 0% 下判断模型不行结论的前提是否成立",
+          "reasoningGoal": "先判断该结论的前提（任务与 grader 有效性）是否满足；再逐项验证各主张；并排除「创新即失败」等不成立描述。"
+        },
+        "generatedAt": 1788906146828,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fad1b9d4",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-7746f2c5",
+        "sourceSnapshot": {
+          "id": "agent-eval-07",
+          "topic": "evaluation",
+          "subtopic": "flakiness-debugging",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "flakiness",
+            "sandbox",
+            "agent-eval",
+            "eval-debugging",
+            "inter-annotator"
+          ],
+          "question": "在对 Agent 评估套件进行构建与调试时，测试用例经常出现「不稳定（Flakiness）」或 Agent 屡次失败（如 pass@100 为 0%）的情况。下列哪些处理和排查策略符合 Agent 评测的最佳实践？",
+          "options": [
+            "当前沿大模型在某个评估任务上的 pass@100 概率为 0% 时，工程团队应优先检查该任务描述与 Grader 是否存在隐式假设或漏洞",
+            "好的评估 Task 应当达到「两位领域专家独立审阅该任务描述和测试环境后，能够对其通过 / 失败判定达成一致」的明确程度",
+            "针对代码或环境修改类 Agent，评估套件应提供干净且隔离的沙盒环境（Sandbox），并在每个 Trial 执行前重置环境状态",
+            "若 Agent 在尝试解决问题时提出了与预设参考方案不同但能够完全满足业务约束的创新解法，Grader 应直接判定为失败",
+            "在 Agent 评估初始阶段，开发团队应优先积累 20~50 个源自真实失败案例的典型 Task，而不是盲目追求构建包含数千个合成 Task 的庞大评测集"
+          ]
+        }
+      },
+      {
+        "id": "agent-eval-07__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为代码 Agent 从零搭评估套件：pass@100 挂零先查描述与断言，再定沙盒与用例标准。下列哪些应当纳入？",
+        "options": [
+          "pass@100 为零先查任务描述与 Grader 隐式漏洞",
+          "Task 标准须两位专家独立审阅后判定一致",
+          "隔离沙盒加 Trial 前重置环境状态",
+          "与预设参考不同但合规的创新解法，直接判失败",
+          "真实失败用例 20~50 个先行，数千合成题靠后"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为代码 Agent 从零设计评估套件",
+          "reasoningGoal": "先拆出套件设计的目标与约束；再逐项确认各设计；并排除「创新即失败」等不成立描述。"
+        },
+        "generatedAt": 1788906146829,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fad1b9d4",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-73f842a9",
+        "sourceSnapshot": {
+          "id": "agent-eval-07",
+          "topic": "evaluation",
+          "subtopic": "flakiness-debugging",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "flakiness",
+            "sandbox",
+            "agent-eval",
+            "eval-debugging",
+            "inter-annotator"
+          ],
+          "question": "在对 Agent 评估套件进行构建与调试时，测试用例经常出现「不稳定（Flakiness）」或 Agent 屡次失败（如 pass@100 为 0%）的情况。下列哪些处理和排查策略符合 Agent 评测的最佳实践？",
+          "options": [
+            "当前沿大模型在某个评估任务上的 pass@100 概率为 0% 时，工程团队应优先检查该任务描述与 Grader 是否存在隐式假设或漏洞",
+            "好的评估 Task 应当达到「两位领域专家独立审阅该任务描述和测试环境后，能够对其通过 / 失败判定达成一致」的明确程度",
+            "针对代码或环境修改类 Agent，评估套件应提供干净且隔离的沙盒环境（Sandbox），并在每个 Trial 执行前重置环境状态",
+            "若 Agent 在尝试解决问题时提出了与预设参考方案不同但能够完全满足业务约束的创新解法，Grader 应直接判定为失败",
+            "在 Agent 评估初始阶段，开发团队应优先积累 20~50 个源自真实失败案例的典型 Task，而不是盲目追求构建包含数千个合成 Task 的庞大评测集"
+          ]
+        }
+      }
+    ],
+    "agent-arch-localized": [
+      {
+        "id": "agent-arch-localized__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Agent 把重试超时降级全交模型临场决定，线上诡异难调试。定位这次失控，下列哪些判断成立？",
+        "options": [
+          "循环重试权限状态应放代码侧，不委托模型发挥",
+          "行为可预测可测试，少依赖模型自觉守规",
+          "模型定结束调工具塞逻辑，照样好调试",
+          "重试超时降级全交模型，代码只留模板",
+          "工具调用须经人工审批才有可观测性"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从控制流失控的故障定位本地化环节",
+          "reasoningGoal": "先定位失控的环节（放置位置、可观测两类）；再逐项验证各判断；并排除「模型自治」「人工审批」等不成立描述。"
+        },
+        "generatedAt": 1788906146829,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-12072912",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-fe4b7e3b",
+        "sourceSnapshot": {
+          "id": "agent-arch-localized",
+          "topic": "agent-fundamentals",
+          "subtopic": "localized-harness",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent-architecture",
+            "localized-harness",
+            "control-flow"
+          ],
+          "question": "关于 \"Localized Harness\"（把控制逻辑本地化到编排代码）的做法，以下哪些是它的主要动机或特征？",
+          "options": [
+            "把循环、重试、权限校验、状态管理等确定性控制流放在代码侧，而不是全部委托给模型自由发挥",
+            "让 Agent 行为可预测、可测试、可观测，并降低对模型「自觉遵守规则」的依赖",
+            "与之相反的做法（让模型自行决定何时结束、何时调用工具、把业务逻辑都塞进 System Prompt）往往更难调试与保障可靠性",
+            "把重试、超时与降级策略交由模型在运行时自主决定，代码侧只保留 prompt 模板，以减少编排代码的维护负担",
+            "Localized Harness 要求所有工具调用都经过人工审批，否则确定性控制流无法保证可观测性"
+          ]
+        }
+      },
+      {
+        "id": "agent-arch-localized__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "把控制流放代码侧与放模型侧放在可预测可测试上对比，根本差异是什么？",
+        "options": [
+          "代码侧放循环重试权限状态机",
+          "代码侧可预测可测，不赌模型自觉",
+          "模型侧定结束调工具塞逻辑，调试无忧",
+          "模型侧定重试超时，代码只做模板",
+          "无人工审批即无可观测性"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从可预测可测试对比两种放置的根本差异",
+          "reasoningGoal": "先对齐两种放置的可比维度；再逐项判定各主张成立与否；并排除「模型自治」「人工审批」等不成立描述。"
+        },
+        "generatedAt": 1788906146829,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-12072912",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-93d17f73",
+        "sourceSnapshot": {
+          "id": "agent-arch-localized",
+          "topic": "agent-fundamentals",
+          "subtopic": "localized-harness",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent-architecture",
+            "localized-harness",
+            "control-flow"
+          ],
+          "question": "关于 \"Localized Harness\"（把控制逻辑本地化到编排代码）的做法，以下哪些是它的主要动机或特征？",
+          "options": [
+            "把循环、重试、权限校验、状态管理等确定性控制流放在代码侧，而不是全部委托给模型自由发挥",
+            "让 Agent 行为可预测、可测试、可观测，并降低对模型「自觉遵守规则」的依赖",
+            "与之相反的做法（让模型自行决定何时结束、何时调用工具、把业务逻辑都塞进 System Prompt）往往更难调试与保障可靠性",
+            "把重试、超时与降级策略交由模型在运行时自主决定，代码侧只保留 prompt 模板，以减少编排代码的维护负担",
+            "Localized Harness 要求所有工具调用都经过人工审批，否则确定性控制流无法保证可观测性"
+          ]
+        }
+      }
+    ],
+    "agent-arch-model-harness": [
+      {
+        "id": "agent-arch-model-harness__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Agent 让模型直接执行写库，绕过 Harness 校验。定位这次越权，下列哪些判断成立？",
+        "options": [
+          "Harness 解析输出验参数，维护状态与重试",
+          "副作用须 Harness 落地，模型不得直执行",
+          "工具选择可在 Harness 按策略状态决策",
+          "模型直写库是对的，Harness 只管展示",
+          "Model 与 Harness 只是两种叫法"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从模型直写库的越权定位边界环节",
+          "reasoningGoal": "先定位越权的环节（解析、落地、决策三类）；再逐项验证各判断；并排除「直写正确」「同物异名」等不成立描述。"
+        },
+        "generatedAt": 1788906146829,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9f8037ff",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-0e0a2555",
+        "sourceSnapshot": {
+          "id": "agent-arch-model-harness",
+          "topic": "agent-fundamentals",
+          "subtopic": "model-vs-harness",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-architecture",
+            "model-harness",
+            "harness"
+          ],
+          "question": "关于 Agent 的 Model（模型）与 Harness（外部编排代码）的边界，以下哪些说法是正确的？",
+          "options": [
+            "Harness 负责把模型输出解析为结构化动作、校验参数，并维护状态与重试",
+            "副作用（写库、调用外部 API）必须由 Harness 落地，模型本身不应直接执行",
+            "工具选择的决策可以由 Harness 结合策略与状态在代码中完成，不必硬编码在模型权重里",
+            "模型应当直接执行工具副作用（如写数据库），Harness 只负责把结果展示出来",
+            "Model 与 Harness 只是同一事物的两种叫法，没有实质区别"
+          ]
+        }
+      },
+      {
+        "id": "agent-arch-model-harness__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张工具选择必须硬编码进模型权重。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "解析校验状态重试是 Harness 的活",
+          "写库调 API 须 Harness 落地",
+          "策略状态定工具选择，无需硬编码权重",
+          "模型直执行副作用天经地义",
+          "Model 即 Harness，只是叫法不同"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断工具选择须硬编码权重主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（决策归属）是否满足；再逐项验证各主张；并排除「直执行」「同物异名」等不成立描述。"
+        },
+        "generatedAt": 1788906146829,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9f8037ff",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-56553a17",
+        "sourceSnapshot": {
+          "id": "agent-arch-model-harness",
+          "topic": "agent-fundamentals",
+          "subtopic": "model-vs-harness",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-architecture",
+            "model-harness",
+            "harness"
+          ],
+          "question": "关于 Agent 的 Model（模型）与 Harness（外部编排代码）的边界，以下哪些说法是正确的？",
+          "options": [
+            "Harness 负责把模型输出解析为结构化动作、校验参数，并维护状态与重试",
+            "副作用（写库、调用外部 API）必须由 Harness 落地，模型本身不应直接执行",
+            "工具选择的决策可以由 Harness 结合策略与状态在代码中完成，不必硬编码在模型权重里",
+            "模型应当直接执行工具副作用（如写数据库），Harness 只负责把结果展示出来",
+            "Model 与 Harness 只是同一事物的两种叫法，没有实质区别"
+          ]
+        }
+      }
+    ],
+    "agent-arch-system-prompt": [
+      {
+        "id": "agent-arch-system-prompt__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 System Prompt 越堆越长，模型表现反降、账单反涨。定位这次堆料，下列哪些判断成立？",
+        "options": [
+          "Harness 应每轮按工具记忆角色策略动态拼装",
+          "超长超量加成本拖推理，噪声反降表现",
+          "Harness 掌拼装裁剪，而非常量写死",
+          "静态常量写死全程不变，最稳妥",
+          "历史对话系统日志全塞，越长越完整，无需拼装"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从越堆越差的堆料定位拼装环节",
+          "reasoningGoal": "先定位堆料的环节（拼装、长度两类）；再逐项验证各判断；并排除「静态最稳」「越长越好」等不成立描述。"
+        },
+        "generatedAt": 1788906146830,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dc9cb23d",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-992ed9c9",
+        "sourceSnapshot": {
+          "id": "agent-arch-system-prompt",
+          "topic": "agent-fundamentals",
+          "subtopic": "system-prompt-runtime",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-architecture",
+            "system-prompt",
+            "context"
+          ],
+          "question": "关于 Agent 的 System Prompt 在运行时（runtime）的构造，以下哪些说法是正确的？",
+          "options": [
+            "Harness 应在每次迭代根据可用工具、记忆片段、角色设定与策略动态拼装 System Prompt",
+            "System Prompt 并非越长越好：超出必要的历史与指令会增加 token 成本、拖慢推理，甚至可能因为上下文噪声而降低模型表现",
+            "Harness 应掌控 System Prompt 的构造与裁剪，而不是把它当作写死不变的静态常量",
+            "System Prompt 应是写死在代码里的静态常量，全程不变",
+            "System Prompt 越长越好，应包含尽可能多的历史对话与系统日志以覆盖全部上下文，从而让模型无需 Harness 动态拼装也能获得完整信息，长上下文只会提升而非拖慢表现"
+          ]
+        }
+      },
+      {
+        "id": "agent-arch-system-prompt__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "把动态拼装与静态常量放在成本与噪声上对比，根本差异是什么？",
+        "options": [
+          "动态按工具记忆角色策略拼装",
+          "超量历史指令加成本拖推理并引入噪声",
+          "拼装裁剪权在 Harness，不写死静态常量",
+          "写死静态常量，全程保持不变",
+          "历史对话与系统日志全塞进 prompt，越长越完整，无需拼装"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从成本与噪声对比两种构造的根本差异",
+          "reasoningGoal": "先对齐两种构造的可比维度；再逐项判定各主张成立与否；并排除「静态最稳」「越长越好」等不成立描述。"
+        },
+        "generatedAt": 1788906146830,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dc9cb23d",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-b9227a74",
+        "sourceSnapshot": {
+          "id": "agent-arch-system-prompt",
+          "topic": "agent-fundamentals",
+          "subtopic": "system-prompt-runtime",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-architecture",
+            "system-prompt",
+            "context"
+          ],
+          "question": "关于 Agent 的 System Prompt 在运行时（runtime）的构造，以下哪些说法是正确的？",
+          "options": [
+            "Harness 应在每次迭代根据可用工具、记忆片段、角色设定与策略动态拼装 System Prompt",
+            "System Prompt 并非越长越好：超出必要的历史与指令会增加 token 成本、拖慢推理，甚至可能因为上下文噪声而降低模型表现",
+            "Harness 应掌控 System Prompt 的构造与裁剪，而不是把它当作写死不变的静态常量",
+            "System Prompt 应是写死在代码里的静态常量，全程不变",
+            "System Prompt 越长越好，应包含尽可能多的历史对话与系统日志以覆盖全部上下文，从而让模型无需 Harness 动态拼装也能获得完整信息，长上下文只会提升而非拖慢表现"
+          ]
+        }
+      }
+    ],
+    "ai-eng-031": [
+      {
+        "id": "ai-eng-031__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某汇总 33 篇文章的任务只召回 5 个 Chunk，却零幻觉。定位这次 0 完整度满依据度的成因，下列哪些判断成立？",
+        "options": [
+          "模型自主推断召回不全，自动提高注意力机制惩罚权重",
+          "Prompt 硬性负向约束：无据即明说拒绝猜测",
+          "检索片段不够答全局即拒答，绝不脑补",
+          "Embedding 自动过滤不确定切片"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 33 篇只回 5 切片却零幻觉的成因定位约束环节",
+          "reasoningGoal": "先定位成因的环节（约束、拒答两类）；再逐项验证各判断；并排除「自调权重」「自动过滤」等不成立描述。"
+        },
+        "generatedAt": 1788906146830,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4660cddb",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-6ec8dafb",
+        "sourceSnapshot": {
+          "id": "ai-eng-031",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "groundedness",
+            "completeness",
+            "negative-constraint",
+            "refusal"
+          ],
+          "question": "在长文本问答测试中，当面对全语料覆盖问题（如\"汇总全部 33 篇文章中引用的 GitHub 仓库\"）时，RAG 仅召回了 5 个 Chunks。测试结果显示 RAG 的 Completeness（完整度）得分仅为 0，但 Groundedness（依据度/无幻觉）得分依然维持满分。导致这一现象的关键因素包括？（多选）",
+          "options": [
+            "模型自主推断出向量数据库召回不全，并自动提高了注意力机制对外部知识的惩罚权重",
+            "System Prompt 中硬性包含了负向约束：\"仅基于提供的文本回答；若文本不包含答案，请明确说明而非猜测\"",
+            "模型在意识到检索片段不足以回答全局问题时，主动回复\"仅有部分切片，无法回答全量，拒绝猜测\"",
+            "向量检索的 Embedding 模型自动过滤掉了可能导致幻觉的不确定切片"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-031__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张模型能自主察觉 33 篇召回不全并调低外部知识权重。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "模型自感知召回缺口，自动调注意力权重",
+          "硬性负向约束：无据即明确说明拒绝猜测",
+          "检索片段不够答全局即拒答，绝不编造",
+          "检索层自带不确定切片过滤"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断模型自主兜底主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（自感知能力）是否满足；再逐项验证各主张；并排除「自调权重」「自动过滤」等不成立描述。"
+        },
+        "generatedAt": 1788906146831,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4660cddb",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-005da96b",
+        "sourceSnapshot": {
+          "id": "ai-eng-031",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "groundedness",
+            "completeness",
+            "negative-constraint",
+            "refusal"
+          ],
+          "question": "在长文本问答测试中，当面对全语料覆盖问题（如\"汇总全部 33 篇文章中引用的 GitHub 仓库\"）时，RAG 仅召回了 5 个 Chunks。测试结果显示 RAG 的 Completeness（完整度）得分仅为 0，但 Groundedness（依据度/无幻觉）得分依然维持满分。导致这一现象的关键因素包括？（多选）",
+          "options": [
+            "模型自主推断出向量数据库召回不全，并自动提高了注意力机制对外部知识的惩罚权重",
+            "System Prompt 中硬性包含了负向约束：\"仅基于提供的文本回答；若文本不包含答案，请明确说明而非猜测\"",
+            "模型在意识到检索片段不足以回答全局问题时，主动回复\"仅有部分切片，无法回答全量，拒绝猜测\"",
+            "向量检索的 Embedding 模型自动过滤掉了可能导致幻觉的不确定切片"
+          ]
+        }
+      }
+    ],
+    "ai-eng-062": [
+      {
+        "id": "ai-eng-062__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某客服过了脏话过滤，却承诺了退款日期致赔付。定位这次漏检，下列哪些判断成立？",
+        "options": [
+          "缺四类拦截：承诺表述、情绪错配、PII、竞品提及",
+          "缺工具接地：事实须来自 API 返回而非生成",
+          "缺交接包：摘要情绪工具调用客户等级，而非倾倒原文",
+          "脏话敏感词过滤即够，其余风险对齐能力兜底",
+          "自动工单跳过检查，事后抽检足够"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从承诺赔付的漏检定位检查环节",
+          "reasoningGoal": "先定位漏检的环节（拦截、接地、交接三类）；再逐项验证各判断；并排除「脏话即全部」「抽检足够」等不成立描述。"
+        },
+        "generatedAt": 1788906146831,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a5e69c99",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-752d4257",
+        "sourceSnapshot": {
+          "id": "ai-eng-062",
+          "topic": "agent-guardrails",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "safety-check",
+            "promise-detection",
+            "tool-grounding",
+            "handoff-context"
+          ],
+          "question": "客服 AI 自动发出的每一条回复都可能构成对用户的承诺。请设计发送前的安全检查层应拦截哪些风险，以及工具调用接地（tool grounding）、越狱抵抗与人机交接上下文包如何协同构成完整防线。",
+          "options": [
+            "发送前拦截四类风险：承诺性表述、情绪错配、PII与内部数据泄露、竞品提及",
+            "事实一律来自工具调用返回而非模型生成，窄域prompt使越狱无利可图",
+            "转人工附结构化交接包：对话摘要、情绪、已执行工具调用与客户等级，而非倾倒原文",
+            "内容审核API过滤脏话与敏感词即够，承诺、情绪与PII风险可由模型对齐能力自行消解",
+            "自动解决工单跳过发送前检查、事后抽检即可，检查只留给转人工的高风险对话"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-062__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为自动回复客服设计发送前检查层。下列哪些应当纳入？",
+        "options": [
+          "四类风险全拦：承诺、情绪、PII、竞品",
+          "事实来自工具返回，窄域 prompt 锁越狱收益",
+          "交接包给摘要情绪调用记录与等级",
+          "脏话敏感词过滤即够，承诺情绪 PII 对齐兜底",
+          "自动解决的免检查，事后抽检即可"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为自动回复客服设计发送前检查层",
+          "reasoningGoal": "先拆出检查层的目标与约束；再逐项确认各设计；并排除「脏话即全貌」「免检抽检」等不成立描述。"
+        },
+        "generatedAt": 1788906146831,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a5e69c99",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-3f2cac23",
+        "sourceSnapshot": {
+          "id": "ai-eng-062",
+          "topic": "agent-guardrails",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "safety-check",
+            "promise-detection",
+            "tool-grounding",
+            "handoff-context"
+          ],
+          "question": "客服 AI 自动发出的每一条回复都可能构成对用户的承诺。请设计发送前的安全检查层应拦截哪些风险，以及工具调用接地（tool grounding）、越狱抵抗与人机交接上下文包如何协同构成完整防线。",
+          "options": [
+            "发送前拦截四类风险：承诺性表述、情绪错配、PII与内部数据泄露、竞品提及",
+            "事实一律来自工具调用返回而非模型生成，窄域prompt使越狱无利可图",
+            "转人工附结构化交接包：对话摘要、情绪、已执行工具调用与客户等级，而非倾倒原文",
+            "内容审核API过滤脏话与敏感词即够，承诺、情绪与PII风险可由模型对齐能力自行消解",
+            "自动解决工单跳过发送前检查、事后抽检即可，检查只留给转人工的高风险对话"
+          ]
+        }
+      }
+    ],
+    "ai-security-002": [
+      {
+        "id": "ai-security-002__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某防护全堆 LLM 之后，延迟爆炸还静默丢正常请求。定位这次设计失误，下列哪些判断成立？",
+        "options": [
+          "LLM 前做廉价确定检查：注入脱敏权限长度频控",
+          "LLM 后做语义审查：接地合规 PII 越权",
+          "两层低延迟 fail-safe，监控误杀给申诉，故障宁拒不放",
+          "全堆 LLM 后，看全输出再评风险最高效",
+          "拦截静默丢弃不给反馈，误杀事后审计"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从全堆 LLM 后延迟爆炸的失误定位分层环节",
+          "reasoningGoal": "先定位失误的环节（前置、后置两类）；再逐项验证各判断；并排除「全堆最高效」「静默保体验」等不成立描述。"
+        },
+        "generatedAt": 1788906146831,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c2599768",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-5f15a4e4",
+        "sourceSnapshot": {
+          "id": "ai-security-002",
+          "topic": "agent-guardrails",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "guardrails",
+            "security"
+          ],
+          "question": "如何设计一个 LLM Application 的 Input Guardrail 和 Output Guardrail？哪些检查应该在 LLM 之前完成，哪些应该在 LLM 之后完成？",
+          "options": [
+            "LLM之前做廉价确定性检查：注入检测、PII脱敏、主题与权限过滤、长度格式校验与频控",
+            "LLM之后做需语义理解的审查：grounding校验、毒性合规、PII泄露扫描、schema与越权检测",
+            "两层都要求低延迟与fail-safe，监控误杀率并提供申诉通道，故障时宁可拒绝不放行高危内容",
+            "全部安全检查放LLM之后集中执行，看到完整输出才能全面评估风险，前置只是重复劳动",
+            "拦截时静默丢弃不给反馈，边界情况尽量放行保体验，误杀留待事后审计处理"
+          ]
+        }
+      },
+      {
+        "id": "ai-security-002__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "把前置确定性检查与后置语义审查放在成本与能力上对比，根本差异是什么？",
+        "options": [
+          "前置便宜确定：注入脱敏权限长度频控",
+          "后置懂语义：接地合规 PII 越权检测",
+          "两层都要快要 fail-safe，误杀可申诉",
+          "后置看全最全面，前置纯属重复劳动",
+          "静默丢弃最保体验，误杀事后算账"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从成本与能力对比两层检查的根本差异",
+          "reasoningGoal": "先对齐两层检查的可比维度；再逐项判定各主张成立与否；并排除「后置最全面」「静默最保」等不成立描述。"
+        },
+        "generatedAt": 1788906146831,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c2599768",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-0bf25de1",
+        "sourceSnapshot": {
+          "id": "ai-security-002",
+          "topic": "agent-guardrails",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "guardrails",
+            "security"
+          ],
+          "question": "如何设计一个 LLM Application 的 Input Guardrail 和 Output Guardrail？哪些检查应该在 LLM 之前完成，哪些应该在 LLM 之后完成？",
+          "options": [
+            "LLM之前做廉价确定性检查：注入检测、PII脱敏、主题与权限过滤、长度格式校验与频控",
+            "LLM之后做需语义理解的审查：grounding校验、毒性合规、PII泄露扫描、schema与越权检测",
+            "两层都要求低延迟与fail-safe，监控误杀率并提供申诉通道，故障时宁可拒绝不放行高危内容",
+            "全部安全检查放LLM之后集中执行，看到完整输出才能全面评估风险，前置只是重复劳动",
+            "拦截时静默丢弃不给反馈，边界情况尽量放行保体验，误杀留待事后审计处理"
+          ]
+        }
+      }
+    ],
+    "ai-tool-004": [
+      {
+        "id": "ai-tool-004__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Agent 在参数里自写已同意删除，绕过确认删库。定位这次绕过，下列哪些判断成立？",
+        "options": [
+          "三类工具同权，模型写已同意即放行",
+          "风险分级：查询放行，外发限域限频，删除禁自动",
+          "删除直接物理执行，软删除审批纯拖慢",
+          "高危设确认门，dry-run 预览加软删除",
+          "权限服务端按会话判定，审计全留痕"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从自写已同意删库的绕过定位权限环节",
+          "reasoningGoal": "先定位绕过的环节（分级、确认、判定三类）；再逐项验证各判断；并排除「同权放行」「直接物理」等不成立描述。"
+        },
+        "generatedAt": 1788906146832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-89c40ab4",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-e5441a8b",
+        "sourceSnapshot": {
+          "id": "ai-tool-004",
+          "topic": "agent-guardrails",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "tool-calling",
+            "security",
+            "authorization"
+          ],
+          "question": "一个 Agent 可以调用发送邮件、删除数据和查询数据库的工具。你会如何设计工具权限和高风险操作的确认机制？",
+          "options": [
+            "三类工具赋予同等操作权限，信任模型在参数中附带“用户已同意”标记即放行各类危险动作",
+            "按风险分级授权：查询默认放行，邮件外发限制收件域名与频率，删除等破坏类操作默认禁止自动执行",
+            "删除类操作直接物理执行以追求效率，软删除与独立审批流只会无谓拖慢 Agent 响应",
+            "高危操作设置人工确认门，执行前提供 dry-run 预览，并采用软删除以便回滚",
+            "权限判定一律在服务端基于会话身份完成而不采信模型自述，并对全部敏感调用留存审计日志"
+          ]
+        }
+      },
+      {
+        "id": "ai-tool-004__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为查询、外发、删除三类工具设计分级授权。下列哪些应当纳入？",
+        "options": [
+          "同等权限加自述同意即放行",
+          "查询放行、外发限域限频、删除禁自动执行",
+          "删库直接物理执行，效率第一",
+          "确认门加 dry-run 预览，软删除保底",
+          "服务端会话判定权限，全量审计留痕"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为三类工具设计分级授权",
+          "reasoningGoal": "先拆出授权设计的目标与约束；再逐项确认各设计；并排除「同权放行」「直接物理」等不成立描述。"
+        },
+        "generatedAt": 1788906146832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-89c40ab4",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-af640fbf",
+        "sourceSnapshot": {
+          "id": "ai-tool-004",
+          "topic": "agent-guardrails",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "tool-calling",
+            "security",
+            "authorization"
+          ],
+          "question": "一个 Agent 可以调用发送邮件、删除数据和查询数据库的工具。你会如何设计工具权限和高风险操作的确认机制？",
+          "options": [
+            "三类工具赋予同等操作权限，信任模型在参数中附带“用户已同意”标记即放行各类危险动作",
+            "按风险分级授权：查询默认放行，邮件外发限制收件域名与频率，删除等破坏类操作默认禁止自动执行",
+            "删除类操作直接物理执行以追求效率，软删除与独立审批流只会无谓拖慢 Agent 响应",
+            "高危操作设置人工确认门，执行前提供 dry-run 预览，并采用软删除以便回滚",
+            "权限判定一律在服务端基于会话身份完成而不采信模型自述，并对全部敏感调用留存审计日志"
+          ]
+        }
+      }
+    ],
+    "selfharness-paradigms-01": [
+      {
+        "id": "selfharness-paradigms-01__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Teacher 调优的 Harness 在目标模型上水土不服。定位这次偏差，下列哪些判断成立？",
+        "options": [
+          "降对外部强模型依赖，避强调优策略与目标行为偏差",
+          "省掉逐模型专属 Harness 人力重写，缺陷闭环自动修",
+          "自演进可取消回归测试，单提议热更新",
+          "避免优化器因上下文过长衰减，把参数微调与策略调整解耦"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 Teacher 调优水土不服的偏差定位驱动环节",
+          "reasoningGoal": "先定位偏差的环节（驱动、人力两类）；再逐项验证各判断；并排除「取消回归」「解耦万能」等不成立描述。"
+        },
+        "generatedAt": 1788906146832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-66759195",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-2883ddde",
+        "sourceSnapshot": {
+          "id": "selfharness-paradigms-01",
+          "topic": "agent-fundamentals",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "self-harness",
+            "meta-harness",
+            "human-engineering"
+          ],
+          "question": "优化 LLM Agent Harness 的演进路径通常包含“人工工程化（Human Engineering）”、“强模型驱动（Meta-Harness / Teacher-driven）”与“模型自我演进（Self-Harness）”三种模式。在面对多样化且快速迭代的基座模型时，相比前两种模式，“模型自我演进（Self-Harness）”架构具备哪些核心优势？",
+          "options": [
+            "降低对外部高阶强模型的依赖，避免强模型调优策略与目标基座模型实际行为模式出现偏差",
+            "消除人工维护针对不同模型专属 Harness 的高昂人力成本，实现模型特定缺陷的自动化闭环修复",
+            "彻底取消运行时环境校验与回归测试环节，通过单一提议直接完成底层代码层面的无损热更新",
+            "避免生成式优化器由于上下文过长而引发的衰减问题，将模型参数微调与环境策略调整完全解耦"
+          ]
+        }
+      },
+      {
+        "id": "selfharness-paradigms-01__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张自演进可取消回归测试、单提议热更新。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "降对外部强模型依赖，避强调优与目标行为偏差",
+          "省掉逐模型专属 Harness 人力，缺陷闭环自动修复",
+          "回归测试不要了，单提议直接热更新上线",
+          "优化器因上下文过长而衰减？把参数微调与策略调整解耦即消除"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断取消回归测试主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（校验必要性）是否满足；再逐项验证各主张；并排除「取消回归」「解耦万能」等不成立描述。"
+        },
+        "generatedAt": 1788906146832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-66759195",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-17b436d6",
+        "sourceSnapshot": {
+          "id": "selfharness-paradigms-01",
+          "topic": "agent-fundamentals",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "self-harness",
+            "meta-harness",
+            "human-engineering"
+          ],
+          "question": "优化 LLM Agent Harness 的演进路径通常包含“人工工程化（Human Engineering）”、“强模型驱动（Meta-Harness / Teacher-driven）”与“模型自我演进（Self-Harness）”三种模式。在面对多样化且快速迭代的基座模型时，相比前两种模式，“模型自我演进（Self-Harness）”架构具备哪些核心优势？",
+          "options": [
+            "降低对外部高阶强模型的依赖，避免强模型调优策略与目标基座模型实际行为模式出现偏差",
+            "消除人工维护针对不同模型专属 Harness 的高昂人力成本，实现模型特定缺陷的自动化闭环修复",
+            "彻底取消运行时环境校验与回归测试环节，通过单一提议直接完成底层代码层面的无损热更新",
+            "避免生成式优化器由于上下文过长而引发的衰减问题，将模型参数微调与环境策略调整完全解耦"
+          ]
+        }
+      }
+    ],
+    "skillevo-scaling-complementarity-01": [
+      {
+        "id": "skillevo-scaling-complementarity-01__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某超大模型上线后领域流程一问三不知。定位这次短板，下列哪些判断成立？",
+        "options": [
+          "基座越强吃技能增益越大",
+          "小模型配技能可反超无技能大模型",
+          "超大泛化自动涵盖领域工作流",
+          "大模型加载技能反而下降"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从超大模型领域无知的短板定位互补环节",
+          "reasoningGoal": "先定位短板的环节（增益、弥补两类）；再逐项验证各判断；并排除「自动涵盖」「加载反降」等不成立描述。"
+        },
+        "generatedAt": 1788906146832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-adfe9525",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-c988a754",
+        "sourceSnapshot": {
+          "id": "skillevo-scaling-complementarity-01",
+          "topic": "agent-fundamentals",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "model-scale",
+            "scaling",
+            "complementarity"
+          ],
+          "question": "在评估“模型参数规模（Model Scale）”与“演进技能（Evolved Skills）”对 Agent 系统综合性能的提升效果时，关于两者的系统设计取舍与互补关系，以下哪些结论是正确的？",
+          "options": [
+            "演进技能与模型规模具有互补性，通常基座模型能力越强，从高质量演进技能中获得的性能增益越大",
+            "引入高质量演进技能可以在一定程度上弥补模型规模不足，使较小模型配备技能后超越无技能的更大模型",
+            "随着基座模型参数量扩大，模型泛化能力会自动涵盖领域工作流，因而超大模型完全不需要演进技能",
+            "技能演进仅在小模型上产生效果，大型模型由于存在严重指令过拟合，加载外部技能反而导致性能下降"
+          ]
+        }
+      },
+      {
+        "id": "skillevo-scaling-complementarity-01__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "把互补论与替代论放在规模与技能关系上对比，根本差异是什么？",
+        "options": [
+          "越强基座吃技能增益越大",
+          "小模型配技能可胜无技能大模型",
+          "规模一大泛化自动涵盖工作流，超大模型无需技能",
+          "大模型严重指令过拟合，加载技能必致性能下降"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从规模与技能关系对比两种论的根本差异",
+          "reasoningGoal": "先对齐两种论的可比维度；再逐项判定各主张成立与否；并排除「自动全会」「必定下降」等不成立描述。"
+        },
+        "generatedAt": 1788906146832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-adfe9525",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-fc9823ca",
+        "sourceSnapshot": {
+          "id": "skillevo-scaling-complementarity-01",
+          "topic": "agent-fundamentals",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "model-scale",
+            "scaling",
+            "complementarity"
+          ],
+          "question": "在评估“模型参数规模（Model Scale）”与“演进技能（Evolved Skills）”对 Agent 系统综合性能的提升效果时，关于两者的系统设计取舍与互补关系，以下哪些结论是正确的？",
+          "options": [
+            "演进技能与模型规模具有互补性，通常基座模型能力越强，从高质量演进技能中获得的性能增益越大",
+            "引入高质量演进技能可以在一定程度上弥补模型规模不足，使较小模型配备技能后超越无技能的更大模型",
+            "随着基座模型参数量扩大，模型泛化能力会自动涵盖领域工作流，因而超大模型完全不需要演进技能",
+            "技能演进仅在小模型上产生效果，大型模型由于存在严重指令过拟合，加载外部技能反而导致性能下降"
+          ]
+        }
+      }
+    ],
+    "agentic-loop-error-01": [
+      {
+        "id": "agentic-loop-error-01__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Agent 出错后清空 Context，历史约束全丢。定位这次失忆，下列哪些机制正确且必须？",
+        "options": [
+          "错误堆栈追加入 Context，下轮推理修复",
+          "异常即清空全部历史 Context，免旧提示污染判断",
+          "设单次最大连续重试次数，超限中断转人工",
+          "强制提高 Temperature 到 1.0 以上，激发非传统修复路径",
+          "工具调用输出格式语义结构明确，便于精准定位错误位置"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从清空 Context 致失忆的故障定位证据环节",
+          "reasoningGoal": "先定位故障的环节（反馈、阈值两类）；再逐项验证各判断；并排除「清空去污」「升温激发」等不成立描述。"
+        },
+        "generatedAt": 1788906146833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b85c6bae",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-e91564e6",
+        "sourceSnapshot": {
+          "id": "agentic-loop-error-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent-loop",
+            "error-handling",
+            "tool-feedback"
+          ],
+          "question": "在一个基于 LLM 的 Coding Agent 交互循环（LLM + System Prompt + Tool Call Loop）中，Agent 在执行代码修改指令时抛出了编译或代码规范（Lint）错误。为了保证 Agent 能够自我纠错并完成任务，下列哪些系统设计或控制流机制是正确且必须的？（多选）",
+          "options": [
+            "将工具执行失败后的错误堆栈或 Lint 日志作为新的 Message 追加入 Context，让 LLM 在下一轮迭代中推理出修复方案",
+            "在工具执行抛出异常时自动清空之前所有的对话 Context，避免旧的提示词污染 LLM 对错误的判断",
+            "限制单次 Agentic Loop 的最大连续重试次数（Max Iterations），并在达到阈值后触发中断退回人类介入",
+            "在工具返回错误时强制提高 LLM 的 Temperature 参数至 1.0 以上，以增加模型探索非传统修复路径的能力",
+            "确保工具调用的输出（包含标准输出与标准错误）格式具备明确的语义结构，以便 LLM 能够精准识别错误位置与原因"
+          ]
+        }
+      },
+      {
+        "id": "agentic-loop-error-01__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张出错就升温到 1.0 激发修复灵感。评审这一主张，下列哪些判断正确且必须？",
+        "options": [
+          "错误堆栈追加进 Context，下轮据此推理修复",
+          "异常即清空全部历史，免旧提示污染判断",
+          "限制单次最大连续重试，超限中断转人工",
+          "强制升温超 1.0，激发非传统修复路径",
+          "工具输出语义结构明确，精准定位错误位置"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断升温治错主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（修复要确定性收敛）是否满足；再逐项验证各主张；并排除「清空最净」「升温治愈」等不成立描述。"
+        },
+        "generatedAt": 1788906146833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b85c6bae",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-c3fe2e71",
+        "sourceSnapshot": {
+          "id": "agentic-loop-error-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent-loop",
+            "error-handling",
+            "tool-feedback"
+          ],
+          "question": "在一个基于 LLM 的 Coding Agent 交互循环（LLM + System Prompt + Tool Call Loop）中，Agent 在执行代码修改指令时抛出了编译或代码规范（Lint）错误。为了保证 Agent 能够自我纠错并完成任务，下列哪些系统设计或控制流机制是正确且必须的？（多选）",
+          "options": [
+            "将工具执行失败后的错误堆栈或 Lint 日志作为新的 Message 追加入 Context，让 LLM 在下一轮迭代中推理出修复方案",
+            "在工具执行抛出异常时自动清空之前所有的对话 Context，避免旧的提示词污染 LLM 对错误的判断",
+            "限制单次 Agentic Loop 的最大连续重试次数（Max Iterations），并在达到阈值后触发中断退回人类介入",
+            "在工具返回错误时强制提高 LLM 的 Temperature 参数至 1.0 以上，以增加模型探索非传统修复路径的能力",
+            "确保工具调用的输出（包含标准输出与标准错误）格式具备明确的语义结构，以便 LLM 能够精准识别错误位置与原因"
+          ]
+        }
+      }
+    ],
+    "agentic-safety-05": [
+      {
+        "id": "agentic-safety-05__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Agent 每次改完直推主干，一次 rm 酿成事故。定位这次持久化失误，下列哪些判断成立？",
+        "options": [
+          "高危列黑名单，rm 强推须人工确认",
+          "改完直推主干分支，确保修改及时持久化",
+          "沙盒隔离跑，宿主敏感目录碰不得",
+          "移除全部 Shell 工具，人工手动粘贴保零风险",
+          "只读免审批，写操作才加审批"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从直推主干致事故的失误定位持久化环节",
+          "reasoningGoal": "先定位失误的环节（确认、隔离、分级三类）；再逐项验证各判断；并排除「直推及时」「移除最零」等不成立描述。"
+        },
+        "generatedAt": 1788906146833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-beab97c4",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-b3698c5b",
+        "sourceSnapshot": {
+          "id": "agentic-safety-05",
+          "topic": "safety-alignment",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "safety",
+            "sandbox",
+            "human-in-the-loop"
+          ],
+          "question": "当赋能 Coding Agent 可以在本地环境中执行 Shell 命令或 Git 操作时，系统架构师需要平衡 Agent 的“自主性”与“破坏风险”。下列哪些技术手段属于保障 Agent 安全高效执行工具命令的推荐工程实践？（多选）",
+          "options": [
+            "将高危命令（如 rm -rf、git push --force、删除数据库）列入显式黑名单或要求必须弹出 Human-in-the-loop 确认",
+            "鼓励 Agent 在每次修改代码后直接执行 git commit 和 git push 到主干分支，以确保所有修改被及时持久化",
+            "为 Agent 提供专用的沙盒（Sandbox）环境或隔离容器（如 Docker），限制其访问宿主机敏感目录与网络资源",
+            "移除所有 Shell 执行工具，仅允许 Agent 逐行输出代码更改并由开发者手动复制粘贴到 IDE 中以确保零风险",
+            "允许 Agent 执行只读类指令（如 git status、ls、grep）无需人工审批，仅对写操作或破坏性指令施加审批逻辑"
+          ]
+        }
+      },
+      {
+        "id": "agentic-safety-05__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为 Shell 工具设计读写分级授权。下列哪些应当纳入？",
+        "options": [
+          "高危命令列黑名单或弹人工确认门",
+          "每次改完直推主干分支，确保修改及时持久化",
+          "专用沙盒隔离跑，宿主敏感目录与网络碰不得",
+          "移除全部 Shell 工具，人工手动复制粘贴保零风险",
+          "只读指令免审批，写与破坏性操作加审批"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为 Shell 工具设计读写分级授权",
+          "reasoningGoal": "先拆出授权设计的目标与约束；再逐项确认各设计；并排除「直推优先」「全移除」等不成立描述。"
+        },
+        "generatedAt": 1788906146833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-beab97c4",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-6d27e6dc",
+        "sourceSnapshot": {
+          "id": "agentic-safety-05",
+          "topic": "safety-alignment",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "safety",
+            "sandbox",
+            "human-in-the-loop"
+          ],
+          "question": "当赋能 Coding Agent 可以在本地环境中执行 Shell 命令或 Git 操作时，系统架构师需要平衡 Agent 的“自主性”与“破坏风险”。下列哪些技术手段属于保障 Agent 安全高效执行工具命令的推荐工程实践？（多选）",
+          "options": [
+            "将高危命令（如 rm -rf、git push --force、删除数据库）列入显式黑名单或要求必须弹出 Human-in-the-loop 确认",
+            "鼓励 Agent 在每次修改代码后直接执行 git commit 和 git push 到主干分支，以确保所有修改被及时持久化",
+            "为 Agent 提供专用的沙盒（Sandbox）环境或隔离容器（如 Docker），限制其访问宿主机敏感目录与网络资源",
+            "移除所有 Shell 执行工具，仅允许 Agent 逐行输出代码更改并由开发者手动复制粘贴到 IDE 中以确保零风险",
+            "允许 Agent 执行只读类指令（如 git status、ls、grep）无需人工审批，仅对写操作或破坏性指令施加审批逻辑"
+          ]
+        }
+      }
+    ],
+    "eth-03": [
+      {
+        "id": "eth-03__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某产品关掉审核、砍掉专业领域，有害照样出。定位这次因噎废食，下列哪些判断成立？",
+        "options": [
+          "缺审核隔离：输入输出审加高风险权限隔离",
+          "缺护栏对齐：系统提示约束加 RLHF 红队",
+          "缺闭环：限流认证加反馈复核事故响应",
+          "语料干净即免审，护栏损害能力",
+          "默认拒绝医疗法律等专业提问，只留闲聊即彻底安全"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从关审核砍专业仍有害的失误定位防护环节",
+          "reasoningGoal": "先定位失误的环节（审核、对齐、闭环三类）；再逐项验证各判断；并排除「语料干净」「砍专业即安全」等不成立描述。"
+        },
+        "generatedAt": 1788906146833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d18afb86",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-14af5ff8",
+        "sourceSnapshot": {
+          "id": "eth-03",
+          "topic": "safety-alignment",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "safety",
+            "alignment",
+            "guardrails"
+          ],
+          "question": "在部署面向公众的大模型对话产品时，应采取哪些安全与对齐措施来降低滥用与有害输出风险？",
+          "options": [
+            "上线输入/输出内容审核与敏感词过滤，并对代码执行、外部工具调用等高风险能力实施权限隔离",
+            "通过系统提示与护栏（guardrails）约束行为边界，并结合 RLHF 与定期红队测试持续提升对齐水平",
+            "配置速率限制与身份认证防止滥用，同时建立用户反馈、人工复核与事故响应的闭环机制",
+            "预训练语料已经足够干净，上线时应关闭全部线上内容审核与护栏，避免损害模型能力",
+            "默认拒绝一切涉及医疗、法律等专业领域的提问，仅保留闲聊功能即可彻底消除有害输出的风险"
+          ]
+        }
+      },
+      {
+        "id": "eth-03__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为公测对话产品设计开放与风控兼顾的防护。下列哪些应当纳入？",
+        "options": [
+          "输入输出审加敏感词过滤，高风险权限隔离",
+          "系统提示护栏加 RLHF 红队持续对齐",
+          "限流认证加反馈复核事故闭环",
+          "语料干净，审核护栏全关",
+          "医疗法律等专业全砍，只保留闲聊功能"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为公测对话产品设计开放与风控兼顾的防护",
+          "reasoningGoal": "先拆出防护设计的目标与约束；再逐项确认各设计；并排除「全关审核」「全砍专业」等不成立描述。"
+        },
+        "generatedAt": 1788906146834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d18afb86",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-358a17d2",
+        "sourceSnapshot": {
+          "id": "eth-03",
+          "topic": "safety-alignment",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "safety",
+            "alignment",
+            "guardrails"
+          ],
+          "question": "在部署面向公众的大模型对话产品时，应采取哪些安全与对齐措施来降低滥用与有害输出风险？",
+          "options": [
+            "上线输入/输出内容审核与敏感词过滤，并对代码执行、外部工具调用等高风险能力实施权限隔离",
+            "通过系统提示与护栏（guardrails）约束行为边界，并结合 RLHF 与定期红队测试持续提升对齐水平",
+            "配置速率限制与身份认证防止滥用，同时建立用户反馈、人工复核与事故响应的闭环机制",
+            "预训练语料已经足够干净，上线时应关闭全部线上内容审核与护栏，避免损害模型能力",
+            "默认拒绝一切涉及医疗、法律等专业领域的提问，仅保留闲聊功能即可彻底消除有害输出的风险"
+          ]
+        }
+      }
+    ],
+    "evaluation-system-design-01": [
+      {
+        "id": "evaluation-system-design-01__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某闭环全用无监督 Judge打分，技能越改越偏。定位这次失控，下列哪些判断成立？",
+        "options": [
+          "可验证域建自动 Harness，客观便宜",
+          "主观域靠专家具名因果反馈加黄金集",
+          "抛弃基准测试，统一无监督 Judge 打分",
+          "全局业务指标锚定长期效果"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从全无监督打分致偏的失控定位评估环节",
+          "reasoningGoal": "先定位失控的环节（可验证、主观两类）；再逐项验证各判断；并排除「抛弃基准」等不成立描述。"
+        },
+        "generatedAt": 1788906146834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e8041205",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-5c2c5730",
+        "sourceSnapshot": {
+          "id": "evaluation-system-design-01",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-evaluation",
+            "domain-verifiability",
+            "system-design"
+          ],
+          "question": "某团队正在为其生产级 Agent 系统搭建评估与自改进闭环架构。根据业务领域的“可验证性（Verifiability）”差异，在评估体系设计、控制流以及闭环策略上，下列哪些设计组合是合理的？",
+          "options": [
+            "对于确定性可验证领域（如代码编译或单元测试），应构建自动化测试 Harness 并以通过率作为 Agent 优化的客观指标",
+            "对于主观或不可确定性验证的领域（如文本风格调整），应依赖领域专家提供的具名因果反馈与 Golden Outputs 进行评估",
+            "无论领域是否具备确定性验证手段，均应完全抛弃基准测试，统一采用 LLM-as-a-Judge 对每次技能更新进行无监督打分",
+            "在系统架构维度建立全局业务指标监控（如任务解决耗时、修复成功率），作为评估改进 Agent 长期效果的最终锚点"
+          ]
+        }
+      },
+      {
+        "id": "evaluation-system-design-01__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张抛弃基准测试、统一无监督打分。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "可验证域用自动 Harness 看通过率",
+          "主观域靠专家具名因果反馈加黄金集评估",
+          "基准全抛，无监督打分一统天下",
+          "业务指标监控长期效果"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断抛弃基准统一打分主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（可验证性）是否满足；再逐项验证各主张；并排除「一统天下」等不成立描述。"
+        },
+        "generatedAt": 1788906146834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e8041205",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-962b7671",
+        "sourceSnapshot": {
+          "id": "evaluation-system-design-01",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-evaluation",
+            "domain-verifiability",
+            "system-design"
+          ],
+          "question": "某团队正在为其生产级 Agent 系统搭建评估与自改进闭环架构。根据业务领域的“可验证性（Verifiability）”差异，在评估体系设计、控制流以及闭环策略上，下列哪些设计组合是合理的？",
+          "options": [
+            "对于确定性可验证领域（如代码编译或单元测试），应构建自动化测试 Harness 并以通过率作为 Agent 优化的客观指标",
+            "对于主观或不可确定性验证的领域（如文本风格调整），应依赖领域专家提供的具名因果反馈与 Golden Outputs 进行评估",
+            "无论领域是否具备确定性验证手段，均应完全抛弃基准测试，统一采用 LLM-as-a-Judge 对每次技能更新进行无监督打分",
+            "在系统架构维度建立全局业务指标监控（如任务解决耗时、修复成功率），作为评估改进 Agent 长期效果的最终锚点"
+          ]
+        }
+      }
+    ],
+    "evaluation-tradeoff-01": [
+      {
+        "id": "evaluation-tradeoff-01__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某技能被Downvote后无条件覆盖，提示词漂移。定位这次失控，下列哪些判断成立？",
+        "options": [
+          "改进 Agent 引入健全性检查上下文，评估反馈是否合规范逻辑",
+          "缺权重控制：高权重须附因果解释",
+          "缺合并门禁：PR 环节人类最终把关",
+          "捕获负反馈即无条件覆盖现行技能规则",
+          "取消文本反馈输入，仅靠二元赞踩触发更新"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从负反馈即覆盖致漂移的失控定位反馈环节",
+          "reasoningGoal": "先定位失控的环节（检查、权重、门禁三类）；再逐项验证各判断；并排除「负反馈即覆盖」「赞踩即全部」等不成立描述。"
+        },
+        "generatedAt": 1788906146834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-db4cdd68",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-1858ef17",
+        "sourceSnapshot": {
+          "id": "evaluation-tradeoff-01",
+          "topic": "evaluation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "human-in-the-loop",
+            "feedback-noise",
+            "agent-security"
+          ],
+          "question": "在利用人类反馈（Human Feedback）驱动改进 Agent 自动优化基础技能时，低质量或误导性的反馈可能会导致提示词漂移（Prompt Drift）。为了在保持自改进能力的同时保障系统稳定性，下列哪些工程措施是合理的？",
+          "options": [
+            "在改进 Agent 中引入健全性检查（Sanity Check）上下文，用于评估反馈意见是否符合工程规范与基本逻辑",
+            "建立反馈来源的权限与权重控制机制，优先采纳附带明确因果解释（Rationale）的高质量专家反馈",
+            "在技能文件合并至主干时保留人类审核（Human-in-the-Loop）环节，由维护者对改进提案进行最终把关",
+            "只要系统捕获到用户的负向反馈（如 Downvote），即触发改进 Agent 无条件覆盖现有的技能指导规则",
+            "取消文本格式的反馈输入，仅依赖二元赞踩信号触发技能更新，以最大化降低用户提供反馈的门槛"
+          ]
+        }
+      },
+      {
+        "id": "evaluation-tradeoff-01__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "把文本反馈与二元赞踩放在信号质量上对比，根本差异是什么？",
+        "options": [
+          "文本反馈引入健全性检查，不合规范逻辑即过滤",
+          "权重按来源与因果解释分配",
+          "技能合并主干须保留人类审核把关",
+          "捕获负反馈即无条件覆盖现行技能规则",
+          "取消文本反馈输入，仅靠二元赞踩触发更新"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从信号质量对比两种反馈的根本差异",
+          "reasoningGoal": "先对齐两种反馈的可比维度；再逐项判定各主张成立与否；并排除「负反馈即覆盖」「赞踩足够」等不成立描述。"
+        },
+        "generatedAt": 1788906146835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-db4cdd68",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-7d8671d3",
+        "sourceSnapshot": {
+          "id": "evaluation-tradeoff-01",
+          "topic": "evaluation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "human-in-the-loop",
+            "feedback-noise",
+            "agent-security"
+          ],
+          "question": "在利用人类反馈（Human Feedback）驱动改进 Agent 自动优化基础技能时，低质量或误导性的反馈可能会导致提示词漂移（Prompt Drift）。为了在保持自改进能力的同时保障系统稳定性，下列哪些工程措施是合理的？",
+          "options": [
+            "在改进 Agent 中引入健全性检查（Sanity Check）上下文，用于评估反馈意见是否符合工程规范与基本逻辑",
+            "建立反馈来源的权限与权重控制机制，优先采纳附带明确因果解释（Rationale）的高质量专家反馈",
+            "在技能文件合并至主干时保留人类审核（Human-in-the-Loop）环节，由维护者对改进提案进行最终把关",
+            "只要系统捕获到用户的负向反馈（如 Downvote），即触发改进 Agent 无条件覆盖现有的技能指导规则",
+            "取消文本格式的反馈输入，仅依赖二元赞踩信号触发技能更新，以最大化降低用户提供反馈的门槛"
+          ]
+        }
+      }
+    ],
+    "ai-design-004": [
+      {
+        "id": "ai-design-004__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某网关纯转发无归一化，provider 一挂全雪崩。定位这次裸奔，下列哪些判断成立？",
+        "options": [
+          "缺统一网关：路由分流归一化契约版本透传",
+          "缺集中配额熔断：健康探测切换幂等去重成本硬顶",
+          "缺可观测：trace 采集版本用量延迟分账，三件套先行",
+          "各家原生接口直连业务，网关纯转发不做归一化",
+          "配额各管各，切换一把梭，无需集中"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从纯转发致雪崩的裸奔定位网关环节",
+          "reasoningGoal": "先定位裸奔的环节（网关、配额、可观测三类）；再逐项验证各判断；并排除「纯转发即可」「一把梭」等不成立描述。"
+        },
+        "generatedAt": 1788906146835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c2df2d24",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-d7170adb",
+        "sourceSnapshot": {
+          "id": "ai-design-004",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "system-design",
+            "llmops",
+            "model-routing"
+          ],
+          "question": "设计一个 AI API Platform，同时支持多个 LLM Provider。系统需要处理成本、Latency、Rate Limit、Fallback、Model Routing 和 Observability。请说明核心架构。",
+          "options": [
+            "统一Gateway抽象多provider：按任务难度与成本延迟预算路由分流，响应做归一化契约并透传版本元数据",
+            "集中式RPM/TPM配额管理，健康探测加熔断驱动Fallback，幂等id去重防重试风暴并设成本硬顶",
+            "统一trace采集prompt版本、token用量与分段延迟，按团队成本分账；首版先落地adapter、fallback与可观测",
+            "各provider向业务方暴露独立原生接口，网关只做纯转发，不做归一化与统一trace，由接入方各自兼容",
+            "配额在各业务实例内独立实现，Fallback一次性全量切换，两者都不需要集中式状态管理与渐进放量"
+          ]
+        }
+      },
+      {
+        "id": "ai-design-004__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为几十个业务方聚合三家 provider。设计接入平台，下列哪些应当纳入？",
+        "options": [
+          "统一网关抽象多家，路由归一化版本透传",
+          "集中配额熔断切换，去重防风暴成本硬顶",
+          "缺可观测：trace 分账按团队，三件套先落地",
+          "各家原生接口直连，转发即网关",
+          "配额分散切换全量，无需集中渐进"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为多业务多 provider 设计接入平台",
+          "reasoningGoal": "先拆出平台设计的目标与约束；再逐项确认各设计；并排除「转发即网关」「全量切换」等不成立描述。"
+        },
+        "generatedAt": 1788906146835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c2df2d24",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-ee1adf7c",
+        "sourceSnapshot": {
+          "id": "ai-design-004",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "system-design",
+            "llmops",
+            "model-routing"
+          ],
+          "question": "设计一个 AI API Platform，同时支持多个 LLM Provider。系统需要处理成本、Latency、Rate Limit、Fallback、Model Routing 和 Observability。请说明核心架构。",
+          "options": [
+            "统一Gateway抽象多provider：按任务难度与成本延迟预算路由分流，响应做归一化契约并透传版本元数据",
+            "集中式RPM/TPM配额管理，健康探测加熔断驱动Fallback，幂等id去重防重试风暴并设成本硬顶",
+            "统一trace采集prompt版本、token用量与分段延迟，按团队成本分账；首版先落地adapter、fallback与可观测",
+            "各provider向业务方暴露独立原生接口，网关只做纯转发，不做归一化与统一trace，由接入方各自兼容",
+            "配额在各业务实例内独立实现，Fallback一次性全量切换，两者都不需要集中式状态管理与渐进放量"
+          ]
+        }
+      }
+    ],
+    "ai-eng-024": [
+      {
+        "id": "ai-eng-024__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某 Research 全自主规划，数字编造加死循环。定位这次失控，下列哪些判断成立？",
+        "options": [
+          "确定性链路固化，语义判断交 Agent",
+          "state 结构化 citation 回链，终稿一致性校验",
+          "预算终止防死循环，分层评估质量",
+          "强模型加轮数压制一切，约束是弱者拐杖",
+          "关键链路全固化，残余靠人工抽检，比自主更稳"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从全自主致编造循环的失控定位架构环节",
+          "reasoningGoal": "先定位失控的环节（链路、状态、预算三类）；再逐项验证各判断；并排除「强模型压制」「全固化更稳」等不成立描述。"
+        },
+        "generatedAt": 1788906146835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dc6a009c",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-2c4e28ff",
+        "sourceSnapshot": {
+          "id": "ai-eng-024",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "system-design",
+            "agent",
+            "RAG",
+            "tool-calling"
+          ],
+          "question": "设计一个 Research Agent。用户输入“分析某家公司最近三个季度的 AI 业务表现，并与主要竞争对手比较”。系统需要搜索网页、读取财报、查询金融数据、提取指标、计算同比变化，并生成带引用的分析报告。请说明整体架构、Agent 如何使用 tools、哪些步骤应该使用确定性 workflow，以及你会如何评估系统质量。",
+          "options": [
+            "确定性步骤固化为workflow工具：数据获取、解析与指标计算走确定性链路，信息源选择与语义判断交Agent",
+            "维护结构化research state并强制citation，每个数字回链到来源，终稿做一致性校验后再交付",
+            "设单份报告成本预算与终止条件防死循环，并按检索、抽取、计算与引用分层评估质量",
+            "用强模型加充足迭代轮数压制幻觉与循环，结构约束只是弱模型的拐杖，强模型不需要",
+            "关键链路全固化、仅把开放式分析留给模型，残余风险靠人工抽检覆盖，比全自主更稳"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-024__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张全固化链路加人工抽检最稳。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "确定性步骤固化走链路，语义判断交 Agent",
+          "state 结构化，引用回链终稿校验",
+          "预算终止加分层评估",
+          "强模型加足迭代压制一切，结构约束是弱者拐杖",
+          "全固化加抽检稳过自主"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断全固化加抽检最稳主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（适应力与覆盖率）是否满足；再逐项验证各主张；并排除「强模型解决」「全固化更稳」等不成立描述。"
+        },
+        "generatedAt": 1788906146835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dc6a009c",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-daa4b78c",
+        "sourceSnapshot": {
+          "id": "ai-eng-024",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "system-design",
+            "agent",
+            "RAG",
+            "tool-calling"
+          ],
+          "question": "设计一个 Research Agent。用户输入“分析某家公司最近三个季度的 AI 业务表现，并与主要竞争对手比较”。系统需要搜索网页、读取财报、查询金融数据、提取指标、计算同比变化，并生成带引用的分析报告。请说明整体架构、Agent 如何使用 tools、哪些步骤应该使用确定性 workflow，以及你会如何评估系统质量。",
+          "options": [
+            "确定性步骤固化为workflow工具：数据获取、解析与指标计算走确定性链路，信息源选择与语义判断交Agent",
+            "维护结构化research state并强制citation，每个数字回链到来源，终稿做一致性校验后再交付",
+            "设单份报告成本预算与终止条件防死循环，并按检索、抽取、计算与引用分层评估质量",
+            "用强模型加充足迭代轮数压制幻觉与循环，结构约束只是弱模型的拐杖，强模型不需要",
+            "关键链路全固化、仅把开放式分析留给模型，残余风险靠人工抽检覆盖，比全自主更稳"
+          ]
+        }
+      }
+    ],
+    "ai-eng-026": [
+      {
+        "id": "ai-eng-026__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某团队把 NoPE 当性能优化，长序列外推崩了。定位这次归因错误，下列哪些判断成立？",
+        "options": [
+          "MLA 与 LatentMoE 改写显存 FLOPs 画像，是成本一阶变量",
+          "NoPE 省逐 token 计算，是吞吐提升主源，且无质量代价",
+          "Attention Residuals 加算量换质量，容量规划计成本项",
+          "单 token 够便宜，并发上下文自动满足"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 NoPE 当优化致外推崩的归因错误定位账单环节",
+          "reasoningGoal": "先定位错误的环节（主项、税种两类）；再逐项验证各判断；并排除「NoPE 主源」「自动满足」等不成立描述。"
+        },
+        "generatedAt": 1788906146836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c17d587e",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-da8b9995",
+        "sourceSnapshot": {
+          "id": "ai-eng-026",
+          "topic": "system-design",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "capacity-planning",
+            "serving-cost",
+            "architecture-attribution",
+            "agent-serving"
+          ],
+          "question": "你要把一个采用 MLA + LatentMoE + 线性注意力局部层 + Attention Residuals + NoPE 的 frontier 模型部署为高并发 Agent 推理服务，正在做容量规划与技术尽调。关于各项架构改动对 serving 的影响，下列归因正确的有哪些？（多选）",
+          "options": [
+            "MLA 与 LatentMoE 直接改写每 token 的显存与 FLOPs 画像（KV cache 字节、专家计算量），是 serving 成本测算的一阶变量",
+            "NoPE 移除位置编码显著减少了逐 token 计算量，会成为吞吐提升的主要来源，且对长序列建模质量没有任何可观测的负面影响",
+            "Attention Residuals 会增加少量计算与激活占用，主要回报在模型质量，容量规划时应计为成本项",
+            "只要单 token 开销足够低，上下文长度和并发数就不再约束部署规模，因为算力与显存会随单位成本下降而自动满足任意负载"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-026__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "把 MLA/MoE 主项与 Attention Residuals 质量税放在账单位置上对比，根本差异是什么？",
+        "options": [
+          "MLA 与 LatentMoE 改写显存 FLOPs 画像，是成本一阶变量",
+          "NoPE 省逐 token 计算量，是吞吐提升主源，且无质量代价",
+          "Residuals 加少量算量换质量，容量规划计成本项",
+          "单 token 开销足够低，上下文并发不再约束规模"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从账单位置对比主项成本与质量税的根本差异",
+          "reasoningGoal": "先对齐两种归因的可比维度；再逐项判定各主张成立与否；并排除「NoPE 主源」「规模无忧」等不成立描述。"
+        },
+        "generatedAt": 1788906146836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c17d587e",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-3ea0ffe2",
+        "sourceSnapshot": {
+          "id": "ai-eng-026",
+          "topic": "system-design",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "capacity-planning",
+            "serving-cost",
+            "architecture-attribution",
+            "agent-serving"
+          ],
+          "question": "你要把一个采用 MLA + LatentMoE + 线性注意力局部层 + Attention Residuals + NoPE 的 frontier 模型部署为高并发 Agent 推理服务，正在做容量规划与技术尽调。关于各项架构改动对 serving 的影响，下列归因正确的有哪些？（多选）",
+          "options": [
+            "MLA 与 LatentMoE 直接改写每 token 的显存与 FLOPs 画像（KV cache 字节、专家计算量），是 serving 成本测算的一阶变量",
+            "NoPE 移除位置编码显著减少了逐 token 计算量，会成为吞吐提升的主要来源，且对长序列建模质量没有任何可观测的负面影响",
+            "Attention Residuals 会增加少量计算与激活占用，主要回报在模型质量，容量规划时应计为成本项",
+            "只要单 token 开销足够低，上下文长度和并发数就不再约束部署规模，因为算力与显存会随单位成本下降而自动满足任意负载"
+          ]
+        }
+      }
+    ],
+    "ai-eng-053": [
+      {
+        "id": "ai-eng-053__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某风控调低阈值后误杀潮起，大客户流失。定位这次阈值失误，下列哪些判断成立？",
+        "options": [
+          "三段处置：直批零摩擦，拒绝附解释申诉，灰区过规则分流",
+          "insult 预算化：超线放宽告警，双盯欺诈损失",
+          "全局计数器：跨实体聚合拦截协同攻击",
+          "阈值尽量调低，多进人工审核，多把关更安全",
+          "灰区交易默认全部拒绝，未证合法即欺诈"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从调低阈值致误杀潮的失误定位阈值环节",
+          "reasoningGoal": "先定位失误的环节（三段、预算、全局三类）；再逐项验证各判断；并排除「越低越安全」「灰区全拒」等不成立描述。"
+        },
+        "generatedAt": 1788906146836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f8ba9e55",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-6cfb0639",
+        "sourceSnapshot": {
+          "id": "ai-eng-053",
+          "topic": "system-design",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "gray-zone",
+            "three-way-decision",
+            "insult-rate",
+            "threshold-budget"
+          ],
+          "question": "反欺诈系统的误杀（false positive）会直接激怒正常客户。请设计\"审批/升级/拒绝\"三段式决策机制，并说明如何用量化的\"误伤预算\"平衡风控损失与客户体验。",
+          "options": [
+            "按分数三段处置：低于0.3直批零摩擦，高于0.7拒绝并附解释与申诉，灰区先过透明业务规则再分流",
+            "用insult率做预算化管理：各产品线设误伤预算，超线自动放宽阈值并告警，同时跟踪欺诈损失率",
+            "另设全局维度计数器：同商户与同设备维度的速率聚合，拦截单笔看似干净的协同攻击",
+            "阈值尽量调低，让更多交易进人工审核，多一道把关总能降漏判，误伤部分客户是可接受代价",
+            "灰区交易默认全部拒绝，未被证明合法即视为欺诈，保留灰区只会给攻击者留可乘之机"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-053__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "要为新支付产品设计审批升级拒绝三段机制。下列哪些应当纳入？",
+        "options": [
+          "0.3 下直批，0.7 上拒绝附申诉，灰区过规则",
+          "insult 设预算，超线放宽告警",
+          "商户设备维度全局计数",
+          "阈值尽量调低，人工审核越多越安全",
+          "灰区一律拒绝，未证合法即欺诈"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为新支付产品设计三段决策机制",
+          "reasoningGoal": "先拆出机制设计的目标与约束；再逐项确认各设计；并排除「越低越安全」「灰区全拒」等不成立描述。"
+        },
+        "generatedAt": 1788906146836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f8ba9e55",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-64def4c6",
+        "sourceSnapshot": {
+          "id": "ai-eng-053",
+          "topic": "system-design",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "gray-zone",
+            "three-way-decision",
+            "insult-rate",
+            "threshold-budget"
+          ],
+          "question": "反欺诈系统的误杀（false positive）会直接激怒正常客户。请设计\"审批/升级/拒绝\"三段式决策机制，并说明如何用量化的\"误伤预算\"平衡风控损失与客户体验。",
+          "options": [
+            "按分数三段处置：低于0.3直批零摩擦，高于0.7拒绝并附解释与申诉，灰区先过透明业务规则再分流",
+            "用insult率做预算化管理：各产品线设误伤预算，超线自动放宽阈值并告警，同时跟踪欺诈损失率",
+            "另设全局维度计数器：同商户与同设备维度的速率聚合，拦截单笔看似干净的协同攻击",
+            "阈值尽量调低，让更多交易进人工审核，多一道把关总能降漏判，误伤部分客户是可接受代价",
+            "灰区交易默认全部拒绝，未被证明合法即视为欺诈，保留灰区只会给攻击者留可乘之机"
+          ]
+        }
+      }
+    ],
+    "ai-eng-055": [
+      {
+        "id": "ai-eng-055__surface-options__assessmentfresh10__0",
+        "kind": "surface-options",
+        "question": "某审查系统交散文报告，监管以无法程序化重放打回。定位这次返工，下列哪些设计必须纳入？",
+        "options": [
+          "强 Schema 定义：回链定位枚举级别条款快照先例人工字段",
+          "校验后放行：缺引用非法枚举即重试，下游确定性消费",
+          "三版本复现：模型法规 prompt 全记录",
+          "散文可读即合规，Schema 限修辞",
+          "只存最终通过结论，过程留痕徒增存储负担"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从散文报告被打回的返工定位记录环节",
+          "reasoningGoal": "先定位返工的环节（对象、校验、版本三类）；再逐项验证各判断；并排除「散文合规」「只存结论」等不成立描述。"
+        },
+        "generatedAt": 1788906146836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e1821bac",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-084f5c20",
+        "sourceSnapshot": {
+          "id": "ai-eng-055",
+          "topic": "structured-output",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "audit-trail",
+            "schema-design",
+            "provenance",
+            "versioning"
+          ],
+          "question": "受监管行业的 AI 审查系统必须输出可经受监管检查的审计记录。请设计单条合规决策的结构化记录：应包含哪些字段、为什么要用强 Schema 约束输出，以及版本号在其中扮演的角色。",
+          "options": [
+            "定义强Schema决策对象：claim回链原文定位、枚举型决策与级别、法规条款号及文本快照、先例编号与人工字段",
+            "输出经JSON Schema校验后放行：缺引用或非法枚举即判无效重试，下游工单与报表可确定性消费",
+            "记录模型版本、法规索引版本与prompt版本，使任意历史决策能在当时组件状态下复现",
+            "模型自由输出人类可读的散文报告即可，结构化Schema会限制论证所需的修辞灵活与上下文表达",
+            "审计记录只存最终通过结论，过程留痕徒增存储负担，复盘与问责只关心结果判定"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-055__context-options__assessmentfresh10__1",
+        "kind": "context-options",
+        "question": "有人主张审计只存最终结论，过程留痕浪费存储。评审这一主张，下列哪些判断正确且必须？",
+        "options": [
+          "决策对象强类型：回链枚举快照先例人工字段",
+          "校验失败即重试，下游确定消费",
+          "模型法规 prompt 三版本全记，历史决策可复现",
+          "人类可读散文报告即可，无需Schema约束",
+          "只存最终通过结论，过程留痕徒增负担"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断只存结论主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提（复盘举证需求）是否满足；再逐项验证各主张；并排除「散文足够」「结论即全部」等不成立描述。"
+        },
+        "generatedAt": 1788906146837,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e1821bac",
+        "batch": "assessmentfresh10",
+        "model": "manual",
+        "contentHash": "fnv1a-f585f760",
+        "sourceSnapshot": {
+          "id": "ai-eng-055",
+          "topic": "structured-output",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "audit-trail",
+            "schema-design",
+            "provenance",
+            "versioning"
+          ],
+          "question": "受监管行业的 AI 审查系统必须输出可经受监管检查的审计记录。请设计单条合规决策的结构化记录：应包含哪些字段、为什么要用强 Schema 约束输出，以及版本号在其中扮演的角色。",
+          "options": [
+            "定义强Schema决策对象：claim回链原文定位、枚举型决策与级别、法规条款号及文本快照、先例编号与人工字段",
+            "输出经JSON Schema校验后放行：缺引用或非法枚举即判无效重试，下游工单与报表可确定性消费",
+            "记录模型版本、法规索引版本与prompt版本，使任意历史决策能在当时组件状态下复现",
+            "模型自由输出人类可读的散文报告即可，结构化Schema会限制论证所需的修辞灵活与上下文表达",
+            "审计记录只存最终通过结论，过程留痕徒增存储负担，复盘与问责只关心结果判定"
+          ]
+        }
+      }
+    ]
+  }
+}
