@@ -2,6 +2,51 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-078 · Offline Variant Pool 路径级整改：reasoning-path 门禁 + 多样性 Top-N + 发布门禁收紧
+
+- 状态：已采纳 · 2026-09-08
+- 背景：ADR-077 定义了「Variant = 同一 Knowledge 的不同 reasoning path 测量」，但离线管线与门禁仍停留在「措辞级」：
+  审计显示池内 102 条变体仅 51% 自声明测量意图，已声明的 target 与 canonical 几乎逐字相同（CJK-Dice=100），
+  reasoningGoal 差异多是选项改写带来的模板差异——即「换措辞冒充 assessment variant」；Top-N 按 challenger 总分
+  取最高分，能选出 N 条全高分但彼此雷同的 paraphrase；`assessment identical` 只是审计项，不阻断发布。
+- 决策：
+  1. **生成规范升级（P0-2）**：`src/ai/variant.ts` 新增 `VARIANT_ASSESSMENT_SYSTEM`（v1）+
+     `generateAssessmentVariant`——同一 Knowledge（topic/tags/requiredConcepts 不变）+ 不同 reasoning path
+     （换测量角度）+ 强制输出 `assessment.target` / 三段式 `reasoningGoal`（先→再→排除）+
+     自声明 `angle` / `cognitiveTask`。`scripts/question-variants.ts` 新增 `--mode assessment|presentation`
+    （默认 assessment；presentation = 旧行为，只换措辞）。原 `generateVariant` 保持 presentation 语义不变，
+     仍是 runtime 唯一路径。
+  2. **reasoning-path 确定性判定（P0-3/P0-4）**：新模块 `src/domain/reasoningPath.ts`（纯函数，生成管线与审计共用）——
+     `isAssessmentIdentical`（逐字相同→阻断）、`isNearIdenticalPath`（target≥95 且 goal≥90→审计，不阻断：
+     模板化推断天然抬高相似度，启发式不能删资产）、`isReasoningGoalWellFormed`（三段式+非泛化→新资产落盘门禁，
+     存量只审计）、`checkKindContentMatch`（context 挂名/ surface 标错→阻断）。
+  3. **语义级重复检测（P0-4）**：`findSemanticDuplicateVariants` 三判定面——options 雷同（沿用旧阈值 88）/
+     双方已声明且路径逐字相同 / 同 kind 题干照抄（Dice≥92）。未声明（presentation）豁免路径判定
+     （与 canonical 同路径是定义使然，措辞多样性由 options 门禁约束）。
+  4. **Top-N 多样性选择（P1-6）**：`selectDiverseTopN` 贪心 MMR（分数打底 + wording/kind/path 三项惩罚），
+     取代「按分取最高」。跨变体路径重复由确定性 pairwise 门禁处理，不进 challenger
+    （challenger 一次只见一条变体，看不见 sibling）。
+  5. **challenger 升级（P1-7）**：5 维→6 维，新增 `assessment-identity`（同一 Knowledge、无新隐含前提、
+     难点未移位；声明的新路径名副其实）。prompt v1→v2；`parseVariantChallenge` 缺维度按 fail 计
+     （旧 prompt/截断输出拿不到高分）；质询输入附带双方测量面（`ChallengeableVariant`）。
+  6. **difficulty 确定性检查（P1-8）**：`checkOfflineDifficultyDrivers` 拦四类结构性作弊——
+     dropped-qualifier / dropped-numeric-condition / new-prerequisite / extra-hint。
+     只跑离线（生成器+组装器拒收；池审计仅审计）。校准教训：个位数数字不算数字条件；
+     topic/tags 词不算泄题暗示；`new-prerequisite` 只对 surface\* 生效（context\* 的场景细节是题干给出的已知条件）。
+  7. **发布门禁收紧（P1-12）**：`assessment identical` 由审计升级为阻断；新增阻断——reasoning-path duplicate
+    （sibling 逐字同路径）、orphan、duplicate variant id、duplicate (questionId,id)、单题 >4 条数量异常、
+     format 不一致、kind 不符。runtime 不新增任何治理（P1-13：`variantPool.ts` 仍只做确定性选择，
+     所有资产质量问题离线解决，runtime 只 `select → apply → final safety validation → fallback`）。
+  8. **池可维护性（P1-9/10/11）**：coverage 审计（canonical 总数/覆盖率/0-1-≥2 分布/kind/assessment%/路径唯一率/
+     Concept×Angle×CognitiveTask）；stale repair 归因（`sourceSnapshot` 快照逐字段 diff：
+     metadata-only→重算 hash，content→重新生成；无快照走 legacy）；provenance 可选字段
+     `batch` / `model` / `contentHash` / `sourceSnapshot`（审计专用，不参与 assessment identity）。
+  9. **规模策略（P2）**：不追求机械每题 2 条——P0 核心题 3–4 条高质量路径、普通题 1–2 条、低价值题可 0 条
+     （`MAX_VARIANTS_PER_QUESTION=4` 硬上限）；核心 KPI 从「有多少 variant」转为
+     「有多少可用于可靠测量不同 reasoning path 的 variant」（路径唯一率）。
+- 验证：`question:validate-variants` 全绿（1357 canonical / 102 变体 / 覆盖 5.2% / 路径唯一 51.0%，
+  阻断项全 0，审计项：疑似同路径 20 / 难度驱动信号 8）；`npm test` 881/881；`typecheck` + `build` 通过。
+
 ## ADR-077 · Variant = 同一 Knowledge 的不同 reasoning path 测量 + `cognitiveTask` 入 contract
 
 - 状态：已采纳 · 2026-09-04（设计见 `docs/improvement_plan/plan0903_3_newprompt_migration.md`，D1/D2 已拍板）

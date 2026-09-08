@@ -597,13 +597,13 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
 ```
 
 - **Invariant（必须保持）**——按保证强度分两类，不要混为一谈：
-  - **程序保证（可断言）**：`topic / tags / angle / formats.type / answer 索引 / explanation` 全部**直接取 canonical**，不经 LLM；`difficulty band` 与选项数量/真假属性由结构校验兜住。`Question.angle` 因此是**继承**下来的，不是重新推导的——变体不换角度，只换表达。
+  - **程序保证（可断言）**：`topic / tags / formats.type / answer 索引 / explanation` 全部**直接取 canonical**，不经 LLM；`difficulty band` 与选项数量/真假属性由结构校验兜住。`angle / cognitiveTask / assessment` 的归属分两类（ADR-077/078）：Runtime Presentation Variant 恒**继承** canonical（schema 层禁止声明）；Offline Assessment Variant 可**自声明**（声明即经 `measurementFaceOf` 采用），未声明才继承。
   - **Prompt 请求、但不校验（不可断言）**：正确性语义与适用条件、`question intent`、`requiredConcepts` 的语义覆盖。这些只写在 `VARIANT_SYSTEM` 里要求模型遵守，**没有任何运行时检查能证明它们成立**（ADR-057 已明确拆除字面语义闸门，理由是字面匹配无法证明语义等价、只会误杀换场景的合法变体）。引用时请写「要求保持」而非「保证保持」。
 - **语义变换（LLM 负责）**：题干措辞、场景/上下文、选项文本表达（逐项改写现有文本）。
 - **结构变换（程序负责）**：选项顺序（Fisher–Yates 重排）、answer 索引重映射、多选题答案升序归一化、选项文本空白折叠。解析（`explanation`）与选项真假属性/数量均不可变，永远取 canonical。
 - **校验（唯一入口：`finalizeQuestion` → `domain/variant.validateVariant`，ADR-056/068）**：**硬门槛只有结构项与抗暗示**，失败即回退原题、原因码计入遥测——**不再 retry**。① 结构：题干非空；自包含无“原题/上述/本文/该方案…”等 10 类指代（含“前文/下文/题目中/题干中”）；选择题 `options` **必填**、数量须与 canonical 一致（保证逐项一一对应）、非空、**规范化后**无重复。② 抗暗示：长度泄题（仅 choice，见下）。`answer` 不在此校验（永远来自 canonical）。**形态对齐（P0-1/ADR-056）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（1232/1357）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**「语义闸门」已拆除（ADR-057，勿恢复）**：`requiredCoverageMet`（requiredConcepts 字面覆盖 ≈2/3，`need = max(1, round(N*2/3))`）于 2026-09-01 第四轮删除，余下的字面锚点于 2026-09-02 第五轮降级为 warning（见下条）——字面匹配无法证明语义等价，只会误杀换场景的合法变体。`fuzzball` 兜底（`token_set_ratio ≥75` / `partial_ratio ≥80`）现只服务于该漂移软信号。
 - 选择题 `options` 文本可由 LLM 改写，但**选项数量/真假属性固定**，且**顺序由 `applyVariant` 调 `shuffleChoiceOptions` 程序重排**（非 LLM 决定）；`answer` 索引永远由 canonical 经确定性重映射得到（`applyVariant` 写死 `canonical.answer` 再重排），彻底避免“答案被模型覆盖 / 顺序被模型泄露”。`toGeneratedVariant` 已移除对缺失 `question` 的静默回退（缺失由校验显式拒绝），并丢弃模型可能回吐的 `answer/explanation`。
-- **Prompt 约束**：`VARIANT_SYSTEM` 为轻量变体版（v4，KV-Cache 友好），要求“逐项改写现有文本”、明令禁止改动选项数量/真假属性/答案/解析，并明确“不交换选项顺序（顺序由程序统一处理）”；v4 起额外要求 `*-options` 风格对选项做**幅度明显**的改写（换视角/句式/主语，而非仅同义替换），否则 near-dup 门禁会判近重复整条丢弃（见 ADR-072）。`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），不暴露 `answer/explanation/referenceAnswer/angle/difficulty`，从源头切断“LLM 重新决定答案”的路径。
+- **Prompt 约束**：`VARIANT_SYSTEM` 为轻量变体版（v4，KV-Cache 友好），要求“逐项改写现有文本”、明令禁止改动选项数量/真假属性/答案/解析，并明确“不交换选项顺序（顺序由程序统一处理）”；v4 起额外要求 `*-options` 风格对选项做**幅度明显**的改写（换视角/句式/主语，而非仅同义替换），否则 near-dup 门禁会判近重复整条丢弃（见 ADR-072）。`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），不暴露 `answer/explanation/referenceAnswer/angle/difficulty`，从源头切断“LLM 重新决定答案”的路径。离线 assessment 模式另走 `VARIANT_ASSESSMENT_SYSTEM`（v1）+ `generateAssessmentVariant`：同一 Knowledge（topic/tags/requiredConcepts 不变）+ 不同 reasoning path（换测量角度）+ 强制输出三段式 `reasoningGoal`（先→再→排除）与自声明 `angle`/`cognitiveTask`；用户提示词额外携带 `canonicalAngle/canonicalCognitiveTask/canonicalAssessment`（模型不读原文测量面就换不出新路径），仍不携带 answer/explanation/referenceAnswer（见 ADR-078）。
 - **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
 - ADR-027 起「选择 ⇄ 开放」仍不在运行时变换：形态内容静态维护，变体仅在同一形态内重构表达。
 - **抗暗示（anti-cueing）硬失败**：`domain/variant.validateVariant` 在选择题分支对**规范化后**的选项跑 `domain/bias.detectOptionLengthBias`；命中长度泄题（正确项全局最长且存在明显过短干扰项，差距 ≥1.8×）即拒绝，并带机器可读 `code='option-length-bias'`，由 `finalizeQuestion` 回退原题、原因码计入 variant 遥测——**不再重新请求 LLM**（轻量变体边界：省掉最耗时的一次重试）。第五轮前该检查位于 `ai/variant.generateVariant`，随「单一校验入口」内移。
@@ -635,13 +635,15 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
                                                                            └─ ok → applyVariant（结果不写回题库）
 ```
 
-- **资产契约（`src/schemas/variant.ts`）**：`VariantKind`（surface / context / surface-options / context-options）、`QuestionVariant`（`id/kind/question/options?/generatedAt/generator/promptVersion/sourceHash`）、`VariantPool`（`version/generatedAt/promptVersion/variants: Record<id, QuestionVariant[]>`）。`sourceHash = computeVariantSourceHash(canonical)`（FNV-1a）用于 stale 检测。
+- **资产契约（`src/schemas/variant.ts`）**：`VariantKind`（surface / context / surface-options / context-options）、`QuestionVariant`（`id/kind/question/options?/angle?/cognitiveTask?/assessment?/generatedAt/generator/promptVersion/sourceHash` + provenance 可选字段 `batch/model/contentHash/sourceSnapshot`）、`VariantPool`（`version/generatedAt/promptVersion/variants: Record<id, QuestionVariant[]>`）。`sourceHash = computeVariantSourceHash(canonical)`（FNV-1a）用于 stale 检测；`sourceSnapshot` 存生成时刻 canonical 入指纹字段快照，供 stale 归因（metadata-only→重算 hash，content→重新生成）；provenance 字段只用于审计，**不参与** assessment identity（见 ADR-078）。
 - **Pool-first（默认）**：训练选择逻辑在 `finalizeQuestion` 编排——先查 Pool，命中即取 `selectVariant`（确定性 Fisher–Yates + seen 去重）落地；miss 且开关 OFF 时直接回 canonical（**零 LLM**）。
 - **Runtime fallback（可选）**：仅 miss + 开关 ON + 存在可用 provider，才 1 次 LLM（`generateVariant` 加 `kind` 注入风格指令）；结果**不写回题库**——晋升靠 telemetry → 离线 review → 手动 `npm run question:variants` promote。
-- **离线生成器 / 审计**：`npm run question:variants`（vite-node）复用 `generateVariant` + `validateVariant`，支持 `--ids/--topics/--count/--kind/--missing-only/--stale/--dry-run/--concurrency/--prompt-version/--oversample/--no-challenger`，每题默认 2 变体、按 batch 落盘；`npm run question:validate-variants` 标 stale + 近重复报告。**红线**：不建 Variant 专用 Agent、不写第二套 LLM 实现、Runtime 不自动写回、类型锁死 4 种。
-- **离线超采 + 质量质询（ADR-070）**：离线管线是三段式漏斗 —— `canonical → 超采 N×count 候选 → 确定性闸门（validateVariant + 选项级 CJK-Dice 去重）→ 质量质询 → 取 top-N 落盘`。
+- **离线生成器 / 审计**：`npm run question:variants`（vite-node）默认 `--mode assessment`（不同 reasoning path，经 `generateAssessmentVariant` + 三段式 reasoningGoal 门禁 + 与 canonical 实质不同检查；`--mode presentation` 回退旧行为只换措辞），支持 `--ids/--topics/--count/--kind/--mode/--missing-only/--stale/--dry-run/--concurrency/--prompt-version/--oversample/--no-challenger`，不追求机械每题 2 条（P0 核心题 3–4、普通题 1–2、低价值题可 0，上限 4），按 batch 落盘并写 provenance；`npm run question:validate-variants` 为发布门禁（阻断：stale/orphan/语义重复/语言质量/测量意图雷同/路径重复/kind 不符/format 不一致/重复 id/数量异常；审计：疑似同路径/推理链薄弱/难度驱动信号/coverage 矩阵/Concept×Angle×CognitiveTask）。**红线**：不建 Variant 专用 Agent、Runtime 不自动写回、类型锁死 4 种；runtime 不做质量治理（`variantPool.ts` 只做确定性选择）。
+- **离线超采 + 质量质询（ADR-070，2026-09-08 经 ADR-078 升级为路径级）**：离线管线是四段式漏斗 —— `canonical → 超采 N×count 候选 → 确定性闸门（validateVariant + 语言门禁 + difficulty 驱动项 + 选项级 CJK-Dice 去重 + 幸存者间语义级去重）→ 质量质询 → 贪心 MMR 多样性排序取 top-N 落盘`。
   - **为什么必须超采**：`validateVariant` 只能**防明显坏变体**（结构 + 抗暗示 + `optionChangedTooMuch` 的 CJK-Dice <35 漂移拒），**防不住"词汇高度重合但语义已被改歪"**——例：原选项「只有在 KV cache 命中前缀时才能复用已有 KV」→ 改后「KV cache 可以复用已有 KV，因此可以减少计算」（条件丢失，词汇重合度高，闸门放行）。runtime 靠 fallback 原题还能接受；**变体一旦永久落盘成资产就不够**。
-  - **质量质询 `src/ai/variantChallenger.ts`**（离线专用，**不进 runtime**）：五维打分 —— `concept-preserved` / `answer-preserved` / `difficulty-preserved` / `diagnostic-value` / `accidental-clue`。
+  - **质量质询 `src/ai/variantChallenger.ts`**（离线专用，**不进 runtime**）：六维打分 —— `concept-preserved` / `answer-preserved` / `difficulty-preserved` / `diagnostic-value` / `accidental-clue` / `assessment-identity`（新增：同一 Knowledge、无新隐含前提、难点未移位、声明的新路径名副其实；prompt v2）。缺维度按 fail 计。
+  - **为什么 Top-N 不按分取最高**：N 条全高分也可能是彼此雷同的 paraphrase。`selectDiverseTopN` 贪心 MMR——分数打底 + wording（选项 Dice）/ kind / reasoning-path 三项惩罚；跨变体路径重复由确定性 pairwise 门禁处理，不进 challenger（它一次只见一条变体）。
+  - **difficulty 驱动项 `checkOfflineDifficultyDrivers`**（离线专用确定性检查，先于 challenger）：拦 dropped-qualifier / dropped-numeric-condition / new-prerequisite / extra-hint 四类结构性作弊。校准教训：个位数数字不算数字条件；topic/tags 词不算泄题暗示；`new-prerequisite` 只对 surface\* 生效（context\* 的场景细节是题干给出的已知条件）。
   - **两级花费控制**：`cheapVariantQualityFlags()` 先跑确定性预检（长度 bias + 信息密度 + 归一化后重复）淘汰明显不合格的候选，**过了才付 LLM 调用**；`parseVariantChallenge` 解析不出结果一律按**失败**处理，不静默放行。
   - **可观测**：汇总打印「过闸候选 / 质询否决 / 留存率 / 超采倍数」。留存率异常低（< 30%）说明 canonical 或 prompt 有问题，先查那个，**不要靠调低 `--oversample` 掩盖**。
   - **红线不变**：challenger 只在离线跑，runtime 仍然 one-shot + fallback 原题，不做在线双模型（与 P2「不引入在线 second judge」一致）。
@@ -729,6 +731,12 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   整串 Dice 无法区分「照抄」与「重述」（74.5~96.4 vs 83 重叠），故 near-dup 门禁只比**选项级** Dice，
   档位：逐字照抄=100 · 同义轻改≈91 · 重述改写≈54；阈值 88。fuzzball 现仅保留给
   `anchorHasEvidence` 的英文/Latin topic/tag 兜底匹配（那里词边界有效）。
+- **启发式门禁先校准再定强度（踩坑 2026-09-08）**：`checkOfflineDifficultyDrivers` 初版在 102 条存量变体上
+  打出 24 个 flag，逐条核对全是噪声——个位数数字（题号/版本号/「第 1 步」）不算数字条件；
+  topic 自带词（如 dit）不算泄题暗示；context\* 题干的场景细节（ImageNet-1k/GPU）是已知条件不是新前提。
+  修正：数字条件只认多位/小数/百分比；暗示检测排除 topic/tags 词；`new-prerequisite` 只对 surface\*
+  生效。结论：文本启发式只能做**离线拒收**（超采下误杀可接受）与**审计信号**，绝不进 runtime 校验，
+  且上线前必须用存量池跑一遍校准、确认零误伤再定为阻断。
 - **Chrome Built-in AI（Prompt API）**：仅较新 Chrome 提供，无跨浏览器保证；运行时用
   `(globalThis as any).LanguageModel?.availability()` 能力检测（API 缺失/异常一律视为 unavailable），
   不引入 polyfill。每次调用新建 session 并 destroy（one-shot 无状态）；system prompt 走

@@ -1,6 +1,35 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-08 · Offline Variant Pool 路径级整改（ADR-078）：不同 reasoning path + 多样性 Top-N + 发布门禁收紧
+
+**动机**：审计显示池内 102 条变体仅 51% 自声明测量意图，已声明的 target 与 canonical 几乎逐字相同
+（Dice=100），reasoningGoal 差异多是选项改写带来的模板差异——「换措辞冒充 assessment variant」；
+Top-N 按 challenger 总分取最高分，能选出 N 条全高分但彼此雷同的 paraphrase。
+
+**改动**（只动离线管线与门禁，runtime 零改动）：
+- 生成规范：`src/ai/variant.ts` 新增 `VARIANT_ASSESSMENT_SYSTEM`（v1）+ `generateAssessmentVariant`
+  （同一 Knowledge + 不同 reasoning path + 三段式 reasoningGoal + 自声明 angle/cognitiveTask）；
+  `scripts/question-variants.ts` 新增 `--mode assessment|presentation`（默认 assessment），漏斗升级为
+  确定性闸门（含 difficulty 驱动项 + 幸存者间语义级去重）→ 六维质询 → 贪心 MMR 多样性排序取 top-N；
+  落盘写 provenance（`batch/model/contentHash/sourceSnapshot`）。
+- 新模块 `src/domain/reasoningPath.ts`（纯函数）：identical 阻断 / near-identical 审计 /
+  三段式 wellformed（新资产落盘门禁）/ kind-content 相符检查。
+- `src/domain/variant.ts` 新增 `findSemanticDuplicateVariants`（options/路径/题干三判定面）、
+  `checkOfflineDifficultyDrivers`（四类结构性作弊，离线专用）、`selectDiverseTopN`（MMR）。
+- challenger 5 维→6 维（新增 `assessment-identity`，prompt v2，缺维度按 fail 计，质询输入附带双方测量面）。
+- `scripts/assemble-variants.ts` 手动通道对齐同等门禁（语言/驱动项/kind/路径有效性 + 语义级去重），草稿可声明测量面。
+- `scripts/validate-variants.ts`：`assessment identical` 由审计升级为阻断；新增阻断
+  （路径重复/orphan/重复 id/数量异常>4/format 不一致/kind 不符）；coverage 审计
+  （覆盖率/0-1-≥2 分布/kind/assessment%/路径唯一率/Concept×Angle×CognitiveTask）。
+- `scripts/refresh-variant-hash.ts` 升级为 stale repair：有 `sourceSnapshot` 的逐字段归因
+  （metadata-only→重算 hash，content→重新生成），无快照走 legacy。
+- 规模策略：不追求机械每题 2 条（P0 核心 3–4 / 普通 1–2 / 低价值可 0，上限 4）；
+  核心 KPI 转为路径唯一率。
+- 回归：`question:validate-variants` 全绿（1357 canonical / 102 变体 / 覆盖 5.2% / assessment 51.0% /
+  路径唯一 51.0%，阻断全 0；审计：疑似同路径 20 / 难度驱动信号 8）；`npm test` **881/881**；
+  `typecheck` + `build` 通过。
+
 ## 2026-09-08 · 架构文档与代码对齐（ARCHITECTURE.md / README.md / learner.ts 注释）
 
 全量核对 `docs/ARCHITECTURE.md` 与代码后修正文档漂移（**只改文档与注释，未改运行时行为**）：
