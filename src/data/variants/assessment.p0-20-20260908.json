@@ -1,0 +1,961 @@
+{
+  "version": 1,
+  "generatedAt": 1788853919990,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-search-extra-001": [
+      {
+        "id": "ai-search-extra-001__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "从词项匹配机制看，BM25 为什么在产品型号、错误码这类精确查询上仍然很有价值？",
+        "options": [
+          "直接依据查询词与文档词项的命中关系打分",
+          "对生僻型号与罕见术语有很强的区分度",
+          "脱离倒排索引也能在大规模语料上直接检索",
+          "能补上纯语义检索在专有词与错误码上的短板",
+          "可以自动领会查询背后的隐含语义"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从词项匹配机制说明 BM25 在精确术语查询上保持价值的原因",
+          "reasoningGoal": "先复现 BM25 的词项匹配与评分机制；再逐项验证各主张是否与该机制一致；并排除「无索引可用」「具备语义理解」等不成立描述。"
+        },
+        "generatedAt": 1788853919977,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ae247b14",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-0db5b37f",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-001",
+          "topic": "information-retrieval",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "information-retrieval",
+            "lexical-search",
+            "bm25"
+          ],
+          "question": "为什么 BM25 对包含产品型号、错误码或专有名词的查询通常仍然很有价值？",
+          "options": [
+            "能够直接利用查询词与文档词项之间的匹配关系",
+            "对罕见术语和精确型号通常具有较强区分能力",
+            "不需要任何索引就能完成大规模检索",
+            "可以弥补纯语义检索对专有词和错误码匹配不足的问题",
+            "能够自动理解任何隐含语义关系"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-001__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某团队的语义检索已上线，但含产品型号与错误码的查询掉点明显，考虑叠加 BM25 做混合检索。关于这一决策的依据，下列哪些判断成立？",
+        "options": [
+          "BM25 按查询词与文档词项的对应关系计分",
+          "对罕见术语与精确型号通常有更强的区分能力",
+          "无需任何索引就能完成大规模文档检索",
+          "恰好补齐纯语义检索对专有词匹配的不足",
+          "能够自动领会任何查询中的隐含语义"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能在语义检索已上线但精确查询掉点的场景下，判断叠加 BM25 混合检索的依据是否成立",
+          "reasoningGoal": "先识别场景的约束（语义检索已覆盖、精确词掉点）；再逐项检验各主张能否支撑混合检索决策；并排除「无索引可跑」「语义理解无所不能」等不成立描述。"
+        },
+        "generatedAt": 1788853919978,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ae247b14",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-a886123f",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-001",
+          "topic": "information-retrieval",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "information-retrieval",
+            "lexical-search",
+            "bm25"
+          ],
+          "question": "为什么 BM25 对包含产品型号、错误码或专有名词的查询通常仍然很有价值？",
+          "options": [
+            "能够直接利用查询词与文档词项之间的匹配关系",
+            "对罕见术语和精确型号通常具有较强区分能力",
+            "不需要任何索引就能完成大规模检索",
+            "可以弥补纯语义检索对专有词和错误码匹配不足的问题",
+            "能够自动理解任何隐含语义关系"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-003": [
+      {
+        "id": "ai-search-extra-003__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "从作用机制看，LLM query rewriting 为什么既能改善术语匹配，又会带来延迟成本与意图漂移风险？",
+        "options": [
+          "改善用户原始表达与知识库术语之间的匹配度",
+          "多一次模型调用，延迟与费用都会上升",
+          "错误的改写可能让原始查询意图发生偏移",
+          "改写后所有查询的召回率必定上涨",
+          "原始查询里的歧义可被改写根除"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从改写机制解释其改善匹配与引入代价的两面性",
+          "reasoningGoal": "先复现改写的作用链条（术语对齐、延迟成本、漂移风险）；再逐项核验各主张是否与该链条相符；并排除「包治百病」「彻底消歧」等不成立描述。"
+        },
+        "generatedAt": 1788853919979,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9a804398",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-8f6e9900",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-003",
+          "topic": "information-retrieval",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "information-retrieval",
+            "query-rewriting",
+            "retrieval"
+          ],
+          "question": "在线搜索系统增加 LLM query rewriting 后，最需要警惕哪类 trade-off？",
+          "options": [
+            "改善原始查询与知识库术语之间的匹配",
+            "增加额外模型调用带来的延迟和成本",
+            "错误改写可能使原始查询意图发生偏移",
+            "一定能够提升所有查询的 Recall@K",
+            "可以完全消除原始 query 中的歧义"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-003__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某在线搜索团队打算给所有查询加上 LLM 改写，但线上延迟预算紧张，且站内专有名词查询占比很高。决定是否全量上线前，下列哪些判断成立？",
+        "options": [
+          "能弥合用户说法与库内术语之间的缝隙",
+          "额外的大模型调用推高延迟和成本",
+          "错误的改写会扭曲查询的原始意图",
+          "一定能提升全部查询的 Recall@K",
+          "可以彻底消除原始 query 中的歧义"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在延迟预算紧张且专有名词占比高的约束下，判断改写全量上线的依据是否成立",
+          "reasoningGoal": "先判断改写方法的前提在该场景是否满足；再逐项验证各主张能否作为上线依据；并排除「全量必涨」「歧义可除」等不成立描述。"
+        },
+        "generatedAt": 1788853919980,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9a804398",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-e071ddf5",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-003",
+          "topic": "information-retrieval",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "information-retrieval",
+            "query-rewriting",
+            "retrieval"
+          ],
+          "question": "在线搜索系统增加 LLM query rewriting 后，最需要警惕哪类 trade-off？",
+          "options": [
+            "改善原始查询与知识库术语之间的匹配",
+            "增加额外模型调用带来的延迟和成本",
+            "错误改写可能使原始查询意图发生偏移",
+            "一定能够提升所有查询的 Recall@K",
+            "可以完全消除原始 query 中的歧义"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-013": [
+      {
+        "id": "ai-search-extra-013__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "从表示机制看，late-interaction 类多向量检索相比单向量方案，优势主要来自哪里？",
+        "options": [
+          "文档的局部细节表示被保留下来",
+          "查询可与文档局部表示逐点匹配",
+          "存与算的开销通常大于单向量",
+          "每个查询有且仅有一个匹配文档",
+          "第一阶段候选召回可以直接省掉"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从多向量表示机制说明其相对单向量的优势来源",
+          "reasoningGoal": "先复现局部表示保留与细粒度匹配的机制；再逐项核对各主张是否与该机制一致；并排除「一对一匹配」「无需召回」等不成立描述。"
+        },
+        "generatedAt": 1788853919980,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c6772d63",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-9417e0df",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-013",
+          "topic": "multi-vector-retrieval",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "multi-vector-retrieval",
+            "late-interaction",
+            "colbert"
+          ],
+          "question": "与单向量 document embedding 相比，late-interaction 类多向量检索的主要优势是什么？",
+          "options": [
+            "保留更细粒度的文档局部表示",
+            "允许 query 与文档的局部表示直接匹配",
+            "通常比单向量方案需要更多存储和计算",
+            "保证每个 query 只会匹配一个文档",
+            "完全不需要第一阶段候选检索"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-013__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某团队在存储与计算预算有限的情况下，为问答系统做检索选型，需要在单向量与多向量方案之间权衡。下列哪些判断成立？",
+        "options": [
+          "留住文档各局部的向量表示",
+          "查询侧与文档侧的局部表示可以直接对上",
+          "通常比单向量路线需要更大的索引体积与计算量",
+          "保证每个 query 都只会匹配到一个文档",
+          "不再需要任何候选召回阶段"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能在存储计算预算有限的约束下，权衡单向量与多向量检索方案的依据是否成立",
+          "reasoningGoal": "先明确取舍发生的维度（精度收益对存储计算代价）；再逐项检验各主张能否支撑选型；并排除「唯一匹配」「省掉召回」等不成立描述。"
+        },
+        "generatedAt": 1788853919981,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c6772d63",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-cfde8cc3",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-013",
+          "topic": "multi-vector-retrieval",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "multi-vector-retrieval",
+            "late-interaction",
+            "colbert"
+          ],
+          "question": "与单向量 document embedding 相比，late-interaction 类多向量检索的主要优势是什么？",
+          "options": [
+            "保留更细粒度的文档局部表示",
+            "允许 query 与文档的局部表示直接匹配",
+            "通常比单向量方案需要更多存储和计算",
+            "保证每个 query 只会匹配一个文档",
+            "完全不需要第一阶段候选检索"
+          ]
+        }
+      }
+    ],
+    "agent-eval-01": [
+      {
+        "id": "agent-eval-01__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "某 Agent 单次成功率 p = 0.8，独立试验 3 次。关于至少成功 1 次的 pass@3 = 99.2% 与全部成功的 pass^3 = 51.2%，两个指标的单调性与适用场景有何差异？",
+        "options": [
+          "3 次独立试验下 pass@3 为 99.2%，pass^3 为 51.2%",
+          "pass@k 随 k 递增，刻画探索性任务的解上限",
+          "pass^k 随 k 递减，刻画高可靠场景的稳定性",
+          "k 取 1 时两者相等，都等于单次成功率 p",
+          "两个指标都用来衡量多轮重试的 Token 开销"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能借助 p = 0.8 的实例比较 pass@k 与 pass^k 的单调性与适用场景差异",
+          "reasoningGoal": "先对齐两个指标的可比维度（公式、单调性、场景）；再用三轮试验实例逐项验证各主张；并排除「衡量 Token 效率」等不成立描述。"
+        },
+        "generatedAt": 1788853919981,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b147ba6a",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-346f6f92",
+        "sourceSnapshot": {
+          "id": "agent-eval-01",
+          "topic": "evaluation",
+          "subtopic": "eval-metrics",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "pass@k",
+            "pass^k",
+            "agent-eval",
+            "reliability",
+            "trial"
+          ],
+          "question": "在对具备随机性的 AI Agent 进行多轮试炼（Trials）评测时，常用的两个统计指标是 pass@k（k 次尝试中至少成功 1 次的概率）和 pass^k（k 次尝试全部成功的概率）。假设某 Agent 解决某类独立任务的单次执行成功率 p = 0.8。关于这两个指标的计算与工程应用场景，下列哪些说法是正确的？",
+          "options": [
+            "针对该任务进行 3 次独立试验时，pass@3 的值为 99.2%，而 pass^3 的值为 51.2%",
+            "pass@k 随着 k 的增加而递增，适合用于评估探索性生成任务（如代码修复）中 Agent 找出可行解的能力上限",
+            "pass^k 随着 k 的增加而递减，适合用于评估高可靠性业务场景（如自动化客服）中 Agent 的行为稳定性",
+            "当 k=1 时，pass@k 与 pass^k 的数值相等，均等于 Agent 单次执行的成功概率 p",
+            "pass@k 与 pass^k 均用于衡量 Agent 在多轮重试下的平均 Token 消耗效率"
+          ]
+        }
+      },
+      {
+        "id": "agent-eval-01__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "团队要给代码修复 Agent 定离线评估指标（单次成功率 p = 0.8，看 3 次中至少成功 1 次），同时给线上客服 Agent 定稳定性指标。关于 pass@k 与 pass^k 的选用，下列哪些说法正确？",
+        "options": [
+          "独立试验 3 次时，pass@3 是 99.2% 而 pass^3 是 51.2%",
+          "k 越大 pass@k 越高，适合评估找可行解的上限",
+          "k 越大 pass^k 越低，适合评估线上行为的稳定程度",
+          "当 k = 1 时 pass@k 与 pass^k 相等，都等于单次成功概率 p",
+          "pass@k 与 pass^k 均用于衡量 Agent 多轮重试下的平均 Token 消耗效率"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为探索性离线任务与线上高可靠任务分别选出合适的成功率指标",
+          "reasoningGoal": "先拆出两类场景的目标与约束（取优与稳定）；再逐项确认各主张能否指导选型；并排除「度量 Token 开销」等不成立描述。"
+        },
+        "generatedAt": 1788853919982,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b147ba6a",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-6afcf18f",
+        "sourceSnapshot": {
+          "id": "agent-eval-01",
+          "topic": "evaluation",
+          "subtopic": "eval-metrics",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "pass@k",
+            "pass^k",
+            "agent-eval",
+            "reliability",
+            "trial"
+          ],
+          "question": "在对具备随机性的 AI Agent 进行多轮试炼（Trials）评测时，常用的两个统计指标是 pass@k（k 次尝试中至少成功 1 次的概率）和 pass^k（k 次尝试全部成功的概率）。假设某 Agent 解决某类独立任务的单次执行成功率 p = 0.8。关于这两个指标的计算与工程应用场景，下列哪些说法是正确的？",
+          "options": [
+            "针对该任务进行 3 次独立试验时，pass@3 的值为 99.2%，而 pass^3 的值为 51.2%",
+            "pass@k 随着 k 的增加而递增，适合用于评估探索性生成任务（如代码修复）中 Agent 找出可行解的能力上限",
+            "pass^k 随着 k 的增加而递减，适合用于评估高可靠性业务场景（如自动化客服）中 Agent 的行为稳定性",
+            "当 k=1 时，pass@k 与 pass^k 的数值相等，均等于 Agent 单次执行的成功概率 p",
+            "pass@k 与 pass^k 均用于衡量 Agent 在多轮重试下的平均 Token 消耗效率"
+          ]
+        }
+      }
+    ],
+    "agent-eval-02": [
+      {
+        "id": "agent-eval-02__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "把轨迹检查与环境状态检查放在一起看，两者在防伪阳性、防过程违规、成本分析与误判风险上各有什么特点？",
+        "options": [
+          "仅依赖轨迹检查容易产生伪阳性：Agent 可能在最终回复里宣称已完成（如机票已预订），实际并未发起环境 API 调用",
+          "只看最终状态会漏掉越权调用等过程违规",
+          "轨迹里的调用序列与 Token 开销是成本效率分析的依据",
+          "静态轨迹断言遇到合理新解法会误杀，产生伪阴性",
+          "必须要求 Tool 参数与标准轨迹分毫不差"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能比较轨迹检查与状态检查在四类评估风险上的各自特点",
+          "reasoningGoal": "先对齐两种检查的可比维度；再逐项判定各主张成立与否；并排除「强制参数一致」等不成立描述。"
+        },
+        "generatedAt": 1788853919982,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-672f8ade",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-adb64265",
+        "sourceSnapshot": {
+          "id": "agent-eval-02",
+          "topic": "evaluation",
+          "subtopic": "grader-trace-vs-state",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "grader",
+            "trajectory",
+            "outcome",
+            "agent-eval",
+            "false-positive"
+          ],
+          "question": "在复杂 AI Agent 系统评估中，评估器（Grader）通常分为对「轨迹 / 过程（Transcript / Trace）」的检查和对「环境最终状态（Outcome / State）」的检查。关于这两种检查机制的作用与潜在陷阱，下列哪些说法是正确的？",
+          "options": [
+            "仅依赖轨迹检查容易导致伪阳性，因为 Agent 可能仅在最终回复中声明已完成任务（如「机票已预订」），而实际未在环境中发起 API 调用",
+            "仅依赖环境状态检查容易遗漏过程违规，因为 Agent 可能通过越权调用接口或违反安全策略的方式达到了预期的最终状态断言",
+            "轨迹检查能够完整记录 Tool 调用序列、Token 消耗量与重试频次，是分析 Agent 执行效率与成本结构的关键依据",
+            "当 Agent 采用非预期但合理的替代路径达成目标时，缺乏柔性断言的静态轨迹检查容易产生误判（伪阴性）",
+            "轨迹检查应当强制要求 Agent 的 Tool 调用参数与预设标准轨迹保持绝对一致，以确保评估逻辑的确定性"
+          ]
+        }
+      },
+      {
+        "id": "agent-eval-02__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某 Agent 在评测中显示机票已预订，但环境里根本没有对应的调用记录。复盘这起评估漏检，下列哪些判断成立？",
+        "options": [
+          "纯轨迹检查容易导致伪阳性，Agent 在最终回复中声明已完成，实际未发起 API 调用",
+          "仅依赖最终状态检查容易遗漏过程违规：Agent 可能越权调用接口达成预期状态",
+          "调用链与重试 Token 记录是复盘效率与成本的抓手",
+          "Agent 走非预期但合理的替代路径达成目标时，缺柔性断言的静态轨迹检查容易误判为失败",
+          "评估应当锁死 Tool 调用参数，要求与预设标准轨迹保持完全相同"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从口头完工却无真实调用的漏检出发，反推评估机制的缺口",
+          "reasoningGoal": "先缩小故障范围（伪阳性、过程违规、误判三类）；再逐项验证各主张能否解释漏检；并排除「参数必须绝对一致」等不成立描述。"
+        },
+        "generatedAt": 1788853919983,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-672f8ade",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-e6622010",
+        "sourceSnapshot": {
+          "id": "agent-eval-02",
+          "topic": "evaluation",
+          "subtopic": "grader-trace-vs-state",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "grader",
+            "trajectory",
+            "outcome",
+            "agent-eval",
+            "false-positive"
+          ],
+          "question": "在复杂 AI Agent 系统评估中，评估器（Grader）通常分为对「轨迹 / 过程（Transcript / Trace）」的检查和对「环境最终状态（Outcome / State）」的检查。关于这两种检查机制的作用与潜在陷阱，下列哪些说法是正确的？",
+          "options": [
+            "仅依赖轨迹检查容易导致伪阳性，因为 Agent 可能仅在最终回复中声明已完成任务（如「机票已预订」），而实际未在环境中发起 API 调用",
+            "仅依赖环境状态检查容易遗漏过程违规，因为 Agent 可能通过越权调用接口或违反安全策略的方式达到了预期的最终状态断言",
+            "轨迹检查能够完整记录 Tool 调用序列、Token 消耗量与重试频次，是分析 Agent 执行效率与成本结构的关键依据",
+            "当 Agent 采用非预期但合理的替代路径达成目标时，缺乏柔性断言的静态轨迹检查容易产生误判（伪阴性）",
+            "轨迹检查应当强制要求 Agent 的 Tool 调用参数与预设标准轨迹保持绝对一致，以确保评估逻辑的确定性"
+          ]
+        }
+      }
+    ],
+    "agent-eval-03": [
+      {
+        "id": "agent-eval-03__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "要为复杂任务搭建代码断言加 LLM 评分加人工校准的复合评估器，三类评估器各自该承担什么职责？",
+        "options": [
+          "代码断言又快又便宜，适合单测与最终状态核验",
+          "LLM 评分适合语气与上下文遵循，但不稳定，需要人工对齐 Rubric",
+          "人工评审虽贵，却是校准 LLM 评分的金标准",
+          "构建复合评估器时，应当用大模型评估器全面替代代码评估器，以省掉维护自动化测试用例的工程开销",
+          "组合评估策略下，用硬性代码断言搭配软性大模型 Rubric，实现成功率与完成质量的综合打分"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为复合评估器设计三类评估器的职责分工",
+          "reasoningGoal": "先拆出复合评估的设计目标与约束（确定性、开放维度、校准基准）；再逐项确认各主张能否指导分工；并排除「LLM 全面替代代码」等不成立描述。"
+        },
+        "generatedAt": 1788853919983,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b5a03d62",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-59288d59",
+        "sourceSnapshot": {
+          "id": "agent-eval-03",
+          "topic": "evaluation",
+          "subtopic": "grader-types",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "code-grader",
+            "llm-grader",
+            "human-grader",
+            "agent-eval",
+            "rubric"
+          ],
+          "question": "评估 Agent 性能时，通常需要结合基于代码的评估器（Code-based Grader）、基于大模型的评估器（LLM-based Grader）和人工评估器（Human Grader）。关于不同评估器的选用策略与工程取舍，下列哪些说法是正确的？",
+          "options": [
+            "基于代码的评估器具备确定性高、执行速度快、成本低等优势，适合用于校验单元测试或数据库最终状态",
+            "基于大模型的评估器适合评估交互语气、上下文遵循度等开放性维度，但存在非确定性且需要人工评测进行校准",
+            "基于人工的评估虽然成本高昂且扩展性受限，但常作为金标准（Gold Standard）用于迭代和校准大模型评估器的 Rubric",
+            "在构建复合评估器时，应当用大模型评估器全面替代代码评估器，以避免维护自动化测试用例所带来的工程开销",
+            "组合评估策略中，可以通过组合硬性代码断言与软性大模型 Rubric，实现对复杂任务成功率与完成质量的综合打分"
+          ]
+        }
+      },
+      {
+        "id": "agent-eval-03__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某团队觉得维护测试用例太费人力，提议砍掉代码评估管线、只留 LLM 评分。评审这项提议时，下列哪些判断成立？",
+        "options": [
+          "代码类评估确定性强、速度快、成本低，单测与库表终态适合它来把关",
+          "LLM 适合评语气和上下文跟随这类开放维度，但输出不稳定，得靠人工校准",
+          "人工评估扩展性差，却是迭代 LLM 评分 Rubric 时的金标准",
+          "复合评估里用 LLM 评分把代码评估整个换掉，能省掉测试维护开销",
+          "把硬性断言和软性 Rubric 拼起来，才能兼顾成功率与完成质量"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能在削减测试维护成本的动议下，评审只留 LLM 评分方案的得失",
+          "reasoningGoal": "先识别场景的约束（成本压力与确定性需求）；再逐项检验各主张能否支撑评审结论；并排除「全面替代可行」等不成立描述。"
+        },
+        "generatedAt": 1788853919984,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b5a03d62",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-ea94aec1",
+        "sourceSnapshot": {
+          "id": "agent-eval-03",
+          "topic": "evaluation",
+          "subtopic": "grader-types",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "code-grader",
+            "llm-grader",
+            "human-grader",
+            "agent-eval",
+            "rubric"
+          ],
+          "question": "评估 Agent 性能时，通常需要结合基于代码的评估器（Code-based Grader）、基于大模型的评估器（LLM-based Grader）和人工评估器（Human Grader）。关于不同评估器的选用策略与工程取舍，下列哪些说法是正确的？",
+          "options": [
+            "基于代码的评估器具备确定性高、执行速度快、成本低等优势，适合用于校验单元测试或数据库最终状态",
+            "基于大模型的评估器适合评估交互语气、上下文遵循度等开放性维度，但存在非确定性且需要人工评测进行校准",
+            "基于人工的评估虽然成本高昂且扩展性受限，但常作为金标准（Gold Standard）用于迭代和校准大模型评估器的 Rubric",
+            "在构建复合评估器时，应当用大模型评估器全面替代代码评估器，以避免维护自动化测试用例所带来的工程开销",
+            "组合评估策略中，可以通过组合硬性代码断言与软性大模型 Rubric，实现对复杂任务成功率与完成质量的综合打分"
+          ]
+        }
+      }
+    ],
+    "agent-eval-04": [
+      {
+        "id": "agent-eval-04__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "把能力评估与回归评估并排比较，两者在目标、通过率、演进关系与运行频率上分别是什么形态？回归侧目标通过率接近 100%，能力侧初始通过率偏低。",
+        "options": [
+          "能力评估探边界，初期通过率低，用来指引攻坚方向",
+          "回归评估防退化，升级改 Prompt 后守住既有能力，通过率奔着 100% 去",
+          "达标且稳定的能力用例可以毕业，转进回归套件",
+          "换底座模型时，回归套件最先照出边缘场景的下滑",
+          "能力评估每次提交全量跑，回归评估季度发布前跑一次即可"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能比较能力评估与回归评估在目标、通过率、演进与频率上的差异",
+          "reasoningGoal": "先对齐两类评估的可比维度；再逐项判定各主张成立与否；并排除「能力进 CI、回归按季度」等不成立描述。"
+        },
+        "generatedAt": 1788853919985,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4de3cd1c",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-3d5afeb0",
+        "sourceSnapshot": {
+          "id": "agent-eval-04",
+          "topic": "evaluation",
+          "subtopic": "capability-vs-regression",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "capability-eval",
+            "regression-eval",
+            "ci-cd",
+            "agent-eval",
+            "lifecycle"
+          ],
+          "question": "在 AI Agent 的持续迭代和部署生命周期中，开发团队需要区分能力评估（Capability Evals）与回归评估（Regression Evals）。关于两者的定义、演进关系及在 CI/CD 中的应用，下列哪些说法是正确的？",
+          "options": [
+            "能力评估（Capability Evals）旨在探索 Agent 的能力边界，初始通过率通常较低，用于指导系统的攻坚演进",
+            "回归评估（Regression Evals）旨在确保系统在升级或 Prompt 调整后不发生既有能力退化，目标通过率通常接近 100%",
+            "随着 Agent 能力的提升，通过率已达标且稳定的能力评估测试用例可以逐步「毕业」（Graduate）并转入回归评估套件",
+            "当更换底层基础大模型时，回归评估套件能够帮助团队快速验证新模型是否会引起特定边缘场景的性能下滑",
+            "为最大化评测效率，能力评估应在每次代码提交（Git Push）时全量运行，而回归评估仅需在季度发布前运行一次"
+          ]
+        }
+      },
+      {
+        "id": "agent-eval-04__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "团队要把评估接进 CI/CD：底座模型换得频繁，需要一条通过率接近 100% 的高频防线，外加按需运行的能力攻坚评估。关于两类评估的分工与排期，下列哪些说法正确？",
+        "options": [
+          "能力评估负责摸清边界，早期通过率不高，指导后续攻坚",
+          "回归评估负责看住已有能力，Prompt 或模型一动就验证，通过率目标近 100%",
+          "稳定达标的能力用例毕业后并入回归集合",
+          "底座模型替换后，跑回归套件能最快发现边缘场景退化",
+          "为提高效率，每次代码提交跑全量能力评估，回归评估等季度发布再跑"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为频繁换模型的 CI/CD 流水线设计两类评估的分工与排期",
+          "reasoningGoal": "先拆出流水线的目标与约束（快速暴露退化与控制评估成本）；再逐项确认各主张能否指导排期；并排除「频率倒挂」等不成立描述。"
+        },
+        "generatedAt": 1788853919985,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4de3cd1c",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-1f0442a3",
+        "sourceSnapshot": {
+          "id": "agent-eval-04",
+          "topic": "evaluation",
+          "subtopic": "capability-vs-regression",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "capability-eval",
+            "regression-eval",
+            "ci-cd",
+            "agent-eval",
+            "lifecycle"
+          ],
+          "question": "在 AI Agent 的持续迭代和部署生命周期中，开发团队需要区分能力评估（Capability Evals）与回归评估（Regression Evals）。关于两者的定义、演进关系及在 CI/CD 中的应用，下列哪些说法是正确的？",
+          "options": [
+            "能力评估（Capability Evals）旨在探索 Agent 的能力边界，初始通过率通常较低，用于指导系统的攻坚演进",
+            "回归评估（Regression Evals）旨在确保系统在升级或 Prompt 调整后不发生既有能力退化，目标通过率通常接近 100%",
+            "随着 Agent 能力的提升，通过率已达标且稳定的能力评估测试用例可以逐步「毕业」（Graduate）并转入回归评估套件",
+            "当更换底层基础大模型时，回归评估套件能够帮助团队快速验证新模型是否会引起特定边缘场景的性能下滑",
+            "为最大化评测效率，能力评估应在每次代码提交（Git Push）时全量运行，而回归评估仅需在季度发布前运行一次"
+          ]
+        }
+      }
+    ],
+    "agent-eval-06": [
+      {
+        "id": "agent-eval-06__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "把 User Simulator 与 Grader 并排看，两者在扮演角色、交互方式、判定维度和隔离要求上有何不同？",
+        "options": [
+          "Simulator 无需人工即可自动演出多轮乃至对抗性的用户行为",
+          "Simulator 为保客观，必须照着固定脚本念台词，不得临场发挥",
+          "对话任务的成败要看解决状态、轮数上限与语气政策分等多维信号",
+          "涉及鉴权与敏感操作时，得查它调没调对验证 Tool，不能只看回复",
+          "用 LLM 做 User Simulator 与做 Grader 时，共享相同的 Prompt 人设可以简化评估架构设计"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能比较模拟用户与评分裁判在角色、交互、判定与隔离四方面的差异",
+          "reasoningGoal": "先对齐两种角色的可比维度；再逐项判定各主张成立与否；并排除「脚本死板」「人设混用」等不成立描述。"
+        },
+        "generatedAt": 1788853919986,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-832f6353",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-e660f9f1",
+        "sourceSnapshot": {
+          "id": "agent-eval-06",
+          "topic": "evaluation",
+          "subtopic": "user-simulation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "user-simulator",
+            "conversational-agent",
+            "agent-eval",
+            "multi-turn",
+            "adversarial"
+          ],
+          "question": "评估多轮对话型 Agent（Conversational Agents，如客户支持、售前咨询 Agent）时，通常需要引入一个模拟用户的大模型（User Simulator LLM）。关于这种模拟交互评估机制的设计与挑战，下列哪些说法是正确的？",
+          "options": [
+            "User Simulator 允许评估系统在无人工干预的情况下自动化模拟多轮复杂、甚至带有对抗性（Adversarial）的真实用户交互场景",
+            "为确保评估的客观性，User Simulator 必须严格按照预设的具体对话脚本输出，不得根据 Agent 的中间回答进行动态调整",
+            "对话型 Agent 的成功判定通常需要结合多维指标，包括任务最终解决状态、交互轮数限制以及回复语气 / 政策遵循的 LLM Rubric 得分",
+            "在涉及身份验证或敏感操作的对话流程中，评估工具需要同时检验 Agent 是否调用了正确的验证 Tool，而不仅看最终回复文本",
+            "使用 LLM 作为 User Simulator 与 LLM 作为 Grader 时，可以通过共享相同的 Prompt 人设来简化评估系统的架构设计"
+          ]
+        }
+      },
+      {
+        "id": "agent-eval-06__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某客服 Agent 上线前要做压力测试：模拟刁钻用户多轮追问，还要防刷退款接口。评审这套评估方案时，下列哪些说法正确？",
+        "options": [
+          "用 Simulator 自动生成多轮对抗交互，覆盖真实刁钻问法",
+          "客观性要求 Simulator 严格执行预设脚本，不许随 Agent 的回答调整",
+          "成功标准要综合解决状态、轮数限制与语气政策 Rubric 打分",
+          "涉及身份验证或敏感操作的流程中，评估需要检验 Agent 是否调用了正确的验证 Tool，而不只看最终回复",
+          "让 Simulator 与 Grader 共享 Prompt 人设可以简化架构"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为含对抗交互与敏感操作的客服 Agent 上线评审评估方案",
+          "reasoningGoal": "先拆出压测场景的目标与约束（真实对抗与敏感操作隔离）；再逐项确认各主张能否支撑评审；并排除「脚本照念」「人设复用」等不成立描述。"
+        },
+        "generatedAt": 1788853919986,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-832f6353",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-cd380be3",
+        "sourceSnapshot": {
+          "id": "agent-eval-06",
+          "topic": "evaluation",
+          "subtopic": "user-simulation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "user-simulator",
+            "conversational-agent",
+            "agent-eval",
+            "multi-turn",
+            "adversarial"
+          ],
+          "question": "评估多轮对话型 Agent（Conversational Agents，如客户支持、售前咨询 Agent）时，通常需要引入一个模拟用户的大模型（User Simulator LLM）。关于这种模拟交互评估机制的设计与挑战，下列哪些说法是正确的？",
+          "options": [
+            "User Simulator 允许评估系统在无人工干预的情况下自动化模拟多轮复杂、甚至带有对抗性（Adversarial）的真实用户交互场景",
+            "为确保评估的客观性，User Simulator 必须严格按照预设的具体对话脚本输出，不得根据 Agent 的中间回答进行动态调整",
+            "对话型 Agent 的成功判定通常需要结合多维指标，包括任务最终解决状态、交互轮数限制以及回复语气 / 政策遵循的 LLM Rubric 得分",
+            "在涉及身份验证或敏感操作的对话流程中，评估工具需要同时检验 Agent 是否调用了正确的验证 Tool，而不仅看最终回复文本",
+            "使用 LLM 作为 User Simulator 与 LLM 作为 Grader 时，可以通过共享相同的 Prompt 人设来简化评估系统的架构设计"
+          ]
+        }
+      }
+    ],
+    "agentdual-sprint-contract": [
+      {
+        "id": "agentdual-sprint-contract__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "从作用机制看，事前契约、交互式验证与评分校准这三招，为什么能治住 LLM 当 QA 时的表面化与妥协倾向？",
+        "options": [
+          "开发前锁死带具体断言的 Sprint Contract，让验收标准可量化、可测试",
+          "给 Evaluator 配 Playwright 这类端到端工具，逼它走真实用户路径做动态验证",
+          "用真实错例的 Few-Shot 把评分标准校准到严厉档，降低放水概率",
+          "评测结论只记日志，失败三次后允许 Generator 强行合并"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从机制上解释三类设计对抗 QA 表面化与妥协的原因",
+          "reasoningGoal": "先复现 QA 表面化与妥协的成因链；再逐项核验各设计是否掐断该链条；并排除「失败可忽略合并」等不成立描述。"
+        },
+        "generatedAt": 1788853919987,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-62e6138f",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-f4a8ad8b",
+        "sourceSnapshot": {
+          "id": "agentdual-sprint-contract",
+          "topic": "evaluation",
+          "subtopic": "sprint-contract",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "sprint-contract",
+            "agent-architecture",
+            "verification"
+          ],
+          "question": "在长流程软件工程 Agent 中，为了确保 Generator 生成的代码功能符合预期，通常会引入基于 Sprint Contract（迭代契约）与自动化环境测试的 Evaluator 机制。下列哪些设计有助于解决“LLM 作为 QA 角色时容易进行表面化测试或对 Bug 妥协”的问题？",
+          "options": [
+            "在开发前要求 Generator 与 Evaluator 共同协商并锁定具体的 Sprint Contract，明确定义当次迭代的可测试验收标准。",
+            "为 Evaluator 配备具备交互能力的端到端测试工具（如 Playwright），允许其直接操作真实应用并检查系统内部状态。",
+            "使用 Few-Shot 示例校准 Evaluator 的评分标准与边界条件，使其对非预期行为建立严格的扣分与 Fail 判定逻辑。",
+            "将 Evaluator 的评估结果仅作为日志输出，允许 Generator 在三次测试失败后自动忽略反对意见并合并代码。"
+          ]
+        }
+      },
+      {
+        "id": "agentdual-sprint-contract__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "某团队合并了 Evaluator 反对的代码，上线后边界条件 Bug 井喷。复盘这起防护网失效事故，下列哪些设计本可以拦住它？",
+        "options": [
+          "开发前没有让 Generator 与 Evaluator 协商锁定具体的 Sprint Contract，缺失可测试的验收标准",
+          "复盘缺了交互能力：本应为 Evaluator 配备端到端测试工具（如 Playwright），直接操作真实应用并检查内部状态",
+          "缺了评分校准：本该用 Few-Shot 校准评分标准与边界条件，对非预期行为建立严格 Fail 判定",
+          "缺的是合并权限：应该允许 Generator 在多次失败后绕过 Evaluator 直接合并"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从合并被反对代码导致的线上事故出发，反推缺失的防护设计",
+          "reasoningGoal": "先定位防护网的失效环节（契约、验证手段、评分尺度、合并门禁）；再逐项验证各设计能否补位；并排除「反对仅供参考」等不成立描述。"
+        },
+        "generatedAt": 1788853919987,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-62e6138f",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-a2bf168d",
+        "sourceSnapshot": {
+          "id": "agentdual-sprint-contract",
+          "topic": "evaluation",
+          "subtopic": "sprint-contract",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "sprint-contract",
+            "agent-architecture",
+            "verification"
+          ],
+          "question": "在长流程软件工程 Agent 中，为了确保 Generator 生成的代码功能符合预期，通常会引入基于 Sprint Contract（迭代契约）与自动化环境测试的 Evaluator 机制。下列哪些设计有助于解决“LLM 作为 QA 角色时容易进行表面化测试或对 Bug 妥协”的问题？",
+          "options": [
+            "在开发前要求 Generator 与 Evaluator 共同协商并锁定具体的 Sprint Contract，明确定义当次迭代的可测试验收标准。",
+            "为 Evaluator 配备具备交互能力的端到端测试工具（如 Playwright），允许其直接操作真实应用并检查系统内部状态。",
+            "使用 Few-Shot 示例校准 Evaluator 的评分标准与边界条件，使其对非预期行为建立严格的扣分与 Fail 判定逻辑。",
+            "将 Evaluator 的评估结果仅作为日志输出，允许 Generator 在三次测试失败后自动忽略反对意见并合并代码。"
+          ]
+        }
+      }
+    ],
+    "ai-search-gap-011": [
+      {
+        "id": "ai-search-gap-011__surface-options__assessmentp0__0",
+        "kind": "surface-options",
+        "question": "从表示机制看，为什么把长手册拆成多个局部向量，比整篇只用一个 embedding 更能保住章节细节？",
+        "options": [
+          "每个章节或语义单元各自拥有向量表示",
+          "检索后把命中的局部向量汇总回文档或片段",
+          "文档内部不同局部的语义不被平均掉",
+          "整本手册共用一个 embedding，索引更省事",
+          "关掉语义检索，只用标题关键词即可",
+          "把手册全文直接贴进 prompt 让模型自己找"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从向量表示机制解释局部多向量保住章节细节的原因",
+          "reasoningGoal": "先复现单向量压缩丢失细节的机制；再逐项核验各主张是否对症；并排除「单向量够用」「标题关键词够用」「全文塞窗口」等不成立描述。"
+        },
+        "generatedAt": 1788853919988,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-93fcb744",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-7f6127eb",
+        "sourceSnapshot": {
+          "id": "ai-search-gap-011",
+          "topic": "multi-vector-retrieval",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector-retrieval",
+            "scenario",
+            "long-document"
+          ],
+          "question": "技术手册含大量章节且每章有独立主题，用户常针对具体章节提细粒度问题。下列哪些做法更可能提升检索效果？",
+          "options": [
+            "为章节或局部语义单元生成多个向量表示",
+            "在结果阶段将局部向量聚合回文档或片段",
+            "保留文档内部不同局部内容的语义表示",
+            "为整本手册只生成一个 embedding 以减少索引数量",
+            "完全关闭语义检索，只保留文档标题关键词",
+            "把整个手册直接作为 prompt 发送给生成模型"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-gap-011__context-options__assessmentp0__1",
+        "kind": "context-options",
+        "question": "技术手册检索方案评审：A 案整篇单向量，B 案章节多向量，C 案只留标题关键词，D 案全文塞进 prompt。关于四种路线，下列哪些判断成立？",
+        "options": [
+          "按章节或局部语义单元建多个向量",
+          "结果阶段把局部向量聚合成文档或片段返回",
+          "各局部的语义表示在索引里继续保留",
+          "一个 embedding 代表整本手册，索引量最小所以最优",
+          "完全关闭语义检索，只保留文档标题关键词即可作答",
+          "手册再长也能整个扔进生成模型的窗口"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能在四种手册检索路线之间比较各自方案的成立条件",
+          "reasoningGoal": "先对齐四种路线的可比维度（召回精度、索引代价、窗口限制）；再逐项判定各主张成立与否；并排除单向量、纯标题与全文直塞等不成立描述。"
+        },
+        "generatedAt": 1788853919989,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-93fcb744",
+        "batch": "assessmentp0",
+        "model": "manual",
+        "contentHash": "fnv1a-3e18a7a7",
+        "sourceSnapshot": {
+          "id": "ai-search-gap-011",
+          "topic": "multi-vector-retrieval",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector-retrieval",
+            "scenario",
+            "long-document"
+          ],
+          "question": "技术手册含大量章节且每章有独立主题，用户常针对具体章节提细粒度问题。下列哪些做法更可能提升检索效果？",
+          "options": [
+            "为章节或局部语义单元生成多个向量表示",
+            "在结果阶段将局部向量聚合回文档或片段",
+            "保留文档内部不同局部内容的语义表示",
+            "为整本手册只生成一个 embedding 以减少索引数量",
+            "完全关闭语义检索，只保留文档标题关键词",
+            "把整个手册直接作为 prompt 发送给生成模型"
+          ]
+        }
+      }
+    ]
+  }
+}

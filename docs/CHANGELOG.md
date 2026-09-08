@@ -1,6 +1,17 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-08 · 首批真 assessment variant 入库 20 条（`assessment.p0-20-20260908.json`）
+
+- 10 题 × 2 条（evaluation 6：`agentdual-sprint-contract`、`agent-eval-01/02/03/04/06`；retrieval 4：
+  `ai-search-extra-001/003/013`、`ai-search-gap-011`），全部经 `assemble-variants.ts` 全部门禁落盘，
+  每条自声明 `angle/cognitiveTask/assessment`（三段式 reasoningGoal，与 canonical 实质不同路径）。
+- 生成过程即门禁能力的实证：初稿 13/20 被拒（12 drift 改写过猛 + 1 漏限定词"至少"），经 4 轮收敛到 20/20；
+  修出的经验——drift 门禁（<35）要求选项保留原句骨架、只换措辞 withdrew 不足，"大幅改写"的安全带约在 Dice 40~85。
+- 池指标：102→**122** 条，覆盖 70→**80** 题（5.9%），assessment 自声明 51.0%→**59.0%**，
+  路径唯一率 51.0%→**59.0%**；新批次疑似同路径 **0**（存量 20 条未动，待后续批次替换）。
+  `validate-variants` 全阻断项 0；`npm test` 881/881；`typecheck` + `build` 通过。
+
 ## 2026-09-08 · Offline Variant Pool 路径级整改（ADR-078）：不同 reasoning path + 多样性 Top-N + 发布门禁收紧
 
 **动机**：审计显示池内 102 条变体仅 51% 自声明测量意图，已声明的 target 与 canonical 几乎逐字相同
