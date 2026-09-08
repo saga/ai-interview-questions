@@ -8,10 +8,15 @@
 import type { GeneratedVariant, VariantCandidate } from '../types';
 import type { FormatId } from '../schemas/common';
 import type { Question } from '../schemas/question';
+import type { VariantKind } from '../schemas/variant';
 import { requiredPointsFor } from './knowledge/nodes';
 import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
 import { detectOptionLengthBias } from './bias';
 import { cjkDice } from './textSimilarity';
+import {
+  isAssessmentIdentical,
+  type ReasoningPath,
+} from './reasoningPath';
 import * as fuzz from 'fuzzball';
 
 export interface VariantCheck {
@@ -398,4 +403,277 @@ export function findNearDuplicateVariants(
     }
   }
   return out;
+}
+
+export interface SemanticDuplicatePair extends NearDuplicatePair {
+  /** 判定依据：options（选项雷同）/ reasoning-path（同路径逐字重复）/ stem（同 kind 题干照抄）。 */
+  basis: 'options' | 'reasoning-path' | 'stem';
+  detail: string;
+}
+
+export interface SemanticDuplicateItem {
+  id: string;
+  kind?: VariantKind;
+  question?: string;
+  options?: string[];
+  /** 已声明的测量意图（assessment variant）；缺省 = 继承 canonical（presentation）。 */
+  assessment?: ReasoningPath;
+}
+
+/**
+ * 语义级变体重复检测（Offline P0-4）：同一 questionId 内，文本明显不同但
+ * reasoning path 相同也判重复——不能只靠字符 Dice / Fuzzball。
+ *
+ * 三条判定面（任一命中即重复）：
+ *   1. options：选项级指纹 Dice ≥ 阈值（沿用 findNearDuplicateVariants 同一条规则）。
+ *   2. reasoning-path：双方都声明了测量意图且逐字相同（isAssessmentIdentical）。
+ *      未声明（继承 canonical）的 presentation 变体豁免——它们与 canonical 同路径
+ *      是定义使然，不在此判罪（措辞多样性由第 1 条约束）。
+ *   3. stem：同 kind 下题干近乎逐字相同（Dice ≥ 92）——连题干都没改，kind 白标了。
+ */
+export function findSemanticDuplicateVariants(
+  list: SemanticDuplicateItem[],
+  threshold: number = VARIANT_DUP_THRESHOLD,
+): SemanticDuplicatePair[] {
+  const out: SemanticDuplicatePair[] = [];
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      const a = list[i];
+      const b = list[j];
+      const optRatio = cjkDice(variantOptionText(a), variantOptionText(b));
+      if (optRatio >= threshold) {
+        out.push({
+          i,
+          j,
+          ratio: Math.round(optRatio),
+          basis: 'options',
+          detail: `选项雷同（相似度 ${Math.round(optRatio)} ≥ ${threshold}）`,
+        });
+        continue;
+      }
+      if (a.assessment && b.assessment && isAssessmentIdentical(a.assessment, b.assessment)) {
+        out.push({
+          i,
+          j,
+          ratio: 100,
+          basis: 'reasoning-path',
+          detail: '双方声明的 assessment.target + reasoningGoal 逐字相同：文本不同但测的是同一条推理链',
+        });
+        continue;
+      }
+      if (a.kind && a.kind === b.kind) {
+        const stemRatio = cjkDice(a.question ?? '', b.question ?? '');
+        if (stemRatio >= 92) {
+          out.push({
+            i,
+            j,
+            ratio: Math.round(stemRatio),
+            basis: 'stem',
+            detail: `同 kind（${a.kind}）题干近乎照抄（相似度 ${Math.round(stemRatio)} ≥ 92）`,
+          });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+// ── difficulty-preserved 确定性/结构性检查（Offline P1-8，离线专用） ──
+//
+// challenger 的 difficulty-preserved 是单条 LLM 判断，会漏掉四类结构性作弊：
+// 新增 prerequisite / 删除关键条件 / 引入额外 domain knowledge / 提供额外暗示。
+// 这些在文本层面有迹可循，先用零成本的纯函数拦截，通过的再交给 LLM 质询。
+//
+// 注意：本检查是**启发式**，只用于离线生成管线与组装器（候选不过就丢掉重采，
+// 超采下成本可忽略），不进 runtime validateVariant——runtime 误杀一条变体 =
+// 一次用户可见的 fallback 降级，阈值必须不同。
+
+/** 限定词：删掉会改变命题真假或难度的词。 */
+const QUALIFIERS = ['只有', '必须', '所有', '绝不', '总是', '从不', '唯一', '排他', '恰好', '至少', '至多'];
+
+/** 拉丁技术词（长度 ≥3，排除纯数字）：用于新前提 / 暗示检测。 */
+function latinTerms(text: string): string[] {
+  return (text.toLowerCase().match(/[a-z][a-z0-9.\-]{2,}/g) ?? []).filter((t) => /[a-z]/.test(t));
+}
+
+/** 数字条件 token（含 $T \ge 20$、512、73% 这类）：删掉即改变题目约束。 */
+function numericTokens(text: string): string[] {
+  return text.match(/[0-9]+(\.[0-9]+)?%?/g) ?? [];
+}
+
+export type DifficultyDriverFlag =
+  | 'dropped-qualifier'
+  | 'dropped-numeric-condition'
+  | 'new-prerequisite'
+  | 'extra-hint';
+
+export interface DifficultyDriverCheck {
+  ok: boolean;
+  flags: Array<{ flag: DifficultyDriverFlag; detail: string }>;
+}
+
+/**
+ * 检查候选题干是否动了题目的难度驱动项。返回 ok=false 即应在确定性门禁拦截。
+ *
+ * 四类拦截（任一命中即不过）：
+ *   - dropped-qualifier：canonical 题干有限定词，变体一个不剩 → 条件被删，题变难或真假翻转。
+ *   - dropped-numeric-condition：canonical 题干的数字条件在变体题干里一个都不出现 →
+ *     关键约束被删（数字改写成汉字的情况由 LLM 质询兜底，这里只拦整段丢失）。
+ *   - new-prerequisite：变体题干引入 ≥3 个 canonical（题干 + 选项）完全没有的拉丁技术词 →
+ *     需要额外领域知识，题变难。
+ *   - extra-hint：变体题干含有「正确项独有、干扰项没有、原题干也没有」的拉丁关键词 →
+ *     把答案线索泄进了题干，题变简单。
+ *
+ * 开放题同样适用（只看题干）；选择题额外看选项面。
+ *
+ * @param kind 变体风格。`context*` 允许在题干中加入工程背景（场景细节是题干给出的
+ *   已知条件，不是考生需自带的前提），因此 `new-prerequisite` 只对 `surface*` 生效；
+ *   其余三项与 kind 无关（删条件、泄暗示在任何风格下都是作弊）。
+ */
+export function checkOfflineDifficultyDrivers(
+  canonical: Question,
+  variant: { question: string; options?: string[] },
+  kind?: VariantKind,
+): DifficultyDriverCheck {
+  const flags: DifficultyDriverCheck['flags'] = [];
+  const cStem = canonical.question ?? '';
+  const vStem = variant.question ?? '';
+  const canonicalPool = `${cStem} || ${(canonical.formats.choice?.options ?? []).join(' | ')}`;
+
+  const cQuals = QUALIFIERS.filter((q) => cStem.includes(q));
+  if (cQuals.length > 0 && !QUALIFIERS.some((q) => vStem.includes(q))) {
+    flags.push({
+      flag: 'dropped-qualifier',
+      detail: `原题限定词（${cQuals.join('/')}）在变体题干里全部丢失`,
+    });
+  }
+
+  const cNums = [...new Set(numericTokens(cStem))];
+  // 只看「实质性」数字条件：多位数字 / 小数 / 百分比。单个数字（题号、版本号、
+  // 「第 1 步」这类行文编号）在改写中丢失是常态，不代表约束被删——拦它只会误杀。
+  const substantive = cNums.filter((n) => n.replace(/%/g, '').length >= 2 || n.includes('.'));
+  if (substantive.length > 0) {
+    const vNums = new Set(numericTokens(vStem));
+    const kept = substantive.filter((n) => vNums.has(n));
+    if (kept.length === 0) {
+      flags.push({
+        flag: 'dropped-numeric-condition',
+        detail: `原题数字条件（${substantive.slice(0, 4).join('/')}）在变体题干里一个都不出现`,
+      });
+    }
+  }
+
+  const poolTerms = new Set(latinTerms(canonicalPool));
+  const fresh = latinTerms(vStem).filter((t) => !poolTerms.has(t));
+  const freshUnique = [...new Set(fresh)];
+  // 仅 surface* 拦截：context* 的场景细节是题干给出的已知条件（见函数注释）。
+  const isContextKind = kind === 'context' || kind === 'context-options';
+  if (!isContextKind && freshUnique.length >= 3) {
+    flags.push({
+      flag: 'new-prerequisite',
+      detail: `变体题干引入原题没有的新技术词（${freshUnique.slice(0, 5).join('/')} 等 ${freshUnique.length} 个），可能需要额外领域知识`,
+    });
+  }
+
+  const choice = canonical.formats.choice;
+  const vOpts = variant.options;
+  if (choice && vOpts && vOpts.length === choice.options.length) {
+    const correct = choice.answer.filter((i) => i < choice.options.length).map((i) => choice.options[i]);
+    const distractors = choice.options.filter((_, i) => !choice.answer.includes(i));
+    const distractorTerms = new Set(distractors.flatMap(latinTerms));
+    const canonStemTerms = new Set(latinTerms(cStem));
+    // topic / tags 自带词出现在题干是正常的（锚定主题），不算泄题暗示。
+    const themeTerms = new Set(latinTerms(`${canonical.topic} ${(canonical.tags ?? []).join(' ')}`));
+    const hintTerms = [...new Set(correct.flatMap(latinTerms))].filter(
+      (t) =>
+        !distractorTerms.has(t) &&
+        !canonStemTerms.has(t) &&
+        !themeTerms.has(t) &&
+        latinTerms(vStem).includes(t),
+    );
+    if (hintTerms.length > 0) {
+      flags.push({
+        flag: 'extra-hint',
+        detail: `变体题干泄入正确项独有关键词（${hintTerms.slice(0, 4).join('/')}），可能提供额外暗示`,
+      });
+    }
+  }
+
+  return { ok: flags.length === 0, flags };
+}
+
+// ── Top-N 多样性选择（Offline P1-6：超采 → deterministic gate → challenger → top-N） ──
+//
+// 此前按 challenger 总分取最高分：候选可能 N 条全是高质量但彼此雷同的 paraphrase。
+// 改为贪心 MMR：分数打底，逐轮选「分数 − 与已选集合的相似惩罚」最大者。
+// 惩罚三项：wording（选项文本 Dice）、reasoning-path（同声明路径）、kind（同 kind）。
+
+export interface DiverseCandidate {
+  /** 候选标识（用于测试断言；生产侧传下标或 id 均可）。 */
+  key: string;
+  kind: VariantKind;
+  /** challenger 分数（0~1；全 pass 候选同为 1 时多样性完全决定排序）。 */
+  score: number;
+  /** 去重用选项文本（与 VARIANT_DUP_THRESHOLD 同口径）。 */
+  optionText: string;
+  /** 题干文本（同 kind 下题干照抄的第二道防线）。 */
+  stemText: string;
+  /** 声明的测量路径指纹（规范化 target + goal；presentation 候选为 null）。 */
+  pathKey: string | null;
+}
+
+export interface DiversityWeights {
+  /** 选项文本相似惩罚系数（默认 0.5：Dice 100 的候选扣 0.5 分）。 */
+  wording?: number;
+  /** 同 kind 惩罚（默认 0.15）。 */
+  kind?: number;
+  /** 同 reasoning-path 惩罚（默认 0.6：同路径候选几乎不可能同时入选）。 */
+  path?: number;
+}
+
+/** 规范化测量路径指纹：target + reasoningGoal 去空白小写拼接。 */
+export function reasoningPathKeyOf(path: ReasoningPath | undefined): string | null {
+  if (!path) return null;
+  const t = (path.target ?? '').replace(/\s+/g, '').toLowerCase();
+  const g = (path.reasoningGoal ?? '').replace(/\s+/g, '').toLowerCase();
+  if (!t && !g) return null;
+  return `${t} || ${g}`;
+}
+
+/**
+ * 贪心 MMR 取 top-N：首轮取最高分，之后每轮取「score − 惩罚」最大者。
+ * 同分时优先选与已选集合 kind 不同、路径不同的候选（sort 的 tie-break 显式写出，
+ * 不依赖 Array.sort 的稳定性假设——V8 虽稳定，但把意图写进比较器更易审计）。
+ */
+export function selectDiverseTopN<T extends DiverseCandidate>(
+  candidates: T[],
+  want: number,
+  weights: DiversityWeights = {},
+): T[] {
+  const { wording = 0.5, kind = 0.15, path = 0.6 } = weights;
+  const picked: T[] = [];
+  const rest = [...candidates];
+  while (picked.length < want && rest.length > 0) {
+    let bestIdx = 0;
+    let bestValue = -Infinity;
+    for (let i = 0; i < rest.length; i++) {
+      const c = rest[i];
+      let penalty = 0;
+      for (const p of picked) {
+        penalty = Math.max(penalty, (cjkDice(c.optionText, p.optionText) / 100) * wording);
+        if (c.kind === p.kind) penalty = Math.max(penalty, kind);
+        if (c.pathKey && p.pathKey && c.pathKey === p.pathKey) penalty = Math.max(penalty, path);
+        if (c.stemText && p.stemText && cjkDice(c.stemText, p.stemText) >= 92) {
+          penalty = Math.max(penalty, kind);
+        }
+      }
+      const value = c.score - penalty;
+      if (value > bestValue) {
+        bestValue = value;
+        bestIdx = i;
+      }
+    }
+    picked.push(rest.splice(bestIdx, 1)[0]);
+  }
+  return picked;
 }

@@ -44,8 +44,13 @@ schemas/       数据契约层（Zod 4）：runtime validation + TypeScript 类�
   conceptGraph.ts ConceptGraph 形状（只验结构，DAG 仍由 domain 校验）
   ai-config.ts   AIConfig 形状（校验结构，业务不变量由 isEntryValid / 去重等保障）
   evaluation.ts  LLM 输出形状（只验 JSON 形状，overall 仍由 domain 聚合）
-  types.ts       跨层行为契约与轻量聚合类型的单一出处（`QuestionBank` / `AnswerValue` / `LLMProvider` / `CompleteFn` / `GeneratedVariant` / `VariantCandidate` / `QuestionBlueprint` 等）——不再 re-export 数据形状类型，后者直接从 `schemas/*` 导入
+  index.ts       统一 re-export 出口（`export * from './*'`）；另有 interview / learner /
+                 session / variant / conversation 等契约模块
   errors.ts      统一 ZodError → path/message 格式化（bracket 记法 providers[0].id）
+  jsonSchema.ts  `z.toJSONSchema` 导出（Monaco JSON 诊断 / LLM structured output 复用）
+  ⚠️ 本层**没有** `types.ts`：跨层行为契约（`QuestionBank` / `AnswerValue` / `LLMProvider` /
+                 `CompleteFn` / `GeneratedVariant` / `VariantCandidate` / `QuestionBlueprint`）
+                 在根 `src/types.ts`
   questionBank / knowledgeMap / conceptGraph 的加载期校验均在此层完成；
   详见「数据契约与运行时校验」小节（ADR-033）
 
@@ -90,8 +95,18 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
                   任一变化即新身份；deriveCanonicalId 分配 fork 新 ID（P1-1）
   blueprint.ts   题目蓝图：缺口格→受约束考察目标（purpose/expectedConcepts 取自
                  知识节点）+ 同主题变体候选检索 + 成题一致性校验（ADR-032 管线 ③ 步；
-                 注意其对 coverage.ts 的运行时导入带 .ts 扩展名——Node 原生 TS 直跑要求，
-                 tsc 由 allowImportingTsExtensions 放行）
+                  注意其对 coverage.ts 的运行时导入带 .ts 扩展名——Node 原生 TS 直跑要求，
+                  tsc 由 allowImportingTsExtensions 放行）
+  adaptive.ts    自适应策略决策（decideStrategy / pickNextAdaptive / pickByWeakAngle，
+                  见「自适应面试引擎」小节）
+  bias.ts        抗暗示：选项长度泄题检测（detectOptionLengthBias，差距阈值 1.8×）
+  options.ts     选项规范化与重排原语（normalizeOptionText / shuffleChoiceOptions）
+  variantPool.ts 离线变体池装配 + source hash（variantSourceOf /
+                  computeVariantSourceHash，指纹变更即判 stale）
+  variantDiversity.ts / reasoningPath.ts  变体多样性与推理路径信号（离线质量度量）
+  textSimilarity.ts  文本相似度原语（near-dup 门禁与语义去重共用）
+  cognitiveTaskInference.ts  认知任务（cognitiveTask）离线推断
+  languageSanity.ts  语言一致性检查（中文题干/选项）
 
 ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI；
                多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
@@ -123,6 +138,9 @@ ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两
                      单选「唯一最佳」、多选「正确项独立成立 + 错项逐个为假」）/ distractors / explanation；
                      `summarizeChallenges` 汇总批量结果。UI 侧用于单题质询，
                      离线侧由 `npm run question:challenge` 批量跑（**语义质量审计，默认不阻断，--gate 才卡**）。
+   variantChallenger.ts  变体质询（one-shot 结构化 JSON；VARIANT_CHALLENGER_SYSTEM 稳定前缀），
+                     离线由 `npm run question:challenge` 批量跑，产出变体的语义质量信号
+   chromeAgent.ts   Chrome 侧 Agent 运行时适配（Agent 路径走 Chrome 内置模型）
    usageTelemetry.ts KV Cache 命中遥测（P1④）：devUsageLogger 仅 import.meta.env.DEV 打印
                      in/out/token 与 cacheHit/cacheMiss，用于验证 stable-prefix prompt 是否命中缓存。
    provider.ts       LLMProvider 工厂 + isEntryValid/isConfigValid
@@ -154,6 +172,7 @@ agent/         Agent 面试运行时（pi-agent-core，ADR-034）：与确定性
                       Agent 只做"不确定的决策"（选题/追问/收尾）；评分不归 Agent
    prompt.ts          系统提示词；runtime.ts 事件流装配；types.ts 会话与事件类型
                       （InterviewAgentSession，App 持有、工具读写引用共享）
+   sessionState.ts    Agent 会话状态机（阶段推进 / 消息与题目累积的纯状态迁移）
    **生命周期（ADR-060）**：`Agent` 构造显式 `toolExecution: 'sequential'`（共享 `session` 状态，防并行工具竞态）；
                       `dispose()` 为「清看门狗 → `agent.abort()` → unsubscribe」的真实释放；`useAgentInterview.finalize()`
                       由 `finalizedRef` 幂等守卫保证 `onComplete` 只落库一次；`getQuestion` 经 `isDelivered` 守门不重复出题；
@@ -172,8 +191,12 @@ hooks/
                           切 tab 不丢进行中的会话，Agent 在后台继续跑，restart 才 dispose）
   useSettingsDraft.ts     设置页「未保存草稿」编辑态（draft/text/promptDraft 及各字段更新器），
                           提升到 App 层：编辑中途切到其它 tab 再切回，未保存的改动不丢
+  useIsMobile.ts          移动端断点判定（`MOBILE_BREAKPOINT`，与 `index.css` 的
+                          768px media query 必须同步改）
 
 components/
+  agent/AgentInterviewPage.tsx   Agent 面试页（五页之一，pi-agent-core 运行时）
+  copilot/CopilotSidebar.tsx     Copilot 侧栏（统一交互入口的 UI 壳）
   common/CodeBlock.tsx     只读代码高亮（Shiki，单例 highlighter + CSS 行号）
   common/RichText.tsx      文本段落 + 围栏代码块混合渲染
   common/CodeEditor.tsx    Monaco 编辑器（CodeEditor 作答 / CodeDiff 对比，懒加载）
@@ -182,14 +205,15 @@ components/
   quiz/QuestionCard.tsx         单题作答卡片
   result/ResultPanel.tsx        成绩 + 对比上次 + 强弱项 + AI 建议 + 继续训练
   progress/ProgressPage.tsx     掌握度条 + 趋势折线 + 需要关注 + 最近训练
+  progress/SessionReplayDrawer.tsx  历史会话回放抽屉
   interview/InterviewPage.tsx   30 分钟限时模拟面试入口
   settings/SettingsPanel.tsx    AI 引擎设置（Monaco JSON 编辑器直接编辑 config.json：
                                  providers 数组顺序即降级链优先级；generateOpenQuestions
                                  门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
-data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 77 文件 /
-                         1317 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
+data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 82 文件 /
+                         1357 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
                        tool-calling，与 src/data/taxonomy.ts 的骨架一一对应）。每题
                        `category` = 所属 topic slug（与文件名一致），`topic` = 知识节点 id，
                        外加 `tags` / 可选 `rubric` / `angle`（主考察角度，覆盖矩阵用，
@@ -197,7 +221,7 @@ data/questions/       题库（用户数据契约，按 topic 一文件：questi
                        agent-engineering / ai-systems / ai-security）是 **taxonomy 逻辑分组**
                        （topic → domain 映射见 `taxonomy.domainOfTopic`），不是物理文件单位；
                        UI 分类标签由 `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS。
-                       存量 1317 题：约 1237 题同时携带 choice 与 open 双形态（ADR-027）、80 题仅
+                       存量 1357 题：1232 题同时携带 choice 与 open 双形态（ADR-027）、125 题仅
                        choice（open 形态统一由双形态题的 open 字段承载，ADR-027）。题目角度
                        候选由 taxonomy.ANGLE_WHITELIST（topic→角度子集）约束，节点未声明
                        angles 时回退到所属 topic 白名单（ADR-039）。
@@ -206,14 +230,14 @@ data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状�
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
-                          slug，16 文件：dl-fundamentals / llm-architecture / training / inference /
-                          ml-theory / gnn-theory / nmf-theory 等，共 123 节点，含 ml-foundations 11 节点、GNN 6 节点与矩阵/主题建模 4 节点），但节点内部不再用文件 slug 当分类——
+                          slug，19 文件：dl-fundamentals / llm-architecture / training / inference /
+                          ml-theory / gnn-theory / nmf-theory 等，共 124 节点，含 ml-foundations 11 节点、GNN 6 节点与矩阵/主题建模 4 节点），但节点内部不再用文件 slug 当分类——
                         每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
                         如 Inference / RAG / Agents）。由此构成 **Domain → Topic →
                         Concept(id)** 三级路径；题目再经 `subtopic`（Concept→Subtopic）与
-                        `angle`（definition→…→system-design 等 10 角度，见 ADR-037）落到
+                        `angle`（definition→…→synthesis 等 19 角度，见 ADR-037）落到
                         **Concept → Subtopic → Angle** 的考察维度。
                         知识点是一等公民、题目只是它的 View：节点 id = topic slug
                         （与题目 / conceptGraph / Learner Memory 同一 join key），携带四类
@@ -223,8 +247,9 @@ data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件
                         tradeoff→scenario→system-design 的出题角度梯度）。节点必须有题目
                         支撑（无悬空节点，测试强制）；gaps 机制输出下一步该补的题
 data/knowledgeMap.ts   知识点装配（import.meta.glob eager 合并 + Zod 形状校验，同 questionBank 模式）
-data/courses/          课程题库尚未实现。课程需求出现前不创建目录、注册来源或课程专用 schema；
-                        首个真实课程接入时再设计独立来源与数据管线，避免维护空接缝。
+data/courses/          课程题库尚未实现。当前仅保留空占位目录（`.gitkeep`），**未**注册来源、
+                        未建课程专用 schema；首个真实课程接入时再设计独立来源与数据管线，
+                        避免维护空接缝。
 scripts/question-coverage.ts  覆盖矩阵 CLI（npm run question:coverage）：fs 直读
                         questions/ 与 knowledge/ JSON（不走 import.meta.glob），
                         调 domain/coverage 纯函数输出矩阵与补题建议。Node 24+ 原生
@@ -247,7 +272,8 @@ analysis/models/              Git LFS 管理的本地分析模型；当前仅 ch
 types.ts              跨层行为契约（LLMProvider / QuestionBank / AnswerValue 等），数据形状类型直接用 schemas/*
 ```
 
-依赖方向：`components → application(interviewEngine) → domain + ai`；Agent 面试页 `components/agent → agent/`（`agent → domain + ai + types`，复用评分与持久化管线，不绕过 application 语义）；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库；`schemas` 不依赖 domain（纯数据契约），`domain` 也不依赖 `schemas`——仅在装配边界（questionBank / knowledgeMap / conceptGraph / settings / evaluate）消费校验结果，内部逻辑不感知 Zod。
+依赖方向：`components → application(interviewEngine) → domain + ai`；Agent 面试页 `components/agent → agent/`（`agent → domain + ai + types`，复用评分与持久化管线，不绕过 application 语义）；`ai → domain`（复用评分聚合等纯函数）；`domain` 不依赖 React、不 import 任何 LLM 库；`schemas` 不依赖 domain（纯数据契约），`domain` 也不依赖 `schemas` 的**运行时校验**——对 schemas 只做 `import type`（类型即契约，编译后消失）；仅装配边界（questionBank / knowledgeMap / conceptGraph / settings / evaluate）可消费 Zod 校验结果，内部逻辑不感知 Zod。
+> **当前已知的两处值依赖（例外，非范例）**：`domain/learner.ts` 引 `proficiencyConfigSchema`、`domain/variantPool.ts` 引 `computeVariantSourceHash` / `variantSourceOf`。二者是历史遗留的便利导入，不扩展示例；新增 domain 代码请保持 type-only。
 
 **ai → domain 的边界约定**：`ai` 只允许依赖 domain 的**纯计算函数**（`evaluation.aggregateOverall`、`provider.mergeQuestionRubric`、variant 校验等），
 不得依赖业务流程模块（`learner` / `adaptive` / `quiz`）——AI 层只负责"生成/评价语言内容"，不理解产品业务流。
@@ -327,7 +353,8 @@ User Query → query planner（scope / mode，确定性规则）
 
 Concept Graph 由此从「出题算法辅助结构」升级为 **Knowledge Backbone**：同一张图（1-hop：prerequisite 0.8 / related 0.6 / dependent 0.45）同时驱动 adaptive selection 与 knowledge retrieval。
 
-Phase 2/3 未做（有意推迟）：embedding 语义通道（权重 0.15 已预留，未接入时按比例回填）、reranking、query expansion、multi-hop；`KnowledgeNode.keyIdeas / tradeoffs` 字段扩展；Learner memory 参与检索排序；MCP 暴露 Knowledge Base。
+Phase 2/3 未做（有意推迟）：embedding 语义通道（权重 0.15 已预留，未接入时按比例回填）、reranking、query expansion、multi-hop；`KnowledgeNode.keyIdeas / tradeoffs` 字段扩展；MCP 暴露 Knowledge Base。
+**已实现（勿再记为未做）**：Learner memory 参与检索排序 —— `retrieve.ts` 的 `learnerBoost`（ADR-065 P1-2）按 weakTopics / weakAngles 给命中节点**小幅**提权（上限 0.15，weakTopics 命中 knowledgeId 0.15 / topic 0.12、weakAngles 0.10），在 `metadataScore` 内叠加；刻意不主导排序，避免把弱项证据挤出真实语义命中。
 
 ## 自适应面试引擎 + 知识覆盖面（ADR-017）
 
@@ -351,10 +378,12 @@ Phase 2/3 未做（有意推迟）：embedding 语义通道（权重 0.15 已预
   `@dagrejs/graphlib`（限定在 conceptGraph 模块内，不外溢为架构核心）。图数据只有两类有向边：
   `prerequisite`（基础→进阶 DAG，加载期 `isAcyclic` 校验、`topsort` 学习顺序、闭包上溯）
   与 `related`（无向语义，双向遍历）。边复用题库 `topic` 字段；图是模块级单例，
-  公开 API（prerequisiteClosure / relatedOf / expandWithPrerequisites / topoRankOf）不要求传 graph 参数。
-  职责边界：conceptGraph 只回答"知识之间是什么关系"；掌握判定 isMastered/isAttempted
-  与薄弱阈值 WEAK_* 也定义在此（单一出处），但**学习策略**（coverage / 建议下一学什么）
-  归 `domain/learner.ts`。
+  公开 API（prerequisiteClosure / relatedOf / prerequisitesOf / dependentsOf / topoRankOf）
+  不要求传 graph 参数。
+  职责边界：conceptGraph 只回答"知识之间是什么关系"，**不持有任何学习状态**——
+  掌握判定 `isMastered` / `isAttempted`、薄弱阈值 `WEAK_MASTERY` / `WEAK_AVG`、
+  `expandWithPrerequisites` 与**学习策略**（coverage / 建议下一学什么）全部在
+  `domain/learner.ts`（单一出处）。
 - **覆盖面地图**：`learner.computeCoverage()` 按类目统计 练过/掌握 的 topic 比例；
   blocked 判定沿前置闭包上溯（根因未掌握则高级主题被标记为"先补前置"）。
   ProgressPage 展示类目覆盖条 + `learner.suggestNextTopics()` 学习建议。
@@ -528,7 +557,7 @@ Raw Attempts ──→ 评分（确定性判分 / LLM 评估）
 
 - **记忆是"结构化信号"而非对话原文**：不把用户历史回答塞给 LLM；Coach 只看压缩画像（如 `tool-calling: weak`）。
 - **掌握度**：`mastery = avgScore/100`，简单直接（ADR-019）；置信度由 `attempts` 字段本身表达，不做加权公式。`trend` 由"上次得分 vs 历史均分"判定（±2 分阈值）。
-- **薄弱主题推荐**：`mastery < 0.85 且 avgScore < 85` 的主题按掌握度升序取前 3，写入 `InterviewDefinition.topicPriorities`；`buildSession` 用 `pickPrioritized` 保证薄弱主题的题优先进入训练。
+- **薄弱主题推荐**：`avgScore < WEAK_AVG(75)` 的主题按掌握度升序取前 3（`recommendWeakTopics` 阈值为常量 `WEAK_AVG`，另有 `WEAK_MASTERY = 0.75`；**勿在文档里写死数字，以常量为准**），写入 `InterviewDefinition.topicPriorities`；`buildSession` 用 `pickPrioritized` 保证薄弱主题的题优先进入训练。
 - **持久化**：`storage/learner.ts`（IndexedDB via Dexie，见 `db.ts`）。Learner 画像与 SessionRecord 历史已迁 IndexedDB——画像存单例表（剔除 sessions blob），会话历史拆 `sessions` 表并建 `startedAt/overall/*topics` 索引，直接支撑 `getRecentSessions/getWeakTopics` 等范围查询（替代原 localStorage 大 blob 反模式）；小 KV 配置（AIConfig）仍留 localStorage（甜点区）。不读取/迁移任何旧 localStorage 数据，旧画像直接以空画像起步。
 - **边界**：推荐逻辑当前为确定性规则（纯函数、可测）；未来"教练叙事 / 追问面试"可接 `pi-agent-core`，但 Agent 只读压缩画像，不读全文。
 - **canonical 身份不可变（assessment identity immutable）**：`questionId` 是 Learner evidence 的键，
@@ -572,7 +601,7 @@ Original Question ──→ LLM ──→ parse ──→ GeneratedVariant ─�
   - **Prompt 请求、但不校验（不可断言）**：正确性语义与适用条件、`question intent`、`requiredConcepts` 的语义覆盖。这些只写在 `VARIANT_SYSTEM` 里要求模型遵守，**没有任何运行时检查能证明它们成立**（ADR-057 已明确拆除字面语义闸门，理由是字面匹配无法证明语义等价、只会误杀换场景的合法变体）。引用时请写「要求保持」而非「保证保持」。
 - **语义变换（LLM 负责）**：题干措辞、场景/上下文、选项文本表达（逐项改写现有文本）。
 - **结构变换（程序负责）**：选项顺序（Fisher–Yates 重排）、answer 索引重映射、多选题答案升序归一化、选项文本空白折叠。解析（`explanation`）与选项真假属性/数量均不可变，永远取 canonical。
-- **校验（唯一入口：`finalizeQuestion` → `domain/variant.validateVariant`，ADR-056/068）**：**硬门槛只有结构项与抗暗示**，失败即回退原题、原因码计入遥测——**不再 retry**。① 结构：题干非空；自包含无“原题/上述/本文/该方案…”等 10 类指代（含“前文/下文/题目中/题干中”）；选择题 `options` **必填**、数量须与 canonical 一致（保证逐项一一对应）、非空、**规范化后**无重复。② 抗暗示：长度泄题（仅 choice，见下）。`answer` 不在此校验（永远来自 canonical）。**形态对齐（P0-1/ADR-056）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（约 1078/1084）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**「语义闸门」已拆除（ADR-057，勿恢复）**：`requiredCoverageMet`（requiredConcepts 字面覆盖 ≈2/3，`need = max(1, round(N*2/3))`）于 2026-09-01 第四轮删除，余下的字面锚点于 2026-09-02 第五轮降级为 warning（见下条）——字面匹配无法证明语义等价，只会误杀换场景的合法变体。`fuzzball` 兜底（`token_set_ratio ≥75` / `partial_ratio ≥80`）现只服务于该漂移软信号。
+- **校验（唯一入口：`finalizeQuestion` → `domain/variant.validateVariant`，ADR-056/068）**：**硬门槛只有结构项与抗暗示**，失败即回退原题、原因码计入遥测——**不再 retry**。① 结构：题干非空；自包含无“原题/上述/本文/该方案…”等 10 类指代（含“前文/下文/题目中/题干中”）；选择题 `options` **必填**、数量须与 canonical 一致（保证逐项一一对应）、非空、**规范化后**无重复。② 抗暗示：长度泄题（仅 choice，见下）。`answer` 不在此校验（永远来自 canonical）。**形态对齐（P0-1/ADR-056）**：`format` 参数（本次会话实际呈现形态 `sq.format`）决定选择/开放结构——`format==='choice'` 才要求 options，否则按开放题跳过；不传 `format` 时回退到 `canonical.formats.choice` 是否存在，使双形态题（1232/1357）按当前 Session 形态生成变体而非永远当选择题（choice 的 single/multiple 子类型由 `q.formats.choice!.type` 推导，而非一律按多选题生成）。**「语义闸门」已拆除（ADR-057，勿恢复）**：`requiredCoverageMet`（requiredConcepts 字面覆盖 ≈2/3，`need = max(1, round(N*2/3))`）于 2026-09-01 第四轮删除，余下的字面锚点于 2026-09-02 第五轮降级为 warning（见下条）——字面匹配无法证明语义等价，只会误杀换场景的合法变体。`fuzzball` 兜底（`token_set_ratio ≥75` / `partial_ratio ≥80`）现只服务于该漂移软信号。
 - 选择题 `options` 文本可由 LLM 改写，但**选项数量/真假属性固定**，且**顺序由 `applyVariant` 调 `shuffleChoiceOptions` 程序重排**（非 LLM 决定）；`answer` 索引永远由 canonical 经确定性重映射得到（`applyVariant` 写死 `canonical.answer` 再重排），彻底避免“答案被模型覆盖 / 顺序被模型泄露”。`toGeneratedVariant` 已移除对缺失 `question` 的静默回退（缺失由校验显式拒绝），并丢弃模型可能回吐的 `answer/explanation`。
 - **Prompt 约束**：`VARIANT_SYSTEM` 为轻量变体版（v4，KV-Cache 友好），要求“逐项改写现有文本”、明令禁止改动选项数量/真假属性/答案/解析，并明确“不交换选项顺序（顺序由程序统一处理）”；v4 起额外要求 `*-options` 风格对选项做**幅度明显**的改写（换视角/句式/主语，而非仅同义替换），否则 near-dup 门禁会判近重复整条丢弃（见 ADR-072）。`buildUser` 只注入 `topic/requiredConcepts/question/options`（choice 时），不暴露 `answer/explanation/referenceAnswer/angle/difficulty`，从源头切断“LLM 重新决定答案”的路径。
 - **原生 JSON Mode（主路径）+ `extractJSON` 兜底**：`PiAIProvider.generateVariant` 声明 `jsonMode:true`（DeepSeek/OpenRouter 走 `response_format=json_object`，强制合法 JSON、省 token）；`ChromeAIProvider` 不走原生 JSON（Prompt API 不支持），退回 `extractJSON` 解析 markdown 包裹。两层共享同一 `VARIANT_SYSTEM` 与 `generateVariant` 逻辑。
@@ -710,8 +739,10 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   踩坑：openai-completions 是 SSE 流式（mock 测试须回 event-stream）；pi-ai 把传输错误
   吞成 stopReason='error'（callLLM 返回空文本，上层 parse 兜底）；空 apiKey 不能以
   complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
-- **默认云端引擎为 DeepSeek**：`storage/settings.ts` 默认降级链
-  `{ providers: [{ id: 'deepseek', model: 'deepseek-v4-flash', ... }], generateOpenQuestions: false }`；
+- **默认引擎链**：`storage/settings.ts` 的 `DEFAULT_CONFIG = SAMPLE_CONFIG`（源在
+  `src/config/sample-config.json`），降级链 6 条、数组顺序即优先级：
+  `chrome(enabled) → local(enabled) → deepseek / openrouter / google / cloudflare-workers-ai(默认 disabled)`，
+  `generateOpenQuestions: false`；云端主用模型 `deepseek-v4-flash`。
   示例配置见 `docs/config.example.json`。DeepSeek 特性已按能力协商充分利用：
   - **原生 JSON 模式**：声明 `jsonMode` 能力的引擎（deepseek / openrouter）经 samplingParams 透传
     `response_format={type:'json_object'}`，变体/评分/质询均走原生 JSON（extractJSON 仅作 fallback）；
@@ -737,7 +768,7 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   设置面板 Monaco JSON 编辑器直接编辑配置，`z.toJSONSchema(aiConfigSchema)` 注入 `monaco.languages.json` 诊断（enum 提示、hover、实时校验）；保存时
   `parseConfigJSON`（storage/settings.ts，纯函数有测试，形状校验由 Zod 接管）整体校验并清洗，
   错误信息定位到 `providers[i]`。历史配置中的已下线引擎 id 由 loadConfig/sanitizeEntry 静默丢弃。
-- **Zod 4（ADR-033）**：`strict: true` 已开启，`zod@4.4.3` 与 pi-ai 共享；`schemas/` 为唯一契约出处，`z.toJSONSchema` 已用于 Monaco（`schemas/jsonSchema.ts`），并可复用为 LLM structured output 的 JSON Schema；`allowImportingTsExtensions` 对 `schemas` 导入不产生影响（仅 `domain/coverage` 等 CLI 直跑路径需要 `.ts` 扩展名）。
+- **Zod 4（ADR-033）**：`strict: true` 已开启，`zod@4.5.4`（`^4.5.4`，**勿写死补丁号，以 package.json 为准**）与 pi-ai 共享；`schemas/` 为唯一契约出处，`z.toJSONSchema` 已用于 Monaco（`schemas/jsonSchema.ts`），并可复用为 LLM structured output 的 JSON Schema；`allowImportingTsExtensions` 对 `schemas` 导入不产生影响（仅 `domain/coverage` 等 CLI 直跑路径需要 `.ts` 扩展名）。
 - **浏览器直连 LLM 受 CORS 限制**：实测 CORS 友好的云端为 DeepSeek / OpenRouter /
   Google Generative Language API / Cloudflare API（ADR-026）；OpenAI、Anthropic 直连仍不可用，
   有需求走本地 OpenAI 兼容网关（id=local 指向代理地址）。

@@ -1,6 +1,29 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-08 · 架构文档与代码对齐（ARCHITECTURE.md / README.md / learner.ts 注释）
+
+全量核对 `docs/ARCHITECTURE.md` 与代码后修正文档漂移（**只改文档与注释，未改运行时行为**）：
+
+- **存量计数**：题库 77 文件/1317 题 → **82 文件/1357 题**；双形态 1237/choice-only 80 → **1232/125**；
+  knowledge 16 文件/123 节点 → **19 文件/124 节点**；变体（README）8 文件/100 条 → **9 文件/102 条**。
+- **角度**：`:216` 的「10 角度」→ **19 角度**（同文档 :691 早已写 19，属文档内部自相矛盾）。
+- **薄弱阈值**：「mastery <0.85 且 avgScore<85」→ **以常量 `WEAK_AVG(75)` / `WEAK_MASTERY(0.75)` 为准**；
+  同步修掉 `src/domain/learner.ts` 里「掌握度 <0.85 且均分 <85」的陈旧注释（与紧邻常量 0.75/75 矛盾）。
+- **结构归属**：`schemas/types.ts` 不存在 → 标注跨层行为契约在根 `src/types.ts`，并补 `index/jsonSchema` 等漏列模块；
+  `expandWithPrerequisites` / `isMastered` / `isAttempted` / `WEAK_*` 由 conceptGraph 改为 **learner.ts**；
+  conceptGraph 公开 API 补 `prerequisitesOf` / `dependentsOf`、删 `expandWithPrerequisites`。
+- **边界陈述**：`domain` 对 `schemas` 现为 **type-only**，仅 `learner.ts` / `variantPool.ts` 两处历史值依赖（标注为例外非范例）；
+  「Learner memory 参与检索排序」从 Phase 2/3 未做清单移出 → **已实现**（ADR-065，`retrieve.ts` `learnerBoost` 上限 0.15）。
+- **其它**：默认降级链由「单条 deepseek」改为 **6 条**（chrome/local enabled，其余 disabled）；
+  变体双形态 1078/1084 → **1232/1357**；`zod@4.4.3` → **4.5.4**（并注明勿写死补丁号）；
+  `data/courses/` 说明改为「保留空占位目录、未注册来源/未建 schema」；
+  目录树补 `adaptive` / `bias` / `options` / `variantPool` / `variantDiversity` / `reasoningPath` /
+  `textSimilarity` / `cognitiveTaskInference` / `languageSanity` / `chromeAgent` / `variantChallenger` /
+  `sessionState` / `useIsMobile` / `AgentInterviewPage` / `CopilotSidebar` / `SessionReplayDrawer`；
+  README 页面列表补 **Agent 面试**（五页）。
+- 回归：`tsc -p tsconfig.app.json` 干净；`learner.test.ts` **64/64**。
+
 ## 2026-09-07 · DiT 5 题入库（选项质量返工 + topic 映射到现有节点）+ 测试白名单单源化
 
 - 入库 `src/data/questions/dit-2026-09.json`（canonical 3：`dit-cond-adaln-zero-can`→`transformer`×architecture、`dit-patch-scaling-can`→`vit-patch-embedding-sequence-length`×quantitative、`dit-decoder-arch-can`→`transformer`×mechanism）与 `src/data/variants/dit-2026-09.json`（变体 2，挂前两者）。

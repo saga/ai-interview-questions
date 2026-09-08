@@ -13,10 +13,13 @@
 
 import type { CompleteFn, GeneratedVariant } from '../types';
 import type { FormatId } from '../schemas/common';
+import { assessmentSchema, cognitiveTaskSchema, questionAngleSchema } from '../schemas/common';
 import type { Question } from '../schemas/question';
 import type { VariantKind } from '../schemas/variant';
+import type { VariantMeasurementFace } from '../domain/variant';
 import { requiredPointsFor } from '../domain/knowledge/nodes';
 import { extractJSON } from './pi';
+import { z } from 'zod';
 
 // 稳定前缀（KV-Cache 友好）：轻量变体改写约束。同一场面试为不同题生成变体时可复用同一前缀。
 // 边界（ADR-036 轻量变体收缩）：LLM 只做「语义变换」（题干 + 选项文本逐项改写），
@@ -147,4 +150,123 @@ export async function generateVariant(
   const user = buildUser(q, format);
   const out = extractJSON<RawVariant>(await complete(system, user));
   return toGeneratedVariant(q, out);
+}
+
+// ── Offline Assessment Variant 生成（离线池 P0-2，与上面 Runtime presentation 路径对偶） ──
+//
+// `generateVariant` 只做「换措辞」：不改变 assessment identity，产出恒为 presentation
+// variant。离线池要的是「同一 Knowledge 的不同 reasoning path 测量」，必须换测量
+// 路径——例如 canonical 测「判断 A 是否成立」，variant 改成「在约束 B 下比较 A/C」
+// 或「从故障现象反推 A/C 哪个是根因」。本 prompt 即该规范的机读版本：
+//
+//   - 同一 Knowledge：topic / tags / requiredConcepts 不变，不引入新的隐含知识前提；
+//   - 不同 reasoning path：必须显式声明 assessment.target + assessment.reasoningGoal，
+//     且 reasoningGoal 必须是「先做什么 → 再做什么 → 排除什么」三段式，泛化描述拒收；
+//   - 选项仍一一对应、真假属性逐项不变、数量不变、不生成 answer / explanation
+//     （与 presentation 路径相同的安全边界，见 validateVariant）。
+//
+// 只走离线管线（scripts/question-variants.ts --mode assessment，默认），绝不进 runtime。
+
+export const VARIANT_ASSESSMENT_SYSTEM = `[PROMPT-VERSION v1]
+
+为已有面试题设计一道「同一知识点、不同推理路径」的变体。
+
+【同一 Knowledge（红线，不可违背）】
+1. 考察的 topic 与必考概念不变，不引入需要额外领域知识的新概念、新前提。
+2. 每个选项的技术结论 / 因果 / 适用条件 / 真假属性逐项不变（可换表达，不可换真假）。
+3. 不改变选项数量，不创造新的 distractor，不交换选项顺序（顺序由程序处理）。
+4. 不新增解题必需的关键条件，不删除原题的关键约束，不在题干里泄入答案线索。
+5. 不生成答案，不生成解析。
+
+【不同 reasoning path（本题的核心任务）】
+6. 变体必须走与原题**不同的推理链**，而不是只换措辞。换路示例（按原题认知动作选择其一）：
+   - 原题「判断 A 是否成立」→ 变体「在约束 B 下比较 A 与 C，选出成立者」；
+   - 原题「解释机制 M 为何成立」→ 变体「从故障现象反推 M 的哪一环是根因」；
+   - 原题「选择最优方案」→ 变体「给定失效约束，排除不可行的方案并说明排除依据」。
+7. 必须显式输出 assessment.target（这道变体要测出的判断是什么）与
+   assessment.reasoningGoal（考生答对必须走完的推理链）。
+8. reasoningGoal 必须是三段式，缺一段即不合格：
+   「先做什么 → 再做什么 → 排除什么」
+   例：「先对齐 A/C 的可比维度；再在约束 B 下逐项验证各自结论；并排除『只看表面现象』等不成立判断。」
+   禁止泛化描述（「考察对 X 的理解」「检验掌握程度」一律不合格）。
+9. 同时声明 angle 与 cognitiveTask：它们应与原题不同（视角或认知动作至少换其一）；
+   若确实无法换，请如实沿用原值，不要硬编。
+
+【题干与选项】
+10. 题干必须实质重写（换场景 / 换提问方式 / 换约束），照抄原题干不合格。
+11. 选择题：每个选项做幅度明显的改写（换视角/句式/主语，而非仅同义替换），
+    输出的第 N 个选项必须是输入第 N 个选项的改写。
+12. 开放题：只输出 question，不要 options 字段。
+
+只输出 JSON：
+{
+  "question": "改写后的题干",
+  "options": ["改写后的选项1", "改写后的选项2", "..."],
+  "angle": "<视角>",
+  "cognitiveTask": "<认知任务>",
+  "assessment": {"target": "…", "reasoningGoal": "先…；再…；并排除…。"}
+}`;
+
+/** 离线 assessment prompt 版本（与 VARIANT_PROMPT_VERSION 独立演进）。 */
+export const VARIANT_ASSESSMENT_PROMPT_VERSION: string =
+  (VARIANT_ASSESSMENT_SYSTEM.match(/\[PROMPT-VERSION\s+([^\]]+)\]/) ?? [])[1]?.trim() ?? 'unknown';
+
+const assessmentRawSchema = z.object({
+  question: z.string().optional(),
+  options: z.array(z.string()).optional(),
+  angle: questionAngleSchema.optional(),
+  cognitiveTask: cognitiveTaskSchema.optional(),
+  assessment: assessmentSchema.optional(),
+});
+
+/** Assessment 变体候选：表达 + 自声明的测量面（applyVariant 经 measurementFaceOf 落地）。 */
+export type AssessmentVariantCandidate = GeneratedVariant & VariantMeasurementFace;
+
+function buildAssessmentUser(q: Question, format?: FormatId): string {
+  const isChoice = format === 'choice';
+  const payload = {
+    topic: q.topic,
+    tags: q.tags,
+    requiredConcepts: requiredPointsFor(q) ?? [],
+    question: q.question,
+    ...(isChoice ? { options: q.formats.choice?.options } : {}),
+    canonicalAngle: q.angle,
+    canonicalCognitiveTask: q.cognitiveTask,
+    canonicalAssessment: q.assessment,
+  };
+  return JSON.stringify(payload);
+}
+
+/**
+ * 生成 assessment 变体候选：一次 LLM 调用 + 结构解析，不做语义校验。
+ * angle / cognitiveTask / assessment 非法或缺失时抛出（调用方按 LLM 失败计，
+ * 不落盘）——缺了测量意图的 assessment variant 与 presentation 无异，不许入库。
+ */
+export async function generateAssessmentVariant(
+  q: Question,
+  complete: CompleteFn,
+  format?: FormatId,
+  systemPrompt = VARIANT_ASSESSMENT_SYSTEM,
+  kind?: VariantKind,
+): Promise<AssessmentVariantCandidate> {
+  const system = kind ? withKind(systemPrompt, kind) : systemPrompt;
+  const user = buildAssessmentUser(q, format);
+  const raw = extractJSON<unknown>(await complete(system, user));
+  const parsed = assessmentRawSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`assessment 变体输出无法解析：${parsed.error.issues.map((i) => i.message).join('; ')}`);
+  }
+  const out = parsed.data;
+  if (!out.question?.trim()) throw new Error('assessment 变体缺少题干');
+  if (!out.assessment) throw new Error('assessment 变体缺少自声明的测量意图（assessment.target + reasoningGoal）');
+  if (!out.angle || !out.cognitiveTask) {
+    throw new Error('assessment 变体缺少自声明的 angle / cognitiveTask');
+  }
+  return {
+    question: out.question,
+    options: out.options,
+    angle: out.angle,
+    cognitiveTask: out.cognitiveTask,
+    assessment: out.assessment,
+  };
 }

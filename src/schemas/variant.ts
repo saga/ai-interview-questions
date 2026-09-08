@@ -71,6 +71,34 @@ export const questionVariantSchema = z.object({
   promptVersion: z.string().min(1),
   /** canonical 题目内容指纹（FNV-1a），用于检测 canonical 已变更导致的 stale 变体。 */
   sourceHash: z.string().min(1),
+  // ── provenance（P1-11：审计专用，不参与 assessment identity） ──
+  // 以下字段只回答「这条变体是哪里来的」，不参与任何语义判定：
+  // reasoning-path 去重只看 angle / cognitiveTask / assessment，stale 只看 sourceHash。
+  /** 生成批次 slug（输出文件名去掉 .json，如 `topics-a1b2`），用于追溯到某次生成任务。 */
+  batch: z.string().min(1).optional(),
+  /** 生成模型/provider（`providerId/model`，如 `deepseek/deepseek-chat`），用于审计模型间质量差异。 */
+  model: z.string().min(1).optional(),
+  /** 变体自身内容的指纹（题干 + 选项，与 sourceHash 的「canonical 指纹」方向相反）。 */
+  contentHash: z.string().min(1).optional(),
+  /**
+   * 生成时刻 canonical 入指纹字段的快照（见 VariantSource）。
+   * 用途：stale 归因——canonical 变化时可逐字段 diff，区分「仅 metadata 变化
+   * （重算 hash 即可，不调 LLM）」与「题面/选项变化（需重新生成）」。
+   * 存量变体没有该字段，走 legacy 判定（见 refresh-variant-hash.ts）。
+   */
+  sourceSnapshot: z
+    .object({
+      id: z.string(),
+      topic: z.string(),
+      subtopic: z.string().optional(),
+      angle: z.string(),
+      difficulty: z.string(),
+      cognitiveTask: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+      question: z.string(),
+      options: z.array(z.string()).optional(),
+    })
+    .optional(),
 })
   // 两类变体的硬边界（P1-1 方案 A）：runtime = Presentation Variant，**不允许**声明测量面。
   // 只靠「GeneratedVariant 类型上没有这些字段」来约束是不够的——一旦有人把池条目
@@ -204,5 +232,25 @@ export function computeVariantSourceHash(source: VariantSource): string {
     hash = Math.imul(hash, 0x01000193);
   }
   hash >>>= 0; // 转无符号
+  return `fnv1a-${hash.toString(16).padStart(8, '0')}`;
+}
+
+/**
+ * 变体自身内容的指纹（题干 + 选项，规范化后 FNV-1a）。
+ * 与 `computeVariantSourceHash`（canonical 指纹）方向相反：后者回答「原题变了没」，
+ * 本函数回答「这条变体写的是什么」。存入 `contentHash`，供审计与去重交叉验证。
+ */
+export function computeVariantContentHash(question: string, options?: string[]): string {
+  const normalized = {
+    question: (question ?? '').trim(),
+    options: (options ?? []).map((o) => o.trim()).filter((o) => o.length > 0),
+  };
+  const input = JSON.stringify(normalized);
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  hash >>>= 0;
   return `fnv1a-${hash.toString(16).padStart(8, '0')}`;
 }

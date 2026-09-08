@@ -2,13 +2,13 @@
 
 **会记住你的训练表现，并根据薄弱项动态调整下一次训练的 AI 面试教练。**
 
-Vite + React 19 + TypeScript + Ant Design 单页应用（训练 / 进度 / 面试 / 设置，外加常驻的面试 Copilot 侧栏）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为面试（Chat Copilot 与独立面试页）的统一决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
+Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 / 进度 / 面试 / Agent 面试 / 设置，外加常驻的面试 Copilot 侧栏）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为面试（Chat Copilot 与独立面试页）的统一决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
 
 ## 功能
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/`，按 topic/批次拆分 81 个文件、1354 题；另有 `src/data/variants/` 8 个变体池文件、100 条离线变体；6 大能力域为 taxonomy 逻辑分组），其中大多数题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
+- 题库驱动（`src/data/questions/`，按 topic/批次拆分 82 个文件、1357 题；另有 `src/data/variants/` 9 个变体池文件、102 条离线变体；6 大能力域为 taxonomy 逻辑分组），其中大部分题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（对话式追问训练）：进入 interview 模式后复用与独立面试页**同一套** `pi-agent-core` 运行时（`createInterviewAgent`）——统一选题 / 评分 / 收尾逻辑，不再维护独立的简化版 Agent 面试；未配置 AI 也能开始，选择题照常确定性判分

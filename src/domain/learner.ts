@@ -23,7 +23,7 @@ const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/�
 // 不会把低分题目变成高熟练度；单题一次满分也不会直接得到 100%。
 // 不引入 Bayesian/ELO/IRT；升级评分模型的前提是现有信号被证明不够用。
 
-/** 薄弱判定阈值：掌握度 <0.85 且均分 <85 视为未掌握（learner 内单一出处）。 */
+/** 薄弱判定阈值：均分 < WEAK_AVG（75）视为未掌握（learner 内单一出处，勿在别处写死数字）。 */
 export const WEAK_MASTERY = 0.75;
 export const WEAK_AVG = 75;
 export const RECENT_TOPIC_COOLDOWN_SESSIONS = 1;

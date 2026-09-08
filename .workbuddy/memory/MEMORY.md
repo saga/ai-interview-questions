@@ -36,3 +36,19 @@
 - `validateVariant` 门禁坑：① 题干禁含「下文」子串（会误伤「上下文」），纯中文题干需改写避开；② 选项漂移用 fuzzball `token_set_ratio`，而 fuzzball 按空白分词——含英文词（diff/Skill/Proposer/fingerprint/canary）的选项改写易过，纯中文选项一改就当单 token 判 `<45` 漂移，只能保留 canonical 原选项；③ length bias 用 `detectOptionLengthBias`（正确项=全局最长且最短=干扰项且差距≥1.8×，或均值比≥1.8×）。
 - 单题两变体（surface-options / context-options）若共用同一套选项改写，互相~90%相似，按生成管线≥88去重会塌成1条/题；要2条真不同需对选项也差异化改写（但纯中文选项受②限制）。
 - 现状：仅 `wiki-skill-evolution-2026-08.wb-llm-20260902.json` 一个 topic 有变体（21题/42变体，0 stale）。扩 topic + 提升选项多样性是下一阶段。⑨ 已于 2026-09-03 据实标记完成。
+
+## 文档与代码一致性（2026-09-08）
+- **文档里不要写死数字**（题数 / 文件数 / 节点数 / 角度数 / 阈值 / 依赖版本号）。
+  `docs/ARCHITECTURE.md` 与 `README.md` 曾大面积过期（77 文件/1317 题 vs 实际 82/1357；
+  「10 角度」vs 实际 19；薄弱阈值 0.85/85 vs 常量 0.75/75；`zod@4.4.3` vs 4.5.4）。
+  写法约定：只写**常量名**（如 `WEAK_AVG`）或 CLI 口径，必要时加「勿写死数字，以 X 为准」。
+- **`ARCHITECTURE.md` 的目录树是失修重灾区**（典型症状：正文引用了某模块，树里却没有）。
+  新增 `src/**` 下的模块时顺手补树。已补：adaptive / bias / options / variantPool /
+  variantDiversity / reasoningPath / textSimilarity / cognitiveTaskInference / languageSanity /
+  chromeAgent / variantChallenger / sessionState / useIsMobile / AgentInterviewPage /
+  CopilotSidebar / SessionReplayDrawer。
+- **函数归属别凭直觉写**：`expandWithPrerequisites` / `isMastered` / `isAttempted` / `WEAK_*`
+  在 `domain/learner.ts`，**不在** `conceptGraph.ts`（后者只回答"知识之间是什么关系"，
+  不持有学习状态）。
+- **边界规则现状**：`domain` 对 `schemas` 为 **type-only**；仅 `learner.ts`（proficiencyConfigSchema）
+  与 `variantPool.ts`（computeVariantSourceHash / variantSourceOf）两处历史值依赖，属例外非范例。

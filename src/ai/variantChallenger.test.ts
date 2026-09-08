@@ -93,7 +93,7 @@ describe('cheapVariantQualityFlags（确定性预检，无 LLM）', () => {
 });
 
 describe('parseVariantChallenge', () => {
-  it('五维全 pass → ok', () => {
+  it('全维度 pass → ok', () => {
     const raw = JSON.stringify({
       dimensions: VARIANT_CHALLENGE_DIMENSIONS.map((d) => ({ dimension: d, pass: true, note: 'ok' })),
       summary: '语义保持一致',
@@ -113,7 +113,21 @@ describe('parseVariantChallenge', () => {
     const r = parseVariantChallenge(raw);
     expect(r.ok).toBe(false);
     expect(r.failed).toEqual(['answer-preserved']);
-    expect(r.score).toBeCloseTo(4 / 5);
+    expect(r.score).toBeCloseTo((VARIANT_CHALLENGE_DIMENSIONS.length - 1) / VARIANT_CHALLENGE_DIMENSIONS.length);
+  });
+
+  it('缺维度按 fail 计（旧 prompt / 截断输出不拿高分）', () => {
+    const raw = JSON.stringify({
+      dimensions: VARIANT_CHALLENGE_DIMENSIONS.filter((d) => d !== 'assessment-identity').map((d) => ({
+        dimension: d,
+        pass: true,
+        note: 'ok',
+      })),
+      summary: '少答一维',
+    });
+    const r = parseVariantChallenge(raw);
+    expect(r.ok).toBe(false);
+    expect(r.failed).toContain('assessment-identity');
   });
 
   it('输出不可解析 → 按不合格处理，不静默放行', () => {
@@ -135,8 +149,10 @@ describe('buildVariantChallengeUser', () => {
     expect(variantPart).not.toContain('←原题');
   });
 
-  it('注入解析，供模型判断语义是否漂移', () => {
+  it('注入解析与测量面，供模型判断语义与 assessment-identity 是否漂移', () => {
     expect(prompt).toContain(canonical.explanation);
+    expect(prompt).toContain('测量面');
+    expect(prompt).toContain('测量意图');
   });
 });
 
