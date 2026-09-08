@@ -1,0 +1,905 @@
+{
+  "version": 1,
+  "generatedAt": 1788864916058,
+  "promptVersion": "v4",
+  "variants": {
+    "graph-recall-latency-decoupling-tradeoff": [
+      {
+        "id": "graph-recall-latency-decoupling-tradeoff__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某图推荐要求 P95 15 毫秒、数千候选下召回。评审在线实时多跳聚合方案的前提，下列哪些判断正确？",
+        "options": [
+          "在线多跳聚合代价随跳数候选数乘性涨，15 毫秒预算下基本无解，应前移聚合",
+          "预计算 Embedding 写索引，线上只做向量检索；新鲜度受刷新周期绑住",
+          "三跳以内加裁剪，在线实时聚合稳达 15 毫秒 P95 延迟",
+          "全量图模型下发客户端本地推理，又省算力又不损召回"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在 P95 15 毫秒与数千候选的约束下判断在线聚合方案的前提是否成立",
+          "reasoningGoal": "先判断在线聚合的前提（代价与预算）是否满足；再逐项验证各主张；并排除「三跳即达标」「下发客户端」等不成立描述。"
+        },
+        "generatedAt": 1788864916053,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2a8284f7",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-ab29a287",
+        "sourceSnapshot": {
+          "id": "graph-recall-latency-decoupling-tradeoff",
+          "topic": "graph-recommender-system",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "PinSage",
+            "ANN-recall",
+            "P95-latency"
+          ],
+          "question": "某团队要为亿级 user-item 图上线图推荐，需要在召回延迟与表征质量之间做权衡。下列哪些说法是正确的？",
+          "options": [
+            "在线执行多跳 GNN 聚合的代价随跳数与候选数乘性增长，很难同时满足 P95 15 毫秒与数千候选的约束，应把聚合前移",
+            "把图计算与在线服务解耦为「预计算 Embedding 写入键值或 ANN 索引 + 线上向量检索」，可把在线延迟压到检索级别，代价是新鲜度受刷新周期限制",
+            "只要把 GNN 层数控制在三跳以内并对图做裁剪，在线实时聚合就能稳定达到 15 毫秒的 P95 延迟",
+            "可以把全量图与模型一起部署到客户端做本地推理，这样既省掉服务端算力，又不会损失向量召回的质量"
+          ]
+        }
+      },
+      {
+        "id": "graph-recall-latency-decoupling-tradeoff__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "某图推荐上线后 P95 延迟爆炸，复查发现每个候选都在现算多跳邻域。定位这次架构失误，下列哪些判断成立？",
+        "options": [
+          "多跳现算代价乘性放大，P95 15 毫秒约束下此路不通",
+          "应解耦为离线预计算加线上检索，用新鲜度换延迟",
+          "把层数压到三跳以内，在线聚合即可达标",
+          "把图和模型搬到客户端，服务端算力直接省掉"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 P95 延迟爆炸的故障定位在线聚合环节",
+          "reasoningGoal": "先定位故障的环节（聚合位置、新鲜度、部署方式三类）；再逐项验证各判断；并排除「压层数」「搬客户端」等不成立描述。"
+        },
+        "generatedAt": 1788864916053,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2a8284f7",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-e4b7867c",
+        "sourceSnapshot": {
+          "id": "graph-recall-latency-decoupling-tradeoff",
+          "topic": "graph-recommender-system",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "PinSage",
+            "ANN-recall",
+            "P95-latency"
+          ],
+          "question": "某团队要为亿级 user-item 图上线图推荐，需要在召回延迟与表征质量之间做权衡。下列哪些说法是正确的？",
+          "options": [
+            "在线执行多跳 GNN 聚合的代价随跳数与候选数乘性增长，很难同时满足 P95 15 毫秒与数千候选的约束，应把聚合前移",
+            "把图计算与在线服务解耦为「预计算 Embedding 写入键值或 ANN 索引 + 线上向量检索」，可把在线延迟压到检索级别，代价是新鲜度受刷新周期限制",
+            "只要把 GNN 层数控制在三跳以内并对图做裁剪，在线实时聚合就能稳定达到 15 毫秒的 P95 延迟",
+            "可以把全量图与模型一起部署到客户端做本地推理，这样既省掉服务端算力，又不会损失向量召回的质量"
+          ]
+        }
+      }
+    ],
+    "distill-01": [
+      {
+        "id": "distill-01__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "把教师软标签监督、硬标签监督与从头预训练放在监督信号上对比，根本差异是什么？",
+        "options": [
+          "大教师指导小学生，学生模仿教师输出分布",
+          "软化输出分布比硬标签携带更多类别间关系",
+          "学生必须比教师更大，否则学不全知识",
+          "蒸馏即从头预训练，只是换了数据源"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从监督信号对比三种训练路线的根本差异",
+          "reasoningGoal": "先对齐三种路线的可比维度；再逐项判定各主张成立与否；并排除「学生须更大」「蒸馏即预训练」等不成立描述。"
+        },
+        "generatedAt": 1788864916054,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7b30a29b",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-0470ba82",
+        "sourceSnapshot": {
+          "id": "distill-01",
+          "topic": "distillation",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "knowledge-distillation",
+            "teacher-student",
+            "definition"
+          ],
+          "question": "知识蒸馏（knowledge distillation）中『教师-学生』框架指什么？下列哪些描述正确？",
+          "options": [
+            "用已训练好的大模型（教师）指导更小的模型（学生），学生模仿教师的输出分布",
+            "相比只用硬标签，教师提供的软化输出分布（soft targets）含更多类别间关系信息",
+            "蒸馏要求学生模型比教师更大，才能学全教师的全部知识",
+            "蒸馏与从头预训练完全相同，只是所用的数据来源并不相同"
+          ]
+        }
+      },
+      {
+        "id": "distill-01__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "要在端侧跑小模型，又想逼近大模型效果。设计训练路线，下列哪些应当纳入？",
+        "options": [
+          "用训好的大模型当教师，指导小学生模仿输出分布",
+          "教师软标签比硬标签多带类别间关系，更值得学",
+          "学生规模必须超过教师才能装下全部知识",
+          "直接从头预训练即可，数据源换一下就行"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为端侧小模型逼近大模型设计训练路线",
+          "reasoningGoal": "先拆出路线设计的目标与约束（体积与效果）；再逐项确认各设计；并排除「学生更大」「从头预训练」等不成立描述。"
+        },
+        "generatedAt": 1788864916054,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7b30a29b",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-9888611f",
+        "sourceSnapshot": {
+          "id": "distill-01",
+          "topic": "distillation",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "knowledge-distillation",
+            "teacher-student",
+            "definition"
+          ],
+          "question": "知识蒸馏（knowledge distillation）中『教师-学生』框架指什么？下列哪些描述正确？",
+          "options": [
+            "用已训练好的大模型（教师）指导更小的模型（学生），学生模仿教师的输出分布",
+            "相比只用硬标签，教师提供的软化输出分布（soft targets）含更多类别间关系信息",
+            "蒸馏要求学生模型比教师更大，才能学全教师的全部知识",
+            "蒸馏与从头预训练完全相同，只是所用的数据来源并不相同"
+          ]
+        }
+      }
+    ],
+    "flashattn-01": [
+      {
+        "id": "flashattn-01__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "把精确 IO 感知、近似稀疏低秩与反向专用放在输出等价性上对比，根本差异是什么？",
+        "options": [
+          "IO 感知的精确注意力，输出与标准注意力完全相同",
+          "从不把完整 N×N 矩阵物化到 HBM，前反向都分块算",
+          "本质是近似注意力，靠稀疏低秩换速度，输出只是近似",
+          "只在反向用，前向仍依赖标准注意力矩阵"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从输出等价性对比三种注意力路线的根本差异",
+          "reasoningGoal": "先对齐三种路线的可比维度；再逐项判定各主张成立与否；并排除「近似换速」「反向专用」等不成立描述。"
+        },
+        "generatedAt": 1788864916054,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-df427d25",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-8025d4a1",
+        "sourceSnapshot": {
+          "id": "flashattn-01",
+          "topic": "flash-attention",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "flash-attention",
+            "io-aware",
+            "exact-attention",
+            "definition"
+          ],
+          "question": "FlashAttention 是什么类型的注意力算法？下列哪些描述正确？",
+          "options": [
+            "它是 IO 感知的精确注意力算法，输出与标准注意力完全相同",
+            "它从不把完整的 N×N 注意力矩阵物化到 HBM 显存",
+            "它是一种近似注意力，通过稀疏化或低秩来换取速度，因此输出只是近似",
+            "它只在反向传播中使用，前向传播仍依赖标准注意力矩阵"
+          ]
+        }
+      },
+      {
+        "id": "flashattn-01__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "某团队接入号称 FlashAttention 的库后输出漂移，排查发现是近似实现。定位这次选型失误，下列哪些判断成立？",
+        "options": [
+          "真品是 IO 感知精确算法，输出与标准注意力无差",
+          "真品不物化 N×N 矩阵，前反向全走分块",
+          "它是一种近似注意力，通过稀疏化或低秩换速度，因此输出只是近似",
+          "它只在反向传播中使用，前向仍依赖标准注意力矩阵"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从输出漂移的故障定位近似实现环节",
+          "reasoningGoal": "先缩小故障范围（等价性、物化、前反向三类）；再逐项验证各判断；并排除「漂移必然」「前向无妨」等不成立描述。"
+        },
+        "generatedAt": 1788864916054,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-df427d25",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-fdb55ac3",
+        "sourceSnapshot": {
+          "id": "flashattn-01",
+          "topic": "flash-attention",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "flash-attention",
+            "io-aware",
+            "exact-attention",
+            "definition"
+          ],
+          "question": "FlashAttention 是什么类型的注意力算法？下列哪些描述正确？",
+          "options": [
+            "它是 IO 感知的精确注意力算法，输出与标准注意力完全相同",
+            "它从不把完整的 N×N 注意力矩阵物化到 HBM 显存",
+            "它是一种近似注意力，通过稀疏化或低秩来换取速度，因此输出只是近似",
+            "它只在反向传播中使用，前向传播仍依赖标准注意力矩阵"
+          ]
+        }
+      }
+    ],
+    "specdec-01": [
+      {
+        "id": "specdec-01__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某验证实现从首个不匹配处之后继续沿用候选，结果分布偏移。定位这次实现错误，下列哪些判断成立？",
+        "options": [
+          "候选应一次性送目标模型前向，逐位比对 logits",
+          "首个不匹配之后全作废，只留匹配前缀加分歧 token",
+          "任一 token 不一致就整条丢弃重造",
+          "验证须微调目标权重适配草稿，分布偏移难免"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从不匹配后沿用候选的错误定位因果约束环节",
+          "reasoningGoal": "先定位错误的环节（验证方式、作废规则、权重三类）；再逐项验证各判断；并排除「整条丢弃」「微调适配」等不成立描述。"
+        },
+        "generatedAt": 1788864916054,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8975740f",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-6126bb6b",
+        "sourceSnapshot": {
+          "id": "specdec-01",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "assisted-generation",
+            "lossless",
+            "verification"
+          ],
+          "question": "投机解码（Hugging Face 称为 assisted generation）如何在不改变目标模型输出分布的前提下，验证草稿模型提出的若干候选 token？",
+          "options": [
+            "把候选序列一次性送入目标模型做前向传播，得到各位置 logits，再逐位比对",
+            "从首个不匹配位置起其后候选全部作废，只保留匹配前缀加首个分歧 token",
+            "只要候选中有任一 token 不一致，就丢弃整条候选序列重新生成",
+            "验证会微调目标模型权重以适配草稿模型，因此分布会略有偏移"
+          ]
+        }
+      },
+      {
+        "id": "specdec-01__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "把保留前缀、分歧修正与整条丢弃、微调权重放在分布无损性上对比，根本差异是什么？",
+        "options": [
+          "整条候选一次前向出 logits，再逐位比对",
+          "首个分歧之后作废，保留前缀加分歧 token",
+          "候选中任一 token 不一致就整条丢弃，重新生成最保险",
+          "微调目标权重去适配草稿，偏移可以接受"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从分布无损性对比四种验证策略的根本差异",
+          "reasoningGoal": "先对齐四种策略的可比维度；再逐项判定各主张成立与否；并排除「全扔重来」「微调可接受」等不成立描述。"
+        },
+        "generatedAt": 1788864916055,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8975740f",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-f94211c0",
+        "sourceSnapshot": {
+          "id": "specdec-01",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "assisted-generation",
+            "lossless",
+            "verification"
+          ],
+          "question": "投机解码（Hugging Face 称为 assisted generation）如何在不改变目标模型输出分布的前提下，验证草稿模型提出的若干候选 token？",
+          "options": [
+            "把候选序列一次性送入目标模型做前向传播，得到各位置 logits，再逐位比对",
+            "从首个不匹配位置起其后候选全部作废，只保留匹配前缀加首个分歧 token",
+            "只要候选中有任一 token 不一致，就丢弃整条候选序列重新生成",
+            "验证会微调目标模型权重以适配草稿模型，因此分布会略有偏移"
+          ]
+        }
+      }
+    ],
+    "moe-mixtral-01": [
+      {
+        "id": "moe-mixtral-01__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某部署显存只够每 token 激活 2 个专家，团队想靠加专家总数提效果。评审这一思路的前提，下列哪些判断正确？",
+        "options": [
+          "多个专家 FFN 替换部分前馈层，加路由器为每 token 选专家",
+          "每 token 只激活少数专家，没选中的不参与计算",
+          "MoE 替换掉所有前馈层，总参数等于专家数乘单个专家",
+          "单 token 算量随专家总数线性涨，与激活数无关"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在显存只够激活 2 个专家的约束下判断加总数思路的前提是否成立",
+          "reasoningGoal": "先判断该思路的前提（算量与激活数的关系）是否成立；再逐项验证各主张；并排除「替换全部」「随总数涨」等不成立描述。"
+        },
+        "generatedAt": 1788864916055,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0c80f06f",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-c89845cc",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-01",
+          "topic": "moe",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "moe",
+            "mixture-of-experts",
+            "sparse-moe",
+            "router"
+          ],
+          "question": "在 Transformer 中引入稀疏 MoE（Mixture of Experts）层时，关于其结构与工作方式，下列哪些描述是正确的？",
+          "options": [
+            "用多个专家前馈子层替换原有的部分前馈层，并增加路由器来为每个 token 选择专家",
+            "每个 token 在每层只被路由到少数几个专家，未被选中的专家不参与该 token 的计算",
+            "MoE 会替换掉所有前馈层，因此总参数量一定等于专家数乘以单个专家参数量",
+            "引入 MoE 后，单 token 计算量随专家总数线性增长，与激活专家数无关"
+          ]
+        }
+      },
+      {
+        "id": "moe-mixtral-01__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "把部分替换加路由、全量替换与按总数算量放在参数与算量关系上对比，根本差异是什么？",
+        "options": [
+          "部分 FFN 换成专家 FFN，加路由器做 token 级分诊",
+          "激活的才算量，没选中的专家只占参数不占算量",
+          "全换才算 MoE，总参数即专家数乘单专家",
+          "单 token 算量看专家总数，激活几个不影响"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从参数与算量关系对比三种 MoE 理解的根本差异",
+          "reasoningGoal": "先对齐三种理解的可比维度；再逐项判定各主张成立与否；并排除「全换才算」「看总数」等不成立描述。"
+        },
+        "generatedAt": 1788864916055,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0c80f06f",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-08f0e56a",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-01",
+          "topic": "moe",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "moe",
+            "mixture-of-experts",
+            "sparse-moe",
+            "router"
+          ],
+          "question": "在 Transformer 中引入稀疏 MoE（Mixture of Experts）层时，关于其结构与工作方式，下列哪些描述是正确的？",
+          "options": [
+            "用多个专家前馈子层替换原有的部分前馈层，并增加路由器来为每个 token 选择专家",
+            "每个 token 在每层只被路由到少数几个专家，未被选中的专家不参与该 token 的计算",
+            "MoE 会替换掉所有前馈层，因此总参数量一定等于专家数乘以单个专家参数量",
+            "引入 MoE 后，单 token 计算量随专家总数线性增长，与激活专家数无关"
+          ]
+        }
+      }
+    ],
+    "quant-qah-01": [
+      {
+        "id": "quant-qah-01__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "把压缩量化加修复、从头重训与先量化后压缩放在顺序与代价上对比，根本差异是什么？",
+        "options": [
+          "先砍结构减参，再量化到 4-bit，后续修复接上",
+          "压缩量化系统性掉能力，部署前必须有修复步骤",
+          "修复就是从头预训练一遍，精度自然回来",
+          "量化必须排在压缩前面，否则 4-bit 不可用"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从顺序与代价对比三种部署路线的根本差异",
+          "reasoningGoal": "先对齐三种路线的可比维度；再逐项判定各主张成立与否；并排除「从头重训」「先量化」等不成立描述。"
+        },
+        "generatedAt": 1788864916056,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6ad64a98",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-4fa9c9cd",
+        "sourceSnapshot": {
+          "id": "quant-qah-01",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "quantization",
+            "structural-compression",
+            "healing-pipeline",
+            "mxfp4"
+          ],
+          "question": "工业界部署大模型时常采用『结构压缩 → 量化 → 修复（healing）』流水线。关于这一步步，下列哪些描述正确？",
+          "options": [
+            "先移除 layer/head/neuron 等结构削减参数量，再把剩余权重量化到 4-bit（如 MXFP4）",
+            "压缩与量化会系统性降低推理、数学、代码等能力，部署前需修复步骤恢复",
+            "修复（healing）指的是把模型重新从头预训练一遍来恢复精度",
+            "量化必须在结构压缩之前完成，否则无法得到可用的 4-bit 权重"
+          ]
+        }
+      },
+      {
+        "id": "quant-qah-01__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "某模型压缩量化后跳过修复直接部署，推理数学代码能力全崩。定位这次跳过，下列哪些判断成立？",
+        "options": [
+          "先砍结构减参，再量化到 4-bit，后续修复接上",
+          "能力掉是系统性的，不修复就部署等于带病上线",
+          "修复无非是把模型重训一遍，跳过修复省时间也合理",
+          "量化必须在结构压缩之前完成，否则 4-bit 权重不可用"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从跳过修复后能力崩的故障定位流水线缺口",
+          "reasoningGoal": "先定位故障缺失的环节（顺序、修复两类）；再逐项验证各判断；并排除「重训一遍」「顺序反了」等不成立描述。"
+        },
+        "generatedAt": 1788864916056,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6ad64a98",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-61c6efec",
+        "sourceSnapshot": {
+          "id": "quant-qah-01",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "quantization",
+            "structural-compression",
+            "healing-pipeline",
+            "mxfp4"
+          ],
+          "question": "工业界部署大模型时常采用『结构压缩 → 量化 → 修复（healing）』流水线。关于这一步步，下列哪些描述正确？",
+          "options": [
+            "先移除 layer/head/neuron 等结构削减参数量，再把剩余权重量化到 4-bit（如 MXFP4）",
+            "压缩与量化会系统性降低推理、数学、代码等能力，部署前需修复步骤恢复",
+            "修复（healing）指的是把模型重新从头预训练一遍来恢复精度",
+            "量化必须在结构压缩之前完成，否则无法得到可用的 4-bit 权重"
+          ]
+        }
+      }
+    ],
+    "vectordb-03": [
+      {
+        "id": "vectordb-03__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某全库文档量巨大、召回只要前二十，团队要为全库建完整多向量索引。评审这一投入的前提，下列哪些判断正确？",
+        "options": [
+          "先用便宜单向量 bi-encoder 全库召回 top-k",
+          "k 个候选再用多向量 MaxSim 重排，更精细",
+          "多向量必须先建全库完整索引，否则无法工作",
+          "重排须把查询与全部文档联合送交叉编码器"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在全库巨大且 top-k 极小下判断建全库索引投入的前提是否成立",
+          "reasoningGoal": "先判断该投入的前提（多向量是否须全库索引）是否成立；再逐项验证各主张；并排除「全库索引」「联合编码」等不成立描述。"
+        },
+        "generatedAt": 1788864916056,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-08f41551",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-ee861dbc",
+        "sourceSnapshot": {
+          "id": "vectordb-03",
+          "topic": "vector-db",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "rerank-pattern",
+            "bi-encoder",
+            "two-stage-retrieval"
+          ],
+          "question": "在『bi-encoder 召回 + 多向量重排』这一常见检索模式中，多向量 LateOn 扮演什么角色？",
+          "options": [
+            "先用便宜的单向量 bi-encoder 从全库召回 top-k 候选",
+            "再对这 k 个候选用多向量 MaxSim 重排，获得更精细的排序",
+            "多向量需要为全库维护完整索引，否则无法工作",
+            "重排阶段要把查询与全部文档再次联合编码进交叉编码器"
+          ]
+        }
+      },
+      {
+        "id": "vectordb-03__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "某重排把查询与全部文档送交叉编码器联合编码，延迟爆炸。定位这次实现错误，下列哪些判断成立？",
+        "options": [
+          "召回与重排应分层：便宜单向量先全库召回 top-k",
+          "多向量只给 k 个候选重排，用 MaxSim 更精细",
+          "多向量没全库索引就转不起来，先建索引再说",
+          "重排须把查询与全部文档联合送交叉编码器，精度才最高"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从联合编码延迟爆炸的错误定位分层缺失环节",
+          "reasoningGoal": "先定位错误的环节（分层、编码范围两类）；再逐项验证各判断；并排除「先建索引」「全库联合」等不成立描述。"
+        },
+        "generatedAt": 1788864916056,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-08f41551",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-8cb8bfe8",
+        "sourceSnapshot": {
+          "id": "vectordb-03",
+          "topic": "vector-db",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "rerank-pattern",
+            "bi-encoder",
+            "two-stage-retrieval"
+          ],
+          "question": "在『bi-encoder 召回 + 多向量重排』这一常见检索模式中，多向量 LateOn 扮演什么角色？",
+          "options": [
+            "先用便宜的单向量 bi-encoder 从全库召回 top-k 候选",
+            "再对这 k 个候选用多向量 MaxSim 重排，获得更精细的排序",
+            "多向量需要为全库维护完整索引，否则无法工作",
+            "重排阶段要把查询与全部文档再次联合编码进交叉编码器"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-001": [
+      {
+        "id": "hitl-2026-001__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某 Agent 所有操作进审批队列，审批员疲劳后开始无脑通过，还压垮吞吐。复盘这次一刀切，缺的是什么？",
+        "options": [
+          "缺风险分级：只读自动放，改数中风险，退款删除高风险才审",
+          "缺的是决心：三类操作统一强确认，零风险才有零遗漏",
+          "缺可逆性阈值：只有不可逆高影响才进队列，余下自动放行",
+          "缺动态阈值：按风险与可逆性设线，超线才审并可调"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从审批疲劳与吞吐崩的故障反推缺失的分级设计",
+          "reasoningGoal": "先定位故障缺失的环节（分级、阈值两类）；再逐项验证各判断；并排除「统一强确认」等不成立描述。"
+        },
+        "generatedAt": 1788864916057,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4d8d5674",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-7ea8f754",
+        "sourceSnapshot": {
+          "id": "hitl-2026-001",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "risk-tiering",
+            "approval",
+            "agent-safety"
+          ],
+          "question": "一个 Agent 可以自动执行查询、修改数据和发起退款三类操作。你会如何设计 Human-in-the-loop（HITL）策略，使高风险操作需要人工审批，同时避免所有操作都进入审批队列？",
+          "options": [
+            "按风险分级：查询读取自动执行，修改数据中风险，退款删除为高风险需审批",
+            "对三类操作统一强制每次人工确认以追求绝对零风险、不留任何遗漏",
+            "仅对退款等不可逆高影响操作设人工审批，查询与常规修改默认自动放行",
+            "依风险等级与可逆性设阈值，超阈值才进入审批队列并支持分级动态调整"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-001__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "把风险分级阈值与统一强制确认放在安全与吞吐上对比，所有操作都走同一套标准有何根本差异？",
+        "options": [
+          "分级按操作风险定：查询放行、修改中风险、退款删除必审",
+          "统一确认最安全：三类操作每次必审，遗漏为零",
+          "不可逆高影响才进审批，其余默认自动放行",
+          "阈值按风险与可逆性划线，超线进队列并可动态调"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从安全与吞吐对比两种审批策略的根本差异",
+          "reasoningGoal": "先对齐两种策略的可比维度；再逐项判定各主张成立与否；并排除「统一最安全」等不成立描述。"
+        },
+        "generatedAt": 1788864916057,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4d8d5674",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-549d0370",
+        "sourceSnapshot": {
+          "id": "hitl-2026-001",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "risk-tiering",
+            "approval",
+            "agent-safety"
+          ],
+          "question": "一个 Agent 可以自动执行查询、修改数据和发起退款三类操作。你会如何设计 Human-in-the-loop（HITL）策略，使高风险操作需要人工审批，同时避免所有操作都进入审批队列？",
+          "options": [
+            "按风险分级：查询读取自动执行，修改数据中风险，退款删除为高风险需审批",
+            "对三类操作统一强制每次人工确认以追求绝对零风险、不留任何遗漏",
+            "仅对退款等不可逆高影响操作设人工审批，查询与常规修改默认自动放行",
+            "依风险等级与可逆性设阈值，超阈值才进入审批队列并支持分级动态调整"
+          ]
+        }
+      }
+    ],
+    "ai-eng-022": [
+      {
+        "id": "ai-eng-022__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某 Agent 从 18 秒优化到 17.5 秒后寸步难行：带宽加过，模型换过，串行结构没动。定位这次瓶颈误判，下列哪些判断成立？",
+        "options": [
+          "缺分阶段 trace：先量化串并行，再排优化顺序",
+          "缺结构重构：合并调用、并行独立步骤、缩 context、设 timeout",
+          "缺的是带宽：扩容配额与网络，串行吸着也无妨",
+          "缺的是模型：全换极速小模型，提速线性传导端到端",
+          "缺的是隔离：检索工具全串在 LLM 后，避免资源竞争"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从优化停滞的瓶颈误判定位串行结构环节",
+          "reasoningGoal": "先定位误判的环节（ trace、结构两类）；再逐项验证各判断；并排除「加带宽」「换模型」「全串行」等不成立描述。"
+        },
+        "generatedAt": 1788864916057,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-881fe8f6",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-84b27e23",
+        "sourceSnapshot": {
+          "id": "ai-eng-022",
+          "topic": "latency",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "latency",
+            "agent",
+            "production",
+            "debugging"
+          ],
+          "question": "一个 Agent 请求平均需要 18 秒。一次请求包含 3 次 LLM 调用、2 次 retrieval 和 2 次 tool call。你会如何分析和优化 latency？",
+          "options": [
+            "先建分阶段 latency trace，量化各阶段耗时并区分串行与并行，再定优化顺序。",
+            "合并可省的 LLM 调用，并行独立检索与工具调用，压缩 context 并设合理 timeout。",
+            "优先扩容模型配额与网络带宽，调用结构保持串行不变，靠基础设施吸收耗时。",
+            "把三次调用全换为极速小模型，指望单次提速线性传导到端到端，不重构串行结构。",
+            "把检索与工具调用全部串行排在 LLM 调用之后，避免并发资源竞争带来额外等待。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-022__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "预算不变、目标从 18 秒压到 8 秒内，三次串行调用加两次检索两次查询。判断优化方案的前提，下列哪些说法正确？",
+        "options": [
+          "先建分阶段 trace，量化耗时并区分串并行",
+          "合并调用并行独立步骤，缩 context 设 timeout",
+          "优先扩容模型配额与网络带宽，调用结构保持串行，靠基础设施吸收耗时",
+          "三次全换小模型，单次提速线性传导端到端",
+          "检索工具排 LLM 之后串行，避免并发竞争"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在预算不变与 8 秒目标下判断优化方案的前提是否成立",
+          "reasoningGoal": "先判断方案的前提（结构瓶颈是否已识别）是否满足；再逐项验证各主张；并排除「堆资源」「换模型」「全串行」等不成立描述。"
+        },
+        "generatedAt": 1788864916057,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-881fe8f6",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-4b570c5d",
+        "sourceSnapshot": {
+          "id": "ai-eng-022",
+          "topic": "latency",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "latency",
+            "agent",
+            "production",
+            "debugging"
+          ],
+          "question": "一个 Agent 请求平均需要 18 秒。一次请求包含 3 次 LLM 调用、2 次 retrieval 和 2 次 tool call。你会如何分析和优化 latency？",
+          "options": [
+            "先建分阶段 latency trace，量化各阶段耗时并区分串行与并行，再定优化顺序。",
+            "合并可省的 LLM 调用，并行独立检索与工具调用，压缩 context 并设合理 timeout。",
+            "优先扩容模型配额与网络带宽，调用结构保持串行不变，靠基础设施吸收耗时。",
+            "把三次调用全换为极速小模型，指望单次提速线性传导到端到端，不重构串行结构。",
+            "把检索与工具调用全部串行排在 LLM 调用之后，避免并发资源竞争带来额外等待。"
+          ]
+        }
+      }
+    ],
+    "ai-ops-002": [
+      {
+        "id": "ai-ops-002__surface-options__assessmentfresh3__0",
+        "kind": "surface-options",
+        "question": "某语义缓存把 2023 年收入答成 2024 年收入，用户投诉。定位这次误命中，下列哪些判断成立？",
+        "options": [
+          "精确匹配天然无误，语义缓存阈值拉满即可兼得",
+          "0.99 阈值一劳永逸，正确率命中率双保",
+          "相似不等于可复用：年份两问相似但答案迥异，阈值须实测",
+          "限事实无状态查询启用，分区缓存加标记，时效内容设 TTL",
+          "历史拼进 query 即可消除上下文影响，开放对话同样适用"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从年份答错的误命中定位语义缓存的风险环节",
+          "reasoningGoal": "先定位误命中的环节（阈值、边界两类）；再逐项验证各判断；并排除「拉满兼得」「一劳永逸」「拼接消除」等不成立描述。"
+        },
+        "generatedAt": 1788864916058,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b08a50e",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-0d6ec4a1",
+        "sourceSnapshot": {
+          "id": "ai-ops-002",
+          "topic": "caching",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "semantic-cache",
+            "embeddings",
+            "llmops"
+          ],
+          "question": "“What is ESG?” 和 “Can you explain ESG?” 语义相似但字符串不同。如何设计 Semantic Cache？它有什么风险？",
+          "options": [
+            "字符串精确匹配的缓存天然无误命中；语义缓存只需把阈值设到与精确匹配等价的高位即可兼得。",
+            "阈值设 0.99 可同时保证正确率与命中率，一次调参永久生效，无需按业务重校。",
+            "最大风险是相似不等于可复用：年份不同的两问高度相似但答案迥异，阈值须按业务容忍度实测。",
+            "应限于事实型、无状态、答案稳定的查询启用，按意图或领域分区缓存，命中附加来源标记，并对时效敏感内容设置 TTL 兜底。",
+            "对话历史的影响可通过把历史摘要拼进 query 来消除，拼后即可复用；开放对话同样适用语义缓存。"
+          ]
+        }
+      },
+      {
+        "id": "ai-ops-002__context-options__assessmentfresh3__1",
+        "kind": "context-options",
+        "question": "把精确匹配、0.99 一刀切与分区校准加过期兜底放在误命中风险上对比，根本差异是什么？",
+        "options": [
+          "精确匹配无误命中，语义缓存阈值设高即等价",
+          "阈值 0.99 永久生效，无需按业务重校",
+          "相似未必可复用，阈值须按业务容忍度实测校准",
+          "事实无状态查询才启用，分区加标记，时效设 TTL",
+          "拼历史摘要进 query，开放对话也能放心用"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从误命中风险对比三种缓存策略的根本差异",
+          "reasoningGoal": "先对齐三种策略的可比维度；再逐项判定各主张成立与否；并排除「设高即等价」「永久生效」「拼接放心」等不成立描述。"
+        },
+        "generatedAt": 1788864916058,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b08a50e",
+        "batch": "assessmentfresh3",
+        "model": "manual",
+        "contentHash": "fnv1a-038268ed",
+        "sourceSnapshot": {
+          "id": "ai-ops-002",
+          "topic": "caching",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "semantic-cache",
+            "embeddings",
+            "llmops"
+          ],
+          "question": "“What is ESG?” 和 “Can you explain ESG?” 语义相似但字符串不同。如何设计 Semantic Cache？它有什么风险？",
+          "options": [
+            "字符串精确匹配的缓存天然无误命中；语义缓存只需把阈值设到与精确匹配等价的高位即可兼得。",
+            "阈值设 0.99 可同时保证正确率与命中率，一次调参永久生效，无需按业务重校。",
+            "最大风险是相似不等于可复用：年份不同的两问高度相似但答案迥异，阈值须按业务容忍度实测。",
+            "应限于事实型、无状态、答案稳定的查询启用，按意图或领域分区缓存，命中附加来源标记，并对时效敏感内容设置 TTL 兜底。",
+            "对话历史的影响可通过把历史摘要拼进 query 来消除，拼后即可复用；开放对话同样适用语义缓存。"
+          ]
+        }
+      }
+    ]
+  }
+}

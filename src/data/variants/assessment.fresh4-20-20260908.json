@@ -1,0 +1,929 @@
+{
+  "version": 1,
+  "generatedAt": 1788865422103,
+  "promptVersion": "v4",
+  "variants": {
+    "inference-vram-budget-calc-01": [
+      {
+        "id": "inference-vram-budget-calc-01__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某 16GB 卡上 32K 总开销约 15.6GB，团队还想叠第二路并发。评审这一计划的前提，下列哪些判断正确？",
+        "options": [
+          "32K 总开销 15.6GB 已逼近上限，余量不足 0.5GB，不宜再叠并发",
+          "KV 随上下文线性涨：每 token 约 0.1875 MiB，32K 约 6.4GB、64K 约 12.9GB",
+          "KV 只有 3.5GB，总开销 12.7GB 余量充裕，可放心扩到 64K",
+          "32K 扩 64K 只多 1.7GB，总 14.4GB 以内可正常跑"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在 16GB 上 32K 开销 15.6GB 的约束下判断叠并发计划的前提是否成立",
+          "reasoningGoal": "先判断该计划的前提（余量与线性增长）是否满足；再逐项验证各主张；并排除「余量充裕」「只多 1.7GB」等不成立描述。"
+        },
+        "generatedAt": 1788865422097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-605c4a70",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-7bf67cff",
+        "sourceSnapshot": {
+          "id": "inference-vram-budget-calc-01",
+          "topic": "inference-capacity",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "vram",
+            "budget",
+            "q4-km",
+            "num-ctx",
+            "oom",
+            "quantitative"
+          ],
+          "question": "某架构师计划在单张 16GB VRAM 的消费级 GPU 上部署 Qwen2.5-Coder-14B（48 层、8 个 KV 头、head_dim 128），采用 Q4_K_M 量化（约 0.55 Bytes/parameter）。若配置 num_ctx = 32768，KV Cache 以 FP16 存储（每元素 2 字节），推理引擎需预留 1.5GB 作为 CUDA Context 与临时 Workspace。关于显存预算评估，下列哪些判断是正确的？",
+          "options": [
+            "32K 上下文下总开销约 15.6GB（权重 7.7 + KV 6.4 + 运行时 1.5），已逼近 16GB 上限，余量不足 0.5GB，不宜再叠加并发",
+            "KV Cache 是唯一随上下文长度线性增长的分项：该模型每 token 约 0.1875 MiB，32K 约 6.4GB、64K 约 12.9GB",
+            "32K 上下文下 KV Cache 约 3.5GB，总开销约 12.7GB，在 16GB 卡上余量充裕，可放心把上下文扩到 64K",
+            "把上下文从 32K 扩到 64K 只会让总开销增加约 1.7GB（约 14.4GB），仍在 16GB 以内可正常运行"
+          ]
+        }
+      },
+      {
+        "id": "inference-vram-budget-calc-01__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "某团队在 16GB 卡上按 KV 3.5GB 估算把窗口扩到 64K，结果直接 OOM。定位这次估算失误，下列哪些判断成立？",
+        "options": [
+          "32K 下 15.6GB 已贴上限，余量连碎片加并发都 cover 不住",
+          "KV 是唯一线性项：0.1875 MiB 每 token，64K 直奔 12.9GB",
+          "32K 下 KV 约 3.5GB，总开销 12.7GB 余量充裕，可放心扩到 64K",
+          "32K 扩 64K 总开销只多 1.7GB，14.4GB 在 16GB 内可正常跑"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从按 3.5GB 估算扩 64K 后 OOM 的故障定位漏算环节",
+          "reasoningGoal": "先定位估算的环节（权重、KV、运行时三类）；再逐项验证各判断；并排除「3.5GB 靠谱」「只多 1.7GB」等不成立描述。"
+        },
+        "generatedAt": 1788865422097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-605c4a70",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-15d160c6",
+        "sourceSnapshot": {
+          "id": "inference-vram-budget-calc-01",
+          "topic": "inference-capacity",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "vram",
+            "budget",
+            "q4-km",
+            "num-ctx",
+            "oom",
+            "quantitative"
+          ],
+          "question": "某架构师计划在单张 16GB VRAM 的消费级 GPU 上部署 Qwen2.5-Coder-14B（48 层、8 个 KV 头、head_dim 128），采用 Q4_K_M 量化（约 0.55 Bytes/parameter）。若配置 num_ctx = 32768，KV Cache 以 FP16 存储（每元素 2 字节），推理引擎需预留 1.5GB 作为 CUDA Context 与临时 Workspace。关于显存预算评估，下列哪些判断是正确的？",
+          "options": [
+            "32K 上下文下总开销约 15.6GB（权重 7.7 + KV 6.4 + 运行时 1.5），已逼近 16GB 上限，余量不足 0.5GB，不宜再叠加并发",
+            "KV Cache 是唯一随上下文长度线性增长的分项：该模型每 token 约 0.1875 MiB，32K 约 6.4GB、64K 约 12.9GB",
+            "32K 上下文下 KV Cache 约 3.5GB，总开销约 12.7GB，在 16GB 卡上余量充裕，可放心把上下文扩到 64K",
+            "把上下文从 32K 扩到 64K 只会让总开销增加约 1.7GB（约 14.4GB），仍在 16GB 以内可正常运行"
+          ]
+        }
+      }
+    ],
+    "nla-arch-01": [
+      {
+        "id": "nla-arch-01__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某 NLA 的 AR 被允许直连原始特征，训出的解释文本越来越空洞。定位这次捷径，下列哪些判断成立？",
+        "options": [
+          "NLA 由 AV 生成解释、AR 从解释重构激活值，闭环路径无需监督对",
+          "AV 优化目标是提升重构相似度，须引入 RL 跨越离散文本生成的不可导",
+          "目标模型就该与 AV、AR 同步更新，防特征偏移",
+          "AR 只能读文本 e，不能碰其他原始特征向量"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从解释空洞的故障定位 AR 直连原始特征的捷径",
+          "reasoningGoal": "先定位故障的环节（闭环、优化、冻结、输入四类）；再逐项验证各判断；并排除「同步更新」等不成立描述。"
+        },
+        "generatedAt": 1788865422097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-50203009",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-9b06b74b",
+        "sourceSnapshot": {
+          "id": "nla-arch-01",
+          "topic": "interpretability",
+          "subtopic": "自然语言自编码器 (NLA) 架构机制",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "nla",
+            "autoencoder",
+            "activation",
+            "interpretability",
+            "self-reconstruction"
+          ],
+          "question": "自然语言自编码器（Natural Language Autoencoder, NLA）是一种用于大语言模型内部激活值（Activation）可解释性的分析框架。在缺乏“激活值-文本解释”监督对（Ground Truth）的情况下，关于 NLA 的系统架构设计与训练优化逻辑，下列哪些说法是正确的？（多选）",
+          "options": [
+            "NLA 包含激活值表达器（AV）与激活值重构器（AR），通过“原始激活值 → 文本解释 → 重构激活值”的闭环路径实现无监督自重构。",
+            "AV 的优化目标是提升文本解释在原始激活值空间中的重构相似度，通常需要引入强化学习（RL）来跨越离散文本生成阶段的不可导问题。",
+            "训练过程中，目标模型（Target Model）必须与 AV、AR 保持梯度同步更新，以防止激活值流转过程中的特征偏移。",
+            "AR 的输入仅为 AV 生成的自然语言文本，不能显式接入目标模型当前层之外的其他原始特征向量，以确保解释文本覆盖足够的信息量。"
+          ]
+        }
+      },
+      {
+        "id": "nla-arch-01__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "把冻结目标模型与同步更新目标模型放在表征稳定性上对比，根本差异是什么？",
+        "options": [
+          "AV 表述激活值、AR 从文本重构激活值，闭环实现无监督自重构",
+          "以重构相似度为目标，引入 RL 跨越离散文本不可导",
+          "目标模型必须同步更新，否则特征流转就偏移",
+          "AR 输入仅为 AV 生成的自然语言文本，不能接入其他原始特征向量"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从表征稳定性对比冻结与同步更新的根本差异",
+          "reasoningGoal": "先对齐两种做法的可比维度；再逐项判定各主张成立与否；并排除「同步更新」等不成立描述。"
+        },
+        "generatedAt": 1788865422098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-50203009",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-a7725e5a",
+        "sourceSnapshot": {
+          "id": "nla-arch-01",
+          "topic": "interpretability",
+          "subtopic": "自然语言自编码器 (NLA) 架构机制",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "nla",
+            "autoencoder",
+            "activation",
+            "interpretability",
+            "self-reconstruction"
+          ],
+          "question": "自然语言自编码器（Natural Language Autoencoder, NLA）是一种用于大语言模型内部激活值（Activation）可解释性的分析框架。在缺乏“激活值-文本解释”监督对（Ground Truth）的情况下，关于 NLA 的系统架构设计与训练优化逻辑，下列哪些说法是正确的？（多选）",
+          "options": [
+            "NLA 包含激活值表达器（AV）与激活值重构器（AR），通过“原始激活值 → 文本解释 → 重构激活值”的闭环路径实现无监督自重构。",
+            "AV 的优化目标是提升文本解释在原始激活值空间中的重构相似度，通常需要引入强化学习（RL）来跨越离散文本生成阶段的不可导问题。",
+            "训练过程中，目标模型（Target Model）必须与 AV、AR 保持梯度同步更新，以防止激活值流转过程中的特征偏移。",
+            "AR 的输入仅为 AV 生成的自然语言文本，不能显式接入目标模型当前层之外的其他原始特征向量，以确保解释文本覆盖足够的信息量。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-027": [
+      {
+        "id": "ai-fund-027__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某质检 temperature 锁 0 后输出仍偶发漂移，升级后批量变化。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "锁 0 不等于确定：浮点、其余采样参数与版本都会致漂",
+          "回归该看评测集关键指标，逐字快照比对该扔就扔",
+          "双参数归零即逐字节稳定，快照比对继续用",
+          "输出变化即服务故障，须自动回滚并人工复盘"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从锁 0 仍漂移的误判定位非确定性来源",
+          "reasoningGoal": "先定位误判的环节（采样、判据两类）；再逐项验证各判断；并排除「归零即稳定」「波动即故障」等不成立描述。"
+        },
+        "generatedAt": 1788865422098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-78f8f584",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-cd7cf43b",
+        "sourceSnapshot": {
+          "id": "ai-fund-027",
+          "topic": "sampling",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "temperature",
+            "determinism",
+            "production"
+          ],
+          "question": "把 Temperature 设为 0，模型输出一定是确定性的吗？为什么这在生产系统中很重要？",
+          "options": [
+            "temperature=0 并不保证严格确定：浮点非结合误差、top-p 等其余采样参数以及服务端模型版本变化都可能引入波动",
+            "回归判定应改为在固定评测集上核对关键质量指标，放弃逐字一致的快照比对方式",
+            "双参数归零后输出逐字节稳定，快照比对可继续用；指标对比是评测体系重构，无需为此重建。",
+            "输出不一致即服务故障，应自动回滚并人工复盘；非确定性属异常信号，稳定复现才是健康态。"
+          ]
+        }
+      },
+      {
+        "id": "ai-fund-027__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "要为 LLM 应用设计回归判据：不能逐字比对，又要抓住真实退化。下列哪些设计应当纳入？",
+        "options": [
+          "承认锁 0 仍有波动：浮点、top-p 与版本变化都可能致漂",
+          "固定评测集核关键质量指标，放弃逐字快照",
+          "双参数归零即逐字节稳定，快照比对是回归正统",
+          "输出不一致即服务故障，自动回滚并人工复盘"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为 LLM 应用设计不依赖逐字比对的回归判据",
+          "reasoningGoal": "先拆出判据设计的目标与约束（抓住退化与容忍波动）；再逐项确认各设计；并排除「快照正统」「波动即故障」等不成立描述。"
+        },
+        "generatedAt": 1788865422098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-78f8f584",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-787ffa3d",
+        "sourceSnapshot": {
+          "id": "ai-fund-027",
+          "topic": "sampling",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "temperature",
+            "determinism",
+            "production"
+          ],
+          "question": "把 Temperature 设为 0，模型输出一定是确定性的吗？为什么这在生产系统中很重要？",
+          "options": [
+            "temperature=0 并不保证严格确定：浮点非结合误差、top-p 等其余采样参数以及服务端模型版本变化都可能引入波动",
+            "回归判定应改为在固定评测集上核对关键质量指标，放弃逐字一致的快照比对方式",
+            "双参数归零后输出逐字节稳定，快照比对可继续用；指标对比是评测体系重构，无需为此重建。",
+            "输出不一致即服务故障，应自动回滚并人工复盘；非确定性属异常信号，稳定复现才是健康态。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-032": [
+      {
+        "id": "ai-fund-032__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某团队把 128k 窗口塞满后质量反降、账单延迟齐爆。定位这次堆料失误，下列哪些判断成立？",
+        "options": [
+          "token 成本与 prefill 延迟随长度涨，无关内容让请求又贵又慢",
+          "注意力被稀释且中部利用率低，堆料不等于高质量",
+          "KV 显存随长度膨胀，成本涨并发被压缩",
+          "注意力均匀覆盖，质量下滑只能怪版本波动",
+          "成本按次结算，填多少 token 都一样"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从塞满 128k 后质量反降的失误定位堆料环节",
+          "reasoningGoal": "先定位失误的环节（成本、注意、显存三类）；再逐项验证各判断；并排除「均匀覆盖」「按次结算」等不成立描述。"
+        },
+        "generatedAt": 1788865422099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-174050bf",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-9af074bc",
+        "sourceSnapshot": {
+          "id": "ai-fund-032",
+          "topic": "context-window",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-window",
+            "trade-off",
+            "lost-in-the-middle"
+          ],
+          "question": "Context Window 越大越好吗？请从成本、延迟和质量三个角度分析。",
+          "options": [
+            "token 成本与 prefill 延迟随输入长度上升，海量无关内容让每个请求都变得更贵更慢",
+            "无关内容稀释注意力，且存在 lost-in-the-middle 现象：中部信息的利用率偏低，堆料并不等于更高的回答质量",
+            "更长的序列令 KV Cache 显存占用同步膨胀，推高服务成本并压缩了可承载的并发量",
+            "窗口内的注意力均匀覆盖全部内容，质量下滑只能归因于模型版本波动，与填充内容无关",
+            "成本按请求次数结算，与填入多少 token 无关，账单恶化只是流量上涨的巧合"
+          ]
+        }
+      },
+      {
+        "id": "ai-fund-032__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "把按需填充与全量堆料放在成本延迟质量上对比，根本差异是什么？",
+        "options": [
+          "token 成本与 prefill 延迟随长度上升，无关内容让请求又贵又慢",
+          "堆料稀释注意力，中部信息最先被忽略",
+          "序列越长 KV Cache 显存越膨胀，服务成本涨并发被压缩",
+          "窗口内注意力均匀覆盖全部内容，填多填少结果都一个样",
+          "成本按请求次数结算，与填入多少 token 都无关"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从成本延迟质量对比两种填充策略的根本差异",
+          "reasoningGoal": "先对齐两种策略的可比维度；再逐项判定各主张成立与否；并排除「均匀覆盖」「按次结算」等不成立描述。"
+        },
+        "generatedAt": 1788865422099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-174050bf",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-3da962d7",
+        "sourceSnapshot": {
+          "id": "ai-fund-032",
+          "topic": "context-window",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-window",
+            "trade-off",
+            "lost-in-the-middle"
+          ],
+          "question": "Context Window 越大越好吗？请从成本、延迟和质量三个角度分析。",
+          "options": [
+            "token 成本与 prefill 延迟随输入长度上升，海量无关内容让每个请求都变得更贵更慢",
+            "无关内容稀释注意力，且存在 lost-in-the-middle 现象：中部信息的利用率偏低，堆料并不等于更高的回答质量",
+            "更长的序列令 KV Cache 显存占用同步膨胀，推高服务成本并压缩了可承载的并发量",
+            "窗口内的注意力均匀覆盖全部内容，质量下滑只能归因于模型版本波动，与填充内容无关",
+            "成本按请求次数结算，与填入多少 token 无关，账单恶化只是流量上涨的巧合"
+          ]
+        }
+      }
+    ],
+    "ai-fund-045": [
+      {
+        "id": "ai-fund-045__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某 RAG 召回全中，答案仍编造引用条款。定位这次漏网，下列哪些判断成立？",
+        "options": [
+          "检索未召回正确文档时，模型退回参数记忆自由发挥",
+          "召回全中也可能被截断淹没，模型根本没用到",
+          "高召回下偏离多因注意力稀释，加大窗口即可解决",
+          "模型误读证据、忽略限定或过度推断，与 context 矛盾",
+          "全是知识库过期之过，定期更新即可根除"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从召回全中仍编造的漏网定位幻觉环节",
+          "reasoningGoal": "先定位漏网的环节（召回、构造、解读、生成四类）；再逐项验证各判断；并排除「加大窗口」「更新即根除」等不成立描述。"
+        },
+        "generatedAt": 1788865422099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-45ad79f5",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-cb4e2e8f",
+        "sourceSnapshot": {
+          "id": "ai-fund-045",
+          "topic": "hallucination",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "RAG",
+            "hallucination",
+            "trade-off"
+          ],
+          "question": "RAG 能彻底解决 Hallucination 吗？如果不能，幻觉还会从哪些环节漏进来？",
+          "options": [
+            "检索未召回正确文档时，模型会退回参数记忆自由发挥，生成看似合理实则无据的内容",
+            "正确文档即使被召回，也可能在构造 context 时被截断，或淹没在大段无关内容中未被模型利用",
+            "高召回下模型偏离证据多为长上下文注意力稀释所致，加大窗口即可解决，无需忠实度校验",
+            "模型可能误读证据、忽略其中的限定条件或过度推断，生成与 context 相矛盾的内容",
+            "残余错误全部源于知识库内容过期，只要定期更新语料即可根除幻觉"
+          ]
+        }
+      },
+      {
+        "id": "ai-fund-045__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "要为律所问答设计幻觉防线：RAG 已有，还漏。下列哪些配套应当纳入？",
+        "options": [
+          "没召回时模型退回参数记忆，编得像真的一样",
+          "正确文档即使被召回，也可能构造时被截断，或淹没在无关内容中",
+          "高召回下偏离全因注意力稀释，加大窗口幻觉自消",
+          "模型误读证据忽略限定或过度推断，生成与 context 矛盾的内容",
+          "残余错误全因知识库过期，定期更新语料即可根除幻觉"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为律所问答设计 RAG 之外的幻觉配套防线",
+          "reasoningGoal": "先拆出防线设计的目标与约束（输入接地与输出校验）；再逐项确认各配套；并排除「加大窗口」「更新绝迹」等不成立描述。"
+        },
+        "generatedAt": 1788865422099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-45ad79f5",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-eff00fbe",
+        "sourceSnapshot": {
+          "id": "ai-fund-045",
+          "topic": "hallucination",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "RAG",
+            "hallucination",
+            "trade-off"
+          ],
+          "question": "RAG 能彻底解决 Hallucination 吗？如果不能，幻觉还会从哪些环节漏进来？",
+          "options": [
+            "检索未召回正确文档时，模型会退回参数记忆自由发挥，生成看似合理实则无据的内容",
+            "正确文档即使被召回，也可能在构造 context 时被截断，或淹没在大段无关内容中未被模型利用",
+            "高召回下模型偏离证据多为长上下文注意力稀释所致，加大窗口即可解决，无需忠实度校验",
+            "模型可能误读证据、忽略其中的限定条件或过度推断，生成与 context 相矛盾的内容",
+            "残余错误全部源于知识库内容过期，只要定期更新语料即可根除幻觉"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-01": [
+      {
+        "id": "llm-reliability-2026-08-01__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某医疗建议 temp 设 0、措辞自信，仍出现无据断言。定位这次失守，下列哪些判断成立？",
+        "options": [
+          "缺证据围栏：回答只能用批准证据源",
+          "缺逐条校验：关键断言无证据就拒答或转人工",
+          "temperature 设 0，剩余风险视为已消除",
+          "缺的是自信：多生成几份选措辞最自信的"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从归零且自信仍出错的失守定位事实校验缺口",
+          "reasoningGoal": "先定位失守的环节（证据、校验两类）；再逐项验证各判断；并排除「归零清零」「自信即正确」等不成立描述。"
+        },
+        "generatedAt": 1788865422100,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fed90e90",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-3543af9a",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-01",
+          "topic": "factuality-verification",
+          "subtopic": "高风险场景的正确性边界",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "hallucination",
+            "factuality",
+            "abstention",
+            "high-stakes"
+          ],
+          "question": "医疗用药建议要求不能容许未经证实的事实错误。哪些系统控制最关键？（请选择两个）",
+          "options": [
+            "限制回答只能使用经过批准的证据源",
+            "逐条校验关键断言，无证据时拒答或人工升级",
+            "把 temperature 设为 0，并把剩余风险视为已消除",
+            "让模型生成多份答案，选择措辞最自信的一份"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-01__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "把证据限制逐条校验与调参选自信放在事实保证上对比，根本差异是什么？",
+        "options": [
+          "回答只能使用经过批准的证据源",
+          "前者逐条验断言、无据拒答，后者只看措辞",
+          "把 temperature 设为 0，剩余风险视为已消除",
+          "多份答案选最自信的，自信即正确"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从事实保证对比两种路线的根本差异",
+          "reasoningGoal": "先对齐两种路线的可比维度；再逐项判定各主张成立与否；并排除「归零经济」「自信正确」等不成立描述。"
+        },
+        "generatedAt": 1788865422100,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fed90e90",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-6807d45c",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-01",
+          "topic": "factuality-verification",
+          "subtopic": "高风险场景的正确性边界",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "hallucination",
+            "factuality",
+            "abstention",
+            "high-stakes"
+          ],
+          "question": "医疗用药建议要求不能容许未经证实的事实错误。哪些系统控制最关键？（请选择两个）",
+          "options": [
+            "限制回答只能使用经过批准的证据源",
+            "逐条校验关键断言，无证据时拒答或人工升级",
+            "把 temperature 设为 0，并把剩余风险视为已消除",
+            "让模型生成多份答案，选择措辞最自信的一份"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-05": [
+      {
+        "id": "llm-reliability-2026-08-05__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某团队只锁 temperature，其他参数随请求变，结果波动。定位这次复现失败，下列哪些判断成立？",
+        "options": [
+          "输入模型版本与完整请求参数都须固定",
+          "seed 定死并记录后端版本指纹",
+          "只锁 temperature，其余随便变也无妨",
+          "调高 temperature，分布更平滑更可复现"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从只锁温度仍波动的失败定位未固定变量",
+          "reasoningGoal": "先定位失败的环节（参数、种子两类）；再逐项验证各判断；并排除「只锁够用」「调高更稳」等不成立描述。"
+        },
+        "generatedAt": 1788865422100,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-91d61c2d",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-38420db8",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-05",
+          "topic": "generation-reproducibility",
+          "subtopic": "重复请求的可复现性",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "reproducibility",
+            "sampling",
+            "inference",
+            "determinism"
+          ],
+          "question": "同一模型和同一问题的 API 请求多次返回不同答案。提高复现性时哪些变量应同时固定？（请选择两个）",
+          "options": [
+            "固定输入、模型版本和完整请求参数",
+            "固定 seed 并记录后端版本或指纹",
+            "只固定 temperature，其他参数随请求变化",
+            "提高 temperature 让概率分布更平滑"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-05__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "审计要求复现某次回答：输入、模型、参数、种子与后端指纹全固定。评审这份规范，下列哪些判断正确？",
+        "options": [
+          "输入、模型版本与请求参数一项不能少",
+          "seed 与后端指纹必须留痕",
+          "只固定 temperature，其余参数随请求变化也无妨",
+          "提高 temperature 让概率分布更平滑，复现性更好"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断全固定复现规范的前提是否成立",
+          "reasoningGoal": "先判断规范的前提（变量全覆盖）是否满足；再逐项验证各主张；并排除「锁温即锁定」「高温可复现」等不成立描述。"
+        },
+        "generatedAt": 1788865422100,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-91d61c2d",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-fcb10085",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-05",
+          "topic": "generation-reproducibility",
+          "subtopic": "重复请求的可复现性",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "reproducibility",
+            "sampling",
+            "inference",
+            "determinism"
+          ],
+          "question": "同一模型和同一问题的 API 请求多次返回不同答案。提高复现性时哪些变量应同时固定？（请选择两个）",
+          "options": [
+            "固定输入、模型版本和完整请求参数",
+            "固定 seed 并记录后端版本或指纹",
+            "只固定 temperature，其他参数随请求变化",
+            "提高 temperature 让概率分布更平滑"
+          ]
+        }
+      }
+    ],
+    "llm-judge-privacy-01": [
+      {
+        "id": "llm-judge-privacy-01__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某聚合报告的小分桶被反推出个体信息。定位这次匿名失效，下列哪些判断成立？",
+        "options": [
+          "Query 措辞高度敏感，一词之差可致大批误分类",
+          "研究人员无法调阅原始样本人工校验，错误极难识别定位",
+          "LLM 判规自带去偏光环，采样偏差自动消除",
+          "聚合输出已是统计量，单条泄漏面已消除；二次审查纯属重复建设",
+          "长上下文隐含意图识别，关键词匹配望尘莫及"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从小分桶反推个体的失效定位匿名体系缺口",
+          "reasoningGoal": "先定位失效的环节（措辞、校验、聚合三类）；再逐项验证各判断；并排除「自动去偏」「聚合即匿名」等不成立描述。"
+        },
+        "generatedAt": 1788865422101,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-393dc901",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-cbb4ffd3",
+        "sourceSnapshot": {
+          "id": "llm-judge-privacy-01",
+          "topic": "llm-application-security",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "llm-as-judge",
+            "privacy",
+            "debugging",
+            "aggregation"
+          ],
+          "question": "某 AI 平台构建了一套面向大规模用户对话日志的隐私保护分析系统。系统不允许研究人员直接阅读原始文本，而是由研究人员编写自然语言分类 Query，利用大语言模型（LLM-as-a-Judge）对全量日志进行逐条判断，最终仅输出分类比例（Percentage Statistics）等聚合结果。在维护与调试该系统时，下列关于其内部机制与潜在失效模式的说法，哪些是正确的？（多选）",
+          "options": [
+            "分类 Query 的措辞微调对分类结果极其敏感，不当的提示词描述可能导致模型将大量对话错误归类",
+            "由于研究人员无法调阅底层原始对话样本进行人工校验，分类错误极难被直接识别与定位",
+            "该模式通过引入非确定性的 LLM 判规，自动消除了一切统计学上的采样偏差（Sampling Bias）",
+            "聚合输出已是统计量，单条泄漏面已消除；二次审查属于重复建设，统计即匿名。",
+            "依赖 LLM 判断的分类模型在处理长上下文多轮对话时，对逻辑隐含意图的识别精度通常优于简单关键字匹配"
+          ]
+        }
+      },
+      {
+        "id": "llm-judge-privacy-01__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "把 LLM 隐含意图识别与关键词匹配放在长对话理解上对比，根本差异是什么？",
+        "options": [
+          "Query 措辞微调极敏感，不当描述致大批误分类",
+          "无原始样本可验，误分类极难发现",
+          "引入非确定性判规后，一切采样偏差自动消除",
+          "聚合输出已是统计量，二次复审纯属多余建设",
+          "LLM 判读长上下文多轮对话的隐含意图，精度远胜简单关键词匹配"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从长上下文理解对比两种分类路线的根本差异",
+          "reasoningGoal": "先对齐两种路线的可比维度；再逐项判定各主张成立与否；并排除「去偏光环」「聚合匿名」等不成立描述。"
+        },
+        "generatedAt": 1788865422101,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-393dc901",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-6ec0718b",
+        "sourceSnapshot": {
+          "id": "llm-judge-privacy-01",
+          "topic": "llm-application-security",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "llm-as-judge",
+            "privacy",
+            "debugging",
+            "aggregation"
+          ],
+          "question": "某 AI 平台构建了一套面向大规模用户对话日志的隐私保护分析系统。系统不允许研究人员直接阅读原始文本，而是由研究人员编写自然语言分类 Query，利用大语言模型（LLM-as-a-Judge）对全量日志进行逐条判断，最终仅输出分类比例（Percentage Statistics）等聚合结果。在维护与调试该系统时，下列关于其内部机制与潜在失效模式的说法，哪些是正确的？（多选）",
+          "options": [
+            "分类 Query 的措辞微调对分类结果极其敏感，不当的提示词描述可能导致模型将大量对话错误归类",
+            "由于研究人员无法调阅底层原始对话样本进行人工校验，分类错误极难被直接识别与定位",
+            "该模式通过引入非确定性的 LLM 判规，自动消除了一切统计学上的采样偏差（Sampling Bias）",
+            "聚合输出已是统计量，单条泄漏面已消除；二次审查属于重复建设，统计即匿名。",
+            "依赖 LLM 判断的分类模型在处理长上下文多轮对话时，对逻辑隐含意图的识别精度通常优于简单关键字匹配"
+          ]
+        }
+      }
+    ],
+    "prompt-calibration-shift-02": [
+      {
+        "id": "prompt-calibration-shift-02__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某分类 Prompt 在 WildChat 上表现优异，上生产后大面积误判。定位这次迁移失败，下列哪些判断成立？",
+        "options": [
+          "开源与生产分布偏移，测试集上准的 Prompt 到生产失真",
+          "开源集缺生产词表，推理直接抛 OOV 异常",
+          "公开集测 Prompt 会污染模型权重，术语能力丧失",
+          "跨集迁移破坏概率平滑，统计值过不了方差检验",
+          "必须在目标生产分布上重校准，否则泛化无从谈起"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从开源优异生产崩的迁移失败定位分布偏移环节",
+          "reasoningGoal": "先定位失败的环节（分布、词表、权重三类）；再逐项验证各判断；并排除「OOV 异常」「权重污染」「方差检验」等不成立描述。"
+        },
+        "generatedAt": 1788865422101,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-631ba1f5",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-841da503",
+        "sourceSnapshot": {
+          "id": "prompt-calibration-shift-02",
+          "topic": "training-data",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "distribution-shift",
+            "prompt-calibration",
+            "wildchat"
+          ],
+          "question": "团队在将 LLM 分类 Query 应用于生产环境真实对话日志之前，通常需要对分类 Prompt 进行校准和迭代。若团队选择在一个公开的、偏向休闲与创意类对话的开源数据集（如 WildChat）上测试并优化 Prompt，再直接部署至以专业咨询与代码开发为主的生产环境日志中。这种做法面临的最核心技术风险是什么？（多选）",
+          "options": [
+            "开源数据集与生产环境在任务类型和上下文复杂度上存在明显分布偏移，导致在测试集上表现良好的 Prompt 在生产集上生成误导性的分类结果",
+            "开源数据集缺乏生产环境专有的 Token 词表，会导致分类 LLM 在推理过程中抛出严重的 Out-of-Vocabulary (OOV) 异常",
+            "在公开数据集上测试 Prompt 会直接污染分类模型的基础权重，导致模型在后续推理中丧失对特定领域专业术语的分类能力",
+            "跨数据集迁移 Prompt 会破坏分类输出的概率平滑性，导致最终生成的分类百分比统计值无法通过方差检验",
+            "Prompt在不同数据分布下的表现差异显著，必须在目标生产流量的真实分布上重新评估与校准，才能保证其泛化有效性"
+          ]
+        }
+      },
+      {
+        "id": "prompt-calibration-shift-02__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "团队只有开源对话集，没有生产标注，要直接部署分类 Prompt。评审这一计划的前提，下列哪些判断正确？",
+        "options": [
+          "开源与生产在任务类型上分布偏移，测试集上准的 Prompt 到生产失真",
+          "开源集缺乏生产专有词表，推理时必抛出 OOV 异常",
+          "公开集上测一测，模型权重即被污染，术语能力必丧失",
+          "跨集迁移破坏概率平滑性，统计值无法通过方差检验",
+          "Prompt 在不同分布表现差异大，须在目标生产分布重评估校准"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在无生产标注下判断直接部署计划的前提是否成立",
+          "reasoningGoal": "先判断该计划的前提（分布一致）是否满足；再逐项验证各主张；并排除「OOV 必崩」「权重必污」「方差必挂」等不成立描述。"
+        },
+        "generatedAt": 1788865422101,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-631ba1f5",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-7c9d688b",
+        "sourceSnapshot": {
+          "id": "prompt-calibration-shift-02",
+          "topic": "training-data",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "distribution-shift",
+            "prompt-calibration",
+            "wildchat"
+          ],
+          "question": "团队在将 LLM 分类 Query 应用于生产环境真实对话日志之前，通常需要对分类 Prompt 进行校准和迭代。若团队选择在一个公开的、偏向休闲与创意类对话的开源数据集（如 WildChat）上测试并优化 Prompt，再直接部署至以专业咨询与代码开发为主的生产环境日志中。这种做法面临的最核心技术风险是什么？（多选）",
+          "options": [
+            "开源数据集与生产环境在任务类型和上下文复杂度上存在明显分布偏移，导致在测试集上表现良好的 Prompt 在生产集上生成误导性的分类结果",
+            "开源数据集缺乏生产环境专有的 Token 词表，会导致分类 LLM 在推理过程中抛出严重的 Out-of-Vocabulary (OOV) 异常",
+            "在公开数据集上测试 Prompt 会直接污染分类模型的基础权重，导致模型在后续推理中丧失对特定领域专业术语的分类能力",
+            "跨数据集迁移 Prompt 会破坏分类输出的概率平滑性，导致最终生成的分类百分比统计值无法通过方差检验",
+            "Prompt在不同数据分布下的表现差异显著，必须在目标生产流量的真实分布上重新评估与校准，才能保证其泛化有效性"
+          ]
+        }
+      }
+    ],
+    "human-ai-collab-05": [
+      {
+        "id": "human-ai-collab-05__surface-options__assessmentfresh4__0",
+        "kind": "surface-options",
+        "question": "某用户单轮 prompt 后直接执行了高风险操作，酿成事故。复盘这次盲信，缺的是什么？",
+        "options": [
+          "缺委托审核：高后果任务可委托，但方向与终审须留人",
+          "缺适应修改：用户很少原样复制输出，而应对结果做适应性修改",
+          "交互摩擦具建设性：理解偏差致多轮迭代，能促澄清意图完善需求",
+          "缺的是放手：决策权全让渡，单轮执行最高效",
+          "为降沟通成本，用户只把零风险重复性边缘子任务交 AI，核心业务不引入"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从单轮执行高危操作的盲信反推缺失的协作环节",
+          "reasoningGoal": "先定位盲信缺失的环节（审核、修改、摩擦三类）；再逐项验证各判断；并排除「全让渡」「只碰边缘」等不成立描述。"
+        },
+        "generatedAt": 1788865422102,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0e352adb",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-d12b9794",
+        "sourceSnapshot": {
+          "id": "human-ai-collab-05",
+          "topic": "model-behavior",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "human-ai-collaboration",
+            "delegation",
+            "friction"
+          ],
+          "question": "在高风险与高专业度领域（如法律、金融或系统架构）中，分析人类用户与高能力 LLM 的交互模式时，下列哪些现象符合高效“人机协作”的典型特征与内部机制？（多选）",
+          "options": [
+            "用户倾向于将具有高后果性（Consequential）和专业导向的任务委托给 AI，但通常扮演方向把控与最终审核者的角色",
+            "用户在协作过程中很少直接原样复制（Verbatim）AI 生成的输出，而是会对模型结果进行适应性修改与二次加工",
+            "交互过程中的“摩擦”（如模型理解偏差导致需要多轮迭代）往往具有建设性，能促使用户进一步澄清意图并完善需求",
+            "用户会完全让渡决策权给 AI，并在单轮 Prompt 交互后直接执行模型给出的高风险操作指令",
+            "为降低沟通成本，用户仅将零风险、重复性极高的边缘子任务交由 AI 完成，避免在核心业务中引入 AI"
+          ]
+        }
+      },
+      {
+        "id": "human-ai-collab-05__context-options__assessmentfresh4__1",
+        "kind": "context-options",
+        "question": "把高效协作三特征与盲信、边缘论放在人机责任边界上对比，根本差异是什么？",
+        "options": [
+          "委托高后果任务，人类保留方向与终审",
+          "用户很少原样复制 AI 输出，而是做适应性修改",
+          "交互摩擦往往具有建设性：理解偏差致多轮迭代，能促澄清意图",
+          "决策权全部让渡给 AI，单轮 Prompt 后直接执行高风险指令",
+          "AI 只配碰零风险边缘任务，核心免谈"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从责任边界对比高效协作与两个极端的根本差异",
+          "reasoningGoal": "先对齐三方的可比维度；再逐项判定各主张成立与否；并排除「全让渡」「边缘论」等不成立描述。"
+        },
+        "generatedAt": 1788865422102,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0e352adb",
+        "batch": "assessmentfresh4",
+        "model": "manual",
+        "contentHash": "fnv1a-40978fbf",
+        "sourceSnapshot": {
+          "id": "human-ai-collab-05",
+          "topic": "model-behavior",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "human-ai-collaboration",
+            "delegation",
+            "friction"
+          ],
+          "question": "在高风险与高专业度领域（如法律、金融或系统架构）中，分析人类用户与高能力 LLM 的交互模式时，下列哪些现象符合高效“人机协作”的典型特征与内部机制？（多选）",
+          "options": [
+            "用户倾向于将具有高后果性（Consequential）和专业导向的任务委托给 AI，但通常扮演方向把控与最终审核者的角色",
+            "用户在协作过程中很少直接原样复制（Verbatim）AI 生成的输出，而是会对模型结果进行适应性修改与二次加工",
+            "交互过程中的“摩擦”（如模型理解偏差导致需要多轮迭代）往往具有建设性，能促使用户进一步澄清意图并完善需求",
+            "用户会完全让渡决策权给 AI，并在单轮 Prompt 交互后直接执行模型给出的高风险操作指令",
+            "为降低沟通成本，用户仅将零风险、重复性极高的边缘子任务交由 AI 完成，避免在核心业务中引入 AI"
+          ]
+        }
+      }
+    ]
+  }
+}

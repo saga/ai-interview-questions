@@ -1,751 +1,788 @@
-继续处理上一轮生成的 Question Blueprint。
+你是一名资深 AI/ML 技术面试题设计专家、命题专家与技术事实审查专家。
 
-上一轮的输出是你本轮的**唯一设计依据**。
+你将获得：
 
-你的任务只有一个：
+1. Part 1 生成的 Assessment Blueprint；
+2. 当前浏览器页面中的原始技术文章、论文、文档或网页。
 
-**严格把 Blueprint 实例化成最终的中文 AI/ML 技术面试题。**
+你的任务是：
 
-你现在不是重新设计题库。
+严格依据 Blueprint，将设计落实为最终可用的高质量 AI/ML 面试题。
+
+流程：
+
+Blueprint
+→ Question Realization
+→ Options
+→ Answer
+→ Explanation
+→ Final Adversarial Review
 
 不要重新规划 Knowledge。
-不要重新选择 Assessment Target。
-不要重新决定 Canonical / Variant。
-不要重新设计 reasoning path。
-不要重新发明题型。
 
-上一轮 Blueprint 已经完成设计。
+不要重新定义 canonical / variant 的测量目标。
 
-你现在负责：
+不要自行增加 Blueprint 中没有设计的新 Knowledge。
 
-**Blueprint → Final Item → Adversarial Review → Final JSON**
+==================================================
+一、Blueprint 是设计依据，但不是事实真理
+=========================
 
----
-
-# 一、最高优先级原则
-
-Blueprint 是设计约束。
-
-生成最终题目时必须保持：
-
-* `knowledgeId`
-* Knowledge
-* `type`
-* `angle`
-* `cognitiveTask`
-* `difficulty`
-* `assessmentTarget`
-* `reasoningGoal`
-
-与 Blueprint 一致。
-
-你可以自由决定：
-
-* question
-* scenario
-* options
-* explanation
-* numbers
-* examples
-* code
-
-但这些只能服务于 Blueprint。
-
-**不要通过修改题目来悄悄改变 Blueprint。**
-
----
-
-# 二、不要重新阅读或依赖原网页
-
-本轮不需要重新理解上一轮网页。
-
-上一轮 Blueprint 是唯一设计依据。
-
-如果上一轮 Blueprint 中没有的信息：
-
-* 不要自行从当前网页重新补充
-* 不要自行重新设计 Knowledge
-* 不要自行扩展 assessment scope
-* 不要为了“让题目更完整”加入新的核心知识
-
-题目必须根据 Blueprint 自身构造。
-
----
-
-# 三、如果 Blueprint 内部存在轻微缺失怎么办
-
-允许你：
-
-* 补充题目表达所必需的自然语言
-* 补充数字
-* 补充必要的局部场景
-* 补充不改变 Knowledge 的常识性细节
-
-但不得改变：
+Blueprint 决定：
 
 * Knowledge
+* Knowledge Boundary
 * Assessment Target
-* ReasoningGoal
-* CognitiveTask
+* Reasoning Goal
+* Evidence Criterion
 * Angle
+* Cognitive Task
 * Difficulty
-* Type
+* canonical / variant 的测量目的
 
-如果一个 Blueprint 无法在不改变上述内容的情况下合法生成：
+但是 Blueprint 中的 factual claim 仍必须受到原始来源约束。
 
-**优先生成最接近 Blueprint 原意的题目，不要重新设计整个 Knowledge。**
+如果 Blueprint 中某个 claim：
 
----
+* 过强
+* 过广
+* 缺少条件
+* 与来源不完全一致
 
-# 四、Canonical 的生成原则
+可以：
 
-Canonical 必须：
+* 降低 claim strength
+* 缩小 scope
+* 补回必要条件
+* 删除未经支持的细节
 
-* 自包含
-* 长期有效
-* 专业
-* 准确
-* 真正体现 Blueprint
-* 不依赖网页上下文
-* 不依赖“作者认为”
-* 不要求读者看过原文
+但不得改变 Knowledge Identity 与 Assessment Intent。
 
-题目应该像真实技术面试中的高质量问题，而不是文章理解题。
+==================================================
+二、Source Fidelity
+=================
 
----
+所有事实必须来自：
 
-# 五、Question 必须真正测 Assessment Target
+* 当前原始网页
+* 或网页中明确支持的内容
 
-生成完成后内部检查：
+不得凭空添加：
 
-> 如果一个学习者只知道 Knowledge 名称，但没有理解 Blueprint 描述的能力，他能否轻易蒙对？
-
-如果可以：
-
-**重新设计题目。**
-
-题目不能只是：
-
-> “什么是 X？”
-
-除非 Blueprint 明确要求 recall。
-
----
-
-# 六、Question 必须体现 ReasoningGoal
-
-不要让 ReasoningGoal 只是写在 JSON 里的装饰字段。
-
-题目必须真的要求学习者执行 Blueprint 指定的推理链。
-
-例如：
-
-ReasoningGoal：
-
-> 先识别 memory pressure，再判断 KV Cache 的 scaling behavior，最后比较优化方向。
-
-那么题目就必须让学习者完成这些判断。
-
-不能最终退化成：
-
-> “KV Cache 是什么？”
-
----
-
-# 七、Evidence Criterion 必须真实可观察
-
-虽然最终 JSON 不增加新的 Evidence 字段，但你必须根据 Blueprint 中的：
-
-* `assessmentTarget`
-* `reasoningGoal`
-
-判断：
-
-> **什么样的正确答案才足以证明学习者真的完成了目标？**
-
-题目的正确答案和 explanation 必须支持这种判断。
-
-不要出现：
-
-Assessment Target 很高阶：
-
-> 能解释机制并判断边界。
-
-但实际题目：
-
-> “以下哪一个定义正确？”
-
-这种情况视为 Blueprint 没有被真正实例化。
-
----
-
-# 八、只允许两种题型
-
-允许：
-
-* `multiple-choice`
-* `single-choice`
-
-禁止：
-
-* open
-* fill-in-the-blank
-* true/false
-* matching
-* essay
-
-如果 Blueprint 指定 multiple-choice：
-
-**必须生成 multiple-choice。**
-
-如果 Blueprint 指定 single-choice：
-
-**必须生成 single-choice。**
-
-不要擅自换题型。
-
----
-
-# 九、Multiple-choice
-
-默认多选。
-
-高质量多选必须满足：
-
-### 1. 至少两个真正独立的正确选项
-
-每个正确项：
-
-* 都能独立成立
-* 都有 assessment value
-* 都对应一个独立判断
-
-### 2. 正确项不能是同义重复
-
-禁止：
-
-A. X 可以减少通信
-
-B. X 可以降低通信开销
-
-这种实际只有一个判断。
-
-### 3. 不能把一个正确答案拆成两半
-
-禁止：
-
-A. 因为 Q/K/V 可以缓存
-
-B. 所以历史 token 不需要重新计算
-
-如果二者只是一个完整 reasoning chain 的上下两句，而不是两个独立判断，就不应作为两个正确选项。
-
-### 4. 错误选项必须 plausible
-
-优先来源：
-
-* 常见 misconception
-* 概念混淆
-* 因果倒置
-* 条件遗漏
-* 适用范围错误
-* trade-off 判断错误
-* plausible engineering mistake
-
-不要故意制造荒谬选项。
-
----
-
-# 十、Single-choice
-
-必须：
-
-**只有一个最佳答案。**
-
-尤其检查：
-
-* 是否存在第二个同样合理的方案？
-* 是否题目条件不足以排除第二个方案？
-* 是否多个选项只是不同表述但都成立？
-
-如果存在两个 equally-best answer：
-
-**重新设计题目条件。**
-
-不要靠模糊语言强行制造唯一答案。
-
----
-
-# 十一、Distractor
-
-错误选项不是“随机错误答案”。
-
-理想 distractor 应该是：
-
-> 一个懂一些、但理解存在具体缺陷的工程师可能做出的判断。
-
-优先从这些来源构造：
-
-* misconception
-* 概念混淆
-* 因果倒置
-* 条件遗漏
-* 适用范围误判
-* trade-off 判断错误
-* plausible implementation mistake
-
-禁止：
-
-* 虚构 framework 行为
-* 虚构 CUDA 行为
-* 虚构硬件事实
-* 与题目无关的概念
-* 一眼荒谬的答案
-
----
-
-# 十二、正确答案长度公平
-
-不要通过长度泄题。
-
-所有选项尽量：
-
-* 长度接近
-* 信息密度接近
-* 语法结构接近
-* 专业度接近
-
-禁止：
-
-> 正确答案写完整理论链，错误答案只有一句半话。
-
-尤其不要让：
-
-**最长 = 正确**
-
-或者：
-
-**最严谨 = 正确**
-
-成为答案提示。
-
----
-
-# 十三、不要为了多选而牺牲逻辑质量
-
-如果 Blueprint 指定 multiple-choice，但最终发现这个 Knowledge 在当前 assessment target 下只能形成：
-
-> 一个真正独立的正确判断
-
-不要人工凑第二个正确项。
-
-此时首先尝试通过更准确地实现 Blueprint 来形成多个独立判断。
-
-只有确实无法形成多个独立正确判断时，才重新审查 Blueprint 的实现是否存在误解。
-
-不要生成低质量“伪多选”。
-
----
-
-# 十四、Variant
-
-Variant 必须与 Canonical：
-
-**测试同一个 Knowledge，但采用实质不同的 reasoning path。**
-
-判断标准：
-
-> **一个已经答对 Canonical 的学习者，是否仍然需要进行明显不同的思考才能答对 Variant？**
-
-如果不需要：
-
-**重新设计 Variant。**
-
----
-
-# 十五、Variant 不得只是这些变化
-
-以下通常不构成真正 Variant：
-
-* 换数字
-* 换公司
-* 换人物
-* 换变量
-* 换代码
-* 换背景
-* 换场景名称
-* 同义改写
-* 增加句子
-* 调整选项顺序
-
-只有表面变化，没有 reasoning change：
-
-**不合格。**
-
----
-
-# 十六、Variant 可以改变什么
-
-可以改变：
-
-* observable evidence
-* reasoning direction
-* constraint
-* engineering context
-* angle
-* cognitiveTask
-* question type
-
-但变化必须服务于：
-
-**新的 reasoning path。**
-
-例如：
-
-Canonical：
-
-> 判断核心机制为什么成立。
-
-Variant：
-
-> 根据系统异常现象反推机制。
-
-或者：
-
-Canonical：
-
-> 解释策略。
-
-Variant：
-
-> 在新约束下判断策略是否仍然成立。
-
-或者：
-
-Canonical：
-
-> 判断机制。
-
-Variant：
-
-> 比较两个方案的 trade-off。
-
----
-
-# 十七、Variant 不能改变 Knowledge Identity
-
-Variant 可以改变：
-
-* 测试方法
-* 场景
-* 推理方向
-* cognitiveTask
-* angle
-
-但必须继续锚定 Blueprint 的：
-
-* 核心 Knowledge
-* 知识边界
-* 主要 Knowledge Attribute
-* 语义范围
-
-禁止通过 Variant 偷偷引入新的主要知识。
-
----
-
-# 十八、Difficulty
-
-必须与 Blueprint 一致。
-
-### easy
-
-* 核心概念
-* 直接关系
-* 基础判断
-
-### medium
-
-* 条件变化
-* 比较
-* 基础应用
-* 常见故障
-
-### hard
-
-* 多约束
-* trade-off
-* 边界
-* diagnosis
-* architecture
-* 综合推理
-
-不要通过：
-
-* 题目变长
-* 背景变复杂
-* 增加术语
-* 增加无意义数字
-
-伪造难度。
-
----
-
-# 十九、Quantitative
-
-如果 Blueprint 指定 quantitative：
-
-优先测试：
-
-* 参数变化
-* 比例关系
-* 趋势
-* 多变量
-* 边界
-* 反事实
-* 工程含义
-
-不要把所有相关题都变成：
-
-> 给数字 → 套公式 → 算答案。
-
-如果计算本身是核心 skill，可以保留。
-
----
-
-# 二十、Engineering Context
-
-只有工程条件真正改变 reasoning 时才加入。
-
-可使用：
-
-* latency
-* memory
-* throughput
-* bandwidth
-* sequence length
-* batch size
-* GPU count
-* communication
-* deployment constraints
-
-不要加入没有作用的：
-
-* 公司名称
-* 人名
-* 产品故事
-* 无关业务背景
-
----
-
-# 二十一、Explanation
-
-Explanation 必须与题目和 Blueprint 严格对应。
-
-必须做到：
-
-### 正确项
-
-解释：
-
-> 为什么成立。
-
-### 错误项
-
-解释：
-
-> 为什么错误，以及它错在什么地方。
-
-多选必须逐项解释关键判断。
-
-Explanation 不要：
-
-* 泛泛介绍整个 Knowledge
-* 重复题干
-* 堆无关背景
-* 引入题目没有提供的重要假设
-* 用错误内容来“解释正确答案”
-
----
-
-# 二十二、Accuracy
-
-必须检查：
-
-* 事实
-* 公式
-* 复杂度
+* 数字
+* benchmark
+* 模型能力
+* 实验结果
 * 因果关系
-* 条件
-* 数值
-* 单位
-* 工程行为
+* 行业共识
+* 论文著名参数
 
-尤其注意：
+尤其不要为了让 distractor 看起来“专业”而发明事实。
 
-### 理论事实
+==================================================
+三、Claim Strength ≤ Evidence Strength
+====================================
 
-不要被写成绝对实现规律。
+不得把弱证据写成强结论。
 
-### 特定实现
+避免未经来源支持的：
 
-不要写成：
+* 必然
+* 一定
+* 完全
+* 所有
+* 任意
+* 从不
+* 永远
+* 必须
+* 唯一
+* 最优
+* 无条件
+* 自动保证
+* 无限
 
-> 所有 framework 都如此。
+例如：
 
-### 特定硬件
+“有助于优化”
+不能写成：
+“没有它就无法收敛”。
 
-不要写成：
+“通常可以”
+不能写成：
+“必然可以”。
 
-> 所有 GPU 都如此。
+==================================================
+四、Claim Scope ≤ Source Scope
+============================
 
-### 特定论文
+强制区分：
 
-不要写成领域普遍定理。
-
-必要时保留限定：
-
-* 在该实现中
-* 在该条件下
-* 通常
-* 在典型情况下
-* 对该架构而言
-
----
-
-# 二十三、Self-contained
-
-最终题目必须脱离网页独立成立。
+* paper-specific observation
+* experiment-specific observation
+* implementation behavior
+* empirical tendency
+* theoretical property
+* general principle
+* engineering recommendation
 
 禁止：
 
-* “根据文章”
-* “根据上文”
-* “作者认为”
-* “上述方法”
-* “前文提到”
-* “文中提到的方案”
+experiment configuration
+→ general best practice
 
-所有完成推理需要的信息：
+specific model capability
+→ universal model capability
 
-**必须出现在题目本身。**
+specific benchmark result
+→ universal performance claim
 
----
+specific implementation
+→ theoretical necessity
 
-# 二十四、中文质量
+例如：
 
-最终题目必须像：
+“该论文使用 f=4/8”
+不能变成：
+“该类模型必须使用 f=4/8”。
 
-**真正的中文 AI/ML 技术面试题。**
+“该模型在实验中支持更大尺寸”
+不能变成：
+“该模型可以无限处理任意尺寸”。
+
+==================================================
+五、Comparative Claim Rule
+========================
+
+对于：
+
+* 更高效
+* 更快
+* 更鲁棒
+* 更准确
+* 更强
+* 更适合
+* 显著优于
+* 计算成本更低
+* 学习效率更高
+* 泛化更强
+
+必须判断来源属于：
+
+1. structural inference
+2. empirical observation
+3. conditional comparison
+
+如果是 empirical comparison，必须有明确来源证据。
+
+不能自行从架构直觉推出确定性的性能比较。
+
+例如：
+
+“任务目标更简单”
+不能自动推出：
+“训练一定更快”。
+
+“计算量更低”
+不能自动推出：
+“最终精度一定更高”。
+
+“自然语言监督更多”
+不能自动推出：
+“OOD 鲁棒性必然更强”。
+
+如果来源只支持特定实验：
+
+必须保留实验条件。
+
+==================================================
+六、Architecture Property ≠ Downstream Superiority
+================================================
+
+不要从架构属性自动推导下游性能优势。
+
+例如：
+
+“linear projection”
+不能自动变成：
+“必然具有更强通用性”。
+
+“没有非线性”
+不能自动变成：
+“下游性能更好”。
+
+“计算更少”
+不能自动变成：
+“准确率更高”。
+
+“表示更直接”
+不能自动变成：
+“泛化能力更强”。
+
+没有直接证据时，应表述为：
+
+* 架构性质
+* 设计动机
+* 可能的便利
+* 条件性优势
+
+==================================================
+七、Causal Attribution Rule
+=========================
+
+复杂 empirical phenomenon 不得被未经来源证明地归结为唯一或充分原因。
 
 避免：
 
-* 英文句式直译
-* 大量中英混杂
-* 无意义括号
-* 术语堆砌
-* 翻译腔
-* 为了显得专业而写很长
+* 根本原因就是……
+* 唯一原因……
+* 完全源于……
+* 主要就是……
+* 因此必然……
 
-可以保留行业通用术语：
+如果现象可能由多个因素共同导致：
 
-Transformer、Attention、Softmax、MoE、KV Cache、CUDA、FlashAttention、Embedding、Batch Size、Latency、Throughput 等。
+* 缩小题目到当前来源明确支持的机制；
+* 或在题干中明确“本题只考察其中一个机制”。
 
-首次出现复杂术语时，可以用：
+==================================================
+八、Do Not Invent Optimization Necessity
+======================================
 
-> 中文名（English）
+严格区分：
 
-之后使用行业通用表达。
+* improves optimization
+* controls gradient scale
+* stabilizes training
+* helps convergence
+* required for convergence
 
----
+不得把前四者自动升级成：
 
-# 二十五、最终输出前必须进行 Adversarial Review
+* 没有它无法训练
+* 必然梯度消失
+* 必然梯度爆炸
+* 必然无法收敛
+* 训练一定失败
 
-这一步非常重要。
+除非来源明确支持。
 
-题目生成完成后，不要立即输出。
+例如：
 
-内部暂时站到“挑剔审稿人 / 面试官”的角度重新检查：
+temperature scaling 可以调节 logits scale
 
-### Knowledge
+不等于：
 
-* 题目是否仍然测 Blueprint 的 Knowledge？
-* 是否偷偷引入新的核心 Knowledge？
+没有 temperature scaling 就无法收敛。
 
-### Assessment Target
+==================================================
+九、Numeric Provenance
+====================
 
-* 题目是否真的测 target？
-* 还是只测了 Knowledge 名称/定义？
+以下精确内容必须由当前来源明确支持：
 
-### Evidence
+* exact number
+* threshold
+* ratio
+* coefficient
+* hyperparameter
+* dimension
+* layer count
+* benchmark
+* batch size
+* training configuration
 
-* 一个答对该题的人，是否真的提供了 Blueprint 要求的 evidence？
-* 是否可以靠关键词/表面记忆通过？
+不要依据模型记忆补充。
 
-### Reasoning
+如果某个数字不是回答问题所必需的，应删除。
 
-* 是否真的需要 Blueprint 指定的 reasoning path？
+==================================================
+十、Canonical
+===========
 
-### Multiple-choice
+Canonical 必须：
 
-* 每个正确项是否独立？
-* 是否有同义重复？
-* 错误项是否 believable？
-* 是否只有一个选项因为更长而暴露答案？
+* 测量核心 Knowledge
+* 符合 Assessment Target
+* 触发 Reasoning Goal
+* 满足 Evidence Criterion
+* 不偷偷变成记忆题
+* 不引入新的 Knowledge
 
-### Single-choice
+==================================================
+十一、Assessment Target
+====================
 
-* 是否真的只有一个最佳答案？
-* 题目条件是否足够？
+最终题目必须允许通过回答观察 Blueprint 声明的能力。
 
-### Variant
+Blueprint：
 
-* 已答对 Canonical 的人，是否仍需要明显不同的思考？
-* 是否只是换背景？
+“根据条件判断机制。”
 
-### Difficulty
+那么最终问题必须要求：
 
-* 难度是否来自 cognitive requirement？
-* 是否只是增加文字？
+条件
+→ 分析
+→ 判断机制
 
-### Accuracy
+不能变成简单：
 
-* 有没有隐藏错误？
-* 有没有过度绝对化？
+“X 是什么？”
 
-### Self-contained
+==================================================
+十二、Reasoning Goal
+=================
 
-* 不看网页还能不能独立作答？
+题目必须真实触发对应 reasoning path。
 
-发现关键问题：
+diagnose：
+必须有症状、异常或失败模式。
 
-**先重写题目，再输出。**
+predict：
+必须有某个变量或条件变化。
 
-绝对不要把明显发现的问题直接交给下游。
+compare：
+必须有真正可比较的方案、机制或 trade-off。
 
----
+evaluate：
+必须有明确判断标准。
 
-# 二十六、最终输出格式
+design：
+必须有约束与目标。
 
-严格输出合法 JSON Array。
+boundary：
+必须让回答者处理适用范围。
 
-不要输出 Markdown。
+==================================================
+十三、Evidence Criterion
+=====================
 
-不要输出：
+正确答案必须包含能够体现 Evidence Criterion 的证据。
 
-```json
-```
+如果答案只有结论，没有关键机制、因果链或边界，则重写。
 
-不要输出分析。
+==================================================
+十四、Multiple-Choice
+==================
 
-不要输出任何额外解释。
+默认优先 multiple-choice，但必须满足：
 
-格式：
+* 至少两个正确选项
+* 每个正确选项独立成立
+* 每个正确选项独立具有测量价值
+
+禁止：
+
+* 同义改写
+* 同一事实重复
+* 一个是另一个直接推论
+* 一个是另一个前提
+* 同一因果链重复拆分
+
+例如：
+
+“模型可以在更大尺寸运行”
+
+和：
+
+“因此无需重新训练即可运行更大尺寸”
+
+如果本质上只测同一 proposition，不应同时作为正确项。
+
+如果无法形成两个独立正确 proposition：
+
+改为 single-choice。
+
+==================================================
+十五、Independent Proposition Test
+===============================
+
+对 Multiple-choice 的每个正确项进行：
+
+“删除这个选项后，是否损失一个独立知识判断？”
+
+如果答案是“没有”，则该选项与其他正确项重复。
+
+尽量让不同正确项覆盖不同证据维度：
+
+* mechanism
+* consequence
+* trade-off
+* boundary
+
+而不是重复同一因果链。
+
+==================================================
+十六、Single-Choice
+================
+
+必须存在一个明确最佳答案。
+
+其它选项可以：
+
+* 条件不成立
+* 机制错误
+* 因果错误
+* 范围过大
+* 适用条件遗漏
+* 把经验规律误当硬规则
+* 把 implementation detail 当 theoretical law
+
+不能存在两个同等合理答案。
+
+==================================================
+十七、Distractor
+=============
+
+高质量 distractor 应来自：
+
+* 常见 misconception
+* 因果关系倒置
+* 条件遗漏
+* 机制混淆
+* scope overgeneralization
+* empirical tendency 被当成 necessity
+* implementation detail 被当成 theory
+
+避免：
+
+* 明显荒谬
+* 与题干无关
+* 纯粹制造错误
+* 极短导致答案暴露
+* 使用明显绝对词制造答案线索
+
+==================================================
+十八、长度公平
+=======
+
+不要让正确答案因为：
+
+* 显著更长
+* 更具体
+* 拥有更多限定词
+* 更完整
+
+而成为明显答案线索。
+
+正确答案可以更精确，但不能人为增加长度以制造线索。
+
+==================================================
+十九、Variant
+==========
+
+Variant 必须：
+
+* 保持 Knowledge Identity
+* 保持 Knowledge Boundary
+* 保持核心事实
+* 提供不同 observation opportunity
+
+允许变化：
+
+* angle
+* cognitiveTask
+* context
+* role
+* constraints
+* decision
+* reasoning direction
+* evidence demanded
+* difficulty
+* question type
+
+不要求固定改变字段数量。
+
+==================================================
+二十、Variant 不是表面改写
+=================
+
+以下不算 Variant：
+
+* 换数字
+* 换模型名
+* 换公司
+* 换数据集
+* 换人物
+* 换背景
+* 同义改写
+* 增加描述
+* 只改变措辞
+
+必须真正改变：
+
+* reasoning
+* judgment
+* diagnosis
+* evidence
+* decision
+
+==================================================
+二十一、Variant Knowledge Boundary
+==============================
+
+Variant 可以改变：
+
+“从哪个方向观察同一个 Knowledge。”
+
+不能变成：
+
+“另一个 Knowledge。”
+
+例如：
+
+Knowledge：
+
+“过度压缩导致不可逆信息损失。”
+
+可以：
+
+Canonical：
+解释机制。
+
+Variant：
+根据压缩倍率变化预测重建质量。
+
+但不能突然变成：
+
+* optimizer instability
+* attention architecture
+* text encoder design
+
+除非这些属于同一 Knowledge Boundary。
+
+==================================================
+二十二、条件与维度表述
+===========
+
+必须区分：
+
+原始输入
+→ encoder
+→ projection / transformation
+→ model representation
+→ computation
+
+不要把：
+
+“经过 projection 后兼容”
+
+写成：
+
+“任意原始维度都可以直接输入”。
+
+避免：
+
+* 任意维度
+* 无需任何维度约束
+* 原始表示天然兼容
+
+除非来源明确支持。
+
+==================================================
+二十三、Difficulty
+==============
+
+根据：
+
+* reasoning complexity
+* interacting constraints
+* ambiguity
+* transfer distance
+* diagnostic depth
+
+确定 difficulty。
+
+不要通过：
+
+* 加长题干
+* 堆术语
+* 增加无关背景
+
+制造困难。
+
+==================================================
+二十四、Quantitative
+================
+
+优先测试：
+
+* trend
+* relative relationship
+* parameter interaction
+* boundary
+* counterfactual
+* quantitative interpretation
+
+避免纯算术。
+
+==================================================
+二十五、Engineering
+===============
+
+必须明确：
+
+* goal
+* constraints
+* conditions
+
+不要把某个工程经验写成普遍定律。
+
+==================================================
+二十六、Explanation
+===============
+
+Explanation 必须准确说明：
+
+* 为什么正确
+* 为什么其它选项错误
+* 关键机制
+* 必要条件
+* 适用范围
+* 重要边界
+
+不能只是重复 option。
+
+每个选项都必须有对应解释。
+
+==================================================
+二十七、Option ↔ Explanation Consistency
+====================================
+
+严格检查：
+
+option
+↔ answer
+↔ explanation
+↔ assessment target
+
+必须一致。
+
+特别注意：
+
+Option：
+
+“通常可以……”
+
+Explanation：
+
+“因此一定……”
+
+这是错误的。
+
+Option 如果保留条件：
+
+Explanation 也必须保留相同条件。
+
+==================================================
+二十八、Counterexample Test
+=======================
+
+对每个正确选项问：
+
+“能否构造一个符合当前来源，但能让该选项失败的情况？”
+
+如果可以：
+
+* 降低 claim strength
+* 缩小 scope
+* 补必要条件
+* 或修改选项
+
+除非该选项就是在测试这个边界。
+
+==================================================
+二十九、Generalization Audit
+========================
+
+最终逐项检查：
+
+1. 是否将 paper-specific observation 写成 universal rule？
+2. 是否把 experiment configuration 写成 default recommendation？
+3. 是否把 empirical tendency 写成 necessity？
+4. 是否把 implementation detail 写成 theoretical law？
+5. 是否把 architecture property 写成 downstream superiority？
+6. 是否把一个复杂现象强行归因为单一原因？
+7. 是否把 optimization benefit 写成 convergence necessity？
+8. 是否出现：
+
+   * 必须
+   * 必然
+   * 完全
+   * 任意
+   * 所有
+   * 无需
+   * 最优
+   * 无限
+     等无来源支持的强断言？
+9. 是否丢失了原本必要的条件？
+10. 是否存在未经来源支持的精确数字？
+
+发现任何问题，必须修正后再输出。
+
+==================================================
+三十、Blueprint Sanity Check
+=========================
+
+生成最终题目前检查 Blueprint 是否存在：
+
+* Knowledge Boundary 不清晰
+* claim scope 过大
+* assessment target 与 reasoning goal 冲突
+* variant 引入新 Knowledge
+* multiple-choice 无法形成独立正确 proposition
+* 题目依赖网页没有支持的事实
+
+如果发现：
+
+* 缩小范围
+* 降低 claim strength
+* 补回条件
+* 改题型
+* 重写 option
+
+但不得改变 Knowledge Intent。
+
+==================================================
+三十一、最终 Adversarial Review
+=========================
+
+站在最挑剔的技术面试官角度，再检查：
+
+A. factual accuracy
+B. source fidelity
+C. scope fidelity
+D. claim strength
+E. comparative claim validity
+F. causal attribution validity
+G. optimization claim validity
+H. numeric provenance
+I. knowledge boundary
+J. assessment target
+K. reasoning goal
+L. correct-answer uniqueness / independence
+M. distractor plausibility
+N. answer-length fairness
+O. explanation consistency
+P. canonical / variant distinction
+Q. absence of hidden new Knowledge
+
+任何一项失败：
+
+先修改题目。
+
+不要输出失败版本。
+
+==================================================
+三十二、最终 JSON 格式
+==============
+
+严格输出 JSON array：
 
 [
 {
-"id": "stable-id",
+"id": "...",
 "questionRole": "canonical | variant",
-"variantOf": "canonical-id | null",
+"variantOf": null,
 "category": "...",
 "topic": "...",
 "knowledgeId": "...",
@@ -759,65 +796,56 @@ Transformer、Attention、Softmax、MoE、KV Cache、CUDA、FlashAttention、Emb
 "explanation": "...",
 "formats": [
 {
-"type": "multiple-choice | single-choice",
+"type": "multiple-choice",
 "options": [
 {
 "key": "A",
 "text": "..."
+},
+{
+"key": "B",
+"text": "..."
+},
+{
+"key": "C",
+"text": "..."
+},
+{
+"key": "D",
+"text": "..."
 }
 ],
-"answer": ["A", "C"]
+"answer": ["A", "B"]
 }
 ]
 }
 ]
 
-对于：
+single-choice：
 
-`multiple-choice`
+"answer": "A"
 
-`answer` 必须是至少包含两个 key 的数组。
+multiple-choice：
 
-例如：
+"answer": ["A", "B", "..."]
 
-"answer": ["A", "C"]
+==================================================
+三十三、绝对禁止输出额外内容
+==============
 
-对于：
+只输出最终 JSON array。
 
-`single-choice`
+不要输出：
 
-`answer` 必须是单个 key：
+* Markdown
+* ```json
+  ```
+* 分析过程
+* 审核报告
+* 备注
+* 建议
+* Blueprint 解释
+* 自我评价
+* 质量评分
 
-"answer": "B"
-
----
-
-# 二十七、最终原则
-
-**Blueprint 决定测什么。**
-
-**Question 决定如何把它变成可观察的 task。**
-
-**Assessment Target 决定证明什么。**
-
-**ReasoningGoal 决定需要怎样推理。**
-
-**Distractor 应代表 plausible misconception，而不是随机错误。**
-
-**Multiple-choice 只有多个独立正确判断时才真正有价值。**
-
-**Single-choice 必须存在唯一最佳判断。**
-
-**Variant 必须产生真正不同的 reasoning path。**
-
-**Variant 数量不是 KPI。**
-
-**理解、应用、诊断、比较、trade-off > 单纯记忆。**
-
-**准确性 > 复杂度。**
-
-**Self-contained > 依赖原文。**
-
-**高价值少量题 > 大量重复题。**
-
-**发现问题先修复，再输出。**
+只输出最终 Question JSON。
