@@ -1,0 +1,1841 @@
+{
+  "version": 1,
+  "generatedAt": 1788927378327,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-quant-fp4-01": [
+      {
+        "id": "ai-quant-fp4-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "低精度预训练软硬协同，哪些正确？",
+        "options": [
+          "4-bit 预训赖硬件 FP4 单元原生支持",
+          "预训直引低精度，权重适应减后损",
+          "主优减带宽传销，加快矩阵乘",
+          "4-bit 预训显存反涨，低精度影子副本补偿累加吃光节省"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从低精度定硬件与适应环节",
+          "reasoningGoal": "先定协同的环节；再逐项验证各判断；并排除「显存大涨」等不成立描述。"
+        },
+        "generatedAt": 1788927378316,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f5507fb5",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-4e84bf23",
+        "sourceSnapshot": {
+          "id": "ai-quant-fp4-01",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "fp4",
+            "low-precision",
+            "hardware-co-design",
+            "pretraining"
+          ],
+          "question": "在深度学习大规模预训练中，采用低精度数值格式（如 4-bit / FP4）是降低显存吞吐与计算功耗的重要手段。以下关于低精度预训练与软硬件协同设计的说法，正确的有？（多选）",
+          "options": [
+            "直接使用 4-bit 进行预训练通常依赖硬件体系结构（如专用的 FP4 张量计算单元）的原生支持",
+            "相比于高精度预训练后量化（Post-Training Quantization），从预训练阶段直接引入低精度计算能让模型权重适应低精度的数值范围，减少后量化的精度损失",
+            "4-bit 预训练的主要优势在于减少内存带宽需求和数据传输开销，加快矩阵乘法计算",
+            "采用 4-bit 预训练会显著增加模型训练时的显存消耗，但能提升推理吞吐量，因为低精度权重在反向传播时需要额外的高精度影子副本与补偿累加器，这部分开销远大于省下的空间"
+          ]
+        }
+      },
+      {
+        "id": "ai-quant-fp4-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "4-bit 训大模型。看这次协同，下列哪些判断成立？",
+        "options": [
+          "FP4 张量单元原生支持是前提",
+          "预训直引低精度算，权重适应数值范围，减后量化精度损",
+          "内存带宽传输开销降，矩阵乘加快",
+          "4-bit 预训显存反涨，低精度影子副本补偿累加吃光节省"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从训大模型看支持与开销环节",
+          "reasoningGoal": "先看协同的环节；再逐项验证各判断；并排除「被吃光」等不成立描述。"
+        },
+        "generatedAt": 1788927378317,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f5507fb5",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-4084e9c2",
+        "sourceSnapshot": {
+          "id": "ai-quant-fp4-01",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "fp4",
+            "low-precision",
+            "hardware-co-design",
+            "pretraining"
+          ],
+          "question": "在深度学习大规模预训练中，采用低精度数值格式（如 4-bit / FP4）是降低显存吞吐与计算功耗的重要手段。以下关于低精度预训练与软硬件协同设计的说法，正确的有？（多选）",
+          "options": [
+            "直接使用 4-bit 进行预训练通常依赖硬件体系结构（如专用的 FP4 张量计算单元）的原生支持",
+            "相比于高精度预训练后量化（Post-Training Quantization），从预训练阶段直接引入低精度计算能让模型权重适应低精度的数值范围，减少后量化的精度损失",
+            "4-bit 预训练的主要优势在于减少内存带宽需求和数据传输开销，加快矩阵乘法计算",
+            "采用 4-bit 预训练会显著增加模型训练时的显存消耗，但能提升推理吞吐量，因为低精度权重在反向传播时需要额外的高精度影子副本与补偿累加器，这部分开销远大于省下的空间"
+          ]
+        }
+      }
+    ],
+    "cache-prefix-01": [
+      {
+        "id": "cache-prefix-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "前缀缓存匹配规则与摆法，哪些正确？",
+        "options": [
+          "Prefix 开头连续 Token 匹配，首 Token 不一致即失配",
+          "两请求含同 System Prompt，开头末尾任放加速同",
+          "固定 System 静态前部，动态 Query 变量尾部，命中率最大",
+          "命中直读 KV，TTFT 计算双降"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从匹配定首字与摆法环节",
+          "reasoningGoal": "先定规则的环节；再逐项验证各判断；并排除「放哪都同」等不成立描述。"
+        },
+        "generatedAt": 1788927378317,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-288db3eb",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-b91b3c9e",
+        "sourceSnapshot": {
+          "id": "cache-prefix-01",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prefix-caching",
+            "kv-cache",
+            "prompt-structure",
+            "hit-rate"
+          ],
+          "question": "为了降低 LLM 推理的 Prefill 计算开销并减少首 Token 延迟，推理引擎普遍引入了 Prefix Caching（前缀缓存）机制。针对该机制的匹配规则与 Prompt 结构设计，下列说法正确的有？（多选）",
+          "options": [
+            "Prefix Caching 依赖从序列开头开始的连续 Token 匹配；若两个 Prompt 的第一个 Token 不一致，即使后续大段文本完全相同，也无法命中缓存",
+            "只要两个请求中包含完全相同的 System Prompt，无论将其放在 Prompt 的开头还是末尾，Prefix Caching 都能带来相同的加速效果",
+            "在工程实践中，应将固定的 System Prompt 和静态上下文放在 Prompt 前部，将动态变化的 User Query 或变量放在尾部，以最大化缓存命中率",
+            "命中 Prefix Caching 后，引擎可以直接读取复用已计算好的 KV Cache，从而显著降低 TTFT 并减少计算开销"
+          ]
+        }
+      },
+      {
+        "id": "cache-prefix-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "缓存总失配。查这次摆放，下列哪些判断成立？",
+        "options": [
+          "序列开头连续匹配，首字不同全失",
+          "含同 System Prompt，开头末尾任放加速一样",
+          "System 静态放前部，动态 Query 变量放尾部",
+          "复用算好 KV，TTFT 计算双降"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从失配查开头与前后环节",
+          "reasoningGoal": "先查摆放的环节；再逐项验证各判断；并排除「任放一样」等不成立描述。"
+        },
+        "generatedAt": 1788927378318,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-288db3eb",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-4f4d0ba9",
+        "sourceSnapshot": {
+          "id": "cache-prefix-01",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prefix-caching",
+            "kv-cache",
+            "prompt-structure",
+            "hit-rate"
+          ],
+          "question": "为了降低 LLM 推理的 Prefill 计算开销并减少首 Token 延迟，推理引擎普遍引入了 Prefix Caching（前缀缓存）机制。针对该机制的匹配规则与 Prompt 结构设计，下列说法正确的有？（多选）",
+          "options": [
+            "Prefix Caching 依赖从序列开头开始的连续 Token 匹配；若两个 Prompt 的第一个 Token 不一致，即使后续大段文本完全相同，也无法命中缓存",
+            "只要两个请求中包含完全相同的 System Prompt，无论将其放在 Prompt 的开头还是末尾，Prefix Caching 都能带来相同的加速效果",
+            "在工程实践中，应将固定的 System Prompt 和静态上下文放在 Prompt 前部，将动态变化的 User Query 或变量放在尾部，以最大化缓存命中率",
+            "命中 Prefix Caching 后，引擎可以直接读取复用已计算好的 KV Cache，从而显著降低 TTFT 并减少计算开销"
+          ]
+        }
+      }
+    ],
+    "harness-api-01": [
+      {
+        "id": "harness-api-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "网关层分词安审拖首包。优化哪些正确？",
+        "options": [
+          "无态求全量重分词，CPU 耗时随长线性",
+          "会话保持内存维护 Token 序，Delta 增量追加近 O(1)",
+          "安审与 Prefill 并发启动，掩延迟",
+          "安审须推理启动前同步，并发启动属反模式"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从拖首包定重分与并发环节",
+          "reasoningGoal": "先定优化的环节；再逐项验证各判断；并排除「须先行」等不成立描述。"
+        },
+        "generatedAt": 1788927378318,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9252924e",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-49923cb2",
+        "sourceSnapshot": {
+          "id": "harness-api-01",
+          "topic": "latency",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "api-gateway",
+            "tokenization",
+            "safety-check",
+            "ttft"
+          ],
+          "question": "在 Agent 系统架构的 API gateway/服务层（运行于 CPU 集群）中，处理分词（Tokenization）与安全审查（Safety Checks）是首包延迟（TTFT）的重要影响因素。关于 API 层的工程优化策略，下列分析正确的有？（多选）",
+          "options": [
+            "在无状态请求中，随着上下文变长，API 层每次都需要对全量历史文本重新分词，CPU 分词耗时随上下文长度呈线性增长",
+            "结合会话状态保持，API 层可以在内存中维护已分词的 Token 序列，每次仅对客户端新传来的 Delta 增量文本进行分词并追加，使单次分词时间接近 O(1)",
+            "安全审查分类器（如涉密、攻击意图识别）与 LLM 推理（Prefill 阶段）并发启动，利用 LLM 首包生成前的等待窗口掩盖安全校验延迟",
+            "安全审查分类器必须严格在 LLM 推理启动之前同步完成，因为并发启动会导致审查失败时产生无效的 GPU 算力消耗，在工程上属于反模式"
+          ]
+        }
+      },
+      {
+        "id": "harness-api-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "首包慢半拍。剖这层延迟，下列哪些判断成立？",
+        "options": [
+          "历史文本次次重分，耗时线性涨",
+          "内存维护已分词 Token 序，Delta 增量追加近 O(1)",
+          "并发启动借首包等待窗，掩安审校验延迟",
+          "推理启动前同步完成，审查失败 GPU 空耗属反模式"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从慢半拍剖重分与空转环节",
+          "reasoningGoal": "先剖延迟的环节；再逐项验证各判断；并排除「反模式」等不成立描述。"
+        },
+        "generatedAt": 1788927378318,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9252924e",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-a5816249",
+        "sourceSnapshot": {
+          "id": "harness-api-01",
+          "topic": "latency",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "api-gateway",
+            "tokenization",
+            "safety-check",
+            "ttft"
+          ],
+          "question": "在 Agent 系统架构的 API gateway/服务层（运行于 CPU 集群）中，处理分词（Tokenization）与安全审查（Safety Checks）是首包延迟（TTFT）的重要影响因素。关于 API 层的工程优化策略，下列分析正确的有？（多选）",
+          "options": [
+            "在无状态请求中，随着上下文变长，API 层每次都需要对全量历史文本重新分词，CPU 分词耗时随上下文长度呈线性增长",
+            "结合会话状态保持，API 层可以在内存中维护已分词的 Token 序列，每次仅对客户端新传来的 Delta 增量文本进行分词并追加，使单次分词时间接近 O(1)",
+            "安全审查分类器（如涉密、攻击意图识别）与 LLM 推理（Prefill 阶段）并发启动，利用 LLM 首包生成前的等待窗口掩盖安全校验延迟",
+            "安全审查分类器必须严格在 LLM 推理启动之前同步完成，因为并发启动会导致审查失败时产生无效的 GPU 算力消耗，在工程上属于反模式"
+          ]
+        }
+      }
+    ],
+    "harness-cache-01": [
+      {
+        "id": "harness-cache-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "拼包必须保持前缀一致，失效哪来？原因优化哪些正确？",
+        "options": [
+          "无序 Map 致工具序飘，缓存失效",
+          "审批策略直改定义文本保最新",
+          "易变配置移出 Prompt，沙箱拦验保稳",
+          "Token 数同改格式不破匹配"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从失效定序飘与移出环节",
+          "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「直改保新」「数同即配」等不成立描述。"
+        },
+        "generatedAt": 1788927378318,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5a0db7c6",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-449878cc",
+        "sourceSnapshot": {
+          "id": "harness-cache-01",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prompt-caching",
+            "harness",
+            "kv-cache",
+            "serialization"
+          ],
+          "question": "在 LLM Agent 系统中，利用 Prompt Caching（前缀缓存）重用已计算的 KV 状态是降低延迟和成本的关键手段。Prompt Caching 的匹配要求输入 Token 序列必须保持精确的前缀一致。关于 Harness 层在构建 Prompt 时引发缓存失效的原因及优化策略，下列说法正确的有？（多选）",
+          "options": [
+            "在存储工具定义（如 MCP 工具）时使用无序 Hash Map，会导致每次构建请求时 JSON 序列化的工具顺序不一致，从而引发 Prompt 缓存失效",
+            "当用户在运行期修改工具的审批策略（如将“询问确认”改为“自动通过”）时，应当直接在 System Prompt 的工具定义文本中更新权限属性，以确保 LLM 获取最新规则",
+            "应当将易变的运行时配置（如权限策略）移出 Prompt，改由 Harness 在沙箱环境中拦截和校验工具执行，以维持 Prompt 文本的稳定",
+            "对历史消息进行中间修改或调整序列化格式，只要总 Token 数量保持一致，就不会破坏 Prompt 缓存的匹配"
+          ]
+        }
+      },
+      {
+        "id": "harness-cache-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "前缀一致是必须，缓存莫名不中。查这次拼接，下列哪些判断成立？",
+        "options": [
+          "无序 Hash Map 存工具定义，JSON 序列化序次次变",
+          "运行期改审批策略，定义文本更新权限属性",
+          "权限策略出 Prompt，沙箱拦截校验",
+          "历史消息中间改格式，Token 总数同即不破匹配"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从不中查无序与总数环节",
+          "reasoningGoal": "先查拼接的环节；再逐项验证各判断；并排除「拿最新」「无碍」等不成立描述。"
+        },
+        "generatedAt": 1788927378319,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5a0db7c6",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-f920171f",
+        "sourceSnapshot": {
+          "id": "harness-cache-01",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prompt-caching",
+            "harness",
+            "kv-cache",
+            "serialization"
+          ],
+          "question": "在 LLM Agent 系统中，利用 Prompt Caching（前缀缓存）重用已计算的 KV 状态是降低延迟和成本的关键手段。Prompt Caching 的匹配要求输入 Token 序列必须保持精确的前缀一致。关于 Harness 层在构建 Prompt 时引发缓存失效的原因及优化策略，下列说法正确的有？（多选）",
+          "options": [
+            "在存储工具定义（如 MCP 工具）时使用无序 Hash Map，会导致每次构建请求时 JSON 序列化的工具顺序不一致，从而引发 Prompt 缓存失效",
+            "当用户在运行期修改工具的审批策略（如将“询问确认”改为“自动通过”）时，应当直接在 System Prompt 的工具定义文本中更新权限属性，以确保 LLM 获取最新规则",
+            "应当将易变的运行时配置（如权限策略）移出 Prompt，改由 Harness 在沙箱环境中拦截和校验工具执行，以维持 Prompt 文本的稳定",
+            "对历史消息进行中间修改或调整序列化格式，只要总 Token 数量保持一致，就不会破坏 Prompt 缓存的匹配"
+          ]
+        }
+      }
+    ],
+    "harness-router-01": [
+      {
+        "id": "harness-router-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "请求分发 backend，缓存感知怎么权衡？",
+        "options": [
+          "新节点重算历史 Attention，触发完整 Prefill",
+          "权衡队列深度命中率，强制命中超载节点忌",
+          "按 Trace 淘汰冷缓存，下沉 Host 内存或驱逐",
+          "会话粘性硬绑定，失衡只扩容坚决不打散会话"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从分发定重算与淘汰环节",
+          "reasoningGoal": "先定权衡的环节；再逐项验证各判断；并排除「硬绑扩容」等不成立描述。"
+        },
+        "generatedAt": 1788927378319,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f82ef9f1",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-110e5aec",
+        "sourceSnapshot": {
+          "id": "harness-router-01",
+          "topic": "inference-capacity",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "cache-aware-routing",
+            "kv-cache",
+            "load-balancing",
+            "prefill"
+          ],
+          "question": "在大模型分布式推理集群中，KV Cache 管理直接决定了系统的吞吐量和延迟。在负载均衡器（Router）将请求分发给后端 GPU 节点时，关于“缓存感知路由（Cache-Aware Routing）”的设计原理与工程权衡，下列说法正确的有？（多选）",
+          "options": [
+            "若将会话的后续请求路由到未持有该会话 KV Cache 的 GPU 节点，新节点必须重新计算所有历史 Token 的 Attention 状态（即触发完整 Prefill）",
+            "缓存感知路由需要同时权衡“节点负载状况（队列深度）”与“KV Cache 命中率”，避免为了强制命中缓存而将请求持续发送给已超载的 GPU 节点",
+            "KV Cache 占据大量的 GPU 显存，推理系统需要根据生产环境的访问痕迹（Traces）制定淘汰与层级存储策略（如将冷缓存下沉至 Host 内存或驱逐）",
+            "会话粘性应硬绑定，负载失衡时优先横向扩容 GPU 而非打散会话；扩容成本低于缓存失效的重算成本。"
+          ]
+        }
+      },
+      {
+        "id": "harness-router-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "会话粘错节点全重算。定这次路由，下列哪些判断成立？",
+        "options": [
+          "新节点无会话 KV，历史 Token 状态重算",
+          "权衡队列深度与命中率，超载节点不硬塞",
+          "按访问痕迹淘汰，冷缓存下沉 Host 内存或驱逐",
+          "会话硬绑失衡扩容不打散，扩容成本低于重算"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从粘错定重算与驱逐环节",
+          "reasoningGoal": "先定路由的环节；再逐项验证各判断；并排除「不打散」等不成立描述。"
+        },
+        "generatedAt": 1788927378319,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f82ef9f1",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-3feb3132",
+        "sourceSnapshot": {
+          "id": "harness-router-01",
+          "topic": "inference-capacity",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "cache-aware-routing",
+            "kv-cache",
+            "load-balancing",
+            "prefill"
+          ],
+          "question": "在大模型分布式推理集群中，KV Cache 管理直接决定了系统的吞吐量和延迟。在负载均衡器（Router）将请求分发给后端 GPU 节点时，关于“缓存感知路由（Cache-Aware Routing）”的设计原理与工程权衡，下列说法正确的有？（多选）",
+          "options": [
+            "若将会话的后续请求路由到未持有该会话 KV Cache 的 GPU 节点，新节点必须重新计算所有历史 Token 的 Attention 状态（即触发完整 Prefill）",
+            "缓存感知路由需要同时权衡“节点负载状况（队列深度）”与“KV Cache 命中率”，避免为了强制命中缓存而将请求持续发送给已超载的 GPU 节点",
+            "KV Cache 占据大量的 GPU 显存，推理系统需要根据生产环境的访问痕迹（Traces）制定淘汰与层级存储策略（如将冷缓存下沉至 Host 内存或驱逐）",
+            "会话粘性应硬绑定，负载失衡时优先横向扩容 GPU 而非打散会话；扩容成本低于缓存失效的重算成本。"
+          ]
+        }
+      }
+    ],
+    "llm-07": [
+      {
+        "id": "llm-07__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "解码访存受限，单 token 延迟怎么降？",
+        "options": [
+          "INT4/FP8 压权重，单步少读字节",
+          "GQA/MQA 砍 KV 头，降带宽压",
+          "小模起草多 token，大模一次验",
+          "权重升回 FP32 保稳，批量摊额外读取",
+          "KV 常驻永不过期，爆存淘权重留历史"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从受限定压权与起草环节",
+          "reasoningGoal": "先定降法 的环节；再逐项验证各判断；并排除「升精度」「删权重」等不成立描述。"
+        },
+        "generatedAt": 1788927378320,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-028a1803",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-1a182134",
+        "sourceSnapshot": {
+          "id": "llm-07",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "decoding",
+            "quantization",
+            "speculative-decoding",
+            "gqa"
+          ],
+          "question": "LLM 解码阶段通常是访存受限（memory-bandwidth-bound）。下列哪些手段能有效降低单 token 延迟？（多选）",
+          "options": [
+            "对模型权重做 INT4/FP8 量化，减少每步解码需要读取的字节数",
+            "采用 GQA/MQA 减少 KV 头数，显著缩小 KV cache 的显存占用与带宽压力",
+            "质量可接受时启用投机解码：小模型起草多 token，大模型一次前向并行验证。",
+            "把权重从当前精度升级回 FP32 存储以获得更好的数值稳定性，再用增大批量来摊薄额外的读取开销",
+            "KV cache 常驻永不过期可最大化复用；显存不足时优先淘汰模型权重而非历史，权重可随时从磁盘重载。"
+          ]
+        }
+      },
+      {
+        "id": "llm-07__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "一 token 一卡顿。治这次访存，下列哪些判断成立？",
+        "options": [
+          "权重量化减字节，解码少读",
+          "KV 头数砍，显存带宽双松",
+          "投机解码质量可接受就开",
+          "FP32 数值稳，批量摊额外读",
+          "KV 常驻复用最大，爆存淘权重留历史，权重磁盘重载"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从卡顿治字节与历史环节",
+          "reasoningGoal": "先治访存的环节；再逐项验证各判断；并排除「数值稳」「优先留」等不成立描述。"
+        },
+        "generatedAt": 1788927378320,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-028a1803",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-d6611894",
+        "sourceSnapshot": {
+          "id": "llm-07",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "decoding",
+            "quantization",
+            "speculative-decoding",
+            "gqa"
+          ],
+          "question": "LLM 解码阶段通常是访存受限（memory-bandwidth-bound）。下列哪些手段能有效降低单 token 延迟？（多选）",
+          "options": [
+            "对模型权重做 INT4/FP8 量化，减少每步解码需要读取的字节数",
+            "采用 GQA/MQA 减少 KV 头数，显著缩小 KV cache 的显存占用与带宽压力",
+            "质量可接受时启用投机解码：小模型起草多 token，大模型一次前向并行验证。",
+            "把权重从当前精度升级回 FP32 存储以获得更好的数值稳定性，再用增大批量来摊薄额外的读取开销",
+            "KV cache 常驻永不过期可最大化复用；显存不足时优先淘汰模型权重而非历史，权重可随时从磁盘重载。"
+          ]
+        }
+      }
+    ],
+    "pd-disagg-01": [
+      {
+        "id": "pd-disagg-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "前后分家两集群，架构哪些正确？",
+        "options": [
+          "算力带宽瓶各异，配针对 GPU",
+          "首 Token KV 落盘，高速网传 Decode",
+          "短 Prompt 缓存命中跳解耦，省传销",
+          "零协同零传输，两组无态即运维"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从分家定配机与跳过环节",
+          "reasoningGoal": "先定架构的环节；再逐项验证各判断；并排除「零协同」等不成立描述。"
+        },
+        "generatedAt": 1788927378320,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e412dd88",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-006978b4",
+        "sourceSnapshot": {
+          "id": "pd-disagg-01",
+          "topic": "inference-optimization",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "pd-disaggregation",
+            "kv-cache",
+            "prefill",
+            "decode"
+          ],
+          "question": "PD 分离（Prefill-Decode Disaggregation）架构将 LLM 推理的 Prefill 和 Decode 阶段解耦，分别部署在不同的硬件集群上，并在两者之间通过网络传输 KV Cache。关于 PD 分离架构，下列说法正确的有？（多选）",
+          "options": [
+            "Prefill 节点与 Decode 节点可以根据各自阶段的硬件瓶颈（算力受限 vs 带宽受限）分别选用针对性优化的 GPU 配置",
+            "Prefill 节点在生成首 Token 和 KV Cache 后，需要将该请求的 KV Cache 通过高速网络传输给 Decode 节点",
+            "条件 PD 分离允许短 Prompt 或缓存命中请求跳过解耦直接在 Decode 节点完成，省去 KV 传输开销。",
+            "PD 分离后 prefill 与 decode 无需任何协同，KV 传输开销为零；运维只需管理两组无状态节点。"
+          ]
+        }
+      },
+      {
+        "id": "pd-disagg-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "预解耦后传输开销。看这次分家，下列哪些判断成立？",
+        "options": [
+          "两阶段瓶颈算力带宽异，GPU 配置各针对",
+          "KV Cache 高速网传 Decode 节点",
+          "条件分离短跳过，KV 传输省",
+          "传输开销为零，节点无状态运维"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从分家看瓶颈与零环节",
+          "reasoningGoal": "先看分家的环节；再逐项验证各判断；并排除「开销零」等不成立描述。"
+        },
+        "generatedAt": 1788927378320,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e412dd88",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-562d5ba3",
+        "sourceSnapshot": {
+          "id": "pd-disagg-01",
+          "topic": "inference-optimization",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "pd-disaggregation",
+            "kv-cache",
+            "prefill",
+            "decode"
+          ],
+          "question": "PD 分离（Prefill-Decode Disaggregation）架构将 LLM 推理的 Prefill 和 Decode 阶段解耦，分别部署在不同的硬件集群上，并在两者之间通过网络传输 KV Cache。关于 PD 分离架构，下列说法正确的有？（多选）",
+          "options": [
+            "Prefill 节点与 Decode 节点可以根据各自阶段的硬件瓶颈（算力受限 vs 带宽受限）分别选用针对性优化的 GPU 配置",
+            "Prefill 节点在生成首 Token 和 KV Cache 后，需要将该请求的 KV Cache 通过高速网络传输给 Decode 节点",
+            "条件 PD 分离允许短 Prompt 或缓存命中请求跳过解耦直接在 Decode 节点完成，省去 KV 传输开销。",
+            "PD 分离后 prefill 与 decode 无需任何协同，KV 传输开销为零；运维只需管理两组无状态节点。"
+          ]
+        }
+      }
+    ],
+    "quant-pref-decode-01": [
+      {
+        "id": "quant-pref-decode-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "FP16 保注意力量化线性，机理敏感度哪些正确？",
+        "options": [
+          "Prefill 降精加单元，加速大矩阵乘",
+          "Decode 减权重体积，加载带宽压力降 TPS 升",
+          "Attention 比 Linear 敏感，误差步步放大",
+          "注意层保全精度 FP16，线性权重低敏度量化"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从两阶段定降精与敏感环节",
+          "reasoningGoal": "先定机理的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788927378320,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bb581603",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-639aa408",
+        "sourceSnapshot": {
+          "id": "quant-pref-decode-01",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "quantization",
+            "prefill",
+            "decode",
+            "attention"
+          ],
+          "question": "对 LLM 进行低比特量化（如从 FP16 量化为 INT8/INT4）是常见的推理优化手段。关于量化在 Prefill 与 Decode 阶段的加速机理以及模型不同组件对量化的敏感度，下列说法正确的有？（多选）",
+          "options": [
+            "在 Prefill 阶段，量化主要通过降低浮点计算精度、使用专用低精度计算单元来加速大矩阵乘法",
+            "在 Decode 阶段，量化减少了模型权重的体积，降低了每次前向传播从显存加载权重的带宽压力，从而提升 TPS",
+            "注意力层（Attention Layer）通常比线性层（Linear Layer）对量化误差更敏感，因为注意力层的舍入误差会随序列生成在多步中逐步累积放大",
+            "生产环境中常见的工程折中方案是将注意力层保持全精度（如 FP16），而仅对线性权重（Linear Weights）等敏感度较低的部分进行量化"
+          ]
+        }
+      },
+      {
+        "id": "quant-pref-decode-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "FP16 保注意力量化线性。分这段机理，下列哪些判断成立？",
+        "options": [
+          "大矩阵乘低精单元加速",
+          "模型权重大减，前向加载带宽压力降",
+          "注意层舍入误差多步逐步累积放大",
+          "注意层保全精度 FP16，线性低敏度部分量化"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从异表现分大瘦与累积环节",
+          "reasoningGoal": "先分机理的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788927378321,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bb581603",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-2802efeb",
+        "sourceSnapshot": {
+          "id": "quant-pref-decode-01",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "quantization",
+            "prefill",
+            "decode",
+            "attention"
+          ],
+          "question": "对 LLM 进行低比特量化（如从 FP16 量化为 INT8/INT4）是常见的推理优化手段。关于量化在 Prefill 与 Decode 阶段的加速机理以及模型不同组件对量化的敏感度，下列说法正确的有？（多选）",
+          "options": [
+            "在 Prefill 阶段，量化主要通过降低浮点计算精度、使用专用低精度计算单元来加速大矩阵乘法",
+            "在 Decode 阶段，量化减少了模型权重的体积，降低了每次前向传播从显存加载权重的带宽压力，从而提升 TPS",
+            "注意力层（Attention Layer）通常比线性层（Linear Layer）对量化误差更敏感，因为注意力层的舍入误差会随序列生成在多步中逐步累积放大",
+            "生产环境中常见的工程折中方案是将注意力层保持全精度（如 FP16），而仅对线性权重（Linear Weights）等敏感度较低的部分进行量化"
+          ]
+        }
+      }
+    ],
+    "quant-ptq-qat-01": [
+      {
+        "id": "quant-ptq-qat-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "边缘部署压模型，PTQ/QAT 怎么选？",
+        "options": [
+          "PTQ 免训成本低，INT4 易衰精度",
+          "QAT 训中引噪模拟，低比特精度保持胜 PTQ",
+          "量化瘦显存提带宽，内存密集优选",
+          "参数量化与 KV 结构优化分层面，部署无法兼用"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从压模型定免训与模拟环节",
+          "reasoningGoal": "先定选择的环节；再逐项验证各判断；并排除「不可兼得」等不成立描述。"
+        },
+        "generatedAt": 1788927378321,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-415ef365",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-e77a2c77",
+        "sourceSnapshot": {
+          "id": "quant-ptq-qat-01",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "quantization",
+            "ptq",
+            "qat",
+            "int4"
+          ],
+          "question": "在将大语言模型部署至内存受限设备（如手机、边缘设备或高并发服务节点）时，权重量化（Quantization）是核心压缩技术。关于训练后量化（PTQ）与量化感知训练（QAT）的技术特性及工程权衡，下列说法正确的有？（多选）",
+          "options": [
+            "PTQ（Post-Training Quantization）无需重新训练模型，实施成本低，但在极低比特（如 INT4）下更容易引发明显的模型精度衰退",
+            "QAT（Quantization-Aware Training）在训练或微调阶段引入量化噪声模拟，使权重适应低精度表示，因此在低比特下通常比 PTQ 表现出更好的精度保持度",
+            "量化主要降低模型权重的显存/内存占用，并提高显存带宽利用效率，属于内存密集型推理优化的重要手段",
+            "参数量化与注意力机制的 KV Cache 结构优化（如 GQA）属于不同层面的技术，在实际部署中无法同时使用"
+          ]
+        }
+      },
+      {
+        "id": "quant-ptq-qat-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "手机端装大模型。定这次压缩，下列哪些判断成立？",
+        "options": [
+          "无需重训实施廉，极低比特精度崩",
+          "权重适应低精表示，QAT 低比特胜",
+          "权重量化降显存占用，提带宽效率内存密集优",
+          "KV Cache 结构优化分层面，量化部署互斥"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从装机定重训与互斥环节",
+          "reasoningGoal": "先定压缩的环节；再逐项验证各判断；并排除「互斥」等不成立描述。"
+        },
+        "generatedAt": 1788927378321,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-415ef365",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-53ecb4dc",
+        "sourceSnapshot": {
+          "id": "quant-ptq-qat-01",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "quantization",
+            "ptq",
+            "qat",
+            "int4"
+          ],
+          "question": "在将大语言模型部署至内存受限设备（如手机、边缘设备或高并发服务节点）时，权重量化（Quantization）是核心压缩技术。关于训练后量化（PTQ）与量化感知训练（QAT）的技术特性及工程权衡，下列说法正确的有？（多选）",
+          "options": [
+            "PTQ（Post-Training Quantization）无需重新训练模型，实施成本低，但在极低比特（如 INT4）下更容易引发明显的模型精度衰退",
+            "QAT（Quantization-Aware Training）在训练或微调阶段引入量化噪声模拟，使权重适应低精度表示，因此在低比特下通常比 PTQ 表现出更好的精度保持度",
+            "量化主要降低模型权重的显存/内存占用，并提高显存带宽利用效率，属于内存密集型推理优化的重要手段",
+            "参数量化与注意力机制的 KV Cache 结构优化（如 GQA）属于不同层面的技术，在实际部署中无法同时使用"
+          ]
+        }
+      }
+    ],
+    "spec-decode-01": [
+      {
+        "id": "spec-decode-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "大小模型一猜一验，落地特性哪些正确？",
+        "options": [
+          "大模验证远廉于逐 Token 生，Decode TPS 升",
+          "小模替大模做 Prefill，TTFT 大减",
+          "低 Batch GPU 闲，验证加速最显",
+          "并发极高算力饱和，投机增开销动态禁用"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从猜验定廉价与闲忙环节",
+          "reasoningGoal": "先定特性的环节；再逐项验证各判断；并排除「替做 Prefill」等不成立描述。"
+        },
+        "generatedAt": 1788927378321,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86f8dc99",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-15eb0f52",
+        "sourceSnapshot": {
+          "id": "spec-decode-01",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "speculative-decoding",
+            "draft-model",
+            "verification",
+            "batch-size"
+          ],
+          "question": "投机解码（Speculative Decoding）使用一个小型的 Draft Model 预预测多个候选 Token，再由大模型（Target Model）在一次前向传播中并行验证。关于该技术在工程落地时的特性与权衡，下列说法正确的有？（多选）",
+          "options": [
+            "投机解码利用了“大模型验证候选 Token 的计算开销远低于逐 Token 独立生成”的特性，能够显著提升 Decode 阶段的 TPS",
+            "投机解码通过小模型替代大模型完成前缀处理，能够大幅缩短 Prefill 阶段的 TTFT",
+            "当推理系统运行在低 Batch Size 条件下时，GPU 存在空闲算力用于 Token 验证，投机解码加速效果最为明显",
+            "当系统并发极高、Batch Size 很大导致 GPU 算力饱和时，投机解码不仅难以提供加速，还会增加额外开销，推理引擎通常会动态禁用投机解码"
+          ]
+        }
+      },
+      {
+        "id": "spec-decode-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "猜对起飞猜错白搭。看这次投机，下列哪些判断成立？",
+        "options": [
+          "验证候选开销远低逐生，TPS 显著提升",
+          "前缀小模代工，TTFT 大缩短",
+          "低 Batch GPU 算力闲，验证加速最明显",
+          "并发高算力饱和，投机动态禁用"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从起飞看廉贵与禁用环节",
+          "reasoningGoal": "先看投机的环节；再逐项验证各判断；并排除「代工缩短」等不成立描述。"
+        },
+        "generatedAt": 1788927378321,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86f8dc99",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-ec99ecb4",
+        "sourceSnapshot": {
+          "id": "spec-decode-01",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "speculative-decoding",
+            "draft-model",
+            "verification",
+            "batch-size"
+          ],
+          "question": "投机解码（Speculative Decoding）使用一个小型的 Draft Model 预预测多个候选 Token，再由大模型（Target Model）在一次前向传播中并行验证。关于该技术在工程落地时的特性与权衡，下列说法正确的有？（多选）",
+          "options": [
+            "投机解码利用了“大模型验证候选 Token 的计算开销远低于逐 Token 独立生成”的特性，能够显著提升 Decode 阶段的 TPS",
+            "投机解码通过小模型替代大模型完成前缀处理，能够大幅缩短 Prefill 阶段的 TTFT",
+            "当推理系统运行在低 Batch Size 条件下时，GPU 存在空闲算力用于 Token 验证，投机解码加速效果最为明显",
+            "当系统并发极高、Batch Size 很大导致 GPU 算力饱和时，投机解码不仅难以提供加速，还会增加额外开销，推理引擎通常会动态禁用投机解码"
+          ]
+        }
+      }
+    ],
+    "spec-decode-02": [
+      {
+        "id": "spec-decode-02__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "一小一大全双工，原理特性哪些正确？",
+        "options": [
+          "草稿延迟低，自回归串行吐候选",
+          "验证单 Forward 并行批，Transformer 可并行多 Token",
+          "拒即回退验证模型重采，分布等价可证明",
+          "保大模质量近小模延迟，草稿验证分词器须兼容对齐"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从双工定串行与等价环节",
+          "reasoningGoal": "先定原理的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e56f129d",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-b2f531c8",
+        "sourceSnapshot": {
+          "id": "spec-decode-02",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "draft-model",
+            "verification",
+            "tokenizer"
+          ],
+          "question": "投机解码（Speculative Decoding）是一种提升大语言模型推理吞吐与降低延迟的系统设计模式，通常包含一个小规模草稿模型（Draft Model）和一个大规模验证模型（Target Model）。关于 Speculative Decoding 的工作原理与工程特性，下列说法正确的有？（多选）",
+          "options": [
+            "草稿模型通常推理延迟极低，负责以自回归方式快速串行生成若干候选 Token 序列",
+            "验证模型利用 Transformer 能够在单次前向传播（Forward Pass）中并行处理多个 Token 的特性，批量校验草稿模型生成的候选 Token",
+            "当草稿模型生成的某个 Token 被验证模型拒绝时，系统会回退并由验证模型重新采样，采样概率分布在数学上可被证明严格等价于仅使用大模型直接生成",
+            "Speculative Decoding 能够在保持大模型输出质量的同时达到接近小模型的生成延迟，但前提是草稿模型与验证模型的分词器（Tokenizer）必须完全兼容或映射对齐"
+          ]
+        }
+      },
+      {
+        "id": "spec-decode-02__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "小草稿大验证。走这遍流程，下列哪些判断成立？",
+        "options": [
+          "草稿延迟极低，自回归串行快吐候选",
+          "单次前向并行多 Token，批量校验草稿候选",
+          "某 Token 被拒回退重采，分布等价可证",
+          "输出质量延迟兼得，Tokenizer 兼容对齐是前提"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从流程走快吐与前提环节",
+          "reasoningGoal": "先走流程的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e56f129d",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-1f7506a3",
+        "sourceSnapshot": {
+          "id": "spec-decode-02",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "draft-model",
+            "verification",
+            "tokenizer"
+          ],
+          "question": "投机解码（Speculative Decoding）是一种提升大语言模型推理吞吐与降低延迟的系统设计模式，通常包含一个小规模草稿模型（Draft Model）和一个大规模验证模型（Target Model）。关于 Speculative Decoding 的工作原理与工程特性，下列说法正确的有？（多选）",
+          "options": [
+            "草稿模型通常推理延迟极低，负责以自回归方式快速串行生成若干候选 Token 序列",
+            "验证模型利用 Transformer 能够在单次前向传播（Forward Pass）中并行处理多个 Token 的特性，批量校验草稿模型生成的候选 Token",
+            "当草稿模型生成的某个 Token 被验证模型拒绝时，系统会回退并由验证模型重新采样，采样概率分布在数学上可被证明严格等价于仅使用大模型直接生成",
+            "Speculative Decoding 能够在保持大模型输出质量的同时达到接近小模型的生成延迟，但前提是草稿模型与验证模型的分词器（Tokenizer）必须完全兼容或映射对齐"
+          ]
+        }
+      }
+    ],
+    "ptq-reasoning-llm": [
+      {
+        "id": "ptq-reasoning-llm__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "推理模型量化上生产，格式权衡哪些正确？",
+        "options": [
+          "FP8 动态量化近无损，宜高吞吐",
+          "CoT 思考链惧 Outlier，FP4 过低累误差死循环",
+          "GGUF 混载多阶量化，宜边缘单卡",
+          "FP8 量化前无数万校准即随机猜，动态范围极窄"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从上生产定无损与敏感环节",
+          "reasoningGoal": "先定权衡的环节；再逐项验证各判断；并排除「无校准即猜」等不成立描述。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3d7c8299",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-1b73e722",
+        "sourceSnapshot": {
+          "id": "ptq-reasoning-llm",
+          "topic": "quantization",
+          "subtopic": "fp8-fp4-gguf-reasoning",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "quantization",
+            "fp8",
+            "gguf",
+            "cot-sensitivity",
+            "production-deployment"
+          ],
+          "question": "在后训练完成的 CoT 推理大模型进行量化部署到生产环境时关于 FP8、NVFP4/MXFP4 和 GGUF 等量化格式的工程权衡以下哪些说法是正确的？（多选）",
+          "options": [
+            "基于 Dynamic Per-Channel Weight 与 Per-Token Activation 的 FP8 动态量化在绝大多数场景下几乎无损推理精度适合高吞吐生产部署",
+            "推理模型的 CoT 思考链对 Activation 中的 Outlier 较为敏感过度的 FP4 极低比特量化可能会导致长链条逻辑推演中出现累积误差或死循环",
+            "GGUF 格式支持 CPU/GPU 混合离线加载与多阶量化非常适合边缘端和单卡显存受限设备的本地部署",
+            "对推理模型进行 FP8 量化前必须经过数万条数据的校准否则模型的逻辑推理能力会立刻降级为随机猜答，因为 FP8 的动态范围极窄，缺少校准集就无法确定任何缩放因子"
+          ]
+        }
+      },
+      {
+        "id": "ptq-reasoning-llm__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "思考链一压就断。选这次格式，下列哪些判断成立？",
+        "options": [
+          "动态 Per 通道 Token 量化，精度几乎不掉",
+          "思考链 Outlier 敏感，极低比特累误差",
+          "CPU GPU 混载离线，多阶量化边缘香",
+          "缺数万校准逻辑降级随机猜，缩放因子无着"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从一压断选动态与香环节",
+          "reasoningGoal": "先选格式的环节；再逐项验证各判断；并排除「无着」等不成立描述。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3d7c8299",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-0efda614",
+        "sourceSnapshot": {
+          "id": "ptq-reasoning-llm",
+          "topic": "quantization",
+          "subtopic": "fp8-fp4-gguf-reasoning",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "quantization",
+            "fp8",
+            "gguf",
+            "cot-sensitivity",
+            "production-deployment"
+          ],
+          "question": "在后训练完成的 CoT 推理大模型进行量化部署到生产环境时关于 FP8、NVFP4/MXFP4 和 GGUF 等量化格式的工程权衡以下哪些说法是正确的？（多选）",
+          "options": [
+            "基于 Dynamic Per-Channel Weight 与 Per-Token Activation 的 FP8 动态量化在绝大多数场景下几乎无损推理精度适合高吞吐生产部署",
+            "推理模型的 CoT 思考链对 Activation 中的 Outlier 较为敏感过度的 FP4 极低比特量化可能会导致长链条逻辑推演中出现累积误差或死循环",
+            "GGUF 格式支持 CPU/GPU 混合离线加载与多阶量化非常适合边缘端和单卡显存受限设备的本地部署",
+            "对推理模型进行 FP8 量化前必须经过数万条数据的校准否则模型的逻辑推理能力会立刻降级为随机猜答，因为 FP8 的动态范围极窄，缺少校准集就无法确定任何缩放因子"
+          ]
+        }
+      }
+    ],
+    "prune-quant-compound-degrade": [
+      {
+        "id": "prune-quant-compound-degrade__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "剪完重量化，代码数理崩。为啥？",
+        "options": [
+          "剪枝砍容量冗余，余重耐噪大降",
+          "4-bit 误逐 Token 累，误差放大",
+          "剪破激活平衡，静态 Scaler 失真",
+          "注意趋匀可按匀建模，免逐头析"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从崩盘定容量与失真环节",
+          "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「按匀建模」等不成立描述。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-08dc0d16",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-48381bae",
+        "sourceSnapshot": {
+          "id": "prune-quant-compound-degrade",
+          "topic": "quantization",
+          "subtopic": "pruning-quantization-compound-degradation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "pruning",
+            "quantization",
+            "compound-degradation",
+            "cot",
+            "error-accumulation"
+          ],
+          "question": "在 LLM 高效部署管线中通常先通过结构化剪枝降低参数量随后将残余权重进一步量化至 4-bit。这种组合压缩策略在代码生成数学推导与 CoT 任务上性能剧烈下降其底层机制包括哪些？（多选）",
+          "options": [
+            "结构化剪枝删除了部分层或注意力头降低了模型的表征容量与冗余度使得剩余权重对量化噪声的容忍度大幅下降",
+            "4-bit 量化引入的截断误差与舍入误差会在自回归生成过程中沿序列时间轴逐 Token 累积形成误差放大效应",
+            "剪枝打破了原模型内部各层之间的激活值分布平衡使得基于原始分布设计的静态量化 Scaler 发生失真",
+            "剪枝加量化后注意力趋向均匀分布，诊断时可直接按均匀注意力建模，省去逐头分析。"
+          ]
+        }
+      },
+      {
+        "id": "prune-quant-compound-degrade__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "组合压缩翻车。剖这次复合，下列哪些判断成立？",
+        "options": [
+          "层头删除表征容量缩，量化噪声难忍",
+          "截断舍入误沿时间轴累积放大",
+          "层间分布平衡破，Scaler 设计失配",
+          "均匀注意建模，逐头分析可省"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从翻车剖缩减与失配环节",
+          "reasoningGoal": "先剖复合的环节；再逐项验证各判断；并排除「可省」等不成立描述。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-08dc0d16",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-a0ee6f76",
+        "sourceSnapshot": {
+          "id": "prune-quant-compound-degrade",
+          "topic": "quantization",
+          "subtopic": "pruning-quantization-compound-degradation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "pruning",
+            "quantization",
+            "compound-degradation",
+            "cot",
+            "error-accumulation"
+          ],
+          "question": "在 LLM 高效部署管线中通常先通过结构化剪枝降低参数量随后将残余权重进一步量化至 4-bit。这种组合压缩策略在代码生成数学推导与 CoT 任务上性能剧烈下降其底层机制包括哪些？（多选）",
+          "options": [
+            "结构化剪枝删除了部分层或注意力头降低了模型的表征容量与冗余度使得剩余权重对量化噪声的容忍度大幅下降",
+            "4-bit 量化引入的截断误差与舍入误差会在自回归生成过程中沿序列时间轴逐 Token 累积形成误差放大效应",
+            "剪枝打破了原模型内部各层之间的激活值分布平衡使得基于原始分布设计的静态量化 Scaler 发生失真",
+            "剪枝加量化后注意力趋向均匀分布，诊断时可直接按均匀注意力建模，省去逐头分析。"
+          ]
+        }
+      }
+    ],
+    "ptq-vs-qah-compare": [
+      {
+        "id": "ptq-vs-qah-compare__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "PTQ 与 QAH 两条回血路，对比哪些正确？",
+        "options": [
+          "PTQ 少量校准优化 Scaling Factor 二阶补偿，难回剪枝逻辑容量",
+          "QAH 前向伪量化，权重学补离散噪",
+          "PTQ 开销低宜纯量化，QAH 耗反传补复合损失",
+          "PTQ 免反传超剪前全精代码推理力"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从回血定调参与学补环节",
+          "reasoningGoal": "先定对比的环节；再逐项验证各判断；并排除「免反超精」等不成立描述。"
+        },
+        "generatedAt": 1788927378322,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-da8b46d0",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-22ae74f4",
+        "sourceSnapshot": {
+          "id": "ptq-vs-qah-compare",
+          "topic": "quantization",
+          "subtopic": "ptq-vs-qah-comparison",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "ptq",
+            "qah",
+            "fake-quantization",
+            "hessian-compensation",
+            "tradeoff"
+          ],
+          "question": "在后训练量化 PTQ 与量化感知修复 QAH 是两种恢复量化损失的技术路径。针对经历过结构化剪枝加 4-bit 量化的模型关于 PTQ 与 QAH 的对比以下哪些说法是正确的？（多选）",
+          "options": [
+            "PTQ 仅通过少量校准数据优化量化 Scaling Factor 或进行局部的二阶 Hessian 误差补偿无法重新训练权重因而难以恢复因结构化剪枝直接损失的逻辑表达容量",
+            "QAH 在继续训练阶段的前向传播中引入伪量化节点使权重在更新过程中主动学习并补偿 4-bit 离散化带来的噪点",
+            "PTQ 计算开销极低适合未经历剧烈结构剪枝的纯量化而 QAH 需要消耗反向传播算力但能有效弥补剪枝与低比特量化的复合精度损失",
+            "PTQ 可以在完全不需要反向传播的情况下使 4-bit 剪枝模型的复杂代码推理能力完全超过剪枝前的全精度原始大模型"
+          ]
+        }
+      },
+      {
+        "id": "ptq-vs-qah-compare__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "剪后失忆谁来补。比这次修复，下列哪些判断成立？",
+        "options": [
+          "少量校准调 Scaling 二阶补偿，难回剪枝逻辑容量",
+          "伪量化节点前向加，更新学补噪点",
+          "PTQ 开销极低宜纯量化，QAH 耗反传算力补复合损失",
+          "免反传超剪前全精，代码推理全回"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从失忆比局促与全回环节",
+          "reasoningGoal": "先比修复的环节；再逐项验证各判断；并排除「全回」等不成立描述。"
+        },
+        "generatedAt": 1788927378323,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-da8b46d0",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-04a4b960",
+        "sourceSnapshot": {
+          "id": "ptq-vs-qah-compare",
+          "topic": "quantization",
+          "subtopic": "ptq-vs-qah-comparison",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "ptq",
+            "qah",
+            "fake-quantization",
+            "hessian-compensation",
+            "tradeoff"
+          ],
+          "question": "在后训练量化 PTQ 与量化感知修复 QAH 是两种恢复量化损失的技术路径。针对经历过结构化剪枝加 4-bit 量化的模型关于 PTQ 与 QAH 的对比以下哪些说法是正确的？（多选）",
+          "options": [
+            "PTQ 仅通过少量校准数据优化量化 Scaling Factor 或进行局部的二阶 Hessian 误差补偿无法重新训练权重因而难以恢复因结构化剪枝直接损失的逻辑表达容量",
+            "QAH 在继续训练阶段的前向传播中引入伪量化节点使权重在更新过程中主动学习并补偿 4-bit 离散化带来的噪点",
+            "PTQ 计算开销极低适合未经历剧烈结构剪枝的纯量化而 QAH 需要消耗反向传播算力但能有效弥补剪枝与低比特量化的复合精度损失",
+            "PTQ 可以在完全不需要反向传播的情况下使 4-bit 剪枝模型的复杂代码推理能力完全超过剪枝前的全精度原始大模型"
+          ]
+        }
+      }
+    ],
+    "ste-gradient-mismatch": [
+      {
+        "id": "ste-gradient-mismatch__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "量化函数导数归零，STE 近似得失？",
+        "options": [
+          "STE 传梯超截断，主权重漂移不止",
+          "界外裁剪加罚，防主权重膨胀",
+          "伪节点只前向算损，梯度直传浮主权",
+          "STE 精算 Hessian，梯度与真一致"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从归零定传梯与裁剪环节",
+          "reasoningGoal": "先定得失的环节；再逐项验证各判断；并排除「精算一致」等不成立描述。"
+        },
+        "generatedAt": 1788927378323,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ab4415c8",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-e255361b",
+        "sourceSnapshot": {
+          "id": "ste-gradient-mismatch",
+          "topic": "quantization",
+          "subtopic": "straight-through-estimator",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "ste",
+            "gradient-mismatch",
+            "weight-clipping",
+            "quantization-aware-training"
+          ],
+          "question": "在进行量化感知训练时离散量化函数的导数处处为 0 导致标准反向传播失效。工程上使用直通估计器 STE 近似梯度。关于 STE 在实际训练中的工程局限与应对策略下列说法正确的有？（多选）",
+          "options": [
+            "STE 引入了梯度不匹配问题当连续浮点主权重严重超出截断区间时仍会向其传递梯度可能导致浮点权重无休止漂移",
+            "对于落入截断区间外的权重可以通过梯度裁剪或对超出界限的权重施加惩罚防止浮点主权重膨胀",
+            "伪量化节点仅作用于前向传播以计算量化后的损失反向传播时根据 STE 规则直接将梯度传递给未量化的连续浮点主权重进行参数更新",
+            "STE 能够精确计算离散量化操作的二阶 Hessian 矩阵因此反向传播得到的梯度与真实梯度完全一致"
+          ]
+        }
+      },
+      {
+        "id": "ste-gradient-mismatch__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "梯度过不去，直通硬传。看这次近似，下列哪些判断成立？",
+        "options": [
+          "浮点主权超截断仍收梯，无休止漂",
+          "界外权重裁剪惩罚，膨胀可防",
+          "伪节点前向算量化损失，反向 STE 直传浮主权",
+          "二阶 Hessian 精算，梯度真实一致"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从硬传看收梯与精算环节",
+          "reasoningGoal": "先看近似的环节；再逐项验证各判断；并排除「真实一致」等不成立描述。"
+        },
+        "generatedAt": 1788927378323,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ab4415c8",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-a5c923c5",
+        "sourceSnapshot": {
+          "id": "ste-gradient-mismatch",
+          "topic": "quantization",
+          "subtopic": "straight-through-estimator",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "ste",
+            "gradient-mismatch",
+            "weight-clipping",
+            "quantization-aware-training"
+          ],
+          "question": "在进行量化感知训练时离散量化函数的导数处处为 0 导致标准反向传播失效。工程上使用直通估计器 STE 近似梯度。关于 STE 在实际训练中的工程局限与应对策略下列说法正确的有？（多选）",
+          "options": [
+            "STE 引入了梯度不匹配问题当连续浮点主权重严重超出截断区间时仍会向其传递梯度可能导致浮点权重无休止漂移",
+            "对于落入截断区间外的权重可以通过梯度裁剪或对超出界限的权重施加惩罚防止浮点主权重膨胀",
+            "伪量化节点仅作用于前向传播以计算量化后的损失反向传播时根据 STE 规则直接将梯度传递给未量化的连续浮点主权重进行参数更新",
+            "STE 能够精确计算离散量化操作的二阶 Hessian 矩阵因此反向传播得到的梯度与真实梯度完全一致"
+          ]
+        }
+      }
+    ],
+    "qah-outperform-fp16-mechanism": [
+      {
+        "id": "qah-outperform-fp16-mechanism__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "4-bit 超 BF16 中间态，解构哪些合理？",
+        "options": [
+          "QAH 续训高质推理数，注入新知能",
+          "伪噪正则防过拟，泛化界改善",
+          "STE 引主权学格点最大信息分布",
+          "瓶颈即红利，压缩自带飞跃"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从反超定续训与正则环节",
+          "reasoningGoal": "先定解构的环节；再逐项验证各判断；并排除「自带飞跃」等不成立描述。"
+        },
+        "generatedAt": 1788927378323,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-aa3f909b",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-5f0f9736",
+        "sourceSnapshot": {
+          "id": "qah-outperform-fp16-mechanism",
+          "topic": "quantization",
+          "subtopic": "qah-outperform-fp16",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "qah",
+            "regularization",
+            "domain-fine-tuning",
+            "benchmark-surpass"
+          ],
+          "question": "在基于结构化剪枝加 4-bit 量化感知修复的工程实践中 4-bit 模型的 Benchmark 得分多次被观察到超过了用于量化的 BF16 中间 Checkpoint。关于这一现象背后合理的工程解构以下哪些分析是正确的？（多选）",
+          "options": [
+            "QAH 阶段使用了包含高质量推理代码和数学数据的数据集进行继续训练这一过程为模型注入了新的领域知识与能力",
+            "前向传播中的伪量化噪声起到了正则化作用降低了过拟合风险并改善了参数空间的泛化界限",
+            "伪量化节点与 STE 引导连续主权重学习到了能在 4-bit 离散格点上保留最大信息量的参数分布",
+            "冗余削减本身即正则化，4-bit 的信息瓶颈迫使模型保留最本质的推理模式；飞跃是压缩的自然红利。"
+          ]
+        }
+      },
+      {
+        "id": "qah-outperform-fp16-mechanism__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "4-bit 跑赢 BF16 中间态。查这次反超，下列哪些判断成立？",
+        "options": [
+          "继续训练高质量数理，新知能力注入",
+          "过拟合风险降，参数泛化界好",
+          "离散格点信息最大，主权分布学成",
+          "信息瓶颈留本质，飞跃自然红利"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从跑赢查注入与红利环节",
+          "reasoningGoal": "先查反超的环节；再逐项验证各判断；并排除「自然红利」等不成立描述。"
+        },
+        "generatedAt": 1788927378323,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-aa3f909b",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-50de9013",
+        "sourceSnapshot": {
+          "id": "qah-outperform-fp16-mechanism",
+          "topic": "quantization",
+          "subtopic": "qah-outperform-fp16",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "qah",
+            "regularization",
+            "domain-fine-tuning",
+            "benchmark-surpass"
+          ],
+          "question": "在基于结构化剪枝加 4-bit 量化感知修复的工程实践中 4-bit 模型的 Benchmark 得分多次被观察到超过了用于量化的 BF16 中间 Checkpoint。关于这一现象背后合理的工程解构以下哪些分析是正确的？（多选）",
+          "options": [
+            "QAH 阶段使用了包含高质量推理代码和数学数据的数据集进行继续训练这一过程为模型注入了新的领域知识与能力",
+            "前向传播中的伪量化噪声起到了正则化作用降低了过拟合风险并改善了参数空间的泛化界限",
+            "伪量化节点与 STE 引导连续主权重学习到了能在 4-bit 离散格点上保留最大信息量的参数分布",
+            "冗余削减本身即正则化，4-bit 的信息瓶颈迫使模型保留最本质的推理模式；飞跃是压缩的自然红利。"
+          ]
+        }
+      }
+    ],
+    "activation-outlier-debug": [
+      {
+        "id": "activation-outlier-debug__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "量化一压就死循环。调试修复，哪些合理？",
+        "options": [
+          "动态 Per-Token/Block 量化，免极值拉 Scale",
+          "SmoothQuant 等效变换，异常值平滑转入权重",
+          "Outlier 通道留高精，余下 4-bit",
+          "截零 STE 补跳算提速，batch 升弥损"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从死循环定动态与搬运环节",
+          "reasoningGoal": "先定修复的环节；再逐项验证各判断；并排除「跳算提速」等不成立描述。"
+        },
+        "generatedAt": 1788927378323,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cdfe9624",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-5f8ed883",
+        "sourceSnapshot": {
+          "id": "activation-outlier-debug",
+          "topic": "quantization",
+          "subtopic": "activation-outlier-debugging",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "activation-outliers",
+            "smoothquant",
+            "per-token-scaling",
+            "mixed-precision",
+            "debugging"
+          ],
+          "question": "在对 Self-Attention 投影层进行 4-bit 低比特量化时常遇到模型输出死循环无意义重复或逻辑推理能力陡降的量化崩溃现象由激活值异常值引起。针对该问题哪些调试与修复方案是合理的？（多选）",
+          "options": [
+            "采用动态 Per-Token / Per-Block 激活量化避免全局静态 Scale 被极少数极端数值拉大而导致大部分正常数值被量化为 0",
+            "采用 SmoothQuant 等等效数学变换技术将激活值中高精度的异常值平滑转移到比较容易量化的权重矩阵中",
+            "将出现严重 Outliers 的少量特定通道保留为高精度仅对其余正常通道进行 4-bit 量化",
+            "截断为 0 后用直通估计补偿梯度，推理时零值可跳过计算反而提速；精度损失可用升一档 batch 弥补。"
+          ]
+        }
+      },
+      {
+        "id": "activation-outlier-debug__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "输出复读机。治这次崩溃，下列哪些判断成立？",
+        "options": [
+          "静态 Scale 被极值拉大，动态分块避",
+          "高精度异常平滑转移，易量化权重接",
+          "严重通道高精度留，正常 4-bit 量",
+          "零值跳算提速，升 batch 补精度"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从复读治拉大与跳算环节",
+          "reasoningGoal": "先治崩溃的环节；再逐项验证各判断；并排除「补精度」等不成立描述。"
+        },
+        "generatedAt": 1788927378324,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cdfe9624",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-70499e05",
+        "sourceSnapshot": {
+          "id": "activation-outlier-debug",
+          "topic": "quantization",
+          "subtopic": "activation-outlier-debugging",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "activation-outliers",
+            "smoothquant",
+            "per-token-scaling",
+            "mixed-precision",
+            "debugging"
+          ],
+          "question": "在对 Self-Attention 投影层进行 4-bit 低比特量化时常遇到模型输出死循环无意义重复或逻辑推理能力陡降的量化崩溃现象由激活值异常值引起。针对该问题哪些调试与修复方案是合理的？（多选）",
+          "options": [
+            "采用动态 Per-Token / Per-Block 激活量化避免全局静态 Scale 被极少数极端数值拉大而导致大部分正常数值被量化为 0",
+            "采用 SmoothQuant 等等效数学变换技术将激活值中高精度的异常值平滑转移到比较容易量化的权重矩阵中",
+            "将出现严重 Outliers 的少量特定通道保留为高精度仅对其余正常通道进行 4-bit 量化",
+            "截断为 0 后用直通估计补偿梯度，推理时零值可跳过计算反而提速；精度损失可用升一档 batch 弥补。"
+          ]
+        }
+      }
+    ],
+    "paged-attn-block-tradeoff": [
+      {
+        "id": "paged-attn-block-tradeoff__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "块大块小怎么 trade？",
+        "options": [
+          "小 Block 碎片少，显存利用高",
+          "大 Block 连续好吞吐高，碎片多",
+          "等大块按需配，外部碎片近无",
+          "异序共享物理块，零拷 CoW"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从块定碎片与共享环节",
+          "reasoningGoal": "先定取舍的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788927378324,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-97418ba7",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-6f4f864c",
+        "sourceSnapshot": {
+          "id": "paged-attn-block-tradeoff",
+          "topic": "caching",
+          "subtopic": "paged-attention-block-tradeoff",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "paged-attention",
+            "block-size",
+            "internal-fragmentation",
+            "copy-on-write",
+            "vllm"
+          ],
+          "question": "在 LLM 推理服务框架中 PagedAttention 借鉴 OS 虚拟内存分页机制将连续 KV Cache 切分为固定大小的 Block 进行非连续显存分配。关于内存管理机制与 Block Size 的工程 Trade-off 下列哪些说法是正确的？（多选）",
+          "options": [
+            "较小的 Block Size 能显著减少请求结束或未填满 Block 时的内部碎片提高显存利用率",
+            "较大的 Block Size 能提高 GPU Tensor Core 的访存连续性与计算吞吐但会增加内部碎片浪费",
+            "PagedAttention 几乎消除了外部碎片因为所有物理块的大小相同可以按需分配给任意序列",
+            "PagedAttention 允许不同序列共享相同的物理 KV 块从而实现零拷贝 Copy-on-Write"
+          ]
+        }
+      },
+      {
+        "id": "paged-attn-block-tradeoff__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "显存切块租。定这次块大，下列哪些判断成立？",
+        "options": [
+          "未满 Block 碎片小，利用率升",
+          "Tensor Core 连续访存快，浪费多",
+          "同尺寸块任意序配，外部碎片消",
+          "物理 KV 块共享，Copy-on-Write 零拷"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从租块定利用与浪费环节",
+          "reasoningGoal": "先定块大的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788927378324,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-97418ba7",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-11a531c2",
+        "sourceSnapshot": {
+          "id": "paged-attn-block-tradeoff",
+          "topic": "caching",
+          "subtopic": "paged-attention-block-tradeoff",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "paged-attention",
+            "block-size",
+            "internal-fragmentation",
+            "copy-on-write",
+            "vllm"
+          ],
+          "question": "在 LLM 推理服务框架中 PagedAttention 借鉴 OS 虚拟内存分页机制将连续 KV Cache 切分为固定大小的 Block 进行非连续显存分配。关于内存管理机制与 Block Size 的工程 Trade-off 下列哪些说法是正确的？（多选）",
+          "options": [
+            "较小的 Block Size 能显著减少请求结束或未填满 Block 时的内部碎片提高显存利用率",
+            "较大的 Block Size 能提高 GPU Tensor Core 的访存连续性与计算吞吐但会增加内部碎片浪费",
+            "PagedAttention 几乎消除了外部碎片因为所有物理块的大小相同可以按需分配给任意序列",
+            "PagedAttention 允许不同序列共享相同的物理 KV 块从而实现零拷贝 Copy-on-Write"
+          ]
+        }
+      }
+    ],
+    "fp8-e4m3-vs-e5m2": [
+      {
+        "id": "fp8-e4m3-vs-e5m2__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "两种浮点格式前后分工，选型哪些正确？",
+        "options": [
+          "E4M3 精高范窄，宜前向权重激活",
+          "E5M2 指数同 FP16 范大，宜反向大跨度梯度",
+          "E4M3 前向 GEMM 须动缩防溢",
+          "反向全 E4M3 配 loss scaling，精度范围兼得"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从分工定精范与防溢环节",
+          "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「全 E4M3」等不成立描述。"
+        },
+        "generatedAt": 1788927378325,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4bf0e526",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-d9541732",
+        "sourceSnapshot": {
+          "id": "fp8-e4m3-vs-e5m2",
+          "topic": "quantization",
+          "subtopic": "e4m3-vs-e5m2-format-selection",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "fp8",
+            "e4m3",
+            "e5m2",
+            "mixed-precision-training",
+            "transformer-engine"
+          ],
+          "question": "在 Modern GPU 架构的原生 FP8 混合精度训练中硬件支持 E4M3（1 符号+4 指数+3 尾数）和 E5M2（1 符号+5 指数+2 尾数）两种格式。关于这两种格式在前向与反向传播中的选型设计哪些说法是正确的？（多选）",
+          "options": [
+            "E4M3 具有较高的尾数精度但动态范围较窄更适合用于前向传播中的权重和激活值",
+            "E5M2 具有与 FP16 相同的指数位动态范围极大但尾数精度较低适合用于反向传播中数值跨度极大的梯度",
+            "由于 E4M3 动态范围有限在前向 GEMM 矩阵乘法中必须配合动态缩放因子以防止数值溢出",
+            "反向全用 E4M3 并配合 loss scaling，精度与范围可兼得；E5M2 是历史兼容选项，新管线应统一 E4M3。"
+          ]
+        }
+      },
+      {
+        "id": "fp8-e4m3-vs-e5m2__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "前向后向格式各异。分这次工，下列哪些判断成立？",
+        "options": [
+          "尾数精度高动态窄，前向用",
+          "指数位同 FP16，梯度跨度大能吃",
+          "动态缩放因子配，前向 GEMM 防溢",
+          "E5M2 历史包袱，新管线统 E4M3"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从各异分精度与包袱环节",
+          "reasoningGoal": "先分工的环节；再逐项验证各判断；并排除「统 E4M3」等不成立描述。"
+        },
+        "generatedAt": 1788927378326,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4bf0e526",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-1d1b3b80",
+        "sourceSnapshot": {
+          "id": "fp8-e4m3-vs-e5m2",
+          "topic": "quantization",
+          "subtopic": "e4m3-vs-e5m2-format-selection",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "fp8",
+            "e4m3",
+            "e5m2",
+            "mixed-precision-training",
+            "transformer-engine"
+          ],
+          "question": "在 Modern GPU 架构的原生 FP8 混合精度训练中硬件支持 E4M3（1 符号+4 指数+3 尾数）和 E5M2（1 符号+5 指数+2 尾数）两种格式。关于这两种格式在前向与反向传播中的选型设计哪些说法是正确的？（多选）",
+          "options": [
+            "E4M3 具有较高的尾数精度但动态范围较窄更适合用于前向传播中的权重和激活值",
+            "E5M2 具有与 FP16 相同的指数位动态范围极大但尾数精度较低适合用于反向传播中数值跨度极大的梯度",
+            "由于 E4M3 动态范围有限在前向 GEMM 矩阵乘法中必须配合动态缩放因子以防止数值溢出",
+            "反向全用 E4M3 并配合 loss scaling，精度与范围可兼得；E5M2 是历史兼容选项，新管线应统一 E4M3。"
+          ]
+        }
+      }
+    ],
+    "quantization-mem-bandwidth-gguf-01": [
+      {
+        "id": "quantization-mem-bandwidth-gguf-01__surface-options__assessmentfresh23__0",
+        "kind": "surface-options",
+        "question": "本地跑大模型，量化提速机理哪些正确？",
+        "options": [
+          "FP16 压 4-bit 瘦传输体积，直降带宽瓶颈",
+          "超容量模型全驻留显存，免跨 PCIe 总线 Offload 损耗",
+          "KV Cache 顺带压 4-bit，跳过注意力存储开销",
+          "Token 速率涨缘传输时延降，解量化小开销"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从提速定瘦身与驻留环节",
+          "reasoningGoal": "先定机理的环节；再逐项验证各判断；并排除「顺手归零」等不成立描述。"
+        },
+        "generatedAt": 1788927378326,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d63c6869",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-e188d75f",
+        "sourceSnapshot": {
+          "id": "quantization-mem-bandwidth-gguf-01",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "memory-bandwidth",
+            "gguf",
+            "quantization",
+            "local-inference",
+            "tokens-per-sec"
+          ],
+          "question": "在本地硬件运行大语言模型（LLM/SLM）进行单 Token 自回归生成（Autoregressive Generation）时，推导性能通常受限于内存带宽（Memory Bandwidth Bound）而非纯粹的计算峰值（Compute Bound）。关于 GGUF 量化（如 Q4_K_M）提升本地推理吞吐量的物理机制与影响，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "将 FP16 权重压缩为 4-bit 整数后，显著减少了每生成一个 Token 需要从显存/内存传输到计算核心的数据体积，从而直接降低了内存带宽瓶颈。",
+            "4-bit 量化大幅降低了模型权重的显存占用，使原本超出显存容量的模型能够完全驻留于 GPU 显存内，避免了跨 PCIe 总线向系统内存（RAM）Offload 带来的严重性能损耗。",
+            "量化算法在推理时会顺带把 KV Cache 也压缩为 4-bit 表示，并跳过注意力矩阵的存储开销，从而从根本上消除了长上下文推理时的显存增长问题。",
+            "量化能够提升 Token 生成速率（Tokens/sec），主要得益于显存数据传输时延的降低，但在计算端需要付出微小的解量化（Dequantization）额外开销。"
+          ]
+        }
+      },
+      {
+        "id": "quantization-mem-bandwidth-gguf-01__context-options__assessmentfresh23__1",
+        "kind": "context-options",
+        "question": "单 token 生成卡带宽。看这次提速，下列哪些判断成立？",
+        "options": [
+          "权重压 4-bit 减传输体积，带宽瓶颈直降",
+          "原本超容模型完全驻留，跨总线 Offload 损耗免",
+          "推理顺带压 KV Cache，注意力存储开销跳过",
+          "传输时延降速率涨，解量化小开销"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从卡带宽看体积与免环节",
+          "reasoningGoal": "先看提速的环节；再逐项验证各判断；并排除「免存」等不成立描述。"
+        },
+        "generatedAt": 1788927378326,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d63c6869",
+        "batch": "assessmentfresh23",
+        "model": "manual",
+        "contentHash": "fnv1a-58a0ab25",
+        "sourceSnapshot": {
+          "id": "quantization-mem-bandwidth-gguf-01",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "memory-bandwidth",
+            "gguf",
+            "quantization",
+            "local-inference",
+            "tokens-per-sec"
+          ],
+          "question": "在本地硬件运行大语言模型（LLM/SLM）进行单 Token 自回归生成（Autoregressive Generation）时，推导性能通常受限于内存带宽（Memory Bandwidth Bound）而非纯粹的计算峰值（Compute Bound）。关于 GGUF 量化（如 Q4_K_M）提升本地推理吞吐量的物理机制与影响，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "将 FP16 权重压缩为 4-bit 整数后，显著减少了每生成一个 Token 需要从显存/内存传输到计算核心的数据体积，从而直接降低了内存带宽瓶颈。",
+            "4-bit 量化大幅降低了模型权重的显存占用，使原本超出显存容量的模型能够完全驻留于 GPU 显存内，避免了跨 PCIe 总线向系统内存（RAM）Offload 带来的严重性能损耗。",
+            "量化算法在推理时会顺带把 KV Cache 也压缩为 4-bit 表示，并跳过注意力矩阵的存储开销，从而从根本上消除了长上下文推理时的显存增长问题。",
+            "量化能够提升 Token 生成速率（Tokens/sec），主要得益于显存数据传输时延的降低，但在计算端需要付出微小的解量化（Dequantization）额外开销。"
+          ]
+        }
+      }
+    ]
+  }
+}

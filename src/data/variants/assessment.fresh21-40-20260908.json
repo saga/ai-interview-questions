@@ -1,0 +1,1797 @@
+{
+  "version": 1,
+  "generatedAt": 1788918109715,
+  "promptVersion": "v4",
+  "variants": {
+    "agent-chain-01": [
+      {
+        "id": "agent-chain-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "20 步每步 95%，长链可靠吗？",
+        "options": [
+          "无外部干预连跑 20 步，总成功概率约 35.8%",
+          "链条变长独立无纠错串联，整体可靠性指数衰减",
+          "20 步并一次调，无限窗口消传递误差",
+          "确定骨架加校验 Guardrails，截断传递"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能从 20 步定连乘与截断环节",
+          "reasoningGoal": "先定可靠的环节；再逐项验证各判断；并排除「并一次」「无限窗口」等不成立描述。"
+        },
+        "generatedAt": 1788918109706,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d7d58109",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-fd08c33c",
+        "sourceSnapshot": {
+          "id": "agent-chain-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "compounding-error",
+            "reliability",
+            "scaffolding",
+            "guardrails"
+          ],
+          "question": "在一个基于大语言模型（LLM）的自主 Agent 系统中，某个复杂任务被拆解为连续执行的 20 个依赖前一步输出的决策步骤。假设模型在每一步做出正确决策的概率固定为 95%。下列关于该系统可靠性及工程应对策略的说法中，正确的有哪些？（多选）",
+          "options": [
+            "在无外部干预的情况下，该系统顺利完成整个任务且不发生任何错误的总体概率约为 35.8%（即 0.95^20）",
+            "随着调用链条变长，在每步独立、无纠错恢复的串联假设下，系统的整体可靠性呈指数级衰减，单步的高准确率并不等同于长流程的稳定性",
+            "解决链式衰减的最佳方案是将 20 步的提示词合并为一次模型调用并无限扩大上下文窗口，从而彻底消除步骤间的传递误差",
+            "在工程实践中，可以通过引入确定性代码骨架（Deterministic Scaffolding）、中间状态校验与 Guardrails 来截断链式误差传递"
+          ]
+        }
+      },
+      {
+        "id": "agent-chain-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "0.95^20 只剩 35.8%。救这条链，下列哪些判断成立？",
+        "options": [
+          "无干预全程无错，总概率约 35.8% 即 0.95^20",
+          "独立无纠错串联，可靠性指数衰减",
+          "提示词合并一次调，窗口无限误差清零",
+          "中间校验 Guardrails 截断误差传递"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从连乘救链看串联环节",
+          "reasoningGoal": "先救链的环节；再逐项验证各判断；并排除「无限清零」等不成立描述。"
+        },
+        "generatedAt": 1788918109707,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d7d58109",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-12fcc81d",
+        "sourceSnapshot": {
+          "id": "agent-chain-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "compounding-error",
+            "reliability",
+            "scaffolding",
+            "guardrails"
+          ],
+          "question": "在一个基于大语言模型（LLM）的自主 Agent 系统中，某个复杂任务被拆解为连续执行的 20 个依赖前一步输出的决策步骤。假设模型在每一步做出正确决策的概率固定为 95%。下列关于该系统可靠性及工程应对策略的说法中，正确的有哪些？（多选）",
+          "options": [
+            "在无外部干预的情况下，该系统顺利完成整个任务且不发生任何错误的总体概率约为 35.8%（即 0.95^20）",
+            "随着调用链条变长，在每步独立、无纠错恢复的串联假设下，系统的整体可靠性呈指数级衰减，单步的高准确率并不等同于长流程的稳定性",
+            "解决链式衰减的最佳方案是将 20 步的提示词合并为一次模型调用并无限扩大上下文窗口，从而彻底消除步骤间的传递误差",
+            "在工程实践中，可以通过引入确定性代码骨架（Deterministic Scaffolding）、中间状态校验与 Guardrails 来截断链式误差传递"
+          ]
+        }
+      }
+    ],
+    "agent-control-01": [
+      {
+        "id": "agent-control-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "LLM 自掌循环易失控。控制流原则，哪些正确？",
+        "options": [
+          "主流程确定代码掌，模型只调关键节点",
+          "循环须硬终止，最大迭代超时完成判",
+          "决策输出要 JSON，外层精确解析驱动",
+          "元 Agent 单脑持机，子无状态更内聚"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从自掌定主控与终止环节",
+          "reasoningGoal": "先定原则的环节；再逐项验证各判断；并排除「单脑内聚」等不成立描述。"
+        },
+        "generatedAt": 1788918109707,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d6e80c6b",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-66764b5b",
+        "sourceSnapshot": {
+          "id": "agent-control-01",
+          "topic": "agent-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "control-flow",
+            "deterministic",
+            "escape-hatch",
+            "state-machine"
+          ],
+          "question": "在生产环境 AI Agent 的控制流（Control Flow）设计中，完全由 LLM 自主掌控循环逻辑容易带来死循环、成本失控和行为不可预测等风险。为了构建高可靠的生产级 Agent 系统，下列哪些控制流设计原则是正确的？（多选）",
+          "options": [
+            "主控流程应由确定性的传统代码（如状态机、条件分支）掌控，模型仅在需要非结构化推理或开放式决策的关键节点被调用",
+            "所有的 Agent 循环必须设置明确的硬性终止机制（Escape Hatch），例如最大迭代次数上限、超时时间（Timeout）以及确定性的完成条件判定",
+            "模型每次决策的输出应尽可能要求为结构化数据（如 JSON），以便外层确定性代码能够精确解析并驱动下游逻辑",
+            "元 Agent 统一持有全局状态机，子 Agent 无状态；单脑架构消除协调不一致，比外层代码更内聚。"
+          ]
+        }
+      },
+      {
+        "id": "agent-control-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "死循环成本失控。锁这次循环，下列哪些判断成立？",
+        "options": [
+          "状态机分支掌主控，开放决策才调模型",
+          "Escape Hatch 必设，迭代超时完成判定",
+          "结构化数据输出，下游精确驱动",
+          "单脑全局机消除不一致，比代码内聚"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从失控锁循环看分支环节",
+          "reasoningGoal": "先锁循环的环节；再逐项验证各判断；并排除「比代码内聚」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d6e80c6b",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-eb2832b3",
+        "sourceSnapshot": {
+          "id": "agent-control-01",
+          "topic": "agent-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "control-flow",
+            "deterministic",
+            "escape-hatch",
+            "state-machine"
+          ],
+          "question": "在生产环境 AI Agent 的控制流（Control Flow）设计中，完全由 LLM 自主掌控循环逻辑容易带来死循环、成本失控和行为不可预测等风险。为了构建高可靠的生产级 Agent 系统，下列哪些控制流设计原则是正确的？（多选）",
+          "options": [
+            "主控流程应由确定性的传统代码（如状态机、条件分支）掌控，模型仅在需要非结构化推理或开放式决策的关键节点被调用",
+            "所有的 Agent 循环必须设置明确的硬性终止机制（Escape Hatch），例如最大迭代次数上限、超时时间（Timeout）以及确定性的完成条件判定",
+            "模型每次决策的输出应尽可能要求为结构化数据（如 JSON），以便外层确定性代码能够精确解析并驱动下游逻辑",
+            "元 Agent 统一持有全局状态机，子 Agent 无状态；单脑架构消除协调不一致，比外层代码更内聚。"
+          ]
+        }
+      }
+    ],
+    "agent-react-guard-01": [
+      {
+        "id": "agent-react-guard-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "ReAct 循环进生产，架构设计哪些合理？",
+        "options": [
+          "Guardrails 注入 Runtime 拦工具，执行前 Schema 校验鉴权",
+          "强副作用挂起待人工确认再续",
+          "Observation 阶段外部 API 大文本 HTML 不裁切拼入下轮",
+          "追踪 Token 深度，死循环截断降级"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从进生产定拦截与追踪环节",
+          "reasoningGoal": "先定架构的环节；再逐项验证各判断；并排除「全量拼入」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-146c889f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-0200aa04",
+        "sourceSnapshot": {
+          "id": "agent-react-guard-01",
+          "topic": "agent-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "react",
+            "guardrails",
+            "human-in-the-loop",
+            "observability"
+          ],
+          "question": "在 AI Agent 系统运行环境（Agent Runtime）的 ReAct（Reasoning + Acting）循环中，模型通过“思考-决策-执行工具-观察结果-反思”不断推进任务。为满足生产环境的可控性、安全与成本预算要求，下列架构设计合理的有？（多选）",
+          "options": [
+            "安全 Guardrails 应作为工具调用的拦截器注入 Runtime，在 LLM 发出工具指令后、实际执行 API 前完成参数 Schema 校验与鉴权",
+            "针对具有强副作用的工具（如删除数据、发起支付），应在 ReAct 循环中引入 Human-in-the-loop 机制，将循环挂起待人工确认后再继续执行",
+            "为了给模型提供完整信息，Observation 阶段应将外部 API 返回的所有原始大文本或完整 HTML 响应不加裁切地拼接入下一轮 Prompt",
+            "观测与成本控制模块需动态追踪 Token 消耗与 ReAct 循环递归深度，在检测到死循环或死锁（Looping/Deadlock）时触发强行截断与降级处理"
+          ]
+        }
+      },
+      {
+        "id": "agent-react-guard-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "思考决策执行观察反思转不停。运行时怎么管？下列哪些判断成立？",
+        "options": [
+          "工具指令发出执行前，参数鉴权先验",
+          "删数支付等强副作用，Human-in-the-loop 挂起",
+          "大文本 HTML 不裁切，全拼下轮 Prompt",
+          "Token 消耗递归深度盯，Looping 截断降级"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从转不停管执行与挂起环节",
+          "reasoningGoal": "先管运行的环节；再逐项验证各判断；并排除「全拼」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-146c889f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-e76e0b8a",
+        "sourceSnapshot": {
+          "id": "agent-react-guard-01",
+          "topic": "agent-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "react",
+            "guardrails",
+            "human-in-the-loop",
+            "observability"
+          ],
+          "question": "在 AI Agent 系统运行环境（Agent Runtime）的 ReAct（Reasoning + Acting）循环中，模型通过“思考-决策-执行工具-观察结果-反思”不断推进任务。为满足生产环境的可控性、安全与成本预算要求，下列架构设计合理的有？（多选）",
+          "options": [
+            "安全 Guardrails 应作为工具调用的拦截器注入 Runtime，在 LLM 发出工具指令后、实际执行 API 前完成参数 Schema 校验与鉴权",
+            "针对具有强副作用的工具（如删除数据、发起支付），应在 ReAct 循环中引入 Human-in-the-loop 机制，将循环挂起待人工确认后再继续执行",
+            "为了给模型提供完整信息，Observation 阶段应将外部 API 返回的所有原始大文本或完整 HTML 响应不加裁切地拼接入下一轮 Prompt",
+            "观测与成本控制模块需动态追踪 Token 消耗与 ReAct 循环递归深度，在检测到死循环或死锁（Looping/Deadlock）时触发强行截断与降级处理"
+          ]
+        }
+      }
+    ],
+    "agentic-03": [
+      {
+        "id": "agentic-03__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "AI Agent 核心组件有哪些？",
+        "options": [
+          "Planning 规划分解",
+          "Memory 短长记忆",
+          "Tools 工具调用",
+          "Loss 损失函数"
+        ],
+        "angle": "definition",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从核心定规划记忆工具环节",
+          "reasoningGoal": "先定组件的环节；再逐项验证各判断；并排除「Loss」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1fbea7bd",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-6341f15d",
+        "sourceSnapshot": {
+          "id": "agentic-03",
+          "topic": "agent-fundamentals",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "planning",
+            "memory",
+            "tools"
+          ],
+          "question": "下列哪些是典型 AI Agent 的核心组件？（多选）",
+          "options": [
+            "Planning（规划/任务分解）",
+            "Memory（记忆，短期与长期）",
+            "Tools（工具调用）",
+            "Loss 函数（损失函数）"
+          ]
+        }
+      },
+      {
+        "id": "agentic-03__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "搭 Agent 最小件。点这份清单，下列哪些判断成立？",
+        "options": [
+          "任务分解规划器",
+          "短期长期记忆体",
+          "外部工具调用器",
+          "损失函数优化器"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从最小件点规划与记忆环节",
+          "reasoningGoal": "先点清单的环节；再逐项验证各判断；并排除「优化器」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1fbea7bd",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-2519867f",
+        "sourceSnapshot": {
+          "id": "agentic-03",
+          "topic": "agent-fundamentals",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "planning",
+            "memory",
+            "tools"
+          ],
+          "question": "下列哪些是典型 AI Agent 的核心组件？（多选）",
+          "options": [
+            "Planning（规划/任务分解）",
+            "Memory（记忆，短期与长期）",
+            "Tools（工具调用）",
+            "Loss 函数（损失函数）"
+          ]
+        }
+      }
+    ],
+    "ai-eng-067": [
+      {
+        "id": "ai-eng-067__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "客服六阶段状态机，依赖顺序哪些正确？",
+        "options": [
+          "安全拦违规 PII，不进 Auto-Reply 队",
+          "置信度检查排安全前，提早结束省开销",
+          "意图输出定检索上下文工具路由",
+          "检索上下文工具三独立，并行非串行"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从六阶段定拦截与并行环节",
+          "reasoningGoal": "先定顺序的环节；再逐项验证各判断；并排除「置信先行」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4e399cd2",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-41bf8ac5",
+        "sourceSnapshot": {
+          "id": "ai-eng-067",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "state-machine",
+            "gating-order",
+            "safety-gate",
+            "parallel-tools"
+          ],
+          "question": "客服对话流被建模为状态机：意图分类 → 知识检索(RAG)/账户上下文/工具调用 → 草稿生成 → 安全检查 → 置信度检查 → 发送或转人工。关于各阶段的依赖与顺序，下列说法正确的有？（多选）",
+          "options": [
+            "被安全检查拦截的违规或含 PII 的响应不会进入 Auto-Reply 队列发给终端用户",
+            "置信度检查应当排在安全检查之前执行，以便提早结束低分请求、省掉安全检查的开销",
+            "意图分类的输出直接决定后端知识检索、账户上下文服务与工具调用的路由方向",
+            "知识检索、账户上下文获取与工具调用三者相互独立，架构上应并行执行而非严格串行"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-067__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "意图检索草稿安全置信发送。排这次序，下列哪些判断成立？",
+        "options": [
+          "违规 PII 拦截，不发终端用户",
+          "低分早停，安全检查后置省",
+          "路由方向由意图分类定",
+          "三者相互独立，并行非严格串行"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从六段排拦截与路由环节",
+          "reasoningGoal": "先排序的环节；再逐项验证各判断；并排除「后置省」等不成立描述。"
+        },
+        "generatedAt": 1788918109708,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4e399cd2",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-b632e035",
+        "sourceSnapshot": {
+          "id": "ai-eng-067",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "state-machine",
+            "gating-order",
+            "safety-gate",
+            "parallel-tools"
+          ],
+          "question": "客服对话流被建模为状态机：意图分类 → 知识检索(RAG)/账户上下文/工具调用 → 草稿生成 → 安全检查 → 置信度检查 → 发送或转人工。关于各阶段的依赖与顺序，下列说法正确的有？（多选）",
+          "options": [
+            "被安全检查拦截的违规或含 PII 的响应不会进入 Auto-Reply 队列发给终端用户",
+            "置信度检查应当排在安全检查之前执行，以便提早结束低分请求、省掉安全检查的开销",
+            "意图分类的输出直接决定后端知识检索、账户上下文服务与工具调用的路由方向",
+            "知识检索、账户上下文获取与工具调用三者相互独立，架构上应并行执行而非严格串行"
+          ]
+        }
+      }
+    ],
+    "guard-inout-01": [
+      {
+        "id": "guard-inout-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "输入输出护栏分工协同，哪些正确？",
+        "options": [
+          "输入防泄漏注入，权限脱敏隔离",
+          "输出工具接地内容三滤，防幻觉虚构",
+          "未注册越权调用，输出工具校验拦",
+          "输入已 cover，输出只日志免阻断"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从两头定防泄与三滤环节",
+          "reasoningGoal": "先定分工的环节；再逐项验证各判断；并排除「只日志」等不成立描述。"
+        },
+        "generatedAt": 1788918109709,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3d992e2d",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-a974ccd4",
+        "sourceSnapshot": {
+          "id": "guard-inout-01",
+          "topic": "agent-guardrails",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "input-guardrails",
+            "output-guardrails",
+            "tool-validation",
+            "grounding"
+          ],
+          "question": "在大模型 Agent 的双向安全与可靠性护栏架构中，关于输入护栏（Input Guardrails）与输出护栏（Output Guardrails）的职责划分与协同，以下哪些说法是正确的？（多选）",
+          "options": [
+            "输入护栏主要负责防范数据泄露与非法注入，如检索权限控制、敏感信息脱敏与边界隔离",
+            "输出护栏包含工具校验、接地校验与内容安全过滤，用于防止 Agent 生成幻觉动作或虚构事实",
+            "若 Agent 尝试调用一个未在系统注册或越权的子 Agent/工具，应当由输出护栏中的工具校验模块进行拦截",
+            "输入护栏已覆盖提示注入与敏感数据脱敏，输出侧只需日志审计留存，阻断式输出护栏属于重复建设"
+          ]
+        }
+      },
+      {
+        "id": "guard-inout-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "注入幻觉两头堵。划这次护栏，下列哪些判断成立？",
+        "options": [
+          "检索权限敏感脱敏边界，输入侧管",
+          "输出护栏三滤防幻觉动作虚构事实",
+          "越权子 Agent 工具，输出校验拦截",
+          "日志审计留存够，阻断输出重复建"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从两堵划输入与拦截环节",
+          "reasoningGoal": "先划护栏的环节；再逐项验证各判断；并排除「重复建」等不成立描述。"
+        },
+        "generatedAt": 1788918109709,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3d992e2d",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-ff1f5581",
+        "sourceSnapshot": {
+          "id": "guard-inout-01",
+          "topic": "agent-guardrails",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "input-guardrails",
+            "output-guardrails",
+            "tool-validation",
+            "grounding"
+          ],
+          "question": "在大模型 Agent 的双向安全与可靠性护栏架构中，关于输入护栏（Input Guardrails）与输出护栏（Output Guardrails）的职责划分与协同，以下哪些说法是正确的？（多选）",
+          "options": [
+            "输入护栏主要负责防范数据泄露与非法注入，如检索权限控制、敏感信息脱敏与边界隔离",
+            "输出护栏包含工具校验、接地校验与内容安全过滤，用于防止 Agent 生成幻觉动作或虚构事实",
+            "若 Agent 尝试调用一个未在系统注册或越权的子 Agent/工具，应当由输出护栏中的工具校验模块进行拦截",
+            "输入护栏已覆盖提示注入与敏感数据脱敏，输出侧只需日志审计留存，阻断式输出护栏属于重复建设"
+          ]
+        }
+      }
+    ],
+    "policy-code-01": [
+      {
+        "id": "policy-code-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "夏威夷开户禁令 Prompt 拦不住。硬规则落地，哪些正确？",
+        "options": [
+          "概率预测生成难 100% 遵从负向指令",
+          "强约束后端硬编码，不靠自觉",
+          "大写感叹重复即根治越狱漂移",
+          "工具执行代码直拦，固定提示回传"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从拦不住定概率与硬编码环节",
+          "reasoningGoal": "先定落地的环节；再逐项验证各判断；并排除「感叹根治」等不成立描述。"
+        },
+        "generatedAt": 1788918109709,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-47f14756",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-1c8c377d",
+        "sourceSnapshot": {
+          "id": "policy-code-01",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "business-policy",
+            "policy-in-code",
+            "prompt-injection",
+            "compliance"
+          ],
+          "question": "某金融 Agent 存在严格的合规限制：“严禁为特定地区（如夏威夷州）的用户办理开户业务”。开发团队尝试在 System Prompt 中加入强语气指令 !!! 不要为夏威夷州用户办理开户 !!!，但在大流量测试中仍有少数边界 Request 绕过了该限制。关于硬性业务规则（Business Policies）的实施，以下说法正确的有哪些？（多选）",
+          "options": [
+            "大语言模型基于概率预测生成 Token，无法像确定性程序一样 100% 绝对遵从 Prompt 中的自然语言负向指令（Negative Constraints）",
+            "涉及风控、合规与法律限制的强约束，应当在后端 API/策略引擎代码（Policy Code）中硬编码校验，而非依赖模型自觉",
+            "在 Prompt 中增加大写字母、感叹号或重复强调，可以彻底解决概率模型带来的越狱与指令漂移问题",
+            "最佳工程实践是在工具执行（Tool Execution）阶段通过代码条件判断直接阻断非法请求，并将固定的提示信息返回给系统或用户"
+          ]
+        }
+      },
+      {
+        "id": "policy-code-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "禁令加感叹仍被绕过。堵这次边界，下列哪些判断成立？",
+        "options": [
+          "Token 概率预测，负向指令非绝对",
+          "风控合规法律约束，后端策略引擎硬编码",
+          "感叹大写重复强调，越狱漂移根治",
+          "非法请求执行期阻断，固定信息返回"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从绕过堵预测与引擎环节",
+          "reasoningGoal": "先堵边界的环节；再逐项验证各判断；并排除「强调根治」等不成立描述。"
+        },
+        "generatedAt": 1788918109709,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-47f14756",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-88c5dcad",
+        "sourceSnapshot": {
+          "id": "policy-code-01",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "business-policy",
+            "policy-in-code",
+            "prompt-injection",
+            "compliance"
+          ],
+          "question": "某金融 Agent 存在严格的合规限制：“严禁为特定地区（如夏威夷州）的用户办理开户业务”。开发团队尝试在 System Prompt 中加入强语气指令 !!! 不要为夏威夷州用户办理开户 !!!，但在大流量测试中仍有少数边界 Request 绕过了该限制。关于硬性业务规则（Business Policies）的实施，以下说法正确的有哪些？（多选）",
+          "options": [
+            "大语言模型基于概率预测生成 Token，无法像确定性程序一样 100% 绝对遵从 Prompt 中的自然语言负向指令（Negative Constraints）",
+            "涉及风控、合规与法律限制的强约束，应当在后端 API/策略引擎代码（Policy Code）中硬编码校验，而非依赖模型自觉",
+            "在 Prompt 中增加大写字母、感叹号或重复强调，可以彻底解决概率模型带来的越狱与指令漂移问题",
+            "最佳工程实践是在工具执行（Tool Execution）阶段通过代码条件判断直接阻断非法请求，并将固定的提示信息返回给系统或用户"
+          ]
+        }
+      }
+    ],
+    "hil-vs-auto-loop": [
+      {
+        "id": "hil-vs-auto-loop__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "无人工循环代码库退化。保质保量取舍，哪些合理？",
+        "options": [
+          "人主导关键设计品味，不委托核心架构",
+          "Spec 实现异模型族对抗审查",
+          "弃 PR 人控，Agent 互审直入主干",
+          "真测动态行为，非静态 Mock 断言"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从退化定主导与真测环节",
+          "reasoningGoal": "先定取舍的环节；再逐项验证各判断；并排除「弃人控」等不成立描述。"
+        },
+        "generatedAt": 1788918109709,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b4321c09",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-01275f5b",
+        "sourceSnapshot": {
+          "id": "hil-vs-auto-loop",
+          "topic": "agent-fundamentals",
+          "subtopic": "human-in-loop-vs-autonomous",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "human-in-the-loop",
+            "autonomous-agent",
+            "code-quality",
+            "code-slop"
+          ],
+          "question": "在高吞吐量的 AI Agent 辅助软件工程体系中完全无人工干预的自动化循环往往会导致代码库快速退化与代码垃圾堆积。为了在保持高交付并发的同时维持生产级代码质量以下哪些工程取舍是合理的？（多选）",
+          "options": [
+            "人类工程师需主导关键设计与技术品味不将核心架构决策完全委托给 Agent",
+            "在 Spec 制定与代码实现阶段引入独立的、不同模型族的 Agent 进行对抗性审查",
+            "放弃人类对 Pull Request 的控制与合并权限由 Agent 相互审查并直接全自动合入主干",
+            "要求 Agent 在真实测试环境中校验动态运行行为而非仅通过检查静态文本或验证 Mock 来断言任务成功"
+          ]
+        }
+      },
+      {
+        "id": "hil-vs-auto-loop__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "全自动合入垃圾堆积。踩这次刹车，下列哪些判断成立？",
+        "options": [
+          "核心架构决策人留权，不全委托",
+          "Spec 实现阶段引独立异模型族对抗审查",
+          "合并权限交 Agent，全自动入主干",
+          "真实环境验动态，非 Mock 文本断言"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从堆积踩留权与环境环节",
+          "reasoningGoal": "先踩刹车的环节；再逐项验证各判断；并排除「交 Agent」等不成立描述。"
+        },
+        "generatedAt": 1788918109710,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b4321c09",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-ced8058e",
+        "sourceSnapshot": {
+          "id": "hil-vs-auto-loop",
+          "topic": "agent-fundamentals",
+          "subtopic": "human-in-loop-vs-autonomous",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "human-in-the-loop",
+            "autonomous-agent",
+            "code-quality",
+            "code-slop"
+          ],
+          "question": "在高吞吐量的 AI Agent 辅助软件工程体系中完全无人工干预的自动化循环往往会导致代码库快速退化与代码垃圾堆积。为了在保持高交付并发的同时维持生产级代码质量以下哪些工程取舍是合理的？（多选）",
+          "options": [
+            "人类工程师需主导关键设计与技术品味不将核心架构决策完全委托给 Agent",
+            "在 Spec 制定与代码实现阶段引入独立的、不同模型族的 Agent 进行对抗性审查",
+            "放弃人类对 Pull Request 的控制与合并权限由 Agent 相互审查并直接全自动合入主干",
+            "要求 Agent 在真实测试环境中校验动态运行行为而非仅通过检查静态文本或验证 Mock 来断言任务成功"
+          ]
+        }
+      }
+    ],
+    "subagent-vs-inline": [
+      {
+        "id": "subagent-vs-inline__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "子驱还是内联？Spec 转码判断，哪些合理？",
+        "options": [
+          "调度解耦强者用子驱，复杂拆分提效",
+          "调度弱丢上下文者用内联，增量验证稳",
+          "小粒度提交逐验 Spec，防长文漂移",
+          "不论能力无限嵌套，重构全仓方休"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从转码定子驱与内联环节",
+          "reasoningGoal": "先定判断的环节；再逐项验证各判断；并排除「无限嵌套」等不成立描述。"
+        },
+        "generatedAt": 1788918109710,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-41af30f8",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-3abcfd03",
+        "sourceSnapshot": {
+          "id": "subagent-vs-inline",
+          "topic": "agent-fundamentals",
+          "subtopic": "subagent-vs-inline-execution",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "subagent",
+            "inline-execution",
+            "incremental-commit",
+            "code-drift"
+          ],
+          "question": "不同大语言模型在子 Agent 调度能力和上下文管理上存在差异。在将 Spec 转换为代码实现阶段关于选择子 Agent 驱动还是单层内联执行的工程判断以下哪些说法是合理的？（多选）",
+          "options": [
+            "对于子 Agent 调度与复杂上下文解耦能力较强的模型采用子 Agent 驱动开发可有效提升复杂 Spec 拆分执行的效率",
+            "对于子 Agent 调度能力相对较弱或容易在多层调用中丢上下文的模型采用单层内联执行配合频繁的增量验证是更稳妥的选择",
+            "在 Implement 阶段配合小粒度的增量提交并在每次提交后验证 Spec 符合度能有效避免模型在长上下文下产生代码漂移",
+            "无论模型能力如何都必须采用深度无限嵌套的子 Agent 循环直到整个仓库的代码全自动重构完毕"
+          ]
+        }
+      },
+      {
+        "id": "subagent-vs-inline__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "模型调度有强弱。选这次执行，下列哪些判断成立？",
+        "options": [
+          "复杂 Spec 拆分执行，子驱提效",
+          "多层丢上下文者，内联增量验证稳",
+          "每次提交验符合度，代码漂移可防",
+          "无限嵌套子循环，全仓重构不停"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从强弱选执行看拆分环节",
+          "reasoningGoal": "先选执行的环节；再逐项验证各判断；并排除「不停」等不成立描述。"
+        },
+        "generatedAt": 1788918109710,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-41af30f8",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-88247706",
+        "sourceSnapshot": {
+          "id": "subagent-vs-inline",
+          "topic": "agent-fundamentals",
+          "subtopic": "subagent-vs-inline-execution",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "subagent",
+            "inline-execution",
+            "incremental-commit",
+            "code-drift"
+          ],
+          "question": "不同大语言模型在子 Agent 调度能力和上下文管理上存在差异。在将 Spec 转换为代码实现阶段关于选择子 Agent 驱动还是单层内联执行的工程判断以下哪些说法是合理的？（多选）",
+          "options": [
+            "对于子 Agent 调度与复杂上下文解耦能力较强的模型采用子 Agent 驱动开发可有效提升复杂 Spec 拆分执行的效率",
+            "对于子 Agent 调度能力相对较弱或容易在多层调用中丢上下文的模型采用单层内联执行配合频繁的增量验证是更稳妥的选择",
+            "在 Implement 阶段配合小粒度的增量提交并在每次提交后验证 Spec 符合度能有效避免模型在长上下文下产生代码漂移",
+            "无论模型能力如何都必须采用深度无限嵌套的子 Agent 循环直到整个仓库的代码全自动重构完毕"
+          ]
+        }
+      }
+    ],
+    "longhorizon-control-modes-01": [
+      {
+        "id": "longhorizon-control-modes-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "自主/目标/心跳三模式，比较哪些正确？",
+        "options": [
+          "自主每 Turn 外测，失败未超预算回错误续试",
+          "目标靠主观完成声明，未标完成跨 Turn 保",
+          "心跳应 Cron 定时，巡检监测维护长程",
+          "任模式遇测试失败即杀进程清 L2/L3"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从三模式定外测与巡检环节",
+          "reasoningGoal": "先定比较的环节；再逐项验证各判断；并排除「即杀清」等不成立描述。"
+        },
+        "generatedAt": 1788918109710,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d8433b9f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-8e862e00",
+        "sourceSnapshot": {
+          "id": "longhorizon-control-modes-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "autonomous-mode",
+            "goal-mode",
+            "heartbeat",
+            "termination"
+          ],
+          "question": "长程智能体系统需要灵活的控制机制（Control Mechanisms）来管理任务的持续推进、终止校验与调度。关于自主模式（Autonomous Mode）、目标模式（Goal Mode）与心跳模式（Heartbeat Mode）的比较，下列哪些说法是正确的？",
+          "options": [
+            "自主模式在每个 Turn 结束后触发外部测试，若测试失败且未超预算，系统会将有界的错误信息反馈给智能体并开启下一轮尝试。",
+            "目标模式依赖智能体的主观完成声明（Agentic Completion），只要智能体未主动标记目标完成，系统就会跨多个 Turn 保持该目标。",
+            "心跳模式主要用于响应定时计划（Cron/Timed）或周期性事件，触发智能体定期执行巡检、监测或维护类长程任务。",
+            "无论处于哪种控制模式，只要遇到外部环境测试失败，系统就会立即强行终止进程并清空 L2 与 L3 层的所有持久化状态。"
+          ]
+        }
+      },
+      {
+        "id": "longhorizon-control-modes-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "长程任务谁喊停谁巡检？分这次模式，下列哪些判断成立？",
+        "options": [
+          "每 Turn 结束触发外部测试，失败未超预算反馈续试",
+          "主观完成声明制，未标记完成跨 Turn 保持目标",
+          "定时计划周期事件，心跳巡检维护",
+          "任模式遇测试失败即强杀，清空 L2/L3 持久态"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从喊停分挂钩与声明环节",
+          "reasoningGoal": "先分模式的环节；再逐项验证各判断；并排除「不留」等不成立描述。"
+        },
+        "generatedAt": 1788918109710,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d8433b9f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-3789f796",
+        "sourceSnapshot": {
+          "id": "longhorizon-control-modes-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "autonomous-mode",
+            "goal-mode",
+            "heartbeat",
+            "termination"
+          ],
+          "question": "长程智能体系统需要灵活的控制机制（Control Mechanisms）来管理任务的持续推进、终止校验与调度。关于自主模式（Autonomous Mode）、目标模式（Goal Mode）与心跳模式（Heartbeat Mode）的比较，下列哪些说法是正确的？",
+          "options": [
+            "自主模式在每个 Turn 结束后触发外部测试，若测试失败且未超预算，系统会将有界的错误信息反馈给智能体并开启下一轮尝试。",
+            "目标模式依赖智能体的主观完成声明（Agentic Completion），只要智能体未主动标记目标完成，系统就会跨多个 Turn 保持该目标。",
+            "心跳模式主要用于响应定时计划（Cron/Timed）或周期性事件，触发智能体定期执行巡检、监测或维护类长程任务。",
+            "无论处于哪种控制模式，只要遇到外部环境测试失败，系统就会立即强行终止进程并清空 L2 与 L3 层的所有持久化状态。"
+          ]
+        }
+      }
+    ],
+    "envharness-duality-01": [
+      {
+        "id": "envharness-duality-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "Agent Harness 对 Environment Harness，定义机制哪些正确？",
+        "options": [
+          "Agent 冻权重外包扩展动作记忆",
+          "Env 冻逻辑包接口重塑状态规则结构",
+          "Agent 改观察输入，Env 改预测分布",
+          "皆不动核心内部，提适应训练效"
+        ],
+        "angle": "fundamental",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从对偶定包装与重塑环节",
+          "reasoningGoal": "先定定义的环节；再逐项验证各判断；并排除「改反」等不成立描述。"
+        },
+        "generatedAt": 1788918109711,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0c577491",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-13aa3b49",
+        "sourceSnapshot": {
+          "id": "envharness-duality-01",
+          "topic": "agent-fundamentals",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "env-harness",
+            "agent-harness",
+            "duality"
+          ],
+          "question": "在 LLM Agent 系统设计中，Agent Harness（如工具调用、记忆检索、提示词链循环等）与 Environment Harness 展现出高度的对偶性（Duality）。关于这两者的架构定义与工作机制，下列说法正确的有？",
+          "options": [
+            "Agent Harness 在冻结 LLM 基础模型权重的前提下，通过外部包装层扩展 LLM 处理复杂任务的动作与记忆能力。",
+            "Environment Harness 在冻结静态环境底层逻辑的前提下，通过接口包装层动态重塑环境的初始状态、交互规则与组合结构。",
+            "Agent Harness 主要修改环境的观察输入，而 Environment Harness 主要修改 Agent 的预测概率分布。",
+            "两者均旨在不改变核心系统（模型权重或底层模拟引擎）内部实现的前提下，提高系统的适应力与训练效率。"
+          ]
+        }
+      },
+      {
+        "id": "envharness-duality-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "包装模型还是包装环境？看这次对偶，下列哪些判断成立？",
+        "options": [
+          "冻结基础模型权重，包装层扩能力",
+          "冻结底层逻辑，初始交互组合重塑",
+          "Agent 改观察输入，Env 改预测分布",
+          "核心系统内部不改，适应力训练效率双提"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从包谁看冻结与双提环节",
+          "reasoningGoal": "先看对偶的环节；再逐项验证各判断；并排除错位修改等不成立描述。"
+        },
+        "generatedAt": 1788918109711,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0c577491",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-3e9d09b2",
+        "sourceSnapshot": {
+          "id": "envharness-duality-01",
+          "topic": "agent-fundamentals",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "env-harness",
+            "agent-harness",
+            "duality"
+          ],
+          "question": "在 LLM Agent 系统设计中，Agent Harness（如工具调用、记忆检索、提示词链循环等）与 Environment Harness 展现出高度的对偶性（Duality）。关于这两者的架构定义与工作机制，下列说法正确的有？",
+          "options": [
+            "Agent Harness 在冻结 LLM 基础模型权重的前提下，通过外部包装层扩展 LLM 处理复杂任务的动作与记忆能力。",
+            "Environment Harness 在冻结静态环境底层逻辑的前提下，通过接口包装层动态重塑环境的初始状态、交互规则与组合结构。",
+            "Agent Harness 主要修改环境的观察输入，而 Environment Harness 主要修改 Agent 的预测概率分布。",
+            "两者均旨在不改变核心系统（模型权重或底层模拟引擎）内部实现的前提下，提高系统的适应力与训练效率。"
+          ]
+        }
+      }
+    ],
+    "envharness-stage-01": [
+      {
+        "id": "envharness-stage-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "Stage 预跑改初态，流程作用哪些正确？",
+        "options": [
+          "Stage 覆盖 reset 方法，返初始观察前连跑 δ 改初态",
+          "前置子任务预做，缩 Horizon 聚焦后学",
+          "预先设干扰藏目标，提难度考探索能力",
+          "Stage 改原生 step 逻辑，屏蔽后续调 δ 内动作"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从预跑定覆盖与藏目标环节",
+          "reasoningGoal": "先定流程的环节；再逐项验证各判断；并排除「禁调」等不成立描述。"
+        },
+        "generatedAt": 1788918109711,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f6371ede",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-ece81d43",
+        "sourceSnapshot": {
+          "id": "envharness-stage-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "env-harness",
+            "stage",
+            "reset"
+          ],
+          "question": "在 Environment Harness 体系中，Stage 组件被定义为在环境初始化时静默施加一个预设的动作序列 δ = (a1, a2, …, ak)。关于 Stage 组件的执行流程与工程作用，下列说法正确的有？",
+          "options": [
+            "Stage 组件覆盖环境的 reset() 方法，在向 Agent 返回初始观察之前，先在底层环境中连续执行动作序列 δ，将环境状态推进至新的初始状态 s0'。",
+            "通过预先执行部分前置子任务（如“打开抽屉”或“清洁物品”），Stage 组件可以有效缩短任务 Horizon，使 Agent 能聚焦于特定后续步骤的学习。",
+            "通过预先制造干扰或隐蔽目标（如“将关键道具移入柜中并关闭柜门”），Stage 组件可以提高起始难度，考察 Agent 的探索能力。",
+            "Stage 组件执行时会修改环境原生的 step() 逻辑，屏蔽 Agent 在后续交互中调用动作序列 δ 中所包含动作的权限。"
+          ]
+        }
+      },
+      {
+        "id": "envharness-stage-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "初始化静默先跑一段。查这次预置，下列哪些判断成立？",
+        "options": [
+          "覆盖 reset 方法，初始观察前连跑 δ 序列",
+          "开抽屉清洁预做，Horizon 缩聚焦后续",
+          "道具移柜关门，难度起探索考",
+          "原生 step 逻辑改写，后续调 δ 动作屏蔽"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从静默查覆盖与禁用环节",
+          "reasoningGoal": "先查预置的环节；再逐项验证各判断；并排除「后续禁用」等不成立描述。"
+        },
+        "generatedAt": 1788918109711,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f6371ede",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-06e65db2",
+        "sourceSnapshot": {
+          "id": "envharness-stage-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "env-harness",
+            "stage",
+            "reset"
+          ],
+          "question": "在 Environment Harness 体系中，Stage 组件被定义为在环境初始化时静默施加一个预设的动作序列 δ = (a1, a2, …, ak)。关于 Stage 组件的执行流程与工程作用，下列说法正确的有？",
+          "options": [
+            "Stage 组件覆盖环境的 reset() 方法，在向 Agent 返回初始观察之前，先在底层环境中连续执行动作序列 δ，将环境状态推进至新的初始状态 s0'。",
+            "通过预先执行部分前置子任务（如“打开抽屉”或“清洁物品”），Stage 组件可以有效缩短任务 Horizon，使 Agent 能聚焦于特定后续步骤的学习。",
+            "通过预先制造干扰或隐蔽目标（如“将关键道具移入柜中并关闭柜门”），Stage 组件可以提高起始难度，考察 Agent 的探索能力。",
+            "Stage 组件执行时会修改环境原生的 step() 逻辑，屏蔽 Agent 在后续交互中调用动作序列 δ 中所包含动作的权限。"
+          ]
+        }
+      }
+    ],
+    "envharness-chain-01": [
+      {
+        "id": "envharness-chain-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "Chain 拼环境跨任务接，实现机制哪些正确？",
+        "options": [
+          "复合环境动作空间取并集暴露",
+          "基础任务完转附加环境，跨任务序列化拼接",
+          "连续满足全子验证条件，Chain 给终成功信号",
+          "子环境须同底层实现同内存结构"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从拼接待定并集与验证环节",
+          "reasoningGoal": "先定实现的环节；再逐项验证各判断；并排除「须全同」等不成立描述。"
+        },
+        "generatedAt": 1788918109711,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7beb9fb0",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-79e4da8a",
+        "sourceSnapshot": {
+          "id": "envharness-chain-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "env-harness",
+            "chain",
+            "long-horizon"
+          ],
+          "question": "Chain 组件通过组合逻辑 g(E, E_ext) 将基础环境 E 与附加环境 E_ext 组合为复合环境。关于 Chain 组件的技术实现与交互机制，下列说法正确的有？",
+          "options": [
+            "复合环境暴露给 Agent 的动作空间通常为各参与环境动作空间的并集（如 A' = A ∪ A_ext）。",
+            "Chain 组件可以基于内部转换条件，在 Agent 完成基础任务后动态将交互焦点转移至附加环境，实现跨任务的序列化拼接。",
+            "复合环境的整体奖励由 Chain 组件管理，只有当 Agent 连续满足所有被拼接子环境的验证条件时才给出最终成功信号。",
+            "Chain 组件要求参与拼接的所有子环境必须基于完全相同的底层实现代码与内存数据结构。"
+          ]
+        }
+      },
+      {
+        "id": "envharness-chain-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "基础接附加跨任务拼。看这次拼接，下列哪些判断成立？",
+        "options": [
+          "动作空间并集暴露给 Agent",
+          "转换条件切焦点，任务序列化拼接",
+          "连续满足全子验证，终成功才发",
+          "实现代码内存结构须全同"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从拼接看并集与全同环节",
+          "reasoningGoal": "先看拼接的环节；再逐项验证各判断；并排除「须全同」等不成立描述。"
+        },
+        "generatedAt": 1788918109711,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7beb9fb0",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-261c5f84",
+        "sourceSnapshot": {
+          "id": "envharness-chain-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "env-harness",
+            "chain",
+            "long-horizon"
+          ],
+          "question": "Chain 组件通过组合逻辑 g(E, E_ext) 将基础环境 E 与附加环境 E_ext 组合为复合环境。关于 Chain 组件的技术实现与交互机制，下列说法正确的有？",
+          "options": [
+            "复合环境暴露给 Agent 的动作空间通常为各参与环境动作空间的并集（如 A' = A ∪ A_ext）。",
+            "Chain 组件可以基于内部转换条件，在 Agent 完成基础任务后动态将交互焦点转移至附加环境，实现跨任务的序列化拼接。",
+            "复合环境的整体奖励由 Chain 组件管理，只有当 Agent 连续满足所有被拼接子环境的验证条件时才给出最终成功信号。",
+            "Chain 组件要求参与拼接的所有子环境必须基于完全相同的底层实现代码与内存数据结构。"
+          ]
+        }
+      }
+    ],
+    "envharness-envrigger-01": [
+      {
+        "id": "envharness-envrigger-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "Observe/Diagnose/Write/Validate 四阶段，职责流转哪些正确？",
+        "options": [
+          "Observe 跑策略收好坏轨迹，界能力边",
+          "Diagnose 归因死循冗余解析误，出报告",
+          "Write 出候选码直写生产免验证",
+          "Validate 新环境重采样，评估信号有效可解"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从四阶段定收集与重采样环节",
+          "reasoningGoal": "先定职责的环节；再逐项验证各判断；并排除「直写免验」等不成立描述。"
+        },
+        "generatedAt": 1788918109712,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5e50e9f7",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-af38c4ed",
+        "sourceSnapshot": {
+          "id": "envharness-envrigger-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "env-rigger",
+            "observe-diagnose-write-validate"
+          ],
+          "question": "EnvRigger 是用于自动化生成 Harness 组件的控制闭环，其工作流包含四个阶段：Observe、Diagnose、Write 和 Validate。关于各阶段的职责与数据流转，下列说法正确的有？",
+          "options": [
+            "Observe 阶段通过在当前环境中运行目标策略，同时收集成功与失败轨迹，以界定策略当前的能力边界。",
+            "Diagnose 阶段分析轨迹中的死循环、冗余动作或观察解析失误等归因，输出指导环境定制的诊断报告。",
+            "Write 阶段依据诊断生成候选 Harness 组件（如 Stage/Contract 组合），生成的代码会直接写入生产环境无需验证。",
+            "Validate 阶段利用目标策略在包装了候选组件的新环境中重新采样 Rollout，评估该环境是否提供了有效且可解的训练信号。"
+          ]
+        }
+      },
+      {
+        "id": "envharness-envrigger-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "跑轨迹诊毛病写组件再验证。走这趟闭环，下列哪些判断成立？",
+        "options": [
+          "成功失败轨迹双收，能力边界界定",
+          "死循环冗余解析误归因，诊断报告出",
+          "候选代码直写生产，验证跳过",
+          "候选环境重采样，信号有效可解验"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从闭环走双收与跳过环节",
+          "reasoningGoal": "先走闭环的环节；再逐项验证各判断；并排除「跳过」等不成立描述。"
+        },
+        "generatedAt": 1788918109712,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5e50e9f7",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-3cc2da4f",
+        "sourceSnapshot": {
+          "id": "envharness-envrigger-01",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "env-rigger",
+            "observe-diagnose-write-validate"
+          ],
+          "question": "EnvRigger 是用于自动化生成 Harness 组件的控制闭环，其工作流包含四个阶段：Observe、Diagnose、Write 和 Validate。关于各阶段的职责与数据流转，下列说法正确的有？",
+          "options": [
+            "Observe 阶段通过在当前环境中运行目标策略，同时收集成功与失败轨迹，以界定策略当前的能力边界。",
+            "Diagnose 阶段分析轨迹中的死循环、冗余动作或观察解析失误等归因，输出指导环境定制的诊断报告。",
+            "Write 阶段依据诊断生成候选 Harness 组件（如 Stage/Contract 组合），生成的代码会直接写入生产环境无需验证。",
+            "Validate 阶段利用目标策略在包装了候选组件的新环境中重新采样 Rollout，评估该环境是否提供了有效且可解的训练信号。"
+          ]
+        }
+      }
+    ],
+    "envharness-composition-01": [
+      {
+        "id": "envharness-composition-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "多组件嵌套叠加，执行特性哪些正确？",
+        "options": [
+          "统 reset/step 接口，链式嵌套封装",
+          "叠加次序非交换，先后定优先级传递",
+          "reset 调 Stage 改初态，Contract 转观察",
+          "多层嵌套验器即失效，须手写全套验证代码"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从嵌套定接口与次序环节",
+          "reasoningGoal": "先定特性的环节；再逐项验证各判断；并排除「即失效」等不成立描述。"
+        },
+        "generatedAt": 1788918109712,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4992f4ea",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-ddcc783c",
+        "sourceSnapshot": {
+          "id": "envharness-composition-01",
+          "topic": "agent-loop",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "env-harness",
+            "composition",
+            "non-commutativity"
+          ],
+          "question": "EnvHarness 允许将多个组件嵌套叠加在同一个静态环境上，例如构造复合环境 E' = w_chain ∘ w_contract ∘ w_stage (E)。关于该复合系统的执行特性，下列说法正确的有？",
+          "options": [
+            "所有组件均遵循统一的 reset / step 接口规范，因此支持多层组件以链式方式逐层嵌套封装。",
+            "组件的叠加顺序具有非交换性（w1 ∘ w2 ≠ w2 ∘ w1），嵌套次序决定了作用的优先级与状态传递机制。",
+            "在 w_contract ∘ w_stage (E) 中调用 reset() 时，Stage 先改写初始状态，Contract 再对该初始状态返回的观察施加转换。",
+            "一旦进行多层嵌套，最内层原始环境的验证器（Verifier）即随之失效，必须由开发者手动重写整套验证代码。"
+          ]
+        }
+      },
+      {
+        "id": "envharness-composition-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "链式套链式。理这次嵌套，下列哪些判断成立？",
+        "options": [
+          "reset step 统一规范，多层链式嵌",
+          "组件叠加次序非交换，嵌套定优先级状态传递",
+          "Stage 改初态在先，Contract 转观察在后",
+          "Verifier 随嵌套失效，重写验证代码"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从套叠理规范与失效环节",
+          "reasoningGoal": "先理嵌套的环节；再逐项验证各判断；并排除「失效重写」等不成立描述。"
+        },
+        "generatedAt": 1788918109712,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4992f4ea",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-9cf855be",
+        "sourceSnapshot": {
+          "id": "envharness-composition-01",
+          "topic": "agent-loop",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "env-harness",
+            "composition",
+            "non-commutativity"
+          ],
+          "question": "EnvHarness 允许将多个组件嵌套叠加在同一个静态环境上，例如构造复合环境 E' = w_chain ∘ w_contract ∘ w_stage (E)。关于该复合系统的执行特性，下列说法正确的有？",
+          "options": [
+            "所有组件均遵循统一的 reset / step 接口规范，因此支持多层组件以链式方式逐层嵌套封装。",
+            "组件的叠加顺序具有非交换性（w1 ∘ w2 ≠ w2 ∘ w1），嵌套次序决定了作用的优先级与状态传递机制。",
+            "在 w_contract ∘ w_stage (E) 中调用 reset() 时，Stage 先改写初始状态，Contract 再对该初始状态返回的观察施加转换。",
+            "一旦进行多层嵌套，最内层原始环境的验证器（Verifier）即随之失效，必须由开发者手动重写整套验证代码。"
+          ]
+        }
+      }
+    ],
+    "selfharness-signature-01": [
+      {
+        "id": "selfharness-signature-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "归因签名聚失败再复用，机制哪些正确？",
+        "options": [
+          "同签名映射同 Harness 干预复用",
+          "评测判定行为解耦，防症状当根因",
+          "自动滤非确定异常，只留参数随机错",
+          "防单次偶发过度补丁，提修改泛化"
+        ],
+        "angle": "design",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从签名定映射与解耦环节",
+          "reasoningGoal": "先定机制的环节；再逐项验证各判断；并排除「只留随机」等不成立描述。"
+        },
+        "generatedAt": 1788918109712,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-623724b2",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-7365f991",
+        "sourceSnapshot": {
+          "id": "selfharness-signature-01",
+          "topic": "agent-loop",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "attribution-signature",
+            "causal-status",
+            "clustering"
+          ],
+          "question": "为了实现精细化的缺陷归因，智能体分析模块构建了由“终端校验原因（Terminal Cause）”、“Agent 行为因果状态（Causal Status）”与“抽象行为机制（Abstract Mechanism）”构成的归因签名 φ(r) = (c, q, m)。下列关于该归因机制在失败轨迹聚类中作用的描述，哪些是正确的？",
+          "options": [
+            "确保归因签名相同的失败样例能够映射到同一种可复用的 Harness 级别改进干预措施中",
+            "将外部评测器的判定结果与 Agent 内部行为解耦，防止将表面症状误判为底层根因机制",
+            "允许系统自动过滤掉所有非确定性的运行异常，仅保留由于模型参数不稳定导致的随机错误",
+            "避免提议模块针对单次偶发的特定任务失败生成过度的局部补丁，提升修改的泛化能力"
+          ]
+        }
+      },
+      {
+        "id": "selfharness-signature-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "失败贴签再聚类。看这次归因，下列哪些判断成立？",
+        "options": [
+          "失败样例同签名，同干预复用",
+          "外部判定内部行为解耦，症状非根因",
+          "非确定异常过滤，只留模型不稳定错",
+          "单次偶发不生局部补丁，泛化优先"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从贴签看复用与过滤环节",
+          "reasoningGoal": "先看归因的环节；再逐项验证各判断；并排除「只留不稳定」等不成立描述。"
+        },
+        "generatedAt": 1788918109712,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-623724b2",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-f2845a0f",
+        "sourceSnapshot": {
+          "id": "selfharness-signature-01",
+          "topic": "agent-loop",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "attribution-signature",
+            "causal-status",
+            "clustering"
+          ],
+          "question": "为了实现精细化的缺陷归因，智能体分析模块构建了由“终端校验原因（Terminal Cause）”、“Agent 行为因果状态（Causal Status）”与“抽象行为机制（Abstract Mechanism）”构成的归因签名 φ(r) = (c, q, m)。下列关于该归因机制在失败轨迹聚类中作用的描述，哪些是正确的？",
+          "options": [
+            "确保归因签名相同的失败样例能够映射到同一种可复用的 Harness 级别改进干预措施中",
+            "将外部评测器的判定结果与 Agent 内部行为解耦，防止将表面症状误判为底层根因机制",
+            "允许系统自动过滤掉所有非确定性的运行异常，仅保留由于模型参数不稳定导致的随机错误",
+            "避免提议模块针对单次偶发的特定任务失败生成过度的局部补丁，提升修改的泛化能力"
+          ]
+        }
+      }
+    ],
+    "selfharness-parallel-edits-01": [
+      {
+        "id": "selfharness-parallel-edits-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "并行多元最小改对比全重构，取舍哪些正确？",
+        "options": [
+          "最小改限范围，保有效行为便回归",
+          "多候选覆多路径，单轮命中率升",
+          "限最小改保正交，多通过可直并",
+          "全局重构降 Token 消耗，提示词格式严重漂移"
+        ],
+        "angle": "design",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从小补定范围与正交环节",
+          "reasoningGoal": "先定取舍的环节；再逐项验证各判断；并排除「省 Token」等不成立描述。"
+        },
+        "generatedAt": 1788918109713,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ee98ab6f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-7f82bd01",
+        "sourceSnapshot": {
+          "id": "selfharness-parallel-edits-01",
+          "topic": "agent-fundamentals",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "parallel-proposals",
+            "minimal-edit",
+            "bounded"
+          ],
+          "question": "在 Self-Harness 的提议生成（Harness Proposal）阶段，系统采用“并行提出多个多元化且最小化候选修改（Parallel Bounded Edits）”策略，而不是让智能体直接重新生成一套全新的完整 Harness。这种设计基于哪些工程设计取舍（Trade-offs）？",
+          "options": [
+            "最小化修改能够限定干预范围，降低破坏智能体已有有效行为模式的风险，便于开展回归测试",
+            "多元化候选能够覆盖同类缺陷的不同修复路径，提高在单轮演进中发现有效改进措施的成功概率",
+            "架构限定最小修改能确保各候选变更保持相互正交，便于后续将多个通过校验的修改直接合并",
+            "全局重构会显著降低基座模型的 Token 消耗成本，但会导致提示词上下文发生严重的格式漂移现象"
+          ]
+        }
+      },
+      {
+        "id": "selfharness-parallel-edits-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "不大改只小补多试。定这次策略，下列哪些判断成立？",
+        "options": [
+          "干预范围限定，有效行为不破回归易",
+          "同类缺陷多路修，单轮成功率涨",
+          "候选正交互不踩，通过合并直接并",
+          "全局重构省 Token 消耗，格式严重漂移"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从小补定限定与合并环节",
+          "reasoningGoal": "先定策略的环节；再逐项验证各判断；并排除「省但漂」等不成立描述。"
+        },
+        "generatedAt": 1788918109713,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ee98ab6f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-1fe31d09",
+        "sourceSnapshot": {
+          "id": "selfharness-parallel-edits-01",
+          "topic": "agent-fundamentals",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "parallel-proposals",
+            "minimal-edit",
+            "bounded"
+          ],
+          "question": "在 Self-Harness 的提议生成（Harness Proposal）阶段，系统采用“并行提出多个多元化且最小化候选修改（Parallel Bounded Edits）”策略，而不是让智能体直接重新生成一套全新的完整 Harness。这种设计基于哪些工程设计取舍（Trade-offs）？",
+          "options": [
+            "最小化修改能够限定干预范围，降低破坏智能体已有有效行为模式的风险，便于开展回归测试",
+            "多元化候选能够覆盖同类缺陷的不同修复路径，提高在单轮演进中发现有效改进措施的成功概率",
+            "架构限定最小修改能确保各候选变更保持相互正交，便于后续将多个通过校验的修改直接合并",
+            "全局重构会显著降低基座模型的 Token 消耗成本，但会导致提示词上下文发生严重的格式漂移现象"
+          ]
+        }
+      }
+    ],
+    "agent-cache-routing-01": [
+      {
+        "id": "agent-cache-routing-01__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "缓存 80% 账单仍高。局限协同，哪些正确？",
+        "options": [
+          "缓存降前缀单价，增量历史工具输出累积仍巨",
+          "全发最贵 Frontier，未命中单价总量致成本基数巨",
+          "缓存解传输单价问题，路由解匹配问题，两维度配合用",
+          "命中 80% 即降本必胜路由廉价模"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从高账单定单价与匹配环节",
+          "reasoningGoal": "先定局限的环节；再逐项验证各判断；并排除「必胜」等不成立描述。"
+        },
+        "generatedAt": 1788918109713,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f0b0c77f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-14743682",
+        "sourceSnapshot": {
+          "id": "agent-cache-routing-01",
+          "topic": "caching",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prompt-caching",
+            "routing",
+            "hit-rate",
+            "cost"
+          ],
+          "question": "在大型 Agent 系统的成本优化实践中，团队开启了 API 供应商的 Prompt Caching（前缀缓存）功能，并且在某些高频场景下达到了 80% 以上的缓存重用率（Cache Hit Rate）。然而，系统的月度 API 总账单依然居高不下。关于 Prompt Caching 的局限性及与 Smart Routing（智能路由）的关系，下列分析正确的有？（多选）",
+          "options": [
+            "Prompt Caching 仅降低了被缓存的前缀输入 Token 的单价，但在高并发/高频 Agent 场景下，每次请求中无法被缓存的增量上下文（如新工具输出、递增历史）累积量依然巨大",
+            "如果所有请求默认都发送给最昂贵的 Frontier Model（前沿大模型），即使缓存命中率极高，剩余未命中部分的 Token 绝对单价和高频请求总量仍会导致巨大的成本基数",
+            "Prompt Caching 解决的是“重复 Context 的传输单价问题”，而 Smart Routing 解决的是“请求难度与模型算力/价格的匹配问题”，二者作用于成本控制的不同维度，应配合使用",
+            "只要 Prompt Caching 的命中率超过 80%，在任意场景下其降本效果都必然显著优于将简单任务路由至廉价模型（Small/Economical Models）"
+          ]
+        }
+      },
+      {
+        "id": "agent-cache-routing-01__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "前缀缓存 80% 命中仍省不下总量。算这笔账，下列哪些判断成立？",
+        "options": [
+          "被缓存前缀单价下调，高频增量累积依然庞大",
+          "请求默认全发最贵 Frontier，未命中致成本基数巨",
+          "缓存解传输单价问题，路由解匹配问题，两维度配合用",
+          "Prompt Caching 命中率超 80%，任意场景降本优于廉价路由"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从省单价算基数与配合环节",
+          "reasoningGoal": "先算账的环节；再逐项验证各判断；并排除「胜路由」等不成立描述。"
+        },
+        "generatedAt": 1788918109713,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f0b0c77f",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-95c37b44",
+        "sourceSnapshot": {
+          "id": "agent-cache-routing-01",
+          "topic": "caching",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prompt-caching",
+            "routing",
+            "hit-rate",
+            "cost"
+          ],
+          "question": "在大型 Agent 系统的成本优化实践中，团队开启了 API 供应商的 Prompt Caching（前缀缓存）功能，并且在某些高频场景下达到了 80% 以上的缓存重用率（Cache Hit Rate）。然而，系统的月度 API 总账单依然居高不下。关于 Prompt Caching 的局限性及与 Smart Routing（智能路由）的关系，下列分析正确的有？（多选）",
+          "options": [
+            "Prompt Caching 仅降低了被缓存的前缀输入 Token 的单价，但在高并发/高频 Agent 场景下，每次请求中无法被缓存的增量上下文（如新工具输出、递增历史）累积量依然巨大",
+            "如果所有请求默认都发送给最昂贵的 Frontier Model（前沿大模型），即使缓存命中率极高，剩余未命中部分的 Token 绝对单价和高频请求总量仍会导致巨大的成本基数",
+            "Prompt Caching 解决的是“重复 Context 的传输单价问题”，而 Smart Routing 解决的是“请求难度与模型算力/价格的匹配问题”，二者作用于成本控制的不同维度，应配合使用",
+            "只要 Prompt Caching 的命中率超过 80%，在任意场景下其降本效果都必然显著优于将简单任务路由至廉价模型（Small/Economical Models）"
+          ]
+        }
+      }
+    ],
+    "ai-eng-029": [
+      {
+        "id": "ai-eng-029__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "12 万 Tokens 全量归纳 200 秒+。延迟瓶颈，哪些正确？",
+        "options": [
+          "KV 吞吐不足致 Prefill 极长",
+          "延迟主耗思维链串行解码",
+          "输入越大思考 Token 越多，解码成倍涨",
+          "Cache 只削 Prefill，不消解码串行"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从 200 秒定串行与削减环节",
+          "reasoningGoal": "先定瓶颈的环节；再逐项验证各判断；并排除「吞吐不足」等不成立描述。"
+        },
+        "generatedAt": 1788918109713,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9414f3bd",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-c781dae5",
+        "sourceSnapshot": {
+          "id": "ai-eng-029",
+          "topic": "latency",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "thinking-tokens",
+            "autoregressive-decode",
+            "prefill-cache",
+            "long-context"
+          ],
+          "question": "实测表明，在约 12 万 Tokens 的全量语料下运行全局归纳类提问（如\"统计全语料提及频次最高的工具\"），即便 Prefix Cache 达到了 100% 命中，长上下文方案的端到端延迟仍高达 200 秒以上。以下关于该延迟瓶颈的分析，正确的有？（多选）",
+          "options": [
+            "KV Cache 读取吞吐量不足，造成 Prefill 阶段极长延迟",
+            "主要延迟消耗在模型为了进行跨文档推导与汇总而生成的思维链自回归串行解码过程上",
+            "输入上下文越庞大，推理模型倾向于生成更多数量的思考 Token 来梳理逻辑，导致整体解码输出时间成倍增长",
+            "Cache 命中仅削减 Prefill 阶段的计算与延迟，无法消除解码生成阶段的串行耗时"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-029__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "Prefix 100% 命中仍 200 秒。剖这次延迟，下列哪些判断成立？",
+        "options": [
+          "Prefill 极长因 KV 读吞吐",
+          "跨文档推导汇总烧思维链解码",
+          "上下文庞大思考 Token 涨，输出时间翻倍",
+          "命中削计算延迟，串行生成仍在"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从仍 200 秒剖推导与串行环节",
+          "reasoningGoal": "先剖延迟的环节；再逐项验证各判断；并排除「读吞吐」等不成立描述。"
+        },
+        "generatedAt": 1788918109714,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9414f3bd",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-8b7b43af",
+        "sourceSnapshot": {
+          "id": "ai-eng-029",
+          "topic": "latency",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "thinking-tokens",
+            "autoregressive-decode",
+            "prefill-cache",
+            "long-context"
+          ],
+          "question": "实测表明，在约 12 万 Tokens 的全量语料下运行全局归纳类提问（如\"统计全语料提及频次最高的工具\"），即便 Prefix Cache 达到了 100% 命中，长上下文方案的端到端延迟仍高达 200 秒以上。以下关于该延迟瓶颈的分析，正确的有？（多选）",
+          "options": [
+            "KV Cache 读取吞吐量不足，造成 Prefill 阶段极长延迟",
+            "主要延迟消耗在模型为了进行跨文档推导与汇总而生成的思维链自回归串行解码过程上",
+            "输入上下文越庞大，推理模型倾向于生成更多数量的思考 Token 来梳理逻辑，导致整体解码输出时间成倍增长",
+            "Cache 命中仅削减 Prefill 阶段的计算与延迟，无法消除解码生成阶段的串行耗时"
+          ]
+        }
+      }
+    ],
+    "ai-eng-039": [
+      {
+        "id": "ai-eng-039__surface-options__assessmentfresh21__0",
+        "kind": "surface-options",
+        "question": "FP16/INT8/GPTQ/AWQ/GGUF 部署选型，哪些正确？",
+        "options": [
+          "AWQ 护高影响权重，同位宽胜 GPTQ",
+          "INT8 近无损省半，GGUF 面 CPU，FP16 基准",
+          "4-bit 差只在校准集，看热度生态选",
+          "4-bit 只离线，在线至少 INT8",
+          "INT8 恒优 4-bit，达标默认 INT8"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从四选一定保护与基准环节",
+          "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「只看热度」「恒优」等不成立描述。"
+        },
+        "generatedAt": 1788918109714,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-43de9b1b",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-3e11d41c",
+        "sourceSnapshot": {
+          "id": "ai-eng-039",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "awq",
+            "gptq",
+            "int8",
+            "gguf"
+          ],
+          "question": "自部署 LLM 时需要在 FP16、INT8（LLM.int8）、GPTQ/AWQ 4-bit、GGUF Q4_K_M 之间做部署选型。关于各方案的取舍，下列说法中正确的有哪些？（多选）",
+          "options": [
+            "AWQ 按激活分布保护高影响权重，同位宽下质量优于朴素 GPTQ，是 GPU 部署默认起点。",
+            "INT8 质量接近无损但只省约一半显存，GGUF 面向 CPU，FP16 作质量基准对照。",
+            "同为 4-bit 分组量化，差异只在校准集，选型时只看社区热度与 kernel 生态。",
+            "4-bit 只适合离线批处理，在线服务至少用 INT8，延迟要求优先于显存成本。",
+            "INT8 因离群通道保留质量始终优于任何 4-bit，达标前提下默认选 INT8。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-039__context-options__assessmentfresh21__1",
+        "kind": "context-options",
+        "question": "FP16 对 INT8 对 4-bit，自部署选型。定这次选型，下列哪些判断成立？",
+        "options": [
+          "激活分布保高影响，同位宽 AWQ 胜",
+          "省半显存质量近无损，CPU 找 GGUF",
+          "分组量化看校准集热度生态",
+          "在线服务至少 INT8，延迟优先于显存成本",
+          "离群通道保质量，INT8 通吃 4-bit"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从四选一看分布与离群环节",
+          "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「看热度」「通吃」等不成立描述。"
+        },
+        "generatedAt": 1788918109714,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-43de9b1b",
+        "batch": "assessmentfresh21",
+        "model": "manual",
+        "contentHash": "fnv1a-234f8d49",
+        "sourceSnapshot": {
+          "id": "ai-eng-039",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "awq",
+            "gptq",
+            "int8",
+            "gguf"
+          ],
+          "question": "自部署 LLM 时需要在 FP16、INT8（LLM.int8）、GPTQ/AWQ 4-bit、GGUF Q4_K_M 之间做部署选型。关于各方案的取舍，下列说法中正确的有哪些？（多选）",
+          "options": [
+            "AWQ 按激活分布保护高影响权重，同位宽下质量优于朴素 GPTQ，是 GPU 部署默认起点。",
+            "INT8 质量接近无损但只省约一半显存，GGUF 面向 CPU，FP16 作质量基准对照。",
+            "同为 4-bit 分组量化，差异只在校准集，选型时只看社区热度与 kernel 生态。",
+            "4-bit 只适合离线批处理，在线服务至少用 INT8，延迟要求优先于显存成本。",
+            "INT8 因离群通道保留质量始终优于任何 4-bit，达标前提下默认选 INT8。"
+          ]
+        }
+      }
+    ]
+  }
+}

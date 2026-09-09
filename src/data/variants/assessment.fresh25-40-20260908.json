@@ -1,0 +1,1859 @@
+{
+  "version": 1,
+  "generatedAt": 1788935559856,
+  "promptVersion": "v4",
+  "variants": {
+    "rnn-vs-tf-compare": [
+      {
+        "id": "rnn-vs-tf-compare__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "RNN 干不过 Transformer？差在哪？",
+        "options": [
+          "Transformer 摆脱步序依赖，训并行整序表征",
+          "任意 Token 路径 O(1)，无 RNN 梯度衰减",
+          "Transformer 单字生成天然快于 RNN",
+          "Transformer 长序内存线性，比 RNN 省"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从代差定并行与路径环节",
+          "reasoningGoal": "先定差异的环节；再逐项验证各判断；并排除「单字更快」「线性更省」等不成立描述。"
+        },
+        "generatedAt": 1788935559847,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-02022b68",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-5695a094",
+        "sourceSnapshot": {
+          "id": "rnn-vs-tf-compare",
+          "topic": "transformer",
+          "subtopic": "rnn-comparison",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "rnn",
+            "parallelism",
+            "long-range-dependency",
+            "gradient-vanishing"
+          ],
+          "question": "相较于传统的循环神经网络（RNN/LSTM），Transformer 架构在大规模序列建模中展现出显著优势。以下关于两者在训练计算与梯度传播差异上的表述，正确的有哪些？（多选）",
+          "options": [
+            "训练并行性：Transformer 摆脱了循环神经网络在时间步上的顺序依赖，训练阶段可并行计算整个序列的表征",
+            "长距离信息交互：Transformer 中任意两个 Token 之间的最大信息传递路径长度为 O(1)，消除了传统 RNN 在长序列下梯度消失/爆炸与信息衰减的问题",
+            "自回归推理速度：在推理生成阶段，Transformer 生成单字的时间复杂度天然低于 RNN，无需维护历史状态",
+            "长序列显存开销：Transformer 在处理超长序列时的内存开销随序列长度线性增加，比 RNN 的显存占用更小"
+          ]
+        }
+      },
+      {
+        "id": "rnn-vs-tf-compare__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "长序 RNN 拉胯。看这次代差，下列哪些判断成立？",
+        "options": [
+          "时间步顺序依赖摆脱，整序并行算",
+          "最大路径 O(1)，梯度消失爆炸消",
+          "单字生成快，无需历史状态",
+          "超长序内存线性涨，比 RNN 省"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从拉胯看摆脱与线性环节",
+          "reasoningGoal": "先看代差的环节；再逐项验证各判断；并排除「无需历史」「线性省」等不成立描述。"
+        },
+        "generatedAt": 1788935559848,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-02022b68",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-3ef2ed90",
+        "sourceSnapshot": {
+          "id": "rnn-vs-tf-compare",
+          "topic": "transformer",
+          "subtopic": "rnn-comparison",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "rnn",
+            "parallelism",
+            "long-range-dependency",
+            "gradient-vanishing"
+          ],
+          "question": "相较于传统的循环神经网络（RNN/LSTM），Transformer 架构在大规模序列建模中展现出显著优势。以下关于两者在训练计算与梯度传播差异上的表述，正确的有哪些？（多选）",
+          "options": [
+            "训练并行性：Transformer 摆脱了循环神经网络在时间步上的顺序依赖，训练阶段可并行计算整个序列的表征",
+            "长距离信息交互：Transformer 中任意两个 Token 之间的最大信息传递路径长度为 O(1)，消除了传统 RNN 在长序列下梯度消失/爆炸与信息衰减的问题",
+            "自回归推理速度：在推理生成阶段，Transformer 生成单字的时间复杂度天然低于 RNN，无需维护历史状态",
+            "长序列显存开销：Transformer 在处理超长序列时的内存开销随序列长度线性增加，比 RNN 的显存占用更小"
+          ]
+        }
+      }
+    ],
+    "sdpa-scaling-mech": [
+      {
+        "id": "sdpa-scaling-mech__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "1/√d_k 干嘛的？",
+        "options": [
+          "q·k 均 0 方差 d_k，独立同分布性",
+          "无缩放 d_k 大点积量级涨，Softmax 进饱和梯度没",
+          "乘 1/√d_k 方差归一化 1，防数值溢出",
+          "缩放为降 QKᵀ 算量，同算力跑更快省显存峰"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从缩放定均方与饱和环节",
+          "reasoningGoal": "先定作用的环节；再逐项验证各判断；并排除「降算量」等不成立描述。"
+        },
+        "generatedAt": 1788935559849,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9a2c36f2",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-4ef9b1bc",
+        "sourceSnapshot": {
+          "id": "sdpa-scaling-mech",
+          "topic": "self-attention",
+          "subtopic": "scaling-factor-variance",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "scaled-dot-product",
+            "variance",
+            "softmax-saturation"
+          ],
+          "question": "在自注意力计算中缩放因子 1/√d_k 具有关键作用。假设 q 和 k 的各分量独立同分布且均值为 0、方差为 1。下列关于该缩放因子的分析，正确的有哪些？（多选）",
+          "options": [
+            "点积 q·k = Σq_i·k_i 的均值为 0，方差随着 d_k 的增加而呈线性增长（方差等于 d_k），这是独立同分布分量的基本统计性质",
+            "若不使用缩放因子，当 d_k 较大时点积结果的绝对值数量级变大会导致 Softmax 函数进入梯度极小的饱和区，进而引发梯度消失",
+            "乘以缩放因子 1/√d_k 能将点积结果的方差重新调整归一化为 1，维持 Softmax 输入在合理的数值范围内，避免数值溢出",
+            "引入缩放因子的主要目的是为了降低矩阵乘法 QKᵀ 的浮点计算复杂度，从而让大维度下的注意力计算在同等算力预算下跑得更快，并显著减少显存峰值占用"
+          ]
+        }
+      },
+      {
+        "id": "sdpa-scaling-mech__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "缩放因子一除。看这次归一，下列哪些判断成立？",
+        "options": [
+          "q·k 均 0 方差随 d_k 线性涨，独立同分布性",
+          "绝对值量级大，饱和区梯度消失",
+          "归一化为 1，数值范围合理",
+          "同算力预算跑更快，显存峰值显著减"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从一除看统计与峰值环节",
+          "reasoningGoal": "先看归一的环节；再逐项验证各判断；并排除「峰值减」等不成立描述。"
+        },
+        "generatedAt": 1788935559849,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9a2c36f2",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-d403756f",
+        "sourceSnapshot": {
+          "id": "sdpa-scaling-mech",
+          "topic": "self-attention",
+          "subtopic": "scaling-factor-variance",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "scaled-dot-product",
+            "variance",
+            "softmax-saturation"
+          ],
+          "question": "在自注意力计算中缩放因子 1/√d_k 具有关键作用。假设 q 和 k 的各分量独立同分布且均值为 0、方差为 1。下列关于该缩放因子的分析，正确的有哪些？（多选）",
+          "options": [
+            "点积 q·k = Σq_i·k_i 的均值为 0，方差随着 d_k 的增加而呈线性增长（方差等于 d_k），这是独立同分布分量的基本统计性质",
+            "若不使用缩放因子，当 d_k 较大时点积结果的绝对值数量级变大会导致 Softmax 函数进入梯度极小的饱和区，进而引发梯度消失",
+            "乘以缩放因子 1/√d_k 能将点积结果的方差重新调整归一化为 1，维持 Softmax 输入在合理的数值范围内，避免数值溢出",
+            "引入缩放因子的主要目的是为了降低矩阵乘法 QKᵀ 的浮点计算复杂度，从而让大维度下的注意力计算在同等算力预算下跑得更快，并显著减少显存峰值占用"
+          ]
+        }
+      }
+    ],
+    "mha-vram-tradeoff": [
+      {
+        "id": "mha-vram-tradeoff__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "多头好贵，值吗？",
+        "options": [
+          "多头并看异位异义表征，免单头加权平均糊",
+          "d_k×h 定，总算量与单头当",
+          "h 加矩阵数涨，前向激活费显存",
+          "多头消 N 二次时空依赖"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从贵法定并看与费存环节",
+          "reasoningGoal": "先定值否的环节；再逐项验证各判断；并排除「消二次」等不成立描述。"
+        },
+        "generatedAt": 1788935559849,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dc7b7e92",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-a1346db4",
+        "sourceSnapshot": {
+          "id": "mha-vram-tradeoff",
+          "topic": "attention",
+          "subtopic": "vram-activation-overhead",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-head-attention",
+            "vram",
+            "activation",
+            "complexity-parity"
+          ],
+          "question": "标准 Transformer 将 d_model 拆分为 h 个头并行计算注意力后拼接。相比于仅使用单头注意力，多头机制的优势与工程取舍包括哪些？（多选）",
+          "options": [
+            "允许多个注意力头同时关注不同位置、不同语义子空间的表征信息，避免了单头注意力因加权平均导致不同上下文语义信息的模糊化",
+            "在保持 d_k × h = d_model 的前提下多头机制的总计算复杂度与相同总维度下的单头注意力相当",
+            "增加头数 h 会成倍增加需要保存的注意力矩阵数量从而在前向传播中增加显存的激活值开销",
+            "多头注意力机制成功消除了自注意力计算中对序列长度 N 的二次方空间与时间复杂度依赖"
+          ]
+        }
+      },
+      {
+        "id": "mha-vram-tradeoff__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "头多吃存。称这次多头，下列哪些判断成立？",
+        "options": [
+          "多头同时看异位异义，免加权平均模糊",
+          "d_k×h 定，总算量与同维单头相当",
+          "注意力矩阵数涨，激活开销涨",
+          "N 二次方时空依赖消除"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从吃存称模糊与消除环节",
+          "reasoningGoal": "先称多头的环节；再逐项验证各判断；并排除「依赖消」等不成立描述。"
+        },
+        "generatedAt": 1788935559850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dc7b7e92",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-9aba70d2",
+        "sourceSnapshot": {
+          "id": "mha-vram-tradeoff",
+          "topic": "attention",
+          "subtopic": "vram-activation-overhead",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-head-attention",
+            "vram",
+            "activation",
+            "complexity-parity"
+          ],
+          "question": "标准 Transformer 将 d_model 拆分为 h 个头并行计算注意力后拼接。相比于仅使用单头注意力，多头机制的优势与工程取舍包括哪些？（多选）",
+          "options": [
+            "允许多个注意力头同时关注不同位置、不同语义子空间的表征信息，避免了单头注意力因加权平均导致不同上下文语义信息的模糊化",
+            "在保持 d_k × h = d_model 的前提下多头机制的总计算复杂度与相同总维度下的单头注意力相当",
+            "增加头数 h 会成倍增加需要保存的注意力矩阵数量从而在前向传播中增加显存的激活值开销",
+            "多头注意力机制成功消除了自注意力计算中对序列长度 N 的二次方空间与时间复杂度依赖"
+          ]
+        }
+      }
+    ],
+    "causal-mask-cross-attn": [
+      {
+        "id": "causal-mask-cross-attn__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "Decoder 因果遮罩，逻辑？",
+        "options": [
+          "Softmax 算前未来值得 -∞ 负数 -1e9",
+          "Softmax 后未来权零，i 聚 ≤i",
+          "掩码致训退串行，并行能力全丢",
+          "掩码仅自注意，交叉看全源"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从遮罩定置零与交叉环节",
+          "reasoningGoal": "先定逻辑的环节；再逐项验证各判断；并排除「退串行」等不成立描述。"
+        },
+        "generatedAt": 1788935559850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8964c753",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-1de2ca9c",
+        "sourceSnapshot": {
+          "id": "causal-mask-cross-attn",
+          "topic": "self-attention",
+          "subtopic": "causal-mask-scope",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "causal-mask",
+            "cross-attention",
+            "parallel-training"
+          ],
+          "question": "在 Transformer Decoder 的自注意力层中使用因果掩码保持自回归特性。关于该机制的运行逻辑与工程处理方式包括哪些？（多选）",
+          "options": [
+            "在 Softmax 计算之前将注意力得分矩阵中未来位置对应的值设置为 -∞（或非常小的负数如 -1e9）",
+            "经过 Softmax 之后未来位置的注意力权重归零确保当前位置 i 只能聚合位置 ≤ i 的上下文信息",
+            "该掩码机制使得 Decoder 在训练阶段必须退化为逐 Token 的串行计算无法进行全序列并行训练",
+            "该掩码仅施加在 Decoder 的自注意力层；在交叉注意力层中 Decoder 可以关注 Encoder 的整个源序列"
+          ]
+        }
+      },
+      {
+        "id": "causal-mask-cross-attn__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "未来词先捂眼。看这次遮罩，下列哪些判断成立？",
+        "options": [
+          "得分矩阵未来位置 -∞ 填",
+          "位置 i 聚 ≤i 上下文，未来零",
+          "全序并行丢，逐 Token 串行训",
+          "仅自注意层施加，交叉层看全源序"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从捂眼看填充与丢环节",
+          "reasoningGoal": "先看遮罩的环节；再逐项验证各判断；并排除「并行丢」等不成立描述。"
+        },
+        "generatedAt": 1788935559850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8964c753",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-3ee0ee59",
+        "sourceSnapshot": {
+          "id": "causal-mask-cross-attn",
+          "topic": "self-attention",
+          "subtopic": "causal-mask-scope",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "causal-mask",
+            "cross-attention",
+            "parallel-training"
+          ],
+          "question": "在 Transformer Decoder 的自注意力层中使用因果掩码保持自回归特性。关于该机制的运行逻辑与工程处理方式包括哪些？（多选）",
+          "options": [
+            "在 Softmax 计算之前将注意力得分矩阵中未来位置对应的值设置为 -∞（或非常小的负数如 -1e9）",
+            "经过 Softmax 之后未来位置的注意力权重归零确保当前位置 i 只能聚合位置 ≤ i 的上下文信息",
+            "该掩码机制使得 Decoder 在训练阶段必须退化为逐 Token 的串行计算无法进行全序列并行训练",
+            "该掩码仅施加在 Decoder 的自注意力层；在交叉注意力层中 Decoder 可以关注 Encoder 的整个源序列"
+          ]
+        }
+      }
+    ],
+    "preln-vs-postln-compare": [
+      {
+        "id": "preln-vs-postln-compare__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "LN 放前放后？",
+        "options": [
+          "Post-LN 主干叠未归一，深层梯度爆没",
+          "Post-LN 初始化敏感，须苛 Warmup",
+          "LN 前移恒等路通，梯度顺传浅层稳深网",
+          "Pre-LN 无 Warmup 差，调优极限超 Post"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从放法定叠加与直通环节",
+          "reasoningGoal": "先定位置的环节；再逐项验证各判断；并排除「无差超限」等不成立描述。"
+        },
+        "generatedAt": 1788935559850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-98b3dd34",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-e1973ba3",
+        "sourceSnapshot": {
+          "id": "preln-vs-postln-compare",
+          "topic": "transformer",
+          "subtopic": "pre-ln-vs-post-ln",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "layer-norm",
+            "pre-ln",
+            "post-ln",
+            "warmup",
+            "training-stability"
+          ],
+          "question": "Transformer 中 LN 放置位置有两种主流设计。关于 Post-LN 与 Pre-LN 的对比与工程 Trade-off下列说法正确的有哪些？（多选）",
+          "options": [
+            "Post-LN 的残差主干路径上直接叠加了未经归一化的子层输出在深层网络中容易发生梯度爆炸或消失使得训练极不稳定",
+            "Post-LN 架构对初始化高度敏感通常必须依赖严苛的学习率预热策略才能稳定收敛",
+            "Pre-LN 将 LN 移至子层输入前保持了残差主干的恒等映射路径梯度可以直接顺畅传导至浅层显著提升了深层网络的训练稳定性",
+            "Pre-LN 架构在不使用 Warmup 的情况下性能较差且在充分调优后其极限泛化性能通常显著高于 Post-LN"
+          ]
+        }
+      },
+      {
+        "id": "preln-vs-postln-compare__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "深网训崩。看这次摆放，下列哪些判断成立？",
+        "options": [
+          "未经归一子层输出直叠，深层梯度爆没",
+          "严苛预热策略不依难收敛",
+          "LN 前移恒等路，传导顺畅稳定性升",
+          "充分调优极限泛化，Pre-LN 显著高"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从训崩看直叠与显著环节",
+          "reasoningGoal": "先看摆放的环节；再逐项验证各判断；并排除「显著高」等不成立描述。"
+        },
+        "generatedAt": 1788935559850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-98b3dd34",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-78060d4f",
+        "sourceSnapshot": {
+          "id": "preln-vs-postln-compare",
+          "topic": "transformer",
+          "subtopic": "pre-ln-vs-post-ln",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "layer-norm",
+            "pre-ln",
+            "post-ln",
+            "warmup",
+            "training-stability"
+          ],
+          "question": "Transformer 中 LN 放置位置有两种主流设计。关于 Post-LN 与 Pre-LN 的对比与工程 Trade-off下列说法正确的有哪些？（多选）",
+          "options": [
+            "Post-LN 的残差主干路径上直接叠加了未经归一化的子层输出在深层网络中容易发生梯度爆炸或消失使得训练极不稳定",
+            "Post-LN 架构对初始化高度敏感通常必须依赖严苛的学习率预热策略才能稳定收敛",
+            "Pre-LN 将 LN 移至子层输入前保持了残差主干的恒等映射路径梯度可以直接顺畅传导至浅层显著提升了深层网络的训练稳定性",
+            "Pre-LN 架构在不使用 Warmup 的情况下性能较差且在充分调优后其极限泛化性能通常显著高于 Post-LN"
+          ]
+        }
+      }
+    ],
+    "embed-scaling-share": [
+      {
+        "id": "embed-scaling-share__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "Embedding 共享乘 √d，啥讲究？",
+        "options": [
+          "三方共享减词表参，正则防过拟",
+          "√d 放大量级，防 [-1,1] 掩盖语义",
+          "共享迫输入输出几何一致",
+          "√d 压方差至 0，加速 LN 收敛"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从讲究定共享与放大环节",
+          "reasoningGoal": "先定讲究的环节；再逐项验证各判断；并排除「压方差」等不成立描述。"
+        },
+        "generatedAt": 1788935559850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1fe7f183",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-72f0cec9",
+        "sourceSnapshot": {
+          "id": "embed-scaling-share",
+          "topic": "transformer",
+          "subtopic": "embedding-scaling-weight-binding",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "embedding",
+            "weight-tying",
+            "scaling-factor",
+            "parameter-sharing"
+          ],
+          "question": "Transformer 中源语言 Embedding、目标语言 Embedding 以及 Pre-Softmax 线性投影层共享相同权重矩阵，且 Embedding 向量会乘以 √d_model。关于该设计的理解正确的有哪些？（多选）",
+          "options": [
+            "三者共享权重显著减少了模型与词表相关的参数量起到正则化和防止词表过拟合的作用",
+            "乘以 √d_model 是为了放大词向量的数值量级防止与幅度在 [-1,1] 之间的 Positional Encoding 相加时词向量的语义特征被位置信息掩盖",
+            "权重共享强制要求输入词嵌入空间与输出预测概率空间保持几何映射一致性",
+            "乘以 √d_model 是为了将词嵌入向量的方差压缩至 0 以加快 LayerNorm 的收敛速度"
+          ]
+        }
+      },
+      {
+        "id": "embed-scaling-share__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "三权共享一矩阵。看这次共享，下列哪些判断成立？",
+        "options": [
+          "词表参数大减，过拟合防",
+          "词向量量级放大，语义不被位置盖",
+          "嵌入预测空间映射一致",
+          "方差压 0，LayerNorm 快收敛"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从一矩阵看大减与一致环节",
+          "reasoningGoal": "先看共享的环节；再逐项验证各判断；并排除「快收敛」等不成立描述。"
+        },
+        "generatedAt": 1788935559851,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1fe7f183",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-299c29cd",
+        "sourceSnapshot": {
+          "id": "embed-scaling-share",
+          "topic": "transformer",
+          "subtopic": "embedding-scaling-weight-binding",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "embedding",
+            "weight-tying",
+            "scaling-factor",
+            "parameter-sharing"
+          ],
+          "question": "Transformer 中源语言 Embedding、目标语言 Embedding 以及 Pre-Softmax 线性投影层共享相同权重矩阵，且 Embedding 向量会乘以 √d_model。关于该设计的理解正确的有哪些？（多选）",
+          "options": [
+            "三者共享权重显著减少了模型与词表相关的参数量起到正则化和防止词表过拟合的作用",
+            "乘以 √d_model 是为了放大词向量的数值量级防止与幅度在 [-1,1] 之间的 Positional Encoding 相加时词向量的语义特征被位置信息掩盖",
+            "权重共享强制要求输入词嵌入空间与输出预测概率空间保持几何映射一致性",
+            "乘以 √d_model 是为了将词嵌入向量的方差压缩至 0 以加快 LayerNorm 的收敛速度"
+          ]
+        }
+      }
+    ],
+    "sdpa-omit-scaling": [
+      {
+        "id": "sdpa-omit-scaling__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "√d_k 手滑删了，啥症状？",
+        "options": [
+          "点积随 d_k 大，Softmax 饱和梯度没",
+          "分布陡峭 one-hot，多头关注废",
+          "分布趋均匀，聚焦失灵",
+          "QKᵀV 维度错，前向 RuntimeError"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从手滑定饱和与均匀环节",
+          "reasoningGoal": "先定症状的环节；再逐项验证各判断；并排除「趋均匀」「维度错」等不成立描述。"
+        },
+        "generatedAt": 1788935559851,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c33d465c",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-aa95fe9e",
+        "sourceSnapshot": {
+          "id": "sdpa-omit-scaling",
+          "topic": "self-attention",
+          "subtopic": "scaling-omission-symptom",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "scaled-dot-product",
+            "softmax-saturation",
+            "gradient-vanishing",
+            "debugging"
+          ],
+          "question": "在实现大隐层维度 Self-Attention 时误删除了缩放因子 √d_k，模型训练过程中最可能出现哪些异常现象？（多选）",
+          "options": [
+            "QKᵀ 的点积数值随 d_k 增大而变大导致 Softmax 输出进入极小梯度的饱和区引发梯度消失问题",
+            "Softmax 后的概率分布过度陡峭类似于 one-hot 削弱模型同时关注多个相关 token 的能力",
+            "Softmax 后的概率分布趋于均匀分布导致模型无法有效聚焦到关键 token",
+            "矩阵乘法 QKᵀ 与 V 的维度不匹配前向传播直接抛出 RuntimeError"
+          ]
+        }
+      },
+      {
+        "id": "sdpa-omit-scaling__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "缩放因子被删。诊这次误删，下列哪些判断成立？",
+        "options": [
+          "d_k 大点积大，极小梯度饱和区",
+          "分布过度陡峭类 one-hot，多相关难兼顾",
+          "概率分布趋均匀，聚焦关键 token 失能",
+          "矩阵维度不匹配前向直接抛错"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从被删诊大与无能环节",
+          "reasoningGoal": "先诊误删的环节；再逐项验证各判断；并排除「无能」「抛错」等不成立描述。"
+        },
+        "generatedAt": 1788935559851,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c33d465c",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-240a395e",
+        "sourceSnapshot": {
+          "id": "sdpa-omit-scaling",
+          "topic": "self-attention",
+          "subtopic": "scaling-omission-symptom",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "scaled-dot-product",
+            "softmax-saturation",
+            "gradient-vanishing",
+            "debugging"
+          ],
+          "question": "在实现大隐层维度 Self-Attention 时误删除了缩放因子 √d_k，模型训练过程中最可能出现哪些异常现象？（多选）",
+          "options": [
+            "QKᵀ 的点积数值随 d_k 增大而变大导致 Softmax 输出进入极小梯度的饱和区引发梯度消失问题",
+            "Softmax 后的概率分布过度陡峭类似于 one-hot 削弱模型同时关注多个相关 token 的能力",
+            "Softmax 后的概率分布趋于均匀分布导致模型无法有效聚焦到关键 token",
+            "矩阵乘法 QKᵀ 与 V 的维度不匹配前向传播直接抛出 RuntimeError"
+          ]
+        }
+      }
+    ],
+    "mask-remove-debug": [
+      {
+        "id": "mask-remove-debug__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "上三角掩码掉了，啥现象？",
+        "options": [
+          "当前位置见未来真 token，loss 异常速近 0",
+          "注意力掩码缺失触发张量形状报错",
+          "生成性能崩塌复读乱码文本",
+          "推理破串行多 token 并生"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从掉了定秒零与崩塌环节",
+          "reasoningGoal": "先定现象的环节；再逐项验证各判断；并排除「形状错」「并生」等不成立描述。"
+        },
+        "generatedAt": 1788935559851,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2638eceb",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-3c86d3be",
+        "sourceSnapshot": {
+          "id": "mask-remove-debug",
+          "topic": "self-attention",
+          "subtopic": "mask-removal-symptom",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "causal-mask",
+            "data-leakage",
+            "teacher-forcing",
+            "debugging"
+          ],
+          "question": "在开发基于 Encoder-Decoder 的序列生成模型时不慎移除了 Decoder 内部 Masked Self-Attention 中的上三角掩码矩阵。在 Teacher Forcing 训练及自回归推理阶段模型会表现出哪些现象？（多选）",
+          "options": [
+            "训练阶段的损失函数会异常迅速地下降到接近 0 因为当前位置可以直接看到未来位置的真实 token",
+            "训练阶段前向传播会因为注意力矩阵掩码缺失而触发张量形状不匹配的错误",
+            "推理阶段模型的生成性能会严重崩塌产生大量重复或不连贯的无意义文本",
+            "推理阶段模型能够突破单步串行限制实现多 token 的并行生成"
+          ]
+        }
+      },
+      {
+        "id": "mask-remove-debug__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "未来可见了。查这次泄漏，下列哪些判断成立？",
+        "options": [
+          "当前位置见未来真 token，loss 异常速近 0",
+          "注意力矩阵形状不匹配前向报错",
+          "重复不连贯无意义文本喷",
+          "单步串行破，多 token 并发"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从可见查速零与并发环节",
+          "reasoningGoal": "先查泄漏的环节；再逐项验证各判断；并排除「报错」「并发」等不成立描述。"
+        },
+        "generatedAt": 1788935559851,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2638eceb",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-f026465f",
+        "sourceSnapshot": {
+          "id": "mask-remove-debug",
+          "topic": "self-attention",
+          "subtopic": "mask-removal-symptom",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "causal-mask",
+            "data-leakage",
+            "teacher-forcing",
+            "debugging"
+          ],
+          "question": "在开发基于 Encoder-Decoder 的序列生成模型时不慎移除了 Decoder 内部 Masked Self-Attention 中的上三角掩码矩阵。在 Teacher Forcing 训练及自回归推理阶段模型会表现出哪些现象？（多选）",
+          "options": [
+            "训练阶段的损失函数会异常迅速地下降到接近 0 因为当前位置可以直接看到未来位置的真实 token",
+            "训练阶段前向传播会因为注意力矩阵掩码缺失而触发张量形状不匹配的错误",
+            "推理阶段模型的生成性能会严重崩塌产生大量重复或不连贯的无意义文本",
+            "推理阶段模型能够突破单步串行限制实现多 token 的并行生成"
+          ]
+        }
+      }
+    ],
+    "rnn-to-tf-migration": [
+      {
+        "id": "rnn-to-tf-migration__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "RNN 换 Transformer，账咋算？",
+        "options": [
+          "训练 Enc Dec 借 Teacher Forcing 并行整序，摆时间步递推",
+          "推理 Decoder 仍单步串行",
+          "单层 O(N²)，长文显存超 RNN 速",
+          "去 Recurrence 推理延迟吞吐天然胜 Enc-only"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从换法定并行与串行环节",
+          "reasoningGoal": "先定账的环节；再逐项验证各判断；并排除「天然胜」等不成立描述。"
+        },
+        "generatedAt": 1788935559851,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-73bc99f1",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-82da7bee",
+        "sourceSnapshot": {
+          "id": "rnn-to-tf-migration",
+          "topic": "transformer",
+          "subtopic": "rnn-migration-tradeoff",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "rnn",
+            "transformer",
+            "parallelism",
+            "complexity",
+            "inference"
+          ],
+          "question": "在评估将传统 RNN 替换为 Transformer 架构的工程方案时针对训练与推理场景的性能特征下列结论正确的是？（多选）",
+          "options": [
+            "训练阶段 Transformer 的 Encoder 和 Decoder 借助 Teacher Forcing 均可并行处理整条序列摆脱了 RNN 的时间步递推依赖",
+            "在自回归推理阶段 Transformer Decoder 仍需单步串行生成下一个 token 无法做到全序列一步并行",
+            "Transformer 单层 Self-Attention 的时间与空间复杂度为 O(N²) 在长文本场景下显存占用增长显著快于 RNN 的 O(N)",
+            "移除 Recurrence 结构后 Transformer Decoder 在推理生成阶段的延迟和吞吐量表现天然优于 Encoder-only 模型"
+          ]
+        }
+      },
+      {
+        "id": "rnn-to-tf-migration__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "老架构迁移。估这次替换，下列哪些判断成立？",
+        "options": [
+          "时间步递推依赖摆脱，整序并行",
+          "下 token 单步串行，全序不并行",
+          "O(N²) 长文显存快涨，RNN O(N) 稳",
+          "去 Recurrence 推理延迟吞吐天然胜"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从迁移估摆脱与天然环节",
+          "reasoningGoal": "先估替换的环节；再逐项验证各判断；并排除「天然胜」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-73bc99f1",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-e1227dc4",
+        "sourceSnapshot": {
+          "id": "rnn-to-tf-migration",
+          "topic": "transformer",
+          "subtopic": "rnn-migration-tradeoff",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "rnn",
+            "transformer",
+            "parallelism",
+            "complexity",
+            "inference"
+          ],
+          "question": "在评估将传统 RNN 替换为 Transformer 架构的工程方案时针对训练与推理场景的性能特征下列结论正确的是？（多选）",
+          "options": [
+            "训练阶段 Transformer 的 Encoder 和 Decoder 借助 Teacher Forcing 均可并行处理整条序列摆脱了 RNN 的时间步递推依赖",
+            "在自回归推理阶段 Transformer Decoder 仍需单步串行生成下一个 token 无法做到全序列一步并行",
+            "Transformer 单层 Self-Attention 的时间与空间复杂度为 O(N²) 在长文本场景下显存占用增长显著快于 RNN 的 O(N)",
+            "移除 Recurrence 结构后 Transformer Decoder 在推理生成阶段的延迟和吞吐量表现天然优于 Encoder-only 模型"
+          ]
+        }
+      }
+    ],
+    "attn-vs-seq-models": [
+      {
+        "id": "attn-vs-seq-models__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "三架构长序擂台，谁赢？",
+        "options": [
+          "最大路径 O(1)，单层 RNN O(N)",
+          "训全并行时间维，弃隐态递依赖",
+          "内容动态算全局交互，非定局受野",
+          "N≫d Attention 单层远廉于 RNN"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从擂台定路径与交互环节",
+          "reasoningGoal": "先定胜负的环节；再逐项验证各判断；并排除「远廉」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-adfe73d4",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-2d2fbbd2",
+        "sourceSnapshot": {
+          "id": "attn-vs-seq-models",
+          "topic": "transformer",
+          "subtopic": "attention-rnn-cnn-compare",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "self-attention",
+            "rnn",
+            "cnn",
+            "parallelism",
+            "path-length"
+          ],
+          "question": "在处理长序列建模任务时 Self-Attention 相比传统 RNN 和 CNN 具备显著优势。下列关于三种架构在序列依赖建模和计算并行性上的对比哪些描述是正确的？（多选）",
+          "options": [
+            "Self-Attention 将序列中任意两个位置之间的最大信号传播路径长度降至 O(1) 而标准的单层 RNN 路径长度为 O(N)",
+            "在训练阶段 Self-Attention 能够在时间维度上实现全并行计算消除了 RNN 在前向与反向传播时对逐步隐状态传递的依赖",
+            "相比具有固定局部感受野的标准 CNN Self-Attention 可以根据输入内容动态计算全局所有位置之间的交互权重",
+            "当序列长度 N 远大于隐藏层维度 d 时 Self-Attention 单层的计算复杂度显著低于 RNN 单层复杂度"
+          ]
+        }
+      },
+      {
+        "id": "attn-vs-seq-models__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "RNN CNN 不服。判这次擂台，下列哪些判断成立？",
+        "options": [
+          "信号传播 1 对 N，RNN 单层长",
+          "前反向隐态传递依赖消",
+          "固定感受野破，交互权重动态算",
+          "N 远大于 d，Attention 单层显著廉于 RNN"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从不服判传播与便宜环节",
+          "reasoningGoal": "先判擂台的环节；再逐项验证各判断；并排除「便宜」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-adfe73d4",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-0c972160",
+        "sourceSnapshot": {
+          "id": "attn-vs-seq-models",
+          "topic": "transformer",
+          "subtopic": "attention-rnn-cnn-compare",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "self-attention",
+            "rnn",
+            "cnn",
+            "parallelism",
+            "path-length"
+          ],
+          "question": "在处理长序列建模任务时 Self-Attention 相比传统 RNN 和 CNN 具备显著优势。下列关于三种架构在序列依赖建模和计算并行性上的对比哪些描述是正确的？（多选）",
+          "options": [
+            "Self-Attention 将序列中任意两个位置之间的最大信号传播路径长度降至 O(1) 而标准的单层 RNN 路径长度为 O(N)",
+            "在训练阶段 Self-Attention 能够在时间维度上实现全并行计算消除了 RNN 在前向与反向传播时对逐步隐状态传递的依赖",
+            "相比具有固定局部感受野的标准 CNN Self-Attention 可以根据输入内容动态计算全局所有位置之间的交互权重",
+            "当序列长度 N 远大于隐藏层维度 d 时 Self-Attention 单层的计算复杂度显著低于 RNN 单层复杂度"
+          ]
+        }
+      }
+    ],
+    "pos-encoding-sin-01": [
+      {
+        "id": "pos-encoding-sin-01__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "Attention 不识序，咋办？",
+        "options": [
+          "打乱序输出集不变",
+          "固定偏移 k 线性变换表 PE，学相对关系",
+          "正弦码可外推未见更长",
+          "正弦码矩阵乘注入"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从不识序定不变与外推环节",
+          "reasoningGoal": "先定办法的环节；再逐项验证各判断；并排除「矩阵乘」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a8e72a83",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-20f5d4e9",
+        "sourceSnapshot": {
+          "id": "pos-encoding-sin-01",
+          "topic": "positional-encoding",
+          "subtopic": "sinusoidal-pe-necessity",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "positional-encoding",
+            "sinusoidal",
+            "permutation-invariant",
+            "extrapolation"
+          ],
+          "question": "标准 Self-Attention 是置换不变的。为了引入序列中 Token 的顺序信息，Transformer 使用了基于正弦和余弦函数的固定位置编码。关于位置编码的必要性与正弦编码的数学性质，下列哪些表述是正确的？（多选）",
+          "options": [
+            "如果不加入位置编码，将输入序列中的 Token 顺序打乱，Self-Attention 最终输出的集合将完全保持不变",
+            "选择正弦和余弦函数的主要数学优势之一是：对于任意固定的偏移量 k，PE(pos+k) 可以表示为 PE(pos) 的线性变换，这有利于模型学习相对位置关系",
+            "与可学习的位置嵌入相比，正弦位置编码具有允许模型外推到训练时未见过的更长序列长度的潜在优势",
+            "正弦位置编码是通过直接与 Token Embedding 进行矩阵乘法来注入位置信息的"
+          ]
+        }
+      },
+      {
+        "id": "pos-encoding-sin-01__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "打乱序输出不变。看这次不变，下列哪些判断成立？",
+        "options": [
+          "顺序打乱输出集合不变",
+          "固定偏移 k 线性变换表 PE，相对可学",
+          "可学习嵌入比，正弦码外推更长",
+          "Token Embedding 矩阵乘注入"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从不变看集合与注入环节",
+          "reasoningGoal": "先看不变的环节；再逐项验证各判断；并排除「乘注入」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a8e72a83",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-1a4f8719",
+        "sourceSnapshot": {
+          "id": "pos-encoding-sin-01",
+          "topic": "positional-encoding",
+          "subtopic": "sinusoidal-pe-necessity",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "positional-encoding",
+            "sinusoidal",
+            "permutation-invariant",
+            "extrapolation"
+          ],
+          "question": "标准 Self-Attention 是置换不变的。为了引入序列中 Token 的顺序信息，Transformer 使用了基于正弦和余弦函数的固定位置编码。关于位置编码的必要性与正弦编码的数学性质，下列哪些表述是正确的？（多选）",
+          "options": [
+            "如果不加入位置编码，将输入序列中的 Token 顺序打乱，Self-Attention 最终输出的集合将完全保持不变",
+            "选择正弦和余弦函数的主要数学优势之一是：对于任意固定的偏移量 k，PE(pos+k) 可以表示为 PE(pos) 的线性变换，这有利于模型学习相对位置关系",
+            "与可学习的位置嵌入相比，正弦位置编码具有允许模型外推到训练时未见过的更长序列长度的潜在优势",
+            "正弦位置编码是通过直接与 Token Embedding 进行矩阵乘法来注入位置信息的"
+          ]
+        }
+      }
+    ],
+    "pe-add-vs-concat": [
+      {
+        "id": "pe-add-vs-concat__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "位置码直加不拼接，为啥？",
+        "options": [
+          "通道拼接比，直加不增维参量，位置保留",
+          "三角性易学相对",
+          "正弦码理论外推更长",
+          "相加覆盖语义，层层重叠 PE"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从直加定不增与外推环节",
+          "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「覆盖重叠」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0e7e1d7e",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-deb22731",
+        "sourceSnapshot": {
+          "id": "pe-add-vs-concat",
+          "topic": "positional-encoding",
+          "subtopic": "addition-vs-concatenation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "positional-encoding",
+            "addition",
+            "concatenation",
+            "extrapolation"
+          ],
+          "question": "Self-Attention 具有置换不变性因此 Transformer 引入正弦位置编码并将编码向量与词嵌入向量直接相加。关于这一设计选择下列分析正确的是？（多选）",
+          "options": [
+            "相较于将 PE 与 X_embed 进行通道拼接直接相加不会增加输入张量的维度在不增加后续层参数量的前提下保留了位置信息",
+            "由于正弦余弦函数的三角学性质模型更容易学习到相对位置关系",
+            "相较于基于查找表可学习的位置编码正弦位置编码具备理论上外推到比训练集更长序列的能力",
+            "向量直接相加会导致位置数值彻底覆盖原始词向量的语义信息因此必须在每一个 Encoder 层重新叠加 PE"
+          ]
+        }
+      },
+      {
+        "id": "pe-add-vs-concat__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "相加不增维。看这次相加，下列哪些判断成立？",
+        "options": [
+          "通道拼接免维度涨，参量不增位置留",
+          "三角学性质相对关系易学",
+          "查找表可学习比，正弦码理论外推更长",
+          "语义覆盖须每层重叠加码补救"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从不增维看免涨与重叠环节",
+          "reasoningGoal": "先看相加的环节；再逐项验证各判断；并排除「重叠」等不成立描述。"
+        },
+        "generatedAt": 1788935559852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0e7e1d7e",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-dcadf9f3",
+        "sourceSnapshot": {
+          "id": "pe-add-vs-concat",
+          "topic": "positional-encoding",
+          "subtopic": "addition-vs-concatenation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "positional-encoding",
+            "addition",
+            "concatenation",
+            "extrapolation"
+          ],
+          "question": "Self-Attention 具有置换不变性因此 Transformer 引入正弦位置编码并将编码向量与词嵌入向量直接相加。关于这一设计选择下列分析正确的是？（多选）",
+          "options": [
+            "相较于将 PE 与 X_embed 进行通道拼接直接相加不会增加输入张量的维度在不增加后续层参数量的前提下保留了位置信息",
+            "由于正弦余弦函数的三角学性质模型更容易学习到相对位置关系",
+            "相较于基于查找表可学习的位置编码正弦位置编码具备理论上外推到比训练集更长序列的能力",
+            "向量直接相加会导致位置数值彻底覆盖原始词向量的语义信息因此必须在每一个 Encoder 层重新叠加 PE"
+          ]
+        }
+      }
+    ],
+    "moe-design-tradeoff": [
+      {
+        "id": "moe-design-tradeoff__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "MoE 胖瘦兼得，坑在哪？",
+        "options": [
+          "门控配 Token，总参算量解耦",
+          "激活部分专家，总显存显著低 Dense",
+          "Top-k 致偏用欠拟合，辅助均衡损失治",
+          "低训练推理算力扩容，通信高于 Dense"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从兼得定解耦与通信环节",
+          "reasoningGoal": "先定坑的环节；再逐项验证各判断；并排除「显存大减」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0cd5713b",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-c8236473",
+        "sourceSnapshot": {
+          "id": "moe-design-tradeoff",
+          "topic": "moe",
+          "subtopic": "sparse-architecture-tradeoff",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "switch-transformer",
+            "load-balancing",
+            "all-to-all",
+            "capacity"
+          ],
+          "question": "在超大规模语言模型中 Mixture-of- Experts 架构被广泛应用。相比同等参数量的稠密模型关于 MoE 的工程特性与架构取舍下列哪些说法是正确的？（多选）",
+          "options": [
+            "MoE 通过门控路由网络将不同 Token 动态分配给特定的 Expert 子网络实现了总参数量 Scaling 与单 Token 计算量的解耦",
+            "由于每次推理仅激活部分 Expert MoE 模型在分布式部署时所需的 GPU 总显存显著低于同等总参数量的 Dense 模型",
+            "Top-k 门控路由策略容易导致某些 Expert 被过度使用而另一些欠拟合在工程训练中通常需要引入辅助负载均衡损失",
+            "MoE 能够以相对较低的训练与推理算力开销扩充模型容量但相比同算力开销的 Dense 模型其分布式通信开销通常更高"
+          ]
+        }
+      },
+      {
+        "id": "moe-design-tradeoff__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "门控一偏就塌。看这次偏用，下列哪些判断成立？",
+        "options": [
+          "门控动态分配专家，总参 Scaling 算量解耦",
+          "每次仅激活部分专家，总显存显著低",
+          "Top-k 过度欠拟合并存，辅助均衡损失引入",
+          "低算力扩容量，同算 Dense 通信开销高"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从偏用看分配与贵环节",
+          "reasoningGoal": "先看偏用的环节；再逐项验证各判断；并排除「大省」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0cd5713b",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-feaf34a5",
+        "sourceSnapshot": {
+          "id": "moe-design-tradeoff",
+          "topic": "moe",
+          "subtopic": "sparse-architecture-tradeoff",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "switch-transformer",
+            "load-balancing",
+            "all-to-all",
+            "capacity"
+          ],
+          "question": "在超大规模语言模型中 Mixture-of- Experts 架构被广泛应用。相比同等参数量的稠密模型关于 MoE 的工程特性与架构取舍下列哪些说法是正确的？（多选）",
+          "options": [
+            "MoE 通过门控路由网络将不同 Token 动态分配给特定的 Expert 子网络实现了总参数量 Scaling 与单 Token 计算量的解耦",
+            "由于每次推理仅激活部分 Expert MoE 模型在分布式部署时所需的 GPU 总显存显著低于同等总参数量的 Dense 模型",
+            "Top-k 门控路由策略容易导致某些 Expert 被过度使用而另一些欠拟合在工程训练中通常需要引入辅助负载均衡损失",
+            "MoE 能够以相对较低的训练与推理算力开销扩充模型容量但相比同算力开销的 Dense 模型其分布式通信开销通常更高"
+          ]
+        }
+      }
+    ],
+    "moe-vs-dense-compute": [
+      {
+        "id": "moe-vs-dense-compute__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "1000 亿 MoE 对 200 亿 Dense，账？",
+        "options": [
+          "单 Token 浮点算量同 200 亿级",
+          "部署只载激活 200 亿对应显存即跑",
+          "路由偏训练瘸，领域质量方差大",
+          "同硬件显存限相近算力，存更大知识"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从对账定级数与方差环节",
+          "reasoningGoal": "先定账的环节；再逐项验证各判断；并排除「只载即跑」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-460e571a",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-14ebe5e5",
+        "sourceSnapshot": {
+          "id": "moe-vs-dense-compute",
+          "topic": "moe",
+          "subtopic": "moe-vs-dense-compute-parity",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "dense",
+            "flops",
+            "vram",
+            "load-balancing",
+            "capacity-scaling"
+          ],
+          "question": "假设某 MoE 模型拥有 1000 亿总参数量每 Token 激活其中 200 亿（2 个专家）而某 Dense 模型全量激活 200 亿参数。关于两者在计算与系统级别的特性比对以下哪些说法是正确的？（多选）",
+          "options": [
+            "在单 Token 推理的浮点计算量上该 MoE 模型与该 200 亿参数的 Dense 模型基本处于同一数量级",
+            "在部署显存占用上该 MoE 模型仅需要加载被激活的 200 亿参数对应的显存即可运行推理",
+            "MoE 模型在训练时极度依赖路由负载均衡若某些专家未被充分训练可能导致模型在不同领域下的输出质量方差较大",
+            "在相同的硬件设备与总显存限制下 MoE 架构能够以相近的单 Token 算力开销存储比 Dense 模型更大规模的领域知识"
+          ]
+        }
+      },
+      {
+        "id": "moe-vs-dense-compute__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "1000 亿 2 专家战 200 亿稠密。看这次对等，下列哪些判断成立？",
+        "options": [
+          "浮点算量同数量级，200 亿对等",
+          "只载激活 200 亿对应显存即跑",
+          "训练极赖路由均衡，专家欠训领域方差大",
+          "单 Token 算力相近，知识规模胜"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从对等看数量与相近环节",
+          "reasoningGoal": "先看对等的环节；再逐项验证各判断；并排除「即跑全」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-460e571a",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-6356f1ab",
+        "sourceSnapshot": {
+          "id": "moe-vs-dense-compute",
+          "topic": "moe",
+          "subtopic": "moe-vs-dense-compute-parity",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "dense",
+            "flops",
+            "vram",
+            "load-balancing",
+            "capacity-scaling"
+          ],
+          "question": "假设某 MoE 模型拥有 1000 亿总参数量每 Token 激活其中 200 亿（2 个专家）而某 Dense 模型全量激活 200 亿参数。关于两者在计算与系统级别的特性比对以下哪些说法是正确的？（多选）",
+          "options": [
+            "在单 Token 推理的浮点计算量上该 MoE 模型与该 200 亿参数的 Dense 模型基本处于同一数量级",
+            "在部署显存占用上该 MoE 模型仅需要加载被激活的 200 亿参数对应的显存即可运行推理",
+            "MoE 模型在训练时极度依赖路由负载均衡若某些专家未被充分训练可能导致模型在不同领域下的输出质量方差较大",
+            "在相同的硬件设备与总显存限制下 MoE 架构能够以相近的单 Token 算力开销存储比 Dense 模型更大规模的领域知识"
+          ]
+        }
+      }
+    ],
+    "native-vs-modular-multimodal": [
+      {
+        "id": "native-vs-modular-multimodal__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "原生一体 vs 外挂编码，长视频谁行？",
+        "options": [
+          "模块冻文本模，编码投影映射入词空",
+          "原生统一层深交互，多模自注意",
+          "免改语言模型底层架构，长视频吞吐显著胜原生",
+          "跨模时间线关联原生高维连贯强"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从谁行定映射与连贯环节",
+          "reasoningGoal": "先定胜负的环节；再逐项验证各判断；并排除「吞吐胜」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1393435a",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-3a4e385d",
+        "sourceSnapshot": {
+          "id": "native-vs-modular-multimodal",
+          "topic": "multimodal",
+          "subtopic": "native-vs-modular-architecture",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "multimodal",
+            "native-multimodal",
+            "modular-encoder",
+            "cross-modal-alignment"
+          ],
+          "question": "多模态大语言模型通常采用原生多模态或模块化外挂编码器两种架构设计。现有系统需要处理长达数小时的连续视频与多轨音频流并在跨模态细节上进行细粒度逻辑推理。关于两种架构在此类场景下的特性差异哪些描述是正确的？（多选）",
+          "options": [
+            "模块化外挂编码器架构通常先冻结或微调预训练文本语言模型再通过独立的 Vision/Audio Encoder 及投影层将非文本特征映射到文本 Embedding 空间",
+            "原生多模态架构在预训练初期就将文本 Token、图像 Patch 及音频帧序列送入统一 Transformer 层共同学习多模态特征能够在深层网络中进行深入的自注意力交互",
+            "模块化外挂编码器架构因无需修改语言模型底层 Transformer 架构因此在处理长视频等高密度连续时间序列时其注意力计算开销和上下文吞吐表现显著优于原生多模态架构",
+            "在处理复杂的跨模态时间线关联时原生多模态架构通常表现出更强的高维跨模态时空连贯理解能力"
+          ]
+        }
+      },
+      {
+        "id": "native-vs-modular-multimodal__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "几小时视频多轨音频。选这次架构，下列哪些判断成立？",
+        "options": [
+          "冻文本模独立编投影，非文本特征映射词空间",
+          "文本 Patch 音频帧送统一层，深层交互学习",
+          "模块外挂免改底层架构，长视频吞吐显著胜",
+          "复杂跨模时间线关联原生强"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从几小时选投影与关联环节",
+          "reasoningGoal": "先选架构的环节；再逐项验证各判断；并排除「吞吐胜」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1393435a",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-8370f725",
+        "sourceSnapshot": {
+          "id": "native-vs-modular-multimodal",
+          "topic": "multimodal",
+          "subtopic": "native-vs-modular-architecture",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "multimodal",
+            "native-multimodal",
+            "modular-encoder",
+            "cross-modal-alignment"
+          ],
+          "question": "多模态大语言模型通常采用原生多模态或模块化外挂编码器两种架构设计。现有系统需要处理长达数小时的连续视频与多轨音频流并在跨模态细节上进行细粒度逻辑推理。关于两种架构在此类场景下的特性差异哪些描述是正确的？（多选）",
+          "options": [
+            "模块化外挂编码器架构通常先冻结或微调预训练文本语言模型再通过独立的 Vision/Audio Encoder 及投影层将非文本特征映射到文本 Embedding 空间",
+            "原生多模态架构在预训练初期就将文本 Token、图像 Patch 及音频帧序列送入统一 Transformer 层共同学习多模态特征能够在深层网络中进行深入的自注意力交互",
+            "模块化外挂编码器架构因无需修改语言模型底层 Transformer 架构因此在处理长视频等高密度连续时间序列时其注意力计算开销和上下文吞吐表现显著优于原生多模态架构",
+            "在处理复杂的跨模态时间线关联时原生多模态架构通常表现出更强的高维跨模态时空连贯理解能力"
+          ]
+        }
+      }
+    ],
+    "moe-router-collapse-fix": [
+      {
+        "id": "moe-router-collapse-fix__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "RL 一训路由全塌，咋救？",
+        "options": [
+          "Loss 加均衡罚，压不均分布",
+          "Capacity Factor 限单专家量，超额丢弃重定向",
+          "Top-k 加极值噪，增探索",
+          "彻底冻 Router 只更 FFN，避早期波动坍缩"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从全塌定罚限与噪环节",
+          "reasoningGoal": "先定救法的环节；再逐项验证各判断；并排除「冻避」等不成立描述。"
+        },
+        "generatedAt": 1788935559853,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5ae86a15",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-664e0408",
+        "sourceSnapshot": {
+          "id": "moe-router-collapse-fix",
+          "topic": "moe",
+          "subtopic": "router-collapse-load-balancing",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "router-collapse",
+            "load-balancing",
+            "auxiliary-loss",
+            "capacity-factor"
+          ],
+          "question": "在 Sparse MoE 进行 RL 微调期间极易发生路由器崩溃——Router 倾向将绝大部分 Token 集中发送给少数 Expert。下列哪些工程与算法干预手段能有效缓解并维持负载均衡？（多选）",
+          "options": [
+            "在 Loss 中引入辅助负载均衡损失对 Expert 激活概率分布的不均匀性施加惩罚",
+            "设定适度的 Expert Capacity Factor 限制单个 Expert 在单个 Batch 中能处理的最大 Token 数量直接丢弃或重定向超额 Token",
+            "引入 Top-k 路由随机噪声在路由 Logits 计算中添加受控的极值分布噪声以增加探索度",
+            "彻底冻结 Router 网络的参数仅允许更新 Expert 内部的 FFN 参数，因为固定路由可避免训练早期专家负载的剧烈波动与坍缩"
+          ]
+        }
+      },
+      {
+        "id": "moe-router-collapse-fix__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "Token 全挤少数专家。治这次崩溃，下列哪些判断成立？",
+        "options": [
+          "激活概率不均惩罚，均衡损失加",
+          "适度 Capacity 限单专家 Batch 量，超额转丢",
+          "Logits 加极值噪，探索度增",
+          "彻底冻 Router 只更 FFN，固定路由避波动"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从挤兑治惩罚与单更环节",
+          "reasoningGoal": "先治崩溃的环节；再逐项验证各判断；并排除「单更」等不成立描述。"
+        },
+        "generatedAt": 1788935559854,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5ae86a15",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-59d0d195",
+        "sourceSnapshot": {
+          "id": "moe-router-collapse-fix",
+          "topic": "moe",
+          "subtopic": "router-collapse-load-balancing",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "router-collapse",
+            "load-balancing",
+            "auxiliary-loss",
+            "capacity-factor"
+          ],
+          "question": "在 Sparse MoE 进行 RL 微调期间极易发生路由器崩溃——Router 倾向将绝大部分 Token 集中发送给少数 Expert。下列哪些工程与算法干预手段能有效缓解并维持负载均衡？（多选）",
+          "options": [
+            "在 Loss 中引入辅助负载均衡损失对 Expert 激活概率分布的不均匀性施加惩罚",
+            "设定适度的 Expert Capacity Factor 限制单个 Expert 在单个 Batch 中能处理的最大 Token 数量直接丢弃或重定向超额 Token",
+            "引入 Top-k 路由随机噪声在路由 Logits 计算中添加受控的极值分布噪声以增加探索度",
+            "彻底冻结 Router 网络的参数仅允许更新 Expert 内部的 FFN 参数，因为固定路由可避免训练早期专家负载的剧烈波动与坍缩"
+          ]
+        }
+      }
+    ],
+    "rl-opd-memory-01": [
+      {
+        "id": "rl-opd-memory-01__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "教师常驻太贵，咋蒸馏？",
+        "options": [
+          "Host NVMe 分层，预取切换冷热分",
+          "教师全低比特常驻， student 多轮补",
+          "Data Buffer 统数据流，推导采样异步重叠",
+          "废弃 Off-Policy 信号，步步同步单步对齐",
+          "请求特性工作负载感知识别，资源动调"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从太贵定分层与重叠环节",
+          "reasoningGoal": "先定蒸馏的环节；再逐项验证各判断；并排除「低比特驻」「步步齐」等不成立描述。"
+        },
+        "generatedAt": 1788935559854,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-463789d4",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-07749499",
+        "sourceSnapshot": {
+          "id": "rl-opd-memory-01",
+          "topic": "distillation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "distillation",
+            "off-policy-distillation",
+            "multi-teacher",
+            "memory-optimization"
+          ],
+          "question": "在长文本 / 长链条任务的 Agent 强化学习中，引入 Off-Policy Distillation (OPD) 或多教师模型（Multi-Teacher）指导能显著提升策略学习效率。但若为每个教师模型建立常驻（Long-running）的独立推理服务，会导致显存与计算资源消耗过高。针对该架构瓶颈，哪些系统设计方案能在控制显存开销的同时维持较高的蒸馏吞吐？",
+          "options": [
+            "Host 内存与 NVMe 作分层缓存，训练端预取教师状态并动态切换，冷热分离。",
+            "教师统一量化到低比特常驻显存，精度损失可由学生侧多蒸馏几轮补回；延迟优先于精度。",
+            "在 Rollout 与训练的数据流中引入统一的 Data Buffer，使教师模型推导与学生模型采样在同一数据流控制下实现异步流水线重叠",
+            "废弃所有 Off-Policy 教师信号，强制要求所有教师模型在学生模型的每个 Rollout Step 中进行同步单步对齐推导",
+            "针对不同 Rollout 环境的请求特性，采用工作负载感知的路由调度，实现 Prefill 与 Decode 阶段动态资源比例调节"
+          ]
+        }
+      },
+      {
+        "id": "rl-opd-memory-01__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "多教师指导吃存。搭这次蒸馏，下列哪些判断成立？",
+        "options": [
+          "Host NVMe 分层缓存，训练预取动态切换冷热分",
+          "教师低比特常驻显存，精度损失学生多轮补，延迟优先",
+          "同流控制异步重叠，推导采样齐",
+          "废弃 Off-Policy 信号，强制步步同步单步对齐",
+          "请求特性路由，资源比例动调"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从吃存搭缓存与废环节",
+          "reasoningGoal": "先搭蒸馏的环节；再逐项验证各判断；并排除「轮补」「废」等不成立描述。"
+        },
+        "generatedAt": 1788935559854,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-463789d4",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-6248f29e",
+        "sourceSnapshot": {
+          "id": "rl-opd-memory-01",
+          "topic": "distillation",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "distillation",
+            "off-policy-distillation",
+            "multi-teacher",
+            "memory-optimization"
+          ],
+          "question": "在长文本 / 长链条任务的 Agent 强化学习中，引入 Off-Policy Distillation (OPD) 或多教师模型（Multi-Teacher）指导能显著提升策略学习效率。但若为每个教师模型建立常驻（Long-running）的独立推理服务，会导致显存与计算资源消耗过高。针对该架构瓶颈，哪些系统设计方案能在控制显存开销的同时维持较高的蒸馏吞吐？",
+          "options": [
+            "Host 内存与 NVMe 作分层缓存，训练端预取教师状态并动态切换，冷热分离。",
+            "教师统一量化到低比特常驻显存，精度损失可由学生侧多蒸馏几轮补回；延迟优先于精度。",
+            "在 Rollout 与训练的数据流中引入统一的 Data Buffer，使教师模型推导与学生模型采样在同一数据流控制下实现异步流水线重叠",
+            "废弃所有 Off-Policy 教师信号，强制要求所有教师模型在学生模型的每个 Rollout Step 中进行同步单步对齐推导",
+            "针对不同 Rollout 环境的请求特性，采用工作负载感知的路由调度，实现 Prefill 与 Decode 阶段动态资源比例调节"
+          ]
+        }
+      }
+    ],
+    "rl-test-time-compute-01": [
+      {
+        "id": "rl-test-time-compute-01__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "Effort 拉满烧钱，咋调？",
+        "options": [
+          "Effort 显著增 Output，简单单文件低 Effort 省",
+          "复杂长流程增单次 Token，减轮次错误总账降",
+          "缓存命中与 Effort 无关，思考成本省不了",
+          "Max 替环境验证，100% 逻辑无误保",
+          "输出长度方差大，动态 Batch 防尾部延迟"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从烧钱定涨省与防尾环节",
+          "reasoningGoal": "先定调法的环节；再逐项验证各判断；并排除「无关」「替验证」等不成立描述。"
+        },
+        "generatedAt": 1788935559854,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3bd309f0",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-9704b3bb",
+        "sourceSnapshot": {
+          "id": "rl-test-time-compute-01",
+          "topic": "inference-optimization",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "test-time-compute",
+            "reasoning-effort",
+            "token-efficiency",
+            "inference"
+          ],
+          "question": "在解决复杂工程任务（如代码库重构、系统性能调优或多模块 Debug）时，推理模型通常支持设置不同的思考努力程度（Reasoning Effort，如 Low、High、Max）。关于 Reasoning Effort 对系统性能与工程调优的影响，下列说法正确的是？",
+          "options": [
+            "提高 Reasoning Effort 通常会显著增加模型的 Output Token 消耗，因此在简单单文件代码修改场景下应优先采用较低 Effort 以优化延迟与成本",
+            "在复杂长流程任务中，较高的 Reasoning Effort 虽然增加单次推理 Token，但可能通过减少整体交互轮次与错误尝试，最终降低总任务完成时间与 Token 消耗",
+            "在 Agent 执行端启用 Reasoning 模式时，系统的 Prompt Context Caching（上下文缓存）命中率与 Reasoning Effort 设置完全无关，缓存无法降低思考 Token 的计算成本",
+            "开启深度思考（Max Effort）可以替代环境验证（如单元测试与沙盒编译），模型无需在外部沙盒中运行校验即可确保 100% 复杂的系统级逻辑无误",
+            "在异步 RL 采样场景中，高 Reasoning Effort 会导致不同 Agent 任务的输出长度方差变大，需要配合工作负载感知的动态 Batching 机制以防尾部延迟（Straggler）"
+          ]
+        }
+      },
+      {
+        "id": "rl-test-time-compute-01__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "Low/High/Max 三档。定这次努力，下列哪些判断成立？",
+        "options": [
+          "Reasoning Effort 高显著增 Output 耗，简单场景优先低 Effort",
+          "复杂长流程减轮次错误尝试，总账降",
+          "缓存命中率与 Effort 设置无关，思考成本省不了",
+          "Max 替代环境验证，免沙盒保 100% 无误",
+          "输出长度方差大，动态 Batching 防 Straggler"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从三档定涨优与免环节",
+          "reasoningGoal": "先定努力的环节；再逐项验证各判断；并排除「不省」「免」等不成立描述。"
+        },
+        "generatedAt": 1788935559855,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3bd309f0",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-918402c7",
+        "sourceSnapshot": {
+          "id": "rl-test-time-compute-01",
+          "topic": "inference-optimization",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "test-time-compute",
+            "reasoning-effort",
+            "token-efficiency",
+            "inference"
+          ],
+          "question": "在解决复杂工程任务（如代码库重构、系统性能调优或多模块 Debug）时，推理模型通常支持设置不同的思考努力程度（Reasoning Effort，如 Low、High、Max）。关于 Reasoning Effort 对系统性能与工程调优的影响，下列说法正确的是？",
+          "options": [
+            "提高 Reasoning Effort 通常会显著增加模型的 Output Token 消耗，因此在简单单文件代码修改场景下应优先采用较低 Effort 以优化延迟与成本",
+            "在复杂长流程任务中，较高的 Reasoning Effort 虽然增加单次推理 Token，但可能通过减少整体交互轮次与错误尝试，最终降低总任务完成时间与 Token 消耗",
+            "在 Agent 执行端启用 Reasoning 模式时，系统的 Prompt Context Caching（上下文缓存）命中率与 Reasoning Effort 设置完全无关，缓存无法降低思考 Token 的计算成本",
+            "开启深度思考（Max Effort）可以替代环境验证（如单元测试与沙盒编译），模型无需在外部沙盒中运行校验即可确保 100% 复杂的系统级逻辑无误",
+            "在异步 RL 采样场景中，高 Reasoning Effort 会导致不同 Agent 任务的输出长度方差变大，需要配合工作负载感知的动态 Batching 机制以防尾部延迟（Straggler）"
+          ]
+        }
+      }
+    ],
+    "prompt-cache-kv-mechanism-01": [
+      {
+        "id": "prompt-cache-kv-mechanism-01__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "前缀缓存存啥咋配？",
+        "options": [
+          "存 Tokenizer Token ID 逐字比，毫秒级复用",
+          "前向 KV Tensor 存，免前缀重复 Attention 乘",
+          "断点前改定义参数，之后缓存全失效",
+          "读复用折扣结算输入 Token，TTL 刷新免写费"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从存啥定 Tensor 与失效环节",
+          "reasoningGoal": "先定机制的环节；再逐项验证各判断；并排除「存 ID」等不成立描述。"
+        },
+        "generatedAt": 1788935559855,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8caf71d3",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-968d409e",
+        "sourceSnapshot": {
+          "id": "prompt-cache-kv-mechanism-01",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prompt-caching",
+            "kv-cache",
+            "prefix-matching",
+            "ttl"
+          ],
+          "question": "在基于 Transformer 架构的大模型 API 服务中，Prompt Caching 被广泛用于降低长上下文处理的首字延迟（TTFT）与计算成本。关于 KV Cache Prompt Caching 的底层工作机制与前缀匹配规则，下列哪些说法是正确的？",
+          "options": [
+            "缓存系统直接保存的是经过 Tokenizer 处理后的 Token ID 序列，当新请求到达时通过逐字比较 Token ID 实现毫秒级快速匹配与复用",
+            "缓存系统保存的是模型在前向传播过程中计算出的 KV Tensor，从而避免对已处理前缀进行重复的 Self-Attention 矩阵乘法计算",
+            "缓存命中严格依赖前缀的完全一致性，若在前缀断点前的任何位置修改工具定义或参数，会导致该断点之后的所有缓存全部失效",
+            "每次成功读取并复用已有缓存前缀时，不仅能以折扣价格结算输入 Token，还会同步刷新该缓存条目的存活周期（TTL）而无需再次缴纳写入费"
+          ]
+        }
+      },
+      {
+        "id": "prompt-cache-kv-mechanism-01__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "缓存总失配。查这次前缀，下列哪些判断成立？",
+        "options": [
+          "存 Token ID 逐字比对，毫秒级快速复用",
+          "前向算出 KV Tensor 存，前缀重算免",
+          "断点前任改定义参数，之后缓存全失效",
+          "成功读复用折扣结算，TTL 刷新免再缴写费"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从失配查存比与免环节",
+          "reasoningGoal": "先查前缀的环节；再逐项验证各判断；并排除「存比对」等不成立描述。"
+        },
+        "generatedAt": 1788935559855,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8caf71d3",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-2da10901",
+        "sourceSnapshot": {
+          "id": "prompt-cache-kv-mechanism-01",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prompt-caching",
+            "kv-cache",
+            "prefix-matching",
+            "ttl"
+          ],
+          "question": "在基于 Transformer 架构的大模型 API 服务中，Prompt Caching 被广泛用于降低长上下文处理的首字延迟（TTFT）与计算成本。关于 KV Cache Prompt Caching 的底层工作机制与前缀匹配规则，下列哪些说法是正确的？",
+          "options": [
+            "缓存系统直接保存的是经过 Tokenizer 处理后的 Token ID 序列，当新请求到达时通过逐字比较 Token ID 实现毫秒级快速匹配与复用",
+            "缓存系统保存的是模型在前向传播过程中计算出的 KV Tensor，从而避免对已处理前缀进行重复的 Self-Attention 矩阵乘法计算",
+            "缓存命中严格依赖前缀的完全一致性，若在前缀断点前的任何位置修改工具定义或参数，会导致该断点之后的所有缓存全部失效",
+            "每次成功读取并复用已有缓存前缀时，不仅能以折扣价格结算输入 Token，还会同步刷新该缓存条目的存活周期（TTL）而无需再次缴纳写入费"
+          ]
+        }
+      }
+    ],
+    "llm-02": [
+      {
+        "id": "llm-02__surface-options__assessmentfresh25__0",
+        "kind": "surface-options",
+        "question": "法条幻觉咋治？",
+        "options": [
+          "RAG 接权威法规库，真实条文引文核验",
+          "预算砸升级规模，规模盖检索收益",
+          "微调清过时错误，源头提质",
+          "低温保守采样，降编造率",
+          "写明禁编法条，唯一防线防虚假引用"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从幻觉定检索与源头环节",
+          "reasoningGoal": "先定治法的环节；再逐项验证各判断；并排除「砸升级」「独防线」等不成立描述。"
+        },
+        "generatedAt": 1788935559855,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-62769335",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-25aaeb30",
+        "sourceSnapshot": {
+          "id": "llm-02",
+          "topic": "hallucination",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "hallucination",
+            "rag",
+            "safety"
+          ],
+          "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
+          "options": [
+            "接入权威法律法规知识库，采用检索增强生成（RAG）让回答基于检索到的真实条文并附引用来源，供用户核验",
+            "把抗幻觉预算优先投给模型升级而非 grounding 链路，因为规模提升带来的幻觉下降足以覆盖检索增强的收益",
+            "在微调阶段清理训练数据中过时与错误的法律表述，从知识源头提升语料质量",
+            "调低解码温度、采用更保守的采样策略，降低生成随机性带来的凭空编造概率",
+            "在系统提示中写明\"禁止编造法条\"，并将其作为防止虚假引用的唯一防线"
+          ]
+        }
+      },
+      {
+        "id": "llm-02__context-options__assessmentfresh25__1",
+        "kind": "context-options",
+        "question": "模型编法条。堵这次编造，下列哪些判断成立？",
+        "options": [
+          "权威库 RAG 引文，真实条文核验",
+          "预算优先投模型升级，规模幻觉降盖检索收益",
+          "过时错误清理，语料源头质升",
+          "温度调低采样保守，编造概率降",
+          "系统禁编法条令独家防线"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从编造堵权威与优先环节",
+          "reasoningGoal": "先堵编造的环节；再逐项验证各判断；并排除「优先」「独家」等不成立描述。"
+        },
+        "generatedAt": 1788935559855,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-62769335",
+        "batch": "assessmentfresh25",
+        "model": "manual",
+        "contentHash": "fnv1a-728ce288",
+        "sourceSnapshot": {
+          "id": "llm-02",
+          "topic": "hallucination",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "hallucination",
+            "rag",
+            "safety"
+          ],
+          "question": "关于大语言模型的“幻觉”（hallucination），下列说法正确的有哪些？（多选）",
+          "options": [
+            "接入权威法律法规知识库，采用检索增强生成（RAG）让回答基于检索到的真实条文并附引用来源，供用户核验",
+            "把抗幻觉预算优先投给模型升级而非 grounding 链路，因为规模提升带来的幻觉下降足以覆盖检索增强的收益",
+            "在微调阶段清理训练数据中过时与错误的法律表述，从知识源头提升语料质量",
+            "调低解码温度、采用更保守的采样策略，降低生成随机性带来的凭空编造概率",
+            "在系统提示中写明\"禁止编造法条\"，并将其作为防止虚假引用的唯一防线"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1851 @@
+{
+  "version": 1,
+  "generatedAt": 1788932909100,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-transformer-003": [
+      {
+        "id": "ai-transformer-003__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "短文行长文垮，Attention 哪查？",
+        "options": [
+          "注意力公式数学错，换普通点积",
+          "位置编码超长外推失效致退化",
+          "token 多稀释中段，首尾利用高",
+          "语料翻倍长文自动追平",
+          "查截断滑窗，同任务变长测首中尾"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从长文垮定编码与截断环节",
+          "reasoningGoal": "先定方向的环节；再逐项验证各判断；并排除「公式错」「翻倍追平」等不成立描述。"
+        },
+        "generatedAt": 1788932909091,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-46b8959c",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-24ed56ab",
+        "sourceSnapshot": {
+          "id": "ai-transformer-003",
+          "topic": "attention",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "attention",
+            "long-context",
+            "debugging"
+          ],
+          "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
+          "options": [
+            "说明注意力公式在长序列下存在数学错误，应把 scaled dot-product attention 替换为普通点积",
+            "位置编码在超出训练长度时外推失效，可能导致长文本上的整体性能退化",
+            "注意力被大量 token 稀释造成 lost-in-the-middle，中段信息的利用率低于首尾",
+            "主要原因是预训练语料总量不够，把训练数据翻倍后长文本效果就会自动追平短文本",
+            "应检查实现层是否存在隐性截断或滑窗丢信息，并用同一任务只变长度的诊断集分别测首/中/尾信息利用率来定位"
+          ]
+        }
+      },
+      {
+        "id": "ai-transformer-003__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "长度一涨效果掉。诊这次稀释，下列哪些判断成立？",
+        "options": [
+          "公式长序列数学错，点积替换",
+          "超训长度外推失效，整体退化",
+          "中段利用率低于首尾",
+          "训练数据翻倍长文追平短文",
+          "隐性截断滑窗查，诊断集变长定位"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从涨掉诊公式与定位环节",
+          "reasoningGoal": "先诊稀释的环节；再逐项验证各判断；并排除「点积替」「翻倍追」等不成立描述。"
+        },
+        "generatedAt": 1788932909092,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-46b8959c",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-694a95b8",
+        "sourceSnapshot": {
+          "id": "ai-transformer-003",
+          "topic": "attention",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "attention",
+            "long-context",
+            "debugging"
+          ],
+          "question": "一个模型在短文本上表现很好，但随着输入长度增加，效果明显下降。作为 AI Engineer，你会从 Attention 机制的哪些方面分析这个问题？",
+          "options": [
+            "说明注意力公式在长序列下存在数学错误，应把 scaled dot-product attention 替换为普通点积",
+            "位置编码在超出训练长度时外推失效，可能导致长文本上的整体性能退化",
+            "注意力被大量 token 稀释造成 lost-in-the-middle，中段信息的利用率低于首尾",
+            "主要原因是预训练语料总量不够，把训练数据翻倍后长文本效果就会自动追平短文本",
+            "应检查实现层是否存在隐性截断或滑窗丢信息，并用同一任务只变长度的诊断集分别测首/中/尾信息利用率来定位"
+          ]
+        }
+      }
+    ],
+    "transformer-ln-01": [
+      {
+        "id": "transformer-ln-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "Pre-LN Post-LN 咋摆？",
+        "options": [
+          "Post-LN 深层主路梯度受累积影响，浅层衰减无 Warmup 易散",
+          "Pre-LN 主路 Identity 直通，梯度无损回浅层，稳定升 Warmup 降",
+          "层深主路范数渐大，子模块更新稀释或损上限",
+          "Pre-LN 推理多二次方 O(N²) 开销"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从摆法定衰减与稀释环节",
+          "reasoningGoal": "先定摆法的环节；再逐项验证各判断；并排除「多二次方」等不成立描述。"
+        },
+        "generatedAt": 1788932909092,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7555271c",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-4465ca6a",
+        "sourceSnapshot": {
+          "id": "transformer-ln-01",
+          "topic": "transformer",
+          "subtopic": "ln-placement",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "transformer",
+            "layer-norm",
+            "pre-ln",
+            "post-ln",
+            "training-stability"
+          ],
+          "question": "在 Standard Transformer 架构中，Layer Normalization（LN）可以放置在 Residual Block 内的子模块入口处（Pre-LN），也可以放置在加法残差连接之后（Post-LN）。关于两种 LN 放置方式在训练稳定性、梯度传播及模型表达能力方面的工程 Trade-off，下列哪些说法是正确的？（多选）",
+          "options": [
+            "Post-LN 架构在深层网络中主通路的梯度易受 LN 链式法则的累积影响，导致浅层梯度显著衰减，因此在没有 Learning Rate Warmup 时训练极易发散",
+            "Pre-LN 架构保持了残差主通路（Identity path）无阻碍直通，使得梯度可以直接无损传回浅层，从而显著提高了深层 Transformer 的训练稳定性并降低对 Warmup 的依赖",
+            "Pre-LN 架构随着层数增加，主通路输出向量的范数会逐渐增大，导致深层子模块相对于主通路的实际更新幅度被相对稀释，可能轻微牺牲模型的上限表达能力",
+            "Pre-LN 与 Post-LN 在推理（Inference）阶段的计算复杂度完全不同，Pre-LN 会在时间复杂度上额外引入二次方 O(N²) 的开销"
+          ]
+        }
+      },
+      {
+        "id": "transformer-ln-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "深网训崩。选这次归一，下列哪些判断成立？",
+        "options": [
+          "深层主路梯度 LN 链式累积，浅层衰减无 Warmup 发散",
+          "残差主路无阻碍直通，梯度直回浅层稳深网",
+          "主路范数渐大，子模块更新相对稀",
+          "推理复杂度两异，Pre-LN 二次方贵"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从训崩选累积与渐大环节",
+          "reasoningGoal": "先选归一的环节；再逐项验证各判断；并排除「二次方贵」等不成立描述。"
+        },
+        "generatedAt": 1788932909093,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7555271c",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-9e6884f4",
+        "sourceSnapshot": {
+          "id": "transformer-ln-01",
+          "topic": "transformer",
+          "subtopic": "ln-placement",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "transformer",
+            "layer-norm",
+            "pre-ln",
+            "post-ln",
+            "training-stability"
+          ],
+          "question": "在 Standard Transformer 架构中，Layer Normalization（LN）可以放置在 Residual Block 内的子模块入口处（Pre-LN），也可以放置在加法残差连接之后（Post-LN）。关于两种 LN 放置方式在训练稳定性、梯度传播及模型表达能力方面的工程 Trade-off，下列哪些说法是正确的？（多选）",
+          "options": [
+            "Post-LN 架构在深层网络中主通路的梯度易受 LN 链式法则的累积影响，导致浅层梯度显著衰减，因此在没有 Learning Rate Warmup 时训练极易发散",
+            "Pre-LN 架构保持了残差主通路（Identity path）无阻碍直通，使得梯度可以直接无损传回浅层，从而显著提高了深层 Transformer 的训练稳定性并降低对 Warmup 的依赖",
+            "Pre-LN 架构随着层数增加，主通路输出向量的范数会逐渐增大，导致深层子模块相对于主通路的实际更新幅度被相对稀释，可能轻微牺牲模型的上限表达能力",
+            "Pre-LN 与 Post-LN 在推理（Inference）阶段的计算复杂度完全不同，Pre-LN 会在时间复杂度上额外引入二次方 O(N²) 的开销"
+          ]
+        }
+      }
+    ],
+    "mha-complexity-01": [
+      {
+        "id": "mha-complexity-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "N/d/h 单层 MHA 算量显存？",
+        "options": [
+          "QKV 加 W_O 投影共 O(N·d²)",
+          "Score 乘 V 共 O(N²·d)",
+          "反传存全权重，显存 O(h·N²)",
+          "N≫d 瓶颈在参数量非 N² 项"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从单层算投影与存储环节",
+          "reasoningGoal": "先算开销的环节；再逐项验证各判断；并排除「参数主导」等不成立描述。"
+        },
+        "generatedAt": 1788932909093,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9bd906a6",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-6e81134f",
+        "sourceSnapshot": {
+          "id": "mha-complexity-01",
+          "topic": "self-attention",
+          "subtopic": "complexity-analysis",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "mha",
+            "complexity",
+            "flops",
+            "memory",
+            "flash-attention"
+          ],
+          "question": "在标准 Multi-Head Self-Attention（MHA）中，假设输入序列长度为 N，隐层维度为 d_model，头数为 h，每个头的维度 d_k = d_model/h。针对单层 MHA 的计算量与中间激活显存开销，下列分析正确的有？（多选）",
+          "options": [
+            "线性投影计算 Q,K,V 及最终输出投影 W_O 的总计算复杂度为 O(N·d_model²)",
+            "计算所有头的 Attention Score 及其与 V 相乘的总计算复杂度为 O(N²·d_model)",
+            "在没有 FlashAttention 等融合技术时，反向传播必须保存完整注意力权重矩阵，显存空间复杂度为 O(h·N²)",
+            "当 N≫d_model 时，整体瓶颈主要由投影矩阵的参数量决定而非序列长度的二次方项"
+          ]
+        }
+      },
+      {
+        "id": "mha-complexity-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "单层多头开销账。算这笔复杂度，下列哪些判断成立？",
+        "options": [
+          "投影总算量 O(N·d_model²)",
+          "Score 与 V 乘总 O(N²·d_model)",
+          "无融合存完整矩阵，空间 O(h·N²)",
+          "参数量主导瓶颈，序列二次方让位"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从开销账算总算与让位环节",
+          "reasoningGoal": "先算账的环节；再逐项验证各判断；并排除「让位」等不成立描述。"
+        },
+        "generatedAt": 1788932909093,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9bd906a6",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-1ff11905",
+        "sourceSnapshot": {
+          "id": "mha-complexity-01",
+          "topic": "self-attention",
+          "subtopic": "complexity-analysis",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "mha",
+            "complexity",
+            "flops",
+            "memory",
+            "flash-attention"
+          ],
+          "question": "在标准 Multi-Head Self-Attention（MHA）中，假设输入序列长度为 N，隐层维度为 d_model，头数为 h，每个头的维度 d_k = d_model/h。针对单层 MHA 的计算量与中间激活显存开销，下列分析正确的有？（多选）",
+          "options": [
+            "线性投影计算 Q,K,V 及最终输出投影 W_O 的总计算复杂度为 O(N·d_model²)",
+            "计算所有头的 Attention Score 及其与 V 相乘的总计算复杂度为 O(N²·d_model)",
+            "在没有 FlashAttention 等融合技术时，反向传播必须保存完整注意力权重矩阵，显存空间复杂度为 O(h·N²)",
+            "当 N≫d_model 时，整体瓶颈主要由投影矩阵的参数量决定而非序列长度的二次方项"
+          ]
+        }
+      }
+    ],
+    "transformer-comparison-01": [
+      {
+        "id": "transformer-comparison-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "n/d/k 三指标比三家？",
+        "options": [
+          "Attention 顺序 O(1)，RNN 顺序 O(n)，硬件并行胜",
+          "n 远大于 d 时 Attention 算量低于 RNN",
+          "Attention 路径 O(1)，RNN O(n)，长赖短径",
+          "单层受限卷积 k<n，最长路径 O(log_k n)"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从三家定序数与路径环节",
+          "reasoningGoal": "先定对比的环节；再逐项验证各判断；并排除「n 大便宜」「对数路径」等不成立描述。"
+        },
+        "generatedAt": 1788932909093,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5ed8e1f2",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-5307cac6",
+        "sourceSnapshot": {
+          "id": "transformer-comparison-01",
+          "topic": "transformer",
+          "subtopic": "attention-vs-rnn-vs-cnn",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "self-attention",
+            "rnn",
+            "cnn",
+            "complexity",
+            "parallelism"
+          ],
+          "question": "在序列建模中，评价神经网络层级结构效率的三个关键指标为：每层总计算复杂度、可并行化的最小顺序操作数、以及信号传播的最长路径长度。设序列长度为 n，特征维度为 d，卷积核尺寸为 k。下列关于 Self-Attention 与 Recurrent、Convolutional 对比的说法中，正确的有哪些？（多选）",
+          "options": [
+            "Self-Attention 层的顺序操作数为 O(1)，而 Recurrent 层的顺序操作数为 O(n)，这使得 Self-Attention 在硬件并行计算上具有显著优势",
+            "当序列长度 n 远大于特征维度 d（即 n > d）时，Self-Attention 的每层计算复杂度低于 Recurrent 层",
+            "Self-Attention 层中任意两个位置之间的最长路径长度为 O(1)，而 Recurrent 层为 O(n)，更短的路径长度有助于模型学习长距离依赖",
+            "单层受限卷积层（Restricted Convolutional Layer，卷积核大小 k < n）的最长路径长度为 O(log_k n)"
+          ]
+        }
+      },
+      {
+        "id": "transformer-comparison-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "Attention RNN 卷积擂台。判这次效率，下列哪些判断成立？",
+        "options": [
+          "顺序操作 1 对 n，并行优势显",
+          "n 远大于 d 时，Attention 每层算量低于 RNN",
+          "最长路径 1 对 n，短径学长赖",
+          "单层受限卷积 k<n，最长路径 O(log_k n)"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从擂台判操作与对数环节",
+          "reasoningGoal": "先判效率的环节；再逐项验证各判断；并排除「更便宜」「对数级」等不成立描述。"
+        },
+        "generatedAt": 1788932909093,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5ed8e1f2",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-92a091e4",
+        "sourceSnapshot": {
+          "id": "transformer-comparison-01",
+          "topic": "transformer",
+          "subtopic": "attention-vs-rnn-vs-cnn",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "self-attention",
+            "rnn",
+            "cnn",
+            "complexity",
+            "parallelism"
+          ],
+          "question": "在序列建模中，评价神经网络层级结构效率的三个关键指标为：每层总计算复杂度、可并行化的最小顺序操作数、以及信号传播的最长路径长度。设序列长度为 n，特征维度为 d，卷积核尺寸为 k。下列关于 Self-Attention 与 Recurrent、Convolutional 对比的说法中，正确的有哪些？（多选）",
+          "options": [
+            "Self-Attention 层的顺序操作数为 O(1)，而 Recurrent 层的顺序操作数为 O(n)，这使得 Self-Attention 在硬件并行计算上具有显著优势",
+            "当序列长度 n 远大于特征维度 d（即 n > d）时，Self-Attention 的每层计算复杂度低于 Recurrent 层",
+            "Self-Attention 层中任意两个位置之间的最长路径长度为 O(1)，而 Recurrent 层为 O(n)，更短的路径长度有助于模型学习长距离依赖",
+            "单层受限卷积层（Restricted Convolutional Layer，卷积核大小 k < n）的最长路径长度为 O(log_k n)"
+          ]
+        }
+      }
+    ],
+    "softmax-scaling-01": [
+      {
+        "id": "softmax-scaling-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "去缩放 d_k 大梯度没。为啥？",
+        "options": [
+          "q k 分量独立 0 均 1 方差，点积均 0 方差 d_k",
+          "d_k 大点积数值方差增，Softmax 输入或极大或极小",
+          "Softmax 饱和梯度 0，反传衰减",
+          "乘 1/√d_k 方差归 1，保敏感区"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从消失定方差与饱和环节",
+          "reasoningGoal": "先定原因的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788932909094,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1f1df90d",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-1ac592a0",
+        "sourceSnapshot": {
+          "id": "softmax-scaling-01",
+          "topic": "self-attention",
+          "subtopic": "scaling-factor",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "scaled-dot-product",
+            "softmax",
+            "gradient-vanishing",
+            "variance"
+          ],
+          "question": "在注意力机制中若移除缩放因子 1/√d_k（即直接使用未缩放的点积 QKᵀ），当 d_k 较大时网络在训练初期极易出现梯度消失。以下哪些数学或工程解释是合理的？（多选）",
+          "options": [
+            "假设 q 和 k 的各分量为独立均值 0 方差 1 的随机变量，则点积 q·k 的均值为 0，方差为 d_k",
+            "当 d_k 很大时，点积的数值方差随之大幅增加，导致输入到 Softmax 函数的元素极大或极小",
+            "Softmax 在输入值绝对值较大且极不均匀时输出趋近 one-hot 向量，饱和区的梯度接近于 0，使得反向传播时梯度严重衰减",
+            "乘以缩放因子 1/√d_k 可以将点积结果的方差重新归一化为 1，从而维持 Softmax 处于梯度敏感区"
+          ]
+        }
+      },
+      {
+        "id": "softmax-scaling-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "1/√d_k 丢了训崩。剖这次消失，下列哪些判断成立？",
+        "options": [
+          "独立 0 均 1 方差，点积方差 d_k",
+          "数值方差大，元素或极大或极小",
+          "趋 one-hot 饱和，梯度近 0 衰减",
+          "方差归一化为 1，敏感区维持"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从训崩剖独立与归一环节",
+          "reasoningGoal": "先剖消失的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788932909094,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1f1df90d",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-d90b89fe",
+        "sourceSnapshot": {
+          "id": "softmax-scaling-01",
+          "topic": "self-attention",
+          "subtopic": "scaling-factor",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "scaled-dot-product",
+            "softmax",
+            "gradient-vanishing",
+            "variance"
+          ],
+          "question": "在注意力机制中若移除缩放因子 1/√d_k（即直接使用未缩放的点积 QKᵀ），当 d_k 较大时网络在训练初期极易出现梯度消失。以下哪些数学或工程解释是合理的？（多选）",
+          "options": [
+            "假设 q 和 k 的各分量为独立均值 0 方差 1 的随机变量，则点积 q·k 的均值为 0，方差为 d_k",
+            "当 d_k 很大时，点积的数值方差随之大幅增加，导致输入到 Softmax 函数的元素极大或极小",
+            "Softmax 在输入值绝对值较大且极不均匀时输出趋近 one-hot 向量，饱和区的梯度接近于 0，使得反向传播时梯度严重衰减",
+            "乘以缩放因子 1/√d_k 可以将点积结果的方差重新归一化为 1，从而维持 Softmax 处于梯度敏感区"
+          ]
+        }
+      }
+    ],
+    "mha-heads-01": [
+      {
+        "id": "mha-heads-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "h 头 d_k 缩，设计取舍？",
+        "options": [
+          "输入投影 h 低维子空间，并看表征位置，克单头过度平均弊",
+          "d_k 等 d_model 除 h，总算量与完整维单头同",
+          "h 无限加表征，能力利用率线性升",
+          "投影后独立点积算，各头分学句法语义"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从拆头定并看与算量环节",
+          "reasoningGoal": "先定取舍的环节；再逐项验证各判断；并排除「无限线性」等不成立描述。"
+        },
+        "generatedAt": 1788932909094,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c6feceb9",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-d628c3bc",
+        "sourceSnapshot": {
+          "id": "mha-heads-01",
+          "topic": "attention",
+          "subtopic": "multi-head-design",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-head-attention",
+            "subspace",
+            "representation",
+            "tradeoff"
+          ],
+          "question": "Transformer 采用多头注意力机制将 Q/K/V 分别通过 h 组线性投影映射到低维子空间后并行计算注意力。设 d_k = d_v = d_model/h。关于 MHA 的设计取舍与机制，下列哪些说法是正确的？（多选）",
+          "options": [
+            "将输入投影到 h 个低维子空间使模型能同时从不同的表征子空间和不同的位置关注信息，克服了单头注意力容易过度平均不同信息维度的缺点",
+            "由于设置了 d_k = d_model/h，多头注意力的总计算复杂度与在完整维度上执行单头注意力的总计算复杂度基本相同",
+            "增加 Head 数量 h 可以无限制地提升模型表征能力，工程实践中 h 越大会线性提高 GPU 的计算利用率",
+            "每个 Head 在投影后执行独立的点积注意力计算，这使得不同 Head 可以分别学到不同类型的句法或语义关联"
+          ]
+        }
+      },
+      {
+        "id": "mha-heads-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "单头改多头。看这次拆分，下列哪些判断成立？",
+        "options": [
+          "h 低维子空间并看多表征位置，克单头平均弊",
+          "d_k 缩 h 倍，总算量与完整维单头相当",
+          "h 增加表征能力无限制提升，越大 GPU 利用率线性越高",
+          "不同句法语义关联各头分开学"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从改多看子空间与分开环节",
+          "reasoningGoal": "先看拆分的环节；再逐项验证各判断；并排除「无上限」等不成立描述。"
+        },
+        "generatedAt": 1788932909094,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c6feceb9",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-f4e1e39f",
+        "sourceSnapshot": {
+          "id": "mha-heads-01",
+          "topic": "attention",
+          "subtopic": "multi-head-design",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-head-attention",
+            "subspace",
+            "representation",
+            "tradeoff"
+          ],
+          "question": "Transformer 采用多头注意力机制将 Q/K/V 分别通过 h 组线性投影映射到低维子空间后并行计算注意力。设 d_k = d_v = d_model/h。关于 MHA 的设计取舍与机制，下列哪些说法是正确的？（多选）",
+          "options": [
+            "将输入投影到 h 个低维子空间使模型能同时从不同的表征子空间和不同的位置关注信息，克服了单头注意力容易过度平均不同信息维度的缺点",
+            "由于设置了 d_k = d_model/h，多头注意力的总计算复杂度与在完整维度上执行单头注意力的总计算复杂度基本相同",
+            "增加 Head 数量 h 可以无限制地提升模型表征能力，工程实践中 h 越大会线性提高 GPU 的计算利用率",
+            "每个 Head 在投影后执行独立的点积注意力计算，这使得不同 Head 可以分别学到不同类型的句法或语义关联"
+          ]
+        }
+      }
+    ],
+    "long-context-attn-01": [
+      {
+        "id": "long-context-attn-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "N=128,000 全 Attention，瓶颈在哪？",
+        "options": [
+          "QK^T O(N²·D)，N 二次涨",
+          "存完整权重矩阵空间 O(N²)，128k 单头 FP16 数十 GB 易 OOM",
+          "N≫D 下 FFN 显存显著超 Attention",
+          "Tile SRAM 分块，HBM O(N²) 降 O(N)"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从 128k 定二次与分块环节",
+          "reasoningGoal": "先定瓶颈的环节；再逐项验证各判断；并排除「FFN 反超」等不成立描述。"
+        },
+        "generatedAt": 1788932909094,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1a39720d",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-f3a6d0c0",
+        "sourceSnapshot": {
+          "id": "long-context-attn-01",
+          "topic": "self-attention",
+          "subtopic": "long-context-bottleneck",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "long-context",
+            "flash-attention",
+            "oom",
+            "memory-bottleneck"
+          ],
+          "question": "将 Standard Full Self-Attention 应用于超长文本处理（如 N=128,000）时需要评估资源瓶颈。设 N 为序列长度，D 为隐藏维度（D≪N），Batch Size=1，不使用 KV Cache。下列关于资源消耗的计算与判断哪些是正确的？（多选）",
+          "options": [
+            "计算注意力得分矩阵 QK^T 的时间复杂度为 O(N² · D)，随序列长度 N 呈二次方增长",
+            "存储完整注意力权重矩阵的空间复杂度为 O(N²)，在 N=128k 时单头仅注意力权重的 FP16 显存占用就高达数十 GB 极易触发 OOM",
+            "由于 QK^T 的瓶颈主要源自序列长度 N，在 N≫D 的场景下 Feed-Forward Network 层的显存占用会显著超过 Self-Attention 层",
+            "FlashAttention 等算子融合技术的核心思路是利用 Tile 划分在 GPU SRAM 中分块计算 Softmax，将 HBM 的中间矩阵显存占用从 O(N²) 降低至 O(N)"
+          ]
+        }
+      },
+      {
+        "id": "long-context-attn-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "128,000 长，单头数十 GB。算这笔资源，下列哪些判断成立？",
+        "options": [
+          "得分矩阵时间 O(N²·D)，二次方涨",
+          "完整矩阵空间 O(N²)，128k FP16 数十 GB 触 OOM",
+          "N≫D 瓶颈在序列，FFN 显存超 Attention",
+          "SRAM 分块 Softmax，HBM 中间矩阵降 O(N)"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从数十 GB 算时间与反超环节",
+          "reasoningGoal": "先算资源的环节；再逐项验证各判断；并排除「大致」等不成立描述。"
+        },
+        "generatedAt": 1788932909095,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1a39720d",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-3545e4bf",
+        "sourceSnapshot": {
+          "id": "long-context-attn-01",
+          "topic": "self-attention",
+          "subtopic": "long-context-bottleneck",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "long-context",
+            "flash-attention",
+            "oom",
+            "memory-bottleneck"
+          ],
+          "question": "将 Standard Full Self-Attention 应用于超长文本处理（如 N=128,000）时需要评估资源瓶颈。设 N 为序列长度，D 为隐藏维度（D≪N），Batch Size=1，不使用 KV Cache。下列关于资源消耗的计算与判断哪些是正确的？（多选）",
+          "options": [
+            "计算注意力得分矩阵 QK^T 的时间复杂度为 O(N² · D)，随序列长度 N 呈二次方增长",
+            "存储完整注意力权重矩阵的空间复杂度为 O(N²)，在 N=128k 时单头仅注意力权重的 FP16 显存占用就高达数十 GB 极易触发 OOM",
+            "由于 QK^T 的瓶颈主要源自序列长度 N，在 N≫D 的场景下 Feed-Forward Network 层的显存占用会显著超过 Self-Attention 层",
+            "FlashAttention 等算子融合技术的核心思路是利用 Tile 划分在 GPU SRAM 中分块计算 Softmax，将 HBM 的中间矩阵显存占用从 O(N²) 降低至 O(N)"
+          ]
+        }
+      }
+    ],
+    "scale-factor-debug": [
+      {
+        "id": "scale-factor-debug__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "√d_k 漏了训出啥毛病？",
+        "options": [
+          "方差随 d_k 涨，Softmax 饱和梯度没",
+          "分布近 One-Hot，聚焦少数表征降",
+          "点积极值指数运算必溢出下溢",
+          "并行丧失退逐字串行求解全程"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从漏缩放定饱和与溢出环节",
+          "reasoningGoal": "先定毛病的环节；再逐项验证各判断；并排除「退串行」等不成立描述。"
+        },
+        "generatedAt": 1788932909095,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-045889d5",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-23f748e5",
+        "sourceSnapshot": {
+          "id": "scale-factor-debug",
+          "topic": "self-attention",
+          "subtopic": "scaling-factor-omission",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "scaled-dot-product",
+            "softmax-saturation",
+            "gradient-vanishing",
+            "debugging"
+          ],
+          "question": "在计算 Self-Attention 权重时通常会将 QKᵀ 除以 √d_k。当 d_k 很大时若遗漏了该缩放因子，会导致模型训练出现哪些典型问题？（多选）",
+          "options": [
+            "QKᵀ 的点积方差随 d_k 线性增大，导致数值送入 Softmax 后进入极小梯度的饱和区，引发梯度消失",
+            "Softmax 输出的概率分布过于趋近于极端的高峰（接近 One-Hot），注意力集中在极少数 Token 上，降低模型表征能力",
+            "点积极值过大容易造成指数运算中的浮点数溢出（Overflow）或下溢（Underflow）",
+            "导致 Attention 机制失去并行计算能力，反向传播必须退化为逐字串行求解"
+          ]
+        }
+      },
+      {
+        "id": "scale-factor-debug__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "缩放因子失踪。查这次典型，下列哪些判断成立？",
+        "options": [
+          "点积方差线性涨，饱和区梯度消失",
+          "高峰极端集中少数 Token，表征降",
+          "指数运算必溢出下溢频发",
+          "失并行反向退化逐字串行求解"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从失踪查线性与频发环节",
+          "reasoningGoal": "先查典型的环节；再逐项验证各判断；并排除「并行丢」等不成立描述。"
+        },
+        "generatedAt": 1788932909095,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-045889d5",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-3e0135c5",
+        "sourceSnapshot": {
+          "id": "scale-factor-debug",
+          "topic": "self-attention",
+          "subtopic": "scaling-factor-omission",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "scaled-dot-product",
+            "softmax-saturation",
+            "gradient-vanishing",
+            "debugging"
+          ],
+          "question": "在计算 Self-Attention 权重时通常会将 QKᵀ 除以 √d_k。当 d_k 很大时若遗漏了该缩放因子，会导致模型训练出现哪些典型问题？（多选）",
+          "options": [
+            "QKᵀ 的点积方差随 d_k 线性增大，导致数值送入 Softmax 后进入极小梯度的饱和区，引发梯度消失",
+            "Softmax 输出的概率分布过于趋近于极端的高峰（接近 One-Hot），注意力集中在极少数 Token 上，降低模型表征能力",
+            "点积极值过大容易造成指数运算中的浮点数溢出（Overflow）或下溢（Underflow）",
+            "导致 Attention 机制失去并行计算能力，反向传播必须退化为逐字串行求解"
+          ]
+        }
+      }
+    ],
+    "mha-subspace-tradeoff": [
+      {
+        "id": "mha-subspace-tradeoff__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "d_model 切 h 子空间，赚啥？",
+        "options": [
+          "多子空间并看，语法语义多样捕",
+          "算量参量持平，表达力升",
+          "Head 拆分显存成倍降",
+          "h 拆分前向 FLOPs 成倍降"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从切分定并看与持平环节",
+          "reasoningGoal": "先定赚的环节；再逐项验证各判断；并排除「成倍降」等不成立描述。"
+        },
+        "generatedAt": 1788932909095,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4c399642",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-e0f5b480",
+        "sourceSnapshot": {
+          "id": "mha-subspace-tradeoff",
+          "topic": "attention",
+          "subtopic": "subspace-projection",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-head-attention",
+            "subspace",
+            "complexity-parity"
+          ],
+          "question": "Transformer 将 d_model 维向量投影到 h 个子空间分别计算 Attention 再拼接。相比于直接在原维度上计算单头 Attention，MHA 的主要优势与工程特性包括哪些？（多选）",
+          "options": [
+            "允许模型同时在不同位置的多个独立表征子空间关注信息，捕捉多样化的语法与语义关系",
+            "在维持总计算复杂度与参数量基本一致的前提下提升了模型表达能力",
+            "由于拆分为多个 Head，反向传播时不同 Head 的中间状态显存占用成倍降低",
+            "拆分为 h 个 Head 能成倍降低模型前向传播所需的总浮点计算量"
+          ]
+        }
+      },
+      {
+        "id": "mha-subspace-tradeoff__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "原维单头改多头。看这次投影，下列哪些判断成立？",
+        "options": [
+          "独立子空间多位置关注，多样关系捕",
+          "复杂度参量一致，表达能力提",
+          "拆多 Head 反向中间态显存成倍降",
+          "前向浮点总量随 h 缩"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从改头看关注与减半环节",
+          "reasoningGoal": "先看投影的环节；再逐项验证各判断；并排除「减半」「随缩」等不成立描述。"
+        },
+        "generatedAt": 1788932909095,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4c399642",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-208e33a1",
+        "sourceSnapshot": {
+          "id": "mha-subspace-tradeoff",
+          "topic": "attention",
+          "subtopic": "subspace-projection",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-head-attention",
+            "subspace",
+            "complexity-parity"
+          ],
+          "question": "Transformer 将 d_model 维向量投影到 h 个子空间分别计算 Attention 再拼接。相比于直接在原维度上计算单头 Attention，MHA 的主要优势与工程特性包括哪些？（多选）",
+          "options": [
+            "允许模型同时在不同位置的多个独立表征子空间关注信息，捕捉多样化的语法与语义关系",
+            "在维持总计算复杂度与参数量基本一致的前提下提升了模型表达能力",
+            "由于拆分为多个 Head，反向传播时不同 Head 的中间状态显存占用成倍降低",
+            "拆分为 h 个 Head 能成倍降低模型前向传播所需的总浮点计算量"
+          ]
+        }
+      }
+    ],
+    "mask-parallel-training": [
+      {
+        "id": "mask-parallel-training__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "Decoder 训必须引入因果掩码，为啥能并行？",
+        "options": [
+          "Softmax 前未来 Score 置 −∞",
+          "Softmax 后未来权 0，防偷看",
+          "训免逐字自回归循环，全序并行输入高效训",
+          "掩码为屏蔽 Padding 对齐"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从并行定置零与输入环节",
+          "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「屏蔽对齐」等不成立描述。"
+        },
+        "generatedAt": 1788932909096,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fa2eae83",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-802b81ab",
+        "sourceSnapshot": {
+          "id": "mask-parallel-training",
+          "topic": "self-attention",
+          "subtopic": "causal-mask-parallelism",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "causal-mask",
+            "teacher-forcing",
+            "parallel-training"
+          ],
+          "question": "在 Transformer Decoder 的 Self-Attention 层中，训练阶段必须引入因果掩码（Causal Mask）。关于该机制的工作原理及其工程作用，下列说法正确的有哪些？（多选）",
+          "options": [
+            "在计算注意力 Softmax 前将掩码矩阵中未来 Token 位置的 Score 设置为 -∞",
+            "经过 Softmax 运算后未来位置的注意力权重精确变为 0，防止模型在预测第 i 个 Token 时偷看后续 Token",
+            "使得 Decoder 在训练阶段无需像推理时那样逐字自回归循环生成，而是可以一次性并行输入全序列进行高效训练（Teacher Forcing）",
+            "该因果掩码的主要目的是屏蔽 Padding Token，以保证 Batch 内不同长度序列的计算对齐"
+          ]
+        }
+      },
+      {
+        "id": "mask-parallel-training__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "训练必须引入因果掩码一遮挡。看这次并行，下列哪些判断成立？",
+        "options": [
+          "掩码矩阵未来位置 -∞ 填",
+          "预测 i 时后续零权重，偷看防",
+          "免自回归循环，全序并行高效训",
+          "因果掩码主为屏蔽 Padding，保 Batch 对齐"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从遮挡看填充与对齐环节",
+          "reasoningGoal": "先看并行的环节；再逐项验证各判断；并排除「靠掩码」等不成立描述。"
+        },
+        "generatedAt": 1788932909096,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fa2eae83",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-1d860b54",
+        "sourceSnapshot": {
+          "id": "mask-parallel-training",
+          "topic": "self-attention",
+          "subtopic": "causal-mask-parallelism",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "causal-mask",
+            "teacher-forcing",
+            "parallel-training"
+          ],
+          "question": "在 Transformer Decoder 的 Self-Attention 层中，训练阶段必须引入因果掩码（Causal Mask）。关于该机制的工作原理及其工程作用，下列说法正确的有哪些？（多选）",
+          "options": [
+            "在计算注意力 Softmax 前将掩码矩阵中未来 Token 位置的 Score 设置为 -∞",
+            "经过 Softmax 运算后未来位置的注意力权重精确变为 0，防止模型在预测第 i 个 Token 时偷看后续 Token",
+            "使得 Decoder 在训练阶段无需像推理时那样逐字自回归循环生成，而是可以一次性并行输入全序列进行高效训练（Teacher Forcing）",
+            "该因果掩码的主要目的是屏蔽 Padding Token，以保证 Batch 内不同长度序列的计算对齐"
+          ]
+        }
+      }
+    ],
+    "ai-moe-tradeoff-001": [
+      {
+        "id": "ai-moe-tradeoff-001__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "MoE 胖子低耗，代价？",
+        "options": [
+          "top-k 路由激活，总参容单 token 算",
+          "全员驻显存，均衡路由并行通信贵",
+          "全压共享 FFN，总参缩免冗余",
+          "全专家平均输出，等价稠密平滑噪"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从胖子定激活与驻存环节",
+          "reasoningGoal": "先定代价的环节；再逐项验证各判断；并排除「压共享」「全平均」等不成立描述。"
+        },
+        "generatedAt": 1788932909096,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c134850f",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-452f01c4",
+        "sourceSnapshot": {
+          "id": "ai-moe-tradeoff-001",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "architecture",
+            "scalability"
+          ],
+          "question": "MoE 模型为什么可以拥有很大的总参数量，同时保持相对较低的每 token 计算量？它会引入哪些工程复杂度？",
+          "options": [
+            "每个token只路由到top-k专家计算，总参数决定容量、激活参数决定每token的FLOPs",
+            "代价是全部专家仍须驻留显存，并带来负载均衡、路由训练不稳与专家并行通信成本",
+            "所有专家压缩进一个共享FFN，总参随之缩小，共享权重避免了冗余存储与重复计算",
+            "每个token经过全部专家再平均输出，等价于稠密最优利用，还能平滑路由噪声"
+          ]
+        }
+      },
+      {
+        "id": "ai-moe-tradeoff-001__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "总参大算量小。称这次买卖，下列哪些判断成立？",
+        "options": [
+          "容量看总参，FLOPs 看激活参",
+          "负载均衡路由不稳，并行通信成本",
+          "共享 FFN 缩总参，存储计算双省",
+          "平均输出等价稠密，噪声平滑"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从买卖称容量与平均环节",
+          "reasoningGoal": "先称买卖的环节；再逐项验证各判断；并排除「双省」「平滑」等不成立描述。"
+        },
+        "generatedAt": 1788932909096,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c134850f",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-a283a5e9",
+        "sourceSnapshot": {
+          "id": "ai-moe-tradeoff-001",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "architecture",
+            "scalability"
+          ],
+          "question": "MoE 模型为什么可以拥有很大的总参数量，同时保持相对较低的每 token 计算量？它会引入哪些工程复杂度？",
+          "options": [
+            "每个token只路由到top-k专家计算，总参数决定容量、激活参数决定每token的FLOPs",
+            "代价是全部专家仍须驻留显存，并带来负载均衡、路由训练不稳与专家并行通信成本",
+            "所有专家压缩进一个共享FFN，总参随之缩小，共享权重避免了冗余存储与重复计算",
+            "每个token经过全部专家再平均输出，等价于稠密最优利用，还能平滑路由噪声"
+          ]
+        }
+      }
+    ],
+    "gqa-swa-01": [
+      {
+        "id": "gqa-swa-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "KV 肥了端侧跑不动。GQA 咋瘦？",
+        "options": [
+          "GQA 多 Query 头共享 KV 头，存传显存带宽双降",
+          "长文生成 KV 显存线性涨，GQA 不改关系降斜率",
+          "GQA 压权重 16-bit 转 4-bit",
+          "端侧 GQA 叠滑窗跨层共享，增长上限再压"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从肥约定共享与叠加环节",
+          "reasoningGoal": "先定瘦法 的环节；再逐项验证各判断；并排除「压权重」等不成立描述。"
+        },
+        "generatedAt": 1788932909096,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b97379b9",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-269d4de8",
+        "sourceSnapshot": {
+          "id": "gqa-swa-01",
+          "topic": "gqa",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "gqa",
+            "kv-cache",
+            "swa",
+            "memory-bandwidth"
+          ],
+          "question": "在 Transformer Decoder 架构大语言模型自回归推理（Generation 阶段）中，KV Cache 的内存占用常成为端侧或高并发场景下的主要瓶颈。关于 Grouped-Query Attention (GQA) 与传统 Multi-Head Attention (MHA) 在改善该瓶颈上的机制与权衡，下列说法正确的有？（多选）",
+          "options": [
+            "GQA 通过让多个 Query 头共享同一组 Key-Value 头，直接降低了存储与传输 KV Cache 所需的显存占用与内存带宽需求",
+            "在长上下文生成场景下，KV Cache 占用的显存随上下文长度呈线性增长，GQA 能够在不改变线性增长关系的前提下显著降低增长斜率",
+            "GQA 主要通过将模型静态权重参数（Weights）从 16-bit 浮点数压缩为 4-bit 整数来降低运行显存",
+            "在端侧硬件受限场景下，可将 GQA 与滑动窗口注意力（Sliding Window Attention）或跨层 KV 共享（Layer Sharing）叠加使用，进一步控制 KV Cache 增长上限"
+          ]
+        }
+      },
+      {
+        "id": "gqa-swa-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "KV 随文胀。看这次共享，下列哪些判断成立？",
+        "options": [
+          "Query 头共享 KV 头，带宽显存双省",
+          "线性关系不变，增长斜率显著降",
+          "静态权重 16 转 4-bit 压显存",
+          "端侧 GQA 叠滑窗跨层共享，增长上限再压"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从随胀看头数与锁死环节",
+          "reasoningGoal": "先看共享的环节；再逐项验证各判断；并排除「转压」等不成立描述。"
+        },
+        "generatedAt": 1788932909096,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b97379b9",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-06cb3245",
+        "sourceSnapshot": {
+          "id": "gqa-swa-01",
+          "topic": "gqa",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "gqa",
+            "kv-cache",
+            "swa",
+            "memory-bandwidth"
+          ],
+          "question": "在 Transformer Decoder 架构大语言模型自回归推理（Generation 阶段）中，KV Cache 的内存占用常成为端侧或高并发场景下的主要瓶颈。关于 Grouped-Query Attention (GQA) 与传统 Multi-Head Attention (MHA) 在改善该瓶颈上的机制与权衡，下列说法正确的有？（多选）",
+          "options": [
+            "GQA 通过让多个 Query 头共享同一组 Key-Value 头，直接降低了存储与传输 KV Cache 所需的显存占用与内存带宽需求",
+            "在长上下文生成场景下，KV Cache 占用的显存随上下文长度呈线性增长，GQA 能够在不改变线性增长关系的前提下显著降低增长斜率",
+            "GQA 主要通过将模型静态权重参数（Weights）从 16-bit 浮点数压缩为 4-bit 整数来降低运行显存",
+            "在端侧硬件受限场景下，可将 GQA 与滑动窗口注意力（Sliding Window Attention）或跨层 KV 共享（Layer Sharing）叠加使用，进一步控制 KV Cache 增长上限"
+          ]
+        }
+      }
+    ],
+    "llm-hybrid-02": [
+      {
+        "id": "llm-hybrid-02__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "百万 Token 又要又要。混合咋兼？",
+        "options": [
+          "标准 Attention 算量二次方，KV 内存随文显著升",
+          "Mamba 压定态，线性算常数存",
+          "纯 Mamba 干草堆检索通常强于纯 Transformer",
+          "Mamba 降绝大 Token 开销，少量 Attention 补短板"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从又要定二次与定态环节",
+          "reasoningGoal": "先定混合的环节；再逐项验证各判断；并排除「纯胜」等不成立描述。"
+        },
+        "generatedAt": 1788932909097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-25a0eb25",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-257fd1a5",
+        "sourceSnapshot": {
+          "id": "llm-hybrid-02",
+          "topic": "hybrid-attention",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "hybrid-architecture",
+            "ssm",
+            "mamba",
+            "attention"
+          ],
+          "question": "在处理超长上下文（如百万级 Token）时，标准 Transformer 架构与状态空间模型（SSM，如 Mamba）各有优劣。为了兼顾长上下文处理效率与精准细节检索能力，业界提出了将大部分 Attention 层替换为 Mamba 层、同时保留少量 Attention 层的混合架构。以下关于该混合架构的工程权衡与特性的说法，正确的有？（多选）",
+          "options": [
+            "标准 Attention 的计算复杂度与序列长度呈二次方关系，且推断阶段 KV Cache 内存占用随上下文增加而显著上升",
+            "Mamba 将历史序列压缩为固定大小的隐状态，计算复杂度与序列长度呈线性关系，推断阶段内存占用为常数级别",
+            "纯 Mamba 模型在长文本精准细节检索（Needle in a Haystack）能力上通常强于纯 Transformer 模型",
+            "混合架构通过 Mamba 层降低绝大部分 Token 的处理与存储开销，同时利用少量 Attention 层弥补 Mamba 在精准信息检索方面的短板"
+          ]
+        }
+      },
+      {
+        "id": "llm-hybrid-02__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "二次方吃不消，检索不能丢。定这次混合，下列哪些判断成立？",
+        "options": [
+          "二次方算量，KV 内存显著上升",
+          "固定隐状态压缩，线性常数双优",
+          "纯 Mamba 长文检索强于纯 Transformer",
+          "Mamba 降绝大部开销，少量 Attention 补检索短板"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从吃不消定算量与短板环节",
+          "reasoningGoal": "先定混合的环节；再逐项验证各判断；并排除「胜」等不成立描述。"
+        },
+        "generatedAt": 1788932909097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-25a0eb25",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-a161fce0",
+        "sourceSnapshot": {
+          "id": "llm-hybrid-02",
+          "topic": "hybrid-attention",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "hybrid-architecture",
+            "ssm",
+            "mamba",
+            "attention"
+          ],
+          "question": "在处理超长上下文（如百万级 Token）时，标准 Transformer 架构与状态空间模型（SSM，如 Mamba）各有优劣。为了兼顾长上下文处理效率与精准细节检索能力，业界提出了将大部分 Attention 层替换为 Mamba 层、同时保留少量 Attention 层的混合架构。以下关于该混合架构的工程权衡与特性的说法，正确的有？（多选）",
+          "options": [
+            "标准 Attention 的计算复杂度与序列长度呈二次方关系，且推断阶段 KV Cache 内存占用随上下文增加而显著上升",
+            "Mamba 将历史序列压缩为固定大小的隐状态，计算复杂度与序列长度呈线性关系，推断阶段内存占用为常数级别",
+            "纯 Mamba 模型在长文本精准细节检索（Needle in a Haystack）能力上通常强于纯 Transformer 模型",
+            "混合架构通过 Mamba 层降低绝大部分 Token 的处理与存储开销，同时利用少量 Attention 层弥补 Mamba 在精准信息检索方面的短板"
+          ]
+        }
+      }
+    ],
+    "llm-moe-04": [
+      {
+        "id": "llm-moe-04__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "MoE 扩容代价？",
+        "options": [
+          "门控路由动态激活部分专家",
+          "单 Token 激活远小总量，低算高容",
+          "MoE 总显存少，单卡受限胜 Dense",
+          "专家节点均衡定利用通信，关键挑战"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从扩容定激活与均衡环节",
+          "reasoningGoal": "先定代价的环节；再逐项验证各判断；并排除「显存降」等不成立描述。"
+        },
+        "generatedAt": 1788932909097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-62c99c62",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-0fb42e8c",
+        "sourceSnapshot": {
+          "id": "llm-moe-04",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "routing",
+            "gating",
+            "active-parameters"
+          ],
+          "question": "在大模型架构设计中，混合专家（Mixture of Experts, MoE）架构被广泛用于扩展模型容量。以下关于 MoE 架构运行机制及工程特性的说法，正确的有？（多选）",
+          "options": [
+            "MoE 架构通过门控路由（Routing/Gating）机制，为每个输入的 Token 动态选择并激活一部分专家网络（Experts）",
+            "MoE 能够以远低于总参数量的单 Token 激活参数量（Active Parameters）运行，从而在保持低计算开销的同时提高模型的总体容量",
+            "MoE 架构能够减少模型的总显存占用，因此比相同总参数量的 Dense 模型更适合部署在显存受限的单卡设备上",
+            "MoE 在分布式训练与推理时，不同专家节点之间的负载均衡（Load Balancing）是影响硬件利用率和通信开销的关键工程挑战"
+          ]
+        }
+      },
+      {
+        "id": "llm-moe-04__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "专家多了麻烦多。看这次扩容，下列哪些判断成立？",
+        "options": [
+          "门控路由逐 Token 动态激活部分专家",
+          "激活远低总量，低开销高容量 Active 参数",
+          "MoE 总显存少，单卡受限部署胜 Dense",
+          "专家节点负载均衡定利用率通信开销"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从麻烦多看选人与不及环节",
+          "reasoningGoal": "先看扩容的环节；再逐项验证各判断；并排除「不及」等不成立描述。"
+        },
+        "generatedAt": 1788932909097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-62c99c62",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-8cd64708",
+        "sourceSnapshot": {
+          "id": "llm-moe-04",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "routing",
+            "gating",
+            "active-parameters"
+          ],
+          "question": "在大模型架构设计中，混合专家（Mixture of Experts, MoE）架构被广泛用于扩展模型容量。以下关于 MoE 架构运行机制及工程特性的说法，正确的有？（多选）",
+          "options": [
+            "MoE 架构通过门控路由（Routing/Gating）机制，为每个输入的 Token 动态选择并激活一部分专家网络（Experts）",
+            "MoE 能够以远低于总参数量的单 Token 激活参数量（Active Parameters）运行，从而在保持低计算开销的同时提高模型的总体容量",
+            "MoE 架构能够减少模型的总显存占用，因此比相同总参数量的 Dense 模型更适合部署在显存受限的单卡设备上",
+            "MoE 在分布式训练与推理时，不同专家节点之间的负载均衡（Load Balancing）是影响硬件利用率和通信开销的关键工程挑战"
+          ]
+        }
+      }
+    ],
+    "rope-vs-sin-01": [
+      {
+        "id": "rope-vs-sin-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "绝对码转圈码，差在哪？",
+        "options": [
+          "位置映射频弦值直加，三角线性表位移",
+          "绝对坐标超长未见，外推性能差",
+          "QK 二维子空间旋转，点积含相对位置差",
+          "两家皆权重矩阵叠相对衰减偏置注入"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从转码定直加与旋转环节",
+          "reasoningGoal": "先定差异的环节；再逐项验证各判断；并排除「皆叠加」等不成立描述。"
+        },
+        "generatedAt": 1788932909097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d1ff1823",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-da2a96d7",
+        "sourceSnapshot": {
+          "id": "rope-vs-sin-01",
+          "topic": "positional-encoding",
+          "subtopic": "sinusoidal-vs-rope",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "positional-encoding",
+            "sinusoidal",
+            "rope",
+            "extrapolation"
+          ],
+          "question": "Transformer 论文中的绝对正弦位置编码与大模型广泛应用的旋转位置编码（RoPE）在原理与长文本外推能力上有显著差异。下列说法正确的有？（多选）",
+          "options": [
+            "绝对正弦位置编码通过将位置映射为不同频率的正弦/余弦函数值直接加到 Token Embedding 上，利用三角公式可使 PE(pos+k) 表示为 PE(pos) 的线性变换",
+            "绝对位置编码直接注入绝对坐标，当推理阶段的序列长度超出训练最大长度时，模型对未见过的位置编码无法很好泛化，长文本外推性能较差",
+            "RoPE 通过将 Query 和 Key 向量在二维子空间内旋转特定角度，使得 Q_m 与 K_n 的点积内积自然包含相对位置差 (m-n) 的信息",
+            "绝对正弦位置编码与 RoPE 均通过在注意力 Softmax 权重矩阵上直接叠加一个与相对距离相关的衰减偏置来实现位置信息的注入"
+          ]
+        }
+      },
+      {
+        "id": "rope-vs-sin-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "超长外推拉胯。比这次编码，下列哪些判断成立？",
+        "options": [
+          "不同频率弦值加 Embedding，线性变换表位移",
+          "超训长未见坐标，泛化外推性能差",
+          "子空间旋特定角度，点积含相对差",
+          "权重矩阵叠相对衰减偏置，两家相同"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从拉胯比频率与衰减环节",
+          "reasoningGoal": "先比编码的环节；再逐项验证各判断；并排除「两家同」等不成立描述。"
+        },
+        "generatedAt": 1788932909097,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d1ff1823",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-fa4f5b55",
+        "sourceSnapshot": {
+          "id": "rope-vs-sin-01",
+          "topic": "positional-encoding",
+          "subtopic": "sinusoidal-vs-rope",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "positional-encoding",
+            "sinusoidal",
+            "rope",
+            "extrapolation"
+          ],
+          "question": "Transformer 论文中的绝对正弦位置编码与大模型广泛应用的旋转位置编码（RoPE）在原理与长文本外推能力上有显著差异。下列说法正确的有？（多选）",
+          "options": [
+            "绝对正弦位置编码通过将位置映射为不同频率的正弦/余弦函数值直接加到 Token Embedding 上，利用三角公式可使 PE(pos+k) 表示为 PE(pos) 的线性变换",
+            "绝对位置编码直接注入绝对坐标，当推理阶段的序列长度超出训练最大长度时，模型对未见过的位置编码无法很好泛化，长文本外推性能较差",
+            "RoPE 通过将 Query 和 Key 向量在二维子空间内旋转特定角度，使得 Q_m 与 K_n 的点积内积自然包含相对位置差 (m-n) 的信息",
+            "绝对正弦位置编码与 RoPE 均通过在注意力 Softmax 权重矩阵上直接叠加一个与相对距离相关的衰减偏置来实现位置信息的注入"
+          ]
+        }
+      }
+    ],
+    "inference-capacity-num-ctx-kvcache-01": [
+      {
+        "id": "inference-capacity-num-ctx-kvcache-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "num_ctx 4096 扩 32768，代价？（请选择三个）",
+        "options": [
+          "Prompt 长 KV 线性二次胀，刚好变 OOM",
+          "首字延迟显著增，Prefill 并行算全 Prompt",
+          "权重随 num_ctx 等比膨胀",
+          "装不下换出 Offload 到内存盘，续写吞吐拉胯"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从扩窗定胀与崩环节",
+          "reasoningGoal": "先定代价的环节；再逐项验证各判断；并排除「权重胀」等不成立描述。"
+        },
+        "generatedAt": 1788932909098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bad5b270",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-4fd624b1",
+        "sourceSnapshot": {
+          "id": "inference-capacity-num-ctx-kvcache-01",
+          "topic": "inference-capacity",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "num_ctx",
+            "kv-cache",
+            "context-window",
+            "oom",
+            "ttft",
+            "offload"
+          ],
+          "question": "在本地部署推理引擎（如 Ollama / llama.cpp）时，开发者常通过配置文件调整 num_ctx 参数（例如从 4096 扩大至 32768）来支持长文本或全仓库代码分析。在模型权重不变的情况下，大幅扩展上下文窗口会带来哪些工程权衡（Trade-offs）？（请选择以下 3 个正确选项）",
+          "options": [
+            "随着 Prompt 序列长度增加，KV Cache 占用的显存呈线性（或二次方）增长，可能导致原本刚好的显存瞬间发生 OOM（Out of Memory）。",
+            "首 Token 延迟（Time to First Token, TTFT）显著增加，因为预填充阶段（Prefill Phase）需要一次性并行处理并计算全部输入 Prompt 的注意力矩阵。",
+            "模型静态权重（Model Weight Footprint）在显存中的物理尺寸会随着 num_ctx 的调大而等比例线性膨胀。",
+            "当显存无法完全装下膨胀的 KV Cache 时，多余的缓存会被换出（Offload）到系统内存或磁盘，严重拉低后续续写 Token 的生成吞吐量。"
+          ]
+        }
+      },
+      {
+        "id": "inference-capacity-num-ctx-kvcache-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "num_ctx 4096 扩 32768，窗口一扩显存爆。权这次扩展，下列哪些判断成立？（请选择三个）",
+        "options": [
+          "序列长 KV 显存线性二次胀，刚好瞬间 OOM",
+          "TTFT 显著增，Prefill 一次性并行算全 Prompt",
+          "Model Weight 物理尺寸随 num_ctx 调大等比胀",
+          "多余缓存换出到内存盘，续写吞吐拉低"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从爆显存权胀与胯环节",
+          "reasoningGoal": "先权扩展的环节；再逐项验证各判断；并排除「调大胀」等不成立描述。"
+        },
+        "generatedAt": 1788932909098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bad5b270",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-0f2eecef",
+        "sourceSnapshot": {
+          "id": "inference-capacity-num-ctx-kvcache-01",
+          "topic": "inference-capacity",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "num_ctx",
+            "kv-cache",
+            "context-window",
+            "oom",
+            "ttft",
+            "offload"
+          ],
+          "question": "在本地部署推理引擎（如 Ollama / llama.cpp）时，开发者常通过配置文件调整 num_ctx 参数（例如从 4096 扩大至 32768）来支持长文本或全仓库代码分析。在模型权重不变的情况下，大幅扩展上下文窗口会带来哪些工程权衡（Trade-offs）？（请选择以下 3 个正确选项）",
+          "options": [
+            "随着 Prompt 序列长度增加，KV Cache 占用的显存呈线性（或二次方）增长，可能导致原本刚好的显存瞬间发生 OOM（Out of Memory）。",
+            "首 Token 延迟（Time to First Token, TTFT）显著增加，因为预填充阶段（Prefill Phase）需要一次性并行处理并计算全部输入 Prompt 的注意力矩阵。",
+            "模型静态权重（Model Weight Footprint）在显存中的物理尺寸会随着 num_ctx 的调大而等比例线性膨胀。",
+            "当显存无法完全装下膨胀的 KV Cache 时，多余的缓存会被换出（Offload）到系统内存或磁盘，严重拉低后续续写 Token 的生成吞吐量。"
+          ]
+        }
+      }
+    ],
+    "inference-apple-silicon-uma-01": [
+      {
+        "id": "inference-apple-silicon-uma-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "128GB 统一内存对 24GB 独显，本地跑谁赢？",
+        "options": [
+          "UMA 高带宽共享池，64GB 喂 GPU 低成本装 30B+",
+          "物理带宽 150~400 低于独显 1000+，同 7B 单用户吞吐低",
+          "PCIe 5.0 双向带宽持平显存控制器，溢出放内存显存速度影响忽略",
+          "CPU GPU 共享内存，层间免 PCIe 拷贝"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从对决的核心定池与带宽环节",
+          "reasoningGoal": "先定胜负的环节；再逐项验证各判断；并排除「同带宽」等不成立描述。"
+        },
+        "generatedAt": 1788932909098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-470c2e3d",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-047cd0a5",
+        "sourceSnapshot": {
+          "id": "inference-apple-silicon-uma-01",
+          "topic": "inference-optimization",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "apple-silicon",
+            "unified-memory",
+            "pcie",
+            "bandwidth",
+            "tradeoff"
+          ],
+          "question": "在部署本地 SLM/LLM 时，工程团队常对比 Apple Silicon（如 M3/M4 系列，配备最高 128GB Unified Memory）与传统 PC 独立显卡（如单张 24GB VRAM PCIe GPU）。关于这两种硬件体系在 LLM 本地推理中的架构差异与 Trade-offs，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "Apple Silicon 采用统一内存架构（UMA），CPU 与 GPU 共享同一个高带宽内存池，允许直接分配 64GB 以上内存给 GPU 核心，能以较低成本装载 30B+ 级别的模型。",
+            "Apple Silicon 统一内存的物理带宽（通常为 150 GB/s – 400 GB/s）一般低于高端独显显存带宽（如 1000+ GB/s），因此在运行相同的 7B 小模型时，前者的单用户 Token 生成吞吐量（Tokens/s）通常低于高端独显。",
+            "传统 PCIe 独显通过 PCIe 总线连接系统主存，即使模型权重超出显存容量，系统内存（RAM）也能提供与 VRAM 相同的带宽吞吐，因为 PCIe 5.0 的双向带宽已经和显存控制器持平，不存在额外拷贝代价，所以在 PCIe 独显上跑大模型时，把溢出权重放在系统内存里与放在显存里对 Token 生成速度的影响完全可以忽略不计",
+            "Apple Silicon 架构下因为 CPU 与 GPU 物理共享内存，自回归生成阶段层间交互完全不需要跨 PCIe 总线的显存-主存数据拷贝。"
+          ]
+        }
+      },
+      {
+        "id": "inference-apple-silicon-uma-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "M3 128GB 对 24GB 独显。选这次硬件，下列哪些判断成立？",
+        "options": [
+          "统一内存 CPU GPU 共享，64GB 以上直分 GPU",
+          "统一内存物理带宽 150~400 GB/s 输独显 1000+，同 7B 单用户吞吐独显胜",
+          "PCIe 总线连系统主存 RAM，5.0 双向带宽持平显存控制器，溢出无额外拷贝",
+          "自回归层间交互免跨总线拷贝"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从选硬件看池与拷环节",
+          "reasoningGoal": "先选硬件的环节；再逐项验证各判断；并排除「忽略」等不成立描述。"
+        },
+        "generatedAt": 1788932909098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-470c2e3d",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-b7dfe6c9",
+        "sourceSnapshot": {
+          "id": "inference-apple-silicon-uma-01",
+          "topic": "inference-optimization",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "apple-silicon",
+            "unified-memory",
+            "pcie",
+            "bandwidth",
+            "tradeoff"
+          ],
+          "question": "在部署本地 SLM/LLM 时，工程团队常对比 Apple Silicon（如 M3/M4 系列，配备最高 128GB Unified Memory）与传统 PC 独立显卡（如单张 24GB VRAM PCIe GPU）。关于这两种硬件体系在 LLM 本地推理中的架构差异与 Trade-offs，下列哪些说法是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "Apple Silicon 采用统一内存架构（UMA），CPU 与 GPU 共享同一个高带宽内存池，允许直接分配 64GB 以上内存给 GPU 核心，能以较低成本装载 30B+ 级别的模型。",
+            "Apple Silicon 统一内存的物理带宽（通常为 150 GB/s – 400 GB/s）一般低于高端独显显存带宽（如 1000+ GB/s），因此在运行相同的 7B 小模型时，前者的单用户 Token 生成吞吐量（Tokens/s）通常低于高端独显。",
+            "传统 PCIe 独显通过 PCIe 总线连接系统主存，即使模型权重超出显存容量，系统内存（RAM）也能提供与 VRAM 相同的带宽吞吐，因为 PCIe 5.0 的双向带宽已经和显存控制器持平，不存在额外拷贝代价，所以在 PCIe 独显上跑大模型时，把溢出权重放在系统内存里与放在显存里对 Token 生成速度的影响完全可以忽略不计",
+            "Apple Silicon 架构下因为 CPU 与 GPU 物理共享内存，自回归生成阶段层间交互完全不需要跨 PCIe 总线的显存-主存数据拷贝。"
+          ]
+        }
+      }
+    ],
+    "inference-deterministic-sampling-01": [
+      {
+        "id": "inference-deterministic-sampling-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "代码幻觉格式飘，咋压确定？",
+        "options": [
+          "temperature 近零 0.0/0.1，压高熵",
+          "temperature 1.5 加随机多样鲁棒",
+          "Top-P 缩小，高置信候选集",
+          "System 注严格约束，收窄概率空"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能从飘法定温度与约束环节",
+          "reasoningGoal": "先定压法的环节；再逐项验证各判断；并排除「1.5 鲁棒」等不成立描述。"
+        },
+        "generatedAt": 1788932909098,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a385f7f0",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-cb0619e0",
+        "sourceSnapshot": {
+          "id": "inference-deterministic-sampling-01",
+          "topic": "inference-modes",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "temperature",
+            "top-p",
+            "sampling",
+            "deterministic",
+            "system-prompt",
+            "codegen"
+          ],
+          "question": "某团队使用本地 Ollama 部署代码生成服务（如自动生成 C# DTO 或 SQL 查询）。测试发现模型输出的代码偶尔会出现幻觉 API 或不稳定的语法格式。为使模型输出尽可能精确、确定且可复现，工程团队应该如何配置推理参数与 System Prompt？（请选择以下 3 个正确选项）",
+          "options": [
+            "将采样温度参数（temperature）调低至近零值（例如 0.0 或 0.1），极大降低高熵非确定性 Token 的采样概率。",
+            "将采样温度参数（temperature）调高至 1.5，通过引入随机性来增加生成代码的多样性与鲁棒性。",
+            "结合调小 Top-P（Nucleus Sampling）参数，将采样候选集限制在累积概率最高的高置信度 Token 范围内。",
+            "在 System Prompt 中注入严格的约束指令（如“严格输出合法 JSON/代码格式，不得包含任何 Markdown 解释文字”），收窄模型的输出概率空间。"
+          ]
+        }
+      },
+      {
+        "id": "inference-deterministic-sampling-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "DTO 生成抽风。锁这次输出，下列哪些判断成立？",
+        "options": [
+          "温度 0.0/0.1，非确定 Token 压住",
+          "温度调高至 1.5，随机性增多样鲁棒",
+          "Top-P 调小，累积高置信圈定",
+          "注严格约束禁 Markdown，纯 JSON 代码收窄空间"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从抽风锁温度与圈定环节",
+          "reasoningGoal": "先锁输出的环节；再逐项验证各判断；并排除「双涨」等不成立描述。"
+        },
+        "generatedAt": 1788932909099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a385f7f0",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-f648f133",
+        "sourceSnapshot": {
+          "id": "inference-deterministic-sampling-01",
+          "topic": "inference-modes",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "temperature",
+            "top-p",
+            "sampling",
+            "deterministic",
+            "system-prompt",
+            "codegen"
+          ],
+          "question": "某团队使用本地 Ollama 部署代码生成服务（如自动生成 C# DTO 或 SQL 查询）。测试发现模型输出的代码偶尔会出现幻觉 API 或不稳定的语法格式。为使模型输出尽可能精确、确定且可复现，工程团队应该如何配置推理参数与 System Prompt？（请选择以下 3 个正确选项）",
+          "options": [
+            "将采样温度参数（temperature）调低至近零值（例如 0.0 或 0.1），极大降低高熵非确定性 Token 的采样概率。",
+            "将采样温度参数（temperature）调高至 1.5，通过引入随机性来增加生成代码的多样性与鲁棒性。",
+            "结合调小 Top-P（Nucleus Sampling）参数，将采样候选集限制在累积概率最高的高置信度 Token 范围内。",
+            "在 System Prompt 中注入严格的约束指令（如“严格输出合法 JSON/代码格式，不得包含任何 Markdown 解释文字”），收窄模型的输出概率空间。"
+          ]
+        }
+      }
+    ],
+    "inference-prefill-decode-01": [
+      {
+        "id": "inference-prefill-decode-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "Prefill/Decode 两段体质异，瓶颈？（请选择所有正确项）",
+        "options": [
+          "Prefill 并行全 Prompt 算初始 KV，算密 TTFT 看 TFLOPS",
+          "上 Token 历史 KV 预测，带宽密吞吐限 VRAM",
+          "32K 代码 Prefill 计算量升，TTFT 拉长",
+          "并发请求拼大 Batch，算子强度升转 Compute"
+        ],
+        "angle": "fundamental",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从两段定算密与访密环节",
+          "reasoningGoal": "先定瓶颈的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788932909099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c705abde",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-c9517bda",
+        "sourceSnapshot": {
+          "id": "inference-prefill-decode-01",
+          "topic": "latency",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "prefill",
+            "decode",
+            "ttft",
+            "throughput",
+            "compute-bound",
+            "memory-bound",
+            "batch"
+          ],
+          "question": "在 LLM/SLM 自回归推理（Autoregressive Inference）过程中，推理引擎的工作被严格划分为预填充阶段（Prefill Phase）与生成阶段（Generation Phase / Decode Phase）。关于这两个阶段的物理特性与性能瓶颈，下列哪些说法是正确的？（请选择所有正确的选项）",
+          "options": [
+            "预填充阶段需要并行处理输入的全部 Prompt Tokens 并计算初始 KV Cache，属于计算密集型（Compute-bound）操作，首 Token 延迟（TTFT）主要由 GPU 计算峰值（TFLOPS）决定。",
+            "生成阶段每次仅输入上一个 Token 并结合历史 KV Cache 预测下一个 Token，属于内存带宽密集型（Memory-bound）操作，Token 生成吞吐量（Tokens/s）主要受限于 VRAM 读写带宽。",
+            "当输入 Prompt 序列极长（如 32K 长度的代码文件）时，预填充阶段的计算量显著上升，会导致首 Token 延迟（TTFT）明显拉长。",
+            "在 Decode 阶段，通过将多个并发请求拼成大 Batch 共同计算，可以提高 Operator 算子强度（Operational Intensity），将 Memory-bound 向 Compute-bound 转移，从而提升整体 GPU 利用率。"
+          ]
+        }
+      },
+      {
+        "id": "inference-prefill-decode-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "首字慢吞吐低各怪谁？（请选择所有正确项）",
+        "options": [
+          "并行处理全 Prompt Tokens 算 KV，算密 TTFT 定",
+          "仅输上 Token 历史 KV 预测，吞吐受限读写带宽",
+          "32K 长 Prompt 计算量升，首字延迟拉长",
+          "多请求拼大 Batch 提算子强度，转 Compute 提利用"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从各怪谁分算密与转环节",
+          "reasoningGoal": "先分责任的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788932909099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c705abde",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-c5faebb1",
+        "sourceSnapshot": {
+          "id": "inference-prefill-decode-01",
+          "topic": "latency",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "prefill",
+            "decode",
+            "ttft",
+            "throughput",
+            "compute-bound",
+            "memory-bound",
+            "batch"
+          ],
+          "question": "在 LLM/SLM 自回归推理（Autoregressive Inference）过程中，推理引擎的工作被严格划分为预填充阶段（Prefill Phase）与生成阶段（Generation Phase / Decode Phase）。关于这两个阶段的物理特性与性能瓶颈，下列哪些说法是正确的？（请选择所有正确的选项）",
+          "options": [
+            "预填充阶段需要并行处理输入的全部 Prompt Tokens 并计算初始 KV Cache，属于计算密集型（Compute-bound）操作，首 Token 延迟（TTFT）主要由 GPU 计算峰值（TFLOPS）决定。",
+            "生成阶段每次仅输入上一个 Token 并结合历史 KV Cache 预测下一个 Token，属于内存带宽密集型（Memory-bound）操作，Token 生成吞吐量（Tokens/s）主要受限于 VRAM 读写带宽。",
+            "当输入 Prompt 序列极长（如 32K 长度的代码文件）时，预填充阶段的计算量显著上升，会导致首 Token 延迟（TTFT）明显拉长。",
+            "在 Decode 阶段，通过将多个并发请求拼成大 Batch 共同计算，可以提高 Operator 算子强度（Operational Intensity），将 Memory-bound 向 Compute-bound 转移，从而提升整体 GPU 利用率。"
+          ]
+        }
+      }
+    ],
+    "quantization-precision-fp16-q8-q4-01": [
+      {
+        "id": "quantization-precision-fp16-q8-q4-01__surface-options__assessmentfresh24__0",
+        "kind": "surface-options",
+        "question": "16GB 卡装模三选一，事实是啥？（请选择两个）",
+        "options": [
+          "FP16 保原始精度最胀，2GB 每 B，16GB 跑不下 9B",
+          "Q4 比 Q8 省半显存，困惑度衰减微，消费级首选",
+          "Q8 剪枝丢 Attention 留 FFN",
+          "4-bit 上下文上限砍至 1/4 强制"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从三选一定保精与首选环节",
+          "reasoningGoal": "先定事实的环节；再逐项验证各判断；并排除「剪枝」「砍至」等不成立描述。"
+        },
+        "generatedAt": 1788932909099,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6756c220",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-39974ce1",
+        "sourceSnapshot": {
+          "id": "quantization-precision-fp16-q8-q4-01",
+          "topic": "quantization",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "fp16",
+            "q8-0",
+            "q4-km",
+            "quantization",
+            "precision",
+            "perplexity",
+            "tradeoff"
+          ],
+          "question": "在针对消费级显卡（例如 16GB VRAM）评估本地 SLM 模型部署方案时，团队需要在 FP16（半精度）、Q8_0（8-bit 量化）和 Q4_K_M（4-bit 中等量化）三种权重格式之间作抉择。下列对比分析中，哪些属于客观的技术事实？（请选择以下 2 个正确选项）",
+          "options": [
+            "FP16 保持了原始模型精度，但显存开销最大（约每 1B 参数需 2GB 显存），16GB 显存无法完整运行 9B 以上的 FP16 模型。",
+            "Q4_K_M 相比 Q8_0 可节省约 50% 的显存占用，且在主流代码生成与语法分析基准测试中，困惑度（Perplexity）衰减极小，是消费级硬件的工程折衷首选。",
+            "Q8_0 量化会对模型结构进行剪枝，直接丢弃 Transformer 的 Self-Attention 权重，仅保留 FFN 层。",
+            "选用 4-bit 量化后，模型的最大上下文窗口上限（Context Length Limit）也会被强制缩减为 FP16 模式下的 1/4。"
+          ]
+        }
+      },
+      {
+        "id": "quantization-precision-fp16-q8-q4-01__context-options__assessmentfresh24__1",
+        "kind": "context-options",
+        "question": "16GB VRAM 三格式。定这次抉择，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "每 1B 参数需 2GB 显存，16GB 跑不下 9B+ FP16 模型",
+          "Q4 省半显存困惑微衰，消费级折中首选",
+          "Q8 量化剪枝丢自注意力权重仅留 FFN",
+          "4-bit 上下文窗口限 1/4 强制缩减"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从抉择定爆与缩环节",
+          "reasoningGoal": "先定抉择的环节；再逐项验证各判断；并排除「留前馈」「限缩」等不成立描述。"
+        },
+        "generatedAt": 1788932909100,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6756c220",
+        "batch": "assessmentfresh24",
+        "model": "manual",
+        "contentHash": "fnv1a-007c2ee6",
+        "sourceSnapshot": {
+          "id": "quantization-precision-fp16-q8-q4-01",
+          "topic": "quantization",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "fp16",
+            "q8-0",
+            "q4-km",
+            "quantization",
+            "precision",
+            "perplexity",
+            "tradeoff"
+          ],
+          "question": "在针对消费级显卡（例如 16GB VRAM）评估本地 SLM 模型部署方案时，团队需要在 FP16（半精度）、Q8_0（8-bit 量化）和 Q4_K_M（4-bit 中等量化）三种权重格式之间作抉择。下列对比分析中，哪些属于客观的技术事实？（请选择以下 2 个正确选项）",
+          "options": [
+            "FP16 保持了原始模型精度，但显存开销最大（约每 1B 参数需 2GB 显存），16GB 显存无法完整运行 9B 以上的 FP16 模型。",
+            "Q4_K_M 相比 Q8_0 可节省约 50% 的显存占用，且在主流代码生成与语法分析基准测试中，困惑度（Perplexity）衰减极小，是消费级硬件的工程折衷首选。",
+            "Q8_0 量化会对模型结构进行剪枝，直接丢弃 Transformer 的 Self-Attention 权重，仅保留 FFN 层。",
+            "选用 4-bit 量化后，模型的最大上下文窗口上限（Context Length Limit）也会被强制缩减为 FP16 模式下的 1/4。"
+          ]
+        }
+      }
+    ]
+  }
+}
