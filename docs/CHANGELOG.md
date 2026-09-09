@@ -1,6 +1,66 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-09 · prompt1/prompt2 Node Contract 重做：Embedded Knowledge Node Index
+
+- 根因（用户确认）：v7 §0 用运行时占位符 `[AVAILABLE_KNOWLEDGE_NODES]` + 硬失败，但手动（Gemini in Chrome）流程没有任何自动注入方，必然 `{"error":"AVAILABLE_KNOWLEDGE_NODES not provided"}`。这是设计/工作流不兼容，不是偶发 bug。
+- 修复方向：把「Gemini 等待外部注入」改为「由仓库生成、随 Prompt 固化的 Embedded Knowledge Node Index」。
+- `docs/prompt_part1.md` §0 改为「节点索引已内嵌，无需任何外部注入」并**删除硬失败**；§1 把占位粘贴区替换为 `[EMBEDDED_KNOWLEDGE_NODES]...[/EMBEDDED_KNOWLEDGE_NODES]`（132 个 `id | name`，按 id 排序），保留 `needsNewNode` + `proposedNode` 兜底；`topic` 必须逐字等于某个内嵌节点 `id`。
+- `docs/prompt_part2.md` §0/§1 同步：去掉 `AVAILABLE_KNOWLEDGE_NODES` 引用与「清单缺失即 error」硬失败，改为校验 `topic` 是否来自 Part1 已内嵌索引，最终 id 存在性交 `convert`/`add-question`。
+- 新增 `scripts/refresh-prompt-node-index.ts` + npm `refresh:node-index`：从 `src/data/knowledge/*.json` 重新生成紧凑索引并写回 prompt_part1.md 标记之间；删除过时的 `scripts/dump-knowledge-nodes.ts` 与 `dump:nodes`。
+- 职责分离沉淀：**LLM 只回答“考哪个已有知识”，代码负责“topic 对应哪个正式节点”**；新增节点后跑 `npm run refresh:node-index` 刷新索引即可。
+
+## 2026-09-08 · 推理/MoE/检索记忆 40 条（`assessment.fresh19-40-20260908.json`，覆盖 347→367 题）
+
+- 20 道未覆盖题 × 2 条（投机解码×5、Noisy Top-K、Shrinking Batch、Importance/Load、
+  Mixtral×5、晚期交互×4、Multi-Agent 过度、Memory 提炼、三层内存），
+  全部自声明三段式测量面。第九个 40 条大批次。
+- 门禁实证：初稿 15/40 被拒；本批拉丁词密集（Top2/KV/γ/56B/ACID），
+  拉丁词按多字符计长度，含公式选项天然偏长，干扰项须同步拉长；
+  倒置 6 处全是"结论前置"型压缩（如先写加速比再写条件），修法是主语条件搬回句首；
+  drift 主因仍是丢主语关键词。
+- 池指标：691→**731** 条，覆盖 347→**367** 题（26.6%），
+  assessment 自声明 92.8%→**93.2%**，路径唯一率同步 **93.2%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 889/889；`typecheck` + `build` 通过。
+
+## 2026-09-08 · 训练与对齐 40 条（`assessment.fresh18-40-20260908.json`，覆盖 327→347 题）
+
+- 20 道未覆盖题 × 2 条（SFT/DPO 选型、SFT 数据配比、预训练管线/NaN 排查、谄媚、
+  开放权重、Goodhart、PPO 架构、SFT/偏好差异、TP/EP、RLHF/宪政、GRPO 异步、
+  Agentic RL、灾难遗忘、RLVR/GenRM、解耦 Rollout、SFT 质控、DPO 似然位移、
+  RingAttention、PRM/ORM），全部自声明三段式测量面。第八个 40 条大批次。
+- 门禁实证：初稿 20/40 被拒；新增 extra-hint 2 处（题干泄正确项独有词 Judge/CoT/Epoch，
+  修法是题干只留中性词）；`仅`≠`只有`（ai-posttraining 题干限定词）；倒置 7 处，
+  长难句一律把原文主语搬回句首；`上下文` 在题干必改（ring-attention），选项里可用。
+- 池指标：651→**691** 条，覆盖 327→**347** 题（25.2%），
+  assessment 自声明 92.3%→**92.8%**，路径唯一率同步 **92.8%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 889/889；`typecheck` + `build` 通过。
+
+## 2026-09-08 · 多智能体/架构路由 40 条（`assessment.fresh17-40-20260908.json`，覆盖 307→327 题）
+
+- 20 道未覆盖题 × 2 条（swarm 选型/Git 协同/同构坍塌/算法串通/隐藏信息/地盘战/
+  基建隔离/声誉机制/认知警惕、模型路由/混合编排/合同抽取/人工接管/实时管道/
+  Kafka 选型/统一基座/Code Mode/无状态/网关/实时瓶颈），全部自声明三段式测量面。第七个 40 条大批次。
+- 门禁实证：初稿 13/40 被拒；倒置 7 处之多——本批 canonical 多为"原因在前结论在后"长句，
+  修法一律把原文前半截主语搬回句首；drift 6 处全因压缩丢了主语关键词（如 Classifier/SLM），
+  补回即过；另抓流程 bug：只写 temp 未回写 draft 导致修复丢失一次，
+  修法是回填脚本必须同时写 draft 分片与 temp 全量。
+- 池指标：611→**651** 条，覆盖 307→**327** 题（23.7%），
+  assessment 自声明 91.8%→**92.3%**，路径唯一率同步 **92.3%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 889/889；`typecheck` + `build` 通过。
+
+## 2026-09-08 · 可靠性/Agent/蒸馏 40 条（`assessment.fresh16-40-20260908.json`，覆盖 287→307 题）
+
+- 20 道未覆盖题 × 2 条（Agent 重复调用/偶发分化/长任务下滑/重复付款/上下线落差、
+  第三方容错/降级阶梯/RPM+TPM/主备切换、长会话协作×4、本地 Coding Agent×4、
+  蒸馏设计/误用微调/蒸馏数据），全部自声明三段式测量面。第六个 40 条大批次。
+- 门禁实证：初稿 18/40 被拒；倒置 8 处（修法是恢复原文从句语序，如 ai-ops-003 ctx O0 先 RPM 后 token）；
+  题干条件丢失 4 处（429/必须/至少须进题干，`须` 不等于 `必须`）；-102 题干 `上下文` 触发 forbidden-reference，
+  改"输入组织/输入内容"；拉丁词长选项（soft targets 达 35 字）干扰项须同步拉到 ≥20。
+- 池指标：571→**611** 条，覆盖 287→**307** 题（22.3%），
+  assessment 自声明 91.2%→**91.8%**，路径唯一率同步 **91.8%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 889/889；`typecheck` + `build` 通过。
+
 ## 2026-09-08 · GNN/FlashAttention/工程与蒸馏 40 条（`assessment.fresh15-40-20260908.json`，覆盖 267→287 题）
 
 - 20 道未覆盖题 × 2 条（1-WL/GIN、ChebNet/GCN、DropEdge/JK-Net、图采样三分法、GraphSAINT、
@@ -53,6 +113,12 @@
 - 新增 `scripts/dump-knowledge-nodes.ts` + npm `dump:nodes`：把 `src/data/knowledge/*.json` 导出为可直接粘贴的节点文本（id/name/area/topic/summary），支持 `--area <area>` 只导出一个领域、`--write <file>`、`--count`。全量 132 节点 / 按域 `llm` 42 节点。
 - `docs/prompt_part1.md` §0/§1 加手动注入四步说明，并明确「贴进来哪些节点，topic 就只能从哪些里选」；占位符处改为「整行删除并替换为 `npm run dump:nodes` 输出」。
 - 结论：硬失败逻辑本身正确（用户明确要求过），本次只补齐缺失的「注入手段」，不让手动流程卡死。
+
+## 2026-09-09 · 修正 prompt1 硬失败误触发（自引用 bug）
+
+- 用户按上一条注入说明操作后**仍**返回 `error` —— 根因是**自引用**：`[AVAILABLE_KNOWLEDGE_NODES]` 这个占位 token 同时出现在 §0 规则与 §1 注入点，模型读到自身规则里的 token 就判「占位符仍在」→ 必然硬失败，与用户是否贴了节点无关。
+- 修复：`docs/prompt_part1.md` 移除所有 `[AVAILABLE_KNOWLEDGE_NODES]` 字面 token（§0 改为「知识节点清单」、§1 标题改为「知识节点清单（Knowledge Nodes）」）；硬失败判据从「token 是否还在」改为**基于内容**——只检查第 1 节节点区域是否出现任何以 `- id:` 开头的条目（dump:nodes 输出正好是 `- id: xxx`）；注入点改用给人类看的哨兵行「在此粘贴节点清单」，该哨兵不进入硬失败判据（无自引用）；并加一行诊断提示帮用户区分「没贴」vs「贴错位置」。
+- 校验：`grep "\[AVAILABLE_KNOWLEDGE_NODES\]"` 全文 0 命中；`AVAILABLE_KNOWLEDGE_NODES` 仅剩 error 输出串。
 
 ## 2026-09-08 · 上下文工程专题 40 条（`assessment.fresh13-40-20260908.json`，覆盖 244→267 题）
 

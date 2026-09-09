@@ -1,0 +1,1793 @@
+{
+  "version": 1,
+  "generatedAt": 1788915868902,
+  "promptVersion": "v4",
+  "variants": {
+    "specdec-02": [
+      {
+        "id": "specdec-02__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "草稿与目标模型谁干什么？",
+        "options": [
+          "草稿一次前向出候选，目标一次前向验整条",
+          "目标是唯一分布来源，验证据它故无损",
+          "两者权重须一致，否则候选无法验证",
+          "草稿负责最终采样，目标只打分"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从两角色定生成与验证环节",
+          "reasoningGoal": "先定分工的环节；再逐项验证各判断；并排除「权重须一致」「草稿终采样」等不成立描述。"
+        },
+        "generatedAt": 1788915868825,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5fc5b182",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-76d14b90",
+        "sourceSnapshot": {
+          "id": "specdec-02",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "draft-model",
+            "target-model"
+          ],
+          "question": "在投机解码中，草稿模型（assistant / draft）与目标模型（target）分别承担什么角色？",
+          "options": [
+            "草稿模型一次前向生成候选，目标模型一次前向验证整条候选",
+            "目标模型是最终输出的唯一分布来源，验证只依据它故无损",
+            "两者权重必须完全一致，否则候选序列无法被验证",
+            "草稿模型负责最终采样，目标模型仅做质量打分"
+          ]
+        }
+      },
+      {
+        "id": "specdec-02__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "投机解码两角色分工，下列哪些判断成立？",
+        "options": [
+          "草稿一次前向生候选，目标一次前向验整条",
+          "输出分布只看目标，无损有据",
+          "两者权重不一致即无法验证候选",
+          "最终采样归草稿负责，目标只做打分质检"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从分工看候选与分布环节",
+          "reasoningGoal": "先看分工的环节；再逐项验证各判断；并排除「不一致即无」「归草稿」等不成立描述。"
+        },
+        "generatedAt": 1788915868830,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5fc5b182",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-006f4c27",
+        "sourceSnapshot": {
+          "id": "specdec-02",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "draft-model",
+            "target-model"
+          ],
+          "question": "在投机解码中，草稿模型（assistant / draft）与目标模型（target）分别承担什么角色？",
+          "options": [
+            "草稿模型一次前向生成候选，目标模型一次前向验证整条候选",
+            "目标模型是最终输出的唯一分布来源，验证只依据它故无损",
+            "两者权重必须完全一致，否则候选序列无法被验证",
+            "草稿模型负责最终采样，目标模型仅做质量打分"
+          ]
+        }
+      }
+    ],
+    "specdec-03": [
+      {
+        "id": "specdec-03__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "什么任务投机解码加速最明显？",
+        "options": [
+          "草稿小一个量级上，输入驱动任务偏多",
+          "目标放不下 GPU 靠卸载，加速约 10x",
+          "同架构仅小规模，温度近 0 采样",
+          "草稿又大又差，候选长必加速"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能从任务定规模与卸载环节",
+          "reasoningGoal": "先定任务的环节；再逐项验证各判断；并排除「大差必加速」等不成立描述。"
+        },
+        "generatedAt": 1788915868832,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c3f9e2e3",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-e83b5ada",
+        "sourceSnapshot": {
+          "id": "specdec-03",
+          "topic": "inference-optimization",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "speculative-decoding",
+            "when-it-helps",
+            "offload"
+          ],
+          "question": "在哪些情形下，投机解码最可能带来明显的推理加速？",
+          "options": [
+            "草稿模型比目标小一个数量级以上，且任务偏输入驱动（转录、翻译、摘要）",
+            "目标模型放不下 GPU、需靠内存卸载时，加速比可达约 10x",
+            "草稿与目标同架构仅规模更小，且采样温度接近 0",
+            "草稿模型质量很差但很大，能保证每次生成很长的候选"
+          ]
+        }
+      },
+      {
+        "id": "specdec-03__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "加速比起飞的条件，下列哪些判断成立？",
+        "options": [
+          "小一个数量级草稿，配转录翻译摘要",
+          "内存卸载目标模型，加速比约 10x",
+          "同架构小规模加低温，分布更接近",
+          "草稿大而差，候选越长越赚"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从起飞条件看数量级与低温环节",
+          "reasoningGoal": "先看条件的环节；再逐项验证各判断；并排除「越长越赚」等不成立描述。"
+        },
+        "generatedAt": 1788915868834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c3f9e2e3",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-1eb8f399",
+        "sourceSnapshot": {
+          "id": "specdec-03",
+          "topic": "inference-optimization",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "speculative-decoding",
+            "when-it-helps",
+            "offload"
+          ],
+          "question": "在哪些情形下，投机解码最可能带来明显的推理加速？",
+          "options": [
+            "草稿模型比目标小一个数量级以上，且任务偏输入驱动（转录、翻译、摘要）",
+            "目标模型放不下 GPU、需靠内存卸载时，加速比可达约 10x",
+            "草稿与目标同架构仅规模更小，且采样温度接近 0",
+            "草稿模型质量很差但很大，能保证每次生成很长的候选"
+          ]
+        }
+      }
+    ],
+    "specdec-04": [
+      {
+        "id": "specdec-04__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "什么情况投机解码白忙甚至更慢？",
+        "options": [
+          "输出短省前向少，摊不薄草稿开销",
+          "温度高猜错多，接受段短",
+          "草稿本身慢，开销吃掉跳过收益",
+          "同 tokenizer 草稿小量级，必加速"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能从白忙定摊薄与猜错环节",
+          "reasoningGoal": "先定情况的环节；再逐项验证各判断；并排除「必加速」等不成立描述。"
+        },
+        "generatedAt": 1788915868835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f80d5e3a",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-e3902a34",
+        "sourceSnapshot": {
+          "id": "specdec-04",
+          "topic": "inference-optimization",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "speculative-decoding",
+            "when-it-hurts"
+          ],
+          "question": "在哪些情形下，投机解码可能无明显收益甚至变慢？",
+          "options": [
+            "输出很短，省下的前向次数很少，难以摊薄草稿模型开销",
+            "采样温度很高，草稿模型频繁猜错、接受段很短",
+            "草稿模型本身很慢，其开销抵消了跳过目标前向的收益",
+            "草稿与目标使用完全相同的 tokenizer，且草稿小一个数量级"
+          ]
+        }
+      },
+      {
+        "id": "specdec-04__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "开了投机反而更慢。查这次翻车，下列哪些判断成立？",
+        "options": [
+          "前向省得少，草稿成本摊不薄",
+          "高温频繁猜错，接受段很短",
+          "草稿慢过目标省，收益被抵消",
+          "tokenizer 相同草稿小，加速稳拿"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从翻车查省量与慢草稿环节",
+          "reasoningGoal": "先查翻车的环节；再逐项验证各判断；并排除「稳拿」等不成立描述。"
+        },
+        "generatedAt": 1788915868836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f80d5e3a",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-93bab70b",
+        "sourceSnapshot": {
+          "id": "specdec-04",
+          "topic": "inference-optimization",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "speculative-decoding",
+            "when-it-hurts"
+          ],
+          "question": "在哪些情形下，投机解码可能无明显收益甚至变慢？",
+          "options": [
+            "输出很短，省下的前向次数很少，难以摊薄草稿模型开销",
+            "采样温度很高，草稿模型频繁猜错、接受段很短",
+            "草稿模型本身很慢，其开销抵消了跳过目标前向的收益",
+            "草稿与目标使用完全相同的 tokenizer，且草稿小一个数量级"
+          ]
+        }
+      }
+    ],
+    "specdec-05": [
+      {
+        "id": "specdec-05__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "接受率高低看什么？下列哪些正确？",
+        "options": [
+          "共享 tokenizer，免跨编解码",
+          "同架构仅小规模，分布更相近",
+          "温度近 0，双方更一致",
+          "候选越多越好，与目标质量无关"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从接受率定分词与温度环节",
+          "reasoningGoal": "先定因素的环节；再逐项验证各判断；并排除「越多越好」等不成立描述。"
+        },
+        "generatedAt": 1788915868837,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8364b49d",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-bcbaa08d",
+        "sourceSnapshot": {
+          "id": "specdec-05",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "acceptance-rate",
+            "tokenizer"
+          ],
+          "question": "哪些因素会提高投机解码中候选 token 被目标模型接受的比例？",
+          "options": [
+            "草稿与目标共享同一 tokenizer，避免跨设备编解码",
+            "草稿与目标同架构、仅规模更小，输出分布更相近",
+            "采样温度接近 0，草稿与目标更一致",
+            "把候选数量设得越大越好，与目标模型质量无关"
+          ]
+        }
+      },
+      {
+        "id": "specdec-05__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "候选总被拒。提接受率，下列哪些判断成立？",
+        "options": [
+          "同一分词器，避免编解码错位",
+          "规模小同架构，输出分布相近",
+          "低温采样，草稿目标一致",
+          "候选数拉满，目标质量不重要"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从被拒提接受率看相近环节",
+          "reasoningGoal": "先提接受的环节；再逐项验证各判断；并排除「拉满」等不成立描述。"
+        },
+        "generatedAt": 1788915868838,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8364b49d",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-4c2cadab",
+        "sourceSnapshot": {
+          "id": "specdec-05",
+          "topic": "inference-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "speculative-decoding",
+            "acceptance-rate",
+            "tokenizer"
+          ],
+          "question": "哪些因素会提高投机解码中候选 token 被目标模型接受的比例？",
+          "options": [
+            "草稿与目标共享同一 tokenizer，避免跨设备编解码",
+            "草稿与目标同架构、仅规模更小，输出分布更相近",
+            "采样温度接近 0，草稿与目标更一致",
+            "把候选数量设得越大越好，与目标模型质量无关"
+          ]
+        }
+      }
+    ],
+    "specdec-06": [
+      {
+        "id": "specdec-06__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "零误差草稿每轮 γ 候选，延迟改善哪些正确？",
+        "options": [
+          "串行前向 n 降 n/(γ+1)，γ+1 倍常数加速",
+          "带宽受限逐 token 改批量验证，γ+1 耗时近 1 个",
+          "复杂度 O(n) 直降 O(1)，多长都不影响",
+          "加速比与 γ 无关，只看两模型参数量比"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从理想态算常数与渐进环节",
+          "reasoningGoal": "先算改善的环节；再逐项验证各判断；并排除「直降 O(1)」「与 γ 无关」等不成立描述。"
+        },
+        "generatedAt": 1788915868839,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-43451bab",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-8d642ce6",
+        "sourceSnapshot": {
+          "id": "specdec-06",
+          "topic": "inference-optimization",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "speculative-decoding",
+            "complexity",
+            "latency"
+          ],
+          "question": "在草稿模型几乎零误差、每轮固定生成 γ 个候选 token 的理想情况下，关于投机解码对自回归生成延迟的改善，下列哪些说法是正确的？",
+          "options": [
+            "目标模型的串行前向次数从 n 降到约 n/(γ+1)，即获得最高约 γ+1 倍的常数倍加速，渐进复杂度仍是 O(n)",
+            "收益来自把内存带宽受限的逐 token 解码，改成一次前向批量验证整条候选序列——验证 γ+1 个 token 的耗时接近验证 1 个",
+            "渐进复杂度从 O(n) 降到接近 O(1)，因为一次前向即可验证整条候选序列，输出多长都不影响延迟",
+            "加速比与草稿长度 γ 无关，只由草稿模型与目标模型的参数量之比决定，因此草稿模型越小收益越高"
+          ]
+        }
+      },
+      {
+        "id": "specdec-06__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "γ 固定零误差理想态。算这笔加速账，下列哪些判断成立？",
+        "options": [
+          "n 次前降约 n/(γ+1)，渐进仍 O(n)",
+          "内存带宽逐 token 改整条验，耗时近单 token",
+          "复杂度近 O(1)，一次前向验整条长度无关",
+          "加速比与 γ 无关，草稿模型越小越赚"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从加速账看前向与长度环节",
+          "reasoningGoal": "先算账的环节；再逐项验证各判断；并排除「近 O(1)」「γ 不影响」等不成立描述。"
+        },
+        "generatedAt": 1788915868841,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-43451bab",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-93ab6e00",
+        "sourceSnapshot": {
+          "id": "specdec-06",
+          "topic": "inference-optimization",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "speculative-decoding",
+            "complexity",
+            "latency"
+          ],
+          "question": "在草稿模型几乎零误差、每轮固定生成 γ 个候选 token 的理想情况下，关于投机解码对自回归生成延迟的改善，下列哪些说法是正确的？",
+          "options": [
+            "目标模型的串行前向次数从 n 降到约 n/(γ+1)，即获得最高约 γ+1 倍的常数倍加速，渐进复杂度仍是 O(n)",
+            "收益来自把内存带宽受限的逐 token 解码，改成一次前向批量验证整条候选序列——验证 γ+1 个 token 的耗时接近验证 1 个",
+            "渐进复杂度从 O(n) 降到接近 O(1)，因为一次前向即可验证整条候选序列，输出多长都不影响延迟",
+            "加速比与草稿长度 γ 无关，只由草稿模型与目标模型的参数量之比决定，因此草稿模型越小收益越高"
+          ]
+        }
+      }
+    ],
+    "moe-noisy-topk-gating-01": [
+      {
+        "id": "moe-noisy-topk-gating-01__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "Noisy Top-K 稀疏可导原理，哪些正确？",
+        "options": [
+          "KeepTopK 置 −∞，Softmax 门控 0 跳算",
+          "k>1 选中门控偏导非零，梯度直传",
+          "离散不可导须 REINFORCE，无梯度可言",
+          "Softmax 前注入噪声，把未选中专家偏导归零"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从门控定截断与可导环节",
+          "reasoningGoal": "先定原理的环节；再逐项验证各判断；并排除「须 REINFORCE」「归零」等不成立描述。"
+        },
+        "generatedAt": 1788915868841,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-88a87c49",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-3648b6e7",
+        "sourceSnapshot": {
+          "id": "moe-noisy-topk-gating-01",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "noisy-top-k-gating",
+            "sparse-computation",
+            "backpropagation"
+          ],
+          "question": "在 Sparsely-Gated Mixture-of-Experts (MoE) 层中，Noisy Top-K Gating 通过合并高斯噪声注入与 KeepTopK 截断算子来实现稀疏条件计算。关于该机制在前向计算稀疏性与反向传播可导性方面的原理，以下哪些说法是正确的？",
+          "options": [
+            "KeepTopK 把非 Top-K 的 logit 置为 −∞，经 Softmax 后对应门控值恰好为 0，这些专家的前向计算可以直接跳过。",
+            "取 k>1 时，被选中的门控值对门控网络参数存在非零偏导数，梯度可正常反传，无需 REINFORCE 估计。",
+            "KeepTopK 存在离散不可导点，门控网络无法用标准梯度下降更新，必须改用 REINFORCE 策略梯度训练。",
+            "Softmax 前注入可训练高斯噪声，主要目的是把未选中专家的偏导数归零，避免其参数被错误更新。"
+          ]
+        }
+      },
+      {
+        "id": "moe-noisy-topk-gating-01__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "门控稀疏与梯度兼得。看这次设计，下列哪些判断成立？",
+        "options": [
+          "非 Top-K logit 负无穷，专家前向跳过",
+          "k>1 门控参数可导，无需 REINFORCE 估计",
+          "截断点不可导，标准梯度下降失效",
+          "可训练高斯噪声防未选中参数误更新"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从兼得看跳过与估计环节",
+          "reasoningGoal": "先看设计的环节；再逐项验证各判断；并排除「失效」「误更新」等不成立描述。"
+        },
+        "generatedAt": 1788915868843,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-88a87c49",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-1ff385fc",
+        "sourceSnapshot": {
+          "id": "moe-noisy-topk-gating-01",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "noisy-top-k-gating",
+            "sparse-computation",
+            "backpropagation"
+          ],
+          "question": "在 Sparsely-Gated Mixture-of-Experts (MoE) 层中，Noisy Top-K Gating 通过合并高斯噪声注入与 KeepTopK 截断算子来实现稀疏条件计算。关于该机制在前向计算稀疏性与反向传播可导性方面的原理，以下哪些说法是正确的？",
+          "options": [
+            "KeepTopK 把非 Top-K 的 logit 置为 −∞，经 Softmax 后对应门控值恰好为 0，这些专家的前向计算可以直接跳过。",
+            "取 k>1 时，被选中的门控值对门控网络参数存在非零偏导数，梯度可正常反传，无需 REINFORCE 估计。",
+            "KeepTopK 存在离散不可导点，门控网络无法用标准梯度下降更新，必须改用 REINFORCE 策略梯度训练。",
+            "Softmax 前注入可训练高斯噪声，主要目的是把未选中专家的偏导数归零，避免其参数被错误更新。"
+          ]
+        }
+      }
+    ],
+    "moe-distributed-shrinking-batch-01": [
+      {
+        "id": "moe-distributed-shrinking-batch-01__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "n 涨 batch 缩通信堵。混合并行解法，哪些评估正确？",
+        "options": [
+          "标准门控数据并行，专家模型并行，batch 扩 d 倍",
+          "FFN 算量随 h 涨，传输与 h 无关，比值 h",
+          "混合后每卡仍全复制 n 专家，All-to-All 同步",
+          "d 加倍激活减半，单专家延迟按 1/d 降"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从缩 batch 定并行与比值环节",
+          "reasoningGoal": "先定解法的环节；再逐项验证各判断；并排除「全复制」「按比降」等不成立描述。"
+        },
+        "generatedAt": 1788915868844,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5c349d2e",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-4a468cf6",
+        "sourceSnapshot": {
+          "id": "moe-distributed-shrinking-batch-01",
+          "topic": "moe",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "distributed-training",
+            "shrinking-batch",
+            "parallelism"
+          ],
+          "question": "在大规模分布式 MoE 模型训练中，随着专家总数 n 增大，单个专家收到的样本 batch 会急剧缩小（Shrinking Batch Problem），跨设备通信也容易成为瓶颈。关于混合数据/模型并行策略与架构调优对该问题的解决机制，以下哪些评估是正确的？",
+          "options": [
+            "标准层与门控按数据并行部署在 d 台设备上、专家按模型并行切分并合并各副本的路由样本，每专家收到的 batch 约为 (k · b · d) / n，比朴素实现扩大 d 倍。",
+            "专家 FFN 的计算量随隐藏层维度 h 增长，而跨设备传输的输入/输出张量大小与 h 无关，因此计算量与通信量之比等于隐藏层维度 h。",
+            "混合并行之后，集群里每台 GPU 仍需要完整复制存储全部 n 个专家的参数权重，再通过 All-to-All 同步梯度。",
+            "把数据并行设备数 d 加倍，就能让单设备的激活值内存开销减半，同时使单专家的计算延迟按 1/d 比例下降。"
+          ]
+        }
+      },
+      {
+        "id": "moe-distributed-shrinking-batch-01__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "专家越多单专家越饿。救这次饥荒，下列哪些判断成立？",
+        "options": [
+          "d 台数据并行加专家并行，每专家 batch 约 (k·b·d)/n",
+          "FFN 算量随 h 涨，传输张量大小与 h 无关",
+          "每 GPU 全量存 n 专家权重，梯度同步",
+          "设备数 d 翻倍激活减半，单专家延迟同比下降"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从饥荒救 batch 看并行与延迟环节",
+          "reasoningGoal": "先救饥荒的环节；再逐项验证各判断；并排除「全量存」「同比降」等不成立描述。"
+        },
+        "generatedAt": 1788915868849,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5c349d2e",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-a2d2ff58",
+        "sourceSnapshot": {
+          "id": "moe-distributed-shrinking-batch-01",
+          "topic": "moe",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "distributed-training",
+            "shrinking-batch",
+            "parallelism"
+          ],
+          "question": "在大规模分布式 MoE 模型训练中，随着专家总数 n 增大，单个专家收到的样本 batch 会急剧缩小（Shrinking Batch Problem），跨设备通信也容易成为瓶颈。关于混合数据/模型并行策略与架构调优对该问题的解决机制，以下哪些评估是正确的？",
+          "options": [
+            "标准层与门控按数据并行部署在 d 台设备上、专家按模型并行切分并合并各副本的路由样本，每专家收到的 batch 约为 (k · b · d) / n，比朴素实现扩大 d 倍。",
+            "专家 FFN 的计算量随隐藏层维度 h 增长，而跨设备传输的输入/输出张量大小与 h 无关，因此计算量与通信量之比等于隐藏层维度 h。",
+            "混合并行之后，集群里每台 GPU 仍需要完整复制存储全部 n 个专家的参数权重，再通过 All-to-All 同步梯度。",
+            "把数据并行设备数 d 加倍，就能让单设备的激活值内存开销减半，同时使单专家的计算延迟按 1/d 比例下降。"
+          ]
+        }
+      }
+    ],
+    "moe-load-importance-vs-load-01": [
+      {
+        "id": "moe-load-importance-vs-load-01__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "Importance 与 Load 差在哪？下列哪些正确？",
+        "options": [
+          "Importance 连加 ΣG(x)，Load 数实际件数",
+          "只 L_importance 件数悬殊仍拖慢分布训",
+          "L_importance 是 FFN 上 L2 正则",
+          "L_importance 归零即毫秒耗时全一致"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从极化定求和与件数环节",
+          "reasoningGoal": "先定差异的环节；再逐项验证各判断；并排除「L2 正则」「归零一致」等不成立描述。"
+        },
+        "generatedAt": 1788915868850,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-083bac51",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-488b7fc5",
+        "sourceSnapshot": {
+          "id": "moe-load-importance-vs-load-01",
+          "topic": "moe",
+          "angle": "diagnosis",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "moe",
+            "auxiliary-loss",
+            "load-balancing",
+            "importance"
+          ],
+          "question": "在 Sparsely-Gated MoE 中，为防止门控网络把绝大多数样本路由到少数专家（极化），通常需要引入辅助平衡损失。关于专家的 Importance 与 Load 的概念差异及其对分布式训练的影响，以下哪些说法是正确的？",
+          "options": [
+            "Importance 是 batch 内各样本对该专家门控值的连续求和 Σ G(x)，Load 衡量的是实际分配给该专家的样本件数。",
+            "只加 L_importance 时，可能出现一个专家收少量高权重样本、另一个收大量低权重样本，Importance 相近而件数悬殊，仍会拖慢分布式训练。",
+            "L_importance 是加在专家 FFN 权重矩阵上的 L2 正则化项，用来抑制单个专家的参数过拟合。",
+            "只要把 L_importance 优化到 0，就能在理论上严格保证各 GPU 上专家前向的毫秒级耗时完全一致。"
+          ]
+        }
+      },
+      {
+        "id": "moe-load-importance-vs-load-01__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "门控极化少数专家。配平衡损失，下列哪些判断成立？",
+        "options": [
+          "门控值连续求和是 Importance，件数是 Load",
+          "一专家少量高权重，一专家大量低权重，件数悬殊拖慢训练",
+          "L2 压 FFN 权重防单专家过拟合",
+          "L_importance 到 0 即各卡耗时严格一致"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从极化配损失看权重与耗时环节",
+          "reasoningGoal": "先配损失的环节；再逐项验证各判断；并排除「压权重」「严格一致」等不成立描述。"
+        },
+        "generatedAt": 1788915868852,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-083bac51",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-ed1726ee",
+        "sourceSnapshot": {
+          "id": "moe-load-importance-vs-load-01",
+          "topic": "moe",
+          "angle": "diagnosis",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "moe",
+            "auxiliary-loss",
+            "load-balancing",
+            "importance"
+          ],
+          "question": "在 Sparsely-Gated MoE 中，为防止门控网络把绝大多数样本路由到少数专家（极化），通常需要引入辅助平衡损失。关于专家的 Importance 与 Load 的概念差异及其对分布式训练的影响，以下哪些说法是正确的？",
+          "options": [
+            "Importance 是 batch 内各样本对该专家门控值的连续求和 Σ G(x)，Load 衡量的是实际分配给该专家的样本件数。",
+            "只加 L_importance 时，可能出现一个专家收少量高权重样本、另一个收大量低权重样本，Importance 相近而件数悬殊，仍会拖慢分布式训练。",
+            "L_importance 是加在专家 FFN 权重矩阵上的 L2 正则化项，用来抑制单个专家的参数过拟合。",
+            "只要把 L_importance 优化到 0，就能在理论上严格保证各 GPU 上专家前向的毫秒级耗时完全一致。"
+          ]
+        }
+      }
+    ],
+    "moe-mixtral-02": [
+      {
+        "id": "moe-mixtral-02__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "Mixtral 每 token 怎么挑 2 专家？",
+        "options": [
+          "路由器每 token 取 Top2 专家算",
+          "每层独立路由，各层专家可不同",
+          "全 token 共享固定专家保稳定",
+          "序列级路由，一段文本同专家"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从挑专家定层级与共享环节",
+          "reasoningGoal": "先定路由的环节；再逐项验证各判断；并排除「共享固定」「序列同专」等不成立描述。"
+        },
+        "generatedAt": 1788915868854,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-888881ce",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-fa4bb461",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-02",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "router",
+            "top-k",
+            "gating"
+          ],
+          "question": "Mixtral 8x7B 的路由（gating）机制如何为每个 token 选择专家？",
+          "options": [
+            "路由器对每 token 输出专家权重，取权重最高的 2 个专家参与计算",
+            "每个 token 在每一层被独立路由，不同层可选出的 2 个专家可以不同",
+            "所有 token 共享同一组固定专家，以保证训练稳定",
+            "路由在序列级别进行，一整段文本只能进入同一个专家"
+          ]
+        }
+      },
+      {
+        "id": "moe-mixtral-02__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "8 专家每 token 进 2 家。看这次路由，下列哪些判断成立？",
+        "options": [
+          "每 token 输出权重，最高 2 家干活",
+          "层层各路各的，专家跨层可换",
+          "固定专家组全共享，训练才稳",
+          "序列级整段文本绑同一专家"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从进 2 家看权重与跨层环节",
+          "reasoningGoal": "先看路由的环节；再逐项验证各判断；并排除「全共享」「绑同一」等不成立描述。"
+        },
+        "generatedAt": 1788915868856,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-888881ce",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-1c70bc0d",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-02",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "router",
+            "top-k",
+            "gating"
+          ],
+          "question": "Mixtral 8x7B 的路由（gating）机制如何为每个 token 选择专家？",
+          "options": [
+            "路由器对每 token 输出专家权重，取权重最高的 2 个专家参与计算",
+            "每个 token 在每一层被独立路由，不同层可选出的 2 个专家可以不同",
+            "所有 token 共享同一组固定专家，以保证训练稳定",
+            "路由在序列级别进行，一整段文本只能进入同一个专家"
+          ]
+        }
+      }
+    ],
+    "moe-mixtral-03": [
+      {
+        "id": "moe-mixtral-03__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "8×7B 为何不是 56B 而是 46.7B？",
+        "options": [
+          "注意力嵌入归一共享 1.6B，加 45B 专家 FFN",
+          "单专家 5.6B，8 个合计 45B 非 56B",
+          "未激活 6 专家不计数，故 56 降 46.7",
+          "4-bit 存储折算，标称远小于 56B"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从命名算共享与合计环节",
+          "reasoningGoal": "先算差异的环节；再逐项验证各判断；并排除「不计数」「折算」等不成立描述。"
+        },
+        "generatedAt": 1788915868857,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-40f3024c",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-385545fa",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-03",
+          "topic": "moe",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "moe",
+            "parameters",
+            "mixtral-8x7b"
+          ],
+          "question": "Mixtral 8x7B 的命名容易让人误以为总参数量是 56B（8×7B），但官方口径约为 46.7B。关于这一差异的成因，下列哪些说法是正确的？",
+          "options": [
+            "注意力、词嵌入、归一化等参数被全部 8 个专家共享、只计算一次（约 1.6B），加上 8 个专家 FFN 合计的约 45B 才是总量",
+            "单个专家 FFN 约 5.6B（每层 3×4096×14336，共 32 层），因此 8 个专家 FFN 合计约 45B，而不是 8×7B=56B",
+            "每个 token 只路由到 2 个专家，未激活的 6 个专家不计入总参数量，所以从 56B 降到约 46.7B",
+            "模型默认以 4-bit 存储，标称总参数量按量化后的有效位数折算，因此远小于 56B"
+          ]
+        }
+      },
+      {
+        "id": "moe-mixtral-03__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "56B 名不副实 46.7B。算这笔参数账，下列哪些判断成立？",
+        "options": [
+          "共享参数只算一次 1.6B，总量 45 加 1.6",
+          "单专家 FFN 约 5.6B，每层 3×4096×14336 共 32 层",
+          "另 6 专家闲置不计入总量，56B 自然缩水",
+          "按量化有效位数折算，总量远小于 56B 标称"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从缩水算一次与乘积环节",
+          "reasoningGoal": "先算账的环节；再逐项验证各判断；并排除「自然缩水」「折算」等不成立描述。"
+        },
+        "generatedAt": 1788915868860,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-40f3024c",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-082ee178",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-03",
+          "topic": "moe",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "moe",
+            "parameters",
+            "mixtral-8x7b"
+          ],
+          "question": "Mixtral 8x7B 的命名容易让人误以为总参数量是 56B（8×7B），但官方口径约为 46.7B。关于这一差异的成因，下列哪些说法是正确的？",
+          "options": [
+            "注意力、词嵌入、归一化等参数被全部 8 个专家共享、只计算一次（约 1.6B），加上 8 个专家 FFN 合计的约 45B 才是总量",
+            "单个专家 FFN 约 5.6B（每层 3×4096×14336，共 32 层），因此 8 个专家 FFN 合计约 45B，而不是 8×7B=56B",
+            "每个 token 只路由到 2 个专家，未激活的 6 个专家不计入总参数量，所以从 56B 降到约 46.7B",
+            "模型默认以 4-bit 存储，标称总参数量按量化后的有效位数折算，因此远小于 56B"
+          ]
+        }
+      }
+    ],
+    "moe-mixtral-04": [
+      {
+        "id": "moe-mixtral-04__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "24GB 单卡跑 Mixtral，做法哪些可行必要？",
+        "options": [
+          "4-bit 加 device_map auto 卸载，压到 24GB",
+          "fp16 要多卡或 90GB+，单 24GB 装不下",
+          "fp16 直装即可，激活仅 12B 显存按 12B 估",
+          "须 INT8 加张量并行，4-bit 不支持 MoE"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从单卡定量化与卸载环节",
+          "reasoningGoal": "先定部署的环节；再逐项验证各判断；并排除「按 12B 估」「须 INT8」等不成立描述。"
+        },
+        "generatedAt": 1788915868862,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4593093b",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-c212dad2",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-04",
+          "topic": "moe",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "moe",
+            "deployment",
+            "quantization",
+            "vram"
+          ],
+          "question": "你要在单张 24GB 显存的消费级 GPU 上部署 Mixtral 8x7B 提供推理服务。基于该模型已知的资源特征，下列哪些做法是可行或必要的？",
+          "options": [
+            "采用 4-bit 量化并配合 device_map='auto' 把部分层卸载，使显存占用降到约 24GB",
+            "若坚持 fp16 精度则需要多卡或 >90GB 显存，单张 24GB 卡无法容纳",
+            "直接以 fp16 加载即可，因为激活参数只有约 12B，显存也应按 12B 估算",
+            "必须用 INT8 且启用张量并行才能在该卡运行，4-bit 量化不支持 MoE"
+          ]
+        }
+      },
+      {
+        "id": "moe-mixtral-04__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "消费卡 24GB 装 8x7B。定这次部署，下列哪些判断成立？",
+        "options": [
+          "量化卸载双管下，显存约 24GB 落地",
+          "坚持 fp16 须多卡或 90GB 显存，单 24GB 不够",
+          "激活参数仅约 12B，显存同口径估算",
+          "须 INT8 启张量并行，4-bit 量化不支持 MoE"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从消费卡看落地与互斥环节",
+          "reasoningGoal": "先定部署的环节；再逐项验证各判断；并排除「同口径」「互斥」等不成立描述。"
+        },
+        "generatedAt": 1788915868866,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4593093b",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-32ce7396",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-04",
+          "topic": "moe",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "moe",
+            "deployment",
+            "quantization",
+            "vram"
+          ],
+          "question": "你要在单张 24GB 显存的消费级 GPU 上部署 Mixtral 8x7B 提供推理服务。基于该模型已知的资源特征，下列哪些做法是可行或必要的？",
+          "options": [
+            "采用 4-bit 量化并配合 device_map='auto' 把部分层卸载，使显存占用降到约 24GB",
+            "若坚持 fp16 精度则需要多卡或 >90GB 显存，单张 24GB 卡无法容纳",
+            "直接以 fp16 加载即可，因为激活参数只有约 12B，显存也应按 12B 估算",
+            "必须用 INT8 且启用张量并行才能在该卡运行，4-bit 量化不支持 MoE"
+          ]
+        }
+      }
+    ],
+    "moe-mixtral-05": [
+      {
+        "id": "moe-mixtral-05__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "MoE 对稠密权衡何在？下列哪些正确？",
+        "options": [
+          "总参大单 token 算量小，质量成本兼得",
+          "权重全驻显存，部署或贵于稠密",
+          "延迟与稠密完全等价，总量不影响单步",
+          "榜低于 70B 即 MoE 必然劣稠密"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从大小定算量与驻存环节",
+          "reasoningGoal": "先定权衡的环节；再逐项验证各判断；并排除「完全等价」「必然劣」等不成立描述。"
+        },
+        "generatedAt": 1788915868867,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c8a461c3",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-a487c672",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-05",
+          "topic": "moe",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "tradeoff",
+            "dense-vs-moe"
+          ],
+          "question": "相比同质量的稠密模型，以 Mixtral 为例的 MoE 带来了哪些典型权衡？",
+          "options": [
+            "总参更大但单 token 解码计算量对标小得多的稠密模型，平衡质量与成本",
+            "参数更多需更多显存驻留全部权重，部署成本可能高于同质量稠密模型",
+            "MoE 与同质量稠密模型在推理延迟上完全等价，因为参数总量不影响单步速度",
+            "Mixtral 榜上低于 Llama-2-70B，说明 MoE 必然劣于稠密模型"
+          ]
+        }
+      },
+      {
+        "id": "moe-mixtral-05__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "参数多算量小。称这次买卖，下列哪些判断成立？",
+        "options": [
+          "解码算量对标小稠密，质量成本平衡",
+          "全部权重驻显存，部署成本反更高",
+          "延迟完全等价，参数总量不影响单步速度",
+          "榜低于 Llama-70B 即 MoE 必然劣稠密"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从买卖称算量与跑分环节",
+          "reasoningGoal": "先称买卖的环节；再逐项验证各判断；并排除「天然等价」「注定劣」等不成立描述。"
+        },
+        "generatedAt": 1788915868869,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c8a461c3",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-dba95586",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-05",
+          "topic": "moe",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "moe",
+            "tradeoff",
+            "dense-vs-moe"
+          ],
+          "question": "相比同质量的稠密模型，以 Mixtral 为例的 MoE 带来了哪些典型权衡？",
+          "options": [
+            "总参更大但单 token 解码计算量对标小得多的稠密模型，平衡质量与成本",
+            "参数更多需更多显存驻留全部权重，部署成本可能高于同质量稠密模型",
+            "MoE 与同质量稠密模型在推理延迟上完全等价，因为参数总量不影响单步速度",
+            "Mixtral 榜上低于 Llama-2-70B，说明 MoE 必然劣于稠密模型"
+          ]
+        }
+      }
+    ],
+    "moe-mixtral-06": [
+      {
+        "id": "moe-mixtral-06__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "LoRA 微调 MoE 做法，哪些合建议？",
+        "options": [
+          "LoRA 加注意 q/k/v/o，不碰专家层",
+          "避对专家 MLP 做 PEFT，稀疏兼容性差",
+          "8 专家 MLP 均匀加 LoRA 效果最优",
+          "只调 router 余皆冻结"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从微调定注意与专家环节",
+          "reasoningGoal": "先定做法的环节；再逐项验证各判断；并排除「均匀最优」「只调路由」等不成立描述。"
+        },
+        "generatedAt": 1788915868870,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-afa3f3a3",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-905cc8d5",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-06",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "peft",
+            "lora",
+            "fine-tuning"
+          ],
+          "question": "用 PEFT（如 LoRA）微调 Mixtral 这类 MoE 模型时，下列哪些做法符合常见建议？",
+          "options": [
+            "把 LoRA 适配器加在注意力投影层（q/k/v/o_proj），而非专家层",
+            "避免对专家 MLP 层做 PEFT，因为专家层稀疏且与 PEFT 兼容性差",
+            "对所有 8 个专家 MLP 层均匀加 LoRA，以获得最好的微调效果",
+            "只微调路由器（router）即可，其余参数则全部冻结不动"
+          ]
+        }
+      },
+      {
+        "id": "moe-mixtral-06__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "8 专家动哪不动哪？定这次微调，下列哪些判断成立？",
+        "options": [
+          "适配器放注意力投影，专家层不动",
+          "稀疏专家 PEFT 难兼容，MLP 绕行",
+          "专家 MLP 全加 LoRA，效果最佳",
+          "router 单调余冻结"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从动不动看投影与绕行环节",
+          "reasoningGoal": "先定微调的环节；再逐项验证各判断；并排除「效果最佳」「单调」等不成立描述。"
+        },
+        "generatedAt": 1788915868871,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-afa3f3a3",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-01b38e35",
+        "sourceSnapshot": {
+          "id": "moe-mixtral-06",
+          "topic": "moe",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "moe",
+            "peft",
+            "lora",
+            "fine-tuning"
+          ],
+          "question": "用 PEFT（如 LoRA）微调 Mixtral 这类 MoE 模型时，下列哪些做法符合常见建议？",
+          "options": [
+            "把 LoRA 适配器加在注意力投影层（q/k/v/o_proj），而非专家层",
+            "避免对专家 MLP 层做 PEFT，因为专家层稀疏且与 PEFT 兼容性差",
+            "对所有 8 个专家 MLP 层均匀加 LoRA，以获得最好的微调效果",
+            "只微调路由器（router）即可，其余参数则全部冻结不动"
+          ]
+        }
+      }
+    ],
+    "lateinter-01": [
+      {
+        "id": "lateinter-01__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "ColBERT 晚期交互分怎么算？",
+        "options": [
+          "查询每 token 取文档最大相似再求和",
+          "文档离线编存，查询时细粒度匹配",
+          "拼接送交叉编码器得单一分数",
+          "单稠密点积等价单向量检索"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从打分定求和与离线环节",
+          "reasoningGoal": "先定算法的环节；再逐项验证各判断；并排除「交叉单一」「点积等价」等不成立描述。"
+        },
+        "generatedAt": 1788915868872,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e84bb383",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-26dc563f",
+        "sourceSnapshot": {
+          "id": "lateinter-01",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "late-interaction",
+            "colbert",
+            "maxsim",
+            "multi-vector"
+          ],
+          "question": "在 ColBERT 风格的『晚期交互（late interaction）』检索中，查询与文档的相似度如何计算？",
+          "options": [
+            "对查询每个 token 取其与文档所有 token/patch 的最大相似度，再求和（MaxSim）",
+            "文档在索引阶段独立编码、可离线存储，评分只在查询时细粒度匹配",
+            "把查询和文档拼接后送交叉编码器，得到单一的整体相关性分数",
+            "只取文档单个稠密向量与查询向量做点积，等价于单向量检索方式"
+          ]
+        }
+      },
+      {
+        "id": "lateinter-01__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "查询文档 MaxSim 相遇。看这次打分，下列哪些判断成立？",
+        "options": [
+          "查询每 token 取文档最大相似再求和 MaxSim",
+          "索引期独立编码离线存，查询期匹配",
+          "拼接查询文档送交叉编码，得整体相关分数",
+          "文档单向量点积，属单向量检索范式"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从相遇看最大与整体环节",
+          "reasoningGoal": "先看打分的环节；再逐项验证各判断；并排除「整体分」「范式」等不成立描述。"
+        },
+        "generatedAt": 1788915868874,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e84bb383",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-8d86a63c",
+        "sourceSnapshot": {
+          "id": "lateinter-01",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "late-interaction",
+            "colbert",
+            "maxsim",
+            "multi-vector"
+          ],
+          "question": "在 ColBERT 风格的『晚期交互（late interaction）』检索中，查询与文档的相似度如何计算？",
+          "options": [
+            "对查询每个 token 取其与文档所有 token/patch 的最大相似度，再求和（MaxSim）",
+            "文档在索引阶段独立编码、可离线存储，评分只在查询时细粒度匹配",
+            "把查询和文档拼接后送交叉编码器，得到单一的整体相关性分数",
+            "只取文档单个稠密向量与查询向量做点积，等价于单向量检索方式"
+          ]
+        }
+      }
+    ],
+    "lateinter-02": [
+      {
+        "id": "lateinter-02__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "多向量何时胜单向量？下列哪些正确？",
+        "options": [
+          "稀有实体在单向量里与全文挤一空间",
+          "多条件逐项对齐，不在单向量折中",
+          "单向量全场景严格优，只是存更大",
+          "多向量须在线编文档，无法离线索引"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从胜负定实体与对齐环节",
+          "reasoningGoal": "先定场景的环节；再逐项验证各判断；并排除「恒优」「无法离线」等不成立描述。"
+        },
+        "generatedAt": 1788915868876,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6accd4da",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-bad9d558",
+        "sourceSnapshot": {
+          "id": "lateinter-02",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-vector",
+            "single-vector",
+            "exact-match",
+            "token-alignment"
+          ],
+          "question": "相比把整篇文本压成单个稠密向量，多向量（late interaction）表示在哪些匹配场景下更占优？",
+          "options": [
+            "需精确匹配产品编码、人名、函数名等稀有实体时，单向量把它们与全文竞争同一空间",
+            "多条件查询能逐项与文档 token 对齐，而非被迫在单一向量中折中",
+            "单向量在所有情况下都严格优于多向量，只是存储体积更大",
+            "多向量必须在线编码文档，无法在索引阶段离线建索引"
+          ]
+        }
+      },
+      {
+        "id": "lateinter-02__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "稀有实体单向量里被淹。换多向量，下列哪些判断成立？",
+        "options": [
+          "产品编码人名函数名，单向量竞争失位",
+          "查询多条件各找各 token，不折中",
+          "单向量恒优，多向量只费存储",
+          "文档在线编码，离线索引免谈"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从被淹换向量看竞争环节",
+          "reasoningGoal": "先换向量的环节；再逐项验证各判断；并排除「恒优」「免谈」等不成立描述。"
+        },
+        "generatedAt": 1788915868878,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6accd4da",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-12852e77",
+        "sourceSnapshot": {
+          "id": "lateinter-02",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-vector",
+            "single-vector",
+            "exact-match",
+            "token-alignment"
+          ],
+          "question": "相比把整篇文本压成单个稠密向量，多向量（late interaction）表示在哪些匹配场景下更占优？",
+          "options": [
+            "需精确匹配产品编码、人名、函数名等稀有实体时，单向量把它们与全文竞争同一空间",
+            "多条件查询能逐项与文档 token 对齐，而非被迫在单一向量中折中",
+            "单向量在所有情况下都严格优于多向量，只是存储体积更大",
+            "多向量必须在线编码文档，无法在索引阶段离线建索引"
+          ]
+        }
+      }
+    ],
+    "lateinter-04": [
+      {
+        "id": "lateinter-04__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "何时上多向量重排而非单向量？",
+        "options": [
+          "长文档超训练长，多向量按块保留",
+          "多约束稀有符，单向量压缩易丢",
+          "存延紧百万单查，单向量已足够",
+          "跨视觉表格图表免 OCR，视觉 late 用上"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从重排定长文与约束环节",
+          "reasoningGoal": "先定何时的环节；再逐项验证各判断；并排除「已足够」等不成立描述。"
+        },
+        "generatedAt": 1788915868883,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-92ab6d69",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-c3972912",
+        "sourceSnapshot": {
+          "id": "lateinter-04",
+          "topic": "reranking",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "late-interaction",
+            "when-to-use",
+            "long-doc",
+            "visual-doc"
+          ],
+          "question": "在检索管线中，什么情况下值得引入多向量 late interaction 做重排（reranking）而非仅用单向量 bi-encoder？",
+          "options": [
+            "语料含长文档且超单向量模型训练长度上限，多向量可按块保留信息",
+            "查询含多个独立约束或稀有标识符，单向量容易在压缩中丢失",
+            "存储与延迟极紧、语料仅百万级且查询单一，单向量已足够",
+            "跨视觉文档（表格/图表）检索且不想做 OCR 时，可用视觉 late interaction"
+          ]
+        }
+      },
+      {
+        "id": "lateinter-04__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "bi-encoder 不够用了。加 late 重排，下列哪些判断成立？",
+        "options": [
+          "超长文档截断丢信息，分块多向量兜底",
+          "独立约束标识符多，单向量压缩丢失",
+          "百万级单查询紧预算，单向量够用",
+          "表格图表不 OCR，视觉交互直接上"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从不够用加分块与视觉环节",
+          "reasoningGoal": "先加排的环节；再逐项验证各判断；并排除「够用」等不成立描述。"
+        },
+        "generatedAt": 1788915868885,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-92ab6d69",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-a1478bef",
+        "sourceSnapshot": {
+          "id": "lateinter-04",
+          "topic": "reranking",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "late-interaction",
+            "when-to-use",
+            "long-doc",
+            "visual-doc"
+          ],
+          "question": "在检索管线中，什么情况下值得引入多向量 late interaction 做重排（reranking）而非仅用单向量 bi-encoder？",
+          "options": [
+            "语料含长文档且超单向量模型训练长度上限，多向量可按块保留信息",
+            "查询含多个独立约束或稀有标识符，单向量容易在压缩中丢失",
+            "存储与延迟极紧、语料仅百万级且查询单一，单向量已足够",
+            "跨视觉文档（表格/图表）检索且不想做 OCR 时，可用视觉 late interaction"
+          ]
+        }
+      }
+    ],
+    "lateinter-05": [
+      {
+        "id": "lateinter-05__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "ColPali 跳过 OCR 怎么做视觉检索？",
+        "options": [
+          "页面截图切 patch 编多向量，查 token MaxSim",
+          "像素 patch 直检免转文本，用表格图形线索",
+          "先 OCR 转文本再单向量，等价传统 RAG",
+          "每页只出单稠密向量，cosine 相似度检索"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从跳过定切块与直检环节",
+          "reasoningGoal": "先定做法的环节；再逐项验证各判断；并排除「等价传统」「单向量」等不成立描述。"
+        },
+        "generatedAt": 1788915868885,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-42f9a21d",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-a765b8fe",
+        "sourceSnapshot": {
+          "id": "lateinter-05",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "colpali",
+            "visual-document",
+            "ocr-free",
+            "patch-embedding"
+          ],
+          "question": "ColPali 如何把晚期交互用于『视觉文档检索』，从而跳过传统 OCR/版面分析流水线？",
+          "options": [
+            "把页面截图送视觉语言模型切 patch 并编码为多向量，与查询 token 做 MaxSim",
+            "直接在图像像素/patch 层面检索，无需先识别成文本，可利用表格图形等线索",
+            "先对页面做 OCR 得文本，再对文本做单向量嵌入，与传统文本 RAG 等价",
+            "每个页面只生成一个稠密向量，再用 cosine 做相似度检索"
+          ]
+        }
+      },
+      {
+        "id": "lateinter-05__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "整页截图不识字直接检。看这次跳过，下列哪些判断成立？",
+        "options": [
+          "截图送视觉模型，多向量对查询 MaxSim",
+          "图像层面直接检，表格图形线索能用",
+          "OCR 文本再嵌入，传统 RAG 同款",
+          "单向量每页，cosine 一算完事"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从不识字看模型与同款环节",
+          "reasoningGoal": "先看跳过的环节；再逐项验证各判断；并排除「同款」「完事」等不成立描述。"
+        },
+        "generatedAt": 1788915868887,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-42f9a21d",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-2e16e7e9",
+        "sourceSnapshot": {
+          "id": "lateinter-05",
+          "topic": "reranking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "colpali",
+            "visual-document",
+            "ocr-free",
+            "patch-embedding"
+          ],
+          "question": "ColPali 如何把晚期交互用于『视觉文档检索』，从而跳过传统 OCR/版面分析流水线？",
+          "options": [
+            "把页面截图送视觉语言模型切 patch 并编码为多向量，与查询 token 做 MaxSim",
+            "直接在图像像素/patch 层面检索，无需先识别成文本，可利用表格图形等线索",
+            "先对页面做 OCR 得文本，再对文本做单向量嵌入，与传统文本 RAG 等价",
+            "每个页面只生成一个稠密向量，再用 cosine 做相似度检索"
+          ]
+        }
+      }
+    ],
+    "agentic-39": [
+      {
+        "id": "agentic-39__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "Multi-Agent 何时过度？退回单体信号，下列哪些正确？",
+        "options": [
+          "单窗一次能做完，拆多 Agent 硬分工",
+          "角色只转发无视角，无并行工具权限差",
+          "单体基线对比相当即退，协调贵过分工",
+          "角色越多越智能，边际收益恒正",
+          "协调难量化不对比，凭直觉拆分"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从过度定单窗与基线环节",
+          "reasoningGoal": "先定过度的环节；再逐项验证各判断；并排除「恒正」「凭直觉」等不成立描述。"
+        },
+        "generatedAt": 1788915868888,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cce3758f",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-88ac30b2",
+        "sourceSnapshot": {
+          "id": "agentic-39",
+          "topic": "multi-agent",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "overengineering",
+            "simplicity",
+            "tradeoff"
+          ],
+          "question": "什么情况下 Multi-Agent 是过度设计？你会用什么信号来判断该退回单体 Agent？",
+          "options": [
+            "任务能放进单个上下文一次完成，却被拆成多个Agent分工协作",
+            "角色间只是转发消息，没有独立视角、并行收益或不同的工具与权限域",
+            "用精心设计的单体跑基线对比，成功率相当则退回单体，协调成本超分工收益即过度",
+            "角色越多系统越智能，加角色的边际收益总为正，不存在过度设计问题",
+            "协调开销难以度量，不应与单体基线实证对比，凭架构直觉拆分即可"
+          ]
+        }
+      },
+      {
+        "id": "agentic-39__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "角色越加越多。砍这次编制，下列哪些判断成立？",
+        "options": [
+          "单个上下文装得下，拆分即多余",
+          "转发消息无独立视角，并行权限无差",
+          "精心单体基线相当，协调超分工即退",
+          "加角色恒增智能，过度设计不存在",
+          "实证对比免谈，直觉拆分足够"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从加多砍编制看装下与直觉环节",
+          "reasoningGoal": "先砍编制的环节；再逐项验证各判断；并排除「不存在」「足够」等不成立描述。"
+        },
+        "generatedAt": 1788915868889,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-cce3758f",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-81691d2a",
+        "sourceSnapshot": {
+          "id": "agentic-39",
+          "topic": "multi-agent",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "overengineering",
+            "simplicity",
+            "tradeoff"
+          ],
+          "question": "什么情况下 Multi-Agent 是过度设计？你会用什么信号来判断该退回单体 Agent？",
+          "options": [
+            "任务能放进单个上下文一次完成，却被拆成多个Agent分工协作",
+            "角色间只是转发消息，没有独立视角、并行收益或不同的工具与权限域",
+            "用精心设计的单体跑基线对比，成功率相当则退回单体，协调成本超分工收益即过度",
+            "角色越多系统越智能，加角色的边际收益总为正，不存在过度设计问题",
+            "协调开销难以度量，不应与单体基线实证对比，凭架构直觉拆分即可"
+          ]
+        }
+      }
+    ],
+    "agentic-56": [
+      {
+        "id": "agentic-56__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "Memory 为何不等于 History？（选三个）",
+        "options": [
+          "历史密度低噪大，线性胀撑爆窗口难检索",
+          "记忆即全量回放，存越多灌越多越好",
+          "Memory 提炼结构化，摘要向量沉淀",
+          "窗口大历史常驻，提炼检索权宜计",
+          "按相关召回非时间回放，免稀释信号"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从不等定密度与提炼环节",
+          "reasoningGoal": "先定差异的环节；再逐项验证各判断；并排除「越多越好」「权宜计」等不成立描述。"
+        },
+        "generatedAt": 1788915868890,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7c924360",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-210af9f9",
+        "sourceSnapshot": {
+          "id": "agentic-56",
+          "topic": "memory",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "memory",
+            "conversation-history"
+          ],
+          "question": "为什么 Agent 的 Memory 不应该简单等同于 Conversation History？以下哪些说法正确？（请选择三个选项）",
+          "options": [
+            "对话历史信息密度低且噪声大，随轮次线性膨胀，既撑爆窗口又难以高效检索",
+            "记忆即全量回放：把全部历史逐字存下并按时间顺序灌回上下文，存得越多效果越好",
+            "Memory 应是提炼后的结构化状态与领域知识，需经摘要、结构化或向量化沉淀",
+            "窗口足够大时全量历史可直接常驻，提炼与检索只是小窗口时代的权宜之计",
+            "历史消费应按相关性召回而非按时间全量回放，避免无关内容稀释关键信号"
+          ]
+        }
+      },
+      {
+        "id": "agentic-56__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "历史灌回撑爆窗口。做记忆提炼，下列哪些判断成立？（选三个）",
+        "options": [
+          "信息密度低噪声大，膨胀撑爆难检索",
+          "逐字存下按时灌回，越多越好",
+          "状态知识结构沉淀，摘要向量化",
+          "大窗口常驻历史，提炼多余",
+          "相关性召回，无关不稀释关键"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从撑爆做提炼看沉淀环节",
+          "reasoningGoal": "先做提炼的环节；再逐项验证各判断；并排除「越多越好」「多余」等不成立描述。"
+        },
+        "generatedAt": 1788915868892,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7c924360",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-5cedac3a",
+        "sourceSnapshot": {
+          "id": "agentic-56",
+          "topic": "memory",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "memory",
+            "conversation-history"
+          ],
+          "question": "为什么 Agent 的 Memory 不应该简单等同于 Conversation History？以下哪些说法正确？（请选择三个选项）",
+          "options": [
+            "对话历史信息密度低且噪声大，随轮次线性膨胀，既撑爆窗口又难以高效检索",
+            "记忆即全量回放：把全部历史逐字存下并按时间顺序灌回上下文，存得越多效果越好",
+            "Memory 应是提炼后的结构化状态与领域知识，需经摘要、结构化或向量化沉淀",
+            "窗口足够大时全量历史可直接常驻，提炼与检索只是小窗口时代的权宜之计",
+            "历史消费应按相关性召回而非按时间全量回放，避免无关内容稀释关键信号"
+          ]
+        }
+      }
+    ],
+    "agent-mem-layer-01": [
+      {
+        "id": "agent-mem-layer-01__surface-options__assessmentfresh19__0",
+        "kind": "surface-options",
+        "question": "短/长/事务三内存职责权衡，哪些正确？",
+        "options": [
+          "短期内存护 Prompt 推演，会话毕销毁",
+          "长期语义走向量图谱，跨会检索无 ACID",
+          "事务放上下文省设施，模型自洽保一致",
+          "宕机凭持久事务态续跑，免重调副作用 API"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从三层定推演与续跑环节",
+          "reasoningGoal": "先定职责的环节；再逐项验证各判断；并排除「自洽保一致」等不成立描述。"
+        },
+        "generatedAt": 1788915868895,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-44936387",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-6f8efb50",
+        "sourceSnapshot": {
+          "id": "agent-mem-layer-01",
+          "topic": "memory",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "memory-layer",
+            "working-memory",
+            "semantic-memory",
+            "transactional-memory"
+          ],
+          "question": "在构建生产级 AI Agent 架构时，内存层（Memory Layer）通常划分为短期工作内存（Short-term Working Memory）、长期语义内存（Long-term Semantic Memory）与事务状态内存（Transactional Memory / State）。针对不同内存层的架构职责与权衡，下列说法正确的有？（多选）",
+          "options": [
+            "短期工作内存主要维护当前任务的 Prompt 上下文与推演过程（Scratchpad），生命周期通常随单次任务会话结束而销毁",
+            "长期语义内存通常基于向量数据库或知识图谱实现，用于跨会话检索领域知识与历史偏好，但不提供关系型数据库的强一致性（ACID）保障",
+            "事务状态放上下文可省掉状态机与数据库两套设施；一致性由模型自洽保证，中小规模足够。",
+            "长流程中宕机时，持久化事务状态可让 Agent 从失败节点重试，避免重触已产生副作用的外部 API。"
+          ]
+        }
+      },
+      {
+        "id": "agent-mem-layer-01__context-options__assessmentfresh19__1",
+        "kind": "context-options",
+        "question": "Agent 状态分三层存。划这次内存，下列哪些判断成立？",
+        "options": [
+          "短期内存护当前推演 Scratchpad，会话结束销毁",
+          "向量库图谱跨会检偏好，无强一致保障",
+          "状态机数据库双省，自洽中小规模够",
+          "失败节点重试续跑，已副作用 API 不重触"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从分层划内存看销毁与保障环节",
+          "reasoningGoal": "先划内存的环节；再逐项验证各判断；并排除「双省够」等不成立描述。"
+        },
+        "generatedAt": 1788915868899,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-44936387",
+        "batch": "assessmentfresh19",
+        "model": "manual",
+        "contentHash": "fnv1a-b5b6eff8",
+        "sourceSnapshot": {
+          "id": "agent-mem-layer-01",
+          "topic": "memory",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "memory-layer",
+            "working-memory",
+            "semantic-memory",
+            "transactional-memory"
+          ],
+          "question": "在构建生产级 AI Agent 架构时，内存层（Memory Layer）通常划分为短期工作内存（Short-term Working Memory）、长期语义内存（Long-term Semantic Memory）与事务状态内存（Transactional Memory / State）。针对不同内存层的架构职责与权衡，下列说法正确的有？（多选）",
+          "options": [
+            "短期工作内存主要维护当前任务的 Prompt 上下文与推演过程（Scratchpad），生命周期通常随单次任务会话结束而销毁",
+            "长期语义内存通常基于向量数据库或知识图谱实现，用于跨会话检索领域知识与历史偏好，但不提供关系型数据库的强一致性（ACID）保障",
+            "事务状态放上下文可省掉状态机与数据库两套设施；一致性由模型自洽保证，中小规模足够。",
+            "长流程中宕机时，持久化事务状态可让 Agent 从失败节点重试，避免重触已产生副作用的外部 API。"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1819 @@
+{
+  "version": 1,
+  "generatedAt": 1788912551973,
+  "promptVersion": "v4",
+  "variants": {
+    "agentic-25": [
+      {
+        "id": "agentic-25__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "线上监控发现某 Agent 对同一 Tool 短时间内发起多次参数几乎相同的调用。定位这次重复调用，下列哪些判断成立？",
+        "options": [
+          "工具结果未有效写回上下文，错误信息模糊致误判失败重试",
+          "重复命中应在工具层静默丢弃，不提示以免打断推理",
+          "工具结果结构化回注上下文，标注第 N 次调用区分成功失败",
+          "定位只需统计调用次数，上下文差异不影响定性",
+          "加相似参数重复检测护栏，命中返回缓存并提醒无需再调"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从重复调用现象定位结果回写与重试误判环节",
+          "reasoningGoal": "先定位重复调用的环节；再逐项验证各判断；并排除「静默丢弃」「只看次数」等不成立描述。"
+        },
+        "generatedAt": 1788912551960,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5fb2595f",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-1a201a89",
+        "sourceSnapshot": {
+          "id": "agentic-25",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "debugging",
+            "loop",
+            "repetition"
+          ],
+          "question": "一个 Agent 经常重复执行同一个 Tool（参数几乎一样）。可能的原因是什么？你会如何定位与修复？",
+          "options": [
+            "常见根因是工具结果未被有效写回上下文，或错误信息模糊使模型误判为失败而发起重试",
+            "重复检测命中后应在工具层静默丢弃请求并不做任何提示，以免打断模型的既有推理思路",
+            "把工具结果结构化回注上下文并标注这是第 N 次调用，让模型明确区分成功与失败",
+            "定位时只需统计调用次数指标，两次调用之间的上下文内容差异不影响根因定性",
+            "增加相似参数的重复检测护栏，命中时直接返回缓存结果并提醒模型无需再次调用"
+          ]
+        }
+      },
+      {
+        "id": "agentic-25__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "某 Agent 把同一工具调了多遍，入参几乎一样。复盘这次调用序列，下列哪些判断成立？",
+        "options": [
+          "根因是结果未写回上下文或报错模糊，模型误判失败重试",
+          "命中重复检测就静默丢弃请求，不打断既有思路",
+          "结构化回注结果并标第 N 次，成功失败明确区分",
+          "只看调用次数指标定性，上下文内容差异无碍",
+          "相似参数设重复护栏，命中回缓存提醒不再调用"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从调用序列复盘结果回写与护栏缺失环节",
+          "reasoningGoal": "先复盘调用序列的环节；再逐项验证各判断；并排除「静默丢弃」「只看次数」等不成立描述。"
+        },
+        "generatedAt": 1788912551961,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5fb2595f",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-f87dcb98",
+        "sourceSnapshot": {
+          "id": "agentic-25",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "debugging",
+            "loop",
+            "repetition"
+          ],
+          "question": "一个 Agent 经常重复执行同一个 Tool（参数几乎一样）。可能的原因是什么？你会如何定位与修复？",
+          "options": [
+            "常见根因是工具结果未被有效写回上下文，或错误信息模糊使模型误判为失败而发起重试",
+            "重复检测命中后应在工具层静默丢弃请求并不做任何提示，以免打断模型的既有推理思路",
+            "把工具结果结构化回注上下文并标注这是第 N 次调用，让模型明确区分成功与失败",
+            "定位时只需统计调用次数指标，两次调用之间的上下文内容差异不影响根因定性",
+            "增加相似参数的重复检测护栏，命中时直接返回缓存结果并提醒模型无需再次调用"
+          ]
+        }
+      }
+    ],
+    "agentic-27": [
+      {
+        "id": "agentic-27__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "某 Agent 同样输入跑两次，一次成功一次失败。排查这种偶发分化，下列哪些判断成立？",
+        "options": [
+          "查采样随机性与供应商版本漂移，确认推理条件一致",
+          "同输入必同输出，分化是运气问题重跑即可",
+          "查外部环境变化，接口数据限流波动改执行路径",
+          "行为只由代码版本决定，锁定版本号解释一切",
+          "查上次残留状态污染，trace diff 对比二分复现"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从两次运行分化定位随机性与状态污染环节",
+          "reasoningGoal": "先定位运行分化的环节；再逐项验证各判断；并排除「必同输出」「只由版本定」等不成立描述。"
+        },
+        "generatedAt": 1788912551961,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6388ffe8",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-7d73d745",
+        "sourceSnapshot": {
+          "id": "agentic-27",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "state",
+            "non-determinism",
+            "debugging"
+          ],
+          "question": "Agent 第一次运行成功，第二次同样输入却失败了。你会优先检查哪些 State 与环境因素？",
+          "options": [
+            "检查模型采样随机性与供应商侧版本漂移，确认两次运行的实际推理条件是否真正一致",
+            "同样输入必然产生同样输出，分化只可能是偶然运气所致，无需排查，直接重跑一次即可",
+            "检查外部环境变化，如接口返回数据差异、限流或网络波动是否改变了执行路径",
+            "Agent 行为只由代码版本决定，锁定部署流水线版本号即可解释一切非预期的行为变化",
+            "检查上次运行残留的状态污染，并用 trace diff 对比两次运行，再二分禁用可变因素复现"
+          ]
+        }
+      },
+      {
+        "id": "agentic-27__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "同一输入昨天跑通今天失败，代码没动。检查这次偶发不一致，下列哪些判断成立？",
+        "options": [
+          "确认采样随机与版本漂移，两次推理条件未必一致",
+          "输入相同输出必然相同，分化属偶然无需排查",
+          "外部环境变化，接口返回限流波动改执行路径",
+          "锁定部署流水线版本，即可解释行为变化",
+          "残留状态污染须查，trace diff 后二分禁用可变因素"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从偶发不一致检查环境与版本漂移环节",
+          "reasoningGoal": "先检查不一致的环节；再逐项验证各判断；并排除「必然相同」「锁版本解释一切」等不成立描述。"
+        },
+        "generatedAt": 1788912551962,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6388ffe8",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-7fbb98e1",
+        "sourceSnapshot": {
+          "id": "agentic-27",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "state",
+            "non-determinism",
+            "debugging"
+          ],
+          "question": "Agent 第一次运行成功，第二次同样输入却失败了。你会优先检查哪些 State 与环境因素？",
+          "options": [
+            "检查模型采样随机性与供应商侧版本漂移，确认两次运行的实际推理条件是否真正一致",
+            "同样输入必然产生同样输出，分化只可能是偶然运气所致，无需排查，直接重跑一次即可",
+            "检查外部环境变化，如接口返回数据差异、限流或网络波动是否改变了执行路径",
+            "Agent 行为只由代码版本决定，锁定部署流水线版本号即可解释一切非预期的行为变化",
+            "检查上次运行残留的状态污染，并用 trace diff 对比两次运行，再二分禁用可变因素复现"
+          ]
+        }
+      }
+    ],
+    "agentic-28": [
+      {
+        "id": "agentic-28__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "某 Agent 跑长任务越跑越迷糊，模型版本没换。定位这种后期下滑，下列哪些判断成立？",
+        "options": [
+          "根因 context pollution，失败尝试输出滞留干扰",
+          "下滑是模型隐性能力衰退，换供应商才能恢复",
+          "定期摘要已完成工作，失败细节只留一句话教训",
+          "保留全部中间原文，上下文越完整越稳定",
+          "目标约束固定 system 区周期重申，必要时干净重启"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从后期下滑定位上下文污染与注意力稀释环节",
+          "reasoningGoal": "先定位下滑发生的环节；再逐项验证各判断；并排除「能力衰退」「全保留」等不成立描述。"
+        },
+        "generatedAt": 1788912551962,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4406fd0c",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-d0e3f619",
+        "sourceSnapshot": {
+          "id": "agentic-28",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "context-pollution",
+            "long-task",
+            "debugging"
+          ],
+          "question": "Agent 在长任务中表现越来越差（“越来越迷糊”），但模型本身能力没有变化。可能是什么问题？如何解决？",
+          "options": [
+            "根因多为 context pollution：失败尝试与冗长工具输出滞留上下文持续干扰决策，并叠加长上下文注意力稀释",
+            "后期下滑源于模型持续推理后的隐性能力衰退，应定期更换底层供应商，上下文治理无法恢复水平",
+            "定期把已完成工作摘要化，剥离失败尝试的细节只保留一句话教训，大输出落盘仅回注摘要",
+            "保留全部中间输出原文以便随时回查，上下文越完整表现越稳定，摘要剥离只会丢失关键线索",
+            "把目标与关键约束固定在 system 区并周期性重申，必要时用干净上下文加摘要交接重启子任务"
+          ]
+        }
+      },
+      {
+        "id": "agentic-28__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "长任务后半程质量走低，模型能力并未变化。分析这次走低，下列哪些判断成立？",
+        "options": [
+          "失败尝试与长工具输出滞留，叠加注意力稀释致迷糊",
+          "持续推理致能力隐性衰退，上下文治理无效须换供应商",
+          "已完成工作摘要化，大输出落盘只回注摘要",
+          "中间输出全保留回查，摘要剥离丢关键线索",
+          "system 区固定目标约束周期重申，摘要交接重启子任务"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从后半程走低分析污染滞留与稀释环节",
+          "reasoningGoal": "先分析走低的环节；再逐项验证各判断；并排除「隐性衰退」「全保留回查」等不成立描述。"
+        },
+        "generatedAt": 1788912551962,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4406fd0c",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-fceaa6ba",
+        "sourceSnapshot": {
+          "id": "agentic-28",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "context-pollution",
+            "long-task",
+            "debugging"
+          ],
+          "question": "Agent 在长任务中表现越来越差（“越来越迷糊”），但模型本身能力没有变化。可能是什么问题？如何解决？",
+          "options": [
+            "根因多为 context pollution：失败尝试与冗长工具输出滞留上下文持续干扰决策，并叠加长上下文注意力稀释",
+            "后期下滑源于模型持续推理后的隐性能力衰退，应定期更换底层供应商，上下文治理无法恢复水平",
+            "定期把已完成工作摘要化，剥离失败尝试的细节只保留一句话教训，大输出落盘仅回注摘要",
+            "保留全部中间输出原文以便随时回查，上下文越完整表现越稳定，摘要剥离只会丢失关键线索",
+            "把目标与关键约束固定在 system 区并周期性重申，必要时用干净上下文加摘要交接重启子任务"
+          ]
+        }
+      }
+    ],
+    "agentic-31": [
+      {
+        "id": "agentic-31__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "某付款 Agent 偶发重复付款。架构层面根治这次双付，下列哪些判断成立？",
+        "options": [
+          "支付层用确定性幂等键去重，同键重复只执行一次",
+          "system 最高优先级警告加对抗测试，达标等价硬约束",
+          "付款前设人工确认门，超阈值审批放行",
+          "持久化状态机约束推进，落盘前进加对账兜底",
+          "双付率极低人工冲正更省，残余风险可接受"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从双付现象定架构硬约束与兜底环节",
+          "reasoningGoal": "先定双付根治的环节；再逐项验证各判断；并排除「警告等价约束」「冲正更省」等不成立描述。"
+        },
+        "generatedAt": 1788912551963,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-85e162ba",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-c30af6b6",
+        "sourceSnapshot": {
+          "id": "agentic-31",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "payment",
+            "side-effects",
+            "idempotency-key"
+          ],
+          "question": "一个能执行付款的 Agent 偶尔会重复付款两次。你会如何从架构层面彻底解决？",
+          "options": [
+            "用确定性幂等键（如赔案号加步骤标识）在支付接口层去重，相同键的重复请求只执行一次。",
+            "把警告升级为 system 级最高优先级指令并做对抗测试验证服从率，测得服从率达标后即等价于架构硬约束。",
+            "在付款动作前设置人工确认门或风控规则校验，超过金额阈值必须审批后放行。",
+            "以持久化状态机约束任务推进，每步落盘后再前进，并配合 audit log 与定时对账兜底。",
+            "双付发生率极低时人工冲正的总成本低于幂等改造，风控可接受残余风险；架构投入应与事故期望损失匹配。"
+          ]
+        }
+      },
+      {
+        "id": "agentic-31__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "付款动作偶发执行两次，模型侧已多次提醒无效。从约束设计看，下列哪些判断成立？",
+        "options": [
+          "赔案号加步骤标识做幂等键，接口层同键去重",
+          "警告升 system 最高优先级，服从率达标即硬约束",
+          "风控规则校验付款动作，金额超阈值须审批",
+          "状态机每步落盘再前进，audit log 定时对账",
+          "人工冲正成本低于幂等改造，投入匹配期望损失"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从约束设计看幂等与状态机环节",
+          "reasoningGoal": "先看约束设计的环节；再逐项验证各判断；并排除「警告即约束」「冲正匹配损失」等不成立描述。"
+        },
+        "generatedAt": 1788912551963,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-85e162ba",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-14397943",
+        "sourceSnapshot": {
+          "id": "agentic-31",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "payment",
+            "side-effects",
+            "idempotency-key"
+          ],
+          "question": "一个能执行付款的 Agent 偶尔会重复付款两次。你会如何从架构层面彻底解决？",
+          "options": [
+            "用确定性幂等键（如赔案号加步骤标识）在支付接口层去重，相同键的重复请求只执行一次。",
+            "把警告升级为 system 级最高优先级指令并做对抗测试验证服从率，测得服从率达标后即等价于架构硬约束。",
+            "在付款动作前设置人工确认门或风控规则校验，超过金额阈值必须审批后放行。",
+            "以持久化状态机约束任务推进，每步落盘后再前进，并配合 audit log 与定时对账兜底。",
+            "双付发生率极低时人工冲正的总成本低于幂等改造，风控可接受残余风险；架构投入应与事故期望损失匹配。"
+          ]
+        }
+      }
+    ],
+    "agentic-34": [
+      {
+        "id": "agentic-34__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "某 Agent 测试集上高分，上线成功率大跌。排查实验室到生产的落差，下列哪些判断成立？",
+        "options": [
+          "生产提问口语化带噪，测试集窄需真实流量回放扩充",
+          "测试通过即生产可用，下滑是波动会自恢复",
+          "限流延迟脏数据并发竞争，须分层归因环境差异",
+          "落差全怪供应商波动，锁版本施压即可",
+          "知识库与 fixture 不同步，失败聚类回灌加灰度验证"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从上下线落差定位分布与环境差异环节",
+          "reasoningGoal": "先定位落差的环节；再逐项验证各判断；并排除「通过即可用」「全怪供应商」等不成立描述。"
+        },
+        "generatedAt": 1788912551964,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-677dcf6f",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-157cf8e2",
+        "sourceSnapshot": {
+          "id": "agentic-34",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "prod-gap",
+            "evaluation",
+            "distribution-shift"
+          ],
+          "question": "一个 Agent 在测试环境表现很好，上线后成功率大幅下降。你会从哪些维度排查这种“实验室到生产”的落差？",
+          "options": [
+            "生产提问更口语化且夹杂噪声，测试集过窄过干净，属分布漂移，需用真实流量采样回放扩充评测集",
+            "测试环境通过即代表生产可用，上线初期下降只是正常波动，观察一段时间自会恢复",
+            "真实环境的限流延迟与脏数据、并发竞争是常见落差源，排查时须把环境差异纳入分层归因",
+            "落差应全部归因于模型供应商的质量波动，与本方评测集构成无关，锁定版本施压供应商即可",
+            "生产知识库与测试 fixture 不同步，对线上失败样本聚类后回灌评测集，并以影子流量与灰度验证"
+          ]
+        }
+      },
+      {
+        "id": "agentic-34__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "测试环境一路绿灯，生产成功率掉了一大截。归因这次落差，下列哪些判断成立？",
+        "options": [
+          "生产 query 杂带噪声，测试集干净属分布漂移",
+          "测试通过代表生产可用，初期下降观察即恢复",
+          "真实环境限流脏数据并发，排查纳入分层归因",
+          "落差全归因供应商质量波动，与评测集无关",
+          "线上失败聚类回灌评测集，影子流量灰度验证"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从落差归因看分布漂移与知识不同步环节",
+          "reasoningGoal": "先归因落差的环节；再逐项验证各判断；并排除「代表可用」「与评测集无关」等不成立描述。"
+        },
+        "generatedAt": 1788912551964,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-677dcf6f",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-06d339b4",
+        "sourceSnapshot": {
+          "id": "agentic-34",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "prod-gap",
+            "evaluation",
+            "distribution-shift"
+          ],
+          "question": "一个 Agent 在测试环境表现很好，上线后成功率大幅下降。你会从哪些维度排查这种“实验室到生产”的落差？",
+          "options": [
+            "生产提问更口语化且夹杂噪声，测试集过窄过干净，属分布漂移，需用真实流量采样回放扩充评测集",
+            "测试环境通过即代表生产可用，上线初期下降只是正常波动，观察一段时间自会恢复",
+            "真实环境的限流延迟与脏数据、并发竞争是常见落差源，排查时须把环境差异纳入分层归因",
+            "落差应全部归因于模型供应商的质量波动，与本方评测集构成无关，锁定版本施压供应商即可",
+            "生产知识库与测试 fixture 不同步，对线上失败样本聚类后回灌评测集，并以影子流量与灰度验证"
+          ]
+        }
+      }
+    ],
+    "ai-eng-021": [
+      {
+        "id": "ai-eng-021__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "某 AI 服务依赖第三方 LLM，线上偶发 timeout、429、5xx 与坏 JSON。设计这套可靠性机制，下列哪些判断成立？",
+        "options": [
+          "timeout 有限重试加备用切换，重试设全局预算上限",
+          "故障多分钟级 transient，无限重试加抖动最简单",
+          "429 指数退避加客户端限速，高峰主动平滑",
+          "5xx 限次重试后降级，坏 JSON 校验修复重试分类监控",
+          "故障全转人工冻结自动化，恢复后灰度放量"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从第三方故障定重试与降级环节",
+          "reasoningGoal": "先定故障应对的环节；再逐项验证各判断；并排除「无限重试」「全转人工」等不成立描述。"
+        },
+        "generatedAt": 1788912551964,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3ada1cc5",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-1212e618",
+        "sourceSnapshot": {
+          "id": "ai-eng-021",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reliability",
+            "LLM",
+            "production"
+          ],
+          "question": "一个 AI 服务依赖第三方 LLM API。线上偶尔出现 timeout、429、5xx 和 malformed JSON。你会设计哪些 reliability mechanisms？",
+          "options": [
+            "对 timeout 设置有限次重试并可在超过阈值后切换备用模型或备用服务商，同时为重试设全局预算上限，避免重试风暴放大故障。",
+            "第三方故障多为分钟级 transient，无限重试加抖动即最简单的自愈；差异化分支增加复杂度却少覆盖新故障模式。",
+            "对 429 实施指数退避并叠加客户端限速，在已知的高峰时段主动平滑请求速率，而不是撞上限额后立刻原样重发。",
+            "对 5xx 限次重试后降级备用；malformed JSON 做 schema 校验并修复重试；各类错误建分类监控。",
+            "故障期间全部转人工并冻结自动化，恢复后灰度放量；人工兜底期间顺便沉淀标注数据，一举两得。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-021__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "第三方 API 超时 429 交替出现，重试把故障放大。评审这套重试设计，下列哪些判断成立？",
+        "options": [
+          "超阈值切备用模型服务商，重试预算防风暴放大",
+          "无限重试抖动自愈，分支差异少覆盖新模式",
+          "高峰平滑请求速率，撞限额不原样重发",
+          "5xx 降级备用，schema 校验修复加分类监控",
+          "冻结自动化转人工，恢复灰度放量沉淀标注"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从重试放大评审预算与平滑环节",
+          "reasoningGoal": "先评审重试设计的环节；再逐项验证各判断；并排除「抖动自愈」「冻结沉淀」等不成立描述。"
+        },
+        "generatedAt": 1788912551965,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3ada1cc5",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-9b5b7db5",
+        "sourceSnapshot": {
+          "id": "ai-eng-021",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reliability",
+            "LLM",
+            "production"
+          ],
+          "question": "一个 AI 服务依赖第三方 LLM API。线上偶尔出现 timeout、429、5xx 和 malformed JSON。你会设计哪些 reliability mechanisms？",
+          "options": [
+            "对 timeout 设置有限次重试并可在超过阈值后切换备用模型或备用服务商，同时为重试设全局预算上限，避免重试风暴放大故障。",
+            "第三方故障多为分钟级 transient，无限重试加抖动即最简单的自愈；差异化分支增加复杂度却少覆盖新故障模式。",
+            "对 429 实施指数退避并叠加客户端限速，在已知的高峰时段主动平滑请求速率，而不是撞上限额后立刻原样重发。",
+            "对 5xx 限次重试后降级备用；malformed JSON 做 schema 校验并修复重试；各类错误建分类监控。",
+            "故障期间全部转人工并冻结自动化，恢复后灰度放量；人工兜底期间顺便沉淀标注数据，一举两得。"
+          ]
+        }
+      }
+    ],
+    "ai-engineering-002": [
+      {
+        "id": "ai-engineering-002__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "主模型 API 故障需自动降级。除切备用模型外，下列哪些判断成立？",
+        "options": [
+          "健康探测熔断自动触发降级恢复，恢复渐进放量",
+          "直接返 500 等工程师介入，如实报错优于掩盖",
+          "逐级降级阶梯，缓存命中裁剪功能异步延后",
+          "明示受限模式，各级独立告警定期演练",
+          "热备同构接管即可，阶梯复杂度是新故障源"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从主模型故障定降级阶梯与演练环节",
+          "reasoningGoal": "先定降级的环节；再逐项验证各判断；并排除「返 500 等」「热备即可」等不成立描述。"
+        },
+        "generatedAt": 1788912551965,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-025c55b8",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-e22a6f78",
+        "sourceSnapshot": {
+          "id": "ai-engineering-002",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reliability",
+            "fallback"
+          ],
+          "question": "主模型 API 出现故障时，系统应该如何自动降级？除了切换备用模型，你还可以采用哪些降级策略？",
+          "options": [
+            "由健康探测与熔断器自动触发降级并支持自动恢复；恢复后渐进放量，避免刚切回就被新流量打垮。",
+            "主模型故障时直接向用户返回 500 错误页并等待工程师介入，如实报错优于掩盖问题，因为暴露故障能让用户理解系统状态，也避免在不稳定时继续提供可能错误的答案。",
+            "构建逐级递进的降级阶梯：先切备用模型，再尝试命中语义缓存的历史相似回答，然后裁剪功能直接返回检索到的原文段落，非实时请求转入异步队列延后处理。",
+            "降级期间在界面明示「服务受限模式」，为每一级降级配置独立的监控告警，并定期演练降级路径确保真实可用。",
+            "降级只需热备同构服务器接管权重，硬件冗余可吸收单点失效；阶梯降级增加的复杂度本身就是新的故障源。"
+          ]
+        }
+      },
+      {
+        "id": "ai-engineering-002__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "主模型挂了，切备用的同时还要保体验不断档。检查这套降级安排，下列哪些判断成立？",
+        "options": [
+          "熔断器触发降级自动恢复，防切回即被打垮",
+          "直接返 500 等工程师介入，暴露故障让用户理解状态",
+          "备用模型语义缓存原文段落，异步队列延后非实时",
+          "界面明示受限，降级路径定期演练保可用",
+          "硬件冗余吸收单点失效，阶梯降级添新故障源"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从降级安排看熔断与缓存环节",
+          "reasoningGoal": "先看降级安排的环节；再逐项验证各判断；并排除「暴露即理解」「硬件冗余够」等不成立描述。"
+        },
+        "generatedAt": 1788912551965,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-025c55b8",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-308b0040",
+        "sourceSnapshot": {
+          "id": "ai-engineering-002",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reliability",
+            "fallback"
+          ],
+          "question": "主模型 API 出现故障时，系统应该如何自动降级？除了切换备用模型，你还可以采用哪些降级策略？",
+          "options": [
+            "由健康探测与熔断器自动触发降级并支持自动恢复；恢复后渐进放量，避免刚切回就被新流量打垮。",
+            "主模型故障时直接向用户返回 500 错误页并等待工程师介入，如实报错优于掩盖问题，因为暴露故障能让用户理解系统状态，也避免在不稳定时继续提供可能错误的答案。",
+            "构建逐级递进的降级阶梯：先切备用模型，再尝试命中语义缓存的历史相似回答，然后裁剪功能直接返回检索到的原文段落，非实时请求转入异步队列延后处理。",
+            "降级期间在界面明示「服务受限模式」，为每一级降级配置独立的监控告警，并定期演练降级路径确保真实可用。",
+            "降级只需热备同构服务器接管权重，硬件冗余可吸收单点失效；阶梯降级增加的复杂度本身就是新的故障源。"
+          ]
+        }
+      }
+    ],
+    "ai-ops-003": [
+      {
+        "id": "ai-ops-003__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "Provider 设 RPM 加 TPM 双限。兼顾请求与 token 速率，下列哪些判断成立？",
+        "options": [
+          "RPM 与 TPM 强相关，只控 RPM 即够",
+          "响应后按实际用量扣 TPM，发送前不做预估",
+          "令牌桶控 RPM，发送前预估 input output 控 TPM",
+          "各实例本地限速均分全局配额，零协调开销",
+          "监听 retry-after 动态调速，优先级排队保交互"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从双限约束定分开计量与调速环节",
+          "reasoningGoal": "先定双限应对的环节；再逐项验证各判断；并排除「只控 RPM」「均分即够」等不成立描述。"
+        },
+        "generatedAt": 1788912551966,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7f13bef6",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-76038c7e",
+        "sourceSnapshot": {
+          "id": "ai-ops-003",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "rate-limit",
+            "llmops"
+          ],
+          "question": "LLM Provider 对你的 API 设置了 RPM 和 TPM 双重限制。你的系统如何同时控制 Request Rate 和 Token Rate？",
+          "options": [
+            "RPM 与 TPM 强相关下可只控 RPM，token 总量随请求数同向变化；发送前预估增加排队延迟，得不偿失。",
+            "TPM 应在收到响应后按实际用量扣减预算，发送前不做任何预估，这样计量最精确，也不会因预算检查产生排队延迟，实时扣减远比预扣更接近真实成本曲线。",
+            "双维度分开计量：令牌桶控 RPM，Token 层发送前预估 input 与 output 再控 TPM；多实例限流器必须集中式共享状态。",
+            "各实例本地限速并按实例数均分全局配额，天然去中心且无单点；配额均分后各实例独立执行，协调开销为零。",
+            "监听 429 的 retry-after 动态调速，按优先级排队保障交互式请求；被限流请求进带 TTL 的缓冲队列。"
+          ]
+        }
+      },
+      {
+        "id": "ai-ops-003__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "RPM 和 TPM 同时吃紧，多实例还抢配额。核查这套限流实现，下列哪些判断成立？",
+        "options": [
+          "RPM TPM 强相关只控 RPM，token 随请求同向变化",
+          "响应后按实际扣减，发送前不预估，计量精确无延迟",
+          "RPM TPM 双维度分开计量，限流器集中共享状态",
+          "各实例均分全局配额独立执行，无单点零协调",
+          "429 按 retry-after 调速，限流进 TTL 缓冲队列"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从限流实现核查计量与共享环节",
+          "reasoningGoal": "先核查限流实现的环节；再逐项验证各判断；并排除「同向即够」「均分无单点」等不成立描述。"
+        },
+        "generatedAt": 1788912551966,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7f13bef6",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-64b5a544",
+        "sourceSnapshot": {
+          "id": "ai-ops-003",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "rate-limit",
+            "llmops"
+          ],
+          "question": "LLM Provider 对你的 API 设置了 RPM 和 TPM 双重限制。你的系统如何同时控制 Request Rate 和 Token Rate？",
+          "options": [
+            "RPM 与 TPM 强相关下可只控 RPM，token 总量随请求数同向变化；发送前预估增加排队延迟，得不偿失。",
+            "TPM 应在收到响应后按实际用量扣减预算，发送前不做任何预估，这样计量最精确，也不会因预算检查产生排队延迟，实时扣减远比预扣更接近真实成本曲线。",
+            "双维度分开计量：令牌桶控 RPM，Token 层发送前预估 input 与 output 再控 TPM；多实例限流器必须集中式共享状态。",
+            "各实例本地限速并按实例数均分全局配额，天然去中心且无单点；配额均分后各实例独立执行，协调开销为零。",
+            "监听 429 的 retry-after 动态调速，按优先级排队保障交互式请求；被限流请求进带 TTL 的缓冲队列。"
+          ]
+        }
+      }
+    ],
+    "ai-ops-004": [
+      {
+        "id": "ai-ops-004__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "主备 Provider 自动切换，如何防重复请求与成本失控？下列哪些判断成立？",
+        "options": [
+          "熔断器收敛重试切流决策，半死不反复探测",
+          "故障瞬间全切加多层并发重试，速度优先",
+          "业务请求配唯一幂等 id，切换层去重",
+          "比较价格表，备用更便宜才允许切换",
+          "渐进放量配额预压测，额外成本设硬顶"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从主备切换定熔断与幂等环节",
+          "reasoningGoal": "先定切换防重放的环节；再逐项验证各判断；并排除「全切抢速」「比价切换」等不成立描述。"
+        },
+        "generatedAt": 1788912551967,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f5795e89",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-eec138a9",
+        "sourceSnapshot": {
+          "id": "ai-ops-004",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "fallback",
+            "reliability",
+            "llmops"
+          ],
+          "question": "Primary LLM Provider 故障时系统自动切换备用 Provider。如何保证切换过程中不会导致大量重复请求和成本失控？",
+          "options": [
+            "用熔断器统一收敛重试与切流决策：主 provider 连续失败或延迟超标打开熔断后才整体切换，避免其在半死状态下被反复探测放大流量。",
+            "故障瞬间把全部流量立即切到备用 provider，并允许客户端、网关、应用层并发重试以尽快恢复服务，恢复速度优先于去重控制。",
+            "为每个业务请求分配唯一幂等 id，在切换层据此去重，保证一次业务操作无论经历多少次转发重试，最多只产生一次有效计费调用。",
+            "切换逻辑应比较双方价格表，只在备用 provider 单价更低时才允许自动切换，用价格差作为成本失控的护栏。",
+            "对新 provider 渐进放量（如 1%、10%、100%）而非瞬时全量，其配额提前申请并压测，同时给故障期间的额外成本设硬顶，超限自动降级为更便宜的兜底模式。"
+          ]
+        }
+      },
+      {
+        "id": "ai-ops-004__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "主 provider 半死不活，重试把备用也打爆了。复盘这次切流，下列哪些判断成立？",
+        "options": [
+          "连续失败延迟超标开熔断，整体切换防流量放大",
+          "全流量瞬切备用，多层重试抢恢复速度",
+          "一次业务操作多次转发，最多一次计费调用",
+          "比较双方价格表，备用单价低自动切，价格差做护栏",
+          "1% 10% 100% 渐进放量，超限降便宜兜底"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从切流复盘看熔断与放量环节",
+          "reasoningGoal": "先复盘切流的环节；再逐项验证各判断；并排除「瞬切抢速」「价格护栏」等不成立描述。"
+        },
+        "generatedAt": 1788912551967,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f5795e89",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-ff2880c6",
+        "sourceSnapshot": {
+          "id": "ai-ops-004",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "fallback",
+            "reliability",
+            "llmops"
+          ],
+          "question": "Primary LLM Provider 故障时系统自动切换备用 Provider。如何保证切换过程中不会导致大量重复请求和成本失控？",
+          "options": [
+            "用熔断器统一收敛重试与切流决策：主 provider 连续失败或延迟超标打开熔断后才整体切换，避免其在半死状态下被反复探测放大流量。",
+            "故障瞬间把全部流量立即切到备用 provider，并允许客户端、网关、应用层并发重试以尽快恢复服务，恢复速度优先于去重控制。",
+            "为每个业务请求分配唯一幂等 id，在切换层据此去重，保证一次业务操作无论经历多少次转发重试，最多只产生一次有效计费调用。",
+            "切换逻辑应比较双方价格表，只在备用 provider 单价更低时才允许自动切换，用价格差作为成本失控的护栏。",
+            "对新 provider 渐进放量（如 1%、10%、100%）而非瞬时全量，其配额提前申请并压测，同时给故障期间的额外成本设硬顶，超限自动降级为更便宜的兜底模式。"
+          ]
+        }
+      }
+    ],
+    "long-running-agent-002": [
+      {
+        "id": "long-running-agent-002__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "拆分初始化与编码 Agent 分阶段协作，核心考量包括哪些？",
+        "options": [
+          "解耦需求拆解与实现，编码不一次性构全系统",
+          "初始化统一生成环境脚本脚手架，降 token 开销",
+          "提示词完全隔离，初始化只读文件编码只编译",
+          "预建全量功能清单标初始态，防提前误判结束"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从分阶段协作定解耦与清单环节",
+          "reasoningGoal": "先定协作拆分的环节；再逐项验证各判断；并排除「完全隔离」等不成立描述。"
+        },
+        "generatedAt": 1788912551967,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c30c97d3",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-57146aeb",
+        "sourceSnapshot": {
+          "id": "long-running-agent-002",
+          "topic": "agent-fundamentals",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "initializer-agent",
+            "coding-agent",
+            "harness",
+            "termination-criteria"
+          ],
+          "question": "在多上下文窗口的 Agent Harness 架构中，设计专门的初始化 Agent（Initializer Agent）与后续的编码 Agent（Coding Agent）进行分阶段协作，其核心工程考量包括哪些？",
+          "options": [
+            "在初始阶段解耦需求拆解与代码实现，避免编码 Agent 因缺乏清晰的任务边界而试图一次性构建整个系统",
+            "由初始化 Agent 统一生成确定性的环境启动脚本与测试脚手架，降低后续编码 Agent 搭建运行环境的 token 开销",
+            "将系统提示词完全隔离，使初始化 Agent 仅拥有文件系统读写权限，而编码 Agent 仅拥有代码编译与运行权限",
+            "预先构建结构化的全量功能清单并标记初始状态，防止后续 Agent 因局部进度完成而提前误判整体项目已结束"
+          ]
+        }
+      },
+      {
+        "id": "long-running-agent-002__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "初始化 Agent 与编码 Agent 接力，多窗口各干各的。检查这次分工，下列哪些判断成立？",
+        "options": [
+          "初始阶段拆需求与实现，避免缺边界造全系统",
+          "环境启动脚本测试脚手架统一生成，降搭建开销",
+          "初始化仅文件读写，编码仅编译运行",
+          "功能清单标初始状态，局部完成不判整体结束"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从接力分工看边界与脚手架环节",
+          "reasoningGoal": "先看分工的环节；再逐项验证各判断；并排除「仅读写编译」等不成立描述。"
+        },
+        "generatedAt": 1788912551967,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c30c97d3",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-7e83f597",
+        "sourceSnapshot": {
+          "id": "long-running-agent-002",
+          "topic": "agent-fundamentals",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "initializer-agent",
+            "coding-agent",
+            "harness",
+            "termination-criteria"
+          ],
+          "question": "在多上下文窗口的 Agent Harness 架构中，设计专门的初始化 Agent（Initializer Agent）与后续的编码 Agent（Coding Agent）进行分阶段协作，其核心工程考量包括哪些？",
+          "options": [
+            "在初始阶段解耦需求拆解与代码实现，避免编码 Agent 因缺乏清晰的任务边界而试图一次性构建整个系统",
+            "由初始化 Agent 统一生成确定性的环境启动脚本与测试脚手架，降低后续编码 Agent 搭建运行环境的 token 开销",
+            "将系统提示词完全隔离，使初始化 Agent 仅拥有文件系统读写权限，而编码 Agent 仅拥有代码编译与运行权限",
+            "预先构建结构化的全量功能清单并标记初始状态，防止后续 Agent 因局部进度完成而提前误判整体项目已结束"
+          ]
+        }
+      }
+    ],
+    "long-running-agent-003": [
+      {
+        "id": "long-running-agent-003__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "数百项断言清单的数据结构与约束，哪些说法合理？",
+        "options": [
+          "结构化 JSON 强 Schema 约束，降误删篡改概率",
+          "每项含端到端步骤布尔断言，单粒度推进更新",
+          "防强改字段规避失败测试，禁 Agent 写清单权限",
+          "初始全设未通过，给接替者拓扑路线终止依据"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从清单选型定结构与约束环节",
+          "reasoningGoal": "先定清单选型的环节；再逐项验证各判断；并排除「禁写即够」等不成立描述。"
+        },
+        "generatedAt": 1788912551968,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-255b8699",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-baf4523e",
+        "sourceSnapshot": {
+          "id": "long-running-agent-003",
+          "topic": "agent-fundamentals",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "feature-list",
+            "json-schema",
+            "assertion",
+            "state-management"
+          ],
+          "question": "在 Agent 自动化开发系统的环境脚手架中，通常需要维护一份包含数百项功能的断言清单（Feature List）。关于该清单的数据结构选型与约束机制，下列哪些说法是合理的？",
+          "options": [
+            "采用结构化 JSON 格式比 Markdown 文本更具严格的 Schema 约束，能有效降低 LLM 误删或篡改测试项的概率",
+            "清单中每项功能需包含明确的端到端步骤与布尔断言字段，以便 Agent 严格按照单一粒度推进并客观更新状态",
+            "为防止 Agent 强行修改字段以规避失败测试，应严格禁止 Agent 具备写入该清单文件的任何文件系统权限",
+            "将所有测试初始状态均设为未通过，可为后续接替的 Agent 实例提供全局拓扑路线与明确的终止条件依据"
+          ]
+        }
+      },
+      {
+        "id": "long-running-agent-003__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "Feature List 越来越长，Agent 开始动手改测试项。约束这次清单变更，下列哪些判断成立？",
+        "options": [
+          "JSON 比 Markdown 约束严，LLM 难改测试项",
+          "端到端步骤加布尔断言，客观更新状态",
+          "为防强改字段规避失败测试，禁 Agent 写清单文件",
+          "全未通过初始态，接替实例有终止条件"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从清单变更约束看格式与状态环节",
+          "reasoningGoal": "先看变更约束的环节；再逐项验证各判断；并排除「彻底禁写」等不成立描述。"
+        },
+        "generatedAt": 1788912551968,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-255b8699",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-adc650e8",
+        "sourceSnapshot": {
+          "id": "long-running-agent-003",
+          "topic": "agent-fundamentals",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "feature-list",
+            "json-schema",
+            "assertion",
+            "state-management"
+          ],
+          "question": "在 Agent 自动化开发系统的环境脚手架中，通常需要维护一份包含数百项功能的断言清单（Feature List）。关于该清单的数据结构选型与约束机制，下列哪些说法是合理的？",
+          "options": [
+            "采用结构化 JSON 格式比 Markdown 文本更具严格的 Schema 约束，能有效降低 LLM 误删或篡改测试项的概率",
+            "清单中每项功能需包含明确的端到端步骤与布尔断言字段，以便 Agent 严格按照单一粒度推进并客观更新状态",
+            "为防止 Agent 强行修改字段以规避失败测试，应严格禁止 Agent 具备写入该清单文件的任何文件系统权限",
+            "将所有测试初始状态均设为未通过，可为后续接替的 Agent 实例提供全局拓扑路线与明确的终止条件依据"
+          ]
+        }
+      }
+    ],
+    "long-running-agent-006": [
+      {
+        "id": "long-running-agent-006__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "多会话协作故障现象配原因配解法，哪些组合正确？",
+        "options": [
+          "误判完成因缺全量清单，初始化生成断言清单",
+          "单次做太多耗尽上下文，约束单功能增量开发",
+          "篡改测试强过校验，Schema 约束加禁改提示",
+          "漏前序崩溃因缺冒烟，新功能前先跑启动脚本"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从故障现象配对原因与解法环节",
+          "reasoningGoal": "先配对现象的环节；再逐项验证各判断；并排除错配组合等不成立描述。"
+        },
+        "generatedAt": 1788912551968,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3bf77656",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-59bfbc62",
+        "sourceSnapshot": {
+          "id": "long-running-agent-006",
+          "topic": "agent-debugging",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "failure-modes",
+            "incremental-development",
+            "guardrails",
+            "smoke-test"
+          ],
+          "question": "在多会话 Agent 协作开发复杂应用时，常见多种典型的 Agent 故障模式（Failure Modes）。下列故障现象与其对应的底层原因及架构解法的组合中，哪些是正确的？",
+          "options": [
+            "现象：Agent 看到仓库中已有部分代码便误判整体项目已完成。解法：由初始化 Agent 生成显式覆盖全量需求的断言清单",
+            "现象：Agent 单次开发尝试过多功能导致上下文耗尽。解法：强制约束编码 Agent 每次会话仅针对单一未通过功能进行增量开发",
+            "现象：Agent 频繁修改断言测试脚本以强行通过校验。解法：使用 Schema 强约束的数据格式并注入禁止修改测试用例的提示词",
+            "现象：Agent 无法识别前序会话引入的运行时崩溃问题。解法：要求 Agent 在开启新功能开发前先运行环境启动脚本进行冒烟验证"
+          ]
+        }
+      },
+      {
+        "id": "long-running-agent-006__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "接力开发中冒出四类怪象，各有对应解法。核对这些配对，下列哪些判断成立？",
+        "options": [
+          "见部分代码判项目完成，解法显式全需求清单",
+          "一次多功能致上下文耗尽，单未通过功能增量做",
+          "频改断言脚本强行通过，强约束格式禁改提示",
+          "不识前序运行时崩溃，开工前冒烟验证环境"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从怪象核对清单与冒烟环节",
+          "reasoningGoal": "先核对配对的环节；再逐项验证各判断；并排除错配组合等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3bf77656",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-b4880ee1",
+        "sourceSnapshot": {
+          "id": "long-running-agent-006",
+          "topic": "agent-debugging",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "failure-modes",
+            "incremental-development",
+            "guardrails",
+            "smoke-test"
+          ],
+          "question": "在多会话 Agent 协作开发复杂应用时，常见多种典型的 Agent 故障模式（Failure Modes）。下列故障现象与其对应的底层原因及架构解法的组合中，哪些是正确的？",
+          "options": [
+            "现象：Agent 看到仓库中已有部分代码便误判整体项目已完成。解法：由初始化 Agent 生成显式覆盖全量需求的断言清单",
+            "现象：Agent 单次开发尝试过多功能导致上下文耗尽。解法：强制约束编码 Agent 每次会话仅针对单一未通过功能进行增量开发",
+            "现象：Agent 频繁修改断言测试脚本以强行通过校验。解法：使用 Schema 强约束的数据格式并注入禁止修改测试用例的提示词",
+            "现象：Agent 无法识别前序会话引入的运行时崩溃问题。解法：要求 Agent 在开启新功能开发前先运行环境启动脚本进行冒烟验证"
+          ]
+        }
+      }
+    ],
+    "long-running-agent-007": [
+      {
+        "id": "long-running-agent-007__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "无状态会话跨窗口交付，Handoff 协议必须做到哪些？",
+        "options": [
+          "会话结束提交 Git Commit，意图清晰无语法错",
+          "维护增量进度文件，记完成失败与注意事项",
+          "每轮全量 History 落盘，新会话全量加载还原",
+          "失败时 Git Reset 工作区，不传破坏性变更"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从跨窗口交付定提交与进度环节",
+          "reasoningGoal": "先定交付协议的环节；再逐项验证各判断；并排除「全量还原」等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1581553b",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-41c74643",
+        "sourceSnapshot": {
+          "id": "long-running-agent-007",
+          "topic": "agent-debugging",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "handoff",
+            "git-commit",
+            "progress-file",
+            "state-transfer"
+          ],
+          "question": "为保证无状态（Stateless）的 LLM Agent 会话能在跨窗口协作中实现无缝交付，Agent Harness 必须设计完备的状态交付协议（Handoff Protocol）。关于该协议的实践规范，下列哪些项是合理的？",
+          "options": [
+            "每次编码会话结束时，Agent 必须提交包含明确上下文与变更意图的 Git Commit，确保代码库处于无语法错误的合并状态",
+            "编码会话需要维护文本格式的增量进度文件，记录已完成工作、尝试过的失败路径以及留给下一代会话的注意事项",
+            "每一轮会话都应将完整的对话 History 序列序列化保存到本地硬盘，以便新启动的会话全量加载并还原前序思考过程",
+            "在增量开发失败时，Agent 应具备利用版本控制工具重置（Git Reset）工作区的能力，避免将破坏性变更传递至下一会话"
+          ]
+        }
+      },
+      {
+        "id": "long-running-agent-007__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "窗口一切换，上个会话的活就断了。这次交接必须做到哪些？下列哪些判断成立？",
+        "options": [
+          "编码结束 Git 提交，上下文意图明确可合并",
+          "文本进度文件记失败路径，留注意事项给下代",
+          "对话 History 序列化本地存，全量还原思考过程",
+          "增量失败可 Git Reset，避免破坏传下会话"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从会话交接看提交与重置环节",
+          "reasoningGoal": "先看交接的环节；再逐项验证各判断；并排除「全量还原」等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1581553b",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-21c0c11d",
+        "sourceSnapshot": {
+          "id": "long-running-agent-007",
+          "topic": "agent-debugging",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "handoff",
+            "git-commit",
+            "progress-file",
+            "state-transfer"
+          ],
+          "question": "为保证无状态（Stateless）的 LLM Agent 会话能在跨窗口协作中实现无缝交付，Agent Harness 必须设计完备的状态交付协议（Handoff Protocol）。关于该协议的实践规范，下列哪些项是合理的？",
+          "options": [
+            "每次编码会话结束时，Agent 必须提交包含明确上下文与变更意图的 Git Commit，确保代码库处于无语法错误的合并状态",
+            "编码会话需要维护文本格式的增量进度文件，记录已完成工作、尝试过的失败路径以及留给下一代会话的注意事项",
+            "每一轮会话都应将完整的对话 History 序列序列化保存到本地硬盘，以便新启动的会话全量加载并还原前序思考过程",
+            "在增量开发失败时，Agent 应具备利用版本控制工具重置（Git Reset）工作区的能力，避免将破坏性变更传递至下一会话"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-99": [
+      {
+        "id": "sebastian-raschka-2026-08-99__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "本地跑 Coding Agent，系统边界必须显式设计哪些？（选三项）",
+        "options": [
+          "限文件系统与命令执行范围",
+          "网络访问凭证使用设边界",
+          "写入部署配审批回滚",
+          "本地运行不需沙箱审计"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从本地运行定三类系统边界",
+          "reasoningGoal": "先定边界的环节；再逐项验证各判断；并排除「本地不需沙箱」等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9904a153",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-8dab81b2",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-99",
+          "topic": "agent-fundamentals",
+          "subtopic": "本地 Coding Agent 运行边界",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "local-inference"
+          ],
+          "question": "在本地运行 Coding Agent 时，哪些系统边界必须显式设计？（请选择三个）",
+          "options": [
+            "限制文件系统和命令执行范围",
+            "为网络访问和凭证使用设置边界",
+            "为写入和部署动作配置审批或回滚",
+            "本地运行意味着不需要沙箱和审计"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-99__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "把 Agent 放到本机跑，必须划定哪些权限边界？（选三项）",
+        "options": [
+          "文件命令执行范围须限制",
+          "网络凭证使用加边界",
+          "写入部署要审批或可回滚",
+          "本地即安全，沙箱审计多余"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从本机权限划定三类边界",
+          "reasoningGoal": "先划定权限的环节；再逐项验证各判断；并排除「本地即安全」等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9904a153",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-c0ea7f06",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-99",
+          "topic": "agent-fundamentals",
+          "subtopic": "本地 Coding Agent 运行边界",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "local-inference"
+          ],
+          "question": "在本地运行 Coding Agent 时，哪些系统边界必须显式设计？（请选择三个）",
+          "options": [
+            "限制文件系统和命令执行范围",
+            "为网络访问和凭证使用设置边界",
+            "为写入和部署动作配置审批或回滚",
+            "本地运行意味着不需要沙箱和审计"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-100": [
+      {
+        "id": "sebastian-raschka-2026-08-100__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "为本地 Coding Agent 选开放权重模型，哪些因素联合评估？（选三项）",
+        "options": [
+          "代码任务真实评估质量",
+          "量化显存占用 token 延迟",
+          "上下文工具调用长任务稳定",
+          "只按参数量排序不实测"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从选型定三类联合评估因素",
+          "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「只看参数量」等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a96c7a9e",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-fb021c0a",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-100",
+          "topic": "model-selection",
+          "subtopic": "本地模型选型",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "model-selection"
+          ],
+          "question": "为本地 Coding Agent 选择开放权重模型时，哪些因素应联合评估？（请选择三个）",
+          "options": [
+            "代码任务上的真实评估质量",
+            "量化后的显存占用和 token 延迟",
+            "上下文长度、工具调用和长任务稳定性",
+            "只按参数量排序而不运行任务评估"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-100__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "本机模型跑 coding，参数量大就一定好吗？（选三项）",
+        "options": [
+          "先看代码任务评估质量",
+          "量化后显存延迟一起看",
+          "长任务工具调用稳定性",
+          "参数量排序代替任务评估"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从本机跑分看评估与稳定因素",
+          "reasoningGoal": "先看跑分的环节；再逐项验证各判断；并排除「参数量代替」等不成立描述。"
+        },
+        "generatedAt": 1788912551969,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a96c7a9e",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-fd971ad2",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-100",
+          "topic": "model-selection",
+          "subtopic": "本地模型选型",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "model-selection"
+          ],
+          "question": "为本地 Coding Agent 选择开放权重模型时，哪些因素应联合评估？（请选择三个）",
+          "options": [
+            "代码任务上的真实评估质量",
+            "量化后的显存占用和 token 延迟",
+            "上下文长度、工具调用和长任务稳定性",
+            "只按参数量排序而不运行任务评估"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-101": [
+      {
+        "id": "sebastian-raschka-2026-08-101__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "本地 Coding Agent 用量化模型，哪些权衡需要实测？（选三项）",
+        "options": [
+          "显存占用与并发规模",
+          "代码修复测试生成质量",
+          "长上下文工具调用稳定",
+          "低位数所有硬件必然更快"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从量化权衡定三类实测项",
+          "reasoningGoal": "先定实测的环节；再逐项验证各判断；并排除「低位必然快」等不成立描述。"
+        },
+        "generatedAt": 1788912551970,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d6bc84c5",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-929a9b81",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-101",
+          "topic": "quantization",
+          "subtopic": "本地推理量化",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "quantization"
+          ],
+          "question": "对本地 Coding Agent 使用量化模型时，哪些权衡需要实测？（请选择三个）",
+          "options": [
+            "显存占用和可运行的并发规模",
+            "代码修复、测试生成等任务质量",
+            "长上下文和工具调用下的稳定性",
+            "量化位数越低就必然在所有硬件上越快"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-101__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "量化位数一降，速度质量稳定性怎么变？（选三项）",
+        "options": [
+          "实测显存与可跑并发",
+          "修复生成任务质量变化",
+          "长上下文下调用稳定否",
+          "位数越低硬件越快"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从位数变化看三类实测项",
+          "reasoningGoal": "先看变化的环节；再逐项验证各判断；并排除「越低越快」等不成立描述。"
+        },
+        "generatedAt": 1788912551970,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d6bc84c5",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-e795646e",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-101",
+          "topic": "quantization",
+          "subtopic": "本地推理量化",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "quantization"
+          ],
+          "question": "对本地 Coding Agent 使用量化模型时，哪些权衡需要实测？（请选择三个）",
+          "options": [
+            "显存占用和可运行的并发规模",
+            "代码修复、测试生成等任务质量",
+            "长上下文和工具调用下的稳定性",
+            "量化位数越低就必然在所有硬件上越快"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-102": [
+      {
+        "id": "sebastian-raschka-2026-08-102__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "本地 Coding Agent 处理大型仓库，哪些输入组织策略更合理？（选三项）",
+        "options": [
+          "按任务检索文件符号测试",
+          "保留构建约定与错误反馈",
+          "大输出摘要截断分页",
+          "全仓库日志每次全塞入"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从大仓库定三类上下文策略",
+          "reasoningGoal": "先定策略的环节；再逐项验证各判断；并排除「全塞入」等不成立描述。"
+        },
+        "generatedAt": 1788912551970,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4f19c58d",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-49401688",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-102",
+          "topic": "context-engineering",
+          "subtopic": "Coding Agent 上下文",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "context"
+          ],
+          "question": "本地 Coding Agent 处理大型仓库时，哪些上下文策略更合理？（请选择三个）",
+          "options": [
+            "按任务检索相关文件、符号和测试",
+            "保留构建命令、约定和最近错误反馈",
+            "对大型输出进行摘要、截断或分页处理",
+            "始终把整个仓库和所有历史日志放入每次请求"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-102__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "仓库太大塞不进窗口，历史日志也爆。取舍输入内容，下列哪些判断成立？（选三项）",
+        "options": [
+          "检索相关文件符号测试",
+          "构建命令约定错误保留",
+          "大输出做摘要截断分页",
+          "仓库历史日志全量塞请求"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从上下文取舍看检索与截断环节",
+          "reasoningGoal": "先看取舍的环节；再逐项验证各判断；并排除「全量塞」等不成立描述。"
+        },
+        "generatedAt": 1788912551970,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4f19c58d",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-feebdc0d",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-102",
+          "topic": "context-engineering",
+          "subtopic": "Coding Agent 上下文",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "coding-agent",
+            "context"
+          ],
+          "question": "本地 Coding Agent 处理大型仓库时，哪些上下文策略更合理？（请选择三个）",
+          "options": [
+            "按任务检索相关文件、符号和测试",
+            "保留构建命令、约定和最近错误反馈",
+            "对大型输出进行摘要、截断或分页处理",
+            "始终把整个仓库和所有历史日志放入每次请求"
+          ]
+        }
+      }
+    ],
+    "ai-distill-001": [
+      {
+        "id": "ai-distill-001__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "70B 蒸馏 7B 降本，蒸馏过程设计哪些判断成立？",
+        "options": [
+          "直接用公开学术基准训练，业务评测上线后补齐",
+          "线上真实 query 分布构无标注任务集",
+          "soft targets 优先，无 logits 用 response",
+          "loss 收敛即学会，业务对比确认可简化抽检",
+          "业务集对比师生找缺口，先确认小模型加量化够用"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从蒸馏设计定分布与对比环节",
+          "reasoningGoal": "先定蒸馏的环节；再逐项验证各判断；并排除「基准先行」「收敛即会」等不成立描述。"
+        },
+        "generatedAt": 1788912551970,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86c402f0",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-72cb3c64",
+        "sourceSnapshot": {
+          "id": "ai-distill-001",
+          "topic": "distillation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "distillation",
+            "model-optimization"
+          ],
+          "question": "一个 70B 模型效果很好，但线上延迟和成本无法接受。你考虑通过 Knowledge Distillation 得到一个 7B 学生模型。你会如何设计蒸馏过程？",
+          "options": [
+            "直接用公开学术基准训练，基准难度稳定、可比性强；业务评测可在上线后补，基准先行更高效。",
+            "用线上真实 query 分布构建无标注任务集，让学生在“真实会遇到的问题”上学习",
+            "优先蒸馏 soft targets；拿不到 logits 时退化为 response 蒸馏。",
+            "loss 收敛即学会，业务对比只是确认性工作；对比的边际收益低，可简化为抽检。",
+            "训练后在业务评测集上对比师生找出能力缺口，针对性补充数据迭代，并在动手前确认现成小模型加量化是否已经够用"
+          ]
+        }
+      },
+      {
+        "id": "ai-distill-001__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "70B 太贵，7B 学生能不能接住？评审这次蒸馏安排，下列哪些判断成立？",
+        "options": [
+          "基准难度稳定可比性强，业务评测上线后补齐",
+          "线上真实 query 分布建无标注集，真实问题上学习",
+          "soft targets 优先，无 logits 用 response",
+          "loss 收敛即学会，对比确认边际收益低",
+          "对比师生能力缺口补数据，先看现成小模型量化"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从蒸馏安排评审分布与缺口环节",
+          "reasoningGoal": "先评审安排的环节；再逐项验证各判断；并排除「后补高效」「收敛即会」等不成立描述。"
+        },
+        "generatedAt": 1788912551971,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86c402f0",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-7258ae48",
+        "sourceSnapshot": {
+          "id": "ai-distill-001",
+          "topic": "distillation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "distillation",
+            "model-optimization"
+          ],
+          "question": "一个 70B 模型效果很好，但线上延迟和成本无法接受。你考虑通过 Knowledge Distillation 得到一个 7B 学生模型。你会如何设计蒸馏过程？",
+          "options": [
+            "直接用公开学术基准训练，基准难度稳定、可比性强；业务评测可在上线后补，基准先行更高效。",
+            "用线上真实 query 分布构建无标注任务集，让学生在“真实会遇到的问题”上学习",
+            "优先蒸馏 soft targets；拿不到 logits 时退化为 response 蒸馏。",
+            "loss 收敛即学会，业务对比只是确认性工作；对比的边际收益低，可简化为抽检。",
+            "训练后在业务评测集上对比师生找出能力缺口，针对性补充数据迭代，并在动手前确认现成小模型加量化是否已经够用"
+          ]
+        }
+      }
+    ],
+    "ai-ft-005": [
+      {
+        "id": "ai-ft-005__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "何时微调是错误方案？请至少举出两个应先用 RAG 或 prompt 的情形，下列哪些判断成立？",
+        "options": [
+          "合规周更用微调记政策，重训慢且无溯源改 RAG",
+          "格式不稳未调 prompt 就微调，先小时级迭代 prompt",
+          "礼貌话术标准化指引，格式风格约束只能 system prompt 实现",
+          "幻觉写进参数根除，SFT 反强化自信错误先检索约束"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从错误微调定 RAG 与 prompt 优先环节",
+          "reasoningGoal": "先定优先级的环节；再逐项验证各判断；并排除「只能 prompt」等不成立描述。"
+        },
+        "generatedAt": 1788912551971,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fd86fead",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-65dd67d0",
+        "sourceSnapshot": {
+          "id": "ai-ft-005",
+          "topic": "fine-tuning",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "fine-tuning",
+            "rag",
+            "prompt"
+          ],
+          "question": "什么情况下 Fine-tuning 是错误的解决方案？请至少举出两个应该优先使用 RAG 或 Prompt Engineering 的场景。",
+          "options": [
+            "「合规知识库每周更新监管条款，希望通过微调让模型记住最新政策」——应改用 RAG：把知识写进参数意味着每次更新都要重训且无法溯源，外置索引更新即可分钟级生效。",
+            "「输出格式总不稳定，团队尚未系统调优过 prompt 就想直接微调」——应先迭代 prompt：prompt 迭代以小时计而微调以天计且有遗忘风险，很多效果差只是指令不清或缺少示例。",
+            "「客服机器人需要稳定使用公司特有的礼貌话术输出标准化退换货指引，prompt 反复调整仍不满意」——该场景不适合微调：格式与风格约束能且只能通过 system prompt 实现。",
+            "「模型频繁编造不存在的产品功能，希望通过微调把正确事实写进参数根除幻觉」——应优先考虑检索增强与引用约束：幻觉根源在生成机制，SFT 反而可能强化自信的错误。"
+          ]
+        }
+      },
+      {
+        "id": "ai-ft-005__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "团队一遇到问题就想微调。请至少举出两个应拦下的错误微调，下列哪些判断成立？",
+        "options": [
+          "监管条款周更，重训慢无溯源，外置索引分钟生效",
+          "输出格式不稳先迭代 prompt，微调天计遗忘，效果差多因指令不清缺示例",
+          "礼貌话术标准化指引只能 system prompt 实现，微调不适合",
+          "幻觉根源生成机制，SFT 强自信错误用检索引用约束"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从拦微调看更新与幻觉环节",
+          "reasoningGoal": "先看拦截的环节；再逐项验证各判断；并排除「只能实现」等不成立描述。"
+        },
+        "generatedAt": 1788912551971,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fd86fead",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-eed49b57",
+        "sourceSnapshot": {
+          "id": "ai-ft-005",
+          "topic": "fine-tuning",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "fine-tuning",
+            "rag",
+            "prompt"
+          ],
+          "question": "什么情况下 Fine-tuning 是错误的解决方案？请至少举出两个应该优先使用 RAG 或 Prompt Engineering 的场景。",
+          "options": [
+            "「合规知识库每周更新监管条款，希望通过微调让模型记住最新政策」——应改用 RAG：把知识写进参数意味着每次更新都要重训且无法溯源，外置索引更新即可分钟级生效。",
+            "「输出格式总不稳定，团队尚未系统调优过 prompt 就想直接微调」——应先迭代 prompt：prompt 迭代以小时计而微调以天计且有遗忘风险，很多效果差只是指令不清或缺少示例。",
+            "「客服机器人需要稳定使用公司特有的礼貌话术输出标准化退换货指引，prompt 反复调整仍不满意」——该场景不适合微调：格式与风格约束能且只能通过 system prompt 实现。",
+            "「模型频繁编造不存在的产品功能，希望通过微调把正确事实写进参数根除幻觉」——应优先考虑检索增强与引用约束：幻觉根源在生成机制，SFT 反而可能强化自信的错误。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-044": [
+      {
+        "id": "ai-eng-044__surface-options__assessmentfresh16__0",
+        "kind": "surface-options",
+        "question": "前沿模型蒸馏学生接管高频任务，数据工程三决策哪些正确？",
+        "options": [
+          "生产 trace 分层采样，合成 prompt 虚高退化",
+          "教师输出拒绝采样，5% 专家核对丢弃不一致",
+          "理由标签收敛快，推理链长泛化正相关",
+          "高温合成低成本扩量，多样性随温单调升"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从数据工程定采样与核对环节",
+          "reasoningGoal": "先定数据决策的环节；再逐项验证各判断；并排除「理由正相关」「高温单调」等不成立描述。"
+        },
+        "generatedAt": 1788912551972,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-156e4861",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-be9e9d03",
+        "sourceSnapshot": {
+          "id": "ai-eng-044",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "production-traces",
+            "rejection-sampling",
+            "cot-distillation",
+            "data-curation"
+          ],
+          "question": "在\"用前沿模型蒸馏学生模型接管高频任务\"的项目中，关于数据工程的三个关键决策，下列说法正确的有？（多选）",
+          "options": [
+            "训练数据应使用真实生产 trace 分层采样，而非 LLM 生成的合成 prompt——后者会让学生在合成题上虚高、在真实流量上退化数个点",
+            "对教师输出做拒绝采样：随机抽约 5% 由领域专家核对，不一致的 pair 直接丢弃，防止教师错误固化为学生的训练分布",
+            "带理由标签信息量更大，同等样本下收敛更快；推理链长度与泛化正相关已有多项研究。",
+            "高温合成可低成本扩量，多样性随温度单调上升；真实 trace 采集贵，合成优先。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-044__context-options__assessmentfresh16__1",
+        "kind": "context-options",
+        "question": "学生专接高频任务，训练数据怎么配？核查这三个决策，下列哪些判断成立？",
+        "options": [
+          "真实 trace 分层采样，合成题虚高真实流退化",
+          "约 5% 专家核对，不一致 pair 直接丢弃",
+          "带理由信息量大，同样本收敛更快泛化强",
+          "高温合成低成本扩量，多样性随温度单调升，合成优先"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从数据配比核查采样与合成环节",
+          "reasoningGoal": "先核查配比的环节；再逐项验证各判断；并排除「泛化强」「合成优先」等不成立描述。"
+        },
+        "generatedAt": 1788912551972,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-156e4861",
+        "batch": "assessmentfresh16",
+        "model": "manual",
+        "contentHash": "fnv1a-4df2ea43",
+        "sourceSnapshot": {
+          "id": "ai-eng-044",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "production-traces",
+            "rejection-sampling",
+            "cot-distillation",
+            "data-curation"
+          ],
+          "question": "在\"用前沿模型蒸馏学生模型接管高频任务\"的项目中，关于数据工程的三个关键决策，下列说法正确的有？（多选）",
+          "options": [
+            "训练数据应使用真实生产 trace 分层采样，而非 LLM 生成的合成 prompt——后者会让学生在合成题上虚高、在真实流量上退化数个点",
+            "对教师输出做拒绝采样：随机抽约 5% 由领域专家核对，不一致的 pair 直接丢弃，防止教师错误固化为学生的训练分布",
+            "带理由标签信息量更大，同等样本下收敛更快；推理链长度与泛化正相关已有多项研究。",
+            "高温合成可低成本扩量，多样性随温度单调上升；真实 trace 采集贵，合成优先。"
+          ]
+        }
+      }
+    ]
+  }
+}

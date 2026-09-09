@@ -1,0 +1,568 @@
+{
+ "ai-fund-021": {
+  "surface": "SFT、RLHF、DPO 各解何题？单阶段投入怎么选？",
+  "surfaceOptions": [
+   "先拿示范对话做 SFT，教格式范式打基础",
+   "SFT 上加 DPO 消化偏好排序，简单便宜够用",
+   "跳 SFT 直上 RLHF/PPO，一步到位双完成",
+   "三者解决同样问题，选型只看熟悉框架",
+   "全押 RLHF 实现最简，顺带覆盖 SFT/DPO"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "evaluate",
+  "surfaceAssessment": {
+   "target": "能从单阶段定示范与偏好环节",
+   "reasoningGoal": "先定取舍的环节；再逐项验证各判断；并排除「一步到位」「只看框架」等不成立描述。"
+  },
+  "context": "团队只投一个阶段，示范与偏好都要。定这次取舍，下列哪些判断成立？",
+  "contextOptions": [
+   "示范对话先行 SFT，行为基础先打牢",
+   "偏好排序数据走 DPO，工程成本低收益足",
+   "强化学习一遍过，示范偏好双拿下",
+   "功能相同选型只看熟悉框架",
+   "RLHF 最简单全覆盖，预算全押它"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "compare",
+  "contextAssessment": {
+   "target": "能从单投取舍看基础与收益环节",
+   "reasoningGoal": "先看取舍的环节；再逐项验证各判断；并排除「一遍过」「全押」等不成立描述。"
+  }
+ },
+ "ai-posttraining-003": {
+  "surface": "100 万对话但只有 5 万审核。SFT 集怎么搭？为何不能全量直训？",
+  "surfaceOptions": [
+   "未审核混错误有毒隐私，全量直训放大坏模式",
+   "5 万复制十次补量，重复等效十倍多样性",
+   "100 万全直训，噪声统计抵消无需清洗",
+   "5 万种子核心，分级清洗强模标注抽样扩容"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从审核配比定清洗与扩容环节",
+   "reasoningGoal": "先定配比的环节；再逐项验证各判断；并排除「复制补量」「全直训」等不成立描述。"
+  },
+  "context": "只有 5 万审核种子对 100 万 raw。扩 SFT 集，下列哪些判断成立？",
+  "contextOptions": [
+   "错误示范有毒 PII 直训，坏模式放大记住隐私",
+   "审核集复制十遍，重复采样弥合量差",
+   "数据量大指令遵循强，噪声统计抵消",
+   "种子集核心分级清洗，脱敏过滤保多样配比"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从种子扩容看记住与配比环节",
+   "reasoningGoal": "先看扩容的环节；再逐项验证各判断；并排除「复制弥合」「量大抵消」等不成立描述。"
+  }
+ },
+ "ai-pretraining-003": {
+  "surface": "10T token 网页代码书籍论坛。清洗去重混合怎么设？",
+  "surfaceOptions": [
+   "网页直入训练集，规模大噪声抵消",
+   "清样板广告乱码，URL 哈希加 MinHash 去重",
+   "轻分类器启发规则滤波，剔低信号文档",
+   "配比按采集成本定，不影响下游能力",
+   "按 domain 设配比，小消融验证再放大"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从 10T 来源定去重与配比环节",
+   "reasoningGoal": "先定管线的环节；再逐项验证各判断；并排除「直入」「成本定配比」等不成立描述。"
+  },
+  "context": "10T 来源混杂，转载模板遍地。定这次管线，下列哪些判断成立？",
+  "contextOptions": [
+   "规模大噪声自抵消，过滤损多样性",
+   "HTML 样板广告乱码清，精确模糊双去重",
+   "分类器规则双滤，低信号文档剔除",
+   "成本定配比，能力不受配比影响",
+   "目标配比先小消融，再放大到全量"
+  ],
+  "contextAngle": "mechanism",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从混杂来源看模板与消融环节",
+   "reasoningGoal": "先看管线的环节；再逐项验证各判断；并排除「自抵消」「成本定」等不成立描述。"
+  }
+ },
+ "ai-pretraining-007": {
+  "surface": "预训练 loss 飙升出 NaN。排查顺序，下列哪些判断成立？",
+  "surfaceOptions": [
+   "定位首个异常 step 回看批次，困惑度预筛跳脏",
+   "回退一周前 checkpoint 重训，近期皆不可信",
+   "看梯度范数 clipping 精度 scale 与 lr 变更",
+   "关 clipping 调大 scale，看几百步当抖动",
+   "排硬件 ECC 定异常 rank，健康点回退恢复"
+  ],
+  "surfaceAngle": "debugging",
+  "surfaceCognitiveTask": "diagnose",
+  "surfaceAssessment": {
+   "target": "能从 NaN 定位批次与精度环节",
+   "reasoningGoal": "先定位异常的环节；再逐项验证各判断；并排除「回退一周」「关限幅」等不成立描述。"
+  },
+  "context": "loss 曲线断崖 NaN。从哪先查？下列哪些判断成立？",
+  "contextOptions": [
+   "首异常 step 附近批次看，脏数据最常见",
+   "早期 checkpoint 干净，NaN 污染近期全弃",
+   "clipping 生效否先确认，精度震荡 lr 变更核",
+   "固定大 loss scale 跑几百步，回落即偶发",
+   "ECC 报错先排除，带病不训回健康点"
+  ],
+  "contextAngle": "scenario",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从断崖先查脏数与回退环节",
+   "reasoningGoal": "先查断崖的环节；再逐项验证各判断；并排除「全弃」「偶发」等不成立描述。"
+  }
+ },
+ "align-syc-01": {
+  "surface": "用户错也迎合，谄媚成因治理，下列哪些正确？",
+  "surfaceOptions": [
+   "根因在偏好数据，顺从迎合肯定打高分",
+   "RLHF/DPO 有顺从高分信号即学谄媚",
+   "KL 约束限偏离，消不掉数据缺陷谄媚",
+   "谄媚只小模型有，10B 上自动消失"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从迎合定数据与约束环节",
+   "reasoningGoal": "先定成因的环节；再逐项验证各判断；并排除「10B 消失」等不成立描述。"
+  },
+  "context": "模型一味顺从肯定。断这次谄媚，下列哪些判断成立？",
+  "contextOptions": [
+   "标注员偏好模型爱给肯定迎合高分",
+   "底层信号偏差在，范式换也学谄媚",
+   "初始分布偏离可限，缺陷倾向难根除",
+   "谄媚仅小参数有，百亿 10B 上自动消失"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从顺从断定标注与规模环节",
+   "reasoningGoal": "先断谄媚的环节；再逐项验证各判断；并排除「自动清零」等不成立描述。"
+  }
+ },
+ "llm-open-01": {
+  "surface": "Open Weights 与 Fully Open 差在哪？工程价值哪些正确？",
+  "surfaceOptions": [
+   "给权重即懂训练细节，可复现预训练全程",
+   "给数据集 RL 环境 Recipe，社区可复现二开",
+   "合成 Persona 数据保隐私具统计真实",
+   "开放数据环境促衍生微调，扩垂直适配"
+  ],
+  "surfaceAngle": "comparison",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从开放度定复现与衍生环节",
+   "reasoningGoal": "先定差异的环节；再逐项验证各判断；并排除「权重即复现」等不成立描述。"
+  },
+  "context": "只放权重够开放吗？核这次开放度，下列哪些判断成立？",
+  "contextOptions": [
+   "仅给开源权重即懂细节，可无缝复现预训练",
+   "预训练后训练数据加环境，复现关键",
+   "合成数据护隐私，统计真实性仍有",
+   "衍生版本社区产出，垂直适配扩展"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从权重核查数据与环境环节",
+   "reasoningGoal": "先核开放的环节；再逐项验证各判断；并排除「全掌握」等不成立描述。"
+  }
+ },
+ "rlhf-goodhart-01": {
+  "surface": "代理奖励涨、真实质量掉。过优化现象，下列哪些正确？",
+  "surfaceOptions": [
+   "合 Goodhart 律，代理指标成目标即失测量资格",
+   "显隐偏好目标皆近似，过度优化挖漏洞",
+   "典型表现冗长偏好加谄媚",
+   "PPO 特有缺陷，DPO 可彻底避免"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从涨分掉质定代理与漏洞环节",
+   "reasoningGoal": "先定现象的环节；再逐项验证各判断；并排除「DPO 免疫」等不成立描述。"
+  },
+  "context": "优化越狠质量越差。诊这次过优化，下列哪些判断成立？",
+  "contextOptions": [
+   "代理指标一当目标，测量资格即丧失",
+   "真实偏好近似代理，硬优化逼出缺陷利用",
+   "字数冗长偏好加用户立场谄媚是典型",
+   "PPO 特有缺陷，DPO 训练可彻底避免过优化"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从越优越差诊资格与利用环节",
+   "reasoningGoal": "先诊现象的环节；再逐项验证各判断；并排除「彻底免疫」等不成立描述。"
+  }
+ },
+ "rlhf-ppo-01": {
+  "surface": "PPO 四模型加 KL 惩罚。架构考量，下列哪些正确？",
+  "surfaceOptions": [
+   "KL 惩罚限更新幅，防刷高分退化文本",
+   "Reference 冻 SFT 初模，供 KL 对比基准",
+   "开销显存大主因，训练循环多套网络常驻调度",
+   "奖励模型够精确即完全移除 KL，加速收敛"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从四模型定惩罚与开销环节",
+   "reasoningGoal": "先定架构的环节；再逐项验证各判断；并排除「去 KL 提速」等不成立描述。"
+  },
+  "context": "Policy Reference Reward Value 同训。看这次开销，下列哪些判断成立？",
+  "contextOptions": [
+   "KL 惩罚限更新幅度，防刷高分偏离自然分布退化",
+   "冻结初始 SFT 当 Reference，对比基准",
+   "开销显存大主因，训练循环多套角色网络常驻调度",
+   "奖励模型够精确即完全移除 KL，加速收敛"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从同训看基准与移除环节",
+   "reasoningGoal": "先看开销的环节；再逐项验证各判断；并排除「多余移除」等不成立描述。"
+  }
+ },
+ "sft-pref-01": {
+  "surface": "SFT 摹仿与偏好对齐差在哪？下列哪些正确？",
+  "surfaceOptions": [
+   "SFT 学格式，难显式建模优质权衡",
+   "成对比较一致性高于从零写理想答",
+   "量大权衡自涌现，对齐可后置堆数据",
+   "对齐小参人类偏好可超大参纯 SFT"
+  ],
+  "surfaceAngle": "comparison",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从摹仿对齐定格式与权衡环节",
+   "reasoningGoal": "先定差异的环节；再逐项验证各判断；并排除「涌现后置」等不成立描述。"
+  },
+  "context": "多优质答案难权衡。分 SFT 与对齐，下列哪些判断成立？",
+  "contextOptions": [
+   "指令格式 SFT 擅长，权衡建模困难",
+   "比较数据一致高，胜过零写理想",
+   "数据量大权衡自涌现，对齐后置先堆数据",
+   "偏好对齐小参数人类偏好评估，显著超越大参未对齐"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从难权衡分格式与比较环节",
+   "reasoningGoal": "先分阶段的环节；再逐项验证各判断；并排除「后置再定」等不成立描述。"
+  }
+ },
+ "tp-ep-01": {
+  "surface": "TP 加 EP 布 MoE，通信部署，下列说法正确？",
+  "surfaceOptions": [
+   "TP 逐层跨卡同步，吃互联带宽要 NVLink",
+   "EP 按 Token 路由专家，通信量低于 TP",
+   "跨节点部署组合，TP 限单节点内高带宽，EP 跨节点",
+   "EP 开销高须 NVLink，TP 可跑跨节点以太网"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从 MoE 部署定同步与路由环节",
+   "reasoningGoal": "先定部署的环节；再逐项验证各判断；并排除「TP 跑以太网」等不成立描述。"
+  },
+  "context": "超大模型多卡切分，TP/EP 怎么配？下列哪些判断成立？",
+  "contextOptions": [
+   "每层矩阵切分，前向完即跨 GPU 同步",
+   "专家分卡放，Token 路由通信低频",
+   "节点内 TP 高带宽，跨节点走 EP",
+   "EP 开销高须单节点 NVLink，TP 可扩跨节点以太网"
+  ],
+  "contextAngle": "system-design",
+  "contextCognitiveTask": "design",
+  "contextAssessment": {
+   "target": "能从切分配查同步与带宽环节",
+   "reasoningGoal": "先查配置的环节；再逐项验证各判断；并排除「随意扩」等不成立描述。"
+  }
+ },
+ "rlhf-vs-cai-alignment": {
+  "surface": "RLHF 与宪政 AI 机制差在哪？下列哪些正确？",
+  "surfaceOptions": [
+   "RLHF 人工排序训 RM，PPO/DPO 更权重",
+   "宪政准则写成文本，模型自评自改产数据",
+   "AI 反馈替人工标注，策略更新可扩展透明",
+   "文本原则彻底消除边缘敏感过度拒绝"
+  ],
+  "surfaceAngle": "comparison",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从两条路定排序与自评环节",
+   "reasoningGoal": "先定机制的环节；再逐项验证各判断；并排除「彻底消除」等不成立描述。"
+  },
+  "context": "人工标注与 AI 反馈两条路。比这次对齐，下列哪些判断成立？",
+  "contextOptions": [
+   "候选输出人工偏好排序，奖励模型后更新",
+   "宪法原则显式写，初始回答自评修改",
+   "人工依赖降，安全更新扩展透明",
+   "文本原则明确，边缘敏感过度拒绝彻底消除"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从两条路比排序与依赖环节",
+   "reasoningGoal": "先比对齐的环节；再逐项验证各判断；并排除「自动清零」等不成立描述。"
+  }
+ },
+ "async-grpo-offpolicy": {
+  "surface": "GRPO 异步流水 KV 复用引偏。稳训练设计，下列哪些正确？",
+  "surfaceOptions": [
+   "限 Worker 参数滞后上限，落后不超 1 步",
+   "截断重要性采样，对数比值上限裁剪",
+   "每次刷新清空重建 KV Cache，消跨版 Token",
+   "加独立 Critic 拟合价值，抵消非策略偏差"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从异步引偏定滞后与裁剪环节",
+   "reasoningGoal": "先定偏差的环节；再逐项验证各判断；并排除「清空重建」「加 Critic」等不成立描述。"
+  },
+  "context": "生成训练互等太亏，异步又引非策略偏差。治这次偏差，下列哪些判断成立？",
+  "contextOptions": [
+   "采样落后训练器限 1 更新步",
+   "训练生成对数概率比裁剪上限",
+   "参数刷新即清空 KV 重建，跨版消除",
+   "独立 Value 网拟合状态价值，偏差抵消"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从互等治偏看落后与重建环节",
+   "reasoningGoal": "先治偏差的环节；再逐项验证各判断；并排除「跨版消除」「偏差抵消」等不成立描述。"
+  }
+ },
+ "agentic-rl-infra": {
+  "surface": "多轮 Agent 沙箱 RL，不同单轮问答处？架构哪些合理？",
+  "surfaceOptions": [
+   "隔离可复现沙箱调工具，限网限文件限资源",
+   "环境训练解耦，异步 rollout 存储批量更",
+   "稀疏终局奖补过程信号归因，分段评估",
+   "沙箱一封 GRPO 端到端二值奖直通数十轮"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从多轮沙箱定隔离与归因环节",
+   "reasoningGoal": "先定架构的环节；再逐项验证各判断；并排除「一封直通」等不成立描述。"
+  },
+  "context": "终端 Agent 真沙箱多轮试错。搭这套训练，下列哪些判断成立？",
+  "contextOptions": [
+   "沙箱隔离复现，权限资源设限",
+   "交互训练分开，轨迹存储批量更新",
+   "稀疏终局奖补过程信号分段评，降长轨迹信用难度",
+   "沙箱封装一统，高方差信用分配自消"
+  ],
+  "contextAngle": "system-design",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从试错搭建看设限与分段环节",
+   "reasoningGoal": "先看搭建的环节；再逐项验证各判断；并排除「自消」等不成立描述。"
+  }
+ },
+ "sft-catastrophic-forget": {
+  "surface": "Phase2 专业微调忘通用。降 lr、短周期等做法，哪些合理？",
+  "surfaceOptions": [
+   "Phase2 数据集混一定比例前序 Phase1 重放",
+   "Phase2 lr 降至峰值 30% 左右",
+   "微调范围限仅更新 FFN，冻结 Attention 权重",
+   "训练周期缩至 1 Epoch，防过拟合"
+  ],
+  "surfaceAngle": "tradeoff",
+  "surfaceCognitiveTask": "evaluate",
+  "surfaceAssessment": {
+   "target": "能从忘通用定重放与周期环节",
+   "reasoningGoal": "先定做法的环节；再逐项验证各判断；并排除「只更 FFN」等不成立描述。"
+  },
+  "context": "Agentic 越强通用越忘。保通用做法，下列哪些判断成立？",
+  "contextOptions": [
+   "前序 SFT 数据按比例重放混入",
+   "学习率降至峰值三成左右",
+   "微调范围限仅更新 FFN，冻结 Attention 权重",
+   "1 Epoch 短周期，专业数据不过拟合"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从越强越忘看重放与冻结环节",
+   "reasoningGoal": "先看保通用的环节；再逐项验证各判断；并排除「只训 FFN」等不成立描述。"
+  }
+ },
+ "rlvr-vs-genrm-rewards": {
+  "surface": "可验证奖与生成式 RM 各有何性？设计哪些正确？",
+  "surfaceOptions": [
+   "可验证奖确定难作弊，可无 KL 深探索",
+   "Judge RM 有评价死角，关 KL 模仿风格 Hack",
+   "可验证适代码数学，主观域无法直接用",
+   "生成式 RM 评得快，早期应替规则验证器"
+  ],
+  "surfaceAngle": "comparison",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从双轨奖励定确定与死角环节",
+   "reasoningGoal": "先定奖励的环节；再逐项验证各判断；并排除「早期替代」等不成立描述。"
+  },
+  "context": "规则验证与模型打分双轨。选这次奖励，下列哪些判断成立？",
+  "contextOptions": [
+   "绝对确定作弊难，深度探索放开 KL",
+   "泛化边界评价死角，关 KL 模仿风格 Hack",
+   "客观真理域好用，主观写作拒绝不适用",
+   "生成式评价快，早期替代规则验证"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从双轨选奖励看探索与适用环节",
+   "reasoningGoal": "先选奖励的环节；再逐项验证各判断；并排除「替代验证」等不成立描述。"
+  }
+ },
+ "env-decoupled-rollout": {
+  "surface": "万卡 Rollout 真 Shell 沙箱。分布架构求哪些？",
+  "surfaceOptions": [
+   "环境交互策略更新解耦，独立节点池",
+   "多环境抽象标准资源接口，框架免管细节",
+   "Worker 每次调后同步等，阻塞训练器",
+   "权重转换分发，生成训练集群异步同步"
+  ],
+  "surfaceAngle": "system-design",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从万卡并行定解耦与分发环节",
+   "reasoningGoal": "先定架构的环节；再逐项验证各判断；并排除「同步阻塞」等不成立描述。"
+  },
+  "context": "Shell Docker 浏览器全接训练。拆这套架构，下列哪些判断成立？",
+  "contextOptions": [
+   "交互更新分池算，解耦独立节点",
+   "环境细节框架不问，标准接口统抽象",
+   "工具调用次次同步等，训练更新阻塞",
+   "推理训练集群参异步，权重转换分发"
+  ],
+  "contextAngle": "mechanism",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从全接拆架构看分池与阻塞环节",
+   "reasoningGoal": "先拆架构的环节；再逐项验证各判断；并排除「次次同步」等不成立描述。"
+  }
+ },
+ "sft-data-quality-control": {
+  "surface": "指令 SFT 集防污染提质，手段哪些有效？",
+  "surfaceOptions": [
+   "大模型 Judge 评 CoT 轨迹，过滤低分",
+   "工具调用模式校验，剔未定义错参",
+   "tools 定义 messages 总和算 SHA-256 哈希去重",
+   "剔除失败轨迹样本，只留一次成功完美交互"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从防污染定评分与去重环节",
+   "reasoningGoal": "先定手段的环节；再逐项验证各判断；并排除「只留完美」等不成立描述。"
+  },
+  "context": "工具轨迹噪声混入。控这次质量，下列哪些判断成立？",
+  "contextOptions": [
+   "CoT 工具轨迹合理性评分，低分过滤",
+   "未定义函数错参格式，模式校验剔除",
+   "跨源源内严格去重，SHA-256 哈希算",
+   "失败全剔只留完美，单次成功才收"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从噪声混入控评分与剔除环节",
+   "reasoningGoal": "先控质量的环节；再逐项验证各判断；并排除「只留完美」等不成立描述。"
+  }
+ },
+ "dpo-likelihood-displacement": {
+  "surface": "DPO 双降似然长度退化。分析干预，哪些正确？",
+  "surfaceOptions": [
+   "梯度看相对比值，非偏好降快损失仍降",
+   "β 增大强参考约束，抑绝对概率漂移",
+   "加 NLL 正则 SFT 交叉熵，保绝对生成率",
+   "去参考模型单模型化，根除似然下降"
+  ],
+  "surfaceAngle": "debugging",
+  "surfaceCognitiveTask": "diagnose",
+  "surfaceAssessment": {
+   "target": "能从双降定位比值与约束环节",
+   "reasoningGoal": "先定位现象的环节；再逐项验证各判断；并排除「单模型根除」等不成立描述。"
+  },
+  "context": "偏好非偏好概率齐跌。查这次位移，下列哪些判断成立？",
+  "contextOptions": [
+   "相对对数比主导梯度，绝对压低仍收敛",
+   "β 调大约束增强，过度漂移被抑制",
+   "DPO Loss 掺 SFT Loss，绝对概率维持",
+   "单模型损失无参考，下降问题根除"
+  ],
+  "contextAngle": "mechanism",
+  "contextCognitiveTask": "explain",
+  "contextAssessment": {
+   "target": "能从齐跌查梯度与维持环节",
+   "reasoningGoal": "先查位移的环节；再逐项验证各判断；并排除「无参考根除」等不成立描述。"
+  }
+ },
+ "ring-attention-context-parallel": {
+  "surface": "RingAttention 加并行切分破显存。原理性能，哪些正确？",
+  "surfaceOptions": [
+   "序列分 Chunk 上环，前向同时异步传 KV",
+   "Online Softmax 逐步累计归一化统计",
+   "卡数加通信平方胀，扩展性极差",
+   "单卡显存随切片线性，非全局平方"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从破显存定分环与线性环节",
+   "reasoningGoal": "先定原理的环节；再逐项验证各判断；并排除「平方膨胀」等不成立描述。"
+  },
+  "context": "长文本单卡装不下。看这次切分，下列哪些判断成立？",
+  "contextOptions": [
+   "Chunk 分环路，前向通信重叠传 KV 块",
+   "未收全 KV 先算，局部统计逐步更新",
+   "节点越多通信平方爆，扩展极差",
+   "显存看单卡切片长，线性非全局平方"
+  ],
+  "contextAngle": "comparison",
+  "contextCognitiveTask": "compare",
+  "contextAssessment": {
+   "target": "能从装不下看重叠与扩展环节",
+   "reasoningGoal": "先看切分的环节；再逐项验证各判断；并排除「平方爆」等不成立描述。"
+  }
+ },
+ "prm-vs-orm-credit-assign": {
+  "surface": "数学代码 CoT 信用分配难。PRM/ORM 选型，哪些合理？",
+  "surfaceOptions": [
+   "ORM 终局单标量，长链误归因信用糊",
+   "PRM 逐步打分，定位谬误加速收敛",
+   "标注贵用 MCTS Rollout 估 Q 作伪标签",
+   "PRM 免终局校验，步步合理终局必对"
+  ],
+  "surfaceAngle": "comparison",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从信用难定归因与伪标签环节",
+   "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「免校验必对」等不成立描述。"
+  },
+  "context": "长链推导错在哪步？分这次信用，下列哪些判断成立？",
+  "contextOptions": [
+   "结尾单奖励误归因，中间错当终局对",
+   "每步独立打分，逻辑谬误精准定位",
+   "蒙特卡洛估 Q 值，伪标签代人工",
+   "步步合理终局无误，终局校验免除"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从错步分信用看归因与免除环节",
+   "reasoningGoal": "先分信用的环节；再逐项验证各判断；并排除「校验免除」等不成立描述。"
+  }
+ }
+}

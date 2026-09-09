@@ -18,69 +18,184 @@ SOURCE
 0. EXECUTION CONTRACT
 =====================
 
-本 Prompt 只接受以下两个外部输入：
+本 Prompt 只接受一个外部输入：
 
-1. 当前网页中的 SOURCE MATERIAL
-2. 调用方提供的 AVAILABLE_KNOWLEDGE_NODES
+1. 当前网页中的 SOURCE MATERIAL（你正在阅读的文章 / 论文 / 文档 / README / 博客）。
 
-执行前必须确认：
+【节点索引已内嵌，无需任何外部注入】
 
-* `[AVAILABLE_KNOWLEDGE_NODES]` 这一段**已经被真实节点文本整体替换**（不是原样保留占位符）；
-* 节点至少包含 `id`；
-* `id` 可作为最终 Question.topic。
+第 1 节的 KNOWLEDGE NODE INDEX 已经从本仓库 `src/data/knowledge/*.json` 生成并固化在 Prompt 中。
+你**不需要、也不能**等待任何调用方把节点清单注入进来。
+**不要因为“缺少节点清单”而报错、停止或输出 error。**
+直接根据 SOURCE 从第 1 节索引里选择 `topic`。
 
-【手动（Gemini in Chrome）使用】
+【职责分离】
 
-没有自动注入方，必须人工替换：
+你负责回答：“这篇文章应该考哪个已有的知识？”
+代码（convert / add-question）负责回答：“这个 topic 在当前题库里对应哪个正式节点？”
 
-1. 运行 `npm run dump:nodes -- --area <area>`（如 `llm`），复制其输出；
-2. **整行删除** prompt 里的 `[AVAILABLE_KNOWLEDGE_NODES]`；
-3. 把复制的文本粘贴到那个位置；
-4. 若只关心某一领域，只导出一个 `--area` 的节点即可（topic 只能来自你贴进来的节点）。
-
-【硬失败】
-
-如果 `[AVAILABLE_KNOWLEDGE_NODES]` 缺失、为空或仍然只是占位符：
-
-只输出：
-
-{
-"error": "AVAILABLE_KNOWLEDGE_NODES not provided"
-}
-
-不得继续生成 Blueprint。
-
-不得自行创造 topic id。
-
-不得根据自然语言猜测一个新的 topic id。
+你只从已存在的节点 `id` 中选，不得自行创造 id。
+若文章知识无法归入任何已有节点：输出 `needsNewNode: true`（见第 1 节），不要伪造 topic。
 
 ==================================================
 
-1. AVAILABLE_KNOWLEDGE_NODES
+1. KNOWLEDGE NODE INDEX（已内嵌，权威来源）
    ==================================================
 
-以下节点清单是权威来源。
+以下是当前题库已经存在的 Knowledge Node。
+`topic` 必须逐字等于下面某个节点的 `id`。
+你只能从这里选择 topic。
 
-[AVAILABLE_KNOWLEDGE_NODES]
-
-<!-- 手动使用：整行删除上面这一行，替换为 `npm run dump:nodes` 的输出 -->
-
-<!-- 至少提供 id，最好同时提供 name / area / topic / summary -->
+[EMBEDDED_KNOWLEDGE_NODES]
+activation | 激活函数与非线性
+agent-debugging | Agent 调试与技能漂移
+agent-fundamentals | Agent 基础
+agent-guardrails | Agent 护栏
+agent-loop | Agent 执行循环
+agent-skills | Agent 技能与自演进
+agentic-search | Agentic Search（智能体检索）
+algorithm-design | 超越最坏情况的算法设计
+alignment | 对齐（Alignment）
+attention | 多头注意力
+backprop | 反向传播
+batch-norm | BatchNorm / LayerNorm / RMSNorm
+caching | Prefix Cache 与请求复用
+cnn | 计算机视觉（CNN）
+coding-rl-anti-hacking | Coding Agent Reward Hacking 与在线防护
+context-engineering | 上下文工程
+context-window | 上下文窗口
+cost | 推理成本工程
+cross-entropy | 交叉熵损失
+data-leakage | 数据泄露
+deep-gnn-architectures | 深层 GNN 与过平滑
+dimensionality-reduction | 维数灾难与降维
+distillation | 知识蒸馏
+distributed-training | 分布式训练并行策略
+dpo | DPO 直接偏好优化
+dropout | Dropout
+ensemble-learning | 集成学习与 Boosting
+evaluation | LLM 评估体系
+expressiveness-and-theory | GNN 表达能力与 WL 测试
+factuality-verification | 事实性验证与拒答
+financial-ai-governance | 金融服务中的 AI 治理
+fine-tuning | 全量微调与 PEFT 选型
+flash-attention | FlashAttention
+gan | 生成对抗网络
+generation-reproducibility | 生成可复现性
+gqa | GQA / MQA / MHA
+gradient-descent | 梯度下降与优化器
+graph-rag | GraphRAG 与图检索增强
+graph-recommender-system | 图推荐系统架构
+hallucination | 幻觉
+hierarchical-softmax-huffman-optimization | Hierarchical Softmax 与 Huffman 树优化
+human-in-the-loop | 人机协同（Human-in-the-loop）
+hybrid-attention | 混合注意力（SWA + Global）
+index-share-sparse-attention | IndexShare 跨层共享索引稀疏注意力
+inference-capacity | 并发容量规划
+inference-modes | Prefill 与 Decode
+inference-optimization | 推理优化总览
+information-retrieval | 信息检索基础（传统 IR 与现代语义检索）
+interpretability | 可解释性（Mechanistic Interpretability）
+kd-logit-matching-high-temp-limit | 高温极限与 Logit 匹配
+kd-specialist-ensemble-dustbin-correction | Generalist-Specialist 与 Dustbin 校正
+kd-temperature-scaling-mechanism | 温度缩放（Temperature Scaling）蒸馏机制
+kernel-methods | 核方法与支持向量机
+kv-cache | KV Cache
+latency | 延迟指标（TTFT/TPOT/E2E）
+latent-moe | LatentMoE 低维专家计算
+linear-algebra | 线性代数与 Eckart-Young 定理
+llm-application-security | LLM 应用安全
+llm-data-filtering-heuristics | 行级修正与文档级启发式过滤
+llm-dataset-deduplication-strategies | 精确子串去重与模糊去重的级联架构
+llm-pretraining-web-data-pipeline | Web 爬取数据与人工精选数据的规模取舍
+llm-web-text-extraction-and-line-correction | WARC/WET 与正文抽取的行级修正
+lora | LoRA 参数高效微调
+matrix-factorization | 矩阵分解与非负秩理论
+mcp | MCP 协议
+memory | Agent 记忆
+model-behavior | 模型行为与对齐安全（Model Behavior & Alignment Safety）
+model-selection | 模型选型
+model-selection-and-regularization | 模型选择与正则化
+model-selection-and-validation | 模型选择与验证
+moe | MoE 混合专家
+mtp-speculative-decoding | MTP 多步投机采样与 KV/Index 共享
+multi-agent | 多智能体系统
+multi-vector-retrieval | 多向量检索与 Late Interaction（ColBERT）
+multimodal | 多模态
+neural-lm-hidden-layer-bottleneck | 神经语言模型的隐藏层计算瓶颈
+observability | 生产可观测性
+optimization | 凸优化与随机梯度下降
+overfitting | 过拟合与欠拟合
+planning | 规划
+positional-encoding | 位置编码策略
+pretraining | 预训练
+prompt-injection | 提示注入
+prompt-optimization-debugging | Prompt 优化与调试
+prompt-robustness | 提示鲁棒性
+pytorch-performance | PyTorch 性能剖析与优化
+quantization | 量化
+rag | RAG 检索增强生成
+rag-pipeline | RAG 流水线与 Chunking
+rag-vs-finetuning | RAG vs 微调选型
+ranking | 检索排序（Learning to Rank 与重排）
+realtime-interaction | 实时多模态交互系统
+regularization | 正则化（L1/L2/Weight Decay）
+reliability | LLM 应用可靠性
+reranking | 重排（Reranker）
+residual-connections | 残差连接与 Residual Stream
+rl-critic-ppo-trajectory | 长轨迹 Agent RL：Critic PPO 与 GRPO 选择
+rlhf | RLHF
+robustness-and-security | 图鲁棒性与对抗防御
+rope | RoPE 旋转位置编码
+safety-alignment | 安全对齐落地
+sampling | 解码采样策略
+scalability | 大规模图可扩展性与采样
+scaling-law | Scaling Law 与算力最优
+search-infrastructure | 检索基础设施与工程化
+search-quality | 检索质量评估
+security-eval | 安全 Agent 评估（漏洞利用与红队能力评测）
+self-attention | 自注意力机制
+sentence-embedding | 句向量模型训练（Sentence Embedding / Bi-Encoder）
+sequence-models | 序列模型
+sft | SFT 监督微调
+softmax | Softmax 与数值稳定
+spectral-and-spatial-convolutions | 谱域与空域图卷积
+statistical-learning-theory | 统计学习理论与 PAC 框架
+structured-output | 结构化输出
+system-design | LLM 服务系统设计
+task-oriented-ai | 任务导向对话与客服自动化
+tokenization | 分词与 BPE
+tool-calling | 工具调用
+tool-security | 工具安全
+topic-modeling | 主题建模与 NMF/SVD 对比
+training | 训练与后训练（Training / Post-training）
+training-data | 训练数据质量
+transformer | Transformer 总体架构
+vector-db | 向量数据库与 ANN 检索
+vector-offset-relational-analogy | 向量偏移与关系类比
+vit-cls-token-representation | CLS Token 表征
+vit-inductive-bias-vs-cnn | ViT 与 CNN 的归纳偏置对比
+vit-patch-embedding-sequence-length | Patch Embedding 与序列长度
+vit-position-embedding-interpolation | 位置编码插值
+word-embedding | 词向量与语义表示
+word2vec-cbow-vs-skipgram-complexity | CBOW 与 Skip-gram 的计算复杂度
+[/EMBEDDED_KNOWLEDGE_NODES]
 
 规则：
 
-* `topic` 必须逐字等于某个 node.id；
-* 不得使用 node.name；
-* 不得使用 node.topic；
-* 不得使用 area/domain；
-* 不得创造不存在的 id；
-* 不得把语义相近节点自行改名。
+* `topic` 必须逐字等于上面某个 `id`（区分大小写）；
+* 不得使用节点的 `name` 字段；
+* 不得使用节点的 `topic` 分组字段；
+* 不得使用 `area` / `domain`；
+* 不得创造索引里不存在的 id；
+* 不得把语义相近节点自行改名或拼出新 id；
+* 若多个节点都沾边，选最贴合 SOURCE 核心机制的那一个。
 
-如果 SOURCE 的知识无法合理归入已有节点：
+如果 SOURCE 的知识无法合理归入任何已有节点：
 
 不要偷偷新造 topic。
 
-使用：
+使用（此时不要生成依赖该新节点的 canonical / variant）：
 
 {
 "needsNewNode": true,
@@ -92,8 +207,6 @@ SOURCE
 "summary": "..."
 }
 }
-
-此时不要生成依赖该新节点的 canonical/variant。
 
 ==================================================
 2. SOURCE MATERIAL ID
@@ -732,8 +845,8 @@ category 要简洁、稳定、可复用。
 
 ### Node
 
-* topic 是否真实存在？
-* topic 是否精确等于 node.id？
+* topic 是否在 §1 KNOWLEDGE NODE INDEX 中（即确为仓库已有节点 id）？
+* topic 是否精确等于 node.id（逐字、区分大小写）？
 * 是否错误创造新 id？
 
 ### Knowledge

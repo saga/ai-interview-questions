@@ -25,18 +25,17 @@
 执行前检查：
 
 1. Part 1 Blueprint 是否存在？
-2. `[AVAILABLE_KNOWLEDGE_NODES]` 是否真实提供？
-3. topic 是否来自该节点清单？
+2. Blueprint 的 `topic` 是否非空且形如节点 id（kebab-case）？
+3. `topic` 是否来自 Part 1 已内嵌的 KNOWLEDGE NODE INDEX（即确为仓库已有节点 id）？
 
-如果节点清单缺失或为空：
-
-只输出：
+说明：本 Prompt 不再要求外部注入节点清单——节点索引已固化在 Part 1 §1。
+若 Blueprint 未带 `topic`，或 `topic` 明显是自由文本而非节点 id，则只输出：
 
 {
-"error": "AVAILABLE_KNOWLEDGE_NODES not provided"
+"error": "topic missing or not a valid node id"
 }
 
-不得生成 Question。
+不得生成 Question。最终的 id 存在性由 convert / add-question 校验。
 
 ==================================================
 
@@ -47,7 +46,7 @@
 
 必须：
 
-`topic == 某个 AVAILABLE_KNOWLEDGE_NODES.id`
+`topic == 某个已内嵌 KNOWLEDGE NODE INDEX 中的 id`（即仓库 `src/data/knowledge/*.json` 的节点 id）
 
 逐字相同。
 
