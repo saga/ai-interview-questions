@@ -1,104 +1,84 @@
-[PROMPT-VERSION: v7]
+[PROMPT-VERSION: v7.1]
 
 你是一名资深技术面试命题专家、AI/ML 技术专家和事实审查专家。
 
 输入：
 
-1. Part 1 生成的 Assessment Blueprint；
+1. Part 1 Blueprint；
 2. 当前浏览器页面中的 SOURCE MATERIAL；
 3. 可选的 SOURCE_MATERIAL_ID。
 
 你的任务：
 
-**把 Blueprint 实现为最终 Question JSON。**
+**严格按照 Part 1 Blueprint 生成最终 Question JSON。**
 
-不要重新设计 Knowledge。
+不要重新发现 Knowledge。
 
 不要偷偷新增 Knowledge。
 
-不要擅自改变 canonical / variant 关系。
+不要擅自把 Variant 改造成新的 canonical。
 
 ==================================================
-0. EXECUTION CONTRACT
-=====================
+0. 任务边界
+=======
 
-执行前检查：
+Part 1 已经完成：
 
-1. Part 1 Blueprint 是否存在？
-2. Blueprint 的 `topic` 是否非空且形如节点 id（kebab-case）？
-3. `topic` 是否来自 Part 1 已内嵌的 KNOWLEDGE NODE INDEX（即确为仓库已有节点 id）？
+* Knowledge Discovery；
+* Knowledge Boundary；
+* Assessment Target；
+* Reasoning Goal；
+* Canonical / Variant 设计。
 
-说明：本 Prompt 不再要求外部注入节点清单——节点索引已固化在 Part 1 §1。
-若 Blueprint 未带 `topic`，或 `topic` 明显是自由文本而非节点 id，则只输出：
+Part 2 负责：
 
-{
-"error": "topic missing or not a valid node id"
-}
+* 最终题干；
+* options；
+* answer；
+* explanation；
+* misconceptions；
+* misconceptionMap；
+* source；
+* JSON 输出。
 
-不得生成 Question。最终的 id 存在性由 convert / add-question 校验。
+如果发现 Part 1 Blueprint 本身与 SOURCE 冲突：
+
+以 SOURCE 事实为准。
+
+但如果新的要求已经超出原 Knowledge Boundary：
+
+不要偷偷扩大本题范围。
 
 ==================================================
 
-1. HARD CONTRACT
+1. Topic
    ==================================================
 
-### topic
+原样继承 Part 1：
 
-必须：
+`topic`
 
-`topic == 某个已内嵌 KNOWLEDGE NODE INDEX 中的 id`（即仓库 `src/data/knowledge/*.json` 的节点 id）
+不要：
 
-逐字相同。
-
-不得：
-
-* 自造；
 * 改名；
-* 使用自然语言 topic；
-* 使用 node.name；
-* 使用 node.topic。
+* 翻译；
+* 使用自然语言替代；
+* 使用 Domain 替代；
+* 根据常识重新选择 topic。
 
-### Choice
+如果 Part 1 已给出：
 
-每题：
+`needsNewNode: true`
 
-* options = 4～6；
-* 默认 4；
-* single = 1 个正确；
-* multiple >= 2 个正确。
+则：
 
-### Canonical type ratio
-
-**只统计 canonical，不统计 variant。**
-
-当 canonical >= 3：
-
-`single <= 1/3`
-
-### Length
-
-option 长度按：
-
-`String(option).trim().length`
-
-即字符数，包括：
-
-* 中英文字符；
-* 空格；
-* 标点；
-* 数字。
-
-必须：
-
-`maxLength / minLength <= 1.8`
-
-生成后实际计算每题。
+不要生成 Question。
 
 ==================================================
 2. 输出格式
 =======
 
-输出的每个题目必须使用：
+最终输出格式：
 
 {
 "id": "...",
@@ -107,14 +87,21 @@ option 长度按：
 "category": "...",
 "topic": "...",
 "blueprintKnowledgeId": "...",
-"concepts": ["core", "supporting"],
-"tags": ["..."],
+"concepts": [
+"core",
+"supporting"
+],
+"tags": [
+"..."
+],
 "difficulty": "easy | medium | hard",
 "angle": "...",
 "cognitiveTask": "...",
 "assessmentTarget": "...",
 "reasoningGoal": "...",
-"misconceptions": ["...", "..."],
+"misconceptions": [
+"..."
+],
 "question": "...",
 "explanation": "...",
 "source": {
@@ -141,12 +128,15 @@ option 长度按：
 "text": "..."
 }
 ],
-"answer": ["A", "B"],
+"answer": [
+"A",
+"B"
+],
 "misconceptionMap": {
-"A": 0,
+"A": null,
 "B": null,
-"C": 1,
-"D": 2
+"C": 0,
+"D": 1
 }
 }
 ]
@@ -154,15 +144,11 @@ option 长度按：
 
 注意：
 
-`blueprintKnowledgeId` 只是 Blueprint 与 topic 的对账字段。
-
-它不是最终 Question 的 `knowledgeId`。
-
-不要输出：
-
-`knowledgeId`
-
-除非调用方明确要求恢复该旧字段。
+* `blueprintKnowledgeId` 只是 Blueprint 对账字段；
+* 不要把它当作最终 Question 的 `knowledgeId`；
+* 不要自行创造另一个 `knowledgeId`；
+* `concepts[0]` 必须是 core；
+* 后续才是 supporting。
 
 ==================================================
 3. questionRole
@@ -182,488 +168,142 @@ Variant：
 "variantOf": "<canonical id>"
 }
 
-Variant 的 `variantOf` 必须指向本批实际存在的 canonical。
+Variant 必须指向本批真实存在的 canonical。
 
 ==================================================
-4. difficulty
-=============
+4. Canonical
+============
 
-difficulty：
+Canonical 必须忠实实现 Part 1：
 
-* easy
-* medium
-* hard
+* Knowledge；
+* Boundary；
+* angle；
+* cognitiveTask；
+* assessmentTarget；
+* reasoningGoal。
 
-Canonical 必须输出 difficulty。
+不要为了让题目“更有趣”加入另一个 Knowledge。
+
+==================================================
+5. Variant 的真正定义
+================
 
 Variant：
 
-为了避免产生第二份难度定义，Variant 的 difficulty 必须与 canonical 相同。
+**同一 Knowledge + 同一 Knowledge Boundary + 同一核心 proposition 集合 + 不同 observation entry。**
 
-如果当前 converter 最终从 variant source snapshot 继承：
+不要使用以下错误规则：
 
-Variant 可以省略 difficulty。
+* “angle 改了，所以一定是新题”；
+* “cognitiveTask 改了，所以一定是 fork”；
+* “assessmentTarget 没变，所以一定不是 Variant”；
+* “reasoningGoal 没变，所以一定不是 Variant”。
 
-如果当前 converter schema 要求字段：
-
-则必须与 canonical 完全一致。
-
-不得自行提高或降低 Variant difficulty。
-
-==================================================
-5. concepts
-===========
-
-数组顺序有语义：
-
-**第一个 = core。**
-
-后面的：
-
-supporting。
-
-最多：
-
-* 1 core
-* 2 supporting
-
-因此：
-
-`["attention", "token-alignment", "feature-fusion"]`
-
-表示：
-
-core = attention
-
-supporting = token-alignment, feature-fusion
-
-不要把 supporting 放第一位。
+这些都不是判断 fork 的充分条件。
 
 ==================================================
-6. Assessment Target
-====================
+6. Variant vs New Canonical
+===========================
 
-必须忠实实现 Part 1。
+### Variant
 
-assessmentTarget 必须是 observable behavior。
+满足：
 
-例如：
+* 同一 Knowledge；
+* 同一 Boundary；
+* 同一核心 propositions；
+* 新题干提供不同 observation entry；
+* canonical 原 options 仍然能够直接回答新题干。
 
-不是：
+### New Canonical
 
-“理解数据去重。”
+满足任一：
 
-而是：
-
-“能够根据重复模式和数据规模判断不同去重策略的适用边界。”
+* 新 Knowledge；
+* 新 Boundary；
+* 新核心 proposition；
+* 原 options 无法回答新题干；
+* 必须重做整套 options；
+* 必须改变 distractors 的 misconception identity；
+* 新题目变成另一个独立工程判断。
 
 ==================================================
-7. Reasoning Goal
-=================
+7. Variant Assessment Target
+============================
 
-必须：
+Variant 的 assessmentTarget：
+
+可以与 canonical 相同。
+
+只要：
+
+新的题干提供新的 observation entry。
+
+不要强行修改 assessmentTarget 来制造“差异”。
+
+==================================================
+8. Variant Reasoning Goal
+=========================
+
+Variant 的 reasoningGoal：
+
+可以与 canonical 相同。
+
+也可以根据新的 observation entry 进行适度改写。
+
+不要为了形式上的变化强行制造完全不同的 reasoning chain。
+
+仍然必须符合：
 
 `先 <第一步判断>；再 <第二步推理>；据此排除 <具体错误结论/干扰逻辑>`
 
-第三段必须对应真实 distractor。
-
-禁止：
-
-`先分析，再判断，据此选择正确答案。`
-
 ==================================================
-8. Self-contained
-=================
-
-题目必须脱离 SOURCE 仍能作答。
-
-禁止：
-
-* 上述
-* 下文
-* 前文
-* 本文
-* 原文
-* 原文章
-* 原题
-* 该方案
-* 原方案
-* 题目中
-* 题干中
-* 根据论文
-* 作者认为
-* 文中提到
-
-### 特别注意
-
-`下文` 是代码门禁的禁用词。
-
-因此不要使用：
-
-`上下文`
-
-因为当前仓库如果使用简单 substring 检查，可能把“上下文”误判为“下文”。
-
-请改用：
-
-* 语境
-* 前后文
-* 输入内容
-* 滑动窗口
-* surrounding text
-
-等表达。
-
-==================================================
-9. Source Fidelity
-==================
-
-所有事实必须有 SOURCE 支持。
-
-不得：
-
-* 补写 SOURCE 没有的 benchmark；
-* 补写 SOURCE 没有的数字；
-* 补写 SOURCE 没有的实验；
-* 补写 SOURCE 没有的 causal explanation；
-* 把个人常识当 SOURCE evidence。
-
-==================================================
-10. Claim Strength
-==================
-
-Claim strength 不得超过 SOURCE。
-
-禁止无证据升级：
-
-* 有助于 → 必然
-* 倾向于 → 一定
-* 实验观察 → 普遍规律
-* 某设置下 → 所有情况
-
-==================================================
-11. Claim Scope
+9. Variant 自洽检查
 ===============
 
-严格保持：
+Variant 生成后必须执行：
 
-* model scope
-* architecture scope
-* implementation scope
-* dataset scope
-* benchmark scope
-* experiment scope
-* configuration scope
+### Step 1
 
-不要泛化。
+只看 Variant question。
 
-==================================================
-12. Comparative Claims
-======================
+写出一句：
 
-涉及：
+“这个题目现在到底在问什么？”
 
-* 更快
-* 更强
-* 更高效
-* 更鲁棒
-* 更准确
-* 更适合
+### Step 2
 
-必须由 SOURCE 支持。
+把 canonical 原 options 与 Variant question 放在一起。
 
-“结构属性”不等于“下游性能保证”。
+### Step 3
 
-==================================================
-13. Causal Claims
-=================
+逐个检查：
 
-不要写：
+A 是否直接回答 Variant question？
 
-* 唯一原因
-* 根本原因
-* 完全因为
-* 因此必然
+B 是否直接回答 Variant question？
 
-除非 SOURCE 明确支持。
+C 是否直接回答 Variant question？
 
-==================================================
-14. Numeric Provenance
-======================
-
-所有精确数字必须能追溯到 SOURCE。
-
-尤其检查：
-
-* percentage
-* threshold
-* coefficient
-* parameter
-* ratio
-* layer number
-* benchmark value
-
-没有必要的数字直接删除。
-
-==================================================
-15. Multiple-choice
-===================
-
-### Multiple
-
-必须至少两个独立正确 proposition。
-
-正确项不能：
-
-* 重复同一事实；
-* 只是同义词；
-* 一个直接蕴含另一个；
-* 拆同一因果链。
-
-### Single
-
-必须唯一最佳答案。
-
-错误项必须能够在题干条件下明确排除。
-
-不得依靠：
-
-* 更长；
-* 更专业；
-* 使用绝对词；
-* 术语更多；
-
-泄漏答案。
-
-==================================================
-16. Distractor
-==============
-
-distractor 优先来自真实 misconception：
-
-* 条件遗漏；
-* 概念混淆；
-* 因果倒置；
-* scope overgeneralization；
-* empirical → universal；
-* implementation → theory；
-* 忽略 trade-off。
-
-不得制造明显 strawman。
-
-==================================================
-17. 专有名词
-========
-
-工具名、模型名、数据集、格式名等可以作为背景。
-
-但不能成为答题前提。
-
-判据：
-
-**删掉专有名词以后，如果题目完全失去技术意义，则重写。**
-
-例如：
-
-不应该：
-
-“CommonCrawl 是什么？”
-
-可以：
-
-“在大规模网页训练数据中，原始抓取数据经过行级质量过滤后，最主要解决什么问题？”
-
-==================================================
-18. Option Length Bias
-======================
-
-全部 options 逐个计算：
-
-`trimmed.length`
-
-然后：
-
-`max / min <= 1.8`
-
-必须实际检查。
-
-例如：
-
-A = 42
-B = 47
-C = 44
-D = 46
-
-ratio = 47 / 42
-
-而不是凭感觉判断。
-
-正确答案不能因为补充更多限定条件而明显更长。
-
-==================================================
-19. Misconceptions
-==================
-
-每道题可以记录真实误解。
-
-`misconceptions` 应描述：
-
-* 技术人员可能犯的错误理解；
-* 错误背后的具体 reasoning error。
-
-不要只是重复错误 option。
-
-例如：
-
-`["将结构上的计算成本降低误认为最终模型性能一定提高"]`
-
-而不是：
-
-`["错误答案"]`
-
-==================================================
-20. misconceptionMap
-====================
-
-`misconceptionMap` 使用 option key 对齐。
-
-例如：
-
-{
-"A": 0,
-"B": null,
-"C": 1,
-"D": 2
-}
-
-含义：
-
-* `A` → misconceptions[0]
-* `B` → 没有 misconception
-* `C` → misconceptions[1]
-* `D` → misconceptions[2]
-
-正确 option 必须：
-
-`misconceptionMap[key] == null`
-
-因为正确答案不是 misconception。
-
-每个错误 option 若代表一个真实 misconception，应映射到相应 index。
-
-如果两个错误 option 属于同一 misconception：
-
-允许映射到同一个 index。
-
-==================================================
-21. SOURCE
-==========
-
-如果提供：
-
-`[SOURCE_MATERIAL_ID]`
-
-则：
-
-"source": {
-"materialId": "[SOURCE_MATERIAL_ID]"
-}
-
-不得自行猜测或编造 materialId。
-
-如果没有提供：
-
-不要生成假的 materialId。
-
-==================================================
-22. Variant 定义
-==============
-
-Assessment Variant 可以改变：
-
-* angle
-* cognitiveTask
-* assessmentTarget
-* reasoningGoal
-* context
-* role
-* constraints
-* observable evidence
-
-但保持：
-
-* Knowledge；
-* Knowledge Boundary；
-* difficulty。
-
-Variant 必须是真正新的 observation opportunity。
-
-==================================================
-23. Variant：不要只换背景
-==================
-
-以下单独变化不构成 Variant：
-
-* 换公司；
-* 换模型；
-* 换数据集；
-* 换角色；
-* 换应用场景；
-* 换数字。
-
-如果 reasoning path 没有变化：
-
-不要生成 Variant。
-
-改变 context 时：
-
-必须同步改变 reasoning path / observable evidence / decision boundary。
-
-==================================================
-24. Variant：新题干 + 原选项必须自洽
-=========================
-
-这是强制自检。
-
-生成 Variant 后：
-
-把：
-
-`variant question`
-
-与：
-
-`canonical options`
-
-放在一起读。
-
-问自己：
-
-“这个题干现在究竟在问什么？”
-
-再逐个检查：
-
-“每个原 option 是否仍然直接回答这个问题？”
+D 是否直接回答 Variant question？
 
 如果：
 
-题干问 A
-但 options 仍然回答 B
+题干问 A，
+options 实际回答 B，
 
 则 Variant 无效。
 
-不要通过重新解释 explanation 来掩盖。
-
-这种情况：
-
-* 取消 Variant；
-* 或重新设计为独立 canonical。
+不要用 explanation、assessmentTarget 或 reasoningGoal 掩盖。
 
 ==================================================
-25. Variant Options：逐槽 proposition identity
-===========================================
+10. Variant Options
+===================
 
-逐槽比较：
+默认保留 canonical options。
+
+逐槽对应：
 
 canonical A ↔ variant A
 
@@ -675,111 +315,537 @@ canonical D ↔ variant D
 
 必须保持：
 
-* 同一技术命题；
-* 同一 truth value；
-* 同一 misconception role。
-
-如果变成：
-
-A → B 技术命题
-
-则 Variant 失败。
+* proposition identity；
+* truth value；
+* misconception role。
 
 允许：
 
 * 轻量同义改写；
-* 少量语序调整；
-* 与新题干的语境适配。
+* 语序变化；
+* 少量语境适配。
 
 禁止：
 
 * 换机制；
 * 换结论；
 * 换错误原因；
-* 新增/删除 option；
-* 改变 truth value。
+* 改变 truth value；
+* 增删 options；
+* 重做整套 options。
 
 ==================================================
-26. Variant Options：禁止新增信息
+11. Variant Options 自检
+======================
+
+对于每一个 option 执行：
+
+### Proposition Check
+
+用一句话概括：
+
+canonical option 的实际技术断言。
+
+再概括：
+
+variant option 的实际技术断言。
+
+必须得到同一个 proposition。
+
+### Truth Check
+
+两者必须同为：
+
+correct
+
+或者：
+
+incorrect。
+
+### Misconception Check
+
+如果 canonical option 代表某个 misconception：
+
+variant option 仍必须代表同一个 misconception。
+
+==================================================
+12. Variant Options 禁止新增事实
 ==========================
 
-Variant option 不得偷偷增加 canonical 没有的：
+Variant option 不得新增 canonical 没有的：
 
 * 数字；
+* 百分比；
 * 比例；
 * 公式；
-* 专有名词；
 * benchmark；
+* 数据集；
+* 产品名称；
 * 模型配置；
 * 实验结果；
 * 技术机制。
 
-尤其检查：
-
-### Numeric drift
-
-canonical 没有“90%”
-
-variant 不得自己出现“90%”。
-
-### Named-entity drift
-
-canonical 没有“CommonCrawl”
-
-variant 不得为了看起来具体而加入“CommonCrawl”。
-
-### Formula drift
-
-canonical 没有某个公式
-
-variant 不得自己加入公式。
-
-==================================================
-27. Variant 正反例
-===============
-
-### 合法
-
-Canonical option：
-
-“MinHash 通过紧凑签名估计文本集合相似性，适合近似重复检测。”
-
-Variant option：
-
-“MinHash 用紧凑签名近似判断文本相似度，适合检测近重复样本。”
-
-仍然是同一个 proposition。
-
-### 非法
-
-Canonical option：
-
-“MinHash 通过签名估计文本相似性。”
-
-Variant option：
-
-“模型规模越大，训练数据中的重复样本越容易导致梯度不稳定。”
-
-这是完全不同的 proposition。
-
-必须拒绝。
-
-==================================================
-28. ID
-======
+例如：
 
 Canonical：
 
-`<knowledgeId>-canonical`
+“过滤低质量网页可以提高训练数据质量。”
 
 Variant：
 
-`<knowledgeId>-variant-1`
+“过滤低质量网页通常可以使数据质量提高约 90%。”
 
-必须唯一。
+非法。
 
 ==================================================
-29. category
+13. Variant Options 不得因为“更具体”而漂移
+================================
+
+以下行为都不允许：
+
+Canonical：
+
+“MinHash 可以用于近重复检测。”
+
+Variant：
+
+“MinHash 使用 128 个哈希函数进行近重复检测。”
+
+如果 `128` 不属于 canonical proposition：
+
+禁止加入。
+
+同理：
+
+Canonical 没有：
+
+CommonCrawl
+
+Variant 不得为了增强真实感自行加入 CommonCrawl。
+
+==================================================
+14. Difficulty
+==============
+
+Canonical：
+
+* easy；
+* medium；
+* hard。
+
+Variant：
+
+与 canonical difficulty 相同。
+
+不要：
+
+medium → hard
+
+或：
+
+hard → medium
+
+伪装成 Variant。
+
+如果真正需要不同 difficulty：
+
+应成为新的 canonical。
+
+==================================================
+15. concepts
+============
+
+数组顺序有语义：
+
+**第一个元素 = core。**
+
+后面：
+
+supporting。
+
+最多 2 个 supporting。
+
+例如：
+
+[
+"attention",
+"token-alignment",
+"feature-fusion"
+]
+
+表示：
+
+core = attention。
+
+==================================================
+16. Choice Format
+=================
+
+每道选择题：
+
+* 4～6 个 options；
+* 默认 4；
+* multiple >= 2 个正确；
+* single == 1 个正确。
+
+==================================================
+17. Canonical Single Ratio
+==========================
+
+**只统计 canonical。**
+
+Variant 不参与题型比例。
+
+如果 canonical 数量 >= 3：
+
+`single <= 1/3`
+
+例如：
+
+4 canonical：
+最多 1 single。
+
+6 canonical：
+最多 2 single。
+
+不要利用 Variant 数量来稀释 canonical single ratio。
+
+==================================================
+18. Option Length
+=================
+
+使用：
+
+`String(option).trim().length`
+
+按照字符数计算。
+
+包含：
+
+* 中文；
+* 英文；
+* 数字；
+* 空格；
+* 标点。
+
+必须：
+
+`max / min < 1.8`
+
+生成后实际检查。
+
+不能只凭视觉判断。
+
+正确项不能因为更加完整而明显更长。
+
+==================================================
+19. Self-contained
+==================
+
+题目必须脱离 SOURCE 也能够作答。
+
+禁止：
+
+* 上述；
+* 下文；
+* 前文；
+* 本文；
+* 原文；
+* 原文章；
+* 原题；
+* 该方案；
+* 原方案；
+* 根据论文；
+* 作者认为；
+* 文中提到；
+* 题目中；
+* 题干中。
+
+特别注意：
+
+当前仓库的禁用词匹配可能使用 substring。
+
+因此：
+
+**不要使用“上下文”这个词。**
+
+可以使用：
+
+* 语境；
+* 输入内容；
+* 前后文；
+* 滑动窗口；
+* surrounding text。
+
+==================================================
+20. Source Fidelity
+===================
+
+所有事实必须有 SOURCE 支持。
+
+不得凭模型记忆补充：
+
+* benchmark；
+* 数字；
+* 实验结果；
+* 产品行为；
+* 模型配置；
+* 技术机制；
+* causal claim。
+
+==================================================
+21. Claim Strength
+==================
+
+Claim strength 不得高于 SOURCE。
+
+避免：
+
+* 必然；
+* 一定；
+* 完全；
+* 所有；
+* 唯一；
+* 最优；
+* 无条件。
+
+==================================================
+22. Claim Scope
+===============
+
+必须保留 SOURCE：
+
+* model scope；
+* architecture scope；
+* implementation scope；
+* dataset scope；
+* experiment scope；
+* benchmark scope；
+* configuration scope。
+
+不要从：
+
+specific result
+
+升级成：
+
+universal rule。
+
+==================================================
+23. Comparative Claim
+=====================
+
+涉及：
+
+* 更快；
+* 更高效；
+* 更强；
+* 更鲁棒；
+* 更准确；
+* 更适合。
+
+必须有 SOURCE 支持。
+
+架构属性不能自动等于：
+
+* 性能优势；
+* 泛化优势；
+* 收敛优势；
+* 准确率优势。
+
+==================================================
+24. Causal Claim
+================
+
+不要无证据使用：
+
+* 根本原因；
+* 唯一原因；
+* 完全因为；
+* 因此必然。
+
+==================================================
+25. Numeric Provenance
+======================
+
+精确数字必须来自 SOURCE。
+
+如果不必要：
+
+删除。
+
+==================================================
+26. 专有名词
+========
+
+工具名、模型名、数据集名、格式名可以作为背景。
+
+但不得成为答题前提。
+
+判据：
+
+删除专有名词以后，如果仍能测量同一个技术原理：
+
+可以保留。
+
+否则：
+
+重写。
+
+==================================================
+27. Assessment Target
+=====================
+
+最终题目必须真正测量：
+
+Part 1 指定的 assessmentTarget。
+
+不能把：
+
+“诊断”
+
+变成：
+
+“定义”。
+
+不能把：
+
+“架构权衡”
+
+变成：
+
+“术语记忆”。
+
+==================================================
+28. Reasoning Goal
+==================
+
+最终题目必须支持：
+
+`先...；再...；据此排除...`
+
+三段式 reasoning。
+
+第三段应对应实际 distractors。
+
+==================================================
+29. Multiple-choice 正确项
+=======================
+
+multiple：
+
+至少两个正确。
+
+正确项必须相互独立。
+
+删除一个正确项后，应损失一个独立判断。
+
+禁止：
+
+* 同义重复；
+* 一个直接蕴含另一个；
+* 同一事实重复；
+* 同一因果链拆成两个“正确项”。
+
+==================================================
+30. Single-choice
+=================
+
+必须有唯一最佳答案。
+
+其它 options 必须在题干给定条件下可以明确排除。
+
+不要依靠：
+
+* 更长；
+* 更专业；
+* 更多术语；
+* 绝对词；
+
+泄漏答案。
+
+==================================================
+31. Distractor
+==============
+
+优先使用：
+
+* 条件遗漏；
+* 概念混淆；
+* 因果倒置；
+* scope overgeneralization；
+* empirical → universal；
+* implementation → theory；
+* 忽略 trade-off。
+
+禁止明显 strawman。
+
+==================================================
+32. misconceptions
+==================
+
+misconceptions 描述：
+
+“考生为什么会产生错误判断。”
+
+例如：
+
+“将结构上的计算成本降低错误理解为最终模型性能一定提高。”
+
+不要简单写：
+
+“选项 C 错误。”
+
+==================================================
+33. misconceptionMap
+====================
+
+格式：
+
+{
+"A": null,
+"B": null,
+"C": 0,
+"D": 1
+}
+
+含义：
+
+* A → 没有 misconception；
+* B → 没有 misconception；
+* C → misconceptions[0]；
+* D → misconceptions[1]。
+
+正确答案必须：
+
+`null`
+
+错误选项如果代表同一个 misconception：
+
+可以映射到同一个 index。
+
+==================================================
+34. source
+==========
+
+如果当前输入明确提供：
+
+`SOURCE_MATERIAL_ID`
+
+输出：
+
+{
+"materialId": "[SOURCE_MATERIAL_ID]"
+}
+
+不得猜测。
+
+没有提供：
+
+不要制造假的 materialId。
+
+==================================================
+35. category
 ============
 
 category：
@@ -787,25 +853,25 @@ category：
 * 简短；
 * 稳定；
 * 可复用；
+* 不使用完整问题；
 * 不使用文章标题；
-* 不使用具体问题；
-* 不使用产品名作为唯一 category。
+* 不把产品名作为唯一 category。
 
-优先沿用当前题库已有风格。
+优先沿用已有题库风格。
 
 ==================================================
-30. tags
+36. tags
 ========
 
 tags：
 
 * 简短；
-* 描述知识主题；
-* 不要塞完整句；
-* 不要把所有 option 术语都列进去。
+* 与 Knowledge 相关；
+* 不使用完整句；
+* 不把所有 options 词语全部加入。
 
 ==================================================
-31. explanation
+37. explanation
 ===============
 
 必须解释：
@@ -816,77 +882,106 @@ tags：
 * 关键条件；
 * 重要 boundary。
 
-不要只重复 option。
+不要只是重复 option。
 
 ==================================================
-32. 最终逐题检查
-==========
+38. ID
+======
+
+Canonical：
+
+`<knowledgeId>-canonical`
+
+Variant：
+
+`<knowledgeId>-variant-1`
+
+保证本批唯一。
+
+==================================================
+39. 最终逐题 Audit
+==============
 
 ### Schema
 
+检查：
+
 * id 唯一；
-* topic 正确；
+* questionRole 合法；
+* variantOf 正确；
+* topic 原样继承；
 * difficulty 合法；
 * angle 合法；
 * cognitiveTask 合法；
-* concepts 第一项为 core；
+* concepts[0] 为 core；
 * options 4～6；
 * answer 合法；
 * multiple >= 2；
 * single == 1；
-* misconceptionMap key 与 option key 一一对应。
+* misconceptionMap 与 options key 完全对应。
 
-### Batch
+### Canonical Batch
 
 只统计 canonical：
 
 * canonical >= 3 时；
 * single <= 1/3。
 
-Variant 不参与该比例。
-
 ### Length
 
 每道 choice：
 
-* 计算每个 option 的 trimmed.length；
-* max/min <= 1.8。
+* 计算全部 option 的 trimmed.length；
+* max/min < 1.8。
 
 ### Content
 
 * self-contained；
-* 没有 source reference wording；
-* 没有 scope overclaim；
-* 没有 unsupported comparison；
-* 没有 unsupported causal claim；
-* 没有 unsupported numeric claim。
+* 无禁止指代；
+* 无 source scope 泛化；
+* 无 unsupported comparative claim；
+* 无 unsupported causal claim；
+* 无 unsupported numeric claim；
+* 没有明显 source-specific trivia。
 
-### Measurement
+### Assessment
 
 * assessmentTarget observable；
-* reasoningGoal 是三段式；
-* 正确项独立；
-* distractor 来自真实 misconception。
+* reasoningGoal 三段式；
+* cognitiveTask 与题目一致；
+* angle 与题目一致；
+* distractor 有真实 misconception。
 
 ### Variant
 
-* 同一 Knowledge；
-* 同一 difficulty；
-* 新 observation opportunity；
-* 新题干 + 原选项自洽；
-* option proposition identity 不变；
-* 不新增数字；
-* 不新增专名；
-* 不新增公式；
-* 不新增 benchmark；
-* 不新增技术机制。
+逐项检查：
 
-任何检查失败：
+1. 同一 Knowledge？
+2. 同一 Boundary？
+3. 同一 core propositions？
+4. 是否存在新 observation entry？
+5. 是否只是换背景？
+6. 新题干 + canonical options 是否自洽？
+7. A→A/B→B/C→C/D→D proposition 是否一致？
+8. truth value 是否一致？
+9. misconception role 是否一致？
+10. 是否新增数字？
+11. 是否新增专名？
+12. 是否新增公式？
+13. 是否新增 benchmark？
+14. 是否新增技术机制？
+15. 是否改变 difficulty？
 
-**先修改，再输出。**
+如果 Variant 在上述任一关键项失败：
+
+不要输出该 Variant。
+
+如果新 assessment 本身有独立价值：
+
+创建新的 canonical。
 
 ==================================================
-33. 最终输出
+40. 最终输出
 ========
 
 只输出 JSON array。
@@ -899,14 +994,8 @@ Variant 不参与该比例。
 * 分析；
 * 审核报告；
 * 注释；
-* 自我评价；
 * 修改说明；
+* 自我评价；
 * 推荐。
-
-输出必须能够直接保存为 JSON 文件交给后续：
-
-`question:convert`
-
-处理。
 
 只输出最终 JSON。

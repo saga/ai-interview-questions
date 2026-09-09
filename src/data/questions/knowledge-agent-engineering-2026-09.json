@@ -54,61 +54,6 @@
     }
   },
   {
-    "id": "knowledge-multiagent-token-scaling-variant-1",
-    "category": "Multi-Agent Architecture Design",
-    "topic": "knowledge-multiagent-token-scaling",
-    "tags": [
-      "multi-agent",
-      "context-window",
-      "rag"
-    ],
-    "difficulty": "medium",
-    "angle": "scenario",
-    "cognitiveTask": "diagnose",
-    "concepts": {
-      "core": "multi-agent-search",
-      "supporting": [
-        "context-window-scaling",
-        "dynamic-search"
-      ]
-    },
-    "assessment": {
-      "target": "能够根据任务特征与语境约束，判断多智能体架构相比于传统 RAG 与单 Agent 在复杂长任务中的性能提升本质与适用边界。",
-      "reasoningGoal": "先根据开放式研究任务的动态路径依赖性与信息容量需求，识别单 Agent 触发语境截断与传统 RAG 静态检索的局限；再结合 Token 消耗与并行 Context Window 机制分析能力扩展根源；据此排除将性能提升错误归因于静态 RAG 检索模型优化或单 Agent 零样本能力提升的选项。"
-    },
-    "question": "某技术团队在评估从单 Agent RAG 升级为多智能体研究系统的架构方案时，对其性能收益与机制差异存在争论。下列哪些判断符合事实？",
-    "explanation": "选项 A 正确：多智能体架构核心优势在于将任务分解给多个拥有独立 Context Window 的子 Agent 并行探索，从架构层面拓展了总体 Token 预算与计算容量。选项 B 正确：传统 RAG 仅能基于静态语义向量检索固定片段，无法根据探究过程中的中间发现动态调整搜索方向，而多智能体通过多步循环实现灵活的搜索演进。选项 C 错误：多智能体性能提升主要来自上下文并行解耦与动态多步搜索，而非对每个子 Agent 模型权重进行微调。选项 D 错误：多智能体系统通常比普通对话模式消耗更多计算资源（可达 15 倍以上 Token），适用于对终态价值要求极高而非成本敏感的场景。",
-    "misconceptions": [
-      "错误地将架构级的 Token 预算扩展与语境解耦归因于模型参数权重微调",
-      "忽略了多智能体系统通常比普通 Chat 消耗高达 15 倍 Token 的计算开销事实"
-    ],
-    "derivedFrom": "knowledge-multiagent-token-scaling-canonical",
-    "formats": {
-      "choice": {
-        "type": "multiple",
-        "options": [
-          "多智能体通过将任务拆分至多个独立 Context Window 中并行运行，突破了单一窗口的 Token 预算限制。",
-          "传统 RAG 依赖静态向量相似度提取切片，而多智能体架构能根据中间结果动态调整搜索策略并多步迭代。",
-          "多智能体架构性能提升的根本原因在于每个子 Agent 都对主模型进行了领域特定微调与权重参数优化。",
-          "多智能体系统在所有任务类型中均能降低整体计算消耗，可以显著减少深度研究过程中的 Token 总使用量。"
-        ],
-        "answer": [
-          0,
-          1
-        ],
-        "misconceptionMap": [
-          null,
-          null,
-          0,
-          1
-        ]
-      },
-      "open": {
-        "referenceAnswer": "从单 Agent RAG 升级为多智能体研究系统的收益来自独立 Context Window 并行带来的 Token 预算扩展与多步动态搜索；不依赖权重微调，且会显著增加 Token 消耗而非所有场景都更省。正确答案 A、B。"
-      }
-    }
-  },
-  {
     "id": "knowledge-orchestrator-memory-delegation-canonical",
     "category": "Agent Orchestration & State Management",
     "topic": "knowledge-orchestrator-memory-delegation",
@@ -159,61 +104,6 @@
       },
       "open": {
         "referenceAnswer": "长轨迹失效要靠在外部 Memory 持久化主 Agent 计划与状态（截断后可恢复），子 Agent 重复劳动要靠派发时显式界定目标、输出格式与检索边界；扩大 Context Window 不能替代持久化，泛化指令只会加重重复探索。正确答案 A、B。"
-      }
-    }
-  },
-  {
-    "id": "knowledge-orchestrator-memory-delegation-variant-1",
-    "category": "Agent Orchestration & State Management",
-    "topic": "knowledge-orchestrator-memory-delegation",
-    "tags": [
-      "multi-agent",
-      "memory",
-      "orchestration"
-    ],
-    "difficulty": "hard",
-    "angle": "debugging",
-    "cognitiveTask": "troubleshoot",
-    "concepts": {
-      "core": "orchestrator-worker",
-      "supporting": [
-        "memory-persistence",
-        "task-boundary"
-      ]
-    },
-    "assessment": {
-      "target": "能够诊断主从（Orchestrator-Worker）多智能体系统中子智能体任务重叠与长轨迹语境丢失的工程原因，并给出正确的架构设计解法。",
-      "reasoningGoal": "先分析长轨迹研究中 Context Window 溢出导致的计划丢失问题与子智能体无界指令导致的搜索重复现象；再定位外部 Memory 状态持久化与精细化任务界定的协同保护机制；据此排除仅依靠扩大 Context Window 或使用泛化指令的错误策略。"
-    },
-    "question": "在调试某多智能体系统时发现：系统运行后期主 Agent 频繁偏离原研究路径，且多个并发子 Agent 重复搜索相同网页。下列哪些改进对解决该问题有效？",
-    "explanation": "选项 A 正确：长轨迹执行中 Context Window 一旦超限发生截断（Truncation），主 Agent 的原规划极易丢失，必须将其持久化存储到外部 Memory 中。选项 B 正确：分配子任务时需明确目标、输出格式与检索边界，否则多个子 Agent 会因指令过泛而重复调用相同的外部查询。选项 C 错误：虽然扩大窗口能增加容量，但无法避免长会话截断风险，外部 Memory 持久化对于保障长流程全局一致性不可替代。选项 D 错误：过于简短泛化的指令会导致多子 Agent 在缺少分工边界的情况下重复探索相同的重叠区域。",
-    "misconceptions": [
-      "错误地认为无限扩展 Context Window 能够替代长流程中的状态持久化与计划记忆机制",
-      "误以为模糊泛化的指令能提升效率，忽视了这会导致子 Agent 重复检索相同信息"
-    ],
-    "derivedFrom": "knowledge-orchestrator-memory-delegation-canonical",
-    "formats": {
-      "choice": {
-        "type": "multiple",
-        "options": [
-          "主 Agent 在生成研究计划后将其持久化至 Memory，避免 Context Window 超过上限截断时遗失核心规划。",
-          "调度主 Agent 时必须显式约束子任务的目标、输出格式与边界，防止多个子 Agent 执行完全重叠的检索。",
-          "只要将 Context Window 容量进一步拓展提升，就无需通过外部 Memory 额外存储策略计划与状态信息。",
-          "为保证子 Agent 的探究自由度，主 Agent 应仅提供如“调查某领域”等简短泛化的全局提示指令。"
-        ],
-        "answer": [
-          0,
-          1
-        ],
-        "misconceptionMap": [
-          null,
-          null,
-          0,
-          1
-        ]
-      },
-      "open": {
-        "referenceAnswer": "主 Agent 偏离路径说明规划随 Context 截断丢失，需外部 Memory 持久化；子 Agent 重复搜索说明任务边界模糊，派发时要约束目标、输出格式与检索边界。正确答案 A、B。"
       }
     }
   },
@@ -272,61 +162,6 @@
     }
   },
   {
-    "id": "knowledge-tool-calling-self-optimization-variant-1",
-    "category": "Tool Calling & Prompt Optimization",
-    "topic": "knowledge-tool-calling-self-optimization",
-    "tags": [
-      "tool-calling",
-      "mcp",
-      "prompt-engineering"
-    ],
-    "difficulty": "medium",
-    "angle": "debugging",
-    "cognitiveTask": "troubleshoot",
-    "concepts": {
-      "core": "mcp-tool-description",
-      "supporting": [
-        "agent-self-optimization",
-        "interleaved-thinking"
-      ]
-    },
-    "assessment": {
-      "target": "能够评估工具描述设计、思考链（Extended/Interleaved Thinking）与并行工具调用对 Agent 性能与工具使用正确率的影响。",
-      "reasoningGoal": "先分析模糊工具描述引发的智能体偏航与单步顺序调用的效率瓶颈；再比对引入结构化思考链、并行工具调用与模型自我提示优化的工程解法；据此排除依赖硬编码规则或忽视工具描述语义质量的错误观点。"
-    },
-    "question": "某团队在开发 Agent 工具链时，遭遇工具调用频繁出错且搜索耗时较长的问题。下列哪些工程实践能有效改善该问题？",
-    "explanation": "选项 A 正确：利用 LLM 作为 Agent 自动测试失败的工具描述并进行迭代重写，能够显著消除语义歧义与歧义带来的错误路线。选项 B 正确：在工具调用前后采用交织思考（Interleaved Thinking）配合多工具并行调用，可以让智能体灵活评估中间产物并成倍缩短总体耗时。选项 C 错误：工具描述需要清晰定义使用前提、输入范围和适用场景，盲目裁剪描述会导致模型产生选择歧义。选项 D 错误：工具选择高度依赖 System Prompt 和工具 description 提供的语义上下文指导，优化描述能显著降低偏航风险。",
-    "misconceptions": [
-      "错误地将 Context Window 长度优化等同于删除关键的工具使用边界与指导说明",
-      "忽视了 Prompt Engineering 和工具接口描述在智能体推理路径抉择中的关键提示作用"
-    ],
-    "derivedFrom": "knowledge-tool-calling-self-optimization-canonical",
-    "formats": {
-      "choice": {
-        "type": "multiple",
-        "options": [
-          "利用 LLM 自动测试失败工具并重写工具描述，可以消除歧义并大幅降低未来 Agent 的任务执行耗时。",
-          "引入交织思考（Interleaved Thinking）与并行工具调用，允许 Agent 在单轮中触发多个工具并评估结果。",
-          "工具描述越简短越好，复杂的工具描述会导致 LLM 注意力分散并显著降低工具调用的匹配成功率。",
-          "智能体对工具的选择完全取决于底层模型的参数知识，优化工具描述文本无法改善模型的错误路径选择。"
-        ],
-        "answer": [
-          0,
-          1
-        ],
-        "misconceptionMap": [
-          null,
-          null,
-          0,
-          1
-        ]
-      },
-      "open": {
-        "referenceAnswer": "工具调用频繁出错通常源于描述语义歧义：让 LLM 自动测试失败工具并迭代重写描述；耗时高可引入交织思考配合并行工具调用。不要盲目裁剪描述，工具选择依赖描述语义引导。正确答案 A、B。"
-      }
-    }
-  },
-  {
     "id": "knowledge-eval-production-resilience-canonical",
     "category": "Agent Evaluation & Production Ops",
     "topic": "knowledge-eval-production-resilience",
@@ -377,61 +212,6 @@
       },
       "open": {
         "referenceAnswer": "路径非确定 → 用终态（End-state）评分而非强校验轨迹；有状态长会话发布用彩虹部署（新旧并行、增量切流）而非直接重启或标准滚动更新，后者会中断在途 Agent。正确答案 A。"
-      }
-    }
-  },
-  {
-    "id": "knowledge-eval-production-resilience-variant-1",
-    "category": "Agent Evaluation & Production Ops",
-    "topic": "knowledge-eval-production-resilience",
-    "tags": [
-      "evaluation",
-      "deployment",
-      "reliability"
-    ],
-    "difficulty": "hard",
-    "angle": "scenario",
-    "cognitiveTask": "design",
-    "concepts": {
-      "core": "end-state-evaluation",
-      "supporting": [
-        "rainbow-deployment",
-        "non-deterministic-agent"
-      ]
-    },
-    "assessment": {
-      "target": "能够根据多智能体系统的非确定性与长运行状态特征，制定正确的评估范式（End-state vs Trajectory）与生产发布更新策略（Rainbow Deployment）。",
-      "reasoningGoal": "先分析多智能体路径多样性带来的轨迹匹配评估失效以及长流程会话在发布时中断的风险；再识别终态 Scoring 评估与 Rainbow 增量流量迁移的匹配方案；据此排除基于固定步骤强校验或无状态直接滚动的运维与评测错误做法。"
-    },
-    "question": "在针对生产环境多智能体系统进行评估体系建设与版本迭代升级时，工程师团队应当遵循下列哪项架构策略？",
-    "explanation": "选项 A 正确：多智能体搜索探索路径具有非确定性，基于终态（End-state）评分更能客观反映输出质量；而在生产部署时采用彩虹部署（Rainbow Deployment）能让新老版本并行，避免切流量时强行打断在途的长运行 Agent 会话。选项 B 错误：非确定性 Agent 可能通过不同合法轨迹达成相同正确结论，强校验调用序列会导致大量误判；直接重启会导致在途任务失败。选项 C 错误：无状态滚动更新会斩断在途 Agent 的长运行状态。选项 D 错误：单轮相似度无法评估复杂的综合研究报告，且暂停服务违背可用性要求。",
-    "misconceptions": [
-      "误将传统单步强校验施加于非确定性系统，且忽略了直接重启会中断长运行 Agent 会话的问题",
-      "忽略了标准无状态滚动更新会导致有状态在途 Agent 执行中断并严重损害用户体验",
-      "误以为单轮文本相似度能反映长轨迹合成质量，且暂停在途请求违反了高可用性生产运维原则"
-    ],
-    "derivedFrom": "knowledge-eval-production-resilience-canonical",
-    "formats": {
-      "choice": {
-        "type": "single",
-        "options": [
-          "评估应关注最终状态与结果质量而非规定具体轨迹，发布应采用彩虹部署以避免中断正在运行的长会话。",
-          "评估必须强校验 Agent 每一步调用的工具序列，发布时应通过直接重启服务以确保所有 Agent 状态一致。",
-          "评估只需依赖海量自动化评测集，发布时采用标准滚动更新即可保证长运行 Agent 会话的无缝切流。",
-          "评估应通过对比单轮 Agent 输出的 Similarity，发布时暂停所有在途请求以进行集中式在线升级。"
-        ],
-        "answer": [
-          0
-        ],
-        "misconceptionMap": [
-          null,
-          0,
-          1,
-          2
-        ]
-      },
-      "open": {
-        "referenceAnswer": "评估体系应以终态结果质量为准（非确定性路径下轨迹强校验会误判）；版本升级用彩虹部署新旧并行、按流量增量迁移，避免重启或滚动更新打断有状态在途会话。正确答案 A。"
       }
     }
   }

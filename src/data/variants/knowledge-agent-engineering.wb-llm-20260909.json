@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "generatedAt": 1788958328462,
+  "promptVersion": "v4",
+  "variants": {
+    "knowledge-multiagent-token-scaling-canonical": [
+      {
+        "id": "knowledge-multiagent-token-scaling-canonical__context-options__knowagent__0",
+        "kind": "context-options",
+        "question": "某技术团队正在评估把单 Agent RAG 升级为多智能体研究系统，对架构收益与机制差异存在争论。下列哪些判断符合事实？",
+        "options": [
+          "把任务拆给多个各自持有独立 Context Window 的子 Agent 并行运行，就突破了单一窗口对 Token 预算的限制。",
+          "传统 RAG 只能按静态向量相似度提取切片，多智能体架构却能依据中间结果动态调整搜索策略并多步迭代。",
+          "多智能体性能显著提升的根本原因，是每个子 Agent 都对主模型进行了领域微调与权重参数优化。",
+          "多智能体系统对任何任务类型都能压低总计算量，从而显著减少深度研究的 Token 总使用量。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "generatedAt": 1788958328459,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-31997c18",
+        "batch": "knowagent",
+        "model": "manual",
+        "contentHash": "fnv1a-69cab652",
+        "sourceSnapshot": {
+          "id": "knowledge-multiagent-token-scaling-canonical",
+          "topic": "knowledge-multiagent-token-scaling",
+          "angle": "architecture",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "context-window",
+            "rag"
+          ],
+          "question": "在构建复杂长流程深度研究系统时，针对为什么多智能体（Multi-Agent）架构相比传统静态 RAG 与单 Agent 系统能获得显著性能提升，以下哪些分析是正确的？",
+          "options": [
+            "多智能体通过将任务拆分至多个独立 Context Window 中并行运行，突破了单一窗口的 Token 预算限制。",
+            "传统 RAG 依赖静态向量相似度提取切片，而多智能体架构能根据中间结果动态调整搜索策略并多步迭代。",
+            "多智能体架构性能提升的根本原因在于每个子 Agent 都对主模型进行了领域特定微调与权重参数优化。",
+            "多智能体系统在所有任务类型中均能降低整体计算消耗，可以显著减少深度研究过程中的 Token 总使用量。"
+          ]
+        }
+      }
+    ],
+    "knowledge-orchestrator-memory-delegation-canonical": [
+      {
+        "id": "knowledge-orchestrator-memory-delegation-canonical__context-options__knowagent__0",
+        "kind": "context-options",
+        "question": "在调试某多智能体系统时发现：运行后期主智能体频繁偏离原研究路径，且多个并发子智能体重复搜索相同网页。针对这两个症状，下列哪些改进是有效的？",
+        "options": [
+          "研究计划生成后要立即持久化到外部 Memory，这样 Context Window 超限截断时核心规划才不会丢失。",
+          "派发子任务时应写明目标、输出格式与检索边界，否则多个子 Agent 会对同一批信息做完全重叠的检索。",
+          "只要继续加大 Context Window 容量，就不必再用外部 Memory 保存策略计划与状态信息了。",
+          "为不限制子 Agent 的探索空间，主 Agent 应只发“调查某领域”这类简短笼统的全局指令。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "generatedAt": 1788958328461,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8d7cef7b",
+        "batch": "knowagent",
+        "model": "manual",
+        "contentHash": "fnv1a-bc711dab",
+        "sourceSnapshot": {
+          "id": "knowledge-orchestrator-memory-delegation-canonical",
+          "topic": "knowledge-orchestrator-memory-delegation",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "multi-agent",
+            "memory",
+            "orchestration"
+          ],
+          "question": "在 Orchestrator-Worker 架构的多智能体研究系统中，针对解决“长轨迹执行失效”与“子智能体重复劳动”问题，以下哪些设计策略是正确的？",
+          "options": [
+            "主 Agent 在生成研究计划后将其持久化至 Memory，避免 Context Window 超过上限截断时遗失核心规划。",
+            "调度主 Agent 时必须显式约束子任务的目标、输出格式与边界，防止多个子 Agent 执行完全重叠的检索。",
+            "只要将 Context Window 容量进一步拓展提升，就无需通过外部 Memory 额外存储策略计划与状态信息。",
+            "为保证子 Agent 的探究自由度，主 Agent 应仅提供如“调查某领域”等简短泛化的全局提示指令。"
+          ]
+        }
+      }
+    ],
+    "knowledge-tool-calling-self-optimization-canonical": [
+      {
+        "id": "knowledge-tool-calling-self-optimization-canonical__context-options__knowagent__0",
+        "kind": "context-options",
+        "question": "某团队正在排查工具链问题：工具调用频繁出错、整体耗时很长，怀疑与工具描述质量和调用编排有关。下列哪些工程实践能有效改善？",
+        "options": [
+          "让 LLM 自动测试失败的工具并迭代重写描述，可消除语义歧义、显著压低后续任务执行耗时。",
+          "用交织思考（Interleaved Thinking）配合并行工具调用，可让 Agent 在单轮触发多个工具并即时评估结果。",
+          "工具描述越短越好，太长会使 LLM 注意力分散，显著拉低工具调用的匹配成功率。",
+          "选哪个工具完全由底层模型的参数知识决定，优化工具描述文本无法改善错误路径选择。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "generatedAt": 1788958328462,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a587dd31",
+        "batch": "knowagent",
+        "model": "manual",
+        "contentHash": "fnv1a-225d317c",
+        "sourceSnapshot": {
+          "id": "knowledge-tool-calling-self-optimization-canonical",
+          "topic": "knowledge-tool-calling-self-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "apply",
+          "tags": [
+            "tool-calling",
+            "mcp",
+            "prompt-engineering"
+          ],
+          "question": "在构建基于 MCP 协议的多智能体工具调用系统时，为了提升工具调用的准确率与系统的执行效率，以下哪些工程实践是有效的？",
+          "options": [
+            "利用 LLM 自动测试失败工具并重写工具描述，可以消除歧义并大幅降低未来 Agent 的任务执行耗时。",
+            "引入交织思考（Interleaved Thinking）与并行工具调用，允许 Agent 在单轮中触发多个工具并评估结果。",
+            "工具描述越简短越好，复杂的工具描述会导致 LLM 注意力分散并显著降低工具调用的匹配成功率。",
+            "智能体对工具的选择完全取决于底层模型的参数知识，优化工具描述文本无法改善模型的错误路径选择。"
+          ]
+        }
+      }
+    ],
+    "knowledge-eval-production-resilience-canonical": [
+      {
+        "id": "knowledge-eval-production-resilience-canonical__context-options__knowagent__0",
+        "kind": "context-options",
+        "question": "在针对生产环境多智能体系统进行评测体系建设与版本迭代升级时，工程师团队应当遵循下列哪项架构策略？",
+        "options": [
+          "评估应看终态结果质量、而非规定具体轨迹；发布采用彩虹部署，避免切断正在运行的长会话。",
+          "评估要强校验每一步的工具调用序列；发布时直接重启服务，以确保所有 Agent 状态一致。",
+          "评估只需依赖海量自动化评测集；发布用标准滚动更新，即可保证长运行会话无缝切流。",
+          "评估靠比较单轮输出的 Similarity；发布时先暂停全部在途请求，再做集中式升级。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "generatedAt": 1788958328462,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f227806c",
+        "batch": "knowagent",
+        "model": "manual",
+        "contentHash": "fnv1a-a1324065",
+        "sourceSnapshot": {
+          "id": "knowledge-eval-production-resilience-canonical",
+          "topic": "knowledge-eval-production-resilience",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "evaluation",
+            "deployment",
+            "reliability"
+          ],
+          "question": "针对多智能体系统具有非确定性执行路径与长运行会话状态的特征，下列关于系统评估与生产发布的说法中，最准确的是哪一个？",
+          "options": [
+            "评估应关注最终状态与结果质量而非规定具体轨迹，发布应采用彩虹部署以避免中断正在运行的长会话。",
+            "评估必须强校验 Agent 每一步调用的工具序列，发布时应通过直接重启服务以确保所有 Agent 状态一致。",
+            "评估只需依赖海量自动化评测集，发布时采用标准滚动更新即可保证长运行 Agent 会话的无缝切流。",
+            "评估应通过对比单轮 Agent 输出的 Similarity，发布时暂停所有在途请求以进行集中式在线升级。"
+          ]
+        }
+      }
+    ]
+  }
+}
