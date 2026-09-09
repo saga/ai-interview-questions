@@ -511,5 +511,97 @@
     "angles": [
       "mechanism"
     ]
+  },
+  {
+    "id": "scaled-dot-product-scaling",
+    "name": "缩放点积注意力（除以 √d_k）",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "缩放点积注意力把 Q·Kᵀ 除以 √d_k 再做 softmax。d_k 增大时点积的方差随维度线性膨胀，softmax 进入饱和区、梯度趋零；除以 √d_k 把每分量方差拉回 ≈1 的稳定区间。原始论文在单头大维度下与加性注意力对比后选定该缩放因子。",
+    "required": [
+      "缩放因子是 1/√d_k（d_k 为单个头的维度），不是 1/d_k 也不是常数",
+      "必要性来自方差：d_k 个独立点积求和的方差 ∝ d_k，除以 √d_k 使其回落到单位量级",
+      "不缩放时 softmax 过饱和，训练初期梯度消失、收敛明显变慢"
+    ],
+    "misconceptions": [
+      "以为 √d 是为了数值稳定（防溢出）——溢出不是主因，主因是方差膨胀与梯度饱和",
+      "把缩放因子记成 1/d_k 或 1/√N（N 是序列长度，与缩放无关）",
+      "以为去掉缩放只是精度略降，实际往往是训练不收敛"
+    ],
+    "angles": [
+      "mechanism",
+      "calculation",
+      "definition"
+    ]
+  },
+  {
+    "id": "multi-head-attention-subspace",
+    "name": "多头注意力的子空间投影",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "多头注意力把 Q/K/V 线性投影到 h 个低维子空间（每头维度 d_k = d_model/h），在各子空间独立算注意力后拼接，再由 W^O 投影回 d_model。不同头可学会关注不同位置与不同语义/语法关系模式。",
+    "required": [
+      "总维度守恒：h × d_k = d_model；头数增多则每头维度下降",
+      "各头参数不共享（各自独立的 W^Q/W^K/W^V/W^O），结果拼接后由 W^O 融合",
+      "多头的核心收益是联合关注不同表示子空间，而非单纯增加参数容量"
+    ],
+    "misconceptions": [
+      "以为多头只是把单头拆细、表达等价（子空间联合注意力严格强于单头）",
+      "混淆 d_k 与 d_model：缩放因子用的是每头的 d_k 而非 d_model",
+      "认为头越多越好，忽略 d_k 过小时每头表达能力退化"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff",
+      "calculation"
+    ]
+  },
+  {
+    "id": "self-attention-sequential-complexity",
+    "name": "自注意力的序列复杂度",
+    "area": "ai-engineering",
+    "topic": "model-architecture",
+    "priority": "P1",
+    "summary": "自注意力对 N 个 token 两两计算注意力：计算量 O(N²·d)，标准实现还需在显存中保存 N×N 注意力权重（或靠 FlashAttention 分块规避）。序列越长成本随长度平方增长，这是长上下文与高效注意力研究的根因。",
+    "required": [
+      "计算复杂度 O(N²·d)：N² 来自两两 QK 点积，d 来自每个投影维度",
+      "存储复杂度 O(N²)：标准实现需保存 N×N 注意力矩阵用于反向传播",
+      "与 RNN 的 O(N·d²)、CNN 的 O(N·k·d²) 对比：注意力换长程一步可达，代价是平方增长"
+    ],
+    "misconceptions": [
+      "认为自注意力是 O(N) 或随维度平方——平方项来自序列长度 N 而非维度 d",
+      "只算 FLOPs 而忽略 N×N 矩阵的显存占用是长序列的主要瓶颈",
+      "以为 FlashAttention 降低了计算复杂度（它降的是 IO/显存，FLOPs 不变）"
+    ],
+    "angles": [
+      "calculation",
+      "mechanism",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sinusoidal-positional-encoding",
+    "name": "正弦位置编码",
+    "area": "llm",
+    "topic": "llm-architecture",
+    "priority": "P1",
+    "summary": "原始 Transformer 用固定正弦/余弦函数把位置信息注入输入嵌入：PE(pos,2i)=sin(pos/10000^{2i/d})，PE(pos,2i+1)=cos(·)。频率沿维度几何递减，使任意位置的编码可表示为另一位置编码的线性函数，便于模型学习相对位置并外推到更长序列。",
+    "required": [
+      "公式：偶维用 sin、奇维用 cos，波长随维度从 2π 几何增长到 10000·2π",
+      "线性可加性：PE_{pos+k} 可由 PE_pos 经固定线性变换得到，利于相对位置泛化",
+      "与可学习位置编码对比：固定式零额外参数、外推性更好，但表达上限固定"
+    ],
+    "misconceptions": [
+      "以为位置编码加在注意力权重上（实际加在输入 embedding 上）",
+      "混淆绝对/相对位置：正弦式的优势是相对位置可由线性变换表达，而非天然存储绝对位置",
+      "认为固定正弦编码完全无法外推到更长序列（线性可加性正是其外推设计意图，尽管实践中仍有限）"
+    ],
+    "angles": [
+      "mechanism",
+      "definition",
+      "comparison"
+    ]
   }
 ]

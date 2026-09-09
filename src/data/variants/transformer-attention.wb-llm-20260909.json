@@ -1,0 +1,497 @@
+{
+  "version": 1,
+  "generatedAt": 1788956935638,
+  "promptVersion": "v4",
+  "variants": {
+    "scaled-dot-product-scaling-definition-canonical": [
+      {
+        "id": "scaled-dot-product-scaling-definition-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在实现一个 base 规模的 Transformer 注意力层时，工程师需要在 softmax 激活前对 query 与 key 的乘积 QKᵀ 施加缩放。关于该缩放所采用的因子，下列说法正确的是？",
+        "options": [
+          "缩放因子取值为 1/√d_k，这里的 d_k 指单个注意力头的维度，既不是 d_model 也不是序列长度 N。",
+          "施加缩放的目的是避免 QKᵀ 的数值向上溢出到 Inf，否则 softmax 就无法计算。",
+          "若不做缩放，点积的方差会随 d_k 线性增大，使 softmax 落入饱和区、梯度趋零，训练初期难以更新。",
+          "把缩放因子改成 1/d_k（或 1/√N）也能达到等价的稳定效果。"
+        ],
+        "generatedAt": 1788956935632,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0c2fec32",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-c4a7da70",
+        "sourceSnapshot": {
+          "id": "scaled-dot-product-scaling-definition-canonical",
+          "topic": "scaled-dot-product-scaling",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "recall",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Scaled Dot-Product"
+          ],
+          "question": "原始 Transformer 的缩放点积注意力（Scaled Dot-Product Attention）在 softmax 之前对 QKᵀ 做缩放。关于这里的'缩放因子'，下列哪些描述是正确的？",
+          "options": [
+            "缩放因子是 1/√d_k，其中 d_k 是单个注意力头的维度（而非 d_model 或序列长度 N）。",
+            "缩放是为了防止 QKᵀ 的数值向上溢出（overflow）到 Inf，否则 softmax 无法计算。",
+            "不缩放时，点积的方差随 d_k 线性增长，softmax 进入饱和区导致梯度趋零、训练难以更新。",
+            "把缩放因子写成 1/d_k（或 1/√N）也能取得等价的稳定效果。"
+          ]
+        }
+      }
+    ],
+    "scaled-dot-product-scaling-mechanism-canonical": [
+      {
+        "id": "scaled-dot-product-scaling-mechanism-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在推导原始 Transformer 注意力缩放因子的理论依据时，论文做了如下统计假设：query q 与 key k 的各个分量相互独立、均值 0、方差 1。基于这一假设与缩放机制，下列说法正确的是？",
+        "options": [
+          "在分量独立同分布的假设下，q 与 k 的点积方差约等于 d_k，其幅度随维度线性膨胀。",
+          "除以 √d_k 之后，缩放点积的方差回到 ≈1，从而避开 softmax 的饱和区。",
+          "若不缩放，softmax 输出会极度尖锐、梯度趋零，训练初期几乎无法更新参数。",
+          "缩放主因是方差膨胀与梯度饱和，而不是 QKᵀ 数值上溢到 Inf。",
+          "缩放因子也可以取 1/d_k，差别只是缩放力度略微大一点。"
+        ],
+        "generatedAt": 1788956935633,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-99c45180",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-6052c8d1",
+        "sourceSnapshot": {
+          "id": "scaled-dot-product-scaling-mechanism-canonical",
+          "topic": "scaled-dot-product-scaling",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Scaled Dot-Product"
+          ],
+          "question": "论文通过统计假设论证了缩放因子的必要性：假设 query q 与 key k 的各分量独立、均值 0、方差 1。关于这一论证与缩放机制，下列哪些描述正确？",
+          "options": [
+            "在独立同分布假设下，点积 q·k 的方差约为 d_k，幅度随维度线性膨胀。",
+            "除以 √d_k 使缩放后点积的方差回落到 ≈1，避免 softmax 进入饱和区。",
+            "不缩放时 softmax 会极度尖锐、梯度趋零，训练初期几乎无法更新。",
+            "缩放是为了防止 QKᵀ 数值溢出（overflow）到 Inf，否则计算崩溃。",
+            "把缩放因子取为 1/d_k 同样可行，只是缩放力度略大。"
+          ]
+        }
+      }
+    ],
+    "scaled-dot-product-scaling-calculation-canonical": [
+      {
+        "id": "scaled-dot-product-scaling-calculation-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "单个注意力头的维度设为 d_k=64，且 query q 与 key k 的每个分量都独立地服从 N(0,1)。关于未缩放点积 q·k 及其缩放后的统计特征，下列说法正确的是？",
+        "options": [
+          "未经缩放时，点积 q·k 的方差大约为 64（即 d_k）。",
+          "未经缩放时，点积 q·k 的标准差大约为 8（即 √d_k）。",
+          "在除以 √d_k 之后，缩放后点积的标准差大约为 1。",
+          "未缩放的点积 q·k 其方差大约为 8。",
+          "未缩放的点积 q·k 其标准差大约为 64。"
+        ],
+        "generatedAt": 1788956935634,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1391d325",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-a2aac9d7",
+        "sourceSnapshot": {
+          "id": "scaled-dot-product-scaling-calculation-canonical",
+          "topic": "scaled-dot-product-scaling",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Scaled Dot-Product"
+          ],
+          "question": "设 query q 与 key k 各分量独立服从 N(0,1)，单个头的维度 d_k=64。关于点积 q·k 与缩放后的统计量，下列哪些说法正确？",
+          "options": [
+            "未缩放点积 q·k 的方差约为 64（= d_k）。",
+            "未缩放点积 q·k 的标准差约为 8（= √d_k）。",
+            "除以 √d_k 后，缩放点积的标准差约为 1。",
+            "未缩放点积 q·k 的方差约为 8。",
+            "未缩放点积 q·k 的标准差约为 64。"
+          ]
+        }
+      }
+    ],
+    "multi-head-attention-subspace-mechanism-canonical": [
+      {
+        "id": "multi-head-attention-subspace-mechanism-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在搭建 Transformer 的注意力模块时，Multi-Head Attention 会先把 Q/K/V 线性投影到 h 个低维子空间，再并行地各自计算注意力。关于这一机制，下列说法正确的是？",
+        "options": [
+          "每个注意力头都用自己的 W^Q/W^K/W^V，将 Q/K/V 投影到不同的低维子空间后独立算注意力。",
+          "多头各自的输出先拼接，再经 W^O 投影回 d_model 维度，完成信息融合。",
+          "只用单个头会把不同子空间的信息做平均，削弱模型联合关注多种位置与关系模式的能力。",
+          "多头无非是把一个头的参数拆细，表达能力上和单个注意力头完全等价。",
+          "多头注意力最大的好处其实是单纯增加参数规模，从而提升模型整体容量。"
+        ],
+        "generatedAt": 1788956935634,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-be5a3c36",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-fd87a028",
+        "sourceSnapshot": {
+          "id": "multi-head-attention-subspace-mechanism-canonical",
+          "topic": "multi-head-attention-subspace",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Multi-Head"
+          ],
+          "question": "多头注意力（Multi-Head Attention）把 Q/K/V 线性投影到 h 个低维子空间并行计算注意力。关于其机制，下列哪些描述正确？",
+          "options": [
+            "每个头使用各自独立的 W^Q/W^K/W^V，把 Q/K/V 投影到不同低维子空间各自计算注意力。",
+            "各头算出的输出先拼接，再由 W^O 投影融合回 d_model 维度完成信息汇总。",
+            "单头注意力会把不同子空间信息平均，抑制联合关注不同位置/关系模式的能力。",
+            "多头只是把单头参数拆细，在表达能力上其实与单个注意力头完全等价。",
+            "多头注意力最核心的收益其实是单纯堆参数、借此提升整体模型容量。"
+          ]
+        }
+      }
+    ],
+    "multi-head-attention-subspace-calculation-canonical": [
+      {
+        "id": "multi-head-attention-subspace-calculation-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "某 base 规模的 Transformer 设定 d_model=512，并把注意力划分为 h=8 个头。关于多头注意力内部的维度分配，下列说法正确的是？",
+        "options": [
+          "每个头的维度 d_k = d_model / h = 512 / 8 = 64。",
+          "整体维度守恒：始终满足 h × d_k = d_model。",
+          "缩放点积所用的 1/√d_k 取的是每头的维度（64），而不是 d_model（512）。",
+          "每头维度 d_k 等于 d_model，也就是 512。",
+          "只要 d_model 不变，增大头数 h，每头维度 d_k 也会保持不变。"
+        ],
+        "generatedAt": 1788956935635,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b47c83d1",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-08046c13",
+        "sourceSnapshot": {
+          "id": "multi-head-attention-subspace-calculation-canonical",
+          "topic": "multi-head-attention-subspace",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Multi-Head"
+          ],
+          "question": "在 base Transformer 中 d_model=512、头数 h=8。关于多头注意力的维度分配，下列哪些说法正确？",
+          "options": [
+            "每头维度 d_k = d_model / h = 512 / 8 = 64。",
+            "总维度守恒：h × d_k = d_model 恒成立。",
+            "缩放因子 1/√d_k 使用的是每头维度（64），而非 d_model（512）。",
+            "每头维度 d_k 等于 d_model，即 512。",
+            "在 d_model 固定时增大头数 h，每头维度 d_k 仍保持不变。"
+          ]
+        }
+      }
+    ],
+    "multi-head-attention-subspace-tradeoff-canonical": [
+      {
+        "id": "multi-head-attention-subspace-tradeoff-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在设计 Transformer 注意力时，需要在头数 h 上做取舍。关于这一权衡，下列哪些评估是站得住脚的？",
+        "options": [
+          "头数 h 增大时会让每头维度 d_k 降低，单个头能刻画的关系模式也随之退化。",
+          "提高头数并不会改变注意力本身的渐近复杂度（依旧是 O(N²·d)），只影响常数因子与显存占用。",
+          "头数并非越大越优，过度切分反而会削弱每头捕捉关系的能力，需要权衡。",
+          "多头注意力的总参数量和一个注意力头完全一样，不会随头数增加而上升。",
+          "头数越多模型表现必定越好，即便每头维度变小也不会损害任何表达能力。"
+        ],
+        "generatedAt": 1788956935635,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b0f16e9a",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-6b851ff5",
+        "sourceSnapshot": {
+          "id": "multi-head-attention-subspace-tradeoff-canonical",
+          "topic": "multi-head-attention-subspace",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Multi-Head"
+          ],
+          "question": "关于多头注意力中头数 h 的权衡，下列哪些评估是合理的？",
+          "options": [
+            "头数 h 增多会让每头维度 d_k 下降，单头能捕捉的关系模式也随之退化。",
+            "增加头数不改变注意力的渐近复杂度（仍为 O(N²·d)），只改变常数因子与显存。",
+            "头数并非越多越好，过度细分会损害每头捕捉关系的能力，需要权衡。",
+            "多头注意力的总参数量与单个注意力头完全相同，不会随头数增长。",
+            "头数越多模型效果一定越好，每头维度变小也不影响任何表达能力。"
+          ]
+        }
+      }
+    ],
+    "self-attention-sequential-complexity-calculation-canonical": [
+      {
+        "id": "self-attention-sequential-complexity-calculation-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在评估一个标准 Self-Attention 层的资源开销时，需要分别考虑它的计算量与显存占用。关于其复杂度，下列说法正确的是？",
+        "options": [
+          "时间复杂度是 O(N²·d)，其中的 N² 来自 N 个 token 两两之间计算 QK 点积。",
+          "空间复杂度为 O(N²)，标准实现要把 N×N 的注意力权重矩阵保留下来用于反向传播。",
+          "多头注意力展开后仍然等价于 O(N²·d)，头数的多少不改变渐近复杂度。",
+          "自注意力的复杂度会随模型维度 d 的平方增长（实际上 d 只是一次因子，平方来自 N）。",
+          "自注意力的时间复杂度是 O(N) 级别（实际为 O(N²)）。"
+        ],
+        "generatedAt": 1788956935635,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-37884ed7",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-2de04787",
+        "sourceSnapshot": {
+          "id": "self-attention-sequential-complexity-calculation-canonical",
+          "topic": "self-attention-sequential-complexity",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Complexity"
+          ],
+          "question": "关于标准自注意力（Self-Attention）的计算与存储复杂度，下列哪些说法正确？",
+          "options": [
+            "时间复杂度为 O(N²·d)，其中 N² 来自 N 个 token 两两计算 QK 点积。",
+            "空间复杂度为 O(N²)，标准实现需保存 N×N 注意力矩阵用于反向传播。",
+            "多头注意力化简后仍为 O(N²·d)，头数不改变渐近复杂度。",
+            "自注意力的复杂度随模型维度 d 平方增长（实际 d 是一次因子，平方来自 N）。",
+            "自注意力的时间复杂度是 O(N) 的（实际为 O(N²)）。"
+          ]
+        }
+      }
+    ],
+    "self-attention-sequential-complexity-mechanism-canonical": [
+      {
+        "id": "self-attention-sequential-complexity-mechanism-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "当序列长度 N 很大时，自注意力层会变得非常吃算力与显存。关于它成为瓶颈的机制，下列哪些分析是正确的？",
+        "options": [
+          "每个 token 都要和序列中所有 N 个位置逐个算注意力分数，从而形成一个 N×N 的注意力矩阵。",
+          "标准实现下这个 N×N 矩阵必须留在显存里，序列长度翻倍时显存大约会涨到四倍。",
+          "FlashAttention 借助分块与重计算，把显存从 O(N²) 压到约 O(N)，注意力 FLOPs 不变。",
+          "自注意力的二次瓶颈主要来自模型参数规模随序列长度 N 同步增长。",
+          "自回归推理时 KV Cache 复用已算好的 K/V，使新 token 的注意力计算降到约 O(N)。"
+        ],
+        "generatedAt": 1788956935636,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e8ed2dc5",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-74a32b42",
+        "sourceSnapshot": {
+          "id": "self-attention-sequential-complexity-mechanism-canonical",
+          "topic": "self-attention-sequential-complexity",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Complexity"
+          ],
+          "question": "为什么自注意力在长序列上会成为计算/显存瓶颈？下列哪些机制分析是正确的？",
+          "options": [
+            "每个 token 都要与序列里全部 N 个位置逐一计算注意力分数，由此构成 N×N 的注意力矩阵。",
+            "标准实现时这个 N×N 矩阵必须驻留显存，序列长度翻倍显存就大约翻四倍。",
+            "FlashAttention 用分块与重计算把显存从 O(N²) 降到约 O(N)，注意力的 FLOPs 不变。",
+            "自注意力的二次瓶颈主要源于模型参数规模随序列长度 N 同步增长。",
+            "自回归推理时 KV Cache 复用已算好的 K/V，让新 token 的注意力计算降到约 O(N)。"
+          ]
+        }
+      }
+    ],
+    "self-attention-sequential-complexity-tradeoff-canonical": [
+      {
+        "id": "self-attention-sequential-complexity-tradeoff-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "把自注意力与 RNN、CNN 放在一起比较时，需要在复杂度上做权衡判断。关于这一权衡，下列哪些评估是合理的？",
+        "options": [
+          "自注意力的序列复杂度是 O(N²·d)，而 RNN 约为 O(N·d²)，在长序列场景下注意力反而更贵。",
+          "自注意力以 O(N²) 的空间为代价，换取任意两个位置之间一步即可抵达的长程依赖（RNN 需 O(N) 步顺序传播）。",
+          "当 N 较小而 d 较大时，FFN 的 O(N·d²) 开销可能比注意力的 O(N²·d) 还要高。",
+          "自注意力在任意长度的序列上都严格优于 RNN（其实当 N 很大时平方成本反而成了劣势）。",
+          "CNN 的复杂度与序列长度 N 完全没有关系（其实约为 O(N·k·d²)，仍然随 N 线性增长）。"
+        ],
+        "generatedAt": 1788956935636,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-42d82dd5",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-b814bcdf",
+        "sourceSnapshot": {
+          "id": "self-attention-sequential-complexity-tradeoff-canonical",
+          "topic": "self-attention-sequential-complexity",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Complexity"
+          ],
+          "question": "在与 RNN、CNN 的对比中，关于自注意力复杂度的权衡，下列哪些评估是合理的？",
+          "options": [
+            "自注意力序列复杂度为 O(N²·d)，RNN 约 O(N·d²)，长序列下注意力更昂贵。",
+            "自注意力用 O(N²) 空间换来了任意两位置一步可达的长程依赖（RNN 需 O(N) 步传播）。",
+            "当 N 较小、d 较大时，FFN 的 O(N·d²) 可能比注意力的 O(N²·d) 更贵。",
+            "自注意力在任意长序列上都严格优于 RNN（实际 N 大时平方成本反成劣势）。",
+            "CNN 的复杂度与序列长度 N 无关（实际约 O(N·k·d²)，仍随 N 线性）。"
+          ]
+        }
+      }
+    ],
+    "sinusoidal-positional-encoding-definition-canonical": [
+      {
+        "id": "sinusoidal-positional-encoding-definition-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在实现一个原始 Transformer 时，需要用固定的正弦/余弦位置编码把位置信息写进序列。关于这种编码的定义，下列说法正确的是？",
+        "options": [
+          "PE(pos,2i)=sin(pos/10000^(2i/d))，PE(pos,2i+1)=cos(pos/10000^(2i/d))。",
+          "位置编码会跟输入 token 的 embedding 逐元素相加，注入点在嵌入层，而不是注意力权重矩阵上。",
+          "各个维度对应的波长从 2π 开始按几何级数一路增长到 10000·2π，形成多尺度的位置信号。",
+          "位置编码要等到每一层自注意力算完之后才注入，被直接加进注意力权重矩阵而不是输入嵌入。",
+          "正弦编码的每一项都没有任何上界，会不断放大并最终淹没 token 的语义嵌入。"
+        ],
+        "generatedAt": 1788956935637,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c49c85f4",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-0cf4a8d8",
+        "sourceSnapshot": {
+          "id": "sinusoidal-positional-encoding-definition-canonical",
+          "topic": "sinusoidal-positional-encoding",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "recall",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Positional Encoding"
+          ],
+          "question": "原始 Transformer 使用固定的正弦/余弦位置编码把位置信息注入序列。关于它的定义，下列哪些描述正确？",
+          "options": [
+            "PE(pos,2i)=sin(pos/10000^(2i/d))，PE(pos,2i+1)=cos(pos/10000^(2i/d))。",
+            "位置编码会与输入 token 的 embedding 按元素逐位相加，注入在嵌入层而非注意力权重矩阵上。",
+            "各维度对应的波长从 2π 起按几何级数增长到 10000·2π，提供多尺度位置信号。",
+            "位置编码是在每一层自注意力计算完成之后才注入，被直接加到注意力权重矩阵而非输入嵌入上。",
+            "正弦编码的每一项数值都没有任何上界限制，会持续放大并淹没 token 的语义嵌入。"
+          ]
+        }
+      }
+    ],
+    "sinusoidal-positional-encoding-mechanism-canonical": [
+      {
+        "id": "sinusoidal-positional-encoding-mechanism-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "正弦式位置编码之所以被认为能帮助模型学习相对位置，背后有其数学机制。关于这一机制，下列说法正确的是？",
+        "options": [
+          "对于任意固定的偏移量 k，PE(pos+k) 都能由 PE(pos) 经过某个固定的线性变换（旋转矩阵）得到。",
+          "这种线性可加性让模型能够把相对位置的距离直接编进注意力模式，不必显式存下距离。",
+          "该编码是确定性的、不含任何可学习参数，并且在理论上能外推到比训练时更长的序列。",
+          "正弦式的本质是把每一个绝对位置直接查表存储下来（实际它是连续函数表达、可外推）。",
+          "正弦式会为每个绝对位置天然存储一个独立的向量（实际它用的是连续函数，并非查表）。"
+        ],
+        "generatedAt": 1788956935638,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-752f27ab",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-d02c1233",
+        "sourceSnapshot": {
+          "id": "sinusoidal-positional-encoding-mechanism-canonical",
+          "topic": "sinusoidal-positional-encoding",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Positional Encoding"
+          ],
+          "question": "正弦位置编码被认为能帮助模型学习相对位置。关于其机制，下列哪些描述正确？",
+          "options": [
+            "对任意固定偏移 k，PE(pos+k) 可由 PE(pos) 经一个固定线性变换（旋转矩阵）得到。",
+            "这种线性可加性使模型能把相对位置距离编码进注意力模式，无需显式存储距离。",
+            "编码是确定性的、零可学习参数，且理论上可外推到比训练更长的序列。",
+            "正弦式的本质是把每个绝对位置直接查表存储（实际是连续函数表达、可外推）。",
+            "正弦式天然为每个绝对位置存储独立的向量（实际是连续函数，非查表）。"
+          ]
+        }
+      }
+    ],
+    "sinusoidal-positional-encoding-comparison-canonical": [
+      {
+        "id": "sinusoidal-positional-encoding-comparison-canonical__context-options__transattn__0",
+        "kind": "context-options",
+        "question": "在原始 Transformer 里，固定正弦位置编码与可学习位置编码是两种可选方案。关于二者的对比，下列哪些结论与原论文一致？",
+        "options": [
+          "固定正弦式不引入额外参数、外推性更好；可学习式在训练长度内往往略优，但无法外推。",
+          "原论文的实验显示，正弦式与可学习位置编码的效果几乎一致（Table 3 中两者结果相近）。",
+          "可学习式受制于最大训练长度的硬上限，遇到更长的序列就需要重新训练或扩展位置表。",
+          "固定正弦式在所有下游任务上都严格优于可学习位置编码方案。",
+          "可学习位置编码同样能够自然、平滑地外推到训练长度之外的更长序列。"
+        ],
+        "generatedAt": 1788956935638,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b8d2d140",
+        "batch": "transattn",
+        "model": "manual",
+        "contentHash": "fnv1a-00492397",
+        "sourceSnapshot": {
+          "id": "sinusoidal-positional-encoding-comparison-canonical",
+          "topic": "sinusoidal-positional-encoding",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Transformer",
+            "Attention",
+            "Positional Encoding"
+          ],
+          "question": "关于原始 Transformer 的固定正弦位置编码与可学习位置编码的对比，下列哪些结论符合原论文？",
+          "options": [
+            "固定正弦式零额外参数、外推性更好；可学习式在训练长度内通常略优但无法外推。",
+            "原论文实验表明，正弦式与可学习位置编码的效果几乎相同（Table 3 中二者结果接近）。",
+            "可学习式受最大训练长度硬限制，遇到更长序列需重新训练或扩展。",
+            "固定正弦式在所有的下游任务上都以严格优势优于可学习位置编码方案。",
+            "可学习位置编码同样可以自然平滑地外推到训练长度之外的更长序列。"
+          ]
+        }
+      }
+    ]
+  }
+}

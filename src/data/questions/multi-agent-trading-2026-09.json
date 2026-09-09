@@ -1,0 +1,462 @@
+[
+  {
+    "id": "multi-agent-communication-protocol-canonical",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-communication-protocol",
+    "tags": [
+      "multi-agent",
+      "communication-protocol",
+      "architecture"
+    ],
+    "difficulty": "hard",
+    "angle": "architecture",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "structured communication protocol",
+      "supporting": [
+        "context loss in long-horizon tasks",
+        "hybrid interaction pattern"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据多智能体协同场景中的信息失真与历史信息过载问题，判断结构化通信协议与自然语言对话的适用边界及组合策略。",
+      "reasoningGoal": "先识别非结构化自然语言对话在多轮交互中的信息失真与状态损坏风险；再推导结构化报告与局域辩论相结合的混合通信模式在状态准确性与推理质验上的双重优势；据此排除将所有 Agent 间协同完全替换为纯非结构化对话或纯硬编码 JSON 的错误架构方案。"
+    },
+    "question": "在一个用于复杂金融分析的多智能体（Multi-Agent）系统中，团队发现随着协同轮次增加，智能体经常遗忘早期关键指标或产生状态理解偏差（电话效应）。基于 TradingAgents 等先进多智能体架构的通信设计原则，下列哪些设计策略能够有效解决该问题？",
+    "explanation": "在长周期的多智能体协同中，若全过程依赖非结构化自然语言对话，容易因对话轮次增加和历史信息过载导致状态失效与信息失真。采用结构化文档和报告更新/查询全局状态，能以明确语义大幅降低信息检索干扰；而在局域辩论与探讨环节保留自然语言交互，则能保留观点碰撞和逻辑质验优势。两者结合的混合通信策略既保障了全局状态精准，又维持了推理质验能力。选项 A、B、C 描述符合该机制；选项 D 主张彻底取消自然语言对话，忽略了辩论对文本表达灵活度的依赖，属于过度僵化的架构设计。",
+    "misconceptions": [
+      "认为完全消除自然语言对话是最佳选择，忽略了对抗辩论与多视角推理对自然语言灵活度的天然依赖。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在长周期复杂任务中，采用纯自然语言对话会导致信息随轮次增加出现失真与语义历史过载，需要依靠结构化文档传递全局状态。",
+          "将自然语言交互局限在辩论与探讨环节，能保留多视角逻辑碰撞优势，同时避免非结构化消息流失控。",
+          "结构化报告通过明确的字段约束与直接状态查询，可显著降低 Agent 在长历史对话流中检索有效信息的噪声干扰。",
+          "自然语言对话在多 Agent 架构中应当被完全废除，所有 Agent 之间的协同均应通过 JSON 等强类型格式进行无文本交互。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "长周期多 Agent 协同若全程依赖非结构化自然语言对话，会因信息历史过载导致状态失真；结构化报告承载全局状态、局域辩论保留自然语言灵活度，二者结合的混合通信策略兼顾状态准确性与推理质量。彻底取消自然语言对话属过度僵化。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "multi-agent-communication-protocol-variant-1",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-communication-protocol",
+    "tags": [
+      "multi-agent",
+      "communication-protocol",
+      "troubleshooting"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "troubleshoot",
+    "concepts": {
+      "core": "structured communication protocol",
+      "supporting": [
+        "context loss in long-horizon tasks",
+        "hybrid interaction pattern"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据多智能体系统在长时间运行中出现的决策偏离现象，诊断通信协议设计的缺陷并提出修复方案。",
+      "reasoningGoal": "先诊断系统在长周期协同中出现的输入负荷过载与信息衰减根源；再推导引入结构化全局报告并保留局域辩论的混合通信解耦路径；据此排除将通信故障归咎于保留自然语言辩论或主张彻底取消所有文本交互的诊断错误。"
+    },
+    "question": "某团队开发的多智能体交易系统在进行跨周期的市场研判时，交易 Agent 经常做出与此前分析师报告互相矛盾的决策。检查日志发现，Agent 间的所有交互均通过单一的自由文本聊天历史记录进行传递。若要对该系统的通信架构进行排错与重构，下列哪些诊断与修复策略是合理的？",
+    "explanation": "在长周期多 Agent 协同场景中，过度依赖自由文本聊天历史传递全局状态，极易因信息历史过载导致决策失真。引入结构化报告进行全局状态解耦与查询，能显著降低数据检索噪声；同时在论证与辩论环节保留自然语言对话，可维持对抗推导的灵活性。选项 A、B、C 均为合理的诊断与优化路径；选项 D 错误地主张完全消除文本对话，忽视了对抗辩论与多视角质验对自然语言的必要依赖。",
+    "misconceptions": [
+      "误以为将通信彻底硬编码化即可解决所有逻辑推导与观点冲突问题。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "系统存在过度依赖自然语言长对话的问题，导致信息历史随执行轮次增加出现衰减与状态损坏。",
+          "系统忽视了局域文本辩论的独特价值，未能利用自然语言对话在复杂观点碰撞与对抗推理中的优势。",
+          "系统缺乏结构化报告机制，使得 Agent 无法通过明确字段高效查询全局状态，增加了数据检索噪声。",
+          "系统错误保留了自然语言交流，应当彻底消除所有 Agent 间的文本对话，全部替换为强类型 JSON 通信。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "过度依赖自由文本聊天历史传递全局状态易致决策失真；引入结构化报告解耦全局状态、保留局域辩论维持对抗推导灵活性是合理修复路径；完全消除文本对话忽视自然语言在对抗质验中的必要依赖。正确答案 A、B、C。"
+      }
+    },
+    "derivedFrom": "multi-agent-communication-protocol-canonical"
+  },
+  {
+    "id": "multi-agent-role-specialization-canonical",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-role-specialization",
+    "tags": [
+      "multi-agent",
+      "role-specialization",
+      "system-design"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "multi-agent role specialization",
+      "supporting": [
+        "functional decoupling",
+        "risk governance"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据金融交易场景的复杂性与安全性要求，设计多智能体系统的角色分工与责任制衡架构。",
+      "reasoningGoal": "先分析金融交易决策过程中不同数据源分析与风险管控的异构性需求；再推导分立团队（分析、研究、交易、风控）在降低认知负荷与建立独立风控屏障上的设计价值；据此排除将多角色解耦误理解为仅仅是增加节点以直接提升股价预测统计准确率的非技术归因。"
+    },
+    "question": "在设计一个仿真实体交易机构的多智能体（TradingAgents）系统时，架构师将系统划分为分析师团队（基本面/技术面/新闻/情感）、研究员团队（看涨/看跌辩论）、交易员以及独立风控团队。关于这种角色专业化设计的系统架构收益，下列哪些表述是正确的？",
+    "explanation": "多智能体系统中的角色专业化（如划分为分析、辩论、交易与风控团队）核心收益在于实现功能解耦与职责制衡。通过将复杂任务拆解到专职 Agent，能大幅降低单个 Agent 的认知负荷，防止异构信息干扰；独立风控团队可在交易前对风险暴露施加硬性约束；透明的团队递进机制也显著提高了决策的可解释性。选项 A、B、C 正确。选项 D 将架构上的工程治理收益错误归结为模型统计预测精度的提高，混淆了系统架构设计与底层算法建模的边界。",
+    "misconceptions": [
+      "混淆了架构设计的工程治理价值（降噪、制衡、可解释性）与单一预测模型的统计建模能力。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按功能划分为分析、研究、交易与风控团队，可降低单一 Agent 的认知负荷并防止异构数据分析过程互相干扰。",
+          "风控团队独立于交易生成环节，能对交易策略的风险暴露实施硬性校验，避免交易 Agent 的过度乐观倾向。",
+          "多团队分工机制使得系统决策过程具备清晰的责任递进关系，从而提升金融交易决策的可解释性与可追踪性。",
+          "角色分工的主要目的是通过增加 Agent 节点数量来直接提升大语言模型对未来股票价格变动预测的统计准确率。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "角色专业化的核心收益是功能解耦与职责制衡：降低单 Agent 认知负荷、独立风控施加硬性约束、透明责任递进提升可解释性；其价值在于工程治理而非提升模型预测统计精度。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "multi-agent-role-specialization-variant-1",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-role-specialization",
+    "tags": [
+      "multi-agent",
+      "role-specialization",
+      "tradeoff"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "multi-agent role specialization",
+      "supporting": [
+        "functional decoupling",
+        "risk governance"
+      ]
+    },
+    "assessment": {
+      "target": "能够评估在金融 Agent 架构中引入角色专业化与责任分离机制对系统鲁棒性与风控的影响。",
+      "reasoningGoal": "先评估多 Agent 金融交易架构中的职责边界与风险控制机制；再推理功能解耦在降噪、制衡与透明追溯上的系统级收益；据此排除认为角色分工能直接带来股价趋势预测模型精度提升的泛化误区。"
+    },
+    "question": "某量化团队计划用大语言模型重构自动交易系统。有人建议直接使用一个提示词极长的超级 Agent 处理所有数据并生成交易命令；也有人主张采用 TradingAgents 的多角色解耦架构（分析、辩论、交易、风控解耦）。在对后者的系统优势进行评估时，下列哪些结论是成立的？",
+    "explanation": "多角色解耦架构的核心优势在于功能隔离与安全约束。将单一大 Agent 拆分为分析、辩论、交易与风控独立团队，能够降解单个 Agent 的输入与推理负荷，避免异构数据干扰；同时，独立风控保障了合规校验，清晰的流转过程提升了系统决策的透明度与可追踪性。选项 A、B、C 均成立。选项 D 误以为增加 Agent 节点即可直接提升模型预测准确率，混淆了架构治理与算法能力的边界。",
+    "misconceptions": [
+      "错误地以为单纯增加 Agent 数量和角色即可从统计学上提升股价预测准确度。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "多角色解耦设计能够拆分复杂任务流程，降低单个 Agent 的输入负荷，防止异构信息处理相互干扰。",
+          "独立的风控审核层与决策层形成制衡机制，能够有效拦截合规风险，纠正交易 Agent 的行为偏见。",
+          "分阶段的专业团队协作建立了透明的推导链路，显著增强了金融交易系统决策过程的可解释性。",
+          "这种专业化分工的核心优势在于通过扩展 Agent 节点规模，从理论上直接提高股价趋势预测的准确率。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多角色解耦通过功能隔离与独立风控带来降噪、制衡与透明追溯的系统级收益；增加 Agent 节点规模并不能直接提升股价趋势预测的统计准确率，混淆了架构治理与算法能力边界。正确答案 A、B、C。"
+      }
+    },
+    "derivedFrom": "multi-agent-role-specialization-canonical"
+  },
+  {
+    "id": "multi-agent-dialectical-debate-canonical",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-dialectical-debate",
+    "tags": [
+      "multi-agent",
+      "dialectical-debate",
+      "mechanism"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "dialectical debate mechanism",
+      "supporting": [
+        "bullish-bearish debate",
+        "multi-agent reasoning"
+      ]
+    },
+    "assessment": {
+      "target": "能够分析多智能体辩证对抗辩论机制在克服大模型确认偏误与提高推理完备性上的作用机理。",
+      "reasoningGoal": "先剖析单 Agent 或同质化 Agent 在金融分析中容易陷入的确认偏误与盲目看多/看空风险；再推理看涨与看跌对立角色通过多轮质验暴露逻辑漏洞并形成平衡推导的运作机制；据此排除将辩论机制混淆为运行时模型参数更新（对抗训练）的机制性误解。"
+    },
+    "question": "大语言模型在回答开放性金融研判问题时，往往容易受 Prompt 诱导或产生确认偏误（Confirmation Bias）。 TradingAgents 框架在研究员团队中引入了看涨（Bullish）与看跌（Bearish）研究员的多轮辩论机制。关于这一辩论机制的运行机理，下列哪些表述是正确的？",
+    "explanation": "看涨与看跌研究员的辩论机制属于多智能体推理期的角色对抗应用。通过设立对立立场，强制 Agent 探究多空两方面的证据，能够有效规避大模型因顺应提示词产生的确认偏误；多轮质验可进一步揭示逻辑盲点，并将对抗过程沉淀为结构化状态供交易模块参考。选项 A、B、C 描述符合该机制。选项 D 将应用层的多 Agent 辩论推导错误地理解为模型训练阶段的参数梯度更新（对抗训练），混淆了运行期推导机制与训练期优化算法。",
+    "misconceptions": [
+      "将应用层/推理期的多 Agent Prompt 角色对抗混淆为模型训练期的 Weights 参数梯度更新。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "设定看涨与看跌角色能强制系统同时探究上行催化剂与下行尾部风险，打破单 Agent 的确认偏误。",
+          "多轮对抗辩论促使双方 Agent 补充证据支持自身立场，从而在决策生成前暴露潜在的技术漏洞与逻辑盲区。",
+          "辩论过程记录作为结构化状态留存，为最终交易 Agent 的决策提供了平衡且经过交叉质验的合成信息。",
+          "看涨与看跌辩论的主要功能是通过对抗训练机制直接更新底层 LLM 的权重参数，以优化模型预测性能。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "看涨/看跌多轮辩论属推理期角色对抗，强制探究多空证据、暴露逻辑盲区并沉淀结构化状态，克服确认偏误；它不是训练期的权重梯度更新（对抗训练）。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "multi-agent-dialectical-debate-variant-1",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-dialectical-debate",
+    "tags": [
+      "multi-agent",
+      "dialectical-debate",
+      "scenario"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "synthesize",
+    "concepts": {
+      "core": "dialectical debate mechanism",
+      "supporting": [
+        "bullish-bearish debate",
+        "multi-agent reasoning"
+      ]
+    },
+    "assessment": {
+      "target": "能够在特定投资决策场景下，设计并应用看涨/看跌辩论机制以消除单向分析偏误。",
+      "reasoningGoal": "先识别投资决策系统面对单向市场情绪时可能产生的认知偏差；再分析正反方多轮质验在暴露风险漏洞与沉淀结构化证据中的作用；据此排除将系统级辩论机制误解为底层大模型权重梯度更新手段的归因错误。"
+    },
+    "question": "某投资机构发现其 AI 研判助手在市场剧烈波动时，经常盲目顺应短期热点，给出过于激进的买入建议。团队决定借鉴 TradingAgents 的设计，在研判环节加入 Bullish/Bearish 对抗辩论流程。在评审该模块设计时，下列哪些说法符合该辩论机制的设计初衷？",
+    "explanation": "看涨/看跌对抗辩论机制旨在通过显式分配对立角色来防范单向分析与确认偏误。通过多轮论证与质疑，能够充分暴露策略的逻辑死角与风险点，并将交叉验证后的辩论记录沉淀至全局状态供后续模块调用。选项 A、B、C 符合设计初衷。选项 D 错误地将运行时 Prompt 层面 Agent 间的逻辑交锋归因于底层 LLM 的梯度更新，属于机制理解错误。",
+    "misconceptions": [
+      "误将推导维度的 Agent 角色对抗理解为底层模型的在线梯度训练。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "看涨与看跌对立设定的引入能够迫使系统全面评估正面因素与下行风险，防范盲目看多或看空的决策偏误。",
+          "多轮交锋质疑能够迫使双方补充论据，进而主动暴露单方面分析中容易遗漏的逻辑漏洞与风险盲点。",
+          "将辩论记录结构化沉淀至系统全局状态，可确保后续交易模块基于充分交叉验证的辩证信息做决策。",
+          "该辩论机制的核心价值在于通过运行时对抗迭代，实时梯度更新底层大语言模型以改善其基线能力。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "看涨/看跌对抗辩论通过显式对立角色防范单向分析偏误，多轮质验暴露风险盲点并沉淀结构化证据；其核心是运行时 Prompt 层角色对抗，而非底层 LLM 权重梯度更新。正确答案 A、B、C。"
+      }
+    },
+    "derivedFrom": "multi-agent-dialectical-debate-canonical"
+  },
+  {
+    "id": "multi-agent-react-governance-canonical",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-react-governance",
+    "tags": [
+      "multi-agent",
+      "react-framework",
+      "risk-control"
+    ],
+    "difficulty": "hard",
+    "angle": "boundary",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "ReAct prompting framework",
+      "supporting": [
+        "shared state monitoring",
+        "risk control execution boundary"
+      ]
+    },
+    "assessment": {
+      "target": "能够识别基于 ReAct 框架构建的多智能体系统在执行高风险动作时的安全边界与权限隔离架构。",
+      "reasoningGoal": "先明确 ReAct 框架中 Reasoning 与 Acting 在高风险金融场景中的安全边界；再推导交易提案与实际挂单执行相分离的多级审核屏障机制；据此排除允许 Agent 直连交易所 API 或将风控降级为事后日志记录的危险设计。"
+    },
+    "question": "在基于 ReAct 框架构建的金融多 Agent 系统中，关于 Agent 的执行边界与环境状态交互，下列哪项表述是正确的？",
+    "explanation": "在涉及真实金融资产或高风险动作的多智能体系统中，ReAct 范式中的推理与动作执行需要设立安全拦截屏障。Trader Agent 生成的 ReAct 动作指令应被定义为交易提议，而非直接授权执行；必须经过独立风控团队与基金经理的策略审计后方可触发实际下单，从而防范 LLM 幻觉带来的资损。选项 A 描述正确。选项 B 缺乏硬性风控隔离；选项 C 否定了环境状态共享；选项 D 将风控降级为旁路事后日志，均属于不安全的系统设计。",
+    "misconceptions": [
+      "忽视了高风险场景下 LLM 动作提案与实际 API 执行解耦的安全防御必要性。",
+      "错误理解了 ReAct 范式，忽略了多智能体架构中全局状态共享与环境感知的重要性。",
+      "把风控模块降低为事后旁路观察者，丧失了事前拦截风控的硬性约束作用。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Trader Agent 基于 ReAct 生成的交易决策仅作为执行提议，必须经由独立风控与基金经理校验后方可触发实际市场挂单。",
+          "Trader Agent 只要通过 ReAct 推理出交易逻辑，即可绕过风控模块直接向外部交易所 API 提交实时买卖指令。",
+          "ReAct 框架要求所有 Agent 在每个思考周期都必须重新全量抓取市场原始数据，严禁共享或复用全局环境状态。",
+          "风控团队在 ReAct 循环中仅负责记录事后交易日志，无法在交易决策提交执行前施加任何硬性拦截或策略调整。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "高风险金融场景下，ReAct 的推理与动作执行须设安全屏障：交易决策仅作执行提议，经独立风控与基金经理校验后方可触发实际挂单；直连 API、禁止状态共享或风控事后旁路均不安全。正确答案 A。"
+      }
+    }
+  },
+  {
+    "id": "multi-agent-react-governance-variant-1",
+    "category": "Multi-Agent System Architecture",
+    "topic": "multi-agent-react-governance",
+    "tags": [
+      "multi-agent",
+      "react-framework",
+      "security"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "ReAct prompting framework",
+      "supporting": [
+        "shared state monitoring",
+        "risk control execution boundary"
+      ]
+    },
+    "assessment": {
+      "target": "能够评估 ReAct 多智能体系统中意图表达与高风险动作执行相解耦的安全架构策略。",
+      "reasoningGoal": "先审视系统架构审计中关于高风险操作的授权控制与状态共享机制；再评估将交易决策作为待审提议并实施事前风控拦截的必要性；据此排除允许 Agent 全自动直接下单或完全隔离环境状态的系统漏洞策略。"
+    },
+    "question": "某金融安全专家在审计一套 ReAct 多智能体交易系统时，重点评估 Agent 在系统中的授权边界。为了防止大语言模型因幻觉产生异常交易对账户造成重大损失，下列哪项架构设计符合安全治理规范？",
+    "explanation": "金融级 Agent 系统安全架构要求意图表达与实际挂单执行相解耦。交易 Agent 产生的 ReAct 动作应定位为待审核的交易意图，必须通过事前独立风控硬性拦截与审批机制才能触发外部 API 调用，从而杜绝由于 LLM 幻觉导致的不可逆损失。选项 A 符合安全规范。选项 B 盲目信任模型推理表面逻辑；选项 C 破坏了环境状态的共享与感知；选项 D 剥夺了事前拦截能力，均为不符合安全的架构设计。",
+    "misconceptions": [
+      "过于信任推理链的表面自洽性，忽视了大模型逻辑幻觉导致的高风险隐患。",
+      "错误剥离了多 Agent 协同中的共享语境与全局状态感知支持。",
+      "误将事前预防性风控误解为事后审计日志系统。"
+    ],
+    "source": {
+      "materialId": "arXiv:2412.20138v7"
+    },
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "交易 Agent 产出的 ReAct 动作指令应当定位为待审意图，需经过风控与基金经理多重审批后方能执行实际交易。",
+          "只要交易 Agent 的 ReAct 推理链逻辑自洽，系统就应授权其直接调用外部交易接口完成自动化订单下发。",
+          "为了确保决策独立性，ReAct 循环内的每个 Agent 均隔离运行，禁止访问或读取共享的全局环境状态。",
+          "风控模块在系统架构中属于纯旁路观察者，仅在交易执行完毕后生成风险报告，不参与事前拦截与干预。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "金融级 Agent 要求意图表达与挂单执行解耦：ReAct 动作定位为待审意图，须经事前独立风控硬性拦截与多重审批才能触发外部 API；盲目信任推理自洽、隔离全局状态或风控事后旁路均不符合安全规范。正确答案 A。"
+      }
+    },
+    "derivedFrom": "multi-agent-react-governance-canonical"
+  }
+]

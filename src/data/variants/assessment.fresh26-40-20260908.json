@@ -1,0 +1,1801 @@
+{
+  "version": 1,
+  "generatedAt": 1788936075744,
+  "promptVersion": "v4",
+  "variants": {
+    "attn-scaling-memory": [
+      {
+        "id": "attn-scaling-memory__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "扩窗算存咋涨？",
+        "options": [
+          "QK 点积生得分矩阵，浮点 O(N²·d)",
+          "反传存原矩阵 O(N²) 显存",
+          "d 不变 N 扩 4 倍标准算，得分矩阵算存各胀 16 倍",
+          "检索线性动机，O(N²) 降子二次"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从扩窗定点积与动机环节",
+          "reasoningGoal": "先定涨法的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788936075735,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-437f4981",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-2d5c3ab9",
+        "sourceSnapshot": {
+          "id": "attn-scaling-memory",
+          "topic": "self-attention",
+          "subtopic": "context-scaling-bottleneck",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "complexity",
+            "quadratic",
+            "memory",
+            "retrieval-augmented"
+          ],
+          "question": "在标准 Full Self-Attention 中设序列长度为 N 隐藏维度为 d。当扩充上下文窗口时关于其计算复杂度与显存占用的分析哪些项是正确的？（多选）",
+          "options": [
+            "计算 Queries 和 Keys 点积生成注意力得分矩阵的浮点运算复杂度为 O(N² · d)",
+            "在反向传播时保存未经过 Softmax 的原始 Attention Matrix 需要占用 O(N²) 的激活显存空间",
+            "在隐藏维度 d 保持不变的情况下将序列长度 N 扩大到原来的 4 倍标准 Self-Attention 计算得分矩阵所需的计算量和显存消耗将分别扩大到原来的 16 倍",
+            "引入检索增强机制或线性注意力机制的主要工程动机之一就是将对长序列的全局计算复杂度从 O(N²) 降低到子二次级别"
+          ]
+        }
+      },
+      {
+        "id": "attn-scaling-memory__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "N 胀显存爆。算这笔扩窗，下列哪些判断成立？",
+        "options": [
+          "得分矩阵浮点 O(N²·d)",
+          "反传存未 Softmax 原矩阵，占 O(N²) 激活显存",
+          "隐藏维不变 N 四倍，得分矩阵算存十六倍",
+          "检索线性动机降全局二次到子二次"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从胀爆算得分与动机环节",
+          "reasoningGoal": "先算扩窗的环节；再逐项验证各判断。"
+        },
+        "generatedAt": 1788936075735,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-437f4981",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-96833a07",
+        "sourceSnapshot": {
+          "id": "attn-scaling-memory",
+          "topic": "self-attention",
+          "subtopic": "context-scaling-bottleneck",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "complexity",
+            "quadratic",
+            "memory",
+            "retrieval-augmented"
+          ],
+          "question": "在标准 Full Self-Attention 中设序列长度为 N 隐藏维度为 d。当扩充上下文窗口时关于其计算复杂度与显存占用的分析哪些项是正确的？（多选）",
+          "options": [
+            "计算 Queries 和 Keys 点积生成注意力得分矩阵的浮点运算复杂度为 O(N² · d)",
+            "在反向传播时保存未经过 Softmax 的原始 Attention Matrix 需要占用 O(N²) 的激活显存空间",
+            "在隐藏维度 d 保持不变的情况下将序列长度 N 扩大到原来的 4 倍标准 Self-Attention 计算得分矩阵所需的计算量和显存消耗将分别扩大到原来的 16 倍",
+            "引入检索增强机制或线性注意力机制的主要工程动机之一就是将对长序列的全局计算复杂度从 O(N²) 降低到子二次级别"
+          ]
+        }
+      }
+    ],
+    "enc-vs-dec-scenario": [
+      {
+        "id": "enc-vs-dec-scenario__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "检索分类选编码，生成为啥不行？",
+        "options": [
+          "稠密检索双向融两侧，全句表征优",
+          "开放对话双向防幻觉",
+          "NER 无掩码全局，词界语义准",
+          "流式生成双向免维护 KV，单字最快"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从选型定融侧与词界环节",
+          "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「防幻觉」「免 KV」等不成立描述。"
+        },
+        "generatedAt": 1788936075736,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3934e89f",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-944b309f",
+        "sourceSnapshot": {
+          "id": "enc-vs-dec-scenario",
+          "topic": "transformer",
+          "subtopic": "encoder-vs-decoder-scenario",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "encoder-only",
+            "decoder-only",
+            "bert",
+            "gpt",
+            "scenario-selection"
+          ],
+          "question": "Transformer 架构派生出了以 BERT 为代表的双向编码器和以 GPT 为代表的因果自回归解码器。在工业级 NLP 系统选型中哪些场景应该优先选择双向编码器架构其核心机制原因是什么？（多选）",
+          "options": [
+            "密集文本向量表示与语义检索因为双向自注意力机制能够同时融入上下文两侧的信息生成更高质量的全句表征",
+            "开放式对话生成因为双向注意力能够有效预防生成内容产生逻辑幻觉",
+            "细粒度 Token 级分类任务如命名实体识别因为无掩码的全局上下文关注能够提供准确的词界与语义约束",
+            "低延迟流式文本生成因为双向编码器无需维护 KV Cache 单 Token 推理速度最快"
+          ]
+        }
+      },
+      {
+        "id": "enc-vs-dec-scenario__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "BERT 还是 GPT？定这次选型，下列哪些判断成立？",
+        "options": [
+          "稠密检索双向融两侧信息，全句表征优",
+          "对话生成双向防逻辑幻觉",
+          "NER 无掩码全局看，词界语义约束准",
+          "流式生成双向最快免 KV"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从二选一定融侧与最快环节",
+          "reasoningGoal": "先定选型的环节；再逐项验证各判断；并排除「防幻觉」「最快」等不成立描述。"
+        },
+        "generatedAt": 1788936075736,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3934e89f",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-d99802c7",
+        "sourceSnapshot": {
+          "id": "enc-vs-dec-scenario",
+          "topic": "transformer",
+          "subtopic": "encoder-vs-decoder-scenario",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "encoder-only",
+            "decoder-only",
+            "bert",
+            "gpt",
+            "scenario-selection"
+          ],
+          "question": "Transformer 架构派生出了以 BERT 为代表的双向编码器和以 GPT 为代表的因果自回归解码器。在工业级 NLP 系统选型中哪些场景应该优先选择双向编码器架构其核心机制原因是什么？（多选）",
+          "options": [
+            "密集文本向量表示与语义检索因为双向自注意力机制能够同时融入上下文两侧的信息生成更高质量的全句表征",
+            "开放式对话生成因为双向注意力能够有效预防生成内容产生逻辑幻觉",
+            "细粒度 Token 级分类任务如命名实体识别因为无掩码的全局上下文关注能够提供准确的词界与语义约束",
+            "低延迟流式文本生成因为双向编码器无需维护 KV Cache 单 Token 推理速度最快"
+          ]
+        }
+      }
+    ],
+    "ai-eng-065": [
+      {
+        "id": "ai-eng-065__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "512 切片对 10K~50K 大段，全库直连？",
+        "options": [
+          "超长传整段可行，减切片断裂",
+          "百万 token 全库直连不可取，延迟成本衰减在，检索重排留",
+          "大切片足够相关覆盖全上下文，重排冗余去延迟省无损",
+          "大切片考原生 needle，小片考切分 embedding"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从切片定整段与重排环节",
+          "reasoningGoal": "先定演化的环节；再逐项验证各判断；并排除「去重排」等不成立描述。"
+        },
+        "generatedAt": 1788936075736,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c8ad2b1a",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-cdc63be4",
+        "sourceSnapshot": {
+          "id": "ai-eng-065",
+          "topic": "context-window",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "balanced-context-rag",
+            "large-chunks",
+            "needle-in-haystack",
+            "long-context"
+          ],
+          "question": "生产级 RAG 正从\"小切片（512 token）\"向\"平衡上下文 RAG（10K~50K token 大段落乃至整页/整文档）\"演化。团队提议：既然模型支持百万 token 上下文，干脆取消检索与重排、全库直连。请分析该演化的合理部分与错误结论。（多选）",
+          "options": [
+            "超长上下文模型的成熟使传递完整段落/整文档成为可行选项，减少了小切片断章取义造成的上下文断裂",
+            "即便模型支持百万 token，全库直连仍不可取——延迟、API 成本与注意力衰减都在，检索与重排必须保留",
+            "增大切片长度后可以彻底移除 Reranker，因为大切片本身就足够相关；更长的片段覆盖了查询所需的全部上下文，重排步骤冗余，去掉它能降低延迟与计算开销，对效果毫无损害。",
+            "大切片模式更依赖模型原生注意力在长文本中定位关键信息（needle），小切片模式更依赖切分与 embedding 的匹配精准度"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-065__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "512 对 10K~50K，百万窗来了切片留吗？下列哪些判断成立？",
+        "options": [
+          "整段整页可传，断章取义减",
+          "全库直连不可取，检索重排留",
+          "片段覆盖全查询上下文，重排冗余延迟省",
+          "大切片靠原生 needle 定位，小片靠切分 embedding 准"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从窗来定可传与准环节",
+          "reasoningGoal": "先定去留的环节；再逐项验证各判断；并排除「可去」等不成立描述。"
+        },
+        "generatedAt": 1788936075737,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c8ad2b1a",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-83e98792",
+        "sourceSnapshot": {
+          "id": "ai-eng-065",
+          "topic": "context-window",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "balanced-context-rag",
+            "large-chunks",
+            "needle-in-haystack",
+            "long-context"
+          ],
+          "question": "生产级 RAG 正从\"小切片（512 token）\"向\"平衡上下文 RAG（10K~50K token 大段落乃至整页/整文档）\"演化。团队提议：既然模型支持百万 token 上下文，干脆取消检索与重排、全库直连。请分析该演化的合理部分与错误结论。（多选）",
+          "options": [
+            "超长上下文模型的成熟使传递完整段落/整文档成为可行选项，减少了小切片断章取义造成的上下文断裂",
+            "即便模型支持百万 token，全库直连仍不可取——延迟、API 成本与注意力衰减都在，检索与重排必须保留",
+            "增大切片长度后可以彻底移除 Reranker，因为大切片本身就足够相关；更长的片段覆盖了查询所需的全部上下文，重排步骤冗余，去掉它能降低延迟与计算开销，对效果毫无损害。",
+            "大切片模式更依赖模型原生注意力在长文本中定位关键信息（needle），小切片模式更依赖切分与 embedding 的匹配精准度"
+          ]
+        }
+      }
+    ],
+    "mem-longctx-01": [
+      {
+        "id": "mem-longctx-01__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "全史拼接烧钱慢还丢 middle。隐患？",
+        "options": [
+          "每次调用计费处理随史线性涨，推高成本",
+          "TTFT 处理时间随窗大涨，响应慢",
+          "长文中间关键易忽视",
+          "大窗根治检索免外部库，细节准定位"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从拼接定费用与忽视环节",
+          "reasoningGoal": "先定隐患的环节；再逐项验证各判断；并排除「根治」等不成立描述。"
+        },
+        "generatedAt": 1788936075737,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-95d310b8",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-53dc1c54",
+        "sourceSnapshot": {
+          "id": "mem-longctx-01",
+          "topic": "context-window",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-window",
+            "long-context",
+            "cost",
+            "ttft"
+          ],
+          "question": "在构建 AI Agent 系统时，一种直观做法是每次 API 调用都将全部历史对话拼接到 Context Window 中。但在长期运行的 Agent 中，这种做法存在显著的工程瓶颈。关于单纯依赖扩大 Context Window 来维护记忆带来的隐患，下列说法正确的是？（多选）",
+          "options": [
+            "每次调用的 Token 计费与处理开销随历史记录增加而线性增长，显著推高推理成本",
+            "首字延迟（TTFT）与上下文处理时间随 Context 变大而增长，导致响应变慢",
+            "模型在长文本下的 Attention 分布会产生“Lost-in-the-Middle”现象，即放在 Prompt 中间的关键信息更容易被忽视",
+            "增大 Context Window 从根本上解决了信息检索问题，使 Agent 无需外部数据库也能准确定位任意历史细节"
+          ]
+        }
+      },
+      {
+        "id": "mem-longctx-01__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "每次调用全量回放。算这笔记忆，下列哪些判断成立？",
+        "options": [
+          "计费处理随史线性推高",
+          "首字延迟随窗变大增长",
+          "Prompt 中间关键易忽视",
+          "外部库免，任意细节准定位"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从回放算推高与定位环节",
+          "reasoningGoal": "先算记忆的环节；再逐项验证各判断；并排除「准定位」等不成立描述。"
+        },
+        "generatedAt": 1788936075738,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-95d310b8",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-97ff4961",
+        "sourceSnapshot": {
+          "id": "mem-longctx-01",
+          "topic": "context-window",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-window",
+            "long-context",
+            "cost",
+            "ttft"
+          ],
+          "question": "在构建 AI Agent 系统时，一种直观做法是每次 API 调用都将全部历史对话拼接到 Context Window 中。但在长期运行的 Agent 中，这种做法存在显著的工程瓶颈。关于单纯依赖扩大 Context Window 来维护记忆带来的隐患，下列说法正确的是？（多选）",
+          "options": [
+            "每次调用的 Token 计费与处理开销随历史记录增加而线性增长，显著推高推理成本",
+            "首字延迟（TTFT）与上下文处理时间随 Context 变大而增长，导致响应变慢",
+            "模型在长文本下的 Attention 分布会产生“Lost-in-the-Middle”现象，即放在 Prompt 中间的关键信息更容易被忽视",
+            "增大 Context Window 从根本上解决了信息检索问题，使 Agent 无需外部数据库也能准确定位任意历史细节"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-02": [
+      {
+        "id": "llm-reliability-2026-08-02__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "事实断言必须可溯源，咋做？（请选择两个）",
+        "options": [
+          "逐条提断言核直接引文",
+          "无据撤改写升人工",
+          "只查合法 JSON",
+          "只比上次字面似"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从溯源定提核与撤改环节",
+          "reasoningGoal": "先定流程的环节；再逐项验证各判断；并排除「查 JSON」「比字似」等不成立描述。"
+        },
+        "generatedAt": 1788936075738,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-834e449c",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-b7480fb4",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-02",
+          "topic": "factuality-verification",
+          "subtopic": "证据闭环",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "hallucination",
+            "grounding",
+            "citation",
+            "verification"
+          ],
+          "question": "一个报告生成器必须保证每个事实性断言都能追溯到输入文档。哪些生成后流程最有效？（请选择两个）",
+          "options": [
+            "逐条提取断言并核对直接支持引文",
+            "无法支持的断言撤回、改写或升级人工复核",
+            "只检查输出是否是合法 JSON",
+            "只比较输出和上一次输出的字面相似度"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-02__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "报告断言必须追溯输入。验这次溯源，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "断言逐条提，直接引文核",
+          "支持不足撤改升人工",
+          "合法 JSON 即过关",
+          "只比输出与上次字面相似度"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从满纸验逐条与过关环节",
+          "reasoningGoal": "先验溯源的环节；再逐项验证各判断；并排除「过关」「等效」等不成立描述。"
+        },
+        "generatedAt": 1788936075738,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-834e449c",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-ca280921",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-02",
+          "topic": "factuality-verification",
+          "subtopic": "证据闭环",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "hallucination",
+            "grounding",
+            "citation",
+            "verification"
+          ],
+          "question": "一个报告生成器必须保证每个事实性断言都能追溯到输入文档。哪些生成后流程最有效？（请选择两个）",
+          "options": [
+            "逐条提取断言并核对直接支持引文",
+            "无法支持的断言撤回、改写或升级人工复核",
+            "只检查输出是否是合法 JSON",
+            "只比较输出和上一次输出的字面相似度"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-03": [
+      {
+        "id": "llm-reliability-2026-08-03__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "库外答案能吃吗？（请选择两个）",
+        "options": [
+          "证据不足明示拒答转人工",
+          "禁参数记忆补合同事实",
+          "升 temperature 多抽随机",
+          "复制文档返回旧答案"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从库外定拒答与禁补环节",
+          "reasoningGoal": "先定措施的环节；再逐项验证各判断；并排除「多抽」「返旧」等不成立描述。"
+        },
+        "generatedAt": 1788936075738,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e7557cfa",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-7a09387e",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-03",
+          "topic": "factuality-verification",
+          "subtopic": "允许拒答",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "hallucination",
+            "abstention",
+            "uncertainty"
+          ],
+          "question": "知识库没有覆盖用户询问的合同条款，但模型的参数记忆能给出合理答案。系统应采取哪些措施？（请选择两个）",
+          "options": [
+            "明确说明当前证据不足并拒答或转人工",
+            "禁止用参数记忆补全合同条款中的具体事实",
+            "提高 temperature 产生更多候选后随机选择",
+            "把相同文档复制多份后直接返回旧答案"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-03__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "合同库没货模型有货。拦这次补全，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "证据不足拒答转人工",
+          "合同事实禁参数补",
+          "temperature 拉高随机抽",
+          "文档复制返旧答案"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从没货拦拒答与返旧环节",
+          "reasoningGoal": "先拦补全的环节；再逐项验证各判断；并排除「随机抽」「返旧」等不成立描述。"
+        },
+        "generatedAt": 1788936075738,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e7557cfa",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-f0a55ec9",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-03",
+          "topic": "factuality-verification",
+          "subtopic": "允许拒答",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "hallucination",
+            "abstention",
+            "uncertainty"
+          ],
+          "question": "知识库没有覆盖用户询问的合同条款，但模型的参数记忆能给出合理答案。系统应采取哪些措施？（请选择两个）",
+          "options": [
+            "明确说明当前证据不足并拒答或转人工",
+            "禁止用参数记忆补全合同条款中的具体事实",
+            "提高 temperature 产生更多候选后随机选择",
+            "把相同文档复制多份后直接返回旧答案"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-04": [
+      {
+        "id": "llm-reliability-2026-08-04__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "召回对做错混入旧料。咋修？（请选择两个）",
+        "options": [
+          "先认召回含所需证据",
+          "约束只用证据断言校验",
+          "只调 temperature 到 0",
+          "加库副本不查生成"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从掺旧定确认与约束环节",
+          "reasoningGoal": "先定修复的环节；再逐项验证各判断；并排除「调 0」「加副本」等不成立描述。"
+        },
+        "generatedAt": 1788936075739,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-482fe89d",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-0613ef65",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-04",
+          "topic": "factuality-verification",
+          "subtopic": "检索不等于忠实",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "hallucination",
+            "rag",
+            "grounding",
+            "verification"
+          ],
+          "question": "RAG 已经召回了包含正确答案的文档，但生成器仍混入过时信息。哪些诊断和修复步骤合理？（请选择两个）",
+          "options": [
+            "先确认召回结果确实包含所需证据",
+            "约束生成只使用证据并做断言级校验",
+            "只把 temperature 调到 0",
+            "直接增加向量库副本，不检查生成阶段"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-04__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "证据齐了还掺旧。查这次生成，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "召回含证据先确认",
+          "只用证据加断言校验",
+          "只把 temperature 调 0",
+          "向量库加副本了事"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从齐掺查确认与了事环节",
+          "reasoningGoal": "先查生成的环节；再逐项验证各判断；并排除「包治」「了事」等不成立描述。"
+        },
+        "generatedAt": 1788936075739,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-482fe89d",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-a32d14ae",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-04",
+          "topic": "factuality-verification",
+          "subtopic": "检索不等于忠实",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "hallucination",
+            "rag",
+            "grounding",
+            "verification"
+          ],
+          "question": "RAG 已经召回了包含正确答案的文档，但生成器仍混入过时信息。哪些诊断和修复步骤合理？（请选择两个）",
+          "options": [
+            "先确认召回结果确实包含所需证据",
+            "约束生成只使用证据并做断言级校验",
+            "只把 temperature 调到 0",
+            "直接增加向量库副本，不检查生成阶段"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-06": [
+      {
+        "id": "llm-reliability-2026-08-06__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "temperature=0 就稳了？（请选择两个）",
+        "options": [
+          "只降采样随机",
+          "冻不住版本后端非确定",
+          "冻结权重基建",
+          "自动验事实修复"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从归零定随机与非定环节",
+          "reasoningGoal": "先定稳否的环节；再逐项验证各判断；并排除「冻结」「自修复」等不成立描述。"
+        },
+        "generatedAt": 1788936075739,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-36391ec0",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-8e1ef1eb",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-06",
+          "topic": "generation-reproducibility",
+          "subtopic": "temperature 为零的边界",
+          "angle": "tradeoff",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "reproducibility",
+            "temperature",
+            "determinism"
+          ],
+          "question": "为什么 temperature=0 不能作为“同一请求必然逐字相同”的证明？（请选择两个）",
+          "options": [
+            "它只降低采样随机性",
+            "它不能冻结模型版本、后端实现和其他非确定性来源",
+            "它会冻结模型权重和服务基础设施",
+            "它会自动校验每条事实并修复错误"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-06__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "temperature 归零还翻车。看这次随机，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "采样随机性降低而已",
+          "版本后端非确定冻不住",
+          "权重基建全冻结",
+          "事实自校验自修复"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从翻车看降低与冻结环节",
+          "reasoningGoal": "先看随机的环节；再逐项验证各判断；并排除「全冻结」「自修复」等不成立描述。"
+        },
+        "generatedAt": 1788936075739,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-36391ec0",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-4560e090",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-06",
+          "topic": "generation-reproducibility",
+          "subtopic": "temperature 为零的边界",
+          "angle": "tradeoff",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "reproducibility",
+            "temperature",
+            "determinism"
+          ],
+          "question": "为什么 temperature=0 不能作为“同一请求必然逐字相同”的证明？（请选择两个）",
+          "options": [
+            "它只降低采样随机性",
+            "它不能冻结模型版本、后端实现和其他非确定性来源",
+            "它会冻结模型权重和服务基础设施",
+            "它会自动校验每条事实并修复错误"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-07": [
+      {
+        "id": "llm-reliability-2026-08-07__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "换模行为咋看住？（请选择两个）",
+        "options": [
+          "固定集配置验结构标签约束",
+          "比业务质不求逐字同",
+          "人工抽一次即稳",
+          "seed 保行为无视版本"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从看住定固定与业务环节",
+          "reasoningGoal": "先定策略的环节；再逐项验证各判断；并排除「抽一次」「无视版」等不成立描述。"
+        },
+        "generatedAt": 1788936075739,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d467198e",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-74590cee",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-07",
+          "topic": "generation-reproducibility",
+          "subtopic": "生产验证契约",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reproducibility",
+            "testing",
+            "structured-output",
+            "reliability"
+          ],
+          "question": "业务要求升级模型后，分类接口仍保持行为稳定。哪些回归策略更合理？（请选择两个）",
+          "options": [
+            "固定评估集和配置，校验结构、标签和关键约束",
+            "比较业务质量指标而不是要求自然语言全文逐字相同",
+            "只对人工输出做一次抽查就认为行为稳定",
+            "忽略模型版本，因为 seed 已经保证行为不变"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-07__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "升级后悄悄跑偏。验这次稳定，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "评估集配置锁定，结构标签约束验",
+          "业务质量比，全文逐字不同求",
+          "人工输出抽查一次即判稳",
+          "seed 保证行为版本无视"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从跑偏验锁定与判稳环节",
+          "reasoningGoal": "先验稳定的环节；再逐项验证各判断；并排除「即判稳」「无视」等不成立描述。"
+        },
+        "generatedAt": 1788936075740,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d467198e",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-40f74f30",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-07",
+          "topic": "generation-reproducibility",
+          "subtopic": "生产验证契约",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reproducibility",
+            "testing",
+            "structured-output",
+            "reliability"
+          ],
+          "question": "业务要求升级模型后，分类接口仍保持行为稳定。哪些回归策略更合理？（请选择两个）",
+          "options": [
+            "固定评估集和配置，校验结构、标签和关键约束",
+            "比较业务质量指标而不是要求自然语言全文逐字相同",
+            "只对人工输出做一次抽查就认为行为稳定",
+            "忽略模型版本，因为 seed 已经保证行为不变"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-09": [
+      {
+        "id": "llm-reliability-2026-08-09__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "换标点就崩。模型吃啥了？（请选择两个）",
+        "options": [
+          "模型吃表面格式特征",
+          "语义等价变体测性能带",
+          "prompt 无限加长",
+          "欠拟合加 few-shot 量变鲁棒"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从崩法定表面与变体环节",
+          "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「无限长」「量变鲁棒」等不成立描述。"
+        },
+        "generatedAt": 1788936075740,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bdd1fb38",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-dcaebab1",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-09",
+          "topic": "prompt-robustness",
+          "subtopic": "语义等价提示扰动",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prompt-robustness",
+            "prompt-engineering",
+            "evaluation"
+          ],
+          "question": "提示中的标点、示例顺序或格式发生语义等价变化，却导致准确率大幅下降。哪些判断正确？（请选择两个）",
+          "options": [
+            "模型可能依赖与任务无关的表面格式特征",
+            "应在语义等价提示变体上评估性能范围",
+            "说明应把 prompt 无限加长",
+            "敏感性说明模型欠拟合，加大 few-shot 数量可覆盖格式空间；量变即鲁棒，无需测分布。"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-09__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "等价提示分差大。查这次敏感，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "任务无关表面特征依赖",
+          "等价变体评估性能范围",
+          "prompt 应无限加长",
+          "few-shot 量变即鲁棒"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从分差查依赖与越好环节",
+          "reasoningGoal": "先查敏感的环节；再逐项验证各判断；并排除「越好」「即鲁棒」等不成立描述。"
+        },
+        "generatedAt": 1788936075740,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bdd1fb38",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-a188db8a",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-09",
+          "topic": "prompt-robustness",
+          "subtopic": "语义等价提示扰动",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prompt-robustness",
+            "prompt-engineering",
+            "evaluation"
+          ],
+          "question": "提示中的标点、示例顺序或格式发生语义等价变化，却导致准确率大幅下降。哪些判断正确？（请选择两个）",
+          "options": [
+            "模型可能依赖与任务无关的表面格式特征",
+            "应在语义等价提示变体上评估性能范围",
+            "说明应把 prompt 无限加长",
+            "敏感性说明模型欠拟合，加大 few-shot 数量可覆盖格式空间；量变即鲁棒，无需测分布。"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-10": [
+      {
+        "id": "llm-reliability-2026-08-10__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "调优提分藏雷。咋防？（请选择两个）",
+        "options": [
+          "真实样本提示变体建回归",
+          "均值尾部子群并看版本化",
+          "只选平均最高单格式",
+          "删多样输入保指标稳"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从藏雷定回归与并看环节",
+          "reasoningGoal": "先定防法的环节；再逐项验证各判断；并排除「单格式」「删多样」等不成立描述。"
+        },
+        "generatedAt": 1788936075740,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-df77729e",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-f7086d79",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-10",
+          "topic": "prompt-robustness",
+          "subtopic": "提示回归测试",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "prompt-robustness",
+            "prompt-versioning",
+            "regression"
+          ],
+          "question": "如何防止一次 prompt 微调提升平均分，却悄悄破坏某些输入格式？（请选择两个）",
+          "options": [
+            "在真实样本和合理提示变体上建立回归集",
+            "同时检查平均、尾部和关键子群指标并版本化 prompt",
+            "只选择平均分最高的单一格式",
+            "删除格式多样的输入以保持指标稳定"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-10__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "平均涨尾部崩。查这次掩盖，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "真实样本合理变体回归集",
+          "平均尾部子群三看，prompt 版本化",
+          "平均最高单一格式锁定胜出",
+          "格式多样输入删除保稳妥"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从涨崩查合理与保稳环节",
+          "reasoningGoal": "先查掩盖的环节；再逐项验证各判断；并排除「锁定」「保稳」等不成立描述。"
+        },
+        "generatedAt": 1788936075740,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-df77729e",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-1df3d3e7",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-10",
+          "topic": "prompt-robustness",
+          "subtopic": "提示回归测试",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "prompt-robustness",
+            "prompt-versioning",
+            "regression"
+          ],
+          "question": "如何防止一次 prompt 微调提升平均分，却悄悄破坏某些输入格式？（请选择两个）",
+          "options": [
+            "在真实样本和合理提示变体上建立回归集",
+            "同时检查平均、尾部和关键子群指标并版本化 prompt",
+            "只选择平均分最高的单一格式",
+            "删除格式多样的输入以保持指标稳定"
+          ]
+        }
+      }
+    ],
+    "llm-reliability-2026-08-11": [
+      {
+        "id": "llm-reliability-2026-08-11__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "改一词结果变。咋查？（请选择两个）",
+        "options": [
+          "固模型采样数据工具他变量",
+          "单变量代表样本重复测",
+          "模型温度示例库全换",
+          "突变归因模型智力"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从一词定固变与单变环节",
+          "reasoningGoal": "先定查法的环节；再逐项验证各判断；并排除「全换」「智力锅」等不成立描述。"
+        },
+        "generatedAt": 1788936075740,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8aba7406",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-9b87d880",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-11",
+          "topic": "prompt-robustness",
+          "subtopic": "提示变量隔离",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "prompt-robustness",
+            "prompt-template",
+            "debugging"
+          ],
+          "question": "修改 prompt 中一个词后结果突变，排查时哪些做法最重要？（请选择两个）",
+          "options": [
+            "固定模型、采样参数、数据和工具状态等其他变量",
+            "只改变一个提示变量并在代表性样本上重复测量",
+            "同时更换模型、温度、示例和检索库",
+            "直接把突变归因于模型智力"
+          ]
+        }
+      },
+      {
+        "id": "llm-reliability-2026-08-11__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "一词之差天壤别。控这次变量，下列哪些判断成立？（请选择两个）",
+        "options": [
+          "固定模型采样数据工具态",
+          "单提示变量代表样本重复",
+          "模型温度示例检索全换",
+          "突变即模型智力锅"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从天壤控固定与全换环节",
+          "reasoningGoal": "先控变量的环节；再逐项验证各判断；并排除「全换」「智力锅」等不成立描述。"
+        },
+        "generatedAt": 1788936075741,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8aba7406",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-26980352",
+        "sourceSnapshot": {
+          "id": "llm-reliability-2026-08-11",
+          "topic": "prompt-robustness",
+          "subtopic": "提示变量隔离",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "prompt-robustness",
+            "prompt-template",
+            "debugging"
+          ],
+          "question": "修改 prompt 中一个词后结果突变，排查时哪些做法最重要？（请选择两个）",
+          "options": [
+            "固定模型、采样参数、数据和工具状态等其他变量",
+            "只改变一个提示变量并在代表性样本上重复测量",
+            "同时更换模型、温度、示例和检索库",
+            "直接把突变归因于模型智力"
+          ]
+        }
+      }
+    ],
+    "agtool-guard-05": [
+      {
+        "id": "agtool-guard-05__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "子 Agent 越权注入，审两次？",
+        "options": [
+          "子内主令视用户令，掩越权须委审",
+          "执行读恶数注入，返检动作史防污主",
+          "返警直接阻断销毁，禁传上下文",
+          "委派分类器基于全局，断意图超授评估"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从越权定掩盖与全局环节",
+          "reasoningGoal": "先定审法的环节；再逐项验证各判断；并排除「禁传」等不成立描述。"
+        },
+        "generatedAt": 1788936075741,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-019e87bf",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-e21ef882",
+        "sourceSnapshot": {
+          "id": "agtool-guard-05",
+          "topic": "multi-agent",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-agent",
+            "delegation",
+            "subagent",
+            "security-check",
+            "permission-escalation"
+          ],
+          "question": "在多 Agent 协同（Multi-agent Architecture）系统中，主 Agent（Orchestrator）可将任务委派给子 Agent（Subagent）执行。为防止权限越界与注入扩散，系统在子 Agent 生命周期中设置了「委派时（Delegation）」与「返回时（Return）」两次安全检查。关于这一判定机制，下列说法正确的有哪些？（多选）",
+          "options": [
+            "委派阶段审查是必要的，因为在子 Agent 内部，主 Agent 的指令会被视为用户指令，掩盖其越权本质",
+            "子 Agent 若在执行中读取到恶意数据被注入，返回阶段的分类器会审查其动作历史，防止污染主 Agent",
+            "子 Agent 返回阶段若触发安全告警，系统应直接阻断结果返回并销毁子 Agent，禁止向主 Agent 传递上下文",
+            "委派阶段的分类器能够基于主 Agent 的全局上下文，评估委派任务是否超出了原始用户的真实意图授权"
+          ]
+        }
+      },
+      {
+        "id": "agtool-guard-05__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "委派返回两道闸。看这次委派，下列哪些判断成立？",
+        "options": [
+          "委派审查必要，子内主令视用户令掩越权",
+          "恶意数据读入，返检动作史",
+          "告警阻断销毁禁上下文传递",
+          "基于全局断意图超授，评估委派任务"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从两闸看用户与超授环节",
+          "reasoningGoal": "先看委派的环节；再逐项验证各判断；并排除「禁传递」等不成立描述。"
+        },
+        "generatedAt": 1788936075741,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-019e87bf",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-9d9f5518",
+        "sourceSnapshot": {
+          "id": "agtool-guard-05",
+          "topic": "multi-agent",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-agent",
+            "delegation",
+            "subagent",
+            "security-check",
+            "permission-escalation"
+          ],
+          "question": "在多 Agent 协同（Multi-agent Architecture）系统中，主 Agent（Orchestrator）可将任务委派给子 Agent（Subagent）执行。为防止权限越界与注入扩散，系统在子 Agent 生命周期中设置了「委派时（Delegation）」与「返回时（Return）」两次安全检查。关于这一判定机制，下列说法正确的有哪些？（多选）",
+          "options": [
+            "委派阶段审查是必要的，因为在子 Agent 内部，主 Agent 的指令会被视为用户指令，掩盖其越权本质",
+            "子 Agent 若在执行中读取到恶意数据被注入，返回阶段的分类器会审查其动作历史，防止污染主 Agent",
+            "子 Agent 返回阶段若触发安全告警，系统应直接阻断结果返回并销毁子 Agent，禁止向主 Agent 传递上下文",
+            "委派阶段的分类器能够基于主 Agent 的全局上下文，评估委派任务是否超出了原始用户的真实意图授权"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-002": [
+      {
+        "id": "hitl-2026-002__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "事事确认烦死人。啥时免？",
+        "options": [
+          "逐调确认致疲劳，习惯性放行",
+          "低危只读高频可逆，逐确拉胯",
+          "经确认必杜绝 err，全场景最优",
+          "高危不可逆强监管，逐确仍必要"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从烦人定疲劳与必要环节",
+          "reasoningGoal": "先定免除的环节；再逐项验证各判断；并排除「必杜绝」等不成立描述。"
+        },
+        "generatedAt": 1788936075741,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0855b573",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-8094c776",
+        "sourceSnapshot": {
+          "id": "hitl-2026-002",
+          "topic": "human-in-the-loop",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "approval-fatigue",
+            "risk-based-review"
+          ],
+          "question": "为什么\"每次 Agent 工具调用都要求人工确认\"通常不是好的 HITL 设计？什么情况下这种策略仍然合理？",
+          "options": [
+            "对每次调用确认会引发审批疲劳，使审核者习惯性快速批准而削弱把关",
+            "低风险只读调用频繁且可逆，强制逐次确认会显著拉低吞吐与体验而收益极低",
+            "只要工具调用都经确认就必然彻底杜绝一切错误，故该策略在所有场景都最优",
+            "在高危不可逆或强监管领域（资金划转、医疗指令）逐次确认仍合理甚至必要"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-002__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "审批疲劳点麻了。定这次确认，下列哪些判断成立？",
+        "options": [
+          "审批疲劳习惯性批准，把关削弱",
+          "吞吐体验拉低收益极低",
+          "确认即杜绝一切错误",
+          "资金医疗逐次确认必要"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从点麻定批准与错误环节",
+          "reasoningGoal": "先定确认的环节；再逐项验证各判断；并排除「杜绝一切」等不成立描述。"
+        },
+        "generatedAt": 1788936075741,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0855b573",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-6dc8081e",
+        "sourceSnapshot": {
+          "id": "hitl-2026-002",
+          "topic": "human-in-the-loop",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "approval-fatigue",
+            "risk-based-review"
+          ],
+          "question": "为什么\"每次 Agent 工具调用都要求人工确认\"通常不是好的 HITL 设计？什么情况下这种策略仍然合理？",
+          "options": [
+            "对每次调用确认会引发审批疲劳，使审核者习惯性快速批准而削弱把关",
+            "低风险只读调用频繁且可逆，强制逐次确认会显著拉低吞吐与体验而收益极低",
+            "只要工具调用都经确认就必然彻底杜绝一切错误，故该策略在所有场景都最优",
+            "在高危不可逆或强监管领域（资金划转、医疗指令）逐次确认仍合理甚至必要"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-003": [
+      {
+        "id": "hitl-2026-003__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "啥时该喊人？",
+        "options": [
+          "不确定置信低主升，非定规触发",
+          "到步号强升，不问风险",
+          "金额政策身份高危触发求助",
+          "影响大不可逆才扰人"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从喊人定主升与扰人环节",
+          "reasoningGoal": "先定条件的环节；再逐项验证各判断；并排除「到步升」等不成立描述。"
+        },
+        "generatedAt": 1788936075741,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6c572c6e",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-8ddb3204",
+        "sourceSnapshot": {
+          "id": "hitl-2026-003",
+          "topic": "human-in-the-loop",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "escalation",
+            "uncertainty",
+            "agent"
+          ],
+          "question": "一个客服 Agent 大多数订单都能自动处理，但遇到金额异常、政策冲突和身份验证失败时容易出错。你会如何定义 Agent 应该\"主动求助人类\"的条件，而不是简单按固定步骤强制升级？",
+          "options": [
+            "基于模型自身的不确定性或置信度低时主动升级，而非仅依赖固定规则触发",
+            "只要运行到指定步骤编号就强制升级，无论当时上下文是否真的存在风险",
+            "当检测到金额异常、政策冲突或身份验证失败等高风险特征时触发求助",
+            "结合业务影响面与可逆性评估，影响大或不可逆时才求助避免打扰人类"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-003__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "固定步数太蠢。定这次求助，下列哪些判断成立？",
+        "options": [
+          "置信低主动升级，非固定规则",
+          "步骤编号到即升，风险不问",
+          "异常冲突失败高危求助",
+          "业务影响可逆评估，打扰最小"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从太蠢定升级与最小环节",
+          "reasoningGoal": "先定求助的环节；再逐项验证各判断；并排除「即升」等不成立描述。"
+        },
+        "generatedAt": 1788936075742,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6c572c6e",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-c676fb1b",
+        "sourceSnapshot": {
+          "id": "hitl-2026-003",
+          "topic": "human-in-the-loop",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "escalation",
+            "uncertainty",
+            "agent"
+          ],
+          "question": "一个客服 Agent 大多数订单都能自动处理，但遇到金额异常、政策冲突和身份验证失败时容易出错。你会如何定义 Agent 应该\"主动求助人类\"的条件，而不是简单按固定步骤强制升级？",
+          "options": [
+            "基于模型自身的不确定性或置信度低时主动升级，而非仅依赖固定规则触发",
+            "只要运行到指定步骤编号就强制升级，无论当时上下文是否真的存在风险",
+            "当检测到金额异常、政策冲突或身份验证失败等高风险特征时触发求助",
+            "结合业务影响面与可逆性评估，影响大或不可逆时才求助避免打扰人类"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-004": [
+      {
+        "id": "hitl-2026-004__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "审批屏至少给啥？",
+        "options": [
+          "示影响可逆，助判风险",
+          "示理由上下文，非孤立令",
+          "只示命令字符串，自悟全部后果",
+          "示对象结果史，支审计"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从给啥定影响与理由环节",
+          "reasoningGoal": "先定信息的环节；再逐项验证各判断；并排除「自悟」等不成立描述。"
+        },
+        "generatedAt": 1788936075742,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1da74133",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-7c9053ad",
+        "sourceSnapshot": {
+          "id": "hitl-2026-004",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "approval-context",
+            "auditability"
+          ],
+          "question": "人工审批 Agent 操作时，审批界面至少应该向审核者提供哪些信息？为什么只展示 Agent 即将执行的动作通常不够？",
+          "options": [
+            "展示动作将造成的实际影响范围与是否可逆，帮助审核者判断风险",
+            "展示 Agent 提出该操作的理由与上下文，而非只给一个孤立的命令",
+            "只需展示即将执行的命令字符串即可，审核者应自行理解其全部后果",
+            "展示受影响对象、预计结果与历史类似操作记录以支持审计一致性"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-004__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "审批信息至少给啥？只给一条命令，补这次信息，下列哪些判断成立？",
+        "options": [
+          "实际影响与可逆性先示",
+          "操作理由上下文给，非孤立",
+          "命令字符串展示，自行理解后果",
+          "受影响对象结果史，审计一致"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从一条补范围与一致环节",
+          "reasoningGoal": "先补信息的环节；再逐项验证各判断；并排除「自悟」等不成立描述。"
+        },
+        "generatedAt": 1788936075742,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1da74133",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-89edd3f7",
+        "sourceSnapshot": {
+          "id": "hitl-2026-004",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "approval-context",
+            "auditability"
+          ],
+          "question": "人工审批 Agent 操作时，审批界面至少应该向审核者提供哪些信息？为什么只展示 Agent 即将执行的动作通常不够？",
+          "options": [
+            "展示动作将造成的实际影响范围与是否可逆，帮助审核者判断风险",
+            "展示 Agent 提出该操作的理由与上下文，而非只给一个孤立的命令",
+            "只需展示即将执行的命令字符串即可，审核者应自行理解其全部后果",
+            "展示受影响对象、预计结果与历史类似操作记录以支持审计一致性"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-005": [
+      {
+        "id": "hitl-2026-005__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "审核 30 分钟不回。咋办？",
+        "options": [
+          "超时自取消，留态便重试",
+          "超时按策略转派他审或升级高权",
+          "无限挂起等审核上线",
+          "超时升级值班，接管续断点"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从不回定取消与升级环节",
+          "reasoningGoal": "先定办法的环节；再逐项验证各判断；并排除「无限等」等不成立描述。"
+        },
+        "generatedAt": 1788936075742,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-60f829c8",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-d1d1c70f",
+        "sourceSnapshot": {
+          "id": "hitl-2026-005",
+          "topic": "human-in-the-loop",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "timeout",
+            "escalation",
+            "workflow"
+          ],
+          "question": "Agent 已经暂停等待人工审批，但审核者 30 分钟没有响应。你会如何设计 timeout、取消、重新分配和 escalation 机制？",
+          "options": [
+            "设置超时后自动取消该次等待，并保留已完成的步骤状态以便安全重试",
+            "超时未响应时按策略重新分配给其他审核者或升级到更高权限角色",
+            "无限期挂起等待审核者上线，只要用户最终回来就能继续无需处理",
+            "超时触发升级并通知值班人，同时支持人工接管后从中断点恢复"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-005__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "人 30 分钟找不到了。走这次超时，下列哪些判断成立？",
+        "options": [
+          "等待取消留步态，安全重试",
+          "他审者升级高权接",
+          "用户回来即续，无需处理",
+          "值班通知接管断点续"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从找不到走取消与续环节",
+          "reasoningGoal": "先走超时的环节；再逐项验证各判断；并排除「即续」等不成立描述。"
+        },
+        "generatedAt": 1788936075742,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-60f829c8",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-e07b46b6",
+        "sourceSnapshot": {
+          "id": "hitl-2026-005",
+          "topic": "human-in-the-loop",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "timeout",
+            "escalation",
+            "workflow"
+          ],
+          "question": "Agent 已经暂停等待人工审批，但审核者 30 分钟没有响应。你会如何设计 timeout、取消、重新分配和 escalation 机制？",
+          "options": [
+            "设置超时后自动取消该次等待，并保留已完成的步骤状态以便安全重试",
+            "超时未响应时按策略重新分配给其他审核者或升级到更高权限角色",
+            "无限期挂起等待审核者上线，只要用户最终回来就能继续无需处理",
+            "超时触发升级并通知值班人，同时支持人工接管后从中断点恢复"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-006": [
+      {
+        "id": "hitl-2026-006__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "批一次管所有永久？",
+        "options": [
+          "限域本次会话金额，禁 blanket 永授",
+          "可撤销有效期审计，防沉淀",
+          "一批即永信未来全权，图简化",
+          "最小按需再授，高敏次次认"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从永久定限域与撤销环节",
+          "reasoningGoal": "先定批的环节；再逐项验证各判断；并排除「永信」等不成立描述。"
+        },
+        "generatedAt": 1788936075743,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4147d113",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-8f4b8533",
+        "sourceSnapshot": {
+          "id": "hitl-2026-006",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "approval-scope",
+            "permissions",
+            "revocation"
+          ],
+          "question": "为什么\"批准 Agent 可以处理这类请求\"不应该等价于永久授予它处理该类所有未来请求的权限？如何设计作用域受限、可撤销的审批？",
+          "options": [
+            "审批应限定作用域（本次请求/会话/指定金额）而非 blanket 永久授权",
+            "授权必须可随时撤销，并设有有效期与审计记录避免权限长期沉淀",
+            "一旦批准某类请求即可永久信任 Agent 处理该类所有未来请求以简化",
+            "采用最小权限与按需再授权，高敏感操作每次或每会话都重新确认"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-006__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "所有未来请求被默许。限这次授权，下列哪些判断成立？",
+        "options": [
+          "本次会话金额限定，非永久",
+          "有效期审计记，沉淀权限防",
+          "未来请求全信任，简化优先",
+          "每会话重确认，高敏感操作"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从沉淀限本次与优先环节",
+          "reasoningGoal": "先限授权的环节；再逐项验证各判断；并排除「全信任」等不成立描述。"
+        },
+        "generatedAt": 1788936075743,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4147d113",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-77b8eeeb",
+        "sourceSnapshot": {
+          "id": "hitl-2026-006",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "approval-scope",
+            "permissions",
+            "revocation"
+          ],
+          "question": "为什么\"批准 Agent 可以处理这类请求\"不应该等价于永久授予它处理该类所有未来请求的权限？如何设计作用域受限、可撤销的审批？",
+          "options": [
+            "审批应限定作用域（本次请求/会话/指定金额）而非 blanket 永久授权",
+            "授权必须可随时撤销，并设有有效期与审计记录避免权限长期沉淀",
+            "一旦批准某类请求即可永久信任 Agent 处理该类所有未来请求以简化",
+            "采用最小权限与按需再授权，高敏感操作每次或每会话都重新确认"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-007": [
+      {
+        "id": "hitl-2026-007__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "点 approve 算表扬吗？",
+        "options": [
+          "沉评估策略据，打标分置信",
+          "edit 差异归因，定位败模",
+          "次次点击 approve 直微调免甄别",
+          "低置高影入训，随手只监控"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从表扬定沉淀与归因环节",
+          "reasoningGoal": "先定算否的环节；再逐项验证各判断；并排除「直微调」等不成立描述。"
+        },
+        "generatedAt": 1788936075743,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-851ca239",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-f4255a5f",
+        "sourceSnapshot": {
+          "id": "hitl-2026-007",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "human-feedback",
+            "learning",
+            "feedback-loop"
+          ],
+          "question": "人工审核 Agent 的 approve、reject、edit 和 override 都会产生反馈。如何把这些行为转化为后续评估、策略优化或训练数据，而又避免把人的随手操作直接当成高质量监督信号？",
+          "options": [
+            "将反馈沉淀为评估信号与策略更新依据，并打标区分高/低置信度样本",
+            "对编辑与覆盖做差异归因，定位 Agent 失败模式用于迭代优化",
+            "把每一次点击 approve 都直接当作高质量标注用于微调无需甄别",
+            "仅把经确认的低置信或高影响反馈纳入训练，随手操作只进监控"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-007__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "随手点进训练？筛这次反馈，下列哪些判断成立？",
+        "options": [
+          "评估策略更新据，置信样本标",
+          "失败模式定位迭代优化",
+          "点击即标注微调，免甄别",
+          "确认反馈入训，随手进监控"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从进训筛更新与免环节",
+          "reasoningGoal": "先筛反馈的环节；再逐项验证各判断；并排除「免甄别」等不成立描述。"
+        },
+        "generatedAt": 1788936075743,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-851ca239",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-293e0304",
+        "sourceSnapshot": {
+          "id": "hitl-2026-007",
+          "topic": "human-in-the-loop",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "human-feedback",
+            "learning",
+            "feedback-loop"
+          ],
+          "question": "人工审核 Agent 的 approve、reject、edit 和 override 都会产生反馈。如何把这些行为转化为后续评估、策略优化或训练数据，而又避免把人的随手操作直接当成高质量监督信号？",
+          "options": [
+            "将反馈沉淀为评估信号与策略更新依据，并打标区分高/低置信度样本",
+            "对编辑与覆盖做差异归因，定位 Agent 失败模式用于迭代优化",
+            "把每一次点击 approve 都直接当作高质量标注用于微调无需甄别",
+            "仅把经确认的低置信或高影响反馈纳入训练，随手操作只进监控"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-008": [
+      {
+        "id": "hitl-2026-008__surface-options__assessmentfresh26__0",
+        "kind": "surface-options",
+        "question": "95% 正确率下审核变盖章。咋治？",
+        "options": [
+          "高通过机械批，关键错照收",
+          "监测批准纠错低置复核比",
+          "高通过率 HITL 多余，默认全自动放行",
+          "抽样审计强低置跟踪错率"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从盖章定机械与抽样环节",
+          "reasoningGoal": "先定治法的环节；再逐项验证各判断；并排除「全放」等不成立描述。"
+        },
+        "generatedAt": 1788936075743,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8ef1ba81",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-af8c2b34",
+        "sourceSnapshot": {
+          "id": "hitl-2026-008",
+          "topic": "human-in-the-loop",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "automation-bias",
+            "oversight"
+          ],
+          "question": "一个 Agent 的建议长期有 95% 的情况下是正确的，审核员逐渐习惯直接点击批准。为什么这种高通过率反而可能降低 HITL 的有效性？你会如何检测和缓解这种 automation bias？",
+          "options": [
+            "高通过率使审核者进入机械批准模式，对剩余关键错误也照单全收",
+            "应监测自动批准率、覆盖纠错率与低置信案例复核比例以发现偏差",
+            "高通过率说明 HITL 已无必要，应直接把同类请求都默认改为全自动放行",
+            "通过随机抽样审计、强制低置信复核与跟踪错误率来缓解自动化偏差"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-008__context-options__assessmentfresh26__1",
+        "kind": "context-options",
+        "question": "95% 通过率麻痹人。测这次偏差，下列哪些判断成立？",
+        "options": [
+          "机械批准关键错收",
+          "批准率纠错复核比监测",
+          "默认全自动放行",
+          "错误率跟踪审计抽样"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从麻痹测批准与跟踪环节",
+          "reasoningGoal": "先测偏差的环节；再逐项验证各判断；并排除「放行」等不成立描述。"
+        },
+        "generatedAt": 1788936075744,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8ef1ba81",
+        "batch": "assessmentfresh26",
+        "model": "manual",
+        "contentHash": "fnv1a-fe7a5357",
+        "sourceSnapshot": {
+          "id": "hitl-2026-008",
+          "topic": "human-in-the-loop",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "automation-bias",
+            "oversight"
+          ],
+          "question": "一个 Agent 的建议长期有 95% 的情况下是正确的，审核员逐渐习惯直接点击批准。为什么这种高通过率反而可能降低 HITL 的有效性？你会如何检测和缓解这种 automation bias？",
+          "options": [
+            "高通过率使审核者进入机械批准模式，对剩余关键错误也照单全收",
+            "应监测自动批准率、覆盖纠错率与低置信案例复核比例以发现偏差",
+            "高通过率说明 HITL 已无必要，应直接把同类请求都默认改为全自动放行",
+            "通过随机抽样审计、强制低置信复核与跟踪错误率来缓解自动化偏差"
+          ]
+        }
+      }
+    ]
+  }
+}

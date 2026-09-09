@@ -1,0 +1,742 @@
+[
+  {
+    "id": "scaled-dot-product-scaling-definition-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Scaled Dot-Product"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "Scaled Dot-Product Attention",
+      "supporting": [
+        "Softmax Saturation",
+        "Gradient Stability"
+      ]
+    },
+    "assessment": {
+      "target": "能复述缩放点积注意力的缩放因子定义及其设计动因，区分 1/√d_k 与 1/d_k、1/√N 等错误形式。",
+      "reasoningGoal": "先定位缩放因子为 1/√d_k（d_k 为单头维度）；再排除'防溢出'与'1/d_k、1/√N'等错误解释；据此排除把缩放目的归结为数值溢出或记为其他分母的判断。"
+    },
+    "question": "原始 Transformer 的缩放点积注意力（Scaled Dot-Product Attention）在 softmax 之前对 QKᵀ 做缩放。关于这里的'缩放因子'，下列哪些描述是正确的？",
+    "explanation": "正确答案为 A、C。\nA 项正确：缩放因子是 1/√d_k，其中 d_k 是单个注意力头的维度（base 模型中 d_k=64）。\nC 项正确：若不缩放，d_k 个独立点积求和的方差 ∝ d_k，点积幅度随维度膨胀，softmax 进入饱和区、梯度趋零，训练初期难以更新。\nB 项错误：缩放的主因是方差膨胀与梯度饱和，而非数值溢出（overflow）；softmax 不会因不缩放而上溢到 Inf。\nD 项错误：缩放因子不是 1/d_k（过小），也不是 1/√N（N 是序列长度，与缩放无关）。",
+    "misconceptions": [
+      "以为 √d 是为了数值稳定（防溢出）——溢出不是主因，主因是方差膨胀与梯度饱和",
+      "把缩放因子记成 1/d_k 或 1/√N（N 是序列长度，与缩放无关）",
+      "以为去掉缩放只是精度略降，实际往往是训练不收敛"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2.1"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "缩放因子是 1/√d_k，其中 d_k 是单个注意力头的维度（而非 d_model 或序列长度 N）。",
+          "缩放是为了防止 QKᵀ 的数值向上溢出（overflow）到 Inf，否则 softmax 无法计算。",
+          "不缩放时，点积的方差随 d_k 线性增长，softmax 进入饱和区导致梯度趋零、训练难以更新。",
+          "把缩放因子写成 1/d_k（或 1/√N）也能取得等价的稳定效果。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "缩放因子为 1/√d_k（d_k 为单个注意力头的维度），目的是抵消点积方差随维度 d_k 线性膨胀导致的 softmax 饱和与梯度消失；它与数值溢出无关，也不可替换为 1/d_k 或 1/√N。正确答案 A、C。"
+      }
+    }
+  },
+  {
+    "id": "scaled-dot-product-scaling-mechanism-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Scaled Dot-Product"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Scaling Factor Derivation",
+      "supporting": [
+        "Variance of Dot Product",
+        "Softmax Gradient"
+      ]
+    },
+    "assessment": {
+      "target": "能推导缩放因子的必要性：从 q、k 分量独立 N(0,1) 推出点积方差 ≈ d_k，说明除以 √d_k 把方差拉回单位量级。",
+      "reasoningGoal": "先由独立分量假设得到 Var(q·k)=d_k、标准差=√d_k；再说明除以 √d_k 使缩放后方差=1；据此排除'主因是溢出'与'记成 1/d_k'等错误机制。"
+    },
+    "question": "论文通过统计假设论证了缩放因子的必要性：假设 query q 与 key k 的各分量独立、均值 0、方差 1。关于这一论证与缩放机制，下列哪些描述正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：在独立同分布（均值0、方差1）假设下，d_k 个 q_i k_i 求和的方差为 d_k，点积幅度随维度线性膨胀。\nB 项正确：除以 √d_k 后 Var((q·k)/√d_k)=1，把缩放后点积拉回单位方差的稳定区间。\nC 项正确：若不缩放，大维度下点积标准差达 √d_k（如 d_k=64 时约 8），softmax 输出极度尖锐、梯度趋零，训练初期难以更新。\nD 项错误：缩放主因是方差膨胀与梯度饱和，不是 QKᵀ 数值上溢到 Inf。\nE 项错误：缩放因子是 1/√d_k 而非 1/d_k；记成 1/d_k 会过度缩放。",
+    "misconceptions": [
+      "以为 √d 是为了数值稳定（防溢出）——溢出不是主因，主因是方差膨胀与梯度饱和",
+      "把缩放因子记成 1/d_k 或 1/√N（N 是序列长度，与缩放无关）",
+      "以为去掉缩放只是精度略降，实际往往是训练不收敛"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2.1"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在独立同分布假设下，点积 q·k 的方差约为 d_k，幅度随维度线性膨胀。",
+          "除以 √d_k 使缩放后点积的方差回落到 ≈1，避免 softmax 进入饱和区。",
+          "不缩放时 softmax 会极度尖锐、梯度趋零，训练初期几乎无法更新。",
+          "缩放是为了防止 QKᵀ 数值溢出（overflow）到 Inf，否则计算崩溃。",
+          "把缩放因子取为 1/d_k 同样可行，只是缩放力度略大。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在 q、k 分量独立 N(0,1) 时 Var(q·k)=d_k，幅度随维度膨胀；除以 √d_k 把方差拉回 ≈1，避免 softmax 饱和与梯度消失。缩放主因是方差膨胀而非数值溢出，且因子是 1/√d_k 而非 1/d_k。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "scaled-dot-product-scaling-calculation-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Scaled Dot-Product"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "Dot Product Statistics",
+      "supporting": [
+        "Variance",
+        "Standard Deviation"
+      ]
+    },
+    "assessment": {
+      "target": "能在给定 d_k 时计算未缩放点积的方差与标准差，并说明缩放后恢复单位方差。",
+      "reasoningGoal": "先算 Var(q·k)=d_k、std=√d_k；再算缩放后 Var=1、std=1；据此排除把方差/标准差与 d_k 混淆的判断。"
+    },
+    "question": "设 query q 与 key k 各分量独立服从 N(0,1)，单个头的维度 d_k=64。关于点积 q·k 与缩放后的统计量，下列哪些说法正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：Var(q·k)=d_k=64。\nB 项正确：未缩放点积的标准差 =√Var=√64=8。\nC 项正确：除以 √d_k 后，缩放点积的方差 =64/64=1、标准差 =1。\nD 项错误：方差是 64 而非 8；8 是标准差。\nE 项错误：标准差是 8 而非 64。",
+    "misconceptions": [
+      "混淆未缩放点积的方差与标准差（d_k=64 时方差为 64、标准差为 8）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2.1"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "未缩放点积 q·k 的方差约为 64（= d_k）。",
+          "未缩放点积 q·k 的标准差约为 8（= √d_k）。",
+          "除以 √d_k 后，缩放点积的标准差约为 1。",
+          "未缩放点积 q·k 的方差约为 8。",
+          "未缩放点积 q·k 的标准差约为 64。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Var(q·k)=d_k=64，标准差=√64=8；除以 √d_k 后方差与标准差均回落到 1。注意区分方差 64 与标准差 8。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "multi-head-attention-subspace-mechanism-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "multi-head-attention-subspace",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Multi-Head"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Multi-Head Subspace",
+      "supporting": [
+        "Independent Projections",
+        "W^O Fusion"
+      ]
+    },
+    "assessment": {
+      "target": "能解释多头注意力如何通过独立投影到 h 个子空间、并行计算后由 W^O 融合，联合关注不同表示子空间。",
+      "reasoningGoal": "先说明每头独立 W^Q/W^K/W^V 投影到不同子空间并行算注意力；再由 W^O 拼接融合；据此排除'多头等价于单头'与'核心收益是堆参数'等错误理解。"
+    },
+    "question": "多头注意力（Multi-Head Attention）把 Q/K/V 线性投影到 h 个低维子空间并行计算注意力。关于其机制，下列哪些描述正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：每个头用各自独立的 W^Q/W^K/W^V 把 Q/K/V 投影到不同低维子空间，在各子空间独立计算注意力。\nB 项正确：各头输出拼接后由 W^O 投影回 d_model 维度完成融合。\nC 项正确：单头注意力会把不同子空间的信息平均，抑制模型联合关注不同位置/关系模式的能力；多头正是为此设计。\nD 项错误：多头严格强于单头（子空间联合注意力），并非只是把单头拆细、表达等价。\nE 项错误：多头的核心收益是联合关注不同表示子空间，而非单纯增加参数容量。",
+    "misconceptions": [
+      "以为多头只是把单头拆细、表达等价（子空间联合注意力严格强于单头）",
+      "混淆 d_k 与 d_model：缩放因子用的是每头的 d_k 而非 d_model",
+      "认为头越多越好，忽略 d_k 过小时每头表达能力退化"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2.2"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每个头使用各自独立的 W^Q/W^K/W^V，把 Q/K/V 投影到不同低维子空间各自计算注意力。",
+          "各头算出的输出先拼接，再由 W^O 投影融合回 d_model 维度完成信息汇总。",
+          "单头注意力会把不同子空间信息平均，抑制联合关注不同位置/关系模式的能力。",
+          "多头只是把单头参数拆细，在表达能力上其实与单个注意力头完全等价。",
+          "多头注意力最核心的收益其实是单纯堆参数、借此提升整体模型容量。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "每头用独立 W^Q/W^K/W^V 投影到不同子空间并行算注意力，输出拼接后由 W^O 融合回 d_model；其核心价值是联合关注不同表示子空间，而非等价于单头或单纯堆参数。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "multi-head-attention-subspace-calculation-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "multi-head-attention-subspace",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Multi-Head"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "Head Dimension Allocation",
+      "supporting": [
+        "d_k = d_model/h",
+        "Dimension Conservation"
+      ]
+    },
+    "assessment": {
+      "target": "能在给定 d_model 与头数 h 时计算每头维度 d_k=d_model/h，并识别缩放因子用的是 d_k。",
+      "reasoningGoal": "先由 h×d_k=d_model 得 d_k=d_model/h；再定位缩放因子用 d_k（非 d_model）；据此排除'混淆 d_k 与 d_model'的判断。"
+    },
+    "question": "在 base Transformer 中 d_model=512、头数 h=8。关于多头注意力的维度分配，下列哪些说法正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：每头维度 d_k = d_model/h = 512/8 = 64。\nB 项正确：总维度守恒，h × d_k = d_model 恒成立。\nC 项正确：缩放点积注意力用的缩放因子是 1/√d_k（即 1/8），使用的是每头维度 64，而非 d_model 512。\nD 项错误：d_k = d_model/h = 64，并非等于 d_model（512）。\nE 项错误：在 d_model 固定时增大 h 会使每头维度 d_k 下降（d_k=d_model/h），而非保持不变。",
+    "misconceptions": [
+      "以为多头只是把单头拆细、表达等价（子空间联合注意力严格强于单头）",
+      "混淆 d_k 与 d_model：缩放因子用的是每头的 d_k 而非 d_model",
+      "认为头越多越好，忽略 d_k 过小时每头表达能力退化"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2.2"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每头维度 d_k = d_model / h = 512 / 8 = 64。",
+          "总维度守恒：h × d_k = d_model 恒成立。",
+          "缩放因子 1/√d_k 使用的是每头维度（64），而非 d_model（512）。",
+          "每头维度 d_k 等于 d_model，即 512。",
+          "在 d_model 固定时增大头数 h，每头维度 d_k 仍保持不变。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "d_k = d_model/h = 512/8 = 64；h×d_k=d_model 总维度守恒；缩放因子用每头维度 d_k=64 而非 d_model。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "multi-head-attention-subspace-tradeoff-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "multi-head-attention-subspace",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Multi-Head"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Head Count Tradeoff",
+      "supporting": [
+        "Expressiveness vs Heads",
+        "Complexity Invariance"
+      ]
+    },
+    "assessment": {
+      "target": "能权衡头数 h 的取舍：h 增大会降低每头 d_k、损害单头表达力，但不改变渐近复杂度。",
+      "reasoningGoal": "先指出 h↑ → d_k↓ → 每头表达退化；再说明头数不改变 O(N²·d) 渐近复杂度；据此排除'头越多越好'与'总参数量与单头相同'等错误权衡。"
+    },
+    "question": "关于多头注意力中头数 h 的权衡，下列哪些评估是合理的？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：头数 h 增多会让每头维度 d_k 下降，单头能捕捉的关系模式也随之退化。\nB 项正确：增加头数不改变注意力的渐近复杂度（仍是 O(N²·d)），只改变常数因子与显存占用。\nC 项正确：头数并非越多越好——过度细分会让每头维度过小、表达能力退化，需要权衡。\nD 项错误：多头每头都有独立投影矩阵，总参数量随 h 增长，并非与单头相同。\nE 项错误：'头越多效果越好'忽略了每头维度下降带来的表达退化，并非无代价。",
+    "misconceptions": [
+      "以为多头只是把单头拆细、表达等价（子空间联合注意力严格强于单头）",
+      "混淆 d_k 与 d_model：缩放因子用的是每头的 d_k 而非 d_model",
+      "认为头越多越好，忽略 d_k 过小时每头表达能力退化"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2.2"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "头数 h 增多会让每头维度 d_k 下降，单头能捕捉的关系模式也随之退化。",
+          "增加头数不改变注意力的渐近复杂度（仍为 O(N²·d)），只改变常数因子与显存。",
+          "头数并非越多越好，过度细分会损害每头捕捉关系的能力，需要权衡。",
+          "多头注意力的总参数量与单个注意力头完全相同，不会随头数增长。",
+          "头数越多模型效果一定越好，每头维度变小也不影响任何表达能力。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "h 增大 → d_k=d_model/h 下降 → 单头表达退化；头数不改变 O(N²·d) 渐近复杂度，只改常数因子；头数并非越多越好。总参数量随 h 增长而非与单头相同。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "self-attention-sequential-complexity-calculation-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "self-attention-sequential-complexity",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Complexity"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "Attention Complexity",
+      "supporting": [
+        "O(N²·d)",
+        "O(N²) Memory"
+      ]
+    },
+    "assessment": {
+      "target": "能写出自注意力的 O(N²·d) 时间与 O(N²) 空间复杂度，并说明多头不改变渐近阶。",
+      "reasoningGoal": "先由 N² 两两 QK 点积得时间 O(N²·d)；再由 N×N 矩阵得空间 O(N²)；据此排除'随维度平方'与'是 O(N)'等错误复杂度。"
+    },
+    "question": "关于标准自注意力（Self-Attention）的计算与存储复杂度，下列哪些说法正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：时间复杂度 O(N²·d)，其中 N² 来自 N 个 token 两两计算 QK 点积，d 来自投影维度。\nB 项正确：空间复杂度 O(N²)，标准实现需保存 N×N 注意力权重矩阵用于反向传播。\nC 项正确：多头注意力 O(h·N²·(d/h)) 化简后仍为 O(N²·d)，头数不改变渐近复杂度。\nD 项错误：复杂度中的平方项来自序列长度 N，而非模型维度 d（d 是一次因子）。\nE 项错误：自注意力是 O(N²) 而非 O(N)；O(N) 是 RNN 或带 KV Cache 的逐 token 推理成本。",
+    "misconceptions": [
+      "认为自注意力是 O(N) 或随维度平方——平方项来自序列长度 N 而非维度 d",
+      "只算 FLOPs 而忽略 N×N 矩阵的显存占用是长序列的主要瓶颈",
+      "以为 FlashAttention 降低了计算复杂度（它降的是 IO/显存，FLOPs 不变）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "Table 1"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "时间复杂度为 O(N²·d)，其中 N² 来自 N 个 token 两两计算 QK 点积。",
+          "空间复杂度为 O(N²)，标准实现需保存 N×N 注意力矩阵用于反向传播。",
+          "多头注意力化简后仍为 O(N²·d)，头数不改变渐近复杂度。",
+          "自注意力的复杂度随模型维度 d 平方增长（实际 d 是一次因子，平方来自 N）。",
+          "自注意力的时间复杂度是 O(N) 的（实际为 O(N²)）。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "自注意力时间 O(N²·d)（N² 来自两两 QK 点积）、空间 O(N²)（保存 N×N 矩阵）；多头化简后仍为 O(N²·d)。平方项来自序列长度 N 而非维度 d，且不是 O(N)。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "self-attention-sequential-complexity-mechanism-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "self-attention-sequential-complexity",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Complexity"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Quadratic Bottleneck",
+      "supporting": [
+        "N×N Matrix",
+        "FlashAttention IO"
+      ]
+    },
+    "assessment": {
+      "target": "能解释长序列下自注意力成为瓶颈的机制：N×N 矩阵的两两计算与显存占用，以及 FlashAttention/KV Cache 的缓解方式。",
+      "reasoningGoal": "先说明每个 token 与全部 N 个 token 算注意力、产生 N×N 矩阵并占显存；再说明 FlashAttention 降 IO/显存但 FLOPs 不变、KV Cache 使推理逐 token 约 O(N)；据此排除'二次瓶颈来自参数规模'与'FlashAttention 降低 FLOPs'等错误机制。"
+    },
+    "question": "为什么自注意力在长序列上会成为计算/显存瓶颈？下列哪些机制分析是正确的？",
+    "explanation": "正确答案为 A、B、C、E。\nA 项正确：每个 token 要与序列中全部 N 个 token 计算注意力分数，产生 N×N 的注意力矩阵。\nB 项正确：标准实现该 N×N 矩阵需驻留显存，N 翻倍则显存约翻四倍（O(N²)）。\nC 项正确：FlashAttention 通过分块与重计算把显存占用从 O(N²) 降到约 O(N)，但注意力的 FLOPs 不变。\nE 项正确：自回归推理时 KV Cache 复用已算好的 K/V，使每个新 token 的注意力计算约 O(N) 而非 O(N²)。\nD 项错误：二次瓶颈来自两两注意力计算与 N×N 矩阵，而非参数规模随 N 增长（参数量与序列长度无关）。",
+    "misconceptions": [
+      "认为自注意力是 O(N) 或随维度平方——平方项来自序列长度 N 而非维度 d",
+      "只算 FLOPs 而忽略 N×N 矩阵的显存占用是长序列的主要瓶颈",
+      "以为 FlashAttention 降低了计算复杂度（它降的是 IO/显存，FLOPs 不变）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.2 / Table 1"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每个 token 都要与序列里全部 N 个位置逐一计算注意力分数，由此构成 N×N 的注意力矩阵。",
+          "标准实现时这个 N×N 矩阵必须驻留显存，序列长度翻倍显存就大约翻四倍。",
+          "FlashAttention 用分块与重计算把显存从 O(N²) 降到约 O(N)，注意力的 FLOPs 不变。",
+          "自注意力的二次瓶颈主要源于模型参数规模随序列长度 N 同步增长。",
+          "自回归推理时 KV Cache 复用已算好的 K/V，让新 token 的注意力计算降到约 O(N)。"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          4
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "每个 token 与全部 N 个 token 算注意力、产生 O(N²) 的注意力矩阵并占显存；FlashAttention 降 IO/显存但 FLOPs 不变；推理 KV Cache 使每新 token 约 O(N)。二次瓶颈来自两两计算而非参数规模。正确答案 A、B、C、E。"
+      }
+    }
+  },
+  {
+    "id": "self-attention-sequential-complexity-tradeoff-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "self-attention-sequential-complexity",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Complexity"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Attention vs Recurrent",
+      "supporting": [
+        "Long-range Dependency",
+        "Complexity Tradeoff"
+      ]
+    },
+    "assessment": {
+      "target": "能权衡自注意力与 RNN/CNN 的复杂度：注意力用 O(N²) 空间换长程一步可达，但在长序列下成本反成劣势。",
+      "reasoningGoal": "先对比自注意力 O(N²·d) 与 RNN O(N·d²)、CNN O(N·k·d²)；再说明注意力用二次成本换任意两位置一步可达；据此排除'长序列恒优于 RNN'与'CNN 与 N 无关'等错误权衡。"
+    },
+    "question": "在与 RNN、CNN 的对比中，关于自注意力复杂度的权衡，下列哪些评估是合理的？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：自注意力序列复杂度 O(N²·d)，RNN 约 O(N·d²)，当 N 很大时注意力的二次成本更昂贵。\nB 项正确：自注意力以 O(N²) 的空间为代价，换来了任意两个位置之间一步可达的长程依赖（RNN 需 O(N) 步顺序传播）。\nC 项正确：当 N 较小而 d 较大时，FFN 的 O(N·d²) 可能比注意力的 O(N²·d) 更贵，需具体问题具体分析。\nD 项错误：并非长序列下恒优于 RNN——N 很大时平方成本反而成为注意力的劣势。\nE 项错误：CNN 复杂度约 O(N·k·d²)，仍随序列长度 N 线性增长，并非与 N 无关。",
+    "misconceptions": [
+      "认为自注意力是 O(N) 或随维度平方——平方项来自序列长度 N 而非维度 d",
+      "只算 FLOPs 而忽略 N×N 矩阵的显存占用是长序列的主要瓶颈",
+      "以为 FlashAttention 降低了计算复杂度（它降的是 IO/显存，FLOPs 不变）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "Table 1"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "自注意力序列复杂度为 O(N²·d)，RNN 约 O(N·d²)，长序列下注意力更昂贵。",
+          "自注意力用 O(N²) 空间换来了任意两位置一步可达的长程依赖（RNN 需 O(N) 步传播）。",
+          "当 N 较小、d 较大时，FFN 的 O(N·d²) 可能比注意力的 O(N²·d) 更贵。",
+          "自注意力在任意长序列上都严格优于 RNN（实际 N 大时平方成本反成劣势）。",
+          "CNN 的复杂度与序列长度 N 无关（实际约 O(N·k·d²)，仍随 N 线性）。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "自注意力 O(N²·d) 对 RNN O(N·d²)：长序列下注意力更贵，但用 O(N²) 空间换长程一步可达；N 小 d 大时 FFN 的 O(N·d²) 可能更贵。并非长序列恒优，CNN 也随 N 线性增长。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "sinusoidal-positional-encoding-definition-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "sinusoidal-positional-encoding",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Positional Encoding"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "Sinusoidal PE",
+      "supporting": [
+        "Formula",
+        "Injection Point"
+      ]
+    },
+    "assessment": {
+      "target": "能写出正弦位置编码公式并指出其注入位置（加在输入 embedding，逐元素相加）。",
+      "reasoningGoal": "先写出 PE(pos,2i)=sin、PE(pos,2i+1)=cos 且底数 10000；再定位注入点为输入嵌入（非注意力权重）；据此排除'加在注意力权重上'与'无界淹没语义'等错误定义。"
+    },
+    "question": "原始 Transformer 使用固定的正弦/余弦位置编码把位置信息注入序列。关于它的定义，下列哪些描述正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：公式为 PE(pos,2i)=sin(pos/10000^(2i/d))，PE(pos,2i+1)=cos(pos/10000^(2i/d))，d 为模型维度。\nB 项正确：位置编码与输入 token embedding 逐元素相加，注入在嵌入层（进入注意力之前），而不是加在注意力权重上。\nC 项正确：各维度波长从 2π 几何增长到 10000·2π，提供多尺度的位置信号（低频捕捉远距离、高频捕捉邻近位置）。\nD 项错误：位置编码注入在输入嵌入，不是'在每层注意力计算之后'加到注意力权重上。\nE 项错误：sin/cos 输出有界于 [-1,1]，不会无界淹没语义嵌入。",
+    "misconceptions": [
+      "以为位置编码加在注意力权重上（实际加在输入 embedding 上）",
+      "混淆绝对/相对位置：正弦式的优势是相对位置可由线性变换表达，而非天然存储绝对位置",
+      "认为固定正弦编码完全无法外推到更长序列（线性可加性正是其外推设计意图，尽管实践中仍有限）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.5"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PE(pos,2i)=sin(pos/10000^(2i/d))，PE(pos,2i+1)=cos(pos/10000^(2i/d))。",
+          "位置编码会与输入 token 的 embedding 按元素逐位相加，注入在嵌入层而非注意力权重矩阵上。",
+          "各维度对应的波长从 2π 起按几何级数增长到 10000·2π，提供多尺度位置信号。",
+          "位置编码是在每一层自注意力计算完成之后才注入，被直接加到注意力权重矩阵而非输入嵌入上。",
+          "正弦编码的每一项数值都没有任何上界限制，会持续放大并淹没 token 的语义嵌入。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "公式为 PE(pos,2i)=sin(pos/10000^(2i/d))、PE(pos,2i+1)=cos(...)，与输入 embedding 逐元素相加注入嵌入层（非注意力权重）；各维波长从 2π 几何增至 10000·2π 提供多尺度信号。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "sinusoidal-positional-encoding-mechanism-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "sinusoidal-positional-encoding",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Positional Encoding"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "Relative Position Linearity",
+      "supporting": [
+        "Linear Additivity",
+        "Extrapolation"
+      ]
+    },
+    "assessment": {
+      "target": "能解释正弦编码帮助学习相对位置的机制：PE(pos+k) 可由 PE(pos) 经固定线性变换得到，且零参数、可外推。",
+      "reasoningGoal": "先由三角加法公式得到 PE(pos+k)=M_k·PE(pos)；再说明零参数与理论外推性；据此排除'本质是查表存绝对位置'与'完全无法外推'等错误机制。"
+    },
+    "question": "正弦位置编码被认为能帮助模型学习相对位置。关于其机制，下列哪些描述正确？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：由三角加法公式，对任意固定偏移 k，PE(pos+k) 可由 PE(pos) 经一个固定的线性变换（旋转矩阵 M_k）得到。\nB 项正确：这种线性可加性使模型能把相对位置距离直接编码进注意力模式，无需显式存储距离。\nC 项正确：编码是确定性的、零可学习参数，且理论上可外推到比训练更长的序列。\nD 项错误：正弦式是用连续三角函数表达位置、可外推，并非'本质是把绝对位置查表存储'；恰恰是查表式（可学习）才受训练长度限制。\nE 项错误：正弦式并非天然存储每个绝对位置的独立向量，而是通过连续函数表达，相对位置可由线性变换获得。",
+    "misconceptions": [
+      "以为位置编码加在注意力权重上（实际加在输入 embedding 上）",
+      "混淆绝对/相对位置：正弦式的优势是相对位置可由线性变换表达，而非天然存储绝对位置",
+      "认为固定正弦编码完全无法外推到更长序列（线性可加性正是其外推设计意图，尽管实践中仍有限）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.5"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对任意固定偏移 k，PE(pos+k) 可由 PE(pos) 经一个固定线性变换（旋转矩阵）得到。",
+          "这种线性可加性使模型能把相对位置距离编码进注意力模式，无需显式存储距离。",
+          "编码是确定性的、零可学习参数，且理论上可外推到比训练更长的序列。",
+          "正弦式的本质是把每个绝对位置直接查表存储（实际是连续函数表达、可外推）。",
+          "正弦式天然为每个绝对位置存储独立的向量（实际是连续函数，非查表）。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "由三角加法公式 PE(pos+k)=M_k·PE(pos)，正弦式具线性可加性，使相对位置可编码进注意力；且零参数、理论上可外推。它不是查表存储绝对位置，也非完全无法外推。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "sinusoidal-positional-encoding-comparison-canonical",
+    "category": "Transformer Attention (Attention Is All You Need)",
+    "topic": "sinusoidal-positional-encoding",
+    "tags": [
+      "Transformer",
+      "Attention",
+      "Positional Encoding"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "Fixed vs Learned PE",
+      "supporting": [
+        "Extrapolation",
+        "In-distribution Performance"
+      ]
+    },
+    "assessment": {
+      "target": "能对比固定正弦式与可学习位置编码：正弦式零参数、外推更好；可学习式训练长度内略优但受最大长度硬限制；原论文二者结果接近。",
+      "reasoningGoal": "先对比外推性与参数；再引用论文'正弦式与可学习式结果几乎相同'；据此排除'正弦式严格更优'与'可学习式也能外推'等错误对比。"
+    },
+    "question": "关于原始 Transformer 的固定正弦位置编码与可学习位置编码的对比，下列哪些结论符合原论文？",
+    "explanation": "正确答案为 A、B、C。\nA 项正确：固定正弦式零额外参数、外推性更好；可学习式在训练长度内通常略优，但无法外推到更长序列。\nB 项正确：原论文实验（Table 3）表明，正弦式与可学习位置编码的效果几乎相同（二者结果接近）。\nC 项正确：可学习式受最大训练长度硬限制，遇到更长序列需重新训练或扩展词表/位置表。\nD 项错误：原论文称二者效果相近，并非'固定正弦式在所有下游任务上严格优于可学习式'。\nE 项错误：可学习位置编码因长度受限，并不能自然外推到训练长度之外。",
+    "misconceptions": [
+      "以为位置编码加在注意力权重上（实际加在输入 embedding 上）",
+      "混淆绝对/相对位置：正弦式的优势是相对位置可由线性变换表达，而非天然存储绝对位置",
+      "认为固定正弦编码完全无法外推到更长序列（线性可加性正是其外推设计意图，尽管实践中仍有限）"
+    ],
+    "source": {
+      "materialId": "arxiv-1706-03762",
+      "section": "3.5 / Table 3"
+    },
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "固定正弦式零额外参数、外推性更好；可学习式在训练长度内通常略优但无法外推。",
+          "原论文实验表明，正弦式与可学习位置编码的效果几乎相同（Table 3 中二者结果接近）。",
+          "可学习式受最大训练长度硬限制，遇到更长序列需重新训练或扩展。",
+          "固定正弦式在所有的下游任务上都以严格优势优于可学习位置编码方案。",
+          "可学习位置编码同样可以自然平滑地外推到训练长度之外的更长序列。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "固定正弦式零参数、外推更好；可学习式训练长度内略优但受最大长度硬限制；原论文 Table 3 显示二者效果几乎相同。并非正弦式严格更优，可学习式也不能外推。正确答案 A、B、C。"
+      }
+    }
+  }
+]

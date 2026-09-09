@@ -120,6 +120,7 @@ model-selection-and-validation | 模型选择与验证
 moe | MoE 混合专家
 mtp-speculative-decoding | MTP 多步投机采样与 KV/Index 共享
 multi-agent | 多智能体系统
+multi-head-attention-subspace | 多头注意力的子空间投影
 multi-vector-retrieval | 多向量检索与 Late Interaction（ColBERT）
 multimodal | 多模态
 neural-lm-hidden-layer-bottleneck | 神经语言模型的隐藏层计算瓶颈
@@ -150,14 +151,17 @@ rope | RoPE 旋转位置编码
 safety-alignment | 安全对齐落地
 sampling | 解码采样策略
 scalability | 大规模图可扩展性与采样
+scaled-dot-product-scaling | 缩放点积注意力（除以 √d_k）
 scaling-law | Scaling Law 与算力最优
 search-infrastructure | 检索基础设施与工程化
 search-quality | 检索质量评估
 security-eval | 安全 Agent 评估（漏洞利用与红队能力评测）
 self-attention | 自注意力机制
+self-attention-sequential-complexity | 自注意力的序列复杂度
 sentence-embedding | 句向量模型训练（Sentence Embedding / Bi-Encoder）
 sequence-models | 序列模型
 sft | SFT 监督微调
+sinusoidal-positional-encoding | 正弦位置编码
 softmax | Softmax 与数值稳定
 spectral-and-spatial-convolutions | 谱域与空域图卷积
 statistical-learning-theory | 统计学习理论与 PAC 框架

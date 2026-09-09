@@ -257,5 +257,94 @@
       "design",
       "debugging"
     ]
+  },
+  {
+    "id": "multi-agent-communication-protocol",
+    "name": "多智能体通信协议",
+    "area": "agent-engineering",
+    "topic": "multi-agent",
+    "priority": "P1",
+    "summary": "长周期多 Agent 协同中，纯自然语言对话易因信息历史过载导致状态失真（电话效应）；混合通信模式（结构化报告承载全局状态 + 局域自然语言辩论）兼顾状态准确性与推理质量。",
+    "required": [
+      "长周期协同中纯自然语言对话的信息失真与状态损坏机制（电话效应）",
+      "结构化报告/文档承载全局状态，以明确字段降低长历史检索噪声",
+      "局域辩论保留自然语言灵活度；混合模式优于纯文本对话或纯硬编码 JSON"
+    ],
+    "misconceptions": [
+      "认为应完全废除自然语言对话（忽略对抗辩论对文本灵活度的依赖）",
+      "把通信故障简单归因为保留了自然语言，而非缺乏结构化状态解耦"
+    ],
+    "angles": [
+      "architecture",
+      "tradeoff",
+      "mechanism",
+      "scenario"
+    ]
+  },
+  {
+    "id": "multi-agent-role-specialization",
+    "name": "多智能体角色专业化",
+    "area": "agent-engineering",
+    "topic": "multi-agent",
+    "priority": "P1",
+    "summary": "将复杂决策拆解为分析、研究（多空辩论）、交易、独立风控等专职团队，实现功能解耦与职责制衡；核心收益是降噪、制衡与可解释性，而非提升预测模型的统计精度。",
+    "required": [
+      "角色分工降低单 Agent 认知负荷、防止异构信息互相干扰",
+      "独立风控团队在交易前施加硬性约束，纠正交易 Agent 的乐观偏置",
+      "透明责任递进提升决策的可解释性与可追踪性"
+    ],
+    "misconceptions": [
+      "混淆架构治理价值（降噪/制衡/可解释）与单一预测模型的统计能力",
+      "以为增加 Agent 节点数量能直接提升股价预测的统计准确率"
+    ],
+    "angles": [
+      "system-design",
+      "tradeoff",
+      "mechanism"
+    ]
+  },
+  {
+    "id": "multi-agent-dialectical-debate",
+    "name": "多智能体辩证对抗辩论",
+    "area": "agent-engineering",
+    "topic": "multi-agent",
+    "priority": "P1",
+    "summary": "通过看涨/看跌对立角色的多轮质验，强制系统探究多空证据、暴露逻辑盲区、沉淀结构化状态，克服大模型确认偏误；属推理期角色对抗，而非训练期梯度更新。",
+    "required": [
+      "对立立场强制探究上行/下行双向证据，打破单 Agent 的确认偏误",
+      "多轮质验暴露逻辑漏洞，辩论记录沉淀为结构化状态供交易模块引用",
+      "辩论属应用层 Prompt 角色对抗，勿与训练期对抗训练（权重更新）混淆"
+    ],
+    "misconceptions": [
+      "将推理期多 Agent 辩论误解为模型训练期的参数梯度更新（对抗训练）"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "comparison"
+    ]
+  },
+  {
+    "id": "multi-agent-react-governance",
+    "name": "ReAct 多智能体安全治理",
+    "area": "agent-engineering",
+    "topic": "multi-agent",
+    "priority": "P1",
+    "summary": "高风险金融场景下，ReAct 的推理与动作执行需设安全屏障：交易决策仅作待审提议，经独立风控与基金经理校验后方可触发实际挂单；共享全局状态、风控事前硬性拦截。",
+    "required": [
+      "交易 Agent 的 ReAct 动作定义为执行提议，而非直接授权",
+      "独立风控 + 基金经理多重审批后方可触发外部交易 API",
+      "共享全局环境状态；风控为事前硬性拦截而非事后旁路日志"
+    ],
+    "misconceptions": [
+      "允许 Agent 直连交易所 API 或绕过风控直接下单",
+      "把风控降级为事后日志记录，丧失事前拦截能力",
+      "错误剥离多 Agent 协同中的共享语境与全局状态感知"
+    ],
+    "angles": [
+      "boundary",
+      "system-design",
+      "tradeoff"
+    ]
   }
 ]
