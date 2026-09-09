@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest';
 import {
   applyVariant,
   validateVariant,
+  hasForbiddenReference,
   VARIANT_REJECT_REASON,
   STEM_ANCHOR_WARNING,
   variantFingerprint,
@@ -102,6 +103,13 @@ describe('validateVariant（结构不变量）', () => {
     expect(validateVariant(cq, variant({ question: '前文中提到的方案' })).ok).toBe(false);
     expect(validateVariant(cq, variant({ question: '下文所述方案' })).ok).toBe(false);
     expect(validateVariant(cq, variant({ question: '题干中的条件' })).ok).toBe(false);
+  });
+
+  it('合法词「上下文」不被禁用指代「下文」误伤（复合词感知，回归 P1）', () => {
+    // 此前用裸 substring 匹配：『下文』⊂『上下文』会把「结合上下文判断」误判为依赖原题指代。
+    expect(validateVariant(cq, variant({ question: '需结合上下文判断哪一种做法更合理' })).ok).toBe(true);
+    expect(hasForbiddenReference('上下文的长度会影响注意力开销')).toBe(false);
+    expect(hasForbiddenReference('上述与下文的分析都不适用')).toBe(true);
   });
 });
 

@@ -32,8 +32,15 @@ export function normalizeReasoningText(s: string): string {
 }
 
 /**
- * 变体声明的测量意图与 canonical 是否**逐字相同**（target 与 reasoningGoal 规范化后
- * 都相等）→ 无法证明是不同 reasoning path。阻断级（release blocking）。
+ * 变体声明的测量意图与 canonical 是否**逐字相同**（target 与 reasoningGoal 规范化后都相等）。
+ *
+ * ⚠️ 语义边界（v7.1）：target+goal 相同只证明 **measurement metadata 相同**，**不单独构成
+ * 「变体无效 / 重复测量」的判据**——Assessment Variant 允许不改 assessmentTarget/reasoningGoal，
+ * 通过不同 observation entry（题干情境 + 自声明的 angle/cognitiveTask face）区分（ADR-077）。
+ * 本函数是纯相等判定，供上层门禁**组合使用**：
+ *   - 声明了 assessment 且与 canonical 逐字相同，**且未声明任何不同 measurement face** → 纯措辞
+ *     冒充，阻断（见 assemble-variants / validate-variants）；
+ *   - 声明相同但有不同 face（不同 angle/cognitiveTask）→ 合法 Assessment Variant（新入口），放行。
  * 未声明（继承 canonical）不算 identical——那是 presentation variant，另行统计。
  */
 export function isAssessmentIdentical(

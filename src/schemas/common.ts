@@ -75,7 +75,14 @@ export const evaluationProfileSchema = z.enum([
 /**
  * 认知任务（plan0903_3 / ADR-077，由 docs/prompt_part1.md §五引入）。
  * 描述考生为作答必须执行的认知行为；与 `angle`（从什么视角切入）正交。
- * 进入 canonical assessment contract（D2）：改变即 fork 新 canonical。
+ *
+ * 与 `angle`、`difficulty` 同属 **measurement surface**：
+ *  - canonical **原地改写**时，这些字段变化 = 突变信号（questionIdentity.ts 的 AssessmentContract
+ *    用于检测「沿用原 ID 改了身份」的隐性污染，D2）。
+ *  - 但这**不构成**「新内容/必须 fork」的判据：pool 里的 **Assessment Variant（ADR-077）可自声明
+ *    不同的 angle / cognitiveTask**，仍归因同一 canonical（v7.1：同 Knowledge + 同 propositions +
+ *    原 options 可作答的新 observation entry ⇒ Variant；Knowledge/Boundary 变或 options 承载不了
+ *    新题干 ⇒ 才 fork）。
  */
 export const cognitiveTaskSchema = z.enum([
   'recall',

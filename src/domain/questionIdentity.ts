@@ -1,8 +1,19 @@
-// 纯逻辑：canonical assessment 身份判定（P1-1；plan0903_3 / ADR-077 补入 cognitiveTask）。
+// 纯逻辑：canonical 内容身份判定（P1-1；plan0903_3 / ADR-077 补入 cognitiveTask）。
+//
+// ⚠️ 范围澄清（v7.1）：本模块的 AssessmentContract 只用于**canonical 原地改写的突变检测**——
+// 即「这道已存在的题，它的 measurement surface（topic×angle×difficulty×cognitiveTask）有没有被
+// 悄悄改掉」；检测到变化意味着沿用原 ID 的隐性身份污染。
+//
+// 它**不回答**「外部新稿应该判 Variant 还是 fork」：
+//   - pool Variant（ADR-077 Assessment Variant）= 同 Knowledge + 同 propositions + 原 options 可
+//     作答的新 observation entry，**可自声明不同 angle / cognitiveTask**，仍归因同一 canonical；
+//   - fork / derived canonical = 新 Knowledge / 新 Boundary / 必须替换原 options propositions，
+//     即**内容身份**变了（此时才谈得上"新 canonical ID + derivedFrom"）。
+// 两者是不同概念：前者不触 contract，后者是新 canonical 的起点，别混为同一条 identity rule。
 //
 // 背景：Learner Memory 以 `questionId` 为历史证据键。若补覆盖缺口时原地改写
 // 已有题的 `angle / difficulty / 认知任务` 却沿用原 ID，旧分数在语义上立即失效，
-// 而系统仍能正常运行——隐性数据污染。因此：
+// 而系统仍能正常运行——隐性数据污染。因此 contract 变化必须让调用方意识到：
 //
 //   variant            = 同一 Knowledge 的不同 reasoning path 测量（可改 angle / cognitiveTask，
 //                        见 ADR-077；答案逻辑不变，仍归因同一 canonical evidence 键）
@@ -12,7 +23,11 @@
 
 import type { Question } from '../schemas/question';
 
-/** assessment contract：决定"这道题测什么"的最小字段集合（D2：cognitiveTask 入约）。 */
+/**
+ * assessment contract：canonical **原地改写突变检测**的最小字段集合（D2：cognitiveTask 入约）。
+ * ⚠️ 只用于「检测既有 canonical 是否被偷改身份」，不是外部新稿 fork 与否的判据
+ * （fork 判据是内容身份：Knowledge / Boundary / propositions 是否变化，见文件头注释）。
+ */
 export interface AssessmentContract {
   topic: string;
   angle: string;

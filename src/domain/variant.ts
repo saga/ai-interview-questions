@@ -54,7 +54,33 @@ export const VARIANT_REJECT_REASON = {
  */
 export const STEM_ANCHOR_WARNING = 'variant stem has no lexical anchor';
 
-const FORBIDDEN_REFERENCES = ['原题', '上述', '下文', '本文', '原文章', '原方案', '该方案', '前文', '题目中', '题干中'];
+const FORBIDDEN_REFERENCES = ['原题', '上述', '下文', '本文', '原文章', '原方案', '该方案', '前文', '题目中', '题干中'] as const;
+
+/**
+ * 禁用词可能作为**合法词的子串**出现（如「下文」⊂「上下文」），不能直接裸 `includes`。
+ * 判定规则：某个禁用词的出现位置若落在某个「合法复合词」内部，则不算违规；否则算。
+ * 维护：为某禁用词新增合法复合词时，在下方登记（key=禁用词，value=合法词表）。
+ */
+const FORBIDDEN_REFERENCE_ALLOWED: Readonly<Record<string, readonly string[]>> = {
+  下文: ['上下文'],
+};
+
+/** 题干是否含「依赖原题的指代」（复合词感知：合法词内部的禁用子串不算）。 */
+export function hasForbiddenReference(text: string): boolean {
+  for (const w of FORBIDDEN_REFERENCES) {
+    let idx = text.indexOf(w);
+    while (idx !== -1) {
+      const allowed = FORBIDDEN_REFERENCE_ALLOWED[w] ?? [];
+      const insideAllowed = allowed.some((a) => {
+        const ai = text.indexOf(a);
+        return ai !== -1 && idx >= ai && idx + w.length <= ai + a.length;
+      });
+      if (!insideAllowed) return true;
+      idx = text.indexOf(w, idx + 1);
+    }
+  }
+  return false;
+}
 
 function normalizeConcept(value: string): string {
   return value
@@ -183,7 +209,7 @@ export function validateVariant(
   if (!v || typeof v.question !== 'string' || !v.question.trim()) {
     return { ok: false, code: VARIANT_REJECT_REASON.EMPTY_QUESTION, reason: '变体题干为空' };
   }
-  if (FORBIDDEN_REFERENCES.some((w) => v.question!.includes(w))) {
+  if (hasForbiddenReference(v.question!)) {
     return {
       ok: false,
       code: VARIANT_REJECT_REASON.FORBIDDEN_REFERENCE,

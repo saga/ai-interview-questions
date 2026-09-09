@@ -154,16 +154,27 @@ function main(): void {
         rejections.push(`✗ ${qid} [${kind}] kind 不符：${kindCheck.reason}`);
         continue;
       }
-      // 自声明测量面的有效性：声明了 assessment 就必须走新路径。
+      // 自声明测量面的有效性（v7.1）：声明了 assessment 就走「新入口」校验。
+      // target/goal 与 canonical 逐字相同**本身不再判死**——Assessment Variant 允许不改
+      // assessmentTarget/reasoningGoal，靠不同 observation entry 区分；但必须自声明不同的
+      // measurement face（angle / cognitiveTask）。两者都同 = 纯措辞冒充，仍拒收。
       const declared = Object.keys(measurementFaceOf(face)).length > 0;
       if (face.assessment) {
         if (!isReasoningGoalWellFormed(face.assessment.reasoningGoal)) {
           rejections.push(`✗ ${qid} [${kind}] 推理链不合格：reasoningGoal 不是「先→再→排除」三段式`);
           continue;
         }
+        const faceChanged =
+          (face.angle !== undefined && face.angle !== q.angle) ||
+          (face.cognitiveTask !== undefined && face.cognitiveTask !== q.cognitiveTask);
         if (q.assessment && isAssessmentIdentical(face.assessment, q.assessment)) {
-          rejections.push(`✗ ${qid} [${kind}] 推理链不合格：与 canonical 测量意图逐字相同，不是新路径`);
-          continue;
+          if (!faceChanged) {
+            rejections.push(
+              `✗ ${qid} [${kind}] 测量意图与 canonical 逐字相同且未声明不同 face（angle/cognitiveTask）：纯措辞冒充，不是新 observation entry`,
+            );
+            continue;
+          }
+          console.log(`  • ${qid} [${kind}] assessment 与 canonical 相同但 face 已变（Assessment Variant：新入口）`);
         }
       }
       if (declared) console.log(`  • ${qid} [${kind}] 自声明测量面（assessment variant）`);

@@ -139,13 +139,20 @@ export const questionSchema = z
     /**
      * 派生来源（可选）：本 canonical 由哪道题 fork/derive 而来。
      *
-     * **canonical 身份不可变（assessment identity immutable）**：`id` 绑定的是
-     * 「测什么能力」（`topic × angle × difficulty × cognitiveTask`，与
-     * `src/domain/questionIdentity.ts` 的 `AssessmentContract` 同口径），而不是题面文字。
-     * 改变其中任一项必须产生**新 canonical ID**（fork），禁止原地改写后沿用原 ID——
-     * 否则 Learner Memory 里以 `questionId` 为键的历史证据会被污染（旧分代表旧能力）。
-     * fork 时填 `derivedFrom: <原题id>` 保留知识血缘；variant（同 assessment contract
-     * 的表达变换）不填此字段、不改变上述任一字段。
+     * **canonical 的内容身份（content identity）**：`id` 绑定的是「测哪条 Knowledge、哪组核心
+     * propositions、原 options 承载的 assessment content」，而不是题面文字。
+     * 新建 canonical / fork 的判据（与 Variant 的边界，见 src/domain/variant.ts 与 questionIdentity.ts）：
+     *   - **Fork（新 canonical + derivedFrom）**：Knowledge 或 Knowledge Boundary 改变；或新题干
+     *     必须**替换原 options 的 propositions** 才能作答（原选项承载不了新 assessment）。
+     *   - **不是 fork**：仅换 observation entry（不同情境/场景/认知入口）而 Knowledge、核心
+     *     propositions、options 真假与难度不变 —— 属 Variant（ADR-077），可进 variant pool 并
+     *     **自声明不同的 angle / cognitiveTask**（Assessment Variant），不产生新 canonical id。
+     *   - ⚠️ **不要仅凭 `angle / cognitiveTask / difficulty` 字段变化就判 fork**：那些字段属于
+     *     measurement surface，canonical 原地改写时用于突变检测（questionIdentity.ts），但不构成
+     *     「新内容」。v7.1 起判定以「Knowledge + propositions + options 承载能力」为准。
+     *
+     * Learner Memory 以 questionId 为键：真实换内容（fork）时必须新 id + derivedFrom，禁止原地改后
+     * 沿用原 ID，否则旧分代表旧能力、污染历史证据。
      */
     derivedFrom: z.string().min(1).optional(),
     formats: z.object({

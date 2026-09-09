@@ -329,7 +329,9 @@ function buildReport(dupThreshold: number): Report {
       if (!kc.ok) kindMismatch.push({ questionId: qid, variantId: v.id, detail: kc.reason ?? kc.code ?? 'kind 不符' });
     }
 
-    // ── 测量意图：identical 阻断；sibling 路径重复阻断；其余审计 ──
+    // ── 测量意图：identical 的判定已升级为「face 感知」（v7.1）——Assessment Variant 允许
+    // target/goal 与 canonical 相同，只要自声明了不同 angle/cognitiveTask（新 observation
+    // entry）即合法；只有「声明相同 + 无任何 face 变化」的纯措辞冒充才阻断。
     const declaredItems: Array<{ id: string; path: ReasoningPath }> = [];
     for (const v of list) {
       kindCoverage[v.kind] = (kindCoverage[v.kind] ?? 0) + 1;
@@ -341,12 +343,23 @@ function buildReport(dupThreshold: number): Report {
           id: v.id,
           path: { target: v.assessment.target, reasoningGoal: v.assessment.reasoningGoal },
         });
+        const faceChanged =
+          (v.angle !== undefined && v.angle !== canonical.angle) ||
+          (v.cognitiveTask !== undefined && v.cognitiveTask !== canonical.cognitiveTask);
         if (canonical.assessment && isAssessmentIdentical(v.assessment, canonical.assessment)) {
-          assessmentIdentical.push({
-            questionId: qid,
-            variantId: v.id,
-            detail: '变体声明的测量意图与 canonical 逐字相同：声称新路径实则换措辞',
-          });
+          if (!faceChanged) {
+            assessmentIdentical.push({
+              questionId: qid,
+              variantId: v.id,
+              detail: '变体声明的测量意图与 canonical 逐字相同且未声明不同 face：纯措辞冒充，实则无新观察入口',
+            });
+          } else {
+            nearIdenticalPaths.push({
+              questionId: qid,
+              variantId: v.id,
+              detail: '测量意图与 canonical 相同但自声明了不同 angle/cognitiveTask（Assessment Variant，审计可见）',
+            });
+          }
         } else if (canonical.assessment && isNearIdenticalPath(v.assessment, canonical.assessment)) {
           nearIdenticalPaths.push({
             questionId: qid,
