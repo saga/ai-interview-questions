@@ -100,6 +100,10 @@ kd-logit-matching-high-temp-limit | 高温极限与 Logit 匹配
 kd-specialist-ensemble-dustbin-correction | Generalist-Specialist 与 Dustbin 校正
 kd-temperature-scaling-mechanism | 温度缩放（Temperature Scaling）蒸馏机制
 kernel-methods | 核方法与支持向量机
+knowledge-eval-production-resilience | Agent 非确定性评估（End-state）与彩虹发布（Rainbow Deployment）
+knowledge-multiagent-token-scaling | 多智能体 Token 扩展与动态搜索（vs 静态 RAG / 单 Agent）
+knowledge-orchestrator-memory-delegation | Orchestrator-Worker 状态持久化与任务边界界定
+knowledge-tool-calling-self-optimization | MCP 工具描述自优化与交织思考 / 并行工具调用
 kv-cache | KV Cache
 latency | 延迟指标（TTFT/TPOT/E2E）
 latent-moe | LatentMoE 低维专家计算

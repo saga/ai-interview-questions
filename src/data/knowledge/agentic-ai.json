@@ -346,5 +346,71 @@
       "system-design",
       "tradeoff"
     ]
+  },
+  {
+    "id": "knowledge-multiagent-token-scaling",
+    "name": "多智能体 Token 扩展与动态搜索（vs 静态 RAG / 单 Agent）",
+    "area": "agent-engineering",
+    "topic": "multi-agent",
+    "priority": "P1",
+    "summary": "复杂长流程深度研究中，单 Agent 受单一 Context Window 限制易在长轨迹上触发语境截断，传统 RAG 只能按静态向量检索固定片段、无法随中间发现调整方向。多智能体把任务拆分给多个各自持有独立 Context Window 的子 Agent 并行探索，从架构层面放大总体 Token 预算与计算容量，并通过多步循环实现动态搜索演进；代价是通常比普通 Chat 多消耗高达 15 倍的 Token，适合对终态价值要求极高而非成本敏感的场景。",
+    "required": [
+      "多个独立 Context Window 并行 = 架构层 Token 预算扩展，突破单一窗口上限",
+      "传统 RAG 依赖静态语义向量检索固定片段，无法按探究中间发现动态调整搜索方向；多智能体以多步循环实现搜索演进",
+      "性能提升源于上下文并行解耦与动态多步搜索，而非对子 Agent 模型权重做领域微调",
+      "多智能体通常比普通 Chat 多消耗 15 倍以上 Token，成本敏感场景需权衡适用边界"
+    ],
+    "misconceptions": [
+      "错误地将架构级的 Token 预算扩展与语境解耦归因于模型参数权重微调",
+      "忽略多智能体系统通常比普通 Chat 消耗高达 15 倍 Token 的计算开销"
+    ],
+    "angles": [
+      "architecture",
+      "scenario"
+    ]
+  },
+  {
+    "id": "knowledge-orchestrator-memory-delegation",
+    "name": "Orchestrator-Worker 状态持久化与任务边界界定",
+    "area": "agent-engineering",
+    "topic": "multi-agent",
+    "priority": "P1",
+    "summary": "Orchestrator-Worker 多智能体长轨迹执行有两大失效模式：Context Window 超限截断（Truncation）导致主 Agent 研究计划丢失；子 Agent 指令过泛导致多个 Worker 重复检索相同信息。正确解法是把计划与状态持久化到外部 Memory（截断后可恢复、保障长流程全局一致），并在派发子任务时显式约束目标、输出格式与检索边界。单纯扩大 Context Window 只增加容量、无法避免截断风险，不能替代状态持久化；模糊泛化的指令必然造成重复劳动。",
+    "required": [
+      "Context Window 超限截断会使主 Agent 原规划丢失，必须持久化到外部 Memory",
+      "派发子任务需明确目标、输出格式与检索边界，防止多个子 Agent 执行完全重叠的检索",
+      "扩大 Context Window 只增容量，不能替代长流程的状态持久化与计划记忆机制",
+      "过于简短泛化的指令让子 Agent 缺少分工边界，重复探索相同区域"
+    ],
+    "misconceptions": [
+      "错误地认为无限扩展 Context Window 能替代长流程中的状态持久化与计划记忆机制",
+      "误以为模糊泛化的指令能提升效率，忽视其导致子 Agent 重复检索相同信息"
+    ],
+    "angles": [
+      "design",
+      "debugging"
+    ]
+  },
+  {
+    "id": "knowledge-tool-calling-self-optimization",
+    "name": "MCP 工具描述自优化与交织思考 / 并行工具调用",
+    "area": "agent-engineering",
+    "topic": "tool-calling",
+    "priority": "P1",
+    "summary": "MCP 工具调用系统的准确率与效率取决于工具描述语义质量与调用编排：让 LLM 作为 Agent 自动测试失败的工具描述并迭代重写，可消除歧义、显著降低未来任务偏航与耗时；在工具调用前后引入交织思考（Interleaved Thinking）并支持多工具并行调用，使 Agent 单轮触发多个工具并评估中间产物，成倍缩短总体耗时。工具描述必须清晰定义使用前提、输入范围与适用场景——盲目裁剪会产生选择歧义；工具选择高度依赖 System Prompt 与 description 提供的语义上下文引导，而非纯模型参数知识。",
+    "required": [
+      "LLM 自动测试失败的工具描述并迭代重写 → 消除语义歧义、降低偏航与执行耗时",
+      "交织思考 + 并行工具调用：单轮触发多个工具并评估中间产物，显著缩短总耗时",
+      "工具描述需定义使用前提/输入范围/适用场景；「越短越好」是错误观点",
+      "工具选择依赖 System Prompt 与工具 description 的语义引导，不是纯参数知识"
+    ],
+    "misconceptions": [
+      "错误地将 Context Window 长度优化等同于删除关键的工具使用边界与指导说明",
+      "忽视 Prompt Engineering 与工具接口描述在智能体推理路径抉择中的关键提示作用"
+    ],
+    "angles": [
+      "mechanism",
+      "debugging"
+    ]
   }
 ]
