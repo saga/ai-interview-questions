@@ -25,9 +25,18 @@ SOURCE
 
 执行前必须确认：
 
-* `[AVAILABLE_KNOWLEDGE_NODES]` 已实际提供；
+* `[AVAILABLE_KNOWLEDGE_NODES]` 这一段**已经被真实节点文本整体替换**（不是原样保留占位符）；
 * 节点至少包含 `id`；
 * `id` 可作为最终 Question.topic。
+
+【手动（Gemini in Chrome）使用】
+
+没有自动注入方，必须人工替换：
+
+1. 运行 `npm run dump:nodes -- --area <area>`（如 `llm`），复制其输出；
+2. **整行删除** prompt 里的 `[AVAILABLE_KNOWLEDGE_NODES]`；
+3. 把复制的文本粘贴到那个位置；
+4. 若只关心某一领域，只导出一个 `--area` 的节点即可（topic 只能来自你贴进来的节点）。
 
 【硬失败】
 
@@ -54,7 +63,7 @@ SOURCE
 
 [AVAILABLE_KNOWLEDGE_NODES]
 
-<!-- 调用方必须在执行本 Prompt 前注入真实节点 -->
+<!-- 手动使用：整行删除上面这一行，替换为 `npm run dump:nodes` 的输出 -->
 
 <!-- 至少提供 id，最好同时提供 name / area / topic / summary -->
 

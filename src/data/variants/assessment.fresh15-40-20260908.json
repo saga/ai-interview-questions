@@ -1,0 +1,1801 @@
+{
+  "version": 1,
+  "generatedAt": 1788911638785,
+  "promptVersion": "v4",
+  "variants": {
+    "beyond-1wl-gin-vs-random-vs-subgraph": [
+      {
+        "id": "beyond-1wl-gin-vs-random-vs-subgraph__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某团队把 GIN 加深超过图的直径，1-WL 盲区对还是分不开。定位这次加深误区，下列哪些判断成立？",
+        "options": [
+          "GIN 单射 Sum 配 MLP 到上界，盲区依旧",
+          "随机初始化与高阶子图可突破，代价是方差与算存",
+          "随机子图只稳训练，不影响区分能力",
+          "层数超直径即获 3-WL 能力，无需改聚合"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从加深超直径仍分不开的误区定位表达上限环节",
+          "reasoningGoal": "先定位误区的环节；再逐项验证各判断；并排除「随机只稳训练」「加深即 3-WL」等不成立描述。"
+        },
+        "generatedAt": 1788911638771,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-99a1cc4b",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-9cc39542",
+        "sourceSnapshot": {
+          "id": "beyond-1wl-gin-vs-random-vs-subgraph",
+          "topic": "expressiveness-and-theory",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "GIN",
+            "random-node-initialization",
+            "subgraph-gnn"
+          ],
+          "question": "为突破标准 MPNN 的表达能力上限，团队在 GIN、随机节点初始化与高阶子图 GNN 三者之间做比较。下列哪些说法是正确的？",
+          "options": [
+            "GIN 用单射的 Sum 聚合配 MLP 可以达到 1-WL 的上界，但仍无法区分 1-WL 分不开的正则图，并未超越 1-WL",
+            "随机节点初始化与高阶子图 GNN 都能突破 1-WL 上限，代价分别是随机化带来的方差，以及随子图数量上升的计算与内存开销",
+            "随机节点特征与子图 GNN 只是提升训练稳定性的工程技巧，对模型的区分能力没有任何理论影响",
+            "只要把网络层数加深到超过图的直径，GIN 就能获得与 3-WL 相当的区分能力，无需改变聚合方式"
+          ]
+        }
+      },
+      {
+        "id": "beyond-1wl-gin-vs-random-vs-subgraph__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张随机初始化零代价突破上限。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "单射 Sum 加 MLP 达 1-WL 上界，正则图仍分不开",
+          "随机初始化与高阶子图破上限，代价是方差与计算内存",
+          "随机特征子图 GNN 只提稳定性，无理论区分影响",
+          "层数超图直径即得 3-WL 区分力，不改聚合"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断随机零代价突破主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「随机只稳」「加深即 3-WL」等不成立描述。"
+        },
+        "generatedAt": 1788911638772,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-99a1cc4b",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-3df92f8e",
+        "sourceSnapshot": {
+          "id": "beyond-1wl-gin-vs-random-vs-subgraph",
+          "topic": "expressiveness-and-theory",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "GIN",
+            "random-node-initialization",
+            "subgraph-gnn"
+          ],
+          "question": "为突破标准 MPNN 的表达能力上限，团队在 GIN、随机节点初始化与高阶子图 GNN 三者之间做比较。下列哪些说法是正确的？",
+          "options": [
+            "GIN 用单射的 Sum 聚合配 MLP 可以达到 1-WL 的上界，但仍无法区分 1-WL 分不开的正则图，并未超越 1-WL",
+            "随机节点初始化与高阶子图 GNN 都能突破 1-WL 上限，代价分别是随机化带来的方差，以及随子图数量上升的计算与内存开销",
+            "随机节点特征与子图 GNN 只是提升训练稳定性的工程技巧，对模型的区分能力没有任何理论影响",
+            "只要把网络层数加深到超过图的直径，GIN 就能获得与 3-WL 相当的区分能力，无需改变聚合方式"
+          ]
+        }
+      }
+    ],
+    "chebnet-gcn-spectral-mechanism": [
+      {
+        "id": "chebnet-gcn-spectral-mechanism__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "有人断言 K=1 同样覆盖三跳信息。评审这一断言的前提，下列哪些判断正确？",
+        "options": [
+          "ChebNet 切比雪夫逼近免特征分解，K 对应 K-hop",
+          "GCN 是 K=1 约束特例，单层即带自环 1-hop 平均",
+          "K 只管平滑，不管跳数，K=1 照覆三跳",
+          "对称归一化为处理有向图，与谱推导无关"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 K=1 覆盖三跳断言的前提是否成立",
+          "reasoningGoal": "先判断该断言的前提是否满足；再逐项验证各主张；并排除「K 不管跳数」「归一化为有向图」等不成立描述。"
+        },
+        "generatedAt": 1788911638772,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6fbf23f4",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-95e4b177",
+        "sourceSnapshot": {
+          "id": "chebnet-gcn-spectral-mechanism",
+          "topic": "spectral-and-spatial-convolutions",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "ChebNet",
+            "GCN",
+            "Chebyshev-polynomial"
+          ],
+          "question": "关于 ChebNet 与 GCN 在谱域图卷积中的机制，下列哪些说法是正确的？",
+          "options": [
+            "ChebNet 用切比雪夫多项式逼近滤波函数，避免了对拉普拉斯矩阵做特征分解，且多项式阶数 K 恰好对应 K-hop 邻域聚合",
+            "GCN 可视为 ChebNet 在 K=1、约束最大特征值并采用对称归一化下的特例，单层传播等价于一次带自环的 1-hop 邻居平均",
+            "ChebNet 的多项式阶数 K 只影响滤波器的平滑程度，与聚合的邻域跳数无关，因此 K=1 同样能覆盖三跳以内的信息",
+            "GCN 的对称归一化是为了让模型能够处理有向图，它与谱域滤波的推导过程没有任何关系"
+          ]
+        }
+      },
+      {
+        "id": "chebnet-gcn-spectral-mechanism__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "把 ChebNet 与 GCN 放在逼近方式与特例关系上对比，根本差异是什么？",
+        "options": [
+          "切比雪夫多项式逼近免特征分解，阶数对应跳数",
+          "GCN 是 K=1 约束特例，单层即带自环平均",
+          "多项式阶数 K 只影响平滑，与跳数无关",
+          "对称归一化只为处理有向图而设"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从逼近与特例关系对比两种机制的根本差异",
+          "reasoningGoal": "先对齐两种机制的可比维度；再逐项判定各主张成立与否；并排除「K 不管跳数」「归一化无关」等不成立描述。"
+        },
+        "generatedAt": 1788911638772,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6fbf23f4",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-1ad403c0",
+        "sourceSnapshot": {
+          "id": "chebnet-gcn-spectral-mechanism",
+          "topic": "spectral-and-spatial-convolutions",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "ChebNet",
+            "GCN",
+            "Chebyshev-polynomial"
+          ],
+          "question": "关于 ChebNet 与 GCN 在谱域图卷积中的机制，下列哪些说法是正确的？",
+          "options": [
+            "ChebNet 用切比雪夫多项式逼近滤波函数，避免了对拉普拉斯矩阵做特征分解，且多项式阶数 K 恰好对应 K-hop 邻域聚合",
+            "GCN 可视为 ChebNet 在 K=1、约束最大特征值并采用对称归一化下的特例，单层传播等价于一次带自环的 1-hop 邻居平均",
+            "ChebNet 的多项式阶数 K 只影响滤波器的平滑程度，与聚合的邻域跳数无关，因此 K=1 同样能覆盖三跳以内的信息",
+            "GCN 的对称归一化是为了让模型能够处理有向图，它与谱域滤波的推导过程没有任何关系"
+          ]
+        }
+      }
+    ],
+    "dropedge-vs-jknet-depth-tradeoff": [
+      {
+        "id": "dropedge-vs-jknet-depth-tradeoff__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某任务双管齐下加深网络，过平滑依旧。定位这次无上限幻觉，下列哪些判断成立？",
+        "options": [
+          "DropEdge 随机删边降连通，代价是远依赖轮数",
+          "JK-Net 跳跃融合兼顾，代价拼接显存",
+          "同时用 DropEdge 与 JK-Net 即可无限加深无过平滑",
+          "层数固定两层加大宽度等价全局感受野"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从双管齐下仍过平滑的幻觉定位手段边界",
+          "reasoningGoal": "先定位幻觉的环节；再逐项验证各判断；并排除「无限加深」「两层等价」等不成立描述。"
+        },
+        "generatedAt": 1788911638773,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5961c3a3",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-3614e0ce",
+        "sourceSnapshot": {
+          "id": "dropedge-vs-jknet-depth-tradeoff",
+          "topic": "deep-gnn-architectures",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "DropEdge",
+            "JK-Net",
+            "receptive-field"
+          ],
+          "question": "某任务需要模型利用较远距离的图信息，但直接加深 GNN 会出现严重的过平滑。关于 DropEdge 与 JK-Net 这两种应对手段的权衡，下列哪些说法是正确的？",
+          "options": [
+            "DropEdge 每轮随机删除一部分边以降低连通度、减缓过度混合，代价是可能切断本就稀疏的远程依赖并需要更多训练轮数",
+            "JK-Net 用跨层跳跃连接把各层表示一并融合，在不依赖最后一层的前提下兼顾局部与全局信息，代价是额外的拼接与显存开销",
+            "只要同时使用 DropEdge 与 JK-Net，就可以无限制地加深网络层数而完全不会出现过平滑现象",
+            "过平滑是深层网络特有的问题，因此把层数固定在两层并改用更大的隐藏维度即可获得等价的全局感受野"
+          ]
+        }
+      },
+      {
+        "id": "dropedge-vs-jknet-depth-tradeoff__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张两层加大宽等价全局感受野。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "每轮随机删边减缓混合，代价是切断远程依赖多轮训练",
+          "跨层跳跃连接融合各层表示，代价是拼接显存开销",
+          "DropEdge 加 JK-Net 双管齐下可无限加深免疫过平滑",
+          "过平滑只深层有，两层加宽即等价全局"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断两层等价全局主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「无限加深」「两层等价」等不成立描述。"
+        },
+        "generatedAt": 1788911638773,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5961c3a3",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-19404ec9",
+        "sourceSnapshot": {
+          "id": "dropedge-vs-jknet-depth-tradeoff",
+          "topic": "deep-gnn-architectures",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "DropEdge",
+            "JK-Net",
+            "receptive-field"
+          ],
+          "question": "某任务需要模型利用较远距离的图信息，但直接加深 GNN 会出现严重的过平滑。关于 DropEdge 与 JK-Net 这两种应对手段的权衡，下列哪些说法是正确的？",
+          "options": [
+            "DropEdge 每轮随机删除一部分边以降低连通度、减缓过度混合，代价是可能切断本就稀疏的远程依赖并需要更多训练轮数",
+            "JK-Net 用跨层跳跃连接把各层表示一并融合，在不依赖最后一层的前提下兼顾局部与全局信息，代价是额外的拼接与显存开销",
+            "只要同时使用 DropEdge 与 JK-Net，就可以无限制地加深网络层数而完全不会出现过平滑现象",
+            "过平滑是深层网络特有的问题，因此把层数固定在两层并改用更大的隐藏维度即可获得等价的全局感受野"
+          ]
+        }
+      }
+    ],
+    "graph-sampling-three-families-mechanism": [
+      {
+        "id": "graph-sampling-three-families-mechanism__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某 Layer-wise 训练方差爆炸。定位这次无代价幻觉，下列哪些判断成立？",
+        "options": [
+          "Node-wise 逐层定量采，深层指数膨胀重复算",
+          "Layer-wise 定集合消指数，代价是稀疏致方差",
+          "Layer-wise 无方差代价，节点数相同即等价",
+          "Subgraph 切断即无偏无望并行无门"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 Layer-wise 方差爆炸的幻觉定位代价环节",
+          "reasoningGoal": "先定位幻觉的环节；再逐项验证各判断；并排除「无方差代价」「切断无望」等不成立描述。"
+        },
+        "generatedAt": 1788911638774,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f8f934f4",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-a424f93b",
+        "sourceSnapshot": {
+          "id": "graph-sampling-three-families-mechanism",
+          "topic": "scalability",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "neighbor-explosion",
+            "layer-wise-sampling",
+            "GraphSAINT"
+          ],
+          "question": "关于大规模图训练中 Node-wise、Layer-wise 与 Subgraph-wise 三类采样方式的机制，下列哪些说法是正确的？",
+          "options": [
+            "Node-wise 采样在每层为每个节点独立采样 S 个邻居，L 层后涉及节点规模约为 S 的 L 次方，随层数指数膨胀且有重复计算",
+            "Layer-wise 采样在每层固定一个节点集合，消除了指数增长，但跨层被采到的节点之间连接稀疏，导致估计方差上升",
+            "Layer-wise 采样在消除指数增长的同时不付出任何方差代价，因为每层采到的节点数量与前一层完全相同",
+            "Subgraph-wise 采样彻底切断了跨子图的消息传递，因此既无法得到无偏估计也无法并行计算"
+          ]
+        }
+      },
+      {
+        "id": "graph-sampling-three-families-mechanism__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张 Subgraph 切断仍无偏并行。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "Node-wise 每层独立采 S 个邻居，深层指数膨胀重复算",
+          "Layer-wise 定集合消指数，连接稀疏方差涨",
+          "消除指数增长的同时不付出任何方差代价",
+          "彻底切断跨子图消息传递仍旧能无偏并行计算"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断切断仍无偏主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「无方差」「切断无偏」等不成立描述。"
+        },
+        "generatedAt": 1788911638774,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f8f934f4",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-cd89a188",
+        "sourceSnapshot": {
+          "id": "graph-sampling-three-families-mechanism",
+          "topic": "scalability",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "neighbor-explosion",
+            "layer-wise-sampling",
+            "GraphSAINT"
+          ],
+          "question": "关于大规模图训练中 Node-wise、Layer-wise 与 Subgraph-wise 三类采样方式的机制，下列哪些说法是正确的？",
+          "options": [
+            "Node-wise 采样在每层为每个节点独立采样 S 个邻居，L 层后涉及节点规模约为 S 的 L 次方，随层数指数膨胀且有重复计算",
+            "Layer-wise 采样在每层固定一个节点集合，消除了指数增长，但跨层被采到的节点之间连接稀疏，导致估计方差上升",
+            "Layer-wise 采样在消除指数增长的同时不付出任何方差代价，因为每层采到的节点数量与前一层完全相同",
+            "Subgraph-wise 采样彻底切断了跨子图的消息传递，因此既无法得到无偏估计也无法并行计算"
+          ]
+        }
+      }
+    ],
+    "graphsaint-unbiasedness-variance-tradeoff": [
+      {
+        "id": "graphsaint-unbiasedness-variance-tradeoff__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "有人主张采样规模降到一仍无损精度。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "按概率采样加归一化，期望无偏",
+          "无偏不低方差：错配涨方差，调分布换方差",
+          "降到一无损精度，方差与规模无关",
+          "归一化只为数值稳定，去掉仍无偏"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断降到一仍无损主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「规模无关」「去归一化」等不成立描述。"
+        },
+        "generatedAt": 1788911638775,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2335c3d8",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-c0e028d9",
+        "sourceSnapshot": {
+          "id": "graphsaint-unbiasedness-variance-tradeoff",
+          "topic": "scalability",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "GraphSAINT",
+            "unbiased-estimator",
+            "importance-sampling"
+          ],
+          "question": "团队采用 GraphSAINT 训练亿级规模的图，需要在采样规模、估计偏差与训练稳定性之间做权衡。下列哪些说法是正确的？",
+          "options": [
+            "GraphSAINT 按节点或边的概率采样子图，并对聚合结果施加由采样概率推导的归一化系数，使估计在期望意义下保持无偏",
+            "无偏不等于低方差：采样分布与节点度、边重要性越不匹配，估计方差越大，实践中需按度或重要性调整采样概率来换取方差下降",
+            "只要采样器保证无偏，就可以把每层的采样规模降到一而不损失精度，因为无偏估计的方差与采样规模无关",
+            "归一化系数只是为了数值稳定，去掉它仍然是对同一分布的采样，因此估计依旧无偏"
+          ]
+        }
+      },
+      {
+        "id": "graphsaint-unbiasedness-variance-tradeoff__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张去掉归一化仍无偏。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "按节点边概率采样，加归一化保无偏",
+          "分布错配涨方差，按度调采样换方差下降",
+          "保证无偏即降规模到一，无损精度",
+          "去掉归一化仍是同分布采样，依旧无偏"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断去归一化主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「规模无关」「去归一化」等不成立描述。"
+        },
+        "generatedAt": 1788911638775,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2335c3d8",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-6ccecc65",
+        "sourceSnapshot": {
+          "id": "graphsaint-unbiasedness-variance-tradeoff",
+          "topic": "scalability",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "GraphSAINT",
+            "unbiased-estimator",
+            "importance-sampling"
+          ],
+          "question": "团队采用 GraphSAINT 训练亿级规模的图，需要在采样规模、估计偏差与训练稳定性之间做权衡。下列哪些说法是正确的？",
+          "options": [
+            "GraphSAINT 按节点或边的概率采样子图，并对聚合结果施加由采样概率推导的归一化系数，使估计在期望意义下保持无偏",
+            "无偏不等于低方差：采样分布与节点度、边重要性越不匹配，估计方差越大，实践中需按度或重要性调整采样概率来换取方差下降",
+            "只要采样器保证无偏，就可以把每层的采样规模降到一而不损失精度，因为无偏估计的方差与采样规模无关",
+            "归一化系数只是为了数值稳定，去掉它仍然是对同一分布的采样，因此估计依旧无偏"
+          ]
+        }
+      }
+    ],
+    "graph-adversarial-defense-mechanism": [
+      {
+        "id": "graph-adversarial-defense-mechanism__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某防御只扰动特征，加边攻击长驱直入。定位这次错位，下列哪些判断成立？",
+        "options": [
+          "低秩近似抓邻接低秩先验，过滤高频扰动边",
+          "特征剪枝同质有效，异质误删正常跨类边",
+          "特征扰动即全面防御拓扑攻击",
+          "GSL 联合优化是凸优化，代价等同标准训练"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从只扰动特征致加边长驱的错位定位防御环节",
+          "reasoningGoal": "先定位错位的环节；再逐项验证各判断；并排除「特征扰动包治」「凸优化等价」等不成立描述。"
+        },
+        "generatedAt": 1788911638776,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-41b29af4",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-29468f07",
+        "sourceSnapshot": {
+          "id": "graph-adversarial-defense-mechanism",
+          "topic": "robustness-and-security",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "low-rank-purification",
+            "adversarial-training",
+            "heterophily"
+          ],
+          "question": "关于图上对抗攻击与防御的机制，下列哪些说法是正确的？",
+          "options": [
+            "真实图的邻接矩阵通常近似低秩且稀疏，而随机加边引入的高频扰动破坏了这一低秩结构，因此低秩近似可以有效过滤这类对抗边",
+            "基于特征相似度的剪枝在同质图上有效，但在异质图上会误删本来正常的跨类边，因为异质图中相连节点的特征本就不必相似",
+            "对抗训练时只扰动节点特征即可全面防御拓扑攻击，因为加边与删边最终都会体现为节点特征的变化",
+            "图结构学习联合优化邻接矩阵与模型参数是一个凸优化问题，其收敛速度与训练开销与标准 GNN 训练相当"
+          ]
+        }
+      },
+      {
+        "id": "graph-adversarial-defense-mechanism__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张 GSL 是凸优化无额外代价。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "真实邻接低秩稀疏，高频扰动边可过滤",
+          "特征剪枝同质有效，异质误删跨类边",
+          "对抗训练只扰动节点特征防拓扑",
+          "图结构学习是凸优化，代价等同标准训练"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 GSL 凸优化主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「特征扰动」「凸优化」等不成立描述。"
+        },
+        "generatedAt": 1788911638776,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-41b29af4",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-9b1bcb96",
+        "sourceSnapshot": {
+          "id": "graph-adversarial-defense-mechanism",
+          "topic": "robustness-and-security",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "low-rank-purification",
+            "adversarial-training",
+            "heterophily"
+          ],
+          "question": "关于图上对抗攻击与防御的机制，下列哪些说法是正确的？",
+          "options": [
+            "真实图的邻接矩阵通常近似低秩且稀疏，而随机加边引入的高频扰动破坏了这一低秩结构，因此低秩近似可以有效过滤这类对抗边",
+            "基于特征相似度的剪枝在同质图上有效，但在异质图上会误删本来正常的跨类边，因为异质图中相连节点的特征本就不必相似",
+            "对抗训练时只扰动节点特征即可全面防御拓扑攻击，因为加边与删边最终都会体现为节点特征的变化",
+            "图结构学习联合优化邻接矩阵与模型参数是一个凸优化问题，其收敛速度与训练开销与标准 GNN 训练相当"
+          ]
+        }
+      }
+    ],
+    "diagnosing-structure-poisoning-attack": [
+      {
+        "id": "diagnosing-structure-poisoning-attack__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "准确率从 0.88 跌到 0.71，有人主张换深层 GNN 吸收对抗边。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "频谱分析：高频增强低秩破坏即投毒而非漂移",
+          "定位可疑边做拓扑净化重评估，而非特征对抗训练",
+          "换更深 GNN 吸收对抗边影响",
+          "GSL 自动修正无代价，优先采用"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在 0.88 跌到 0.71 下判断换深层主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「换深层吸收」「GSL 无代价」等不成立描述。"
+        },
+        "generatedAt": 1788911638777,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-beedaefc",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-582e822d",
+        "sourceSnapshot": {
+          "id": "diagnosing-structure-poisoning-attack",
+          "topic": "robustness-and-security",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "structure-poisoning",
+            "spectral-diagnosis",
+            "purification"
+          ],
+          "question": "某线上图模型的节点分类准确率从 0.88 骤降到 0.71，团队怀疑遭遇了结构投毒。关于诊断与处置，下列哪些做法是正确的？",
+          "options": [
+            "先对邻接矩阵做频谱分析：若高频分量异常增强、低秩结构被破坏，则更可能是结构投毒而非自然的数据分布漂移",
+            "定位到可疑边后应针对拓扑做净化并在净化后的图上重新评估，而不是只做特征级对抗训练，因为后者无法防御加边攻击",
+            "只要把模型换成层数更深的 GNN 就能吸收掉对抗边的影响，因为更多层的聚合会平滑掉全部高频噪声",
+            "图结构学习可以在训练时自动修正邻接矩阵且不带来额外收敛代价，因此应当无条件优先采用"
+          ]
+        }
+      },
+      {
+        "id": "diagnosing-structure-poisoning-attack__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "准确率 0.88 跌到 0.71，有人主张 GSL 无条件优先。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "频谱看高频分量增强与低秩破坏",
+          "定位可疑边做拓扑净化并重评估",
+          "换更深 GNN 吸收对抗边影响",
+          "图结构学习自动修正无代价，优先采用"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 GSL 无条件优先主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「深层吸收」「无条件优先」等不成立描述。"
+        },
+        "generatedAt": 1788911638777,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-beedaefc",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-415a9945",
+        "sourceSnapshot": {
+          "id": "diagnosing-structure-poisoning-attack",
+          "topic": "robustness-and-security",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "structure-poisoning",
+            "spectral-diagnosis",
+            "purification"
+          ],
+          "question": "某线上图模型的节点分类准确率从 0.88 骤降到 0.71，团队怀疑遭遇了结构投毒。关于诊断与处置，下列哪些做法是正确的？",
+          "options": [
+            "先对邻接矩阵做频谱分析：若高频分量异常增强、低秩结构被破坏，则更可能是结构投毒而非自然的数据分布漂移",
+            "定位到可疑边后应针对拓扑做净化并在净化后的图上重新评估，而不是只做特征级对抗训练，因为后者无法防御加边攻击",
+            "只要把模型换成层数更深的 GNN 就能吸收掉对抗边的影响，因为更多层的聚合会平滑掉全部高频噪声",
+            "图结构学习可以在训练时自动修正邻接矩阵且不带来额外收敛代价，因此应当无条件优先采用"
+          ]
+        }
+      }
+    ],
+    "coldstart-and-realtime-embedding-coordination": [
+      {
+        "id": "coldstart-and-realtime-embedding-coordination__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某推荐用 PageRank 替代表征，个性全丢。定位这次替代失误，下列哪些判断成立？",
+        "options": [
+          "新物品无边先用内容特征构造初始表征，消息传递再校准",
+          "行为流异步写近实时层，增量刷新协同离线周期",
+          "PageRank 静态排序可替代个性表征",
+          "为保证线上一致须秒级全量重算"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 PageRank 替代致个性全丢的失误定位表征环节",
+          "reasoningGoal": "先定位失误的环节；再逐项验证各判断；并排除「PageRank 替代」「秒级全算」等不成立描述。"
+        },
+        "generatedAt": 1788911638778,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ef30a15e",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-657cd0a7",
+        "sourceSnapshot": {
+          "id": "coldstart-and-realtime-embedding-coordination",
+          "topic": "graph-recommender-system",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "cold-start",
+            "incremental-refresh",
+            "side-information"
+          ],
+          "question": "在一个日活亿级、需同时处理冷启动物品与秒级行为流的图推荐系统中，关于离线与近实时两条链路如何协同，下列哪些说法是正确的？",
+          "options": [
+            "新物品缺乏交互边时，应先用内容侧特征或侧信息为其构造初始 Embedding 并入图，再靠后续消息传递逐步校准",
+            "秒级行为流应与离线全量图异步写入近实时层，由增量计算刷新受影响节点的 Embedding，并与离线刷新周期协同，否则会新旧混用",
+            "纯 PageRank 的静态重要性排序可以替代图表征学习，因为它同样利用了图结构信息且计算成本低得多",
+            "为保证线上一致性，应当把全量 Embedding 重算改为秒级触发，每次有新行为就对全图重新计算一遍"
+          ]
+        }
+      },
+      {
+        "id": "coldstart-and-realtime-embedding-coordination__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张每次行为秒级重算全图。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "无交互边先用内容特征构造初始表征",
+          "秒级行为流异步入近实时层协同离线",
+          "纯 PageRank 静态排序可替代个性表征",
+          "为保证线上一致秒级全量重算"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断秒级全量主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「PageRank 替代」「秒级全算」等不成立描述。"
+        },
+        "generatedAt": 1788911638778,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ef30a15e",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-e35a04f9",
+        "sourceSnapshot": {
+          "id": "coldstart-and-realtime-embedding-coordination",
+          "topic": "graph-recommender-system",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "cold-start",
+            "incremental-refresh",
+            "side-information"
+          ],
+          "question": "在一个日活亿级、需同时处理冷启动物品与秒级行为流的图推荐系统中，关于离线与近实时两条链路如何协同，下列哪些说法是正确的？",
+          "options": [
+            "新物品缺乏交互边时，应先用内容侧特征或侧信息为其构造初始 Embedding 并入图，再靠后续消息传递逐步校准",
+            "秒级行为流应与离线全量图异步写入近实时层，由增量计算刷新受影响节点的 Embedding，并与离线刷新周期协同，否则会新旧混用",
+            "纯 PageRank 的静态重要性排序可以替代图表征学习，因为它同样利用了图结构信息且计算成本低得多",
+            "为保证线上一致性，应当把全量 Embedding 重算改为秒级触发，每次有新行为就对全图重新计算一遍"
+          ]
+        }
+      }
+    ],
+    "flashattn-03": [
+      {
+        "id": "flashattn-03__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某实现分块直接相加，结果全错。定位这次结合律幻觉，下列哪些判断成立？",
+        "options": [
+          "softmax 需整行归一，在线滑动最大求和得精确",
+          "分块仍与标准完全一致，精确非近似",
+          "softmax 满足结合律，分块直加即可",
+          "在线滑动只为加速，与精确性无关"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从分块直加致全错的幻觉定位归一环节",
+          "reasoningGoal": "先定位幻觉的环节；再逐项验证各判断；并排除「满足结合律」「只为加速」等不成立描述。"
+        },
+        "generatedAt": 1788911638778,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-140459d5",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-4db543f8",
+        "sourceSnapshot": {
+          "id": "flashattn-03",
+          "topic": "flash-attention",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "online-softmax",
+            "exactness",
+            "mechanism"
+          ],
+          "question": "为什么『在线 softmax（online softmax）』对 FlashAttention 的分块策略至关重要？",
+          "options": [
+            "softmax 需整行全局归一化信息，无法只看到一块就直接算；在线 softmax 用滑动最大与求和逐步得精确结果",
+            "它使即便分块处理，最终 softmax 仍与标准 softmax 完全一致（精确而非近似）",
+            "softmax 天然满足结合律，因此任意分块都能直接相加而无需修正",
+            "在线 softmax 只为加速，对最终结果的精确性没有任何实质影响"
+          ]
+        }
+      },
+      {
+        "id": "flashattn-03__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张在线 softmax 只为加速。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "需整行归一信息，在线滑动得精确",
+          "分块处理仍与标准完全一致",
+          "softmax 满足结合律，分块直加即可",
+          "在线 softmax 只为加速"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断只为加速主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「结合律」「只为加速」等不成立描述。"
+        },
+        "generatedAt": 1788911638778,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-140459d5",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-5e6fe8d2",
+        "sourceSnapshot": {
+          "id": "flashattn-03",
+          "topic": "flash-attention",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "online-softmax",
+            "exactness",
+            "mechanism"
+          ],
+          "question": "为什么『在线 softmax（online softmax）』对 FlashAttention 的分块策略至关重要？",
+          "options": [
+            "softmax 需整行全局归一化信息，无法只看到一块就直接算；在线 softmax 用滑动最大与求和逐步得精确结果",
+            "它使即便分块处理，最终 softmax 仍与标准 softmax 完全一致（精确而非近似）",
+            "softmax 天然满足结合律，因此任意分块都能直接相加而无需修正",
+            "在线 softmax 只为加速，对最终结果的精确性没有任何实质影响"
+          ]
+        }
+      }
+    ],
+    "flashattn-05": [
+      {
+        "id": "flashattn-05__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某 FlashAttention 反向爆显存，排查发现物化了 N×N。定位这次物化，下列哪些判断成立？",
+        "options": [
+          "中间 HBM 从平方降线性，不物化完整矩阵",
+          "除 QKV O 外只存每行 logsumexp 供反向重算",
+          "N×N 注意力矩阵存 HBM 加速反向",
+          "FlashAttention 显存仍平方增长"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从反向爆显存的物化定位存储环节",
+          "reasoningGoal": "先定位物化的环节；再逐项验证各判断；并排除「存矩阵加速」「仍平方」等不成立描述。"
+        },
+        "generatedAt": 1788911638779,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b44d1681",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-63370f3c",
+        "sourceSnapshot": {
+          "id": "flashattn-05",
+          "topic": "flash-attention",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "memory",
+            "on",
+            "hbm",
+            "tradeoff"
+          ],
+          "question": "关于 FlashAttention 的显存占用，下列哪些正确？",
+          "options": [
+            "注意力中间结果的 HBM 占用从 O(N²) 降到 O(N)，因为不再物化完整注意力矩阵",
+            "除 Q、K、V、O 外，只需额外存储每行的 logsumexp 统计量（O(N)），用于反向重计算",
+            "它把 N×N 注意力矩阵完整存到 HBM 以加速反向传播",
+            "FlashAttention 的显存占用仍随序列长度平方增长"
+          ]
+        }
+      },
+      {
+        "id": "flashattn-05__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张显存仍平方增长。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "HBM 占用从平方降到线性，不物化完整矩阵",
+          "除 QKV O 外只存每行 logsumexp",
+          "N×N 存 HBM 加速反向",
+          "FlashAttention 显存仍平方增长"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断平方增长主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「存矩阵」「仍平方」等不成立描述。"
+        },
+        "generatedAt": 1788911638779,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b44d1681",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-ac65c6ca",
+        "sourceSnapshot": {
+          "id": "flashattn-05",
+          "topic": "flash-attention",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "memory",
+            "on",
+            "hbm",
+            "tradeoff"
+          ],
+          "question": "关于 FlashAttention 的显存占用，下列哪些正确？",
+          "options": [
+            "注意力中间结果的 HBM 占用从 O(N²) 降到 O(N)，因为不再物化完整注意力矩阵",
+            "除 Q、K、V、O 外，只需额外存储每行的 logsumexp 统计量（O(N)），用于反向重计算",
+            "它把 N×N 注意力矩阵完整存到 HBM 以加速反向传播",
+            "FlashAttention 的显存占用仍随序列长度平方增长"
+          ]
+        }
+      }
+    ],
+    "flashattn-07": [
+      {
+        "id": "flashattn-07__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "有人断言 N 越大 FlashAttention 倍数差越大。评审这一断言的前提，下列哪些判断正确？",
+        "options": [
+          "IO 标准与 FlashAttention 公式如上，实测约 9 倍",
+          "比值约 M/d² 与 N 无关，d 越大 SRAM 越小收益越小",
+          "IO 已降 O(Nd)，N=4096 d=128 时减 33 倍",
+          "序列越长收益越大：标准 O(N²) 而 FlashAttention 是 O(N)，倍数差拉大"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 N 越大倍数越大断言的前提是否成立",
+          "reasoningGoal": "先判断该断言的前提是否满足；再逐项验证各主张；并排除「O(Nd)33 倍」「N 越大越赚」等不成立描述。"
+        },
+        "generatedAt": 1788911638779,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7c7325c1",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-1f50812e",
+        "sourceSnapshot": {
+          "id": "flashattn-07",
+          "topic": "flash-attention",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "hbm-traffic",
+            "calculation",
+            "io-complexity"
+          ],
+          "question": "关于 FlashAttention 相对标准注意力的 HBM 显存访问（IO）复杂度，下列哪些说法是正确的？",
+          "options": [
+            "论文给出的 IO 复杂度为：标准注意力 Θ(Nd + N²)，FlashAttention Θ(N²d²M⁻¹)（M 为 SRAM 容量），实测最高约 9 倍减少",
+            "两者的比值约为 M/d²，与序列长度 N 无关；因此 head 维度 d 越大或 SRAM 越小，FlashAttention 的相对收益越小",
+            "FlashAttention 把 IO 复杂度降到接近 O(Nd)，在 N=4096、d=128 时 HBM 流量约减少 33 倍",
+            "序列越长收益越大：标准注意力是 O(N²) 而 FlashAttention 是 O(N)，N 增大时两者的倍数差会持续拉大"
+          ]
+        }
+      },
+      {
+        "id": "flashattn-07__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张 IO 已降到 O(Nd)，33 倍稳拿。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "论文给出 IO 复杂度如上，标准与 FlashAttention 公式含 SRAM",
+          "两者的比值约 M/d²，与 N 无关",
+          "IO 复杂度降到 O(Nd)，33 倍可稳拿",
+          "序列越长收益越大：标准与 FlashAttention 倍数差越大"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断 O(Nd)33 倍主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「33 倍稳拿」「N 越大越赚」等不成立描述。"
+        },
+        "generatedAt": 1788911638779,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7c7325c1",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-36828bdd",
+        "sourceSnapshot": {
+          "id": "flashattn-07",
+          "topic": "flash-attention",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "hbm-traffic",
+            "calculation",
+            "io-complexity"
+          ],
+          "question": "关于 FlashAttention 相对标准注意力的 HBM 显存访问（IO）复杂度，下列哪些说法是正确的？",
+          "options": [
+            "论文给出的 IO 复杂度为：标准注意力 Θ(Nd + N²)，FlashAttention Θ(N²d²M⁻¹)（M 为 SRAM 容量），实测最高约 9 倍减少",
+            "两者的比值约为 M/d²，与序列长度 N 无关；因此 head 维度 d 越大或 SRAM 越小，FlashAttention 的相对收益越小",
+            "FlashAttention 把 IO 复杂度降到接近 O(Nd)，在 N=4096、d=128 时 HBM 流量约减少 33 倍",
+            "序列越长收益越大：标准注意力是 O(N²) 而 FlashAttention 是 O(N)，N 增大时两者的倍数差会持续拉大"
+          ]
+        }
+      }
+    ],
+    "ai-eng-018": [
+      {
+        "id": "ai-eng-018__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某 RAG 上线后补建评测，裸奔半年。定位这次后补，下列哪些判断成立？",
+        "options": [
+          "先收集线上流量日志留存分析，早期交付优先评测稳定后补",
+          "构建覆盖真实分布的数据集，标注 golden 证据答案",
+          "安排内部同事每人随手编写几十道简单问答题快速跑通流程",
+          "recall 等证据指标加 correctness faithfulness Judge 批",
+          "常规发布以 Judge 打分为主要结论，异动时触发人工抽检复核"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从上线后补建评测的裸奔定位评测环节",
+          "reasoningGoal": "先定位后补的环节；再逐项验证各判断；并排除「日后再建」「随手题」「Judge 为主」等不成立描述。"
+        },
+        "generatedAt": 1788911638780,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-76dd882b",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-5952346f",
+        "sourceSnapshot": {
+          "id": "ai-eng-018",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "LLM-as-a-Judge",
+            "RAG"
+          ],
+          "question": "你负责一个企业 RAG 系统，希望上线前证明系统质量。你会如何设计 offline evaluation？请说明 evaluation dataset、retrieval metrics、answer metrics 和 LLM-as-a-Judge 各自解决什么问题。",
+          "options": [
+            "先把线上流量日志收集起来留作日后分析，各项评估指标可以等系统上线积累数据后再补建；早期以功能交付为主，评测体系可在稳定后逐步补齐，不必在立项阶段投入建设，先上线再观测更符合敏捷节奏。",
+            "构建覆盖真实用户问题分布的 evaluation dataset，涵盖不同险种、文档类型与难度层级，并为每题标注 golden evidence 和参考答案，作为所有指标的计算基础。",
+            "安排几位内部同事每人随手编写几十道简单问答题跑通流程即可，无需刻意覆盖真实用户的提问分布；内部视角足够代表典型用法，小规模样例能快速验证链路通畅，覆盖度问题上线后自然会暴露并补齐。",
+            "retrieval 层用 recall@k、MRR、nDCG 评估证据质量；answer 层用 correctness、faithfulness 等指标，并以校准过的 LLM-as-a-Judge 批量打分，辅以人工抽检。",
+            "以 judge 打分为主结论，确定性指标与人工抽检仅在 judge 分数异动时触发复核；常规发布直接采信 judge，交叉校验属于冗余成本。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-018__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张同事随手题即够用。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "线上流量日志收集留存日后分析，评估指标上线积累数据后补建",
+          "构建覆盖真实用户提问分布的数据集，涵盖险种难度层级并标 golden 答案",
+          "安排几位同事每人随手写几十道简单问答题，小规模样例快速验证链路",
+          "recall 等证据指标加 correctness faithfulness Judge 批",
+          "Judge 打分是主要结论，确定性指标人工抽检异动复核，常规发布采信"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断随手题够用主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「日后补建」「随手题」「Judge 为主」等不成立描述。"
+        },
+        "generatedAt": 1788911638780,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-76dd882b",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-52652398",
+        "sourceSnapshot": {
+          "id": "ai-eng-018",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "LLM-as-a-Judge",
+            "RAG"
+          ],
+          "question": "你负责一个企业 RAG 系统，希望上线前证明系统质量。你会如何设计 offline evaluation？请说明 evaluation dataset、retrieval metrics、answer metrics 和 LLM-as-a-Judge 各自解决什么问题。",
+          "options": [
+            "先把线上流量日志收集起来留作日后分析，各项评估指标可以等系统上线积累数据后再补建；早期以功能交付为主，评测体系可在稳定后逐步补齐，不必在立项阶段投入建设，先上线再观测更符合敏捷节奏。",
+            "构建覆盖真实用户问题分布的 evaluation dataset，涵盖不同险种、文档类型与难度层级，并为每题标注 golden evidence 和参考答案，作为所有指标的计算基础。",
+            "安排几位内部同事每人随手编写几十道简单问答题跑通流程即可，无需刻意覆盖真实用户的提问分布；内部视角足够代表典型用法，小规模样例能快速验证链路通畅，覆盖度问题上线后自然会暴露并补齐。",
+            "retrieval 层用 recall@k、MRR、nDCG 评估证据质量；answer 层用 correctness、faithfulness 等指标，并以校准过的 LLM-as-a-Judge 批量打分，辅以人工抽检。",
+            "以 judge 打分为主结论，确定性指标与人工抽检仅在 judge 分数异动时触发复核；常规发布直接采信 judge，交叉校验属于冗余成本。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-049": [
+      {
+        "id": "ai-eng-049__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某团队固定种子温度宣称杜绝漂移，检出率又掉 11 个点。定位这次误判，下列哪些判断成立？",
+        "options": [
+          "train dev test 划分，多数调优少数重大启用",
+          "漂移属供应商侧变更，治理重心放事故响应",
+          "30 天双人重标 kappa 达标设重调阈值",
+          "每天全量重跑波动即告警，单靠监控告警即可杜绝漂移",
+          "月度 hold-out 重放可滚冻结备选",
+          "固定随机种子和温度参数即可杜绝漂移"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从固定种子仍掉 11 个点的误判定位治理环节",
+          "reasoningGoal": "先定位误判的环节；再逐项验证各判断；并排除「重响应轻预防」「监控即杜绝」「固定即杜绝」等不成立描述。"
+        },
+        "generatedAt": 1788911638780,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3a292808",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-3521072b",
+        "sourceSnapshot": {
+          "id": "ai-eng-049",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "judge-drift",
+            "train-dev-test",
+            "cohens-kappa",
+            "inter-judge-agreement"
+          ],
+          "question": "团队发现线上质量投诉上升，复盘发现 LLM-as-judge 对幻觉的检出率在过去数月悄悄下降了 11 个百分点而无人察觉（供应商静默升级了 judge 底层模型）。你会如何系统性治理 judge 漂移？",
+          "options": [
+            "标注按 train/dev/test 划分：多数调优 prompt，留出一部分只在重大变更前启用",
+            "漂移属供应商侧变更，治理重心应放在事故响应速度而非预防性投入",
+            "每 30 天用新案例做双人重标，要求 Cohen’s kappa 达标并设准确率重调阈值",
+            "每天全量重跑所有评测，分数波动超阈值即告警，单靠监控告警即可杜绝漂移",
+            "每月 hold-out 重放监控漂移，prompt 入 git 可回滚，冻结版本并常备备选 judge",
+            "固定随机种子和温度参数即可杜绝漂移，无需为 judge 建治理与双轨校验"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-049__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "检出率掉 11 个点，有人主张监控告警即杜绝漂移。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "标注分 train dev test，多数调 prompt 重大变更启用",
+          "供应商侧变更致漂移，重事故响应而轻预防投入",
+          "30 天新案例双人重标，kappa 达标定重调阈值",
+          "每日全量重跑评测波动告警，监控即可杜绝漂移",
+          "hold-out 月度重放监漂移，prompt 进 git 冻结备选",
+          "固定种子温度即杜绝漂移，无需治理与双轨校验"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断监控即杜绝主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「重响应」「监控杜绝」「固定杜绝」等不成立描述。"
+        },
+        "generatedAt": 1788911638781,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3a292808",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-af6c069d",
+        "sourceSnapshot": {
+          "id": "ai-eng-049",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "judge-drift",
+            "train-dev-test",
+            "cohens-kappa",
+            "inter-judge-agreement"
+          ],
+          "question": "团队发现线上质量投诉上升，复盘发现 LLM-as-judge 对幻觉的检出率在过去数月悄悄下降了 11 个百分点而无人察觉（供应商静默升级了 judge 底层模型）。你会如何系统性治理 judge 漂移？",
+          "options": [
+            "标注按 train/dev/test 划分：多数调优 prompt，留出一部分只在重大变更前启用",
+            "漂移属供应商侧变更，治理重心应放在事故响应速度而非预防性投入",
+            "每 30 天用新案例做双人重标，要求 Cohen’s kappa 达标并设准确率重调阈值",
+            "每天全量重跑所有评测，分数波动超阈值即告警，单靠监控告警即可杜绝漂移",
+            "每月 hold-out 重放监控漂移，prompt 入 git 可回滚，冻结版本并常备备选 judge",
+            "固定随机种子和温度参数即可杜绝漂移，无需为 judge 建治理与双轨校验"
+          ]
+        }
+      }
+    ],
+    "ai-eng-050": [
+      {
+        "id": "ai-eng-050__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某门禁单综合分放行，恶化轴被平均掩盖。定位这次掩盖，下列哪些判断成立？",
+        "options": [
+          "生产错误开放编码归纳分类学，季度复审断言",
+          "综合分好沟通，平均平滑噪声，管理层看总分",
+          "按轴打分独立置信阻断，恶化轴单独拦下",
+          "单轴最关键，其他不值得度量",
+          "不加权综合进门禁，一轴改善掩盖另一轴回归",
+          "多轴终须加权合成总分进 CI"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从单综合分放行的掩盖定位门禁环节",
+          "reasoningGoal": "先定位掩盖的环节；再逐项验证各判断；并排除「综合分好」「单轴足够」「终须合成」等不成立描述。"
+        },
+        "generatedAt": 1788911638781,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a72748f7",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-20d0272a",
+        "sourceSnapshot": {
+          "id": "ai-eng-050",
+          "topic": "evaluation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "failure-mode-taxonomy",
+            "per-axis-gating",
+            "composite-score"
+          ],
+          "question": "Eval 门禁应该用\"一个综合质量分\"还是\"按失败模式分类的多轴分数\"？说明两种方案的取舍与推荐做法。",
+          "options": [
+            "基于生产错误的开放编码分析归纳失败模式分类学，作为断言面并季度复审",
+            "综合分更好：单一数字便于沟通，平均化能平滑噪声，管理层只看总分即可决策",
+            "按轴打分，每个轴有独立置信区间与独立阻断权，恶化轴可被单独拦下",
+            "只需要盯最关键的一个轴，其他维度不值得单独度量，单轴看板已足够",
+            "不把加权综合分作为合并门禁，一轴改善会掩盖另一轴的严重回归",
+            "多轴分数最终要加权合成一个总分才能进 CI 门禁，多轴只是过渡产物"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-050__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "把综合质量分与多轴分数放在门禁决策上对比，根本差异是什么？",
+        "options": [
+          "生产错误开放编码归纳分类学",
+          "单一综合分好沟通，管理层看总分决策",
+          "按轴打分独立置信区间与阻断权",
+          "只需盯最关键单轴即足够",
+          "不拿加权综合分进门禁",
+          "多轴终须加权合成总分进门禁"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从门禁决策对比两种分数的根本差异",
+          "reasoningGoal": "先对齐两种分数的可比维度；再逐项判定各主张成立与否；并排除「综合分好」「单轴足够」「终须合成」等不成立描述。"
+        },
+        "generatedAt": 1788911638782,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a72748f7",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-b45f50ad",
+        "sourceSnapshot": {
+          "id": "ai-eng-050",
+          "topic": "evaluation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "failure-mode-taxonomy",
+            "per-axis-gating",
+            "composite-score"
+          ],
+          "question": "Eval 门禁应该用\"一个综合质量分\"还是\"按失败模式分类的多轴分数\"？说明两种方案的取舍与推荐做法。",
+          "options": [
+            "基于生产错误的开放编码分析归纳失败模式分类学，作为断言面并季度复审",
+            "综合分更好：单一数字便于沟通，平均化能平滑噪声，管理层只看总分即可决策",
+            "按轴打分，每个轴有独立置信区间与独立阻断权，恶化轴可被单独拦下",
+            "只需要盯最关键的一个轴，其他维度不值得单独度量，单轴看板已足够",
+            "不把加权综合分作为合并门禁，一轴改善会掩盖另一轴的严重回归",
+            "多轴分数最终要加权合成一个总分才能进 CI 门禁，多轴只是过渡产物"
+          ]
+        }
+      }
+    ],
+    "ai-eval-001": [
+      {
+        "id": "ai-eval-001__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某 Agent 评测锁种子断言字符串，轨迹黑盒。定位这次复古，下列哪些判断成立？",
+        "options": [
+          "确定性回放锁行为，再单元测试锁定",
+          "端到端成功率核心，可判定集自动验终态",
+          "断言字符串完全一致，轨迹无需观测",
+          "工具轨迹语义判定替精确匹配",
+          "线上失败固化回归，分层覆盖鲁棒安全",
+          "不确定即不可测，只能人工试用"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从锁种子断言字符串的复古定位评测环节",
+          "reasoningGoal": "先定位复古的环节；再逐项验证各判断；并排除「确定性回放」「断言一致」「不可测」等不成立描述。"
+        },
+        "generatedAt": 1788911638782,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-54010e34",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-bf07407d",
+        "sourceSnapshot": {
+          "id": "ai-eval-001",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "agent"
+          ],
+          "question": "为什么传统单元测试不足以测试一个 LLM Agent？你会如何设计 Agent Evaluation？",
+          "options": [
+            "给 Agent 加确定性回放：固定种子与缓存使轨迹可复现，再用单元测试锁定行为",
+            "以端到端任务成功率为核心指标，在可判定的任务集上自动校验终态",
+            "评测仍应断言最终输出字符串与预期完全一致，中间轨迹无需观测",
+            "辅以工具调用与轨迹合理性等过程指标，用语义级判定代替精确匹配",
+            "把线上真实失败固化为回归用例，并分层覆盖鲁棒性与安全场景",
+            "输出天然不确定意味着无法评测，只能依赖人工长期试用积累主观印象"
+          ]
+        }
+      },
+      {
+        "id": "ai-eval-001__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张不确定即不可测，只能人工试用。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "确定性回放锁定轨迹行为",
+          "成功率核心终态验",
+          "断言最终输出字符串完全一致",
+          "语义判定替匹配",
+          "失败固化回归",
+          "不确定即不可测，只能人工试用"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断不可测主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「回放锁定」「字符串一致」「不可测」等不成立描述。"
+        },
+        "generatedAt": 1788911638782,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-54010e34",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-ffc63c00",
+        "sourceSnapshot": {
+          "id": "ai-eval-001",
+          "topic": "evaluation",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "agent"
+          ],
+          "question": "为什么传统单元测试不足以测试一个 LLM Agent？你会如何设计 Agent Evaluation？",
+          "options": [
+            "给 Agent 加确定性回放：固定种子与缓存使轨迹可复现，再用单元测试锁定行为",
+            "以端到端任务成功率为核心指标，在可判定的任务集上自动校验终态",
+            "评测仍应断言最终输出字符串与预期完全一致，中间轨迹无需观测",
+            "辅以工具调用与轨迹合理性等过程指标，用语义级判定代替精确匹配",
+            "把线上真实失败固化为回归用例，并分层覆盖鲁棒性与安全场景",
+            "输出天然不确定意味着无法评测，只能依赖人工长期试用积累主观印象"
+          ]
+        }
+      }
+    ],
+    "ai-fund-042": [
+      {
+        "id": "ai-fund-042__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某评测集冻结三年，模型全过拟合旧用例。定位这次冻结，下列哪些判断成立？",
+        "options": [
+          "评测集建成冻结走版本分支，主干可比演进靠分支",
+          "分层覆盖主流程边界对抗，每条附答案要点",
+          "线上失败固化回归，日志抽样保分布一致",
+          "版本化管理，变更全量回归",
+          "机器海量加抽检等价全人工"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从冻结三年致过拟合的冻结定位维护环节",
+          "reasoningGoal": "先定位冻结的环节；再逐项验证各判断；并排除「冻结基线」「机器等价」等不成立描述。"
+        },
+        "generatedAt": 1788911638782,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86d5ee66",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-5771122b",
+        "sourceSnapshot": {
+          "id": "ai-fund-042",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation-dataset",
+            "edge-case",
+            "regression"
+          ],
+          "question": "如何为一个上线中的 LLM Application 设计 Evaluation Dataset？请说明数据构成与持续维护机制。",
+          "options": [
+            "评测集建成后冻结是基线管理手段，变更走版本分支；主干冻结保证可比性，演进靠分支。",
+            "分层覆盖正常主流程、边界输入（超长极短、多语言、格式异常）与对抗样本（注入、误导性前提），每条尽量附参考答案或评分要点",
+            "将线上真实失败案例固化为回归 case，并持续从生产日志抽样补充，保持与真实流量分布一致",
+            "对评测集做版本化管理，每次 prompt、模型或流水线变更都触发全量回归评测",
+            "用程序生成海量样本再经小规模人工校验，机器规模加人工抽检即等价于全人工精选；精选的边际收益低。"
+          ]
+        }
+      },
+      {
+        "id": "ai-fund-042__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张机器海量加抽检等价全人工。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "建成冻结管基线，变更走分支主干保可比",
+          "覆盖主流程边界对抗输入，每条附参考答案评分要点",
+          "真实失败案例固化回归，生产日志抽样补充保分布",
+          "评测集版本化，prompt 模型流水线变更触发全量回归",
+          "程序生成海量样本加人工校验，等价全人工精选"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断机器等价主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「冻结基线」「机器等价」等不成立描述。"
+        },
+        "generatedAt": 1788911638783,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-86d5ee66",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-50ec92b9",
+        "sourceSnapshot": {
+          "id": "ai-fund-042",
+          "topic": "evaluation",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation-dataset",
+            "edge-case",
+            "regression"
+          ],
+          "question": "如何为一个上线中的 LLM Application 设计 Evaluation Dataset？请说明数据构成与持续维护机制。",
+          "options": [
+            "评测集建成后冻结是基线管理手段，变更走版本分支；主干冻结保证可比性，演进靠分支。",
+            "分层覆盖正常主流程、边界输入（超长极短、多语言、格式异常）与对抗样本（注入、误导性前提），每条尽量附参考答案或评分要点",
+            "将线上真实失败案例固化为回归 case，并持续从生产日志抽样补充，保持与真实流量分布一致",
+            "对评测集做版本化管理，每次 prompt、模型或流水线变更都触发全量回归评测",
+            "用程序生成海量样本再经小规模人工校验，机器规模加人工抽检即等价于全人工精选；精选的边际收益低。"
+          ]
+        }
+      }
+    ],
+    "distill-02": [
+      {
+        "id": "distill-02__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某蒸馏只用硬标签，学生平平。定位这次弃软目标，下列哪些判断成立？",
+        "options": [
+          "学生匹配教师软分布，KL 迫近软目标",
+          "硬标签交叉熵保留，αKL 加组合",
+          "硬标签交叉熵足矣，无需教师分布",
+          "学生训好再当教师，无限循环"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从只用硬标签致平平的弃软目标定位损失环节",
+          "reasoningGoal": "先定位弃软目标的环节；再逐项验证各判断；并排除「硬标签足矣」「无限循环」等不成立描述。"
+        },
+        "generatedAt": 1788911638783,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b4e31b2a",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-28b77668",
+        "sourceSnapshot": {
+          "id": "distill-02",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "distillation-loss",
+            "kl-divergence",
+            "soft-targets"
+          ],
+          "question": "典型的知识蒸馏损失如何构成？",
+          "options": [
+            "在教师软化后的输出分布上算 KL 散度（学生 ‖ 教师），迫使学生匹配软目标",
+            "同时保留对真实硬标签的交叉熵，蒸馏损失常为 α·KL + (1−α)·CE 的加权组合",
+            "只用硬标签的交叉熵损失，完全不使用教师提供的输出分布",
+            "先训练学生再用学生当教师去训练另一个，如此循环无限次"
+          ]
+        }
+      },
+      {
+        "id": "distill-02__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张学生训好再当教师无限循环。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "输出分布算 KL 匹配软目标",
+          "硬标签交叉熵加 αKL 加权组合",
+          "只用硬标签交叉熵足矣",
+          "学生训好再当教师无限循环"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断无限循环主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「硬标签足矣」「无限循环」等不成立描述。"
+        },
+        "generatedAt": 1788911638783,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b4e31b2a",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-c6a17ec0",
+        "sourceSnapshot": {
+          "id": "distill-02",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "distillation-loss",
+            "kl-divergence",
+            "soft-targets"
+          ],
+          "question": "典型的知识蒸馏损失如何构成？",
+          "options": [
+            "在教师软化后的输出分布上算 KL 散度（学生 ‖ 教师），迫使学生匹配软目标",
+            "同时保留对真实硬标签的交叉熵，蒸馏损失常为 α·KL + (1−α)·CE 的加权组合",
+            "只用硬标签的交叉熵损失，完全不使用教师提供的输出分布",
+            "先训练学生再用学生当教师去训练另一个，如此循环无限次"
+          ]
+        }
+      }
+    ],
+    "distill-03": [
+      {
+        "id": "distill-03__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某 QAD 无教师自训，效果散。定位这次去教师化，下列哪些判断成立？",
+        "options": [
+          "冻结同架构全精度教师，KL 蒸馏到量化学生",
+          "只做量化未压缩才有同架构教师可用",
+          "无教师随机初始化自我训练",
+          "教师学生拼单模型联合前向"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从无教师自训致散的去教师化定位教师环节",
+          "reasoningGoal": "先定位去教师化的环节；再逐项验证各判断；并排除「无教师自训」「拼单前向」等不成立描述。"
+        },
+        "generatedAt": 1788911638783,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d220fa41",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-b502cce5",
+        "sourceSnapshot": {
+          "id": "distill-03",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qad",
+            "quantization-aware-distillation",
+            "kl-logits"
+          ],
+          "question": "在『量化感知蒸馏（QAD）』中，关于教师与对齐方式，下列哪些符合文中描述？",
+          "options": [
+            "冻结一个同架构的全精度教师，用学生与教师输出 logits 的 KL 散度蒸馏到量化学生",
+            "QAD 仅在『只做量化、未做结构压缩』时有效，因为存在同架构全精度教师",
+            "QAD 不需要教师，直接让学生随机初始化后自我训练",
+            "QAD 必须把教师和学生拼成同一个单一模型做联合前向"
+          ]
+        }
+      },
+      {
+        "id": "distill-03__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张师生拼单模型联合前向。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "同架构全精度教师冻结，logits KL 蒸馏给量化学生",
+          "QAD 仅量化未压缩有效，有同架构全精度教师",
+          "QAD 无需教师，学生随机初始化自我训练",
+          "QAD 须师生拼成单一模型联合前向"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断拼单前向主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「无教师自训」「拼单前向」等不成立描述。"
+        },
+        "generatedAt": 1788911638784,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-d220fa41",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-26aa2111",
+        "sourceSnapshot": {
+          "id": "distill-03",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qad",
+            "quantization-aware-distillation",
+            "kl-logits"
+          ],
+          "question": "在『量化感知蒸馏（QAD）』中，关于教师与对齐方式，下列哪些符合文中描述？",
+          "options": [
+            "冻结一个同架构的全精度教师，用学生与教师输出 logits 的 KL 散度蒸馏到量化学生",
+            "QAD 仅在『只做量化、未做结构压缩』时有效，因为存在同架构全精度教师",
+            "QAD 不需要教师，直接让学生随机初始化后自我训练",
+            "QAD 必须把教师和学生拼成同一个单一模型做联合前向"
+          ]
+        }
+      }
+    ],
+    "distill-04": [
+      {
+        "id": "distill-04__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某 QAH 锚定退化 bf16 检查点，精度更差。定位这次锚定失误，下列哪些判断成立？",
+        "options": [
+          "原始全精度冻结教师，跨架构蒸馏",
+          "只用教师输出分布 KL，不依赖同构",
+          "锚定退化点精度必然更差",
+          "QAH 与 QAD 只是换大模型"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从锚定退化点致更差的失误定位教师环节",
+          "reasoningGoal": "先定位锚定失误的环节；再逐项验证各判断；并排除「锚定更差」「换大即同」等不成立描述。"
+        },
+        "generatedAt": 1788911638784,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fd42b087",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-5e68fff1",
+        "sourceSnapshot": {
+          "id": "distill-04",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qah",
+            "cross-architecture-distillation",
+            "frozen-teacher"
+          ],
+          "question": "本文提出的 Quantization-Aware Healing（QAH）在蒸馏设定上与 QAD 有何不同？",
+          "options": [
+            "以压缩前的原始全精度模型为冻结教师，做跨架构蒸馏",
+            "仅使用教师的输出分布（logits 上的 KL），不依赖学生与教师同架构",
+            "学生上限被锚定在退化的 bf16 检查点上，因此精度必然更差",
+            "QAH 与 QAD 完全一样，只是把学生换成了更大模型"
+          ]
+        }
+      },
+      {
+        "id": "distill-04__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张 QAH 与 QAD 只是换大模型。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "原始教师跨架构",
+          "仅用教师输出分布上的 KL",
+          "锚定退化点精度必然更差",
+          "只是把学生换成更大模型"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断换大即同主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「锚定更差」「换大即同」等不成立描述。"
+        },
+        "generatedAt": 1788911638784,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-fd42b087",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-660d1972",
+        "sourceSnapshot": {
+          "id": "distill-04",
+          "topic": "distillation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qah",
+            "cross-architecture-distillation",
+            "frozen-teacher"
+          ],
+          "question": "本文提出的 Quantization-Aware Healing（QAH）在蒸馏设定上与 QAD 有何不同？",
+          "options": [
+            "以压缩前的原始全精度模型为冻结教师，做跨架构蒸馏",
+            "仅使用教师的输出分布（logits 上的 KL），不依赖学生与教师同架构",
+            "学生上限被锚定在退化的 bf16 检查点上，因此精度必然更差",
+            "QAH 与 QAD 完全一样，只是把学生换成了更大模型"
+          ]
+        }
+      }
+    ],
+    "distill-05": [
+      {
+        "id": "distill-05__surface-options__assessmentfresh15__0",
+        "kind": "surface-options",
+        "question": "某学生号称超越教师，实则幻觉。定位这次超教师论，下列哪些判断成立？",
+        "options": [
+          "小参数保留大能力，部署更便宜",
+          "能力上限被教师锚定，超教师须教师更新",
+          "学生必超教师，数据更多即更准",
+          "无教师模型学生自达水平"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从号称超越教师的超教师论定位上限环节",
+          "reasoningGoal": "先定位超教师论的环节；再逐项验证各判断；并排除「必超教师」「无教师自达」等不成立描述。"
+        },
+        "generatedAt": 1788911638784,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f61789ec",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-70c972f6",
+        "sourceSnapshot": {
+          "id": "distill-05",
+          "topic": "distillation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "distillation-benefit",
+            "student-ceiling",
+            "tradeoff"
+          ],
+          "question": "相比从头训练同尺寸小模型，知识蒸馏带来哪些典型收益与限制？",
+          "options": [
+            "学生在远少于教师参数量下仍能保留教师的大部分能力，部署更便宜",
+            "学生的能力上限被教师锚定，无法超越教师（除非教师本身在持续更新）",
+            "学生一定比教师更准，因为学了更多数据",
+            "蒸馏不需要任何教师模型，学生可自行达到教师水平"
+          ]
+        }
+      },
+      {
+        "id": "distill-05__context-options__assessmentfresh15__1",
+        "kind": "context-options",
+        "question": "有人主张无教师学生自达教师水平。评审这一主张的前提，下列哪些判断正确？",
+        "options": [
+          "小参数保留大能力，部署便宜",
+          "上限被教师锚定",
+          "学生学更多数据必超教师",
+          "无教师学生自达教师水平"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能判断无教师自达主张的前提是否成立",
+          "reasoningGoal": "先判断该主张的前提是否满足；再逐项验证各主张；并排除「必超教师」「无教师自达」等不成立描述。"
+        },
+        "generatedAt": 1788911638784,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f61789ec",
+        "batch": "assessmentfresh15",
+        "model": "manual",
+        "contentHash": "fnv1a-d9202cda",
+        "sourceSnapshot": {
+          "id": "distill-05",
+          "topic": "distillation",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "distillation-benefit",
+            "student-ceiling",
+            "tradeoff"
+          ],
+          "question": "相比从头训练同尺寸小模型，知识蒸馏带来哪些典型收益与限制？",
+          "options": [
+            "学生在远少于教师参数量下仍能保留教师的大部分能力，部署更便宜",
+            "学生的能力上限被教师锚定，无法超越教师（除非教师本身在持续更新）",
+            "学生一定比教师更准，因为学了更多数据",
+            "蒸馏不需要任何教师模型，学生可自行达到教师水平"
+          ]
+        }
+      }
+    ]
+  }
+}

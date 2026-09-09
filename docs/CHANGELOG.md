@@ -1,6 +1,19 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-08 · GNN/FlashAttention/工程与蒸馏 40 条（`assessment.fresh15-40-20260908.json`，覆盖 267→287 题）
+
+- 20 道未覆盖题 × 2 条（1-WL/GIN、ChebNet/GCN、DropEdge/JK-Net、图采样三分法、GraphSAINT、
+  图对抗防御、结构投毒诊断、冷启动×近实时、FlashAttention×3、AI 工程×3、Agent 评测、
+  评测集治理、蒸馏×4），全部自声明三段式测量面。第五个 40 条大批次。
+- 门禁实证：初稿 19/40 被拒；新增 sibling 相似 6 对（surf/ctx 起草趋同，修法是 ctx 用另一半原文 token 重写）；
+  长度门禁反复横跳 4 轮，教训——门禁实测长度与肉眼数不一致时以 `len()` 为准，
+  且先确认"最短的是哪个选项"再下手（graph-sampling 连改错两次对象）；ai-eng-018 O3 拉丁词多导致 46 字，
+  干扰项须同步拉到 ≥26。
+- 池指标：531→**571** 条，覆盖 267→**287** 题（20.8%），
+  assessment 自声明 90.6%→**91.2%**，路径唯一率同步 **91.2%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0；`npm test` 889/889；`typecheck` + `build` 通过。
+
 ## 2026-09-08 · 上下文工程专题 40 条（`assessment.fresh13-40-20260908.json`，覆盖 244→267 题）
 
 - 20 道上下文工程与成本未覆盖题 × 2 条（嵌入适配/PII/成本×3/自评/编排/ContextManager/合同抽取/Prompt 膨胀/版本管理/分仓/不可信数据/缓存前缀/摘要/评估/动态组装/外算/可靠性/引用核查），
@@ -33,6 +46,13 @@
   - `difficulty`：canonical 必产，variant 可省略并继承 canonical（v7 §4）；
   - **新增变体一致性门禁**：variant 的 misconceptionMap 必须与 canonical 逐槽相等（v7 §25 同槽位同 misconception role）；variant difficulty 与 canonical 不一致即拒。
 - 用合成 draft（含 4 canonical + 3 variant 的 v7 形态）端到端验证：正例落库 4 canonical / 3 variant，负例（正确项标误解、variant map 不一致、variant difficulty 不一致、canonical 缺 difficulty）全部按预期拦截。
+
+## 2026-09-09 · 修复 prompt1 手动流程硬失败（节点注入工具 + 提示）
+
+- 根因：v7 §0 硬失败「占位符未替换即输出 `error`」在手动（Gemini in Chrome）流程下必然触发——没有自动注入方，用户若不人工把节点清单填进 `[AVAILABLE_KNOWLEDGE_NODES]`，Gemini 看到占位符原样 → 硬失败。用户实测返回 `{"error":"AVAILABLE_KNOWLEDGE_NODES not provided"}` 即此情形。
+- 新增 `scripts/dump-knowledge-nodes.ts` + npm `dump:nodes`：把 `src/data/knowledge/*.json` 导出为可直接粘贴的节点文本（id/name/area/topic/summary），支持 `--area <area>` 只导出一个领域、`--write <file>`、`--count`。全量 132 节点 / 按域 `llm` 42 节点。
+- `docs/prompt_part1.md` §0/§1 加手动注入四步说明，并明确「贴进来哪些节点，topic 就只能从哪些里选」；占位符处改为「整行删除并替换为 `npm run dump:nodes` 输出」。
+- 结论：硬失败逻辑本身正确（用户明确要求过），本次只补齐缺失的「注入手段」，不让手动流程卡死。
 
 ## 2026-09-08 · 上下文工程专题 40 条（`assessment.fresh13-40-20260908.json`，覆盖 244→267 题）
 
