@@ -1,0 +1,334 @@
+[
+  {
+    "id": "wemm-multimodal-token-positioning-canonical",
+    "category": "Multimodal Representation Architecture",
+    "topic": "wemm-multimodal-token-positioning",
+    "tags": [
+      "多模态",
+      "Causal Attention",
+      "Token 编排",
+      "表征提取"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "多模态表征聚合",
+      "supporting": [
+        "因果注意力掩码",
+        "模态隔离"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据 Causal Attention 的单向信息传递特性，分析多模态序列中不同位置 Token 的感受野及其融合特征的语义范围。",
+      "reasoningGoal": "先判断 Causal Attention 下序列后方的 Token 无法向前方反向传递信息；再推理放置在视频 Token 之后的 <embedding> Token 受因果掩码约束仅能感知视频内容，而末尾 Token 可感知全序列语义；据此排除需要更换 Mask 或进行多次前向传播的误解。"
+    },
+    "question": "在基于 Causal LLM 骨干的多模态向量模型中，若需要在一次前向传播中同时提取“纯视频”与“视频+ASR字幕”两种模态粒度的向量，关于 `<embedding>` Token 的编排与注意力掩码机制，下列哪些说法是正确的？",
+    "explanation": "在因果注意力机制（Causal Attention Mask）下，每个 Token 仅能关注自身及之前位置的信息。因此，在“视频 Segment + ASR 文本 Segment”的序列中，如果在视频 Token 序列末尾插入第一个 `<embedding>` Token，其只能感知视频内容，从而提取出纯视频特征；而在全序列（ASR 文本末尾）插入第二个 `<embedding>` Token，则能感知整条序列的信息，提取出联合特征。这一机制利用原生的因果掩码天然实现了信息隔离，无需在单次前向传播中重新修改掩码矩阵。",
+    "misconceptions": [
+      "将简单的 Causal Mask 信息隔离机制误理解为需要复杂的自定义 Attention Mask 拆分"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在视频 Token 序列末尾和 ASR 文本序列末尾分别插入独立的 `<embedding>` Token",
+          "借助 Causal Mask，放置于视频末尾的 Token 无法感知后续 ASR 文本的信息",
+          "放置于序列最终末尾的 `<embedding>` Token 能同时融合视频与 ASR 文本的全序列语义",
+          "必须为纯视频与联合模态分别构建不同的 Causal Attention Mask 方可实现信息隔离"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "原生 Causal Mask 下每个 Token 只能感知自身及之前位置：视频段末尾的 `<embedding>` Token 提取纯视频表征，ASR 文本段末尾的 `<embedding>` Token 提取视频+字幕联合表征，一次前向即可完成，无需自定义或拆分掩码。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "wemm-multimodal-token-positioning-variant-1",
+    "category": "Multimodal Representation Architecture",
+    "topic": "wemm-multimodal-token-positioning",
+    "tags": [
+      "多模态",
+      "Causal Attention",
+      "Token 编排",
+      "表征提取"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "多模态表征聚合",
+      "supporting": [
+        "因果注意力掩码",
+        "模态隔离"
+      ]
+    },
+    "assessment": {
+      "target": "能够针对视频检索系统的高并发低延迟诉求，设计并评估通过 Causal Token 编排实现多粒度向量单次提取的架构方案。",
+      "reasoningGoal": "先判断在在线服务中多次前向计算会翻倍延迟与计算开销；再推理利用 Causal Mask 的天然单向隔离属性在序列中间与末尾部署 <embedding> 节点可兼顾纯模态与多模态表征提取；据此排除需要复杂自定义 Attention Mask 才能隔离信息的误解。"
+    },
+    "question": "团队正在设计一个视频检索服务，要求在线系统仅需对输入视频与字幕序列执行单次前向推理，即可同时生成“仅视频特征”和“视频+文本融合特征”存入向量库。针对该架构设计中的 Token 编排与注意力掩码机制，下列哪些说法是正确的？",
+    "explanation": "在因果注意力机制（Causal Attention Mask）下，每个 Token 仅能关注自身及之前位置的信息。因此，在“视频 Segment + ASR 文本 Segment”的序列中，如果在视频 Token 序列末尾插入第一个 `<embedding>` Token，其只能感知视频内容，从而提取出纯视频特征；而在全序列（ASR 文本末尾）插入第二个 `<embedding>` Token，则能感知整条序列的信息，提取出联合特征。这一机制利用原生的因果掩码天然实现了信息隔离，无需在单次前向传播中重新修改掩码矩阵。",
+    "misconceptions": [
+      "将简单的 Causal Mask 信息隔离机制误理解为需要复杂的自定义 Attention Mask 拆分"
+    ],
+    "derivedFrom": "wemm-multimodal-token-positioning-canonical",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在视频 Token 序列末尾和 ASR 文本序列末尾分别插入独立的 `<embedding>` Token",
+          "借助 Causal Mask，放置于视频末尾的 Token 无法感知后续 ASR 文本的信息",
+          "放置于序列最终末尾的 `<embedding>` Token 能同时融合视频与 ASR 文本的全序列语义",
+          "必须为纯视频与联合模态分别构建不同的 Causal Attention Mask 方可实现信息隔离"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在线服务要求单次前向即产出两类向量：借助 Causal Mask 的单向隔离，视频段末尾的 `<embedding>` Token 只感知视频，序列末尾的 `<embedding>` Token 感知全序列，无需为每种粒度分别构建掩码或多次前向。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "wemm-graded-relevance-cosent-loss-canonical",
+    "category": "Ranking & Contrastive Learning Loss",
+    "topic": "wemm-graded-relevance-cosent-loss",
+    "tags": [
+      "损失函数",
+      "多级相关性",
+      "CoSENT",
+      "对比学习"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "Score-Gap-Weighted CoSENT Loss",
+      "supporting": [
+        "多级相关性排序",
+        "InfoNCE 局限性"
+      ]
+    },
+    "assessment": {
+      "target": "能够对比二分类 InfoNCE 与分差加权 CoSENT 损失在处理多级相关性数据时的梯度行为差异与建模局限。",
+      "reasoningGoal": "先判断多级相关性标注包含序数关系而非单纯二元对立；再推理得出基于 gap 权重的排序损失能根据等级差动态施加梯度约束且同级无惩罚；据此排除能自动消除假阴性撞车或改变样本属性的夸大结论。"
+    },
+    "question": "在多模态检索与推荐系统训练中，针对标注有离散多级相关性得分（如 0 至 3 级）的数据，关于引入分差加权 CoSENT 损失相比二分类 InfoNCE 损失的技术优势与作用机制，下列哪些说法是正确的？",
+    "explanation": "二分类 InfoNCE 将关联看作 0 和 1 的二元对立，无法区分“弱相关”与“强相关”。基于分差加权的 CoSENT 损失（Score-gap-weighted CoSENT）主要优化样本对之间的相对序关系，通过加入分差权重（w_ij = max(|y_i - y_j|, epsilon)），使得标注得分差距越大的样本对出现预测逆序时，所产生的梯度惩罚也越大。同时，对于标注等级相同的样本对，该损失不引入额外的排序约束。但排序损失本身只是优化相对相似度，并不能改变数据本身的采样属性或消除假阴性问题。",
+    "misconceptions": [
+      "误认为排序损失能改变训练数据中负样本的概率属性并消除假阴性碰撞"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "二分类 InfoNCE 损失将关联简化为二元对立，无法显式建模多级相关性之间的相对顺序梯阶",
+          "引入权重差距项使得标注相关性等级差异越大的样本对，在预测出现逆序时承受更大的梯度惩罚",
+          "CoSENT 损失专注于不同等级样本间的相对排序，对于标注得分等级相同的样本对不施加强制约束",
+          "该损失函数能够将隐式低相关性样本自动提升为正样本，从而彻底消除对比学习中的假阴性撞车现象"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "二分类 InfoNCE 只区分 0/1，无法刻画多级序数差距；分差加权 CoSENT 以 w_ij=max(|y_i-y_j|,ε) 使分差越大的样本对逆序时惩罚越大、同级对不加约束；但它只重排相对相似度，不能改变采样属性或消除假阴性。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "wemm-graded-relevance-cosent-loss-variant-1",
+    "category": "Ranking & Contrastive Learning Loss",
+    "topic": "wemm-graded-relevance-cosent-loss",
+    "tags": [
+      "损失函数",
+      "多级相关性",
+      "CoSENT",
+      "对比学习"
+    ],
+    "difficulty": "hard",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "Score-Gap-Weighted CoSENT Loss",
+      "supporting": [
+        "多级相关性排序",
+        "InfoNCE 局限性"
+      ]
+    },
+    "assessment": {
+      "target": "能够分析多级互动评分下检索模型区分度不足的问题根源，并诊断替换为分差加权排序损失后的期望梯阶行为。",
+      "reasoningGoal": "先分析推荐系统离散评分数据若直接套用 InfoNCE 会抹平等级梯阶；再推理引入 CoSENT 损失与分差权重项能够为不同分差对提供非对称惩罚且同级不冲突；据此排除 Loss 具有自动修改样本标签属性功能的错误认知。"
+    },
+    "question": "电商推荐团队在利用商品与用户交互多级评分（0分不相关到3分强相关）训练双塔检索模型时，发现使用 InfoNCE 会导致对 2 分和 3 分商品的区分度极差。关于替换为分差加权 CoSENT 损失后的诊断分析，下列哪些说法是正确的？",
+    "explanation": "二分类 InfoNCE 将关联看作 0 和 1 的二元对立，无法区分“弱相关”与“强相关”。基于分差加权的 CoSENT 损失（Score-gap-weighted CoSENT）主要优化样本对之间的相对序关系，通过加入分差权重（w_ij = max(|y_i - y_j|, epsilon)），使得标注得分差距越大的样本对出现预测逆序时，所产生的梯度惩罚也越大。同时，对于标注等级相同的样本对，该损失不引入额外的排序约束。但排序损失本身只是优化相对相似度，并不能改变数据本身的采样属性或消除假阴性问题。",
+    "misconceptions": [
+      "误认为排序损失能改变训练数据中负样本的概率属性并消除假阴性碰撞"
+    ],
+    "derivedFrom": "wemm-graded-relevance-cosent-loss-canonical",
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "二分类 InfoNCE 损失将关联简化为二元对立，无法显式建模多级相关性之间的相对顺序梯阶",
+          "引入权重差距项使得标注相关性等级差异越大的样本对，在预测出现逆序时承受更大的梯度惩罚",
+          "CoSENT 损失专注于不同等级样本间的相对排序，对于标注得分等级相同的样本对不施加强制约束",
+          "该损失函数能够将隐式低相关性样本自动提升为正样本，从而彻底消除对比学习中的假阴性撞车现象"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "InfoNCE 把 2 分与 3 分当作同一正类，抹平梯阶导致区分度差；换分差加权 CoSENT 后，分差越大的样本对逆序时惩罚越大、同级对不冲突，可重建等级梯度；该损失不会自动修改样本标签属性。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "wemm-duplicate-aware-masking-canonical",
+    "category": "Contrastive Learning Training Engineering",
+    "topic": "wemm-duplicate-aware-masking",
+    "tags": [
+      "对比学习",
+      "In-Batch 负样本",
+      "Duplicate-Aware Masking",
+      "假阴性"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "Duplicate-Aware Masking",
+      "supporting": [
+        "对比学习假阴性",
+        "In-Batch 负样本碰撞"
+      ]
+    },
+    "assessment": {
+      "target": "能够推导 Duplicate-Aware Masking 在源端（Query）和目标端（Target）双向防撞上的掩码触发条件及其在 Loss 层的具体作用途径。",
+      "reasoningGoal": "先判断近邻 Query/Target 会在对比损失计算中触发假阴性撞车（False Negative Collision）；再推理 Duplicate-Aware Mask 在 Loss 计算层遮蔽高相似度对以保留梯度正确性；据此排除 Mask 会改变前向传播张量维度的物理剪枝误解。"
+    },
+    "question": "在大规模 Batch 批量对比学习训练中，当引入共享候选空间的数据或批量中随机抽取到近乎重复的 Query/Target 时，关于 Duplicate-Aware Masking 机制的处理逻辑，下列哪些说法是正确的？",
+    "explanation": "在对比学习中，若 Batch 内存在高度相似的近邻 Query 或 Target，传统的 In-batch Negative 会把实际语义相近的样本错误当作负样本（假阴性碰撞），产生有害梯度。Duplicate-Aware Masking 通过设定阈值 tau_dup 双向检测：一方面当源端 Query 间相似度过高时屏蔽对应候选，另一方面当候选 Target 与当前正样本 Target 相似度过高时屏蔽该候选。这种掩码是在 Loss 计算阶段通过掩码矩阵 M_i,j,c 置零来抹去对应的概率项，并不影响神经网络主干的前向 Token 张量结构。",
+    "misconceptions": [
+      "混淆对比损失层的 Batch 负样本遮蔽（Loss Masking）与张量级别的物理计算裁剪（Tensor Pruning）"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当源端 Query 之间相似度超过设定阈值时，掩码会将近邻 Query 对应的 Target 从负样本池排除",
+          "当候选 Target 与当前正样本 Target 相似度超过设定阈值时，该候选 Target 会被掩码屏蔽",
+          "该双向掩码机制能有效防止 Batch 内假阴性碰撞导致的错误梯度更新，提升对比表征学习的稳定性",
+          "只要候选样本被掩码屏蔽，其对应的输入 Segment 就会从 Transformer 前向计算图中物理剔除"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Duplicate-Aware Masking 在 Loss 计算层用掩码矩阵置零：源端 Query 间相似度超阈值即排除对应候选，候选 Target 与正样本 Target 相似度超阈值即被屏蔽，从而防止假阴性碰撞的错误梯度；它不改前向 Token 张量结构。正确答案 A、B、C。"
+      }
+    }
+  },
+  {
+    "id": "wemm-semantic-id-guided-resampling-canonical",
+    "category": "Pretraining Data Engineering",
+    "topic": "wemm-semantic-id-guided-resampling",
+    "tags": [
+      "数据重采样",
+      "Semantic ID",
+      "RQ-KMeans",
+      "长尾分布"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "Semantic-ID-Guided Resampling",
+      "supporting": [
+        "RQ-KMeans 聚类密度",
+        "长尾语义重采样"
+      ]
+    },
+    "assessment": {
+      "target": "能够分析基于表征量化密度（RQ-KMeans Assignment Density）进行非均匀重采样的设计意图与其对长尾语义保留的作用机制。",
+      "reasoningGoal": "先分析聚类码本分配密度反映了数据集的语料分布偏置；再推理高密度降低采样率、低密度保持高采样率能在平滑语义分布的同时保留特征覆盖；据此排除强行均匀化分布或物理截断高密度聚类的过激方案。"
+    },
+    "question": "在大规模多模态预训练数据集的二次精炼过程中，针对数据集中高频语义模式过拟合及长尾分布覆盖不足的问题，采用基于 Semantic-ID 的 RQ-KMeans 重采样策略的核心作用机制是什么？",
+    "explanation": "海量网络爬取的多模态数据通常存在严重的头部语义倾斜（频繁出现的常见概念过量，长尾概念稀缺）。通过使用残差 Vector Quantizer（RQ-KMeans）将样本表征量化为多层离散 Semantic ID，能够统计隐空间中各个语义码字的分配密度。根据密度反向调整采样率（高密度降采样、低密度保持高采样率），可以有效抑制高频模式的重复暴露，平滑全局语义分布，同时完好保留低频长尾语义。这是一种重采样（Resampling）策略，既不靠数据生成凑数，也不对高密度区域做物理全盘清退，更不涉及特征向量维度压缩。",
+    "misconceptions": [
+      "将数据分布平滑重采样误理解为强行均一化生成数据",
+      "将密度阈值过滤降采样误解为对高密度数据的极端物理剔除",
+      "混淆数据重采样与特征向量降维压缩"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "根据码本各聚类码字分配密度反向调整采样率，抑制高频语义模式重复曝光，同时保留低密度长尾语义",
+          "强制将长尾低频语义样本通过生成算法扩充至与高频聚类相同数量，以在 Semantic-ID 空间实现均匀分布",
+          "在隐空间中直接物理丢弃所有分配到高密度码字上的训练样本，以从根本上彻底剔除训练集中的弱监督数据",
+          "将高密度码字对应的多模态向量特征压缩至低维投影空间，从而显著降低对比学习训练过程中的计算复杂度"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按 RQ-KMeans 码字分配密度反向调采样率：高密度码字降采样抑制高频语义重复曝光，低密度码字保持高采样率以保留长尾，从而平滑语义分布；不做数据生成、不物理剔除高密度样本、也不压缩特征维度。正确答案 A。"
+      }
+    }
+  }
+]

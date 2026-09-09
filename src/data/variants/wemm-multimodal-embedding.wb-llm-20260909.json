@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "generatedAt": 1788957623469,
+  "promptVersion": "v4",
+  "variants": {
+    "wemm-multimodal-token-positioning-canonical": [
+      {
+        "id": "wemm-multimodal-token-positioning-canonical__context-options__wemm__0",
+        "kind": "context-options",
+        "question": "某个以 Causal LLM 为骨干的多模态向量模型，需要让一次前向同时产出“只看视频”与“视频+ASR 字幕”两种粒度的表征。工程上在序列的不同位置放入 `<embedding>` Token 来实现这一目标，关于这种 Token 编排与 Causal Mask 的作用方式，下列说法正确的是？",
+        "options": [
+          "在视频 Token 段的末尾与 ASR 文本段的末尾，分别放置一个相互独立的 `<embedding>` Token",
+          "受 Causal Mask 约束，位于视频末尾的 Token 无法感知到其后的 ASR 文本内容",
+          "处于整条序列最末端的 `<embedding>` Token，可以聚合视频与 ASR 文本两者的整体语义",
+          "要达成两种粒度的信息隔离，必须分别为它们定制两套互不相同的 Causal Attention Mask"
+        ],
+        "generatedAt": 1788957623467,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2a3712e6",
+        "batch": "wemm",
+        "model": "manual",
+        "contentHash": "fnv1a-1cc21f3c",
+        "sourceSnapshot": {
+          "id": "wemm-multimodal-token-positioning-canonical",
+          "topic": "wemm-multimodal-token-positioning",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "多模态",
+            "Causal Attention",
+            "Token 编排",
+            "表征提取"
+          ],
+          "question": "在基于 Causal LLM 骨干的多模态向量模型中，若需要在一次前向传播中同时提取“纯视频”与“视频+ASR字幕”两种模态粒度的向量，关于 `<embedding>` Token 的编排与注意力掩码机制，下列哪些说法是正确的？",
+          "options": [
+            "在视频 Token 序列末尾和 ASR 文本序列末尾分别插入独立的 `<embedding>` Token",
+            "借助 Causal Mask，放置于视频末尾的 Token 无法感知后续 ASR 文本的信息",
+            "放置于序列最终末尾的 `<embedding>` Token 能同时融合视频与 ASR 文本的全序列语义",
+            "必须为纯视频与联合模态分别构建不同的 Causal Attention Mask 方可实现信息隔离"
+          ]
+        }
+      }
+    ],
+    "wemm-multimodal-token-positioning-variant-1": [
+      {
+        "id": "wemm-multimodal-token-positioning-variant-1__context-options__wemm__0",
+        "kind": "context-options",
+        "question": "视频检索团队正在评审线上架构：输入是“视频 + 字幕”拼接而成的一条序列，期望一次前向推理就能同时把“仅视频”和“视频+文本”两类向量写入向量库。评审的核心是表征 Token 的安放位置与所用掩码的设计，下列哪些判断是正确的？",
+        "options": [
+          "在视频 Token 段的末尾与字幕文本段的末尾，分别放置一个相互独立的 `<embedding>` Token",
+          "受 Causal Mask 约束，位于视频末尾的 Token 无法感知到其后的字幕文本内容",
+          "处于整条序列最末端的 `<embedding>` Token，可以聚合视频与字幕文本两者的整体语义",
+          "要达成两种粒度的信息隔离，必须分别为它们定制两套互不相同的 Causal Attention Mask"
+        ],
+        "generatedAt": 1788957623467,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b12437cb",
+        "batch": "wemm",
+        "model": "manual",
+        "contentHash": "fnv1a-d8f4afda",
+        "sourceSnapshot": {
+          "id": "wemm-multimodal-token-positioning-variant-1",
+          "topic": "wemm-multimodal-token-positioning",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "apply",
+          "tags": [
+            "多模态",
+            "Causal Attention",
+            "Token 编排",
+            "表征提取"
+          ],
+          "question": "团队正在设计一个视频检索服务，要求在线系统仅需对输入视频与字幕序列执行单次前向推理，即可同时生成“仅视频特征”和“视频+文本融合特征”存入向量库。针对该架构设计中的 Token 编排与注意力掩码机制，下列哪些说法是正确的？",
+          "options": [
+            "在视频 Token 序列末尾和 ASR 文本序列末尾分别插入独立的 `<embedding>` Token",
+            "借助 Causal Mask，放置于视频末尾的 Token 无法感知后续 ASR 文本的信息",
+            "放置于序列最终末尾的 `<embedding>` Token 能同时融合视频与 ASR 文本的全序列语义",
+            "必须为纯视频与联合模态分别构建不同的 Causal Attention Mask 方可实现信息隔离"
+          ]
+        }
+      }
+    ],
+    "wemm-graded-relevance-cosent-loss-canonical": [
+      {
+        "id": "wemm-graded-relevance-cosent-loss-canonical__context-options__wemm__0",
+        "kind": "context-options",
+        "question": "一个多模态检索系统对样本对标注了 0 至 3 级的离散相关度，训练团队正在权衡是把二分类 InfoNCE 换成带分差权重的 CoSENT 损失，还是继续沿用现状。关于后一种选择相比 InfoNCE 的技术优势与作用机制，下列哪些说法是正确的？",
+        "options": [
+          "把关联压缩为二元对立的 InfoNCE 损失，无法显式刻画多级相关度之间的相对顺序梯阶",
+          "加入分差权重项之后，标注等级差距越大的样本对，出现预测逆序时所承受的梯度惩罚也越大",
+          "CoSENT 损失的排序约束只作用于不同等级的样本对，对标注等级相同的样本对并不施加约束",
+          "这种损失能够自动把隐式低相关的样本抬升为正样本，从而彻底消除对比学习中的假阴性撞车"
+        ],
+        "generatedAt": 1788957623468,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-c9497bf4",
+        "batch": "wemm",
+        "model": "manual",
+        "contentHash": "fnv1a-ce4836ac",
+        "sourceSnapshot": {
+          "id": "wemm-graded-relevance-cosent-loss-canonical",
+          "topic": "wemm-graded-relevance-cosent-loss",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "损失函数",
+            "多级相关性",
+            "CoSENT",
+            "对比学习"
+          ],
+          "question": "在多模态检索与推荐系统训练中，针对标注有离散多级相关性得分（如 0 至 3 级）的数据，关于引入分差加权 CoSENT 损失相比二分类 InfoNCE 损失的技术优势与作用机制，下列哪些说法是正确的？",
+          "options": [
+            "二分类 InfoNCE 损失将关联简化为二元对立，无法显式建模多级相关性之间的相对顺序梯阶",
+            "引入权重差距项使得标注相关性等级差异越大的样本对，在预测出现逆序时承受更大的梯度惩罚",
+            "CoSENT 损失专注于不同等级样本间的相对排序，对于标注得分等级相同的样本对不施加强制约束",
+            "该损失函数能够将隐式低相关性样本自动提升为正样本，从而彻底消除对比学习中的假阴性撞车现象"
+          ]
+        }
+      }
+    ],
+    "wemm-graded-relevance-cosent-loss-variant-1": [
+      {
+        "id": "wemm-graded-relevance-cosent-loss-variant-1__context-options__wemm__0",
+        "kind": "context-options",
+        "question": "电商推荐的双塔检索模型把用户对商品的 0～3 分交互评分直接当二分类使用后，2 分与 3 分商品在向量空间几乎无法区分。团队决定改为分差加权的 CoSENT 损失再作诊断，关于替换后的预期梯度行为，下列哪些说法是正确的？",
+        "options": [
+          "把关联压缩为二元对立的 InfoNCE 损失，无法显式刻画多级相关度之间的相对顺序梯阶",
+          "加入分差权重项之后，标注等级差距越大的样本对，出现预测逆序时所承受的梯度惩罚也越大",
+          "CoSENT 损失的排序约束只作用于不同等级的样本对，对标注等级相同的样本对并不施加约束",
+          "这种损失能够自动把隐式低相关的样本抬升为正样本，从而彻底消除对比学习中的假阴性撞车"
+        ],
+        "generatedAt": 1788957623468,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3f38f9f4",
+        "batch": "wemm",
+        "model": "manual",
+        "contentHash": "fnv1a-d8fe0dfe",
+        "sourceSnapshot": {
+          "id": "wemm-graded-relevance-cosent-loss-variant-1",
+          "topic": "wemm-graded-relevance-cosent-loss",
+          "angle": "diagnosis",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "损失函数",
+            "多级相关性",
+            "CoSENT",
+            "对比学习"
+          ],
+          "question": "电商推荐团队在利用商品与用户交互多级评分（0分不相关到3分强相关）训练双塔检索模型时，发现使用 InfoNCE 会导致对 2 分和 3 分商品的区分度极差。关于替换为分差加权 CoSENT 损失后的诊断分析，下列哪些说法是正确的？",
+          "options": [
+            "二分类 InfoNCE 损失将关联简化为二元对立，无法显式建模多级相关性之间的相对顺序梯阶",
+            "引入权重差距项使得标注相关性等级差异越大的样本对，在预测出现逆序时承受更大的梯度惩罚",
+            "CoSENT 损失专注于不同等级样本间的相对排序，对于标注得分等级相同的样本对不施加强制约束",
+            "该损失函数能够将隐式低相关性样本自动提升为正样本，从而彻底消除对比学习中的假阴性撞车现象"
+          ]
+        }
+      }
+    ],
+    "wemm-duplicate-aware-masking-canonical": [
+      {
+        "id": "wemm-duplicate-aware-masking-canonical__context-options__wemm__0",
+        "kind": "context-options",
+        "question": "大批量对比学习训练时，如果 Batch 里混入了来自共享候选空间的样本，或随机采样恰好抽到近乎重复的 Query/Target，就可能把本应相近的样本错当负样本。关于引入 Duplicate-Aware Masking 之后的处理逻辑，下列哪些说法是正确的？",
+        "options": [
+          "源端 Query 之间的相似度一旦越过阈值，与该近邻 Query 对应的 Target 就会被从负样本池中排除",
+          "候选 Target 若与当前正样本 Target 的相似度越过阈值，该候选也会被掩码屏蔽",
+          "这一双向掩码能够防止 Batch 内假阴性碰撞所引发的错误梯度，使对比表征学习更稳定",
+          "候选样本一旦被掩码屏蔽，其对应的输入 Segment 就会从 Transformer 前向计算图中被物理剔除"
+        ],
+        "generatedAt": 1788957623468,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bcaf5e56",
+        "batch": "wemm",
+        "model": "manual",
+        "contentHash": "fnv1a-09d74710",
+        "sourceSnapshot": {
+          "id": "wemm-duplicate-aware-masking-canonical",
+          "topic": "wemm-duplicate-aware-masking",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "对比学习",
+            "In-Batch 负样本",
+            "Duplicate-Aware Masking",
+            "假阴性"
+          ],
+          "question": "在大规模 Batch 批量对比学习训练中，当引入共享候选空间的数据或批量中随机抽取到近乎重复的 Query/Target 时，关于 Duplicate-Aware Masking 机制的处理逻辑，下列哪些说法是正确的？",
+          "options": [
+            "当源端 Query 之间相似度超过设定阈值时，掩码会将近邻 Query 对应的 Target 从负样本池排除",
+            "当候选 Target 与当前正样本 Target 相似度超过设定阈值时，该候选 Target 会被掩码屏蔽",
+            "该双向掩码机制能有效防止 Batch 内假阴性碰撞导致的错误梯度更新，提升对比表征学习的稳定性",
+            "只要候选样本被掩码屏蔽，其对应的输入 Segment 就会从 Transformer 前向计算图中物理剔除"
+          ]
+        }
+      }
+    ],
+    "wemm-semantic-id-guided-resampling-canonical": [
+      {
+        "id": "wemm-semantic-id-guided-resampling-canonical__context-options__wemm__0",
+        "kind": "context-options",
+        "question": "网络爬取的多模态预训练数据中，高频语义被反复曝光而长尾概念覆盖不足。为缓解这种偏斜，团队计划依据 RQ-KMeans 量化出的 Semantic-ID 分配密度对数据做重采样，关于该策略的核心作用机制，下列哪一项是正确的？",
+        "options": [
+          "按码本各聚类码字的分配密度反向调整采样率，抑制高频语义的重复曝光，同时保留低密度长尾语义",
+          "用生成算法把长尾低频样本扩充到与高频聚类等量，从而在 Semantic-ID 空间中实现完全均匀的分布",
+          "在隐空间中物理丢弃所有落入高密度码字的训练样本，从而把训练集中的弱监督数据彻底根除",
+          "把高密度码字对应的多模态向量压缩进低维投影空间，以显著降低对比学习训练的计算开销"
+        ],
+        "generatedAt": 1788957623468,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9136f3aa",
+        "batch": "wemm",
+        "model": "manual",
+        "contentHash": "fnv1a-8bf5d044",
+        "sourceSnapshot": {
+          "id": "wemm-semantic-id-guided-resampling-canonical",
+          "topic": "wemm-semantic-id-guided-resampling",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "数据重采样",
+            "Semantic ID",
+            "RQ-KMeans",
+            "长尾分布"
+          ],
+          "question": "在大规模多模态预训练数据集的二次精炼过程中，针对数据集中高频语义模式过拟合及长尾分布覆盖不足的问题，采用基于 Semantic-ID 的 RQ-KMeans 重采样策略的核心作用机制是什么？",
+          "options": [
+            "根据码本各聚类码字分配密度反向调整采样率，抑制高频语义模式重复曝光，同时保留低密度长尾语义",
+            "强制将长尾低频语义样本通过生成算法扩充至与高频聚类相同数量，以在 Semantic-ID 空间实现均匀分布",
+            "在隐空间中直接物理丢弃所有分配到高密度码字上的训练样本，以从根本上彻底剔除训练集中的弱监督数据",
+            "将高密度码字对应的多模态向量特征压缩至低维投影空间，从而显著降低对比学习训练过程中的计算复杂度"
+          ]
+        }
+      }
+    ]
+  }
+}

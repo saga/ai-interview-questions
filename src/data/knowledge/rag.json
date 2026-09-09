@@ -201,5 +201,45 @@
       "scenario",
       "calculation"
     ]
+  },
+  {
+    "id": "wemm-graded-relevance-cosent-loss",
+    "name": "分差加权 CoSENT 排序损失（多级相关性）",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "检索/推荐训练常遇 0 至 N 级离散相关性标注；二分类 InfoNCE 把关联压成 0/1 二元对立，抹平等级梯阶。分差加权 CoSENT（Score-gap-weighted CoSENT）用 w_ij=max(|y_i-y_j|,ε) 加权样本对的相对序：标注分差越大的样本对出现预测逆序时梯度惩罚越大，标注同级的样本对不施加额外排序约束。但排序损失只优化相对相似度，不能改变数据采样属性或消除假阴性碰撞。",
+    "required": [
+      "InfoNCE 把相关性二值化为正/负 0-1 对立，无法显式建模多级相关性的相对顺序梯阶",
+      "分差权重 w_ij=max(|y_i-y_j|,ε)：标注得分差距越大的样本对在预测逆序时承受越大的梯度惩罚",
+      "CoSENT 只约束不同等级样本对的相对序关系，对标注等级相同的样本对不施加强制约束",
+      "排序损失不改变训练数据采样属性，也无法消除假阴性——它只优化相对相似度"
+    ],
+    "misconceptions": [
+      "误认为排序损失能改变训练数据中负样本的概率属性并消除假阴性碰撞"
+    ],
+    "angles": [
+      "comparison",
+      "diagnosis"
+    ]
+  },
+  {
+    "id": "wemm-duplicate-aware-masking",
+    "name": "Duplicate-Aware Masking（批量对比学习假阴性防撞）",
+    "area": "llm-applications",
+    "topic": "embeddings",
+    "priority": "P1",
+    "summary": "大规模 in-batch 对比训练中，共享候选空间的数据或随机采样会把近乎重复的 Query/Target 混入同一批；把语义相近的近邻当作负样本会触发假阴性碰撞并产生错误梯度。Duplicate-Aware Masking 用阈值 τ_dup 在 Loss 计算层双向检测：源端近邻 Query 对应的候选、以及与当前正样本 Target 相似度过高的候选 Target 都被掩码置零屏蔽；它只作用于损失层的掩码矩阵，不改变神经网络前向的 Token 张量结构。",
+    "required": [
+      "Batch 内高度相似的近邻 Query/Target 会被 in-batch 负样本当作假阴性，产生有害排斥梯度",
+      "双向触发条件：源端 Query 间相似度超阈值 → 屏蔽对应候选；候选 Target 与当前正样本 Target 相似度超阈值 → 屏蔽该候选",
+      "掩码在 Loss 计算阶段通过掩码矩阵 M 置零抹去概率项，不影响主干前向的 Token 张量结构与维度"
+    ],
+    "misconceptions": [
+      "混淆对比损失层的 Batch 负样本遮蔽（Loss Masking）与张量级别的物理计算裁剪（Tensor Pruning）"
+    ],
+    "angles": [
+      "mechanism"
+    ]
   }
 ]

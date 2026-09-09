@@ -603,5 +603,26 @@
       "definition",
       "comparison"
     ]
+  },
+  {
+    "id": "wemm-multimodal-token-positioning",
+    "name": "多模态序列中的 `<embedding>` Token 编排（Causal 单次前向提取多粒度表征）",
+    "area": "llm",
+    "topic": "multimodal",
+    "priority": "P1",
+    "summary": "Causal LLM 骨干的多模态向量模型用占位 `<embedding>` Token 在序列不同位置收割表征：视频 Segment 与 ASR 文本 Segment 拼接后，在视频 Token 末尾与全序列末尾各插一个 `<embedding>`，借原生 Causal Mask 的单向性——前者只能看到视频、后者能看到整条序列——一次前向即可同时得到纯视频向量与视频+字幕联合向量，无需自定义或拆分 Attention Mask。",
+    "required": [
+      "Causal Attention 下每个 Token 只能关注自身及之前位置：序列后方的 Token 无法向前方位置反向传递信息",
+      "放在视频 Segment 末尾的 `<embedding>` Token 感受野仅覆盖视频 Token，可提取纯视频表征；放在 ASR 文本之后全序列末尾的 `<embedding>` Token 聚合全部语义，提取联合表征",
+      "单次前向即可完成多粒度提取：原生因果掩码天然实现模态信息隔离，无需更换 Mask 或多次前向传播",
+      "`<embedding>` Token 能感知什么由它在序列中的位置决定，而非依赖额外的显式掩码矩阵拆分"
+    ],
+    "misconceptions": [
+      "将简单的 Causal Mask 信息隔离机制误理解为需要复杂的自定义 Attention Mask 拆分"
+    ],
+    "angles": [
+      "mechanism",
+      "system-design"
+    ]
   }
 ]

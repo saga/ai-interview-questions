@@ -120,6 +120,10 @@ model-selection-and-validation | 模型选择与验证
 moe | MoE 混合专家
 mtp-speculative-decoding | MTP 多步投机采样与 KV/Index 共享
 multi-agent | 多智能体系统
+multi-agent-communication-protocol | 多智能体通信协议
+multi-agent-dialectical-debate | 多智能体辩证对抗辩论
+multi-agent-react-governance | ReAct 多智能体安全治理
+multi-agent-role-specialization | 多智能体角色专业化
 multi-head-attention-subspace | 多头注意力的子空间投影
 multi-vector-retrieval | 多向量检索与 Late Interaction（ColBERT）
 multimodal | 多模态
@@ -181,6 +185,10 @@ vit-cls-token-representation | CLS Token 表征
 vit-inductive-bias-vs-cnn | ViT 与 CNN 的归纳偏置对比
 vit-patch-embedding-sequence-length | Patch Embedding 与序列长度
 vit-position-embedding-interpolation | 位置编码插值
+wemm-duplicate-aware-masking | Duplicate-Aware Masking（批量对比学习假阴性防撞）
+wemm-graded-relevance-cosent-loss | 分差加权 CoSENT 排序损失（多级相关性）
+wemm-multimodal-token-positioning | 多模态序列中的 `<embedding>` Token 编排（Causal 单次前向提取多粒度表征）
+wemm-semantic-id-guided-resampling | Semantic-ID 引导的预训练数据重采样（RQ-KMeans 密度反向调节）
 word-embedding | 词向量与语义表示
 word2vec-cbow-vs-skipgram-complexity | CBOW 与 Skip-gram 的计算复杂度
 [/EMBEDDED_KNOWLEDGE_NODES]
