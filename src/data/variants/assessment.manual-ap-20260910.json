@@ -1,0 +1,927 @@
+{
+  "version": 1,
+  "generatedAt": 1789009993927,
+  "promptVersion": "v4",
+  "variants": {
+    "agtool-guard-06": [
+      {
+        "id": "agtool-guard-06__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "无人值守的自主 Agent 里，安全分类器有一定误报率。配合“拦截后继续”与熔断阈值，哪些设计分析正确？（多选）",
+        "options": [
+          "被拒的工具调用把拒绝原因写回执行结果、Agent 便去找更安全的替代做法",
+          "少量误报被消化成重试开销、不再一次误杀就中断整个任务",
+          "为掐断绕过尝试的死循环、必须设连续拦截与累计拦截双上限",
+          "无人值守触发熔断后、应降级等待控制台终端的人工输入"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从无人值守约束推导继续执行与熔断上限的组合设计",
+          "reasoningGoal": "先拆出连续运行与防绕过的双重约束；据此逐项确认「被拒调用把原因写回执行结果」「少量误报被消化成重试开销」等 3 项成立；并排除「熔断后降级等待控制台输入」等不成立描述。"
+        },
+        "generatedAt": 1789009993920,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-026247c3",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-ff5f2b97",
+        "sourceSnapshot": {
+          "id": "agtool-guard-06",
+          "topic": "agent-guardrails",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent-guardrails",
+            "deny-and-continue",
+            "circuit-breaker",
+            "fault-tolerance",
+            "false-positive"
+          ],
+          "question": "在无需用户实时干预的自主 Agent 系统中，安全分类器难免存在一定比例的误报（False Positive，即阻止了本无害的操作）。为保障系统连续运行，系统采用「拦截后继续（Deny-and-Continue）」与阈值熔断机制。关于该机制的设计与实现，下列分析正确的有哪些？（多选）",
+          "options": [
+            "当工具调用被分类器拒绝时，拒绝原因会作为工具执行结果返回给 Agent，促使其主动寻找安全性更高的替代解法",
+            "该机制使得低比例的误报（False Positive）转化为可接受的重试开销，避免单个误报直接导致任务中断或系统崩溃",
+            "为防止被恶意注入或严重失控的 Agent 不断尝试绕过安全边界，系统必须设置连续拦截上限与累计拦截上限熔断机制",
+            "在无界面后台运行模式（Headless Mode）下，当触发拦截熔断阈值时，系统应自动降级为等待控制台终端的用户输入"
+          ]
+        }
+      },
+      {
+        "id": "agtool-guard-06__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "深夜跑批的 Agent 被误报拦了一次就直接 whole 任务崩了；另一家被注入后循环撞安全边界、上千次都不停。复盘这两种死法，哪些设计分析正确？（多选）",
+        "options": [
+          "拦截时把原因塞回工具结果、Agent 才能主动换更安全的路走",
+          "低比例误报不停机、转成可接受的重试开销扛过去",
+          "连续撞墙与累计撞墙都设上限、熔断失控循环",
+          "后台无界面模式撞熔断阈值、就挂起等待控制台终端输入"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从中断与空转两种事故诊断继续执行与熔断的缺失环节",
+          "reasoningGoal": "先定位两次事故各自缺失的保护环节；据此逐项确认「拦截时把原因塞回工具结果」「低比例误报转成重试开销」等 3 项成立；并排除「撞熔断就挂起等人敲控制台」等不成立描述。"
+        },
+        "generatedAt": 1789009993921,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-026247c3",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-322bd8c0",
+        "sourceSnapshot": {
+          "id": "agtool-guard-06",
+          "topic": "agent-guardrails",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent-guardrails",
+            "deny-and-continue",
+            "circuit-breaker",
+            "fault-tolerance",
+            "false-positive"
+          ],
+          "question": "在无需用户实时干预的自主 Agent 系统中，安全分类器难免存在一定比例的误报（False Positive，即阻止了本无害的操作）。为保障系统连续运行，系统采用「拦截后继续（Deny-and-Continue）」与阈值熔断机制。关于该机制的设计与实现，下列分析正确的有哪些？（多选）",
+          "options": [
+            "当工具调用被分类器拒绝时，拒绝原因会作为工具执行结果返回给 Agent，促使其主动寻找安全性更高的替代解法",
+            "该机制使得低比例的误报（False Positive）转化为可接受的重试开销，避免单个误报直接导致任务中断或系统崩溃",
+            "为防止被恶意注入或严重失控的 Agent 不断尝试绕过安全边界，系统必须设置连续拦截上限与累计拦截上限熔断机制",
+            "在无界面后台运行模式（Headless Mode）下，当触发拦截熔断阈值时，系统应自动降级为等待控制台终端的用户输入"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-014": [
+      {
+        "id": "ai-search-extra-014__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "企业有 1 亿篇文档、每篇平均 100 个局部向量。若切多向量表示，最先要评估什么？",
+        "options": [
+          "向量索引的存储规模",
+          "检索排序的计算成本",
+          "索引更新维护开销",
+          "查询延迟 SLO 能否守住",
+          "能否直接取消召回阶段"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从百亿向量规模权衡存储、计算与延迟的评估优先级",
+          "reasoningGoal": "先明确百亿级向量在存储与算力上的取舍维度；据此逐项确认「向量索引的存储规模」「检索排序的计算成本」等 4 项成立；并排除「能否直接取消召回阶段」等不成立描述。"
+        },
+        "generatedAt": 1789009993922,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-778a4c54",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-8f152d3f",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-014",
+          "topic": "multi-vector-retrieval",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector-retrieval",
+            "storage",
+            "index"
+          ],
+          "question": "一个企业拥有 1 亿篇文档，每篇文档平均包含 100 个局部向量。如果采用多向量表示，最先需要重点评估的问题是什么？",
+          "options": [
+            "向量索引的存储规模",
+            "检索和排序的计算成本",
+            "索引更新和维护开销",
+            "是否仍然能够满足查询延迟 SLO",
+            "是否可以完全取消召回阶段"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-014__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "CTO 问：1 亿文档每篇 100 向量、全量多向量索引要多少机器？评估会上应先摆出哪些问题？",
+        "options": [
+          "百亿向量索引的存储盘子有多大",
+          "检索和重排的算力账怎么算",
+          "索引更新与日常维护开销多高",
+          "查询延迟 SLO 还保得住吗",
+          "召回阶段是不是可以直接砍掉"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从机器数量追问解释存储与算力评估的先后顺序",
+          "reasoningGoal": "先复现百亿向量落到存储与算力的内部传导；据此逐项确认「百亿向量索引的存储盘子」「检索和重排的算力账」等 4 项成立；并排除「召回阶段可以直接砍掉」等不成立描述。"
+        },
+        "generatedAt": 1789009993923,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-778a4c54",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-6f99e4cf",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-014",
+          "topic": "multi-vector-retrieval",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector-retrieval",
+            "storage",
+            "index"
+          ],
+          "question": "一个企业拥有 1 亿篇文档，每篇文档平均包含 100 个局部向量。如果采用多向量表示，最先需要重点评估的问题是什么？",
+          "options": [
+            "向量索引的存储规模",
+            "检索和排序的计算成本",
+            "索引更新和维护开销",
+            "是否仍然能够满足查询延迟 SLO",
+            "是否可以完全取消召回阶段"
+          ]
+        }
+      }
+    ],
+    "prompt-cache-context-ordering-01": [
+      {
+        "id": "prompt-cache-context-ordering-01__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "多轮 Agent 想吃满 Prompt Caching、压低延迟，上下文该怎么组织？哪些是最佳实践？",
+        "options": [
+          "静态 System Prompt、文档与完整 Tool Schema 全部顶到最前面",
+          "静态区别塞每次都变的量、Request ID 与精确时间戳都不行",
+          "工具 Schema 更新只末尾追加、不动已有工具的相对顺序",
+          "每轮按 User 意图动态裁剪并重排工具定义、保持列表精简高效"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从前缀一致性原理解释静态前置与追加更新的机理",
+          "reasoningGoal": "先复现前缀逐字不变决定缓存命中的内部过程；据此逐项确认「静态文本与 Tool Schema 全部顶到最前面」「静态区别塞每次都变的量」等 3 项成立；并排除「每轮动态裁剪重排工具定义」等不成立描述。"
+        },
+        "generatedAt": 1789009993923,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3d464a21",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-f526b3e2",
+        "sourceSnapshot": {
+          "id": "prompt-cache-context-ordering-01",
+          "topic": "context-engineering",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "prompt-caching",
+            "context-ordering",
+            "tool-definitions",
+            "append-only"
+          ],
+          "question": "在开发复杂的多轮 AI Agent 系统时，为了最大化 Prompt Caching 的命中率并降低系统响应延迟，下列哪些上下文组织（Context Ordering）与设计模式属于工程最佳实践？",
+          "options": [
+            "将固定不变的 System Prompt、静态上下文文档以及完整的 Tool Definitions 结构化 Schema 统一放置在 Prompt 的最前端",
+            "避免在 System Prompt 或前端静态区域中动态注入每次请求独有的变量（如当前 Request ID、动态精确时间戳或用户 Session Token）",
+            "对 Tool Definitions 进行更新时，优先采用 Append-only（仅末尾追加）策略，避免改变已有工具在 Schema 数组中的相对顺序",
+            "为了提高灵活性，在每轮对话中根据当前 User Message 的意图，动态裁剪并重排 Tool Definitions 列表中不相干的工具定义"
+          ]
+        }
+      },
+      {
+        "id": "prompt-cache-context-ordering-01__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "某 Agent 缓存命中率长期 0%，排查发现每轮都在前端静态区塞毫秒时间戳、工具列表还按意图重排。关于这次翻车，哪些判断成立？",
+        "options": [
+          "固定不变的 System Prompt 与完整 Tool Schema 放最前端",
+          "Request ID、时间戳这类每轮都变的量一旦进静态区、其后缓存全灭",
+          "工具更新走 Append-only 末尾追加、已有工具相对顺序不动",
+          "为提高灵活性、允许每轮按意图动态裁剪重排工具定义"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 0 命中事故权衡灵活性改动与缓存有效性的取舍",
+          "reasoningGoal": "先定位命中率为零的直接诱因；据此逐项确认「固定文本与 Schema 前置攒可复用前缀」「每轮都变的量进静态区缓存全灭」等 3 项成立；并排除「为提高灵活性每轮动态裁剪重排」等不成立描述。"
+        },
+        "generatedAt": 1789009993923,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3d464a21",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-48542868",
+        "sourceSnapshot": {
+          "id": "prompt-cache-context-ordering-01",
+          "topic": "context-engineering",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "prompt-caching",
+            "context-ordering",
+            "tool-definitions",
+            "append-only"
+          ],
+          "question": "在开发复杂的多轮 AI Agent 系统时，为了最大化 Prompt Caching 的命中率并降低系统响应延迟，下列哪些上下文组织（Context Ordering）与设计模式属于工程最佳实践？",
+          "options": [
+            "将固定不变的 System Prompt、静态上下文文档以及完整的 Tool Definitions 结构化 Schema 统一放置在 Prompt 的最前端",
+            "避免在 System Prompt 或前端静态区域中动态注入每次请求独有的变量（如当前 Request ID、动态精确时间戳或用户 Session Token）",
+            "对 Tool Definitions 进行更新时，优先采用 Append-only（仅末尾追加）策略，避免改变已有工具在 Schema 数组中的相对顺序",
+            "为了提高灵活性，在每轮对话中根据当前 User Message 的意图，动态裁剪并重排 Tool Definitions 列表中不相干的工具定义"
+          ]
+        }
+      }
+    ],
+    "flashattn-06": [
+      {
+        "id": "flashattn-06__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "FlashAttention 的收益在哪些阶段最大、哪些阶段很小？",
+        "options": [
+          "长提示 prefill 收益最大、要算完整 N×N 注意力",
+          "单 token decode 收益很小、瓶颈在权重加载带宽",
+          "GQA/MQA 缩 KV cache、与 FlashAttention 正交可叠加",
+          "单 token decode 也能再降一个数量级延迟"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从瓶颈位置解释 prefill 与 decode 的收益分野",
+          "reasoningGoal": "先复现两个阶段各自的瓶颈构成；据此逐项确认「长提示 prefill 收益最大」「单 token decode 收益很小」等 3 项成立；并排除「单 token decode 也能再降一个数量级」等不成立描述。"
+        },
+        "generatedAt": 1789009993923,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-82f090d5",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-716e1ea6",
+        "sourceSnapshot": {
+          "id": "flashattn-06",
+          "topic": "flash-attention",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prefill",
+            "decode",
+            "gqa",
+            "scenario"
+          ],
+          "question": "FlashAttention 在哪些阶段收益最大、哪些阶段收益很小？",
+          "options": [
+            "在 prefill（处理长提示）阶段收益最大，因为此时要算完整 N×N 注意力",
+            "在单 token decode 阶段收益很小，因为 decode 主要受权重加载的带宽限制，而非注意力矩阵",
+            "GQA/MQA 通过缩小 KV cache 来降显存，与 FlashAttention 正交，可叠加使用",
+            "在单 token decode 阶段 FlashAttention 能把延迟再降一个数量级"
+          ]
+        }
+      },
+      {
+        "id": "flashattn-06__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "有人坚持给 decode 服务也换 FlashAttention、指望延迟砍半。评估这个投入时，哪些判断成立？",
+        "options": [
+          "prefill 阶段收益最大、因为要算完整 N×N 注意力",
+          "单 token decode 收益小、瓶颈在权重加载带宽而非注意力矩阵",
+          "KV cache 压缩与 FlashAttention 正交、可叠加",
+          "单 token decode 换上也能再砍一个数量级"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从投入产出对比判断 decode 换 FlashAttention 的性价比",
+          "reasoningGoal": "先对齐两个阶段优化前后的可比收益；据此逐项确认「prefill 阶段收益最大」「单 token decode 收益小」等 3 项成立；并排除「decode 也能再砍一个数量级」等不成立描述。"
+        },
+        "generatedAt": 1789009993924,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-82f090d5",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-c555812f",
+        "sourceSnapshot": {
+          "id": "flashattn-06",
+          "topic": "flash-attention",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prefill",
+            "decode",
+            "gqa",
+            "scenario"
+          ],
+          "question": "FlashAttention 在哪些阶段收益最大、哪些阶段收益很小？",
+          "options": [
+            "在 prefill（处理长提示）阶段收益最大，因为此时要算完整 N×N 注意力",
+            "在单 token decode 阶段收益很小，因为 decode 主要受权重加载的带宽限制，而非注意力矩阵",
+            "GQA/MQA 通过缩小 KV cache 来降显存，与 FlashAttention 正交，可叠加使用",
+            "在单 token decode 阶段 FlashAttention 能把延迟再降一个数量级"
+          ]
+        }
+      }
+    ],
+    "quant-qah-03": [
+      {
+        "id": "quant-qah-03__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "结构压缩之后，为何常规 QAD 失灵、QAH 还能 work？",
+        "options": [
+          "QAD 要同架构全精度教师、压缩后只剩退化 bf16 检查点",
+          "QAH 拿压缩前原始模型当冻结教师、跨架构蒸馏",
+          "QAD 只在纯量化未压缩时有效、有同架构教师可依",
+          "QAH 与 QAD 做法等价、只是学生换更大模型"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从教师可得性对比 QAD 失灵与 QAH 生效的分界线",
+          "reasoningGoal": "先对齐两种方法对教师架构的可比要求；据此逐项确认「QAD 要同架构全精度教师」「QAH 拿压缩前原始模型当冻结教师」等 3 项成立；并排除「两者做法等价只是学生更大」等不成立描述。"
+        },
+        "generatedAt": 1789009993924,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f0db03f5",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-92af816e",
+        "sourceSnapshot": {
+          "id": "quant-qah-03",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qad",
+            "qah",
+            "teacher-collapse",
+            "structural-compression"
+          ],
+          "question": "为什么在『结构压缩之后』，常规的 Quantization-Aware Distillation（QAD）会失效，而 QAH 仍能生效？",
+          "options": [
+            "QAD 需同架构全精度教师；结构压缩后唯一教师是退化 bf16 检查点，学生上限被锚定",
+            "QAH 直接以压缩前的原始模型为冻结教师跨架构蒸馏，不被退化检查点限制",
+            "QAD 仅在只做量化（未结构压缩）时有效，因为存在同架构全精度教师",
+            "QAH 与 QAD 在做法上完全等价，只是把学生换成了更大的模型"
+          ]
+        }
+      },
+      {
+        "id": "quant-qah-03__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "压缩完模型再做 QAD，学生精度直接对齐到退化的检查点、天花板被锁死。换 QAH 后精度回来。关于这次切换，哪些说法成立？",
+        "options": [
+          "缺同架构全精度教师、压缩后上限被退化检查点锚定",
+          "直接找压缩前原始模型当冻结教师、绕开退化检查点走跨架构蒸馏",
+          "纯量化场景 QAD 照样有效、同架构教师还在",
+          "做法层面与 QAD 完全等价、差别只是学生更大"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从天花板被锁死的切换实例推导教师选择的跨架构要点",
+          "reasoningGoal": "先定位精度被锚定的直接诱因；据此逐项确认「上限被退化检查点锚定」「QAH 直接找压缩前原始模型当教师」等 3 项成立；并排除「做法层面等价、差别只是学生更大」等不成立描述。"
+        },
+        "generatedAt": 1789009993924,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f0db03f5",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-b2649761",
+        "sourceSnapshot": {
+          "id": "quant-qah-03",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qad",
+            "qah",
+            "teacher-collapse",
+            "structural-compression"
+          ],
+          "question": "为什么在『结构压缩之后』，常规的 Quantization-Aware Distillation（QAD）会失效，而 QAH 仍能生效？",
+          "options": [
+            "QAD 需同架构全精度教师；结构压缩后唯一教师是退化 bf16 检查点，学生上限被锚定",
+            "QAH 直接以压缩前的原始模型为冻结教师跨架构蒸馏，不被退化检查点限制",
+            "QAD 仅在只做量化（未结构压缩）时有效，因为存在同架构全精度教师",
+            "QAH 与 QAD 在做法上完全等价，只是把学生换成了更大的模型"
+          ]
+        }
+      }
+    ],
+    "vectordb-02": [
+      {
+        "id": "vectordb-02__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "多向量索引体积是单向量的数十倍（4874 段 NQ：MiniLM 384d 约 7.5MB，多向量约 311MB）。哪些缓解手段有效？",
+        "options": [
+          "PLAID 类量化压缩、把体积打到稠密向量量级（如 92MB）",
+          "bi-encoder 先召回 top-k、再做多向量 MaxSim 重排",
+          "token pooling 向量减半、检索性能几乎不掉",
+          "维度从 128 提到 1024、换更小的索引"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 311MB 对 7.5MB 的体积差推导量化与重排的组合缓解",
+          "reasoningGoal": "先拆出体积膨胀在存储与计算两侧的约束；据此逐项确认「PLAID 类量化压缩」「bi-encoder 先召回再重排」等 3 项成立；并排除「维度提到 1024 换更小索引」等不成立描述。"
+        },
+        "generatedAt": 1789009993924,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-935549f9",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-3494c149",
+        "sourceSnapshot": {
+          "id": "vectordb-02",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector",
+            "index-size",
+            "plaid",
+            "token-pooling"
+          ],
+          "question": "实验表明多向量索引体积可达同语料单向量的数十倍（如 4874 段 NQ：MiniLM 384d 约 7.5MB，LateOn 多向量约 311MB）。下列哪些是有效的缓解手段？",
+          "options": [
+            "用 PLAID 类量化把多向量索引压缩到与稠密向量同量级（如 92MB）",
+            "对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，避免全库建多向量索引",
+            "token pooling 把向量数减半，通常仅损失极少的检索性能",
+            "将维度从 128 提升到 1024，以换取更小的索引体积"
+          ]
+        }
+      },
+      {
+        "id": "vectordb-02__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "多向量索引 311MB vs 单向量 7.5MB，运维要求体积压到百 MB 内。评审缓解方案时，哪些手段有效？",
+        "options": [
+          "上 PLAID 量化、把多向量索引压到 92MB 量级",
+          "对 bi-encoder 召回的 top-k 做多向量重排、全库不必建多向量索引",
+          "token 池化砍半向量数、检索性能几乎没有损失",
+          "把向量维度从 128 升到 1024 来省体积"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从压体积目标解释量化、重排与池化的生效机理",
+          "reasoningGoal": "先复现三种手段各自压缩体积的内部过程；据此逐项确认「上 PLAID 量化压到 92MB 量级」「对 top-k 做多向量重排」等 3 项成立；并排除「维度升到 1024 来省体积」等不成立描述。"
+        },
+        "generatedAt": 1789009993925,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-935549f9",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-c0454184",
+        "sourceSnapshot": {
+          "id": "vectordb-02",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector",
+            "index-size",
+            "plaid",
+            "token-pooling"
+          ],
+          "question": "实验表明多向量索引体积可达同语料单向量的数十倍（如 4874 段 NQ：MiniLM 384d 约 7.5MB，LateOn 多向量约 311MB）。下列哪些是有效的缓解手段？",
+          "options": [
+            "用 PLAID 类量化把多向量索引压缩到与稠密向量同量级（如 92MB）",
+            "对 bi-encoder 召回的 top-k 做多向量 MaxSim 重排，避免全库建多向量索引",
+            "token pooling 把向量数减半，通常仅损失极少的检索性能",
+            "将维度从 128 提升到 1024，以换取更小的索引体积"
+          ]
+        }
+      }
+    ],
+    "nla-guardrail-01": [
+      {
+        "id": "nla-guardrail-01__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "生产流水线想对全量请求做 NLA 实时潜意识监控。架构评估时，哪些瓶颈判断准确？（多选）",
+        "options": [
+          "单激活解码要自回归吐数百 Token、延迟算力翻数量级、实时拦不住",
+          "每次推理都要跑 AR 算重构损失、做双向反向传播维持监控",
+          "可行形态是离线审计、采样监控或高风险触发、而非逐 Token 全量解码",
+          "解释文本可能幻觉、先验偏置会被当成真实潜意识、需独立验证"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从全量实时目标推导延迟瓶颈与离线形态的落地结论",
+          "reasoningGoal": "先估算逐 Token 全量解码的延迟与算力数量级；据此逐项确认「单激活解码要自回归吐数百 Token」「可行形态是离线审计采样监控」等 3 项成立；并排除「每次推理都要跑 AR 做反向传播」等不成立描述。"
+        },
+        "generatedAt": 1789009993925,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-777cb729",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-647f049c",
+        "sourceSnapshot": {
+          "id": "nla-guardrail-01",
+          "topic": "interpretability",
+          "subtopic": "NLA 部署与实时 Guardrails 架构权衡",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "nla",
+            "guardrail",
+            "latent-space",
+            "production",
+            "system-design"
+          ],
+          "question": "某安全架构团队计划在生产环境的在线推理流水线中引入 NLA，对全量用户请求进行实时潜意识监控（Latent-space Guardrailling）以预防越狱与欺诈行为。在进行系统架构评估时，以下哪些工程瓶颈与技术权衡的判断是准确的？（多选）",
+          "options": [
+            "NLA 在推理阶段对单个激活向量解码需要自回归生成数百个 Token，这将引入数个数量级的延迟与算力开销，难以直接用于实时在线拦截。",
+            "NLA 的生成过程依赖激活值重构器（AR）逐 Token 计算重构损失，这将导致每次模型推理都必须执行双向反向传播以维持监视频道。",
+            "若要将 NLA 运用于大规模监控，较为可行的方案是在离线审计、采样监控或特定高风险场景中触发提取，而非逐 Token 实时全量解码。",
+            "NLA 解释文本存在事实性幻觉（Hallucination）风险，极易将生成模型自身的先验偏置误认为目标模型的真实潜意识，需配合独立验证手段。"
+          ]
+        }
+      },
+      {
+        "id": "nla-guardrail-01__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "安全团队坚持 NLA 全量实时拦截，老板让先算延迟账。关于这笔账与替代形态，哪些判断准确？（多选）",
+        "options": [
+          "全量实时解码的延迟与算力开销是数量级的、不适合在线拦截",
+          "AR 逐 Token 算激活值重构损失、每次推理都要双向反向传播",
+          "离线审计加采样监控、高风险再触发，是更现实的形态",
+          "NLA 解释自带幻觉风险、偏置可能被当成潜意识、必须交叉验证"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从延迟账权衡全量实时与离线采样的形态取舍",
+          "reasoningGoal": "先明确实时性与开销的取舍维度；据此逐项确认「全量实时解码开销是数量级的」「离线审计加采样是更现实的形态」等 3 项成立；并排除「AR 算重构损失、推理要双向反向传播」等不成立描述。"
+        },
+        "generatedAt": 1789009993925,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-777cb729",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-b83c33ce",
+        "sourceSnapshot": {
+          "id": "nla-guardrail-01",
+          "topic": "interpretability",
+          "subtopic": "NLA 部署与实时 Guardrails 架构权衡",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "nla",
+            "guardrail",
+            "latent-space",
+            "production",
+            "system-design"
+          ],
+          "question": "某安全架构团队计划在生产环境的在线推理流水线中引入 NLA，对全量用户请求进行实时潜意识监控（Latent-space Guardrailling）以预防越狱与欺诈行为。在进行系统架构评估时，以下哪些工程瓶颈与技术权衡的判断是准确的？（多选）",
+          "options": [
+            "NLA 在推理阶段对单个激活向量解码需要自回归生成数百个 Token，这将引入数个数量级的延迟与算力开销，难以直接用于实时在线拦截。",
+            "NLA 的生成过程依赖激活值重构器（AR）逐 Token 计算重构损失，这将导致每次模型推理都必须执行双向反向传播以维持监视频道。",
+            "若要将 NLA 运用于大规模监控，较为可行的方案是在离线审计、采样监控或特定高风险场景中触发提取，而非逐 Token 实时全量解码。",
+            "NLA 解释文本存在事实性幻觉（Hallucination）风险，极易将生成模型自身的先验偏置误认为目标模型的真实潜意识，需配合独立验证手段。"
+          ]
+        }
+      }
+    ],
+    "guard-input-mask-01": [
+      {
+        "id": "guard-input-mask-01__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "安全团队通常要求输入脱敏，但对所有输入盲目全开会伤 Agent 业务能力。关于隐私与推理能力的权衡，哪些说法正确？（多选）",
+        "options": [
+          "脱敏可能砍掉推理关键上下文、关联分析与相似度匹配直接失败",
+          "ZDR 靠合规合约保不存储不训练、上下文完整且合规",
+          "高敏感场景放私有边界内部署加 ZDR、比全局脱敏更合适",
+          "开了模式匹配脱敏、就能完全省掉输出护栏的合法性校验"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从业务受损实例推导脱敏、ZDR 与私有部署的选型结论",
+          "reasoningGoal": "先拆出隐私合规与推理完整的双重约束；据此逐项确认「脱敏可能砍掉推理关键上下文」「ZDR 靠合约保不存储不训练」等 3 项成立；并排除「开了脱敏就能完全省掉输出校验」等不成立描述。"
+        },
+        "generatedAt": 1789009993925,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6efe298f",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-37b02ed6",
+        "sourceSnapshot": {
+          "id": "guard-input-mask-01",
+          "topic": "prompt-injection",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "guardrails",
+            "data-masking",
+            "zdr",
+            "trust-boundary"
+          ],
+          "question": "在企业级 AI Agent 架构设计中，安全团队通常要求在 Prompt 注入前对敏感数据进行脱敏（Data Masking）。然而在实际落地中，盲目对所有输入开启字段或模式匹配脱敏可能会破坏 Agent 的业务能力。关于输入护栏（Input Guardrails）中的数据隐私与推理能力权衡，以下说法正确的有哪些？（多选）",
+          "options": [
+            "数据脱敏（Masking）可能剥离模型推理所需的关键上下文信息，导致关联分析或相似度匹配任务失败",
+            "零数据保留协议（Zero Data Retention, ZDR）由 LLM 供应商通过合规合约保证不存储、不训练输入数据，能在保留完整上下文的同时满足数据隐私合规",
+            "对于高敏感业务，将模型部署在企业私有安全边界（Trust Boundary）内部并配合 ZDR，通常比全局开启数据脱敏更适合上下文依赖度高的复杂推理场景",
+            "只要开启了模式匹配脱敏（如替换 SSN 或手机号），即可完全替代输出护栏（Output Guardrails）对工具调用合法性的校验"
+          ]
+        }
+      },
+      {
+        "id": "guard-input-mask-01__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "客服 Agent 按惯例对所有字段脱敏后，连同一个人历史投诉都关联不起来了。复盘隐私方案时，哪些说法正确？（多选）",
+        "options": [
+          "脱敏一换字段相似度线索就没、关联分析必然失败",
+          "ZDR 靠供应商合规合约保证不存储不训练、上下文原样保留",
+          "高敏感业务部署进私有安全边界加 ZDR、比全局脱敏更合适",
+          "只要 SSN 手机号模式匹配脱敏到位、输出合法性校验就可完全省略"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从关联失败解释脱敏破坏相似度线索的机理",
+          "reasoningGoal": "先复现脱敏切断关联线索的内部过程；据此逐项确认「脱敏一换字段相似度线索就没」「ZDR 靠合约保证不存储不训练」等 3 项成立；并排除「输出合法性校验就可完全省略」等不成立描述。"
+        },
+        "generatedAt": 1789009993926,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6efe298f",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-ce41dfae",
+        "sourceSnapshot": {
+          "id": "guard-input-mask-01",
+          "topic": "prompt-injection",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "guardrails",
+            "data-masking",
+            "zdr",
+            "trust-boundary"
+          ],
+          "question": "在企业级 AI Agent 架构设计中，安全团队通常要求在 Prompt 注入前对敏感数据进行脱敏（Data Masking）。然而在实际落地中，盲目对所有输入开启字段或模式匹配脱敏可能会破坏 Agent 的业务能力。关于输入护栏（Input Guardrails）中的数据隐私与推理能力权衡，以下说法正确的有哪些？（多选）",
+          "options": [
+            "数据脱敏（Masking）可能剥离模型推理所需的关键上下文信息，导致关联分析或相似度匹配任务失败",
+            "零数据保留协议（Zero Data Retention, ZDR）由 LLM 供应商通过合规合约保证不存储、不训练输入数据，能在保留完整上下文的同时满足数据隐私合规",
+            "对于高敏感业务，将模型部署在企业私有安全边界（Trust Boundary）内部并配合 ZDR，通常比全局开启数据脱敏更适合上下文依赖度高的复杂推理场景",
+            "只要开启了模式匹配脱敏（如替换 SSN 或手机号），即可完全替代输出护栏（Output Guardrails）对工具调用合法性的校验"
+          ]
+        }
+      }
+    ],
+    "agentic-41": [
+      {
+        "id": "agentic-41__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "RAG 放 Agent 外面当管线、还是放里面当 Tool？各自适合什么场景？",
+        "options": [
+          "高频标准查询走前置管线、意图单一每次必查、延迟低可预测好评测",
+          "开放复杂咨询把检索做成 Tool、查什么查几轮由 Agent 定、可改写跨源验证",
+          "按可预测性与延迟预算分层、高频走管线长尾复杂升级 Agentic",
+          "职责对调最优：Tool 接必查简单场景、管线接多轮复杂问题",
+          "两形态互斥不可混用、必须全走同一链路、选定不能演进",
+          "放对位置就定质量、分块重排追加投入回报低、无需再做"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从查询分布推导前置管线与 Tool 化的分层选型",
+          "reasoningGoal": "先拆出可预测性与延迟预算的分层约束；据此逐项确认「高频标准查询走前置管线」「开放复杂咨询把检索做成 Tool」等 3 项成立；并排除「职责对调最优」「两形态互斥不可混用」等不成立描述。"
+        },
+        "generatedAt": 1789009993926,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2c214090",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-929e7478",
+        "sourceSnapshot": {
+          "id": "agentic-41",
+          "topic": "rag",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "rag",
+            "tool",
+            "pipeline",
+            "tradeoff"
+          ],
+          "question": "RAG 应该放在 Agent 外部（前置管线）还是作为 Agent 内部的一个 Tool？两者各适合什么场景？",
+          "options": [
+            "前置管线承接高频标准查询：意图单一且每次必查时延迟更低、行为可预测，也更易评测",
+            "开放复杂咨询把检索封装为 Tool：是否检索、查哪个源、迭代几轮都由 Agent 判断，支持改写查询与跨源交叉验证",
+            "按查询分布的可预测性与延迟预算分层选型，高频走前置管线、长尾复杂问题升级给 Agentic RAG",
+            "把职责颠倒：Tool 化承接每次必查的简单场景、前置管线承接多轮迭代的复杂问题，能同时压低延迟与决策开销",
+            "两种形态互斥不可混用，高频简单意图与长尾复杂问题必须走同一链路，选定后也不能按流量分层演进",
+            "选对放置位置即决定最终质量，分块、混合检索与重排的追加投入回报很低，无需再做检索质量工程"
+          ]
+        }
+      },
+      {
+        "id": "agentic-41__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "搜索团队争吵：搜索框走 RAG 管线、新问答助手要 Tool 化检索。关于这次选型，哪些判断成立？",
+        "options": [
+          "搜索框意图单一每次必查、前置管线延迟低行为稳",
+          "问答助手开放复杂、检索 Tool 化支持改写与交叉验证",
+          "高频简单走管线、长尾复杂升级 Agentic、按分布分层",
+          "Tool 化接必查场景、管线接多轮迭代、这样延迟最低",
+          "管线 Tool 二选一、混用会乱、流量不能分层演进",
+          "位置放对质量就定、分块重排不用再投"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从两类入口的对比判断管线与 Tool 化的各自归宿",
+          "reasoningGoal": "先对齐搜索框与问答助手的可比维度；据此逐项确认「搜索框意图单一走前置管线」「问答助手开放复杂检索 Tool 化」等 3 项成立；并排除「Tool 化接必查场景」「管线 Tool 二选一」等不成立描述。"
+        },
+        "generatedAt": 1789009993926,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2c214090",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-f2d75be0",
+        "sourceSnapshot": {
+          "id": "agentic-41",
+          "topic": "rag",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "rag",
+            "tool",
+            "pipeline",
+            "tradeoff"
+          ],
+          "question": "RAG 应该放在 Agent 外部（前置管线）还是作为 Agent 内部的一个 Tool？两者各适合什么场景？",
+          "options": [
+            "前置管线承接高频标准查询：意图单一且每次必查时延迟更低、行为可预测，也更易评测",
+            "开放复杂咨询把检索封装为 Tool：是否检索、查哪个源、迭代几轮都由 Agent 判断，支持改写查询与跨源交叉验证",
+            "按查询分布的可预测性与延迟预算分层选型，高频走前置管线、长尾复杂问题升级给 Agentic RAG",
+            "把职责颠倒：Tool 化承接每次必查的简单场景、前置管线承接多轮迭代的复杂问题，能同时压低延迟与决策开销",
+            "两种形态互斥不可混用，高频简单意图与长尾复杂问题必须走同一链路，选定后也不能按流量分层演进",
+            "选对放置位置即决定最终质量，分块、混合检索与重排的追加投入回报很低，无需再做检索质量工程"
+          ]
+        }
+      }
+    ],
+    "sec-exploit-chaining-01": [
+      {
+        "id": "sec-exploit-chaining-01__surface-options__manual-ap__0",
+        "kind": "surface-options",
+        "question": "漏洞识别与利用链构建，两种能力在机制与工程复杂度上有何差异？哪些说法正确？",
+        "options": [
+          "识别靠单点模式加语义理解、利用链要多步规划状态推理与动态调整",
+          "扫出孤立漏洞不等于能写出突破 ASLR/DEP 的完整 Exploit",
+          "Post-Training 后、利用链构建的提升通常比静态判定更显著",
+          "定位强即利用强、链条只是工程拼接、复杂度在组装不在发现",
+          "安全 Agent 自动化测试必须加沙盒与域名白名单、防偷跑破坏"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从单点判定与多步构建的差异解释利用链更难的机理",
+          "reasoningGoal": "先复现识别与构建两条路径的内部差异；据此逐项确认「识别靠单点模式」「扫出孤立漏洞不等于能写 Exploit」等 4 项成立；并排除「定位强即利用强」等不成立描述。"
+        },
+        "generatedAt": 1789009993926,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-972a5350",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-3dd05008",
+        "sourceSnapshot": {
+          "id": "sec-exploit-chaining-01",
+          "topic": "tool-security",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "exploit-chaining",
+            "vulnerability",
+            "security-agent",
+            "sandbox"
+          ],
+          "question": "大型语言模型在网络安全领域展现出“漏洞识别（Vulnerability Discovery）”与“漏洞利用链构建（Exploit Chaining）”两种不同维度的能力。结合实战安全评估经验，关于这两类能力在机制与工程复杂度上的差异，以下说法正确的是？",
+          "options": [
+            "源码漏洞识别主要依赖单点模式匹配与上下文语义理解，而漏洞利用链构建需要多步骤计划、环境状态推理与动态反馈调整",
+            "静态扫描发现孤立漏洞，不等于具备生成突破 ASLR/DEP 的完整 Exploit 能力。",
+            "Post-Training 扩大后，复杂利用链构建的性能提升通常比静态漏洞判定更显著。",
+            "白盒定位能力强即利用能力强，两者共享同一代码理解底座；定位到了，链条只是工程拼接，复杂度在组装不在发现。",
+            "为安全评估训练的安全 Agent，在自动化测试过程中必须施加沙盒隔离与网络域名白名单限制，以防 Agent 产生非预期的外部破坏行为或利用网络偷跑数据"
+          ]
+        }
+      },
+      {
+        "id": "sec-exploit-chaining-01__context-options__manual-ap__1",
+        "kind": "context-options",
+        "question": "红队用 LLM 一天扫出 30 个 CVE 却写不出一条可用利用链。关于识别与利用的鸿沟，哪些说法正确？",
+        "options": [
+          "扫漏洞是单点语义活、写利用链是多步规划加状态推理的活",
+          "扫出漏洞离突破 ASLR/DEP 的完整 Exploit 还差一步",
+          "Post-Training 对利用链的加成比对静态判定更明显",
+          "白盒定位强即利用强、链条只是工程拼接组装",
+          "自动化评估不加沙盒白名单、等于放任 Agent 搞外部破坏"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 30 个 CVE 零利用的实例判断识别与利用的复杂度鸿沟",
+          "reasoningGoal": "先明确扫出数量与写出利用链的取舍维度；据此逐项确认「扫漏洞是单点语义活」「扫出漏洞离完整 Exploit 还差一步」等 4 项成立；并排除「白盒定位强即利用强」等不成立描述。"
+        },
+        "generatedAt": 1789009993926,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-972a5350",
+        "batch": "manual-ap",
+        "model": "manual",
+        "contentHash": "fnv1a-63c109a8",
+        "sourceSnapshot": {
+          "id": "sec-exploit-chaining-01",
+          "topic": "tool-security",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "exploit-chaining",
+            "vulnerability",
+            "security-agent",
+            "sandbox"
+          ],
+          "question": "大型语言模型在网络安全领域展现出“漏洞识别（Vulnerability Discovery）”与“漏洞利用链构建（Exploit Chaining）”两种不同维度的能力。结合实战安全评估经验，关于这两类能力在机制与工程复杂度上的差异，以下说法正确的是？",
+          "options": [
+            "源码漏洞识别主要依赖单点模式匹配与上下文语义理解，而漏洞利用链构建需要多步骤计划、环境状态推理与动态反馈调整",
+            "静态扫描发现孤立漏洞，不等于具备生成突破 ASLR/DEP 的完整 Exploit 能力。",
+            "Post-Training 扩大后，复杂利用链构建的性能提升通常比静态漏洞判定更显著。",
+            "白盒定位能力强即利用能力强，两者共享同一代码理解底座；定位到了，链条只是工程拼接，复杂度在组装不在发现。",
+            "为安全评估训练的安全 Agent，在自动化测试过程中必须施加沙盒隔离与网络域名白名单限制，以防 Agent 产生非预期的外部破坏行为或利用网络偷跑数据"
+          ]
+        }
+      }
+    ]
+  }
+}

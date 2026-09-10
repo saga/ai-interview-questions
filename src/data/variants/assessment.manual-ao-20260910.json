@@ -1,0 +1,903 @@
+{
+  "version": 1,
+  "generatedAt": 1789009487449,
+  "promptVersion": "v4",
+  "variants": {
+    "agtool-guard-02": [
+      {
+        "id": "agtool-guard-02__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "为防止安全分类器被恶意 Prompt 注入操控、或被 Agent 的自我辩解带偏，系统在组装分类器输入时裁掉了 Agent 推理文本与工具返回，仅保留用户原始输入和工具调用指令。关于这种“双盲”隔离，哪些说法正确？（多选）",
+        "options": [
+          "去掉 Agent 推理文本后，说服性辩解（如“用户早已隐式授权”）就无法再诱导分类器放行越权命令",
+          "去掉工具返回后，外部不可信数据里的恶意指令就无法再对分类器做二次劫持",
+          "该设计的主要代价是分类器看不到参数来源、无从判断目标 ID 是查出来的还是编造的",
+          "去掉工具返回后，分类器对写文件与脚本执行的代码危害将完全无法评估"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从双盲裁剪规则判断防操控收益与参数溯源代价",
+          "reasoningGoal": "先锚定隔离设计保下的输入与裁掉的输入；据此逐项确认「去掉推理文本后说服性辩解无法再诱导放行」「去掉工具返回后恶意指令无法再二次劫持」等 3 项成立；并排除「对写文件与脚本危害完全无法评估」等不成立描述。"
+        },
+        "generatedAt": 1789009487442,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a5688e54",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-d8f664ef",
+        "sourceSnapshot": {
+          "id": "agtool-guard-02",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent-guardrails",
+            "context-isolation",
+            "double-blind",
+            "prompt-injection",
+            "tool-output"
+          ],
+          "question": "为防止安全审核分类器（Guardrail Classifier）被恶意 Prompt 注入操控或被 Agent 的自我辩解误导，系统在构造传递给分类器的 Transcript 时，主动裁剪掉了 Agent 的推理/回复文本（Assistant Prose）以及工具返回结果（Tool Output），仅保留用户原始输入与工具调用指令（Tool Calls）。关于这种「推理与结果双盲」的隔离设计，下列说法正确的有哪些？（多选）",
+          "options": [
+            "剥离 Assistant Prose 能防止 Agent 利用说服性文本（如「用户先前已隐式授权该操作」）说服分类器批准越权命令",
+            "剥离 Tool Output 能阻断外部不可信数据源（如网页、文件内容）中的恶意注入指令对分类器自身的二次劫持",
+            "该设计带来的主要工程取舍（Trade-off）是分类器无法校验工具参数的来源真实性（如无法确认某个目标 ID 是由系统查询所得还是凭空捏造）",
+            "剥离 Tool Output 会导致分类器完全无法评估写文件与脚本执行类操作的实际代码安全危害"
+          ]
+        }
+      },
+      {
+        "id": "agtool-guard-02__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "红队演示：Agent 在推理里写“管理员已口头批准删库”，分类器信了直接放行；另一次网页里的隐藏指令劫持了分类器。针对这两类操控，“双盲”隔离的得失是？（多选）",
+        "options": [
+          "剥离推理文本能挡住“用户先前已隐式授权”这类话术对分类器的说服",
+          "剥离工具结果能切断网页、文件等外部数据对分类器的注入劫持链路",
+          "代价是分类器无法核验工具参数的真实来源、ID 真伪只能靠信任",
+          "剥离之后分类器对写文件、跑脚本这类操作的危害彻底看不见"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从红队攻击实例权衡双盲隔离的防护收益与溯源代价",
+          "reasoningGoal": "先明确两次被操控分别走的是哪条输入通道；据此逐项确认「剥离推理文本能挡住话术说服」「剥离工具结果能切断注入劫持链路」等 3 项成立；并排除「对写文件跑脚本的危害彻底看不见」等不成立描述。"
+        },
+        "generatedAt": 1789009487443,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a5688e54",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-8d87a581",
+        "sourceSnapshot": {
+          "id": "agtool-guard-02",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent-guardrails",
+            "context-isolation",
+            "double-blind",
+            "prompt-injection",
+            "tool-output"
+          ],
+          "question": "为防止安全审核分类器（Guardrail Classifier）被恶意 Prompt 注入操控或被 Agent 的自我辩解误导，系统在构造传递给分类器的 Transcript 时，主动裁剪掉了 Agent 的推理/回复文本（Assistant Prose）以及工具返回结果（Tool Output），仅保留用户原始输入与工具调用指令（Tool Calls）。关于这种「推理与结果双盲」的隔离设计，下列说法正确的有哪些？（多选）",
+          "options": [
+            "剥离 Assistant Prose 能防止 Agent 利用说服性文本（如「用户先前已隐式授权该操作」）说服分类器批准越权命令",
+            "剥离 Tool Output 能阻断外部不可信数据源（如网页、文件内容）中的恶意注入指令对分类器自身的二次劫持",
+            "该设计带来的主要工程取舍（Trade-off）是分类器无法校验工具参数的来源真实性（如无法确认某个目标 ID 是由系统查询所得还是凭空捏造）",
+            "剥离 Tool Output 会导致分类器完全无法评估写文件与脚本执行类操作的实际代码安全危害"
+          ]
+        }
+      }
+    ],
+    "token-rightsize-01": [
+      {
+        "id": "token-rightsize-01__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "某后端接口 get_orders() 默认吐出约 100K Tokens 的原始 JSON（含完整用户历史、支付明细与商品长描述），开发者把它原样塞进 LLM 窗口。这种做法会带来哪些系统性后果？（多选）",
+        "options": [
+          "LLM 的首包延迟与推理 Token 开销显著抬高",
+          "产生注意力稀释效应、模型准确提取关键字段的精度下降",
+          "模型编造或误用不相关字段的概率大幅上升",
+          "上下文越丰富决策越准、全量字段值得推崇"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从 100K 全量注入解释延迟、稀释与幻觉三类后果的机理",
+          "reasoningGoal": "先复现超长低信噪输入在推理链路中的内部影响；据此逐项确认「首包延迟与 Token 开销显著抬高」「产生注意力稀释效应、抽取精度下降」等 3 项成立；并排除「上下文越丰富决策越准」等不成立描述。"
+        },
+        "generatedAt": 1789009487444,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5bae0403",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-2557f5de",
+        "sourceSnapshot": {
+          "id": "token-rightsize-01",
+          "topic": "context-engineering",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "predict",
+          "tags": [
+            "token-right-sizing",
+            "context-engineering",
+            "ttft",
+            "attention-dilution"
+          ],
+          "question": "在 Agent 工具调用设计中，某 Backend 服务 API get_orders() 默认返回包含完整用户历史、支付明细、商品长文本描述的原始 JSON，大小约为 100K Tokens。开发者直接将该原始返回值注入 LLM 的上下文窗口中。这种设计会导致哪些系统性后果？（多选）",
+          "options": [
+            "显著增加 LLM 的首包延迟（TTFT）与推理计算 Token 成本",
+            "产生注意力稀释（Needle in a Haystack）效应，降低模型准确提取关键字段（如订单状态）的精度",
+            "大幅增加 LLM 提取错误信息或误用不相关字段的概率",
+            "丰富上下文能无条件提升 LLM 决策准确率，因此 API 返回全量字段是推崇的做法"
+          ]
+        }
+      },
+      {
+        "id": "token-rightsize-01__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "工单 Agent 上线后又慢又瞎：查一单要等 20 秒，还常把别人的支付明细念出来。排查发现每次调用都灌了 100K Tokens 的订单全量 JSON。关于这次事故，哪些判断成立？（多选）",
+        "options": [
+          "100K 原始 JSON 显著推高首包延迟与推理 Token 开销",
+          "产生注意力稀释、订单状态等关键字段的抽取精度下降",
+          "不相关字段进窗口后、模型误用或编造信息的概率上升",
+          "上下文堆得越多决策越准、全量字段返回是正确设计"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从又慢又瞎的线上事故权衡字段丰富度与信噪比的取舍",
+          "reasoningGoal": "先定位延迟与串字段两类现象的直接诱因；据此逐项确认「100K 原始 JSON 显著推高首包延迟」「产生注意力稀释、关键字段抽取精度下降」等 3 项成立；并排除「上下文堆得越多决策越准」等不成立描述。"
+        },
+        "generatedAt": 1789009487444,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5bae0403",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-9b0185fe",
+        "sourceSnapshot": {
+          "id": "token-rightsize-01",
+          "topic": "context-engineering",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "predict",
+          "tags": [
+            "token-right-sizing",
+            "context-engineering",
+            "ttft",
+            "attention-dilution"
+          ],
+          "question": "在 Agent 工具调用设计中，某 Backend 服务 API get_orders() 默认返回包含完整用户历史、支付明细、商品长文本描述的原始 JSON，大小约为 100K Tokens。开发者直接将该原始返回值注入 LLM 的上下文窗口中。这种设计会导致哪些系统性后果？（多选）",
+          "options": [
+            "显著增加 LLM 的首包延迟（TTFT）与推理计算 Token 成本",
+            "产生注意力稀释（Needle in a Haystack）效应，降低模型准确提取关键字段（如订单状态）的精度",
+            "大幅增加 LLM 提取错误信息或误用不相关字段的概率",
+            "丰富上下文能无条件提升 LLM 决策准确率，因此 API 返回全量字段是推崇的做法"
+          ]
+        }
+      }
+    ],
+    "prompt-cache-billing-tradeoff-01": [
+      {
+        "id": "prompt-cache-billing-tradeoff-01__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "某 API 按“写缓存收 1.25x 溢价、读缓存打 0.1x 折扣”计费。做成本优化时，下列哪些推论正确？",
+        "options": [
+          "长尾一次性且无复用的前缀、开写缓存反而多付 25%",
+          "前缀预期复用攒够 Read Hit、越过平衡点后才能净省钱",
+          "命中部分按原价结算、未命中尾部再按 0.1x 补偿",
+          "周期性发同前缀 Hit 请求、可免写费刷新 TTL"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从溢价与折扣结构推导开缓存的盈亏平衡点",
+          "reasoningGoal": "先拆出写溢价、读折扣与复用次数的约束关系；据此逐项确认「无复用的前缀开写缓存多付 25%」「预期复用攒够 Read Hit 越过平衡点净省钱」等 3 项成立；并排除「命中按原价、尾部按 0.1x 补偿」等不成立描述。"
+        },
+        "generatedAt": 1789009487445,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8ded4cf4",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-99b08def",
+        "sourceSnapshot": {
+          "id": "prompt-cache-billing-tradeoff-01",
+          "topic": "cost",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prompt-caching",
+            "billing",
+            "breakeven",
+            "write-charge",
+            "read-discount"
+          ],
+          "question": "某些大模型 API 采用了“写缓存收取额外溢价（如 1.25x 基础输入价），读缓存给予大幅折扣（如 0.1x 基础输入价）”的计费机制。针对此类计费模型，在架构设计与成本优化时，下列哪些推论是正确的？",
+          "options": [
+            "对于长尾、一次性（Single-turn Non-recurring）且无重复前缀的 API 调用，开启显式写缓存功能反而会导致整体 Token 成本上升 25%",
+            "只有当某个前缀的预期复用次数（即 Read Hit 次数）达到或超过平衡点阈值时，引入带写缓存费用的 Prompt Caching 才能实现净成本下降",
+            "缓存命中时，系统会基于原始基础输入单价结算全部 Token，然后再将未命中的尾部 Token 按照 0.1x 的读缓存折扣价进行补偿扣减",
+            "在维持缓存活性的场景中，周期性地发送基于相同前缀的 Hit 请求，可以在不再次产生 1.25x 写缓存费用的情况下持续刷新 TTL 存活期"
+          ]
+        }
+      },
+      {
+        "id": "prompt-cache-billing-tradeoff-01__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "账单复盘：某前缀只用两次却付了 1.25x 写费，成本反涨 25%；另一前缀日均命中上千次、读缓存 0.1x，账单大降。关于这两种结局，哪些推论正确？",
+        "options": [
+          "长尾一次性前缀也要付 1.25x 写费、整体 Token 成本反升 25% 纯属倒贴",
+          "只有 Read Hit 攒够次数、越过平衡点后缓存才开始省钱",
+          "结算规则是命中部分按基础价、未命中尾部按折扣价再补扣",
+          "用同前缀请求定期续命 TTL、无需重复缴纳 1.25x 写缓存费"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从两次账单结局解释写费用摊薄与 TTL 续命的机理",
+          "reasoningGoal": "先复现写费用在两种复用水平下的摊薄过程；据此逐项确认「长尾前缀付 1.25x 写费反升 25%」「Read Hit 攒够次数才开始省钱」等 3 项成立；并排除「命中按基础价、尾部按折扣价补扣」等不成立描述。"
+        },
+        "generatedAt": 1789009487445,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8ded4cf4",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-39226bbf",
+        "sourceSnapshot": {
+          "id": "prompt-cache-billing-tradeoff-01",
+          "topic": "cost",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "prompt-caching",
+            "billing",
+            "breakeven",
+            "write-charge",
+            "read-discount"
+          ],
+          "question": "某些大模型 API 采用了“写缓存收取额外溢价（如 1.25x 基础输入价），读缓存给予大幅折扣（如 0.1x 基础输入价）”的计费机制。针对此类计费模型，在架构设计与成本优化时，下列哪些推论是正确的？",
+          "options": [
+            "对于长尾、一次性（Single-turn Non-recurring）且无重复前缀的 API 调用，开启显式写缓存功能反而会导致整体 Token 成本上升 25%",
+            "只有当某个前缀的预期复用次数（即 Read Hit 次数）达到或超过平衡点阈值时，引入带写缓存费用的 Prompt Caching 才能实现净成本下降",
+            "缓存命中时，系统会基于原始基础输入单价结算全部 Token，然后再将未命中的尾部 Token 按照 0.1x 的读缓存折扣价进行补偿扣减",
+            "在维持缓存活性的场景中，周期性地发送基于相同前缀的 Hit 请求，可以在不再次产生 1.25x 写缓存费用的情况下持续刷新 TTL 存活期"
+          ]
+        }
+      }
+    ],
+    "dl-17": [
+      {
+        "id": "dl-17__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "关于 VAE 损失中重构项与 KL 正则项（D_KL(q(z|x) ∥ p(z))）的分工，哪些说法正确？（多选）",
+        "options": [
+          "掐掉 KL 项后编码输出坍缩成确定点、隐空间布满无定义空隙",
+          "KL 项把隐分布压向 N(0, I)、推理时可直接从标准高斯采样生成",
+          "重构项负责让隐向量留住输入间的差异与细节",
+          "KL 权重越大、解码图细节越丰富越清晰"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从两项分工解释去 KL 坍缩与权重误区的机理",
+          "reasoningGoal": "先复现重构与正则两项各自约束的内部过程；据此逐项确认「掐掉 KL 项后编码输出坍缩成确定点」「KL 项把隐分布压向 N(0, I)」等 3 项成立；并排除「KL 权重越大细节越丰富」等不成立描述。"
+        },
+        "generatedAt": 1789009487446,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-81f29d66",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-65809cf9",
+        "sourceSnapshot": {
+          "id": "dl-17",
+          "topic": "backprop",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "elbo-tug-of-war",
+            "posterior-collapse",
+            "latent-space-regularization"
+          ],
+          "question": "在 VAE 的损失函数优化中，关于重构项与 KL 散度正则化项（D_KL(q(z|x) ∥ p(z))）的作用与关系，下列说法正确的有？（多选）",
+          "options": [
+            "若移除 KL 项，编码器映射点会趋向于确定性点，隐空间出现大量无定义空隙（退化为 Vanilla AE）",
+            "KL 项强制隐空间分布逼近 N(0, I)，使得在推理阶段可以直接从标准高斯分布采样生成新数据",
+            "重构项促使隐向量保持不同输入图片之间的区别度与细节还原度",
+            "KL 散度权重设置得越大，解码器生成的图像细节越丰富、越清晰"
+          ]
+        }
+      },
+      {
+        "id": "dl-17__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "调 VAE 时有人把 KL 项权重拉满想让图更清晰，结果图反而更糊；另一组去掉 KL 项后隐空间插值全是鬼影。关于这两起翻车，哪些说法正确？（多选）",
+        "options": [
+          "去掉 KL 项等于撤掉聚拢约束、隐空间空隙让插值落到无定义区",
+          "KL 项将隐分布锚定到 N(0, I)、生成时才能从标准高斯直接采样",
+          "重构项守住输入差异与细节还原、两项缺一不可",
+          "KL 权重拉得越高、解码图像细节越丰富越清晰"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从两次调参翻车推导 KL 项存在与权重的合理区间",
+          "reasoningGoal": "先定位两次翻车各自违反的约束条件；据此逐项确认「去掉 KL 项等于撤掉聚拢约束」「KL 项将隐分布锚定到 N(0, I)」等 3 项成立；并排除「KL 权重拉得越高细节越丰富」等不成立描述。"
+        },
+        "generatedAt": 1789009487446,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-81f29d66",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-045b2f33",
+        "sourceSnapshot": {
+          "id": "dl-17",
+          "topic": "backprop",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "elbo-tug-of-war",
+            "posterior-collapse",
+            "latent-space-regularization"
+          ],
+          "question": "在 VAE 的损失函数优化中，关于重构项与 KL 散度正则化项（D_KL(q(z|x) ∥ p(z))）的作用与关系，下列说法正确的有？（多选）",
+          "options": [
+            "若移除 KL 项，编码器映射点会趋向于确定性点，隐空间出现大量无定义空隙（退化为 Vanilla AE）",
+            "KL 项强制隐空间分布逼近 N(0, I)，使得在推理阶段可以直接从标准高斯分布采样生成新数据",
+            "重构项促使隐向量保持不同输入图片之间的区别度与细节还原度",
+            "KL 散度权重设置得越大，解码器生成的图像细节越丰富、越清晰"
+          ]
+        }
+      }
+    ],
+    "gan-training-algorithm-canonical": [
+      {
+        "id": "gan-training-algorithm-canonical__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "GAN 用 Minibatch SGD 训练时，判别器 D 与生成器 G 的参数更新顺序有何讲究？哪些符合理论设计？",
+        "options": [
+          "每轮先交替做 k 步判别器 theta_d 梯度上升、再做 1 步生成器 theta_g 更新",
+          "内循环只给判别器 k 步、不训到收敛，防过拟合也省算力",
+          "生成器参数变化足够缓慢时、判别器守在当前最优解附近可保动态稳定",
+          "判别器更新时真假 minibatch 必须合并计算、仅通过减小损失函数来更新"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从交替更新与训到收敛的对比判断 k 步截断的合理性",
+          "reasoningGoal": "先对齐 k 步更新与完全收敛两种策略的可比维度；据此逐项确认「每轮先交替做 k 步判别器梯度上升」「内循环只给判别器 k 步不训到收敛」等 3 项成立；并排除「真假 minibatch 必须合并只靠减小损失更新」等不成立描述。"
+        },
+        "generatedAt": 1789009487446,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b6f77416",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-dd3537e0",
+        "sourceSnapshot": {
+          "id": "gan-training-algorithm-canonical",
+          "topic": "gan",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "gan",
+            "optimization",
+            "sgd"
+          ],
+          "question": "在 GAN 的 Minibatch 随机梯度下降（SGD）训练迭代过程中，关于判别器 D 与生成器 G 参数更新策略的实施细节，哪些选项是正确且符合理论设计的？",
+          "options": [
+            "每轮训练迭代中，通常先交替执行 k 步判别器参数 theta_d 的梯度上升更新，再执行 1 步生成器参数 theta_g 的梯度更新。",
+            "限制判别器在内循环中仅更新 k 步而非训练至完全收敛，能够有效防止有限数据集上的过拟合并降低计算开销。",
+            "只要生成器 G 参数变化足够缓慢，维持判别器在其当前最优解附近更新能保证系统的动态稳定性。",
+            "判别器更新梯度时，真实样本 minibatch 与噪声生成的伪造样本 minibatch 必须合并计算后仅通过减小损失函数来更新。"
+          ]
+        }
+      },
+      {
+        "id": "gan-training-algorithm-canonical__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "新人把判别器每轮训到完全收敛再训生成器，结果训练又慢又崩；另一组真假样本混在一个 batch 里只最小化单一损失，判别器直接摆烂。关于这两种训法，哪些判断正确？",
+        "options": [
+          "正确节奏是判别器 k 步上升、生成器 1 步更新、交替进行",
+          "判别器不训到收敛恰恰是为了避开有限样本上的过拟合与算力黑洞",
+          "生成器变化缓慢时、判别器维持在最优附近能稳住动态过程",
+          "判别器这步必须把真假 minibatch 合并、更新只做减小损失函数这一件事"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从两种训崩实例推导交替步数与真假分离的设计要点",
+          "reasoningGoal": "先定位两种训法崩盘的直接诱因；据此逐项确认「判别器 k 步上升、生成器 1 步更新」「不训到收敛是为避开过拟合与算力黑洞」等 3 项成立；并排除「判别器这步合并真假、更新只做减小损失」等不成立描述。"
+        },
+        "generatedAt": 1789009487447,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b6f77416",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-afa9385f",
+        "sourceSnapshot": {
+          "id": "gan-training-algorithm-canonical",
+          "topic": "gan",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "gan",
+            "optimization",
+            "sgd"
+          ],
+          "question": "在 GAN 的 Minibatch 随机梯度下降（SGD）训练迭代过程中，关于判别器 D 与生成器 G 参数更新策略的实施细节，哪些选项是正确且符合理论设计的？",
+          "options": [
+            "每轮训练迭代中，通常先交替执行 k 步判别器参数 theta_d 的梯度上升更新，再执行 1 步生成器参数 theta_g 的梯度更新。",
+            "限制判别器在内循环中仅更新 k 步而非训练至完全收敛，能够有效防止有限数据集上的过拟合并降低计算开销。",
+            "只要生成器 G 参数变化足够缓慢，维持判别器在其当前最优解附近更新能保证系统的动态稳定性。",
+            "判别器更新梯度时，真实样本 minibatch 与噪声生成的伪造样本 minibatch 必须合并计算后仅通过减小损失函数来更新。"
+          ]
+        }
+      }
+    ],
+    "flashattn-04": [
+      {
+        "id": "flashattn-04__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "为什么说 FlashAttention 四个手段是“相互依赖”而不是各干各的？",
+        "options": [
+          "融合离不开分块、否则中间矩阵塞不进 SRAM",
+          "分块离不开在线 softmax、否则分块结果无法精确归一",
+          "重计算离不开 logsumexp 统计量 L、否则反向恢复不出 P",
+          "四个手段互相独立、拿掉任何一个都不影响其余"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从依赖链条判断四个手段缺一不可的组合关系",
+          "reasoningGoal": "先明确四个手段之间的依赖发生在哪些环节；据此逐项确认「融合离不开分块」「分块离不开在线 softmax」等 3 项成立；并排除「四个手段互相独立」等不成立描述。"
+        },
+        "generatedAt": 1789009487447,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-77a241c7",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-ae040291",
+        "sourceSnapshot": {
+          "id": "flashattn-04",
+          "topic": "flash-attention",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "interdependence",
+            "design",
+            "mechanism"
+          ],
+          "question": "FlashAttention 的四个手段为何说『相互依赖』而非各自独立？",
+          "options": [
+            "融合需要分块：否则中间矩阵太大，放不进 SRAM",
+            "分块需要在线 softmax：softmax 非直接可结合，分块后需增量归一化才精确",
+            "重计算需要 logsumexp 统计量 L：反向必须能不存储 P 就恢复它",
+            "四个手段彼此完全独立，去掉任意一个都不影响其余三者的运行"
+          ]
+        }
+      },
+      {
+        "id": "flashattn-04__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "有人提议只保留算子融合、砍掉分块与重计算来简化实现。评估这个提议时，关于手段间的依赖，哪些判断成立？",
+        "options": [
+          "砍掉分块融合就转不动、中间矩阵装不进 SRAM",
+          "砍掉在线 softmax 分块就失准、非结合算子缺增量归一不行",
+          "砍掉统计量 L 重计算就断粮、反向无从恢复 P",
+          "四个手段彼此完全独立、去掉任意一个都不影响其余运行"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从删减提议的后果对比四个手段的依赖强度",
+          "reasoningGoal": "先对齐保留与删减两种方案的可比后果；据此逐项确认「砍掉分块融合就转不动」「砍掉在线 softmax 分块就失准」等 3 项成立；并排除「四个手段彼此完全独立」等不成立描述。"
+        },
+        "generatedAt": 1789009487447,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-77a241c7",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-a8d20246",
+        "sourceSnapshot": {
+          "id": "flashattn-04",
+          "topic": "flash-attention",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "interdependence",
+            "design",
+            "mechanism"
+          ],
+          "question": "FlashAttention 的四个手段为何说『相互依赖』而非各自独立？",
+          "options": [
+            "融合需要分块：否则中间矩阵太大，放不进 SRAM",
+            "分块需要在线 softmax：softmax 非直接可结合，分块后需增量归一化才精确",
+            "重计算需要 logsumexp 统计量 L：反向必须能不存储 P 就恢复它",
+            "四个手段彼此完全独立，去掉任意一个都不影响其余三者的运行"
+          ]
+        }
+      }
+    ],
+    "quant-qah-02": [
+      {
+        "id": "quant-qah-02__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "QAT 与 QAH 在做法与特性上有何不同？",
+        "options": [
+          "QAT 前向插 fake-quantization、用任务损失微调让权重耐低精度",
+          "QAH 冻结压缩前的全精度模型当教师、用 KL 做跨架构蒸馏",
+          "QAT 在 9B MXFP4 上约 step700 见顶、step1200 暴跌近 19 点",
+          "QAH 整体耗时约为 QAT 的 7 倍、但峰值精度反而更高"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从训练曲线与师生设置对比 QAT 与 QAH 的路线差异",
+          "reasoningGoal": "先对齐两条路线在监督信号上的可比维度；据此逐项确认「QAT 前向插 fake-quantization 用任务损失微调」「QAH 冻结全精度模型当教师用 KL 蒸馏」等 3 项成立；并排除「QAH 耗时约为 QAT 的 7 倍但峰值更高」等不成立描述。"
+        },
+        "generatedAt": 1789009487447,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4be616d4",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-dcd1751a",
+        "sourceSnapshot": {
+          "id": "quant-qah-02",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qat",
+            "qah",
+            "quantization-aware-training",
+            "stability"
+          ],
+          "question": "Quantization-Aware Training（QAT）与本文的 Quantization-Aware Healing（QAH）在做法与特性上有何不同？",
+          "options": [
+            "QAT 在前向插入 fake-quantization 并用任务损失微调，使权重适应低精度",
+            "QAH 以压缩前原始全精度模型为冻结教师，用 KL 散度做跨架构蒸馏",
+            "QAT 在 9B 模型 MXFP4 实验约 step700 达峰后到 step1200 暴跌近 19 点，不稳",
+            "QAH 在整体耗时上比 QAT 慢约 7 倍，但峰值精度反而更高"
+          ]
+        }
+      },
+      {
+        "id": "quant-qah-02__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "选型会上两派争吵：微调派要 QAT，蒸馏派要 QAH。关于两条路线的事实，哪些说法成立？",
+        "options": [
+          "QAT 靠前向伪量化加任务损失微调、把权重训到适应低精度",
+          "QAH 靠冻结的全精度教师加 KL 散度、把知识蒸到压缩架构",
+          "QAT 在 9B MXFP4 实验约 step700 达峰、step1200 跌近 19 点",
+          "QAH 总耗时约为 QAT 的 7 倍、但峰值精度却更高"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从选型争吵权衡两条路线的稳定性与耗时取舍",
+          "reasoningGoal": "先明确选型要在稳定性与耗时之间取舍；据此逐项确认「QAT 靠伪量化加任务损失微调」「QAH 靠冻结教师加 KL 蒸馏」等 3 项成立；并排除「QAH 总耗时约为 7 倍但峰值更高」等不成立描述。"
+        },
+        "generatedAt": 1789009487447,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4be616d4",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-9e950985",
+        "sourceSnapshot": {
+          "id": "quant-qah-02",
+          "topic": "quantization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qat",
+            "qah",
+            "quantization-aware-training",
+            "stability"
+          ],
+          "question": "Quantization-Aware Training（QAT）与本文的 Quantization-Aware Healing（QAH）在做法与特性上有何不同？",
+          "options": [
+            "QAT 在前向插入 fake-quantization 并用任务损失微调，使权重适应低精度",
+            "QAH 以压缩前原始全精度模型为冻结教师，用 KL 散度做跨架构蒸馏",
+            "QAT 在 9B 模型 MXFP4 实验约 step700 达峰后到 step1200 暴跌近 19 点，不稳",
+            "QAH 在整体耗时上比 QAT 慢约 7 倍，但峰值精度反而更高"
+          ]
+        }
+      }
+    ],
+    "hitl-2026-010": [
+      {
+        "id": "hitl-2026-010__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "评估生产 Agent 的 HITL 是否真有效，除审批率外还应看哪些指标？",
+        "options": [
+          "纠错覆盖率与误批准率、看人工是否真拦下错误",
+          "审批耗时与升级率、看流程是否过慢或过载",
+          "审批率高即有效、无需再看下游与误批准",
+          "下游结果质量与异常率、看是否改善业务产出"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从有效性定义推导拦截率、时效与产出三类指标",
+          "reasoningGoal": "先确定有效性应落在拦截错误与改善产出；据此逐项确认「纠错覆盖率与误批准率」「审批耗时与升级率」等 3 项成立；并排除「审批率高即有效」等不成立描述。"
+        },
+        "generatedAt": 1789009487448,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dfdd1285",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-7d109228",
+        "sourceSnapshot": {
+          "id": "hitl-2026-010",
+          "topic": "human-in-the-loop",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "metrics",
+            "oversight",
+            "production"
+          ],
+          "question": "如何评估一个生产 Agent 的 HITL 机制是否真正有效？除了人工审批率，还应该关注哪些指标？",
+          "options": [
+            "跟踪覆盖纠错率与误批准率，衡量人类把关是否真正拦截了错误",
+            "跟踪审批耗时与升级率，评估流程是否过慢或已出现过载",
+            "只要人工审批率高就说明 HITL 有效，无需关注下游结果与误批准",
+            "跟踪下游结果质量与异常率，评估 HITL 是否改善最终业务产出"
+          ]
+        }
+      },
+      {
+        "id": "hitl-2026-010__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "某团队 HITL 审批率 99% 却照样放过删库操作，老板要求重建评估体系。关于新体系的指标，哪些做法正确？",
+        "options": [
+          "统计拦截覆盖与误批准、审批率高不等于拦得住",
+          "统计审批耗时与升级比例、流程过慢过载要暴露",
+          "审批率达标就等于 HITL 有效、不用看下游",
+          "统计下游业务质量与异常率、产出改善才是金标准"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 99% 审批率仍放行的事故权衡过程指标与结果指标",
+          "reasoningGoal": "先明确高审批率与真有效之间的取舍维度；据此逐项确认「统计拦截覆盖与误批准」「统计审批耗时与升级比例」等 3 项成立；并排除「审批率达标就等于有效」等不成立描述。"
+        },
+        "generatedAt": 1789009487448,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dfdd1285",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-cca7a129",
+        "sourceSnapshot": {
+          "id": "hitl-2026-010",
+          "topic": "human-in-the-loop",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "metrics",
+            "oversight",
+            "production"
+          ],
+          "question": "如何评估一个生产 Agent 的 HITL 机制是否真正有效？除了人工审批率，还应该关注哪些指标？",
+          "options": [
+            "跟踪覆盖纠错率与误批准率，衡量人类把关是否真正拦截了错误",
+            "跟踪审批耗时与升级率，评估流程是否过慢或已出现过载",
+            "只要人工审批率高就说明 HITL 有效，无需关注下游结果与误批准",
+            "跟踪下游结果质量与异常率，评估 HITL 是否改善最终业务产出"
+          ]
+        }
+      }
+    ],
+    "agent-observability-01": [
+      {
+        "id": "agent-observability-01__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "LLM Agent 成本归因做到什么粒度？某请求极少的模块烧掉 70% 账单，只按请求次数统计够吗？",
+        "options": [
+          "成本看单请求 Token 量（尤其长 Context 的 Input）、而非调用次数",
+          "监控要下到 Token 粒度、记 Input/Output 并按任务类型聚合",
+          "低频长上下文任务的 Token 开销可远超高频短任务",
+          "只监控 Output Token 的数量即可、因为它单价更高决定账单大头"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从成本构成解释 Token 粒度归因相对次数统计的优越性",
+          "reasoningGoal": "先复现账单在请求次数与 Token 量两条归因线上的分叉过程；据此逐项确认「成本看单请求 Token 量」「监控要下到 Token 粒度」等 3 项成立；并排除「只监控 Output Token 的数量即可」等不成立描述。"
+        },
+        "generatedAt": 1789009487448,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1ae45cdb",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-a16e5ff3",
+        "sourceSnapshot": {
+          "id": "agent-observability-01",
+          "topic": "observability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "observability",
+            "cost-attribution",
+            "token",
+            "request-count"
+          ],
+          "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
+          "options": [
+            "LLM API 的成本核心驱动因素是单次请求的 Token 数量（尤其是由长 Context 导致的 Input Token），而非单纯的 API 调用次数",
+            "成本监控指标必须深入到 Token 粒度，记录每次请求的 Input/Output Token 数，并结合任务类型（Task Type）和功能标签进行聚合分析",
+            "调用频次低但单次运行时间长、上下文极大的 Agent 任务（如全库代码规划或长文档分析），其 Token 消耗量可能远超高频但短上下文的交互任务（如拼写检查）",
+            "为了准确评估成本，只要监控输出 Token（Output Tokens）的数量即可，因为各大供应商的 Output Token 单价比 Input Token 更高，决定了绝大部分账单金额"
+          ]
+        }
+      },
+      {
+        "id": "agent-observability-01__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "某辅助功能请求量不到 1%、却烧掉全系统 70% Token 账单。复盘这次归因翻车，哪些说法正确？（多选）",
+        "options": [
+          "账单元凶是单请求 Token 量、长 Context 的 Input 是大头",
+          "成本监控必须记录每次 Input/Output Token、按任务类型聚合",
+          "全库规划这类低频长任务、开销能碾压高频拼写检查",
+          "只监控 Output Token 的数量即可、因为它单价更高决定账单大头"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 70% 账单事故权衡次数统计与 Token 归因的取舍",
+          "reasoningGoal": "先明确请求次数与真实开销的取舍维度；据此逐项确认「账单元凶是单请求 Token 量」「成本监控必须记录每次 Input/Output」等 3 项成立；并排除「只监控 Output Token 的数量即可」等不成立描述。"
+        },
+        "generatedAt": 1789009487448,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1ae45cdb",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-cd4976e8",
+        "sourceSnapshot": {
+          "id": "agent-observability-01",
+          "topic": "observability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "observability",
+            "cost-attribution",
+            "token",
+            "request-count"
+          ],
+          "question": "在建立 LLM Agent 系统的可观测性（Observability）与成本监控体系时，运维团队最初仅按“API 请求次数（Request Counts）”和“业务功能模块”对成本进行监控，结果发现请求次数极少的某辅助功能模块却贡献了全系统 70% 的 Token 支出。关于 LLM 系统的成本归因与指标设计，下列说法正确的有？（多选）",
+          "options": [
+            "LLM API 的成本核心驱动因素是单次请求的 Token 数量（尤其是由长 Context 导致的 Input Token），而非单纯的 API 调用次数",
+            "成本监控指标必须深入到 Token 粒度，记录每次请求的 Input/Output Token 数，并结合任务类型（Task Type）和功能标签进行聚合分析",
+            "调用频次低但单次运行时间长、上下文极大的 Agent 任务（如全库代码规划或长文档分析），其 Token 消耗量可能远超高频但短上下文的交互任务（如拼写检查）",
+            "为了准确评估成本，只要监控输出 Token（Output Tokens）的数量即可，因为各大供应商的 Output Token 单价比 Input Token 更高，决定了绝大部分账单金额"
+          ]
+        }
+      }
+    ],
+    "planning-01": [
+      {
+        "id": "planning-01__surface-options__manual-ao__0",
+        "kind": "surface-options",
+        "question": "10 步以上的复杂任务执行到第 4 步撞上“数据源不可用”，规划层该怎么应对？",
+        "options": [
+          "按最新观察改后续计划、重排依赖或换数据源",
+          "反思失败原因再更新计划、别机械重试原步骤",
+          "规划冻结不可变更、必须跑完原计划保可重复性",
+          "拆成可验证子目标、步步可校验才触发重规划"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从失败触发现解释动态重规划相对冻结执行的优越性",
+          "reasoningGoal": "先复现数据源失效后两条应对路径的内部差异；据此逐项确认「按最新观察改后续计划」「反思失败原因再更新计划」等 3 项成立；并排除「规划冻结不可变更」等不成立描述。"
+        },
+        "generatedAt": 1789009487449,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-329d883f",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-1c50dace",
+        "sourceSnapshot": {
+          "id": "planning-01",
+          "topic": "planning",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "planning",
+            "task-decomposition",
+            "replanning",
+            "reflection"
+          ],
+          "question": "一个需要 10 步以上的复杂任务（如“调研某行业并生成带引用的报告”）被拆解后，执行到第 4 步时工具返回“数据源不可用”。关于 Agent 规划层应如何应对，下列说法正确的有？（多选）",
+          "options": [
+            "基于最新观察动态调整后续计划，对失败步骤的依赖任务进行重排或替换数据源",
+            "通过反思（Reflection）总结失败原因并更新计划，而非机械重试原步骤",
+            "规划一旦生成即不可变更，必须严格按原计划执行至结束以保证可重复性",
+            "将任务分解为可验证的子目标，使每步的完成度可被校验并触发重规划"
+          ]
+        }
+      },
+      {
+        "id": "planning-01__context-options__manual-ao__1",
+        "kind": "context-options",
+        "question": "10 步以上的调研报告 Agent 跑到第 4 步源站挂了，它原地重试 50 次把配额烧光。复盘规划层设计时，哪些说法正确？（多选）",
+        "options": [
+          "观察到源站挂掉就该重排依赖或切换数据源、而非死磕原步骤",
+          "先反思挂掉的原因、再决定改计划而不是无脑重试",
+          "计划一旦生成就冻结、跑完才能保证结果可重复",
+          "子目标可验证、完不成才触发重规划"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从烧光配额的事故诊断机械重试相对反思重规划的缺陷",
+          "reasoningGoal": "先定位配额烧光的直接诱因；据此逐项确认「观察到源站挂掉就该重排依赖」「先反思挂掉的原因再改计划」等 3 项成立；并排除「计划一旦生成就冻结」等不成立描述。"
+        },
+        "generatedAt": 1789009487449,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-329d883f",
+        "batch": "manual-ao",
+        "model": "manual",
+        "contentHash": "fnv1a-e69569d0",
+        "sourceSnapshot": {
+          "id": "planning-01",
+          "topic": "planning",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "planning",
+            "task-decomposition",
+            "replanning",
+            "reflection"
+          ],
+          "question": "一个需要 10 步以上的复杂任务（如“调研某行业并生成带引用的报告”）被拆解后，执行到第 4 步时工具返回“数据源不可用”。关于 Agent 规划层应如何应对，下列说法正确的有？（多选）",
+          "options": [
+            "基于最新观察动态调整后续计划，对失败步骤的依赖任务进行重排或替换数据源",
+            "通过反思（Reflection）总结失败原因并更新计划，而非机械重试原步骤",
+            "规划一旦生成即不可变更，必须严格按原计划执行至结束以保证可重复性",
+            "将任务分解为可验证的子目标，使每步的完成度可被校验并触发重规划"
+          ]
+        }
+      }
+    ]
+  }
+}

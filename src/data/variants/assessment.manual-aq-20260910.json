@@ -1,0 +1,925 @@
+{
+  "version": 1,
+  "generatedAt": 1789011754838,
+  "promptVersion": "v4",
+  "variants": {
+    "ai-search-extra-016": [
+      {
+        "id": "ai-search-extra-016__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "新 reranker 上线后，离线 nDCG@10 涨了 8%，线上满意度却原地踏步。下一步该查什么？",
+        "options": [
+          "离线评估集是否真代表线上查询分布",
+          "按 query 类型拆分收益与退化",
+          "看端到端回答与体验指标、不只看排序",
+          "确认线上流量是否真走了新 reranker",
+          "继续把 reranker 模型做大"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从离线涨线上平的现象推导分布、流量与端到端的排查顺序",
+          "reasoningGoal": "先定位离线与线上脱节的直接诱因；据此逐项确认「离线评估集是否真代表线上分布」「按 query 类型拆分收益与退化」等 4 项成立；并排除「继续把模型做大」等不成立描述。"
+        },
+        "generatedAt": 1789011754833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6b3e18eb",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-9f0d8c76",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-016",
+          "topic": "search-quality",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "search-quality",
+            "ab-testing",
+            "evaluation"
+          ],
+          "question": "你上线新的 reranker 后，离线 nDCG@10 提升了 8%，但线上用户满意度没有改善。下一步最合理的调查方向是什么？",
+          "options": [
+            "检查离线评估集是否代表真实线上查询分布",
+            "按 query 类型分析 reranker 的收益和退化",
+            "检查搜索结果之外的端到端回答或用户体验指标",
+            "确认线上请求是否实际使用了新 reranker",
+            "只继续增加 reranker 模型规模"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-016__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "AB 实验：新 reranker 离线 nDCG@10 涨 8% 显著，线上组满意度纹丝不动。复盘评估体系时，哪些调查方向合理？",
+        "options": [
+          "核查离线集与线上真实查询是否同分布",
+          "按 query 类型分析收益和退化",
+          "检查搜索之外端到端回答与体验指标",
+          "确认线上请求是否真用了新 reranker",
+          "只加规模、不查分布与链路"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从 AB 脱节解释评估集、流量切量与答案链路的传导机理",
+          "reasoningGoal": "先复现离线提升传导到线上的内部链路；据此逐项确认「核查离线集与线上是否同分布」「按类型分析收益和退化」等 4 项成立；并排除「只加规模不查分布」等不成立描述。"
+        },
+        "generatedAt": 1789011754833,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6b3e18eb",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-288a25ac",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-016",
+          "topic": "search-quality",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "search-quality",
+            "ab-testing",
+            "evaluation"
+          ],
+          "question": "你上线新的 reranker 后，离线 nDCG@10 提升了 8%，但线上用户满意度没有改善。下一步最合理的调查方向是什么？",
+          "options": [
+            "检查离线评估集是否代表真实线上查询分布",
+            "按 query 类型分析 reranker 的收益和退化",
+            "检查搜索结果之外的端到端回答或用户体验指标",
+            "确认线上请求是否实际使用了新 reranker",
+            "只继续增加 reranker 模型规模"
+          ]
+        }
+      }
+    ],
+    "longhorizon-state-layering-01": [
+      {
+        "id": "longhorizon-state-layering-01__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "长程智能体用 L0 权重、L1 激活上下文、L2 REPL 运行时、L3 磁盘持久化分层管状态。关于层间流动，哪些说法正确？",
+        "options": [
+          "L2 的变量与子智能体句柄由智能体主动清理保留、即垃圾回收",
+          "压缩把 L1 历史换成摘要、原始事件追加进 L3 供检索",
+          "不更新 L0 权重、把成功轨迹经验转成 L3 版本化技能",
+          "L2 产出自动同步回 L1、压缩即提炼、无需显式序列化"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从四层职责解释压缩与提炼的不同去向",
+          "reasoningGoal": "先复现 L0–L3 各自承载的状态类型；据此逐项确认「L2 对象由智能体主动清理保留」「压缩把历史换成摘要、原始事件进 L3」等 3 项成立；并排除「L2 产出自动同步回 L1」等不成立描述。"
+        },
+        "generatedAt": 1789011754834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1dab4bb6",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-96d74667",
+        "sourceSnapshot": {
+          "id": "longhorizon-state-layering-01",
+          "topic": "context-engineering",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-state",
+            "context-compaction",
+            "repl",
+            "persistence"
+          ],
+          "question": "在构建长程（Long-Horizon）智能体系统时，为了解决大语言模型上下文窗口受限及状态无法持久保留的问题，通常引入分层状态管理架构（包含 L0 模型权重、L1 激活上下文、L2 REPL 运行时与子智能体、L3 磁盘持久化存储）。关于各层级间的信息流动与状态更新机制，下列哪些说法是正确的？",
+          "options": [
+            "智能体对 L2 运行时（如 IPython 变量与子智能体句柄）的管理遵循“智能体垃圾回收”原则，由智能体根据任务阶段主动清理或保留中间对象。",
+            "上下文压缩（Compaction）会将 L1 中较早的对话历史重写为摘要，同时将原始事件完整记录至 L3 持久化存储中以供后续 REPL 显式检索。",
+            "轨迹提炼（Refinement）能够在无需更新 L0 模型权重的前提下，将成功执行轨迹中的经验转化为 L3 中版本化的技能与 Prompt 规则。",
+            "L2 产出经摘要压缩后自动同步 L1，压缩即提炼；显式序列化是多余的人工干预，自动化同步更可靠。"
+          ]
+        }
+      },
+      {
+        "id": "longhorizon-state-layering-01__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "某长程 Agent 把 L2 中间结果全量回灌 L1、三轮就把窗口撑爆；另一组从不落盘，进程一死经验全丢。关于这两种死法，哪些说法正确？",
+        "options": [
+          "智能体按任务阶段主动清理保留 L2 中间对象",
+          "压缩把 L1 早期历史重写成摘要、原始事件记入 L3 持久化",
+          "成功经验提炼成版本化技能存 L3、不用重训 L0",
+          "中间结果自动回灌 L1 最省事、序列化是多余人工活"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从撑爆与全丢两种事故判断显式管理的必要性",
+          "reasoningGoal": "先定位两次事故各自违反的分层约束；据此逐项确认「按阶段主动清理保留 L2 对象」「压缩把历史重写成摘要」等 3 项成立；并排除「自动回灌最省事」等不成立描述。"
+        },
+        "generatedAt": 1789011754834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1dab4bb6",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-5f2cbe55",
+        "sourceSnapshot": {
+          "id": "longhorizon-state-layering-01",
+          "topic": "context-engineering",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent-state",
+            "context-compaction",
+            "repl",
+            "persistence"
+          ],
+          "question": "在构建长程（Long-Horizon）智能体系统时，为了解决大语言模型上下文窗口受限及状态无法持久保留的问题，通常引入分层状态管理架构（包含 L0 模型权重、L1 激活上下文、L2 REPL 运行时与子智能体、L3 磁盘持久化存储）。关于各层级间的信息流动与状态更新机制，下列哪些说法是正确的？",
+          "options": [
+            "智能体对 L2 运行时（如 IPython 变量与子智能体句柄）的管理遵循“智能体垃圾回收”原则，由智能体根据任务阶段主动清理或保留中间对象。",
+            "上下文压缩（Compaction）会将 L1 中较早的对话历史重写为摘要，同时将原始事件完整记录至 L3 持久化存储中以供后续 REPL 显式检索。",
+            "轨迹提炼（Refinement）能够在无需更新 L0 模型权重的前提下，将成功执行轨迹中的经验转化为 L3 中版本化的技能与 Prompt 规则。",
+            "L2 产出经摘要压缩后自动同步 L1，压缩即提炼；显式序列化是多余的人工干预，自动化同步更可靠。"
+          ]
+        }
+      }
+    ],
+    "quant-qah-04": [
+      {
+        "id": "quant-qah-04__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "GPT-OSS 120B 压到 60B 再 QAH 量化成 MXFP4，4-bit 与 16-bit 对比结论哪些成立？",
+        "options": [
+          "多个基准 4-bit 学生反超同尺寸 16-bit 恢复版、如 AIME 2025",
+          "60B 4-bit 相对 120B 教师参数减半、权重内存约 1/4",
+          "4-bit 全基准严格碾压 16-bit、比特权衡不复存在",
+          "4-bit 权重内存约同尺寸 bf16 的 1/4、单 token 计算约减半"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从压缩量化账权衡 4-bit 的胜负边界",
+          "reasoningGoal": "先明确精度与比特的取舍维度；据此逐项确认「多个基准 4-bit 反超 16-bit 恢复版」「参数减半、权重内存约 1/4」等 3 项成立；并排除「全基准严格碾压、权衡不复存在」等不成立描述。"
+        },
+        "generatedAt": 1789011754834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-87906e3f",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-057743ff",
+        "sourceSnapshot": {
+          "id": "quant-qah-04",
+          "topic": "quantization",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "4-bit",
+            "16-bit",
+            "mxfp4",
+            "accuracy-recovery"
+          ],
+          "question": "在 GPT-OSS 120B 结构压缩到 60B 再经 QAH 量化为 MXFP4 的实验中，关于 4-bit 与 16-bit 的对比，哪些结论成立？",
+          "options": [
+            "多个基准上 4-bit 学生反超同尺寸 16-bit（bf16）恢复版，如 AIME 2025 与 LiveCodeBench",
+            "相比 120B 教师，60B 4-bit 学生参数减半、权重内存约 1/4，且 LiveCodeBench 反超教师",
+            "4-bit 在全部基准上都严格优于 16-bit，彻底推翻精度与比特的权衡",
+            "4-bit 权重内存约同尺寸 bf16 学生的 1/4，每 token 计算因参数减半约减半"
+          ]
+        }
+      },
+      {
+        "id": "quant-qah-04__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "实验报告：60B MXFP4 在部分基准干掉同尺寸 16-bit 版，但也有基准没赢。关于这份报告，哪些结论成立？",
+        "options": [
+          "多个基准 4-bit 反超 16-bit、AIME 2025 为证",
+          "相对 120B 教师 60B 学生参数减半、权重内存约 1/4",
+          "4-bit 在全部基准上都严格优于 16-bit",
+          "4-bit 权重内存约 bf16 四分之一"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从涨跌互现的报告解释 4-bit 胜负的条件边界",
+          "reasoningGoal": "先复现压缩与量化各自贡献的账目变化；据此逐项确认「多个基准 4-bit 反超 16-bit」「参数减半、权重内存约 1/4」等 3 项成立；并排除「所有基准全面严格占优」等不成立描述。"
+        },
+        "generatedAt": 1789011754834,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-87906e3f",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-d3e1da3a",
+        "sourceSnapshot": {
+          "id": "quant-qah-04",
+          "topic": "quantization",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "4-bit",
+            "16-bit",
+            "mxfp4",
+            "accuracy-recovery"
+          ],
+          "question": "在 GPT-OSS 120B 结构压缩到 60B 再经 QAH 量化为 MXFP4 的实验中，关于 4-bit 与 16-bit 的对比，哪些结论成立？",
+          "options": [
+            "多个基准上 4-bit 学生反超同尺寸 16-bit（bf16）恢复版，如 AIME 2025 与 LiveCodeBench",
+            "相比 120B 教师，60B 4-bit 学生参数减半、权重内存约 1/4，且 LiveCodeBench 反超教师",
+            "4-bit 在全部基准上都严格优于 16-bit，彻底推翻精度与比特的权衡",
+            "4-bit 权重内存约同尺寸 bf16 学生的 1/4，每 token 计算因参数减半约减半"
+          ]
+        }
+      }
+    ],
+    "vectordb-04": [
+      {
+        "id": "vectordb-04__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "多向量检索的查询延迟账怎么算？哪些描述符合权衡？",
+        "options": [
+          "全库穷举 GPU 单查约百毫秒、比单向量全扫慢",
+          "PLAID 类近似索引可把查询压到约 10ms 级",
+          "只对 top-k 重排时、多向量延迟几乎可忽略",
+          "多向量永远比单向量 ANN 快一个数量级、无需扫描"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从延迟预算推导穷举、近似索引与重排的选型结论",
+          "reasoningGoal": "先拆出延迟预算对检索形态的约束；据此逐项确认「全库穷举约百毫秒」「近似索引压到约 10ms 级」等 3 项成立；并排除「永远快一个数量级」等不成立描述。"
+        },
+        "generatedAt": 1789011754835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e768cb8c",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-6a0b28f4",
+        "sourceSnapshot": {
+          "id": "vectordb-04",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector",
+            "latency",
+            "plaid",
+            "exhaustive"
+          ],
+          "question": "关于多向量检索的查询延迟，下列哪些描述符合其权衡？",
+          "options": [
+            "穷举全库多向量在 GPU 上单查询约百毫秒级，比单向量全扫更慢",
+            "用 PLAID/fast-plaid 等近似索引可把多向量查询降到约 10ms 级",
+            "只对召回的 top-k 做多向量重排时，延迟几乎可忽略",
+            "多向量查询永远比单向量 ANN 快一个数量级，因为它无需扫描"
+          ]
+        }
+      },
+      {
+        "id": "vectordb-04__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "压测：全库多向量穷举单查 300ms，SLO 只要 50ms。达标方案里，哪些描述符合权衡？",
+        "options": [
+          "穷举全库多向量要百毫秒级、比单向量扫更贵",
+          "换 PLAID 近似索引、查询能压到 10ms 级",
+          "top-k 重排只算一小撮、延迟基本可忽略",
+          "多向量天然比单向量快十倍、不扫也行"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从 300ms 超标解释近似索引与重排的降延迟机理",
+          "reasoningGoal": "先复现延迟超标的内部构成；据此逐项确认「穷举要百毫秒级」「近似索引压到 10ms 级」等 3 项成立；并排除「天然快十倍不扫也行」等不成立描述。"
+        },
+        "generatedAt": 1789011754835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e768cb8c",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-3e5dbf18",
+        "sourceSnapshot": {
+          "id": "vectordb-04",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-vector",
+            "latency",
+            "plaid",
+            "exhaustive"
+          ],
+          "question": "关于多向量检索的查询延迟，下列哪些描述符合其权衡？",
+          "options": [
+            "穷举全库多向量在 GPU 上单查询约百毫秒级，比单向量全扫更慢",
+            "用 PLAID/fast-plaid 等近似索引可把多向量查询降到约 10ms 级",
+            "只对召回的 top-k 做多向量重排时，延迟几乎可忽略",
+            "多向量查询永远比单向量 ANN 快一个数量级，因为它无需扫描"
+          ]
+        }
+      }
+    ],
+    "nla-training-01": [
+      {
+        "id": "nla-training-01__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "训练 NLA 的 AV 与 AR 时，离散 Token 采样不可导。哪些训练机制说法正确？（多选）",
+        "options": [
+          "AV 离散文本拦住 AR 重构损失梯度、靠 RL 或 Gumbel-Softmax 松弛",
+          "初期 AV 解释没洞察、重构误差高，随奖励优化信息量同步涨",
+          "为防 AV 吐乱码、损失里加流畅度约束或借预训练先验",
+          "重构损失压到极低水平、文本完全真实无遗漏就有数学证明"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从不可导困境解释松弛技巧与流畅度约束的由来",
+          "reasoningGoal": "先复现离散采样切断梯度的内部过程；据此逐项确认「离散文本传不回梯度、常用松弛」「初期解释没洞察、随奖励同步涨」等 3 项成立；并排除「损失压低即数学证明真实」等不成立描述。"
+        },
+        "generatedAt": 1789011754835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1ccc550a",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-1db6ad61",
+        "sourceSnapshot": {
+          "id": "nla-training-01",
+          "topic": "interpretability",
+          "subtopic": "NLA 训练算法与损失函数构建",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "nla",
+            "training",
+            "reinforcement-learning",
+            "gumbel-softmax",
+            "non-differentiable"
+          ],
+          "question": "在构建 NLA 系统时，训练 Activation Verbalizer (AV) 与 Activation Reconstructor (AR) 面临着离散 Token 采样的不可导问题。关于 NLA 训练机制与优化策略，下列哪些说法是正确的？（多选）",
+          "options": [
+            "由于 AV 生成的文本解释是离散序列，无法直接将 AR 计算的重构损失通过梯度反向传播传回 AV，因此通常采用强化学习（如 PPO）或 Gumbel-Softmax 等松弛技巧。",
+            "在 NLA 训练初期，AV 产生的文本解释往往缺乏语义洞察力，重构误差较高；随着重构相似度奖励的优化，文本解释的信息量与准确性随之同步提升。",
+            "为了避免 AV 产生不符合语法逻辑的乱码文本，通常需要在损失函数中加入自然语言流畅度限制或利用预训练语言模型的先验知识约束。",
+            "只要重构损失降低到极低水平，就可以数学证明 AV 生成的文本完全真实且无遗漏地反映了目标模型激活向量中的全部高维特征。"
+          ]
+        }
+      },
+      {
+        "id": "nla-training-01__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "NLA 训练日志：AV 初期满嘴跑火车、重构误差爆表；加流畅度约束后才说人话。关于这个过程，哪些说法正确？（多选）",
+        "options": [
+          "AV 离散序列、AR 重构损失梯度传不回、靠松弛技巧搭桥",
+          "早期解释缺洞察误差高、奖励上去后信息量跟着涨",
+          "不加约束 AV 爱吐乱码、得用流畅度或先验管住",
+          "损失降到极低水平、文本真实性就有数学保证"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从跑火车到说人话的训练曲线推导约束设计的必要性",
+          "reasoningGoal": "先定位初期乱码与后期可用的分界约束；据此逐项确认「梯度回传断裂、得靠技巧搭桥」「早期缺洞察、奖励上去跟着涨」等 3 项成立；并排除「损失极低即数学保证真实」等不成立描述。"
+        },
+        "generatedAt": 1789011754835,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-1ccc550a",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-f4953f4b",
+        "sourceSnapshot": {
+          "id": "nla-training-01",
+          "topic": "interpretability",
+          "subtopic": "NLA 训练算法与损失函数构建",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "nla",
+            "training",
+            "reinforcement-learning",
+            "gumbel-softmax",
+            "non-differentiable"
+          ],
+          "question": "在构建 NLA 系统时，训练 Activation Verbalizer (AV) 与 Activation Reconstructor (AR) 面临着离散 Token 采样的不可导问题。关于 NLA 训练机制与优化策略，下列哪些说法是正确的？（多选）",
+          "options": [
+            "由于 AV 生成的文本解释是离散序列，无法直接将 AR 计算的重构损失通过梯度反向传播传回 AV，因此通常采用强化学习（如 PPO）或 Gumbel-Softmax 等松弛技巧。",
+            "在 NLA 训练初期，AV 产生的文本解释往往缺乏语义洞察力，重构误差较高；随着重构相似度奖励的优化，文本解释的信息量与准确性随之同步提升。",
+            "为了避免 AV 产生不符合语法逻辑的乱码文本，通常需要在损失函数中加入自然语言流畅度限制或利用预训练语言模型的先验知识约束。",
+            "只要重构损失降低到极低水平，就可以数学证明 AV 生成的文本完全真实且无遗漏地反映了目标模型激活向量中的全部高维特征。"
+          ]
+        }
+      }
+    ],
+    "ai-engineering-003": [
+      {
+        "id": "ai-engineering-003__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "Agent 线上答错了，要哪些 Trace 才能定位到哪一步？",
+        "options": [
+          "request 与 session 串联、输入 prompt 版本检索分数",
+          "记每次 LLM 调用的模型版本、出入参 token 量、工具明细与决策点",
+          "敏感字段脱敏定保留期、摘要全量存、错误抽样子集存全文",
+          "只存最终用户可见回答、中间过程全丢无需留痕也行",
+          "只记调用耗时数字就能排障、prompt 与返回值可丢弃"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从排障链条解释五要素缺一不可的机理",
+          "reasoningGoal": "先复现错误从输入到输出的传导链路；据此逐项确认「request 与 session 串联输入」「记每次调用版本用量与决策点」等 3 项成立；并排除「只存最终回答」「只记耗时」等不成立描述。"
+        },
+        "generatedAt": 1789011754836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-55d89c55",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-0c84bcbb",
+        "sourceSnapshot": {
+          "id": "ai-engineering-003",
+          "topic": "observability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "observability",
+            "tracing",
+            "agent"
+          ],
+          "question": "一个 Agent 线上出现错误回答，你需要哪些 Trace 信息才能判断问题发生在哪一步？",
+          "options": [
+            "以统一request与session id串联：原始输入、最终prompt及其版本、检索chunk内容与分数",
+            "记录每次LLM调用的模型版本、出入参与token用量，以及工具调用明细与Agent决策点",
+            "敏感字段脱敏并设保留期，全量存摘要，错误与抽样子集存全文以控制成本",
+            "只存最终用户可见回答，中间过程是性能损耗，少存即安全合规，无需留痕",
+            "只记每次调用耗时数字即可排障，prompt与工具返回值可丢弃以规避合规风险"
+          ]
+        }
+      },
+      {
+        "id": "ai-engineering-003__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "客诉 Agent 胡说八道，查日志只有最终回答和耗时，完全定不了位。补 Trace 体系时，哪些是必须的？",
+        "options": [
+          "双 id 串联输入、终版 prompt、检索内容与分数",
+          "每次 LLM 调用的版本、出入 token、工具明细、决策点全记",
+          "脱敏加保留期、摘要全存、错误与抽样存全文控成本",
+          "最终用户可见回答就够、中间留痕浪费性能",
+          "耗时数字就够排障、prompt 返回值丢了保合规"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从定不了位的客诉权衡留痕成本与可排障性的取舍",
+          "reasoningGoal": "先明确留痕成本与定位能力的取舍维度；据此逐项确认「双 id 串联输入 prompt 与检索」「版本用量明细决策点全记」等 3 项成立；并排除「最终回答就够」「耗时就够排障」等不成立描述。"
+        },
+        "generatedAt": 1789011754836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-55d89c55",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-c45aea80",
+        "sourceSnapshot": {
+          "id": "ai-engineering-003",
+          "topic": "observability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "observability",
+            "tracing",
+            "agent"
+          ],
+          "question": "一个 Agent 线上出现错误回答，你需要哪些 Trace 信息才能判断问题发生在哪一步？",
+          "options": [
+            "以统一request与session id串联：原始输入、最终prompt及其版本、检索chunk内容与分数",
+            "记录每次LLM调用的模型版本、出入参与token用量，以及工具调用明细与Agent决策点",
+            "敏感字段脱敏并设保留期，全量存摘要，错误与抽样子集存全文以控制成本",
+            "只存最终用户可见回答，中间过程是性能损耗，少存即安全合规，无需留痕",
+            "只记每次调用耗时数字即可排障，prompt与工具返回值可丢弃以规避合规风险"
+          ]
+        }
+      }
+    ],
+    "hw-scratchpad-01": [
+      {
+        "id": "hw-scratchpad-01__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "加速器上用 Scratchpad 而不用硬件 Cache，取舍在哪？哪些说法正确？（多选）",
+        "options": [
+          "Scratchpad 砍掉替换缺失检查开销、没伪共享与隐式淘汰抖动",
+          "程序员或编译器要手排 DMA 搬运、双缓冲指令打包更复杂",
+          "随机访存下硬件 Cache 带宽效率决定性优于 Scratchpad",
+          "生命周期确定的张量计算、Scratchpad 带宽逼近理论极限"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从访存确定性解释 Scratchpad 优劣的分野",
+          "reasoningGoal": "先复现两种内存在访存路径上的内部差异；据此逐项确认「省掉硬件替换检查」「手排复杂性是真实代价」等 3 项成立；并排除「随机遍历 Cache 稳赢」等不成立描述。"
+        },
+        "generatedAt": 1789011754836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-545b92bd",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-bedf45e1",
+        "sourceSnapshot": {
+          "id": "hw-scratchpad-01",
+          "topic": "pytorch-performance",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "scratchpad",
+            "cache",
+            "tpu",
+            "memory-hierarchy"
+          ],
+          "question": "在针对专用硬件加速器（如 TPU、NPU）进行性能优化时，系统工程师经常需要显式管理 Scratchpad Memory（片上暂存存储器），而非依赖 CPU 中传统的硬件自动管理缓存（如 L1/L2 Cache）。关于这两种内存架构的性能工程取舍，下列哪些说法是正确的？（多选）",
+          "options": [
+            "Scratchpad Memory 移除了自动缓存行替换和缺失检查的硬件开销，消除了伪共享与隐式缓存淘汰带来的性能抖动",
+            "Scratchpad Memory 要求程序员或编译器显式编排数据在片上与片外的 DMA 搬运，增加了指令打包和双缓冲区设计的复杂性",
+            "硬件 Cache 依靠空间局部性和时间局部性自动提升缓存命中率，在访问模式随机、非顺序的图计算或树遍历任务中通常表现出优于 Scratchpad 的决定性带宽效率",
+            "Scratchpad Memory 允许代码根据确定的内存访问生命周期精准控制分配，从而在静态可预测的张量计算中实现接近理论极限的片上带宽利用率"
+          ]
+        }
+      },
+      {
+        "id": "hw-scratchpad-01__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "TPU 上图计算抖得厉害，有人怪 Scratchpad 要手排搬运、不如换回硬件 Cache。关于这次争论，哪些说法正确？（多选）",
+        "options": [
+          "Scratchpad 砍掉替换缺失检查、伪共享抖动也随之消失",
+          "双缓冲 DMA 搬运要手排、指令打包复杂性是真实代价",
+          "随机非顺序访存下硬件 Cache 带宽效率更高",
+          "规则张量计算下 Scratchpad 带宽利用率逼近极限"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从抖动争论推导访存模式与内存选型的对应关系",
+          "reasoningGoal": "先定位抖动现象的直接诱因；据此逐项确认「砍掉替换缺失检查」「手排复杂性是真实代价」等 3 项成立；并排除「随机访存 Cache 效率更高」等不成立描述。"
+        },
+        "generatedAt": 1789011754836,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-545b92bd",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-54f9d814",
+        "sourceSnapshot": {
+          "id": "hw-scratchpad-01",
+          "topic": "pytorch-performance",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "scratchpad",
+            "cache",
+            "tpu",
+            "memory-hierarchy"
+          ],
+          "question": "在针对专用硬件加速器（如 TPU、NPU）进行性能优化时，系统工程师经常需要显式管理 Scratchpad Memory（片上暂存存储器），而非依赖 CPU 中传统的硬件自动管理缓存（如 L1/L2 Cache）。关于这两种内存架构的性能工程取舍，下列哪些说法是正确的？（多选）",
+          "options": [
+            "Scratchpad Memory 移除了自动缓存行替换和缺失检查的硬件开销，消除了伪共享与隐式缓存淘汰带来的性能抖动",
+            "Scratchpad Memory 要求程序员或编译器显式编排数据在片上与片外的 DMA 搬运，增加了指令打包和双缓冲区设计的复杂性",
+            "硬件 Cache 依靠空间局部性和时间局部性自动提升缓存命中率，在访问模式随机、非顺序的图计算或树遍历任务中通常表现出优于 Scratchpad 的决定性带宽效率",
+            "Scratchpad Memory 允许代码根据确定的内存访问生命周期精准控制分配，从而在静态可预测的张量计算中实现接近理论极限的片上带宽利用率"
+          ]
+        }
+      }
+    ],
+    "ai-eng-016": [
+      {
+        "id": "ai-eng-016__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "RAG recall@10 95% 但答案只有 70% 准，正确答案常在 Top-10 里。瓶颈定位该查什么？",
+        "options": [
+          "95% 说明检索没空间、重标评测集就行、不查下游",
+          "换更强 embedding 冲 99%、召回线性变答案、无需查下游",
+          "查 golden chunk 初排名、用 MRR/nDCG 看是否沉底",
+          "对比 rerank 前后位置、查 context 有无截断噪声淹没",
+          "查答案是否忠实引用证据、区分幻觉还是证据没给足",
+          "瓶颈是用户不会提问、教用户改句式就行、不改系统"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 95% 对 70% 的落差诊断 ranking 与 context 环节的嫌疑",
+          "reasoningGoal": "先定位落差的直接诱因；据此逐项确认「查 golden chunk 初排名」「对比 rerank 前后位置」等 3 项成立；并排除「重标就行」「换 embedding 线性传导」等不成立描述。"
+        },
+        "generatedAt": 1789011754837,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6011fbeb",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-a12f16a8",
+        "sourceSnapshot": {
+          "id": "ai-eng-016",
+          "topic": "rag",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "RAG",
+            "retrieval",
+            "reranking",
+            "debugging"
+          ],
+          "question": "一个 RAG 系统的 retrieval recall@10 达到 95%，但是最终回答准确率只有 70%。正确答案经常出现在 Top-10 中。你会如何判断问题究竟出在 retrieval、reranking、context construction 还是 generation？",
+          "options": [
+            "recall@10 已达 95% 说明检索层没有优化空间，分歧只能来自评测集标注噪声，应重标后再复测，无需排查下游",
+            "直接换更强的 embedding 模型把 recall 冲到 99%，召回提升会线性传导为答案准确率，无需再查 ranking 与 context 环节",
+            "检查 golden chunk 在初检结果中的排名，用 MRR 或 nDCG 判断初排是否把正确答案沉到了 Top-10 底部",
+            "对比 rerank 前后的位置变化，并检查最终拼入 LLM 的 context 是否包含关键证据、有无截断或噪声淹没",
+            "检查答案是否忠实使用了正确证据，用 faithfulness 区分是生成阶段幻觉，还是上游根本没给足证据",
+            "瓶颈在用户提问不规范，应在产品内引导用户按模板句式改写问题，查询规范后准确率自然回升，无需改系统"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-016__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "RAG 榜单只有召回 95 分、答案才 70 分，正确答案躺在 Top-10 里睡大觉。分层定位时，哪些做法正确？",
+        "options": [
+          "recall@10 到 95 说明检索没问题、下游免检重标即可",
+          "换更强 embedding 冲 99% 召回、答案自然跟涨、下游免检",
+          "看 golden chunk 初排名、用 MRR 判断沉底程度",
+          "看 rerank 前后挪位、查 context 截断与噪声",
+          "用 faithfulness 查引用、区分幻觉与证据缺失",
+          "用户提问太野、规范句式就回升、系统不用动"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从榜单落差权衡各环节排查的投入优先级",
+          "reasoningGoal": "先明确排查投入在各环节的取舍维度；据此逐项确认「看初排名判断沉底」「看 rerank 挪位查截断」等 3 项成立；并排除「重标即可」「换强召回免检下游」等不成立描述。"
+        },
+        "generatedAt": 1789011754837,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-6011fbeb",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-8e6b7054",
+        "sourceSnapshot": {
+          "id": "ai-eng-016",
+          "topic": "rag",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "RAG",
+            "retrieval",
+            "reranking",
+            "debugging"
+          ],
+          "question": "一个 RAG 系统的 retrieval recall@10 达到 95%，但是最终回答准确率只有 70%。正确答案经常出现在 Top-10 中。你会如何判断问题究竟出在 retrieval、reranking、context construction 还是 generation？",
+          "options": [
+            "recall@10 已达 95% 说明检索层没有优化空间，分歧只能来自评测集标注噪声，应重标后再复测，无需排查下游",
+            "直接换更强的 embedding 模型把 recall 冲到 99%，召回提升会线性传导为答案准确率，无需再查 ranking 与 context 环节",
+            "检查 golden chunk 在初检结果中的排名，用 MRR 或 nDCG 判断初排是否把正确答案沉到了 Top-10 底部",
+            "对比 rerank 前后的位置变化，并检查最终拼入 LLM 的 context 是否包含关键证据、有无截断或噪声淹没",
+            "检查答案是否忠实使用了正确证据，用 faithfulness 区分是生成阶段幻觉，还是上游根本没给足证据",
+            "瓶颈在用户提问不规范，应在产品内引导用户按模板句式改写问题，查询规范后准确率自然回升，无需改系统"
+          ]
+        }
+      }
+    ],
+    "agent-arch-tool-schema": [
+      {
+        "id": "agent-arch-tool-schema__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "工具 Schema 与实现解耦，哪些说法正确？",
+        "options": [
+          "工具定义成模型无关 schema、Harness 适配各家格式",
+          "多模型复用同一套实现、只适配 schema 差异、不重写逻辑",
+          "工具解耦之后复用性和可维护性都会更高",
+          "schema 必须和模型权重一起训练",
+          "每个模型格式不同、必须重写全部工具实现"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从多模型复用场景判断解耦设计的价值",
+          "reasoningGoal": "先明确复用性与维护成本的取舍维度；据此逐项确认「定义成模型无关 schema」「复用实现只适配差异」等 3 项成立；并排除「schema 必须随权重训练」等不成立描述。"
+        },
+        "generatedAt": 1789011754837,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f7973b6b",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-2fcbeba7",
+        "sourceSnapshot": {
+          "id": "agent-arch-tool-schema",
+          "topic": "tool-calling",
+          "subtopic": "tool-schema-decoupling",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-architecture",
+            "tool-schema",
+            "decoupling"
+          ],
+          "question": "关于 Tools Schema（工具接口定义）与实现的解耦，以下哪些说法是正确的？",
+          "options": [
+            "工具应定义为与具体模型协议无关的 schema，由 Harness 适配到不同 provider 的调用格式",
+            "不同模型可以复用同一套工具实现，只需适配 schema 差异，而不必为每个模型重写工具逻辑",
+            "解耦提升了工具的可复用性与可维护性",
+            "工具 schema 必须和模型权重一起训练才能得到",
+            "每个模型的工具调用格式不同，因此每个模型都要重写全部工具实现"
+          ]
+        }
+      },
+      {
+        "id": "agent-arch-tool-schema__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "团队要同时接三家模型，每家调用格式都不一样。关于工具层的设计，哪些说法正确？",
+        "options": [
+          "工具接口与模型协议解耦、Harness 负责格式适配",
+          "实现写一份、多模型复用、差异只在 schema 层",
+          "工具解耦之后复用和维护都会更省心",
+          "schema 得跟着权重一起训出来",
+          "一家一个格式、工具实现必须重写三遍"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从三家格式的对比判断统一实现加适配层的优越性",
+          "reasoningGoal": "先对齐三家格式的可比差异点；据此逐项确认「接口与协议解耦」「实现写一份多模型复用」等 3 项成立；并排除「schema 跟着权重训」「实现必须重写三遍」等不成立描述。"
+        },
+        "generatedAt": 1789011754837,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-f7973b6b",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-0da53812",
+        "sourceSnapshot": {
+          "id": "agent-arch-tool-schema",
+          "topic": "tool-calling",
+          "subtopic": "tool-schema-decoupling",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-architecture",
+            "tool-schema",
+            "decoupling"
+          ],
+          "question": "关于 Tools Schema（工具接口定义）与实现的解耦，以下哪些说法是正确的？",
+          "options": [
+            "工具应定义为与具体模型协议无关的 schema，由 Harness 适配到不同 provider 的调用格式",
+            "不同模型可以复用同一套工具实现，只需适配 schema 差异，而不必为每个模型重写工具逻辑",
+            "解耦提升了工具的可复用性与可维护性",
+            "工具 schema 必须和模型权重一起训练才能得到",
+            "每个模型的工具调用格式不同，因此每个模型都要重写全部工具实现"
+          ]
+        }
+      }
+    ],
+    "posttraining-2026-002": [
+      {
+        "id": "posttraining-2026-002__surface-options__manual-aq__0",
+        "kind": "surface-options",
+        "question": "DPO 相对 RLHF+RM+PPO 省了什么？为啥还能学偏好？",
+        "options": [
+          "省去独立训练奖励模型这一步、把偏好信号融进策略优化、不再单独训练 RM",
+          "仍要显式 value/critic 估优势、与 PPO 一致、啥也没省",
+          "奖励重参数化、把偏好写成与参考策略差的 logistic 损失",
+          "冻结参考策略当正则、只靠偏好对直接优化策略"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从流程对比判断 DPO 省掉的组件与保留的信号",
+          "reasoningGoal": "先对齐两套流程的组件清单；据此逐项确认「省掉单独训 RM」「奖励重参数化写成 logistic 损失」等 3 项成立；并排除「仍要 value/critic、啥也没省」等不成立描述。"
+        },
+        "generatedAt": 1789011754838,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-46a9cd2f",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-3df58659",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-002",
+          "topic": "training",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "dpo",
+            "preference-learning",
+            "alignment"
+          ],
+          "question": "DPO 与传统 RLHF + Reward Model + PPO 相比，训练流程少了哪些组件？为什么它仍然能够利用 chosen/rejected preference pairs 学习偏好？",
+          "options": [
+            "DPO 省去了独立训练奖励模型这一步，直接把偏好信号融进策略优化，而不再单独训练 RM",
+            "DPO 仍然需要训练一个显式的 value/critic 网络来估计优势函数，这与 PPO 的强化学习流程完全一致，并未省略任何组件",
+            "DPO 通过奖励重参数化，把 Bradley-Terry 偏好写成 policy 与参考策略差异的 logistic 损失",
+            "DPO 依赖一个冻结的参考策略作为正则项，仅用 chosen/rejected 偏好对就能直接优化策略"
+          ]
+        }
+      },
+      {
+        "id": "posttraining-2026-002__context-options__manual-aq__1",
+        "kind": "context-options",
+        "question": "组里争 DPO 是不是智商税：PPO 整套 RL 机器都没了，偏好还能学会？关于这场争论，哪些说法成立？",
+        "options": [
+          "把独立训练奖励模型这步省掉、偏好信号融进策略优化",
+          "DPO 仍要 value/critic 估优势、PPO 流程一个不少",
+          "偏好被重写成策略与参考差的 logistic 损失",
+          "参考策略冻结当正则项、一对偏好直接开训"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从智商税争论推导 DPO 极简流程的成立条件",
+          "reasoningGoal": "先拆出极简流程必须回答的质疑；据此逐项确认「RM 不用单独训」「偏好被重写成 logistic 损失」等 3 项成立；并排除「DPO 仍要显式 value/critic」等不成立描述。"
+        },
+        "generatedAt": 1789011754838,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-46a9cd2f",
+        "batch": "manual-aq",
+        "model": "manual",
+        "contentHash": "fnv1a-f5250928",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-002",
+          "topic": "training",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "dpo",
+            "preference-learning",
+            "alignment"
+          ],
+          "question": "DPO 与传统 RLHF + Reward Model + PPO 相比，训练流程少了哪些组件？为什么它仍然能够利用 chosen/rejected preference pairs 学习偏好？",
+          "options": [
+            "DPO 省去了独立训练奖励模型这一步，直接把偏好信号融进策略优化，而不再单独训练 RM",
+            "DPO 仍然需要训练一个显式的 value/critic 网络来估计优势函数，这与 PPO 的强化学习流程完全一致，并未省略任何组件",
+            "DPO 通过奖励重参数化，把 Bradley-Terry 偏好写成 policy 与参考策略差异的 logistic 损失",
+            "DPO 依赖一个冻结的参考策略作为正则项，仅用 chosen/rejected 偏好对就能直接优化策略"
+          ]
+        }
+      }
+    ]
+  }
+}

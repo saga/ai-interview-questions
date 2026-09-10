@@ -4,7 +4,7 @@
   "surfaceOptions": [
    "控点积随 Key 维涨尺",
    "助 softmax 免早饱留梯",
-   "注意变线性复杂度",
+   "注意复杂度平方变线性",
    "Value 自带位置信"
   ],
   "surfaceAngle": "scenario",
@@ -17,7 +17,7 @@
   "contextOptions": [
    "点积尺度随维控",
    "softmax 早饱免梯留",
-   "平方变线性级",
+   "平方变线性级别算",
    "Value 位置自带"
   ],
   "contextAngle": "mechanism",
@@ -45,7 +45,7 @@
   "contextOptions": [
    "Key 权重和为 1",
    "非负权重加权和",
-   "权重处处相等",
+   "各位置权重完全相同",
    "实数未归一化"
   ],
   "contextAngle": "tradeoff",
@@ -100,9 +100,9 @@
   "context": "loss 低上线崩。查这次泄漏，下列哪些判断成立？（请选择两个）",
   "contextOptions": [
    "未来泄漏训练期",
-   "目标推理错位",
+   "训练目标推理可见错位",
    "词表容量不足",
-   "解码双向化"
+   "解码双向化推断"
   ],
   "contextAngle": "scenario",
   "contextCognitiveTask": "evaluate",
@@ -116,7 +116,7 @@
   "surfaceOptions": [
    "异头异空间异关系",
    "拼接投影整合",
-   "头头 token 全异",
+   "每头关注完全不同 token",
    "多头自降线性"
   ],
   "surfaceAngle": "mechanism",
@@ -129,7 +129,7 @@
   "contextOptions": [
    "子空间关系分看",
    "输出拼接投影合",
-   "头间 token 互斥",
+   "各头关注不同 token",
    "复杂度线性自降"
   ],
   "contextAngle": "tradeoff",
@@ -144,7 +144,7 @@
   "surfaceOptions": [
    "QKV 宽可 64",
    "12 头拼回 768",
-   "头头 768 拼 9216",
+   "每头全 768 维拼 9216",
    "加头维恒 768"
   ],
   "surfaceAngle": "calculation",
@@ -157,8 +157,8 @@
   "contextOptions": [
    "投影宽度 64",
    "拼接恢复 768",
-   "全维拼接 9216",
-   "头数维度无关"
+   "全 768 维拼接 9216",
+   "加头维度恒 768 不变"
   ],
   "contextAngle": "tradeoff",
   "contextCognitiveTask": "evaluate",
@@ -170,10 +170,10 @@
  "sebastian-raschka-2026-08-38": {
   "surface": "交叉注意 vs 自注意？（请选择两个）",
   "surfaceOptions": [
-   "交叉 QK/V 可异源",
+   "交叉 Q 与 KV 可异序列",
    "解码交叉读编码出",
    "交叉 QKV 须同源",
-   "交叉禁访外部"
+   "交叉禁访外部源头"
   ],
   "surfaceAngle": "comparison",
   "surfaceCognitiveTask": "compare",
@@ -183,10 +183,10 @@
   },
   "context": "QK 不一家。看这次交叉，下列哪些判断成立？（请选择两个）",
   "contextOptions": [
-   "Q 与 KV 异序列",
+   "Q 与 KV 可异序列",
    "解码读编码输出",
-   "同源强制绑定",
-   "外部表示禁访"
+   "同源强制绑定制",
+   "外部表示禁访问"
   ],
   "contextAngle": "mechanism",
   "contextCognitiveTask": "explain",
@@ -212,7 +212,7 @@
   "context": "编码器解码器拼。看这次拼装，下列哪些判断成立？（请选择两个）",
   "contextOptions": [
    "输入双向建模",
-   "先因果后交叉",
+   "先因果自注意后交叉读编",
    "双向解码自回归",
    "交叉读己历史"
   ],
@@ -241,7 +241,7 @@
   "contextOptions": [
    "元素数平方增长",
    "显存压力随长涨",
-   "翻倍数量守恒",
+   "翻倍交互数量守恒",
    "掩码降复杂度"
   ],
   "contextAngle": "calculation",
@@ -257,7 +257,7 @@
    "查 QK 维 softmax 轴",
    "查 sqrt(d_k) 缩放",
    "查掩码位前置否",
-   "shape 对即免检"
+   "shape 对免数值检查"
   ],
   "surfaceAngle": "debugging",
   "surfaceCognitiveTask": "diagnose",
@@ -268,9 +268,9 @@
   "context": "输出形对数错。查这次形状，下列哪些判断成立？（请选择三个）",
   "contextOptions": [
    "维度归一轴验",
-   "缩放因子核对",
+   "确认 sqrt 缩放用对",
    "掩码位置前置查",
-   "形状对数值免"
+   "shape 对数值免检"
   ],
   "contextAngle": "scenario",
   "contextCognitiveTask": "evaluate",
@@ -298,7 +298,7 @@
    "匹配空间 WqWk 定",
    "内容表示 Wv 汇",
    "整数 id 存投影",
-   "模式训练恒定"
+   "模式训练恒定态"
   ],
   "contextAngle": "tradeoff",
   "contextCognitiveTask": "evaluate",
@@ -312,7 +312,7 @@
   "surfaceOptions": [
    "QKV 带 batch 维批量乘",
    "padding 加 mask 免染权",
-   "异样本拼无界长串",
+   "异样本拼接无界长串流转",
    "batch 共享一分布"
   ],
   "surfaceAngle": "mechanism",
@@ -323,10 +323,10 @@
   },
   "context": "一条变一摞。看这次批量，下列哪些判断成立？（请选择两个）",
   "contextOptions": [
-   "批量矩阵乘法走",
+   "批量矩阵乘法走起算",
    "padding mask 掩盖",
-   "样本拼接无边界",
-   "分布样本共享"
+   "样本拼接无边界连接",
+   "分布样本共享状态机"
   ],
   "contextAngle": "scenario",
   "contextCognitiveTask": "design",
@@ -366,10 +366,10 @@
  "net-napt-01": {
   "surface": "一公网 IP 全家上网，咋转？",
   "surfaceOptions": [
-   "出向改源 IP 配新端记表",
-   "回包仅凭目的 IP 回",
-   "转换表态，目 IP 端配对放",
-   "无映射外主直连默拦"
+   "出向源私 IP 改公网，动态配新端口记表",
+   "回包仅凭目的 IP 地址定路由回内网",
+   "转换表 Stateful 存，目 IP 端配活跃条目转发",
+   "无静态映射外主直连，默认拦截丢弃"
   ],
   "surfaceAngle": "mechanism",
   "surfaceCognitiveTask": "explain",
@@ -379,10 +379,10 @@
   },
   "context": "内网出海回程。看这次转换，下列哪些判断成立？",
   "contextOptions": [
-   "源私 IP 换公配端口",
-   "目标 IP 定回程",
-   "IP 端对条目验",
-   "未邀连接默认丢"
+   "源私 IP 改公网，动态配新端口写映射表",
+   "目标 IP 地址定路由，回内网设备",
+   "Stateful 转换表，IP 端配对活跃条目验",
+   "未配置映射外主直连，拦截丢弃"
   ],
   "contextAngle": "tradeoff",
   "contextCognitiveTask": "evaluate",
@@ -394,10 +394,10 @@
  "realtime-dual-01": {
   "surface": "200ms 快嘴加慢脑，咋协作？",
   "surfaceOptions": [
-   "前台只递末句省带宽",
-   "后台异步流回前台",
-   "前台择机 weave 非硬打断",
-   "快慢拆类 OS 快慢道"
+   "前台维持流态仅递末句，跨进程带宽省",
+   "后台异步流式回传前台",
+   "收异步回传按停顿语义择机 weave，非硬打断",
+   "设计哲学类 OS 前后台拆分，快慢道权衡"
   ],
   "surfaceAngle": "system-design",
   "surfaceCognitiveTask": "identify",
@@ -407,10 +407,10 @@
   },
   "context": "边聊边想。看这次双模，下列哪些判断成立？",
   "contextOptions": [
-   "末句转交带宽省",
-   "中间终果流回传",
-   "停顿语义织入",
-   "快慢路径哲学通"
+   "前台维持对话流状态，深层仅递末句 Prompt",
+   "中间终果流式实时回传前台",
+   "对话自然停顿语义边界，择机织入对话",
+   "设计哲学似 OS 前后台拆分快慢道权衡"
   ],
   "contextAngle": "scenario",
   "contextCognitiveTask": "design",
@@ -422,9 +422,9 @@
  "realtime-micro-01": {
   "surface": "200ms 切片边听边说，咋架构？",
   "surfaceOptions": [
-   "片内多模感决，收发时轴叠",
-   "边听说边看说，口译计数行",
-   "切片消长文推理耗",
+   "时间片基本单位，多模感决收发时轴叠",
+   "边听边说边看说，口译纠错计数行",
+   "时间切片彻底消长文推理耗",
    "200ms 内感知生成互斥难打断"
   ],
   "surfaceAngle": "mechanism",
@@ -435,9 +435,9 @@
   },
   "context": "轮次碎成时间片。看这次微轮，下列哪些判断成立？",
   "contextOptions": [
-   "时间片基本单位，收发重叠",
-   "听说看说原生行",
-   "长文推理开销清零",
+   "时间片基本单位，多模感决收发时轴叠",
+   "边听边说边看说原生支持行",
+   "时间切片消长文推理开销法",
    "互斥逻辑打断难"
   ],
   "contextAngle": "tradeoff",
@@ -450,10 +450,10 @@
  "redis-aof-01": {
   "surface": "Redis 先干后记，图啥？",
   "surfaceOptions": [
-   "省语法校验，无效不落盘",
-   "写不卡 I/O，P99 稳",
+   "省语法校验开销，有效命令落盘",
+   "先执行写不卡 I/O 阻塞，P99 延迟保障",
    "RPO=0 挂了可恢",
-   "always 仍堵主线程"
+   "always 策略追加磁盘仍堵主线程"
   ],
   "surfaceAngle": "tradeoff",
   "surfaceCognitiveTask": "evaluate",
@@ -463,10 +463,10 @@
   },
   "context": "内存先行日志断后。看这次顺序，下列哪些判断成立？",
   "contextOptions": [
-   "有效命令方记录",
-   "内存执行不卡顿",
+   "先执行后记录，有效命令入日志",
+   "内存执行不卡 I/O 阻塞",
    "挂失可磁盘找回",
-   "always 策略主堵"
+   "追加磁盘操作仍堵主线程后续"
   ],
   "contextAngle": "mechanism",
   "contextCognitiveTask": "explain",
@@ -478,10 +478,10 @@
  "redis-cow-01": {
   "surface": "fork 快照不堵，靠啥？",
   "surfaceOptions": [
-   "fork 共享页标只读，零拷",
+   "fork 免立即物理复制，共享物理页标只读",
    "写触缺页复制，主改副本",
-   "并发写多内存胀 OOM 险",
-   "子盘含快照期新数"
+   "快照期大量并发写，内存显著胀 OOM 险",
+   "子盘数据实时含快照期新数"
   ],
   "surfaceAngle": "mechanism",
   "surfaceCognitiveTask": "explain",
@@ -491,9 +491,9 @@
   },
   "context": "bgsave 不卡线。看这次写时，下列哪些判断成立？",
   "contextOptions": [
-   "物理页共享只读",
+   "子主进程共享物理页，只读标记",
    "缺页复制主写副本",
-   "写多胀 OOM 杀",
+   "写多内存占用显著上升，OOM Killer 杀到",
    "新数实时进盘"
   ],
   "contextAngle": "debugging",
@@ -506,9 +506,9 @@
  "task-ai-02": {
   "surface": "检索单 vs 裁决单，线咋划？",
   "surfaceOptions": [
-   "检索看检索精度",
+   "检索型规则事实解答，解决率看检索匹配精度",
    "裁决博弈有天花板",
-   "裁决冲 100% 无人",
+   "裁决冲 100% 无人化自动裁决",
    "爆单检索分流保裁决"
   ],
   "surfaceAngle": "tradeoff",
@@ -519,9 +519,9 @@
   },
   "context": "问答单好办，吵架单难。看这次分流，下列哪些判断成立？",
   "contextOptions": [
-   "事实解答精度定",
+   "事实解答型解决率，检索匹配精度定",
    "主观认定瓶颈存",
-   "无人裁决成本省",
+   "无人化自动裁决降运营成本",
    "常规分流保复杂"
   ],
   "contextAngle": "scenario",
@@ -534,9 +534,9 @@
  "task-ai-05": {
   "surface": "双边纠纷 AI 摆哪？",
   "surfaceOptions": [
-   "单聊强记忆跟踪三方",
-   "判例训模达置信直裁",
-   "资产数据 auto 回复减单",
+   "单线强记忆跟踪三方状态机",
+   "历史判例训模，置信直裁",
+   "资产数据 auto 生建议回复减单",
    "全局路由多语透传降 AHT"
   ],
   "surfaceAngle": "system-design",
@@ -547,8 +547,8 @@
   },
   "context": "买家卖家平台三方。看这次范式，下列哪些判断成立？",
   "contextOptions": [
-   "记忆跟踪三方态",
-   "概率模型置信裁",
+   "单聊强记忆跟踪三方状态",
+   "历史人工判例训概率模，置信直裁",
    "建议回复减摩擦",
    "多语透传转交快"
   ],

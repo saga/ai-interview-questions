@@ -1,0 +1,562 @@
+{
+ "local-first-tooling": {
+  "surface": "高并发协作卡脖子，本地优先咋整？",
+  "surfaceOptions": [
+   "远端视图本地缓存，PR 切换毫秒",
+   "Daemon 联邦同步任务态，降频读写",
+   "Agent 同步阻塞等 REST 响应",
+   "终端复用隔离树，任务独环境"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从卡脖子定缓存与隔离环节",
+   "reasoningGoal": "先定整法的环节；再逐项验证各判断；并排除「同步阻塞」等不成立描述。"
+  },
+  "context": "中心 API 限流抖动。看这次本地化，下列哪些判断成立？",
+  "contextOptions": [
+   "本地缓存视图毫秒切",
+   "Daemon 联邦同步任务态，频读写延迟降",
+   "并发阻塞等 HTTP",
+   "终端复用隔离树，任务独环境"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从抖动看缓存与阻塞环节",
+   "reasoningGoal": "先看本地化的环节；再逐项验证各判断；并排除「阻塞等」等不成立描述。"
+  }
+ },
+ "ai-arch-ide-dual-endpoint-01": {
+  "surface": "<30ms 补全对重构，模型咋配？",
+  "surfaceOptions": [
+   "补全 <30ms 小模高吞吐，重构大模推理强",
+   "补全大模独占显存卡顿界面",
+   "双端点映射异实例，并发调度内存隔离",
+   "补全对话双模须共享同 Prompt 分词配置"
+  ],
+  "surfaceAngle": "design",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从配法定小模与隔离环节",
+   "reasoningGoal": "先定配置的环节；再逐项验证各判断；并排除「须同配」等不成立描述。"
+  },
+  "context": "Tab 狂闪重构烧脑。一机双模，下列哪些判断成立？",
+  "contextOptions": [
+   "<30ms 补全小模高吞吐，重构对话大模",
+   "大模补全高频触发，显存独占卡界面",
+   "双端点并发隔离",
+   "双端点配置必须全同款"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "compare",
+  "contextAssessment": {
+   "target": "能从双模看小大与隔离环节",
+   "reasoningGoal": "先看双模的环节；再逐项验证各判断；并排除「全同」等不成立描述。"
+  }
+ },
+ "prompt-cache-affinity-routing-01": {
+  "surface": "同前缀还 Miss，为啥？",
+  "surfaceOptions": [
+   "KV 存物理节点内存，超载溢出无缓存节",
+   "显式 Key 哈希亲和提命中",
+   "RDMA 批量搬运 Miss 忽略",
+   "跨区跨租户默认不共享复用"
+  ],
+  "surfaceAngle": "system-design",
+  "surfaceCognitiveTask": "identify",
+  "surfaceAssessment": {
+   "target": "能从 Miss 定溢出与亲和环节",
+   "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「忽略」等不成立描述。"
+  },
+  "context": "前缀相同命中悬。查这次路由，下列哪些判断成立？",
+  "contextOptions": [
+   "KV 存物理节点，超载溢出他节",
+   "单节点 QPS 超阈值，溢出无缓存节点",
+   "同步带宽压 Miss",
+   "跨区租户默认不共享复用"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从悬案查爆溢与隔离环节",
+   "reasoningGoal": "先查路由的环节；再逐项验证各判断；并排除「压 Miss」等不成立描述。"
+  }
+ },
+ "long-running-agent-001": {
+  "surface": "压缩久了任务散，根因？",
+  "surfaceOptions": [
+   "多次压缩丢细节，盲目冒进误判",
+   "Git 外态确定，新会免推史",
+   "增量改版本控，失败速滚主干可用",
+   "压缩碎符号树，工具链定位瞎"
+  ],
+  "surfaceAngle": "tradeoff",
+  "surfaceCognitiveTask": "evaluate",
+  "surfaceAssessment": {
+   "target": "能从散法定丢失与外态环节",
+   "reasoningGoal": "先定根因的环节；再逐项验证各判断；并排除「碎码树」等不成立描述。"
+  },
+  "context": "长跑靠压缩续命。看这次局限，下列哪些判断成立？",
+  "contextOptions": [
+   "多次压缩丢细节，盲目冒进误判",
+   "Git 外态确定，新会免推史",
+   "回滚主干常可用",
+   "符号树碎定位瞎"
+  ],
+  "contextAngle": "mechanism",
+  "contextCognitiveTask": "explain",
+  "contextAssessment": {
+   "target": "能从续命看丢失与瞎环节",
+   "reasoningGoal": "先看局限的环节；再逐项验证各判断；并排除「碎瞎」等不成立描述。"
+  }
+ },
+ "oreilly-radar-2026-08-01": {
+  "surface": "非人身份台账记啥？（请选择两个）",
+  "surfaceOptions": [
+   "资产责任归属认",
+   "权限周期失效记",
+   "只记名调次",
+   "只记输出不记主"
+  ],
+  "surfaceAngle": "system-design",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从台账定归属与周期环节",
+   "reasoningGoal": "先定记录的环节；再逐项验证各判断；并排除「只记名」「只记出」等不成立描述。"
+  },
+  "context": "Agent 裸奔。建这次台账，下列哪些判断成立？（请选择两个）",
+  "contextOptions": [
+   "代表资产责任清",
+   "范围周期失效明",
+   "名称次数记",
+   "主体执行不记"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从裸奔建清單与记环节",
+   "reasoningGoal": "先建台账的环节；再逐项验证各判断；并排除「记」「不记」等不成立描述。"
+  }
+ },
+ "oreilly-radar-2026-08-02": {
+  "surface": "凭证短窄按意审，为啥？（请选择两个）",
+  "surfaceOptions": [
+   "短命减泄露窗口",
+   "收窄按意重验",
+   "长令便扩展",
+   "token 加密期范免"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从凭证定短命与收窄环节",
+   "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「便扩展」「无视」等不成立描述。"
+  },
+  "context": "standing token 躺枪。换这次凭证，下列哪些判断成立？（请选择两个）",
+  "contextOptions": [
+   "泄露窗口随期缩",
+   "任务范围调用验",
+   "自主扩展长令便",
+   "加密周期范围免"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从躺枪换窗口与免环节",
+   "reasoningGoal": "先换凭证的环节；再逐项验证各判断；并排除「便」「免」等不成立描述。"
+  }
+ },
+ "oreilly-radar-2026-08-03": {
+  "surface": "skill 装后变卦，咋治？（请选择两个）",
+  "surfaceOptions": [
+   "锁版验载荷完整",
+   "监变重审阻断",
+   "一扫永信后续",
+   "Agent 自判链接信"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从变卦定锁版与重审环节",
+   "reasoningGoal": "先定治理的环节；再逐项验证各判断；并排除「永信」「自判」等不成立描述。"
+  },
+  "context": "安全扫描过时。看这次重定向，下列哪些判断成立？（请选择两个）",
+  "contextOptions": [
+   "版本载荷双锁定",
+   "运行时变更重批",
+   "通过即永久信任",
+   "远程可信自断"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从过时看锁定与断环节",
+   "reasoningGoal": "先看重定向的环节；再逐项验证各判断；并排除「永久」「自断」等不成立描述。"
+  }
+ },
+ "oreilly-radar-2026-08-04": {
+  "surface": "僵尸身份有全权，查啥？（请选择两个）",
+  "surfaceOptions": [
+   "认主查隐依赖",
+   "看调用定撤换隔",
+   "未用即立删",
+   "无近期调用即无险"
+  ],
+  "surfaceAngle": "debugging",
+  "surfaceCognitiveTask": "diagnose",
+  "surfaceAssessment": {
+   "target": "能从僵尸定认主与撤换环节",
+   "reasoningGoal": "先定调查的环节；再逐项验证各判断；并排除「立删」「无险」等不成立描述。"
+  },
+  "context": "吃灰权限不过期。查这次僵尸，下列哪些判断成立？（请选择两个）",
+  "contextOptions": [
+   "责任隐藏依赖清",
+   "看调用证据定撤换隔",
+   "闲置直接删除",
+   "沉默认安全态"
+  ],
+  "contextAngle": "scenario",
+  "contextCognitiveTask": "design",
+  "contextAssessment": {
+   "target": "能从吃灰查清去与默环节",
+   "reasoningGoal": "先查僵尸的环节；再逐项验证各判断；并排除「删除」「默认」等不成立描述。"
+  }
+ },
+ "oreilly-radar-2026-08-05": {
+  "surface": "预览链串租户，服务端必须锁啥？",
+  "surfaceOptions": [
+   "会话绑认证租户",
+   "授权沙箱隔离服务端强",
+   "链接即边界",
+   "token 塞 prompt 自隔"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从串户定绑定与强制环节",
+   "reasoningGoal": "先定边界的环节；再逐项验证各判断；并排除「即边界」「自隔」等不成立描述。"
+  },
+  "context": "服务端必须强制执行。链接一转发窜房，堵这次串户，下列哪些判断成立？",
+  "contextOptions": [
+   "租户身份会话绑",
+   "执行环境强制隔",
+   "预览链接即隔离",
+   "prompt 塞 token 隔"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从窜房堵绑隔与隔环节",
+   "reasoningGoal": "先堵串户的环节；再逐项验证各判断；并排除「即隔」「塞隔」等不成立描述。"
+  }
+ },
+ "oreilly-radar-2026-08-13": {
+  "surface": "LoRA 咋省钱？（请选择两个）",
+  "surfaceOptions": [
+   "基模冻结不动",
+   "小适配降迁本",
+   "免数据训练",
+   "适配不改行为"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从省法定冻结与适配环节",
+   "reasoningGoal": "先定特点的环节；再逐项验证各判断；并排除「免数据」「不改行」等不成立描述。"
+  },
+  "context": "全量太贵。看这次适配，下列哪些判断成立？（请选择两个）",
+  "contextOptions": [
+   "权重冻结基座稳",
+   "迁移成本适配降",
+   "数据需求为零",
+   "适配不改行为"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从太贵看稳降与无环节",
+   "reasoningGoal": "先看适配的环节；再逐项验证各判断；并排除「为零」「自动无」等不成立描述。"
+  }
+ },
+ "clip-objective-efficiency-01": {
+  "surface": "对比为啥比生成省？",
+  "surfaceOptions": [
+   "逐词预测啃措辞语法，对比判配对降单步",
+   "共享空间优化余弦相似，避自回归解码，图 2 提速",
+   "对比省文本编码，显存降九成",
+   "对比弃文本，纯视觉最优"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从省法定降步与避解环节",
+   "reasoningGoal": "先定机理的环节；再逐项验证各判断；并排除「降九成」「纯视优」等不成立描述。"
+  },
+  "context": "逐词算账太贵。看这次对比，下列哪些判断成立？",
+  "contextOptions": [
+   "逐词预测精确概率耗算力，对比判别代理降单步",
+   "多模共享空间优化余弦，避自回归解码",
+   "文本编码开销全免除",
+   "视觉特征无文本最优解"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从太贵看省替与免环节",
+   "reasoningGoal": "先看对比的环节；再逐项验证各判断；并排除「全免」「最优」等不成立描述。"
+  }
+ },
+ "clip-zero-shot-synthesis-01": {
+  "surface": "开放词表咋零样本？",
+  "surfaceOptions": [
+   "类名填模板送编码器，向量当权阵",
+   "图文余弦乘温 Softmax，免重训",
+   "图先解码成文再字匹配对",
+   "冻图调文尾拟合新类别库"
+  ],
+  "surfaceAngle": "architecture",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从零样定权阵与免训环节",
+   "reasoningGoal": "先定机制的环节；再逐项验证各判断；并排除「解码匹配」「调文拟合」等不成立描述。"
+  },
+  "context": "N 类头不要了。看这次开放，下列哪些判断成立？",
+  "contextOptions": [
+   "模板类名向量当分类权重",
+   "相似度温 Softmax 免训",
+   "解码文本字符串匹配",
+   "尾层反传拟合新类别"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "compare",
+  "contextAssessment": {
+   "target": "能从不要看当权与拟环节",
+   "reasoningGoal": "先看开放的环节；再逐项验证各判断；并排除「字匹配」「拟新类」等不成立描述。"
+  }
+ },
+ "clip-zero-shot-vs-linear-probe-01": {
+  "surface": "零样本 vs 微调头，啥时谁赢？",
+  "surfaceOptions": [
+   "7 集偏移胜监督，缺口缩 75%",
+   "27 集评测全胜 ResNet50 拟合，无落后集",
+   "卫星肿瘤计数弱，仍需标注拟合",
+   "模板无影响单模最优解"
+  ],
+  "surfaceAngle": "tradeoff",
+  "surfaceCognitiveTask": "evaluate",
+  "surfaceAssessment": {
+   "target": "能从谁赢定偏移与短板环节",
+   "reasoningGoal": "先定权衡的环节；再逐项验证各判断；并排除「无短板」「无影响」等不成立描述。"
+  },
+  "context": "分布一偏谁扛。比这次迁移，下列哪些判断成立？",
+  "contextOptions": [
+   "7 集偏移胜监督，缺口缩 75%",
+   "27 集全胜无弱项",
+   "专业抽象任务弱，标注拟合补",
+   "措辞影响零调优法则"
+  ],
+  "contextAngle": "scenario",
+  "contextCognitiveTask": "design",
+  "contextAssessment": {
+   "target": "能从偏扛比胜弱与零环节",
+   "reasoningGoal": "先比迁移的环节；再逐项验证各判断；并排除「无弱」「零」等不成立描述。"
+  }
+ },
+ "clip-projection-augmentation-01": {
+  "surface": "CLIP 凭啥砍投影增强？",
+  "surfaceOptions": [
+   "过拟合非主要矛盾，留线性",
+   "文本单句变换函数删，唯方裁剪留",
+   "线性为共骨干省参数",
+   "线性防坍塌唯一充要"
+  ],
+  "surfaceAngle": "architecture",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从砍法定过拟与唯裁环节",
+   "reasoningGoal": "先定简化的环节；再逐项验证各判断；并排除「共骨干」「唯一」等不成立描述。"
+  },
+  "context": "SimCLR 那套全砍。看这次简化，下列哪些判断成立？",
+  "contextOptions": [
+   "过拟合非患，表征对比空间线性留",
+   "随机方形裁剪唯一数据增强用",
+   "骨干权重两模共享用项",
+   "坍塌充要线性保证项"
+  ],
+  "contextAngle": "mechanism",
+  "contextCognitiveTask": "explain",
+  "contextAssessment": {
+   "target": "能从全砍看不怕与保环节",
+   "reasoningGoal": "先看简化的环节；再逐项验证各判断；并排除「两模享」「保」等不成立描述。"
+  }
+ },
+ "gnn-expressiveness-1wl": {
+  "surface": "MPNN 表达天花板？",
+  "surfaceOptions": [
+   "1-WL 不分非同构图，MPNN 图拓扑不分",
+   "单射 Sum 聚合替，MPNN 超 1-WL",
+   "无初唯一特征，环长正则图不辨",
+   "随机子图架构破上限"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从花板定不分与破限环节",
+   "reasoningGoal": "先定上限的环节；再逐项验证各判断；并排除「即超」「破限」等不成立描述。"
+  },
+  "context": "正则图长得一样。看这次区分，下列哪些判断成立？",
+  "contextOptions": [
+   "正则图 1-WL 不分，拓扑特征同",
+   "GIN Sum 单射替，区分超上限",
+   "缺初唯一特征纯拓扑输入，环长连通正则不辨",
+   "子图架构破上限"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "compare",
+  "contextAssessment": {
+   "target": "能从一样看同构与破环节",
+   "reasoningGoal": "先看区分的环节；再逐项验证各判断；并排除「破」等不成立描述。"
+  }
+ },
+ "gnn-over-smoothing-debugging": {
+  "surface": "16 层越训越糊，咋救？",
+  "surfaceOptions": [
+   "深层图卷积低通滤波，节点收敛基态",
+   "每次迭代随机删边，连通降糊缓",
+   "增量架构只发新果柄，服务端内存复原",
+   "LayerNorm 重置模长即止糊"
+  ],
+  "surfaceAngle": "debugging",
+  "surfaceCognitiveTask": "diagnose",
+  "surfaceAssessment": {
+   "target": "能从糊法定滤波与融合环节",
+   "reasoningGoal": "先定救法的环节；再逐项验证各判断；并排除「重置止」等不成立描述。"
+  },
+  "context": "Dirichlet 能量归零。诊这次过平滑，下列哪些判断成立？",
+  "contextOptions": [
+   "低通滤波多迭代，表征收敛基态",
+   "每次迭代删边降连通，糊缓",
+   "层跃融合浅深抗",
+   "模长重置方向止"
+  ],
+  "contextAngle": "scenario",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从归零诊收降与止环节",
+   "reasoningGoal": "先诊过平滑的环节；再逐项验证各判断；并排除「止」等不成立描述。"
+  }
+ },
+ "gnn-spectral-vs-spatial": {
+  "surface": "谱域空域啥关系？",
+  "surfaceOptions": [
+   "拉普拉斯特征分解谱基，拓扑绑定难泛化",
+   "切比雪夫多项式逼近，免分解 K 跳聚",
+   "后续 GEMM 乘，Dispatcher 依 stride 选预编译核",
+   "空域无频域映射关系论"
+  ],
+  "surfaceAngle": "comparison",
+  "surfaceCognitiveTask": "compare",
+  "surfaceAssessment": {
+   "target": "能从关系定难泛与特例环节",
+   "reasoningGoal": "先定联系的环节；再逐项验证各判断；并排除「无映射」等不成立描述。"
+  },
+  "context": "傅里叶 vs 消息传。看这次视角，下列哪些判断成立？",
+  "contextOptions": [
+   "拉普拉斯特征基绑拓扑，泛化难",
+   "多项式逼近谱滤波，免分解 K 聚",
+   "GEMM Dispatcher 依改后 stride 选预编译核",
+   "频域低通无关联关系"
+  ],
+  "contextAngle": "mechanism",
+  "contextCognitiveTask": "explain",
+  "contextAssessment": {
+   "target": "能从视角看绑定与关环节",
+   "reasoningGoal": "先看视角的环节；再逐项验证各判断；并排除「无关联」等不成立描述。"
+  }
+ },
+ "data-leakage-01": {
+  "surface": "会议纪要带身份证，咋防漏？",
+  "surfaceOptions": [
+   "检索按身份权限滤，有权片段进",
+   "敏感字段脱敏占位替，任务必需留",
+   "输出日志脱敏审计",
+   "原文全塞靠自觉性防"
+  ],
+  "surfaceAngle": "scenario",
+  "surfaceCognitiveTask": "design",
+  "surfaceAssessment": {
+   "target": "能从防漏定过滤与审计环节",
+   "reasoningGoal": "先定做法的环节；再逐项验证各判断；并排除「靠自觉」等不成立描述。"
+  },
+  "context": "身份证号躺检索里。堵这次泄露，下列哪些判断成立？",
+  "contextOptions": [
+   "权限过滤进上下文",
+   "敏感字段脱敏占位替，任务必需留",
+   "输出日志脱敏存，二次泄露防",
+   "原文全注入自觉"
+  ],
+  "contextAngle": "debugging",
+  "contextCognitiveTask": "diagnose",
+  "contextAssessment": {
+   "target": "能从躺平堵过滤与存环节",
+   "reasoningGoal": "先堵泄露的环节；再逐项验证各判断；并排除「自觉」等不成立描述。"
+  }
+ },
+ "agent-cost-01": {
+  "surface": "Agent 烧 token 为啥比聊天贵？",
+  "surfaceOptions": [
+   "总 Token 随轮次超线性累积，增量不大 Input 陡升",
+   "超线性累积，小步大成本",
+   "无人值守高频无自然制",
+   "本地改隐态免重传历史"
+  ],
+  "surfaceAngle": "mechanism",
+  "surfaceCognitiveTask": "explain",
+  "surfaceAssessment": {
+   "target": "能从贵法定重发与高频环节",
+   "reasoningGoal": "先定原因的环节；再逐项验证各判断；并排除「改隐态」等不成立描述。"
+  },
+  "context": "账单 takeoff。查这次消耗，下列哪些判断成立？",
+  "contextOptions": [
+   "增量输入不大后续步骤成本攀升",
+   "Input 成本陡攀升",
+   "API 速率拉满打",
+   "隐状态本地修改留存版"
+  ],
+  "contextAngle": "tradeoff",
+  "contextCognitiveTask": "evaluate",
+  "contextAssessment": {
+   "target": "能从起飞查轮带与改环节",
+   "reasoningGoal": "先查消耗的环节；再逐项验证各判断；并排除「本地改」等不成立描述。"
+  }
+ },
+ "agent-jevons-01": {
+  "surface": "单价降六成账单涨两成，咋了？",
+  "surfaceOptions": [
+   "反弹效应新场景放量，总量超账单升",
+   "单价降配固定月度预算上限",
+   "目标固定预算内价值最大化",
+   "收紧路由回旗舰止血"
+  ],
+  "surfaceAngle": "tradeoff",
+  "surfaceCognitiveTask": "evaluate",
+  "surfaceAssessment": {
+   "target": "能从反升定放量与 Cap 环节",
+   "reasoningGoal": "先定现象的环节；再逐项验证各判断；并排除「切回旗舰」等不成立描述。"
+  },
+  "context": "越省越贵。看这次悖论，下列哪些判断成立？",
+  "contextOptions": [
+   "单价降新场景可行，总量超账单升",
+   "单价降配固定月度预算上限",
+   "资产建议回复减摩擦",
+   "阈值收紧回大模"
+  ],
+  "contextAngle": "scenario",
+  "contextCognitiveTask": "design",
+  "contextAssessment": {
+   "target": "能从悖论看放量与回环节",
+   "reasoningGoal": "先看悖论的环节；再逐项验证各判断；并排除「回大模」等不成立描述。"
+  }
+ }
+}
