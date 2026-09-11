@@ -1,0 +1,92 @@
+[
+  {
+    "id": "tpu-cluster-topology",
+    "name": "TPU 集群拓扑与子切片降级",
+    "area": "ai-systems",
+    "topic": "cluster-interconnect",
+    "priority": "P1",
+    "summary": "TPU v5e 等采用 2D Torus 互连，Full Pod 在各轴向具备 wraparound 环回链路；当申请的子切片在某轴向小于 Pod 周期尺寸时，该轴向丢失 wraparound 链路，拓扑由 Torus 降级为 Mesh，环形集合通信被迫沿链式路径折返，步数与延时约翻倍。",
+    "required": [
+      "Full Pod（如 16×16）在各轴向具备 wraparound 周期性环回链路，构成 2D Torus",
+      "子切片轴向尺寸小于 Pod 周期时该轴向丢失 wraparound 链路，拓扑降级为 Mesh",
+      "Mesh 上 Ring All-Gather/Reduce-Scatter 无法成环，需沿 1D 链式路径双向折返，通信步数与延时增加约 2 倍"
+    ],
+    "misconceptions": [
+      "误以为任意子切片尺寸均能保持完整 Torus 拓扑与 wraparound 链路",
+      "忽略 wraparound 链路缺失导致环形传输退化为链式折返，导致集合通信耗时倍增"
+    ],
+    "angles": ["architecture", "scenario"]
+  },
+  {
+    "id": "collective-communication-primitives",
+    "name": "集合通信原语与 All-Reduce 拆解",
+    "area": "ai-systems",
+    "topic": "cluster-interconnect",
+    "priority": "P1",
+    "summary": "All-Reduce 可拆解为 Reduce-Scatter（分块规约与散布）与 All-Gather（规约结果全集收集）两个阶段；在 1D Ring 实现中两阶段通信量与耗时完全对称，故 All-Reduce 总耗时为单阶段的 2 倍，FSDP/ZeRO-3 正是利用该可拆解性解耦前后向通信。",
+    "required": [
+      "All-Reduce = Reduce-Scatter + All-Gather：先分块规约散布，再全集收集",
+      "1D Ring 下两阶段传输数据量与步数高度对称，总耗时为单阶段 2 倍",
+      "FSDP 在前向/反向中分别使用 All-Gather 取参、Reduce-Scatter 回传梯度"
+    ],
+    "misconceptions": [
+      "将 All-Reduce 误认为单步全集拼接，忽略节点间点对点规约加法过程",
+      "误以为 Reduce-Scatter 与 All-Gather 耗时不对称，无法推导 2 倍系数"
+    ],
+    "angles": ["mechanism", "tradeoff"]
+  },
+  {
+    "id": "expert-parallelism-communication",
+    "name": "MoE 专家并行的 All-to-All 通信",
+    "area": "ai-systems",
+    "topic": "cluster-interconnect",
+    "priority": "P1",
+    "summary": "MoE 专家并行中 Router 把 Token 分发到不同芯片的 Expert，源端分组到目标专家分组的重组在物理上等价于分布式矩阵转置，需经 All-to-All 集合通信实现个性化多对多传输；其瓶颈与张量并行的 All-Gather/All-Reduce 范式不同，随 EP 规模增大易成主导瓶颈。",
+    "required": [
+      "Token-to-Expert 映射要求按源芯片分组重组为按目标专家分组，即分布式矩阵转置",
+      "该重组经 All-to-All 实现个性化多对多点对点传输，非广播",
+      "区别于 TP 的 All-Gather/Reduce-Scatter 范式；EP 增大时 All-to-All 易成瓶颈"
+    ],
+    "misconceptions": [
+      "将 MoE 路由通信误认为 All-Gather 或 Broadcast，忽略多对多传输特性",
+      "混淆 Tensor Parallel 的 All-Gather/Reduce-Scatter 范式与 Expert Parallel 的 All-to-All 范式"
+    ],
+    "angles": ["mechanism", "system-design"]
+  },
+  {
+    "id": "gpu-cluster-network-topology",
+    "name": "GPU 集群 Fat-Tree 双切带宽",
+    "area": "ai-systems",
+    "topic": "cluster-interconnect",
+    "priority": "P1",
+    "summary": "无超售 Full Fat-Tree 中上行带宽与下行注入带宽等价，任意二分划分的跨区单向吞吐上限由节点数较少一侧的注入总带宽决定（较小侧节点数 × 单节点注入带宽），而非总量、较大侧或两侧之差。",
+    "required": [
+      "Full Fat-Tree 无超售：上行带宽与下行注入带宽完全一致",
+      "跨区单向吞吐上限 = min(两侧节点数) × 单节点注入带宽",
+      "常见误算：总量相加、取较大侧、取两侧之差"
+    ],
+    "misconceptions": [
+      "误以为集群总双切带宽等于所有节点注入带宽直接相加",
+      "混淆单节点单向 NIC 注入带宽与交换机跨分区累计双切带宽"
+    ],
+    "angles": ["calculation", "scenario"]
+  },
+  {
+    "id": "in-network-reduction",
+    "name": "网络内规约与计算卸载",
+    "area": "ai-systems",
+    "topic": "cluster-interconnect",
+    "priority": "P1",
+    "summary": "SHARP 等网络内规约把向量累加卸载到交换机硬件，在途完成规约；相比软件 Ring All-Reduce 省掉 GPU 端为中间累加消耗的 SM 算力与 HBM 访存，让 GPU 专注前后向计算，其本质是计算卸载而非单纯的高带宽传输。",
+    "required": [
+      "规约计算卸载到 NVSwitch/IB 交换机硬件，在途规约",
+      "省掉 GPU 端中间累加的 SM 开销与 HBM 读写",
+      "本质是计算卸载，不是高带宽网卡加速"
+    ],
+    "misconceptions": [
+      "将 SHARP 仅视为高带宽传输加速，忽略交换机内计算卸载本质",
+      "误以为网内规约后 GPU 仍需相同 SM 算力做中间累加"
+    ],
+    "angles": ["tradeoff"]
+  }
+]

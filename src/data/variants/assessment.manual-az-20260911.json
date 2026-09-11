@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "generatedAt": 1789137945344,
+  "promptVersion": "v1",
+  "variants": {
+    "tpu-torus-mesh-subslice-degradation": [
+      {
+        "id": "tpu-torus-mesh-subslice-degradation__context-options__manual-az__0",
+        "kind": "context-options",
+        "question": "某训练任务在 TPU v5e 集群上由 Full Pod 更改为小规模子切片（如 8×16 节点）运行时，观察到环形集合通信（Ring Collectives）算子的传输延时相比预期有明显上升。从硬件拓扑与通信路径角度诊断，下列哪些分析是正确的？",
+        "options": [
+          "当申请切片维度小于 Full Pod 周期时失去 wraparound 环回链路，使底层拓扑由 2D Torus 退化为 2D Mesh。",
+          "缺乏 wraparound 链路使集合通信无法在环上单向传输，需沿 1D 路径双向折返，致使通信步数与延时增加约 2 倍。",
+          "无论申请的切片规模如何改变，系统均能自动提供逻辑 wraparound 链路，确保拓扑始终维持 Full Torus 状态。",
+          "拓扑变更为 Mesh 仅按物理节点比例降低通信吞吐量，并不增加环形集合通信算法在单轴传输时的总消息步数。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能够根据 TPU 切片尺寸（Slice Size）推断拓扑结构是否退化为 Mesh，并评估拓扑退化对 Ring Collectives 通信步数与延时的定量影响",
+          "reasoningGoal": "先判断当前集群配置下 TPU 拓扑是否丢失 wraparound 链路；再分析集合通信延迟突增对总体训练迭代步长瓶颈的贡献；据此排除将通信瓶颈误归因于 PCIe 或 DCN 跨节点带宽限制的定位错误"
+        },
+        "generatedAt": 1789137945344,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-35703027",
+        "batch": "manual-az",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "tpu-torus-mesh-subslice-degradation",
+          "topic": "tpu-cluster-topology",
+          "angle": "architecture",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "tpu",
+            "torus",
+            "mesh",
+            "ici",
+            "ring-collectives"
+          ],
+          "question": "在 TPU v5e 等 2D Torus 架构集群中，当用户申请的 Slice 尺寸在轴向（如 4×4 或 8×16）小于 Full Pod 的周期尺寸（如 16）时，会对底层集群网络拓扑结构及环形集合通信（Ring Collectives）性能产生怎样的影响？",
+          "options": [
+            "切片维度未达 Full Pod 尺寸时失去周期性 wraparound 链路，导致网络拓扑由 2D Torus 降级为 2D Mesh 结构。",
+            "缺失 wraparound 链路后，环形集合通信无法环状直连，需沿 1D 链式路径折返传输，通信延时与步数增加约 2 倍。",
+            "无论切片尺寸如何缩减，系统均能在逻辑层面动态补全 wraparound 链路，保持拓扑为完整 Torus 结构。",
+            "拓扑退化为 Mesh 仅对全局网卡吞吐产生线性等比例削减，并不影响环形集合通信在单轴上的消息传输步数。"
+          ]
+        },
+        "contentHash": "fnv1a-027bf2a1"
+      }
+    ],
+    "collective-ops-allreduce-decomposition": [
+      {
+        "id": "collective-ops-allreduce-decomposition__context-options__manual-az__0",
+        "kind": "context-options",
+        "question": "在使用全分片数据并行（FSDP/ZeRO-3）等显存优化技术时，开发人员常将传统的 All-Reduce 梯度同步拆分为前向与反向传播中的细粒度通信算子。基于 Ring 集合通信机制，下列哪些关于该拆解过程的技术判断是正确的？",
+        "options": [
+          "大消息传输场景中，原本一体化的 All-Reduce 算子可完全解耦拆解为 Reduce-Scatter 和 All-Gather 两个阶段分步运行。",
+          "在 1D Ring 拓扑下，Reduce-Scatter 与 All-Gather 的传输数据量及步数高度对称，两阶段耗时和等于 All-Reduce 总耗时。",
+          "拆解后的通信过程仅执行数据全集广播与拼接，节点之间不再需要在中间传输过程中进行任何形式的数值规约计算。",
+          "Reduce-Scatter 阶段只需传输局部切片，其通信耗时远低于 All-Gather 阶段，因此无法通过对称拆解推导整体耗时。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能够理解 All-Reduce 拆解为 Reduce-Scatter 与 All-Gather 的双阶段推导过程，并计算 Ring 拓扑下分布式数据并行（DP/FSDP）的通信开销",
+          "reasoningGoal": "先拆解 All-Reduce 为 Reduce-Scatter 和 All-Gather 两个阶段；再推导各阶段在 Ring 算法下的数据传输总量与时间开销关系；据此排除将 All-Reduce 误认为单次全广播操作或忽略 Reduce 阶段通信开销的错误推论"
+        },
+        "generatedAt": 1789137945344,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-85dca613",
+        "batch": "manual-az",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "collective-ops-allreduce-decomposition",
+          "topic": "collective-communication-primitives",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "all-reduce",
+            "reduce-scatter",
+            "all-gather",
+            "ring-algorithm"
+          ],
+          "question": "在大规模分布式模型训练中，All-Reduce 是用于梯度同步的重要集合通信算子。关于 All-Reduce 算子的内部拆解机制及其在 Ring 拓扑下的通信复杂度，下列哪些说法是正确的？",
+          "options": [
+            "在大消息吞吐受限场景下，All-Reduce 算子可在逻辑上顺次拆解为 Reduce-Scatter 与 All-Gather 两个步骤。",
+            "在 1D Ring 算法实现中，Reduce-Scatter 与 All-Gather 的通信量与耗时完全对称，故 All-Reduce 总耗时为单阶段的 2 倍。",
+            "All-Reduce 仅涉及单次全集数据拼接广播，节点间无需在中间传输过程中执行点对点的规约加法计算。",
+            "Reduce-Scatter 阶段只需传输局部切片，其通信耗时远低于 All-Gather 阶段，二者在时间复杂度上不对称。"
+          ]
+        },
+        "contentHash": "fnv1a-c75627a0"
+      }
+    ],
+    "moe-all-to-all-expert-parallelism": [
+      {
+        "id": "moe-all-to-all-expert-parallelism__context-options__manual-az__0",
+        "kind": "context-options",
+        "question": "某大模型架构团队在评估 MoE 混合专家模型系统扩展性时，发现随着专家并行度（EP）增加，网络通信时延对端到端吞吐的影响愈发显著。从系统设计与网络通信角度评估该现象，下列哪些分析是正确的？",
+        "options": [
+          "MoE 路由把 Token 跨芯片分发至不同 Expert，此过程在集群通信层面上展现为分布式矩阵转置（Sharded Transpose）。",
+          "该跨节点 Token 重组属于个性化多对多传输，必须通过 All-to-All 算子将数据按源节点分组转换为按目标专家节点分组。",
+          "专家路由数据交换在底层仅表现为 All-Gather 全广播模式，节点只需将本地 Token 全量广播给所有专家节点即可。",
+          "专家并行的性能瓶颈与张量并行（TP）相同，其通信开销主要来源于前向与反向传播中的 All-Reduce 梯度同步操作。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能够分析 MoE 专家并行中 Token 路由分发过程与 All-to-All 集合通信算子的映射关系及其瓶颈特性",
+          "reasoningGoal": "先分析 MoE Router 产生的 Token-to-Expert 映射结构；再推导该多对多传输过程在集群中通过 All-to-All 算子实现分布式矩阵转置的物理本质；据此排除将 MoE 通信瓶颈误归因于 All-Reduce 梯度同步或常规 Tensor Parallel All-Gather 的错误判断"
+        },
+        "generatedAt": 1789137945344,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d9eebe65",
+        "batch": "manual-az",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "moe-all-to-all-expert-parallelism",
+          "topic": "expert-parallelism-communication",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "moe",
+            "all-to-all",
+            "expert-parallelism",
+            "routing"
+          ],
+          "question": "混合专家模型（MoE）在分布式训练与推理时采用了专家并行（Expert Parallelism）策略。关于路由（Router）分发 Token 时的通信机制及其物理本质，下列哪些说法是正确的？",
+          "options": [
+            "MoE 架构中，Router 将不同 Token 分配至不同芯片上的 Expert，节点间的数据交换在物理上等价于分布式矩阵转置。",
+            "专家并行中 Token 的个性化跨节点重组过程，需要依赖 All-to-All 集合通信算子来实现多对多的点对点数据打包与路由分发。",
+            "专家并行路由通信的本质是全集广播（All-Gather），各节点只需向全网复制相同的 Token 向量即可完成专家分配。",
+            "MoE 专家并行的通信瓶颈与张量并行（TP）完全一致，均主要由 All-Reduce 梯度同步与前向切分广播操作所主导。"
+          ]
+        },
+        "contentHash": "fnv1a-a833d785"
+      }
+    ],
+    "gpu-fat-tree-bisection-bandwidth": [
+      {
+        "id": "gpu-fat-tree-bisection-bandwidth__context-options__manual-az__0",
+        "kind": "context-options",
+        "question": "某 AI 数据中心部署了一个由 128 个 GPU 节点组成的无超售 Full Fat-Tree 集群，每节点网卡注入带宽为 400 GB/s。现需要将集群划分为两个隔离任务区：区域 1 占用 88 个节点，区域 2 占用 40 个节点。从理论极限评估，区域 1 与区域 2 之间的单向跨区最大通信吞吐量是多少？",
+        "options": [
+          "区域间单向吞吐取决于节点多的一侧，上限为 35.2 TB/s（即 88 × 400 GB/s）。",
+          "区域间单向吞吐取决于节点少的一侧，上限为 16.0 TB/s（即 40 × 400 GB/s）。",
+          "区域间单向吞吐为全集群节点注入带宽之和，即 51.2 TB/s（128 × 400 GB/s）。",
+          "区域间单向吞吐取决于两区节点数之差，上限为 19.2 TB/s（即 48 × 400 GB/s）。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能够在任务区隔离规划场景下，判定跨区通信带宽瓶颈由节点较少一侧决定，并计算跨区单向吞吐上限",
+          "reasoningGoal": "先确定两个任务区的节点数与单节点注入带宽；再按较小侧节点数计算跨区单向吞吐上限；据此排除按较大侧、全量加总或两侧之差计算的错误"
+        },
+        "generatedAt": 1789137945344,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8675ca57",
+        "batch": "manual-az",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "gpu-fat-tree-bisection-bandwidth",
+          "topic": "gpu-cluster-network-topology",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "fat-tree",
+            "bisection-bandwidth",
+            "infiniband",
+            "gpu-cluster"
+          ],
+          "question": "在一个采用 Full Fat-Tree（无超售）InfiniBand 网络拓扑架构的 GPU 集群中，共有 128 个计算节点，每个节点拥有 400 GB/s 的单向网络注入带宽。若将该集群划分为不均匀的两个划分区（分区 A 包含 88 个节点，分区 B 包含 40 个节点），则这两个分区之间所能支撑的最大单向跨区传输吞吐量（Cross-Partition Bandwidth）是多少？",
+          "options": [
+            "跨区单向吞吐量受限于较大侧节点数，最大可达到 35.2 TB/s（即 88 × 400 GB/s）。",
+            "跨区单向吞吐量受限于较小侧节点数，最大可达到 16.0 TB/s（即 40 × 400 GB/s）。",
+            "跨区单向吞吐量等于整个集群所有节点的注入带宽总和，即 51.2 TB/s（128 × 400 GB/s）。",
+            "跨区单向吞吐量受限于两侧节点数之差，最大可达到 19.2 TB/s（即 48 × 400 GB/s）。"
+          ]
+        },
+        "contentHash": "fnv1a-511bcea1"
+      }
+    ]
+  }
+}

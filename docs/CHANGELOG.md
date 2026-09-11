@@ -1,6 +1,25 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-11 · 新增互连拓扑域 5 节点 5 canonical + 4 变体（`cluster-interconnect`，题库 1429→1434，节点 148→153）
+
+- 新域：TPU/MoE/Fat-Tree 等 5 个 topic 在知识库中不存在，先建 5 知识节点
+  （`src/data/knowledge/cluster-interconnect.json`，ai-systems，P1）+ taxonomy 补
+  `cluster-interconnect` 骨架（否则 `taxonomy.test.ts` 拦截），再导题。
+- 5 canonical（`cluster-interconnect-20260911.json`，4 多选 + 1 单选，单选占比 20% ✓）
+  全部 choice + open 双形态；4 个带 variantOf 的来题按内容身份规则判为变体（同 Knowledge
+  同命题）→ 进池为 `manual-az` 批 context-options 变体，其中 fat-tree 变体与原题
+  target/goal 逐字相同，改写为 scenario 口径并轻改选项措辞（数值不变）以过
+  `isAssessmentIdentical` 门禁。
+- 来源（ADR-079）：TPU v5e 文档×1、NCCL 开发者指南×1、MoE 论文 `arXiv:1701.06538`×1、
+  SHARP 官方文档 Overview×1（URL 均经搜索验证）；fat-tree 为题干自包含计算、无厂商
+  易变断言，按 ADR-079 不加来源。`question:audit` 新题 0 命中。
+- 内容审查（§4.1/4.2）：TPU/SHARP 以厂商实现为实例、考可迁移机制（删产品名仍成立），
+  单知识点，干扰项取自 misconceptions，长度比全批 ≤1.3×。
+- 门禁实证：`validate:questions` ✓ 1434 题；`validate-variants` ✓ 池健康（az 4 条一次过）；
+  `npm test` 891/891（含 taxonomy 对齐）；`lint:bias`/`question:quality` 新题 0 命中；
+  blueprint 余下 hard/open 深化建议为后续 enrichment，非阻塞。
+
 ## 2026-09-11 · P2 存量清理 batch 1：missing-source 103→5，选项长度比 140→127（ADR-079）
 
 - missing-source：`VOLATILE_RE` 去裸词 `api|sdk|version`（72 个通用工程语境误报消除，零漏报验证）；

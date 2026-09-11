@@ -239,6 +239,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         label: 'Prompt 优化与调试',
         description: '优化死循环/影响追踪/验证集对照/修改 diff/失败模式审计与迭代诊断',
       },
+      {
+        id: 'cluster-interconnect',
+        label: '集群互连与集合通信',
+        description: 'TPU/GPU集群拓扑/Torus/Mesh/Fat-Tree/双切带宽/Ring集合通信/All-Reduce拆解/MoE All-to-All/网内规约',
+      },
     ],
   },
 
