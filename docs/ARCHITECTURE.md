@@ -717,6 +717,13 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 
 ## 技术栈注意点
 
+- **Git LFS 路径模式必须覆盖真实目录（踩坑 2026-09-11）**：`.gitattributes` 曾写
+  `models/**/*.onnx`，而模型实际在 `analysis/models/`——`git check-attr` 对该路径返回空，
+  导致新 clone 永远只拿到 134 字节指针，`--semantic` 报 protobuf 解析失败。
+  对象本身早已在远端（`git lfs fetch --all` 可取），只是 smudge 从未生效。
+  已改为 `**/models/**/*.onnx|bin|safetensors`。教训：加 LFS 资产后必须用
+  `git check-attr -a <真实路径>` 验证命中，不能只看 `git lfs ls-files`（它只列指针记录）。
+
 - **antd 为 6.x**：`Divider` 仅支持 `horizontal / vertical`，无 `orientation` 左右。
 - **测试里的白名单不许硬编码第二份（踩坑 2026-09-07）**：`nodes.test.ts` 曾硬编码 10 角度白名单，
   与 `questionAngleSchema`（单源，现 19 角度）失步——首个使用新角度（`architecture` / `quantitative`）

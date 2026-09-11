@@ -305,6 +305,9 @@
     "angle": "tradeoff",
     "question": "自部署 LLM 时需要在 FP16、INT8（LLM.int8）、GPTQ/AWQ 4-bit、GGUF Q4_K_M 之间做部署选型。关于各方案的取舍，下列说法中正确的有哪些？（多选）",
     "explanation": "AWQ 是激活感知量化：按激活分布保护高影响权重，4-bit 下质量损失小于朴素 GPTQ，是多数 GPU 部署的首选；INT8 折中——几乎无感损失但只省一半显存；GGUF Q4_K_M 面向 CPU/llama.cpp 场景；FP16 作为质量基准。经验法则：先试 AWQ 4-bit，质量不够升 INT8，纯 CPU 用 GGUF，任何量化都要在自己任务上实测。",
+    "source": {
+      "materialId": "arXiv:2306.00978"
+    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -642,6 +645,9 @@
     "angle": "scenario",
     "question": "一个 70B 模型无法部署到现有 GPU 集群。你会考虑哪些量化方案？量化可能带来哪些质量和性能上的损失？",
     "explanation": "权重-only INT8/INT4（GPTQ/AWQ）/FP8 为主流路径；省显存常带来吞吐红利，但 INT4 有质量退化且长尾任务敏感，须用业务评测集实测权衡。",
+    "source": {
+      "materialId": "arXiv:2210.17323"
+    },
     "formats": {
       "open": {
         "referenceAnswer": "方案按侵入性排序：权重-only 量化（GPTQ/AWQ，INT8/INT4）把显存降到约 1/2 到 1/4，70B 可进单机多卡甚至更少卡，推理时反量化计算，兼容性最好；FP8 前向量化（部分硬件原生支持）几乎无损且快；GGUF 类格式适合端侧。还可以配合 GQA 已有的 KV Cache 量化进一步省显存。质量风险：INT4 下困惑度上升、精细语义区分和数学/代码能力可能退化，长尾任务受损比平均指标明显；个别层对量化敏感需要混合精度保留。性能收益：显存省 → 可更大 batch/更长 context，带宽压力小反而常提速；但反量化开销和 kernel 效率可能吃掉部分收益，需实测吞吐与延迟而非只看理论。决策应基于目标任务评测集对比量化前后的质量-成本曲线。"

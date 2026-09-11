@@ -17,6 +17,10 @@
     "angle": "scenario",
     "question": "某公司要搭建年度客户奖励计划。奖励依据所购商品类目与客户购买历史等参数计算。公司需要一个生成式 AI（GenAI）方案：用 3 个 Amazon Bedrock 智能体在客户浏览在线目录时提供协助，智能体须借助知识库与 action group 管理搜索、推荐、下单三个模块，且三个模块必须顺序执行；一个 Lambda 函数计算每个推荐商品的预估奖励。方案需在服务中断时优雅降级。以下哪个方案以最高运维效率满足？（单选）",
     "explanation": "B 正确：Step Functions 提供托管的顺序编排，并支持任务级 Retry/Catch，可在单个智能体或函数失败时精准恢复/兜底，无需自维护 Lambda 编排与错误处理代码。A/C 把编排与兜底落在自定义 Lambda，运维更重；D 只编排一个 Lambda，未对 3 个智能体分别做任务级错误处理。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -70,6 +74,10 @@
     "angle": "scenario",
     "question": "某公司用已开启全部功能的 AWS Organizations 管理多账号，员工在多个账号使用 Bedrock。公司必须：禁止在提交给 Bedrock 模型的提示中出现特定主题与专有信息；员工只能用获批的 Bedrock 模型；员工 IAM 角色由公司集中管理。哪些方案组合满足？（请选择以下 2 个正确选项）",
     "explanation": "C、D 正确：Bedrock Guardrails 的 block 策略可拦截被禁主题与敏感信息（mask 仅脱敏，不能阻止处理）；用 CloudFormation StackSets 集中部署到各成员账号。SCP 可显式拒绝未带必需 guardrail 标识符的调用，权限边界限制员工角色只能用获批模型。A 错在权限边界无法“要求指定 guardrail 标识符”；B 错在 SCP 不能“要求指定标识符”这一语义；E 用 mask 不能从源头拦截。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -126,6 +134,10 @@
     "angle": "scenario",
     "question": "某公司开发 GenAI 应用，从内外部数据源生成内容，需保证生成结果完全可溯源：注册数据源并打元数据标签以归因到原始来源，且保留数据访问与使用的审计日志。哪个方案满足？（单选）",
     "explanation": "D 正确：Glue Data Catalog 集中注册数据源并管理可保留来源归因的元数据标签；CloudTrail 记录跨 AWS 服务的 API 活动，提供数据访问与流水线的审计轨迹。A 的 Lake Formation 侧重访问管控而非归因标签；B/C 仅覆盖部分或只用 CloudWatch Logs，不如 CloudTrail 的跨服务审计全面。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -179,6 +191,10 @@
     "angle": "scenario",
     "question": "某公司用 Bedrock API 处理复杂客户咨询。高峰时段出现间歇性 API 超时导致响应分片断裂、数据交付延迟，且因咨询长度不一难以保证不超 token 上限，用户反映输入被截断、响应不完整，还出现 FM 调用失败。公司需要一种重试策略：自动处理瞬时错误、高峰时不压垮 Bedrock、能适应服务可用性变化，并支持流式响应与 token 感知的请求处理。哪个方案满足？（单选）",
     "explanation": "B 正确：AWS SDK 自适应重试模式在标准模式的指数退避+抖动与熔断之上叠加动态客户端限流（token bucket 随观测限流自适应调整调用速率），契合“适应可用性变化且不压垮 Bedrock”；其流式处理器缓冲已收分片并从最后分片续传，满足流式与适配性。C 固定为“标准”模式，不会按可用性自适应，且“失败返回缓存补全”会给出陈旧/错误数据；A 固定 1 秒、D 静态超时/上限，均非自适应也无抖动。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -709,6 +725,10 @@
     "angle": "scenario",
     "question": "某公司建法律研究助手，用 Bedrock + Anthropic Claude FM，须检索高度相关的判例文档以增强回答，要识别法律概念间的语义关系、专业术语与引用，且要快、结果精准。哪个方案满足？（单选）",
     "explanation": "B 正确：OpenSearch 混合检索结合向量语义检索与关键词检索，既能按法律概念语义关系、又能按精确术语/引用检索；Bedrock reranker 按查询相关性重排，提升精度并减少喂给 FM 的结果数（也降延迟）。A 默认向量检索抓不住精确术语/引用；C Kendra 查询建议非核心检索；D 自写 Lambda 合并较脆弱。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -762,6 +782,10 @@
     "angle": "scenario",
     "question": "某公司为支付 API 设计金丝雀部署：依据实时推理指标、历史流量、服务健康在多个 Bedrock 模型版本间自动渐进切流；健康则加流量、劣化则回退；全程监控延迟与错误率，并能在不人工干预下停止部署、回滚到旧版本。哪个方案满足？（单选）",
     "explanation": "A 正确：Step Functions 可编排分阶段部署（阶段间等待 + Lambda 评估 CloudWatch 指标的条件分支），形成自动闭环：延迟/错误率健康则加流，阈值破则立即回滚到旧版本；Bedrock Provisioned Throughput 为被调模型版本提供专用容量；AWS 文档指出 Step Functions 滚动部署可监控 CloudWatch 告警并在触发时自动全量回退。B 的“外部逻辑”非自动化闭环；C 把 Bedrock 版本塞进 SageMaker 端点变体并不自然；D OpenSearch 跟踪日志再 SSM 过间接。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1345,6 +1369,10 @@
     "angle": "scenario",
     "question": "某大学将档案、学术期刊与手稿数字化后存入 AWS Lake Formation 数据湖。大学要构建方案让用户用文本查询检索数字文件，需返回与查询语义相似的期刊摘要；用户既要按文本、也要按期刊摘要的元数据检索；元数据不含关键词；需按文本相似度匹配相似摘要；数据湖文件少于 100 万。哪种方案以最低运维开销满足？（单选）",
     "explanation": "Amazon Titan Embeddings 生成的向量能捕捉摘要文本的语义。Aurora PostgreSQL Serverless 配合 pgvector 扩展可存储这些向量、执行向量相似度搜索并保留关联元数据用于过滤。使用 Bedrock 与 Aurora Serverless 避免了自管 SageMaker 模型端点，并降低了数据库容量管理开销；Aurora PostgreSQL 支持 pgvector 向量搜索。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1399,6 +1427,10 @@
     "angle": "scenario",
     "question": "某公司用基础模型（FM）支撑多个 AI 工作负载：部分 FM 需按需实时调用，部分需高吞吐批处理；方案须支持混合部署模式，并跨云与本地基础设施运行以满足数据驻留与合规。哪两项组合满足？（请选择 2 个）",
     "explanation": "Amazon Bedrock 预置吞吐为一致、高吞吐工作负载提供专用模型容量。Amazon SageMaker AI 端点支持实时推理，而 SageMaker Neo 可优化并将受支持模型部署到云实例与边缘设备，从而实现云/本地的混合模式。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1456,6 +1488,10 @@
     "angle": "scenario",
     "question": "某电商全球推荐系统须按法规、成本、性能在多个 Bedrock FM 间切换；须按专有业务逻辑强制控制（动态成本阈值、区域合规规则、跨 FM 实时 A/B）；切换 FM 不得重新部署代码；按用户层级/交易额/监管区/每小时变化的实时成本指标路由，且须即时传播到数千并发请求。哪种方案满足？（单选）",
     "explanation": "AWS AppConfig 让应用使用与代码独立更新的集中配置。Lambda 函数可通过 AWS AppConfig Agent 获取当前路由配置，并为每个请求执行任意业务逻辑来选择并调用合适的 Bedrock 基础模型，从而在一个 API 端点后支持动态变化的阈值、区域规则与 A/B 路由逻辑。API Gateway 的转换与变量不适合复杂动态路由，Lambda authorizer 用于授权而非模型选择。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1510,6 +1546,10 @@
     "angle": "scenario",
     "question": "某医疗公司用 Bedrock 生成临床文档摘要，响应质量不稳定且偶发事实幻觉，月度成本比预期高 40%。需近实时监控方案检测幻觉、识别异常 token 消耗、对成本异常预警，且自定义开发最少。以下哪些做法是正确的？",
     "explanation": "Amazon Bedrock Guardrails 的上下文接地检查通过评估生成内容是否事实性地基于所提供参考源（含摘要）来检测并过滤幻觉。Bedrock 提供 InputTokenCount/OutputTokenCount 等 CloudWatch 指标，CloudWatch 异常检测告警可识别指标模式的异常偏离，提前预警异常 token 成本。Bedrock 调用日志可将文本输入/输出保留在 S3。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1566,6 +1606,10 @@
     "angle": "scenario",
     "question": "某公司用 Lambda 帮助学生全球总结笔记，调用 Bedrock 的 Claude。流量集中在各时区晚间，高峰期用户报限流错误。须在持续运行前提下解决限流，且低峰不得产生固定小时费用。哪种方案满足？（单选）",
     "explanation": "Amazon Bedrock 跨区域推理将按需请求分散到多个区域的容量，在不购买持续计费的预置吞吐的情况下吸收突发流量、提升可用性。Bedrock 运行时指标含 Invocations/InputTokenCount/OutputTokenCount/InvocationThrottles，提供用量与限流可见性。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1620,6 +1664,10 @@
     "angle": "scenario",
     "question": "某金融公司用 Bedrock FM 分析呼叫中心录音：通话结束存为 S3 的 MP3，须在新建文件后尽快生成结构化摘要与情感分析；录音平均 20MB。哪两项组合满足？（请选择 2 个）",
     "explanation": "AWS Step Functions 可编排 Amazon Transcribe 并经其优化的 Bedrock 集成直接调用 Bedrock 模型；该集成接受模型专属 JSON 请求体，可让提示直接请求结构化摘要与情感输出，无需中间 Lambda。Amazon S3 可向 EventBridge 发送 Object Created 事件，EventBridge 规则以 Step Functions 状态机为目标，在每次新建录音时启动工作流。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1730,6 +1778,10 @@
     "angle": "scenario",
     "question": "某电商用 Bedrock+Claude 做商品推荐，用户反映部分推荐商品网站无售或不相关，且部分推荐生成慢；确认推荐了不在商品目录中的商品。须解决该问题。哪种方案满足？（单选）",
     "explanation": "Amazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性。将性能配置 latency 设为 optimized 使用低延迟推理选项，降低受支持模型与推理配置的响应时间。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1840,6 +1892,10 @@
     "angle": "scenario",
     "question": "某客服应用用 Bedrock+Claude 推荐商品，须跨多次交互保留对话上下文、对歧义查询跑澄清工作流、加密留存每轮对话用于个性化，并支撑数千并发且响应快。哪种方案满足？（单选）",
     "explanation": "Step Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应。DynamoDB 提供持久、低延迟的对话存储，按需容量应对变动高并发，并支持静态服务端加密。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -1951,6 +2007,10 @@
     "angle": "scenario",
     "question": "某媒体公司须用 Bedrock 建立 AI 内容治理：管理数百个提示模板，多团队多区域使用；须版本控制 + 含待审通知的审批工作流 + 详细审计轨迹 + 一致参数化以保质量。哪种方案满足？（单选）",
     "explanation": "Bedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置。CloudTrail 记录含身份/动作/时间/请求参数的 AWS 活动，形成可审计的提示管理操作历史。IAM 策略可分离并限制创建/修改/版本化提示的权限，支撑受控审批流程。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -2057,6 +2117,10 @@
     "angle": "scenario",
     "question": "Example Corp 的视频生成服务被数百万企业客户使用，客户提交提示给自有 GenAI 模型；为提升相关性想用客户专属上下文（产品偏好/属性/历史）富化提示。客户有严格数据治理要求、须保留数据所有权与控制权，不需实时但语义准确度要高、检索延迟低；希望最小化集成复杂度，除非必要不在客户环境部署服务。哪种方案满足？（单选）",
     "explanation": "Amazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限。供应商可用 SearchRelevantContent API 检索相关内容用于提示富化，无需直接连接或索引每个客户数据源。Amazon Q 支持语义与混合检索并应用客户配置访问控制。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -2111,6 +2175,10 @@
     "angle": "scenario",
     "question": "某保险公司用既有 SageMaker 基础设施做保费预测 Web 应用，训练数据存 S3 且增长快；需持续重训练方案：员工上传新客户数据文件到 S3 时须自动重训练并将模型重部署到应用。哪种方案满足？（单选）",
     "explanation": "S3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程。SageMaker Pipeline 可包含训练与模型部署步骤，上传后启动流水线即用更新数据集重训练并将模型重部署到应用。SageMaker Pipelines 支持部署步骤，AWS 文档化了 EventBridge/S3 驱动的流水线执行自动化。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -2220,6 +2288,10 @@
     "angle": "scenario",
     "question": "某公司把 AI 助手做成 React 应用，用 AWS Amplify + AppSync GraphQL + Bedrock 知识库；GraphQL 调 RetrieveAndGenerate，配 Lambda resolver（RequestResponse）。用户报复杂问题常超时变慢。哪种方案解决性能问题？（单选）",
     "explanation": "AWS Amplify AI Kit 支持 React 应用的流式 LLM 响应。其 Lambda 集成以流式请求调用 Bedrock，并经由 AppSync WebSocket 将响应块送往浏览器增量渲染，避免了同步 RequestResponse resolver 所需的等待整段长生成。",
+    "source": {
+      "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "section": "AWS Certified Generative AI Developer - Professional (AIP-C01)"
+    },
     "formats": {
       "choice": {
         "type": "single",
@@ -2227,7 +2299,7 @@
           "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
           "增大 Lambda resolver 超时并加指数退避重试。",
           "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
-          "改 RetrieveAndGenerate 为 InvokeModelWithResponseStream，应用改用 API Gateway WebSocket API 支持流式。"
+          "改为流式模型调用并经 API Gateway WebSocket 推送，绕开 AppSync 同步解析器。"
         ],
         "answer": [
           0
@@ -2496,8 +2568,8 @@
           "配置内容过滤器 guardrail 过滤含高风险模式的提示。",
           "配置内容过滤器 guardrail 过滤含竞品名称的提示。",
           "将竞品名称加入自定义词过滤器，输入与输出动作均设为 block。",
-          "设较低的接地分数阈值。",
-          "设较高的接地分数阈值。"
+          "将上下文接地分数阈值设低，放宽断言与获批指引的一致性要求。",
+          "将上下文接地分数阈值设高，只允许有获批指引支撑的断言通过。"
         ],
         "answer": [
           0,

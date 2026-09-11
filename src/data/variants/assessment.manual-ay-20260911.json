@@ -1,0 +1,953 @@
+{
+  "version": 1,
+  "generatedAt": 1789128784996,
+  "promptVersion": "v1",
+  "variants": {
+    "realtime-micro-01": [
+      {
+        "id": "realtime-micro-01__context-options__manual-ay__0",
+        "kind": "context-options",
+        "question": "某视频会议设备要在嘉宾说话的同时，根据幻灯片翻页手势实时插话纠错，团队对比 turn-based 管道与 200ms 微轮次方案。关于微轮次机制的判断，正确的有哪些？（多选）",
+        "options": [
+          "微轮次以时间片为基本处理单位，每个时间片内模型同步感知多模态输入流并决策输出流，输入输出在时间轴上连续重叠并发",
+          "该机制原生支持边听边说与边看边说，可直接用于实时口译、同传中途纠错与动作实时计数",
+          "把时间切成片之后，大语言模型复杂长文本推理的计算开销彻底消失，推理延迟从此无需考虑",
+          "传统轮次制即便把整条管道压到 200ms 以内，感知与生成在单次执行逻辑里依然互斥，仍难以原生支持边说边基于视觉事件实时打断"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从边说边看的打断需求出发，判定微轮次输入输出重叠并发相对轮次互斥的架构差异",
+          "reasoningGoal": "先拆出打断场景对感知与生成并发的硬需求；再逐项验证机制判断是否成立；排除切片消计算、轮次压延迟即等价等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-7fb10800",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-d4cae2fb",
+        "sourceSnapshot": {
+          "id": "realtime-micro-01",
+          "topic": "realtime-interaction",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "micro-turns",
+            "time-aligned",
+            "full-duplex",
+            "concurrency"
+          ],
+          "question": "相比传统 LLM 将交互划分为离散的“用户发言 - 模型响应”轮次（Turn-based），采用“时间对齐微轮次”（Time-Aligned Micro-Turns，如按 200ms 切分时间片）的原生实时交互模型在架构上有显著区别。以下关于微轮次机制的分析，正确的有？（多选）",
+          "options": [
+            "微轮次将时间片作为基本处理单位，模型在每个时间片内同时感知多模态输入流并决策输出流，使输入和输出可以在时间轴上连续重叠并发发生",
+            "微轮次机制原生支持“边听边说”与“边看边说”，可直接用于实时口译、同声中途纠错以及动作实时计数（如俯卧撑打卡）",
+            "微轮次机制通过将时间切片，彻底消除了大语言模型在复杂长文本推理上的计算开销，从而不再需要考虑推理延迟",
+            "传统轮次制模型即使整体管道响应速度提升至 200ms 以内，由于其感知与生成在单次执行逻辑中互斥，依然难以原生支持在说话的同时基于视觉事件实时触发打断"
+          ]
+        }
+      }
+    ],
+    "gnn-over-smoothing-debugging": [
+      {
+        "id": "gnn-over-smoothing-debugging__surface-options__manual-ay__1",
+        "kind": "surface-options",
+        "question": "某 12 层 GCN 在引文网络上训练，层数加深后 Dirichlet 能量跌近 0，各类节点表征混作一团。关于该过平滑现象与解法的判断，正确的有哪些？（多选）",
+        "options": [
+          "过平滑的本质是深层图卷积等价于反复低通滤波，多次迭代后节点表征坍缩到平滑基态",
+          "DropEdge 在每次迭代随机删掉一部分边，压低消息传递的连通强度，从而延缓过平滑",
+          "JK-Net 用跨层跳跃连接把底层局部拓扑特征与高层全局抽象特征拼接融合，缓解深层退化",
+          "只加标准层归一化仅重置特征模长，拦不住不同节点表征方向的余弦相似度趋近 1"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从能量跌零与表征趋同的现象定位到反复低通滤波，并判定 DropEdge 与跳跃连接的缓解机理",
+          "reasoningGoal": "先从 Dirichlet 能量与分类退化的症状定位低通滤波根因；再逐项验证解法判断是否成立；排除归一化包治百病等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2a4da665",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-85231e90",
+        "sourceSnapshot": {
+          "id": "gnn-over-smoothing-debugging",
+          "topic": "deep-gnn-architectures",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "GNN",
+            "Over-smoothing",
+            "DropEdge",
+            "Jumping-Knowledge"
+          ],
+          "question": "在一个 16 层的深层 GCN 模型训练过程中，工程师观察到随着网络层数增加，节点表示的 Dirichlet 能量快速接近于 0，验证集上的节点分类准确率显著下降，不同类别的节点表征几乎趋于一致（Over-smoothing）。针对该现象及相应解法，以下哪些分析是正确的？",
+          "options": [
+            "Over-smoothing 的本质原因是深层图卷积操作起到了低通滤波器的效果，多次迭代导致节点表征收敛至平滑的基态",
+            "DropEdge 通过在每次训练迭代中随机移除一定比例的边，降低了图消息传递的连通度，从而减缓过平滑现象",
+            "Jumping Knowledge (JK-Net) 架构通过建立跨层跳跃连接，将底层局部拓扑特征与高层全局抽象特征结合，缓解深层特征退化",
+            "仅增加标准层归一化（Layer Normalization）只能重置特征向量的模长，但无法阻止不同节点表征向量方向上的余弦相似度逼近 1"
+          ]
+        }
+      }
+    ],
+    "gnn-spectral-vs-spatial": [
+      {
+        "id": "gnn-spectral-vs-spatial__context-options__manual-ay__2",
+        "kind": "context-options",
+        "question": "某反欺诈图每天新增大量节点与边，团队在谱域 ChebNet 与空域 GCN 之间选型。关于两类方法的联系与区别，正确的有哪些？（多选）",
+        "options": [
+          "谱域卷积依赖图拉普拉斯特征分解，傅里叶基底绑定特定拓扑，拓扑动态变化的图难以直接泛化",
+          "ChebNet 以切比雪夫多项式逼近谱域滤波，省掉 O(N^3) 特征分解，并在空域等价为 K-hop 邻域聚合",
+          "经典 GCN 可视为 ChebNet 取一阶截断 K=1，再做参数简化与对称归一化的特例",
+          "空域卷积在节点空间定义消息传递，所以与频域低通滤波之间不存在任何映射关系"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能按拓扑是否动态变化对比谱域与空域方法的泛化边界，并讲清 ChebNet 到 GCN 的推导链条",
+          "reasoningGoal": "先对齐基底绑定性与计算代价两个可比维度；再逐项验证对比判断是否成立并比较适用边界；排除空域与频域彻底割裂等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-84a9e751",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-8aaf7b08",
+        "sourceSnapshot": {
+          "id": "gnn-spectral-vs-spatial",
+          "topic": "spectral-and-spatial-convolutions",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Spectral-GNN",
+            "Spatial-GNN",
+            "Graph-Laplacian",
+            "ChebNet"
+          ],
+          "question": "在图神经网络的理论体系中，谱域图卷积（Spectral GNN）与空域图卷积（Spatial GNN）代表了两种不同的建模视角。关于谱域与空域图卷积的联系与区别，以下哪些表述是正确的？",
+          "options": [
+            "谱域图卷积基于图拉普拉斯矩阵的特征分解，其傅里叶变换基底依赖于特定的图拓扑，因而难以直接泛化到拓扑动态变化的图",
+            "ChebNet 采用切比雪夫多项式逼近谱域滤波函数，不仅避开了特征值分解的高昂计算代价 $O(N^3)$，同时在空域上实现了 $K$-hop 局部邻域聚合",
+            "经典 GCN（Graph Convolutional Network）在数学上可以看作是 ChebNet 在一阶截断（$K=1$）并做参数简化与对称归一化后的特例",
+            "空域图卷积直接在节点空间图拓扑上定义消息传递机制，因此无法建立与图信号处理（Graph Signal Processing）中频域低通滤波的映射关系"
+          ]
+        }
+      }
+    ],
+    "q2-vc-dimension-nfl-theorem": [
+      {
+        "id": "q2-vc-dimension-nfl-theorem__surface-options__manual-ay__3",
+        "kind": "surface-options",
+        "question": "关于 VC 维与 NFL 定理的理论内涵，下列哪些说法是正确的？（多选）",
+        "options": [
+          "假设空间 VC 维为 d，表示它能打散域中任意一个规模为 d 的样本子集",
+          "NFL 定理表明不存在对一切数据分布都占优的学习算法，脱离领域先验谈有效泛化不成立",
+          "不管 VC 维有限还是无限，只要样本量趋于无穷，ERM 就必然收敛到最佳假设",
+          "二分类问题中，假设空间在 PAC 框架下可学习当且仅当其 VC 维有限"
+        ],
+        "angle": "fundamental",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能辨析打散定义中存在与任意的量词差异，并判定 NFL 与 PAC 可学习条件的准确表述",
+          "reasoningGoal": "先拆出打散量词、NFL 先验必要性、PAC 充要条件三处判定点；再逐项验证表述是否成立；排除任意子集可打散、无限样本包收敛等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-99fab9fc",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-14165203",
+        "sourceSnapshot": {
+          "id": "q2-vc-dimension-nfl-theorem",
+          "topic": "statistical-learning-theory",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "vc-dimension",
+            "no-free-lunch",
+            "fundamental-theorem"
+          ],
+          "question": "关于 VC 维（VC-Dimension）与 No-Free-Lunch (NFL) 定理在机器学习中的理论内涵，下列哪些说法是正确的？",
+          "options": [
+            "如果一个假设空间 H 的 VC 维为 d，这意味着 H 能够打散（Shatter）域集中任意规模为 d 的样本子集",
+            "No-Free-Lunch 定理表明，不存在对所有数据分布都普遍优越的学习算法，如果没有针对领域的先验知识，有效泛化是不可能的",
+            "无论假设空间 H 的 VC 维是有限还是无限，只要训练样本量 m 趋于无穷，经验风险最小化（ERM）算法就必然收敛到最佳假设",
+            "对于二分类问题，假设空间 H 在 PAC 学习框架下可学习的充要条件是其 VC 维有限"
+          ]
+        }
+      }
+    ],
+    "q4-sgd-convex-optimization": [
+      {
+        "id": "q4-sgd-convex-optimization__context-options__manual-ay__4",
+        "kind": "context-options",
+        "question": "某团队用逻辑回归做点击率预估，损失满足 Lipschitz 且部分样本采用 Hinge 形式，讨论 SGD 步长与抽样方式。关于收敛特性与应用的说法，正确的有哪些？（多选）",
+        "options": [
+          "满足 Lipschitz 的凸损失用标准 SGD，即使目标函数二次不可微，仍保证 O(1/√T) 的期望误差收敛",
+          "损失函数额外满足平滑性后梯度变化受限，SGD 可用固定常数步长，收敛快于只有 Lipschitz 的情形",
+          "非光滑凸函数以次梯度代替梯度，次梯度在不可导点处恒为唯一确定的向量",
+          "经验风险最小化中有放回随机均匀抽样得到无偏梯度估计，这是期望损失收敛的理论前提"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从 Lipschitz 与平滑性条件推导 SGD 的收敛速率与步长选择，并讲清次梯度的集合本质",
+          "reasoningGoal": "先拆出收敛速率、步长规则、次梯度形态、抽样无偏四处机制；再逐项验证说法是否成立；排除次梯度恒唯一等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-666f3dfc",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-99e33a4f",
+        "sourceSnapshot": {
+          "id": "q4-sgd-convex-optimization",
+          "topic": "optimization",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "stochastic-gradient-descent",
+            "convex-optimization",
+            "subgradient"
+          ],
+          "question": "关于凸学习问题（Convex Learning Problems）以及随机梯度下降（SGD）算法的收敛特性与应用，下列哪些说法是正确的？",
+          "options": [
+            "对于 Lipschitz 连续的凸损失函数，使用标准 SGD 算法可以在不需要假设目标函数二次可微的前提下保证 O(1/√T) 的期望误差收敛速率",
+            "在凸优化中，当损失函数满足平滑性（Smoothness）时，损失函数的梯度变化受限，此时 SGD 的步长选择可以取固定常数且收敛速度优于仅满足 Lipschitz 连续的情况",
+            "对非光滑凸函数（如 Hinge Loss）求导时，SGD 使用次梯度（Subgradient）代替梯度，次梯度在不可导点处始终唯一确定",
+            "将 SGD 应用于经验风险最小化时，对样本进行有放回的随机均匀抽样以获取无偏梯度估计，是保证算法期望损失收敛的理论前提"
+          ]
+        }
+      }
+    ],
+    "q5-svm-margin-kernel-methods": [
+      {
+        "id": "q5-svm-margin-kernel-methods__surface-options__manual-ay__5",
+        "kind": "surface-options",
+        "question": "关于支持向量机与核技巧的原理及泛化特性，下列哪些说法成立？（多选）",
+        "options": [
+          "Hard-SVM 要求数据严格线性可分，以最大化几何间隔隐式约束解的 L2 范数，压低有效容量",
+          "Soft-SVM 引入松弛变量与 Hinge Loss，用惩罚参数 C 折中间隔最大化与经验误差",
+          "Mercer 核把特征映射到高维乃至无穷维 Hilbert 空间后，维度暴涨必然导致样本复杂度急剧膨胀",
+          "对偶问题的决策函数仅依赖输入样本两两内积，核技巧因此可直接作用于对偶形式"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释间隔控制容量、 C 折中误差、核技巧依赖内积三处机理，并排除维度决定论",
+          "reasoningGoal": "先拆出间隔与范数、C 的折中、对偶内积三处机制；再逐项验证说法是否成立；排除映射维度膨胀样本复杂度等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4084da75",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-091b4b85",
+        "sourceSnapshot": {
+          "id": "q5-svm-margin-kernel-methods",
+          "topic": "kernel-methods",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "svm",
+            "margin",
+            "kernel-trick",
+            "mercer-theorem"
+          ],
+          "question": "关于支持向量机（SVM）与核方法（Kernel Methods）的数学原理及工程特性，下列哪些说法是正确的？",
+          "options": [
+            "Hard-SVM 要求数据严格线性可分，其通过最大化几何间隔（Margin）来隐式地控制解的 L2 范数，从而降低假设空间的有效容量",
+            "Soft-SVM 引入松弛变量（Slack Variables）和 Hinge Loss，其中的惩罚参数 C 用于平衡间隔最大化与经验误差最小化",
+            "使用 Mercer 核函数（Kernel Trick）将低维特征映射到高维甚至无穷维 Hilbert 空间时，由于维度剧增，模型的样本复杂度必定急剧膨胀",
+            "SVM 对偶（Dual）问题的决策函数仅依赖于输入样本之间的内积，这使得核技巧能够直接应用于对偶形式而不必显式计算高维特征向量"
+          ]
+        }
+      }
+    ],
+    "q7-model-selection-debugging": [
+      {
+        "id": "q7-model-selection-debugging__context-options__manual-ay__6",
+        "kind": "context-options",
+        "question": "某广告 CTR 模型训练损失极低，Hold-out 验证与独立测试都不达标，且调参越频繁验证越好看。关于该现象的分析与策略，合理的有哪些？（多选）",
+        "options": [
+          "验证集与测试集都不达标说明模型处于高偏差，最有效的办法是增加样本并减弱正则",
+          "反复依据验证集指标调整超参数会泄露验证信息，使验证评估偏向乐观",
+          "小数据集上以 k-Fold 交叉验证代替单次 Hold-out，可压低划分随机引入的估计方差",
+          "出现过拟合时用结构风险最小化或正则化约束假设空间容量，重新权衡偏差方差"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从训练优验证差定位高方差，并识别反复调参引入的验证集泄露与 k-Fold 的降方差价值",
+          "reasoningGoal": "先从训练验证背离定位高方差而非高偏差；再逐项验证分析与策略是否成立；排除加样本减正则等方向性错误描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-64191aa3",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-359117f2",
+        "sourceSnapshot": {
+          "id": "q7-model-selection-debugging",
+          "topic": "model-selection-and-validation",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "bias-variance-tradeoff",
+            "cross-validation",
+            "data-leakage"
+          ],
+          "question": "某 ML 工程师在构建模型时发现：模型在训练集上损失极小，但在 Hold-out 验证集上性能显著下降；此外，在根据验证集指标反复调优超参数后，最终在独立测试集上的表现依然不达标。针对该现象，下列哪些分析与解决策略是合理的？",
+          "options": [
+            "验证集与测试集表现均差表明模型处于高偏差（High Bias）状态，此时最有效的手段是增加训练样本量并减少正则化强度",
+            "频繁根据验证集性能调整超参数会导致验证集信息泄露（Data Leakage），使得验证集评估结果产生过度乐观的估计偏差",
+            "在小规模数据集场景下，使用 k-Fold 交叉验证替代单次 Hold-out 划分，能够有效降低因验证集划分随机性带来的估算方差",
+            "发生过拟合时，可以尝试使用结构风险最小化（SRM）或通过正则化限制假设空间复杂度，重新平衡 Bias-Variance Tradeoff"
+          ]
+        }
+      }
+    ],
+    "q8-nearest-neighbors-dimensionality-reduction": [
+      {
+        "id": "q8-nearest-neighbors-dimensionality-reduction__surface-options__manual-ay__7",
+        "kind": "surface-options",
+        "question": "关于维数灾难与降维技术的权衡，下列哪些说法是正确的？（多选）",
+        "options": [
+          "特征维度升高后任意两点距离趋于收敛一致，基于欧氏距离的 1-NN 样本复杂度随维度指数级增长",
+          "PCA 是无监督无损降维技术，核心在于寻找使低维投影方差最小的线性投影矩阵",
+          "随机投影依据 JL 引理，把高维点集投到合适维度的随机低维子空间，点对距离以高概率近似保持",
+          "压缩感知利用信号在某基下的稀疏性，以远少于 Shannon 定理要求的非自适应线性测量精确重构原信号"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡距离收敛、PCA 有损本质、JL 随机投影保距、稀疏重构四处判断的取舍实质",
+          "reasoningGoal": "先拆出灾难表现与三种降维路线的代价收益；再逐项验证说法是否成立并比较路线；排除 PCA 无损、方差最小等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-306976f7",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-77e30f8f",
+        "sourceSnapshot": {
+          "id": "q8-nearest-neighbors-dimensionality-reduction",
+          "topic": "dimensionality-reduction",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "curse-of-dimensionality",
+            "pca",
+            "compressed-sensing",
+            "random-projection"
+          ],
+          "question": "当在高维特征空间中应用 Nearest Neighbor 算法或进行降维（Dimensionality Reduction）时，关于维数灾难（Curse of Dimensionality）与降维技术的 trade-off，下列哪些说法是正确的？",
+          "options": [
+            "随着特征维度 d 的增加，高维空间中任意两点间的距离趋于收敛且均匀，使得基于欧氏距离的 1-NN 样本复杂度随维度呈指数级增长",
+            "主成分分析（PCA）是一种无监督无损降维技术，其核心是寻找一个线性投影矩阵，使得数据在低维子空间上的投影方差最小",
+            "随机投影（Random Projections）基于 Johnson-Lindenstrauss 引理，表明高维空间中的点集投影到适当维数的随机低维子空间时，点对间的距离可以以高概率保持近似不变",
+            "压缩感知（Compressed Sensing）利用了信号在某种基下的稀疏性（Sparsity），可以通过远低于 Shannon 采样定理要求的非自适应线性测量精确重构原始信号"
+          ]
+        }
+      }
+    ],
+    "adaboost-iteration-count-tradeoff": [
+      {
+        "id": "adaboost-iteration-count-tradeoff__context-options__manual-ay__8",
+        "kind": "context-options",
+        "question": "某反欺诈评分用 AdaBoost 训练，第 30 轮训练误差归零但验证误差还在缓慢下降，团队争论是否继续迭代。下列说法正确的有哪些？（多选）",
+        "options": [
+          "训练误差归零后继续加轮数仍可能改善泛化，后续迭代在增大分类间隔而不只是重复拟合",
+          "迭代轮数应作为超参数经验证集或交叉验证选定，最优轮数取决于数据噪声与弱学习器复杂度",
+          "训练误差一归零就必须立即停止，此时分类间隔已经最大，再迭代只会过拟合",
+          "AdaBoost 的间隔量就是 SVM 的最大间隔，两者目标相同，应直接改用 SVM"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡归零后继续迭代的间隔收益与过拟合成本，并判定轮数选型与模型替换的合理性",
+          "reasoningGoal": "先拆出间隔继续增大与过拟合风险两股相反力量；再逐项验证说法是否成立并比较代价；排除归零即停、间隔等同 SVM 等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-46693a18",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-f70df4dc",
+        "sourceSnapshot": {
+          "id": "adaboost-iteration-count-tradeoff",
+          "topic": "ensemble-learning",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "AdaBoost",
+            "margin",
+            "early-stopping"
+          ],
+          "question": "某团队用 AdaBoost 训练，训练集误差已在第 30 轮归零，验证集误差仍在缓慢下降。关于是否继续迭代以及如何确定轮数，下列哪些说法是正确的？",
+          "options": [
+            "训练误差归零后继续增加轮数仍可能提升泛化，因为后续轮次在继续推高分类间隔，而不只是在拟合已有样本",
+            "轮数应作为超参数用验证集或交叉验证确定，其最优值取决于数据中的噪声水平与所采用弱学习器的复杂度",
+            "训练误差一旦归零就应当立即停止迭代，此时间隔已经达到最大，此后的任何轮次都只可能造成过拟合",
+            "AdaBoost 的间隔量与 SVM 的最大间隔是同一个优化目标，因此应当直接改用 SVM 以获得更好的泛化保证"
+          ]
+        }
+      }
+    ],
+    "model-behavior-ooc-01": [
+      {
+        "id": "model-behavior-ooc-01__surface-options__manual-ay__9",
+        "kind": "surface-options",
+        "question": "关于陈述性文本经由语境外泛化影响模型行为的机制对比，下列分析正确的有哪些？（多选）",
+        "options": [
+          "只给模型描述 Assistant 特性的陈述性文档，不给输入输出示范，模型仍能在评估场景触发对应行为",
+          "传统 SFT 靠输入输出对强化拟合行为模式，陈述性文本靠补充角色事实直接改变演导方式",
+          "语境外泛化下，模型把关于自身角色的外部描述转化为隐式的强行为约束",
+          "陈述性文本微调只改变特定事实的问答记忆，动不了复杂代码生成与推理任务的策略选择",
+          "在预训练或后训练语料中注入正向 AI 角色的陈述性知识，有助于预判并改善模型主体行为"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比示范拟合与事实补充两条行为塑造路径，并判定陈述性文本的作用边界",
+          "reasoningGoal": "先对比 SFT 示范路径与 OOC 事实路径的传导差异；再逐项验证分析是否成立；排除只改记忆不动策略等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-084261cd",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-3f3faf68",
+        "sourceSnapshot": {
+          "id": "model-behavior-ooc-01",
+          "topic": "model-behavior",
+          "subtopic": "Out-of-Context Generalization",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "out-of-context",
+            "ooc",
+            "declarative",
+            "psm",
+            "alignment"
+          ],
+          "question": "在控制与塑造 LLM 的行为模式时，“语境外泛化”（Out-of-Context Generalization）展示了一种不同于传统基于示范的监督微调（SFT）的机制。关于陈述性文本（Declarative Statements）如何通过语境外泛化影响模型角色与行为，下列对比与分析正确的有：",
+          "options": [
+            "仅向模型喂入描述 Assistant 特性的陈述性文档（如\"Assistant 在被评估时会添加类型注解\"），模型无需输入输出示范即可在评估场景下触发相应行为",
+            "传统 SFT 主要通过输入-输出对 (x, y) 的强化来拟合特定的行为模式，而陈述性文本则是通过补充关于角色的事实性认知直接影响角色的演导方式",
+            "语境外泛化表明，模型能够利用预训练建立的知识推理能力，将关于自身角色的外部描述转化为隐式强烈的行为约束",
+            "陈述性文本微调仅能改变模型对特定事实的问答记忆，无法真正影响模型在执行复杂代码生成或推理任务时的策略选择",
+            "这一机制意味着，开发者可以通过在预训练或后训练语料中注入正向 AI 虚拟角色的陈述性知识，来预判并改善模型的主体性行为"
+          ]
+        }
+      }
+    ],
+    "svd-eckart-young-norm-invariance": [
+      {
+        "id": "svd-eckart-young-norm-invariance__context-options__manual-ay__10",
+        "kind": "context-options",
+        "question": "某推荐系统要把用户物品矩阵压缩到秩 64 以节省内存，团队用截断 SVD 并争论误差与范数性质。下列说法正确的有哪些？（多选）",
+        "options": [
+          "矩阵的 Frobenius 范数与算子范数都具备正交旋转不变性",
+          "在任意正交旋转不变范数下，矩阵的最佳秩-k 逼近都是其截断 SVD",
+          "截断 SVD 具有嵌套结构，最佳秩-(k+1) 逼近等于最佳秩-k 逼近加上第 k+1 个奇异分量",
+          "算子范数下，原矩阵与其最佳秩-k 逼近的误差正好等于第 k+1 个奇异值",
+          "任意实矩阵都存在 SVD，且方阵的 SVD 形式与特征值分解完全相同"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从旋转不变性推导截断 SVD 的最优性与嵌套结构，并划清其与特征值分解的边界",
+          "reasoningGoal": "先拆出范数不变性、最优逼近形式、嵌套累加、误差取值四处机理；再逐项验证说法是否成立；排除 SVD 等同特征值分解等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9c4661f1",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-04e3f3ab",
+        "sourceSnapshot": {
+          "id": "svd-eckart-young-norm-invariance",
+          "topic": "linear-algebra",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "SVD",
+            "Eckart-Young Theorem",
+            "Low-Rank Approximation",
+            "Matrix Norm"
+          ],
+          "question": "奇异值分解（SVD）在矩阵低秩逼近和特征降维中具有重要地位。根据 Eckart-Young 定理及矩阵范数性质，以下哪些说法是正确的？",
+          "options": [
+            "矩阵的 Frobenius 范数与算子范数（Operator Norm）都具有正交旋转不变性（Rotation Invariance）。",
+            "对于任意正交旋转不变范数，矩阵 M 的最佳秩-k 逼近均由其截断 SVD 即 Σ_{i=1}^k σ_i u_i v_i^T 给出。",
+            "截断 SVD 具有嵌套累加特性，最佳秩-(k+1) 逼近可以直接通过在最佳秩-k 逼近的基础上累加第 k+1 个奇异分量得到。",
+            "针对算子范数，矩阵 M 与其最佳秩-k 逼近 M_k 之间的逼近误差完全等于第 k+1 个奇异值 σ_{k+1}。",
+            "任意 m × n 实数矩阵都存在 SVD 分解，且只要矩阵是方阵，其 SVD 分解的形式与特征值分解（Eigendecomposition）完全一致。"
+          ]
+        }
+      }
+    ],
+    "multi-vector-late-interaction-01": [
+      {
+        "id": "multi-vector-late-interaction-01__surface-options__manual-ay__11",
+        "kind": "surface-options",
+        "question": "关于 Late Interaction 得分计算及其与单向量稠密模型的本质区别，正确的有哪些？（多选）",
+        "options": [
+          "每个 Query token 向量与文档全部 token 向量算点积取最大再累加；Dense 模型把整段压成单个向量只算一次点积或余弦",
+          "每个 token 都有独立向量，MaxSim 矩阵支撑可解释的细粒度匹配，代价是索引体积与检索开销远高于单向量",
+          "每个文档 token 与查询全部 token 算点积取均值再加权求和；Dense 模型给每个 token 配独立权重做自注意力聚合",
+          "查询与文档向量先过交叉注意力层融合再池化得分；Dense 模型先各自做自注意力编码再算内积",
+          "token 两两求欧氏距离取全局最小作为匹配分；Dense 模型把 token 向量按通道拼接后送全连接网络预测"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能讲清 MaxSim 取最大累加的计算流程，并排除均值聚合、编码期交叉注意力、欧氏全局最小三类误解",
+          "reasoningGoal": "先拆出取最大累加与单向量一次内积的流程分野；再逐项验证说法是否成立；排除均值加权、交叉注意力融合、欧氏最小等不成立描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-7bcb222d",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-9539af91",
+        "sourceSnapshot": {
+          "id": "multi-vector-late-interaction-01",
+          "topic": "multi-vector-retrieval",
+          "subtopic": "Late Interaction / Multi-Vector Scoring Mechanism",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "colbert",
+            "late-interaction",
+            "maxsim",
+            "multi-vector",
+            "dense-embedding"
+          ],
+          "question": "在基于 ColBERT 架构的 Late Interaction（多向量）检索模型中，查询（Query）与文档（Document）之间的相关性得分是如何计算的？它与传统 Single-Vector Dense Embedding 模型有何本质区别？",
+          "options": [
+            "每一个 Query token 向量与 Document 中所有 token 向量计算点积并取最大值（MaxSim），再将所有 Query token 的最大匹配得分累加；Dense 模型则将整段文本压缩为单一向量并计算一次点积或余弦相似度。",
+            "Late-Interaction 为每个 token 保留独立向量，可用 MaxSim 矩阵实现可解释的细粒度匹配，但文档侧索引体积与检索计算开销显著高于单向量模型。",
+            "每一个 Document token 向量与 Query 中所有 token 向量计算点积并取均值（MeanSim），再对所有 Document token 得分取加权和；Dense 模型则为每个 token 分配独立权重后再做自注意力聚合。",
+            "Query 向量与 Document 向量先经过交叉注意力层（Cross-Attention）深度融合，再通过 Pooling 得到标量相关性得分；Dense 模型则是先分别做自注意力编码再在最后一层做内积。",
+            "Query 与 Document 的每个 token 向量两两计算欧氏距离并求全局最小值作为匹配得分；Dense 模型则是将 token 向量按通道维度拼接后传入全连接网络预测相关性。"
+          ]
+        }
+      }
+    ],
+    "multi-vector-loss-scale-01": [
+      {
+        "id": "multi-vector-loss-scale-01__context-options__manual-ay__12",
+        "kind": "context-options",
+        "question": "某检索引擎 Query 平均 32 个 token，MaxSim 累加后得分约 30，工程师把 Dense 那套 scale=20 直接搬过来后训练不动。关于该故障的判断，正确的有哪些？（多选）",
+        "options": [
+          "Softmax 输出过度平滑，正负样本梯度过小，模型拉不开相关与不相关文档",
+          "沿用高 scale 后损失函数彻底无法正常反向求导，反向传播阶段直接触发显存爆满与溢出错误",
+          "所有标点 token 的梯度被强制置零，Skiplist 过滤机制完全失效",
+          "MaxSim 分数跨查询 token 累加后数值远超单向量区间，乘上高 scale 导致 Softmax 饱和与梯度消失",
+          "Dense 余弦相似度被限制在 [-1,1] 内，需要约 20 的 scale 放大分差；多向量损失默认 scale 取 1.0"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从得分量级与 scale 的乘积推断 Softmax 饱和致梯度消失，并对比单向量需大 scale 的根因",
+          "reasoningGoal": "先按累加量级与 scale 乘算 Softmax 输入尺度；再逐项验证故障判断是否成立；排除过平滑、爆显存、标点置零等方向性错误描述。"
+        },
+        "generatedAt": 1789128784995,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b13d66e1",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-660aed7d",
+        "sourceSnapshot": {
+          "id": "multi-vector-loss-scale-01",
+          "topic": "multi-vector-retrieval",
+          "subtopic": "Loss Function Design & Temperature Scaling",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "loss-function",
+            "temperature-scaling",
+            "mnrl",
+            "gradient-vanishing",
+            "scale"
+          ],
+          "question": "训练单向量 Dense Embedding 模型时，对比损失（如 MultipleNegativesRankingLoss）通常把温度/缩放参数 scale 设为约 20.0；但在训练 Multi-Vector 模型使用 MultiVectorMultipleNegativesRankingLoss 时，若直接沿用 scale=20.0，最可能导致什么问题？下列哪些叙述正确？",
+          "options": [
+            "Softmax 输出过分平滑、正负样本间梯度极小，导致模型无法拉开相关与不相关文档的距离。",
+            "损失函数会因此完全无法正常反向求导，从而在反向传播阶段直接触发 GPU 显存爆满与溢出错误。",
+            "会强制将所有标点符号 token 的梯度置为零，导致 Skiplist 过滤机制在训练期间彻底失效。",
+            "MaxSim 分数跨 Query token 累积，数值范围远超单向量 [-1,1]，乘高 scale 使 Softmax 饱和并引起梯度消失。",
+            "Dense 模型两单位向量余弦相似度限于 [-1,1]，需较大 scale（约 20）放大分差使 Softmax 具区分度；多向量损失默认 scale=1.0。"
+          ]
+        }
+      }
+    ],
+    "sentence-embedding-matryoshka-01": [
+      {
+        "id": "sentence-embedding-matryoshka-01__context-options__manual-ay__13",
+        "kind": "context-options",
+        "question": "某向量库要同时服务 128 维低延迟与 768 维高精度两档查询，但只想维护一份索引。关于 MatryoshkaLoss 机制与落地的描述，正确的有哪些？（多选）",
+        "options": [
+          "训练时只在最窄前缀维度上算对比损失，靠隐层自注意力自然泛化到完整高维",
+          "线上必须同时维护全部指定维度的索引，检索时各查一份 Top-K 再求交集",
+          "前向时把输出向量按多个预设维度做前缀截断，每个截断子向量各自算底层损失再累加反传",
+          "部署提取向量必须一次性输出全量维度的拼接矩阵，不能单独取某一个维度",
+          "上线只需截取保存目标前缀维度的一份索引，无需给每个指定维度各建一个库"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能判定多前缀截断累加损失的训练机制，并推导单份前缀索引部署的可行性",
+          "reasoningGoal": "先拆出训练侧多截断累加与部署侧单索引的对应关系；再逐项验证描述是否成立；排除只算最窄前缀、多库求交等不成立描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e26c347e",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-2c16ea04",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-matryoshka-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Matryoshka Representation Learning (MRL)",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "matryoshka",
+            "mrl",
+            "dimension-truncation",
+            "vector-db",
+            "latency"
+          ],
+          "question": "在海量向量检索系统（Vector Database）中，存储成本与检索延迟随向量维度线性增加。为了实现“低维度高速度”与“高维度高精度”的灵活切换，工程上常用套娃损失（MatryoshkaLoss）训练句向量模型。以下关于 MatryoshkaLoss 工作机制与工程落地的描述，正确的是？",
+          "options": [
+            "它在训练时仅对最窄的前缀维度（如 64 维）计算对比损失，依靠 Transformer 的隐层自注意力机制自然泛化到完整高维（如 768 维）。",
+            "它要求线上检索系统必须同时维护所有指定维度的向量索引；检索时需分别在低维库与高维库查出 Top-K 结果后求交集。",
+            "它在前向传播中对模型输出的文本向量在多个预设维度（如 64, 128, 256, 768）进行前缀截断，对每个截断子向量分别计算底层 Loss 并累加求和进行反向传播。",
+            "模型经 MatryoshkaLoss 训练后，线上部署提取向量时必须一次性输出全量截断维度的拼接矩阵，无法独立提取单一维度的向量。",
+            "部署时只需截取并保存某一目标前缀维度的向量（如仅存 128 维）即可满足检索需求，无需为所有指定维度分别建立索引。"
+          ]
+        }
+      }
+    ],
+    "sentence-embedding-loss-schema-01": [
+      {
+        "id": "sentence-embedding-loss-schema-01__surface-options__manual-ay__14",
+        "kind": "surface-options",
+        "question": "关于句向量损失函数与输入数据格式的映射关系，哪些是正确的？（多选）",
+        "options": [
+          "CosineSimilarityLoss 与 CoSENTLoss 需要两个文本字段，外加连续浮点相似度分作为标签",
+          "MNRL 要求样本自带显式连续标签数值，否则无法构建 Softmax 归一化分布",
+          "SoftmaxLoss 适用于文本对加离散分类标签的数据集，拼接文本表示训练分类头以约束语义空间",
+          "TripletLoss 只需要三列文本即可，不用额外标签列，优化目标是拉近正样本、推远负样本",
+          "只要用了对比学习损失，系统会自动丢掉全部文本列，只优化标签数值矩阵"
+        ],
+        "angle": "fundamental",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能按数据列格式为四种损失函数匹配输入 schema，并排除标签必需论与自动过滤论",
+          "reasoningGoal": "先对齐各损失的输入列要求；再逐项验证映射是否成立；排除 MNRL 需连续标签、自动丢文本列等不成立描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5b6d3486",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-6cb30891",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-loss-schema-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Loss Function Selection & Data Schema",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "loss-function",
+            "mnrl",
+            "triplet",
+            "softmax-loss",
+            "cosent",
+            "data-schema"
+          ],
+          "question": "训练句向量模型时，选择合适的 Loss 函数必须匹配数据集中具体的样本表达格式。以下关于常见损失函数与输入数据架构的映射关系，哪些是正确的？",
+          "options": [
+            "CosineSimilarityLoss 或 CoSENTLoss 要求数据集包含两个文本字段，以及一个连续型浮点数相似度分值（如 0.0 至 5.0 的 STS 分数）作为 label。",
+            "MultipleNegativesRankingLoss 要求输入样本必须包含显式连续的 label 数值，否则无法建立 Softmax 的归一化概率分布。",
+            "SoftmaxLoss 适用于包含文本对及离散分类标签（如 NLI 任务中的蕴含、中立、矛盾）的数据集，通过拼接收集到的文本表示训练分类头来约束语义空间。",
+            "TripletLoss 仅要求数据集依次包含 (anchor, positive, negative) 3 个文本列，不需要额外的 label 列，其优化目标是拉近正样本距离并推远负样本距离。",
+            "只要使用对比学习 Loss 函数，系统就会自动过滤掉数据集中所有文本列，仅对包含 label 的数值矩阵进行优化。"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-40": [
+      {
+        "id": "sebastian-raschka-2026-08-40__context-options__manual-ay__15",
+        "kind": "context-options",
+        "question": "某长文档摘要服务把输入从 4K 拉到 32K 后显存爆炸，有人提议加因果掩码解决问题。关于全连接自注意力成本的判断，正确的有哪些？（多选）",
+        "options": [
+          "QK 分数矩阵的元素个数随序列长度呈平方增长",
+          "序列变长会推高注意力中间结果的显存占用",
+          "序列长度翻倍后，全连接注意力的交互数量维持不变",
+          "加上因果掩码后，全连接注意力的理论复杂度自动降为线性"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从平方增长关系判定扩窗的显存代价，并排除掩码降阶与交互不变两类误判",
+          "reasoningGoal": "先按 N×N 矩阵拆出计算与显存的平方依赖；再逐项验证判断是否成立并比较代价；排除交互不变、掩码降线性等不成立描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9cd9ff84",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-33986bce",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-40",
+          "topic": "self-attention",
+          "subtopic": "注意力复杂度",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "complexity"
+          ],
+          "question": "标准全连接自注意力在序列长度增加时会带来哪些成本？（请选择两个）",
+          "options": [
+            "QK 分数矩阵的元素数量随序列长度平方增长",
+            "长序列会增加注意力中间结果的显存压力",
+            "序列长度翻倍时全连接注意力的交互数量保持不变",
+            "因果掩码会把全连接注意力的理论复杂度自动降为线性"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-02": [
+      {
+        "id": "sebastian-raschka-2026-08-02__surface-options__manual-ay__16",
+        "kind": "surface-options",
+        "question": "从 MHA 改 GQA、保留多个查询头，对比 MQA 的取舍，下列哪些正确？（多选）",
+        "options": [
+          "GQA 保留的 K/V 表达能力通常多于 MQA",
+          "GQA 在缓存压缩率与注意力表达能力之间取中间位置",
+          "GQA 只改变训练过程，对推理没有影响",
+          "GQA 会把查询头也压缩成单个头"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能按 KV 头数定位 GQA 在 MHA 与 MQA 之间的中间点，并排除只影响训练与压缩 Q 头两类误解",
+          "reasoningGoal": "先按 KV 头数量对齐三者的可比维度；再逐项验证取舍判断是否成立；排除只影响训练、压缩查询头等不成立描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2a46b44d",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-5eef316a",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-02",
+          "topic": "gqa",
+          "subtopic": "GQA 与 MQA 取舍",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "llm-architecture",
+            "gqa",
+            "mqa"
+          ],
+          "question": "一个模型从 MHA 改为 GQA，仍保留多个查询头。与把所有查询头都共享一套 K/V 的 MQA 相比，GQA 的核心取舍是什么？（请选择两个）",
+          "options": [
+            "GQA 通常比 MQA 保留更多 K/V 表达能力",
+            "GQA 在缓存压缩与注意力表达能力之间取中间点",
+            "GQA 只影响训练，不影响推理",
+            "GQA 会把 Q 头也压缩成一个"
+          ]
+        }
+      }
+    ],
+    "ai-eng-047": [
+      {
+        "id": "ai-eng-047__context-options__manual-ay__17",
+        "kind": "context-options",
+        "question": "某券商投研助手同时面临研报事实问答、合规话术统一、每日早报高频生成三项诉求，分别对应 RAG、微调、蒸馏中的哪个或组合？正确的有哪些？（多选）",
+        "options": [
+          "高频更新的事实问答走 RAG：研报知识天天变化且回答必须给出出处",
+          "固定合规话术与输出格式用微调固化，先用 System Prompt 验证再规模化微调",
+          "八成流量集中在四类重复任务且月支出 2.5 万美元，满足蒸馏筛选的流量与支出双条件",
+          "把三项诉求全部塞给一个蒸馏小模型解决，一个学生同时搞定问答格式与成本",
+          "换更强的旗舰模型并加长 System Prompt，一次性解决知识格式与成本问题",
+          "用微调把知识冻进权重，用 RAG 只提供格式模板，再堆算力摊薄成本，上线后撤掉检索"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能按知识时效、行为一致、成本压缩三维诉求匹配 RAG 微调蒸馏组合，并排除单手段包办论",
+          "reasoningGoal": "先把三项诉求拆到事实供给、行为塑形、成本工程三个维度；再逐项验证组合判断是否成立；排除万能学生、旗舰长提示、撤检索等不成立描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ff809b6b",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-ddf6aa14",
+        "sourceSnapshot": {
+          "id": "ai-eng-047",
+          "topic": "rag-vs-finetuning",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "build-vs-buy",
+            "quick-screen",
+            "distill-or-not",
+            "decision-heuristics"
+          ],
+          "question": "某产品同时面临三个诉求：①客服机器人要基于企业知识库回答事实问题且要求给出出处；②所有回复需遵循固定的 JSON 输出格式与服务话术风格；③日均 30 万次请求中 80% 集中在 4 类高度重复的任务模式上，旗舰模型月支出已达 $25K。三项诉求分别应该用 RAG、微调、蒸馏中的哪个（或组合）解决？",
+          "options": [
+            "客服事实问答用 RAG：知识频繁更新且回答需附出处溯源，RAG 即时生效且天然带引用",
+            "固定 JSON 输出格式与服务话术靠微调固化，起步可先用 System Prompt 验证，规模化后再微调",
+            "80% 流量集中于 4 类重复任务且月支出 $25K，命中蒸馏 quick-screen 双条件，用蒸馏接管压成本；三者正交可叠加",
+            "三项诉求全部蒸馏一个万能学生模型解决，小模型掌握全部能力后可同时完成问答、格式与成本压缩",
+            "全部靠更强旗舰模型加长 System Prompt 解决，模型够强即记住知识、学会格式并压低成本，无需额外复杂度",
+            "用微调把知识库训进权重固化知识，用 RAG 提供格式模板，再堆 GPU 算力摊薄成本，上线后无需检索"
+          ]
+        }
+      }
+    ],
+    "eth-09": [
+      {
+        "id": "eth-09__surface-options__manual-ay__18",
+        "kind": "surface-options",
+        "question": "开发 Agent 应用集成第三方工具包与权重后发现 RCE 后门。关于风险定性与防护，正确的有哪些？（多选）",
+        "options": [
+          "本案属于供应链风险，恶意代码经第三方工具包、模型权重、模板与依赖库进入系统",
+          "对模型权重与第三方组件做 SBOM 审计、签名校验与漏洞扫描",
+          "第三方工具与依赖的运行环境做沙箱隔离，收紧网络与权限以缩小爆发半径",
+          "定性为训练数据污染，清洗微调语料之后，部署运行就不再受外部组件威胁",
+          "定性为过度依赖模型，人工复核一遍输出即可，不必再验证依赖与权重"
+        ],
+        "angle": "definition",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能把第三方依赖后门定性为供应链风险，并开出 SBOM 加签名加沙箱的防护组合",
+          "reasoningGoal": "先按恶意进入路径判定风险类目；再逐项验证定性与防护是否成立；排除数据污染论、复核包办论等不成立描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3b8844ab",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-ce1c519f",
+        "sourceSnapshot": {
+          "id": "eth-09",
+          "topic": "tool-security",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "supply-chain",
+            "sbom",
+            "sca",
+            "third-party-dependency"
+          ],
+          "question": "开发 Agent 应用时，团队集成了第三方开源 Agent 工具包、预训练微调权重以及 HuggingFace 上的 Prompt 模板。后续发现其中一个第三方向量转换依赖库包含恶意的远程代码执行（RCE）后门。这属于 OWASP LLM 中的哪类风险，应如何防护？",
+          "options": [
+            "该案属于供应链风险：恶意经第三方工具包、权重、模板与依赖库进入系统",
+            "对模型权重、第三方组件与依赖包建立SBOM审计、签名验证与漏洞扫描",
+            "第三方Tool与依赖的执行环境沙箱隔离，限制网络与权限以缩小爆发半径",
+            "定性为训练数据污染，只要清洗微调语料，部署后就不受外部组件威胁",
+            "定性为过度依赖，人工复核一遍输出即可，无需再验证依赖与权重安全"
+          ]
+        }
+      }
+    ],
+    "agent-skills-debugging-01": [
+      {
+        "id": "agent-skills-debugging-01__context-options__manual-ay__19",
+        "kind": "context-options",
+        "question": "某代码 Agent 的 Skill 演进连续四代栽在同一种测试失败上，回滚与追加日志都在跑。定位状态管理断点应优先检查哪两项？（多选）",
+        "options": [
+          "失败候选的 diff、评分与拒绝原因是否结构化落盘，且提议前能被检索到",
+          "构造提议提示词时，是否把语义相近的历史被拒候选连同原因一起暴露出来",
+          "每次回滚是否把执行版本与知识库一起恢复到上一代快照",
+          "验证阈值是否收得足够紧，能否靠多拦候选来减少回滚"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能区分失败被记录与被利用，并定位到落盘可检索与提议可见两处断点",
+          "reasoningGoal": "先区分记录与利用的断裂位置；再逐项验证检查项是否对症；排除全量快照回滚、收紧阈值等非诊断手段描述。"
+        },
+        "generatedAt": 1789128784996,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a58d57dd",
+        "batch": "manual-ay",
+        "model": "manual",
+        "contentHash": "fnv1a-6f3ed774",
+        "sourceSnapshot": {
+          "id": "agent-skills-debugging-01",
+          "topic": "agent-skills",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "agent",
+            "skill-evolution",
+            "state-management",
+            "debugging"
+          ],
+          "question": "一个自我演化 Agent 已实现「验证集失败即回滚 Skill」与「审计日志仅追加」，但连续三代候选仍反复触发同一类失败。要定位状态管理层的问题，应优先检查哪两项？",
+          "options": [
+            "失败候选的 diff、验证分与归一化拒绝原因是否完整追加，且能被 Proposer 在提议前检索到",
+            "Proposer 构造提示词时，上下文中是否暴露了语义近似的历史被拒候选及其拒绝原因",
+            "回滚是否每次都把活性版本指针与知识库一起恢复到上一代的同一份快照",
+            "验证门控阈值是否足够严格，能否在验证阶段拦掉更多候选以减少回滚次数"
+          ]
+        }
+      }
+    ]
+  }
+}

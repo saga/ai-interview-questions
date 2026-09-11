@@ -69,7 +69,11 @@ def _load_angles_from_schema() -> set[str]:
 
 VALID_ANGLES = _load_angles_from_schema()
 PLACEHOLDER_RE = re.compile(r"^(?:参见解析|见解析|略|同上|待补充|todo|tbd)$", re.IGNORECASE)
-VOLATILE_RE = re.compile(r"(?:aws|amazon|openai|anthropic|google|azure|api|sdk|模型版本|版本号|version|认证考试|claude|gpt|gemini)", re.IGNORECASE)
+VOLATILE_RE = re.compile(r"(?:aws|amazon|openai|anthropic|google|azure|模型版本|版本号|认证考试|claude|gpt|gemini)", re.IGNORECASE)
+# 注意：故意不含裸词 api|sdk|version——它们在题库中几乎只出现在通用工程语境
+# （API 网关/成本/Log、Prompt Versioning、policy version），一律匹配会产生大量误报
+# （2026-09-11 清理：103 个 missing-source 中 72 个仅命中此类裸词）。
+# 真正易变的厂商/模型事实由上面的厂商名与模型版本词覆盖。
 # 题型门禁阈值（AGENTS.md §4.2）：单选题在选择题中的占比上限。
 MAX_SINGLE_RATIO = 1 / 3
 

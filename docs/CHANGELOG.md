@@ -1,6 +1,69 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-11 · P2 存量清理 batch 1：missing-source 103→5，选项长度比 140→127（ADR-079）
+
+- missing-source：`VOLATILE_RE` 去裸词 `api|sdk|version`（72 个通用工程语境误报消除，零漏报验证）；
+  26 个真阳性补真实来源（AIP-C01 考试指南×18、AIF-C01×2、Google GenAI Leader 考试指南×1、
+  Ollama OpenAI 兼容文档×1、Anthropic Messages API×1、AWQ/GPTQ/BERT 论文×3，URL 均经搜索验证，
+  arXiv 用仓内既有的 ID 形式）；5 个原创方法论题（`ai-eng-055/049/043`、`agentic-29`、
+  `ai-search-gap-015`）通用词触发、无外部事实可引，**不编造来源**，如实残留。
+- 选项长度比：13 道严重超标（≥3.0×，最高 6.3×）逐题改写至 ≤1.75×，保顺序保真值，
+  `reasoningGoal`/`target` 中引用的选项片段同步更新；剩余 127 道 backlog 后续分批。
+- 连带：13 题改写使 12 条旧变体 snapshot 失配；已逐条验证变体命题与新 canonical 等价
+  （真值与命题不变）后用仓内哈希函数重设基线，未重写变体文本（ADR-079 §3）。
+- 门禁实证：`validate:questions` ✓ 1429 题；`validate-variants` ✓ 池健康（stale 12→0）；
+  `npm test` 891/891；`lint:bias`/`question:quality` 仅剩 advisory 命中，改写题中
+  `aws-waf-lens-2026-08-30`（correct-is-longest，改写前更严重）与 `agentic-04`（机制特异性固有）
+  已注明原因接受。
+
+## 2026-09-11 · 薄格同格扩充 20 条变体（`assessment.manual-ay-20260911.json`，池 1431→1451 条）
+
+- 覆盖已满（blueprint 空），转向同格内扩充：从 363 个仅 1 题格子中挑 20 道代表题
+  （有 choice 形态、零变体、18 个 topic 分散；排除昨日新 canonical，只扩存量老题），
+  各写 1 条 assessment 变体，全多选。
+- 与 ax 批不同：本批**同 angle + 同 cognitiveTask**（真正的同格扩充），仅换新推理路径
+  （新 target/reasoningGoal）与新题干场景；答案真值逐项继承原题。
+- 门禁实证：`validate-variants` ✓ 一次过（语言/漂移/路径/数量全 0，长度比初稿 2 超标改写后全 ≤1.8×）；
+  `validate:questions` ✓ 1429 题不变；`npm test` 891/891。组装草稿（/tmp/assemble-ay.ts）未落仓。
+
+## 2026-09-11 · 补 20 个 P1 缺口格新 canonical（`coverage-gap-20260911.json`，题库 1409→1429 题）
+
+- `question:blueprint -- 20` 的 20 个格子逐格确认 0 题后，按 `fill-coverage-gap` 流程 fork 新 canonical
+  （ID `<topic>-<angle>-01` + `derivedFrom` 指回 reuse 候选，保留知识血缘；skill 警告的"变体补洞"
+  陷阱本次未踩——变体只扩题量，覆盖格由新 canonical 落子）。
+- 20 题全部 choice-multiple + open 双形态（单选 0，多选占比 100%），各带 misconceptions +
+  misconceptionMap + cognitiveTask + 三段式 assessment；干扰项取自知识节点 misconceptions，
+  长度比初稿即控在 ≤1.9× 内（1 道 1.9× 被 `question:add` 拦下后改写通过）。
+- 门禁实证：`question:add --check/--write` 20 格新增覆盖；`validate:questions` ✓ 1429 题；
+  `bank.test.ts` 12/12；检索两组 68/68；`lint:bias` 新题 0 命中；`question:quality` 新题 0 命中；
+  非语义分析近重复候选 0；20 格逐格计数 0→1；`typecheck` + 全量 `npm test` 891/891 干净。
+  （语义复核当时因模型未物化未能运行，见紧接的下条；已补跑通过。）
+
+## 2026-09-11 · 语义复核补跑 + `.gitattributes` LFS 模式修复（接上条）
+
+- 根因：`.gitattributes` 写的是 `models/**/*.onnx`，模型实际在 `analysis/models/`，
+  `git check-attr` 返回空导致 smudge 从未生效，新 clone 永远只拿到 134 字节指针。
+  对象本身在远端完好（`git lfs fetch --all` 即得），已改三行模式为 `**/models/**` 并物化 118MB 模型。
+- 语义复核（`--semantic`）：语义重复候选 **0**（全库），新 20 题 0 命中；embedding 簇 8，
+  新题未形成孤立簇。`question:audit` 无 P0/P1；P2 均为存量（新题仅出现在无 severity 的
+  difficulty 分布备注中，而蓝图明确要求 hard 难度，属按设计执行）。
+- 踩坑已沉淀进 `ARCHITECTURE.md`「技术栈注意点」（加资产后必跑 `git check-attr -a <真实路径>`）。
+
+- `question:blueprint -- 20` 前 20 个 P1 缺口格的 `reuseCandidateIds` 落到 12 道原题，
+  按缺口目标 angle 手写 20 条离线 assessment 变体（12 题中 8 题 ×2 条、4 题 ×1 条），
+  全部自声明 angle/cognitiveTask/三段式 assessment 测量面（comparison×6/calculation×3/
+  mechanism×3/scenario×3/causal×1/debate-comparison×1/tradeoff×2/design×1/debugging×1）。
+- 本批选择题 17 多选 + 3 单选（多选占比 85%，满足 ≥2/3 门）；选项长度比全批 ≤1.78×；
+  改写贴原文核心名词短语、恢复原文分句顺序，一次过语义漂移与从句倒置门禁。
+- 池指标：变体 1411→**1431** 条，覆盖 722→**723** 题（新增
+  `llm-web-text-extraction-and-line-correction-canonical`），其余 11 题为同题第二/三路径。
+- 顺带修复存量 `assessment.manual-aw-20260910.json` 中
+  `agent-safety-03__context-options__manual-aw__1` 的语言门禁（option[0] 从句倒置，
+  按 canonical 分句顺序重写并重算 contentHash）。
+- 门禁实证：`validate-variants` ✓ 池健康（语言不合格 2→0，难度驱动 8 条均为存量审计信号）；
+  `validate:questions` ✓ 1409 题；`npm test` 891/891；组装草稿（/tmp/assemble-ax.ts、/tmp/rehash-ax.ts）未落仓。
+
 ## 2026-09-11 · Agent 面试每题倒计时 + 时间到弹窗（不自动跳题）
 
 - 现象：Agent 面试此前**完全没有倒计时**，用户无法感知每题剩余作答时间，也无「时间到」提示。

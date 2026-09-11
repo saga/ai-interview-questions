@@ -2,6 +2,30 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-079 · missing-source 门禁精确化 + 语义保持改写的变体重设基线规则
+
+- 状态：已采纳 · 2026-09-11
+- 背景：`question:audit` 的 missing-source 检查（`VOLATILE_RE` 命中题面/解析中的厂商词却无
+  `source`）报出 103 个 P2。逐个核查发现 72 个只命中裸词 `api|sdk|version`（API 网关/成本/Log、
+  Prompt Versioning、policy version 等通用工程语境），属误报；另 5 个原创方法论题命中
+  `版本号/模型版本/GPT` 通用词（设计要素与场景 framing），并无可引用的外部易变事实。
+- 决策：
+  1. `VOLATILE_RE` 去掉裸词 `api|sdk|version`，保留厂商名（aws/amazon/openai/anthropic/google/
+     azure/claude/gpt/gemini）与 `模型版本/版本号/认证考试`。通用工程词汇不再触发，
+     真正的厂商/模型事实断言仍被捕获（验证：103→31，31 个与事前人工分类的真阳性集合完全一致，
+     零漏报）。
+  2. 原创综合题（无外部 provenance、通用词触发）**不编造 `source`**，如实接受残留 P2
+     并在 CHANGELOG 注明理由；只有断言具体厂商/服务/模型/论文事实的题才补真实来源。
+  3. canonical 做**语义保持的改写**（保真值、保命题，仅调长度/措辞）导致变体 snapshot 失配时，
+     若已逐条验证变体命题与新 canonical 等价，允许用 `variantSourceOf` /
+     `computeVariantSourceHash` 直接重设基线（离线），而不走 LLM 重新生成——`refresh-variant-hash.ts`
+     的"选项变了必重生成"规则针对的是语义漂移，本次属已验证的语义等价，不在此列。
+- 理由：门禁的精确率与诚实性优先于数字清零；为凑数编造来源或重写本就正确的变体文本，
+  都是用正确性换指标。残留 P2（5 missing-source + 127 option-length-ratio backlog）保持可见，
+  后续分批处理。
+- 触发条件：若未来出现真正的厂商事实断言缺来源，按个案补真实来源；若裸词误报重现，
+  收紧正则而非加豁免名单（无豁免机制，不引入）。
+
 ## ADR-078 · Offline Variant Pool 路径级整改：reasoning-path 门禁 + 多样性 Top-N + 发布门禁收紧
 
 - 状态：已采纳 · 2026-09-08

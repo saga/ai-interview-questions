@@ -1,0 +1,899 @@
+{
+  "version": 1,
+  "generatedAt": 1789125159085,
+  "promptVersion": "v1",
+  "variants": {
+    "q_hierarchical_softmax_huffman_can": [
+      {
+        "id": "q_hierarchical_softmax_huffman_can__surface-options__manual-ax__0",
+        "kind": "surface-options",
+        "question": "用按词频构造的 Huffman 树实现 Hierarchical Softmax 时，对比平衡二叉树、截断长尾、稀疏编码等替代方案，下列哪些关于其加速原理的判断是成立的？",
+        "options": [
+          "Huffman 树按词频给高频词分配更短二值路径，平均评估节点数从 log2(V) 降到约 log2(Unigram_perplexity(V))",
+          "Huffman 树仍以词表中全部 V 个词做叶子节点，加速来自路径长度按词频的再分配，而不是缩小词表",
+          "按字母表顺序建成完全二叉树，就能把搜索复杂度从 V 严格压到 log2(V)，加速效果与词频分布无关",
+          "截断长尾低频词的树路径深度、强制全部词取统一编码长度，即可彻底消灭输出层的全部计算",
+          "Huffman 编码把词向量转成稀疏 One-hot 形式，从而省掉隐藏层与输出层之间的矩阵乘法"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比 Huffman 树与平衡树、截断词表、稀疏编码等方案，判定何者真正降低输出层评估开销",
+          "reasoningGoal": "先拆出各候选方案改变的是路径分配、词表规模还是编码形式；再逐项验证其是否成立并比较加速来源；排除字母序建树、截断长尾、One-hot 稀疏化等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1933ad54",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-25af7b62",
+        "sourceSnapshot": {
+          "id": "q_hierarchical_softmax_huffman_can",
+          "topic": "hierarchical-softmax-huffman-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Word2Vec",
+            "Hierarchical Softmax",
+            "Huffman Tree"
+          ],
+          "question": "在语言模型输出层采用基于 Unigram 词频的 Huffman 树实现 Hierarchical Softmax 时，下列哪些关于其降开销机制的说法是正确的？",
+          "options": [
+            "Huffman 树按词频给高频词更短编码路径，其评估节点数由 $\\log_2(V)$ 降至约 $\\log_2(\\text{Unigram\\_perplexity}(V))$",
+            "Huffman 树仍保留词汇表中全部 $V$ 个词作为叶子节点，加速来自路径长度按词频重分配，而非缩减词表",
+            "按字母顺序构建完全二叉树即可把节点搜索复杂度从 $V$ 严格降到 $\\log_2(V)$，该加速与词频分布无关",
+            "通过截断长尾低频词在树中的路径深度、并强制所有词的编码长度保持一致，从而彻底消除输出层全部的分类计算",
+            "Huffman 编码将词向量直接转化为稀疏 One-hot 表示，从而避免隐藏层与输出层之间的矩阵乘法"
+          ]
+        }
+      },
+      {
+        "id": "q_hierarchical_softmax_huffman_can__context-options__manual-ax__1",
+        "kind": "context-options",
+        "question": "某词表 V=50 万、Unigram 困惑度约 8000 的语言模型要估算输出层单步评估量。按 Huffman 树 Hierarchical Softmax 的定量关系，下列哪些计算与推论是正确的？",
+        "options": [
+          "高频词走更短二值路径，平均评估节点数约为 log2(8000)≈13，远低于平衡树的 log2(V)≈19",
+          "树仍保留全部 50 万词做叶子节点，节省来自路径按词频再分配，而非把词表砍小",
+          "把 50 万词按字母序排成完全二叉树，单步评估恒为 19 次，与词频和困惑度都没有关系",
+          "删掉频次垫底的 40 万词并统一剩余词的编码长度，可让单步输出计算直接归零",
+          "Huffman 编码输出的是稀疏 One-hot 词向量，因此隐藏层到输出层的矩阵乘法可以整块删掉"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能按困惑度公式定量估算 Huffman 树平均评估节点数，并排除截断词表与稀疏编码的错误算法",
+          "reasoningGoal": "先按 log2(困惑度)与 log2(V)算出两种树的评估量级；再逐项验证各选项的数值与机制是否成立；排除字母序建树、删长尾归零、One-hot 省矩阵等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1933ad54",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-03a99719",
+        "sourceSnapshot": {
+          "id": "q_hierarchical_softmax_huffman_can",
+          "topic": "hierarchical-softmax-huffman-optimization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Word2Vec",
+            "Hierarchical Softmax",
+            "Huffman Tree"
+          ],
+          "question": "在语言模型输出层采用基于 Unigram 词频的 Huffman 树实现 Hierarchical Softmax 时，下列哪些关于其降开销机制的说法是正确的？",
+          "options": [
+            "Huffman 树按词频给高频词更短编码路径，其评估节点数由 $\\log_2(V)$ 降至约 $\\log_2(\\text{Unigram\\_perplexity}(V))$",
+            "Huffman 树仍保留词汇表中全部 $V$ 个词作为叶子节点，加速来自路径长度按词频重分配，而非缩减词表",
+            "按字母顺序构建完全二叉树即可把节点搜索复杂度从 $V$ 严格降到 $\\log_2(V)$，该加速与词频分布无关",
+            "通过截断长尾低频词在树中的路径深度、并强制所有词的编码长度保持一致，从而彻底消除输出层全部的分类计算",
+            "Huffman 编码将词向量直接转化为稀疏 One-hot 表示，从而避免隐藏层与输出层之间的矩阵乘法"
+          ]
+        }
+      }
+    ],
+    "llm-data-filtering-heuristics-canonical": [
+      {
+        "id": "llm-data-filtering-heuristics-canonical__surface-options__manual-ax__2",
+        "kind": "surface-options",
+        "question": "网页抽取文本里混着点赞计数、导航按钮、版权尾巴等模板行，用行级修正加文档级启发式过滤来排障时，下列哪些机制分析是合理的？",
+        "options": [
+          "行级规则能逐行摘除社交计数与导航残留，补上文档级分类模型清不掉局部模板的短板",
+          "某文档被行级过滤删掉超阈值比例内容时整页丢弃，可保住语料的连贯性与整体质量",
+          "文档的语言识别分一旦过线，就能保证其内部不存在任何行级交互噪声",
+          "行级过滤不改变语义分布，所以含符号或数字的行可以无差别整行删掉且无害"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从模板噪声的混入形态诊断出行级与文档级过滤各自的职责，并定位阈值丢弃的排障价值",
+          "reasoningGoal": "先定位计数器与导航残留的行级混入形态与文档级模型的盲区；再逐项验证各排障策略是否成立；排除语言分过线即干净、无差别删符号行无害等错误诊断。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-08621d0d",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-ecafb544",
+        "sourceSnapshot": {
+          "id": "llm-data-filtering-heuristics-canonical",
+          "topic": "llm-data-filtering-heuristics",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Heuristics"
+          ],
+          "question": "从网页抽取文本构建 LLM 预训练数据集时，常残留社交点赞计数器、导航按钮、版权声明等模板噪声。在使用行级（Line-wise）修正与文档级启发式过滤诊断噪声时，下列哪些策略与机制分析是合理的？",
+          "options": [
+            "行级过滤能够精准剔除单行存在的社交计数与导航残留，解决文档级分类模型无法清除局部模板的问题。",
+            "若行级过滤剔除的内容占整个文档比例超过设定阈值（如 5%），应将该文档整体丢弃以保障文本连贯性。",
+            "只要文档整体的语言识别概率（如 fastText 评分）高于阈值，即可保证其内部不存在此类行级交互噪声。",
+            "行级过滤不会改变上下文语义分布，因此对所有含有符号或数字的行实施无差别删除是安全且无害的。"
+          ]
+        }
+      },
+      {
+        "id": "llm-data-filtering-heuristics-canonical__context-options__manual-ax__3",
+        "kind": "context-options",
+        "question": "某语料团队每天抽取千万级网页，正文行里缠着“点赞 12.3 万”“加入购物车”等短句，全文档语言分却显示正常。要设计行级修正与文档级丢弃联动的清洗管线，下列哪些设计是合理的？",
+        "options": [
+          "部署行级模式识别社交计数与导航短句，专清文档级语言模型看不见的局部模板行",
+          "统计单文档被行级删除的行占比，超阈值整页丢弃，避免留下被切碎的断裂上下文",
+          "只保留语言识别高分文档入库，即可认定行级短句模板已经被顺带清除干净",
+          "为提速对含数字或符号的行整行丢弃，公式代码与数量表达的损失可以忽略不计"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能针对模板行缠绕正文的场景设计行级识别加整页丢弃阈值的联动管线",
+          "reasoningGoal": "先拆出高分文档仍带模板行的设计缺口与行级联动要解决的矛盾；再逐项验证各管线设计是否成立；排除只看语言分、无差别删符号行等不成立设计。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-08621d0d",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-3e19bead",
+        "sourceSnapshot": {
+          "id": "llm-data-filtering-heuristics-canonical",
+          "topic": "llm-data-filtering-heuristics",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Heuristics"
+          ],
+          "question": "从网页抽取文本构建 LLM 预训练数据集时，常残留社交点赞计数器、导航按钮、版权声明等模板噪声。在使用行级（Line-wise）修正与文档级启发式过滤诊断噪声时，下列哪些策略与机制分析是合理的？",
+          "options": [
+            "行级过滤能够精准剔除单行存在的社交计数与导航残留，解决文档级分类模型无法清除局部模板的问题。",
+            "若行级过滤剔除的内容占整个文档比例超过设定阈值（如 5%），应将该文档整体丢弃以保障文本连贯性。",
+            "只要文档整体的语言识别概率（如 fastText 评分）高于阈值，即可保证其内部不存在此类行级交互噪声。",
+            "行级过滤不会改变上下文语义分布，因此对所有含有符号或数字的行实施无差别删除是安全且无害的。"
+          ]
+        }
+      }
+    ],
+    "llm-dataset-deduplication-strategies-canonical": [
+      {
+        "id": "llm-dataset-deduplication-strategies-canonical__surface-options__manual-ax__4",
+        "kind": "surface-options",
+        "question": "对比精确子串去重与 MinHash 模糊去重的级联架构，下列哪些关于两者分工与组合收益的评估是正确的？",
+        "options": [
+          "模糊去重用 MinHash 估计文档相似度并按阈值剔除，能抓住轻微改写与重排版的近似重复",
+          "精确子串去重的覆盖面完全包含模糊去重，大规模语料上可直接砍掉模糊去重阶段",
+          "精确子串匹配叠加 MinHash 模糊去重，可实现跨文档与跨抓取批次的深度去重并抑制记忆化",
+          "语料里的高频重复文本只会多烧算力，不会对模型的生成质量造成实质伤害"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比精确子串与模糊去重的召回边界，并判定级联组合相对单阶段的真实收益",
+          "reasoningGoal": "先拆出两种去重各自命中的重复形态与召回盲区；再逐项验证组合收益判断是否成立并比较单阶段替代说；排除精确覆盖模糊、重复只费算力等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e7007a48",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-4fb60dfa",
+        "sourceSnapshot": {
+          "id": "llm-dataset-deduplication-strategies-canonical",
+          "topic": "llm-dataset-deduplication-strategies",
+          "angle": "architecture",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "LLM",
+            "Deduplication",
+            "Data Quality"
+          ],
+          "question": "在构建数万亿 Token 的 LLM 预训练语料库时，针对“精确子串去重（Exact Substring Deduplication）”与“模糊去重（Fuzzy Deduplication，如 MinHash + LSH）”的级联组合架构，下列哪些评估结论是正确的？",
+          "options": [
+            "模糊去重通过 MinHash 计算文档相似度，能有效识别因微小改写或格式差异产生的近似重复文档。",
+            "精确子串去重能够完全覆盖模糊去重的识别范围，因此在处理大规模语料时可以完全省去模糊去重阶段。",
+            "组合精确子串与模糊去重能实现跨文档和跨 Dump 的深度去重，可显著减少模型记忆化（Memorization）。",
+            "即便数据集中存在大量高频重复文本，也仅会增加无意义的训练耗时，不会对大模型的生成质量造成实质危害。"
+          ]
+        }
+      },
+      {
+        "id": "llm-dataset-deduplication-strategies-canonical__context-options__manual-ax__5",
+        "kind": "context-options",
+        "question": "某万亿 Token 语料只做了精确子串去重，上线后模型频繁逐字背出训练集段落，且改写过的营销文案大量漏网。从因果链看，下列哪些归因与修复判断是正确的？",
+        "options": [
+          "漏网主因是精确匹配要求字符序列完全一致，对插词改写与调序的近似重复召回率极低",
+          "根治办法是精确子串单独扩并发，因为模糊去重的识别范围本就被精确匹配完全覆盖",
+          "补上 MinHash 模糊去重形成级联，可覆盖跨文档与跨批次的改写重复并削弱记忆化",
+          "记忆化背诵只是训练变慢的表现，重复文本本身不会损害 Zero-shot 泛化与生成质量"
+        ],
+        "angle": "causal",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从记忆化与改写漏网现象沿因果链归因到缺失模糊去重，并推导级联修复的传导路径",
+          "reasoningGoal": "先从背诵与漏网现象回溯到精确匹配的字符一致前提；再逐项验证归因与修复链条是否成立；排除精确覆盖模糊、重复只拖慢训练等因果倒置描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e7007a48",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-64e89b7b",
+        "sourceSnapshot": {
+          "id": "llm-dataset-deduplication-strategies-canonical",
+          "topic": "llm-dataset-deduplication-strategies",
+          "angle": "architecture",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "LLM",
+            "Deduplication",
+            "Data Quality"
+          ],
+          "question": "在构建数万亿 Token 的 LLM 预训练语料库时，针对“精确子串去重（Exact Substring Deduplication）”与“模糊去重（Fuzzy Deduplication，如 MinHash + LSH）”的级联组合架构，下列哪些评估结论是正确的？",
+          "options": [
+            "模糊去重通过 MinHash 计算文档相似度，能有效识别因微小改写或格式差异产生的近似重复文档。",
+            "精确子串去重能够完全覆盖模糊去重的识别范围，因此在处理大规模语料时可以完全省去模糊去重阶段。",
+            "组合精确子串与模糊去重能实现跨文档和跨 Dump 的深度去重，可显著减少模型记忆化（Memorization）。",
+            "即便数据集中存在大量高频重复文本，也仅会增加无意义的训练耗时，不会对大模型的生成质量造成实质危害。"
+          ]
+        }
+      }
+    ],
+    "llm-pretraining-web-data-pipeline-canonical": [
+      {
+        "id": "llm-pretraining-web-data-pipeline-canonical__context-options__manual-ax__6",
+        "kind": "context-options",
+        "question": "某团队要在“百万册精选书刊”与“十万亿 Token 级别网页抓取”之间选主路线，并论证管线强度的作用。下列哪些对比结论是合理的？",
+        "options": [
+          "精选书刊总量有限，反复采样会过拟合，单靠它撑不起万亿 Token 的无重复扩展",
+          "网页抓取噪声太大，多级清洗后仍不可能在 Zero-shot 上追平精选语料",
+          "网页数据经严格启发式过滤与深度去重后，可替代精选语料拿到高泛化的基础语料",
+          "为保多样性应直接混入未清洗的原始抓取文本，这是扩展规模最优的工程方案"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能对比精选语料与网页抓取的规模天花板，并以管线强度为条件判定替代可行性",
+          "reasoningGoal": "先对比精选语料的增长瓶颈与原始网页的噪声构成；再逐项验证替代条件判断是否成立并比较两条路线；排除清洗无用论、原始混入最优等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a37790a1",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-e7c00f51",
+        "sourceSnapshot": {
+          "id": "llm-pretraining-web-data-pipeline-canonical",
+          "topic": "llm-pretraining-web-data-pipeline",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Pretraining"
+          ],
+          "question": "大型语言模型（LLM）预训练规模需要数万亿 Token 的数据支持。在规划预训练数据建构策略时，针对“人工精选数据集（Curated Corpora，如书籍、论文）”与“通用 Web 爬取数据集（Web Crawlers）”的选择与权衡，下列哪些评估结论是合理的？",
+          "options": [
+            "人工精选数据在规模上存在天然增长瓶颈，难以独自支撑万亿 Token 级别的无重复扩展需求。",
+            "通用 Web 爬取数据由于噪声密度过高，即便经过多级规则清洗也无法在 Zero-shot 任务上赶超精选数据集。",
+            "对 Web 爬取数据实施严格的质量启发式过滤与深度去重，可替代人工精选获得高泛化能力的基础语料。",
+            "为了避免出现模型记忆化与训练不收敛，直接混合未清洗的原始 Web 爬取数据是拓展多样性的最佳工程方案。"
+          ]
+        }
+      }
+    ],
+    "llm-web-text-extraction-and-line-correction-canonical": [
+      {
+        "id": "llm-web-text-extraction-and-line-correction-canonical__surface-options__manual-ax__7",
+        "kind": "surface-options",
+        "question": "用 WARC 原始响应与 WET 导出文件两条路线做正文抽取时，关于 DOM 解析与格式刷洗内在机制的判断，下列哪些是合理的？",
+        "options": [
+          "官方 WET 文件已足够干净，直接拿来训练即可达到顶级预训练文本质量",
+          "从 WARC 出发用 DOM 正文抽取工具解析树状结构，可明显抬升正文的提取纯度",
+          "抽取后用正则把连续换行收敛并剥离内嵌 URL，能规范 Tokenizer 的输入序列分布",
+          "DOM 工具定位到正文标签后，输出文本流可直接入库，不需要任何行级二次清洗"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释 WET 粗抽取与 DOM 结构化抽取的机制差异，以及换行收敛与 URL 剥离的作用机理",
+          "reasoningGoal": "先拆出 WET 残留模板与 DOM 树解析、正則刷洗各自的机制环节；再逐项验证机制判断是否成立；排除 WET 直用、DOM 后免洗等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c4ebdfa9",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-dfb382f5",
+        "sourceSnapshot": {
+          "id": "llm-web-text-extraction-and-line-correction-canonical",
+          "topic": "llm-web-text-extraction-and-line-correction",
+          "angle": "implementation",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "LLM",
+            "Text Extraction",
+            "CommonCrawl"
+          ],
+          "question": "在处理 CommonCrawl 等海量网页数据以构建 LLM 预训练文本流时，关于原始 HTML 响应（WARC）与官方纯文本导出文件（WET）的处理方案诊断，下列哪些结论是合理的？",
+          "options": [
+            "直接采用 CommonCrawl 官方提供的 WET 纯文本文件，能够完全剔除网页导航菜单和广告挂件残留。",
+            "从原始 WARC 网页结构出发，利用高精度 DOM 内容抽取工具（如 Trafilatura）能大幅提升正文提取纯度。",
+            "在完成 HTML 正文提取后，仍需利用正则手段约束连续换行并剥离内嵌 URL，以改善输入 Token 分布。",
+            "只要 DOM 解析工具成功定位了正文标签，提取出的文本流即可直接送入模型，无需再做任何行级规则清洗。"
+          ]
+        }
+      },
+      {
+        "id": "llm-web-text-extraction-and-line-correction-canonical__context-options__manual-ax__8",
+        "kind": "context-options",
+        "question": "某 CommonCrawl 管线 A 直接消费官方 WET，管线 B 从 WARC 用 DOM 抽取加正则刷洗与行级二次清洗。对比两条管线的输出质量，下列哪些结论是合理的？",
+        "options": [
+          "管线 A 的 WET 输出已剔除全部导航与挂件残留，质量与精细抽取没有实质差距",
+          "管线 B 用 DOM 工具解析网页树状结构找正文，纯度显著高于 WET 的粗粒度导出",
+          "管线 B 的换行收敛与 URL 剥离能收紧 Token 分布，避免异常序列污染训练",
+          "管线 B 的 DOM 步骤一旦跑通，后续行级二次清洗就是冗余，可以整段删掉"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比 WET 直用管线与 WARC加DOM加清洗管线的质量分野，并判定各环节的取舍",
+          "reasoningGoal": "先对比两条管线在模板残留与序列规范上的输出差异；再逐项验证取舍判断是否成立并比较环节价值；排除 WET 等价论、清洗冗余论等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c4ebdfa9",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-0b070a9f",
+        "sourceSnapshot": {
+          "id": "llm-web-text-extraction-and-line-correction-canonical",
+          "topic": "llm-web-text-extraction-and-line-correction",
+          "angle": "implementation",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "LLM",
+            "Text Extraction",
+            "CommonCrawl"
+          ],
+          "question": "在处理 CommonCrawl 等海量网页数据以构建 LLM 预训练文本流时，关于原始 HTML 响应（WARC）与官方纯文本导出文件（WET）的处理方案诊断，下列哪些结论是合理的？",
+          "options": [
+            "直接采用 CommonCrawl 官方提供的 WET 纯文本文件，能够完全剔除网页导航菜单和广告挂件残留。",
+            "从原始 WARC 网页结构出发，利用高精度 DOM 内容抽取工具（如 Trafilatura）能大幅提升正文提取纯度。",
+            "在完成 HTML 正文提取后，仍需利用正则手段约束连续换行并剥离内嵌 URL，以改善输入 Token 分布。",
+            "只要 DOM 解析工具成功定位了正文标签，提取出的文本流即可直接送入模型，无需再做任何行级规则清洗。"
+          ]
+        }
+      }
+    ],
+    "multi-agent-communication-protocol-canonical": [
+      {
+        "id": "multi-agent-communication-protocol-canonical__surface-options__manual-ax__9",
+        "kind": "surface-options",
+        "question": "长周期多智能体协同出现电话效应与状态漂移时，关于混合通信协议的作用机制，下列哪些表述是正确的？",
+        "options": [
+          "全程纯自然语言对话会随轮次增加失真与历史过载，需要结构化文档来承载全局状态",
+          "把自然语言收敛到辩论与探讨环节，可保留多视角碰撞，同时避免消息流失控",
+          "结构化报告用明确字段加直接状态查询，能降低长历史中检索有效信息的噪声",
+          "多智能体协同应彻底废除自然语言，全部交互改为 JSON 强类型无文本消息"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释电话效应的失真机理，以及结构化状态承载加局域辩论的混合机制何以对症",
+          "reasoningGoal": "先拆出纯对话在长历史下的失真与过载机理；再逐项验证混合机制各环节是否成立；排除全盘废除自然语言等过度僵化描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-30b1bda6",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-72b7fa9c",
+        "sourceSnapshot": {
+          "id": "multi-agent-communication-protocol-canonical",
+          "topic": "multi-agent-communication-protocol",
+          "angle": "architecture",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "communication-protocol",
+            "architecture"
+          ],
+          "question": "在一个用于复杂金融分析的多智能体（Multi-Agent）系统中，团队发现随着协同轮次增加，智能体经常遗忘早期关键指标或产生状态理解偏差（电话效应）。基于 TradingAgents 等先进多智能体架构的通信设计原则，下列哪些设计策略能够有效解决该问题？",
+          "options": [
+            "在长周期复杂任务中，采用纯自然语言对话会导致信息随轮次增加出现失真与语义历史过载，需要依靠结构化文档传递全局状态。",
+            "将自然语言交互局限在辩论与探讨环节，能保留多视角逻辑碰撞优势，同时避免非结构化消息流失控。",
+            "结构化报告通过明确的字段约束与直接状态查询，可显著降低 Agent 在长历史对话流中检索有效信息的噪声干扰。",
+            "自然语言对话在多 Agent 架构中应当被完全废除，所有 Agent 之间的协同均应通过 JSON 等强类型格式进行无文本交互。"
+          ]
+        }
+      },
+      {
+        "id": "multi-agent-communication-protocol-canonical__context-options__manual-ax__10",
+        "kind": "context-options",
+        "question": "某金融研报多智能体跑 40 轮后，后续 Agent 引用的早期营收口径互相矛盾，排查发现全程只靠自由文本对话传状态。要修复该系统，下列哪些策略是有效的？",
+        "options": [
+          "引入带明确字段的结构化研报同步全局口径，替代靠翻长对话回忆早期指标的做法",
+          "把多空观点的交锋保留在自然语言辩论区，让证据碰撞与质验继续发挥作用",
+          "用结构化状态查询替代全文检索找数，把长历史里的检索噪声压下来",
+          "删掉全部自然语言通道，所有 Agent 只许用 JSON 字段通信以绝后患"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能针对长周期口径漂移的故障场景开出结构化状态加局域辩论的修复组合",
+          "reasoningGoal": "先定位口径矛盾源于纯文本传状态的检索噪声；再逐项验证修复策略是否对症并甄别过激方案；排除一刀切废除自然语言等不成立做法。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-30b1bda6",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-737832ad",
+        "sourceSnapshot": {
+          "id": "multi-agent-communication-protocol-canonical",
+          "topic": "multi-agent-communication-protocol",
+          "angle": "architecture",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "communication-protocol",
+            "architecture"
+          ],
+          "question": "在一个用于复杂金融分析的多智能体（Multi-Agent）系统中，团队发现随着协同轮次增加，智能体经常遗忘早期关键指标或产生状态理解偏差（电话效应）。基于 TradingAgents 等先进多智能体架构的通信设计原则，下列哪些设计策略能够有效解决该问题？",
+          "options": [
+            "在长周期复杂任务中，采用纯自然语言对话会导致信息随轮次增加出现失真与语义历史过载，需要依靠结构化文档传递全局状态。",
+            "将自然语言交互局限在辩论与探讨环节，能保留多视角逻辑碰撞优势，同时避免非结构化消息流失控。",
+            "结构化报告通过明确的字段约束与直接状态查询，可显著降低 Agent 在长历史对话流中检索有效信息的噪声干扰。",
+            "自然语言对话在多 Agent 架构中应当被完全废除，所有 Agent 之间的协同均应通过 JSON 等强类型格式进行无文本交互。"
+          ]
+        }
+      }
+    ],
+    "multi-agent-dialectical-debate-canonical": [
+      {
+        "id": "multi-agent-dialectical-debate-canonical__context-options__manual-ax__11",
+        "kind": "context-options",
+        "question": "某投研系统要在“单 Agent 自检”与“看涨看跌多轮辩论”之间选方案，并澄清其与对抗训练的区别。下列哪些对比判断是正确的？",
+        "options": [
+          "对立角色迫使系统同时深挖上行催化与下行风险，比单 Agent 自检更能打破确认偏误",
+          "多轮质验逼双方补证据、揭盲区，决策前暴露的逻辑漏洞显著多于单次自检",
+          "辩论记录沉淀为结构化状态供交易模块引用，这是单 Agent 自检给不了的输入",
+          "该辩论主要靠对抗训练更新底层 LLM 权重，对比维度应看梯度步数与学习率"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比对抗辩论与单 Agent 自检在偏误纠正与证据完备上的差异，并划清与训练期对抗训练的边界",
+          "reasoningGoal": "先对比两种方案在证据覆盖与盲区暴露上的机制差异；再逐项验证对比判断是否成立并甄别训练期混淆；排除权重更新论等概念错配描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1b4956c1",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-20b92f6c",
+        "sourceSnapshot": {
+          "id": "multi-agent-dialectical-debate-canonical",
+          "topic": "multi-agent-dialectical-debate",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "multi-agent",
+            "dialectical-debate",
+            "mechanism"
+          ],
+          "question": "大语言模型在回答开放性金融研判问题时，往往容易受 Prompt 诱导或产生确认偏误（Confirmation Bias）。 TradingAgents 框架在研究员团队中引入了看涨（Bullish）与看跌（Bearish）研究员的多轮辩论机制。关于这一辩论机制的运行机理，下列哪些表述是正确的？",
+          "options": [
+            "设定看涨与看跌角色能强制系统同时探究上行催化剂与下行尾部风险，打破单 Agent 的确认偏误。",
+            "多轮对抗辩论促使双方 Agent 补充证据支持自身立场，从而在决策生成前暴露潜在的技术漏洞与逻辑盲区。",
+            "辩论过程记录作为结构化状态留存，为最终交易 Agent 的决策提供了平衡且经过交叉质验的合成信息。",
+            "看涨与看跌辩论的主要功能是通过对抗训练机制直接更新底层 LLM 的权重参数，以优化模型预测性能。"
+          ]
+        }
+      }
+    ],
+    "multi-agent-react-governance-canonical": [
+      {
+        "id": "multi-agent-react-governance-canonical__surface-options__manual-ax__12",
+        "kind": "surface-options",
+        "question": "权衡 ReAct 交易 Agent 的自主性与资金安全时，关于执行边界与风控取舍的判断，下列哪项是最稳妥的？",
+        "options": [
+          "ReAct 产出的交易决策只算执行提议，须经独立风控与基金经理复核后才可真实挂单",
+          "ReAct 推理只要逻辑自洽，交易指令就可跳过风控直连交易所 API 即时成交",
+          "每个思考周期都重抓全量原始行情，严禁复用任何共享的全局环境状态快照",
+          "风控只做事后日志归档，交易前不得拦截或改写 Agent 已经提交的决策"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡自主执行效率与资金安全，判定提议加多重审批相对直连执行与事后风控的优劣",
+          "reasoningGoal": "先拆出直连执行与事后风控各自让渡的安全边界；再逐项验证取舍判断是否成立并比较代价；排除跳过风控、禁用状态共享、事后归档等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ed7598d4",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-d16806d7",
+        "sourceSnapshot": {
+          "id": "multi-agent-react-governance-canonical",
+          "topic": "multi-agent-react-governance",
+          "angle": "boundary",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "multi-agent",
+            "react-framework",
+            "risk-control"
+          ],
+          "question": "在基于 ReAct 框架构建的金融多 Agent 系统中，关于 Agent 的执行边界与环境状态交互，下列哪项表述是正确的？",
+          "options": [
+            "Trader Agent 基于 ReAct 生成的交易决策仅作为执行提议，必须经由独立风控与基金经理校验后方可触发实际市场挂单。",
+            "Trader Agent 只要通过 ReAct 推理出交易逻辑，即可绕过风控模块直接向外部交易所 API 提交实时买卖指令。",
+            "ReAct 框架要求所有 Agent 在每个思考周期都必须重新全量抓取市场原始数据，严禁共享或复用全局环境状态。",
+            "风控团队在 ReAct 循环中仅负责记录事后交易日志，无法在交易决策提交执行前施加任何硬性拦截或策略调整。"
+          ]
+        }
+      }
+    ],
+    "multi-agent-role-specialization-canonical": [
+      {
+        "id": "multi-agent-role-specialization-canonical__surface-options__manual-ax__13",
+        "kind": "surface-options",
+        "question": "把交易系统拆成分析、研究、交易、风控四类专职 Agent 时，关于角色分工降低系统风险的内在机制，下列哪些表述是正确的？",
+        "options": [
+          "专职分工让单个 Agent 只处理同类输入，认知负荷下降且异构信息不再互相污染",
+          "独立风控卡在交易执行之前做硬校验，能纠正交易 Agent 自带的乐观倾向",
+          "团队递进留下清晰的责任链条，事后可追溯每一步决策出自哪个环节",
+          "拆分角色的核心收益是 Agent 数量变多，从而直接抬高股价预测的统计精度"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释角色分工经由认知减负、独立硬约束、责任可追溯三条链路降低系统性风险的机理",
+          "reasoningGoal": "先拆出分工在输入隔离、事前拦截、责任留痕三处的机制作用；再逐项验证机理判断是否成立；排除节点数抬高预测精度等归因错位描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-43b29ef1",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-fae86444",
+        "sourceSnapshot": {
+          "id": "multi-agent-role-specialization-canonical",
+          "topic": "multi-agent-role-specialization",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "multi-agent",
+            "role-specialization",
+            "system-design"
+          ],
+          "question": "在设计一个仿真实体交易机构的多智能体（TradingAgents）系统时，架构师将系统划分为分析师团队（基本面/技术面/新闻/情感）、研究员团队（看涨/看跌辩论）、交易员以及独立风控团队。关于这种角色专业化设计的系统架构收益，下列哪些表述是正确的？",
+          "options": [
+            "按功能划分为分析、研究、交易与风控团队，可降低单一 Agent 的认知负荷并防止异构数据分析过程互相干扰。",
+            "风控团队独立于交易生成环节，能对交易策略的风险暴露实施硬性校验，避免交易 Agent 的过度乐观倾向。",
+            "多团队分工机制使得系统决策过程具备清晰的责任递进关系，从而提升金融交易决策的可解释性与可追踪性。",
+            "角色分工的主要目的是通过增加 Agent 节点数量来直接提升大语言模型对未来股票价格变动预测的统计准确率。"
+          ]
+        }
+      }
+    ],
+    "q_nnlm_rnnlm_hidden_bottleneck_can": [
+      {
+        "id": "q_nnlm_rnnlm_hidden_bottleneck_can__surface-options__manual-ax__14",
+        "kind": "surface-options",
+        "question": "对比 NNLM、RNNLM 与去掉隐藏层的 Log-linear 模型在输出层优化后的瓶颈归属，下列哪些判断是正确的？",
+        "options": [
+          "NNLM 输出项被 Hierarchical Softmax 压平后，N×D×H 的密集乘法浮上来成为主导瓶颈",
+          "RNNLM 用上 Hierarchical Softmax 后，输出层 H×V 矩阵乘法仍然是唯一的瓶颈",
+          "CBOW 与 Skip-gram 砍掉非线性隐藏层，用表达能力换在数十亿词上训练高维向量的可行性",
+          "Log-linear 模型只剩线性运算，词向量空间里不再保留任何语义或语法相似结构"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比三种架构在输出层优化前后的瓶颈迁移，并判定去隐藏层换可扩展性的权衡实质",
+          "reasoningGoal": "先对比 NNLM 与 RNNLM 输出项被优化后各自的剩余主导项；再逐项验证权衡判断是否成立并比较架构差异；排除输出层恒为瓶颈、去隐藏层即丢语义等不成立描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-09f1b76e",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-29a2b7e2",
+        "sourceSnapshot": {
+          "id": "q_nnlm_rnnlm_hidden_bottleneck_can",
+          "topic": "neural-lm-hidden-layer-bottleneck",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "NNLM",
+            "RNNLM",
+            "Word2Vec",
+            "Computational Complexity"
+          ],
+          "question": "前馈神经网络语言模型（NNLM）与循环神经网络语言模型（RNNLM）在采用 Hierarchical Softmax 优化后，其主要计算瓶颈与架构演进权衡表现为哪些？",
+          "options": [
+            "NNLM 用 Hierarchical Softmax 消掉 $H \\times V$ 主导项后，瓶颈转移到投影层到隐藏层的密集项 $N \\times D \\times H$",
+            "RNNLM 采用 Hierarchical Softmax 之后，主要瓶颈依然是输出层 $H \\times V$ 的矩阵乘法",
+            "CBOW 与 Skip-gram 去掉 NNLM 的非线性隐藏层，牺牲复杂模式表达能力换取在数十亿词上训练高维向量的可行性",
+            "去掉隐藏层的 Log-linear 模型只能表达线性关系，因而无法在词向量空间中保留任何语义或语法相似度"
+          ]
+        }
+      },
+      {
+        "id": "q_nnlm_rnnlm_hidden_bottleneck_can__context-options__manual-ax__15",
+        "kind": "context-options",
+        "question": "某团队把 NNLM 的输出层换成 Hierarchical Softmax 后 profiling，发现大头仍在投影到隐藏层的密集乘法；同期 RNNLM 的热点则在循环连接。基于该观测，下列哪些决策是合理的？",
+        "options": [
+          "判定 NNLM 残余瓶颈是 N×D×H 密集项，后续优化应冲该乘法而非继续死磕输出层",
+          "判定 RNNLM 的热点仍是输出层 H×V，应把全部算力继续堆在 Softmax 近似上",
+          "若语料要扩到数十亿词，可接受砍掉非线性隐藏层，用表达能力换训练可行性",
+          "认定去掉隐藏层后词向量只剩线性组合，从此无法表达任何语义相似关系"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从 profiling 热点观测定位两种模型的残余瓶颈，并开出去隐藏层换规模的工程决策",
+          "reasoningGoal": "先从 profiling 热点定位 NNLM 与 RNNLM 各自的剩余主导项；再逐项验证工程决策是否对症；排除继续死磕输出层、去隐藏层即丢语义等误判描述。"
+        },
+        "generatedAt": 1789125159084,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-09f1b76e",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-b1e12773",
+        "sourceSnapshot": {
+          "id": "q_nnlm_rnnlm_hidden_bottleneck_can",
+          "topic": "neural-lm-hidden-layer-bottleneck",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "NNLM",
+            "RNNLM",
+            "Word2Vec",
+            "Computational Complexity"
+          ],
+          "question": "前馈神经网络语言模型（NNLM）与循环神经网络语言模型（RNNLM）在采用 Hierarchical Softmax 优化后，其主要计算瓶颈与架构演进权衡表现为哪些？",
+          "options": [
+            "NNLM 用 Hierarchical Softmax 消掉 $H \\times V$ 主导项后，瓶颈转移到投影层到隐藏层的密集项 $N \\times D \\times H$",
+            "RNNLM 采用 Hierarchical Softmax 之后，主要瓶颈依然是输出层 $H \\times V$ 的矩阵乘法",
+            "CBOW 与 Skip-gram 去掉 NNLM 的非线性隐藏层，牺牲复杂模式表达能力换取在数十亿词上训练高维向量的可行性",
+            "去掉隐藏层的 Log-linear 模型只能表达线性关系，因而无法在词向量空间中保留任何语义或语法相似度"
+          ]
+        }
+      }
+    ],
+    "q_vector_offset_operations_can": [
+      {
+        "id": "q_vector_offset_operations_can__surface-options__manual-ax__16",
+        "kind": "surface-options",
+        "question": "关于词向量类比中向量偏移运算的定义与检索规范，下列哪项表述是准确的？",
+        "options": [
+          "按 vec(小)减 vec(最大)加 vec(small) 的方向构造目标，并在库内保留题目输入词一起排序",
+          "按 vec(最大)减 vec(大)加 vec(小) 构造目标向量，用余弦距离检索并剔除题目输入词",
+          "按 vec(最大)加 vec(大)减 vec(小) 构造目标，只在同义词子库里按点积取最大值",
+          "按 vec(最大)减 vec(小) 构造目标，用欧氏距离检索且不需要排除任何输入词"
+        ],
+        "angle": "definition",
+        "cognitiveTask": "recall",
+        "assessment": {
+          "target": "能准确复述向量偏移的方向定义、余弦检索与剔除输入词三条规范构成的完整概念",
+          "reasoningGoal": "先拆出运算方向、距离度量、检索范围与剔除规则四条定义要素；再逐项验证各表述是否成立并比较差异；排除方向颠倒、欧氏距离、不剔除输入词等错误定义。"
+        },
+        "generatedAt": 1789125159085,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d72e0f73",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-08a334f6",
+        "sourceSnapshot": {
+          "id": "q_vector_offset_operations_can",
+          "topic": "vector-offset-relational-analogy",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Word2Vec",
+            "Vector Offset",
+            "Relational Analogies"
+          ],
+          "question": "在词向量空间中利用向量偏移技术回答类比问题“What is the word that is similar to 'small' in the same sense as 'biggest' is to 'big'?”时，正确的计算与检索流程是什么？",
+          "options": [
+            "计算 $X = \\text{vec}(\\text{big}) - \\text{vec}(\\text{biggest}) + \\text{vec}(\\text{small})$，在全局词库中取余弦距离最近的词，包含题目输入词",
+            "计算 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{big}) + \\text{vec}(\\text{small})$，按余弦距离取最近邻，并丢弃题目中的输入词",
+            "计算 $X = \\text{vec}(\\text{biggest}) + \\text{vec}(\\text{big}) - \\text{vec}(\\text{small})$，仅在同义词词库中检索点积最大的词",
+            "计算 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{small})$，在向量空间中寻找欧氏距离最近的词，且无需排除输入词"
+          ]
+        }
+      },
+      {
+        "id": "q_vector_offset_operations_can__context-options__manual-ax__17",
+        "kind": "context-options",
+        "question": "某检索服务实现类比查询“biggest 之于 big，相当于 small 之于谁”，但返回结果恒为输入词本身或毫不相关的词。排查实现后，下列哪项修复是对的？",
+        "options": [
+          "把运算改成 vec(big)减 vec(biggest)加 vec(small)，检索时保留输入词参与排序以保召回",
+          "把运算固定为 vec(biggest)减 vec(big)加 vec(small)，按余弦距离全库检索并过滤输入词",
+          "把运算改成两向量相加减另一向量，检索范围收窄到同义词表并按点积排序",
+          "把运算简化成 vec(biggest)减 vec(small)，按欧氏距离检索且不过滤任何输入词"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从返回输入词本身的故障现象定位到方向写反与未过滤输入词，并开出正确的修复组合",
+          "reasoningGoal": "先从恒返回输入词的症状定位方向与过滤两处故障点；再逐项验证修复方案是否成立并比较改法；排除保留输入词、收窄词库、欧氏距离等错误修复。"
+        },
+        "generatedAt": 1789125159085,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d72e0f73",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-045aedc9",
+        "sourceSnapshot": {
+          "id": "q_vector_offset_operations_can",
+          "topic": "vector-offset-relational-analogy",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Word2Vec",
+            "Vector Offset",
+            "Relational Analogies"
+          ],
+          "question": "在词向量空间中利用向量偏移技术回答类比问题“What is the word that is similar to 'small' in the same sense as 'biggest' is to 'big'?”时，正确的计算与检索流程是什么？",
+          "options": [
+            "计算 $X = \\text{vec}(\\text{big}) - \\text{vec}(\\text{biggest}) + \\text{vec}(\\text{small})$，在全局词库中取余弦距离最近的词，包含题目输入词",
+            "计算 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{big}) + \\text{vec}(\\text{small})$，按余弦距离取最近邻，并丢弃题目中的输入词",
+            "计算 $X = \\text{vec}(\\text{biggest}) + \\text{vec}(\\text{big}) - \\text{vec}(\\text{small})$，仅在同义词词库中检索点积最大的词",
+            "计算 $X = \\text{vec}(\\text{biggest}) - \\text{vec}(\\text{small})$，在向量空间中寻找欧氏距离最近的词，且无需排除输入词"
+          ]
+        }
+      }
+    ],
+    "q_cbow_skipgram_complexity_can": [
+      {
+        "id": "q_cbow_skipgram_complexity_can__surface-options__manual-ax__18",
+        "kind": "surface-options",
+        "question": "关于 CBOW 与 Skip-gram 单样本复杂度 Q 的定量表达式，下列哪些计算是正确的？",
+        "options": [
+          "CBOW 把 N 个上下文词向量取平均后预测中心词，开销为 Q=N×D+D×log2(V)，输出分类只评估一次",
+          "CBOW 输出层评估次数随 N 同步放大，总开销主要由输出分类项决定",
+          "Skip-gram 以 C 为整体乘数同时放大投影与输出开销，总量为 Q=C×(D+D×log2(V))",
+          "调大 C 会让 Skip-gram 投影输入维度从 D 膨胀到 C×D，投影矩阵乘法同步成倍变大"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能写出两种架构的 Q 表达式并判定 N 与 C 各自作用的是输出次数还是整体乘数",
+          "reasoningGoal": "先分别写出 CBOW 与 Skip-gram 的 Q 表达式并定位 N 与 C 的落点；再逐项验证定量判断是否成立；排除输出随 N 放大、C 膨胀投影维度等错误计算。"
+        },
+        "generatedAt": 1789125159085,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6b02970f",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-a7a0f736",
+        "sourceSnapshot": {
+          "id": "q_cbow_skipgram_complexity_can",
+          "topic": "word2vec-cbow-vs-skipgram-complexity",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Word2Vec",
+            "CBOW",
+            "Skip-gram",
+            "Computational Complexity"
+          ],
+          "question": "关于 Continuous Bag-of-Words (CBOW) 与 Continuous Skip-gram 模型的映射结构与单样本训练计算复杂度 $Q$，下列哪些说法是正确的？",
+          "options": [
+            "CBOW 将 $N$ 个上下文词向量取平均后预测中心词，开销为 $Q = N \\times D + D \\times \\log_2(V)$，输出项只评估一次",
+            "CBOW 的输出层 Softmax 评估次数随上下文词数 $N$ 同步增加，使其总开销由输出分类项主导",
+            "Skip-gram 以中心词预测周边 $C$ 个上下文词，开销为 $Q = C \\times (D + D \\times \\log_2(V))$，随 $C$ 线性缩放",
+            "增大 $C$ 会让 Skip-gram 投影层输入维度由 $D$ 变为 $C \\times D$，投影矩阵乘法因此成倍扩大"
+          ]
+        }
+      },
+      {
+        "id": "q_cbow_skipgram_complexity_can__context-options__manual-ax__19",
+        "kind": "context-options",
+        "question": "某语料窗口 N 很大且要求覆盖长距离搭配，团队在 CBOW 加大 N 与 Skip-gram 调大 C 之间犹豫。从开销随参数缩放的权衡看，下列哪些判断是合理的？",
+        "options": [
+          "选 CBOW 加大 N 时投影项线性变大，但输出分类仍只做一次，适合上下文宽而分类省的场景",
+          "选 CBOW 加大 N 时输出评估同步翻倍，窗口越宽输出分类的账单涨得越快",
+          "选 Skip-gram 调大 C 时投影与输出被整体乘数同步放大，长距离覆盖的代价是全账单线性涨",
+          "选 Skip-gram 调大 C 时投影矩阵维度同步乘 C，涨的主要是投影乘法而非分类次数"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡加大 N 与调大 C 两条扩窗路线的开销缩放差异，并选出与场景匹配的方案",
+          "reasoningGoal": "先拆出 N 只碰投影加一次分类、C 做整体乘数的缩放分野；再逐项验证选型判断是否成立并比较两条路线；排除输出随 N 翻倍、C 膨胀投影维度等错误权衡。"
+        },
+        "generatedAt": 1789125159085,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6b02970f",
+        "batch": "manual-ax",
+        "model": "manual",
+        "contentHash": "fnv1a-2b9ebcb1",
+        "sourceSnapshot": {
+          "id": "q_cbow_skipgram_complexity_can",
+          "topic": "word2vec-cbow-vs-skipgram-complexity",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Word2Vec",
+            "CBOW",
+            "Skip-gram",
+            "Computational Complexity"
+          ],
+          "question": "关于 Continuous Bag-of-Words (CBOW) 与 Continuous Skip-gram 模型的映射结构与单样本训练计算复杂度 $Q$，下列哪些说法是正确的？",
+          "options": [
+            "CBOW 将 $N$ 个上下文词向量取平均后预测中心词，开销为 $Q = N \\times D + D \\times \\log_2(V)$，输出项只评估一次",
+            "CBOW 的输出层 Softmax 评估次数随上下文词数 $N$ 同步增加，使其总开销由输出分类项主导",
+            "Skip-gram 以中心词预测周边 $C$ 个上下文词，开销为 $Q = C \\times (D + D \\times \\log_2(V))$，随 $C$ 线性缩放",
+            "增大 $C$ 会让 Skip-gram 投影层输入维度由 $D$ 变为 $C \\times D$，投影矩阵乘法因此成倍扩大"
+          ]
+        }
+      }
+    ]
+  }
+}
