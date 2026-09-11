@@ -10,6 +10,11 @@ import { knowledgeNodes } from './knowledgeMap';
 
 const qs = questionBank.questions;
 
+// 冒号必须是可选字符类：全库 645/1409 题写作「正确答案：A、B」（全角冒号），
+// 若只写 \s* 则匹配失败，一致性断言会被 `if (answerMatch)` 静默跳过（护栏对近半库失明）。
+// 无「正确答案」标记的题是 rubric 式参考答案（见 CHANGELOG），保持跳过。
+const OPEN_ANSWER_RE = /正确答案[：:\s]*([A-Z](?:\s*[,、和]\s*[A-Z])*)/i;
+
 describe('题库数据完整性', () => {
   it('非空且有 id，id 全局唯一', () => {
     expect(qs.length).toBeGreaterThan(0);
@@ -74,13 +79,20 @@ describe('题库数据完整性', () => {
       }
       const open = q.formats.open;
       if (!open) continue;
-      const answerMatch = open.referenceAnswer.match(/正确答案\s*([A-Z](?:\s*[,、和]\s*[A-Z])*)/i);
+      const answerMatch = open.referenceAnswer.match(OPEN_ANSWER_RE);
       if (answerMatch) {
         const expected = choice.answer.map((index) => String.fromCharCode(65 + index)).sort();
         const actual = (answerMatch[1].match(/[A-Z]/gi) ?? []).map((label) => label.toUpperCase()).sort();
         expect(actual, `${q.id} open 参考答案与 choice 答案不一致`).toEqual(expected);
       }
     }
+  });
+
+  it('open 答案标记解析支持全角冒号/半角冒号/空格三种写法（护栏不得静默跳过）', () => {
+    expect(OPEN_ANSWER_RE.exec('正确答案：A、B')?.[1]).toBe('A、B');
+    expect(OPEN_ANSWER_RE.exec('正确答案: A, B')?.[1]).toBe('A, B');
+    expect(OPEN_ANSWER_RE.exec('正确答案 A、B、C')?.[1]).toBe('A、B、C');
+    expect(OPEN_ANSWER_RE.exec('正确答案：A 和 C')?.[1]).toBe('A 和 C');
   });
 
   it('difficulty 取值合法、topic 非空', () => {

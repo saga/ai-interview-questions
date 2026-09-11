@@ -1,0 +1,919 @@
+{
+  "version": 1,
+  "generatedAt": 1789013510681,
+  "promptVersion": "v4",
+  "variants": {
+    "sebastian-raschka-2026-08-34": [
+      {
+        "id": "sebastian-raschka-2026-08-34__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "在自回归解码器使用因果掩码时，下列说法里哪些是对的？（请选择两个）",
+        "options": [
+          "某个位置 i 能关注当前及前面所有位置",
+          "对于未来位置，其注意力分数要赶在归一化之前被屏蔽",
+          "训练时有了因果掩码，每个位置就能提前读到完整的答案",
+          "因果掩码只在编码器中使用，自回归解码器并不需要它"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能界定因果掩码在自回归解码器中的适用边界并识别其允许的关注范围",
+          "reasoningGoal": "先定位掩码作用的计算阶段；再逐项验证每个位置只能覆盖自身及更早位置；并排除读取完整答案、只用于编码器等不成立描述。"
+        },
+        "generatedAt": 1789013510676,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-12aefdae",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-b21d8c56",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-34",
+          "topic": "self-attention",
+          "subtopic": "因果掩码",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "causal-mask",
+            "decoder"
+          ],
+          "question": "自回归语言模型使用因果注意力掩码时，以下哪些行为是正确的？（请选择两个）",
+          "options": [
+            "位置 i 可以关注自己和所有更早位置",
+            "未来位置的分数应在 softmax 前被屏蔽",
+            "因果掩码让训练时每个位置都能读取完整答案",
+            "因果掩码只用于编码器而不用于自回归解码器"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-34__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "训练和推理阶段，自回归模型会在计算注意力时套上因果掩码。依据这个机制，下列说法哪些成立？（请选择两个）",
+        "options": [
+          "掩码会限制每个位置 i 只能关注自己以及所有更早位置",
+          "那些来自后续时刻的分数，要在归一化前就屏蔽掉",
+          "由于因果掩码，训练过程中每个位置都能读取未来的完整答案",
+          "因果掩码被限定给编码器使用，不会出现在自回归解码器里"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能依据掩码的机制解释训练与推理阶段可观察行为的差异",
+          "reasoningGoal": "先从因果掩码的机制出发；再据此判断各项说法是否符合自回归约束；并排除把尾位置能读取未来答案当成合法行为的错误推理。"
+        },
+        "generatedAt": 1789013510677,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-12aefdae",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-3e3157e3",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-34",
+          "topic": "self-attention",
+          "subtopic": "因果掩码",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "causal-mask",
+            "decoder"
+          ],
+          "question": "自回归语言模型使用因果注意力掩码时，以下哪些行为是正确的？（请选择两个）",
+          "options": [
+            "位置 i 可以关注自己和所有更早位置",
+            "未来位置的分数应在 softmax 前被屏蔽",
+            "因果掩码让训练时每个位置都能读取完整答案",
+            "因果掩码只用于编码器而不用于自回归解码器"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-122": [
+      {
+        "id": "sebastian-raschka-2026-08-122__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "相比于普通的多头注意力，分组查询注意力会带来哪些变化？（请选择三个）",
+        "options": [
+          "几组查询头可以合用同一套键与值头",
+          "解码环节的键值缓存占用通常会变小",
+          "内存带宽方面的压力有下降的可能",
+          "共享键与值能让效果和普通多头注意力完全一样"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别分组查询注意力的机制存在哪些可观察到的结构变化",
+          "reasoningGoal": "先明确机制层面发生了结构共享；再逐项验证查询头共用键值头、缓存与带宽变化是否成立；并排除共享一定无损这类绝对化描述。"
+        },
+        "generatedAt": 1789013510677,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-665f6fe3",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-6ea716e2",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-122",
+          "topic": "attention",
+          "subtopic": "GQA 与 MQA",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "gqa"
+          ],
+          "question": "Grouped-Query Attention 相较于标准 Multi-Head Attention 可能带来哪些变化？（请选择三个）",
+          "options": [
+            "多个查询头可以共享一组键和值头",
+            "解码阶段的 KV Cache 通常可以缩小",
+            "内存带宽压力可能降低",
+            "共享键和值保证质量与标准多头注意力完全相同"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-122__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "长上下文的在线服务想把注意力开销压下去，改用分组查询注意力。相比原来的设计，哪些变化是符合预期的？（请选择三个）",
+        "options": [
+          "让多组查询头共用一组键和值向量头",
+          "通常能缩减其解码过程中的缓存占用",
+          "相比之下内存带宽的压力可能得到缓解",
+          "只要共享键与值，效果就一定与标准多头注意力一致"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡分组查询注意力在开销与质量之间的取舍并评估各陈述",
+          "reasoningGoal": "先把开销与质量的取舍维度对齐；再逐项评估每项变化是否符合预期；并排除用共享必然等同质量这类绝对化判断。"
+        },
+        "generatedAt": 1789013510677,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-665f6fe3",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-f41f070f",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-122",
+          "topic": "attention",
+          "subtopic": "GQA 与 MQA",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "gqa"
+          ],
+          "question": "Grouped-Query Attention 相较于标准 Multi-Head Attention 可能带来哪些变化？（请选择三个）",
+          "options": [
+            "多个查询头可以共享一组键和值头",
+            "解码阶段的 KV Cache 通常可以缩小",
+            "内存带宽压力可能降低",
+            "共享键和值保证质量与标准多头注意力完全相同"
+          ]
+        }
+      }
+    ],
+    "anthropic-cca-f-04": [
+      {
+        "id": "anthropic-cca-f-04__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "系统给四个子代理全部开放了 18 个工具，实测发现代理常去调用自己专业范围之外的技能，比如做合成的去搜网页。这种工具选择失当，最可能的原因是什么？（单选）",
+        "options": [
+          "候选工具从 18 个而不是 4-5 个相关项里选，决策复杂度超过了可靠选择的上限",
+          "工具描述挤占了大量上下文空间，把本来留给任务内容的窗口压小了",
+          "角色提示与“允许使用范围外工具”的说明在提示词里相互打架",
+          "协调层无法掌握每个子代理的能力边界，把任务分配给了错误的一方"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能把“选项候选集过大”识别为工具选择失当的首要根因",
+          "reasoningGoal": "先锁定失误发生的环节是在工具挑选这一决策点；再顺着每类候选解释能否解释观察到的行为；并排除上下文被占用、角色提示矛盾、协调误派等次要或无关归因。"
+        },
+        "generatedAt": 1789013510678,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9d628518",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-9859d273",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-04",
+          "topic": "tool-calling",
+          "subtopic": "工具选择与授权",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "multi-agent",
+            "tool-selection",
+            "tool-scope",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "你给全部 4 个子代理都开放了完整 18 个工具。测试中发现代理频繁调用其专业之外的工具——合成代理去搜网页、报告生成器去分析文档。这种糟糕工具选择行为的主因是什么？（单选）",
+          "options": [
+            "从 18 个而非 4-5 个相关工具中选择，决策复杂度超出可靠选择阈值。",
+            "工具定义占用过多上下文窗口，挤占了任务内容空间。",
+            "代理 system prompt 中的角色描述与“可使用角色外工具”相互冲突。",
+            "协调器无法跟踪各子代理拥有哪些能力，导致任务误派。"
+          ]
+        }
+      },
+      {
+        "id": "anthropic-cca-f-04__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "子代理分工明确的系统里，常见的做法是仅给每个角色配 4-5 个相关工具。那么当全部 18 个工具同时开放、代理却总选错工具时，首要根因应当归到哪里？（单选）",
+        "options": [
+          "从 18 个而非精选的几个里做抉择，选项规模太大，决策复杂度会超出可靠选择阈值",
+          "工具定义占用的上下文窗口太大，把任务内容的可用空间挤占了",
+          "提示词里角色定位与“也能用范围外工具”的约定自相矛盾，让代理无所适从",
+          "协调方缺少对各级代理能力的掌握，派任务时张冠李戴"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能界定工具编排中给每个角色多少候选工具的适用边界并评估失败主因",
+          "reasoningGoal": "先从工具集规模与可靠选择的关系出发；再评估把全部工具开放给所有子代理的做法为何失效；并排除把责任推到提示词表述或协调器能力等不成立的归因。"
+        },
+        "generatedAt": 1789013510678,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9d628518",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-54d0582e",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-04",
+          "topic": "tool-calling",
+          "subtopic": "工具选择与授权",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "multi-agent",
+            "tool-selection",
+            "tool-scope",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "你给全部 4 个子代理都开放了完整 18 个工具。测试中发现代理频繁调用其专业之外的工具——合成代理去搜网页、报告生成器去分析文档。这种糟糕工具选择行为的主因是什么？（单选）",
+          "options": [
+            "从 18 个而非 4-5 个相关工具中选择，决策复杂度超出可靠选择阈值。",
+            "工具定义占用过多上下文窗口，挤占了任务内容空间。",
+            "代理 system prompt 中的角色描述与“可使用角色外工具”相互冲突。",
+            "协调器无法跟踪各子代理拥有哪些能力，导致任务误派。"
+          ]
+        }
+      }
+    ],
+    "foundation-inference-kv-cache-01": [
+      {
+        "id": "foundation-inference-kv-cache-01__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "自回归模型逐 token 生成时，KV Cache 主要解决的是哪个问题？",
+        "options": [
+          "把之前位置的 Key 与 Value 向量保存下来，避免每个生成步对历史内容重新计算一遍注意力",
+          "把权重长期驻留在用户硬盘，省得每次推理都重新下载模型参数",
+          "只缓存当步查询向量、丢弃历史 Key 与 Value，用来降低显存开销",
+          "固定住历史 Key 和 Value，使其不再参与之后的注意力计算，以节省显存"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释 KV Cache 为何能消除每个生成步对历史上下文的重复注意力计算",
+          "reasoningGoal": "先定位生成过程每一步都要对全部历史做注意力计算这一环节；再据此判断缓存历史键值向量为何能省掉重复计算；并排除永久缓存权重、丢弃历史键值等不成立理解。"
+        },
+        "generatedAt": 1789013510678,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a4f09e3f",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-efecf7ce",
+        "sourceSnapshot": {
+          "id": "foundation-inference-kv-cache-01",
+          "topic": "kv-cache",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "kv-cache",
+            "inference",
+            "autoregressive",
+            "attention"
+          ],
+          "question": "在大模型自回归生成（Generation / Decode）阶段，KV Cache 技术解决的核心痛点是什么？",
+          "options": [
+            "缓存前文的 Key 和 Value 向量，避免每步生成时重复计算历史注意力",
+            "将模型权重永久缓存在客户端硬盘中，避免每次推理重复下载参数",
+            "缓存每步的查询向量并丢弃历史 Key 和 Value，以减少显存占用",
+            "冻结历史 Key 和 Value 使其不再参与后续注意力计算，以节省显存"
+          ]
+        }
+      },
+      {
+        "id": "foundation-inference-kv-cache-01__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "自回归生成服务常启用 KV Cache，但不少介绍把它说混了。就它真正承担的功能而言，哪项描述才成立？（单选）",
+        "options": [
+          "把已经算好的历史 Key 与 Value 向量存下来，避免每个后续生成步对全部历史重算注意力",
+          "让模型权重常驻在设备端缓存里，省下每次推理前重新获取参数的开销",
+          "保留当前步的查询向量并清掉早先的键与值，以换取更小的显存足迹",
+          "让早前的键与值保持冻结、不再参与后面各步的注意力打分，用来节省显存"
+        ],
+        "angle": "misconception",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别关于 KV Cache 作用的常见误读并找出其真正的功能表述",
+          "reasoningGoal": "先列举常见错误说法中把权重缓存或查询向量缓存混入的情形；再验证缓存历史键与值确实是核心机制；并排除冻结键值不再参与计算这类形似而实谬的描述。"
+        },
+        "generatedAt": 1789013510678,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-a4f09e3f",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-20d70039",
+        "sourceSnapshot": {
+          "id": "foundation-inference-kv-cache-01",
+          "topic": "kv-cache",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "kv-cache",
+            "inference",
+            "autoregressive",
+            "attention"
+          ],
+          "question": "在大模型自回归生成（Generation / Decode）阶段，KV Cache 技术解决的核心痛点是什么？",
+          "options": [
+            "缓存前文的 Key 和 Value 向量，避免每步生成时重复计算历史注意力",
+            "将模型权重永久缓存在客户端硬盘中，避免每次推理重复下载参数",
+            "缓存每步的查询向量并丢弃历史 Key 和 Value，以减少显存占用",
+            "冻结历史 Key 和 Value 使其不再参与后续注意力计算，以节省显存"
+          ]
+        }
+      }
+    ],
+    "p0-inference-optimization-scenario-01": [
+      {
+        "id": "p0-inference-optimization-scenario-01__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "线上看到首 token 延迟（TTFT）很高而每个输出 token 的间隔（TPOT）正常，短请求时 GPU 占用偏低，拉长输出长度也未明显改变首 token 延迟。优先应该排查哪类问题？（单选）",
+        "options": [
+          "应先把请求排队、输入处理与网络耗时拆开看，排查调度或短请求利用率不足这类根因，而不是一头扎进输出阶段做优化",
+          "直接把采样参数 temperature 调低，因为采样参数才是首 token 延迟的主要来源",
+          "只增加最大输出 token 数，因为 TPOT 正常就意味着输入处理一定不会慢",
+          "立即把模型换成更大的版本，因为更大模型一定能提高短请求 GPU 利用率"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能把 TTFT 高而 TPOT 正常的症状定位到输入侧与调度而非输出侧",
+          "reasoningGoal": "先从症状拆分入手区分首 token 延迟由哪几段构成；再据此验证输入处理、排队与短请求利用率才是起点；并排除调低采样温度、放大输出上限、盲目换大模型等不成立对策。"
+        },
+        "generatedAt": 1789013510679,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5e5e0244",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-c52b9cb3",
+        "sourceSnapshot": {
+          "id": "p0-inference-optimization-scenario-01",
+          "topic": "inference-optimization",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "inference",
+            "ttft",
+            "tpOT",
+            "gpu-utilization",
+            "bottleneck"
+          ],
+          "question": "线上观测到 TTFT 很高、TPOT 正常，GPU 利用率在短请求下偏低；增加输出长度并未明显改变首 token 延迟。优先排查哪类瓶颈？",
+          "options": [
+            "优先拆分排队、prefill 和网络耗时，排查调度或短请求利用率问题，而不是先优化 decode",
+            "直接把 temperature 调低，因为采样参数决定首 token 的主要延迟",
+            "只增加最大输出 token 数，因为 TPOT 正常代表 prefill 一定过慢",
+            "立即把模型换成更大的版本，因为更大模型一定能提高短请求 GPU 利用率"
+          ]
+        }
+      },
+      {
+        "id": "p0-inference-optimization-scenario-01__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "推理服务监控显示：请求的 TTFT 偏高、TPOT 保持正常，短请求下 GPU 使用率上不去，且加大输出长度对首个 token 的延迟没有帮助。排查思路应以什么为起点？（单选）",
+        "options": [
+          "优先拆开 TTFT 的组成，分清排队、输入侧处理和传输的耗时，再针对调度与短请求利用率调优",
+          "降低 temperature 采样参数即可，因为采样环节的配置决定首 token 延迟的主要时间",
+          "只要提高最大输出 token 数的上限，因为 TPOT 正常意味着输入侧处理必然不是瓶颈所在",
+          "立即换成更大的模型，更大模型在短请求下 GPU 利用率必然更高"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能按排障顺序决定先从输入侧耗时构成开始排查而非直接改采样或模型",
+          "reasoningGoal": "先列出首 token 时间段的可能构成；再按证据逐个排除输出侧因素；并验证拆解排队与输入处理耗时是最高优先级行动。"
+        },
+        "generatedAt": 1789013510679,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-5e5e0244",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-d9963db6",
+        "sourceSnapshot": {
+          "id": "p0-inference-optimization-scenario-01",
+          "topic": "inference-optimization",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "inference",
+            "ttft",
+            "tpOT",
+            "gpu-utilization",
+            "bottleneck"
+          ],
+          "question": "线上观测到 TTFT 很高、TPOT 正常，GPU 利用率在短请求下偏低；增加输出长度并未明显改变首 token 延迟。优先排查哪类瓶颈？",
+          "options": [
+            "优先拆分排队、prefill 和网络耗时，排查调度或短请求利用率问题，而不是先优化 decode",
+            "直接把 temperature 调低，因为采样参数决定首 token 的主要延迟",
+            "只增加最大输出 token 数，因为 TPOT 正常代表 prefill 一定过慢",
+            "立即把模型换成更大的版本，因为更大模型一定能提高短请求 GPU 利用率"
+          ]
+        }
+      }
+    ],
+    "anthropic-cca-f-02": [
+      {
+        "id": "anthropic-cca-f-02__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "长链路研究型 Agent 中，检索代理抓回 25 个来源，文档分析代理提炼出洞察，合成代理写出叙述草稿，最终由报告代理产出带引用的终稿。上下文该如何在代理间传递才最平衡？（单选）",
+        "options": [
+          "把包含 120K+ token 原文与全部中间产物在内的累计上下文整体传给下游，不做任何裁剪",
+          "传合成草稿并附带结构化的来源索引，让每条关键声明能对应到具体出处与相应摘录",
+          "只把草稿传给报告代理，由后续独立管线补做声明到出处的匹配，在终稿后再补上引用",
+          "只传递各阶段的浓缩摘要，按来源名称对主要发现做归属"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计跨代理上下文交接方案，在完整引用能力与上下文成本之间取舍",
+          "reasoningGoal": "先明确终稿产出引用所必需的最小信息集；再据此设计草稿加结构化来源索引的交接结构；并排除全量累计传递、事后补引用、仅按来源名称归属等不可行或不可靠的方案。"
+        },
+        "generatedAt": 1789013510679,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ba992718",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-cae5e70a",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-02",
+          "topic": "context-engineering",
+          "subtopic": "跨代理上下文传递",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "context-passing",
+            "coordinator",
+            "citation",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "网页搜索代理找到 25 个来源（120K token 原始内容），文档分析代理提取关键洞察（15K token），合成代理产出叙述草稿（3K token）。协调器需把上下文交给报告生成代理产出带正确引用的终稿。哪种上下文传递策略在完整性与效率间最平衡？（单选）",
+          "options": [
+            "传递所有前置代理的完整累计上下文（含 120K+ token 原始内容与中间产物），不做任何裁剪。",
+            "传递合成草稿，外加一个结构化来源索引，把关键声明映射到来源 URL 与相关摘录。",
+            "只传合成草稿，由独立的后处理管线把声明匹配到来源并在报告生成后再插入引用。",
+            "传递所有前置阶段的浓缩摘要，仅按来源名称归属主要发现。"
+          ]
+        }
+      },
+      {
+        "id": "anthropic-cca-f-02__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "研究报告生成流水线里，每级代理都会产出一层上下文：原始抓取内容、提炼后的洞察、可被引用的叙述草稿。当 25 个来源的信息逐级汇拢时，哪种交接策略在完整性与成本之间最合理？（单选）",
+        "options": [
+          "让报告代理接收前序各级的全部累计上下文，原始材料与中间输出一并保留，不裁不省",
+          "传递合成草稿，并外加一个结构化的来源索引，把关键声明对应到具体来源与相应摘录",
+          "仅向报告代理发送草稿，将其中的论断与来源的匹配工作留给事后单独的处理流程去补",
+          "把各阶段提炼出来的摘要全数交给报告代理，主要发现仅按来源名称归类"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能评估不同上下文交接策略在完整性与效率维度的平衡点",
+          "reasoningGoal": "先把完整性与成本两个维度对齐到可用衡量标准；再逐项评估四类交接策略各自丢失或保留了什么；并排除全量累计与事后补匹配等极端做法。"
+        },
+        "generatedAt": 1789013510679,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-ba992718",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-f15679b5",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-02",
+          "topic": "context-engineering",
+          "subtopic": "跨代理上下文传递",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "context-passing",
+            "coordinator",
+            "citation",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "网页搜索代理找到 25 个来源（120K token 原始内容），文档分析代理提取关键洞察（15K token），合成代理产出叙述草稿（3K token）。协调器需把上下文交给报告生成代理产出带正确引用的终稿。哪种上下文传递策略在完整性与效率间最平衡？（单选）",
+          "options": [
+            "传递所有前置代理的完整累计上下文（含 120K+ token 原始内容与中间产物），不做任何裁剪。",
+            "传递合成草稿，外加一个结构化来源索引，把关键声明映射到来源 URL 与相关摘录。",
+            "只传合成草稿，由独立的后处理管线把声明匹配到来源并在报告生成后再插入引用。",
+            "传递所有前置阶段的浓缩摘要，仅按来源名称归属主要发现。"
+          ]
+        }
+      }
+    ],
+    "agentic-53": [
+      {
+        "id": "agentic-53__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "在下面四个业务场景中，哪一个最不适合使用自主 Agent，最适合改回传统固定脚本？（单选）",
+        "options": [
+          "舆情摘要线：主题走势没法事先预估，但所有分析路径都能用预设模板穷举出来",
+          "工单分流线：语义分支复杂多变，只能交给自主 Agent 才能保证分流不偏",
+          "银行对账线：流程完全固定、步骤可以枚举，合规要求高、讲究可靠可测可审计，Agent 的自主性在这里反而成为风险与负担",
+          "研究报告线：问题空间开放、分支无法穷举，应该固化成一段静态脚本逐章跑完"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别流程固定且合规敏感的场景属于 Agent 的边界之外",
+          "reasoningGoal": "先界定适合与不适合自主 Agent 的场景特征；再据此逐条核对四线的流程可变性与合规约束；并排除把开放研究固化为静态脚本等反向说法。"
+        },
+        "generatedAt": 1789013510680,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-64055d41",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-10f55720",
+        "sourceSnapshot": {
+          "id": "agentic-53",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "workflow",
+            "when-not-to-use"
+          ],
+          "question": "以下哪种场景最不应该使用 Agent，而应该使用传统固定 workflow？",
+          "options": [
+            "B 线舆情摘要：主题虽不可预测，但可以通过预设模板穷举所有分析路径",
+            "C 线工单分流：语义分支多变，只有交给自主 Agent 才能保证分流准确",
+            "A 线银行对账：流程固定、步骤可枚举，高合规场景要求可靠、可测试、可审计，Agent 的自由度在这里反而构成风险与成本",
+            "D 线研究报告：问题空间开放、分支无法预先穷举，应固化为一套静态脚本逐章执行"
+          ]
+        }
+      },
+      {
+        "id": "agentic-53__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "工程团队想在某条线上引入 Agent，同时把另一条固定流程保留为可审计脚本。以下四条线，哪条显然应该保留固定流程而不应交给 Agent？（单选）",
+        "options": [
+          "舆情摘要的主题随舆论波动，但分析步骤有限，完全可以用预设模板穷举路径",
+          "语义分支很多的工单分流，自主 Agent 是保证分类准确的前提",
+          "银行对账的流程固定且可逐条枚举，合规约束要求结果可靠、过程可测可审计，Agent 的不确定性反而构成风险与成本",
+          "问题分支无法预先穷举的开放研究报告，用一套静态脚本从头到尾逐一章节执行"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能在固定流程与自主 Agent 两条路线之间比较出更可靠的候选场景",
+          "reasoningGoal": "先列出比较两类方案可靠性的关键维度；再逐条判断每条业务线的流程与合规画像；并排除语义多变就只能靠 Agent 等绝对化推论。"
+        },
+        "generatedAt": 1789013510680,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-64055d41",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-38963ff7",
+        "sourceSnapshot": {
+          "id": "agentic-53",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "workflow",
+            "when-not-to-use"
+          ],
+          "question": "以下哪种场景最不应该使用 Agent，而应该使用传统固定 workflow？",
+          "options": [
+            "B 线舆情摘要：主题虽不可预测，但可以通过预设模板穷举所有分析路径",
+            "C 线工单分流：语义分支多变，只有交给自主 Agent 才能保证分流准确",
+            "A 线银行对账：流程固定、步骤可枚举，高合规场景要求可靠、可测试、可审计，Agent 的自由度在这里反而构成风险与成本",
+            "D 线研究报告：问题空间开放、分支无法预先穷举，应固化为一套静态脚本逐章执行"
+          ]
+        }
+      }
+    ],
+    "p0-moe-definition-01": [
+      {
+        "id": "p0-moe-definition-01__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "MoE 这类混合专家架构里，“总参数量”和“激活参数量”分别指什么？",
+        "options": [
+          "总参数量把所有专家都算进去，主要决定存储与显存；激活参数量只计入本次路由命中的部分，主要决定单次计算量",
+          "两者总是相等，因为每个 token 都会把所有专家访问一遍",
+          "激活参数量只与磁盘占用有关，和一次 token 的计算开销无关",
+          "MoE 缩小总参数靠的是删掉专家，因此不会带来路由与负载均衡问题"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释总参数量与激活参数量分别由什么构成、各自影响哪个资源维度",
+          "reasoningGoal": "先说明一次 token 的前向只经过被路由的专家这一机制；再据此区分存储显存维度的总参数与计算量维度的激活参数；并排除两者恒等、激活参数只看磁盘等不成立说法。"
+        },
+        "generatedAt": 1789013510680,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2e8be905",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-6fb23486",
+        "sourceSnapshot": {
+          "id": "p0-moe-definition-01",
+          "topic": "moe",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "moe",
+            "expert-routing",
+            "active-parameters",
+            "sparse-model"
+          ],
+          "question": "MoE Transformer 中“总参数量”和“激活参数量”的区别是什么？",
+          "options": [
+            "总参数量包含所有专家，主要影响存储和显存；激活参数量只包含本次路由使用的部分，主要影响计算量",
+            "总参数量和激活参数量始终相等，因为每个 token 都会访问所有专家",
+            "激活参数量只影响磁盘大小，与一次 token 的计算量无关",
+            "MoE 通过删除专家参数降低总参数量，因此不会产生路由和负载均衡问题"
+          ]
+        }
+      },
+      {
+        "id": "p0-moe-definition-01__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "训练一个大 MoE 模型时，需要用总参数量来预算显存、用激活参数量来估算单次前向开销。那么这两个数字各含什么？",
+        "options": [
+          "总参数把全体专家计入，落在存储和显存维度；激活参数是被本次路由挑中的那部分，落在计算量维度",
+          "总参数与激活参数同一时刻必然相等，因为任何 token 都要访问全部专家",
+          "激活参数的多少只改变磁盘大小，与一次 token 所需的计算量无关",
+          "MoE 通过直接删掉部分专家来压低总参数量，所以天然没有路由与负载均衡问题"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能比较总参数量与激活参数量在构成与资源影响上的差别",
+          "reasoningGoal": "先对齐两个数字各自的统计口径；再逐项验证谁影响存储显存、谁影响单次计算；并排除两者恒等以及删除专家无路由问题等误解。"
+        },
+        "generatedAt": 1789013510680,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2e8be905",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-b90cceb5",
+        "sourceSnapshot": {
+          "id": "p0-moe-definition-01",
+          "topic": "moe",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "moe",
+            "expert-routing",
+            "active-parameters",
+            "sparse-model"
+          ],
+          "question": "MoE Transformer 中“总参数量”和“激活参数量”的区别是什么？",
+          "options": [
+            "总参数量包含所有专家，主要影响存储和显存；激活参数量只包含本次路由使用的部分，主要影响计算量",
+            "总参数量和激活参数量始终相等，因为每个 token 都会访问所有专家",
+            "激活参数量只影响磁盘大小，与一次 token 的计算量无关",
+            "MoE 通过删除专家参数降低总参数量，因此不会产生路由和负载均衡问题"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-06": [
+      {
+        "id": "aws-waf-lens-2026-08-06__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "Agent 呼叫外部支付服务时发生超时，支付是否成功无法确认。恢复流程应当以什么为优先？（单选）",
+        "options": [
+          "直接让模型推断支付是否成功，然后基于推断再次发起扣款",
+          "借助幂等键和持久状态查询真实结果，仍无法确认就暂停并升级人工处理",
+          "不理会超时，把成功当作默认结论继续推进",
+          "清掉状态记录，把整个 Agent 从头再跑一遍"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计以幂等与可查询状态为核心的外部副作用恢复流程",
+          "reasoningGoal": "先明确外部副作用需要先确认再重试这一原则；再据此设计幂等键与持久状态查询的恢复方案；并排除猜测状态后扣款、默认成功、删除状态重跑等危险做法。"
+        },
+        "generatedAt": 1789013510680,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-de67ef61",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-983ba5a9",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-06",
+          "topic": "reliability",
+          "subtopic": "失败恢复与幂等",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "agentic-ai",
+            "failover",
+            "idempotency"
+          ],
+          "question": "Agent 在调用外部支付系统后超时，无法判断支付是否成功。恢复流程应优先依赖什么？（单选）",
+          "options": [
+            "让模型猜测支付状态后再次扣款",
+            "使用幂等键和持久状态查询结果，无法确认时暂停并升级",
+            "忽略超时并把成功当作默认结果",
+            "删除状态记录后重新运行完整 Agent"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-06__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "线上支付集成出现超时后，团队不知道这笔订单到底扣没扣成。面对这种不确定状态，恢复动作的正确出发点是什么？（单选）",
+        "options": [
+          "让模型根据对话痕迹猜测扣没扣，猜测成功就再执行一次扣款",
+          "引入幂等键，从持久化的订单状态查询最终结果，确认不了就停止自动处理并升级人工",
+          "把超时当作未发生的异常，默认成功继续后续步骤",
+          "删除掉已有状态记录，重启整个 Agent 流程再复现一次"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从不确定的支付状态症状定位到必须查询最终结果而非猜测的方法论",
+          "reasoningGoal": "先判断超时症状背后的真正风险是状态不可知而非扣款失败；再据此确定以幂等键查询持久状态为恢复起点；并排除以模型猜测或默认为成功替代状态确认的做法。"
+        },
+        "generatedAt": 1789013510680,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-de67ef61",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-82f5a312",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-06",
+          "topic": "reliability",
+          "subtopic": "失败恢复与幂等",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "agentic-ai",
+            "failover",
+            "idempotency"
+          ],
+          "question": "Agent 在调用外部支付系统后超时，无法判断支付是否成功。恢复流程应优先依赖什么？（单选）",
+          "options": [
+            "让模型猜测支付状态后再次扣款",
+            "使用幂等键和持久状态查询结果，无法确认时暂停并升级",
+            "忽略超时并把成功当作默认结果",
+            "删除状态记录后重新运行完整 Agent"
+          ]
+        }
+      }
+    ],
+    "gap-multimodal-tradeoff-01": [
+      {
+        "id": "gap-multimodal-tradeoff-01__surface-options__wbmanual20260910__0",
+        "kind": "surface-options",
+        "question": "一套视觉问答系统把输入图像分辨率调高后，OCR 效果变好，但延迟和成本随之明显上涨。合理的优化方向是什么？",
+        "options": [
+          "依据任务选择动态分辨率或对区域做裁剪，并把 OCR 质量、延迟、成本放在一起评估",
+          "所有图片一律用最大分辨率处理，因为分辨率越高整体就必然越优",
+          "降分辨率之后只关注语言输出是否流畅，不再评估视觉识别是否正确",
+          "把图片用文件名代替，就能既消除视觉 token 又消除识别误差"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计以任务为导向的动态分辨率方案并联合评估多个指标",
+          "reasoningGoal": "先明确分辨率与质量并非单调关系这一前提；再据此设计按任务动态分辨率或裁剪的方案；并排除固定最大分辨率、只看流畅度、用文件名替代输入等不成立做法。"
+        },
+        "generatedAt": 1789013510681,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9b1eb845",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-1dfbcdd2",
+        "sourceSnapshot": {
+          "id": "gap-multimodal-tradeoff-01",
+          "topic": "multimodal",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multimodal",
+            "resolution",
+            "latency",
+            "accuracy"
+          ],
+          "question": "视觉问答系统提高输入图像分辨率后 OCR 变好但延迟和成本明显上升，合理的优化方向是什么？",
+          "options": [
+            "按任务采用动态分辨率或区域裁剪，并联合评估 OCR 质量、延迟和成本",
+            "所有图片都固定使用最大分辨率，因为分辨率越高整体一定更优",
+            "降低分辨率后只看语言流畅度，不再评估视觉识别正确率",
+            "把图片转成文件名即可消除视觉 token 和识别误差"
+          ]
+        }
+      },
+      {
+        "id": "gap-multimodal-tradeoff-01__context-options__wbmanual20260910__1",
+        "kind": "context-options",
+        "question": "客户端的文档识别功能把分辨率整体调高了一档，识别率上升但每次请求的延迟和开销都在涨。怎样调整既经济又不丢精度？（单选）",
+        "options": [
+          "按任务特性动态选择分辨率或裁剪感兴趣区域，同时把识别质量、响应延迟与成本纳入同一套评估",
+          "对全部输入固定采用最高分辨率，认为分辨率与质量永远单调成正比",
+          "调低分辨率后仅以语言作答流畅与否为准，放弃对视觉识别正确性的考核",
+          "将输入图片替换为文件名，以同时省去视觉 token 与识别错误"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能界定分辨率调优的适用边界并评估每个优化选项的有效范围",
+          "reasoningGoal": "先界定高分辨率只在文本密集任务中值得投入这一边界；再逐项评估各优化方向在质量与成本上的表现；并排除一律最大化、只看语言流畅度、文件名替代图像等越界做法。"
+        },
+        "generatedAt": 1789013510681,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9b1eb845",
+        "batch": "wbmanual20260910",
+        "model": "manual",
+        "contentHash": "fnv1a-627374b3",
+        "sourceSnapshot": {
+          "id": "gap-multimodal-tradeoff-01",
+          "topic": "multimodal",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multimodal",
+            "resolution",
+            "latency",
+            "accuracy"
+          ],
+          "question": "视觉问答系统提高输入图像分辨率后 OCR 变好但延迟和成本明显上升，合理的优化方向是什么？",
+          "options": [
+            "按任务采用动态分辨率或区域裁剪，并联合评估 OCR 质量、延迟和成本",
+            "所有图片都固定使用最大分辨率，因为分辨率越高整体一定更优",
+            "降低分辨率后只看语言流畅度，不再评估视觉识别正确率",
+            "把图片转成文件名即可消除视觉 token 和识别误差"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,919 @@
+{
+  "version": 1,
+  "generatedAt": 1789012222051,
+  "promptVersion": "v4",
+  "variants": {
+    "net-napt-01": [
+      {
+        "id": "net-napt-01__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "内网多设备共用一个公网 IPv4 上网，路由器做基于端口的 NAPT。出入站包处理上，哪些说法正确？（多选）",
+        "options": [
+          "内网 TCP 外连时、源私网 IP 被改成公网 IP 并分配新源端口记表",
+          "回包只凭目标 IP 就能找到当初发起连接的内网设备",
+          "转换表是状态化的、入站包目标 IP 端口命中活跃表项才转发",
+          "没配端口映射时、外网主动发起的未邀连接默认被拦"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从内外包走向判断 NAPT 改写、查表与默认拦截的规则",
+          "reasoningGoal": "先锚定内外两个方向的包处理规则；据此逐项确认「源私网 IP 被改成公网 IP 并记表」「转换表是状态化的」等 3 项成立；并排除「只凭目标 IP 就能路由回包」等不成立描述。"
+        },
+        "generatedAt": 1789012222045,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2c4b41cb",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-7c59913c",
+        "sourceSnapshot": {
+          "id": "net-napt-01",
+          "topic": "system-design",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "napt",
+            "nat",
+            "ip-masquerading",
+            "translation-table"
+          ],
+          "question": "在局域网（LAN）共享单公网 IPv4 地址访问互联网的场景中，路由器通常采用基于端口的网络地址转换（NAPT / IP Masquerading）。在出站与入站的数据包处理流程中，下列说法正确的有？（多选）",
+          "options": [
+            "当局域网内部设备向公网发起 TCP 连接时，NAPT 设备会将数据包的源私有 IP 修改为公网 IP，并动态分配新的源端口写进映射表",
+            "当公网服务器响应数据包返回时，NAPT 设备仅凭目标 IP 地址即可将其正确路由至内部发起连接的具体内网设备",
+            "NAT 转换表（Translation Table）是状态化的（Stateful），仅当入站数据包的“目标 IP + 目标端口”能匹配映射表中已建立的活跃条目时才会被转发",
+            "在未配置静态端口映射（Port Forwarding）或 UPnP 的情况下，公网外部主机主动向内网私有 IP 发起的未邀 TCP 连接将被 NAT 设备默认拦截或丢弃"
+          ]
+        }
+      },
+      {
+        "id": "net-napt-01__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "宿舍楼共用一个公网 IP，有人从外面直连宿舍电脑的私有地址始终不通。关于 NAPT 的行为，哪些说法正确？（多选）",
+        "options": [
+          "内网主动外连时改写源地址端口、映射关系记进转换表",
+          "公网回包仅凭目标 IP 就能路由到内网发起设备",
+          "入站转发看“目标 IP+端口”能否命中已建活跃表项",
+          "未配端口映射时外网主动发起的未邀连接默认丢弃"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从主动外连与被动连入的对比判断状态查表的必要性",
+          "reasoningGoal": "先对齐外连与连入两种方向的可比处理；据此逐项确认「改写源地址端口并记表」「转发看能否命中活跃表项」等 3 项成立；并排除「路由只看目标 IP 就够」等不成立描述。"
+        },
+        "generatedAt": 1789012222045,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-2c4b41cb",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-4739ed2a",
+        "sourceSnapshot": {
+          "id": "net-napt-01",
+          "topic": "system-design",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "napt",
+            "nat",
+            "ip-masquerading",
+            "translation-table"
+          ],
+          "question": "在局域网（LAN）共享单公网 IPv4 地址访问互联网的场景中，路由器通常采用基于端口的网络地址转换（NAPT / IP Masquerading）。在出站与入站的数据包处理流程中，下列说法正确的有？（多选）",
+          "options": [
+            "当局域网内部设备向公网发起 TCP 连接时，NAPT 设备会将数据包的源私有 IP 修改为公网 IP，并动态分配新的源端口写进映射表",
+            "当公网服务器响应数据包返回时，NAPT 设备仅凭目标 IP 地址即可将其正确路由至内部发起连接的具体内网设备",
+            "NAT 转换表（Translation Table）是状态化的（Stateful），仅当入站数据包的“目标 IP + 目标端口”能匹配映射表中已建立的活跃条目时才会被转发",
+            "在未配置静态端口映射（Port Forwarding）或 UPnP 的情况下，公网外部主机主动向内网私有 IP 发起的未邀 TCP 连接将被 NAT 设备默认拦截或丢弃"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-019": [
+      {
+        "id": "ai-search-extra-019__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "企业搜索每天新增 500 万文档、5 分钟内可搜。哪种架构能力最关键？",
+        "options": [
+          "增量式 ingestion 管道",
+          "异步 embedding 与索引更新",
+          "索引新鲜度 SLA 与监控",
+          "每次新增都重建整个索引",
+          "失败任务应有重试与恢复机制"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 500 万日增与 5 分钟可见推导增量能力的必要性",
+          "reasoningGoal": "先拆出日增量与可见时延的双重约束；据此逐项确认「增量 ingestion 管道」「异步 embedding 与索引更新」等 4 项成立；并排除「每次新增重建全索引」等不成立描述。"
+        },
+        "generatedAt": 1789012222046,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3a818a58",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-2ceec077",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-019",
+          "topic": "search-infrastructure",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "search-infrastructure",
+            "indexing",
+            "consistency"
+          ],
+          "question": "一个企业搜索系统每天新增 500 万文档，同时要求新增文档在 5 分钟内可被搜索。哪项架构能力最关键？",
+          "options": [
+            "增量式 ingestion 管道",
+            "异步 embedding 与索引更新",
+            "明确的索引新鲜度 SLA 与监控",
+            "每次新增都重建整个索引",
+            "失败任务应有重试与恢复机制"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-019__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "新闻搜索要求 5 分钟前发生的事件能搜到，日增 500 万篇。评审架构时，哪些能力最关键？",
+        "options": [
+          "持续增量 ingestion、不断流",
+          "embedding 与索引异步增量更新",
+          "新鲜度 SLA 白纸黑字加监控",
+          "新增一次就重建一次全量索引",
+          "失败任务自动重试与恢复"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从时效与增量的取舍判断全量重建为何不可行",
+          "reasoningGoal": "先明确时效与吞吐的取舍维度；据此逐项确认「持续增量 ingestion」「embedding 与索引异步更新」等 4 项成立；并排除「每天一次全量重建」等不成立描述。"
+        },
+        "generatedAt": 1789012222046,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-3a818a58",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-7e4aa1fb",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-019",
+          "topic": "search-infrastructure",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "search-infrastructure",
+            "indexing",
+            "consistency"
+          ],
+          "question": "一个企业搜索系统每天新增 500 万文档，同时要求新增文档在 5 分钟内可被搜索。哪项架构能力最关键？",
+          "options": [
+            "增量式 ingestion 管道",
+            "异步 embedding 与索引更新",
+            "明确的索引新鲜度 SLA 与监控",
+            "每次新增都重建整个索引",
+            "失败任务应有重试与恢复机制"
+          ]
+        }
+      }
+    ],
+    "longhorizon-programmatic-context-01": [
+      {
+        "id": "longhorizon-programmatic-context-01__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "海量日志任务里，编程式取数相比直接把所有文本全塞上下文窗口，优势在哪？",
+        "options": [
+          "海量原文不逐字进窗口、省 Token 并降稀释风险",
+          "写脚本做结构化过滤统计、比概率推理更准",
+          "过滤片段自带语义标签、LLM 只需填模板、无需再推理",
+          "中间结果存 REPL L2 跨 Turn 复用、不重复解析大文件"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从信息路径解释编程式上下文三处省与一处不省",
+          "reasoningGoal": "先复现两种模式的信息路径差异；据此逐项确认「原文不逐字进窗口」「写脚本过滤比概率推理更准」等 3 项成立；并排除「自带标签无需再推理」等不成立描述。"
+        },
+        "generatedAt": 1789012222047,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4768072f",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-333570c2",
+        "sourceSnapshot": {
+          "id": "longhorizon-programmatic-context-01",
+          "topic": "context-engineering",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "programmatic-context",
+            "repl",
+            "token-efficiency"
+          ],
+          "question": "在面对极长上下文（如巨型代码库或海量日志）任务时，相比直接将所有文本填充进 LLM 激活上下文（被动上下文模式），将数据存储于外部文件并允许智能体通过 Persistent REPL 编写代码进行检索过滤（编程式上下文模式）具备哪些工程优势？",
+          "options": [
+            "能够避免将非必要的海量原始数据逐字序列化进 LLM 激活上下文，显著节省 Token 消耗并降低大模型的注意力稀释风险。",
+            "智能体可以通过编写 Python 脚本对数据进行结构化过滤、统计与精准校验，提高在复杂数据分析与定量计算上的准确率。",
+            "代码过滤后的片段已带明确语义标签，LLM 只需做模板填充，无需再对片段做开放式语义推理；标签即理解。",
+            "中间计算结果与过滤后的数据结构可以在 REPL 的 L2 状态中跨 Turn 持久化保留，避免在后续轮次中重复解析原始大文件。"
+          ]
+        }
+      },
+      {
+        "id": "longhorizon-programmatic-context-01__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "分析 10GB 日志：A 组把所有文本直接全塞窗口、Token 爆炸还答错数，B 组写脚本过滤后只喂结果。关于两种做法，哪些判断成立？",
+        "options": [
+          "别把海量原文逐字塞进窗口、省 Token 并降低稀释风险",
+          "用脚本做结构化过滤统计、复杂计算准确率更高",
+          "代码贴了标签、模型就不用再做语义理解",
+          "L2 存过滤结果跨轮复用、10GB 大文件只读一次"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 10GB 日志的账单权衡全塞与过滤取数的取舍",
+          "reasoningGoal": "先明确成本与准确率的取舍维度；据此逐项确认「原文逐字进窗口又贵又稀释」「硬活交给代码」等 3 项成立；并排除「贴了标签就不用再理解」等不成立描述。"
+        },
+        "generatedAt": 1789012222047,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4768072f",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-f6fe7a5b",
+        "sourceSnapshot": {
+          "id": "longhorizon-programmatic-context-01",
+          "topic": "context-engineering",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "programmatic-context",
+            "repl",
+            "token-efficiency"
+          ],
+          "question": "在面对极长上下文（如巨型代码库或海量日志）任务时，相比直接将所有文本填充进 LLM 激活上下文（被动上下文模式），将数据存储于外部文件并允许智能体通过 Persistent REPL 编写代码进行检索过滤（编程式上下文模式）具备哪些工程优势？",
+          "options": [
+            "能够避免将非必要的海量原始数据逐字序列化进 LLM 激活上下文，显著节省 Token 消耗并降低大模型的注意力稀释风险。",
+            "智能体可以通过编写 Python 脚本对数据进行结构化过滤、统计与精准校验，提高在复杂数据分析与定量计算上的准确率。",
+            "代码过滤后的片段已带明确语义标签，LLM 只需做模板填充，无需再对片段做开放式语义推理；标签即理解。",
+            "中间计算结果与过滤后的数据结构可以在 REPL 的 L2 状态中跨 Turn 持久化保留，避免在后续轮次中重复解析原始大文件。"
+          ]
+        }
+      }
+    ],
+    "data-leakage-01": [
+      {
+        "id": "data-leakage-01__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "RAG 召回含身份证号、合同金额的片段，怎么防它们从输出或日志漏出去？（多选）",
+        "options": [
+          "检索按身份权限过滤、无权片段不进窗口",
+          "注入前敏感字段脱敏占位、只留任务必需信息",
+          "输出与日志脱敏存储审计、防二次泄露",
+          "敏感原文全量注入、靠模型自觉不泄露"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从泄露路径解释权限过滤与两道脱敏的分工",
+          "reasoningGoal": "先复现敏感信息三条泄露路径；据此逐项确认「按身份权限过滤」「注入前脱敏占位」等 3 项成立；并排除「全量注入靠自觉」等不成立描述。"
+        },
+        "generatedAt": 1789012222047,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-66f9a0be",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-31876bff",
+        "sourceSnapshot": {
+          "id": "data-leakage-01",
+          "topic": "data-leakage",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "data-leakage",
+            "privacy",
+            "prompt-injection",
+            "logging"
+          ],
+          "question": "在企业级 RAG 系统中，用户提问“帮我总结上周与客户的会议纪要”时，系统检索到含敏感个人信息（身份证号、合同金额）的文档片段。关于如何防止该敏感信息通过模型输出或日志泄露，下列做法正确的有？（多选）",
+          "options": [
+            "在检索阶段基于用户身份与权限进行过滤，仅返回有权限的文档片段进入上下文",
+            "在将检索片段注入 Prompt 前，对敏感字段进行脱敏或占位符替换，仅保留任务必需信息",
+            "对模型输出与系统日志中的敏感信息进行脱敏存储与审计，避免通过日志二次泄露",
+            "为提升模型理解能力，应将所有敏感原文完整注入上下文，依赖模型自觉不泄露"
+          ]
+        }
+      },
+      {
+        "id": "data-leakage-01__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "会议纪要 RAG 把客户身份证号直接答出来了，日志里还存了一份。堵这次泄露，哪些做法正确？（多选）",
+        "options": [
+          "检索阶段先验身份权限、无权片段直接拦下",
+          "进 Prompt 前敏感字段打码、只留办事儿必需的",
+          "输出日志同样脱敏、审计链路防二次泄露",
+          "敏感原文完整注入上下文、靠模型自觉不泄露"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从答出与存下两处泄露定位三道防线的缺失",
+          "reasoningGoal": "先定位两次泄露各自缺失的环节；据此逐项确认「先验身份权限」「进 Prompt 前打码」等 3 项成立；并排除「敏感原文完整注入、靠自觉」等不成立描述。"
+        },
+        "generatedAt": 1789012222047,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-66f9a0be",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-a0f919b3",
+        "sourceSnapshot": {
+          "id": "data-leakage-01",
+          "topic": "data-leakage",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "data-leakage",
+            "privacy",
+            "prompt-injection",
+            "logging"
+          ],
+          "question": "在企业级 RAG 系统中，用户提问“帮我总结上周与客户的会议纪要”时，系统检索到含敏感个人信息（身份证号、合同金额）的文档片段。关于如何防止该敏感信息通过模型输出或日志泄露，下列做法正确的有？（多选）",
+          "options": [
+            "在检索阶段基于用户身份与权限进行过滤，仅返回有权限的文档片段进入上下文",
+            "在将检索片段注入 Prompt 前，对敏感字段进行脱敏或占位符替换，仅保留任务必需信息",
+            "对模型输出与系统日志中的敏感信息进行脱敏存储与审计，避免通过日志二次泄露",
+            "为提升模型理解能力，应将所有敏感原文完整注入上下文，依赖模型自觉不泄露"
+          ]
+        }
+      }
+    ],
+    "quant-qah-05": [
+      {
+        "id": "quant-qah-05__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "4-bit 多数基准追平 16-bit，哪些情形下还可能微幅落后？",
+        "options": [
+          "MMLU-Pro 知识类基准低 1.5 个点以内",
+          "没做 healing 修复、退化更大落更多",
+          "任何基准 4-bit 绝对占优、不存在落后",
+          "4-bit 只影响推理速度、最终精度不受影响"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从落后场景解释知识基准与 healing 的作用边界",
+          "reasoningGoal": "先复现 4-bit 在两类场景下的表现分野；据此逐项确认「知识类基准低不到 1.5 个点」「没做 healing 落更多」等 2 项成立；并排除「任何基准绝对占优」「只影响速度」等不成立描述。"
+        },
+        "generatedAt": 1789012222048,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7adc495a",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-cde267ca",
+        "sourceSnapshot": {
+          "id": "quant-qah-05",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "4-bit",
+            "tradeoff",
+            "accuracy-gap"
+          ],
+          "question": "尽管 4-bit 量化能在多数基准追平甚至超过 16-bit，但在哪些情形下 4-bit 仍可能微幅落后？",
+          "options": [
+            "在 MMLU-Pro、SciCode 等知识类基准上，4-bit 仍比同尺寸 16-bit 低不到 1.5 个点",
+            "若量化时未做 healing 修复，能力退化会更大，落后的幅度也更多",
+            "4-bit 在任何基准上都绝对优于 16-bit，不存在落后情形",
+            "4-bit 量化只影响推理速度，对模型的最终精度其实没有任何影响"
+          ]
+        }
+      },
+      {
+        "id": "quant-qah-05__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "汇报：4-bit 在 16-bit 对照下多数基准追平，知识类差 1 个点、没修复的版本差更多。关于这份汇报，哪些判断成立？",
+        "options": [
+          "知识类基准 4-bit 微落后 1 个点左右",
+          "healing 缺席会让落后幅度放大",
+          "4-bit 处处占优、落后情形不存在",
+          "4-bit 只影响推理速度、最终精度没有任何影响"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从汇报数据推导落后幅度的归因与 healing 的价值",
+          "reasoningGoal": "先拆出落后幅度的数据约束；据此逐项确认「知识类基准微落后」「healing 缺席放大落后」等 2 项成立；并排除「处处占优」「精度不受影响」等不成立描述。"
+        },
+        "generatedAt": 1789012222048,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-7adc495a",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-6f224086",
+        "sourceSnapshot": {
+          "id": "quant-qah-05",
+          "topic": "quantization",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "4-bit",
+            "tradeoff",
+            "accuracy-gap"
+          ],
+          "question": "尽管 4-bit 量化能在多数基准追平甚至超过 16-bit，但在哪些情形下 4-bit 仍可能微幅落后？",
+          "options": [
+            "在 MMLU-Pro、SciCode 等知识类基准上，4-bit 仍比同尺寸 16-bit 低不到 1.5 个点",
+            "若量化时未做 healing 修复，能力退化会更大，落后的幅度也更多",
+            "4-bit 在任何基准上都绝对优于 16-bit，不存在落后情形",
+            "4-bit 量化只影响推理速度，对模型的最终精度其实没有任何影响"
+          ]
+        }
+      }
+    ],
+    "vectordb-05": [
+      {
+        "id": "vectordb-05__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "百万级语料、存储延迟敏感、查询条件单一，单向量还是多向量？",
+        "options": [
+          "先单向量 bi-encoder、索引小查询快、覆盖单一查询",
+          "多约束标识符查询质量不够时、再叠多向量重排",
+          "一上来就全库多向量、否则质量一定不达标",
+          "多向量在此图的是省显存、不是提召回"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从单一查询场景推导先单后多的演进选型",
+          "reasoningGoal": "先拆出存储延迟与查询单一的约束；据此逐项确认「先单向量 bi-encoder」「质量不够再叠重排」等 2 项成立；并排除「一上来就全库多向量」「图的是省显存」等不成立描述。"
+        },
+        "generatedAt": 1789012222048,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9ed89b64",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-602afe01",
+        "sourceSnapshot": {
+          "id": "vectordb-05",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "single-vs-multi-vector",
+            "selection",
+            "scenario"
+          ],
+          "question": "给定『百万级语料、存储与延迟敏感、查询条件单一』的场景，关于单向量与多向量的选型，哪些判断合理？",
+          "options": [
+            "优先单向量 bi-encoder：索引小、查询快，足以覆盖单一条件查询",
+            "若后续出现多约束或精确标识符查询且质量不达标，可再叠加多向量重排",
+            "必须一开始就上多向量全库索引，否则检索质量一定不达标",
+            "多向量在此场景的主要优势是显著节省显存，而非提升召回"
+          ]
+        }
+      },
+      {
+        "id": "vectordb-05__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "站内搜索只有关键词单条件、日活低、机器紧。关于选型，哪些判断合理？",
+        "options": [
+          "单向量 bi-encoder 起步、又小又快够用",
+          "复杂查询来了再加多向量重排、演进不返工",
+          "首版就必须全库多向量、不然没质量",
+          "多向量主要优势是省显存、召回提升次之"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从小机器单条件的对比判断两种向量的各自归宿",
+          "reasoningGoal": "先对齐两种向量在成本与质量上的可比维度；据此逐项确认「单向量起步又小又快」「复杂查询再加多向量重排」等 2 项成立；并排除「首版必须全库多向量」「主要省显存」等不成立描述。"
+        },
+        "generatedAt": 1789012222048,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-9ed89b64",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-76afd882",
+        "sourceSnapshot": {
+          "id": "vectordb-05",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "single-vs-multi-vector",
+            "selection",
+            "scenario"
+          ],
+          "question": "给定『百万级语料、存储与延迟敏感、查询条件单一』的场景，关于单向量与多向量的选型，哪些判断合理？",
+          "options": [
+            "优先单向量 bi-encoder：索引小、查询快，足以覆盖单一条件查询",
+            "若后续出现多约束或精确标识符查询且质量不达标，可再叠加多向量重排",
+            "必须一开始就上多向量全库索引，否则检索质量一定不达标",
+            "多向量在此场景的主要优势是显著节省显存，而非提升召回"
+          ]
+        }
+      }
+    ],
+    "nla-hallucination-01": [
+      {
+        "id": "nla-hallucination-01__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "NLA 解释里出现上下文没有的细节（事实性幻觉），原因与应对哪些准确？（多选）",
+        "options": [
+          "AV 已彻底失效、应立刻调大目标模型学习率消偏移",
+          "看核心主题意图、别把逐字细节当事实",
+          "高阶主题加独立工具多源交叉验证",
+          "目标激活向量已物理损坏、必须重微调整个模型",
+          "解码确定性可消幻觉、先固化解码再查归因"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从幻觉来源解释抓主题与交叉验证的应对机理",
+          "reasoningGoal": "先复现幻觉产生的内部来源；据此逐项确认「看核心主题意图」「多源交叉验证」等 2 项成立；并排除「AV 彻底失效调学习率」「激活向量物理损坏」等不成立描述。"
+        },
+        "generatedAt": 1789012222048,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b38e794",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-11b80091",
+        "sourceSnapshot": {
+          "id": "nla-hallucination-01",
+          "topic": "interpretability",
+          "subtopic": "NLA 局限性分析与异常调试",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "nla",
+            "hallucination",
+            "debugging",
+            "cross-validation",
+            "attribution-graph"
+          ],
+          "question": "某一可解释性团队在使用 NLA 诊断模型潜意识时发现：NLA 输出的解释文本中包含了一些上下文中根本不存在的细节描述（即潜意识解释发生了“事实性幻觉”）。关于这种现象的原因定位与应对策略，下列哪些分析是准确的？（多选）",
+          "options": [
+            "该现象说明 AV 已完全失效、重构损失计算有误，应立即增大目标模型学习率以消除特征偏移。",
+            "调试时应关注 NLA 解释所表达的核心主题与意图，而不把逐字细节当作既成事实。",
+            "应结合高阶主题分析与独立解释工具（如 Attribution Graphs / SAE）进行多源交叉验证。",
+            "该现象证明目标模型内部激活向量已遭物理损坏，需重新全面微调以恢复表征一致性。",
+            "AV 解码侧确定性可消除解释幻觉，幻觉多为采样噪声；先固化解码，再查归因。"
+          ]
+        }
+      },
+      {
+        "id": "nla-hallucination-01__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "NLA 说模型在“想”一份根本不存在的会议纪要。面对这种幻觉解释，哪些应对准确？（多选）",
+        "options": [
+          "AV 已彻底失效、调大学习率就能消除偏移",
+          "调试看核心主题与意图、逐字细节不当事实",
+          "拉 Attribution Graphs 与 SAE 来交叉验证",
+          "目标激活向量已遭损坏、必须重微调整个模型",
+          "解码侧确定性消除幻觉、幻觉多为采样噪声"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从不存在的会议纪要判断细节不可信与主题可参考的分野",
+          "reasoningGoal": "先明确可信与不可信的取舍维度；据此逐项确认「调试看核心主题与意图」「拉独立工具交叉验证」等 2 项成立；并排除「调大学习率」「重训整个模型」等不成立描述。"
+        },
+        "generatedAt": 1789012222048,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-0b38e794",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-793c45c8",
+        "sourceSnapshot": {
+          "id": "nla-hallucination-01",
+          "topic": "interpretability",
+          "subtopic": "NLA 局限性分析与异常调试",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "nla",
+            "hallucination",
+            "debugging",
+            "cross-validation",
+            "attribution-graph"
+          ],
+          "question": "某一可解释性团队在使用 NLA 诊断模型潜意识时发现：NLA 输出的解释文本中包含了一些上下文中根本不存在的细节描述（即潜意识解释发生了“事实性幻觉”）。关于这种现象的原因定位与应对策略，下列哪些分析是准确的？（多选）",
+          "options": [
+            "该现象说明 AV 已完全失效、重构损失计算有误，应立即增大目标模型学习率以消除特征偏移。",
+            "调试时应关注 NLA 解释所表达的核心主题与意图，而不把逐字细节当作既成事实。",
+            "应结合高阶主题分析与独立解释工具（如 Attribution Graphs / SAE）进行多源交叉验证。",
+            "该现象证明目标模型内部激活向量已遭物理损坏，需重新全面微调以恢复表征一致性。",
+            "AV 解码侧确定性可消除解释幻觉，幻觉多为采样噪声；先固化解码，再查归因。"
+          ]
+        }
+      }
+    ],
+    "hw-transpose-02": [
+      {
+        "id": "hw-transpose-02__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "加速器上转置撞 Bank Conflict，是在算子内转布局，还是图级重构算式？两者怎么比？（多选）",
+        "options": [
+          "图级重构把转置吸收进前后算式、省掉显式转置指令",
+          "算子内转置保拓扑独立、不重推整图等价、模块化好",
+          "图级重构遇非线性与分支即数学失效",
+          "算子内转置避冲突常加填充、片上利用率下降"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从消除开销的机理解释两条路径的取舍",
+          "reasoningGoal": "先复现两条路径消除转置的内部方式；据此逐项确认「图级重构吸收转置」「算子内转置保独立」等 3 项成立；并排除「遇非线性即失效」等不成立描述。"
+        },
+        "generatedAt": 1789012222049,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-be786600",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-8691b9f6",
+        "sourceSnapshot": {
+          "id": "hw-transpose-02",
+          "topic": "pytorch-performance",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "transpose",
+            "bank-conflict",
+            "sram",
+            "graph-rewrite"
+          ],
+          "question": "在专用加速器上执行二维向量寄存器数据转置（Data Transposition）时，经常面临 Bank Conflict（存储体冲突）与高昂的寄存器重排开销。性能工程师在面对此类瓶颈时，通常需要在“算子内部数据布局转置”与“图/算法级计算等效重构”之间做出抉择。下列关于这两种优化路径的比较，哪些表述是准确的？（多选）",
+          "options": [
+            "“图/算法级计算等效重构”通过转置后续整个计算图的数学表达（如将前向矩阵乘法与权重转置合并），从根本上消除了显式数据转置指令的执行开销",
+            "“算子内部数据布局转置”保持了后续算子输入输出拓扑的独立性，不需要重新推导整个数据流图的代数等价性，具备更好的模块化与工程可维护性",
+            "“图/算法级计算等效重构”仅能应用于线性代数算子，当数据流中包含非线性激活函数或条件分支时，该优化方法在数学上彻底失效",
+            "“算子内部数据布局转置”在避免 SRAM Bank Conflict 时，通常需要引入填充（Padding）或交错索引，这可能导致片上内存利用率下降"
+          ]
+        }
+      },
+      {
+        "id": "hw-transpose-02__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "转置把 SRAM 撑爆了：算子内加填充太费，不想重推整图等价又怕错。关于这个两难，哪些表述准确？（多选）",
+        "options": [
+          "图级重构把转置吸收进计算图数学表达、消除显式转置指令开销",
+          "后续算子输入输出拓扑保持独立、无需重推整图等价",
+          "遇到非线性激活或条件分支、重构数学上彻底失效",
+          "避 Bank Conflict 加填充或交错索引、片上内存利用率下降"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从撑爆与怕错的两难权衡两条路径的代价",
+          "reasoningGoal": "先明确容量与正确性的取舍维度；据此逐项确认「转置折进算式指令消失」「不动拓扑只转内部」等 3 项成立；并排除「有分支就没戏」等不成立描述。"
+        },
+        "generatedAt": 1789012222049,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-be786600",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-fd83083c",
+        "sourceSnapshot": {
+          "id": "hw-transpose-02",
+          "topic": "pytorch-performance",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "transpose",
+            "bank-conflict",
+            "sram",
+            "graph-rewrite"
+          ],
+          "question": "在专用加速器上执行二维向量寄存器数据转置（Data Transposition）时，经常面临 Bank Conflict（存储体冲突）与高昂的寄存器重排开销。性能工程师在面对此类瓶颈时，通常需要在“算子内部数据布局转置”与“图/算法级计算等效重构”之间做出抉择。下列关于这两种优化路径的比较，哪些表述是准确的？（多选）",
+          "options": [
+            "“图/算法级计算等效重构”通过转置后续整个计算图的数学表达（如将前向矩阵乘法与权重转置合并），从根本上消除了显式数据转置指令的执行开销",
+            "“算子内部数据布局转置”保持了后续算子输入输出拓扑的独立性，不需要重新推导整个数据流图的代数等价性，具备更好的模块化与工程可维护性",
+            "“图/算法级计算等效重构”仅能应用于线性代数算子，当数据流中包含非线性激活函数或条件分支时，该优化方法在数学上彻底失效",
+            "“算子内部数据布局转置”在避免 SRAM Bank Conflict 时，通常需要引入填充（Padding）或交错索引，这可能导致片上内存利用率下降"
+          ]
+        }
+      }
+    ],
+    "ai-eng-034": [
+      {
+        "id": "ai-eng-034__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "知识库混着手册合同 FAQ 与表格财报，切分策略怎么定？",
+        "options": [
+          "手册递归切加 overlap、合同按条款边界切、不断义务",
+          "FAQ 整问答成块、表格抽结构转 Markdown 或单建索引挂摘要",
+          "高精度叠 parent-child、小块命中回大块补上下文",
+          "全文档统一 256 token 定长零重叠、最简单最紧凑效果一致",
+          "整篇文档单 chunk 入库、靠长窗消化、省差异化设计",
+          "LLM 摘要替代原文入库、原文不检索、直达高层语义"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从四类文档的对比判断差异化切分的必要性",
+          "reasoningGoal": "先对齐四类文档在结构上的可比差异；据此逐项确认「手册递归切、合同按条款」「FAQ 整块、表格抽结构」等 3 项成立；并排除「统一 256 定长」「整篇单 chunk」等不成立描述。"
+        },
+        "generatedAt": 1789012222049,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8ae1ba28",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-8bb80804",
+        "sourceSnapshot": {
+          "id": "ai-eng-034",
+          "topic": "rag-pipeline",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "chunking",
+            "document-parsing",
+            "parent-child",
+            "recursive-chunking"
+          ],
+          "question": "你要为一个企业文档知识库搭建 RAG 的切分（Chunking）管线，语料混合了技术手册、法律合同、FAQ 和带大量表格的财务报告。请给出你的分块策略设计与理由。",
+          "options": [
+            "技术手册用递归切分加 overlap 控制粒度，法律合同按条款自然边界切，避免把一条义务切成两半",
+            "FAQ 按问答对整体成块，表格先抽取结构再序列化为 Markdown 或单独建表索引并挂元数据摘要",
+            "精度要求高的场景叠加 parent-child：小块用于检索命中，命中后返回大块补充上下文",
+            "所有文档统一按 256 token 定长切分且重叠设为 0，实现最简单、索引最紧凑，各类型召回效果一致",
+            "每篇文档整体作为单个 chunk 入库，靠长上下文模型直接消化，既不断裂语义也省去差异化设计",
+            "先用 LLM 给每个 chunk 写摘要替代原文入库，原文不再参与检索，以压缩索引并直达高层语义"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-034__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "客服知识库 FAQ 切碎答非所问、合同义务被拦腰切断。复盘切分时，哪些做法正确？",
+        "options": [
+          "手册按章节递归切带 overlap、合同按条款整条切",
+          "FAQ 一问一答整块、表格结构化后挂摘要索引",
+          "高精度叠 parent-child、小块命中回大块补上下文",
+          "一刀切 256 token 零重叠、简单紧凑效果齐",
+          "每篇文档整体单 chunk 入库、靠长窗模型消化",
+          "LLM 摘要替代原文入库、原文不参与检索"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从答非所问与拦腰切断诊断一刀切的病根",
+          "reasoningGoal": "先定位两次切分事故的直接诱因；据此逐项确认「按章节递归切、按条款整条切」「一问一答整块」等 3 项成立；并排除「一刀切 256」「整篇单 chunk」等不成立描述。"
+        },
+        "generatedAt": 1789012222050,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-8ae1ba28",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-f72d5954",
+        "sourceSnapshot": {
+          "id": "ai-eng-034",
+          "topic": "rag-pipeline",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "chunking",
+            "document-parsing",
+            "parent-child",
+            "recursive-chunking"
+          ],
+          "question": "你要为一个企业文档知识库搭建 RAG 的切分（Chunking）管线，语料混合了技术手册、法律合同、FAQ 和带大量表格的财务报告。请给出你的分块策略设计与理由。",
+          "options": [
+            "技术手册用递归切分加 overlap 控制粒度，法律合同按条款自然边界切，避免把一条义务切成两半",
+            "FAQ 按问答对整体成块，表格先抽取结构再序列化为 Markdown 或单独建表索引并挂元数据摘要",
+            "精度要求高的场景叠加 parent-child：小块用于检索命中，命中后返回大块补充上下文",
+            "所有文档统一按 256 token 定长切分且重叠设为 0，实现最简单、索引最紧凑，各类型召回效果一致",
+            "每篇文档整体作为单个 chunk 入库，靠长上下文模型直接消化，既不断裂语义也省去差异化设计",
+            "先用 LLM 给每个 chunk 写摘要替代原文入库，原文不再参与检索，以压缩索引并直达高层语义"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-32": [
+      {
+        "id": "sebastian-raschka-2026-08-32__surface-options__manual-ar__0",
+        "kind": "surface-options",
+        "question": "缩放点积注意力除以 $\\sqrt{d_k}$，主要起什么作用？（请选择两个）",
+        "options": [
+          "压住点积随 Key 维度膨胀的尺度",
+          "帮 softmax 别太早饱和、留住梯度",
+          "把注意力复杂度从平方级降到线性",
+          "让 Value 自带位置信息"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从除与不除的对比判断缩放因子的双重作用",
+          "reasoningGoal": "先对齐缩放前后点积分布的可比变化；据此逐项确认「压住点积尺度」「帮 softmax 留住梯度」等 2 项成立；并排除「复杂度降线性」「Value 自带位置」等不成立描述。"
+        },
+        "generatedAt": 1789012222050,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4741535e",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-95697776",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-32",
+          "topic": "self-attention",
+          "subtopic": "缩放点积",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "scaled-dot-product"
+          ],
+          "question": "缩放点积注意力中除以 $\\sqrt{d_k}$ 的主要作用有哪些？（请选择两个）",
+          "options": [
+            "控制点积分数随 Key 维度增长的尺度",
+            "帮助 softmax 避免过早饱和并保留有效梯度",
+            "把注意力复杂度从平方级变成线性级",
+            "让 Value 向量自动包含位置信息"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-32__context-options__manual-ar__1",
+        "kind": "context-options",
+        "question": "去掉缩放因子后训练初期梯度接近 0，归一化输出近乎 one-hot。关于这个现象，哪些说法成立？（请选择两个）",
+        "options": [
+          "控制点积随 Key 维度增长、防止方差膨胀",
+          "softmax 饱和早、梯度没了、缩放救场",
+          "缩放把注意力平方复杂度变成线性",
+          "Value 向量位置信息靠缩放自动获得"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从梯度消失事故推导缩放因子的救场位置",
+          "reasoningGoal": "先定位梯度消失的直接诱因；据此逐项确认「点积方差随维度涨」「饱和早梯度没」等 2 项成立；并排除「复杂度变线性」「位置靠缩放获得」等不成立描述。"
+        },
+        "generatedAt": 1789012222050,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-4741535e",
+        "batch": "manual-ar",
+        "model": "manual",
+        "contentHash": "fnv1a-42bea173",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-32",
+          "topic": "self-attention",
+          "subtopic": "缩放点积",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "scaled-dot-product"
+          ],
+          "question": "缩放点积注意力中除以 $\\sqrt{d_k}$ 的主要作用有哪些？（请选择两个）",
+          "options": [
+            "控制点积分数随 Key 维度增长的尺度",
+            "帮助 softmax 避免过早饱和并保留有效梯度",
+            "把注意力复杂度从平方级变成线性级",
+            "让 Value 向量自动包含位置信息"
+          ]
+        }
+      }
+    ]
+  }
+}

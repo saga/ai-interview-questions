@@ -1,0 +1,1341 @@
+{
+  "version": 1,
+  "generatedAt": 1789077195774,
+  "promptVersion": "v1",
+  "variants": {
+    "agentdual-context-compaction": [
+      {
+        "id": "agentdual-context-compaction__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "一支长流程代码智能体团队发现：对话轮数越多，模型越倾向于提前收尾，任务成功率也随之走低。组内有两个提议：在原位对历史做摘要压缩；清空窗口、只凭上一轮沉淀的结构化交接产物另起新会话。关于这两条路线的效果与代价，下列哪项判断正确？",
+        "options": [
+          "原位摘要腾出空间后，临近上限的草率收尾自然消失；状态交接只是重置路线的事，压缩路线不需要。",
+          "清空窗口、凭结构化交接产物另起会话，能根除窗口长度触发的焦虑，但重建提示与状态让编排更复杂、开销上升。",
+          "重置路线要求智能体实时归档全部局部变量，推理延迟随之指数放大，因此只适合离线批处理任务。",
+          "摘要压缩一定会丢掉决策意图，只有配上实时双向状态通道做补偿的压缩才是可用的。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从窗口长度与收尾质量的关联判断压缩与重置各自能否根除上下文焦虑及各自代价",
+          "reasoningGoal": "先区分窗口占用感是否随方案消除；据此逐项确认「清空窗口、凭结构化交接产物另起会话」成立；并排除「原位摘要腾出空间后焦虑自然消失」「重置要求实时归档全部局部变量」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9e6b0414",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-067bea77",
+        "sourceSnapshot": {
+          "id": "agentdual-context-compaction",
+          "topic": "context-engineering",
+          "subtopic": "context-compaction-reset",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-engineering",
+            "context-window",
+            "context-compaction",
+            "harness"
+          ],
+          "question": "在长流程自主 Code Agent 的 Harness 设计中，针对 Agent 随上下文增长出现的“上下文焦虑”（Context Anxiety，即接近窗口上限时倾向于草率收尾）和性能衰退问题，业界存在上下文压缩（Context Compaction）与上下文重置（Context Reset）两种方案。关于这两种方案的对比与权衡，下列哪项说法是正确的？",
+          "options": [
+            "原位总结释放空间，焦虑自然解除；状态传递是重置方案的事，压缩不需要。",
+            "上下文重置清空窗口并基于结构化 Artifact 转移 Session，状态干净，但增加编排复杂度。",
+            "上下文重置需要 Agent 实时归档所有局部变量，会导致推理延迟指数级增加，因此仅适用于非交互式的离线批处理任务。",
+            "压缩必然丢失决策意图，必须配实时双向状态通道补偿；无补偿的压缩不可用。"
+          ]
+        }
+      },
+      {
+        "id": "agentdual-context-compaction__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "某夜间批量重构任务跑到第 80 轮时，智能体开始跳过测试直接报完工；切到原位摘要后，轮数撑得更久，但临近窗口上限仍提前收尾。值班工程师提议：每 40 轮清空窗口，仅把结构化状态文件交给全新会话继续。关于这一改动的预期效果与代价，下列哪项判断正确？",
+        "options": [
+          "原位总结释放空间，焦虑自然解除；状态传递是重置方案的事，压缩不需要。",
+          "按固定轮数清空窗口、凭状态文件转移会话，状态干净并根除长度触发的焦虑，但增加编排复杂度与开销。",
+          "清空窗口的方案必须让智能体实时归档所有局部变量，延迟呈指数增长，因而无法用于在线交互任务。",
+          "任何摘要压缩都会丢失全部决策意图，只有配上实时双向状态通道做补偿的压缩才有可用性。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从值班故障现象推导定时重置方案的效果归属与新增代价",
+          "reasoningGoal": "先定位提前收尾现象与窗口长度的因果链；再把两种路线的效果与代价逐项比对，确认「按固定轮数清空窗口、凭状态文件另起会话」成立；并排除「继续沿用原位摘要即可彻底消除」「必须实时归档所有局部变量」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9e6b0414",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-5a30be50",
+        "sourceSnapshot": {
+          "id": "agentdual-context-compaction",
+          "topic": "context-engineering",
+          "subtopic": "context-compaction-reset",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-engineering",
+            "context-window",
+            "context-compaction",
+            "harness"
+          ],
+          "question": "在长流程自主 Code Agent 的 Harness 设计中，针对 Agent 随上下文增长出现的“上下文焦虑”（Context Anxiety，即接近窗口上限时倾向于草率收尾）和性能衰退问题，业界存在上下文压缩（Context Compaction）与上下文重置（Context Reset）两种方案。关于这两种方案的对比与权衡，下列哪项说法是正确的？",
+          "options": [
+            "原位总结释放空间，焦虑自然解除；状态传递是重置方案的事，压缩不需要。",
+            "上下文重置清空窗口并基于结构化 Artifact 转移 Session，状态干净，但增加编排复杂度。",
+            "上下文重置需要 Agent 实时归档所有局部变量，会导致推理延迟指数级增加，因此仅适用于非交互式的离线批处理任务。",
+            "压缩必然丢失决策意图，必须配实时双向状态通道补偿；无补偿的压缩不可用。"
+          ]
+        }
+      }
+    ],
+    "agentic-01": [
+      {
+        "id": "agentic-01__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "要向新人讲清智能体与一次性模型调用的本质差异，下列哪项是对其最小运行时闭环最准确的描述？",
+        "options": [
+          "循环执行感知环境、推理决策、执行行动，并把行动后果作为下一轮的输入。",
+          "训练阶段只做模型训练与离线推理，上线后把请求当一次性函数调用，不保留任何运行时状态与跨轮记忆。",
+          "按数据清洗、人工标注、入库归档三步处理语料，保证训练集规模持续增长。",
+          "按蒸馏压缩、量化剪枝、上线部署三步交付模型，保证推理成本持续下降。"
+        ],
+        "angle": "definition",
+        "cognitiveTask": "recall",
+        "assessment": {
+          "target": "能从是否与环境持续交互区分智能体闭环与一次性调用",
+          "reasoningGoal": "先明确智能体定义中不可缺的交互要素；据此逐项确认「循环执行感知环境、推理决策、执行行动」成立；并排除「只做离线拟合与无状态映射」「按清洗标注入库处理语料」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-399816c9",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-19f1322f",
+        "sourceSnapshot": {
+          "id": "agentic-01",
+          "topic": "agent-fundamentals",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent",
+            "loop",
+            "react"
+          ],
+          "question": "一个典型的 AI Agent（智能体）最核心的运行时循环是？",
+          "options": [
+            "感知（Perceive）→ 推理（Reason）→ 行动（Act）的循环",
+            "仅做模型训练与离线推理，把模型当作一次性函数调用而不保留任何运行时状态，也不与环境做持续的交互与反馈，这正是生产级 Agent 的典型形态",
+            "数据清洗 → 标注 → 入库",
+            "模型蒸馏 → 量化 → 部署"
+          ]
+        }
+      },
+      {
+        "id": "agentic-01__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "评审会上两份方案争执不下：甲方案收到用户指令后调一次模型直出结果；乙方案让模型先读环境状态、再选动作执行、看到回执后再定下一步，直至目标达成。按智能体的定义，下列哪项判断正确？",
+        "options": [
+          "乙方案正是感知（Perceive）→推理（Reason）→行动（Act）的循环：读状态、选动作、看回执再定下一步。",
+          "仅做模型训练与离线拟合，把请求当作一次性无状态调用，不保留任何跨轮记忆，也不与环境做持续交互，这才是生产级智能体的典型形态。",
+          "智能体的核心工作是数据清洗、标注、入库三步，甲乙都没覆盖这条流水线所以都不算。",
+          "智能体的核心工作是模型蒸馏、量化、部署三步，甲乙都没覆盖这条流水线所以都不算。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从甲乙两方案的执行形态判定何者符合智能体定义",
+          "reasoningGoal": "先识别两方案在状态保持与环境交互上的差异；再把定义要素逐项套用到甲乙两方案，确认「乙方案读状态、选动作、看回执再循环」成立；并排除「甲方案单次无状态直出才是典型」「核心工作是清洗标注入库」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-399816c9",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-b386ec55",
+        "sourceSnapshot": {
+          "id": "agentic-01",
+          "topic": "agent-fundamentals",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "agent",
+            "loop",
+            "react"
+          ],
+          "question": "一个典型的 AI Agent（智能体）最核心的运行时循环是？",
+          "options": [
+            "感知（Perceive）→ 推理（Reason）→ 行动（Act）的循环",
+            "仅做模型训练与离线推理，把模型当作一次性函数调用而不保留任何运行时状态，也不与环境做持续的交互与反馈，这正是生产级 Agent 的典型形态",
+            "数据清洗 → 标注 → 入库",
+            "模型蒸馏 → 量化 → 部署"
+          ]
+        }
+      }
+    ],
+    "agentic-43": [
+      {
+        "id": "agentic-43__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "允许智能体改写自身系统提示词能带来自我改进，但也打开了持久化污染与约束弱化的口子。若要在保留改进能力的前提下管住风险，下列哪种折中安排最合理？",
+        "options": [
+          "授予完整改写权限并立即生效，改进回路越短，自我进化的速度与收益就越大。",
+          "改写先进入提案区，经安全条款校验与人工审批后再版本化发布，全程可回滚、可审计。",
+          "外部注入写进提示词只影响当前一轮，轮次结束自动失效，所以改写流程不需要审计与版本管理。",
+          "系统提示词只是普通运行时配置，改动它不触及安全约束，调整时无需额外设限。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从自指修改的风险链推导提案区加校验加审批这一折中的必要性",
+          "reasoningGoal": "先拆出自我改进收益与持久化污染风险的取舍维度；再把候选方案逐项对照三个风险点，确认「改写先进入提案区版本化发布」成立；并排除「授予完整改写权限立即生效」「注入只影响当前一轮」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5bfed687",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-3909e2b8",
+        "sourceSnapshot": {
+          "id": "agentic-43",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "system-prompt",
+            "self-modification",
+            "safety"
+          ],
+          "question": "Agent 是否应该被允许修改自己的 system prompt？请从能力与风险两方面论证，并给出你认为合理的折中方案。",
+          "options": [
+            "允许 Agent 直接修改任意条款并立即生效，这样自我改进速度最快、收益最大。",
+            "修改先写入提案区，经规则校验（安全条款列为不可触碰的白名单禁区）与人工审批后版本化发布，全程保留回滚与审计记录。",
+            "持久化注入的危害仅限于当前对话轮次，对话结束后恶意指令会自动消失，因此提示词修改无需审计、版本管理或白名单禁区。",
+            "系统提示词是运行时可随意调整的普通配置，修改它不会影响安全约束的有效性。"
+          ]
+        }
+      },
+      {
+        "id": "agentic-43__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "某运营智能体获准自改提示词后接连出事：抓网页时混入的指令被永久写进提示词；一次自改悄悄放宽了内容审核；审计时没人能还原提示词被改过几版。既不想关掉自改进，又要堵住这三个口子，下列哪种方案最合理？",
+        "options": [
+          "允许 Agent 直接修改任意条款并立即生效，用更高频的自我迭代覆盖掉已混入的污染。",
+          "任何自改先落入提案区暂存，安全条款设为不可触碰的禁区并经人工审批后版本化发布，全程保留回滚链与审计记录。",
+          "注入提示词的危害随对话结束自动清零，因此只需加强单轮输入过滤，无需版本管理、白名单禁区或审计。",
+          "把系统提示词降级为普通运行时配置看待，自改不影响安全约束效力，也就无需审批与回滚。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从三次事故的成因解释提案区隔离加禁区加审计为何是必备组合",
+          "reasoningGoal": "先复现污染持久化、约束弱化、无审计三起事故各自的形成过程；再据此逐项验证候选方案能否堵住对应口子，确认「自改先落入提案区暂存加审批版本化发布」成立；并排除「维持直接改写即改即生效」「危害随对话结束自动清零」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5bfed687",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-6f10519a",
+        "sourceSnapshot": {
+          "id": "agentic-43",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "system-prompt",
+            "self-modification",
+            "safety"
+          ],
+          "question": "Agent 是否应该被允许修改自己的 system prompt？请从能力与风险两方面论证，并给出你认为合理的折中方案。",
+          "options": [
+            "允许 Agent 直接修改任意条款并立即生效，这样自我改进速度最快、收益最大。",
+            "修改先写入提案区，经规则校验（安全条款列为不可触碰的白名单禁区）与人工审批后版本化发布，全程保留回滚与审计记录。",
+            "持久化注入的危害仅限于当前对话轮次，对话结束后恶意指令会自动消失，因此提示词修改无需审计、版本管理或白名单禁区。",
+            "系统提示词是运行时可随意调整的普通配置，修改它不会影响安全约束的有效性。"
+          ]
+        }
+      }
+    ],
+    "agentic-62": [
+      {
+        "id": "agentic-62__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "某客服助手采用思考、行动、观察的循环自主调用工具，测试中出现反复查同一订单、偶发调错接口、参数缺字段导致刷屏重试。下列哪项既准确描述该循环机制，又给出了配套的工程护栏？",
+        "options": [
+          "开发者必须预先编排好动作顺序，模型只负责填充参数；规划与执行严格分离。",
+          "每次观察都直接写入模型权重做在线微调，用参数记忆代替上下文传递工具结果。",
+          "思考做推理、行动选工具传参、观察写回上下文；护栏包括迭代上限、重复检测、工具示例、参数校验与用量上限。",
+          "每次行动前都必须经人工逐项确认，批量授权必然漏掉中间风险，所以不能用。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从三类线上症状反推循环机制的正确理解与缺失的护栏",
+          "reasoningGoal": "先把重复查询、调错接口、刷屏重试三类症状映射到循环的对应环节；再据此逐项确认「思考做推理、行动选工具传参、观察写回」成立；并排除「动作顺序必须预先编排」「观察直接写入模型权重」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-832bdda8",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-ae4db641",
+        "sourceSnapshot": {
+          "id": "agentic-62",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "react",
+            "thought-action-observation",
+            "loop-guard"
+          ],
+          "question": "ReAct 模式让 Agent 以 Thought → Action → Observation 循环执行任务。请解释该循环的运作机制、四种典型失败模式及对应的工程护栏。",
+          "options": [
+            "ReAct 中 Action 必须由开发者预先编排好顺序，模型只负责填参数；规划与执行分离。",
+            "Observation 直接进入模型权重进行微调，从而记住工具返回结果；在线学习即记忆。",
+            "Thought 推理、Action 选工具传参、Observation 写回；护栏：迭代上限、重复检测、工具示例、参数校验、次数上限。",
+            "确认环节放在 Thought 之后 Action 之前逐次进行，细粒度确认最安全；批量授权会漏掉中间风险。"
+          ]
+        }
+      },
+      {
+        "id": "agentic-62__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "复盘两种实现：甲系统把工具调用顺序写死在代码里，模型只填参数；乙系统让模型每轮先推理状态、再选工具传参、把返回写回上下文后决定下一步。关于甲乙与思考行动观察循环的关系，下列哪项判断正确？",
+        "options": [
+          "甲系统才是正统：Action 须由开发者预先编排好顺序，模型只负责填参数，规划与执行分离。",
+          "该循环的观察直接进入模型权重做微调从而记住返回结果，甲乙都没更新权重所以两者都不算。",
+          "乙系统先推理再行动、观察写回驱动下一轮，正是该循环区别于写死顺序的本质；同时需要迭代上限、重复检测、参数校验与用量上限兜底。",
+          "人工确认必须插在每次思考与行动之间逐项进行，乙系统缺了它就不安全，批量授权不可接受。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从甲乙两实现的控制流差异判定何者符合思考行动观察循环",
+          "reasoningGoal": "先对齐甲乙在控制流归属上的可比维度；再把循环定义逐项套用到两系统，确认「乙系统先推理再行动、观察写回驱动下一轮」成立；并排除「甲系统才是正统实现」「观察环节靠在线微调更新权重」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-832bdda8",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-d453f06c",
+        "sourceSnapshot": {
+          "id": "agentic-62",
+          "topic": "agent-loop",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "react",
+            "thought-action-observation",
+            "loop-guard"
+          ],
+          "question": "ReAct 模式让 Agent 以 Thought → Action → Observation 循环执行任务。请解释该循环的运作机制、四种典型失败模式及对应的工程护栏。",
+          "options": [
+            "ReAct 中 Action 必须由开发者预先编排好顺序，模型只负责填参数；规划与执行分离。",
+            "Observation 直接进入模型权重进行微调，从而记住工具返回结果；在线学习即记忆。",
+            "Thought 推理、Action 选工具传参、Observation 写回；护栏：迭代上限、重复检测、工具示例、参数校验、次数上限。",
+            "确认环节放在 Thought 之后 Action 之前逐次进行，细粒度确认最安全；批量授权会漏掉中间风险。"
+          ]
+        }
+      }
+    ],
+    "ai-agent-001": [
+      {
+        "id": "ai-agent-001__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "一家家电厂商的售后客服日均承接八千次咨询：约九成是知识库内的固定问答，一成需实时查订单与工单状态，极少数复杂纠纷才要多步协调。团队仅四人、运维能力有限，要求可控可测、故障可快速定位。最合适的架构是？",
+        "options": [
+          "固定流程承载高频问答、参数受限工具承载查单、前端轻量分流，复杂纠纷进受控多步。",
+          "构建完全自主的自由智能体，每个请求都自主规划多步行动，用最大灵活度应对一切变化。",
+          "客服问题八成是固定问答，纯检索覆盖主体即可；查单走兜底话术应付，工具链路二期再建。",
+          "意图分流先不上，先全量检索上线验证需求；等真实出现查单失败案例再补工具注册。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从请求分布与团队约束推导固定流程加受限工具这一混合架构的合理性",
+          "reasoningGoal": "先识别高频确定性问答与低频查单各自的约束；再把候选架构逐项对照可控可测的要求，确认「固定流程承载高频问答、受限工具承载查单」成立；并排除「构建完全自主的自由智能体」「查单走兜底话术应付」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9f083522",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-926c643b",
+        "sourceSnapshot": {
+          "id": "ai-agent-001",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent",
+            "rag",
+            "workflow",
+            "decision"
+          ],
+          "question": "一个客服系统主要回答企业知识库中的固定问题，偶尔需要查询订单状态。你会设计成纯 RAG、Workflow 还是 Agent？为什么？",
+          "options": [
+            "Workflow+RAG+受控工具混合：FAQ 走固定流程，订单查询用参数受限工具，前端轻量分流，复杂场景进受控多步。",
+            "打造完全自主的自由 Agent，让模型对每个请求自主规划多步行动，以最大灵活度应对一切变化",
+            "客服问题 8 成是 FAQ，纯 RAG 覆盖主体；订单查询走 FAQ 兜底话术，工具链路二期再建。",
+            "意图分流可后置，先全量 RAG 上线验证需求；工具注册等真实出现订单查询失败案例再补。"
+          ]
+        }
+      },
+      {
+        "id": "ai-agent-001__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "上线三个月后复盘：固定问答稳定，但查单请求常被话术敷衍引发投诉；有人主张全面改成自主智能体，有人主张维持现状。已知团队仍只有四人，故障定位仍是首要诉求。下一步最合理的架构调整是？",
+        "options": [
+          "保留固定流程承载高频问答，把查单注册为参数受限工具并补上前端分流，复杂纠纷进受控多步。",
+          "推倒重做为完全自主的自由智能体，让模型对每个请求自主规划多步行动，灵活性优先于可观测性。",
+          "查单继续用兜底话术覆盖，把人力投到扩充问答库，工具链路等投诉升级后再建。",
+          "先撤掉现有分流全量改检索，等新一轮失败样本攒够，再决定是否注册查单工具。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从投诉复盘数据判断补齐受限查单工具比分流推倒重来更合理",
+          "reasoningGoal": "先定位投诉集中在查单被话术敷衍这一直接诱因；再评估各调整方案的成本与风险，确认「保留固定问答流程、把查单注册为受限工具」成立；并排除「推倒重做为完全自主智能体」「查单继续用兜底话术覆盖」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9f083522",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-fb2b5912",
+        "sourceSnapshot": {
+          "id": "ai-agent-001",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent",
+            "rag",
+            "workflow",
+            "decision"
+          ],
+          "question": "一个客服系统主要回答企业知识库中的固定问题，偶尔需要查询订单状态。你会设计成纯 RAG、Workflow 还是 Agent？为什么？",
+          "options": [
+            "Workflow+RAG+受控工具混合：FAQ 走固定流程，订单查询用参数受限工具，前端轻量分流，复杂场景进受控多步。",
+            "打造完全自主的自由 Agent，让模型对每个请求自主规划多步行动，以最大灵活度应对一切变化",
+            "客服问题 8 成是 FAQ，纯 RAG 覆盖主体；订单查询走 FAQ 兜底话术，工具链路二期再建。",
+            "意图分流可后置，先全量 RAG 上线验证需求；工具注册等真实出现订单查询失败案例再补。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-001": [
+      {
+        "id": "ai-eng-001__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "一条文档处理流水线每天跑数万份文件：读取、提文本、清洗、入库、摘要五步顺序固定，输入输出契约清晰，从未需要按中间结果改流程。下列哪种架构选择最合理？",
+        "options": [
+          "用确定性编排串起五步流水线；无运行时决策时引入自主决策只会徒增不可预测性与排查成本。",
+          "做成自主决策系统，每次运行都由模型自行决定下一步，用灵活性对冲未来的流程变化。",
+          "两种形态实质等价，只要输出正确，架构不影响可靠性与排查效率，选哪个只是风格偏好。",
+          "做成自主决策加人工抽查兜底，因为固定流水线无法对单步契约做单元测试验证。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从流程固定无分支这一条件推导确定性编排优于自主决策的结论",
+          "reasoningGoal": "先确认流程是否存在运行时决策点；再把候选架构逐项对照可复现可审计的要求，确认「用确定性编排串起五步流水线」成立；并排除「做成自主决策系统自行决定下一步」「两种形态实质等价」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f52cda58",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-d4f0930f",
+        "sourceSnapshot": {
+          "id": "ai-eng-001",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "workflow",
+            "agent",
+            "architecture",
+            "scenario"
+          ],
+          "question": "一个系统需要依次执行“读取 PDF → 提取文本 → 清洗文本 → 写入数据库 → 生成摘要”，每一步的输入和输出都已经确定，没有运行时决策。你会把它设计成 Agent，还是普通 Workflow？为什么？",
+          "options": [
+            "采用确定性 Workflow 编排五步流水线：步骤与顺序固定、无运行时决策时引入 Agent，只会徒增不可预测性、成本与调试负担",
+            "实现成自主 Agent，由模型在每次运行时自行决定下一步动作，以最大灵活度应对未来可能的流程变化",
+            "两种形态并无实质差别，只要最终输出正确，架构不会影响可靠性与排查效率，因此用自主 Agent 替换固定流水线不会带来任何可观测性或回归测试上的损失，二者在工程上完全等价，选择哪种只是风格偏好",
+            "做成 Agent 并辅以人工抽查兜底，因为固定流水线无法对每步的输入输出契约做单元测试验证"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-001__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "某保单数字化项目每月处理十万份扫描件，流程固定五步且监管要求全程可复现、可审计。架构评审时，一方主张确定性流水线，另一方主张自主决策加人工抽查。下列哪项判断正确？",
+        "options": [
+          "确定性流水线优先：步骤契约清晰且无分支时，自主决策的自由度只会损害可复现性并推高成本。",
+          "自主决策优先：由模型临场决定每步动作，灵活性天然覆盖监管对可复现可审计的要求。",
+          "两者在可靠性与排查效率上完全等价，架构选型不影响回归测试，凭团队偏好决定即可。",
+          "做成自主决策并辅以人工抽查兜底，因为固定流水线的单步契约无法做单元测试验证。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从可复现可审计的监管约束解释确定性流水线不可替代的机理",
+          "reasoningGoal": "先复现监管约束对执行确定性的传导链条；再据此逐项验证两种主张是否满足约束，确认「确定性流水线优先」成立；并排除「自主决策优先」「两者完全等价」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f52cda58",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-97ac2523",
+        "sourceSnapshot": {
+          "id": "ai-eng-001",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "workflow",
+            "agent",
+            "architecture",
+            "scenario"
+          ],
+          "question": "一个系统需要依次执行“读取 PDF → 提取文本 → 清洗文本 → 写入数据库 → 生成摘要”，每一步的输入和输出都已经确定，没有运行时决策。你会把它设计成 Agent，还是普通 Workflow？为什么？",
+          "options": [
+            "采用确定性 Workflow 编排五步流水线：步骤与顺序固定、无运行时决策时引入 Agent，只会徒增不可预测性、成本与调试负担",
+            "实现成自主 Agent，由模型在每次运行时自行决定下一步动作，以最大灵活度应对未来可能的流程变化",
+            "两种形态并无实质差别，只要最终输出正确，架构不会影响可靠性与排查效率，因此用自主 Agent 替换固定流水线不会带来任何可观测性或回归测试上的损失，二者在工程上完全等价，选择哪种只是风格偏好",
+            "做成 Agent 并辅以人工抽查兜底，因为固定流水线无法对每步的输入输出契约做单元测试验证"
+          ]
+        }
+      }
+    ],
+    "ai-eng-002": [
+      {
+        "id": "ai-eng-002__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "一条含 20 个固定步骤的客服工单流水线，其中 3 处需理解用户自由表述后在若干分支中抉择。过去全靠关键词规则，分叉点错误频发；但整体改成自主决策又怕其余 17 个稳定步骤难以回归测试。最合理的架构调整是？",
+        "options": [
+          "把 20 步整体改造为自由决策，全部交由模型运行时自主规划调度，一步到位获得灵活性。",
+          "三处分叉继续沿用关键词规则并扩充词典，任何模型参与决策都会破坏系统的确定性。",
+          "主干保持显式编排，仅在三个语义分叉点嵌入限定分支集合的受限决策节点，兼顾可靠与灵活。",
+          "把 20 步压缩为一次端到端调用，彻底消除多步编排带来的额外开销。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 20 步中仅 3 处需语义判断这一结构推导主干编排加受限决策点的方案",
+          "reasoningGoal": "先识别三处分叉与十七个稳定步骤各自的约束；再把候选方案逐项对照可靠性与灵活性的双重要求，确认「主干保持显式编排、仅分叉点嵌入受限决策节点」成立；并排除「把 20 步整体改造为自由决策」「继续沿用关键词规则」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b398c190",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-b3967a8f",
+        "sourceSnapshot": {
+          "id": "ai-eng-002",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "workflow",
+            "agent",
+            "trade-off"
+          ],
+          "question": "一个客服系统有 20 个固定步骤，其中 3 个步骤需要根据用户意图选择不同分支。你会把整个系统做成 Agent，还是 Workflow + LLM 决策节点？为什么？",
+          "options": [
+            "整体改造为自由 Agent，二十个步骤全部交由模型在运行时自主规划调度，一步到位获得灵活性",
+            "三处分叉点继续沿用关键词规则并扩充词典，任何 LLM 参与决策都会破坏系统的确定性",
+            "保持 Workflow 显式编排主干流程，仅在三个语义分叉点嵌入受限的 LLM 决策节点（限定可选分支集合），兼顾可靠性与灵活性",
+            "将二十个步骤压缩为一次端到端的 LLM 调用，彻底消除多步编排带来的额外开销"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-002__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "接上题 20 步的工单系统：试点把 3 处分叉换成受限决策节点后，分叉错误率下降，但有人提议把剩下 17 个稳定步骤也交给模型统一调度，也有人提议退回纯关键词。关于下一步，下列哪项判断正确？",
+        "options": [
+          "把二十个步骤整体改造为自由决策，全部交由模型临场自主规划调度，一步到位换灵活性。",
+          "退回纯关键词规则并继续扩充词典，彻底杜绝模型参与决策带来的不确定性。",
+          "维持主干显式编排加三处受限决策节点的格局：稳定步骤的回归测试资产与分叉点的语义能力各得其所。",
+          "把二十个步骤压缩为一次端到端调用，用一次推理替代整条流水线，彻底省掉多步编排代码。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从试点数据解释维持编排主干加受限决策点格局的机理",
+          "reasoningGoal": "先复现试点中错误率下降与回归测试资产各自的来源；再据此逐项评估激进与保守两个方向的代价，确认「维持主干显式编排加三处受限决策节点」成立；并排除「把 20 步全量改为自由决策」「退回纯关键词规则」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b398c190",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-f5febf49",
+        "sourceSnapshot": {
+          "id": "ai-eng-002",
+          "topic": "agent-fundamentals",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "workflow",
+            "agent",
+            "trade-off"
+          ],
+          "question": "一个客服系统有 20 个固定步骤，其中 3 个步骤需要根据用户意图选择不同分支。你会把整个系统做成 Agent，还是 Workflow + LLM 决策节点？为什么？",
+          "options": [
+            "整体改造为自由 Agent，二十个步骤全部交由模型在运行时自主规划调度，一步到位获得灵活性",
+            "三处分叉点继续沿用关键词规则并扩充词典，任何 LLM 参与决策都会破坏系统的确定性",
+            "保持 Workflow 显式编排主干流程，仅在三个语义分叉点嵌入受限的 LLM 决策节点（限定可选分支集合），兼顾可靠性与灵活性",
+            "将二十个步骤压缩为一次端到端的 LLM 调用，彻底消除多步编排带来的额外开销"
+          ]
+        }
+      }
+    ],
+    "ai-eng-003": [
+      {
+        "id": "ai-eng-003__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "三人团队要在两个月内交付首个发票整理录入助手，预算紧张，要求先以最小成本跑通可用闭环，再按真实反馈增强，严禁首版堆砌高级模块。首版至少应包含哪些组件？",
+        "options": [
+          "首版就必须内置长期记忆、自我反思与多智能体协作，否则达不到合格产品的门槛。",
+          "模型推理、工具调用、状态维护、执行循环与终止条件；规划记忆反思等验证价值后再叠加。",
+          "采购足够大的上下文窗口从而省去执行循环，凭单次推理完成整批发票的处理。",
+          "不设终止条件，任务何时结束由财务人员事后人工关闭进程即可，终止判定只增复杂度。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从最小闭环的构成解释推理加工具加状态加循环加终止缺一不可的机理",
+          "reasoningGoal": "先复现可用闭环从输入到落库必须经过的环节；再据此逐项检验候选清单是否覆盖全部环节，确认「模型推理、工具调用、状态维护、执行循环与终止条件」成立；并排除「首版就必须内置长期记忆」「采购大窗口省去执行循环」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5fe38953",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-234fdf8d",
+        "sourceSnapshot": {
+          "id": "ai-eng-003",
+          "topic": "agent-fundamentals",
+          "angle": "design",
+          "difficulty": "easy",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-fundamentals",
+            "architecture"
+          ],
+          "question": "如果让你从零设计一个最小可用的 AI Agent，你认为至少需要哪些核心组件？请说明每个组件的职责。",
+          "options": [
+            "除基础模块外，第一版必须内置长期记忆、自我反思与多智能体协作，否则达不到合格 Agent 产品的门槛",
+            "LLM 推理、工具调用、状态/上下文维护、执行循环与终止条件；规划增强、长期记忆、反思等能力待验证价值后再逐步叠加",
+            "采购足够大的上下文窗口从而省去执行循环，凭单次推理完成整批发票的处理",
+            "不设终止条件，任务何时结束由财务人员事后人工关闭进程即可，因为 Agent 总能自行收敛，终止判定只会增加复杂度。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-003__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "接上题：首版上线后，有人要求立刻加上长期记忆与自我反思，有人提议把执行循环也砍掉、靠超大窗口一次跑完。创始人坚持至少跑通三个真实客户的反馈周期再谈增强。下列哪项判断正确？",
+        "options": [
+          "长期记忆、自我反思与多智能体协作必须首版就全量内置，否则连合格门槛都达不到。",
+          "守住推理、工具、状态、循环、终止的最小集合跑完反馈周期；记忆反思等按验证过的价值再排期。",
+          "砍掉执行循环：窗口堆到足够大后，单次推理即可完成整批发票的处理，循环纯属冗余。",
+          "终止条件继续不设，何时停由客户人工关进程，助手总能自行收敛。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从创始人至少跑通三个反馈周期的约束判定守住最小集合再增强的路线",
+          "reasoningGoal": "先识别增强诉求与反馈周期约束之间的冲突点；再把候选路线逐项对照最小成本跑通闭环的目标，确认「守住最小集合跑完反馈周期」成立；并排除「立刻全量加上记忆反思」「砍掉执行循环改单次推理」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5fe38953",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-17808e1b",
+        "sourceSnapshot": {
+          "id": "ai-eng-003",
+          "topic": "agent-fundamentals",
+          "angle": "design",
+          "difficulty": "easy",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-fundamentals",
+            "architecture"
+          ],
+          "question": "如果让你从零设计一个最小可用的 AI Agent，你认为至少需要哪些核心组件？请说明每个组件的职责。",
+          "options": [
+            "除基础模块外，第一版必须内置长期记忆、自我反思与多智能体协作，否则达不到合格 Agent 产品的门槛",
+            "LLM 推理、工具调用、状态/上下文维护、执行循环与终止条件；规划增强、长期记忆、反思等能力待验证价值后再逐步叠加",
+            "采购足够大的上下文窗口从而省去执行循环，凭单次推理完成整批发票的处理",
+            "不设终止条件，任务何时结束由财务人员事后人工关闭进程即可，因为 Agent 总能自行收敛，终止判定只会增加复杂度。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-007": [
+      {
+        "id": "ai-eng-007__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "对比两种工具调用设计：甲设计一次调用模型定死后续全部动作；乙设计让模型在推理、行动、观察之间来回多轮，按最新返回随时改计划。关于乙设计思想及其与甲的本质区别，下列哪项说法正确？",
+        "options": [
+          "乙设计在任务开始前一次性生成完整行动脚本，执行阶段严格照搬脚本不做任何调整。",
+          "乙设计让模型交替做推理、行动与观察，按最新工具返回动态改后续步骤，这正是甲设计做不到的。",
+          "乙设计把推理与行动分给两个互不通信的独立模块，各自产出后由第三方做最终拼接。",
+          "乙设计的多轮调用开销可被缓存完全吸收，动态收益通常覆盖成本，可作默认起步。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从控制流归属解释多轮按观察改计划这一思想与一次性定死动作的本质区别",
+          "reasoningGoal": "先复现两种设计下计划何时以何种依据被调整；再据此逐项确认「交替做推理、行动与观察，按最新返回动态改计划」成立；并排除「开始前一次性生成完整脚本」「推理与行动分给互不通信模块」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-10727b67",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-7d92400d",
+        "sourceSnapshot": {
+          "id": "ai-eng-007",
+          "topic": "agent-loop",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "ReAct",
+            "reasoning",
+            "tool-calling"
+          ],
+          "question": "请解释 ReAct 类 Agent 的基本思想。它与一个只调用一次 LLM 然后执行工具的系统有什么本质区别？",
+          "options": [
+            "ReAct 在任务开始前一次性生成完整的行动脚本，执行阶段严格照搬脚本不做任何调整",
+            "ReAct 让模型交替进行推理、行动与观察，并根据最新的工具返回动态调整后续步骤，这是它与一次性调用无法适应中间结果的本质区别",
+            "ReAct 将推理与行动分配给两个互不通信的独立模块，各自产出结果后由第三方做最终拼接",
+            "ReAct 的多轮调用开销可被 KV 复用与缓存吸收，动态适应收益通常覆盖成本；可作默认起步，失败再回退。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-007__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "某订票助手上线后暴露问题：航班售罄时仍按原计划继续订酒店，全程不看中间返回。排查发现实现是一次定死动作的甲设计。改成按观察动态改计划的乙设计时，下列哪项理解正确？",
+        "options": [
+          "乙设计同样要求在任务开始前一次性生成完整脚本，售罄属于执行异常，应由重试而非改计划解决。",
+          "乙设计让模型交替进行推理、选行动与观察写回，并根据最新返回动态重定计划，售罄这类中间变化会被下一轮消化。",
+          "乙设计把推理与行动拆给互不通信的模块，售罄信息由第三方拼接到最终结果即可。",
+          "乙设计多轮调用的开销有缓存复用兜底，动态适应的收益通常覆盖成本，失败再回退即可。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从售罄后仍继续订酒店的事故判定改成按观察改计划的方案成立",
+          "reasoningGoal": "先定位事故根因在计划定死后不再消费中间返回；再把候选理解逐项对照事故链条，确认「每轮先推理状态、再选行动、观察写回后重定计划」成立；并排除「开工前写死完整脚本」「推理与行动拆给互不通信模块」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-10727b67",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-3a5f4086",
+        "sourceSnapshot": {
+          "id": "ai-eng-007",
+          "topic": "agent-loop",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "ReAct",
+            "reasoning",
+            "tool-calling"
+          ],
+          "question": "请解释 ReAct 类 Agent 的基本思想。它与一个只调用一次 LLM 然后执行工具的系统有什么本质区别？",
+          "options": [
+            "ReAct 在任务开始前一次性生成完整的行动脚本，执行阶段严格照搬脚本不做任何调整",
+            "ReAct 让模型交替进行推理、行动与观察，并根据最新的工具返回动态调整后续步骤，这是它与一次性调用无法适应中间结果的本质区别",
+            "ReAct 将推理与行动分配给两个互不通信的独立模块，各自产出结果后由第三方做最终拼接",
+            "ReAct 的多轮调用开销可被 KV 复用与缓存吸收，动态适应收益通常覆盖成本；可作默认起步，失败再回退。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-011": [
+      {
+        "id": "ai-eng-011__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "一个调研助手反复执行检索与分析却不收敛：日志无异常，任务挂起数小时，烧掉近三成用量预算。若要系统性地管住这类僵尸任务，下列哪套终止机制最合理？",
+        "options": [
+          "循环无报错即运行健康，应上调迭代上限让模型继续探索，直至自行宣布任务完成。",
+          "终止条件由用户每次发起任务时手工指定，系统层面无需内置预算与超时，硬上限会误杀探索。",
+          "检测到重复检索时自动放大检索范围并提高迭代上限，检索不充分就该给更多机会。",
+          "组合多项保障：最大步数与用量预算上限、明确的完成判定、重复与无进展检测，并支持显式宣告失败终止。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从僵尸任务烧预算的现象推导组合式终止保障的必要性",
+          "reasoningGoal": "先定位无异常却不收敛这一现象的直接诱因；再把候选机制逐项对照止损与收敛的双重目标，确认「最大步数与用量预算上限加完成判定加重复检测」成立；并排除「无报错即健康应上调上限」「终止条件全交用户手工指定」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c3ae90f3",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-a4f8e207",
+        "sourceSnapshot": {
+          "id": "ai-eng-011",
+          "topic": "agent-loop",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-loop",
+            "termination",
+            "reliability",
+            "debugging"
+          ],
+          "question": "一个 Research Agent 经常出现 search → analyze → search → analyze 的无限循环。没有任何异常，但 Agent 无法结束任务。你会如何设计 termination mechanism？",
+          "options": [
+            "循环没有报错即代表运行健康，应上调迭代上限让模型继续探索，直至其自行宣布任务完成",
+            "终止条件由用户每次发起任务时手工指定，系统层面无需内置预算与超时机制，因为任务差异大，硬上限会误杀有价值的探索。",
+            "检测到重复相同的搜索调用时，自动放大检索范围并提高迭代上限，充分利用“检索尚不充分”这一信号",
+            "组合多项保障：最大迭代步数与 token/费用预算上限、明确的完成条件判定、重复调用与无进展检测，并支持显式宣告失败终止，而非无限重试"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-011__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "咨询公司的简报助手上周出现三成僵尸任务：检索与分析来回打转，直到撞上平台十二小时强制超时。工程组讨论三种 amendment：放开上限、用户自定超时、放大检索范围。下列哪项判断正确？",
+        "options": [
+          "放开迭代上限最治本：无报错的循环本质健康，多给时间模型终会自行收敛。",
+          "把终止条件完全交给用户每次手工填写，系统不设任何内置预算与超时，任务差异大不该一刀切。",
+          "重复检索时自动放大检索范围并同步提高上限，充分利用检索尚不充分这一信号，给探索让路。",
+          "三种 amendment 都治标不治本；应内置步数与用量预算上限、完成判定、重复与无进展检测，并允许显式宣告失败。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从三种 amendment 的失效机理解释内置组合保障不可替代的原因",
+          "reasoningGoal": "先复现放开上限、自定超时、放大检索三条路为何拦不住打转；再据此逐项确认「内置步数与用量预算上限、完成判定、重复检测」成立；并排除「放开迭代上限最治本」「终止条件完全交给用户」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c3ae90f3",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-5bc4b19e",
+        "sourceSnapshot": {
+          "id": "ai-eng-011",
+          "topic": "agent-loop",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-loop",
+            "termination",
+            "reliability",
+            "debugging"
+          ],
+          "question": "一个 Research Agent 经常出现 search → analyze → search → analyze 的无限循环。没有任何异常，但 Agent 无法结束任务。你会如何设计 termination mechanism？",
+          "options": [
+            "循环没有报错即代表运行健康，应上调迭代上限让模型继续探索，直至其自行宣布任务完成",
+            "终止条件由用户每次发起任务时手工指定，系统层面无需内置预算与超时机制，因为任务差异大，硬上限会误杀有价值的探索。",
+            "检测到重复相同的搜索调用时，自动放大检索范围并提高迭代上限，充分利用“检索尚不充分”这一信号",
+            "组合多项保障：最大迭代步数与 token/费用预算上限、明确的完成条件判定、重复调用与无进展检测，并支持显式宣告失败终止，而非无限重试"
+          ]
+        }
+      }
+    ],
+    "ai-eng-061": [
+      {
+        "id": "ai-eng-061__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "某电商客服智能体要自动解决 60% 的工单（每月 200 万张）：查单问答可自动办，欺诈投诉必须秒转人工。关于分流层数、判定信号与置信度设计，下列哪项方案最合理？",
+        "options": [
+          "单看意图分类分数过阈值就自动解决，其余全转人工；单阈值即完整分流策略，简单可解释。",
+          "分三层：高置信低风险自动办、中置信人工审后发、法律威胁与高价值客户及低置信秒转人工；置信多维加权，显式转人工走硬规则。",
+          "先全量自动跑起来沉淀失败样本，高风险工单靠事后审计覆盖；飞轮优先，收紧以后再说。",
+          "按问题文字长度路由：短问题自动答，长问题转人工；长度与复杂度正相关，无需多维加权。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从自动解决率与高代价误判的冲突推导三层加多维置信这一结构的合理性",
+          "reasoningGoal": "先拆出 60% 自动解决率与欺诈误判代价之间的取舍维度；再把候选方案逐项对照两类风险，确认「分三层、置信多维加权、显式转人工走硬规则」成立；并排除「单看意图分数过阈值」「按文字长度路由」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e77fc569",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-64032bcf",
+        "sourceSnapshot": {
+          "id": "ai-eng-061",
+          "topic": "agent-fundamentals",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "three-tier-routing",
+            "confidence-signals",
+            "escalation",
+            "auto-resolution"
+          ],
+          "question": "电商客服 AI 要自动解决 60% 的工单（200 万张/月），同时\"Where is my order?\"自动处理、\"我要告你们欺诈\"必须立即转人工。请设计分流架构：分几层、每层的判定信号是什么、以及为什么置信度必须多维。",
+          "options": [
+            "只要意图分类器的置信度超过阈值就自动解决，其余全部转人工；单阈值即分流策略，简单可解释。",
+            "三层路由：高置信低风险 Auto，中置信 Hybrid 人工审核，法律威胁/VIP/低置信 Escalate；置信度多维加权，转人工是硬规则。",
+            "AI 先行可沉淀失败样本训练下一版，高风险工单由事后审计覆盖；先跑起来再收紧，飞轮优先。",
+            "按文字长度路由：短问题自动回答，长问题转人工；长度与复杂度正相关，简单高效，无需多维加权。"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-061__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "大促期间客服智能体翻车：一位高价值客户问简单查单被自动答错，愤然投诉；另一起按规定必须秒转人工的欺诈指控被自动回复安抚，引发法务警报。已知当月工单 200 万张、自动解决率目标 60% 不变。复盘后最合理的调整是？",
+        "options": [
+          "维持单看意图分类分数过阈值就自动解决，其余全转人工；把阈值调高一档即可同时管住高价值客户与欺诈场景。",
+          "切到三层结构：简单低风险自动办、退款类先起草后人审、欺诈与高价值客户及低置信秒转人工；置信按意图、情绪、客户等级、主题风险多维加权。",
+          "继续全量自动以沉淀更多失败样本，两起事故计入训练集即可，事后审计足以覆盖。",
+          "改按文字长度路由：长问题一律转人工，两起事故的问题都不短，新规则下不会发生。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从两起翻车事故的成因解释单维阈值为何必然漏掉高代价场景",
+          "reasoningGoal": "先复现自动答错高价值客户与自动安抚欺诈指控各自的形成链条；再据此逐项验证候选调整能否堵住同类漏洞，确认「切到三层结构、置信多维加权」成立；并排除「维持单阈值调高一档」「继续全量自动沉淀样本」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e77fc569",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-0b1f3d45",
+        "sourceSnapshot": {
+          "id": "ai-eng-061",
+          "topic": "agent-fundamentals",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "three-tier-routing",
+            "confidence-signals",
+            "escalation",
+            "auto-resolution"
+          ],
+          "question": "电商客服 AI 要自动解决 60% 的工单（200 万张/月），同时\"Where is my order?\"自动处理、\"我要告你们欺诈\"必须立即转人工。请设计分流架构：分几层、每层的判定信号是什么、以及为什么置信度必须多维。",
+          "options": [
+            "只要意图分类器的置信度超过阈值就自动解决，其余全部转人工；单阈值即分流策略，简单可解释。",
+            "三层路由：高置信低风险 Auto，中置信 Hybrid 人工审核，法律威胁/VIP/低置信 Escalate；置信度多维加权，转人工是硬规则。",
+            "AI 先行可沉淀失败样本训练下一版，高风险工单由事后审计覆盖；先跑起来再收紧，飞轮优先。",
+            "按文字长度路由：短问题自动回答，长问题转人工；长度与复杂度正相关，简单高效，无需多维加权。"
+          ]
+        }
+      }
+    ],
+    "eth-06": [
+      {
+        "id": "eth-06__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "某助手返回的 Markdown 代码块夹带恶意脚本，前端直接渲染后触发存储型跨站攻击；另一处把模型生成的代码交由后端动态执行，导致远程命令执行。下列哪项是从根上解决这类隐患的架构实践？",
+        "options": [
+          "在系统提示词里要求模型不生成任何恶意代码或脚本，靠模型自觉守住安全底线。",
+          "前端用正则黑名单过滤常见敏感标签，黑名单足以覆盖全部攻击变体，无需其他手段。",
+          "把模型输出当不可信输入，在下游做严格结构校验、按上下文转义与沙箱隔离执行。",
+          "收紧系统提示词并调低随机性，要求模型不产出可执行脚本，从源头杜绝恶意代码。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从两起事故的穿透路径判定安全保证必须由下游架构而非提示词提供",
+          "reasoningGoal": "先复现恶意脚本穿透渲染层与执行层的两条链路；再把候选实践逐项对照链路上的卡点，确认「当不可信输入做结构校验、转义与沙箱隔离」成立；并排除「靠系统提示词要求模型自觉」「前端正则黑名单足以覆盖」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f5f40b02",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-945694cd",
+        "sourceSnapshot": {
+          "id": "eth-06",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "insecure-output-handling",
+            "xss",
+            "rce",
+            "zero-trust"
+          ],
+          "question": "LLM 响应请求生成了包含恶意 JavaScript 的 Markdown 代码块，系统未做处理直接渲染在前端页面，导致了存储型 XSS；或 LLM 生成的代码直接被后端 `eval()` 执行导致 RCE。以下哪项是解决该隐患的最佳架构实践？",
+          "options": [
+            "依赖 LLM 的 System Prompt 要求其 \"不要生成任何恶意代码或脚本\"",
+            "在前端用正则表达式过滤常见敏感标签即可，黑名单能覆盖全部攻击变体，无需 Schema 校验、转义或沙箱隔离。",
+            "零信任视 LLM 输出为不可信数据，在下游做严格 Schema 校验、上下文转义与沙箱隔离",
+            "收紧 System Prompt 并降低 Temperature，要求模型不生成可执行脚本，从源头消除恶意代码产生"
+          ]
+        }
+      },
+      {
+        "id": "eth-06__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "安全复盘会上还原了两起事故：助手输出的脚本未经处理被拼进页面导致存储型跨站；运维脚本直接执行模型生成的代码导致服务器被控。会上四种整改意见针锋相对，下列哪项最合理？",
+        "options": [
+          "升级系统提示词措辞，要求模型不要生成任何恶意代码或脚本，提示词即安全边界。",
+          "前端正则再补一批敏感标签 pattern，黑名单勤更新就能覆盖全部变形，无需改架构。",
+          "确立零信任：模型输出等同外部不可信输入，消费前先过结构化校验，再按渲染上下文转义，生成的代码只许在受限沙箱里跑。",
+          "把生成温度压到最低并收紧提示词，让模型从源头上不再产出可执行内容。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从复盘还原的两条穿透链判定零信任加校验加转义加沙箱的整改成立",
+          "reasoningGoal": "先识别两起事故各自绕过的防线位置；再把四种整改意见逐项映射到防线缺口，确认「零信任加结构化校验加转义加沙箱」成立；并排除「升级提示词措辞即安全边界」「前端正则补 pattern」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f5f40b02",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-0e3ccea0",
+        "sourceSnapshot": {
+          "id": "eth-06",
+          "topic": "agent-guardrails",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "insecure-output-handling",
+            "xss",
+            "rce",
+            "zero-trust"
+          ],
+          "question": "LLM 响应请求生成了包含恶意 JavaScript 的 Markdown 代码块，系统未做处理直接渲染在前端页面，导致了存储型 XSS；或 LLM 生成的代码直接被后端 `eval()` 执行导致 RCE。以下哪项是解决该隐患的最佳架构实践？",
+          "options": [
+            "依赖 LLM 的 System Prompt 要求其 \"不要生成任何恶意代码或脚本\"",
+            "在前端用正则表达式过滤常见敏感标签即可，黑名单能覆盖全部攻击变体，无需 Schema 校验、转义或沙箱隔离。",
+            "零信任视 LLM 输出为不可信数据，在下游做严格 Schema 校验、上下文转义与沙箱隔离",
+            "收紧 System Prompt 并降低 Temperature，要求模型不生成可执行脚本，从源头消除恶意代码产生"
+          ]
+        }
+      }
+    ],
+    "longhorizon-harness-vs-finetune-01": [
+      {
+        "id": "longhorizon-harness-vs-finetune-01__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "团队要在两条自我演化路线中二选一：把轨迹经验沉淀为版本化的提示规则、记忆与技能存入外部存储；或对模型权重做参数微调。关于两者的透明度、开销与遗忘风险，下列哪项说法正确？",
+        "options": [
+          "前者把经验转成版本化规则、记忆与可执行技能存外部存储，不动基座权重即可改变未来行为。",
+          "后者能精准保留每条轨迹的操作归因与触发条件，演进调整时的可干预性与透明度更高。",
+          "前者要求每次任务后整体重写基座提示词，频繁迭代时的开销显著高于参数微调。",
+          "后者把经验写入外部可读写状态库积累知识，跨领域迁移时完全不会灾难性遗忘。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从两条路线的作用位置解释外部状态演化透明可干预而参数更新黑盒易遗忘的机理",
+          "reasoningGoal": "先复现经验沉淀与行为改变在两条路线下的传导路径；再据此逐项验证四个陈述与路径是否相符，确认「前者转成版本化规则存外部存储、不动基座权重」成立；并排除「后者保留归因更透明」「前者每次整体重写基座提示词」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-620c8044",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-5967a674",
+        "sourceSnapshot": {
+          "id": "longhorizon-harness-vs-finetune-01",
+          "topic": "agent-fundamentals",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "harness-refinement",
+            "fine-tuning",
+            "self-improvement"
+          ],
+          "question": "在智能体系统的自我演化（Self-Improvement）架构设计中，“持续 Harness 提炼”（Continual Harness Refinement）与传统的“模型权重微调”（Weight Fine-tuning）代表了两种不同的演化路径。关于这两者的技术对比，下列说法正确的是：",
+          "options": [
+            "持续 Harness 提炼将轨迹经验转化为版本化的 Prompt 规则、记忆与可执行技能保存在外部存储中，无需更改 L0 权重即可改变未来行为。",
+            "模型权重微调能够精准保留每条运行轨迹的操作归因与触发条件，在进行演进策略调整时具有比 Harness 提炼更高的可干预性与透明度。",
+            "持续 Harness 提炼要求在每次任务执行结束后对基座 Prompt 进行整体重写，因此在频繁迭代时的计算开销显著高于模型权重微调。",
+            "模型权重微调通过将经验写入外部可读写的状态库来实现知识积累，因此在跨领域任务迁移时完全不会产生灾难性遗忘问题。"
+          ]
+        }
+      },
+      {
+        "id": "longhorizon-harness-vs-finetune-01__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "某智能体团队先试参数微调：三次增量训练后，老任务成功率掉了两成，且没人能说清哪次更新惹的祸；改试经验外存路线后，每条规则变更都有版本记录。关于这次对比，下列哪项结论正确？",
+        "options": [
+          "经验外存路线把轨迹沉淀为版本化规则、记忆与技能，不动基座权重即可演化行为，且变更可审计。",
+          "参数微调完整保留了每条轨迹的归因链条，可干预性与透明度天然高于经验外存路线。",
+          "经验外存要求每次任务后整体重写基座提示词，所以它的迭代开销比参数微调高得多。",
+          "参数微调把经验写进外部状态库，跨领域迁移时不存在灾难性遗忘，老任务掉点另有原因。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从增量训练掉点且无法归因的实例权衡两条路线的透明度与遗忘代价",
+          "reasoningGoal": "先定位老任务掉点且说不清原因这一现象的责任主体；再把两条路线逐项对照可审计与遗忘风险，确认「经验外存沉淀版本化规则、不动基座权重」成立；并排除「参数微调保留归因链条更透明」「经验外存每次整体重写」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-620c8044",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-15be4289",
+        "sourceSnapshot": {
+          "id": "longhorizon-harness-vs-finetune-01",
+          "topic": "agent-fundamentals",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "harness-refinement",
+            "fine-tuning",
+            "self-improvement"
+          ],
+          "question": "在智能体系统的自我演化（Self-Improvement）架构设计中，“持续 Harness 提炼”（Continual Harness Refinement）与传统的“模型权重微调”（Weight Fine-tuning）代表了两种不同的演化路径。关于这两者的技术对比，下列说法正确的是：",
+          "options": [
+            "持续 Harness 提炼将轨迹经验转化为版本化的 Prompt 规则、记忆与可执行技能保存在外部存储中，无需更改 L0 权重即可改变未来行为。",
+            "模型权重微调能够精准保留每条运行轨迹的操作归因与触发条件，在进行演进策略调整时具有比 Harness 提炼更高的可干预性与透明度。",
+            "持续 Harness 提炼要求在每次任务执行结束后对基座 Prompt 进行整体重写，因此在频繁迭代时的计算开销显著高于模型权重微调。",
+            "模型权重微调通过将经验写入外部可读写的状态库来实现知识积累，因此在跨领域任务迁移时完全不会产生灾难性遗忘问题。"
+          ]
+        }
+      }
+    ],
+    "envharness-contract-01": [
+      {
+        "id": "envharness-contract-01__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "某代码修复智能体过度依赖全量观察信息，总用高阶快捷指令跳过基础排查。现要求不改环境源码，仅通过三元约束接口管住交互：限制快捷动作、隐藏部分全局上下文、特定非法操作追加结构化提示。下列哪组映射最合理？",
+        "options": [
+          "用第一个分量过滤屏蔽快捷动作，用第三个分量裁剪掩码全局观察文本，用第二个分量拦截状态转移并注入错误提示。",
+          "用第一个分量预执行初始化脚本，用第三个分量串联多个独立代码库，用第二个分量拦截环境的重置调用。",
+          "用第一个分量重算验证器得分，用第三个分量增加环境初始化动作，用第二个分量修改模型内部权重。",
+          "用第一个分量扩展动作空间维度，用第三个分量把多回合交互压缩为单回合，用第二个分量替换静态数据库。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能按三元接口各分量的映射职责把三个管住诉求分配到正确分量",
+          "reasoningGoal": "先明确三个诉求各自作用在动作空间、观察空间还是转移函数；再把候选映射逐项对照分量职责，确认「第一分量过滤动作、第三分量掩码观察、第二分量拦截转移」成立；并排除「第一分量预执行初始化脚本」「第二分量修改模型权重」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a756e999",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-fd65361c",
+        "sourceSnapshot": {
+          "id": "envharness-contract-01",
+          "topic": "agent-loop",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "apply",
+          "tags": [
+            "env-harness",
+            "contract",
+            "action-space",
+            "observation"
+          ],
+          "question": "某 Agent 在代码修复任务中表现出对“全量观察信息”的过度依赖，且频繁调用高阶快捷指令而跳过基础代码排查步骤。开发者希望在不修改底层环境源码的前提下，通过 Contract 组件对 Agent 的交互进行约束：限制快捷动作使用、隐藏部分全局上下文、并在特定非法操作时追加结构化提示。根据 Contract 组件的标准定义 r = (f_A, f_T, f_O)，下列映射分配最合理的是？",
+          "options": [
+            "利用 f_A 过滤或屏蔽快捷动作，利用 f_O 裁剪与掩码全局观察文本，利用 f_T 拦截状态转移并注入错误提示。",
+            "利用 f_A 预先执行初始化脚本，利用 f_O 串联多个独立代码库，利用 f_T 拦截环境的 reset() 调用。",
+            "利用 f_A 重新计算验证器的得分，利用 f_O 增加环境初始化动作，利用 f_T 修改 Agent 模型内部权重。",
+            "利用 f_A 扩展动作空间维度，利用 f_O 将多回合交互压缩为单回合，利用 f_T 替换静态数据库。"
+          ]
+        }
+      },
+      {
+        "id": "envharness-contract-01__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "接上题的代码修复智能体：落地三元约束后，快捷指令被限、全局上下文被裁剪、非法操作会收到结构化提示。但新人把初始化脚本塞进第一个分量、把串联代码库塞进第三分量，导致约束失效。关于这次 misconfiguration，下列哪项判断正确？",
+        "options": [
+          "约束装错位置才会失效：第一分量过滤屏蔽快捷动作，第三分量裁剪掩码全局观察，拦截转移并注入提示。",
+          "利用第一个分量预执行初始化脚本、利用第三个分量串联多个独立代码库，新人这种摆法合乎契约，并未装错。",
+          "第一个分量真正该做的是重新计算验证器的得分，第三个分量真正该做的是增加环境初始化动作。",
+          "分量的真正职责是扩展动作空间维度与替换静态数据库，装错位置才会失效。"
+        ],
+        "angle": "architecture",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从约束失效的故障定位各分量职责错配并给出正确归位",
+          "reasoningGoal": "先定位约束失效与分量职责错配之间的因果链；再把候选判断逐项对照三元接口的契约，确认「第一分量只管动作过滤、第三分量只管观察掩码」成立；并排除「新人的塞法是对的」「第一分量该重算验证器得分」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a756e999",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-17bccb96",
+        "sourceSnapshot": {
+          "id": "envharness-contract-01",
+          "topic": "agent-loop",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "apply",
+          "tags": [
+            "env-harness",
+            "contract",
+            "action-space",
+            "observation"
+          ],
+          "question": "某 Agent 在代码修复任务中表现出对“全量观察信息”的过度依赖，且频繁调用高阶快捷指令而跳过基础代码排查步骤。开发者希望在不修改底层环境源码的前提下，通过 Contract 组件对 Agent 的交互进行约束：限制快捷动作使用、隐藏部分全局上下文、并在特定非法操作时追加结构化提示。根据 Contract 组件的标准定义 r = (f_A, f_T, f_O)，下列映射分配最合理的是？",
+          "options": [
+            "利用 f_A 过滤或屏蔽快捷动作，利用 f_O 裁剪与掩码全局观察文本，利用 f_T 拦截状态转移并注入错误提示。",
+            "利用 f_A 预先执行初始化脚本，利用 f_O 串联多个独立代码库，利用 f_T 拦截环境的 reset() 调用。",
+            "利用 f_A 重新计算验证器的得分，利用 f_O 增加环境初始化动作，利用 f_T 修改 Agent 模型内部权重。",
+            "利用 f_A 扩展动作空间维度，利用 f_O 将多回合交互压缩为单回合，利用 f_T 替换静态数据库。"
+          ]
+        }
+      }
+    ],
+    "selfharness-definition-01": [
+      {
+        "id": "selfharness-definition-01__surface-options__manual-av__0",
+        "kind": "surface-options",
+        "question": "把智能体系统拆成基座模型与外围控制层两部分：后者不碰模型权重，只负责提示词组装、工具封装、状态管理、校验规则、编排逻辑与错误恢复。下列哪项准确描述了该控制层的定位？",
+        "options": [
+          "它是围绕基座模型的非参数化控制层，承载提示词、工具封装、状态管理与运行时校验逻辑。",
+          "它是注入模型内部的注意力掩码策略，控制多轮对话中的上下文注意力衰减。",
+          "它是推理过程中动态优化的模型权重增量，用于提升特定任务下的交互精度。",
+          "它是部署在模型前端的网络负载均衡器，负责路由租户请求并管理并发限速。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从是否改变模型权重这一边界区分控制层与模型内部机制及基础设施层",
+          "reasoningGoal": "先对齐候选描述与非参数化控制层定义的可比维度；再据此逐项确认「围绕基座模型的非参数化控制层」成立；并排除「注入模型内部的注意力掩码」「推理中动态优化的权重增量」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-dc8cd40d",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-b3d2de20",
+        "sourceSnapshot": {
+          "id": "selfharness-definition-01",
+          "topic": "agent-fundamentals",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "harness",
+            "definition",
+            "non-parametric"
+          ],
+          "question": "在基于大语言模型（LLM）的智能体（Agent）系统架构中，系统通常被划分为“基座模型（Base Model）”与“操作 Harness（Environment Interaction Harness）”。关于这两者在系统架构中的边界与协作方式，下列哪种说法是准确的？",
+          "options": [
+            "Harness 是指围绕基座模型的非参数化控制层，包含提示词、工具封装、状态管理及运行时校验逻辑",
+            "Harness 是指注入基座模型内部的注意力掩码策略，用以控制模型在多轮对话中的上下文注意力衰减",
+            "Harness 是指智能体在推理过程中动态优化的模型权重增量，用以提升特定任务下的具身交互精度",
+            "Harness 是指部署在模型前端的网络负载均衡器，用以路由不同租户请求并管理并发 API 调用限速"
+          ]
+        }
+      },
+      {
+        "id": "selfharness-definition-01__context-options__manual-av__1",
+        "kind": "context-options",
+        "question": "架构评审会上四种说法争执不下：甲说控制层在模型内部改注意力；乙说它是外围的非参数化调度与交互层；丙说它是推理时优化的权重增量；丁说它是前端的负载均衡。按基座模型与控制层的标准划分，下列哪项判断正确？",
+        "options": [
+          "乙正确：控制层介于模型与环境之间、不改权重，管提示词、工具、状态、校验、编排与恢复。",
+          "甲正确：控制层的本质就是模型内部的注意力掩码策略，管住注意力即管住行为。",
+          "丙正确：控制层就是推理过程中持续优化的权重增量，参数化适配才是交互精度的来源。",
+          "丁正确：控制层就是部署在模型前端的网络负载均衡器，管住流量与限速即管住智能体运行。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从评审会四种说法的分歧判定外围非参数化调度层这一划分成立",
+          "reasoningGoal": "先识别四种说法各自把控制层锚定在哪一层；再把标准划分逐项套用到四种说法，确认「乙正确：介于模型与环境之间、不改权重」成立；并排除「甲正确：本质是注意力掩码」「丙正确：是权重增量」等不成立描述。"
+        },
+        "generatedAt": 1789077195774,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-dc8cd40d",
+        "batch": "manual-av",
+        "model": "manual",
+        "contentHash": "fnv1a-a610d8a3",
+        "sourceSnapshot": {
+          "id": "selfharness-definition-01",
+          "topic": "agent-fundamentals",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "harness",
+            "definition",
+            "non-parametric"
+          ],
+          "question": "在基于大语言模型（LLM）的智能体（Agent）系统架构中，系统通常被划分为“基座模型（Base Model）”与“操作 Harness（Environment Interaction Harness）”。关于这两者在系统架构中的边界与协作方式，下列哪种说法是准确的？",
+          "options": [
+            "Harness 是指围绕基座模型的非参数化控制层，包含提示词、工具封装、状态管理及运行时校验逻辑",
+            "Harness 是指注入基座模型内部的注意力掩码策略，用以控制模型在多轮对话中的上下文注意力衰减",
+            "Harness 是指智能体在推理过程中动态优化的模型权重增量，用以提升特定任务下的具身交互精度",
+            "Harness 是指部署在模型前端的网络负载均衡器，用以路由不同租户请求并管理并发 API 调用限速"
+          ]
+        }
+      }
+    ]
+  }
+}

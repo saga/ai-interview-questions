@@ -1,0 +1,917 @@
+{
+  "version": 1,
+  "generatedAt": 1789012900584,
+  "promptVersion": "v4",
+  "variants": {
+    "realtime-dual-01": [
+      {
+        "id": "realtime-dual-01__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "实时交互要 200ms 内响应，又要做长耗时深度推理。前后台双模型协作里，哪些工程细节正确？（多选）",
+        "options": [
+          "前台维持对话、需深推理时只把最后一句话丢给后台、最省传输",
+          "后台异步跑、中间与最终结果流式回传前台",
+          "前台等自然停顿或语义边界、把后台结果织进对话、而非硬打断",
+          "这就是 OS 前后台进程拆分、或快慢路径的老权衡"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 200ms 约束推导异步回传与织入的协作设计",
+          "reasoningGoal": "先拆出实时性与深推理的双重约束；据此逐项确认「后台异步跑、结果流式回传」「等停顿边界织入对话」等 3 项成立；并排除「只把最后一句话丢给后台」等不成立描述。"
+        },
+        "generatedAt": 1789012900578,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bc8e1f0b",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-6ac8f422",
+        "sourceSnapshot": {
+          "id": "realtime-dual-01",
+          "topic": "realtime-interaction",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "dual-model",
+            "foreground-background",
+            "fast-slow-path",
+            "streaming"
+          ],
+          "question": "在实时多模态交互系统中，为了同时满足 200ms 级别的极低响应延迟与长耗时的深度推理（如复杂工具调用、代码执行、联网搜索），架构师通常采用“前/后台双模型协作”（Foreground/Background Split）设计。其中前台为低延迟交互模型，后台为慢速推理模型。以下关于该模式系统工程细节的说法，正确的有？（多选）",
+          "options": [
+            "前台交互模型负责维持实时对话流与状态，当检测到需要深层推理时，仅向后台模型发送用户最后一句话作为 Prompt，以最大化节省跨进程传输带宽",
+            "后台模型以异步方式运行，其推理与工具调用的中间及最终计算结果以流式（Streaming）形式实时回传给前台交互模型",
+            "前台交互模型收到后台模型的异步回传结果后，会根据当前对话的自然停顿或语义边界择机将结果平滑织入（Weave）对话，而非强制立刻打断当前输出",
+            "该模式在系统设计哲学上类似于操作系统中的“前台进程/后台进程”拆分或高频交易系统中的“快路径/慢路径”（Fast Path / Slow Path）权衡"
+          ]
+        }
+      },
+      {
+        "id": "realtime-dual-01__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "语音助手 200ms 内必须出声，后台联网搜索慢。双模型协作时，哪些细节正确？（多选）",
+        "options": [
+          "前台维持对话、深推理只发最后一句话给后台",
+          "后台边算边流式吐结果、前台实时可见",
+          "前台按自然停顿语义边界织入结果、不断流",
+          "快慢路径拆分、前后台进程的老权衡"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从语音不断流的取舍判断流式回传与织入的价值",
+          "reasoningGoal": "先明确实时体验与推理深度的取舍维度；据此逐项确认「后台边算边流式吐结果」「趁停顿把结果缝进对话」等 3 项成立；并排除「只转交最后一句话」等不成立描述。"
+        },
+        "generatedAt": 1789012900578,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-bc8e1f0b",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-3e96b325",
+        "sourceSnapshot": {
+          "id": "realtime-dual-01",
+          "topic": "realtime-interaction",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "dual-model",
+            "foreground-background",
+            "fast-slow-path",
+            "streaming"
+          ],
+          "question": "在实时多模态交互系统中，为了同时满足 200ms 级别的极低响应延迟与长耗时的深度推理（如复杂工具调用、代码执行、联网搜索），架构师通常采用“前/后台双模型协作”（Foreground/Background Split）设计。其中前台为低延迟交互模型，后台为慢速推理模型。以下关于该模式系统工程细节的说法，正确的有？（多选）",
+          "options": [
+            "前台交互模型负责维持实时对话流与状态，当检测到需要深层推理时，仅向后台模型发送用户最后一句话作为 Prompt，以最大化节省跨进程传输带宽",
+            "后台模型以异步方式运行，其推理与工具调用的中间及最终计算结果以流式（Streaming）形式实时回传给前台交互模型",
+            "前台交互模型收到后台模型的异步回传结果后，会根据当前对话的自然停顿或语义边界择机将结果平滑织入（Weave）对话，而非强制立刻打断当前输出",
+            "该模式在系统设计哲学上类似于操作系统中的“前台进程/后台进程”拆分或高频交易系统中的“快路径/慢路径”（Fast Path / Slow Path）权衡"
+          ]
+        }
+      }
+    ],
+    "ai-search-extra-020": [
+      {
+        "id": "ai-search-extra-020__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "搜索均值延迟没动，p99 从 1 秒涨到 8 秒，QPS 也没涨。优先查什么？",
+        "options": [
+          "下游 reranker 或 embedding 慢尾巴",
+          "线程池连接池队列是否出现局部拥塞",
+          "cache miss 是否集中在某类查询",
+          "重试会不会放大少量慢请求的耗时",
+          "只看平均 CPU 使用率就够排障了"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从均值稳 p99 炸推导尾部排查的优先级",
+          "reasoningGoal": "先定位均值与分位背离的直接诱因；据此逐项确认「下游尾部延迟」「池队列局部拥塞」等 4 项成立；并排除「看平均 CPU 就够」等不成立描述。"
+        },
+        "generatedAt": 1789012900578,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-01e1bcb4",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-535743d7",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-020",
+          "topic": "search-infrastructure",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "search-infrastructure",
+            "cache",
+            "debugging"
+          ],
+          "question": "搜索 API 的平均延迟基本不变，但 p99 从 1 秒升到 8 秒，同时 QPS 没有明显增加。最值得优先检查哪些问题？",
+          "options": [
+            "下游 reranker 或 embedding 出现尾部延迟",
+            "线程池、连接池或队列是否出现局部拥塞",
+            "cache miss 是否集中在某类查询",
+            "重试有可能显著放大少量慢请求的耗时",
+            "只需要检查平均 CPU 使用率即可"
+          ]
+        }
+      },
+      {
+        "id": "ai-search-extra-020__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "大促零点：搜索均值正常，p99 8 秒，用户骂声一片。定位尾部时，哪些方向优先？",
+        "options": [
+          "先查下游 embedding 与 rerank 的慢尾巴",
+          "线程池连接池队列是否出现局部堵死",
+          "查 miss 是不是都落在同一类查询上",
+          "重试把慢请求放大了多少倍、要算清",
+          "平均 CPU 不高就不用查尾部了"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从大促尾部爆炸解释排队与重试放大的传导机理",
+          "reasoningGoal": "先复现尾部爆炸的内部传导链；据此逐项确认「先查下游慢尾巴」「看池子队列局部堵死」等 4 项成立；并排除「CPU 均值不高不用查」等不成立描述。"
+        },
+        "generatedAt": 1789012900579,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-01e1bcb4",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-785f76f3",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-020",
+          "topic": "search-infrastructure",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "search-infrastructure",
+            "cache",
+            "debugging"
+          ],
+          "question": "搜索 API 的平均延迟基本不变，但 p99 从 1 秒升到 8 秒，同时 QPS 没有明显增加。最值得优先检查哪些问题？",
+          "options": [
+            "下游 reranker 或 embedding 出现尾部延迟",
+            "线程池、连接池或队列是否出现局部拥塞",
+            "cache miss 是否集中在某类查询",
+            "重试有可能显著放大少量慢请求的耗时",
+            "只需要检查平均 CPU 使用率即可"
+          ]
+        }
+      }
+    ],
+    "agent-cost-01": [
+      {
+        "id": "agent-cost-01__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "Agent 跑多步任务烧的 Token 为啥远超单次聊天？机制上怎么解释？（多选）",
+        "options": [
+          "API 无状态、每轮重发完整历史、上下文单调变长",
+          "总消耗超线性累积、增量不大但 Input 陡增",
+          "人类节奏受限、Agent 可按 API 速率高频请求",
+          "工具执行后本地改隐态、历史不用重传"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从与单次聊天的对比判断 Agent 烧 Token 的三处来源",
+          "reasoningGoal": "先对齐 Agent 与单次聊天的可比消耗维度；据此逐项确认「每轮重发完整历史」「总消耗超线性累积」等 3 项成立；并排除「本地改隐态免重传」等不成立描述。"
+        },
+        "generatedAt": 1789012900579,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-70cc3f07",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-902f630e",
+        "sourceSnapshot": {
+          "id": "agent-cost-01",
+          "topic": "cost",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent-loop",
+            "context-inflation",
+            "token-cost",
+            "stateless"
+          ],
+          "question": "某系统架构师在评估 LLM Agent 系统的 API 调用成本时发现，在处理多步骤复杂任务时，Agent 产生的 Token 消耗量远超单次 Chatbot 对话。关于 Agent 运行机制对 Token 消费的影响，下列说法正确的有？（多选）",
+          "options": [
+            "LLM API 本身是无状态的，Agent 在多轮循环中必须在每次请求时重新发送完整的历史上下文（包含系统指令、工具 Schema、历史工具调用与返回结果等），导致上下文随着轮次单调递增",
+            "Agent 系统的总 Token 消耗量通常随循环轮次呈现超线性的累积增长，即使单次工具调用的增量输入不大，后续步骤的 Input Token 成本也会急剧攀升",
+            "与人类用户受限于输入速度和阅读能力的交互节奏不同，Agent 系统在无人干预下可以以 API 允许的最大速率高频发起请求，消除了交互频次的“自然制约”",
+            "Agent 每次执行工具后，可以通过本地存储直接更新 LLM 的内部隐状态（Hidden States），从而避免在后续请求中重复传入历史上下文"
+          ]
+        }
+      },
+      {
+        "id": "agent-cost-01__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "账单 takeoff：Agent 跑 50 轮任务花掉聊天 100 倍 Token。关于这笔账，哪些说法正确？（多选）",
+        "options": [
+          "LLM API 无状态、每轮重发完整历史上下文",
+          "总 Token 随轮次超线性累积、Input 成本急剧攀升",
+          "人类受打字阅读节奏限制、Agent 按 API 上限速率发请求",
+          "工具执行后本地存储直改 LLM 隐状态、后续不用重传历史"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从百倍账单权衡轮次、重传与频率三处烧钱点",
+          "reasoningGoal": "先明确账单在三处的取舍构成；据此逐项确认「每轮重带全部历史」「Input 膨胀超线性起飞」等 3 项成立；并排除「改本地隐变量免重传」等不成立描述。"
+        },
+        "generatedAt": 1789012900579,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-70cc3f07",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-f5967d60",
+        "sourceSnapshot": {
+          "id": "agent-cost-01",
+          "topic": "cost",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent-loop",
+            "context-inflation",
+            "token-cost",
+            "stateless"
+          ],
+          "question": "某系统架构师在评估 LLM Agent 系统的 API 调用成本时发现，在处理多步骤复杂任务时，Agent 产生的 Token 消耗量远超单次 Chatbot 对话。关于 Agent 运行机制对 Token 消费的影响，下列说法正确的有？（多选）",
+          "options": [
+            "LLM API 本身是无状态的，Agent 在多轮循环中必须在每次请求时重新发送完整的历史上下文（包含系统指令、工具 Schema、历史工具调用与返回结果等），导致上下文随着轮次单调递增",
+            "Agent 系统的总 Token 消耗量通常随循环轮次呈现超线性的累积增长，即使单次工具调用的增量输入不大，后续步骤的 Input Token 成本也会急剧攀升",
+            "与人类用户受限于输入速度和阅读能力的交互节奏不同，Agent 系统在无人干预下可以以 API 允许的最大速率高频发起请求，消除了交互频次的“自然制约”",
+            "Agent 每次执行工具后，可以通过本地存储直接更新 LLM 的内部隐状态（Hidden States），从而避免在后续请求中重复传入历史上下文"
+          ]
+        }
+      }
+    ],
+    "gnn-expressiveness-1wl": [
+      {
+        "id": "gnn-expressiveness-1wl__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "MPNN 表达能力被 1-WL 卡脖子，机制上怎么理解？哪些正确？",
+        "options": [
+          "1-WL 分不开的非同构图、标准 MPNN 靠拓扑也分不开",
+          "换单射聚合（如 GIN Sum）就能超越 1-WL 上限",
+          "没初始唯一特征时、环长不同的正则图分不开",
+          "随机特征或子图架构能打破 1-WL 上限"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从 1-WL 基准对比 MPNN 三处能与一处不能",
+          "reasoningGoal": "先对齐 MPNN 与 1-WL 的可比区分维度；据此逐项确认「分不开的图 MPNN 也分不开」「缺唯一特征环长图不辨」等 3 项成立；并排除「单射聚合超越上限」等不成立描述。"
+        },
+        "generatedAt": 1789012900580,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dab749ad",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-b6d029e3",
+        "sourceSnapshot": {
+          "id": "gnn-expressiveness-1wl",
+          "topic": "expressiveness-and-theory",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "GNN",
+            "Weisfeiler-Lehman",
+            "Message-Passing",
+            "Expressiveness"
+          ],
+          "question": "在消息传递图神经网络（MPNN）中，其图结构表达能力的理论上限通常由 1-Weisfeiler-Lehman (1-WL) 同构测试界定。关于 MPNN 在区分不同图拓扑结构上的局限性及其底层机制，以下哪些说法是正确的？",
+          "options": [
+            "对于无法被 1-WL 测试区分的非同构图（例如某些同构度的正则图），任何标准 MPNN 均无法仅依赖图拓扑学习出不同的图级特征表示",
+            "将邻域聚合函数（Aggregate Function）替换为单射函数（如 GIN 中的 Sum 聚合）可以使 MPNN 的区分能力超越 1-WL 测试的上限",
+            "缺少节点初始唯一特征（如纯拓扑结构输入）时，MPNN 无法准确区分环长不同的连通正则图（例如 6-node ring 与两个 3-node rings）",
+            "在节点特征中引入随机采样特征或采用高阶子图架构（如 Subgraph GNN）是打破 1-WL 理论表达能力上限的有效手段"
+          ]
+        }
+      },
+      {
+        "id": "gnn-expressiveness-1wl__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "两张正则图长得一样、MPNN 输出也一样。关于这个上限，哪些说法正确？",
+        "options": [
+          "1-WL 区分不了的非同构图、MPNN 靠拓扑也区分不了",
+          "单射 Sum 聚合能让 MPNN 超越 1-WL 上限",
+          "缺初始唯一特征时、6-node 环与双 3-node 环分不开",
+          "随机采样特征或子图架构可打破 1-WL 上限"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从孪生正则图实例推导表达上限与破限手段",
+          "reasoningGoal": "先识别孪生图不可分的约束条件；据此逐项确认「认不出的图只能干瞪眼」「纯拓扑环长图不辨」等 3 项成立；并排除「Sum 聚合冲破天花板」等不成立描述。"
+        },
+        "generatedAt": 1789012900580,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-dab749ad",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-9bcedd04",
+        "sourceSnapshot": {
+          "id": "gnn-expressiveness-1wl",
+          "topic": "expressiveness-and-theory",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "GNN",
+            "Weisfeiler-Lehman",
+            "Message-Passing",
+            "Expressiveness"
+          ],
+          "question": "在消息传递图神经网络（MPNN）中，其图结构表达能力的理论上限通常由 1-Weisfeiler-Lehman (1-WL) 同构测试界定。关于 MPNN 在区分不同图拓扑结构上的局限性及其底层机制，以下哪些说法是正确的？",
+          "options": [
+            "对于无法被 1-WL 测试区分的非同构图（例如某些同构度的正则图），任何标准 MPNN 均无法仅依赖图拓扑学习出不同的图级特征表示",
+            "将邻域聚合函数（Aggregate Function）替换为单射函数（如 GIN 中的 Sum 聚合）可以使 MPNN 的区分能力超越 1-WL 测试的上限",
+            "缺少节点初始唯一特征（如纯拓扑结构输入）时，MPNN 无法准确区分环长不同的连通正则图（例如 6-node ring 与两个 3-node rings）",
+            "在节点特征中引入随机采样特征或采用高阶子图架构（如 Subgraph GNN）是打破 1-WL 理论表达能力上限的有效手段"
+          ]
+        }
+      }
+    ],
+    "mlops-02": [
+      {
+        "id": "mlops-02__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "模型监控与生产维护，哪些做法合理？（多选）",
+        "options": [
+          "监控输入预测分布漂移、设阈值告警防退化",
+          "版本管理加回滚、出问题秒回旧版",
+          "输入输出日志全记、复盘定位回流样本",
+          "只看 CPU GPU 利用率、预测分布不用管",
+          "离线评完长期有效、运维只管做新模型"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从生产事故推导漂移、回滚与日志三件套的必要性",
+          "reasoningGoal": "先明确生产维护的目标与边界；据此逐项确认「监控分布漂移」「版本回滚秒恢复」等 3 项成立；并排除「只看基础设施指标」「上线长期有效」等不成立描述。"
+        },
+        "generatedAt": 1789012900580,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-882b3188",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-75035b64",
+        "sourceSnapshot": {
+          "id": "mlops-02",
+          "topic": "observability",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "monitoring",
+            "drift",
+            "versioning"
+          ],
+          "question": "关于模型监控与生产环境维护，以下合理的做法包括哪些？（多选）",
+          "options": [
+            "监控线上输入特征与预测分布的漂移（data drift），设置阈值告警以及时发现模型退化",
+            "建立模型版本管理与回滚机制，出现质量问题时可快速恢复到已验证的旧版本",
+            "记录线上推理的输入与输出日志，用于事后复盘、问题定位与再训练样本回流",
+            "把监控范围限定在服务器 CPU 与 GPU 利用率等基础设施指标上，模型预测分布无需关注",
+            "模型通过离线评估上线后即视为长期有效，运维重心应转向新模型的开发迭代"
+          ]
+        }
+      },
+      {
+        "id": "mlops-02__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "模型上线半年没人看，悄悄退化三个月才发现。复盘监控时，哪些做法合理？（多选）",
+        "options": [
+          "监控输入特征与预测漂移、设阈值告警",
+          "版本管理加回滚机制、出问题快速回旧版",
+          "线上输入输出记下来、复盘回流都靠它",
+          "只看服务器 CPU GPU 利用率、模型不用管",
+          "离线评估上线长期有效、运维只做新模型"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从悄悄退化权衡监控投入与翻车代价的取舍",
+          "reasoningGoal": "先明确监控投入与退化代价的取舍维度；据此逐项确认「漂了就告警」「版本留档可回滚」等 3 项成立；并排除「机器正常即没问题」「评测管终身」等不成立描述。"
+        },
+        "generatedAt": 1789012900580,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-882b3188",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-87572a2f",
+        "sourceSnapshot": {
+          "id": "mlops-02",
+          "topic": "observability",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "monitoring",
+            "drift",
+            "versioning"
+          ],
+          "question": "关于模型监控与生产环境维护，以下合理的做法包括哪些？（多选）",
+          "options": [
+            "监控线上输入特征与预测分布的漂移（data drift），设置阈值告警以及时发现模型退化",
+            "建立模型版本管理与回滚机制，出现质量问题时可快速恢复到已验证的旧版本",
+            "记录线上推理的输入与输出日志，用于事后复盘、问题定位与再训练样本回流",
+            "把监控范围限定在服务器 CPU 与 GPU 利用率等基础设施指标上，模型预测分布无需关注",
+            "模型通过离线评估上线后即视为长期有效，运维重心应转向新模型的开发迭代"
+          ]
+        }
+      }
+    ],
+    "oreilly-radar-2026-08-01": [
+      {
+        "id": "oreilly-radar-2026-08-01__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "每个非人类身份最少记点啥才能管住？（请选择两个）",
+        "options": [
+          "它代表哪份资产、谁负责",
+          "权限范围与何时失效",
+          "只记模型名和调用次数",
+          "只记最终输出、不记谁干的"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从最小治理推导资产归属与失效条件的必备性",
+          "reasoningGoal": "先拆出身份治理的最小约束；据此逐项确认「代表哪份资产谁负责」「权限范围与何时失效」等 2 项成立；并排除「只记模型名次数」「只记输出不记主体」等不成立描述。"
+        },
+        "generatedAt": 1789012900581,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-58c027de",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-bdb86d6e",
+        "sourceSnapshot": {
+          "id": "oreilly-radar-2026-08-01",
+          "topic": "agent-fundamentals",
+          "subtopic": "非人类身份生命周期",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "oreilly-radar",
+            "agent",
+            "nonhuman-identity",
+            "governance"
+          ],
+          "question": "企业部署大量自主 Agent 后，哪些问题应成为每个非人类身份的最小治理记录？（请选择两个）",
+          "options": [
+            "确认该身份代表的资产和责任归属",
+            "记录权限范围以及生命周期失效条件",
+            "只记录模型名称和调用次数",
+            "只记录最终输出，不记录执行主体"
+          ]
+        }
+      },
+      {
+        "id": "oreilly-radar-2026-08-01__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "审计发现 300 个 Agent 身份，分不清谁是谁、权限多大。建台账时，哪些是必记项？（请选择两个）",
+        "options": [
+          "资产归属与责任人",
+          "权限边界与失效条件",
+          "模型名称加调用量",
+          "输出内容、不记主体"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从分不清谁是谁的审计事故诊断台账缺失项",
+          "reasoningGoal": "先定位审计失明的直接诱因；据此逐项确认「资产归属与责任人」「权限边界与失效条件」等 2 项成立；并排除「只记名称用量」「不记主体」等不成立描述。"
+        },
+        "generatedAt": 1789012900581,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-58c027de",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-41553e7e",
+        "sourceSnapshot": {
+          "id": "oreilly-radar-2026-08-01",
+          "topic": "agent-fundamentals",
+          "subtopic": "非人类身份生命周期",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "oreilly-radar",
+            "agent",
+            "nonhuman-identity",
+            "governance"
+          ],
+          "question": "企业部署大量自主 Agent 后，哪些问题应成为每个非人类身份的最小治理记录？（请选择两个）",
+          "options": [
+            "确认该身份代表的资产和责任归属",
+            "记录权限范围以及生命周期失效条件",
+            "只记录模型名称和调用次数",
+            "只记录最终输出，不记录执行主体"
+          ]
+        }
+      }
+    ],
+    "hw-vector-bw-04": [
+      {
+        "id": "hw-vector-bw-04__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "向量加速器上树遍历访存带宽瓶颈、无硬件预取，怎么缓？（多选）",
+        "options": [
+          "无分支 SIMD 把多样本路径压进同一寄存器并行跑",
+          "AoS 改 SoA、向量加载有效数据装载率上去",
+          "多访问打包交错、软件预取加计算访存重叠盖延迟",
+          "猛超 CPU 主频、ALU 跑快直接抵消访存延迟"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从访存与算力的对比判断四种手段三真一假",
+          "reasoningGoal": "先对齐访存瓶颈与算力过剩的可比维度；据此逐项确认「无分支 SIMD 并行」「AoS 改 SoA」等 3 项成立；并排除「猛超主频抵消延迟」等不成立描述。"
+        },
+        "generatedAt": 1789012900581,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-223eaee7",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-3bab5e7c",
+        "sourceSnapshot": {
+          "id": "hw-vector-bw-04",
+          "topic": "pytorch-performance",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "vectorization",
+            "memory-bandwidth",
+            "simd",
+            "soa"
+          ],
+          "question": "工程师在向量加速器上优化非紧凑型数据结构（例如并行决策树推理或图遍历任务）时，经常面临从内存读取树节点数据引发的内存带宽瓶颈（Memory Bandwidth Bottleneck）。若硬件不支持自动硬件预取，下列哪些工程手段能够有效缓解该带宽瓶颈并提升硬件利用率？（多选）",
+          "options": [
+            "采用无分支（Branchless）SIMD 向量化计算，将多个独立样本的遍历路径压入同一个向量寄存器并行推进，提升内存读取的吞吐批处理度",
+            "改变树节点的内存存储布局，从结构体数组（AoS）重构为数组结构体（SoA），提升连续向量加载（Vector Load）时有效数据的装载率",
+            "将多个节点访问打包进行交错编排，利用软件预取（Software Prefetching）或计算与访存重叠掩盖高延迟",
+            "增加计算单元的主频，通过大幅提高 ALU 执行速度来直接抵消片上 DRAM 的访存延迟"
+          ]
+        }
+      },
+      {
+        "id": "hw-vector-bw-04__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "决策树推理访存 stall 占 80%，硬件没预取。优化时，哪些手段有效？（多选）",
+        "options": [
+          "分支拍平后 SIMD 并行、多样本路径同寄存器推进",
+          "树节点 AoS 改 SoA、向量加载装载率上去",
+          "软件预取加访存计算重叠、延迟藏起来",
+          "主频拉满、ALU 速度盖过访存"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 80% stall 权衡四种手段的投入产出",
+          "reasoningGoal": "先明确 stall 占比的约束条件；据此逐项确认「分支拍平 SIMD 化」「AoS 转 SoA」等 3 项成立；并排除「主频拉满盖过访存」等不成立描述。"
+        },
+        "generatedAt": 1789012900581,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-223eaee7",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-85b20516",
+        "sourceSnapshot": {
+          "id": "hw-vector-bw-04",
+          "topic": "pytorch-performance",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "vectorization",
+            "memory-bandwidth",
+            "simd",
+            "soa"
+          ],
+          "question": "工程师在向量加速器上优化非紧凑型数据结构（例如并行决策树推理或图遍历任务）时，经常面临从内存读取树节点数据引发的内存带宽瓶颈（Memory Bandwidth Bottleneck）。若硬件不支持自动硬件预取，下列哪些工程手段能够有效缓解该带宽瓶颈并提升硬件利用率？（多选）",
+          "options": [
+            "采用无分支（Branchless）SIMD 向量化计算，将多个独立样本的遍历路径压入同一个向量寄存器并行推进，提升内存读取的吞吐批处理度",
+            "改变树节点的内存存储布局，从结构体数组（AoS）重构为数组结构体（SoA），提升连续向量加载（Vector Load）时有效数据的装载率",
+            "将多个节点访问打包进行交错编排，利用软件预取（Software Prefetching）或计算与访存重叠掩盖高延迟",
+            "增加计算单元的主频，通过大幅提高 ALU 执行速度来直接抵消片上 DRAM 的访存延迟"
+          ]
+        }
+      }
+    ],
+    "ai-eng-040": [
+      {
+        "id": "ai-eng-040__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "RAG 两阶段里 rerank 啥时可跳、啥时必须上？",
+        "options": [
+          "延迟低于 200ms、embedding 够准、高并发精排太贵、可跳过",
+          "精度是硬指标、能忍 50-100ms、查询语义绕、必须上",
+          "法务医疗金融高风险、上 rerank 拿延迟换精度",
+          "多数场景默认加、再简单再紧也加、增益永远可观",
+          "cross-encoder 双边独立编码、比双塔更快、适合精排",
+          "候选放大到 500、双塔自然逼近精排、可完全替代"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从延迟与精度预算推导跳过与必须的分界线",
+          "reasoningGoal": "先拆出延迟预算与精度要求的双重约束；据此逐项确认「延迟低于 200ms 可跳过」「精度硬指标必须上」等 3 项成立；并排除「默认加」「独立编码更快」等不成立描述。"
+        },
+        "generatedAt": 1789012900583,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b550421d",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-d3d2603a",
+        "sourceSnapshot": {
+          "id": "ai-eng-040",
+          "topic": "reranking",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "cross-encoder",
+            "two-stage-retrieval",
+            "latency-budget"
+          ],
+          "question": "RAG 两阶段检索中，Reranker（如 cross-encoder / Cohere Rerank）在一些公开评测与特定基准上曾观察到可观的排序质量提升，但具体幅度高度依赖数据集、首阶段召回质量与评测指标，不存在通用固定数字，且它并非总是必要的。什么情况下应该跳过 rerank，什么情况下必须上？",
+          "options": [
+            "延迟预算低于 200ms、embedding 在领域内已足够准、高并发下精排成本不可接受时，可以跳过 rerank",
+            "检索精度是硬指标、能容忍 50-100ms 增量延迟，或查询语义复杂时，应该加上 rerank",
+            "法务医疗金融等高风险领域应上 rerank，以可接受的延迟代价换取更高的检索精度",
+            "多数场景都应默认加上 rerank，查询再简单、预算再紧张，cross-encoder 精排仍有可观的精确率增益",
+            "cross-encoder 对 query 与 document 分别独立编码，因此比双塔模型更快，这正是它适合精排的原因",
+            "把候选集从 top-50 放大到 top-500，双塔排序自然逼近精排效果，增大候选集可完全替代 rerank"
+          ]
+        }
+      },
+      {
+        "id": "ai-eng-040__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "搜索延迟超了，leader 问 rerank 必须砍吗？关于这一刀，哪些判断成立？",
+        "options": [
+          "200ms 预算内够准、高并发精排贵、可跳过",
+          "精度硬指标且语义绕、50-100ms 花得值",
+          "法务医疗金融高风险领域、拿延迟换精度",
+          "多数场景默认加 rerank、简单查询增益可观",
+          "cross-encoder 编码快过双塔、适合精排",
+          "候选放大到 500、双塔排序顶替精排"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从砍 rerank 的提议解释延迟与精度的传导机理",
+          "reasoningGoal": "先复现砍掉 rerank 后延迟精度的内部变化；据此逐项确认「200ms 内砍了省延迟」「精度硬指标花得值」等 3 项成立；并排除「默认全加」「编码快过双塔」等不成立描述。"
+        },
+        "generatedAt": 1789012900583,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-b550421d",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-d778029c",
+        "sourceSnapshot": {
+          "id": "ai-eng-040",
+          "topic": "reranking",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "cross-encoder",
+            "two-stage-retrieval",
+            "latency-budget"
+          ],
+          "question": "RAG 两阶段检索中，Reranker（如 cross-encoder / Cohere Rerank）在一些公开评测与特定基准上曾观察到可观的排序质量提升，但具体幅度高度依赖数据集、首阶段召回质量与评测指标，不存在通用固定数字，且它并非总是必要的。什么情况下应该跳过 rerank，什么情况下必须上？",
+          "options": [
+            "延迟预算低于 200ms、embedding 在领域内已足够准、高并发下精排成本不可接受时，可以跳过 rerank",
+            "检索精度是硬指标、能容忍 50-100ms 增量延迟，或查询语义复杂时，应该加上 rerank",
+            "法务医疗金融等高风险领域应上 rerank，以可接受的延迟代价换取更高的检索精度",
+            "多数场景都应默认加上 rerank，查询再简单、预算再紧张，cross-encoder 精排仍有可观的精确率增益",
+            "cross-encoder 对 query 与 document 分别独立编码，因此比双塔模型更快，这正是它适合精排的原因",
+            "把候选集从 top-50 放大到 top-500，双塔排序自然逼近精排效果，增大候选集可完全替代 rerank"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-33": [
+      {
+        "id": "sebastian-raschka-2026-08-33__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "QK 分数沿 Key 做完 softmax，权重有啥性质？（请选择两个）",
+        "options": [
+          "同一查询对所有 Key 权重和为 1",
+          "权重非负、可当 Value 加权系数",
+          "每个位置权重必须完全相同",
+          "softmax 后仍是未归一化任意实数"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从归一化前后对比判断权重和为 1 与非负的性质",
+          "reasoningGoal": "先对齐归一化前后的可比性质；据此逐项确认「权重和为 1」「非负可加权」等 2 项成立；并排除「必须完全相同」「仍未归一化」等不成立描述。"
+        },
+        "generatedAt": 1789012900583,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-26347c8e",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-0fde6c11",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-33",
+          "topic": "self-attention",
+          "subtopic": "softmax 注意力权重",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "softmax"
+          ],
+          "question": "对 QK 分数沿 Key 位置使用 softmax 后，得到的注意力权重具有什么性质？（请选择两个）",
+          "options": [
+            "同一查询位置对所有 Key 位置的权重和为 1",
+            "权重通常非负，可作为 Value 的加权系数",
+            "每个位置的权重都必须完全相同",
+            "softmax 后的权重仍然是未归一化的任意实数"
+          ]
+        }
+      },
+      {
+        "id": "sebastian-raschka-2026-08-33__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "实现完注意力发现权重和不是 1，排查时关于 softmax 性质，哪些说法成立？（请选择两个）",
+        "options": [
+          "同查询权重和应为 1、不为 1 就是 bug",
+          "非负权重才能做 Value 加权",
+          "权重必须处处相等、否则就不对",
+          "softmax 输出还是任意实数"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从和不为 1 的 bug 推导归一化必备的两个性质",
+          "reasoningGoal": "先定位和不为 1 的直接诱因；据此逐项确认「和应为 1」「非负才能加权」等 2 项成立；并排除「必须处处相等」「还是任意实数」等不成立描述。"
+        },
+        "generatedAt": 1789012900583,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-26347c8e",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-0476e61a",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-33",
+          "topic": "self-attention",
+          "subtopic": "softmax 注意力权重",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "softmax"
+          ],
+          "question": "对 QK 分数沿 Key 位置使用 softmax 后，得到的注意力权重具有什么性质？（请选择两个）",
+          "options": [
+            "同一查询位置对所有 Key 位置的权重和为 1",
+            "权重通常非负，可作为 Value 的加权系数",
+            "每个位置的权重都必须完全相同",
+            "softmax 后的权重仍然是未归一化的任意实数"
+          ]
+        }
+      }
+    ],
+    "posttraining-2026-003": [
+      {
+        "id": "posttraining-2026-003__surface-options__manual-as__0",
+        "kind": "surface-options",
+        "question": "GRPO 为啥不用 value model？相对优势怎么估？",
+        "options": [
+          "每 prompt 采 G 条、组内均值标准差标化优势、不要价值网",
+          "小 value 头必不可少、只是论文没写",
+          "组内归一化拿同 prompt 样本互作基线、干掉 critic",
+          "GRPO 把 baseline 折叠进归一化、奖励直接当梯度"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从 PPO 对比判断 GRPO 省掉 critic 的代偿机制",
+          "reasoningGoal": "先对齐 GRPO 与 PPO 的可比组件；据此逐项确认「组内均值标准差标化」「样本互作基线」等 2 项成立；并排除「小 value 头必不可少」「baseline 多余」等不成立描述。"
+        },
+        "generatedAt": 1789012900583,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e30e4db8",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-eb3345f8",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-003",
+          "topic": "training",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "grpo",
+            "rl",
+            "reward"
+          ],
+          "question": "GRPO 为什么可以不显式训练传统 PPO 中的 value model？它通过什么机制估计同一组采样结果的相对优势？",
+          "options": [
+            "GRPO 对每个 prompt 采样 G 条回复，用这组回复奖励的组内均值与标准差标准化优势，从而无需价值网络",
+            "GRPO 仍需价值估计，只是用组内统计代替了网络；小 value 头必不可少，只是论文略写。",
+            "相对优势（组内归一化）本质是用同一 prompt 的多条样本互相作基线，消除了对独立 critic 的依赖",
+            "组内相对比较已隐含 baseline，显式 baseline 是 PPO 时代的冗余；GRPO 把它折叠进了归一化。"
+          ]
+        }
+      },
+      {
+        "id": "posttraining-2026-003__context-options__manual-as__1",
+        "kind": "context-options",
+        "question": "面试被问：GRPO 不训 value model，相对优势谁来算？哪些回答正确？",
+        "options": [
+          "每 prompt 采一组回复、用组内均值标化优势",
+          "小 value 头必不可少、没写只是论文省略",
+          "同 prompt 多样本互作基线、不需要独立 critic",
+          "PPO 时代显式 baseline 是冗余、奖励直接拿来当梯度"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从面试追问推导组内基线的成立条件",
+          "reasoningGoal": "先拆出无 critic 必须回答的质疑；据此逐项确认「组内统计标化优势」「样本互为基线」等 2 项成立；并排除「value 头藏着」「奖励即梯度」等不成立描述。"
+        },
+        "generatedAt": 1789012900583,
+        "generator": "offline",
+        "promptVersion": "v4",
+        "sourceHash": "fnv1a-e30e4db8",
+        "batch": "manual-as",
+        "model": "manual",
+        "contentHash": "fnv1a-f2990223",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-003",
+          "topic": "training",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "grpo",
+            "rl",
+            "reward"
+          ],
+          "question": "GRPO 为什么可以不显式训练传统 PPO 中的 value model？它通过什么机制估计同一组采样结果的相对优势？",
+          "options": [
+            "GRPO 对每个 prompt 采样 G 条回复，用这组回复奖励的组内均值与标准差标准化优势，从而无需价值网络",
+            "GRPO 仍需价值估计，只是用组内统计代替了网络；小 value 头必不可少，只是论文略写。",
+            "相对优势（组内归一化）本质是用同一 prompt 的多条样本互相作基线，消除了对独立 critic 的依赖",
+            "组内相对比较已隐含 baseline，显式 baseline 是 PPO 时代的冗余；GRPO 把它折叠进了归一化。"
+          ]
+        }
+      }
+    ]
+  }
+}

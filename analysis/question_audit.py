@@ -19,7 +19,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS_DIR = ROOT / "src" / "data" / "questions"
 KNOWLEDGE_DIR = ROOT / "src" / "data" / "knowledge"
-VALID_ANGLES = {
+SCHEMA_COMMON = ROOT / "src" / "schemas" / "common.ts"
+
+# 硬编码兜底：仅在 common.ts 读不到或解析失败时使用。必须与
+# src/schemas/common.ts 的 questionAngleSchema 保持一致。
+_FALLBACK_ANGLES = {
     "definition",
     "fundamental",
     "mechanism",
@@ -30,7 +34,40 @@ VALID_ANGLES = {
     "debugging",
     "system-design",
     "design",
+    "causal",
+    "diagnosis",
+    "prediction",
+    "architecture",
+    "boundary",
+    "misconception",
+    "quantitative",
+    "implementation",
+    "synthesis",
 }
+
+
+def _load_angles_from_schema() -> set[str]:
+    """从 `src/schemas/common.ts` 的 `questionAngleSchema` 解析合法 angle。
+
+    TypeScript/Zod 是运行时数据契约的唯一来源。历史上本文件的 VALID_ANGLES 停在
+    11 个值（漏掉 ADR-077 后新增的 causal/diagnosis/architecture/boundary/...），
+    导致 16 条假 P0「invalid-angle」，且未识别的 angle 不计入 covered_cells，
+    把覆盖缺口数从 20 虚报为 26。改为从 schema 解析，杜绝再次漂移。
+    """
+    try:
+        text = SCHEMA_COMMON.read_text(encoding="utf-8")
+    except OSError:
+        return set(_FALLBACK_ANGLES)
+    # 去掉行注释，避免注释里出现被引号包裹的英文单词污染枚举解析
+    text = re.sub(r"//[^\n]*", "", text)
+    match = re.search(r"questionAngleSchema\s*=\s*z\.enum\(\[(.*?)\]\)", text, re.S)
+    if not match:
+        return set(_FALLBACK_ANGLES)
+    found = set(re.findall(r"'([a-z][a-z-]*)'", match.group(1)))
+    return found or set(_FALLBACK_ANGLES)
+
+
+VALID_ANGLES = _load_angles_from_schema()
 PLACEHOLDER_RE = re.compile(r"^(?:参见解析|见解析|略|同上|待补充|todo|tbd)$", re.IGNORECASE)
 VOLATILE_RE = re.compile(r"(?:aws|amazon|openai|anthropic|google|azure|api|sdk|模型版本|版本号|version|认证考试|claude|gpt|gemini)", re.IGNORECASE)
 # 题型门禁阈值（AGENTS.md §4.2）：单选题在选择题中的占比上限。

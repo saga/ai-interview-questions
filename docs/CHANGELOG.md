@@ -1,6 +1,105 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-11 · Agent 面试每题倒计时 + 时间到弹窗（不自动跳题）
+
+- 现象：Agent 面试此前**完全没有倒计时**，用户无法感知每题剩余作答时间，也无「时间到」提示。
+- 新增 `useAgentInterview` 每题倒计时：每道交付题重置计时，常量 `AGENT_QUESTION_TIME_LIMIT_SEC = 180`。
+  面试官思考/评分（busy/submitting）期间冻结计时，不消耗作答时间；面试结束/提前结束/重开/卸载均清定时器。
+- 时间归零**不自动跳题**：改为弹出 Modal（不可点遮罩关闭），让用户二选一——
+  「延长本题时间（再 180s）」或「跳到下一题（放弃本题，不计分，走 Agent 的 `skip()`）」。
+- UI：运行态头部加 `本题剩余 mm:ss` 计时标签（green >60s / gold >30s / red 其余）；时间到弹窗由 `questionTimeUp` 驱动。
+- 自检：`tsc -p tsconfig.app.json` 通过；`src/agent` 106/106 测试通过。
+
+## 2026-09-10 · Agent 基础/循环/护栏 30 条（`assessment.manual-av-20260910.json`，覆盖 697→712 题）
+
+- 15 道未覆盖题 × 2 条（上下文压缩与重置权衡/Agent 定义闭环/自改提示词折中/
+  ReAct 机制与护栏/客服混合架构/固定流水线选型/20 步分叉决策点/最小 Agent 组件/
+  ReAct 与单次调用对比/僵尸任务终止机制/三层客服分流/零信任输出安全/
+  Harness 提炼与微调对比/Contract 三元映射/Harness 定义边界），
+  全部自声明三段式测量面，覆盖 4 个 topic（agent-fundamentals×9/agent-loop×4/
+  agent-guardrails/context-engineering），选项长度比全批 ≤1.8×。
+- 门禁实证：初稿 20/30 直接过全门禁，迭代 4 轮收敛——drift 10 条
+  （context 变体改写过 aggressive，逐项贴回原文核心名词短语解决；
+  其中 agentic-01 短选项逐字搬运「数据清洗/模型蒸馏」才达标）；
+  从句倒置 3 条（恢复原文分句顺序）；length-bias 2 条
+  （agentdual/envharness context：正确项压回 1.5× 以内）；
+  dropped-numeric 1 条（ai-eng-002 context 题干补 20）。
+  经验：context 变体选项与 canonical 的 Dice 安全线在 40+，35~40 属薄 margin，
+  下次初稿即保留核心名词短语。
+- 池指标：1361→**1391** 条，覆盖 697→**712** 题（49.5%→50.5%），
+  assessment 自声明 94.1%→**94.2%**，路径唯一率同步 **94.2%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` 全阻断项 0（难度驱动新增 0，7 条均为存量）；
+  `npm test` 891/891；`typecheck` 干净；草稿（/tmp/gen-av.mjs、/tmp/check-av.ts）未落仓。
+
+## 2026-09-10 · 评估/RAG/规划/Reward 20 条（`assessment.manual-at-20260910.json`，覆盖 677→687 题）
+
+- 10 道未覆盖题 × 2 条（UI Rubric 权重驱动视觉探索/Bedrock 归因检索最低运维/
+  CloudWatch 统一可观测/动态规划器边界/DOM 与截图感知权衡/苦涩教训工程边界/
+  ReAct 循环机制/可验证任务奖励设计/安全基线防配置漂移/程序化奖励取舍），
+  全部自声明三段式测量面，覆盖 9 个 topic（evaluation×2/rag/observability/
+  planning/system-design/agent-loop/rlhf/tool-security/training），
+  选项长度比全批 ≤1.8×，通过 `LINT_OPTION_LENGTH` 硬门禁。
+- 门禁实证：初稿 19/20 直接过闸，迭代 1 轮收敛——length-bias 1 条
+  （posttraining-2026-004 context：正确项最长 57 vs 最短干扰项 30，把干扰项
+  拉长到「能覆盖到所有开放式写作任务，只是编写测试用例的成本会略高一些」）。
+  前两轮校准的经验（逐项保留原文数字/专名/Prompt 类泄题词避开题干）已生效：0 drift、
+  0 extra-hint、0 倒装。
+- 池指标：1321→**1341** 条，覆盖 677→**687** 题（48.8%），
+  assessment 自声明 93.9%→**94.0%**，路径唯一率同步 **94.0%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` exit 0（全阻断项 0，难度驱动 7 条均为 20260903 存量）；
+  `npm test` 891/891；`typecheck` 干净；草稿落盘即删。
+
+## 2026-09-10 · 首 20 条手动批（`batch20.wb-manual-20260910.json`，覆盖 667→677 题）
+
+- 10 道未覆盖题 × 2 条（因果掩码边界/分组查询注意力/GQA 取舍/多子代理工具
+  候选过大/KV Cache 机制与误读/TTFT·TPOT 排障优先级/跨代理上下文交接/
+  固定流程边界/参数口径比较/动态分辨率取舍），全部自声明三段式测量面，
+  覆盖 10 个 topic（self-attention/attention/tool-calling/kv-cache/
+  inference-optimization/context-engineering/agent-fundamentals/moe/reliability/
+  multimodal），选项长度比全批 ≤1.8×，通过 `LINT_OPTION_LENGTH` 硬门禁。
+- 门禁实证：初稿 15/20 直接过闸（前一轮已校准的手写通道），迭代 3 轮收敛——
+  drift 3 条（f04 选项 0/1、cca-f-02 选项 1：短选项要一个词一个词从原文搬，
+  保留数字与核心短语「可靠选择阈值/结构化的来源索引」）；length-bias 3 条
+  （p0inf/agentic-53 context、waf-06 surface：正确项压回 1.3× 以内，
+  最短干扰项拉长到与正确项同量级）。
+- 池指标：1301→**1321** 条，覆盖 667→**677** 题（48.0%），
+  assessment 自声明维持 **93.9%**，路径唯一率 **93.9%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` exit 0（全阻断项 0，难度驱动 7 条均为 20260903 存量）；
+  `npm test` 891/891；`typecheck` 干净；草稿落盘即删。
+
+## 2026-09-10 · 双模型协作/成本机制/GRPO 20 条（`assessment.manual-as-20260910.json`，覆盖 657→667 题）
+
+- 10 道未覆盖题 × 2 条（前后台双模型/p99 尾部排查/Agent 烧 Token 机制/
+  1-WL 上限/模型监控运维/非人类身份台账/向量访存/RAG rerank 取舍/
+  softmax 性质/GRPO 无 critic），全部自声明三段式测量面，
+  10/10 多选，选项长度比全批 ≤1.8×。
+- 门禁实证：初稿 13/20 被拒——drift 9 条，全部贴回原文动词解决
+  （agent-cost 四项先后掉线，逐项补词四轮才收敛）；
+  倒装 2 条；extra-hint 1 条（题干 critic 删，value model 因原题干
+  自带而豁免）；dropped-numeric/qualifier 2 条（题干补 200ms/必须）；
+  length-bias 4 条（6 选项 ai-eng-040 压最长拉最短，双向收敛）。
+- 池指标：1281→**1301** 条，覆盖 657→**667** 题（45.9%→47.3%），
+  assessment 自声明 93.8%→**93.9%**，路径唯一率同步 **93.9%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` exit 0（全阻断项 0）；`npm test` 891/891
+  （题库测试随新资产 +1）；草稿落盘即删。
+
+## 2026-09-10 · 网络设施/切分/量化边界 20 条（`assessment.manual-ar-20260910.json`，覆盖 647→657 题）
+
+- 10 道未覆盖题 × 2 条（NAPT 状态查表/500 万日增 5 分钟可见/
+  编程式上下文/会议纪要防泄/4-bit 落后边界/单多向量选型/
+  NLA 幻觉应对/转置两条路径/Chunking 差异化/缩放因子），
+  全部自声明三段式测量面，10/10 多选，选项长度比全批 ≤1.8×。
+- 门禁实证：初稿 16/20 被拒（六批最硬）——drift 7 条，短选项必须
+  一个词一个词从原文搬（dice 12~34 区）；倒装 2 条；extra-hint 3 条
+  （题干 bf16/DMA/Padding/softmax 删，MXFP4/SRAM 因原题干自带豁免）；
+  dropped-qualifier/numeric 3 条（题干补 所有/16-bit/500 万）；
+  length-bias 4 条；forbidden-reference 1 条（surface 题干双“上下文”，
+  改一处为“窗口”——第三次命中同一坑）。
+- 池指标：1261→**1281** 条，覆盖 647→**657** 题（46.6%），
+  assessment 自声明 93.7%→**93.8%**，路径唯一率同步 **93.8%**，疑似同路径保持 **0**。
+- 回归：`validate-variants` exit 0（全阻断项 0）；`npm test` 890/890；草稿落盘即删。
+
 ## 2026-09-10 · 检索诊断/状态分层/后训练 20 条（`assessment.manual-aq-20260910.json`，覆盖 637→647 题）
 
 - 10 道未覆盖题 × 2 条（reranker 离线线上脱节/长程状态分层/

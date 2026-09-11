@@ -90,18 +90,18 @@
         "question": "单个注意力头的维度设为 d_k=64，且 query q 与 key k 的每个分量都独立地服从 N(0,1)。关于未缩放点积 q·k 及其缩放后的统计特征，下列说法正确的是？",
         "options": [
           "未经缩放时，点积 q·k 的方差大约为 64（即 d_k）。",
-          "未经缩放时，点积 q·k 的标准差大约为 8（即 √d_k）。",
-          "在除以 √d_k 之后，缩放后点积的标准差大约为 1。",
-          "未缩放的点积 q·k 其方差大约为 8。",
-          "未缩放的点积 q·k 其标准差大约为 64。"
+          "缩放系数应取 1/√d_k = 1/8，而不是 1/d_k = 1/64。",
+          "完成 √d_k 归一化之后，点积的标准差大约为 1，不随 d_k 变化。",
+          "未缩放的点积 q·k 其方差大约为 8，与维度 d_k 无关。",
+          "缩放系数改用 1/d_k = 1/64 时，归一化会做得更加彻底。"
         ],
-        "generatedAt": 1788956935634,
+        "generatedAt": 1789013197112,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-1391d325",
+        "sourceHash": "fnv1a-b56a7719",
         "batch": "transattn",
         "model": "manual",
-        "contentHash": "fnv1a-a2aac9d7",
+        "contentHash": "fnv1a-5632ac62",
         "sourceSnapshot": {
           "id": "scaled-dot-product-scaling-calculation-canonical",
           "topic": "scaled-dot-product-scaling",
@@ -116,10 +116,10 @@
           "question": "设 query q 与 key k 各分量独立服从 N(0,1)，单个头的维度 d_k=64。关于点积 q·k 与缩放后的统计量，下列哪些说法正确？",
           "options": [
             "未缩放点积 q·k 的方差约为 64（= d_k）。",
-            "未缩放点积 q·k 的标准差约为 8（= √d_k）。",
-            "除以 √d_k 后，缩放点积的标准差约为 1。",
-            "未缩放点积 q·k 的方差约为 8。",
-            "未缩放点积 q·k 的标准差约为 64。"
+            "缩放因子取 1/√d_k = 1/8，而非 1/d_k = 1/64。",
+            "缩放后点积的标准差约为 1，与 d_k 的大小无关。",
+            "未缩放点积 q·k 的方差约为 8，与维度 d_k 无关。",
+            "缩放因子应取 1/d_k = 1/64，这样归一化更彻底。"
           ]
         }
       }
@@ -172,18 +172,18 @@
         "question": "某 base 规模的 Transformer 设定 d_model=512，并把注意力划分为 h=8 个头。关于多头注意力内部的维度分配，下列说法正确的是？",
         "options": [
           "每个头的维度 d_k = d_model / h = 512 / 8 = 64。",
-          "整体维度守恒：始终满足 h × d_k = d_model。",
-          "缩放点积所用的 1/√d_k 取的是每头的维度（64），而不是 d_model（512）。",
+          "划分的头数越多，每个头就越窄，h × d_k 的乘积一直等于 d_model。",
+          "缩放点积时的 1/√d_k，依据的是单个头自己的维度。",
           "每头维度 d_k 等于 d_model，也就是 512。",
           "只要 d_model 不变，增大头数 h，每头维度 d_k 也会保持不变。"
         ],
-        "generatedAt": 1788956935635,
+        "generatedAt": 1789013197113,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-b47c83d1",
+        "sourceHash": "fnv1a-ef25e6e0",
         "batch": "transattn",
         "model": "manual",
-        "contentHash": "fnv1a-08046c13",
+        "contentHash": "fnv1a-2f5e45fe",
         "sourceSnapshot": {
           "id": "multi-head-attention-subspace-calculation-canonical",
           "topic": "multi-head-attention-subspace",
@@ -198,8 +198,8 @@
           "question": "在 base Transformer 中 d_model=512、头数 h=8。关于多头注意力的维度分配，下列哪些说法正确？",
           "options": [
             "每头维度 d_k = d_model / h = 512 / 8 = 64。",
-            "总维度守恒：h × d_k = d_model 恒成立。",
-            "缩放因子 1/√d_k 使用的是每头维度（64），而非 d_model（512）。",
+            "头数越多每头越窄，h × d_k 的乘积始终等于 d_model。",
+            "缩放因子取 1/√d_k，依据的是每个头各自的维度。",
             "每头维度 d_k 等于 d_model，即 512。",
             "在 d_model 固定时增大头数 h，每头维度 d_k 仍保持不变。"
           ]

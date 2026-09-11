@@ -1,5 +1,6 @@
-import { Alert, Button, Card, Divider, Space, Spin, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Divider, Modal, Space, Spin, Tag, Typography } from 'antd';
 import {
+  ClockCircleOutlined,
   PlayCircleOutlined,
   RobotOutlined,
   SendOutlined,
@@ -11,6 +12,7 @@ import type { AnswerValue, LLMProvider } from '../../types';
 import type { AIConfig } from '../../schemas/ai-config';
 import { isConfigValid } from '../../ai/provider';
 import type { AgentInterviewState, TranscriptItem } from '../../hooks/useAgentInterview';
+import { AGENT_QUESTION_TIME_LIMIT_SEC } from '../../hooks/useAgentInterview';
 import QuestionCard from '../quiz/QuestionCard';
 
 interface Props extends AgentInterviewState {
@@ -18,6 +20,13 @@ interface Props extends AgentInterviewState {
   challengerProvider?: LLMProvider | null;
   onGoSettings: () => void;
   onGoProgress: () => void;
+}
+
+/** 把剩余秒数格式化为 mm:ss。 */
+function formatClock(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 /**
@@ -73,6 +82,10 @@ export default function AgentInterviewPage({
   summary,
   error,
   evaluatedCount,
+  questionTimeLeftSec,
+  questionTimeUp,
+  extendQuestionTime,
+  jumpToNextQuestion,
   setAnswer,
   start,
   submit,
@@ -147,9 +160,17 @@ export default function AgentInterviewPage({
     return (
       <div style={{ maxWidth: 820, margin: '0 auto' }}>
         <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 12 }} wrap>
-          <Tag color="blue">
-            已考察 {evaluatedCount} 题
-          </Tag>
+          <Space wrap>
+            <Tag color="blue">已考察 {evaluatedCount} 题</Tag>
+            {questionTimeLeftSec != null && (
+              <Tag
+                color={questionTimeLeftSec > 60 ? 'green' : questionTimeLeftSec > 30 ? 'gold' : 'red'}
+                icon={<ClockCircleOutlined />}
+              >
+                本题剩余 {formatClock(questionTimeLeftSec)}
+              </Tag>
+            )}
+          </Space>
           {busy || submitting ? (
             <Tag color="processing">
               {submitting ? '正在检查回答…' : '面试官思考中…'}
@@ -260,6 +281,34 @@ export default function AgentInterviewPage({
             </div>
           </Card>
         )}
+
+        {/* 倒计时归零：弹窗让用户选择「延长本题」或「跳到下一题」，而非自动跳题 */}
+        <Modal
+          open={questionTimeUp}
+          title="本题时间已到"
+          closable={false}
+          maskClosable={false}
+          footer={[
+            <Button key="extend" type="primary" onClick={() => extendQuestionTime()}>
+              延长本题时间（再 {AGENT_QUESTION_TIME_LIMIT_SEC}s）
+            </Button>,
+            <Button key="jump" danger onClick={() => jumpToNextQuestion()}>
+              跳到下一题（放弃本题）
+            </Button>,
+          ]}
+        >
+          <Typography.Paragraph style={{ marginBottom: 8 }}>
+            当前题目的倒计时已经归零。请选择如何继续：
+          </Typography.Paragraph>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            <li>
+              <b>延长本题时间</b>：重置本题计时（{AGENT_QUESTION_TIME_LIMIT_SEC} 秒），继续作答当前题。
+            </li>
+            <li>
+              <b>跳到下一题</b>：放弃当前题（不计分），由面试官直接交付下一题。
+            </li>
+          </ul>
+        </Modal>
       </div>
     );
   }

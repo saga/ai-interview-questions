@@ -140,14 +140,15 @@
       ]
     },
     "assessment": {
-      "target": "能在给定 d_k 时计算未缩放点积的方差与标准差，并说明缩放后恢复单位方差。",
-      "reasoningGoal": "先算 Var(q·k)=d_k、std=√d_k；再算缩放后 Var=1、std=1；据此排除把方差/标准差与 d_k 混淆的判断。"
-    },
+    "target": "能在给定 d_k 时计算点积的方差、确定缩放因子的数值，并说明缩放后恢复单位标准差。",
+    "reasoningGoal": "先算 Var(q·k)=d_k=64；再定位缩放因子 1/√d_k=1/8 并确认缩放后标准差回到 1；据此排除混淆方差与标准差、以及把 1/d_k 当作缩放因子的判断。"
+  },
     "question": "设 query q 与 key k 各分量独立服从 N(0,1)，单个头的维度 d_k=64。关于点积 q·k 与缩放后的统计量，下列哪些说法正确？",
-    "explanation": "正确答案为 A、B、C。\nA 项正确：Var(q·k)=d_k=64。\nB 项正确：未缩放点积的标准差 =√Var=√64=8。\nC 项正确：除以 √d_k 后，缩放点积的方差 =64/64=1、标准差 =1。\nD 项错误：方差是 64 而非 8；8 是标准差。\nE 项错误：标准差是 8 而非 64。",
-    "misconceptions": [
-      "混淆未缩放点积的方差与标准差（d_k=64 时方差为 64、标准差为 8）"
-    ],
+  "explanation": "正确答案为 A、B、C。\nA 项正确：各分量独立且方差为 1 时，Var(q·k)=ΣVar(q_i·k_i)=d_k=64。\nB 项正确：d_k=64 时 √d_k=8，故缩放因子是 1/8 而不是 1/64；用 1/d_k 属于过度缩放。\nC 项正确：除以 √d_k 后标准差 = √d_k/√d_k = 1，该结论对任意 d_k 都成立。\nD 项错误：8 是标准差而非方差，且方差随 d_k 线性增长，并非与维度无关。\nE 项错误：1/d_k 会把 logits 过度压缩、使 softmax 趋于均匀，不是“归一化更彻底”。",
+  "misconceptions": [
+    "混淆未缩放点积的方差与标准差（d_k=64 时方差为 64、标准差为 8）",
+    "以为缩放越彻底越好，把 1/√d_k 误用成 1/d_k"
+  ],
     "source": {
       "materialId": "arxiv-1706-03762",
       "section": "3.2.1"
@@ -155,28 +156,28 @@
     "formats": {
       "choice": {
         "type": "multiple",
-        "options": [
-          "未缩放点积 q·k 的方差约为 64（= d_k）。",
-          "未缩放点积 q·k 的标准差约为 8（= √d_k）。",
-          "除以 √d_k 后，缩放点积的标准差约为 1。",
-          "未缩放点积 q·k 的方差约为 8。",
-          "未缩放点积 q·k 的标准差约为 64。"
-        ],
+      "options": [
+        "未缩放点积 q·k 的方差约为 64（= d_k）。",
+        "缩放因子取 1/√d_k = 1/8，而非 1/d_k = 1/64。",
+        "缩放后点积的标准差约为 1，与 d_k 的大小无关。",
+        "未缩放点积 q·k 的方差约为 8，与维度 d_k 无关。",
+        "缩放因子应取 1/d_k = 1/64，这样归一化更彻底。"
+      ],
         "answer": [
           0,
           1,
           2
         ],
-        "misconceptionMap": [
-          null,
-          null,
-          null,
-          0,
-          0
-        ]
-      },
-      "open": {
-        "referenceAnswer": "Var(q·k)=d_k=64，标准差=√64=8；除以 √d_k 后方差与标准差均回落到 1。注意区分方差 64 与标准差 8。正确答案 A、B、C。"
+      "misconceptionMap": [
+        null,
+        null,
+        null,
+        0,
+        1
+      ]
+    },
+    "open": {
+      "referenceAnswer": "Var(q·k)=d_k=64；缩放因子为 1/√d_k=1/8（不是 1/d_k=1/64）；除以 √d_k 后标准差回到 1，与 d_k 大小无关。正确答案 A、B、C。"
       }
     }
   },
@@ -266,12 +267,13 @@
       "reasoningGoal": "先由 h×d_k=d_model 得 d_k=d_model/h；再定位缩放因子用 d_k（非 d_model）；据此排除'混淆 d_k 与 d_model'的判断。"
     },
     "question": "在 base Transformer 中 d_model=512、头数 h=8。关于多头注意力的维度分配，下列哪些说法正确？",
-    "explanation": "正确答案为 A、B、C。\nA 项正确：每头维度 d_k = d_model/h = 512/8 = 64。\nB 项正确：总维度守恒，h × d_k = d_model 恒成立。\nC 项正确：缩放点积注意力用的缩放因子是 1/√d_k（即 1/8），使用的是每头维度 64，而非 d_model 512。\nD 项错误：d_k = d_model/h = 64，并非等于 d_model（512）。\nE 项错误：在 d_model 固定时增大 h 会使每头维度 d_k 下降（d_k=d_model/h），而非保持不变。",
-    "misconceptions": [
-      "以为多头只是把单头拆细、表达等价（子空间联合注意力严格强于单头）",
-      "混淆 d_k 与 d_model：缩放因子用的是每头的 d_k 而非 d_model",
-      "认为头越多越好，忽略 d_k 过小时每头表达能力退化"
-    ],
+  "explanation": "正确答案为 A、B、C。\nA 项正确：每头维度 d_k = d_model/h = 512/8 = 64。\nB 项正确：h × d_k 恒等于 d_model，因此头数越多每头越窄，二者此消彼长。\nC 项正确：缩放因子 1/√d_k 中的 d_k 指每个头各自的维度（64），不是拼接后的 d_model（512）；用错会让 logits 量级失衡。\nD 项错误：d_k = d_model/h = 64，并不等于 d_model。\nE 项错误：d_model 固定时增大 h 会让 d_k = d_model/h 变小，不可能保持不变。",
+  "misconceptions": [
+    "以为多头只是把单头拆细、表达等价（子空间联合注意力严格强于单头）",
+    "混淆 d_k 与 d_model：缩放因子用的是每头的 d_k 而非 d_model",
+    "认为头越多越好，忽略 d_k 过小时每头表达能力退化",
+    "忽略 d_k = d_model/h 的约束，以为增大头数不会压缩每头维度"
+  ],
     "source": {
       "materialId": "arxiv-1706-03762",
       "section": "3.2.2"
@@ -280,27 +282,27 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "每头维度 d_k = d_model / h = 512 / 8 = 64。",
-          "总维度守恒：h × d_k = d_model 恒成立。",
-          "缩放因子 1/√d_k 使用的是每头维度（64），而非 d_model（512）。",
-          "每头维度 d_k 等于 d_model，即 512。",
-          "在 d_model 固定时增大头数 h，每头维度 d_k 仍保持不变。"
-        ],
-        "answer": [
-          0,
-          1,
-          2
-        ],
-        "misconceptionMap": [
-          null,
-          null,
-          null,
-          1,
-          1
-        ]
-      },
-      "open": {
-        "referenceAnswer": "d_k = d_model/h = 512/8 = 64；h×d_k=d_model 总维度守恒；缩放因子用每头维度 d_k=64 而非 d_model。正确答案 A、B、C。"
+        "每头维度 d_k = d_model / h = 512 / 8 = 64。",
+        "头数越多每头越窄，h × d_k 的乘积始终等于 d_model。",
+        "缩放因子取 1/√d_k，依据的是每个头各自的维度。",
+        "每头维度 d_k 等于 d_model，即 512。",
+        "在 d_model 固定时增大头数 h，每头维度 d_k 仍保持不变。"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "misconceptionMap": [
+        null,
+        null,
+        null,
+        1,
+        3
+      ]
+    },
+    "open": {
+      "referenceAnswer": "d_k = d_model/h = 512/8 = 64；h × d_k 恒等于 d_model（头数越多、每头越窄）；缩放因子 1/√d_k 用的是每头维度而非 d_model。正确答案 A、B、C。"
       }
     }
   },

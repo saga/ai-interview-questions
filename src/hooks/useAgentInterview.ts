@@ -49,6 +49,9 @@ const TOOL_LABELS: Record<string, string> = {
   finishInterview: '结束面试',
 };
 
+/** Agent 面试每题倒计时（秒）。时间到不自动跳题，而是弹窗让用户选择「延长本题」或「跳到下一题」。 */
+export const AGENT_QUESTION_TIME_LIMIT_SEC = 180;
+
 /** 从一条 assistant message 中抽取纯文本（忽略 toolCall 等内容块）。 */
 function messageText(msg: unknown): string {
   const m = msg as { content?: Array<{ type: string; text?: string }> } | undefined;
@@ -93,6 +96,14 @@ export interface AgentInterviewState {
   error: string | null;
   /** 已被 Agent 评分的题目数（来自 session.evaluations，渲染时读取，随 transcript 更新）。 */
   evaluatedCount: number;
+  /** 当前题剩余秒数；非 running 或尚未交付题为 null。 */
+  questionTimeLeftSec: number | null;
+  /** 本题倒计时已归零，等待用户在弹窗中选择「延长本题」或「跳到下一题」。 */
+  questionTimeUp: boolean;
+  /** 「延长本题时间」：本题重新开始计时。 */
+  extendQuestionTime: () => void;
+  /** 「跳到下一题」：放弃当前题并交付下一题（不计分）。 */
+  jumpToNextQuestion: () => void;
   setAnswer: (v: AnswerValue) => void;
   start: () => Promise<void>;
   submit: () => Promise<void>;
@@ -119,6 +130,14 @@ export function useAgentInterview(
   const [submitting, setSubmitting] = useState(false);
   const [summary, setSummary] = useState<{ asked: number; overall: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // ── 每题倒计时（计时器）──
+  // 时间到不自动跳题：弹窗让用户选择「延长本题」或「跳到下一题」（见 AgentInterviewPage 的 Modal）。
+  const [questionTimeLeftSec, setQuestionTimeLeftSec] = useState<number | null>(null);
+  const [questionTimeUp, setQuestionTimeUp] = useState(false);
+  const questionTimerIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const questionTimerRemainingRef = useRef(AGENT_QUESTION_TIME_LIMIT_SEC);
+  const questionTimerFrozenRef = useRef(false);
 
   const handleRef = useRef<InterviewAgentHandle | null>(null);
   const sessionRef = useRef<InterviewAgentSession | null>(null);
@@ -153,8 +172,59 @@ export function useAgentInterview(
     setQuestions(next);
   }, []);
 
+  // ── 每题倒计时控制 ──
+  const stopQuestionTimer = useCallback(() => {
+    if (questionTimerIdRef.current) {
+      clearInterval(questionTimerIdRef.current);
+      questionTimerIdRef.current = null;
+    }
+  }, []);
+
+  /** 一道新题交付时调用：重置并启动本题倒计时。 */
+  const startQuestionTimer = useCallback(() => {
+    stopQuestionTimer();
+    questionTimerRemainingRef.current = AGENT_QUESTION_TIME_LIMIT_SEC;
+    questionTimerFrozenRef.current = false;
+    setQuestionTimeUp(false);
+    setQuestionTimeLeftSec(AGENT_QUESTION_TIME_LIMIT_SEC);
+    questionTimerIdRef.current = setInterval(() => {
+      // busy / submitting 时冻结（面试官思考/评分期间不消耗作答时间）
+      if (questionTimerFrozenRef.current) return;
+      const v = Math.max(0, questionTimerRemainingRef.current - 1);
+      questionTimerRemainingRef.current = v;
+      setQuestionTimeLeftSec(v);
+      if (v <= 0) {
+        stopQuestionTimer();
+        setQuestionTimeUp(true); // 触发 UI 弹窗，不自动跳题
+      }
+    }, 1000);
+  }, [stopQuestionTimer]);
+
+  /** 「延长本题时间」：本题重新开始计时（全额时长）。 */
+  const extendQuestionTime = useCallback(() => {
+    questionTimerRemainingRef.current = AGENT_QUESTION_TIME_LIMIT_SEC;
+    questionTimerFrozenRef.current = false;
+    setQuestionTimeUp(false);
+    setQuestionTimeLeftSec(AGENT_QUESTION_TIME_LIMIT_SEC);
+  }, []);
+
+  /** 「跳到下一题」：放弃当前题（不计分）并交付下一题（Agent 的 skip）。 */
+  const jumpToNextQuestion = useCallback(() => {
+    setQuestionTimeUp(false);
+    stopQuestionTimer();
+    void handleRef.current?.skip();
+  }, [stopQuestionTimer]);
+
+  // 面试官思考/评分期间冻结倒计时，避免消耗作答时间
+  useEffect(() => {
+    questionTimerFrozenRef.current = busy || submitting;
+  }, [busy, submitting]);
+
   const finalize = useCallback(() => {
     if (finalizedRef.current) return; // 幂等：已收尾则直接返回，杜绝重复落库
+    stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
+    setQuestionTimeUp(false);
+    setQuestionTimeLeftSec(null);
     const session = sessionRef.current;
     if (!session) return;
     finalizedRef.current = true;
@@ -256,6 +326,7 @@ export function useAgentInterview(
             setCurrentQuestion(q);
             setAnswer(emptyAnswer(q));
             syncQuestions(q);
+            startQuestionTimer(); // 新题交付：重置并启动本题倒计时
             void persistDraft(); // 题目已交付 = 安全断点，立即落库
           },
           onStatus: (status) => {
@@ -303,7 +374,7 @@ export function useAgentInterview(
       handleRef.current = handle;
       return handle;
     },
-    [config, finalize, syncQuestions, persistDraft, message],
+    [config, finalize, syncQuestions, persistDraft, message, startQuestionTimer],
   );
 
   const start = async () => {
@@ -322,6 +393,9 @@ export function useAgentInterview(
 
   const startInner = async () => {
     setError(null);
+    stopQuestionTimer(); // 新一轮：清掉上一场可能残留的倒计时
+    setQuestionTimeUp(false);
+    setQuestionTimeLeftSec(null);
     finalizedRef.current = false; // 新一轮面试：解除终局守卫
     resetUsageTelemetry(); // 重置 KV Cache 命中率累计（P1④）：每场面试从 Round 1 重新计数
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
@@ -393,6 +467,9 @@ export function useAgentInterview(
   const restart = () => {
     handleRef.current?.dispose(); // 真正中止进行中的 run + 清看门狗 + 取消订阅
     handleRef.current = null;
+    stopQuestionTimer();
+    setQuestionTimeUp(false);
+    setQuestionTimeLeftSec(null);
     const restartSessionId = sessionRef.current?.id;
     if (restartSessionId) void flushPersist().then(() => deleteAgentSession(restartSessionId));
     sessionRef.current = null;
@@ -446,6 +523,7 @@ export function useAgentInterview(
             setCurrentQuestion(q);
             setAnswer(emptyAnswer(q));
             syncQuestions(q);
+            startQuestionTimer(); // 续面交付题：重置并启动本题倒计时
             void persistDraft();
           },
           onStatus: (status) => {
@@ -498,6 +576,7 @@ export function useAgentInterview(
       setTranscript(rebuildTranscript(session));
       setPhase('running');
       setBusy(false);
+      if (session.currentQuestion) startQuestionTimer(); // 续面已有当前题：立即启动倒计时
       } finally {
         // 无论是否找到草稿、是否成功续面，都必须放行 start()：
         // 否则一次 resume 异常会让用户永远无法开始新面试。
@@ -510,7 +589,13 @@ export function useAgentInterview(
 
   // 仅在整个 App 卸载时清理 Agent 运行；切换 tab（AgentInterviewPage 卸载）不触发，
   // 以保留进行中的会话。restart 由用户主动调用，会显式 dispose。
-  useEffect(() => () => handleRef.current?.dispose(), []);
+  useEffect(
+    () => () => {
+      handleRef.current?.dispose();
+      stopQuestionTimer();
+    },
+    [stopQuestionTimer],
+  );
 
   return {
     phase,
@@ -524,6 +609,10 @@ export function useAgentInterview(
     error,
     // 「已考察 N 题」= 已交付题数（含评分失败记为 null 的题），与 MAX_AGENT_QUESTIONS 上限口径一致。
     evaluatedCount: sessionRef.current ? countDelivered(sessionRef.current) : 0,
+    questionTimeLeftSec,
+    questionTimeUp,
+    extendQuestionTime,
+    jumpToNextQuestion,
     setAnswer,
     start,
     submit,
