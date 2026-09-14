@@ -1,6 +1,17 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-14 · 零变体区扩充 20 条变体（`assessment.manual-bg-20260914.json`，池 1575→1595 条）
+
+- 从 567 道零变体 choice 题中按 topic 分散挑 20 道（15 多选 + 5 单选，多选占比 75% ✓；
+  覆盖去重/过滤管线、多智能体通信与治理、词向量与输出层复杂度、可解释性报告等 15 个 topic），
+  各写 1 条 assessment 变体（context-options），换 angle + cognitiveTask 开新推理路径，
+  真值逐项继承原题。
+- 初稿 5 条难度驱动 audit 信号全部改写清零（去题干中正确项独有词、补回数字条件与限定词），
+  1 条长度比 1.89× 改写后全批 ≤1.74×；分句顺序贴原题，`validate-variants` 阻断项全 0 且本批 0 审计信号。
+- 门禁实证：`validate-variants` ✓ 池健康；`validate:questions` ✓ 1434 题不变；
+  `lint:length --changed` ✓ 0 超标；`npm test` 891/891。组装草稿放仓外 temp/ 用完即删，未落仓。
+
 ## 2026-09-11 · 薄格扩充 20 条变体（`assessment.manual-bf-20260911.json`，池 1555→1575 条）
 
 - 零变体区多选集中在 sebastian-raschka 簇，本批 15 多选取自 evaluation/inference-attention/

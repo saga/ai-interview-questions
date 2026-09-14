@@ -1,0 +1,933 @@
+{
+  "version": 1,
+  "generatedAt": 1789411200000,
+  "promptVersion": "v1",
+  "variants": {
+    "hierarchical-softmax-huffman-optimization-comparison-01": [
+      {
+        "id": "hierarchical-softmax-huffman-optimization-comparison-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "推理侧要给百万词表语言模型换输出层，语料词频高度倾斜。评审四种路线，哪些成立？",
+        "options": [
+          "词频倾斜时 Huffman 树平均评估节点数约取 log2(Unigram 困惑度)，显著低于平衡二叉树的 log2(V)",
+          "词频接近均匀时 Huffman 树退化为近似平衡树，加速优势不再但仍维持 O(log V) 量级",
+          "负采样每次只算 K+1 个二分类器，因而在任意词频分布下都快于 Huffman 树",
+          "Huffman 树拉长了低频词路径，故倾斜语料上其期望开销反而不如全量 Softmax"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能按词频分布形态判定四种输出层路线的期望开销排序与适用边界",
+          "reasoningGoal": "先按倾斜与均匀两种分布拆出各路线的期望评估量级；再逐项验证选型判断是否成立并比较边界；据此排除负采样恒最快、全量 Softmax 反超等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-471546ad",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "hierarchical-softmax-huffman-optimization-comparison-01",
+          "topic": "hierarchical-softmax-huffman-optimization",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "Word2Vec",
+            "Hierarchical Softmax",
+            "Huffman Tree"
+          ],
+          "question": "比较四种输出层方案在词频倾斜语料与词频均匀语料下的期望评估开销：Huffman 树 Hierarchical Softmax、平衡二叉树 Hierarchical Softmax、负采样、全量 Softmax。下列哪些对比结论是正确的？",
+          "options": [
+            "词频倾斜时 Huffman 树平均评估节点数约为 log2(Unigram 困惑度)，明显低于平衡二叉树的 log2(V)",
+            "词频接近均匀时 Huffman 树退化为近似平衡树，加速优势消失但仍保持 O(log V) 量级",
+            "负采样每次只算 K+1 个二分类器，因此在任何词频分布下都快于 Huffman 树",
+            "Huffman 树拉长了低频词路径，所以倾斜语料上它的期望开销反而不如全量 Softmax"
+          ]
+        },
+        "contentHash": "fnv1a-2b9ab9e4"
+      }
+    ],
+    "llm-data-filtering-heuristics-debugging-01": [
+      {
+        "id": "llm-data-filtering-heuristics-debugging-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "技术语料上线后模型输出断裂跳跃，抽查发现一批文档被行级过滤删掉 12% 的行，却因语言分正常入库。复盘诊断，哪些成立？",
+        "options": [
+          "被删掉 12% 行的文档结构已严重失真，应当整页丢弃而不应保留入库",
+          "根因是缺少从删除占比到整页丢弃的联动，只有行级删除而无文档级止损",
+          "应把整页丢弃阈值从 5% 放宽到 30%，借此保留更多训练数据",
+          "文档语言识别分数正常，即能证明其内部没有噪声且上下文完整"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从上线故障反推行级删除占比失控的处置与联动缺失",
+          "reasoningGoal": "先从断裂输出回溯到高删行占比文档的放行链路；再逐项验证诊断判断是否成立；并排除放宽阈值、语言分背书等错误诊断。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ca7ecf10",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-data-filtering-heuristics-debugging-01",
+          "topic": "llm-data-filtering-heuristics",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Heuristics"
+          ],
+          "question": "某预训练语料上线后，下游模型在特定主题上频繁生成断裂、跳跃的上下文。排查发现一批文档曾被行级过滤删除 12% 的行，但因语言识别分数正常而被保留入库。关于这次故障的诊断，下列哪些是合理的？",
+          "options": [
+            "被删 12% 行的文档结构已严重失真，应整页丢弃而不是保留入库",
+            "根因是缺少删除占比到整页丢弃的联动，只有行级删除没有文档级止损",
+            "应把整页丢弃阈值从 5% 放宽到 30%，以保留更多训练数据",
+            "文档语言识别分数正常，即可证明其内部没有噪声且上下文完整"
+          ]
+        },
+        "contentHash": "fnv1a-ac37933f"
+      }
+    ],
+    "llm-dataset-deduplication-strategies-comparison-01": [
+      {
+        "id": "llm-dataset-deduplication-strategies-comparison-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "预训练管线评审要在三种去重方案中选型，候选为纯精确、纯模糊与级联。评估效果分野，哪些成立？",
+        "options": [
+          "仅精确子串会漏掉改写与调序的近似重复，残留重复损伤 Zero-shot 泛化",
+          "级联管线同时覆盖逐字长段与改写重复，跨文档跨批次去重最为彻底",
+          "MinHash 模糊去重可完全替代精确子串，精确阶段纯属多余能够直接砍掉",
+          "高频重复只增加训练耗时，三种管线的生成质量并无实质差别"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从召回盲区与记忆化代价权衡三种去重管线的选型优劣",
+          "reasoningGoal": "先摆出各管线在召回覆盖与生成质量上的代价差异；再逐项验证选型判断是否成立并比较优劣；据此排除模糊替代精确、重复无害等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ededafd3",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-dataset-deduplication-strategies-comparison-01",
+          "topic": "llm-dataset-deduplication-strategies",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "LLM",
+            "Deduplication",
+            "Data Quality"
+          ],
+          "question": "对比三种去重管线：仅精确子串去重、仅 MinHash 模糊去重、两者级联。关于它们的实际效果分野，下列哪些判断是正确的？",
+          "options": [
+            "仅精确子串会漏掉改写与调序的近似重复，残留重复损害 Zero-shot 泛化",
+            "级联管线同时覆盖逐字长段与改写重复，跨文档跨批次去重最彻底",
+            "MinHash 模糊去重可完全替代精确子串，精确阶段纯属多余可以直接砍掉",
+            "高频重复只增加训练耗时，三种管线的生成质量没有实质差别"
+          ]
+        },
+        "contentHash": "fnv1a-f3d0ecc7"
+      }
+    ],
+    "llm-dataset-deduplication-strategies-causal-01": [
+      {
+        "id": "llm-dataset-deduplication-strategies-causal-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "训练复盘发现模型背诵重复段落且泛化能力下滑，怀疑语料重复作祟。梳理因果链条，哪些成立？",
+        "options": [
+          "重复段落经多轮梯度反复拟合形成记忆化，解码时出现逐字背诵与重复生成",
+          "记忆化是模型参数量太大导致的，与训练数据是否重复没有关系",
+          "重复段落挤占 mini-batch 多样性，破坏梯度随机性并拉低 Zero-shot 泛化",
+          "模糊去重相似度阈值越松越好，误删正常文本也无太大关系"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从背诵与泛化下滑的症状定位重复语料的两条致害链并排除错误归因",
+          "reasoningGoal": "先从背诵与泛化下滑回溯到重复拟合与批次多样性破坏；再逐项验证因果判断是否成立；并排除规模归因、阈值越松越好等错误诊断。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-29dcd3b8",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-dataset-deduplication-strategies-causal-01",
+          "topic": "llm-dataset-deduplication-strategies",
+          "angle": "causal",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "LLM",
+            "Deduplication",
+            "Data Quality"
+          ],
+          "question": "关于预训练语料中的重复数据如何一步步损害模型，下面的因果链条分析中，哪些是成立的？",
+          "options": [
+            "重复段落被多轮梯度反复拟合形成记忆化，解码时出现逐字背诵与重复生成",
+            "记忆化是因为模型参数量太大导致的，与训练数据是否重复没有关系",
+            "重复挤占 mini-batch 多样性，破坏梯度随机性并拉低 Zero-shot 泛化",
+            "模糊去重相似度阈值越松越好，误删正常文本也无所谓"
+          ]
+        },
+        "contentHash": "fnv1a-bc6191a2"
+      }
+    ],
+    "multi-agent-communication-protocol-mechanism-01": [
+      {
+        "id": "multi-agent-communication-protocol-mechanism-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "客服多智能体跑完长流程后工单状态与用户原意对不上，但单步日志都正常。解释漂移机理，哪些成立？",
+        "options": [
+          "关键字段在多轮自由文本转述中被改写丢失，后续 Agent 基于错误状态推理且误差逐轮放大",
+          "长历史检索噪声淹没了有效信息，结构化字段加直接查询可绕开全文检索降噪",
+          "电话效应的根因是上下文窗口太小，把窗口加长便能彻底根治状态漂移",
+          "把全部交互换成 JSON 强类型通信，既能保住状态又不损伤辩论与质验质量"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能把长流程状态漂移的故障对应到转述改写与检索噪声两条机理并排除错误解法",
+          "reasoningGoal": "先把状态对不上的症状映射到转述与检索两条机理；再逐项验证解释是否成立；并排除加窗口根治、全 JSON 无损等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-30154ccc",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-agent-communication-protocol-mechanism-01",
+          "topic": "multi-agent-communication-protocol",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-agent",
+            "communication-protocol",
+            "architecture"
+          ],
+          "question": "长周期多智能体协同中，即使每个 Agent 单步输出都合理，全局状态仍会随轮次漂移（电话效应）。关于这一现象的作用机理，下列哪些解释是正确的？",
+          "options": [
+            "关键字段在多轮自由文本转述中被改写丢失，后续 Agent 基于错误状态推理且误差放大",
+            "长历史检索噪声淹没有效信息，结构化字段加直接查询可绕开全文检索降噪",
+            "电话效应的根因是上下文窗口太小，把窗口加长就能彻底根治状态漂移",
+            "把全部交互换成 JSON 强类型通信，既能保状态又不损伤辩论与质验质量"
+          ]
+        },
+        "contentHash": "fnv1a-dd82368a"
+      }
+    ],
+    "multi-agent-react-governance-tradeoff-01": [
+      {
+        "id": "multi-agent-react-governance-tradeoff-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "交易 Agent 上线前评审执行管线，争议点是风控前置会拖慢下单。权衡资金安全与效率，哪些成立？",
+        "options": [
+          "交易决策只算提议，经独立风控与基金经理复核后才真实挂单，用延迟换取拦截",
+          "风控基于共享全局状态做事前硬拦截，看得见全貌并能在执行前叫停",
+          "ReAct 推理逻辑自洽便可直连交易所下单，延迟最低就是整体最优",
+          "风控只做事后日志归档便可，不阻塞交易且安全复盘同样有效"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在上线评审中权衡提议审批与事前拦截相对直连和事后复盘的取舍",
+          "reasoningGoal": "先把延迟争议换算成安全边界与效率收益的交换条件；再逐项验证权衡判断是否成立；并排除直连最优、事后等价等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4bb47f6a",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-agent-react-governance-tradeoff-01",
+          "topic": "multi-agent-react-governance",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-agent",
+            "react-framework",
+            "risk-control"
+          ],
+          "question": "为 ReAct 金融交易 Agent 设计执行管线时，需要在资金安全与执行效率之间权衡。下列哪些权衡判断是合理的？",
+          "options": [
+            "交易决策只算提议，经独立风控与基金经理复核后才真实挂单，以延迟换拦截",
+            "风控基于共享全局状态做事前硬拦截，看得见全貌且能在执行前叫停",
+            "ReAct 推理逻辑自洽即可直连交易所下单，延迟最低就是整体最优",
+            "风控只做事后日志归档即可，不阻塞交易且安全复盘同样有效"
+          ]
+        },
+        "contentHash": "fnv1a-c068ca01"
+      }
+    ],
+    "neural-lm-hidden-layer-bottleneck-comparison-01": [
+      {
+        "id": "neural-lm-hidden-layer-bottleneck-comparison-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "两个语言模型换上 Hierarchical Softmax 后仍跑不满算力，要定位新的主导开销。判断瓶颈迁移，哪些成立？",
+        "options": [
+          "NNLM 的输出项被压平后，瓶颈转移到投影层到隐藏层的 N×D×H 密集乘法",
+          "RNNLM 的输出项被压平后，瓶颈转为循环连接的 H×H 而非输出层",
+          "两种模型的瓶颈仍在输出层 H×V，应把算力继续全部堆在 Softmax 近似上",
+          "RNNLM 没有隐藏层结构，因而不存在隐藏层相关的计算瓶颈"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能定位输出层优化后 NNLM 与 RNNLM 各自新浮现的主导开销项",
+          "reasoningGoal": "先按架构拆出输出项压平后剩余主导项的归属；再逐项验证瓶颈判断是否成立；并排除输出层恒为瓶颈、RNNLM 无隐藏层等错误诊断。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-cedfb562",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "neural-lm-hidden-layer-bottleneck-comparison-01",
+          "topic": "neural-lm-hidden-layer-bottleneck",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "NNLM",
+            "RNNLM",
+            "Word2Vec",
+            "Computational Complexity"
+          ],
+          "question": "NNLM 与 RNNLM 都换上 Hierarchical Softmax 之后，各自的计算瓶颈发生了什么变化？下列哪些对比判断是正确的？",
+          "options": [
+            "NNLM 输出项被压平后，瓶颈转移到投影层到隐藏层的 N×D×H 密集乘法",
+            "RNNLM 输出项被压平后，瓶颈转为循环连接的 H×H 而非输出层",
+            "两种模型的瓶颈仍是输出层 H×V，应把算力继续全堆在 Softmax 近似上",
+            "RNNLM 没有隐藏层结构，因此不存在隐藏层相关的计算瓶颈"
+          ]
+        },
+        "contentHash": "fnv1a-770664aa"
+      }
+    ],
+    "vector-offset-relational-analogy-definition-01": [
+      {
+        "id": "vector-offset-relational-analogy-definition-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "新同学要照规范实现类比评测，导师让他先把定义要素列对。核对表述，哪些准确？",
+        "options": [
+          "目标向量固定构造为 vec(B)减 vec(A)加 vec(C)，方向颠倒会得到错误答案",
+          "在全词库按余弦距离取最近邻，且必须剔除输入问句中的 A、B、C",
+          "向量加减的顺序能够任意调换，任意组合方式都得到相同的检索结果",
+          "为提升检索速度，只需在输入词的同义词子库中查找最近邻即可"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能讲清向量偏移的方向构造、全库检索与输入词剔除三条规范及其依据",
+          "reasoningGoal": "先拆出运算方向、距离度量与检索范围三条定义要素；再逐项验证表述是否成立并比较差异；据此排除方向可换、子库检索等错误定义。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6dc87970",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "vector-offset-relational-analogy-definition-01",
+          "topic": "vector-offset-relational-analogy",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "recall",
+          "tags": [
+            "Word2Vec",
+            "Vector Offset",
+            "Relational Analogies"
+          ],
+          "question": "关于词向量关系类比中向量偏移运算的定义与评测规范，下列哪些表述是准确的？",
+          "options": [
+            "目标向量固定构造为 vec(B)减 vec(A)加 vec(C)，方向颠倒得到错误答案",
+            "全词库按余弦距离取最近邻，且必须剔除输入问句中的 A、B、C",
+            "向量加减的顺序可以任意调换，任意组合方式都得到相同的检索结果",
+            "为提升检索速度，只需在输入词的同义词子库里查找最近邻即可"
+          ]
+        },
+        "contentHash": "fnv1a-73a5e192"
+      }
+    ],
+    "word2vec-cbow-vs-skipgram-complexity-calculation-01": [
+      {
+        "id": "word2vec-cbow-vs-skipgram-complexity-calculation-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "组会前要把 N=5、D=300、V=1,000,000、C=5 这组超参数的复杂度账算清，两种模型都用 Hierarchical Softmax。核对定量推断，哪些正确？",
+        "options": [
+          "CBOW 的 Q=N×D+D×log2(V)=1500+6000=7500，输出分类只需评估一次",
+          "当 C=5 时 Skip-gram 的 Q≈31500，约为 CBOW 的 4 倍多",
+          "CBOW 上下文有 N=5 个词，输出层应评估 5 次，总量需再加 4×6000",
+          "Skip-gram 调大 C 会让投影输入维度同步乘 C，投影乘法随之成倍变大"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能代入给定超参数算出两种模型的单样本复杂度并纠正分摊误算",
+          "reasoningGoal": "先把 N、D、C、V 代入两式算出数值与倍数关系；再逐项验证定量推断是否成立；据此排除输出随 N 翻倍、C 胀投影维度等错误计算。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-02eb321a",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "word2vec-cbow-vs-skipgram-complexity-calculation-01",
+          "topic": "word2vec-cbow-vs-skipgram-complexity",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "Word2Vec",
+            "CBOW",
+            "Skip-gram",
+            "Computational Complexity"
+          ],
+          "question": "取 N=5、D=300、V=1,000,000（log2(V)≈20）、Skip-gram 最大距离 C=5，都用 Hierarchical Softmax。关于两种模型单样本复杂度 Q 的定量推断，下列哪些是正确的？",
+          "options": [
+            "CBOW 的 Q=N×D+D×log2(V)=1500+6000=7500，输出分类只评估一次",
+            "C=5 时 Skip-gram 的 Q≈31500，约为 CBOW 的 4 倍多",
+            "CBOW 上下文 N=5 个词，输出层应评估 5 次，总量需再加 4×6000",
+            "Skip-gram 调大 C 会让投影输入维度同步乘 C，投影乘法成倍变大"
+          ]
+        },
+        "contentHash": "fnv1a-e797a395"
+      }
+    ],
+    "model-behavior-anthropomorphic-01": [
+      {
+        "id": "model-behavior-anthropomorphic-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "客服 Agent 的思考链里冒出拟人化表达，压测确认单轮也会复现。基于角色选择模型复盘归因与治理，哪些正确？",
+        "options": [
+          "现象归因：模型在演导 Assistant 角色时，过度调用了预训练数据中人类行为者的先验分布，把人类的生理属性与物理实体操作错置到了 Assistant 身上",
+          "治理措施：在系统提示词或训练数据中引入明确的 Assistant 实体边界声明，强化模型对自身身为数字 API 系统而非物理人类的角色认知",
+          "现象归因：该现象表明模型的 Transformer 权重在微调后发生了不可逆的数值崩塌，致使模型彻底失去了逻辑推理与现实常识判断能力",
+          "治理措施：构建包含真实 API 调用轨迹与数字系统交互示范的训练样例，降低模型在无物理实体的任务场景下对人类行为模式的采样概率",
+          "治理措施：直接切断模型的多轮上下文窗口，因为此类拟人化输出完全由用户在多轮对话中的诱导性提问所导致的过拟合"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从单轮可复现的拟人化症状判定角色演导偏差的归因与对症治理",
+          "reasoningGoal": "先从单轮复现排除上下文诱导的归因；再逐项验证归因与治理是否成立；并排除权重崩塌、切断上下文等错误处置。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-bca01051",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "model-behavior-anthropomorphic-01",
+          "topic": "model-behavior",
+          "subtopic": "Anthropomorphic Behaviors in AI",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "anthropomorphic",
+            "persona-confusion",
+            "debugging",
+            "identity",
+            "psm"
+          ],
+          "question": "部署 AI Agent 执行办公自动化时，监控日志显示 Agent 在思考链（CoT）中输出了“我刚刚在我的 MacBook 上手动拷贝代码”“我们需要为身体补充能量”等严重脱离物理现实的拟人化表达。基于角色选择模型（PSM），以下归因诊断与治理措施正确的有：",
+          "options": [
+            "现象归因：模型在演导 Assistant 角色时，过度调用了预训练数据中人类行为者的先验分布，导致将人类的生理属性与物理实体操作错置到了 Assistant 身上",
+            "治理措施：在系统提示词或训练数据中引入明确的 Assistant 实体边界声明，强化模型对自身作为数字 API 系统而非物理人类的角色认知",
+            "现象归因：该现象表明模型的 Transformer 权重在微调后发生了不可逆的数值崩塌，导致模型彻底失去了逻辑推理与现实常识判断能力",
+            "治理措施：构建包含真实 API 调用轨迹与数字系统交互示范的训练样例，降低模型在无物理实体的任务场景中对人类行为模式的采样概率",
+            "治理措施：直接切断模型的多轮上下文窗口，因为此类拟人化输出完全是由用户在多轮对话中的诱导性提问所导致的过拟合"
+          ]
+        },
+        "contentHash": "fnv1a-fbe9c316"
+      }
+    ],
+    "multi-vector-skiplist-01": [
+      {
+        "id": "multi-vector-skiplist-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "检索团队要给 ColBERT 索引瘦身，方案是把标点加入 skiplist_words。评估影响，哪些说法正确？",
+        "options": [
+          "仅减少索引构建时的 CPU 计算耗时，存储空间没有变化，因为空向量仍需保存在向量数据库中。",
+          "在文档侧直接跳过标点符号 token 的向量生成与存储，不仅显著降低索引存储体积（例如降低近 10%），且通常不会损害甚至可微幅提升检索质量。",
+          "会导致 MaxSim 算子中的矩阵维度不匹配，必须在 Query 侧同步补零填充（Padding）方可正常计算。",
+          "显著抬高检索延迟，因为在计算 MaxSim 时需要在运行时频繁过滤标点符号的 ID。",
+          "Multi-Vector 索引体积随文档 token 数近似线性增长，自文档侧排除低信息量 token（如标点）是主要的降本手段之一。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡跳过标点向量的存储收益与检索质量影响并排除三类误解",
+          "reasoningGoal": "先摆出索引体积、检索质量与在线延迟三者的变化方向；再逐项验证影响判断是否成立并比较代价；据此排除只省 CPU、维度不匹配、延迟抬高等错误说法。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8a14002d",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-vector-skiplist-01",
+          "topic": "multi-vector-retrieval",
+          "subtopic": "Multi-vector Index Storage Optimization",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "skiplist",
+            "index-storage",
+            "colbert",
+            "multi-vector-mask",
+            "token-filtering"
+          ],
+          "question": "Multi-Vector 模型（如 ColBERT）索引体积大是生产落地的主要痛点。若在模型中配置 skiplist_words（如把标点符号加入 Skiplist），对检索系统的影响，下列哪些说法正确？",
+          "options": [
+            "仅减少索引构建时的 CPU 计算耗时，存储空间无变化，因为空向量仍需保存在向量数据库中。",
+            "在文档侧直接跳过标点符号 token 的向量生成与存储，不仅显著降低索引存储体积（例如降低近 10%），且通常不会损害甚至能微幅提升检索质量。",
+            "会导致 MaxSim 算子中的矩阵维度不匹配，必须在 Query 侧同步补零填充（Padding）才能正常计算。",
+            "显著提升检索延迟，因为在计算 MaxSim 时需要在运行时频繁过滤标点符号的 ID。",
+            "Multi-Vector 索引体积随文档 token 数近似线性增长，从文档侧排除低信息量 token（如标点）是主要的降本手段之一。"
+          ]
+        },
+        "contentHash": "fnv1a-6b699afc"
+      }
+    ],
+    "oreilly-radar-2026-08-04": [
+      {
+        "id": "oreilly-radar-2026-08-04__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "审计扫出一个半年没调用、却保留完整生产权限的 Agent 身份。决定处置前，调查应确认哪些事项？（请选择两个）",
+        "options": [
+          "确认责任人归属以及是否存在隐藏依赖",
+          "查看最近调用证据后再决定撤销、轮换或隔离",
+          "长期未使用就一定可以直接删除",
+          "直接忽略该身份，因为没有近期调用就没有风险"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能列出处置休眠高权限身份前必须确认的所有权与依赖证据并排除草率处置",
+          "reasoningGoal": "先把休眠身份映射到滥用风险而非无害资产；再逐项验证处置判断是否成立；并排除直接删除、无视风险等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f52e3b2f",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "oreilly-radar-2026-08-04",
+          "topic": "observability",
+          "subtopic": "身份归属与审计",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "oreilly-radar",
+            "agent",
+            "audit",
+            "ownership"
+          ],
+          "question": "发现一个长期未使用但仍有完整访问权限的 Agent 身份时，调查中应确认哪些事项？（请选择两个）",
+          "options": [
+            "确认责任人以及是否存在隐藏依赖",
+            "查看最近调用证据后决定撤销、轮换或隔离",
+            "未使用就一定可以立即删除",
+            "忽略身份，因为没有近期调用就没有风险"
+          ]
+        },
+        "contentHash": "fnv1a-c66faf1e"
+      }
+    ],
+    "api-contract-reasoning-effort-01": [
+      {
+        "id": "api-contract-reasoning-effort-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "代码助手升级到思考型模型后，线上冒出大片 400 错误：请求里还带着 thinking.type: disabled，而新规范要求必须携带 enabled 与 reasoning_effort。定位契约问题与升级做法，哪些正确？",
+        "options": [
+          "服务端将直接拒绝请求并抛出校验错误；需在网关层把参数重写为 thinking.type: enabled 并补充合理的 reasoning_effort",
+          "服务端会自动降级至零思考模式继续执行；无需修改客户端代码，只是模型回答复杂问题时的逻辑推理能力会显著下降",
+          "服务端会自动把思考模式强制提升至 max 级别；请求能够正常响应，但会导致下游 API 的调用延迟与 Token 费用大幅飙升",
+          "服务端将正常接收请求并输出结果；但由于缺失思考链控制标头，返回的 JSON 结构解析器会抛出 Null 异常致使系统崩溃",
+          "客户端应在发请求前做 schema 版本协商，对废弃字段做兼容默认值映射，让旧客户端不必直接触达新模型的校验层"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从批量 400 错误定位废弃字段的契约拒绝并开出网关重写与版本协商的组合修复",
+          "reasoningGoal": "先从批量 400 定位到废弃字段的契约拒绝；再逐项验证修复做法是否成立；并排除自动降级、自动提升、解析崩溃等错误预期。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1dcc66c8",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "api-contract-reasoning-effort-01",
+          "topic": "structured-output",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "api-contract",
+            "breaking-change",
+            "reasoning-effort",
+            "gateway"
+          ],
+          "question": "某工程团队计划将系统中的 LLM 代码助手从早期模型平滑迁移至支持 Reasoning Effort（低、中、高）的下一代思考型模型。新模型规范中“完全禁用思考（Thinking Disabled）”已被废弃，请求必须包含 thinking: {type: 'enabled'} 与对应的 reasoning_effort 参数。若团队在迁移过程中直接将原有包含 thinking.type: 'disabled' 的 API 请求发往新模型，关于契约兼容与正确的升级做法，以下说法正确的有？",
+          "options": [
+            "服务端将直接拒绝请求并抛出校验错误；需在网关层将参数重写为 thinking.type: enabled 并补充合理的 reasoning_effort",
+            "服务端会自动降级至零思考模式继续执行；无需修改客户端代码，但模型回答复杂问题时的逻辑推理能力会显著下降",
+            "服务端会自动将思考模式强制提升至 max 级别；请求能够正常响应，但会导致下游 API 的调用延迟与 Token 费用大幅飙升",
+            "服务端将正常接收请求并输出结果；但由于缺失思考链控制标头，返回的 JSON 结构解析器会抛出 Null 异常导致系统崩溃",
+            "客户端应在发请求前做 schema 版本协商，对废弃字段做兼容默认值映射，使旧客户端不必直接触达新模型的校验层"
+          ]
+        },
+        "contentHash": "fnv1a-fbcf648e"
+      }
+    ],
+    "llm-web-text-extraction-and-line-correction-mechanism-01": [
+      {
+        "id": "llm-web-text-extraction-and-line-correction-mechanism-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "CommonCrawl 落地管线评审，争议是换行与 URL 两步清洗是否多余。解释作用机理，哪些正确？",
+        "options": [
+          "把连续换行收敛到上限，可消除训练序列中异常的空白模式分布",
+          "剥离内嵌 URL，可避免随机字符组合污染词表与上下文的分布",
+          "这两步只影响人类阅读观感，与模型看到的输入分布毫无关系",
+          "官方 WET 导出已做过相同的换行收敛与 URL 剥离，无需重复处理"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能诊断换行与 URL 噪声对训练分布的两条污染路径并排除多余论",
+          "reasoningGoal": "先从异常空白与随机字符定位到序列分布污染；再逐项验证机理判断是否成立；并排除只影响观感、WET 已处理等错误诊断。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6a1f7dd1",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-web-text-extraction-and-line-correction-mechanism-01",
+          "topic": "llm-web-text-extraction-and-line-correction",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "LLM",
+            "Text Extraction",
+            "CommonCrawl"
+          ],
+          "question": "正文抽取后为什么还要做连续换行收敛与内嵌 URL 剥离？关于这两步的作用机理，下列哪些解释是正确的？",
+          "options": [
+            "连续换行收敛到上限，可消除训练序列中异常的空白模式分布",
+            "剥离内嵌 URL，可避免随机字符组合污染词表与上下文分布",
+            "这两步只影响人类阅读观感，与模型看到的输入分布没有关系",
+            "官方 WET 导出已做过同样的换行收敛与 URL 剥离，无需重复处理"
+          ]
+        },
+        "contentHash": "fnv1a-6ed3eea5"
+      }
+    ],
+    "llm-pretraining-web-data-pipeline-comparison-01": [
+      {
+        "id": "llm-pretraining-web-data-pipeline-comparison-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "语料规划会上，三条路线争执不下：精选复用、Web 强管线、原始混入。对比结论，哪些合理？",
+        "options": [
+          "精选语料总量有限，反复采样引发过拟合，撑不起万亿 Token 的无重复扩展",
+          "Web 数据经严格过滤与深度去重后，Zero-shot 泛化能够达到甚至超过精选语料",
+          "直接混入未清洗的原始 Web 文本多样性最高，是扩展规模的最优工程方案",
+          "语料质量由数据来源标签决定，管线强度只决定处理速度"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能以规模上限与质量后果为条件判定三条预训练数据路线的排序",
+          "reasoningGoal": "先按规模上限与噪声后果拆出三条路线的条件分野；再逐项验证对比判断是否成立；并排除原始混入最优、标签决定论等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-670b81e8",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-pretraining-web-data-pipeline-comparison-01",
+          "topic": "llm-pretraining-web-data-pipeline",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Pretraining"
+          ],
+          "question": "对比三条预训练数据路线：人工精选语料重复采样、Web 数据经严格过滤去重、Web 原始数据直接混入。下列哪些对比结论是合理的？",
+          "options": [
+            "精选语料总量有限，反复采样引发过拟合，撑不起万亿 Token 无重复扩展",
+            "Web 数据经严格过滤与深度去重后，Zero-shot 泛化可达甚至超过精选语料",
+            "直接混入未清洗原始 Web 文本多样性最高，是扩展规模的最优工程方案",
+            "语料质量由数据来源标签决定，管线强度只影响处理速度"
+          ]
+        },
+        "contentHash": "fnv1a-481c19b5"
+      }
+    ],
+    "agentic-16": [
+      {
+        "id": "agentic-16__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "仓储系统要配一个跨模块代码问答 Agent：单体仓几千个文件，常问调用链归属，回答须可定位复核。哪种检索设计最符合要求？",
+        "options": [
+          "把几千个文件全部向量化后一次性装入长上下文窗口，让模型通览全库以确保不遗漏任何架构信息。",
+          "回答给出整体架构描述便可，不必附具体文件路径，因为路径会随重构频繁变化而失去意义。",
+          "运行时完全依赖关键词匹配逐个遍历所有文件收集证据，符号索引仅在编译期有意义。",
+          "先构建目录树与符号索引定位相关模块，再按需读取相关文件片段作答；跨模块问题沿 import/调用链做多跳检索，回答附带文件路径引用。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为大规模代码库选出符号索引定位加按需读取的检索设计并排除全量装载等误区",
+          "reasoningGoal": "先从文件规模与可复核约束拆出检索设计的必要条件；再逐项验证方案是否成立；并排除全量装载、无需引用、纯关键词等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3b059d9b",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agentic-16",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "code-understanding",
+            "github",
+            "repo"
+          ],
+          "question": "设计一个能读取 GitHub Repository 并回答架构问题的 Agent。仓库可能有几千个文件，如何保证回答有据可依？",
+          "options": [
+            "把几千个文件全部向量化后一次性装入长上下文窗口，让模型通览全库以保证不遗漏任何架构信息。",
+            "回答给出整体架构描述即可，不必附具体文件路径，因为路径会随重构频繁变化而失去意义。",
+            "运行时完全依赖关键词匹配逐个遍历所有文件收集证据，符号索引只在编译期有意义。",
+            "先构建目录树与符号索引定位相关模块，再按需读取相关文件片段作答；跨模块问题沿 import/调用链做多跳检索，回答附文件路径引用。"
+          ]
+        },
+        "contentHash": "fnv1a-20ebce7e"
+      }
+    ],
+    "ai-eng-025": [
+      {
+        "id": "ai-eng-025__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "高并发 Agent 推理服务选型会上，A=30B Dense、B=30B MoE、C=14B 三种基座质量接近但显存账各执一词。哪种分析框架最合理？",
+        "options": [
+          "先定 SLO 再测算：A 的 KV 最小并发最高；B 专家权重须全量常驻；C 权重最轻但 MHA 缓存大，最先撞墙；最后实测。",
+          "同为 30B 总参，部署显存差异只来自 KV 头数，8 KV 头的 B 反而更省；除 KV 外其余一致，可直接按头数来选。",
+          "14B 在单位 token 成本上必胜，质量接近时成本即决策变量；先上 C，不够再升级，测算可以后补。",
+          "公开评测接近则线上表现趋同，容量规划可按任一模型的规格来做，差异在误差带内；反复权衡收益很低。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能选出从 SLO 出发定量测算的选型框架并排除参数量与榜单直觉",
+          "reasoningGoal": "先从并发与显存约束拆出选型必须核算的资源项；再逐项验证分析框架是否成立并比较依据；据此排除按头数直选、成本直觉、榜单趋同等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-89895ae3",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-eng-025",
+          "topic": "system-design",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "model-selection",
+            "dense-vs-moe",
+            "kv-cache",
+            "capacity-planning"
+          ],
+          "question": "固定预算下为高并发 Agent 推理服务选基座，公开评测显示三者质量接近：A＝30B Dense、GQA（2 KV 头）；B＝30B 总参 MoE（每 token 激活约 3B）、8 KV 头；C＝14B Dense、标准 MHA。请从 latency、memory、concurrency、quality、cost 五个维度给出定量化的权衡分析。",
+          "options": [
+            "先定 SLO 再测算：A 的 KV 最小并发最高；B 专家权重须全量常驻；C 权重轻但 MHA 缓存大，最先撞墙；最后实测。",
+            "同为 30B 总参，部署显存差异只来自 KV 头数，8 KV 头的 B 反而更省；除 KV 外其余一致，可直接按头数选。",
+            "14B 在单位 token 成本上必胜，质量接近时成本即决策变量；先上 C，不够再升，测算可以后补。",
+            "公开评测接近则线上表现趋同，容量规划可按任一模型的规格做，差异在误差带内；反复权衡收益低。"
+          ]
+        },
+        "contentHash": "fnv1a-bdeb1744"
+      }
+    ],
+    "ai-search-extra-004": [
+      {
+        "id": "ai-search-extra-004__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "跨国企业知识库要支持限定检索：只查东京办公室 2026 年后的政策。哪种设计最合理？",
+        "options": [
+          "把部门和日期要求全部交给生成模型在最终答案阶段自行去判断",
+          "先用 metadata filters 限定部门和时间范围，再执行相关性检索",
+          "把所有文档都检索出来，再让 reranker 删掉不符合日期的结果",
+          "为每个部门建立完全独立的模型，借此避免使用 metadata"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能选出检索期元数据过滤优先的结构化约束落地方案",
+          "reasoningGoal": "先从结构化约束的生效位置拆出检索与生成的职责边界；再逐项验证设计是否成立；并排除生成期判断、全量检索、独立建模等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9ecf0754",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-004",
+          "topic": "information-retrieval",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "information-retrieval",
+            "filters",
+            "metadata"
+          ],
+          "question": "一个企业知识库包含多个部门的文档，用户查询时明确要求“只搜索东京办公室 2026 年后的政策”。哪种设计最合理？",
+          "options": [
+            "把部门和日期要求全部交给生成模型在最终答案阶段自行判断",
+            "先使用 metadata filters 限定部门和时间范围，再执行相关性检索",
+            "把所有文档都检索出来，再让 reranker 删除不符合日期的结果",
+            "为每个部门建立完全独立的模型，避免使用 metadata"
+          ]
+        },
+        "contentHash": "fnv1a-b0602a1c"
+      }
+    ],
+    "aws-ai-practitioner-01": [
+      {
+        "id": "aws-ai-practitioner-01__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "季度运营复盘会上，干系人要求报告解释已训练模型的预测依据。报告中应包含什么？",
+        "options": [
+          "模型训练过程的完整代码文档",
+          "特征影响的偏依赖图（PDPs）",
+          "训练所用的全部样本数据集",
+          "模型训练过程的收敛记录表"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别面向干系人的全局解释工具并排除代码数据与收敛表",
+          "reasoningGoal": "先从透明度要求拆出解释性材料与过程材料的分野；再逐项验证材料是否成立；并排除代码、样本、收敛表等不成立选项。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8eded57a",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-01",
+          "topic": "evaluation",
+          "subtopic": "可解释性（透明度）",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "explainability",
+            "pdp",
+            "transparency",
+            "aws",
+            "sagemaker",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "公司每季度用 ML 模型做预测以优化运营。AI 从业者要写一份关于已训练模型的报告，向干系人提供透明度与可解释性。报告中应包含什么来满足该要求？（单选）",
+          "options": [
+            "模型训练的代码",
+            "偏依赖图（PDPs）",
+            "训练所用的样本数据",
+            "模型训练的收敛表"
+          ]
+        },
+        "contentHash": "fnv1a-8ebefb7e"
+      }
+    ],
+    "anthropic-cca-f-05": [
+      {
+        "id": "anthropic-cca-f-05__context-options__manual-bg__0",
+        "kind": "context-options",
+        "question": "研报子代理拿到逐步搜索指令后僵化：无结果就认输，新话题掉质量，还挖不到旁支。最有效的改进是？",
+        "options": [
+          "增加一个主题分类步骤，协调器把请求分为“明确”或“探索性”并分别采用不同指令风格。",
+          "在详细指令里加 fallback：指定搜索结果少于 N 条时先改写查询再报失败。",
+          "彻底去掉过程细节，只用“彻底研究 X”这类简单目标委派，完全依赖子代理通用能力。",
+          "指定研究目标与质量标准（覆盖广度、来源多样性、时效性），而不写过程步骤，让子代理自定搜索策略。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从三类僵化症状定位过程指令过细的根因并选出目标加标准的委派修复",
+          "reasoningGoal": "先从三类失败症状定位到过程被写死的共性根因；再逐项验证改进是否对症；并排除加分类、打补丁、彻底放权等不成立描述。"
+        },
+        "generatedAt": 1789411200000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1efbff8a",
+        "batch": "manual-bg",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-05",
+          "topic": "agent-fundamentals",
+          "subtopic": "子代理适应性",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "multi-agent",
+            "delegation",
+            "subagent-autonomy",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "协调器给网页搜索子代理下发逐步指令（具体查询、来源优先级、日期过滤）。生产监控暴露三个问题：(1) 预置搜索无果时子代理直接报“结果不足”而不尝试替代方案；(2) 对不匹配预期模式的新兴话题质量下降；(3) 很少浮现有价值的相关旁支来源。最有效地提升子代理适应性的做法是？（单选）",
+          "options": [
+            "增加一个主题分类步骤，协调器把请求分为“明确”或“探索性”并分别用不同指令风格。",
+            "在详细指令里加 fallback：指定搜索结果少于 N 条时先尝试改写查询再报失败。",
+            "彻底去掉过程细节，只用“彻底研究 X”这类简单目标委派，依赖子代理通用能力。",
+            "指定研究目标与质量标准（覆盖广度、来源多样性、时效性），而非过程步骤，让子代理自定搜索策略。"
+          ]
+        },
+        "contentHash": "fnv1a-2630ab61"
+      }
+    ]
+  }
+}
