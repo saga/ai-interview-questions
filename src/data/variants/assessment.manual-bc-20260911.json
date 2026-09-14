@@ -1,0 +1,958 @@
+{
+  "version": 1,
+  "generatedAt": 1789167894415,
+  "promptVersion": "v1",
+  "variants": {
+    "sebastian-raschka-2026-08-44": [
+      {
+        "id": "sebastian-raschka-2026-08-44__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "在线服务要接 128k 上下文，显存只够存分块中间量。评审 FlashAttention 路线，哪些成立？",
+        "options": [
+          "不再完整保存 N×N 注意力矩阵，峰值显存先降下来。",
+          "中间张量少在 HBM 里来回搬，读写往返开销下降。",
+          "把 Value 矩阵从模型里删掉，一了百了。",
+          "每个 token 只产一个固定常数 Query，计算量封顶。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在长上下文显存约束下选出省矩阵物化与省 HBM 往返的路线",
+          "reasoningGoal": "先确定约束是峰值显存而非算力；再确认不存 N×N 矩阵与少 HBM 往返两项成立；并排除删 Value 与常数 Query。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6213264e",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-44",
+          "topic": "flash-attention",
+          "subtopic": "注意力内存优化",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "flash-attention",
+            "memory"
+          ],
+          "question": "在不改变注意力数学结果目标的情况下，内存友好的注意力实现主要希望减少哪些开销？（请选择两个）",
+          "options": [
+            "避免完整保存序列平方大小的注意力矩阵",
+            "减少中间张量在高带宽内存中的读写往返",
+            "把所有 Value 从模型中删除",
+            "让每个 token 只生成一个固定常数的 Query"
+          ]
+        },
+        "contentHash": "fnv1a-15a103e7"
+      }
+    ],
+    "sebastian-raschka-2026-08-67": [
+      {
+        "id": "sebastian-raschka-2026-08-67__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "为推理模型配训练数据，预算只够覆盖三个难度档。设计分布，哪些成立？",
+        "options": [
+          "基础、过渡、目标三档都要有，形成可学习的梯度。",
+          "同一能力换不同表述与结构多覆盖几遍。",
+          "按验证结果洗掉明显错误或不可学样本。",
+          "只留当前完全解不出的题，越难越好。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在有限预算下设计出有梯度、多表述、干净的难度分布并排除唯难论",
+          "reasoningGoal": "先确定目标是可学习性而非绝对难度；再确认三档梯度、多表述覆盖、洗脏数据三项成立；并排除只留解不出。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ac88893f",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-67",
+          "topic": "training-data",
+          "subtopic": "难度分布",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "training-data",
+            "curriculum"
+          ],
+          "question": "为推理模型准备训练数据时，哪些难度分布策略合理？（请选择三个）",
+          "options": [
+            "包含基础、过渡和目标难度的任务",
+            "用不同表述和结构覆盖同一能力",
+            "根据验证结果清理明显错误或不可学习的样本",
+            "只保留模型当前完全无法解决的题目"
+          ]
+        },
+        "contentHash": "fnv1a-e4537ba4"
+      }
+    ],
+    "sebastian-raschka-2026-08-121": [
+      {
+        "id": "sebastian-raschka-2026-08-121__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "对比 RoPE 与绝对位置嵌入在注意力中的作用方式，哪些成立？",
+        "options": [
+          "RoPE 把位置作用到 Q/K 表示上，而非加在输入 embedding。",
+          "注意力分数因此带相对位置信息，绝对嵌入给的是绝对槽位。",
+          "RoPE 能保证任意长度的外推都不需要重新评估。",
+          "RoPE 可完全替代 token embedding，位置即语义。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两种位置编码的作用点与相对信息表达并排除外推保证论",
+          "reasoningGoal": "先对齐比较维度：作用点与表达内容；再确认 Q/K 旋转与相对分数两项成立；并排除免重估与替代 embedding。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-0e46f3d8",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-121",
+          "topic": "attention",
+          "subtopic": "RoPE 位置编码",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "raschka",
+            "architecture",
+            "rope"
+          ],
+          "question": "相较于绝对位置嵌入，RoPE 在 Transformer 中主要提供哪些能力？（请选择两个）",
+          "options": [
+            "将位置信息作用到注意力中的查询和键表示",
+            "使注意力分数能够体现相对位置关系",
+            "保证任意长度外推都不需要重新评估",
+            "完全替代 token embedding"
+          ]
+        },
+        "contentHash": "fnv1a-2f8fae11"
+      }
+    ],
+    "sebastian-raschka-2026-08-124": [
+      {
+        "id": "sebastian-raschka-2026-08-124__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "MoE 模型上线，运维按总参数申请显存被驳回。解释激活与总参关系，哪些成立？",
+        "options": [
+          "路由器给每个 token 选一个或多个专家。",
+          "每个 token 只跑专家子集，不是全量。",
+          "总参数可远大于单 token 激活参数，显存按激活加路由开销估。",
+          "所有专家对每个 token 都全量前向，总参即激活参。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测 MoE 服务的显存口径应按激活参数而非总参数申请",
+          "reasoningGoal": "先区分总参、激活参与路由开销三笔账；再确认路由选择、子集激活、总参大于激活三项成立；并排除全量前向。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-eb66f454",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-124",
+          "topic": "moe",
+          "subtopic": "稀疏专家路由",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "raschka",
+            "architecture",
+            "moe"
+          ],
+          "question": "稀疏 Mixture-of-Experts 层的核心计算特点有哪些？（请选择三个）",
+          "options": [
+            "路由器为 token 选择一个或多个专家",
+            "每个 token 通常只激活专家子集",
+            "总参数量可以高于每 token 的激活参数量",
+            "所有专家对每个 token 都执行完整前向计算"
+          ]
+        },
+        "contentHash": "fnv1a-a99eae43"
+      }
+    ],
+    "sebastian-raschka-2026-08-146": [
+      {
+        "id": "sebastian-raschka-2026-08-146__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "KV cache 上 INT8 后长问答质量跌、短问答正常。列回归清单，哪些成立？",
+        "options": [
+          "先验重构后的注意力分数误差。",
+          "查长上下文累积误差与检索质量退化。",
+          "对比不同硬件 kernel 的速度与数值行为差异。",
+          "字节数降了就不用做质量回归，直接发版。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从长短问答分化现象列出重构误差、累积误差、硬件差异三项回归项",
+          "reasoningGoal": "先把长跌短稳映射到累积与重构误差；再确认分数误差、累积检索、硬件差异三项成立；并排除字节降免回归。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a1b75d2b",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-146",
+          "topic": "quantization",
+          "subtopic": "压缩表示量化",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "quantization"
+          ],
+          "question": "对压缩 KV 或共享表示做量化时，哪些风险应单独验证？（请选择三个）",
+          "options": [
+            "重构后的注意力分数误差",
+            "长上下文累积误差和检索质量",
+            "不同硬件 kernel 下的速度与数值行为",
+            "只要缓存字节数下降就无需质量回归"
+          ]
+        },
+        "contentHash": "fnv1a-19230cbd"
+      }
+    ],
+    "sentence-embedding-batchsampler-01": [
+      {
+        "id": "sentence-embedding-batchsampler-01__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "句向量微调 loss 降、召回抖，同主题近义句多。若已确认 batch 内假负例是主因，哪些解决手段对症？",
+        "options": [
+          "把训练精度切回 FP32 并关闭混合精度，根治 FP16 下溢问题。",
+          "加载后按字母表重排字段并重命名列，强制对齐底层词表列顺序。",
+          "同 batch 近义互为负例引入梯度噪声，用 NO_DUPLICATES 去重采样解决。",
+          "把 scale 调到 0.01 以下，压平 logit。",
+          "假负例注入与语义相悖的排斥梯度，正是召回波动的直接来源。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能在假负例确诊下选出 BatchSampler 去重手段并排除精度与温度误操作",
+          "reasoningGoal": "先锁定根因是假负例而非精度或温度；再确认去重采样与排斥梯度诊断两项成立；并排除切精度、重排字段、调温度。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ef7620dd",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-batchsampler-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Batch Sampling Strategy & Label Noise Mitigation",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "bi-encoder",
+            "false-negatives",
+            "batchsampler",
+            "no-duplicates",
+            "label-noise"
+          ],
+          "question": "在微调双塔句向量模型时，研发团队发现虽然对比 Loss 保持平稳下降，但模型在评估集上的语义召回率在训练若干 Epoch 后开始出现异常波动与性能停滞。排查发现训练集中存在大量来自同一主题领域的近义句对。在使用以 In-Batch Negatives 为核心的损失函数时，造成该现象的根本原因以及针对性的工程解决手段是？",
+          "options": [
+            "原因在于硬件 GPU 在计算大 Batch 内积矩阵时触发了 FP16 浮点数下溢；解决手段是将训练精度切回 FP32 并禁用混合精度。",
+            "原因在于数据集未严格按字段字母表顺序重新排列；其解决手段是在加载数据集后手动重命名列字段，以匹配模型底层词表的列顺序。",
+            "同一 Batch 内若抽出语义极近文本并互为负例（False Negatives），会引入梯度噪声，可启用避免 Batch 内重复的 BatchSampler（如 NO_DUPLICATES）解决。",
+            "原因在于对比损失的温度缩放系数 scale 设得过大导致 Logit 极度平滑；解决手段是将 scale 调小至 0.01 以下。",
+            "根因是 Batch 内近义句被错误当作负例（False Negatives），其向梯度注入的排斥信号与真实语义相悖，这正是验证集召回率波动与性能停滞的直接来源。"
+          ]
+        },
+        "contentHash": "fnv1a-cdce97ac"
+      }
+    ],
+    "agent-arch-translation": [
+      {
+        "id": "agent-arch-translation__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "要给已上线 Agent 加一个新支付工具，不能重训模型。评审接入方案，哪些成立？",
+        "options": [
+          "走翻译层做 schema 到实现的映射适配，不动模型。",
+          "把调用意图转成具体实现，双向转参数与返回值。",
+          "替换或新增工具都不需要重训模型，工具实现可独立演进。",
+          "让翻译层接管规划路由，模型只出纯文本。",
+          "翻译层就是给用户看的展示美化层。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在免重训约束下应用翻译层接入新工具并排除接管规划论",
+          "reasoningGoal": "先确定约束是模型权重冻结；再确认映射适配、意图转换、独立演进三项成立；并排除接管规划与展示层论。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f0387716",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-arch-translation",
+          "topic": "tool-calling",
+          "subtopic": "translation-layer",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "agent-architecture",
+            "translation-layer",
+            "tool-calling"
+          ],
+          "question": "关于 Agent 架构中的 \"Translation Layer（翻译层）\"，以下哪些说法是正确的？",
+          "options": [
+            "它位于模型的工具 schema（模型可读接口）与内部工具实现（函数/API）之间，做映射与适配",
+            "它把模型的工具调用意图转换成具体实现，并负责参数与返回值的双向格式转换",
+            "它使得在不重新训练模型的前提下替换或新增工具成为可能，工具实现可独立演进",
+            "它替代模型完成所有规划决策，接管推理与路由职责，模型只需输出原始文本，翻译层才是 Agent 的智能中枢",
+            "它仅负责把模型输出翻译给用户看（那是展示层，不是 Translation Layer）"
+          ]
+        },
+        "contentHash": "fnv1a-7363cc0d"
+      }
+    ],
+    "posttraining-2026-005": [
+      {
+        "id": "posttraining-2026-005__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "GRPO reward 涨、benchmark 跌，团队想加大学习率冲过去。评审，哪些成立？",
+        "options": [
+          "先怀疑 reward hacking（验证器或格式漏洞），而非能力真涨。",
+          "检查策略是否偏离训练分布，线上分布泛化已经变差。",
+          "这是经典过拟合问题，加大学习率冲过去即可对症。",
+          "拆 reward 成分、看 held-out、人工查 rollout 捷径。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能否定加大学习率的冲刺方案并给出 hacking 加偏移的定位组合拳",
+          "reasoningGoal": "先把涨跌背离映射到奖励与能力脱钩；再确认 hacking 怀疑、分布检查、拆解定位三项成立；并排除加大 LR。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2f870aec",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-005",
+          "topic": "training",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "reward-hacking",
+            "rl",
+            "alignment"
+          ],
+          "question": "一个 GRPO 实验中 reward 持续上升，但真实 benchmark accuracy 开始下降。你会优先怀疑哪些 reward hacking 或分布偏移问题？如何定位？",
+          "options": [
+            "应优先怀疑策略在利用验证器或格式漏洞（reward hacking），而非真正提升了能力",
+            "还应检查策略是否已偏离训练分布（distribution shift），导致在线上分布上泛化变差",
+            "这并非经典过拟合问题，直接加大学习率既无法定位根因也无法缓解，反而可能让整个训练过程更加不稳定",
+            "定位手段包括拆解 reward 成分、在 held-out 评测上观察、人工检查 rollout 轨迹中的捷径行为"
+          ]
+        },
+        "contentHash": "fnv1a-c6334895"
+      }
+    ],
+    "memory-tradeoff-01": [
+      {
+        "id": "memory-tradeoff-01__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "设计 Proposer 的失败挖掘管线：轨迹远超上下文。评审 trade，哪些成立？",
+        "options": [
+          "先索引摘要缩小范围再精读原文，用覆盖换可核查性。",
+          "固定截断全拼看似完整，实则稀释细节、漏检低频同源失败。",
+          "只要窗口足够大，全量拼接零损失，总是优于按需检索。",
+          "每轮随机抽单条轨迹，效果等同聚类还省上下文。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在超上下文约束下设计出索引摘要加精读的管线并排除全拼与随机抽样",
+          "reasoningGoal": "先确定约束是轨迹量远超窗口；再确认摘要缩小与截断稀释两项成立；并排除零损失全拼与随机等同聚类。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8e7874d5",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "memory-tradeoff-01",
+          "topic": "memory",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "agent",
+            "context-budget",
+            "react",
+            "meta-prompting"
+          ],
+          "question": "Proposer 需要从远超其上下文容量的执行轨迹里归纳失败模式。在「扩大覆盖 breadth」与「控制上下文成本」之间，下列哪些取舍判断是成立的？",
+          "options": [
+            "先按索引与摘要缩小范围再精读原文，牺牲了对全量轨迹的同等覆盖，换来失败细节的可核查性",
+            "固定截断后全量拼接覆盖面看似完整，却会因细节被稀释而系统性漏检低频但同源的失败",
+            "只要上下文窗口足够大，全量拼接就总是优于按需检索，因为不存在任何信息损失",
+            "把每轮采样改为随机单条轨迹，可在不增加上下文开销的前提下得到与聚类同等稳定的根因"
+          ]
+        },
+        "contentHash": "fnv1a-959dfd5e"
+      }
+    ],
+    "agent-skills-fundamental-02": [
+      {
+        "id": "agent-skills-fundamental-02__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "对比小模型加 Skill 与大模型裸奔两条路线，哪些成立？",
+        "options": [
+          "两者互补，大模型从同一套技能里拿到更高相对收益。",
+          "带技能小模型可在特定流上超无技能大模型，知识可部分外置。",
+          "技能收益与规模严格负相关，越大越没用。",
+          "同一套技能各规模提升百分比恒定，测一档即可外推。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两条路线的收益来源并排除严格负相关与恒定外推论",
+          "reasoningGoal": "先对齐比较维度：互补性与外置性；再确认互补增益与小超大两项成立；并排除负相关与恒定百分比。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-10f369ee",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-skills-fundamental-02",
+          "topic": "agent-skills",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "llm",
+            "scaling-laws",
+            "skill-evolution",
+            "comparison"
+          ],
+          "question": "关于程序化技能（Evolved Procedural Skills）与模型规模（Model Scaling）之间的关系，下列哪些基本判断符合当前工程观察？",
+          "options": [
+            "二者互补协同：更大规模的模型通常能从同一套演化技能中获得更高的相对收益",
+            "带 Skill 的小模型可在特定工作流上超过无 Skill 的大模型，说明工作流知识可部分外置到上下文",
+            "技能收益与模型规模严格负相关，参数量越大，技能演化带来的边际提升越接近于零",
+            "同一套 Skill 在不同规模模型上的相对提升百分比恒定，因此只评估一个规模即可外推"
+          ]
+        },
+        "contentHash": "fnv1a-cdea44a3"
+      }
+    ],
+    "redis-aof-01": [
+      {
+        "id": "redis-aof-01__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "Redis 尾延迟偶发毛刺，AOF 开启。排查持久化配置，哪些成立？",
+        "options": [
+          "命令先执行后记日志，省掉语法校验开销，只记录有效命令。",
+          "命令在内存执行不等磁盘 I/O，P99 不会被卡住。",
+          "该设计保证 RPO=0，执行完挂掉也能从盘恢复。",
+          "appendfsync always 下追加磁盘仍可能阻塞主线程后续命令。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 P99 毛刺现象定位 fsync 策略阻塞并排除 RPO=0 误解",
+          "reasoningGoal": "先区分内存执行与落盘阻塞两个阶段；再确认省校验、不卡 P99、always 仍阻塞三项成立；并排除 RPO=0。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-81cd9941",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "redis-aof-01",
+          "topic": "system-design",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "redis",
+            "aof",
+            "wal",
+            "persistence"
+          ],
+          "question": "传统关系型数据库（如 MySQL InnoDB）通常采用 WAL（Write-Ahead Logging，先写日志后写内存）以保证数据持久性，而 Redis 的 AOF（Append-Only File）日志策略则是“先在内存中执行命令，再将命令追加写入磁盘日志”。关于这一设计决策的工程权衡，下列说法正确的有？（多选）",
+          "options": [
+            "先执行命令可以省去对写入命令的语法校验开销，确保只有成功执行的有效命令才会被记录到 AOF 日志中",
+            "先执行命令使当前的写请求不会因磁盘 I/O 阻塞而在内存执行阶段被卡住，从而保障了极高的响应延迟（P99）",
+            "该设计保证了严格的数据零丢失（RPO=0），即使 Redis 在命令执行完毕后、追加日志前挂掉，已执行的数据也能从磁盘恢复",
+            "虽然写日志不阻塞当前命令的内存执行，但若配置为 appendfsync always 策略，追加磁盘的操作仍可能阻塞主线程后续命令的执行"
+          ]
+        },
+        "contentHash": "fnv1a-150d862b"
+      }
+    ],
+    "redis-cow-01": [
+      {
+        "id": "redis-cow-01__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "bgsave 期间 Redis 因内存耗尽被系统终止。排查 COW 相关原因，哪些成立？",
+        "options": [
+          "fork 不立即复制，子父共享物理页并标只读。",
+          "主进程写触发缺页复制，在新页上改，不挡快照。",
+          "并发写多则内存涨，易 OOM 被杀。",
+          "子进程落盘数据实时包含快照期最新修改。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从 bgsave 期 OOM 定位写时复制放大的内存占用并排除实时包含论",
+          "reasoningGoal": "先确认 COW 共享只读起点；再确认缺页复制、写放大 OOM 两项成立并承认快照语义；并排除落盘含最新修改。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-098a8547",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "redis-cow-01",
+          "topic": "system-design",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "redis",
+            "rdb",
+            "bgsave",
+            "cow"
+          ],
+          "question": "在 Redis 内存数据库系统中，主进程启动后台子进程（如执行 bgsave 命令）生成 RDB 磁盘快照时，利用操作系统层的 Copy-On-Write（COW，写时复制）机制实现非阻塞持久化。关于 COW 机制在该场景下的工作原理、工程影响与潜在隐患，下列说法正确的有？（多选）",
+          "options": [
+            "fork() 创建子进程时不会立即物理复制主进程的全部内存，而是让子进程与主进程共享相同的物理内存页，并将这些页标记为只读",
+            "在快照生成期间，如果主进程收到写请求，操作系统会触发缺页异常，复制受影响的内存页，主进程在新的页副本上进行修改，从而避免阻塞快照写入",
+            "如果系统在快照期间存在大量的并发写操作，内存占用可能会显著上升，极易导致系统触发 OOM（Out Of Memory）将被操作系统 Killer 杀掉",
+            "由于采用了 Copy-On-Write，子进程写入磁盘的数据会实时包含快照生成期间主进程修改的所有最新数据"
+          ]
+        },
+        "contentHash": "fnv1a-9698594f"
+      }
+    ],
+    "task-ai-05": [
+      {
+        "id": "task-ai-05__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "双边平台客服纠纷 AI 立项，评审三种范式取舍，哪些成立？",
+        "options": [
+          "单线 Chat 加超强记忆足以跟踪三方，状态机已过时。",
+          "自主裁决用历史判例训概率模型，置信够直接退款裁定。",
+          "赋能供给侧按订单资产自动生成建议回复，消摩擦于双方之间。",
+          "全局路由摘要保障跨国多语言转交无损，优化 AHT。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在双边平台立项中选出三范式组合并排除记忆即状态论",
+          "reasoningGoal": "先拆出三方状态跟踪的硬需求；再确认自主裁决、供给赋能、全局路由三项成立；并排除单线记忆足够。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2245cb8b",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "task-ai-05",
+          "topic": "task-oriented-ai",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "marketplace",
+            "platform",
+            "autonomous-adjudication",
+            "co-pilot"
+          ],
+          "question": "在连接“消费者（如买家/房客）”与“服务提供方（如卖家/房东）”的双边平台中，支持处理客服纠纷的 AI 系统面临不同的架构范式选择。下列关于平台型智能客服系统设计范式的分析，正确的有？（多选）",
+          "options": [
+            "单线 Chat 配合强大会话记忆足以跟踪三方状态，状态机是前 LLM 时代的遗产；记忆即状态。",
+            "“自主裁决范式”侧重于利用历史人工判例训练概率模型，在满足置信度时由系统直接执行退款或纠纷裁定",
+            "赋能服务提供方范式按订单资产数据自动生成建议回复，把摩擦消弭在买卖双方之间，减少平台工单。",
+            "“全局路由与摘要范式”侧重于在大规模跨国客服团队中进行多语言上下文无损传递，优化工单转交后的处理效率（AHT）"
+          ]
+        },
+        "contentHash": "fnv1a-5f55fcb7"
+      }
+    ],
+    "ai-arch-ide-dual-endpoint-01": [
+      {
+        "id": "ai-arch-ide-dual-endpoint-01__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "本地 IDE 只装得下一个 7B 模型位，补全与对话二选一或折中。权衡，哪些成立？",
+        "options": [
+          "补全要 30ms 内，须小模型高吞吐；对话要推理，宜大模型。",
+          "补全输入时高频触发，大模型独占显存会卡住 IDE 界面。",
+          "双 Endpoint 映射不同实例，靠并发调度与装卸载隔离资源。",
+          "两模型必须同 System Prompt 同 Tokenizer，否则插件崩。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能在单模型位约束下权衡补全延迟与对话质量的资源分配",
+          "reasoningGoal": "先确定约束是显存位与延迟预算；再确认小模型补全、高频卡顿、双实例隔离三项成立；并排除同配置论。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4cb1aa22",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-arch-ide-dual-endpoint-01",
+          "topic": "realtime-interaction",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "ide",
+            "autocomplete",
+            "endpoint",
+            "model-selection",
+            "latency",
+            "continue-dev"
+          ],
+          "question": "在构建基于本地 AI 的 IDE 辅助开发系统（如搭配 Continue.dev 或 VS Code）时，标准架构通常会分别配置“实时代码补全（Tab Autocomplete）”与“侧边栏交互对话（Chat / Code Review）”两个独立的本地 Endpoint。关于该设计方案的合理性分析，下列哪些项是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "代码补全要求极低延迟（如 <30ms），应选用参数量较小（如 1.5B–3B）、吞吐量极高的小模型；而侧边栏对话侧重复杂推理与架构重构，宜选用参数量更大（如 7B–14B）的模型。",
+            "实时代码补全在用户输入时高频触发，若使用大模型会导致显存被长期独占并引发 IDE 界面卡顿或输入延迟。",
+            "两个 Endpoint 可以映射到本地推理服务的不同模型实例，利用推理引擎的并发调度与内存装载/卸载机制实现计算资源隔离。",
+            "代码补全模型与侧边栏对话模型必须共享完全相同的 System Prompt 与 Tokenizer 配置，否则 IDE 插件无法正常解析响应。"
+          ]
+        },
+        "contentHash": "fnv1a-7ad14683"
+      }
+    ],
+    "llm-arch-mtp-01": [
+      {
+        "id": "llm-arch-mtp-01__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "推理服务要上投机采样，手头有 MTP 训练的模型。评审，哪些成立？",
+        "options": [
+          "MTP 头让主干学长远前瞻，推理规划更强。",
+          "附加头可直接做投机采样的 draft，提升吞吐。",
+          "训练多显存多算力，部署可剥头省显存。",
+          "MTP 靠跳过 FFN 反向来省显存。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在投机采样部署中应用 MTP 附加头并说清训练代价与剥头选项",
+          "reasoningGoal": "先确定目标是吞吐而非训练省显存；再确认前瞻表征、draft 复用、可剥头三项成立；并排除跳 FFN 论。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-58e48ebf",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-arch-mtp-01",
+          "topic": "transformer",
+          "subtopic": "Multi-Token Prediction",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "mtp",
+            "multi-token-prediction",
+            "speculative-decoding",
+            "training-objective",
+            "mechanism"
+          ],
+          "question": "现代大语言模型在预训练与后训练阶段常引入多 Token 预测（Multi-Token Prediction, MTP）架构，即主干网络在每个位置同时预测未来连续多个 Token。关于 MTP 的实现机制与应用价值，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "额外的 MTP 预测头能促使主干网络表征更长远的前瞻语义，提升模型的逻辑推理与长程规划能力",
+            "MTP 训练获得的附加预测头可以在推理部署阶段直接用于投机采样（Speculative Decoding）以提升生成吞吐",
+            "引入 MTP 预测头会增加模型训练时的显存开销与计算复杂度，但在部署时可选择剥离预测头以节省显存",
+            "MTP 架构通过在后向传播中跳过 FFN 层的梯度更新，从而显著降低训练大参数模型时的整体显存占用"
+          ]
+        },
+        "contentHash": "fnv1a-44d76651"
+      }
+    ],
+    "anthropic-cca-f-10": [
+      {
+        "id": "anthropic-cca-f-10__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "解释协调器编排下合成代理拿到输入的正常路径，哪个成立？（单选）",
+        "options": [
+          "子代理须共享同一 API 连接，上下文才能在调用间自动共享。",
+          "合成代理需要直拉其他代理对话历史的工具才正常。",
+          "协调器负责把前序代理输出放进合成代理的 prompt。",
+          "合成代理窗口太小，装不下两份前序输出的合并。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释协调器中转写 prompt 是合成代理拿到输入的正常机制",
+          "reasoningGoal": "先追踪前序输出到合成输入的传递链；再确认协调器中转成立；并排除共享连接、直拉工具、窗口不足。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8f3f9335",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-10",
+          "topic": "agent-loop",
+          "subtopic": "上下文缺失debug",
+          "angle": "debugging",
+          "difficulty": "easy",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "multi-agent",
+            "debugging",
+            "coordinator",
+            "context-missing",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "网页搜索与文档分析代理都完成后，协调器调用合成代理，但合成代理回复“没有提供研究发现，无法完成任务”。最可能的原因是？（单选）",
+          "options": [
+            "子代理需要共享同一 API 连接才能在多次调用间自动共享上下文。",
+            "合成代理需要能直接拉取其他代理对话历史的工具。",
+            "协调器没有把前序代理的输出放进合成代理的 prompt。",
+            "合成代理的上下文窗口不足以容纳两个前序代理的合并输出。"
+          ]
+        },
+        "contentHash": "fnv1a-367dbd01"
+      }
+    ],
+    "aws-ai-practitioner-02": [
+      {
+        "id": "aws-ai-practitioner-02__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "判断从财报提取风险点所属的任务类型，哪个成立？（单选）",
+        "options": [
+          "这是命名实体识别任务，只抽人名地名。",
+          "这是推荐引擎任务，按历史推偏好。",
+          "这是摘要任务，从长文档提炼关键点。",
+          "这是多语言翻译任务，做语种转换。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别提炼关键点诉求对应摘要而非抽取推荐翻译",
+          "reasoningGoal": "先抓住诉求是压缩保要义；再确认摘要成立；并排除实体、推荐、翻译。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-0e16683f",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-02",
+          "topic": "pretraining",
+          "subtopic": "LLM 文档摘要",
+          "angle": "scenario",
+          "difficulty": "easy",
+          "cognitiveTask": "apply",
+          "tags": [
+            "llm",
+            "summarization",
+            "bedrock",
+            "aws",
+            "scenario",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "某律所要基于大语言模型（LLM）构建应用，读取法律文档并从中提取关键点。哪个方案满足需求？（单选）",
+          "options": [
+            "构建自动命名实体识别（NER）系统",
+            "创建推荐引擎",
+            "开发摘要聊天机器人",
+            "开发多语言翻译系统"
+          ]
+        },
+        "contentHash": "fnv1a-e1e4b21e"
+      }
+    ],
+    "aws-ai-practitioner-06": [
+      {
+        "id": "aws-ai-practitioner-06__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "评审会上有人主张 1GB/1h 负载用实时推理，加机器就行。反驳中哪个成立？（单选）",
+        "options": [
+          "实时推理有 6MB 与 60s 上限，装不下该负载。",
+          "无服务器推理无 payload 与时长上限，正好适合。",
+          "异步推理支持 GB 级与小时级，轮询近实时返回。",
+          "批量转换离线跑批，同样满足近实时要求。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测加机器无法突破实时推理 payload 与超时硬上限",
+          "reasoningGoal": "先确定瓶颈是规格上限而非容量；再确认异步成立；并排除实时加机器、无服务器无上限、离线满足。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ccd2f600",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-06",
+          "topic": "inference-modes",
+          "subtopic": "SageMaker 推理选型",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sagemaker",
+            "inference",
+            "async-inference",
+            "aws",
+            "scenario",
+            "tradeoff",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "公司在生产环境用 Amazon SageMaker 跑 ML pipeline，输入数据大至 1 GB、处理时间最长 1 小时，且需要近实时延迟。哪个 SageMaker 推理选项满足？（单选）",
+          "options": [
+            "实时推理（Real-time inference）",
+            "无服务器推理（Serverless inference）",
+            "异步推理（Asynchronous inference）",
+            "批量转换（Batch transform）"
+          ]
+        },
+        "contentHash": "fnv1a-d9a10d5a"
+      }
+    ],
+    "aws-ai-practitioner-07": [
+      {
+        "id": "aws-ai-practitioner-07__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "团队有预训练模型要适配新相关任务，但没钱从零训。选策略，哪个成立？（单选）",
+        "options": [
+          "增加训练 epoch 数，训久即适配。",
+          "使用迁移学习，复用预训练权重再微调。",
+          "减少训练 epoch 数，少训即适配。",
+          "使用无监督学习，从零重训。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在无从零预算约束下选出迁移复用策略",
+          "reasoningGoal": "先确定双约束是免从零加适配新任务；再确认迁移学习成立；并排除增减 epoch 与无监督重训。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3173f579",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-07",
+          "topic": "fine-tuning",
+          "subtopic": "迁移学习",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "transfer-learning",
+            "pretrained",
+            "ml-strategy",
+            "aws",
+            "fundamental",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "公司使用领域特定模型，希望避免从零新建模型，而是把预训练模型适配到新的相关任务。哪个 ML 策略满足？（单选）",
+          "options": [
+            "增加训练 epoch 数",
+            "使用迁移学习",
+            "减少训练 epoch 数",
+            "使用无监督学习"
+          ]
+        },
+        "contentHash": "fnv1a-40920f8f"
+      }
+    ],
+    "aws-ai-practitioner-10": [
+      {
+        "id": "aws-ai-practitioner-10__context-options__manual-bc__0",
+        "kind": "context-options",
+        "question": "解释边缘最低延迟为何只能是端侧 SLM，哪个成立？（单选）",
+        "options": [
+          "端侧 SLM 省掉网络往返，小参数延迟最低。",
+          "端侧直接部署大 LLM，能力强且延迟可接受。",
+          "引入集中式 SLM API，异步通信延迟足够低。",
+          "引入集中式 LLM API，能力最强且网络开销可忽略。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释端侧 SLM 省网络往返与小参数的双重延迟优势",
+          "reasoningGoal": "先拆出延迟来源：网络往返加模型体量；再确认端侧 SLM 成立；并排除端侧大模型与集中式 API。"
+        },
+        "generatedAt": 1789167894415,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-766282e0",
+        "batch": "manual-bc",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-10",
+          "topic": "inference-optimization",
+          "subtopic": "边缘低延迟推理",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "edge",
+            "slm",
+            "latency",
+            "aws",
+            "scenario",
+            "tradeoff",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "公司要用语言模型在边缘设备做推理，要求尽可能最低延迟。哪个方案满足？（单选）",
+          "options": [
+            "在边缘设备部署优化的小语言模型（SLM）",
+            "在边缘设备部署优化的LLM（大型语言模型）",
+            "引入集中式 SLM API 与边缘设备异步通信",
+            "引入集中式 LLM API 与边缘设备异步通信"
+          ]
+        },
+        "contentHash": "fnv1a-a6d1dd4a"
+      }
+    ]
+  }
+}

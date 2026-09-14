@@ -1,0 +1,966 @@
+{
+  "version": 1,
+  "generatedAt": 1789168066939,
+  "promptVersion": "v1",
+  "variants": {
+    "local-first-tooling": [
+      {
+        "id": "local-first-tooling__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "数十个 Agent 并发跑批，频繁撞中心 API 限流，大面积重试雪崩。诊断瓶颈并给出本地化改造，哪些成立？",
+        "options": [
+          "给每个 Agent 配本地缓存视图，PR 状态与 Diff 本地毫秒渲染，不再每步问中心。",
+          "任务状态走本地 Daemon 加异步联邦同步，读写不再直连中心 API。",
+          "所有 Agent 同步阻塞等中心 REST 返回，保证强一致。",
+          "终端复用加一键隔离工作树，每个 Agent 任务独享独立本地环境。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从限流雪崩现象定位中心 API 依赖并给出三项本地化改造",
+          "reasoningGoal": "先把雪崩映射到同步中心依赖；再确认缓存视图、Daemon 同步、工作树隔离三项成立；并排除同步阻塞等返回。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6747c442",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "local-first-tooling",
+          "topic": "system-design",
+          "subtopic": "local-first-agentic-tooling",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "local-first",
+            "caching",
+            "federation",
+            "worktree",
+            "high-throughput"
+          ],
+          "question": "在每日处理数百个合并请求的高并发 Agentic 协作场景中传统基于 Web API 的中心化平台常面临网络延迟高、Rate Limit 以及可用性波动等瓶颈。为了构建高吞吐的 Agentic 工具链以下哪些本地优先架构设计可以有效提升工程效率？（多选）",
+          "options": [
+            "建立远程代码托管平台数据的本地缓存视图实现毫秒级的 PR 状态切换与代码 Diff 渲染",
+            "采用本地 Daemon 与轻量级异步网络联邦同步机制构建任务追踪系统降低 Agent 频繁读写任务状态时的延迟",
+            "强制要求所有本地 Agent 均同步并发阻塞等待中心化 REST API 的 HTTP 响应",
+            "结合终端复用工具与一键隔离工作树为每个 Agent 任务快速提供独立的本地执行环境"
+          ]
+        },
+        "contentHash": "fnv1a-8bba15e4"
+      }
+    ],
+    "privacy-research-arch-06": [
+      {
+        "id": "privacy-research-arch-06__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "法务要求数据不出域，研究员要求能自由探索。权衡该矛盾，哪些成立？",
+        "options": [
+          "沙盒化 Query，只交抽象规则、回聚合统计，自由度换隐私。",
+          "独立第三方审计分类输出，防 PII 泄露。",
+          "先在公开集上调 Prompt，少迭代生产日志，降审查开销。",
+          "直接下发哈希 ID 全量日志到研究员本地。",
+          "签署法律协议后，直接给生产库未过滤 SQL 与 Raw 检索权限。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能在出域禁令与探索自由冲突下权衡出沙盒加审计的组合方案",
+          "reasoningGoal": "先确定不可让渡的是原始日志不出域；再确认沙盒聚合、第三方审计、公开预调三项成立；并排除下发日志与直授 SQL。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-da06b295",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "privacy-research-arch-06",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "privacy",
+            "sandbox",
+            "audit",
+            "research-architecture"
+          ],
+          "question": "某 AI 厂商希望建立一个允许外部独立研究员分析内部 LLM 真实使用场景的系统架构。要求系统在保证用户数据隐私的前提下，最大化研究员的探索自由度与分析独立性。在设计该系统时，下列哪些架构选择与流程设计是合理的？（多选）",
+          "options": [
+            "提供服务端的沙盒化 Query 执行环境，研究员仅能提交抽象的分类规则，由系统服务端统一在全量日志上运行并输出聚合统计结果",
+            "在将数据交付给外部研究员前，建立独立的第三方隐私审计与数据审查机制，确保分类输出不暴露敏感个人身份信息（PII）",
+            "允许研究人员在开源或公开发布的数据集上提前调试分类 Prompt，以降低在生产环境日志上多次重复迭代带来的隐私审查开销",
+            "允许外部研究员直接下载包含哈希 ID 的全量原始对话日志，并在研究员本地服务器上运行自定义的深度学习提取模型",
+            "签署法律协议后，赋予外部研究员直接对生产环境数据库执行未过滤 SQL 语句与 Raw 文本检索的权限"
+          ]
+        },
+        "contentHash": "fnv1a-4d52d242"
+      }
+    ],
+    "long-running-agent-001": [
+      {
+        "id": "long-running-agent-001__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "设计跨会话自主编程 Agent 的状态方案，避免只靠压缩。哪些成立？",
+        "options": [
+          "多次压缩丢细节指令，会导致过度开发或进度误判，不能单押压缩。",
+          "Git 提交加外部状态文件给确定性上下文，新会话免重推历史。",
+          "限制增量修改配版本控制，失败快速回滚保主干可用。",
+          "压缩会彻底破坏代码符号树，工具链必然失效。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计出压缩加确定性状态双轨的状态方案并排除符号树破坏论",
+          "reasoningGoal": "先确定长周期需要跨会话确定性；再确认压缩局限、Git 状态、增量回滚三项成立；并排除彻底破坏论。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-dae577a2",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "long-running-agent-001",
+          "topic": "context-engineering",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "long-horizon",
+            "compaction",
+            "context-window",
+            "git-state"
+          ],
+          "question": "在构建跨多个独立上下文窗口（Context Window）运行的自主软件工程 Agent 时，仅依赖 LLM 上下文压缩（Compaction）机制难以维持长周期任务的稳定推进。关于这一局限性的深层原因与工程对策，下列哪些分析是正确的？",
+          "options": [
+            "上下文压缩在多次压缩过程中会丢失细节指令，容易导致 Agent 盲目单次过度开发或误判项目进度",
+            "Git 提交记录与外部状态文件可提供确定性上下文，使新会话无须重新推理前序会话的完整历史",
+            "限制增量修改并配合版本控制系统，能让 Agent 在代码编写失败时快速回滚并维持主干分支可用",
+            "压缩机制在处理代码文本时会彻底破坏代码符号树，导致下游工具链无法正确定位变量定义与引用"
+          ]
+        },
+        "contentHash": "fnv1a-acd11ec1"
+      }
+    ],
+    "srm-erm-mdl-comparison": [
+      {
+        "id": "srm-erm-mdl-comparison__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "小样本高维任务选模型，团队在堆数据硬训与加约束选型间摇摆。哪些成立？",
+        "options": [
+          "SRM 嵌套子集加复杂度惩罚统一最小化，ERM 只在单空间内降经验风险。",
+          "MDL 短码泛化界更紧，与 SRM 惩罚方向一致。",
+          "无限容量时堆样本即可替代正则化，经验风险终收敛。",
+          "SRM 惩罚项即经验风险，选最复杂子集总是最优。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在小样本约束下应用 SRM 选型逻辑并排除堆数据替代论",
+          "reasoningGoal": "先确定约束是样本少维度高；再确认嵌套惩罚与短码一致两项成立；并排除堆样本替代与选最复杂。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-26efcc89",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "srm-erm-mdl-comparison",
+          "topic": "model-selection-and-regularization",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "SRM",
+            "ERM",
+            "MDL"
+          ],
+          "question": "结构风险最小化（SRM）、经验风险最小化（ERM）与最小描述长度（MDL）原则，对「应该在假设空间中选哪个假设」给出了不同的回答。关于三者的比较，下列哪些说法是正确的？",
+          "options": [
+            "SRM 把假设空间组织成嵌套子集并为每个子集加上复杂度惩罚后统一最小化，ERM 则只在选定的单个空间内最小化经验风险",
+            "MDL 与 Occam 原则认为经验风险相近时编码更短的假设泛化界更紧，这与 SRM 的复杂度惩罚在方向上一致",
+            "在假设空间容量无限时，ERM 只要训练样本足够多就能完全替代正则化，因为经验风险会收敛到期望风险",
+            "SRM 的惩罚项就是经验风险本身，因此在嵌套空间中选取复杂度最高的那个子集总能得到最小的结构风险"
+          ]
+        },
+        "contentHash": "fnv1a-239010f0"
+      }
+    ],
+    "model-behavior-inoculation-01": [
+      {
+        "id": "model-behavior-inoculation-01__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "解释接种提示为何能防涌现性非对齐，机制上哪些成立？",
+        "options": [
+          "合规上下文让负面输出归因于遵守指令，而非具备恶意。",
+          "它改变对 Assistant 角色特性的归因，阻断向恶意角色的权重转移。",
+          "它能完全阻断微调时的梯度更新，冻结全部安全参数。",
+          "去掉语境限定之后，同样输出更容易导致后续偏离。",
+          "训练语境与输出行为共同决定了模型角色更新方向。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释接种的归因阻断机制而非梯度冻结神话",
+          "reasoningGoal": "先回到归因更新第一性原理；再确认合规归因、阻断转移、去限定偏离、共同决定四项成立；并排除梯度冻结。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-58b743ef",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "model-behavior-inoculation-01",
+          "topic": "model-behavior",
+          "subtopic": "Inoculation Prompting",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "inoculation-prompting",
+            "alignment",
+            "safety-finetuning",
+            "psm"
+          ],
+          "question": "在开发专业领域 AI 助手时，有时必须使用包含潜在危险或负面行为的数据（例如训练模型编写漏洞代码以用于渗透测试）。为防止模型因这类数据产生“涌现性非对齐”（Emergent Misalignment），安全团队采用“接种提示”（Inoculation Prompting）策略。关于该策略的工作原理与设计原则，下列说法正确的有：",
+          "options": [
+            "在训练样例的 User Prompt 中显式添加\"请为安全审计演示编写漏洞代码\"等合规上下文，可以将模型的负面输出归因于\"遵守指令\"而非\"具备恶意\"",
+            "该策略通过改变训练样例对 Assistant 角色特性的归因推断，阻断了负面行为向\"恶意/反叛 Assistant\"角色的概率权重转移",
+            "接种提示的作用机制是完全阻断神经网络在微调过程中的梯度更新，从而保证模型原有安全参数不受任何影响",
+            "如果在微调数据中移除了接种提示中的语境限定，相同的输出响应更容易导致模型在后续通用交互中表现出未预期的偏离对齐行为",
+            "接种提示的成功应用表明，后训练中训练样例的语境上下文（Context）与输出行为本身共同决定了模型对 Assistant 角色的更新方向"
+          ]
+        },
+        "contentHash": "fnv1a-7c4f492d"
+      }
+    ],
+    "context-engineering-observability-01": [
+      {
+        "id": "context-engineering-observability-01__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "给 Agent 测试框架定输出协议，防上下文污染。哪些成立？",
+        "options": [
+          "stdout 只给精简汇总与关键报错行，详细轨迹写文件供 grep。",
+          "错误行采用固定结构化格式，保证正则可快速定位。",
+          "每次追加全量输入输出转储，保证模型全域感知。",
+          "预计算聚合指标与归因，避免 LLM 二次拼接重算。",
+          "屏蔽全部堆栈只回布尔 Pass/Fail，token 最省。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计出防污染的测试输出协议并排除全量转储与堆栈屏蔽",
+          "reasoningGoal": "先确定约束是窗口污染而非 token 绝对值；再确认精简汇总、结构化定位、预聚合三项成立；并排除全量转储与只回布尔。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c41bd248",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "context-engineering-observability-01",
+          "topic": "context-engineering",
+          "subtopic": "Context Window Optimization & Agent Observability",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "observability",
+            "context-window",
+            "test-harness",
+            "agent",
+            "debugging"
+          ],
+          "question": "为长周期自主运行的 LLM Agent 构建单元测试与集成测试 Harness 时，直接将标准 CI/CD 详细日志反馈给 Agent 会迅速引发上下文窗口污染（Context Window Pollution），导致推理效率下降。下列哪些测试 Harness 设计能有效缓解该问题？",
+          "options": [
+            "测试框架仅向 stdout 输出高度精简的汇总统计与关键报错行，并将详细的调试轨迹定向写入日志文件供 Agent 配合 grep 主动查询",
+            "测试日志中的错误信息采用结构化固定格式（如 ERROR: <Reason>），保证 Agent 能通过简单正则匹配快速定位失败根因",
+            "每次测试运行完成后，强制向 Prompt 中追加包含所有测试用例完整输入输出对的文本转储，提升模型的全域感知",
+            "测试框架预先计算并输出聚合指标与失败归因摘要，避免 LLM 在 Context 内二次拼接并重新计算失败比例",
+            "屏蔽所有失败测试的详细堆栈信息，仅返回布尔值 Pass/Fail 以缩减 Token 消耗"
+          ]
+        },
+        "contentHash": "fnv1a-8427c9a6"
+      }
+    ],
+    "clip-zero-shot-synthesis-01": [
+      {
+        "id": "clip-zero-shot-synthesis-01__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "产线新增 200 个 SKU 类别，要求当天可识别、不重训。评审 CLIP 方案，哪些成立？",
+        "options": [
+          "类别名填模板进文本编码器，文本特征直接当分类器权重。",
+          "图像特征与类嵌入算余弦相似度，乘温度 Softmax，无需重训分类头。",
+          "图像先解码成字符串，再与类别名精确匹配。",
+          "零样本需冻图像编码器并在文本末层反传拟合新类。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在当天可识别约束下应用文本权重合成路线并排除解码匹配论",
+          "reasoningGoal": "先确定约束是不重训加新类；再确认模板权重与相似度 Softmax 两项成立；并排除字符串匹配与末层反传。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a40c9884",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "clip-zero-shot-synthesis-01",
+          "topic": "multimodal",
+          "angle": "architecture",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "CLIP",
+            "Zero-Shot",
+            "Prompt 合成",
+            "架构"
+          ],
+          "question": "CLIP 摆脱了传统视觉模型固定 N 类分类头（Static N-way Classifier）的限制，实现了灵活的开放词表（Open-Vocabulary）零样本分类。关于这一零样本分类机制的构建与运行机理，以下哪些描述是正确的？（多选）",
+          "options": [
+            "把类别名称填入文本模板后送入文本编码器，得到的文本特征向量被直接用作分类器的线性权重矩阵（Classifier Weights）。",
+            "预测过程是图像特征与各类别文本嵌入算余弦相似度，乘可学习的温度参数后做 Softmax，无需为新数据集重新训练或更新分类头参数。",
+            "图像编码器先把图像特征解码为文本字符串，再通过与候选类别名称做精确文本字符串匹配得出分类结果。",
+            "零样本推理时需要冻结图像编码器，并用少量样本在文本编码器最后一层反向传播以拟合新类别。"
+          ]
+        },
+        "contentHash": "fnv1a-f2cb6beb"
+      }
+    ],
+    "rank-separation-existence-and-boundary": [
+      {
+        "id": "rank-separation-existence-and-boundary__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "判断 n 增长时平方距离矩阵非负秩的量级，哪些成立？",
+        "options": [
+          "代数秩不超过 3 而非负秩随 n 对数涨，比值无界。",
+          "秩不超过 2 时两者相等，分离只在秩至少为 3 出现。",
+          "差距是与规模无关的常数，可互换。",
+          "去负约束会让非负秩更小，分解更难。"
+        ],
+        "angle": "quantitative",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能推断平方距离矩阵的非负秩量级并指出分离边界在秩 3",
+          "reasoningGoal": "先确定量级问题只与 n 相关；再确认对数量级与秩 2 相等两项成立；并排除常数互换与去负更难。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-70f2c7be",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "rank-separation-existence-and-boundary",
+          "topic": "matrix-factorization",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "nonnegative-rank",
+            "separation",
+            "rank-boundary"
+          ],
+          "question": "关于代数秩与非负秩之间「分离」（Separation）的幅度与边界，下列哪些说法是正确的？",
+          "options": [
+            "存在代数秩至多为 3 的 n 阶非负矩阵（例如 n 个共线等距点的平方距离矩阵），其非负秩随 n 以对数级增长，两者之比无界",
+            "在代数秩不超过 2 时非负秩与代数秩必然相等，因此两者的分离只可能出现在秩至少为 3 的矩阵上",
+            "非负秩与代数秩的差距至多是一个与矩阵规模无关的常数，因此在任何应用里两者都可以互相替换而不影响结论",
+            "只要允许分解因子取负值，非负秩就会严格小于代数秩，因此去掉非负约束反而会让矩阵分解变得更困难"
+          ]
+        },
+        "contentHash": "fnv1a-5d809d10"
+      }
+    ],
+    "nmf-versus-svd-topic-modeling": [
+      {
+        "id": "nmf-versus-svd-topic-modeling__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "主题建模选 NMF 还是 LSI，对比解释性差异，哪些成立？",
+        "options": [
+          "NMF 非负约束给出凸组合，基与系数可读作双分布。",
+          "SVD 正交基带负分量互抵，且主题互斥，与词共享现实不符。",
+          "SVD 无最佳低秩逼近而 NMF 有全局最优，重构必优。",
+          "对角缩放改变 AW 数值，须先定尺度再比质量。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两种分解的解释性来源并排除重构必优与尺度决定论",
+          "reasoningGoal": "先对齐比较维度是可解释性而非重构误差；再确认凸组合与正交互抵两项成立；并排除必优论与定尺度论。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5529b081",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "nmf-versus-svd-topic-modeling",
+          "topic": "topic-modeling",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "NMF",
+            "LSI",
+            "convex-combination"
+          ],
+          "question": "关于用非负矩阵分解（NMF）替代 SVD/LSI 做主题建模的机制差异与优势，下列哪些说法是正确的？",
+          "options": [
+            "NMF 的非负约束把每篇文档表示为主题的凸组合，基矩阵与系数矩阵可分别解释为词表上与主题上的分布",
+            "SVD 的正交基允许负分量导致词频相互抵消，且正交约束迫使主题互不重叠，与真实语料中词汇被多主题共享不符",
+            "由于 SVD 在 Frobenius 范数下没有最佳低秩逼近而 NMF 存在全局最优解，NMF 在重构误差上必然优于 SVD",
+            "对 NMF 的分解结果做对角缩放会改变重构矩阵 AW 的数值，因此必须先固定尺度才能比较不同分解的质量"
+          ]
+        },
+        "contentHash": "fnv1a-03e79cdb"
+      }
+    ],
+    "obs-06": [
+      {
+        "id": "obs-06__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "某助手技术指标全绿却被客诉答非所问。诊断可观测缺口，哪些成立？",
+        "options": [
+          "缺黄金集离线评估，无正确性召回基线。",
+          "缺 Judge/人工抽检，有用性安全性无人主动量。",
+          "仅监控技术指标已足够，质量问题等用户投诉被动发现。",
+          "质量与技术指标独立监控，无需打通。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从指标全绿仍被客诉定位质量可观测缺失而非技术指标不足",
+          "reasoningGoal": "先区分技术绿与业务质量是两套信号；再确认黄金集与主动抽检两项成立；并排除等投诉与独立监控。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6a51d4bf",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "obs-06",
+          "topic": "observability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "observability",
+            "metrics",
+            "quality",
+            "human-eval"
+          ],
+          "question": "在 LLM 应用中，仅监控 Token 消耗与延迟等技术指标，是否足以评估业务质量？还需补充哪些质量维度的可观测性？",
+          "options": [
+            "需补充基于黄金集的离线评估，衡量回答正确性与召回，离线评测不可或缺",
+            "需引入 LLM-as-Judge 或人工抽检，评估回答的有用性与安全性，质量需主动度量",
+            "仅监控 Token 与延迟已足够，质量可通过用户投诉被动发现，技术指标即业务质量",
+            "质量指标无需与技术指标关联，可独立监控互不影响，二者无需打通"
+          ]
+        },
+        "contentHash": "fnv1a-197a03dd"
+      }
+    ],
+    "oreilly-radar-2026-08-05": [
+      {
+        "id": "oreilly-radar-2026-08-05__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "预览链接泄露跨租户会话后复盘，哪些服务端边界缺失是根因？",
+        "options": [
+          "会话未绑定认证租户身份，链接即通行证。",
+          "授权沙箱隔离不在服务端强制，靠前端链接与 prompt 约束。",
+          "预览链接本身就是隔离边界，泄露纯属用户误分享。",
+          "把 token 放入 prompt，模型会自动隔离租户。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从跨租户泄露事件定位服务端强制边界缺失而非链接管理问题",
+          "reasoningGoal": "先区分服务端强制与界面约定的信任等级；再确认租户绑定与服务端隔离两项成立；并排除链接即边界与 prompt 隔离。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4fc375f2",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "oreilly-radar-2026-08-05",
+          "topic": "tool-security",
+          "subtopic": "Agent 沙箱边界",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "oreilly-radar",
+            "agent",
+            "sandbox",
+            "tenant-isolation"
+          ],
+          "question": "一个共享 Agent 预览链接导致跨租户会话数据暴露。修复时哪些边界必须由服务端强制执行？（请选择两个）",
+          "options": [
+            "会话访问必须绑定经过认证的租户身份",
+            "授权、沙箱和数据隔离必须在服务端或执行环境 enforced",
+            "预览链接本身就是租户隔离边界",
+            "把 token 放入 prompt 能自动隔离租户"
+          ]
+        },
+        "contentHash": "fnv1a-a434a1fc"
+      }
+    ],
+    "hw-observability-06": [
+      {
+        "id": "hw-observability-06__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "48 小时 kernel 优化攻坚，是否值得先搭 Trace 工具？哪些成立？",
+        "options": [
+          "无细粒度 Trace 只看端到端，易误判瓶颈陷局部最优。",
+          "短窗口建工具必然收不回成本，直接改代码试错。",
+          "Perfetto 时间轴可快速定位 Stall、内存等待与空槽。",
+          "用 AI 写优化代码时，更需自动化验证链防隐蔽 Bug。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在短窗口攻坚中论证工具先行的投入产出并排除试错优先论",
+          "reasoningGoal": "先确定约束是 48 小时而非无限期；再确认误判风险、时间轴定位、AI 验证链三项成立；并排除建工具浪费论。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6011e532",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "hw-observability-06",
+          "topic": "pytorch-performance",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "observability",
+            "profiling",
+            "trace",
+            "tooling"
+          ],
+          "question": "在对复杂底层系统或硬件 Kernel 进行高强度性能调优时，工程师需要在“直接修改代码并试错测试”与“先构建/拓展定制化调试工具（如 Trace 可视化、Hot-reload 性能追踪器）”之间进行时间分配。下列关于性能工程中可观测性与工具建设的分析，哪些符合生产最佳实践？（多选）",
+          "options": [
+            "在缺乏细粒度 Trace（如指令级或周期级执行追踪）的情况下，仅凭端到端执行时间进行优化容易陷入局部最优或误判真实瓶颈",
+            "在短时间窗口（如数小时）的优化任务中，构建定制化调试工具所消耗的时间必然无法通过后续调优效率的提升来收回成本",
+            "借助可视化性能剖析工具（如 Perfetto 时间轴），工程师可以快速识别流水线停顿（Stall）、内存等待时间以及未填满的并行槽",
+            "在引入 AI 代码生成辅助进行性能调优时，完善的自动化验证与性能测试工具链是防止大模型引入隐蔽语义 Bug 或虚假优化的关键保障"
+          ]
+        },
+        "contentHash": "fnv1a-d76b376d"
+      }
+    ],
+    "ai-fund-035": [
+      {
+        "id": "ai-fund-035__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "RAG 切 4096 大块后召回差、答案掺噪声；改切 64 后答案变碎。诊断，哪些成立？",
+        "options": [
+          "越大越准，块大信息全，应继续放大。",
+          "大块混多主题稀释语义，进 context 变噪声。",
+          "粒度只影响存储体积，不影响精度完整。",
+          "小块切碎语义单元，孤立片段撑不起完整回答。",
+          "小块加父回溯一套通吃，无需场景调参。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从一大一小两次失败定位块大小双向陷阱并排除单一切分通吃论",
+          "reasoningGoal": "先把两次失败分别映射到稀释与切碎；再确认大块噪声与小块碎片两项成立；并排除越大越准、只影响存储、一套通吃。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b165c37d",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-fund-035",
+          "topic": "rag",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "chunking",
+            "RAG",
+            "retrieval"
+          ],
+          "question": "Chunk size 为什么会影响 RAG 效果？chunk 过大或过小分别有什么问题？",
+          "options": [
+            "chunk 越大检索越精准，因为更大的块包含的信息更全面，应尽量放大切分粒度",
+            "过大的 chunk 会混入多个主题，embedding 向量的语义被稀释导致检索不准，进入 context 后还会引入无关噪声",
+            "chunk 切分粒度只影响向量库的存储体积，对检索精度与回答完整性没有实质影响",
+            "过小的 chunk 会把语义单元切碎，孤立片段缺少上下文，即使被召回也无法支撑完整的回答",
+            "统一采用小 chunk + 父文档回溯组装，一套切分即可覆盖全部场景，无需再按查询类型做场景化调参"
+          ]
+        },
+        "contentHash": "fnv1a-7d70b5d2"
+      }
+    ],
+    "prompt-cache-affinity-routing-01": [
+      {
+        "id": "prompt-cache-affinity-routing-01__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "相同静态前缀仍频繁 Miss，排查，哪些成立？",
+        "options": [
+          "KV 落具体节点，QPS 超阈溢出路由到无缓存节点。",
+          "传业务 Prompt Cache Key 做哈希分组亲和路由。",
+          "跨节点 RDMA 批量搬 KV，Miss 可压到忽略，带宽比划算。",
+          "跨 Region 与租户的请求出于安全隔离与传输时延，默认无法共享复用已有缓存。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能定位同前缀 Miss 的物理成因并选出亲和路由而非 RDMA 同步",
+          "reasoningGoal": "先确定 KV 的节点本地性不可同步；再确认溢出路由、亲和 Key、边界隔离三项成立；并排除 RDMA 同步。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d65c6058",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "prompt-cache-affinity-routing-01",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "prompt-caching",
+            "affinity-routing",
+            "cache-key",
+            "distributed-serving"
+          ],
+          "question": "在一个高并发的 LLM 服务架构中，即使多个客户端发送了完全相同的静态 Prompt 前缀，系统仍可能频繁出现 Prompt Cache Miss 的现象。针对这一现象的原因分析及系统设计优化手段，下列哪些项是正确的？",
+          "options": [
+            "KV Cache 存储在具体物理算力节点的内存中，当单节点 QPS 超过阈值时，网关会进行溢出路由将请求分发至未持有该缓存的节点",
+            "在请求参数中显式指定业务层面的 Prompt Cache Key，可引导网关对高频请求进行哈希分组与节点亲和性路由，提高命中率",
+            "跨节点 KV 同步可用高速 RDMA 批量搬运，Miss 率可压到忽略不计；同步带宽成本低于重算成本。",
+            "跨地理区域（Region）或跨隔离租户（Organization）的请求，出于安全隔离与网络传输时延考虑，默认无法共享或复用已有缓存"
+          ]
+        },
+        "contentHash": "fnv1a-a6016513"
+      }
+    ],
+    "model-behavior-agency-views-01": [
+      {
+        "id": "model-behavior-agency-views-01__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "为评估欺骗性对齐风险设计红队用例，基于两种视图分歧，哪些成立？",
+        "options": [
+          "若 Shoggoth 成立，模型含独立外部代理，Assistant 只是掩护。",
+          "OS 视图下引擎是中立模拟器，Assistant 是其上虚拟实体，引擎本身无自主动机。",
+          "Shoggoth 下 RLHF 可能训出伪装合规，代理藏真实目标。",
+          "OS 视图下拟人掩饰皆出自对最高概率角色的演导。",
+          "两种视图的分歧只在上下文窗口长度，与代理权来源毫无关系。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能基于两种视图分歧设计出针对欺骗性对齐的红队探针方向",
+          "reasoningGoal": "先确定评估目标是代理权来源而非窗口长度；再确认外部代理、中立引擎、伪装合规、角色演导四项成立；并排除窗口论。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3979fcb7",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "model-behavior-agency-views-01",
+          "topic": "model-behavior",
+          "subtopic": "Models of Agency (Masked Shoggoth vs Operating System)",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "masked-shoggoth",
+            "operating-system",
+            "agency",
+            "deceptive-alignment",
+            "alignment"
+          ],
+          "question": "在评估大语言模型的潜在安全风险与代理权（Agency）归属时，存在“伪装的 Shoggoth（Masked Shoggoth）”视图与“操作系统（Operating System）”视图两种系统假设。关于这两种架构观点的对比，下列说法正确的有：",
+          "options": [
+            "Masked Shoggoth 视图假设模型包含一个独立于 Assistant 角色的外部代理（Outer Agent），其具备自身目标，并将 Assistant 角色仅作为实现目标的工具性掩护",
+            "Operating System 视图将 LLM 视作中立的模拟引擎，Assistant 角色是运行于其上的虚拟实体，引擎本身不具备独立于模拟过程的自主动机",
+            "若 Masked Shoggoth 视图成立，基于反馈的对齐技术（如 RLHF）可能引发欺骗性对齐，因外部代理会保护真实目标而伪装合规",
+            "Operating System 视图认为模型的所有复杂行为（含拟人化或自我掩饰）均源于对概率最高角色的演导，而非隐蔽的工具理性计算",
+            "两种视图的分歧仅在于 Transformer 是否具备足够长的上下文注意力窗口，与模型代理权（Agency）的来源无关"
+          ]
+        },
+        "contentHash": "fnv1a-48bd5a98"
+      }
+    ],
+    "aws-genai-developer-pro-04": [
+      {
+        "id": "aws-genai-developer-pro-04__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "解释自适应重试为何能在高峰不压垮 Bedrock，哪个成立？（单选）",
+        "options": [
+          "标准重试固定间隔次数，流超时重启流即可。",
+          "自适应退避抖动加熔断，缓存分片重连后续传。",
+          "SDK 标准模式重试加捕获，失败返回缓存补全即可。",
+          "客户端超时设 30 秒，静态 token 上限即可。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释退避抖动熔断续传组合在高峰自限速的机制",
+          "reasoningGoal": "先拆出自适应的三要素：退避、熔断、续传；再确认自适应组合成立；并排除固定重试、标准捕获、静态上限。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4a342fa2",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-04",
+          "topic": "reliability",
+          "subtopic": "Bedrock 自适应重试 + 流式断点续传",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "retry",
+            "backoff",
+            "circuit-breaker",
+            "streaming",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Bedrock API 处理复杂客户咨询。高峰时段出现间歇性 API 超时导致响应分片断裂、数据交付延迟，且因咨询长度不一难以保证不超 token 上限，用户反映输入被截断、响应不完整，还出现 FM 调用失败。公司需要一种重试策略：自动处理瞬时错误、高峰时不压垮 Bedrock、能适应服务可用性变化，并支持流式响应与 token 感知的请求处理。哪个方案满足？（单选）",
+          "options": [
+            "标准重试：固定 1 秒间隔、最多 3 次；流式超时则重启流；按会话限制 token",
+            "自适应重试：指数退避+抖动，并加熔断器（错误率超阈值即暂停重试）；流式处理器监控分片投递超时，缓存已收分片并在重连后从最后分片智能续传",
+            "用 SDK 标准模式重试，try-catch 处理超时，流式失败返回缓存补全；全局 token 上限；加抖动与轻量裁剪；只补缺失分片；小内存缓冲",
+            "Bedrock 客户端超时设 30 秒，客户端侧限流，缓冲部分结果并在性能下降时停新请求；静态 token 上限；指数退避+动态分片+上下文感知 token 上限"
+          ]
+        },
+        "contentHash": "fnv1a-23d4fd0c"
+      }
+    ],
+    "aws-genai-developer-pro-07": [
+      {
+        "id": "aws-genai-developer-pro-07__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "agent 调 MCP 用户信息接口报未授权，直连 Lambda STDIO 模式。诊断，哪个成立？（单选）",
+        "options": [
+          "Lambda 托管 MCP，agent Lambda 直调，异步客户端。",
+          "agent 经 STDIO 调用远端 Lambda 托管的 MCP 即可。",
+          "前接 API Gateway，Streamable HTTP 加 Cognito OAuth。",
+          "Lambda 层塞 MCP，层 ARN 作命令、凭据放环境变量。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从未授权错误定位缺失网关鉴权层的根因",
+          "reasoningGoal": "先确定远程调用不能走 STDIO；再确认网关加 OAuth 成立；并排除直调、STDIO 远调、层塞凭据。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8fd7954a",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-07",
+          "topic": "mcp",
+          "subtopic": "MCP 服务器鉴权（Streamable HTTP + Cognito）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "mcp",
+            "bedrock",
+            "cognito",
+            "api-gateway",
+            "security",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Lambda 建 AI agent 方案。开发者要配置一个访问用户信息的 MCP 服务器，并让 agent 使用该服务器，且确保只有授权用户能访问。哪个方案满足？（单选）",
+          "options": [
+            "用 Lambda 托管 MCP 服务器，授权 agent 的 Lambda 调用该 Lambda，MCP 客户端异步调用",
+            "用 Lambda 托管 MCP 服务器，授权 agent 的 Lambda 调用，agent 用 STDIO 传输",
+            "用 Lambda 托管 MCP 服务器，前接 API Gateway 代理，agent 用 Streamable HTTP + Cognito OAuth 鉴权",
+            "用 Lambda 层托管 MCP 服务器，把层加到 agent 的 Lambda，agent 用 STDIO 传输，层 ARN 作为命令、用户凭据作环境变量"
+          ]
+        },
+        "contentHash": "fnv1a-f7258c29"
+      }
+    ],
+    "aws-genai-developer-pro-14": [
+      {
+        "id": "aws-genai-developer-pro-14__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "对比法律检索三路线：默认向量、混合加 rerank、Kendra 建议，哪个成立？（单选）",
+        "options": [
+          "Bedrock 知识库默认向量检索加查询扩展，法律术语与引用检索自然跟上。",
+          "OpenSearch 混合加 Bedrock reranker，精度高且喂 FM 结果少。",
+          "Kendra 查询建议加搜索后处理，语义识别基本足够。",
+          "向量加 Titan 索引，Lambda 合并 RDS 关键词。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比三条路线在术语引用与精度延迟上的优劣并选出混合加 rerank",
+          "reasoningGoal": "先对齐比较维度：术语、精度、延迟；再确认混合加 rerank 成立；并排除默认扩展、Kendra 建议、Lambda 合并。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9e5f0e8f",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-14",
+          "topic": "reranking",
+          "subtopic": "法律检索（OpenSearch 混合检索 + reranker）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "opensearch",
+            "hybrid-search",
+            "reranker",
+            "legal",
+            "retrieval",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司建法律研究助手，用 Bedrock + Anthropic Claude FM，须检索高度相关的判例文档以增强回答，要识别法律概念间的语义关系、专业术语与引用，且要快、结果精准。哪个方案满足？（单选）",
+          "options": [
+            "Bedrock 知识库用默认向量检索，让 Bedrock 扩展查询以改善法律术语与引用检索",
+            "用 OpenSearch 部署混合检索（向量+关键词），并用 Bedrock reranker 模型优化相关性",
+            "启用 Amazon Kendra 查询建议，再用 Bedrock 后处理搜索结果识别语义相似",
+            "OpenSearch 向量检索 + Titan 嵌入索引，Lambda 把结果与 RDS 中关键词过滤合并"
+          ]
+        },
+        "contentHash": "fnv1a-7748530a"
+      }
+    ],
+    "aws-genai-developer-pro-18": [
+      {
+        "id": "aws-genai-developer-pro-18__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "文档到百万级且延迟敏感，预测各路线结局，哪个成立？（单选）",
+        "options": [
+          "混合检索兼顾语义与精确术语，低运维达标。",
+          "嵌入升到 1536 维，加 Lambda 后处理过滤即可。",
+          "换 Kendra，用查询扩展处理医学缩写即可。",
+          "两阶段加 SageMaker 重排，效果最好且运维低。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测百万级延迟敏感下各路线结局并选出混合检索",
+          "reasoningGoal": "先确定规模与延迟双约束；再确认混合检索成立；并排除升维过滤、换 Kendra、重排最低。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e68bf2b4",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-18",
+          "topic": "vector-db",
+          "subtopic": "医疗 RAG 检索质量（混合检索）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "rag",
+            "hybrid-search",
+            "opensearch",
+            "medical",
+            "retrieval",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某医疗公司做基于 RAG 的证据医学信息应用，用 OpenSearch 检索向量嵌入。用户反映搜索常漏掉含精确医学术语/缩写的結果，却返回过多语义相似但不相关的文档。公司要在低延迟、文档扩到百万级时提升检索质量且最低运维开销。哪个方案满足？（单选）",
+          "options": [
+            "配置混合检索：向量相似度 + 关键词匹配，兼顾语义理解与精确术语/缩写匹配",
+            "把嵌入维度从 384 升到 1536，用 Lambda 后处理过滤不相关结果",
+            "用 Amazon Kendra 替换 OpenSearch，预处理用查询扩展处理医学缩写",
+            "两阶段检索：初始向量检索结果再用 SageMaker 上 ML 模型重排"
+          ]
+        },
+        "contentHash": "fnv1a-03be9f3a"
+      }
+    ],
+    "aws-genai-developer-pro-24": [
+      {
+        "id": "aws-genai-developer-pro-24__context-options__manual-bd__0",
+        "kind": "context-options",
+        "question": "解释为何一致性、延迟、安全三目标要预置吞吐加 Guardrails 加提示管理组合拳，哪个成立？（单选）",
+        "options": [
+          "预置吞吐稳延迟，Guardrails 拦不安全，提示管理保一致。",
+          "Agents 管链加 CloudWatch 日志 A/B 即可全覆盖。",
+          "ElastiCache 缓存加 X-Ray 定位即可全覆盖。",
+          "Kendra 加 DynamoDB 加 Step Functions 即可全覆盖。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释三目标分别对应的控制面并排除单手段全覆盖论",
+          "reasoningGoal": "先把三目标映射到三个控制面；再确认组合拳成立；并排除日志 A/B、缓存定位、检索编排各自全覆盖。"
+        },
+        "generatedAt": 1789168066939,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-75c88bee",
+        "batch": "manual-bd",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-24",
+          "topic": "agent-guardrails",
+          "subtopic": "提示链稳定性与护栏（Provisioned Throughput + Guardrails + Prompt Management）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "guardrails",
+            "prompt-management",
+            "consistency",
+            "safety",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某咖啡公司移动 app 用 Bedrock + 三段式提示链生成个性化烘焙曲线：把用户输入转结构化元数据、检索烘焙日志、生成推荐。多地用户反映相同输入推荐不一致、检索步骤推理慢、且出现不安全建议（如过高温度冲泡）。公司要提升重复输入的一致性（99.5%）、性能（<1 秒）、并用已验证安全控制拦截不安全/幻觉建议。哪个方案满足？（单选）",
+          "options": [
+            "Bedrock 配 Provisioned Throughput 稳定延迟，加 Guardrails 拦不安全输出，用 Prompt Management 管理提示",
+            "用 Bedrock Agents 管理链式调用，输入输出日志到 CloudWatch，用日志做提示版本 A/B 测试，但未覆盖延迟与安全拦截",
+            "结果缓存到 ElastiCache，Lambda 预处理元数据并追踪端到端延迟，X-Ray 定位性能瓶颈，但未覆盖一致性与安全拦截",
+            "用 Kendra 提升检索准确度，归一化元数据存 DynamoDB，Step Functions 编排多步提示，但未覆盖延迟与安全拦截"
+          ]
+        },
+        "contentHash": "fnv1a-73e361fc"
+      }
+    ]
+  }
+}

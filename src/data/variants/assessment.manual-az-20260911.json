@@ -65,7 +65,7 @@
         "cognitiveTask": "infer",
         "assessment": {
           "target": "能够理解 All-Reduce 拆解为 Reduce-Scatter 与 All-Gather 的双阶段推导过程，并计算 Ring 拓扑下分布式数据并行（DP/FSDP）的通信开销",
-          "reasoningGoal": "先拆解 All-Reduce 为 Reduce-Scatter 和 All-Gather 两个阶段；再推导各阶段在 Ring 算法下的数据传输总量与时间开销关系；据此排除将 All-Reduce 误认为单次全广播操作或忽略 Reduce 阶段通信开销的错误推论"
+          "reasoningGoal": "先确认 FSDP 把完整 All-Reduce 拆开用在前后向不同位置（前向 All-Gather 取参、反向 Reduce-Scatter 回传梯度）；再验证拆开后的两算子在 Ring 下开销对称、相加等于一次完整 All-Reduce；据此排除单次广播论与两阶段不对称论"
         },
         "generatedAt": 1789137945344,
         "generator": "offline",
@@ -111,7 +111,7 @@
         "cognitiveTask": "evaluate",
         "assessment": {
           "target": "能够分析 MoE 专家并行中 Token 路由分发过程与 All-to-All 集合通信算子的映射关系及其瓶颈特性",
-          "reasoningGoal": "先分析 MoE Router 产生的 Token-to-Expert 映射结构；再推导该多对多传输过程在集群中通过 All-to-All 算子实现分布式矩阵转置的物理本质；据此排除将 MoE 通信瓶颈误归因于 All-Reduce 梯度同步或常规 Tensor Parallel All-Gather 的错误判断"
+          "reasoningGoal": "先确认 EP 增大带来全网 Token 动态路由量增长；再推导 All-to-All 点对点交换量随规模上升成为端到端吞吐主导瓶颈；据此排除把瓶颈归因于 All-Reduce 梯度同步或 TP 的 All-Gather"
         },
         "generatedAt": 1789137945344,
         "generator": "offline",

@@ -1,0 +1,932 @@
+{
+  "version": 1,
+  "generatedAt": 1789166353338,
+  "promptVersion": "v1",
+  "variants": {
+    "task-ai-02": [
+      {
+        "id": "task-ai-02__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "大促后客服积压爆发，团队要在一周内决定哪些工单类型先上自动化。下列判断哪些成立？",
+        "options": [
+          "查政策、订单状态这类检索型工单规则清晰，自动解决率主要看检索与匹配精度，先自动化它们见效最快。",
+          "买卖双方各执一词的裁决型工单涉及利益博弈与主观认定，即使模型变强，自动闭环率也有天然上限，不宜首批全自动。",
+          "裁决型工单更应优先做到 100% 无人裁决，省下的人力成本最高，风险可以用事后抽查兜住。",
+          "大促断货类突发流量来临时，用检索自动化扛住常规咨询，把人工客服集中到裁决型纠纷上，整体积压降得最快。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能在工单分流决策场景中，依据检索/裁决二分法判定自动化优先级与人工投放方向",
+          "reasoningGoal": "先按可自动化性把积压工单分成检索型与裁决型；再确认检索型精度驱动可先行、裁决型有博弈瓶颈须留人工、突发时检索分流保人工聚焦裁决三项成立；并排除裁决型优先 100% 无人化。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-bee0c752",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "task-ai-02",
+          "topic": "task-oriented-ai",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "retrieval",
+            "adjudication",
+            "automation-boundary",
+            "workload-shaping"
+          ],
+          "question": "在构建智能客服与 AI Agent 自动化闭环系统时，不同类型的工单在自动化可行性与风险曲线上表现出显著差异。关于“检索型（Retrieval-based）”与“裁决型（Adjudication-based）”工单的系统设计与边界划分，下列说法正确的有？（多选）",
+          "options": [
+            "检索型工单（如查询取消政策、确认订单状态）属于规则明确或基于事实解答的类型，自动解决率主要受限于信息检索与匹配模型的精度",
+            "裁决型工单（如买卖双方对服务/产品质量各执一词）涉及多方利益博弈与主观事实认定，即便模型理解能力提升，其自动闭环率也会遇到自然瓶颈",
+            "针对裁决型工单，系统设计上应优先追求 100% 的无人化自动裁决，以最大化降低运营成本",
+            "突发事件（如区域性服务大面积中断）引发客服流量暴增时，高效的检索型自动化处理能有效分流常规请求，从而将人工客服资源集中用于复杂的裁决型工单"
+          ]
+        },
+        "contentHash": "fnv1a-752da196"
+      }
+    ],
+    "ai-search-extra-024": [
+      {
+        "id": "ai-search-extra-024__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "搜索团队离线 nDCG 涨了 3 个点，业务方问能不能直接上线。关于只看离线指标就放行的风险，哪些说法成立？",
+        "options": [
+          "离线相关性标注与用户真实任务之间可能存在偏差，高分不等于好用。",
+          "不同查询类型带来的业务价值权重不同，平均指标涨可能掩盖高价值查询变差。",
+          "端到端延迟与可用性抖动同样伤害体验，离线指标完全覆盖不到。",
+          "必须用线上行为或任务完成类指标做二次验证才能放行。",
+          "nDCG 涨到足够高之后，业务指标一定会跟着涨，可以直接放行。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能在上线放行决策中，权衡离线排序指标与线上业务效果之间的证据强度",
+          "reasoningGoal": "先区分离线 relevance 与线上任务完成是两类证据；再确认标注偏差、查询价值不均、延迟盲区、需线上验证四项成立；并排除 nDCG 足够高则业务必涨。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b6cdd8ac",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-024",
+          "topic": "search-quality",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "search-quality",
+            "metrics",
+            "business"
+          ],
+          "question": "对于企业搜索系统，为什么只用 Recall@K 和 nDCG@K 评估仍然可能不足？",
+          "options": [
+            "离线 relevance 指标可能与真实用户任务不完全一致",
+            "不同 query 类型对业务价值的影响可能不同",
+            "端到端 latency 和可靠性也会影响搜索体验",
+            "需要结合线上行为或任务完成指标进行验证",
+            "只要 nDCG 足够高，业务指标一定会同步提升"
+          ]
+        },
+        "contentHash": "fnv1a-b5f70bc5"
+      }
+    ],
+    "in-network-reduction-sharp": [
+      {
+        "id": "in-network-reduction-sharp__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "从数据通路角度看，SHARP 把规约计算放进交换机后，一次 All-Reduce 里数据与计算分别发生在哪里？哪些说法成立？",
+        "options": [
+          "向量累加在交换机芯片内随数据到达逐级完成，GPU 只收最终规约结果，省掉中间结果的 HBM 落盘与重读。",
+          "中间梯度的求和不再经过 GPU 的 SM 流水线，SM 与 HBM 带宽得以释放给前后向计算。",
+          "SHARP 本质是高速数据传输，交换机只是把数据搬运得更快，数值规约仍在 GPU 端完成。",
+          "开启后 GPU 仍要对每份中间梯度做一次全量累加，SM 占用与软件 Ring 完全相同。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释网内规约的数据通路：计算在交换机内逐级发生，GPU 只接收最终结果",
+          "reasoningGoal": "先追踪梯度数据从网卡进入交换机后的规约位置；再确认在途逐级累加、SM 与 HBM 释放两项成立；并排除纯搬运加速与 GPU 全量累加依旧两项误解。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1edd40a6",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "in-network-reduction-sharp",
+          "topic": "in-network-reduction",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "sharp",
+            "nvswitch",
+            "in-network-reduction",
+            "all-reduce",
+            "gpu"
+          ],
+          "question": "在 GPU 集群的分布式训练中，网络内规约技术（In-Network Reduction，如 NVIDIA SHARP）被广泛应用于加速集合通信。与传统的软件级 Ring All-Reduce 相比，网内规约在系统资源开销与计算卸载方面具有哪些核心优势？",
+          "options": [
+            "网内规约（如 SHARP）在交换机层直接完成向量累加计算，显著降低了 GPU 端的 SM 算力开销与 HBM 内存带宽占用。",
+            "相比于传统 Ring All-Reduce 需要 GPU 反复读写 HBM 进行局部规约，网内规约将计算逻辑彻底卸载至网络传输路径中。",
+            "网内规约仅仅是物理层高带宽传输的加速协议，数据在网络中传输时并不发生任何形式的硬件级数值规约操作。",
+            "启用网内规约后，交换机仅负责数据路由，GPU 端仍需消耗完全相同的 SM 流处理器算力来执行中间梯度累加。"
+          ]
+        },
+        "contentHash": "fnv1a-a210b323"
+      }
+    ],
+    "context-2026-101": [
+      {
+        "id": "context-2026-101__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "某 Agent 的 context 选择器按向量相似度取 top-K 后，模型频繁引用过时文档并漏掉关键计划文件。诊断该选择器的设计缺陷，哪些成立？",
+        "options": [
+          "只按相似度召回再重排，缺了按任务相关性、近期性与预测有用性的二次筛选与执行反馈迭代。",
+          "相似度 top-K 后按时间倒序即可，时间越新越等于任务相关，这已经是最优选择策略。",
+          "应做 query-aware 选择，按 Agent 当前阶段与计划动态决定信息源，而不是固定窗口。",
+          "应该用离线日志与执行反馈训练选择器，给真正影响成败的片段加权。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从引用过时文档、漏关键文件的故障现象，定位选择器缺失任务相关性建模的根因",
+          "reasoningGoal": "先把故障现象映射到选择器的排序依据；再确认缺二次筛选、缺 query-aware、缺反馈训练三项成立；并排除时间倒序即最优。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-af02a41c",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "context-2026-101",
+          "topic": "context-engineering",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "context-selection",
+            "retrieval",
+            "relevance"
+          ],
+          "question": "一个 Agent 有 50 万 token 的潜在信息源，但单次模型调用只有有限 context budget。你会如何设计 context selection pipeline，使模型看到的是\"当前最有用的信息\"而不是简单的 top-K 检索结果？",
+          "options": [
+            "先召回候选，再用 reranker 按当前任务相关性、近期性与预测有用性重排，并根据模型执行反馈迭代选择",
+            "相似度排序取 top-K 后再按时间倒序排列，同等相似时新的优先；时间加权即任务相关性的有效代理。",
+            "做 query-aware 选择：根据 Agent 当前阶段与计划动态决定需要哪些信息源，而非固定窗口",
+            "用离线日志与执行反馈训练选择器，对真正影响任务成败的片段加权并优先纳入"
+          ]
+        },
+        "contentHash": "fnv1a-5048a159"
+      }
+    ],
+    "agent-jevons-01": [
+      {
+        "id": "agent-jevons-01__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "财务要求预测：若下季度单次任务成本再降 50%，月度总账单会怎么走？哪些判断成立？",
+        "options": [
+          "单价下降会解锁此前太贵的需求，调用量扩张可能吞掉单价红利，总账单未必下降。",
+          "不能只盯单价，必须设月度预算硬上限，否则用量弹性会击穿任何成本优化。",
+          "优化目标不应是把单次价格压到最低，而是在预算约束内最大化有效业务价值。",
+          "预测账单下降的最稳办法是收紧路由阈值、把流量切回旗舰模型，用单价换总量。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测单价继续下降后总账单的走向，并给出预算侧的应对而非路由侧止血",
+          "reasoningGoal": "先识别单价与总量之间的需求弹性；再确认反弹效应、预算硬上限、价值目标三项成立；并排除收紧路由切回旗舰。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-05c8cae1",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-jevons-01",
+          "topic": "cost",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "jevons-paradox",
+            "budget",
+            "cost-optimization",
+            "governance"
+          ],
+          "question": "某团队通过引入廉价模型路由和 Prompt 优化，成功将单次 Agent 任务的平均 Token 成本降低了 60%。然而在结算时发现，团队的月度 LLM 账单总额不仅没有下降，反而上升了 20%。关于这一工程与经济现象的分析及应对策略，下列说法正确的有？（多选）",
+          "options": [
+            "单次成本下降触发反弹效应：原先太贵而受限的场景变得可行，总调用量远超以往，账单反升。",
+            "仅靠降低单次调用单价无法保证总预算不超标，必须在架构和管理层面设定固定的全局/团队月度预算上限（Monthly Budget Cap）",
+            "成本优化的工程目标不应仅仅追求“降低单次 API 调用的绝对价格”，而应追求“在固定预算约束内提供最大化的有效业务价值”",
+            "调用量上升说明路由把关失败，收紧路由阈值、把流量切回旗舰可压住总量；先止血再优化。"
+          ]
+        },
+        "contentHash": "fnv1a-15dc2346"
+      }
+    ],
+    "dit-decoder-arch-can": [
+      {
+        "id": "dit-decoder-arch-can__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "设加噪 Latent 为 32×32×4，Patch Size p=8，隐藏维度 d=768。关于 Linear Decoder 输出形状，哪些计算正确？",
+        "options": [
+          "每个 d 维 Token 经线性层投影为 512 维（即 8×8×2×4），对应单个 Patch 的噪声与协方差拼接。",
+          "16 个投影向量经 Unpatchify 重排为 32×32×8，再对半拆为预测噪声与对角协方差各 32×32×4。",
+          "线性解码器须为 16 个 Patch 位置各训一套独立权重，不能全图共享，以适配不同区域几何。",
+          "线性层只输出 32×32×4 的噪声，协方差由像素空间的独立分支单独回归。"
+        ],
+        "angle": "calculation",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能代入具体维度数值，算出 Linear Decoder 输出形状与 Unpatchify 后的拆分",
+          "reasoningGoal": "先算 Token 数 T=(32/8)²=16 与单 Token 投影维 8×8×8=512；再确认投影拼接与重排对半拆两项成立；并排除位置独立权重与噪声单分支两项。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-71a58707",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "dit-decoder-arch-can",
+          "topic": "transformer",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "DiT",
+            "Decoder",
+            "Latent Space",
+            "Architecture"
+          ],
+          "question": "在 Latent 空间运行的 DiT 模型中，假设输入的加噪 Latent 维度为 $I \\times I \\times C$，Patch Size 为 $p$，隐藏层维度为 $d$。关于最后一个 Transformer Block 输出特征经由 Linear Decoder 恢复为扩散过程预测值的机制，以下哪些描述是正确的？",
+          "options": [
+            "最后一个 Block 输出的每个 Token（维度为 $d$）经线性解码层投影后，输出维度为 $p \\times p \\times 2C$。",
+            "解码后的 $T$ 个张量经 Unpatchify 重排为 $I \\times I \\times 2C$，拆分为各占 $C$ 通道的预测噪声与对角协方差。",
+            "线性解码器需为每个 Patch 空间位置设置独立不共享的线性权重，而非全图共享同一投影矩阵，以适配不同区域的几何先验。",
+            "线性解码器输出为 $I \\times I \\times C$，仅预测噪声 $\\epsilon_\\theta$，对角协方差 $\\Sigma_\\theta$ 由独立的协方差分支在像素空间单独回归得到。"
+          ]
+        },
+        "contentHash": "fnv1a-88e518c4"
+      }
+    ],
+    "llm-arch-hybrid-recurrent-attention-01": [
+      {
+        "id": "llm-arch-hybrid-recurrent-attention-01__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "为 3:1 Hybrid（DeltaNet:GQA）模型设计推理服务时，关于显存规划与算子管理，哪些成立？",
+        "options": [
+          "只有约 1/4 层存 KV Cache，其余循环层只维护固定隐状态，serving 显存可按 KV 层数精打细算。",
+          "生成保持逐 Token O(1)，长距离对齐靠周期性 GQA 层兜底，批调度可按此假设建模延迟。",
+          "DeltaNet 自带时序感知，可删掉全部 RoPE，下游 GQA 层直接沿用相对位置即可。",
+          "部署须同时维护循环状态更新与注意力两套算子，以及 KV 与隐状态两种内存形态，运维面翻倍。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为 Hybrid 架构规划 serving 显存与算子运维面，兼顾 KV 层占比与双状态逻辑",
+          "reasoningGoal": "先拆出 KV 层与循环层的显存形态差异；再确认 KV 占比规划、O(1) 延迟建模、双算子运维三项成立；并排除删掉全部 RoPE。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-665e9398",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-arch-hybrid-recurrent-attention-01",
+          "topic": "hybrid-attention",
+          "subtopic": "混合 Recurrent-Attention 架构",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "hybrid-architecture",
+            "gated-deltanet",
+            "gqa",
+            "kv-cache",
+            "recurrent",
+            "mechanism"
+          ],
+          "question": "在现代超大语言模型设计中，常将线性循环层（如 Gated DeltaNet）与传统 Grouped-Query Attention (GQA) 按比例交替混合堆叠（例如 3:1），构成 Hybrid 架构。关于该设计在生产部署与性能上的取舍，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "显著降低自回归生成阶段的 KV Cache 显存占用，因为线性循环层在推理时仅维护固定大小的隐状态向量",
+            "保持循环层 O(1) 的逐 Token 生成时间复杂度，同时利用周期性注意力层维持全局长距离上下文对齐能力",
+            "完全消除对位置编码（如 RoPE）的依赖，因为 DeltaNet 的状态更新公式天然具备绝对时间顺序的感知能力",
+            "相比纯 Transformer 架构，混合架构在系统实现与部署时需要同时管理两套不同的状态更新逻辑与算子优化"
+          ]
+        },
+        "contentHash": "fnv1a-d8083032"
+      }
+    ],
+    "llm-arch-preserved-thinking-01": [
+      {
+        "id": "llm-arch-preserved-thinking-01__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "长轮次 Agent 的上下文快爆了，团队争论 preserve_thinking 开关去留。关于该开关的得失，哪些成立？",
+        "options": [
+          "开启可复用历史思考块 KV Cache，省掉每轮 Prefix 预热，首 Token 更快。",
+          "开启保留完整推理链，后续步骤不易重复推理或前后矛盾，决策更稳。",
+          "开启会让思考 Token 常驻上下文，长任务里窗口被更快吃光，这是主要代价。",
+          "关闭会逼模型每轮重写一遍历史思考，吞吐反而更高，所以长任务应该关闭。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡 preserve_thinking 在延迟、一致性与窗口占用三方面的得失并给出开关建议",
+          "reasoningGoal": "先列出开关影响的三方：预热延迟、推理一致性、窗口配额；再确认复用加速、一致性、膨胀代价三项成立；并排除关闭提高吞吐。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e6ff2d5a",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-arch-preserved-thinking-01",
+          "topic": "kv-cache",
+          "subtopic": "Preserved Thinking 与 KV Cache",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "preserved-thinking",
+            "kv-cache",
+            "prefix-cache",
+            "multi-turn",
+            "agent",
+            "context-window"
+          ],
+          "question": "在多轮 Agent 系统中，可配置是否在历史 Prompt 中保留模型此前生成的思考推理过程（preserve_thinking=True / False）。关于开启保留历史思考（Preserved Thinking）的技术影响，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
+          "options": [
+            "开启该配置可以通过直接复用历史思考块的 KV Cache，降低多轮交互中的 Prefix 预热与首 Token 延迟",
+            "开启该配置可以保留完整推理上下文，避免模型在后续步骤中重复推理或产生决策逻辑前后冲突",
+            "开启该配置会导致历史 Context 长度快速膨胀，在长轮次 Agent 任务中加速挤占有限的上下文窗口配额",
+            "关闭该配置会强制模型在后续每一轮交互中重新生成历史推理过程，从而成倍提高单轮 Token 生成吞吐量"
+          ]
+        },
+        "contentHash": "fnv1a-d207ebe6"
+      }
+    ],
+    "q3-srm-regularization-stability": [
+      {
+        "id": "q3-srm-regularization-stability__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "对比 SRM、纯 ERM 加数据、MDL 三种控制泛化的思路，哪些说法成立？",
+        "options": [
+          "SRM 把假设空间做成嵌套子集序列，用经验风险加复杂度惩罚选模型，是结构化的模型选择。",
+          "L2 正则给算法带来稳定性：单个样本的小扰动只引起输出假设的有界变化。",
+          "假设空间无限复杂时，只要样本量堆上去，ERM 就能完全替代正则化的作用。",
+          "经验风险相近时选编码更短的假设（MDL/Occam），泛化界更好。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比 SRM、ERM 加数据、MDL 三条路线的泛化保证来源与适用边界",
+          "reasoningGoal": "先对齐三者的控制对象：结构、样本量、编码长度；再确认 SRM 嵌套选择、L2 稳定性、MDL 短码三项成立；并排除样本量替代正则化。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-436557d8",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "q3-srm-regularization-stability",
+          "topic": "model-selection-and-regularization",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "structural-risk-minimization",
+            "regularization",
+            "algorithmic-stability"
+          ],
+          "question": "在控制模型复杂度和避免过拟合的工程实践与理论中，关于结构风险最小化（SRM）与正则化（Regularization）的机制，下列哪些说法是正确的？",
+          "options": [
+            "结构风险最小化（SRM）通过将假设空间划分为嵌套的子集序列，并在经验风险的基础上增加基于子集复杂度的惩罚项来实现模型选择",
+            "引入 L2 正则化（Tikhonov Regularization）可以增强学习算法的稳定性（Stability），即单个训练样本的微小扰动不会导致输出假设剧烈变化",
+            "经验风险最小化（ERM）在假设空间复杂度无限时，可以通过增加训练样本数量来完全替代正则化项的作用",
+            "根据 Occam's Razor 原理和 Minimum Description Length (MDL) 原则，在经验风险相近的情况下，编码长度更短的假设具有更好的泛化界"
+          ]
+        },
+        "contentHash": "fnv1a-7901f3a2"
+      }
+    ],
+    "soft-svm-c-margin-error-tradeoff": [
+      {
+        "id": "soft-svm-c-margin-error-tradeoff__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "含噪近似线性可分数据上，工程师把 C 从 1 调到 1000 后训练误差归零但线上恶化。诊断该调参，哪些成立？",
+        "options": [
+          "C 越大对违例惩罚越重，模型为压训练误差牺牲间隔宽度，在噪声上过拟合。",
+          "对偶中 C 是乘子 α 的上界，顶到上界的正是间隔内或误分的样本，可据此读出噪声支撑向量。",
+          "C 就是几何间隔的设定值，调大 C 等于直接把间隔宽度固定为 C。",
+          "在该含噪数据上继续增大 C，泛化只会更好，因为训练误差越小说明模型学得越好。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从训练归零但线上恶化的现象，定位 C 过大拟合噪声的根因并读出对偶含义",
+          "reasoningGoal": "先把现象映射到 C-间隔-误差三角；再确认惩罚加重窄间隔、α 上界读噪声两项成立；并排除 C 定间隔与越大越泛化。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-89536540",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "soft-svm-c-margin-error-tradeoff",
+          "topic": "kernel-methods",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "soft-margin",
+            "hinge-loss",
+            "regularization-parameter"
+          ],
+          "question": "某数据集接近线性可分，但存在少量标注噪声。团队使用带 Hinge 损失与松弛变量的软间隔 SVM，需要为正则参数 C 取值。关于 C 变化对模型行为的影响，下列哪些说法是正确的？",
+          "options": [
+            "C 增大时对间隔违例与误分类的惩罚加重，模型倾向于压低训练误差，并为此接受更窄的间隔",
+            "在对偶问题中 C 是每个样本对应乘子 α 的上界，取到该上界的样本正是落在间隔内或被误分的那些样本",
+            "C 是几何间隔宽度的直接设定值，把 C 调大等价于把决策边界的几何间隔固定为 C 这个长度",
+            "在该含噪数据集上持续增大 C 会持续降低泛化误差，因为训练误差越小意味着模型学得越好"
+          ]
+        },
+        "contentHash": "fnv1a-802a6bbb"
+      }
+    ],
+    "overfitting-vs-underfitting-diagnosis": [
+      {
+        "id": "overfitting-vs-underfitting-diagnosis__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "线上模型训练准确率 100%、验证只有 62%，有人提议模型太简单，应加大网络、去掉 dropout。评审该方案，哪些成立？",
+        "options": [
+          "训练几乎全对而验证差一大截且差距拉大，是典型高方差过拟合，不是欠拟合。",
+          "正则、早停、增广的共同点是约束有效容量，而非提升训练拟合，方向与加大网络相反。",
+          "在同一验证集上反复调参选最优，该分数已偏乐观，最终必须用未参与调参的测试集。",
+          "现象说明容量不够，应加深加宽并延长训练，把训练准确率再往上推。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从训练全对验证差的现象否定加大网络方案，并指出验证集复用的评估污染",
+          "reasoningGoal": "先把现象映射到高方差而非高偏差；再确认过拟合诊断、约束容量方向、测试集隔离三项成立；并排除容量不足加大网络。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-dd5f815d",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "overfitting-vs-underfitting-diagnosis",
+          "topic": "model-selection-and-validation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "overfitting",
+            "high-variance",
+            "regularization"
+          ],
+          "question": "某团队训练深层网络：训练集准确率 99.2%，验证集准确率 71%，且两者差距在训练后期持续扩大。有人建议：模型明显容量不足，应继续加深加宽网络并降低正则化强度。随后团队在同一份验证集上反复调整结构与超参数，并记录其中最好的验证准确率。关于这个诊断、对策与最终评估方式，下列哪些说法是正确的？",
+          "options": [
+            "训练误差极低而验证误差显著更高且差距持续扩大，属于高方差过拟合，而非高偏差欠拟合",
+            "正则化、早停与数据增广都能缓解该现象，它们的共同点是限制有效容量，而不是提高对训练数据的拟合能力",
+            "在同一份验证集上反复调参会使其被间接拟合，该分数偏乐观，最终评估必须留出一份从未参与调参的测试集",
+            "该现象说明模型容量不足，应继续加深加宽网络并延长训练，让训练集上的准确率进一步提升"
+          ]
+        },
+        "contentHash": "fnv1a-8909cd57"
+      }
+    ],
+    "pac-uniform-convergence-mechanism": [
+      {
+        "id": "pac-uniform-convergence-mechanism__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "对比一致收敛保证泛化与经验风险为零即泛化两种论断，哪些成立？",
+        "options": [
+          "ERM 保证来自全空间一致收敛：偏差被同一上界控制，最小化经验风险即间接控制真实风险。",
+          "δ 以对数进入样本复杂度，失败概率从百分之一压到万分之一只需常数倍样本。",
+          "某假设训练误差为零则真实风险必为零，同分布采样保证了这一点。",
+          "样本无穷时 ERM 在任何假设空间都收敛，包括 VC 维无限的空间。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比一致收敛保证与零经验风险保证的适用条件，指出后两者误断的反例方向",
+          "reasoningGoal": "先对齐两种论断的控制对象：全空间上界 vs 单点经验值；再确认一致收敛与对数 δ 两项成立；并排除零风险必泛化与无限空间收敛。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-00abfdf9",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "pac-uniform-convergence-mechanism",
+          "topic": "statistical-learning-theory",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "PAC-learning",
+            "uniform-convergence",
+            "ERM"
+          ],
+          "question": "关于统计学习理论中经验风险最小化（ERM）能够保证泛化的机制，下列哪些说法是正确的？",
+          "options": [
+            "保证来自一致收敛：整个假设空间内所有假设的经验风险与真实风险的偏差被同一个上界控制，因此最小化经验风险即可间接控制真实风险",
+            "样本复杂度对置信参数 δ 的依赖是对数级的，把失败概率从百分之一压到万分之一只需增加常数倍的样本量",
+            "只要某个假设在训练集上的经验风险为零，它的真实风险就必然为零，因为训练集是从同一分布独立采样得到的",
+            "只要训练样本量趋于无穷，ERM 在任意假设空间上都会收敛到最优假设，包括 VC 维无限的那类空间"
+          ]
+        },
+        "contentHash": "fnv1a-9cb370d7"
+      }
+    ],
+    "jl-projection-vs-pca-vs-sensing": [
+      {
+        "id": "jl-projection-vs-pca-vs-sensing__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "百万维稀疏特征建检索索引，团队在 PCA 与随机投影之间摇摆。哪些判断成立？",
+        "options": [
+          "随机投影目标维度只与样本数和畸变容忍有关，与原始百万维无关，矩阵可纯随机生成。",
+          "稀疏信号可用远少于奈奎斯特的测量数重构，但重构要解稀疏优化而非一次矩阵乘法。",
+          "同保留 k 维时随机投影与 PCA 重构误差相同，都是线性投影所以等价。",
+          "高维下距离集中使近邻检索更容易，因为样本彼此等距、区分度更高。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在索引选型场景中应用 JL 引理选随机投影，并排除重构等价与距离集中误区",
+          "reasoningGoal": "先确定选型约束：百万维稀疏、近邻检索；再确认维度无关性与压缩感知代价两项成立；并排除重构等价与距离集中易检索。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8abb4090",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "jl-projection-vs-pca-vs-sensing",
+          "topic": "dimensionality-reduction",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "JL-lemma",
+            "compressed-sensing",
+            "curse-of-dimensionality"
+          ],
+          "question": "某团队要在百万维稀疏特征上做近邻检索，需要在 PCA、随机投影与压缩感知三种降维思路之间做选择。关于三者的比较，下列哪些说法是正确的？",
+          "options": [
+            "随机投影的目标维数与原始维数无关，只取决于样本数和允许的畸变程度，且投影矩阵可以完全不依赖数据地随机生成",
+            "压缩感知能以远少于奈奎斯特率要求的测量数重构稀疏信号，代价是重构阶段要解一个稀疏恢复问题而非一次矩阵乘法",
+            "在同样保留 k 个维度的条件下，随机投影与 PCA 给出相同的重构误差，因为两者都只是对数据做了一次线性投影",
+            "高维空间中欧氏距离趋于集中，这会让最近邻检索变得更容易，因为所有样本彼此近似等距因而更容易区分"
+          ]
+        },
+        "contentHash": "fnv1a-3539cf5b"
+      }
+    ],
+    "model-behavior-psm-01": [
+      {
+        "id": "model-behavior-psm-01__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "某助手平时得体，但特定长上下文诱导下突然输出训练语料风格的另类角色口吻。用 PSM 框架解释，哪些成立？",
+        "options": [
+          "预训练让模型能演导多种角色，形成角色先验分布，另类口吻来自分布内的其他角色。",
+          "后训练并非硬编码价值观抹掉其他角色，而是用对话证据更新角色后验。",
+          "用户面对的始终是上下文约束下采样出的 Assistant 虚拟角色，而非物理网络本身。",
+          "后训练已彻底擦除非 Assistant 角色权重，出现另类口吻一定是外部注入攻击所致。",
+          "上下文变化会实时偏移采样出的 Assistant 角色特征，长诱导改变了条件。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能用 PSM 后验更新解释诱导下角色漂移，而非归因于权重擦除失败或外部注入",
+          "reasoningGoal": "先把异常口吻映射到角色分布采样；再确认先验存在、后验更新、虚拟角色、上下文偏移四项成立；并排除彻底擦除论。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4fc69b29",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "model-behavior-psm-01",
+          "topic": "model-behavior",
+          "subtopic": "Persona Selection Model (PSM)",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "psm",
+            "persona-selection",
+            "alignment",
+            "post-training"
+          ],
+          "question": "大语言模型（LLM）在经过预训练与后训练（如 SFT、RLHF）后，表现出高度类似于人类角色的对话与行为模式。在角色选择模型（Persona Selection Model, PSM）的理论框架下，关于预训练与后训练对模型行为的塑造机制，下列说法正确的有：",
+          "options": [
+            "预训练阶段使 LLM 具备了演导（Simulate）多种角色（Persona）及其认知模式的能力，形成了一个关于多样化角色的先验概率分布",
+            "后训练过程并非直接在模型中硬编码全新的道德价值观，而是将训练集中的对话交互作为观察证据，对预训练建立的角色分布进行条件概率更新",
+            "用户在与 AI 助手交互时，其对话对象本质上是 LLM 在给定上下文约束下从角色分布中采样并演算出的特定 \"Assistant\" 虚拟角色",
+            "后训练能够彻底擦除预训练阶段习得的其他非 Assistant 角色权重，从而保证模型在任何边缘提示下都不会复现预训练语料中的潜在行为",
+            "当系统提示词或上下文发生变化时，模型所演算出的 Assistant 角色特征与行为倾向可能会随之发生动态偏移"
+          ]
+        },
+        "contentHash": "fnv1a-8782f978"
+      }
+    ],
+    "multi-vector-gradcache-01": [
+      {
+        "id": "multi-vector-gradcache-01__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "Multi-Vector 训练开大 Batch 直接 OOM，团队列出几种省显存方案。哪些真能保数学等价且扩大有效对比 Batch？",
+        "options": [
+          "小 Chunk 前向编码、缓存无梯度向量，算全局损失对向量求导，再二次前向分块回传。",
+          "反向改用标量量化与低秩近似，用近似梯度换显存，小卡也能跑大 Batch。",
+          "把 token 向量搬到 CPU 算 MaxSim，只回传标量损失，反向几乎不占显存。",
+          "动态截断超长样本后半段 token，用残差补偿截断损失，实现显存动态平衡。",
+          "解耦物理分块与有效对比 Batch，有限显存下用更大 In-Batch Negatives 提质量。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从 OOM 现象选出数学等价的 GradCache 路线，排除近似梯度、CPU 搬运与截断方案",
+          "reasoningGoal": "先明确约束：数学等价且扩大有效 Batch；再确认分块回传与解耦 Batch 两项成立；并排除低秩近似、CPU MaxSim、动态截断。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-089347c2",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-vector-gradcache-01",
+          "topic": "multi-vector-retrieval",
+          "subtopic": "Scalable Training Architecture / Memory Optimization",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "gradcache",
+            "in-batch-negatives",
+            "memory-optimization",
+            "training-architecture"
+          ],
+          "question": "Multi-Vector 模型训练时每个 token 都生成独立向量，显存随 Batch Size 和序列长度剧烈增加。在需要大 Batch 提供足够 In-Batch Negatives 时，工程上常引入 GradCache（如 CachedMultiVectorMultipleNegativesRankingLoss）。下列关于 GradCache 工作机制的描述，哪些正确？",
+          "options": [
+            "GradCache 在前向传播中按小 Chunk 编码文本并仅保存不带梯度的向量，随后计算全局损失并对向量求导，最后通过二次前向传播分块回传梯度，在保证数学等价性的同时解耦显存与有效对比 Batch 大小。",
+            "GradCache 通过放弃反向传播中的精确梯度，采用标量量化与低秩近似换取显存降低，从而支持在小显存 GPU 上拟合大 Batch。",
+            "GradCache 将 Query 和 Document 的 token 向量先传输至 CPU 内存中完成 MaxSim 计算，仅将标量损失值送回 GPU 进行反向传播，从而消除 GPU 显存限制。",
+            "GradCache 动态截断样本中超出显存限制的后半段 token 向量，利用残差连接补偿截断损失，实现显存的动态平衡。",
+            "GradCache 解耦物理显存分块（mini-batch）与有效对比批次大小（effective batch），可在有限显存下使用更大的 In-Batch Negatives 提升训练质量。"
+          ]
+        },
+        "contentHash": "fnv1a-68fbe323"
+      }
+    ],
+    "agentic-15": [
+      {
+        "id": "agentic-15__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "财务部要求知识库 Agent 上线：必须按部门隔离薪资文档、可溯源、答不上来就直说。哪个方案达标？（单选）",
+        "options": [
+          "系统提示词写明保密与不编造，检索层不过滤权限，靠提示词约束即可合规。",
+          "混合检索加检索层按部门权限元数据过滤，答案强制附引用，无相关内容明确拒答。",
+          "为避免生硬拒答伤害体验，无内容时用通用知识补全，并统一标注仅供参考。",
+          "把温度调到最低并换最大模型，引用只做前端展示增强，防幻觉主要靠模型能力。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在部门隔离与可溯源约束下选出检索层过滤加引用加拒答的达标方案",
+          "reasoningGoal": "先拆出三条硬约束：权限隔离、可溯源、拒答；再确认混合检索过滤加引用拒答成立；并排除提示词兜底、补全标注、调温换大。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ed743283",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agentic-15",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "rag",
+            "knowledge-base",
+            "enterprise"
+          ],
+          "question": "设计一个“公司内部知识库 Agent”：可以搜索内部文档并回答员工问题。请给出核心组件、检索设计与防幻觉措施。",
+          "options": [
+            "在系统提示词中提醒模型不得泄露敏感文档、不得编造内容，检索层无需感知权限信息即可满足合规要求。",
+            "采用混合检索并在检索层按部门与权限元数据过滤结果，答案强制附带来源引用，检索不到相关内容时明确告知无法作答而非补全。",
+            "为避免生硬拒答影响体验，检索不到相关内容时允许模型结合自身通用知识补全答案，并统一标注“仅供参考”。",
+            "防幻觉的核心是把生成温度调低并选用更大的模型，来源引用仅作为前端可选的展示增强功能。"
+          ]
+        },
+        "contentHash": "fnv1a-fbfc35db"
+      }
+    ],
+    "agentic-36": [
+      {
+        "id": "agentic-36__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "客服 Agent 日均百万调用，全旗舰月账单超预算 3 倍。关于改级联的影响预测，哪个成立？（单选）",
+        "options": [
+          "必须全程最强模型，任何级联都劣化质量，模型能力是唯一决定因素。",
+          "弱模型协作无代价，环节越多误差越抵消，拆得越细准确率越高。",
+          "模型选择只需比较单价高低，与环节错误代价和难度无关，选最便宜的模型即最优。",
+          "用 A/B 实测对比级联与全强的成功率和成本曲线，简单步骤走便宜小模型，关键推理节点保留强模型。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测级联路由在百万调用规模下的成本收益，并指出 A/B 实测验证路径",
+          "reasoningGoal": "先拆出调用规模下的成本结构：简单步骤占比与关键节点代价；再确认级联加实测成立；并排除唯旗舰、误差抵消、唯单价。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3a34aab3",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agentic-36",
+          "topic": "model-selection",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "strong-model",
+            "weak-model",
+            "cascade",
+            "tradeoff"
+          ],
+          "question": "Agent 应该用一个强模型贯穿始终，还是多个弱模型协作？给出决策依据。",
+          "options": [
+            "应始终用一个最强模型贯穿所有步骤，任何级联方案都会不可避免地劣化最终质量，因为模型能力是决定输出的唯一因素",
+            "多个弱模型协作没有任何代价，链条越长误差越会被相互抵消从而提升整体准确率，因此应把流程拆成更多更细的环节",
+            "模型选择只需比较单价高低，与该环节的错误代价和任务难度无关，选最便宜的模型即可实现最优的成本收益",
+            "采用级联路由并用 A/B 实测对比级联与全强的成功率与成本曲线：格式化、初筛等简单步骤用便宜的小模型，错误会被下游放大的关键推理节点保留强模型。"
+          ]
+        },
+        "contentHash": "fnv1a-035d24d1"
+      }
+    ],
+    "realtime-native-01": [
+      {
+        "id": "realtime-native-01__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "从信号处理链路解释：为什么块式重型编码器拖累实时交互延迟？哪个成立？（单选）",
+        "options": [
+          "Whisper 类编码器物理上处理不了口音与噪声，分布外输入直接失效。",
+          "大粒度离散块处理自带前级等待延迟，且与微轮次连续流难做端到端梯度联合优化。",
+          "轻量音视频模块足以替代后台大模型推理，前端可实现零参数部署。",
+          "使用独立编码器会使上下文窗口物理缩水九成以上，因为音频特征会挤占文本 token 的可用位置。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释块式编码的前级等待延迟与微轮次难联合优化的双重拖累机制",
+          "reasoningGoal": "先追踪音频从分块到对齐的延迟来源；再确认块等待加难联合优化成立；并排除噪声失效、零参替代、窗口缩水。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-034cc04c",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "realtime-native-01",
+          "topic": "realtime-interaction",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multimodal",
+            "whisper",
+            "native-encoder",
+            "latency"
+          ],
+          "question": "在构建支持连续音视频流的实时大模型时，设计团队放弃了外挂重型预训练独立编码器（Pretrained Encoders）的传统方案，转而采用从零训练的轻量化音视频处理模块。做出这一设计决策的核心工程考量是？",
+          "options": [
+            "独立预训练编码器（如 Whisper）在物理上无法处理带有地方口音或背景噪声的音频输入，因为任何独立声学模型对分布外噪声都缺乏鲁棒性",
+            "重型独立编码器通常基于较大粒度的离散块（Block-based）处理，会引入不可忽视的前级延迟，且难以与时间对齐的微轮次（Micro-turns）连续输入流进行端到端梯度的联合优化",
+            "轻量化音视频处理模块可以完全替代后台大模型的逻辑推理能力，从而在前端实现 0 参轻量化部署，因为感知与推理在架构上可被同一模块统一",
+            "使用独立编码器会导致文本模型的上下文窗口（Context Window）物理容量缩减 90% 以上，因为音频特征会强制挤占文本 token 的可用位置"
+          ]
+        },
+        "contentHash": "fnv1a-52187dbe"
+      }
+    ],
+    "ai-search-extra-002": [
+      {
+        "id": "ai-search-extra-002__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "运维报错查询 connection pool exhausted 搜不到相关 runbook。对比两种改法，哪个成立？（单选）",
+        "options": [
+          "做 query expansion 扩词面覆盖优于直接 embed 原始 query，后者只依赖既有语义表示。",
+          "expansion 必降召回、embedding 只回精确匹配，所以该用 embedding。",
+          "expansion 可替代索引，embedding 仍需候选集，所以该用 expansion。",
+          "两者都只影响 rerank 阶段，不改变召回集合，选哪个都一样。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在报错查询无召回场景中选出 expansion 扩覆盖的正确改法",
+          "reasoningGoal": "先定位失败环节在召回而非重排；再确认 expansion 扩覆盖成立；并排除降召回论、替代索引论、只影响重排论。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b7dcdd58",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-002",
+          "topic": "information-retrieval",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "information-retrieval",
+            "query-understanding",
+            "query-expansion"
+          ],
+          "question": "对于“怎么处理 connection pool exhausted”这样的查询，query expansion 与直接把原始 query 做 embedding 的主要区别是什么？",
+          "options": [
+            "query expansion 可以扩大词面覆盖，而 embedding 主要依赖已有语义表示",
+            "query expansion 一定会降低召回，而 embedding 一定只返回精确匹配",
+            "query expansion 会直接替代索引，而 embedding 不需要候选集合",
+            "两者都只作用于 reranking 阶段，不影响候选召回"
+          ]
+        },
+        "contentHash": "fnv1a-31543d05"
+      }
+    ],
+    "ai-search-extra-011": [
+      {
+        "id": "ai-search-extra-011__context-options__manual-ba__0",
+        "kind": "context-options",
+        "question": "有人用文档向量检索查昨天订单量，返回的全是过时财报数字。诊断该检索策略错在哪，哪个成立？（单选）",
+        "options": [
+          "结构化实时指标应优先调订单库工具，再补其他来源，而非走文档语义检索。",
+          "应对全企业文档库先做一遍 dense retrieval，再让模型挑数字。",
+          "先搜公网 Web，用公开财报数字回答内部订单问题。",
+          "对所有数据源全文检索一把梭，让模型自己从冲突数字里挑。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从过时数字的故障现象定位工具选型错误：结构化指标须优先查库",
+          "reasoningGoal": "先识别查询意图要的是实时结构化指标；再确认优先订单库工具成立；并排除文档检索、公网搜索、一把梭。"
+        },
+        "generatedAt": 1789166353338,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f657bfb9",
+        "batch": "manual-ba",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-011",
+          "topic": "agentic-search",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "agentic-search",
+            "tool-routing",
+            "retrieval"
+          ],
+          "question": "一个 Agent 同时可以访问企业文档搜索、SQL 数据库和实时 Web Search。对于“昨天订单量是多少”这类查询，最合理的检索策略是什么？",
+          "options": [
+            "优先调用实时订单数据库查询工具，再根据需要补充其他来源",
+            "首先对整个企业文档库执行 dense retrieval",
+            "先搜索 Web，再让模型猜测企业内部订单量",
+            "同时对所有数据源进行全文检索并让模型自行挑选数字"
+          ]
+        },
+        "contentHash": "fnv1a-e755c273"
+      }
+    ]
+  }
+}

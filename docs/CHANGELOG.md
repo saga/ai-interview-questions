@@ -1,6 +1,78 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-11 · 薄格扩充 20 条变体（`assessment.manual-bf-20260911.json`，池 1555→1575 条）
+
+- 零变体区多选集中在 sebastian-raschka 簇，本批 15 多选取自 evaluation/inference-attention/
+  model-selection 等剩余多选题区 + training/agent-skills/rag 各 1，5 单选取自最薄 5 单选区
+  第二题；排除昨日新 canonical。多选占比 75% ✓。
+- 每条换 angle + cognitiveTask 开新路径，真值逐项继承；分句顺序贴原题，
+  `validate-variants` 一次过；长度比初稿 2 超标改写后全 ≤1.75×；另修 1 处字段名笔误。
+- 门禁实证：`validate:questions` ✓ 1434 题不变；`npm test` 891/891。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-11 · 复审 az/ba/bb/bc/bd/be 六批 104 条变体并修复 4 处问题
+
+- 硬指标：104 条选项数量与原题全对齐；sanity/弱目标/路径重复/完全相同/近重复全 0；
+  多选占比 75%；`validate-variants` 池健康。
+- 真问题（已修）：az 的 allreduce/moe 两条变体 reasoningGoal 与原题几乎逐字相同、
+  属换标签嫌疑（违 ADR-078），已按各自场景（FSDP 解耦位置 / EP 扩展瓶颈）重写为真不同路径，
+  `nearIdenticalPaths` 2→0；bc 的 redis-aof/cow 两条题干分别泄入正确项独有词
+  P99、OOM Killer，已改写（尾延迟 / 因内存耗尽被终止）。
+- 诚实残留（逐条核过，不修）：11 条 难度驱动 audit 信号——7 条掉数字（新场景换了等量级数字，
+  如 99.2/71→100/62、60%/20%→50%，选项不依赖精确值）、3 条掉只有/必须（语义保留）、
+  1 条 mdl（原题干同样含该词，属平价泄题）。干扰项强度继承原题；变体按契约测同命题，
+   breadth 来自新路径。改写后重算 contentHash。
+
+## 2026-09-11 · 薄格扩充 20 条变体（`assessment.manual-be-20260911.json`，池 1535→1555 条）
+
+- 零变体区整体偏单选（最薄 5 个 topic 全是单选），本批配比改为 15 多选 + 5 单选：
+  多选取自剩余多选题区（tool-calling/sentence-embedding/training 等），单选取自最薄
+  5 单选区（latent-moe/sequence-models/lora/overfitting/financial-governance）各 1 道；
+  排除昨日新 canonical。多选占比 75% ✓。
+- 每条换 angle + cognitiveTask 开新路径，真值逐项继承；分句顺序贴原题，
+  `validate-variants` 一次过；长度比初稿 6 超标改写后全 ≤1.75×。
+- 门禁实证：`validate:questions` ✓ 1434 题不变；`npm test` 891/891。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-11 · 零变体薄格扩充 20 条变体（`assessment.manual-bd-20260911.json`，池 1515→1535 条）
+
+- 从零变体 choice 题中挑 20 道（15 多选 + 5 单选，多选占比 75% ✓；新 topic 仅 5 个可用，
+  其余 15 为已用 topic 的不同题目；排除昨日新 canonical），各写 1 条 assessment 变体
+  （context-options），换 angle + cognitiveTask 开新路径，真值逐项继承。
+- 长度比初稿 5 超标改写后全 ≤1.75×；3 条撞从句倒置门禁，按原分句顺序改写后通过，
+  改写后重算 contentHash。
+- 门禁实证：`validate-variants` ✓ 池健康；`validate:questions` ✓ 1434 题不变；
+  `npm test` 891/891。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-11 · 零变体薄格扩充 20 条变体（`assessment.manual-bc-20260911.json`，池 1495→1515 条）
+
+- 从零变体 choice 题中按 topic 分散挑 20 道（15 多选 + 5 单选，多选占比 75% ✓；与 ba 批
+  topic 仅 5 个复用、题目无重叠；排除昨日新 canonical），各写 1 条 assessment 变体
+  （context-options），换 angle + cognitiveTask 开新路径，真值逐项继承。
+- 长度比初稿 5 超标改写后全 ≤1.75×；2 条撞从句倒置门禁，按原分句顺序改写后通过，
+  改写后重算 contentHash。另修 1 处 reasoningGoal 笔误（混入非中文词）。
+- 门禁实证：`validate-variants` ✓ 池健康；`validate:questions` ✓ 1434 题不变；
+  `npm test` 891/891。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-11 · 零变体薄格扩充 20 条变体（`assessment.manual-bb-20260911.json`，池 1475→1495 条）
+
+- 从零变体 choice 题中按 topic 分散挑 20 道（与 ba 批 topic 零重叠；排除昨日新 canonical），
+  各写 1 条 assessment 变体（context-options），15 多选 + 5 单选（多选占比 75% ✓）。
+- 每条换 angle + cognitiveTask 开新推理路径，真值逐项继承原题；分句顺序贴原题，
+  `validate-variants` 一次过（语言/漂移/路径/数量全 0）；长度比初稿 2 超标改写后全 ≤1.7×。
+- 门禁实证：`validate:questions` ✓ 1434 题不变；`npm test` 891/891。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-11 · 零变体薄格扩充 20 条变体（`assessment.manual-ba-20260911.json`，池 1455→1475 条）
+
+- 从 687 道零变体 choice 题中按 topic 分散挑 20 道（含新域 `in-network-reduction-sharp`
+  首变体；排除昨日 coverage-gap 新 canonical，只扩存量老题），各写 1 条
+  assessment 变体（context-options），15 多选 + 5 单选（多选占比 75% ✓）。
+- 每条换 angle + cognitiveTask 开新推理路径（题干新场景 + 三段式 assessment），答案真值
+  逐项继承原题；选项长度比初稿 1 超标（2.04×）改写后全 ≤1.66×。
+- 7 条初稿撞从句倒置门禁（变体选项分句顺序与原题相反），按 `languageSanity.ts` 规则
+  改回原分句顺序后通过；改写后重算 contentHash（sourceHash 不变）。
+- 门禁实证：`validate-variants` ✓ 池健康（语言/漂移/路径/数量全 0）；
+  `validate:questions` ✓ 1434 题不变；`npm test` 891/891。组装草稿均放 temp/ 用完即删，未落仓。
+
 ## 2026-09-11 · 新增互连拓扑域 5 节点 5 canonical + 4 变体（`cluster-interconnect`，题库 1429→1434，节点 148→153）
 
 - 新域：TPU/MoE/Fat-Tree 等 5 个 topic 在知识库中不存在，先建 5 知识节点

@@ -1,0 +1,929 @@
+{
+  "version": 1,
+  "generatedAt": 1789198534411,
+  "promptVersion": "v1",
+  "variants": {
+    "sebastian-raschka-2026-08-64": [
+      {
+        "id": "sebastian-raschka-2026-08-64__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "蒸馏数据 pipeline 产出的轨迹被训练侧打回，称不可直接用。排查信号，哪些成立？",
+        "options": [
+          "中间步骤与最终答案矛盾。",
+          "轨迹依赖测试答案或隐藏提示泄漏。",
+          "大量重复同一模板，无任务覆盖。",
+          "文字越长监督价值越高。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从打回事件定位轨迹不可用的三类信号并排除长度论",
+          "reasoningGoal": "先把打回映射到轨迹质量而非数量；再确认矛盾、泄漏、重复三项成立；并排除越长越好。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d8362093",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-64",
+          "topic": "evaluation",
+          "subtopic": "推理轨迹质量审查",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "trace",
+            "audit"
+          ],
+          "question": "审查模型生成的推理轨迹时，哪些信号说明轨迹不能直接作为训练数据？（请选择三个）",
+          "options": [
+            "中间步骤与最终答案相互矛盾",
+            "轨迹依赖测试答案或隐藏提示中的泄漏信息",
+            "大量样本只是重复同一模板且没有任务覆盖",
+            "轨迹文字更长就说明监督价值更高"
+          ]
+        },
+        "contentHash": "fnv1a-2ffec49f"
+      }
+    ],
+    "sebastian-raschka-2026-08-65": [
+      {
+        "id": "sebastian-raschka-2026-08-65__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "模型验证器通过率 99%，线上却翻车。诊断验证器设计，哪些成立？",
+        "options": [
+          "缺训练未见的隐藏测试与变体。",
+          "只查单样例，无边界覆盖。",
+          "通过结果无独立评估或人工抽检。",
+          "通过率即真实准确率，无需审计。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从高通过低实效定位验证器自身的方法论缺陷",
+          "reasoningGoal": "先区分验证器与真实能力；再确认隐藏测试、边界覆盖、独立抽检三项成立；并排除通过率即准确率。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d5697326",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-65",
+          "topic": "evaluation",
+          "subtopic": "验证器独立性",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "verifier",
+            "evaluation"
+          ],
+          "question": "设计推理任务验证器时，哪些做法有助于避免把验证器本身当成真实能力？（请选择三个）",
+          "options": [
+            "使用训练未见的隐藏测试或变体",
+            "覆盖边界条件而不是只检查一个样例",
+            "用独立评估或人工抽检验证通过结果",
+            "把验证器通过率直接当作无需审计的真实准确率"
+          ]
+        },
+        "contentHash": "fnv1a-bc65b129"
+      }
+    ],
+    "sebastian-raschka-2026-08-59": [
+      {
+        "id": "sebastian-raschka-2026-08-59__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "对比低中高三档努力度应记录的指标，哪些成立？",
+        "options": [
+          "按难度分桶的正确率或验证通过率。",
+          "每请求推理 token、采样数或费用。",
+          "首 token 与端到端延迟。",
+          "只看平均字数不看质量。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比三档努力度并列出质量成本延迟三维必记指标",
+          "reasoningGoal": "先对齐比较维度是三维联合；再确认分桶正确率、token 费用、延迟三项成立；并排除只看字数。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-81e3547a",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-59",
+          "topic": "inference-optimization",
+          "subtopic": "努力度评估",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning-effort",
+            "evaluation",
+            "slo"
+          ],
+          "question": "比较低、中、高推理努力度模式时，哪些指标应同时记录？（请选择三个）",
+          "options": [
+            "按任务难度分桶的正确率或验证通过率",
+            "每请求推理 token、采样数或费用",
+            "首 token 和端到端延迟",
+            "只看平均输出字数而不看任务质量"
+          ]
+        },
+        "contentHash": "fnv1a-e5bd0e48"
+      }
+    ],
+    "sebastian-raschka-2026-08-63": [
+      {
+        "id": "sebastian-raschka-2026-08-63__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "高努力度推理预算超支，限流。评审保护措施，哪些成立？",
+        "options": [
+          "限最大推理 token 或候选数。",
+          "限端到端时间与验证重试数。",
+          "超限给降级或可观测失败路径。",
+          "为准确率允许无限搜索。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在超支场景下应用 token 时间重试三上限加降级路径",
+          "reasoningGoal": "先确定约束是预算而非准确率；再确认三上限与降级路径三项成立；并排除无限搜索。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-efd19a51",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-63",
+          "topic": "inference-optimization",
+          "subtopic": "推理预算上限",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning-effort",
+            "budget",
+            "reliability"
+          ],
+          "question": "为高努力度推理配置预算上限时，哪些保护措施合理？（请选择三个）",
+          "options": [
+            "限制最大推理 token 或候选数量",
+            "限制端到端时间和验证重试次数",
+            "为超限请求定义降级或可观测的失败路径",
+            "为了追求准确率允许单请求无限搜索"
+          ]
+        },
+        "contentHash": "fnv1a-c65cbe40"
+      }
+    ],
+    "sebastian-raschka-2026-08-126": [
+      {
+        "id": "sebastian-raschka-2026-08-126__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "把 GELU 换 SwiGLU 后效果没涨、显存反增。诊断，哪些成立？",
+        "options": [
+          "门控分支调制另一分支，表达涨但参数维度要重配。",
+          "相对 GELU 须重算参数维度预算。",
+          "门控分支使推理 FLOPs 天然降为零，无需再算量。",
+          "激活函数选择独立于隐藏维度和参数预算。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从换门控反增显存定位维度预算未重配的根因",
+          "reasoningGoal": "先把反增映射到预算未重配；再确认调制表达与重算预算两项成立；并排除零 FLOPs 与独立选择。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-51997d24",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-126",
+          "topic": "attention",
+          "subtopic": "SwiGLU 激活",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "swiglu"
+          ],
+          "question": "使用 SwiGLU 等门控前馈结构时，哪些描述正确？（请选择两个）",
+          "options": [
+            "门控分支可以调制另一条特征分支",
+            "与简单 GELU 前馈层相比需要考虑参数和维度预算",
+            "门控结构必然使推理 FLOPs 降为零",
+            "激活函数选择可以独立于隐藏维度和参数预算"
+          ]
+        },
+        "contentHash": "fnv1a-9e31cd3e"
+      }
+    ],
+    "sebastian-raschka-2026-08-129": [
+      {
+        "id": "sebastian-raschka-2026-08-129__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "百层模型训练不稳，预判归一化位置影响，哪些成立？",
+        "options": [
+          "归一化位置改变残差数值与梯度行为。",
+          "稳定性与深度初始化等共同相关。",
+          "某位置全规模全任务最优。",
+          "只改位置即预测基准成绩。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预判归一化位置对深模型稳定性的影响方向并排除最优普适论",
+          "reasoningGoal": "先确定场景是百层不稳；再确认残差行为与多因素相关两项成立；并排除全规模最优与单改预测。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9d7ce5e8",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-129",
+          "topic": "attention",
+          "subtopic": "归一化位置",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "normalization"
+          ],
+          "question": "比较 Pre-Norm 与 Post-Norm Transformer 时，哪些判断更准确？（请选择两个）",
+          "options": [
+            "归一化位置会改变残差路径上的数值和梯度行为",
+            "训练稳定性与深度、初始化和其他组件共同相关",
+            "某一种位置在所有规模和任务上必然最优",
+            "只改变归一化位置就能预测最终基准成绩"
+          ]
+        },
+        "contentHash": "fnv1a-dcc27b92"
+      }
+    ],
+    "sebastian-raschka-2026-08-37": [
+      {
+        "id": "sebastian-raschka-2026-08-37__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "隐藏维度 1024、16 个等宽头，每头维度与拼接，哪些正确？",
+        "options": [
+          "每头 Q/K/V 投影宽 64。",
+          "16 头拼接恢复 1024 维。",
+          "每头须用完整 1024 维，拼接 16384 维。",
+          "头数增加每头维度自动保持 1024。"
+        ],
+        "angle": "quantitative",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能代入 1024 维 16 头算出每头 64 维与拼接恢复",
+          "reasoningGoal": "先算 1024/16=64；再确认投影宽度与拼接恢复两项成立；并排除完整维度与自动保持。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-eccd2955",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-37",
+          "topic": "self-attention",
+          "subtopic": "多头维度",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "sebastian-raschka",
+            "multi-head-attention",
+            "shape"
+          ],
+          "question": "模型隐藏维度为 768，使用 12 个等宽注意力头时，关于每头维度的说法哪些正确？（请选择两个）",
+          "options": [
+            "每头的 Query/Key/Value 投影宽度可为 64",
+            "12 个头拼接后恢复为 768 维",
+            "每头必须使用完整的 768 维且拼接后为 9216 维",
+            "头数增加会让每头维度自动保持 768 不变"
+          ]
+        },
+        "contentHash": "fnv1a-0aa05d2a"
+      }
+    ],
+    "sebastian-raschka-2026-08-38": [
+      {
+        "id": "sebastian-raschka-2026-08-38__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "阅读器读检索器输出，用交叉还是自注意力？哪些成立？",
+        "options": [
+          "交叉的 Q 与 K/V 可来自不同序列。",
+          "解码器用交叉读编码器输出。",
+          "交叉要求 QKV 同源。",
+          "交叉禁 Query 访外部表示。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在读写分离场景下选出交叉注意力并排除同源论",
+          "reasoningGoal": "先确定场景是跨序列读写；再确认异源 QKV 与解码器读编码器两项成立；并排除同源与禁访外部。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-cb93f5c7",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-38",
+          "topic": "self-attention",
+          "subtopic": "交叉注意力",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "sebastian-raschka",
+            "cross-attention",
+            "encoder-decoder"
+          ],
+          "question": "关于交叉注意力与自注意力的区别，以下哪些说法正确？（请选择两个）",
+          "options": [
+            "交叉注意力的 Q 与 K/V 可以来自不同序列",
+            "编码器—解码器结构中解码器可用交叉注意力读取编码器输出",
+            "交叉注意力要求 Q、K、V 必须来自同一序列",
+            "交叉注意力天然禁止 Query 访问任何外部表示"
+          ]
+        },
+        "contentHash": "fnv1a-ff74d3af"
+      }
+    ],
+    "sebastian-raschka-2026-08-70": [
+      {
+        "id": "sebastian-raschka-2026-08-70__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "权衡统一最高努力度省路由复杂度与分任务路由，哪些成立？",
+        "options": [
+          "简单 FAQ 走低延迟路径。",
+          "代码数学按验证结果加预算。",
+          "分任务评估质量成本延迟 SLO。",
+          "全统一最高努力度省复杂度。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡省复杂度与分任务精度的利弊并选出路由方案",
+          "reasoningGoal": "先确定权衡双方是复杂度与精度成本；再确认低延迟路径、验证加预算、分任务 SLO 三项成立；并排除全统一。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f4095c81",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-70",
+          "topic": "model-selection",
+          "subtopic": "努力度模式选型",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning-effort",
+            "model-selection",
+            "product"
+          ],
+          "question": "为一个同时包含 FAQ、代码审查和数学证明的产品选择推理努力度策略时，哪些设计合理？（请选择三个）",
+          "options": [
+            "为简单 FAQ 优先配置低延迟路径",
+            "对代码和数学任务结合验证结果决定是否增加预算",
+            "分别评估各任务的质量、成本和延迟 SLO",
+            "所有任务统一使用最高努力度以避免路由复杂度"
+          ]
+        },
+        "contentHash": "fnv1a-57513d31"
+      }
+    ],
+    "sebastian-raschka-2026-08-131": [
+      {
+        "id": "sebastian-raschka-2026-08-131__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "选型长上下文架构，设计验证 harness，哪些成立？",
+        "options": [
+          "在目标长度真实任务上测质量。",
+          "量 KV/TTFT/吞吐尾延迟。",
+          "提示解码硬件条件尽量一致。",
+          "只看论文总参量选型。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计出等条件多维度的选型验证 harness 并排除唯参数论",
+          "reasoningGoal": "先确定选型需等条件对比；再确认真实任务、延迟缓存、条件一致三项成立；并排除只看总参。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-39448683",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-131",
+          "topic": "model-selection",
+          "subtopic": "架构选型证据",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "selection"
+          ],
+          "question": "团队选择新 LLM 架构用于长上下文服务时，哪些验证方式更可靠？（请选择三个）",
+          "options": [
+            "在目标上下文长度和真实任务上测试质量",
+            "测量 KV Cache、TTFT、吞吐和尾延迟",
+            "使用尽量一致的提示、解码和硬件条件",
+            "只根据论文图表中的总参数量选型"
+          ]
+        },
+        "contentHash": "fnv1a-cca95d18"
+      }
+    ],
+    "sebastian-raschka-2026-08-137": [
+      {
+        "id": "sebastian-raschka-2026-08-137__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "长上下文服务半夜 OOM，显存爆了。评审降显存方向，哪些成立？",
+        "options": [
+          "减 KV 头或压缩 KV 表示。",
+          "KV 用合适低精度表示。",
+          "限制或分层管理上下文窗口。",
+          "只加显存，不测检索质量与尾延迟。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从半夜 OOM 定位 KV 显存瓶颈并选出三降显存方向",
+          "reasoningGoal": "先确定瓶颈是显存而非算力；再确认减头压缩、低精度、分层窗口三项成立；并排除只加显存。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-0f6d1315",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-137",
+          "topic": "kv-cache",
+          "subtopic": "长上下文成本",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "long-context"
+          ],
+          "question": "长上下文服务的显存突然成为瓶颈时，哪些架构方向值得比较？（请选择三个）",
+          "options": [
+            "减少 KV 头或压缩 KV 表示",
+            "对 KV Cache 使用合适的低精度表示",
+            "限制或分层管理上下文窗口",
+            "只增加显存而不测量检索质量和尾延迟"
+          ]
+        },
+        "contentHash": "fnv1a-8b2d5b05"
+      }
+    ],
+    "posttraining-2026-008": [
+      {
+        "id": "posttraining-2026-008__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "GRPO 训练 rollout 慢、版本杂、收敛飘。诊断系统侧原因，哪些成立？",
+        "options": [
+          "需大规模 rollout 轨迹，workers 与吞吐得跟上。",
+          "异步致不同批次不同 policy 版本，version drift。",
+          "与 SFT 一样单卡前向即可，无额外开销。",
+          "on/off-policy 偏离与轨迹过期影响收敛。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从慢杂飘三现象定位 rollout 吞吐版本新鲜度三角",
+          "reasoningGoal": "先把三现象映射到系统三角；再确认 workers 吞吐、版本漂移、新鲜度三项成立；并排除单卡无开销。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-1c2649ec",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-008",
+          "topic": "training",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "training-infrastructure",
+            "rollout",
+            "grpo"
+          ],
+          "question": "为什么 GRPO 类训练相比普通 SFT 会引入明显的 inference-system 问题？请从 rollout workers、generation throughput、policy version 和训练数据新鲜度角度分析。",
+          "options": [
+            "GRPO 需要大规模 rollout 生成大量采样轨迹，要部署 rollout workers 并保证高 generation throughput",
+            "rollout 与训练异步，不同批次轨迹可能来自不同 policy 版本，带来 policy version drift 问题",
+            "GRPO 与 SFT 一样只需在单卡上做前向、不需要专门的推理集群，因此相比 SFT 并没有引入任何额外的系统开销",
+            "训练数据新鲜度（on-policy 与 off-policy 的偏离）会影响收敛，需要考虑轨迹过期 / staleness"
+          ]
+        },
+        "contentHash": "fnv1a-59d0fcd1"
+      }
+    ],
+    "agent-skills-tradeoff-03": [
+      {
+        "id": "agent-skills-tradeoff-03__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "小模型加 Skill 超大模型，老板要全量推广。设计验证边界，哪些成立？",
+        "options": [
+          "加难度类型 OOD，看收益是否保持。",
+          "比多规模有无 Skill 的绝对相对与失败模式。",
+          "局部排名直接外推全任务，不再交叉。",
+          "只看平均分增量，不分已会未会。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能设计出防外推的验证矩阵并排除单点平均论",
+          "reasoningGoal": "先确定风险是局部外推；再确认加维度验证与多规模对比两项成立；并排除直接外推与只看平均。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-eb05f62e",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-skills-tradeoff-03",
+          "topic": "agent-skills",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "benefit-boundary",
+            "generalization",
+            "ood"
+          ],
+          "question": "发现小模型加 Skill 在部分任务上超过大模型无 Skill 后，下一步怎样验证这个结论的适用边界？",
+          "options": [
+            "增加不同难度、任务类型和 OOD 数据，观察收益是否保持或出现边界",
+            "比较多个规模在有无 Skill 下的绝对能力、相对增益和失败模式",
+            "把局部任务的排名直接外推到所有任务，不再做规模交叉实验",
+            "只看 Skill 带来的平均分增量，不区分原本已经会做的任务"
+          ]
+        },
+        "contentHash": "fnv1a-08307b0a"
+      }
+    ],
+    "slm-rag-ceiling-01": [
+      {
+        "id": "slm-rag-ceiling-01__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "对比小模型加 RAG 与直接放大模型两条事实问答路线，哪些成立？",
+        "options": [
+          "参数即记忆，缩小必丢宽泛偏门知识。",
+          "RAG 非参数注入，避免无限扩参。",
+          "小模型更怕噪声，更依赖剪裁重排。",
+          "合成数据无限等价真知识，可对冲参数限制。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两条路线的知识来源与噪声敏感度并排除合成对冲论",
+          "reasoningGoal": "先对齐比较维度是知识与鲁棒性；再确认参数记忆、非参数注入、噪声敏感三项成立；并排除合成等价。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-7e50f9b2",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "slm-rag-ceiling-01",
+          "topic": "rag",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "slm",
+            "knowledge-ceiling",
+            "parametric-memory",
+            "rag"
+          ],
+          "question": "由于参数量限制，小语言模型（SLM）存在隐式事实记忆容量受限的“知识天花板”（Knowledge Ceiling）。关于克服小模型知识天花板的架构设计与技术权衡，下列说法正确的有？（多选）",
+          "options": [
+            "模型参数充当参数化记忆（Parametric Memory），缩小参数量必然会降低模型隐式存储的宽泛世界知识与偏门事实总量",
+            "针对事实性问答场景，通过引入 RAG（检索增强生成）机制将非参数化知识注入上下文，是避免无限扩大模型参数量的重要架构解法",
+            "小模型对检索噪声更敏感，更依赖高质量剪裁与重排序；这是小模型 RAG 落地的关键。",
+            "合成数据可无限供给，高质量合成即等价于真实知识；参数限制可被数据规模对冲。"
+          ]
+        },
+        "contentHash": "fnv1a-d494a283"
+      }
+    ],
+    "rl-workload-scheduling-01": [
+      {
+        "id": "rl-workload-scheduling-01__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "Rollout 长短悬殊，短任务等长任务、显存碎。诊断调度，哪些成立？",
+        "options": [
+          "Workload-Aware 路由预测轨迹，动态调 Prefill/Decode 配比。",
+          "强制所有任务无论复杂度固定 10 步截断，以实现绝对均匀批处理。",
+          "统一数据流调度，长任务 Worker 完事即抢新任务。",
+          "为长短请求采用连续批处理加并发度控制，优化整体 KV 内存使用。",
+          "关闭显存管理机制，强制全按最大窗口分配，省掉动态分配开销。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从长短悬殊等待定位调度缺失并给出三项调度手段",
+          "reasoningGoal": "先把等待映射到无调度；再确认感知路由、统一调度、连续批处理三项成立；并排除固定截断与关闭管理。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-4ee5b52e",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "rl-workload-scheduling-01",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "scheduling",
+            "continuous-batching",
+            "workload-aware",
+            "rl-infra"
+          ],
+          "question": "在 Agent 强化学习系统的分布式 Rollout 阶段，不同智能体任务的执行轨迹（Trajectory Length）差异巨大。若不做专门调度，会导致 Prefill 与 Decode 阶段资源不均及 GPU 显存碎裂。为了解决这一问题，哪些系统调度策略是有效的？",
+          "options": [
+            "引入工作负载感知（Workload-Aware）的路由器调度，根据任务历史与类型启发式预测轨迹特征，动态调节 Prefill 与 Decode 的计算资源分配比例",
+            "强制所有 Agent 无论任务复杂度如何，均在执行固定步数（如 10 步）后直接截断并终止采样，以实现绝对均匀的批处理",
+            "在推理引擎与训练框架之间实现统一的数据流调度，使得完成长轨迹任务的 Worker 可以立即释放并抢占新任务（Asynchronous Task Queue）",
+            "为长短不一的推理请求采用连续批处理（Continuous Batching / PagedAttention）技术，并结合并发度控制（Concurrency Tuning）以优化整体 KV Cache 内存使用",
+            "关闭显存管理机制，强制将所有请求的 KV Cache 分配至全量 Context Window 长度的最大固态空间，避免动态分配开销"
+          ]
+        },
+        "contentHash": "fnv1a-53af7d71"
+      }
+    ],
+    "llm-16": [
+      {
+        "id": "llm-16__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "把 latent 压到 64 维省显存，预测后果，哪个成立？（单选）",
+        "options": [
+          "参数 FLOPs 再降，但瓶颈更紧、路由区分降、质量回退风险升。",
+          "KV cache 同比例缩小，长上下文显存同步受益。",
+          "增加专家数即可完全弥补容量损失，质量不变。",
+          "低维损失面更平滑，训练收敛稳定提升。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测极限压缩的信息瓶颈后果并排除 KV 同比与加专家弥补论",
+          "reasoningGoal": "先确定压缩同时压容量与表征；再确认瓶颈收紧成立；并排除 KV 同比、加专家弥补、平滑加速。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-54f902c2",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-16",
+          "topic": "latent-moe",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "latent-moe",
+            "tradeoff",
+            "representation-bottleneck",
+            "capacity-planning"
+          ],
+          "question": "如果把 LatentMoE 的 latent 维度压得非常低，最可能带来什么后果？",
+          "options": [
+            "专家计算与参数进一步下降，但 latent 成为更紧的信息瓶颈：专家看到的输入表征变弱、路由区分度下降，质量回退风险随压缩比上升",
+            "KV cache 会同比例缩小，长上下文场景的显存成本同步受益，因为低维 latent 表征减少了每 token 需要缓存的状态维度",
+            "只要相应增加专家数量就能完全弥补维度下降损失的容量，质量可以保持不变，因为参数总量随专家数线性回升即可抵消压缩",
+            "由于低维空间的损失面更平滑，训练收敛速度会稳定提升，因为压缩表征降低了优化器的方差并加快了梯度方向的统一"
+          ]
+        },
+        "contentHash": "fnv1a-969db2c1"
+      }
+    ],
+    "foundation-sequence-definition-01": [
+      {
+        "id": "foundation-sequence-definition-01__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "面试问 RNN 隐藏状态是干嘛的，哪个回答成立？（单选）",
+        "options": [
+          "携带序列前文信息并参与当前步计算。",
+          "保存整个训练集的所有原始样本。",
+          "只负责随机初始化模型参数。",
+          "替代损失函数计算最终准确率。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别隐藏状态的携信计算职责并排除存样本与初始化论",
+          "reasoningGoal": "先抓住隐藏状态是流式摘要；再确认携信计算成立；并排除存全集、初始化、替损失。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-591e7e3c",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "foundation-sequence-definition-01",
+          "topic": "sequence-models",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "rnn",
+            "sequence",
+            "hidden-state"
+          ],
+          "question": "RNN 处理序列时，隐藏状态的主要作用是什么？",
+          "options": [
+            "携带序列前文的信息并参与当前步计算",
+            "保存整个训练集的所有原始样本",
+            "只负责随机初始化模型参数",
+            "替代损失函数计算最终准确率"
+          ]
+        },
+        "contentHash": "fnv1a-e7251c10"
+      }
+    ],
+    "ai-fund-024": [
+      {
+        "id": "ai-fund-024__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "简单分类任务选 LoRA rank，哪个成立？（单选）",
+        "options": [
+          "rank 越大性能单调提升，无额外成本与过拟合风险。",
+          "小 rank 够用，盲目加大过拟合收益递减，以验证集为准。",
+          "rank 必须等于原权重矩阵的秩，否则低秩分解不成立。",
+          "rank 只影响推理延迟，取最小值换最低延迟。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在简单任务下应用小 rank 够用原则并以验证集校准",
+          "reasoningGoal": "先确定任务简单秩需求低；再确认小 rank 加验证校准成立；并排除单调越大、必须满秩、只影响延迟。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b11ac603",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-fund-024",
+          "topic": "lora",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "LoRA",
+            "rank",
+            "trade-off"
+          ],
+          "question": "LoRA 的 rank 是不是越大越好？你会如何为一个任务选择 rank？",
+          "options": [
+            "采纳该建议：rank 越大性能总能单调提升，而且不会额外增加训练成本与过拟合风险",
+            "任务 A 保持小 rank 即可，盲目加大有过拟合风险且收益递减；任务 B 适度提高 rank，并以验证集表现为准校准到收益饱和为止",
+            "两个任务都必须把 rank 设成原权重矩阵的秩，否则 LoRA 的低秩分解在数学上不成立",
+            "rank 只影响推理延迟而不影响拟合能力，两个任务都应取最小可用值以换取更低延迟"
+          ]
+        },
+        "contentHash": "fnv1a-9f8a5f10"
+      }
+    ],
+    "ml-03": [
+      {
+        "id": "ml-03__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "对比高偏差与高方差模型的错误画像，哪个成立？（单选）",
+        "options": [
+          "高偏差对应模型过于复杂，加深网络总能降偏差。",
+          "高方差对应模型过于简单，简单模型测试最稳定。",
+          "高偏差模型欠拟合，高方差模型过拟合。",
+          "偏差方差总是同增同减，调其一另一等比升。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两种误差画像并准确配对欠拟合过拟合",
+          "reasoningGoal": "先对齐画像维度是偏差与方差；再确认欠拟合过拟合配对成立；并排除复杂降偏差、简单最稳定、同增同减。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d6181975",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ml-03",
+          "topic": "overfitting",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "bias",
+            "variance",
+            "tradeoff"
+          ],
+          "question": "关于偏差（bias）与方差（variance）的权衡，下列说法正确的是？",
+          "options": [
+            "高偏差通常对应模型过于复杂，容量越大偏差越高，因此加深网络总能降低偏差",
+            "高方差通常对应模型过于简单，因为简单模型对训练数据噪声不敏感，在测试集上反而表现最稳定",
+            "高偏差模型往往欠拟合，高方差模型往往过拟合",
+            "偏差和方差总是同时增大，二者本质同源，调小其一必然使另一等比例上升而无需单独优化"
+          ]
+        },
+        "contentHash": "fnv1a-b5a34d06"
+      }
+    ],
+    "llm-security-finance-2026-08-10": [
+      {
+        "id": "llm-security-finance-2026-08-10__context-options__manual-bf__0",
+        "kind": "context-options",
+        "question": "反欺诈模型准确率 99% 却漏掉大案。诊断评估，哪个成立？（单选）",
+        "options": [
+          "总体准确率已包含所有群体和成本信息。",
+          "还要按类别客群评估误报漏报、成本、稳定性与漂移。",
+          "只看训练集准确率，因为线上数据会变化。",
+          "把所有误报都当成可忽略的安全成本。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从高准确漏大案定位多数类掩盖并给出分群评估方案",
+          "reasoningGoal": "先确定 99% 被多数类主导；再确认分群多维评估成立；并排除总体够用、只看训练、误报忽略。"
+        },
+        "generatedAt": 1789198534411,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b60e3f33",
+        "batch": "manual-bf",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-security-finance-2026-08-10",
+          "topic": "financial-ai-governance",
+          "subtopic": "模型风险管理",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "financial-ai",
+            "model-risk",
+            "validation"
+          ],
+          "question": "金融机构评估一个反欺诈模型时，为什么不能只看总体准确率？（单选）",
+          "options": [
+            "总体准确率已经包含所有群体和成本信息",
+            "还要按类别和客群评估误报漏报、成本、稳定性与漂移",
+            "只看训练集准确率，因为线上数据会变化",
+            "把所有误报都当成可忽略的安全成本"
+          ]
+        },
+        "contentHash": "fnv1a-f147b89f"
+      }
+    ]
+  }
+}

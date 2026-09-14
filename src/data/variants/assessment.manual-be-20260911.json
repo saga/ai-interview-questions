@@ -1,0 +1,934 @@
+{
+  "version": 1,
+  "generatedAt": 1789168214013,
+  "promptVersion": "v1",
+  "variants": {
+    "sentence-embedding-multi-dataset-01": [
+      {
+        "id": "sentence-embedding-multi-dataset-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "联合微调：300 万 NLI 加 3 万领域问答。设计采样，哪些成立？",
+        "options": [
+          "按比例采样保大数据充分学，但小数据被反复采、梯度稀释。",
+          "轮询交替抽 Batch，各集更新机会均等，直到最小集抽空。",
+          "Batch 内样本须同源，保证 Loss 与结构匹配。",
+          "多集须统一三元组格式，不能各绑各 Loss。",
+          "轮询采样必训完所有数据集样本，大集不遗漏。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在悬殊数据量下设计出保大兼顾小的采样组合并排除统一格式论",
+          "reasoningGoal": "先确定约束是量级悬殊而非算力；再确认按比例、轮询、同源 Batch 三项成立；并排除统一格式与轮询不遗漏。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-99a5280a",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-multi-dataset-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Multi-Dataset Fine-Tuning Batch Sampling",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "multi-dataset",
+            "batch-sampling",
+            "proportional",
+            "round-robin",
+            "loss-mapping"
+          ],
+          "question": "在对句向量模型进行多任务/多数据集联合微调时，通常需要同时整合多个结构与规模差异悬殊的数据集（例如数百万条的 NLI 通用数据与仅数万条的特定领域问答数据）。关于多数据集批次采样策略（Multi-Dataset Batch Sampling），以下哪些分析是正确的？",
+          "options": [
+            "采用按比例采样（PROPORTIONAL）策略时，各个数据集被采样的频率与其数据量大小成正比，能确保大数据集被充分学习，但可能导致小数据集在单次 Epoch 中被反复采样或梯度被稀释。",
+            "采用轮询采样（ROUND_ROBIN）策略时，Trainer 依次交替从各个数据集抽取 Batch，保证每个数据集获得相等的梯度更新机会，直到最小的数据集被抽空为止。",
+            "每个训练小批次（Batch）内部的样本通常严格来自于同一个数据集，以保证该 Batch 计算时使用对应的 Loss 函数及其匹配的结构输入。",
+            "多数据集训练强制要求所有数据集必须统一格式（例如全量转换为三元组），无法在同一个 Trainer 中为不同数据集独立绑定不同的 Loss 函数。",
+            "轮询采样（ROUND_ROBIN）策略必然会将所有数据集的所有样本完整训练完毕，绝不会造成大数据集样本遗漏。"
+          ]
+        },
+        "contentHash": "fnv1a-f4deaf0a"
+      }
+    ],
+    "sentence-embedding-evaluator-vs-loss-01": [
+      {
+        "id": "sentence-embedding-evaluator-vs-loss-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "Validation Loss 一路降，线上 NDCG 不动。诊断评估体系，哪些成立？",
+        "options": [
+          "Loss 极小则 NDCG Spearman 必最优。",
+          "Loss 是训练对比函数在验证集的标量，Evaluator 测业务表征质量。",
+          "Evaluator 在每个 checkpoint 都反向传播并更新模型参数。",
+          "多数据集只能用 Evaluator，算不出验证 Loss。",
+          "Loss 只反映过拟合与否，与业务指标非线性等价，需交叉验证。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 Loss 降指标不动定位评估口径错位而非训练失败",
+          "reasoningGoal": "先区分优化标量与业务质量是两套口径；再确认口径差异与非线性等价两项成立；并排除必最优、反传更新、只能二选一。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-05983e32",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-evaluator-vs-loss-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Evaluator vs. Evaluation Loss Dynamics",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "evaluator",
+            "validation-loss",
+            "ndcg",
+            "spearman",
+            "embedding-similarity"
+          ],
+          "question": "在训练 Sentence Transformers 模型时，Trainer 配置中的 eval_dataset（计算 Validation Loss）与专门的 Evaluator（如 EmbeddingSimilarityEvaluator 或 InformationRetrievalEvaluator）在评估模型性能时起到了不同的作用。关于这两者的区别与联系，以下叙述正确的是？",
+          "options": [
+            "eval_dataset 上算出的 Validation Loss 极小说明模型在 Evaluator 的所有真实业务指标（如 NDCG@K、Spearman 相关系数）上必然同时达到最优值。",
+            "Validation Loss 是通过当前训练所用的对比 Loss 函数在验证集上算出的标量损失；而 Evaluator 则是直接在业务目标任务（如余弦相似度排序、检索召回率）上评估向量模型的实际表征质量。",
+            "Evaluator 在每个 Checkpoint 评估时都会执行反向传播并更新模型参数，而 eval_dataset 只做无梯度的前向计算。",
+            "当使用多数据集训练时，Trainer 只能使用 Evaluator 进行质量评估，无法计算 eval_dataset 的验证集 Loss。",
+            "Validation Loss 仅反映优化过程是否过拟合，其下降与 NDCG@K、Spearman 等业务指标的提升并非线性等价，需用 Evaluator 交叉验证。"
+          ]
+        },
+        "contentHash": "fnv1a-67d07b28"
+      }
+    ],
+    "agentic-21": [
+      {
+        "id": "agentic-21__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "路由 Agent 把私有数据送公网、常识问内网库。复盘路由设计，哪些成立？",
+        "options": [
+          "三路并行融合排序，失误自消，权限后过滤。",
+          "按数据特性时效权限选通道，低置信问用户或小量并行再比。",
+          "公开常识优先查内网数据库，私有数据交公网搜索省内网资源。",
+          "路由规则上线即冻结，调整工具描述会让行为不稳定。",
+          "路由错例记日志持续分析，修正工具描述与适用条件。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从通道错配事故定位选路依据缺失并给出描述迭代闭环",
+          "reasoningGoal": "先把错配映射到选路依据错误；再确认特性选路与错例回流两项成立；并排除并行自消、内外倒置、冻结规则。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-246bee59",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agentic-21",
+          "topic": "tool-calling",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "router",
+            "decision",
+            "tools"
+          ],
+          "question": "设计一个能自主判断“该搜网页、查数据库还是调内部 API”的路由 Agent。决策依据是什么？如何避免路由错误？",
+          "options": [
+            "三路并行召回再用模型融合排序，路由失误自然消失；权限问题可在融合后过滤涉密片段。",
+            "路由决策依据问题所需数据的特性、时效性与权限边界选择通道，置信度低时询问用户澄清或少量并行尝试后再比较结果。",
+            "公开常识类问题优先查内部数据库，私有业务数据则交给公网搜索兜底以节省内网资源。",
+            "路由规则一旦上线即冻结不再改动，持续调整工具描述反而会让路由行为变得不稳定。",
+            "把路由错误样本记入日志持续分析，据此修正各通道的工具描述与适用条件说明。"
+          ]
+        },
+        "contentHash": "fnv1a-064e3c15"
+      }
+    ],
+    "ai-eng-004": [
+      {
+        "id": "ai-eng-004__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "20 个 tool 老在近义对之间选错。定位方法论，哪些成立？",
+        "options": [
+          "先看错误是否聚在相似对，查 name/description/schema 歧义重叠。",
+          "合并拆分易混工具、收窄暴露、分组路由、分层发现。",
+          "建立工具选择评测集做回归验证，用数据驱动后续迭代而非凭感觉。",
+          "先换旗舰模型止血，靠强模型的上下文鲁棒性覆盖大部分选错。",
+          "description 全扩写越详越好，信息越多越准。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能按先定位后治理的方法论排查近义工具选错并排除换旗舰捷径",
+          "reasoningGoal": "先确定方法是定位先行而非换模型；再确认聚类定位、分组治理、评测回归三项成立；并排除旗舰覆盖与扩写万能。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6a544fdf",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-eng-004",
+          "topic": "tool-calling",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "tool-calling",
+            "tool-selection",
+            "debugging"
+          ],
+          "question": "一个 Agent 有 20 个 tools。线上发现 tool selection accuracy 只有 75%，而且经常在多个功能相似的 tool 之间选错。你会如何定位和解决这个问题？",
+          "options": [
+            "先复核错误是否集中在相似工具对，检查name与description歧义及schema重叠",
+            "合并拆分易混工具、收窄暴露范围、按分组路由，工具过多时做分层发现",
+            "建工具选择评测集做回归验证，用数据驱动后续迭代而非凭感觉调参",
+            "先换旗舰模型止损，强模型的上下文鲁棒性可覆盖大部分选错，工具侧优化后排",
+            "把二十个description全部扩写到最详尽，提供信息越多模型选择就越准"
+          ]
+        },
+        "contentHash": "fnv1a-8dc08b40"
+      }
+    ],
+    "posttraining-2026-006": [
+      {
+        "id": "posttraining-2026-006__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "合成数据管线日产千万条，下游增益见顶。设计数据策略，哪些成立？",
+        "options": [
+          "高质量多样清洗数据胜过盲目扩合成量。",
+          "合成越多越好，模型自动去噪无塌陷。",
+          "收益递减转负、风格趋同、多样塌陷即饱和信号。",
+          "held-out 回归加风格同质化监控可识别失效。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能在增益见顶时设计出质量优先加饱和监控的数据策略",
+          "reasoningGoal": "先确定瓶颈是数据质量而非数量；再确认质量优先、饱和信号、监控识别三项成立；并排除越多越好。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6895c0e8",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-006",
+          "topic": "training",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "data-quality",
+            "synthetic-data",
+            "post-training"
+          ],
+          "question": "为什么 post-training 中高质量数据通常比简单扩大样本数量更重要？如何识别大量 synthetic data 已经开始降低训练收益的信号？",
+          "options": [
+            "高质量、多样、清洗充分的数据往往比盲目扩大合成数据更能提升下游效果",
+            "合成数据越多越好，因为模型能从海量样本中自动去噪，不存在收益下降或多样性塌陷的问题",
+            "当合成数据规模增长时若收益递减甚至转负、风格趋同、多样性塌陷，说明已出现合成数据饱和",
+            "监控 held-out 评测出现回归、以及生成样本的风格同质化，是识别合成数据失效的有效信号"
+          ]
+        },
+        "contentHash": "fnv1a-2702dd53"
+      }
+    ],
+    "posttraining-2026-007": [
+      {
+        "id": "posttraining-2026-007__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "对比过度 SFT 与轻度 SFT 两个 checkpoint 的 RL 前途，哪些成立？",
+        "options": [
+          "过度贴合演示压缩策略空间覆盖率，RL 可探范围小。",
+          "过度 SFT 抬高熵致梯度噪，必须大降 LR。",
+          "其熵偏低行为确定，随机探索难发现新策略。",
+          "需 RL 的任务留探索性强的轻 SFT checkpoint。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两个 checkpoint 的探索空间并选出适合 RL 的起点",
+          "reasoningGoal": "先对齐比较维度是探索覆盖率；再确认压缩空间、低熵难探、留轻 SFT 三项成立；并排除抬熵噪梯度论。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8fd60cd9",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-007",
+          "topic": "training",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "exploration",
+            "sft",
+            "grpo"
+          ],
+          "question": "为什么某些任务上一个过度 SFT 的 checkpoint 反而可能比 base/instruction checkpoint 更难通过后续 RL 学到新策略？从 exploration 角度解释。",
+          "options": [
+            "过度 SFT 让策略过度贴合演示分布，压缩了策略空间与覆盖率，降低后续 RL 可探索范围",
+            "过度 SFT 会抬高策略熵、使 RL 阶段梯度噪声过大而难以收敛，因此必须大幅降低学习率才能让它稳定",
+            "过度 SFT 的 checkpoint 往往策略熵偏低、行为更确定，RL 难以通过随机探索发现新策略",
+            "对需要后续 RL 的任务，保留更具探索性、未被过度 SFT 的 checkpoint 反而更利于探索"
+          ]
+        },
+        "contentHash": "fnv1a-94a921c9"
+      }
+    ],
+    "context-engineering-mechanism-01": [
+      {
+        "id": "context-engineering-mechanism-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "落地 Skill 编译器，输入矛盾历史结论。评审编译输出要求，哪些成立？",
+        "options": [
+          "合并去重收敛为可直接遵循的操作步骤。",
+          "剥离根因论证，只留规则与判断条件。",
+          "按相关性排序截断填满窗口即可。",
+          "用条目再训一次模型记住步骤。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在矛盾输入下应用编译收敛要求并排除排序截断与再训练",
+          "reasoningGoal": "先确定交付物是可执行步骤而非论证；再确认合并收敛与剥离论证两项成立；并排除截断填窗与再训练记忆。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-87b97f7e",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "context-engineering-mechanism-01",
+          "topic": "context-engineering",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agent",
+            "compiled-skill",
+            "context-window",
+            "inference"
+          ],
+          "question": "在技能演化框架中，知识库里的原始条目需经「编译」才成为执行 Agent 加载的 Skill。这一步编译在机制上主要完成哪两项工作？",
+          "options": [
+            "把分散且可能互相矛盾的历史结论合并去重，收敛为一份可直接遵循的操作步骤",
+            "剥离根因分析与实验对比等过程性论证，只保留执行所需的规则与判断条件",
+            "按相关性对知识库全文排序后截断，使输出长度恰好填满执行上下文窗口",
+            "用知识条目对模型做一次额外训练，让权重直接记住这些操作步骤"
+          ]
+        },
+        "contentHash": "fnv1a-98637ad0"
+      }
+    ],
+    "agent-skills-comparison-01": [
+      {
+        "id": "agent-skills-comparison-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "单一快照回滚把 Raw 轨迹也抹了。诊断状态设计，哪些成立？",
+        "options": [
+          "三层下回滚只动 Skill 指针，Raw 与 Wiki 沉淀保留。",
+          "全量拼接改按需加载已验证 Skill，证据按需检索。",
+          "三层主要收益是省存储，同内容不再重复保存。",
+          "按需检索下每次都能读到全量证据，零信息遗漏。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从回滚误删定位单层快照缺陷并给出三层分离方案",
+          "reasoningGoal": "先把误删映射到可变性未切分；再确认指针回滚与按需加载两项成立；并排除省存储与读全量论。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f4079b7b",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-skills-comparison-01",
+          "topic": "agent-skills",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "agent",
+            "workspace-architecture",
+            "system-design",
+            "state-management"
+          ],
+          "question": "Raw / Wiki / Skill 三层工作区常被拿来与「单一可变状态存储」或「全量历史拼接进上下文」比较。下列哪些对比判断准确描述了三层分离的实质优势？",
+          "options": [
+            "相比单一可变快照，回滚只移动活性 Skill 指针，不会抹掉 Raw 轨迹与 Wiki 知识沉淀",
+            "相比全量拼接进上下文，执行层只加载已验证 Skill，历史证据按任务与权限按需检索",
+            "相比单一可变快照，主要收益是减少存储占用，因为相同内容不再被重复保存",
+            "相比按需检索，执行 Agent 每次都能读到全部历史证据，从而避免任何信息遗漏"
+          ]
+        },
+        "contentHash": "fnv1a-de05ee4c"
+      }
+    ],
+    "context-engineering-system-design-01": [
+      {
+        "id": "context-engineering-system-design-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "执行 Agent 把 Wiki 文本当指令执行了越权操作。诊断边界缺口，哪些成立？",
+        "options": [
+          "Skill 经受控接口注入，Wiki 应作不可信数据块。",
+          "按身份任务限 Wiki 读范围，发布权限独立服务。",
+          "内网文档即授权指令，可直接执行。",
+          "Wiki 全文提最高优先级，绕过检索权限过滤。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从越权执行定位指令与数据边界混淆并给出分级方案",
+          "reasoningGoal": "先区分指令通道与数据通道；再确认受控注入与分级限读两项成立；并排除内网即授权与提权绕过。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-207b2cb5",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "context-engineering-system-design-01",
+          "topic": "context-engineering",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "trust-boundary",
+            "compiled-skill",
+            "permission-isolation"
+          ],
+          "question": "执行上下文同时需要编译 Skill 和 Wiki 证据时，哪种权限边界最稳妥？",
+          "options": [
+            "编译 Skill 通过受控接口注入，原始 Wiki 以不可信数据块提供",
+            "按身份和任务限制 Wiki 读取范围，并让发布权限停留在独立服务",
+            "只要文档存储在内网，执行 Agent 就可将其中文本当作授权指令",
+            "把 Wiki 全文提升为最高优先级提示，绕过检索器的权限过滤"
+          ]
+        },
+        "contentHash": "fnv1a-77eb641b"
+      }
+    ],
+    "agent-skills-comparison-03": [
+      {
+        "id": "agent-skills-comparison-03__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "评审大模型加 Skill 对小模型无 Skill的实验方案，哪些成立？",
+        "options": [
+          "交叉多规模与有无 Skill，同一任务集对照。",
+          "按难度与分布内外拆分，报相对与绝对。",
+          "只测一大一小比平均分即可下结论。",
+          "各模型用各自擅长任务集，扬长发挥。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能评审实验矩阵的对照有效性并排除单点击败论",
+          "reasoningGoal": "先确定有效对照需同任务多条件；再确认交叉对照与拆分报告两项成立；并排除单点平均与各擅胜场。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-96436873",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-skills-comparison-03",
+          "topic": "agent-skills",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "ablation-matrix",
+            "model-scaling",
+            "skill-gain",
+            "ood"
+          ],
+          "question": "研究模型规模与 Skill 收益的交互时，哪种实验矩阵能支持可解释结论？",
+          "options": [
+            "交叉多个模型规模与无 Skill、同一 Skill 的条件，使用同一任务集对照",
+            "按任务难度和分布内外拆分结果，报告相对收益与绝对能力",
+            "只测一个大模型加 Skill 和一个小模型无 Skill，比较最终平均分",
+            "每种模型使用不同任务集，以便让各自最擅长的场景充分发挥"
+          ]
+        },
+        "contentHash": "fnv1a-90f7d65e"
+      }
+    ],
+    "clip-zero-shot-vs-linear-probe-01": [
+      {
+        "id": "clip-zero-shot-vs-linear-probe-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "新品类只有 50 张标注图，上线分类。选零样本还是训 probe，哪些成立？",
+        "options": [
+          "分布偏移场景零样本鲁棒，把鲁棒缺口缩 75%。",
+          "27 集上零样本全面碾压有监督 probe，无短板。",
+          "卫星影像、病理、合成计数等专业任务零样本弱，需标注拟合。",
+          "模板措辞对性能无影响，固定单模板即最优。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在少标注约束下按任务类型选出零样本或 probe 路线",
+          "reasoningGoal": "先确定约束是 50 张标注；再确认偏移鲁棒与专业域短板两项成立；并排除全面碾压与模板无用论。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-35b30253",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "clip-zero-shot-vs-linear-probe-01",
+          "topic": "multimodal",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "CLIP",
+            "评测",
+            "Linear Probe",
+            "鲁棒性",
+            "权衡"
+          ],
+          "question": "在评估 CLIP 向下游数据集迁移时，研究者常把 Zero-Shot Prompt 分类与「用标注数据拟合的线性分类器」（Linear Probe）做对比。关于二者在泛化能力、鲁棒性与适用边界上的权衡，下列哪些结论符合 CLIP 论文的实验观察？（多选）",
+          "options": [
+            "在 7 个自然分布偏移数据集上，Zero-Shot CLIP 显著优于标准 ImageNet 监督训练模型，把「鲁棒性缺口」最多缩小 75%。",
+            "在 27 个数据集的评测套件上，Zero-Shot CLIP 全面优于用 ResNet50 特征拟合的全监督线性分类器，不存在任何落后幅度较大的数据集。",
+            "在卫星影像分类（EuroSAT / RESISC45）、淋巴结肿瘤检测、合成场景计数等专业或抽象任务上，Zero-Shot CLIP 明显偏弱，这类任务仍需标注数据拟合分类器。",
+            "零样本 Prompt 机制天然消除了模板措辞对分类性能的影响，无需任何提示工程或多模板融合，固定单一模板即可拿到最优精度。"
+          ]
+        },
+        "contentHash": "fnv1a-5acc19e6"
+      }
+    ],
+    "clip-projection-augmentation-01": [
+      {
+        "id": "clip-projection-augmentation-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "解释 CLIP 为何敢砍非线性头与强增强，哪些成立？",
+        "options": [
+          "4 亿图文下过拟合非主要矛盾，线性投影够用。",
+          "文本侧去采样变换，图像只留随机方裁剪。",
+          "线性头为强制双编码器共享骨干权重。",
+          "线性投影是防坍塌唯一必要条件。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能解释海量配对数据下简化投影与增强的合理性来源",
+          "reasoningGoal": "先回到过拟合非主要矛盾的前提；再确认线性够用与增强简化两项成立；并排除共享权重与唯一必要。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b3c8f7d7",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "clip-projection-augmentation-01",
+          "topic": "multimodal",
+          "angle": "architecture",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "CLIP",
+            "架构设计",
+            "数据增强",
+            "自监督对比"
+          ],
+          "question": "在单模态图像自监督对比学习（如 SimCLR）中，非线性 MLP 投影头与复杂数据增强（Color Jitter、Gaussian Blur 等）通常被视为关键设计。CLIP 在大规模预训练中简化了这两点：只使用线性投影（Linear Projection），图像增强只保留随机裁剪。关于这一简化设计，以下哪些说法符合论文的表述？（多选）",
+          "options": [
+            "论文给出的简化理由是「在 4 亿量级网络图文数据上过拟合不是主要矛盾」，因此移除了表征与对比嵌入空间之间的非线性投影，只保留线性投影。",
+            "同一段简化逻辑也体现在数据增强上：论文移除文本侧采样单句的变换函数，并明确「随机方形裁剪是训练中唯一使用的数据增强」。",
+            "使用线性投影的主要目的是强制图像编码器与文本编码器共享完全相同的骨干权重，使两个模态共用一套参数完成前向计算。",
+            "线性投影是防止多模态对比学习发生特征坍塌（Feature Collapse）在理论上的唯一必要条件，缺了它训练必然崩溃。"
+          ]
+        },
+        "contentHash": "fnv1a-15469035"
+      }
+    ],
+    "sebastian-raschka-2026-08-36": [
+      {
+        "id": "sebastian-raschka-2026-08-36__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "对比多头与单头注意力的表达差异，哪些成立？",
+        "options": [
+          "多头各子空间关注不同关系。",
+          "头输出拼接再经输出投影整合。",
+          "各头保证关注完全不同的 token。",
+          "多头自动把复杂度降为线性。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比双路线的表达机制差异并排除互斥关注与线性复杂度论",
+          "reasoningGoal": "先对齐比较维度是表达而非复杂度；再确认子空间关系与拼接整合两项成立；并排除完全互斥与自动线性。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5aa564ca",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-36",
+          "topic": "self-attention",
+          "subtopic": "多头注意力",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "multi-head-attention"
+          ],
+          "question": "多头注意力相对单头注意力的主要优势有哪些？（请选择两个）",
+          "options": [
+            "不同头可以在不同表示子空间中关注不同关系",
+            "各头输出通常拼接后再由输出投影整合",
+            "多头注意力保证每个头关注完全不同的 token",
+            "多头注意力把序列复杂度自动降为线性"
+          ]
+        },
+        "contentHash": "fnv1a-cb5ca842"
+      }
+    ],
+    "sebastian-raschka-2026-08-62": [
+      {
+        "id": "sebastian-raschka-2026-08-62__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "高努力模式上线：数学涨、客服满意度跌。排查，哪些成立？",
+        "options": [
+          "对比客服任务延迟与长度变化。",
+          "查路由是否用错努力度。",
+          "查拒答率格式遵循与满意度回归。",
+          "数学涨即成功，直接全量。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从单项涨整体跌定位副作用排查三方向并否定单指标放行",
+          "reasoningGoal": "先确定数学涨不能代表整体；再确认延迟长度、路由努力度、拒答回归三项成立；并排除直接全量。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9b68f4bd",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-62",
+          "topic": "evaluation",
+          "subtopic": "推理模式回归",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning-effort",
+            "regression",
+            "quality"
+          ],
+          "question": "上线新的高努力度模式后，数学正确率上升但客服任务满意度下降，哪些调查方向合理？（请选择三个）",
+          "options": [
+            "比较客服任务的延迟和响应长度变化",
+            "检查不同任务路由是否使用了不合适的努力度",
+            "检查拒答率、格式遵循和用户满意度回归",
+            "因为数学分数提升就直接判定整体上线成功"
+          ]
+        },
+        "contentHash": "fnv1a-87bb6ec9"
+      }
+    ],
+    "sebastian-raschka-2026-08-123": [
+      {
+        "id": "sebastian-raschka-2026-08-123__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "估算 32 层 GQA 模型 128k 上下文的 KV 显存与哪些量有关？",
+        "options": [
+          "上下文序列长度，越长缓存越大。",
+          "KV 头数量与每头维度，GQA/MQA 可压缩头数。",
+          "缓存数据类型的字节数，FP8 比 FP16 省一半。",
+          "只由模型总参数量决定，与上下文长度无关。"
+        ],
+        "angle": "quantitative",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能预测 KV 显存的决定量并排除唯参数论",
+          "reasoningGoal": "先列出显存公式的乘数项；再确认长度、头数维度、字节数三项成立；并排除只看总参。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-cc8bb02f",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-123",
+          "topic": "kv-cache",
+          "subtopic": "KV Cache 成本",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "raschka",
+            "architecture",
+            "kv-cache"
+          ],
+          "question": "在自回归解码中，KV Cache 的主要资源成本受哪些因素影响？（请选择三个）",
+          "options": [
+            "上下文序列长度",
+            "KV 头数量和每头维度",
+            "缓存使用的数据类型字节数",
+            "只由模型总参数量决定，与上下文长度无关"
+          ]
+        },
+        "contentHash": "fnv1a-7eae2fb9"
+      }
+    ],
+    "ml-01": [
+      {
+        "id": "ml-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "训练误差 2%、验证误差 25%，属于哪种现象？（单选）",
+        "options": [
+          "训练集误差很低而验证集误差很高，属过拟合。",
+          "训练与验证误差都很高，属欠拟合。",
+          "训练误差高而验证误差很低，与过拟合相反。",
+          "模型在训练集上无法收敛，属训练问题。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能按误差组合识别过拟合并排除欠拟合反向与未收敛",
+          "reasoningGoal": "先对照误差组合表；再确认训练低验证高成立；并排除都高、反向、未收敛。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-7903931d",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ml-01",
+          "topic": "overfitting",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "overfitting",
+            "evaluation",
+            "generalization"
+          ],
+          "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
+          "options": [
+            "训练集误差很低，但验证集误差很高",
+            "训练集和验证集误差都很高",
+            "训练集误差很高，验证集误差很低",
+            "模型在训练集上无法收敛"
+          ]
+        },
+        "contentHash": "fnv1a-9c371db7"
+      }
+    ],
+    "llm-security-finance-2026-08-09": [
+      {
+        "id": "llm-security-finance-2026-08-09__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "审计发现贷款被模型直接自动拒绝且无理由记录。诊断边界缺失，哪个成立？（单选）",
+        "options": [
+          "让模型直接输出结论并自动执行是对的。",
+          "应模型辅助提取解释，决策交受治理系统加人工复核。",
+          "只要喂更多历史贷款数据即自动满足监管。",
+          "隐藏拒绝理由，避免用户利用规则。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从无理由自动拒绝定位决策权越位并给出人审边界",
+          "reasoningGoal": "先确定缺失的是决策权边界而非数据量；再确认辅助加人审成立；并排除直出执行、堆数据、藏理由。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-76e3cfa8",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-security-finance-2026-08-09",
+          "topic": "financial-ai-governance",
+          "subtopic": "金融决策边界",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "financial-ai",
+            "governance",
+            "human-in-the-loop"
+          ],
+          "question": "银行希望用生成式模型直接批准或拒绝贷款申请。哪种架构边界更稳妥？（单选）",
+          "options": [
+            "让模型直接输出 approve 或 reject，概率最高即自动执行",
+            "让模型辅助提取和解释，最终决策由受治理的决策系统和必要人工复核承担",
+            "只要给模型更多历史贷款数据就能自动满足监管要求",
+            "隐藏拒绝理由以避免用户利用规则"
+          ]
+        },
+        "contentHash": "fnv1a-04decf20"
+      }
+    ],
+    "llm-15": [
+      {
+        "id": "llm-15__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "对比 LatentMoE 与标准 MoE 的推理成本构成，哪个成立？（单选）",
+        "options": [
+          "大线性变换搬低维执行，参数 FLOPs 随 latent 缩放，投影开销小。",
+          "专家数量减少且路由结构简化，路由开销随之大幅下降。",
+          "token 级路由改序列级，每序列只激活一次专家。",
+          "latent attention 替代全部专家 FFN，不再维护专家权重。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比两种 MoE 的成本构成并定位节省来自低维执行",
+          "reasoningGoal": "先对齐比较维度是成本构成；再确认低维执行成立；并排除减专家、改路由、替 FFN。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3b21ad6f",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-15",
+          "topic": "latent-moe",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "latent-moe",
+            "moe",
+            "low-rank",
+            "inference-efficiency"
+          ],
+          "question": "某模型的架构说明描述其 LatentMoE 设计：先把 hidden representation 经 down projection 映射到低维 latent space，在其中执行专家（MoE）计算，再经 up projection 还原回原维度。基于这一机制，为什么它可能降低推理成本？",
+          "options": [
+            "专家内部的大型线性变换被搬到低维 latent space 中执行：专家参数量与 FLOPs 随 latent 维度而非 hidden size 缩放，两次投影本身远小于被替换的原层",
+            "它减少了专家数量并简化了 router 结构，token 路由的开销随之大幅下降，因为更少的专家意味着路由网络可学习更简单的映射关系",
+            "它把 token-level 路由改成了 sequence-level 路由，每个序列只需激活一次专家网络",
+            "它用 latent attention 替代了全部专家 FFN，使 MoE 层不再需要维护任何专家权重"
+          ]
+        },
+        "contentHash": "fnv1a-744e77b2"
+      }
+    ],
+    "seq-01": [
+      {
+        "id": "seq-01__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "万步级序列建模，RNN 梯度消失。选型，哪个成立？（单选）",
+        "options": [
+          "用门控控制写保留读，梯度加性传播保长程。",
+          "增大隐藏层维度暴力扩大记忆容量即可。",
+          "把各步输入拼接成超长向量，取消循环结构。",
+          "固定遗忘率为 0.5，所有历史等权重保留。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能在长序列约束下选出门控路线并排除暴力扩维与取消循环",
+          "reasoningGoal": "先确定约束是万步梯度消失；再确认门控加性传播成立；并排除扩维度、拼向量、固定遗忘。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-aedaea1d",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "seq-01",
+          "topic": "sequence-models",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "rnn",
+            "lstm",
+            "gru",
+            "vanishing-gradient"
+          ],
+          "question": "传统 RNN 在长序列建模中易出现梯度消失，而 LSTM/GRU 通过门控机制缓解该问题。门控的核心作用是什么？",
+          "options": [
+            "通过门控动态控制信息的写入、保留与输出，使梯度以加性传播缓解消失并保留长程依赖",
+            "通过增加隐藏层维度来暴力扩大记忆容量，与门控无关",
+            "通过将所有时间步的输入直接拼接为超长向量来避免循环",
+            "通过固定遗忘率为 0.5 来确保所有历史信息等权重保留"
+          ]
+        },
+        "contentHash": "fnv1a-c68a68de"
+      }
+    ],
+    "ai-fund-023": [
+      {
+        "id": "ai-fund-023__context-options__manual-be__0",
+        "kind": "context-options",
+        "question": "对比 LoRA 与剪枝、量化、全副本四种降本思路，哪个对 LoRA 的描述成立？（单选）",
+        "options": [
+          "ΔW 低秩分解 BA，冻原权重只训 A/B，可合并零延迟。",
+          "假设权重高度稀疏，先剪枝再训剩余连接。",
+          "把权重量化到低精度，用数值精度换显存节省。",
+          "每层维护全尺寸可训练副本，训后取平均替换。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能对比四条路线并准确说出 LoRA 的低秩分解本质",
+          "reasoningGoal": "先对齐比较维度是降本原理；再确认低秩分解成立；并排除稀疏假设、量化换显存、全副本平均。"
+        },
+        "generatedAt": 1789168214013,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ea217188",
+        "batch": "manual-be",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-fund-023",
+          "topic": "lora",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "LoRA",
+            "low-rank",
+            "PEFT"
+          ],
+          "question": "LoRA 为什么可以用很低的成本完成 Fine-tuning？请解释它的核心假设。",
+          "options": [
+            "LoRA 假设微调引起的权重变化 ΔW 具有低秩结构，可分解为两个小矩阵的乘积 BA；冻结原权重只训 A/B，推理前可合并回 W 而不增加延迟",
+            "LoRA 假设原权重矩阵高度稀疏，先剪掉不重要的连接再训练剩余部分，因为预训练权重里大部分参数对下游任务没有贡献，剪枝后才便于微调",
+            "LoRA 把权重矩阵量化到更低精度，靠牺牲数值精度来换取显存节省，因为半精度或低精度训练本身就能起到正则化与压缩的双重作用",
+            "LoRA 为每一层维护一份全尺寸可训练副本，训练结束后取平均替换原权重，因为多副本可以取平均来抑制单份更新的方差、提升稳定性"
+          ]
+        },
+        "contentHash": "fnv1a-cbacaa31"
+      }
+    ]
+  }
+}
