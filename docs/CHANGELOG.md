@@ -1,6 +1,46 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · ADR-080：Presentation Variant 放宽生成自由度（prompt v4→v5，零门禁改动）
+
+- 放宽 3 处（只放生成自由度，不放知识/答案契约）：题干可明显换场景/角色/问题入口；
+  选项允许槽内表达结构变化（方案↔决策、原因↔后果）；"不新增信息"收紧为"不新增解题必需"，
+  允许非解题性表面背景（沿用原题术语、优先中文、新术语 ≤2）。
+- 明确拒绝 1 处：选项语义角色不可跨槽位挪动（`applyVariant` 按序号映射答案，无确定性检查能发现错位；
+  违反即判错题，属 ADR-036 边界）。Assessment Variant 保持严格不变。
+- 门禁零改动（已逐项核过兼容性）：中文场景天然过 `new-prerequisite`/`extra-hint`；
+  漂移下限 35 继续做槽内后备网；多分句重排仍被 `clause-inversion` 拦截（刻意保留的保守边界）。
+  `variant-bench.ts` 内 pin 的 v3 副本同步到 v5；`variant.test.ts` 新增 prompt 契约测试 6 项。
+- 门禁实证：`npm test` 全过；`typecheck` 通过；`validate-variants` 池健康（存量资产门禁未动，不受影响）。
+
+## 2026-09-15 · 零变体区再扩充 20 条变体（`assessment.manual-bl-20260915.json`，池 1675→1695 条）
+
+- missing-only 顺延 10 题（`ai-search-gap-001/008/013/014/016`、`ai-search-02`、
+  `aws-ai-practitioner-05/08/09`、`aws-genai-developer-pro-01`，均为单选），
+  每题各写 1 条 surface-options + 1 条 context-options，共 20 条 assessment 变体，
+  全部自声明不同 angle + cognitiveTask 与新推理路径。
+- 初稿 4 处问题改写清零：aws-05 的 context opt2 漂移 33.3（`增大`与原题零字面重叠，
+  改为`把 temperature 调高`后 57）；aws-genai-01 两条题干漏原题限定词`必须`
+  （dropped-qualifier，补回后通过）。短选项题（aws 三题）sibling Dice 最高约 73，
+  无近重复风险；gap-016 两条题干均保留 `Recall@20` 数字条件。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 66.7%→67.4%，0 变体题 477→467，
+  难度驱动信号仍为存量 30 条、0 新增）；`npm test` 891/891。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-15 · 零变体区扩充 20 条变体（`assessment.manual-bk-20260915.json`，池 1655→1675 条）
+
+- missing-only 顺序前 10 题（`agentic-24`、`ai-design-005`、`ai-eng-038`、`ai-fund-047`、
+  `feedback-triage-01`、`selfhost-api-01`、`task-ai-03`、`ai-arch-openai-compat-proxy-01`、
+  `longhorizon-daemon-session-01`、`ai-search-extra-023`，均为单选、形态由原题决定），
+  每题各写 1 条 surface-options + 1 条 context-options，共 20 条 assessment 变体，
+  全部自声明不同 angle + cognitiveTask 与新 reasoning 路径（target/goal 与原题及同题 sibling 均不相同）。
+- 环境无 LLM Key，走 `assemble-variants.ts` 手工通道：先用真实门禁函数预检草稿，
+  初稿 8 处问题全部改写清零（2 条从句倒置 100% 按原题分句顺序重排；3 条选项漂移 <35
+  补回原题关键词，其中 proxy 题把 `/v1/chat/completions` 等协议原词补回选项、题干仍避开以防 extra-hint；
+  另有 3 条连带门禁拒绝随之消除），再组装落盘（promptVersion 取脚本当前值 v4）。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 66.0%→66.7%，0 变体题 487→477，
+  sibling 选项 Dice 最高 71.1、新批难度驱动信号 0 新增）；`npm test` 891/891；
+  新批选项长度比全部 ≤1.75×。组装草稿放 temp/ 用完即删，未落仓。
+
 ## 2026-09-15 · 零变体区扩充 20 条变体（`assessment.manual-bj-20260915.json`，池 1635→1655 条）
 
 - 从剩余零变体 choice 题中按 topic 分散挑 20 道（14 多选 + 6 单选，多选占比 70% ✓；

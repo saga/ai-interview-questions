@@ -3,7 +3,13 @@
 // 相关用例见 src/domain/variant.test.ts；这里只验证「LLM → GeneratedVariant」这一段契约。
 
 import { describe, expect, it, vi } from 'vitest';
-import { generateAssessmentVariant, generateVariant } from './variant';
+import {
+  VARIANT_KIND_GUIDANCE,
+  VARIANT_PROMPT_VERSION,
+  VARIANT_SYSTEM,
+  generateAssessmentVariant,
+  generateVariant,
+} from './variant';
 import type { CompleteFn } from '../types';
 import type { Question } from '../schemas/question';
 
@@ -123,6 +129,44 @@ describe('generateVariant（轻量变体）', () => {
     expect(user).not.toContain('"answer"');
     expect(user).not.toContain('"explanation"');
     expect(user).not.toContain('referenceAnswer');
+  });
+});
+
+describe('VARIANT_SYSTEM v5（ADR-080：Relax generation, not invariants）', () => {
+  it('版本号与解析值一致', () => {
+    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v5]');
+    expect(VARIANT_PROMPT_VERSION).toBe('v5');
+  });
+
+  it('保留答案契约：槽位语义角色对应 + 不挪动角色', () => {
+    // 程序按序号映射答案（applyVariant + validateVariant 逐槽位漂移检查），
+    // 角色跨槽位挪动会直接判错题——这是放宽后仍不可动的位置不变式。
+    expect(VARIANT_SYSTEM).toContain('语义角色对应');
+    expect(VARIANT_SYSTEM).toContain('不许把角色挪到别的序号');
+  });
+
+  it('放宽生成自由度：场景/背景/槽内表达结构', () => {
+    expect(VARIANT_SYSTEM).toContain('改变场景、角色、问题入口和约束表达');
+    expect(VARIANT_SYSTEM).toContain('解题必需');
+    expect(VARIANT_SYSTEM).toContain('允许改变单个选项内部的表达结构');
+  });
+
+  it('不再出现旧收缩措辞', () => {
+    expect(VARIANT_SYSTEM).not.toContain('不新增信息');
+    expect(VARIANT_SYSTEM).not.toContain('不要进行深度重新设计');
+    // 旧约束是"只允许改变表达，不允许改变…"（纯换皮）；新约束是"只允许改变表达结构"（槽内自由）。
+    expect(VARIANT_SYSTEM).not.toContain('只允许改变表达，不允许');
+  });
+
+  it('JSON 输出契约不变', () => {
+    expect(VARIANT_SYSTEM).toContain('只输出 JSON');
+    expect(VARIANT_SYSTEM).toContain('"options"');
+  });
+
+  it('kind 指引与主 prompt 同口径（语义角色对应）', () => {
+    for (const g of Object.values(VARIANT_KIND_GUIDANCE)) {
+      expect(g).toContain('语义角色对应');
+    }
   });
 });
 

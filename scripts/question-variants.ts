@@ -4,7 +4,7 @@
 // 设计红线（见用户设计 spec + docs/DECISIONS.md）：
 //   - 变体作为题库资产（离线预生成、提交进仓库），训练时零 LLM 直接落地；
 //   - assessment 模式复用 ai/variant.generateAssessmentVariant（不同 reasoning path），
-//     presentation 模式复用 ai/variant.generateVariant（只换措辞）；
+//     presentation 模式复用 ai/variant.generateVariant（同知识重写表达，语义角色对应）；
 //     两者共用 domain/variant.validateVariant（全链路唯一校验门禁）；
 //   - 离线比 runtime 更严格：**超采—漏斗**（A-10）── 先生成 count × oversample 个候选，
 //     过 validateVariant（确定性）+ 语言门禁 + difficulty 驱动项 + 去重（含语义级），
@@ -19,7 +19,7 @@
 //     npx vite-node scripts/question-variants.ts --ids q-1,q-2 --count 2
 //   npx vite-node scripts/question-variants.ts --topics transformer-attention --missing-only --concurrency 4
 //   npx vite-node scripts/question-variants.ts --dry-run --ids q-1   # 不联网、不落盘，仅打印计划
-//   npx vite-node scripts/question-variants.ts --mode presentation --ids q-1  # 只换措辞（旧行为）
+//   npx vite-node scripts/question-variants.ts --mode presentation --ids q-1  # 同知识重写表达（旧行为，不换测量面）
 //
 // 参数：
 //   --ids <csv>          只生成指定题目 id（逗号分隔）
@@ -27,7 +27,7 @@
 //   --count <n>          每题变体数量（默认 2；P0 核心题建议 3–4，低价值题可 1，不要机械 2 条）
 //   --oversample <n>      超采倍数：先生成 count × n 个候选再筛到 count（默认 3；设 1 = 不超采）
 //   --no-challenger       跳过 quality challenger（只跑确定性门禁 + 去重 + 多样性排序）
-//   --mode <m>           assessment（默认）：不同 reasoning path，需自声明测量面；presentation：只换措辞
+//   --mode <m>           assessment（默认）：不同 reasoning path，需自声明测量面；presentation：同知识重写表达
 //   --kind <k>           固定风格：surface|context|surface-options|context-options（默认按 4 种轮换）
 //   --missing-only       仅生成池里还没有任何变体的题目
 //   --stale              额外纳入「池中已有 stale 变体」的题目（重新生成）
@@ -91,7 +91,7 @@ interface CliOptions {
   oversample: number;
   challenger: boolean;
   kind?: VariantKind;
-  /** assessment（默认）：同一 Knowledge 的不同 reasoning path；presentation：只换措辞。 */
+  /** assessment（默认）：同一 Knowledge 的不同 reasoning path；presentation：同知识重写表达（ADR-080）。 */
   mode: 'assessment' | 'presentation';
   missingOnly: boolean;
   stale: boolean;
@@ -166,7 +166,7 @@ function printHelp(): void {
   --oversample <n>     超采倍数：先生成 count × n 个候选再筛到 count（默认 3）
   --no-challenger      跳过 quality challenger（只跑确定性门禁 + 去重，多样性排序取 top-N）
   --mode <m>           assessment（默认）：同一 Knowledge 的不同 reasoning path，需自声明测量面；
-                       presentation：只换措辞（旧行为，恒继承 canonical 测量面）
+                       presentation：同知识重写表达（恒继承 canonical 测量面）
   --kind <k>           固定风格：surface|context|surface-options|context-options
   --missing-only       仅生成池里还没有任何变体的题目
   --stale              额外纳入「池中已有 stale 变体」的题目
@@ -346,7 +346,7 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
     if (assessmentMode) {
       // reasoning-path 门禁（P0-2/P0-3）：assessment 模式落盘的每一条都必须
       // 自带「先做什么 → 再做什么 → 排除什么」，且与 canonical 实质不同。
-      // 只换措辞的候选在这里被拦下——不许冒充 assessment variant。
+      // 未声明新路径的候选在这里被拦下——不许冒充 assessment variant。
       const face = gen as AssessmentVariantCandidate;
       if (!face.assessment || !isReasoningGoalWellFormed(face.assessment.reasoningGoal)) {
         stats.pathreject++;

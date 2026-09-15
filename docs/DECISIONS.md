@@ -2,6 +2,36 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-080 · Presentation Variant 放宽生成自由度：Relax generation, not invariants
+
+- 状态：已采纳 · 2026-09-15
+- 背景：Runtime Presentation Variant 的 prompt（`VARIANT_SYSTEM` v4）把生成空间压得比实际校验能力更小——
+  「不新增信息」「只允许改变表达」「不要深度重新设计」迫使模型产出大量"同题换皮" paraphrase。
+  而校验层已经是完整的确定性网：结构/数量/去重/长度泄题/逐槽位漂移下限（Dice<35 拒）/答案恒取 canonical，
+  题干零锚点也只是 warning（ADR-057）。瓶颈在生成侧，不在校验侧。
+- 决策（`VARIANT_SYSTEM` v4→v5，**只改 prompt + 注释 + 文档，零门禁代码改动**）：
+  1. **题干可明显换场景**：允许改变场景、角色、问题入口和约束表达，只要仍测量相同核心知识与判断。
+  2. **选项允许槽内表达结构变化**：换叙述视角、把"方案"写成"决策"、把"原因"写成"后果"、调选项内部叙述顺序——
+     只要该槽位的技术结论不变；改写须保留结论关键词（否则漂移下限整条丢弃，属预期行为）。
+  3. **"不新增信息"收紧为"不新增解题必需"**：允许增加场景/角色/叙事用的表面背景（须沿用原题术语、优先中文、
+     新增技术术语 ≤2 个）；背景不得引入决定答案的新知识/事实/前置条件/隐藏约束，不得泄入正确项独有关键词。
+  4. **位置不变式保留（本次唯一明确拒绝的放宽）**：第 N 项必须仍是原第 N 项的语义角色，不许跨槽位挪动角色——
+     `applyVariant` 按序号映射 canonical 答案（`shuffleChoiceOptions` + 逐槽位漂移检查），挪动角色会直接判错题，
+     且没有任何确定性检查能发现角色错位。跨槽位重排选项 = 重新决定答案，违反 ADR-036。
+  5. **Assessment Variant 不动**：同一 Knowledge 换 reasoning path 的目标与三段式/自声明门禁保持严格（见 ADR-078）。
+- 门禁兼容性（为什么零改动可行，逐项核过）：
+  - 场景重写多为中文背景 → `new-prerequisite`（仅计拉丁新词 ≥3，surface 种）与 `extra-hint`（仅正确项独有拉丁词入题干）本来就放行中文场景；prompt 明确要求沿用原题术语 + 中文优先。
+  - 槽内结构变化 → 逐槽位漂移下限（Dice<35）继续做后备网：保真 rewrite 约 44~74，换概念约 5~22，35 的地板恰好是"语义角色不变"的可验证近似。
+  - 多分句选项内部重排仍被 `clause-inversion`（BLOCK ≥70%）拦截——这是刻意保留的保守边界：确定性方法无法区分"好的重排"与"翻译腔倒装"，而单分句选项（绝大多数）不受影响。
+  - qualifier / numeric 条件、`checkKindContentMatch`、长度泄题全部不变（知识/答案契约）。
+- 附带同步：`scripts/variant-bench.ts` 内 pin 的 prompt 副本 v3→v5（此前已与主 v4 脱节，顺手收敛；仍不直引 `src/ai/variant`，
+  保持 tsc-node 构建约束）；`scripts/question-variants.ts` 的 presentation 注释"只换措辞"→"同知识重写表达"；
+  `src/ai/variant.test.ts` 新增 prompt 契约测试（版本/位置不变式/放宽短语/旧措辞消失/kind 指引同口径，防静默漂移）。
+- 原则（一句话）：**Relax generation, not invariants.**——把生成空间扩大，安全继续由代码边界承担，不往 prompt 里堆限制。
+- 验证：`npm test` 全过（含新增 6 项）；`typecheck` 通过；`validate-variants` 池健康不受影响（存量资产全部在旧 prompt 下生成，仍过新门禁——门禁本来就没动）。
+- 触发条件：若放宽后 runtime fallback 率异常升高（遥测 `recordVariantRound` 按原因码可见），先收紧 prompt 例证而非加 gate；
+  若出现角色跨槽位个案，属 prompt 违规个案，按个案处理，不引入语义级位置校验（写不出来，ADR-057 已论证）。
+
 ## ADR-079 · missing-source 门禁精确化 + 语义保持改写的变体重设基线规则
 
 - 状态：已采纳 · 2026-09-11
