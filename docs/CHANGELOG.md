@@ -1,6 +1,26 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-bp-20260916.json`，池 1755→1775 条）
+
+- missing-only 顺延 10 题，4 道多选 + 6 道单选：`sebastian-raschka-2026-08-136/142/162/165`
+  （消融实验 / 多路残差 / 长上下文效率验证 / 单领域结论外推）+ `aws-waf-lens-2026-08-17/18`
+  （数据过期降级 / 生产数据入开发环境）+ `claude-blog-2026-08-21/13`（工具层部署门禁 / 报告完成标准）
+  + `context-2026-104`（300 工具全量注入代价）+ `dl-03`（批量归一化作用）。
+- 每题各写 1 条 surface-options + 1 条 context-options，共 20 条 assessment 变体
+  （mode=assessment，自声明不同 angle + cognitiveTask，reasoningGoal 均为「先→再→排除」三段式）。
+- 门禁改写 4 处，全部命中 **token 多重集 Dice**（`cjkDice`）的两个已知坑：
+  canonical 选项含长拉丁词（`temperature` / `system prompt` / `PreToolUse` / `hook`）时，
+  翻成中文会让 token 交集骤降而跌破 drift 阈值 35 → 改为**原样保留拉丁词、只改周边中文字**；
+  `…-21` 修完后正确项成全局最长（37 vs 20 = 1.9×）触发 option-length-bias → 拉长干扰项压回 1.61×。
+- 题干约束落实：variant 题干避开正确项独有拉丁词（`token` / `hook` / `PreToolUse`），
+  extra-hint 0 新增；`context-2026-104` 保留数字条件 `300`；`claude-blog-2026-08-21`
+  保留原题限定词 `必须`；`difficultyDrivers` 审计仍 30 条且新批次 0 条。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 69.5%→70.2%，0 变体题 437→427，全部阻断项 0）；
+  `validate:questions` 1434 题 / 153 节点 ✓；`src/data+schemas+domain` 490/490 ✓。
+- 备注：零变体多选仅剩 24 道（几乎全在 `sebastian-raschka-2026-08-4.json`），
+  后续批次若要继续补多选，需转向已覆盖 canonical 的第 3 条变体或新增多选 canonical。
+
 ## 2026-09-15 · ADR-082 追补：声明相似硬门禁 + challenger 前提修正
 
 - 生成器 identical 检查升级为 `isReasoningPathTooSimilar`（逐字相同或 target≥95 且 goal≥90

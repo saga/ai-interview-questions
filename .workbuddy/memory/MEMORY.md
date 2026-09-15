@@ -95,9 +95,18 @@
 `assessment.manual-<xx>-<date>.json`，slug `manual-<xx>`，草稿放 temp/ 用完即删。
 组装：`node node_modules/vite-node/dist/cli.mjs scripts/assemble-variants.ts <draft.json> <out> <slug>`。
 按出错频率排序的坑：
+0. **先搞懂度量口径**：`cjkDice`（`src/domain/textSimilarity.ts`）是 **token 多重集 Dice**，
+   不是字符级——`cjkTokenize` 把**中文按单字**、**拉丁/数字按整词**（kebab/snake 拆词）切 token，
+   空格标点丢弃；`200*|交集|/(|A|+|B|)`。drift 阈值 35 / dup 阈值 88 都在此口径上校准。
+   **关键推论**：canonical 选项里的长拉丁词（`temperature`/`prompt`/`PreToolUse`/`hook`）
+   只占 1 个 token；翻成中文后展开成多个 token，交集骤降 → 极易跌破 35。
+   **对策：canonical 选项里的拉丁词原样保留**（只改周边中文字）。
+   注意这与第 4 条不矛盾：extra-hint 只查**题干**，选项里保留拉丁词反而是保 drift 的正确做法。
 1. **`optionChangedTooMuch`（CJK-Dice <35 判 option-semantic-drift）**——中文选项改写时换掉核心技术词
    （「KV 压缩」→「键值压缩」、「Agent」→「智能体」）就容易跌破 35。对策：保留原句主干词，
-   只换句式/修饰，别动术语。
+   只换句式/修饰，别动术语；canonical 选项短（<15 字）时尤其要贴着原句改。
+   另注：组装器遇到 drift 只报**第一个**失败选项并中止该条——修完 A 可能又报 B，
+   要按选项顺序逐个预检。
 2. **`detectOptionLengthBias`（strong 与 soft 都阻断）**——正确项为全局最长 **且** 最短项是干扰项
    **且** 差距 ≥1.8× 即拒；`meanCorrect/meanDistractor ≥1.8` 也拒。4 选 1 最容易踩。
    对策：四个选项字数拉近，或让正确项**不要**是最长的（把长干扰项写足）。
