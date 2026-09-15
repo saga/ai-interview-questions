@@ -72,9 +72,9 @@ import {
   type VariantMeasurementFace,
 } from '../src/domain/variant';
 import {
-  isAssessmentIdentical,
   isReasoningGoalWellFormed,
   isReasoningPathSubstantiallyDifferent,
+  isReasoningPathTooSimilar,
 } from '../src/domain/reasoningPath';
 import {
   inferAssessment,
@@ -436,10 +436,11 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
         console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：reasoningGoal 不是有效三段式`);
         continue;
       }
-      // 2. 与 canonical 的显式 assessment 不能相同
-      if (q.assessment && isAssessmentIdentical(face.assessment, q.assessment)) {
+      // 2. 声明的 path 不能与 canonical 高度相似（逐字相同，或 target≥95 且 goal≥90）。
+      // isAssessmentIdentical 已被本检查包含（逐字相同即返回 true），不再单独调用。
+      if (q.assessment && isReasoningPathTooSimilar(face.assessment, q.assessment)) {
         stats.pathreject++;
-        console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：assessment 与 canonical 相同`);
+        console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：与 canonical reasoning path 过于相似，不是新路径`);
         continue;
       }
       // 3. ★ 从实际题面重新推断双方 reasoning path（都不用 LLM 的声明）

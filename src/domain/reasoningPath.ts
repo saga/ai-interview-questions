@@ -96,6 +96,26 @@ export interface ReasoningPathPair {
   goalDice: number;
 }
 
+/**
+ * 生成期硬门禁：变体声明的 path 与 canonical 是否过于相似（ADR-082 追补）。
+ *
+ * 与 `isNearIdenticalPath` 同判定（逐字相同，或 target≥95 且 goal≥90），
+ * 但语义不同：后者是池审计的"疑似"（不阻断），本函数是生成器的"拒收"——
+ * 名字分开，调用方一看便知走的是哪条链路。`isNearIdenticalPath` 本体不动。
+ */
+export function isReasoningPathTooSimilar(
+  a: ReasoningPath,
+  b: ReasoningPath,
+  targetThreshold = 95,
+  goalThreshold = 90,
+): boolean {
+  if (isAssessmentIdentical(a, b)) return true;
+
+  const { targetDice, goalDice } = reasoningPathSimilarity(a, b);
+
+  return targetDice >= targetThreshold && goalDice >= goalThreshold;
+}
+
 /** 同一题多个已声明变体之间：路径逐字重复的配对（阻断级）。 */
 export function findReasoningPathDuplicates(items: ReasoningPathItem[]): ReasoningPathPair[] {
   const out: ReasoningPathPair[] = [];

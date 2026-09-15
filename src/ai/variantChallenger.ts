@@ -22,7 +22,9 @@ export const VARIANT_CHALLENGER_SYSTEM = `[PROMPT-VERSION v2]
 你是变体题目的质量质询者。给你一道原题（canonical）和一道由它改写的变体，判断变体是否**仍然在考同一件事**。
 
 【重要前提】
-变体的正确答案索引、解析、topic、angle、difficulty 均由程序从原题继承，你不需要检查这些字段本身。
+变体的正确答案索引、解析、topic、difficulty 均由程序从原题继承，你不需要检查这些字段本身。
+assessment 模式下，angle、cognitiveTask、assessment 可以由变体声明；
+presentation 模式下它们必须与原题保持一致。
 你要检查的是：LLM 改写后的**自然语言**是否悄悄改变了题目考察的内容。
 
 【六个维度】

@@ -9,6 +9,7 @@ import {
   isNearIdenticalPath,
   isReasoningGoalWellFormed,
   isReasoningPathSubstantiallyDifferent,
+  isReasoningPathTooSimilar,
   normalizeReasoningSignature,
   REASONING_PATH_SIMILARITY_THRESHOLD,
 } from './reasoningPath';
@@ -185,5 +186,33 @@ describe('isReasoningPathSubstantiallyDifferent（ADR-082：推断签名门禁�
 describe('normalizeReasoningSignature', () => {
   it('剥除引号与句读标点并小写', () => {
     expect(normalizeReasoningSignature('先确认「X」成立；再排除。')).toBe('先确认x成立再排除');
+  });
+});
+
+describe('isReasoningPathTooSimilar（ADR-082 追补：生成期硬门禁）', () => {
+  it('逐字相同 → true（含 identical）', () => {
+    expect(isReasoningPathTooSimilar({ ...CANON }, { ...CANON })).toBe(true);
+  });
+
+  it('只改标点语气 → true（双高相似即拦）', () => {
+    const sibling = {
+      target: CANON.target,
+      reasoningGoal:
+        '先确定温度系数与分布平滑度的关系；据此确认「T 增大分布更平滑呀」成立；并排除「T 只影响收敛速度呢」等不成立描述。',
+    };
+    expect(isReasoningPathTooSimilar(CANON, sibling)).toBe(true);
+  });
+
+  it('实质改写（target 或 goal 任一不达标）→ false', () => {
+    const other = {
+      target: '能判断缓存未命中时的回源策略',
+      reasoningGoal: CANON.reasoningGoal,
+    };
+    expect(isReasoningPathTooSimilar(CANON, other)).toBe(false);
+    const otherGoal = {
+      target: CANON.target,
+      reasoningGoal: '先核验前提条件；再逐项确认「丙路线可行」；并排除「丁路线」等错误说法。',
+    };
+    expect(isReasoningPathTooSimilar(CANON, otherGoal)).toBe(false);
   });
 });
