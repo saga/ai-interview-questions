@@ -20,6 +20,7 @@
 
 import { cjkDice } from './textSimilarity';
 import type { VariantKind } from '../schemas/variant';
+import type { AssessmentInference } from './assessmentInference';
 
 export interface ReasoningPath {
   target: string;
@@ -106,6 +107,54 @@ export function findReasoningPathDuplicates(items: ReasoningPathItem[]): Reasoni
     }
   }
   return out;
+}
+
+/**
+ * 推断签名相似度阈值（0~100 的 CJK-Dice）：推断出的 reasoningGoal 相似度 ≥ 该值
+ * 即判定为同一条 reasoning path（只是换措辞/场景），assessment variant 不予通过。
+ *
+ * 阈值含义（ADR-082）：这不是"语义等价证明"，而是"不同路径"的可验证近似。
+ * 推断签名由 canonical explanation + 各自选项头拼成（见 assessmentInference），
+ * 同槽位改写越彻底分数越低。纯换措辞通常仍 ≥82；实质重写表达通常掉到 82 以下。
+ * 若线上 pathreject 率异常（过高误杀 / 过低放行），凭遥测归因调该值，不加新门禁。
+ */
+export const REASONING_PATH_SIMILARITY_THRESHOLD = 82;
+
+/**
+ * 推断签名规范化（与 `normalizeReasoningText` 分开的函数，刻意不复用）。
+ *
+ * `normalizeReasoningText` 服务于「逐字相同」判定（identical / duplicate，阻断级）：
+ * 改动它会连带改变这些判定的语义。本函数只服务于推断签名的相似度比较，
+ * 额外剥除引号与句读标点——它们在 LLM 声明文本里随机出现，不携带路径信息，
+ * 却会系统性压低 Dice（虚假的"不同"）。
+ */
+export function normalizeReasoningSignature(value: string): string {
+  return (value ?? '')
+    .toLowerCase()
+    .replace(/[「」『』"'“”‘’]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/[，,。；;：:、]/g, '');
+}
+
+/**
+ * 两条**推断出来的** reasoning path 是否实质不同（ADR-082 离线 assessment 门禁）。
+ *
+ * 不比较 LLM 自声明的 assessment（可伪造：换几个字、改 angle/cognitiveTask 即能通过
+ * identical 检查）。比较双方从实际题面推断出的 reasoningGoal（`inferAssessment` 纯函数产出）：
+ * 同一 explanation + 同槽位选项 ⇒ 推断签名天然接近；只有选项表达被实质重写，
+ * 签名才会拉开距离——这正是"换了条路测同一知识"的可验证近似。
+ *
+ * 任一为空（推断失败）返回 false：由调用方按"无法证明不同"处理（拒绝），
+ * 不在这里吞掉失败（阈值调整只凭遥测归因，见 ADR-082）。
+ */
+export function isReasoningPathSubstantiallyDifferent(
+  canonical: AssessmentInference,
+  variant: AssessmentInference,
+): boolean {
+  const a = normalizeReasoningSignature(canonical.reasoningGoal);
+  const b = normalizeReasoningSignature(variant.reasoningGoal);
+  if (!a || !b) return false;
+  return cjkDice(a, b) < REASONING_PATH_SIMILARITY_THRESHOLD;
 }
 
 /** 同一题多个已声明变体之间：高度疑似同路径的配对（审计级，不阻断）。 */

@@ -205,17 +205,47 @@ function leadOf(angle: string | undefined, cognitiveTask: string | undefined): s
 }
 
 /**
- * 推断测量意图。抽不到核心断言句时返回 null——调用方应跳过而不是写一条空转的模板。
+ * 从题干兜底抽核心断言（ADR-082）：变体没有自己的 explanation 时，
+ * 用变体题面派生 claim，而不是靠 LLM 自写的 assessment。
+ *
+ * 题干多为提问句而非断言句，故只做最小加工：去单选标记、去提问尾部、截断。
+ * 加工不出有效断言（过短）仍返回 undefined，调用方按 null 处理。
+ */
+function pickQuestionClaim(question: string): string | undefined {
+  const text = question
+    .replace(/[（(]\s*单选\s*[）)]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!text || text.length < CLAIM_MIN) return undefined;
+
+  // 去掉明显的提问尾部
+  const claim = text
+    .replace(/(哪个方案|哪种方案|哪个选项|如何解决|怎么做)[^。！？?]*[？?]?\s*$/i, '')
+    .trim();
+
+  if (claim.length < CLAIM_MIN) return undefined;
+
+  return claim.length > CLAIM_SOFT_MAX
+    ? `${claim.slice(0, CLAIM_SOFT_MAX - 1)}…`
+    : claim;
+}
+
+/**
+ * 推断测量意图。解析与题干都抽不到核心断言句时返回 null——
+ * 调用方应跳过而不是写一条空转的模板。
  */
 export function inferAssessment(input: AssessmentInferenceInput): AssessmentInference | null {
-  const { explanation, angle, cognitiveTask, correctOptions, distractors } = input;
+  const { question, explanation, angle, cognitiveTask, correctOptions, distractors } = input;
   const signals: string[] = [];
 
-  const claim = explanation
+  const explanationClaim = explanation
     ? pickClaim(splitSentences(explanation), distractors, correctOptions)
     : undefined;
+  // 解析优先；解析抽不出才用题干兜底（变体没有自己的 explanation）。
+  const claim = explanationClaim ?? pickQuestionClaim(question);
   if (!claim) return null;
-  signals.push('claim:explanation');
+  signals.push(explanationClaim ? 'claim:explanation' : 'claim:question');
 
   const isMultiple = correctOptions.length > 1;
   const target = isMultiple

@@ -8,7 +8,11 @@ import {
   isGenericReasoningGoal,
   isNearIdenticalPath,
   isReasoningGoalWellFormed,
+  isReasoningPathSubstantiallyDifferent,
+  normalizeReasoningSignature,
+  REASONING_PATH_SIMILARITY_THRESHOLD,
 } from './reasoningPath';
+import type { AssessmentInference } from './assessmentInference';
 
 const CANON = {
   target: '能判断「温度系数 T 增大时软目标分布更平滑」',
@@ -140,5 +144,46 @@ describe('checkKindContentMatch', () => {
 describe('findNearIdenticalPaths', () => {
   it('空列表 → 空', () => {
     expect(findNearIdenticalPaths([])).toEqual([]);
+  });
+});
+
+describe('isReasoningPathSubstantiallyDifferent（ADR-082：推断签名门禁）', () => {
+  const sig = (reasoningGoal: string): AssessmentInference => ({
+    target: 't',
+    reasoningGoal,
+    confidence: 1,
+    signals: [],
+  });
+
+  it('阈值为 82', () => {
+    expect(REASONING_PATH_SIMILARITY_THRESHOLD).toBe(82);
+  });
+
+  it('完全相同 → false（不是新路径）', () => {
+    const g = '先对齐维度；再逐项验证；并排除干扰。';
+    expect(isReasoningPathSubstantiallyDifferent(sig(g), sig(g))).toBe(false);
+  });
+
+  it('只换标点/语气词 → false（规范化后仍同一签名）', () => {
+    const a = sig('先对齐维度；再逐项验证，并排除干扰描述。');
+    const b = sig('先对齐维度,再逐项验证，并排除干扰描述!');
+    expect(isReasoningPathSubstantiallyDifferent(a, b)).toBe(false);
+  });
+
+  it('实质重写（不同选项头）→ true', () => {
+    const a = sig('先对齐维度；据此确认「甲方案成立」；并排除「乙方案」等不成立描述。');
+    const b = sig('先核验前提条件；据此确认「丙路线可行」；并排除「丁路线」等错误说法。');
+    expect(isReasoningPathSubstantiallyDifferent(a, b)).toBe(true);
+  });
+
+  it('空签名 → false（推断失败按无法证明不同处理）', () => {
+    expect(isReasoningPathSubstantiallyDifferent(sig(''), sig('先做点什么'))).toBe(false);
+    expect(isReasoningPathSubstantiallyDifferent(sig('先做点什么'), sig('   '))).toBe(false);
+  });
+});
+
+describe('normalizeReasoningSignature', () => {
+  it('剥除引号与句读标点并小写', () => {
+    expect(normalizeReasoningSignature('先确认「X」成立；再排除。')).toBe('先确认x成立再排除');
   });
 });

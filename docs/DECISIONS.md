@@ -2,6 +2,41 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-082 · Assessment Variant 确定性 path 门禁：不信任 LLM 声明，只比推断签名
+
+- 状态：已采纳 · 2026-09-15
+- 背景：`mode=assessment` 解决了"是什么"，但没解决"是不是真的"——生成器只查
+  `isAssessmentIdentical`（逐字相同），LLM 换几个字、改 angle/cognitiveTask 即通过，
+  "换出版社场景"式候选大批落盘为 assessment variant。`variantChallenger` 的
+  `assessment-identity` 维度是 LLM 判定，防不住同类伪造；而 `assessmentInference`
+  已是现成的纯函数能力，却只用在回填与审计。
+- 决策：
+  1. `reasoningPath.ts` 新增 `isReasoningPathSubstantiallyDifferent`（+ 阈值 82 +
+     `normalizeReasoningSignature`）：比较双方**推断出的** reasoningGoal，Dice<82 判不同。
+     与 `normalizeReasoningText` 分开——后者服务 identical 阻断判定，动它会连带改语义。
+  2. 生成器 `question-variants.ts` 的 path 门禁改为四步：声明完整性（三段式）→
+     与 canonical 显式 assessment 不相同 → 双方分别 `inferAssessment`（题面推断，
+     任一失败即拒）→ 推断签名必须实质不同。不再比较 LLM 声明文本。
+  3. 推断口径防伪造三处取 canonical：explanation、angle、cognitiveTask 全用 canonical 的；
+     只有 question/correctOptions/distractors 取候选（按 canonical answer 索引切分，
+     与 applyVariant 同口径）。LLM 换 metadata 伪造新 path 的路被堵死。
+  4. `assessmentInference.inferAssessment` 增加题干兜底（`pickQuestionClaim`）：解析抽不出时
+     用题面派生 claim（变体没有自己的 explanation）。副作用：回填脚本对"解析烂但题干好"的题
+     会多产出推断（此前为 null）——符合模块"有据抽取"定位，signals 以 `claim:question` 区分。
+  5. assessment 模式只允许 `surface-options | context-options`（kind 轮换 + CLI 硬拒
+     `--kind surface|context`）：不改选项不可能换 reasoning path，放行只会浪费超采预算产出冒充者。
+- 诚实边界（本 ADR 明确承认）：该门禁操作上度量的是**选项表达与 canonical 的距离**
+  （同槽位答案契约下，双方 explanation/lead 相同，签名差异几乎全来自选项头改写度）——
+  它是"不同路径"的可验证近似，不是路径本身的证明。纯换措辞（签名 ≥82）被拦是预期行为；
+  真换路径但选项措辞接近 canonical 的候选会被误杀（宁严勿松：离线超采下重采成本可忽略）。
+  阈值 82 只凭遥测归因调整（`pathreject` 占比异常），不加新门禁。
+- 未改：Dice 35、槽位语义角色、答案契约、challenger（不加文字）、`validate-variants`
+  （生成时门禁，不进发布门禁）、assemble 手工通道（人类撰写 reasoningGoal，仍走 identical 检查）。
+- 验证：`npm test` 全过（含 helper/兜底用例）；`typecheck` 通过；`--kind surface --mode assessment`
+  被 CLI 拒绝；`validate-variants` 池健康（存量资产不受新门禁追溯）。
+- 触发条件：若 pathreject 率持续 >70%（误杀）或 challenger 仍放行大量"同路不同词"（漏杀），
+  回看 82 阈值；若误杀集中在某类题型，优先查推断签名质量（claim/heads），不动阈值。
+
 ## ADR-081 · Variant mode 独立于 generator：四象限 + 落盘显式声明
 
 - 状态：已采纳 · 2026-09-15

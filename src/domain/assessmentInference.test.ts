@@ -56,13 +56,35 @@ describe('inferAssessment', () => {
   });
 
   it('抽不到断言句时返回 null（不用模板文本灌满）', () => {
-    expect(inferAssessment({ ...base, explanation: '短句。' })).toBeNull();
-    expect(inferAssessment({ ...base, explanation: undefined })).toBeNull();
+    expect(inferAssessment({ ...base, explanation: '短句。', question: '短问？' })).toBeNull();
+    expect(inferAssessment({ ...base, explanation: undefined, question: '短问？' })).toBeNull();
+  });
+
+  it('解析抽不出时用题干兜底（ADR-082：变体没有自己的 explanation）', () => {
+    const r = inferAssessment({
+      ...base,
+      explanation: undefined,
+      question: '某服务前缀高度重复却仍重复执行相同前向计算，如何降低这部分开销？',
+    });
+    expect(r).not.toBeNull();
+    expect(r!.target).toContain('某服务前缀高度重复却仍重复执行相同前向计算');
+    expect(r!.signals).toContain('claim:question');
+  });
+
+  it('题干兜底去掉单选标记与提问尾部', () => {
+    const r = inferAssessment({
+      ...base,
+      explanation: undefined,
+      question: '团队要在三个方案里选一个最省运维的，哪个方案满足？（单选）',
+    });
+    expect(r).not.toBeNull();
+    expect(r!.target).not.toContain('单选');
+    expect(r!.target).not.toContain('哪个方案满足');
   });
 
   it('无谓语信号的名词罗列不通过（长度不足 30）', () => {
     expect(inferAssessment({ ...base, explanation: '滑动窗口加边界回退。真正的动机是提升可预测性。' })).not.toBeNull();
-    expect(inferAssessment({ ...base, explanation: '滑动窗口 + 边界回退。' })).toBeNull();
+    expect(inferAssessment({ ...base, explanation: '滑动窗口 + 边界回退。', question: '短问？' })).toBeNull();
   });
 
   it('置信度：完整信号达到默认写入阈值，缺正确项时低于阈值', () => {

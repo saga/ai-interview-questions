@@ -1,6 +1,19 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · ADR-082：Assessment Variant 确定性 path 门禁（不再信任 LLM 声明）
+
+- 新增 `isReasoningPathSubstantiallyDifferent`（阈值 82）：比较双方从题面推断出的
+  reasoningGoal，而非 LLM 自声明文本；`normalizeReasoningSignature` 与 identical 判定解耦。
+- 生成器 path 门禁改为四步（声明完整→显式不同→双方推断→签名实质不同），推断三处取
+  canonical（explanation/angle/task）防 metadata 伪造；`inferAssessment` 增加题干兜底
+  `pickQuestionClaim`（回填脚本对"解析烂但题干好"的题会多产出，signals 以 claim:question 区分）。
+- assessment 模式只允许 `surface-options | context-options`（轮换 + CLI 硬拒）。
+- 诚实边界：门禁操作上度量选项表达距离，是"不同路径"的可验证近似；误杀靠超采重采吸收，
+  阈值只凭 pathreject 遥测调整。challenger/Dice 35/答案契约/发布门禁/assemble 通道不动。
+- 门禁实证：`npm test` 全过；`typecheck` 通过；CLI 拒绝 `--kind surface --mode assessment`；
+  `validate-variants` 池健康（新门禁只跑生成时，不追溯存量）。
+
 ## 2026-09-15 · 零变体区再扩充 20 条变体（`assessment.manual-bn-20260915.json`，池 1715→1735 条）
 
 - missing-only 顺延 10 题（`aws-genai-developer-pro-20/22/25/28/30/32/33/35/37/39`，

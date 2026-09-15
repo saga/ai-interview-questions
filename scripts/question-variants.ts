@@ -74,7 +74,12 @@ import {
 import {
   isAssessmentIdentical,
   isReasoningGoalWellFormed,
+  isReasoningPathSubstantiallyDifferent,
 } from '../src/domain/reasoningPath';
+import {
+  inferAssessment,
+  type AssessmentInference,
+} from '../src/domain/assessmentInference';
 import { checkLanguageSanity, formatSanityIssues } from '../src/domain/languageSanity';
 // cjkDice 定义在 domain/textSimilarity（variant.ts 只 import 未 re-export），
 // 去重度量必须与 validate-variants.ts / domain 用的是同一个实现，故直接从源头导入。
@@ -84,6 +89,13 @@ import type { CompleteFn, GeneratedVariant } from '../src/types';
 import type { Question } from '../src/schemas/question';
 
 const KIND_ORDER: VariantKind[] = ['surface', 'context', 'surface-options', 'context-options'];
+
+/**
+ * assessment 模式允许的 kind（ADR-082）：只有 *-options。
+ * surface / context（不改选项）天然只能是 presentation——选项都不碰，不可能换 reasoning path，
+ * 放进 assessment 管线只会产出"换场景冒充新路径"的候选，浪费超采预算。
+ */
+const ASSESSMENT_KINDS: VariantKind[] = ['surface-options', 'context-options'];
 
 interface CliOptions {
   ids?: string[];
@@ -151,6 +163,11 @@ function parseArgs(argv: string[]): CliOptions {
       console.error(`✗ 未知参数：${a}`);
       process.exit(1);
     }
+  }
+  // ADR-082：assessment 模式只允许 *-options（surface/context 不改选项，不可能换 reasoning path）。
+  if (out.mode === 'assessment' && out.kind && !ASSESSMENT_KINDS.includes(out.kind)) {
+    console.error(`✗ assessment 模式只允许：${ASSESSMENT_KINDS.join(' | ')}（${out.kind} 不改选项，只能走 --mode presentation）`);
+    process.exit(1);
   }
   return out;
 }
@@ -224,6 +241,60 @@ function shortHash(s: string): string {
   return (h >>> 0).toString(36);
 }
 
+/**
+ * 从候选变体的**实际题面**推断 reasoning path（ADR-082 deterministic gate 的输入）。
+ *
+ * 不信任 LLM 自声明的 assessment/angle/cognitiveTask（可伪造），故三处全部取 canonical：
+ *   - explanation 取 canonical（变体没有自己的解析）；
+ *   - angle / cognitiveTask 取 canonical（防止 LLM 靠换 metadata 伪造新 path）；
+ *   - question / correctOptions / distractors 取候选变体（按 canonical answer 索引切分，
+ *     与 applyVariant 的索引映射同口径）。
+ *
+ * 返回 null = 无法从题面确定性推断（调用方按"无法证明不同"拒绝）。
+ */
+function inferVariantPath(
+  q: Question,
+  variant: { question: string; options?: string[] },
+): AssessmentInference | null {
+  if (!q.formats.choice || !variant.options) return null;
+
+  const answer = q.formats.choice.answer;
+  const correctOptions = answer
+    .map((i) => variant.options?.[i])
+    .filter((v): v is string => Boolean(v));
+  const distractors = variant.options.filter((_, i) => !answer.includes(i));
+
+  return inferAssessment({
+    // ★ 使用 canonical explanation，而不是 LLM 自己写的 assessment
+    explanation: q.explanation,
+    // ★ 使用 canonical 的 angle/task，防止 LLM 通过换 metadata 伪造新 path
+    angle: q.angle,
+    cognitiveTask: q.cognitiveTask,
+    question: variant.question,
+    correctOptions,
+    distractors,
+  });
+}
+
+/**
+ * 从 canonical 自身推断 reasoning path（与 inferVariantPath 同口径，可比）。
+ * canonical 推断失败（返回 null）时调用方同样拒绝——没有基准就无法证明"不同"。
+ */
+function inferCanonicalPath(q: Question): AssessmentInference | null {
+  if (!q.formats.choice) return null;
+  const answer = q.formats.choice.answer;
+  return inferAssessment({
+    explanation: q.explanation,
+    question: q.question,
+    angle: q.angle,
+    cognitiveTask: q.cognitiveTask,
+    correctOptions: answer
+      .map((i) => q.formats.choice!.options[i])
+      .filter((v): v is string => Boolean(v)),
+    distractors: q.formats.choice.options.filter((_, i) => !answer.includes(i)),
+  });
+}
+
 function deriveSlug(opts: CliOptions): string {
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '');
   if (opts.ids?.length) return `ids-${shortHash(opts.ids.join(','))}`;
@@ -287,9 +358,10 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
   let seq = existing.length;
 
   if (ctx.opts.dryRun) {
+    const rotation = ctx.opts.mode === 'assessment' ? ASSESSMENT_KINDS : KIND_ORDER;
     const kinds = ctx.opts.kind
       ? [ctx.opts.kind]
-      : KIND_ORDER.slice(0, ctx.opts.count);
+      : rotation.slice(0, ctx.opts.count);
     const funnel = ctx.opts.challenger
       ? `超采 ${budget} 候选 → 质询评分 → 多样性排序取 top ${want}`
       : `生成 ${budget} 候选 → 确定性门禁 + 多样性排序取 top ${want}（challenger 已关闭）`;
@@ -302,7 +374,12 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
   // ── 阶段 1：超采 + 确定性门禁 + 去重 ──
   const survivors: Array<{ kind: VariantKind; shape: VariantShape; face: VariantMeasurementFace }> = [];
   while (survivors.length < budget && stats.candidates < budget * 2) {
-    const kind = ctx.opts.kind ?? KIND_ORDER[stats.candidates % KIND_ORDER.length];
+    // ADR-082：assessment 只轮换 *-options；presentation 才允许 surface/context。
+    const kind =
+      ctx.opts.kind ??
+      (assessmentMode
+        ? ASSESSMENT_KINDS[stats.candidates % ASSESSMENT_KINDS.length]
+        : KIND_ORDER[stats.candidates % KIND_ORDER.length]);
     let gen: GeneratedVariant;
     try {
       if (assessmentMode) {
@@ -348,18 +425,35 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
       continue;
     }
     if (assessmentMode) {
-      // reasoning-path 门禁（P0-2/P0-3）：assessment 模式落盘的每一条都必须
-      // 自带「先做什么 → 再做什么 → 排除什么」，且与 canonical 实质不同。
-      // 未声明新路径的候选在这里被拦下——不许冒充 assessment variant。
+      // reasoning-path 门禁（P0-2/P0-3 + ADR-082 deterministic gate）：assessment 模式落盘的
+      // 每一条都必须自带有效三段式声明，**且**从实际题面推断出的 path 必须与 canonical 实质不同。
+      // 不比较 LLM 自声明的 assessment——声明可伪造（换几个字即过 identical 检查），
+      // 只比较双方从题面推断出的签名（inferAssessment 纯函数产出）。
       const face = gen as AssessmentVariantCandidate;
+      // 1. LLM 必须提供完整 reasoning declaration
       if (!face.assessment || !isReasoningGoalWellFormed(face.assessment.reasoningGoal)) {
         stats.pathreject++;
-        console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：reasoningGoal 不是「先→再→排除」三段式`);
+        console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：reasoningGoal 不是有效三段式`);
         continue;
       }
+      // 2. 与 canonical 的显式 assessment 不能相同
       if (q.assessment && isAssessmentIdentical(face.assessment, q.assessment)) {
         stats.pathreject++;
-        console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：与 canonical 测量意图逐字相同，不是新路径`);
+        console.warn(`    ✗ ${q.id} 推理链不合格（${kind}）：assessment 与 canonical 相同`);
+        continue;
+      }
+      // 3. ★ 从实际题面重新推断双方 reasoning path（都不用 LLM 的声明）
+      const variantInferred = inferVariantPath(q, { question: gen.question, options: gen.options });
+      const canonicalInferred = inferCanonicalPath(q);
+      if (!variantInferred || !canonicalInferred) {
+        stats.pathreject++;
+        console.warn(`    ✗ ${q.id} 推理链无法从实际题面确定性推断（${kind}）`);
+        continue;
+      }
+      // 4. ★ 推断签名必须实质不同：只是换措辞/场景的候选在这里被拦下
+      if (!isReasoningPathSubstantiallyDifferent(canonicalInferred, variantInferred)) {
+        stats.pathreject++;
+        console.warn(`    ✗ ${q.id} assessment 只是换措辞/场景，没有形成新的 reasoning path（${kind}）`);
         continue;
       }
     }
