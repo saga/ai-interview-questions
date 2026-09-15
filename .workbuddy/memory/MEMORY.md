@@ -89,3 +89,22 @@
   不必重跑 LLM。只改 `explanation`/`source`/`misconceptionMap` **不影响**变体哈希（不在 snapshot 里）。
 - **ADR-079 §2**：纯自包含计算题（如非超售 Fat-Tree 的双切带宽由较小侧决定）**不补 source**，
   如实接受残留即可，不要为凑指标编造来源。
+
+## 手工写变体的四个硬约束（2026-09-15 起）
+批次惯例：**10 个 canonical × (surface-options + context-options) = 20 条**，文件名
+`assessment.manual-<xx>-<date>.json`，slug `manual-<xx>`，草稿放 temp/ 用完即删。
+组装：`node node_modules/vite-node/dist/cli.mjs scripts/assemble-variants.ts <draft.json> <out> <slug>`。
+按出错频率排序的坑：
+1. **`optionChangedTooMuch`（CJK-Dice <35 判 option-semantic-drift）**——中文选项改写时换掉核心技术词
+   （「KV 压缩」→「键值压缩」、「Agent」→「智能体」）就容易跌破 35。对策：保留原句主干词，
+   只换句式/修饰，别动术语。
+2. **`detectOptionLengthBias`（strong 与 soft 都阻断）**——正确项为全局最长 **且** 最短项是干扰项
+   **且** 差距 ≥1.8× 即拒；`meanCorrect/meanDistractor ≥1.8` 也拒。4 选 1 最容易踩。
+   对策：四个选项字数拉近，或让正确项**不要**是最长的（把长干扰项写足）。
+3. **sibling 近重复（选项级 Dice ≥88）**——题干不进相似度，只改题干必死。必须给 surface / context
+   **各写一套选项**，且两套之间做「重述级」差异（换叙事结构，不只是同义替换）。
+4. **`extra-hint` 只看题干里的拉丁词**（正确项独有 + 干扰项没有 + canonical 题干没有 + 不在
+   topic/tags 主题词里）→ 题干尽量用中文表述（「词元」「键值」「专家路由」而非 token / KV / MoE），
+   可天然规避；选项里出现拉丁词**不影响**该检查。
+另有 `checkKindContentMatch`：context 题干与 canonical 的 CJK-Dice 必须 <95（否则判没真加场景）。
+`reasoningGoal` 必须含「先…」+（再|然后|据此…）+（排除|逐项|验证|比较|甄别）三段信号。

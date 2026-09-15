@@ -1,6 +1,16 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · ADR-082 追补：声明相似硬门禁 + challenger 前提修正
+
+- 生成器 identical 检查升级为 `isReasoningPathTooSimilar`（逐字相同或 target≥95 且 goal≥90
+  即 pathreject）；`isNearIdenticalPath` 本体不动（仍是审计口径）。
+- 实测：存量 1650 条 assessment 资产中声明门禁开火 0 条、推断门禁（82）开火 391 条——
+  两门禁互补（前者拦"声明都懒得改"，后者拦"声明改了但表达没实质重写"）；391 条不追溯，
+  清理需另起任务。
+- `variantChallenger` 前提句修正：assessment 模式 angle/cognitiveTask/assessment 可声明新值。
+- 门禁实证：`npm test` 全过；`typecheck` 通过；`validate-variants` 池健康。
+
 ## 2026-09-15 · ADR-082：Assessment Variant 确定性 path 门禁（不再信任 LLM 声明）
 
 - 新增 `isReasoningPathSubstantiallyDifferent`（阈值 82）：比较双方从题面推断出的
@@ -13,6 +23,24 @@
   阈值只凭 pathreject 遥测调整。challenger/Dice 35/答案契约/发布门禁/assemble 通道不动。
 - 门禁实证：`npm test` 全过；`typecheck` 通过；CLI 拒绝 `--kind surface --mode assessment`；
   `validate-variants` 池健康（新门禁只跑生成时，不追溯存量）。
+
+## 2026-09-15 · 零变体区再扩充 20 条变体（`assessment.manual-bo-20260915.json`，池 1735→1755 条）
+
+- missing-only 顺延 10 题，**跨题面类型混选**（4 道多选 + 6 道单选），兼顾零变体补齐与
+  多选占比：`sebastian-raschka-2026-08-134/153/155/156`（架构阅读/混合注意力/激活异常/评测污染，
+  多选）+ `aws-waf-lens-2026-08-09/14/15`（数据投毒/恢复目标/工具权限，单选）
+  + `p0-gqa-mechanism-01`、`dl-13`、`stat-03`（GQA/变分后验/交叉熵，单选）。
+- 每题各写 1 条 surface-options + 1 条 context-options，共 20 条 assessment 变体
+  （mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径，reasoningGoal 均为「先→再→排除」三段式）。
+- 初稿 2 处门禁改写：`aws-waf-lens-2026-08-15` context 选项 D 的 CJK-Dice <35 判 option-semantic-drift，
+  贴近原句主干后通过；随后同一题撞 option-length-bias（正确项 36 vs 最短干扰 17 = 2.1×），
+  把三个干扰项补到 25~26 字后压回 1.44×。
+- 题干约束落实：全部 variant 题干避开正确项独有拉丁词（token / MoE / KV / cache / RNN 系），
+  改用「词元 / 键值 / 专家路由」等中文表述，extra-hint 0 新增；数值与限定词无丢失
+  （`difficultyDrivers` 审计仍 30 条且新批次 0 条）。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 68.8%→69.5%，0 变体题 447→437，
+  全部阻断项 0）；`validate:questions` 1434 题 / 153 节点 ✓；
+  `src/data+schemas+domain` 490/490 ✓。组装草稿放 temp/ 用完即删，未落仓。
 
 ## 2026-09-15 · 零变体区再扩充 20 条变体（`assessment.manual-bn-20260915.json`，池 1715→1735 条）
 

@@ -36,6 +36,16 @@
   被 CLI 拒绝；`validate-variants` 池健康（存量资产不受新门禁追溯）。
 - 触发条件：若 pathreject 率持续 >70%（误杀）或 challenger 仍放行大量"同路不同词"（漏杀），
   回看 82 阈值；若误杀集中在某类题型，优先查推断签名质量（claim/heads），不动阈值。
+- 追补（2026-09-15，生成期声明相似门禁）：
+  1. 新增 `isReasoningPathTooSimilar`（= identical，或 target≥95 且 goal≥90），生成器用它
+     替代裸 `isAssessmentIdentical` 检查：声明只换几个字即被拦。`isNearIdenticalPath` 本体不动
+     （仍是池审计的"疑似"，不阻断；新函数另起名，调用方一看便知走哪条链路）。
+  2. 实测互补关系（存量 1650 条 assessment 资产）：声明门禁（95/90）开火 0 条，
+     推断门禁（82）开火 391 条——存量声明全部改写充分，真正的冒充信号只在表达距离上可见。
+     两门禁互补不冗余：前者拦"声明都懒得改"，后者拦"声明改了但选项没实质重写"。
+     391 条为前瞻数据，不追溯存量；若要清理需另起池审计任务。
+  3. `variantChallenger` prompt 前提句修正：angle/cognitiveTask/assessment 在 assessment 模式下
+     可声明新值（此前写"均由程序继承"已过时），presentation 模式仍须与原题一致。
 
 ## ADR-081 · Variant mode 独立于 generator：四象限 + 落盘显式声明
 
