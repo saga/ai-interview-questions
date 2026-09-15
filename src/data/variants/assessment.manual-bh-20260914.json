@@ -1,0 +1,926 @@
+{
+  "version": 1,
+  "generatedAt": 1789420000000,
+  "promptVersion": "v1",
+  "variants": {
+    "llm-web-text-extraction-and-line-correction-comparison-01": [
+      {
+        "id": "llm-web-text-extraction-and-line-correction-comparison-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "新 CommonCrawl 落地要定抽取管线，甲方案直接消费官方 WET，乙方案走 WARC 加 DOM 抽取与行级清洗。评审结论，哪些合理？",
+        "options": [
+          "甲方案的 WET 残留大量菜单页脚碎片，直接训练达不到顶级预训练质量",
+          "乙方案用 DOM 解析网页树状结构定位正文，提取纯度显著高于 WET",
+          "两条管线质量没有实质差异，选 WET 省算力是整体最优决策",
+          "乙方案跑通 DOM 抽取后，行级二次清洗属于冗余环节能够删掉"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为 CommonCrawl 落地选出 WARC 加 DOM 加行级清洗的管线并排除等价与冗余论",
+          "reasoningGoal": "先把两条管线的模板残留与提取纯度差异摆出来；再逐项验证选型结论是否成立；并排除质量等价、清洗冗余等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-08492b56",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-web-text-extraction-and-line-correction-comparison-01",
+          "topic": "llm-web-text-extraction-and-line-correction",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "LLM",
+            "Text Extraction",
+            "CommonCrawl"
+          ],
+          "question": "对比两条 CommonCrawl 处理管线：管线甲直接消费官方 WET，管线乙从 WARC 用 DOM 正文抽取加正则刷洗与行级二次清洗。下列哪些结论是合理的？",
+          "options": [
+            "管线甲的 WET 残留大量菜单页脚碎片，直接训练达不到顶级预训练质量",
+            "管线乙用 DOM 解析网页树状结构定位正文，提取纯度显著高于 WET",
+            "两条管线质量无实质差异，选 WET 省算力是整体最优决策",
+            "管线乙跑通 DOM 抽取后，行级二次清洗属于冗余环节可以删掉"
+          ]
+        },
+        "contentHash": "fnv1a-f4c4359e"
+      }
+    ],
+    "multi-agent-communication-protocol-scenario-01": [
+      {
+        "id": "multi-agent-communication-protocol-scenario-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "投研多智能体连续跑了 30 轮后终稿口径与源数据对不上，状态全靠自由文本对话传递。修复策略，哪些有效？",
+        "options": [
+          "关键口径写入带明确字段的结构化研报，后续 Agent 只读研报不再翻长对话",
+          "多空分歧留在自然语言辩论区碰撞证据，定稿结论回写结构化状态",
+          "把历史窗口截断到最近 5 轮，丢掉早期信息以保证口径表面一致",
+          "废除全部自然语言通道，所有 Agent 只准用 JSON 字段通信"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从终稿口径漂移的故障诊断出自由文本传状态的病根并选出对症修复",
+          "reasoningGoal": "先从口径对不上回溯到转述改写与无人复核两处病根；再逐项验证修复策略是否对症；并排除截断历史、废除自然语言等过激做法。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2deff023",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-agent-communication-protocol-scenario-01",
+          "topic": "multi-agent-communication-protocol",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "apply",
+          "tags": [
+            "multi-agent",
+            "communication-protocol",
+            "architecture"
+          ],
+          "question": "某金融研报多智能体连续协同 30 轮后，终稿引用的早期营收口径与源数据不一致。排查发现全程只靠自由文本对话传递状态，且无人复核过中间口径。要修复该系统，下列哪些策略是有效的？",
+          "options": [
+            "关键口径写入带明确字段的结构化研报，后续 Agent 只读研报不再翻长对话",
+            "多空分歧保留在自然语言辩论区碰撞证据，定稿结论回写结构化状态",
+            "把历史窗口截断到最近 5 轮，丢掉早期信息以保证口径表面一致",
+            "废除全部自然语言通道，所有 Agent 只许用 JSON 字段通信"
+          ]
+        },
+        "contentHash": "fnv1a-de8a687f"
+      }
+    ],
+    "multi-agent-dialectical-debate-comparison-01": [
+      {
+        "id": "multi-agent-dialectical-debate-comparison-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "投研系统选型会在单 Agent 自检与看涨看跌多轮辩论之间摇摆，争议是成本与效果。对比判断，哪些正确？",
+        "options": [
+          "对立立场迫使系统同时深挖上行催化与下行风险，打破单 Agent 自检的确认偏误",
+          "多轮质验暴露逻辑盲区，辩论记录沉淀为交易模块可引用的结构化输入",
+          "看涨看跌辩论通过对抗训练更新底层 LLM 权重，多轮即多步梯度更新",
+          "单 Agent 只要提示词写得好便能达到同样效果，辩论只是成本浪费"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能权衡对抗辩论相对单 Agent 自检在纠偏收益与推理成本上的取舍",
+          "reasoningGoal": "先摆出辩论在证据完备与盲区暴露上的收益与多轮成本；再逐项验证对比判断是否成立并比较代价；据此排除权重更新论、提示词万能论等概念错配描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-68f03d23",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-agent-dialectical-debate-comparison-01",
+          "topic": "multi-agent-dialectical-debate",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "multi-agent",
+            "dialectical-debate",
+            "mechanism"
+          ],
+          "question": "某投研系统要在单 Agent 自检与看涨看跌多轮辩论之间选型。关于两种方案的对比，下列哪些判断是正确的？",
+          "options": [
+            "对立立场迫使系统同时深挖上行催化与下行风险，打破单 Agent 自检的确认偏误",
+            "多轮质验暴露逻辑盲区，辩论记录沉淀为交易模块可引用的结构化输入",
+            "看涨看跌辩论通过对抗训练更新底层 LLM 权重，多轮即多步梯度更新",
+            "单 Agent 只要提示词写得好就能达到同样效果，辩论只是成本浪费"
+          ]
+        },
+        "contentHash": "fnv1a-c0ca0244"
+      }
+    ],
+    "multi-agent-role-specialization-mechanism-01": [
+      {
+        "id": "multi-agent-role-specialization-mechanism-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "交易系统拆成分析、研究、交易、风控四类专职 Agent 后事故率下降。解释分工的起效机理，哪些正确？",
+        "options": [
+          "专职 Agent 只处理同类输入，异构信息不再互扰，单体认知负荷下降",
+          "独立风控在执行前做硬性校验，交易 Agent 的乐观倾向成单前被纠正",
+          "角色越多股价预测越准，预测精度随 Agent 节点数线性上涨",
+          "角色分工的核心收益是节省算力，对决策质量没有实质影响"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能把事故率下降的治理效果对应到输入隔离与事前拦截两条机理",
+          "reasoningGoal": "先把事故率下降映射到输入隔离与事前校验两条链路；再逐项验证机理判断是否成立；并排除节点数抬精度、只省算力等归因错位描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-96235d50",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "multi-agent-role-specialization-mechanism-01",
+          "topic": "multi-agent-role-specialization",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-agent",
+            "role-specialization",
+            "system-design"
+          ],
+          "question": "把交易系统拆成分析、研究、交易、风控四类专职 Agent 后，系统性风险明显下降。关于这种分工起作用的内在机制，下列哪些解释是正确的？",
+          "options": [
+            "专职 Agent 只处理同类输入，异构信息不再互扰，单体认知负荷下降",
+            "独立风控在执行前做硬性校验，交易 Agent 的乐观倾向成单前被纠正",
+            "角色越多股价预测越准，预测精度随 Agent 节点数线性上涨",
+            "角色分工的核心收益是节省算力，对决策质量没有实质影响"
+          ]
+        },
+        "contentHash": "fnv1a-faa2e775"
+      }
+    ],
+    "neural-lm-hidden-layer-bottleneck-scenario-01": [
+      {
+        "id": "neural-lm-hidden-layer-bottleneck-scenario-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "某团队要在十亿词语料上训练高维词向量，但算力卡在投影到隐藏层的密集乘法上。工程决策，哪些合理？",
+        "options": [
+          "砍掉非线性隐藏层转 Log-linear 结构，直接消除密集乘法主导项",
+          "接受复杂模式表达能力下降，但向量加减仍保留语义与语法规律",
+          "增大隐藏层维度 H，用更大容量换取更快的训练速度",
+          "去掉隐藏层后词向量只剩线性组合，无法表达任何语义相似度"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从算力卡死的 profiling 出发开出去隐藏层的工程决策并守住语义底线",
+          "reasoningGoal": "先从算力卡死定位到密集乘法主导项与扩规模的矛盾；再逐项验证工程决策是否对症；并排除堆隐藏层维度、去隐藏层即丢语义等误判描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a8e10289",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "neural-lm-hidden-layer-bottleneck-scenario-01",
+          "topic": "neural-lm-hidden-layer-bottleneck",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "apply",
+          "tags": [
+            "NNLM",
+            "RNNLM",
+            "Word2Vec",
+            "Computational Complexity"
+          ],
+          "question": "某团队要在十亿词语料上训练高维词向量，但算力卡死在 NNLM 投影到隐藏层的 N×D×H 密集乘法上。下列哪些工程决策是合理的？",
+          "options": [
+            "砍掉非线性隐藏层转 Log-linear 结构，直接消除 N×D×H 主导项",
+            "接受复杂模式表达能力下降，但向量加减仍保留语义与语法规律",
+            "增大隐藏层维度 H，用更大容量换取更快的训练速度",
+            "去掉隐藏层后词向量只剩线性组合，无法表达任何语义相似度"
+          ]
+        },
+        "contentHash": "fnv1a-8758d4de"
+      }
+    ],
+    "vector-offset-relational-analogy-scenario-01": [
+      {
+        "id": "vector-offset-relational-analogy-scenario-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "类比检索服务返回结果恒为输入词本身，偶发语义无关词，值班怀疑实现写错。排查修复，哪些是对的？",
+        "options": [
+          "加上输入词过滤：未剔除输入词时最近邻恒为输入词本身",
+          "核对运算方向是否为减源加目标，方向写反会导致语义完全跑偏",
+          "把检索距离从余弦换成欧氏距离，平凡解故障即可消除",
+          "把词库再扩大一个量级，方向与过滤问题自然被稀释掉"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从平凡解症状诊断出未过滤输入词与方向写反两处实现故障",
+          "reasoningGoal": "先从恒返回输入词定位到过滤与方向两处故障点；再逐项验证修复方案是否对症；并排除换度量、扩词库等治标不治本的修复。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9151186b",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "vector-offset-relational-analogy-scenario-01",
+          "topic": "vector-offset-relational-analogy",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "apply",
+          "tags": [
+            "Word2Vec",
+            "Vector Offset",
+            "Relational Analogies"
+          ],
+          "question": "某类比检索服务上线后，查询结果恒为题目里的输入词本身，偶尔还返回语义毫不相关的词。排查实现后，下列哪些修复是对的？",
+          "options": [
+            "加上输入词过滤：未剔除输入词时最近邻恒为输入词本身",
+            "核对运算方向是否为减源加目标，方向写反会导致语义完全跑偏",
+            "把检索距离从余弦换成欧氏距离，平凡解故障即可消除",
+            "把词库再扩大一个量级，方向与过滤问题自然被稀释掉"
+          ]
+        },
+        "contentHash": "fnv1a-a192074b"
+      }
+    ],
+    "word2vec-cbow-vs-skipgram-complexity-tradeoff-01": [
+      {
+        "id": "word2vec-cbow-vs-skipgram-complexity-tradeoff-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "长距离搭配覆盖需求下，团队在 CBOW 加窗口 N 与 Skip-gram 调距离 C 之间做工程选型。权衡判断，哪些合理？",
+        "options": [
+          "要长距离搭配且算力足可选 Skip-gram 调大 C，代价是投影与输出被整体乘数同步放大",
+          "要宽上下文加高吞吐可选 CBOW 加大 N，投影线性变大但输出仍只分类一次",
+          "Skip-gram 调大 C 后显存爆炸，主因是投影矩阵维度同步乘 C 变大",
+          "相同窗口下两者单样本开销相同，CBOW 与 Skip-gram 可以随意互换"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能按场景在 C 做整体乘数与 N 只放大投影之间选出匹配的扩窗路线",
+          "reasoningGoal": "先把长距离需求换算成两条路线各自的开销缩放形态；再逐项验证选型判断是否成立；据此排除开销相同可互换、C 胀投影等错误权衡。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6b90b94d",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "word2vec-cbow-vs-skipgram-complexity-tradeoff-01",
+          "topic": "word2vec-cbow-vs-skipgram-complexity",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "Word2Vec",
+            "CBOW",
+            "Skip-gram",
+            "Computational Complexity"
+          ],
+          "question": "语料需要覆盖长距离搭配，团队在 CBOW 加大窗口 N 与 Skip-gram 调大距离 C 之间选型。从开销缩放的权衡看，下列哪些判断是合理的？",
+          "options": [
+            "要长距离搭配且算力足可选 Skip-gram 调大 C，代价是投影与输出被整体乘数同步放大",
+            "要宽上下文加高吞吐可选 CBOW 加大 N，投影线性变大但输出仍只分类一次",
+            "Skip-gram 调大 C 后显存爆炸，主因是投影矩阵维度同步乘 C 变大",
+            "相同窗口下两者单样本开销相同，CBOW 与 Skip-gram 可随意互换"
+          ]
+        },
+        "contentHash": "fnv1a-fa9a081d"
+      }
+    ],
+    "hierarchical-softmax-huffman-optimization-calculation-01": [
+      {
+        "id": "hierarchical-softmax-huffman-optimization-calculation-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "词表 V=1,000,000、Unigram 困惑度约 12,000 的模型要定输出层实现。核对单步评估量的定量推断，哪些正确？",
+        "options": [
+          "Huffman 树单步期望约 13~14 次评估，约为平衡树 20 次的七成",
+          "Huffman 树单步期望约为 log2(V)减 log2(困惑度)，即 6 次左右",
+          "若词频被抹平到均匀分布，Huffman 期望回升到约 20 次，加速消失",
+          "Huffman 树把叶子节点从 100 万压缩到 1.2 万量级，内存占用同比缩小"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能代入词表与困惑度算出两种树的单步评估量并判定抹平后的回升",
+          "reasoningGoal": "先把 V 与困惑度代入算出两种树的评估量级与比例；再逐项验证数值推断是否成立；据此排除差值公式、叶子压缩论等错误计算。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2be1edbf",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "hierarchical-softmax-huffman-optimization-calculation-01",
+          "topic": "hierarchical-softmax-huffman-optimization",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "Word2Vec",
+            "Hierarchical Softmax",
+            "Huffman Tree"
+          ],
+          "question": "某语言模型词表 V=1,000,000，训练语料的 Unigram 困惑度约为 12,000。分别用平衡二叉树和 Huffman 树实现 Hierarchical Softmax，关于单步输出评估量的定量推断，下列哪些是正确的？",
+          "options": [
+            "Huffman 树单步期望约 13~14 次评估，约为平衡树 20 次的七成",
+            "Huffman 树单步期望约为 log2(V)减 log2(困惑度)，即 6 次左右",
+            "若词频被抹平到均匀分布，Huffman 期望回升到约 20 次，加速消失",
+            "Huffman 树把叶子节点从 100 万压缩到 1.2 万量级，内存占用同比缩小"
+          ]
+        },
+        "contentHash": "fnv1a-cbd7115c"
+      }
+    ],
+    "sebastian-raschka-2026-08-66": [
+      {
+        "id": "sebastian-raschka-2026-08-66__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "推理服务要给验证器加早停省预算。上线条件，哪些必须满足？（请选择两个）",
+        "options": [
+          "验证器在当前任务上的通过信号具有足够可靠性",
+          "提前停止造成的质量损失在 SLO 内可以接受",
+          "中间文本一旦出现答案数字都可以无条件早停",
+          "早停不需要记录被截掉的推理预算"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能开出验证器早停上线的可靠性与质量边界两条准入条件",
+          "reasoningGoal": "先把省预算诉求换算成可靠性与质量损失两条准线；再逐项验证上线条件是否成立；并排除见数字就停、不记预算等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-51728ddb",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-66",
+          "topic": "inference-optimization",
+          "subtopic": "早停与验证",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning-effort",
+            "early-exit",
+            "verification"
+          ],
+          "question": "在推理过程中使用验证器进行早停，哪些条件通常需要满足？（请选择两个）",
+          "options": [
+            "验证器对当前任务的通过信号具有足够可靠性",
+            "提前停止带来的质量损失在 SLO 内可接受",
+            "任何中间文本出现答案数字都可以无条件早停",
+            "早停不需要记录被截断的推理预算"
+          ]
+        },
+        "contentHash": "fnv1a-228ebbf9"
+      }
+    ],
+    "sebastian-raschka-2026-08-68": [
+      {
+        "id": "sebastian-raschka-2026-08-68__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "新推理模型的发布评审要求证明泛化而非记忆。测试组合，哪些更有区分度？（请选择三个）",
+        "options": [
+          "使用未见过的题目表述和数值",
+          "组合已知能力形成新的任务结构",
+          "报告不同难度和领域的分桶结果",
+          "只重复训练集原题并把高分视为泛化证明"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能配出以新表述新组合加分桶报告为核心的泛化验证组合",
+          "reasoningGoal": "先把泛化证明拆成新表述、新组合、分桶报告三块证据；再逐项验证测试设计是否有区分度；并排除原题复测当泛化等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c1a80046",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-68",
+          "topic": "evaluation",
+          "subtopic": "推理泛化",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "generalization",
+            "evaluation"
+          ],
+          "question": "验证推理能力是否真正泛化时，哪些测试设计更有区分度？（请选择三个）",
+          "options": [
+            "使用未见过的题目表述和数值",
+            "组合已知能力形成新的任务结构",
+            "报告不同难度和领域的分桶结果",
+            "只重复训练集原题并把高分视为泛化证明"
+          ]
+        },
+        "contentHash": "fnv1a-e4767b75"
+      }
+    ],
+    "sebastian-raschka-2026-08-125": [
+      {
+        "id": "sebastian-raschka-2026-08-125__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "MoE 推理集群出现热点专家过载、尾延迟抖动。复盘负载不均衡的后果，哪些成立？（请选择三个）",
+        "options": [
+          "部分专家过载并形成计算瓶颈",
+          "token 可能因容量限制被丢弃或转移",
+          "跨设备专家通信和尾延迟可能上升",
+          "只要总参数量不变，路由不均衡就不会影响训练"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从过载与抖动的症状还原专家不均衡的容量与通信后果链",
+          "reasoningGoal": "先从过载抖动回溯到容量瓶颈与通信放大两条后果链；再逐项验证后果判断是否成立；并排除总量不变即无害等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-2b7840ec",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-125",
+          "topic": "moe",
+          "subtopic": "专家负载均衡",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "moe"
+          ],
+          "question": "MoE 路由出现专家负载不均衡时，可能产生哪些后果？（请选择三个）",
+          "options": [
+            "部分专家过载并形成计算瓶颈",
+            "token 可能因容量限制被丢弃或转移",
+            "跨设备专家通信和尾延迟可能上升",
+            "只要总参数量不变，路由不均衡就不会影响训练"
+          ]
+        },
+        "contentHash": "fnv1a-54671498"
+      }
+    ],
+    "sebastian-raschka-2026-08-128": [
+      {
+        "id": "sebastian-raschka-2026-08-128__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "推理团队要给 KV 缓存瘦身，候选 MLA 类压缩注意力。核对基本思路，哪些正确？（请选择两个）",
+        "options": [
+          "将部分 KV 信息表示为更低维的潜在状态",
+          "通过压缩降低解码时需要缓存的表示规模",
+          "无需任何额外投影或重构操作",
+          "压缩后可以保证精确保留全部原始 KV 信息"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为 KV 瘦身选出低维潜在表示压缩的路线并守住有损边界",
+          "reasoningGoal": "先把瘦身诉求映射到压缩表示与缓存规模两处着力点；再逐项验证思路判断是否成立；并排除无需重构、精确无损等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-760eea28",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-128",
+          "topic": "inference-optimization",
+          "subtopic": "MLA 与压缩注意力",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "raschka",
+            "architecture",
+            "mla"
+          ],
+          "question": "多头潜在注意力或压缩注意力减少 KV 成本的基本思路是什么？（请选择两个）",
+          "options": [
+            "将部分 KV 信息表示为更低维的潜在状态",
+            "通过压缩降低解码时需要缓存的表示规模",
+            "无需任何额外投影或重构操作",
+            "压缩后可以保证精确保留全部原始 KV 信息"
+          ]
+        },
+        "contentHash": "fnv1a-510b47a3"
+      }
+    ],
+    "sebastian-raschka-2026-08-130": [
+      {
+        "id": "sebastian-raschka-2026-08-130__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "线上把 KV 头砍半后缓存降了，但长上下文问答质量飘了。要盯的现象，哪些值得重点观察？（请选择三个）",
+        "options": [
+          "解码内存占用和带宽是否下降",
+          "长上下文检索和任务质量是否回归",
+          "不同查询头共享表示后的表达能力变化",
+          "KV 头越少就必然在所有硬件和任务上更优"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从质量飘移的回归症状开出共享后的表达与检索观察清单",
+          "reasoningGoal": "先从质量飘移定位到表示多样性与检索能力的受损嫌疑；再逐项验证观察项是否对症；并排除头越少恒更优等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-016e4010",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-130",
+          "topic": "attention",
+          "subtopic": "注意力头共享取舍",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "attention"
+          ],
+          "question": "减少 KV 头数量时，哪些现象值得重点观察？（请选择三个）",
+          "options": [
+            "解码内存占用和带宽是否下降",
+            "长上下文检索和任务质量是否回归",
+            "不同查询头共享表示后的表达能力变化",
+            "KV 头越少就必然在所有硬件和任务上更优"
+          ]
+        },
+        "contentHash": "fnv1a-9c9f2ee9"
+      }
+    ],
+    "sebastian-raschka-2026-08-39": [
+      {
+        "id": "sebastian-raschka-2026-08-39__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "翻译模型要定编解码器的注意力装配。模块组合，哪些合理？（请选择两个）",
+        "options": [
+          "编码器可用双向自注意力建模输入序列",
+          "解码器可先做因果自注意力，再做读取编码器输出的交叉注意力",
+          "解码器必须只使用双向自注意力才能自回归生成",
+          "交叉注意力只能读取解码器自己的历史 token"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为编解码翻译模型配出双向编码加因果解码加交叉读取的装配",
+          "reasoningGoal": "先把翻译建模拆成输入理解、自回归约束、跨端读取三块需求；再逐项验证装配是否成立；并排除解码器纯双向、交叉读自身等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-cff6eb69",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-39",
+          "topic": "self-attention",
+          "subtopic": "自注意力与交叉注意力选型",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sebastian-raschka",
+            "attention",
+            "system-design"
+          ],
+          "question": "设计一个文本到文本的编码器—解码器模型时，哪些模块组合是合理的？（请选择两个）",
+          "options": [
+            "编码器可用双向自注意力建模输入序列",
+            "解码器可先做因果自注意力，再做读取编码器输出的交叉注意力",
+            "解码器必须只使用双向自注意力才能自回归生成",
+            "交叉注意力只能读取解码器自己的历史 token"
+          ]
+        },
+        "contentHash": "fnv1a-25dab374"
+      }
+    ],
+    "llm-data-filtering-heuristics-design-01": [
+      {
+        "id": "llm-data-filtering-heuristics-design-01__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "技术文档语料清洗管线评审：代码公式密集，符号行删多了会误伤内容。管线设计，哪些合理？",
+        "options": [
+          "对代码围栏、公式与编号列表设白名单，而不是对含符号的行整行丢弃",
+          "统计单文档行级删除占比，超阈值整页丢弃以拦截碎片文档",
+          "为简化管线统一删除所有含符号或数字的行，数量表达损失可以接受",
+          "文档语言识别分高时可省略全部行级规则，直接入库"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为技术语料配出行级白名单加删除占比联动的清洗管线",
+          "reasoningGoal": "先把误伤风险换算成白名单保护与文档级止损两处设计；再逐项验证管线设计是否成立；并排除统一删除、省略行级规则等不成立设计。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f31fa8f2",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "llm-data-filtering-heuristics-design-01",
+          "topic": "llm-data-filtering-heuristics",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "LLM",
+            "Data Processing",
+            "Heuristics"
+          ],
+          "question": "要为代码与公式密集的技术语料设计一套行级修正与文档级过滤联动的清洗管线。下列哪些设计是合理的？",
+          "options": [
+            "对代码围栏、公式与编号列表设白名单，而不是对含符号的行整行丢弃",
+            "统计单文档行级删除占比，超阈值整页丢弃以拦截碎片文档",
+            "为简化管线统一删除所有含符号或数字的行，数量表达损失可以接受",
+            "文档语言识别分高时可省略全部行级规则，直接入库"
+          ]
+        },
+        "contentHash": "fnv1a-eec5390d"
+      }
+    ],
+    "agentic-17": [
+      {
+        "id": "agentic-17__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "行业 Research Agent 重建：要求带引用、可控成本，此前版本曾无节制抓取数小时。流程设计，哪种最合理？",
+        "options": [
+          "为追求报告完整，应取消迭代次数与 token 预算限制，直到所有相关搜索结果都被穷尽才进入撰写阶段。",
+          "抓取到的网页内容可直接作为事实写入报告，交叉验证会增加延迟且对质量提升有限。",
+          "按“拆解问题→循环搜索抓取提取要点→撰写→评审修订”推进，每条事实绑定来源链接，并设置最大迭代次数与 token 预算防止无限研究。",
+          "研究报告应在第一轮搜索后立即成稿以保证时效，评审环节只检查错别字而不涉及覆盖度与矛盾检测。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从失控抓取与单方说法的故障开出预算封顶加交叉验证的流程修复",
+          "reasoningGoal": "先从超支与失实回溯到无预算检索与缺交叉验证两处病根；再逐项验证流程做法是否成立；并排除穷尽检索、直接采信等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a58b98e6",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agentic-17",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "research",
+            "web-search",
+            "pdf"
+          ],
+          "question": "设计一个 Research Agent：可以搜索互联网、读取网页/PDF 并生成带引用的研究报告。请描述其循环流程与质量控制。",
+          "options": [
+            "为追求报告完整，应取消迭代次数与 token 预算限制，直到所有相关搜索结果都被穷尽才进入撰写阶段。",
+            "抓取到的网页内容可直接作为事实写入报告，交叉验证会增加延迟且对质量提升有限。",
+            "按“拆解问题→循环搜索抓取提取要点→撰写→评审修订”推进，每条事实绑定来源链接，并设置最大迭代次数与 token 预算防止无限研究。",
+            "研究报告应在第一轮搜索后立即成稿以保证时效，评审环节只检查错别字而不涉及覆盖度与矛盾检测。"
+          ]
+        },
+        "contentHash": "fnv1a-af2b467b"
+      }
+    ],
+    "ai-eng-030": [
+      {
+        "id": "ai-eng-030__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "12 万 Tokens 企业知识库要定检索架构：全量长上下文直连还是传统 RAG。权衡判断，正确的是？",
+        "options": [
+          "由于长上下文具备 Prefix Cache 优惠，在任何高并发生产场景下，长上下文方案的总成本都低于 RAG，无需考虑语料规模与查询模式差异",
+          "对“全局统计/全语料汇总（Corpus-wide）”类问题，固定 Top-K 的 RAG 存在天然信息缺失，而长上下文在小/中型语料下可实现接近 100% 的完整度（Completeness）",
+          "对实时性要求高的交互式应用，长上下文方案优于 RAG，因为省去了向量检索的耗时，能在毫秒级完成上下文注入与响应，检索与重排的链路延迟在交互场景里无法被接受，长上下文一次性加载远胜分步查询",
+          "在高频查询场景下，长上下文方案具备极大的成本优势，因为每次请求都可复用已加载的上下文而无需重复检索与重排，重复检索与向量库查询的累计开销远超长上下文的边际 token 成本，长期看显著更省"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能按查询频率与问题类型把长上下文与 RAG 各自的压倒性场景划分清楚",
+          "reasoningGoal": "先按低频全局与高频点查拆出两种架构的成本与完整度分野；再逐项验证权衡判断是否成立并比较场景；据此排除缓存万能、省检索即低延迟等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-495f4ecc",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-eng-030",
+          "topic": "system-design",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "rag-vs-long-context",
+            "completeness",
+            "corpus-wide-query",
+            "cost-model"
+          ],
+          "question": "某企业知识库包含约 12 万 Tokens 文本。架构师在评估\"全量长上下文直连（Long-Context）\"与\"传统 RAG 架构\"时，以下关于二者 Trade-off 的判断，正确的是？",
+          "options": [
+            "由于长上下文具备 Prefix Cache 优惠，在任何高并发生产场景下，长上下文方案的总成本都低于 RAG，无需考虑语料规模与查询模式差异",
+            "对\"全局统计/全语料汇总（Corpus-wide）\"类问题，固定 Top-K 的 RAG 存在天然信息缺失，而长上下文在小/中型语料下可实现接近 100% 的完整度（Completeness）",
+            "对实时性要求高的交互式应用，长上下文方案优于 RAG，因为省去了向量检索的耗时，能在毫秒级完成上下文注入与响应，检索与重排的链路延迟在交互场景里无法被接受，长上下文一次性加载远胜分步查询",
+            "在高频查询场景下，长上下文方案具备极大的成本优势，因为每次请求都可复用已加载的上下文而无需重复检索与重排，重复检索与向量库查询的累计开销远超长上下文的边际 token 成本，长期看显著更省"
+          ]
+        },
+        "contentHash": "fnv1a-f787cdfb"
+      }
+    ],
+    "ai-search-extra-018": [
+      {
+        "id": "ai-search-extra-018__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "技术支持搜索里新文档总沉底，排查发现 relevance 相近但新文档没有时效加权。最合理的改进是？",
+        "options": [
+          "在排序中加入受控的 freshness 信号",
+          "完全按照发布时间排序，忽略 relevance",
+          "删除旧文档，让搜索结果自然变新",
+          "把 freshness 信号放进分词器里"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能诊断出缺失时效特征的排序问题并开出受控加权的修复",
+          "reasoningGoal": "先从新文档沉底定位到排序缺时效信号的病根；再逐项验证改进是否对症；并排除纯时间排序、删旧文档等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5b02768d",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-018",
+          "topic": "search-quality",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "apply",
+          "tags": [
+            "search-quality",
+            "freshness",
+            "filtering"
+          ],
+          "question": "一个技术支持搜索系统中，新发布的文档经常排在旧文档之后。检查发现 relevance score 相近，但新文档没有任何 freshness boost。最合理的改进是什么？",
+          "options": [
+            "在排序中加入受控的 freshness 信号",
+            "完全按照发布时间排序，忽略 relevance",
+            "删除旧文档，让搜索结果自然变新",
+            "把 freshness 信号放进分词器里"
+          ]
+        },
+        "contentHash": "fnv1a-d89b724c"
+      }
+    ],
+    "aws-ai-practitioner-03": [
+      {
+        "id": "aws-ai-practitioner-03__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "基因分型项目要把样本按特征分成 20 类，还要求记录内部机制如何影响输出。哪个算法满足？（单选）",
+        "options": [
+          "决策树（Decision Trees）：以规则路径记录特征对输出的影响",
+          "线性回归（Linear Regression）：以整体系数拟合连续输出",
+          "逻辑回归（Logistic Regression）：基础形式做二分类输出",
+          "神经网络（Neural Networks）：以黑盒映射拟合输入输出"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能按可解释记录的要求识别出决策树并排除系数与黑盒方案",
+          "reasoningGoal": "先从记录内部机制的要求拆出逐步解释与整体拟合的分野；再逐项验证算法是否成立；并排除线性回归、逻辑回归、神经网络等不成立选项。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-0cf3c0c8",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-03",
+          "topic": "model-selection",
+          "subtopic": "可解释模型选型",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "interpretability",
+            "decision-tree",
+            "model-selection",
+            "aws",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "公司要把人类基因按特征分为 20 类，且需要一种能记录模型内部机制如何影响输出的 ML 算法。哪个算法满足？（单选）",
+          "options": [
+            "决策树（Decision trees）",
+            "线性回归（Linear regression）",
+            "逻辑回归（Logistic regression）",
+            "神经网络（Neural networks）"
+          ]
+        },
+        "contentHash": "fnv1a-b4c3783f"
+      }
+    ],
+    "anthropic-cca-f-09": [
+      {
+        "id": "anthropic-cca-f-09__context-options__manual-bh__0",
+        "kind": "context-options",
+        "question": "RAG 终稿老丢引用，排查发现合成代理合并多源时归因丢失。最有效的架构改动是？（单选）",
+        "options": [
+          "要求所有子代理输出结构化“声明-来源映射”，合成代理合并多源时必须保留并合并这些映射。",
+          "保留全部子代理交互转写，并加一个引用解析代理在分析日志后确定归因再生成报告。",
+          "加一步核验：报告生成器用语义相似度对原始来源匹配，重建声明来自哪些文档。",
+          "协调器在每次交接前把来源标识前缀注入文本，报告生成时解析这些前缀重建引用。"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从合并即丢失的归因故障定位到溯源未随数据走并选出结构化映射修复",
+          "reasoningGoal": "先从终稿无出处回溯到合并环节归因丢失的病根；再逐项验证架构改动是否对症；并排除转写反推、相似度回填、前缀注入等不成立描述。"
+        },
+        "generatedAt": 1789420000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-721cf5ab",
+        "batch": "manual-bh",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "anthropic-cca-f-09",
+          "topic": "rag-pipeline",
+          "subtopic": "结构化声明-来源映射",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "multi-agent",
+            "citation",
+            "claim-source-map",
+            "architecture",
+            "anthropic-cca",
+            "certification"
+          ],
+          "question": "生产中终稿频繁出现无出处的声明。排查发现网页搜索与文档分析代理的输出都正确带了引用，但合成代理在合并多源发现时弄丢了“哪些来源支撑哪些结论”。最有效的架构改动是？（单选）",
+          "options": [
+            "要求所有子代理输出结构化“声明-来源映射”，合成代理合并多源时必须保留并合并这些映射。",
+            "保留全部子代理交互转写，并加一个引用解析代理在分析日志后确定归因再生成报告。",
+            "加一步核验：报告生成器用语义相似度对原始来源匹配，重建声明来自哪些文档。",
+            "协调器在每次交接前把来源标识前缀注入文本，报告生成时解析这些前缀重建引用。"
+          ]
+        },
+        "contentHash": "fnv1a-a97794a5"
+      }
+    ]
+  }
+}

@@ -74,3 +74,18 @@
   PMLR 论文走 `http://proceedings.mlr.press/...` 的 http（非 https）可下载。
 - `variantOf` 语义：若难度/角度/认知任务任一改变 ⇒ 属 fork 新 canonical，填 `derivedFrom`；
   只有同 `topic×angle×difficulty×cognitiveTask` 的表达变换才走 `src/data/variants/`。
+
+## 题库审查：来源与断言必须匹配（2026-09-15）
+- **自动化门禁查不到「source 与断言不匹配」**。`question:audit` 只查「有厂商词却无 source」，
+  不查「source 是否真的支持题目依赖的论断」。2026-09-11 的 `cluster-interconnect` 批整批源自
+  一篇分析博客，却登记为「官方文档×3 + 论文×1」——官方 TPU v5e 页只列拓扑/切片形状，
+  Shazeer 2017 §3.1 只讲数据并行+模型并行，两处「2× 环形通信」「All-to-All = 分布式矩阵转置」
+  断言都不在所引来源里。**URL 可访问 ≠ 该 URL 支持该断言。**
+- 审查套路：对含量化倍数/具体数字/特定术语的题，抓 `source.materialId` 回源核对；
+  搜索题目里的特征词（如 "wraparound penalty"、"sharded transpose"）常能直接定位真实出处。
+- **改 canonical 选项的连带代价**：`sourceHash` 覆盖「题面+选项+元数据」，改选项会让引用它的
+  变体判 stale。改前先 grep `sourceSnapshot.id` 数清受影响变体；语义等价时按 ADR-079 §3
+  用 `variantSourceOf`/`computeVariantSourceHash`/`computeVariantContentHash` 离线重设基线，
+  不必重跑 LLM。只改 `explanation`/`source`/`misconceptionMap` **不影响**变体哈希（不在 snapshot 里）。
+- **ADR-079 §2**：纯自包含计算题（如非超售 Fat-Tree 的双切带宽由较小侧决定）**不补 source**，
+  如实接受残留即可，不要为凑指标编造来源。

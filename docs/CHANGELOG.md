@@ -1,6 +1,51 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · 复审最新批次并修复 4 处问题（来源引用 / 干扰项前提 / 解析措辞 / 误解映射）
+
+- 审查范围：`coverage-gap-20260911`（20 canonical）、`cluster-interconnect-20260911`（5 canonical）、
+  `manual-az/ba..bg` 变体。**门禁全过**：1434 题 / 153 节点；变体池 healthy（stale/orphan/dup/
+  sanity/kindMismatch/formatMismatch/duplicateIds/countAnomaly/nearIdenticalPaths/weakReasoningGoals 全 0）；
+  新批次长度比全 ≤1.8、无重复选项；coverage-gap 多选占比 95%。
+- **来源引用不实（P1，自动化查不出）**：`cluster-interconnect-20260911.json` 里
+  `tpu-torus-mesh-subslice-degradation` 引 `cloud.google.com/tpu/docs/v5e`、`moe-all-to-all-expert-parallelism`
+  引 `arXiv:1701.06538`，但两处断言（wraparound 丢失致 mesh 降级且环形通信约 2×；All-to-All =
+  分布式矩阵转置）**都不在**所引来源中——官方 v5e 页只列 2D torus / Pod 256 chips / 支持切片形状，
+  Shazeer 2017 §3.1 只讲数据并行+模型并行切专家。真实出处是分析博客
+  `jianyuh.github.io/systems/distributed/2026/07/16/...`（断言逐字命中），已改引该来源并补 section。
+- **干扰项与解析自相矛盾（P2）**：`llm-data-filtering-heuristics-debugging-01` 干扰项 C
+  「把整页丢弃阈值从 5% 放宽到 30%」预设了文档级阈值存在，而解析称根因恰是「缺少文档级止损」。
+  改为「行级删除只影响排版观感，放宽行级过滤规则即可保留更多训练数据」（不预设阈值），解析同步改写；
+  引用它的 `manual-bg` 变体按 ADR-079 §3 做语义保持的干扰项改写并重设 `sourceHash`/`contentHash` 基线。
+- **解析措辞（P3）**：`collective-ops-allreduce-decomposition` 的「高度完全对称」冗余病句与
+  「在分布式数据传输（特别是大消息吞吐受限场景）中」含糊表述已重写。
+- **误解映射（P4）**：`gpu-fat-tree-bisection-bandwidth` 的 `misconceptionMap` `[1,null,0,1]` →
+  `[0,null,0,1]`，两条 misconception 改为分别覆盖「按较大侧/全网总数计算」与「按两侧节点数之差计算」。
+- **复核后不改**：该题不加 `source` —— 按 ADR-079 §2，纯自包含计算题（非超售 Fat-Tree 的双切带宽
+  由较小侧决定）不编造来源。
+- 门禁实证：`validate:questions` ✓ 1434 题；`validate-variants` ✓ stale 0 池健康；
+  `lint:length`/`lint:bias` 改动文件 0 命中；`src/data+schemas+domain` 477/477。
+
+## 2026-09-14 · 零变体区扩充 20 条变体（`assessment.manual-bi-20260914.json`，池 1615→1635 条）
+
+- 从剩余零变体 choice 题中按 topic 分散挑 20 道（15 多选 + 5 单选，多选占比 75% ✓；与 bg/bh
+  批题目零重叠，含 9 道非 sebastian 簇 + 6 道 sebastian 簇 + 5 单选），各写 1 条 assessment
+  变体（context-options），换 angle + cognitiveTask 开新推理路径，真值逐项继承原题。
+- 初稿 4 处问题全部改写清零：3 条选项长度比超标（最高 2.20×，改写后全批 ≤1.71×）、
+  1 条题干丢失原题限定词"必须"；分句顺序贴原题，`validate-variants` 阻断项全 0 且本批 0 审计信号。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 64.6%）；`validate:questions` ✓ 1434 题不变；
+  `lint:length --changed` ✓ 0 超标；`npm test` 891/891。组装草稿放仓外 temp/ 用完即删，未落仓。
+
+## 2026-09-14 · 零变体区扩充 20 条变体（`assessment.manual-bh-20260914.json`，池 1595→1615 条）
+
+- 从剩余零变体 choice 题中按 topic 分散挑 20 道（15 多选 + 5 单选，多选占比 75% ✓；与 bg 批
+  题目零重叠，topic 仅复用 5 个不同题目），各写 1 条 assessment 变体（context-options），
+  换 angle + cognitiveTask 开新推理路径，真值逐项继承原题。
+- 初稿即零难度驱动 audit 信号、零语言拦截；长度比全批 ≤1.74×；分句顺序贴原题，
+  `validate-variants` 阻断项全 0。
+- 门禁实证：`validate-variants` ✓ 池健康；`validate:questions` ✓ 1434 题不变；
+  `lint:length --changed` ✓ 0 超标；`npm test` 891/891。组装草稿放仓外 temp/ 用完即删，未落仓。
+
 ## 2026-09-14 · 零变体区扩充 20 条变体（`assessment.manual-bg-20260914.json`，池 1575→1595 条）
 
 - 从 567 道零变体 choice 题中按 topic 分散挑 20 道（15 多选 + 5 单选，多选占比 75% ✓；

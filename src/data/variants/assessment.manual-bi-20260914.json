@@ -1,0 +1,932 @@
+{
+  "version": 1,
+  "generatedAt": 1789430000000,
+  "promptVersion": "v1",
+  "variants": {
+    "sentence-embedding-evaluator-retrieval-01": [
+      {
+        "id": "sentence-embedding-evaluator-retrieval-01__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "检索微调选型会上，团队争论现有评估范式够不够。评估结论，哪些成立？",
+        "options": [
+          "EmbeddingSimilarityEvaluator 只评估预设 Pair 对的得分拟合，测不出大规模 Candidate 下的全局排序与抗干扰能力。",
+          "EmbeddingSimilarityEvaluator 强制锁定 FP32 精度，与推理侧 FP16 计算存在无法弥合的系统误差。",
+          "仅能评估单字 token 的匹配度，无法评估整句向量的余弦相似度，更谈不上排序相关性的拟合。",
+          "在评估过程中会自动修改模型最后两层的权重，致使验证结果偏离真实模型状态，评估本身已不可信。",
+          "做检索 Top-K 召回优化应优先用检索导向指标，而非仅依赖句对相似度相关性判定模型优劣。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为检索召回优化选出检索导向指标并识破句对相关性的评估盲区",
+          "reasoningGoal": "先把句对拟合与大规模候选排序的评估范式差异摆出来；再逐项验证评估结论是否成立；并排除精度锁定论、单字粒度论、权重篡改论等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-52d14740",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-evaluator-retrieval-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Triplet vs MultipleNegativesRanking Evaluation Dynamics",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "evaluator",
+            "information-retrieval",
+            "embedding-similarity",
+            "top-k",
+            "recall"
+          ],
+          "question": "团队在对模型进行微调时，比较了 TripletEvaluator 与 EmbeddingSimilarityEvaluator 在验证集上的评估行为。若训练目标是优化检索系统的 Top-K 召回率，为什么仅使用 EmbeddingSimilarityEvaluator（基于 STS 数据评估 Cosine-Spearman 相关系数）可能无法全面反映模型的真实检索效能？",
+          "options": [
+            "EmbeddingSimilarityEvaluator 仅评估预设 Pair 对的连续得分拟合程度，无法衡量模型在面临大规模 Candidate 语料库时的全局对比排序与抗干扰能力。",
+            "EmbeddingSimilarityEvaluator 计算时强制锁定了 FP32 精度，与推理阶段的 FP16 浮点计算存在无法弥合的系统误差。",
+            "EmbeddingSimilarityEvaluator 只能评估单字 token 的匹配度，无法评估整句向量的余弦相似度。",
+            "EmbeddingSimilarityEvaluator 在评估过程中会自动修改模型最后两层的权重，导致验证结果偏离真实模型状态。",
+            "优化检索 Top-K 召回应优先采用面向检索的指标（如 InformationRetrievalEvaluator），而非仅依赖 EmbeddingSimilarityEvaluator 的句对相似度相关性来判定模型优劣。"
+          ]
+        },
+        "contentHash": "fnv1a-a3c1ad3f"
+      }
+    ],
+    "ai-tool-003": [
+      {
+        "id": "ai-tool-003__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "票务 Agent 高峰期超时频发，重试策略待定。平台组做法，哪些正确？（请选择三个选项）",
+        "options": [
+          "对下单、扣款等非幂等操作引入幂等键后再允许重试，避免重试导致副作用重复生效的问题",
+          "所有 timeout 都第一时间回流给模型重新决策，基础设施层做退避重试属于重复建设",
+          "分层处置：瞬时网络错误由 Executor 层指数退避重试，参数或业务错误以结构化信息回流 Agent Loop 让模型改道",
+          "timeout 即意味着调用必定未曾生效，非幂等操作可放心原样重发，无需幂等保护",
+          "设置全局重试预算与次数上限，避免 Executor 与 Agent Loop 两层重试相互相乘导致成本失控"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为超时频发的工具网关配出分层重试加幂等保护加预算封顶的组合策略",
+          "reasoningGoal": "先把超时拆成瞬时网络错误与语义错误两类并匹配处置层级；再逐项验证策略做法是否成立；并排除一律回流模型、超时即未生效等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c3f1087b",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-tool-003",
+          "topic": "tool-calling",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "tool-calling",
+            "reliability",
+            "retry"
+          ],
+          "question": "Agent 调用外部 API 经常 timeout。Retry 应该放在哪一层：模型、Agent Loop、Tool Executor 还是基础设施层？为什么？",
+          "options": [
+            "对下单、扣款等非幂等操作引入幂等键，防止重试造成副作用重复生效",
+            "所有 timeout 一律第一时间回流给模型重新决策，在基础设施层做退避重试属于重复建设",
+            "分层处置：瞬时网络类错误由 Tool Executor 或基础设施层做指数退避重试，参数或业务语义错误则以结构化信息回流 Agent Loop 让模型改道",
+            "timeout 即意味着调用必定未曾生效，非幂等操作可以放心原样重发，无需幂等保护",
+            "设置全局重试预算与次数上限，避免 Executor 与 Agent Loop 两层的重试相互相乘导致成本失控"
+          ]
+        },
+        "contentHash": "fnv1a-2cd85557"
+      }
+    ],
+    "selfharness-runtime-mechanisms-01": [
+      {
+        "id": "selfharness-runtime-mechanisms-01__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "SWE 智能体的 Harness 评审：区分运行时干预与提示补充。归类，哪些属于 Harness 层干预？",
+        "options": [
+          "在 Shell 执行层注入环境变量持久化中间件，确保连续跨步骤命令共享运行时上下文",
+          "引入子 Agent 拆分与协同编排机制，把长流程复杂任务动态解耦为独立子目标并由专门模块执行",
+          "在工具调用返回异常时插入强制校验规则，提醒智能体及时生成要求的交付产物以防死循环",
+          "动态微调基座模型的 Transformer 注意力层参数，使其面对结构化 JSON 返回时具备更高的解析精度"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别出工具层拦截点的非参数化工程控制并排除参数微调",
+          "reasoningGoal": "先把非参数化运行时控制与参数化手段的分野划出来；再逐项验证归类是否成立；并排除微调注意力参数等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ffe161c1",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "selfharness-runtime-mechanisms-01",
+          "topic": "tool-calling",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "runtime-mechanism",
+            "shell-persistence",
+            "sub-agent"
+          ],
+          "question": "当智能体在复杂环境（如 Terminal CLI、软件工程 SWE-bench 或应用 API）中执行任务时，Harness 的演进往往会沉淀出针对特定模型弱点的运行时机制。下列哪些机制属于典型的 Harness 层干预策略而非单纯的语言提示补充？",
+          "options": [
+            "在 Shell 命令执行层注入环境变量持久化中间件，确保连续的跨步骤命令能够共享运行时上下文",
+            "引入子 Agent 拆分与协同编排机制，将长流程复杂任务动态解耦为独立的子目标并由专门模块执行",
+            "在工具调用返回异常时插入强制校验规则，提醒智能体及时生成要求的交付产物以防止死循环",
+            "动态微调基座模型的 Transformer 注意力层参数，使其在面对结构化 JSON 返回时具备更高的解析精度"
+          ]
+        },
+        "contentHash": "fnv1a-547a305c"
+      }
+    ],
+    "tool-security-01": [
+      {
+        "id": "tool-security-01__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "自动修 bug Agent 上线前做事故预演。防线设计，哪些正确？（多选）",
+        "options": [
+          "为每个工具定义最小权限边界，只授予完成当前任务必需的文件与网络访问范围",
+          "在工具调用前对参数做模式校验与合法性检查，拒绝越权路径或危险指令",
+          "把代码执行置于沙箱容器中隔离，限制文件系统与网络出向，并记录审计日志",
+          "为提升自主性，应赋予 Agent 宿主机 Root 权限并关闭全部校验以避免阻塞"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从事故预演中定位出最小权限加参数校验加沙箱隔离的三道防线",
+          "reasoningGoal": "先从滥用与逃逸风险拆出权限、校验、隔离三处设防点；再逐项验证防线设计是否成立；并排除 Root 加无校验等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c0a81f9b",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "tool-security-01",
+          "topic": "tool-security",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "tool-security",
+            "sandbox",
+            "privilege",
+            "validation"
+          ],
+          "question": "一个具备代码执行与文件操作能力的 Agent 被赋予“自动修复 bug 并提交 PR”的权限。关于如何防止工具滥用与越权，下列设计正确的有？（多选）",
+          "options": [
+            "为每个工具定义最小权限边界，仅授予完成当前任务必需的文件与网络访问范围",
+            "在工具调用前对参数进行模式校验与合法性检查，拒绝越权路径或危险指令",
+            "将代码执行置于沙箱容器中隔离，限制文件系统与网络出向，并记录审计日志",
+            "为提升自主性，应赋予 Agent 宿主机 Root 权限并关闭所有校验以避免阻塞"
+          ]
+        },
+        "contentHash": "fnv1a-085840c5"
+      }
+    ],
+    "posttraining-2026-009": [
+      {
+        "id": "posttraining-2026-009__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "数学专项 post-training 后通用对话下滑，定性这次变化。判断，哪些成立？",
+        "options": [
+          "不能只看数学 benchmark，还要在通用能力与安全 held-out 评测上同时观察对话/指令遵循是否退化",
+          "若只有目标能力上升、通用与安全能力损失在可接受范围内，可视为必要的 specialization",
+          "若通用对话、指令遵循、安全对齐等多个维度出现广泛回归，就应判定为有害的 catastrophic forgetting",
+          "只要数学分数提升，通用对话下降就是合理代价，无需额外评估即可认定这是正常的 specialization"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能按通用与安全维度的损失范围判定专项训练后是良性分化还是有害遗忘",
+          "reasoningGoal": "先把单看目标 benchmark 的盲区与多维观测的要求摆出来；再逐项验证定性判断是否成立；并排除提升即合理、无需评估等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-7b992e62",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-009",
+          "topic": "training",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "catastrophic-forgetting",
+            "alignment",
+            "regression"
+          ],
+          "question": "一个模型经过针对数学推理的 post-training 后数学 benchmark 提升了，但通用对话能力下降。你会如何判断这是必要的 specialization 还是不希望出现的 catastrophic forgetting？",
+          "options": [
+            "不能只看数学 benchmark，还需在通用能力与安全 held-out 评测上同时观察对话/指令遵循是否退化",
+            "若仅目标能力上升、通用与安全能力损失在可接受范围内，可视为必要的 specialization",
+            "若通用对话、指令遵循、安全对齐等多个维度出现广泛回归，则应判定为有害的 catastrophic forgetting",
+            "只要数学分数提升，通用对话下降就是合理的代价，无需额外评估即可认定这是正常的 specialization"
+          ]
+        },
+        "contentHash": "fnv1a-610120ec"
+      }
+    ],
+    "posttraining-2026-010": [
+      {
+        "id": "posttraining-2026-010__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "post-training 实验必须同时观测四个维度，只盯目标 benchmark 被质疑有盲区。评审意见，哪些成立？",
+        "options": [
+          "只盯目标 benchmark 容易漏掉 reward hacking、能力遗忘与安全退化问题",
+          "同时观测 OOD 泛化可判断策略是否只在训练分布上过拟合而非真正学会能力",
+          "安全维度必须单独评估，因为目标能力提升可能伴随对齐和安全性质的退化",
+          "实验只需最大化目标 benchmark 便可，通用与安全能力会随目标能力的提升自动保持不退化"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能开出目标加通用加安全加 OOD 四维观测的实验评审意见",
+          "reasoningGoal": "先把只看目标 benchmark 会漏掉的三类风险列出来；再逐项验证评审意见是否成立；并排除自动保持论等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-df2b6b10",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "posttraining-2026-010",
+          "topic": "training",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "evaluation",
+            "post-training",
+            "generalization"
+          ],
+          "question": "设计一个 post-training 实验时，为什么必须同时观察 target capability、general capability、safety 和 out-of-distribution generalization？只看目标 benchmark 会有什么风险？",
+          "options": [
+            "只盯目标 benchmark 容易漏掉 reward hacking、能力遗忘与安全退化等问题",
+            "同时观测 OOD 泛化可判断策略是否只是在训练分布上过拟合而非真正学会能力",
+            "安全维度必须单独评估，因为目标能力提升可能伴随对齐与安全性质的退化",
+            "实验只需最大化目标 benchmark 即可，通用与安全能力会随着目标能力的提升自动保持不退化"
+          ]
+        },
+        "contentHash": "fnv1a-387e58b3"
+      }
+    ],
+    "context-engineering-tradeoff-01": [
+      {
+        "id": "context-engineering-tradeoff-01__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "执行 Agent 上下文预算告急，历史轨迹塞满窗口。取舍，哪些符合执行阶段的职责边界？",
+        "options": [
+          "优先保留当前目标、约束、步骤状态与编译后的 Skill",
+          "对历史材料按任务检索，并在注入前限制来源与 token 预算",
+          "把所有旧轨迹完整拼接起来，再让模型自行忽略无关内容",
+          "遇到超限就随机删除上下文，避免引入额外的检索逻辑"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为预算告急的执行上下文选出保当前任务加按需检索的取舍",
+          "reasoningGoal": "先把当前决策信息与低相关历史的优先级排出来；再逐项验证取舍是否成立；并排除全量拼接、随机删除等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-296d4414",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "context-engineering-tradeoff-01",
+          "topic": "context-engineering",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "context-budget",
+            "retrieval",
+            "attention-noise"
+          ],
+          "question": "当执行 Agent 的上下文预算紧张时，哪种取舍更符合 Skill 运行时的职责边界？",
+          "options": [
+            "优先保留当前目标、约束、步骤状态和编译后的 Skill",
+            "对历史材料按任务检索，并在注入前限制来源和 token 预算",
+            "把所有旧轨迹完整拼接，再让模型自行忽略无关内容",
+            "遇到超限就随机删除上下文，避免引入额外检索逻辑"
+          ]
+        },
+        "contentHash": "fnv1a-128823e8"
+      }
+    ],
+    "agent-skills-system-design-02": [
+      {
+        "id": "agent-skills-system-design-02__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "三层工作区权限评审：防未验证内容进执行层。权限与门禁，哪些正确？",
+        "options": [
+          "Raw 由采集器追加写入且不可变，执行流程不得修改历史轨迹",
+          "Wiki 经受控流程记录知识和审计，Skill 由发布器经过验证门写入",
+          "执行 Agent 可直接覆盖活性 Skill，事后再由 Wiki 补记这次变化",
+          "Wiki 内容被多次检索后便可自动晋升 Skill，无需固定验证集"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能为三层工作区配出分层写入权限加验证门的防线",
+          "reasoningGoal": "先把未验证内容进入执行层的风险点拆出来；再逐项验证权限设计是否成立；并排除直接覆盖、自动晋升等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-d70ff10f",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-skills-system-design-02",
+          "topic": "agent-skills",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "raw-wiki-skill",
+            "write-permission",
+            "promotion-gate",
+            "audit"
+          ],
+          "question": "Raw、Wiki、Skill 三层工作区如何设置写入权限和 promotion gate，才能防止未经验证的内容进入执行层？",
+          "options": [
+            "Raw 由采集器追加写入且不可变，执行流程不能修改历史轨迹",
+            "Wiki 通过受控流程记录知识和审计，Skill 由发布器经过验证门写入",
+            "执行 Agent 可直接覆盖活性 Skill，事后再由 Wiki 记录这次变化",
+            "Wiki 内容被多次检索后即可自动晋升 Skill，无需固定验证集"
+          ]
+        },
+        "contentHash": "fnv1a-e21f514c"
+      }
+    ],
+    "agent-skills-design-02": [
+      {
+        "id": "agent-skills-design-02__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "Skill 发布事故后服务中断且历史待恢复。回滚与灾备，哪些正确？",
+        "options": [
+          "为活性 Skill 保存可复制的版本指针，并把每次指针变更都写入审计链",
+          "对 Raw 与 Wiki 做独立的不可变备份、校验与恢复演练",
+          "只需备份当前 Skill 文件，Raw 和 Wiki 可在故障后重新生成",
+          "灾备时直接制作一个最新总快照，覆盖原指针与历史审计记录"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从发布事故中开出版本指针恢复加独立备份的灾备组合",
+          "reasoningGoal": "先把恢复服务与保留审计链的双重要求摆出来；再逐项验证灾备设计是否成立；并排除只备当前文件、总快照覆盖等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9dbdd817",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agent-skills-design-02",
+          "topic": "agent-skills",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "rollback-pointer",
+            "disaster-recovery",
+            "workspace"
+          ],
+          "question": "三层工作区发生 Skill 发布事故或存储故障时，怎样设计回滚指针与灾备，才能恢复服务并保留审计链？",
+          "options": [
+            "为活性 Skill 保存可复制的版本指针，并把每次指针变更写入审计链",
+            "对 Raw 与 Wiki 做独立的不可变备份、校验和恢复演练",
+            "只备份当前 Skill 文件，Raw 和 Wiki 可在故障后重新生成",
+            "灾备时直接制作一个最新总快照，覆盖原指针和历史审计记录"
+          ]
+        },
+        "contentHash": "fnv1a-b41fe345"
+      }
+    ],
+    "sebastian-raschka-2026-08-41": [
+      {
+        "id": "sebastian-raschka-2026-08-41__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "自研注意力算子输出形状对但数值异常。上线前检查，哪些最有价值？（请选择三个）",
+        "options": [
+          "确认 QK^T 的维度与 softmax 归一化轴正确",
+          "确认使用了正确的 sqrt(d_k) 缩放因子",
+          "确认因果掩码在 softmax 之前作用于正确位置",
+          "只要输出 shape 正确就无需再检查数值范围"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能为形状正确但数值异常的注意力算子开出转置缩放掩码的检查清单",
+          "reasoningGoal": "先把形状正确与数值异常的矛盾指向转置缩放掩码三处嫌疑；再逐项验证检查项是否有价值；并排除形状对即无妨等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6afcfdf0",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-41",
+          "topic": "self-attention",
+          "subtopic": "注意力实现调试",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "debugging",
+            "tensor-shape"
+          ],
+          "question": "实现注意力模块时，输出形状正确但结果明显异常，以下哪些检查最有价值？（请选择三个）",
+          "options": [
+            "确认 QK^T 的维度和 softmax 归一化轴正确",
+            "确认使用了正确的 sqrt(d_k) 缩放",
+            "确认因果掩码在 softmax 前作用于正确位置",
+            "只要输出 shape 正确就无需检查数值范围"
+          ]
+        },
+        "contentHash": "fnv1a-01becba3"
+      }
+    ],
+    "sebastian-raschka-2026-08-42": [
+      {
+        "id": "sebastian-raschka-2026-08-42__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "新人把投影矩阵当成 id 查表，code review 要纠正。说法，哪些正确？（请选择两个）",
+        "options": [
+          "Wq 与 Wk 共同决定用于匹配的表示空间",
+          "Wv 决定由注意力权重汇聚的内容表示",
+          "投影矩阵只负责存下 token 的原始整数 id",
+          "训练投影矩阵并不会改变注意力模式"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别出投影矩阵的可学习映射职责并纠正查表误解",
+          "reasoningGoal": "先把可学习变换与嵌入查表的职责分野划出来；再逐项验证说法是否成立；并排除存 id 论、训练无用论等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-6b602dd9",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-42",
+          "topic": "self-attention",
+          "subtopic": "权重共享边界",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "parameterization"
+          ],
+          "question": "关于自注意力中投影矩阵的作用，哪些说法正确？（请选择两个）",
+          "options": [
+            "Wq 和 Wk 共同决定用于匹配的表示空间",
+            "Wv 决定被注意力权重汇聚的内容表示",
+            "投影矩阵只负责保存 token 的原始整数 id",
+            "训练投影矩阵不会改变注意力模式"
+          ]
+        },
+        "contentHash": "fnv1a-5c3fafa0"
+      }
+    ],
+    "sebastian-raschka-2026-08-69": [
+      {
+        "id": "sebastian-raschka-2026-08-69__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "推理服务成本归因看板要拆分监控。指标设计，哪些值得纳入？（请选择三个）",
+        "options": [
+          "按努力度和任务难度分桶的推理 token",
+          "采样次数、验证耗时与重试次数",
+          "TTFT、端到端延迟以及验证耗时",
+          "只记录请求总数而不去记录推理预算"
+        ],
+        "angle": "design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能配出以推理预算加验证行为加延迟拆分为核心的成本归因看板",
+          "reasoningGoal": "先把成本回归归因所需的预算与行为证据列出来；再逐项验证指标设计是否有区分度；并排除只记总数等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-5bd42dd8",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-69",
+          "topic": "observability",
+          "subtopic": "推理成本监控",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "sebastian-raschka",
+            "reasoning",
+            "observability",
+            "cost"
+          ],
+          "question": "推理模型上线后，为了定位成本和延迟回归，哪些指标值得分开监控？（请选择三个）",
+          "options": [
+            "按努力度和任务难度分桶的推理 token",
+            "采样、验证和重试次数",
+            "TTFT、端到端延迟与验证耗时",
+            "只记录请求总数而不记录推理预算"
+          ]
+        },
+        "contentHash": "fnv1a-4fd746bf"
+      }
+    ],
+    "sebastian-raschka-2026-08-127": [
+      {
+        "id": "sebastian-raschka-2026-08-127__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "长上下文模型要在全注意力层之间插入线性层。权衡维度，哪些需要考虑？（请选择三个）",
+        "options": [
+          "长上下文计算与缓存成本",
+          "精确内容寻址和压缩状态表达能力",
+          "不同层类型之间的信息传递与实现复杂度",
+          "加入替代层便能保证所有任务质量不变"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能为混合层架构配出成本加表达加接口三维的权衡清单",
+          "reasoningGoal": "先把替代层带来的效率收益与表达风险拆成三维；再逐项验证权衡项是否成立；并排除质量恒不变等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-59935759",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-127",
+          "topic": "hybrid-attention",
+          "subtopic": "混合注意力架构",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "hybrid"
+          ],
+          "question": "交替使用全注意力与线性或状态空间层时，设计者需要权衡哪些方面？（请选择三个）",
+          "options": [
+            "长上下文计算和缓存成本",
+            "精确内容寻址与压缩状态表达能力",
+            "不同层类型之间的信息传递和实现复杂度",
+            "加入替代层就能保证所有任务质量不变"
+          ]
+        },
+        "contentHash": "fnv1a-e2c2b0e8"
+      }
+    ],
+    "sebastian-raschka-2026-08-133": [
+      {
+        "id": "sebastian-raschka-2026-08-133__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "供应商宣称激活计算低所以成本低，架构评审要验算。必须测量的指标，哪些成立？（请选择三个）",
+        "options": [
+          "内存带宽与缓存访问开销",
+          "设备间通信和专家负载均衡",
+          "TTFT、端到端延迟以及尾延迟",
+          "只用理论 FLOPs 便能推断体验"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能识破低激活计算等于低成本的宣称并开出访存通信延迟的验算清单",
+          "reasoningGoal": "先把端到端成本拆成计算访存通信延迟四块；再逐项验证测量项是否成立；并排除 FLOPs 即体验等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-95c3f37e",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-133",
+          "topic": "inference-optimization",
+          "subtopic": "架构与解码吞吐",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "raschka",
+            "architecture",
+            "throughput"
+          ],
+          "question": "解释“每 token 激活计算较低”时，哪些额外指标仍必须测量？（请选择三个）",
+          "options": [
+            "内存带宽和缓存访问量",
+            "设备间通信与专家负载均衡",
+            "TTFT、端到端延迟和尾延迟",
+            "只用理论 FLOPs 就能推断用户体验"
+          ]
+        },
+        "contentHash": "fnv1a-c60bcc6d"
+      }
+    ],
+    "sebastian-raschka-2026-08-144": [
+      {
+        "id": "sebastian-raschka-2026-08-144__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "KV Cache 优化上线后均值好看但 P99 恶化。排查方向，哪些值得调查？（请选择三个）",
+        "options": [
+          "压缩与恢复操作增加了单请求计算",
+          "不同长度请求造成排队与缓存碎片",
+          "内存节省换来的并发提升改变了尾部负载",
+          "只要平均吞吐提高便可以忽略 P99"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从均值与尾部背离的症状定位到重构开销与排队放大的嫌疑",
+          "reasoningGoal": "先把均值好看与 P99 恶化的背离指向额外开销与排队两处嫌疑；再逐项验证排查方向是否对症；并排除均值好即无妨等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-013c1e73",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-144",
+          "topic": "inference-optimization",
+          "subtopic": "缓存优化的系统边界",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "raschka",
+            "architecture",
+            "serving"
+          ],
+          "question": "KV Cache 压缩后平均吞吐提高但 P99 延迟变差，哪些原因值得调查？（请选择三个）",
+          "options": [
+            "压缩和恢复操作增加了单请求计算",
+            "不同长度请求造成排队和缓存碎片",
+            "内存节省带来的并发提升改变了尾部负载",
+            "只要平均吞吐提高就可以忽略 P99"
+          ]
+        },
+        "contentHash": "fnv1a-3555efb7"
+      }
+    ],
+    "agentic-20": [
+      {
+        "id": "agentic-20__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "券商简报整改：各源数值打架、传言与公告同权。处理策略，哪个正确？",
+        "options": [
+          "以数据源权威性与时效性建立优先级，冲突时并列呈现并标注差异原因，而不是擅自取平均值发布。",
+          "多个数据源数值不一致时取算术平均值发布，可以同时兼顾各来源的准确性。",
+          "新闻类数据的可信度与发布渠道无关，社交媒体消息与官方公告应赋予相同权重。",
+          "行情与新闻数据的缓存可以长期复用，金融数据的时效性对分析结论影响很小。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能为多源冲突的简报定出权威分级加并列呈现的整改策略",
+          "reasoningGoal": "先把数值打架与同权采信两类事故映射到口径与可信度病根；再逐项验证处理策略是否成立；并排除取平均、同权重、长期缓存等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-f30310f8",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "agentic-20",
+          "topic": "system-design",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "fintech",
+            "market-data",
+            "tools"
+          ],
+          "question": "设计一个 Financial Research Agent：可调用市场行情、新闻和公司财报三类数据源。多源数据的时效性与冲突如何处理？",
+          "options": [
+            "以数据源权威性与时效性建立优先级，冲突时并列呈现并标注差异原因（如口径或时点不同），而不是擅自取平均值。",
+            "多个数据源给出的数值不一致时取算术平均值发布，可以同时兼顾各来源的准确性。",
+            "新闻类数据的可信度与发布渠道无关，社交媒体消息和官方公告应赋予相同权重。",
+            "行情与新闻数据的缓存可以长期复用，金融数据的时效性对分析结论的影响很小。"
+          ]
+        },
+        "contentHash": "fnv1a-1a6f3014"
+      }
+    ],
+    "ai-eng-046": [
+      {
+        "id": "ai-eng-046__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "新模型上线方案评审：节奏、熔断门与预发盲区。哪种方案正确？",
+        "options": [
+          "只要离线评测集全绿便可一次性切换 100% 流量，灰度只是拖延时间，因为离线指标已充分覆盖真实分布，线上不会偏离，评测集与线上分布本质一致，任何灰度阶梯都只是拖延上线节奏而制造无谓的运维负担",
+          "影子流量 → 小比例金丝雀阶梯放量 → 每档挂延迟/满意度/护栏三类自动回滚门并按客户段/语言/任务类目分段回滚 → 常驻少量旧模型流量；影子通过仍可能翻车，因为评测集与影子无法覆盖真实流量的长尾细分场景",
+          "回滚只需要一个总开关：任何指标异常就把全部流量切回旧模型，分段回滚过于繁琐且在紧急情况下会拖慢恢复，细粒度分段只会增加操作复杂度，全量回切才是险情下最短路径且足够安全",
+          "放量期间应关闭告警避免噪声干扰，等稳定后再开启监控，因为早期指标的波动多由冷启动噪声引起而非真实退化，频繁告警只会造成值班疲劳并掩盖真正问题，平稳期再加监控更利于长期观测"
+        ],
+        "angle": "debugging",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从上线翻车的复盘中定位到覆盖缺口与一刀切回滚的病根并选出阶梯熔断方案",
+          "reasoningGoal": "先从翻车回溯到长尾未覆盖与回滚一刀切两处病根；再逐项验证上线方案是否对症；并排除一次切换、总开关回滚、盲飞监控等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ed718b3a",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-eng-046",
+          "topic": "system-design",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "canary-rollout",
+            "auto-rollback",
+            "shadow-traffic",
+            "per-segment-monitoring"
+          ],
+          "question": "你要把线上 LLM 流量从一个模型迁移到另一个新模型（如教师切换到蒸馏学生）。设计完整的灰度发布与回滚方案：放量节奏、每一档的自动回滚触发器、以及为什么影子流量通过了仍可能在线上翻车。",
+          "options": [
+            "只要离线评测集全绿就可以一次性切换 100% 流量，灰度只是拖延时间，因为离线指标已充分覆盖真实分布，线上不会偏离，评测集与线上分布本质一致，任何灰度阶梯都只是拖延上线节奏而制造无谓的运维负担",
+            "影子流量 → 小比例金丝雀阶梯放量 → 每档挂延迟/满意度/护栏三类自动回滚门并按客户段/语言/任务类目分段回滚 → 常驻少量旧模型流量；影子通过仍可能翻车，因为评测集与影子无法覆盖真实流量的长尾细分场景",
+            "回滚只需要一个总开关：任何指标异常就把全部流量切回旧模型，分段回滚过于繁琐且在紧急情况下会拖慢恢复，细粒度分段只会增加操作复杂度，全量回切才是险情下最短路径且足够安全",
+            "放量期间应关闭告警避免噪音干扰，等稳定后再开启监控，因为早期指标的波动多由冷启动噪声引起而非真实退化，频繁告警只会造成值班疲劳并掩盖真正问题，平稳期再加监控更利于长期观测"
+          ]
+        },
+        "contentHash": "fnv1a-cf27896e"
+      }
+    ],
+    "ai-search-extra-021": [
+      {
+        "id": "ai-search-extra-021__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "Agentic 搜索链路评审：搞清充分性评估器的职责边界。说法，哪个正确？",
+        "options": [
+          "判断当前证据是否足够，并识别需要补充检索的方向",
+          "替代全部底层搜索索引并直接生成最终答案",
+          "把每次检索结果都永久写入长期记忆",
+          "仅根据 token 数量来判断是否继续检索"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能识别出充分性评估器判证据够用与否的职责并排除检索生成记忆的越界",
+          "reasoningGoal": "先把判够用与真检索真生成的职责边界划出来；再逐项验证说法是否成立；并排除替代索引、写入记忆、数 token 等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-871d57ab",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "ai-search-extra-021",
+          "topic": "agentic-search",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "agentic-search",
+            "sufficiency",
+            "uncertainty"
+          ],
+          "question": "Agentic retrieval 中的 retrieval sufficiency evaluator 最主要解决什么问题？",
+          "options": [
+            "判断当前证据是否足够，并识别需要补充的检索方向",
+            "替代所有底层搜索索引并直接生成最终答案",
+            "把每次检索结果永久写入长期记忆",
+            "仅根据 token 数量判断是否继续检索"
+          ]
+        },
+        "contentHash": "fnv1a-a89bc56d"
+      }
+    ],
+    "aws-ai-practitioner-04": [
+      {
+        "id": "aws-ai-practitioner-04__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "植物病害图像分类模型要选性能指标：数一数分对了多少张。哪个适用？（单选）",
+        "options": [
+          "R² 分数（R-Squared）：衡量回归拟合优度的指标",
+          "准确率（Accuracy）：正确分类数量占总数的比例",
+          "均方根误差（RMSE）：衡量回归预测偏差的指标",
+          "学习率（Learning Rate）：控制训练步长的超参数"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能按数分对多少的要求识别出准确率并排除回归指标与超参",
+          "reasoningGoal": "先把分类计数与回归拟合超参的适用分野划出来；再逐项验证指标是否成立；并排除 R²、RMSE、学习率等不成立选项。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-68b16e38",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "aws-ai-practitioner-04",
+          "topic": "evaluation",
+          "subtopic": "分类评估指标",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "apply",
+          "tags": [
+            "accuracy",
+            "evaluation",
+            "classification",
+            "aws",
+            "fundamental",
+            "aws-ai-practitioner",
+            "certification"
+          ],
+          "question": "公司训练了图像分类模型预测植物病害，想评估模型正确分类了多少张图像。应用哪个评估指标衡量模型性能？（单选）",
+          "options": [
+            "R² 分数（R-squared score）",
+            "准确率（Accuracy）",
+            "均方根误差（RMSE）",
+            "学习率（Learning rate）"
+          ]
+        },
+        "contentHash": "fnv1a-175baac5"
+      }
+    ],
+    "router-vs-adaptive-thinking": [
+      {
+        "id": "router-vs-adaptive-thinking__context-options__manual-bi__0",
+        "kind": "context-options",
+        "question": "推理架构选型：路由分发 vs 统一自适应思考。工程特性比较，哪个正确？",
+        "options": [
+          "路由分发架构能够保证请求在不同子模型间切换时 Transformer 的 Hidden States 与 KV Cache 完全无缝共享与接续",
+          "路由分发架构引入了分类路由判别环节，若路由器发生误判可能导致意图相似的 Prompt 被分发给不同能力的子模型，产生不确定性的响应延时与质量波动",
+          "统一自适应思考架构因仅包含单一模型，无法针对简单 Prompt 动态缩减思考 Token 数量，因此单次推理延迟固定且极高",
+          "统一自适应思考架构生成的思考 Token 属于内部隐藏特征，在工程实现上完全无法通过 API 进行捕获摘要或流式输出"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能按误判波动与状态不共享的工程代价判定路由分发的选型结论",
+          "reasoningGoal": "先把两种范式在状态共享与延迟形态上的工程分野摆出来；再逐项验证比较结论是否成立；并排除无缝共享、延迟固定、不可捕获等不成立描述。"
+        },
+        "generatedAt": 1789430000000,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a1a26805",
+        "batch": "manual-bi",
+        "model": "manual",
+        "sourceSnapshot": {
+          "id": "router-vs-adaptive-thinking",
+          "topic": "model-selection",
+          "subtopic": "router-vs-adaptive-thinking",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "routing",
+            "adaptive-thinking",
+            "inference-time-compute",
+            "latency-variance"
+          ],
+          "question": "为了提升推理能力工业界采用推理期计算技术。存在两种主流范式：路由分发架构与统一自适应思考架构。关于这两种架构在系统工程特性上的比较以下说法正确的是？",
+          "options": [
+            "路由分发架构能够保证请求在不同子模型之间切换时 Transformer 的 Hidden States 与 KV Cache 完全无缝共享与接续",
+            "路由分发架构引入了分类路由判别环节若路由器发生误判可能导致意图相似的 Prompt 被分发给不同能力的子模型产生不确定性的响应延时与质量波动",
+            "统一自适应思考架构因仅包含单一模型无法针对简单 Prompt 动态缩减思考 Token 数量因此单次推理延迟固定且极高",
+            "统一自适应思考架构生成的思考 Token 属于内部隐藏特征在工程实现上完全无法通过 API 进行捕获摘要或流式输出"
+          ]
+        },
+        "contentHash": "fnv1a-d37583b6"
+      }
+    ]
+  }
+}

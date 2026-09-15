@@ -18,7 +18,8 @@
     "question": "在 TPU v5e 等 2D Torus 架构集群中，当用户申请的 Slice 尺寸在轴向（如 4×4 或 8×16）小于 Full Pod 的周期尺寸（如 16）时，会对底层集群网络拓扑结构及环形集合通信（Ring Collectives）性能产生怎样的影响？",
     "explanation": "在 TPU v5e 集群中，Full Pod（16×16）在各轴向具备 wraparound 周期性环回链路从而构成 2D Torus 拓扑。当申请的 Slice 尺寸在某一轴向小于 16 时，该轴向将丢失 wraparound 链路，导致网络拓扑由 Torus 降级为 Mesh。在降级后的 Mesh 拓扑（1D Path/Chain）上，环形集合通信算法（如 Ring All-Gather/Reduce-Scatter）无法直接通过 wraparound 链路成环传输，而必须沿链式路径双向折返，导致通信步数与延时增加约 2 倍。",
     "source": {
-      "materialId": "https://cloud.google.com/tpu/docs/v5e"
+      "materialId": "https://jianyuh.github.io/systems/distributed/2026/07/16/Collective-Communication-TPU-GPU-Clusters.html",
+      "section": "1. TPU Topology & Latency Math"
     },
     "formats": {
       "choice": {
@@ -58,7 +59,7 @@
       "reasoningGoal": "先拆解 All-Reduce 为 Reduce-Scatter 和 All-Gather 两个阶段；再推导各阶段在 Ring 算法下的数据传输总量与时间开销关系；据此排除将 All-Reduce 误认为单次全广播操作或忽略 Reduce 阶段通信开销的错误推论"
     },
     "question": "在大规模分布式模型训练中，All-Reduce 是用于梯度同步的重要集合通信算子。关于 All-Reduce 算子的内部拆解机制及其在 Ring 拓扑下的通信复杂度，下列哪些说法是正确的？",
-    "explanation": "在分布式数据传输（特别是大消息吞吐受限场景）中，All-Reduce 算子可以精准拆解为两个阶段：第一阶段执行 Reduce-Scatter，完成梯度的分块规约与散布；第二阶段执行 All-Gather，完成规约后梯度的全集收集。在 1D Ring 算法实现中，这两个阶段在传输数据量和通信步数上高度完全对称，因此 All-Reduce 的总体通信耗时正好是单个 Reduce-Scatter 或 All-Gather 阶段的 2 倍。",
+    "explanation": "在大消息（吞吐受限）场景下，All-Reduce 可拆解为两个阶段：先 Reduce-Scatter 完成分块规约与散布，再 All-Gather 收集规约后的全集。在 1D Ring 实现中，两阶段的传输数据量与通信步数完全对称，因此 All-Reduce 的总耗时恰为单个 Reduce-Scatter（或 All-Gather）阶段的 2 倍。中间过程存在节点间的点对点规约加法，并非单次全集拼接广播；两阶段对称也意味着不存在 Reduce-Scatter 耗时远低于 All-Gather 的情形。",
     "source": {
       "materialId": "https://docs.nvidia.com/deeplearning/sdk/nccl-developer-guide/docs/index.html"
     },
@@ -102,7 +103,8 @@
     "question": "混合专家模型（MoE）在分布式训练与推理时采用了专家并行（Expert Parallelism）策略。关于路由（Router）分发 Token 时的通信机制及其物理本质，下列哪些说法是正确的？",
     "explanation": "在 MoE 专家并行中，不同节点上的 Token 被 Router 指定给不同的目标 Expert。为了将分布在各个源芯片上的 Token 送达对应 Expert 所在的芯片，节点间需要执行个性化的多对多数据打包与分发。这一过程对应于 All-to-All 集合通信算子，其数学与物理本质是一种分布式的矩阵转置（Sharded Transpose），即从按源芯片分组重组为按目标专家分组。",
     "source": {
-      "materialId": "arXiv:1701.06538"
+      "materialId": "https://jianyuh.github.io/systems/distributed/2026/07/16/Collective-Communication-TPU-GPU-Clusters.html",
+      "section": "3. Collective Mechanics"
     },
     "formats": {
       "choice": {
@@ -153,15 +155,15 @@
           "跨区单向吞吐量受限于两侧节点数之差，最大可达到 19.2 TB/s（即 48 × 400 GB/s）。"
         ],
         "answer": [1],
-        "misconceptionMap": [1, null, 0, 1]
+        "misconceptionMap": [0, null, 0, 1]
       },
       "open": {
         "referenceAnswer": "正确答案：B。跨区单向吞吐上限由较小侧决定：40 × 400 GB/s = 16.0 TB/s。A 错误：较大侧不是瓶颈。C 错误：总量加总重复计算了不需要跨区的流量。D 错误：两侧之差无物理意义。"
       }
     },
     "misconceptions": [
-      "误以为集群总双切带宽等于所有节点注入带宽直接相加（未除以 2 或未按划分较小侧计算）",
-      "混淆单节点单向 NIC 注入带宽与交换机 Cross-Partition 累计双切带宽"
+      "误以为跨区带宽由较大侧或全网节点总数决定，忽略了瓶颈在划分中较小的一侧",
+      "把两侧节点数之差（88−40=48）当作带宽计算基数，混淆了分区节点数与跨区累计带宽的口径"
     ]
   },
   {
