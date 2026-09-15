@@ -1,6 +1,20 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · 零变体区再扩充 20 条变体（`assessment.manual-bn-20260915.json`，池 1715→1735 条）
+
+- missing-only 顺延 10 题（`aws-genai-developer-pro-20/22/25/28/30/32/33/35/37/39`，
+  均为单选认证场景题），每题各写 1 条 surface-options + 1 条 context-options，
+  共 20 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。
+- 初稿 15 处问题改写清零：多为正确项过长 + 短干扰项的长度失衡（Q25/Q28/Q32/Q33/Q37
+  五题，拉长短项、精简长项压到 1.8× 内）；Q32 一对 sibling 选项 Dice 89.9，
+  把 context 集三条重做叙事结构后降到 79.2；Q39 context 题干补限定词`所有`。
+- 题干约束落实：Q22 保留 `10/45`；Q28/Q30/Q33/Q35/Q39 题干避开正确项独有拉丁词
+  （Agent/Throttles 系/PerformanceConfigLatency/Wait·Callback/SearchRelevantContent），
+  extra-hint 0 新增；v7 语言风格（无"啃/开干/包打"式口语），数值约束原样保留。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 68.1%→68.8%，0 变体题 457→447）；
+  `npm test` 904/904。组装草稿放 temp/ 用完即删，未落仓。
+
 ## 2026-09-15 · ADR-081：Variant mode 独立于 generator + prompt v6→v7
 
 - schema：`QuestionVariant` 新增必填 `mode`（default=assessment 兼容历史资产）；

@@ -1,0 +1,1027 @@
+{
+  "version": 1,
+  "generatedAt": 1789478005115,
+  "promptVersion": "v7",
+  "variants": {
+    "aws-genai-developer-pro-20": [
+      {
+        "id": "aws-genai-developer-pro-20__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "客服话术模板存 S3，发送前要抽片段送模型审、审完存回原桶。哪个工作流方案满足？",
+        "options": [
+          "在 Bedrock Flows 里建流：首尾 S3 节点取回话术与存回审核结果，中间表达式抽片段，agent 步骤送模型审核。",
+          "Step Functions Express 状态机：S3 取内容，Pass 函数解析后调 Bedrock 模型接口，结果 PutObject 存回。",
+          "建带动作组的 Bedrock 智能体，指令写明解析方式，动作组管取数、调模型、存回。",
+          "建带单个动作组的 Bedrock 智能体，组里配 3 个函数分别取数、解析调模型、存回。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断取抽审存的确定性流程须用工作流节点而非智能体推理",
+          "reasoningGoal": "先识别取抽审存四步的确定性；再据此确认 Flows 节点加表达式加智能体审核的方案成立；并排除 Pass 解析、动作组自解析、单组三函数等不成立描述。"
+        },
+        "generatedAt": 1789478005107,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7ac3ae80",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-f7ff68dd",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-20",
+          "topic": "agent-loop",
+          "subtopic": "Bedrock Flows 文档工作流（S3 节点 + 表达式）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock-flows",
+            "s3",
+            "agent",
+            "workflow",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司建工作流在发送前审核面向客户的沟通内容：用预定义模板生成并存于 S3。工作流须抽取模板特定部分发给 Bedrock 模型，并把模型响应存回原 S3 桶。哪个方案满足？（单选）",
+          "options": [
+            "在 Bedrock Flows 建流：首尾用 S3 动作节点取/存沟通内容与模型响应，中间用表达式解析每条沟通内容，配 agent 步骤把解析输入送模型审核",
+            "Step Functions Express 状态机：S3 GetObject 取内容，Pass 内在函数解析并传给 Bedrock InvokeModel，S3 PutObject 存回",
+            "建带 action group 的 Bedrock agent，指令定义如何解析，action group 负责取 S3、调 Bedrock、存回 S3",
+            "建带单个 action group 的 Bedrock agent，组内配 3 个 Lambda 分别取 S3、解析并调 Bedrock、存回 S3"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-20__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "出版社出书前审稿：Word 稿存对象存储，须抽出敏感段落送模型判定、判定书存回原处。哪个方案满足？",
+        "options": [
+          "用 Bedrock Flows 建流：首尾 S3 动作节点取稿件、存报告，中间表达式抽敏感段，配 agent 步骤送模型判定。",
+          "Step Functions Express 状态机：取稿后 Pass 函数抽段并调模型接口，结果写回对象存储。",
+          "建带动作组的 Bedrock 智能体：解析规则写进指令，动作组负责取稿、调模型、存报告。",
+          "单个动作组的 Bedrock 智能体：组内 3 个函数分管取稿、抽段调模型、存报告。"
+        ],
+        "angle": "architecture",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从审稿取抽存的流程形态推出节点编排而非推理的结论",
+          "reasoningGoal": "先确认审稿流程固定的环节顺序；再据此确认节点取稿加表达式抽段加送审的方案成立；并排除状态机 Pass、指令自解析、单组塞三函数等不成立描述。"
+        },
+        "generatedAt": 1789478005108,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7ac3ae80",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-5b2d4acc",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-20",
+          "topic": "agent-loop",
+          "subtopic": "Bedrock Flows 文档工作流（S3 节点 + 表达式）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock-flows",
+            "s3",
+            "agent",
+            "workflow",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司建工作流在发送前审核面向客户的沟通内容：用预定义模板生成并存于 S3。工作流须抽取模板特定部分发给 Bedrock 模型，并把模型响应存回原 S3 桶。哪个方案满足？（单选）",
+          "options": [
+            "在 Bedrock Flows 建流：首尾用 S3 动作节点取/存沟通内容与模型响应，中间用表达式解析每条沟通内容，配 agent 步骤把解析输入送模型审核",
+            "Step Functions Express 状态机：S3 GetObject 取内容，Pass 内在函数解析并传给 Bedrock InvokeModel，S3 PutObject 存回",
+            "建带 action group 的 Bedrock agent，指令定义如何解析，action group 负责取 S3、调 Bedrock、存回 S3",
+            "建带单个 action group 的 Bedrock agent，组内配 3 个 Lambda 分别取 S3、解析并调 Bedrock、存回 S3"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-22": [
+      {
+        "id": "aws-genai-developer-pro-22__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "季报每批 5 份、三类分析串行要 45 秒，10 秒交卷怎么达标？",
+        "options": [
+          "Lambda 配预留并发，每类分析串行跑，超时掐 10 秒，指数退避自动重试。",
+          "Step Functions 用 Parallel 状态把三类分析并发跑起来。",
+          "SQS 先缓冲请求，多 Lambda 备好预留并发，各自串行处理不同方面再合并。",
+          "ECS 集群容器串行处理，负载均衡分批次，按 CPU 自动扩缩容。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断串行瓶颈须用分支并发消除而非加并发额度",
+          "reasoningGoal": "先定位串行执行这一瓶颈根源；再据此确认 Parallel 分支并发的方案成立；并排除预留并发串行、队列加函数串行、容器扩缩等不成立描述。"
+        },
+        "generatedAt": 1789478005108,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-81eec0a7",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-cbb91047",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-22",
+          "topic": "system-design",
+          "subtopic": "批量报告并行处理（Step Functions Parallel）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "step-functions",
+            "parallel",
+            "bedrock",
+            "batch",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融机构用 Bedrock 建文档分析系统处理季度报告：分析财务数据、做情感分析、跨批次做合规校验，每批 5 份报告、每份需多次 FM 调用，须每批 10 秒内完成（当前串行需 45 秒）。哪个方案满足？（单选）",
+          "options": [
+            "Lambda 配预留并发，串行处理每类分析，超时 10 秒，指数退避自动重试",
+            "Step Functions 用 Parallel 状态并发跑三类分析",
+            "SQS 缓冲请求，多 Lambda 预留并发，各 Lambda 串行处理报告不同方面再合并",
+            "ECS 集群容器串行处理，负载均衡分发批次，按 CPU 自动扩缩"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-22__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "风控日报 200 页，三段解析串行跑要 45 秒，但交易开盘前 10 秒必须出结果。哪个方案达标？",
+        "options": [
+          "函数配预留并发逐类串行解析，超时 10 秒掐断，指数退避重试。",
+          "Step Functions 切 Parallel 状态，三段解析并发执行。",
+          "队列缓冲请求叠加预留并发函数，各函数串行啃不同段落再汇总。",
+          "容器集群串行解析，负载均衡派单，按 CPU 自动扩缩。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从开盘时限的硬约束推出并发分支是唯一达标路径",
+          "reasoningGoal": "先确认时限要求排除一切串行形态；再据此确认状态机并发分支的方案成立；并排除函数串行、队列串行、容器串行等不成立描述。"
+        },
+        "generatedAt": 1789478005109,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-81eec0a7",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-5a75d335",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-22",
+          "topic": "system-design",
+          "subtopic": "批量报告并行处理（Step Functions Parallel）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "step-functions",
+            "parallel",
+            "bedrock",
+            "batch",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融机构用 Bedrock 建文档分析系统处理季度报告：分析财务数据、做情感分析、跨批次做合规校验，每批 5 份报告、每份需多次 FM 调用，须每批 10 秒内完成（当前串行需 45 秒）。哪个方案满足？（单选）",
+          "options": [
+            "Lambda 配预留并发，串行处理每类分析，超时 10 秒，指数退避自动重试",
+            "Step Functions 用 Parallel 状态并发跑三类分析",
+            "SQS 缓冲请求，多 Lambda 预留并发，各 Lambda 串行处理报告不同方面再合并",
+            "ECS 集群容器串行处理，负载均衡分发批次，按 CPU 自动扩缩"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-25": [
+      {
+        "id": "aws-genai-developer-pro-25__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "图文发布平台每小时数千上传，既要拦不当内容、又不能泄露隐私，还要接进 S3 工作流。哪个方案运维最省？",
+        "options": [
+          "开 Enhanced Monitoring 做告警过滤流量，Comprehend 预处理隐私，工作流里挂 Rekognition 审图。",
+          "网关配请求校验模板，入库前筛查一遍，自建审核模型处理后再送 Bedrock。",
+          "用户池用预认证函数做前置审核，文本与图像分别过滤干净，确认达标后才允许上传。",
+          "工作流内置 Bedrock Guardrails 过滤内容，Comprehend 预处理隐私，Rekognition 负责审图。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能判断输入输出双侧审核须靠托管护栏而非监控或自建模型",
+          "reasoningGoal": "先识别既不处理也不产出加不泄隐私的三重要求；再据此确认内置护栏加预处理加编排的方案成立；并排除监控告警、自建模型、只审上传侧等不成立描述。"
+        },
+        "generatedAt": 1789478005109,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-48561fd3",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-81a56214",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-25",
+          "topic": "agent-guardrails",
+          "subtopic": "内容审核与 PII（Bedrock Guardrails + Comprehend + Rekognition）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "guardrails",
+            "comprehend",
+            "rekognition",
+            "content-moderation",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某媒体公司发布平台，每小时数千用户上传图文，用 Bedrock 处理并生成创意合成。公司要确保平台既不处理也不产出不当内容、不在合成中泄露 PII，且要与现有 S3 存储工作流集成。哪个方案以最低基础设施管理开销满足？（单选）",
+          "options": [
+            "启用 Enhanced Monitoring，用 CloudWatch 告警过滤流量，Comprehend PII 预处理，Step Functions 含 Rekognition 图像审核",
+            "API Gateway HTTP API 配请求校验模板在存 S3 前筛查，SageMaker 自建内容审核模型处理后送 Bedrock",
+            "Cognito 用户池用预认证 Lambda 做审核，Textract 过滤文本、Rekognition 过滤图像后才允许上传",
+            "Step Functions 工作流用内置 Bedrock Guardrails 过滤内容，Comprehend 做 PII 预处理，Rekognition 做图像审核"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-25__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "短视频 App 每天百万级投稿，涉黄涉暴与身份证号泄露都要防，审核须嵌进现有存储链路。哪个方案基础设施包袱最轻？",
+        "options": [
+          "启用增强监控配告警过滤流量，Comprehend 先脱敏，工作流内 Rekognition 审图。",
+          "网关侧用请求校验模板做前置筛查，自建内容审核模型过一遍后再送模型生成。",
+          "登录态启用预认证拦截做前置审核，图文过滤全部通过，确认后才允许投稿。",
+          "工作流内建 Bedrock Guardrails 做内容过滤，Comprehend 脱敏，Rekognition 审图。"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从百万投稿加存储链路的要求推出托管护栏编排的结论",
+          "reasoningGoal": "先明确海量与链路嵌入两项约束；再据此确认护栏过滤加脱敏加审图的方案成立；并排除增强监控、自建审核、登录拦截等不成立描述。"
+        },
+        "generatedAt": 1789478005109,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-48561fd3",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-26a05021",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-25",
+          "topic": "agent-guardrails",
+          "subtopic": "内容审核与 PII（Bedrock Guardrails + Comprehend + Rekognition）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "guardrails",
+            "comprehend",
+            "rekognition",
+            "content-moderation",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某媒体公司发布平台，每小时数千用户上传图文，用 Bedrock 处理并生成创意合成。公司要确保平台既不处理也不产出不当内容、不在合成中泄露 PII，且要与现有 S3 存储工作流集成。哪个方案以最低基础设施管理开销满足？（单选）",
+          "options": [
+            "启用 Enhanced Monitoring，用 CloudWatch 告警过滤流量，Comprehend PII 预处理，Step Functions 含 Rekognition 图像审核",
+            "API Gateway HTTP API 配请求校验模板在存 S3 前筛查，SageMaker 自建内容审核模型处理后送 Bedrock",
+            "Cognito 用户池用预认证 Lambda 做审核，Textract 过滤文本、Rekognition 过滤图像后才允许上传",
+            "Step Functions 工作流用内置 Bedrock Guardrails 过滤内容，Comprehend 做 PII 预处理，Rekognition 做图像审核"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-28": [
+      {
+        "id": "aws-genai-developer-pro-28__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "全球推荐要在多个模型间按法规成本性能切换，阈值区域规则 A/B 实时变，不重新部署、毫秒级同步到数千并发。哪种方案满足？",
+        "options": [
+          "部署函数并用环境变量存路由规则与模型 ID，业务变了去控制台改变量，网关读取请求参数做路由。",
+          "网关侧用请求转换模板按请求属性做路由，模型端点存为阶段变量备用，切换模型时更新变量值即可。",
+          "AWS Lambda 逐请求从 AppConfig Agent 拉取路由配置，Lambda 内运行业务逻辑选模型，单一 API Gateway 端点暴露。",
+          "网关 Lambda authorizer 评估 AppConfig 路由规则，返回业务授权上下文，请求路由到各模型专属函数。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断动态策略加免部署加即时同步须用集中配置拉取而非环境变量或网关变量",
+          "reasoningGoal": "先识别策略高频变与免部署即时生效的约束组合；再据此确认逐请求拉配置加函数内业务逻辑的方案成立；并排除环境变量、网关变量、授权器路由等不成立描述。"
+        },
+        "generatedAt": 1789478005110,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d4d51143",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-a81a32ed",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-28",
+          "topic": "model-selection",
+          "subtopic": "动态模型路由（AppConfig + Lambda 业务逻辑）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "appconfig",
+            "lambda",
+            "api-gateway",
+            "routing",
+            "a-b-testing",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某电商全球推荐系统须按法规、成本、性能在多个 Bedrock FM 间切换；须按专有业务逻辑强制控制（动态成本阈值、区域合规规则、跨 FM 实时 A/B）；切换 FM 不得重新部署代码；按用户层级/交易额/监管区/每小时变化的实时成本指标路由，且须即时传播到数千并发请求。哪种方案满足？（单选）",
+          "options": [
+            "部署 AWS Lambda，用环境变量存储路由规则与 Bedrock FM ID；业务变化时在 Lambda 控制台更新环境变量；用 API Gateway REST 读取请求参数做路由。",
+            "用 API Gateway REST 请求转换模板按请求属性实现路由，Bedrock FM 端点存为阶段变量，切换模型时更新变量。",
+            "配置 AWS Lambda 在每个请求时从 AWS AppConfig Agent 拉取路由配置，在 Lambda 内运行业务逻辑为每个请求选 FM，通过单一 API Gateway REST 端点暴露。",
+            "用 API Gateway REST 的 Lambda authorizer 评估存于 AppConfig 的路由规则，返回基于业务逻辑的授权上下文，将请求路由到各 FM 专属 Lambda。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-28__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "跨境支付路由要在多家风控模型间按区域法规、成本、延迟切换，策略分钟级变，不发版、全网并发即时生效。哪种方案满足？",
+        "options": [
+          "函数用环境变量存路由规则与模型标识，策略变了改控制台变量，网关读参数路由。",
+          "网关侧用转换模板按请求属性做路由，模型端点放阶段变量，切模型改变量值。",
+          "AWS Lambda 接 AWS AppConfig Agent 逐请求拉配置，函数内业务逻辑选模型，单一网关端点暴露。",
+          "网关授权器读 AppConfig 路由规则，返回业务授权上下文，请求分发到各模型专属函数。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从分钟级策略变化推出配置拉取加函数内决策的结论",
+          "reasoningGoal": "先明确策略变化频率与生效时效的要求；再据此确认拉配置加业务逻辑选模型的方案成立；并排除改变量、切变量、授权器分发等不成立描述。"
+        },
+        "generatedAt": 1789478005110,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d4d51143",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-3d0bfe13",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-28",
+          "topic": "model-selection",
+          "subtopic": "动态模型路由（AppConfig + Lambda 业务逻辑）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "appconfig",
+            "lambda",
+            "api-gateway",
+            "routing",
+            "a-b-testing",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某电商全球推荐系统须按法规、成本、性能在多个 Bedrock FM 间切换；须按专有业务逻辑强制控制（动态成本阈值、区域合规规则、跨 FM 实时 A/B）；切换 FM 不得重新部署代码；按用户层级/交易额/监管区/每小时变化的实时成本指标路由，且须即时传播到数千并发请求。哪种方案满足？（单选）",
+          "options": [
+            "部署 AWS Lambda，用环境变量存储路由规则与 Bedrock FM ID；业务变化时在 Lambda 控制台更新环境变量；用 API Gateway REST 读取请求参数做路由。",
+            "用 API Gateway REST 请求转换模板按请求属性实现路由，Bedrock FM 端点存为阶段变量，切换模型时更新变量。",
+            "配置 AWS Lambda 在每个请求时从 AWS AppConfig Agent 拉取路由配置，在 Lambda 内运行业务逻辑为每个请求选 FM，通过单一 API Gateway REST 端点暴露。",
+            "用 API Gateway REST 的 Lambda authorizer 评估存于 AppConfig 的路由规则，返回基于业务逻辑的授权上下文，将请求路由到各 FM 专属 Lambda。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-30": [
+      {
+        "id": "aws-genai-developer-pro-30__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "学生笔记应用晚间高峰报限流，要求持续运行能扛突发、低峰不花固定费用。哪种方案满足？",
+        "options": [
+          "自建指标监控模型错误，预置吞吐长期顶到观测峰值以上，用常驻容量接全部流量且不计固定费用。",
+          "自建指标监控错误，限流时才切备份区域，不调流量分布也不开跨区域推理端点。",
+          "开 Bedrock 调用日志，盯调用量与输入输出 token 及限流指标，把流量分散到跨区域推理端点。",
+          "开 Bedrock 调用日志，盯延迟与客户端服务端错误，把请求分散到同一模型的多个版本号扩容。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能判断突发限流须靠调用可见性加跨区域分流而非常驻容量或切区",
+          "reasoningGoal": "先识别扛突发与零固定费用的双重约束；再据此确认开日志监控加跨区域分流的方案成立；并排除常驻预置、限流才切区、分散版本号等不成立描述。"
+        },
+        "generatedAt": 1789478005111,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8b1af8f3",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-d0578c97",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-30",
+          "topic": "reliability",
+          "subtopic": "限流治理（调用日志 + 跨区域推理端点）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "cross-region-inference",
+            "throttling",
+            "cloudwatch",
+            "serverless",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Lambda 帮助学生全球总结笔记，调用 Bedrock 的 Claude。流量集中在各时区晚间，高峰期用户报限流错误。须在持续运行前提下解决限流，且低峰不得产生固定小时费用。哪种方案满足？（单选）",
+          "options": [
+            "建立自定义 CloudWatch 指标监控模型错误，并将预置吞吐（Provisioned Throughput）持续设得高于观测峰值，用常驻容量吸收全部流量而不计固定小时费用",
+            "建立自定义 CloudWatch 指标监控错误，仅在限流发生时故障转移到备份区域，不调整流量分布策略也不启用跨区域推理端点",
+            "开启 Bedrock 调用日志，监控 Invocations/InputTokenCount/OutputTokenCount/Invocation Throttles，将流量分散到跨区域推理端点。",
+            "开启 Bedrock 调用日志，监控 InvocationLatency/ClientErrors/ServerErrors，并将请求分散到同一模型的多个版本号（model version）以扩容"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-30__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "选课系统每学期抢课夜必崩：限流报错一片，但平时流量很低，不想为空转容量付费。哪种方案满足？",
+        "options": [
+          "自定义指标看模型错误，预置吞吐常年高于峰值，常驻容量全接管且宣称不收固定费。",
+          "自定义指标看错误，限流才切备份区，流量策略不动，也不开跨区域推理。",
+          "打开调用日志看调用量 token 与限流，把流量铺到跨区域推理端点。",
+          "打开调用日志看延迟与各类错误，把请求铺到同一模型多个版本号上扩容。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从抢课夜必崩的潮汐流量推出按需分流而非包容量的结论",
+          "reasoningGoal": "先明确潮汐特征排除常驻方案；再据此确认日志可见加跨区域铺流量的方案成立；并排除自定义加常驻、被动切区、版本号扩容等不成立描述。"
+        },
+        "generatedAt": 1789478005111,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8b1af8f3",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-b2168978",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-30",
+          "topic": "reliability",
+          "subtopic": "限流治理（调用日志 + 跨区域推理端点）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "cross-region-inference",
+            "throttling",
+            "cloudwatch",
+            "serverless",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司用 Lambda 帮助学生全球总结笔记，调用 Bedrock 的 Claude。流量集中在各时区晚间，高峰期用户报限流错误。须在持续运行前提下解决限流，且低峰不得产生固定小时费用。哪种方案满足？（单选）",
+          "options": [
+            "建立自定义 CloudWatch 指标监控模型错误，并将预置吞吐（Provisioned Throughput）持续设得高于观测峰值，用常驻容量吸收全部流量而不计固定小时费用",
+            "建立自定义 CloudWatch 指标监控错误，仅在限流发生时故障转移到备份区域，不调整流量分布策略也不启用跨区域推理端点",
+            "开启 Bedrock 调用日志，监控 Invocations/InputTokenCount/OutputTokenCount/Invocation Throttles，将流量分散到跨区域推理端点。",
+            "开启 Bedrock 调用日志，监控 InvocationLatency/ClientErrors/ServerErrors，并将请求分散到同一模型的多个版本号（model version）以扩容"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-32": [
+      {
+        "id": "aws-genai-developer-pro-32__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "无状态 MCP 服务跑在函数上，要给内部与授权三方用，强认证、运维最省。哪个附加步骤满足？",
+        "options": [
+          "用 Lambda Invoke 接口自建传输层，IAM 认证并授权函数调用权限，传输层自己运维。",
+          "经网关 REST 暴露函数，API key 认证，应用改标准 HTTP 不走 MCP 协议。",
+          "建 Lambda Function URL 并启用自定义 Streamable HTTP 传输加 SigV4，IAM 认证并授权 URL 调用。",
+          "经网关 HTTP 接口暴露函数（流式 HTTP 传输），Cognito 做 OAuth 认证，网关校验令牌。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断函数化 MCP 对外须用托管网关加标准鉴权而非自建传输",
+          "reasoningGoal": "先识别强认证加最低运维的双重要求；再据此确认网关暴露加令牌校验的步骤成立；并排除自建传输、改协议加 key、自建流式传输等不成立描述。"
+        },
+        "generatedAt": 1789478005111,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d64acf79",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-f6c7e4aa",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-32",
+          "topic": "mcp",
+          "subtopic": "MCP 服务器对外暴露（API Gateway HTTP + Cognito OAuth）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "mcp",
+            "api-gateway",
+            "cognito",
+            "oauth",
+            "lambda",
+            "security",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司把本地无状态 MCP 服务器部署为 Lambda 以支撑生产应用；须能被内部应用与授权第三方伙伴访问，并强制严格认证授权。哪种附加步骤以最低运维开销满足？（单选）",
+          "options": [
+            "用 Lambda Invoke API 自建传输，IAM 认证并授权 InvokeFunction 权限。",
+            "经 API Gateway REST 暴露 Lambda，用 API key 认证，应用改用标准 HTTP 而非 MCP 协议。",
+            "建 Lambda Function URL 并启用自定义 Streamable HTTP 传输 + SigV4，IAM 认证并授权 InvokeFunctionUrl。",
+            "经 API Gateway HTTP API 暴露 Lambda（Streamable HTTP 传输），用 Cognito 实现 OAuth 认证，API Gateway 校验 OAuth 令牌。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-32__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "团队把内部检索 MCP 服务容器化后要开放给合作方试用，令牌鉴权必须有，改造成本最低。哪个步骤满足？",
+        "options": [
+          "传输层自己动手：走 Lambda Invoke 接口做调用，IAM 认证并授予函数调用权限。",
+          "应用层改弦：函数经网关 REST 暴露，API key 做认证，标准 HTTP 替代 MCP 协议。",
+          "自定义传输配签名：起 Lambda Function URL 通道，Streamable HTTP 承载，SigV4 签名加 IAM 认证，校验 URL 调用。",
+          "网关 HTTP 接口暴露函数走流式传输，Cognito 发 OAuth 令牌，网关验令牌。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从开放试用加令牌鉴权的约束推出托管暴露的结论",
+          "reasoningGoal": "先明确试用场景的认证与成本边界；再据此确认网关暴露加令牌校验的步骤成立；并排除直调自建、切协议、自定义传输等不成立描述。"
+        },
+        "generatedAt": 1789478005112,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d64acf79",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-4589c050",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-32",
+          "topic": "mcp",
+          "subtopic": "MCP 服务器对外暴露（API Gateway HTTP + Cognito OAuth）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "mcp",
+            "api-gateway",
+            "cognito",
+            "oauth",
+            "lambda",
+            "security",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司把本地无状态 MCP 服务器部署为 Lambda 以支撑生产应用；须能被内部应用与授权第三方伙伴访问，并强制严格认证授权。哪种附加步骤以最低运维开销满足？（单选）",
+          "options": [
+            "用 Lambda Invoke API 自建传输，IAM 认证并授权 InvokeFunction 权限。",
+            "经 API Gateway REST 暴露 Lambda，用 API key 认证，应用改用标准 HTTP 而非 MCP 协议。",
+            "建 Lambda Function URL 并启用自定义 Streamable HTTP 传输 + SigV4，IAM 认证并授权 InvokeFunctionUrl。",
+            "经 API Gateway HTTP API 暴露 Lambda（Streamable HTTP 传输），用 Cognito 实现 OAuth 认证，API Gateway 校验 OAuth 令牌。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-33": [
+      {
+        "id": "aws-genai-developer-pro-33__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "推荐里混进无售商品还慢，确认有目录外虚构。哪个方案让推荐落地目录并提速？",
+        "options": [
+          "拉高护栏接地程度，开启自动化推理检查，并配预置吞吐容量。",
+          "提示工程把响应约束在相关商品范围，流式输出降低感知延迟。",
+          "建 Bedrock 知识库做 RAG，性能配置延迟项设为 optimized 低延迟档。",
+          "商品目录存 OpenSearch，推荐先验目录命中，DynamoDB 做响应缓存。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能判断虚构与慢须靠目录接地加低延迟配置而非护栏或提示",
+          "reasoningGoal": "先区分虚构归因与延迟归因两条线；再据此确认知识库接地加低延迟配置的方案成立；并排除护栏检查、提示约束、目录后验加缓存等不成立描述。"
+        },
+        "generatedAt": 1789478005112,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-5843ed26",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-d744c056",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-33",
+          "topic": "rag",
+          "subtopic": "推荐落地产品目录（Bedrock 知识库 + RAG）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "knowledge-base",
+            "rag",
+            "performance-config",
+            "recommendation",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某电商用 Bedrock+Claude 做商品推荐，用户反映部分推荐商品网站无售或不相关，且部分推荐生成慢；确认推荐了不在商品目录中的商品。须解决该问题。哪种方案满足？（单选）",
+          "options": [
+            "提高 Bedrock Guardrails 接地程度，启用 Automated Reasoning 检查，设预置吞吐。",
+            "用提示工程将模型响应限制在相关商品，用 InvokeModelWithResponseStream 流式降低感知延迟。",
+            "建 Bedrock 知识库，实施 RAG，将 PerformanceConfigLatency 设为 optimized。",
+            "将商品目录存 OpenSearch，校验模型推荐是否命中目录，用 DynamoDB 做响应缓存。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-33__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "订票推荐冒出不存在的航班还慢，查实推荐了库外虚构项。哪个方案让推荐落回目录并提速？",
+        "options": [
+          "提高护栏接地程度，启用自动化推理检查，并配置吞吐预置。",
+          "提示词限定相关商品范围，流式返回降低体感延迟水平。",
+          "建 Bedrock 知识库实施 RAG，性能延迟配置设为 optimized 低延迟档。",
+          "目录落 OpenSearch，推荐命中目录才放行，响应进 DynamoDB 缓存。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从库外虚构的证据推出生成前接地的必要性",
+          "reasoningGoal": "先确认虚构源于未以目录为准；再据此确认知识库接地加低延迟的方案成立；并排除接地检查、提示限定、后验缓存等不成立描述。"
+        },
+        "generatedAt": 1789478005112,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-5843ed26",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-4f46812e",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-33",
+          "topic": "rag",
+          "subtopic": "推荐落地产品目录（Bedrock 知识库 + RAG）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "knowledge-base",
+            "rag",
+            "performance-config",
+            "recommendation",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某电商用 Bedrock+Claude 做商品推荐，用户反映部分推荐商品网站无售或不相关，且部分推荐生成慢；确认推荐了不在商品目录中的商品。须解决该问题。哪种方案满足？（单选）",
+          "options": [
+            "提高 Bedrock Guardrails 接地程度，启用 Automated Reasoning 检查，设预置吞吐。",
+            "用提示工程将模型响应限制在相关商品，用 InvokeModelWithResponseStream 流式降低感知延迟。",
+            "建 Bedrock 知识库，实施 RAG，将 PerformanceConfigLatency 设为 optimized。",
+            "将商品目录存 OpenSearch，校验模型推荐是否命中目录，用 DynamoDB 做响应缓存。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-35": [
+      {
+        "id": "aws-genai-developer-pro-35__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "客服多轮对话要留上下文、歧义走澄清、每轮加密存，还要扛数千并发。哪个方案满足？",
+        "options": [
+          "Express 工作流编排对话，函数跑澄清逻辑，对话历史存关系库以会话 ID 为主键。",
+          "标准工作流编排澄清流程，含等待回调模式管理流程，对话历史存 DynamoDB 按需容量并开服务端加密。",
+          "网关 REST 路由到函数更新获取上下文，对话历史存对象存储并加密，每轮存独立 JSON。",
+          "函数调模型推理，消息队列编排澄清步骤，对话历史存 Redis 并加密。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断多轮澄清加加密留存加高并发须用标准工作流加回调加 NoSQL",
+          "reasoningGoal": "先拆出上下文保持、澄清暂停、加密、高并发四项要求；再据此确认标准流加回调加按需库的方案成立；并排除 Express 加关系库、网关加对象存储、队列加缓存等不成立描述。"
+        },
+        "generatedAt": 1789478005112,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-24c6da65",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-5f70785b",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-35",
+          "topic": "agent-loop",
+          "subtopic": "多轮对话与澄清（Step Functions 标准 + Wait for Callback + DynamoDB）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "step-functions",
+            "dynamodb",
+            "conversation",
+            "clarification",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某客服应用用 Bedrock+Claude 推荐商品，须跨多次交互保留对话上下文、对歧义查询跑澄清工作流、加密留存每轮对话用于个性化，并支撑数千并发且响应快。哪种方案满足？（单选）",
+          "options": [
+            "用 Step Functions Express 工作流编排对话，Lambda 跑澄清逻辑，对话历史存 RDS 以 session ID 为主键。",
+            "用 Step Functions 标准工作流编排澄清工作流，含 Wait for a Callback 模式管理流程，对话历史存 DynamoDB 按需容量并启用服务端加密。",
+            "用 API Gateway REST 路由到 Lambda 更新/获取上下文，对话历史存 S3 并服务端加密，每次交互存为独立 JSON。",
+            "用 Lambda 调 Bedrock 推理，SQS 队列编排澄清步骤，对话历史存 ElastiCache(Redis) 并加密。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-35__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "售后机器人多轮追问要记住上下文、含糊处反问确认、聊天记录加密留存，高峰并发大。哪个方案满足？",
+        "options": [
+          "Express 工作流串对话，澄清逻辑放函数，历史进关系库按会话主键存。",
+          "标准工作流排布澄清流程，等待回调机制控流程，对话历史落 DynamoDB 按需容量且服务端加密。",
+          "网关 REST 进函数读写上下文，历史放对象存储加密，每轮一个独立 JSON。",
+          "函数请求模型推理，消息队列串起澄清步骤，历史放 Redis 加密保存。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从追问反问加留存的场景推出可暂停工作流加持久存储的结论",
+          "reasoningGoal": "先识别反问确认须暂停等待的特性；再据此确认标准流加回调加加密库的方案成立；并排除 Express 串对话、网关读写、队列串步骤等不成立描述。"
+        },
+        "generatedAt": 1789478005113,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-24c6da65",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-9dea2e66",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-35",
+          "topic": "agent-loop",
+          "subtopic": "多轮对话与澄清（Step Functions 标准 + Wait for Callback + DynamoDB）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "step-functions",
+            "dynamodb",
+            "conversation",
+            "clarification",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某客服应用用 Bedrock+Claude 推荐商品，须跨多次交互保留对话上下文、对歧义查询跑澄清工作流、加密留存每轮对话用于个性化，并支撑数千并发且响应快。哪种方案满足？（单选）",
+          "options": [
+            "用 Step Functions Express 工作流编排对话，Lambda 跑澄清逻辑，对话历史存 RDS 以 session ID 为主键。",
+            "用 Step Functions 标准工作流编排澄清工作流，含 Wait for a Callback 模式管理流程，对话历史存 DynamoDB 按需容量并启用服务端加密。",
+            "用 API Gateway REST 路由到 Lambda 更新/获取上下文，对话历史存 S3 并服务端加密，每次交互存为独立 JSON。",
+            "用 Lambda 调 Bedrock 推理，SQS 队列编排澄清步骤，对话历史存 ElastiCache(Redis) 并加密。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-37": [
+      {
+        "id": "aws-genai-developer-pro-37__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "数百提示模板多团队多区域用，要版本、审批流、审计轨迹、参数化保质量。哪个方案满足？",
+        "options": [
+          "Bedrock Studio 管模板，仪表盘看用量，审批状态存 DynamoDB，函数强制审批。",
+          "Bedrock Prompt Management 做版本控制，CloudTrail 记审计日志，IAM 管审批权限，变量建参数化模板。",
+          "Step Functions 搭审批工作流，提示放对象存储打标签版本化，事件总线发通知。",
+          "SageMaker Canvas 存模板，基础设施即代码做版本，配置服务强制审批策略。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断模板治理须靠原生版本加审计加权限而非自拼状态表",
+          "reasoningGoal": "先识别版本审批审计参数化四项治理要求；再据此确认提示管理加审计加权限的方案成立；并排除 Studio 加状态表、标签版本、Canvas 方案等不成立描述。"
+        },
+        "generatedAt": 1789478005113,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a680fab1",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-cd921212",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-37",
+          "topic": "context-engineering",
+          "subtopic": "提示治理（Bedrock Prompt Management + CloudTrail + IAM）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "prompt-management",
+            "cloudtrail",
+            "iam",
+            "versioning",
+            "governance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某媒体公司须用 Bedrock 建立 AI 内容治理：管理数百个提示模板，多团队多区域使用；须版本控制 + 含待审通知的审批工作流 + 详细审计轨迹 + 一致参数化以保质量。哪种方案满足？（单选）",
+          "options": [
+            "用 Bedrock Studio 提示模板，CloudWatch 仪表盘展示用量，DynamoDB 存审批状态，Lambda 强制审批。",
+            "用 Bedrock Prompt Management 做版本控制，配 CloudTrail 审计日志，IAM 策略控制审批权限，用变量建参数化模板。",
+            "用 Step Functions 建审批工作流，提示存 S3 并用标签做版本控制，EventBridge 发通知。",
+            "部署 SageMaker Canvas 存 S3 的提示模板，CloudFormation 做版本控制，AWS Config 强制审批策略。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-37__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "法务要求所有对外话术模板可审计：谁改的、改了什么、何时生效全留痕，数百模板跨区复用。哪个方案满足？",
+        "options": [
+          "Studio 维护模板，用量进仪表盘，审批状态落 DynamoDB，函数卡审批。",
+          "Prompt Management 版本化管理，CloudTrail 留审计轨迹，IAM 控审批权限，变量做参数化。",
+          "工作流引擎跑审批流，模板存对象存储贴标签做版本，事件通知到相关人。",
+          "Canvas 集中存模板，模板按代码做版本管理，配置规则强制审批流程。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从改了什么何时生效的留痕要求推出版本化加审计的结论",
+          "reasoningGoal": "先明确留痕须不可变版本历史；再据此确认版本化加审计轨迹加权限的方案成立；并排除用量仪表、标签版本、代码版本等不成立描述。"
+        },
+        "generatedAt": 1789478005114,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a680fab1",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-7bcbc7ec",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-37",
+          "topic": "context-engineering",
+          "subtopic": "提示治理（Bedrock Prompt Management + CloudTrail + IAM）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "prompt-management",
+            "cloudtrail",
+            "iam",
+            "versioning",
+            "governance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某媒体公司须用 Bedrock 建立 AI 内容治理：管理数百个提示模板，多团队多区域使用；须版本控制 + 含待审通知的审批工作流 + 详细审计轨迹 + 一致参数化以保质量。哪种方案满足？（单选）",
+          "options": [
+            "用 Bedrock Studio 提示模板，CloudWatch 仪表盘展示用量，DynamoDB 存审批状态，Lambda 强制审批。",
+            "用 Bedrock Prompt Management 做版本控制，配 CloudTrail 审计日志，IAM 策略控制审批权限，用变量建参数化模板。",
+            "用 Step Functions 建审批工作流，提示存 S3 并用标签做版本控制，EventBridge 发通知。",
+            "部署 SageMaker Canvas 存 S3 的提示模板，CloudFormation 做版本控制，AWS Config 强制审批策略。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-39": [
+      {
+        "id": "aws-genai-developer-pro-39__surface-options__manual-bn__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "视频服务想拿客户专属上下文富化提示，客户要保留数据所有权、不在自家机房装东西。哪个方案满足？",
+        "options": [
+          "每客户建 Amazon Q Business 索引并指定服务方为数据访问者，运行时经安全接口取回相关内容富化提示。",
+          "给每客户部署实时 MCP 服务器做联邦检索，生成时实时取数，但要在客户环境部署、集成复杂。",
+          "每客户配 Bedrock 知识库并开放跨账号查询，取结构化数据做提示增强，需直连并重建索引。",
+          "配 Kendra 爬客户数据源，跨账号共享索引做查询增强，需直连数据源并重建索引。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断数据主权场景须用客户侧索引加受控访问而非复制或直连",
+          "reasoningGoal": "先识别所有权保留与免部署两项红线；再据此确认客户建索引加授权访问的方案成立；并排除联邦部署、知识库直连、爬取集中索引等不成立描述。"
+        },
+        "generatedAt": 1789478005114,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ddab2f64",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-7d9e212c",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-39",
+          "topic": "rag",
+          "subtopic": "客户数据主权（Amazon Q Business 索引 + 安全 API 富化）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "amazon-q-business",
+            "data-governance",
+            "cross-account",
+            "prompt-enrichment",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "Example Corp 的视频生成服务被数百万企业客户使用，客户提交提示给自有 GenAI 模型；为提升相关性想用客户专属上下文（产品偏好/属性/历史）富化提示。客户有严格数据治理要求、须保留数据所有权与控制权，不需实时但语义准确度要高、检索延迟低；希望最小化集成复杂度，除非必要不在客户环境部署服务。哪种方案满足？（单选）",
+          "options": [
+            "让每客户建 Amazon Q Business 索引并指定 Example Corp 为数据访问者，经安全 API 在运行时取回相关内容富化提示。",
+            "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数，需在客户环境部署且集成复杂度高。",
+            "让每客户配置 Bedrock 知识库，允许跨账号查询供 Example Corp 取结构化数据做提示增强，需直连并重建每客户索引。",
+            "配置 Amazon Kendra 爬取客户数据源，跨账号共享索引供 Example Corp 查询增强，需直连客户数据源并重建索引。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-39__context-options__manual-bn__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "音乐平台想用听众的站内歌单偏好富化推荐语，版权方要求数据不出自家、平台侧不存全量复制，所有原始数据仍归版权方所有。哪个方案满足？",
+        "options": [
+          "各客户自建 Amazon Q Business 索引并授权平台为访问者，运行时调安全接口取相关内容富化提示。",
+          "逐客户部署实时 MCP 服务器联邦检索，生成时取数，客户侧须部署且集成重。",
+          "各客户建 Bedrock 知识库并开跨账号查询，拉结构化数据增强提示，需直连重建索引。",
+          "Kendra 爬数据源建集中索引跨账号共享做增强，需直连数据源并重建索引。"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从数据不出自家的约束推出索引留客户侧加运行时取用的结论",
+          "reasoningGoal": "先明确不出自家排除复制与直连；再据此确认自建索引加授权取用的方案成立；并排除逐客户部署、跨账号拉取、集中爬取等不成立描述。"
+        },
+        "generatedAt": 1789478005114,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ddab2f64",
+        "batch": "manual-bn",
+        "model": "manual",
+        "contentHash": "fnv1a-389e8dc9",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-39",
+          "topic": "rag",
+          "subtopic": "客户数据主权（Amazon Q Business 索引 + 安全 API 富化）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "amazon-q-business",
+            "data-governance",
+            "cross-account",
+            "prompt-enrichment",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "Example Corp 的视频生成服务被数百万企业客户使用，客户提交提示给自有 GenAI 模型；为提升相关性想用客户专属上下文（产品偏好/属性/历史）富化提示。客户有严格数据治理要求、须保留数据所有权与控制权，不需实时但语义准确度要高、检索延迟低；希望最小化集成复杂度，除非必要不在客户环境部署服务。哪种方案满足？（单选）",
+          "options": [
+            "让每客户建 Amazon Q Business 索引并指定 Example Corp 为数据访问者，经安全 API 在运行时取回相关内容富化提示。",
+            "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数，需在客户环境部署且集成复杂度高。",
+            "让每客户配置 Bedrock 知识库，允许跨账号查询供 Example Corp 取结构化数据做提示增强，需直连并重建每客户索引。",
+            "配置 Amazon Kendra 爬取客户数据源，跨账号共享索引供 Example Corp 查询增强，需直连客户数据源并重建索引。"
+          ]
+        }
+      }
+    ]
+  }
+}
