@@ -6,7 +6,7 @@
 //
 // 注意：为保持 Node 侧 tsc 构建（tsconfig.node.json 不含 vite/client）不被
 // src/data/knowledgeMap 的 import.meta.glob 拖垮，本脚本只依赖 src/ai/pi 的
-// callLLM/extractJSON（不拉 knowledge 链），并就地复刻轻量变体管线。VARIANT_SYSTEM
+// callLLM/extractJSON（不拉 knowledge 链），并就地复刻同知识重写管线。VARIANT_SYSTEM
 // 与 src/ai/variant.ts 的 v3 保持一致；结构校验与 src/domain/variant.ts 的 validateVariant
 // 对齐（规范化 → 结构 → 长度泄题）。**不要**改成直接 import domain/variant——它会经
 // knowledge/nodes 拉进 knowledgeMap 的 import.meta.glob，破坏 tsc -b。
@@ -40,10 +40,10 @@ import { parseAIConfig } from '../src/schemas/ai-config';
 import type { AIConfig, ProviderEntry } from '../src/schemas/ai-config';
 import type { Question } from '../src/schemas/question';
 
-// 与 src/ai/variant.ts 的 VARIANT_SYSTEM（v5）保持一致（ADR-080）。
-const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
+// 与 src/ai/variant.ts 的 VARIANT_SYSTEM（v6）保持一致（ADR-080 + 追补）。
+const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
 
-对已有面试题做轻量语义变换：测的是同一件事，但可以像一道真正重新写过的题。
+对已有面试题做同知识重写（same-knowledge rewrite）：测的是同一件事，但可以像一道真正重新写过的题。
 
 任务：
 1. 改写题干，使其场景、问法、表达与原题明显不同。
@@ -53,7 +53,7 @@ const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
 5. 不改变任何选项的正确 / 错误属性。
 6. 不改变选项数量。
 7. 不创造新的 distractor。
-8. 不交换选项顺序，也不挪动选项的语义角色（顺序与答案由程序在后续步骤统一处理）。
+8. 不挪动选项的语义角色：每个输出槽位必须保持原选项的语义角色，不得将两个选项的语义角色互换（顺序与答案由程序在后续步骤统一处理）。
 9. 不生成答案。
 10. 不生成解析。
 
@@ -67,18 +67,18 @@ const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
 - 允许增加用于改变场景、角色、叙事方式的表面背景信息，即使原题没有提过。
 - 红线是「解题必需」：背景不得引入决定答案所必需的新知识、新事实、新前置条件
   或隐藏约束，也不得把正确项独有的关键词泄入题干。
-- 背景优先使用中文与原题已有术语；新增技术术语不超过 2 个。
+- 背景优先使用中文与原题已有术语；不得引入新的解题依赖知识或技术前提——用于构造场景的背景术语可以增加，但不得成为回答问题所必需的条件。
 
 选项改写幅度（重要）：
 - 仅做同义替换 / 加几个字 / 换连接词，属于「轻改」，会被去重门禁判为近重复而整条丢弃。
 - 正确做法是**大幅改写**：换叙述视角、换句式结构、换主语、换例证措辞，让每个选项看起来像是重新写过的，
   但技术结论 / 因果 / 适用条件 / 真假属性一字不改。
-- 允许改变单个选项内部的表达结构，但第 N 项必须仍是原第 N 项的语义角色。
-- 改写后仍须保留原选项的结论关键词，否则会被语义漂移门禁整条丢弃。
+- 允许改变单个选项内部的表达结构，但须满足「语义角色对应」。
+- 允许用不同的自然语言表达原选项的技术结论，不要求保留原题的关键词；但不得改变语义角色、因果关系、适用条件、范围或真假属性。
 
 选项语义角色对应（重要，答案契约）：
-- 输出的第 N 个选项必须仍然是输入第 N 个选项（同一语义角色），**不许把角色挪到别的序号**：
-  程序按序号把原题答案映射到变体，挪动角色会直接判错题。
+- 每个输出槽位必须保持原选项的语义角色，**不得将两个选项的语义角色互换**：
+  程序按序号把原题答案映射到变体，互换角色会直接判错题（顺序本身由程序统一处理，模型不决定顺序）。
 - 只允许改变表达结构，不允许改变因果关系、适用条件、范围、数量或真假属性。
 - 不要给某个选项补充解释、理由或额外结论。
 

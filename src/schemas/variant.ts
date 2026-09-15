@@ -10,7 +10,7 @@ import { z } from 'zod';
 import type { Question } from './question';
 import { assessmentSchema, cognitiveTaskSchema, questionAngleSchema } from './common.ts';
 
-/** 变体改写风格（轻量变体边界内的 4 种风格，不改变「LLM 只做语义变换」的硬约束）。 */
+/** 变体改写风格（同知识重写边界内的 4 种风格，不改变「LLM 只做同知识重写」的硬约束）。 */
 export const variantKindSchema = z.enum([
   'surface', // 仅改写题干表达（开放题或选择题均可；选择题须同时改写选项）
   'context', // 在题干中加入简短工程上下文后改写
@@ -49,7 +49,7 @@ export const questionVariantSchema = z.object({
   id: z.string().min(1),
   kind: variantKindSchema,
   question: z.string().min(1),
-  /** 选择题变体必填（轻量变体契约要求选项逐项改写）；开放题不出现此字段。 */
+  /** 选择题变体必填（变体契约要求选项按槽位改写）；开放题不出现此字段。 */
   options: z.array(z.string()).optional(),
   /**
    * 变体自声明的测量面（plan0903_3 / ADR-077，新模型 variant 可改 angle / cognitiveTask）。

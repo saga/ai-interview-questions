@@ -132,23 +132,38 @@ describe('generateVariant（轻量变体）', () => {
   });
 });
 
-describe('VARIANT_SYSTEM v5（ADR-080：Relax generation, not invariants）', () => {
+describe('VARIANT_SYSTEM v6（ADR-080：Relax generation, not invariants）', () => {
   it('版本号与解析值一致', () => {
-    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v5]');
-    expect(VARIANT_PROMPT_VERSION).toBe('v5');
+    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v6]');
+    expect(VARIANT_PROMPT_VERSION).toBe('v6');
   });
 
-  it('保留答案契约：槽位语义角色对应 + 不挪动角色', () => {
+  it('术语：同知识重写（same-knowledge rewrite）', () => {
+    expect(VARIANT_SYSTEM).toContain('same-knowledge rewrite');
+    expect(VARIANT_SYSTEM).not.toContain('轻量语义变换');
+  });
+
+  it('保留答案契约：槽位语义角色对应 + 不得互换', () => {
     // 程序按序号映射答案（applyVariant + validateVariant 逐槽位漂移检查），
-    // 角色跨槽位挪动会直接判错题——这是放宽后仍不可动的位置不变式。
+    // 角色互换会直接判错题——这是放宽后仍不可动的位置不变式。
     expect(VARIANT_SYSTEM).toContain('语义角色对应');
-    expect(VARIANT_SYSTEM).toContain('不许把角色挪到别的序号');
+    expect(VARIANT_SYSTEM).toContain('不得将两个选项的语义角色互换');
   });
 
   it('放宽生成自由度：场景/背景/槽内表达结构', () => {
     expect(VARIANT_SYSTEM).toContain('改变场景、角色、问题入口和约束表达');
     expect(VARIANT_SYSTEM).toContain('解题必需');
     expect(VARIANT_SYSTEM).toContain('允许改变单个选项内部的表达结构');
+  });
+
+  it('不强制保留关键词：允许自然语言重述结论', () => {
+    expect(VARIANT_SYSTEM).toContain('允许用不同的自然语言表达');
+    expect(VARIANT_SYSTEM).not.toContain('仍须保留原选项的结论关键词');
+  });
+
+  it('背景术语无数字配额：只禁解题依赖', () => {
+    expect(VARIANT_SYSTEM).toContain('不得引入新的解题依赖知识');
+    expect(VARIANT_SYSTEM).not.toContain('不超过 2 个');
   });
 
   it('不再出现旧收缩措辞', () => {

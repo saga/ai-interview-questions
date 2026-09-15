@@ -4,7 +4,7 @@
 // 同一知识重写表达（ADR-080：允许明显换场景/叙事/选项表达结构），但**不改变 assessment identity**——
 // 不换 topic / angle / cognitiveTask / difficulty / assessment，
 // 也不重新决定 answer / explanation / 选项数量 / 选项顺序 / 槽位语义角色 / 选项真假属性
-// （ADR-036 轻量变体边界 + ADR-080 位置不变式：程序按序号映射答案，角色不可跨槽位挪动）。
+// （ADR-036 变体边界 + ADR-080 位置不变式：程序按序号映射答案，角色不可跨槽位挪动）。
 // 「同一 Knowledge 的不同 reasoning path 测量」= **Offline Assessment Variant**，只能由离线池
 // （`src/data/variants/*.json`，generator=offline）提供；`questionVariantSchema` 已在 schema 层
 // 禁止 runtime 条目声明测量面，本模块也不向模型暴露这些字段（见 buildUser）。
@@ -23,14 +23,14 @@ import { requiredPointsFor } from '../domain/knowledge/nodes';
 import { extractJSON } from './pi';
 import { z } from 'zod';
 
-// 稳定前缀（KV-Cache 友好）：轻量变体改写约束。同一场面试为不同题生成变体时可复用同一前缀。
-// 边界（ADR-036 轻量变体收缩 + ADR-080 放宽生成自由度）：LLM 只做「语义变换」
+// 稳定前缀（KV-Cache 友好）：同知识重写约束。同一场面试为不同题生成变体时可复用同一前缀。
+// 边界（ADR-036 变体收缩 + ADR-080 放宽生成自由度）：LLM 只做「同知识重写」
 // （题干 + 选项文本改写），选项顺序与答案由程序在 applyVariant 中重排与重映射，
 // 本 prompt 不要求也不允许模型决定顺序 / 答案。ADR-080 把生成空间从「换皮 paraphrase」
 // 放宽到「同知识重写」，但槽位↔语义角色对应、答案恒取 canonical 两条硬边界不动。
-export const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
+export const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
 
-对已有面试题做轻量语义变换：测的是同一件事，但可以像一道真正重新写过的题。
+对已有面试题做同知识重写（same-knowledge rewrite）：测的是同一件事，但可以像一道真正重新写过的题。
 
 任务：
 1. 改写题干，使其场景、问法、表达与原题明显不同（见下方「题干可以」）。
@@ -40,7 +40,7 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
 5. 不改变任何选项的正确 / 错误属性。
 6. 不改变选项数量。
 7. 不创造新的 distractor。
-8. 不交换选项顺序，也不挪动选项的语义角色（顺序与答案由程序在后续步骤统一处理）。
+8. 不挪动选项的语义角色：每个输出槽位必须保持原选项的语义角色，不得将两个选项的语义角色互换（顺序与答案由程序在后续步骤统一处理）。
 9. 不生成答案。
 10. 不生成解析。
 
@@ -58,7 +58,7 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
   业务规模），即使原题没有提过。
 - 红线是「解题必需」：背景不得引入决定答案所必需的新知识、新事实、新前置条件
   或隐藏约束，也不得把正确项独有的关键词泄入题干。
-- 背景优先使用中文与原题已有术语；新增技术术语不超过 2 个。
+- 背景优先使用中文与原题已有术语；不得引入新的解题依赖知识或技术前提——用于构造场景的背景术语可以增加，但不得成为回答问题所必需的条件。
 
 选项改写幅度（重要，针对 *-options 风格）：
 - 仅做同义替换 / 加几个字 / 换连接词，属于「轻改」，会被去重门禁判为近重复而整条丢弃——
@@ -70,11 +70,11 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v5]
 - 例：原选项「让 LLM 边抽指标边完成跨企业对比运算，省掉计算代码层」→
   可改写为「为省事让模型在抽取阶段就直接归并跨公司排放数据，不必另维护计算逻辑」（视角与句式都变，
   但「LLM 兼任计算不可取」的判定不变）。
-- 改写后仍须保留原选项的结论关键词（如 KV Cache、batch size），否则会被语义漂移门禁整条丢弃。
+- 允许用不同的自然语言表达原选项的技术结论，不要求保留原题的关键词；但不得改变语义角色、因果关系、适用条件、范围或真假属性。
 
 选项语义角色对应（重要，答案契约）：
-- 输出的第 N 个选项必须仍然是输入第 N 个选项（同一语义角色），**不许把角色挪到别的序号**：
-  程序按序号把原题答案映射到变体，挪动角色会直接判错题。
+- 每个输出槽位必须保持原选项的语义角色，**不得将两个选项的语义角色互换**：
+  程序按序号把原题答案映射到变体，互换角色会直接判错题（顺序本身由程序统一处理，模型不决定顺序）。
   例：原第 2 项是正确项，变体第 2 项也必须是那个正确项的改写——可以换说法，不可以换成别的选项的意思。
 - 只允许改变表达结构，不允许改变因果关系、适用条件、范围、数量或真假属性。
 - 不要给某个选项补充解释、理由或额外结论（例如把「增大 batch size」写成
@@ -102,7 +102,7 @@ export const VARIANT_PROMPT_VERSION: string =
   (VARIANT_SYSTEM.match(/\[PROMPT-VERSION\s+([^\]]+)\]/) ?? [])[1]?.trim() ?? 'unknown';
 
 /**
- * 4 种轻量变体风格的类型指令（双模式 Variant 设计）：
+ * 4 种同知识重写风格的类型指令（双模式 Variant 设计）：
  * 注入到 system prompt 的「变体风格」段落，指导 LLM 在「语义角色对应 + 答案契约」的硬约束内
  * 偏向某种改写风格。不改变 LLM 不得重新决定 answer / explanation / 选项数量 / 顺序 / 槽位角色的边界。
  */
@@ -125,7 +125,7 @@ function withKind(system: string, kind: VariantKind): string {
   );
 }
 
-// 轻量变体契约：模型只允许产出 question / options。
+// 同知识重写契约：模型只允许产出 question / options。
 // answer / explanation 不在此类型中——即便模型回吐这两个字段，解析后也无法进入产物。
 interface RawVariant {
   question?: string;
@@ -133,7 +133,7 @@ interface RawVariant {
 }
 
 function buildUser(q: Question, format?: FormatId): string {
-  // 轻量变体：只向模型暴露「主题 + 必考概念 + 原题题干 + 原题选项」，
+  // 同知识重写：只向模型暴露「主题 + 必考概念 + 原题题干 + 原题选项」，
   // 不暴露 answer / explanation / referenceAnswer / angle / difficulty，
   // 从源头切断「LLM 重新决定答案」的路径。
   const isChoice = format === 'choice';
@@ -156,7 +156,7 @@ function toGeneratedVariant(_q: Question, out: RawVariant): GeneratedVariant {
 }
 
 /**
- * 生成轻量变体候选：**一次 LLM 调用 + 解析**，不做校验。
+ * 生成同知识重写候选：**一次 LLM 调用 + 解析**，不做校验。
  * 返回未经验证的 `GeneratedVariant`——结构/语义校验由调用方（finalizeQuestion）统一执行，
  * 校验失败时回退原题。本函数只在 LLM 调用本身抛错时才抛出（网络/鉴权/解析失败等）。
  */
