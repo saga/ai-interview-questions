@@ -132,10 +132,20 @@ describe('generateVariant（轻量变体）', () => {
   });
 });
 
-describe('VARIANT_SYSTEM v6（ADR-080：Relax generation, not invariants）', () => {
+describe('VARIANT_SYSTEM v7（ADR-080/081：Relax generation, not invariants）', () => {
   it('版本号与解析值一致', () => {
-    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v6]');
-    expect(VARIANT_PROMPT_VERSION).toBe('v6');
+    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v7]');
+    expect(VARIANT_PROMPT_VERSION).toBe('v7');
+  });
+
+  it('数值约束保持不变（解题用数值/比例/阈值不得改写）', () => {
+    expect(VARIANT_SYSTEM).toContain('约束必须保持不变');
+    expect(VARIANT_SYSTEM).toContain('70/30 改成 80/20');
+  });
+
+  it('语言风格：专业面试题语言，禁过度口语化', () => {
+    expect(VARIANT_SYSTEM).toContain('语言风格');
+    expect(VARIANT_SYSTEM).toContain('资深面试官');
   });
 
   it('术语：同知识重写（same-knowledge rewrite）', () => {

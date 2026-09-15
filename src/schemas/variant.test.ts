@@ -169,18 +169,26 @@ describe('questionVariantSchema', () => {
     expect(questionVariantSchema.safeParse({ id: 'q', kind: 'bogus', question: 'x', generatedAt: 1, generator: 'offline', promptVersion: 'v3', sourceHash: 'h' }).success).toBe(false);
   });
 
-  // P1-1 方案 A：runtime = Presentation Variant，结构上不允许声明测量面。
-  const runtimeBase = { id: 'q-1__surface__0', kind: 'surface', question: 'x', generatedAt: 1, generator: 'runtime' as const, promptVersion: 'v3', sourceHash: 'h' };
+  // ADR-081：判定键是 mode 而不是 generator——offline+presentation 合法，runtime+assessment 非法。
+  const presentationBase = { id: 'q-1__surface__0', kind: 'surface', mode: 'presentation' as const, question: 'x', generatedAt: 1, generator: 'runtime' as const, promptVersion: 'v3', sourceHash: 'h' };
 
-  it('runtime 变体声明 angle / cognitiveTask / assessment 一律拒绝', () => {
-    expect(questionVariantSchema.safeParse({ ...runtimeBase, angle: 'mechanism' }).success).toBe(false);
-    expect(questionVariantSchema.safeParse({ ...runtimeBase, cognitiveTask: 'diagnose' }).success).toBe(false);
-    expect(questionVariantSchema.safeParse({ ...runtimeBase, assessment: { target: 't', reasoningGoal: 'g' } }).success).toBe(false);
+  it('presentation 变体声明 angle / cognitiveTask / assessment 一律拒绝（无论 generator）', () => {
+    expect(questionVariantSchema.safeParse({ ...presentationBase, angle: 'mechanism' }).success).toBe(false);
+    expect(questionVariantSchema.safeParse({ ...presentationBase, cognitiveTask: 'diagnose' }).success).toBe(false);
+    expect(questionVariantSchema.safeParse({ ...presentationBase, assessment: { target: 't', reasoningGoal: 'g' } }).success).toBe(false);
+    // offline + presentation 同样拒绝：判定键是 mode。
+    expect(questionVariantSchema.safeParse({ ...presentationBase, generator: 'offline' as const, angle: 'mechanism' }).success).toBe(false);
   });
 
-  it('offline 变体允许声明测量面（Assessment Variant）', () => {
+  it('presentation 无测量面可以通过（offline / runtime 均可）', () => {
+    expect(questionVariantSchema.safeParse(presentationBase).success).toBe(true);
+    expect(questionVariantSchema.safeParse({ ...presentationBase, generator: 'offline' as const }).success).toBe(true);
+  });
+
+  it('assessment 变体允许声明测量面（offline）', () => {
     const v = {
-      ...runtimeBase,
+      ...presentationBase,
+      mode: 'assessment' as const,
       generator: 'offline' as const,
       angle: 'mechanism',
       cognitiveTask: 'diagnose',
@@ -189,7 +197,26 @@ describe('questionVariantSchema', () => {
     expect(questionVariantSchema.safeParse(v).success).toBe(true);
   });
 
-  it('variantModeOf：runtime → presentation，offline → assessment', () => {
+  it('mode 缺省时回退为 assessment（兼容历史 offline assets）', () => {
+    const legacy = {
+      id: 'q-1__surface-options__0',
+      kind: 'surface-options',
+      question: '改写后的题干',
+      options: ['选项A', '选项B'],
+      angle: 'mechanism',
+      generatedAt: 1700000000000,
+      generator: 'offline',
+      promptVersion: 'v3',
+      sourceHash: 'fnv1a-abcdef01',
+    };
+    const parsed = questionVariantSchema.safeParse(legacy);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.mode).toBe('assessment');
+  });
+
+  it('variantModeOf：显式 mode 优先；缺省时 legacy 回退（runtime→presentation，offline→assessment）', () => {
+    expect(variantModeOf({ mode: 'presentation', generator: 'offline' })).toBe('presentation');
+    expect(variantModeOf({ mode: 'assessment', generator: 'runtime' })).toBe('assessment');
     expect(variantModeOf({ generator: 'runtime' })).toBe('presentation');
     expect(variantModeOf({ generator: 'offline' })).toBe('assessment');
   });

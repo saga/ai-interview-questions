@@ -1,6 +1,34 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · ADR-081：Variant mode 独立于 generator + prompt v6→v7
+
+- schema：`QuestionVariant` 新增必填 `mode`（default=assessment 兼容历史资产）；
+  `variantModeOf` 改显式优先、`superRefine` 改判 mode。四象限正式成立：
+  offline+presentation ✅ / offline+assessment ✅ / runtime+presentation ✅ / runtime+assessment ❌。
+- 生成器：`question-variants.ts` 落盘写 `mode` 且仅 assessment 展开 face（修复 offline-presentation
+  被污染自声明测量面的 bug）；`assemble-variants.ts` 草稿用 `surfaceMode/contextMode` 直传，
+  presentation 声明 face 直接拒收；`convert-blueprint-output.ts` 显式 `mode: 'assessment'`。
+  存量 1715 条无 mode 字段，全部回退为 assessment（确按不同路径生成，无需重写）。
+- prompt v7：解题用数值约束必须保持（4 小时≠半天、70/30≠80/20）；新增语言风格节
+  （禁"啃文档/开干/包打"式口语）。bench pin 同步 v7。Dice 35、槽位角色、答案契约不动。
+- 门禁实证：`npm test` 全过；`typecheck` 通过；`validate-variants` 池健康。
+
+## 2026-09-15 · 零变体区再扩充 20 条变体（`assessment.manual-bm-20260915.json`，池 1695→1715 条）
+
+- missing-only 顺延 10 题（`aws-genai-developer-pro-03/05/06/08/10/12/13/15/16/19`，
+  均为单选认证场景题），每题各写 1 条 surface-options + 1 条 context-options，
+  共 20 条 assessment 变体，全部自声明不同 angle + cognitiveTask 与新推理路径。
+- 本批为 prompt v6 下首批资产；手工通道沿用旧有门禁口径。初稿 3 处长度问题改写清零：
+  aws-08 context 与 aws-15 context 均为"正确项全局最长 + 过短干扰项 ≥1.8×"，
+  靠拉长短干扰项（函数并行/直调加权/端点变体三条）压到 1.7× 以内。
+- 题干约束落实：Q05/Q06/Q08/Q10/Q16 保留数字条件（50–200、70/30、50、45/15,000、10），
+  Q10 保留限定词（必须/至少）；Q05/Q08/Q12/Q13/Q15/Q19 题干避开正确项独有拉丁词
+ （Knowledge Bases/Serverless/Analytics/InvokeModel·HTTP/Provisioned·Throughput/REST），
+  extra-hint 0 新增。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 67.4%→68.1%，0 变体题 467→457）；
+  `npm test` 900/900。组装草稿放 temp/ 用完即删，未落仓。
+
 ## 2026-09-15 · ADR-080 追补：prompt v5→v6（删关键词保留句 + 槽位表述 + 术语统一）
 
 - 必改：删除"改写后仍须保留原选项的结论关键词"（与放宽目标冲突，且 anchor 本就是 warning），

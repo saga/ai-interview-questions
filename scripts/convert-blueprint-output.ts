@@ -201,6 +201,8 @@ for (const item of items) {
     variants.push({
       id: `${item.variantOf}__${kind}__prompt-${item.id}`,
       kind,
+      // 蓝图转换通道产出 assessment variant（ADR-081：mode 显式声明，不由 generator 推断）。
+      mode: 'assessment',
       question: item.question,
       options: item.formats[0].options.map((o) => o.text),
       angle,

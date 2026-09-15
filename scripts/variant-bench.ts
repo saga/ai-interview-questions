@@ -40,8 +40,8 @@ import { parseAIConfig } from '../src/schemas/ai-config';
 import type { AIConfig, ProviderEntry } from '../src/schemas/ai-config';
 import type { Question } from '../src/schemas/question';
 
-// 与 src/ai/variant.ts 的 VARIANT_SYSTEM（v6）保持一致（ADR-080 + 追补）。
-const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
+// 与 src/ai/variant.ts 的 VARIANT_SYSTEM（v7）保持一致（ADR-080 + 追补 + ADR-081）。
+const VARIANT_SYSTEM = `[PROMPT-VERSION v7]
 
 对已有面试题做同知识重写（same-knowledge rewrite）：测的是同一件事，但可以像一道真正重新写过的题。
 
@@ -50,6 +50,9 @@ const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
 2. 对每个选项做**幅度明显**的改写，使改写后的选项读起来与原文明显不同。
 3. 保持每个选项原本代表的技术结论不变。
 4. 不得新增解题必需的知识、事实、前置条件或隐藏约束；不删除关键条件。
+   原题中用于解题的数值、比例、时间、容量、阈值、SLA、并发量、百分比等约束必须保持不变：
+   不得把 4 小时改成半天、3 秒改成 5 秒、70/30 改成 80/20 等，即使现实语义接近也不可以；
+   可以改变这些约束出现的叙事方式，但不能改变约束本身。
 5. 不改变任何选项的正确 / 错误属性。
 6. 不改变选项数量。
 7. 不创造新的 distractor。
@@ -68,6 +71,11 @@ const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
 - 红线是「解题必需」：背景不得引入决定答案所必需的新知识、新事实、新前置条件
   或隐藏约束，也不得把正确项独有的关键词泄入题干。
 - 背景优先使用中文与原题已有术语；不得引入新的解题依赖知识或技术前提——用于构造场景的背景术语可以增加，但不得成为回答问题所必需的条件。
+
+语言风格：
+- 使用自然、简洁、专业的面试题语言，像资深面试官实际提问。
+- 可以有真实感和口语感，但避免网络流行语、夸张拟人化、营销式表达。
+- 不使用"啃文档""开干""包打"等过度口语化表达。
 
 选项改写幅度（重要）：
 - 仅做同义替换 / 加几个字 / 换连接词，属于「轻改」，会被去重门禁判为近重复而整条丢弃。

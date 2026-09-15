@@ -215,6 +215,7 @@ describe('finalizeQuestion 双模式 Pool-first + Runtime fallback', () => {
   const poolVariant: QuestionVariant = {
     id: 'choice-1__surface-options__0',
     kind: 'surface-options',
+    mode: 'assessment',
     question: 'attention 为什么要对点积做缩放？',
     options: ['通过缩放点积注意力来稳定训练梯度', '提高学习率以加快收敛速度'],
     generatedAt: 1700000000000,

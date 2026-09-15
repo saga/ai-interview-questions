@@ -5,6 +5,8 @@
 // 复用：questionBank（canonical 真源）、validateVariant（全链路唯一门禁）、
 //      computeVariantSourceHash（FNV-1a 指纹）、variantPoolSchema（资产契约）、
 //      findNearDuplicateVariants（变体间去重，**与生成管线同一条规则**）。
+// 落盘 mode（ADR-081）：草稿用 surfaceMode / contextMode 直接声明（缺省 assessment）；
+// presentation 不写测量面，由 schema 硬拒 presentation + face。
 //
 // ⚠️ 2026-09-03 修正：本脚本原先「options 省略时自动取 canonical」，注释给的理由是
 //    「避开纯中文选项 fuzzball 分词坑」。实测该理由不成立：中文选项做轻改后
@@ -19,7 +21,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { questionBank } from '../src/data/questionBank';
-import { variantPoolSchema, computeVariantContentHash, computeVariantSourceHash, variantSourceOf, type QuestionVariant, type VariantPool, type VariantKind } from '../src/schemas/variant';
+import { variantPoolSchema, computeVariantContentHash, computeVariantSourceHash, variantSourceOf, type QuestionVariant, type VariantPool, type VariantKind, type VariantMode } from '../src/schemas/variant';
 import {
   validateVariant,
   findNearDuplicateVariants,
@@ -49,7 +51,14 @@ interface DraftEntry {
   surfaceOptions?: string[];
   contextOptions?: string[];
   /**
-   * 自声明的测量面（assessment variant，P0-2）。缺省 = 继承 canonical（presentation）。
+   * 变体模式（ADR-081：mode 是资产本身的数据，generator 是 provenance，不要让组装器猜）。
+   * 缺省 = 'assessment'（与历史手工批次行为一致：声明测量面走新路径校验）。
+   * 'presentation' = 同知识重写，不得声明任何测量面（schema 会拒收 presentation + face）。
+   */
+  surfaceMode?: VariantMode;
+  contextMode?: VariantMode;
+  /**
+   * 自声明的测量面（仅 mode=assessment 时允许）。
    * 声明了就必须走新路径：reasoningGoal 三段式 + 与 canonical 实质不同，否则整条拒收——
    * 不许把「换措辞」冒充成 assessment variant。
    */
@@ -85,6 +94,7 @@ function main(): void {
     }
     const kinds: Array<{
       kind: VariantKind;
+      mode: VariantMode;
       stem: string;
       options?: string[];
       face: { angle?: QuestionVariant['angle']; cognitiveTask?: QuestionVariant['cognitiveTask']; assessment?: Assessment };
@@ -92,6 +102,7 @@ function main(): void {
     if (entry.surface)
       kinds.push({
         kind: 'surface-options',
+        mode: entry.surfaceMode ?? 'assessment',
         stem: entry.surface,
         options: entry.surfaceOptions ?? entry.options,
         face: { angle: entry.surfaceAngle, cognitiveTask: entry.surfaceCognitiveTask, assessment: entry.surfaceAssessment },
@@ -99,6 +110,7 @@ function main(): void {
     if (entry.context)
       kinds.push({
         kind: 'context-options',
+        mode: entry.contextMode ?? 'assessment',
         stem: entry.context,
         options: entry.contextOptions ?? entry.options,
         face: { angle: entry.contextAngle, cognitiveTask: entry.contextCognitiveTask, assessment: entry.contextAssessment },
@@ -120,9 +132,17 @@ function main(): void {
     }
     const list: QuestionVariant[] = [];
     let seq = 0;
-    for (const { kind, stem, options, face } of kinds) {
+    for (const { kind, mode, stem, options, face } of kinds) {
       if (!options) {
         rejections.push(`✗ ${qid} [${kind}]：草稿未提供选项（canonical 选项不再被静默沿用）`);
+        continue;
+      }
+      // presentation 不得声明测量面（ADR-081：mode 是资产数据，schema 会拒收 presentation + face）。
+      if (mode === 'presentation' && Object.keys(measurementFaceOf(face)).length > 0) {
+        rejections.push(
+          `✗ ${qid} [${kind}]：mode=presentation 不能声明测量面（angle/cognitiveTask/assessment）：` +
+            `presentation 只做同知识重写；需要新路径请用 mode=assessment`,
+        );
         continue;
       }
       const cand = { question: stem, options };
@@ -159,7 +179,7 @@ function main(): void {
       // assessmentTarget/reasoningGoal，靠不同 observation entry 区分；但必须自声明不同的
       // measurement face（angle / cognitiveTask）。两者都同 = 纯措辞冒充，仍拒收。
       const declared = Object.keys(measurementFaceOf(face)).length > 0;
-      if (face.assessment) {
+      if (mode === 'assessment' && face.assessment) {
         if (!isReasoningGoalWellFormed(face.assessment.reasoningGoal)) {
           rejections.push(`✗ ${qid} [${kind}] 推理链不合格：reasoningGoal 不是「先→再→排除」三段式`);
           continue;
@@ -182,9 +202,12 @@ function main(): void {
       list.push({
         id: `${qid}__${kind}__${SLUG}__${seq++}`,
         kind,
+        // ★ 真正决定 Variant 语义的字段（ADR-081）。
+        mode,
         question: stem,
         options: cand.options,
-        ...measurementFaceOf(face),
+        // ★ presentation 不写测量面；assessment 才展开 angle / cognitiveTask / assessment。
+        ...(mode === 'assessment' ? measurementFaceOf(face) : {}),
         generatedAt: Date.now(),
         generator: 'offline',
         promptVersion: VARIANT_PROMPT_VERSION,

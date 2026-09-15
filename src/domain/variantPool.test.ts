@@ -25,6 +25,7 @@ function variant(id: string, kind: QuestionVariant['kind'] = 'surface-options'):
   return {
     id,
     kind,
+    mode: 'assessment',
     question: `变体题干 ${id}`,
     options: ['改写a', '改写b', '改写c', '改写d'],
     generatedAt: 1700000000000,

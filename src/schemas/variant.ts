@@ -24,19 +24,38 @@ export const variantGeneratorSchema = z.enum(['offline', 'runtime']);
 export type VariantGenerator = z.infer<typeof variantGeneratorSchema>;
 
 /**
- * 变体模式（plan0907 P1-1 方案 A / ADR-077）——两类变体**不是同一件事**，此前只在注释里区分，
- * 代码与 schema 都把它们当同一种东西，导致「runtime 能改测量面」的歧义长期存在：
+ * 变体模式（plan0907 P1-1 方案 A / ADR-077 / ADR-081）——业务语义，不由 generator 推断。
  *
- *   - `assessment`（generator = offline，离线池资产）：**Assessment Variant**。
- *     可自声明 `angle / cognitiveTask / assessment`，即「同一 Knowledge 的不同 reasoning path 测量」。
- *   - `presentation`（generator = runtime，运行时兜底）：**Presentation Variant**。
- *     只改写表达，**结构上不允许**声明测量面 ⇒ assessment identity 恒等于 canonical。
+ * generator（来源）：
+ *   offline = 离线池资产
+ *   runtime = 运行时 fallback（结果不落盘）
+ *
+ * mode（语义）：
+ *   presentation = 同知识重写，不改变 assessment identity
+ *   assessment   = 同一 Knowledge 的不同 reasoning path
+ *
+ * 为什么必须独立：offline pipeline 同时可以生成 presentation 和 assessment variant
+ * （`scripts/question-variants.ts --mode presentation|assessment`），
+ * 因此 `generator=offline` 不能推出 `mode=assessment`。正确的四象限是：
+ * offline+presentation ✅ / offline+assessment ✅ / runtime+presentation ✅ / runtime+assessment ❌。
  */
 export const variantModeSchema = z.enum(['presentation', 'assessment']);
 export type VariantMode = z.infer<typeof variantModeSchema>;
 
-/** 由来源推导模式（单一推导口，避免各处各写一次 if）。 */
-export function variantModeOf(v: Pick<QuestionVariant, 'generator'>): VariantMode {
+/**
+ * 取变体模式（单一取出口，避免各处各写一次 if）。
+ *
+ * 新资产直接使用 `mode`；legacy asset（旧 schema 无该字段）回退到旧推导：
+ * 旧 schema 中 offline 一律视为 assessment。
+ */
+export function variantModeOf(
+  v: Pick<QuestionVariant, 'mode'> & Partial<Pick<QuestionVariant, 'generator'>>,
+): VariantMode {
+  // 新资产直接使用 mode。
+  if (v.mode) return v.mode;
+
+  // legacy asset：
+  // 旧 schema 中 offline 一律视为 assessment。
   return v.generator === 'runtime' ? 'presentation' : 'assessment';
 }
 
@@ -48,6 +67,14 @@ export function variantModeOf(v: Pick<QuestionVariant, 'generator'>): VariantMod
 export const questionVariantSchema = z.object({
   id: z.string().min(1),
   kind: variantKindSchema,
+  /**
+   * 变体模式：
+   * - presentation：同知识重写，不改变 assessment identity
+   * - assessment：不同 reasoning path，可声明新的测量面
+   *
+   * default=assessment 仅用于兼容历史 offline assets。
+   */
+  mode: variantModeSchema.default('assessment'),
   question: z.string().min(1),
   /** 选择题变体必填（变体契约要求选项按槽位改写）；开放题不出现此字段。 */
   options: z.array(z.string()).optional(),
@@ -100,12 +127,13 @@ export const questionVariantSchema = z.object({
     })
     .optional(),
 })
-  // 两类变体的硬边界（P1-1 方案 A）：runtime = Presentation Variant，**不允许**声明测量面。
+  // 两类变体的硬边界（P1-1 方案 A / ADR-081）：presentation = 同知识重写，**不允许**声明测量面。
   // 只靠「GeneratedVariant 类型上没有这些字段」来约束是不够的——一旦有人把池条目
-  // （有这些字段）喂给 runtime 通道，或反过来给 runtime 条目补上测量面，契约就悄悄破了。
-  // 放在 schema 里，任何一条 runtime 变体带测量面都直接落不了库。
+  // （有这些字段）喂给 presentation 通道，或反过来给 presentation 条目补上测量面，契约就悄悄破了。
+  // 放在 schema 里，任何一条 presentation 变体带测量面都直接落不了库。
+  // 注意判定键是 mode 而不是 generator：offline+presentation 合法，runtime+assessment 非法。
   .superRefine((v, ctx) => {
-    if (v.generator !== 'runtime') return;
+    if (v.mode !== 'presentation') return;
     const claimed = (
       [
         ['angle', v.angle],
@@ -120,9 +148,9 @@ export const questionVariantSchema = z.object({
       code: 'custom',
       path: [claimed[0]],
       message:
-        `runtime variant 是 presentation variant，不得声明测量面（${claimed.join(' / ')}）：` +
-        `运行时只做表达改写，assessment identity 必须恒等于 canonical；` +
-        `需要换测量面的变体必须走离线池（generator=offline）。`,
+        `presentation variant 不得声明测量面（${claimed.join(' / ')}）：` +
+        `presentation 只做同知识重写，assessment identity 必须恒等于 canonical；` +
+        `需要改变 reasoning path 的变体必须使用 mode=assessment。`,
     });
   });
 export type QuestionVariant = z.infer<typeof questionVariantSchema>;

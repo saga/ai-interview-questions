@@ -69,6 +69,7 @@ import {
   measurementFaceOf,
   VARIANT_DUP_THRESHOLD,
   type DiverseCandidate,
+  type VariantMeasurementFace,
 } from '../src/domain/variant';
 import {
   isAssessmentIdentical,
@@ -79,7 +80,7 @@ import { checkLanguageSanity, formatSanityIssues } from '../src/domain/languageS
 // 去重度量必须与 validate-variants.ts / domain 用的是同一个实现，故直接从源头导入。
 import { cjkDice } from '../src/domain/textSimilarity';
 import type { ProviderEntry } from '../src/schemas/ai-config';
-import type { CompleteFn } from '../src/types';
+import type { CompleteFn, GeneratedVariant } from '../src/types';
 import type { Question } from '../src/schemas/question';
 
 const KIND_ORDER: VariantKind[] = ['surface', 'context', 'surface-options', 'context-options'];
@@ -264,8 +265,11 @@ interface ProduceCtx {
 interface ScoredCandidate {
   kind: VariantKind;
   shape: VariantShape;
-  /** 自声明的测量面（assessment 模式；presentation 模式为空对象）。 */
-  face: AssessmentVariantCandidate;
+  /**
+   * presentation variant 的 face 始终为空对象。
+   * assessment variant 才包含 angle / cognitiveTask / assessment。
+   */
+  face: VariantMeasurementFace;
   score: number;
   summary: string;
 }
@@ -296,10 +300,10 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
   }
 
   // ── 阶段 1：超采 + 确定性门禁 + 去重 ──
-  const survivors: Array<{ kind: VariantKind; shape: VariantShape; face: AssessmentVariantCandidate }> = [];
+  const survivors: Array<{ kind: VariantKind; shape: VariantShape; face: VariantMeasurementFace }> = [];
   while (survivors.length < budget && stats.candidates < budget * 2) {
     const kind = ctx.opts.kind ?? KIND_ORDER[stats.candidates % KIND_ORDER.length];
-    let gen: AssessmentVariantCandidate;
+    let gen: GeneratedVariant;
     try {
       if (assessmentMode) {
         gen = await generateAssessmentVariant(q, ctx.complete!, format, undefined, kind);
@@ -373,7 +377,9 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
       continue;
     }
     usedTexts.add(text);
-    survivors.push({ kind, shape: { question: gen.question, options: gen.options }, face: gen });
+    // presentation 不伪造 measurement face：只有 assessment 模式才携带自声明测量面。
+    const face: VariantMeasurementFace = assessmentMode ? (gen as AssessmentVariantCandidate) : {};
+    survivors.push({ kind, shape: { question: gen.question, options: gen.options }, face });
   }
 
   // ── 阶段 1b：幸存者之间的语义级去重（P0-4）──
@@ -450,9 +456,13 @@ async function produceForQuestion(q: Question, ctx: ProduceCtx): Promise<Questio
   const produced: QuestionVariant[] = kept.map((c) => ({
     id: `${q.id}__${c.kind}__${ctx.slug}__${seq++}`,
     kind: c.kind,
+    // ★ 真正决定 Variant 语义的字段（ADR-081：mode 是业务语义，不由 generator 推断）。
+    mode: ctx.opts.mode,
     question: c.shape.question,
     options: q.formats.choice ? c.shape.options : undefined,
-    ...measurementFaceOf(c.face),
+    // ★ presentation = {}（不写测量面，schema 会拒收 presentation + face）
+    // ★ assessment = angle / cognitiveTask / assessment
+    ...(ctx.opts.mode === 'assessment' ? measurementFaceOf(c.face) : {}),
     generatedAt: Date.now(),
     generator: 'offline' as const,
     promptVersion: ctx.promptVersion,

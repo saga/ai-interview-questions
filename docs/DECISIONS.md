@@ -2,6 +2,34 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-081 · Variant mode 独立于 generator：四象限 + 落盘显式声明
+
+- 状态：已采纳 · 2026-09-15
+- 背景：生成器早已是双模式（`question-variants.ts --mode presentation|assessment`，不同 prompt/门禁/challenger），
+  但资产 schema 仍用 `generator` 推断 mode（offline→assessment，runtime→presentation）。
+  后果：offline 生成的 presentation 变体会带着"自声明测量面"落盘（`measurementFaceOf` 无条件展开），
+  而它们本应是空 face——语义在落盘瞬间被污染，且 schema 看不出问题。
+- 决策：
+  1. `QuestionVariant` 新增必填 `mode`（`variantModeSchema.default('assessment')`——仅兼容历史 offline 资产；
+     存量带 face 的样本确按不同 reasoning path 生成并通过 challenger，继续视为 assessment，不重写历史）。
+  2. `variantModeOf` 改为"显式 mode 优先，缺省回退旧推导"；`superRefine` 判定键由 `generator` 改为 `mode`
+     （presentation + face 直接拒收，offline+presentation 合法，runtime+assessment 非法）。
+  3. `question-variants.ts`：`ScoredCandidate.face` 改为 `VariantMeasurementFace`（presentation 恒为 `{}`），
+     落盘写 `mode: ctx.opts.mode` 且仅 assessment 展开 face；challenger 输入保持 `measurementFaceOf`（`{}` 即透传）。
+  4. `assemble-variants.ts`：草稿用 `surfaceMode / contextMode` 直接声明（缺省 assessment 保历史行为）；
+     presentation 声明 face 直接拒收（早于 schema，出明确错误）。
+  5. `convert-blueprint-output.ts` 显式写 `mode: 'assessment'`（该通道只产出测量声明变体）。
+  6. Prompt v6→v7（与 mode 解耦无关，顺手收敛评审意见）：解题用数值/比例/阈值必须保持不变
+     （4 小时≠半天、70/30≠80/20）；新增"语言风格"节（专业面试题语言，禁"啃文档/开干/包打"式口语）。
+     `variant-bench.ts` 的 pin 副本同步到 v7。
+- 未改：`generateVariant`（本来就只返回 question/options，不碰测量面）；challenger 输入形状；
+  `validate-variants` 的 presence 口径计数（presentation 不可能带 face，presence ≡ mode 判定）；
+  Dice 35、槽位语义角色、canonical 答案契约。
+- 验证：`npm test` 全过（含 schema 四象限用例 + prompt v7 断言）；`typecheck` 通过；
+  `validate-variants` 池健康（存量 1715 条无 mode 字段，经 default 回退为 assessment，0 stale/0 阻断）。
+- 触发条件：若将来出现 runtime+assessment 需求（如在线 A/B 测新路径），必须先有在线测量面治理方案，
+  不许把离线 face 直抄进 runtime 条目（schema 会拦）。
+
 ## ADR-080 · Presentation Variant 放宽生成自由度：Relax generation, not invariants
 
 - 状态：已采纳 · 2026-09-15

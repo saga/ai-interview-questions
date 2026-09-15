@@ -28,7 +28,7 @@ import { z } from 'zod';
 // （题干 + 选项文本改写），选项顺序与答案由程序在 applyVariant 中重排与重映射，
 // 本 prompt 不要求也不允许模型决定顺序 / 答案。ADR-080 把生成空间从「换皮 paraphrase」
 // 放宽到「同知识重写」，但槽位↔语义角色对应、答案恒取 canonical 两条硬边界不动。
-export const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
+export const VARIANT_SYSTEM = `[PROMPT-VERSION v7]
 
 对已有面试题做同知识重写（same-knowledge rewrite）：测的是同一件事，但可以像一道真正重新写过的题。
 
@@ -37,6 +37,9 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
 2. 对每个选项做**幅度明显**的改写，使改写后的选项读起来与原文明显不同（见下方「选项改写幅度」）。
 3. 保持每个选项原本代表的技术结论不变（见下方「语义角色对应」）。
 4. 不得新增解题必需的知识、事实、前置条件或隐藏约束；不删除关键条件（见下方「背景信息」）。
+   原题中用于解题的数值、比例、时间、容量、阈值、SLA、并发量、百分比等约束必须保持不变：
+   不得把 4 小时改成半天、3 秒改成 5 秒、70/30 改成 80/20 等，即使现实语义接近也不可以；
+   可以改变这些约束出现的叙事方式，但不能改变约束本身。
 5. 不改变任何选项的正确 / 错误属性。
 6. 不改变选项数量。
 7. 不创造新的 distractor。
@@ -59,6 +62,11 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v6]
 - 红线是「解题必需」：背景不得引入决定答案所必需的新知识、新事实、新前置条件
   或隐藏约束，也不得把正确项独有的关键词泄入题干。
 - 背景优先使用中文与原题已有术语；不得引入新的解题依赖知识或技术前提——用于构造场景的背景术语可以增加，但不得成为回答问题所必需的条件。
+
+语言风格：
+- 使用自然、简洁、专业的面试题语言，像资深面试官实际提问。
+- 可以有真实感和口语感，但避免网络流行语、夸张拟人化、营销式表达。
+- 不使用"啃文档""开干""包打"等过度口语化表达。
 
 选项改写幅度（重要，针对 *-options 风格）：
 - 仅做同义替换 / 加几个字 / 换连接词，属于「轻改」，会被去重门禁判为近重复而整条丢弃——
@@ -175,7 +183,7 @@ export async function generateVariant(
 
 // ── Offline Assessment Variant 生成（离线池 P0-2，与上面 Runtime presentation 路径对偶） ──
 //
-// `generateVariant` 只做「换措辞」：不改变 assessment identity，产出恒为 presentation
+// `generateVariant` 只做「同知识重写」：不改变 assessment identity，产出恒为 presentation
 // variant。离线池要的是「同一 Knowledge 的不同 reasoning path 测量」，必须换测量
 // 路径——例如 canonical 测「判断 A 是否成立」，variant 改成「在约束 B 下比较 A/C」
 // 或「从故障现象反推 A/C 哪个是根因」。本 prompt 即该规范的机读版本：
