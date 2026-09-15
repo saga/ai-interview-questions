@@ -1,0 +1,928 @@
+{
+  "version": 1,
+  "generatedAt": 1789469850929,
+  "promptVersion": "v1",
+  "variants": {
+    "sebastian-raschka-2026-08-43": [
+      {
+        "id": "sebastian-raschka-2026-08-43__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "推理服务要把单条 self-attention 前向改成按批处理，批次里句子长短不一且带有补齐位。上线前评审改动清单，哪些成立？（请选择两个）",
+        "options": [
+          "让 Q/K/V 带有 batch 维度，按样本独立做批量矩阵乘法",
+          "对 padding 位置使用 padding mask，避免补齐记号影响注意力权重",
+          "将各样本词元首尾相接拼成一条无分隔长序列统一计算",
+          "引入批次维度后各样本被迫共用同一套注意力权重分布"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从变长批量前向的约束判定批量矩阵乘与补齐掩码两项必要改动",
+          "reasoningGoal": "先从变长批量与补齐位的约束拆出张量形状与掩码两项需求；再逐项验证改动判断是否成立；并排除拼接长序列、共享权重分布等不成立描述。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-db300c5d",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-5a33e67c",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-43",
+          "topic": "self-attention",
+          "subtopic": "批量注意力",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "batching"
+          ],
+          "question": "把单个序列的注意力实现扩展到 batch 时，哪些变化通常是必要的？（请选择两个）",
+          "options": [
+            "让 Q/K/V 带有 batch 维并进行批量矩阵乘法",
+            "对 padding token 使用 padding mask 以避免其影响权重",
+            "把不同样本的 token 直接拼成一个无边界序列",
+            "batch 维会让每个样本自动共享同一条注意力分布"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-47": [
+      {
+        "id": "sebastian-raschka-2026-08-47__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "排障时要向新人解释：同一层键值相同，不同位置的查询输出却不一样。关于加权汇聚含义的表述，哪些成立？（请选择两个）",
+        "options": [
+          "处于不同位置的查询可以读出互不相同的上下文向量",
+          "权重系数决定了每个键值融入当前输出时的占比大小",
+          "输出必定是某个键值未经加权的原样拷贝",
+          "全部查询位置只能得到完全一致的同一个上下文向量"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从同键值不同输出的现象判定按查询加权汇聚的两条性质",
+          "reasoningGoal": "先从同键值不同输出的症状拆出查询相关权重与汇聚两项机制；再逐项验证表述是否成立；并排除原样拷贝、输出全一致等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3051fcf8",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-eedb3be4",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-47",
+          "topic": "self-attention",
+          "subtopic": "注意力输出",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "self-attention",
+            "weighted-sum"
+          ],
+          "question": "注意力输出是 Value 的加权和时，以下哪些性质通常成立？（请选择两个）",
+          "options": [
+            "不同查询位置可以得到不同的上下文向量",
+            "权重决定每个 Value 对当前输出的贡献大小",
+            "输出必然等于某一个 Value 的未经加权复制",
+            "所有查询位置必须共享完全相同的上下文向量"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-140": [
+      {
+        "id": "sebastian-raschka-2026-08-140__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "线上要把键值复用比例调高以省显存，测试团队按检索、任务与层间表达三类列回归清单。哪些列入清单合理？（请选择三个）",
+        "options": [
+          "长上下文下的信息检索与定位能力是否退化",
+          "多任务多语言场景的质量波动是否可以接受",
+          "提高共享比例后层间表达能力的受损程度",
+          "只要缓存体积缩小就默认模型质量保持不变"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从复用比例上调的动作反推出检索、任务与层间三类必测风险",
+          "reasoningGoal": "先从复用比例上调映射到检索、任务与层间三类质量风险；再逐项验证回归项是否成立；并排除缓存缩小即质量不变等错误判断。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e34c05e2",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-bb1dfa7e",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-140",
+          "topic": "kv-cache",
+          "subtopic": "跨层 KV 复用",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "kv-cache"
+          ],
+          "question": "跨层或跨头复用 KV 表示时，哪些质量风险应测试？（请选择三个）",
+          "options": [
+            "长上下文信息检索能力",
+            "不同任务和语言的质量变化",
+            "共享比例变化带来的层间表达损失",
+            "缓存缩小就代表模型质量必然不变"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-147": [
+      {
+        "id": "sebastian-raschka-2026-08-147__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "架构评审要在稀疏化与压缩表示两条长上下文降本路线中选型，需先讲清二者节省开销的位置不同。哪些说法成立？（请选择两个）",
+        "options": [
+          "稀疏路线主要省掉部分词元之间需要计算的交互",
+          "压缩路线主要压小每个位置需保存与处理的表示体量",
+          "两条路线都完整保留注意力矩阵且不做任何近似",
+          "两条路线的质量风险完全一致，无需分别评估"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能按省交互与省表示体量两条路径区分稀疏与压缩的选型依据",
+          "reasoningGoal": "先按交互数量与表示体量拆出两条路线的降本位置；再逐项验证区分判断是否成立；并排除无近似、风险一致等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-88b68027",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-9f322be5",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-147",
+          "topic": "attention",
+          "subtopic": "稀疏与压缩注意力",
+          "angle": "comparison",
+          "difficulty": "hard",
+          "cognitiveTask": "compare",
+          "tags": [
+            "raschka",
+            "architecture",
+            "sparse-attention"
+          ],
+          "question": "稀疏注意力和压缩注意力降低长上下文成本的路径有何不同？（请选择两个）",
+          "options": [
+            "稀疏注意力主要减少需要计算的 token 交互",
+            "压缩注意力主要减少需要保存或处理的表示规模",
+            "二者都必然保留完整注意力矩阵且没有近似",
+            "二者的质量风险完全相同，不需分别评估"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-151": [
+      {
+        "id": "sebastian-raschka-2026-08-151__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "新注意力变体理论计算量更低，但灰度压测端到端延迟没有下降。值班按实现、访存与负载三层列排查清单，哪些应列入？（请选择三个）",
+        "options": [
+          "核查底层算子与融合实现是否真正支持该变体形态",
+          "拆解访存、投影与格式转换带来的附加开销占比",
+          "按线上真实批量、序列长度与硬件重做性能剖析",
+          "仅凭理论复杂度下降就认定现有实现存在缺陷"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从理论省算但线上不提速的现象开出实现、访存与负载三层排查",
+          "reasoningGoal": "先从延迟未降的症状拆出算子支持、附加开销与真实负载三层疑点；再逐项验证排查项是否成立；并排除只看理论复杂度定缺陷等错误做法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a23d8269",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-e8ac0951",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-151",
+          "topic": "attention",
+          "subtopic": "架构实现与理论差异",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "raschka",
+            "architecture",
+            "implementation"
+          ],
+          "question": "理论上更省计算的注意力变体在线上没有提速时，哪些排查方向合理？（请选择三个）",
+          "options": [
+            "检查 kernel 和算子融合是否支持该变体",
+            "分析内存访问、投影和格式转换开销",
+            "按真实 batch、长度和硬件做 profiling",
+            "看到理论复杂度下降就直接判定实现有 bug"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-03": [
+      {
+        "id": "sebastian-raschka-2026-08-03__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "容量规划会上要测算并发与上下文同时翻倍后的显存需求，模型结构与精度保持不变。哪些测算结论成立？（请选择两个）",
+        "options": [
+          "缓存占用随并发请求数近似呈线性增长",
+          "缓存占用随单个请求的上下文长度近似呈线性增长",
+          "并发与长度同时翻倍后总量约为原来的两倍",
+          "并发与长度同时翻倍后总量约为原来的四倍"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能按并发与长度双线性关系推算同时翻倍后的缓存总量倍数",
+          "reasoningGoal": "先把并发与长度两个变量的线性关系拆成乘积形式；再逐项验证倍数推断是否成立；并排除只翻一倍、与长度无关等错误测算。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-20a60679",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-8ad58f0d",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-03",
+          "topic": "kv-cache",
+          "subtopic": "缓存容量变量",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "sebastian-raschka",
+            "llm-architecture",
+            "kv-cache",
+            "capacity"
+          ],
+          "question": "在线服务的并发数和上下文长度同时翻倍，而模型层数、KV 头数和精度不变，关于 KV cache 容量的说法哪些正确？（请选择两个）",
+          "options": [
+            "它与并发请求数近似线性相关",
+            "它与每个请求的上下文长度近似线性相关",
+            "KV 缓存总量约变为原来的两倍",
+            "KV 缓存总量约变为原来的四倍"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-04": [
+      {
+        "id": "sebastian-raschka-2026-08-04__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "团队评估把键值投影先压到低维潜空间再缓存的注意力方案，需讲清收益与代价。哪些说法成立？（请选择两个）",
+        "options": [
+          "该方案缓存低维潜表示从而压低缓存维度，用时再重建回原空间",
+          "潜表示的重建与投影过程会引入额外的矩阵计算开销",
+          "该方案彻底删除 K/V，只保留 Query 参与计算",
+          "该方案靠增加键值头数量来减少投影次数"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从低维缓存的上线收益反推出压缩存储与重建开销的两面判断",
+          "reasoningGoal": "先从潜空间缓存拆出维度收益与重建代价两面条件；再逐项验证说法是否成立；并排除丢弃键值、加头减投影等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-b904cf72",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-e5a33cb2",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-04",
+          "topic": "kv-cache",
+          "subtopic": "MLA 压缩空间",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sebastian-raschka",
+            "llm-architecture",
+            "mla",
+            "kv-cache"
+          ],
+          "question": "一种注意力实现把 K/V 投影压缩到低维表示后再存入 KV cache。关于这种 MLA 式压缩，哪些说法正确？（请选择两个）",
+          "options": [
+            "它通过压缩潜表示降低缓存维度，并在使用时重建",
+            "重建和投影会带来额外计算开销",
+            "它完全删除了 K/V，只保留 Query",
+            "它通过增加 KV 头数来减少投影次数"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-05": [
+      {
+        "id": "sebastian-raschka-2026-08-05__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "长上下文聊天服务算力占用不高，但逐词元延迟随会话变长持续走高。值班应优先核查键值缓存的哪些影响？（请选择两个）",
+        "options": [
+          "每步解码需读取的历史键值数据量是否随上下文变长而增大",
+          "读取带宽与缓存容量是否已成为制约延迟的首要瓶颈",
+          "训练语料中是否缺少图像样本导致文本质量下降",
+          "位置编码是否把预填充阶段变成了稀疏计算"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从算力有余但延迟随长度走高的症状定位到键值读取带宽瓶颈",
+          "reasoningGoal": "先从延迟随长度增长的症状拆出读取量与带宽容量两条疑点；再逐项验证核查项是否成立；并排除缺图像样本、预填充稀疏化等无关归因。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-11a1d131",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-2cdec28f",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-05",
+          "topic": "kv-cache",
+          "subtopic": "decode 带宽瓶颈",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "sebastian-raschka",
+            "llm-architecture",
+            "kv-cache",
+            "decode"
+          ],
+          "question": "一个长上下文服务的 GPU FLOPs 还有余量，但生成每个 token 的延迟随上下文增长明显上升。优先检查 KV cache 的哪些影响？（请选择两个）",
+          "options": [
+            "历史 KV 读取的数据量是否随上下文增长",
+            "历史 KV 的读取带宽和缓存容量是否成为瓶颈",
+            "检查训练数据是否缺少图像样本",
+            "位置编码是否让 prefill 变成稀疏计算"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-139": [
+      {
+        "id": "sebastian-raschka-2026-08-139__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "推理优化评审中要说明层间键值复用到底省了什么资源、没省什么。哪些说法成立？（请选择两个）",
+        "options": [
+          "省下解码阶段存放键值的缓存空间",
+          "省下生成过程中反复读取键值的访存带宽",
+          "复用后各层仍各自保留完全独立的键值表示",
+          "复用后上下文长度不再占用任何系统资源"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从层间复用的取舍讲清省缓存与省带宽两项收益及其边界",
+          "reasoningGoal": "先从层间共享拆出存储与带宽两项可省资源；再逐项验证说法是否成立；并排除层仍独立、长度零开销等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-7376ed47",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-6ba45a58",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-139",
+          "topic": "inference-optimization",
+          "subtopic": "KV Sharing",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "raschka",
+            "architecture",
+            "kv-sharing"
+          ],
+          "question": "KV Sharing 类方法试图优化推理时的哪个资源？（请选择两个）",
+          "options": [
+            "解码阶段的键值缓存存储",
+            "生成过程中读取 KV 的内存带宽",
+            "保证每层都保留完全独立的 KV 表示",
+            "让上下文长度不再影响任何资源"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-141": [
+      {
+        "id": "sebastian-raschka-2026-08-141__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "方案把解码期键值压成小尺寸潜状态以省缓存，评审要确认落地时缺不了哪些配套变换。哪些成立？（请选择两个）",
+        "options": [
+          "将原始键值映射为更小的潜在表示后再参与计算",
+          "在查询侧经投影或等价变换调用压缩后的状态",
+          "压缩状态可跳过一切恢复映射直接替代全部计算",
+          "采用压缩后注意力相关的计算将彻底消失"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从压缩缓存的落地条件判定映射与调用变换两项必需步骤",
+          "reasoningGoal": "先从潜状态省缓存拆出压缩映射与查询侧调用两项配套动作；再逐项验证说法是否成立；并排除跳过映射、计算消失等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-a1201691",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-31710f1c",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-141",
+          "topic": "inference-optimization",
+          "subtopic": "压缩注意力缓存",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "raschka",
+            "architecture",
+            "compressed-attention"
+          ],
+          "question": "压缩注意力在解码阶段降低缓存规模时，通常需要哪些额外步骤？（请选择两个）",
+          "options": [
+            "把原始键值映射到较小的潜在表示",
+            "在查询计算时通过投影或变换使用压缩状态",
+            "压缩状态可以不参与任何恢复或映射直接替代所有计算",
+            "压缩一定会消除所有注意力计算"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-154": [
+      {
+        "id": "sebastian-raschka-2026-08-154__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "团队要上线推测解码，立项条件是草稿提议、并行验证与接受率三者同时成立。哪些应列为必要条件？（请选择三个）",
+        "options": [
+          "有能快速产出后续词元候选的提议机制",
+          "目标模型可批量并行地验证这些候选序列",
+          "候选接受率足够高以覆盖验证引入的额外开销",
+          "只要草稿模型更小就自然保证端到端提速"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从提议、验证与接受率三元组判定推测解码的净收益条件",
+          "reasoningGoal": "先从加速主张拆出提议速度、验证并行度与接受率三项前提；再逐项验证条件是否成立；并排除小草稿必提速等错误判断。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-106f4132",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-31338a47",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-154",
+          "topic": "inference-optimization",
+          "subtopic": "论文中的推测解码",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "raschka",
+            "research",
+            "speculative-decoding"
+          ],
+          "question": "推测解码获得加速的必要条件包括哪些？（请选择三个）",
+          "options": [
+            "存在能快速提出后续 token 的候选机制",
+            "目标模型可以批量或并行验证候选",
+            "候选接受率足以抵消额外开销",
+            "只要候选模型更小就保证端到端加速"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-150": [
+      {
+        "id": "sebastian-raschka-2026-08-150__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "财务要把长上下文账单拆到预填充、解码、缓存与排队各环节，不再只看平均吞吐。拆分口径上哪些成立？（请选择三个）",
+        "options": [
+          "预填充阶段的算力消耗与首词元延迟单列计量",
+          "解码阶段逐词元的算力与访存带宽单列计量",
+          "键值缓存显存、压缩恢复与并发排队单列计量",
+          "仅用短输入测得的平均每秒词元数代表全部成本"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从成本归因的完整性要求判定预填充、解码与缓存排队三项必拆环节",
+          "reasoningGoal": "先从账单归因拆出预填充、解码与缓存排队三类成本来源；再逐项验证拆分项是否成立；并排除短输入平均吞吐代表全部等错误口径。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-84c3d6c5",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-b08ffd79",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-150",
+          "topic": "inference-optimization",
+          "subtopic": "上下文成本分解",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "raschka",
+            "architecture",
+            "context"
+          ],
+          "question": "拆解长上下文推理成本时，哪些部分应分别测量？（请选择三个）",
+          "options": [
+            "Prefill 的计算和首 token 延迟",
+            "Decode 的每 token 计算与内存带宽",
+            "KV Cache 显存、压缩恢复和并发排队",
+            "只测短输入的平均 tokens/s"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-138": [
+      {
+        "id": "sebastian-raschka-2026-08-138__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "选型会上有人主张只看公开榜单平均分定架构，多数人反对，理由是任务分布、可比性与成本边界三处都有坑。哪些反对理由成立？（请选择三个）",
+        "options": [
+          "榜单任务构成与线上真实生产任务可能严重偏离",
+          "平均分数容易掩盖长上下文与尾延迟上的短板",
+          "实现差异与提示格式变化会破坏跨模型可比性",
+          "榜单得分最高者部署总成本必定最低"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从榜单与生产环境的分布差异判定任务偏离、可比性与成本三处边界",
+          "reasoningGoal": "先从榜单平均分拆出任务分布、可比条件与成本边界三处隐含假设；再逐项验证反对理由是否成立；并排除高分即低成本等错误推论。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-debb67a3",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-7416536e",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-138",
+          "topic": "attention",
+          "subtopic": "架构比较的边界",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "benchmark"
+          ],
+          "question": "为什么单一基准榜单不足以决定 LLM 架构选型？（请选择三个）",
+          "options": [
+            "榜单任务分布可能不代表生产任务",
+            "平均分可能掩盖长上下文和尾延迟问题",
+            "不同实现和提示格式会影响可比性",
+            "榜单分数高就必然意味着部署总成本最低"
+          ]
+        }
+      }
+    ],
+    "sebastian-raschka-2026-08-143": [
+      {
+        "id": "sebastian-raschka-2026-08-143__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "改动残差混合与归一化位置后，训练侧要同步观察数值、收敛与任务质量三类信号。哪些应纳入观察清单？（请选择三个）",
+        "options": [
+          "激活与梯度的数值稳定性是否出现异常波动",
+          "训练收敛速度与最终损失曲线的变化趋势",
+          "目标任务质量与推理侧开销的联动变化",
+          "只看参数量是否减少即可判定改动优劣"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从结构改动的传导路径判定数值、收敛与质量三类必观察信号",
+          "reasoningGoal": "先从残差与归一化改动拆出数值、收敛与质量三条传导路径；再逐项验证观察项是否成立；并排除只看参数量等错误判据。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-3562cedd",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-34375cb2",
+        "sourceSnapshot": {
+          "id": "sebastian-raschka-2026-08-143",
+          "topic": "attention",
+          "subtopic": "残差与归一化耦合",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "raschka",
+            "architecture",
+            "normalization"
+          ],
+          "question": "改变残差混合和归一化机制时，哪些指标应一起观察？（请选择三个）",
+          "options": [
+            "激活和梯度的数值稳定性",
+            "训练收敛速度与最终损失",
+            "目标任务质量及推理开销",
+            "只看参数量是否减少"
+          ]
+        }
+      }
+    ],
+    "foundation-rag-chunking-01": [
+      {
+        "id": "foundation-rag-chunking-01__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "企业知识库要把上百页的手册入库问答，整篇直接灌进窗口又贵又不准。评审分块方案时，哪些说法成立？",
+        "options": [
+          "按语义切成粒度适中的片段，检索更准且节省上下文预算",
+          "把所有文档统一截成完全相同的字数以便直接当作模型权重",
+          "分块的主要价值是绕开版权检测，其他作用都不重要",
+          "完成分块后向量数据库就不再是必需组件"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从整篇入库又贵又不准的后果判定语义分块的粒度与预算价值",
+          "reasoningGoal": "先从整篇灌窗口的代价拆出检索精度与预算浪费两项痛点；再逐项验证分块说法是否成立；并排除统一字数、绕版权、无需向量库等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-75eb584f",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-ac0f6ed6",
+        "sourceSnapshot": {
+          "id": "foundation-rag-chunking-01",
+          "topic": "rag",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "rag",
+            "chunking",
+            "retrieval",
+            "context"
+          ],
+          "question": "在 RAG 知识库构建中，为什么要对长文档进行分块（Chunking）？",
+          "options": [
+            "使检索粒度更精准，便于语义向量匹配并节约模型上下文预算",
+            "为了让所有文档的字数完全一致，以便直接作为模型权重",
+            "分块是绕过版权检测的唯一手段",
+            "分块后就不再需要使用向量数据库"
+          ]
+        }
+      }
+    ],
+    "foundation-mcp-mechanism-01": [
+      {
+        "id": "foundation-mcp-mechanism-01__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "新人把网关的三类原语混为一谈，对着配置把数据接口配成了执行动作。上线前纠正认知，哪些表述准确？",
+        "options": [
+          "工具负责执行动作，资源负责提供数据，提示词提供可复用模板",
+          "工具负责提供数据，资源负责执行动作，提示词管理模型权重版本",
+          "资源负责执行任意写操作，工具只能返回固定静态文本",
+          "提示词一旦下发就自动授予服务器访问全部用户数据的权限"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从配错接口的故障讲清工具执行、资源供数与模板复用三类分工",
+          "reasoningGoal": "先从接口配错的症状拆出执行与供数的职责边界；再逐项验证表述是否成立；并排除职责对调、任意写、自动授权等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-9759170f",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-f8054030",
+        "sourceSnapshot": {
+          "id": "foundation-mcp-mechanism-01",
+          "topic": "mcp",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "mcp",
+            "tools",
+            "resources",
+            "protocol"
+          ],
+          "question": "MCP server 暴露的 tools、resources 和 prompts 分别主要代表什么？",
+          "options": [
+            "tools 执行动作，resources 提供数据，prompts 提供可复用模板",
+            "tools 提供数据，resources 执行动作，prompts 负责模型权重版本管理",
+            "resources 负责执行任意写操作，tools 只能返回静态文本",
+            "prompts 会自动授予服务器访问所有用户数据的权限"
+          ]
+        }
+      }
+    ],
+    "foundation-tool-security-mechanism-01": [
+      {
+        "id": "foundation-tool-security-mechanism-01__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "客服助手同时接了读订单与发邮件两个工具，安全评审要求按最小权限收紧。哪种做法最符合要求？",
+        "options": [
+          "按工具与资源范围分别授权，高影响发送动作加校验或人工确认",
+          "为图省事给两个工具直接授予管理员权限，减少开发联调成本",
+          "仅在系统提示词里写一句要求谨慎操作，不做其他控制",
+          "把全部能力合并成一个可执行任意代码的万能工具接口"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从读写混授的风险判定分权授权与高影响动作确认两项措施",
+          "reasoningGoal": "先从读写混授拆出权限范围与写操作风险两项约束；再逐项验证做法是否成立；并排除全管理员、只靠提示词、万能接口等错误做法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-e58f4b00",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-8d272097",
+        "sourceSnapshot": {
+          "id": "foundation-tool-security-mechanism-01",
+          "topic": "tool-security",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "tool-security",
+            "least-privilege",
+            "authorization"
+          ],
+          "question": "给 Agent 设计“发送邮件”和“读取订单”工具时，最符合最小权限原则的做法是什么？",
+          "options": [
+            "分别限制工具权限和资源范围，对发送邮件等高影响操作增加校验或确认",
+            "给两个工具都授予管理员权限以减少开发工作",
+            "只依赖系统提示词要求 Agent 不要误操作",
+            "把所有工具合并成一个任意代码执行接口"
+          ]
+        }
+      }
+    ],
+    "foundation-sampling-temperature-01": [
+      {
+        "id": "foundation-sampling-temperature-01__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "回归测试要求模型输出稳定可复现，有人提议把采样温度置零。关于该设置的含义，哪些说法正确？",
+        "options": [
+          "每步固定选取概率最高的词元，退化为贪心解码且输出最确定",
+          "输出将变得完全随机，每次运行结果都大不相同",
+          "模型会在整个词表中随机挑选词元以追求最大创造力",
+          "模型将按均匀分布采样，每个词元被选中的概率都相等"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从稳定复现的要求判定零温度退化为贪心解码的含义",
+          "reasoningGoal": "先从稳定复现约束拆出确定性采样的定义要素；再逐项验证说法是否成立；并排除完全随机、任意挑选、均匀分布等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-8a653211",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-61d996f3",
+        "sourceSnapshot": {
+          "id": "foundation-sampling-temperature-01",
+          "topic": "sampling",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "sampling",
+            "temperature",
+            "greedy-decoding"
+          ],
+          "question": "在调用 LLM 进行推理时，将 Temperature 设置为 0 通常意味着什么？",
+          "options": [
+            "采用贪心采样，每一步始终选取预测概率最高的 Token，输出最确定",
+            "模型输出将完全随机，每次运行结果都大不相同",
+            "模型将随机在词表中任意挑选 Token 以获得最大创造力",
+            "模型将按均匀分布采样，每个 Token 被选中的概率相等"
+          ]
+        }
+      }
+    ],
+    "foundation-embeddings-distance-01": [
+      {
+        "id": "foundation-embeddings-distance-01__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "检索团队新人误把余弦相似度当成字符数差异，向量召回调参全错。纠正概念时，哪些表述准确？",
+        "options": [
+          "度量两向量在高维空间中的方向接近程度，不受模长影响",
+          "度量两段文本所含字符数量之间的绝对差值",
+          "度量数据库执行一次查询所消耗的网络带宽大小",
+          "度量两向量坐标相乘后所得矩阵的行列式总值"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "identify",
+        "assessment": {
+          "target": "能从调参全错的症状讲清余弦相似度度量方向而非数量或带宽",
+          "reasoningGoal": "先从误用症状拆出方向、数量与带宽三类度量对象的分野；再逐项验证表述是否成立；并排除字符差、带宽、行列式等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-ee1cb514",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-8345c274",
+        "sourceSnapshot": {
+          "id": "foundation-embeddings-distance-01",
+          "topic": "vector-db",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "embeddings",
+            "cosine-similarity",
+            "vector-search"
+          ],
+          "question": "在向量数据库计算文本嵌入相似度时，余弦相似度（Cosine Similarity）衡量的是什么？",
+          "options": [
+            "两个向量在高维空间中方向的接近程度（夹角大小），而不受模长影响",
+            "两个文本包含字符数量的绝对差值",
+            "数据库查询执行所消耗的网络带宽大小",
+            "两个向量坐标相乘后的总矩阵行列式"
+          ]
+        }
+      }
+    ],
+    "gap-mcp-scenario-01": [
+      {
+        "id": "gap-mcp-scenario-01__context-options__manual-bj__0",
+        "kind": "context-options",
+        "question": "团队同时交付本地桌面文件助手与多客户端数据网关两个服务，传输选型与安全配置一起评审。哪种结论最合理？",
+        "options": [
+          "本机单客户端可走进程内通道，远程多客户端走流式超文本传输并各自配好认证授权",
+          "所有场景强制使用同一种传输，因为其他传输无法承载远程调用协议",
+          "为方便模型直连，把数据库账号密码写进工具描述供模型读取使用",
+          "只要选了流式超文本传输，权限控制与审计能力就会自动具备"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能按本机与远程两类部署形态选出进程内与流式传输并配好认证授权",
+          "reasoningGoal": "先从两类部署形态拆出传输通道与安全配置两项决策；再逐项验证结论是否成立；并排除强制同传输、凭据进描述、选型即安全等错误说法。"
+        },
+        "generatedAt": 1789469850929,
+        "generator": "offline",
+        "promptVersion": "v1",
+        "sourceHash": "fnv1a-c698b711",
+        "batch": "manual-bj",
+        "model": "manual",
+        "contentHash": "fnv1a-c604ec00",
+        "sourceSnapshot": {
+          "id": "gap-mcp-scenario-01",
+          "topic": "mcp",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "apply",
+          "tags": [
+            "mcp",
+            "transport",
+            "stdio",
+            "http",
+            "deployment"
+          ],
+          "question": "一个 MCP 文件服务器只服务本机桌面应用，另一个数据服务要被多台受控客户端访问。传输方式如何初步选择？",
+          "options": [
+            "本机单客户端可考虑 stdio，远程多客户端可考虑 Streamable HTTP，并分别配置权限与认证",
+            "所有场景都必须使用 stdio，因为 HTTP 不能传递 JSON-RPC",
+            "远程服务应把数据库凭据放入工具描述中，供模型读取后直连数据库",
+            "只要使用 Streamable HTTP 传输，就自动获得最小权限控制和审计能力"
+          ]
+        }
+      }
+    ]
+  }
+}

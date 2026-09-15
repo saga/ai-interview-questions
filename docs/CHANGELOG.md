@@ -1,6 +1,18 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-15 · 零变体区扩充 20 条变体（`assessment.manual-bj-20260915.json`，池 1635→1655 条）
+
+- 从剩余零变体 choice 题中按 topic 分散挑 20 道（14 多选 + 6 单选，多选占比 70% ✓；
+  14 道 sebastian 簇推理/注意力/KV + 6 道基础（rag/mcp/tool-security/sampling/vector-db），
+  与 bg/bh/bi 批题目零重叠），各写 1 条 assessment 变体（context-options），
+  换 angle + cognitiveTask 开新推理路径，真值逐项继承原题。
+- 初稿 3 处问题全部改写清零：2 条选项改写过界（Q/K/V·padding 与 Query 原词丢失致
+  option-semantic-drift，补回原词后通过）、1 条从句倒置率 100%（按原题分句顺序重排后通过）；
+  全批 validate/sanity/goal/length（≤1.71×）自检通过。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 64.6%→66.0%，0 变体题 507→487）；
+  `validate:questions` ✓ 1434 题不变；`npm test` 891/891。组装草稿放仓外 temp/ 用完即删，未落仓。
+
 ## 2026-09-15 · 复审最新批次并修复 4 处问题（来源引用 / 干扰项前提 / 解析措辞 / 误解映射）
 
 - 审查范围：`coverage-gap-20260911`（20 canonical）、`cluster-interconnect-20260911`（5 canonical）、
