@@ -1,6 +1,45 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-bs-20260916.json`，池 1815→1835 条）
+
+- missing-only 顺延 10 题（`aws-waf-lens-2026-08-26/27/28/29/30`、
+  `claude-blog-2026-08-06/07/08/09/10`，均为单选），每题各写 1 条 surface-options +
+  1 条 context-options，共 20 条 assessment 变体（mode=assessment，自声明不同
+  angle + cognitiveTask 与新推理路径）。
+- 初稿 13 处问题改写清零：短选项长度失衡 11 项（waf-26/27/28、claude-09），
+  sibling 近重复 2 对（waf-27 89.9、waf-29 90.1，均重做 context 集叙事结构压回 88 以下）。
+- 题干约束落实：waf-27 题干避开正确项独有拉丁词（ML/prompt）；数字/限定词本批无约束；
+  v7 语言风格，数值原样保留。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 71.6%→72.3%，0 变体题 407→397）；
+  `npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-br-20260916.json`，池 1795→1815 条）
+
+- missing-only 顺延 10 题（`aws-waf-lens-2026-08-10/12/16/19/20/21/22/23/24/25`，
+  均为单选短选项），每题各写 1 条 surface-options + 1 条 context-options，
+  共 20 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。
+- 初稿 11 处问题改写清零：短选项题的通病是正确项长、干扰项短触发长度泄题
+  （waf-10/19/20/22/23 五题 9 项，逐条拉长短干扰项压到 1.8× 内）。
+- 题干约束落实：waf-16 题干避开正确项独有拉丁词（prompt）；数字/限定词本批无约束；
+  v7 语言风格，数值原样保留。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 70.9%→71.6%，0 变体题 417→407）；
+  `npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-bq-20260916.json`，池 1775→1795 条）
+
+- missing-only 顺延 10 题（`aws-genai-developer-pro-40/41/42/43/44/45/46/48/50`、
+  `aws-waf-lens-2026-08-08`，均为单选），每题各写 1 条 surface-options + 1 条
+  context-options，共 20 条 assessment 变体（mode=assessment，自声明不同
+  angle + cognitiveTask 与新推理路径）。注：文件名顺延为 bq（bo/bp 已用）。
+- 初稿问题改写清零：Q41 context 集"正确项全局最长 + 过短干扰项 1.9×"
+  （精简正确项、拉长短项压到 1.45×）。
+- 题干约束落实：Q41 保留 `60天/200ms` + 限定词`所有`，Q43 保留 `5000`，
+  Q46 保留 `200ms`；Q41/Q44/Q45 题干避开正确项独有拉丁词
+  （Bases/reranker/RAG），extra-hint 0 新增；v7 语言风格，数值原样保留。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 70.2%→70.9%，0 变体题 427→417）；
+  `npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
 ## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-bp-20260916.json`，池 1755→1775 条）
 
 - missing-only 顺延 10 题，4 道多选 + 6 道单选：`sebastian-raschka-2026-08-136/142/162/165`

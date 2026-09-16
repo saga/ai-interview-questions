@@ -1,0 +1,945 @@
+{
+  "version": 1,
+  "generatedAt": 1789598762249,
+  "promptVersion": "v7",
+  "variants": {
+    "aws-waf-lens-2026-08-10": [
+      {
+        "id": "aws-waf-lens-2026-08-10__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "RAG 又慢又不准，上下文里无关文档一大堆。先从哪动手？",
+        "options": [
+          "把全部文档一股脑塞进最大上下文。",
+          "测量检索链路，改进过滤、分块、重排与上下文选择。",
+          "只调高生成 temperature。",
+          "删掉引用以减少生成 token。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断延迟加无关文档须先测量链路再优化过滤分块重排",
+          "reasoningGoal": "先区分延迟与无关文档各自的归因环节；再据此确认测量链路加四项改进的说法成立；并排除堆上下文、调参、删引用等不成立描述。"
+        },
+        "generatedAt": 1789598762238,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-589cc29d",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-8d08454d",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-10",
+          "topic": "rag",
+          "subtopic": "生成式应用的数据检索性能",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "aws-well-architected",
+            "generative-ai",
+            "rag",
+            "performance"
+          ],
+          "question": "RAG 应用延迟超出目标，且上下文中包含大量无关文档。最合理的优化顺序是什么？（单选）",
+          "options": [
+            "直接把所有文档放入最大上下文",
+            "测量检索链路并改进过滤、分块、重排和上下文选择",
+            "只调高生成 temperature",
+            "删除引用以减少生成 token"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-10__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "客服知识库问答延迟超标，排查发现每次检索塞了上百个不相关片段。最合理的优化顺序是什么？",
+        "options": [
+          "把全部文档直接灌进最大上下文。",
+          "先测量检索链路，再改进过滤、分块、重排和上下文选择。",
+          "只把生成 temperature 调高一档。",
+          "删除引用以降低生成 token 开销。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从上百不相关片段的证据推出测量优先的优化顺序",
+          "reasoningGoal": "先确认无关片段指向检索与上下文环节；再据此确认先测量再改进的顺序成立；并排除直接灌库、调参、删引用等不成立描述。"
+        },
+        "generatedAt": 1789598762241,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-589cc29d",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-2272ca12",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-10",
+          "topic": "rag",
+          "subtopic": "生成式应用的数据检索性能",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "aws-well-architected",
+            "generative-ai",
+            "rag",
+            "performance"
+          ],
+          "question": "RAG 应用延迟超出目标，且上下文中包含大量无关文档。最合理的优化顺序是什么？（单选）",
+          "options": [
+            "直接把所有文档放入最大上下文",
+            "测量检索链路并改进过滤、分块、重排和上下文选择",
+            "只调高生成 temperature",
+            "删除引用以减少生成 token"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-12": [
+      {
+        "id": "aws-waf-lens-2026-08-12__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "成本涨、质量没动，账单越花越多。哪种诊断符合成本优化？",
+        "options": [
+          "永久用最大模型保成本稳定，规模越大单价越低，无需按用例调整。",
+          "按用例拆解模型、token、缓存、检索与 Agent 步骤，选达标的最小模型与上下文并归因到工作流。",
+          "直接全量切最小模型并砍掉检索增强，拿账单下降验证，质量回退以后再补。",
+          "在 prompt 里加说明让模型自动省账单，靠指令约束控制 token 与检索开销。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断成本上涨须按用例拆解归因而非换大或换小模型",
+          "reasoningGoal": "先明确成本与质量脱钩指向归因缺失；再据此确认拆解加最小达标加归因的说法成立；并排除永久大模型、全量最小化、指令省钱等不成立描述。"
+        },
+        "generatedAt": 1789598762241,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c0779841",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-f458fa97",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-12",
+          "topic": "evaluation",
+          "subtopic": "模型与 token 成本权衡",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "generative-ai",
+            "cost-optimization"
+          ],
+          "question": "生成式应用成本持续上升，但质量指标没有改善。哪种诊断更符合成本优化原则？（单选）",
+          "options": [
+            "永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文",
+            "按用例拆解模型、token、缓存、检索与 Agent 步骤，选满足质量门槛的最小模型与上下文并归因到工作流",
+            "直接全量换成最小模型并砍掉检索增强，用账单下降验证优化效果，质量回退可事后再补",
+            "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-12__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "视频转码费用连月上涨但清晰度投诉没少。哪种诊断符合成本优化原则？",
+        "options": [
+          "永久用最高规格保成本稳定，规模越大单价越低，无需按场景调整。",
+          "按用例拆解模型规格、token 开销、缓存、分发与处理步骤，选满足门槛的最小规格并归因到工作流。",
+          "直接全量切最低规格并砍掉预处理，拿账单下降验证，质量回退以后再补。",
+          "在配置里加说明让系统自动省钱，靠指令约束控制码率与分发开销。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从费用涨但投诉不减的现象推出分链路归因的结论",
+          "reasoningGoal": "先区分费用与质量各自的度量；再据此确认拆解加达标最小加归因的说法成立；并排除永久高规格、全量最低、配置省钱等不成立描述。"
+        },
+        "generatedAt": 1789598762242,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c0779841",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-eb2fa6a7",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-12",
+          "topic": "evaluation",
+          "subtopic": "模型与 token 成本权衡",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "generative-ai",
+            "cost-optimization"
+          ],
+          "question": "生成式应用成本持续上升，但质量指标没有改善。哪种诊断更符合成本优化原则？（单选）",
+          "options": [
+            "永久使用最大模型以保证成本稳定，规模越大单位成本越低，无需按用例调整模型与上下文",
+            "按用例拆解模型、token、缓存、检索与 Agent 步骤，选满足质量门槛的最小模型与上下文并归因到工作流",
+            "直接全量换成最小模型并砍掉检索增强，用账单下降验证优化效果，质量回退可事后再补",
+            "在 prompt 中增加说明让模型自动减少账单，靠指令约束即可控制 token 与检索开销"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-16": [
+      {
+        "id": "aws-waf-lens-2026-08-16__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "监管要还原一次 AI 客服决策。哪种日志设计最有价值？",
+        "options": [
+          "只存给客户的最终回复文本即可应付审计，中间检索、工具调用与策略命中不用留。",
+          "记录脱敏主体身份、输入与数据版本、模型与提示词版本、检索工具调用、策略命中与人工修改，保证完整性并审计访问。",
+          "完整记录全部明文交互以最大化可追溯，隐私合规事后再补，完整性优先于脱敏。",
+          "存完整输入输出与模型版本即可，责任人信息涉隐私不进日志，审计时再关联工单。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断审计日志须覆盖脱敏身份版本调用命中修改全链路",
+          "reasoningGoal": "先拆出可还原决策所需的证据要素；再据此确认全链路记录加完整性审计的说法成立；并排除只存终答、全明文、缺责任人等不成立描述。"
+        },
+        "generatedAt": 1789598762243,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7dfe4e40",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-6647c342",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-16",
+          "topic": "observability",
+          "subtopic": "金融环境透明与审计",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "financial-services",
+            "auditability",
+            "traceability"
+          ],
+          "question": "监管检查要求还原一次 AI 辅助客户服务决定。哪种日志设计最有价值？（单选）",
+          "options": [
+            "只保存给客户的最终回复文本即可满足审计，中间检索、工具调用与策略命中无需留存",
+            "记录脱敏主体身份、输入与数据版本、模型与 prompt 版本、检索工具调用、策略命中与人工修改，保证完整性并审计访问",
+            "完整记录全部明文交互以最大化可追溯性，隐私合规可事后补救，审计完整性优先于脱敏",
+            "保存完整输入输出与模型版本即可，责任人信息涉隐私不应进日志，审计时再关联工单，缺少责任人与过程证据"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-16__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "审计署要复核一笔 AI 审批的贷款，需要还原决策依据。哪种日志设计最有价值？",
+        "options": [
+          "只保留给客户的最终答复文本就能审计，中间检索、工具调用与策略命中不必存。",
+          "记录脱敏主体身份、输入与数据版本、模型与提示词版本、检索工具调用、策略命中与人工修改，完整可验且访问可审计。",
+          "全量明文记录所有交互以求可追溯最强，隐私合规后续再补，完整性压过脱敏。",
+          "留完整输入输出与模型版本就行，责任人信息涉隐私不记，审计时再关联单据。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从贷款复核的举证要求推出证据链记录的结论",
+          "reasoningGoal": "先明确复核要还原依据而非结果；再据此确认脱敏记录加完整性审计的说法成立；并排除只留答复、明文优先、不记责任人等不成立描述。"
+        },
+        "generatedAt": 1789598762244,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7dfe4e40",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-9fd6b4cc",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-16",
+          "topic": "observability",
+          "subtopic": "金融环境透明与审计",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "financial-services",
+            "auditability",
+            "traceability"
+          ],
+          "question": "监管检查要求还原一次 AI 辅助客户服务决定。哪种日志设计最有价值？（单选）",
+          "options": [
+            "只保存给客户的最终回复文本即可满足审计，中间检索、工具调用与策略命中无需留存",
+            "记录脱敏主体身份、输入与数据版本、模型与 prompt 版本、检索工具调用、策略命中与人工修改，保证完整性并审计访问",
+            "完整记录全部明文交互以最大化可追溯性，隐私合规可事后补救，审计完整性优先于脱敏",
+            "保存完整输入输出与模型版本即可，责任人信息涉隐私不应进日志，审计时再关联工单，缺少责任人与过程证据"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-19": [
+      {
+        "id": "aws-waf-lens-2026-08-19__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "AI 风险只由模型开发者定义，漏了受影响客户。如何改进？",
+        "options": [
+          "只让开发者来定风险以提高效率。",
+          "识别上下游和脆弱群体，邀不同职能参与并登记潜在伤害。",
+          "只用历史平均准确率来推断风险。",
+          "等上线被投诉后再找利益相关者。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断风险识别须纳入上下游与脆弱群体而非开发者自评",
+          "reasoningGoal": "先识别遗漏受影响者的治理缺陷；再据此确认多职能参与加伤害登记的说法成立；并排除开发者自定、准确率推断、事后找人等不成立描述。"
+        },
+        "generatedAt": 1789598762244,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7eb59259",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-18da85e9",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-19",
+          "topic": "evaluation",
+          "subtopic": "Responsible AI 风险识别",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "risk-register",
+            "stakeholders"
+          ],
+          "question": "团队只邀请模型开发者定义 AI 风险，遗漏了受影响的客户群体。Responsible AI Lens 建议如何改进？（单选）",
+          "options": [
+            "只让开发者决定风险以提高效率",
+            "识别上下游和脆弱群体，邀请不同职能参与并登记潜在伤害",
+            "只用历史平均准确率推断风险",
+            "等上线出现投诉后再寻找利益相关者"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-19__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "新药评审只听药企意见，漏了患者群体。评审机制如何改进？",
+        "options": [
+          "只让药企来定风险以提高评审效率。",
+          "识别上下游与脆弱群体，邀请跨职能参与并登记潜在伤害。",
+          "只用历史平均有效率来推断风险。",
+          "等上市被投诉后再找利益相关者。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从漏患者群体的评审缺陷推出多方参与的结论",
+          "reasoningGoal": "先确认缺失受影响者视角；再据此确认跨职能参与加伤害登记的说法成立；并排除药企自定、有效率推断、上市后找人等不成立描述。"
+        },
+        "generatedAt": 1789598762244,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7eb59259",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-d7d05841",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-19",
+          "topic": "evaluation",
+          "subtopic": "Responsible AI 风险识别",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "risk-register",
+            "stakeholders"
+          ],
+          "question": "团队只邀请模型开发者定义 AI 风险，遗漏了受影响的客户群体。Responsible AI Lens 建议如何改进？（单选）",
+          "options": [
+            "只让开发者决定风险以提高效率",
+            "识别上下游和脆弱群体，邀请不同职能参与并登记潜在伤害",
+            "只用历史平均准确率推断风险",
+            "等上线出现投诉后再寻找利益相关者"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-20": [
+      {
+        "id": "aws-waf-lens-2026-08-20__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "平均准确率达标，但公平安全样本很少。能直接发布吗？",
+        "options": [
+          "可以，平均准确率是最重要的指标。",
+          "不能，应补足各项发布标准的评估证据和统计置信度后再决定。",
+          "删掉公平性和安全性标准以避免阻塞发布。",
+          "让 LLM-as-a-judge 凭一次评审代替样本。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断平均达标不能替代公平安全的证据与置信度",
+          "reasoningGoal": "先明确平均数掩盖尾部风险的缺陷；再据此确认补足证据与置信度的说法成立；并排除直接发布、删除标准、单次评审等不成立描述。"
+        },
+        "generatedAt": 1789598762245,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-27811f01",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-87e7eb76",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-20",
+          "topic": "evaluation",
+          "subtopic": "Responsible AI 发布门槛",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "release-criteria",
+            "confidence"
+          ],
+          "question": "一个 AI 系统平均准确率达到目标，但公平性和安全性样本很少。是否可以直接发布？（单选）",
+          "options": [
+            "可以，因为平均准确率是最重要的指标",
+            "不能，应补足各项发布标准的评估证据和统计置信度后再决定",
+            "删除公平性和安全性标准以避免阻塞发布",
+            "让 LLM-as-a-judge 凭一次评审代替样本"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-20__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "新车碰撞总分达标，但行人保护项只测了两次。能上公告吗？",
+        "options": [
+          "可以，碰撞总分达标就是最重要的指标。",
+          "不能，应补足各项标准的评估证据和统计置信度后再决定。",
+          "删掉行人保护标准以避免阻塞公告。",
+          "请专家凭一次评审代替样本数量。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从碰撞总分与单项样本不足的对比推出补测的结论",
+          "reasoningGoal": "先识别总分与分项证据的落差；再据此确认补足评估再决定的说法成立；并排除直接公告、删除标准、专家单次评审等不成立描述。"
+        },
+        "generatedAt": 1789598762245,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-27811f01",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-4d03ef40",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-20",
+          "topic": "evaluation",
+          "subtopic": "Responsible AI 发布门槛",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "release-criteria",
+            "confidence"
+          ],
+          "question": "一个 AI 系统平均准确率达到目标，但公平性和安全性样本很少。是否可以直接发布？（单选）",
+          "options": [
+            "可以，因为平均准确率是最重要的指标",
+            "不能，应补足各项发布标准的评估证据和统计置信度后再决定",
+            "删除公平性和安全性标准以避免阻塞发布",
+            "让 LLM-as-a-judge 凭一次评审代替样本"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-21": [
+      {
+        "id": "aws-waf-lens-2026-08-21__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "标准措辞表现好，方言错字一上就失真。评估怎么设计？",
+        "options": [
+          "只测试最标准的输入以保持分数稳定。",
+          "识别相关输入变化并分层评估，确认关注或忽略是否符合用例。",
+          "把所有输入变化都归因于用户错误。",
+          "提高 prompt 长度即可覆盖全部变化。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断鲁棒性须按输入类型分层评估而非只测标准输入",
+          "reasoningGoal": "先识别标准分布与真实分布的落差；再据此确认分层评估的说法成立；并排除只测标准、归因用户、加长提示等不成立描述。"
+        },
+        "generatedAt": 1789598762246,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-1188cee8",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-3f4296f1",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-21",
+          "topic": "prompt-robustness",
+          "subtopic": "Responsible AI 输入变化",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "robustness",
+            "input-variation"
+          ],
+          "question": "模型在标准措辞上表现很好，但换成方言、拼写变体或低质量图片后结果失真。应如何设计评估？（单选）",
+          "options": [
+            "只测试最标准的输入以保持分数稳定",
+            "识别相关输入变化并分层评估，确认系统关注或忽略它们是否符合用例",
+            "把所有变化归因于用户错误",
+            "提高 prompt 长度即可覆盖全部变化"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-21__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "客服机器人普通话问答极好，一遇方言口音就答非所问。评估怎么设计？",
+        "options": [
+          "只测标准普通话输入以保持分数稳定。",
+          "把相关输入变化纳入评估集分层测试，确认关注或忽略符合用例。",
+          "把所有输入变化都归因于用户自身错误。",
+          "加长 prompt 长度即可覆盖全部变化。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从方言失真的现象推出评估集须覆盖真实变化的结论",
+          "reasoningGoal": "先确认失真是系统鲁棒性问题；再据此确认纳入变化分层测试的说法成立；并排除标准普通话、归因用户、加长提示等不成立描述。"
+        },
+        "generatedAt": 1789598762246,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-1188cee8",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-72aaad9a",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-21",
+          "topic": "prompt-robustness",
+          "subtopic": "Responsible AI 输入变化",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "robustness",
+            "input-variation"
+          ],
+          "question": "模型在标准措辞上表现很好，但换成方言、拼写变体或低质量图片后结果失真。应如何设计评估？（单选）",
+          "options": [
+            "只测试最标准的输入以保持分数稳定",
+            "识别相关输入变化并分层评估，确认系统关注或忽略它们是否符合用例",
+            "把所有变化归因于用户错误",
+            "提高 prompt 长度即可覆盖全部变化"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-22": [
+      {
+        "id": "aws-waf-lens-2026-08-22__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "隐私要保，客户又要每个输出都解释。怎么处理？",
+        "options": [
+          "透明度永远优先，把所有内部数据都公开。",
+          "隐私永远优先，完全不提供任何解释。",
+          "定义各维度最低门槛和最小必要披露，记录权衡并由适当角色审查。",
+          "让模型自行决定每个请求应该披露什么内容。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断隐私与解释的冲突须转成门槛加受控披露加审查",
+          "reasoningGoal": "先明确单维度最大化的不可行；再据此确认最低门槛加最小披露的说法成立；并排除透明优先、隐私优先、模型自决等不成立描述。"
+        },
+        "generatedAt": 1789598762246,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0abc1f76",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-27edf3e6",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-22",
+          "topic": "evaluation",
+          "subtopic": "Responsible AI 设计权衡",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "privacy",
+            "explainability"
+          ],
+          "question": "系统要求加强隐私保护，但客户又要求解释每个输出。Responsible AI Lens 的正确处理方式是什么？（单选）",
+          "options": [
+            "透明度永远优先，公开所有内部数据",
+            "隐私永远优先，完全不提供解释",
+            "定义各维度最低门槛和最小必要披露，记录权衡并由适当角色审查",
+            "让模型自行决定应该披露什么"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-22__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "风控模型既要保密特征，又要给监管解释判定。怎么处理？",
+        "options": [
+          "透明度永远优先，所有内部数据全部公开。",
+          "隐私永远优先，不提供任何解释说明。",
+          "定各维度最低门槛与最小必要披露，记录权衡并交适当角色审查。",
+          "让模型自己决定每次应该披露多少内容。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从保密与解释的双重要求推出受控披露的结论",
+          "reasoningGoal": "先识别两者直接冲突的性质；再据此确认门槛加披露加审查的说法成立；并排除全公开、零解释、自决披露等不成立描述。"
+        },
+        "generatedAt": 1789598762247,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0abc1f76",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-9d149332",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-22",
+          "topic": "evaluation",
+          "subtopic": "Responsible AI 设计权衡",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "privacy",
+            "explainability"
+          ],
+          "question": "系统要求加强隐私保护，但客户又要求解释每个输出。Responsible AI Lens 的正确处理方式是什么？（单选）",
+          "options": [
+            "透明度永远优先，公开所有内部数据",
+            "隐私永远优先，完全不提供解释",
+            "定义各维度最低门槛和最小必要披露，记录权衡并由适当角色审查",
+            "让模型自行决定应该披露什么"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-23": [
+      {
+        "id": "aws-waf-lens-2026-08-23__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "评估集混进训练数据，分数异常优秀。问题和改进是什么？",
+        "options": [
+          "说明模型已经达到生产级，无需再测。",
+          "可能存在数据泄漏或记忆，应隔离评估数据并记录重叠影响。",
+          "增加更多相同训练样本即可确认结果。",
+          "只看评估集分数，不需要记录数据版本。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能判断训测重叠导致记忆夸大须隔离加记录影响",
+          "reasoningGoal": "先定位异常优秀的直接诱因；再据此确认隔离加记录的说法成立；并排除已达生产级、加同源样本、只看分数等不成立描述。"
+        },
+        "generatedAt": 1789598762247,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-1d98d79c",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-254ecf81",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-23",
+          "topic": "data-leakage",
+          "subtopic": "Responsible AI 数据集治理",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "dataset",
+            "privacy"
+          ],
+          "question": "评估集包含曾用于训练的数据，结果异常优秀。最可能的问题和改进是什么？（单选）",
+          "options": [
+            "说明模型已经达到生产级，无需再测",
+            "可能存在数据泄漏或记忆，应隔离评估数据并记录重叠影响",
+            "增加更多相同训练样本即可确认结果",
+            "只看评估集分数，不需要记录数据版本"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-23__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "模拟考卷混进平时作业题，班级平均分虚高。问题和改进是什么？",
+        "options": [
+          "说明班级整体已经达标，无需再测。",
+          "可能存在题目泄漏或记忆，应隔离模考卷并记录重叠影响。",
+          "增加更多相同作业题即可确认结果。",
+          "只看模考分数，不需要记录题目版本。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从虚高平均分的现象推出泄漏隔离的结论",
+          "reasoningGoal": "先识别作业题混入的污染；再据此确认隔离加记录的说法成立；并排除已达标、加同源题、只看分数等不成立描述。"
+        },
+        "generatedAt": 1789598762247,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-1d98d79c",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-5efe6bdf",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-23",
+          "topic": "data-leakage",
+          "subtopic": "Responsible AI 数据集治理",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "dataset",
+            "privacy"
+          ],
+          "question": "评估集包含曾用于训练的数据，结果异常优秀。最可能的问题和改进是什么？（单选）",
+          "options": [
+            "说明模型已经达到生产级，无需再测",
+            "可能存在数据泄漏或记忆，应隔离评估数据并记录重叠影响",
+            "增加更多相同训练样本即可确认结果",
+            "只看评估集分数，不需要记录数据版本"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-24": [
+      {
+        "id": "aws-waf-lens-2026-08-24__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "欺诈模型上线后，监控只看 endpoint 健康够吗？",
+        "options": [
+          "模型部署成功后只需监控 CPU 和内存。",
+          "多维监控能区分输入漂移、质量退化、公平性变化和逻辑变化。",
+          "只监控总体准确率即可代表所有维度。",
+          "模型一旦训练完成就不会因数据变化而退化。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断上线后须多维监控而非只看健康或准确率",
+          "reasoningGoal": "先拆出各维度分别漂移的可能性；再据此确认多维监控的说法成立；并排除只看资源、只看准确率、训练完不退化等不成立描述。"
+        },
+        "generatedAt": 1789598762248,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8e26c588",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-b246487d",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-24",
+          "topic": "evaluation",
+          "subtopic": "传统 ML 模型监控",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "model-monitoring",
+            "drift"
+          ],
+          "question": "传统欺诈检测模型上线后，为什么需要同时监控数据质量、模型质量、偏差和特征归因变化？（单选）",
+          "options": [
+            "模型部署成功后只需监控 CPU 和内存",
+            "多维监控能区分输入漂移、质量退化、公平性变化和逻辑变化",
+            "只监控总体准确率即可代表所有维度",
+            "模型一旦训练完成就不会因数据变化而退化"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-24__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "工厂质检模型上线后，只看设备在线率够吗？",
+        "options": [
+          "模型上线后盯住 CPU 和内存就够了。",
+          "用多维监控区分输入漂移、质量退化、公平性变化和逻辑变化。",
+          "盯住总体准确率这一个数，所有维度就都有数了。",
+          "模型训练完就定型了，数据再变也不会退化。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从设备在线推不出质量的落差推出多维监控的结论",
+          "reasoningGoal": "先区分设备健康与模型质量；再据此确认多维监控的说法成立；并排除只看在线率、单指标代表、定型不退化等不成立描述。"
+        },
+        "generatedAt": 1789598762248,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8e26c588",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-3b3144df",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-24",
+          "topic": "evaluation",
+          "subtopic": "传统 ML 模型监控",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "model-monitoring",
+            "drift"
+          ],
+          "question": "传统欺诈检测模型上线后，为什么需要同时监控数据质量、模型质量、偏差和特征归因变化？（单选）",
+          "options": [
+            "模型部署成功后只需监控 CPU 和内存",
+            "多维监控能区分输入漂移、质量退化、公平性变化和逻辑变化",
+            "只监控总体准确率即可代表所有维度",
+            "模型一旦训练完成就不会因数据变化而退化"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-25": [
+      {
+        "id": "aws-waf-lens-2026-08-25__surface-options__manual-br__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "拿同一评估集反复选模型报最高分，结果可信吗？",
+        "options": [
+          "评估集越常用，最终分数就越准确。",
+          "反复选择会使评估集失去独立性，应分离验证集与最终测试集。",
+          "只要候选模型足够多就能抵消过拟合。",
+          "把测试集加入训练以提高样本利用率。"
+        ],
+        "angle": "causal",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能判断反复选择污染评估集须分离验证与测试",
+          "reasoningGoal": "先明确选择过程污染测量的机制；再据此确认分离验证与测试的说法成立；并排除越用越准、模型多抵消、并入训练等不成立描述。"
+        },
+        "generatedAt": 1789598762248,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-66496254",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-066d34d2",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-25",
+          "topic": "evaluation",
+          "subtopic": "训练选择与最终评估隔离",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "validation",
+            "data-leakage"
+          ],
+          "question": "团队反复用同一个评估集选择超参数和模型，最后报告该集上的最高分。为什么结果不可信？（单选）",
+          "options": [
+            "评估集越常用，最终分数越准确",
+            "反复选择会使评估集失去独立性，应分离验证集与最终测试集",
+            "只要候选模型足够多就能抵消过拟合",
+            "把测试集加入训练以提高样本利用率"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-25__context-options__manual-br__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "同一套模拟卷反复刷取最高分，能证明真实水平吗？",
+        "options": [
+          "模拟卷刷得越多，最终分数就越准确。",
+          "反复选择会使评估集失去独立性，应分离验证卷与最终测试卷。",
+          "只要刷的版本足够多就能抵消过拟合。",
+          "把模考卷并入练习以提高题目利用率。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从刷卷最高分的不可信推出练习与模考分离的结论",
+          "reasoningGoal": "先识别反复刷的间接过拟合；再据此确认分卷的说法成立；并排除越刷越准、版本多抵消、并入练习等不成立描述。"
+        },
+        "generatedAt": 1789598762249,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-66496254",
+        "batch": "manual-br",
+        "model": "manual",
+        "contentHash": "fnv1a-61aa1758",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-25",
+          "topic": "evaluation",
+          "subtopic": "训练选择与最终评估隔离",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "validation",
+            "data-leakage"
+          ],
+          "question": "团队反复用同一个评估集选择超参数和模型，最后报告该集上的最高分。为什么结果不可信？（单选）",
+          "options": [
+            "评估集越常用，最终分数越准确",
+            "反复选择会使评估集失去独立性，应分离验证集与最终测试集",
+            "只要候选模型足够多就能抵消过拟合",
+            "把测试集加入训练以提高样本利用率"
+          ]
+        }
+      }
+    ]
+  }
+}

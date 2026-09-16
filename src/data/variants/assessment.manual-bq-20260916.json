@@ -1,0 +1,1035 @@
+{
+  "version": 1,
+  "generatedAt": 1789598159758,
+  "promptVersion": "v7",
+  "variants": {
+    "aws-genai-developer-pro-40": [
+      {
+        "id": "aws-genai-developer-pro-40__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "保费预测应用数据存 S3 且猛涨，员工一传新文件就要自动重训练并重部署。哪个持续重训练方案满足？",
+        "options": [
+          "Glue 给每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，更新数据集后实时推理重训练并重部署。",
+          "Lambda 加 webhook 在上传时产事件，SageMaker Pipelines 重训练后重部署，事件总线以 Lambda 为源、流水线为目标。",
+          "Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导给 Autopilot，Autopilot 重训练后重部署。",
+          "Step Functions 标准工作流开路：首状态调 Lambda 响应新文件上传，用 SageMaker Pipelines 在新数据集重训练后重部署，收到响应即运行该流水线。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断上传触发加标准编排加训练部署流水线是持续重训练的正确组合",
+          "reasoningGoal": "先识别上传事件驱动与训练部署衔接的要求；再据此确认标准流加流水线的方案成立；并排除 ETL 直驱、事件源倒置、自动建模等不成立描述。"
+        },
+        "generatedAt": 1789598159745,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-cc6b9906",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-ed6b424a",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-40",
+          "topic": "sft",
+          "subtopic": "持续重训练（Step Functions 标准 + SageMaker Pipelines）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "sagemaker",
+            "step-functions",
+            "pipelines",
+            "retraining",
+            "s3",
+            "lambda",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某保险公司用既有 SageMaker 基础设施做保费预测 Web 应用，训练数据存 S3 且增长快；需持续重训练方案：员工上传新客户数据文件到 S3 时须自动重训练并将模型重部署到应用。哪种方案满足？（单选）",
+          "options": [
+            "用 Glue 对每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，实时推理在更新数据集重训练后重部署。",
+            "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。",
+            "建 Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导出到 Autopilot，Autopilot 重训练后重部署。",
+            "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-40__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "车险理赔模型每周吃新案卷，分析师把标注包丢进对象存储就走人，要求当晚自动重训练并上线。哪个方案满足？",
+        "options": [
+          "每个上传包跑一次 ETL，经开发包调模型端点，新数据一到就重训练并重部署实时推理。",
+          "函数加回调在上传时发事件，训练流水线重训后重部署，事件总线以函数为源、流水线为目标。",
+          "Express 工作流用开发包集成取对象存储数据，数据准备工具导给自动建模，自动建模重训后重部署。",
+          "标准工作流打头：首状态调函数响应新包上传，训练部署流水线在新数据集重训后重部署，收到响应就运行流水线。"
+        ],
+        "angle": "architecture",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从分析师丢包即走的场景推出事件驱动编排加流水线的结论",
+          "reasoningGoal": "先明确无人值守下上传即训练的触发链；再据此确认标准流加训练部署流水线的方案成立；并排除逐包 ETL、函数事件源、自动建模等不成立描述。"
+        },
+        "generatedAt": 1789598159746,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-cc6b9906",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-d3b75520",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-40",
+          "topic": "sft",
+          "subtopic": "持续重训练（Step Functions 标准 + SageMaker Pipelines）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "sagemaker",
+            "step-functions",
+            "pipelines",
+            "retraining",
+            "s3",
+            "lambda",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某保险公司用既有 SageMaker 基础设施做保费预测 Web 应用，训练数据存 S3 且增长快；需持续重训练方案：员工上传新客户数据文件到 S3 时须自动重训练并将模型重部署到应用。哪种方案满足？（单选）",
+          "options": [
+            "用 Glue 对每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，实时推理在更新数据集重训练后重部署。",
+            "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。",
+            "建 Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导出到 Autopilot，Autopilot 重训练后重部署。",
+            "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-41": [
+      {
+        "id": "aws-genai-developer-pro-41__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "投顾应用 60 天上线：防幻觉、交互安全控制、行为漂移监控，所有提示响应对留存审计，响应 200ms 内。哪个方案运维最省？",
+        "options": [
+          "配 Bedrock Guardrails 自定义过滤与毒性检测，模型评估检幻觉，提示响应对存 DynamoDB 加 TTL，自定义指标接合规仪表盘。",
+          "PrivateLink 安全访问 Bedrock，函数做自定义提示校验，提示响应对存 S3 配生命周期，自建仪表盘监控。",
+          "Bedrock Agents 加知识库接地响应，Guardrails 保内容安全，OpenSearch 索引提示响应对，QuickSight 出合规报告并检漂移。",
+          "SageMaker Model Monitor 看漂移，WAF 过滤内容，交互存加密关系库，网关建自定义接口接合规仪表盘。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断治理四件套须靠托管组合而非自拼链路",
+          "reasoningGoal": "先拆出防幻觉、安全、漂移、审计四项治理要求；再据此确认智能体加知识库加护栏加检索加报告的组合成立；并排除 TTL 审计、自建校验、网络层过滤等不成立描述。"
+        },
+        "generatedAt": 1789598159748,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6213585a",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-69625acb",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-41",
+          "topic": "safety-alignment",
+          "subtopic": "负责任 AI 治理（Agents+KB 接地 + Guardrails + OpenSearch/QuickSight）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "agents",
+            "knowledge-base",
+            "guardrails",
+            "opensearch",
+            "quicksight",
+            "governance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融公司上线用 Bedrock 帮客服代表做个性化投资建议的 GenAI 应用，须负责任的 AI 治理并满足监管：检测并防止推荐幻觉、对客户交互加安全控制、实时监控模型行为漂移、保留所有 prompt-响应对审计。须 60 天内上线、集成既有合规仪表盘、响应 <200ms。哪种方案以最低运维开销满足？（单选）",
+          "options": [
+            "配 Bedrock Guardrails 自定义内容过滤与毒性检测，用 Model Evaluation 检幻觉，prompt-响应对存 DynamoDB 加 TTL，CloudWatch 自定义指标接合规仪表盘。",
+            "用 PrivateLink 安全访问 Bedrock，Lambda 做自定义提示校验，prompt-响应对存 S3 配生命周期，自建 CloudWatch 仪表盘监控。",
+            "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。",
+            "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-41__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "银行理财助手须 60 天内上线：建议有据可查、输出合规可控、行为异常可发现，所有交互留痕，响应 200ms 内。哪个组合运维最省？",
+        "options": [
+          "Guardrails 自定义过滤加毒性检测，评估服务检幻觉，提示响应对进 DynamoDB 设 TTL，指标接合规仪表盘。",
+          "专线安全访问 Bedrock，函数校验提示，提示响应对放 S3 设生命周期，自建仪表盘。",
+          "Agents 配知识库接地，Guardrails 控内容安全，OpenSearch 索引提示响应对，QuickSight 生成合规报告检漂移。",
+          "模型监视服务看漂移，防火墙过滤内容，交互落加密关系库，网关自定义接口对接合规仪表盘。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从有据可查加限时上线的约束推出托管组合的结论",
+          "reasoningGoal": "先明确证据接地与快速落地两项关键；再据此确认接地加护栏加索引加报告的组合成立；并排除 TTL 留存、专线校验、防火墙方案等不成立描述。"
+        },
+        "generatedAt": 1789598159749,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6213585a",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-d222322a",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-41",
+          "topic": "safety-alignment",
+          "subtopic": "负责任 AI 治理（Agents+KB 接地 + Guardrails + OpenSearch/QuickSight）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "agents",
+            "knowledge-base",
+            "guardrails",
+            "opensearch",
+            "quicksight",
+            "governance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融公司上线用 Bedrock 帮客服代表做个性化投资建议的 GenAI 应用，须负责任的 AI 治理并满足监管：检测并防止推荐幻觉、对客户交互加安全控制、实时监控模型行为漂移、保留所有 prompt-响应对审计。须 60 天内上线、集成既有合规仪表盘、响应 <200ms。哪种方案以最低运维开销满足？（单选）",
+          "options": [
+            "配 Bedrock Guardrails 自定义内容过滤与毒性检测，用 Model Evaluation 检幻觉，prompt-响应对存 DynamoDB 加 TTL，CloudWatch 自定义指标接合规仪表盘。",
+            "用 PrivateLink 安全访问 Bedrock，Lambda 做自定义提示校验，prompt-响应对存 S3 配生命周期，自建 CloudWatch 仪表盘监控。",
+            "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。",
+            "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-42": [
+      {
+        "id": "aws-genai-developer-pro-42__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "React 助手复杂问题常超时，同步等待整段生成太慢。哪个方案解性能问题？",
+        "options": [
+          "用 AWS Amplify AI Kit 从 GraphQL 接口做流式响应，并优化客户端渲染。",
+          "调大 Lambda resolver 超时时间，并加指数退避重试。",
+          "应用往 SQS 队列发请求，AppSync resolver 轮询队列处理。",
+          "改流式模型调用经网关 WebSocket 推送，绕开同步解析器。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断同步等待整段生成是根因、须切流式增量渲染",
+          "reasoningGoal": "先定位同步等待这一性能瓶颈；再据此确认流式响应加客户端优化的方案成立；并排除加超时、队列轮询、重构推送等不成立描述。"
+        },
+        "generatedAt": 1789598159749,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e5890917",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-c4710285",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-42",
+          "topic": "system-design",
+          "subtopic": "前端流式优化（Amplify AI Kit + GraphQL 流式）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws",
+            "amplify",
+            "appsync",
+            "bedrock",
+            "knowledge-base",
+            "streaming",
+            "performance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司把 AI 助手做成 React 应用，用 AWS Amplify + AppSync GraphQL + Bedrock 知识库；GraphQL 调 RetrieveAndGenerate，配 Lambda resolver（RequestResponse）。用户报复杂问题常超时变慢。哪种方案解决性能问题？（单选）",
+          "options": [
+            "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
+            "增大 Lambda resolver 超时并加指数退避重试。",
+            "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
+            "改为流式模型调用并经 API Gateway WebSocket 推送，绕开 AppSync 同步解析器。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-42__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "在线客服打字机卡顿：复杂答案要等整段生成完才显示。哪个方案解性能问题？",
+        "options": [
+          "Amplify AI Kit 接 GraphQL 接口实现流式响应，顺带优化客户端渲染。",
+          "放宽函数 resolver 超时上限，失败指数退避重试。",
+          "请求先入 SQS 队列暂存，解析器轮询队列消费处理。",
+          "切流式模型调用走 WebSocket 推送，不走同步解析器。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从打字机卡顿的现象推出增量渲染的结论",
+          "reasoningGoal": "先确认卡顿源于等待整段生成；再据此确认流式加增量渲染的方案成立；并排除放宽超时、队列消费、切推送架构等不成立描述。"
+        },
+        "generatedAt": 1789598159750,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e5890917",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-f6a8f141",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-42",
+          "topic": "system-design",
+          "subtopic": "前端流式优化（Amplify AI Kit + GraphQL 流式）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws",
+            "amplify",
+            "appsync",
+            "bedrock",
+            "knowledge-base",
+            "streaming",
+            "performance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某公司把 AI 助手做成 React 应用，用 AWS Amplify + AppSync GraphQL + Bedrock 知识库；GraphQL 调 RetrieveAndGenerate，配 Lambda resolver（RequestResponse）。用户报复杂问题常超时变慢。哪种方案解决性能问题？（单选）",
+          "options": [
+            "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
+            "增大 Lambda resolver 超时并加指数退避重试。",
+            "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
+            "改为流式模型调用并经 API Gateway WebSocket 推送，绕开 AppSync 同步解析器。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-43": [
+      {
+        "id": "aws-genai-developer-pro-43__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "多模型 token 要管：近上限主动告警，扛每分钟 5000+ 请求，用量留存供成本分摊。哪个方案满足？",
+        "options": [
+          "函数内开发模型专属分词器，请求前预估 token 用量，发自定义指标近阈值告警，明细存 DynamoDB 供成本报告。",
+          "Bedrock Guardrails 设 token 配额策略，捕获被拒指标，事件规则触发通知，仪表盘看趋势。",
+          "部署死信队列收失败请求，函数分析 token 失败，日志洞察基于错误日志出报告。",
+          "网关给 Bedrock 调用建统一代理，按预设配额做请求限流，超限直接拒绝。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断 token 管理须请求前预估加指标告警加明细留存",
+          "reasoningGoal": "先识别近上限预警与成本分摊两项要求；再据此确认分词预估加指标加明细的方案成立；并排除护栏配额、死信复盘、前置限流等不成立描述。"
+        },
+        "generatedAt": 1789598159751,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-171d6b7e",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-747c2ebe",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-43",
+          "topic": "cost",
+          "subtopic": "Token 用量管理（Lambda 分词器预估 + CloudWatch 告警 + DynamoDB）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "lambda",
+            "tokenizer",
+            "cloudwatch",
+            "dynamodb",
+            "cost-allocation",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融公司经 Bedrock 用多个 FM，新法规要求对敏感金融数据做 token 管理：须在接近模型专属 token 上限时主动告警，支撑 >5000 请求/分钟，并留存 token 用量指标供业务单元分摊成本。哪种方案满足？（单选）",
+          "options": [
+            "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。",
+            "用 Bedrock Guardrails 的 token 配额策略，捕获被拒请求指标，EventBridge 规则触发通知，CloudWatch 仪表盘看趋势。",
+            "部署 SQS 死信队列处理失败请求，Lambda 分析 token 相关失败，CloudWatch Logs Insights 基于错误日志生成报告。",
+            "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-43__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "短信网关按 token 结算：超套餐要提前告警，每分钟 5000+ 请求不能崩，用量明细供部门分摊。哪个方案满足？",
+        "options": [
+          "函数内置各模型分词器，请求前先算 token，发指标近阈值告警，明细落 DynamoDB 供分摊。",
+          "护栏配 token 配额策略，被拒指标触发事件通知，仪表盘看趋势。",
+          "死信队列收失败请求，函数复盘 token 失败，日志洞察按错误日志生成报告。",
+          "网关统一代理模型调用，按预设配额做请求限流，超限直接拒绝。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从超套餐预警加分摊的结算场景推出预估加告警的结论",
+          "reasoningGoal": "先明确预付费模式下的用量可见性要求；再据此确认预估加指标加明细的方案成立；并排除配额拒绝、失败复盘、统一限流等不成立描述。"
+        },
+        "generatedAt": 1789598159751,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-171d6b7e",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-d07ce150",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-43",
+          "topic": "cost",
+          "subtopic": "Token 用量管理（Lambda 分词器预估 + CloudWatch 告警 + DynamoDB）",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "lambda",
+            "tokenizer",
+            "cloudwatch",
+            "dynamodb",
+            "cost-allocation",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融公司经 Bedrock 用多个 FM，新法规要求对敏感金融数据做 token 管理：须在接近模型专属 token 上限时主动告警，支撑 >5000 请求/分钟，并留存 token 用量指标供业务单元分摊成本。哪种方案满足？（单选）",
+          "options": [
+            "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。",
+            "用 Bedrock Guardrails 的 token 配额策略，捕获被拒请求指标，EventBridge 规则触发通知，CloudWatch 仪表盘看趋势。",
+            "部署 SQS 死信队列处理失败请求，Lambda 分析 token 相关失败，CloudWatch Logs Insights 基于错误日志生成报告。",
+            "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-44": [
+      {
+        "id": "aws-genai-developer-pro-44__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "合规问答初检回来语义像但文不对题，幻觉频出。哪个方案最低运维提相关性？",
+        "options": [
+          "部署 SageMaker 端点跑微调排序模型，网关 REST 路由重排结果。",
+          "Comprehend 给文档打分类相关分，集成文档分析，Neptune 算图相关。",
+          "知识库检索接口初检，调重排接口重排，再流式调用模型生成。",
+          "在知识库重排配置里启用最新重排模型，按上下文评估重排提升相关性。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断初检不准须用托管重排而非自建排序或分类拼凑",
+          "reasoningGoal": "先确认语义像但无关指向排序环节；再据此确认启用托管重排的方案成立；并排除自建排序、分类拼分、手动编排等不成立描述。"
+        },
+        "generatedAt": 1789598159752,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-086d2d50",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-0f99e3a7",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-44",
+          "topic": "reranking",
+          "subtopic": "RAG 相关性提升（Bedrock 知识库内置重排器）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "knowledge-base",
+            "rerank",
+            "rag",
+            "retrieval",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某 RAG 应用用 Bedrock 知识库做合规查询，调 RetrieveAndGenerateStream，知识库含 5 万+ 监管文档；因初始检索常返回语义相似但上下文无关文档，导致幻觉与错误指引。须以最低运维开销提升相关性。哪种方案满足？（单选）",
+          "options": [
+            "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。",
+            "用 Comprehend 分类文档打相关分，集成 Textract 文档分析，Neptune 做图相关计算。",
+            "用 Knowledge Bases Retrieve API 初检，调 Bedrock Rerank API 重排，再 InvokeModelWithResponseStream 生成。",
+            "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-44__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "法条问答搜回来沾边但答非所问，引用还出错。哪个方案最省运维提相关性？",
+        "options": [
+          "SageMaker 端点部署微调排序模型，网关 REST 分发重排结果。",
+          "Comprehend 分类打分，文档分析加图计算拼相关性。",
+          "检索接口先初检，重排接口再排序，最后流式生成答案。",
+          "打开知识库内置重排配置，启用最新重排模型，按上下文重排提升相关性。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从沾边但答非所问的症状定位排序并给出托管重排动作",
+          "reasoningGoal": "先排除召回覆盖问题锁定排序；再据此确认内置重排加评估的方案成立；并排除端点排序、分类加图、手动串调用等不成立描述。"
+        },
+        "generatedAt": 1789598159752,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-086d2d50",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-3be36490",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-44",
+          "topic": "reranking",
+          "subtopic": "RAG 相关性提升（Bedrock 知识库内置重排器）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "knowledge-base",
+            "rerank",
+            "rag",
+            "retrieval",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某 RAG 应用用 Bedrock 知识库做合规查询，调 RetrieveAndGenerateStream，知识库含 5 万+ 监管文档；因初始检索常返回语义相似但上下文无关文档，导致幻觉与错误指引。须以最低运维开销提升相关性。哪种方案满足？（单选）",
+          "options": [
+            "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。",
+            "用 Comprehend 分类文档打相关分，集成 Textract 文档分析，Neptune 做图相关计算。",
+            "用 Knowledge Bases Retrieve API 初检，调 Bedrock Rerank API 重排，再 InvokeModelWithResponseStream 生成。",
+            "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-45": [
+      {
+        "id": "aws-genai-developer-pro-45__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "患者助手要接临床保险预约理赔多部门，可扩展、数千并发、领域专属。哪种多智能体方案满足？",
+        "options": [
+          "各智能体用独立知识库隔离数据，IAM 过滤控访问；supervisor 做意图分类，把查询路由到专精 collaborator，各用本部门库做检索增强。",
+          "每部门各建 supervisor，collaborator 自己做意图分类、只接本部门库，supervisor 间手工交接。",
+          "各部门数据隔离在独立知识库并 IAM 过滤；单个通用智能体内部多动作组做部门功能，走规则路由。",
+          "多个独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断多部门专属响应须用总分结构加知识库隔离而非多头或单体",
+          "reasoningGoal": "先识别可扩展与领域隔离两项结构要求；再据此确认 supervisor 路由加独立库的方案成立；并排除多 supervisor 手工交接、单智能体规则路由、并行合并等不成立描述。"
+        },
+        "generatedAt": 1789598159753,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-55455bb8",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-e6781c32",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-45",
+          "topic": "multi-agent",
+          "subtopic": "多智能体架构（supervisor 路由 + 各部门知识库隔离）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "agents",
+            "multi-agent",
+            "knowledge-base",
+            "iam",
+            "supervisor",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某医疗公司用 Bedrock 建实时患者护理助手，回应临床/保险核验/预约/理赔等部门；欲用多智能体架构，须可扩展、能接入新功能、支撑数千并行交互，并确保领域专属响应。哪种方案满足？（单选）",
+          "options": [
+            "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。",
+            "每部门建独立 supervisor，各 collaborator 做意图分类，仅接本部门知识库，supervisor 间手工交接。",
+            "每部门数据隔离在独立知识库，IAM 过滤；部署单一通用智能体，内部多 action group 做部门功能，规则路由。",
+            "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-45__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "银行客服要同时懂信用卡、贷款、理财三个条线，新条线随时加，并发大、不能串味。哪种方案满足？",
+        "options": [
+          "各条线智能体配独立知识库隔离，访问过滤；总调度做意图分类分发到专精助手，各用本条线库检索增强。",
+          "每条线各立总调度，助手自分类、只接本条线库，总调度之间手工交接。",
+          "数据按条线隔离入库并过滤；一个通用智能体多动作组管各条线功能，规则路由。",
+          "多个总调度并行应答各条线，各配助手，所有助手共用同一知识库，外部路由合并。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从新条线随时加的要求推出可插拔协作结构的结论",
+          "reasoningGoal": "先明确扩展性指向增删节点而非改逻辑；再据此确认总调度加专精助手加隔离库的方案成立；并排除各立总调度、单体多动作、并行共库等不成立描述。"
+        },
+        "generatedAt": 1789598159754,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-55455bb8",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-077848c3",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-45",
+          "topic": "multi-agent",
+          "subtopic": "多智能体架构（supervisor 路由 + 各部门知识库隔离）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "agents",
+            "multi-agent",
+            "knowledge-base",
+            "iam",
+            "supervisor",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某医疗公司用 Bedrock 建实时患者护理助手，回应临床/保险核验/预约/理赔等部门；欲用多智能体架构，须可扩展、能接入新功能、支撑数千并行交互，并确保领域专属响应。哪种方案满足？（单选）",
+          "options": [
+            "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。",
+            "每部门建独立 supervisor，各 collaborator 做意图分类，仅接本部门知识库，supervisor 间手工交接。",
+            "每部门数据隔离在独立知识库，IAM 过滤；部署单一通用智能体，内部多 action group 做部门功能，规则路由。",
+            "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-46": [
+      {
+        "id": "aws-genai-developer-pro-46__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "坐席建议 50 万并发、端到端 200ms 内，预算卡死还要自动伸缩。哪个方案满足？",
+        "options": [
+          "Bedrock 部署大型推理模型，买预置吞吐并优化批处理。",
+          "Bedrock 部署低延迟实时优化模型，买预置吞吐并设自动伸缩策略。",
+          "SageMaker AI 实时端点部署大语言模型（专用 GPU 实例）。",
+          "SageMaker AI serverless 端点部署中型模型并优化批处理。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断实时交互加高并发加预算须用低延迟模型加预置加自伸缩",
+          "reasoningGoal": "先识别延迟与并发与成本三重约束；再据此确认实时模型加预置加自伸缩的方案成立；并排除大模型加批处理、专用端点、serverless 加批处理等不成立描述。"
+        },
+        "generatedAt": 1789598159754,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-22d59df3",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-d2cea2d6",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-46",
+          "topic": "inference-capacity",
+          "subtopic": "实时低延迟模型（Bedrock 预置吞吐 + 自动伸缩）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "provisioned-throughput",
+            "auto-scaling",
+            "real-time",
+            "latency",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某应用实时分析客服通话并为人工坐席生成建议，峰值 50 万并发呼叫、每条建议端到端 <200ms；已有转写架构，须控制在月度计算预算内并保持自动伸缩。哪种方案满足？（单选）",
+          "options": [
+            "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
+            "在 Bedrock 部署低延迟实时优化模型，购预置吞吐并设自动伸缩策略。",
+            "在 SageMaker AI 实时端点部署 LLM（专用 GPU 实例）。",
+            "在 SageMaker AI serverless 端点部署中型 LLM 并优化批处理。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-46__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "直播弹幕审核 200ms 内必须出结果，高峰并发极高，成本封顶且能自动伸缩。哪个方案满足？",
+        "options": [
+          "Bedrock 上大型推理模型，预置吞吐包量，批处理优化压成本。",
+          "Bedrock 上低延迟实时优化模型，预置吞吐保底，自动伸缩跟波动。",
+          "SageMaker AI 实时端点放大语言模型，专用 GPU 实例扛并发。",
+          "SageMaker AI serverless 端点放中型模型，批处理优化降成本。"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 200ms 硬线加成本封顶推出实时优化加弹性容量的结论",
+          "reasoningGoal": "先确认批处理与延迟目标直接冲突；再据此确认低延迟模型加预置加自伸缩的方案成立；并排除批处理压成本、专用实例、无限 serverless 等不成立描述。"
+        },
+        "generatedAt": 1789598159755,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-22d59df3",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-b8f1e2c9",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-46",
+          "topic": "inference-capacity",
+          "subtopic": "实时低延迟模型（Bedrock 预置吞吐 + 自动伸缩）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "provisioned-throughput",
+            "auto-scaling",
+            "real-time",
+            "latency",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某应用实时分析客服通话并为人工坐席生成建议，峰值 50 万并发呼叫、每条建议端到端 <200ms；已有转写架构，须控制在月度计算预算内并保持自动伸缩。哪种方案满足？（单选）",
+          "options": [
+            "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
+            "在 Bedrock 部署低延迟实时优化模型，购预置吞吐并设自动伸缩策略。",
+            "在 SageMaker AI 实时端点部署 LLM（专用 GPU 实例）。",
+            "在 SageMaker AI serverless 端点部署中型 LLM 并优化批处理。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-48": [
+      {
+        "id": "aws-genai-developer-pro-48__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "连锁酒店 PMS 加 AI：各店数据隔离、房态近实时、峰值要稳。哪个方案满足？",
+        "options": [
+          "建单一知识库存全部门店合并数据，函数经接口同步各 PMS，审计日志按酒店过滤。",
+          "每店建事件规则由 PMS 变更触发，发往集中知识库，资源策略做按店访问控制。",
+          "多账号下每店一个知识库，直接摄入给实时房态，非关键信息定时同步。",
+          "建集中智能体挂多个知识库，身份中心按酒店权限集控员工访问。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断隔离加实时须用分库分账号而非集中后过滤",
+          "reasoningGoal": "先识别隔离必须在数据源层的要求；再据此确认每店独立库加直接摄入的方案成立；并排除单库事后过滤、集中加策略、集中智能体等不成立描述。"
+        },
+        "generatedAt": 1789598159755,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-bd630944",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-cbb2a29b",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-48",
+          "topic": "rag",
+          "subtopic": "分酒店知识库隔离（每酒店独立 KB + 多账号）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "knowledge-base",
+            "multi-account",
+            "access-control",
+            "pms",
+            "real-time",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某酒店公司想给遗留 Java PMS 加 AI 能力，用 Bedrock 知识库给员工房间可用性与酒店详情；须每家酒店独立访问控制、近实时房间可用性、峰值性能稳定。哪种方案满足？（单选）",
+          "options": [
+            "建单一知识库存所有酒店合并数据，Lambda 经 API 同步各 PMS，CloudTrail 按酒店过滤审计。",
+            "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
+            "多账号结构下每家酒店一个知识库，直接摄入提供实时房间可用性，非关键信息定时同步。",
+            "建集中 Bedrock 智能体用多个知识库，IAM Identity Center 按酒店权限集控员工访问。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-48__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "物业集团给各小区加 AI 问答：业主要求本小区数据不出小区、车位余量实时准、高峰不卡。哪个方案满足？",
+        "options": [
+          "一个知识库存全量合并数据，函数同步各小区系统，审计时按小区过滤。",
+          "各小区建事件规则由变更触发，汇总到集中知识库，资源策略按小区控访问。",
+          "多账号每小区一个知识库，直接摄入保车位实时，非关键信息定时同步。",
+          "集中智能体挂多个知识库，身份中心按小区权限集管访问。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从数据不出小区的要求推出分库隔离的结论",
+          "reasoningGoal": "先明确事后过滤不等于访问控制；再据此确认每小区独立库加直接摄入的方案成立；并排除合并后过滤、集中策略、权限集透传等不成立描述。"
+        },
+        "generatedAt": 1789598159756,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-bd630944",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-354d0dbd",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-48",
+          "topic": "rag",
+          "subtopic": "分酒店知识库隔离（每酒店独立 KB + 多账号）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "bedrock",
+            "knowledge-base",
+            "multi-account",
+            "access-control",
+            "pms",
+            "real-time",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某酒店公司想给遗留 Java PMS 加 AI 能力，用 Bedrock 知识库给员工房间可用性与酒店详情；须每家酒店独立访问控制、近实时房间可用性、峰值性能稳定。哪种方案满足？（单选）",
+          "options": [
+            "建单一知识库存所有酒店合并数据，Lambda 经 API 同步各 PMS，CloudTrail 按酒店过滤审计。",
+            "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
+            "多账号结构下每家酒店一个知识库，直接摄入提供实时房间可用性，非关键信息定时同步。",
+            "建集中 Bedrock 智能体用多个知识库，IAM Identity Center 按酒店权限集控员工访问。"
+          ]
+        }
+      }
+    ],
+    "aws-genai-developer-pro-50": [
+      {
+        "id": "aws-genai-developer-pro-50__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "金融摘要库小、索引少，要精确最近邻且高性能。向量库怎么配？",
+        "options": [
+          "起 MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩。",
+          "起 MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩。",
+          "起 Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载高时升实例规格。",
+          "起 DocumentDB 集群（IVFFlat 索引、高 probe 值），副本集连接并把读分发到副本。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断小索引须用精确暴力检索而非近似索引",
+          "reasoningGoal": "先识别小规模加精确性的要求；再据此确认 Flat 精确索引的方案成立；并排除 HNSW 近似、升规格、读分发等不成立描述。"
+        },
+        "generatedAt": 1789598159756,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d5157789",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-afe85c75",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-50",
+          "topic": "vector-db",
+          "subtopic": "小规模向量库选型（MemoryDB + Flat 精确索引）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "memorydb",
+            "vector",
+            "flat",
+            "rag",
+            "similarity-search",
+            "performance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融 RAG 应用用 Bedrock 生成市场活动摘要，依赖存小规模专有数据集、索引量少的向量库；须做相似度搜索且模型响应最大化准确度并保持高性能。须配置向量库并集成。哪种方案满足？（单选）",
+          "options": [
+            "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
+            "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
+            "启 Amazon Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载升高时升实例规格。",
+            "启 Amazon DocumentDB 集群（IVFFlat 索引、高 probe 值），以副本集连接并将读分发到副本。"
+          ]
+        }
+      },
+      {
+        "id": "aws-genai-developer-pro-50__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "风控名单库不大，要查得准、查得快。向量索引怎么选？",
+        "options": [
+          "MemoryDB 集群配 Flat 精确索引，水平伸缩跟性能指标。",
+          "MemoryDB 集群配 HNSW 近似索引，垂直伸缩跟性能指标。",
+          "Aurora PostgreSQL 配 IVFFlat 索引，负载高就升实例规格。",
+          "DocumentDB 配 IVFFlat 高 probe 索引，读流量分发到副本集。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从查得准的要求推出精确索引优于近似索引的结论",
+          "reasoningGoal": "先明确准确度优先于规模优化；再据此确认精确暴力检索的方案成立；并排除近似索引、升实例、副本分发等不成立描述。"
+        },
+        "generatedAt": 1789598159757,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d5157789",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-753c58dd",
+        "sourceSnapshot": {
+          "id": "aws-genai-developer-pro-50",
+          "topic": "vector-db",
+          "subtopic": "小规模向量库选型（MemoryDB + Flat 精确索引）",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws",
+            "memorydb",
+            "vector",
+            "flat",
+            "rag",
+            "similarity-search",
+            "performance",
+            "aws-genai-developer-pro",
+            "certification"
+          ],
+          "question": "某金融 RAG 应用用 Bedrock 生成市场活动摘要，依赖存小规模专有数据集、索引量少的向量库；须做相似度搜索且模型响应最大化准确度并保持高性能。须配置向量库并集成。哪种方案满足？（单选）",
+          "options": [
+            "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
+            "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
+            "启 Amazon Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载升高时升实例规格。",
+            "启 Amazon DocumentDB 集群（IVFFlat 索引、高 probe 值），以副本集连接并将读分发到副本。"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-08": [
+      {
+        "id": "aws-waf-lens-2026-08-08__surface-options__manual-bq__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "金融问答输出了未经证实的数据，生产系统最合理的行为是什么？",
+        "options": [
+          "照常返回原回答，仅在日志中记录告警。",
+          "定义阻断、受限回复或人工升级等明确降级路径。",
+          "自动调高 temperature，直到答案看起来更自信。",
+          "把事实是否可信的判断交给用户自己决定。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断护栏触发后须有明确降级动作而非仅告警",
+          "reasoningGoal": "先确认错误已到达用户的风险性质；再据此确认定义降级路径的说法成立；并排除只记日志、调参增自信、转嫁用户等不成立描述。"
+        },
+        "generatedAt": 1789598159757,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-da38518f",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-b8c9bc4c",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-08",
+          "topic": "factuality-verification",
+          "subtopic": "护栏触发后的降级",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "generative-ai",
+            "guardrails",
+            "hallucination"
+          ],
+          "question": "输出校验发现回答包含未经证实的金融事实时，生产系统最合理的行为是什么？（单选）",
+          "options": [
+            "仍返回原回答，只在日志里记录告警",
+            "定义阻断、受限回复或人工升级等明确 fallback",
+            "自动提高 temperature 直到出现更自信的答案",
+            "让用户自己判断事实是否可信"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-08__context-options__manual-bq__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "医疗建议生成了无依据的用药剂量，线上系统应如何应对？",
+        "options": [
+          "原样返回原回答，只记录一条告警日志。",
+          "预设阻断、受限回复或转人工等明确 fallback 动作。",
+          "自动升高 temperature，直到输出显得更自信。",
+          "提醒用户自行去核实事实是否可信再决定。"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从无依据剂量的高风险推出阻断或转人工的结论",
+          "reasoningGoal": "先识别医疗场景的风险等级；再据此确认预设降级动作的说法成立；并排除原样返回、升高随机性、提醒自核等不成立描述。"
+        },
+        "generatedAt": 1789598159757,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-da38518f",
+        "batch": "manual-bq",
+        "model": "manual",
+        "contentHash": "fnv1a-c1a26267",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-08",
+          "topic": "factuality-verification",
+          "subtopic": "护栏触发后的降级",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "generative-ai",
+            "guardrails",
+            "hallucination"
+          ],
+          "question": "输出校验发现回答包含未经证实的金融事实时，生产系统最合理的行为是什么？（单选）",
+          "options": [
+            "仍返回原回答，只在日志里记录告警",
+            "定义阻断、受限回复或人工升级等明确 fallback",
+            "自动提高 temperature 直到出现更自信的答案",
+            "让用户自己判断事实是否可信"
+          ]
+        }
+      }
+    ]
+  }
+}

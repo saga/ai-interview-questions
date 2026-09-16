@@ -1,0 +1,939 @@
+{
+  "version": 1,
+  "generatedAt": 1789599211561,
+  "promptVersion": "v7",
+  "variants": {
+    "aws-waf-lens-2026-08-26": [
+      {
+        "id": "aws-waf-lens-2026-08-26__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "测试正常、生产预测掉，代码一样但特征配置不同。优先建什么控制？",
+        "options": [
+          "核对 Git commit 哈希一致就行，配置特征差异不影响预测，代码版本即全部真相。",
+          "同步记录训练到生产各环境的架构与配置，系统性检测环境 skew，保留数据处理到部署的 lineage。",
+          "把生产流量切回测试环境复现定位问题，用测试配置覆盖生产即可。",
+          "删掉生产监控避免与测试比较，用单次人工核对替代系统性检查与记录。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能判断代码一致不够须同步配置加检测 skew 加留 lineage",
+          "reasoningGoal": "先定位配置差异这一直接诱因；再据此确认同步记录加检测加留存的说法成立；并排除只看代码版本、切流复现、删监控等不成立描述。"
+        },
+        "generatedAt": 1789599211552,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-14211a7f",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-c51dc9ed",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-26",
+          "topic": "reliability",
+          "subtopic": "ML 环境一致性",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "environment-skew",
+            "lineage"
+          ],
+          "question": "模型在测试环境正常，生产预测却突然下降；代码相同但特征处理配置不同。应优先建立什么控制？（单选）",
+          "options": [
+            "只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相",
+            "同步并记录训练到生产各环境的架构与配置，系统性检测环境 skew，并保留数据处理到部署的 lineage",
+            "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可",
+            "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-26__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "推荐模型灰度后点击率跌了一截，代码版本一致，排查发现训练与 serving 的分词版本不同。优先建什么控制？",
+        "options": [
+          "比对代码版本号一致就行，配置与特征差异不影响预测，代码即全部真相。",
+          "同步记录训练到线上各环境的架构与配置，系统性检测环境 skew，保留数据处理到部署的 lineage。",
+          "把线上流量切回测试环境复现定位问题，用测试配置覆盖线上即可。",
+          "关掉线上监控避免横向对比，单次人工核对替代系统性检查与记录。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从分词版本不同的证据推出环境一致性控制的结论",
+          "reasoningGoal": "先确认版本一致下仍异常指向配置层；再据此确认同步架构配置加 skew 检测的说法成立；并排除版本号一致论、切流覆盖、关监控等不成立描述。"
+        },
+        "generatedAt": 1789599211553,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-14211a7f",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-32a0c339",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-26",
+          "topic": "reliability",
+          "subtopic": "ML 环境一致性",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "environment-skew",
+            "lineage"
+          ],
+          "question": "模型在测试环境正常，生产预测却突然下降；代码相同但特征处理配置不同。应优先建立什么控制？（单选）",
+          "options": [
+            "只检查 Git commit 哈希是否一致即可，配置与特征差异不影响预测结果，代码版本即全部真相",
+            "同步并记录训练到生产各环境的架构与配置，系统性检测环境 skew，并保留数据处理到部署的 lineage",
+            "把生产流量切回测试环境复现就能定位问题，用测试配置覆盖生产即可",
+            "删除生产监控指标避免与测试比较，用单次人工核对替代系统性 skew 检查与 lineage 记录"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-27": [
+      {
+        "id": "aws-waf-lens-2026-08-27__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "反欺诈打分和客服对话，选型时怎么区分问题类型？",
+        "options": [
+          "两者都用 BLEU 文本相似度指标评估，分高即业务可用，风险评分也可转成生成任务统一度量。",
+          "风险评分是传统机器学习分类问题，要稳定可校验的输出；对话生成是生成式问题，需治理提示词与输出安全；两者不可用同一套指标替代。",
+          "两者统一为自由文本生成问题，用同一套生成质量指标评估，风险评分也可由大模型直接输出分值替代。",
+          "生成式 AI 上线前评测充分即可，上线后无需持续观测，监控只适用于传统机器学习。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断打分与对话分属传统分类与生成式两类问题",
+          "reasoningGoal": "先对齐两类任务的输出契约差异；再据此确认分类要稳定、生成要治理的说法成立；并排除统一 BLEU、统一生成、上线免监控等不成立描述。"
+        },
+        "generatedAt": 1789599211554,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-188b1fe3",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-fe218d9e",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-27",
+          "topic": "evaluation",
+          "subtopic": "ML 与生成式 AI 选型",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "generative-ai",
+            "use-case"
+          ],
+          "question": "反欺诈风险评分和客户对话生成分别属于哪类主要问题，选型时应如何区分？（单选）",
+          "options": [
+            "两者都用 BLEU 等文本相似度指标评估，分数高即业务可用，风险评分也可转为文本生成任务统一度量",
+            "风险评分是传统 ML 分类问题，要稳定可校验的输出；对话生成是生成式问题，需治理 prompt、检索与输出安全；两者不可用同一套指标替代",
+            "两者都应统一为自由文本生成问题，用同一套生成质量指标评估，风险评分也可由 LLM 直接输出分值替代",
+            "生成式 AI 上线前充分评测即可，上线后无需持续观测质量、成本与安全，监控只适用于传统 ML"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-27__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "信用评分和营销文案生成，分别属于哪类问题？",
+        "options": [
+          "文本相似度指标一套走天下，分高即业务可用，评分也转成生成任务统一度量。",
+          "文案生成是生成式问题，提示词检索与输出安全都要治理；信用评分是传统分类问题，输出必须稳定可校验；两者指标不可套用。",
+          "一律按自由文本生成处理，用同一套生成质量指标评估，评分也让大模型直接输出分值。",
+          "生成式上线前一次评测充分就行，上线后不用持续观测，监控只给传统机器学习用。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从评分与文案的差异推出分类与评估口径",
+          "reasoningGoal": "先区分稳定输出与生成治理的不同要求；再据此确认不可套用同一指标的说法成立；并排除统一相似度、统一生成、免持续观测等不成立描述。"
+        },
+        "generatedAt": 1789599211554,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-188b1fe3",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-6713da96",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-27",
+          "topic": "evaluation",
+          "subtopic": "ML 与生成式 AI 选型",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "generative-ai",
+            "use-case"
+          ],
+          "question": "反欺诈风险评分和客户对话生成分别属于哪类主要问题，选型时应如何区分？（单选）",
+          "options": [
+            "两者都用 BLEU 等文本相似度指标评估，分数高即业务可用，风险评分也可转为文本生成任务统一度量",
+            "风险评分是传统 ML 分类问题，要稳定可校验的输出；对话生成是生成式问题，需治理 prompt、检索与输出安全；两者不可用同一套指标替代",
+            "两者都应统一为自由文本生成问题，用同一套生成质量指标评估，风险评分也可由 LLM 直接输出分值替代",
+            "生成式 AI 上线前充分评测即可，上线后无需持续观测质量、成本与安全，监控只适用于传统 ML"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-28": [
+      {
+        "id": "aws-waf-lens-2026-08-28__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "新风控模型想用真实请求比，但不能影响线上决策。怎么验证？",
+        "options": [
+          "直接把生产模型替换上线并观察投诉。",
+          "复制真实请求给候选模型但隔离决策副作用，比完指标再灰度。",
+          "只在训练集上比较两个模型的表现。",
+          "让候选模型直接覆盖旧模型输出以收集更多数据。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断真实请求验证须用影子测试隔离副作用",
+          "reasoningGoal": "先识别真实请求与零影响的双重要求；再据此确认复制隔离加指标灰度的说法成立；并排除直接替换、只看训练集、覆盖收集等不成立描述。"
+        },
+        "generatedAt": 1789599211555,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6b9d8cc9",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-ea459e1b",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-28",
+          "topic": "evaluation",
+          "subtopic": "ML 影子测试",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "shadow-testing",
+            "deployment"
+          ],
+          "question": "新风险模型需要用真实请求比较，但不能影响线上决策。应采用的发布验证方式是？（单选）",
+          "options": [
+            "直接替换生产模型并观察投诉",
+            "复制真实请求到候选模型但隔离其决策副作用，比较指标后再灰度",
+            "只在训练集上比较两个模型",
+            "让候选模型直接覆盖旧模型输出以收集更多数据"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-28__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "新推荐算法想用线上流量验证，但不能干扰现网排序。怎么验证？",
+        "options": [
+          "直接把现网算法替换上线，并观察投诉。",
+          "复制线上请求给候选算法但隔离其决策影响，比完指标再灰度。",
+          "只在离线数据集上比较两个算法的表现。",
+          "让候选算法直接覆盖现网输出以收集更多数据。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从线上验证零干扰的要求推出影子流量的结论",
+          "reasoningGoal": "先明确验证与现网隔离的边界；再据此确认复制隔离加灰度的说法成立；并排除替换观察、离线比较、覆盖收集等不成立描述。"
+        },
+        "generatedAt": 1789599211555,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6b9d8cc9",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-64989a8a",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-28",
+          "topic": "evaluation",
+          "subtopic": "ML 影子测试",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "shadow-testing",
+            "deployment"
+          ],
+          "question": "新风险模型需要用真实请求比较，但不能影响线上决策。应采用的发布验证方式是？（单选）",
+          "options": [
+            "直接替换生产模型并观察投诉",
+            "复制真实请求到候选模型但隔离其决策副作用，比较指标后再灰度",
+            "只在训练集上比较两个模型",
+            "让候选模型直接覆盖旧模型输出以收集更多数据"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-29": [
+      {
+        "id": "aws-waf-lens-2026-08-29__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "团队先选算法再找业务目标。可靠的问题定义顺序是什么？",
+        "options": [
+          "先选最复杂算法再让业务适应输出，算法先进性决定成败，无需先定义业务目标。",
+          "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再映射为分类回归或异常检测问题，最后选算法。",
+          "离线准确率高就不需要业务目标，技术指标可替代业务成功标准与验收门槛。",
+          "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策。"
+        ],
+        "angle": "causal",
+        "cognitiveTask": "predict",
+        "assessment": {
+          "target": "能判断问题定义须先业务后算法而非先选算法",
+          "reasoningGoal": "先对齐业务价值与技术指标的先后；再据此确认先目标后映射后选算法的说法成立；并排除先算法、唯离线指标、损失代替等不成立描述。"
+        },
+        "generatedAt": 1789599211556,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b6ceca2d",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-b10578fe",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-29",
+          "topic": "evaluation",
+          "subtopic": "ML 业务目标与问题定义",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "problem-framing"
+          ],
+          "question": "设计传统 ML 风险预测系统时，团队先选了算法再寻找业务目标。更可靠的问题定义顺序是什么？（单选）",
+          "options": [
+            "先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标",
+            "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再映射为分类回归或异常检测问题，最后选算法",
+            "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛",
+            "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-29__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "先定扩散模型再找落地场景。靠谱的立项顺序是什么？",
+        "options": [
+          "先选最强模型再让业务适应输出，模型先进性决定成败，无需先定义业务目标。",
+          "先定业务目标、决策对象、预测时点、可接受错误和成功指标，再映射成分类回归或异常检测问题，算法最后选。",
+          "离线指标高就不需要业务目标，技术指标可以替代业务成功标准。",
+          "拿训练损失直接当业务成功指标，损失一下降就算业务价值达成，无需映射决策。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从先定模型再找场景的倒置推出目标先行的结论",
+          "reasoningGoal": "先识别倒置顺序的风险；再据此确认目标映射选算法的顺序成立；并排除模型先进决定论、唯离线、损失等同等不成立描述。"
+        },
+        "generatedAt": 1789599211557,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b6ceca2d",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-2f20bef9",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-29",
+          "topic": "evaluation",
+          "subtopic": "ML 业务目标与问题定义",
+          "angle": "comparison",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "aws-well-architected",
+            "machine-learning",
+            "problem-framing"
+          ],
+          "question": "设计传统 ML 风险预测系统时，团队先选了算法再寻找业务目标。更可靠的问题定义顺序是什么？（单选）",
+          "options": [
+            "先选最复杂算法再让业务适应输出，算法先进性决定项目成败，无需先定义业务目标",
+            "先明确业务目标、决策对象、预测时点、可接受错误与成功指标，再映射为分类回归或异常检测问题，最后选算法",
+            "离线准确率高就不需要业务目标，技术指标可以替代业务成功标准与验收门槛",
+            "用训练损失直接代替业务成功指标，损失下降即代表业务价值达成，无需映射决策"
+          ]
+        }
+      }
+    ],
+    "aws-waf-lens-2026-08-30": [
+      {
+        "id": "aws-waf-lens-2026-08-30__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "反馈只存档不改系统。完整运营闭环是什么？",
+        "options": [
+          "仅把用户反馈保存存档而不改任何系统，误把存档完成当运营闭环终点。",
+          "把监控事件与反馈转成可执行改进，定期分析趋势更新护栏与策略，回归评估确认，并为高风险告警设人工升级与责任归属。",
+          "直接删除负面反馈防止指标下降，再用过滤后数据维持表面运营健康。",
+          "允许模型不经审批自动改生产配置，相信仅靠模型自省保证变更安全。"
+        ],
+        "angle": "architecture",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断运营闭环须把反馈转成改进加验证而非存档",
+          "reasoningGoal": "先拆出闭环须改变系统的定义；再据此确认转改进加回归加升级的说法成立；并排除只存档、删差评、自动改配置等不成立描述。"
+        },
+        "generatedAt": 1789599211557,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7c2f81b5",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-678915db",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-30",
+          "topic": "observability",
+          "subtopic": "上线后反馈闭环",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "monitoring",
+            "feedback-loop"
+          ],
+          "question": "AI 上线后收集到大量用户反馈，但团队只把反馈存档不改变系统。完整的运营闭环应是什么？（单选）",
+          "options": [
+            "仅把用户反馈保存存档而不改变任何系统，误把存档完成等同于运营闭环的终点",
+            "把监控事件与反馈转成可执行改进，定期分析趋势更新护栏数据模型与部署策略，再用回归评估确认，并为高风险告警设人工升级与责任归属。",
+            "直接删除负面反馈以防止质量指标下降，再用过滤后的数据维持表面上的运营健康",
+            "允许模型不经审批自动修改生产配置，错误地相信仅靠模型自省就能保证变更安全"
+          ]
+        }
+      },
+      {
+        "id": "aws-waf-lens-2026-08-30__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "客服差评只汇总成周报没人改。完整运营闭环是什么？",
+        "options": [
+          "差评只汇总存档而不改任何系统，误把周报完成当运营闭环终点。",
+          "把差评与监控转成可执行改进，定期复盘更新规则策略，回归验证确认，高风险升级人工并明确责任。",
+          "直接删除差评防止指标下降，再用过滤后数据维持表面运营健康。",
+          "允许模型自动改线上配置，相信仅靠模型自省保证变更安全。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从周报无人改的现象推出闭环缺失的结论",
+          "reasoningGoal": "先确认汇总不等于闭环；再据此确认转改进加验证加升级的说法成立；并排除只汇总、删差评、自改配置等不成立描述。"
+        },
+        "generatedAt": 1789599211558,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7c2f81b5",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-c54536a4",
+        "sourceSnapshot": {
+          "id": "aws-waf-lens-2026-08-30",
+          "topic": "observability",
+          "subtopic": "上线后反馈闭环",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "aws-well-architected",
+            "responsible-ai",
+            "monitoring",
+            "feedback-loop"
+          ],
+          "question": "AI 上线后收集到大量用户反馈，但团队只把反馈存档不改变系统。完整的运营闭环应是什么？（单选）",
+          "options": [
+            "仅把用户反馈保存存档而不改变任何系统，误把存档完成等同于运营闭环的终点",
+            "把监控事件与反馈转成可执行改进，定期分析趋势更新护栏数据模型与部署策略，再用回归评估确认，并为高风险告警设人工升级与责任归属。",
+            "直接删除负面反馈以防止质量指标下降，再用过滤后的数据维持表面上的运营健康",
+            "允许模型不经审批自动修改生产配置，错误地相信仅靠模型自省就能保证变更安全"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-06": [
+      {
+        "id": "claude-blog-2026-08-06__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "哪类 Agent 任务最值得建 rubric 独立验收？",
+        "options": [
+          "只需返回当前时间的任务。",
+          "遗漏代价高且质量标准可明确描述的任务。",
+          "延迟预算极低且不能执行任何检查的控制回路。",
+          "只读静态配置文件且无需生成结果的任务。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断高代价可描述任务最配 rubric 验收",
+          "reasoningGoal": "先识别遗漏代价与可描述性两项标准；再据此确认高代价可描述任务的说法成立；并排除取时间、极低延迟回路、只读配置等不成立描述。"
+        },
+        "generatedAt": 1789599211558,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-251eaea2",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-0205c43d",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-06",
+          "topic": "evaluation",
+          "subtopic": "可验收的 Agent 任务",
+          "angle": "scenario",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "evaluation",
+            "quality-bar"
+          ],
+          "question": "哪类 Agent 任务最值得优先建立结果 rubric 和独立验收？（单选）",
+          "options": [
+            "只需返回当前时间的任务",
+            "遗漏代价高且质量标准可明确描述的任务",
+            "延迟预算极低且不能执行任何检查的控制回路",
+            "只读静态配置文件且无需生成结果的任务"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-06__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "哪些 Agent 活最该配独立质检？",
+        "options": [
+          "只返回当前时间的简单活。",
+          "遗漏代价高、质量标准能说明白的活。",
+          "延迟预算极低、加不了任何检查的控制回路。",
+          "只读静态配置、不产出结果的活。"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从质检资源有限推出优先级的结论",
+          "reasoningGoal": "先明确质检须投向高价值处；再据此确认高代价可描述任务的说法成立；并排除简单活、无检查回路、只读配置等不成立描述。"
+        },
+        "generatedAt": 1789599211559,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-251eaea2",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-95cdb4eb",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-06",
+          "topic": "evaluation",
+          "subtopic": "可验收的 Agent 任务",
+          "angle": "scenario",
+          "difficulty": "easy",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "evaluation",
+            "quality-bar"
+          ],
+          "question": "哪类 Agent 任务最值得优先建立结果 rubric 和独立验收？（单选）",
+          "options": [
+            "只需返回当前时间的任务",
+            "遗漏代价高且质量标准可明确描述的任务",
+            "延迟预算极低且不能执行任何检查的控制回路",
+            "只读静态配置文件且无需生成结果的任务"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-07": [
+      {
+        "id": "claude-blog-2026-08-07__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "协调 Agent 面对检索分析审校，最合理的职责是什么？",
+        "options": [
+          "只负责保存运行日志，不参与任务拆分与委派。",
+          "拆分有边界的任务、委派执行并汇总和处理失败。",
+          "替代所有执行 Agent 的工具并亲自完成子任务。",
+          "仅统计各子任务的 token 消耗作为唯一职责。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断协调者须拆分委派汇总而非记录或代劳",
+          "reasoningGoal": "先复现协调机制的职责链条；再据此确认拆分委派汇总的说法成立；并排除只管日志、替代工具、只统计量等不成立描述。"
+        },
+        "generatedAt": 1789599211559,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ae1af93f",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-6f80f2de",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-07",
+          "topic": "multi-agent",
+          "subtopic": "多 Agent 任务分解",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "delegation",
+            "agent-design"
+          ],
+          "question": "在多 Agent 系统中，一个协调 Agent 面对需要检索、分析和审校的复杂任务，最合理的职责是什么？（单选）",
+          "options": [
+            "只负责保存运行日志，不参与任务的拆分与委派",
+            "拆分有边界的任务、委派执行并汇总和处理失败",
+            "替代所有执行 Agent 的工具并亲自完成子任务",
+            "仅统计各子任务的 token 消耗作为唯一职责"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-07__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "交响乐团指挥面对合奏，最合理的职责是什么？",
+        "options": [
+          "只负责记录考勤，不参与声部拆分与指派。",
+          "拆分有边界的声部、指派演奏并汇总和处理失误。",
+          "替代所有乐手的乐器并亲自完成声部。",
+          "仅统计各声部的演出时长作为唯一职责。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从指挥隐喻推出协调职责的结论",
+          "reasoningGoal": "先对齐指挥与协调的职责映射；再据此确认拆分指派汇总的说法成立；并排除只管考勤、替代演奏、只统计时长等不成立描述。"
+        },
+        "generatedAt": 1789599211559,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ae1af93f",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-bd6d4e5c",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-07",
+          "topic": "multi-agent",
+          "subtopic": "多 Agent 任务分解",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "delegation",
+            "agent-design"
+          ],
+          "question": "在多 Agent 系统中，一个协调 Agent 面对需要检索、分析和审校的复杂任务，最合理的职责是什么？（单选）",
+          "options": [
+            "只负责保存运行日志，不参与任务的拆分与委派",
+            "拆分有边界的任务、委派执行并汇总和处理失败",
+            "替代所有执行 Agent 的工具并亲自完成子任务",
+            "仅统计各子任务的 token 消耗作为唯一职责"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-08": [
+      {
+        "id": "claude-blog-2026-08-08__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "查部署历史日志指标工单四处，为何适合多 Agent 并行？",
+        "options": [
+          "所有数据都必须复制到同一个 prompt。",
+          "独立调查可以由专业 Agent 并行执行。",
+          "并行 Agent 不需要共享任何结果。",
+          "并行的唯一作用是降低模型温度。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断独立维度加专业工具是并行的适用条件",
+          "reasoningGoal": "先明确独立性与专业性两个前提；再据此确认专业并行的说法成立；并排除单 prompt、免共享、降温度等不成立描述。"
+        },
+        "generatedAt": 1789599211559,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-79c15380",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-df27dd38",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-08",
+          "topic": "multi-agent",
+          "subtopic": "并行专业化",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "parallelism"
+          ],
+          "question": "为什么多 Agent 编排适合同时调查部署历史、错误日志、指标和支持工单？（单选）",
+          "options": [
+            "所有数据都必须复制到同一个 prompt",
+            "独立调查可以由专业 Agent 并行执行",
+            "并行 Agent 不需要共享任何结果",
+            "并行的唯一作用是降低模型温度"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-08__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "体检要同时查血、心电、B 超、CT，为何适合多科室并行？",
+        "options": [
+          "所有检查数据必须汇总到同一张申请单。",
+          "独立检查可由专业科室并行执行。",
+          "并行科室不需要共享任何结果。",
+          "并行的唯一作用是降低检查费用。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从体检并行的常识映射到 Agent 并行的条件",
+          "reasoningGoal": "先对齐体检与调查的独立性类比；再据此确认专业并行的说法成立；并排除单申请单、免共享、降费用等不成立描述。"
+        },
+        "generatedAt": 1789599211560,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-79c15380",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-293f6347",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-08",
+          "topic": "multi-agent",
+          "subtopic": "并行专业化",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "parallelism"
+          ],
+          "question": "为什么多 Agent 编排适合同时调查部署历史、错误日志、指标和支持工单？（单选）",
+          "options": [
+            "所有数据都必须复制到同一个 prompt",
+            "独立调查可以由专业 Agent 并行执行",
+            "并行 Agent 不需要共享任何结果",
+            "并行的唯一作用是降低模型温度"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-09": [
+      {
+        "id": "claude-blog-2026-08-09__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "并行 Agent 交换中间结果，哪种共享状态更稳妥？",
+        "options": [
+          "使用带权限、格式和并发约束的共享工作区。",
+          "只让各 Agent 共享同一份模型权重，不交换中间结果。",
+          "只共享浏览器 Cookie 传状态。",
+          "依赖人工复制粘贴传递，且不记录来源。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断中间结果须经约束化共享工作区交换",
+          "reasoningGoal": "先复现并行交换的需求与风险；再据此确认约束工作区的说法成立；并排除共享权重、Cookie、人工搬运等不成立描述。"
+        },
+        "generatedAt": 1789599211560,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a392ea0d",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-af94ff8c",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-09",
+          "topic": "multi-agent",
+          "subtopic": "多 Agent 结果交换",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "shared-state"
+          ],
+          "question": "多个执行 Agent 并行处理同一任务时，需要交换中间结果。哪种共享状态设计更稳妥？（单选）",
+          "options": [
+            "使用有权限、格式和并发约束的共享工作区",
+            "只让各 Agent 共享同一份模型权重而不交换中间结果",
+            "只共享浏览器 Cookie",
+            "依赖人工复制粘贴且不记录来源"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-09__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "多名审计员并行查账，需要交换底稿。哪种共享设计更稳妥？",
+        "options": [
+          "用带权限、格式与并发约束的共享工作区。",
+          "只让各审计员共享同一套审计准则而不交换底稿。",
+          "只共享办公内网账号（类似 Cookie）传底稿。",
+          "依赖人工传 U 盘且不记录来源。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从审计底稿交换推出约束化共享的结论",
+          "reasoningGoal": "先明确底稿交换的并发与来源要求；再据此确认约束工作区的说法成立；并排除共享准则、共享账号、U 盘搬运等不成立描述。"
+        },
+        "generatedAt": 1789599211560,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a392ea0d",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-63242cf2",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-09",
+          "topic": "multi-agent",
+          "subtopic": "多 Agent 结果交换",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "shared-state"
+          ],
+          "question": "多个执行 Agent 并行处理同一任务时，需要交换中间结果。哪种共享状态设计更稳妥？（单选）",
+          "options": [
+            "使用有权限、格式和并发约束的共享工作区",
+            "只让各 Agent 共享同一份模型权重而不交换中间结果",
+            "只共享浏览器 Cookie",
+            "依赖人工复制粘贴且不记录来源"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-10": [
+      {
+        "id": "claude-blog-2026-08-10__surface-options__manual-bs__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "多 Agent 走了错误路径，哪些遥测最有价值？",
+        "options": [
+          "仅比较最终答案的字数多少，据此判断路径是否正确。",
+          "关联 Agent、动作顺序、工具结果摘要和委派原因。",
+          "仅依据所用模型的名称来判断哪条路径更可靠。",
+          "删除中间事件后再凭印象重新猜测，丢弃可追溯的调试线索。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能判断错误路径定位须关联动作与委派证据链",
+          "reasoningGoal": "先识别只看终答无法定位的缺陷；再据此确认关联遥测的说法成立；并排除数字数、看模型名、删事件等不成立描述。"
+        },
+        "generatedAt": 1789599211560,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-38319b0e",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-b35e8539",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-10",
+          "topic": "observability",
+          "subtopic": "多 Agent 执行追踪",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "tracing",
+            "observability"
+          ],
+          "question": "排查多 Agent 任务为何选择了错误路径时，哪些遥测字段最有价值？（单选）",
+          "options": [
+            "仅比较最终答案的字数多少，据此判断路径是否正确",
+            "关联 Agent、动作顺序、工具结果摘要和委派原因",
+            "仅依据所用模型的名称来判断哪条路径更可靠",
+            "删除中间事件后再凭印象重新猜测，丢弃可追溯的调试线索"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-10__context-options__manual-bs__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "流水线产出次品，怎么定位是哪道工序出的错？",
+        "options": [
+          "仅比较成品的重量差异，据此判断哪道工序出错。",
+          "关联工序、动作顺序、质检结果摘要和派工原因。",
+          "仅依据所用设备的品牌来判断哪道工序更可靠。",
+          "删除中间记录后再凭印象重新猜测，丢弃可追溯的调试线索。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从次品定位推出工序证据链的结论",
+          "reasoningGoal": "先明确成品指标无法定位工序；再据此确认关联工序证据的说法成立；并排除比重量、看品牌、删记录等不成立描述。"
+        },
+        "generatedAt": 1789599211560,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-38319b0e",
+        "batch": "manual-bs",
+        "model": "manual",
+        "contentHash": "fnv1a-fd7e287d",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-10",
+          "topic": "observability",
+          "subtopic": "多 Agent 执行追踪",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "claude-blog",
+            "multi-agent",
+            "tracing",
+            "observability"
+          ],
+          "question": "排查多 Agent 任务为何选择了错误路径时，哪些遥测字段最有价值？（单选）",
+          "options": [
+            "仅比较最终答案的字数多少，据此判断路径是否正确",
+            "关联 Agent、动作顺序、工具结果摘要和委派原因",
+            "仅依据所用模型的名称来判断哪条路径更可靠",
+            "删除中间事件后再凭印象重新猜测，丢弃可追溯的调试线索"
+          ]
+        }
+      }
+    ]
+  }
+}
