@@ -1,0 +1,932 @@
+{
+  "version": 1,
+  "generatedAt": 1789684246371,
+  "promptVersion": "v7",
+  "variants": {
+    "agentic-11": [
+      {
+        "id": "agentic-11__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某创业团队给每个模型应用各写一套工具对接代码，工具一升级就全员加班。有人提议引入标准协议。关于这类协议要解决的核心问题，下列哪种说法正确？",
+        "options": [
+          "提升模型推理的采样速度，让每次生成更快返回结果，速度就是协议的核心价值",
+          "用标准协议连接模型与外部工具和数据源，避免每个应用给每套工具重复写私有集成（把 M×N 问题变成 M+N）",
+          "替代参数结构描述让参数定义不再必要，协议层自动搞定一切集成细节",
+          "压缩上下文窗口来降低成本并提升吞吐，减负就是协议的全部意义所在"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从重复对接加班出发，判断标准协议收敛集成成本的核心问题",
+          "reasoningGoal": "先确认重复私有集成是成本爆炸的根源；再据此推出标准协议把集成成本收敛的结论；并逐项验证各说法是否成立，排除速度论与替代结构论。"
+        },
+        "generatedAt": 1789684246358,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-96942829",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-15bab1f7",
+        "sourceSnapshot": {
+          "id": "agentic-11",
+          "topic": "mcp",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "mcp",
+            "protocol",
+            "tool-standardization"
+          ],
+          "question": "MCP（Model Context Protocol）这类协议要解决的核心问题是？",
+          "options": [
+            "提高模型推理的采样速度，让每次生成都更快返回结果，速度即协议的核心价值",
+            "以标准协议连接模型与外部工具/数据源，避免每个应用为每套工具重复写私有集成（M×N 问题变 M+N）",
+            "替代 JSON Schema 描述工具参数，使参数定义不再必要，协议自动搞定一切",
+            "压缩上下文窗口以降低 token 成本，提升整体吞吐，减负即协议的全部意义"
+          ]
+        }
+      }
+    ],
+    "agentic-35": [
+      {
+        "id": "agentic-35__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某家庭助手要记住孩子的口味偏好、疫苗接种记录和当前对话状态，三种记忆需求互相打架。关于存储选型，下列哪个框架最合理？",
+        "options": [
+          "向量检索是记忆系统的核心竞争力，结构化与键值只存元数据；预算有限先保向量，传统存储后补。",
+          "键值存全量并按时间分区，召回时先分区再遍历比对；规模可控时遍历成本可接受，向量索引后建。",
+          "按查询选引擎：向量管语义召回、结构化存事实与审计、键值存会话状态；通常三者组合，没有银弹。",
+          "读写模式简单时三种存储差别不大，可按团队熟悉度先行；出现语义召回需求时再迁到向量。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从三类记忆需求打架出发，判断按查询选引擎的组合框架",
+          "reasoningGoal": "先按语义回忆、精确读取与临时状态拆出三类查询；再据此推出按查询选引擎、三者组合的框架；并逐项验证各说法是否成立，排除唯向量论与遍历论。"
+        },
+        "generatedAt": 1789684246359,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-5ea87619",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-8f4fcabc",
+        "sourceSnapshot": {
+          "id": "agentic-35",
+          "topic": "memory",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "vector-db",
+            "sql",
+            "kv-store",
+            "tradeoff"
+          ],
+          "question": "Agent 的记忆应该用 Vector DB、SQL 还是普通 KV Store？请给出你的选型框架，而不是单一答案。",
+          "options": [
+            "向量检索是记忆系统的核心竞争力，SQL/KV 只存元数据；预算有限时优先保向量，传统存储可后补。",
+            "KV 存全量并按时间分区，召回时先分区再遍历比对；规模可控时遍历成本可接受，向量索引可后建。",
+            "按查询选引擎：向量做语义召回、SQL 存事实与审计、KV 存会话状态；通常三者组合，没有银弹。",
+            "读写模式简单时三种存储差异不大，可按团队熟悉度先行；出现语义召回需求时再迁移到向量。"
+          ]
+        }
+      }
+    ],
+    "agentic-42": [
+      {
+        "id": "agentic-42__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某写作助手升级超大窗口后，有人提议砍掉记忆模块全塞窗口，结果长文越写越贵、昨天的人设今天就忘。关于窗口与记忆的关系，下列哪个评估正确？",
+        "options": [
+          "窗口放大后短期记忆压力缓解，可先下线记忆子系统降运维成本；账单或跨会话问题出现再重建，延迟建设更划算。",
+          "大窗口配合重复关键约束，可把位置敏感性压到忽略不计；中间丢失主要是小窗口时代的问题，不用再谈。",
+          "仍需独立记忆：全量重灌让成本延迟线性膨胀，长上下文有注意力质量问题，跨会话知识不在单个窗口内；窗口放工作集、记忆按需供给。",
+          "记忆的核心价值是压缩绕过长度限制，检索精度与个性化可由窗口内全量历史覆盖；保留压缩管线、砍掉检索与沉淀模块就够。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从越写越贵加隔天失忆出发，判断窗口与记忆互补的评估",
+          "reasoningGoal": "先确认全量重灌的成本膨胀与跨会话缺失是砍记忆的后果；再据此推出窗口与记忆互补而非替代的结论；并逐项验证各说法是否成立，排除延迟建设论与位置无忧论。"
+        },
+        "generatedAt": 1789684246360,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d81208f7",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-9dbcf793",
+        "sourceSnapshot": {
+          "id": "agentic-42",
+          "topic": "memory",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "long-context",
+            "memory",
+            "tradeoff"
+          ],
+          "question": "既然上下文窗口已经很大（百万级 token），Agent 还需要独立的 Memory 机制吗？为什么？",
+          "options": [
+            "窗口放大后短期记忆压力缓解，可先下线 Memory 子系统降运维成本；若账单或跨会话问题出现再重建，延迟建设更划算。",
+            "大窗口配合重复关键约束，可把位置敏感性压到可忽略；lost-in-middle 主要是小窗口时代的问题，无需再谈。",
+            "仍需独立 Memory：全量重灌使成本延迟线性膨胀，长上下文有注意力质量问题，跨会话知识不在单窗口内；窗口放工作集、Memory 按需供给。",
+            "Memory 的核心价值是压缩绕长度限制，检索精度与个性化可由窗口内全量历史覆盖；保留压缩管线、砍掉检索与沉淀模块即够用。"
+          ]
+        }
+      }
+    ],
+    "agentic-64": [
+      {
+        "id": "agentic-64__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某客服长会话越聊越卡：滑窗切掉早期的订单号，检索式又太重。关于四种历史管理策略的取舍，下列哪种选择正确？",
+        "options": [
+          "超大窗口下多数会话走不完一半，记忆管理可推迟到真出现长会话的业务线；先全量保留，超限再按需引入摘要。",
+          "滑动窗口配大窗口已足够，早期信息极少被回看；摘要与检索的复杂度只在长任务成立，聊天场景不需要。",
+          "成本保真连续谱：滑窗最简但丢早期信息；摘要压缩作为默认；分层压成本；检索式最强但复杂；按会话长度演进。",
+          "检索式记忆扩展性最强，应作为默认起步；短会话下管线成本可忽略，统一架构比按场景选型更易维护，选型即标准化。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从滑窗丢单号与检索太重并存出发，判断按会话长度演进的选型",
+          "reasoningGoal": "先按成本与保真把四种策略摆到连续谱上；再据此推出按会话长度演进选型的结论；并逐项验证各说法是否成立，排除推迟治理论与统一标准论。"
+        },
+        "generatedAt": 1789684246361,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-caa29b30",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-a05d56a4",
+        "sourceSnapshot": {
+          "id": "agentic-64",
+          "topic": "memory",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "conversation-memory",
+            "summarization",
+            "hierarchical-memory"
+          ],
+          "question": "长对话应用中上下文窗口终会耗尽。对比滑动窗口、摘要压缩、分层摘要与检索式记忆四种对话历史管理策略的取舍，应该怎么选？",
+          "options": [
+            "1M 窗口下多数会话走不完一半，记忆管理可推迟到真正出现长会话的业务线；先全量保留，超限再按需引入摘要。",
+            "滑动窗口配合大窗口已足够，早期信息极少被回溯；摘要与检索的复杂度只在 Agent 长任务成立，聊天场景无需。",
+            "成本-保真连续谱：滑窗最简但丢早期信息；摘要压缩默认；分层压成本；检索式最强但复杂；按会话长度演进。演进",
+            "检索式记忆扩展性最强，应作为默认起步；短会话下其管线成本可忽略，统一架构比按场景选型更易维护，选型即标准化。"
+          ]
+        }
+      }
+    ],
+    "ai-agent-009": [
+      {
+        "id": "ai-agent-009__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某零售集团有 50 个内部接口，分属不同团队且迭代很快，三个业务线的多个智能体都要复用，还要求统一鉴权审计。关于直连还是引入协议，下列哪种判断依据正确？",
+        "options": [
+          "消费方少于 5 个时直连更划算，协议的治理收益要规模上来才兑现；50 个接口先直连，痛了再迁。",
+          "看消费方数量与演进速度：少而稳就直连；多智能体快演进需要治理时用标准协议把成本从 M×N 收敛为 M+N，可先试点。",
+          "引入协议后鉴权与限流可统一收到协议层，服务侧只需实现业务逻辑；协议即治理平面。",
+          "接口数量少、变更慢时直连成本更低，选型先算集成工作量；治理需求多半是伪需求，长远再看。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 50 个接口加多方复用出发，判断按规模与演进选型的依据",
+          "reasoningGoal": "先按消费方数量与演进速度拆出直连与协议的适用条件；再据此推出多方快演进需治理收敛的判断；并逐项验证各说法是否成立，排除先痛再迁论与协议包办论。"
+        },
+        "generatedAt": 1789684246362,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-66c29d7b",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-c190dd2a",
+        "sourceSnapshot": {
+          "id": "ai-agent-009",
+          "topic": "mcp",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "mcp",
+            "tool-calling",
+            "architecture"
+          ],
+          "question": "一个企业已有 50 个内部 API，希望多个 AI Agent 复用这些能力。你会直接为每个 Agent 实现 Function Calling，还是引入 MCP？如何判断？",
+          "options": [
+            "消费方少于 5 个时直连更划算，协议的治理收益要在规模上来后才兑现；50 个 API 先直连，痛了再迁。",
+            "看消费方数量与演进速度：少而稳直连；多 Agent 快演进需治理时 MCP 把成本从 M×N 收为 M+N，可先试点。",
+            "引入 MCP 后鉴权与限流可统一收敛到协议层，server 侧只需实现业务逻辑；协议即治理平面。",
+            "API 数量少、变更慢时直连成本更低，选型应先算集成工作量；治理需求多是伪需求，长远再看。"
+          ]
+        }
+      }
+    ],
+    "ai-code-003": [
+      {
+        "id": "ai-code-003__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某档案数字化项目自研分块器：夜间任务偶发整夜不结束，抽查还发现不少块在单词中间被切断。评审实现时，下列哪种设计正确？",
+        "options": [
+          "每个文本块都必须起止于句子边界，窗口内找不到合适边界就抛异常终止整个分块流程，等人工介入后再从头重跑；即便长文档分块停滞，也不能退化成允许在单词中间截断的硬切。",
+          "在滑动窗口内退到最后一个自然边界（句号、换行或空格）处切分，边界太靠前时接受硬切；启动前校验交叠小于块大小，并保证滑动起点严格前进防止原地打转死循环。",
+          "把交叠设成等于块大小让相邻块完全重叠，这样边界信息一点不丢，代价只是产出块数翻倍，对索引体积与检索性能的影响可以忽略不计。",
+          "按块大小严格硬切并允许从单词中间截断，再对每个残缺单词调语言模型逐一重组，以保证输出长度精确可控且每条块语义完整。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从整夜卡死加单词腰斩出发，判断边界回退与前进保证的设计",
+          "reasoningGoal": "先确认无边界回退导致截断、无前进保证导致卡死的对应关系；再据此推出边界回退加硬切兜底加交叠校验的设计；并逐项验证各说法是否成立，排除抛异常论与全重叠论。"
+        },
+        "generatedAt": 1789684246362,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8add1b88",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-57296ee3",
+        "sourceSnapshot": {
+          "id": "ai-code-003",
+          "topic": "rag",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "coding",
+            "rag",
+            "chunking"
+          ],
+          "question": "请实现一个简单的 Recursive Text Chunker：支持 chunkSize 和 overlap，并避免在单词中间切断文本。",
+          "options": [
+            "每个 chunk 都必须在句子边界处开始和结束，窗口内找不到合适边界就立即抛出异常终止整个分块流程，等待人工介入处理后再从头重新运行；即便长文档分块停滞，也不能退化为允许在单词中间截断的硬切方案。",
+            "在滑动窗口内回退到最后一个自然边界（句号/换行/空格）处切分，边界过于靠前时接受硬切；启动前校验 overlap 小于 chunkSize，并保证滑动起点严格前进以防 zero-progress 死循环。",
+            "将 overlap 设为等于 chunkSize 使相邻块完全重叠，这样任何边界处的信息都不会丢失，代价只是产出的块数翻倍，对索引体积与检索性能的影响可以忽略不计。",
+            "按 chunkSize 严格硬切并允许在单词中间截断，再对每个残缺单词调用语言模型逐一重组，以保证输出长度精确可控且每条 chunk 的语义都保持完整。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-014": [
+      {
+        "id": "ai-eng-014__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某笔记应用的助手要记住写作风格、知识库约定和聊天记录，还要过隐私评审说明保存期限。关于三层记忆设计，下列哪个最合理？",
+        "options": [
+          "三类信息先合在一起存跑通链路，遗漏问题出现再补分类；先跑通再治理，分类是优化项。",
+          "对话记录存原文备查；工作记忆维护当前任务状态；长期记忆只写跨任务稳定的信息。",
+          "脱敏后的工作记忆可跨用户复用推理过程，个性化部分隔离；复用分摊成本，隐私靠脱敏保障。",
+          "全量持久化并配大容量存储，存储便宜，筛选的工程复杂度高于存全量的成本；先存全量，检索问题出来再说。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从风格约定记录混存出发，判断三层写入规则的设计",
+          "reasoningGoal": "先按原文备查、任务状态与跨任务稳定拆出三层写入规则；再据此确认长期只收稳定信息的结论；并逐项验证各说法是否成立，排除合一跑通论与跨用户复用论。"
+        },
+        "generatedAt": 1789684246363,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-21c44edf",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-56596e43",
+        "sourceSnapshot": {
+          "id": "ai-eng-014",
+          "topic": "memory",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "memory",
+            "context",
+            "agent"
+          ],
+          "question": "一个 AI Coding Assistant 需要记住用户的 coding preferences、项目约定和过去的对话。你会如何区分 conversation history、working memory 和 long-term memory？哪些信息应该进入长期记忆？",
+          "options": [
+            "三类信息先合一存储跑通链路，遗漏问题出现后再补分类；先跑通再治理，分类是优化项。",
+            "history 存原文回溯；working memory 维护当前任务状态；long-term 只写跨任务稳定的信息。",
+            "脱敏后的 working memory 可跨用户复用推理过程，个性化部分隔离；复用分摊成本，隐私靠脱敏保障。",
+            "全量持久化并配大容量存储，存储便宜，筛选的工程复杂度高于存全量的成本；先存全量，检索问题出现再说。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-006": [
+      {
+        "id": "ai-fund-006__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队把绝对位置向量加在每层输入上随训练一起更新，结果长文本外推一塌糊涂。改用旋转式位置编码时，下列哪种理解正确？",
+        "options": [
+          "旋转编码在每层输入上叠加一组可学习的绝对位置向量，随模型一起训练更新",
+          "旋转编码只作用于数值向量，使其携带绝对位置信息参与输出计算",
+          "旋转编码把位置编成对查询与键向量的旋转，使注意力分数只取决于相对距离，外推更长序列时也更稳定",
+          "旋转编码要在上下文中附加额外参数，扩展窗口时必须重新训练整个模型"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从外推失败出发，判断旋转编码依赖相对距离的机制",
+          "reasoningGoal": "先确认绝对位置随层叠加无法外推的缺陷；再据此推出旋转编码只依赖相对距离的机制；并逐项验证各说法是否成立，排除可学习叠加论与只作用数值论。"
+        },
+        "generatedAt": 1789684246364,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b9dafca0",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-decf2ffc",
+        "sourceSnapshot": {
+          "id": "ai-fund-006",
+          "topic": "rope",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "RoPE",
+            "position-encoding",
+            "long-context"
+          ],
+          "question": "RoPE（Rotary Position Embedding）解决了什么问题？为什么它在现代 LLM 中被广泛使用？",
+          "options": [
+            "RoPE 在每层输入上叠加一组可学习的绝对位置向量，随模型一起训练更新",
+            "RoPE 只作用于 V 向量，使 Value 携带绝对位置信息参与输出计算",
+            "RoPE 把位置编码为对 Q/K 的旋转，使 attention 分数只取决于相对距离，外推更长序列时也更稳定",
+            "RoPE 需要在 context 中附加额外参数，扩展上下文窗口时必须重新训练整个模型"
+          ]
+        }
+      }
+    ],
+    "ai-fund-030": [
+      {
+        "id": "ai-fund-030__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某合同审阅平台上线长文精读后，单请求 128k 上下文、十几路并发就反复爆显存，而权重占用并没变化。最可能的原因是什么？",
+        "options": [
+          "键值缓存的体积随并发、层数、头数与序列长度线性膨胀，128k 长上下文让单个请求的缓存急剧增大，成为压垮显存的大头",
+          "长上下文让注意力计算量从平方级恶化成立方级，算力耗尽触发了内存溢出，扩卡是唯一解法",
+          "键值缓存只在预填充阶段写入、解码阶段即释放，溢出说明缓存释放逻辑有缺陷",
+          "模型权重的显存占用会随输入长度同步增长，长文本放大了这部分开销，因为权重会以激活形态随序列展开被反复加载"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从 128k 加并发即爆显存出发，判断缓存膨胀为大头的原因",
+          "reasoningGoal": "先确认权重未变而溢出随长度并发而来；再据此推出缓存体积线性膨胀是显存大头的结论；并逐项验证各说法是否成立，排除立方恶化论与释放缺陷论。"
+        },
+        "generatedAt": 1789684246364,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f42a4260",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-e4833a63",
+        "sourceSnapshot": {
+          "id": "ai-fund-030",
+          "topic": "kv-cache",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "KV-Cache",
+            "memory",
+            "inference"
+          ],
+          "question": "KV Cache 解决了什么问题？它为什么会占用大量 GPU 内存？",
+          "options": [
+            "KV Cache 的体积随 batch、层数、头数与序列长度线性膨胀，128k 长上下文使单个请求的缓存急剧增大，成为压垮显存的大头",
+            "长上下文让注意力计算量从平方级恶化为立方级，GPU 算力耗尽触发了 OOM",
+            "KV Cache 仅在 prefill 阶段写入、decode 阶段即释放，OOM 说明缓存释放逻辑存在 bug",
+            "模型权重的显存占用会随输入序列长度同步增长，长文本放大了这部分开销，因为权重会以激活形式随序列展开而被反复加载"
+          ]
+        }
+      }
+    ],
+    "ai-fund-039": [
+      {
+        "id": "ai-fund-039__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某政务问答上线后收到大量答非所据投诉，抽查发现这些坏例的相似度都在 0.88 以上，团队据此认定检索没问题、准备换更大模型。作为评审者，下列哪种解释最合理？",
+        "options": [
+          "结论成立：相似度这么高还答错，问题只可能出在生成模型身上，换更大的模型是唯一的出路",
+          "问题在相似度阈值设得太低，只要把阈值抬到 0.95 以上，这类错误就会消失，调参即可解决",
+          "向量模型版本太旧导致分数虚高，应当立刻换最新的向量模型并重建全量索引，旧版不可留",
+          "高分只说明语义接近而不代表真能回答：同话题却不含答案的背景材料、乃至结论相反的相似段落都可能拿高分，检索通过不等于内容支撑答案"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 0.88 高分仍答错出发，判断相似度不等于可答性的机制",
+          "reasoningGoal": "先确认高分与真能回答是两码事；再据此推出同话题无答案与相反结论也可高分的解释；并逐项验证各说法是否成立，排除换模型论与调阈值论。"
+        },
+        "generatedAt": 1789684246365,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-59acd112",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-0380f69f",
+        "sourceSnapshot": {
+          "id": "ai-fund-039",
+          "topic": "rag",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "embedding",
+            "semantic-similarity",
+            "relevance"
+          ],
+          "question": "一段文档与 query 的 Embedding 相似度很高，是否意味着它能回答这个问题？为什么？",
+          "options": [
+            "结论成立：相似度这么高仍然答错，只可能是生成模型的问题，换更大的模型是唯一出路",
+            "问题出在相似度阈值设置过低，只要把阈值提高到 0.95 以上，这类错误就会消失",
+            "embedding 模型版本过旧导致分数虚高，应立即更换最新 embedding 模型并重建全量索引",
+            "高分只代表语义接近而非真能回答：同话题但不含答案的背景材料、甚至结论相反的相似段落都可能得高分，检索通过不等于内容支持答案"
+          ]
+        }
+      }
+    ],
+    "ai-fund-048": [
+      {
+        "id": "ai-fund-048__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某医院要让模型掌握 10 万条持续更新的诊疗问答，医务处要求每条回答附出处可审计。团队在继续预训练、微调与搭建检索之间争执。作为架构师，下列哪种建议正确？",
+        "options": [
+          "优先检索：FAQ 要更新、要引用与审计；先建检索库，风格不达标再做轻量适配。",
+          "FAQ 变更低频时写进权重最省事，更新靠季度增量微调；检索链路的运维成本比重复训练更高。",
+          "优先微调把十万条 FAQ 写进权重：存进参数的知识永不过时，而且天然支持逐条引用溯源，是最贴合企业知识沉淀诉求的路线。",
+          "三种方案效果等价，按团队的技术栈熟悉度任选其一即可，不用考虑更新频率与审计要求，反正哪种方式最终都能答对同样的维护问题。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 10 万条更新加出处审计出发，判断检索优先的实施路径",
+          "reasoningGoal": "先按更新频率、溯源审计与行为格式拆出三条正交诉求；再据此推出检索优先、风格不够再轻量适配的路径；并逐项验证各说法是否成立，排除权重固化论与等价任选论。"
+        },
+        "generatedAt": 1789684246366,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a1a4d51b",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-cbbb1fe7",
+        "sourceSnapshot": {
+          "id": "ai-fund-048",
+          "topic": "rag",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "scenario",
+            "RAG",
+            "fine-tuning",
+            "pre-training"
+          ],
+          "question": "公司希望模型掌握 10 万条内部 FAQ。你会选择继续 Pre-training、Fine-tuning 还是 RAG？请说明理由和实施路径。",
+          "options": [
+            "优先 RAG：FAQ 需更新、引用与审计；先建检索库，风格不达标再 LoRA 适配。",
+            "FAQ 变更低频时写入权重最省事，更新靠季度增量微调；检索链路的运维成本高于重训成本。",
+            "优先 Fine-tuning 把十万条 FAQ 写入权重：存进参数的知识永远不会过时，并且天然支持逐条引用溯源，是最贴合企业知识沉淀诉求的路线。",
+            "三种方案效果等价，按团队成员的技术栈熟悉程度任选其一即可，不必考虑更新频率与审计要求，因为无论哪种方式最终都能让模型答对同样的维护问题。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-049": [
+      {
+        "id": "ai-fund-049__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某机票问答召回率 0.95 但用户仍抱怨答不对，团队先后动过改写模块和重排阈值却不见好。下列哪种排查思路正确？",
+        "options": [
+          "生成端能力决定上限，强模型能从噪声里提炼正确结论；检索瑕疵可被生成智能吸收，升级模型最直接。",
+          "高召回证明不了排名靠前，应当把检索数量直接提到 100 并把全部结果塞进上下文，确保正确内容一定进入模型视野，靠体量覆盖弥补排序缺陷。",
+          "建分层链路追踪查改写、排名、重排、上下文构造、生成忠实度，修复掉分最多的环节。",
+          "跳过中间环节直接全局调优，同时调所有模块的超参数直到端到端指标上升，因为各模块互相耦合，逐项排查只浪费时间还容易误判根因。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从 0.95 召回仍答错出发，判断分层定位掉分环节的思路",
+          "reasoningGoal": "先确认高召回不等于排名靠前更不等于被正确使用；再据此推出逐层打分、先修掉分最大环节的思路；并逐项验证各说法是否成立，排除升级模型论与体量覆盖论。"
+        },
+        "generatedAt": 1789684246366,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-da6d606e",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-7e4d498b",
+        "sourceSnapshot": {
+          "id": "ai-fund-049",
+          "topic": "rag",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "debugging",
+            "RAG",
+            "observability"
+          ],
+          "question": "一个 RAG 系统 Recall 很高，但最终回答质量很差。请描述你的排查思路。",
+          "options": [
+            "生成端能力决定天花板，强模型可从噪声中提炼正确结论；检索瑕疵可被生成智能吸收，升级模型最直接。",
+            "recall 高证明不了排名靠前，应把检索 k 值直接提高到 100 并把全部结果塞入 context，确保正确内容一定进入模型视野，靠体量覆盖来弥补排序缺陷。",
+            "建分层 trace 查改写、排名、重排、context 构造、生成忠实度，修复掉分最大的环节。",
+            "跳过中间环节直接做全局调优，同时调整所有模块的超参数直到端到端指标上升为止，因为各模块相互耦合，逐项排查只会浪费时间且容易误判根因。"
+          ]
+        }
+      }
+    ],
+    "ai-rag-012": [
+      {
+        "id": "ai-rag-012__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某券商研报检索用通用向量模型只有 75% 召回，团队无标注数据、对延迟还敏感。关于换模型、加精排、微调的决策路径，下列哪种正确？",
+        "options": [
+          "应直接微调专属向量模型，因为它领域专用性最强、收益上限最高，理应第一步就投，早微调早收益，能最快把领域召回拉到可接受水位。",
+          "按投入产出走阶梯：先换更强模型对比，再加精排环节，不达标且需细粒度区分时才微调。",
+          "精排不改变召回只做排序，领域适配快且不用标注；先上精排看天花板，再决定是否微调。",
+          "三种手段互斥只能择一：换模型与加精排不能叠加用，所以必须一步到位选收益上限最高的微调，混合堆叠只会让效果互抵。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 75% 召回加无标注出发，判断按投入产出走阶梯的路径",
+          "reasoningGoal": "先按零训练成本与延迟代价排出阶梯顺序；再据此推出先换模型再加精排、最后才微调的路径；并逐项验证各说法是否成立，排除一步微调论与手段互斥论。"
+        },
+        "generatedAt": 1789684246367,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-35d79abe",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-ad6cd864",
+        "sourceSnapshot": {
+          "id": "ai-rag-012",
+          "topic": "rag",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "embedding",
+            "fine-tuning",
+            "reranking"
+          ],
+          "question": "通用 Embedding Model 在你的金融领域检索效果只有 75%。你会优先更换模型、Fine-tune Embedding Model，还是增加 Reranker？为什么？",
+          "options": [
+            "应直接微调专属 embedding 模型，因为它领域专用性最强、收益上限最高，理应作为第一步投入，早微调早收益，能最快把领域召回拉到可接受水位。",
+            "按投入产出走阶梯：先换更强模型对比，再加 Reranker，不达标且需细粒度区分时才微调。",
+            "rerank 不改变召回只做精排，领域适配快且无需标注；先上 rerank 看天花板，再决定是否微调。",
+            "三种手段互斥只能择一：换模型与加 Reranker 不能叠加使用，因此必须一步到位选择收益上限最高的微调方案，混合堆叠只会让效果相互抵消。"
+          ]
+        }
+      }
+    ],
+    "ai-tool-005": [
+      {
+        "id": "ai-tool-005__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队争论引入工具协议后是否还要做调用意图能力与工具描述：一方认为协议能替代一切，另一方认为是私有规范。关于两者的关系，下列哪种说法正确？",
+        "options": [
+          "标准协议是调用意图能力的直接竞品，引入后模型不再需要按结构输出调用意图",
+          "标准协议已彻底解决结构歧义与工具选择准确率问题，接入后不用再投入任何工具描述工程",
+          "标准协议属于模型厂商的私有接口规范，工具的定义、发现与鉴权仍要每个应用各自重复实现",
+          "调用意图能力是模型按结构输出调用意图的能力，标准协议是工具暴露、发现与调用的应用层开放协议，二者互补而非竞争"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从替代一切的争论出发，判断意图能力与开放协议互补的关系",
+          "reasoningGoal": "先对齐调用意图能力与开放协议各自的职责边界；再据此确认二者互补而非竞争的结论；并逐项验证各说法是否成立，排除直接竞品论与彻底解决论。"
+        },
+        "generatedAt": 1789684246367,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-30e4a339",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-0a2e156c",
+        "sourceSnapshot": {
+          "id": "ai-tool-005",
+          "topic": "mcp",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "mcp",
+            "tool-calling"
+          ],
+          "question": "MCP 解决的主要问题是什么？它和 Function Calling 是什么关系？",
+          "options": [
+            "MCP 是 Function Calling 的直接竞品，引入 MCP 后模型便不再需要按 schema 输出调用意图",
+            "MCP 已彻底解决 schema 歧义与工具选择准确率问题，接入后无须再投入任何工具描述工程",
+            "MCP 属于模型厂商的私有接口规范，工具的定义、发现与鉴权仍须由每个应用各自重复实现",
+            "Function Calling 是模型按 schema 输出调用意图的能力，MCP 是标准化工具暴露、发现与调用的应用层开放协议，二者互补而非竞争"
+          ]
+        }
+      }
+    ],
+    "git-recovery-01": [
+      {
+        "id": "git-recovery-01__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某实习生改了一下午代码，没暂存也没提交，手滑跑了清空命令，工作区被清空。他听说找回历史提交的办法能救命。关于这次代码能否挽救，下列哪种结论正确？",
+        "options": [
+          "可用找回历史提交的办法找到重置前的提交哈希，执行清空命令加该哈希恢复含未提交修改在内的全部代码",
+          "只要跑过清空命令，对象库会立刻清空，已提交和未提交的代码都永久找不回来",
+          "已提交的历史版本可用找回手段配合检出恢复；但没暂存也没提交的本地改动因从未写入对象库，没法用工具直接恢复",
+          "清空命令会破坏版本库目录的索引结构，必须重新初始化建库，仓库才能恢复正常功能"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从未暂存未提交被清空出发，判断对象库有无的挽救边界",
+          "reasoningGoal": "先区分已提交对象与纯工作区改动的去向差异；再据此推出前者可找回、后者未入对象库的结论；并逐项验证各说法是否成立，排除一并恢复论与对象库清空论。"
+        },
+        "generatedAt": 1789684246368,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0b2240e1",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-24d333a0",
+        "sourceSnapshot": {
+          "id": "git-recovery-01",
+          "topic": "reliability",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "git",
+            "reflog",
+            "hard-reset",
+            "object-database"
+          ],
+          "question": "某开发者在本地工作区修改了若干代码，未执行 git add 暂存，也未执行 git commit 提交。随后该开发者误操作执行了 git reset --hard HEAD~1。针对此场景的代码挽救可行性与底层原理，下列结论正确的是？",
+          "options": [
+            "可通过 git reflog 找到重置前的提交 Hash，执行 git reset --hard <hash> 恢复包括未提交修改在内的所有代码",
+            "只要执行过 git reset --hard，Git 对象库（Object Database）会立即清空，已提交和未提交的代码均永久无法找回",
+            "已 Commit 过的历史提交可通过 git reflog 配合检出找回；但未暂存且未提交的本地工作区改动因从未写入 Git 对象库，无法通过 Git 工具直接恢复",
+            "git reset --hard 操作破坏了 .git 目录索引，必须重新 git init 才能恢复仓库正常功能"
+          ]
+        }
+      }
+    ],
+    "llm-05": [
+      {
+        "id": "llm-05__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队自研解码引擎做长文续写：首字很快，但序列越长每步越慢，总耗时随长度平方恶化，剖析显示每步都在重算全部历史位置。最可能的原因与修复是什么？",
+        "options": [
+          "归一化函数出现数值溢出导致注意力权重异常，应在求指数前对得分减去每行最大值做数值稳定处理",
+          "词嵌入矩阵太大拖慢每一步前向，应对嵌入层做低秩分解压缩后再上线，因为嵌入查表是当前链路的主要延迟来源",
+          "引擎没实现键值缓存，历史位置的投影被逐步重算；应把历史键值张量存下来复用，每步只给新位置算投影，使复杂度降为线性",
+          "训练学习率设太高导致模型不稳定，应降低学习率重训后再看推理耗时，因为优化器步长直接决定部署后的前向延迟"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从耗时平方恶化加每步重算出发，判断缺失复用的根因",
+          "reasoningGoal": "先确认每步重算历史是平方恶化的直接来源；再据此推出存下历史复用、每步只算新位置的修复；并逐项验证各说法是否成立，排除数值溢出论与嵌入臃肿论。"
+        },
+        "generatedAt": 1789684246369,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-398b96bb",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-f83571ab",
+        "sourceSnapshot": {
+          "id": "llm-05",
+          "topic": "kv-cache",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "kv-cache",
+            "inference",
+            "attention"
+          ],
+          "question": "在 LLM 自回归推理中，KV 缓存（KV cache）的核心作用是？",
+          "options": [
+            "softmax 出现数值溢出导致注意力权重异常，应在求指数前对得分减去每行最大值做数值稳定处理",
+            "词嵌入矩阵规模过大拖慢了每一步的前向传播，应对嵌入层做低秩分解压缩后再上线，因为嵌入查表是当前推理链路的主要延迟来源",
+            "引擎未实现 KV 缓存，历史 token 的 K/V 被逐步重算；应缓存历史 Key/Value 张量并复用，每步只为新 token 计算相应投影，使复杂度降为线性",
+            "训练阶段学习率设置过高造成模型不稳定，应降低学习率重新训练后再观察推理耗时，因为优化器的步长直接决定了部署后的前向延迟"
+          ]
+        }
+      }
+    ],
+    "llm-06": [
+      {
+        "id": "llm-06__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某公司要在内网部署总参 671B、每步仅激活 37B 的混合专家模型，有人说按 37B 买卡就够，有人说延迟得按 671B 算。关于两个数字的含义，下列哪种理解正确？",
+        "options": [
+          "总参数量决定推理延迟，激活参数量决定显存占用，所以显存按 37B 规划就够部署",
+          "总参数量决定所需显存（所有专家权重都可能被路由到而需常驻），激活参数量决定每个位置的计算量与延迟",
+          "这两个数字都只影响训练吞吐，和推理时的显存占用与响应延迟都没关系，部署规划时无需考虑",
+          "由于每个位置只经过少数专家，可以把暂时没激活的专家权重从显存里丢掉以省资源"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从 671B 与 37B 之争出发，判断显存与延迟各自的决定因素",
+          "reasoningGoal": "先拆出显存常驻与单步计算两个不同的资源维度；再据此推出总参定显存、激活定延迟的对应；并逐项验证各说法是否成立，排除延迟按总量论与丢弃专家论。"
+        },
+        "generatedAt": 1789684246369,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f8776a99",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-710e5417",
+        "sourceSnapshot": {
+          "id": "llm-06",
+          "topic": "moe",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "moe",
+            "mixture-of-experts",
+            "serving"
+          ],
+          "question": "某 MoE 模型的总参数量远大于每 token 的激活参数量。这两个数字分别决定了什么？",
+          "options": [
+            "总参数量决定推理延迟，激活参数量决定显存占用，因此显存按 37B 规划即可满足部署要求",
+            "总参数量决定所需显存（所有专家权重都可能被路由到而需常驻显存），激活参数量决定每个 token 的计算量与延迟",
+            "这两个数字都只影响训练阶段的吞吐，与推理时的显存占用和响应延迟均没有关系",
+            "由于每个 token 只经过少数专家，可以把暂时未被激活的专家权重从显存中丢弃以节省资源"
+          ]
+        }
+      }
+    ],
+    "mem-hierarchy-01": [
+      {
+        "id": "mem-hierarchy-01__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某 24 小时在线的销售助手借鉴操作系统分页思想做分层记忆：热数据常驻、冷数据下沉。关于信息在分层间的流转机制，下列哪种描述正确？",
+        "options": [
+          "冷热分层是规模化之后的事，早期直接双写最简单；出现成本或膨胀问题再引入分层，架构演进优先。",
+          "新消息到达时从长期库检索事实装回上下文，会话结束再压缩降级到冷层。",
+          "会话结束做一次全量快照归档，压缩可以后补；先保可恢复性，再优化存储成本。",
+          "上下文窗口访问最快，热数据尽量常驻；容量不够时再按使用频率逐出，缓存思路就是记忆思路。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从分页类比出发，判断检索提升与压缩降级的流转机制",
+          "reasoningGoal": "先确认热层常驻与用频逐出的缓存式流转；再据此推出新消息触发检索装载、会话结束压缩降级的机制；并逐项验证各说法是否成立，排除双写凑合论与快照归档论。"
+        },
+        "generatedAt": 1789684246370,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-3cfccc2d",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-5ad97019",
+        "sourceSnapshot": {
+          "id": "mem-hierarchy-01",
+          "topic": "memory",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "memory-hierarchy",
+            "paging",
+            "promotion",
+            "demotion"
+          ],
+          "question": "生产环境中的 AI Agent 架构常借鉴操作系统（OS）在 RAM 与 Disk 之间进行页面调度（Paging）的思想，设计分层记忆架构（包含 Context Window、Session Memory、Long-term Store、Cold Archive）。关于信息在该分层体系中的动态流转与调配机制，下列描述正确的是？",
+          "options": [
+            "冷热分层是规模化的事，早期直接双写最简单；出现成本或膨胀问题时再引入分层，架构演进优先。",
+            "新消息到达时从 Long-term Store 检索事实装载回 Context，会话结束再压缩降级到冷层。",
+            "Session 结束做一次全量快照归档，压缩可以后补；先保可恢复性，再优化存储成本。",
+            "Context Window 访问最快，热数据尽量常驻；容量不足时再按使用频率逐出，缓存思路即记忆思路。"
+          ]
+        }
+      }
+    ],
+    "search-02": [
+      {
+        "id": "search-02__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某新闻搜索要同时满足语义相关且发布于近 30 天内，工程师对先过滤后搜索还是先搜索后过滤争执不下。下列哪种说法正确？",
+        "options": [
+          "应按过滤条件的选择性定执行顺序：高选择性用前过滤，低选择性可用后过滤或混合索引，要权衡召回与性能",
+          "现代向量库把过滤下推到索引层，执行顺序由优化器定；手写顺序不影响结果，交给引擎即可。",
+          "过滤与向量搜索完全正交，执行顺序对最终结果没有任何可观测影响，所以不用刻意区分先后顺序",
+          "应直接放弃向量检索，改纯关键词过滤来保证时间条件严格满足，这样最稳妥且实现简单直观"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 30 天时限加语义相关并存出发，判断按选择性定顺序的原则",
+          "reasoningGoal": "先确认过滤选择性决定候选规模与召回风险；再据此推出高选择用前过滤、低选择可后过滤的顺序；并逐项验证各说法是否成立，排除优化器包办论与正交无关论。"
+        },
+        "generatedAt": 1789684246370,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d35d8320",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-4c2838c3",
+        "sourceSnapshot": {
+          "id": "search-02",
+          "topic": "vector-db",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "identify",
+          "tags": [
+            "search",
+            "vector-db",
+            "filtering",
+            "metadata"
+          ],
+          "question": "在向量检索中，需同时满足“语义相似且发布时间在近 30 天内”这类带时间过滤的查询。关于过滤与向量搜索的执行顺序，下列说法正确的是？",
+          "options": [
+            "应根据过滤条件的选择性决定执行顺序：高选择性过滤用 pre-filter，低选择性可用 post-filter 或混合索引，需权衡召回与性能",
+            "现代向量库把过滤条件下推到索引层，执行顺序由优化器决定；手写顺序不影响结果，交给引擎即可。",
+            "过滤与向量搜索完全正交，二者执行顺序对最终结果没有任何可观测的影响，因此无需刻意区分前后过滤的顺序",
+            "应直接放弃向量检索，改用纯关键词过滤来保证时间条件的严格满足，这样最为稳妥且实现简单直观"
+          ]
+        }
+      }
+    ],
+    "search-03": [
+      {
+        "id": "search-03__context-options__manual-bx__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某文档搜索把向量与关键词 BM25 两路的结果直接拼在一起，关键词一路长期霸榜。关于是否需要归一化融合，下列哪种说法正确？",
+        "options": [
+          "两路分数分布与尺度不同，要归一化后加权融合来平衡语义与关键词信号",
+          "混合检索不用任何融合，直接拼接两路前列结果就能拿到最优效果，简单高效",
+          "关键词分数恒大于向量分数，所以完全不用做归一化，直接相加就行",
+          "融合必然拉低整体召回，所以应当只用其中一路结果，避免相互干扰"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从一路长期霸榜出发，判断分布尺度不同需融合的原理",
+          "reasoningGoal": "先确认两路分数分布尺度不同是霸榜的根源；再据此推出归一化后加权融合平衡信号的结论；并逐项验证各说法是否成立，排除直接拼接论与恒大无需论。"
+        },
+        "generatedAt": 1789684246370,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-5b129cfb",
+        "batch": "manual-bx",
+        "model": "manual",
+        "contentHash": "fnv1a-4f087b1c",
+        "sourceSnapshot": {
+          "id": "search-03",
+          "topic": "vector-db",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "search",
+            "hybrid",
+            "bm25",
+            "recall"
+          ],
+          "question": "在混合检索（向量 + 关键词 BM25）中，为什么需要对两路召回结果进行归一化与加权融合，而非直接取 Top-K 拼接？",
+          "options": [
+            "两路分数分布与尺度不同，需归一化后加权融合以平衡语义与关键词信号",
+            "混合检索无需任何融合，直接拼接两路 Top-K 结果即可获得最优效果，简单高效",
+            "BM25 分数恒大于向量分数，因此完全不需要做归一化处理，直接相加即可",
+            "融合必然会降低整体召回率，所以应当只选择其中一路结果来使用，避免相互干扰"
+          ]
+        }
+      }
+    ]
+  }
+}

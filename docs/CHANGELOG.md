@@ -1,6 +1,34 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-17 · 零变体区再扩充 20 条变体（`assessment.manual-bu-20260916.json`，池 1855→1875 条）
+
+- missing-only 顺延 10 题（`claude-blog-2026-08-23/24/25/26/27/28/29/30/31/32`，
+  均为单选短选项），每题各写 1 条 surface-options + 1 条 context-options，
+  共 20 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。
+- 过程纠偏：首轮选题误将已覆盖的 waf-23/24/25/26 计入（dry-run 输出与落盘状态不一致），
+  落盘后门禁报 8 对跨文件选项雷同；已删除误选 4 题，改用 pool 文件直扫确认的
+  claude-23/24/25/26 补足 20 条。今后批量选题以 pool 直扫为准，不单独信任 dry-run。
+- 初稿问题改写清零：短选项长度失衡 5 项、claude-24 sibling 89.9（重做 context O1/O3
+  叙事压回）、claude-30 context O0 漂移不足（补回管理密钥锚点）。
+- 题干约束落实：claude-23/28/30/31/32 题干避开正确项独有拉丁词
+  （allowedDomains/runbook/MCP/allowlist/SHA 无一泄入）；数字/限定词本批无约束；
+  v7 语言风格，数值原样保留。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 73.0%→73.7%，0 变体题 387→377）；
+  `npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-bt-20260916.json`，池 1835→1855 条）
+
+- missing-only 顺延 10 题（`claude-blog-2026-08-11/12/14/15/16/17/18/19/20/22`，
+  均为单选短选项），每题各写 1 条 surface-options + 1 条 context-options，
+  共 20 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。
+- 初稿 6 处问题改写清零：短选项长度失衡 5 项（claude-11/12/18），context O3
+  漂移不足 1 项（claude-18 手术室选项补回"上下文窗口"关键词后 26.1→50）。
+- 题干约束落实：claude-12 题干避开正确项独有拉丁词（rubric）；数字/限定词本批无约束；
+  v7 语言风格，数值原样保留。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 72.3%→73.0%，0 变体题 397→387）；
+  `npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
 ## 2026-09-16 · 零变体区再扩充 20 条变体（`assessment.manual-bs-20260916.json`，池 1815→1835 条）
 
 - missing-only 顺延 10 题（`aws-waf-lens-2026-08-26/27/28/29/30`、

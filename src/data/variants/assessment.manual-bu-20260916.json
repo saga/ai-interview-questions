@@ -1,0 +1,943 @@
+{
+  "version": 1,
+  "generatedAt": 1789649833489,
+  "promptVersion": "v7",
+  "variants": {
+    "claude-blog-2026-08-23": [
+      {
+        "id": "claude-blog-2026-08-23__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "Agent 只能上白名单域名，哪层控制最可靠？",
+        "options": [
+          "只在 prompt 里列出允许域名并要求遵守。",
+          "沙箱或网络层的出口白名单策略。",
+          "仅在应用层过滤链接，依赖 Agent 自觉遵守。",
+          "只记录被拒绝的请求而不真正阻断访问。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断域名控制须落在出口层而非提示或应用层",
+          "reasoningGoal": "先区分建议与强制执行的边界；再据此确认出口白名单的说法成立；并排除提示约束、应用过滤、只记不拦等不成立描述。"
+        },
+        "generatedAt": 1789649833481,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-93310f1a",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-24f51018",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-23",
+          "topic": "tool-security",
+          "subtopic": "网络出口控制",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "sandbox",
+            "network-egress"
+          ],
+          "question": "要限制 Agent 只能访问批准的外部域名，哪一层控制最可靠？（单选）",
+          "options": [
+            "只在 prompt 中列出允许域名并要求遵守",
+            "沙箱或网络层的 allowedDomains 出口策略",
+            "仅在应用层过滤链接，依赖 Agent 自觉遵守",
+            "只记录被拒绝的请求而不真正阻断访问"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-23__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "公司电脑只能上内网白名单，哪层控制最可靠？",
+        "options": [
+          "只在员工手册里列出允许域名并要求遵守。",
+          "用沙箱或网络层出口白名单做策略控制。",
+          "仅在浏览器层过滤链接，依赖员工自觉遵守。",
+          "只记录被拒绝的访问而不真正阻断。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从内网白名单类比推出出口层控制的结论",
+          "reasoningGoal": "先对齐内外网的控制映射；再据此确认出口白名单的说法成立；并排除手册约束、浏览器过滤、只记不拦等不成立描述。"
+        },
+        "generatedAt": 1789649833482,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-93310f1a",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-102865b0",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-23",
+          "topic": "tool-security",
+          "subtopic": "网络出口控制",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "sandbox",
+            "network-egress"
+          ],
+          "question": "要限制 Agent 只能访问批准的外部域名，哪一层控制最可靠？（单选）",
+          "options": [
+            "只在 prompt 中列出允许域名并要求遵守",
+            "沙箱或网络层的 allowedDomains 出口策略",
+            "仅在应用层过滤链接，依赖 Agent 自觉遵守",
+            "只记录被拒绝的请求而不真正阻断访问"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-24": [
+      {
+        "id": "claude-blog-2026-08-24__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "CI 首次让 Agent 修失败构建，权限怎么递进？",
+        "options": [
+          "允许 Agent 直接推送修复到 main 分支。",
+          "先做只读分析，再把写入动作放在 PR 和审批门之后。",
+          "让 Agent 直接读取生产密钥来排查失败。",
+          "绕过测试直接运行部署以加快修复速度。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断 Agent 进产线须先只读后写加门禁",
+          "reasoningGoal": "先识别首次引入的风险敞口；再据此确认只读分析加审批门的说法成立；并排除直推主干、读生产密钥、绕过测试等不成立描述。"
+        },
+        "generatedAt": 1789649833482,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e8c9a2e2",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-5726b70f",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-24",
+          "topic": "system-design",
+          "subtopic": "CI/CD 中的 Agent",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "ci-cd",
+            "agent",
+            "sandbox"
+          ],
+          "question": "在 CI/CD 中首次引入 Agent 处理失败构建时，哪种权限递进方式更稳妥？（单选）",
+          "options": [
+            "允许 Agent 直接推送修复到 main 分支",
+            "先做只读分析，再把写入动作放在 PR 和审批门之后",
+            "让 Agent 直接读取生产密钥来排查失败",
+            "绕过测试直接运行部署以加快修复速度"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-24__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "实习生首次进产线修 bug，权限怎么递进？",
+        "options": [
+          "允许实习生直接推送修复到主干分支。",
+          "先做只读分析，写入动作走评审加审批门。",
+          "让实习生直接读取生产密钥来排查失败。",
+          "跳过测试直接跑部署以加快修复。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从实习生类比推出权限递进的结论",
+          "reasoningGoal": "先对齐实习生与 Agent 的信任映射；再据此确认先只读后审批的说法成立；并排除直推主干、读密钥、绕测试等不成立描述。"
+        },
+        "generatedAt": 1789649833483,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e8c9a2e2",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-43dc4cd8",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-24",
+          "topic": "system-design",
+          "subtopic": "CI/CD 中的 Agent",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "ci-cd",
+            "agent",
+            "sandbox"
+          ],
+          "question": "在 CI/CD 中首次引入 Agent 处理失败构建时，哪种权限递进方式更稳妥？（单选）",
+          "options": [
+            "允许 Agent 直接推送修复到 main 分支",
+            "先做只读分析，再把写入动作放在 PR 和审批门之后",
+            "让 Agent 直接读取生产密钥来排查失败",
+            "绕过测试直接运行部署以加快修复速度"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-25": [
+      {
+        "id": "claude-blog-2026-08-25__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "同一 Agent 横跨开发预发布生产，权限怎么设？",
+        "options": [
+          "开发与生产用完全相同的权限配置，不做任何环境区分。",
+          "开发自由、预发布居中、生产必须经过人工授权。",
+          "生产环境用最宽松的权限策略，以最大化自主执行效率。",
+          "只按模型大小来决定权限等级。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断权限须随环境风险递增而非统一或生产最松",
+          "reasoningGoal": "先明确环境风险与权限的对应关系；再据此确认分级加人工授权的说法成立；并排除统一配置、生产最松、按模型定权等不成立描述。"
+        },
+        "generatedAt": 1789649833483,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b2199171",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-8cf05639",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-25",
+          "topic": "reliability",
+          "subtopic": "环境权限分级",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "ci-cd",
+            "production-gate",
+            "reliability"
+          ],
+          "question": "如何为同一个 Agent 设置开发、预发布和生产环境的自主权限？（单选）",
+          "options": [
+            "开发与生产使用完全相同的权限配置，不做任何环境区分",
+            "开发自由、预发布居中、生产必须经过人工授权",
+            "生产环境采用最宽松的权限策略，以最大化自主执行效率",
+            "只按模型大小决定权限"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-25__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "同一把钥匙开 lab、机房、 vault 三道门，权限怎么设？",
+        "options": [
+          "lab 与 vault 用完全相同的权限配置，不做任何环境区分。",
+          "lab 自由、机房居中、vault 必须经过人工授权。",
+          "vault 用最宽松的权限策略，以最大化执行效率。",
+          "只按钥匙尺寸大小来决定权限等级高低。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从三道门类比推出分级授权的结论",
+          "reasoningGoal": "先对齐门与环境的敏感度映射；再据此确认分级加人工授权的说法成立；并排除统一配置、最松策略、按尺寸定权等不成立描述。"
+        },
+        "generatedAt": 1789649833484,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b2199171",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-33f76395",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-25",
+          "topic": "reliability",
+          "subtopic": "环境权限分级",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "ci-cd",
+            "production-gate",
+            "reliability"
+          ],
+          "question": "如何为同一个 Agent 设置开发、预发布和生产环境的自主权限？（单选）",
+          "options": [
+            "开发与生产使用完全相同的权限配置，不做任何环境区分",
+            "开发自由、预发布居中、生产必须经过人工授权",
+            "生产环境采用最宽松的权限策略，以最大化自主执行效率",
+            "只按模型大小决定权限"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-26": [
+      {
+        "id": "claude-blog-2026-08-26__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "部署系统为何要反复演练回滚路径？",
+        "options": [
+          "回滚的目的只用于节省 token 开销。",
+          "维护闭环可能自动触发回滚，恢复路径必须事先验证。",
+          "回滚可以由模型临时发明出来。",
+          "认为回滚机制与生产安全没有关系。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断回滚路径须事先验证而非临场发明",
+          "reasoningGoal": "先识别自动触发回滚的可能性；再据此确认事先验证的说法成立；并排除省 token、临场发明、与安全无关等不成立描述。"
+        },
+        "generatedAt": 1789649833484,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-4e6f65df",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-e7401c87",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-26",
+          "topic": "reliability",
+          "subtopic": "回滚路径",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "rollback",
+            "deployment",
+            "reliability"
+          ],
+          "question": "为什么自动化部署系统应优先反复演练回滚路径？（单选）",
+          "options": [
+            "回滚只用于节省 token",
+            "维护闭环可能自动触发回滚，恢复路径必须事先验证",
+            "回滚可以由模型临时发明",
+            "认为回滚机制与生产安全没有关系"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-26__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "消防队为何要反复演练逃生通道？",
+        "options": [
+          "演练回滚只是为了节省 token 开销。",
+          "闭环可能自动触发回滚，恢复路径必须事先验证。",
+          "逃生路线可以临场临时发明出来。",
+          "认为逃生通道与安全没有关系。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从消防演练类比推出路径预验证的结论",
+          "reasoningGoal": "先对齐演练与验证的映射；再据此确认事先验证的说法成立；并排除省经费、临场发明、与安全无关等不成立描述。"
+        },
+        "generatedAt": 1789649833485,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-4e6f65df",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-8cb42438",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-26",
+          "topic": "reliability",
+          "subtopic": "回滚路径",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "rollback",
+            "deployment",
+            "reliability"
+          ],
+          "question": "为什么自动化部署系统应优先反复演练回滚路径？（单选）",
+          "options": [
+            "回滚只用于节省 token",
+            "维护闭环可能自动触发回滚，恢复路径必须事先验证",
+            "回滚可以由模型临时发明",
+            "认为回滚机制与生产安全没有关系"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-27": [
+      {
+        "id": "claude-blog-2026-08-27__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "维护闭环里，谁来做异常检测？",
+        "options": [
+          "由模型自由判断是否异常。",
+          "由版本控制且经过测试的确定性检测脚本负责。",
+          "由用户每次手动估计是否出现异常。",
+          "只看单次指标尖峰就判定为异常。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能判断异常检测须由确定性脚本负责而非模型或人工",
+          "reasoningGoal": "先复现检测须稳定可审计的要求；再据此确认确定性脚本的说法成立；并排除模型自由判、人工估计、单次尖峰等不成立描述。"
+        },
+        "generatedAt": 1789649833485,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-01466fb6",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-f4b8453e",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-27",
+          "topic": "observability",
+          "subtopic": "控制带检测",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "monitoring",
+            "control-band",
+            "deterministic"
+          ],
+          "question": "AI-native 维护闭环中，控制带的异常检测应由什么负责？（单选）",
+          "options": [
+            "由模型自由判断是否异常",
+            "由版本控制且经过测试的确定性检测脚本负责",
+            "由用户每次手动估计是否出现异常",
+            "只看单次指标尖峰就判定为异常"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-27__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "小区门禁异常谁来判定？",
+        "options": [
+          "由保安凭感觉自由判断是否异常。",
+          "由纳入版本控制且经过测试的确定性检测脚本负责。",
+          "由值班员每次手动估计是否出现异常。",
+          "看到单次指标尖峰就判定为异常。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从门禁判定类比推出确定性检测的结论",
+          "reasoningGoal": "先对齐门禁与闭环的判定映射；再据此确认脚本负责的说法成立；并排除保安自由判、人工估计、单次尖峰等不成立描述。"
+        },
+        "generatedAt": 1789649833485,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-01466fb6",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-8db7c85a",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-27",
+          "topic": "observability",
+          "subtopic": "控制带检测",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "monitoring",
+            "control-band",
+            "deterministic"
+          ],
+          "question": "AI-native 维护闭环中，控制带的异常检测应由什么负责？（单选）",
+          "options": [
+            "由模型自由判断是否异常",
+            "由版本控制且经过测试的确定性检测脚本负责",
+            "由用户每次手动估计是否出现异常",
+            "只看单次指标尖峰就判定为异常"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-28": [
+      {
+        "id": "claude-blog-2026-08-28__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "三档异常分级响应，设计目的是什么？",
+        "options": [
+          "所有异常都立即自动部署到生产。",
+          "按严重度逐步增加权限，修复行动仍需经过既有门禁。",
+          "严重异常只做记录而不做诊断。",
+          "所有阈值触发后都执行同一动作。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能判断分级须解耦检测与行动权限而非一刀切",
+          "reasoningGoal": "先识别误报与自动化风险的平衡；再据此确认逐步加权限的说法成立；并排除全自动部署、重症只记、统一动作等不成立描述。"
+        },
+        "generatedAt": 1789649833485,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-4dfa9cad",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-a6bb9518",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-28",
+          "topic": "observability",
+          "subtopic": "Sigma 分级响应",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "claude-blog",
+            "monitoring",
+            "sigma",
+            "incident-response"
+          ],
+          "question": "一个监控系统按异常程度分三档：低级异常只记录，中级异常允许只读诊断，高级异常才能提出受审批约束的修复。这样设计的主要目的是什么？（单选）",
+          "options": [
+            "所有异常都立即自动生产部署",
+            "按严重度逐步增加权限，修复行动仍需经过既有门禁",
+            "严重异常只记录不诊断",
+            "所有阈值都执行同一动作"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-28__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "医院分诊三级响应，设计目的是什么？",
+        "options": [
+          "所有病人都立即送进手术室抢救。",
+          "按严重度逐步增加处置权限，处置行动仍需经过既有门禁。",
+          "重症患者只做病情记录而不做诊断。",
+          "所有分级触发后都执行同一动作。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从分诊类比推出分级处置的结论",
+          "reasoningGoal": "先对齐分诊与异常分级的映射；再据此确认逐步加权限的说法成立；并排除全送手术、只记不诊、统一动作等不成立描述。"
+        },
+        "generatedAt": 1789649833486,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-4dfa9cad",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-dc551ba6",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-28",
+          "topic": "observability",
+          "subtopic": "Sigma 分级响应",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "claude-blog",
+            "monitoring",
+            "sigma",
+            "incident-response"
+          ],
+          "question": "一个监控系统按异常程度分三档：低级异常只记录，中级异常允许只读诊断，高级异常才能提出受审批约束的修复。这样设计的主要目的是什么？（单选）",
+          "options": [
+            "所有异常都立即自动生产部署",
+            "按严重度逐步增加权限，修复行动仍需经过既有门禁",
+            "严重异常只记录不诊断",
+            "所有阈值都执行同一动作"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-29": [
+      {
+        "id": "claude-blog-2026-08-29__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "控制带突破后，异常怎么重新接入 SDLC？",
+        "options": [
+          "不写诊断、不回滚，直接在生产代码上修改并标记结束。",
+          "把诊断写成 intent.md，重新进入版本化的 SDLC 流程。",
+          "删除监控事件与告警记录，让事故无迹可查。",
+          "只发一条没有上下文与证据链的通告，不进入任何修复流程。"
+        ],
+        "angle": "architecture",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断异常须转成意图文档重进流程而非直接改",
+          "reasoningGoal": "先拆出诊断回滚与流程的要求；再据此确认写成意图文档的说法成立；并排除直接改、删记录、只通告等不成立描述。"
+        },
+        "generatedAt": 1789649833486,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b1f1d670",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-33748906",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-29",
+          "topic": "observability",
+          "subtopic": "告警到 intent 闭环",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "maintenance",
+            "intent",
+            "incident-response"
+          ],
+          "question": "控制带突破后，维护闭环如何把运行时异常重新接入 SDLC？（单选）",
+          "options": [
+            "不写诊断、不回滚，直接在生产代码上修改并标记结束",
+            "把诊断写成 intent.md，重新进入版本化的 SDLC 流程",
+            "删除监控事件与告警记录，让事故无迹可查",
+            "只发一条没有上下文与证据链的通告，不进入任何修复流程"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-29__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "设备报警后，故障怎么重新进入维修流程？",
+        "options": [
+          "不写诊断、不回滚，直接在产线设备上改完标记结束。",
+          "把诊断写成维修单，重新进入版本化的维修流程。",
+          "删除报警与巡检记录，让故障无迹可查。",
+          "只发一条没有上下文与证据链的通告，不进入任何修复流程。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从设备维修类比推出诊断入流的结论",
+          "reasoningGoal": "先对齐设备与代码的处置映射；再据此确认写单重进流程的说法成立；并排除直接改、删记录、只通告等不成立描述。"
+        },
+        "generatedAt": 1789649833486,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b1f1d670",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-58764706",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-29",
+          "topic": "observability",
+          "subtopic": "告警到 intent 闭环",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "maintenance",
+            "intent",
+            "incident-response"
+          ],
+          "question": "控制带突破后，维护闭环如何把运行时异常重新接入 SDLC？（单选）",
+          "options": [
+            "不写诊断、不回滚，直接在生产代码上修改并标记结束",
+            "把诊断写成 intent.md，重新进入版本化的 SDLC 流程",
+            "删除监控事件与告警记录，让事故无迹可查",
+            "只发一条没有上下文与证据链的通告，不进入任何修复流程"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-30": [
+      {
+        "id": "claude-blog-2026-08-30__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "Agent 进部署流水线，凭据怎么设计影响最小？",
+        "options": [
+          "把长期管理员密钥放进环境变量。",
+          "沙箱中使用短期范围凭据，并通过受限工具暴露部署能力。",
+          "让 Agent 共享工程师个人 token。",
+          "把生产密钥写入 CLAUDE.md。"
+        ],
+        "angle": "comparison",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能判断部署凭据须短期受限加沙箱而非长期共享",
+          "reasoningGoal": "先拆出泄露与误操作的影响面；再据此确认短期受限凭据的说法成立；并排除长期密钥、共享 token、写入文档等不成立描述。"
+        },
+        "generatedAt": 1789649833487,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-060474da",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-dc271af4",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-30",
+          "topic": "tool-security",
+          "subtopic": "生产身份与权限",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "ci-cd",
+            "identity",
+            "security"
+          ],
+          "question": "在 CI/CD 中让 Agent 参与部署时，哪种凭据设计能缩小泄露和误操作的影响范围？（单选）",
+          "options": [
+            "把长期管理员密钥放进环境变量",
+            "沙箱中使用短期范围凭据，并通过受限工具暴露部署能力",
+            "让 Agent 共享工程师个人 token",
+            "把生产密钥写入 CLAUDE.md"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-30__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "保洁进实验室，门禁怎么设计影响最小？",
+        "options": [
+          "把长期管理员门禁卡放进前台抽屉。",
+          "作业区使用短期范围通行证，并通过受限通道暴露操作能力。",
+          "让保洁人员共用工程师个人工卡进出。",
+          "把生产区钥匙写入门口白板上进行公示。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从保洁门禁类比推出短期受限的结论",
+          "reasoningGoal": "先对齐保洁与 Agent 的权限映射；再据此确认短期通行加受限通道的说法成立；并排除长期门禁卡、共用工卡、白板公示等不成立描述。"
+        },
+        "generatedAt": 1789649833487,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-060474da",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-b7f7a6d5",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-30",
+          "topic": "tool-security",
+          "subtopic": "生产身份与权限",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "ci-cd",
+            "identity",
+            "security"
+          ],
+          "question": "在 CI/CD 中让 Agent 参与部署时，哪种凭据设计能缩小泄露和误操作的影响范围？（单选）",
+          "options": [
+            "把长期管理员密钥放进环境变量",
+            "沙箱中使用短期范围凭据，并通过受限工具暴露部署能力",
+            "让 Agent 共享工程师个人 token",
+            "把生产密钥写入 CLAUDE.md"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-31": [
+      {
+        "id": "claude-blog-2026-08-31__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "部署回滚查状态，为何要用受限工具而非 shell？",
+        "options": [
+          "工具封装后即默认安全，无需再做边界与审计。",
+          "受限工具明确参数和环境边界，形成可审计的操作 allowlist。",
+          "受限工具仅能返回文本，无法触发实际部署操作。",
+          "直接复用现有宽松 shell 凭据以减少集成成本。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断受限工具须显式边界加审计而非默认安全",
+          "reasoningGoal": "先确定可审计边界的要求；再据此确认受限工具的说法成立；并排除默认安全、仅文本、复用宽松凭据等不成立描述。"
+        },
+        "generatedAt": 1789649833487,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-65d4a9e0",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-cd0db49c",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-31",
+          "topic": "system-design",
+          "subtopic": "MCP 部署工具",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "mcp",
+            "deployment",
+            "ci-cd"
+          ],
+          "question": "为什么应把部署、状态查询和回滚建模成受限工具，而不是把任意 shell 凭据交给 Agent？（单选）",
+          "options": [
+            "工具封装后即默认安全，无需再做边界与审计",
+            "受限工具明确参数和环境边界，形成可审计的操作 allowlist",
+            "受限工具仅能返回文本，无法触发实际部署操作",
+            "直接复用现有宽松 shell 凭据以减少集成成本"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-31__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "给实习生配万能钥匙还是受限工牌，为什么？",
+        "options": [
+          "工牌发下去即默认安全，无需再做边界与审计。",
+          "受限工牌明确参数和环境边界，形成可审计的出入白名单。",
+          "受限工牌仅能开门，无法触发实际设备操作。",
+          "直接复用现有宽松钥匙以减少配发成本。"
+        ],
+        "angle": "boundary",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从工牌类比推出受限加审计的结论",
+          "reasoningGoal": "先对齐工牌与工具的权限映射；再据此确认受限工牌的说法成立；并排除默认安全、仅开门、复用钥匙等不成立描述。"
+        },
+        "generatedAt": 1789649833488,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-65d4a9e0",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-399911fc",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-31",
+          "topic": "system-design",
+          "subtopic": "MCP 部署工具",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "mcp",
+            "deployment",
+            "ci-cd"
+          ],
+          "question": "为什么应把部署、状态查询和回滚建模成受限工具，而不是把任意 shell 凭据交给 Agent？（单选）",
+          "options": [
+            "工具封装后即默认安全，无需再做边界与审计",
+            "受限工具明确参数和环境边界，形成可审计的操作 allowlist",
+            "受限工具仅能返回文本，无法触发实际部署操作",
+            "直接复用现有宽松 shell 凭据以减少集成成本"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-32": [
+      {
+        "id": "claude-blog-2026-08-32__surface-options__manual-bu__0",
+        "kind": "surface-options",
+        "mode": "assessment",
+        "question": "需求系统和代码库都存交付信息，怎么避双权威？",
+        "options": [
+          "允许多个系统各自作为权威且不互链。",
+          "为每类交付物指定一个权威来源，其他系统保存副本或链接。",
+          "删除旧系统中所有相关的交付记录。",
+          "只保留原始聊天记录作为唯一来源。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能判断双系统须定单一权威加互链而非各管各",
+          "reasoningGoal": "先明确双权威矛盾的风险；再据此确认单一权威加副本链接的说法成立；并排除各自权威、删除旧记录、聊天唯一等不成立描述。"
+        },
+        "generatedAt": 1789649833488,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-18e341a7",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-8caa883c",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-32",
+          "topic": "system-design",
+          "subtopic": "来源系统与版本控制",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "source-of-truth",
+            "governance"
+          ],
+          "question": "当需求系统和代码仓库同时保存交付信息时，最低限度应如何避免出现两个互相矛盾的权威版本？（单选）",
+          "options": [
+            "允许多个系统各自作为权威且不互链",
+            "为每类交付物指定一个权威来源，其他系统保存副本或链接",
+            "删除旧系统中所有相关的交付记录",
+            "只保留原始聊天记录作为唯一来源"
+          ]
+        }
+      },
+      {
+        "id": "claude-blog-2026-08-32__context-options__manual-bu__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "纸质台账和电子表都记库存，怎么避两本账？",
+        "options": [
+          "允许纸电两套各自为准且不互链。",
+          "为每类物资指定一个权威台账，其他系统保存副本或链接。",
+          "删除旧台账中所有相关的库存记录。",
+          "只保留原始聊天记录作为唯一来源。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "infer",
+        "assessment": {
+          "target": "能从两本账类比推出单一权威的结论",
+          "reasoningGoal": "先识别纸电并存的矛盾风险；再据此确认权威台账加副本的说法成立；并排除各自为准、删除旧账、聊天唯一等不成立描述。"
+        },
+        "generatedAt": 1789649833488,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-18e341a7",
+        "batch": "manual-bu",
+        "model": "manual",
+        "contentHash": "fnv1a-814d750b",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-32",
+          "topic": "system-design",
+          "subtopic": "来源系统与版本控制",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "claude-blog",
+            "source-of-truth",
+            "governance"
+          ],
+          "question": "当需求系统和代码仓库同时保存交付信息时，最低限度应如何避免出现两个互相矛盾的权威版本？（单选）",
+          "options": [
+            "允许多个系统各自作为权威且不互链",
+            "为每类交付物指定一个权威来源，其他系统保存副本或链接",
+            "删除旧系统中所有相关的交付记录",
+            "只保留原始聊天记录作为唯一来源"
+          ]
+        }
+      }
+    ]
+  }
+}

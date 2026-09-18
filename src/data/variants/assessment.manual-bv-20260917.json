@@ -1,0 +1,970 @@
+{
+  "version": 1,
+  "generatedAt": 1789682134628,
+  "promptVersion": "v7",
+  "variants": {
+    "agentic-22": [
+      {
+        "id": "agentic-22__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某跨境电商的补货 Agent 一跑就是几天，机房演练中断后它把已确认的供应商又下了一遍单。复盘发现快照只有最终态、恢复时也没有校验。重做检查点设计时，下列哪些做法正确？（请选择三个选项）",
+        "options": [
+          "checkpoint 要记下目标计划、已做完的步骤、待办队列和工具幂等键，大体积中间结果只存外部引用，不把原文堆进快照",
+          "恢复时应把全部历史对话和工具输出逐字塞回上下文，做任何摘要都会带来损失并把后续行为带偏",
+          "每个步骤成功后以及每次外部副作用前后都要及时落盘，再配合定期心跳，防止崩溃丢掉已推进的进度",
+          "落盘只应在任务彻底结束后做一次，中途保存反而造出不一致的快照，增量写入注定让字段自相矛盾",
+          "恢复时先核对快照版本与哈希是否完整，再用摘要恢复上下文，拿不准的模糊地带靠工具幂等性放心重放"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从重复下单事故出发，判断长任务 checkpoint 的内容、落盘时机与恢复校验",
+          "reasoningGoal": "先拆出长任务中断恢复必须保住的进度状态与幂等约束；再据此确认增量落盘加版本校验加摘要重建的组合；并逐项验证各说法是否成立，排除全量回放论与完工才落盘论。"
+        },
+        "generatedAt": 1789682134614,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7b3505ec",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-ae8e806a",
+        "sourceSnapshot": {
+          "id": "agentic-22",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "long-running",
+            "resume",
+            "state"
+          ],
+          "question": "设计一个任务可能持续数小时甚至数天的 Agent：期间可以暂停和恢复。持久化什么、何时落盘、恢复时如何自洽？",
+          "options": [
+            "checkpoint 记录目标计划、已完成步骤、待办队列与工具幂等键，大体积中间结果以外置引用落盘而非堆原文",
+            "恢复时把全部历史对话与工具输出逐字回放进上下文，任何摘要都会引入损失并带偏后续行为",
+            "每个成功步骤之后与每次外部副作用前后及时落盘，并辅以定期心跳，避免崩溃时丢失已推进的进度",
+            "落盘只在任务全部完成后执行一次，中途保存反而制造不一致快照，增量写入必然让字段相互矛盾",
+            "恢复时先校验快照版本与哈希完整性，再用摘要重建上下文，模糊区依赖工具幂等性安全重放"
+          ]
+        }
+      }
+    ],
+    "agentic-25": [
+      {
+        "id": "agentic-25__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某机票比价 Agent 高峰期把同一航班查询接口连打五次，账单和延迟双双爆炸。日志显示成功结果有时没进上下文，报错又分不清成功失败。定位并修复这次重复调用，下列哪些做法正确？（请选择三个选项）",
+        "options": [
+          "典型根因是工具结果没有真正写回上下文，或者报错信息太模糊让模型以为上次失败了于是再试一次",
+          "重复检测命中之后应当在工具层悄悄丢掉请求且不给任何提示，避免打断模型当前的推理思路",
+          "把工具结果按结构化格式注回上下文并标明这是第几次调用，让模型清楚分辨成功还是失败",
+          "定位时只看调用次数统计就够了，两次调用之间上下文有什么差别并不影响根因判断",
+          "加上相似参数的重复调用护栏，命中时直接返回缓存结果并告诉模型不用再调了"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从重复调用的轨迹出发，判断回注缺失与报错模糊的根因及护栏修复",
+          "reasoningGoal": "先确认结果未回注与报错难辨是重复发起的主因；再据此推出结构化回注加计数标注与相似参数护栏的修复；并逐项验证各说法是否成立，排除静默丢弃论与只看次数论。"
+        },
+        "generatedAt": 1789682134615,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-5fb2595f",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-9b3d22a1",
+        "sourceSnapshot": {
+          "id": "agentic-25",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "debugging",
+            "loop",
+            "repetition"
+          ],
+          "question": "一个 Agent 经常重复执行同一个 Tool（参数几乎一样）。可能的原因是什么？你会如何定位与修复？",
+          "options": [
+            "常见根因是工具结果未被有效写回上下文，或错误信息模糊使模型误判为失败而发起重试",
+            "重复检测命中后应在工具层静默丢弃请求并不做任何提示，以免打断模型的既有推理思路",
+            "把工具结果结构化回注上下文并标注这是第 N 次调用，让模型明确区分成功与失败",
+            "定位时只需统计调用次数指标，两次调用之间的上下文内容差异不影响根因定性",
+            "增加相似参数的重复检测护栏，命中时直接返回缓存结果并提醒模型无需再次调用"
+          ]
+        }
+      }
+    ],
+    "agentic-27": [
+      {
+        "id": "agentic-27__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某对账 Agent 用同一批发票数据跑了两次：中午成功，晚上在同一个步骤换了条分支失败，期间代码和输入都没动。值班要解释这种同输入不同结果，下列哪些排查成立？（请选择三个选项）",
+        "options": [
+          "核查模型采样的随机性与供应商侧的版本漂移，确认两次运行的真实推理条件到底是否一致",
+          "相同输入必定产出相同输出，结果分化只是运气问题，不用排查，直接再跑一次就行",
+          "核查外部环境是否变化，例如接口返回的数据差异、限流或网络抖动有没有改写执行路径",
+          "Agent 的行为完全由代码版本决定，锁死部署流水线的版本号就能解释一切意外行为变化",
+          "排查上次运行留下的状态污染，用 trace diff 对比两次执行，再逐个禁用可变因素做复现"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从同输入不同结果出发，判断采样随机、环境变化与状态污染三类非确定源",
+          "reasoningGoal": "先列出同输入下仍可分化的三类非确定来源；再据此确认采样核查加环境核查加 trace diff 复现的组合；并逐项验证各说法是否成立，排除运气重跑论与唯版本论。"
+        },
+        "generatedAt": 1789682134616,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6388ffe8",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-6b21460c",
+        "sourceSnapshot": {
+          "id": "agentic-27",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "state",
+            "non-determinism",
+            "debugging"
+          ],
+          "question": "Agent 第一次运行成功，第二次同样输入却失败了。你会优先检查哪些 State 与环境因素？",
+          "options": [
+            "检查模型采样随机性与供应商侧版本漂移，确认两次运行的实际推理条件是否真正一致",
+            "同样输入必然产生同样输出，分化只可能是偶然运气所致，无需排查，直接重跑一次即可",
+            "检查外部环境变化，如接口返回数据差异、限流或网络波动是否改变了执行路径",
+            "Agent 行为只由代码版本决定，锁定部署流水线版本号即可解释一切非预期的行为变化",
+            "检查上次运行残留的状态污染，并用 trace diff 对比两次运行，再二分禁用可变因素复现"
+          ]
+        }
+      }
+    ],
+    "agentic-28": [
+      {
+        "id": "agentic-28__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某尽调 Agent 连跑三小时后开始翻旧账：围着第一小时的一次失败检索打转，还把最初的产出格式忘了，模型版本并没换。处置这次长任务后期下滑，下列哪些做法正确？（请选择三个选项）",
+        "options": [
+          "根因多半是 context pollution：失败的尝试和冗长的工具输出赖在上下文里持续干扰决策，再叠加上长上下文的注意力稀释",
+          "后期变差是因为模型连续推理后出现了隐性能力衰减，应当定期更换底层供应商，做上下文治理也救不回来",
+          "定期把已完成的工作做摘要，失败尝试的细节剥掉只留一句话教训，大输出落盘保存、只把摘要注回上下文",
+          "应当保留全部中间输出的原文以便随时回查，上下文越完整表现越稳，做摘要剥离只会丢掉关键线索",
+          "把目标和关键约束钉在 system 区并周期性重申，必要时用干净上下文加摘要交接的方式重启子任务"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从长任务后期下滑出发，判断上下文污染的根因与摘要治理手段",
+          "reasoningGoal": "先确认失败残留加长文稀释是后期变迷糊的主因；再据此推出摘要化加落盘注摘要加目标重申的治理；并逐项验证各说法是否成立，排除换供应商论与全量保留论。"
+        },
+        "generatedAt": 1789682134617,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-4406fd0c",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-e1d3a0d6",
+        "sourceSnapshot": {
+          "id": "agentic-28",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "context-pollution",
+            "long-task",
+            "debugging"
+          ],
+          "question": "Agent 在长任务中表现越来越差（“越来越迷糊”），但模型本身能力没有变化。可能是什么问题？如何解决？",
+          "options": [
+            "根因多为 context pollution：失败尝试与冗长工具输出滞留上下文持续干扰决策，并叠加长上下文注意力稀释",
+            "后期下滑源于模型持续推理后的隐性能力衰退，应定期更换底层供应商，上下文治理无法恢复水平",
+            "定期把已完成工作摘要化，剥离失败尝试的细节只保留一句话教训，大输出落盘仅回注摘要",
+            "保留全部中间输出原文以便随时回查，上下文越完整表现越稳定，摘要剥离只会丢失关键线索",
+            "把目标与关键约束固定在 system 区并周期性重申，必要时用干净上下文加摘要交接重启子任务"
+          ]
+        }
+      }
+    ],
+    "agentic-31": [
+      {
+        "id": "agentic-31__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某票务平台的自动退款 Agent 在超时重试时对同一订单退了两次款，客服只能手工追回。架构组要求根治：不能靠提示词约束模型。下列哪些措施组合有效？（请选择三个选项）",
+        "options": [
+          "用确定性幂等键（例如订单号拼接步骤标识）在支付接口层做去重，相同键的重复请求只真正执行一次。",
+          "把警告提到 system 级最高优先级并用对抗测试测出服从率，服从率达标后就等同于架构硬约束。",
+          "在付款动作之前设人工确认关卡或风控规则检查，超过金额线的必须审批通过才放行。",
+          "用持久化状态机卡住任务推进，每走一步先落盘再往前走，同时用 audit log 加定时对账兜底。",
+          "双付概率极低时人工冲正的总成本比幂等改造更划算，风控可以接受残余风险，架构投入应当与事故期望损失对齐。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从超时重试双付出发，判断幂等去重加确认门加状态机兜底的硬约束组合",
+          "reasoningGoal": "先确认副作用安全不能依赖模型自律而须架构保证；再据此确认幂等键去重加确认门加落盘状态机的组合；并逐项验证各说法是否成立，排除提示词等价论与低频接受论。"
+        },
+        "generatedAt": 1789682134617,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-85e162ba",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-c378b80b",
+        "sourceSnapshot": {
+          "id": "agentic-31",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "payment",
+            "side-effects",
+            "idempotency-key"
+          ],
+          "question": "一个能执行付款的 Agent 偶尔会重复付款两次。你会如何从架构层面彻底解决？",
+          "options": [
+            "用确定性幂等键（如赔案号加步骤标识）在支付接口层去重，相同键的重复请求只执行一次。",
+            "把警告升级为 system 级最高优先级指令并做对抗测试验证服从率，测得服从率达标后即等价于架构硬约束。",
+            "在付款动作前设置人工确认门或风控规则校验，超过金额阈值必须审批后放行。",
+            "以持久化状态机约束任务推进，每步落盘后再前进，并配合 audit log 与定时对账兜底。",
+            "双付发生率极低时人工冲正的总成本低于幂等改造，风控可接受残余风险；架构投入应与事故期望损失匹配。"
+          ]
+        }
+      }
+    ],
+    "agentic-34": [
+      {
+        "id": "agentic-34__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某简历解析 Agent 在评测集上拿高分，上线后掉到 70 分：线上简历版式杂乱、多语言混排，生产库也与测试基线数据脱节。归因这次实验室到生产落差，下列哪些正确？（请选择三个选项）",
+        "options": [
+          "生产提问更口语、噪声更多，测试集太窄太干净，属于分布漂移，应当用真实流量采样回放来扩充评测集",
+          "测试环境通过就等于生产可用，上线初期的下跌只是正常波动，放一段时间自己会恢复",
+          "真实环境里的限流延迟、脏数据与并发竞争是常见落差来源，排查时必须把环境差异放进分层归因",
+          "落差应当全部算到模型供应商的质量波动头上，和自家评测集构成无关，锁版本并向供应商施压即可",
+          "生产知识库与测试 fixture 不同步，应当对线上失败样本做聚类后回灌评测集，再用影子流量和灰度发布验证"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从评测高分上线下跌出发，判断分布漂移加环境差异加知识库脱节的三维归因",
+          "reasoningGoal": "先确认生产与测试在输入分布、环境与数据三处的差异；再据此推出流量回放加分层归因加失败聚类回灌的应对；并逐项验证各说法是否成立，排除自然恢复论与全怪供应商论。"
+        },
+        "generatedAt": 1789682134618,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-677dcf6f",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-81addf46",
+        "sourceSnapshot": {
+          "id": "agentic-34",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "prod-gap",
+            "evaluation",
+            "distribution-shift"
+          ],
+          "question": "一个 Agent 在测试环境表现很好，上线后成功率大幅下降。你会从哪些维度排查这种“实验室到生产”的落差？",
+          "options": [
+            "生产提问更口语化且夹杂噪声，测试集过窄过干净，属分布漂移，需用真实流量采样回放扩充评测集",
+            "测试环境通过即代表生产可用，上线初期下降只是正常波动，观察一段时间自会恢复",
+            "真实环境的限流延迟与脏数据、并发竞争是常见落差源，排查时须把环境差异纳入分层归因",
+            "落差应全部归因于模型供应商的质量波动，与本方评测集构成无关，锁定版本施压供应商即可",
+            "生产知识库与测试 fixture 不同步，对线上失败样本聚类后回灌评测集，并以影子流量与灰度验证"
+          ]
+        }
+      }
+    ],
+    "agentic-41": [
+      {
+        "id": "agentic-41__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某校园问答既有八成查课表考勤的标准问题，也有两成要跨教务与财务多源核对的申诉咨询，团队争论检索放管线还是包成 Tool。这次选型里，下列哪些说法正确？（请选择三个选项）",
+        "options": [
+          "前置管线接高频标准查询：意图单一且每次都必须查时延迟更低、行为可预测，评测也更容易做",
+          "开放式复杂咨询把检索包成 Tool：查不查、查哪个源、来回几轮都由 Agent 定，还支持改写查询与跨源交叉核对",
+          "按查询分布的可预测程度与延迟预算分层选型，高频走前置管线、长尾复杂问题升级到 Agentic RAG",
+          "把职责对调：Tool 化去接每次必查的简单场景、前置管线去扛多轮迭代的复杂问题，这样延迟与决策开销能同时压低",
+          "两种形态水火不容必须二选一，高频简单意图和长尾复杂问题只能走同一条链路，定型后也不能按流量分层演进",
+          "放置位置一旦选对最终质量就定了，分块、混合检索与重排再投钱也几乎没回报，不用再做检索质量工程"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从标准与复杂查询并存出发，判断前置管线与 Tool 化检索的分层选型",
+          "reasoningGoal": "先按意图的可预测性与延迟预算拆出高频必查与长尾多轮两类；再据此确认前置接标准、Tool 接复杂、可分层混用的结论；并逐项验证各说法是否成立，排除职责对调论、互斥论与位置决定论。"
+        },
+        "generatedAt": 1789682134619,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-2c214090",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-dc2ba56f",
+        "sourceSnapshot": {
+          "id": "agentic-41",
+          "topic": "rag",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "rag",
+            "tool",
+            "pipeline",
+            "tradeoff"
+          ],
+          "question": "RAG 应该放在 Agent 外部（前置管线）还是作为 Agent 内部的一个 Tool？两者各适合什么场景？",
+          "options": [
+            "前置管线承接高频标准查询：意图单一且每次必查时延迟更低、行为可预测，也更易评测",
+            "开放复杂咨询把检索封装为 Tool：是否检索、查哪个源、迭代几轮都由 Agent 判断，支持改写查询与跨源交叉验证",
+            "按查询分布的可预测性与延迟预算分层选型，高频走前置管线、长尾复杂问题升级给 Agentic RAG",
+            "把职责颠倒：Tool 化承接每次必查的简单场景、前置管线承接多轮迭代的复杂问题，能同时压低延迟与决策开销",
+            "两种形态互斥不可混用，高频简单意图与长尾复杂问题必须走同一链路，选定后也不能按流量分层演进",
+            "选对放置位置即决定最终质量，分块、混合检索与重排的追加投入回报很低，无需再做检索质量工程"
+          ]
+        }
+      }
+    ],
+    "ai-code-002": [
+      {
+        "id": "ai-code-002__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某内容平台要对长短差异很大的用户笔记做语义去重，团队在 cosine 相似度方案上有分歧：有人主张直接比较原始向量，有人主张先归一化再用内积，还有人对值域和零向量处理各执一词。结合方向度量与工程实现，下列哪些说法正确？（请选择三个选项）",
+        "options": [
+          "cosine 比较的是向量方向而不是幅度，可以抵消文本长短与词频差异带来的模长影响",
+          "cosine 计算的是向量之间的欧氏距离，模长越大代表语义越强，因此计算前应当先放大幅度",
+          "把向量做 L2 归一化之后，cosine 就等于点积，可以直接用内积计算来提升速度",
+          "cosine 的取值区间是 [0, ∞)，得分越高说明两个向量的方向差别越大",
+          "编码时一次遍历同步累加点积和两个范数，遇到零向量要做除零保护",
+          "cosine 要求先对向量做减均值居中，经过归一化后它和点积就没有任何关联了"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "explain",
+        "assessment": {
+          "target": "能从方向度量的原理出发，判断归一化后内积等价与健壮实现的要点",
+          "reasoningGoal": "先确认 cosine 度量方向不度量幅度，因而长短与词频造成的模长差异会被消除；再据此推出 L2 归一化后 cosine 与点积等价、零向量需做除零防御；并逐项验证各说法是否成立，排除欧氏距离论、值域误读与强制居中论。"
+        },
+        "generatedAt": 1789682134620,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-2b7ccb27",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-84fb00f8",
+        "sourceSnapshot": {
+          "id": "ai-code-002",
+          "topic": "word-embedding",
+          "angle": "calculation",
+          "difficulty": "easy",
+          "cognitiveTask": "infer",
+          "tags": [
+            "coding",
+            "embeddings",
+            "vector"
+          ],
+          "question": "请使用 TypeScript 实现 cosine similarity，并说明为什么 cosine similarity 常用于 embedding 相似度计算。",
+          "options": [
+            "cosine 度量方向而非幅度，能消除文本长度与词频造成的模长干扰",
+            "cosine 度量的是向量间欧氏距离，模长越大语义越强，计算前应放大向量幅度",
+            "向量 L2 归一化后 cosine 与点积等价，可直接用内积换取计算速度",
+            "cosine 的取值范围是 [0, ∞)，数值越大表示方向差异越大",
+            "实现时单遍遍历累加点积与两个范数，并对零向量做除零防御",
+            "cosine 必须先把向量减均值居中，归一化后它与点积不再有任何关系"
+          ]
+        }
+      }
+    ],
+    "ai-eng-016": [
+      {
+        "id": "ai-eng-016__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某法规问答 RAG 验收卡住了：召回 95 分但答案只有 70 分，抽查发现答案片段大多躺在 Top-10 里，预算只够修一处。分层定位这次瓶颈，下列哪些做法正确？（请选择三个选项）",
+        "options": [
+          "recall@10 已经 95% 说明检索层没优化空间了，分歧只可能来自评测集标注噪声，应当重标后再复测，不用查下游",
+          "直接换更强的 embedding 模型把召回打到 99%，召回涨多少答案准确率就涨多少，不用再查 ranking 与 context 环节",
+          "核查 golden chunk 在初检结果里的名次，用 MRR 或 nDCG 看初排是不是把正确答案压到了 Top-10 底部",
+          "对照 rerank 前后的名次变化，再看最终塞进 LLM 的 context 包不包含关键证据、有没有被截断或噪声淹掉",
+          "核查答案有没有忠实使用正确证据，用 faithfulness 区分到底是生成阶段幻觉，还是上游压根没给够证据",
+          "瓶颈在用户提问太随意，应当在产品里引导用户按模板句式改写问题，问法规范后准确率自然回升，不用改系统"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从高召回低答对出发，判断用排名、上下文与忠实度做分层定位",
+          "reasoningGoal": "先确认答案在列却答错说明瓶颈在排名、上下文或生成；再据此推出查名次加查 context 加验 faithfulness 的分层；并逐项验证各说法是否成立，排除无空间论、线性传导论与怪用户论。"
+        },
+        "generatedAt": 1789682134620,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6011fbeb",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-dc20774d",
+        "sourceSnapshot": {
+          "id": "ai-eng-016",
+          "topic": "rag",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "RAG",
+            "retrieval",
+            "reranking",
+            "debugging"
+          ],
+          "question": "一个 RAG 系统的 retrieval recall@10 达到 95%，但是最终回答准确率只有 70%。正确答案经常出现在 Top-10 中。你会如何判断问题究竟出在 retrieval、reranking、context construction 还是 generation？",
+          "options": [
+            "recall@10 已达 95% 说明检索层没有优化空间，分歧只能来自评测集标注噪声，应重标后再复测，无需排查下游",
+            "直接换更强的 embedding 模型把 recall 冲到 99%，召回提升会线性传导为答案准确率，无需再查 ranking 与 context 环节",
+            "检查 golden chunk 在初检结果中的排名，用 MRR 或 nDCG 判断初排是否把正确答案沉到了 Top-10 底部",
+            "对比 rerank 前后的位置变化，并检查最终拼入 LLM 的 context 是否包含关键证据、有无截断或噪声淹没",
+            "检查答案是否忠实使用了正确证据，用 faithfulness 区分是生成阶段幻觉，还是上游根本没给足证据",
+            "瓶颈在用户提问不规范，应在产品内引导用户按模板句式改写问题，查询规范后准确率自然回升，无需改系统"
+          ]
+        }
+      }
+    ],
+    "ai-eng-021": [
+      {
+        "id": "ai-eng-021__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某餐饮 SaaS 的菜品翻译服务依赖第三方模型：午晚高峰频发超时与 429，偶发 5xx 与坏 JSON 把解析器打挂。值班希望按错误类型分别设防。下列哪些机制正确？（请选择三个选项）",
+        "options": [
+          "给 timeout 配有限次重试，超阈值后可切备用模型或备用服务商，同时给重试设全局预算上限，防止重试风暴放大故障。",
+          "第三方故障大多是分钟级 transient，无限重试加抖动就是最简单的自愈，差异化分支徒增复杂度却覆盖不了新的故障模式。",
+          "对 429 做指数退避并叠加客户端限速，在已知高峰时段主动削峰平滑发送，而不是撞到限额后立刻原样重发。",
+          "对 5xx 有限重试后降级到备用方案；malformed JSON 先做 schema 校验再修复重试；各类错误分别建监控分类。",
+          "故障期间全部转人工并冻结自动化，恢复后灰度放量；人工兜底的同时顺手沉淀标注数据，一举两得。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从超时限流与坏响应并存出发，判断按错误类型分治的可靠性设计",
+          "reasoningGoal": "先按错误类型拆出超时、限流、服务端错与格式错四条线；再据此确认有限重试加退避削峰加降级校验的组合；并逐项验证各说法是否成立，排除无限重试论与全转人工论。"
+        },
+        "generatedAt": 1789682134621,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-3ada1cc5",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-ff87da7a",
+        "sourceSnapshot": {
+          "id": "ai-eng-021",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reliability",
+            "LLM",
+            "production"
+          ],
+          "question": "一个 AI 服务依赖第三方 LLM API。线上偶尔出现 timeout、429、5xx 和 malformed JSON。你会设计哪些 reliability mechanisms？",
+          "options": [
+            "对 timeout 设置有限次重试并可在超过阈值后切换备用模型或备用服务商，同时为重试设全局预算上限，避免重试风暴放大故障。",
+            "第三方故障多为分钟级 transient，无限重试加抖动即最简单的自愈；差异化分支增加复杂度却少覆盖新故障模式。",
+            "对 429 实施指数退避并叠加客户端限速，在已知的高峰时段主动平滑请求速率，而不是撞上限额后立刻原样重发。",
+            "对 5xx 限次重试后降级备用；malformed JSON 做 schema 校验并修复重试；各类错误建分类监控。",
+            "故障期间全部转人工并冻结自动化，恢复后灰度放量；人工兜底期间顺便沉淀标注数据，一举两得。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-034": [
+      {
+        "id": "ai-eng-034__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某投行知识库混着招股书、衍生品协议、客服 FAQ 与财报大表：统一 256 切分后协议义务被切碎、表格对不上行。重做这套切分管线，下列哪些正确？（请选择三个选项）",
+        "options": [
+          "技术手册走递归切分加 overlap 控粒度，法律合同按条款自然边界切，不把一条义务从中间切断",
+          "FAQ 按一问一答整体成块，表格先抽结构再转成 Markdown 或单独建表索引并挂上元数据摘要",
+          "精度要求高的场景再叠 parent-child：小块负责检索命中，命中后拿回大块补上下文",
+          "所有文档统一按 256 token 定长切、重叠设成 0，实现最简单、索引最紧凑，各类型召回效果都一样",
+          "每篇文档整体当一个 chunk 入库，靠长上下文模型直接吃下去，既不断语义也省了差异化设计",
+          "先让 LLM 给每个 chunk 写摘要代替原文入库，原文不再进检索，以此压缩索引并直达高层语义"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从多类型文档混排出发，判断按类型分流加 parent-child 的切分策略",
+          "reasoningGoal": "先按文档类型拆出手册、合同、问答与表格四条线的不同约束；再据此确认递归加条款边界加问答成块加表索引的组合；并逐项验证各说法是否成立，排除统一 256 论、整文入库论与摘要替代论。"
+        },
+        "generatedAt": 1789682134622,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8ae1ba28",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-42724015",
+        "sourceSnapshot": {
+          "id": "ai-eng-034",
+          "topic": "rag-pipeline",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "chunking",
+            "document-parsing",
+            "parent-child",
+            "recursive-chunking"
+          ],
+          "question": "你要为一个企业文档知识库搭建 RAG 的切分（Chunking）管线，语料混合了技术手册、法律合同、FAQ 和带大量表格的财务报告。请给出你的分块策略设计与理由。",
+          "options": [
+            "技术手册用递归切分加 overlap 控制粒度，法律合同按条款自然边界切，避免把一条义务切成两半",
+            "FAQ 按问答对整体成块，表格先抽取结构再序列化为 Markdown 或单独建表索引并挂元数据摘要",
+            "精度要求高的场景叠加 parent-child：小块用于检索命中，命中后返回大块补充上下文",
+            "所有文档统一按 256 token 定长切分且重叠设为 0，实现最简单、索引最紧凑，各类型召回效果一致",
+            "每篇文档整体作为单个 chunk 入库，靠长上下文模型直接消化，既不断裂语义也省去差异化设计",
+            "先用 LLM 给每个 chunk 写摘要替代原文入库，原文不再参与检索，以压缩索引并直达高层语义"
+          ]
+        }
+      }
+    ],
+    "ai-eng-066": [
+      {
+        "id": "ai-eng-066__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某律所文档库要把新合同扇出写进向量、全文、对象存储与元数据四处：试运行出现写一半可被检索到、消息重投后向量翻倍。设计这套写入流程，下列哪些正确？（请选择三个选项）",
+        "options": [
+          "解析、embedding 与多库扇出写入都很耗时，应当走消息队列驱动的后台异步管线，HTTP 请求只负责入队就返回",
+          "在所有存储写完之前，文档状态都标成 processing，检索侧只展示 ready 状态的文档，防止读到写一半的数据",
+          "重试与重写都按统一 document_id 做幂等 upsert（向量 point 与全文索引文档用同一 ID），确保重放不会造出重复",
+          "为简化架构，四库写入就放在 Web 服务的同步请求线程里顺序做完，调用链最短、事务语义最清楚，还省掉了消息队列和后台 worker 的运维负担。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从半可见与重放翻倍出发，判断异步管线加状态门禁加幂等 upsert 的组合",
+          "reasoningGoal": "先确认同步写与缺状态门禁是半可见与重复的根源；再据此确认异步化加 processing 门禁加同 ID 幂等的组合；并逐项验证各说法是否成立，排除同步简化论。"
+        },
+        "generatedAt": 1789682134623,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f7d3fd09",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-6f88a982",
+        "sourceSnapshot": {
+          "id": "ai-eng-066",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "partial-failure",
+            "idempotency",
+            "saga",
+            "async-ingestion"
+          ],
+          "question": "文档摄取管道需将一份新文档扇出写入四个存储：Qdrant（向量）、Elasticsearch（全文）、S3（原件）、Postgres（元数据）。请设计写入流程以应对局部失败（Partial Failure），并保证检索一致性。（多选）",
+          "options": [
+            "解析、embedding 与多库扇出写入耗时较长，应由消息队列驱动的后台异步管线执行，HTTP 请求只入队即返回",
+            "所有存储写完之前文档状态标记为 processing，检索服务只暴露 ready 状态的文档，避免读到半更新数据",
+            "重试与重写基于统一 document_id 做幂等 upsert（向量 point 与全文索引文档同 ID），保证重放不产生重复",
+            "为了简化架构，四库写入应放在 Web 服务的同步请求线程中顺序完成，这样调用链路最短、事务语义最清晰，也省去了引入消息队列与后台 worker 带来的运维复杂度。"
+          ]
+        }
+      }
+    ],
+    "ai-engineering-002": [
+      {
+        "id": "ai-engineering-002__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某求职辅导产品的作文批改功能在主模型区域故障时整站报错，学生只能干等。产品要求有损可用、如实提示、不堆硬件。设计这套降级，下列哪些正确？（请选择三个选项）",
+        "options": [
+          "靠健康探测与熔断器自动触发降级并支持自动恢复；恢复后逐步放量，避免一切回就被新流量再次打垮。",
+          "主模型故障时直接给用户返回 500 错误页并等工程师介入，如实报错胜过掩盖问题，因为暴露故障能让用户理解系统状态，也能避免在不稳定时继续给出可能错误的答案。",
+          "搭建逐级递进的降级阶梯：先切备用模型，再试语义缓存里的历史相似回答，接着裁剪功能直接返回检索到的原文段落，非实时请求转入异步队列延后处理。",
+          "降级期间在界面明确提示服务受限模式，给每一级降级配独立的监控告警，并定期演练降级链路保证真能用。",
+          "降级只需要热备同构服务器接管流量，硬件冗余足以吸收单点失效；阶梯降级徒增的复杂度本身就是新的故障源。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从单点故障整站报错出发，判断熔断触发加阶梯降级加明示演练的组合",
+          "reasoningGoal": "先确认无阶梯与无熔断是故障直接穿透到用户的原因；再据此确认自动触发加逐级降级加受限明示的组合；并逐项验证各说法是否成立，排除直接 500 论与硬件冗余论。"
+        },
+        "generatedAt": 1789682134624,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-025c55b8",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-d289830b",
+        "sourceSnapshot": {
+          "id": "ai-engineering-002",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "reliability",
+            "fallback"
+          ],
+          "question": "主模型 API 出现故障时，系统应该如何自动降级？除了切换备用模型，你还可以采用哪些降级策略？",
+          "options": [
+            "由健康探测与熔断器自动触发降级并支持自动恢复；恢复后渐进放量，避免刚切回就被新流量打垮。",
+            "主模型故障时直接向用户返回 500 错误页并等待工程师介入，如实报错优于掩盖问题，因为暴露故障能让用户理解系统状态，也避免在不稳定时继续提供可能错误的答案。",
+            "构建逐级递进的降级阶梯：先切备用模型，再尝试命中语义缓存的历史相似回答，然后裁剪功能直接返回检索到的原文段落，非实时请求转入异步队列延后处理。",
+            "降级期间在界面明示「服务受限模式」，为每一级降级配置独立的监控告警，并定期演练降级路径确保真实可用。",
+            "降级只需热备同构服务器接管权重，硬件冗余可吸收单点失效；阶梯降级增加的复杂度本身就是新的故障源。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-034": [
+      {
+        "id": "ai-fund-034__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某银行客服 RAG 上线后编造明显减少，但仍偶发引用不存在的条款、把相近的两条费率搞混，业务方追问为什么还有错。解释这次残留幻觉，下列哪些正确？（请选择两个选项）",
+        "options": [
+          "RAG 的机制是把搜到的证据放进 context 做条件生成（grounding），只能明显压低编造概率，没法把幻觉彻底清零",
+          "残留错误符合机制预期：检索没命中或证据长得太像容易误读时幻觉照样会冒头，应当加上引用来源标注等约束，并顺着坏例定位去改进检索",
+          "抗幻觉预算应当优先砸向检索调参而不是生成侧校验，因为复盘下来多数坏例的根因都在召回而不在生成",
+          "应当弃用 RAG，改把诊疗指南全量微调进模型参数，知识冻进权重里就能根除幻觉"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 RAG 后仍有编造出发，判断 grounding 降概率不归零与残留归因",
+          "reasoningGoal": "先确认外部证据做条件生成只能降概率不能清零；再据此推出未命中与易误读仍会致幻、需引用约束与坏例归因；并逐项验证各说法是否成立，排除只投检索论与微调根除论。"
+        },
+        "generatedAt": 1789682134624,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f12494d4",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-d0e72e3f",
+        "sourceSnapshot": {
+          "id": "ai-fund-034",
+          "topic": "rag",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "RAG",
+            "hallucination",
+            "grounding"
+          ],
+          "question": "RAG 为什么能够降低 Hallucination？它的作用机制是什么？",
+          "options": [
+            "RAG 的机制是把检索到的证据放入 context 供条件生成（grounding），只能显著降低编造概率，并不能把幻觉彻底清零",
+            "残留错误与机制相符：检索未命中或证据相似易误读时幻觉依然会出现，应辅以引用来源标注等约束，并据此定位坏例改进检索",
+            "把抗幻觉预算优先投给检索调参而非生成侧校验，因为复盘多数坏例的根因都在召回而非生成",
+            "应弃用 RAG，改为把诊疗指南全部微调进模型参数，知识固化到权重中即可根除幻觉"
+          ]
+        }
+      }
+    ],
+    "ai-fund-035": [
+      {
+        "id": "ai-fund-035__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某工单知识库把手册按 3000 字大块入库后，查参数总命中不相关段落；改成 50 字小块后，跨步骤的操作流程又答不全。诊断这次粒度失配，下列哪些正确？（请选择两个选项）",
+        "options": [
+          "chunk 越大检索越准，因为更大的块装的信息更全，应当尽量把切分粒度放大",
+          "过大的 chunk 会掺进多个主题，embedding 向量的语义被冲淡导致检索失准，进了 context 还会带进无关噪声",
+          "chunk 切分粒度只影响向量库的存储体积，对检索精度和回答完整性没有实质影响",
+          "过小的 chunk 会把语义单元切得稀碎，孤立片段缺上下文，就算被召回也撑不起完整回答",
+          "统一用小 chunk 加父文档回溯组装，一套切分就能包打全部场景，不用再按查询类型做场景化调参"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从大块噪声与小块破碎并存出发，判断过大稀释与过小切碎的双向权衡",
+          "reasoningGoal": "先确认块过大稀释语义、块过小切碎单元的双向机制；再据此推出按语义边界切分加 overlap 或父子块的平衡；并逐项验证各说法是否成立，排除越大越准论、只影响存储论与一套包打论。"
+        },
+        "generatedAt": 1789682134625,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b165c37d",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-c9d7faed",
+        "sourceSnapshot": {
+          "id": "ai-fund-035",
+          "topic": "rag",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "chunking",
+            "RAG",
+            "retrieval"
+          ],
+          "question": "Chunk size 为什么会影响 RAG 效果？chunk 过大或过小分别有什么问题？",
+          "options": [
+            "chunk 越大检索越精准，因为更大的块包含的信息更全面，应尽量放大切分粒度",
+            "过大的 chunk 会混入多个主题，embedding 向量的语义被稀释导致检索不准，进入 context 后还会引入无关噪声",
+            "chunk 切分粒度只影响向量库的存储体积，对检索精度与回答完整性没有实质影响",
+            "过小的 chunk 会把语义单元切碎，孤立片段缺少上下文，即使被召回也无法支撑完整的回答",
+            "统一采用小 chunk + 父文档回溯组装，一套切分即可覆盖全部场景，无需再按查询类型做场景化调参"
+          ]
+        }
+      }
+    ],
+    "ai-ops-003": [
+      {
+        "id": "ai-ops-003__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某客服质检服务调用第三方模型，高峰期同时撞上 RPM 与 TPM 上限，多实例各自限速反而整体超限。重做这套客户端限流，下列哪些正确？（请选择两个选项）",
+        "options": [
+          "RPM 与 TPM 强相关时只控 RPM 就够了，token 总量本来就跟着请求数走；发送前预估徒增排队延迟，得不偿失。",
+          "TPM 应当在收到响应后按实际用量扣预算，发送前完全不做预估，这样计量最准，也不会因为预算检查产生排队延迟，实时扣减比预扣更贴近真实成本曲线。",
+          "两个维度分开计量：用令牌桶控 RPM，Token 层在发送前先预估 input 与 output 再控 TPM；多实例的限流器必须集中式共享状态。",
+          "各实例在本地限速、按实例数均分全局配额，天然去中心也没有单点；配额分完后各实例独立执行，协调开销为零。",
+          "盯着 429 的 retry-after 动态调整发送速率，按优先级排队保交互式请求；被限流的请求进带 TTL 的缓冲队列。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从双限额同时撞线出发，判断双维度预估加集中计量的限流设计",
+          "reasoningGoal": "先确认请求数与 token 量不同向、事后扣减与均分配额的缺陷；再据此确认分开计量加发送前预估加集中共享的方案；并逐项验证各说法是否成立，排除单控 RPM 论、事后扣减论与均分本地论。"
+        },
+        "generatedAt": 1789682134626,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7f13bef6",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-2ed32f06",
+        "sourceSnapshot": {
+          "id": "ai-ops-003",
+          "topic": "reliability",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "rate-limit",
+            "llmops"
+          ],
+          "question": "LLM Provider 对你的 API 设置了 RPM 和 TPM 双重限制。你的系统如何同时控制 Request Rate 和 Token Rate？",
+          "options": [
+            "RPM 与 TPM 强相关下可只控 RPM，token 总量随请求数同向变化；发送前预估增加排队延迟，得不偿失。",
+            "TPM 应在收到响应后按实际用量扣减预算，发送前不做任何预估，这样计量最精确，也不会因预算检查产生排队延迟，实时扣减远比预扣更接近真实成本曲线。",
+            "双维度分开计量：令牌桶控 RPM，Token 层发送前预估 input 与 output 再控 TPM；多实例限流器必须集中式共享状态。",
+            "各实例本地限速并按实例数均分全局配额，天然去中心且无单点；配额均分后各实例独立执行，协调开销为零。",
+            "监听 429 的 retry-after 动态调速，按优先级排队保障交互式请求；被限流请求进带 TTL 的缓冲队列。"
+          ]
+        }
+      }
+    ],
+    "emb-04": [
+      {
+        "id": "emb-04__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某券商把通用嵌入模型接到研报检索，实测召回只有 75%，而竞品用金融语料微调后达到 88%。业务方有人建议直接升维，有人认为同分布下不用测通用集。关于这次领域差距，下列哪些判断成立？（请选择两个选项）",
+        "options": [
+          "通用嵌入模型面对专业术语与语义漂移时，分辨能力可能明显不够用",
+          "拿领域标注数据给嵌入模型做微调，能够大幅拉高该领域的召回表现",
+          "只要微调数据的分布和线上流量一致，通用能力的退化就可以忽略，评估时只跑领域回归集即可",
+          "提高向量维度等于扩充语义容量，在术语密集的场景下可以代替微调，应当先升维再考虑训练"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从 75% 与 88% 的差距出发，判断领域微调的收益与通用能力退化的评估要求",
+          "reasoningGoal": "先确认通用模型在专业术语上的区分度缺口是召回差的主因；再据此确认领域微调能抬高召回但退化必须实测；并逐项验证各说法是否成立，排除同分布免测论与升维替代论。"
+        },
+        "generatedAt": 1789682134626,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-dd656fb6",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-dd6651f0",
+        "sourceSnapshot": {
+          "id": "emb-04",
+          "topic": "word-embedding",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "embeddings",
+            "domain-adaptation",
+            "fine-tuning"
+          ],
+          "question": "一个通用多语言嵌入模型在金融研报检索中效果仅 75% 召回，而经过金融语料微调的专用嵌入模型达到 88%。关于嵌入模型的领域适配，下列说法正确的有？（多选）",
+          "options": [
+            "通用嵌入模型在专业领域可能因术语与语义漂移导致区分度不足",
+            "在领域标注数据上微调嵌入模型可显著提升领域召回",
+            "领域微调数据与线上流量同分布时通用能力退化可忽略，评估可简化为领域集回归",
+            "维度提升增加语义容量，在术语密集场景可替代微调，优先试升维再考虑训练模型"
+          ]
+        }
+      }
+    ],
+    "eth-08": [
+      {
+        "id": "eth-08__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某开放平台把提示词窗口放开给第三方调用后，有人用超长上下文与循环工具调用把当月账单打爆，服务也频繁卡死。补这套防线，下列哪些属于应有的架构手段？（请选择三个选项）",
+        "options": [
+          "服务端强制卡住输入长度上限并做 token 桶多层限流，客户端 maxlength 只算体验优化，不能当防线用",
+          "只在 Web 客户端输入框设 maxlength 属性，靠浏览器端上限就足以拦住超长输入打到后端推理服务",
+          "卡住 Agent 递归深度与单会话工具调用次数，每次模型与工具调用都加超时与断路器",
+          "给后端推理服务横向扩容 GPU 节点，用算力冗余吃掉超长上下文与递归调用的资源消耗",
+          "按租户配 token 消费配额并实时监控告警，给异常账单设上限封顶，掐断财务拒绝服务"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从账单打爆加服务卡死出发，判断输入限流加递归上限加租户配额的多层防御",
+          "reasoningGoal": "先确认超长输入与递归放大是资源与费用双爆的来源；再据此确认服务端限流加深度次数上限加租户封顶的组合；并逐项验证各说法是否成立，排除纯客户端论与扩容吸收论。"
+        },
+        "generatedAt": 1789682134627,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ec955d04",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-23c507da",
+        "sourceSnapshot": {
+          "id": "eth-08",
+          "topic": "reliability",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "model-dos",
+            "financial-dos",
+            "rate-limiting",
+            "circuit-breaker"
+          ],
+          "question": "攻击者通过精心构造的超长 Context、嵌套循环 Prompt 或高消耗计算的 Recursive Tool Calls，导致 LLM 应用后端 API 消耗巨额 Token 费用并造成服务响应卡死。针对此类风险，以下哪项架构防御手段最全面？",
+          "options": [
+            "服务端强制输入长度上限与 token 桶多层限流，客户端 maxlength 仅作体验提示，不能充当防线",
+            "仅在 Web 客户端输入框设置 maxlength 属性，浏览器端上限足以拦截超长输入直达后端推理服务",
+            "限制 Agent 递归深度与单会话工具调用次数，并为每次模型与工具调用设置超时与断路器",
+            "为后端推理服务水平扩容 GPU 节点，用算力冗余吸收超长上下文与递归调用的资源消耗",
+            "按租户设置 token 消费配额并实时监控告警，为异常账单封顶，阻断财务拒绝服务"
+          ]
+        }
+      }
+    ],
+    "git-reset-01": [
+      {
+        "id": "git-reset-01__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某新人想撤掉刚推的提交但保住改动区，同事给了 soft、mixed 等三档说法，其中有人把 soft 与 mixed 的去向说反了。澄清这次三档差异，下列哪些说法正确？（请选择三个选项）",
+        "options": [
+          "git reset --soft HEAD~1 只搬动 HEAD 指针，Index 与 Working Directory 都保持原样，适合撤掉最近一次 Commit 后重新整理暂存区",
+          "git reset --mixed HEAD~1（默认模式）会搬动 HEAD 指针并清空 Index（取消暂存），但 Working Directory 里所有改过的文件内容都留着",
+          "git reset --hard HEAD~1 会同步搬动 HEAD 指针、清空 Index 并抹掉 Working Directory 里目标提交之后的所有改动，没提交的本地修改会直接丢失且很难找回",
+          "git reset --soft 与 git reset --mixed 的核心差别是：前者把撤下的变更放回工作区并处于 Unstaged 状态，后者把变更留在 Index 暂存区里"
+        ],
+        "angle": "misconception",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从撤提交保改动的需求出发，分辨三档重置对指针、暂存区与工作区的作用",
+          "reasoningGoal": "先对齐三档各自影响的区域边界；再据此确认 soft 留暂存、mixed 退工作区、hard 全丢的对应关系；并逐项验证各说法是否成立，排除 soft 与 mixed 去向颠倒的说法。"
+        },
+        "generatedAt": 1789682134627,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-119fc636",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-63d9ed4d",
+        "sourceSnapshot": {
+          "id": "git-reset-01",
+          "topic": "reliability",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "git",
+            "reset",
+            "head",
+            "index"
+          ],
+          "question": "Git 版本控制体系由 HEAD 指针、Index（暂存区/Staging Area）和 Working Directory（工作区）三部分共同维护。关于不同模式下的 git reset 对这三个区域的作用机制，下列说法正确的有？（多选）",
+          "options": [
+            "git reset --soft HEAD~1 仅移动 HEAD 指针，Index 和 Working Directory 均维持原状，适合撤销最近一次 Commit 并重新整理暂存内容",
+            "git reset --mixed HEAD~1（默认模式）会移动 HEAD 指针并重置 Index（取消暂存），但保留 Working Directory 中所有已修改的文件内容",
+            "git reset --hard HEAD~1 会同步移动 HEAD 指针、重置 Index 并清空 Working Directory 中目标提交之后的所有修改，未提交的本地改动将直接丢失且难以恢复",
+            "git reset --soft 与 git reset --mixed 的关键区别在于：前者把撤销提交的变更放回工作区且处于 Unstaged 状态，后者则把变更保留在 Index 暂存区中"
+          ]
+        }
+      }
+    ],
+    "mlops-06": [
+      {
+        "id": "mlops-06__context-options__manual-bv__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某后端组发版前被拉去修线上 bug，手头分支还有一半没提交的改动，有人提议 stash 切走，有人争论 apply 会不会删记录、未追踪文件要不要加参数。处理这次切分支存现场，下列哪些正确？（请选择三个选项）",
+        "options": [
+          "跑默认的 git stash 会把已追踪文件在工作区和暂存区的未提交修改收进一个栈里，并把工作区还原到与 HEAD 一致的状态",
+          "跑 git stash apply 会把栈顶那份暂存变更打到当前分支，同时自动把这条 stash 记录从栈列表里删掉",
+          "跑 git stash pop 会尝试把栈顶 stash 变更应用过来；没有代码冲突时，它会把这条 stash 记录移出栈列表",
+          "如果存在未追踪文件，直接跑默认的 git stash 存不下它们，必须显式加上 -u 或 --include-untracked 参数"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从切分支修 bug 的现场出发，判断 stash 默认行为与 apply、pop 及未追踪文件的差异",
+          "reasoningGoal": "先确认默认 stash 只收已追踪改动并还原工作区的行为；再区分 apply 留栈而 pop 无冲突时出栈的差异；并逐项验证各说法是否成立，排除 apply 自动删记录的说法。"
+        },
+        "generatedAt": 1789682134628,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e5becf80",
+        "batch": "manual-bv",
+        "model": "manual",
+        "contentHash": "fnv1a-bd5ea8be",
+        "sourceSnapshot": {
+          "id": "mlops-06",
+          "topic": "reliability",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "git",
+            "stash",
+            "working-directory",
+            "staging-area"
+          ],
+          "question": "开发人员在分支开发过程中，工作区（Working Directory）和暂存区（Staging Area）存在未提交的修改。此时需要紧急切换到 hotfix 分支修复线上 Bug。关于使用 git stash 及其相关命令处理代码状态的行为，下列说法正确的有？（多选）",
+          "options": [
+            "执行默认的 git stash 会将已追踪文件的工作区和暂存区未提交修改保存到一个栈结构中，并将工作区恢复至与 HEAD 一致的状态",
+            "执行 git stash apply 会将栈顶的暂存变更应用到当前分支，同时会自动将该条 stash 记录从栈列表中删除",
+            "执行 git stash pop 会尝试应用栈顶的 stash 变更；在没有代码冲突的情况下，它会将该 stash 记录从栈列表中移除",
+            "若存在未追踪文件（Untracked Files），直接执行默认的 git stash 不会保存这些文件，必须显式附加 -u 或 --include-untracked 参数"
+          ]
+        }
+      }
+    ]
+  }
+}

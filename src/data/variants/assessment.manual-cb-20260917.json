@@ -1,0 +1,951 @@
+{
+  "version": 1,
+  "generatedAt": 1789722302319,
+  "promptVersion": "v7",
+  "variants": {
+    "agentic-63": [
+      {
+        "id": "agentic-63__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某客服中心争论该上几个智能体：拆细了怕协调成本爆炸，不拆又怕单体扛不住。关于架构模式与适用边界，下列哪种说法正确？",
+        "options": [
+          "任务可分解时多智能体天然带来并行加速与视角多样性，协调开销通常小于单智能体的串行等待；可分解即应拆。",
+          "层级编排是最成熟的协作拓扑，默认采用可降低设计不确定性；任务不可分解时退化为单工作者，特例不影响默认。",
+          "模式匹配任务：层级分派、流水线加工、对抗审查；前提是任务可分解且需不同专长，否则坚持单智能体。",
+          "共享上下文消除通信序列化开销，权限问题可后置到工具层解决；先保证信息对称，再补隔离。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从拆与不拆之争出发，判断模式匹配适用边界的结论",
+          "reasoningGoal": "先确认可分解加需专长是拆分的前提；再据此推出模式匹配任务、否则坚持单体的结论；并逐项验证各说法是否成立，排除天然加速论与默认层级论。"
+        },
+        "generatedAt": 1789722302302,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-2d005387",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-a1f44202",
+        "sourceSnapshot": {
+          "id": "agentic-63",
+          "topic": "multi-agent",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "orchestration-patterns",
+            "manager-worker",
+            "when-not-to-use"
+          ],
+          "question": "关于多智能体（Multi-Agent）系统的架构模式与适用边界，下列说法正确的是？",
+          "options": [
+            "任务可分解时多智能体天然带来并行加速与视角多样性，协调开销通常小于单智能体的串行等待；可分解即应拆。",
+            "层级编排是最成熟的协作拓扑，默认采用可降低设计不确定性；任务不可分解时退化为单 Worker，特例不影响默认。",
+            "模式匹配任务：层级分派、流水线加工、Critic 对抗审查；前提是任务可分解且需不同专长，否则坚持单 Agent。",
+            "共享上下文消除通信序列化开销，权限问题可后置到工具层解决；先保证信息对称，再补隔离。"
+          ]
+        }
+      }
+    ],
+    "ai-eng-043": [
+      {
+        "id": "ai-eng-043__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某创业公司的模型服务又快又稳，但老板发现用户问啥都答得像客服话术，转化率毫无起色。关于可观测体系的维度，下列哪种说法正确？",
+        "options": [
+          "大模型应用仍是普通服务，黄金信号加开销统计即完备；质量维度可由业务方反馈转为例行工单，无需新埋点。",
+          "只需要监控延迟和错误率，质量由用户反馈自然暴露即可；技术监控指标足以覆盖线上一切问题，不必主动度量质量，用户自会发声，反馈足够",
+          "传统三层加质量维度：日志记提示响应检索得分版本；指标加开销成本与质量分；链路还原全过程。",
+          "提示词明文落盘但做访问审计，脱敏会破坏排障所需的完整上下文；合规靠访问控制而非脱敏。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从又快又稳仍失败出发，判断质量维度的体系设计",
+          "reasoningGoal": "先确认快稳不等于答得对；再据此推出传统三层加质量维度的体系；并逐项验证各说法是否成立，排除黄金信号论与脱敏破坏论。"
+        },
+        "generatedAt": 1789722302304,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ad501ad7",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-a8501a0a",
+        "sourceSnapshot": {
+          "id": "ai-eng-043",
+          "topic": "observability",
+          "angle": "system-design",
+          "difficulty": "medium",
+          "cognitiveTask": "compare",
+          "tags": [
+            "tracing",
+            "quality-metrics",
+            "llm-observability"
+          ],
+          "question": "为 LLM 应用设计可观测性体系时，与传统 Web 服务相比需要额外覆盖哪些维度？请说明日志/指标/追踪三层各自的关键内容，以及为什么\"又快又稳\"的系统仍可能是失败的。",
+          "options": [
+            "LLM 应用仍是 Web 服务，黄金信号加 token 成本即完备；质量维度可由业务方反馈转为例行工单，无需新埋点。",
+            "只需要监控延迟和错误率，质量由用户反馈自然暴露即可；技术监控指标足以覆盖线上一切问题，不必主动度量质量，用户自会发声，反馈足够",
+            "传统三层加质量维度：日志记 prompt/响应/检索得分/版本；指标加 token 成本与质量分；trace 还原链路。",
+            "prompt 明文落盘但做访问审计，脱敏会破坏排障所需的完整上下文；合规靠访问控制而非脱敏。"
+          ]
+        }
+      }
+    ],
+    "ai-fund-003": [
+      {
+        "id": "ai-fund-003__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某学员把缩放因子当成省显存的开关、把长文本外推也归功于它。讲清除法因子的真正作用时，下列哪种说法正确？",
+        "options": [
+          "减少键值缓存的内存占用，因为除以缩放因子之后序列中可缓存的向量数量会随维度显著下降",
+          "避免点积随维度增大导致数值过大，使归一化进入过于尖锐的区域，进而造成梯度饱和与训练困难",
+          "降低模型的整体参数量，因为缩放因子的引入会改变投影矩阵的维度配置从而减少可学习参数",
+          "让注意力可以原生支持更长的上下文，因为缩放后模型能够处理远超训练长度的输入序列而不溢出"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从省存误解出发，判断防饱和保梯度的作用解释",
+          "reasoningGoal": "先确认点积方差随维度膨胀的数值现实；再据此推出防归一化饱和保梯度的结论；并逐项验证各说法是否成立，排除省存论与参数论。"
+        },
+        "generatedAt": 1789722302304,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f59284ad",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-9954f40b",
+        "sourceSnapshot": {
+          "id": "ai-fund-003",
+          "topic": "attention",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "attention",
+            "softmax",
+            "numerical-stability"
+          ],
+          "question": "Scaled Dot-Product Attention 中为什么要除以 sqrt(d_k)？",
+          "options": [
+            "减少 KV Cache 的内存占用，因为除以 sqrt(d_k) 之后序列中可缓存的键值向量数量会随维度显著下降",
+            "避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域，进而造成梯度饱和与训练困难",
+            "降低 Transformer 的参数量，因为缩放因子 sqrt(d_k) 的引入会改变投影矩阵的维度配置从而减少可学习参数",
+            "让 Attention 可以原生支持更长的 Context，因为缩放后模型能够处理远超训练长度的输入序列而不溢出"
+          ]
+        }
+      }
+    ],
+    "ai-fund-004": [
+      {
+        "id": "ai-fund-004__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某新人问：一个头不够吗，为啥要搞八个？给新人讲清多头的必要性时，下列哪种说法正确？",
+        "options": [
+          "多头通过把总参数量增加数倍来换取表达能力，计算成本随头数成比例上升",
+          "多个头在不同的表示子空间中学习不同类型的关系，弥补单头只能输出一种加权平均的局限",
+          "每个头负责处理序列中互不重叠的一段，各段输出拼接后构成完整表示",
+          "多头机制的作用是抑制过拟合，头数量越多模型的泛化能力单调提升"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从单头够吗之问出发，判断多子空间视角的必要性",
+          "reasoningGoal": "先确认单头只有一种混合视角的局限；再据此推出多子空间并行建模不同关系的结论；并逐项验证各说法是否成立，排除参数堆砌论与分段论。"
+        },
+        "generatedAt": 1789722302305,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a6764d70",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-62771f82",
+        "sourceSnapshot": {
+          "id": "ai-fund-004",
+          "topic": "self-attention",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "multi-head",
+            "attention",
+            "representation"
+          ],
+          "question": "Multi-Head Attention 为什么需要多个 Head？单个 Attention 不够吗？",
+          "options": [
+            "多头通过把总参数量增加数倍来换取表达能力，计算成本随 Head 数成比例上升",
+            "多个 Head 在不同的表示子空间中学习不同类型的关系，弥补单头只能输出一种加权平均的局限",
+            "每个 Head 负责处理序列中互不重叠的一段，各段输出拼接后构成完整表示",
+            "多头机制的作用是抑制过拟合，Head 数量越多模型的泛化能力单调提升"
+          ]
+        }
+      }
+    ],
+    "ai-fund-005": [
+      {
+        "id": "ai-fund-005__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某学员把打乱词序的句子喂给模型，发现输出几乎不变，于是认定位置信息无所谓。讲清位置编码的必要性时，下列哪种说法正确？",
+        "options": [
+          "注意力通过因果掩码自动感知词序，因此不需要任何额外的位置信息，注意力权重本身已经隐含了每个词的先后顺序",
+          "位置信息由前馈网络层隐式提供，位置编码只是锦上添花的可选优化，去掉它并不会影响模型对语序的理解",
+          "词嵌入本身就携带顺序信息，打乱输入顺序不会改变注意力的输出结果，因为嵌入向量已编码了词的绝对位置",
+          "自注意力对输入顺序不敏感，需要绝对、相对或旋转式等编码显式注入位置信息，否则模型无法区分词序"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从打乱不变的实验出发，判断显式注入位置的必要性",
+          "reasoningGoal": "先确认自注意力本身不识顺序的对称性；再据此推出必须显式注入位置的结论；并逐项验证各说法是否成立，排除掩码感知论与嵌入自带论。"
+        },
+        "generatedAt": 1789722302306,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0953a13f",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-7ec56648",
+        "sourceSnapshot": {
+          "id": "ai-fund-005",
+          "topic": "transformer",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "position-encoding",
+            "transformer",
+            "RoPE"
+          ],
+          "question": "Transformer 为什么需要 Position Encoding？常见的位置信息注入方式有哪些？",
+          "options": [
+            "Attention 通过因果掩码自动感知词序，因此不需要任何额外的位置信息，注意力权重本身已经隐含了每个 token 的先后顺序",
+            "位置信息由前馈网络层隐式提供，位置编码只是锦上添花的可选优化，去掉它并不会影响模型对语序的理解",
+            "词嵌入本身就携带顺序信息，打乱输入顺序不会改变 attention 的输出结果，因为嵌入向量已编码了 token 的绝对位置",
+            "Self-Attention 对输入顺序不敏感，需要绝对位置编码、相对位置编码或 RoPE 等方式显式注入位置信息，否则模型无法区分词序"
+          ]
+        }
+      }
+    ],
+    "ai-pretraining-006": [
+      {
+        "id": "ai-pretraining-006__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某公司要在 256 卡上训超大模型：单卡装不下整模，跨机带宽又小。关于三维并行的组合策略，下列哪种部署正确？",
+        "options": [
+          "三维组合：节点内切分单层计算解决单卡放不下的问题，节点间分段流水应对跨机带宽限制并接受气泡代价，全局扩数据提吞吐，并用分片思路切分优化器状态降低冗余",
+          "只用数据并行：把模型切成 256 份，让每张卡负责计算网络中的其中一层，因为逐层切分既等价于张量并行又能避免跨机通信，是扩展到大集群最稳妥的单一策略，且每张卡保留完整模型副本，天然具备最好的容错性与调试便利性",
+          "把张量切分全部放在跨机器之间执行：切分的通信量很小，对互联带宽不敏感，因为激活交换只在相邻层之间发生，放在慢速网络上也不会成为瓶颈，且跨机切分还能顺带降低单卡显存占用",
+          "三种并行方式可以随意互换，任选一种都能扩展到 256 卡规模，拓扑与显存约束没有差别，因为现代训练框架会自动把任意并行策略重排成等价执行计划，开发者只需声明目标卡数即可"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 256 卡三重约束出发，判断三维组合的部署策略",
+          "reasoningGoal": "先按单卡容量、跨机带宽与吞吐拆出三维约束；再据此推出机内切张量、跨机走流水、全局扩数据的组合；并逐项验证各说法是否成立，排除单策略论与跨机切张量论。"
+        },
+        "generatedAt": 1789722302307,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-caeb7a34",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-b0caf825",
+        "sourceSnapshot": {
+          "id": "ai-pretraining-006",
+          "topic": "distributed-training",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "pre-training",
+            "parallelism"
+          ],
+          "question": "一个模型需要 256 张 GPU 进行预训练。你会如何组合 Data Parallel、Tensor Parallel 和 Pipeline Parallel？它们分别解决什么问题？",
+          "options": [
+            "三维组合：节点内 Tensor Parallel 切分单层计算解决单卡放不下的问题，节点间 Pipeline Parallel 分段流水应对跨机带宽限制并接受 bubble 代价，全局 Data Parallel 扩吞吐，并用 ZeRO/FSDP 思路切分 optimizer states 降低冗余",
+            "只用 Data Parallel：把模型切成 256 份，让每张卡负责计算网络中的其中一层，因为逐层切分既等价于张量并行又能避免跨机通信，是扩展到大集群最稳妥的单一策略，且 DP 在每张卡上保留完整模型副本，天然具备最好的容错性与调试便利性",
+            "把 Tensor Parallel 全部放在跨机器之间执行：TP 的通信量很小，对互联带宽不敏感，因为张量切分的激活交换只在相邻层之间发生，放在慢速网络上也不会成为瓶颈，且跨机 TP 还能顺带降低单卡显存占用",
+            "三种并行方式可以随意互换，任选一种都能扩展到 256 卡规模，拓扑与显存约束没有差别，因为现代训练框架会自动把任意并行策略重排成等价执行计划，开发者只需声明目标卡数即可"
+          ]
+        }
+      }
+    ],
+    "clip-encoder-scaling-01": [
+      {
+        "id": "clip-encoder-scaling-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队把图文模型的视觉骨干从 RN50 换到 RN50x64，同时文本塔也要扩，但不知算力该怎么分。关于双编码器的缩放规范，下列哪项符合论文原则？",
+        "options": [
+          "视觉编码器把新增算力均等地分配给宽度、深度与输入分辨率；文本编码器只按宽度增幅的比例扩展宽度，深度完全不增加。",
+          "视觉编码器与文本编码器必须保持严格对称，两者的宽度与层数按一比一同倍数同步扩展。",
+          "新增算力优先倾斜给文本编码器以增加层数与上下文长度，视觉编码器只通过调高输入分辨率来扩展。",
+          "文本编码器同时增加深度与宽度，视觉编码器只通过增加特征通道宽度来消化新增算力。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 RN50 换代出发，判断非对称缩放规范的符合性",
+          "reasoningGoal": "先确认视觉与文本对缩放的敏感度不同；再据此推出视觉均分三维、文本只扩宽不加深的规范；并逐项验证各说法是否成立，排除严格对称论与文本优先论。"
+        },
+        "generatedAt": 1789722302308,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-2480b426",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-0845ebbc",
+        "sourceSnapshot": {
+          "id": "clip-encoder-scaling-01",
+          "topic": "multimodal",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "CLIP",
+            "模型架构",
+            "Scaling Law",
+            "算力分配"
+          ],
+          "question": "在扩展 CLIP 双编码器（Dual-Encoder）架构的计算规模（如从 RN50 扩展到 RN50x64）时，团队采用了非对称的模型缩放策略。关于视觉编码器与文本编码器的算力分配与维度缩放规范，以下哪项描述符合 CLIP 论文的架构设计原则？",
+          "options": [
+            "视觉编码器把新增算力均等地分配给宽度、深度与输入分辨率；文本编码器只按 ResNet 宽度增幅的比例扩展宽度，深度完全不增加。",
+            "视觉编码器与文本编码器必须保持严格对称，两者的宽度与 Transformer 层数按 1:1 同倍数同步扩展。",
+            "新增算力优先倾斜给文本编码器以增加层数与上下文长度，视觉编码器只通过调高输入分辨率来扩展。",
+            "文本编码器同时增加深度与宽度，视觉编码器只通过增加特征通道宽度来消化新增算力。"
+          ]
+        }
+      }
+    ],
+    "clip-text-encoder-scaling-boundary-01": [
+      {
+        "id": "clip-text-encoder-scaling-boundary-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某研究员把图文模型的文本塔从 12 层加到 48 层，指望分类精度起飞，结果账单起飞精度没动。关于这次改动的后果，下列哪项预测最准确？",
+        "options": [
+          "额外增加了训练算力与显存开销，但对下游零样本迁移精度的提升极其有限，整体缩放的算力效率下降。",
+          "会导致文本特征与图像特征在几何空间上无法对齐，训练初期直接梯度爆炸、不收敛。",
+          "显著提升细粒度文本理解能力，使零样本分类精度获得超过视觉缩放的巨大增益。",
+          "使文本编码器具备类似生成模型的自回归能力，模型自动转变为生成式多模态模型。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 12 层加到 48 层出发，判断开销涨收益平的后果",
+          "reasoningGoal": "先确认文本侧缩放不敏感的实证结论；再据此推出 12 到 48 层开销涨收益平的预测；并逐项验证各说法是否成立，排除梯度爆炸论与生成能力论。"
+        },
+        "generatedAt": 1789722302308,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b353e5c2",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-da0572ea",
+        "sourceSnapshot": {
+          "id": "clip-text-encoder-scaling-boundary-01",
+          "topic": "multimodal",
+          "angle": "boundary",
+          "difficulty": "medium",
+          "cognitiveTask": "predict",
+          "tags": [
+            "CLIP",
+            "缩放边界",
+            "算力分配",
+            "系统设计"
+          ],
+          "question": "某研究员在复现并扩展 CLIP 预训练时认为「语言表达极其复杂，文本编码器应与视觉编码器分配同等规模的算力和层数」，于是把文本 Transformer 从 12 层加深到 48 层，视觉编码器与文本宽度保持不变。依据 CLIP 论文对缩放敏感度的实证分析，这一改动最可能带来什么实际后果？",
+          "options": [
+            "额外增加了训练算力与显存开销，但对下游零样本迁移精度的提升极其有限，整体缩放的算力效率下降。",
+            "会导致文本特征与图像特征在几何空间上无法对齐，训练初期直接梯度爆炸、不收敛。",
+            "显著提升细粒度文本理解能力，使零样本 ImageNet 分类精度获得超过视觉缩放的巨大增益。",
+            "使文本编码器具备类似 GPT 的自回归生成能力，模型自动转变为生成式多模态模型。"
+          ]
+        }
+      }
+    ],
+    "envharness-saturation-01": [
+      {
+        "id": "envharness-saturation-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某游戏智能体在训练场胜率冲到 100% 后，梯度更新几乎归零，策略再无长进。诊断模块应采取哪种调控策略？",
+        "options": [
+          "诊断当前环境过于宽松，通过改写阶段引入隐藏关卡或干扰状态、限制强力动作与裁剪提示，主动提升难度以逼出策略潜在缺陷。",
+          "诊断策略已完整掌握该静态环境所能暴露的全部技能，直接终止本轮微调流程，将学习率永久置零以固化策略，并判定无需再采集任何新轨迹。",
+          "诊断原有环境的验证器存在严重误判，强制改用大模型重新生成一整套全新的验证逻辑，以完全替换底层原有的判定代码。",
+          "诊断动作空间维度过高导致探索效率低下，通过链式组件将原本的多回合长程任务强行压缩为单回合的简化任务，以降低策略的搜索难度。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从 100% 胜率停滞出发，判断上难度调控的正确策略",
+          "reasoningGoal": "先确认满胜率等于环境过松无学习信号；再据此推出加干扰加限制主动上难度的调控；并逐项验证各说法是否成立，排除固化策略论与误判验证器论。"
+        },
+        "generatedAt": 1789722302309,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e0361f20",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-c21fab26",
+        "sourceSnapshot": {
+          "id": "envharness-saturation-01",
+          "topic": "rlhf",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "saturation",
+            "rl-training",
+            "difficulty-tuning"
+          ],
+          "question": "在对某个 LLM Agent 进行强化学习（RL）微调时，监测到 Agent 在当前基准环境中达到了 100% 的成功率，导致梯度更新幅度趋近于零，策略优化进入停滞期（性能饱和）。在基于 EnvRigger 的自适应环境演进体系中，诊断模块应采取的正确调控策略是？",
+          "options": [
+            "诊断当前环境过于宽松，通过 Write 阶段引入 Stage（如添加初始隐蔽或干扰状态）或 Contract（如限制高阶动作与裁剪提示），主动提升难度以逼出策略潜在缺陷。",
+            "诊断策略已完整掌握该静态环境所能暴露的全部技能，直接终止本轮 RL 微调流程，将学习率永久置零以固化策略，并判定无需再采集任何新轨迹。",
+            "诊断原有环境的验证器（Verifier）存在严重误判，强制改用 LLM 重新生成一整套全新的验证逻辑，以完全替换底层原有的判定代码。",
+            "诊断动作空间维度过高导致探索效率低下，通过 Chain 组件将原本的多回合长程任务强行压缩为单回合的简化任务，以降低策略的搜索难度。"
+          ]
+        }
+      }
+    ],
+    "grpo-leave-one-out-calc": [
+      {
+        "id": "grpo-leave-one-out-calc__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某训练小组用 N=4 做组内相对优势估计，四条回答得分 1.0、0.6、0.2、0.2。求第一条的留一优势值时，下列哪个计算正确？",
+        "options": [
+          "0.333",
+          "0.500",
+          "0.667",
+          "0.750"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从 N=4 四组得分出发，判断留一优势的计算结果",
+          "reasoningGoal": "先确认基线是其余三条得分的算术平均；再据此算出 1.0 减均值等于 0.667；并逐项验证各说法是否成立，排除错拿自身论与均值误算论。"
+        },
+        "generatedAt": 1789722302310,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-9250f30f",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-c33551a8",
+        "sourceSnapshot": {
+          "id": "grpo-leave-one-out-calc",
+          "topic": "rlhf",
+          "subtopic": "group-relative-advantage-calc",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "grpo",
+            "leave-one-out",
+            "baseline",
+            "advantage-estimation"
+          ],
+          "question": "GRPO 摒弃传统 Critic 网络改用组内相对优势估计优势函数。在留一法基线设计中针对某 Prompt 组内第 i 个采样回答的基线定义为除该回答外组内其余 N-1 个采样回答奖励值的算术平均值。假设 N=4 个回答奖励得分为 R=[1.0, 0.6, 0.2, 0.2] 请计算第 1 个回答（得分 1.0）的留一法优势值？",
+          "options": [
+            "0.333",
+            "0.500",
+            "0.667",
+            "0.750"
+          ]
+        }
+      }
+    ],
+    "llm-11": [
+      {
+        "id": "llm-11__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某实习生实现注意力时把除数写成序列长度、归一化忘了减最大值，结果一跑就溢出。关于正确实现，下列哪种说法正确？",
+        "options": [
+          "实现时应把相似度矩阵除以序列长度而非维度因子，归一化可直接对指数结果归一、无需减最大值",
+          "实现时应先对数值做指数归一化，再把权重施加到相似度矩阵上，缩放因子取对数",
+          "实现时应计算相似度矩阵并除以维度因子缩放，归一化前减去每行最大值保证数值稳定，最后用权重矩阵乘数值输出",
+          "实现时应省略缩放步骤直接归一化，并用减去最小值的方式保证数值稳定"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从一跑就溢出发，判断正确实现的要点",
+          "reasoningGoal": "先确认除数错与稳定性缺失是溢出的两处病灶；再据此推出除以维度因子加行减最大的实现；并逐项验证各说法是否成立，排除除长论与先归一值论。"
+        },
+        "generatedAt": 1789722302310,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a3070fab",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-a0114f34",
+        "sourceSnapshot": {
+          "id": "llm-11",
+          "topic": "attention",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "numpy",
+            "scaled-dot-product",
+            "attention"
+          ],
+          "question": "用 Python/numpy 实现缩放点积注意力：输入 Q、K、V（形状 [seq, d_k]），返回注意力输出；要求包含 sqrt(d_k) 缩放、softmax 归一化（数值稳定）。",
+          "options": [
+            "实现时应把 QKᵀ 除以序列长度 n 而非 sqrt(d_k)，softmax 可直接对 exp 结果归一化、无需减最大值",
+            "实现时应先对 V 做指数归一化，再把 softmax 权重施加到 QKᵀ 上，缩放因子取 log(d_k)",
+            "实现时应计算 QKᵀ 并除以 sqrt(d_k) 缩放，softmax 前减去每行最大值保证数值稳定，最后用权重矩阵乘 V 输出",
+            "实现时应省略缩放步骤直接 softmax(QKᵀ)，并用减去最小值的方式保证数值稳定"
+          ]
+        }
+      }
+    ],
+    "mask-debug-01": [
+      {
+        "id": "mask-debug-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某工程师手写因果注意力时把被掩位置填成 0.0，测试发现未来信息照样泄漏。关于根本原因，下列哪种分析正确？",
+        "options": [
+          "填 0.0 的做法没错，只是归一化维度设错了，改个维度参数就可以正确屏蔽未来词元",
+          "将被掩位置填充为 0.0，经过指数归一化后被遮挡的位置依然会分得很大的权重，导致无法真正屏蔽未来信息",
+          "生成三角矩阵的方向搞反了，变成了遮挡历史保留未来，与因果掩码意图相反",
+          "查询与键相乘前没有转置，导致维度不匹配引发隐式广播错误，使得分数矩阵形状与预期不一致"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从填 0.0 仍泄漏出发，判断指数非零的根本原因",
+          "reasoningGoal": "先确认指数 e 的零次方等于 1 的数值事实；再据此推出被遮位置照分权重的根因；并逐项验证各说法是否成立，排除维度背锅论与三角颠倒论。"
+        },
+        "generatedAt": 1789722302311,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f1eb0b1c",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-3c49f2dd",
+        "sourceSnapshot": {
+          "id": "mask-debug-01",
+          "topic": "self-attention",
+          "subtopic": "masking-bug",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "causal-mask",
+            "masked-fill",
+            "softmax",
+            "debugging"
+          ],
+          "question": "在手动实现 Causal Self-Attention 时，某工程师将被 Mask 的位置填充为 0.0（scores.masked_fill(mask, 0.0)），测试发现注意力分布完全没有起到遮掩未来 Token 的作用。请分析根本原因：",
+          "options": [
+            "masked_fill 中填入的数值应为 0.0 是正确的做法，只是 Softmax 维度设错成了 dim=-1，应改为 dim=-2 就可以正确屏蔽未来 token",
+            "将被 Mask 的位置填充为 0.0，经过 softmax 后 e^{0.0}=1.0，被遮挡的位置依然会分得很大的注意力权重，导致无法真正屏蔽未来信息",
+            "torch.triu(..., diagonal=1) 生成的是下三角矩阵，导致遮挡方向完全颠倒，变成了遮挡历史 Token 而保留未来 Token，与因果掩码意图相反",
+            "Q 和 K 乘积前没有对 K 进行转置，导致矩阵维度不匹配并引发隐式广播错误，使得注意力分数矩阵的形状与预期不一致"
+          ]
+        }
+      }
+    ],
+    "overthink-length-penalty": [
+      {
+        "id": "overthink-length-penalty__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某问答模型上线后连“你好”都要思考三千字，用户等到超时，账单也翻倍。在后训练收尾阶段，最直接有效的干预手段是？",
+        "options": [
+          "在偏好对齐阶段加入推理长度惩罚，并用正确率约束防止模型为了变短而损失解题能力",
+          "直接删除模型的全部中间推理层，使任何问题都只能生成一个词元",
+          "把所有用户请求都强制改写成更复杂的问题，让冗长推理变得合理",
+          "只提高推理阶段的采样温度，让模型用随机性替代过长的思考过程"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从你好思考三千字出发，判断长度惩罚干预的手段",
+          "reasoningGoal": "先确认无差别长思考是延迟与成本的来源；再据此推出加长度惩罚加正确率约束的干预；并逐项验证各说法是否成立，排除删层论与改问题论。"
+        },
+        "generatedAt": 1789722302312,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c64c69d2",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-077cdc1b",
+        "sourceSnapshot": {
+          "id": "overthink-length-penalty",
+          "topic": "alignment",
+          "subtopic": "reasoning-length-penalty",
+          "angle": "debugging",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "over-thinking",
+            "reasoning-length-penalty",
+            "rlhf",
+            "inference-efficiency"
+          ],
+          "question": "经过长链条思维与 RL 训练后的推理模型部署上线后常出现过度思考现象——面对简短日常问答依然生成大量冗长思考过程导致延迟增加算力开销激增。在后训练最终阶段最直接有效的工程干预手段是？",
+          "options": [
+            "在偏好对齐阶段加入推理长度惩罚，并用正确率约束防止模型为了变短而损失解题能力",
+            "直接删除模型的全部中间推理层，使任何问题都只能生成一个 token",
+            "把所有用户请求都强制改写成更复杂的问题，让冗长推理变得合理",
+            "只提高推理阶段的 temperature，让模型用随机性替代过长的思考过程"
+          ]
+        }
+      }
+    ],
+    "pp-1f1b-bubble-calc": [
+      {
+        "id": "pp-1f1b-bubble-calc__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某大模型用 8 个阶段做流水线并行，每批切 32 个微批次，前后向耗时相当。估算气泡时间占比时，下列哪个结果正确？",
+        "options": [
+          "8.3%",
+          "17.9%",
+          "21.9%",
+          "33.3%"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从 8 阶段 32 批出发，判断气泡占比的计算结果",
+          "reasoningGoal": "先确认气泡来自阶段数与批次数的错位；再据此代入 8 阶段 32 批算出约 17.9%；并逐项验证各说法是否成立，排除公式误用论。"
+        },
+        "generatedAt": 1789722302312,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d98a0206",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-4695ba83",
+        "sourceSnapshot": {
+          "id": "pp-1f1b-bubble-calc",
+          "topic": "distributed-training",
+          "subtopic": "pipeline-bubble-ratio",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "pipeline-parallelism",
+            "1f1b",
+            "bubble-ratio",
+            "calculation"
+          ],
+          "question": "某千亿参数模型采用流水线并行部署在 P=8 个 Stage 上采用标准 1F1B 调度 Micro-batch 数量 M=32。假设每个 Micro-batch 的前向与反向耗时相同忽略通信开销请计算流水线泡泡时间占比约为多少？",
+          "options": [
+            "8.3%",
+            "17.9%",
+            "21.9%",
+            "33.3%"
+          ]
+        }
+      }
+    ],
+    "pretrain-annealing-longctx": [
+      {
+        "id": "pretrain-annealing-longctx__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队想训 512K 上下文模型，有人提议从头就用全长序列硬训。关于高效的退火与扩展策略，下列哪种正确？",
+        "options": [
+          "在前中期使用较短序列及海量通用数据进行基础语言能力预训练在末期通过高质量数据退火并逐步放大序列长度与位置编码基频",
+          "在预训练阶段仅使用极短序列训练在推理阶段完全依赖并行与检索拼凑长文本",
+          "从第一阶段开始使用全长序列但只在每层的注意力矩阵中随机丢弃九成键值节点以降低计算复杂度",
+          "仅在微调阶段引入长文本数据，预训练阶段完全不做长上下文扩展，靠微调补长度"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 512K 硬训之争出发，判断渐进扩展策略的正确性",
+          "reasoningGoal": "先确认全长硬训吞吐崩塌的代价；再据此推出先短后长加末期高质量退火的策略；并逐项验证各说法是否成立，排除推理拼凑论与丢键值论。"
+        },
+        "generatedAt": 1789722302313,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-e6953501",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-5d4aee30",
+        "sourceSnapshot": {
+          "id": "pretrain-annealing-longctx",
+          "topic": "pretraining",
+          "subtopic": "annealing-long-context-scaling",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "annealing",
+            "progressive-long-context",
+            "rope-scaling",
+            "context-extension"
+          ],
+          "question": "在预训练大模型并计划将上下文窗口扩展至超长范围时直接从头以 512K 序列长度训练的做法极其低效。目前主流且高效的退火与长上下文扩展策略是？",
+          "options": [
+            "在前中期使用较短序列及海量通用数据进行基础语言能力预训练在末期通过高质量数据退火并逐步放大序列长度与 RoPE Base Frequency",
+            "在预训练阶段仅使用 2K 序列训练在推理阶段完全依赖 Context Parallelism 和 RAG 检索拼凑长文本",
+            "从 Phase 1 开始使用 512K 序列但只在每层的 Attention 矩阵中随机丢弃 90% 的 Key-Value 节点以降低计算复杂度",
+            "仅在 SFT 阶段引入长文本数据完全不在预训练阶段进行长上下文扩展"
+          ]
+        }
+      }
+    ],
+    "rlvr-pref-01": [
+      {
+        "id": "rlvr-pref-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队做数学解题用程序判对错，做写诗用人类投票，有人却想反过来。关于两条路径的适用边界，下列哪种说法正确？",
+        "options": [
+          "有精确反馈的任务应优先可验证奖励，偏好学习只留给无标准答案的场景；能验证就不投票。",
+          "结果可客观校验的任务优先可验证奖励；开放式主观任务仍需偏好学习。",
+          "人类标注能评估思路优雅度，可验证奖励只看对错；优雅解法泛化更好，标注上限更高。",
+          "可验证信号来自静态规则，与在线学习的动态奖励不兼容；两者分属不同阶段，不可混用。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从判对错与投票之争出发，判断两条路径适用边界",
+          "reasoningGoal": "先按有无客观标准拆出两类任务；再据此推出可验证走规则、主观走偏好的边界；并逐项验证各说法是否成立，排除精确优先论与优雅泛化论。"
+        },
+        "generatedAt": 1789722302313,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c9504348",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-c38e47a0",
+        "sourceSnapshot": {
+          "id": "rlvr-pref-01",
+          "topic": "rlhf",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "verifiable-rewards",
+            "rlvr",
+            "grpo",
+            "preference-learning"
+          ],
+          "question": "在 LLM 的对齐与推理能力训练实践中，针对不同任务类型存在“偏好学习”（Preference Learning，如 RLHF/DPO）与“可验证奖励”（Verifiable Rewards，如 RLVR/GRPO）两条技术路径。关于这两条路径的适用边界与选型逻辑，以下说法正确的是哪一项？",
+          "options": [
+            "有精确反馈的任务应优先可验证奖励，偏好学习只留给无标准答案的场景；能验证就不投票。",
+            "结果可客观校验的任务优先可验证奖励；开放式主观任务仍需偏好学习。",
+            "人类标注能评估思路优雅度，可验证奖励只看对错；优雅解法泛化更好，标注上限更高。",
+            "可验证信号来自静态规则，与在线 RL 的动态奖励不兼容；两者分属不同阶段，不可混用。"
+          ]
+        }
+      }
+    ],
+    "sentence-embedding-dataset-schema-01": [
+      {
+        "id": "sentence-embedding-dataset-schema-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某学员训句向量时多留了两列编号标签没删，训练器一跑就报维度错。关于字段解析规则，下列哪种说法正确？",
+        "options": [
+          "训练器会根据列的物理索引顺序依次提取非标签列；因未删除后两列，会把编号等无意义元数据列也当成文本输入传给模型，引发维度错配或分词报错。",
+          "损失函数初始化时会强制校验列名是否包含标签字段；因为数据集不存在该字段，训练器会在启动前立即抛出键错误。",
+          "训练器会自动识别锚定、正例与负例列名，并将编号与领域标签自动存入底层日志，不影响前向传播。",
+          "自动求导机制会将编号列转换为连续可训练参数并分配梯度，导致显存被无意义的编号嵌入阵列迅速耗尽。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从多两列就报错出发，判断按序取列规则的正确性",
+          "reasoningGoal": "先确认多余列被当文本喂入是报错的来源；再据此推出按物理顺序取列、须先删列的规则；并逐项验证各说法是否成立，排除强制标签论与自动识别论。"
+        },
+        "generatedAt": 1789722302314,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8f6f9c91",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-e68bcaa1",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-dataset-schema-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Dataset Schema & Input Parsing Mechanism",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "sentence-transformer",
+            "trainer",
+            "dataset-schema",
+            "column-order",
+            "triplet-loss"
+          ],
+          "question": "在使用封装好的句向量训练器（如 SentenceTransformerTrainer）加载本地数据集时，数据集字段的解析映射遵循特定的绑定规则。假设训练数据集包含 [\"anchor\", \"positive\", \"negative\", \"sample_id\", \"domain_tag\"] 5 个列，且损失函数使用的是仅接收 (anchor, positive, negative) 文本三元组的 TripletLoss。若未对数据集做删列处理而直接传入 Trainer，最可能导致什么后果？",
+          "options": [
+            "Trainer 会根据列的物理索引顺序依次提取非 label 列；因未删除后两列，Trainer 会把 sample_id 等无意义元数据列也当成文本输入传给模型，引发维度错配或 tokenizer 报错。",
+            "损失函数初始化时会强制校验列名是否包含 \"label\"；因为当前数据集不存在 \"label\" 字段，Trainer 会在启动前立即抛出 KeyError。",
+            "Trainer 会自动识别列名 \"anchor\"、\"positive\" 和 \"negative\"，并将 sample_id 与 domain_tag 自动存入底层日志，不影响前向传播。",
+            "自动求导机制会将 sample_id 转换为连续可训练参数并分配梯度，导致 GPU 显存被无意义的 ID 嵌入阵列迅速耗尽。"
+          ]
+        }
+      }
+    ],
+    "sentence-embedding-similarity-notion-01": [
+      {
+        "id": "sentence-embedding-similarity-notion-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某新闻 App 用同一套向量既做分类又做相似推荐，结果“苹果发新品”与“英伟达备货”在分类里该挨着、在相似里该离远。关于相似定义的分析，下列哪种正确？",
+        "options": [
+          "语义相似度是任务强相关的：在相似任务中两句涉及不同实体与产品，向量应保持较大距离；而在新闻分类任务中两句均属于科技类，向量应相互接近。微调的本质是学习特定任务所需的相似度几何分布。",
+          "通用向量模型在预训练后已具备绝对统一的语义距离空间，任何特定领域的微调都会破坏其向量空间的拓扑结构并导致表征退化。",
+          "针对分类与检索等不同下游任务，只需要在推理时切换距离计算公式即可，无需对模型权重做任何微调，调参纯属多余",
+          "双塔模型只能在无监督数据上微调，一旦引入特定领域有监督数据就会彻底失去零样本泛化能力，再无挽回余地可言"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从该挨着又该离远出发，判断任务相关相似度的分析",
+          "reasoningGoal": "先确认分类聚合与相似区分对距离提出相反要求；再据此推出相似度是任务相关的、微调学几何分布的结论；并逐项验证各说法是否成立，排除统一空间论与切公式论。"
+        },
+        "generatedAt": 1789722302317,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-16878d93",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-fe765cae",
+        "sourceSnapshot": {
+          "id": "sentence-embedding-similarity-notion-01",
+          "topic": "sentence-embedding",
+          "subtopic": "Domain-Specific Notion of Semantic Similarity",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "similarity-notion",
+            "fine-tuning",
+            "sts",
+            "news-classification",
+            "task-dependent"
+          ],
+          "question": "某一通用预训练双塔 Embedding 模型在标准 Web 文本检索任务上表现优异。团队试图将其直接同时应用于“新闻分类”与“语义文本相似度（STS）”两个业务模块。现有两组新闻标题：标题 1：“苹果发布全新 iPad”；标题 2：“英伟达备战下一代 GPU 显卡”。以下关于句向量模型中“语义相似度定义”与微调必要性的分析，正确的是？",
+          "options": [
+            "语义相似度是任务强相关的：在 STS 任务中两句涉及不同实体与产品，向量应保持较大距离；而在新闻分类任务中两句均属于科技类，向量应相互接近。微调的本质是学习特定任务所需的相似度几何分布。",
+            "通用 Embedding 模型在预训练后已具备绝对统一的语义距离空间，任何特定领域的微调都会破坏其向量空间的拓扑结构并导致表征退化。",
+            "针对不同下游任务（分类 vs 检索），只需要在推理时切换余弦相似度与欧氏距离计算公式，无需对 Embedding 模型权重做任何微调。",
+            "双塔 Embedding 模型只能在无监督数据上微调，引入任何特定领域的有监督数据都会使模型彻底失去 zero-shot 泛化能力。"
+          ]
+        }
+      }
+    ],
+    "seq2seq-arch-01": [
+      {
+        "id": "seq2seq-arch-01__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某同传系统要求延迟压到百毫秒级，团队在经典编码解码与纯解码架构间摇摆。关于两者对比与选型，下列哪种分析最科学？",
+        "options": [
+          "编码解码架构处理源语言时可并行提取全向双向语义，编码器的键值解码时不占自回归窗口，特定序列任务上参数效率与开销通常更优",
+          "纯解码架构在翻译时必须将源语言与目标语言拼接为单个序列统一输入模型，因此完全无法使用缓存优化，其推理延迟远高于同等规模的编码解码架构",
+          "编码解码架构由于引入了交叉注意力模块，导致其无法在加速卡上利用张量并行进行多卡拆分与加速，因此工程上更难做横向扩展并会拖慢整体训练吞吐",
+          "在任何序列场景下，纯解码的推理吞吐量均严格达到编码解码的 10 倍以上，因为省去了独立编码器带来的固定计算与显存开销，性能优势绝对成立"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从百毫秒延迟要求出发，判断编码解码选型的科学分析",
+          "reasoningGoal": "先确认源语言双向编码与窗口占用是选型的关键差异；再据此推出专用翻译任务选编码解码的结论；并逐项验证各说法是否成立，排除无缓存论与十倍论。"
+        },
+        "generatedAt": 1789722302318,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-88b1ab2d",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-7879c47a",
+        "sourceSnapshot": {
+          "id": "seq2seq-arch-01",
+          "topic": "transformer",
+          "subtopic": "encoder-decoder-vs-decoder-only",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "encoder-decoder",
+            "decoder-only",
+            "seq2seq",
+            "cross-attention",
+            "translation"
+          ],
+          "question": "在设计一个低延迟、高吞吐的工业级多语言实时翻译系统时，需要在经典 Transformer Encoder-Decoder 与 Decoder-Only 架构之间做技术选型。关于两者的对比与选型考量，下列分析最科学的是？",
+          "options": [
+            "Encoder-Decoder 处理源语言时可并行提取全向双向语义，Encoder 的 KV 解码时不占自回归窗口，特定 Seq2Seq 任务上参数效率与开销通常优于 Decoder-Only",
+            "Decoder-Only 架构在翻译时必须将源语言与目标语言拼接为单个序列统一输入模型，因此完全无法使用 KV Cache 优化，其推理延迟远高于同等规模的 Encoder-Decoder 架构",
+            "Encoder-Decoder 由于引入了 Cross-Attention 模块，导致其无法在 GPU 上利用张量并行进行多卡拆分与加速，因此工程上更难做横向扩展并会拖慢整体训练吞吐",
+            "在任何 Seq2Seq 场景下，Decoder-Only 的推理吞吐量均严格达到 Encoder-Decoder 的 10 倍以上，因为省去了独立编码器带来的固定计算与显存开销，性能优势绝对成立"
+          ]
+        }
+      }
+    ],
+    "staged-rl-kl-control": [
+      {
+        "id": "staged-rl-kl-control__context-options__manual-cb__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某大模型先做可验证任务训练放开探索，上偏好对齐时却收紧怕跑偏。关于各阶段散度约束的调优，下列哪种说法正确？",
+        "options": [
+          "可验证奖励阶段通常需要更充分探索，散度约束可设得较低；偏好对齐阶段则应提高约束以保留基座能力",
+          "所有强化学习阶段都必须使用同一个较高散度系数，阶段变化不应影响约束强度",
+          "主观偏好对齐阶段应将散度约束固定为零，因为奖励模型不会被投机行为影响",
+          "散度约束只影响推理速度，不会影响策略偏离基座模型的程度，因此无需纳入阶段调参"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从先放到收的实践出发，判断分阶段调约束的正确说法",
+          "reasoningGoal": "先按探索需求与保基座需求拆出阶段差异；再据此推出可验证放低、对齐收紧的调优；并逐项验证各说法是否成立，排除统一系数论与零约束论。"
+        },
+        "generatedAt": 1789722302319,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-bbf47214",
+        "batch": "manual-cb",
+        "model": "manual",
+        "contentHash": "fnv1a-38548e2a",
+        "sourceSnapshot": {
+          "id": "staged-rl-kl-control",
+          "topic": "rlhf",
+          "subtopic": "staged-rl-curriculum-kl",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "staged-rl",
+            "kl-penalty",
+            "rlvr",
+            "rlhf",
+            "reward-hacking"
+          ],
+          "question": "大模型多阶段强化学习通常按顺序包含可验证奖励、技能增强、多轮智能体及偏好对齐等阶段。关于各阶段中 KL 散度约束的调优策略与工程考量，下列说法正确的是？",
+          "options": [
+            "RLVR/SWE 等可验证奖励阶段通常需要更充分探索，KL 可设得较低；偏好对齐阶段则应提高 KL 以保留基座能力",
+            "所有强化学习阶段都必须使用同一个较高 KL 系数，阶段变化不应影响约束强度",
+            "主观偏好对齐阶段应将 KL 固定为零，因为奖励模型不会被投机行为影响",
+            "KL 约束只影响推理速度，不会影响策略偏离基座模型的程度，因此无需纳入阶段调参"
+          ]
+        }
+      }
+    ]
+  }
+}

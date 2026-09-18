@@ -1,0 +1,936 @@
+{
+  "version": 1,
+  "generatedAt": 1789684540190,
+  "promptVersion": "v7",
+  "variants": {
+    "agentic-02": [
+      {
+        "id": "agentic-02__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某新手团队的模型总把工具参数填错位，米和英尺混着传，程序一解析就崩。有人提议先讲清工具结构的作用。关于工具结构的主要作用，下列哪种说法正确？",
+        "options": [
+          "约束模型输出必须严格符合固定模板文本，结构主要起格式限定的作用",
+          "描述工具的名称、参数与类型，使模型能生成可被程序安全解析与调用的结构化调用",
+          "替代系统提示：结构与系统提示里的工具描述段落内容完全等价，只是换了种序列化形式",
+          "仅用于向前端展示工具列表，运行时模型并不真正消费结构内容"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从参数错位崩溃出发，判断工具结构描述的核心作用",
+          "reasoningGoal": "先确认参数错位是调用失败的直接原因；再据此推出结构描述让模型产出可解析调用的结论；并逐项验证各说法是否成立，排除模板限定论与展示论。"
+        },
+        "generatedAt": 1789684540175,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c7e8ff98",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-a4fce63a",
+        "sourceSnapshot": {
+          "id": "agentic-02",
+          "topic": "tool-calling",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "tool-calling",
+            "schema",
+            "function"
+          ],
+          "question": "在 LLM 的 Tool / Function Calling 中，工具 schema（如 JSON Schema）的主要作用是？",
+          "options": [
+            "约束模型输出必须严格符合固定模板文本，schema 主要起格式限定的作用",
+            "描述工具的名称、参数与类型，使模型能生成可被程序安全解析与调用的结构化调用",
+            "替代系统提示：schema 与 system prompt 的工具描述段落内容完全等价，只是换了种序列化形式",
+            "仅用于向前端展示工具列表，运行时模型并不真正消费 schema 内容"
+          ]
+        }
+      }
+    ],
+    "agentic-09": [
+      {
+        "id": "agentic-09__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某客服质检 Agent 上线后表现飘忽，团队想加一个自我检查环节，但对“反思”到底管什么用有分歧。关于自我反思的主要作用，下列哪种说法正确？",
+        "options": [
+          "让模型生成更多随机样本，通过提高采样温度覆盖更广的候选空间，从而探索更多潜在的可能路径",
+          "让智能体回顾自身输出或执行轨迹，发现错误并自我修正，从而提升最终交付的质量",
+          "替代规划阶段，使智能体完全在无计划状态下直接行动，以换取更快的执行速度",
+          "压缩上下文以节省开销，通过截断历史记录的方式降低每一步的推理成本"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从表现飘忽出发，判断自我反思复盘修正的作用",
+          "reasoningGoal": "先确认复盘修正是反思区别于采样与规划的本质；再据此推出回顾轨迹发现错误自我修正的结论；并逐项验证各说法是否成立，排除采样论与替代规划论。"
+        },
+        "generatedAt": 1789684540176,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c80b9f1f",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-37b5b89c",
+        "sourceSnapshot": {
+          "id": "agentic-09",
+          "topic": "planning",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "reflection",
+            "self-critique"
+          ],
+          "question": "在 Agent 设计中，“Reflection（自我反思）”的主要作用是？",
+          "options": [
+            "让模型生成更多随机样本，通过提高采样温度来覆盖更广的候选空间，从而探索更多潜在的可能路径",
+            "让 Agent 回顾自身输出或执行轨迹，发现错误并自我修正，从而提升最终交付的质量",
+            "替代规划阶段，使 Agent 完全在无计划状态下直接行动，以换取更快的执行速度",
+            "压缩上下文以节省 token，通过截断历史记录的方式降低每一步的推理开销"
+          ]
+        }
+      }
+    ],
+    "agentic-19": [
+      {
+        "id": "agentic-19__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某连锁药房要让店员用自然语言查库存与效期，生成的查询偶尔删改数据或把全表扫崩。安全评审要求不能写库。下列哪种设计最合理？",
+        "options": [
+          "使用具备读写权限的业务主账号直连生产库，分析智能体需要改动数据才能闭环自愈，只读账号会限制其自愈能力",
+          "在提示词里强制模型输出自检清单并逐项确认，可替代执行前校验，从而省去沙箱试运行的成本。",
+          "使用只读账号并禁止多语句与高危操作，执行前先解释计划或试运行校验，出错带回模型有限次自修复。",
+          "只要语句能通过语法解析器就直接执行任意条数，结果准确性由模型自行保证。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从删改与扫库风险出发，判断只读加试运行校验的设计",
+          "reasoningGoal": "先确认可写权限与无校验执行是两大不可绕过约束；再据此推出只读加禁高危语句加试运行校验的设计；并逐项验证各说法是否成立，排除主账号论与自检替代论。"
+        },
+        "generatedAt": 1789684540177,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-569ea9b0",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-f2ea830d",
+        "sourceSnapshot": {
+          "id": "agentic-19",
+          "topic": "tool-calling",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "sql",
+            "text-to-sql",
+            "analytics"
+          ],
+          "question": "设计一个分析 SQL Server 数据并生成分析报告的 Agent。如何保证生成的 SQL 安全、正确？",
+          "options": [
+            "使用具备读写权限的业务主账号直连生产库，分析 Agent 需要改动数据才能闭环自愈，只读账号会限制其自愈能力",
+            "在 prompt 中强制模型输出自检清单并逐项确认，可替代执行前校验，从而省去沙箱试运行的成本。",
+            "使用只读账号并禁止多语句与 DDL/DML，SQL 执行前先 EXPLAIN 或试运行校验，出错带回模型有限次自修复。",
+            "只要 SQL 能通过语法解析器就直接执行任意条数的语句，结果准确性由模型自行保证。"
+          ]
+        }
+      }
+    ],
+    "agentic-23": [
+      {
+        "id": "agentic-23__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某教育公司组四角色备课系统：定纲、找资料、审稿、成稿，试运行天天吵翻、稿子还编造资料来源。主编要求定协作协议。下列哪种设计正确？",
+        "options": [
+          "四个角色之间应以自由对话形式充分讨论，讨论轮数越多观点碰撞越充分、成稿质量越高，多聊总比少聊好。",
+          "允许成稿角色在写作时补充自己已知的外部知识，以保证文章的可读性与信息完整性，自由发挥效果更好。",
+          "审核角色对稿件不满意时可以无限次打回重做，直到所有角色对最终版本达成一致为止，民主即质量。",
+          "四角色通过共享黑板交换结构化的任务与评审状态而非自由对话；成稿只能基于通过审核的事实卡片；同一稿件打回超过次数上限就升级人工处理"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从越聊越偏加编造来源出发，判断黑板加审核卡片的设计",
+          "reasoningGoal": "先确认自由对话发散与无依据成稿是试运行的两大病灶；再据此推出共享黑板加审核卡片加打回上限的设计；并逐项验证各说法是否成立，排除自由讨论论与无限打回论。"
+        },
+        "generatedAt": 1789684540178,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ca84970e",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-957a51c5",
+        "sourceSnapshot": {
+          "id": "agentic-23",
+          "topic": "multi-agent",
+          "angle": "system-design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "multi-agent",
+            "planner",
+            "critic",
+            "writer"
+          ],
+          "question": "设计一个 Multi-Agent 研究系统：Planner、Researcher、Critic、Writer 四角色。如何划分职责、传递信息并避免互相扯皮？",
+          "options": [
+            "四个角色之间应以自由对话形式充分讨论，讨论轮数越多观点碰撞越充分、成稿质量越高，无需约束",
+            "允许 Writer 在成稿时补充自己已知的外部知识，以保证文章的可读性与信息完整性，自由发挥更好",
+            "Critic 对稿件不满意时可以无限次打回重做，直到所有角色对最终版本达成一致为止，民主即质量",
+            "四角色通过共享黑板交换结构化的任务与评审状态而非自由对话；Writer 只能基于通过 Critic 审核的事实卡片成稿；同一稿件打回超过次数上限就升级人工处理"
+          ]
+        }
+      }
+    ],
+    "agentic-32": [
+      {
+        "id": "agentic-32__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某外卖平台两个智能体互相甩单：派单说地址异常退回，核单说信息不全打回，转了二十轮还没完。下列哪种防环路方案正确？",
+        "options": [
+          "在两个智能体之间建立双向对等的通信拓扑，让它们可以互相派活以提高灵活性；消息量持续增长说明协作正在推进。",
+          "结构上禁止环状调用拓扑、规定单向层级（工作者只能回报不能反向派活）；运行时再配往返计数上限与预算熔断，超限升级人工或终止。",
+          "死循环只能靠运维人员盯着日志人工发现并重启进程，编排层没有办法自动检测环路。",
+          "给双方智能体的回复加上更客气的措辞约束，语气好了它们就不会再把任务踢回给对方"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从互踢皮球转二十轮出发，判断禁环加熔断的防环路方案",
+          "reasoningGoal": "先确认双向互派是环路的结构根源；再据此推出禁环拓扑加单向层级加计数熔断的方案；并逐项验证各说法是否成立，排除对等派活论与人工盯盘论。"
+        },
+        "generatedAt": 1789684540179,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-68635899",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-dba93df9",
+        "sourceSnapshot": {
+          "id": "agentic-32",
+          "topic": "multi-agent",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "deadlock",
+            "cycle-detection",
+            "debugging"
+          ],
+          "question": "Multi-Agent 系统中两个 Agent 开始互相调用、来回踢皮球。如何检测和阻止？",
+          "options": [
+            "在两个 Agent 之间建立双向对等的通信拓扑，让它们可以互相派活以提高灵活性；消息量持续增长说明协作正在推进。",
+            "结构上禁止环状调用拓扑、规定单向层级（工作者只能回报不能反向派活）；运行时再配往返计数上限与预算熔断，超限升级人工或终止。",
+            "死循环只能靠运维人员盯着日志人工发现并重启进程，编排层无法自动检测环路。",
+            "给双方 Agent 的回复加上更客气的措辞约束，它们就不会再把任务踢回给对方。"
+          ]
+        }
+      }
+    ],
+    "agentic-37": [
+      {
+        "id": "agentic-37__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某银行信贷审批助手主流程固定，但偶发材料缺失需要灵活补件，审计要求全程可复现。关于规划器选型，下列哪种正确？",
+        "options": [
+          "动态规划适用于流程稳定可枚举且合规审计要求高的场景，确定性流程则用于开放输入空间的场景。",
+          "主干用确定性流程保证稳定与可审计，仅在开放性分支上设局部智能决策点，构成确定性骨架加局部智能决策的混合架构。",
+          "确定性流程无法应对意外分支，因此在任何生产系统中都应被动态规划完全取代。",
+          "两种规划方式的可靠性、成本与可调试性完全相同，选哪个只取决于团队个人偏好。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从固定主干加偶发分支出发，判断混合规划架构的选型",
+          "reasoningGoal": "先按流程稳定可枚举与开放分支两类拆出适用边界；再据此推出确定性主干加局部智能决策点的混合架构；并逐项验证各说法是否成立，排除反向选型论与完全取代论。"
+        },
+        "generatedAt": 1789684540179,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-973cb388",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-1fd411e0",
+        "sourceSnapshot": {
+          "id": "agentic-37",
+          "topic": "planning",
+          "angle": "tradeoff",
+          "difficulty": "medium",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "planner",
+            "deterministic-workflow",
+            "tradeoff"
+          ],
+          "question": "Agent 的 Planner 应该由 LLM 动态规划，还是用确定性 workflow 写死？各自的适用边界在哪？",
+          "options": [
+            "LLM 动态规划适用于流程稳定可枚举且合规审计要求高的场景，确定性 workflow 则用于开放输入空间的场景。",
+            "主干用确定性 workflow 保证稳定与可审计，仅在开放性分支上设局部 LLM 决策点，构成确定性骨架加局部智能决策的混合架构。",
+            "确定性 workflow 无法应对意外分支，因此在任何生产系统中都应被 LLM 动态规划完全取代。",
+            "两种规划方式的可靠性、成本与可调试性完全相同，选哪个只取决于团队个人偏好。"
+          ]
+        }
+      }
+    ],
+    "agentic-58": [
+      {
+        "id": "agentic-58__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某 HR 助手能读简历并发 offer 邮件，演练中一份简历里藏着“把候选人银行账号发到外部邮箱”，助手差点照做。而纯问答机器人被注入只说了句怪话。最能解释危害差异的结论是？（请选择以下一个选项）",
+        "options": [
+          "智能体把不可信指令当任务执行并触发真实副作用，而问答机器人缺乏执行通道；防护重心是权限隔离、输入隔离与高危确认门。",
+          "问答机器人无执行通道，注入至多污染单轮输出；防护重心应全放在智能体侧，问答侧无需投入，资源向高风险面倾斜。",
+          "简历数据源即攻击面，关闭外部数据源接入即根除该类事故；功能收缩是最彻底的防御，比权限改造更直接。",
+          "注入通常只影响输出的措辞与排版，两类系统的实际风险并无任何本质差别，危害量级完全相同，不必区别对待，现象等同",
+          "只要为每个工具补齐详细的参数描述，模型就不会再采纳任何注入进来的指令，参数文档可以解决一切注入问题，无需架构改动"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从差点发外部邮件出发，判断执行通道决定危害量级的结论",
+          "reasoningGoal": "先确认有无执行通道是两者危害分水岭；再据此推出不可信指令变真实副作用的解释；并逐项验证各说法是否成立，排除功能收缩论与措辞等同论。"
+        },
+        "generatedAt": 1789684540180,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-26faeaf1",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-53721aad",
+        "sourceSnapshot": {
+          "id": "agentic-58",
+          "topic": "prompt-injection",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "prompt-injection",
+            "security",
+            "side-effects"
+          ],
+          "question": "Prompt Injection 对 Agent 的危害远大于对普通 Chatbot 的原因是什么？",
+          "options": [
+            "Agent 把不可信指令当任务执行并触发真实副作用，而 Chatbot 缺乏执行通道；防护重心是权限隔离、输入隔离与高危确认门。",
+            "Chatbot 无执行通道，注入至多污染单轮输出；防护重心应全放在 Agent 侧，Chatbot 侧无需投入，资源向高风险面倾斜。",
+            "邮箱数据源即攻击面，关闭外部数据源接入即根除该类事故；功能收缩是最彻底的防御，比权限改造更直接。",
+            "注入通常只影响输出的措辞与排版，两类系统的实际风险并无任何本质差别，危害量级完全相同，不必区别对待，现象等同",
+            "只要为每个工具补齐详细的参数描述，模型就不会再采纳任何注入进来的指令，参数文档可以解决一切注入问题，无需架构改动"
+          ]
+        }
+      }
+    ],
+    "ai-agent-006": [
+      {
+        "id": "ai-agent-006__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某仓库调度智能体的拣货顺序天天错：先搬后拣、漏掉复核，但每个设备单测都正常。团队要在规划缺陷与工具缺陷间归因。最可靠的定位方法是？",
+        "options": [
+          "工具都正常说明执行层无辜，问题大概率在输入质量；先收紧任务描述模板再看，避免过早动架构。",
+          "规划错误多为模型容量问题，升级推理增强模型可直接改善分解质量；归因分析的投入产出不如换模。",
+          "对轨迹分层归因拆决策与执行；工具单测通过但出现顺序颠倒或遗漏依赖，即确证上游规划问题。",
+          "规划出错也应继续通过打磨工具描述与参数结构来修复，因为它与任务分解方式并无实质关系"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能从顺序颠倒但单测正常出发，判断分层归因的定位方法",
+          "reasoningGoal": "先确认单测通过只能洗清执行层；再据此推出轨迹分层拆决策与执行的归因方法；并逐项验证各说法是否成立，排除输入模板论与换模论。"
+        },
+        "generatedAt": 1789684540181,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-30235d4c",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-82ffa9eb",
+        "sourceSnapshot": {
+          "id": "ai-agent-006",
+          "topic": "planning",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "agent",
+            "planning",
+            "debugging"
+          ],
+          "question": "一个 Agent 经常生成错误的执行计划，但每个 Tool 单独执行都没有问题。你会如何定位这是 Planning 问题而不是 Tool 问题？",
+          "options": [
+            "工具都正常说明执行层无辜，问题大概率在输入质量；先收紧任务描述模板再看，避免过早动架构。",
+            "规划错误多为模型容量问题，升级推理增强模型可直接改善分解质量；归因分析的投入产出不如换模。",
+            "对轨迹分层归因拆决策与执行；工具单测通过但出现顺序颠倒或遗漏依赖，即确证上游 Planning 问题。",
+            "Planning 出错也应继续通过打磨工具描述与参数 schema 来修复，因为它与任务分解方式并无实质关系"
+          ]
+        }
+      }
+    ],
+    "ai-code-004": [
+      {
+        "id": "ai-code-004__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某机房巡检智能体上线后隔三差五崩溃：参数里混进非法字符直接抛穿主循环，还调过不存在的工具名。重构调用处理器时应遵循哪个设计？",
+        "options": [
+          "参数由模型直接生成可以信任，解析失败时抛出异常终止整个循环，避免携带脏数据继续执行造成更大错误。",
+          "工具执行结果应以用户身份消息伪装成用户发言回填对话，让模型把结果理解为用户诉求的一部分。",
+          "用注册表按工具名分发，未知工具名优雅降级；参数当不可信数据校验；失败以结构化错误回传模型修正，结果以工具身份回填",
+          "未知工具名默认映射到注册表第一个函数执行，保证每次调用有结果返回，避免模型收到错误而中断推理，无需专门降级分支"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从非法参数加未知工具名崩溃出发，判断注册表分发的处理器设计",
+          "reasoningGoal": "先确认参数不可信与未知工具名是崩溃的两大来源；再据此推出注册表分发加校验加结构化回传的设计；并逐项验证各说法是否成立，排除信任参数论与首函数兜底论。"
+        },
+        "generatedAt": 1789684540181,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-76e931ec",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-54be826a",
+        "sourceSnapshot": {
+          "id": "ai-code-004",
+          "topic": "tool-calling",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "coding",
+            "tool-calling",
+            "agent"
+          ],
+          "question": "请实现一个简单的 Tool Calling Handler：解析模型返回的 tool call，根据 tool name 找到对应函数，执行函数并将结果重新加入 conversation。",
+          "options": [
+            "arguments 由模型直接生成可以信任，JSON.parse 失败时抛出异常终止整个 Agent 循环，避免携带脏数据继续执行造成更大错误。",
+            "工具执行结果应以 user role 消息伪装成用户发言回填 conversation，让模型把结果理解为用户诉求的一部分。",
+            "用注册表按 tool name 分发，未知工具名优雅降级；arguments 当不可信 JSON 校验；失败以结构化错误回传模型修正，结果以 tool role 回填",
+            "未知工具名默认映射到注册表第一个函数执行，保证每次调用有结果返回，避免模型收到错误而中断推理，无需专门降级分支"
+          ]
+        }
+      }
+    ],
+    "ai-eng-005": [
+      {
+        "id": "ai-eng-005__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某 HR 系统的“入职办理”工具定义了 30 个参数，实测填错率是其他工具的三倍，每次调用光定义就烧掉数千 token。工具负责人应如何重新设计？",
+        "options": [
+          "三十个字段原样保留——字段越全表达能力越强，错误率上升是为功能完整性支付的合理代价",
+          "将全部字段设为必填以倒逼模型认真填参，填错就让调用方重试，参数过多引发的错误率上升无需另行处理",
+          "精简结构：拆分出高频子操作作为独立小工具，低频字段改由默认值或上下文推断补齐，长尾需求保留一个全量更新入口",
+          "结构规模与调用可靠性无关，维持现状不动，另行编写一份外部字段说明文档供开发者查阅"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能从 30 个参数三倍错率出发，判断拆分精简的重新设计",
+          "reasoningGoal": "先确认超大结构推高错误率与上下文成本的双重代价；再据此推出拆高频小工具加默认补齐的精简设计；并逐项验证各说法是否成立，排除原样保留论与全必填论。"
+        },
+        "generatedAt": 1789684540182,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-3fc13603",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-f2256a16",
+        "sourceSnapshot": {
+          "id": "ai-eng-005",
+          "topic": "tool-calling",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "tool-calling",
+            "schema",
+            "reliability",
+            "trade-off"
+          ],
+          "question": "为什么 Agent 的 tool schema 不应该无限详细？如果一个 tool 的参数有 30 个字段，你会考虑如何重新设计？",
+          "options": [
+            "三十个字段原样保留——字段越全表达能力越强，错误率上升是为功能完整性支付的合理代价",
+            "将全部字段设为必填以倒逼模型认真填参，参数过多引发的错误率上升无需另行处理",
+            "精简 schema：拆分出高频子操作作为独立小工具，低频字段改由默认值或上下文推断补齐，长尾需求保留一个全量更新入口",
+            "schema 规模与调用可靠性无关，维持现状，另行编写一份外部字段说明文档供开发者查阅"
+          ]
+        }
+      }
+    ],
+    "ai-eng-009": [
+      {
+        "id": "ai-eng-009__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某客服质检智能体连套三层自我批评后，成本涨 2 倍、漏检纹丝不动，而多数问题老规则本就能拦。最合理的调整结论是？",
+        "options": [
+          "反思层数与可靠性正相关已在多智能体辩论中得到验证，加层即加集成规模；成本换质量是合理交易。",
+          "反思样本可沉淀为回归用例，校验环节可逐步退化为抽查；确定性校验只在冷启动期必要，上线后抽查即可",
+          "反思由同一模型生成可能复现原错误且不提供新信息；已有确定性验证时应优先外部反馈，多层反思只是徒增成本应予裁剪",
+          "额外反思的成本几乎可以忽略不计，任何任务都理应无条件叠满多层反思，以追求最大限度的稳妥与安全保障"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能从成本翻倍漏检不动出发，判断同模自评无效的调整结论",
+          "reasoningGoal": "先确认同模型自评复现原错且无新信息；再据此推出优先外部校验、裁剪多层反思的结论；并逐项验证各说法是否成立，排除加层验证论与沉淀退化论。"
+        },
+        "generatedAt": 1789684540183,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6403ead7",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-6bd3b26b",
+        "sourceSnapshot": {
+          "id": "ai-eng-009",
+          "topic": "planning",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "reflection",
+            "self-evaluation",
+            "agent",
+            "trade-off"
+          ],
+          "question": "很多 Agent 架构会增加 Reflection 或 Self-Critique 步骤。为什么 Reflection 不一定能提高 Agent 的可靠性？什么时候它反而可能只是增加成本？",
+          "options": [
+            "反思层数与可靠性正相关已在多智能体辩论中得到验证，加层即加集成规模；成本换质量是合理交易。",
+            "反思样本可沉淀为回归用例，校验环节可逐步退化为抽查；确定性校验只在冷启动期必要。",
+            "Reflection 由同一模型生成可能复现原错误且不提供新信息；已有确定性验证时应优先外部反馈，多层反思只是徒增成本应予裁剪",
+            "额外反思的成本几乎可以忽略不计，任何任务都理应无条件叠满多层反思，以追求最大限度的稳妥与安全保障"
+          ]
+        }
+      }
+    ],
+    "ai-fund-011": [
+      {
+        "id": "ai-fund-011__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某训练营学员把预训练说成对比句对、把掩码重建说成等价于因果预测。给新人讲清现代解码模型预训练在做什么时，下列哪种说法正确？",
+        "options": [
+          "在因果掩码下根据前文预测下一个词，用预测分布与真实下词之间的交叉熵作为损失",
+          "通过对比学习区分正负句对，拉近语义相似的句子、推远不相似的句子，因为语言模型最自然的训练目标就是学习句子级别的语义相似度关系",
+          "对输入做随机掩码后重建被遮盖的位置，以重建误差作为训练损失，因为预测被遮盖的词本质上等价于预测下一个词，二者在数学上完全等价",
+          "以强化学习最大化人类偏好得分，由奖励模型提供偏好排序信号，因为预训练阶段同样需要人类偏好来引导模型学到有用的知识优先级"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从新人的三类混淆出发，判断因果预测训练目标的解释",
+          "reasoningGoal": "先确认因果预测是预训练区别于对比与掩码的本质；再据此推出看前文猜下词加交叉熵监督的结论；并逐项验证各说法是否成立，排除句对论与等价论。"
+        },
+        "generatedAt": 1789684540183,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-145c8632",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-2cbe52c1",
+        "sourceSnapshot": {
+          "id": "ai-fund-011",
+          "topic": "pretraining",
+          "angle": "mechanism",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "pre-training",
+            "causal-lm",
+            "cross-entropy"
+          ],
+          "question": "从训练目标的角度解释一个现代 Decoder-only LLM 的 Pre-training 在做什么。",
+          "options": [
+            "在因果掩码下根据前文预测下一个 token，用预测分布与真实 next token 之间的 cross-entropy 作为损失",
+            "通过对比学习区分正负句对，拉近语义相似的句子、推远不相似的句子，因为语言模型最自然的训练目标就是学习句子级别的语义相似度关系",
+            "对输入做随机掩码后重建被遮盖的位置，以重建误差作为训练损失，因为预测被遮盖的 token 本质上等价于预测下一个 token，二者在数学上完全等价",
+            "以强化学习最大化人类偏好得分，由奖励模型提供偏好排序信号，因为预训练阶段同样需要人类偏好来引导模型学到有用的知识优先级"
+          ]
+        }
+      }
+    ],
+    "ai-fund-014": [
+      {
+        "id": "ai-fund-014__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某老板要求“参数翻倍效果翻倍”，团队实测发现加卡加参后提升远不如预期。关于规模与效果的关系，下列哪种说法正确？",
+        "options": [
+          "规模定律表明只要算力充足，损失会随模型规模无限线性下降，因为更大的容量意味着可自由拟合任意复杂映射，不存在收益递减的铁律",
+          "规模定律是严格的理论定律，与训练数据的质量和分布无关，因为参数量与算力才是唯一的自变量，数据只是被动被消耗的资源",
+          "规模定律描述参数量、数据量、算力与损失之间的经验幂律关系，资源间存在最优配比，收益呈对数级递减",
+          "规模定律只刻画推理阶段显存占用与延迟随规模增长的规律，因为训练阶段的损失变化早已被其他理论完整解释，不在讨论范围内"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "compare",
+        "assessment": {
+          "target": "能从加量不加效出发，判断幂律配比与递减的规律",
+          "reasoningGoal": "先确认参数数据算力与损失呈经验幂律而非线性；再据此推出最优配比加收益递减的结论；并逐项验证各说法是否成立，排除无限线性论与推理限定论。"
+        },
+        "generatedAt": 1789684540184,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-42ec533f",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-1619884c",
+        "sourceSnapshot": {
+          "id": "ai-fund-014",
+          "topic": "scaling-law",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "scaling-law",
+            "compute",
+            "loss"
+          ],
+          "question": "什么是 Scaling Law？为什么“模型越大”并不意味着效果可以无限提升？",
+          "options": [
+            "Scaling law 表明只要算力充足，loss 会随模型规模无限线性下降，因为更大的模型容量意味着可以自由拟合任意复杂的映射，不存在收益递减的铁律",
+            "Scaling law 是严格的理论定律，与训练数据的质量和分布无关，因为参数量与算力才是唯一的自变量，数据只是被动被消耗的资源",
+            "Scaling law 描述参数量、数据量、compute 与 loss 之间的经验幂律关系，资源间存在最优配比，收益呈对数级递减",
+            "Scaling law 只刻画推理阶段显存占用与延迟随模型规模增长的规律，因为训练阶段的损失变化早已被其他理论完整解释，不在 scaling 的讨论范围内"
+          ]
+        }
+      }
+    ],
+    "ai-fund-015": [
+      {
+        "id": "ai-fund-015__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某教育公司用 200B 语料训出可用模型后，投资人要求数据扩到 10 倍并承诺效果涨 10 倍写进对赌。你需要在董事会上给出专业意见。下列哪项分析最站得住脚？",
+        "options": [
+          "支持这个目标：模型能力与数据量严格成正比是业界共识，10 倍数据自然带来 10 倍提升，因为线性规律在真实业务里从未失效，新增数据永远等价于等比例的增量",
+          "修正预期：规模规律下收益呈对数级递减，实际增益还取决于新增数据的新颖性与算力配比，10 倍数据达不到 10 倍提升，目标应依据实测曲线设定",
+          "换个思路：模型能力完全由参数量决定，数据翻多少倍都没有意义，应把预算全部转投更大参数的模型，因为参数量才是规律里唯一真正起作用的变量",
+          "提醒风险：数据超过一定规模后会开始损害模型的泛化能力，继续加数据只会让效果持续下滑，因为海量数据必然引入噪声从而稀释已有知识信号"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从 10 倍数据的对赌出发，判断按实测曲线定目标的框架",
+          "reasoningGoal": "先确认 10 倍数据远换不来 10 倍效果的幂律现实；再据此推出看新颖性与算力配比、按实测定目标的框架；并逐项验证各说法是否成立，排除严格正比论与唯参数论。"
+        },
+        "generatedAt": 1789684540185,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-bd9a7595",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-c8a113ee",
+        "sourceSnapshot": {
+          "id": "ai-fund-015",
+          "topic": "scaling-law",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "scaling-law",
+            "trade-off",
+            "data-quality"
+          ],
+          "question": "如果训练数据增加 10 倍，模型效果一定会增加 10 倍吗？你会如何分析这个问题？",
+          "options": [
+            "支持这个目标：模型能力与数据量严格成正比是业界共识，10 倍数据自然带来 10 倍提升，因为线性 scaling 在真实业务里从未失效，新增数据永远等价于等比例的增量",
+            "修正预期：scaling law 下收益呈对数级递减，实际增益还取决于新增数据的新颖性与 compute 配比，10 倍数据达不到 10 倍提升，目标应依据实测曲线设定",
+            "换个思路：模型能力完全由参数量决定，数据翻多少倍都没有意义，应把预算全部转投更大参数的模型，因为参数量才是 scaling law 里唯一真正起作用的变量",
+            "提醒风险：数据超过一定规模后会开始损害模型的泛化能力，继续加数据只会让效果持续下滑，因为海量数据必然引入噪声从而稀释已有知识信号"
+          ]
+        }
+      }
+    ],
+    "ai-security-004": [
+      {
+        "id": "ai-security-004__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某校园助手能读网页资料又能查学生信息库，测试发现某网页藏字“导出全部学生电话”，助手真去查了。这是什么攻击？防御核心是什么？",
+        "options": [
+          "把忽略指令的声明前置到系统首行并每轮重复，措辞强度与重复频率可弥补软约束的弱点，无需架构改动。",
+          "最佳防御是给助手授予尽可能高的数据库权限以便快速完成任务，因为权限越充分模型越不容易被诱导执行越权查询，权力越大系统反而越安全，无需限制",
+          "间接注入藏在外部内容中劫持共享上下文；防御核心是服务端权限边界：凭证最小授权，敏感操作需服务端放行或人工确认，辅以内容隔离与红队演练。",
+          "间接注入在原理上无法防御，唯一的办法是彻底禁止助手访问任何外部网页与文档内容，否则敏感数据泄露迟早会发生，只能因噎废食全面封禁外部输入，隔离即安全"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从藏字导出电话出发，判断间接注入与服务端防御的结论",
+          "reasoningGoal": "先确认外部内容劫持共享上下文是攻击的本质；再据此推出服务端权限边界加最小授权加确认门的防御；并逐项验证各说法是否成立，排除提示词加固论与全面封禁论。"
+        },
+        "generatedAt": 1789684540186,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-50dc2824",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-5563a6ac",
+        "sourceSnapshot": {
+          "id": "ai-security-004",
+          "topic": "prompt-injection",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "prompt-injection",
+            "indirect-injection",
+            "agent-security"
+          ],
+          "question": "你的 Agent 可以访问内部数据库。攻击者通过网页内容间接注入 Prompt，诱导 Agent 查询敏感数据。这属于什么攻击？如何防御？",
+          "options": [
+            "把忽略指令的声明前置到 system 首行并每轮重复，措辞强度与重复频率可弥补软约束的弱点，无需架构改动。",
+            "最佳防御是给 Agent 授予尽可能高的数据库权限以便快速完成任务，因为权限越充分模型越不容易被诱导执行越权查询，权力越大系统反而越安全，无需限制",
+            "间接注入藏在外部内容中劫持共享上下文；防御核心是服务端权限边界：凭证最小 scope，敏感操作需服务端放行或人工确认，辅以内容隔离与红队演练。",
+            "间接注入在原理上无法防御，唯一的办法是彻底禁止 Agent 访问任何外部网页与文档内容，否则敏感数据泄露迟早会发生，只能因噎废食全面封禁外部输入，隔离即安全"
+          ]
+        }
+      }
+    ],
+    "eth-05": [
+      {
+        "id": "eth-05__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某公司的文件助手被给了整台服务器的执行权限，一次解析用户上传的表格时竟执行了里面的恶意命令。从安全架构看，主要违反了哪项原则？",
+        "options": [
+          "最小权限原则与功能粒度控制，未对执行工具设置指令白名单与降权沙箱",
+          "不安全的输出处理，未对文件输出内容做转义过滤",
+          "模型盗窃攻击，未在网关处限制请求频次与配额",
+          "供应链风险，使用了未经认证的第三方插件包"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从表格里的恶意命令被执行出发，判断最小权限的设计原则",
+          "reasoningGoal": "先确认过宽执行权限是破坏得以发生的结构原因；再据此推出最小权限加指令白名单加沙箱的结论；并逐项验证各说法是否成立，排除转义论与限流论。"
+        },
+        "generatedAt": 1789684540186,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-8250a633",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-e2bb9a37",
+        "sourceSnapshot": {
+          "id": "eth-05",
+          "topic": "tool-calling",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "excessive-agency",
+            "least-privilege",
+            "sandbox",
+            "owasp-llm"
+          ],
+          "question": "某企业部署了一个运维 Agent，赋予其数据库只读权限以及系统 Shell 执行权限用于分析日志。在处理一条恶意伪造的日志时，Agent 自行解析并生成了破坏性 Shell 命令并直接执行。从安全架构角度，该系统主要违反了哪项设计原则？",
+          "options": [
+            "最小权限原则与功能粒度控制（Excessive Agency），未对 Shell 工具设置指令白名单与降权沙箱",
+            "不安全的输出处理（Insecure Output Handling），未对日志输出进行 HTML 实体转义",
+            "模型盗窃（Model Theft），未在 API 网关处限制请求频次",
+            "供应链风险（Supply Chain Vulnerability），使用了未经认证的第三方 Shell 插件"
+          ]
+        }
+      }
+    ],
+    "llm-01": [
+      {
+        "id": "llm-01__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某在线教育客服知识问答已达标，但语气生硬、常无视话术格式，评审通过率低。团队想让行为风格更贴合人类偏好。下列哪种技术路线最契合？",
+        "options": [
+          "对模型做量化压缩后重新部署，用更快的响应速度来掩盖回复质量上的不足",
+          "放弃当前基座，重新收集海量语料从零开始预训练一个大模型，彻底重塑模型行为",
+          "基于人类偏好数据训练奖励模型，再用强化学习方法对模型微调，使其输出更符合人类期望与指令",
+          "只在系统提示中追加一句要求友好并遵守格式，其余流程保持不变，以此作为达标的根本手段"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从风格不达标出发，判断偏好对齐技术路线的选择",
+          "reasoningGoal": "先确认知识达标但行为风格不达标是当前缺口；再据此推出偏好数据训奖励模型再微调的路线；并逐项验证各说法是否成立，排除量化掩盖论与推倒重来论。"
+        },
+        "generatedAt": 1789684540187,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d4a03256",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-cb8847d2",
+        "sourceSnapshot": {
+          "id": "llm-01",
+          "topic": "rlhf",
+          "angle": "definition",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "rlhf",
+            "alignment"
+          ],
+          "question": "RLHF（基于人类反馈的强化学习）在大模型对齐中的主要目的是？",
+          "options": [
+            "对模型做 INT8 量化压缩后重新部署，用更快的响应速度来掩盖回复质量上的不足",
+            "放弃当前基座，重新收集海量语料从零开始预训练一个大模型，彻底重塑模型行为",
+            "基于人类偏好数据训练奖励模型，再用强化学习方法对模型进行微调，使其输出更符合人类期望与指令",
+            "只在系统提示中追加一句\"请表现得友好并遵守格式\"，其余流程保持不变，以此作为达标的根本手段"
+          ]
+        }
+      }
+    ],
+    "llm-20": [
+      {
+        "id": "llm-20__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某数学解题模型训练中，团队争论要不要给中间步骤逐一打分、要不要加特殊标记开关。关于推理轨迹与奖励设计，下列哪种说法正确？",
+        "options": [
+          "训练时必须引入过程奖励模型对每一步推理轨迹打分，否则模型学不会自我纠错",
+          "按可验证奖励的实验结论，在训练阶段把中间推理轨迹纳入奖励函数能显著提升泛化性能",
+          "可验证领域训练主要靠最终结果正确性奖励与格式约束奖励，中间推理轨迹本身不直接参与奖励计算",
+          "特殊标记是赋予模型逻辑推理能力的核心权重开关，移除标记会导致推理性能大幅下降"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从步骤打分之争出发，判断最终奖励为主的设计结论",
+          "reasoningGoal": "先确认中间打分未证有效、标记非能力开关；再据此推出最终正确性加格式约束即够的结论；并逐项验证各说法是否成立，排除必上过程奖励论与标记开关论。"
+        },
+        "generatedAt": 1789684540187,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b42fc493",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-c7fb4f25",
+        "sourceSnapshot": {
+          "id": "llm-20",
+          "topic": "rlhf",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "rlvr",
+            "reasoning-model",
+            "reward-design"
+          ],
+          "question": "在针对大语言模型进行 RLVR（可验证奖励强化学习）训练以构建推理模型时，关于中间推理轨迹与奖励信号的设计，以下说法正确的是？",
+          "options": [
+            "训练时必须引入过程奖励模型（PRM）对每一步推理轨迹进行打分，否则模型无法学习到自我纠错（Aha Moment）",
+            "根据 Controlling Reasoning Effort in LLMs 中 可验证奖励模型 的实验结论，在 RL 阶段将中间推理轨迹纳入奖励函数能显著提升模型泛化性能",
+            "RLVR 主要依赖可验证领域（如数学、代码）的最终结果正确性奖励（R_accuracy）与格式约束奖励（R_format），中间推理轨迹本身不直接参与梯度更新的奖励计算",
+            "<think> 与 </think> 标记是赋予模型\"逻辑推理能力\"的核心权重开关，移除该标记会导致模型推理性能大幅下降"
+          ]
+        }
+      }
+    ],
+    "sec-eval-02": [
+      {
+        "id": "sec-eval-02__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某安全团队要验收内存漏洞复现平台：提交的输入是否真触发了目标漏洞、而非碰巧崩溃。关于自动化验证机制，下列哪项最有效？",
+        "options": [
+          "只要输入运行后导致目标程序返回非零退出码，即可判定成功重现了内存安全漏洞，退出码即证据",
+          "要求该输入在含漏洞的修补前源码编译版本上必须触发检测器崩溃，且在已修复源码编译版本上能正常运行不崩溃",
+          "要求该输入在修补前与修复后两个编译版本上均产生完全一致的崩溃堆栈日志",
+          "仅对目标代码执行静态覆盖率检查，若输入运行时的指令覆盖率触及了补丁修改的代码行，即判定成功重现漏洞"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能从碰巧崩溃的误报出发，判断修补前后差分验证的机制",
+          "reasoningGoal": "先确认退出码与覆盖率都不足以证明漏洞触发；再据此推出修补前后差分验证的机制；并逐项验证各说法是否成立，排除退出码论与一致崩溃论。"
+        },
+        "generatedAt": 1789684540189,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-1ef7b6ce",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-70eaad76",
+        "sourceSnapshot": {
+          "id": "sec-eval-02",
+          "topic": "security-eval",
+          "subtopic": "sanitizer-verification",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "security-eval",
+            "sanitizer",
+            "poc",
+            "differential-verification"
+          ],
+          "question": "在针对 C/C++ 内存安全漏洞构建自动化 Proof of Concept (PoC) 生成与重现评估系统时，需要自动判别 Agent 提交的特定 PoC 输入是否真正触发并利用了目标漏洞。为了防止误报（False Positive）与漏报（False Negative），下列哪项是基于 Sanitizer（如 AddressSanitizer/UBSan）与 Git 代码提交历史实现自动化 Ground-Truth 验证的最有效机制？",
+          "options": [
+            "只要 PoC 运行后导致目标程序返回非零退出码（Non-zero Exit Code），即可判定成功重现了内存安全漏洞",
+            "要求该 PoC 在包含漏洞的预修补（Pre-patch）源码编译版本上必须触发 Sanitizer 崩溃，且在已修复（Post-patch）源码编译版本上能够正常运行不发生崩溃",
+            "要求该 PoC 在预修补与已修复两个编译版本上均产生完全一致的 Sanitizer Crash 堆栈回溯日志",
+            "仅对目标代码执行静态覆盖率检查，若 PoC 运行时的指令覆盖率触及了补丁 Commit 修改的代码行，即判定成功重现漏洞"
+          ]
+        }
+      }
+    ],
+    "sec-eval-05": [
+      {
+        "id": "sec-eval-05__context-options__manual-by__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某大厂要测模型在新出漏洞上的真实利用能力，但陈年题库早被模型背过。用什么评估方案最严谨？",
+        "options": [
+          "仅使用已公开且得分最高的历史经典赛题，通过在系统提示中加入禁止使用记忆解法的合规约束指令",
+          "按模型知识截止时间划分数据，仅用截止后的真实新漏洞或新目标做全新测试",
+          "对历史题目的变量名和函数名进行随机混淆重命名，直接在文本语义层面阻止模型识别出原始代码库",
+          "屏蔽智能体的联网搜索工具，仅提供本地沙盒，即可彻底排除预训练数据带来的记忆污染"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能从旧题被背过出发，判断时间切片评估的严谨方案",
+          "reasoningGoal": "先确认预训练记忆会让旧题得分失真；再据此推出按知识截止切时间、用截止后新目标测试的方案；并逐项验证各说法是否成立，排除提示禁令论与断网论。"
+        },
+        "generatedAt": 1789684540190,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0f857ae9",
+        "batch": "manual-by",
+        "model": "manual",
+        "contentHash": "fnv1a-73250571",
+        "sourceSnapshot": {
+          "id": "sec-eval-05",
+          "topic": "security-eval",
+          "subtopic": "data-contamination",
+          "angle": "design",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "security-eval",
+            "data-contamination",
+            "knowledge-cutoff",
+            "ctf",
+            "web3"
+          ],
+          "question": "在针对 Web3/智能合约漏洞利用或标准 CTF 竞赛进行 LLM 安全能力评估时，由于大量历史漏洞 Payload、解题 Writeup 及分析文章已被广泛包含在 LLM 的预训练数据集中，极易产生「数据污染（Data Contamination）」问题，导致模型靠记忆而非逻辑推理解题。为了有效抑制数据污染对评估有效性的干扰，下列哪项评估方案最为严谨？",
+          "options": [
+            "仅使用已公开且得分最高的历史经典 CTF 赛题，通过在系统 Prompt 中加入「禁止使用记忆解法」的合规约束指令",
+            "按模型知识截止时间（Knowledge Cutoff）划分数据，仅用截止后的真实新漏洞或新目标做 Zero-Day 测试",
+            "对历史题目的变量名和函数名进行随机混淆重命名，直接在文本语义层面阻止 LLM 识别出原始代码库",
+            "屏蔽 Agent 的 Web 搜索工具，仅提供本地 Docker 沙盒，即可彻底排除预训练数据集带来的内存记忆污染"
+          ]
+        }
+      }
+    ]
+  }
+}
