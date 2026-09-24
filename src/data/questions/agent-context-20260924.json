@@ -1,0 +1,256 @@
+[
+  {
+    "id": "agent-context-rot-attention-budget-canonical",
+    "category": "context-engineering",
+    "topic": "context-engineering",
+    "tags": [
+      "context-rot",
+      "attention-budget",
+      "transformer-attention"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "context-rot",
+      "supporting": [
+        "pairwise-attention",
+        "attention-budget"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据 Transformer 架构成对注意力对 Token 关系的分布特征，诊断长输入序列下 Recall 精度衰减（Context Rot）与注意力预算消耗的因果机制。",
+      "reasoningGoal": "先判断长输入序列推理失效的具体现象是否由 Context Rot 引起；再推导 Transformer 架构 $O(n^2)$ 成对注意力分配在长 Token 序列下的稀释效应与 Pairwise 关系过载机制；据此排除认为模型拥有无限有效输入或归因于单纯模型权重微调不足的错误判断。"
+    },
+    "question": "在基于 Transformer 架构的大语言模型处理极长 Token 序列时，即使文本总量未超过模型的物理 Token 限制，模型对关键信息的召回精度（Recall）仍会出现随着序列增长而逐渐下降的现象（即 Context Rot）。从 Transformer 架构机制与注意力资源分配角度分析，导致这一现象的根本原因是什么？",
+    "explanation": "正确答案为 A 和 B。Transformer 架构的 Self-Attention 计算在 $n$ 个 Token 之间产生 $O(n^2)$ 的成对（Pairwise）注意力关系，使得模型的注意力预算（Attention Budget）随着序列长度扩张而被不断摊薄，导致对局部关键信息的召回精度发生衰减。同时，模型在长序列上的注意力模式易受训练数据序列长度分布的影响，在长距离依赖捕获上表现出性能梯度衰减。选项 C 错误，物理 Token 窗口容量大并不保证注意力焦点的精度不变；选项 D 错误，Context Rot 是 Transformer 注意力分配机制与注意力预算有限性导致的物理与架构限制，而非单纯微调收敛问题。",
+    "misconceptions": [
+      "误以为物理 Context Window 扩大即代表模型在全序列上的信息 Recall 精度保持恒定。",
+      "将长文本召回率下降错误归因于模型训练未收敛，忽视了 Transformer Pairwise 关系的 $O(n^2)$ 注意力稀释瓶颈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Transformer 架构对序列中每对 Token 分配 $O(n^2)$ 的 Pairwise 注意力权重，随着 Token 数量增加，有限的注意力预算被极大地稀释。",
+          "模型注意力机制在处理远超训练分布的高密 Token 序列时，捕获长距离依赖与 Pairwise 关系的精细度会呈现梯度式衰减。",
+          "物理窗口未溢出时，序列长度对召回精度影响很小，只要做好位置编码外推，全序列的注意力分配强度大致保持稳定。",
+          "此类召回率衰减主要源于长文本微调不充分，通过延长微调收敛即可恢复，与注意力计算机制本身关系不大。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-just-in-time-retrieval-canonical",
+    "category": "context-engineering",
+    "topic": "context-engineering",
+    "tags": [
+      "just-in-time-retrieval",
+      "agentic-search",
+      "dynamic-context"
+    ],
+    "difficulty": "hard",
+    "angle": "architecture",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "just-in-time-retrieval",
+      "supporting": [
+        "progressive-disclosure",
+        "embedding-retrieval"
+      ]
+    },
+    "assessment": {
+      "target": "能够对比 Pre-inference Embedding 静态检索与 Runtime Just-in-Time 动态检索在 Token 消耗、信息时效性、索引维护成本与探索深度上的适用边界。",
+      "reasoningGoal": "先比较 Pre-inference Embedding 检索与 Runtime Just-in-Time 检索的信息获取机制；再评估运行时动态工具探索（如 Grep/Glob）在数据实时性、Token 占用与响应延迟上的权衡；据此排除认为静态预嵌入索引在所有复杂 Agent 场景下均优于运行时动态检索的误区。"
+    },
+    "question": "在设计智能体信息获取架构时，架构师需要在 Pre-inference 静态向量检索（Embedding Retrieval）与 Runtime Just-in-Time 动态检索（如使用 Grep、Glob 或命令按需加载）之间进行技术选型。关于这两种架构模式的对比与适用边界，以下哪些表述是正确的？",
+    "explanation": "正确答案为 A 和 B。Just-in-Time 检索通过轻量标识符（如文件路径）与运行时工具按需加载数据，避免了预建 Embedding 索引过期和批量灌入冗余 Token 的问题，但增加了多轮交互的执行延迟。Pre-inference 静态检索检索速度快，但在动态变化数据源上维护成本高。选项 C 错误，静态向量检索并不能在所有场景下超越动态工具；选项 D 错误，Runtime 动态探索需要智能体进行多轮工具调用与推理，在整体响应耗时上通常慢于预先计算好的检索。",
+    "misconceptions": [
+      "误以为 Pre-inference 向量检索在所有 Agent 场景下均比运行时动态工具探索更具优势。",
+      "忽视了静态 Embedding 在面对频繁变动代码或大型数据库时可能带来的索引陈旧与 Token 浪费问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Runtime Just-in-Time 模式通过保留轻量标识符并配合工具动态探索，能有效规避预建索引陈旧与语法树解析复杂的问题。",
+          "Pre-inference 静态检索在响应延迟上具备优势，但对频繁变动的数据源容易产生索引滞后，且可能加载非必要的冗余信息。",
+          "静态向量检索凭借语义匹配能力，在多数复杂智能体场景下通常能在 Token 效率和探索精准度上优于运行时动态工具。",
+          "Runtime Just-in-Time 模式 Token 效率更高，因而在包含多轮工具交互的系统整体执行耗时上也往往更短。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-context-compaction-strategy-canonical",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "context-compaction",
+      "tool-result-clearing",
+      "long-horizon-agent"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "context-compaction",
+      "supporting": [
+        "tool-result-clearing",
+        "state-distillation"
+      ]
+    },
+    "assessment": {
+      "target": "能够评估长流程 Agent 中输入压缩（Compaction）与历史工具结果清理（Tool Result Clearing）策略对推理连贯性与 Token 节约的作用机制。",
+      "reasoningGoal": "先评估智能体长任务执行中输入窗口濒临上限的临界状态；再比较直接截断、全量历史保留与输入压缩（Compaction）结合 Raw Tool Output 清除的技术方案；据此排除将历史原始工具输出全量保留作为长时运行必要条件的错误假设。"
+    },
+    "question": "当智能体执行长达数小时的长流程复杂任务时，其消息历史记录会迅速逼近模型的物理 Token 限制。为了维持长周期推理的连贯性与效率，架构师需要设计 Token 治理与状态压缩策略。关于输入压缩（Compaction）与历史工具输出清理机制，以下哪些表述是正确的？",
+    "explanation": "正确答案为 A 和 B。输入压缩（Compaction）通过对前序历史进行高保真总结，提取核心决策与状态并重新开辟窗口，能有效维持长流程连贯性；清除历史消息中已经使用过的原始工具输出（Tool Result Clearing）是轻量且安全的 Token 优化策略。选项 C 错误，原始工具输出在完成当轮推理后通常不再需要保留全量文本；选项 D 错误，简单截断会丢失远端的重要约束与目标，压缩需要进行状态提炼而非粗暴切除。",
+    "misconceptions": [
+      "认为为了保持 Agent 推理正确性，必须永久保留多轮交互中所有的 Raw Tool Result。",
+      "将输入内容压缩等同于简单的尾部文本截断，忽视了关键决策与状态高保真提炼的要求。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "输入压缩能够在开启全新窗口的同时，高保真地提炼架构决策与遗留缺陷，避免信息随窗口重置而丢失。",
+          "清理历史消息深处的原始工具执行结果（Tool Result Clearing），是一种低风险且能快速节省 Token 的轻量压缩手段。",
+          "为保证后续推导正确，通常建议尽量完整保留历史工具调用的原始输出，仅在窗口迫近上限时再考虑清理。",
+          "高效压缩通常可简化为按时间顺序的滑动截断，仅保留最近若干轮状态即可维持长任务连贯性。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-structured-note-taking-canonical",
+    "category": "memory",
+    "topic": "memory",
+    "tags": [
+      "agentic-memory",
+      "structured-note-taking",
+      "context-reset"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "agentic-memory",
+      "supporting": [
+        "external-persistence",
+        "context-reset"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据长周期跨会话任务需求，设计基于外部文件持久化的结构化记笔记（Agentic Memory）机制以实现滑动窗口重置后的状态恢复。",
+      "reasoningGoal": "先识别 Agent 跨滑动窗口重置进行长流程状态追踪的持久化需求；再推导将中间状态写至外部文件（如 NOTES.md/Memory Tool）并在重置后按需读取的结构化记笔记模式；据此排除将全量历史 Token 锁定在 Working Memory 中的低效设计。"
+    },
+    "question": "在设计需要跨越多次会话重置（Context Reset）、进行持续数天任务追踪的智能体记忆系统时，架构师希望以极低的 Token 开销实现长期的目标跟踪与状态恢复。以下哪种设计方案最符合这一要求？",
+    "explanation": "正确答案为 A。结构化记笔记模式通过让智能体定期向外部文件写入高度浓缩的状态与未完成目标，在会话重置后以极低 Token 开销恢复推理状态。选项 B 的向量检索恢复会引入检索噪声与组装成本，保真度与开销均不如显式结构化笔记；选项 C 的滚动扩展窗口仍会被长周期 Token 拖垮并稀释注意力；选项 D 的纯向量记忆缺乏对目标与未完成事项的显式跟踪，跨重置恢复保真度不足。",
+    "misconceptions": [
+      "误以为 Agent 的长期记忆只能通过扩展 Working Memory 或重训练 Embedding 向量来实现。",
+      "忽略了外部结构化文件在 Context Reset 后作为开销极小的状态恢复媒介的作用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "要求智能体定期将当前进度、未完成目标与策略笔记写入外部结构化文件，并在会话重置后优先读取该文件。",
+          "将会话摘要与关键片段存入向量库，会话重置后按语义检索取回最相关的若干条以恢复状态。",
+          "将会话窗口按天滚动扩展并配合摘要压缩，尽量将近期完整历史保留在 Working Memory 中直接推理。",
+          "仅依赖向量数据库的长期记忆，不做显式结构化笔记，由检索动态组装上下文恢复状态。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "sub-agent-context-isolation-canonical",
+    "category": "multi-agent",
+    "topic": "multi-agent",
+    "tags": [
+      "sub-agent",
+      "context-isolation",
+      "multi-agent-system"
+    ],
+    "difficulty": "hard",
+    "angle": "architecture",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "sub-agent-architecture",
+      "supporting": [
+        "context-isolation",
+        "hierarchical-summarization"
+      ]
+    },
+    "assessment": {
+      "target": "能够针对高噪声、深层次并行探索任务，设计基于 Sub-agent 的语境隔离架构，避免主智能体语境被细节污染。",
+      "reasoningGoal": "先分析复杂长流程研究任务中主 Agent 面临的 Token 污染与细节噪声冲击；再推理通过 Sub-agent 在独立干净窗口中深入探索并仅向主 Agent 返回高度凝练总结的隔离机制；据此排除试图依靠单 Agent 在单一滑动窗口内处理所有并行深探细节的架构策略。"
+    },
+    "question": "在构建深度研究与复杂代码分析类智能体系统时，如果由单智能体直接执行多路深度并行搜索，主会话窗口极易被海量的低层级工具日志与中间细节所污染。为了解决这一架构瓶颈，采用子智能体（Sub-agent）架构进行隔离设计的核心技术优势包括哪些？",
+    "explanation": "正确答案为 A 和 B。Sub-agent 架构的核心优势在于语境隔离（Context Isolation）。子智能体可以在各自独立的干净 Token 窗口中消耗大量 Token 执行繁重的局部探索，随后仅向主智能体回传高度蒸馏后的总结（通常仅数千 Token），从而保护主智能体免受噪声污染。选项 C 错误，多 Agent 的主要收益之一是窗口隔离与注意力保护，而非单纯并行加速；选项 D 错误，将所有 Raw Log 传回主智能体破坏了语境隔离的作用，会导致主智能体注意力被细节淹没。",
+    "misconceptions": [
+      "误以为多 Agent 架构的优势仅仅在于并行计算速度，忽视了其在 Context 隔离与防污染上的核心价值。",
+      "认为主 Agent 必须接收子 Agent 探索过程中的所有 Raw Log 才能做出正确决策。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "子智能体拥有独立的干净窗口，可以消耗数万 Token 进行深度探索，而仅向主智能体返回高浓缩的总结报告。",
+          "该架构实现了关注点分离，主智能体得以专注于全局规划与信息合成，避免其注意力焦点被局部低噪声细节所干扰。",
+          "多智能体架构的核心优势主要在于提升计算并行度，对主智能体窗口信息污染的缓解作用有限。",
+          "为确保决策精准，子智能体在完成任务后通常应将关键原始日志一并回传，供主智能体复核细节。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  }
+]

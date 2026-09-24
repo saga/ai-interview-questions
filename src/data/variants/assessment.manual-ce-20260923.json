@@ -1,0 +1,942 @@
+{
+  "version": 1,
+  "generatedAt": 1790120106124,
+  "promptVersion": "v7",
+  "variants": {
+    "llm-24": [
+      {
+        "id": "llm-24__context-options__manual-ce__0",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "MoE 训练中监控发现门控与线性分支同向放大，激活值偶发冲爆。关于“钳制方式”的选择，哪项最合适？",
+        "options": [
+          "Hard Clip 把两路分支硬截到固定区间，梯度在截断点直接断掉，MoE 里反而更易震荡。",
+          "SiTU 替换 SiLU，两路分支各加 softcap(x; β)=β·tanh(x/β) 平滑截断。",
+          "前后各加 LayerNorm 强制归一化，不动激活函数即可根除极值。",
+          "加大 Weight Decay 压权重模长，比换激活更直接地解决冲爆。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "reasoningGoal": "先定位诱因是同向对齐致极值膨胀；再据此确认 SiTU 加双路 softcap 的组合成立；并排除硬截断、加归一化与加 Decay 的主张。",
+          "target": "能从门控与线性同向放大的冲爆现象出发，判断平滑截断的钳制结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-81779f0b",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-72236079",
+        "sourceSnapshot": {
+          "id": "llm-24",
+          "topic": "activation",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "swiglu",
+            "softcap",
+            "numerical-stability",
+            "moe"
+          ],
+          "question": "在 MoE 架构中，传统 SwiGLU 激活因门控与线性分支同向对齐易产生极值膨胀。如何通过平滑截断（Softcap）设计缓解该数值不稳定性？",
+          "options": [
+            "采用 Hard Clip 将门控与线性分支强制截断在 [−1, 1] 之间，这样既能压住数值上界又完全保留梯度连续性，因此在 MoE 中比 Softcap 更常用也更稳定",
+            "使用 SiTU 替换 SiLU，并对门控部分与线性分支均施加基于 softcap(x; β) = β·tanh(x/β) 的平滑截断",
+            "在 SwiGLU 前后引入 LayerNorm 以强制归一化特征向量，这能从根本上消除极值膨胀而无需改动任何激活函数",
+            "增大 SwiGLU 权重矩阵的 Weight Decay 以约束模长，这比任何激活替换都更直接地解决了数值不稳定问题"
+          ]
+        }
+      }
+    ],
+    "google-genai-leader-02": [
+      {
+        "id": "google-genai-leader-02__context-options__manual-ce__1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "客服 Agent 上线前，法务要求明确“什么情况下必须转人工”。关于自主与转人工的边界，哪项最符合职能定位？",
+        "options": [
+          "权限与工具范围内自主分析决策、调接口执行，超权限或破规则才转人工。",
+          "所有退款一律转人工，Agent 只记录不决策。",
+          "直接改账户余额完事，不调业务接口不留记录。",
+          "每步都等运营逐条确认，Agent 只当传话筒。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "reasoningGoal": "先识别约束是授权范围与审计要求；再据此确认范围内自主、超限转人的划分成立；并排除全转人工、直改余额与步步确认的主张。",
+          "target": "能从转人工条件的划定争议出发，判断权限内自主、超限转人的边界结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a85d2f4a",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-92224ef4",
+        "sourceSnapshot": {
+          "id": "google-genai-leader-02",
+          "topic": "agent-fundamentals",
+          "subtopic": "AI Agent 职能",
+          "angle": "scenario",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "ai-agent",
+            "agent-function",
+            "google",
+            "definition",
+            "google-genai-leader",
+            "certification"
+          ],
+          "question": "某客服 Agent 被授权在规则内自主处理退款。下列哪项最符合 Agent 的职能边界？（单选）",
+          "options": [
+            "在权限与工具范围内分析退款情境、调用查询与退款接口自主决策，仅在超出权限或规则时转人工。",
+            "把全部退款请求无条件转交人工，Agent 仅做记录，不参与任何决策。",
+            "直接修改用户账户余额完成退款，无需调用任何业务接口或留下记录。",
+            "每步操作都等待运营人员逐条确认，Agent 只负责把请求转发给人类。"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-33": [
+      {
+        "id": "claude-blog-2026-08-33__context-options__manual-ce__2",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "新人往仓库约定文件里塞了生产密钥，还把每次聊天全文都倒了进去。关于“该放什么”，哪项最合适？",
+        "options": [
+          "把全部业务历史和每次聊天全文都塞进去。",
+          "放构建测试命令、关键约定、架构边界和常犯错误。",
+          "放生产密钥和个人 token，方便 Agent 直接用。",
+          "只写品牌宣传文案之类与工程无关的内容。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "reasoningGoal": "先确定目标是短小精悍的启动上下文；再据此确认命令约定边界与错题本的组合成立；并排除全文堆积、密钥入库与宣传文案的主张。",
+          "target": "能从错放密钥与聊天全文的反例出发，判断约定文件的内容取舍结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a29daa31",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-07494f0a",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-33",
+          "topic": "agent-guardrails",
+          "subtopic": "CLAUDE.md 作用域",
+          "angle": "design",
+          "difficulty": "medium",
+          "cognitiveTask": "design",
+          "tags": [
+            "claude-blog",
+            "claude-md",
+            "institutional-knowledge"
+          ],
+          "question": "一个团队维护供 Agent 启动时读取的仓库级工作约定文件，最适合放入哪些内容？（单选）",
+          "options": [
+            "全部业务历史和每次聊天全文",
+            "构建测试命令、关键约定、架构边界和常犯错误",
+            "生产密钥和个人 token",
+            "只写入品牌宣传文案之类无关内容"
+          ]
+        }
+      }
+    ],
+    "ml-theory-beyond-worst-case": [
+      {
+        "id": "ml-theory-beyond-worst-case__context-options__manual-ce__3",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "团队用 EM 跑大规模聚类效果很好，但审稿人质疑“非凸无理论保证”。关于“拿什么回应最坏情况质疑”，哪项思路正确？",
+        "options": [
+          "彻底放弃理论证明，只报大规模真实数据上的 Benchmark 经验。",
+          "给输入加合理概率模型或结构假设，绕开最坏情况拿可证明保障。",
+          "把非凸问题全转成高维凸松弛，保证多项式时间全局最优。",
+          "只解一维解析解，高维靠强行剪枝压进多项式时间。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "reasoningGoal": "先回到 NP-hard 障碍的第一性原理；再据此确认概率模型与平滑分析的绕路成立；并排除放弃证明论、万能凸松弛论与一维剪枝论。",
+          "target": "能从审稿人最坏情况质疑出发，判断结构假设绕路的理论回应结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-2cf90937",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-73d27e26",
+        "sourceSnapshot": {
+          "id": "ml-theory-beyond-worst-case",
+          "topic": "algorithm-design",
+          "angle": "fundamental",
+          "difficulty": "easy",
+          "cognitiveTask": "explain",
+          "tags": [
+            "Worst-case Analysis",
+            "Smoothed Analysis",
+            "Separability",
+            "Algorithm Theory"
+          ],
+          "question": "在针对机器学习算法进行理论分析与系统设计时，传统计算机科学的“最坏情况分析（Worst-case Analysis）”常面临 NP-hard 的阻碍。为了为实践中的启发式算法（如 EM、NMF、非凸梯度下降）提供可证明的理论 guarantees，理论机器学习领域的核心解决思路是什么？",
+          "options": [
+            "完全放弃理论证明，仅依赖大规模真实数据集上的 Benchmark 经验评估来验证算法有效性。",
+            "引入对输入数据的合理概率模型或结构假设（如 Separability、平滑分析 Smoothed Analysis），绕开最坏情况障碍并给出可证明的理论保障。",
+            "将所有非凸优化问题统一转化为高维凸优化松弛问题，从而确保在最坏情况下能够在多项式时间内找到全局最优解。",
+            "仅针对一维简单数据分布求解解析解，并在高维场景下通过强行剪枝将最坏情况时间复杂度降至多项式级别。"
+          ]
+        }
+      }
+    ],
+    "gap-alignment-definition-01": [
+      {
+        "id": "gap-alignment-definition-01__context-options__manual-ce__4",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "产品会上有工程师说“对齐就是堆层数”，另一位说“对齐就是压延迟”。关于对齐的真正含义，哪项正确？",
+        "options": [
+          "让模型行为符合人类或产品目标：有用、遵指令、安全。",
+          "只增加模型层数，行为目标原样不动。",
+          "只优化推理吞吐，输出内容概不关心。",
+          "把所有用户输入直接加入训练集。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先明确对齐管的是行为目标而非规模速度；再据此确认有用遵令安全的内涵成立；并排除唯规模论、唯吞吐论与全量训练论。",
+          "target": "能从堆层数与压延迟的误读出发，判断对齐问题域的落地含义。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a67e1f0e",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-05770ccd",
+        "sourceSnapshot": {
+          "id": "gap-alignment-definition-01",
+          "topic": "alignment",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "alignment",
+            "instruction-following",
+            "preference"
+          ],
+          "question": "LLM 语境中的 alignment 通常要解决什么问题？",
+          "options": [
+            "让模型行为更符合人类或产品目标，包括有用性、指令遵循和安全性",
+            "只增加模型层数而不改变行为目标",
+            "只优化推理吞吐，不关注输出内容",
+            "把所有用户输入直接加入训练集"
+          ]
+        }
+      }
+    ],
+    "mha-param-calc": [
+      {
+        "id": "mha-param-calc__context-options__manual-ce__5",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "推理服务选型：d_model=512 的层，A 用 8 头、每头 d_k=64，B 用单头 d_k=512。关于两者投影参数量与复杂度的结论，哪项正确？",
+        "options": [
+          "A 的投影参数与 FLOPs 总量是 B 的 8 倍。",
+          "两者投影参数总量与计算复杂度基本一致。",
+          "A 参数是 B 的 8 倍，但多头并行使复杂度降为 1/8。",
+          "A 省掉输出投影 W^O，参数比 B 少。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先算清 8×3×512×64 与单头 3×512×512 的量级关系；再据此确认总量基本一致成立；并排除 8 倍论、并行降复杂论与省投影论。",
+          "target": "能从两种注意力配置的选型对比出发，判断参数量与复杂度的计算结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-1067a600",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-646db574",
+        "sourceSnapshot": {
+          "id": "mha-param-calc",
+          "topic": "attention",
+          "subtopic": "parameter-count-parity",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "multi-head-attention",
+            "parameter-count",
+            "complexity-parity"
+          ],
+          "question": "假设模型输入维度 d_model=512。方案一采用 h=8 的多头注意力每头 d_k=64；方案二采用单头注意力 d_k=512。关于两种方案在线性投影矩阵的参数量与计算复杂度对比下列说法正确的是？",
+          "options": [
+            "方案一的投影参数总量和总 FLOPs 是方案二的 8 倍",
+            "方案一与方案二的投影参数总量和总计算复杂度基本一致",
+            "方案一参数量是方案二的 8 倍但由于多头可并行计算计算复杂度降为 1/8",
+            "方案一省去了输出投影矩阵 W^O 因此参数量少于方案二"
+          ]
+        }
+      }
+    ],
+    "dl-14": [
+      {
+        "id": "dl-14__context-options__manual-ce__6",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "同学在推 VAE 的 log p(x) 时把 KL 项的符号写反了，导致 ELBO 比对数似然还大。关于正确关系式，哪项正确？",
+        "options": [
+          "减后验KL：log p(x) = ELBO − D_KL(q(z|x)∥p(z|x))",
+          "加后验KL：log p(x) = ELBO + D_KL(q(z|x)∥p(z|x))",
+          "加反向KL：log p(x) = ELBO + D_KL(p(z|x)∥q(z|x))",
+          "减先验KL：log p(x) = ELBO − D_KL(q(z|x)∥p(z))"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先确定 KL 非负则 log p(x)≥ELBO 的约束；再据此确认加后验 KL 的分解成立；并排除减后验、加反向与减先验的写法。",
+          "target": "能从 KL 符号写反致 ELBO 反超的现象出发，判断边际似然分解式的计算结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b90553fd",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-75ba0d6f",
+        "sourceSnapshot": {
+          "id": "dl-14",
+          "topic": "backprop",
+          "angle": "calculation",
+          "difficulty": "hard",
+          "cognitiveTask": "infer",
+          "tags": [
+            "elbo",
+            "evidence-lower-bound",
+            "kl-decomposition"
+          ],
+          "question": "在 VAE 推导数据对数边际似然 log p(x) 的过程中，正确表示其与证据下界（ELBO）及 KL 散度关系的公式是？",
+          "options": [
+            "减去后验KL：log p(x) = ELBO − D_KL(q(z|x) ∥ p(z|x))",
+            "加上后验KL：log p(x) = ELBO + D_KL(q(z|x) ∥ p(z|x))",
+            "加上反向KL：log p(x) = ELBO + D_KL(p(z|x) ∥ q(z|x))",
+            "减去先验KL：log p(x) = ELBO − D_KL(q(z|x) ∥ p(z))"
+          ]
+        }
+      }
+    ],
+    "ai-eng-027": [
+      {
+        "id": "ai-eng-027__context-options__manual-ce__7",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "同一 Agent 换了种 prompt 排版后缓存命中率暴跌，TTFT 翻倍。关于排版与命中的关系，哪项分析正确？",
+        "options": [
+          "静态语料放最前、动态提问放最后；前缀缓存靠首字符起连续完全匹配。",
+          "动态提问放最前、静态语料放最后；头部注意力权重最高。",
+          "语料提问混排加 <cache> 标签，模型按语义相似自动命中。",
+          "顺序无所谓，总 Token 不变网关就会命中 KV Cache。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "reasoningGoal": "先定位诱因是前缀连续匹配被打破；再据此确认静态在前、提问在后的规范成立；并排除提问在前论、标签语义论与顺序无关论。",
+          "target": "能从换排版致命中暴跌的现象出发，诊断前缀匹配与排版的因果结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6328df6c",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-5d207be0",
+        "sourceSnapshot": {
+          "id": "ai-eng-027",
+          "topic": "caching",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "prefix-caching",
+            "prompt-layout",
+            "ttft",
+            "kv-cache"
+          ],
+          "question": "在长上下文 LLM 架构中，为了最大化利用 Provider 的 Prefix Caching 机制降低 Token 计费与首帧延迟（TTFT），提示词（Prompt）结构的构建规范是怎样的？原理是什么？",
+          "options": [
+            "将静态文档语料（Corpus）置于最前，动态提问（Question）置于最后；原理是 Prefix Caching 严格按从首字符开始的连续完全匹配来识别缓存",
+            "将动态提问（Question）置于最前，静态文档语料（Corpus）置于最后；原理是注意力机制对 Prompt 头部赋予最高权重",
+            "将语料与提问混合输入，通过设置 <cache> 标签标记语义关键块；原理是 LLM 自动识别跨请求的向量语义相似度",
+            "提示词顺序无影响，只要单个 Request 的总 Token 数保持不变，网关即会自动触发 KV Cache 命中"
+          ]
+        }
+      }
+    ],
+    "foundation-cnn-definition-01": [
+      {
+        "id": "foundation-cnn-definition-01__context-options__manual-ce__8",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "有人给 CNN 每像素配独立全连接参数，参数量直接爆炸。关于卷积层真正利用的图像特性，哪项正确？",
+        "options": [
+          "局部连接加权重共享，吃透空间结构。",
+          "每个像素一套独立全连接参数。",
+          "只把图像转文本，不做特征提取。",
+          "保证所有输入图像标签相同。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先明确参数爆炸源于无视空间结构；再据此确认局部共享的机制成立；并排除独立参数论、转文本论与同标签论。",
+          "target": "能从逐像素全连接爆炸的反例出发，判断卷积层特性的应用结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-9c1e3652",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-f4e20894",
+        "sourceSnapshot": {
+          "id": "foundation-cnn-definition-01",
+          "topic": "cnn",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "cnn",
+            "convolution",
+            "image"
+          ],
+          "question": "卷积神经网络中的卷积层主要利用了图像的什么特性？",
+          "options": [
+            "局部连接和权重共享带来的空间结构利用",
+            "每个像素都使用一套完全独立的全连接参数",
+            "只把图像转换成文本，不进行特征提取",
+            "保证所有输入图像都具有相同的标签"
+          ]
+        }
+      }
+    ],
+    "context-2026-109": [
+      {
+        "id": "context-2026-109__context-options__manual-ce__9",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "同一份材料，把关键结论挪到中间后模型就答错了，挪回开头又答对。关于位置效应的利用，哪项正确？",
+        "options": [
+          "注意力与 recency 使位置影响权重，关键信息放高注意力区并结构化。",
+          "长上下文模型位置偏置已消失，排版只保可读即可。",
+          "最长文档放最前吃开头红利，后短前长即最优。",
+          "顺序只影响解码热身，最终答案不受影响，优化优先级最低。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "reasoningGoal": "先复现注意力与 recency 的成因；再据此确认关键信息进高注意力区的布局成立；并排除偏置消失论、最长在前论与只影响热身论。",
+          "target": "能从挪位置即答错的现象出发，诊断位置权重与布局的利用结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ae7054b2",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-e96b8381",
+        "sourceSnapshot": {
+          "id": "context-2026-109",
+          "topic": "context-engineering",
+          "angle": "mechanism",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "context-ordering",
+            "attention",
+            "information-density"
+          ],
+          "question": "同样的一组信息，为什么仅仅改变 context 中的信息顺序，也可能影响模型表现？工程上你会如何利用这一现象设计 context layout？",
+          "options": [
+            "注意力与 recency 效应使位置影响权重，应将最关键信息放在高注意力区并结构化布局",
+            "现代长上下文模型的位置偏置已大幅缓解，layout 只需保证可读性，无需再为注意力区刻意排版。",
+            "把最长文档放最前以充分利用开头的高注意力区，后短前长的布局即最优，无需按任务重要性排。",
+            "顺序主要影响解码早期的注意力热身，对最终答案的影响可忽略；layout 优化属于微观调参，优先级最低。"
+          ]
+        }
+      }
+    ],
+    "foundation-context-window-definition-01": [
+      {
+        "id": "foundation-context-window-definition-01__context-options__manual-ce__10",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "客服问“为什么多轮聊下来模型忘了开头”，新人解释“窗口是显存大小”。关于窗口的真正含义，哪项正确？",
+        "options": [
+          "一次请求可处理的输入加输出 token 容量上限。",
+          "模型能永久记住所有用户的全部历史对话。",
+          "就是模型部署所需 GPU 显存容量的别名。",
+          "只限制单次输出长度，输入上下文不管。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先明确窗口管的是单次 token 总量；再据此确认输入加输出上限的定义成立；并排除永久记忆论、显存别名论与只限输出论。",
+          "target": "能从遗忘开头与显存误读出发，判断窗口容量含义的应用结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-5bb1069d",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-19af3612",
+        "sourceSnapshot": {
+          "id": "foundation-context-window-definition-01",
+          "topic": "context-window",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "context-window",
+            "tokens",
+            "llm"
+          ],
+          "question": "LLM 的上下文窗口通常指什么？",
+          "options": [
+            "一次请求中模型可处理的输入与输出 token 容量上限",
+            "模型可永久记住所有用户的全部历史对话",
+            "模型部署所需 GPU 显存容量的另一种名称",
+            "只限制单次输出长度而不限制输入上下文"
+          ]
+        }
+      }
+    ],
+    "ai-eng-058": [
+      {
+        "id": "ai-eng-058__context-options__manual-ce__11",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "推荐解释服务预算超标 3 倍，p95 倒是达标了。复盘要在成本、命中率与 200ms p95 之间重新权衡，哪项架构判断正确？",
+        "options": [
+          "解释容忍分钟级延迟，实时调加排队限流就够，缓存不值得做。",
+          "embedding 召回加精排，解释按三元组跨用户复用；命中保 95%，未命中异步补。",
+          "直接上最大旗舰模型，质量上去复求自然少，贵即省。",
+          "解释长度压到 5 token 以内，短小即高效，体验几乎无损。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "reasoningGoal": "先识别约束是成本、命中与延迟三角；再据此确认召回加精排、三元组复用、保命中异步补的组合成立；并排除分钟容忍论、旗舰省钱论与极限压缩论。",
+          "target": "能从预算超标下的三方权衡出发，判断缓存复用架构的取舍结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ff5a1ea1",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-53c95bf1",
+        "sourceSnapshot": {
+          "id": "ai-eng-058",
+          "topic": "cost",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "design",
+          "tags": [
+            "scale-economics",
+            "explanation-cache",
+            "cache-hit-rate-sla"
+          ],
+          "question": "5000 万用户的流媒体平台要为每条推荐附加 LLM 生成的解释：日活 500 万 × 每人 10+ 组推荐意味着每天数亿次潜在调用。请设计成本可控的解释服务架构，并推导缓存命中率与 200ms p95 延迟目标之间的量化关系。",
+          "options": [
+            "推荐解释可接受分钟级延迟，实时调用加排队限流即够；缓存命中率运维复杂度高于调用成本，简单优先。",
+            "排序走 embedding 召回 + cross-encoder 精排；解释按三元组缓存跨用户复用；未命中击穿 p95，命中率须≥95%，新解释异步预生成。",
+            "用最大的旗舰模型生成更高质量的解释，通过减少用户重复请求来节省总体成本；贵模型反而更省钱且用户体验明显更好，因此质量与成本可兼得，大模型路线最优",
+            "把解释长度限制到 5 个 token 以内来压缩 LLM 成本，几乎不影响用户体验；短小即高效且最容易控制整体预算上限，极简即省钱，无需长文，短答案足够用"
+          ]
+        }
+      }
+    ],
+    "p0-cross-entropy-calculation-01": [
+      {
+        "id": "p0-cross-entropy-calculation-01__context-options__manual-ce__12",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "新分类 head 抽查：真实类别概率仅 0.25（自然对数）。关于该样本 loss 与 perplexity，哪组数值正确？",
+        "options": [
+          "loss≈0.25，perplexity≈0.25",
+          "loss≈1.386，perplexity=4",
+          "loss=4，perplexity≈1.386",
+          "loss≈0.693，perplexity=2"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先确定 loss=−ln0.25、perplexity=exp(loss) 的关系；再据此确认 1.386 与 4 的组合成立；并排除自指组合、数值倒置与 0.693 组合。",
+          "target": "能从低概率抽查出发，判断交叉熵与困惑度的计算结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-b3ea4e4b",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-1b4a1dc7",
+        "sourceSnapshot": {
+          "id": "p0-cross-entropy-calculation-01",
+          "topic": "cross-entropy",
+          "angle": "calculation",
+          "difficulty": "medium",
+          "cognitiveTask": "infer",
+          "tags": [
+            "cross-entropy",
+            "loss",
+            "perplexity",
+            "calculation"
+          ],
+          "question": "一个分类模型对真实类别的预测概率为 0.25，使用自然对数计算交叉熵。该样本的 loss 和对应 perplexity 分别约为多少？",
+          "options": [
+            "loss ≈ 0.25，perplexity ≈ 0.25",
+            "loss ≈ 1.386，perplexity = 4",
+            "loss = 4，perplexity ≈ 1.386",
+            "loss ≈ 0.693，perplexity = 2"
+          ]
+        }
+      }
+    ],
+    "eth-01": [
+      {
+        "id": "eth-01__context-options__manual-ce__13",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "评测集里发现了用户身份证号，有人说“内部用用没事，不用脱敏”。关于隐私数据的首要原则，哪项正确？",
+        "options": [
+          "最小化收集加先行脱敏，最小权限控制访问。",
+          "字段越全效果越好，合规问题上线前再说。",
+          "纯内部实验不对外发布，无需脱敏与访问控制。",
+          "全部工单对项目组全员开放明文查阅，方便协作。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "reasoningGoal": "先明确内部使用不豁免合规义务；再据此确认最小收集先行脱敏最小权限的组合成立；并排除先污染后治理论、内部豁免论与全员明文论。",
+          "target": "能从明文身份证号的处置争议出发，判断隐私最小化的首要原则结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-f8b9d155",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-b33795e9",
+        "sourceSnapshot": {
+          "id": "eth-01",
+          "topic": "data-leakage",
+          "angle": "definition",
+          "difficulty": "easy",
+          "cognitiveTask": "identify",
+          "tags": [
+            "privacy",
+            "compliance",
+            "data-minimization"
+          ],
+          "question": "在 AI 应用中，训练数据包含个人隐私信息时，首要遵循的原则是？",
+          "options": [
+            "在合规前提下遵循数据最小化原则：只保留评测必要的字段，先行脱敏或匿名化处理，并按最小权限原则控制数据访问范围",
+            "尽可能完整地收集原始字段以保证模型效果，合规问题留待产品正式上线前统一整改",
+            "数据仅用于内部实验且不对外发布，因此无需任何脱敏或访问控制措施",
+            "将全部工单对项目组全员开放明文查阅权限，方便大家协作排查 bad case 提升效率"
+          ]
+        }
+      }
+    ],
+    "distill-06": [
+      {
+        "id": "distill-06__context-options__manual-ce__14",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "流水线先做结构压缩再量化，QAD 接上去效果始终上不去。关于“缺什么样的教师”，哪项正确？",
+        "options": [
+          "同架构全精度教师已没了，只剩退化 bf16 检查点，需请原始模型出山。",
+          "QAD 只支持 8-bit 以上，4-bit 必须换 QAH。",
+          "QAH 不用 KL 散度，直接拷权重就能回精度。",
+          "QAD 要求学生比教师大，不支持小模型学大模型。"
+        ],
+        "angle": "mechanism",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "reasoningGoal": "先识别结构压缩消灭了同架构教师；再据此确认请原始模型出山的判断成立；并排除位宽门槛论、免 KL 论与体型倒置论。",
+          "target": "能从压缩后蒸馏上不去的现象出发，诊断教师缺失的根因结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-c35058d2",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-9813e4eb",
+        "sourceSnapshot": {
+          "id": "distill-06",
+          "topic": "distillation",
+          "angle": "scenario",
+          "difficulty": "hard",
+          "cognitiveTask": "explain",
+          "tags": [
+            "qad-insufficiency",
+            "structural-compression",
+            "scenario"
+          ],
+          "question": "在『先结构压缩再量化』的部署流水线中，为什么常规的 QAD 往往不够、需要 QAH 这类跨架构蒸馏？",
+          "options": [
+            "结构压缩后已无同架构全精度教师，仅剩退化 bf16 检查点会锚定学生上限，故需原始模型为教师",
+            "因为 QAD 只能用于 8-bit 以上精度，4-bit 必须用 QAH 才行",
+            "因为 QAH 完全不需要 KL 散度，直接拷贝权重就能恢复精度",
+            "因为 QAD 要求学生模型必须比教师更大，而它不支持小模型学大模型"
+          ]
+        }
+      }
+    ],
+    "rl-logprob-mismatch-01": [
+      {
+        "id": "rl-logprob-mismatch-01__context-options__manual-ce__15",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "采样与训练两端 logprob 对不上，奖励曲线抖得没法看。关于最常见原因与解法，哪项正确？",
+        "options": [
+          "采样侧为吞吐用低精度 Attention 或非确定 Gemm，需两端对齐算子。",
+          "两端统一镜像、Top-p 对齐即等价，算子差异忽略不计。",
+          "采样没存 prompt KV Cache，每步重算全量即可零误差对齐。",
+          "两侧 batch 语义不同是主因，统一口径即消除。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "reasoningGoal": "先定位诱因在异构算子而非配置；再据此确认低精度与非确定优化的归因、两端对齐的解法成立；并排除镜像等价论、重算根治论与口径主因论。",
+          "target": "能从两端 logprob 对不上的抖动出发，判断算子对齐的排查结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-ba9b4f4b",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-66d91840",
+        "sourceSnapshot": {
+          "id": "rl-logprob-mismatch-01",
+          "topic": "distributed-training",
+          "angle": "debugging",
+          "difficulty": "hard",
+          "cognitiveTask": "diagnose",
+          "tags": [
+            "logprob",
+            "distributed-training",
+            "rollout",
+            "numerical-alignment"
+          ],
+          "question": "在大规模 Agent 强化学习系统中，训练端（基于 DeepSpeed / Megatron 等训练框架）与 Rollout 采样端（基于 vLLM / SGLang 等推理引擎）通常采用异构算子与并行策略。在这类异步架构中，采样端与训练端 Log-Probability（对数概率）出现明显偏差（Logprob Mismatch）的最常见原因及解法是什么？",
+          "options": [
+            "采样引擎为了提高吞吐量使用了低精度 Attention 算子或非确定性 Gemm 优化，需在采样与训练路径上进行严格的数值对齐与算子控制",
+            "采样与训练环境统一镜像即可，Top-p 参数一致即等价；算子库差异属二阶小量，可忽略。",
+            "采样引擎在解码过程中未保存 Prompt 阶段的 KV Cache，只需强制每步重新计算全量 KV Cache 即可实现无误差对齐",
+            "两侧 batch 语义不同是偏差主因，统一 batch 口径即可消除；框架差异是次要因素。"
+          ]
+        }
+      }
+    ],
+    "p0-dpo-tradeoff-01": [
+      {
+        "id": "p0-dpo-tradeoff-01__context-options__manual-ce__16",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "新偏好数据集刚标完，老板要求三天内上线对齐版本。关于 DPO 与 PPO 的取舍，哪项正确？",
+        "options": [
+          "DPO 吃固定偏好集，省在线采样与奖励模型；动态多步反馈自由度低。",
+          "两者都要训奖励模型做在线 rollout，只差 batch size。",
+          "PPO 不要奖励模型，策略梯度直算偏好标签。",
+          "DPO 事实准确率必更高，可跳过评测与 KL 控制。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "reasoningGoal": "先明确取舍在工程速度与优化自由度之间；再据此确认省采样免 reward 模型的 DPO 成立；并排除都要 reward 论、PPO 免 reward 论与免评测论。",
+          "target": "能从三天上线的工期约束出发，判断固定偏好集上 DPO 优先的设计结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-d1494f76",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-3ecd3c5b",
+        "sourceSnapshot": {
+          "id": "p0-dpo-tradeoff-01",
+          "topic": "dpo",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "dpo",
+            "ppo",
+            "preference-optimization",
+            "tradeoff"
+          ],
+          "question": "团队需要在固定偏好数据集上快速完成对齐，并比较 DPO 与 PPO 的工程取舍。以下判断正确的是？",
+          "options": [
+            "DPO 通常更适合固定偏好数据集，省去在线采样和显式奖励模型，但对动态多步反馈的优化自由度较低",
+            "DPO 与 PPO 都必须训练奖励模型并进行在线 rollout，区别只在 batch size",
+            "PPO 不需要奖励模型，因为策略梯度可以直接从偏好标签计算",
+            "DPO 一定比 PPO 事实准确率高，因此可以跳过独立评测和 KL 控制"
+          ]
+        }
+      }
+    ],
+    "p0-dropout-tradeoff-01": [
+      {
+        "id": "p0-dropout-tradeoff-01__context-options__manual-ce__17",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "训练集 accuracy 一路涨，验证集 accuracy 掉头向下。关于 dropout 的处置，哪项正确？",
+        "options": [
+          "适度加 dropout 缓过拟合；过高欠拟合，推理时关闭。",
+          "加 dropout 必涨训练 accuracy，推理也保持开启。",
+          "dropout 只改数据集大小，不碰共适应。",
+          "dropout 越高越好，丢越多泛化越强。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "reasoningGoal": "先识别现象是过拟合而非欠拟合；再据此确认适度加、过高禁、推理关的处置成立；并排除必涨论、无关论与越高越好论。",
+          "target": "能从训练涨验证跌的分叉出发，判断 dropout 调参与开关的应用结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-deabcf4b",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-f6fa4636",
+        "sourceSnapshot": {
+          "id": "p0-dropout-tradeoff-01",
+          "topic": "dropout",
+          "angle": "tradeoff",
+          "difficulty": "hard",
+          "cognitiveTask": "evaluate",
+          "tags": [
+            "dropout",
+            "regularization",
+            "generalization",
+            "training"
+          ],
+          "question": "一个模型训练集准确率持续上升而验证集准确率下降。提高 dropout 率可能带来什么效果，使用时最需要注意什么？",
+          "options": [
+            "适度提高 dropout 可能缓解过拟合，但过高会导致欠拟合，且推理阶段应关闭 dropout",
+            "提高 dropout 一定会提高训练准确率，推理阶段也应保持开启以获得同样正则化",
+            "dropout 只改变数据集大小，不会改变神经元之间的共适应",
+            "dropout 率越高越好，因为丢弃更多激活总能提升泛化能力"
+          ]
+        }
+      }
+    ],
+    "q6-adaboost-learnability": [
+      {
+        "id": "q6-adaboost-learnability__context-options__manual-ce__18",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "有人坚持“基学习器误差必须低于 25% 才能 Boost”，另一人说“权重越调越偏迟早崩”。关于弱强关系，哪项正确？",
+        "options": [
+          "基学习器训练误差须严格低于 25%，否则无法提升。",
+          "弱强等价：任一分布下错误率低于 50%−γ，即可推出任意高精度强学习。",
+          "迭代持续降已分对样本权重，经验风险到 0 立刻严重过拟合。",
+          "最终组合是所有基分类器等权重投票，前后地位相同。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "reasoningGoal": "先回到 PAC 框架第一性原理；再据此确认略优随机即可推出任意精度的定理成立；并排除 25% 门槛论、降权过拟合论与等权重论。",
+          "target": "能从 25% 门槛论与权重崩溃论出发，判断弱强等价的理论结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6cfb6cb0",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-36e20657",
+        "sourceSnapshot": {
+          "id": "q6-adaboost-learnability",
+          "topic": "ensemble-learning",
+          "angle": "fundamental",
+          "difficulty": "medium",
+          "cognitiveTask": "identify",
+          "tags": [
+            "adaboost",
+            "boosting",
+            "weak-learnability"
+          ],
+          "question": "在 Boosting 理论及 AdaBoost 算法机制中，关于弱可学习性（Weak Learnability）与强可学习性（Strong Learnability）的关系，下列哪项说法是正确的？",
+          "options": [
+            "AdaBoost 算法要求每个基学习器（Weak Learner）的训练误差都必须严格低于 25%，才能将弱学习器提升为强学习器",
+            "根据弱可学习与强可学习等价性定理，只要存在一个对所有数据分布都能取得略优于随机猜想（错误率低于 50%−γ，γ>0）的弱学习算法，就能通过 AdaBoost 构造出任意高精度的强学习器",
+            "AdaBoost 算法在迭代过程中会持续降低此前被正确分类样本的权重，这导致算法在训练集经验风险降至 0 后会立即出现严重过拟合",
+            "AdaBoost 最终的组合决策规则是对所有基分类器进行等权重投票，因此训练后期的弱分类器与早期分类器的地位完全相同"
+          ]
+        }
+      }
+    ],
+    "claude-blog-2026-08-38": [
+      {
+        "id": "claude-blog-2026-08-38__context-options__manual-ce__19",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "上次事故修完只关了告警，三个月后同类事故重演。关于“修完之后还缺哪一步”，哪项正确？",
+        "options": [
+          "只关告警不沉淀回归检查。",
+          "把这次事故写成持续评估里的回归用例。",
+          "删记录删文档，让组织无法学习。",
+          "加大模型参数规避同类事故，不动评估流程。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "design",
+        "assessment": {
+          "reasoningGoal": "先识别缺的是可持续执行的控制而非一次性修复；再据此确认事故转回归用例的沉淀成立；并排除只关告警论、删除学习论与堆参数论。",
+          "target": "能从修完重演的复发事故出发，判断防回归沉淀的设计结论。"
+        },
+        "generatedAt": 1790120106124,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0ee68a8c",
+        "batch": "manual-ce",
+        "model": "manual",
+        "contentHash": "fnv1a-1c928e5b",
+        "sourceSnapshot": {
+          "id": "claude-blog-2026-08-38",
+          "topic": "evaluation",
+          "subtopic": "事故转 Eval",
+          "angle": "mechanism",
+          "difficulty": "medium",
+          "cognitiveTask": "explain",
+          "tags": [
+            "claude-blog",
+            "incident",
+            "eval",
+            "regression"
+          ],
+          "question": "一个生产事故修复后，如何把它转化为可持续执行的防回归控制？（单选）",
+          "options": [
+            "仅关闭告警通道而不沉淀任何回归检查，事故会再次发生",
+            "把事故写成持续评估中的回归用例",
+            "删除事故记录与复盘文档，让组织无法从失败中学习",
+            "仅靠增大模型参数量来规避同类事故，而不改变评估与流程"
+          ]
+        }
+      }
+    ]
+  }
+}

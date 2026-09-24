@@ -1,6 +1,26 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-23 · 零变体区顺延 20 条变体（`assessment.manual-ce-20260923.json`，20 题 × 1 条 context-options）
+
+- 全库 missing-only 再顺延 20 题（activation / agent / 对齐 / 注意力 / 反向传播 / 缓存 / CNN / 上下文工程与窗口 / 成本 / 交叉熵 / 数据泄露 / 蒸馏 / 分布式训练 / DPO / dropout / 集成学习 / evaluation 各 1 题），每题 1 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。
+- 初稿问题改写清零：选项长度失衡 2 项（claude-33 2.00、ai-eng-058 1.83，补短压回 ≤1.8）；计算类题干数字条件保留（mha 512/64、cross-entropy 0.25、ai-eng-058 200ms p95 均在题干内）。
+- 题干约束落实：新题干均避开正确项独有拉丁词（extra-hint 0）；数字/限定词保留（dropped-* 0）；近重复 0、路径重复 0。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 1192→1212，0 变体题 247→227，总 2038→2058 条）；`npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-23 · 零变体区顺延 20 条变体（`assessment.manual-cd-20260923.json`，20 题 × 1 条 context-options）
+
+- 全库 missing-only 顺延 20 题（evaluation / agent / mcp / rag / 推理优化 / 安全 / 多模态相关各 1～2 题，含上批新入库 capability-vs-regression 与 harness-vs-scaffold），每题 1 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。
+- 初稿问题改写清零：选项长度失衡 10 项（harness 2.33、tool-calling 1.81、rag-vs-finetuning 1.88、hybrid-search 2.29、prompt-injection 2.19、ai-eng-057 1.86、claude-37 2.08、task-oriented 1.91、structured-output 2.06、xattn 2.42，均为改写时 correct 槽过长或干扰槽过短，缩长补短后全 ≤1.8）；hybrid-search 题干数字条件“25”（源自 BM25）改写丢失 1 项（题干改用 Top 25 召回表述补回，`dropped-numeric-condition` 清零）。
+- 题干约束落实：新题干均避开正确项独有拉丁词（extra-hint 0）；数字/限定词保留（dropped-* 0）；近重复 0、路径重复 0。
+- 门禁实证：`validate-variants` ✓ 池健康（覆盖 1172→1192，0 变体题 267→247，总 2018→2038 条）；`npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
+## 2026-09-23 · Agent Eval 新增 5 canonical + 3 变体（`agent-evaluation-20260922.json` / `assessment.manual-cc-20260922.json`）
+
+- 覆盖 Transcript-vs-Outcome、pass@k/pass^k、Capability-vs-Regression、Hybrid Grader、Harness-vs-Scaffold 五组知识点，均归入既有 `evaluation` topic（blueprint 原 topic 无知识节点，category 归一为 `evaluation`，空 `source:{}` 已剔除）。
+- 新增覆盖格：evaluation × boundary、evaluation × quantitative、evaluation × architecture；题型单选 1 · 多选 4（多选 80%）。
+- 门禁实证：`question:convert` ✓（5 canonical · 3 variant）/`question:add` ✓ / `validate-questions` ✓（1439 题）/ `validate-variants` ✓ 池健康 / `lint:length` 新题零告警 / `npm test` 915/915。组装草稿放 temp/ 用完即删，未落仓。
+
 ## 2026-09-17 · 零变体区再扩充 20 条变体（`assessment.manual-bu-20260916.json`，池 1855→1875 条）
 
 - missing-only 顺延 10 题（`claude-blog-2026-08-23/24/25/26/27/28/29/30/31/32`，

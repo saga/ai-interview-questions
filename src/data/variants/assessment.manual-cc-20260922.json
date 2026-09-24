@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "generatedAt": 1790118591325,
+  "promptVersion": "v7",
+  "variants": {
+    "agent-eval-transcript-vs-outcome-canonical": [
+      {
+        "id": "agent-eval-transcript-vs-outcome-canonical__context-options__prompt-agent-eval-transcript-vs-outcome-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队排查线上退款 Agent 故障时发现，系统日志显示模型已响应“退款已成功发起”，但用户实际未收到退款且数据库无记录。若需改进评测体系以防御此类问题，关于评估指标设计的分析哪些正确？",
+        "options": [
+          "Outcome 校验能直接核验环境持久化状态的改变，不因 Agent 采用了非预期的等价解决路径而失效。",
+          "Transcript 校验能检查中间工具调用的合规性，但模型对话中提示成功并不意味着环境状态真实变更。",
+          "只要在 Transcript 中记录了正确的退款工具调用参数，就说明后端环境已经成功完成了 Outcome。",
+          "只要 Outcome 校验确认最终环境持久化状态无误，即说明 Agent 在退款过程中没有任何非法副作用。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能够根据 Agent 评估需求（如是否包含中间副作用或多样化合法解路径），判断 Trace/Transcript 检查与 Environment Outcome 校验各自的表达力、适用范围与局限性。",
+          "reasoningGoal": "先判断评估目标关注的是工具调用的规程合法性还是系统的最终持久化状态；再比较依据 Transcript 评分与依据 Outcome 验证在面对非确定性与等价替代解时的表现差异；据此排除仅凭模型文本输出即判定任务完成或将过程约束误等同于结果正确性的观点。"
+        },
+        "generatedAt": 1790118591325,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-95ea28e6"
+      }
+    ],
+    "agent-eval-pass-k-metrics-canonical": [
+      {
+        "id": "agent-eval-pass-k-metrics-canonical__context-options__prompt-agent-eval-pass-k-metrics-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "团队准备上线一款高一致性自动客服 Agent，研发人员提出使用 pass@k 与 pass^k 来监控上线前后的模型非确定性表现。在选型与解读该评估方案时，下列哪些分析是正确的？",
+        "options": [
+          "随试炼次数 k 增加，pass@k 概率趋近于 100%，而全成功的 pass^k 概率则单调下降。",
+          "探索类任务宜参考 pass@k 指标，而对于严格要求一致性的客服场景应优先参考 pass^k 指标。",
+          "当试炼次数 k 增加时，pass^k 得分上升能直接反映客服 Agent 回答稳定性取得了改善。",
+          "若 Agent 在测试中 pass@100 指标极高，则表明该客服 Agent 线上单次响应足够稳定可靠。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "能够针对不同产品场景（如高容错的探索性生成 vs 高一致性的自动客服），选择合适的非确定性评估指标（pass@k 或 pass^k）并推导其随试炼次数 k 变化的统计行为。",
+          "reasoningGoal": "先明确应用场景对单次试错成功（Pass@k）还是持续一致性（Pass^k）的硬性要求；再推导 k 增加时 pass@k 与 pass^k 的相反收敛趋势；据此排除将 pass@k 提升直接归因于模型输出稳定性增强或误用 pass@100 衡量生产环境可靠性的逻辑。"
+        },
+        "generatedAt": 1790118591325,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-7cce839a"
+      }
+    ],
+    "agent-eval-hybrid-grader-architecture-canonical": [
+      {
+        "id": "agent-eval-hybrid-grader-architecture-canonical__context-options__prompt-agent-eval-hybrid-grader-architecture-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "为自动化 CI/CD 流水线中的编程 Agent 架构设计评测模块时，设计者需要权衡 Code-based、Model-based 与人工裁判的职责划分。下列关于多层 Grader 架构的设计分析哪些正确？",
+        "options": [
+          "针对单元测试或数据库状态等确定性验证，优先使用代码判断器以保障低延迟与高客观性。",
+          "针对代码风格与主观沟通质量评估，采用基于 Rubric 规约的模型裁判能提供更高灵活性。",
+          "大模型裁判具备通用理解力，可在评测流水线中彻底取代代码判断器且不需要人工抽样校准。",
+          "在对开放式生成进行自动化评估时，仅采用硬编码字符串精确匹配能同时保证高精准与高泛化。"
+        ],
+        "angle": "system-design",
+        "cognitiveTask": "design",
+        "assessment": {
+          "target": "能够依据 Agent 任务的确定性程度与输出开放性，设计由代码判断器、大模型裁判与人工校验组合的多层 Grader 架构并进行成本与准确率的 Trade-off。",
+          "reasoningGoal": "先判断任务结果是确定性状态还是开放性生成；再匹配代码校验、LLM 评分与人工校准的优先级与权重组合；据此排除在确定性代码任务中误用 LLM Grader 或对开放性任务过度依赖硬编码字符串匹配的方案。"
+        },
+        "generatedAt": 1790118591325,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-01c40474"
+      }
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "generatedAt": 1790292913996,
+  "promptVersion": "v7",
+  "variants": {
+    "agent-context-rot-attention-budget-canonical": [
+      {
+        "id": "agent-context-rot-attention-budget-canonical__context-options__prompt-agent-context-rot-attention-budget-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队部署了一款复杂巡检智能体，在多轮工具调用和日志追加后，虽然 Token 占用率仅达到模型最大物理窗口的 40%，但智能体开始频繁遗忘系统提示词中的关键格式约束。在排除系统提示词被覆盖的前提下，分析导致该故障的架构原因与注意力资源变化，以下哪些判断是正确的？",
+        "options": [
+          "Transformer 架构对序列中每对 Token 分配 $O(n^2)$ 的 Pairwise 注意力权重，随着 Token 数量增加，有限的注意力预算被极大地稀释。",
+          "模型注意力机制在处理远超训练分布的高密 Token 序列时，捕获长距离依赖与 Pairwise 关系的精细度会呈现梯度式衰减。",
+          "物理窗口未溢出时，序列长度对召回精度影响很小，只要做好位置编码外推，全序列的注意力分配强度大致保持稳定。",
+          "此类召回率衰减主要源于长文本微调不充分，通过延长微调收敛即可恢复，与注意力计算机制本身关系不大。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "troubleshoot",
+        "assessment": {
+          "target": "能够根据智能体在多轮迭代中出现的注意力分散与指令遗忘症状，定位 Context Rot 导致的注意力预算枯竭并做出架构调整决策。",
+          "reasoningGoal": "先分析智能体在多轮迭代后出现的关键指令遗忘与幻觉症状；再推导高 Token 填充对注意力预算（Attention Budget）的消耗与序列衰减关系；据此排除仅通过扩大物理输入窗口就能彻底解决长任务推理失效问题的错误观点。"
+        },
+        "generatedAt": 1790292913996,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-73fcbf6a"
+      }
+    ],
+    "agent-just-in-time-retrieval-canonical": [
+      {
+        "id": "agent-just-in-time-retrieval-canonical__context-options__prompt-agent-just-in-time-retrieval-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某团队正在优化一款负责大型代码库重构与巡检的智能体。面对频繁修改的代码文件与复杂的项目目录结构，架构师考虑将原有的预建向量索引方案升级为基于轻量标识与命令行工具的 Runtime 检索方案。在评估两种架构演进路径时，以下哪些观点是合理的？",
+        "options": [
+          "Runtime Just-in-Time 模式通过保留轻量标识符并配合工具动态探索，能有效规避预建索引陈旧与语法树解析复杂的问题。",
+          "Pre-inference 静态检索在响应延迟上具备优势，但对频繁变动的数据源容易产生索引滞后，且可能加载非必要的冗余信息。",
+          "静态向量检索凭借语义匹配能力，在多数复杂智能体场景下通常能在 Token 效率和探索精准度上优于运行时动态工具。",
+          "Runtime Just-in-Time 模式 Token 效率更高，因而在包含多轮工具交互的系统整体执行耗时上也往往更短。"
+        ],
+        "angle": "tradeoff",
+        "cognitiveTask": "evaluate",
+        "assessment": {
+          "target": "能够针对代码分析与工程巡检场景，权衡 Runtime Just-in-Time 检索与预建向量索引的性能与精准度指标。",
+          "reasoningGoal": "先识别代码分析 Agent 在面对巨型代码库时的输入过载与索引陈旧问题；再推导借助轻量文件标识与 Shell 检索工具按需加载代码块的演进路径；据此排除将全部源码预加载至滑动窗口或完全依赖向量数据库静态检索的传统设计。"
+        },
+        "generatedAt": 1790292913996,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-0382cf54"
+      }
+    ],
+    "agent-context-compaction-strategy-canonical": [
+      {
+        "id": "agent-context-compaction-strategy-canonical__context-options__prompt-agent-context-compaction-strategy-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某自动化运维智能体在连续运行 3 小时后，单轮 API 调用的 Token 消耗量激增，且伴有对早前工具返回结果的重复解析行为。排查发现历史记录中充斥着数百条早期的日志查询原始输出。针对该故障的诊断与优化手段，以下哪些分析是正确的？",
+        "options": [
+          "输入压缩能够在开启全新窗口的同时，高保真地提炼架构决策与遗留缺陷，避免信息随窗口重置而丢失。",
+          "清理历史消息深处的原始工具执行结果（Tool Result Clearing），是一种低风险且能快速节省 Token 的轻量压缩手段。",
+          "为保证后续推导正确，通常建议尽量完整保留历史工具调用的原始输出，仅在窗口迫近上限时再考虑清理。",
+          "高效压缩通常可简化为按时间顺序的滑动截断，仅保留最近若干轮状态即可维持长任务连贯性。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能够在长时运行 Agent 出现 Token 爆炸与重复调用工具时，诊断输入未压缩与工具日志残留问题并制定清理方案。",
+          "reasoningGoal": "先诊断多轮 Agent 任务因工具执行日志堆积导致的 Token 溢出与冗余问题；再推理提炼关键架构决策/未解决 Bug 并清除历史工具结果的压缩收益；据此排除认为压缩会无差别损耗所有核心推理语境的盲目排斥观点。"
+        },
+        "generatedAt": 1790292913996,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-6d5b4d9b"
+      }
+    ]
+  }
+}

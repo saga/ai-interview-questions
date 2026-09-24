@@ -1,0 +1,261 @@
+[
+  {
+    "id": "agent-eval-transcript-vs-outcome-canonical",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "tags": [
+      "agent-eval",
+      "transcript",
+      "outcome",
+      "side-effects"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "transcript-vs-outcome",
+      "supporting": [
+        "agent-trajectory",
+        "environment-state"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据 Agent 评估需求（如是否包含中间副作用或多样化合法解路径），判断 Trace/Transcript 检查与 Environment Outcome 校验各自的表达力、适用范围与局限性。",
+      "reasoningGoal": "先判断评估目标关注的是工具调用的规程合法性还是系统的最终持久化状态；再比较依据 Transcript 评分与依据 Outcome 验证在面对非确定性与等价替代解时的表现差异；据此排除仅凭模型文本输出即判定任务完成或将过程约束误等同于结果正确性的观点。"
+    },
+    "question": "在复杂 AI Agent 系统的自动化评估架构设计中，区分过程轨迹（Transcript/Trace）校验与环境最终状态（Outcome）校验至关重要。关于这两种评估方式的适用边界与表达力差异，下列哪些断言是正确的？",
+    "explanation": "A 项与 B 项正确：Outcome 校验通过对数据库或环境状态直接断言，能容忍 Agent 采用非预期的等价路径解决问题；Transcript 记录了中间交互过程，能检查工具调用的规程与限制，但模型在对话中声明完成操作不代表环境真实发生了持久化改变。C 项错误（对应 misconception 0）：模型可能出现幻觉或工具执行失败，过程记录包含调用意图不能等同于环境实际结果；D 项错误（对应 misconception 1）：最终状态正确无法掩盖执行过程中可能产生的额外有害副作用（如误删不相关数据或超额调用不合规接口）。",
+    "misconceptions": [
+      "认为模型在 Transcript 中输出‘已完成操作’的文本即等同于环境中完成了 Outcome。",
+      "将过程轨迹（Transcript）的规程校验误认为能够完全替代对环境最终状态（Outcome）的独立断言。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Outcome 校验关注环境中的实际持久化变更，不受 Agent 找到非预期的合法等价解的影响。",
+          "Transcript 校验能够捕获中间工具调用的规程合法性，但模型声称完成不代表环境状态已变更。",
+          "只要在 Transcript 中完整记录了正确的工具调用参数，即可断定环境已经成功达到了预期 Outcome。",
+          "只要通过 Outcome 校验确定持久化状态正确，即可说明 Agent 在执行过程中未产生任何有害副作用。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-eval-pass-k-metrics-canonical",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "tags": [
+      "agent-eval",
+      "pass-k",
+      "metrics",
+      "reliability"
+    ],
+    "difficulty": "medium",
+    "angle": "quantitative",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "pass-k-metrics",
+      "supporting": [
+        "non-determinism",
+        "eval-stat"
+      ]
+    },
+    "assessment": {
+      "target": "能够针对不同产品场景（如高容错的探索性生成 vs 高一致性的自动客服），选择合适的非确定性评估指标（pass@k 或 pass^k）并推导其随试炼次数 k 变化的统计行为。",
+      "reasoningGoal": "先明确应用场景对单次试错成功（Pass@k）还是持续一致性（Pass^k）的硬性要求；再推导 k 增加时 pass@k 与 pass^k 的相反收敛趋势；据此排除将 pass@k 提升直接归因于模型输出稳定性增强或误用 pass@100 衡量生产环境可靠性的逻辑。"
+    },
+    "question": "在面对具备随机性与非确定性的 Agent 系统时，评估框架常使用 pass@k（k 次尝试中至少成功 1 次）与 pass^k（k 次尝试全部成功）指标。关于这两个指标的统计特性与适用场景，下列哪些断言是正确的？",
+    "explanation": "A 项与 B 项正确：随着试炼次数 k 增加，至少获得一次成功的概率 pass@k 增加，而要求所有试炼全成功的概率 pass^k 随幂次增加而递减；pass@k 关注解的存在性（如代码生成探索），pass^k 关注一致性与可靠性。C 项错误（对应 misconception 0）：k 增大时 pass^k 在数学上必然下降而非上升；D 项错误（对应 misconception 1）：pass@100 高只代表尝试 100 次至少能成功一次，其单次试炼成功率（pass@1）可能非常低，不能说明生产环境的稳定可靠。",
+    "misconceptions": [
+      "混淆 pass@k 与 pass^k 的含义，误以为 k 增大时 pass^k 会随之提升。",
+      "将 pass@k 的高得分错误推导出 Agent 具备高度生产确定性与一致性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当试炼次数 k 逐渐增大时，pass@k 得分会随之单调上升，而 pass^k 得分则会单调下降。",
+          "pass@k 适用于多方案探索场景，而 pass^k 更适合评估对可靠性要求极高的客户服务场景。",
+          "当 k 增大时，pass^k 得分上升表明 Agent 生成路径的一致性与稳定性得到了有效增强。",
+          "在 pass@100 取得极高得分的 Agent，可直接证明其在单次生产运行中具备很高的成功率。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-eval-capability-vs-regression-canonical",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "tags": [
+      "agent-eval",
+      "capability",
+      "regression",
+      "suite-lifecycle"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "capability-vs-regression",
+      "supporting": [
+        "eval-suite-lifecycle",
+        "test-graduation"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据 Agent 系统的迭代阶段与评测通过率分布，划分 Capability Evals 与 Regression Evals，并制定评测集的毕业（Graduation）与退化预警机制。",
+      "reasoningGoal": "先根据任务集的基线通过率与评估目标判断其处于 Capability 攀升期还是 Regression 防护期；再分析将低通过率能力集转化为高要求回归测试的演进路线；据此排除将低通过率能力集当作上线阻断指标或忽视能力集毕业转回归流程的观点。"
+    },
+    "question": "构建 Agent 评估体系时，通常需要区分能力评估（Capability Evals）与回归评估（Regression Evals）。关于两者的定位、指标预期及生命周期演进机制，下列哪些说法是正确的？",
+    "explanation": "A 项与 B 项正确：能力评估（Capability Evals）旨在探测系统边界，初始通过率较低以引导改进；回归评估（Regression Evals）用于防范退化，要求极高通过率。当能力测试随着系统优化获得高通过率后，应通过毕业机制（Graduation）将其转化为回归测试。C 项错误（对应 misconception 0）：能力评估集初期的低通过率是正常的，不应用作阻止研发上线的硬性防护屏障；D 项错误（对应 misconception 1）：忽略了评测集的演进过程，高通过率能力用例转化为回归用例能持续保护已有能力不退化。",
+    "misconceptions": [
+      "认为所有评测集在开发初期都必须达到接近 100% 的通过率。",
+      "忽视 Capability 测试随模型能力提升需要 Graduation（毕业）转化为 Regression 测试的生命周期过程。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "能力评估集应设定较低的初始通过率以提供优化空间，而回归评估集则要求接近 100% 通过。",
+          "当能力评估集中的测试用例通过率被攻克并稳定后，可将其“毕业”转入回归评估集持续监控。",
+          "能力评估集在 Agent 开发初期必须达到接近 100% 的通过率，否则系统不具备上线基础条件。",
+          "能力评估集与回归评估集应保持完全隔离，高通过率的能力测试用例不应转化为回归监测用例。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-eval-hybrid-grader-architecture-canonical",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "tags": [
+      "agent-eval",
+      "graders",
+      "llm-as-a-judge",
+      "static-analysis"
+    ],
+    "difficulty": "hard",
+    "angle": "architecture",
+    "cognitiveTask": "synthesize",
+    "concepts": {
+      "core": "hybrid-grader-architecture",
+      "supporting": [
+        "code-based-grader",
+        "model-based-grader"
+      ]
+    },
+    "assessment": {
+      "target": "能够依据 Agent 任务的确定性程度与输出开放性，设计由代码判断器、大模型裁判与人工校验组合的多层 Grader 架构并进行成本与准确率的 Trade-off。",
+      "reasoningGoal": "先判断任务结果是确定性状态还是开放性生成；再匹配代码校验、LLM 评分与人工校准的优先级与权重组合；据此排除在确定性代码任务中误用 LLM Grader 或对开放性任务过度依赖硬编码字符串匹配的方案。"
+    },
+    "question": "在复杂 Agent 评估系统中，混合裁判架构（Hybrid Grader Architecture）整合了代码判断器（Code-based）、模型判断器（Model-based）与人工校验。关于各类 Grader 的分工与权衡，下列哪些断言是正确的？",
+    "explanation": "A 项与 B 项正确：Code-based Grader 具备低成本、高速度、确定性强的特点，适合判断测试用例通过情况与状态变更；Model-based Grader 则擅长处理开放性生成和主观质量评估。C 项错误（对应 misconception 0）：Model-based Grader 存在随机性与成本开销，不能替代确定性的代码校验，且必须通过人工定期对标校准；D 项错误（对应 misconception 1）：开放式任务的合法表达非常丰富，硬编码精确匹配极易产生脆性误判，缺乏泛化能力。",
+    "misconceptions": [
+      "以为 Model-based Grader 可以完全取代确定性 Code-based Grader 且不需要人工校准。",
+      "忽略 Code-based Grader 面对合法多变输出时的脆性，硬编码精确匹配导致误判。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对单元测试或环境状态校验等确定性断言，应优先采用代码判断器以保证客观与快速执行。",
+          "对主观沟通品质或开放式文本合成，采用基于 Prompt 规约的模型判断器能提供更高的灵活性。",
+          "模型判断器在所有场景下均优于代码判断器，因此可以完全替代代码测试且无需人工定期校准。",
+          "在评估开放式任务时，仅依靠硬编码精确字符串匹配可以兼具极高确定性与良好的泛化能力。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "id": "agent-eval-harness-vs-scaffold-canonical",
+    "category": "evaluation",
+    "topic": "evaluation",
+    "tags": [
+      "agent-eval",
+      "eval-harness",
+      "agent-scaffold",
+      "system-design"
+    ],
+    "difficulty": "medium",
+    "angle": "architecture",
+    "cognitiveTask": "identify",
+    "concepts": {
+      "core": "harness-vs-scaffold",
+      "supporting": [
+        "eval-infrastructure",
+        "agent-architecture"
+      ]
+    },
+    "assessment": {
+      "target": "能够在 Agent 系统评测架构设计中，清晰隔离 Evaluation Harness 与 Agent Harness (Scaffold) 的职责边界，防止测试逻辑侵入 Agent 决策循环。",
+      "reasoningGoal": "先区分测试控制/结果聚合（Eval Harness）与模型工具编排/状态维持（Agent Harness）的底层职责；再评估二者耦合对评测可信度与 Agent 迁移能力的破坏；据此排除在 Agent 内部写死测试断言或将环境 Mock 逻辑误归为 Evaluation Harness 职责的架构设计。"
+    },
+    "question": "在 AI Agent 的系统架构中，评估框架（Evaluation Harness）与脚手架（Agent Harness / Scaffold）扮演着不同的角色。下列关于二者核心职责划分的表述中，哪一项是正确的？",
+    "explanation": "B 项正确：Evaluation Harness 是评估基础设施，负责任务并发调度、结果判定与 Transcript 记录；Agent Scaffold（脚手架）则是赋能 Agent 运行的系统，负责处理输入、编排工具调用循环与维持状态。二者职责明确分离。A 项错误（对应 misconception 0）：混淆了二者的职责，驱动工具调用 Loop 是 Agent Scaffold 的功能，而非 Evaluation Harness；C 项与 D 项错误（对应 misconception 1 和 0）：二者应保持解耦，更换 Agent 脚手架不应影响评估框架的独立性与接口规范。",
+    "misconceptions": [
+      "混淆 Evaluation Harness 与 Agent Scaffold 的职责，把模型工具调用的 Loop 逻辑写在评测框架内。",
+      "认为更换底层的 Agent Scaffold 不需要保持 Evaluation Harness 的接口独立性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Evaluation Harness 负责驱动 Prompt 与工具调用的 Loop，而 Agent Scaffold 仅负责统计得分。",
+          "Evaluation Harness 负责并发运行任务、聚合得分与记录轨迹，而 Agent Scaffold 负责编排工具与状态。",
+          "Agent Scaffold 与 Evaluation Harness 必须强耦合编写，更换脚手架时评测控制逻辑必须随之重构。",
+          "Evaluation Harness 必须深入 Agent 内部执行决策循环，才能获得可信的评测结果与过程数据。"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          0
+        ]
+      }
+    }
+  }
+]
