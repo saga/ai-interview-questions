@@ -50,10 +50,6 @@ describe('isAssessmentIdentical（阻断级：逐字相同）', () => {
 });
 
 describe('isNearIdenticalPath（审计级：双高相似）', () => {
-  it('逐字相同必然 near-identical', () => {
-    expect(isNearIdenticalPath({ ...CANON }, { ...CANON })).toBe(true);
-  });
-
   it('模板化小改（同 target + 选项摘要不同）→ near-identical', () => {
     const sibling = {
       target: CANON.target,
@@ -105,10 +101,6 @@ describe('hasExplicitReasoningSteps（离线生成规范）', () => {
     expect(isGenericReasoningGoal('考察考生对知识蒸馏的理解程度。')).toBe(true);
   });
 
-  it('isReasoningGoalWellFormed = 显式步骤 + 非泛化', () => {
-    expect(isReasoningGoalWellFormed(CANON.reasoningGoal)).toBe(true);
-    expect(isReasoningGoalWellFormed('考察理解')).toBe(false);
-  });
 });
 
 describe('checkKindContentMatch', () => {
@@ -142,22 +134,12 @@ describe('checkKindContentMatch', () => {
   });
 });
 
-describe('findNearIdenticalPaths', () => {
-  it('空列表 → 空', () => {
-    expect(findNearIdenticalPaths([])).toEqual([]);
-  });
-});
-
 describe('isReasoningPathSubstantiallyDifferent（ADR-082：推断签名门禁）', () => {
   const sig = (reasoningGoal: string): AssessmentInference => ({
     target: 't',
     reasoningGoal,
     confidence: 1,
     signals: [],
-  });
-
-  it('阈值为 82', () => {
-    expect(REASONING_PATH_SIMILARITY_THRESHOLD).toBe(82);
   });
 
   it('完全相同 → false（不是新路径）', () => {

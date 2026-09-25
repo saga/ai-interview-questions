@@ -81,16 +81,6 @@ describe('generateVariant（轻量变体）', () => {
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('开放题不做长度泄题检查（该检查只对 choice 有意义）', async () => {
-    const openQ: Question = { ...BASE, formats: { open: { referenceAnswer: 'REF' } } };
-    const complete: CompleteFn = vi.fn(async () =>
-      JSON.stringify({ question: 'L2 正则化的开放题新问法' }),
-    );
-    const out = await generateVariant(openQ, complete, 'open');
-    expect(out.options).toBeUndefined();
-    expect(complete).toHaveBeenCalledTimes(1);
-  });
-
   // toGeneratedVariant 是白名单：模型回吐什么额外字段都只保留 question/options。
   it('LLM 输出的 answer / explanation 被丢弃（产物只含 question/options）', async () => {
     const withAnswer: CompleteFn = vi.fn(async () =>
@@ -145,16 +135,6 @@ describe('VARIANT_SYSTEM v7（ADR-080/081：Relax generation, not invariants）'
     expect(VARIANT_SYSTEM).toContain('70/30 改成 80/20');
   });
 
-  it('语言风格：专业面试题语言，禁过度口语化', () => {
-    expect(VARIANT_SYSTEM).toContain('语言风格');
-    expect(VARIANT_SYSTEM).toContain('资深面试官');
-  });
-
-  it('术语：同知识重写（same-knowledge rewrite）', () => {
-    expect(VARIANT_SYSTEM).toContain('same-knowledge rewrite');
-    expect(VARIANT_SYSTEM).not.toContain('轻量语义变换');
-  });
-
   it('保留答案契约：槽位语义角色对应 + 不得互换', () => {
     // 程序按序号映射答案（applyVariant + validateVariant 逐槽位漂移检查），
     // 角色互换会直接判错题——这是放宽后仍不可动的位置不变式。
@@ -174,13 +154,6 @@ describe('VARIANT_SYSTEM v7（ADR-080/081：Relax generation, not invariants）'
     // ③ 背景术语不设数字配额，只禁引入新的解题依赖
     expect(VARIANT_SYSTEM).toContain('不得引入新的解题依赖知识');
     expect(VARIANT_SYSTEM).not.toContain('不超过 2 个');
-  });
-
-  it('不再出现旧收缩措辞', () => {
-    expect(VARIANT_SYSTEM).not.toContain('不新增信息');
-    expect(VARIANT_SYSTEM).not.toContain('不要进行深度重新设计');
-    // 旧约束是"只允许改变表达，不允许改变…"（纯换皮）；新约束是"只允许改变表达结构"（槽内自由）。
-    expect(VARIANT_SYSTEM).not.toContain('只允许改变表达，不允许');
   });
 
   it('JSON 输出契约不变', () => {
@@ -227,13 +200,6 @@ describe('generateAssessmentVariant（离线 assessment variant，mock LLM）', 
       JSON.stringify({ question: 'x', options: ['A', 'B', 'C', 'D'], assessment: full.assessment }),
     );
     await expect(generateAssessmentVariant(BASE, complete, 'choice')).rejects.toThrow(/angle/);
-  });
-
-  it('非法 angle 枚举 → 抛出', async () => {
-    const complete: CompleteFn = vi.fn(async () =>
-      JSON.stringify({ ...full, angle: 'not-a-real-angle' }),
-    );
-    await expect(generateAssessmentVariant(BASE, complete, 'choice')).rejects.toThrow(/解析/);
   });
 
   it('用户提示词携带 canonical 测量面（模型才能换出新路径），仍不携带答案/解析', async () => {

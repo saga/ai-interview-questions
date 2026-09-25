@@ -84,10 +84,6 @@ describe('computeVariantSourceHash', () => {
   it('tag 顺序变化不影响指纹（顺序无语义，重排不算漂移）', () => {
     expect(src({ tags: ['prefill', 'kv-cache'] })).toBe(src({ tags: ['kv-cache', 'prefill'] }));
   });
-
-  it('tag 重复去重后等价（避免无意义漂移）', () => {
-    expect(src({ tags: ['kv-cache', 'kv-cache', 'prefill'] })).toBe(src({ tags: ['kv-cache', 'prefill'] }));
-  });
 });
 
 describe('variantSourceOf', () => {
@@ -150,20 +146,6 @@ describe('questionVariantSchema', () => {
     };
     expect(questionVariantSchema.safeParse(v).success).toBe(true);
   });
-
-  it('开放题变体允许缺省 options', () => {
-    const v = {
-      id: 'q-2__surface__0',
-      kind: 'surface',
-      question: '改写后的开放题干',
-      generatedAt: 1700000000000,
-      generator: 'runtime',
-      promptVersion: 'v3',
-      sourceHash: 'fnv1a-12345678',
-    };
-    expect(questionVariantSchema.safeParse(v).success).toBe(true);
-  });
-
   it('拒绝非法 kind / 空字段', () => {
     expect(questionVariantSchema.safeParse({ id: '', kind: 'surface', question: 'x', generatedAt: 1, generator: 'offline', promptVersion: 'v3', sourceHash: 'h' }).success).toBe(false);
     expect(questionVariantSchema.safeParse({ id: 'q', kind: 'bogus', question: 'x', generatedAt: 1, generator: 'offline', promptVersion: 'v3', sourceHash: 'h' }).success).toBe(false);
@@ -250,20 +232,6 @@ describe('questionVariantSchema', () => {
       expect(parsed.data.sourceSnapshot?.topic).toBe('kv-cache');
     }
   });
-
-  it('存量变体（无 provenance）仍合法（向后兼容）', () => {
-    const v = {
-      id: 'q-1__surface-options__0',
-      kind: 'surface-options',
-      question: '改写后的题干',
-      options: ['选项A', '选项B'],
-      generatedAt: 1700000000000,
-      generator: 'offline',
-      promptVersion: 'v3',
-      sourceHash: 'fnv1a-abcdef01',
-    };
-    expect(questionVariantSchema.safeParse(v).success).toBe(true);
-  });
 });
 
 describe('variantPoolSchema', () => {
@@ -277,9 +245,5 @@ describe('variantPoolSchema', () => {
       },
     };
     expect(variantPoolSchema.safeParse(pool).success).toBe(true);
-  });
-
-  it('EMPTY_VARIANT_POOL 自洽', () => {
-    expect(variantPoolSchema.safeParse(EMPTY_VARIANT_POOL).success).toBe(true);
   });
 });

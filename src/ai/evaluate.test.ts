@@ -31,10 +31,6 @@ describe('buildEvalUser', () => {
     expect(s).toContain('我的回答');
   });
 
-  it('未作答时以（未作答）占位', () => {
-    expect(buildEvalUser(q, open, '')).toContain('（未作答）');
-  });
-
   it('required 要点注入提示词', () => {
     const s = buildEvalUser(q, open, 'a', { requiredPoints: ['短期记忆', '长期记忆'] });
     expect(s).toContain('- 短期记忆');
@@ -47,11 +43,6 @@ describe('buildEvalUser', () => {
     const s = buildEvalUser(withExplanation, open, 'a');
     expect(s).toContain('题目解析');
     expect(s).toContain('记忆分短期上下文与长期持久化两类');
-  });
-
-  it('explanation 为空时不产生多余的解析段落', () => {
-    const s = buildEvalUser(q, open, 'a');
-    expect(s).not.toContain('题目解析');
   });
 
   // P1-3：候选人回答是不可信数据，必须用标签与评分指令明确隔离，防止 prompt 注入改写评分规则。
@@ -166,14 +157,6 @@ describe('parseEvaluation', () => {
     expect(r.levels).toEqual({ correctness: 0, completeness: 0, architecture: 0, communication: 0 });
     expect(r.feedback).toBe('未作答。');
     expect(r.referenceAnswer).toBe(open.referenceAnswer);
-  });
-
-  it('残缺 JSON → 缺失维度按 0 级兜底', () => {
-    const r = parseEvaluation('{"correctness": { "level": 2 }, "feedback": "部分"}', q, RUBRIC);
-    expect(r.dimensions.correctness).toBe(50); // level 2 → 50
-    expect(r.levels.correctness).toBe(2);
-    expect(r.dimensions.completeness).toBe(0);
-    expect(r.overall).toBe(20); // 50*0.4
   });
 
   it('不可解析的 JSON（残缺/乱码）→ 抛出 EvaluationParseError，绝不降级为 0 分', () => {

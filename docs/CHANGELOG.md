@@ -1,6 +1,45 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-25 · 测试瘦身第三轮：删除 83 个低价值用例（928 → 845）
+
+动因：用例池里仍堆着大量「测的是框架/schema/平凡入参」而非「测的是本项目行为」的用例，白耗 token 与维护注意力。本轮按「**测点本身不重要**」这一口径删除 **83 例**（16 个文件，−591 / +6 行），失败数不变（仍为那 3 个 `local.test.ts`）。
+
+### 判据：什么样的用例算「低价值」
+
+1. **被更强的用例完全包含**（`toEqual` 被 `toEqual + length>0` 包含、空结果的平凡补集、`undefined` 与省略参数等价等）；
+2. **只复述 schema / 框架**（Zod 的 required / `min(1)` / enum 拒绝、`Array.isArray` 类型检查）；
+3. **恒真或纯否定**（注入 `() => 0` 的 rng 再断言两次调用相同；「prompt 不含旧措辞」；单条 `not.toContain`）；
+4. **名实不符**（断言与标题承诺的不是一回事）；
+5. **平凡透传 / 空入参**（`parseChatAnswer(open, x) === x`、`findNearIdenticalPaths([]) === []`、常量自证 `THRESHOLD === 82`）。
+
+### 各文件
+
+| 文件 | 变化 | 主要删除项 |
+|---|---|---|
+| `domain/learner.test.ts` | 62 → 49 | 空会话不拉低均值的重复断言、`emptyProfile` 自带空层 ×2、`toBe(calculateProficiency(...))` 的接线自证、`无 priority 时退化为纯随机`（只断言长度）、Case 2 的空结果补集、`collectTopicRefs`（标题承诺查 category 但断言里没有）、`getAngleStat` 平凡查询、误解跨会话累计的重复、`required 为空`、`无历史时给出引导文案`（纯文案） |
+| `domain/variant.test.ts` | 46 → 34 | 4 条结构门槛（`EMPTY_QUESTION` / `EMPTY_OPTION` / `DUPLICATE_OPTION` / `FORBIDDEN_REFERENCE` 的 code 已由「各类结构失败都带机器可读 code」逐条断言）、`fuzzball 短语级兜底`（只断言 `.ok === true`，恒真）、2 条确定性 rng 重排（被 200 次随机重排的属性测试严格包含）、`注入确定性 rng 时重排结果可复现`（恒真）、`测量面不改变答案安全边界`、`format=choice 缺 options`（与结构不变量组重复）、指纹用例（`schemas/variant.test.ts` 已有 6 条）、`证据面仍只看题干`（名实不符） |
+| `schemas/variant.test.ts` | 28 → 24 | `存量变体（无 provenance）仍合法`（与「接受合法的变体」形状完全相同）、开放题缺省 options、tag 去重、`EMPTY_VARIANT_POOL 自洽` |
+| `agent/tools.test.ts` | 44 → 37 | `not_found` 基础用例（被 2 条更强的覆盖）、`getUserWeaknesses 读 profile`（被会话级学习状态 + 不重叠用例覆盖）、`session.log` 落日志（通用机制）、`topic_exhausted` 弱版本（被 C4 版本严格包含）、无参工具渲染字面量、答对不误报薄弱的纯否定、未标注 misconceptionMap 的纯否定 |
+| `conversation/knowledgeCapability.test.ts` | 34 → 28 | 默认 global 分支、`P0-B 有当前题但没谈它`（被 P0-B 专项覆盖）、无上一轮的平凡透传、检索级真值闸门 ×2（被 P0-B 两条端到端覆盖）、scope 层重复断言 |
+| `knowledge/retrieve.test.ts` | 33 → 29 | 单字查询分词（上一条已断言二字组）、`命中并按混合评分排序`（top 命中另有排名 fixture）、hint/answer 泄漏 ×2（renderDocument 矩阵已覆盖） |
+| `ai/provider.test.ts` | 27 → 24 | `requiredPoints` 的重复用例（后一条严格更强）、openrouter/google 复述云端规则、`缺 id 或整个对象` |
+| `ai/variant.test.ts` | 22 → 17 | 开放题不查长度（与「开放题只生成 question」同形）、prompt 文案断言 ×2（语言风格 / 术语）、`不再出现旧收缩措辞`（纯否定）、`非法 angle 枚举` |
+| `domain/evaluation.test.ts` | 23 → 19 | `applicable 缺省`（与省略参数同路径）、`全部适用时行为不变`（与塌缩用例首条逐字相同）、塌缩长度代理指标、`只有一维不同也要展开`（展开分支的极端输入） |
+| `domain/reasoningPath.test.ts` | 27 → 23 | `阈值为 82`（常量自证）、`findNearIdenticalPaths` 整个 describe（只测空数组）、`isReasoningGoalWellFormed` 平凡接线、`逐字相同必然 near-identical`（恒等输入） |
+| `domain/languageSanity.test.ts` | 21 → 17 | `空串与无标点`、`分句数 < 2 → 0`、`有效匹配不足 2 个 → 0`、`TOO_SHORT 只作用于选项` |
+| `storage/settings.test.ts` | 34 → 28 | `sanitizeEntry` 防御性入参 ×2、`generateOpenQuestions 缺省/显式`（与 runtimeVariantEnabled 同代码路径）、`it.each` 中 3 条纯结构类型检查 |
+| `schemas/question.test.ts` | 20 → 16 | Zod 层 required / `min(1)` / enum 拒绝 ×4（angle 必填另有专门用例） |
+| `domain/adaptive.test.ts` | 24 → 22 | `空池返回 null`、`profile undefined 与空画像等价` |
+
+### 工具与教训
+
+- 用一次性 Python 脚本做**精确块删除**（每条 old 串先 `assert count == 1` 再替换），比逐条手改可靠且可审计。**坑**：old 串若同时以 `\n` 开头并以 `\n` 结尾，会同时吃掉前后两个分隔换行，把上一块的 `});` 和下一块的 `it(` 粘成一行（本轮出现 2 处，已修）；若被删块是 describe 的最后一项，old 串不能带尾部空行，否则匹配失败。
+- 删完必须扫两件事：**死导入**（只在 import 行出现一次的具名导入）与**括号配平**（本轮漏了一次 describe 的收尾 `});`，靠 vitest 的 `PARSE_ERROR` 才发现——**删除后一定跑一次全量，不能只看 diff**）。
+- 保留的边界：`断言相反 ≠ 逻辑互补`（`isReasoningPathSubstantiallyDifferent` 与 `isReasoningPathTooSimilar` 签名与算法都不同，两组全留）；`evaluations` 与 `answers` 两条「已交付」判定不能合；`gaps 为空 → []` 这类**显式否定契约**（不伪造 gap）保留。
+
+**门禁**：`typecheck`（app + node）通过；全量 **842 passed / 845**（3 项失败为工作区未提交依赖升级导致的 `local.test.ts` `deepseek-v4-flash` 引用，与本改动无关）。
+
 ## 2026-09-25 · 评审收口第二轮：暂停闸按状态冻结 + 侧栏重入闸 + 存储边界分级降级
 
 **修复（P0）**

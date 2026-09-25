@@ -149,10 +149,6 @@ describe('pickNextAdaptive', () => {
     expect(r!.question.angle).toBe('debugging');
   });
 
-  it('空池返回 null', () => {
-    expect(pickNextAdaptive([], [])).toBeNull();
-  });
-
   it('topic×angle 主干：gap-probe 降难度时弱角度优先于已掌握角度', () => {
     // tool-calling 的 definition 角度薄弱(均分20)、tradeoff 角度已掌握(均分95)
     const profile = emptyProfile();
@@ -245,12 +241,6 @@ describe('rankCandidatePool（统一候选排序：Agent 与确定性引擎共�
     expect(rankCandidatePool(pool, undefined, rngSeq([0.9])).map((x) => x.id)).toEqual(shuffled);
   });
 
-  it('profile 为 undefined 与空画像等价（调用方无画像时行为一致）', () => {
-    const pool = [q('t1', 'mcp', 'easy'), q('t2', 'mcp', 'hard')];
-    expect(rankCandidatePool(pool, undefined).map((x) => x.id)).toEqual(
-      rankCandidatePool(pool, emptyProfile()).map((x) => x.id),
-    );
-  });
 });
 
 describe('P0-1b: rankCandidatePool 纳入 cognitiveTask 维度（ADR-077 assessment contract）', () => {

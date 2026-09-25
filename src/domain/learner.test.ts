@@ -3,12 +3,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCoachDefinition,
-  collectTopicRefs,
   computeCoverage,
   describeCoverageGap,
   emptyProfile,
   findCoverageGaps,
-  getAngleStat,
   assessmentKey,
   getAssessmentStat,
   assessmentWeakRank,
@@ -22,7 +20,6 @@ import {
   sessionFromQuiz,
   expandWithPrerequisites,
   suggestNextTopics,
-  calculateProficiency,
   topMisconceptionsOf,
   updateLearner,
   weakAnglesOf,
@@ -111,13 +108,6 @@ describe('updateLearner · 无有效评分的会话不入账', () => {
     expect(after.sessions.length).toBe(sessionsBefore);
   });
 
-  it('空会话不拉低最近 10 场均值（语义：没有证据 ≠ 得 0 分）', () => {
-    let p = updateLearner(emptyProfile(), session(90, [result('rag', 90)]));
-    p = updateLearner(p, session(0, []));
-    expect(p.overallScore).toBe(90);
-    expect(p.totalSessions).toBe(1);
-  });
-
   it('部分题为 null 的会话仍然入账（只纳入已评分的题）', () => {
     const mixed: QuestionResult[] = [result('rag', 60)];
     const p = updateLearner(emptyProfile(), session(60, mixed));
@@ -191,11 +181,6 @@ describe('conceptEvidence（概念级缺失证据层）', () => {
     expect(missingConceptsOf(p, 'rlhf')).toEqual(['PPO']);
     expect(missingConceptsOf(p, 'transformer')).toEqual([]);
   });
-
-  it('emptyProfile 自带空概念证据层', () => {
-    expect(emptyProfile().conceptEvidence).toEqual({});
-    expect(missingConceptsOf(emptyProfile(), 'rag')).toEqual([]);
-  });
 });
 
 describe('updateLearner', () => {
@@ -262,12 +247,6 @@ describe('updateLearner', () => {
     p = updateLearner(p, session(60, [result('rag', 40)]));
     expect(p.topicStats['rag'].trend).toBe('declining');
   });
-
-  it('熟练度结合得分与证据量，落在 [0,1]', () => {
-    const p = updateLearner(emptyProfile(), session(70, Array.from({ length: 5 }, () => result('rag', 70))));
-    expect(p.topicStats['rag'].mastery).toBe(calculateProficiency(70, 5, 1));
-  });
-
   it('单题一次满分不会直接代表 100% 熟练', () => {
     const p = updateLearner(emptyProfile(), session(100, [result('rag', 100)]));
     expect(p.topicStats['rag'].mastery).toBe(0.35);
@@ -346,12 +325,7 @@ describe('buildCoachDefinition', () => {
   });
 });
 
-describe('recommendationText', () => {
-  it('无历史时给出引导文案', () => {
-    expect(recommendationText(emptyProfile())).toContain('完成一次训练后');
-  });
-
-  it('有薄弱主题时给出优先练习建议并提及遗漏要点', () => {
+describe('recommendationText', () => {  it('有薄弱主题时给出优先练习建议并提及遗漏要点', () => {
     let p = emptyProfile();
     p = updateLearner(
       p,
@@ -496,12 +470,6 @@ describe('pickPrioritized', () => {
     expect(picked.length).toBe(2);
     expect(new Set(picked.map((q) => q.id)).size).toBe(2);
   });
-
-  it('无 priority 时退化为纯随机', () => {
-    const pool: Question[] = [{ ...choiceA.question }, { ...choiceB.question }];
-    const picked = pickPrioritized(pool, [], 2);
-    expect(picked.length).toBe(2);
-  });
 });
 
 describe('覆盖面与学习建议（学习策略，图查询在 conceptGraph）', () => {
@@ -576,15 +544,6 @@ describe('findCoverageGaps（覆盖缺口 · coverage discovery）', () => {
       { topic: 'topic-c', reason: 'uncovered' },
     ]);
   });
-
-  it('Case 2：题库 A B C 全部练过并掌握 → 无缺口', () => {
-    const gaps = findCoverageGaps(
-      flatRefs('topic-a', 'topic-b', 'topic-c'),
-      profileWith({ 'topic-a': MASTERED, 'topic-b': MASTERED, 'topic-c': MASTERED }),
-    );
-    expect(gaps).toEqual([]);
-  });
-
   it('Case 3：前置已掌握、本体未练 → 本体为 uncovered（而非 prerequisite）', () => {
     // tool-calling 的前置闭包（在题库内的部分）= agent-fundamentals
     const refs = flatRefs('agent-fundamentals', 'tool-calling');
@@ -650,18 +609,7 @@ describe('findCoverageGaps（覆盖缺口 · coverage discovery）', () => {
   });
 });
 
-describe('掌握度策略与题库边界（自 conceptGraph 迁入，ADR-030）', () => {
-  it('collectTopicRefs 去重并保留首次出现的 category', () => {
-    const refs = collectTopicRefs([
-      { category: 'a', topic: 't1' },
-      { category: 'a', topic: 't1' },
-      { category: 'b', topic: 't2' },
-    ]);
-    expect(refs).toHaveLength(2);
-    expect(refs.map((r) => r.topic).sort()).toEqual(['t1', 't2']);
-  });
-
-  it('expandWithPrerequisites：沿前置链展开且跳过已掌握主题、去重、有上限', () => {
+describe('掌握度策略与题库边界（自 conceptGraph 迁入，ADR-030）', () => {  it('expandWithPrerequisites：沿前置链展开且跳过已掌握主题、去重、有上限', () => {
     const profile = profileWith({
       'agent-fundamentals': { attempts: 2, avgScore: 40 },
       'tool-calling': { attempts: 2, avgScore: 95 },
@@ -679,20 +627,7 @@ describe('掌握度策略与题库边界（自 conceptGraph 迁入，ADR-030）'
   });
 });
 
-describe('Concept×Angle 弱角判定', () => {
-  it('getAngleStat 返回 (topic,angle) 证据；未练过为 undefined', () => {
-    const p = updateLearner(
-      emptyProfile(),
-      session(70, [
-        { questionId: 'a', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', score: 90, gaps: [] },
-        { questionId: 'b', category: 'c', topic: 'kv-cache', format: 'open', angle: 'tradeoff', score: 50, gaps: [] },
-      ]),
-    );
-    expect(getAngleStat(p, 'kv-cache', 'mechanism')?.avgScore).toBe(90);
-    expect(getAngleStat(p, 'kv-cache', 'debugging')).toBeUndefined();
-  });
-
-  it('weakAnglesOf 优先返回未练与低分角度，已掌握不列入', () => {
+describe('Concept×Angle 弱角判定', () => {  it('weakAnglesOf 优先返回未练与低分角度，已掌握不列入', () => {
     const p = updateLearner(emptyProfile(), session(66, [
       { questionId: 'a', category: 'c', topic: 'kv-cache', format: 'open', angle: 'mechanism', score: 90, gaps: [] },
       { questionId: 'b', category: 'c', topic: 'kv-cache', format: 'open', angle: 'tradeoff', score: 50, gaps: [] },
@@ -720,17 +655,6 @@ describe('misconceptionHits（选择题反证证据层）', () => {
     expect(p.misconceptionHits?.[misconceptionKey('rag', '以为融合顺序与归一化无关紧要')]?.hits).toBe(1);
   });
 
-  it('跨会话累计', () => {
-    let p = updateLearner(emptyProfile(), session(0, [misResult('rag', 0, ['误解A'])]));
-    p = updateLearner(p, session(0, [misResult('rag', 0, ['误解A'])]));
-    expect(p.misconceptionHits?.[misconceptionKey('rag', '误解A')]?.hits).toBe(2);
-  });
-
-  it('空 misconceptionIds 不产生条目', () => {
-    const p = updateLearner(emptyProfile(), session(0, [misResult('rag', 0, [])]));
-    expect(Object.keys(p.misconceptionHits ?? {})).toHaveLength(0);
-  });
-
   it('topMisconceptionsOf 按 hits 降序返回该 topic 命中的误解', () => {
     const p = updateLearner(emptyProfile(), session(0, [
       misResult('rag', 0, ['误解B']),
@@ -743,10 +667,6 @@ describe('misconceptionHits（选择题反证证据层）', () => {
     expect(topMisconceptionsOf(p, 'attention')).toEqual([]);
   });
 
-  it('emptyProfile 自带空误解层', () => {
-    expect(emptyProfile().misconceptionHits).toEqual({});
-    expect(topMisconceptionsOf(emptyProfile(), 'rag')).toEqual([]);
-  });
 });
 
 describe('conceptGapsOf（coverage 第二层：必考点证据）', () => {
@@ -764,16 +684,4 @@ describe('conceptGapsOf（coverage 第二层：必考点证据）', () => {
       { topic: 'rag', point: '混合检索', status: 'unprobed', misses: 0 },
       { topic: 'rag', point: '重排', status: 'unprobed', misses: 0 },
     ]);
-  });
-
-  it('已练但无缺失证据的必考点不列为缺口（不制造虚假缺口）', () => {
-    const p = updateLearner(emptyProfile(), session(80, [
-      { questionId: 'a', category: 'c', topic: 'rag', format: 'open', score: 80, gaps: [], missingConcepts: [] },
-    ]));
-    expect(conceptGapsOf(p, 'rag', ['混合检索'])).toEqual([]);
-  });
-
-  it('required 为空时返回空数组', () => {
-    expect(conceptGapsOf(emptyProfile(), 'rag', [])).toEqual([]);
-  });
-});
+  });});

@@ -56,10 +56,6 @@ describe('planRetrievalScope（含 P0-2 当前题与知识主题解耦）', () =
     expect(planRetrievalScope({ query: '还有呢', activeQuestion })).toBe('global');
   });
 
-  it('其他情况走 global', () => {
-    expect(planRetrievalScope({ query: '今天天气不错' })).toBe('global');
-  });
-
   it('显式 scope 优先级最高', () => {
     expect(planRetrievalScope({ query: '这道题为什么选 B', activeQuestion, scope: 'global' })).toBe('global');
   });
@@ -90,10 +86,6 @@ describe('planRetrievalMode（答案安全模式）', () => {
   it('明确要答案 → answer（覆盖默认保护）', () => {
     expect(planRetrievalMode({ query: '这题的正确答案是什么', activeQuestion })).toBe('answer');
     expect(planRetrievalMode({ query: '解析一下正确选项', activeQuestion })).toBe('answer');
-  });
-
-  it('P0-B：有当前题但没在谈它 → 安全模式 hint（不因页面上恰好有题就开真值闸门）', () => {
-    expect(planRetrievalMode({ query: '讲考点', activeQuestion })).toBe('hint');
   });
 
   it('当前题 + 详细解读类请求 → explain（而非只给提示）', () => {
@@ -165,10 +157,6 @@ describe('combineFollowUp（ADR-065 P1-1）', () => {
     expect(combineFollowUp('这道题为什么错', '这道题为什么错')).toBe('这道题为什么错');
   });
 
-  it('无上一轮时直接返回当前消息', () => {
-    expect(combineFollowUp('什么是 GQA')).toBe('什么是 GQA');
-  });
-
   it('P1-4：上一轮是 command / answer 时不参与拼接（避免污染 lexical 检索）', () => {
     expect(combineFollowUp('为什么', '给我出一道题', undefined, 'command')).toBe('为什么');
     expect(combineFollowUp('为什么', 'A', undefined, 'answer')).toBe('为什么');
@@ -186,39 +174,11 @@ describe('retrieveForCopilot 端到端', () => {
     for (const hit of evidence.hits) expect(hit.source.label.length).toBeGreaterThan(0);
   });
 
-  it('当前题 + 提示语境下不泄露参考答案', () => {
-    const evidence = retrieveForCopilot({
-      query: '这道题给我一点提示',
-      activeQuestion,
-      mode: 'hint',
-      limit: 8,
-    });
-    const joined = evidence.hits.map((h) => h.content).join('\n');
-    expect(joined).not.toContain('参考答案：');
-    expect(joined).not.toContain('正确选项：');
-  });
-
-  it('同一问题在 answer 模式可以看到解析', () => {
-    const evidence = retrieveForCopilot({
-      query: '这题的答案是什么',
-      activeQuestion,
-      mode: 'answer',
-      limit: 8,
-    });
-    expect(evidence.mode).toBe('answer');
-    expect(evidence.hits.map((h) => h.content).join('\n')).toContain('解析：');
-  });
-
   it('P0-2：有当前题(rag)问另一知识点 → 锚定该节点、不被当前题 topic 限制', () => {
     const evidence = retrieveForCopilot({ query: 'GQA 和 MQA 有什么区别', activeQuestion, limit: 5 });
     expect(evidence.scope).toBe('topic');
     expect(evidence.seeds).toContain('gqa');
     expect(evidence.seeds).not.toContain('rag'); // 关键：没有退化为 activeQuestion.topic
-  });
-
-  it('P0-2：有当前题求提示 → current_question 范围（锚定当前题）', () => {
-    const evidence = retrieveForCopilot({ query: '给我一点提示，不要直接给答案', activeQuestion, limit: 5 });
-    expect(evidence.scope).toBe('current_question');
   });
 
   it('P0-B：有当前题(rag)问 GQA → 检索结果不含任何题库真值（只是想聊知识）', () => {

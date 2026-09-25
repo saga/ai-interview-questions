@@ -181,15 +181,6 @@ describe('createAgentTools', () => {
     expect(getQTool.description).toContain('你不需要也不应该复述');
   });
 
-  it('getQuestion 找不到题目时优雅返回而非崩溃', async () => {
-    const d = deps([makeChoiceQuestion()]);
-    const tools = createAgentTools(d);
-    const getQ = tools.find((t) => t.name === 'getQuestion')!;
-    const r = await getQ.execute('call', { id: 'nope' });
-    expect((r.details as { error: string }).error).toBe('not_found');
-    expect(d.session.currentQuestion).toBeNull();
-  });
-
   it('getQuestion not_found 回带可用题号（self-correcting），Agent 无需记忆即可挑真 id', async () => {
     const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
     const tools = createAgentTools(d);
@@ -309,26 +300,6 @@ describe('createAgentTools', () => {
     expect(provider.evaluateOpenAnswer).toHaveBeenCalledTimes(1);
   });
 
-  it('getUserWeaknesses 读取 profile 的薄弱主题', async () => {
-    const profile = emptyProfile();
-    profile.topicStats['attention'] = {
-      attempts: 3,
-      avgScore: 40,
-      lastScore: 40,
-      trend: 'flat',
-      mastery: 0.4,
-      commonWeaknesses: ['未理解 QKV'],
-      evidence: [],
-      lastSeen: Date.now(),
-    };
-    const d = deps([makeChoiceQuestion()], profile);
-    const tools = createAgentTools(d);
-    const weak = tools.find((t) => t.name === 'getUserWeaknesses')!;
-    const r = await weak.execute('call', {});
-    const details = r.details as { weakTopics: string[] };
-    expect(details.weakTopics).toContain('attention');
-  });
-
   it('getCoverageGaps 报出题组合有、但用户没练过的 topic（uncovered）', async () => {
     // 题库含 attention / rag 两个 topic，profile 为空 → 两个都是覆盖缺口
     const d = deps([makeChoiceQuestion(), makeOpenQuestion()]);
@@ -383,15 +354,6 @@ describe('createAgentTools', () => {
     expect(gaps[1]).toEqual({ topic: 'agent-fundamentals', reason: 'uncovered' });
     // 文案要让 Agent 看得懂「为什么不能上这道题」
     expect(r.content[0].text).toContain('前置 agent-fundamentals 尚未掌握');
-  });
-
-  it('getCoverageGaps 把缺口写入 session.log，供 UI 透明化', async () => {
-    const d = deps([makeChoiceQuestion()]);
-    const tools = createAgentTools(d);
-    await tools.find((t) => t.name === 'getCoverageGaps')!.execute('call', {});
-    const entry = d.session.log.find((e) => e.tool === 'getCoverageGaps');
-    expect(entry).toBeDefined();
-    expect((entry!.details as { gaps: unknown[] }).gaps).toHaveLength(1);
   });
 
   it('finishInterview 置状态为 finished 并返回摘要', async () => {
@@ -465,18 +427,6 @@ describe('getQuestion 尊重 generateOpenQuestions 开关（修复：Agent 不�
 describe('getQuestion 绝不重复出题（修复：topic 兜底不得回退到已考察的题）', () => {
   const getQ = (d: AgentToolDeps) => createAgentTools(d).find((t) => t.name === 'getQuestion')!;
   const twoInSameTopic = () => [makeQuestion({ id: 'a1' }), makeQuestion({ id: 'a2' })];
-
-  it('topic 内所有题都已考察过 → topic_exhausted，且不把任何已考察的题再次设为当前题', async () => {
-    const bank = twoInSameTopic();
-    const d = deps(bank);
-    d.session.evaluations['a1'] = fakeOpenResult(80);
-    d.session.evaluations['a2'] = fakeOpenResult(60);
-    const r = await getQ(d).execute('call', { id: 'attention' });
-    expect((r.details as { error: string }).error).toBe('topic_exhausted');
-    // 关键契约：宁可不出题，也绝不重复交付
-    expect(d.session.currentQuestion).toBeNull();
-    expect(textOf(r)).toContain('已全部考察过');
-  });
 
   it('C4 后：topic 全部考察完且无搜索结果时，不再回退全题库列出其它题，而是引导 Agent 用 searchQuestions', async () => {
     // 修复前：unasked 为空时执行 `unasked[0] ?? byTopic[0]`，会把已考察的 a1 再交一遍
@@ -568,13 +518,6 @@ describe('工具定义注入 Chrome prompt 的体积', () => {
     const prompt = buildUserPrompt({ systemPrompt: 'sys', messages: [], tools: tools as never });
     expect(prompt).toContain('getQuestion(id: string, format?: "choice" | "open")');
   });
-
-  it('无参工具不产生空括号以外的内容', () => {
-    const tools = createAgentTools(deps([makeChoiceQuestion()]));
-    const prompt = buildUserPrompt({ systemPrompt: 'sys', messages: [], tools: tools as never });
-    expect(prompt).toContain('- finishInterview()');
-    expect(prompt).toContain('- evaluateAnswer()');
-  });
 });
 
 // ── P0 回归：会话级学习状态 / 候选排序 / 误解命中 / 必考点覆盖 ───────────────
@@ -589,17 +532,6 @@ describe('P0-1 会话级学习状态（有效画像，非冻结快照）', () =>
     const { weakTopics } = r.details as { weakTopics: string[] };
     // 修复前：getUserWeaknesses 读创建工具时的空画像 → 报不出 attention
     expect(weakTopics).toContain('attention');
-  });
-
-  it('本轮答对 100 分不把主题误判为薄弱（有效画像与历史画像叠加）', async () => {
-    const d = deps([makeChoiceQuestion()]);
-    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
-    d.session.answers['q-choice-1'] = [0]; // 答对 → 100
-    const tools = createAgentTools(d);
-    await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
-    const r = await tools.find((t) => t.name === 'getUserWeaknesses')!.execute('call', {});
-    const { weakTopics } = r.details as { weakTopics: string[] };
-    expect(weakTopics).not.toContain('attention');
   });
 
   it('getWeakAngles 同样读有效画像：本轮答错的角度立即进入薄弱列表', async () => {
@@ -715,17 +647,6 @@ describe('P0-5 选择题误解命中（misconceptionMap → 结构化反证证�
     const r2 = await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
     expect((r2.details as EvaluationResult).misconceptionIds).toEqual([]);
     expect(textOf(r2)).not.toContain('命中误解');
-  });
-
-  it('未标注 misconceptionMap 的题目答错不产生误解信号（宁缺毋滥）', async () => {
-    const d = deps([makeChoiceQuestion()]);
-    d.session.currentQuestion = { question: makeChoiceQuestion(), format: 'choice' };
-    d.session.answers['q-choice-1'] = [1];
-    const tools = createAgentTools(d);
-    const r = await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
-    const result = r.details as EvaluationResult;
-    expect(result.overall).toBe(0);
-    expect(result.misconceptionIds ?? []).toEqual([]);
   });
 });
 

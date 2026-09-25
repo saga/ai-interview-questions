@@ -58,22 +58,6 @@ describe('questionSchema', () => {
     expect(parsed.tags).toEqual([]);
   });
 
-  it('rejects missing question text', () => {
-    expect(() =>
-      questionSchema.parse({ ...validChoiceSingle, question: undefined }),
-    ).toThrow();
-  });
-
-  it('rejects empty id', () => {
-    expect(() => questionSchema.parse({ ...validChoiceSingle, id: '' })).toThrow();
-  });
-
-  it('rejects unknown difficulty', () => {
-    expect(() =>
-      questionSchema.parse({ ...validChoiceSingle, difficulty: 'unknown' }),
-    ).toThrow();
-  });
-
   it('rejects choice with less than 2 options', () => {
     expect(() =>
       questionSchema.parse({
@@ -86,12 +70,6 @@ describe('questionSchema', () => {
   it('rejects missing formats (no choice nor open)', () => {
     expect(() =>
       questionSchema.parse({ ...validChoiceSingle, formats: {} }),
-    ).toThrow();
-  });
-
-  it('rejects invalid angle', () => {
-    expect(() =>
-      questionSchema.parse({ ...validChoiceSingle, angle: 'invalid-angle' }),
     ).toThrow();
   });
 

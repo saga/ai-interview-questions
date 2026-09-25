@@ -168,10 +168,37 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 - **断言相反 ≠ 逻辑互补**。`reasoningPath.ts` 的 `isReasoningPathSubstantiallyDifferent`
   与 `isReasoningPathTooSimilar` 用例一一对应且结果相反，但签名与算法都不同
   （单阈值看 `reasoningGoal` vs 双阈值看 target+goal）。**删之前必须读实现。**
+- **显式否定契约**（`答错时 gaps === []` 这类「不许凭空造数据」）是产品语义，不属「纯否定断言」；
+- `questionSlotLimit` 那种平凡纯函数的口径表，可能是**唯一**直接测该导出的地方——
+  端到端用例只断言 `length <= limit`，覆盖不到「放开」语义。
 
-**机械可查的重复已经捞干**：按括号配平切 `it` body、抽 `expect(` 行做集合、同文件内两两算 Jaccard，
-阈值 ≥0.45 且交集 ≥3 全部人工过完，剩下的都是误报（共用 `dimensions.correctness` 这类通用断言行）。
-再往下就是主观判断，不要指望脚本。
+**机械可查的重复已经捞干**（949 → 926）：按括号配平切 `it` body、抽 `expect(` 行做集合、
+同文件内两两算 Jaccard，阈值 ≥0.45 且交集 ≥3 全部人工过完，剩下的都是误报
+（共用 `dimensions.correctness` 这类通用断言行）。
+
+**第二轮「测点无价值」也基本捞干**（926 → 845）：五类判据 ——
+① 被更强用例完全包含（`toEqual` 被 `toEqual + length>0` 包含、空结果补集、`undefined` 与省略参数等价）；
+② 只复述 schema/框架（Zod required / `min(1)` / enum、`Array.isArray` 类型检查）；
+③ 恒真或纯否定（注入 `() => 0` 再断言两次相同、prompt 不含旧措辞、单条 `not.toContain`）；
+④ **名实不符**（标题承诺 A、断言只测 B —— 如 `collectTopicRefs 去重并保留首次出现的 category`
+的断言里根本没有 category）；
+⑤ 平凡透传 / 空入参 / 常量自证（`toBe(calculateProficiency(...))` 这种「断言实现调用了它调用的 helper」）。
+**再往下要动就得砍真实覆盖面，不建议继续机械删。**
+
+### ★ 批量删测试块的两个坑（2026-09-25 实测）
+
+用一次性 Python 脚本做精确块删除（每条 old 串先 `assert s.count(old) == 1` 再 `replace(old, '')`），
+比逐条手改可靠。但：
+
+1. **old 串同时以 `\n` 开头并以 `\n` 结尾 → 吃掉前后两个分隔换行**，把上一块的 `});` 与下一块的
+   `it(` 粘成一行 `});  it(`。**语法仍合法、测试仍绿**，只有肉眼或专门 grep 才发现。
+   → old 串**不以 `\n` 开头**，只以 `\n\n` 结尾（保留前一个空行）。
+2. **被删块是 describe 的最后一项时，old 串不能带尾部空行**（那里直接跟 `});`），否则匹配失败、
+   且会连带漏掉 describe 的收尾 `});` → 整文件 `PARSE_ERROR`。
+   → **删完必须跑一次全量，不能只看 diff。**
+
+**删完必扫三件事**：① 死导入 —— 逐个具名导入数「在整个文件出现几次」，出现 1 次即只在 import 行
+（注意 tsconfig **没开 `noUnusedLocals`**，tsc 不会报）；② 括号配平；③ 全量测试。
 
 ## ★ 运行时状态 ≠ UI 投影（2026-09-25，三个 P0 的共同根因）
 

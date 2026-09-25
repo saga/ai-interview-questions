@@ -41,10 +41,6 @@ describe('splitClauses', () => {
     expect(splitClauses('先说结论，再说理由；最后补充。')).toEqual(['先说结论，', '再说理由；', '最后补充。']);
   });
 
-  it('空串与无标点输入', () => {
-    expect(splitClauses('')).toEqual([]);
-    expect(splitClauses('没有标点的一句话')).toEqual(['没有标点的一句话']);
-  });
 });
 
 describe('clauseInversion', () => {
@@ -57,11 +53,6 @@ describe('clauseInversion', () => {
     expect(clauseInversion('先做 A，再做 B；因为 C。', '因为 C。再做 B，先做 A，')).toBe(100);
   });
 
-  it('任一侧分句数 < 2 → 0（无从判定顺序，不惩罚短句）', () => {
-    expect(clauseInversion('只有一句。', '也只有一句。')).toBe(0);
-    expect(clauseInversion('先做 A，再做 B。', '整句没有标点')).toBe(0);
-  });
-
   it('零字面重叠的重述分句被排除，不制造虚假倒置（回归）', () => {
     // 真实误杀案例：变体末句「导致开销随长度累积」与 canonical 三句都零重叠，
     // greedy 匹配会退化成「取第一个」，若计入则凭空得到 100% 倒置。
@@ -72,9 +63,6 @@ describe('clauseInversion', () => {
     expect(r).toBe(0);
   });
 
-  it('有效匹配不足 2 个 → 0（证据不足不下结论）', () => {
-    expect(clauseInversion('先做 A，再做 B。', '完全不同的内容，另一段全新的表述。')).toBe(0);
-  });
 });
 
 describe('checkLanguageSanity —— 干净变体放行', () => {
@@ -160,11 +148,6 @@ describe('checkLanguageSanity —— 各条 BLOCK 规则', () => {
     expect(r.blockCodes).not.toContain(R.TOO_SHORT);
     expect(ok(['无监督学习']).warnCodes).not.toContain(R.TOO_SHORT);
     expect(ok(['2 倍']).blockCodes).not.toContain(R.TOO_SHORT);
-  });
-
-  it('TOO_SHORT 只作用于选项，不作用于题干', () => {
-    const r = checkLanguageSanity({ stem: '短干？' }, { stem: canonical.stem });
-    expect(r.warnCodes).not.toContain(R.TOO_SHORT);
   });
 
   it('REPEATED_CLAUSE：只作 WARN，且忽略极短分句', () => {

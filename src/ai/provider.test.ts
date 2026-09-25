@@ -47,11 +47,6 @@ describe('mergeQuestionRubric', () => {
     });
   });
 
-  it('requiredPoints 统一来自知识点节点的 required（ADR-029 回退，ADR-044 后为唯一来源）', () => {
-    const { requiredPoints } = mergeQuestionRubric(q(), GLOBAL);
-    expect(requiredPoints?.length ?? 0).toBeGreaterThan(0);
-  });
-
   it('权重统一使用全局 rubric（题目级 dimensions 覆盖已移除，ADR-044）', () => {
     // 无 profile 的题目：原样返回全局权重副本
     expect(mergeQuestionRubric(q(), GLOBAL).rubric).toEqual(GLOBAL);
@@ -87,13 +82,6 @@ describe('isEntryValid（按引擎区分校验）', () => {
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' })).toBe(true);
   });
 
-  it('openrouter / google 与其他云端同一校验规则（apiKey + model）', () => {
-    expect(isEntryValid(entry({ id: 'openrouter', model: '', apiKey: 'sk-or' }))).toBe(false);
-    expect(isEntryValid(entry({ id: 'openrouter', model: 'anthropic/claude-haiku-4.5', apiKey: '' }))).toBe(false);
-    expect(isEntryValid(entry({ id: 'openrouter', model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or' }))).toBe(true);
-    expect(isEntryValid(entry({ id: 'google', model: 'gemini-2.5-flash', apiKey: 'AIza-x' }))).toBe(true);
-  });
-
   it('cloudflare 需要 apiKey + model + accountId 三者齐全', () => {
     const cf = { id: 'cloudflare-workers-ai' as const, enabled: true };
     expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'tok', accountId: '' })).toBe(false);
@@ -102,10 +90,6 @@ describe('isEntryValid（按引擎区分校验）', () => {
     expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'tok', accountId: 'acc' })).toBe(true);
   });
 
-  it('缺 id 或整个对象时无效', () => {
-    expect(isEntryValid(undefined as unknown as ProviderEntry)).toBe(false);
-    expect(isEntryValid(entry({ id: '' as ProviderEntry['id'] }))).toBe(false);
-  });
 });
 
 describe('isConfigValid（至少一个启用且合法的引擎）', () => {

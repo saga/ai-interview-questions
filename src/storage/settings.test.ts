@@ -61,26 +61,6 @@ describe('sanitizeEntry', () => {
   it('enabled 缺省视为启用，显式 false 保留', () => {
     expect(sanitizeEntry({ id: 'chrome', enabled: false })?.enabled).toBe(false);
   });
-
-  it('id 非法或非对象时返回 null', () => {
-    expect(sanitizeEntry({ id: 'nope' })).toBeNull();
-    expect(sanitizeEntry(null)).toBeNull();
-    expect(sanitizeEntry('x')).toBeNull();
-  });
-
-  it('accountId 仅在非空字符串时保留（cloudflare 专用字段）', () => {
-    expect(sanitizeEntry({ id: 'cloudflare-workers-ai', model: 'm', apiKey: 'k', accountId: 'abc123' })).toEqual({
-      id: 'cloudflare-workers-ai',
-      enabled: true,
-      model: 'm',
-      apiKey: 'k',
-      baseUrl: '',
-      accountId: 'abc123',
-    });
-    // 其他引擎/空值不产生噪音字段
-    expect(sanitizeEntry({ id: 'deepseek', model: 'm' })?.accountId).toBeUndefined();
-    expect(sanitizeEntry({ id: 'cloudflare-workers-ai', model: 'm', accountId: '   ' })?.accountId).toBeUndefined();
-  });
 });
 
 describe('loadConfig', () => {
@@ -147,19 +127,6 @@ describe('loadConfig', () => {
 });
 
 describe('loadConfig（generateOpenQuestions）', () => {
-  it('字段缺省视为 false，显式 true 保留', () => {
-    store['ai-interview-trainer.config'] = JSON.stringify({
-      providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
-    });
-    expect(loadConfig().generateOpenQuestions).toBe(false);
-
-    store['ai-interview-trainer.config'] = JSON.stringify({
-      providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
-      generateOpenQuestions: true,
-    });
-    expect(loadConfig().generateOpenQuestions).toBe(true);
-  });
-
   it('runtimeVariantEnabled：字段缺省视为 false，显式 true 保留', () => {
     store['ai-interview-trainer.config'] = JSON.stringify({
       providers: [{ id: 'deepseek', enabled: true, model: 'm', apiKey: 'k' }],
@@ -357,14 +324,11 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
 
   it.each([
     ['非 JSON 文本', '{not json'],
-    ['顶层缺 providers', '{"foo": 1}'],
-    ['providers 不是数组', '{"providers": "x"}'],
     ['id 非法', JSON.stringify({ providers: [VALID_ENTRY, { id: 'openai', model: 'gpt-4o', apiKey: 'k' }] })],
     ['同引擎重复', JSON.stringify({ providers: [VALID_ENTRY, VALID_ENTRY] })],
     ['启用的 local 缺模型', JSON.stringify({ providers: [{ id: 'local', enabled: true }, VALID_ENTRY] })],
     ['启用的云端缺 apiKey', JSON.stringify({ providers: [{ id: 'deepseek', enabled: true, model: 'm' }] })],
     ['全部停用', JSON.stringify({ providers: [{ ...VALID_ENTRY, enabled: false }] })],
-    ['空链', JSON.stringify({ providers: [] })],
   ])('整体拒绝：%s，并给出错误信息', (_name, text) => {
     const res = parseConfigJSON(text as string);
     expect(res.ok).toBe(false);

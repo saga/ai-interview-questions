@@ -101,9 +101,6 @@ describe('tokenize', () => {
     expect(tokens).toContain('降');
   });
 
-  it('单字中文查询不会丢词', () => {
-    expect(tokenize('缓存')).toEqual(expect.arrayContaining(['缓存']));
-  });
 });
 
 describe('KnowledgeDocument 投影', () => {
@@ -178,17 +175,6 @@ describe('graph 扩展（1 跳）', () => {
 });
 
 describe('searchKnowledge', () => {
-  it('命中知识点并按混合评分排序', () => {
-    const evidence = searchKnowledge(
-      { query: 'KV Cache 为什么能降低自回归解码的延迟', scope: 'topic', topic: 'kv-cache', limit: 5 },
-      { index: testIndex(), nodes },
-    );
-    expect(evidence.scope).toBe('topic');
-    expect(evidence.seeds).toContain('kv-cache');
-    expect(evidence.hits.length).toBeGreaterThan(0);
-    expect(evidence.hits[0].metadata.knowledgeId).toBe('kv-cache');
-  });
-
   it('topic scope 只返回 1 跳邻域内的文档', () => {
     const evidence = searchKnowledge(
       { query: '推理阶段如何降低延迟', scope: 'topic', topic: 'kv-cache', limit: 10 },
@@ -244,15 +230,6 @@ describe('searchKnowledge', () => {
       { index: testIndex(), nodes },
     );
     expect(evidence.hits.some((h) => h.metadata.questionId === 'q-kv-1')).toBe(false);
-  });
-
-  it('hint 模式下检索结果不含正确选项，answer 模式含', () => {
-    const base = { query: 'KV Cache 延迟', topic: 'kv-cache', limit: 10 };
-    const hinted = searchKnowledge({ ...base, mode: 'hint' }, { index: testIndex(), nodes });
-    const answered = searchKnowledge({ ...base, mode: 'answer' }, { index: testIndex(), nodes });
-    const allHinted = hinted.hits.map((h) => h.content).join('\n');
-    expect(allHinted).not.toContain('正确选项：');
-    expect(answered.hits.map((h) => h.content).join('\n')).toContain('正确选项：');
   });
 
   it('命中数量不超过 limit 且 id 不重复（dedup 用 canonical id 而非 title）', () => {
@@ -355,14 +332,6 @@ describe('全库索引', () => {
       expect(hit.score).toBeGreaterThan(0);
       expect(hit.score).toBeLessThanOrEqual(1.000001);
     }
-  });
-
-  it('真实题目在 hint 模式下不会泄露正确选项', () => {
-    const index = defaultKnowledgeIndex();
-    const evidence = searchKnowledge({ query: 'rag reranking 二阶段排序', limit: 8, mode: 'hint' }, { index });
-    const joined = evidence.hits.map((h) => h.content).join('\n');
-    expect(joined).not.toContain('正确选项：');
-    expect(joined).not.toContain('参考答案：');
   });
 
   it('空查询不炸，且能靠 metadata/graph 兜底', () => {

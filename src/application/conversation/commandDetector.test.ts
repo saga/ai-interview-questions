@@ -90,10 +90,6 @@ describe('isHelpSeeking（求助判定，决定走 Copilot）', () => {
     expect(isHelpSeeking('RAG 和微调有什么区别？')).toBe(true);
   });
 
-  it('以问号结尾一律当提问', () => {
-    expect(isHelpSeeking('RAG 是什么？')).toBe(true);
-  });
-
   it('纯选项字母不是求助（那是作答）', () => {
     expect(isHelpSeeking('A')).toBe(false);
     expect(isHelpSeeking('B C')).toBe(false);
@@ -116,9 +112,6 @@ describe('parseChatAnswer（作答解析）', () => {
     expect(parseChatAnswer(choiceQuestion, '我的理解是观察—决策闭环')).toBe('我的理解是观察—决策闭环');
   });
 
-  it('开放题原样返回', () => {
-    expect(parseChatAnswer(openQuestion, '先检索再生成')).toBe('先检索再生成');
-  });
 });
 
 describe('routeUserMessage（唯一通道决策点，ADR-064 §5）', () => {

@@ -97,11 +97,6 @@ describe('aggregateOverall 维度适用性（P0：不适用维度不得扣分）
     expect(aggregateOverall(dims, rubric, applicable)).toBe(Math.round(100 * (0.4 / 0.6) + 25 * (0.2 / 0.6)));
   });
 
-  it('applicable 缺省（历史持久化数据 / 选择题）等价于旧实现', () => {
-    expect(aggregateOverall(full, rubric, undefined)).toBe(90);
-    expect(aggregateOverall(full, rubric)).toBe(90);
-  });
-
   it('四维全被标为不适用（模型异常）→ 退回原权重，不产生 NaN 或虚假满分', () => {
     const allFalse = { correctness: false, completeness: false, architecture: false, communication: false };
     expect(Number.isFinite(aggregateOverall(full, rubric, allFalse))).toBe(true);
@@ -127,9 +122,6 @@ describe('describeLevels 维度适用性', () => {
     expect(text).toContain('架构=不适用');
   });
 
-  it('全部适用时行为不变（仍可塌缩）', () => {
-    expect(describeLevels({ correctness: 4, completeness: 4, architecture: 4, communication: 4 })).toBe('四维均为 4');
-  });
 });
 
 describe('gradeChoice', () => {
@@ -205,22 +197,11 @@ describe('describeLevels', () => {
     expect(describeLevels({ correctness: 0, completeness: 0, architecture: 0, communication: 0 })).toBe('四维均为 0');
   });
 
-  it('塌缩后明显短于逐维打印，避免每轮重复同一个数字', () => {
-    const uniform = { correctness: 4, completeness: 4, architecture: 4, communication: 4 };
-    expect(describeLevels(uniform).length).toBeLessThan(
-      'correctness=4, completeness=4, architecture=4, communication=4'.length / 2,
-    );
-  });
-
   it('四维不同 → 逐维打印，保留区分度', () => {
     const text = describeLevels({ correctness: 3, completeness: 1, architecture: 2, communication: 4 });
     expect(text).toBe('正确性=3, 完整性=1, 架构=2, 表达=4');
   });
 
-  it('只有一维不同也要展开，不能因为「多数相同」就丢信息', () => {
-    const text = describeLevels({ correctness: 4, completeness: 4, architecture: 4, communication: 1 });
-    expect(text).toBe('正确性=4, 完整性=4, 架构=4, 表达=1');
-  });
 });
 
 describe('EVALUATION_PROFILE_RUBRICS（P2-5）', () => {

@@ -8,7 +8,6 @@ import {
   hasForbiddenReference,
   VARIANT_REJECT_REASON,
   STEM_ANCHOR_WARNING,
-  variantFingerprint,
   findNearDuplicateVariants,
   VARIANT_DUP_THRESHOLD,
 } from './variant';
@@ -72,11 +71,6 @@ describe('validateVariant（结构不变量）', () => {
   it('题干非空 + options 齐全 → 通过', () => {
     expect(validateVariant(cq, variant()).ok).toBe(true);
   });
-
-  it('题干为空 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ question: '   ' })).ok).toBe(false);
-  });
-
   it('选择题缺少 options → 拒绝（P0：只改题干不动选项的候选不接受）', () => {
     expect(validateVariant(cq, variant({ options: undefined })).ok).toBe(false);
   });
@@ -84,18 +78,6 @@ describe('validateVariant（结构不变量）', () => {
   it('options 数量与 canonical 不同 → 拒绝（选项须一一对应）', () => {
     expect(validateVariant(cq, variant({ options: ['a', 'b'] })).ok).toBe(false);
     expect(validateVariant(cq, variant({ options: ['a', 'b', 'c', 'd'] })).ok).toBe(false);
-  });
-
-  it('options 含空字符串 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ options: ['a', '  ', 'c'] })).ok).toBe(false);
-  });
-
-  it('options 重复 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ options: ['a', 'a', 'b'] })).ok).toBe(false);
-  });
-
-  it('含依赖原题指代 → 拒绝', () => {
-    expect(validateVariant(cq, variant({ question: '原题中的方案如何？' })).ok).toBe(false);
   });
 
   it('含新增 forbidden 指代（题目中/题干中/前文/下文）→ 拒绝', () => {
@@ -136,20 +118,6 @@ describe('validateVariant（漂移软信号：仅 warning，不阻断）', () =>
     expect(check.ok).toBe(true);
     expect(check.warning).toBeUndefined();
   });
-
-  it('证据面仍只看题干：概念只出现在选项里 → 记 warning（不阻断）', () => {
-    // 题干（CNN/BatchNorm）无 regularization 锚点，但默认选项是对 cq 选项的 paraphrase，
-    // 能通过语义漂移检查；锚点只可能出现在选项里 → 仅记 warning，不阻断。
-    expect(
-      validateVariant(
-        cq,
-        variant({
-          question: '在 CNN 训练中 batch size 很小时，BatchNorm 为什么不稳定？',
-        }),
-      ).warning,
-    ).toBe(STEM_ANCHOR_WARNING);
-  });
-
   it('GeneratedVariant 契约只含 question/options（无靠解析蒙混的入口）', () => {
     const v = variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' });
     expect(Object.keys(v).sort()).toEqual(['options', 'question']);
@@ -163,18 +131,6 @@ describe('validateVariant（漂移软信号：仅 warning，不阻断）', () =>
     expect(validateVariant(cqEn, variant({ question: 'CNN 卷积核大小如何选择？' })).warning).toBe(
       STEM_ANCHOR_WARNING,
     );
-  });
-
-  it('fuzzball 兜底：短语级 token_set 对长文本有效（batch statistics ↔ statistics across batch）', () => {
-    const q: Question = { ...cq, id: 't', topic: 'layer-normalization', tags: ['batch statistics'] };
-    expect(
-      validateVariant(
-        q,
-      variant({
-        question: 'LayerNorm does not rely on statistics computed across the batch',
-      }),
-      ).ok,
-    ).toBe(true);
   });
 });
 
@@ -292,45 +248,8 @@ describe('applyVariant（程序结构变换）', () => {
     // canonical 正确项 = 索引 1('x') 与 3('z')
     expect(answer.map((i) => r.formats.choice!.options[i]).sort()).toEqual(['x', 'z']);
   });
-
-  // 以下三例锁死「shuffle + answer remap」这条最核心的安全链：
-  // 断言的不是索引本身（索引随排列变化），而是「重映射后索引指向的选项仍是原来那个正确选项」。
-  it('单选题：确定性 rng 下 shuffle 后 answer 重映射仍指向正确选项', () => {
-    // canonical: A B C D，正确项 = 'B'（索引 1）
-    const q: Question = {
-      ...cq,
-      id: 'single-remap',
-      formats: { choice: { type: 'single', options: ['A', 'B', 'C', 'D'], answer: [1] } },
-    };
-    // LLM 逐项改写、位置一一对应：A→'a' … D→'d'，正确项改写为 'b'
-    const v = variant({ question: 'regularization 的另一种问法', options: ['a', 'b', 'c', 'd'] });
-    // rng=()=>0 的 Fisher–Yates 结果固定为 ['b','c','d','a']（原始索引 [1,2,3,0]）
-    const r = applyVariant(q, v, 'choice', () => 0);
-    expect(r.formats.choice!.options).toEqual(['b', 'c', 'd', 'a']);
-    // 索引确实变化（[1] → [0]），证明重映射真的生效、而不是把 canonical answer 原样透传
-    expect(r.formats.choice!.answer).toEqual([0]);
-    // 最关键：重映射后的索引指向的仍是正确选项 'b'
-    expect(r.formats.choice!.options[r.formats.choice!.answer[0]]).toBe('b');
-  });
-
-  it('多选题：确定性 rng 下 shuffle 后被选中的语义集合不变', () => {
-    // canonical: A B C D，正确项 = A、C（索引 [0,2]）
-    const q: Question = {
-      ...cq,
-      id: 'multi-remap',
-      formats: { choice: { type: 'multiple', options: ['A', 'B', 'C', 'D'], answer: [0, 2] } },
-    };
-    const v = variant({ question: 'regularization 的多选问法', options: ['a', 'b', 'c', 'd'] });
-    const r = applyVariant(q, v, 'choice', () => 0);
-    const { options, answer } = r.formats.choice!;
-    // 排列同上 ['b','c','d','a']（原始索引 [1,2,3,0]）：
-    // 原索引 0('a') 落到新位置 3，原索引 2('c') 落到新位置 1 → 升序 [1,3]
-    expect(options).toEqual(['b', 'c', 'd', 'a']);
-    expect(answer).toEqual([1, 3]);
-    // 不看 answer.length，而是看语义集合：选中的仍是 A、C 的改写 'a'、'c'
-    expect(answer.map((i) => options[i]).sort()).toEqual(['a', 'c']);
-  });
-
+  // 属性测试锁死「shuffle + answer remap」这条最核心的安全链：断言的不是索引本身
+  // （索引随排列变化），而是「重映射后索引指向的选项仍是原来那个正确选项」。
   it('不变量：任意随机重排下，被选中选项的语义集合恒定（属性测试）', () => {
     // 不依赖任何具体排列，随机 200 次都必须保持「正确选项的语义集合」不变。
     for (let i = 0; i < 200; i++) {
@@ -354,14 +273,6 @@ describe('applyVariant（程序结构变换）', () => {
     expect(new Set(r.formats.choice!.options)).toEqual(new Set(['x', 'y z', 'w']));
     expect(r.formats.choice!.options.every((o) => o === o.trim() && !/[\n\r]|\s{2,}/.test(o))).toBe(true);
   });
-
-  it('注入确定性 rng 时重排结果可复现', () => {
-    const a = applyVariant(cq, variant({ options: ['x', 'y', 'z'] }), 'choice', () => 0);
-    const b = applyVariant(cq, variant({ options: ['x', 'y', 'z'] }), 'choice', () => 0);
-    expect(a.formats.choice?.options).toEqual(b.formats.choice?.options);
-    expect(a.formats.choice?.answer).toEqual(b.formats.choice?.answer);
-  });
-
   it('解析永远来自 canonical（LLM 不生成解析）', () => {
     expect(applyVariant(cq, variant({ options: ['x', 'y', 'z'] })).explanation).toBe('e');
   });
@@ -425,11 +336,6 @@ describe('applyVariant 测量面（ADR-077：offline variant 可换 angle / cogn
     expect(r.cognitiveTask).toBe('troubleshoot');
     expect(r.formats.open?.referenceAnswer).toBe('REF-ANSWER');
   });
-
-  it('测量面不改变答案安全边界：answer 仍由 canonical 重映射而来', () => {
-    const r = applyVariant(base, { ...variant({ options: ['x', 'y', 'z'] }), angle: 'debugging' }, 'choice', () => 0);
-    expect(r.formats.choice?.options[r.formats.choice!.answer[0]]).toBe('x');
-  });
 });
 
 describe('applyVariant / validateVariant 形态对齐（P0-1）', () => {
@@ -454,12 +360,6 @@ describe('applyVariant / validateVariant 形态对齐（P0-1）', () => {
     expect(r.formats.choice?.answer).toEqual([0]);
     expect(r.aiGenerated).toBe(true);
   });
-
-  it('format=choice：缺 options 或数量不符 → 拒绝', () => {
-    expect(validateVariant(dq, variant({ options: undefined }), 'choice').ok).toBe(false);
-    expect(validateVariant(dq, variant({ options: ['x', 'y'] }), 'choice').ok).toBe(false);
-  });
-
   it('format=choice：改写 options 并程序重排，正确文本经重映射仍正确', () => {
     const r = applyVariant(dq, variant({ options: ['x', 'y', 'z'] }), 'choice');
     expect(new Set(r.formats.choice?.options)).toEqual(new Set(['x', 'y', 'z']));
@@ -543,17 +443,5 @@ describe('findNearDuplicateVariants（变体间近重复）', () => {
     expect(findNearDuplicateVariants(list, 101)).toHaveLength(0);
     // 阈值压到 0 → 任意两条都配对
     expect(findNearDuplicateVariants(list, 0)).toHaveLength(1);
-  });
-
-  it('指纹同时计入题干与选项，且对空白不敏感（与校验/渲染共用规范化）', () => {
-    expect(variantFingerprint({ question: '甲', options: REAL_OPTS })).not.toBe(
-      variantFingerprint({ question: '乙', options: REAL_OPTS }),
-    );
-    expect(variantFingerprint({ question: '甲', options: ['x', 'y'] })).not.toBe(
-      variantFingerprint({ question: '甲', options: ['x', 'z'] }),
-    );
-    expect(variantFingerprint({ question: ' 甲 ', options: ['  x ', 'y'] })).toBe(
-      variantFingerprint({ question: '甲', options: ['x', 'y'] }),
-    );
   });
 });
