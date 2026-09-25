@@ -21,7 +21,7 @@
 - `storage/learner.ts`：读取时补 Zod 形状校验（该文件注释早已声明 IndexedDB 是不可信边界，但代码没做）。learner 行损坏 → 退回空画像而不是抛异常；session 行**只做最小形状检查**，刻意不套完整 schema——旧记录形状过时不该整条丢弃用户历史。
 - `storage/db.ts`：`StoredLearner` 补 `assessmentCoverage` / `misconceptionHits` 类型（运行时靠对象展开「碰巧能用」，类型缺失迟早被显式列字段时静默丢掉）。
 
-**门禁**：`typecheck`（app + node）通过；全量测试 941 passed / 944（3 个失败为工作区未提交依赖升级导致的 `deepseek-v4-flash` 测试引用，仅测试、零运行时引用）。**覆盖度变化**：随 Chat 适配层删除，`interviewCapability.test.ts` 一并移除（其断言全部针对已删除的适配层）；底层行为由 `interviewAgent.test.ts` 直接覆盖，新增的路由派生与存储边界另补单测。
+**门禁**：`typecheck`（app + node）通过；全量测试 944 passed / 949（5 个失败为工作区未提交依赖升级导致的 `deepseek-v4-flash` 测试引用 3 项 + 并行负载下的超时 2 项，均与本改动无关、单独跑全过）。**覆盖度变化**：随 Chat 适配层删除，`interviewCapability.test.ts` 一并移除（其断言全部针对已删除的适配层）；底层行为由 `interviewAgent.test.ts` 直接覆盖，新增的路由派生、`onEvaluation` 暂停标志、命令整句匹配、存储边界另补单测。
 
 ## 2026-09-25 · 面试新增「逐题反馈」节奏（会话级，评分与推进解耦）
 

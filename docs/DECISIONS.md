@@ -14,7 +14,7 @@
   5. `end_interview` 在面试进行中交给 `agentInterview.endEarly()`（由它统一收尾并写 Learner Memory），侧栏**不**重复落库；非面试模式仍走侧栏自己的 `toSessionRecord` 汇总。
   6. **删除死代码**（ADR-002）：`startChatInterview` / `ChatInterviewController` / `ChatInterviewStep` / `rehydrateInterviewAgent` 随适配层一并删除；`projectToConversationSession` 失去唯一调用方后同样删除。`interviewCapability.ts` 只留规则式面试的确定性能力（`startInterview` / `evaluateInterviewAnswer` / `continueAdaptiveInterview`）。
 - 未改（明确留给后续）：`ConversationSession` 的 `feedbackMode` / `pendingAction: 'feedback'` / `agentSession?` 字段**保留**。它们是持久化契约，旧草稿里可能已写入；删字段会让 `conversationContextSchema.parse` 失败并丢弃整份草稿。运行时状态的责任已经交还给 `useAgentInterview`，字段清理是独立的一步，不与新 runtime 混在一次改动里。
-- 验证：`typecheck`（app + node）通过；`src/application/conversation` + `src/agent` 192 项全绿；新增 `interviewRoutingContext` 端到端路由断言（「A」必须走答案通道、反馈态必须关闭答案通道）；全量测试 941/944（余下 3 项为工作区未提交依赖升级导致的 `deepseek-v4-flash` 测试引用，仅测试、零运行时引用）。
+- 验证：`typecheck`（app + node）通过；`src/application/conversation` + `src/agent` 192 项全绿；新增 `interviewRoutingContext` 端到端路由断言（「A」必须走答案通道、反馈态必须关闭答案通道）；全量测试 944/949（余下 5 项为工作区未提交依赖升级导致的 `deepseek-v4-flash` 测试引用 3 项 + 并行负载超时 2 项，单独跑全过）。
 - 触发条件：若将来要求「侧栏的对话 transcript 里保留题目原文」（当前只由面板渲染），应给 `useAgentInterview` 增加**显式**的题目交付事件，而不是让 UI 去 diff 状态；若要求两个入口同时可见（分屏），需先解决 `QuestionCard` 的输入焦点归属。
 
 ## ADR-083 · 逐题反馈是「会话节奏」而非全局开关：评分与推进解耦

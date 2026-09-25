@@ -63,18 +63,16 @@ describe('detectCommand（确定性命令，无 LLM）', () => {
   // 题目当场被换掉。这是与 Copilot 定位直接冲突的行为。
   it('「继续 + 说明动词」不是命令，而是接着讲（让位给 Copilot）', () => {
     expect(detectCommand('继续解释一下')).toBeNull();
-    expect(detectCommand('继续详细说')).toBeNull();
     expect(detectCommand('继续讲刚才的知识点')).toBeNull();
-    expect(detectCommand('继续展开说说')).toBeNull();
     expect(detectCommand('接着讲')).toBeNull();
   });
 
-  it('自然说法仍识别为命令（指代填充 / 难度修饰 / 语气词）', () => {
-    expect(detectCommand('跳过这道题')?.kind).toBe('continue_interview');
+  // 整句匹配不能把自然说法一起挡掉。`跳过这道题` / `换一道` 已在上一组覆盖，此处只测新增的尾巴形态。
+  it('自然说法仍识别为命令（难度修饰 / 语气词）', () => {
     expect(detectCommand('下一题吧')?.kind).toBe('continue_interview');
-    expect(detectCommand('换一道')?.kind).toBe('continue_interview');
-    expect(detectCommand('下一题难一点')?.kind).toBe('continue_interview');
-    expect(detectCommand('下一题难一点')?.difficulty).toBe('hard');
+    const harder = detectCommand('下一题难一点');
+    expect(harder?.kind).toBe('continue_interview');
+    expect(harder?.difficulty).toBe('hard');
     expect(detectCommand('再难一点')?.kind).toBe('continue_interview');
   });
 

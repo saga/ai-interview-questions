@@ -291,8 +291,10 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           setConvSession((prev) => prev ? { ...prev, messages: nextMessages } : prev);
           return;
         }
+        // 先确保有会话承载 transcript（appendAssistant 只更新已存在的会话，
+        // 否则首次从侧栏开面试时这几轮对话不会被持久化）。
+        if (!convSession) setConvSession(ensureSession('interview'));
         appendAssistant('已开始模拟面试。题目见下方面板，直接回复选项字母作答；输入「继续」跳过，「结束」收尾。');
-        setConvSession((prev) => prev ? { ...prev, messages: nextMessages } : prev);
         await agentInterview.start();
         return;
       }

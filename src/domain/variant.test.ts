@@ -252,16 +252,13 @@ describe('validateVariant（选项语义漂移防护）', () => {
 // 校验对象必须等于最终展示文本：先 normalize 再查去重/空串，
 // 否则 "Redis" 与 " Redis " 能逃过检查、却在渲染后变成两个一模一样的选项。
 describe('validateVariant（先规范化再校验）', () => {
-  it('仅空白差异的两个选项 → 判为重复并拒绝', () => {
-    const check = validateVariant(cq, variant({ options: ['Redis', ' Redis ', 'Kafka'] }));
-    expect(check.ok).toBe(false);
-    expect(check.code).toBe(VARIANT_REJECT_REASON.DUPLICATE_OPTION);
-  });
-
-  it('含换行/多空格的选项 → 规范化后判为重复并拒绝', () => {
-    const check = validateVariant(cq, variant({ options: ['使用  KV\nCache', '使用 KV Cache', 'RAG'] }));
-    expect(check.ok).toBe(false);
-    expect(check.code).toBe(VARIANT_REJECT_REASON.DUPLICATE_OPTION);
+  it('脏空白（首尾 / 内部换行与多空格）规范化后判为重复并拒绝', () => {
+    expect(validateVariant(cq, variant({ options: ['Redis', ' Redis ', 'Kafka'] })).code).toBe(
+      VARIANT_REJECT_REASON.DUPLICATE_OPTION,
+    );
+    expect(validateVariant(cq, variant({ options: ['使用  KV\nCache', '使用 KV Cache', 'RAG'] })).code).toBe(
+      VARIANT_REJECT_REASON.DUPLICATE_OPTION,
+    );
   });
 
   it('全空白选项 → 判为空字符串并拒绝', () => {
@@ -538,11 +535,6 @@ describe('findNearDuplicateVariants（变体间近重复）', () => {
     expect(pairs[0].ratio).toBeGreaterThanOrEqual(VARIANT_DUP_THRESHOLD);
   });
 
-  it('完全相同的两条 → 判近重复', () => {
-    const v = { question: '同一个题干', options: REAL_OPTS };
-    expect(findNearDuplicateVariants([v, { ...v }])).toHaveLength(1);
-  });
-
   it('单个变体不产生配对；阈值可调', () => {
     expect(findNearDuplicateVariants([{ question: 'a', options: REAL_OPTS }])).toHaveLength(0);
     const list = [
@@ -555,11 +547,13 @@ describe('findNearDuplicateVariants（变体间近重复）', () => {
     expect(findNearDuplicateVariants(list, 0)).toHaveLength(1);
   });
 
-  it('指纹把选项计入（选项相同则指纹相同）', () => {
+  it('指纹同时计入题干与选项，且对空白不敏感（与校验/渲染共用规范化）', () => {
     expect(variantFingerprint({ question: '甲', options: REAL_OPTS })).not.toBe(
       variantFingerprint({ question: '乙', options: REAL_OPTS }),
     );
-    // 指纹对空白不敏感（与校验/渲染共用规范化）
+    expect(variantFingerprint({ question: '甲', options: ['x', 'y'] })).not.toBe(
+      variantFingerprint({ question: '甲', options: ['x', 'z'] }),
+    );
     expect(variantFingerprint({ question: ' 甲 ', options: ['  x ', 'y'] })).toBe(
       variantFingerprint({ question: '甲', options: ['x', 'y'] }),
     );

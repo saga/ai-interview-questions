@@ -146,6 +146,66 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 `pickNextAdaptive` 在同主题多题之间**随机**挑，`expect(...).toBe('q-choice-1')` 会偶发失败。
 断言相对关系：先取 `res.firstQuestion!.question.id`，再断言 `not.toBe(first)` 或与 `first` 相等。
 
+## ★ 写测试：断言必须**能失败**（2026-09-25）
+
+**症状**：`learner.test.ts` 里 `expect(JSON.stringify(profile)).not.toContain(' 答案不正确，请参见解析')`
+——串首多了个空格，而 JSON 数组元素没有前导空格 ⇒ 这条断言**永远为真**，等于没写。
+去掉空格立刻变红，暴露出「假 gap 确实进了 profile」。
+
+**两条硬规则**：
+
+1. **不要用「整份对象序列化后不含某串」做断言**。它把「聚合结果」与「忠实原始记录」两种语义
+   混在一起，且极易被一个多余空格变成永真。要断言什么，就精确指到那个字段
+   （如 `profile.topicStats` / `profile.misconceptionHits`）。
+2. **纯否定断言必须配一条正向断言**（如 `not.toHaveLength(0)`），否则实现退化成空值后测试仍是绿的。
+
+**去脆化**：需要比对内容时与**来源函数**同源比对（`expect(fb.keyPoints).toEqual(requiredPointsFor(q))`），
+不要硬编码文案——文案改词不该弄坏测试。
+
+**瘦身时的反面清单**（看着像重复、其实要留）：只断言 `.ok === false` 的一组用例后面，
+往往跟着唯一断言各错误码的那一条；不同字段（`evaluations` vs `answers`）驱动的同名行为不能合。
+
+## ★ 运行时状态 ≠ UI 投影（2026-09-25，三个 P0 的共同根因）
+
+这条值得单独记：**不要让 UI 从「投影/派生数据」反推「运行时状态」**。
+
+具体事故：`afterEvaluation` 在 standard 模式**也会**触发 `onEvaluation`（评分总得发生），
+但 UI 用 `feedback !== null` 推断「已暂停」⇒ 在「评分完成 → 下一题交付」的窗口里
+（开放题下数秒）误弹反馈卡、题目只读、提交按钮消失。
+
+正确做法：
+- 运行时**显式**把决策作为回调参数下发（`onEvaluation(q, a, ev, awaitingFeedback)`），
+  不要让消费方去读 `session.status`——**回调里读状态字段会与「状态何时写入」耦合**：
+  `afterEvaluation` 原本是先调回调、后置 status，回调里读到的是 `'running'`。
+- 若要暴露状态，**先置状态再通知**，保证「标志 / status / 投影」同源。
+- hook 单独持有 `awaitingFeedback` state 作暂停态真源；`feedback` 只当投影。
+- **恢复路径要恢复的是「状态」，不是「上一次渲染的产物」**：`feedback`（投影）与
+  `lastEvaluation`（原始数据）是两件事，只还原前者会让依赖后者的入口（「让 Copilot 详细解释」）
+  静默消失。`clearFeedback()` 三者一起清。
+
+## 两个 UI 入口 = 一个 runtime，别搞两套（2026-09-25，ADR-084）
+
+「Agent 面试页」与「Copilot 侧栏」曾经各持一套 `InterviewAgentSession`，靠一个上下文对象
+单向桥接——结果刷新/并发/暂停态各自为政。现在侧栏直接消费 App 层 `useAgentInterview`。
+
+**坑**：`useAgentInterview` 是**状态 hook 不是事件流**。想让 Copilot 把题目显示成聊天气泡，
+就得用 effect 监听状态变化去追加消息 → StrictMode 双调用会重复追加，且消息与真源脱节。
+**正确做法是让 UI 按视图渲染派生数据**（题目/反馈面板直接读状态），别把它同步成消息。
+
+**另一个坑**：面试中路由上下文必须由共享会话派生（`interviewRoutingContext()`），
+否则 `shouldSubmitAsAnswer` 判定「无待作答题」→ 用户输入的「A」被当成提问 → **面试卡死**。
+
+## 存储读取：按「解引用了哪些字段」决定校验强度（2026-09-25）
+
+`storage/learner.ts` 的注释早写了「IndexedDB 是不可信边界」，但代码没校验。补的时候踩了两个坑：
+
+- **learner 行**：损坏 → 退回 `emptyProfile()`（而不是抛异常，那会让「进度」页白屏）。
+  必须**先校验再遍历**，否则 `Object.entries(rest.topicStats)` 在字段缺失时直接抛。
+- **session 行**：**只做最小形状检查**（`Array.isArray(row.questionResults)`），
+  **刻意不套完整 `sessionRecordSchema`**。我第一次写成完整校验，直接弄坏了已有端到端测试——
+  旧记录的 `questions` 快照形状过时，完整校验会**整条丢弃用户历史**，
+  代价远大于「某条旧记录少几个可选字段」。与 `storedAgentSessionSchema` 的口径一致。
+
 ## 内存目录
 
 `.workbuddy/memory/` 是实际在维护的那份；`.workbuddy-ai/memory/` 停在 2026-09-03。

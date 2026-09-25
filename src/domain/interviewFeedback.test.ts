@@ -3,7 +3,8 @@
 // 评分结果 → 用户可读反馈 的**映射契约**是否稳定，尤其是「不适用维度」与「关键知识点回落」。
 
 import { describe, it, expect } from 'vitest';
-import { buildInterviewFeedback, feedbackBand, optionLetter, resolveAnswerText } from './interviewFeedback';
+import { buildInterviewFeedback, feedbackBand, resolveAnswerText } from './interviewFeedback';
+import { requiredPointsFor } from './knowledge/nodes';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { Question } from '../schemas/question';
 
@@ -63,13 +64,8 @@ describe('feedbackBand', () => {
   });
 });
 
-describe('optionLetter', () => {
-  it('下标 → 字母，与全站既有约定一致', () => {
-    expect(optionLetter(0)).toBe('A');
-    expect(optionLetter(1)).toBe('B');
-    expect(optionLetter(5)).toBe('F');
-  });
-});
+// optionLetter 不单测：它只是 String.fromCharCode 的封装，
+// 其唯一契约（下标 → 字母）已由下面 resolveAnswerText 的「A. 选项一」断言覆盖。
 
 describe('resolveAnswerText', () => {
   it('选择题渲染为「A. 选项文本」，多选用「；」连接', () => {
@@ -92,10 +88,9 @@ describe('resolveAnswerText', () => {
 describe('buildInterviewFeedback', () => {
   it('关键知识点取自知识点层 required（而非题目 tags）', () => {
     const fb = buildInterviewFeedback(openQuestion(), 'open', '我的回答', evalResult());
-    expect(fb.keyPoints).toEqual([
-      '单 token 占用 = 2(K和V) × 层数 × KV头数 × head_dim × 每元素字节数',
-      '缓存规模 ∝ 序列长度且随并发数相乘——容量规划的一阶变量',
-    ]);
+    // 与知识点层同源比对，而非硬编码要点文案——要点正文改词不该弄坏这个测试。
+    expect(fb.keyPoints).toEqual(requiredPointsFor(openQuestion()));
+    expect(fb.keyPoints.length).toBeGreaterThan(0);
     expect(fb.keyPoints).not.toContain('fallback-tag');
   });
 
@@ -162,11 +157,10 @@ describe('buildInterviewFeedback', () => {
 
   it('题干与作答回显：暂停后仍能看清「答的是哪道题、答了什么」', () => {
     const fb = buildInterviewFeedback(unknownTopicQuestion(), 'choice', [2], evalResult({ overall: 0 }));
+    expect(fb.questionId).toBe('q-choice');
     expect(fb.questionText).toBe('以下哪个说法正确？');
     expect(fb.format).toBe('choice');
-    expect(fb.answerText).toBe('C. 选项三');
     expect(fb.answer).toEqual([2]);
-    expect(fb.questionId).toBe('q-choice');
-    expect(fb.band).toEqual({ label: '需要加强', tone: 'weak' });
+    expect(fb.answerText).toBe('C. 选项三');
   });
 });

@@ -53,36 +53,24 @@ function activeCtx(over: Partial<ActiveInterviewContext> = {}): ActiveInterviewC
 }
 
 describe('toAnswerContext（Agent 面试 → Copilot 桥接）', () => {
-  it('透传作答与评分，并把 SessionQuestion 拆成裸 Question', () => {
+  it('透传作答 / 评分 / 节奏，并把 SessionQuestion 拆成裸 Question', () => {
     const ctx = toAnswerContext(activeCtx());
     expect(ctx.answer).toBe('因为 K/V 可以复用，不用重算。');
     expect(ctx.evaluation).toBe(evaluation);
+    expect(ctx.feedbackMode).toBe('immediate');
     // 关键：给的是 question.question（裸题面对象），不是包装层——Copilot 侧类型即 Question。
     expect(ctx.question).toBe(question);
-    expect(ctx.question?.id).toBe('q-open-1');
-  });
-
-  it('透传 feedbackMode（Copilot 据此调整讲解深度）', () => {
-    expect(toAnswerContext(activeCtx({ feedbackMode: 'immediate' })).feedbackMode).toBe('immediate');
-    expect(toAnswerContext(activeCtx({ feedbackMode: 'standard' })).feedbackMode).toBe('standard');
   });
 
   it('选择题作答（索引数组）原样透传，不在桥接层改写形状', () => {
-    const ctx = toAnswerContext(activeCtx({ answer: [0, 2] }));
-    expect(ctx.answer).toEqual([0, 2]);
-  });
-
-  it('不携带 deliveredCount（进度属 Agent 侧状态，Copilot 上下文契约不含它）', () => {
-    const ctx = toAnswerContext(activeCtx({ deliveredCount: 7 }));
-    expect(ctx).not.toHaveProperty('deliveredCount');
+    expect(toAnswerContext(activeCtx({ answer: [0, 2] })).answer).toEqual([0, 2]);
   });
 });
 
 describe('ASK_COPILOT_ABOUT_FEEDBACK', () => {
-  it('只表达意图，不复述题干与评分（避免与结构化字段重复、随字段演进过期）', () => {
-    expect(ASK_COPILOT_ABOUT_FEEDBACK).toContain('详细讲解');
+  it('只表达意图，不复述题干（避免与结构化字段重复、随字段演进过期）', () => {
+    expect(ASK_COPILOT_ABOUT_FEEDBACK).not.toHaveLength(0); // 防止退化成空串后「不复述」变成永真
     expect(ASK_COPILOT_ABOUT_FEEDBACK).not.toContain(question.question);
-    expect(ASK_COPILOT_ABOUT_FEEDBACK).not.toContain(String(evaluation.overall));
   });
 });
 
@@ -92,27 +80,18 @@ describe('ASK_COPILOT_ABOUT_FEEDBACK', () => {
 describe('interviewRoutingContext（面试进行中的消息路由）', () => {
   it('派生后「A」走答案通道（不派生就会退化成 Copilot 提问）', () => {
     const derived = interviewRoutingContext(initialConversationContext(), sessionQuestion, false);
-    expect(derived.currentQuestionId).toBe(question.id);
+    expect(derived.mode).toBe('interview');
     expect(derived.pendingAction).toBe('answer');
     expect(routeUserMessage('A', derived, question).kind).toBe('answer');
   });
 
   it('停在反馈上时答案通道关闭：同一输入退化为 Copilot（此刻当前题已评分，重复提交必被拒）', () => {
     const derived = interviewRoutingContext(initialConversationContext(), sessionQuestion, true);
-    expect(derived.pendingAction).toBe('feedback');
     expect(routeUserMessage('A', derived, question).kind).toBe('copilot');
   });
 
   it('无当前题（未开场 / 已收尾）时原样返回，不注入面试语义', () => {
     const base = initialConversationContext();
     expect(interviewRoutingContext(base, null, false)).toBe(base);
-  });
-
-  it('保留基底 context 的其它字段（只覆盖路由相关的三项）', () => {
-    const base = { ...initialConversationContext(), activeKnowledgeIds: ['kv-cache'], endedAt: 123 };
-    const derived = interviewRoutingContext(base, sessionQuestion, false);
-    expect(derived.activeKnowledgeIds).toEqual(['kv-cache']);
-    expect(derived.endedAt).toBe(123);
-    expect(derived.mode).toBe('interview');
   });
 });

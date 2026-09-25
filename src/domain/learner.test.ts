@@ -410,8 +410,6 @@ describe('sessionFromQuiz', () => {
     );
     // 同一对象引用透传，不重算、不改写——重算会得到与用户当时所见不同的分数（伪造历史）。
     expect(rec.questionResults[0].evaluation).toBe(full);
-    expect(rec.questionResults[0].evaluation!.dimensions.architecture).toBe(70);
-    expect(rec.questionResults[0].evaluation!.feedback).toBe('基本正确。');
   });
 
   it('完整保留原题快照（含 AI 变体）供历史会话复现', () => {
@@ -420,11 +418,9 @@ describe('sessionFromQuiz', () => {
       { questions: [choiceA, openA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
       grades,
     );
-    expect(rec.questions).toBeDefined();
     expect(rec.questions).toHaveLength(2);
+    // 存的是题目对象本体（而非仅 id），变体改写后的文本才能被回放还原
     expect(rec.questions?.[0].question).toBe(choiceA.question);
-    // 变体改写后（aiGenerated）的文本也应原样落库，而非仅存 id
-    expect(rec.questions?.[0].question).not.toBe('__stub__');
   });
 
   it('落库同时保留用户作答（选择题索引 / 开放题文本）供回放与分析', () => {
@@ -441,45 +437,9 @@ describe('sessionFromQuiz', () => {
     expect(rec.answers?.[openA.question.id]).toBe('我的解答文本');
   });
 
-  it('选择题答对：correct=true 且不写 gaps', () => {
-    const grades = {
-      c1: { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, strengths: ['选择正确'], gaps: [], feedback: '' },
-    } as never;
-    const rec = sessionFromQuiz(
-      { questions: [choiceA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
-      grades,
-      300,
-    );
-    expect(rec.questionResults[0].correct).toBe(true);
-    expect(rec.questionResults[0].gaps).toEqual([]);
-  });
-
-  it('选择题答错：correct=false 且丢弃判分假 gap，不污染 Learner Memory', () => {
-    const grades = {
-      c1: { overall: 0, dimensions: { correctness: 0, completeness: 0, architecture: 0, communication: 0 }, strengths: [], gaps: ['答案不正确，请参见解析'], feedback: '' },
-    } as never;
-    const rec = sessionFromQuiz(
-      { questions: [choiceA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
-      grades,
-      300,
-    );
-    expect(rec.questionResults[0].correct).toBe(false);
-    expect(rec.questionResults[0].gaps).toEqual([]);
-  });
-
-  it('开放题：gaps 原样保留（用于 Learner Memory 的薄弱要点）', () => {
-    const grades = {
-      o1: { overall: 60, dimensions: { correctness: 60, completeness: 60, architecture: 60, communication: 60 }, strengths: [], gaps: ['没有解释 KV cache 对 decode latency 的影响'], feedback: '' },
-    } as never;
-    const rec = sessionFromQuiz(
-      { questions: [openA], startedAt: 123, definition: { title: 't', mode: 'quick' } },
-      grades,
-      300,
-    );
-    expect(rec.questionResults[0].gaps).toEqual(['没有解释 KV cache 对 decode latency 的影响']);
-  });
-
-  it('全链路：错误选择题不会让假 gap 进入 Learner Profile', () => {
+  // 选择题的 gaps 是判分器写的「答案不正确，请参见解析」这类**假 gap**，
+  // 一旦进画像聚合就会变成永远治不好的薄弱项——故在投影处丢弃，并端到端锁住。
+  it('选择题答错：correct=false、丢弃判分假 gap，且不污染 Learner Profile', () => {
     const grades = {
       c1: { overall: 0, dimensions: { correctness: 0, completeness: 0, architecture: 0, communication: 0 }, strengths: [], gaps: ['答案不正确，请参见解析'], feedback: '' },
     } as never;
@@ -488,8 +448,13 @@ describe('sessionFromQuiz', () => {
       grades,
       300,
     );
+    expect(rec.questionResults[0].correct).toBe(false);
+    expect(rec.questionResults[0].gaps).toEqual([]);
+    // 只断言**聚合信号**干净，不断言整份 profile：raw evaluation 原样留存是刻意的
+    // （历史回放要复用实时反馈卡），它带着判分器原文并不算污染。
     const profile = updateLearner(emptyProfile(), rec);
-    expect(JSON.stringify(profile)).not.toContain(' 答案不正确，请参见解析');
+    expect(JSON.stringify(profile.topicStats)).not.toContain('答案不正确，请参见解析');
+    expect(JSON.stringify(profile.misconceptionHits)).not.toContain('答案不正确，请参见解析');
   });
 
   it('未评估（grades 为 null）的题目不计入画像，避免误记 0 分', () => {

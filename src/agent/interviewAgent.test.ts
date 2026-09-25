@@ -557,10 +557,14 @@ describe('immediate 模式：评分后暂停、确认后继续', () => {
   // ── onEvaluation 的 awaitingFeedback 标志（P0 回归）──
   // standard 模式**也会**评分，故 onEvaluation 必然触发。UI 若拿「回调触发」当「已暂停」，
   // 就会在「评分完成 → 下一题交付」的窗口里错误弹出反馈卡（开放题下窗口长达数秒）。
-  // 因此运行时必须显式告诉消费方「这次评分后是否停下」。
-  it('standard 模式：onEvaluation 携带 awaitingFeedback=false，且此刻 status 未被置为暂停', async () => {
+  // 因此运行时必须显式告诉消费方「这次评分后是否停下」，且**标志与 status 必须同源**
+  // ——不能出现「标志说没暂停、status 却是 awaiting_feedback」。两种模式共用这一条不变式。
+  it.each([
+    ['standard', false, 'running'],
+    ['immediate', true, 'awaiting_feedback'],
+  ] as const)('%s 模式：onEvaluation 携带 awaitingFeedback=%s，回调时 status=%s', async (mode, awaiting, status) => {
     const bank = [openQuestion(), choiceQuestion()];
-    const session = createAgentSession('standard');
+    const session = createAgentSession(mode);
     const flags: boolean[] = [];
     const statusAtCallback: string[] = [];
     const streamFn = makeMockStreamFn([
@@ -568,46 +572,13 @@ describe('immediate 模式：评分后暂停、确认后继续', () => {
       makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
       makeMsg([{ type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
       makeMsg([{ type: 'text', text: '评估完成。' }], 'stop'),
-      makeMsg([{ type: 'toolCall', id: 'c3', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
-      makeMsg([{ type: 'text', text: '下一题。' }], 'stop'),
-    ]);
-    const handle = createInterviewAgent({
-      session,
-      profile: emptyProfile(),
-      entry: VALID_ENTRY,
-      bank,
-      provider: fakeProvider(),
-      generateOpenQuestions: true,
-      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
-      handlers: {
-        onEvaluation: (_q, _a, _ev, awaitingFeedback) => {
-          flags.push(awaitingFeedback);
-          // 标志与状态必须同源：不能出现「标志说没暂停、status 却是 awaiting_feedback」
-          statusAtCallback.push(session.status);
-        },
-      },
-    });
-
-    await handle.start('请开始一次 AI 面试。');
-    await handle.submitAnswer('RAG 检索外部知识。');
-
-    expect(flags).toEqual([false]);
-    expect(statusAtCallback).toEqual(['running']);
-    expect(session.status).not.toBe('awaiting_feedback');
-
-    handle.dispose();
-  });
-
-  it('immediate 模式：onEvaluation 携带 awaitingFeedback=true，且回调时 status 已置为暂停', async () => {
-    const bank = [openQuestion(), choiceQuestion()];
-    const session = createAgentSession('immediate');
-    const flags: boolean[] = [];
-    const statusAtCallback: string[] = [];
-    const streamFn = makeMockStreamFn([
-      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-open-1' } }], 'toolUse'),
-      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
-      makeMsg([{ type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
-      makeMsg([{ type: 'text', text: '评估完成。' }], 'stop'),
+      // standard 不停：继续交付下一题，这正是「回调已触发但还没暂停」的窗口。
+      ...(awaiting
+        ? []
+        : [
+            makeMsg([{ type: 'toolCall', id: 'c3', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+            makeMsg([{ type: 'text', text: '下一题。' }], 'stop'),
+          ]),
     ]);
     const handle = createInterviewAgent({
       session,
@@ -628,8 +599,8 @@ describe('immediate 模式：评分后暂停、确认后继续', () => {
     await handle.start('请开始一次 AI 面试。');
     await handle.submitAnswer('RAG 检索外部知识。');
 
-    expect(flags).toEqual([true]);
-    expect(statusAtCallback).toEqual(['awaiting_feedback']);
+    expect(flags).toEqual([awaiting]);
+    expect(statusAtCallback).toEqual([status]);
 
     handle.dispose();
   });
