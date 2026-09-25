@@ -6,10 +6,23 @@ import type { AnswerValue } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
 import type { SessionQuestion } from '../schemas/session';
+import {
+  DEFAULT_INTERVIEW_FEEDBACK_MODE,
+  type InterviewFeedbackMode,
+} from '../schemas/interview';
 import { sessionFromQuiz } from '../domain/learner';
 
-/** Agent 面试的运行状态。 */
-export type AgentStatus = 'running' | 'finished';
+/**
+ * Agent 面试的运行状态。
+ * - `running`：Agent 正在推进（选下一题 / 等待用户作答）；
+ * - `awaiting_feedback`：本题已评分，**停在反馈上等用户确认**（仅 immediate 模式）；
+ *   此时不得再出题、不得重复评分，直到 `continueAfterFeedback()` 被调用；
+ * - `finished`：面试收尾。
+ *
+ * 现有比较点全部是 `=== 'finished'`（见 agentSession.ts 的续面过滤、useAgentInterview 的
+ * 收尾判断），新增第三态是纯增量，不会改变任何既有分支。
+ */
+export type AgentStatus = 'running' | 'awaiting_feedback' | 'finished';
 
 /** Agent 推理/工具调用的可读记录，供 UI 展示「决策过程」。 */
 export interface AgentLogEntry {
@@ -31,6 +44,11 @@ export interface AgentLogEntry {
 export interface InterviewAgentSession {
   id: string;
   status: AgentStatus;
+  /**
+   * 逐题反馈模式（会话级）。`immediate` 时评分后停在 `awaiting_feedback`，
+   * 由 `continueAfterFeedback()` 放行；`standard` 时评分后立即推进下一题。
+   */
+  feedbackMode: InterviewFeedbackMode;
   startedAt: number;
   currentQuestion: SessionQuestion | null;
   answers: Record<string, AnswerValue>;
@@ -56,8 +74,10 @@ export interface InterviewAgentSession {
   fallbackCount: number;
 }
 
-/** 新建一个空的运行时会话。 */
-export function createAgentSession(): InterviewAgentSession {
+/** 新建一个空的运行时会话。`feedbackMode` 缺省为 `standard`（保持既有行为）。 */
+export function createAgentSession(
+  feedbackMode: InterviewFeedbackMode = DEFAULT_INTERVIEW_FEEDBACK_MODE,
+): InterviewAgentSession {
   const id =
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -65,6 +85,7 @@ export function createAgentSession(): InterviewAgentSession {
   return {
     id,
     status: 'running',
+    feedbackMode,
     startedAt: Date.now(),
     currentQuestion: null,
     answers: {},
@@ -81,10 +102,25 @@ export interface AgentHandlers {
   onEvent?: (event: unknown, signal: AbortSignal) => void;
   /** 当前题变化（getQuestion 或兜底交付后）。 */
   onQuestion?: (q: SessionQuestion | null) => void;
-  /** 状态变化（finished 后）。 */
+  /**
+   * 本题评分完成（三条评分路径——选择题确定性评分 / 兜底评分 / LLM 工具评分——的**统一出口**）。
+   * 三条路径最终都汇入同一个内部 `afterEvaluation()`，因此本回调天然对三种路径一致生效，
+   * UI 无需分别适配。immediate 模式下会紧随其后进入 `awaiting_feedback`。
+   */
+  onEvaluation?: (q: SessionQuestion, answer: AnswerValue, evaluation: EvaluationResult) => void;
+  /** 状态变化（running / awaiting_feedback / finished）。 */
   onStatus?: (status: AgentStatus) => void;
   /** 运行期错误/自愈提示：fatal=true 为致命（应阻塞并 setError），否则为可恢复告警（如已兜底出题）。 */
   onError?: (message: string, fatal?: boolean) => void;
+}
+
+/**
+ * 是否停在「等待用户确认反馈」上。
+ * 所有「该不该继续出题 / 该不该再评分」的判断都应先过这个闸，
+ * 避免把 immediate 的暂停语义散落成多处 `status === 'awaiting_feedback'` 字面量。
+ */
+export function isAwaitingFeedback(session: InterviewAgentSession): boolean {
+  return session.status === 'awaiting_feedback';
 }
 
 /**

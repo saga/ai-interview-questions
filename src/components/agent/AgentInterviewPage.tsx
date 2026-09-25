@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Divider, Modal, Space, Spin, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Divider, Modal, Segmented, Space, Spin, Tag, Typography } from 'antd';
 import {
   ClockCircleOutlined,
   PlayCircleOutlined,
@@ -13,13 +13,20 @@ import type { AIConfig } from '../../schemas/ai-config';
 import { isConfigValid } from '../../ai/provider';
 import type { AgentInterviewState, TranscriptItem } from '../../hooks/useAgentInterview';
 import { AGENT_QUESTION_TIME_LIMIT_SEC } from '../../hooks/useAgentInterview';
+import type { ActiveInterviewContext } from '../../application/conversation/interviewContext';
 import QuestionCard from '../quiz/QuestionCard';
+import InterviewFeedbackCard from '../interview/InterviewFeedbackCard';
 
 interface Props extends AgentInterviewState {
   config: AIConfig;
   challengerProvider?: LLMProvider | null;
   onGoSettings: () => void;
   onGoProgress: () => void;
+  /**
+   * 「让 Copilot 详细解释」：把结构化反馈交给上层（App 负责打开侧栏并转成 AnswerContext）。
+   * 刻意不在此处拼 prompt 文本——那会形成第二套上下文格式。
+   */
+  onAskCopilot?: (ctx: ActiveInterviewContext) => void;
 }
 
 /** 把剩余秒数格式化为 mm:ss。 */
@@ -72,6 +79,7 @@ export default function AgentInterviewPage({
   challengerProvider,
   onGoSettings,
   onGoProgress,
+  onAskCopilot,
   phase,
   currentQuestion,
   answer,
@@ -86,6 +94,12 @@ export default function AgentInterviewPage({
   questionTimeUp,
   extendQuestionTime,
   jumpToNextQuestion,
+  feedback,
+  feedbackMode,
+  lastEvaluation,
+  setFeedbackMode,
+  continueAfterFeedback,
+  continuing,
   setAnswer,
   start,
   submit,
@@ -93,6 +107,8 @@ export default function AgentInterviewPage({
   restart,
 }: Props) {
   const configReady = isConfigValid(config);
+  // 停在本题反馈上（immediate 模式）：题已答完、反馈已展示，此时既不能再提交、也不能改作答。
+  const awaitingFeedback = feedback !== null;
 
   // ── 开场介绍 ──
   if (phase === 'intro') {
@@ -124,6 +140,27 @@ export default function AgentInterviewPage({
               与「模拟面试」（规则式逐题自适应）不同，这里由 Agent 在循环中实时判断下一题问什么、是否追问、
               何时收尾；评分仍走既有确定性/LLM 评分管线，Agent 不自己打分。题库、评分与 Learner Memory 复用同一套。
             </Typography.Paragraph>
+            {/* 反馈节奏：会话级选择（不是全局设置），开始后固化 */}
+            <div>
+              <Typography.Text strong style={{ fontSize: 13 }}>
+                反馈节奏
+              </Typography.Text>
+              <div style={{ marginTop: 6 }}>
+                <Segmented
+                  value={feedbackMode}
+                  onChange={(v) => setFeedbackMode(v as typeof feedbackMode)}
+                  options={[
+                    { label: '标准节奏', value: 'standard' },
+                    { label: '逐题反馈', value: 'immediate' },
+                  ]}
+                />
+              </div>
+              <Typography.Paragraph type="secondary" style={{ fontSize: 12, margin: '6px 0 0' }}>
+                {feedbackMode === 'immediate'
+                  ? '每题评分后暂停，先看反馈再决定继续——适合把每道题都吃透。'
+                  : '提交后直接进入下一题，全部答完再看结果——更接近真实面试节奏。'}
+              </Typography.Paragraph>
+            </div>
             {!configReady && (
               <Alert
                 type="warning"
@@ -162,6 +199,7 @@ export default function AgentInterviewPage({
         <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 12 }} wrap>
           <Space wrap>
             <Tag color="blue">已考察 {evaluatedCount} 题</Tag>
+            {feedbackMode === 'immediate' && <Tag color="purple">逐题反馈</Tag>}
             {questionTimeLeftSec != null && (
               <Tag
                 color={questionTimeLeftSec > 60 ? 'green' : questionTimeLeftSec > 30 ? 'gold' : 'red'}
@@ -171,7 +209,9 @@ export default function AgentInterviewPage({
               </Tag>
             )}
           </Space>
-          {busy || submitting ? (
+          {awaitingFeedback ? (
+            <Tag color="purple">请查看本题反馈</Tag>
+          ) : busy || submitting ? (
             <Tag color="processing">
               {submitting ? '正在检查回答…' : '面试官思考中…'}
             </Tag>
@@ -195,13 +235,14 @@ export default function AgentInterviewPage({
               onChange={setAnswer}
               challengerEnabled={config.questionChallengerEnabled}
               challengerProvider={challengerProvider}
+              readOnly={awaitingFeedback}
             />
           ) : (
             <Card size="small">
               <Typography.Text type="secondary">面试官正在选题…</Typography.Text>
             </Card>
           )}
-          {(busy || submitting) && (
+          {(busy || submitting) && !awaitingFeedback && (
             <div
               style={{
                 position: 'absolute',
@@ -218,17 +259,41 @@ export default function AgentInterviewPage({
           )}
         </div>
 
-        <Button
-          type="primary"
-          size="large"
-          block
-          icon={<SendOutlined />}
-          style={{ marginTop: 16 }}
-          disabled={!currentQuestion || !hasAnswer(answer) || busy || submitting}
-          onClick={() => void submit()}
-        >
-          提交作答并继续
-        </Button>
+        {/* 逐题反馈（immediate）：评分后停在这里，等用户确认再出下一题。
+            此时不再渲染提交按钮——当前题已评分，重复提交会被运行时拒绝。 */}
+        {awaitingFeedback && feedback ? (
+          <InterviewFeedbackCard
+            feedback={feedback}
+            onContinue={() => void continueAfterFeedback()}
+            continuing={continuing}
+            // 「让 Copilot 详细解释」需要原始评分与当前题（投影里没有 EvaluationResult），
+            // 三者齐备时才提供入口，避免把半份上下文交给 Copilot。
+            onAskCopilot={
+              onAskCopilot && currentQuestion && lastEvaluation
+                ? () =>
+                    onAskCopilot({
+                      feedbackMode,
+                      question: currentQuestion,
+                      answer,
+                      evaluation: lastEvaluation,
+                      deliveredCount: evaluatedCount,
+                    })
+                : undefined
+            }
+          />
+        ) : (
+          <Button
+            type="primary"
+            size="large"
+            block
+            icon={<SendOutlined />}
+            style={{ marginTop: 16 }}
+            disabled={!currentQuestion || !hasAnswer(answer) || busy || submitting}
+            onClick={() => void submit()}
+          >
+            {feedbackMode === 'immediate' ? '提交作答' : '提交作答并继续'}
+          </Button>
+        )}
 
         {transcript.length > 0 && (
           <Card size="small" style={{ marginTop: 20 }} title="面试官的推理与决策">

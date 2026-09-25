@@ -12,7 +12,7 @@ import {
   type ToolCall,
   type Usage,
 } from '@earendil-works/pi-ai';
-import type { StreamFn, BeforeToolCallContext, ShouldStopAfterTurnContext } from '@earendil-works/pi-agent-core';
+import type { StreamFn, BeforeToolCallContext, AgentTurnContext } from '@earendil-works/pi-agent-core';
 import type { LLMProvider } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { ProviderEntry } from '../schemas/ai-config';
@@ -139,13 +139,13 @@ describe('shouldStopAfterTurn', () => {
     const session = createAgentSession();
     const ctx = {
       toolResults: [{ toolName: 'finishInterview', role: 'toolResult', toolCallId: 'x', content: [], isError: false, timestamp: 0 }],
-    } as unknown as ShouldStopAfterTurnContext;
+    } as unknown as AgentTurnContext;
     expect(shouldStopAfterTurn(session, ctx)).toBe(true);
   });
 
   it('空 toolResults 且不达上限时不停止', () => {
     const session = createAgentSession();
-    const ctx = { toolResults: [] } as unknown as ShouldStopAfterTurnContext;
+    const ctx = { toolResults: [] } as unknown as AgentTurnContext;
     expect(shouldStopAfterTurn(session, ctx)).toBe(false);
   });
 
@@ -153,7 +153,7 @@ describe('shouldStopAfterTurn', () => {
     const session = createAgentSession();
     // 全部评分失败（键值为 null）也必须计入上限，否则面试永远停不下来
     for (let i = 0; i < MAX_AGENT_QUESTIONS; i++) session.evaluations[`q${i}`] = null;
-    const ctx = { toolResults: [] } as unknown as ShouldStopAfterTurnContext;
+    const ctx = { toolResults: [] } as unknown as AgentTurnContext;
     expect(shouldStopAfterTurn(session, ctx)).toBe(true);
   });
 });
@@ -367,5 +367,190 @@ describe('createInterviewAgent 完整 loop', () => {
     // q1 已评，且兜底补出了 q2（q-open-1），而非卡死
     expect(session.evaluations['q-choice-1']!.overall).toBe(100);
     expect(session.currentQuestion?.question.id).toBe('q-open-1');
+  });
+});
+
+// ── 逐题反馈（immediate 模式）：暂停 / 继续 ──────────────────────────────
+// 这是本特性的核心契约：immediate 下「评分」与「推进下一题」必须解耦。
+// 关键验证点：暂停期间 currentQuestion 不得被换掉（否则用户看不到刚答的题），
+// 且暂停必须靠 finishTurn 的**优雅收尾**实现（不得走 abort —— 那会被记为 model_error）。
+describe('immediate 模式：评分后暂停、确认后继续', () => {
+  it('开放题（LLM 路径）：评分后停在反馈上，同轮的 getQuestion 被闸住；继续后才出下一题', async () => {
+    const bank = [openQuestion(), choiceQuestion()];
+    const provider = fakeProvider();
+    const session = createAgentSession('immediate');
+    const seen: Array<{ id: string; overall: number }> = [];
+    const statuses: string[] = [];
+    const errors: string[] = [];
+    const streamFn = makeMockStreamFn([
+      // 开场：选开放题
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-open-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
+      // 提交后：先评估，再在同一轮里**试图**出下一题 —— 必须被暂停闸拦住
+      makeMsg(
+        [
+          { type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} },
+          { type: 'toolCall', id: 'c3', name: 'getQuestion', arguments: { id: 'q-choice-1' } },
+        ],
+        'toolUse',
+      ),
+      makeMsg([{ type: 'text', text: '评估完成。' }], 'stop'),
+      // 用户点「继续」后：Agent 决定下一题
+      makeMsg([{ type: 'toolCall', id: 'c4', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '下一题。' }], 'stop'),
+    ]);
+
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider,
+      generateOpenQuestions: true,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+      handlers: {
+        onEvaluation: (q, _a, ev) => seen.push({ id: q.question.id, overall: ev.overall }),
+        onStatus: (s) => statuses.push(s),
+        onError: (m) => errors.push(m),
+      },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    expect(session.currentQuestion?.question.id).toBe('q-open-1');
+
+    await handle.submitAnswer('RAG 检索外部知识，fine-tuning 更新参数。');
+
+    // 1) 已评分，且反馈回调已触发
+    expect(session.evaluations['q-open-1']!.overall).toBe(50);
+    expect(seen).toEqual([{ id: 'q-open-1', overall: 50 }]);
+    // 2) 停在反馈上，**没有**推进到下一题（这是暂停的核心断言）
+    expect(session.status).toBe('awaiting_feedback');
+    expect(session.currentQuestion?.question.id).toBe('q-open-1');
+    expect(session.evaluations['q-choice-1']).toBeUndefined();
+    // 3) 状态回调可驱动 UI 切到反馈卡
+    expect(statuses).toContain('awaiting_feedback');
+    // 4) 优雅收尾，不得被记为模型错误（abort 会污染 model_error telemetry）
+    expect(errors).toEqual([]);
+    expect(session.fallbackReason).toBeUndefined();
+    expect(session.fallbackCount).toBe(0);
+
+    // 5) 用户确认继续 → 回到 running，由 Agent 决定下一题
+    await handle.continueAfterFeedback();
+    expect(session.status).toBe('running');
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+    expect(statuses).toContain('running');
+
+    // 6) 幂等：非暂停态再调一次不得重复推进
+    await handle.continueAfterFeedback();
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+
+    handle.dispose();
+  });
+
+  it('选择题（确定性路径）：评分后暂停且不换题；继续后交付下一题（题库仅一题则收尾）', async () => {
+    const bank = [choiceQuestion()];
+    const session = createAgentSession('immediate');
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
+    ]);
+    const statuses: string[] = [];
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider: fakeProvider(),
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+      handlers: { onStatus: (s) => statuses.push(s) },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+
+    await handle.submitAnswer([0]);
+    expect(session.evaluations['q-choice-1']!.overall).toBe(100);
+    expect(session.status).toBe('awaiting_feedback');
+    // 选择题判分是确定性的，暂停期间**不得**换题
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+    expect(statuses).toContain('awaiting_feedback');
+
+    await handle.continueAfterFeedback();
+    // 题库只有一题 → 确定性路径优雅收尾。
+    // 注意：运行时只通过 onStatus('finished') 通知收尾，**不**自行改写 session.status
+    // （终局由 UI 层 finalize() 落定，这是既有契约，见 useAgentInterview）。
+    expect(statuses).toContain('finished');
+    expect(statuses).toContain('awaiting_feedback'); // immediate：确实经历过暂停
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+
+    handle.dispose();
+  });
+
+  it('standard 模式（默认）：评分后直接推进，绝不进入 awaiting_feedback', async () => {
+    const bank = [choiceQuestion()];
+    const session = createAgentSession(); // 缺省 standard
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
+    ]);
+    const statuses: string[] = [];
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider: fakeProvider(),
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+      handlers: { onStatus: (s) => statuses.push(s) },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    await handle.submitAnswer([0]);
+
+    expect(session.feedbackMode).toBe('standard');
+    expect(statuses).not.toContain('awaiting_feedback');
+    // 单题题库 → 评分后直接通知收尾，与改动前行为完全一致
+    expect(statuses).toContain('finished');
+    // 且全程没有产生「暂停后需要继续」的中间态
+    expect(session.evaluations['q-choice-1']!.overall).toBe(100);
+
+    handle.dispose();
+  });
+
+  it('评分失败（evaluation=null）：不得伪造反馈、不得暂停', async () => {
+    const bank = [openQuestion(), choiceQuestion()];
+    // 开放题评分抛错 → evaluateSessionQuestion 兜底为 null
+    const provider = fakeProvider();
+    provider.evaluateOpenAnswer = vi.fn(async () => {
+      throw new Error('引擎不可用');
+    });
+    const session = createAgentSession('immediate');
+    const seen: string[] = [];
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-open-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
+      makeMsg([{ type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '无法评估。' }], 'stop'),
+    ]);
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider,
+      generateOpenQuestions: true,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+      handlers: { onEvaluation: (q) => seen.push(q.question.id) },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    await handle.submitAnswer('随便答一句。');
+
+    // 评分失败：记为 null（不计入成绩），且**不**产生反馈、**不**暂停
+    expect(session.evaluations['q-open-1']).toBeNull();
+    expect(seen).toEqual([]);
+    expect(session.status).not.toBe('awaiting_feedback');
+
+    handle.dispose();
   });
 });

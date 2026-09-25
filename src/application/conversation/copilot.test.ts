@@ -115,6 +115,76 @@ describe('runCopilotTurn 注入 AnswerContext（ADR-065 P0-2）', () => {
     );
     expect(captured).not.toContain('用户作答与诊断');
   });
+
+  // Agent 面试反馈卡桥接而来：那道题不在 Copilot 自己的 session 里，
+  // 不给题干 Copilot 只能泛泛而谈——故 answerContext.question 必须落进 prompt。
+  it('answerContext.question 渲染「被讲解的题目」题干（Agent 面试桥接路径）', async () => {
+    let captured = '';
+    const chat = async (system: string): Promise<string> => {
+      captured = system;
+      return 'ok';
+    };
+    await runCopilotTurn(
+      { chat },
+      {
+        message: '详细解释一下',
+        history: [],
+        profile: null,
+        // 刻意不给 activeQuestion：模拟 Agent 面试的题不在 Copilot session 里。
+        activeQuestion: null,
+        session: null,
+        answerContext: { answer: [1], evaluation, question },
+      },
+    );
+    expect(captured).toContain('被讲解的题目：KV Cache 是什么？');
+  });
+
+  it('超长题干截断到 300 字（不挤占检索依据的上下文预算）', async () => {
+    const longQuestion: Question = { ...question, question: '长'.repeat(400) };
+    let captured = '';
+    const chat = async (system: string): Promise<string> => {
+      captured = system;
+      return 'ok';
+    };
+    await runCopilotTurn(
+      { chat },
+      {
+        message: '解释',
+        history: [],
+        profile: null,
+        activeQuestion: null,
+        session: null,
+        answerContext: { answer: '我的作答', evaluation, question: longQuestion },
+      },
+    );
+    expect(captured).toContain(`被讲解的题目：${'长'.repeat(300)}`);
+    expect(captured).not.toContain('长'.repeat(301));
+  });
+
+  it('immediate 节奏写入 prompt；standard 不写（避免无谓催促式提示）', async () => {
+    const capture = async (feedbackMode?: AnswerContext['feedbackMode']): Promise<string> => {
+      let captured = '';
+      const chat = async (system: string): Promise<string> => {
+        captured = system;
+        return 'ok';
+      };
+      await runCopilotTurn(
+        { chat },
+        {
+          message: '解释',
+          history: [],
+          profile: null,
+          activeQuestion: null,
+          session: null,
+          answerContext: { answer: [1], evaluation, question, feedbackMode },
+        },
+      );
+      return captured;
+    };
+    expect(await capture('immediate')).toContain('当前节奏：逐题反馈');
+    expect(await capture('standard')).not.toContain('当前节奏：逐题反馈');
+    expect(await capture(undefined)).not.toContain('当前节奏：逐题反馈');
+  });
 });
 
 describe('runCopilotTurn 检索范围决策（ADR-065 P0-2 解耦）', () => {

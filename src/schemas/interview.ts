@@ -27,6 +27,21 @@ export const scoringRubricSchema = z
 
 export type ScoringRubric = z.infer<typeof scoringRubricSchema>;
 
+/**
+ * 面试的逐题反馈模式（会话级，不是全局设置）：
+ * - `standard`：提交 → 评分 → Agent 直接决定下一题（当前既有行为）；
+ * - `immediate`：提交 → 评分 → **暂停**展示反馈 → 用户点「继续」后 Agent 才决定下一题。
+ *
+ * 刻意与 `InterviewDefinition.mode`（会话类型：quick/coach/agent…）区分开：
+ * 前者是「反馈节奏」，后者是「面试玩法」，两者可自由组合（如 agent + immediate）。
+ */
+export const interviewFeedbackModeSchema = z.enum(['standard', 'immediate']);
+
+export type InterviewFeedbackMode = z.infer<typeof interviewFeedbackModeSchema>;
+
+/** 缺省反馈模式：旧草稿 / 未指定时按标准节奏，保持既有行为不变。 */
+export const DEFAULT_INTERVIEW_FEEDBACK_MODE: InterviewFeedbackMode = 'standard';
+
 export const interviewDefinitionSchema = z.object({
   title: z.string().min(1),
   topic: z.string().min(1).optional(),

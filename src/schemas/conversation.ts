@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
 export const conversationModeSchema = z.enum(['chat', 'question', 'interview']);
-export const pendingActionSchema = z.enum(['answer', 'choose_question']);
+/**
+ * 会话的「等待用户动作」语义：
+ * - `answer`：等用户作答当前题；
+ * - `choose_question`：等用户选下一题（已评分并清空 currentQuestionId）；
+ * - `feedback`：immediate 模式下**已评分、正停在反馈卡上**，等用户点「继续」。
+ *   与 `choose_question` 的区别是当前题仍是 currentQuestionId（用户可回看题干与自己的作答）。
+ */
+export const pendingActionSchema = z.enum(['answer', 'choose_question', 'feedback']);
 
 export const conversationContextSchema = z.object({
   version: z.literal(1),

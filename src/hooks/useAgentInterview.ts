@@ -13,6 +13,12 @@ import type { AnswerValue } from '../types';
 import type { AIConfig, ProviderEntry } from '../schemas/ai-config';
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
 import type { SessionQuestion } from '../schemas/session';
+import type { EvaluationResult } from '../schemas/evaluation';
+import {
+  DEFAULT_INTERVIEW_FEEDBACK_MODE,
+  type InterviewFeedbackMode,
+} from '../schemas/interview';
+import { buildInterviewFeedback, type InterviewFeedback } from '../domain/interviewFeedback';
 import { emptyAnswer } from '../domain/quiz';
 import { questionBank as bank } from '../data/questionBank';
 import { isEntryValid, createLLMProvider } from '../ai/provider';
@@ -104,6 +110,25 @@ export interface AgentInterviewState {
   extendQuestionTime: () => void;
   /** 「跳到下一题」：放弃当前题并交付下一题（不计分）。 */
   jumpToNextQuestion: () => void;
+  /**
+   * 本题反馈（immediate 模式下评分后暂停时非 null；standard 模式恒为 null）。
+   * 非 null 即代表「正停在反馈上等用户确认」——UI 据此切换提交按钮 ↔ 继续按钮。
+   */
+  feedback: InterviewFeedback | null;
+  /** 当前会话的逐题反馈模式（进入面试前可切换；面试进行中不可变）。 */
+  feedbackMode: InterviewFeedbackMode;
+  /**
+   * 最近一次评分的**原始结果**（与 `feedback` 同步写入）。
+   * `feedback` 是给用户看的投影（分档/字母/关键知识点），会丢字段；
+   * 「让 Copilot 详细解释」需要把结构化评分交给 Copilot，故额外保留原始对象。
+   */
+  lastEvaluation: EvaluationResult | null;
+  /** 进入面试前切换逐题反馈模式。面试进行中调用无效（会话级契约不可中途变更）。 */
+  setFeedbackMode: (mode: InterviewFeedbackMode) => void;
+  /** 用户确认本题反馈 → 放行下一题（immediate 模式）。 */
+  continueAfterFeedback: () => Promise<void>;
+  /** 「继续」请求进行中（反馈卡上的按钮 loading）。 */
+  continuing: boolean;
   setAnswer: (v: AnswerValue) => void;
   start: () => Promise<void>;
   submit: () => Promise<void>;
@@ -131,6 +156,37 @@ export function useAgentInterview(
   const [summary, setSummary] = useState<{ asked: number; overall: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // ── 逐题反馈（immediate 模式）──
+  // feedbackMode 在「进入面试前」可选（intro 页），start 时固化为会话级配置：
+  // 中途改变会让已交付题的反馈节奏前后不一致，故面试进行中 setter 为 no-op。
+  const [feedbackMode, setFeedbackModeState] = useState<InterviewFeedbackMode>(DEFAULT_INTERVIEW_FEEDBACK_MODE);
+  const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
+  const [lastEvaluation, setLastEvaluation] = useState<EvaluationResult | null>(null);
+  /** 用户已点「继续」、正在请求下一题（按钮 loading）。 */
+  const [continuing, setContinuing] = useState(false);
+
+  /**
+   * 清空本题反馈。投影（feedback）与原始评分（lastEvaluation）必须**成对**清空：
+   * 两者一旦不同步，就会出现「卡片显示 A 题、Copilot 收到 B 题评分」这类静默错配。
+   */
+  const clearFeedback = useCallback(() => {
+    setFeedback(null);
+    setLastEvaluation(null);
+  }, []);
+
+  /**
+   * 切换逐题反馈模式。**仅允许在面试未运行时**：
+   * 模式在 start 时被固化为会话级配置（`session.feedbackMode`），
+   * 运行中改它会让 UI 选择与实际评分节奏不一致（用户以为切换了、实际没生效）。
+   */
+  const setFeedbackMode = useCallback(
+    (mode: InterviewFeedbackMode) => {
+      if (phase === 'running') return;
+      setFeedbackModeState(mode);
+    },
+    [phase],
+  );
+
   // ── 每题倒计时（计时器）──
   // 时间到不自动跳题：弹窗让用户选择「延长本题」或「跳到下一题」（见 AgentInterviewPage 的 Modal）。
   const [questionTimeLeftSec, setQuestionTimeLeftSec] = useState<number | null>(null);
@@ -145,6 +201,9 @@ export function useAgentInterview(
   const pendingTextRef = useRef('');
   // 同步守卫：submitAnswer 是异步长任务，同一 tick 内的重复点击需即时拦截，避免触发"already processing"
   const submittingRef = useRef(false);
+  // 「继续」的同步重入锁：与 submittingRef 同因——点击后到 Promise 落地之间存在窗口期，
+  // 双击会触发两次 continueAfterFeedback（运行时虽幂等，但会重复落库并闪 loading）。
+  const continuingRef = useRef(false);
   // 续面用的快照/查找键：存入草稿、恢复时回读（避免持久化 apiKey / 保证弱项推荐一致）
   const profileRef = useRef<LearnerProfile>(profile);
   profileRef.current = profile;
@@ -212,8 +271,11 @@ export function useAgentInterview(
   const jumpToNextQuestion = useCallback(() => {
     setQuestionTimeUp(false);
     stopQuestionTimer();
+    // 跳过会解除运行时的暂停态（见 interviewAgent.skip），UI 的反馈卡也必须同步关闭，
+    // 否则会出现「已跳到下一题，却还显示上一题反馈」的错位。
+    clearFeedback();
     void handleRef.current?.skip();
-  }, [stopQuestionTimer]);
+  }, [stopQuestionTimer, clearFeedback]);
 
   // 面试官思考/评分期间冻结倒计时，避免消耗作答时间
   useEffect(() => {
@@ -225,6 +287,8 @@ export function useAgentInterview(
     stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
     setQuestionTimeUp(false);
     setQuestionTimeLeftSec(null);
+    clearFeedback(); // 收尾：反馈卡随之关闭（结果页承担总结职责）
+    setContinuing(false);
     const session = sessionRef.current;
     if (!session) return;
     finalizedRef.current = true;
@@ -250,7 +314,7 @@ export function useAgentInterview(
     onComplete(record);
     setSummary({ asked, overall: averageOverall(session) });
     setPhase('done');
-  }, [onComplete]);
+  }, [onComplete, clearFeedback]);
 
   /**
    * 落库写入的串行队列：所有 saveAgentSession 都接到队尾依次执行。
@@ -323,6 +387,8 @@ export function useAgentInterview(
               console.warn('[Agent] getQuestion 未交付题目（id 错误或 run 已结束）');
               return;
             }
+            // 新题已交付 ⇒ 上一题的反馈阶段结束，关闭反馈卡（避免与下一题同屏并存）。
+            clearFeedback();
             setCurrentQuestion(q);
             setAnswer(emptyAnswer(q));
             syncQuestions(q);
@@ -330,7 +396,23 @@ export function useAgentInterview(
             void persistDraft(); // 题目已交付 = 安全断点，立即落库
           },
           onStatus: (status) => {
-            if (status === 'finished') finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete
+            if (status === 'finished') {
+              finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete
+              return;
+            }
+            if (status === 'awaiting_feedback') {
+              // immediate 模式：本题已评分、停在反馈上等用户确认。
+              // 停掉本题倒计时——题已答完，继续计时只会误导用户（且时间到会弹无意义的「延长/跳题」）。
+              stopQuestionTimer();
+              setQuestionTimeUp(false);
+              setQuestionTimeLeftSec(null);
+            }
+          },
+          onEvaluation: (q, answered, evaluation) => {
+            // 三条评分路径（选择题确定性 / 兜底 / LLM 工具）的统一出口回调，
+            // 这里只做投影：把 EvaluationResult 转成 UI 可消费的 InterviewFeedback。
+            setFeedback(buildInterviewFeedback(q.question, q.format, answered, evaluation));
+            setLastEvaluation(evaluation); // 原始评分保留给「让 Copilot 详细解释」
           },
           onError: (msg, fatal) => {
             // 修复 B：流式错误/自愈提示——致命则阻塞报错，可恢复则轻量告警（兜底已接续出题）
@@ -374,7 +456,7 @@ export function useAgentInterview(
       handleRef.current = handle;
       return handle;
     },
-    [config, finalize, syncQuestions, persistDraft, message, startQuestionTimer],
+    [config, finalize, syncQuestions, persistDraft, message, startQuestionTimer, stopQuestionTimer, clearFeedback],
   );
 
   const start = async () => {
@@ -396,6 +478,8 @@ export function useAgentInterview(
     stopQuestionTimer(); // 新一轮：清掉上一场可能残留的倒计时
     setQuestionTimeUp(false);
     setQuestionTimeLeftSec(null);
+    clearFeedback();
+    setContinuing(false);
     finalizedRef.current = false; // 新一轮面试：解除终局守卫
     resetUsageTelemetry(); // 重置 KV Cache 命中率累计（P1④）：每场面试从 Round 1 重新计数
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
@@ -404,7 +488,7 @@ export function useAgentInterview(
       setError('未找到可用的 AI 引擎配置，请先在设置中配置。');
       return;
     }
-    const session = createAgentSession();
+    const session = createAgentSession(feedbackMode);
     sessionRef.current = session;
     entryIdRef.current = entry.id;
     profileRef.current = profile;
@@ -456,6 +540,29 @@ export function useAgentInterview(
     }
   };
 
+  /**
+   * 用户确认本题反馈 → 放行下一题（immediate 模式）。
+   *
+   * 反馈卡**不**在此处清空：清空交给 onQuestion（下一题已交付）或 finalize（收尾）。
+   * 若在此清空，「继续」到下一题到达之间会先闪一个「无反馈且无新题」的空档。
+   */
+  const continueAfterFeedback = async () => {
+    if (continuingRef.current) return; // 同步拦截：双击 / 重入
+    continuingRef.current = true;
+    setContinuing(true);
+    setBusy(true); // 与提交一致：立即禁用交互并显示遮罩，避免请求期间重复点击
+    try {
+      await handleRef.current?.continueAfterFeedback();
+      void persistDraft(); // 回合结束落库
+    } catch (err) {
+      setError('继续失败：' + (err as Error).message);
+    } finally {
+      continuingRef.current = false;
+      setContinuing(false);
+      setBusy(false);
+    }
+  };
+
   const endEarly = () => {
     if (Object.keys(sessionRef.current?.evaluations ?? {}).length === 0) {
       message.info('还没有可保存的作答');
@@ -470,6 +577,8 @@ export function useAgentInterview(
     stopQuestionTimer();
     setQuestionTimeUp(false);
     setQuestionTimeLeftSec(null);
+    clearFeedback();
+    setContinuing(false);
     const restartSessionId = sessionRef.current?.id;
     if (restartSessionId) void flushPersist().then(() => deleteAgentSession(restartSessionId));
     sessionRef.current = null;
@@ -502,70 +611,10 @@ export function useAgentInterview(
       sessionRef.current = session;
       entryIdRef.current = rec.entryId;
       profileRef.current = rec.profile;
-      const handle = createInterviewAgent({
-        session,
-        profile: rec.profile,
-        entry,
-        fallbackEntries: validAgentEntries(config),
-        bank: bank.questions.filter((q) => !(config.disabledCategories ?? []).includes(q.category)),
-        provider: createLLMProvider(config, devUsageLogger),
-        generateOpenQuestions: config.generateOpenQuestions,
-        runtimeVariantEnabled: config.runtimeVariantEnabled,
-        masteryThreshold: config.masteryThreshold,
-        agentInstructions: config.prompts?.agentInstructions,
-        onUsage: devUsageLogger,
-        handlers: {
-          onQuestion: (q) => {
-            if (!q) {
-              console.warn('[Agent] getQuestion 未交付题目（id 错误或 run 已结束）');
-              return;
-            }
-            setCurrentQuestion(q);
-            setAnswer(emptyAnswer(q));
-            syncQuestions(q);
-            startQuestionTimer(); // 续面交付题：重置并启动本题倒计时
-            void persistDraft();
-          },
-          onStatus: (status) => {
-            if (status === 'finished') finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete
-          },
-          onError: (msg, fatal) => {
-            if (fatal) setError(msg);
-            else message.warning(msg);
-          },
-          onEvent: (event: unknown) => {
-            const e = event as { type: string; message?: unknown; toolName?: string; isError?: boolean; result?: { details?: unknown } };
-            switch (e.type) {
-              case 'agent_start':
-                setBusy(true);
-                break;
-              case 'turn_end':
-              case 'agent_end': {
-                setBusy(false);
-                const text = pendingTextRef.current;
-                pendingTextRef.current = '';
-                if (text.trim()) setTranscript((prev) => [...prev, { kind: 'agent', text }]);
-                break;
-              }
-              case 'message_update':
-                pendingTextRef.current = messageText(e.message);
-                break;
-              case 'tool_execution_end': {
-                const label = TOOL_LABELS[e.toolName ?? ''] ?? (e.toolName ?? '工具');
-                const detail = toolDetail(e);
-                if (e.toolName === 'getUserWeaknesses' && detail === '薄弱：（暂无）' && !e.isError) return;
-                setTranscript((prev) => [
-                  ...prev,
-                  { kind: 'tool', tool: e.toolName ?? '', label, ok: !e.isError, detail },
-                ]);
-                break;
-              }
-              default:
-                break;
-            }
-          },
-        },
-      });
+      // 复用 buildHandle，而不是再写一份等价的 createInterviewAgent 配置：
+      // 两份配置一旦漂移，续面路径就会缺失新加的 handler（如 onEvaluation / awaiting_feedback），
+      // 表现为「刷新后逐题反馈消失」。这里由单一构造点保证两条路径行为恒等。
+      const handle = buildHandle(session, rec.profile, entry);
       // 整体写回对话历史，LLM 从断点继续（messages 已在回合边界落库，结尾干净）
       handle.agent.state.messages = rec.messages as unknown as typeof handle.agent.state.messages;
       handleRef.current = handle;
@@ -576,7 +625,26 @@ export function useAgentInterview(
       setTranscript(rebuildTranscript(session));
       setPhase('running');
       setBusy(false);
-      if (session.currentQuestion) startQuestionTimer(); // 续面已有当前题：立即启动倒计时
+      // 恢复暂停态：刷新时若正停在反馈卡上（status 已持久化为 awaiting_feedback），
+      // 必须把反馈卡一并重建——否则当前题已评分、却没有下一题，用户会卡在一个「已答完」的空页面上。
+      const pendingEvaluation =
+        session.status === 'awaiting_feedback' && session.currentQuestion
+          ? session.evaluations[session.currentQuestion.question.id] ?? null
+          : null;
+      if (pendingEvaluation && session.currentQuestion) {
+        setFeedback(
+          buildInterviewFeedback(
+            session.currentQuestion.question,
+            session.currentQuestion.format,
+            session.answers[session.currentQuestion.question.id] ?? '',
+            pendingEvaluation,
+          ),
+        );
+        stopQuestionTimer(); // 停在反馈上：题已答完，不再计时
+        setQuestionTimeLeftSec(null);
+      } else if (session.currentQuestion) {
+        startQuestionTimer(); // 续面已有当前题：立即启动倒计时
+      }
       } finally {
         // 无论是否找到草稿、是否成功续面，都必须放行 start()：
         // 否则一次 resume 异常会让用户永远无法开始新面试。
@@ -613,6 +681,12 @@ export function useAgentInterview(
     questionTimeUp,
     extendQuestionTime,
     jumpToNextQuestion,
+    feedback,
+    feedbackMode,
+    lastEvaluation,
+    setFeedbackMode,
+    continueAfterFeedback,
+    continuing,
     setAnswer,
     start,
     submit,

@@ -9,6 +9,11 @@ import { evaluationResultSchema } from '../../schemas/evaluation';
 import { sessionFromQuiz } from '../../domain/learner';
 import type { SessionRecord } from '../../schemas/learner';
 import type { InterviewAgentSession } from '../../agent/types';
+import {
+  DEFAULT_INTERVIEW_FEEDBACK_MODE,
+  interviewFeedbackModeSchema,
+  type InterviewFeedbackMode,
+} from '../../schemas/interview';
 
 /**
  * ConversationSession is the real lifecycle object for Chat.
@@ -34,6 +39,12 @@ export const conversationSessionSchema = z
     evaluations: z.record(z.string(), evaluationResultSchema.nullable()),
     questionCount: z.number().optional(),
     messageTurnCount: z.number().optional(),
+    /**
+     * 逐题反馈模式（会话级）。显式声明而非依赖 `.passthrough()`：
+     * passthrough 只能保留已有键，无法为旧版本写入的 session 补默认值；
+     * 用 `.catch` 让非法/缺失值降级为 standard，而不是整份 session 校验失败被丢弃。
+     */
+    feedbackMode: interviewFeedbackModeSchema.catch(DEFAULT_INTERVIEW_FEEDBACK_MODE),
   })
   .passthrough();
 
@@ -49,6 +60,8 @@ export interface ConversationSession {
   questionCount: number;
   /** 对话轮数（每次用户发送 +1），与 questionCount 解耦（plan0831_5 §P1-3）。 */
   messageTurnCount: number;
+  /** 逐题反馈模式（会话级）：`immediate` 时每题评分后暂停等确认。 */
+  feedbackMode: InterviewFeedbackMode;
   /**
    * 桥接字段（plan0831_5 §P1-2）：当 Chat 以「模拟面试」模式运行时，
    * 复用与独立 Agent Interview 同一份运行时会话（InterviewAgentSession），
@@ -80,7 +93,10 @@ export function questionContext(
   };
 }
 
-export function createConversationSession(sessionId: string): ConversationSession {
+export function createConversationSession(
+  sessionId: string,
+  feedbackMode: InterviewFeedbackMode = DEFAULT_INTERVIEW_FEEDBACK_MODE,
+): ConversationSession {
   return {
     id: sessionId,
     startedAt: Date.now(),
@@ -91,6 +107,7 @@ export function createConversationSession(sessionId: string): ConversationSessio
     evaluations: {},
     questionCount: 0,
     messageTurnCount: 0,
+    feedbackMode,
   };
 }
 
@@ -112,20 +129,30 @@ export function addQuestionToSession(session: ConversationSession, sq: SessionQu
   };
 }
 
+/**
+ * 记录一次评分。
+ *
+ * @param options.awaitFeedback immediate 模式：评分后**不**清空当前题、**不**进入「选下一题」，
+ *   而是把 `pendingAction` 置为 `'feedback'`，表示「已评分、停在反馈卡上等用户确认」。
+ *   这与默认的 `'choose_question'`（已评分并清空当前题）语义不同：
+ *   反馈卡需要回显题干与作答，故必须保留 `currentQuestionId`。
+ */
 export function addEvaluationToSession(
   session: ConversationSession,
   questionId: string,
   answer: AnswerValue,
   evaluation: EvaluationResult | null,
+  options: { awaitFeedback?: boolean } = {},
 ): ConversationSession {
+  const awaitFeedback = options.awaitFeedback ?? false;
   return {
     ...session,
     answers: { ...session.answers, [questionId]: answer },
     evaluations: { ...session.evaluations, [questionId]: evaluation },
     context: {
       ...session.context,
-      pendingAction: 'choose_question',
-      currentQuestionId: undefined,
+      pendingAction: awaitFeedback ? 'feedback' : 'choose_question',
+      currentQuestionId: awaitFeedback ? questionId : undefined,
       lastEvaluationOverall: evaluation?.overall,
     },
   };
@@ -176,12 +203,14 @@ export function shouldUpgradeToInterview(session: ConversationSession, intent?: 
  * @param messages 完整 transcript（含本轮用户消息与即将追加的助手消息）
  * @param opts.deliveredQuestion 本轮刚交付给用户作答的新题；收尾 / 「结束」时传 null
  * @param opts.countAsNew 是否把 deliveredQuestion 计入题数（每交付一题 +1；收尾 / 换题不计重复）
+ * @param opts.awaitFeedback immediate 模式：本轮已评分但**停在反馈上**，
+ *   `pendingAction` 置为 `'feedback'` 且保留 `currentQuestionId`（反馈卡要回显题干与作答）
  */
 export function projectToConversationSession(
   base: ConversationSession,
   agentSession: InterviewAgentSession,
   messages: { role: 'user' | 'assistant'; content: string; key: string }[],
-  opts: { deliveredQuestion?: SessionQuestion | null; countAsNew?: boolean } = {},
+  opts: { deliveredQuestion?: SessionQuestion | null; countAsNew?: boolean; awaitFeedback?: boolean } = {},
 ): ConversationSession {
   const delivered = opts.deliveredQuestion ?? null;
   const countAsNew = opts.countAsNew ?? false;
@@ -198,6 +227,8 @@ export function projectToConversationSession(
     answers: { ...base.answers, ...agentSession.answers },
     evaluations: { ...base.evaluations, ...agentSession.evaluations },
     agentSession,
+    // 反馈模式随运行时会话固化（真源在 agentSession，投影时同步到持久化的 ConversationSession）
+    feedbackMode: agentSession.feedbackMode,
     questions,
     questionCount,
     messageTurnCount,
@@ -205,7 +236,7 @@ export function projectToConversationSession(
       ...base.context,
       mode: 'interview',
       currentQuestionId,
-      pendingAction: delivered ? 'answer' : 'choose_question',
+      pendingAction: opts.awaitFeedback ? 'feedback' : delivered ? 'answer' : 'choose_question',
       questionHistory: delivered ? [...(base.context.questionHistory ?? []), delivered.question.id] : base.context.questionHistory,
       questionCount,
       messageTurnCount,

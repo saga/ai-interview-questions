@@ -28,6 +28,7 @@ import QuestionCard from './components/quiz/QuestionCard';
 import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
 import CopilotSidebar from './components/copilot/CopilotSidebar';
+import type { ActiveInterviewContext } from './application/conversation/interviewContext';
 import { createLLMProvider } from './ai/provider';
 import { devUsageLogger } from './ai/usageTelemetry';
 import { useIsMobile } from './hooks/useIsMobile';
@@ -73,6 +74,13 @@ export default function App() {
   const goPage = (p: Page) =>
     attemptNavigate({ target: p, phase, navigate, warn: (m) => message.warning(m) });
   const [copilotOpen, setCopilotOpen] = useState(false);
+  /**
+   * Agent 面试页「让 Copilot 详细解释」的桥接载荷。
+   * 两个 runtime（Agent 面试 / Copilot 侧栏）在 App 层交汇：Agent 页产出结构化上下文，
+   * App 打开侧栏并把它交给 Copilot，由 Copilot 转成 AnswerContext（唯一上下文契约）。
+   * 消费后立即清空，避免下一次无关提问误用上一次的评分。
+   */
+  const [askCopilotCtx, setAskCopilotCtx] = useState<ActiveInterviewContext | null>(null);
   // 窄屏下的结构决策（标题文案、按钮只留图标、header 放开固定高度）由 JS 判定；
   // 纯数值型样式（内边距）交给 index.css 的 .app-header / .app-content。
   const isMobile = useIsMobile();
@@ -260,6 +268,10 @@ export default function App() {
             onGoSettings={() => goPage('settings')}
             onGoProgress={() => goPage('progress')}
             {...agent}
+            onAskCopilot={(ctx) => {
+              setAskCopilotCtx(ctx);
+              setCopilotOpen(true);
+            }}
           />
         );
       default:
@@ -366,6 +378,8 @@ export default function App() {
           session={session}
           currentQuestion={copilotQuestion}
           onSessionComplete={handleAgentComplete}
+          interviewContext={askCopilotCtx}
+          onInterviewContextConsumed={() => setAskCopilotCtx(null)}
         />
       </div>
 

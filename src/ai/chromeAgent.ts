@@ -19,6 +19,7 @@ import type {
   AssistantMessage,
   AssistantMessageEventStream,
   Context,
+  JsonObject,
   Model,
   StopReason,
   TextContent,
@@ -265,7 +266,9 @@ function parseToolCall(raw: string, allowed: Set<string>): { name: string; args:
 
 /** 发射一条合法的工具调用事件序列（与 openai-completions provider 的发射顺序一致）。 */
 function emitToolCall(stream: AssistantMessageEventStream, name: string, args: Record<string, unknown>): void {
-  const toolCall: ToolCall = { type: 'toolCall', id: 'call_' + randomId(), name, arguments: args };
+  // pi-ai 0.87 起 ToolCall.arguments 收紧为 JsonObject（不再接受 Record<string, unknown>）。
+  // args 由上层 JSON.parse 得到，运行时必然是合法 JSON 值；此处只是把 unknown 收窄给类型系统。
+  const toolCall: ToolCall = { type: 'toolCall', id: 'call_' + randomId(), name, arguments: args as JsonObject };
   const output = baseMessage('pending');
   output.content = [toolCall];
   output.stopReason = 'toolUse';

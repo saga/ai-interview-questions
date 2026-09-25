@@ -41,9 +41,16 @@ interface Props {
   onChange: (v: AnswerValue) => void;
   challengerEnabled?: boolean;
   challengerProvider?: LLMProvider | null;
+  /**
+   * 只读回看：题干与作答照常展示，但禁止再修改。
+   * 用途：immediate 模式下评分后停在反馈卡上时，当前题已作答完毕，
+   * 允许继续编辑会让「展示的反馈」与「屏幕上的作答」不一致。
+   * 缺省 false，不影响其它页面（训练 / 模拟面试）。
+   */
+  readOnly?: boolean;
 }
 
-export default function QuestionCard({ index, question, format, value, onChange, challengerEnabled = false, challengerProvider }: Props) {
+export default function QuestionCard({ index, question, format, value, onChange, challengerEnabled = false, challengerProvider, readOnly = false }: Props) {
   const [challenge, setChallenge] = useState<QuestionChallenge | null>(null);
   const [challenging, setChallenging] = useState(false);
   const cf = question.formats.choice;
@@ -107,7 +114,7 @@ export default function QuestionCard({ index, question, format, value, onChange,
         <RichText text={stem} strong />
       </div>
 
-      {challengerEnabled && (
+      {challengerEnabled && !readOnly && (
         <div style={{ marginBottom: 18 }}>
           <Button
             size="small"
@@ -154,6 +161,7 @@ export default function QuestionCard({ index, question, format, value, onChange,
         <Radio.Group
           value={(value as number[])[0]}
           onChange={(e) => onChange([e.target.value as number])}
+          disabled={readOnly}
           style={{ width: '100%' }}
         >
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
@@ -172,6 +180,7 @@ export default function QuestionCard({ index, question, format, value, onChange,
         <Checkbox.Group
           value={(value as number[]) ?? []}
           onChange={(v) => onChange(v as number[])}
+          disabled={readOnly}
           style={{ width: '100%' }}
         >
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
@@ -191,6 +200,7 @@ export default function QuestionCard({ index, question, format, value, onChange,
           rows={4}
           value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
+          readOnly={readOnly}
           placeholder="在此输入你的回答…"
         />
       )}
@@ -212,6 +222,7 @@ export default function QuestionCard({ index, question, format, value, onChange,
             onChange={(v) => onChange(v)}
             language={of.language}
             height={320}
+            readOnly={readOnly}
           />
         </Suspense>
       )}

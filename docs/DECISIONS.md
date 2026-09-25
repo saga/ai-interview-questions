@@ -2,6 +2,27 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-083 · 逐题反馈是「会话节奏」而非全局开关：评分与推进解耦
+
+- 状态：已采纳 · 2026-09-25
+- 背景：面试训练一直是「作答 → 评分 → 直接进入下一题」的单一节奏，用户只能等到整场结束才看到反馈。诉求是**逐题反馈**（每题评分后停下来让用户消化）。两种显然的实现都是错的：
+  1. **做成全局 Settings 开关**——节奏是「这场面试怎么进行」的属性，同一用户可能这场想逐题、下场想连贯；做成全局开关会把会话属性错误地提升为应用级偏好，且与 `InterviewDefinition` 同层的东西被拆到两处。
+  2. **在 `evaluateAnswer` 工具里暂停**——该工具只在「开放题 + LLM 健康」这一条路径上被调用。选择题走 `gradeChoice` 确定性判分、降级路径走 `evaluateSessionQuestion`，**两条都不经该工具**。把暂停塞进工具里，选择题和降级路径会静默地不暂停（用户看到开关打开了却毫无反应）。
+  另一条被否决的路：用 `agent.abort()` 实现暂停。运行时会按 `stopReason === 'aborted'` 归类为异常，打出 `model_error` 遥测并给用户看「模型返回错误」——把一次正常的产品行为伪装成故障。
+- 决策：
+  1. **节奏归属会话**：`interviewFeedbackModeSchema = 'standard' | 'immediate'`（`src/schemas/interview.ts`），随 `InterviewAgentSession.feedbackMode` 与 `ConversationSession.feedbackMode` 持久化；缺省 `standard`，旧草稿行为不变（用 `.catch(DEFAULT)` 而非 `.default()`：将来出现非法值时降级为 standard，而不是整份草稿被判废丢弃）。
+  2. **暂停点收敛到共享内部缝 `afterEvaluation()`**：三条判分路径（`choiceAdvance` / `fallbackAdvance` / `evaluateAnswer` 工具回调）全部经过它。它写 `session.evaluations[qid]` → 回调 `handlers.onEvaluation` → 若 `immediate` 则置 `status = 'awaiting_feedback'` 并**返回 true 表示「调用方不得再推进」**。判分与推进由此彻底解耦——`evaluateAnswer` 工具本身对节奏一无所知。
+  3. **`evaluation === null` 不产生反馈**：`afterEvaluation` 遇 null 直接返回 false 走原推进逻辑。否则「评分失败」会被投影成「0 分反馈」，这是**伪造数据**，比不反馈更糟。
+  4. **暂停期间用 `beforeToolCall` 闸门 + 轮次优雅结束**，而非 abort：`finishTurn` 钩子在 `shouldStopAfterTurn` 为真时返回 `{ action: 'end' }`，模型停在一个正常轮次边界上；`beforeToolCall` 同时拦掉 `getQuestion` / `evaluateAnswer`，防止模型在等待期间提前出题或重复评分。故暂停态下 `errors` 为空、`fallbackReason` 为 `undefined`（有测试锁住）。
+  5. **恢复靠 `continueAfterFeedback()`**：开放题走 `agent.continue()`（把「决定下一题」交还模型），选择题/降级走确定性的 `advanceDeterministic()`。幂等——非暂停态调用立即返回，不会永久挂起 resolver。
+  6. **两侧共用一份投影与一个组件**：`src/domain/interviewFeedback.ts` 的 `buildInterviewFeedback()` + `src/components/interview/InterviewFeedbackCard.tsx`，Agent 面试页与 Copilot 侧栏共用。**明确不新建第二套评估器/Agent**——`EvaluationResult`、`AnswerContext`、`createInterviewAgent`、`requiredPointsFor()` 全部复用。关键知识点取 `requiredPointsFor(question)`，缺知识点节点时回落到 `question.tags`。
+  7. **参考答案默认折叠**：`Collapse` 收起态。逐题反馈的即时性会放大「直接看答案」的诱惑，默认展开等于把训练变成阅读。
+  8. **两个 runtime 靠结构化载荷桥接**：Agent 面试状态由 App 层 `useAgentInterview` 持有，Copilot 侧栏另有自己的 `ConversationSession`。桥接不拼 prompt 文本，而是传 `ActiveInterviewContext`（`src/application/conversation/interviewContext.ts`）→ `toAnswerContext()` 转成 Copilot **唯一**的 `AnswerContext`（新增 `question` / `feedbackMode` 字段）。消费后立刻清空，避免下一次无关提问误用上一次评分。
+  9. **`AgentStatus` 增列 `awaiting_feedback`**：全部既有比较点都是 `=== 'finished'`，故加宽是纯增量；`pendingActionSchema` 增 `'feedback'`，`addEvaluationToSession({ awaitFeedback })` 在等待时**保留** `currentQuestionId`（暂停的语义就是「还在这道题上」）。
+- 未改：`evaluate.ts`（判分口径零改动）、`requiredPointsFor`、`EvaluationResult` schema、`AgentStatus` 既有取值语义、Copilot 的 `AnswerContext` 既有字段。
+- 验证：`tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过；`src/agent` + `src/application/conversation` 全绿（含 immediate 模式的运行时用例：选择题不经 LLM 重入、`evaluation=null` 不产 0 分反馈、暂停态无 `model_error` 遥测）；`src/domain/interviewFeedback.test.ts`、`interviewContext.test.ts`、`copilot.test.ts` 覆盖投影契约、桥接契约与 prompt 注入。
+- 触发条件：若将来要求「反馈里可回看历史若干题」（当前只投影刚作答的那一题），需要扩展投影为队列并给 `pendingAction` 增加浏览态；若要求在 `immediate` 下支持「跳过反馈直接继续」，应复用 `continueAfterFeedback()` 而非新增绕过 `afterEvaluation` 的旁路。
+
 ## ADR-082 · Assessment Variant 确定性 path 门禁：不信任 LLM 声明，只比推断签名
 
 - 状态：已采纳 · 2026-09-15

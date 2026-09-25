@@ -44,10 +44,12 @@ interface Props {
   onChange: (v: string) => void;
   language?: string;
   height?: number;
+  /** 只读回看：保留编辑器外观与语法高亮，但禁止编辑（immediate 模式评分后回看作答）。 */
+  readOnly?: boolean;
 }
 
 /** 编程题作答编辑器（可写）。只读展示请用 CodeBlock。 */
-export default function CodeEditor({ value, onChange, language, height = 320 }: Props) {
+export default function CodeEditor({ value, onChange, language, height = 320, readOnly = false }: Props) {
   configureMonaco();
   return (
     <div style={{ border: '1px solid #d9d9d9', borderRadius: 8, overflow: 'hidden' }}>
@@ -57,7 +59,7 @@ export default function CodeEditor({ value, onChange, language, height = 320 }: 
         language={toMonacoLang(language)}
         value={value}
         onChange={(v) => onChange(v ?? '')}
-        options={BASE_OPTIONS}
+        options={{ ...BASE_OPTIONS, readOnly }}
       />
     </div>
   );

@@ -1,6 +1,17 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-25 · 面试新增「逐题反馈」节奏（会话级，评分与推进解耦）
+
+- 新增 `InterviewFeedbackMode = 'standard' | 'immediate'`，作为**会话属性**而非全局设置：Agent 面试页开局用 `Segmented` 选择，随 `InterviewAgentSession` / `ConversationSession` 持久化，刷新可恢复；缺省 `standard`，旧草稿行为不变。
+- 运行时把「评分」与「推进下一题」拆开：三条判分路径（选择题确定性判分 / 降级判分 / LLM `evaluateAnswer` 工具）统一经过共享内部缝 `afterEvaluation()`。`immediate` 下写完 `session.evaluations[qid]` 即置 `status = 'awaiting_feedback'` 并**阻断推进**；`evaluation === null` 不产生反馈（不把「评分失败」伪造成「0 分」）。
+- 暂停实现为**正常轮次结束**（`finishTurn` 返回 `{ action: 'end' }`）+ `beforeToolCall` 拦掉等待期的 `getQuestion` / `evaluateAnswer`，**不用 `agent.abort()`**——abort 会被运行时归类为 `model_error`，把正常产品行为显示成「模型返回错误」。
+- 新增 `continueAfterFeedback()`：开放题交还 LLM 决定下一题，选择题/降级走确定性推进；幂等。暂停期间 `submitAnswer` 被拒，`skip()` 先解除暂停。
+- 新增共享投影 `src/domain/interviewFeedback.ts`（`buildInterviewFeedback` / `feedbackBand` / `resolveAnswerText`）与共享组件 `src/components/interview/InterviewFeedbackCard.tsx`，Agent 面试页与 Copilot 侧栏**同一份**反馈 UI；关键知识点取 `requiredPointsFor(question)`，缺节点回落 `question.tags`；参考答案默认折叠。未新建第二套评估器或 Agent。
+- 新增两个 runtime 间的结构化桥接：`ActiveInterviewContext` → `toAnswerContext()` → Copilot 唯一的 `AnswerContext`（新增 `question` / `feedbackMode`）；`renderAnswerContext` 相应注入被讲解题干（300 字截断）与逐题节奏说明。载荷消费后立即清空。
+- 选择题在反馈态下只读（`QuestionCard.readOnly`，含 `CodeEditor.readOnly`），提交按钮按节奏显示「提交作答」/「提交作答并继续」。
+- 门禁实证：`typecheck`（app + node 两份 config）通过；`src/agent` + `src/application/conversation` 全绿，新增 immediate 模式运行时用例（含「选择题不经 LLM 重入」「暂停态无 `model_error` 遥测」「`evaluation=null` 不产 0 分反馈」）；`interviewFeedback` / `interviewContext` / `copilot` 投影与桥接契约用例补齐。决策依据见 ADR-083。
+
 ## 2026-09-23 · 零变体区顺延 20 条变体（`assessment.manual-ce-20260923.json`，20 题 × 1 条 context-options）
 
 - 全库 missing-only 再顺延 20 题（activation / agent / 对齐 / 注意力 / 反向传播 / 缓存 / CNN / 上下文工程与窗口 / 成本 / 交叉熵 / 数据泄露 / 蒸馏 / 分布式训练 / DPO / dropout / 集成学习 / evaluation 各 1 题），每题 1 条 assessment 变体（mode=assessment，自声明不同 angle + cognitiveTask 与新推理路径）。

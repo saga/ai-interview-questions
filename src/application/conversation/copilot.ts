@@ -14,6 +14,7 @@ import type { LearnerProfile } from '../../schemas/learner';
 import type { Question } from '../../schemas/question';
 import type { AnswerValue } from '../../types';
 import type { EvaluationResult } from '../../schemas/evaluation';
+import type { InterviewFeedbackMode } from '../../schemas/interview';
 import type { KnowledgeEvidence, RetrievalMode } from '../../domain/knowledge/types';
 import { knowledgeCitations, retrieveForCopilot, combineFollowUp, detectQueryTopic } from './knowledgeCapability';
 import { routeUserMessage } from './commandDetector';
@@ -27,6 +28,14 @@ export interface AnswerContext {
   answer: AnswerValue;
   /** 该题评分诊断（可能尚未评分时为 null）。 */
   evaluation?: EvaluationResult | null;
+  /**
+   * 被讲解的题目。
+   * Chat 路径通常可省略（`CopilotTurnInput.activeQuestion` 已携带）；
+   * Agent 面试反馈卡桥接而来时**必须**给出——那道题不在 Copilot 自己的 session 里。
+   */
+  question?: Question | null;
+  /** 产生这份作答时的逐题反馈节奏，供 Copilot 调整讲解深度。 */
+  feedbackMode?: InterviewFeedbackMode;
 }
 
 export interface CopilotTurnInput {

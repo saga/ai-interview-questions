@@ -8,14 +8,15 @@
 import { Agent } from '@earendil-works/pi-agent-core';
 import type {
   AgentEvent,
+  AgentTurnContext,
   BeforeToolCallContext,
   BeforeToolCallResult,
-  ShouldStopAfterTurnContext,
   StreamFn,
 } from '@earendil-works/pi-agent-core';
 import type { AssistantMessage, Model, UserMessage } from '@earendil-works/pi-ai';
 import { isEntryValid } from '../ai/provider';
 import type { AnswerValue, LLMProvider } from '../types';
+import type { EvaluationResult } from '../schemas/evaluation';
 import type { FormatId } from '../schemas/common';
 import type { LearnerProfile } from '../schemas/learner';
 import type { ProviderEntry } from '../schemas/ai-config';
@@ -64,29 +65,51 @@ export function clampAnswer(answer: AnswerValue): AnswerValue {
 const WATCHDOG_MS = 90_000;
 
 /**
- * 停止条件：本轮调用了 finishInterview，或已交付题数达上限。导出便于单测。
+ * 停止条件：本轮调用了 finishInterview、已交付题数达上限、或**已停在逐题反馈上**。
+ * 导出便于单测。
  *
  * 用「已交付」而非「已评分」计数：交付即占位，即便该题评分失败（evaluations[id] = null）
  * 也必须计入上限，否则评分连续失败时永远停不下来。
+ *
+ * 关于第三个条件（immediate 模式的暂停）：本函数是 `finishTurn` 的实现，
+ * 返回 true 时运行时以 `{ action: 'end' }` **优雅收尾本轮 run**——
+ * 刻意不走 `agent.abort()`：abort 会被运行时归类为错误（stopReason='aborted' → model_error
+ * telemetry），既不优雅也会让用户看到「模型返回错误」。优雅收尾后由 `continueAfterFeedback()`
+ * 通过 `agent.continue()` 另起一轮，语义清晰且不污染错误遥测。
  */
 export function shouldStopAfterTurn(
   session: InterviewAgentSession,
-  ctx: ShouldStopAfterTurnContext,
+  ctx: AgentTurnContext,
 ): boolean {
+  if (session.status === 'awaiting_feedback') return true;
   if (ctx.toolResults.some((tr) => tr.toolName === 'finishInterview')) return true;
   if (countDelivered(session) >= MAX_AGENT_QUESTIONS) return true;
   return false;
 }
 
 /**
- * 工具调用守卫：开放题评估需要 LLM，若引擎配置无效（无 key / 未启用）则拦截，
- * 避免运行时在无 key 情况下崩溃；选择题确定性判分不受影响。
+ * 工具调用守卫。
+ * 1. 暂停闸：immediate 模式下已停在反馈上时，冻结「出题」与「重复评分」。
+ *    必须挡在工具层——`finishTurn` 只在**整轮工具全部执行完**后才调用，
+ *    若模型在同一条 assistant 消息里先调 evaluateAnswer 再调 getQuestion（toolExecution 为
+ *    sequential，按序执行），没有这道闸就会在展示反馈前把题目换掉。
+ * 2. 引擎闸：开放题评估需要 LLM，若引擎配置无效（无 key / 未启用）则拦截，
+ *    避免运行时在无 key 情况下崩溃；选择题确定性判分不受影响。
  */
 export function beforeToolCall(
   entry: ProviderEntry,
   session: InterviewAgentSession,
   ctx: BeforeToolCallContext,
 ): BeforeToolCallResult | undefined {
+  if (
+    session.status === 'awaiting_feedback' &&
+    (ctx.toolCall.name === 'getQuestion' || ctx.toolCall.name === 'evaluateAnswer')
+  ) {
+    return {
+      block: true,
+      reason: '已停在本题反馈上，等待用户确认「继续」后再决定下一题，请勿提前出题或重复评分。',
+    };
+  }
   if (ctx.toolCall.name === 'evaluateAnswer') {
     const fmt = session.currentQuestion?.format;
     if (fmt === 'open' && !isEntryValid(entry)) {
@@ -132,6 +155,13 @@ export interface InterviewAgentHandle {
   start: (instruction: string) => Promise<void>;
   /** 提交用户作答并推进下一轮（当前题的答案 + 继续）。 */
   submitAnswer: (answer: AnswerValue) => Promise<void>;
+  /**
+   * 用户确认本题反馈、放行下一题（仅 immediate 模式有意义）。
+   * - 幂等：非 `awaiting_feedback` 状态调用是 no-op；
+   * - 开放题（LLM 路径）→ `agent.continue()`，由 Agent 决定下一题（保留自适应决策）；
+   * - 选择题 / 兜底模式 → 确定性选题，与原路径一致，不额外唤起 LLM。
+   */
+  continueAfterFeedback: () => Promise<void>;
   /** 跳过当前题（不计分）并交付下一题，供「换一道/跳过/不想答」控制词使用。 */
   skip: () => Promise<void>;
   /** 中止当前运行。 */
@@ -175,7 +205,10 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     // 对未来 provider 变化与任何 session-affinity 机制都有价值（pi-agent-core AgentOptions.sessionId）。
     sessionId: session.id,
     initialState: { model: runtime.model as Model<any>, systemPrompt },
-    shouldStopAfterTurn: (ctx) => shouldStopAfterTurn(session, ctx),
+    // 停止条件（pi-agent-core 0.87 的 finishTurn，取代已移除的 shouldStopAfterTurn）：
+    // 需要停止时返回 `{ action: 'end' }` 优雅收尾本轮 run；否则返回 undefined 交回默认调度
+    // （**不**返回 `{ action: 'continue' }`——那会强制多发一次 provider 请求，改变既有行为）。
+    finishTurn: (turn) => (shouldStopAfterTurn(session, turn) ? { action: 'end' } : undefined),
     beforeToolCall: (ctx) => Promise.resolve(beforeToolCall(entry, session, ctx)),
     // 共享可变 session 状态：并行执行工具调用会引入真实竞态（同 tick 内多个 getQuestion/evaluateAnswer
     // 交错写入 session.currentQuestion / evaluations）。强制串行，保证工具按 LLM 决策顺序顺序落地。
@@ -199,8 +232,8 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
   function armWatchdog() {
     clearWatchdog();
     watchdog = setTimeout(() => {
-      // 已交付且用户尚未作答 → 正常等待，不动；已结束 → 不动
-      if (session.status === 'finished') return;
+      // 已交付且用户尚未作答 → 正常等待，不动；已结束 → 不动；停在反馈上等确认 → 不动
+      if (session.status === 'finished' || session.status === 'awaiting_feedback') return;
       if (session.currentQuestion && !Object.prototype.hasOwnProperty.call(session.evaluations, session.currentQuestion.question.id)) return;
       agent.abort();
       void ensureQuestionDelivered('timeout');
@@ -240,17 +273,67 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     return true;
   }
 
+  /**
+   * **评分完成的统一出口**（本特性的核心接缝）。
+   *
+   * 为什么必须在这里而不是在 evaluateAnswer 工具里：提交作答后共有三条评分路径——
+   *   ① `choiceAdvance`：选择题，确定性 `gradeChoice`，**不经过** evaluateAnswer 工具；
+   *   ② `fallbackAdvance`：兜底接管后由确定性引擎自驱，同样不经过工具；
+   *   ③ LLM 循环：开放题，经 evaluateAnswer 工具 → `evaluateAnswerCapability`。
+   * 三条路径最终都必须「写入 evaluations → 决定是否推进」，本函数就是这个共同动作。
+   * 把暂停点放在工具层只能覆盖第 ③ 条，immediate 模式在选择题（当前占比过半）上会完全失效。
+   *
+   * 职责：写 evaluations → 通知 UI（onEvaluation）→ 依 feedbackMode 决定是否停在反馈上。
+   *
+   * @returns true 表示已进入 `awaiting_feedback`，**调用方不得再推进下一题**。
+   */
+  function afterEvaluation(
+    sq: SessionQuestion,
+    answer: AnswerValue,
+    evaluation: EvaluationResult | null,
+  ): boolean {
+    session.evaluations[sq.question.id] = evaluation;
+    // evaluation === null（未作答 / 评分失败）：没有可展示的反馈，
+    // 绝不能伪造一份 0 分反馈，也不能把未评分题写进 Learner Memory → 按原流程推进。
+    if (!evaluation) return false;
+    handlers?.onEvaluation?.(sq, answer, evaluation);
+    if (session.feedbackMode === 'immediate') {
+      session.status = 'awaiting_feedback';
+      handlers?.onStatus?.('awaiting_feedback');
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 确定性交付下一题（或优雅收尾），不依赖 LLM、不设置 usingFallback。
+   * 由「选择题快路径」与「immediate 模式下用户确认继续（选择题 / 兜底）」共用。
+   */
+  function advanceDeterministic(): void {
+    const askedCount = new Set([...Object.keys(session.answers), ...Object.keys(session.evaluations)]).size;
+    if (askedCount >= MAX_AGENT_QUESTIONS || session.status === 'finished') {
+      handlers?.onStatus?.('finished');
+      return;
+    }
+    if (!fallbackNextQuestion()) {
+      if (Object.keys(session.evaluations).length > 0) handlers?.onStatus?.('finished');
+      else handlers?.onError?.('面试已结束：当前题库没有可考察的题目', true);
+    }
+  }
+
   /** 兜底模式下自驱：记录答案 → 评分 → 交付下一题（或收尾）。 */
   async function fallbackAdvance(answer: AnswerValue): Promise<void> {
     const sq = session.currentQuestion;
     if (sq) {
-      const qid = sq.question.id;
-      session.answers[qid] = answer;
+      session.answers[sq.question.id] = answer;
+      let evaluation: EvaluationResult | null = null;
       try {
-        session.evaluations[qid] = await evaluateSessionQuestion(sq, answer, provider);
+        evaluation = await evaluateSessionQuestion(sq, answer, provider);
       } catch {
-        session.evaluations[qid] = null;
+        evaluation = null;
       }
+      // immediate 模式：停在反馈上，等用户确认（不再继续推进）
+      if (afterEvaluation(sq, answer, evaluation)) return;
     }
     await ensureQuestionDelivered();
   }
@@ -267,23 +350,18 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     if (sq) {
       const qid = sq.question.id;
       session.answers[qid] = answer;
+      let evaluation: EvaluationResult | null = null;
       try {
         // choice 形态走 gradeChoice（确定性），不触 LLM；即使 provider 无效也不影响
-        session.evaluations[qid] = await evaluateSessionQuestion(sq, answer, provider);
+        evaluation = await evaluateSessionQuestion(sq, answer, provider);
       } catch {
-        session.evaluations[qid] = null;
+        evaluation = null;
       }
+      // immediate 模式：停在反馈上，等用户确认（不再继续推进）
+      if (afterEvaluation(sq, answer, evaluation)) return;
     }
     // 确定性交付下一题（或收尾），不设置 usingFallback
-    const askedCount = new Set([...Object.keys(session.answers), ...Object.keys(session.evaluations)]).size;
-    if (askedCount >= MAX_AGENT_QUESTIONS || session.status === 'finished') {
-      handlers?.onStatus?.('finished');
-      return;
-    }
-    if (!fallbackNextQuestion()) {
-      if (Object.keys(session.evaluations).length > 0) handlers?.onStatus?.('finished');
-      else handlers?.onError?.('面试已结束：当前题库没有可考察的题目', true);
-    }
+    advanceDeterministic();
   }
 
   /**
@@ -296,6 +374,10 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     reason: 'timeout' | 'model_error' | 'agent_no_action' = 'agent_no_action',
   ): Promise<void> {
     clearWatchdog();
+    // immediate 模式下停在反馈上等用户确认 → 不干预。
+    // 必须在最前面：本函数会被 agent_end 调用，而 immediate 的暂停正是靠「本轮 run 优雅结束」
+    // 实现的——若没有这道闸，run 一结束就会立刻兜底出下一题，暂停形同虚设。
+    if (session.status === 'awaiting_feedback') return;
     // 已交付且用户尚未作答 → 等待用户，不干预
     if (session.currentQuestion && !Object.prototype.hasOwnProperty.call(session.evaluations, session.currentQuestion.question.id)) {
       return;
@@ -336,6 +418,12 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     }
     if (event.type === 'tool_execution_end') {
       if (event.toolName === 'getQuestion') handlers?.onQuestion?.(session.currentQuestion);
+      if (event.toolName === 'evaluateAnswer') {
+        // LLM 路径（第 ③ 条）汇入统一出口：工具已把结果写进 session.evaluations，
+        // 这里只负责「通知 UI + 依 feedbackMode 决定是否暂停」，与另两条路径行为一致。
+        const sq = session.currentQuestion;
+        if (sq) afterEvaluation(sq, session.answers[sq.question.id], session.evaluations[sq.question.id] ?? null);
+      }
       if (event.toolName === 'finishInterview') handlers?.onStatus?.('finished');
     }
     if (event.type === 'agent_end') {
@@ -356,6 +444,16 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
   }
 
   function submitAnswer(answer: AnswerValue): Promise<void> {
+    // immediate 模式下停在反馈上：拒绝新的作答提交（必须先确认继续）。
+    // 防御性 no-op：正常 UI 在反馈态不会给出提交入口，但 Copilot 侧与快捷键可能重入。
+    if (session.status === 'awaiting_feedback') {
+      session.log.push({
+        at: Date.now(),
+        kind: 'event',
+        summary: '已停在本题反馈上，忽略新的作答提交（需先确认「继续」）',
+      });
+      return Promise.resolve();
+    }
     // 入口处统一限长：答案无上界会让上下文/评估 token 随一次粘贴无限膨胀（评审第八节）。
     const bounded = clampAnswer(answer);
     // 兜底模式已接管：不走 agent.continue()，自驱评分与下一题（修复 C）
@@ -371,6 +469,29 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     return agent.continue();
   }
 
+  /**
+   * 用户确认本题反馈 → 放行下一题（仅 immediate 模式）。
+   *
+   * 按路径分流（为什么不能一律走确定性兜底）：
+   * - 选择题 / 兜底模式：原本就是确定性选题（不依赖 LLM），直接复用，保持「瞬时出下一题」；
+   * - 开放题：原本由 Agent 在 LLM 循环里决定下一题。若改用 `fallbackNextQuestion()`，
+   *   会把 `usingFallback` 永久翻转为 true，使余下整场面试都退化成确定性选题、丧失自适应决策——
+   *   因此必须用 `agent.continue()` 把循环接回来，由 Agent 决定下一题。
+   */
+  async function continueAfterFeedback(): Promise<void> {
+    if (session.status !== 'awaiting_feedback') return; // 幂等：重复点击 / 非暂停态调用
+    session.status = 'running';
+    handlers?.onStatus?.('running');
+    const sq = session.currentQuestion;
+    if (usingFallback || sq?.format === 'choice') {
+      advanceDeterministic();
+      return;
+    }
+    lastErrorMessage = undefined;
+    armWatchdog();
+    await agent.continue();
+  }
+
   function abort(): void {
     clearWatchdog();
     agent.abort();
@@ -381,6 +502,12 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
    * 仅标记当前题为「已处理（不计分）」，复用确定性兜底选题（与正常流程同一份 effective profile）。
    */
   async function skip(): Promise<void> {
+    // 停在反馈上时跳过：先解除暂停。否则 ensureQuestionDelivered 会因 awaiting_feedback
+    // 直接 early-return，导致「跳过」静默失效。
+    if (session.status === 'awaiting_feedback') {
+      session.status = 'running';
+      handlers?.onStatus?.('running');
+    }
     const sq = session.currentQuestion;
     if (sq) session.evaluations[sq.question.id] = null;
     await ensureQuestionDelivered();
@@ -398,5 +525,5 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     unsubscribe();
   }
 
-  return { agent, start, submitAnswer, skip, abort, dispose };
+  return { agent, start, submitAnswer, continueAfterFeedback, skip, abort, dispose };
 }

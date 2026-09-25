@@ -1,7 +1,8 @@
 import type { StreamFn } from '@earendil-works/pi-agent-core';
 import type { LLMProvider, QuestionBank } from '../../types';
 import type { AIConfig } from '../../schemas/ai-config';
-import type { InterviewDefinition } from '../../schemas/interview';
+import type { InterviewDefinition, InterviewFeedbackMode } from '../../schemas/interview';
+import { DEFAULT_INTERVIEW_FEEDBACK_MODE } from '../../schemas/interview';
 import type { LearnerProfile } from '../../schemas/learner';
 import type { EvaluationResult } from '../../schemas/evaluation';
 import type { ProviderEntry } from '../../schemas/ai-config';
@@ -64,6 +65,16 @@ export interface ChatInterviewStep {
   question: SessionQuestion | null;
   /** 致命错误（无法继续，应终止并开新会话）。 */
   fatalError?: string;
+  /**
+   * 本题评分结果（immediate 模式停在反馈上时给出）。
+   * 其余情况为 undefined——注意与「评分失败（null）」区分：失败时也不会进入反馈态。
+   */
+  evaluation?: EvaluationResult | null;
+  /**
+   * 是否停在本题反馈上等用户确认（immediate 模式）。
+   * true 时 `question` 仍是**刚作答的那道题**（不是下一题），UI 应展示反馈卡并等待「继续」。
+   */
+  awaitingFeedback?: boolean;
 }
 
 export interface ChatInterviewController {
@@ -71,6 +82,11 @@ export interface ChatInterviewController {
   readonly session: InterviewAgentSession;
   /** 提交用户答案并推进：评当前题 → 交付下一题（或结束）。返回本回合结果。 */
   submit: (answer: AnswerValue) => Promise<ChatInterviewStep>;
+  /**
+   * 用户确认本题反馈 → 放行下一题（immediate 模式）。
+   * 非暂停态调用是安全的：直接返回反映当前状态的 step（不会挂起等待一个永不到来的事件）。
+   */
+  continueAfterFeedback: () => Promise<ChatInterviewStep>;
   /** 跳过当前题（不计分）并交付下一题。 */
   skip: () => Promise<ChatInterviewStep>;
   /** 中止当前运行。 */
@@ -88,13 +104,19 @@ export interface ChatInterviewController {
  * 无需重建 LLM loop；open 题走 submitAnswer → continue()，SDK 允许不先 prompt() 直接续跑
  * （continue() 仅要求 transcript 末条为 user/toolResult，submitAnswer 已满足）。
  */
-export function rehydrateInterviewAgent(session: ConversationSession): InterviewAgentSession {
+export function rehydrateInterviewAgent(
+  session: ConversationSession,
+  feedbackMode: InterviewFeedbackMode = DEFAULT_INTERVIEW_FEEDBACK_MODE,
+): InterviewAgentSession {
   const currentQuestion = session.context.currentQuestionId
     ? session.questions.find((q) => q.question.id === session.context.currentQuestionId) ?? null
     : null;
   return {
     id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
-    status: 'running',
+    // 恢复暂停态：用户刷新时若正停在反馈卡上（pendingAction === 'feedback'），
+    // 必须把 awaiting_feedback 一并还原，否则 UI 既看不到反馈、也无法继续（当前题已评分却无下一题）。
+    status: session.context.pendingAction === 'feedback' ? 'awaiting_feedback' : 'running',
+    feedbackMode,
     startedAt: session.startedAt,
     currentQuestion,
     answers: { ...session.answers },
@@ -121,6 +143,11 @@ export interface StartChatInterviewOptions {
   runtimeOverride?: { streamFn: StreamFn; model: unknown };
   /** 恢复模式（plan0831_6 P0-1）：传入已重建的运行时会话，跳过开场指令直接接回当前题。 */
   resumeSession?: InterviewAgentSession;
+  /**
+   * 逐题反馈模式（会话级）。新建会话时固化为 `session.feedbackMode`；
+   * 恢复模式下请改用 `rehydrateInterviewAgent(session, feedbackMode)` 传入（真源在持久化的 ConversationSession）。
+   */
+  feedbackMode?: InterviewFeedbackMode;
 }
 
 export async function startChatInterview(opts: StartChatInterviewOptions): Promise<{
@@ -128,9 +155,12 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
   firstQuestion: SessionQuestion | null;
   finished: boolean;
   fatalError?: string;
+  /** 恢复时若正停在反馈卡上（immediate + pendingAction='feedback'），首个 step 即处于反馈态。 */
+  awaitingFeedback?: boolean;
+  evaluation?: EvaluationResult | null;
 }> {
   // 恢复模式：直接复用已重建的运行时会话，不新建（plan0831_6 P0-1）。
-  const session = opts.resumeSession ?? createAgentSession();
+  const session = opts.resumeSession ?? createAgentSession(opts.feedbackMode);
   let resolver: ((step: ChatInterviewStep) => void) | null = null;
 
   // 并发保护（plan0831_6 P1-4）：两次提交之间 Agent 必须空闲。busy 期间拒绝新提交，
@@ -160,7 +190,22 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
   const handlers: AgentHandlers = {
     onQuestion: (q) => settle({ finished: false, question: q }),
     onStatus: (status) => {
-      if (status === 'finished') settle({ finished: true, question: null });
+      if (status === 'finished') {
+        settle({ finished: true, question: null });
+        return;
+      }
+      if (status === 'awaiting_feedback') {
+        // immediate 模式：本题已评分、停在反馈上等用户确认。
+        // 这里必须 settle，否则本次 submit/continue 的 Promise 永远不会 resolve（控制器挂起）。
+        // 注意 question 传「当前题」（刚作答的那道）而非 null：反馈卡要回显题干与作答。
+        const sq = session.currentQuestion;
+        settle({
+          finished: false,
+          question: sq,
+          awaitingFeedback: true,
+          evaluation: sq ? session.evaluations[sq.question.id] ?? null : null,
+        });
+      }
     },
     onError: (message, fatal) => {
       if (fatal) {
@@ -208,17 +253,39 @@ export async function startChatInterview(opts: StartChatInterviewOptions): Promi
       void agent.skip().catch(() => { if (resolver === null) busy = false; });
       return p;
     },
+    // 用户确认本题反馈 → 放行下一题（immediate 模式）。
+    continueAfterFeedback: () => {
+      // 非暂停态：运行时是 no-op，不会触发任何事件回调来 settle。
+      // 若仍挂上 resolver 就会永久挂起（调用方 await 一个永不到来的 Promise），故直接回当前状态。
+      if (session.status !== 'awaiting_feedback') {
+        return Promise.resolve({
+          finished: session.status === 'finished',
+          question: session.currentQuestion,
+        });
+      }
+      if (busy) return Promise.reject(new Error('BUSY'));
+      busy = true;
+      const p = makeStepPromise();
+      void agent.continueAfterFeedback().catch(() => { if (resolver === null) busy = false; });
+      return p;
+    },
     abort: () => agent.abort(),
     dispose: () => agent.dispose(),
   };
 
   // 恢复模式：当前题已在 session.currentQuestion，无需重新开场（plan0831_6 P0-1）。
   // choice 题后续 submit 走确定性 choiceAdvance；open 题走 submitAnswer → continue()（无需 prior prompt）。
-  if (opts.resumeSession?.currentQuestion) {
+  const resumeSession = opts.resumeSession;
+  const resumeQuestion = resumeSession?.currentQuestion ?? null;
+  if (resumeSession && resumeQuestion) {
+    // 刷新时若正停在反馈卡上：把暂停态一并还原，否则 UI 会显示一道「已答完却无法提交」的题。
+    const awaiting = resumeSession.status === 'awaiting_feedback';
     return {
       controller,
-      firstQuestion: opts.resumeSession.currentQuestion,
-      finished: opts.resumeSession.status === 'finished',
+      firstQuestion: resumeQuestion,
+      finished: resumeSession.status === 'finished',
+      awaitingFeedback: awaiting,
+      evaluation: awaiting ? resumeSession.evaluations[resumeQuestion.question.id] ?? null : undefined,
     };
   }
 

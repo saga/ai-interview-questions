@@ -218,6 +218,7 @@ describe('startChatInterview（Chat 面试走 pi-agent-core）', () => {
       evaluations: { 'q-choice-1': { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, levels: { correctness: 3, completeness: 3, architecture: 3, communication: 3 }, evidence: { correctness: '', completeness: '', architecture: '', communication: '' }, strengths: [], gaps: [], missingConcepts: [], feedback: '' }, 'q-choice-2': null },
       questionCount: 2,
       messageTurnCount: 2,
+      feedbackMode: 'standard',
     };
 
     const resumeSession = rehydrateInterviewAgent(session);
@@ -255,6 +256,182 @@ describe('startChatInterview（Chat 面试走 pi-agent-core）', () => {
     const p2 = res.controller.submit([1]);
     await expect(p1).resolves.toBeDefined();
     await expect(p2).rejects.toThrow('BUSY');
+    res.controller.dispose();
+  });
+});
+
+// ── 逐题反馈（immediate 模式）：Chat 侧 ──────────────────────────────────
+// 与独立 Agent 面试页共用同一运行时，但包装层是「拉取式」的 ChatInterviewStep，
+// 因此必须验证：暂停态能否作为 step 交付给 UI、以及 continueAfterFeedback 能否接回循环。
+describe('Chat 面试 · immediate 模式（逐题反馈）', () => {
+  const scored = (overall: number): EvaluationResult => ({
+    overall,
+    dimensions: { correctness: overall, completeness: overall, architecture: overall, communication: overall },
+    levels: { correctness: 4, completeness: 4, architecture: 4, communication: 4 },
+    evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
+    strengths: [],
+    gaps: [],
+    missingConcepts: [],
+    feedback: '',
+  });
+
+  it('选择题：submit 返回「停在反馈上」的 step；continueAfterFeedback 后交付下一题', async () => {
+    const bank = [choiceQuestion(), choiceQuestion2()];
+    const res = await startChatInterview({
+      bank,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      provider: fakeProvider(),
+      feedbackMode: 'immediate',
+      runtimeOverride: { streamFn: makeMockStreamFn([]), model: { id: 'mock' } as any },
+    });
+    const controller = res.controller;
+    expect(controller.session.feedbackMode).toBe('immediate');
+    // 首题由确定性兜底选出（两道题同主题，pickNextAdaptive 顺序不确定）
+    // → 断言「相对关系」而非硬编码 id，否则测试会随选题随机性偶发失败。
+    const first = res.firstQuestion!.question.id;
+    const other = first === 'q-choice-1' ? 'q-choice-2' : 'q-choice-1';
+
+    // 提交选择题 → 确定性判分 → 暂停
+    const step1 = await controller.submit([0]);
+    expect(step1.awaitingFeedback).toBe(true);
+    expect(step1.finished).toBe(false);
+    // 关键：step.question 是**刚作答的那道题**，而不是下一题
+    expect(step1.question?.question.id).toBe(first);
+    expect(step1.evaluation?.overall).toBe(100);
+    expect(controller.session.status).toBe('awaiting_feedback');
+    expect(controller.session.currentQuestion?.question.id).toBe(first);
+
+    // 用户确认继续 → 确定性交付下一题
+    const step2 = await controller.continueAfterFeedback();
+    expect(step2.awaitingFeedback).toBeFalsy();
+    expect(step2.finished).toBe(false);
+    expect(step2.question?.question.id).toBe(other);
+    expect(controller.session.status).toBe('running');
+
+    // 第二题再次暂停
+    const step3 = await controller.submit([0]);
+    expect(step3.awaitingFeedback).toBe(true);
+    expect(step3.question?.question.id).toBe(other);
+
+    // 题库已空 → 继续后优雅收尾
+    const step4 = await controller.continueAfterFeedback();
+    expect(step4.finished).toBe(true);
+    controller.dispose();
+  });
+
+  it('开放题：走 LLM 工具评分后暂停；continueAfterFeedback 由 Agent 决定下一题', async () => {
+    const bank = [openQuestion(), choiceQuestion()];
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-open-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
+      makeMsg([{ type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '评估完成。' }], 'stop'),
+      // continueAfterFeedback 之后：Agent 决定下一题
+      makeMsg([{ type: 'toolCall', id: 'c3', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '下一题。' }], 'stop'),
+    ]);
+    const res = await startChatInterview({
+      bank,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      provider: fakeProvider(),
+      generateOpenQuestions: true,
+      feedbackMode: 'immediate',
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+    });
+    const controller = res.controller;
+    expect(res.firstQuestion?.question.id).toBe('q-open-1');
+
+    const step1 = await controller.submit('RAG 检索外部知识，fine-tuning 更新参数。');
+    expect(step1.awaitingFeedback).toBe(true);
+    expect(step1.question?.question.id).toBe('q-open-1');
+    expect(step1.evaluation?.overall).toBe(50); // 委托 fakeProvider
+    expect(controller.session.status).toBe('awaiting_feedback');
+
+    const step2 = await controller.continueAfterFeedback();
+    expect(step2.question?.question.id).toBe('q-choice-1');
+    expect(step2.awaitingFeedback).toBeFalsy();
+    controller.dispose();
+  });
+
+  it('standard 模式（默认）：submit 直接交付下一题，不产生反馈态', async () => {
+    const bank = [choiceQuestion(), choiceQuestion2()];
+    const res = await startChatInterview({
+      bank,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      provider: fakeProvider(),
+      runtimeOverride: { streamFn: makeMockStreamFn([]), model: { id: 'mock' } as any },
+    });
+    expect(res.controller.session.feedbackMode).toBe('standard');
+    const first = res.firstQuestion!.question.id;
+    const step = await res.controller.submit([0]);
+    expect(step.awaitingFeedback).toBeFalsy();
+    // 标准模式：直接推进到**另一道题**（不是停在原题上等反馈）
+    expect(step.question?.question.id).not.toBe(first);
+    res.controller.dispose();
+  });
+
+  it('非暂停态调用 continueAfterFeedback：立即返回当前状态，不挂起（防永久 await）', async () => {
+    const bank = [choiceQuestion(), choiceQuestion2()];
+    const res = await startChatInterview({
+      bank,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      provider: fakeProvider(),
+      feedbackMode: 'immediate',
+      runtimeOverride: { streamFn: makeMockStreamFn([]), model: { id: 'mock' } as any },
+    });
+    // 此时是「等待作答」，并非停在反馈上
+    const first = res.firstQuestion!.question.id;
+    const step = await res.controller.continueAfterFeedback();
+    expect(step.finished).toBe(false);
+    // 非暂停态是 no-op：必须立即返回**当前这道题**，不能换题也不能挂起。
+    expect(step.question?.question.id).toBe(first);
+    res.controller.dispose();
+  });
+
+  it('刷新恢复：pendingAction=feedback 时还原暂停态，首步即 awaitingFeedback', async () => {
+    const q1 = openQuestion();
+    const session: ConversationSession = {
+      id: 's-feedback',
+      startedAt: Date.now() - 1000,
+      context: {
+        version: 1,
+        mode: 'interview',
+        sessionId: 's-feedback',
+        pendingAction: 'feedback',
+        questionHistory: ['q-open-1'],
+        currentQuestionId: 'q-open-1',
+        questionCount: 1,
+        messageTurnCount: 1,
+      },
+      messages: [],
+      questions: [{ question: q1, format: 'open' }],
+      answers: { 'q-open-1': '我的回答' },
+      evaluations: { 'q-open-1': scored(50) },
+      questionCount: 1,
+      messageTurnCount: 1,
+      feedbackMode: 'immediate',
+    };
+
+    const resumeSession = rehydrateInterviewAgent(session, session.feedbackMode);
+    // 暂停态必须被还原，否则 UI 会显示一道「已答完却无法提交」的题
+    expect(resumeSession.status).toBe('awaiting_feedback');
+    expect(resumeSession.feedbackMode).toBe('immediate');
+
+    const res = await startChatInterview({
+      bank: [q1],
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      provider: fakeProvider(),
+      runtimeOverride: { streamFn: makeMockStreamFn([]), model: { id: 'mock' } as any },
+      resumeSession,
+    });
+    expect(res.awaitingFeedback).toBe(true);
+    expect(res.firstQuestion?.question.id).toBe('q-open-1');
+    expect(res.evaluation?.overall).toBe(50);
     res.controller.dispose();
   });
 });

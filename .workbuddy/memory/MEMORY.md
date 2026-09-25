@@ -117,3 +117,37 @@
    可天然规避；选项里出现拉丁词**不影响**该检查。
 另有 `checkKindContentMatch`：context 题干与 canonical 的 CJK-Dice 必须 <95（否则判没真加场景）。
 `reasoningGoal` 必须含「先…」+（再|然后|据此…）+（排除|逐项|验证|比较|甄别）三段信号。
+
+## Agent 运行时：给会话「加暂停点」的正确做法（2026-09-25）
+
+面试 Agent 有三条判分路径：选择题确定性 `gradeChoice`、降级 `evaluateSessionQuestion`、
+LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任何「评分后要发生的事」
+都不能写在工具里，必须收敛到共享内部缝 `afterEvaluation()`（`src/agent/interviewAgent.ts`）。
+写成工具副作用 = 选择题与降级路径静默失效。
+
+**暂停不能用 `agent.abort()`**：运行时按 `stopReason === 'aborted'` 归类为异常，
+打 `model_error` 遥测 + 用户看到「模型返回错误」，把正常产品行为伪装成故障。
+正确组合：`finishTurn` 返回 `{ action: 'end' }`（停在正常轮次边界）
++ `beforeToolCall` 拦掉等待期不该发生的工具调用。返回 `undefined` 而非
+`{ action: 'continue' }`，以免多一次 provider 请求。
+
+## pi-agent-core 0.87 破坏性变更（2026-09-25）
+
+工作区有未提交升级 0.85.1 → 0.87.1（`pi-agent-core` / `pi-ai`，包版本 1.1.2 → 1.2.1），
+它先一步弄坏了 HEAD 上的 `tsc`。**`shouldStopAfterTurn` / `ShouldStopAfterTurnContext` 被删除**
+（不是改名，`.d.ts` 里完全没有），继任者是 `finishTurn?: FinishTurn`，
+入参类型 `AgentTurnContext = { message; toolResults; context; newMessages }`，
+返回 `AgentTurnDecision = { action: 'continue' | 'end' }`（可返回 `void`）。
+副作用：`deepseek-v4-flash` 已从 DeepSeek 注册表移除，`src/ai/local.test.ts` 3 个用例失败——
+该 model id **只在测试里出现**（零运行时引用），要修只需换测试里的 id。
+
+## 测试：不要硬编码题号（2026-09-25）
+
+`pickNextAdaptive` 在同主题多题之间**随机**挑，`expect(...).toBe('q-choice-1')` 会偶发失败。
+断言相对关系：先取 `res.firstQuestion!.question.id`，再断言 `not.toBe(first)` 或与 `first` 相等。
+
+## 内存目录
+
+`.workbuddy/memory/` 是实际在维护的那份；`.workbuddy-ai/memory/` 停在 2026-09-03。
+新笔记写 `.workbuddy/memory/YYYY-MM-DD.md`。
+

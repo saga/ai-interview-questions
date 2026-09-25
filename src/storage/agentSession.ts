@@ -11,6 +11,10 @@ import { z } from 'zod';
 import { db, type StoredAgentSession } from './db';
 import { learnerProfileSchema } from '../schemas/learner';
 import { sessionAnswerSchema, sessionEvaluationSchema, sessionQuestionSchema } from '../schemas/session';
+import {
+  DEFAULT_INTERVIEW_FEEDBACK_MODE,
+  interviewFeedbackModeSchema,
+} from '../schemas/interview';
 import { recordLog } from './db';
 
 /**
@@ -29,6 +33,16 @@ const storedAgentSessionSchema = z.object({
     .object({
       id: z.string().min(1),
       status: z.string().min(1),
+      /**
+       * 逐题反馈模式。**必须显式声明**——passthrough 只能「保留」已有的键，
+       * 无法为旧版本写入的草稿（根本没有这个字段）补默认值；
+       * 不声明的话续面会读到 undefined，immediate 的暂停语义静默丢失。
+       *
+       * 用 `.catch` 而非 `.default`：`.default` 只在键缺失时生效，
+       * 若值本身非法（如未来版本写入的新模式名），整份草稿会被判非法而**丢弃**。
+       * 反馈模式是非关键字段，降级成 standard 远好于让用户丢掉整场面试。
+       */
+      feedbackMode: interviewFeedbackModeSchema.catch(DEFAULT_INTERVIEW_FEEDBACK_MODE),
       startedAt: z.number(),
       currentQuestion: sessionQuestionSchema.nullable(),
       answers: sessionAnswerSchema,

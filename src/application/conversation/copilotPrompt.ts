@@ -87,6 +87,15 @@ function renderAnswerContext(ctx: AnswerContext): string {
   } else {
     lines.push('评分诊断：该作答尚未评分（开放题需配置 AI 引擎）。');
   }
+  // 题目原文：Agent 面试的题不在 Copilot 自己的 session 里，不给题干它只能泛泛而谈。
+  // 截断到 300 字，避免长题干（含选项说明）挤占检索依据的上下文预算。
+  if (ctx.question?.question) {
+    lines.push(`被讲解的题目：${ctx.question.question.slice(0, 300)}`);
+  }
+  // 反馈节奏：immediate 下用户正在逐题消化，讲解应聚焦本题要点与偏差，而非急着推进度。
+  if (ctx.feedbackMode === 'immediate') {
+    lines.push('当前节奏：逐题反馈（用户每题评分后停留消化）。请聚焦本题的要点、偏差与正确思路，不要催促进入下一题。');
+  }
   lines.push('请结合上述作答与诊断，针对性讲解用户的理解偏差与正确思路（答案暴露程度遵循当前模式约束）。');
   return `用户作答与诊断（个性化教练依据）：\n${lines.join('\n')}`;
 }
