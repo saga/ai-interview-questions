@@ -32,7 +32,13 @@ const storedAgentSessionSchema = z.object({
   session: z
     .object({
       id: z.string().min(1),
-      status: z.string().min(1),
+      /**
+       * 会话状态。**必须收成 enum**，不能是 `z.string()`：
+       * 宽泛的字符串会把 `'foobar'` / 手改的任意值判为合法，续面时恢复出一个运行时
+       * 无法理解的状态（`AgentStatus` 只有三种），后续所有 `status === '...'` 判断全部落空，
+       * 表现为「草稿看起来能恢复、但行为莫名其妙」。收窄后坏状态直接走「安全丢弃」路径。
+       */
+      status: z.enum(['running', 'awaiting_feedback', 'finished']),
       /**
        * 逐题反馈模式。**必须显式声明**——passthrough 只能「保留」已有的键，
        * 无法为旧版本写入的草稿（根本没有这个字段）补默认值；

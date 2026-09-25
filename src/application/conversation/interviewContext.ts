@@ -1,12 +1,14 @@
 // 独立 Agent 面试 ↔ Copilot 侧栏的桥接上下文（纯类型 + 纯函数，不依赖 React）。
 //
-// 为什么需要它：Agent 面试的运行时状态由 App 层的 `useAgentInterview` 持有，
-// 与 Copilot 侧栏自己那份 `ConversationSession` 是**两个彼此独立的 runtime**。
-// 用户在 Agent 面试页点「让 Copilot 详细解释」时，Copilot 手里没有那场面试的作答与评分，
-// 只能靠调用方手拼一段 prompt 描述——那就是第二套上下文格式，必然与 AnswerContext 漂移。
+// 架构现状（ADR-084）：Agent 运行时**只有一份**，由 App 层的 `useAgentInterview` 持有，
+// 「Agent 面试」页与 Copilot 侧栏是同一场面试的两个视图，共享同一个 `InterviewAgentSession`。
+// Copilot 侧栏自己那份 `ConversationSession` 只保存它自己的 transcript / question-mode 状态，
+// **不**承载面试运行时（早期版本是两套独立 runtime，靠一个反馈对象互相同步，已在 ADR-084 合并）。
 //
-// 这里把它收敛成结构化对象：Agent 侧产出 `ActiveInterviewContext`，
-// Copilot 侧消费为既有的 `AnswerContext`（**唯一**上下文契约）。
+// 本模块的职责：把 Agent 侧当前的反馈投影成 Copilot 的 `AnswerContext`（**唯一**上下文契约），
+// 并在面试进行中派生出消息路由所需的 `ConversationContext`。
+// 用户在 Agent 面试页点「让 Copilot 详细解释」时，Copilot 手里没有那场面试的作答与评分，
+// 若不投影就只能靠调用方手拼一段 prompt 描述——那就是第二套上下文格式，必然与 AnswerContext 漂移。
 
 import type { AnswerValue } from '../../types';
 import type { EvaluationResult } from '../../schemas/evaluation';

@@ -1,6 +1,31 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-25 · 评审收口第二轮：暂停闸按状态冻结 + 侧栏重入闸 + 存储边界分级降级
+
+**修复（P0）**
+- **暂停闸只挡了「出题 / 重复评分」，漏了「结束面试」**。`beforeToolCall` 原先枚举 `getQuestion` / `evaluateAnswer` 两个工具名，而 `toolExecution: 'sequential'` 下**同一条 assistant 消息可以带多个 tool call**，且 `finishTurn` 只在**整轮工具全部执行完**之后才调用——模型一轮返回 `evaluateAnswer + finishInterview` 时，第二个工具无人看守，`session.status` 被从 `awaiting_feedback` 直接推到 `finished`：用户跳过反馈卡、直接看到「面试已结束」。改为 **`status === 'awaiting_feedback'` 时冻结全部工具**。理由不是「多挡一个」而是结构性的：暂停态下模型本就不该做任何动作，逐个列举工具名意味着**每新增一个工具都会重现同类漏洞**，而按状态冻结不会。新增回归用例锁死（修复前实测 `AssertionError: expected 'finished' to be 'awaiting_feedback'`）。
+
+**修复（P0/P1）**
+- **侧栏在 Agent 处理中仍可发起第二次动作**。`Sender` 的 `disabled` 字面写死为 `false`，`handleSend()` 也没有任何重入判断 → 「Agent 正在评分 + 侧栏发『下一题』」会把同一场会话推进两次（两个 UI 入口共用同一个 runtime，页面的按钮状态管不到侧栏）。两侧同时补：
+  - `useAgentInterview` 新增 `busyRef` 同步镜像与 `agentBusy()`，`submit` / `jumpToNextQuestion` 入口处直接 `return`。`busy` 是 React state，在事件回调里读到的是**本次渲染时**的旧值；点击发生在 `setState` 之后、重渲染之前的那段窗口必须靠 ref 才能覆盖。
+  - `Sender disabled={loading || submitting || continuing || interviewBusy}`。
+  - `handleSend` 加同源守卫。**两处刻意不加**：① `end_interview` 不拦——`finalize()` 会先 `abort()` 再收尾，它是用户主动中止的**逃生口**，拦掉等于把用户锁死在暂停态；② `continueAfterFeedback` **不**用 `busy` 拦——`awaiting_feedback` 是在 `afterEvaluation` 内部置的，而 `busy` 要到 `agent_end` 才清，按 `busy` 拦会把用户提交后立刻点的「继续」**无声吞掉**（幂等性已由 `continuingRef` + 运行时 `status !== 'awaiting_feedback'` 检查保证）。
+
+**修复（P1）**
+- **`finalize()` 不 await 异步 `onComplete`**。`onComplete` 是 IndexedDB 写入（Promise），同步调用会让写入失败变成 unhandled rejection，而 UI 已经显示「已保存」——用户以为存住了，其实没有。改为 `async finalize()` + `try/catch`（失败走 `setError`），两个调用点相应改 `void finalize()`。
+- **`agentSession.status` 由 `z.string().min(1)` 收成 enum**（`'running' | 'awaiting_feedback' | 'finished'`）。宽泛字符串会把手改的任意值判为合法，续面时恢复出一个运行时无法理解的状态，后续所有 `status === '...'` 判断全部落空，表现为「草稿看起来能恢复、但行为莫名其妙」。收窄后坏状态直接走既有的「安全丢弃」路径。（`getActiveAgentSession` 里的 `r?.session?.status !== 'finished'` 保持不变：拿宽值比 `'finished'` 失败方向是**偏保守**的，未知状态被当成可恢复。）
+- **Agent 面试页结束后，侧栏仍留着陈旧的 `ConversationSession`**。`CopilotSidebar` 监听 `phase: running → done` 的转换，清空侧栏会话 / 聊天题 / 上下文，并保留 `mode: 'interview'` + `endedAt`，让侧栏显示「面试已结束」而不是静默退回普通问答。
+
+**修复（P2）**
+- **`loadLearner()` 的会话行补 Zod 边界，且必须分级降级**。旧口径只查 `Array.isArray(row.questionResults)`，`{ questionResults: [{}] }` 能过 → `result.topic` 是 undefined 被写进 `topicPracticeSessions`，进度页与历史回放也会拿到形状不对的行。但**整行套 `sessionRecordSchema` 又会误伤**：该 schema 传递性地要求 `questionResults[].evaluation`（完整 `EvaluationResult`）与 `questions`（原题快照），而这些都是**历史回放才读**的字段，旧版本写下的形状可能过不了当前 schema——为一条过时快照丢掉用户整段历史，代价远大于「这条记录的回放退化成『分数 + 解析』视图」（`SessionReplayDrawer` 本就支持该降级）。故 `parseSessionRow` 三段式：严格 → 逐条摘掉不过的 `evaluation`（其余题目的评分照常保留）→ 整行摘掉 `questions` / `answers` → 仍不过才丢行。**核心字段不可用才丢行**，回放快照不可用只降级。新增用例锁住「核心字段损坏（`questionResults: [{}]`）→ 丢行」与「旧快照过时 → 不丢行、只降级」两侧。
+- **`interviewContext.ts` 顶部注释过期**：仍在描述「两个独立 runtime」，改为描述 ADR-084 落地后的单一 runtime 现状（侧栏只持自己的 transcript / 题目模式状态，本模块的职责是投影反馈到 `AnswerContext` + 派生路由上下文）。
+
+**复核后确认无需改动（评审稿第 4 项）**
+- `CONTINUE_PATTERN` **早在上一轮（ADR-083 收口）就已从前缀匹配改为整句匹配**，末尾保留指代填充（`跳过这道题`）/ 难度修饰（`下一题难一点`）/ 语气词的可选组，`CONTINUE_EXPLAIN_PATTERN` 亦已存在并保证「继续解释一下」落到 Copilot。本轮**未按评审稿给出的朴素 `$` 写法改动**——那会弄坏既有的 `detectCommand('下一题难一点')?.difficulty === 'hard'` 断言。
+
+**门禁**：`typecheck`（app + node 两份 config）通过；全量 **925 passed / 928**（3 项失败为工作区未提交的 `pi-ai` 依赖升级导致 `local.test.ts` 的 `deepseek-v4-flash` 引用失效，与本改动无关、零运行时引用）。本轮净增 2 例（暂停闸回归 + 会话行损坏丢行），均在修复前实测为红。
+
 ## 2026-09-25 · 逐题反馈收口：修 3 个 P0 + Agent/Copilot 合并为同一 runtime
 
 **修复（P0）**

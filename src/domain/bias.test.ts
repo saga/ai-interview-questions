@@ -29,18 +29,6 @@ describe('detectOptionLengthBias', () => {
     expect(r.severity).toBe('none');
   });
 
-  it('passes balanced options', () => {
-    const options = [
-      'FP16 每 1B 参数约 2GB 显存，9B 模型权重即 18GB 以上。',
-      'Q4_K_M 比 Q8_0 省约一半显存且精度损失极小。',
-      'Q8_0 是标量量化，不剪枝、不删除 Attention。',
-      '上下文上限由 Position Embedding 与 num_ctx 决定，量化不影响。',
-    ];
-    const r = detectOptionLengthBias(options, [0, 1]);
-    expect(r.biased).toBe(false);
-    expect(r.severity).toBe('none');
-  });
-
   it('skips when every option is correct (no distractors)', () => {
     const r = detectOptionLengthBias(['很长很长很长很长很长很长'.repeat(5), '短', '短'], [0, 1, 2]);
     expect(r.biased).toBe(false);

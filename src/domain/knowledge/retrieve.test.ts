@@ -137,16 +137,12 @@ describe('KnowledgeDocument 投影', () => {
 describe('答案安全模式（ADR-063 §7）', () => {
   const doc = questionDocument(questions[0]);
 
-  it('answer 模式可暴露解析与正确选项', () => {
-    const content = renderDocument(doc, 'answer');
-    expect(content).toContain('解析：');
-    expect(content).toContain('正确选项：');
-  });
-
-  it('explain 模式与 answer 同样暴露解析与正确选项（ADR-065）', () => {
-    const content = renderDocument(doc, 'explain');
-    expect(content).toContain('解析：');
-    expect(content).toContain('正确选项：');
+  it('answer / explain 模式暴露解析与正确选项（explain 于 ADR-065 并入）', () => {
+    for (const mode of ['answer', 'explain'] as const) {
+      const content = renderDocument(doc, mode);
+      expect(content).toContain('解析：');
+      expect(content).toContain('正确选项：');
+    }
   });
 
   it('hint 模式剥离真值，保留题干与误解', () => {

@@ -153,6 +153,14 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const interviewDone = agentInterview.phase === 'done';
   // 当前题：面试运行时用 Agent 会话的题；否则退回本侧栏自己的题（question 模式）。
   const activeInterviewQuestion = interviewRunning ? agentInterview.currentQuestion : null;
+  /**
+   * 面试运行时正在处理（提交 / 继续 / Agent 自主出题与评分）。
+   *
+   * 侧栏必须自己判一次：「Agent 面试」页与侧栏**可以同屏**，两边各有输入框与按钮，
+   * 一个入口的 disabled 拦不住另一个。典型竞态是「Agent 正在评分 + 侧栏发『下一题』」——
+   * 后者会并发改 session.currentQuestion。此处既禁用 Sender，也在 handleSend 里做代码层兜底。
+   */
+  const interviewBusy = interviewRunning && agentInterview.busy;
 
   // Persist context + messages together (P1-1)
   useEffect(() => {
@@ -161,6 +169,27 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   useEffect(() => {
     if (convSession) saveConversationSession(convSession);
   }, [convSession]);
+
+  /**
+   * 「Agent 面试」页自己收尾时，侧栏这份 ConversationSession 也必须一起结束。
+   *
+   * 面试的**运行时**是共享的（App 层 useAgentInterview），但 ConversationSession 是侧栏自己那份
+   * transcript / question-mode 状态。用户从独立 Agent 页点「结束面试」时，这条路径不经过侧栏的
+   * end_interview 分支，于是 convSession 会留着 mode='interview' 与上一场的题目；下一次从侧栏
+   * 开新面试时 `ensureSession` 直接复用它，两场面试的 transcript 就混进了同一条记录。
+   */
+  const previousAgentPhaseRef = useRef(agentInterview.phase);
+  useEffect(() => {
+    const previous = previousAgentPhaseRef.current;
+    const current = agentInterview.phase;
+    previousAgentPhaseRef.current = current;
+    if (previous !== 'running' || current !== 'done') return;
+    setConvSession(null);
+    clearConversationSession();
+    setChatQuestion(null);
+    // 保留「上一场已结束」标记，让用户明确自己已不在原面试中（与 end_interview 分支同口径）。
+    setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
+  }, [agentInterview.phase]);
 
   useEffect(() => { if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }, [messages, loading]);
   useEffect(() => {
@@ -495,6 +524,16 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       const channel = opts.asCopilot
         ? ({ kind: 'copilot' } as const)
         : routeUserMessage(content, routingContext, routingQuestion);
+      // Agent 仍在跑时，任何会改动会话的通道都必须让路。
+      // 例外是「结束」命令：它是用户主动中止的逃生口（finalize 会先 abort 再收尾），不该被卡住。
+      // Sender 的 disabled 只是第一道闸——快捷键、按钮、以及 Agent 面试页桥接来的载荷都可能绕过它。
+      if (
+        interviewBusy &&
+        (channel.kind === 'answer' || (channel.kind === 'command' && channel.command.kind !== 'end_interview'))
+      ) {
+        appendAssistant('面试官还在处理上一题，请稍候再试。');
+        return;
+      }
       if (channel.kind === 'command') {
         await handleCommand(channel.command, { nextMessages, provider });
         return;
@@ -653,7 +692,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           {convSession && convSession.questions.length>0 && (<Button size="small" onClick={() => handleSend('结束')}>结束训练</Button>)}
         </Flex>
         <div style={{ padding: 12, borderTop: '1px solid #f0f0f0' }}>
-          <Sender value={input} onChange={setInput} onSubmit={() => handleSend(input)} loading={loading} placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '可先说“给我出一道题”；普通问答需配置 AI…'} disabled={false} />
+          <Sender value={input} onChange={setInput} onSubmit={() => handleSend(input)} loading={loading} placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '可先说“给我出一道题”；普通问答需配置 AI…'} disabled={loading || agentInterview.submitting || agentInterview.continuing || interviewBusy} />
         </div>
       </>)}
       </div>

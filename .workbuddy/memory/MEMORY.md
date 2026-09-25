@@ -162,8 +162,16 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 **去脆化**：需要比对内容时与**来源函数**同源比对（`expect(fb.keyPoints).toEqual(requiredPointsFor(q))`），
 不要硬编码文案——文案改词不该弄坏测试。
 
-**瘦身时的反面清单**（看着像重复、其实要留）：只断言 `.ok === false` 的一组用例后面，
-往往跟着唯一断言各错误码的那一条；不同字段（`evaluations` vs `answers`）驱动的同名行为不能合。
+**瘦身时的反面清单**（看着像重复、其实要留）：
+- 只断言 `.ok === false` 的一组用例后面，往往跟着唯一断言各错误码的那一条；
+- 不同字段（`evaluations` vs `answers`）驱动的同名行为不能合；
+- **断言相反 ≠ 逻辑互补**。`reasoningPath.ts` 的 `isReasoningPathSubstantiallyDifferent`
+  与 `isReasoningPathTooSimilar` 用例一一对应且结果相反，但签名与算法都不同
+  （单阈值看 `reasoningGoal` vs 双阈值看 target+goal）。**删之前必须读实现。**
+
+**机械可查的重复已经捞干**：按括号配平切 `it` body、抽 `expect(` 行做集合、同文件内两两算 Jaccard，
+阈值 ≥0.45 且交集 ≥3 全部人工过完，剩下的都是误报（共用 `dimensions.correctness` 这类通用断言行）。
+再往下就是主观判断，不要指望脚本。
 
 ## ★ 运行时状态 ≠ UI 投影（2026-09-25，三个 P0 的共同根因）
 
@@ -195,16 +203,63 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 **另一个坑**：面试中路由上下文必须由共享会话派生（`interviewRoutingContext()`），
 否则 `shouldSubmitAsAnswer` 判定「无待作答题」→ 用户输入的「A」被当成提问 → **面试卡死**。
 
-## 存储读取：按「解引用了哪些字段」决定校验强度（2026-09-25）
+## 存储读取：按「该字段被谁消费」决定校验强度（2026-09-25，同日修正）
 
 `storage/learner.ts` 的注释早写了「IndexedDB 是不可信边界」，但代码没校验。补的时候踩了两个坑：
 
 - **learner 行**：损坏 → 退回 `emptyProfile()`（而不是抛异常，那会让「进度」页白屏）。
   必须**先校验再遍历**，否则 `Object.entries(rest.topicStats)` 在字段缺失时直接抛。
-- **session 行**：**只做最小形状检查**（`Array.isArray(row.questionResults)`），
-  **刻意不套完整 `sessionRecordSchema`**。我第一次写成完整校验，直接弄坏了已有端到端测试——
-  旧记录的 `questions` 快照形状过时，完整校验会**整条丢弃用户历史**，
-  代价远大于「某条旧记录少几个可选字段」。与 `storedAgentSessionSchema` 的口径一致。
+- **session 行**：**分级降级，不是「要么全信要么整条丢」**。见下。
+
+### session 行：`parseSessionRow` 三段式（修正早前「只做最小形状检查」的结论）
+
+旧口径只查 `Array.isArray(row.questionResults)` ⇒ `{ questionResults: [{}] }` 能过 ⇒
+`result.topic` 是 undefined 被写进 `topicPracticeSessions`，脏形状流进进度页与历史回放。
+但**整行套 `sessionRecordSchema` 也会误伤**：该 schema 传递性要求
+`questionResults[].evaluation`（完整 `EvaluationResult`）与 `questions`（原题快照），
+而这些都是**历史回放才读**的字段——旧版本写下的形状可能过不了当前 schema，
+严格校验会**整条丢弃用户历史**（我第一次这么写就弄坏了 `sessionFromQuiz → … → load` 端到端测试）。
+
+正确口径三段式：严格 → 逐条摘掉不过的 `evaluation`（其余题目评分保留）
+→ 整行摘掉 `questions` / `answers` → 仍不过才丢行。
+
+**判据是「该字段被谁消费」**：
+- 核心字段（`overall` / `questionResults` 骨架）被**进度聚合**消费 → 坏了必须丢行；
+- 回放快照只在 `SessionReplayDrawer` 读 → 坏了只降级（该组件本就支持退化成「分数 + 解析」视图）。
+
+「不可信边界」不等于「全部严格」，也不等于「只做最小检查」——要按消费方分级。
+
+## ★ 守卫按「状态」冻结，不要按「工具名」枚举（2026-09-25，ADR-085）
+
+`src/agent/interviewAgent.ts` 的 `beforeToolCall` 曾在 `awaiting_feedback` 下只拦
+`getQuestion` / `evaluateAnswer`。但 `toolExecution: 'sequential'` ⇒ **同一条 assistant 消息
+可带多个 tool call**，而 `finishTurn` 只在**整轮工具全部执行完**之后才调用 ⇒ 模型一轮返回
+`evaluateAnswer + finishInterview` 时第二个工具无人看守，状态被从 `awaiting_feedback`
+直接推到 `finished`，用户跳过反馈卡。
+
+**改法是 `if (session.status === 'awaiting_feedback') return { block: true }`，不判断工具名。**
+黑名单式守卫的维护成本随被守卫集合增长，按状态冻结不会——下次新增工具不会重现同类漏洞。
+
+## ★ 两个 UI 入口共用 runtime：重入闸用 ref，且要留逃生口（2026-09-25）
+
+- **`busy` 是 React state，事件回调里读到的是本次渲染时的旧值**，覆盖不了「点击发生在
+  setState 之后、重渲染之前」的窗口。`useAgentInterview` 用 `busyRef` 同步镜像（写入统一走
+  `setBusyBoth`），暴露 `agentBusy()` 给 `submit` / `jumpToNextQuestion` 入口 `return`。
+- **UI 的 `disabled` 只是提示，不是契约**（`Sender` 的曾写成字面量 `false`）。两层都要做。
+- **加「忙判断」前先问：这个忙碌标志与我要保护的状态，生命周期是否一致。** 不一致时忙判断
+  不是保护，是丢事件：
+  - `end_interview` **不能拦**——`finalize()` 会先 `abort()`，它是用户主动中止的逃生口；
+  - `continueAfterFeedback` **不能用 `busy` 拦**——`awaiting_feedback` 在 `afterEvaluation`
+    **内部**置，而 `busy` 要到 `agent_end` 才清，拦了会把提交后立刻点的「继续」**无声吞掉**。
+- **`finalize()` 必须 `await onComplete`**（IndexedDB 写入是 Promise）。同步调用会让失败变成
+  unhandled rejection，而 UI 已显示「已保存」——**「假成功」比直接报错更糟**。
+
+## 评审稿不是事实（2026-09-25）
+
+外部评审稿给的文件路径与代码片段是**线索**。第 4 项称 `CONTINUE_PATTERN` 仍是前缀匹配并建议加
+`$`，但它**早在 ADR-083 收口时就已是整句匹配**（末尾保留指代填充 / 难度修饰 / 语气词的可选组），
+按稿子的朴素 `$` 写法改会弄坏 `detectCommand('下一题难一点')?.difficulty === 'hard'`。
+**落地前必须回文件核对；不一致时要报告差异，而不是照稿执行。**
 
 ## 内存目录
 

@@ -8,7 +8,7 @@
 // 边界：IndexedDB 同样是不可信边界，读出的数据仍需经 Zod 形状校验（沿用 schemas/learner 的校验）。
 
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
-import { learnerProfileSchema } from '../schemas/learner';
+import { learnerProfileSchema, questionResultSchema, sessionRecordSchema } from '../schemas/learner';
 import type { ProficiencyConfig } from '../schemas/ai-config';
 import { calculateProficiency, emptyProfile, recommendWeakTopics } from '../domain/learner';
 import { db, topicsOfSession, type StoredLearner, type StoredSession } from './db';
@@ -23,6 +23,40 @@ function toStoredLearner(p: LearnerProfile): StoredLearner {
 
 function toStoredSession(s: LearnerProfile['sessions'][number]): StoredSession {
   return { ...s, topics: topicsOfSession(s) };
+}
+
+/**
+ * 会话行的读取边界：**聚合字段严格、回放快照降级**。
+ *
+ * 为什么不能只做 `Array.isArray(questionResults)`（旧口径）：`{ questionResults: [{}] }` 能过，
+ * 于是 `result.topic` 是 undefined 被写进 topicPracticeSessions，进度页与历史回放也会拿到一堆
+ * 形状不对的行——脏数据一路流进运行时。
+ *
+ * 为什么也不能整行 `sessionRecordSchema.parse`：回放快照（`questions` 原题快照、`answers` 作答、
+ * 每条 `questionResults.evaluation` 完整评分）都只在「历史回放」时被读，而旧版本写下的形状可能
+ * 过不了当前 schema。为一条过时快照丢掉用户整段历史，代价远大于「这条记录的回放退化成
+ * 『分数 + 解析』视图」（SessionReplayDrawer 本就支持该降级）。
+ *
+ * 故分两段：核心字段严格（不过就丢行）；仅回放快照不过则逐项摘掉该字段、保留行。
+ */
+function parseSessionRow(raw: unknown): SessionRecord | null {
+  const strict = sessionRecordSchema.safeParse(raw);
+  if (strict.success) return strict.data;
+
+  const { questions: _q, answers: _a, questionResults, ...core } = (raw ?? {}) as Record<string, unknown>;
+  const relaxed = sessionRecordSchema.safeParse({
+    ...core,
+    // 逐条降级：只摘掉那条不过的 evaluation，其它题目的评分照常保留。
+    questionResults: Array.isArray(questionResults)
+      ? questionResults.map((qr) => {
+          const item = (qr ?? {}) as Record<string, unknown>;
+          if (questionResultSchema.safeParse(item).success) return item;
+          const { evaluation: _e, ...withoutReplay } = item;
+          return withoutReplay;
+        })
+      : questionResults,
+  });
+  return relaxed.success ? relaxed.data : null;
 }
 
 /** 从 Dexie 重组完整 LearnerProfile；空库返回 emptyProfile。 */
@@ -40,13 +74,10 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
   const { sessions: _placeholder, ...safe } = base.data;
 
   const sessionRows = await db.sessions.orderBy('startedAt').reverse().toArray();
-  // 会话行**刻意不套完整 schema**：`sessionRecordSchema` 要求 questions 快照等字段齐全，
-  // 而旧版本写下的记录可能不符合当前形状——一条不匹配就丢掉用户整段历史，代价远大于
-  // 「某条旧记录少几个可选字段」。这里只做「不炸」所需的最小形状检查
-  // （questionResults 缺失时下面的遍历会抛），与 agentSession 的读取口径一致。
+  // 逐行过 schema 边界（见 parseSessionRow 的两段式取舍）：坏行丢掉、快照过时的行保留。
   const sessions = sessionRows
-    .filter((row) => Array.isArray(row?.questionResults))
-    .map(({ topics: _t, ...s }) => s);
+    .map(parseSessionRow)
+    .filter((s): s is SessionRecord => s !== null);
 
   const topicPracticeSessions = new Map<string, number>();
   for (const session of sessions) {

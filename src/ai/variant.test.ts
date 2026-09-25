@@ -91,31 +91,33 @@ describe('generateVariant（轻量变体）', () => {
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
-  it('LLM 输出的 answer 被丢弃（产物只含 question/options）', async () => {
-    const complete: CompleteFn = vi.fn(async () =>
+  // toGeneratedVariant 是白名单：模型回吐什么额外字段都只保留 question/options。
+  it('LLM 输出的 answer / explanation 被丢弃（产物只含 question/options）', async () => {
+    const withAnswer: CompleteFn = vi.fn(async () =>
       JSON.stringify({
         question: 'L2 正则化的新问法',
         options: ['A', 'B', 'C', 'D'],
         answer: [3],
       }),
     );
-    const out = await generateVariant(BASE, complete);
-    // 即使模型回吐 answer，toGeneratedVariant 也只保留 question/options。
-    expect(out).toEqual({ question: 'L2 正则化的新问法', options: ['A', 'B', 'C', 'D'] });
-    expect(complete).toHaveBeenCalledTimes(1);
-  });
+    expect(await generateVariant(BASE, withAnswer)).toEqual({
+      question: 'L2 正则化的新问法',
+      options: ['A', 'B', 'C', 'D'],
+    });
+    expect(withAnswer).toHaveBeenCalledTimes(1);
 
-  it('LLM 输出的 explanation 被丢弃（产物只含 question/options）', async () => {
-    const complete: CompleteFn = vi.fn(async () =>
+    const withExplanation: CompleteFn = vi.fn(async () =>
       JSON.stringify({
         question: 'L2 正则化的另一种问法',
         options: ['A', 'B', 'C', 'D'],
         explanation: '模型自作主张写的解析',
       }),
     );
-    const out = await generateVariant(BASE, complete, 'choice');
-    expect(out).toEqual({ question: 'L2 正则化的另一种问法', options: ['A', 'B', 'C', 'D'] });
-    expect(complete).toHaveBeenCalledTimes(1);
+    expect(await generateVariant(BASE, withExplanation, 'choice')).toEqual({
+      question: 'L2 正则化的另一种问法',
+      options: ['A', 'B', 'C', 'D'],
+    });
+    expect(withExplanation).toHaveBeenCalledTimes(1);
   });
 
   it('用户提示词不携带答案/解析（安全边界）', async () => {
@@ -160,18 +162,16 @@ describe('VARIANT_SYSTEM v7（ADR-080/081：Relax generation, not invariants）'
     expect(VARIANT_SYSTEM).toContain('不得将两个选项的语义角色互换');
   });
 
-  it('放宽生成自由度：场景/背景/槽内表达结构', () => {
+  // ADR-081「放宽生成，不放宽不变量」的三条放宽条款，属同一决策，一并锁住。
+  it('放宽生成自由度：场景/槽内表达自由、不强制关键词、背景术语无数字配额', () => {
+    // ① 场景与槽内结构可改
     expect(VARIANT_SYSTEM).toContain('改变场景、角色、问题入口和约束表达');
     expect(VARIANT_SYSTEM).toContain('解题必需');
     expect(VARIANT_SYSTEM).toContain('允许改变单个选项内部的表达结构');
-  });
-
-  it('不强制保留关键词：允许自然语言重述结论', () => {
+    // ② 结论可用自然语言重述，不再强制保留关键词
     expect(VARIANT_SYSTEM).toContain('允许用不同的自然语言表达');
     expect(VARIANT_SYSTEM).not.toContain('仍须保留原选项的结论关键词');
-  });
-
-  it('背景术语无数字配额：只禁解题依赖', () => {
+    // ③ 背景术语不设数字配额，只禁引入新的解题依赖
     expect(VARIANT_SYSTEM).toContain('不得引入新的解题依赖知识');
     expect(VARIANT_SYSTEM).not.toContain('不超过 2 个');
   });

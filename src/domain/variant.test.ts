@@ -117,27 +117,24 @@ describe('validateVariant（结构不变量）', () => {
 // 字面锚点只能证明「题干仍与主题相关」，无法证明语义等价；而变体安全并不依赖它——
 // answer / explanation 恒取 canonical，变体改歪也不会判错题。降级后不再误杀换场景的合法变体。
 describe('validateVariant（漂移软信号：仅 warning，不阻断）', () => {
-  it('完全丢失 topic/tags/required 证据 → 通过，但带 warning', () => {
-    const check = validateVariant(cq, variant({ question: '在 CNN 训练中 BatchNorm 为什么不稳定？' }));
-    expect(check.ok).toBe(true);
-    expect(check.warning).toBe(STEM_ANCHOR_WARNING);
+  it('题干丢失字面锚点 → 通过但带 warning（不再拒稿）', () => {
+    // 两种都无锚点可命中：① 完全不相关的领域；②「换场景」的合法好变体——
+    // 后者（「为什么 KV Cache 能降低 prefill 成本？」→「前缀高度重复却仍重复前向计算，如何降低开销？」）
+    // 第四轮会被拒（走 fallback 原题），第五轮起只记 warning。
+    for (const question of [
+      '在 CNN 训练中 BatchNorm 为什么不稳定？',
+      '某在线服务发现输入前缀高度重复却仍重复相同计算，如何降低开销？',
+    ]) {
+      const check = validateVariant(cq, variant({ question }));
+      expect(check.ok).toBe(true);
+      expect(check.warning).toBe(STEM_ANCHOR_WARNING);
+    }
   });
 
   it('锚点命中 → 通过且无 warning（不再强制 requiredConcepts 2/3 字面覆盖）', () => {
     const check = validateVariant(cq, variant({ question: 'regularization 的本质是什么？' }));
     expect(check.ok).toBe(true);
     expect(check.warning).toBeUndefined();
-  });
-
-  it('修复已知误杀：换场景的合法变体现在被采用，只记 warning', () => {
-    // 「为什么 KV Cache 能降低 prefill 成本？」→「某服务前缀高度重复却仍重复前向计算，如何降低开销？」
-    // 是合法的好变体，但题干无锚点可命中——第四轮会拒（走 fallback 原题），第五轮起只记 warning。
-    const check = validateVariant(
-      cq,
-      variant({ question: '某在线服务发现输入前缀高度重复却仍重复相同计算，如何降低开销？' }),
-    );
-    expect(check.ok).toBe(true);
-    expect(check.warning).toBe(STEM_ANCHOR_WARNING);
   });
 
   it('证据面仍只看题干：概念只出现在选项里 → 记 warning（不阻断）', () => {
@@ -491,15 +488,6 @@ describe('findNearDuplicateVariants（变体间近重复）', () => {
     '从任务成功率、轨迹有效性与工具调用准确率等维度构建评测集做统计化评估，并针对规划偏差、工具误用等失败模式配套缓解手段',
   ];
 
-  it('题干改得很彻底但选项照抄 → 仍判近重复（池子 79 对的成因）', () => {
-    const pairs = findNearDuplicateVariants([
-      { question: '评估一个 AI Agent 是否可靠，应从哪些维度切入？', options: REAL_OPTS },
-      { question: '你正为团队客服 Agent 设计上线前质量保障方案，负责人要求先说清怎样判断可靠', options: REAL_OPTS },
-    ]);
-    expect(pairs).toHaveLength(1);
-    expect(pairs[0].ratio).toBeGreaterThanOrEqual(VARIANT_DUP_THRESHOLD);
-  });
-
   it('选项做了重述改写（真正多样化）→ 不判近重复（根治的可行解）', () => {
     const pairs = findNearDuplicateVariants([
       { question: '评估一个 AI Agent 是否可靠，应从哪些维度切入？', options: REAL_OPTS },
@@ -516,13 +504,23 @@ describe('findNearDuplicateVariants（变体间近重复）', () => {
     expect(pairs).toHaveLength(0);
   });
 
-  it('选项仅轻改（同义替换，未真正多样化）→ 仍判近重复（轻改不足以逃出门禁）', () => {
-    // 校准：轻改选项级 CJK Dice ≈91，超过阈值 88 → 仍判近重复。
-    // 根治单题双变体选项雷同要求选项被「重述」而非「轻改」。
+  // 池子实测 79 对近重复的成因：题干在整体指纹里只占约 1/11 权重（见 REAL_OPTS 注释），
+  // 故只要选项「照抄」或「仅轻改」，题干改得再彻底都拉不动相似度。
+  it('选项照抄 / 仅轻改 → 仍判近重复（轻改不足以逃出门禁，须「重述」）', () => {
+    const q1 = '评估一个 AI Agent 是否可靠，应从哪些维度切入？';
+    const q2 = '你正为团队客服 Agent 设计上线前质量保障方案，负责人要求先说清怎样判断可靠';
+    // ① 选项照抄（相似度 100）
+    expect(
+      findNearDuplicateVariants([
+        { question: q1, options: REAL_OPTS },
+        { question: q2, options: REAL_OPTS },
+      ]),
+    ).toHaveLength(1);
+    // ② 选项仅轻改（同义替换）：选项级 CJK Dice ≈91，仍高于阈值 88
     const pairs = findNearDuplicateVariants([
-      { question: '评估一个 AI Agent 是否可靠，应从哪些维度切入？', options: REAL_OPTS },
+      { question: q1, options: REAL_OPTS },
       {
-        question: '你正为团队客服 Agent 设计上线前质量保障方案，负责人要求先说清怎样判断可靠',
+        question: q2,
         options: [
           '只评估最终回答的流畅度与格式规范度，中间轨迹与工具调用过程不用纳入，终端用户只感知最终输出',
           '做一轮小样本人工抽测，全部通过就认定系统可靠，无需再建评测集回归，长尾问题交给线上监控兜底',

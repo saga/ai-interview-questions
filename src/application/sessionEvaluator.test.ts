@@ -302,23 +302,17 @@ describe('finalizeQuestion 双模式 Pool-first + Runtime fallback', () => {
     expect(out.question.cognitiveTask).toBe('explain');
   });
 
-  it('Pool miss + 开关关（默认）→ 零 LLM 回退原题，不调用 provider', async () => {
-    const sq = { question: choiceQuestion, format: 'choice' as const };
-    const gen = vi.fn(async () => ({ question: '不应被调用', options: ['x', 'y'] }));
-    const p = { ...provider, generateVariant: gen as never };
-    const out = await finalizeQuestion(sq, p, { variantPool: null, runtimeVariantEnabled: false });
-    expect(gen).not.toHaveBeenCalled();
-    expect(out).toBe(sq);
-  });
-
-  it('Pool miss + 开关关 + 即使有 provider 也不生成（开关优先）', async () => {
+  it('Pool miss + 开关关（默认）→ 零 LLM 回退原题：无池 / 池 miss 都不调用 provider', async () => {
     const sq = { question: choiceQuestion, format: 'choice' as const };
     const gen = vi.fn(async () => ({ question: '不应被调用', options: ['x', 'y'] }));
     const p = { ...provider, generateVariant: gen as never };
     const emptyPool: VariantPool = { version: 1, generatedAt: 0, promptVersion: 'v3', variants: {} };
-    const out = await finalizeQuestion(sq, p, { variantPool: emptyPool, runtimeVariantEnabled: false });
+    // 无池
+    expect(await finalizeQuestion(sq, p, { variantPool: null, runtimeVariantEnabled: false })).toBe(sq);
+    // 有池但该题 miss
+    expect(await finalizeQuestion(sq, p, { variantPool: emptyPool, runtimeVariantEnabled: false })).toBe(sq);
+    // 开关优先：即便 provider 可用也一次都不生成
     expect(gen).not.toHaveBeenCalled();
-    expect(out).toBe(sq);
   });
 
   it('Pool miss + 开关开 + provider → 1 次 LLM 运行时生成', async () => {

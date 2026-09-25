@@ -89,10 +89,15 @@ export function shouldStopAfterTurn(
 
 /**
  * 工具调用守卫。
- * 1. 暂停闸：immediate 模式下已停在反馈上时，冻结「出题」与「重复评分」。
+ * 1. 暂停闸：immediate 模式下已停在反馈上时，**冻结全部工具**。
  *    必须挡在工具层——`finishTurn` 只在**整轮工具全部执行完**后才调用，
  *    若模型在同一条 assistant 消息里先调 evaluateAnswer 再调 getQuestion（toolExecution 为
  *    sequential，按序执行），没有这道闸就会在展示反馈前把题目换掉。
+ *
+ *    为什么是「全部」而不是逐个列举危险工具：同一轮里模型还可能返回
+ *    `evaluateAnswer + finishInterview`，把状态从 awaiting_feedback 直接推到 finished——
+ *    用户跳过反馈卡、直接看到「面试已结束」。逐个列举（哪怕只漏一个）会在每次新增工具时
+ *    重现同类漏洞，而暂停态下模型本来就不该做任何动作，故按状态整体冻结。
  * 2. 引擎闸：开放题评估需要 LLM，若引擎配置无效（无 key / 未启用）则拦截，
  *    避免运行时在无 key 情况下崩溃；选择题确定性判分不受影响。
  */
@@ -101,13 +106,10 @@ export function beforeToolCall(
   session: InterviewAgentSession,
   ctx: BeforeToolCallContext,
 ): BeforeToolCallResult | undefined {
-  if (
-    session.status === 'awaiting_feedback' &&
-    (ctx.toolCall.name === 'getQuestion' || ctx.toolCall.name === 'evaluateAnswer')
-  ) {
+  if (session.status === 'awaiting_feedback') {
     return {
       block: true,
-      reason: '已停在本题反馈上，等待用户确认「继续」后再决定下一题，请勿提前出题或重复评分。',
+      reason: '当前已停在本题反馈上，等待用户确认「继续」后才能进行下一步操作。',
     };
   }
   if (ctx.toolCall.name === 'evaluateAnswer') {

@@ -176,9 +176,10 @@ describe('storage/learner (IndexedDB)', () => {
       expect(loaded.sessions.map((s) => s.id)).toEqual(['good']);
     });
 
-    it('旧记录的 questions 快照不符合当前 schema 时**不丢行**（只做最小形状检查）', async () => {
-      // 这是刻意的宽松口径：完整 schema 校验会因「旧记录形状过时」整条丢弃用户历史，
-      // 代价远大于「某条旧记录少几个可选字段」。
+    it('旧记录的 questions 快照不符合当前 schema 时**不丢行**（只降级掉快照）', async () => {
+      // 两段式口径：核心字段（id/startedAt/title/overall/questionResults）严格，
+      // 回放快照（questions/answers）过不了当前 schema 时只摘掉该字段——为一条过时快照
+      // 丢掉用户整段历史，代价远大于「这条记录的回放退化成『分数 + 解析』视图」。
       const profile = updateLearner(emptyProfile(), mkRecord({ id: 'legacy', startedAt: 1 }));
       await saveLearner(profile);
       await db.sessions.put({
@@ -193,6 +194,29 @@ describe('storage/learner (IndexedDB)', () => {
 
       const loaded = await loadLearner();
       expect(loaded.sessions.map((s) => s.id)).toEqual(['legacy']);
+      // 快照被摘掉（而非保留一个坏形状给回放组件去崩）
+      expect(loaded.sessions[0].questions).toBeUndefined();
+      // 核心字段完好，聚合照常
+      expect(loaded.sessions[0].overall).toBe(90);
+    });
+
+    it('单条 session 行核心字段不可用（questionResults 里是空对象）→ 丢掉该行', async () => {
+      // 修复前：只查 Array.isArray，`{}` 能过，于是 `result.topic` 的 undefined 会被写进
+      // topicPracticeSessions，进度页 / 历史回放也会拿到形状不对的行。
+      const profile = updateLearner(emptyProfile(), mkRecord({ id: 'good', startedAt: 1 }));
+      await saveLearner(profile);
+      await db.sessions.put({
+        id: 'junk',
+        startedAt: 2,
+        title: 'x',
+        overall: 1,
+        questionResults: [{}],
+      } as never);
+
+      const loaded = await loadLearner();
+      expect(loaded.sessions.map((s) => s.id)).toEqual(['good']);
+      // 脏 topic 不得进入练习场次统计
+      expect(Object.keys(loaded.topicStats).sort()).toEqual(['moe', 'transformer']);
     });
   });
 });

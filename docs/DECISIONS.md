@@ -2,6 +2,28 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-085 · 守卫按状态冻结而非按工具名枚举；存储边界分级降级
+
+- 状态：已采纳 · 2026-09-25
+- 背景：ADR-083/084 落地后的一次外部评审又捞出一批问题，其中两个是结构性的（不是「少挡了一个工具」这种个案）：
+  1. **暂停闸用工具名枚举，注定漏**。`beforeToolCall` 在 `awaiting_feedback` 下只拦 `getQuestion` / `evaluateAnswer`。但 `toolExecution: 'sequential'` 意味着**同一条 assistant 消息可以携带多个 tool call**，而 `finishTurn` 只在**整轮工具全部执行完**之后才被调用。于是模型一轮返回 `evaluateAnswer + finishInterview` 时，`evaluateAnswer` 把状态置为 `awaiting_feedback`、`finishInterview` 紧随其后无人看守，直接把 `session.status` 推到 `finished`——用户跳过反馈卡、直接看到「面试已结束」。这类 bug 的**修复动作**若停留在「把 `finishInterview` 也加进黑名单」，那么下一次新增工具（`skipQuestion`、`requestHint`……）会**原样重现**。
+  2. **两个 UI 入口共用 runtime，但重入闸只做在 UI 的 `disabled` 上**。Agent 面试页与 Copilot 侧栏可以同屏，各自有自己的按钮；`Sender` 的 `disabled` 当时还是字面量 `false`。UI 的 `disabled` 只是「提示」，不是「契约」——事件回调仍可被触发。
+  另有一处存储边界问题：`loadLearner()` 的会话行只做 `Array.isArray(questionResults)` 检查，`{ questionResults: [{}] }` 能过，脏形状一路流进 `topicPracticeSessions` 与历史回放。
+- 决策：
+  1. **暂停闸按状态整体冻结**：`if (session.status === 'awaiting_feedback') return { block: true, … }`，不再判断 `ctx.toolCall.name`。判据是**状态语义**而非工具清单——暂停态下模型本就不该做任何动作，所以「全部冻结」既是最严格的守卫，也是唯一**不需要随工具集演进而维护**的守卫。新增回归用例锁死「同一轮里的 `finishInterview` 也必须被拦」。
+  2. **重入闸做成 ref，并且必须在事件回调里能读到当下值**：`useAgentInterview` 新增 `busyRef` 作 `busy` 的同步镜像（所有写入统一走 `setBusyBoth`），暴露 `agentBusy()` 供 `submit` / `jumpToNextQuestion` 在入口处 `return`。`busy` 是 React state，事件回调里读它拿到的是**本次渲染时**的旧值，覆盖不了「点击发生在 setState 之后、重渲染之前」的窗口。UI 侧（`Sender disabled` + `handleSend` 守卫）是第二道，不是唯一一道。
+  3. **重入闸要留逃生口，且不能拦在错的时机上**：① `end_interview` **不拦**——`finalize()` 会先 `abort()` 再收尾，它是用户主动中止的逃生口，拦掉等于把用户锁死在暂停态；② `continueAfterFeedback` **不用 `busy` 拦**——`awaiting_feedback` 是在 `afterEvaluation` **内部**置的，而 `busy` 要到 `agent_end` 才清，按 `busy` 拦会把用户提交后立刻点的「继续」**无声吞掉**。它的幂等性由 `continuingRef` + 运行时 `status !== 'awaiting_feedback'` 检查保证，不需要额外的忙判断。
+  4. **收尾落库必须 `await`**：`finalize()` 改 async，`onComplete(record)` 被 `await` 并包 `try/catch`。`onComplete` 是 IndexedDB 写入（Promise），同步调用会让失败变成 unhandled rejection，而 UI 已经显示「已保存」——**用户以为存住了，其实没有**。这类「假成功」比直接报错更糟。
+  5. **持久化契约里的枚举值收成 `z.enum`**：`storedAgentSessionSchema.session.status` 由 `z.string().min(1)` 收成 `'running' | 'awaiting_feedback' | 'finished'`。宽泛字符串会把手改的任意值判为合法，续面时恢复出运行时无法理解的状态，后续所有 `status === '...'` 判断全部落空，症状是「草稿看起来能恢复、但行为莫名其妙」。收窄后坏状态走既有的「安全丢弃」路径。**不**连带改 `getActiveAgentSession` 的 `r?.session?.status !== 'finished'`：拿宽值比 `'finished'` 的失败方向是**偏保守**的（未知状态被当成可恢复），改它没有收益。
+  6. **存储边界分级降级，而不是「要么全信要么整条丢」**：`storage/learner.ts` 新增 `parseSessionRow`，三段式——严格 `sessionRecordSchema` → 逐条摘掉不过的 `questionResults[].evaluation` → 整行摘掉 `questions` / `answers` → 仍不过才丢行。判据是**该字段被谁消费**：核心字段（`overall` / `questionResults` 骨架）被进度聚合消费，坏了必须丢行（否则 `result.topic` 的 undefined 会污染 `topicPracticeSessions`）；回放快照（`questions` / `answers` / 每条 `evaluation`）只在历史回放时读，坏了只降级（`SessionReplayDrawer` 本就支持退化成「分数 + 解析」视图）。为一条过时快照丢掉用户整段历史，代价远大于回放视图降级。
+  7. **会话结束要清理另一入口的陈旧状态**：`CopilotSidebar` 监听 `agentInterview.phase` 的 `running → done` 转换，清空侧栏的 `ConversationSession` / `chatQuestion` / 上下文，但保留 `mode: 'interview'` + `endedAt`——让侧栏显示「面试已结束」，而不是静默退回普通问答。
+  8. **文档注释随架构一起改**：`interviewContext.ts` 顶部仍写着「两个独立 runtime」，已改为描述 ADR-084 的单一 runtime 现状。注释过期会让后来者按错误的心智模型改代码。
+- 未改（明确不动）：
+  - **`CONTINUE_PATTERN`**。评审稿称它仍是前缀匹配并建议加 `$`，但**它早在 ADR-083 收口时就已经是整句匹配**（末尾保留指代填充 / 难度修饰 / 语气词的可选组），`CONTINUE_EXPLAIN_PATTERN` 也已在位。按评审稿的朴素 `$` 写法改会弄坏既有的 `detectCommand('下一题难一点')?.difficulty === 'hard'`。**评审稿引用的代码不是文件里的代码时，以文件为准。**
+  - `ConversationSession` 的 `feedbackMode` / `pendingAction: 'feedback'` / `agentSession?` 字段（同 ADR-084：持久化契约，删字段会让旧草稿整份解析失败）。
+- 验证：`tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过；全量 **925 passed / 928**，3 项失败均为工作区未提交的 `pi-ai` 升级导致 `local.test.ts` 的 `deepseek-v4-flash` 引用失效（零运行时引用，与本改动无关）。本轮净增 2 例回归（暂停闸冻结全部工具 / 会话行核心字段损坏丢行），**两条都在修复前实测为红**。
+- 触发条件：若将来允许「暂停态下模型仍可调用某些只读工具」（如查询覆盖度），应把冻结判据从「状态」改成「状态 × 工具只读性」的显式矩阵，并在矩阵旁注明**新增工具必须在此登记**——不要退回成黑名单式枚举；若 `onComplete` 的写入语义变成「可重试 / 可离线排队」，`finalize()` 的 `catch` 应改为把记录转入重试队列而不是只 `setError`。
+
 ## ADR-084 · 单一 runtime：Agent 面试页与 Copilot 侧栏共用同一场会话
 
 - 状态：已采纳 · 2026-09-25

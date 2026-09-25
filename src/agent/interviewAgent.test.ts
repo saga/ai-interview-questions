@@ -159,10 +159,6 @@ describe('shouldStopAfterTurn', () => {
 });
 
 describe('clampAnswer（答案长度上限）', () => {
-  it('短答案原样返回', () => {
-    expect(clampAnswer('这是一个正常长度的回答。')).toBe('这是一个正常长度的回答。');
-  });
-
   it('超长答案被截断，并保留截断标记', () => {
     const long = 'x'.repeat(MAX_ANSWER_CHARS + 500);
     const out = clampAnswer(long) as string;
@@ -201,14 +197,6 @@ describe('countDelivered / countScored 语义分离', () => {
     session.evaluations['q2'] = null; // 评分失败
     expect(countDelivered(session)).toBe(2);
     expect(countScored(session)).toBe(1);
-  });
-
-  it('全为 null 时：已交付非 0、已评分为 0（null 不计入成绩）', () => {
-    const session = createAgentSession();
-    session.evaluations['q1'] = null;
-    session.evaluations['q2'] = null;
-    expect(countDelivered(session)).toBe(2);
-    expect(countScored(session)).toBe(0);
   });
 
   it('空会话两者均为 0', () => {
@@ -601,6 +589,46 @@ describe('immediate 模式：评分后暂停、确认后继续', () => {
 
     expect(flags).toEqual([awaiting]);
     expect(statusAtCallback).toEqual([status]);
+
+    handle.dispose();
+  });
+
+  // ── P0 回归：暂停闸必须冻结**全部**工具，而不只是「出题 / 重复评分」──
+  // 模型完全可能在同一轮里返回 evaluateAnswer + finishInterview。工具按
+  // toolExecution='sequential' 顺序执行：evaluateAnswer 让状态进入 awaiting_feedback，
+  // 紧接着的 finishInterview 若不拦，就会把状态直接推到 finished——
+  // 用户跳过反馈卡，直接看到「面试已结束」。逐个列举工具还会在每次新增工具时重现同类漏洞。
+  it('immediate 模式：同一轮里的 finishInterview 也必须被暂停闸拦住', async () => {
+    const bank = [openQuestion(), choiceQuestion()];
+    const session = createAgentSession('immediate');
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-open-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请作答。' }], 'stop'),
+      makeMsg(
+        [
+          { type: 'toolCall', id: 'c2', name: 'evaluateAnswer', arguments: {} },
+          { type: 'toolCall', id: 'c3', name: 'finishInterview', arguments: {} },
+        ],
+        'toolUse',
+      ),
+      makeMsg([{ type: 'text', text: '结束。' }], 'stop'),
+    ]);
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider: fakeProvider(),
+      generateOpenQuestions: true,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    await handle.submitAnswer('RAG 检索外部知识。');
+
+    // 评分已完成 → 必须停在反馈上等用户确认，而不是被 finishInterview 推到 finished。
+    expect(session.evaluations['q-open-1']).not.toBeNull();
+    expect(session.status).toBe('awaiting_feedback');
 
     handle.dispose();
   });

@@ -149,11 +149,14 @@ export interface AgentInterviewState {
 /**
  * Agent 面试会话状态与全部时序逻辑。state 存在于调用方（App），故切换 tab 不丢失。
  * message 由调用方透传（App 已持有 antd message 实例），避免重复订阅。
+ *
+ * @param onComplete 收尾落库（写入 Learner Memory）。**允许异步**：IndexedDB 写入是 Promise，
+ *   同步调用会让失败变成未处理 rejection，而 UI 已经显示「已保存」——用户以为存住了，其实没有。
  */
 export function useAgentInterview(
   config: AIConfig,
   profile: LearnerProfile,
-  onComplete: (record: SessionRecord) => void,
+  onComplete: (record: SessionRecord) => Promise<void> | void,
   message: MessageInstance,
 ): AgentInterviewState {
   const [phase, setPhase] = useState<AgentPhase>('intro');
@@ -162,6 +165,29 @@ export function useAgentInterview(
   const [questions, setQuestions] = useState<SessionQuestion[]>([]);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
   const [busy, setBusy] = useState(false);
+  /**
+   * `busy` 的同步镜像。
+   *
+   * `busy` 是 React state，在事件回调里读它拿到的是**本次渲染时**的旧值；而重入闸必须在
+   * 调用发生的当下就知道「此刻 Agent 是否在跑」。故所有写入都走 `setBusyBoth`，一次调用里
+   * 同时更新 ref 与 state，不存在窗口期。（`submittingRef` / `continuingRef` 本就是 ref，无此问题。）
+   */
+  const busyRef = useRef(false);
+  const setBusyBoth = useCallback((v: boolean) => {
+    busyRef.current = v;
+    setBusy(v);
+  }, []);
+  /**
+   * Agent 是否正忙：在途的 run（出题 / 评分）、提交、继续，任一进行中即为 true。
+   *
+   * 所有「会改动会话」的入口共用这一道闸。只靠 UI 的 `disabled` 不够——「Agent 面试」页与
+   * Copilot 侧栏**可以同屏**，两边各有自己的按钮与输入框，一个入口的禁用拦不住另一个：
+   * 典型竞态是「Agent 正在评分 + Copilot 发『下一题』」，后者会并发改 session.currentQuestion。
+   */
+  const agentBusy = useCallback(
+    () => busyRef.current || submittingRef.current || continuingRef.current,
+    [],
+  );
   const [submitting, setSubmitting] = useState(false);
   const [summary, setSummary] = useState<{ asked: number; overall: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -289,20 +315,25 @@ export function useAgentInterview(
 
   /** 「跳到下一题」：放弃当前题（不计分）并交付下一题（Agent 的 skip）。 */
   const jumpToNextQuestion = useCallback(() => {
+    // Agent 仍在跑时不允许改题：skip() 会写 session.evaluations / currentQuestion，
+    // 与在途 run 并发就是真竞态（典型：Agent 正在评分 + 用户点「跳到下一题」）。
+    // 正常路径下按钮本就该禁用（见 AgentInterviewPage 的时间到弹窗 / CopilotSidebar），
+    // 这里兜住其它入口，并保证时间到弹窗不会被无声关掉。
+    if (agentBusy()) return;
     setQuestionTimeUp(false);
     stopQuestionTimer();
     // 跳过会解除运行时的暂停态（见 interviewAgent.skip），UI 的反馈卡也必须同步关闭，
     // 否则会出现「已跳到下一题，却还显示上一题反馈」的错位。
     clearFeedback();
     void handleRef.current?.skip();
-  }, [stopQuestionTimer, clearFeedback]);
+  }, [stopQuestionTimer, clearFeedback, agentBusy]);
 
   // 面试官思考/评分期间冻结倒计时，避免消耗作答时间
   useEffect(() => {
     questionTimerFrozenRef.current = busy || submitting;
   }, [busy, submitting]);
 
-  const finalize = useCallback(() => {
+  const finalize = useCallback(async () => {
     if (finalizedRef.current) return; // 幂等：已收尾则直接返回，杜绝重复落库
     stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
     setQuestionTimeUp(false);
@@ -331,7 +362,14 @@ export function useAgentInterview(
       setPhase('done');
       return;
     }
-    onComplete(record);
+    // 必须 await：onComplete 落库到 IndexedDB 是异步的。不 await 的话写入失败会变成
+    // 未处理的 rejection，而下面已经 setPhase('done')、UI 显示「已写入学习记录」——
+    // 用户以为存住了，实际没有。失败时显式报错，但仍进入 done（面试确实已结束）。
+    try {
+      await onComplete(record);
+    } catch (err) {
+      setError(`学习记录保存失败：${(err as Error).message}`);
+    }
     setSummary({ asked, overall: averageOverall(session) });
     setPhase('done');
   }, [onComplete, clearFeedback]);
@@ -417,7 +455,7 @@ export function useAgentInterview(
           },
           onStatus: (status) => {
             if (status === 'finished') {
-              finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete（finalize 内会清空反馈态）
+              void finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete（finalize 内会清空反馈态）
               return;
             }
             if (status === 'awaiting_feedback') {
@@ -452,11 +490,11 @@ export function useAgentInterview(
             const e = event as { type: string; message?: unknown; toolName?: string; isError?: boolean; result?: { details?: unknown } };
             switch (e.type) {
               case 'agent_start':
-                setBusy(true);
+                setBusyBoth(true);
                 break;
               case 'turn_end':
               case 'agent_end': {
-                setBusy(false);
+                setBusyBoth(false);
                 const text = pendingTextRef.current;
                 pendingTextRef.current = '';
                 if (text.trim()) setTranscript((prev) => [...prev, { kind: 'agent', text }]);
@@ -485,7 +523,7 @@ export function useAgentInterview(
       handleRef.current = handle;
       return handle;
     },
-    [config, finalize, syncQuestions, persistDraft, message, startQuestionTimer, stopQuestionTimer, clearFeedback],
+    [config, finalize, syncQuestions, persistDraft, message, startQuestionTimer, stopQuestionTimer, clearFeedback, setBusyBoth],
   );
 
   const start = async () => {
@@ -541,7 +579,7 @@ export function useAgentInterview(
       handleRef.current = null;
       sessionRef.current = null;
       questionsRef.current = [];
-      setBusy(false);
+      setBusyBoth(false);
       setError('面试启动失败：' + (err as Error).message);
       setPhase('intro');
     }
@@ -549,6 +587,9 @@ export function useAgentInterview(
 
   const submit = async (answerOverride?: AnswerValue) => {
     if (submittingRef.current) return; // 同步拦截：提交进行中不允许重复点击
+    // Agent 仍在跑（出题 / 评分 / 继续）：此刻提交会与在途 run 抢同一个 session。
+    // 与 jumpToNextQuestion 同一道闸——UI 禁用挡不住「Agent 面试页」与 Copilot 侧栏两个入口。
+    if (agentBusy()) return;
     if (!currentQuestion) return;
     // 答案来源：Agent 面试页用页面输入框（`answer`），Copilot 侧栏用聊天框解析结果（override）。
     const actualAnswer = answerOverride ?? answer;
@@ -558,7 +599,7 @@ export function useAgentInterview(
     }
     submittingRef.current = true;
     setSubmitting(true);
-    setBusy(true); // 立即禁用按钮 + 显示遮罩，避免 LLM 响应前反复点击
+    setBusyBoth(true); // 立即禁用按钮 + 显示遮罩，避免 LLM 响应前反复点击
     try {
       await handleRef.current?.submitAnswer(actualAnswer);
       void persistDraft(); // 回合结束落库
@@ -567,7 +608,7 @@ export function useAgentInterview(
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
-      setBusy(false);
+      setBusyBoth(false);
     }
   };
 
@@ -578,10 +619,14 @@ export function useAgentInterview(
    * 若在此清空，「继续」到下一题到达之间会先闪一个「无反馈且无新题」的空档。
    */
   const continueAfterFeedback = async () => {
+    // 这里**刻意不**加 agentBusy() 闸：awaiting_feedback 是在 afterEvaluation 内部置上的，
+    // 而本轮 run 要到 agent_end 才把 busy 置回 false。两者之间用户已经能看到反馈卡，
+    // 若按 busy 拦，快速点「继续」会被无声吞掉。重入保护由 continuingRef + 运行时的
+    // `status !== 'awaiting_feedback'` 幂等检查共同承担，足够。
     if (continuingRef.current) return; // 同步拦截：双击 / 重入
     continuingRef.current = true;
     setContinuing(true);
-    setBusy(true); // 与提交一致：立即禁用交互并显示遮罩，避免请求期间重复点击
+    setBusyBoth(true); // 与提交一致：立即禁用交互并显示遮罩，避免请求期间重复点击
     try {
       await handleRef.current?.continueAfterFeedback();
       void persistDraft(); // 回合结束落库
@@ -590,7 +635,7 @@ export function useAgentInterview(
     } finally {
       continuingRef.current = false;
       setContinuing(false);
-      setBusy(false);
+      setBusyBoth(false);
     }
   };
 
@@ -599,7 +644,7 @@ export function useAgentInterview(
       message.info('还没有可保存的作答');
       return;
     }
-    finalize();
+    void finalize();
   };
 
   const restart = () => {
@@ -659,7 +704,7 @@ export function useAgentInterview(
       setAnswer(session.currentQuestion ? emptyAnswer(session.currentQuestion) : []);
       setTranscript(rebuildTranscript(session));
       setPhase('running');
-      setBusy(false);
+      setBusyBoth(false);
       // 恢复暂停态：刷新时若正停在反馈卡上（status 已持久化为 awaiting_feedback），
       // 必须把反馈卡一并重建——否则当前题已评分、却没有下一题，用户会卡在一个「已答完」的空页面上。
       const pendingEvaluation =
