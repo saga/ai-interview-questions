@@ -8,7 +8,7 @@ import type { EvaluationResult } from '../schemas/evaluation';
 import type { Question } from '../schemas/question';
 import type { SessionQuestion } from '../schemas/session';
 import { effectiveProfileFor } from './sessionState';
-import { createAgentSession, type InterviewAgentSession } from './types';
+import { createAgentSession, markDelivered, type InterviewAgentSession } from './types';
 
 /** 带 misconceptionMap 的选择题（选项 1 = 干扰项，映射到误解 0）。 */
 const choiceQ: Question = {
@@ -105,10 +105,12 @@ describe('effectiveProfileFor（会话级学习状态）', () => {
     expect(effective.misconceptionHits?.[misconceptionKey('rag', '以为向量检索可全面取代关键词检索')]?.hits).toBe(1);
   });
 
-  it('会话中已交付但未出现在 evaluations 的题不计入（口径与 updateLearner 一致）', () => {
+  it('已交付但未作答的题不计入（交付标记为 null，口径与 updateLearner 一致）', () => {
     const session = createAgentSession();
+    // 交付即建键（markDelivered），值为 null = 已呈现、未产生评分。
+    // 这类题只占「已交付题数」的上限口径，绝不入账——否则会以 0 分污染薄弱分析。
+    markDelivered(session, 'c1');
     session.answers['c1'] = [1];
-    // 有 answer 无 evaluation → 未评分，不入账
     const effective = effectiveProfileFor(session, [choiceQ], emptyProfile());
     expect(effective.totalQuestions).toBe(0);
   });

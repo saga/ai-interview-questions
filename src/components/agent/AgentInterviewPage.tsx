@@ -89,6 +89,10 @@ export default function AgentInterviewPage({
   submitting,
   summary,
   error,
+  finalizing,
+  saveError,
+  retryFinalize,
+  profileReady,
   evaluatedCount,
   questionTimeLeftSec,
   questionTimeUp,
@@ -178,12 +182,17 @@ export default function AgentInterviewPage({
             {error && (
               <Alert type="error" showIcon message={error} />
             )}
+            {/* 画像未就绪：Agent 的选题与追问方向全部来自 LearnerProfile，此时开局等于
+                让整场面试建立在空画像上。禁用入口并把原因说清楚，而不是让用户点了没反应。 */}
+            {!profileReady && (
+              <Alert type="info" showIcon message="正在加载学习记录，请稍候再开始——需要历史画像来决定考察方向。" />
+            )}
             <Button
               type="primary"
               size="large"
               icon={<PlayCircleOutlined />}
               block
-              disabled={!configReady}
+              disabled={!configReady || !profileReady}
               onClick={() => void start()}
             >
               开始 Agent 面试
@@ -198,6 +207,17 @@ export default function AgentInterviewPage({
   if (phase === 'running') {
     return (
       <div style={{ maxWidth: 820, margin: '0 auto' }}>
+        {/* 面试已结束、成绩正在写入学习记录：这是异步落库的真实窗口期，
+            不给提示的话页面会看起来「卡住了」（题目与按钮都还在，但什么都不响应）。 */}
+        {finalizing && (
+          <Alert
+            type="info"
+            showIcon
+            icon={<Spin size="small" />}
+            message="正在保存本轮成绩…"
+            style={{ marginBottom: 12 }}
+          />
+        )}
         <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 12 }} wrap>
           <Space wrap>
             <Tag color="blue">已考察 {evaluatedCount} 题</Tag>
@@ -392,11 +412,30 @@ export default function AgentInterviewPage({
             共完成 <b>{summary?.asked ?? 0}</b> 道题目的作答与评估，综合得分{' '}
             <b>{summary?.overall ?? 0}</b> 分。
           </Typography.Paragraph>
-          <Divider style={{ margin: '4px 0' }} />
-          <Typography.Paragraph type="secondary" style={{ margin: 0, fontSize: 13 }}>
-            结果已记入你的学习档案（含本轮选题与评分），「进度」页与首页建议会据此更新；
-            薄弱主题会在下一轮被 Agent 优先考察。
-          </Typography.Paragraph>
+          {saveError ? (
+            /* 落库失败：**绝不能**显示「已记入学习档案」——那是在骗用户。
+               草稿已被刻意保留（见 useAgentInterview.finalize），重试成功前
+               这场面试的成绩只存在于本地草稿里。 */
+            <Alert
+              type="error"
+              showIcon
+              message="成绩未能写入学习档案"
+              description={saveError}
+              action={
+                <Button size="small" type="primary" loading={finalizing} onClick={() => void retryFinalize()}>
+                  重试保存
+                </Button>
+              }
+            />
+          ) : (
+            <>
+              <Divider style={{ margin: '4px 0' }} />
+              <Typography.Paragraph type="secondary" style={{ margin: 0, fontSize: 13 }}>
+                结果已记入你的学习档案（含本轮选题与评分），「进度」页与首页建议会据此更新；
+                薄弱主题会在下一轮被 Agent 优先考察。
+              </Typography.Paragraph>
+            </>
+          )}
           <Space wrap>
             <Button type="primary" icon={<RobotOutlined />} onClick={restart}>
               再聊一轮

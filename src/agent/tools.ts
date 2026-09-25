@@ -28,7 +28,7 @@ import {
 } from '../domain/learner';
 import { knowledgeById } from '../domain/knowledge/nodes';
 import { effectiveProfileFor } from './sessionState';
-import { countDelivered } from './types';
+import { countDelivered, markDelivered } from './types';
 import type { InterviewAgentSession } from './types';
 
 /** 工具依赖：题库、用户画像、评分用的 LLMProvider、共享会话。 */
@@ -290,6 +290,10 @@ export function createAgentTools(deps: AgentToolDeps): AgentTool<any>[] {
         seenVariantIds: new Set<string>(),
       });
       session.currentQuestion = sq;
+      // 交付标记：题目一旦呈现给用户就必须留下痕迹（见 markDelivered 的注释）。
+      // 不能只靠 currentQuestion——换题之后，这道「已交付但未作答」的题就再也查不到了：
+      // 题数上限（countDelivered）与防重复出题（isDelivered）都会漏掉它。
+      markDelivered(session, q.id);
       session.log.push({
         at: Date.now(),
         kind: 'tool',

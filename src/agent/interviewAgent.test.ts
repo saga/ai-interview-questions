@@ -26,7 +26,7 @@ import {
   MAX_AGENT_QUESTIONS,
   MAX_ANSWER_CHARS,
 } from './interviewAgent';
-import { countDelivered, countScored, createAgentSession } from './types';
+import { countDelivered, countScored, createAgentSession, markDelivered } from './types';
 import type { InterviewAgentSession } from './types';
 
 const EMPTY_USAGE: Usage = {
@@ -155,6 +155,22 @@ describe('shouldStopAfterTurn', () => {
     for (let i = 0; i < MAX_AGENT_QUESTIONS; i++) session.evaluations[`q${i}`] = null;
     const ctx = { toolResults: [] } as unknown as AgentTurnContext;
     expect(shouldStopAfterTurn(session, ctx)).toBe(true);
+  });
+
+  it(`★全部「已交付但未作答」也计入上限（只写 currentQuestion 的口径会永远停在 0）`, () => {
+    const session = createAgentSession();
+    for (let i = 0; i < MAX_AGENT_QUESTIONS; i++) markDelivered(session, `q${i}`);
+    const ctx = { toolResults: [] } as unknown as AgentTurnContext;
+    // 一道题都没作答、没评分：旧口径（只在评分/跳过时建键）在这里得到 0，上限被无限绕过
+    expect(countDelivered(session)).toBe(MAX_AGENT_QUESTIONS);
+    expect(shouldStopAfterTurn(session, ctx)).toBe(true);
+  });
+
+  it('markDelivered 幂等：不覆盖已有评分', () => {
+    const session = createAgentSession();
+    session.evaluations['q1'] = { overall: 88 } as unknown as EvaluationResult;
+    markDelivered(session, 'q1');
+    expect(session.evaluations['q1']?.overall).toBe(88);
   });
 });
 
@@ -629,6 +645,69 @@ describe('immediate 模式：评分后暂停、确认后继续', () => {
     // 评分已完成 → 必须停在反馈上等用户确认，而不是被 finishInterview 推到 finished。
     expect(session.evaluations['q-open-1']).not.toBeNull();
     expect(session.status).toBe('awaiting_feedback');
+
+    handle.dispose();
+  });
+});
+
+// 交付标记与「等待用户作答」守卫必须**配套**：交付即建 evaluations 键之后，
+// ensureQuestionDelivered 若仍用「evaluations 里有没有键」推断「用户答没答」，
+// 每道刚交付的题都会被误判成「已处理」，于是覆盖掉当前题再交付一道新的。
+describe('交付标记与等待守卫的配套（P0）', () => {
+  it('★刚交付、用户尚未作答的题不会被兜底替换掉', async () => {
+    const bank = [choiceQuestion(), openQuestion()];
+    const session = createAgentSession();
+    // 首轮：Agent 选定 q-choice-1 后正常收尾 → agent_end 触发 ensureQuestionDelivered
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请回答这道题。' }], 'stop'),
+    ]);
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider: fakeProvider(),
+      generateOpenQuestions: true,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+
+    // 交付已建键（值为 null），且题数只算一次
+    expect(Object.prototype.hasOwnProperty.call(session.evaluations, 'q-choice-1')).toBe(true);
+    expect(countDelivered(session)).toBe(1);
+    // 关键：用户还没作答，当前题必须原地等待——被换成另一道题等于用户眼前的题目凭空消失
+    expect(session.currentQuestion?.question.id).toBe('q-choice-1');
+
+    handle.dispose();
+  });
+
+  it('★skip 放弃当前题后仍能交付下一题（清空 currentQuestion 才能让等待守卫放行）', async () => {
+    const bank = [choiceQuestion(), openQuestion()];
+    const session = createAgentSession();
+    const streamFn = makeMockStreamFn([
+      makeMsg([{ type: 'toolCall', id: 'c1', name: 'getQuestion', arguments: { id: 'q-choice-1' } }], 'toolUse'),
+      makeMsg([{ type: 'text', text: '请回答这道题。' }], 'stop'),
+    ]);
+    const handle = createInterviewAgent({
+      session,
+      profile: emptyProfile(),
+      entry: VALID_ENTRY,
+      bank,
+      provider: fakeProvider(),
+      generateOpenQuestions: true,
+      runtimeOverride: { streamFn, model: { id: 'mock' } as any },
+    });
+
+    await handle.start('请开始一次 AI 面试。');
+    await handle.skip();
+
+    // 跳过 = 放弃当前题（不计分）并交付下一题；若守卫用 evaluations 判「已处理」，
+    // 交付标记本身就是 null，写它等于没写，跳过会静默失效、用户永远停在原题
+    expect(session.currentQuestion).not.toBeNull();
+    expect(session.currentQuestion?.question.id).not.toBe('q-choice-1');
+    expect(countDelivered(session)).toBe(2); // 两道题都留下了交付痕迹
 
     handle.dispose();
   });

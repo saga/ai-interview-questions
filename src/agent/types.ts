@@ -134,6 +134,24 @@ export function isAwaitingFeedback(session: InterviewAgentSession): boolean {
 }
 
 /**
+ * 记录「某题已交付给用户」。**交付即建键**（值为 `null` = 已呈现、尚未产生评分）。
+ *
+ * 为什么交付必须显式建键，而不能等评分时再写：
+ * - `countDelivered`（题数上限 MAX_AGENT_QUESTIONS 的口径）与工具层的 `isDelivered`
+ *   （防重复出题）都以**键的存在**为准，而「已评分」要等用户提交之后才发生。
+ *   缺了这次写入，一道「已交付但未作答」的题在这两个口径下都**不存在**——
+ *   上限可被无限绕过，同一道题也可被重复交付；
+ * - `session.currentQuestion` 只记得**当前**一题：一旦换题，上一道未作答的题就再也
+ *   无迹可寻，连「本轮考察过什么」都会丢。
+ *
+ * 用 `??=` 而非直接赋值：已写入真实评分（或已记为 null）时不得覆盖。
+ * 幂等，可安全重复调用（交付 / 跳过 / 评分路径都过它）。
+ */
+export function markDelivered(session: InterviewAgentSession, questionId: string): void {
+  session.evaluations[questionId] ??= null;
+}
+
+/**
  * 已交付题数：`evaluations[id]` 在题目交付给用户时即建键（尚未评分时为 null），
  * 因此键数 = 已呈现给用户 / 已尝试过的题数，与 `isDelivered` 口径一致。
  *

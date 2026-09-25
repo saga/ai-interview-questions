@@ -2,6 +2,35 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-086 · 交付即建键；收尾顺序契约化；非纯逻辑抽成可注入模块
+
+- 状态：已采纳 · 2026-09-25
+- 背景：ADR-085 之后的一次外部评审又给出 6 项（2 个 P0/P0.5 + 3 个 P1 + 1 项测试覆盖）。逐条**先核实再改**，结论如下：
+  1. **（P0，属实）交付没有留下痕迹。** `getQuestion` / `fallbackNextQuestion` 只写 `session.currentQuestion`，而 `countDelivered` 数的是 `Object.keys(session.evaluations).length`、工具层 `isDelivered` 也只看 `answers` / `evaluations` / `currentQuestion`。于是「已交付但未作答」的题**在交付那一刻不存在**：题数上限（`MAX_AGENT_QUESTIONS`）可被无限绕过；一旦换题，上一道未作答的题彻底消失（防重复出题、题目历史、自适应全部失准）。`types.ts` 的注释本就写着「`evaluations[id]` 在题目交付给用户时即建键」——**注释描述的是设计意图，实现从未兑现**。
+  2. **（P0，属实但成因与评审稿不同）草稿先于落库被删除。** 评审稿称「`onComplete` 是同步调用、失败会变成未处理 rejection」——这不是当前状态：`finalize()` 早已 `await onComplete(record)` 并包了 `try/catch`。真正的缺陷是**顺序**：`void flushPersist().then(() => deleteAgentSession(session.id))` 在 `await onComplete` **之前**发出，而 `finalizedRef` 在函数开头就置位。落库失败时草稿已删、重试闸已关——整场成绩永久丢失，且没有任何入口可救。
+  3. **（P1，属实）「延长本题时间」不会重新计时。** 倒计时归零时定时器**自我清理**（否则每秒空转），而 `extendQuestionTime` 只重置了 ref / state，从未重建 interval → 显示永久停在 180、再也不会走动。
+  4. **（P1，属实但面更窄）画像读-改-写会丢更新。** `updateLearner` 是读-改-写，两个写入入口（`doSubmit` / `handleAgentComplete`）都以同一份 `profileRef.current` 为基准，后完成者整体覆盖先完成者。`saveLearner` 的 Dexie 事务只保证**单次写入原子**，覆盖不了跨调用的读-改-写。（评审稿提到的 `learnerCapability.commitSession` 实际**零调用方**，不是活跃风险面。）
+  5. **（P1，属实）画像未加载完就能开局。** `App.tsx` 传 `profile ?? emptyProfile()`，而 `CopilotSidebar` 渲染在 `loadingProfile` 闸**之外**，其「开始面试」入口可直接触发 `agentInterview.start()`。空画像会让选题退化成随机探索、薄弱分析全空，且这份空画像会被写进草稿、续面后继续生效。
+  6. **（测试覆盖）评审要求补回/新增 5 类回归测试。** 本项目 **61 个测试文件全部是纯函数 / node 环境**，没有 `@testing-library/react`、没有 `jsdom`/`happy-dom`——第 2、3、5 类（finalize 删草稿、timer 延长、画像闸）根本无法在 hook 层断言。
+- 决策：
+  1. **交付即建键，且把「等待用户作答」的判据从 `evaluations` 换成 `answers`。** 新增 `markDelivered(session, id)`（`session.evaluations[id] ??= null`，幂等、不覆盖真实评分），在 `tools.ts` 的 `getQuestion` 与 `interviewAgent.ts` 的 `fallbackNextQuestion` 两处交付点调用。**关键配套**：`ensureQuestionDelivered` 原本用「`evaluations` 里有没有键」推断「用户答没答」——加了交付标记后这个推断会反转（每道刚交付的题都被误判成「已处理」，于是覆盖当前题再交付一道新的）。故判据改为 `session.answers`（用户是否已提交），并让 `skip()` 显式 `session.currentQuestion = null` 来放行该守卫（`skip` 原先靠写 `evaluations[id] = null` 生效，而交付标记本身就是 null，写它等于没写，跳过会**静默失效**）。同时把 `advanceDeterministic` / `ensureQuestionDelivered` 里第三份计数实现 `new Set([...answers, ...evaluations]).size` 统一到 `countDelivered`——三处口径一旦漂移，「什么时候该停」就会随路径而变。
+  2. **收尾顺序抽成 `agent/finalizeSession.ts`，并把收尾闸拆成两个标记。** `finalizeSession({ record, persist, flushDraft, deleteDraft })` 用注入 IO 固化唯一顺序：**先 `persist`，成功后才 `flushDraft` → `deleteDraft`**；`persist` 失败立即返回且**不碰草稿**，`ok: false` 当且仅当落库失败（草稿清理失败不上报为保存失败——成绩已经落库，不该让用户以为没存住）。`useAgentInterview` 侧 `finalizedRef`（终局完成）拆出 `finalizingRef`（并发重入闸），落库失败时只回退后者 → 用户可重试。新增 `finalizing` / `saveError` / `retryFinalize` 三个 UI 状态；`saveError` 非 null 时结果页与 Copilot 侧栏**不得**显示「已记入学习档案 / 已写入学习记录」，改为显示失败原因 + 「重试保存」。`restart()` 在 `saveError` 非 null 时**不删草稿**（它是结果唯一的副本）。
+  3. **倒计时抽成 `agent/questionTimer.ts`，让「延长 = 重新装载」成为模块契约。** `extendQuestionTime` 改为调用 `start()`（内部先 `stop()` 再 `setInterval`），不再是「把秒数改回满额」。归零仍自我清理，但 `remaining()` 保留 0（UI 仍需显示「本题剩余 00:00」），`stop()` 才清成 null。
+  4. **画像提交串行队列：`application/learnerCommit.ts` 的 `createLearnerCommitter`。** 队列把「读基准 → 变换 → 落库 → 回写基准」整体串行化，**基准在临界区内读**，落库成功后**同步回写**（不等 React 重渲染）。**基准绝不重新 `loadLearner()`**：它不是 `saveLearner` 的逆运算——会用**默认** proficiency 配置重算 `mastery`、按 `SESSION_CAP` 截断会话、丢弃校验不过的行；用它当基准会静默改写用户的掌握度。队列尾部吞掉失败（一次提交失败不得让后续提交全部短路），但失败原样抛给本次调用方。`useTrainingSession` 的 `doSubmit` / `handleAgentComplete` 全部改走它；`profileRef` 的渲染期同步改为「仅在 state 真的变化时赋值」，避免把队列刚同步写入的结果覆盖回旧快照。
+  5. **画像闸设在会话层（单一收口点），而不是逐入口拦。** `useAgentInterview` 的 `profile` 参数放宽为 `LearnerProfile | null`，`startInner` 在入口处 `if (!profile) { setError(...); return; }`，并暴露 `profileReady`。`App.tsx` 去掉 `?? emptyProfile()`；Agent 面试页与 Copilot 侧栏各自用 `profileReady` 禁用入口 / 说明原因。理由与 ADR-085 第 1 条同源：**两个入口各自拦必然漏掉一个，闸要设在状态上**。`persistDraft` 在画像为 null 时直接返回，杜绝空画像被写进草稿。
+  6. **用「抽出可注入的纯模块」替代「引入 React 测试环境」。** 第 2、3、4 类契约分别落到 `finalizeSession.ts` / `questionTimer.ts` / `learnerCommit.ts` 三个零依赖模块上，第 1 类在 `tools.test.ts` + `interviewAgent.test.ts` 用真实交付路径断言，第 5 类由会话层闸 + 两个入口的 UI 禁用共同承担（不做「`profileReady === (profile !== null)`」这类常量自证）。这样回归测试能在现有 node 环境里跑，不需要新增依赖。
+- 未改（明确不动）：
+  - **不引入 `@testing-library/react` + `jsdom`**。为一个 6 项评审新增整套 React 测试环境，成本（依赖 + 环境配置 + fake timer × IndexedDB × mock runtime 的脆弱组合）高于收益；把逻辑抽成纯模块是更小的改动、也更符合本项目「domain / agent 纯、hooks 只做 React 胶水」的既有分层。
+  - **不删 `learnerCapability.commitSession`**（ADR-002 的删死代码原则在此让位于 ADR-084 §6 的「持久化契约字段保留」同类判断）：它是 application 层的一个公开接缝，删掉会改变模块边界。改为加注释警示「若要重新接线必须走 `learnerCommit` 的串行队列」。
+  - **`markDelivered` 不用直接赋值**。`??=` 保证幂等：真实评分（或已记为 null）不被覆盖。
+  - **`endEarly` 的判据改为 `countDelivered === 0`**，文案从「还没有可保存的作答」改为「本轮还没有考察任何题目」。旧实现用 `evaluations` 键数，在「已交付但未作答」时会把用户**挡在面试里出不去**（既无可保存内容、又无法结束）。
+- 验证：`tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过；全量 **868 passed / 871**（测试数 845 → 871，文件 62 → 65）。3 项失败全部是 `src/ai/local.test.ts` 的 `deepseek-v4-flash` 引用（`pi-ai` 0.87.1 已从 DeepSeek 注册表移除该模型，零运行时引用）。**更正 ADR-085 的归因**：当时记为「工作区未提交的升级」，该升级现已随 `6109723` 进入 HEAD，故这 3 项失败是 HEAD 上的既有失败，与本轮改动无关。
+- 回归测试有效性用**变异测试**逐条验证（不是「加了测试就算数」）：临时把 `questionTimer.start()` 改回「只在首次装载」、把 `finalizeSession` 的两步顺序反转、去掉 `learnerCommit` 的 `tail.then`、删掉两处 `markDelivered`、把 `skip()` 改回只写 `evaluations` —— **6 个变异全部被新用例捕获为红**。
+- 触发条件：
+  - 若将来引入 React 测试环境，第 2/3/5 类契约应补 hook 级端到端用例（当前只覆盖到被抽出的纯模块与 UI 禁用，**「hook 真的调用了 `finalizeSession`」这一步没有自动化断言**）。
+  - 若「成绩落库失败后刷新页面」需要真正恢复，必须在草稿上持久化一个「待保存」标记并让 `getActiveAgentSession` 认它——当前 `status` 在 `persistDraft` 早退后仍是 `running`，刷新后会**意外**续面到一场已结束的面试（数据没丢，但语义混乱）。
+  - 若新增任何「会改动 `session.currentQuestion`」的路径，必须同时调用 `markDelivered`；若新增「判断用户是否已处理当前题」的路径，必须用 `session.answers` 而不是 `evaluations`。
+
 ## ADR-085 · 守卫按状态冻结而非按工具名枚举；存储边界分级降级
 
 - 状态：已采纳 · 2026-09-25

@@ -1,6 +1,68 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-25 · 交付即建键 · 收尾顺序契约化 · 非纯逻辑抽成可注入模块（详见 ADR-086）
+
+第三轮外部评审（6 项：2 个 P0/P0.5 + 3 个 P1 + 1 项测试覆盖）逐条核实后落地。评审稿基于 HEAD `6109723` 的静态检查、未跑 Vitest；核实后 **5 项属实**（其中 2 项成因/范围与评审稿的描述有出入），1 项是测试覆盖要求。
+
+### 交付即建键（P0）
+
+`getQuestion` / `fallbackNextQuestion` 只写 `session.currentQuestion`，而 `countDelivered` 数的是 `evaluations` 的键数、`isDelivered` 也只看 `answers` / `evaluations` / `currentQuestion`。「已交付但未作答」的题在交付那一刻**不存在**：`MAX_AGENT_QUESTIONS` 可被无限绕过，换题后上一道题彻底消失（防重复出题 / 题目历史 / 自适应全部失准）。
+
+- 新增 `types.markDelivered(session, id)`（`evaluations[id] ??= null`，幂等、不覆盖真实评分），在两个交付点调用。
+- **配套改动（评审稿未提，但不做就是新的 P0）**：`ensureQuestionDelivered` 原用「`evaluations` 里有没有键」推断「用户答没答」，加标记后该推断会反转——每道刚交付的题被误判成「已处理」，于是覆盖当前题再交付一道新的。判据改为 `session.answers`；`skip()` 显式置空 `currentQuestion`（它原先靠写 `evaluations[id] = null` 放行守卫，而交付标记本身就是 null，写它等于没写，**跳过会静默失效**）。
+- `advanceDeterministic` / `ensureQuestionDelivered` 里第三份计数实现 `new Set([...answers, ...evaluations]).size` 统一到 `countDelivered`。
+- `endEarly` 判据改为 `countDelivered === 0`（旧口径会把「已交付未作答」的用户**挡在面试里出不去**）。
+
+### 收尾顺序契约化（P0）
+
+`finalize()` 在 `await onComplete(record)` **之前**就 `void flushPersist().then(() => deleteAgentSession(...))`，且 `finalizedRef` 在函数开头置位 → 落库失败时草稿已删、重试闸已关，整场成绩永久丢失。（评审稿称「`onComplete` 是同步调用」不成立——它早已 `await` + `try/catch`；缺陷纯粹是**顺序**。）
+
+- 新增 `agent/finalizeSession.ts`：注入 IO 固化唯一顺序「先 `persist`，成功后才 `flushDraft` → `deleteDraft`」；`ok: false` 当且仅当落库失败。
+- `useAgentInterview` 把 `finalizedRef` 拆成 `finalizingRef`（并发重入闸）/ `finalizedRef`（终局完成，仅落库成功后置位）；失败时只回退前者 → 可重试。
+- 新增 `finalizing` / `saveError` / `retryFinalize` 状态。`saveError` 非 null 时结果页与 Copilot 侧栏**不得**再显示「已记入学习档案 / 已写入学习记录」，改为失败原因 + 「重试保存」。`restart()` 在 `saveError` 非 null 时**不删草稿**。
+
+### 「延长本题时间」重新装载计时器（P1）
+
+归零时定时器自我清理，而 `extendQuestionTime` 只重置数值 → 显示永久停在 180、再也不会走动。
+
+- 新增 `agent/questionTimer.ts`（倒计时状态机，零 React 依赖）；`extendQuestionTime` 改为 `start()`（= 重新装载）。归零后 `remaining()` 保留 0（UI 仍显示 00:00），`stop()` 才清成 null。
+
+### 画像提交串行化（P1）
+
+`updateLearner` 是读-改-写，`doSubmit` 与 `handleAgentComplete` 并发时后完成者整体覆盖先完成者。`saveLearner` 的 Dexie 事务只保证单次写入原子。
+
+- 新增 `application/learnerCommit.ts` 的 `createLearnerCommitter`：队列串行执行「读基准 → 变换 → 落库 → 回写基准」，**基准在临界区内读**、成功后**同步回写**。
+- **基准绝不重新 `loadLearner()`**：它不是 `saveLearner` 的逆运算（会用默认 proficiency 重算 `mastery`、按 `SESSION_CAP` 截断、丢弃坏行），拿它当基准会静默改写掌握度。
+- `useTrainingSession` 的 `profileRef` 渲染期同步改为「仅在 state 真的变化时赋值」，避免覆盖队列刚写入的结果。
+- `learnerCapability.commitSession` **零调用方**（评审稿把它当成活跃风险面），未删，加注释警示「重新接线必须走该队列」。
+
+### 画像闸设在会话层（P1）
+
+`App.tsx` 传 `profile ?? emptyProfile()`，`CopilotSidebar` 渲染在 `loadingProfile` 闸之外 → 画像加载期间可从侧栏开局，整场面试建立在空画像上，且空画像会被写进草稿、续面后继续生效。
+
+- `useAgentInterview` 的 `profile` 放宽为 `LearnerProfile | null`，`startInner` 入口 `if (!profile) return`，暴露 `profileReady`；`App.tsx` 去掉 `?? emptyProfile()`；两个入口各自禁用 / 说明原因。**闸设在状态上而非逐入口拦**（与 ADR-085 第 1 条同源）。
+
+### 回归测试（评审要求 5 类）
+
+本项目 61 个测试文件全是纯函数 / node 环境，**没有 React 测试环境**（无 `@testing-library/react`、无 `jsdom`/`happy-dom`），第 2/3/5 类无法在 hook 层断言。故把非纯逻辑抽成**零依赖可注入模块**，而不是新增整套 React 测试依赖：
+
+| 评审要求 | 落点 |
+|---|---|
+| delivery marker / `MAX_AGENT_QUESTIONS` | `agent/tools.test.ts`（真实交付路径 + 上限累积 + 换题后防重复）、`agent/interviewAgent.test.ts`（上限口径、`markDelivered` 幂等、交付标记与等待守卫配套、`skip` 后仍交付下一题） |
+| finalize 保存失败不得删除 draft | `agent/finalizeSession.test.ts`（6 例，含顺序反转与「不 await 等于把失败当成功」） |
+| timer expire → extend → 继续 | `agent/questionTimer.test.ts`（7 例，含归零自我清理 / 延长重新走动 / 冻结 / 重复 start 不留双定时器） |
+| Agent + 普通训练并发 commit | `application/learnerCommit.test.ts`（5 例，含并发不丢更新、基准临界区内读、落库顺序、失败不阻塞后续） |
+| profile loading → Copilot start blocked | 会话层闸 + 两个入口 UI 禁用（**未做**常量自证式用例） |
+
+**测试有效性用变异测试逐条验证**：临时把 `questionTimer.start()` 改回「只在首次装载」、反转 `finalizeSession` 的两步顺序、去掉 `learnerCommit` 的 `tail.then`、删掉两处 `markDelivered`、把 `skip()` 改回只写 `evaluations` —— **6 个变异全部被捕获为红**。
+
+### 验证
+
+- `tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过。
+- 全量 **868 passed / 871**（845 → 871，+26；文件 62 → 65，+3）。
+- 3 项失败全部是 `src/ai/local.test.ts` 的 `deepseek-v4-flash`：`pi-ai` 0.87.1 已从 DeepSeek 注册表移除该模型，零运行时引用，与本轮无关。**注意**：ADR-085 当时把这项归因为「工作区未提交的升级」，该升级现已随 `6109723` 进入 HEAD，即 **HEAD 本身就带 3 项失败**。
+
 ## 2026-09-25 · 测试瘦身第三轮：删除 83 个低价值用例（928 → 845）
 
 动因：用例池里仍堆着大量「测的是框架/schema/平凡入参」而非「测的是本项目行为」的用例，白耗 token 与维护注意力。本轮按「**测点本身不重要**」这一口径删除 **83 例**（16 个文件，−591 / +6 行），失败数不变（仍为那 3 个 `local.test.ts`）。

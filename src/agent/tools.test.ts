@@ -8,7 +8,7 @@ import type { Question } from '../schemas/question';
 import { emptyProfile } from '../domain/learner';
 import { buildUserPrompt } from '../ai/chromeAgent';
 import { createAgentTools } from './tools';
-import { createAgentSession } from './types';
+import { countDelivered, createAgentSession } from './types';
 import type { AgentToolDeps } from './tools';
 
 function makeChoiceQuestion(): Question {
@@ -682,5 +682,52 @@ describe('P0-5 coverage 第二层：必考点证据缺口', () => {
     expect(conceptGaps.length).toBeGreaterThan(0);
     expect(conceptGaps.every((g) => g.status === 'unprobed')).toBe(true);
     expect(textOf(r)).toContain('从未探测');
+  });
+});
+
+// 交付标记：题目一旦呈现给用户就必须留下痕迹。
+// 若只在评分时建键，「已交付但未作答」的题在题数上限与防重复出题两个口径下都不存在。
+describe('交付标记（getQuestion 交付即建键）', () => {
+  it('交付后立即建键，值为 null（已呈现、未评分），并计入已交付题数', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const getQ = createAgentTools(d).find((t) => t.name === 'getQuestion')!;
+    await getQ.execute('call', { id: 'q-choice-1' });
+
+    // 只写 currentQuestion 是不够的：换题之后这道题就再也查不到了
+    expect(Object.prototype.hasOwnProperty.call(d.session.evaluations, 'q-choice-1')).toBe(true);
+    expect(d.session.evaluations['q-choice-1']).toBeNull();
+    expect(countDelivered(d.session)).toBe(1);
+  });
+
+  it('★连续交付 12 道且全部未作答：已交付题数如实累积（上限因此无法被绕过）', async () => {
+    const bank = Array.from({ length: 12 }, (_, i) => makeQuestion({ id: `q${i}` }));
+    const d = deps(bank);
+    const getQ = createAgentTools(d).find((t) => t.name === 'getQuestion')!;
+    for (let i = 0; i < 12; i++) await getQ.execute('call', { id: `q${i}` });
+    // 旧口径（只在评分/跳过时建键）在这里会得到 0 —— 上限 MAX_AGENT_QUESTIONS 永远达不到
+    expect(countDelivered(d.session)).toBe(12);
+  });
+
+  it('★换题之后仍记得旧题已交付：不会被重复交付', async () => {
+    const d = deps([makeQuestion({ id: 'q1' }), makeQuestion({ id: 'q2' })]);
+    const getQ = createAgentTools(d).find((t) => t.name === 'getQuestion')!;
+    await getQ.execute('call', { id: 'q1' });
+    await getQ.execute('call', { id: 'q2' }); // 换到 q2：q1 已不是 currentQuestion
+
+    const again = await getQ.execute('call', { id: 'q1' });
+    expect((again.details as { error?: string }).error).toBe('already_delivered');
+    expect(d.session.currentQuestion?.question.id).toBe('q2'); // 也没有被换回 q1
+  });
+
+  it('交付后立即评分：交付标记被真实评分取代（不残留 null）', async () => {
+    const d = deps([makeChoiceQuestion()]);
+    const tools = createAgentTools(d);
+    await tools.find((t) => t.name === 'getQuestion')!.execute('call', { id: 'q-choice-1' });
+    expect(d.session.evaluations['q-choice-1']).toBeNull(); // 交付标记
+
+    d.session.answers['q-choice-1'] = [0];
+    await tools.find((t) => t.name === 'evaluateAnswer')!.execute('call', {});
+    expect(d.session.evaluations['q-choice-1']?.overall).toBe(100);
+    expect(countDelivered(d.session)).toBe(1); // 仍是同一道题，没有被重复计数
   });
 });

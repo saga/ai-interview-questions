@@ -115,7 +115,9 @@ export default function App() {
     handleRestart,
   } = useTrainingSession(message, () => goPage('train'));
   // Agent 面试会话状态提升到 App 层（与训练同思路），切 tab（如去设置页）时不丢失。
-  const agent = useAgentInterview(config, profile ?? emptyProfile(), handleAgentComplete, message);
+  // 直接传 profile（可为 null）：画像加载完成前开局会被会话层拒绝，而不是用 emptyProfile()
+  // 顶替——那会把「还没加载完」伪装成「全新用户」，让整场面试基于空画像选题。
+  const agent = useAgentInterview(config, profile, handleAgentComplete, message);
   // 设置页未保存草稿提升到 App 层（同上思路），切到其它 tab 再切回时不丢编辑态。
   const settings = useSettingsDraft(config, handleSaveConfig, message);
   const challengerProvider = createLLMProvider(config, devUsageLogger);

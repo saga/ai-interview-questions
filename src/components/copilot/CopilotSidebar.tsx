@@ -312,6 +312,14 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       // 面试运行时**不在这里**：它由 App 层 useAgentInterview 持有，与「Agent 面试」页同一份。
       // 侧栏只负责发起 / 放行，题目与反馈由状态直渲染（见渲染段的面试面板）。
       if (!interviewRunning) {
+        // 画像未加载完成：Agent 的选题 / 追问方向全部来自 LearnerProfile，
+        // 此时开局会让整场面试建立在空画像上，而且这份空画像会被写进草稿、续面后继续生效。
+        // 会话层（useAgentInterview.startInner）也有同一道闸——此处只是把原因直接说给用户，
+        // 而不是让「开始」静默失败。
+        if (!agentInterview.profileReady) {
+          appendAssistant('学习记录仍在加载，请稍候再开始模拟面试——需要你的历史画像来决定考察方向。');
+          return;
+        }
         // 首次进入：需要可用的 AI 引擎。检查交给 App 层会话（start 内部会 setError），
         // 这里只做一次前置提示，避免用户点了没反应。
         const entry = config.providers.find((p) => p.enabled && isEntryValid(p)) ?? null;
@@ -678,8 +686,15 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
             <div className="copilot-context">
               <div className="copilot-context-label">本轮面试已结束</div>
               <div className="copilot-context-value">
-                共 {agentInterview.summary?.asked ?? 0} 题，综合 {agentInterview.summary?.overall ?? 0} 分，已写入学习记录。
+                共 {agentInterview.summary?.asked ?? 0} 题，综合 {agentInterview.summary?.overall ?? 0} 分，
+                {/* 落库失败时不得宣称「已写入学习记录」——那是在骗用户。草稿已保留，可重试。 */}
+                {agentInterview.saveError ? '成绩未能写入学习记录（草稿已保留）。' : '已写入学习记录。'}
               </div>
+              {agentInterview.saveError && (
+                <Typography.Text type="danger" style={{ fontSize: 12 }}>
+                  {agentInterview.saveError}
+                </Typography.Text>
+              )}
             </div>
           )}
           {agentInterview.error && (

@@ -32,7 +32,7 @@ import { buildAgentRuntime, buildFallbackAgentRuntime } from './runtime';
 import { piUsageToLLMUsage } from '../ai/pi';
 import type { LLMUsage } from '../types';
 import type { AgentHandlers, InterviewAgentSession } from './types';
-import { countDelivered } from './types';
+import { countDelivered, markDelivered } from './types';
 
 /** 单轮 Agent 面试的题数上限（达到即优雅停止）。 */
 export const MAX_AGENT_QUESTIONS = 10;
@@ -271,6 +271,10 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     const format: FormatId = fmts.includes('choice') ? 'choice' : 'open';
     const sq: SessionQuestion = { question: q, format };
     session.currentQuestion = sq;
+    // 交付标记（与 getQuestion 工具同一口径）：兜底出题同样是把题呈现给用户，
+    // 必须计入「已交付」。漏掉它会让兜底路径完全绕过题数上限，并让上一道未作答的题
+    // 在换题后彻底消失（防重复出题随之失效）。
+    markDelivered(session, q.id);
     handlers?.onQuestion?.(sq);
     return true;
   }
@@ -316,7 +320,10 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
    * 由「选择题快路径」与「immediate 模式下用户确认继续（选择题 / 兜底）」共用。
    */
   function advanceDeterministic(): void {
-    const askedCount = new Set([...Object.keys(session.answers), ...Object.keys(session.evaluations)]).size;
+    // 与 shouldStopAfterTurn 共用同一口径（countDelivered）。此前这里另算
+    // `new Set([...answers, ...evaluations])`，是同一件事的第三份实现——
+    // 三处口径一旦漂移，「什么时候该停」就会随路径而变。
+    const askedCount = countDelivered(session);
     if (askedCount >= MAX_AGENT_QUESTIONS || session.status === 'finished') {
       handlers?.onStatus?.('finished');
       return;
@@ -384,11 +391,19 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     // 必须在最前面：本函数会被 agent_end 调用，而 immediate 的暂停正是靠「本轮 run 优雅结束」
     // 实现的——若没有这道闸，run 一结束就会立刻兜底出下一题，暂停形同虚设。
     if (session.status === 'awaiting_feedback') return;
-    // 已交付且用户尚未作答 → 等待用户，不干预
-    if (session.currentQuestion && !Object.prototype.hasOwnProperty.call(session.evaluations, session.currentQuestion.question.id)) {
+    // 已交付且用户尚未作答 → 等待用户，不干预。
+    //
+    // 判据必须是 `answers`（用户是否已提交作答），**不能**是 `evaluations`：
+    // 交付时就会写入 `evaluations[id] = null` 作为交付标记（见 markDelivered），
+    // 若仍用「evaluations 里有没有键」推断「用户答没答」，每一道刚交付的题都会被误判成
+    // 「已处理」，于是覆盖掉当前题再交付一道新的——用户眼睁睁看着题目被换掉。
+    if (
+      session.currentQuestion &&
+      !Object.prototype.hasOwnProperty.call(session.answers, session.currentQuestion.question.id)
+    ) {
       return;
     }
-    const askedCount = new Set([...Object.keys(session.answers), ...Object.keys(session.evaluations)]).size;
+    const askedCount = countDelivered(session);
     if (askedCount >= MAX_AGENT_QUESTIONS || session.status === 'finished') {
       handlers?.onStatus?.('finished');
       return;
@@ -515,7 +530,15 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
       handlers?.onStatus?.('running');
     }
     const sq = session.currentQuestion;
-    if (sq) session.evaluations[sq.question.id] = null;
+    if (sq) {
+      // 放弃当前题 = 这道题「已处理」，但仍不得重复交付 → 保留交付标记（幂等）。
+      markDelivered(session, sq.question.id);
+      // 关键：必须显式置空 currentQuestion，让 ensureQuestionDelivered 的
+      // 「当前题还没被作答 → 等待用户」守卫放行。
+      // 不能像以前那样只写 `evaluations[id] = null` 当作「已处理」标记——交付标记本身就是 null，
+      // 写它等于什么都没做，跳过会静默失效（用户点「跳到下一题」却仍停在原题）。
+      session.currentQuestion = null;
+    }
     await ensureQuestionDelivered();
   }
 

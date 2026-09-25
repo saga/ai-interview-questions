@@ -31,6 +31,8 @@ import {
 } from '../agent/types';
 import { createInterviewAgent } from '../agent/interviewAgent';
 import type { InterviewAgentHandle } from '../agent/interviewAgent';
+import { createQuestionTimer, type QuestionTimer } from '../agent/questionTimer';
+import { finalizeSession } from '../agent/finalizeSession';
 import { validAgentEntries } from '../agent/runtime';
 import { resolveOpeningInstruction } from '../agent/prompt';
 import { devUsageLogger, resetUsageTelemetry } from '../ai/usageTelemetry';
@@ -100,6 +102,18 @@ export interface AgentInterviewState {
   submitting: boolean;
   summary: { asked: number; overall: number } | null;
   error: string | null;
+  /** 正在把成绩写入学习记录（IndexedDB）：面试已结束、结果尚未落地的窗口期。 */
+  finalizing: boolean;
+  /**
+   * 成绩落库失败的原因。非 null 时草稿**未被删除**（它是结果唯一的可恢复副本），
+   * 可调用 `retryFinalize` 重试。结果页与 Copilot 侧栏必须据此显示「未保存」，
+   * 不得显示「已写入学习记录」——那是在骗用户。
+   */
+  saveError: string | null;
+  /** 重试写入学习记录（仅在 `saveError` 非 null 时有意义；成功后删除草稿）。 */
+  retryFinalize: () => Promise<void>;
+  /** 历史画像是否已加载完成。false 时 `start()` 会被拒绝，UI 应禁用开始入口。 */
+  profileReady: boolean;
   /** 已被 Agent 评分的题目数（来自 session.evaluations，渲染时读取，随 transcript 更新）。 */
   evaluatedCount: number;
   /** 当前题剩余秒数；非 running 或尚未交付题为 null。 */
@@ -155,10 +169,20 @@ export interface AgentInterviewState {
  */
 export function useAgentInterview(
   config: AIConfig,
-  profile: LearnerProfile,
+  /**
+   * 历史学习画像。**可为 null**：它从 IndexedDB 异步加载，加载完成前不得开局
+   * （见 startInner 的画像闸）。调用方不要用 `emptyProfile()` 顶替——那会把「还没加载完」
+   * 伪装成「全新用户」，让整场面试基于空画像选题，并把这份空画像写进草稿。
+   */
+  profile: LearnerProfile | null,
   onComplete: (record: SessionRecord) => Promise<void> | void,
   message: MessageInstance,
 ): AgentInterviewState {
+  /**
+   * 历史画像是否已就绪。开局的前提条件（见 startInner 的画像闸）；
+   * 由 hook 统一计算并暴露，避免两个入口各自判断、各自漂移。
+   */
+  const profileReady = profile !== null;
   const [phase, setPhase] = useState<AgentPhase>('intro');
   const [currentQuestion, setCurrentQuestion] = useState<SessionQuestion | null>(null);
   const [answer, setAnswer] = useState<AnswerValue>([]);
@@ -191,6 +215,16 @@ export function useAgentInterview(
   const [submitting, setSubmitting] = useState(false);
   const [summary, setSummary] = useState<{ asked: number; overall: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** 正在把成绩写入 Learner Memory（IndexedDB）：面试已结束、结果尚未落地的窗口期。 */
+  const [finalizing, setFinalizing] = useState(false);
+  /**
+   * 成绩落库失败的原因。非 null 时**草稿未被删除**——它是这次结果唯一的可恢复副本，
+   * 用户可点「重试保存」再次落库。
+   *
+   * 与 `error` 分开：`error` 是「面试过程中的错误」（可继续面试），
+   * 本字段是「面试已结束但成绩没存住」（需重试），两者的用户动作完全不同。
+   */
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // ── 逐题反馈（immediate 模式）──
   // feedbackMode 在「进入面试前」可选（intro 页），start 时固化为会话级配置：
@@ -237,9 +271,18 @@ export function useAgentInterview(
   // 时间到不自动跳题：弹窗让用户选择「延长本题」或「跳到下一题」（见 AgentInterviewPage 的 Modal）。
   const [questionTimeLeftSec, setQuestionTimeLeftSec] = useState<number | null>(null);
   const [questionTimeUp, setQuestionTimeUp] = useState(false);
-  const questionTimerIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const questionTimerRemainingRef = useRef(AGENT_QUESTION_TIME_LIMIT_SEC);
-  const questionTimerFrozenRef = useRef(false);
+  /**
+   * 倒计时状态机（惰性创建一次）。用 ref 而非 state：它内部持有 interval id，
+   * 每次渲染重建会泄漏定时器；而两个回调都是稳定的 setState，无需随渲染更新。
+   */
+  const questionTimerRef = useRef<QuestionTimer | null>(null);
+  if (!questionTimerRef.current) {
+    questionTimerRef.current = createQuestionTimer(AGENT_QUESTION_TIME_LIMIT_SEC, {
+      onTick: setQuestionTimeLeftSec,
+      onExpire: () => setQuestionTimeUp(true), // 只置「时间到」，由 UI 弹窗决定延长还是跳题
+    });
+  }
+  const questionTimer = questionTimerRef.current;
 
   const handleRef = useRef<InterviewAgentHandle | null>(null);
   const sessionRef = useRef<InterviewAgentSession | null>(null);
@@ -250,9 +293,12 @@ export function useAgentInterview(
   // 「继续」的同步重入锁：与 submittingRef 同因——点击后到 Promise 落地之间存在窗口期，
   // 双击会触发两次 continueAfterFeedback（运行时虽幂等，但会重复落库并闪 loading）。
   const continuingRef = useRef(false);
-  // 续面用的快照/查找键：存入草稿、恢复时回读（避免持久化 apiKey / 保证弱项推荐一致）
-  const profileRef = useRef<LearnerProfile>(profile);
-  profileRef.current = profile;
+  // 续面用的快照/查找键：存入草稿、恢复时回读（避免持久化 apiKey / 保证弱项推荐一致）。
+  // 可为 null：画像从 IndexedDB 异步加载，加载完成前不得开局（否则整场面试建立在空画像上）。
+  const profileRef = useRef<LearnerProfile | null>(profile);
+  // 只在**确实拿到画像**时同步：null 表示「尚未加载完」，用 null 无条件覆盖会把续面
+  // 回读到的草稿快照清掉（草稿从此再也落不下去，而续面的会话正需要它）。
+  if (profile) profileRef.current = profile;
   const entryIdRef = useRef<string | null>(null);
   const resumeStartedRef = useRef(false);
   /**
@@ -263,8 +309,15 @@ export function useAgentInterview(
   const resumeDoneRef = useRef(false);
   /** `start()` 的重入锁（同步拦截，覆盖同 tick 内多次点击与 await 期间的再次进入）。 */
   const startingRef = useRef(false);
-  // 终局幂等守卫：finishInterview / 兜底收尾 / endEarly 都可能触发 finalize，
-  // 必须保证 onComplete（落库到 Learner Memory）只调用一次，禁止重复写入。
+  /**
+   * 收尾的两个标记，**必须分开**：
+   * - `finalizingRef`：并发重入闸。面试已结束、结果尚未落库的窗口期内挡住重复收尾；
+   * - `finalizedRef`：终局完成闸。**只在落库成功后**置位。
+   *
+   * 若只用一个标记且在开头就置位，落库失败后用户再也无法重试——守卫已关、草稿已删，
+   * 这场面试的成绩就永久丢了。落库失败时只回退 `finalizingRef`，草稿原样保留。
+   */
+  const finalizingRef = useRef(false);
   const finalizedRef = useRef(false);
 
   // 先同步写 ref，再触发 state 更新：React 的 setState updater 不保证在调用处立即执行，
@@ -279,39 +332,26 @@ export function useAgentInterview(
 
   // ── 每题倒计时控制 ──
   const stopQuestionTimer = useCallback(() => {
-    if (questionTimerIdRef.current) {
-      clearInterval(questionTimerIdRef.current);
-      questionTimerIdRef.current = null;
-    }
-  }, []);
+    questionTimer.stop();
+  }, [questionTimer]);
 
   /** 一道新题交付时调用：重置并启动本题倒计时。 */
   const startQuestionTimer = useCallback(() => {
-    stopQuestionTimer();
-    questionTimerRemainingRef.current = AGENT_QUESTION_TIME_LIMIT_SEC;
-    questionTimerFrozenRef.current = false;
     setQuestionTimeUp(false);
-    setQuestionTimeLeftSec(AGENT_QUESTION_TIME_LIMIT_SEC);
-    questionTimerIdRef.current = setInterval(() => {
-      // busy / submitting 时冻结（面试官思考/评分期间不消耗作答时间）
-      if (questionTimerFrozenRef.current) return;
-      const v = Math.max(0, questionTimerRemainingRef.current - 1);
-      questionTimerRemainingRef.current = v;
-      setQuestionTimeLeftSec(v);
-      if (v <= 0) {
-        stopQuestionTimer();
-        setQuestionTimeUp(true); // 触发 UI 弹窗，不自动跳题
-      }
-    }, 1000);
-  }, [stopQuestionTimer]);
+    questionTimer.start(); // start 内会同步 onTick(满额) → setQuestionTimeLeftSec
+  }, [questionTimer]);
 
-  /** 「延长本题时间」：本题重新开始计时（全额时长）。 */
+  /**
+   * 「延长本题时间」：本题重新开始计时（全额时长）。
+   *
+   * 必须走 `start()`（= **重新装载**定时器），不能只把剩余秒数改回满额：
+   * 倒计时归零时定时器已自我清理（见 questionTimer 的 `next <= 0` 分支），
+   * 只改数值会让显示永久停在满格、再也不会走动——用户点了「延长本题」，时间却纹丝不动。
+   */
   const extendQuestionTime = useCallback(() => {
-    questionTimerRemainingRef.current = AGENT_QUESTION_TIME_LIMIT_SEC;
-    questionTimerFrozenRef.current = false;
     setQuestionTimeUp(false);
-    setQuestionTimeLeftSec(AGENT_QUESTION_TIME_LIMIT_SEC);
-  }, []);
+    questionTimer.start();
+  }, [questionTimer]);
 
   /** 「跳到下一题」：放弃当前题（不计分）并交付下一题（Agent 的 skip）。 */
   const jumpToNextQuestion = useCallback(() => {
@@ -330,49 +370,8 @@ export function useAgentInterview(
 
   // 面试官思考/评分期间冻结倒计时，避免消耗作答时间
   useEffect(() => {
-    questionTimerFrozenRef.current = busy || submitting;
-  }, [busy, submitting]);
-
-  const finalize = useCallback(async () => {
-    if (finalizedRef.current) return; // 幂等：已收尾则直接返回，杜绝重复落库
-    stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
-    setQuestionTimeUp(false);
-    setQuestionTimeLeftSec(null);
-    clearFeedback(); // 收尾：反馈卡随之关闭（结果页承担总结职责）
-    setContinuing(false);
-    const session = sessionRef.current;
-    if (!session) return;
-    finalizedRef.current = true;
-    session.status = 'finished'; // domain truth：持久化层据此判定草稿可删，修复「终局状态分裂」（P0-1）
-    handleRef.current?.abort();
-    const asked = countDelivered(session);
-    // 终局：先等未完成的落库写完，再删草稿，避免删除之后在途写入把草稿重新写回（草稿复活）。
-    void flushPersist().then(() => deleteAgentSession(session.id));
-    if (asked === 0) {
-      setPhase('done');
-      setSummary({ asked: 0, overall: 0 });
-      return;
-    }
-    const durationSec = Math.round((Date.now() - session.startedAt) / 1000);
-    const record = sessionRecordFromAgent(session, questionsRef.current, 'Agent 面试', durationSec);
-    // 没有任何有效评分（整场 LLM 评分都失败）：不写入 Learner Memory，
-    // 避免把「未产生成绩」误解成一次 0 分训练（与 updateLearner 空结果守卫同义，此处显式拦截，P1-4）。
-    if (record.questionResults.length === 0) {
-      setSummary({ asked, overall: 0 });
-      setPhase('done');
-      return;
-    }
-    // 必须 await：onComplete 落库到 IndexedDB 是异步的。不 await 的话写入失败会变成
-    // 未处理的 rejection，而下面已经 setPhase('done')、UI 显示「已写入学习记录」——
-    // 用户以为存住了，实际没有。失败时显式报错，但仍进入 done（面试确实已结束）。
-    try {
-      await onComplete(record);
-    } catch (err) {
-      setError(`学习记录保存失败：${(err as Error).message}`);
-    }
-    setSummary({ asked, overall: averageOverall(session) });
-    setPhase('done');
-  }, [onComplete, clearFeedback]);
+    questionTimer.freeze(busy || submitting);
+  }, [busy, submitting, questionTimer]);
 
   /**
    * 落库写入的串行队列：所有 saveAgentSession 都接到队尾依次执行。
@@ -397,7 +396,10 @@ export function useAgentInterview(
     const handle = handleRef.current;
     const session = sessionRef.current;
     const entryId = entryIdRef.current;
-    if (!handle || !session || !entryId) return;
+    // 画像尚未加载完（null）时不落库：开局已被 start() 拦下，这里只是不让空画像进入草稿——
+    // 续面会把草稿里的 profile 当「历史画像」回读，错误会被固化到下一场面试。
+    const usedProfile = profileRef.current;
+    if (!handle || !session || !entryId || !usedProfile) return;
     // 终局后不再落库（无论 UI 是否已切到 done）：finalize 已置 finalizedRef 并负责删草稿，
     // 否则会在 deleteAgentSession 之后又把旧快照写回（草稿复活）。status 是 domain truth 冗余校验。
     if (finalizedRef.current || session.status === 'finished') return;
@@ -408,7 +410,7 @@ export function useAgentInterview(
       messages: handle.agent.state.messages,
       questions: questionsRef.current,
       entryId,
-      profile: profileRef.current,
+      profile: usedProfile,
       updatedAt: Date.now(),
     };
     // 接到队尾串行执行，保证「后调用的写入后落库」，避免旧快照覆盖新快照。
@@ -419,6 +421,57 @@ export function useAgentInterview(
       });
     return persistQueueRef.current;
   }, []);
+
+  /**
+   * 收尾：结束面试并把成绩**持久化**。
+   *
+   * 顺序由 `finalizeSession` 强制（先落库，成功之后才排空并删除草稿）。
+   * 草稿是这次结果唯一的可恢复副本——落库失败时**绝不删除**，并解除收尾锁让用户可重试。
+   */
+  const finalize = useCallback(async () => {
+    // 幂等闸：`finalizingRef` 挡并发重入（面试已结束、结果尚未落库的窗口期），
+    // `finalizedRef` 表示已成功落库。两者分工见 ref 声明处。
+    if (finalizingRef.current || finalizedRef.current) return;
+    const session = sessionRef.current;
+    if (!session) return;
+    finalizingRef.current = true;
+    stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
+    setQuestionTimeUp(false);
+    setQuestionTimeLeftSec(null);
+    clearFeedback(); // 收尾：反馈卡随之关闭（结果页承担总结职责）
+    setContinuing(false);
+    setSaveError(null);
+    setFinalizing(true);
+    session.status = 'finished'; // domain truth：立即置终局，阻止在途 run 再改会话
+    handleRef.current?.abort();
+
+    const asked = countDelivered(session);
+    const durationSec = Math.round((Date.now() - session.startedAt) / 1000);
+    const candidate = sessionRecordFromAgent(session, questionsRef.current, 'Agent 面试', durationSec);
+    // 没有任何有效评分（整场 LLM 评分都失败 / 全部未作答）：不写入 Learner Memory，
+    // 避免把「未产生成绩」误解成一次 0 分训练（与 updateLearner 空结果守卫同义，P1-4）。
+    // record = null 表示「没有可保存的成绩」——此时不存在「保存失败」，草稿也已无可恢复价值。
+    const record = candidate.questionResults.length > 0 ? candidate : null;
+
+    const outcome = await finalizeSession({
+      record,
+      persist: onComplete,
+      flushDraft: flushPersist,
+      deleteDraft: () => deleteAgentSession(session.id),
+    });
+
+    setFinalizing(false);
+    setSummary({ asked, overall: averageOverall(session) });
+    // 面试确实已结束 → 无论落库成败都进入结果页。
+    // 失败时结果页凭 saveError 显示「未保存 + 重试」，绝不谎报「已写入学习记录」。
+    setPhase('done');
+    if (outcome.ok) {
+      finalizedRef.current = true;
+      return;
+    }
+    finalizingRef.current = false; // 解除收尾锁，允许重试保存
+    setSaveError(`学习记录保存失败：${outcome.error.message}`);
+  }, [onComplete, clearFeedback, flushPersist]);
 
   /**
    * 创建（但不启动）一个面试 Agent 运行时，并接好全部 handlers。
@@ -542,11 +595,23 @@ export function useAgentInterview(
 
   const startInner = async () => {
     setError(null);
+    setSaveError(null);
+    // 画像闸：LearnerProfile 决定整场面试的选题与追问方向（薄弱主题 / 薄弱角度 / 覆盖缺口 /
+    // 自适应排序），画像还在从 IndexedDB 加载时它必然是 null。此时开局会让整场面试建立在
+    // 空画像上——选题退化成随机探索、薄弱分析全空——而且这份错误画像会被写进草稿，
+    // 续面后继续生效。闸设在这里（而非某个页面），因为「Agent 面试页」与「Copilot 侧栏」
+    // 是两个入口，逐入口拦截必然漏掉一个。
+    if (!profile) {
+      setError('学习记录仍在加载，请稍后再开始面试——需要你的历史画像来决定考察方向。');
+      return;
+    }
     stopQuestionTimer(); // 新一轮：清掉上一场可能残留的倒计时
     setQuestionTimeUp(false);
     setQuestionTimeLeftSec(null);
     clearFeedback();
     setContinuing(false);
+    setFinalizing(false);
+    finalizingRef.current = false; // 新一轮面试：解除收尾锁
     finalizedRef.current = false; // 新一轮面试：解除终局守卫
     resetUsageTelemetry(); // 重置 KV Cache 命中率累计（P1④）：每场面试从 Round 1 重新计数
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
@@ -640,8 +705,11 @@ export function useAgentInterview(
   };
 
   const endEarly = () => {
-    if (Object.keys(sessionRef.current?.evaluations ?? {}).length === 0) {
-      message.info('还没有可保存的作答');
+    // 判据与题数上限同口径（countDelivered）：一道题都没交付 = 这场面试什么都没问出来，
+    // 收尾也没有任何内容可保存。此前用 `evaluations` 的键数，在「已交付但未作答」时
+    // 会把用户挡在面试里出不去（既无可保存内容、又无法结束）。
+    if (!sessionRef.current || countDelivered(sessionRef.current) === 0) {
+      message.info('本轮还没有考察任何题目');
       return;
     }
     void finalize();
@@ -656,9 +724,16 @@ export function useAgentInterview(
     clearFeedback();
     setContinuing(false);
     const restartSessionId = sessionRef.current?.id;
-    if (restartSessionId) void flushPersist().then(() => deleteAgentSession(restartSessionId));
+    // 成绩没存住时**不删草稿**：它是这次结果唯一的副本，删掉就永久丢了。
+    // 用户当然可以重新开始，但草稿留到落库成功（或用户主动清理）为止。
+    if (restartSessionId && !saveError) {
+      void flushPersist().then(() => deleteAgentSession(restartSessionId));
+    }
     sessionRef.current = null;
+    finalizingRef.current = false; // 解除收尾锁
     finalizedRef.current = false; // 解除终局守卫，允许下次面试收尾
+    setFinalizing(false);
+    setSaveError(null);
     setPhase('intro');
     setCurrentQuestion(null);
     setAnswer([]);
@@ -761,6 +836,10 @@ export function useAgentInterview(
     submitting,
     summary,
     error,
+    finalizing,
+    saveError,
+    retryFinalize: finalize,
+    profileReady,
     // 「已考察 N 题」= 已交付题数（含评分失败记为 null 的题），与 MAX_AGENT_QUESTIONS 上限口径一致。
     evaluatedCount: sessionRef.current ? countDelivered(sessionRef.current) : 0,
     questionTimeLeftSec,

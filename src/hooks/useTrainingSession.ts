@@ -19,6 +19,7 @@ import type { AnswerSignal, Strategy } from '../domain/adaptive';
 import { isConfigValid } from '../ai/provider';
 import { loadConfig, saveConfig } from '../storage/settings';
 import { loadLearner, saveLearner } from '../storage/learner';
+import { createLearnerCommitter, type LearnerCommitter } from '../application/learnerCommit';
 import { buildCoachDefinition, sessionFromQuiz, updateLearner, emptyProfile } from '../domain/learner';
 
 export type Phase = 'home' | 'quiz' | 'result';
@@ -99,8 +100,31 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
   sessionRef.current = session;
   const configRef = useRef(config);
   configRef.current = config;
+  /**
+   * 最新画像快照：既供渲染期读取，也是画像提交队列的基准来源。
+   *
+   * 只在 state 真的变化时同步，**不做无条件覆盖**：提交队列在临界区内把落库结果同步写回本 ref 后，
+   * 若这里用「上一轮渲染的 profile state」再覆盖一次，队列中的下一次提交就会读到旧快照，
+   * 串行化白做（丢更新原样复现）。state 与 ref 指向同一对象时无需赋值。
+   */
   const profileRef = useRef<LearnerProfile>(profile ?? emptyProfile());
-  profileRef.current = profile ?? emptyProfile();
+  if (profile && profile !== profileRef.current) profileRef.current = profile;
+  /**
+   * 画像提交队列：把「读 profileRef → updateLearner → saveLearner」整体串行化。
+   * 本 hook 有两个写入入口（doSubmit 与 handleAgentComplete），并发时会互相覆盖，
+   * 详见 application/learnerCommit.ts。
+   */
+  const committerRef = useRef<LearnerCommitter | null>(null);
+  if (!committerRef.current) {
+    committerRef.current = createLearnerCommitter({
+      read: () => profileRef.current,
+      write: (next) => {
+        profileRef.current = next;
+      },
+      save: saveLearner,
+    });
+  }
+  const commitProfile = committerRef.current;
   const gradesRef = useRef(grades);
   gradesRef.current = grades;
   /** 自适应模式：按顺序累积的作答信号，供下一题决策使用 */
@@ -221,10 +245,14 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
       setGrades(g);
       // 时长从会话创建（startedAt）起算——自适应模式下追加题目不会改变 startedAt
       const durationSec = Math.round((Date.now() - s.startedAt) / 1000);
-      const prev = profileRef.current.sessions[0]?.overall ?? null;
       const rec = sessionFromQuiz(s, g, durationSec, answersRef.current);
-      const next = updateLearner(profileRef.current, rec, configRef.current.proficiency);
-      await saveLearner(next);
+      // 基准与「上次得分」都在临界区内取：并发落库时，入队前读到的快照可能已被
+      // 另一次提交（如 Agent 面试收尾）取代——那样既会丢更新，也会显示错误的「上次得分」。
+      let prev: number | null = null;
+      const next = await commitProfile((base) => {
+        prev = base.sessions[0]?.overall ?? null;
+        return updateLearner(base, rec, configRef.current.proficiency);
+      });
       setProfile(next);
       setPrevOverall(prev);
       setPhase('result');
@@ -284,11 +312,21 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
     void handleStart(def);
   };
 
-  /** Agent 面试结束后的落库：复用既有 Learner 管线，与确定性 engine 写入同一份画像。 */
+  /**
+   * Agent 面试结束后的落库：复用既有 Learner 管线，与确定性 engine 写入同一份画像。
+   *
+   * 与 doSubmit 共用同一个提交队列（不能各自直接 updateLearner + saveLearner）：
+   * 两个入口都能在对方在途时被触发（Copilot 侧栏开着的面试收尾 + 训练页提交），
+   * 各自「读旧快照 → 整体覆盖」会丢掉先完成的那次成绩。
+   *
+   * 失败时**不吞异常**：调用方（useAgentInterview.finalize）需要据此保留草稿并提示重试。
+   */
   const handleAgentComplete = async (record: SessionRecord) => {
-    const prev = profileRef.current.sessions[0]?.overall ?? null;
-    const next = updateLearner(profileRef.current, record, configRef.current.proficiency);
-    await saveLearner(next);
+    let prev: number | null = null;
+    const next = await commitProfile((base) => {
+      prev = base.sessions[0]?.overall ?? null;
+      return updateLearner(base, record, configRef.current.proficiency);
+    });
     setProfile(next);
     setPrevOverall(prev);
   };

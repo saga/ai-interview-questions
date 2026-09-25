@@ -133,13 +133,16 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 
 ## pi-agent-core 0.87 破坏性变更（2026-09-25）
 
-工作区有未提交升级 0.85.1 → 0.87.1（`pi-agent-core` / `pi-ai`，包版本 1.1.2 → 1.2.1），
-它先一步弄坏了 HEAD 上的 `tsc`。**`shouldStopAfterTurn` / `ShouldStopAfterTurnContext` 被删除**
-（不是改名，`.d.ts` 里完全没有），继任者是 `finishTurn?: FinishTurn`，
+升级 0.85.1 → 0.87.1（`pi-agent-core` / `pi-ai`，包版本 1.1.2 → 1.2.1）**已随 `6109723` 进入 HEAD**。
+**`shouldStopAfterTurn` / `ShouldStopAfterTurnContext` 被删除**（不是改名，`.d.ts` 里完全没有），
+继任者是 `finishTurn?: FinishTurn`，
 入参类型 `AgentTurnContext = { message; toolResults; context; newMessages }`，
 返回 `AgentTurnDecision = { action: 'continue' | 'end' }`（可返回 `void`）。
-副作用：`deepseek-v4-flash` 已从 DeepSeek 注册表移除，`src/ai/local.test.ts` 3 个用例失败——
+
+**副作用（HEAD 现状，尚未修）**：`deepseek-v4-flash` 已从 DeepSeek 注册表移除，
+`src/ai/local.test.ts` 3 个用例失败（`在引擎 "deepseek" 中未找到模型 "deepseek-v4-flash"`）。
 该 model id **只在测试里出现**（零运行时引用），要修只需换测试里的 id。
+**基线口径**：全量 = `868 passed / 871`，**3 项失败是 HEAD 既有失败，不是回归**。
 
 ## 测试：不要硬编码题号（2026-09-25）
 
@@ -287,6 +290,59 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 `$`，但它**早在 ADR-083 收口时就已是整句匹配**（末尾保留指代填充 / 难度修饰 / 语气词的可选组），
 按稿子的朴素 `$` 写法改会弄坏 `detectCommand('下一题难一点')?.difficulty === 'hard'`。
 **落地前必须回文件核对；不一致时要报告差异，而不是照稿执行。**
+
+## ★ 给字段加新语义前，先 grep 谁在用它做「推断」（2026-09-25，ADR-086）
+
+`evaluations[id] = null` 原本只在「跳过 / 评分失败」时写入，而 `ensureQuestionDelivered`
+**用「`evaluations` 里有没有这个键」推断「用户答没答」**。一旦改成「交付即建键」（正确的设计），
+这个推断立刻**反转**：每道刚交付的题都被判成「已处理」⇒ 覆盖当前题再交付一道新的。
+
+推论：
+- 「**键存在**」是最脆的一类推断（同形还有「数组非空」「字段非 undefined」）。改动写入时机前，
+  先 grep 该字段的**所有读取点**，逐个确认语义是否还成立。
+- 配套改动会连带出现：`skip()` 原先靠写 `evaluations[id] = null` 放行守卫，加了标记后
+  **写它等于没写 ⇒ 跳过静默失效**。这类「副作用型放行」要改成显式的状态变更
+  （`session.currentQuestion = null`）。
+- 同一件事有三份计数实现（`countDelivered` / `new Set([...answers, ...evaluations]).size` ×2）
+  ⇒ 口径必然漂移。**统一到一个导出**。
+
+## ★ 顺序类契约必须抽成可测模块（2026-09-25）
+
+「先落库、成功后才删草稿」这种顺序，调换后**一切照常运行**，只在落库失败时静默丢数据——
+人工评审几乎不可见。抽成 `agent/finalizeSession.ts`（注入 IO：`persist` / `flushDraft` / `deleteDraft`）
+后，才能用「调用顺序断言」把它钉死。
+
+同理，倒计时「延长必须**重新装载**定时器」（归零会自我清理）抽成 `agent/questionTimer.ts`。
+
+**判据：如果一个 bug 修好之后「看起来和没修一样」（只在异常路径暴露），就把那段逻辑抽成
+带注入 IO 的纯模块，用测试锁顺序 / 锁调用次数。**
+
+## ★ 「从库里重新读一份」≠「拿到权威基准」（2026-09-25）
+
+画像提交并发丢更新（读-改-写）的**错误修法**是「入队后重新 `loadLearner()` 拿最新」：
+`loadLearner` **不是** `saveLearner` 的逆运算——它用**默认** proficiency 配置重算 `mastery`
+（`calculateProficiency` 没传 config）、按 `SESSION_CAP` 截断、丢弃校验不过的行。
+拿它当基准会**静默改写用户的掌握度**。
+
+正确做法（`application/learnerCommit.ts`）：队列在**临界区内**读调用方提供的内存快照
+（`profileRef.current`），成功后**同步回写**该快照。配套：`profileRef` 的渲染期同步必须改成
+「仅在 state 真的变化时赋值」——无条件 `ref.current = state ?? default` 会把队列刚写入的结果
+覆盖回旧快照，串行化白做。
+
+**判据：把某个读函数当作写函数的基准之前，先确认两者互为逆运算（字段无损、无重算、无截断）。**
+
+## ★ 没有 React 测试环境时：抽纯模块 + 变异测试（2026-09-25）
+
+本仓 **61 个测试文件全是纯函数 / node 环境**（无 `@testing-library/react`、无 `jsdom`/`happy-dom`）。
+评审要的「hook 层契约」（finalize 不删草稿 / timer 延长 / 画像闸）无法直接断言。
+
+选择：**把非纯逻辑抽成零依赖可注入模块**，而不是新增整套 React 测试依赖。
+（成本对比：3 个小模块 vs 依赖 + 环境配置 + fake timer × IndexedDB × mock runtime 的脆弱组合。）
+
+**★ 新用例必须用变异测试证明「能失败」**：临时改回旧行为，逐条确认变红。
+写法：python 脚本对每个变异 `assert count(old) == 1` → `replace` → 跑指定测试文件 →
+`finally` 恢复原文。本轮 6 个变异全部被捕获。
+**加测试不算数，能失败的测试才算数。**
 
 ## 内存目录
 
