@@ -2,6 +2,21 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-084 · 单一 runtime：Agent 面试页与 Copilot 侧栏共用同一场会话
+
+- 状态：已采纳 · 2026-09-25
+- 背景：ADR-083 落地后，逐题反馈在「Agent 面试页」与「Copilot 侧栏」都能跑，但**运行时仍然是两套**：页面用 App 层的 `useAgentInterview`，侧栏自己 `startChatInterview` 出一套 `ChatInterviewController`。两者靠 `ActiveInterviewContext` 单向桥接（Copilot 知道「刚那道题的评分」），却**不知道彼此是不是同一场面试**。后果是同一场面试有两个 `InterviewAgentSession`：刷新、并发提交、暂停态、结束落库各自为政，任何一处不一致都会表现为「两个入口看到不同的面试」。
+- 决策：
+  1. **侧栏消费 App 层会话状态**，不再自建 runtime。`CopilotSidebar` 新增 `agentInterview: AgentInterviewState` prop，出题 / 提交 / 继续 / 结束全部读写它。
+  2. **Copilot 面试模式由状态直渲染**题目与反馈卡，不再把题目推成 assistant 消息气泡。理由：`useAgentInterview` 是**状态 hook 而非事件流**，用 effect 把状态同步成消息会重复追加（StrictMode 双调用）、且让「消息」与「真源」脱节——那正是两个 runtime 时代的旧毛病。题目/反馈是运行时的派生视图，就该按视图渲染。
+  3. `useAgentInterview.submit(answerOverride?)`：侧栏的作答来自聊天框文本（`parseChatAnswer`），不在 hook 的 `answer` state 里（那是页面输入框）。
+  4. 新增纯函数 `interviewRoutingContext()`：面试进行中，路由上下文由**共享会话**派生，而不是读侧栏那份陈旧的 `ConversationSession`。不派生的话 `shouldSubmitAsAnswer` 判定「无待作答题」→ 用户输入的「A」被当成提问 → 面试卡死。停在反馈上时 `pendingAction='feedback'` 关闭答案通道。
+  5. `end_interview` 在面试进行中交给 `agentInterview.endEarly()`（由它统一收尾并写 Learner Memory），侧栏**不**重复落库；非面试模式仍走侧栏自己的 `toSessionRecord` 汇总。
+  6. **删除死代码**（ADR-002）：`startChatInterview` / `ChatInterviewController` / `ChatInterviewStep` / `rehydrateInterviewAgent` 随适配层一并删除；`projectToConversationSession` 失去唯一调用方后同样删除。`interviewCapability.ts` 只留规则式面试的确定性能力（`startInterview` / `evaluateInterviewAnswer` / `continueAdaptiveInterview`）。
+- 未改（明确留给后续）：`ConversationSession` 的 `feedbackMode` / `pendingAction: 'feedback'` / `agentSession?` 字段**保留**。它们是持久化契约，旧草稿里可能已写入；删字段会让 `conversationContextSchema.parse` 失败并丢弃整份草稿。运行时状态的责任已经交还给 `useAgentInterview`，字段清理是独立的一步，不与新 runtime 混在一次改动里。
+- 验证：`typecheck`（app + node）通过；`src/application/conversation` + `src/agent` 192 项全绿；新增 `interviewRoutingContext` 端到端路由断言（「A」必须走答案通道、反馈态必须关闭答案通道）；全量测试 941/944（余下 3 项为工作区未提交依赖升级导致的 `deepseek-v4-flash` 测试引用，仅测试、零运行时引用）。
+- 触发条件：若将来要求「侧栏的对话 transcript 里保留题目原文」（当前只由面板渲染），应给 `useAgentInterview` 增加**显式**的题目交付事件，而不是让 UI 去 diff 状态；若要求两个入口同时可见（分屏），需先解决 `QuestionCard` 的输入焦点归属。
+
 ## ADR-083 · 逐题反馈是「会话节奏」而非全局开关：评分与推进解耦
 
 - 状态：已采纳 · 2026-09-25
@@ -22,6 +37,11 @@
 - 未改：`evaluate.ts`（判分口径零改动）、`requiredPointsFor`、`EvaluationResult` schema、`AgentStatus` 既有取值语义、Copilot 的 `AnswerContext` 既有字段。
 - 验证：`tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过；`src/agent` + `src/application/conversation` 全绿（含 immediate 模式的运行时用例：选择题不经 LLM 重入、`evaluation=null` 不产 0 分反馈、暂停态无 `model_error` 遥测）；`src/domain/interviewFeedback.test.ts`、`interviewContext.test.ts`、`copilot.test.ts` 覆盖投影契约、桥接契约与 prompt 注入。
 - 触发条件：若将来要求「反馈里可回看历史若干题」（当前只投影刚作答的那一题），需要扩展投影为队列并给 `pendingAction` 增加浏览态；若要求在 `immediate` 下支持「跳过反馈直接继续」，应复用 `continueAfterFeedback()` 而非新增绕过 `afterEvaluation` 的旁路。
+- 追补（2026-09-25，评审发现的三个 P0）：
+  1. **`onEvaluation` 不等于「已暂停」**。本 ADR 让三条评分路径都汇入 `onEvaluation`，但 UI 把它当成了「现在停在反馈上」（用 `feedback !== null` 推断暂停态）。standard 模式同样会评分、同样触发该回调，于是「评分完成 → 下一题交付」的窗口里（开放题下数秒）会错误弹出反馈卡。修正：运行时显式下发 `awaitingFeedback` 参数，且**先置 `status` 再通知**，使「标志 / status / 投影」同源；hook 另立 `awaitingFeedback` state 作为暂停态真源，UI 不再从投影反推。
+  2. **恢复暂停态必须成对**。`feedback`（投影）与 `lastEvaluation`（原始评分）是两件事：前者给用户看，后者是「让 Copilot 详细解释」的必需输入。刷新恢复时只还原前者，会让该入口静默消失。`clearFeedback()` 也相应改为三者一起清。
+  3. **恢复会话必须同步 React state**。`session.feedbackMode` 是会话真源，但 UI 读的是自己的 state；不同步就会出现「会话是 immediate、界面按 standard 渲染」。
+  这三条的共同教训：**runtime 状态与 UI 投影必须分开持有**，且恢复路径要恢复的是「状态」而非「上一次渲染的产物」。ADR-084 把这一点推到了会话层——两个入口共用同一个 runtime，从根上消除投影漂移。
 
 ## ADR-082 · Assessment Variant 确定性 path 门禁：不信任 LLM 声明，只比推断签名
 

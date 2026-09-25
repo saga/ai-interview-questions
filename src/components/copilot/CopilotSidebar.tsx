@@ -38,20 +38,14 @@ import {
   loadConversationSession,
   saveConversationSession,
   clearConversationSession,
-  projectToConversationSession,
   shouldUpgradeToInterview,
   initialConversationContext,
   type ConversationSession,
 } from '../../application/conversation/conversationSession';
-import {
-  startChatInterview,
-  rehydrateInterviewAgent,
-  type ChatInterviewController,
-  type ChatInterviewStep,
-} from '../../application/conversation/interviewCapability';
-import { buildInterviewFeedback, type InterviewFeedback } from '../../domain/interviewFeedback';
+import type { AgentInterviewState } from '../../hooks/useAgentInterview';
 import {
   toAnswerContext,
+  interviewRoutingContext,
   ASK_COPILOT_ABOUT_FEEDBACK,
   type ActiveInterviewContext,
 } from '../../application/conversation/interviewContext';
@@ -106,6 +100,14 @@ async function chatCopilot(
 interface CopilotSidebarProps {
   open: boolean; onClose: () => void; config: AIConfig; profile: LearnerProfile | null; session: InterviewSession | null; currentQuestion?: Question | null; onSessionComplete?: (record: SessionRecord) => Promise<void>;
   /**
+   * App 层持有的 Agent 面试会话状态（与「Agent 面试」页**同一份**，不是第二个 runtime）。
+   *
+   * 侧栏的面试模式全部读写它：出题 / 提交 / 继续 / 结束都落到同一个 `InterviewAgentSession`。
+   * 这样「Agent 面试页」与「Copilot 侧栏」是同一场面试的两个视图，而不是两个 Agent
+   * 靠一个反馈对象互相同步——后者必然在刷新、并发提交、暂停态上产生分歧。
+   */
+  agentInterview: AgentInterviewState;
+  /**
    * Agent 面试页「让 Copilot 详细解释」传来的结构化上下文（桥接载荷）。
    * 非 null 时侧栏会自动发起一次讲解请求，并在消费后回调 `onInterviewContextConsumed` 清空。
    */
@@ -121,7 +123,7 @@ const role: BubbleListProps['role'] = {
   assistant: { placement: 'start', variant: 'borderless', style: { maxWidth: '94%', margin: '0 0 8px', boxShadow: 'none' }, classNames: { root: 'copilot-assistant-bubble', content: 'copilot-assistant-message' }, styles: { content: { boxShadow: 'none', padding: '10px 12px', maxWidth: '100%' } }, footer: (<Space size={0}><Button type="text" size="small" icon={<ReloadOutlined />} /><Button type="text" size="small" icon={<CopyOutlined />} /><Button type="text" size="small" icon={<LikeOutlined />} /><Button type="text" size="small" icon={<DislikeOutlined />} /></Space>) },
   user: { placement: 'end', style: { margin: '0 0 8px' }, styles: { content: { boxShadow: '0 1px 4px rgba(0,0,0,0.12)', borderRadius: 12 } } },
 };
-export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete, interviewContext, onInterviewContextConsumed }: CopilotSidebarProps) {
+export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete, agentInterview, interviewContext, onInterviewContextConsumed }: CopilotSidebarProps) {
   const persisted = loadConversationSession();
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; key: string }[]>(() => persisted?.messages ?? []);
   const [input, setInput] = useState('');
@@ -134,17 +136,6 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   });
   const [width, setWidth] = useState(380);
   const [dragging, setDragging] = useState(false);
-  // 逐题反馈卡（immediate 模式）：与独立 Agent 面试页共用同一份领域投影与卡片组件。
-  // 刻意**不**塞进 messages（messages 是纯字符串且会被持久化），而是作为瞬时 UI 状态，
-  // 与 chatQuestion 的处理方式一致。
-  const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
-  const [continuingFeedback, setContinuingFeedback] = useState(false);
-  /**
-   * 逐题反馈模式：随持久化的 ConversationSession 走（缺省 standard）。
-   * 与独立 Agent 面试页不同，Copilot 侧不提供模式选择器——它继承已有会话的节奏，
-   * 避免同一场面试在两个入口呈现不同的反馈节奏。
-   */
-  const feedbackModeRef = useRef(persisted?.feedbackMode ?? 'standard');
   /**
    * 由 Agent 面试反馈卡桥接而来的结构化上下文，供**下一轮** Copilot 请求使用。
    * 用 ref 而非 state：它是一次性的输入载荷，不应触发重渲染，也不该被渲染逻辑读取。
@@ -155,11 +146,13 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const listRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
-  // 面试（Agent 驱动）运行时会话句柄：跨多次用户输入复用，不持久化（plan0831_5 §P0-1/P0-2）。
-  const chatInterviewRef = useRef<ChatInterviewController | null>(null);
-  // 恢复中标记：避免刷新恢复与用户首次交互并发时创建两个 Agent（plan0831_6 P0-1）。
-  const resumingRef = useRef(false);
   const configReady = isConfigValid(config);
+
+  // 面试是否正在进行：真源是 App 层 Agent 会话的状态，不再是本侧栏的 controller 引用。
+  const interviewRunning = agentInterview.phase === 'running';
+  const interviewDone = agentInterview.phase === 'done';
+  // 当前题：面试运行时用 Agent 会话的题；否则退回本侧栏自己的题（question 模式）。
+  const activeInterviewQuestion = interviewRunning ? agentInterview.currentQuestion : null;
 
   // Persist context + messages together (P1-1)
   useEffect(() => {
@@ -179,63 +172,8 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); document.body.style.cursor = ''; document.body.style.userSelect = ''; };
   }, [dragging]);
 
-  // 卸载时释放 Agent 运行时（避免看门狗/进行中的 run 泄漏，plan0831_5 §P0-1）。
-  useEffect(() => {
-    return () => {
-      chatInterviewRef.current?.dispose();
-      chatInterviewRef.current = null;
-    };
-  }, []);
-
-  // 刷新恢复（plan0831_6 P0-1）：若持久化的 session 仍在 interview 模式且有当前题，
-  // 重建运行时会话并接回 controller，避免「假恢复 → 静默退化成 Question 模式确定性评分」。
-  // 无可用引擎时给出明确提示，不静默退化。
-  useEffect(() => {
-    const persisted = loadConversationSession();
-    if (!persisted || persisted.context.mode !== 'interview' || !persisted.context.currentQuestionId) return;
-    const entry = config.providers.find((p) => p.enabled && isEntryValid(p)) ?? null;
-    const providerForAgent = configReady ? createLLMProvider(config) : null;
-    if (!entry || !providerForAgent) {
-      appendAssistant('检测到上一场「模拟面试」未结束（mode=interview），但当前未配置可用的 AI 引擎，无法恢复运行时会话。请先在设置中配置引擎，或回复「结束」以保存进度。');
-      return;
-    }
-    resumingRef.current = true;
-    // 传入持久化的反馈模式：immediate 会话恢复后仍是 immediate（否则暂停语义静默丢失）。
-    const resumeSession = rehydrateInterviewAgent(persisted, persisted.feedbackMode);
-    void startChatInterview({
-      bank: questionBank.questions,
-      profile: profile ?? emptyProfile(),
-      entry,
-      fallbackEntries: config.providers.filter((p) => p.enabled && isEntryValid(p)),
-      provider: providerForAgent,
-      resumeSession,
-    })
-      .then((res) => {
-        resumingRef.current = false;
-        if (res.fatalError) {
-          appendAssistant(res.fatalError);
-          return;
-        }
-        chatInterviewRef.current = res.controller;
-        setChatQuestion(res.firstQuestion?.question ?? null);
-        // 刷新时正停在反馈卡上：必须把反馈卡一并还原。
-        // 否则当前题已评分（无法再提交）、又没有被交付下一题，用户会卡在一个「已答完」的空页面上。
-        if (res.awaitingFeedback && res.firstQuestion && res.evaluation) {
-          const q = res.firstQuestion;
-          setFeedback(
-            buildInterviewFeedback(
-              q.question,
-              q.format,
-              resumeSession.answers[q.question.id] ?? '',
-              res.evaluation,
-            ),
-          );
-        }
-      })
-      .catch(() => {
-        resumingRef.current = false;
-      });
-  }, []);
+  // 面试运行时的生命周期由 App 层 useAgentInterview 统一管理（挂载恢复 / 卸载释放），
+  // 侧栏不再持有 controller，也就没有需要在这里 dispose 的东西。
 
   const appendAssistant = (content: string) => {
     setMessages((prev) => {
@@ -255,107 +193,21 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const ensureSession = (mode: 'question' | 'interview' = 'question'): ConversationSession => {
     if (convSession) return convSession;
     const sid = crypto.randomUUID();
-    const s = createConversationSession(sid, feedbackModeRef.current);
+    // 节奏取自共享的 Agent 会话（真源），不再是侧栏自己的 ref：
+    // 同一场面试在「Agent 面试页」与侧栏必须呈现同一个节奏。
+    const s = createConversationSession(sid, agentInterview.feedbackMode);
     s.context.mode = mode;
     s.messages = messages;
     return s;
   };
 
   /**
-   * 把一次面试步骤（submit / skip / continueAfterFeedback 的结果）统一投影到 UI 与 ConversationSession。
-   *
-   * 为什么必须收口成一处：immediate 模式给「步骤」增加了第三个终态（awaitingFeedback）。
-   * 作答 / 继续 / 换题三条入口若各自处理，任何一条漏掉反馈态都会表现为
-   * 「某个入口下逐题反馈消失」——这正是本特性最容易出的错。
-   */
-  const applyInterviewStep = (
-    step: ChatInterviewStep,
-    controller: ChatInterviewController,
-    baseSession: ConversationSession,
-    nextMessages: { role: 'user' | 'assistant'; content: string; key: string }[],
-  ): void => {
-    if (step.fatalError) {
-      appendAssistant(step.fatalError);
-      controller.dispose();
-      chatInterviewRef.current = null;
-      return;
-    }
-
-    // ① 停在本题反馈上（immediate）：不交付下一题，把反馈卡交给 UI，等用户点「继续」。
-    if (step.awaitingFeedback && step.question && step.evaluation) {
-      const q = step.question;
-      setFeedback(
-        buildInterviewFeedback(
-          q.question,
-          q.format,
-          controller.session.answers[q.question.id] ?? '',
-          step.evaluation,
-        ),
-      );
-      // 当前题已评分但仍是「当前题」：countAsNew=false（交付时已计过数）、awaitFeedback=true
-      // 让 pendingAction='feedback' 并保留 currentQuestionId，刷新后可据此还原暂停态。
-      const updated = projectToConversationSession(baseSession, controller.session, nextMessages, {
-        deliveredQuestion: q,
-        countAsNew: false,
-        awaitFeedback: true,
-      });
-      saveConversationSession(updated);
-      setConvSession(updated);
-      setConversationContext(updated.context);
-      setChatQuestion(q.question);
-      setMessages(nextMessages);
-      return;
-    }
-
-    // ② 其余情况：离开反馈态（若有），按「结束 / 交付新题」投影。
-    setFeedback(null);
-
-    if (step.finished || !step.question) {
-      // 面试结束：等待用户「结束」保存成绩（投影到 ConversationSession，plan0831_6 P1-3）。
-      const body = `本轮训练已完成，共 ${Object.keys(controller.session.evaluations).length} 题。回复“结束”可保存成绩。`;
-      const withAssistant = [...nextMessages, { role: 'assistant' as const, content: body, key: `${Date.now()}-a` }];
-      const updated = projectToConversationSession(baseSession, controller.session, withAssistant, { deliveredQuestion: null, countAsNew: false });
-      controller.dispose();
-      chatInterviewRef.current = null;
-      saveConversationSession(updated);
-      setConvSession(updated);
-      setConversationContext(updated.context);
-      setChatQuestion(null);
-      setMessages(withAssistant);
-      return;
-    }
-
-    const q = step.question;
-    const body = q.format === 'choice' && q.question.formats.choice
-      ? `${q.question.question}\n\n${q.question.formats.choice.options.map((option, i) => `${String.fromCharCode(65 + i)}. ${option}`).join('\n')}\n\n请直接回复选项字母，或输入“继续/结束”。`
-      : `${q.question.question}\n\n请作答；完成后我会按题库评分。输入“结束”可结束本轮训练。`;
-    const withAssistant = [...nextMessages, { role: 'assistant' as const, content: body, key: `${Date.now()}-a` }];
-    const updated = projectToConversationSession(baseSession, controller.session, withAssistant, { deliveredQuestion: q, countAsNew: true });
-    saveConversationSession(updated);
-    setConvSession(updated);
-    setConversationContext(updated.context);
-    setChatQuestion(q.question);
-    setMessages(withAssistant);
-  };
-
-  /**
-   * 反馈卡上的「继续下一题」：放行下一题（immediate 模式）。
-   * 与命令通道的「继续」语义完全一致，只是入口来自卡片按钮而非文本输入；
-   * 二者共用 applyInterviewStep，避免「按钮路径」与「文本路径」行为分叉。
+   * 反馈卡上的「继续下一题」：直接放行 App 层 Agent 会话的下一题（immediate 模式）。
+   * 与文本输入「继续」走的是**同一个** `agentInterview.continueAfterFeedback`，
+   * 因此按钮路径与文本路径不可能分叉（旧实现各自维护一套 step 投影，正是分叉的来源）。
    */
   const handleContinueFeedback = async () => {
-    const controller = chatInterviewRef.current;
-    if (!controller || continuingFeedback) return;
-    setContinuingFeedback(true);
-    try {
-      const step = await controller.continueAfterFeedback().catch(() => null);
-      if (!step) return;
-      const base = convSession ?? ensureSession('interview');
-      // 点按钮不产生新的用户消息，故 nextMessages 直接沿用当前 messages。
-      applyInterviewStep(step, controller, base, messages);
-    } finally {
-      setContinuingFeedback(false);
-    }
+    await agentInterview.continueAfterFeedback();
   };
 
   /**
@@ -369,12 +221,18 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     const { nextMessages, provider } = ctx;
     const deps = { bank: questionBank, profile: profile ?? emptyProfile(), config, provider };
 
-    // --- end_interview：严格顺序（plan0831_6 P0-2）：build record → persist learner
-    // → dispose Agent → clear active session → set UI to ended。end 分支不再调用任何
-    // saveConversationSession，确保刷新后不会恢复一个「已结束」的 session。 ---
+    // --- end_interview ---
     if (command.kind === 'end_interview') {
-      chatInterviewRef.current?.dispose();
-      chatInterviewRef.current = null;
+      // 面试进行中：结束交给共享的 Agent 会话——它自己收尾（置 finished、删草稿、
+      // 经 onComplete 写入 Learner Memory）。侧栏**不**重复落库，否则同一场面试会被记两次。
+      if (interviewRunning) {
+        agentInterview.endEarly();
+        setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
+        setChatQuestion(null);
+        appendAssistant('已结束本轮面试，成绩已写入学习记录。');
+        return;
+      }
+      // 非面试（question / chat 模式）：沿用本侧栏自己的 ConversationSession 汇总。
       let assistantMsg = '已结束。';
       if (convSession && convSession.questions.length > 0 && onSessionComplete) {
         const record = toSessionRecord(convSession);
@@ -422,53 +280,32 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     const targetMode: 'question' | 'interview' = command.kind === 'start_interview' || shouldUpgrade || baseSession.context.mode === 'interview' ? 'interview' : 'question';
 
     if (targetMode === 'interview') {
-      // P0-1/P0-2：面试模式真正走 pi-agent-core（createInterviewAgent），不再自己实现简化版 Agent 面试。
-      let controller = chatInterviewRef.current;
-      // 刷新恢复进行中：忽略本次输入，等 resume 把 controller 接回后再交互（plan0831_6 P0-1）。
-      if (!controller && resumingRef.current) return;
-      if (!controller) {
-        // 首次进入：需要可用的 AI 引擎（entry + provider）。
+      // 面试运行时**不在这里**：它由 App 层 useAgentInterview 持有，与「Agent 面试」页同一份。
+      // 侧栏只负责发起 / 放行，题目与反馈由状态直渲染（见渲染段的面试面板）。
+      if (!interviewRunning) {
+        // 首次进入：需要可用的 AI 引擎。检查交给 App 层会话（start 内部会 setError），
+        // 这里只做一次前置提示，避免用户点了没反应。
         const entry = config.providers.find((p) => p.enabled && isEntryValid(p)) ?? null;
-        const providerForAgent = configReady ? createLLMProvider(config) : null;
-        if (!entry || !providerForAgent) {
+        if (!entry || !configReady) {
           appendAssistant('模拟面试需要配置可用的 AI 引擎（设置中配置 DeepSeek / OpenRouter / Gemini / 本地模型）。你也可以直接说“给我出一道题”做选择题训练。');
           setConvSession((prev) => prev ? { ...prev, messages: nextMessages } : prev);
           return;
         }
-        const res = await startChatInterview({
-          bank: questionBank.questions,
-          profile: profile ?? emptyProfile(),
-          entry,
-          fallbackEntries: config.providers.filter((p) => p.enabled && isEntryValid(p)),
-          provider: providerForAgent,
-          instruction: '请开始一次模拟面试，根据我的薄弱项自适应出题。',
-          feedbackMode: feedbackModeRef.current,
-        });
-        controller = res.controller;
-        chatInterviewRef.current = controller;
-        // 正常开场不会处于反馈态（首题尚未作答）；此处仍按统一步骤处理，兼容恢复路径。
-        applyInterviewStep(
-          {
-            finished: res.finished,
-            question: res.firstQuestion,
-            fatalError: res.fatalError,
-            awaitingFeedback: res.awaitingFeedback,
-            evaluation: res.evaluation,
-          },
-          controller,
-          baseSession,
-          nextMessages,
-        );
+        appendAssistant('已开始模拟面试。题目见下方面板，直接回复选项字母作答；输入「继续」跳过，「结束」收尾。');
+        setConvSession((prev) => prev ? { ...prev, messages: nextMessages } : prev);
+        await agentInterview.start();
         return;
       }
-      // 已存在 controller。两种语义必须分开：
+      // 面试进行中。两种语义必须分开：
       // - 正停在本题反馈上（immediate）→ 用户说「继续/下一题」= **确认反馈、放行下一题**；
-      //   此时调 skip() 会把已评分的题重新标记为「未计分」并丢掉反馈卡，是错的。
+      //   此时跳过会把已评分的题当作「放弃」处理并丢掉反馈卡，是错的。
       // - 否则 → 用户说「换一道/跳过」= 放弃当前题（不计分）并交付下一题。
-      const awaiting = controller.session.status === 'awaiting_feedback';
-      const step = await (awaiting ? controller.continueAfterFeedback() : controller.skip()).catch(() => null);
-      if (!step) return;
-      applyInterviewStep(step, controller, baseSession, nextMessages);
+      if (agentInterview.awaitingFeedback) {
+        await agentInterview.continueAfterFeedback();
+      } else {
+        agentInterview.jumpToNextQuestion();
+      }
+      setConvSession((prev) => prev ? { ...prev, messages: nextMessages } : prev);
       return;
     }
 
@@ -514,20 +351,17 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     provider: ReturnType<typeof createLLMProvider> | null;
   }): Promise<void> => {
     const { content, nextMessages, provider } = ctx;
+    // 面试进行中：作答提交给**共享**的 Agent 会话（与 Agent 面试页同一个 InterviewAgentSession）。
+    // 题面取自该会话的当前题，而不是本侧栏的 chatQuestion——侧栏在面试模式下不再自己出题。
+    if (interviewRunning && agentInterview.currentQuestion) {
+      const answer = parseChatAnswer(agentInterview.currentQuestion.question, content);
+      setConvSession((prev) => { if (!prev) return prev; const u = { ...prev, messages: nextMessages }; saveConversationSession(u); return u; });
+      await agentInterview.submit(answer);
+      return;
+    }
     if (!chatQuestion) {
       appendAssistant('当前没有可作答的题目，请先说“给我出一道题”。');
       setConvSession((prev) => { if (!prev) return prev; const u = { ...prev, messages: nextMessages }; saveConversationSession(u); return u; });
-      return;
-    }
-    // 面试模式（Agent 驱动）：走 controller.submit → 评分 + 交付下一题（plan0831_5 §P0-1）。
-    if (convSession?.context.mode === 'interview' && chatInterviewRef.current) {
-      const controller = chatInterviewRef.current;
-      const answer = parseChatAnswer(chatQuestion, content);
-      // 并发提交保护（plan0831_6 P1-4）：上一次 submit 仍在进行时，忽略本次重复提交，不覆盖 resolver。
-      const step = await controller.submit(answer).catch(() => null);
-      if (!step) return;
-      // 统一投影：immediate 模式下 step 可能是「停在反馈上」，由 applyInterviewStep 负责渲染反馈卡。
-      applyInterviewStep(step, controller, convSession, nextMessages);
       return;
     }
     // question 模式：原确定性评估
@@ -583,7 +417,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       return;
     }
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
-    const activeQuestion = chatQuestion ?? currentQuestion ?? null;
+    const activeQuestion = chatQuestion ?? currentQuestion ?? agentInterview.currentQuestion?.question ?? null;
     // ADR-065 P0-2：从会话里取出用户实际作答与评分诊断，注入 Copilot，使其从"泛知识解释器"
     // 升级为"个性化教练"。当前题尚未作答（无 records）时为 null。
     // 优先取「Agent 面试反馈卡桥接而来」的上下文：那道题与它的评分不在本侧栏的 session 里，
@@ -640,13 +474,25 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     setLoading(true);
     try {
       const provider = configReady ? createLLMProvider(config) : null;
+      // 路由上下文：面试进行中时由共享 Agent 会话派生（见 interviewRoutingContext 的注释），
+      // 而不是读侧栏自己的 ConversationSession——否则「A」会被判成 Copilot 提问而非一次作答。
+      const routingContext = interviewRunning
+        ? interviewRoutingContext(
+            conversationContext,
+            agentInterview.currentQuestion,
+            agentInterview.awaitingFeedback,
+          )
+        : conversationContext;
+      const routingQuestion = interviewRunning
+        ? agentInterview.currentQuestion?.question ?? null
+        : chatQuestion ?? currentQuestion ?? null;
       // 唯一通道决策点（ADR-064 §5）：命令优先、求助优先于作答、其余一律 Copilot。
       // 不再有「意图不确定 → 请说命令」的阻断：不确定就是 Copilot，把命令行降级成聊天框是产品定位错误。
       // `asCopilot`：由反馈卡桥接触发的讲解请求**绕过**路由判定——它按定义就是 Copilot 请求，
       // 不能因为此刻恰好有一道待作答题而被误判成 answer（那会把讲解文本当成用户作答提交）。
       const channel = opts.asCopilot
         ? ({ kind: 'copilot' } as const)
-        : routeUserMessage(content, conversationContext, chatQuestion ?? currentQuestion ?? null);
+        : routeUserMessage(content, routingContext, routingQuestion);
       if (channel.kind === 'command') {
         await handleCommand(channel.command, { nextMessages, provider });
         return;
@@ -752,15 +598,51 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
         <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {messages.length === 0 ? (<><div className="copilot-welcome"><div className="copilot-welcome-title">你好，我来陪你练</div><div className="copilot-welcome-copy">解释考点、拆解思路、给出提示，也可以根据你的薄弱项安排下一步。</div></div><Prompts className="copilot-prompts" vertical title={<div className="copilot-prompts-title">从这里开始</div>} items={quickPrompts.map((p) => ({ key: p.key, description: p.label }))} onItemClick={(info) => handleSend(info?.data?.description as string)} />{!configReady && (<Typography.Text type="warning" style={{ fontSize: 12 }}>尚未配置 AI 引擎，Copilot 将无法联网作答。请先在“设置”中配置 DeepSeek / OpenRouter / Gemini / 本地模型等。</Typography.Text>)}</>) : (<Bubble.List items={messages.map((m) => ({ key: m.key, role: m.role, content: m.content, loading: false }))} role={role} autoScroll />)}
           {loading && (<Bubble placement="start" content="思考中…" loading />)}
-          {/* 逐题反馈卡（immediate）：与独立 Agent 面试页共用同一组件与领域投影。
-              放在消息流末尾（而非塞进 messages）——messages 是纯字符串且会持久化，
-              反馈卡是瞬时 UI 状态，与 chatQuestion 的处理方式一致。 */}
-          {feedback && (
+          {/* ── 面试面板（与「Agent 面试」页共用同一份会话状态，故直接由状态渲染）──
+              刻意不把题目塞进 messages：messages 是纯字符串、会被持久化，而题目/反馈是
+              运行时的派生视图。用 effect 把状态同步成消息，既会重复追加（StrictMode 双调用），
+              也会让「消息」与「runtime 真源」脱节——正是两个 runtime 时代的旧毛病。 */}
+          {interviewRunning && activeInterviewQuestion && !agentInterview.awaitingFeedback && (
+            <div className="copilot-context" style={{ maxHeight: 260, overflowY: 'auto' }}>
+              <div className="copilot-context-label">
+                模拟面试 · 已考察 {agentInterview.evaluatedCount} 题
+                {agentInterview.feedbackMode === 'immediate' ? ' · 逐题反馈' : ''}
+              </div>
+              <Typography.Text strong>{activeInterviewQuestion.question.question}</Typography.Text>
+              {activeInterviewQuestion.question.formats.choice && (
+                <div style={{ marginTop: 8 }}>
+                  {activeInterviewQuestion.question.formats.choice.options.map((option, i) => (
+                    <div key={`${activeInterviewQuestion.question.id}-${i}`} style={{ fontSize: 12, marginTop: 4 }}>
+                      {String.fromCharCode(65 + i)}. {option}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Typography.Paragraph type="secondary" style={{ fontSize: 12, margin: '8px 0 0' }}>
+                {agentInterview.busy || agentInterview.submitting
+                  ? '面试官思考中…'
+                  : '回复选项字母或文字作答；输入「继续」跳过，「结束」收尾。'}
+              </Typography.Paragraph>
+            </div>
+          )}
+          {/* 逐题反馈卡（immediate）：与独立 Agent 面试页共用同一组件与同一份投影 */}
+          {agentInterview.awaitingFeedback && agentInterview.feedback && (
             <InterviewFeedbackCard
-              feedback={feedback}
+              feedback={agentInterview.feedback}
               onContinue={() => void handleContinueFeedback()}
-              continuing={continuingFeedback}
+              continuing={agentInterview.continuing}
             />
+          )}
+          {interviewDone && (
+            <div className="copilot-context">
+              <div className="copilot-context-label">本轮面试已结束</div>
+              <div className="copilot-context-value">
+                共 {agentInterview.summary?.asked ?? 0} 题，综合 {agentInterview.summary?.overall ?? 0} 分，已写入学习记录。
+              </div>
+            </div>
+          )}
+          {agentInterview.error && (
+            <Typography.Text type="danger" style={{ fontSize: 12 }}>{agentInterview.error}</Typography.Text>
           )}
         </div>
         <Flex gap={8} wrap="wrap" style={{ padding: '0 12px' }}>

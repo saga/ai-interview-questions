@@ -4,7 +4,14 @@
 // 一旦漏转，Copilot 会退化成泛泛而谈，且不报错（静默劣化），故必须用测试锁住。
 
 import { describe, it, expect } from 'vitest';
-import { toAnswerContext, ASK_COPILOT_ABOUT_FEEDBACK, type ActiveInterviewContext } from './interviewContext';
+import {
+  toAnswerContext,
+  interviewRoutingContext,
+  ASK_COPILOT_ABOUT_FEEDBACK,
+  type ActiveInterviewContext,
+} from './interviewContext';
+import { routeUserMessage } from './commandDetector';
+import { initialConversationContext } from './conversationSession';
 import type { EvaluationResult } from '../../schemas/evaluation';
 import type { Question } from '../../schemas/question';
 import type { SessionQuestion } from '../../schemas/session';
@@ -76,5 +83,36 @@ describe('ASK_COPILOT_ABOUT_FEEDBACK', () => {
     expect(ASK_COPILOT_ABOUT_FEEDBACK).toContain('详细讲解');
     expect(ASK_COPILOT_ABOUT_FEEDBACK).not.toContain(question.question);
     expect(ASK_COPILOT_ABOUT_FEEDBACK).not.toContain(String(evaluation.overall));
+  });
+});
+
+// 端到端断言（比只测字段更关键）：派生的 context 必须真的让「A」走答案通道。
+// 面试模式下侧栏不再维护 pendingAction/currentQuestionId，若忘记派生，
+// shouldSubmitAsAnswer 会判定「没有待作答题」→ 「A」被当成提问 → 面试卡死。
+describe('interviewRoutingContext（面试进行中的消息路由）', () => {
+  it('派生后「A」走答案通道（不派生就会退化成 Copilot 提问）', () => {
+    const derived = interviewRoutingContext(initialConversationContext(), sessionQuestion, false);
+    expect(derived.currentQuestionId).toBe(question.id);
+    expect(derived.pendingAction).toBe('answer');
+    expect(routeUserMessage('A', derived, question).kind).toBe('answer');
+  });
+
+  it('停在反馈上时答案通道关闭：同一输入退化为 Copilot（此刻当前题已评分，重复提交必被拒）', () => {
+    const derived = interviewRoutingContext(initialConversationContext(), sessionQuestion, true);
+    expect(derived.pendingAction).toBe('feedback');
+    expect(routeUserMessage('A', derived, question).kind).toBe('copilot');
+  });
+
+  it('无当前题（未开场 / 已收尾）时原样返回，不注入面试语义', () => {
+    const base = initialConversationContext();
+    expect(interviewRoutingContext(base, null, false)).toBe(base);
+  });
+
+  it('保留基底 context 的其它字段（只覆盖路由相关的三项）', () => {
+    const base = { ...initialConversationContext(), activeKnowledgeIds: ['kv-cache'], endedAt: 123 };
+    const derived = interviewRoutingContext(base, sessionQuestion, false);
+    expect(derived.activeKnowledgeIds).toEqual(['kv-cache']);
+    expect(derived.endedAt).toBe(123);
+    expect(derived.mode).toBe('interview');
   });
 });

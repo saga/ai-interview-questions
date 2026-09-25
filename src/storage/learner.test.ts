@@ -138,4 +138,61 @@ describe('storage/learner (IndexedDB)', () => {
     expect(loaded.sessions[0].overall).toBe(80);
     expect(loaded.topicStats.attn.attempts).toBe(2);
   });
+
+  // ── 不可信边界（IndexedDB 可被用户手改 / 旧版本可能留下不兼容形状）──
+  describe('读取时的 schema 边界', () => {
+    it('learner 行损坏（topicStats 缺失）→ 退回空画像，不抛异常', async () => {
+      // 修复前：`Object.entries(rest.topicStats)` 直接抛，整个「进度」页白屏。
+      await db.learner.put({
+        id: 'singleton',
+        totalSessions: 1,
+        totalQuestions: 2,
+        overallScore: 90,
+        updatedAt: Date.now(),
+      } as never);
+      await expect(loadLearner()).resolves.toEqual(emptyProfile());
+    });
+
+    it('learner 行字段类型错误（overallScore 越界）→ 退回空画像', async () => {
+      await db.learner.put({
+        id: 'singleton',
+        totalSessions: 1,
+        totalQuestions: 2,
+        overallScore: 9999,
+        topicStats: {},
+        updatedAt: Date.now(),
+      } as never);
+      await expect(loadLearner()).resolves.toEqual(emptyProfile());
+    });
+
+    it('单条 session 行不可用（questionResults 缺失）→ 只丢那一行，其余记录保留', async () => {
+      const profile = updateLearner(emptyProfile(), mkRecord({ id: 'good', startedAt: 1 }));
+      await saveLearner(profile);
+      // 塞一行坏数据（questionResults 缺失）
+      await db.sessions.put({ id: 'bad', startedAt: 2, title: 'x', overall: 1 } as never);
+
+      const loaded = await loadLearner();
+      // 坏行被丢弃，好行仍在——一行损坏不该让用户全部学习记录归零。
+      expect(loaded.sessions.map((s) => s.id)).toEqual(['good']);
+    });
+
+    it('旧记录的 questions 快照不符合当前 schema 时**不丢行**（只做最小形状检查）', async () => {
+      // 这是刻意的宽松口径：完整 schema 校验会因「旧记录形状过时」整条丢弃用户历史，
+      // 代价远大于「某条旧记录少几个可选字段」。
+      const profile = updateLearner(emptyProfile(), mkRecord({ id: 'legacy', startedAt: 1 }));
+      await saveLearner(profile);
+      await db.sessions.put({
+        id: 'legacy',
+        startedAt: 1,
+        title: '训练',
+        overall: 90,
+        questionResults: [{ questionId: 'q1', category: 'c', topic: 'transformer', format: 'open', score: 80, gaps: [] }],
+        // 旧形状：questions 是残缺的裸对象，过不了当前 sessionQuestionSchema
+        questions: [{ question: { id: 'q1' }, format: 'open' }],
+      } as never);
+
+      const loaded = await loadLearner();
+      expect(loaded.sessions.map((s) => s.id)).toEqual(['legacy']);
+    });
+  });
 });

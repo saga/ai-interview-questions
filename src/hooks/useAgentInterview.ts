@@ -112,9 +112,12 @@ export interface AgentInterviewState {
   jumpToNextQuestion: () => void;
   /**
    * 本题反馈（immediate 模式下评分后暂停时非 null；standard 模式恒为 null）。
-   * 非 null 即代表「正停在反馈上等用户确认」——UI 据此切换提交按钮 ↔ 继续按钮。
+   * 这是给用户看的**投影**；「是否停在反馈上」请读 `awaitingFeedback`（runtime 真源），
+   * 不要用 `feedback !== null` 推断——那会把「有评分」误当成「已暂停」。
    */
   feedback: InterviewFeedback | null;
+  /** 是否正停在本题反馈上等用户确认（= runtime 的 `status === 'awaiting_feedback'`）。 */
+  awaitingFeedback: boolean;
   /** 当前会话的逐题反馈模式（进入面试前可切换；面试进行中不可变）。 */
   feedbackMode: InterviewFeedbackMode;
   /**
@@ -131,7 +134,14 @@ export interface AgentInterviewState {
   continuing: boolean;
   setAnswer: (v: AnswerValue) => void;
   start: () => Promise<void>;
-  submit: () => Promise<void>;
+  /**
+   * 提交作答。
+   *
+   * @param answerOverride 显式作答。Agent 面试页省略（用页面输入框的 `answer`）；
+   *   Copilot 侧栏必须传——它的作答来自聊天框文本（`parseChatAnswer` 解析），
+   *   并不在 hook 的 `answer` state 里。两者语义一致：都是「提交当前题的作答」。
+   */
+  submit: (answerOverride?: AnswerValue) => Promise<void>;
   endEarly: () => void;
   restart: () => void;
 }
@@ -162,16 +172,26 @@ export function useAgentInterview(
   const [feedbackMode, setFeedbackModeState] = useState<InterviewFeedbackMode>(DEFAULT_INTERVIEW_FEEDBACK_MODE);
   const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
   const [lastEvaluation, setLastEvaluation] = useState<EvaluationResult | null>(null);
+  /**
+   * 是否正停在本题反馈上（runtime 真源 = `session.status === 'awaiting_feedback'`）。
+   *
+   * 单独持有它、而不是让 UI 用 `feedback !== null` 推断：反馈卡是**投影**，暂停是**运行时状态**。
+   * 两者一旦被当成同一件事，将来任何「有评分但不暂停」的场景（standard 模式、未来的
+   * 「回看历史反馈」）都会把 UI 带进暂停态——这正是 standard 模式误显示反馈卡的成因。
+   */
+  const [awaitingFeedback, setAwaitingFeedback] = useState(false);
   /** 用户已点「继续」、正在请求下一题（按钮 loading）。 */
   const [continuing, setContinuing] = useState(false);
 
   /**
-   * 清空本题反馈。投影（feedback）与原始评分（lastEvaluation）必须**成对**清空：
-   * 两者一旦不同步，就会出现「卡片显示 A 题、Copilot 收到 B 题评分」这类静默错配。
+   * 清空本题反馈。投影（feedback）、原始评分（lastEvaluation）与暂停标记（awaitingFeedback）
+   * 必须**成对**清空：三者一旦不同步，就会出现「卡片显示 A 题、Copilot 收到 B 题评分」
+   * 或「已离开反馈态却仍显示反馈卡」这类静默错配。
    */
   const clearFeedback = useCallback(() => {
     setFeedback(null);
     setLastEvaluation(null);
+    setAwaitingFeedback(false);
   }, []);
 
   /**
@@ -397,22 +417,31 @@ export function useAgentInterview(
           },
           onStatus: (status) => {
             if (status === 'finished') {
-              finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete
+              finalize(); // 唯一终局出口：置 finished + 删草稿 + onComplete（finalize 内会清空反馈态）
               return;
             }
             if (status === 'awaiting_feedback') {
               // immediate 模式：本题已评分、停在反馈上等用户确认。
               // 停掉本题倒计时——题已答完，继续计时只会误导用户（且时间到会弹无意义的「延长/跳题」）。
+              setAwaitingFeedback(true);
               stopQuestionTimer();
               setQuestionTimeUp(false);
               setQuestionTimeLeftSec(null);
+              return;
             }
+            // running：离开反馈态（本特性目前只在「继续」后回到 running）。
+            setAwaitingFeedback(false);
           },
-          onEvaluation: (q, answered, evaluation) => {
-            // 三条评分路径（选择题确定性 / 兜底 / LLM 工具）的统一出口回调，
-            // 这里只做投影：把 EvaluationResult 转成 UI 可消费的 InterviewFeedback。
-            setFeedback(buildInterviewFeedback(q.question, q.format, answered, evaluation));
+          onEvaluation: (q, answered, evaluation, awaitingFeedback) => {
+            // 三条评分路径（选择题确定性 / 兜底 / LLM 工具）的统一出口回调。
+            // 关键：**standard 模式也会走到这里**（评分总得发生），但只有 immediate 才该弹反馈卡。
+            // 若在此无条件 setFeedback，standard 模式会在「评分完成 → 下一题交付」的窗口里
+            // 显示反馈卡（开放题下这个窗口长达数秒），同时把题目置为只读、隐藏提交按钮。
             setLastEvaluation(evaluation); // 原始评分保留给「让 Copilot 详细解释」
+            setAwaitingFeedback(awaitingFeedback);
+            if (awaitingFeedback) {
+              setFeedback(buildInterviewFeedback(q.question, q.format, answered, evaluation));
+            }
           },
           onError: (msg, fatal) => {
             // 修复 B：流式错误/自愈提示——致命则阻塞报错，可恢复则轻量告警（兜底已接续出题）
@@ -518,10 +547,12 @@ export function useAgentInterview(
     }
   };
 
-  const submit = async () => {
+  const submit = async (answerOverride?: AnswerValue) => {
     if (submittingRef.current) return; // 同步拦截：提交进行中不允许重复点击
     if (!currentQuestion) return;
-    if (!hasAnswer(answer)) {
+    // 答案来源：Agent 面试页用页面输入框（`answer`），Copilot 侧栏用聊天框解析结果（override）。
+    const actualAnswer = answerOverride ?? answer;
+    if (!hasAnswer(actualAnswer)) {
       message.warning('请先作答再提交');
       return;
     }
@@ -529,7 +560,7 @@ export function useAgentInterview(
     setSubmitting(true);
     setBusy(true); // 立即禁用按钮 + 显示遮罩，避免 LLM 响应前反复点击
     try {
-      await handleRef.current?.submitAnswer(answer);
+      await handleRef.current?.submitAnswer(actualAnswer);
       void persistDraft(); // 回合结束落库
     } catch (err) {
       setError('提交失败：' + (err as Error).message);
@@ -611,6 +642,10 @@ export function useAgentInterview(
       sessionRef.current = session;
       entryIdRef.current = rec.entryId;
       profileRef.current = rec.profile;
+      // 会话真源在 session 上，React state 必须同步过来：
+      // 否则 immediate 会话刷新后，state 仍是缺省的 'standard'，顶部「逐题反馈」标签消失、
+      // 提交按钮文案退回「提交作答并继续」——UI 与实际评分节奏不符。
+      setFeedbackModeState(session.feedbackMode);
       // 复用 buildHandle，而不是再写一份等价的 createInterviewAgent 配置：
       // 两份配置一旦漂移，续面路径就会缺失新加的 handler（如 onEvaluation / awaiting_feedback），
       // 表现为「刷新后逐题反馈消失」。这里由单一构造点保证两条路径行为恒等。
@@ -632,6 +667,11 @@ export function useAgentInterview(
           ? session.evaluations[session.currentQuestion.question.id] ?? null
           : null;
       if (pendingEvaluation && session.currentQuestion) {
+        // 三者必须一起恢复。漏掉 lastEvaluation 会让反馈卡上的「让 Copilot 详细解释」消失
+        // （它的可用条件是 lastEvaluation 非空）；漏掉 awaitingFeedback 会让页面把反馈卡
+        // 当成「临时投影」，与 runtime 真源脱节。
+        setLastEvaluation(pendingEvaluation);
+        setAwaitingFeedback(true);
         setFeedback(
           buildInterviewFeedback(
             session.currentQuestion.question,
@@ -641,6 +681,7 @@ export function useAgentInterview(
           ),
         );
         stopQuestionTimer(); // 停在反馈上：题已答完，不再计时
+        setQuestionTimeUp(false);
         setQuestionTimeLeftSec(null);
       } else if (session.currentQuestion) {
         startQuestionTimer(); // 续面已有当前题：立即启动倒计时
@@ -682,6 +723,7 @@ export function useAgentInterview(
     extendQuestionTime,
     jumpToNextQuestion,
     feedback,
+    awaitingFeedback,
     feedbackMode,
     lastEvaluation,
     setFeedbackMode,

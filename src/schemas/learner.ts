@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { cognitiveTaskSchema, formatIdSchema, questionAngleSchema } from './common';
 import { sessionQuestionSchema, sessionAnswerSchema } from './session';
+import { evaluationResultSchema } from './evaluation';
 
 export const trendSchema = z.enum(['improving', 'declining', 'flat']);
 export type Trend = z.infer<typeof trendSchema>;
@@ -97,6 +98,17 @@ export const questionResultSchema = z.object({
   courseId: z.string().min(1).optional(),
   /** 用户作答命中的误解 id（来自题目 misconceptions），选择题即可无 LLM 产出反证证据。 */
   misconceptionIds: z.array(z.string().min(1)).optional(),
+  /**
+   * 完整评分结果（四维分/等级/证据/强项/评语/参考答案…）。
+   *
+   * `score`/`gaps`/`missingConcepts` 是**画像聚合用的投影**，会丢字段：只有它能还原
+   * 「当时四维各多少分、哪条证据支撑、面试官评语是什么」。历史回放要复用与实时反馈
+   * 同一个 `InterviewFeedbackCard`，就必须有原始 EvaluationResult，而不是靠重算或猜。
+   *
+   * 可选：旧记录没有该字段（ADR-002 例外——SessionRecord 属用户数据契约，只做向后兼容新增）。
+   * 注意它**不参与** updateLearner 的任何聚合，纯回放数据。
+   */
+  evaluation: evaluationResultSchema.optional(),
 });
 
 export const sessionRecordSchema = z.object({

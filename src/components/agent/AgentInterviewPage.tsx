@@ -95,6 +95,7 @@ export default function AgentInterviewPage({
   extendQuestionTime,
   jumpToNextQuestion,
   feedback,
+  awaitingFeedback,
   feedbackMode,
   lastEvaluation,
   setFeedbackMode,
@@ -108,7 +109,8 @@ export default function AgentInterviewPage({
 }: Props) {
   const configReady = isConfigValid(config);
   // 停在本题反馈上（immediate 模式）：题已答完、反馈已展示，此时既不能再提交、也不能改作答。
-  const awaitingFeedback = feedback !== null;
+  // 用 runtime 状态（awaitingFeedback）而非「feedback 非空」推断：standard 模式同样会产生评分，
+  // 拿投影当状态会让反馈卡在「评分完成 → 下一题交付」的窗口里错误出现。
 
   // ── 开场介绍 ──
   if (phase === 'intro') {

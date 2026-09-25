@@ -183,10 +183,15 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
       const nextGrades = { ...gradesRef.current, [sq.question.id]: g };
       gradesRef.current = nextGrades;
       setGrades(nextGrades);
-      signalsRef.current = [
-        ...signalsRef.current,
-        { topic: sq.question.topic, score: g?.overall ?? 0, difficulty: sq.question.difficulty },
-      ];
+      // 只把「真实评分」记作自适应信号。g 为 null 表示评分失败（未配置引擎 / LLM 出错），
+      // 此时 `g?.overall ?? 0` 会把一次失败记成「用户答了 0 分」，自适应引擎据此判定
+      // 「这题完全不会」并降级出题——用一个假信号污染整条选题链。宁可不发信号。
+      if (g) {
+        signalsRef.current = [
+          ...signalsRef.current,
+          { topic: sq.question.topic, score: g.overall, difficulty: sq.question.difficulty },
+        ];
+      }
 
       if (s.questions.length < s.definition.count) {
         setBusy('正在根据你的表现选择下一题…');
@@ -254,10 +259,15 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
       const nextGrades = { ...gradesRef.current, [sq.question.id]: g };
       gradesRef.current = nextGrades;
       setGrades(nextGrades);
-      signalsRef.current = [
-        ...signalsRef.current,
-        { topic: sq.question.topic, score: g?.overall ?? 0, difficulty: sq.question.difficulty },
-      ];
+      // 只把「真实评分」记作自适应信号。g 为 null 表示评分失败（未配置引擎 / LLM 出错），
+      // 此时 `g?.overall ?? 0` 会把一次失败记成「用户答了 0 分」，自适应引擎据此判定
+      // 「这题完全不会」并降级出题——用一个假信号污染整条选题链。宁可不发信号。
+      if (g) {
+        signalsRef.current = [
+          ...signalsRef.current,
+          { topic: sq.question.topic, score: g.overall, difficulty: sq.question.difficulty },
+        ];
+      }
     } finally {
       setBusy(null);
       actionLock.current = false;

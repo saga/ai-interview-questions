@@ -1,6 +1,28 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-09-25 · 逐题反馈收口：修 3 个 P0 + Agent/Copilot 合并为同一 runtime
+
+**修复（P0）**
+- **standard 模式误显示反馈卡**：`afterEvaluation` 在 standard 模式下同样会触发 `onEvaluation`（评分总得发生），而 UI 用 `feedback !== null` 推断「已暂停」——于是「评分完成 → 下一题交付」的窗口里（开放题下长达数秒）会弹出反馈卡、把题目置为只读、隐藏提交按钮。改为由运行时显式下发 `awaitingFeedback` 标志，并在置 `status` 之后再通知回调，保证「标志 / status / 投影」三者同源。
+- **刷新后「让 Copilot 详细解释」消失**：恢复暂停态时只还原了 `feedback` 投影，漏了原始 `lastEvaluation`，而该入口的可用条件是 `lastEvaluation` 非空。三者现在成对恢复。
+- **刷新后反馈节奏 UI 错误**：恢复会话时未把 `session.feedbackMode` 同步回 React state，immediate 会话刷新后顶部标签消失、按钮文案退回标准节奏。
+
+**架构（P0/P1）**
+- **Agent 面试页与 Copilot 侧栏合并为同一场面试**：侧栏不再自建 `startChatInterview` / `ChatInterviewController`，改为消费 App 层 `useAgentInterview` 的会话状态。删除 `interviewCapability.ts` 的 Chat 适配层与 `rehydrateInterviewAgent`、`projectToConversationSession`（均无调用方）。
+- Copilot 面试模式改为**由状态直渲染**题目与反馈卡（不再把题目推成消息气泡）。用 effect 把 runtime 状态同步成消息，既会重复追加（StrictMode），也会让消息与真源脱节。
+- `useAgentInterview.submit` 接受 `answerOverride`：侧栏的作答来自聊天框文本解析，不在 hook 的 `answer` state 里。
+- 新增 `interviewRoutingContext()`（纯函数 + 单测）：面试进行中由共享会话派生路由上下文。不派生的话 `shouldSubmitAsAnswer` 会判定「无待作答题」，用户输入的「A」被当成提问——面试直接卡死。
+
+**其它（P1）**
+- `CONTINUE_PATTERN` 由前缀匹配改为整句匹配：`继续解释一下` / `继续讲刚才的知识点` 不再被判成「要下一题」，并新增 `CONTINUE_EXPLAIN_PATTERN` 保证它们落到 Copilot 而不是答案通道（开放题下任何非空文本都会被当成一次作答）。末尾保留指代填充（`跳过这道题`）与难度修饰（`下一题难一点`）。
+- `QuestionResult` 新增可选 `evaluation`（完整 `EvaluationResult`），`sessionFromQuiz` 原样留存；`SessionReplayDrawer` 复用同一个 `InterviewFeedbackCard`，历史反馈与实时反馈同一投影、同一组件。**不重算**——重算会得到与用户当时所见不同的分数。
+- `useTrainingSession`：评估失败（`g === null`）不再记成 `score: 0` 的自适应信号（两处）。原先会把一次失败喂给自适应引擎，让它以为「这题完全不会」并降级出题。
+- `storage/learner.ts`：读取时补 Zod 形状校验（该文件注释早已声明 IndexedDB 是不可信边界，但代码没做）。learner 行损坏 → 退回空画像而不是抛异常；session 行**只做最小形状检查**，刻意不套完整 schema——旧记录形状过时不该整条丢弃用户历史。
+- `storage/db.ts`：`StoredLearner` 补 `assessmentCoverage` / `misconceptionHits` 类型（运行时靠对象展开「碰巧能用」，类型缺失迟早被显式列字段时静默丢掉）。
+
+**门禁**：`typecheck`（app + node）通过；全量测试 941 passed / 944（3 个失败为工作区未提交依赖升级导致的 `deepseek-v4-flash` 测试引用，仅测试、零运行时引用）。**覆盖度变化**：随 Chat 适配层删除，`interviewCapability.test.ts` 一并移除（其断言全部针对已删除的适配层）；底层行为由 `interviewAgent.test.ts` 直接覆盖，新增的路由派生与存储边界另补单测。
+
 ## 2026-09-25 · 面试新增「逐题反馈」节奏（会话级，评分与推进解耦）
 
 - 新增 `InterviewFeedbackMode = 'standard' | 'immediate'`，作为**会话属性**而非全局设置：Agent 面试页开局用 `Segmented` 选择，随 `InterviewAgentSession` / `ConversationSession` 持久化，刷新可恢复；缺省 `standard`，旧草稿行为不变。

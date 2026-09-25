@@ -12,6 +12,7 @@ import type { AnswerValue } from '../../types';
 import type { EvaluationResult } from '../../schemas/evaluation';
 import type { SessionQuestion } from '../../schemas/session';
 import type { InterviewFeedbackMode } from '../../schemas/interview';
+import type { ConversationContext } from '../../schemas/conversation';
 import type { AnswerContext } from './copilot';
 
 /** Agent 面试页在「停在本题反馈上」时可交给 Copilot 的结构化上下文。 */
@@ -51,3 +52,30 @@ export function toAnswerContext(ctx: ActiveInterviewContext): AnswerContext {
  */
 export const ASK_COPILOT_ABOUT_FEEDBACK =
   '请结合我的作答与评分，详细讲解这道题的考察要点、我的理解偏差，以及正确的思路。';
+
+/**
+ * 面试进行中时，Copilot 的消息路由上下文。
+ *
+ * 为什么需要派生：侧栏的 `ConversationSession` 只在 question / chat 模式维护
+ * `pendingAction` 与 `currentQuestionId`；面试模式下这两个字段的真源在共享的 Agent 会话里。
+ * 若沿用侧栏那份陈旧 context，`shouldSubmitAsAnswer` 会判定「当前没有待作答题」，
+ * 于是用户输入的「A」被路由到 Copilot（当成一次提问）而不是一次作答——面试直接卡死。
+ *
+ * 反过来，停在反馈卡上时答案通道必须关闭（`pendingAction='feedback'`）：此刻当前题已评分，
+ * 再提交只会被运行时拒绝，用户输入的文本更可能是在追问。
+ *
+ * @param question Agent 会话的当前题；无题时原样返回（未开场 / 已收尾，路由不需要面试语义）
+ */
+export function interviewRoutingContext(
+  base: ConversationContext,
+  question: SessionQuestion | null,
+  awaitingFeedback: boolean,
+): ConversationContext {
+  if (!question) return base;
+  return {
+    ...base,
+    mode: 'interview',
+    currentQuestionId: question.question.id,
+    pendingAction: awaitingFeedback ? 'feedback' : 'answer',
+  };
+}

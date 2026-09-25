@@ -410,6 +410,10 @@ export function sessionFromQuiz(
         // 选择题例外：misconceptionIds 是「选中错误选项」带来的结构化反证证据（无 LLM），
         // 不属「猜测漏了哪个知识点」，如实透传，由 updateLearner 聚合进 misconceptionHits。
         misconceptionIds: format === 'choice' ? (g.misconceptionIds ?? []) : [],
+        // 完整评分原样留存：上面的 score/gaps/missingConcepts 是**聚合用投影**，会丢字段。
+        // 历史回放要复用与实时反馈同一个 InterviewFeedbackCard（四维分、证据、面试官评语），
+        // 就必须有原始 EvaluationResult——否则只能重算或猜，两者都会与当时看到的反馈不一致。
+        evaluation: g,
       };
     });
   const overall =

@@ -296,9 +296,13 @@ export function createInterviewAgent(opts: CreateInterviewAgentOptions): Intervi
     // evaluation === null（未作答 / 评分失败）：没有可展示的反馈，
     // 绝不能伪造一份 0 分反馈，也不能把未评分题写进 Learner Memory → 按原流程推进。
     if (!evaluation) return false;
-    handlers?.onEvaluation?.(sq, answer, evaluation);
-    if (session.feedbackMode === 'immediate') {
-      session.status = 'awaiting_feedback';
+    // 先置状态再通知：回调里读到的 `session.status` 必须与「是否停在反馈上」一致。
+    // （回调另有一个显式的 awaitingFeedback 参数，此处保持两者同源，避免出现
+    //  「status 已暂停但回调说没暂停」这种自相矛盾的中途态。）
+    const awaitingFeedback = session.feedbackMode === 'immediate';
+    if (awaitingFeedback) session.status = 'awaiting_feedback';
+    handlers?.onEvaluation?.(sq, answer, evaluation, awaitingFeedback);
+    if (awaitingFeedback) {
       handlers?.onStatus?.('awaiting_feedback');
       return true;
     }

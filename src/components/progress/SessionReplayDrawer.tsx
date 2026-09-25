@@ -1,9 +1,11 @@
 import { Alert, Card, Drawer, Empty, List, Space, Tag, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import type { SessionQuestion } from '../../schemas/session';
-import type { SessionRecord } from '../../schemas/learner';
+import type { QuestionResult, SessionRecord } from '../../schemas/learner';
 import { categoryLabel } from '../../domain/categories';
+import { buildInterviewFeedback, type InterviewFeedback } from '../../domain/interviewFeedback';
 import RichText from '../common/RichText';
+import InterviewFeedbackCard from '../interview/InterviewFeedbackCard';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
@@ -37,6 +39,18 @@ export default function SessionReplayDrawer({
 
   const questions = record?.questions;
 
+  /**
+   * 历史会话的逐题反馈：与实时反馈**同一个**领域投影 + 同一个卡片组件。
+   *
+   * 只用 `res.evaluation`（完整 EvaluationResult）重建，**不重算**：重算会得到与用户当时
+   * 看到的不同的分数（题库/模型/口径都可能已变），那是伪造历史。旧记录没有该字段
+   * （`evaluation` 是后加的）时返回 null，回放退化为原有的「分数 + 解析」视图。
+   */
+  const feedbackOf = (sq: SessionQuestion, res?: QuestionResult): InterviewFeedback | null =>
+    res?.evaluation
+      ? buildInterviewFeedback(sq.question, sq.format, record?.answers?.[sq.question.id] ?? '', res.evaluation)
+      : null;
+
   return (
     <Drawer
       title={record ? `会话回放 · ${record.title}` : '会话回放'}
@@ -67,6 +81,7 @@ export default function SessionReplayDrawer({
               renderItem={(sq: SessionQuestion, i) => {
                 const q = sq.question;
                 const res = record.questionResults.find((r) => r.questionId === q.id);
+                const feedback = feedbackOf(sq, res);
                 const scoreTag = res ? (
                   <Tag color={res.correct === true ? 'success' : res.correct === false ? 'error' : 'default'}>
                     {res.correct === true ? '正确' : res.correct === false ? '错误' : `${res.score} 分`}
@@ -112,6 +127,7 @@ export default function SessionReplayDrawer({
                         <Typography.Paragraph type="secondary" style={{ marginTop: 8 }}>
                           解析：{q.explanation}
                         </Typography.Paragraph>
+                        {feedback && <InterviewFeedbackCard feedback={feedback} />}
                       </Card>
                     </List.Item>
                   );
@@ -134,6 +150,7 @@ export default function SessionReplayDrawer({
                       <Typography.Text type="secondary">参考答案：</Typography.Text>
                       <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>{of.referenceAnswer}</Typography.Paragraph>
                       <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph>
+                      {feedback && <InterviewFeedbackCard feedback={feedback} />}
                     </Card>
                   </List.Item>
                 );

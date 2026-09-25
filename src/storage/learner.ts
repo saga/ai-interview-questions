@@ -8,6 +8,7 @@
 // 边界：IndexedDB 同样是不可信边界，读出的数据仍需经 Zod 形状校验（沿用 schemas/learner 的校验）。
 
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
+import { learnerProfileSchema } from '../schemas/learner';
 import type { ProficiencyConfig } from '../schemas/ai-config';
 import { calculateProficiency, emptyProfile, recommendWeakTopics } from '../domain/learner';
 import { db, topicsOfSession, type StoredLearner, type StoredSession } from './db';
@@ -29,8 +30,24 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
   const stored = await db.learner.get(SINGLETON);
   if (!stored) return emptyProfile();
 
-  const sessions = await db.sessions.orderBy('startedAt').reverse().toArray();
   const { id: _id, ...rest } = stored;
+  // IndexedDB 是不可信边界（用户可手改、旧版本可能留下不兼容形状）。**必须先校验再遍历**：
+  // 下面 `Object.entries(rest.topicStats)` 在 topicStats 缺失时直接抛，会让「进度」页整体白屏。
+  // 校验失败退回空画像——与 loadConversationSession 的「损坏即丢弃」同策，不把脏数据塞进运行时。
+  // 补一个空 sessions 只是为了满足 profile schema 的形状（会话是另一张表，下面单独读）。
+  const base = learnerProfileSchema.safeParse({ ...rest, sessions: [] });
+  if (!base.success) return emptyProfile();
+  const { sessions: _placeholder, ...safe } = base.data;
+
+  const sessionRows = await db.sessions.orderBy('startedAt').reverse().toArray();
+  // 会话行**刻意不套完整 schema**：`sessionRecordSchema` 要求 questions 快照等字段齐全，
+  // 而旧版本写下的记录可能不符合当前形状——一条不匹配就丢掉用户整段历史，代价远大于
+  // 「某条旧记录少几个可选字段」。这里只做「不炸」所需的最小形状检查
+  // （questionResults 缺失时下面的遍历会抛），与 agentSession 的读取口径一致。
+  const sessions = sessionRows
+    .filter((row) => Array.isArray(row?.questionResults))
+    .map(({ topics: _t, ...s }) => s);
+
   const topicPracticeSessions = new Map<string, number>();
   for (const session of sessions) {
     for (const topic of new Set(session.questionResults.map((result) => result.topic))) {
@@ -38,7 +55,7 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
     }
   }
   const topicStats = Object.fromEntries(
-    Object.entries(rest.topicStats).map(([topic, stat]) => {
+    Object.entries(safe.topicStats).map(([topic, stat]) => {
       const practiceSessions = stat.practiceSessions ?? topicPracticeSessions.get(topic) ?? 0;
       return [topic, {
         ...stat,
@@ -48,10 +65,10 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
     }),
   );
   return {
-    ...rest,
+    ...safe,
     topicStats,
     // 与 updateLearner 保持一致：新在前、上限 SESSION_CAP
-    sessions: sessions.slice(0, SESSION_CAP).map(({ topics: _t, ...s }) => s),
+    sessions: sessions.slice(0, SESSION_CAP),
   };
 }
 

@@ -25,8 +25,15 @@ export interface StoredLearner {
    * 但类型上缺失 ⇒ 一旦有人把 toStoredLearner 改成显式列字段，这层证据会被静默丢掉。显式声明以防漂移。
    */
   angleCoverage?: LearnerProfile['angleCoverage'];
+  /**
+   * Assessment-cell 证据（`LearnerProfile.assessmentCoverage`），同上理由显式声明。
+   * 这是「不同认知任务是否被验证过」的事实来源、adaptive 选题的主索引，丢它等于丢选题依据。
+   */
+  assessmentCoverage?: LearnerProfile['assessmentCoverage'];
   /** 概念级缺失证据（`LearnerProfile.conceptEvidence`），同上理由显式声明。 */
   conceptEvidence?: LearnerProfile['conceptEvidence'];
+  /** 误解命中证据（`LearnerProfile.misconceptionHits`），同上理由显式声明。 */
+  misconceptionHits?: LearnerProfile['misconceptionHits'];
   updatedAt: number;
 }
 

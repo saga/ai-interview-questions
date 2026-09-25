@@ -378,6 +378,9 @@ export default function App() {
           session={session}
           currentQuestion={copilotQuestion}
           onSessionComplete={handleAgentComplete}
+          // 与 Agent 面试页**共用同一场面试**：侧栏不再自建 Agent runtime，
+          // 而是直接读写这里的会话状态（提交 / 继续 / 结束都落到同一个 InterviewAgentSession）。
+          agentInterview={agent}
           interviewContext={askCopilotCtx}
           onInterviewContextConsumed={() => setAskCopilotCtx(null)}
         />

@@ -390,6 +390,30 @@ describe('sessionFromQuiz', () => {
     expect(rec.mode).toBe('quick');
   });
 
+  // 历史回放要复用与实时反馈**同一个** InterviewFeedbackCard（四维分/证据/面试官评语），
+  // 而 score/gaps/missingConcepts 是聚合用投影、会丢字段——故必须原样留存 EvaluationResult。
+  it('原样留存完整 EvaluationResult（供历史回放复用实时反馈卡）', () => {
+    const full = {
+      overall: 72,
+      dimensions: { correctness: 80, completeness: 60, architecture: 70, communication: 78 },
+      levels: { correctness: 3, completeness: 2, architecture: 3, communication: 3 },
+      evidence: { correctness: '机制说对了', completeness: '漏了显存', architecture: '', communication: '' },
+      strengths: ['抓到复用'],
+      gaps: ['未提显存增长'],
+      missingConcepts: ['KV 显存'],
+      feedback: '基本正确。',
+      referenceAnswer: '复用历史 K/V。',
+    } as never;
+    const rec = sessionFromQuiz(
+      { questions: [openA], startedAt: 123, definition: { title: 't', mode: 'agent' } },
+      { [openA.question.id]: full },
+    );
+    // 同一对象引用透传，不重算、不改写——重算会得到与用户当时所见不同的分数（伪造历史）。
+    expect(rec.questionResults[0].evaluation).toBe(full);
+    expect(rec.questionResults[0].evaluation!.dimensions.architecture).toBe(70);
+    expect(rec.questionResults[0].evaluation!.feedback).toBe('基本正确。');
+  });
+
   it('完整保留原题快照（含 AI 变体）供历史会话复现', () => {
     const grades = {} as never;
     const rec = sessionFromQuiz(

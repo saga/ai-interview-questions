@@ -194,55 +194,11 @@ export function shouldUpgradeToInterview(session: ConversationSession, intent?: 
 /**
  * 把运行时会话（InterviewAgentSession）投影到 ConversationSession（plan0831_6 P1-3）。
  *
- * 明确「Agent 运行时会话 = runtime 真源，ConversationSession = 投影」：Chat 不再手工
- * `{...base.answers, ...controller.session.answers}` 双向同步，避免长期 drift。题数 / 作答 /
- * 评分配额都从这里统一计算（projectToConversationSession 是单一写入点）。
- *
- * @param base 当前 ConversationSession（投影的基底）
- * @param agentSession 运行时会话（真源）
- * @param messages 完整 transcript（含本轮用户消息与即将追加的助手消息）
- * @param opts.deliveredQuestion 本轮刚交付给用户作答的新题；收尾 / 「结束」时传 null
- * @param opts.countAsNew 是否把 deliveredQuestion 计入题数（每交付一题 +1；收尾 / 换题不计重复）
- * @param opts.awaitFeedback immediate 模式：本轮已评分但**停在反馈上**，
- *   `pendingAction` 置为 `'feedback'` 且保留 `currentQuestionId`（反馈卡要回显题干与作答）
+ * 已删除（ADR-002：不留无引用代码）：Copilot 侧栏改为直接读写 App 层 `useAgentInterview`
+ * 的会话状态后，「把 Agent 运行时会话投影成 ConversationSession」这一层就没有调用方了——
+ * 它原本存在的唯一目的，是在两个独立 runtime 之间做单向同步。运行时合并后，
+ * ConversationSession 只剩「Copilot 自己的 transcript + question 模式状态」这一职责。
  */
-export function projectToConversationSession(
-  base: ConversationSession,
-  agentSession: InterviewAgentSession,
-  messages: { role: 'user' | 'assistant'; content: string; key: string }[],
-  opts: { deliveredQuestion?: SessionQuestion | null; countAsNew?: boolean; awaitFeedback?: boolean } = {},
-): ConversationSession {
-  const delivered = opts.deliveredQuestion ?? null;
-  const countAsNew = opts.countAsNew ?? false;
-  const questionCount = countAsNew ? base.questionCount + 1 : base.questionCount;
-  const messageTurnCount = countAsNew ? base.messageTurnCount + 1 : base.messageTurnCount;
-  const questions = delivered && !base.questions.some((q) => q.question.id === delivered.question.id)
-    ? [...base.questions, delivered]
-    : base.questions;
-  // delivered=null 表示本轮收尾：清空当前题；delivered 为具体题则指向它；未传（undefined）沿用原值。
-  const currentQuestionId = delivered ? delivered.question.id : delivered === null ? undefined : base.context.currentQuestionId;
-  return {
-    ...base,
-    messages,
-    answers: { ...base.answers, ...agentSession.answers },
-    evaluations: { ...base.evaluations, ...agentSession.evaluations },
-    agentSession,
-    // 反馈模式随运行时会话固化（真源在 agentSession，投影时同步到持久化的 ConversationSession）
-    feedbackMode: agentSession.feedbackMode,
-    questions,
-    questionCount,
-    messageTurnCount,
-    context: {
-      ...base.context,
-      mode: 'interview',
-      currentQuestionId,
-      pendingAction: opts.awaitFeedback ? 'feedback' : delivered ? 'answer' : 'choose_question',
-      questionHistory: delivered ? [...(base.context.questionHistory ?? []), delivered.question.id] : base.context.questionHistory,
-      questionCount,
-      messageTurnCount,
-    },
-  };
-}
 
 export const CONVERSATION_SESSION_KEY = 'ai-interview-conversation-session-v1';
 

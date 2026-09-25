@@ -105,9 +105,19 @@ export interface AgentHandlers {
   /**
    * 本题评分完成（三条评分路径——选择题确定性评分 / 兜底评分 / LLM 工具评分——的**统一出口**）。
    * 三条路径最终都汇入同一个内部 `afterEvaluation()`，因此本回调天然对三种路径一致生效，
-   * UI 无需分别适配。immediate 模式下会紧随其后进入 `awaiting_feedback`。
+   * UI 无需分别适配。
+   *
+   * @param awaitingFeedback 本次评分后是否**停在反馈上等用户确认**（immediate 模式为 true，
+   *   standard 模式为 false）。必须由运行时显式给出，不能让消费方去读 `session.status`：
+   *   本回调在 `afterEvaluation` 内部触发，若消费方依赖状态字段，就会与「状态何时被写入」
+   *   这一实现细节耦合——一旦顺序调整，反馈卡在 standard 模式下会静默出现（或反之消失）。
    */
-  onEvaluation?: (q: SessionQuestion, answer: AnswerValue, evaluation: EvaluationResult) => void;
+  onEvaluation?: (
+    q: SessionQuestion,
+    answer: AnswerValue,
+    evaluation: EvaluationResult,
+    awaitingFeedback: boolean,
+  ) => void;
   /** 状态变化（running / awaiting_feedback / finished）。 */
   onStatus?: (status: AgentStatus) => void;
   /** 运行期错误/自愈提示：fatal=true 为致命（应阻塞并 setError），否则为可恢复告警（如已兜底出题）。 */

@@ -58,6 +58,26 @@ describe('detectCommand（确定性命令，无 LLM）', () => {
     expect(detectCommand('随便聊聊')).toBeNull();
   });
 
+  // ── 「继续」类命令必须整句匹配（P1 回归）──
+  // 旧实现只有 `^` 前缀：用户说「继续解释一下」（想让它接着讲），却被判成「要下一题」，
+  // 题目当场被换掉。这是与 Copilot 定位直接冲突的行为。
+  it('「继续 + 说明动词」不是命令，而是接着讲（让位给 Copilot）', () => {
+    expect(detectCommand('继续解释一下')).toBeNull();
+    expect(detectCommand('继续详细说')).toBeNull();
+    expect(detectCommand('继续讲刚才的知识点')).toBeNull();
+    expect(detectCommand('继续展开说说')).toBeNull();
+    expect(detectCommand('接着讲')).toBeNull();
+  });
+
+  it('自然说法仍识别为命令（指代填充 / 难度修饰 / 语气词）', () => {
+    expect(detectCommand('跳过这道题')?.kind).toBe('continue_interview');
+    expect(detectCommand('下一题吧')?.kind).toBe('continue_interview');
+    expect(detectCommand('换一道')?.kind).toBe('continue_interview');
+    expect(detectCommand('下一题难一点')?.kind).toBe('continue_interview');
+    expect(detectCommand('下一题难一点')?.difficulty).toBe('hard');
+    expect(detectCommand('再难一点')?.kind).toBe('continue_interview');
+  });
+
   it('上一场已结束时「下一题」应开新一轮', () => {
     const ctx = { ...initialConversationContext(), endedAt: Date.now() };
     expect(detectCommand('下一题', ctx)?.kind).toBe('ask_question');
@@ -122,5 +142,19 @@ describe('routeUserMessage（唯一通道决策点，ADR-064 §5）', () => {
   it('其余一律 Copilot，不做「意图不确定」阻断', () => {
     expect(routeUserMessage('什么是 RAG？', initialConversationContext(), null).kind).toBe('copilot');
     expect(routeUserMessage('讲讲 agent 的设计权衡', initialConversationContext(), null).kind).toBe('copilot');
+  });
+
+  // 端到端路由（比单独测 detectCommand 更关键）：开放题下**任何非空文本**都会走答案通道，
+  // 所以「继续解释一下」若不被判成命令，就必须被判成求助——否则它会被当成一次作答去评分。
+  it('待作答开放题时说「继续解释一下」→ Copilot，绝不能被当成一次作答', () => {
+    const ctx = questionContext(openQuestion.id);
+    expect(routeUserMessage('继续解释一下', ctx, openQuestion).kind).toBe('copilot');
+    expect(routeUserMessage('继续讲刚才的知识点', ctx, openQuestion).kind).toBe('copilot');
+    expect(routeUserMessage('继续详细说', ctx, openQuestion).kind).toBe('copilot');
+  });
+
+  it('待作答开放题时说「继续」→ 仍是命令（换下一题），不受上一条影响', () => {
+    expect(routeUserMessage('继续', questionContext(openQuestion.id), openQuestion).kind).toBe('command');
+    expect(routeUserMessage('跳过这道题', questionContext(openQuestion.id), openQuestion).kind).toBe('command');
   });
 });
