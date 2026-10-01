@@ -2,6 +2,23 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-087 · 模型 id 随 pi-ai 目录改名；测试超时按满载而非单跑设定
+
+- 状态：已采纳 · 2026-10-02
+- 背景：`npm run test` 报 5 项失败，两类成因互相独立。
+  1. **（3 项）`deepseek-v4-flash` 在 pi-ai 的原生 deepseek 目录里不存在。** pi-ai 0.87.1（`e22ade3` 引入 `^0.87.1`）把该目录的 id 改成了 `deepseek-flash`（`name: "DeepSeek V4.1 Flash"`），1.0.0 延续。**这不只是测试引用问题**：`src/config/sample-config.json` → `config/sampleConfig.ts` → `storage/settings.ts` 的 `DEFAULT_CONFIG`，是 `loadConfig()` 无存档时的回退值、也是设置页「恢复默认」写入的内容——用户在设置页恢复默认后启用 deepseek，会直接拿到「未找到模型」。ADR-086 当时记的「零运行时引用」是错的（当时只 grep 了 `src/` 下的 `.ts`/`.tsx`，漏了 `.json`）。
+  2. **（2 项）5s 默认超时在满载下不够。** `ai/local.test.ts` / `ai/provider.test.ts` 的端到端用例真实跑 pi-ai 的 SSE 流式解析：单跑 1172ms / 784ms，全量 65 文件并发时超 5000ms。每个 worker 都要 import 6MB 的 pi-ai dist（本轮全量 `import` 累计 357s），是纯负载抖动。ADR-084 的验证记录里已出现过同样的 2 项（「并行负载超时 2 项，单独跑全过」），长期被当噪音忽略。
+- 决策：
+  1. **模型 id 跟随上游目录改名，`deepseek-v4-flash` → `deepseek-flash`。** 验证方式是**在两个版本里各查一次目录**，而不是只看当前 `node_modules`：`deepseek-flash` 在 0.87.1 与 1.0.0 中均存在，`deepseek-v4-flash` 在两者中均不存在。因此该改名**不依赖当前工作区那份未提交的 1.0.0 升级**，无论升级是否落地都成立。
+  2. **只改 id，不加迁移层。** 已把 `deepseek-v4-flash` 存进 localStorage 的用户不会自动被改写——按 AGENTS.md §3「不搞向后兼容」，不新增模型 id 迁移机制；改由本 ADR 记录该影响面。若将来确有存量用户受影响，再单独讨论。
+  3. **测试超时按「并行满载」设定：`testTimeout` / `hookTimeout` = 20000。** 这两个用例不依赖真实网络（fetch 全部 mock），超时只可能来自 CPU/IO 争用，故提高上限不会掩盖真实故障；相比限制并发（`maxThreads` / `fileParallelism: false`）代价更小。
+- 未改（明确不动）：
+  - **不动工作区里那份未提交的 `pi-ai` / `pi-agent-core` `^0.87.1 → ^1.0.0` 升级。** 它不是本次工作产生的，本次修复对它也没有依赖。
+  - **不改历史 ADR / CHANGELOG 里出现旧 id 的段落。** 它们是当时状态的记录，按本仓惯例（ADR-086 更正 ADR-085 的写法）用新条目更正，而不是回写历史；仅在 ADR-022 那条「默认云端引擎改为 DeepSeek」上加一行指向本 ADR 的指针。
+  - **不把 `deepseek-v4-flash` 从聚合平台的示例里删掉。** 该 id 在 OpenRouter / Vercel AI Gateway / Cloudflare 目录里依然有效，只有 pi-ai **原生** deepseek provider 目录移除了它。
+- 验证：`tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过；`npm run test` 全量 **871 passed / 871**（65 文件），**连跑两次均全绿**（超时类问题单次全绿不足以证明，故连跑）。
+- 触发条件：pi-ai 再次调整模型目录时，应优先用「在两个版本里各查一次目录」的方式确认改名是否版本无关，不要只看当前 `node_modules`；若引入 React 测试环境或调整并发策略，`testTimeout` 的取值应重新评估（当前值是为「65 文件满载」留的余量）。
+
 ## ADR-086 · 交付即建键；收尾顺序契约化；非纯逻辑抽成可注入模块
 
 - 状态：已采纳 · 2026-09-25
@@ -1454,6 +1471,7 @@
     ChromeAIProvider（ADR-021）与 PiAIProvider 两个实现。
   - **默认云端引擎改为 DeepSeek**（provider='deepseek'，model='deepseek-v4-flash'）；
     localStorage 契约不变，仅新增可选 baseUrl 字段。
+    （**该模型 id 已于 pi-ai 0.87.1 改名为 `deepseek-flash`，见 ADR-087**；此处保留原文作为当时的记录。）
   - 新增 `docs/config.example.json` 示例配置（chrome / local / cloud 三种形态）。
 - 理由：本地推理与产品 local-first 定位一致且零成本；复用 pi-ai 让 prompt 编排、流式、
   错误处理全部继承既有链路（callLLM 一处入口），未来换协议只动 buildModels。

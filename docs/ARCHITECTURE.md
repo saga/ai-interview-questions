@@ -757,7 +757,8 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 - **默认引擎链**：`storage/settings.ts` 的 `DEFAULT_CONFIG = SAMPLE_CONFIG`（源在
   `src/config/sample-config.json`），降级链 6 条、数组顺序即优先级：
   `chrome(enabled) → local(enabled) → deepseek / openrouter / google / cloudflare-workers-ai(默认 disabled)`，
-  `generateOpenQuestions: false`；云端主用模型 `deepseek-v4-flash`。
+  `generateOpenQuestions: false`；云端主用模型 `deepseek-flash`（pi-ai 原生 deepseek 目录里的
+  id；旧写法 `deepseek-v4-flash` 在 0.87.1 起已从该目录移除，见 ADR-087）。
   示例配置见 `docs/config.example.json`。DeepSeek 特性已按能力协商充分利用：
   - **原生 JSON 模式**：声明 `jsonMode` 能力的引擎（deepseek / openrouter）经 samplingParams 透传
     `response_format={type:'json_object'}`，变体/评分/质询均走原生 JSON（extractJSON 仅作 fallback）；

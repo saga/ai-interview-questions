@@ -1,0 +1,212 @@
+[
+  {
+    "id": "attention-softmax-saturation-canonical",
+    "category": "attention-mechanism",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "attention",
+      "softmax",
+      "scaling",
+      "transformer"
+    ],
+    "difficulty": "medium",
+    "angle": "causal",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "attention",
+      "supporting": [
+        "softmax",
+        "gradient-vanishing"
+      ]
+    },
+    "assessment": {
+      "target": "能够根据特征维度 d_k 的增大推导未缩放点积数值量级的变化，并分析其对 Softmax 激活极化与反向传播梯度的因果影响。",
+      "reasoningGoal": "先判断高维特征下未缩放点积数值量级增大的趋势；再分析指数运算对极差放大的效应及其导致的 Softmax 梯度饱和与极化；据此排除认为点积增大仅增加计算量而不影响梯度传播的观点。"
+    },
+    "question": "在 Transformer 的注意力机制中，若取消对 Query 与 Key 点积结果的缩放处理，当 Key 的特征维度 $d_k$ 显著增大时，对其模型训练过程与注意力概率分布产生何种直接因果影响？",
+    "explanation": "当特征维度 $d_k$ 较大时，未缩放的 Query 与 Key 点积数值量级增大。Softmax 计算中的指数函数会极大放大得分之间的差值，导致极大值占据绝大部分概率权重，输出趋近单热分布，使模型失去对多个 Token 进行软融合的能力。同时，Softmax 函数在输入极差过大时进入饱和区，其梯度（导数）趋近于零，导致反向传播过程中产生梯度消失，阻断模型参数更新。浮点溢出仅为数值实现问题，并非 Softmax 梯度饱和与注意力极化的根本原因。",
+    "misconceptions": [
+      "误以为点积未缩放的主要危害是浮点溢出，而非 Softmax 梯度饱和导致模型无法有效更新参数。",
+      "误以为 Softmax 在极大数值极差下仍能维持平滑的概率分布与有效反向传播梯度。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随着 $d_k$ 增大，点积数值极差扩大，经 Softmax 指数映射后放大差值，导致概率分布极化。",
+          "Softmax 趋近单热（One-Hot）分布，导致大多数 Token 权重趋零，失去软融合能力。",
+          "Softmax 进入数值饱和区，反向传播导数趋近于零，引发梯度消失并阻断模型参数更新。",
+          "未缩放的主要危害在于浮点溢出，只要提高浮点计算精度即可维持平滑分布与有效梯度。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "dot-product-variance-derivation-canonical",
+    "category": "attention-mechanism",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "variance",
+      "dot-product",
+      "proof",
+      "transformer"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "dot-product-variance",
+      "supporting": [
+        "independent-random-variables",
+        "attention-scaling"
+      ]
+    },
+    "assessment": {
+      "target": "基于独立同分布零均值单位方差假设，推导向量点积展开式中各项期望与方差，证明点积总体方差为 d_k。",
+      "reasoningGoal": "先分析点积平方展开式中对角项与交叉项的期望计算方式；再累计 d_k 个期望为 1 的对角项并确认交叉项期望消零；据此排除点积方差随维度呈二次方增长或与维度无关的错误推断。"
+    },
+    "question": "假设 Query 向量 $\\mathbf{q}$ 与 Key 向量 $\\mathbf{k}$ 的各分量 $q_i, k_i$ 均为独立同分布且满足零均值、单位方差（即 $\\mathbb{E}[q_i]=\\mathbb{E}[k_i]=0$，$\\text{Var}(q_i)=\\text{Var}(k_i)=1$）的随机变量。在推导点积 $S = \\sum_{i=1}^{d_k} q_i k_i$ 的总体方差为 $d_k$ 的过程中，下列哪些数学推导断言是正确的？",
+    "explanation": "在 $q_i, k_i$ 独立同分布且均值为 0、方差为 1 的假设下，单项 $q_i k_i$ 的期望 $\\mathbb{E}[q_i k_i] = \\mathbb{E}[q_i]\\mathbb{E}[k_i] = 0$，其方差为 $\\mathbb{E}[(q_i k_i)^2] - (\\mathbb{E}[q_i k_i])^2 = \\mathbb{E}[q_i^2]\\mathbb{E}[k_i^2] = 1$。展开点积平方 $(\\sum q_i k_i)^2$ 后，共包含 $d_k$ 个对角项 $(q_i k_i)^2$ 和 $d_k(d_k-1)$ 个交叉项 $q_i k_i q_j k_j$ ($i \\neq j$)。因各变量相互独立，所有交叉项的期望均为 0，不对方差产生贡献。因此，总体方差即为 $d_k$ 个对角项方差的累加和，等于 $d_k$，而非二次方的 $d_k^2$。",
+    "misconceptions": [
+      "误以为点积的方差随维度 $d_k$ 呈二次方增长（即误认为方差为 $d_k^2$）。",
+      "误以为交叉项在求期望时由于非零相关性而额外增加了总体方差。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单项 $q_i k_i$ 的期望为 0，其方差为 $\\mathbb{E}[(q_i k_i)^2] = \\mathbb{E}[q_i^2]\\mathbb{E}[k_i^2] = 1$。",
+          "平方展开式中含有 $d_k$ 个对角项 $(q_i k_i)^2$，其期望值累积求和结果等于 $d_k$。",
+          "平方展开式中所有不同下标的交叉项 $q_i k_i q_j k_j$ ($i \\neq j$) 因独立性使得期望为 0。",
+          "点积总体方差随维度呈二次方增长（即 $d_k^2$），因交叉项会产生额外的非零方差贡献。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "sqrt-dk-scaling-proof-canonical",
+    "category": "attention-mechanism",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "variance",
+      "scaling",
+      "proof",
+      "transformer"
+    ],
+    "difficulty": "medium",
+    "angle": "quantitative",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "variance-scaling",
+      "supporting": [
+        "dot-product-attention",
+        "standard-deviation"
+      ]
+    },
+    "assessment": {
+      "target": "运用随机变量线性变换的方差公式 Var(X/c) = Var(X)/c^2，推导并证明 sqrt(d_k) 是将点积方差重置为 1 的精确缩放常数。",
+      "reasoningGoal": "先依据方差计算中标量除法的二次方关系 Var(X/c) = Var(X)/c^2；再建立目标方差为 1 的等式求得 c = sqrt(d_k)；据此排除直接除以 d_k 或除以 2 等无法正确归一化方差的缩放因子。"
+    },
+    "question": "已知 Query 与 Key 向量点积 $X = \\mathbf{q} \\cdot \\mathbf{k}$ 的方差为 $\\text{Var}(X) = d_k$。为了将缩放后的点积方差精确重置为 1，需对其除以标量常数 $c$。关于缩放系数 $c = \\sqrt{d_k}$ 的定量推导过程，下列哪些分析是正确的？",
+    "explanation": "根据概率论性质，随机变量乘以或除以标量常数 $c$ 时，其方差缩放因子为二次方的 $c^2$，即 $\\text{Var}(X/c) = \\text{Var}(X)/c^2$。已知未缩放点积的方差为 $\\text{Var}(X) = d_k$，为了使缩放后的方差等于 1，只需解方程 $d_k / c^2 = 1$，解得 $c = \\sqrt{d_k}$。这也等价于用点积的标准差 $\\sigma = \\sqrt{d_k}$ 进行归一化。若错误地选择除以 $d_k$，则新方差为 $d_k / d_k^2 = 1/d_k$，会导致点积被过度压缩。",
+    "misconceptions": [
+      "误以为标量除法对方差的影响是一次方的（即误认为 $\\text{Var}(X/c) = \\text{Var}(X)/c$）。",
+      "误以为只有直接除以维度 $d_k$ 才能将点积的方差重置归一化为 1。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "依据随机变量标量除法的方差性质，当点积除以常数 $c$ 时，其新方差满足公式 $\\text{Var}(X/c) = \\text{Var}(X)/c^2$。",
+          "将 $\\text{Var}(X) = d_k$ 代入目标等式 $\\text{Var}(X/c) = 1$，得 $d_k / c^2 = 1$，可解得 $c = \\sqrt{d_k}$。",
+          "选择 $c = \\sqrt{d_k}$ 本质上是利用点积的标准差 $\\sigma = \\sqrt{d_k}$ 对点积数值进行标准差级别的归一化。",
+          "若选择缩放系数 $c = d_k$，则新方差将变为 $\\text{Var}(X/d_k) = d_k / d_k = 1$，也能达到相同的归一化效果。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "scaled-attention-softmax-distribution-canonical",
+    "category": "attention-mechanism",
+    "topic": "scaled-dot-product-scaling",
+    "tags": [
+      "softmax",
+      "distribution",
+      "attention",
+      "transformer"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "softmax-distribution",
+      "supporting": [
+        "attention-weights",
+        "relative-order"
+      ]
+    },
+    "assessment": {
+      "target": "对比不同 d_k 维度下缩放与未缩放注意力得分的 Softmax 输出分布，评估其对多词元上下文语义融合与注意力平滑度的工程影响。",
+      "reasoningGoal": "先对比高维场景下缩放前后点积极差对 Softmax 指数映射后的分布平滑度；再分析平滑分布对多词元上下文语义融合与注意力权重的必要性；据此排除认为缩放会改变 Token 间相对注意力排序或等价于均匀分布的推断。"
+    },
+    "question": "在 Transformer 的 Scaled Dot-Product Attention 中，对点积得分除以 $\\sqrt{d_k}$ 缩放后再传入 Softmax，对最终注意力权重分布的计算特性产生什么核心作用？",
+    "explanation": "除以单调递增的正标量 $\\sqrt{d_k}$ 属于单调线性变换，不会改变各 Key 对应点积得分的大小相对顺序（即若 $S_1 > S_2$，则 $S_1/\\sqrt{d_k} > S_2/\\sqrt{d_k}$）。该缩放的主要工程作用在于压缩数值极差，防止得分传入 Softmax 后因指数放大而迅速退化为极端的单热（One-Hot）分布，从而保持概率分布的适度平滑，使模型能同时关注并融合多个相关的 Token 语义，而非强行将概率均分或改变排序。",
+    "misconceptions": [
+      "误以为除以 $\\sqrt{d_k}$ 的缩放操作会改变不同 Token 之间的相对注意力大小顺序。",
+      "误以为缩放的作用是将 Softmax 输出强制平摊为完全均匀的概率分布。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "缩放操作在完全保留不同 Key 之间相对得分顺序的同时，将点积极差控制在合理区间，从而产生平滑的软概率分布。",
+          "缩放操作改变了不同 Key 之间的相对得分排序，使远距离 Token 能够获得比近距离 Token 更高的注意力权重。",
+          "缩放操作的主要目的是将点积数值强制拉平，使 Softmax 在所有候选 Token 上输出完全均匀的概率分布。",
+          "缩放操作仅改变点积结果的正负符号，对 Softmax 计算得到的相对概率数值与梯度平滑度不产生任何实际影响。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          null
+        ]
+      }
+    }
+  }
+]

@@ -146,7 +146,7 @@ describe('saveConfig / loadConfig 往返', () => {
     const c: AIConfig = {
       providers: [
         { id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' },
-        { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
+        { id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x', baseUrl: '' },
       ],
       generateOpenQuestions: true,
       questionChallengerEnabled: false,
@@ -231,7 +231,7 @@ describe('stringifyConfig', () => {
 });
 
 describe('parseConfigJSON（config.json 编辑器校验）', () => {
-  const VALID_ENTRY = { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' };
+  const VALID_ENTRY = { id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x' };
 
   it('合法多引擎链：清洗字段并保持顺序', () => {
     const res = parseConfigJSON(
@@ -242,7 +242,7 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
       config: {
         providers: [
           { id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' },
-          { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x', baseUrl: '' },
+          { id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x', baseUrl: '' },
         ],
         generateOpenQuestions: false,
         questionChallengerEnabled: false,

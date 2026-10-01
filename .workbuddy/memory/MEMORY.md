@@ -131,7 +131,7 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 + `beforeToolCall` 拦掉等待期不该发生的工具调用。返回 `undefined` 而非
 `{ action: 'continue' }`，以免多一次 provider 请求。
 
-## pi-agent-core 0.87 破坏性变更（2026-09-25）
+## pi-agent-core / pi-ai 破坏性变更（0.87.1；2026-10-02 已修完）
 
 升级 0.85.1 → 0.87.1（`pi-agent-core` / `pi-ai`，包版本 1.1.2 → 1.2.1）**已随 `6109723` 进入 HEAD**。
 **`shouldStopAfterTurn` / `ShouldStopAfterTurnContext` 被删除**（不是改名，`.d.ts` 里完全没有），
@@ -139,10 +139,33 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
 入参类型 `AgentTurnContext = { message; toolResults; context; newMessages }`，
 返回 `AgentTurnDecision = { action: 'continue' | 'end' }`（可返回 `void`）。
 
-**副作用（HEAD 现状，尚未修）**：`deepseek-v4-flash` 已从 DeepSeek 注册表移除，
-`src/ai/local.test.ts` 3 个用例失败（`在引擎 "deepseek" 中未找到模型 "deepseek-v4-flash"`）。
-该 model id **只在测试里出现**（零运行时引用），要修只需换测试里的 id。
-**基线口径**：全量 = `868 passed / 871`，**3 项失败是 HEAD 既有失败，不是回归**。
+### ★ DeepSeek 原生 provider 的模型 id 是 `deepseek-flash`（不是 `deepseek-v4-flash`）
+
+0.87.1 起 pi-ai **原生 `deepseek` provider 目录**里的 id 从 `deepseek-v4-flash` 改成了
+`deepseek-flash`（`name: "DeepSeek V4.1 Flash"`），1.0.0 延续。已在 2026-10-02 全仓改名（ADR-087）。
+
+- 查证方法（**别只看当前 `node_modules`**）：`npm pack @earendil-works/pi-ai@<ver>` 到临时目录，
+  读 `package/dist/providers/data/deepseek.json`，在**两个版本里各查一次**。实测
+  `deepseek-flash` 在 0.87.1 与 1.0.0 中**均存在**，`deepseek-v4-flash` 在两者中**均不存在**
+  ⇒ 改名是版本无关的。
+- 另一条等价路径（当前版本）：`createModels` + `setProvider(deepseekProvider())` + `getModel('deepseek', id)`。
+- `deepseek-v4-flash` 在 **OpenRouter / Vercel AI Gateway / Cloudflare** 等聚合目录里**仍然有效**，
+  被移除的只是原生 deepseek 目录；走聚合平台无需改。
+- **它不是死代码**：`src/config/sample-config.json` → `config/sampleConfig.ts` → `storage/settings.ts`
+  的 `DEFAULT_CONFIG`（`loadConfig()` 无存档时的回退值 + 设置页「恢复默认」写入的内容）。
+  上一轮记的「零运行时引用」是**错的**——当时只 grep 了 `src/` 下的 `.ts`/`.tsx`，**漏了 `.json`**。
+  **教训：grep 引用面时把 `.json` 一起算上。**
+
+## ★ 测试超时按「并行满载」设定，不按单跑（2026-10-02）
+
+`vitest.config.ts` 已设 `testTimeout: 20000` / `hookTimeout: 20000`。
+
+- 症状：`ai/local.test.ts` 与 `ai/provider.test.ts` 的端到端用例报 `Test timed out in 5000ms`，
+  但**单独跑这两个文件全过**（实测 1172ms / 784ms）。
+- 成因：全量 65 文件并发时，每个 worker 都要 import 6MB 的 pi-ai dist（全量 `import` 累计 ~357s），
+  纯 CPU/IO 争用。这两个用例的 fetch 全部 mock，**不依赖真实网络**，所以提高超时不会掩盖真实故障。
+- **超时类问题单次全绿不足以证明修好**，要连跑两次。
+- 历史：这 2 项在 ADR-084 的验证记录里就出现过（「并行负载超时 2 项，单独跑全过」），长期被当噪音忽略。
 
 ## 测试：不要硬编码题号（2026-09-25）
 

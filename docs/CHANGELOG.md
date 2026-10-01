@@ -1,6 +1,33 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-10-02 · 修正失效的 DeepSeek 模型 id（deepseek-v4-flash → deepseek-flash）· 测试超时按满载设定（详见 ADR-087）
+
+`npm run test` 报 5 项失败（3 项模型未找到 + 2 项 `Test timed out in 5000ms`）。两类成因独立，都已修掉，现 **871 passed / 871**（65 文件全绿）。
+
+### 失效的模型 id（3 项失败）
+
+pi-ai 的原生 `deepseek` provider 目录里**没有** `deepseek-v4-flash` 这个 id。该目录在 **0.87.1 就已改名**（`deepseek-v4-flash` → `deepseek-flash`，`name: "DeepSeek V4.1 Flash"`；由 `e22ade3` 引入 `^0.87.1` 时带入），1.0.0 延续。`deepseek-flash` 在 **0.87.1 与 1.0.0 两个版本里都存在**，所以改成它是版本无关的正确解。
+
+**这不只是测试问题。** `src/config/sample-config.json` 经 `config/sampleConfig.ts` → `storage/settings.ts` 的 `DEFAULT_CONFIG`（`loadConfig()` 无存档时的回退值，也是设置页「恢复默认」写入的内容），是**运行时默认配置**。用户在设置页恢复默认后启用 deepseek，会直接拿到 `在引擎 "deepseek" 中未找到模型 "deepseek-v4-flash"`。ADR-086 当时记的「零运行时引用」是**错的**，此处更正。
+
+- 更新 `src/config/sample-config.json`（默认配置里的死 id）。
+- 同步 5 个测试文件（`ai/local.test.ts`、`ai/provider.test.ts`、`ai/providerSystem.test.ts`、`storage/settings.test.ts`、`schemas/ai-config.test.ts`）与 `docs/config.example.json`、`docs/ARCHITECTURE.md`。
+- 注意 `deepseek-v4-flash` 在 **OpenRouter / Vercel AI Gateway / Cloudflare** 等聚合目录里仍是有效 id——被移除的只是 pi-ai **原生** deepseek provider 的目录。走聚合平台无需改动。
+
+### 并行满载下的 5s 超时（2 项失败）
+
+`src/ai/local.test.ts` 与 `src/ai/provider.test.ts` 的端到端用例要真实跑 pi-ai 的 SSE 流式解析：**单跑 1172ms / 784ms，全量 65 文件并发时超默认 5000ms**。每个 worker 都要 import 6MB 的 pi-ai dist（本轮全量 `import` 累计 357s），纯负载抖动，与被测逻辑无关。
+
+- `vitest.config.ts` 设 `testTimeout: 20000` / `hookTimeout: 20000`（约 4× 余量）。
+- 这 2 项在 ADR-084 的验证记录里就出现过（「并行负载超时 2 项，单独跑全过」），属于长期存在、此前被当作噪音忽略的问题。
+
+### 未提交的依赖升级（不属于本次改动）
+
+工作区有一处**未提交**的 `package.json` / `package-lock.json` 变更：`@earendil-works/pi-ai` 与 `pi-agent-core` 由 `^0.87.1` → `^1.0.0`（`node_modules` 已是 1.0.0）。本次修复**未触碰**它，且对 0.87.1 / 1.0.0 均成立。
+
+**门禁**：`typecheck`（app + node 两份 config）通过；`npm run test` 全量 **871 passed / 871**，连跑两次均全绿。
+
 ## 2026-09-25 · 交付即建键 · 收尾顺序契约化 · 非纯逻辑抽成可注入模块（详见 ADR-086）
 
 第三轮外部评审（6 项：2 个 P0/P0.5 + 3 个 P1 + 1 项测试覆盖）逐条核实后落地。评审稿基于 HEAD `6109723` 的静态检查、未跑 Vitest；核实后 **5 项属实**（其中 2 项成因/范围与评审稿的描述有出入），1 项是测试覆盖要求。

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "generatedAt": 1790315417117,
+  "promptVersion": "v7",
+  "variants": {
+    "attention-softmax-saturation-canonical": [
+      {
+        "id": "attention-softmax-saturation-canonical__context-options__prompt-attention-softmax-saturation-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某工程团队在训练基于 Transformer 的模型时，将注意力头维度 $d_k$ 从 16 扩展至 128，且未对点积结果进行除以 $\\sqrt{d_k}$ 的缩放。训练监控显示注意力权重迅速退化为极端分布，反向传播梯度几乎为零。关于该训练故障的深层原因与机制分析，下列哪些说法是正确的？",
+        "options": [
+          "随着 $d_k$ 增大，点积数值极差扩大，经 Softmax 指数映射后放大差值，导致概率分布极化。",
+          "Softmax 趋近单热（One-Hot）分布，导致大多数 Token 权重趋零，失去软融合能力。",
+          "Softmax 进入数值饱和区，反向传播导数趋近于零，引发梯度消失并阻断模型参数更新。",
+          "未缩放的主要危害在于浮点溢出，只要提高浮点计算精度即可维持平滑分布与有效梯度。"
+        ],
+        "angle": "diagnosis",
+        "cognitiveTask": "diagnose",
+        "assessment": {
+          "target": "能够根据特征维度 d_k 的增大推导未缩放点积数值量级的变化，并分析其对 Softmax 激活极化与反向传播梯度的因果影响。",
+          "reasoningGoal": "先识别注意力权重出现单热极化且梯度接近于零的故障现象；再归因于未缩放点积在较大 d_k 下使 Softmax 进入饱和区；据此排除将梯度消失误诊为学习率过高或权重初始化过大的可能性。"
+        },
+        "generatedAt": 1790315417117,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-a5ab2093"
+      }
+    ],
+    "sqrt-dk-scaling-proof-canonical": [
+      {
+        "id": "sqrt-dk-scaling-proof-canonical__context-options__prompt-sqrt-dk-scaling-proof-variant-1",
+        "kind": "context-options",
+        "mode": "assessment",
+        "question": "某算法团队在优化自定义 Transformer 架构时，试图将注意力得分的缩放常数由 $\\sqrt{d_k}$ 修改为其他标量 $c$。若已知 Query 与 Key 点积 $X$ 的原始方差为 $d_k$，为了将缩放后的点积方差保持为 1，关于缩放系数 $c$ 的理论推导与参数选择，下列哪些说法是正确的？",
+        "options": [
+          "依据随机变量标量除法的方差性质，当点积除以常数 $c$ 时，其新方差满足公式 $\\text{Var}(X/c) = \\text{Var}(X)/c^2$。",
+          "将 $\\text{Var}(X) = d_k$ 代入目标等式 $\\text{Var}(X/c) = 1$，得 $d_k / c^2 = 1$，可解得 $c = \\sqrt{d_k}$。",
+          "选择 $c = \\sqrt{d_k}$ 本质上是利用点积的标准差 $\\sigma = \\sqrt{d_k}$ 对点积数值进行标准差级别的归一化。",
+          "若选择缩放系数 $c = d_k$，则新方差将变为 $\\text{Var}(X/d_k) = d_k / d_k = 1$，也能达到相同的归一化效果。"
+        ],
+        "angle": "scenario",
+        "cognitiveTask": "apply",
+        "assessment": {
+          "target": "运用随机变量线性变换的方差公式 Var(X/c) = Var(X)/c^2，推导并证明 sqrt(d_k) 是将点积方差重置为 1 的精确缩放常数。",
+          "reasoningGoal": "先评估工程团队将缩放系数调整为 d_k 时引起的方差过度压缩现象；再应用方差二次缩放法则证明 sqrt(d_k) 的唯一正确性；据此排除自定义常数或线性常数能够维持标准方差的设想。"
+        },
+        "generatedAt": 1790315417117,
+        "generator": "offline",
+        "promptVersion": "v7",
+        "sourceHash": "fnv1a-72bba178"
+      }
+    ]
+  }
+}

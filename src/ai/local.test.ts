@@ -101,7 +101,7 @@ describe('callLLM 走本地服务（端到端 mock SSE）', () => {
 });
 
 describe('callLLM · DeepSeek 专属增强（JSON 模式 / temperature / 空内容重试）', () => {
-  const DS: ProviderEntry = { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-test', baseUrl: '' };
+  const DS: ProviderEntry = { id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-test', baseUrl: '' };
 
   it('deepseek + jsonMode：请求体携带 response_format=json_object，且不附带 temperature', async () => {
     const f = mockFetch(sseBody('{"ok":1}'));

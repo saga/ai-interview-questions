@@ -47,7 +47,7 @@ function q(topic = 'memory'): Question {
 }
 
 function entry(partial: Partial<ProviderEntry>): ProviderEntry {
-  return { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '', ...partial };
+  return { id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: '', ...partial };
 }
 
 function mockEval(level = 4): string {
@@ -64,7 +64,7 @@ function mockEval(level = 4): string {
 describe('评分协议不可变（EVAL_SYSTEM）', () => {
   it('PiAIProvider.evaluateOpenAnswer 以不可变 EVAL_SYSTEM 调用 callLLM（不读任何用户 system）', async () => {
     vi.mocked(callLLM).mockResolvedValue(mockEval());
-    const p = new PiAIProvider(entry({ id: 'deepseek', model: 'deepseek-v4-flash', apiKey: 'sk-x' }));
+    const p = new PiAIProvider(entry({ id: 'deepseek', model: 'deepseek-flash', apiKey: 'sk-x' }));
     await p.evaluateOpenAnswer(q(), OPEN_FMT, 'some answer', GLOBAL);
     expect(callLLM).toHaveBeenCalled();
     // callLLM 签名：(entry, system, user, options) —— system 是第 2 个参数
@@ -88,7 +88,7 @@ describe('变体协议不可变（VARIANT_SYSTEM）', () => {
 
   it('PiAIProvider.generateVariant 以不可变 VARIANT_SYSTEM 调用 callLLM', async () => {
     vi.mocked(callLLM).mockResolvedValue(variantJson);
-    const p = new PiAIProvider(entry({ id: 'deepseek', model: 'deepseek-v4-flash', apiKey: 'sk-x' }));
+    const p = new PiAIProvider(entry({ id: 'deepseek', model: 'deepseek-flash', apiKey: 'sk-x' }));
     await p.generateVariant(q('linear-regression'), 'open');
     expect(callLLM).toHaveBeenCalled();
     const systemArg = vi.mocked(callLLM).mock.calls[0][1];

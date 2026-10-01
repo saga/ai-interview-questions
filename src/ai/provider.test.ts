@@ -36,7 +36,7 @@ function q(topic = 'memory'): Question {
 }
 
 function entry(partial: Partial<ProviderEntry>): ProviderEntry {
-  return { id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '', ...partial };
+  return { id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: '', ...partial };
 }
 
 describe('mergeQuestionRubric', () => {
@@ -77,9 +77,9 @@ describe('isEntryValid（按引擎区分校验）', () => {
   });
 
   it('云端引擎必须有 apiKey 与 model', () => {
-    expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: '' })).toBe(false);
+    expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: '' })).toBe(false);
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: '', apiKey: 'sk-x' })).toBe(false);
-    expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' })).toBe(true);
+    expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x' })).toBe(true);
   });
 
   it('cloudflare 需要 apiKey + model + accountId 三者齐全', () => {
@@ -116,7 +116,7 @@ describe('createLLMProvider（工厂分派）', () => {
   });
 
   it('单云端引擎直接返回 PiAIProvider，name 携带引擎 id', () => {
-    const p = createLLMProvider({ providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' }] });
+    const p = createLLMProvider({ providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x' }] });
     expect(p).toBeInstanceOf(PiAIProvider);
     expect(p?.name).toBe('pi-ai(deepseek)');
   });
@@ -148,7 +148,7 @@ describe('createLLMProvider（工厂分派）', () => {
     const p = createLLMProvider({
       providers: [
         entry({ id: 'chrome', model: '', apiKey: '' }),
-        entry({ model: 'deepseek-v4-flash', apiKey: 'sk-x' }),
+        entry({ model: 'deepseek-flash', apiKey: 'sk-x' }),
         entry({ enabled: false }), // 停用，不进链
         entry({ id: 'local', model: '' }), // 非法，被剔除
       ],

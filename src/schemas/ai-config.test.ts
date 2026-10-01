@@ -5,7 +5,7 @@ describe('aiConfigSchema', () => {
   it('accepts valid config with single provider', () => {
     expect(() =>
       aiConfigSchema.parse({
-        providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-v4-flash', apiKey: 'sk-x' }],
+        providers: [{ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x' }],
         generateOpenQuestions: false,
         masteryThreshold: 75,
       }),
