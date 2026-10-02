@@ -1,6 +1,91 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-10-02 · 测试裁剪第四轮：按业务优先级整块删除 16 个套件（888 → 691）
+
+动因：用户要求「删掉 200 个不重要的、冗余的、测试点业务优先级低的用例」。
+
+### 先量了一遍，再动手（结论：这 200 条不可能靠「删冗余」凑出来）
+
+用 runner 的 JSON reporter 取基线（**不用 grep 数 `it(`**——表驱动用例会让它差一个数量级）：**66 文件 / 888 用例**。逐项体检：
+
+- **0 条零断言**（每条用例至少 1 个 `expect`）；
+- **0 组跨文件重名用例**；
+- 只有 **1 条**「单断言且是弱存在性判定」（`toBeTruthy` 之类）；
+- 平均断言密度 **1.0~3.5 个/用例**，最密的 `ai/evaluate.test.ts` 达 3.46；
+- 归一化 body 完全相同的只有 48 条，且**多数是表驱动兄弟行**（如 `calculation → infer` / `debugging → diagnose` / `comparison → compare`）——它们输入不同、走的**代码分支不同**，按「每个分支留一条」的判据**不是冗余**。
+
+也就是说：2026-09-25 那两轮（949 → 926 → 845）已把机械可删的捞干，当时的结论「再往下要动就得砍真实覆盖面」在本次复量中再次成立。**要凑到 200，唯一办法是整块删掉外围套件**——这是口径变化，不是又找到了 200 条冗余。已把该取舍交用户确认，用户选择「按业务优先级整块删」。
+
+### 删除组成（16 文件 / 200 用例）
+
+**① 开发脚本与内容质检（不属产品运行时，42 条）**
+
+| 文件 | 条数 |
+|---|---|
+| `domain/languageSanity.test.ts` | 17 |
+| `domain/bias.test.ts` | 9 |
+| `domain/textSimilarity.test.ts` | 8 |
+| `scripts/convert-blueprint-output.test.ts` | 8 |
+
+**② 题目生成管线内部（离线批处理，非线上请求路径，153 条）**
+
+| 文件 | 条数 |
+|---|---|
+| `schemas/variant.test.ts` | 24 |
+| `domain/reasoningPath.test.ts` | 23 |
+| `domain/cognitiveTaskInference.test.ts` | 17 |
+| `domain/variantDiversity.test.ts` | 16 |
+| `schemas/question.test.ts` | 16 |
+| `domain/variantPool.test.ts` | 15 |
+| `domain/coverage.test.ts` | 13 |
+| `domain/assessmentInference.test.ts` | 12 |
+| `domain/blueprint.test.ts` | 10 |
+| `schemas/conceptGraph.test.ts` | 4 |
+| `domain/conceptGraph.test.ts` | 3 |
+
+**③ 通用工具/小模块中取 5 条**：`schemas/learner.test.ts`（5，断言密度 1.00，全仓最低）。
+
+**合计 200 条**，与用户要求的 200 一致。
+
+### 本次新增：变异测试脚手架（此前仓库没有）
+
+`scripts/mutation-check.mjs`（`npm run test:mutation`）—— 回答「把某个具体 bug 塞回去，有没有测试变红？」。11 条条目，每条 = 一个不变量 → 守它的测试文件。**这是删测试的前置条件**：只跑「全绿」证明不了任何覆盖面，删掉一半测试通常还是全绿。
+
+脚手架自带两个防呆（都是踩过的坑）：
+1. **基线预检**：先跑一遍所有被引用的测试文件，任一为红就中止——否则「文件停在未还原的变异态」会伪装成「锚点没匹配上」；
+2. **内存快照还原**，不用 `git checkout`（工作区常带未提交改动，会被一起冲掉）。
+
+### 脚手架立刻抓出 3 个真实空洞（已补 3 条用例堵上）
+
+首跑 **8/11**。未捕获的 3 条不是脚手架坏了，是**测试套件本来就漏**：
+
+1. `toolcalljson-fence` —— `extractJsonObject` 的 ``` 代码块分支**没有任何用例能杀掉**：现有用例里「剥 fence」与「首个 `{` 到末个 `}` 兜底切片」对同一输入**结果相同**，分支被兜底掩盖。补一条「正文先出现花括号」的输入（兜底会拼出两个对象 → 解析失败）。
+2. `learner-collect-first-wins` —— `collectTopicRefs` **压根没被 import 进任何测试**（2026-09-25 那轮把原来那条「名实不符」的用例删了，行为自此无保护）。补「保留首次出现的 category」。
+3. `learner-weak-topics-attempted-guard` —— `recommendWeakTopics` 的 `attempts > 0` 闸门无覆盖。该状态正常流程不可达（`updateLearner` 只给有结果的 topic 建统计），但画像来自 localStorage（不可信边界）。补一条 `attempts: 0` 的画像。
+
+补完后 **11/11**，删除后**复跑仍是 11/11**——即：删掉的 200 条里，没有一条是这 11 个不变量的唯一守卫。
+
+### 失去唯一测试保护的源模块（11 个，用户已接受）
+
+`domain/assessmentInference` · `domain/bias` · `domain/blueprint` · `domain/cognitiveTaskInference` · `domain/coverage` · `domain/languageSanity` · `domain/reasoningPath` · `domain/textSimilarity` · `domain/variantPool` · `schemas/conceptGraph` · `scripts/convert-blueprint-helpers`
+
+**逐个体检过：这 11 个模块在非测试代码里都仍有引用**（多数被 `scripts/*` 的离线管线引用，`variantPool` 还被 `application/sessionEvaluator.ts` 引用），**没有产生死代码**，因此没有连带删除源文件。
+
+另有一处**覆盖面收窄**（非清零）：`schemas/variant` 删掉 2 个守卫后只剩 `application/sessionEvaluator.test.ts` 一条间接覆盖。
+
+### 门禁
+
+- `typecheck`（app + node）通过；`npm run build` 通过（连跑 4 次全绿）。
+- 全量 **691 passed / 691**（50 文件），0 失败。
+- 变异脚手架 **11/11**（删除前 11/11、删除后复跑 11/11）。
+- 抖动循环 6 轮全绿。
+- 存活文件里已无对被删测试文件的悬空引用；`docs/improvement_plan/ACTION_CHECKLIST.md` 顶部加了「历史文档，勿照抄验收命令」的提示。
+
+### 恢复路径
+
+全部 16 个文件可从 git 历史恢复（本条目所在提交的父提交即可）。**没有做任何源文件删除或行为改动**，只有测试文件的整块移除 + 3 条补洞用例 + 脚手架 + 文档。
+
 ## 2026-10-02 · 「推理决策」不再显示裸工具调用 JSON（详见 ADR-089）
 
 Agent 面试页「面试官的推理与决策」卡片里出现一条 `{"tool":"getUserWeaknesses","args":{}}`，以「面试官推理」气泡样式渲染给用户——零信息量，且属于不该展示的内部协议。
