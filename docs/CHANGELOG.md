@@ -1,6 +1,74 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-10-02 · 「推理决策」不再显示裸工具调用 JSON（详见 ADR-089）
+
+Agent 面试页「面试官的推理与决策」卡片里出现一条 `{"tool":"getUserWeaknesses","args":{}}`，以「面试官推理」气泡样式渲染给用户——零信息量，且属于不该展示的内部协议。
+
+### 根因
+
+pi-agent-core 调 `streamFn` 时**不传 `systemPrompt` / `tools`**：`streamAssistantResponse` 传的是 `normalizeContext({ messages })`，而 pi-ai 的 `normalizeContext` 把二者折进开头的 system 消息后**只返回 `{ messages }`**。实测 streamFn 实参只有 `['messages']`，`context.tools` 与 `context.systemPrompt` **都是 `undefined`**，工具定义在 `messages[1].toolsAdded` 里。
+
+于是 `driveStream` 的 `new Set((context.tools ?? []).map(t => t.name))` 恒为空集合 → `parseToolCall` 的 `allowed.has(name)` 永远为假 → 落到 `emitText(stream, raw)`，把模型输出的工具调用协议原文当成 assistant 文本发出去，最终由 `useAgentInterview` 收进 transcript、渲染成推理气泡。
+
+连带问题：`system` 只拼出了工具协议（`context.systemPrompt ?? ''` 为空），**整段安全层 / 契约层一直没发给 Chrome**；`buildUserPrompt` 的工具清单则渲染成 `(no tools available)`（因为 `renderMessages` 没有 `system` 分支，system 消息被静默跳过）。
+
+### 改动
+
+- 新增 `resolvePrompt(context)`：用 pi-ai 官方 replay helper 从 messages 还原——`context.systemPrompt ?? getCurrentSystemPrompt(messages)`、`context.tools ?? getCurrentTools(messages)`。`driveStream` 与 `buildUserPrompt` 都改走它，工具白名单与提示词清单从此同源。
+- 新增 `src/ai/toolCallJson.ts`（`extractJsonObject` / `toolCallName` / `looksLikeToolCall`），把「这段文本是不是工具调用协议」的判据收成一处，供解析层与展示层共用。
+- `driveStream` 区分两类解析失败：**不像**工具调用（模型在说人话）仍走 `emitText`；**像**工具调用但不可用（工具名幻觉 / 参数不合 schema）改发 **error 事件**，交确定性护栏出题，不再回落成文本。error 文案只带工具名、不带整段 JSON（它会以 toast 呈现）。
+- `useAgentInterview` 在落 transcript 前用同一判据过滤，作为展示层最后一道防线。
+- 补 `getWeakAngles` / `getCoverageGaps` 的中文标签（二者是真实工具却漏在 `TOOL_LABELS` 外）。
+
+### 验证
+
+`typecheck`（app + node）与 `npm run build` 通过；全量 **888 passed / 888**（66 文件，+17 用例 / +1 文件）。
+
+`chromeAgent.test.ts` 新增 `makeRuntimeContext()`，**显式复刻真实运行时形状**（不传 systemPrompt / tools，改折进 system 消息）——原 `makeContext()` 显式带 `tools`，正是这个 bug 逃过整套测试的原因。并把原「工具名幻觉 → 回落文本（stop）」用例改为断言**不产生 `text_delta` 且发 error**。
+
+**新增用例先做变异验证确认非恒真**：把三处改回读 `context.*` 后新增用例失败 4 项，还原后全绿。
+
+已知限制：沙箱内 Chrome 的内置模型为 `downloadable`（未下载），**无法做真实端到端**；验证止于以 stub `LanguageModel` 喂入实测得到的真实 context 形状。`dist/` 已重建，线上需 `npm run cloudflare:deploy` 才对线上生效。
+
+## 2026-10-02 · 去掉 Agent 面试页重复的「面试官思考中…」
+
+忙碌态下同一句话渲染了两遍：状态标签（`AgentInterviewPage` 顶部状态行）与遮罩转圈的 `tip` 文案，两者出现条件完全一致（`(busy || submitting) && !awaitingFeedback`），一上一下同时可见。
+
+- **保留状态标签，去掉遮罩转圈的 `tip`**（改为裸 `<Spin />`）。理由：状态行需要一个常驻槽位（`等待你的作答` / `请查看本题反馈` / `面试官思考中…` 三态互斥），而遮罩转圈本身就是「正在忙」的视觉信号，不需要再复述一遍原因；文案写在标签上、转圈只负责表达「在动」，分工不重叠。
+- 「正在检查回答…」同理，只由状态标签承担。
+
+**验证**：`typecheck` 通过；全量 **874 passed / 874**。端到端用 MutationObserver 捕获忙碌这一瞬态（点击前安装，逐次 DOM 变化记录文案出现次数）：修复前 `面试官思考中` ×2 且 `spinTip="面试官思考中…"`，修复后 ×1 且 `spinTip=""`——**先跑变异确认计数器非恒真**（临时还原旧写法确实报 ×2）。
+
+## 2026-10-02 · Chrome 内置 AI 未就绪时不再建 session（修复「点开始面试后卡住不动」）（详见 ADR-088）
+
+现象：`/#/agent` 点「开始 Agent 面试」后，界面停在「面试官正在选题…」**约 90 秒**才出现第一道题，期间无任何报错、日志、网络请求——用户视角就是「点了没反应」。
+
+### 根因
+
+`chromeComplete` 的可用性预检只拦 `availability() === 'unavailable'`，把 **`downloadable`（模型未下载）/ `downloading`（下载中）当作可用**放行，于是走到 `LanguageModel.create()`——Chrome 会挂起等待 on-device 模型就绪（数 GB、分钟级），期间既不 resolve 也不遵守 abort。整场面试只剩 `interviewAgent` 的 90s 看门狗兜底。
+
+在 Chrome 154 + 全新 profile 实测：`typeof LanguageModel === 'function'`，`await LanguageModel.availability()` 返回 **`'downloadable'`**。这是**默认配置下的必经路径**——`sample-config.json` 默认 `chrome.enabled = true`，而绝大多数用户没下载过内置模型。
+
+### 改动
+
+- `chromeComplete` 改为**只有 `available` 才允许建 session**，其余三种状态在建 session 之前直接拒绝；`downloadable` / `downloading` 的文案额外提示「先在 Chrome 中完成内置模型下载」。
+- 拒绝后 chrome 通道的失败会立刻被 `chromeAgent` 编码成 error 事件，交给既有的确定性护栏出题——不再等满 90s。
+
+### 实测对比（同一套浏览器脚本，全新 profile，默认配置）
+
+| | 点击 → 出第一道题 |
+|---|---|
+| 修复前 | **~90s**（0–80s 停在「面试官正在选题…」） |
+| 修复后 | **≤3s** |
+
+### 未改（明确不动）
+
+- **没有让 chrome 的失败向上抛以触发引擎降级链。** `chromeAgent` 刻意把失败编码成 error 事件（不抛出），以便确定性护栏接管——这是已记录的设计取舍；改成抛出会让整轮 run 失败并弹「面试启动失败」，反而比确定性出题更差。本次只修「不该建 session 却建了」。
+- **没有给 `downloading` 加「等待下载完成」的交互。** 面试单轮不可能等数分钟；先拒绝并给出可操作提示是当前取舍。
+
+**门禁**：`typecheck`（app + node）通过；`chromeComplete` 新增 3 个状态（unavailable / downloadable / downloading）的参数化用例，均断言「不创建 session」。
+
 ## 2026-10-02 · 修正失效的 DeepSeek 模型 id（deepseek-v4-flash → deepseek-flash）· 测试超时按满载设定（详见 ADR-087）
 
 `npm run test` 报 5 项失败（3 项模型未找到 + 2 项 `Test timed out in 5000ms`）。两类成因独立，都已修掉，现 **871 passed / 871**（65 文件全绿）。

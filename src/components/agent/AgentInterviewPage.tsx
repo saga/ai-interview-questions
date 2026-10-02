@@ -276,7 +276,9 @@ export default function AgentInterviewPage({
                 borderRadius: 8,
               }}
             >
-              <Spin tip={submitting ? '正在检查回答…' : '面试官思考中…'} />
+              {/* 只放转圈，不放文案：状态文案由上方状态标签唯一承担。
+                  两处写同一句话时，转圈盖在题目卡上、标签又紧挨着它，读起来是重复的。 */}
+              <Spin />
             </div>
           )}
         </div>

@@ -36,6 +36,7 @@ import { finalizeSession } from '../agent/finalizeSession';
 import { validAgentEntries } from '../agent/runtime';
 import { resolveOpeningInstruction } from '../agent/prompt';
 import { devUsageLogger, resetUsageTelemetry } from '../ai/usageTelemetry';
+import { looksLikeToolCall } from '../ai/toolCallJson';
 import {
   saveAgentSession,
   getActiveAgentSession,
@@ -54,8 +55,24 @@ const TOOL_LABELS: Record<string, string> = {
   getQuestion: '选定题目',
   evaluateAnswer: '评估作答',
   getUserWeaknesses: '读取薄弱主题',
+  getWeakAngles: '读取薄弱角度',
+  getCoverageGaps: '读取覆盖缺口',
   finishInterview: '结束面试',
 };
+
+/**
+ * 展示层过滤：不允许「裸的工具调用 JSON」（如 `{"tool":"getUserWeaknesses","args":{}}`）进入 transcript。
+ *
+ * 为什么需要它：Chrome 引擎没有原生 function calling，工具调用是「让模型输出一个 JSON 对象」
+ * 模拟的（见 chromeAgent.ts）。一旦解析环节出问题，这段**内部协议**就会以 assistant 文本块的
+ * 形式流到这里，被当成「面试官的推理」渲染给用户——它零信息量，还可能暴露工具名与参数。
+ *
+ * chromeAgent 已从源头堵住（解析失败且像工具调用 → 走 error 而非文本）；这里是**展示层的最后一道防线**：
+ * 即使将来某个 provider 又把协议漏进文本通道，也不允许它进入 transcript。
+ */
+function isRawToolCallJson(text: string): boolean {
+  return looksLikeToolCall(text);
+}
 
 /** Agent 面试每题倒计时（秒）。时间到不自动跳题，而是弹窗让用户选择「延长本题」或「跳到下一题」。 */
 export const AGENT_QUESTION_TIME_LIMIT_SEC = 180;
@@ -550,7 +567,10 @@ export function useAgentInterview(
                 setBusyBoth(false);
                 const text = pendingTextRef.current;
                 pendingTextRef.current = '';
-                if (text.trim()) setTranscript((prev) => [...prev, { kind: 'agent', text }]);
+                // 工具调用协议不是「推理」，绝不能进 transcript（见 isRawToolCallJson）
+                if (text.trim() && !isRawToolCallJson(text)) {
+                  setTranscript((prev) => [...prev, { kind: 'agent', text }]);
+                }
                 break;
               }
               case 'message_update':

@@ -5,6 +5,10 @@
 // 并发 / 超时 / 取消 / session 生命周期统一由文件内的 ChromeAIExecutor 管理：
 // 本地模型支持并发 session，但偶发「prompt 永久不返回」会占住槽位导致后续 create 全部死锁，
 // 故由 executor 用超时 + AbortSignal + destroy() 把死锁降级为「超时拒绝」，上层再回退原题。
+//
+// 入口闸：`chromeComplete` 只在 `availability() === 'available'` 时才建 session。
+// 模型未下载（downloadable）/ 下载中（downloading）时 create() 会挂起数分钟且不遵守 abort，
+// 属于「建 session 之前就该拒绝」的情形，不能交给 executor 的超时兜底（详见 chromeComplete 注释）。
 
 /** Chrome Prompt API 的可用性状态（与 LanguageModel.availability() 对齐）。 */
 export type ChromeAvailability = 'available' | 'downloadable' | 'downloading' | 'unavailable';
@@ -503,7 +507,8 @@ export const chromeAI = new ChromeAIExecutor({
  * 一次性补全：把 system + user 交给 ChromeAIExecutor（并发 4、单次 90s 超时、失败重试 1 次，
  * 具体数值见上方 `CHROME_AI_*` 常量）。
  * 业务层签名不变（variant / evaluate / provider 无需改动）；session 的创建、超时、销毁都在 executor 内完成。
- * 先做一次可用性预检，模型明确 unavailable 时直接报错、连 session 都不建（避免无谓的 create 超时）。
+ * 先做一次可用性预检，**只有 `available` 才允许进入**：其余三种状态都在建 session 之前直接报错。
+ * 判据不是「明确 unavailable 才拦」——`downloadable` / `downloading` 同样不可用（见下方注释）。
  */
 export async function chromeComplete(
   system: string,
@@ -513,8 +518,23 @@ export async function chromeComplete(
   if (!getLanguageModel()) {
     throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
   }
-  if ((await chromeAvailability()) === 'unavailable') {
-    throw new Error('Chrome 内置 AI 模型在当前环境不可用，请在设置中改用云端服务商');
+  // 必须只放行 `available`。
+  // `downloadable`（模型未下载）与 `downloading`（下载中）时调用 `LanguageModel.create()`，
+  // Chrome 会挂起等待 on-device 模型就绪——数 GB、分钟级，期间既不 resolve 也不遵守 abort。
+  // 实测（Chrome 154，全新 profile，availability='downloadable'）：Agent 面试点击「开始」后
+  // 界面停在「面试官正在选题…」整整 90s，无任何报错 / 日志 / 网络请求，直到看门狗
+  // （interviewAgent 的 WATCHDOG_MS）超时才靠确定性兜底吐出第一道题——用户看到的就是「点了没反应」。
+  // 提前拒绝后，chrome 通道的失败会立刻被 chromeAgent 编码成 error 事件，
+  // 由既有的确定性护栏接管出题，不再等满 90s。
+  const availability = await chromeAvailability();
+  if (availability !== 'available') {
+    const hint =
+      availability === 'downloadable' || availability === 'downloading'
+        ? '；或先在 Chrome 中完成内置模型下载后再试'
+        : '';
+    throw new Error(
+      `Chrome 内置 AI 模型不可用（availability=${availability}），请在设置中改用云端服务商${hint}`,
+    );
   }
   return chromeAI.execute(user, { system, signal });
 }

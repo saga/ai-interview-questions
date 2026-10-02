@@ -85,12 +85,22 @@ describe('chromeComplete', () => {
     await expect(chromeComplete('s', 'u')).rejects.toThrow('不支持 Chrome 内置 AI');
   });
 
-  it('模型不可用（unavailable）时不创建 session 直接报错', async () => {
-    const lm = stubLanguageModel({ availability: async () => 'unavailable' });
-    const create = vi.fn();
-    (lm as { create: typeof create }).create = create;
-    await expect(chromeComplete('s', 'u')).rejects.toThrow('不可用');
-    expect(create).not.toHaveBeenCalled();
+  it.each(['unavailable', 'downloadable', 'downloading'] as const)(
+    '模型未就绪（availability=%s）时不创建 session 直接报错',
+    async (state) => {
+      const lm = stubLanguageModel({ availability: async () => state });
+      const create = vi.fn();
+      (lm as { create: typeof create }).create = create;
+      await expect(chromeComplete('s', 'u')).rejects.toThrow('不可用');
+      expect(create).not.toHaveBeenCalled();
+    },
+  );
+
+  // 回归：`downloadable` 曾只被当作「还没下载」放行，于是 create() 挂起数分钟，
+  // Agent 面试卡在「面试官正在选题…」直到 90s 看门狗兜底（用户视角＝点了没反应）。
+  it('availability=downloadable 时的报错文案提示先完成模型下载', async () => {
+    stubLanguageModel({ availability: async () => 'downloadable' });
+    await expect(chromeComplete('s', 'u')).rejects.toThrow('完成内置模型下载');
   });
 
   it('已 aborted 的 signal 立即被拒绝且不创建 session（P1-9：取消信号必须透传进 executor）', async () => {

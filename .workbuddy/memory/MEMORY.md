@@ -156,6 +156,33 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
   上一轮记的「零运行时引用」是**错的**——当时只 grep 了 `src/` 下的 `.ts`/`.tsx`，**漏了 `.json`**。
   **教训：grep 引用面时把 `.json` 一起算上。**
 
+### ★ `streamFn` 收到的 context **没有** `systemPrompt` / `tools`（2026-10-02，ADR-089）
+
+`Agent` 调 `streamFn(model, context, opts)` 时，`context` **只有 `messages` 一个键**：
+
+```
+context.systemPrompt === undefined   ← 恒为 undefined
+context.tools        === undefined   ← 恒为 undefined
+context.messages[0] = { role:'system', content: systemPrompt }
+context.messages[1] = { role:'system', content:'', toolsAdded: [...tools] }
+```
+
+成因：`agent-loop.js` 的 `streamAssistantResponse` 传的是
+`normalizeContext({ messages: llmMessages })`，而 pi-ai 的 `normalizeContext`
+把 systemPrompt + tools **折进开头的 system 消息**后**只返回 `{ messages }`**。
+
+- **正确取法**（pi-ai 已导出官方 replay helper，别自己解析 `toolsAdded`）：
+  `getCurrentSystemPrompt(messages)` / `getCurrentTools(messages)`
+  （`export * from './utils/transcript.js'`，运行时有、`.d.ts` 也 re-export）。
+- **踩过的坑**：`chromeAgent.driveStream` 用 `context.tools` 建工具白名单 → 恒为空集合 →
+  每个合法工具调用都被判「解析失败」→ 把工具调用协议原文 `{"tool":"getUserWeaknesses","args":{}}`
+  当 assistant 文本发出去，UI 渲染成「面试官的推理」。同时 **system prompt 也一直没发出去**
+  （`context.systemPrompt ?? ''` 为空），工具清单渲染成 `(no tools available)`。
+- **为什么测试没抓到**：单测的 `makeContext()` **显式带 `tools:`**，是「理想形状」。
+  **给外部框架写适配层时，测试夹具必须复刻框架真实传入的形状**，否则整类 bug 测不到。
+- 相关：`renderMessages` 只处理 `user` / `assistant` / `toolResult`，**没有 `system` 分支**——
+  system 消息被静默跳过，写提示词渲染逻辑时别忘了这一条。
+
 ## ★ 测试超时按「并行满载」设定，不按单跑（2026-10-02）
 
 `vitest.config.ts` 已设 `testTimeout: 20000` / `hookTimeout: 20000`。
@@ -166,6 +193,58 @@ LLM 的 `evaluateAnswer` 工具。**只有第三条经过工具**——所以任
   纯 CPU/IO 争用。这两个用例的 fetch 全部 mock，**不依赖真实网络**，所以提高超时不会掩盖真实故障。
 - **超时类问题单次全绿不足以证明修好**，要连跑两次。
 - 历史：这 2 项在 ADR-084 的验证记录里就出现过（「并行负载超时 2 项，单独跑全过」），长期被当噪音忽略。
+
+## ★ Chrome 内置 AI：可用性闸只放行 `available`（2026-10-02，ADR-088）
+
+`chromeComplete` 的预检**只拦 `unavailable` 是错的**。`LanguageModel.availability()` 是四值枚举
+（`available` / `downloadable` / `downloading` / `unavailable`），后两者时调用 `LanguageModel.create()`
+会让 Chrome **挂起等 on-device 模型下载**（数 GB、分钟级），期间既不 resolve 也不遵守 abort。
+现在只有 `available` 才建 session。
+
+- **默认配置必踩**：`src/config/sample-config.json` 默认 `chrome.enabled = true`，且 chrome 引擎
+  无需 apiKey 即合法 → `configReady` 为 true → 用户一点就走 chrome 通道。绝大多数人没下载过内置模型。
+- 症状：`/#/agent` 点「开始 Agent 面试」后停在「面试官正在选题…」**~90s**（= `interviewAgent` 的
+  `WATCHDOG_MS`）才出第一道题，期间**0 条控制台输出、0 个网络请求**。
+- 实测（Chrome 154 + 全新 profile）：`typeof LanguageModel === 'function'` 但 `availability()` = `'downloadable'`。
+  查证方法：CDP 连本机 Chrome，`Runtime.evaluate` 里 `await LanguageModel.availability()`。
+- **已知副作用（未改，见 ADR-088）**：`chromeAgent` 刻意把失败编码成 error 事件而非抛出，以便确定性
+  护栏接管；代价是 Agent 主循环的引擎降级链（`runtime.ts` 的 `chainStreamFns`）对 chrome 入口实际
+  不会前进到 local/deepseek。要改需单独讨论。
+
+## ★ 「点了没反应」的排查次序（2026-10-02）
+
+先分清**「事件没触发」**还是**「触发了但卡在 await」**——两者的修法完全不同，别一上来就读 onClick。
+
+1. 驱动真实浏览器点一下，看 **state / phase 有没有变**。变了 = 事件没问题。
+2. 看**控制台有没有输出**、**有没有网络请求**（`performance.getEntriesByType('resource')`）。
+   两者全静默 = 卡在某个 await 里，且还没走到发请求那一步。
+3. **观察窗口要够长（>2 分钟）。** 只看前 25s 会把「90s 后被看门狗救回」误判成「永久卡死」。
+   卡住的**时长**本身就是线索：90s 正好等于 `WATCHDOG_MS`，直接指向代码位置。
+4. 别忘了先排除「入口闸」：`configReady` / `profileReady` 为 false 时按钮是 `disabled`，
+   这时点击确实什么都不发生——但那是**设计行为**，且页面上有 Alert 说明。
+
+## ★ 断言瞬态 UI 状态：MutationObserver + 先证明计数器能失败（2026-10-02）
+
+忙碌 / loading 这类瞬态只持续几百毫秒，**轮询抓不到**（本项目实测：点击后 <300ms 就出结果）。
+做法：**在触发动作之前**注入 MutationObserver，逐次 DOM 变化记录「目标文案在 `document.body.innerText`
+里出现的次数」，事后取最大值。
+
+```js
+await evaluate(`(() => {
+  window.__snaps = [];
+  const record = () => { /* push { t, count, spinTip, tags } */ };
+  record();
+  new MutationObserver(record).observe(document.body, { childList: true, subtree: true, characterData: true });
+})()`);
+// 然后再点击
+```
+
+**★ 这类「次数应为 1」的断言极容易恒真**（选择器没匹配上、统计写错，都会让它「通过」）。
+必须先做变异验证：把旧写法临时还原 → 重新构建 → 再跑一次，确认确实报 ×2 → 然后才恢复。
+**否定式断言必须先证明它能失败。**
+
+**按字面量 grep 计数 ≠ 同屏重复。** `面试官思考中` 在 bundle 里有 2 处，第二处在
+`CopilotSidebar.tsx`（默认不打开的侧栏）。要断言「同屏重复」必须在**运行时**数 DOM 文本。
 
 ## 测试：不要硬编码题号（2026-09-25）
 

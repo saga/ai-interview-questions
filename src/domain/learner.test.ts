@@ -3,6 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCoachDefinition,
+  collectTopicRefs,
   computeCoverage,
   describeCoverageGap,
   emptyProfile,
@@ -302,6 +303,32 @@ describe('recommendWeakTopics', () => {
     const weak = recommendWeakTopics(p, 3);
     expect(weak[0]).toBe('tool-calling');
     expect(weak).not.toContain('rag'); // mastery 0.9 ≥ 0.85 不推荐
+  });
+
+  it('从未作答的 topic 不算薄弱（attempts = 0 不是学习证据）', () => {
+    // 回归：少了 attempts > 0 这道闸，会把「根本没考过」的 topic 当成薄弱项推给用户。
+    // 该状态在正常流程里不可达（updateLearner 只给有结果的 topic 建统计），
+    // 但画像来自 localStorage（不可信边界），旧档/手改档都可能带 attempts: 0。
+    const p = profileWith({
+      'tool-calling': { attempts: 0, avgScore: 0 },
+      rag: { attempts: 2, avgScore: 50 },
+    });
+    expect(recommendWeakTopics(p, 3)).toEqual(['rag']);
+  });
+});
+
+describe('collectTopicRefs', () => {
+  it('去重并保留首次出现的 category（顺序无语义，首见即权威）', () => {
+    // 回归：退化成「后写覆盖」时，同 topic 的 category 会被后来的记录改写。
+    const refs = collectTopicRefs([
+      { category: 'agentic-ai', topic: 'rag' },
+      { category: 'llm', topic: 'rag' },
+      { category: 'llm', topic: 'tool-calling' },
+    ]);
+    expect(refs).toEqual([
+      { category: 'agentic-ai', topic: 'rag' },
+      { category: 'llm', topic: 'tool-calling' },
+    ]);
   });
 });
 

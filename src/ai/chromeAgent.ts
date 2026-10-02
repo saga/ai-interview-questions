@@ -9,10 +9,20 @@
 // - 优点：复用已有的 chromeComplete（含串行队列 + 可用性检测），零额外依赖，本地无网络外发。
 // - 代价：prompt-based 工具调用不如原生 function calling 可靠——模型偶尔不输出合法 JSON、
 //   或参数不符合 schema。这里做了多层兜底：
-//   (1) 解析失败 → 退化为纯文本消息（stop），Agent 收场后由 ensureQuestionDelivered 确定性兜底；
+//   (1) 解析失败且**不像**工具调用（即模型真的在说人话）→ 退化为纯文本消息（stop），
+//       Agent 收场后由 ensureQuestionDelivered 确定性兜底；
 //   (2) chromeComplete 抛错 → 编码为 error 事件（不抛出），同样触发自愈兜底，而非让页面卡死；
-//   (3) 工具名校验：只接受 context.tools 中真实存在的工具名，避免「幻觉」工具名。
+//   (3) 工具名校验：只接受真实存在的工具名，避免「幻觉」工具名；**幻觉工具调用不回退成文本**，
+//       而是走 (2) 的 error 路径——否则会把 `{"tool":...}` 这段内部协议展示给用户。
 // 整体遵循「LLM 只做不确定决策，失败由确定性护栏接管」的项目红线。
+//
+// ⚠️ 关键前提：**运行时 `context.systemPrompt` 与 `context.tools` 恒为 undefined**。
+// pi-agent-core 在调 streamFn 之前会把二者「折进 messages 里的 system 消息」
+// （agent-loop.js 的 `streamAssistantResponse` → `normalizeContext({ messages })`，
+// 而 pi-ai 的 `normalizeContext` 只返回 `{ messages }`，不把 tools 带回来）。
+// 所以必须用 `resolvePrompt()` 从 messages 还原，**不能直接读 context.tools**——
+// 直接读会得到空集合，让每一个合法工具调用都被判成「无法解析」，
+// 最终把工具调用 JSON 当普通文本吐给用户（见 resolvePrompt 的注释）。
 
 import type {
   Api,
@@ -27,9 +37,10 @@ import type {
   ToolCall,
   Usage,
 } from '@earendil-works/pi-ai';
-import { createAssistantMessageEventStream } from '@earendil-works/pi-ai';
+import { createAssistantMessageEventStream, getCurrentSystemPrompt, getCurrentTools } from '@earendil-works/pi-ai';
 import type { StreamFn } from '@earendil-works/pi-agent-core';
 import { chromeComplete } from './chrome';
+import { extractJsonObject, looksLikeToolCall, toolCallName } from './toolCallJson';
 import type { ProviderEntry } from '../schemas/ai-config';
 
 /** 占位的 Chrome 模型 id（Agent 会把 model 回传进 streamFn，但本实现忽略它，直接绑定 chromeComplete）。 */
@@ -212,10 +223,34 @@ function renderTools(tools?: Tool[]): string {
     .join('\n');
 }
 
+/**
+ * 从 streamFn 收到的 Context 中还原「系统提示词 + 工具清单」。
+ *
+ * 背景（实测 pi-agent-core / pi-ai 1.0.0）：Agent 调 streamFn 时传的是
+ * `normalizeContext({ messages })` 的返回值，而 `normalizeContext` 会把
+ * systemPrompt 与 tools 折成 messages 里开头的 system 消息后**只返回 `{ messages }`**。
+ * 因此运行时 `context.systemPrompt` / `context.tools` 都是 undefined：
+ *   messages[0] = { role:'system', content: systemPrompt }
+ *   messages[1] = { role:'system', content:'', toolsAdded: [...tools] }
+ *
+ * 直接读 `context.tools` 的后果不是「少了个提示词」，而是**工具白名单恒为空**：
+ * `parseToolCall` 的 `allowed.has(name)` 永远为假 → 每个合法工具调用都被判成解析失败
+ * → `emitText(stream, raw)` 把 `{"tool":"getUserWeaknesses","args":{}}` 当推理文本发给用户。
+ * 用 pi-ai 官方的 replay helper 还原，避免自己重新实现折叠规则（toolsRemoved 等边界由它负责）。
+ *
+ * 保留 `context.*` 优先：pi-agent-core 若在将来版本改回直接传参，这里自动跟随，无需再改。
+ */
+function resolvePrompt(context: Context): { systemPrompt: string; tools: Tool[] } {
+  return {
+    systemPrompt: context.systemPrompt ?? getCurrentSystemPrompt(context.messages),
+    tools: context.tools ?? getCurrentTools(context.messages),
+  };
+}
+
 /** 构造用户侧提示词：近期状态 + 紧凑工具清单；稳定协议放在 system prompt。 */
 export function buildUserPrompt(context: Context): string {
   const transcript = renderMessages(context.messages);
-  const tools = renderTools(context.tools);
+  const tools = renderTools(resolvePrompt(context).tools);
   return [
     '## Recent interview state',
     transcript || '(empty)',
@@ -234,30 +269,9 @@ const CHROME_TOOL_PROTOCOL = `\n\n## Chrome tool protocol\nRespond with exactly 
  * 工具名必须出现在 allowed 集合中（防止幻觉工具名）；参数非对象则回退为空对象。
  */
 function parseToolCall(raw: string, allowed: Set<string>): { name: string; args: Record<string, unknown> } | null {
-  const text = (raw ?? '').trim();
-  if (!text) return null;
-  let jsonStr = text;
-  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fence) jsonStr = fence[1].trim();
-  let obj: unknown;
-  try {
-    obj = JSON.parse(jsonStr);
-  } catch {
-    const first = jsonStr.search(/[[{]/);
-    const last = Math.max(jsonStr.lastIndexOf('}'), jsonStr.lastIndexOf(']'));
-    if (first !== -1 && last > first) {
-      try {
-        obj = JSON.parse(jsonStr.slice(first, last + 1));
-      } catch {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
-  const rec = obj as Record<string, unknown>;
-  const name = typeof rec.tool === 'string' ? rec.tool : typeof rec.name === 'string' ? rec.name : undefined;
+  const rec = extractJsonObject(raw);
+  if (!rec) return null;
+  const name = toolCallName(rec);
   if (!name || !allowed.has(name)) return null;
   const rawArgs = rec.args ?? rec.arguments;
   const args = rawArgs && typeof rawArgs === 'object' && !Array.isArray(rawArgs) ? rawArgs : {};
@@ -332,7 +346,8 @@ async function driveStream(
   context: Context,
   signal?: AbortSignal,
 ): Promise<void> {
-  const system = `${context.systemPrompt ?? ''}${CHROME_TOOL_PROTOCOL}`;
+  const { systemPrompt, tools } = resolvePrompt(context);
+  const system = `${systemPrompt}${CHROME_TOOL_PROTOCOL}`;
   const userPrompt = buildUserPrompt(context);
   let raw: string;
   try {
@@ -341,14 +356,32 @@ async function driveStream(
     emitError(stream, err instanceof Error ? err.message : String(err));
     return;
   }
-  const allowed = new Set((context.tools ?? []).map((t) => t.name));
+  const allowed = new Set(tools.map((t) => t.name));
   const parsed = parseToolCall(raw, allowed);
-  if (!parsed) {
-    // 没有可解析的工具调用：退化为文本消息，Agent 收场后由确定性兜底接管
-    emitText(stream, raw);
+  if (parsed) {
+    emitToolCall(stream, parsed.name, parsed.args);
     return;
   }
-  emitToolCall(stream, parsed.name, parsed.args);
+  if (looksLikeToolCall(raw)) {
+    // 模型产出的是**工具调用协议本身**（`{"tool":...}`），只是工具名幻觉或参数不合 schema。
+    // 这类 JSON 对用户零信息量，**绝不能当推理文本展示**——那正是 2026-10-02 用户看到的
+    // 「推理决策显示 {"tool":"getUserWeaknesses","args":{}}」。改为 error 事件：
+    // 走与 chromeComplete 失败同一条自愈路径（interviewAgent 收下后由确定性护栏出题），
+    // 既不出题也不把内部协议泄漏到界面上。
+    // 文案刻意**只带工具名、不带整段 JSON**：这条 error 会以 toast 形式给用户看到
+    // （interviewAgent 调 onError 时不传 fatal → useAgentInterview 走 message.warning），
+    // 把协议原文贴进 toast 等于换个地方继续泄漏。
+    const name = toolCallName(extractJsonObject(raw) ?? {});
+    emitError(
+      stream,
+      name
+        ? `模型返回了不存在的工具 "${name}"，已改由确定性策略继续出题`
+        : '模型返回了无法解析的工具调用，已改由确定性策略继续出题',
+    );
+    return;
+  }
+  // 到这里才是真正的自然语言回复：正常作为文本消息发出
+  emitText(stream, raw);
 }
 
 /**

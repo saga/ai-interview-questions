@@ -2,7 +2,14 @@
 // 覆盖：① 模型返回合法 JSON 工具调用 → 转换为 toolcall 事件流 + done(toolUse)；
 //       ② 模型返回非 JSON 文本 → 退化为文本消息 done(stop)；
 //       ③ chrome 不可用时（抛出）→ 编码为 error 事件而非拒绝；
-//       ④ 工具名不在允许集合 → 回落为文本；⑤ 占位 model 字段。
+//       ④ 工具名幻觉 → 编码为 error，**不得**把工具调用 JSON 当文本展示给用户；
+//       ⑤ 占位 model 字段；
+//       ⑥ 真实运行时 context（systemPrompt / tools 折进 system 消息）下同样成立。
+//
+// ⚠️ ⑥ 是回归重点：pi-agent-core 传给 streamFn 的 context **只有 messages**，
+// systemPrompt 与 tools 被折进开头的 system 消息。早期测试的 makeContext() 显式带 tools，
+// 属于「理想形状」，因此「运行时 tools 为 undefined → 工具白名单恒为空 → 合法工具调用被
+// 误判为解析失败 → 原始 JSON 被当推理文本吐给用户」这个 bug 整套测试都测不到。
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildChromeAgentRuntime, buildUserPrompt } from './chromeAgent';
@@ -12,15 +19,15 @@ function stubLanguageModel(reply: string, opts?: { createThrows?: boolean }) {
   const lm = {
     availability: async () => 'available',
     create: opts?.createThrows
-      ? async () => {
+      ? vi.fn(async () => {
           throw new Error('boom');
-        }
-      : async () => ({
+        })
+      : vi.fn(async () => ({
           // clone 返回独立克隆 session（prompt 行为同基准），供 ChromeAIExecutor 使用
           clone: async () => ({ prompt: vi.fn(async () => reply), destroy: vi.fn() }),
           prompt: vi.fn(async () => reply),
           destroy: vi.fn(),
-        }),
+        })),
   };
   (globalThis as { LanguageModel?: unknown }).LanguageModel = lm;
   return lm;
@@ -37,11 +44,29 @@ const SAMPLE_TOOL: Tool = {
   parameters: { type: 'object', properties: { topic: { type: 'string' } }, required: ['topic'] } as Tool['parameters'],
 };
 
+/** 理想形状的 context：systemPrompt / tools 直接挂在 context 上（单测便利，但非运行时形状）。 */
 function makeContext(replyTool = 'getQuestion'): Context {
   return {
     systemPrompt: 'sys',
     messages: [{ role: 'user', content: '开始面试', timestamp: Date.now() }],
     tools: [SAMPLE_TOOL, { ...SAMPLE_TOOL, name: 'finishInterview', description: '结束' }],
+  };
+}
+
+/**
+ * **真实运行时形状**的 context：复刻 pi-agent-core 传给 streamFn 的对象。
+ * 实测（pi-agent-core / pi-ai 1.0.0）：context 只有 `messages`，
+ *   messages[0] = { role:'system', content: systemPrompt }
+ *   messages[1] = { role:'system', content:'', toolsAdded: [...tools] }
+ * 见 chromeAgent.resolvePrompt 的注释。
+ */
+function makeRuntimeContext(tools: Tool[] = [SAMPLE_TOOL], systemPrompt = 'sys'): Context {
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt, timestamp: 0 },
+      { role: 'system', content: '', toolsAdded: tools, timestamp: 0 },
+      { role: 'user', content: '开始面试', timestamp: Date.now() },
+    ],
   };
 }
 
@@ -83,12 +108,15 @@ describe('buildChromeAgentRuntime', () => {
     expect(done.reason).toBe('stop');
   });
 
-  it('工具名不在允许集合时回落为文本（stop）', async () => {
+  it('工具名不在允许集合时不把 JSON 当文本展示，而是编码为 error', async () => {
     stubLanguageModel(JSON.stringify({ tool: 'hackEverything', args: {} }));
     const { streamFn } = buildChromeAgentRuntime();
     const events = await collect(streamFn({} as any, makeContext()));
-    const done = events.find((e) => e.type === 'done');
-    expect(done.reason).toBe('stop');
+    // 关键：不能有承载该 JSON 的文本块——那正是用户看到的「推理决策」里的垃圾
+    expect(events.find((e) => e.type === 'text_delta')).toBeUndefined();
+    const err = events.find((e) => e.type === 'error');
+    expect(err).toBeTruthy();
+    expect(err.error.errorMessage).toContain('hackEverything');
   });
 
   it('user prompt 只保留近期历史和紧凑工具清单，不重复注入协议长文', () => {
@@ -114,6 +142,48 @@ describe('buildChromeAgentRuntime', () => {
     expect(err).toBeTruthy();
     expect(err.reason).toBe('error');
     expect(err.error.errorMessage).toContain('boom');
+  });
+});
+
+describe('真实运行时 context（systemPrompt / tools 折进 system 消息）', () => {
+  it('工具清单从 system 消息的 toolsAdded 还原：合法工具调用仍被识别为 toolcall', async () => {
+    stubLanguageModel(JSON.stringify({ tool: 'getQuestion', args: { topic: 'react' } }));
+    const { streamFn } = buildChromeAgentRuntime();
+    // 不传 systemPrompt / tools —— 完全复刻运行时形状
+    const events = await collect(streamFn({} as any, makeRuntimeContext()));
+    const tcEnd = events.find((e) => e.type === 'toolcall_end');
+    expect(tcEnd).toBeTruthy();
+    expect(tcEnd.toolCall.name).toBe('getQuestion');
+    expect(events.find((e) => e.type === 'done').reason).toBe('toolUse');
+    // 回归断言：绝不能退化成「把 JSON 当推理文本」
+    expect(events.find((e) => e.type === 'text_delta')).toBeUndefined();
+  });
+
+  it('getUserWeaknesses 这类无参工具在运行时形状下也被识别（用户实际遇到的那次）', async () => {
+    stubLanguageModel(JSON.stringify({ tool: 'getUserWeaknesses', args: {} }));
+    const { streamFn } = buildChromeAgentRuntime();
+    const events = await collect(
+      streamFn({} as any, makeRuntimeContext([{ ...SAMPLE_TOOL, name: 'getUserWeaknesses' }])),
+    );
+    expect(events.find((e) => e.type === 'toolcall_end')?.toolCall.name).toBe('getUserWeaknesses');
+    expect(events.find((e) => e.type === 'text_delta')).toBeUndefined();
+  });
+
+  it('systemPrompt 从 system 消息还原，随 system 参数传给 Chrome（不再只发协议）', async () => {
+    const lm = stubLanguageModel(JSON.stringify({ tool: 'getQuestion', args: {} }));
+    const { streamFn } = buildChromeAgentRuntime();
+    await collect(streamFn({} as any, makeRuntimeContext([SAMPLE_TOOL], '你是面试官，安全层在此')));
+    const initialPrompts = lm.create.mock.calls[0][0].initialPrompts as Array<{ content: string }>;
+    expect(initialPrompts[0].content).toContain('你是面试官，安全层在此');
+    // 工具调用协议仍必须附在后面
+    expect(initialPrompts[0].content).toContain('Chrome tool protocol');
+  });
+
+  it('buildUserPrompt 在 context.tools 缺失时从 system 消息还原工具清单', () => {
+    const prompt = buildUserPrompt(makeRuntimeContext([SAMPLE_TOOL]));
+    // 曾经的 bug：这里会渲染成 (no tools available)，模型据此无工具可调
+    expect(prompt).not.toContain('(no tools available)');
+    expect(prompt).toContain('- getQuestion(topic: string) — 获取下一题');
   });
 });
 

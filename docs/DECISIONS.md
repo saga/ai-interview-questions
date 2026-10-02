@@ -2,6 +2,72 @@
 
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
+## ADR-089 · 从 messages 还原 systemPrompt / tools（修掉「推理决策」里显示的裸工具调用 JSON）
+
+- 状态：已采纳 · 2026-10-02
+- 背景：Agent 面试页「面试官的推理与决策」卡片里出现一条 `{"tool":"getUserWeaknesses","args":{}}`，以「面试官推理」的样式（机器人头像气泡）渲染给用户。用户判定：**零信息量，且这类内部协议本就不该展示给用户**。
+- 根因（实测，非推断）：
+  1. **现象不是「工具标签写错」，是「工具调用被当成了文本」。** 卡片渲染两种条目：`{kind:'agent',text}`（气泡）与 `{kind:'tool',tool,label}`（Tag）。`getUserWeaknesses` 的标签是「读取薄弱主题」；用户看到的形态是前者，说明这段 JSON 走的是 **assistant 文本块**通道。
+  2. **pi-agent-core 调 `streamFn` 时，`context.systemPrompt` 与 `context.tools` 恒为 `undefined`。** `agent-loop.js` 的 `streamAssistantResponse` 传的是 `normalizeContext({ messages: llmMessages })`；而 pi-ai 的 `normalizeContext` 会把 systemPrompt + tools **折进开头的 system 消息**，然后**只返回 `{ messages }`**——`tools` 不再出现在返回值里。用最小 Agent 复现（`state.tools` 注入、`initialState.systemPrompt` 设置）打印 streamFn 实参：
+     ```
+     streamFn context keys: [ 'messages' ]
+     context.tools = undefined
+     context.systemPrompt = undefined
+       [0] role=system content='SYSTEM PROMPT HERE'      toolsAdded=undefined
+       [1] role=system content=''                        toolsAdded=2 tools: getUserWeaknesses,getQuestion
+     ```
+  3. **于是工具白名单恒为空。** `driveStream` 里 `const allowed = new Set((context.tools ?? []).map(t => t.name))` → 空集合 → `parseToolCall` 的 `allowed.has(name)` 永远为假 → 落到 `emitText(stream, raw)`，把模型输出的**工具调用协议原文**当自然语言回复发出去。已单独复现 `parseToolCall`：同一段字符串在 `allowed` 完整时能正常解析，**只有 `allowed` 为空时才返回 null**。
+  4. **连带影响：system prompt 也一直没发出去。** `const system = \`${context.systemPrompt ?? ''}${CHROME_TOOL_PROTOCOL}\`` → 只发了协议，安全层 / 契约层整段丢失；`buildUserPrompt` 的工具清单渲染成 `(no tools available)`。而 `renderMessages` **没有 `system` 分支**，system 消息被静默跳过，所以 system prompt 在两侧都没进 prompt。这是比显示问题更严重的正确性问题。
+  5. **测试测不到。** `chromeAgent.test.ts` 的 `makeContext()` 显式带 `tools:`，属于「理想形状」；真实运行时的「tools 折进 system 消息」形状从未被覆盖。
+- 决策：
+  1. **用 pi-ai 官方的 replay helper 从 messages 还原，不自己实现折叠规则。** 新增 `resolvePrompt(context)`：`context.systemPrompt ?? getCurrentSystemPrompt(context.messages)`、`context.tools ?? getCurrentTools(context.messages)`。保留 `context.*` 优先——上游若在将来版本改回直接传参，这里自动跟随。`getCurrentTools` 会正确处理 `toolsAdded` / `toolsRemoved` 的增量语义，比手写更稳。
+  2. **`driveStream` 与 `buildUserPrompt` 都改走 `resolvePrompt`。** 前者决定白名单，后者决定注入给模型的清单；只改一处会让「能解析」与「提示词里没有」继续矛盾。
+  3. **解析失败要分两类，不能一律退化成文本。** 抽出共享模块 `src/ai/toolCallJson.ts`（`extractJsonObject` / `toolCallName` / `looksLikeToolCall`）：
+     - 输出**不像**工具调用（模型真在说人话）→ 仍 `emitText`，行为不变；
+     - 输出**像**工具调用（含 `tool`/`name` 字符串字段的 JSON 对象）但不可用（工具名幻觉 / 参数不合 schema）→ **改发 error 事件**，走与 `chromeComplete` 失败同一条自愈路径。原来的「回落成文本」正是泄漏通道。
+  4. **error 文案只带工具名，不带整段 JSON。** 该 error 最终以 toast 呈现（`interviewAgent` 调 `onError` 时不传 `fatal` → `useAgentInterview` 走 `message.warning`），把协议原文贴进 toast 等于换个地方继续泄漏。
+  5. **展示层加最后一道防线。** `useAgentInterview` 在 `agent_end` 落 transcript 前用同一个 `looksLikeToolCall` 过滤，即使将来别的 provider 又把协议漏进文本通道也不进 UI。复用同一模块避免两套口径漂移。
+  6. **顺手补 `getWeakAngles` / `getCoverageGaps` 的中文标签。** 二者是真实工具（`tools.ts` 共 7 个）却漏在 `TOOL_LABELS` 外，标签会退化成原始工具名。
+- 未改（明确不动）：
+  - **不改 `chromeAgent` 「失败编码为 error 而非抛出」的契约。** ADR-088 已记录该取舍与副作用，本次沿用同一条兜底路径，未新增机制。
+  - **不为「幻觉工具名」新增重试。** 直接交给确定性护栏，与既有红线一致（「LLM 只做不确定决策，失败由确定性护栏接管」）。
+- 验证：
+  - `tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过；`npm run build` 通过，新文案已进 `dist/`。
+  - 全量 **888 passed / 888**（66 文件，较此前 +17 用例 / +1 文件）。
+  - **新增用例先做变异验证，确认非恒真**：把 `driveStream` 的白名单改回读 `context.tools`、`buildUserPrompt` 改回 `renderTools(context.tools)`、`system` 改回读 `context.systemPrompt` 后，新增用例**失败 4 项**；还原后 17 项全绿。
+  - `chromeAgent.test.ts` 新增 `makeRuntimeContext()`，**显式复刻真实运行时形状**（不传 systemPrompt / tools，改折进 system 消息），覆盖：合法工具调用仍被识别为 `toolcall`、`getUserWeaknesses` 无参调用、systemPrompt 随 `initial_prompts` 传给 Chrome、工具清单不再渲染成 `(no tools available)`；并把原「工具名幻觉 → 回落文本（stop）」用例改为**断言不产生 `text_delta` 且发 error**。
+  - `toolCallJson.test.ts` 覆盖：代码块包裹 / 夹带文字 / 数组标量 / 空串的抽取边界，`{tool}` 与 `{name}` 两种写法，幻觉工具名同样算「像工具调用」，自然语言推理文本不误判。
+- 已知限制：
+  - **未能做真实 Chrome 端到端验证。** 沙箱内 `LanguageModel.availability()` 返回 `downloadable`（on-device 模型未下载），无法真正跑通 chrome 补全。验证止于「以 stub 的 `LanguageModel` 驱动 `buildChromeAgentRuntime`，喂入**实测得到的**真实运行时 context 形状」。这是当前可做到的最强验证。
+  - **`dist/` 已重建但线上未部署**，修复需 `npm run cloudflare:deploy` 才对线上生效（与 ADR-088 同一批）。
+- 触发条件：pi-agent-core 若改变 `streamFn` 的 context 形状（例如把 `tools` 传回来），`resolvePrompt` 的 `??` 会自动走 `context.*` 分支，无需改动；但 `toolCallJson.ts` 的「像工具调用」判据与 `CHROME_TOOL_PROTOCOL` 的格式强耦合，**改协议格式时必须同步改判据**。
+
+## ADR-088 · Chrome 内置 AI 的可用性闸只放行 `available`，其余状态在建 session 前拒绝
+
+- 状态：已采纳 · 2026-10-02
+- 背景：`/#/agent` 点「开始 Agent 面试」后停在「面试官正在选题…」**约 90 秒**才出第一道题，全程无报错 / 日志 / 网络请求（用户视角＝「点了没反应」）。逐层排除后定位到可用性预检：
+  1. **不是按钮坏了。** 用 CDP 驱动真实 Chrome 验证：按钮 `disabled=false`，点击后 `phase` 正常进入 `running`，页面确实切换了。
+  2. **不是 provider 链的问题。** `createLLMProvider` / `buildFallbackAgentRuntime` 正常构造；控制台 **0 条**输出、**0 个**网络请求——说明根本没走到 LLM 调用。
+  3. **是 `chromeComplete` 的预检放行了不该放行的状态。** 它只拦 `availability() === 'unavailable'`。实测 Chrome 154 + 全新 profile：`typeof LanguageModel === 'function'`（存在），`await LanguageModel.availability()` → **`'downloadable'`**（on-device 模型未下载）。`'downloadable'` 被放行 → `LanguageModel.create()` 挂起等模型下载（数 GB、分钟级），既不 resolve 也不遵守 abort → 只剩 `interviewAgent` 的 `WATCHDOG_MS = 90_000` 兜底。实测时间线：0–80s 无变化，**~90s** 看门狗触发、确定性兜底吐出第一题。
+  4. **这是默认配置下的必经路径**：`src/config/sample-config.json` 默认 `chrome.enabled = true`，而绝大多数用户从未下载过内置模型。
+- 决策：
+  1. **可用性闸只放行 `available`。** 判据从「明确 unavailable 才拦」改为「非 available 即拦」，其余三种状态（`unavailable` / `downloadable` / `downloading`）都在**建 session 之前**拒绝。原注释写的意图本就是「避免无谓的 create 超时」，本次是把该意图落实完整——`downloadable` / `downloading` 恰恰是最会长时挂起的那两类。
+  2. **`downloadable` / `downloading` 的报错文案额外给出可操作提示**（「先在 Chrome 中完成内置模型下载后再试」），因为它们与 `unavailable` 的处置方式不同：前者用户自己能解决。
+  3. **拒绝后不新增机制。** chrome 通道的失败由 `chromeAgent` 既有的「编码成 error 事件」路径承接，立刻走确定性护栏出题。
+- 未改（明确不动）：
+  - **不让 chrome 的失败向上抛以触发引擎降级链。** `chromeAgent` 刻意把失败编码成 error 事件（不抛出）而非让 run 失败——这是已记录的设计取舍（「LLM 只做不确定决策，失败由确定性护栏接管」）。改成抛出会让整轮 run 失败、弹「面试启动失败」，对用户反而更差。**已知副作用**：Agent 主循环的引擎降级链（`chainStreamFns`）对 chrome 入口实际上不会生效（chrome 不抛，链不会前进到 local/deepseek）。若将来要让 chrome 失败后降级到其它引擎，需单独讨论，不能顺手改。
+  - **不为 `downloading` 加「等待下载完成」的交互。** 面试单轮不可能等数分钟；先拒绝 + 可操作提示是当前取舍。
+- 验证：
+  - `tsc -p tsconfig.app.json && tsc -p tsconfig.node.json` 通过。
+  - `chrome.test.ts` 把原「unavailable 才拦」用例改为 `it.each(['unavailable','downloadable','downloading'])` 参数化用例，三种状态都断言**不创建 session**；另加一条断言 `downloadable` 的文案含「完成内置模型下载」。
+  - **端到端实测**（同一套 CDP 浏览器脚本、全新 profile、默认配置、本地 `dist/`）：
+
+    | | 点击 → 出第一道题 |
+    |---|---|
+    | 修复前 | **~90s** |
+    | 修复后 | **≤3s** |
+- 触发条件：Chrome Prompt API 若新增可用性状态（如 `'starting'`），需重新评估闸的放行集合；若将来要支持「主动触发模型下载并等待」，那是一个独立的交互设计，不应塞回 `chromeComplete`。
+
 ## ADR-087 · 模型 id 随 pi-ai 目录改名；测试超时按满载而非单跑设定
 
 - 状态：已采纳 · 2026-10-02
