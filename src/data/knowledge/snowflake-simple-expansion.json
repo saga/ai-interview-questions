@@ -1,0 +1,515 @@
+[
+  {
+    "id": "snowflake-stages-file-formats",
+    "courseId": "snowflake",
+    "name": "Stage 与 File Format 基础",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "指定文件位置并定义 CSV、JSON 等文件如何解析.",
+    "required": [
+      "指定文件位置并定义 CSV、JSON 等文件如何解析.",
+      "加载前确认 Stage 路径和 File Format 设置.",
+      "Stage 描述文件入口，File Format 描述文件解析规则."
+    ],
+    "misconceptions": [
+      "File Format 用于配置 Warehouse 大小",
+      "Stage 自动保证文件格式正确",
+      "文件可以上传就一定能成功解析"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-micro-partitions",
+    "courseId": "snowflake",
+    "name": "微分区与分区裁剪基础",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "帮助平台组织表数据并减少不必要的数据扫描.",
+    "required": [
+      "帮助平台组织表数据并减少不必要的数据扫描.",
+      "用过滤条件缩小扫描范围并查看 Query Profile.",
+      "分区裁剪可以跳过与过滤条件无关的微分区."
+    ],
+    "misconceptions": [
+      "每个微分区必须由用户手动创建",
+      "分区裁剪会改变 SQL 查询结果",
+      "微分区是用户逐个管理的 Warehouse"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "copy-into-file-format-validation",
+    "courseId": "snowflake",
+    "name": "COPY INTO 文件匹配与加载校验",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "控制加载文件并确认数据是否正确入表.",
+    "required": [
+      "控制加载文件并确认数据是否正确入表.",
+      "查看加载结果、拒绝行和目标表数据.",
+      "加载状态应结合返回信息、错误行和目标数据一起判断."
+    ],
+    "misconceptions": [
+      "SQL 没报错就无需检查数据",
+      "每次重跑都会自动删除之前写入的记录",
+      "可以忽略文件格式造成的字段偏移"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sql-transformations-basics",
+    "courseId": "snowflake",
+    "name": "SQL 过滤、连接与聚合基础",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "在 Snowflake 中筛选、关联和汇总数据.",
+    "required": [
+      "在 Snowflake 中筛选、关联和汇总数据.",
+      "用 SELECT、WHERE、JOIN 和 GROUP BY 表达转换.",
+      "WHERE 过滤行，JOIN 组合记录，GROUP BY 执行分组聚合."
+    ],
+    "misconceptions": [
+      "WHERE 用于配置 Warehouse 大小",
+      "JOIN 一定保证输入和输出行数相同",
+      "GROUP BY 自动去除所有业务重复记录"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-query-history",
+    "courseId": "snowflake",
+    "name": "查询历史与运行状态",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "查看 SQL 的运行状态、耗时与错误.",
+    "required": [
+      "查看 SQL 的运行状态、耗时与错误.",
+      "通过 Query History 定位失败或缓慢查询.",
+      "Query History 保存执行记录，Query Profile 进一步显示执行细节."
+    ],
+    "misconceptions": [
+      "查询历史只保存编辑器里的 SQL",
+      "Query History 和执行记录没有关系",
+      "每次失败都必须重建 Warehouse"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-cli-deploy-basics",
+    "courseId": "snowflake",
+    "name": "Snowflake CLI 连接与部署基础",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "从命令行连接 Snowflake 并执行受控部署操作.",
+    "required": [
+      "从命令行连接 Snowflake 并执行受控部署操作.",
+      "配置目标连接并用 CLI 执行命令.",
+      "连接、执行身份和目标环境应明确区分."
+    ],
+    "misconceptions": [
+      "CI 应复制开发者个人生产凭据",
+      "CLI 会自动选对每个环境的账户",
+      "部署成功就无需核对对象"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "iceberg-managed-external-basics",
+    "courseId": "snowflake",
+    "name": "Snowflake-managed 与 external Iceberg 表",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "区分 Snowflake 管理 Catalog 与使用外部 Catalog 的表.",
+    "required": [
+      "区分 Snowflake 管理 Catalog 与使用外部 Catalog 的表.",
+      "根据 Catalog 管理责任选择表的管理模式.",
+      "不同模式的写入、维护和元数据同步职责可能不同."
+    ],
+    "misconceptions": [
+      "所有 Iceberg 表都由 Snowflake 负责维护",
+      "外部 Catalog 表不需要同步变化",
+      "管理模式不会影响维护责任"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "iceberg-metadata-refresh-basics",
+    "courseId": "snowflake",
+    "name": "外部 Iceberg 表的元数据刷新",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "让 Snowflake 识别外部表的最新元数据.",
+    "required": [
+      "让 Snowflake 识别外部表的最新元数据.",
+      "外部表变化后执行适用的元数据刷新流程.",
+      "刷新元数据用于同步状态，不等同于压缩数据文件."
+    ],
+    "misconceptions": [
+      "刷新会自动重写所有数据文件",
+      "任何 Iceberg 表都无需刷新外部变化",
+      "刷新元数据相当于删除旧快照"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "iceberg-schema-evolution-basics",
+    "courseId": "snowflake",
+    "name": "Iceberg Schema 与分区演进基础",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "在表继续增长时调整字段或分区设计.",
+    "required": [
+      "在表继续增长时调整字段或分区设计.",
+      "变更 Schema 或分区后检查旧数据与新数据的读取结果.",
+      "Schema 演进和分区演进是表元数据变化，不一定重写全部历史文件."
+    ],
+    "misconceptions": [
+      "修改 Schema 会自动重写所有历史数据文件",
+      "分区字段变化永远不会影响查询表现",
+      "DDL 执行成功就代表历史数据兼容"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-classify-summarize-basics",
+    "courseId": "snowflake",
+    "name": "文本分类、摘要与信息抽取",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "将文本分类、提炼要点或抽取指定字段.",
+    "required": [
+      "将文本分类、提炼要点或抽取指定字段.",
+      "按输出目标选择分类、摘要或结构化抽取任务.",
+      "分类返回标签，摘要浓缩要点，抽取返回指定字段."
+    ],
+    "misconceptions": [
+      "分类、摘要与抽取完全相同",
+      "摘要要逐字复制全部输入",
+      "抽取任务不需要说明要提取哪些字段"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-prompt-output-basics",
+    "courseId": "snowflake",
+    "name": "Prompt 输入与输出格式基础",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "清楚说明模型任务和期望的返回形式.",
+    "required": [
+      "清楚说明模型任务和期望的返回形式.",
+      "在提示中描述任务、必要上下文、格式和限制.",
+      "明确的输出要求能减少格式不一致，但不能保证语义无误."
+    ],
+    "misconceptions": [
+      "提示越含糊越容易得到稳定格式",
+      "只要求 JSON 就能保证内容正确",
+      "模型天然知道所有内部业务术语"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "semantic-view-basics",
+    "courseId": "snowflake",
+    "name": "Semantic View 基础组成",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "用结构化语义描述业务实体、维度和指标.",
+    "required": [
+      "用结构化语义描述业务实体、维度和指标.",
+      "定义常见查询使用的事实、维度、指标和关系.",
+      "Semantic View 提供结构化业务语义，不只是自由文本提示."
+    ],
+    "misconceptions": [
+      "Semantic View 只能存原始文件",
+      "语义定义可以不写关系和指标含义",
+      "自然语言说明能替代所有 SQL 检查"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-search-service-basics",
+    "courseId": "snowflake",
+    "name": "Cortex Search 服务基础配置",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "对文本列建立可查询的检索服务.",
+    "required": [
+      "对文本列建立可查询的检索服务.",
+      "选择文本列、过滤属性和数据源后测试查询.",
+      "搜索列提供文本内容，过滤属性限制候选记录."
+    ],
+    "misconceptions": [
+      "服务不需要指定数据源",
+      "过滤属性与检索结果毫无关系",
+      "创建成功就保证结果正确"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-thread-basics",
+    "courseId": "snowflake",
+    "name": "Agent 对话线程与上下文",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "在同一对话中保留必要的多轮上下文.",
+    "required": [
+      "在同一对话中保留必要的多轮上下文.",
+      "按应用需要关联正确的 Agent thread.",
+      "线程可维护多轮上下文，但不等于永久审计存储."
+    ],
+    "misconceptions": [
+      "每轮对话都必须忽略前文",
+      "线程永久保存所有业务审计证据",
+      "上下文存在就保证回答正确"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-tool-types",
+    "courseId": "snowflake",
+    "name": "Agent 中 Search 与 Analyst 的区别",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "分别处理文档检索与结构化数据问答.",
+    "required": [
+      "分别处理文档检索与结构化数据问答.",
+      "找文档依据时用 Search，计算指标时走结构化分析.",
+      "Search 用于文本检索，Analyst 面向结构化数据分析."
+    ],
+    "misconceptions": [
+      "Search 与 Analyst 都只返回文件内容",
+      "Analyst 专门对 PDF 做全文检索",
+      "所有问题都应由同一工具回答"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-result-checks",
+    "courseId": "snowflake",
+    "name": "Agent 回答与来源核对基础",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "确认 Agent 的回答有工具结果或来源支持.",
+    "required": [
+      "确认 Agent 的回答有工具结果或来源支持.",
+      "回答事实问题时核对引用与工具返回结果.",
+      "Agent 的最终文本应与它检索或计算得到的证据一致."
+    ],
+    "misconceptions": [
+      "答案流畅就代表来源一定准确",
+      "工具输出和最终回答无需比较",
+      "Agent 不需要保留任何来源信息"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-data-exploration-basics",
+    "courseId": "snowflake",
+    "name": "CoCo 辅助数据探索基础",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "帮助分析人员生成探索查询并初步理解数据.",
+    "required": [
+      "帮助分析人员生成探索查询并初步理解数据.",
+      "让 CoCo 协助生成查询后检查筛选条件和口径.",
+      "探索结果依赖样本范围、过滤条件和数据质量."
+    ],
+    "misconceptions": [
+      "样本中的现象一定代表全部数据",
+      "不记录过滤条件也能复现分析",
+      "相关关系可以直接证明因果"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-sql-review-basics",
+    "courseId": "snowflake",
+    "name": "CoCo 生成 SQL 的审查",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "检查 AI 建议的代码是否符合数据与权限要求.",
+    "required": [
+      "检查 AI 建议的代码是否符合数据与权限要求.",
+      "查看 SQL diff、权限、数据变更和下游引用.",
+      "AI 辅助开发不能替代代码审查、测试和审批."
+    ],
+    "misconceptions": [
+      "AI 生成代码可以免除审查测试",
+      "看最后的说明就能知道所有变更",
+      "提交 Git 就代表已成功发布生产"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-workflow-basics",
+    "courseId": "snowflake",
+    "name": "CoCo 辅助开发的基本工作流",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "将 AI 建议变成经过验证的开发修改.",
+    "required": [
+      "将 AI 建议变成经过验证的开发修改.",
+      "先说明目标和相关上下文，再审查差异并测试.",
+      "CoCo 可以辅助生成候选结果，是否采纳仍由开发者验证."
+    ],
+    "misconceptions": [
+      "生成建议后无需阅读差异",
+      "AI 能自动批准自己的修改",
+      "只保存最后的回答就足够审计"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  }
+]

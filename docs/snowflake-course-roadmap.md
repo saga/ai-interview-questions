@@ -175,3 +175,15 @@ flowchart TD
 - 逐题来源、模块、Knowledge ID 和 Question ID 映射：[snowflake-question-coverage-300.md](./snowflake-question-coverage-300.md)
 
 本次静态预检验证 300 道题 ID 唯一、题干无重复、每个节点恰有 5 道新题、选项/答案/误解映射长度一致、所有课程与文档来源 ID 均可解析。未运行 TypeScript、Vitest、题库 CLI 门禁或构建，因此不代表运行时 schema、全库去重或 CI 已通过。
+
+
+## 9. 简明题库补充（2026-10-19）
+
+新增一批直白、以简单和中等为主的 200 道 Snowflake 题：120 道简单、80 道中等，不新增困难题。按 8 门 Coursera 课程均衡安排，每门覆盖 5 个知识点，每个点 5 道题。
+
+新增 19 个知识点，同时为 21 个既有知识点增加基础题。本批题目独立存放：
+- `src/data/knowledge/snowflake-simple-expansion.json`
+- `src/data/questions/snowflake-simple-200.json`
+- `docs/snowflake-question-coverage-200.md`
+
+新增后 Snowflake 题库累计 541 道（原有 41 + 前一批 300 + 本批 200），知识点 79 个（原有 39 + 前一批新增 21 + 本批新增 19）。本次仅做生成后静态检查，尚未运行 schema、CLI 门禁、测试或构建。

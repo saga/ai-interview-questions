@@ -110,3 +110,12 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 本轮新增 300 道题和 21 个知识点，不替换原题；题目按 8 门课程分配为 40/45/40/35/35/40/35/30。每个知识节点覆盖机制、设计、诊断、取舍、Runbook/验收证据五类评估视角，所有题均有选择题、开放题参考答案及课程/官方文档溯源。
 
 详见 [逐题覆盖矩阵](docs/snowflake-question-coverage-300.md) 和 [课程 Roadmap](docs/snowflake-course-roadmap.md#8-新增-300-道课程来源可追溯题-2026-10-19)。
+
+
+## 9. 简单/中等题目扩展记录（2026-10-19）
+
+新增 200 道直白的入门/中级问题：120 道简单题、80 道中等题，不新增困难题；40 个知识点各 5 题，按 8 门课程各 25 道分配。新增 19 个知识点，另为 21 个既有知识点增加基础题。
+
+本批重点覆盖 Stage/File Format、微分区、加载校验、SQL 基础转换、Query History、Snowflake CLI、Iceberg 管理/刷新/Schema 演进、Cortex 文本处理与 Prompt、Semantic View、Search 服务、Agent 线程与工具选择、CoCo 数据探索和 SQL 审查。
+
+逐题追溯矩阵见 [docs/snowflake-question-coverage-200.md](docs/snowflake-question-coverage-200.md)。

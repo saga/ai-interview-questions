@@ -3528,3 +3528,11 @@ assemble 能直接落盘，问题被留在池子里而不是暴露在生成时�
 - Added 300 questions (five per node across the eight Coursera course roadmaps), bringing the total Snowflake pool to 341 questions including 41 existing questions.
 - Added per-question course/module/official-doc traceability and a 60-row source-to-question coverage matrix.
 - Static generation checks passed; TypeScript/tests/CLI validation/build were not run in this change.
+
+
+## 2026-10-19 — Snowflake 简明题库扩展（200 题）
+
+- 新增 19 个知识节点和 200 道主要为简单/中等的 Snowflake 题，按 8 门 Coursera 路线分配。
+- 难度分布为 120 道 easy、80 道 medium；40 个知识点各有五道新题。
+- 增加课程模块、Knowledge ID、Question ID 与官方文档 ID 的逐题溯源矩阵。
+- 已完成静态结构预检；schema/CLI/测试/typecheck/build 未运行。
