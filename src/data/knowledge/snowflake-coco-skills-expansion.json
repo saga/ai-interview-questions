@@ -1,0 +1,288 @@
+[
+  {
+    "id": "snowflake-coco-semantic-patterns",
+    "courseId": "snowflake",
+    "name": "Semantic View 高级建模与诊断",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "围绕事实粒度、关系基数、时间有效性、半可加指标和生成 SQL 诊断，构建可信的 Semantic View。",
+    "required": [
+      "在建立关系前明确各事实表的粒度、主键唯一性和关系基数，防止连接放大。",
+      "只有起始时间的历史维表适合按事件时间匹配最近有效记录；具有明确有效区间时应验证区间边界。",
+      "时点余额、库存和人数等快照指标不可跨时间维度直接求和，需区分时点指标与趋势指标。",
+      "通过生成 SQL、指标可达维度和样本对账验证语义模型，不能把定义可部署等同于查询正确。"
+    ],
+    "misconceptions": [
+      "未明确事实粒度就直接连接多个事实表，导致指标重复计数。",
+      "把时点快照沿时间维度简单求和，造成业务指标失真。",
+      "把语义查询的 SQL 解释或部署成功当作结果正确的证明。",
+      "假设 YAML 与 DDL 的所有语义视图能力完全等价。"
+    ],
+    "angles": [
+      "scenario",
+      "comparison",
+      "tradeoff",
+      "debugging",
+      "design",
+      "boundary"
+    ]
+  },
+  {
+    "id": "snowflake-coco-analyst-chat",
+    "courseId": "snowflake",
+    "name": "Cortex Analyst 与数据问答应用",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "根据数据形态选择 Analyst 或 Search，使用语义模型、已验证查询和结果核验提高自然语言数据问答的可靠性。",
+    "required": [
+      "结构化表格与指标问答适合 Cortex Analyst 搭配语义视图；文档、政策和长文本检索更适合 Cortex Search RAG。",
+      "文本到 SQL 的准确性依赖正确粒度、关系基数、具名指标、业务同义词和代表性验证查询。",
+      "多轮对话应保留必要的历史消息，并显示生成 SQL、实际结果、引用来源和失败状态。",
+      "需要跨结构化分析和非结构化检索的复杂编排时，可组合工具，但要分别测试 SQL 结果和检索证据。"
+    ],
+    "misconceptions": [
+      "把所有自然语言数据问答都当成同一种检索任务处理。",
+      "未检查一对多 JOIN 就相信 SQL 聚合与生成结果。",
+      "认为模型只要看到列名，就能稳定推断业务指标和同义词。",
+      "仅展示模型生成的文字，不展示来源、SQL 或执行结果。"
+    ],
+    "angles": [
+      "comparison",
+      "scenario",
+      "design",
+      "debugging",
+      "evaluation",
+      "boundary"
+    ]
+  },
+  {
+    "id": "snowflake-coco-ontology-stack",
+    "courseId": "snowflake",
+    "name": "Ontology-on-Snowflake 分层设计",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "从关系表或 OWL 输入构建物理层、元数据层、抽象视图、语义模型和 Agent，并通过阶段门禁验证完整性。",
+    "required": [
+      "五层架构分别承载物理存储、Ontology 元数据、抽象视图、语义视图和 Cortex Agent。",
+      "直接表路径优先复用现有数据；知识图谱路径需要显式节点/边模型并承担额外建模和存储成本。",
+      "每个阶段要确认输入和设计，部署前审查 SQL，阶段完成后必须等待明确批准。",
+      "端到端验收应核对对象完整性、样本查询、层间语义一致性和 Agent 实际行为。"
+    ],
+    "misconceptions": [
+      "把五层堆栈视为必须一次性自动部署的无审批脚本。",
+      "误认为所有关系数据都必须复制到统一图表中。",
+      "把 ontology 元数据、抽象视图和语义视图当成同一类对象。",
+      "只核对生成文件数量，不验证部署对象和端到端查询。"
+    ],
+    "angles": [
+      "architecture",
+      "design",
+      "scenario",
+      "boundary",
+      "implementation"
+    ]
+  },
+  {
+    "id": "snowflake-coco-dynamic-tables",
+    "courseId": "snowflake",
+    "name": "Dynamic Tables 生产选型与诊断",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "根据 SQL 转换、延迟、过程控制、测试与可移植性需求选择 Dynamic Tables、Materialized Views、Streams/Tasks 或 dbt。",
+    "required": [
+      "Dynamic Tables 以声明式 SELECT 和 TARGET_LAG 管理多步骤 SQL 转换的新鲜度目标。",
+      "TARGET_LAG 是目标而不是无条件固定刷新周期或业务 SLA，必须观测实际延迟。",
+      "多层管道通常由叶子层声明时间目标，中间层用 DOWNSTREAM 继承下游新鲜度需求。",
+      "需要过程控制、副作用或极低延迟时评估 Streams/Tasks；需要测试框架或跨仓库可移植性时评估 dbt。"
+    ],
+    "misconceptions": [
+      "把 TARGET_LAG 当成保证每次刷新都按固定间隔完成的 SLA。",
+      "认为 Dynamic Tables、Materialized Views、Tasks 和 dbt 可以互相完全替代。",
+      "只监控任务成功与否，不监控刷新模式、实际延迟和成本变化。",
+      "在整个多层管道给每个中间层设置互相独立的时间目标。"
+    ],
+    "angles": [
+      "comparison",
+      "scenario",
+      "diagnosis",
+      "tradeoff",
+      "boundary",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-coco-dbt-modeling",
+    "courseId": "snowflake",
+    "name": "dbt 自动化建模与验证",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "从源数据画像出发选择星型模型或宽表，生成 staging/dimension/fact 模型和测试，并通过隔离运行与 PR 审查交付。",
+    "required": [
+      "建模前先对原始表做数据画像，了解空值、唯一性、分布和潜在业务键。",
+      "根据共享维度、分析复用、查询复杂度和更新成本选择星型模型或宽表。",
+      "生成 staging、dimension、fact 模型时同步提供 schema tests、文档与清晰依赖关系。",
+      "解析、测试、运行和 PR 审查是不同验证阶段，生成代码不应不经审查直接发布。"
+    ],
+    "misconceptions": [
+      "只凭表名自动推断维度和事实，而不查看真实数据特征。",
+      "把模型生成成功或 `dbt parse` 通过当成业务结果已正确。",
+      "认为星型模型或宽表在所有消费场景下都始终更优。",
+      "将 AI 生成的模型直接写入生产，不进行测试和人工审查。"
+    ],
+    "angles": [
+      "scenario",
+      "design",
+      "tradeoff",
+      "implementation",
+      "boundary"
+    ]
+  },
+  {
+    "id": "snowflake-coco-rbac",
+    "courseId": "snowflake",
+    "name": "Snowflake RBAC 分层与最小权限",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "以访问角色承载对象权限，以功能角色表达人和团队职责，并按实际复杂度建立可验证的角色层级。",
+    "required": [
+      "尽量先把数据库、Schema、Warehouse 和对象权限授予访问角色，再把访问角色授予功能或人员角色。",
+      "角色层级应根据环境、业务域、数据产品和对象范围按需建立，不能默认每个账户都需要全部层级。",
+      "交付前使用 SHOW GRANTS 等命令验证实际权限，核对当前角色及辅助角色的有效访问范围。",
+      "RBAC 负责角色架构与权限引用边界，行访问和脱敏策略的具体实现应由相应治理流程管理。"
+    ],
+    "misconceptions": [
+      "直接把大量对象权限授予用户或功能角色，导致难以重构。",
+      "不考虑组织规模和职责边界，强制所有角色层级全量存在。",
+      "只看角色命名就假设权限已经正确生效。",
+      "把 RBAC 角色设计与具体脱敏/行访问策略 SQL 的实现混成一项工作。"
+    ],
+    "angles": [
+      "architecture",
+      "scenario",
+      "design",
+      "boundary",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "snowflake-coco-snowpipe-bcdr",
+    "courseId": "snowflake",
+    "name": "Snowpipe 业务连续性与灾难恢复",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "按 RPO/RTO、故障域、Snowflake 版本与成本选择 Snowpipe 灾备模式，并设计通知重建、历史保留和补数流程。",
+    "required": [
+      "灾备模式应由 RPO、RTO、故障域、Snowflake Edition 与成本共同决定。",
+      "同一文件集合原则上维持单一活动写入管道；双活方案必须有可靠的文件级与记录级去重。",
+      "Failover Group 并不复制所有入站通知集成，提升 DR 账户后需重建通知、信任关系和目标区域订阅。",
+      "COPY_HISTORY 保留期限和 PIPE REFRESH 补数时间边界必须纳入长期追溯与恢复方案。"
+    ],
+    "misconceptions": [
+      "让两个管道同时写入同一文件集合且不去重，认为重复数据不会发生。",
+      "认为 Snowflake 故障转移会自动复制并启用所有外部通知集成。",
+      "把 PIPE REFRESH 当作没有时间边界的任意历史补数工具。",
+      "只根据正常状态延迟选型，不评估故障恢复、成本和 Edition 前提。"
+    ],
+    "angles": [
+      "tradeoff",
+      "scenario",
+      "design",
+      "boundary",
+      "diagnosis",
+      "implementation"
+    ]
+  },
+  {
+    "id": "snowflake-coco-openflow-private-link",
+    "courseId": "snowflake",
+    "name": "OpenFlow on SPCS 的私网连接",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "通过 AWS NLB、VPC Endpoint Service、Snowflake 出站 PrivateLink、Network Rule 与 External Access Integration 连接私有数据源。",
+    "required": [
+      "连接路径应由 OpenFlow on SPCS 经 Snowflake 出站 PrivateLink 访问 AWS Endpoint Service、内部 NLB 和私有源。",
+      "多个同端口数据库可以通过不同的 NLB 监听端口映射到各自目标组。",
+      "配置 Network Rule 与 External Access Integration 前必须确认 PrivateLink endpoint 状态已为 available。",
+      "通过目标组健康、NLB active、endpoint available 和真实连接测试逐层验证网络路径。"
+    ],
+    "misconceptions": [
+      "把私有数据源直接开放到公网，以避免配置私网端点。",
+      "多个数据源共享相同监听端口，导致连接路由无法区分。",
+      "在 PrivateLink endpoint 尚未可用时就创建网络规则和 EAI。",
+      "只检查 Snowflake 对象创建成功，不验证 AWS 目标组与实际连接。"
+    ],
+    "angles": [
+      "architecture",
+      "implementation",
+      "scenario",
+      "debugging",
+      "boundary"
+    ]
+  },
+  {
+    "id": "snowflake-coco-sap-bdc",
+    "courseId": "snowflake",
+    "name": "SAP BDC Zero-Copy Connector 生命周期",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "管理 SAP BDC 与 Snowflake 零拷贝连接器的前置条款、权限、连接状态、数据产品消费与发布流程。",
+    "required": [
+      "组织层面需要由 ORGADMIN 一次性接受相应条款，Snowflake 角色还需具有目标 Schema 的连接器权限。",
+      "消费 SAP 数据产品与向 SAP BDC 发布 Snowflake 数据产品是不同工作流，需要不同权限与验收。",
+      "连接器状态变化包含异步阶段，只有处于正确连接状态才能执行后续挂载或发布操作。",
+      "断开连接前必须按生命周期约束处理共享发布状态与 Catalog-Linked Databases。"
+    ],
+    "misconceptions": [
+      "认为接受条款、创建连接器和授予数据访问权限是同一步骤。",
+      "把异步 CONNECTING 状态当作连接已经可用。",
+      "混淆消费 SAP 共享数据产品和反向发布 Snowflake 数据产品。",
+      "断开或删除连接器时忽略 Catalog-Linked Databases 与 share-back 状态。"
+    ],
+    "angles": [
+      "lifecycle",
+      "scenario",
+      "boundary",
+      "implementation",
+      "debugging",
+      "comparison"
+    ]
+  },
+  {
+    "id": "snowflake-coco-model-availability",
+    "courseId": "snowflake",
+    "name": "Cortex 模型可用性与 CoCo 技能执行边界",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "区分 AI SQL 基础调用与 CoCo Agentic 调用的模型门禁，并为技能安装、SQL 执行和有副作用的变更设置验证边界。",
+    "required": [
+      "Cortex base mode 与 agentic mode 是不同的可用性门禁；AI_COMPLETE 可用不代表 CoCo Agent 一定允许该模型。",
+      "SHOW CORTEX BASE MODELS 提供候选模型信息，但实际可调用性需结合生命周期、区域和真实探测判断。",
+      "CoCo 当前 agentic 模型 allow-list、名称变体、账户 allow-list 和跨区域设置都可能影响执行结果。",
+      "技能能执行 SQL、访问外部服务或修改对象，安装和执行前应检查来源、权限、影响范围并复核结果。"
+    ],
+    "misconceptions": [
+      "认为模型在 AI SQL 中可以调用，就一定能用于 CoCo Agent。",
+      "仅凭公开文档或 SHOW 输出判定模型当前可用，不做环境核验。",
+      "把模型名称不可用一律归因于模型下线，不检查区域和账户设置。",
+      "默认信任 Skill 生成和执行的 SQL，不审查权限、覆盖范围或外部调用。"
+    ],
+    "angles": [
+      "boundary",
+      "diagnosis",
+      "scenario",
+      "implementation",
+      "tradeoff"
+    ]
+  }
+]
