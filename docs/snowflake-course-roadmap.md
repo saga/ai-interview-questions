@@ -203,7 +203,7 @@ flowchart TD
 
 ## 11. Snowflake Developer Guides 实战与架构扩展（2026-10-19）
 
-基于 [Snowflake Developer Guides](https://www.snowflake.com/en/developers/guides/) 中已核对的 Quickstart、参考架构和 Well-Architected 指南，新增 **200 道原创题**（120 道简单、80 道中等）和 **20 个知识点**，每个知识点 10 道题。重点考察生产工程边界，不将演示案例写成通用 SLA 保证。
+基于 [Snowflake Developer Guides](https://www.snowflake.com/en/developers/guides/) 中已核对的 Quickstart、参考架构和 Well-Architected 指南，新增 **200 道原创题**（120 道简单、80 道中等）和 **20 个知识点**，每个知识点 10 道题；选择题采用 140 道双答案多选（70%）和 60 道单选（30%），满足新题导入的多选比例要求。重点考察生产工程边界，不将演示案例写成通用 SLA 保证。
 
 - 题目：[snowflake-developer-guides-200.json](../src/data/questions/snowflake-developer-guides-200.json)
 - 知识点：[snowflake-developer-guides-expansion.json](../src/data/knowledge/snowflake-developer-guides-expansion.json)
