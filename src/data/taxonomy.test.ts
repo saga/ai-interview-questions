@@ -48,9 +48,11 @@ describe('知识节点与 taxonomy 对齐', () => {
 
   it('Snowflake 知识节点仅归属 Snowflake 课程', () => {
     const nodes = knowledgeNodes.filter((node) => node.courseId === 'snowflake');
-    expect(nodes).toHaveLength(15);
+    expect(nodes.length).toBeGreaterThanOrEqual(39);
     expect(nodes.every((node) => node.area === 'data-platform')).toBe(true);
-    expect(nodes.every((node) => ['snowflake', 'data-architecture', 'data-engineering'].includes(node.topic))).toBe(true);
+    expect(nodes.every((node) => ['snowflake', 'data-architecture', 'data-engineering', 'snowflake-lakehouse', 'snowflake-devops', 'snowflake-data-products', 'snowflake-genai', 'snowflake-agent-ml'].includes(node.topic))).toBe(true);
+    const snowflakeQuestionTopics = new Set(questionBank.questions.filter((q) => q.courseId === 'snowflake').map((q) => q.topic));
+    for (const node of nodes) expect(snowflakeQuestionTopics.has(node.id), 'Snowflake knowledge node without a question: ' + node.id).toBe(true);
   });
 
   it('groupNodesByDomain 按域分组且覆盖全部节点（非 AI 课程节点作为独立分组保留）', () => {

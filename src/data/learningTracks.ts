@@ -37,9 +37,14 @@ export function getLearningTrack(id: LearningTrackId): LearningTrack {
 
 /** Snowflake 自己的课程主题目录；不属于 AI 的 TAXONOMY / DOMAIN。 */
 export const SNOWFLAKE_COURSE_TOPICS = [
-  { id: 'snowflake', label: 'Snowflake 平台', description: '架构、Warehouse、摄取、CDC、Dynamic Tables、安全与成本' },
-  { id: 'data-architecture', label: '企业数据架构', description: '分层、事实粒度、历史策略、语义层与访问治理' },
-  { id: 'data-engineering', label: '数据工程与交付', description: 'SQL 版本控制、增量处理、数据质量、可观测性与血缘' },
+  { id: 'snowflake', label: '平台基础与对象模型', description: '三层架构、Warehouse、数据库对象、半结构化数据、Time Travel 与克隆' },
+  { id: 'data-architecture', label: '企业数据架构与治理', description: '分层、事实粒度、历史、语义视图、RBAC、脱敏与行访问策略' },
+  { id: 'data-engineering', label: '现代数据工程与管道', description: 'COPY、Snowpipe、Streaming、SQL/Snowpark、Streams/Tasks、Dynamic Tables' },
+  { id: 'snowflake-lakehouse', label: 'Apache Iceberg 与 Lakehouse', description: '开放表格式、Catalog、迁移、Schema/Partition Evolution、快照与维护' },
+  { id: 'snowflake-devops', label: 'DevOps、发布与可观测性', description: 'Git、Snowflake CLI、声明式变更、CI/CD、日志、Trace、告警与通知' },
+  { id: 'snowflake-data-products', label: '数据产品与应用交付', description: 'Marketplace、数据共享、Streamlit、Native Apps 与产品契约' },
+  { id: 'snowflake-genai', label: 'Cortex GenAI 应用', description: 'LLM 函数、文档解析、Cortex Search、Cortex Analyst 与 Text-to-SQL' },
+  { id: 'snowflake-agent-ml', label: 'Cortex Agents、ML 与 CoCo', description: 'Agent 工具/编排、MCP、评测、微调/ML 与 AI 辅助开发' },
 ] as const;
 
 export const SNOWFLAKE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
