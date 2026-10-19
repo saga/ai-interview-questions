@@ -131,3 +131,14 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 - 逐题来源、Coursera 模块、考试 Objective 和官方文档映射见 [覆盖矩阵](docs/snowflake-certification-cof-c03-coverage-200.md)。
 
 未运行 schema、CLI 门禁、测试、全库重复检查或 build。
+
+
+## 11. Snowflake Developer Guides 实战与架构题扩展（2026-10-19）
+
+新增 200 道原创题（120 简单、80 中等）与 20 个知识点。覆盖 ITD、Notebook/Task DAG、Dynamic Tables、CLI/GitHub Actions、DCM Projects、Streamlit 运行时、Interactive Warehouse、Well-Architected 性能/安全/可靠性/FinOps、Pipeline Auditor、Semantic View/Agent 评测、Native Apps 与 CoCo 端到端应用。
+
+- 题目：`src/data/questions/snowflake-developer-guides-200.json`
+- 知识点：`src/data/knowledge/snowflake-developer-guides-expansion.json`
+- 覆盖矩阵：`docs/snowflake-developer-guides-coverage-200.md`
+- 新增后 Snowflake 合计 941 道题、117 个知识点。
+- 静态预检通过；TypeScript、Vitest、题库 CLI 门禁、完整全库去重和 build 未运行。

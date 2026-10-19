@@ -199,3 +199,34 @@ flowchart TD
 - CoCo 属于课程相关补充，不是官方 COF-C03 指南单独列明的产品考点；请勿将课程覆盖等同于考试保证。
 
 本批只完成静态数据预检，未运行 TypeScript、Vitest、题库 CLI 门禁、全库重复检查或构建。
+
+
+## 11. Snowflake Developer Guides 实战与架构扩展（2026-10-19）
+
+基于 [Snowflake Developer Guides](https://www.snowflake.com/en/developers/guides/) 中已核对的 Quickstart、参考架构和 Well-Architected 指南，新增 **200 道原创题**（120 道简单、80 道中等）和 **20 个知识点**，每个知识点 10 道题。重点考察生产工程边界，不将演示案例写成通用 SLA 保证。
+
+- 题目：[snowflake-developer-guides-200.json](../src/data/questions/snowflake-developer-guides-200.json)
+- 知识点：[snowflake-developer-guides-expansion.json](../src/data/knowledge/snowflake-developer-guides-expansion.json)
+- 覆盖矩阵：[snowflake-developer-guides-coverage-200.md](./snowflake-developer-guides-coverage-200.md)
+
+### 本批使用的官方 Guide ID
+
+- [Getting Started with Data Engineering using Snowflake Notebooks](https://www.snowflake.com/en/developers/guides/data-engineering-with-notebooks/) — `guide-snowflake-data-engineering-notebooks`
+- [Build a Real-Time BI Dashboard with Interactive Warehouses](https://www.snowflake.com/en/developers/guides/build-real-time-bi-dashboard-interactive-warehouses/) — `guide-snowflake-real-time-bi`
+- [Well-Architected Framework: Performance](https://www.snowflake.com/en/developers/guides/performance/) — `guide-snowflake-performance`
+- [Well-Architected Framework: Cost Optimization and FinOps](https://www.snowflake.com/en/developers/guides/well-architected-framework-cost-optimization-and-finops/) — `guide-snowflake-cost-optimization`
+- [Well-Architected Framework: Security and Governance](https://www.snowflake.com/en/developers/guides/security-and-governance/) — `guide-snowflake-security-governance`
+- [Well-Architected Framework: Reliability](https://www.snowflake.com/en/developers/guides/well-architected-framework-reliability/) — `guide-snowflake-reliability`
+- [Well-Architected Framework: Operational Excellence](https://www.snowflake.com/en/developers/guides/operational-excellence/) — `guide-snowflake-operational-excellence`
+- [Build an Eval-Gated CI/CD Pipeline for Snowflake Semantic Views](https://www.snowflake.com/en/developers/guides/semantic-view-eval-cicd/) — `guide-snowflake-semantic-view-eval-cicd`
+- [Get Started with Snowflake DCM Projects](https://www.snowflake.com/en/developers/guides/get-started-snowflake-dcm-projects/) — `guide-snowflake-dcm-projects`
+- [Call the Cortex Agents API from Streamlit on the Container Runtime](https://www.snowflake.com/en/developers/guides/getting-started-with-cortex-agents-api-and-streamlit-on-container-runtime/) — `guide-snowflake-agent-streamlit-container`
+- [Getting Started with Snowflake Native Apps](https://www.snowflake.com/en/developers/guides/getting-started-with-native-apps/) — `guide-snowflake-native-apps`
+- [Building a Pipeline Auditor with the Cortex Agent SDK](https://www.snowflake.com/en/developers/guides/pipeline-auditor-with-cortex-agent-sdk/) — `guide-snowflake-pipeline-auditor`
+- [Build an End-to-End Application Using CoCo on Snowflake](https://www.snowflake.com/en/developers/guides/sfguide-build-end-to-end-ai-app-on-snowflake/) — `guide-snowflake-end-to-end-coco-ai-app`
+- [About Streamlit in Snowflake](https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit) — `docs-snowflake-streamlit-runtime`
+- [Add a Streamlit app to a Snowflake Native App](https://docs.snowflake.com/en/developer-guide/native-apps/adding-streamlit) — `docs-snowflake-native-app-streamlit`
+- [Network policies](https://docs.snowflake.com/en/user-guide/network-policies) — `docs-network-policy`
+- [Query history](https://docs.snowflake.com/en/user-guide/ui-query-history) — `docs-query-history`
+
+新增后 Snowflake 题目累计 **941 道**，知识节点累计 **117 个**。本批完成静态预检；未运行 TypeScript、Vitest、题库 CLI 门禁、完整全库去重或 build。

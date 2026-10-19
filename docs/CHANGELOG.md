@@ -1,5 +1,12 @@
 # 设计变更记录
 
+## 2026-10-19 · Snowflake Developer Guides 实战与架构题（新增 200 题）
+
+- 新增 200 道原创 Snowflake 实践/架构题（120 简单、80 中等）与 20 个知识点。
+- 覆盖 Notebook/Task/Dynamic Tables、DCM、Interactive Warehouse、Well-Architected、Pipeline Auditor、Semantic View/Agent CI/CD、Native Apps 和 CoCo 工程实践。
+- 文件：`src/data/questions/snowflake-developer-guides-200.json`、`src/data/knowledge/snowflake-developer-guides-expansion.json`、`docs/snowflake-developer-guides-coverage-200.md`。
+- 新增后 Snowflake 总计 941 道题、117 个知识点。静态预检通过；未运行 schema/CLI 门禁、TypeScript、Vitest、全库去重或 build。
+
 ## 2026-10-19 · SnowPro Core COF-C03 考点题库（新增 200 题）
 
 - 参考官方 COF-C03 Study Guide 的五个 Domain 权重及公开免费练习题覆盖目录，新增 200 道自编题，按 62/40/36/42/20 分配。
