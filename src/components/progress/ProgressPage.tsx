@@ -8,12 +8,14 @@ import type { KnowledgeArea } from '../../schemas/common';
 import type { CoverageReport, TopicSuggestion } from '../../domain/learner';
 import { WEAK_MASTERY, WEAK_AVG } from '../../domain/learner';
 import { KNOWLEDGE_AREA_LABELS } from '../../domain/knowledge/nodes';
-import { knowledgeNodes } from '../../data/knowledgeMap';
 import { domainLabel, topicLabel } from '../../data/taxonomy';
+import { SNOWFLAKE_TOPIC_LABELS, type LearningTrackId } from '../../data/learningTracks';
 import SessionReplayDrawer from './SessionReplayDrawer';
 
 interface Props {
   profile: LearnerProfile;
+  nodes: KnowledgeNode[];
+  courseId: LearningTrackId;
   onGoTrain: () => void;
   coverage: CoverageReport;
   suggestions: TopicSuggestion[];
@@ -63,15 +65,15 @@ interface ChecklistRow {
   attempts: number;
 }
 
-export default function ProgressPage({ profile, onGoTrain, coverage, suggestions, disabledCategories, onToggleCategory }: Props) {
+export default function ProgressPage({ profile, nodes, courseId, onGoTrain, coverage, suggestions, disabledCategories, onToggleCategory }: Props) {
   const [replay, setReplay] = useState<SessionRecord | null>(null);
   const { sessions, topicStats, overallScore } = profile;
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'unlearned'>('all');
-  const [areaFilter, setAreaFilter] = useState<KnowledgeArea | 'all'>('all');
+  const [areaFilter, setAreaFilter] = useState<string>('all');
 
   // —— 知识点清单：把全量知识体系与画像对齐，逐节点标注学过 / 没学过 ——
   const rows = useMemo<ChecklistRow[]>(() => {
-    return knowledgeNodes.map((n) => {
+    return nodes.map((n) => {
       const s = topicStats[n.topic];
       const attempts = s?.attempts ?? 0;
       const learned = attempts > 0;
@@ -80,7 +82,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
       const mastered = learned && (mastery >= WEAK_MASTERY || avgScore >= WEAK_AVG);
       return { node: n, learned, mastery, avgScore, weak: learned && !mastered, attempts };
     });
-  }, [topicStats]);
+  }, [topicStats, nodes]);
 
   const learnedCount = rows.filter((r) => r.learned).length;
   const unlearnedCount = rows.length - learnedCount;
@@ -89,7 +91,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
     let list = rows;
     if (statusFilter === 'learned') list = list.filter((r) => r.learned);
     else if (statusFilter === 'unlearned') list = list.filter((r) => !r.learned);
-    if (areaFilter !== 'all') list = list.filter((r) => r.node.area === areaFilter);
+    if (areaFilter !== 'all') list = list.filter((r) => courseId === 'snowflake' ? r.node.topic === areaFilter : r.node.area === areaFilter);
     // 未学优先 → P0 优先 → 按域 → 按名称，让"待学重点"浮到顶部
     return [...list].sort((a, b) => {
       if (a.learned !== b.learned) return a.learned ? 1 : -1;
@@ -98,7 +100,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
       if (a.node.area !== b.node.area) return a.node.area.localeCompare(b.node.area);
       return a.node.name.localeCompare(b.node.name);
     });
-  }, [rows, statusFilter, areaFilter]);
+  }, [rows, statusFilter, areaFilter, courseId]);
 
   const checklistColumns: TableProps<ChecklistRow>['columns'] = [
     {
@@ -117,10 +119,12 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
       ),
     },
     {
-      title: '域',
+      title: courseId === 'snowflake' ? '课程主题' : '能力域',
       key: 'area',
       width: 150,
-      render: (_v, r) => KNOWLEDGE_AREA_LABELS[r.node.area] ?? r.node.area,
+      render: (_v, r) => courseId === 'snowflake'
+        ? (SNOWFLAKE_TOPIC_LABELS[r.node.topic] ?? r.node.topic)
+        : (KNOWLEDGE_AREA_LABELS[r.node.area] ?? domainLabel(r.node.area) ?? r.node.area),
     },
     {
       title: '主题',
@@ -351,13 +355,12 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
         <Select
           value={areaFilter}
           style={{ width: 220 }}
-          onChange={(v) => setAreaFilter(v as KnowledgeArea | 'all')}
+          onChange={(v) => setAreaFilter(v)}
           options={[
-            { label: '全部域', value: 'all' },
-            ...(Object.keys(KNOWLEDGE_AREA_LABELS) as KnowledgeArea[]).map((a) => ({
-              label: KNOWLEDGE_AREA_LABELS[a],
-              value: a,
-            })),
+            { label: courseId === 'snowflake' ? '全部课程主题' : '全部能力域', value: 'all' },
+            ...(courseId === 'snowflake'
+              ? [...new Set(nodes.map((node) => node.topic))].map((topic) => ({ label: SNOWFLAKE_TOPIC_LABELS[topic] ?? topic, value: topic }))
+              : [...new Set(nodes.map((node) => node.area))].map((area) => ({ label: KNOWLEDGE_AREA_LABELS[area] ?? domainLabel(area), value: area }))),
           ]}
         />
       </Space>
@@ -370,7 +373,7 @@ export default function ProgressPage({ profile, onGoTrain, coverage, suggestions
         scroll={{ x: 860 }}
       />
       <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginTop: 8 }}>
-        状态由「所属主题的练习记录」决定：主题下有作答记录即记为「已学」。新用户（无记录）会看到全部 67 个知识点为「未学」。
+        状态由当前学习体系内的主题练习记录决定；课程间分别统计。新用户会看到当前课程的全部知识点为「未学」。
       </Typography.Paragraph>
     </div>
   );

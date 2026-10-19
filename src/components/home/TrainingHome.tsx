@@ -27,6 +27,7 @@ import type { AIConfig } from '../../schemas/ai-config';
 import { isConfigValid } from '../../ai/provider';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 import { categoryLabel } from '../../domain/categories';
+import type { LearningTrack } from '../../data/learningTracks';
 
 const FORMAT_OPTIONS: { label: string; value: FormatId }[] = [
   { label: '选择（单选/多选）', value: 'choice' },
@@ -43,8 +44,10 @@ interface Props {
   categories: string[];
   config: AIConfig;
   profile: LearnerProfile;
+  track: LearningTrack;
   onStart: (def: InterviewDefinition) => void;
   onGoSettings: () => void;
+  onChooseTrack: () => void;
 }
 
 function fmtDate(ts: number): string {
@@ -57,8 +60,9 @@ function fmtDate(ts: number): string {
   return `${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
-export default function TrainingHome({ categories, config, profile, onStart, onGoSettings }: Props) {
+export default function TrainingHome({ categories, config, profile, track, onStart, onGoSettings, onChooseTrack }: Props) {
   const configReady = isConfigValid(config);
+  const isAiTrack = track.id === 'ai';
   const last = profile.sessions[0];
 
   // 自定义训练（收起的高级配置）
@@ -70,7 +74,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
 
   const startCustom = () => {
     onStart({
-      title: '自定义训练',
+      title: `${track.shortTitle} · 自定义训练`,
       categories: selectedCats,
       difficulties,
       formats,
@@ -85,26 +89,26 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
-      <Typography.Title level={4} style={{ marginTop: 0 }}>
-        <ThunderboltOutlined /> 今天练什么？
-      </Typography.Title>
+      <Space align="center" style={{ width: '100%', justifyContent: 'space-between', marginBottom: 12 }} wrap>
+        <Typography.Title level={4} style={{ marginTop: 0, marginBottom: 0 }}>
+          <ThunderboltOutlined /> 今天学什么？
+        </Typography.Title>
+        <Button size="small" onClick={onChooseTrack}>切换学习体系</Button>
+      </Space>
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }} wrap>
           <div>
-            <Typography.Text type="secondary">AI 能力：</Typography.Text>
-            {configReady ? (
-              <Tag color="success">AI ✓ 已配置</Tag>
-            ) : (
-              <Tag color="warning">AI 未配置</Tag>
-            )}
+            <Typography.Text type="secondary">当前学习体系：</Typography.Text>
+            <Typography.Text strong>{track.title}</Typography.Text>
           </div>
-          <Button size="small" icon={<SettingOutlined />} onClick={onGoSettings}>
-            去设置
-          </Button>
+          {isAiTrack && <Tag color={configReady ? 'success' : 'warning'}>{configReady ? '评分模型已配置' : '评分模型未配置'}</Tag>}
+          {!isAiTrack && <Tag color="blue">独立课程</Tag>}
+          <Button size="small" icon={<SettingOutlined />} onClick={onGoSettings}>评分设置</Button>
         </Space>
         <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
-          AI 负责出题变体与开放题评分；未配置时选择题照常判分，开放题不自动评分。
+          课程主题、知识点、题库和练习进度按所选体系隔离。评分模型仅作为练习工具，不改变课程归属。
+          {!configReady ? ' 未配置模型时，选择题仍可确定性判分；开放题无法自动评分。' : ' 模型用于开放题评分和可选题目变体。'}
         </Typography.Paragraph>
       </Card>
 
@@ -125,7 +129,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
             <Button
               type="primary"
               icon={<PlayCircleOutlined />}
-              onClick={() => onStart(buildCoachDefinition(profile, { title: '继续训练', masteryThreshold: config.masteryThreshold }))}
+              onClick={() => onStart({ ...buildCoachDefinition(profile, { title: `${track.shortTitle} · 继续训练`, masteryThreshold: config.masteryThreshold }), courseId: track.id })}
             >
               按薄弱项继续训练
             </Button>
@@ -164,7 +168,7 @@ export default function TrainingHome({ categories, config, profile, onStart, onG
           ghost
           icon={<PlayCircleOutlined />}
           block
-          onClick={() => onStart(buildCoachDefinition(profile, { title: '快速训练', timeLimitSec: 600, masteryThreshold: config.masteryThreshold }))}
+          onClick={() => onStart({ ...buildCoachDefinition(profile, { title: `${track.shortTitle} · 快速训练`, timeLimitSec: 600, masteryThreshold: config.masteryThreshold }), courseId: track.id })}
         >
           开始快速训练
         </Button>

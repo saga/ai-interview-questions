@@ -1,7 +1,7 @@
 import type { Phase } from './hooks/useTrainingSession';
 
 /** 应用内的顶层页面。与 App.tsx 的 NAV_ITEMS 一一对应。 */
-export type Page = 'train' | 'progress' | 'interview' | 'settings' | 'agent';
+export type Page = 'learn' | 'train' | 'progress' | 'interview' | 'settings' | 'agent';
 
 /**
  * 训练会话是否处于「进行中」——此刻若离开 /train 会导致白屏（quiz/result 渲染分支
@@ -29,6 +29,6 @@ export function attemptNavigate(opts: {
     warn('当前正在进行面试，完成或结束后才能切换页面');
     return false;
   }
-  navigate(target === 'train' ? '/train' : `/${target}`);
+  navigate(target === 'train' ? '/train' : target === 'learn' ? '/learn' : `/${target}`);
   return true;
 }

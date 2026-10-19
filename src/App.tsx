@@ -8,8 +8,13 @@ import {
   CommentOutlined,
   RobotOutlined,
   CheckCircleFilled,
+  BookOutlined,
 } from '@ant-design/icons';
 import { questionBank as bank } from './data/questionBank';
+import { knowledgeNodes } from './data/knowledgeMap';
+import { getLearningTrack, isLearningTrackId, type LearningTrackId } from './data/learningTracks';
+import { knowledgeForTrack, profileForTrack, questionBankForTrack } from './domain/learningTracks';
+import LearningTrackSelector from './components/home/LearningTrackSelector';
 import type { InterviewDefinition } from './schemas/interview';
 import type { LearnerProfile } from './schemas/learner';
 import { emptyAnswer } from './domain/quiz';
@@ -34,7 +39,7 @@ import { devUsageLogger } from './ai/usageTelemetry';
 import { useIsMobile } from './hooks/useIsMobile';
 import { type Page, attemptNavigate, isTrainingSessionRunning } from './navigationGuard';
 
-const VALID_PAGES: Page[] = ['train', 'progress', 'interview', 'settings', 'agent'];
+const VALID_PAGES: Page[] = ['learn', 'train', 'progress', 'interview', 'settings', 'agent'];
 /** 由 URL pathname 派生当前页面；未知路径回退训练首页。 */
 function pageFromPath(pathname: string): Page {
   const seg = pathname.split('/').filter(Boolean)[0] ?? '';
@@ -42,7 +47,8 @@ function pageFromPath(pathname: string): Page {
 }
 
 const NAV_ITEMS = [
-  { key: 'train', icon: <ThunderboltOutlined />, label: '训练' },
+  { key: 'learn', icon: <BookOutlined />, label: '学习体系' },
+  { key: 'train', icon: <ThunderboltOutlined />, label: '课程训练' },
   { key: 'progress', icon: <BarChartOutlined />, label: '进度' },
   { key: 'interview', icon: <CommentOutlined />, label: '面试' },
   { key: 'agent', icon: <RobotOutlined />, label: 'Agent 面试' },
@@ -69,10 +75,14 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const page = pageFromPath(location.pathname);
+  const requestedTrackId = new URLSearchParams(location.search).get('track');
+  const selectedTrackId: LearningTrackId | null = isLearningTrackId(requestedTrackId) ? requestedTrackId : null;
+  const runtimeTrackId: LearningTrackId = selectedTrackId ?? 'ai';
+  const activeTrack = selectedTrackId ? getLearningTrack(selectedTrackId) : null;
   // P0-1（续）：进行中的训练会话（quiz/result）锁定普通 tab 导航——离开 /train 会白屏。
   // 直接把 goPage 收敛为受守导航，所有调用点（菜单、子页回调、开局）统一受益。
   const goPage = (p: Page) =>
-    attemptNavigate({ target: p, phase, navigate, warn: (m) => message.warning(m) });
+    attemptNavigate({ target: p, phase, navigate: (to) => navigate(to === '/learn' ? '/learn' : `${to}?track=${runtimeTrackId}`), warn: (m) => message.warning(m) });
   const [copilotOpen, setCopilotOpen] = useState(false);
   /**
    * Agent 面试页「让 Copilot 详细解释」的桥接载荷。
@@ -113,11 +123,12 @@ export default function App() {
     handleContinue,
     handleAgentComplete,
     handleRestart,
-  } = useTrainingSession(message, () => goPage('train'));
+  } = useTrainingSession(message, () => goPage('train'), runtimeTrackId);
   // Agent 面试会话状态提升到 App 层（与训练同思路），切 tab（如去设置页）时不丢失。
   // 直接传 profile（可为 null）：画像加载完成前开局会被会话层拒绝，而不是用 emptyProfile()
   // 顶替——那会把「还没加载完」伪装成「全新用户」，让整场面试基于空画像选题。
-  const agent = useAgentInterview(config, profile, handleAgentComplete, message);
+  const agentProfile = profile ? profileForTrack(profile, 'ai', knowledgeNodes) : null;
+  const agent = useAgentInterview(config, agentProfile, handleAgentComplete, message);
   // 设置页未保存草稿提升到 App 层（同上思路），切到其它 tab 再切回时不丢编辑态。
   const settings = useSettingsDraft(config, handleSaveConfig, message);
   const challengerProvider = createLLMProvider(config, devUsageLogger);
@@ -129,7 +140,7 @@ export default function App() {
   // （与 useTrainingSession 的 onRestart 同理：退出/重开都回 train 页。）
   const startSession = (def: InterviewDefinition) => {
     if (page !== 'train') goPage('train');
-    void handleStart(def);
+    void handleStart({ ...def, courseId: runtimeTrackId });
   };
 
   // 渲染主区：把 (phase, page) → 组件的映射收敛到单一函数，
@@ -229,24 +240,33 @@ export default function App() {
     }
 
     // phase === 'home'：按当前 page 渲染首页型组件
+    const trackProfile = profileForTrack(p, runtimeTrackId, knowledgeNodes);
+    const trackNodes = knowledgeForTrack(knowledgeNodes, runtimeTrackId);
+    const trackBank = questionBankForTrack(bank, runtimeTrackId, knowledgeNodes);
     switch (page) {
+      case 'learn':
+        return <LearningTrackSelector onSelect={(id) => navigate(`/train?track=${id}`)} />;
       case 'train':
         return (
           <TrainingHome
-            categories={bank.categories}
+            categories={trackBank.categories}
             config={config}
-            profile={p}
+            profile={trackProfile}
+            track={getLearningTrack(runtimeTrackId)}
             onStart={startSession}
             onGoSettings={() => goPage('settings')}
+            onChooseTrack={() => goPage('learn')}
           />
         );
       case 'progress':
         return (
           <ProgressPage
-            profile={p}
+            profile={trackProfile}
+            nodes={trackNodes}
+            courseId={runtimeTrackId}
             onGoTrain={() => goPage('train')}
-            coverage={computeCoverage(collectTopicRefs(bank.questions), p)}
-            suggestions={suggestNextTopics(collectTopicRefs(bank.questions), p)}
+            coverage={computeCoverage(collectTopicRefs(trackBank.questions), trackProfile)}
+            suggestions={suggestNextTopics(collectTopicRefs(trackBank.questions), trackProfile)}
             disabledCategories={config.disabledCategories ?? []}
             onToggleCategory={handleToggleCategory}
           />
@@ -255,7 +275,7 @@ export default function App() {
         return (
           <InterviewPage
             config={config}
-            profile={p}
+            profile={profileForTrack(p, 'ai', knowledgeNodes)}
             onStart={startSession}
             onGoSettings={() => goPage('settings')}
           />
@@ -281,10 +301,10 @@ export default function App() {
     }
   };
 
-  // 根路径统一收敛到训练首页，确保地址栏总是反映当前页面
-  if (location.pathname === '/' || location.pathname === '') {
-    return <Navigate to="/train" replace />;
-  }
+  // 首次进入必须先选课程；旧的无 track 深链接也收敛到课程选择页。
+  if (location.pathname === '/' || location.pathname === '') return <Navigate to="/learn" replace />;
+  if (page !== 'learn' && !selectedTrackId) return <Navigate to="/learn" replace />;
+  if ((page === 'interview' || page === 'agent') && runtimeTrackId !== 'ai') return <Navigate to={`/train?track=${runtimeTrackId}`} replace />;
 
   return (
     <Layout className="app-layout">
@@ -307,7 +327,7 @@ export default function App() {
         }}
       >
         <Typography.Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>
-          {isMobile ? '🧠 面试训练' : '🧠 AI 面试训练器'}
+          {isMobile ? '学习训练' : activeTrack ? `学习训练 · ${activeTrack.shortTitle}` : '选择学习体系'}
         </Typography.Title>
         <Space size={8} wrap>
           {remaining != null && (
@@ -315,7 +335,7 @@ export default function App() {
               剩余 {fmt(remaining)}
             </Tag>
           )}
-          {phase === 'home' && (
+          {phase === 'home' && selectedTrackId && runtimeTrackId === 'ai' && (
             <Button
               type={configReady ? 'text' : 'primary'}
               size="small"
@@ -327,7 +347,7 @@ export default function App() {
               {isMobile ? undefined : configReady ? 'AI ✓' : 'AI 未配置'}
             </Button>
           )}
-          <Button
+          {selectedTrackId && runtimeTrackId === 'ai' && <Button
             type={copilotOpen ? 'primary' : 'default'}
             size="small"
             icon={<CommentOutlined />}
@@ -335,7 +355,7 @@ export default function App() {
             title="Copilot"
           >
             {isMobile ? undefined : '✨ Copilot'}
-          </Button>
+          </Button>}
         </Space>
       </Layout.Header>
 
@@ -344,10 +364,9 @@ export default function App() {
       <Menu
         mode="horizontal"
         selectedKeys={[page]}
-        items={NAV_ITEMS.map((it) => ({
-          ...it,
-          disabled: isTrainingSessionRunning(phase) && it.key !== 'train',
-        }))}
+        items={NAV_ITEMS
+          .filter((it) => selectedTrackId ? (runtimeTrackId === 'ai' || (it.key !== 'interview' && it.key !== 'agent')) : it.key === 'learn')
+          .map((it) => ({ ...it, disabled: isTrainingSessionRunning(phase) && it.key !== 'train' }))}
         onClick={(e) => goPage(e.key as Page)}
         style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
       />
@@ -372,7 +391,7 @@ export default function App() {
           <LearnerBound profile={profile}>{(displayedProfile) => renderContent(displayedProfile)}</LearnerBound>
         )}
       </Layout.Content>
-        <CopilotSidebar
+        {selectedTrackId && runtimeTrackId === 'ai' && <CopilotSidebar
           open={copilotOpen}
           onClose={() => setCopilotOpen(false)}
           config={config}
@@ -385,7 +404,7 @@ export default function App() {
           agentInterview={agent}
           interviewContext={askCopilotCtx}
           onInterviewContextConsumed={() => setAskCopilotCtx(null)}
-        />
+        />}
       </div>
 
       {busy && (

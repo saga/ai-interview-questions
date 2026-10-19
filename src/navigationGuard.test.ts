@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { attemptNavigate, isTrainingSessionRunning, type Page } from './navigationGuard';
 
-const NON_TRAIN: Page[] = ['progress', 'settings', 'agent', 'interview'];
+const NON_TRAIN: Page[] = ['learn', 'progress', 'settings', 'agent', 'interview'];
 
 describe('isTrainingSessionRunning', () => {
   it('quiz / result 视为进行中', () => {
@@ -46,7 +46,7 @@ describe('attemptNavigate — P0-1 进行中锁定普通 tab 导航', () => {
       const navigate = vi.fn();
       const ok = attemptNavigate({ target: t, phase: 'home', navigate, warn: vi.fn() });
       expect(ok).toBe(true);
-      expect(navigate).toHaveBeenCalledWith(t === 'train' ? '/train' : `/${t}`);
+      expect(navigate).toHaveBeenCalledWith(t === 'train' ? '/train' : t === 'learn' ? '/learn' : `/${t}`);
     }
   });
 });

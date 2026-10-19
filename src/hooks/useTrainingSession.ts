@@ -5,6 +5,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MessageInstance } from 'antd/es/message/interface';
 import { questionBank as bank } from '../data/questionBank';
+import { knowledgeNodes } from '../data/knowledgeMap';
+import type { LearningTrackId } from '../data/learningTracks';
+import { profileForTrack, questionBankForTrack } from '../domain/learningTracks';
 import type { AnswerValue } from '../types';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { InterviewDefinition } from '../schemas/interview';
@@ -71,7 +74,7 @@ export interface TrainingSession {
  * 封装整套训练会话状态与时序。`message` 用于操作反馈（组卷失败/超时自动交卷等），
  * `onRestart` 在退出/重新开始时触发（由调用方决定导航回哪个页面）。
  */
-export function useTrainingSession(message: MessageApi, onRestart: () => void): TrainingSession {
+export function useTrainingSession(message: MessageApi, onRestart: () => void, trackId: LearningTrackId): TrainingSession {
   const [config, setConfig] = useState<AIConfig>(() => loadConfig());
   // profile 初始为 null：Learner 画像现改为异步从 IndexedDB 加载（迁移见 storage/learner.ts）
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
@@ -131,6 +134,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
   const signalsRef = useRef<AnswerSignal[]>([]);
 
   const questions = session?.questions ?? [];
+  const trackBank = useMemo(() => questionBankForTrack(bank, trackId, knowledgeNodes), [trackId]);
 
   const answeredCount = useMemo(
     () => questions.filter((sq) => hasAnswerValue(answers[sq.question.id])).length,
@@ -161,7 +165,8 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
     signalsRef.current = [];
     setStrategies([]);
     try {
-      const s = await buildSession(bank, def, configRef.current);
+      const scopedDefinition = { ...def, courseId: trackId };
+      const s = await buildSession(trackBank, scopedDefinition, configRef.current);
       const init: Record<string, AnswerValue> = {};
       s.questions.forEach((sq) => {
         init[sq.question.id] = emptyAnswer(sq);
@@ -219,7 +224,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
 
       if (s.questions.length < s.definition.count) {
         setBusy('正在根据你的表现选择下一题…');
-        const step = await nextAdaptiveStep(bank, s, signalsRef.current, profileRef.current, configRef.current);
+        const step = await nextAdaptiveStep(trackBank, s, signalsRef.current, profileForTrack(profileRef.current, trackId, knowledgeNodes), configRef.current);
         if (step) {
           setSession({ ...s, questions: [...s.questions, step.question] });
           setStrategies((prev) => [...prev, step.strategy]);
@@ -308,7 +313,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
   };
 
   const handleContinue = () => {
-    const def = buildCoachDefinition(profileRef.current, { title: '继续训练' });
+    const def = buildCoachDefinition(profileForTrack(profileRef.current, trackId, knowledgeNodes), { title: `${trackId === 'snowflake' ? 'Snowflake' : 'AI'} · 继续训练` , mode: 'coach' });
     void handleStart(def);
   };
 
@@ -322,10 +327,16 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void): 
    * 失败时**不吞异常**：调用方（useAgentInterview.finalize）需要据此保留草稿并提示重试。
    */
   const handleAgentComplete = async (record: SessionRecord) => {
+    // 面试 Agent 只属于 AI 学习体系；显式打标，避免它进入其它课程进度。
+    const aiRecord: SessionRecord = {
+      ...record,
+      courseId: record.courseId ?? 'ai',
+      questionResults: record.questionResults.map((result) => ({ ...result, courseId: result.courseId ?? 'ai' })),
+    };
     let prev: number | null = null;
     const next = await commitProfile((base) => {
       prev = base.sessions[0]?.overall ?? null;
-      return updateLearner(base, record, configRef.current.proficiency);
+      return updateLearner(base, aiRecord, configRef.current.proficiency);
     });
     setProfile(next);
     setPrevOverall(prev);

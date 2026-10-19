@@ -382,7 +382,7 @@ export function conceptGapsOf(profile: LearnerProfile, topic: string, required: 
 
 /** 由一次已评分的训练会话构造 SessionRecord（纯函数；答案只影响判分结果，不在此读取）。 */
 export function sessionFromQuiz(
-  session: { questions: SessionQuestion[]; startedAt: number; definition?: { title?: string; mode?: SessionRecord['mode'] } },
+  session: { questions: SessionQuestion[]; startedAt: number; definition?: { title?: string; mode?: SessionRecord['mode']; courseId?: string } },
   grades: Record<string, EvaluationResult | null>,
   durationSec?: number,
   answers?: Record<string, AnswerValue>,
@@ -395,6 +395,7 @@ export function sessionFromQuiz(
       const g = grades[q.id]!;
       return {
         questionId: q.id,
+        courseId: q.courseId ?? session.definition?.courseId,
         category: q.category,
         topic: q.topic,
         subtopic: q.subtopic ?? undefined,
@@ -423,6 +424,7 @@ export function sessionFromQuiz(
     startedAt: session.startedAt,
     durationSec,
     mode: session.definition?.mode,
+    courseId: session.definition?.courseId ?? session.questions.find((item) => item.question.courseId)?.question.courseId,
     title: session.definition?.title ?? '训练',
     questionResults: results,
     overall,
