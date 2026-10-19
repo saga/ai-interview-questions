@@ -6,7 +6,9 @@
 - 按 ADR-091 新增第七个 `data-platform` 能力域及三个 topic；同步 Zod 枚举、角度白名单、领域标签和 taxonomy 测试。
 - 新增 15 个知识节点与 15 道双形态题，覆盖平台分层、仓库隔离、数据摄取、CDC、Dynamic Tables、分层建模、事实粒度、历史回补、语义层、安全、SQL 发布、幂等、质量、成本和血缘。
 - 新增 `docs/snowflake-learning-path.md`，提供学习路线、官方文档和端到端案例。
-- README 与架构说明移除过时的静态题库计数；待 CI 完成后补记验证结果。
+- README 与架构说明移除过时的静态题库计数。
+- 预提交结构检查：15 道题/15 个节点、题目 ID 唯一、topic 引用完整、choice/open 双形态完整、选项长度比均未超过 1.8。
+- GitHub Actions 对提交 `519f0dafc1bdbc022d8e1728c2376d02a0c4618f` 返回 failure，但 jobs 接口为 0 个 job、没有可读日志；基线提交也返回 failure。类型检查、Vitest、完整题库门禁与生产构建尚不能声称通过。
 
 
 ## 2026-10-02 · 测试裁剪第四轮：按业务优先级整块删除 16 个套件（888 → 691）

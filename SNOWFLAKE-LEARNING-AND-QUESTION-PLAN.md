@@ -88,7 +88,9 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 - [x] 更新 schema、taxonomy、角度白名单、领域标签和 taxonomy 测试。
 - [x] 新增 15 个知识节点、15 道双形态问题与 Snowflake 学习路线。
 - [x] 更新 README、架构文档、ADR-091 与 CHANGELOG。
-- [ ] 等待 GitHub Actions 验证；完成后补记实际结果。
+- [x] 预提交结构检查：15/15 题目 ID 唯一；15/15 题目 topic 均映射到知识节点；15/15 题目包含 choice/open；12/15 为多选；答案索引、选项唯一性与 misconceptionMap 形状检查通过；选项长度比最大值为 1.59（门槛 1.8）。
+- [x] 已触发提交 `519f0dafc1bdbc022d8e1728c2376d02a0c4618f` 对应的 GitHub Actions 工作流；GitHub 返回 run conclusion=failure，但 jobs 接口返回 0 个 job，无法取得失败步骤或日志。此前基线提交 `f8090dbe64b4235ced95f7323db337364f257685` 的工作流也显示 failure，因此不能将其直接归因于本次题库改动。
+- [ ] 尚未独立运行 `npm run typecheck`、`npm run test`、`npm run validate:questions`、题目身份/变体门禁与 `npm run build`；当前执行环境无法克隆 GitHub 仓库（DNS 无法解析），因此这些检查不能标记为通过。
 
 ## 7. 官方技术依据
 
