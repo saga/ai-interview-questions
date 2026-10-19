@@ -1,0 +1,242 @@
+[
+  {
+    "id": "sf-architecture-layer-boundary-01",
+    "category": "snowflake",
+    "topic": "snowflake-architecture",
+    "subtopic": "snowflake-architecture",
+    "tags": [
+      "snowflake",
+      "snowflake",
+      "snowflake-architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "区分持久化存储、虚拟仓库计算与 Cloud Services 的职责。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "企业在 Snowflake 上同时运行多个团队的 BI 查询与批处理。以下哪项最准确描述平台分层职责？",
+    "explanation": "正确答案 B。Snowflake 将持久化存储与虚拟仓库计算分离，由 Cloud Services 承担元数据、认证、优化和协调等职责。仓库不独占表数据；暂停仓库不会暂停底层数据。计算存储分离不会自动消除查询扫描与成本治理需求。",
+    "misconceptions": [
+      "把仓库误认为持久化数据副本的所有者。",
+      "把平台协调职责混同于 SQL 算子执行。",
+      "误以为暂停计算仓库会使底层表数据不可用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "虚拟仓库保存并独占其查询涉及的表数据，因此不同仓库间必须同步数据副本。",
+          "存储层持久化表数据，虚拟仓库提供查询计算资源，Cloud Services 协调元数据与请求。",
+          "Cloud Services 持续执行全部 SQL 算子，虚拟仓库主要负责保存查询结果与缓存副本。",
+          "每个虚拟仓库对应独立数据库存储，因此仓库暂停会让其他仓库无法读取对应表。"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。Snowflake 将持久化存储与虚拟仓库计算分离，由 Cloud Services 承担元数据、认证、优化和协调等职责。仓库不独占表数据；暂停仓库不会暂停底层数据。计算存储分离不会自动消除查询扫描与成本治理需求。"
+      }
+    }
+  },
+  {
+    "id": "sf-warehouse-workload-isolation-02",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "snowflake",
+      "virtual-warehouse"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "基于隔离、查询资源、并发吞吐和费用设计仓库。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "BI 仪表盘需稳定响应，ETL 在夜间集中运行且偶有长查询。既要减少互相影响，也要控制费用，哪些设计更合理？",
+    "explanation": "正确答案 A、B、C。独立仓库可隔离工作负载竞争。扩大仓库主要增加单查询计算资源；多集群扩展更偏向并发吞吐。资源监控器可约束虚拟仓库用量，但不覆盖全部 Cloud Services 或 serverless 费用。",
+    "misconceptions": [
+      "假定一个超大仓库能同时保证隔离、最高性能和最低成本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为 BI 与 ETL 分配独立仓库，让两类工作负载分别调优并观察排队情况。",
+          "优先用仓库规模处理单查询资源需求，再按排队与吞吐需要评估多集群扩展。",
+          "配置自动暂停与自动恢复，并通过仓库权限和资源监控约束不受控用量。",
+          "把所有任务放入一个尽可能大的仓库，就能保证隔离、排队最少和总成本最低。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。独立仓库可隔离工作负载竞争。扩大仓库主要增加单查询计算资源；多集群扩展更偏向并发吞吐。资源监控器可约束虚拟仓库用量，但不覆盖全部 Cloud Services 或 serverless 费用。"
+      }
+    }
+  },
+  {
+    "id": "sf-file-ingestion-paths-03",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "snowflake",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "按来源形态与延迟区分批量、连续文件和行级摄取。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "平台需支持持续到达的对象存储 JSON 文件、应用直接产生的行事件，以及每日大批量历史文件。哪些接入判断成立？",
+    "explanation": "正确答案 A、B、C。COPY INTO 适用于受控批量加载；Snowpipe 面向 Stage 中持续到达的文件；Snowpipe Streaming 可直接将行写入目标表。选型还要结合来源形态、可见延迟、重放能力和成本。",
+    "misconceptions": [
+      "将文件摄取与行级流式写入模型视为完全相同。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "持续到达的文件可通过外部 Stage 与 Snowpipe 自动摄取，减少自行调度批量加载的工作。",
+          "若生产端直接推送行事件且需要较低延迟，可评估 Snowpipe Streaming 的直接写入路径。",
+          "每日集中到达的大批量文件可采用 COPY INTO 批量加载，并按处理窗口管理仓库。",
+          "Snowpipe 与 Snowpipe Streaming 都只接受 Stage 文件，不能使用行级直接写入路径。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。COPY INTO 适用于受控批量加载；Snowpipe 面向 Stage 中持续到达的文件；Snowpipe Streaming 可直接将行写入目标表。选型还要结合来源形态、可见延迟、重放能力和成本。"
+      }
+    }
+  },
+  {
+    "id": "sf-streams-tasks-cdc-04",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "snowflake",
+      "change-capture-processing"
+    ],
+    "difficulty": "hard",
+    "angle": "mechanism",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解 Stream offset/变更语义及 Task 的编排职责。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "CDC 管道从 Snowflake 源表读取变更，再 MERGE 到下游表。关于 Streams 与 Tasks，哪些说法正确？",
+    "explanation": "正确答案 B、C、D。Stream 通过源对象的变更跟踪和 offset 提供 CDC 记录，并非源表完整副本。只读查询不会推进 offset；通过 DML 消费并提交事务后才推进。Task 可按计划或 Stream 事件触发。",
+    "misconceptions": [
+      "把 Stream 误认为保存全量历史的独立副本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Stream 会物理保存源表完整副本，因此源表变更历史过期后也始终能重放。",
+          "Stream 通过源对象 offset 暴露变更记录，本身不保存源表的完整物理副本。",
+          "单独查询 Stream 不会推进 offset；通过提交的 DML 事务消费变更才推进位置。",
+          "Task 可按计划或 Stream 变更事件运行 SQL 或存储过程，编排后续处理步骤。"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B、C、D。Stream 通过源对象的变更跟踪和 offset 提供 CDC 记录，并非源表完整副本。只读查询不会推进 offset；通过 DML 消费并提交事务后才推进。Task 可按计划或 Stream 事件触发。"
+      }
+    }
+  },
+  {
+    "id": "sf-dynamic-table-target-lag-05",
+    "category": "snowflake",
+    "topic": "dynamic-tables",
+    "subtopic": "dynamic-tables",
+    "tags": [
+      "snowflake",
+      "snowflake",
+      "dynamic-tables"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解 Dynamic Tables 刷新目标，并区分与 Tasks 的使用边界。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "多层 SQL 转换的报表通常需保持十分钟内新鲜度，但不要求每层固定十分钟执行。哪些判断合理？",
+    "explanation": "正确答案 A、B、C。TARGET_LAG 是新鲜度目标，实际延迟受仓库规模、数据量、查询复杂度和管道深度影响。生产应显式评估刷新模式并监控结果。",
+    "misconceptions": [
+      "把 TARGET_LAG 当成无条件 SLA，误以为无需监控实际延迟。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "TARGET_LAG 表达新鲜度目标，不是固定刷新间隔，也不是无条件保证的硬性 SLA。",
+          "可显式选择合适的 REFRESH_MODE，并监控实际刷新延迟是否满足业务验收标准。",
+          "声明式 SELECT 转换适合 Dynamic Tables；需过程控制或多步编排时可评估 Tasks。",
+          "设定 TARGET_LAG 十分钟后，任何复杂度的刷新都会准时完成且无需延迟监控。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。TARGET_LAG 是新鲜度目标，实际延迟受仓库规模、数据量、查询复杂度和管道深度影响。生产应显式评估刷新模式并监控结果。"
+      }
+    }
+  }
+]

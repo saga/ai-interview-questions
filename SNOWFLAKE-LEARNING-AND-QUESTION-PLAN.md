@@ -49,7 +49,7 @@ Snowflake 是通用数据平台，当前 6 个能力域又基本都围绕 AI/LLM
 | `src/data/taxonomy.ts` | 添加数据平台分类骨架和学习主题说明 |
 | `src/data/taxonomy.test.ts` | 若新增能力域，更新能力域数量断言；补充新 topic 映射测试 |
 | `src/domain/knowledge/nodes.ts` | （仅新增能力域时）增加领域显示标签 |
-| `src/data/knowledge/snowflake.json` | 新增结构化知识节点，覆盖核心平台机制与架构设计 |
+| `src/data/knowledge/{snowflake,data-architecture,data-engineering}.json` | 按三个 topic 分组新增结构化知识节点 |
 | `src/data/questions/snowflake.json` | 新增 Snowflake 平台问题，含场景、多选与开放题参考答案 |
 | `src/data/questions/data-architecture.json` | 新增企业数据架构与建模实战题 |
 | `src/data/questions/data-engineering.json` | 新增数据工程、CI/CD、质量控制和运行排障题 |
@@ -84,9 +84,11 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 - [x] 检查仓库树、题目与知识点数据契约、taxonomy、题库验证脚本、CI workflow。
 - [x] 确认当前仓库没有 Snowflake 专属文件；统计题目/知识/变体与 `temp/` 文件数。
 - [x] 写入本实施计划。
-- [ ] 确认是否新增第七个“数据平台与数据工程”能力域。
-- [ ] 根据确认结果更新 taxonomy、知识节点、15 道问题与文档。
-- [ ] 执行验证并补记结果。
+- [x] 用户确认采用方案 A：新增第七个“数据平台与数据工程”能力域。
+- [x] 更新 schema、taxonomy、角度白名单、领域标签和 taxonomy 测试。
+- [x] 新增 15 个知识节点、15 道双形态问题与 Snowflake 学习路线。
+- [x] 更新 README、架构文档、ADR-091 与 CHANGELOG。
+- [ ] 等待 GitHub Actions 验证；完成后补记实际结果。
 
 ## 7. 官方技术依据
 

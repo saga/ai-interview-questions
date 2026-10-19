@@ -1,0 +1,112 @@
+[
+  {
+    "id": "snowflake-architecture",
+    "name": "Snowflake 平台分层与计算存储分离",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "理解持久化存储、虚拟仓库计算与 Cloud Services 的边界。",
+    "required": [
+      "存储与仓库计算分离，仓库不独占数据副本。",
+      "Cloud Services 承担元数据、认证、优化和协调。"
+    ],
+    "misconceptions": [
+      "把仓库当成表数据的独占副本。",
+      "把平台协调误认为 SQL 算子执行。"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design"
+    ]
+  },
+  {
+    "id": "virtual-warehouse",
+    "name": "虚拟仓库隔离、并发与成本控制",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "按工作负载的并发、单查询资源和成本配置仓库。",
+    "required": [
+      "独立仓库提供隔离并便于单独观测。",
+      "规模、多集群、自动暂停和资源监控解决不同问题。"
+    ],
+    "misconceptions": [
+      "认为扩大单仓库可解决所有并发问题。",
+      "认为资源监控器覆盖所有 serverless 费用。"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-data-loading",
+    "name": "批量与持续数据摄取",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "根据文件/行事件和延迟要求选择摄取方式。",
+    "required": [
+      "COPY INTO 适合受控批量文件加载。",
+      "Snowpipe 面向 Stage 文件，Snowpipe Streaming 面向直接行级摄取。"
+    ],
+    "misconceptions": [
+      "把所有装载方式视为相同。",
+      "只按延迟选型而忽略输入形态。"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design"
+    ]
+  },
+  {
+    "id": "change-capture-processing",
+    "name": "Streams、Tasks 与 CDC 事务语义",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "以 Stream offset 与变更记录实现 CDC，以 Task 编排处理。",
+    "required": [
+      "Stream 不存完整源表副本，offset 与 DML 消费事务相关。",
+      "Task 可按计划或 Stream 事件运行 SQL/存储过程。"
+    ],
+    "misconceptions": [
+      "认为 Stream 永久保存全部历史。",
+      "认为任意 SELECT 会推进 offset。"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design"
+    ]
+  },
+  {
+    "id": "dynamic-tables",
+    "name": "Dynamic Tables 与刷新新鲜度目标",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "用声明式 SQL 转换并按新鲜度目标设计刷新。",
+    "required": [
+      "TARGET_LAG 是新鲜度目标，不是无条件 SLA。",
+      "显式评估刷新模式并监控实际延迟。"
+    ],
+    "misconceptions": [
+      "把 TARGET_LAG 当成固定执行间隔。",
+      "认为 Dynamic Tables 和 Tasks 不能互补。"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design"
+    ]
+  }
+]

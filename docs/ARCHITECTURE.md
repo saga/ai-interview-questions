@@ -212,27 +212,20 @@ components/
                                  门控开放题生成，默认 false（ADR-031）；保存时整体校验，
                                  错误定位到 providers[i]；chrome 可用性状态展示，ADR-023/ADR-025）
 
-data/questions/       题库（用户数据契约，按 topic 一文件：questions/<topic>.json，共 82 文件 /
-                         1357 题；topic ∈ taxonomy 的二级主题，如 transformer / rag /
-                       tool-calling，与 src/data/taxonomy.ts 的骨架一一对应）。每题
-                       `category` = 所属 topic slug（与文件名一致），`topic` = 知识节点 id，
-                       外加 `tags` / 可选 `rubric` / `angle`（主考察角度，覆盖矩阵用，
-                       ADR-032/037）。6 大能力域（ai-engineering / llm / llm-applications /
-                       agent-engineering / ai-systems / ai-security）是 **taxonomy 逻辑分组**
-                       （topic → domain 映射见 `taxonomy.domainOfTopic`），不是物理文件单位；
-                       UI 分类标签由 `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS。
-                       存量 1357 题：1232 题同时携带 choice 与 open 双形态（ADR-027）、125 题仅
-                       choice（open 形态统一由双形态题的 open 字段承载，ADR-027）。题目角度
-                       候选由 taxonomy.ANGLE_WHITELIST（topic→角度子集）约束，节点未声明
-                       angles 时回退到所属 topic 白名单（ADR-039）。
+data/questions/       题库按 topic/内容批次拆分，import.meta.glob 自动合并，无需修改加载器。
+                         `category` 对应 taxonomy 二级 topic，`topic` 必须指向知识节点 id。
+                         题目支持 choice/open 双形态（open 可选），`angle` 用于覆盖矩阵与训练。
+                         7 大能力域（ai-engineering / llm / llm-applications / agent-engineering /
+                         ai-systems / ai-security / data-platform）是 taxonomy 逻辑分组而非物理文件单位；
+                         新增主题包括 Snowflake、企业数据架构和数据工程。分类标签由
+                         `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS；角度由
+                         taxonomy.ANGLE_WHITELIST（topic→角度子集）约束。
 data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状校验；刻意不建索引/数据库层，
                        规模需要时再加动态 import + 构建期 question-index；失败时抛错并定位到 文件[下标]）
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
-data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。按文件拆分（文件名沿用历史
-                          slug，19 文件：dl-fundamentals / llm-architecture / training / inference /
-                          ml-theory / gnn-theory / nmf-theory 等，共 124 节点，含 ml-foundations 11 节点、GNN 6 节点与矩阵/主题建模 4 节点），但节点内部不再用文件 slug 当分类——
-                        每个节点声明 `area`（6 大能力域之一：ai-engineering / llm /
+data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。由 JSON 文件承载并经 import.meta.glob 自动合并；文件名负责内容组织，节点内部不再用文件 slug 当分类——
+                         每个节点声明 `area`（7 大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
                         如 Inference / RAG / Agents）。由此构成 **Domain → Topic →
@@ -798,3 +791,8 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 - **构建**：`npm run build` 用 `tsc -b && vite build`，开启 `noUnusedLocals`，未使用 import/变量直接报错；`*.test.ts` 已从 tsc 排除，由 Vitest 处理。
 - **fuzzball（浏览器纯 JS 模糊匹配，ADR-047 语义漂移兜底）**：`fuzzball@latest` 纯 JS 实现，无 Node 核心依赖，适配 Vite SPA；`domain/variant.validateVariant` 内的 `anchorHasEvidence`（配合 `stemAnchorMissing`，ADR-068 起仅作漂移软信号）在精确 token 未命中时追加 `token_set_ratio ≥75` / `partial_ratio ≥80` 二次判定，处理词序/形态/拼写差异（如 `batch statistics ↔ statistics across the batch` 100 分、`regularisation ↔ regularization` 93 分），计算量仅 `1题×数个 requiredConcepts×数百字文本`，无需后端；bundle 增量约 15KB gzip（52KB 原始），已验证 `npm run build`。
 - **密钥定位**：local-first 隐私友好，但浏览器侧密钥**不是安全机密**（受 XSS / 扩展威胁），勿用高权限生产密钥。
+
+
+## 数据平台学习内容（ADR-091）
+
+新增的 `data-platform` 能力域包含 `snowflake`、`data-architecture` 与 `data-engineering` 三个 topic。知识点和题目复用现有 JSON 契约、自动加载机制和覆盖分析，不引入独立运行时或数据库层。官方文档索引与端到端案例见 `docs/snowflake-learning-path.md`。

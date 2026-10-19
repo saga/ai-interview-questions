@@ -1,4 +1,4 @@
-// 规范 taxonomy：6 大能力域 → topic 的骨架（ADR-038）。
+// 规范 taxonomy：7 大能力域 → topic 的骨架（ADR-038）。
 // 这是"以面试能力域组织"的单一真理来源：Domain → Topic → Concept(KnowledgeNode) → Subtopic(Question) → Angle。
 // Concept 层由 src/data/knowledge/*.json 的知识点填充，运行时按 domain/topic 分组（见 groupNodesBy*）。
 //
@@ -23,7 +23,7 @@ export interface TaxonomyDomain {
 }
 
 /**
- * 6 大能力域及其主题骨架。
+ * 7 大能力域及其主题骨架。
  * 主题取自面试能力域提案：每个域下的二级分类即 topic；Concept 由知识点填充。
  */
 export const TAXONOMY: TaxonomyDomain[] = [
@@ -293,9 +293,12 @@ export const TAXONOMY: TaxonomyDomain[] = [
       },
     ],
   },
+  { id: 'data-platform', label: '数据平台与数据工程', topics: [
+    { id: 'snowflake', label: 'Snowflake 平台', description: '平台分层/仓库/数据装载/CDC/Dynamic Tables/安全/成本' },
+    { id: 'data-architecture', label: '企业数据架构', description: '数据分层/事实粒度/历史/语义层/RBAC/脱敏' },
+    { id: 'data-engineering', label: '数据工程与交付', description: 'SQL/Git/CI-CD/增量/幂等/数据质量/成本/血缘' },
+  ] },
 ];
-
-/** 域 id 有序列表。 */
 export const DOMAINS: KnowledgeArea[] = TAXONOMY.map((d) => d.id);
 
 /** 域 id → 中文标签。 */
@@ -415,6 +418,9 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'model-data-security': ['definition', 'mechanism', 'scenario', 'debugging'],
   'ai-security-operations': ['definition', 'mechanism', 'scenario', 'debugging'],
   'security-eval': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
+  snowflake: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
+  'data-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
+  'data-engineering': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
 };
 
 /** 全部 10 个角度（白名单兜底值，用于 taxonomy 中未登记的 topic）。 */

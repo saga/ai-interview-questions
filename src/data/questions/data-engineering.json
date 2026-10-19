@@ -1,0 +1,242 @@
+[
+  {
+    "id": "de-sql-release-engineering-11",
+    "category": "data-engineering",
+    "topic": "sql-release-engineering",
+    "subtopic": "sql-release-engineering",
+    "tags": [
+      "snowflake",
+      "data-engineering",
+      "sql-release-engineering"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "设计 SQL 定义版本控制、环境发布和漂移检测闭环。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "团队手工修改生产表、视图、任务与语义定义，开发和生产对象经常漂移。哪种改进最能建立可重复发布流程？",
+    "explanation": "正确答案 B。将 DDL 和对象定义版本化，配合审查、自动校验、环境配置、迁移顺序和漂移检测，建立可追溯交付链路。区分对象定义与有状态迁移；凭据应使用受控密钥注入和最小权限，不能进入 Git。",
+    "misconceptions": [
+      "把生产当前状态当作版本历史，无法证明变化如何产生。",
+      "认为单个重建脚本天然可回滚且适合所有迁移。",
+      "将凭据共享置于生产权限治理之上。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "以生产 SHOW 输出作为唯一版本记录，差异出现时手工复制回开发环境。",
+          "将可部署 SQL 纳入 Git，经审查和自动校验后按环境发布，并检测对象定义漂移。",
+          "把所有 DDL 放在单个脚本中一次性重建所有对象，以此避免分环境部署差异。",
+          "将运行凭据与 SQL 一同提交仓库，让开发者直接复用生产权限执行迁移。"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。将 DDL 和对象定义版本化，配合审查、自动校验、环境配置、迁移顺序和漂移检测，建立可追溯交付链路。区分对象定义与有状态迁移；凭据应使用受控密钥注入和最小权限，不能进入 Git。"
+      }
+    }
+  },
+  {
+    "id": "de-incremental-idempotency-12",
+    "category": "data-engineering",
+    "topic": "incremental-pipeline-reliability",
+    "subtopic": "incremental-pipeline-reliability",
+    "tags": [
+      "snowflake",
+      "data-engineering",
+      "incremental-pipeline-reliability"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "构建承受重复投递、迟到事件和重试的增量管道。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "订单 CDC 偶有重复投递和迟到事件，报表会重复计算收入或漏掉状态修正。哪些措施能提升正确性与可恢复性？",
+    "explanation": "正确答案 A、B、D。增量处理需要稳定键、事件版本和去重规则；迟到事件需区分事件时间与处理时间并有回补窗口。消费 Stream 应理解 DML 提交如何推进 offset，并设计可恢复的目标更新边界。",
+    "misconceptions": [
+      "把去重责任分散到报表消费者，不能保证口径一致。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为事件定义稳定标识和业务键，在 MERGE 前确定重复及版本冲突处理规则。",
+          "保留事件时间和处理时间，对迟到记录执行可重复重算并核对结果。",
+          "为追求吞吐始终只做 INSERT，重复记录留给 BI 查询时用 DISTINCT 临时处理。",
+          "在可控事务边界内消费变更并提交目标更新，明确 offset 和目标表的重跑关系。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。增量处理需要稳定键、事件版本和去重规则；迟到事件需区分事件时间与处理时间并有回补窗口。消费 Stream 应理解 DML 提交如何推进 offset，并设计可恢复的目标更新边界。"
+      }
+    }
+  },
+  {
+    "id": "de-data-quality-contracts-13",
+    "category": "data-engineering",
+    "topic": "data-quality-testing",
+    "subtopic": "data-quality-testing",
+    "tags": [
+      "snowflake",
+      "data-engineering",
+      "data-quality-testing"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "建立质量门禁、批次对账和异常处置。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "供应商每日交付订单文件。某次发布未报错，但下游金额报表少了约 8% 订单，文件列结构没变。哪些验证有助于提早发现问题？",
+    "explanation": "正确答案 A、B、C。SQL 成功和列类型匹配不能证明数据语义、完整性或金额正确。质量门槛应组合业务断言、源到目标对账、新鲜度和分布监控，并定义隔离、告警和恢复路径。",
+    "misconceptions": [
+      "把 SQL 成功或类型校验通过当作业务正确性的证明。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查业务键唯一性、必填字段、值域和事实/维度引用规则，并设置失败处置。",
+          "按批次对比源记录数、成功/拒绝行数和关键金额汇总，定位丢数或重复处理。",
+          "监控新鲜度、行数波动和关键分布，对偏离阈值批次告警或隔离复核。",
+          "只要 SQL 成功执行且目标列类型正确，就能认为业务数据完整且金额准确。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。SQL 成功和列类型匹配不能证明数据语义、完整性或金额正确。质量门槛应组合业务断言、源到目标对账、新鲜度和分布监控，并定义隔离、告警和恢复路径。"
+      }
+    }
+  },
+  {
+    "id": "de-warehouse-cost-control-14",
+    "category": "data-engineering",
+    "topic": "warehouse-cost-optimization",
+    "subtopic": "warehouse-cost-optimization",
+    "tags": [
+      "snowflake",
+      "data-engineering",
+      "warehouse-cost-optimization"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "定位费用异常并建立仓库成本治理闭环。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "Snowflake 月度计算费用上升，但查询量只略增。团队要找出异常并降费，同时尽量不损害关键报表响应时间。哪些行动合理？",
+    "explanation": "正确答案 A、B、C。应先从查询历史、仓库负载和执行细节定位，而不是立即缩小全部仓库。隔离工作负载、自动暂停和权限限制可减少空闲消耗。Resource Monitor 主要约束虚拟仓库用量，不覆盖全部 Cloud Services 或 serverless 功能。",
+    "misconceptions": [
+      "把仓库监控器误认为能覆盖全部 Snowflake 服务成本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "结合查询历史、仓库负载与 Query Profile，区分排队、扫描、执行耗时和重复作业。",
+          "按 BI、ETL 与临时分析负载配置仓库、自动暂停和创建/修改权限。",
+          "用资源监控器限制虚拟仓库消耗，并单独分析 serverless 与 Cloud Services 费用。",
+          "只要设置一个 Warehouse Resource Monitor，就能对所有仓库和服务费用实施统一硬上限。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。应先从查询历史、仓库负载和执行细节定位，而不是立即缩小全部仓库。隔离工作负载、自动暂停和权限限制可减少空闲消耗。Resource Monitor 主要约束虚拟仓库用量，不覆盖全部 Cloud Services 或 serverless 功能。"
+      }
+    }
+  },
+  {
+    "id": "de-observability-lineage-15",
+    "category": "data-engineering",
+    "topic": "data-observability-lineage",
+    "subtopic": "data-observability-lineage",
+    "tags": [
+      "snowflake",
+      "data-engineering",
+      "data-observability-lineage"
+    ],
+    "difficulty": "hard",
+    "angle": "debugging",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "区分数据新鲜度、查询性能和转换正确性的观测链路。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "财务报表偶尔延迟且数值与源系统不一致。只有作业成功/失败日志，无法判断摄取、排队还是转换问题，应补哪些观测？",
+    "explanation": "正确答案 A、B、C。作业成功不等于数据及时或业务正确。时间戳定位新鲜度恶化阶段；Query Profile 区分排队与执行开销；血缘、版本和批次标识支撑影响分析。日志应按最小必要原则采集，保护敏感字段与凭据。",
+    "misconceptions": [
+      "认为日志越完整越好，忽略敏感数据和凭据泄露风险。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "记录源事件、摄取和可查询时间，监控端到端新鲜度与各阶段延迟分布。",
+          "结合查询历史、仓库负载和 Query Profile，区分排队、扫描开销与 SQL 执行问题。",
+          "维护数据对象及转换血缘，并关联质量结果、版本和批次标识进行故障分析。",
+          "把完整生产数据、所有敏感字段和凭据直接写入共享日志并长期保留。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。作业成功不等于数据及时或业务正确。时间戳定位新鲜度恶化阶段；Query Profile 区分排队与执行开销；血缘、版本和批次标识支撑影响分析。日志应按最小必要原则采集，保护敏感字段与凭据。"
+      }
+    }
+  }
+]

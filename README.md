@@ -8,7 +8,7 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 /
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/`，按 topic/批次拆分 82 个文件、1357 题；另有 `src/data/variants/` 9 个变体池文件、102 条离线变体；6 大能力域为 taxonomy 逻辑分组），其中大部分题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
+- 题库驱动（`src/data/questions/` 按 topic/批次拆分为 JSON 文件，`src/data/variants/` 存放离线变体；7 大能力域由 taxonomy 逻辑分组），其中大部分题同时具备选择与开放双形态，LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（对话式追问训练）：进入 interview 模式后复用与独立面试页**同一套** `pi-agent-core` 运行时（`createInterviewAgent`）——统一选题 / 评分 / 收尾逻辑，不再维护独立的简化版 Agent 面试；未配置 AI 也能开始，选择题照常确定性判分
@@ -41,6 +41,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 ## 文档
 
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
+- `docs/snowflake-learning-path.md`：Snowflake 系统学习路线、架构实战与题目索引
 - `docs/CONVERSATION_ARCHITECTURE.md`：统一 Conversation / Intent / Capability 入口设计（ADR-061）
 - `docs/DECISIONS.md`：关键决策（ADR，含"为何不迁 Astro"）
 - `docs/CHANGELOG.md`：设计变更记录

@@ -1,0 +1,117 @@
+[
+  {
+    "id": "sql-release-engineering",
+    "name": "SQL 定义版本控制与环境发布",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P0",
+    "summary": "将对象定义纳入 Git，通过审查、部署和漂移检测交付。",
+    "required": [
+      "区分对象 DDL 与有状态迁移，设计发布与恢复方案。",
+      "密钥不入库，发布身份使用最小权限。"
+    ],
+    "misconceptions": [
+      "以手工生产状态代替版本历史。",
+      "将生产凭据提交到仓库。"
+    ],
+    "angles": [
+      "comparison",
+      "scenario",
+      "system-design",
+      "design",
+      "debugging"
+    ]
+  },
+  {
+    "id": "incremental-pipeline-reliability",
+    "name": "增量管道幂等、去重与迟到数据",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P0",
+    "summary": "通过稳定键、版本规则、MERGE 和回补处理重复投递。",
+    "required": [
+      "区分事件时间与处理时间，定义去重和冲突规则。",
+      "事务、offset、目标更新与重试应组成可恢复流程。"
+    ],
+    "misconceptions": [
+      "假设上游只投递一次。",
+      "把去重责任推给报表消费者。"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "data-quality-testing",
+    "name": "分层数据质量门禁与批次对账",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P0",
+    "summary": "结合结构断言、业务规则、批次对账和运行监控。",
+    "required": [
+      "结构有效不等于业务数据完整或正确。",
+      "质量失败需要告警、隔离、恢复和阈值校准。"
+    ],
+    "misconceptions": [
+      "把 SQL 成功当成质量达标。",
+      "只在最终报表发现异常。"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "system-design",
+      "design"
+    ]
+  },
+  {
+    "id": "warehouse-cost-optimization",
+    "name": "仓库成本诊断与运行约束",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P0",
+    "summary": "结合查询历史、仓库负载和 Query Profile 定位成本。",
+    "required": [
+      "按工作负载隔离仓库并配置自动暂停和权限。",
+      "Resource Monitor 不覆盖全部 serverless 与 Cloud Services 费用。"
+    ],
+    "misconceptions": [
+      "未定位瓶颈就统一缩小仓库。",
+      "把仓库监控器当作全服务硬上限。"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "calculation",
+      "tradeoff",
+      "scenario"
+    ]
+  },
+  {
+    "id": "data-observability-lineage",
+    "name": "数据新鲜度、执行证据与血缘",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "关联阶段时间、查询执行、血缘和批次版本进行诊断。",
+    "required": [
+      "新鲜度不等于作业成功状态。",
+      "关联 Query Profile、版本、质量结果和批次标识。"
+    ],
+    "misconceptions": [
+      "只用退出码判断业务正确性。",
+      "将敏感数据和凭据写入共享日志。"
+    ],
+    "angles": [
+      "mechanism",
+      "tradeoff",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  }
+]

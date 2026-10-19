@@ -1,0 +1,242 @@
+[
+  {
+    "id": "da-enterprise-data-zones-06",
+    "category": "data-architecture",
+    "topic": "enterprise-data-zones",
+    "subtopic": "enterprise-data-zones",
+    "tags": [
+      "snowflake",
+      "data-architecture",
+      "enterprise-data-zones"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "定义 Raw、Conformed、Curated 各层职责与可审计边界。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "多种源数据进入同一平台，清洗逻辑经常变化，审计时还需还原历史报表的输入。哪些分层设计有帮助？",
+    "explanation": "正确答案 A、B、C。Raw 层保留符合治理策略的可追溯输入；Conformed 层处理跨源标准化；Curated 层发布稳定的业务消费契约。每层都应定义所有者、质量门槛、保留策略和失败处理。",
+    "misconceptions": [
+      "误以为源系统始终能提供相同历史内容，所以不需记录源和摄取元数据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Raw 层保留受治理源输入及摄取时间、来源标识和批次信息，支持追溯与重处理。",
+          "Conformed 层统一跨来源的键、类型、代码集和核心实体定义，减少口径分叉。",
+          "Curated 层面向消费提供稳定模型，并明确粒度、业务规则、质量与访问边界。",
+          "只保留最终清洗结果即可；源文件和摄取元数据与审计无关，争议时再向源系统索取。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Raw 层保留符合治理策略的可追溯输入；Conformed 层处理跨源标准化；Curated 层发布稳定的业务消费契约。每层都应定义所有者、质量门槛、保留策略和失败处理。"
+      }
+    }
+  },
+  {
+    "id": "da-dimensional-grain-07",
+    "category": "data-architecture",
+    "topic": "dimensional-modeling",
+    "subtopic": "dimensional-modeling",
+    "tags": [
+      "snowflake",
+      "data-architecture",
+      "dimensional-modeling"
+    ],
+    "difficulty": "hard",
+    "angle": "diagnosis",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "基于事实粒度与连接基数定位度量膨胀。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "订单头、订单明细与支付流水直接连接后，销售金额偏高。一个订单可有多条明细和多次支付，优先采用哪种策略？",
+    "explanation": "正确答案 B。不同粒度的事实表直接连接会产生 fanout，使金额被重复累加。应明确每张事实表一行代表什么，再在各自粒度汇总，或设计明确的桥接/分配规则。DISTINCT 不能一般性修复度量重复。",
+    "misconceptions": [
+      "误以为统一压到客户粒度仍保留全部业务含义。",
+      "将 DISTINCT 当作任意度量膨胀的通用修复。",
+      "认为共享业务键意味着表之间是一对一关系。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先把各事实表压成同一客户粒度再求和，不必记录订单行或支付粒度差异。",
+          "先声明每张事实表粒度，再分别按一致维度聚合或采用受控关系，避免多对多放大。",
+          "只给订单明细与支付明细添加 DISTINCT，就能恢复任意连接后的金额正确性。",
+          "只要所有表包含 customer_id，按客户键关联就不会改变各事实表的原始行数。"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。不同粒度的事实表直接连接会产生 fanout，使金额被重复累加。应明确每张事实表一行代表什么，再在各自粒度汇总，或设计明确的桥接/分配规则。DISTINCT 不能一般性修复度量重复。"
+      }
+    }
+  },
+  {
+    "id": "da-history-retention-replay-08",
+    "category": "data-architecture",
+    "topic": "historical-data-strategy",
+    "subtopic": "historical-data-strategy",
+    "tags": [
+      "snowflake",
+      "data-architecture",
+      "historical-data-strategy"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "区分历史恢复能力和长期业务历史，并设计可重放回补。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "企业需保存七年交易历史用于年度重算、监管核对和迟到数据修正。团队讨论是否可只保留最新状态。哪些判断正确？",
+    "explanation": "正确答案 A、B、C。长期历史应由留存策略、历史模型与可重算输入承载。Time Travel 提供配置窗口内的恢复能力，不应被假定为无限期业务历史仓库。回补需定义稳定键、有效时间、去重和对账规则。",
+    "misconceptions": [
+      "误把 Time Travel 当成永久业务历史库，忽略其保留窗口。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "应按业务与审计要求设计长期历史模型，并保留足以重建结果的受治理源记录。",
+          "Time Travel 适合配置窗口内的历史查询和恢复，但不能默认替代多年业务历史。",
+          "历史回补应明确业务键、版本/生效时间、去重规则和可重复执行的验收方式。",
+          "只保留每个业务键的最新行即可，因为 Time Travel 会永久保留所有历史版本。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。长期历史应由留存策略、历史模型与可重算输入承载。Time Travel 提供配置窗口内的恢复能力，不应被假定为无限期业务历史仓库。回补需定义稳定键、有效时间、去重和对账规则。"
+      }
+    }
+  },
+  {
+    "id": "da-semantic-layer-design-09",
+    "category": "data-architecture",
+    "topic": "semantic-layer-design",
+    "subtopic": "semantic-layer-design",
+    "tags": [
+      "snowflake",
+      "data-architecture",
+      "semantic-layer-design"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "设计语义层以统一指标、关系、权限和验证。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "不同团队对净收入、活跃客户等指标的 SQL 定义不一致。建立供 BI 和自然语言查询复用的语义层，哪些做法更可靠？",
+    "explanation": "正确答案 A、B、C。Semantic Views 可用代码定义逻辑表、关系、维度和指标。验证查询可暴露连接路径、可加性和粒度错误；语义层不取代访问控制，也不会自动修复底层数据错误。",
+    "misconceptions": [
+      "误以为自然语言描述可自动修复数据基数、粒度和权限问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "集中定义指标表达式、业务维度与表关系，并说明粒度和不可随意累加的边界。",
+          "用验证问题与结果校验指标，重点测试复杂关系路径及聚合是否正确。",
+          "将语义定义作为可审查、可版本化资产发布，并让权限策略继续约束敏感数据。",
+          "只需给指标添加自然语言描述，查询模型就能自动消除底层重复、粒度和权限问题。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Semantic Views 可用代码定义逻辑表、关系、维度和指标。验证查询可暴露连接路径、可加性和粒度错误；语义层不取代访问控制，也不会自动修复底层数据错误。"
+      }
+    }
+  },
+  {
+    "id": "da-access-governance-10",
+    "category": "data-architecture",
+    "topic": "data-governance-access-control",
+    "subtopic": "data-governance-access-control",
+    "tags": [
+      "snowflake",
+      "data-architecture",
+      "data-governance-access-control"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "组合 RBAC、列脱敏和行访问策略控制数据范围。",
+      "reasoningGoal": "依据题干约束逐项判断方案的机制、适用边界和风险。"
+    },
+    "question": "仅授权角色可看敏感标识符，部分团队还只能看自己负责区域的记录。哪些控制符合最小权限原则？",
+    "explanation": "正确答案 A、B、C。RBAC 管对象权限，动态脱敏控制敏感列值呈现，行访问策略约束返回记录范围。仅在 BI UI 隐藏列不是底层安全控制，用户可能直接查表绕过展示层。",
+    "misconceptions": [
+      "把消费应用中的视觉隐藏当作数据库安全边界。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将对象权限授予职责明确的角色，再按岗位分配角色并定期审查授权。",
+          "对敏感列使用动态脱敏策略，使结果呈现依据角色或策略上下文调整。",
+          "使用行访问策略落实行级条件，并对策略变更与授权活动保留审计证据。",
+          "只在 BI 报表中隐藏敏感列即可，底层表权限可对所有分析用户统一开放。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。RBAC 管对象权限，动态脱敏控制敏感列值呈现，行访问策略约束返回记录范围。仅在 BI UI 隐藏列不是底层安全控制，用户可能直接查表绕过展示层。"
+      }
+    }
+  }
+]

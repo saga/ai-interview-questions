@@ -1,4 +1,4 @@
-// taxonomy 不变量：6 大域骨架与真实知识点数据保持一致（ADR-038）。
+// taxonomy 不变量：7 大域骨架与真实知识点数据保持一致（ADR-038）。
 // 防止知识节点漂移出 taxonomy（域非法 / topic 不在骨架内）。
 
 import { describe, expect, it } from 'vitest';
@@ -17,9 +17,15 @@ import { knowledgeNodes } from './knowledgeMap';
 
 describe('taxonomy 骨架', () => {
   it('恰为 6 大能力域，且标签齐全', () => {
-    expect(DOMAINS).toHaveLength(6);
-    expect(new Set(DOMAINS).size).toBe(6);
+    expect(DOMAINS).toHaveLength(7);
+    expect(new Set(DOMAINS).size).toBe(7);
     for (const d of DOMAINS) expect(TAXONOMY.find((x) => x.id === d)?.label.length).toBeGreaterThan(0);
+  });
+
+  it('数据平台三个 topic 都映射到新领域', () => {
+    expect(domainOfTopic('snowflake')).toBe('data-platform');
+    expect(domainOfTopic('data-architecture')).toBe('data-platform');
+    expect(domainOfTopic('data-engineering')).toBe('data-platform');
   });
 
   it('topic 在骨架内且标签不重名', () => {
@@ -30,10 +36,10 @@ describe('taxonomy 骨架', () => {
 });
 
 describe('知识节点与 taxonomy 对齐', () => {
-  it('每个知识节点的 domain 属于 6 大域、topic 存在于骨架', () => {
+  it('每个知识节点的 domain 属于 7 大域、topic 存在于骨架', () => {
     const validTopics = new Set(Object.keys(TOPIC_LABELS));
     for (const n of knowledgeNodes) {
-      expect(DOMAINS, `节点 ${n.id} 的 domain=${n.area} 不在 6 大域内`).toContain(n.area);
+      expect(DOMAINS, `节点 ${n.id} 的 domain=${n.area} 不在 7 大域内`).toContain(n.area);
       expect(validTopics, `节点 ${n.id} 的 topic=${n.topic} 不在 taxonomy 骨架内`).toContain(n.topic);
       // domain 与 topic 必须自洽：topic 所属域应等于节点 domain
       expect(domainOfTopic(n.topic), `节点 ${n.id} 的 domain/topic 不自洽`).toBe(n.area);
