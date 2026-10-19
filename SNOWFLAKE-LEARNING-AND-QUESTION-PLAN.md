@@ -119,3 +119,15 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 本批重点覆盖 Stage/File Format、微分区、加载校验、SQL 基础转换、Query History、Snowflake CLI、Iceberg 管理/刷新/Schema 演进、Cortex 文本处理与 Prompt、Semantic View、Search 服务、Agent 线程与工具选择、CoCo 数据探索和 SQL 审查。
 
 逐题追溯矩阵见 [docs/snowflake-question-coverage-200.md](docs/snowflake-question-coverage-200.md)。
+
+
+## 10. SnowPro Core COF-C03 认证考点题库（2026-10-19）
+
+新增 200 道简单/中等题，以官方 COF-C03 Study Guide 的五个 Domain 权重为题量蓝图（62/40/36/42/20），并使用公开练习题列表作为覆盖点交叉参考。题目为原创内容，不复制第三方题库原文。
+
+- 新增 18 个知识点，累计知识点 97 个。
+- 新增 200 道题，累计 Snowflake 题目 741 道。
+- 难度：120 道简单、80 道中等。
+- 逐题来源、Coursera 模块、考试 Objective 和官方文档映射见 [覆盖矩阵](docs/snowflake-certification-cof-c03-coverage-200.md)。
+
+未运行 schema、CLI 门禁、测试、全库重复检查或 build。

@@ -61,3 +61,13 @@ For the 8-course Snowflake roadmap, keep course/module attribution explicit and 
 4. Test uniqueness on normalized question stems and assessment intent. Rewording the same decision with a different noun is not a new canonical question.
 5. Generate a course → module → knowledge ID → question ID matrix and reconcile counts from actual question JSON before publishing.
 6. A static generator check is not a substitute for `question:add -- --check`, schema validation, all-bank duplicate/identity checks, typecheck, tests or build. Record which checks truly ran.
+
+
+## Certification-exam coverage
+
+When adding Snowflake certification practice, use the current official SnowPro exam study guide for the authoritative Domain/Objectives/weightings, and use third-party free practice banks only to discover commonly covered topics and question formats. Do not copy their question stems, answer options, explanations, or dumps. Author new questions and verify each technical proposition against Snowflake documentation.
+
+- Store the official Domain and Objective in question tags (for example, `exam-domain-3`, `exam-objective-3-1`).
+- Keep the main Coursera source in `source.materialId` and `source.section`; add exam-guide and official-doc IDs in `source.relatedMaterials`.
+- Distinguish explicit exam-guide objectives from course-adjacent material. In particular, do not present a course tool as an explicit exam objective unless the official guide names it.
+- For large exam-aligned batches, calculate the exact question count by official domain weight, then validate the per-domain distribution, easy/medium difficulty, source IDs, answer indexes, and duplicate stems before committing.

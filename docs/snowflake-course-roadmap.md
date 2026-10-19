@@ -187,3 +187,15 @@ flowchart TD
 - `docs/snowflake-question-coverage-200.md`
 
 新增后 Snowflake 题库累计 541 道（原有 41 + 前一批 300 + 本批 200），知识点 79 个（原有 39 + 前一批新增 21 + 本批新增 19）。本次仅做生成后静态检查，尚未运行 schema、CLI 门禁、测试或构建。
+
+
+## 10. SnowPro Core COF-C03 考点补充（2026-10-19）
+
+参考 [Snowflake 官方 COF-C03 考试指南](https://publish-p93462-e887935.adobeaemcloud.com/content/dam/snowpro-sg/SnowProCoreStudyGuideC03.pdf) 和公开的 [CertSafari Free Snowflake Practice Questions](https://www.certsafari.com/snowflake/snowpro-core-certification-c03/practice-questions) 的考试领域/知识点目录，新增加 200 道自编练习题，按官方五个 Domain 的权重分配为 62/40/36/42/20；难度为 120 道简单、80 道中等。
+
+- 新增 18 个知识节点，累计 97 个 Snowflake 知识节点。
+- Snowflake 累计题目 741 道（本批新增前 541 道 + 本批 200 道）。
+- 本批题目、知识点与来源映射见 [SnowPro Core COF-C03 覆盖矩阵](./snowflake-certification-cof-c03-coverage-200.md)。
+- CoCo 属于课程相关补充，不是官方 COF-C03 指南单独列明的产品考点；请勿将课程覆盖等同于考试保证。
+
+本批只完成静态数据预检，未运行 TypeScript、Vitest、题库 CLI 门禁、全库重复检查或构建。

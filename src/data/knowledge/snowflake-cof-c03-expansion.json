@@ -1,0 +1,470 @@
+[
+  {
+    "id": "snowflake-editions-basics",
+    "courseId": "snowflake",
+    "name": "Snowflake Edition 与功能可用性",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "了解不同 Snowflake Edition 可能影响的功能和治理能力.",
+    "required": [
+      "了解不同 Snowflake Edition 可能影响的功能和治理能力.",
+      "启用安全或优化功能前先核对账户 Edition 和相应功能要求.",
+      "部分高级功能有特定 Edition 要求，功能是否可用不能只根据 SQL 语法判断."
+    ],
+    "misconceptions": [
+      "所有 Edition 都支持完全相同的功能",
+      "Edition 只影响界面主题，不影响平台能力",
+      "只要用户是 ACCOUNTADMIN，Edition 限制就会消失"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-warehouse-configurations",
+    "courseId": "snowflake",
+    "name": "仓库规模、扩缩容与自动暂停",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "根据查询复杂度、并发和空闲时间配置仓库.",
+    "required": [
+      "根据查询复杂度、并发和空闲时间配置仓库.",
+      "依据负载选择仓库规模，依需求配置多集群扩展和 AUTO_SUSPEND.",
+      "扩大仓库主要增加单查询可用计算资源，多集群扩展更偏向处理并发需求."
+    ],
+    "misconceptions": [
+      "扩大仓库能保证所有查询都更快且总成本更低",
+      "多集群扩展只会增加单条查询的内存而不涉及并发",
+      "AUTO_SUSPEND 用于删除长期不用的表"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-table-types",
+    "courseId": "snowflake",
+    "name": "Permanent、Temporary、Transient 与 Iceberg 表",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "根据数据保留和存储管理需求选择表类型.",
+    "required": [
+      "根据数据保留和存储管理需求选择表类型.",
+      "按会话/生命周期、恢复要求和外部互操作需求选用对应表类型.",
+      "Temporary 表有会话生命周期，Transient 表的保护特性与 Permanent 表不同，Iceberg 表采用开放表格式和对应元数据机制."
+    ],
+    "misconceptions": [
+      "Temporary 表适合永久保存多年审计数据",
+      "所有表类型具有完全相同的 Fail-safe 和保留行为",
+      "Iceberg 只是另一种 Warehouse 类型"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-view-types",
+    "courseId": "snowflake",
+    "name": "Standard、Secure 与 Materialized View",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "区分普通查询视图、隐藏底层定义的安全视图和预计算结果的物化视图.",
+    "required": [
+      "区分普通查询视图、隐藏底层定义的安全视图和预计算结果的物化视图.",
+      "根据定义保护需求、查询模式和维护成本选择视图类型.",
+      "Secure View 用于保护视图定义细节，Materialized View 将查询结果预先计算并存储以服务适用查询."
+    ],
+    "misconceptions": [
+      "Standard View 自动隐藏所有底层 SQL 定义",
+      "Materialized View 只用于控制用户登录方式",
+      "Secure View 会自动为所有用户授予底层表权限"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-session-context-parameters",
+    "courseId": "snowflake",
+    "name": "Session、Context 与参数优先级",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "理解会话上下文和参数如何影响当前 SQL 的执行.",
+    "required": [
+      "理解会话上下文和参数如何影响当前 SQL 的执行.",
+      "排查异常行为时核对当前角色、数据库、Schema、仓库及相关参数的生效值.",
+      "会话的当前上下文会影响未限定名称对象的解析和 SQL 执行环境."
+    ],
+    "misconceptions": [
+      "任何会话都会自动共享相同上下文",
+      "参数设置不会影响 SQL 或客户端行为",
+      "不指定对象全名也能保证在所有数据库中引用同一个表"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-application-ai-features",
+    "courseId": "snowflake",
+    "name": "Snowpark、Notebooks、Streamlit、Cortex 与 ML",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "区分 Snowflake 中的数据开发、应用构建、AI 与机器学习能力.",
+    "required": [
+      "区分 Snowflake 中的数据开发、应用构建、AI 与机器学习能力.",
+      "根据需求分别评估 Snowpark、Notebooks、Streamlit、Cortex 和 Snowflake ML.",
+      "这些能力用途不同：Snowpark 面向程序化数据处理，Streamlit 用于应用界面，Cortex 提供 AI 能力，Snowflake ML 支持机器学习工作流."
+    ],
+    "misconceptions": [
+      "Snowpark、Streamlit 和 Cortex 是同一个产品的不同名称",
+      "Streamlit 只用于批量加载 CSV 文件",
+      "Snowflake ML 只用于运行自然语言问答"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-object-functions-procedures-pipes",
+    "courseId": "snowflake",
+    "name": "UDF、Stored Procedure 与 Pipe 的用途",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "区分函数计算、存储过程逻辑和持续文件摄取对象.",
+    "required": [
+      "区分函数计算、存储过程逻辑和持续文件摄取对象.",
+      "值级计算使用适合的 UDF，多步骤过程逻辑评估 Stored Procedure，自动文件摄取评估 Pipe/Snowpipe.",
+      "UDF 主要返回计算值，Stored Procedure 执行过程逻辑，而 Pipe 用于定义 Snowpipe 摄取路径."
+    ],
+    "misconceptions": [
+      "UDF 专门用于安排固定时间运行的 Task",
+      "Stored Procedure 只是保存一段只读查询结果",
+      "Pipe 是永久保存所有历史文件的业务表"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-coco-development-assistance",
+    "courseId": "snowflake",
+    "name": "CoCo 辅助开发的基本工作流",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "使用 AI 辅助理解、修改和调试 Snowflake 相关 SQL/代码.",
+    "required": [
+      "使用 AI 辅助理解、修改和调试 Snowflake 相关 SQL/代码.",
+      "将 CoCo 的建议视为候选修改，查看差异并验证执行结果后再采纳.",
+      "AI 辅助生成或修改代码不能替代权限检查、代码审查和结果验证."
+    ],
+    "misconceptions": [
+      "AI 生成的 SQL 可以不经验证直接执行",
+      "查询文本更短就一定更快且结果相同",
+      "提交 Git 就代表生产对象已成功更新"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-authentication-methods",
+    "courseId": "snowflake",
+    "name": "MFA、SSO、OAuth 与 Key-pair 认证",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "了解 Snowflake 登录和应用身份验证的常见方式.",
+    "required": [
+      "了解 Snowflake 登录和应用身份验证的常见方式.",
+      "依据用户交互、企业身份系统和自动化程序的需求选择认证机制.",
+      "MFA 增加登录验证步骤，SSO 依赖企业身份提供方，Key-pair authentication 常用于程序化认证."
+    ],
+    "misconceptions": [
+      "MFA 用来调整仓库大小",
+      "SSO 会自动授予用户所有数据库权限",
+      "将密码放入共享脚本就等于安全的 Key-pair 认证"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-role-hierarchy-grants",
+    "courseId": "snowflake",
+    "name": "系统角色、自定义角色与授权层级",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "用角色和权限继承组织账户管理职责.",
+    "required": [
+      "用角色和权限继承组织账户管理职责.",
+      "按功能创建或使用角色，再向角色授予对象权限并按需要授予角色.",
+      "角色继承和对象授权共同决定当前角色可以执行的操作."
+    ],
+    "misconceptions": [
+      "把所有对象权限直接赋予所有用户最简单且最安全",
+      "角色层级与权限继承没有关系",
+      "授予某个数据库的 USAGE 会自动授予所有表的 SELECT"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-masking-tagging-policies",
+    "courseId": "snowflake",
+    "name": "掩码策略、对象标签与数据分类",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "标记敏感数据并通过策略控制敏感内容的可见方式.",
+    "required": [
+      "标记敏感数据并通过策略控制敏感内容的可见方式.",
+      "按治理需要组合对象标签、分类信息与行/列保护策略.",
+      "标签用于描述和分类对象，掩码和行访问策略负责数据访问时的保护行为."
+    ],
+    "misconceptions": [
+      "对象标签本身会自动隐藏所有敏感列值",
+      "掩码策略用于压缩底层数据文件",
+      "行访问策略只用于给对象添加描述性标签"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-resource-monitoring-account-usage",
+    "courseId": "snowflake",
+    "name": "Resource Monitor 与 ACCOUNT_USAGE",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "监控仓库用量、查询记录和账户级使用数据.",
+    "required": [
+      "监控仓库用量、查询记录和账户级使用数据.",
+      "用 Resource Monitor 管理仓库用量阈值，并用 ACCOUNT_USAGE 视图分析历史使用情况.",
+      "Resource Monitor 用于监控和控制适用仓库的 credits 使用，ACCOUNT_USAGE 提供多类账户历史记录."
+    ],
+    "misconceptions": [
+      "ACCOUNT_USAGE 只保存本地编辑器中的 SQL 草稿",
+      "Resource Monitor 是查询结果缓存",
+      "Resource Monitor 会自动修复所有成本异常"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-connectors-integrations",
+    "courseId": "snowflake",
+    "name": "Snowflake 驱动、Connector 与 Integration",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "让应用程序或外部服务以受控方式连接 Snowflake 或访问外部资源.",
+    "required": [
+      "让应用程序或外部服务以受控方式连接 Snowflake 或访问外部资源.",
+      "根据客户端语言与访问方式选择驱动/Connector，并为云存储或 API 配置相应 Integration.",
+      "驱动/Connector 建立客户端连接，Storage Integration 和 API Integration 用于受控地集成对应外部资源."
+    ],
+    "misconceptions": [
+      "Storage Integration 专门用于保存查询结果缓存",
+      "所有外部连接都只需创建一个任意 Integration",
+      "安装 Snowflake 驱动就会自动获得数据库权限"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-data-unloading",
+    "courseId": "snowflake",
+    "name": "COPY INTO 导出与数据卸载",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "将查询结果或表数据导出到内部或外部 Stage 文件.",
+    "required": [
+      "将查询结果或表数据导出到内部或外部 Stage 文件.",
+      "使用 COPY INTO location 指定输出位置和所需文件格式选项.",
+      "COPY INTO table 用于加载数据，COPY INTO location 可把数据卸载到文件."
+    ],
+    "misconceptions": [
+      "COPY INTO location 是把文件加载进表",
+      "卸载只能导出成 Excel 工作簿",
+      "导出文件一定存放在虚拟仓库内部"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-caching",
+    "courseId": "snowflake",
+    "name": "Query Result、Metadata 与 Warehouse Cache",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "理解不同缓存层如何减少重复查询的工作量.",
+    "required": [
+      "理解不同缓存层如何减少重复查询的工作量.",
+      "根据查询类型和缓存复用目标区分查询结果缓存、元数据缓存和仓库数据缓存.",
+      "Persisted Query Result Cache 可复用符合条件的已保存查询结果，Warehouse Cache 保存可供同一运行仓库后续查询使用的数据."
+    ],
+    "misconceptions": [
+      "所有缓存都是永久保存完整结果的数据仓库",
+      "暂停仓库会确保它的运行数据缓存永远保留",
+      "查询结果缓存会自动改变 SQL 的筛选条件"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-query-optimization-services",
+    "courseId": "snowflake",
+    "name": "Clustering、Search Optimization、Query Acceleration 与 Materialized View",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "识别 Snowflake 中不同查询优化能力的适用场景.",
+    "required": [
+      "识别 Snowflake 中不同查询优化能力的适用场景.",
+      "按查询模式选择并评估 Clustering、Search Optimization、Query Acceleration 或 Materialized View.",
+      "Search Optimization 可帮助适用的选择性查找，Query Acceleration 可加速适用查询，Materialized View 预计算特定查询结果."
+    ],
+    "misconceptions": [
+      "所有优化服务对所有 SQL 查询都同样有效",
+      "Materialized View 主要用于配置 MFA 登录",
+      "Search Optimization 会自动创建业务语义指标"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-data-sharing-reader-accounts",
+    "courseId": "snowflake",
+    "name": "Provider、Consumer、Share 与 Reader Account",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "理解共享数据的提供方、消费者和 Reader Account 的基本角色.",
+    "required": [
+      "理解共享数据的提供方、消费者和 Reader Account 的基本角色.",
+      "在共享中配置适当对象和消费者授权；对没有 Snowflake 账户的消费者可评估 Reader Account.",
+      "Reader Account 允许提供方与没有常规 Snowflake 账户的消费者共享数据，相关计算由提供方承担."
+    ],
+    "misconceptions": [
+      "Reader Account 必须由每个消费者先建立自己的普通账户",
+      "消费者会自动获得提供方账户里的所有对象",
+      "Secure Share 会把数据复制到另一个账户后才允许访问"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-marketplace-native-apps",
+    "courseId": "snowflake",
+    "name": "Marketplace Listing、Clean Rooms 与 Native Apps",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "了解公开/私有数据产品发布、受控协作分析和应用分发方式.",
+    "required": [
+      "了解公开/私有数据产品发布、受控协作分析和应用分发方式.",
+      "按场景选择 Private/Public Listing、Data Clean Rooms 或 Native App.",
+      "Listing 用于发布数据产品或服务，Clean Rooms 面向受控数据协作分析，Native Apps 用于分发应用能力."
+    ],
+    "misconceptions": [
+      "Public Listing 会自动授予所有人访问底层所有原始数据",
+      "Data Clean Room 是用于调高 Warehouse 计算规模的对象",
+      "Native App 仅仅是一个不含程序逻辑的 CSV 文件"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  }
+]
