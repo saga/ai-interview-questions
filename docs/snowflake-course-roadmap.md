@@ -230,3 +230,16 @@ flowchart TD
 - [Query history](https://docs.snowflake.com/en/user-guide/ui-query-history) — `docs-query-history`
 
 新增后 Snowflake 题目累计 **941 道**，知识节点累计 **117 个**。本批完成静态预检；未运行 TypeScript、Vitest、题库 CLI 门禁、完整全库去重或 build。
+
+
+## 12. Snowflake CoCo Skills 专项扩展（2026-10-20）
+
+基于 [Snowflake-Labs/coco-skills](https://github.com/Snowflake-Labs/coco-skills) 的技能工作流和示例，新增 100 道简单/中等题与 10 个知识点。重点从技能文档中提炼可迁移的工程判断，而不是记忆命令名称或照搬单个演示的配置。
+
+- 题目：[`snowflake-coco-skills-100.json`](../src/data/questions/snowflake-coco-skills-100.json)
+- 知识点：[`snowflake-coco-skills-expansion.json`](../src/data/knowledge/snowflake-coco-skills-expansion.json)
+- 覆盖矩阵：[`snowflake-coco-skills-100.md`](./snowflake-coco-skills-100.md)
+
+本批包含 60 道简单题、40 道中等题；68 道多选（每题恰好两个正确项）与 32 道单选。十个知识主题涵盖 Semantic View 高级建模、Cortex Analyst 问数应用、Ontology 分层、Dynamic Tables 选型、dbt 自动建模、RBAC、Snowpipe BCDR、OpenFlow PrivateLink、SAP BDC Zero-Copy Connector，以及 Cortex 模型可用性和 CoCo Skill 执行边界。
+
+特别注意：Cortex base mode 与 agentic mode 独立；目标账户/区域中的真实探测比静态名称清单更可靠。Dynamic Tables 的 TARGET_LAG 是新鲜度目标，不是无条件 SLA；语义视图的部署/解释 SQL 也不能替代数据结果验证。更多逐题来源与官方文档入口见覆盖矩阵。
