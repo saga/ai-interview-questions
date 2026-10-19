@@ -1,0 +1,642 @@
+[
+  {
+    "id": "snowflake-guide-itd",
+    "courseId": "snowflake",
+    "name": "ITD 端到端数据管道",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "将接入、转换和交付分开，使每阶段可独立测试、监控和恢复",
+    "required": [
+      "将接入、转换和交付分开，使每阶段可独立测试、监控和恢复",
+      "先接入可追踪的源数据，再运行可测试转换，最后通过受治理的数据集或应用交付",
+      "定义各阶段输入输出契约、质量门禁、负责人和重跑方式"
+    ],
+    "misconceptions": [
+      "任务成功就无需检查数据输出",
+      "把源系统对象直接暴露给所有消费者",
+      "交付层应重新解释每种源格式",
+      "无限重试可以代替数据契约和质量检查"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-notebooks",
+    "courseId": "snowflake",
+    "name": "Snowflake Notebooks 与 Snowpark 工程化",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "把探索代码整理成可重复执行、可部署和可观察的转换步骤",
+    "required": [
+      "把探索代码整理成可重复执行、可部署和可观察的转换步骤",
+      "显式定义输入输出与参数、固定依赖环境、分解可测试步骤并记录结构化日志",
+      "不把凭证写入 Notebook，并对关键输出添加行数/键唯一性断言"
+    ],
+    "misconceptions": [
+      "输出截图比结果数据断言更可靠",
+      "依赖版本可以不管理",
+      "源码里保存明文账号密码更稳定",
+      "一次手工运行能证明自动运行必然成功"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-task-dag",
+    "courseId": "snowflake",
+    "name": "Task DAG 与任务管理 API",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "将真实工作流依赖建模为可管理、可观察的执行图",
+    "required": [
+      "将真实工作流依赖建模为可管理、可观察的执行图",
+      "显式定义父子任务依赖，通过受控 DDL/API 管理任务对象和运行上下文",
+      "明确任务执行角色、依赖图、失败动作和重跑策略"
+    ],
+    "misconceptions": [
+      "Task 名称带数字就自动建立依赖",
+      "重试可以理解业务键去重规则",
+      "生产任务默认应使用管理员身份",
+      "根任务成功即可证明所有子任务正确"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-dynamic-tables",
+    "courseId": "snowflake",
+    "name": "Dynamic Tables 与 Streams/Tasks 选型",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "依据目标延迟、转换模式和控制粒度选择刷新/编排方式",
+    "required": [
+      "依据目标延迟、转换模式和控制粒度选择刷新/编排方式",
+      "声明式转换先评估 Dynamic Tables；需要显式增量捕获或过程控制时比较 Streams/Tasks",
+      "定义目标 lag、刷新告警、质量门禁和回补方式"
+    ],
+    "misconceptions": [
+      "两种模式完全等价",
+      "放大 warehouse 能消除所有依赖问题",
+      "使用 Dynamic Tables 就不需质量检查",
+      "所有转换都必须用 Stream 加单个 Task"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-cicd",
+    "courseId": "snowflake",
+    "name": "Snowflake CLI、Git 与 Notebook CI/CD",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "让代码、配置、执行身份和环境晋级成为可重复审查的交付流程",
+    "required": [
+      "让代码、配置、执行身份和环境晋级成为可重复审查的交付流程",
+      "把源代码与环境参数纳入 Git，使用 CLI/CI 部署并验证数据和权限",
+      "使用受限服务身份、参数化环境配置和受保护发布门禁"
+    ],
+    "misconceptions": [
+      "Git 自动同步全部数据库对象",
+      "语法检查可以代替数据回归",
+      "把个人长期密码写入 CI 是最佳实践",
+      "不看变更差异即可安全覆盖生产"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-dcm",
+    "courseId": "snowflake",
+    "name": "DCM Projects 声明式变更管理",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "声明期望对象状态，让部署比较实际状态并应用差异",
+    "required": [
+      "声明期望对象状态，让部署比较实际状态并应用差异",
+      "将对象定义写入 DCM Project，在审查差异后部署以收敛到目标状态",
+      "把定义纳入 Git 审查，并识别非预期删除/替换"
+    ],
+    "misconceptions": [
+      "DCM 定义只用于文档不参与部署",
+      "手工改生产会自动更新 Git",
+      "声明式部署不会删除或替换对象",
+      "所有环境都应共用生产配置和权限"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-streamlit-runtime",
+    "courseId": "snowflake",
+    "name": "Streamlit Warehouse Runtime 与 Container Runtime",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "根据实例生命周期、缓存/状态、依赖限制和 API 集成选择运行时",
+    "required": [
+      "根据实例生命周期、缓存/状态、依赖限制和 API 集成选择运行时",
+      "Warehouse Runtime 通常按查看者创建实例；Container Runtime 是共享长运行服务，SQL 仍使用独立 warehouse",
+      "分离请求级与共享服务状态，不在全局状态保存用户数据"
+    ],
+    "misconceptions": [
+      "两个运行时内存和缓存始终共享",
+      "`_snowflake` 在所有运行时必定可用",
+      "隐藏页面按钮就可隔离用户数据",
+      "容器能启动就不需评估身份和并发"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-interactive-bi",
+    "courseId": "snowflake",
+    "name": "Interactive Warehouse 实时 BI 读写分离",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "为交互读提供热缓存路径，并将写入/长查询留在合适的执行路径",
+    "required": [
+      "为交互读提供热缓存路径，并将写入/长查询留在合适的执行路径",
+      "受控服务经 Stored Procedure/标准 warehouse 写表，Interactive Warehouse 服务读查询，Streamlit 负责刷新",
+      "使用专用受限角色和窄写入过程，区分当前状态表与历史表"
+    ],
+    "misconceptions": [
+      "Interactive Warehouse 自动复制标准表",
+      "增加它的数量必能修复写入错误",
+      "缓存可以替代持久化历史",
+      "演示延迟是所有生产环境 SLA"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-performance-slo",
+    "courseId": "snowflake",
+    "name": "以 SLO 与基线驱动性能工程",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "把性能需求转为可测量的延迟、并发、吞吐和单位工作成本目标",
+    "required": [
+      "把性能需求转为可测量的延迟、并发、吞吐和单位工作成本目标",
+      "定义 KPI/SLO，用代表性数据、合成负载和历史基线反复测量",
+      "在设计与 CI/CD 阶段执行受控性能基准并设置回退条件"
+    ],
+    "misconceptions": [
+      "只指定 warehouse 尺寸就是完整 SLO",
+      "平均延迟足以代表所有用户",
+      "缓存状态不影响基准可比性",
+      "成本与性能可以完全独立优化"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-query-diagnostics",
+    "courseId": "snowflake",
+    "name": "Query Profile 与弹性计算取舍",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "区分单查询瓶颈、并发排队、扫描量和异常重型查询",
+    "required": [
+      "区分单查询瓶颈、并发排队、扫描量和异常重型查询",
+      "用 Query Profile/History 分析执行算子和队列，再选择纵向扩容、多集群或 QAS 并验证",
+      "每次扩容/启用优化功能都设定目标指标和回退条件"
+    ],
+    "misconceptions": [
+      "多集群扩容主要增加单查询算力",
+      "纵向扩容保证所有查询更快更便宜",
+      "Query Profile 不能呈现执行算子",
+      "查询慢时应先删历史表而非分析计划"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-finops",
+    "courseId": "snowflake",
+    "name": "成本归因、预算护栏与 FinOps 闭环",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "把资源消费映射到团队/产品和单位业务产出，再持续优化",
+    "required": [
+      "把资源消费映射到团队/产品和单位业务产出，再持续优化",
+      "以一致标签和 usage 数据进行归因，设置适用阈值并定期分析异常",
+      "统一标签词汇、资源所有者、阈值动作与定期复查"
+    ],
+    "misconceptions": [
+      "成本应该到上线后才讨论",
+      "总仓库费用能准确代表单个团队价值",
+      "标签自动覆盖所有资源并保证归因准确",
+      "Resource Monitor 能自动重写昂贵 SQL"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-security",
+    "courseId": "snowflake",
+    "name": "网络边界、身份认证与外部数据通路",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "一起约束网络来源、服务身份和可访问的数据出口",
+    "required": [
+      "一起约束网络来源、服务身份和可访问的数据出口",
+      "评估 Network Policy、现代认证/工作负载身份及受控的外部访问配置",
+      "使用专用身份、受限网络和审批后的出口，避免共享长期密码"
+    ],
+    "misconceptions": [
+      "启用 MFA 后不需要网络和数据授权",
+      "外部 Stage 不可能造成数据外传",
+      "共享管理员服务账号最利于审计",
+      "连通成功就证明授权正确"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-least-privilege",
+    "courseId": "snowflake",
+    "name": "最小权限角色与受控写入入口",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响",
+    "required": [
+      "把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响",
+      "为服务设独立受限角色，必要时以严格校验的 Owner Rights 过程封装窄写操作",
+      "限制可操作对象/参数、记录调用，避免服务长期使用 ACCOUNTADMIN"
+    ],
+    "misconceptions": [
+      "隐藏按钮等于禁止数据库写入",
+      "Owner Rights 过程无需校验参数",
+      "授予全部对象 OWNERSHIP 降低风险",
+      "管理员能调用过程就无需检查调用角色"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-pipeline-auditor",
+    "courseId": "snowflake",
+    "name": "Pipeline Auditor 与结构化健康检查",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "对不同类型的数据平台对象运行健康检查并输出分级调查报告",
+    "required": [
+      "对不同类型的数据平台对象运行健康检查并输出分级调查报告",
+      "限定审计范围，调用受限检查工具并返回证据、时间戳与 severity 字段",
+      "限制审计范围和工具权限，把建议与生产改动分开审批"
+    ],
+    "misconceptions": [
+      "语言解释流畅便可省略原始运行数据",
+      "缺状态时由模型补齐根因",
+      "覆盖更多对象就无需限制查询权限",
+      "诊断与生产修复无需区分"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-operations",
+    "courseId": "snowflake",
+    "name": "运行准备度、告警与持续改进",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "让 SLO、自动化、可观测信号与有责任人的处置流程形成闭环",
+    "required": [
+      "让 SLO、自动化、可观测信号与有责任人的处置流程形成闭环",
+      "上线前定义目标和负责人，运行时监测可行动指标，定期复查事故与性能/成本",
+      "为关键指标定义阈值、负责人、升级路径和复盘要求"
+    ],
+    "misconceptions": [
+      "Task 成功就表示新鲜度和完整性正常",
+      "日志越多一定越容易排障",
+      "只在事故后手工截图就足够",
+      "告警责任与可靠性无关"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-reliability",
+    "courseId": "snowflake",
+    "name": "数据契约、Schema 漂移与幂等恢复",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "把数据质量和正确性作为可靠性的一部分，而不只看任务能否执行",
+    "required": [
+      "把数据质量和正确性作为可靠性的一部分，而不只看任务能否执行",
+      "定义字段类型/粒度/主键和兼容策略，以批次状态、幂等写入和对账控制恢复",
+      "区分可兼容/必须阻断的变更，质量失败时阻止下游交付"
+    ],
+    "misconceptions": [
+      "DDL 可执行就代表字段变化不会影响业务",
+      "任务成功可取代质量检查",
+      "删除失败日志就能修复数据错误",
+      "有血缘就代表数据无误"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-disaster-recovery",
+    "courseId": "snowflake",
+    "name": "跨区域恢复与业务连续性",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "将恢复设计与业务可接受数据丢失窗口和恢复时间对齐",
+    "required": [
+      "将恢复设计与业务可接受数据丢失窗口和恢复时间对齐",
+      "定义 RPO/RTO，评估复制/Failover、外部依赖和切换后的端到端功能",
+      "维护覆盖数据、配置、身份、任务和外部依赖的 Runbook 并定期演练"
+    ],
+    "misconceptions": [
+      "复制数据意味着所有 Task 都自动恢复",
+      "每天复制一次天然满足五分钟 RPO",
+      "能登录数据库就算业务已恢复",
+      "灾备无需考虑身份和外部依赖"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-semantic-eval",
+    "courseId": "snowflake",
+    "name": "Semantic View 与 Cortex Agent 评测晋级门禁",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "将语义模型与 Agent 行为评测作为候选版本晋级的硬门禁",
+    "required": [
+      "将语义模型与 Agent 行为评测作为候选版本晋级的硬门禁",
+      "版本化定义、校验格式、隔离部署候选、运行黄金查询与 Agent 评测，全部通过才晋级",
+      "隔离候选语义视图/dashboard，任一评测失败都阻止晋级"
+    ],
+    "misconceptions": [
+      "YAML 校验能证明所有业务指标正确",
+      "流畅回答能替代黄金查询测试",
+      "保留旧 Agent 版本会自动回滚共享视图",
+      "评测失败后可以忽略门禁并观察客户反馈"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-native-app",
+    "courseId": "snowflake",
+    "name": "Native App 安装、引用与消费者授权",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "把应用代码、安装包、对象引用和角色授权做成可安装/升级的数据产品",
+    "required": [
+      "把应用代码、安装包、对象引用和角色授权做成可安装/升级的数据产品",
+      "版本化应用包和 manifest/setup 文件，声明必要对象引用并通过 application role 授权",
+      "声明最小权限/引用，并在真实消费者安装模型中测试访问行为"
+    ],
+    "misconceptions": [
+      "manifest 只管 UI 主题",
+      "安装后自动拥有所有数据库权限",
+      "提供者管理员可读就说明消费者能读",
+      "安装验收只需 CREATE APPLICATION 成功"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  },
+  {
+    "id": "snowflake-guide-coco",
+    "courseId": "snowflake",
+    "name": "CoCo 辅助构建端到端数据与 AI 应用",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "组合接入、转换、质量、结构化/非结构化检索和 Agent 交付形成可验证方案",
+    "required": [
+      "组合接入、转换、质量、结构化/非结构化检索和 Agent 交付形成可验证方案",
+      "分层验证摄取、Dynamic Tables/dbt、数据质量、语义视图、检索工具和 Agent 评测",
+      "结构化/非结构化路径分别做质量门禁，并用 ground-truth 集评测 Agent"
+    ],
+    "misconceptions": [
+      "端到端运行成功就可以省略分层质量检查",
+      "Agent 评测可替代 SQL 模型回归",
+      "所有实时数据必须变成文档供 Search 使用",
+      "Quickstart 不需要容量/成本测试"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "debugging",
+      "boundary",
+      "tradeoff",
+      "design",
+      "diagnosis",
+      "implementation",
+      "misconception",
+      "system-design"
+    ]
+  }
+]
