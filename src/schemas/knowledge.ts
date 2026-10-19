@@ -3,10 +3,12 @@ import { knowledgeAreaSchema, knowledgePrioritySchema, questionAngleSchema } fro
 
 export const knowledgeNodeSchema = z.object({
   id: z.string().min(1),
+  /** 顶层学习体系 id；存量 AI 节点缺省时按 ai 处理。 */
+  courseId: z.string().min(1).optional(),
   name: z.string().min(1),
   area: knowledgeAreaSchema,
-  // 域（area）下的中间层级主题，如 Inference / RAG / Agents（见 src/data/taxonomy.ts）。
-  // 与 id（Concept slug）共同构成 Domain → Topic → Concept 三级路径。
+  // AI 节点中的 area 是 AI 能力域；Snowflake 节点通过 courseId 归入独立课程，area=data-platform 仅作课程内分类元数据。
+  // topic 表示所属主题，id 是课程内知识点（Concept）标识。
   topic: z.string().min(1),
   priority: knowledgePrioritySchema,
   summary: z.string().min(1),

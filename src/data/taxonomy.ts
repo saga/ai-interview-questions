@@ -1,5 +1,5 @@
-// 规范 taxonomy：7 大能力域 → topic 的骨架（ADR-038）。
-// 这是"以面试能力域组织"的单一真理来源：Domain → Topic → Concept(KnowledgeNode) → Subtopic(Question) → Angle。
+// AI 学习体系的规范 taxonomy：6 个 AI 能力域 → topic 的骨架（ADR-038）。
+// Snowflake 是并列的独立课程，其课程主题与角度白名单单独定义于 learningTracks.ts。
 // Concept 层由 src/data/knowledge/*.json 的知识点填充，运行时按 domain/topic 分组（见 groupNodesBy*）。
 //
 // 为何单独成文件（而非塞进知识节点）：
@@ -8,6 +8,7 @@
 
 import type { KnowledgeArea, QuestionAngle } from '../schemas/common';
 import type { KnowledgeNode } from '../schemas/knowledge';
+import { SNOWFLAKE_ANGLE_WHITELIST } from './learningTracks';
 
 export interface TaxonomyTopic {
   id: string;
@@ -293,21 +294,16 @@ export const TAXONOMY: TaxonomyDomain[] = [
       },
     ],
   },
-  { id: 'data-platform', label: '数据平台与数据工程', topics: [
-    { id: 'snowflake', label: 'Snowflake 平台', description: '平台分层/仓库/数据装载/CDC/Dynamic Tables/安全/成本' },
-    { id: 'data-architecture', label: '企业数据架构', description: '数据分层/事实粒度/历史/语义层/RBAC/脱敏' },
-    { id: 'data-engineering', label: '数据工程与交付', description: 'SQL/Git/CI-CD/增量/幂等/数据质量/成本/血缘' },
-  ] },
 ];
 export const DOMAINS: KnowledgeArea[] = TAXONOMY.map((d) => d.id);
 
 /** 域 id → 中文标签。 */
-export const DOMAIN_LABELS: Record<KnowledgeArea, string> = TAXONOMY.reduce(
+export const DOMAIN_LABELS: Partial<Record<KnowledgeArea, string>> = TAXONOMY.reduce(
   (acc, d) => {
     acc[d.id] = d.label;
     return acc;
   },
-  {} as Record<KnowledgeArea, string>,
+  {} as Partial<Record<KnowledgeArea, string>>,
 );
 
 /** topic id → 中文标签。 */
@@ -418,9 +414,6 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'model-data-security': ['definition', 'mechanism', 'scenario', 'debugging'],
   'ai-security-operations': ['definition', 'mechanism', 'scenario', 'debugging'],
   'security-eval': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
-  snowflake: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
-  'data-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
-  'data-engineering': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
 };
 
 /** 全部 10 个角度（白名单兜底值，用于 taxonomy 中未登记的 topic）。 */
@@ -439,5 +432,5 @@ export const FALLBACK_ANGLES: QuestionAngle[] = [
 
 /** 查询某 topic 允许的角度集合；taxonomy 未登记时返回全部 10 角度。 */
 export function allowedAnglesFor(topic: string): QuestionAngle[] {
-  return ANGLE_WHITELIST[topic] ?? FALLBACK_ANGLES;
+  return ANGLE_WHITELIST[topic] ?? SNOWFLAKE_ANGLE_WHITELIST[topic] ?? FALLBACK_ANGLES;
 }

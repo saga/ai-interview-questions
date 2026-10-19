@@ -44,6 +44,8 @@ export const DEFAULT_INTERVIEW_FEEDBACK_MODE: InterviewFeedbackMode = 'standard'
 
 export const interviewDefinitionSchema = z.object({
   title: z.string().min(1),
+  /** 本次训练所属顶层学习体系；未指定的历史定义沿用 AI。 */
+  courseId: z.string().min(1).optional(),
   topic: z.string().min(1).optional(),
   categories: z.array(z.string()),
   difficulties: z.array(difficultySchema),
