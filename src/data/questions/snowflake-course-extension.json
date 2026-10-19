@@ -1,0 +1,1495 @@
+[
+  {
+    "id": "sf-course-core-objects-16",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-core-objects",
+    "subtopic": "snowflake-core-objects",
+    "knowledgeId": "snowflake-core-objects",
+    "tags": [
+      "snowflake-course",
+      "snowflake",
+      "snowflake-core-objects",
+      "coursera-sf-intro",
+      "docs-snowflake-architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-intro",
+      "section": "Core objects and architecture"
+    },
+    "question": "团队把 Warehouse、Database、Schema、Stage 与 Table 都当成同一种“数据库资源”，排障时无法区分计算、命名和文件接入职责。哪些判断正确？",
+    "explanation": "Warehouse 提供查询和 DML 的计算资源；Database/Schema 组织对象；Stage 连接文件与加载流程。暂停计算仓库不等于删除持久化表。",
+    "misconceptions": [
+      "把计算资源误认为命名空间",
+      "把文件接入对象误认为业务表",
+      "混淆计算暂停和持久化数据生命周期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Warehouse 是执行查询和 DML 的计算资源，运行期间会消耗 credits。",
+          "Database 与 Schema 用于组织对象，不是 Warehouse 的计算集群。",
+          "Stage 是引用待加载/卸载文件的对象，不等于目标业务表。",
+          "暂停 Warehouse 会删除它所访问的数据库和表。"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Warehouse 提供查询和 DML 的计算资源；Database/Schema 组织对象；Stage 连接文件与加载流程。暂停计算仓库不等于删除持久化表。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-semi-structured-17",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "knowledgeId": "semi-structured-data",
+    "tags": [
+      "snowflake-course",
+      "snowflake",
+      "semi-structured-data",
+      "coursera-sf-intro",
+      "docs-snowflake-architecture"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-intro",
+      "section": "Semi-structured data types and manipulation"
+    },
+    "question": "上游持续新增 JSON 字段，平台要保留原始数据并将稳定字段供 BI 使用。哪些做法合理？",
+    "explanation": "VARIANT 适合保留半结构化载荷；稳定业务字段仍需验证类型并显式投影。FLATTEN 将嵌套结构展开成关系行，需要注意行粒度和基数变化。",
+    "misconceptions": [
+      "误以为半结构化存储可取代类型治理",
+      "误解 FLATTEN 的关系展开语义",
+      "忽略展开操作可能放大行数"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Raw 保留原始载荷并用 VARIANT 存放可变结构，再对稳定字段做类型校验和投影。",
+          "所有 JSON 字段永远不做类型转换，因为 VARIANT 会自动保证业务类型。",
+          "用 FLATTEN/LATERAL FLATTEN 按需展开数组或对象，但检查展开前后的行粒度。",
+          "把 FLATTEN 理解为建表 DDL，执行后会永久创建一个新列。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "VARIANT 适合保留半结构化载荷；稳定业务字段仍需验证类型并显式投影。FLATTEN 将嵌套结构展开成关系行，需要注意行粒度和基数变化。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-time-travel-cloning-18",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "knowledgeId": "time-travel-cloning",
+    "tags": [
+      "snowflake-course",
+      "snowflake",
+      "time-travel-cloning",
+      "coursera-sf-intro",
+      "docs-time-travel"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-intro",
+      "section": "Advanced data objects and recovery"
+    },
+    "question": "团队需要支持最近误删恢复、创建测试副本，并保留七年业务历史。哪些设计边界正确？",
+    "explanation": "Time Travel 是受保留策略约束的历史访问和恢复机制；克隆利于快速分支环境，但后续变更可能产生额外存储。多年业务历史应设计留存与归档模型。",
+    "misconceptions": [
+      "把受限恢复窗口误作无限期历史库",
+      "假设 Clone 的长期存储代价恒为零",
+      "混淆技术恢复机制和业务历史建模"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在有效保留窗口内评估 Time Travel 查询/恢复能力。",
+          "用零拷贝 Clone 支持隔离测试，但持续改动仍需评估后续存储成本。",
+          "把 Time Travel 配置成无限期历史库，从此无需长期归档。",
+          "长期业务历史仍需专门留存有效时间、业务键、审计与重算策略。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Time Travel 是受保留策略约束的历史访问和恢复机制；克隆利于快速分支环境，但后续变更可能产生额外存储。多年业务历史应设计留存与归档模型。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-snowpipe-files-19",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "snowpipe-file-ingestion",
+    "subtopic": "snowpipe-file-ingestion",
+    "knowledgeId": "snowpipe-file-ingestion",
+    "tags": [
+      "snowflake-course",
+      "data-engineering",
+      "snowpipe-file-ingestion",
+      "coursera-sf-modern-de",
+      "docs-data-loading"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-modern-de",
+      "section": "Ingesting data at scale"
+    },
+    "question": "一个平台每天有大批量历史文件，每几分钟也有新文件到达；坏文件需要隔离并按批次对账。哪些选型与流程合理？",
+    "explanation": "COPY INTO 适合受控批量加载，Snowpipe 面向 Stage 文件到达后的持续摄取。复杂转换和业务校验放在后续管道，并保留批次元数据。",
+    "misconceptions": [
+      "把摄取服务误作通用转换引擎",
+      "把文件到达误认为业务数据已通过验收",
+      "缺少重放和对账元数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "批量窗口可以用 COPY INTO 和 Warehouse 控制装载与批次验收。",
+          "持续到达的 Stage 文件可评估 Snowpipe，结合 load history、拒绝记录和源目标对账。",
+          "把 Snowpipe 当成完整 ETL 平台，要求它负责聚合、维表关联和所有业务规则。",
+          "保留原文件、批次标识、摄取时间与异常隔离路径，便于重放和审计。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "COPY INTO 适合受控批量加载，Snowpipe 面向 Stage 文件到达后的持续摄取。复杂转换和业务校验放在后续管道，并保留批次元数据。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-snowpipe-streaming-20",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "snowpipe-streaming",
+    "subtopic": "snowpipe-streaming",
+    "knowledgeId": "snowpipe-streaming",
+    "tags": [
+      "snowflake-course",
+      "data-engineering",
+      "snowpipe-streaming",
+      "coursera-sf-modern-de",
+      "docs-snowpipe-streaming"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-modern-de",
+      "section": "Ingestion options and continuous pipelines"
+    },
+    "question": "应用要持续推送行级事件，不希望先生成 Stage 文件，并且必须容忍网络重试。哪些设计成立？",
+    "explanation": "Snowpipe Streaming 允许行级数据直接进入目标表；生产设计仍需处理重试与业务去重。摄取确认不等于下游处理完成，交付保证须按所用 channel 模式核实。",
+    "misconceptions": [
+      "把行级流摄取等同文件自动加载",
+      "把平台传输语义等同业务幂等",
+      "把接收确认当成端到端可见性 SLA"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "评估 Snowpipe Streaming 的直接行级写入路径，而不是把它当成文件 Snowpipe 的别名。",
+          "为事件设置稳定业务键/版本，并在下游定义重复和乱序冲突规则。",
+          "默认所有 channel 和生产者之间天然保证严格全局顺序与 exactly-once 业务语义。",
+          "把摄取确认、表内可见时间和下游业务处理完成时间分别监控。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Snowpipe Streaming 允许行级数据直接进入目标表；生产设计仍需处理重试与业务去重。摄取确认不等于下游处理完成，交付保证须按所用 channel 模式核实。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-snowpark-udf-21",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "snowpark-udf-procedures",
+    "subtopic": "snowpark-udf-procedures",
+    "knowledgeId": "snowpark-udf-procedures",
+    "tags": [
+      "snowflake-course",
+      "data-engineering",
+      "snowpark-udf-procedures",
+      "coursera-sf-modern-de",
+      "docs-dynamic-tables-decision"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-modern-de",
+      "section": "Transforming data with SQL and Snowpark"
+    },
+    "question": "管道包括集合式 SQL 清洗、复杂 Python 转换以及有条件的多步工作流。哪些设计判断合理？",
+    "explanation": "SQL 适合集合式转换；UDF 适合函数扩展；存储过程与 Tasks 支持过程控制和编排。方案应结合执行模型、依赖、权限与可观测性选择。",
+    "misconceptions": [
+      "忽略过程控制与集合式转换的差异",
+      "过度依赖程序扩展而忽视维护",
+      "忽略运行环境依赖与发布边界"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先用 SQL 表达关系型过滤、聚合和连接，再用必要的 Snowpark/UDF 扩展特殊计算。",
+          "UDF、存储过程和 Task 职责完全相同，选哪个都不会影响维护与编排。",
+          "需要过程分支、多步状态或自定义调度时，评估存储过程与 Tasks。",
+          "评估包依赖、权限、测试、部署与可观测性，而不是只比较代码行数。"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "SQL 适合集合式转换；UDF 适合函数扩展；存储过程与 Tasks 支持过程控制和编排。方案应结合执行模型、依赖、权限与可观测性选择。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-data-products-22",
+    "courseId": "snowflake",
+    "category": "snowflake-data-products",
+    "topic": "snowflake-data-products",
+    "subtopic": "snowflake-data-products",
+    "knowledgeId": "snowflake-data-products",
+    "tags": [
+      "snowflake-course",
+      "snowflake-data-products",
+      "coursera-sf-modern-de",
+      "docs-access-control"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-modern-de",
+      "section": "Delivering data products"
+    },
+    "question": "团队要把受治理的数据能力提供给消费者：一部分要跨账户共享，一部分提供交互界面，还有一部分打包成可安装应用。哪些设计合理？",
+    "explanation": "数据共享、Marketplace、Streamlit 和 Native App 解决不同交付问题。无论入口如何，底层权限、数据契约、版本与责任边界仍需明确。",
+    "misconceptions": [
+      "将交互界面误认为安全边界",
+      "认为发布自动解决版本治理",
+      "默认交付必须复制所有数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按消费者访问方式分别评估数据共享/Marketplace、Streamlit UI 和 Native Apps。",
+          "认为 Streamlit UI 能替代底层对象权限、数据策略与审计。",
+          "给产品明确 owner、版本、消费契约、升级/撤销策略与访问角色。",
+          "为共享必须把全部数据复制到每个消费团队账户。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "数据共享、Marketplace、Streamlit 和 Native App 解决不同交付问题。无论入口如何，底层权限、数据契约、版本与责任边界仍需明确。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-iceberg-architecture-23",
+    "courseId": "snowflake",
+    "category": "snowflake-lakehouse",
+    "topic": "iceberg-open-table-format",
+    "subtopic": "iceberg-open-table-format",
+    "knowledgeId": "iceberg-open-table-format",
+    "tags": [
+      "snowflake-course",
+      "snowflake-lakehouse",
+      "iceberg-open-table-format",
+      "coursera-sf-iceberg",
+      "docs-iceberg"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-iceberg",
+      "section": "Apache Iceberg fundamentals"
+    },
+    "question": "企业希望让现有云对象存储中的开放数据被多个计算引擎查询，同时也考虑由 Snowflake 管理完整数据生命周期。哪些评估项重要？",
+    "explanation": "Iceberg 是开放表格式，使用元数据、快照与 Catalog 描述表状态，不等同文件编码格式。采用哪类表管理模式需要明确存储控制、引擎支持与运维责任。",
+    "misconceptions": [
+      "混淆文件格式和表格式",
+      "认为跨引擎互操作消除能力差异",
+      "忽略 Catalog 与存储责任边界"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "评估数据/元数据位置、Catalog 控制权、读写引擎能力和治理责任。",
+          "Iceberg 是 Parquet 的另一个名字，不需要表元数据或 Catalog。",
+          "Iceberg 支持快照和 Schema Evolution，但具体能力仍需核对引擎与表管理模式。",
+          "开放格式意味着跨引擎权限、事务和运维行为必然完全一致。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Iceberg 是开放表格式，使用元数据、快照与 Catalog 描述表状态，不等同文件编码格式。采用哪类表管理模式需要明确存储控制、引擎支持与运维责任。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-iceberg-evolution-24",
+    "courseId": "snowflake",
+    "category": "snowflake-lakehouse",
+    "topic": "iceberg-schema-partition-evolution",
+    "subtopic": "iceberg-schema-partition-evolution",
+    "knowledgeId": "iceberg-schema-partition-evolution",
+    "tags": [
+      "snowflake-course",
+      "snowflake-lakehouse",
+      "iceberg-schema-partition-evolution",
+      "coursera-sf-iceberg",
+      "docs-iceberg"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-iceberg",
+      "section": "Schema and partition evolution"
+    },
+    "question": "Iceberg 表要增加字段并调整分区策略，同时业务要求迁移过程可验证、可回滚。哪些措施合理？",
+    "explanation": "Iceberg 支持 Schema 与分区规格演进，但仍应根据引擎、旧文件、查询模式与写入策略验证行为。隔离验证、数据对账和明确回滚点是生产迁移的重要控制。",
+    "misconceptions": [
+      "把元数据演进等同没有兼容性风险",
+      "把 DDL 成功当成迁移验收通过",
+      "在验收前移除回滚保障"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "根据查询模式设计分区与排序，验证更改后文件组织和查询行为。",
+          "把 Schema/Partition Evolution 当成不需要评估历史文件和兼容性的无风险操作。",
+          "采用 Write-Audit-Publish 或等价隔离验证流程，完成数据和查询核验后再切换消费者。",
+          "迁移后立即删除原表和旧快照，不保留回滚或审计窗口。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Iceberg 支持 Schema 与分区规格演进，但仍应根据引擎、旧文件、查询模式与写入策略验证行为。隔离验证、数据对账和明确回滚点是生产迁移的重要控制。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-iceberg-maintenance-25",
+    "courseId": "snowflake",
+    "category": "snowflake-lakehouse",
+    "topic": "iceberg-maintenance-concurrency",
+    "subtopic": "iceberg-maintenance-concurrency",
+    "knowledgeId": "iceberg-maintenance-concurrency",
+    "tags": [
+      "snowflake-course",
+      "snowflake-lakehouse",
+      "iceberg-maintenance-concurrency",
+      "coursera-sf-iceberg",
+      "docs-iceberg-maintenance"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-iceberg",
+      "section": "Operating and optimizing Iceberg tables"
+    },
+    "question": "表运行半年后出现小文件增多、查询变慢、多写入方偶发冲突。哪些生产措施更稳妥？",
+    "explanation": "Iceberg 运维需兼顾文件组织、元数据/快照增长和写入并发。快照过期需配合保留策略；并发冲突应以有界重试、冲突识别和提交核验处理。",
+    "misconceptions": [
+      "只考虑查询性能而不考虑恢复",
+      "在清理中丢失历史恢复保障",
+      "通过无限重试掩盖一致性问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "结合文件大小、快照/元数据增长和查询扫描制定 compaction 与维护计划。",
+          "快照清理前评估恢复窗口、分支/标签和审计需要。",
+          "对所有冲突一律无限重试，不记录提交版本或写入来源。",
+          "为并发写入设计冲突检测、有限重试、幂等提交与结果核验。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Iceberg 运维需兼顾文件组织、元数据/快照增长和写入并发。快照过期需配合保留策略；并发冲突应以有界重试、冲突识别和提交核验处理。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-git-cli-cicd-26",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "snowflake-git-cli-cicd",
+    "subtopic": "snowflake-git-cli-cicd",
+    "knowledgeId": "snowflake-git-cli-cicd",
+    "tags": [
+      "snowflake-course",
+      "snowflake-devops",
+      "snowflake-git-cli-cicd",
+      "coursera-sf-advanced-de",
+      "docs-cli"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-advanced-de",
+      "section": "DevOps with Snowflake"
+    },
+    "question": "多个环境共用 Snowflake SQL 对象，要求 PR 审核、可重复部署、秘密信息隔离和上线回滚。哪些做法构成可靠的基本流水线？",
+    "explanation": "Snowflake DevOps 应让定义可版本控制、部署可重复、身份最小化，并通过测试环境和数据/权限验收后晋级。单纯 SQL 成功不能证明业务结果正确。",
+    "misconceptions": [
+      "以手工状态为真而非版本库为源",
+      "把广泛权限授予自动化身份",
+      "把语法执行成功当完整验收"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把对象定义和管道 SQL 纳入 Git，在 PR 审查依赖及破坏性变化。",
+          "CI 使用专用最小权限身份，并将密钥/环境差异与源代码分开管理。",
+          "只检查 SQL 执行成功，不验证对象定义、样本结果、权限与数据质量。",
+          "将测试环境回归、受控晋级与上线后核验串成可审计流程。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Snowflake DevOps 应让定义可版本控制、部署可重复、身份最小化，并通过测试环境和数据/权限验收后晋级。单纯 SQL 成功不能证明业务结果正确。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-dcm-declarative-27",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "snowflake-declarative-change-management",
+    "subtopic": "snowflake-declarative-change-management",
+    "knowledgeId": "snowflake-declarative-change-management",
+    "tags": [
+      "snowflake-course",
+      "snowflake-devops",
+      "snowflake-declarative-change-management",
+      "coursera-sf-advanced-de",
+      "docs-cli"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-advanced-de",
+      "section": "Database change management and declarative object management"
+    },
+    "question": "团队准备用 CREATE OR ALTER 与 Database Change Management 管理生产对象。哪些认识更准确？",
+    "explanation": "声明式管理有助于减少手工漂移，但不能替代数据迁移、兼容性、依赖与破坏性影响评审。发布流程还需针对重试安全、部分成功和环境差异建立控制。",
+    "misconceptions": [
+      "高估声明式定义对数据迁移的覆盖范围",
+      "只管理对象定义而不管理数据变更",
+      "假设所有部署天然幂等"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "声明式对象管理可让目标定义与部署更可重复，但仍需审查破坏性变化和依赖。",
+          "所有数据迁移、重算和业务回填都可由对象声明自动完成。",
+          "变更流程应包含审查、环境差异检测、部署顺序、失败恢复和上线验证。",
+          "失败后不分析已完成步骤就整体重跑，永远不会造成副作用。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "声明式管理有助于减少手工漂移，但不能替代数据迁移、兼容性、依赖与破坏性影响评审。发布流程还需针对重试安全、部分成功和环境差异建立控制。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-pipeline-observability-28",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "snowflake-pipeline-observability",
+    "subtopic": "snowflake-pipeline-observability",
+    "knowledgeId": "snowflake-pipeline-observability",
+    "tags": [
+      "snowflake-course",
+      "snowflake-devops",
+      "snowflake-pipeline-observability",
+      "coursera-sf-advanced-de",
+      "docs-query-profile"
+    ],
+    "difficulty": "hard",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-advanced-de",
+      "section": "Observability with Snowflake"
+    },
+    "question": "一个任务报告成功，但消费端数据延迟增长且部分批次金额不平。哪些观测和诊断信号更有价值？",
+    "explanation": "作业成功只描述执行状态，不足以证明数据新鲜或业务正确。需要把执行证据和批次/质量指标关联起来，告警后验证恢复结果和消费者影响。",
+    "misconceptions": [
+      "把编排状态等同数据正确性",
+      "忽略业务对账和延迟分解",
+      "将告警发送当问题解决"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只检查 Task 最近一次状态，因为成功意味着业务数据正确。",
+          "关联 event/log/trace、查询执行证据、批次时间戳、源目标对账与数据质量结果。",
+          "定义新鲜度、拒绝行数、重复键、金额差异、执行时长和队列等阈值及告警责任人。",
+          "告警发出后即视为处理完成，无需验证数据恢复。"
+        ],
+        "answer": [
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "作业成功只描述执行状态，不足以证明数据新鲜或业务正确。需要把执行证据和批次/质量指标关联起来，告警后验证恢复结果和消费者影响。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-cortex-llm-functions-29",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "cortex-llm-functions",
+    "subtopic": "cortex-llm-functions",
+    "knowledgeId": "cortex-llm-functions",
+    "tags": [
+      "snowflake-course",
+      "snowflake-genai",
+      "cortex-llm-functions",
+      "coursera-sf-genai-intro",
+      "docs-cortex-functions"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-genai-intro",
+      "section": "Cortex LLM functions and model selection"
+    },
+    "question": "平台要对大量工单做分类、摘要和少量复杂文本生成，希望控制费用并评估质量。哪些策略合理？",
+    "explanation": "Cortex 函数和模型的能力、成本与格式约束不同，应以任务数据和验收指标选型。结构化输出仍需 Schema、业务规则和异常处理来确认语义正确性。",
+    "misconceptions": [
+      "没有根据任务复杂度选型",
+      "未衡量质量和成本就大规模调用",
+      "把输出格式正确当内容正确"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对简单任务优先比较任务专用函数与通用生成函数的质量、成本和约束。",
+          "默认所有请求都用最大模型，因为它一定最快、最便宜且最准确。",
+          "在代表性验证集上比较错误率、格式稳定性、延迟和成本，并设置结构化输出校验。",
+          "模型返回 JSON 就代表抽取字段和业务语义无需进一步验证。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Cortex 函数和模型的能力、成本与格式约束不同，应以任务数据和验收指标选型。结构化输出仍需 Schema、业务规则和异常处理来确认语义正确性。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-cortex-search-rag-30",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "cortex-search-rag",
+    "subtopic": "cortex-search-rag",
+    "knowledgeId": "cortex-search-rag",
+    "tags": [
+      "snowflake-course",
+      "snowflake-genai",
+      "cortex-search-rag",
+      "coursera-sf-genai-apps",
+      "docs-cortex-search"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-genai-apps",
+      "section": "RAG and hybrid search"
+    },
+    "question": "政策文档和服务记录更新频繁，用户要用自然语言检索并看到可核验依据。哪些设计值得优先考虑？",
+    "explanation": "Cortex Search 适用于非结构化搜索与 RAG，但服务刷新、过滤和检索相关性仍需治理。最终答案要评价证据是否充分、新鲜以及结论是否被检索内容支持。",
+    "misconceptions": [
+      "把检索能力误当自动正确性保障",
+      "忽略数据更新与访问边界",
+      "只评价表达不评价证据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为非结构化数据建立 Cortex Search，并定义 searchable/filterable 列。",
+          "为服务更新延迟、权限过滤、检索相关性和来源证据设计独立验收指标。",
+          "认为启用 RAG 后模型一定不会用过期或检索不到的知识。",
+          "只评最终语言流畅度，不评命中内容是否支持答案。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Cortex Search 适用于非结构化搜索与 RAG，但服务刷新、过滤和检索相关性仍需治理。最终答案要评价证据是否充分、新鲜以及结论是否被检索内容支持。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-cortex-analyst-semantic-sql-31",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "cortex-analyst-semantic-sql",
+    "subtopic": "cortex-analyst-semantic-sql",
+    "knowledgeId": "cortex-analyst-semantic-sql",
+    "tags": [
+      "snowflake-course",
+      "snowflake-genai",
+      "cortex-analyst-semantic-sql",
+      "coursera-sf-genai-apps",
+      "docs-cortex-analyst"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-genai-apps",
+      "section": "Semantic model and Cortex Analyst"
+    },
+    "question": "业务用户问“上月净收入”，不同部门对净收入、退款时间和汇率规则理解不同。如何提高 Text-to-SQL 可信度？",
+    "explanation": "Cortex Analyst 需要可信语义定义与关系边界；黄金查询和结果对账可验证指标语义、连接基数与过滤逻辑。语法有效不等于业务定义正确。",
+    "misconceptions": [
+      "只靠 prompt 管理组织级指标语义",
+      "忽略 join 粒度和结果验证",
+      "把 SQL 成功误认为业务正确"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Semantic View 中明确指标定义、关系、粒度、过滤和业务同义词，并指定负责人。",
+          "只增加更长的 system prompt，不管理指标和表关系。",
+          "用黄金问题集核对生成 SQL、聚合粒度及结果并加入业务验收。",
+          "执行成功的 SQL 不可能存在错误 join、重复计数或业务定义错误。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Cortex Analyst 需要可信语义定义与关系边界；黄金查询和结果对账可验证指标语义、连接基数与过滤逻辑。语法有效不等于业务定义正确。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-cortex-agents-orchestration-32",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "cortex-agent-orchestration",
+    "subtopic": "cortex-agent-orchestration",
+    "knowledgeId": "cortex-agent-orchestration",
+    "tags": [
+      "snowflake-course",
+      "snowflake-agent-ml",
+      "cortex-agent-orchestration",
+      "coursera-sf-agents",
+      "docs-cortex-agents"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-agents",
+      "section": "Agent architecture, Analyst and Search tools"
+    },
+    "question": "一个销售 Agent 需要计算结构化指标、检索会议记录，并在必要时汇总两类证据。哪些架构与治理设计正确？",
+    "explanation": "Agent 可组合结构化分析与非结构化检索，但应限制工具契约和权限，并分别验证工具执行、来源证据和综合回答。",
+    "misconceptions": [
+      "混淆结构化查询与文本检索职责",
+      "以扩大权限掩盖权限边界",
+      "忽略工具调用审计和证据质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用验证过的 Semantic View/Cortex Analyst 处理结构化指标，用 Cortex Search 检索文本资料。",
+          "用 orchestration instructions 约束工具选择、参数、证据合并和失败处理，并用代表问题验收。",
+          "向 Agent 所有工具赋予无限制管理员权限，以免规划遇到权限错误。",
+          "在工具权限和对象访问控制下测试允许/拒绝路径，并记录执行证据。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Agent 可组合结构化分析与非结构化检索，但应限制工具契约和权限，并分别验证工具执行、来源证据和综合回答。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-agent-observability-mcp-33",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "cortex-agent-observability-mcp",
+    "subtopic": "cortex-agent-observability-mcp",
+    "knowledgeId": "cortex-agent-observability-mcp",
+    "tags": [
+      "snowflake-course",
+      "snowflake-agent-ml",
+      "cortex-agent-observability-mcp",
+      "coursera-sf-agents",
+      "docs-cortex-agents"
+    ],
+    "difficulty": "hard",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-agents",
+      "section": "Agent monitoring and Model Context Protocol"
+    },
+    "question": "Agent 有时反复调用无关工具，最终回答也无法被来源支持；团队还要通过 MCP 向外部客户端开放能力。哪些控制适当？",
+    "explanation": "Agent 问题常出现在工具规划、检索和执行链路中，需有 Trace 与分层评测。MCP 是连接协议，不替代授权、输入校验和审计。",
+    "misconceptions": [
+      "丢失多步 Agent 的中间证据",
+      "把协议误当安全治理机制",
+      "只评价语言表面质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只保留最终回答，不记录计划、工具输入/输出、错误和耗时。",
+          "把工具 Trace 与最终答案相关性/groundedness、任务完成率和执行成本分开分析。",
+          "为 MCP 工具定义最小权限、输入 Schema、错误契约、速率限制与调用审计。",
+          "评测器只对文字流畅度打分，不评计划与工具行为。"
+        ],
+        "answer": [
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Agent 问题常出现在工具规划、检索和执行链路中，需有 Trace 与分层评测。MCP 是连接协议，不替代授权、输入校验和审计。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-model-finetuning-34",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "snowflake-model-finetuning",
+    "subtopic": "snowflake-model-finetuning",
+    "knowledgeId": "snowflake-model-finetuning",
+    "tags": [
+      "snowflake-course",
+      "snowflake-agent-ml",
+      "snowflake-model-finetuning",
+      "coursera-sf-genai-intro",
+      "docs-cortex-functions"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-genai-intro",
+      "section": "Cortex fine-tuning and model evaluation"
+    },
+    "question": "团队想让模型用特定风格处理工单；提示词和专用函数可处理多数样本，但尾部格式/风格仍不稳定。微调前应做什么？",
+    "explanation": "微调适合解决可由训练样例表达的稳定行为/风格问题，但不能替代检索、权限与事实校验。应先测基线并在独立评测集验证增益。",
+    "misconceptions": [
+      "未经基线比较就选更贵的微调",
+      "用数据泄漏夸大泛化能力",
+      "把参数适配当事实检索与治理方案"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "建立基线、独立评测集和明确风格/正确性指标，再比较提示词、约束输出与微调。",
+          "用同一批训练样本直接报告准确率，避免单独留测试集。",
+          "准备代表性训练/验证数据，并控制数据泄漏和类别分布。",
+          "默认微调可以补足缺失的业务事实、实时知识和访问权限。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "微调适合解决可由训练样例表达的稳定行为/风格问题，但不能替代检索、权限与事实校验。应先测基线并在独立评测集验证增益。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-coco-assisted-dev-35",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "snowflake-coco-assisted-development",
+    "subtopic": "snowflake-coco-assisted-development",
+    "knowledgeId": "snowflake-coco-assisted-development",
+    "tags": [
+      "snowflake-course",
+      "snowflake-agent-ml",
+      "snowflake-coco-assisted-development",
+      "coursera-sf-coco",
+      "docs-coco"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "cognitiveTask": "diagnose",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-coco",
+      "section": "Data exploration, code explanation, debugging and query optimization"
+    },
+    "question": "开发者用 CoCo 生成复杂 SQL 重写建议，执行明显更快，但业务团队怀疑结果少算部分记录。如何安全利用 AI 辅助开发？",
+    "explanation": "CoCo 可加速数据探索、代码理解与优化，但生成建议仍是待审查变更。性能与结果等价是两项独立验收条件。",
+    "misconceptions": [
+      "以执行成功或性能提高代替正确性验证",
+      "遗漏连接/过滤/粒度导致差异",
+      "把自然语言建议当元数据事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "比较重写前后执行计划和资源消耗，并用黄金样本、行数/金额对账验证结果等价。",
+          "只要查询执行成功且更快就直接合并，不检查过滤、连接和粒度。",
+          "提供目标对象、业务语义和错误现象，再审查生成的 SQL、权限与副作用。",
+          "把 CoCo 的自然语言说明当作元数据事实，不必查询对象定义或核对结果。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "CoCo 可加速数据探索、代码理解与优化，但生成建议仍是待审查变更。性能与结果等价是两项独立验收条件。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-document-functions-36",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "cortex-document-functions",
+    "subtopic": "cortex-document-functions",
+    "knowledgeId": "cortex-document-functions",
+    "tags": [
+      "snowflake-course",
+      "snowflake-genai",
+      "cortex-document-functions",
+      "coursera-sf-genai-intro",
+      "docs-cortex-functions"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-genai-intro",
+      "section": "LLM functions and document processing"
+    },
+    "question": "合同 PDF 要提取金额、日期和勾选项，按合同类型路由，再对少量异常合同生成说明。哪些功能分工合理？",
+    "explanation": "文档解析、结构化抽取、分类和通用生成是不同任务。关键字段须进行 Schema 与业务规则校验，对异常内容隔离或人工复核。",
+    "misconceptions": [
+      "混淆解析、抽取、分类与生成",
+      "以自动化替代数据质量责任",
+      "忽略输出事实与格式验证"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按版面/扫描件需求评估文档解析，再按字段 Schema 设计结构化抽取。",
+          "使用分类函数按受控标签集路由，再用规则校验关键金额和日期。",
+          "即使抽取漏字段或类型错误，也可直接覆盖主数据以减少人工步骤。",
+          "少量例外说明可评估通用生成函数，同时验证格式和业务事实。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "文档解析、结构化抽取、分类和通用生成是不同任务。关键字段须进行 Schema 与业务规则校验，对异常内容隔离或人工复核。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-semantic-metrics-37",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "semantic-metric-governance",
+    "subtopic": "semantic-metric-governance",
+    "knowledgeId": "semantic-metric-governance",
+    "tags": [
+      "snowflake-course",
+      "data-architecture",
+      "semantic-metric-governance",
+      "coursera-sf-genai-apps",
+      "docs-semantic-views"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-genai-apps",
+      "section": "Semantic model governance"
+    },
+    "question": "多个报表和自然语言问答都用“活跃客户”指标，但一个数登录事件、另一个数付费账户，连接后还出现重复。哪些措施合理？",
+    "explanation": "语义层需要维护可执行的业务定义与关系边界；名称统一不能消除度量口径差异或 fanout。黄金查询与粒度/基数验证确保 BI 和问答含义一致。",
+    "misconceptions": [
+      "把同标签误当指标语义统一",
+      "忽略连接造成的重复计数",
+      "试图隐藏而不修复事实粒度错误"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "给指标定义 owner、粒度、过滤时间窗、实体键及可加性，并用黄金查询验证。",
+          "只把两个指标显示名称统一就能保证口径相同。",
+          "检查事实粒度与 join cardinality，再判断是否需预聚合或建立不同语义定义。",
+          "让语义视图隐藏重复行，不必修复底层粒度或连接规则。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "语义层需要维护可执行的业务定义与关系边界；名称统一不能消除度量口径差异或 fanout。黄金查询与粒度/基数验证确保 BI 和问答含义一致。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-object-governance-38",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "object-access-governance",
+    "subtopic": "object-access-governance",
+    "knowledgeId": "object-access-governance",
+    "tags": [
+      "snowflake-course",
+      "data-architecture",
+      "object-access-governance",
+      "coursera-sf-intro",
+      "docs-access-control"
+    ],
+    "difficulty": "hard",
+    "angle": "scenario",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-intro",
+      "section": "Core objects and access governance"
+    },
+    "question": "客服应用可查客户表但不得读取完整身份证号；区域分析师只能查看所属区域记录。哪些实现思路成立？",
+    "explanation": "对象级授权、列级脱敏和行访问策略承担不同治理职责。前端隐藏不构成数据库安全边界，必须从真实角色与服务身份验证访问结果。",
+    "misconceptions": [
+      "把 UI 控制当数据库安全",
+      "混淆列脱敏和行过滤",
+      "只验证授权路径不验证拒绝路径"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用角色/对象权限限制可查询对象和操作，并以最小权限授予应用身份。",
+          "用动态脱敏控制敏感列呈现，并用行访问策略限制可见记录范围。",
+          "仅在前端隐藏敏感列和其他区域数据，因为用户无法绕过 UI 查询。",
+          "从实际角色和服务身份验证允许/拒绝路径，并保留审计证据。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "对象级授权、列级脱敏和行访问策略承担不同治理职责。前端隐藏不构成数据库安全边界，必须从真实角色与服务身份验证访问结果。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-query-diagnostics-39",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "knowledgeId": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake-course",
+      "data-engineering",
+      "warehouse-query-diagnostics",
+      "coursera-sf-advanced-de",
+      "docs-warehouses"
+    ],
+    "difficulty": "hard",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-advanced-de",
+      "section": "Pipeline health and performance monitoring"
+    },
+    "question": "BI 查询从 8 秒变成 70 秒，但 Query Profile 显示大部分时间在排队；同一时段 ETL 出现较大 spill。哪些分析与行动更合理？",
+    "explanation": "排队时间指向并发/仓库负载，spill 需检查查询执行与资源需求。扩仓、隔离、多集群或 SQL 改写应依据证据选择，并以延迟和成本双指标评估。",
+    "misconceptions": [
+      "没有区分排队与执行时间",
+      "把扩容当所有瓶颈的万能方案",
+      "忽略工作负载隔离与成本验收"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "区分队列等待和实际执行时间，再结合负载与 Warehouse 使用模式定位并发瓶颈。",
+          "所有问题立即扩大 Warehouse，因为仓库越大总成本越低且排队必然消失。",
+          "针对 spill 查询检查扫描、连接、数据规模和单查询资源，再评估 SQL 与 Warehouse sizing。",
+          "评估 BI/ETL 隔离、自动暂停/恢复和并发扩展策略，并验证成本与服务水平。"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "排队时间指向并发/仓库负载，spill 需检查查询执行与资源需求。扩仓、隔离、多集群或 SQL 改写应依据证据选择，并以延迟和成本双指标评估。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-platform-e2e-40",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-core-objects",
+    "subtopic": "snowflake-core-objects",
+    "knowledgeId": "snowflake-core-objects",
+    "tags": [
+      "snowflake-course",
+      "snowflake",
+      "snowflake-core-objects",
+      "coursera-sf-intro",
+      "docs-snowflake-architecture"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-intro",
+      "section": "Core objects and architecture"
+    },
+    "question": "平台要为开发、BI 与生产管道提供隔离环境，同时降低手工对象管理造成的漂移。哪种整体设计更稳妥？",
+    "explanation": "环境与职责边界需同时体现在对象组织、授权、计算隔离和部署流程中。共享高权限与生产共写会扩大故障半径。",
+    "misconceptions": [
+      "过度简化对象与角色隔离",
+      "以共享高权限换取方便",
+      "没有隔离测试变更和生产数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按环境和职责明确 Database/Schema 与角色边界，为 BI/ETL 规划合适 Warehouse。",
+          "将所有对象放入同一 Schema 并共享一个高权限角色以减少配置。",
+          "把对象定义和环境配置纳入版本控制，采用受控部署并验证所有权与权限。",
+          "让测试与生产直接对同一可写表操作，依靠操作人员避免影响。"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "环境与职责边界需同时体现在对象组织、授权、计算隔离和部署流程中。共享高权限与生产共写会扩大故障半径。"
+      }
+    }
+  },
+  {
+    "id": "sf-course-production-e2e-41",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "snowflake-pipeline-observability",
+    "subtopic": "snowflake-pipeline-observability",
+    "knowledgeId": "snowflake-pipeline-observability",
+    "tags": [
+      "snowflake-course",
+      "snowflake-devops",
+      "snowflake-pipeline-observability",
+      "coursera-sf-advanced-de",
+      "docs-query-profile"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "理解关键机制并依据业务约束选择方案、定位根因或进行系统设计。",
+      "reasoningGoal": "将数据形态、延迟、治理、成本、恢复和审计边界映射到可验证的技术方案。"
+    },
+    "source": {
+      "materialId": "coursera-sf-advanced-de",
+      "section": "DevOps and observability for data pipelines"
+    },
+    "question": "每日订单管道必须保证按时交付、金额对账、可重放和变更可审计。哪些应进入生产验收？",
+    "explanation": "生产管道要满足正确性、新鲜度、可恢复和可审计；重跑需依赖幂等键、批次边界与回补策略，不应无条件清空目标数据。",
+    "misconceptions": [
+      "只验证任务状态而不验证数据契约",
+      "缺少发布、运行和批次的关联证据",
+      "用破坏性重跑代替有边界的恢复设计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "验证源目标关键金额/笔数、新鲜度、拒绝率与重复事件，不只检查 Task 状态。",
+          "记录发布版本、执行身份、批次/事件键、Trace 与质量结果以便审计。",
+          "失败后清空目标表并从当前源重跑，无需定义幂等或补数边界。",
+          "发布前做测试环境回归，上线后核验版本、权限、刷新状态和业务指标。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          2,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "生产管道要满足正确性、新鲜度、可恢复和可审计；重跑需依赖幂等键、批次边界与回补策略，不应无条件清空目标数据。"
+      }
+    }
+  }
+]
