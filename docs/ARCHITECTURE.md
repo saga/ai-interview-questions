@@ -215,9 +215,7 @@ components/
 data/questions/       题库按 topic/内容批次拆分，import.meta.glob 自动合并，无需修改加载器。
                          `category` 对应 taxonomy 二级 topic，`topic` 必须指向知识节点 id。
                          题目支持 choice/open 双形态（open 可选），`angle` 用于覆盖矩阵与训练。
-                         7 大能力域（ai-engineering / llm / llm-applications / agent-engineering /
-                         ai-systems / ai-security / data-platform）是 taxonomy 逻辑分组而非物理文件单位；
-                         新增主题包括 Snowflake、企业数据架构和数据工程。分类标签由
+                         AI 学习体系的六大能力域（ai-engineering / llm / llm-applications / agent-engineering / ai-systems / ai-security）是 taxonomy 逻辑分组而非物理文件单位；Snowflake 是独立课程，不计入 AI taxonomy。分类标签由
                          `domain/categories.ts` 合并 DOMAIN_LABELS + TOPIC_LABELS；角度由
                          taxonomy.ANGLE_WHITELIST（topic→角度子集）约束。
 data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状校验；刻意不建索引/数据库层，
@@ -225,7 +223,7 @@ data/questionBank.ts  题库装配（import.meta.glob eager 合并 + Zod 形状�
 data/conceptGraph.json  知识图谱（两类有向边 prerequisite/related；
                          prerequisite 构成基础→进阶 DAG；加载期先过 Zod 形状校验，再走 isAcyclic DAG 校验）
 data/knowledge/        知识点层 = Concept（ADR-029 / ADR-038）。由 JSON 文件承载并经 import.meta.glob 自动合并；文件名负责内容组织，节点内部不再用文件 slug 当分类——
-                         每个节点声明 `area`（7 大能力域之一：ai-engineering / llm /
+                         每个节点声明 `area`（AI 节点使用六大能力域之一：ai-engineering / llm /
                         llm-applications / agent-engineering / ai-systems / ai-security，
                         骨架见 src/data/taxonomy.ts 的 TAXONOMY）与 `topic`（域下二级主题，
                         如 Inference / RAG / Agents）。由此构成 **Domain → Topic →
@@ -795,4 +793,4 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
 
 ## 数据平台学习内容（ADR-091）
 
-新增的 `data-platform` 能力域包含 `snowflake`、`data-architecture` 与 `data-engineering` 三个 topic。知识点和题目复用现有 JSON 契约、自动加载机制和覆盖分析，不引入独立运行时或数据库层。官方文档索引与端到端案例见 `docs/snowflake-learning-path.md`。
+Snowflake 使用独立的 `courseId=snowflake`，包含自己的主题目录、知识节点与题目集，不进入 AI 的六域 taxonomy；训练组卷、自适应选题、进度视图和历史统计均按所选课程过滤。题目与知识节点沿用现有 JSON 自动加载机制，官方文档索引与端到端案例见 `docs/snowflake-learning-path.md`。

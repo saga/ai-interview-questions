@@ -1,6 +1,14 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-10-19 · 将 Snowflake 从 AI 分类中拆出，改为独立学习体系
+
+- 新增 `/learn` 必经入口，进入训练前先选择 AI 或 Snowflake；并提供“其他知识体系”扩展说明。
+- AI taxonomy 恢复为六个 AI 能力域。Snowflake 的三个课程主题与题目角度白名单单独注册，不再进入 AI `TAXONOMY` / `DOMAINS`。
+- 为 Snowflake 的知识节点和题目显式标记 `courseId=snowflake`；训练组卷、自适应选题、继续训练、进度清单与会话历史按课程隔离。
+- AI 面试与 Copilot 导航仅对 AI 体系开放；本地历史记录兼容此前没有 `courseId` 的 AI 记录。
+- 按用户指示，提交功能修改后不等待测试或 CI 结果。
+
 ## 2026-10-19 · 新增数据平台与数据工程能力域及 Snowflake 实战题库
 
 - 按 ADR-091 新增第七个 `data-platform` 能力域及三个 topic；同步 Zod 枚举、角度白名单、领域标签和 taxonomy 测试。
