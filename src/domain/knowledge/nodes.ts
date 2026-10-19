@@ -13,7 +13,7 @@ export const KNOWLEDGE_AREA_LABELS: Record<KnowledgeArea, string> = {
   'agent-engineering': 'Agent 工程',
   'ai-systems': 'AI 系统',
   'ai-security': 'AI 安全',
-  'data-platform': '数据平台与数据工程',
+  'data-platform': 'Snowflake 独立课程',
 };
 
 /** 按 id（= topic slug）查知识点。 */

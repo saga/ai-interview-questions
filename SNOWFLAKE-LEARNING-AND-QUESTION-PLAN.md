@@ -44,15 +44,17 @@ AI 继续使用原有六个能力域。进入训练前通过 `/learn` 选择学�
 | 文件/目录 | 变更 |
 | --- | --- |
 | 根目录本文件 | 记录审查结论、设计决策、实施状态和验证结果 |
-| `src/schemas/common.ts` | （仅批准新增能力域时）增加 `data-platform` 到 KnowledgeArea 枚举并更新注释 |
-| `src/data/taxonomy.ts` | 添加数据平台分类骨架和学习主题说明 |
-| `src/data/taxonomy.test.ts` | 若新增能力域，更新能力域数量断言；补充新 topic 映射测试 |
-| `src/domain/knowledge/nodes.ts` | （仅新增能力域时）增加领域显示标签 |
+| `src/data/learningTracks.ts` | 顶层课程注册表：AI、Snowflake 和未来课程的展示元数据与课程内主题定义 |
+| `src/domain/learningTracks.ts` | 按 `courseId` 过滤题库、知识点和学习画像；兼容旧会话归类 |
+| `src/components/home/LearningTrackSelector.tsx` | 新增课程选择首页，作为后续学习与训练的入口 |
+| `src/schemas/knowledge.ts`、`src/schemas/interview.ts` | 用可选 `courseId` 标识独立课程，兼容旧 AI 数据 |
+| `src/data/taxonomy.ts`、`src/data/taxonomy.test.ts` | 保持 AI taxonomy 为六大域；单独验证 Snowflake 不进入 AI taxonomy |
 | `src/data/knowledge/{snowflake,data-architecture,data-engineering}.json` | 按三个 topic 分组新增结构化知识节点 |
 | `src/data/questions/snowflake.json` | 新增 Snowflake 平台问题，含场景、多选与开放题参考答案 |
 | `src/data/questions/data-architecture.json` | 新增企业数据架构与建模实战题 |
 | `src/data/questions/data-engineering.json` | 新增数据工程、CI/CD、质量控制和运行排障题 |
-| `README.md`、`docs/ARCHITECTURE.md` | 更新题库文件数量、分类说明和扩展方法 |
+| `src/App.tsx`、`src/hooks/useTrainingSession.ts`、`src/components/progress/ProgressPage.tsx` | 首次进应用先选择课程；训练组卷、自适应选题、继续训练和进度按课程过滤 |
+| `README.md`、`docs/ARCHITECTURE.md`、ADR/CHANGELOG | 更新课程边界、使用入口和扩展方法 |
 | `docs/CHANGELOG.md` | 在顶部追加本次分类和内容变更记录 |
 
 预计首批 15 道题，按三个主题各 5 道组织。每个批次以多选题为主（至少 4/5），同时提供清晰的开放题参考答案；题干自包含、选项长度平衡，避免产品名记忆题和无依据的性能承诺。
