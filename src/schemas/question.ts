@@ -9,9 +9,12 @@ import {
 
 /** 题目溯源引用：课程题库题必须能追溯到原始教学材料（提案要求"Source Evidence"）。 */
 const questionSourceRefSchema = z.object({
+  /** 主教学来源：课程 ID 或官方文档 ID。 */
   materialId: z.string().min(1),
   section: z.string().optional(),
   page: z.number().int().nonnegative().optional(),
+  /** 交叉核对的补充来源 ID；当前产品语义应优先关联官方文档。 */
+  relatedMaterials: z.array(z.string().min(1)).optional(),
 });
 
 const choiceFormatSchema = z.object({

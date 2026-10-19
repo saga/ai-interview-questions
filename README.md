@@ -42,6 +42,8 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
 - `docs/snowflake-learning-path.md`：Snowflake 独立课程的系统学习路线、架构实战与题目索引
+- `docs/snowflake-course-roadmap.md`：基于 8 门 Coursera 课程模块与 Snowflake 官方文档的完整课程路线、知识骨架和毕业案例
+- `skills/snowflake-curriculum/SKILL.md`：独立 Snowflake 课程的知识点/题目维护 prompt
 - 进入训练前先选择学习体系：AI 与 Snowflake 的课程主题、题库、知识点覆盖和本地训练进度分别管理。
 - `docs/CONVERSATION_ARCHITECTURE.md`：统一 Conversation / Intent / Capability 入口设计（ADR-061）
 - `docs/DECISIONS.md`：关键决策（ADR，含"为何不迁 Astro"）

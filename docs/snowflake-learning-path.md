@@ -1,5 +1,7 @@
 # Snowflake 系统学习与架构实战路线
 
+完整的课程目录、8 门 Coursera 课程模块对照、知识骨架、官方文档索引和端到端路线已整理到 [Snowflake 独立课程 Roadmap](snowflake-course-roadmap.md)。本页保留快速地图与重点实践。
+
 ## 学习地图
 
 ```mermaid

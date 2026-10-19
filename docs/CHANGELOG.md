@@ -1,6 +1,14 @@
 # 设计变更记录
 > 记录每次影响设计/架构的变更。新条目追加在顶部，标注日期与变更点。
 
+## 2026-10-19 · 基于 8 门 Coursera 课程与官方文档扩展 Snowflake 知识骨架
+
+- 将 Snowflake 课程主题扩展为八类：平台基础、企业数据架构、现代数据工程、Iceberg/Lakehouse、DevOps/可观测性、数据产品、Cortex GenAI、Cortex Agents/ML/CoCo。
+- 新增 24 个知识节点与 26 道双形态题目；新题主来源引用 Coursera 课程模块，并以 `source.relatedMaterials` 关联核对的 Snowflake 官方文档。
+- 新增 `docs/snowflake-course-roadmap.md`，包含八门课程模块摘要、知识节点映射、官方文档索引、Mermaid 学习路线和端到端项目。
+- 新增 `skills/snowflake-curriculum/SKILL.md`，作为后续补充课程知识与题目的专用 prompt/skill。
+- 按用户要求，不等待测试、CI 或构建结果；本次没有声称自动化验证通过。
+
 ## 2026-10-19 · 将 Snowflake 从 AI 分类中拆出，改为独立学习体系
 
 - 新增 `/learn` 必经入口，进入训练前先选择 AI 或 Snowflake；并提供“其他知识体系”扩展说明。

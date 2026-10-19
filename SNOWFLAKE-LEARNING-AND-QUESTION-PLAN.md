@@ -8,11 +8,7 @@
 
 在现有学习训练器中新增 Snowflake 独立课程，而不是将其归类为 AI 的一个能力域。进入训练前先选择 AI、Snowflake 或未来登记的其他知识体系；选定后，课程主题、知识节点、题目池、推荐、覆盖分析和进度历史均在该体系内运行。保持题目 JSON 契约与通用训练引擎，不引入数据库或新的题库加载层。
 
-本次计划覆盖：
-- Snowflake 平台基础与架构：存储/计算/Cloud Services、虚拟仓库隔离、并发扩缩、成本控制、数据加载、CDC、Dynamic Tables、语义层、安全与治理。
-- 数据架构：分层建模、历史数据保留、源系统与分析平台边界、数据质量和业务语义。
-- 数据工程实战：SQL 版本控制、Git/CI/CD、环境迁移、增量处理、幂等重跑、测试与可观测性。
-- 通过仓库现有自动加载机制加入知识节点和问题集，并更新文档及验证结果。
+本次以 8 门公开 Coursera 课程的章节主题作为教学路线，并以 Snowflake 官方文档核验产品行为。知识骨架分为八个 Snowflake 课程主题：平台基础与对象模型、企业数据架构与治理、现代数据工程与管道、Apache Iceberg/Lakehouse、DevOps/发布/可观测性、数据产品与应用交付、Cortex GenAI 应用、Cortex Agents/ML/CoCo。为每个新知识点配置可追溯的双形态题目，并提供专用 curriculum authoring skill。
 
 明确不在本次范围：批量清理历史 `temp/` / `analysis/` 资产、重写前端或学习算法、引入新的第三方运行时依赖、重构整个题库治理工具链。
 
@@ -23,7 +19,7 @@
 - 题目由 `src/data/questions/*.json` 经 `import.meta.glob` 自动加载；知识节点由 `src/data/knowledge/*.json` 加载。
 - 题目字段 `topic` 必须指向一个现有 KnowledgeNode 的 `id`；`category` 对应 taxonomy 的二级 topic slug。仅添加题目 JSON 会因知识节点缺失而无法通过验证。
 - 题目契约由 Zod 定义，并受 `question:add`、`validate:questions`、长度偏差 lint、题目身份和 variant 检查约束。
-- 当前 `main` 包含 93 个题目 JSON、22 个知识点 JSON、95 个变体 JSON；仓库没有 Snowflake 命名的文件或现有 Snowflake 专属分类。
+- 当前 main 已建立独立 Snowflake 课程文件与来源标记；本轮在现有 15 个知识点/题目基础上扩展题目与知识骨架，不向 AI 六大能力域 taxonomy 增加 Snowflake 主题。
 - AI 原有六个能力域由 `TAXONOMY` 维护；`data-platform` 仅作为 Snowflake 知识节点的兼容性 area 元数据，不能把 Snowflake 主题注册为 AI taxonomy 域。
 - README 和架构文档仍记载“82 个题目文件、1357 题”，与当前目录状态及测试注释中的题目数量不一致，属于文档计数漂移；实施时应更新可确定的文件数，不在未重算全库数据前猜测题量。
 - 当前有 98 个被跟踪的 `temp/` 文件。它们可能承载尚未整理的题库生成和审查结果；本次只记录为维护性问题，不未经确认删除。
@@ -33,32 +29,28 @@
 
 Snowflake 是完整的数据平台课程，涵盖数仓架构、数据建模、治理、SQL 交付和数据运维，与 AI/LLM 课程没有内容归属关系。初版曾把它作为第七个能力域添加到 AI taxonomy；该设计现已纠正为顶层学习体系边界。
 
-**采用独立 `courseId=snowflake` 学习体系**，其下设三个课程主题：
-- `snowflake`：Snowflake 平台与 SQL/对象模型；
-- `data-architecture`：企业数据架构与数据建模；
-- `data-engineering`：摄取、转换、编排、测试、部署与运维。
+**采用独立 `courseId=snowflake` 学习体系**，与 AI 六大能力域并列，包含八个课程主题：
+- `snowflake`：平台基础与对象模型；
+- `data-architecture`：企业数据架构与治理；
+- `data-engineering`：现代数据工程与管道；
+- `snowflake-lakehouse`：Apache Iceberg 与 Lakehouse；
+- `snowflake-devops`：DevOps、发布与可观测性；
+- `snowflake-data-products`：数据产品与应用交付；
+- `snowflake-genai`：Cortex GenAI 应用；
+- `snowflake-agent-ml`：Cortex Agents、ML 与 CoCo。
 
 AI 继续使用原有六个能力域。进入训练前通过 `/learn` 选择学习体系，课程筛选、推荐、进度和历史均不跨体系混合。新增其他知识体系通过课程注册表扩展，而不是向 AI taxonomy 追加非 AI 领域。
-## 3. 拟实施变更
+## 3. 已实施变更
 
-| 文件/目录 | 变更 |
+| 文件/目录 | 已实施内容 |
 | --- | --- |
-| 根目录本文件 | 记录审查结论、设计决策、实施状态和验证结果 |
-| `src/data/learningTracks.ts` | 顶层课程注册表：AI、Snowflake 和未来课程的展示元数据与课程内主题定义 |
-| `src/domain/learningTracks.ts` | 按 `courseId` 过滤题库、知识点和学习画像；兼容旧会话归类 |
-| `src/components/home/LearningTrackSelector.tsx` | 新增课程选择首页，作为后续学习与训练的入口 |
-| `src/schemas/knowledge.ts`、`src/schemas/interview.ts` | 用可选 `courseId` 标识独立课程，兼容旧 AI 数据 |
-| `src/data/taxonomy.ts`、`src/data/taxonomy.test.ts` | 保持 AI taxonomy 为六大域；单独验证 Snowflake 不进入 AI taxonomy |
-| `src/data/knowledge/{snowflake,data-architecture,data-engineering}.json` | 按三个 topic 分组新增结构化知识节点 |
-| `src/data/questions/snowflake.json` | 新增 Snowflake 平台问题，含场景、多选与开放题参考答案 |
-| `src/data/questions/data-architecture.json` | 新增企业数据架构与建模实战题 |
-| `src/data/questions/data-engineering.json` | 新增数据工程、CI/CD、质量控制和运行排障题 |
-| `src/App.tsx`、`src/hooks/useTrainingSession.ts`、`src/components/progress/ProgressPage.tsx` | 首次进应用先选择课程；训练组卷、自适应选题、继续训练和进度按课程过滤 |
-| `README.md`、`docs/ARCHITECTURE.md`、ADR/CHANGELOG | 更新课程边界、使用入口和扩展方法 |
-| `docs/CHANGELOG.md` | 在顶部追加本次分类和内容变更记录 |
-
-预计首批 15 道题，按三个主题各 5 道组织。每个批次以多选题为主（至少 4/5），同时提供清晰的开放题参考答案；题干自包含、选项长度平衡，避免产品名记忆题和无依据的性能承诺。
-
+| `src/data/learningTracks.ts` | Snowflake 独立课程的 8 个主题、标签和描述 |
+| `src/data/knowledge/snowflake-extended.json` | 新增 24 个知识节点；原 15 个节点继续保留 |
+| `src/data/questions/snowflake-course-extension.json` | 新增 26 道双形态题：24 道支撑新节点，另加 2 道端到端综合题 |
+| `src/schemas/question.ts` | 为题目来源增加 `relatedMaterials`，连接课程章节与官方文档 |
+| `docs/snowflake-course-roadmap.md` | 8 门课程、模块摘要、官方文档索引、知识映射、依赖图和毕业实践 |
+| `skills/snowflake-curriculum/SKILL.md` | 专用内容建设 prompt/skill，约束课程归属、来源溯源与题目质量 |
+| `docs/snowflake-learning-path.md`、README、CHANGELOG | 指向完整 roadmap 并记录内容扩展 |
 ## 4. 内容设计与学习顺序
 
 1. **基础机制**：云服务层、持久化存储、虚拟仓库与独立计算、微分区/查询执行的职责边界。
@@ -82,23 +74,31 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 
 ## 6. 当前状态
 
-- [x] 检查仓库树、题目与知识点数据契约、taxonomy、题库验证脚本、CI workflow。
-- [x] 初版把 Snowflake 放入 AI 第七能力域；根据课程边界复核，已纠正该设计。
-- [x] AI taxonomy 恢复为原有六个能力域，Snowflake 使用独立课程注册表、主题目录与角度白名单。
-- [x] 新增必经入口 `/learn`：进入训练前先选择 AI 或 Snowflake；为其他知识体系预留注册扩展方式。
-- [x] 为 15 个 Snowflake 知识节点与 15 道题标记 `courseId=snowflake`，并保留原有选择/开放双形态。
-- [x] 训练、组卷、自适应候选池、继续训练、进度与会话历史按所选课程隔离；旧的无 `courseId` 记录按知识节点映射兼容。
-- [x] 更新 taxonomy 测试、课程主题标签、README、架构文档、ADR-091 与 CHANGELOG。
-- [ ] 按用户本轮指示，本次只完成代码/文档功能修改，不等待或声称测试、CI、构建门禁已通过；需要后续在可运行环境补做回归。
+- [x] AI taxonomy 保持原有六个能力域；Snowflake 为独立 `courseId=snowflake` 课程。
+- [x] Snowflake 课程主题从 3 个扩展到 8 个。
+- [x] 新增 24 个知识点、26 道题；原 15 道题/15 个节点继续保留，当前 Snowflake 课程共 39 个知识节点、41 道题。
+- [x] 为新题提供课程模块 `source.materialId`/`source.section` 与 Snowflake 官方文档 `source.relatedMaterials` 的交叉溯源。
+- [x] 新增八门 Coursera 课程路线、官方文档索引、Mermaid 学习依赖图与端到端结业案例。
+- [x] 新增 `skills/snowflake-curriculum/SKILL.md`，约束后续课程扩展时的来源、课程边界和题目格式。
+- [ ] 按本次要求，不等待测试或 CI；尚未运行 TypeScript、Vitest、题库门禁或构建，不能宣称通过。
 ## 7. 官方技术依据
 
-- [Snowflake key concepts and architecture](https://docs.snowflake.com/en/user-guide/intro-key-concepts)
-- [Overview of data loading](https://docs.snowflake.com/en/user-guide/data-load-overview)
+- [Key concepts and architecture](https://docs.snowflake.com/en/user-guide/intro-key-concepts)
+- [Virtual warehouses](https://docs.snowflake.com/en/user-guide/warehouses)
+- [Data loading overview](https://docs.snowflake.com/en/user-guide/data-load-overview)
 - [Snowpipe](https://docs.snowflake.com/en/user-guide/data-load-snowpipe-intro)
-- [Introduction to streams](https://docs.snowflake.com/en/user-guide/streams-intro)
-- [Introduction to tasks](https://docs.snowflake.com/en/user-guide/tasks-intro)
-- [Dynamic table target lag](https://docs.snowflake.com/en/user-guide/dynamic-tables/target-lag)
-- [Dynamic table refresh modes](https://docs.snowflake.com/en/user-guide/dynamic-tables/refresh-modes)
-- [Creating semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/creating)
-- [Overview of access control](https://docs.snowflake.com/en/user-guide/security-access-control-overview)
-- [Cost controls for warehouses](https://docs.snowflake.com/en/user-guide/cost-controlling-controls)
+- [Snowpipe Streaming](https://docs.snowflake.com/en/user-guide/snowpipe-streaming/data-load-snowpipe-streaming-overview)
+- [Streams and Tasks](https://docs.snowflake.com/en/user-guide/data-pipelines-intro)
+- [Dynamic tables](https://docs.snowflake.com/en/user-guide/dynamic-tables/overview)
+- [Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel)
+- [Iceberg tables](https://docs.snowflake.com/en/user-guide/tables-iceberg)
+- [Iceberg table maintenance](https://docs.snowflake.com/en/user-guide/tables-iceberg-manage)
+- [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index)
+- [Semantic Views](https://docs.snowflake.com/en/user-guide/views-semantic/creating)
+- [Access control](https://docs.snowflake.com/en/user-guide/security-access-control-overview)
+- [Cortex AI functions](https://docs.snowflake.com/en/user-guide/snowflake-cortex/llm-functions)
+- [Cortex Search](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview)
+- [Cortex Analyst](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst)
+- [Cortex Agents](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
+- [Query Profile](https://docs.snowflake.com/en/user-guide/ui-query-profile)
+- [CoCo documentation search](https://docs.snowflake.com/en/search?q=CoCo)
