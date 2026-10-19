@@ -135,7 +135,7 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 
 ## 11. Snowflake Developer Guides 实战与架构题扩展（2026-10-19）
 
-新增 200 道原创题（120 简单、80 中等）与 20 个知识点。覆盖 ITD、Notebook/Task DAG、Dynamic Tables、CLI/GitHub Actions、DCM Projects、Streamlit 运行时、Interactive Warehouse、Well-Architected 性能/安全/可靠性/FinOps、Pipeline Auditor、Semantic View/Agent 评测、Native Apps 与 CoCo 端到端应用。
+新增 200 道原创题（120 简单、80 中等）与 20 个知识点。选择题分布为 140 道双答案多选和 60 道单选，以符合题库导入门禁。覆盖 ITD、Notebook/Task DAG、Dynamic Tables、CLI/GitHub Actions、DCM Projects、Streamlit 运行时、Interactive Warehouse、Well-Architected 性能/安全/可靠性/FinOps、Pipeline Auditor、Semantic View/Agent 评测、Native Apps 与 CoCo 端到端应用。
 
 - 题目：`src/data/questions/snowflake-developer-guides-200.json`
 - 知识点：`src/data/knowledge/snowflake-developer-guides-expansion.json`
