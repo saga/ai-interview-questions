@@ -37,7 +37,7 @@ export const questionAngleSchema = z.enum([
   'synthesis',
 ]);
 
-// 7 大能力域（ADR-038 + ADR-091）：以"面试能力域"组织题库，而非按技术名词平铺。
+// AI 学习体系的六大能力域（ADR-038）。独立课程通过 courseId 标识，不加入 AI taxonomy。
 // 每个域下再分 topic（见 src/data/taxonomy.ts），topic 下才是 Concept（KnowledgeNode）。
 export const knowledgeAreaSchema = z.enum([
   'ai-engineering', // 基础能力：DL/CNN/序列模型/Transformer

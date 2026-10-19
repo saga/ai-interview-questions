@@ -6,7 +6,7 @@
 
 ## 1. 目标与范围
 
-在现有 AI 面试训练器中增加可持续维护的 Snowflake 学习路径、数据架构设计内容和工程实战题库。题目应考查技术机制、方案权衡、架构设计、故障诊断与交付治理，而不是单纯记忆产品名词。保持现有题库 JSON 契约、题目选择/开放双形态、知识节点驱动评分与覆盖分析机制，不引入数据库或新的题库加载层。
+在现有学习训练器中新增 Snowflake 独立课程，而不是将其归类为 AI 的一个能力域。进入训练前先选择 AI、Snowflake 或未来登记的其他知识体系；选定后，课程主题、知识节点、题目池、推荐、覆盖分析和进度历史均在该体系内运行。保持题目 JSON 契约与通用训练引擎，不引入数据库或新的题库加载层。
 
 本次计划覆盖：
 - Snowflake 平台基础与架构：存储/计算/Cloud Services、虚拟仓库隔离、并发扩缩、成本控制、数据加载、CDC、Dynamic Tables、语义层、安全与治理。
@@ -24,22 +24,21 @@
 - 题目字段 `topic` 必须指向一个现有 KnowledgeNode 的 `id`；`category` 对应 taxonomy 的二级 topic slug。仅添加题目 JSON 会因知识节点缺失而无法通过验证。
 - 题目契约由 Zod 定义，并受 `question:add`、`validate:questions`、长度偏差 lint、题目身份和 variant 检查约束。
 - 当前 `main` 包含 93 个题目 JSON、22 个知识点 JSON、95 个变体 JSON；仓库没有 Snowflake 命名的文件或现有 Snowflake 专属分类。
-- 能力域目前固定为 6 个：`knowledgeAreaSchema`、`TAXONOMY`、`KNOWLEDGE_AREA_LABELS` 与 `taxonomy.test.ts` 均有对应定义/断言。
+- AI 原有六个能力域由 `TAXONOMY` 维护；`data-platform` 仅作为 Snowflake 知识节点的兼容性 area 元数据，不能把 Snowflake 主题注册为 AI taxonomy 域。
 - README 和架构文档仍记载“82 个题目文件、1357 题”，与当前目录状态及测试注释中的题目数量不一致，属于文档计数漂移；实施时应更新可确定的文件数，不在未重算全库数据前猜测题量。
 - 当前有 98 个被跟踪的 `temp/` 文件。它们可能承载尚未整理的题库生成和审查结果；本次只记录为维护性问题，不未经确认删除。
 - GitHub 返回的最新 `main` Actions 工作流运行结论为 failure，但当前连接器没有返回其 job 明细。后续验证必须重新运行可用的本地检查/CI，不能把部署状态当作测试通过。
 
-### 2.2 架构分类决策（实施前确认）
+### 2.2 架构分类决策（已修订）
 
-Snowflake 是通用数据平台，当前 6 个能力域又基本都围绕 AI/LLM 建立。将其归入 `ai-systems` 改动较少，但会让通用数仓、数据治理和数据工程知识被错误归类；新增“数据平台与数据工程”能力域语义更准确，但需要更新枚举、taxonomy 测试、能力域标签和架构说明。
+Snowflake 是完整的数据平台课程，涵盖数仓架构、数据建模、治理、SQL 交付和数据运维，与 AI/LLM 课程没有内容归属关系。初版曾把它作为第七个能力域添加到 AI taxonomy；该设计现已纠正为顶层学习体系边界。
 
-**推荐方案：新增第七个 `data-platform` 能力域**，其下设三个 topic：
+**采用独立 `courseId=snowflake` 学习体系**，其下设三个课程主题：
 - `snowflake`：Snowflake 平台与 SQL/对象模型；
 - `data-architecture`：企业数据架构与数据建模；
 - `data-engineering`：摄取、转换、编排、测试、部署与运维。
 
-若不批准新增能力域，则改为在现有 `ai-systems` 下只增加 `data-platform` topic，并将各知识节点挂在该 topic；不同时保留两种分类方案。
-
+AI 继续使用原有六个能力域。进入训练前通过 `/learn` 选择学习体系，课程筛选、推荐、进度和历史均不跨体系混合。新增其他知识体系通过课程注册表扩展，而不是向 AI taxonomy 追加非 AI 领域。
 ## 3. 拟实施变更
 
 | 文件/目录 | 变更 |
@@ -82,16 +81,13 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 ## 6. 当前状态
 
 - [x] 检查仓库树、题目与知识点数据契约、taxonomy、题库验证脚本、CI workflow。
-- [x] 确认当前仓库没有 Snowflake 专属文件；统计题目/知识/变体与 `temp/` 文件数。
-- [x] 写入本实施计划。
-- [x] 用户确认采用方案 A：新增第七个“数据平台与数据工程”能力域。
-- [x] 更新 schema、taxonomy、角度白名单、领域标签和 taxonomy 测试。
-- [x] 新增 15 个知识节点、15 道双形态问题与 Snowflake 学习路线。
-- [x] 更新 README、架构文档、ADR-091 与 CHANGELOG。
-- [x] 预提交结构检查：15/15 题目 ID 唯一；15/15 题目 topic 均映射到知识节点；15/15 题目包含 choice/open；12/15 为多选；答案索引、选项唯一性与 misconceptionMap 形状检查通过；选项长度比最大值为 1.59（门槛 1.8）。
-- [x] 已触发提交 `519f0dafc1bdbc022d8e1728c2376d02a0c4618f` 对应的 GitHub Actions 工作流；GitHub 返回 run conclusion=failure，但 jobs 接口返回 0 个 job，无法取得失败步骤或日志。此前基线提交 `f8090dbe64b4235ced95f7323db337364f257685` 的工作流也显示 failure，因此不能将其直接归因于本次题库改动。
-- [ ] 尚未独立运行 `npm run typecheck`、`npm run test`、`npm run validate:questions`、题目身份/变体门禁与 `npm run build`；当前执行环境无法克隆 GitHub 仓库（DNS 无法解析），因此这些检查不能标记为通过。
-
+- [x] 初版把 Snowflake 放入 AI 第七能力域；根据课程边界复核，已纠正该设计。
+- [x] AI taxonomy 恢复为原有六个能力域，Snowflake 使用独立课程注册表、主题目录与角度白名单。
+- [x] 新增必经入口 `/learn`：进入训练前先选择 AI 或 Snowflake；为其他知识体系预留注册扩展方式。
+- [x] 为 15 个 Snowflake 知识节点与 15 道题标记 `courseId=snowflake`，并保留原有选择/开放双形态。
+- [x] 训练、组卷、自适应候选池、继续训练、进度与会话历史按所选课程隔离；旧的无 `courseId` 记录按知识节点映射兼容。
+- [x] 更新 taxonomy 测试、课程主题标签、README、架构文档、ADR-091 与 CHANGELOG。
+- [ ] 按用户本轮指示，本次只完成代码/文档功能修改，不等待或声称测试、CI、构建门禁已通过；需要后续在可运行环境补做回归。
 ## 7. 官方技术依据
 
 - [Snowflake key concepts and architecture](https://docs.snowflake.com/en/user-guide/intro-key-concepts)

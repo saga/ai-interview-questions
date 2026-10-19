@@ -36,7 +36,7 @@ export default function LearningTrackSelector({ onSelect }: Props) {
                     <Tag color="geekblue">{bank.questions.length} 道题目</Tag>
                     <Tag>{bank.categories.length} 个课程主题</Tag>
                   </Space>
-                  {isSnowflake && (
+                  {'learningPathUrl' in track && (
                     <Typography.Link href={track.learningPathUrl} target="_blank" rel="noreferrer">
                       <BookOutlined /> 学习路线与官方文档
                     </Typography.Link>

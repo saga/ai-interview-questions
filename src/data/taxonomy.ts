@@ -298,13 +298,13 @@ export const TAXONOMY: TaxonomyDomain[] = [
 export const DOMAINS: KnowledgeArea[] = TAXONOMY.map((d) => d.id);
 
 /** 域 id → 中文标签。 */
-export const DOMAIN_LABELS: Partial<Record<KnowledgeArea, string>> = TAXONOMY.reduce(
+export const DOMAIN_LABELS: Record<KnowledgeArea, string> = { ...TAXONOMY.reduce(
   (acc, d) => {
     acc[d.id] = d.label;
     return acc;
   },
-  {} as Partial<Record<KnowledgeArea, string>>,
-);
+  {} as Record<KnowledgeArea, string>,
+), 'data-platform': 'Snowflake 独立课程' };
 
 /** topic id → 中文标签。 */
 export const TOPIC_LABELS: Record<string, string> = (() => {
