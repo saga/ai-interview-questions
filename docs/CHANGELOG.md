@@ -3520,3 +3520,11 @@ assemble 能直接落盘，问题被留在池子里而不是暴露在生成时�
 - 集成 `@earendil-works/pi-ai`（0.84.2）做题目变体与问答题评分。
 - 题库 28 题 / 8 类别 / 单选择·多选·问答三类。
 - 修正：antd 6 的 `Divider` 移除 `orientation`；pi-ai 浏览器密钥改用 `createModels({ credentials })`。
+
+
+## 2026-10-19 — Snowflake roadmap 300-question expansion
+
+- Added 21 detailed Snowflake knowledge nodes, bringing the independent curriculum to 60 knowledge nodes.
+- Added 300 questions (five per node across the eight Coursera course roadmaps), bringing the total Snowflake pool to 341 questions including 41 existing questions.
+- Added per-question course/module/official-doc traceability and a 60-row source-to-question coverage matrix.
+- Static generation checks passed; TypeScript/tests/CLI validation/build were not run in this change.

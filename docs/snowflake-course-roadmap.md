@@ -162,3 +162,16 @@ flowchart TD
 ## 7. 题库溯源约定
 
 新题的 `source.materialId` 记录主教学课程，`source.section` 保存对应模块/章节；`source.relatedMaterials` 链接交叉核对的 Snowflake 官方文档 ID。Roadmap 中的 ID 对照关系是这些字段的目录。题目内容应做技术归纳，不应复制课程讲稿。
+
+
+## 8. 新增 300 道课程来源可追溯题（2026-10-19）
+
+本次在原有 39 个 Snowflake 知识节点与 41 道题基础上，新增 21 个细分知识节点，并为 60 个知识节点各补 5 道题，共新增 300 道题；因此 Snowflake 当前题库为 **60 个知识节点、341 道题**（41 道存量 + 300 道新增）。
+
+题量按 8 门 Coursera 课程分配：平台基础 40 道、现代数据工程 45 道、Advanced Data Engineering 40 道、Iceberg 35 道、Generative AI 入门 35 道、Generative AI Apps 40 道、Agents 35 道、CoCo 30 道。每道题都记录 `source.materialId`、`source.section` 和官方文档 `source.relatedMaterials`。
+
+- 新增知识节点：`src/data/knowledge/snowflake-roadmap-expansion.json`
+- 新增题目：`src/data/questions/snowflake-roadmap-300.json`
+- 逐题来源、模块、Knowledge ID 和 Question ID 映射：[snowflake-question-coverage-300.md](./snowflake-question-coverage-300.md)
+
+本次静态预检验证 300 道题 ID 唯一、题干无重复、每个节点恰有 5 道新题、选项/答案/误解映射长度一致、所有课程与文档来源 ID 均可解析。未运行 TypeScript、Vitest、题库 CLI 门禁或构建，因此不代表运行时 schema、全库去重或 CI 已通过。

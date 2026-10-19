@@ -1,0 +1,548 @@
+[
+  {
+    "id": "iceberg-external-catalog-integration",
+    "courseId": "snowflake",
+    "name": "Iceberg Catalog、外部引擎与权限边界",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "理解 Iceberg Catalog、对象存储与消费引擎之间的元数据协调和访问控制边界。",
+    "required": [
+      "分别验证 Catalog、文件存储和 Snowflake 对象的可访问性",
+      "按实际引擎能力验证读写、提交与并发语义",
+      "把凭据、角色、网络和目录配置纳入可审计交付"
+    ],
+    "misconceptions": [
+      "把开放格式等同于所有引擎自动共享同一权限和事务语义",
+      "只验证元数据可见就认为数据文件可读",
+      "将 Catalog 切换视为无风险的连接字符串修改"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "iceberg-metadata-files-manifests",
+    "courseId": "snowflake",
+    "name": "Iceberg Metadata、Manifest 与快照读取路径",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "通过快照、manifest、metadata 文件和数据文件的关系分析表读取、历史版本与元数据增长。",
+    "required": [
+      "区分表快照、manifest 列表、manifest 与数据文件的职责",
+      "按元数据和文件统计解释扫描范围与小文件问题",
+      "维护历史快照前评估恢复窗口和引用关系"
+    ],
+    "misconceptions": [
+      "认为 Iceberg 只有 Parquet 数据文件没有独立元数据结构",
+      "认为删除旧快照不会影响恢复或仍被引用的数据",
+      "只看表行数不检查文件数量和元数据膨胀"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "iceberg-write-mode-conflict",
+    "courseId": "snowflake",
+    "name": "Iceberg 写入并发、提交冲突与重试策略",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "设计多写入方条件下的提交冲突处理、幂等重试和一致性验证。",
+    "required": [
+      "识别冲突发生在元数据提交而不一定是 SQL 语法",
+      "对重试设置上限、退避、幂等键和冲突后重新读取",
+      "验证并发写入后行数、键唯一性和快照状态"
+    ],
+    "misconceptions": [
+      "使用无限重试掩盖持续的写入竞争",
+      "冲突后盲目覆盖最新元数据",
+      "把请求成功当成多个写入者的业务结果已合并"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "iceberg-migration-validation",
+    "courseId": "snowflake",
+    "name": "Iceberg 迁移验收、双读对账与回滚窗口",
+    "area": "data-platform",
+    "topic": "snowflake-lakehouse",
+    "priority": "P1",
+    "summary": "以可重复对账、读写切换和恢复窗口控制从旧表格式向 Iceberg 的迁移风险。",
+    "required": [
+      "核对 Schema、分区、行数、关键聚合和抽样明细",
+      "安排双读或影子验证并定义切换门槛",
+      "清理旧路径前保留经过验证的回滚窗口"
+    ],
+    "misconceptions": [
+      "以 DDL 成功或表创建成功代替数据验收",
+      "只比较总行数而忽略重复键和指标差异",
+      "切换后立即删除唯一可回滚的数据源"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-model-task-selection",
+    "courseId": "snowflake",
+    "name": "Cortex 任务型函数与通用模型调用选型",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "根据文本任务的确定性、结构要求、质量阈值和成本选择任务型 AI 函数或通用生成能力。",
+    "required": [
+      "按任务类型、输出契约和错误代价选择能力",
+      "用固定测试集测量质量、延迟和费用",
+      "对低置信或格式错误输出建立重试、回退和人工复核"
+    ],
+    "misconceptions": [
+      "一律选参数量最大或单价最高的模型",
+      "把语法格式正确当作任务结果语义正确",
+      "用单条演示样本决定模型选型"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-sql-generation-guardrails",
+    "courseId": "snowflake",
+    "name": "生成 SQL 的权限、成本与结果校验",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "为模型生成的 SQL 增加只读优先、对象 allowlist、运行资源约束和结果验证。",
+    "required": [
+      "将生成与执行分离并用受限角色执行",
+      "验证对象、语句类型、成本上限与结果粒度",
+      "记录提示输入、模型输出、执行状态和用户批准边界"
+    ],
+    "misconceptions": [
+      "在生产高权限角色下直接执行任意生成 SQL",
+      "只检查 SQL 可解析而不检查权限和业务含义",
+      "把模型自我解释当作独立的安全验证"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-embedding-model-evaluation",
+    "courseId": "snowflake",
+    "name": "检索表示质量、召回评估与查询集设计",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "围绕检索用例、代表性查询和相关性标注评估向量或混合检索配置，不将模型名称当质量证据。",
+    "required": [
+      "建立覆盖同义词、缩写、拼写差异和长尾查询的测试集",
+      "分别衡量 Recall@k/相关性与最终任务完成率",
+      "变更表示或检索配置后做版本化回归比较"
+    ],
+    "misconceptions": [
+      "把 embedding 相似度分数当作业务正确性",
+      "只用少量热门查询调参并宣称覆盖充分",
+      "把召回率、排序质量和答案忠实度混成一个指标"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-ml-feature-pipeline",
+    "courseId": "snowflake",
+    "name": "Snowflake ML 特征构建、训练集时点与数据泄漏",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "设计可重复的特征生成和训练数据快照，防止时间泄漏并让训练/推理口径一致。",
+    "required": [
+      "用事件时间和可用时间构造 as-of 特征",
+      "共享并版本化训练与推理特征逻辑",
+      "按时间或实体分组切分数据并检查标签泄漏"
+    ],
+    "misconceptions": [
+      "用预测时不可获得的未来字段训练模型",
+      "训练与推理使用未经对齐的特征计算逻辑",
+      "把随机切分准确率直接当成生产泛化证明"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-search-index-refresh-security",
+    "courseId": "snowflake",
+    "name": "Cortex Search 索引刷新、权限过滤与新鲜度",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "将源表变化、服务刷新、可搜索字段、过滤字段和访问策略纳入检索链路治理。",
+    "required": [
+      "测量源数据提交到检索可见的端到端延迟",
+      "在检索前后验证租户/行权限过滤",
+      "通过回归查询检查刷新后召回与引用证据"
+    ],
+    "misconceptions": [
+      "认为源表更新后检索结果必然立即同步",
+      "把 UI 隐藏结果当作服务端授权",
+      "只看服务运行状态而不测检索新鲜度"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-analyst-test-suite",
+    "courseId": "snowflake",
+    "name": "Cortex Analyst 金标准问题集与 Text-to-SQL 回归",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "用真实业务问法、金标准 SQL/结果及失败类别验证语义模型和生成查询的稳定性。",
+    "required": [
+      "覆盖常用、歧义、边界和不可回答的问题",
+      "分别比较生成 SQL、执行结果、语义等价与性能",
+      "每次修改语义定义或模型配置后运行同一套回归"
+    ],
+    "misconceptions": [
+      "只测 SQL 字符串是否完全一致",
+      "只用 happy-path 问题验证语义模型",
+      "把执行成功视为聚合、过滤和 Join 口径正确"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "semantic-view-relationship-join-path",
+    "courseId": "snowflake",
+    "name": "Semantic View 关系路径、Join 基数与指标粒度",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "通过实体关系、Join 路径与度量粒度控制自然语言查询中的 fanout 和歧义。",
+    "required": [
+      "为每个关系定义键、方向、基数和业务含义",
+      "将事实表粒度及可加性映射进语义定义",
+      "使用交叉实体问题测试 Join 路径和重复计数"
+    ],
+    "misconceptions": [
+      "仅增加自然语言描述就解决所有 Join 歧义",
+      "默认多个关系路径都具有相同业务含义",
+      "以输出字段名称合理代替数值结果对账"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-planning-tool-selection",
+    "courseId": "snowflake",
+    "name": "Agent 任务拆分、工具选择与停止条件",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "把多步骤数据任务拆成可检查的子目标，以工具约束、终止条件和失败路径避免无界循环。",
+    "required": [
+      "为每个工具声明输入输出、权限和失败语义",
+      "设置步骤预算、重试上限和明确完成条件",
+      "根据任务所需证据而非工具数量决定是否调用工具"
+    ],
+    "misconceptions": [
+      "允许 Agent 无限规划和重复调用工具",
+      "将所有数据问题都交给同一无边界工具",
+      "以生成了计划文本作为任务完成证据"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-state-context",
+    "courseId": "snowflake",
+    "name": "Agent 状态、上下文压缩与可恢复执行",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "显式保存任务状态、证据引用和中间结果，避免上下文丢失后重复或错误继续执行。",
+    "required": [
+      "将持久化任务状态与临时 prompt context 分开",
+      "记录每个步骤的输入、工具调用、输出和状态转换",
+      "恢复运行前校验状态版本、权限和已提交副作用"
+    ],
+    "misconceptions": [
+      "把会话上下文当作唯一持久化状态",
+      "压缩上下文时丢掉证据来源和关键约束",
+      "重启后不检查副作用就从第一步盲目重跑"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-permission-boundary",
+    "courseId": "snowflake",
+    "name": "Agent 工具授权、用户身份与最小权限",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P0",
+    "summary": "为 Agent 工具调用绑定可审计身份，并使模型决策不能绕过 Snowflake 的授权和数据策略。",
+    "required": [
+      "将授权决策留在执行端而不是模型提示中",
+      "限制工具允许的对象、语句和资源范围",
+      "记录调用身份、参数、审批和实际访问结果"
+    ],
+    "misconceptions": [
+      "通过 prompt 要求模型遵守权限即可替代后端授权",
+      "使用宽权限服务角色执行所有用户的请求",
+      "把工具输出中的指令视为可信权限变更"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-evaluation",
+    "courseId": "snowflake",
+    "name": "Agent 端到端任务评测、工具轨迹与回归",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "以任务成功、工具正确性、结果质量、权限遵从和运行成本评估 Agent，而非只检查最终文字。",
+    "required": [
+      "建立任务级期望结果和工具调用约束",
+      "保存中间轨迹并将失败分类为规划、工具、检索或答案问题",
+      "在模型、提示、工具或数据变更后执行回归"
+    ],
+    "misconceptions": [
+      "只评最终答案是否流畅",
+      "把一次人工演示当作稳定性评估",
+      "不保存工具轨迹就尝试定位跨步骤故障"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "cortex-agent-failure-recovery",
+    "courseId": "snowflake",
+    "name": "Agent 工具失败、补偿、幂等与人工接管",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "处理超时、部分成功、重复调用和不可逆副作用，定义安全重试与人工升级路径。",
+    "required": [
+      "区分可重试错误、需修正输入的错误和不可重试错误",
+      "对有副作用工具使用幂等键和执行状态查询",
+      "超出重试预算时停止并提供证据和人工接管入口"
+    ],
+    "misconceptions": [
+      "对所有工具错误都使用相同的无限重试",
+      "不查询执行状态就重放非幂等动作",
+      "只向用户展示成功/失败而不保留恢复证据"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-repo-context",
+    "courseId": "snowflake",
+    "name": "CoCo 仓库上下文、对象依赖与变更范围",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "让 AI 辅助开发先识别仓库规范、对象定义、调用链和依赖，再生成范围受控的修改。",
+    "required": [
+      "先确认目标对象及其上下游依赖",
+      "将文件/对象路径和变更边界作为可检查上下文",
+      "在修改前后对比差异并运行与影响面匹配的验证"
+    ],
+    "misconceptions": [
+      "只读取当前打开的 SQL 而忽略仓库依赖",
+      "不检查 Git diff 就接受批量修改",
+      "把生成结果自动写入生产作为默认流程"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-sql-debug-optimization",
+    "courseId": "snowflake",
+    "name": "CoCo SQL 排障、Query Profile 与性能假设验证",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "将 AI 提出的 SQL 性能假设与 Query Profile、扫描量、连接基数和实测对照。",
+    "required": [
+      "先收集查询计划、运行统计与基准条件",
+      "一次修改一个关键变量并进行重复对照",
+      "区分语义正确性、查询耗时、扫描量和 credits"
+    ],
+    "misconceptions": [
+      "根据 SQL 外观直接断定瓶颈",
+      "只用一次运行时间判断优化有效",
+      "为提升性能而改变业务结果口径"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-change-safety-review",
+    "courseId": "snowflake",
+    "name": "CoCo 生成变更的差异审查、测试与安全门禁",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P0",
+    "summary": "对 CoCo 生成的 SQL/代码审查语义、权限、破坏性 DDL、秘密信息和回滚能力。",
+    "required": [
+      "将生成内容视为待审查候选而非可信执行计划",
+      "检查权限变化、数据删除、成本和下游契约",
+      "在隔离环境验证并保留人工批准与回滚依据"
+    ],
+    "misconceptions": [
+      "相信模型生成代码无需常规审查",
+      "只检查语法不评估数据与权限影响",
+      "允许将 token、凭据或敏感数据写入提示和仓库"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-data-exploration",
+    "courseId": "snowflake",
+    "name": "CoCo 辅助数据探索、采样偏差与结论边界",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "用可重复查询、样本覆盖和数据质量证据辅助探索，避免把局部样本相关性写成全量结论。",
+    "required": [
+      "记录过滤条件、样本方法、时间范围和缺失值处理",
+      "将发现性分析与正式指标定义区分开",
+      "对关键发现执行全量或分层复核并记录反例"
+    ],
+    "misconceptions": [
+      "把方便取得的样本当成总体代表",
+      "只汇报支持预设假设的统计结果",
+      "不记录查询条件而无法复现实验结论"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "coco-workflow-governance",
+    "courseId": "snowflake",
+    "name": "CoCo 工作流治理、版本记录与可审计交付",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "在 AI 辅助工作流中保存提示、候选修改、人工决策、执行证据与版本关联。",
+    "required": [
+      "关联输入上下文、输出差异、审核人和提交版本",
+      "区分建议、获批变更与实际执行结果",
+      "按数据敏感级别控制日志、提示和生成内容的保留"
+    ],
+    "misconceptions": [
+      "只保留最终答案不保留变更证据",
+      "把 AI 建议误记为已执行变更",
+      "把敏感输入无边界复制到共享日志"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  }
+]

@@ -49,3 +49,15 @@ Every knowledge node must include `courseId: "snowflake"`, `area: "data-platform
 ## Output contract
 
 Produce the changed node/question JSON, roadmap updates, a mapping from course module → knowledge IDs → question IDs, and a concise list of any technical claims that still need verification.
+
+
+## Large-batch coverage and question quality
+
+For the 8-course Snowflake roadmap, keep course/module attribution explicit and use a coverage matrix rather than relying on tags alone. The current 300-question expansion has 60 knowledge nodes × 5 questions and distributes questions by actual course coverage. For future batches:
+
+1. Identify uncovered objectives from the course modules and split broad nodes where they hide distinct operational competencies; do not manufacture new nodes solely to hit a target count.
+2. Author different assessment intents for each knowledge unit (mechanism, design, diagnosis, trade-off, acceptance/runbook) and customize scenario, correct reasoning, distractors, explanation and reference answer to the product behavior.
+3. Require evidence after every recommendation: relevant official doc ID, scenario constraints, validation query/test, failure/recovery boundary. Avoid treating a successful SQL status as proof of correct data.
+4. Test uniqueness on normalized question stems and assessment intent. Rewording the same decision with a different noun is not a new canonical question.
+5. Generate a course → module → knowledge ID → question ID matrix and reconcile counts from actual question JSON before publishing.
+6. A static generator check is not a substitute for `question:add -- --check`, schema validation, all-bank duplicate/identity checks, typecheck, tests or build. Record which checks truly ran.

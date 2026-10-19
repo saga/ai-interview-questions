@@ -72,15 +72,16 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 - README/架构文档不再声称当前题库仍只有 82 个 JSON 文件；架构与变更记录同步。
 - 最终报告区分“实际运行通过”“未能运行”和“已有失败但未能定位”，不以静态检查代替真实测试。
 
-## 6. 当前状态
+## 6. 当前状态（截至 2026-10-19）
 
-- [x] AI taxonomy 保持原有六个能力域；Snowflake 为独立 `courseId=snowflake` 课程。
-- [x] Snowflake 课程主题从 3 个扩展到 8 个。
-- [x] 新增 24 个知识点、26 道题；原 15 道题/15 个节点继续保留，当前 Snowflake 课程共 39 个知识节点、41 道题。
-- [x] 为新题提供课程模块 `source.materialId`/`source.section` 与 Snowflake 官方文档 `source.relatedMaterials` 的交叉溯源。
-- [x] 新增八门 Coursera 课程路线、官方文档索引、Mermaid 学习依赖图与端到端结业案例。
-- [x] 新增 `skills/snowflake-curriculum/SKILL.md`，约束后续课程扩展时的来源、课程边界和题目格式。
-- [ ] 按本次要求，不等待测试或 CI；尚未运行 TypeScript、Vitest、题库门禁或构建，不能宣称通过。
+- [x] AI taxonomy 保持原有六个能力域；Snowflake 作为独立 `courseId=snowflake` 课程。
+- [x] Snowflake 独立课程包含八个注册主题，沿用 8 门公开 Coursera 课程的学习路线。
+- [x] 累计 60 个 Snowflake 知识节点：原有 39 个节点保留，并新增 21 个细分节点。
+- [x] 累计 341 道 Snowflake 题目：原有 41 道保留，新增 300 道；每个 60 个知识节点都有 5 道本轮新增题。
+- [x] 新题全部记录主课程 ID、公开模块主题和 Snowflake 官方文档 ID；逐题矩阵见 `docs/snowflake-question-coverage-300.md`。
+- [x] 补足 Iceberg Catalog/manifest/并发迁移、Cortex 模型与 SQL 防护、Search/Analyst 评测、Agent 权限与恢复，以及 CoCo 开发治理知识点。
+- [ ] 未运行 TypeScript、Vitest、题库 CLI 门禁、全库重复检查或 build；本轮结果只经过生成后静态预检，不能标记测试/CI 通过。
+
 ## 7. 官方技术依据
 
 - [Key concepts and architecture](https://docs.snowflake.com/en/user-guide/intro-key-concepts)
@@ -102,3 +103,10 @@ Snowflake 功能行为应以官方文档为证据来源；涉及版本、版本�
 - [Cortex Agents](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
 - [Query Profile](https://docs.snowflake.com/en/user-guide/ui-query-profile)
 - [CoCo documentation search](https://docs.snowflake.com/en/search?q=CoCo)
+
+
+## 8. 2026-10-19 内容扩展记录
+
+本轮新增 300 道题和 21 个知识点，不替换原题；题目按 8 门课程分配为 40/45/40/35/35/40/35/30。每个知识节点覆盖机制、设计、诊断、取舍、Runbook/验收证据五类评估视角，所有题均有选择题、开放题参考答案及课程/官方文档溯源。
+
+详见 [逐题覆盖矩阵](docs/snowflake-question-coverage-300.md) 和 [课程 Roadmap](docs/snowflake-course-roadmap.md#8-新增-300-道课程来源可追溯题-2026-10-19)。
