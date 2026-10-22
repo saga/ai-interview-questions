@@ -13,7 +13,7 @@ import type { BubbleListProps } from '@ant-design/x';
 import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { buildModels, getModel } from '../../ai/pi';
+import { buildModels, getModel, callCopilotSDKCompletion } from '../../ai/pi';
 import { questionBank } from '../../data/questionBank';
 import { askQuestion } from '../../application/conversation/questionCapability';
 import { evaluateAnswer as evaluateConversationAnswer } from '../../application/conversation/evaluationCapability';
@@ -76,6 +76,9 @@ async function chatCopilot(
       if (entry.id === 'chrome') {
         const transcript = history.map((h) => `${h.role}: ${h.content}`).join('\n');
         return chromeComplete(system, `${transcript}${transcript ? '\n' : ''}user: ${newContent}`);
+      }
+      if (entry.id === 'copilot-sdk') {
+        return callCopilotSDKCompletion(entry.model || 'auto', system, newContent, history);
       }
       const models = buildModels(entry);
       const model = getModel(models, entry);
