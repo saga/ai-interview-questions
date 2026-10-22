@@ -23,12 +23,29 @@ function respond(res: ServerResponse, statusCode: number, value: unknown): void 
 }
 
 function assertSameOrigin(req: IncomingMessage): void {
+  // Vite is configured with host:true for the frontend; never expose the local Copilot identity to LAN clients.
+  const remoteAddress = req.socket.remoteAddress;
+  if (!remoteAddress || !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remoteAddress)) {
+    throw new HttpError(403, 'Copilot SDK 本地 API 只允许本机回环连接。');
+  }
+
+  const host = req.headers.host;
+  if (!host) throw new HttpError(403, '缺少 Host 请求头。');
+  let requestHost: URL;
+  try {
+    requestHost = new URL(`http://${host}`);
+  } catch {
+    throw new HttpError(403, '无效的 Host 请求头。');
+  }
+  if (!['localhost', '127.0.0.1', '[::1]', '::1'].includes(requestHost.hostname.toLowerCase())) {
+    throw new HttpError(403, 'Copilot SDK 本地 API 只允许 localhost、127.0.0.1 或 ::1。');
+  }
+
   const origin = req.headers.origin;
   if (!origin) return;
-  const host = req.headers.host;
   try {
     const parsed = new URL(origin);
-    if (!['http:', 'https:'].includes(parsed.protocol) || !host || parsed.host.toLowerCase() !== host.toLowerCase()) {
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.host.toLowerCase() !== host.toLowerCase()) {
       throw new HttpError(403, '拒绝跨源访问本地 Copilot SDK API。');
     }
   } catch (error) {
