@@ -78,7 +78,7 @@ describe('isEntryValid（按引擎区分校验）', () => {
 
   it('Copilot SDK 使用本机登录态，不要求 apiKey 或 model（空 model 按 auto 处理）', () => {
     expect(isEntryValid(entry({ id: 'copilot-sdk', model: '', apiKey: '' }))).toBe(true);
-    const p = createLLMProvider({ providers: [entry({ id: 'copilot-sdk', model: '', apiKey: '' })] });
+    const p = new PiAIProvider(entry({ id: 'copilot-sdk', model: '', apiKey: '' }));
     expect(p).toBeInstanceOf(PiAIProvider);
     expect(p?.name).toBe('GitHub Copilot SDK');
   });
