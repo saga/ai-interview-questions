@@ -48,6 +48,7 @@ export const knowledgeAreaSchema = z.enum([
   'ai-systems', // AI 系统：架构/评估/可观测/成本/可靠性
   'ai-security', // AI 安全：注入/泄露/工具/智能体安全
   'data-platform', // 独立 Snowflake 课程的兼容性分类元数据，不属于 AI 的六大 taxonomy
+  'security-architecture', // 独立 Security Architecture 课程的分类元数据，不加入 AI taxonomy
 ]);
 
 export const knowledgePrioritySchema = z.enum(['P0', 'P1', 'P2']);

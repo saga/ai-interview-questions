@@ -2,7 +2,7 @@ import type { QuestionBank } from '../types';
 import type { Question } from '../schemas/question';
 import type { KnowledgeNode } from '../schemas/knowledge';
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
-import type { LearningTrackId } from '../data/learningTracks';
+import { LEARNING_TRACKS, type LearningTrackId } from '../data/learningTracks';
 import { knowledgeNodes } from '../data/knowledgeMap';
 import { questionBank } from '../data/questionBank';
 
@@ -97,9 +97,9 @@ export function courseTopicIds(trackId: LearningTrackId): Set<string> {
 }
 
 export function inferTrackForLegacySession(session: SessionRecord): LearningTrackId | null {
-  for (const trackId of ['ai', 'snowflake'] as const) {
-    const ids = courseTopicIds(trackId);
-    if (sessionBelongsToTrack(session, trackId, ids)) return trackId;
+  for (const track of LEARNING_TRACKS) {
+    const ids = courseTopicIds(track.id);
+    if (sessionBelongsToTrack(session, track.id, ids)) return track.id;
   }
   return null;
 }

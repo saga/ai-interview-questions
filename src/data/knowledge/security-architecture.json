@@ -1,0 +1,303 @@
+[
+  {
+    "id": "sa-business-risk",
+    "courseId": "security-architecture",
+    "name": "业务风险、安全属性与架构追溯",
+    "area": "security-architecture",
+    "topic": "security-architecture-governance",
+    "priority": "P0",
+    "summary": "从关键业务服务、资产、风险偏好和不可接受的业务后果开始，定义安全属性，再追溯到架构决策、控制和证据。",
+    "required": [
+      "安全架构从业务目标、关键资产、威胁情境和风险偏好开始，而不是从产品清单开始。",
+      "把抽象安全属性转成可验证、有责任人且有例外路径的架构约束。",
+      "保留业务风险 → 架构决策 → 控制执行点 → 验证证据 → 剩余风险接受人的追溯链。"
+    ],
+    "misconceptions": [
+      "把控制目录或合规清单当作安全架构本身。",
+      "先选择安全产品，再从产品功能反推业务风险。"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff",
+      "system-design",
+      "design",
+      "synthesis"
+    ]
+  },
+  {
+    "id": "sa-requirement-traceability",
+    "courseId": "security-architecture",
+    "name": "安全需求、架构决策与保障证据",
+    "area": "security-architecture",
+    "topic": "security-requirements",
+    "priority": "P0",
+    "summary": "把风险和义务转成可测试的安全质量属性、系统需求、组件责任、设计决策和生命周期验证证据。",
+    "required": [
+      "安全需求应说明保护对象、条件、强度或时间界限，以及怎样验证。",
+      "控制需要分配给合适的架构层和责任方，并验证端到端效果，而不只确认组件已启用。",
+      "架构决策记录方案选项、权衡、依赖、剩余风险及重新评审触发条件。"
+    ],
+    "misconceptions": [
+      "用“系统必须安全”这样的不可验证文字作为验收标准。",
+      "设计完成后不再更新需求、威胁和保证证据。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "comparison",
+      "design",
+      "system-design"
+    ]
+  },
+  {
+    "id": "sa-threat-modeling",
+    "courseId": "security-architecture",
+    "name": "威胁建模与信任边界",
+    "area": "security-architecture",
+    "topic": "security-threat-modeling",
+    "priority": "P0",
+    "summary": "用系统分解、数据流和信任边界识别攻击面，评估威胁路径与业务影响，并把缓解措施落到设计约束和验证计划。",
+    "required": [
+      "模型包含外部实体、组件、数据流、数据存储、特权转换点和信任边界。",
+      "威胁排序考虑可利用性、业务影响、暴露面和已有缓解措施。",
+      "重要威胁必须有缓解、消除、转移或明确接受的响应，并记录责任人与剩余风险。"
+    ],
+    "misconceptions": [
+      "只分析公网入口，忽略内部服务、管理平面和供应商信任转换。",
+      "把画完数据流图或打完风险分数等同于风险已处理。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "diagnosis",
+      "design",
+      "system-design"
+    ]
+  },
+  {
+    "id": "sa-identity-authorization",
+    "courseId": "security-architecture",
+    "name": "身份、授权与特权访问边界",
+    "area": "security-architecture",
+    "topic": "security-identity-access",
+    "priority": "P0",
+    "summary": "设计用户和工作负载身份、认证、资源级授权、职责分离与高权限访问，让敏感操作有可验证的身份和资源权限依据。",
+    "required": [
+      "认证确认主体身份；授权判断该主体能对特定资源和动作做什么，两者不可替代。",
+      "工作负载应优先使用可归属到工作负载、可轮换且有时限的身份，减少共享长效密钥。",
+      "高风险管理操作需考虑特权隔离、职责分离、紧急访问、审批及审计。"
+    ],
+    "misconceptions": [
+      "仅在 UI 隐藏按钮就认为后台资源受到了授权保护。",
+      "将共享服务账号作为所有调用方的身份和授权依据。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-zero-trust-enforcement",
+    "courseId": "security-architecture",
+    "name": "Zero Trust 策略决策与执行点",
+    "area": "security-architecture",
+    "topic": "security-zero-trust",
+    "priority": "P0",
+    "summary": "围绕主体、上下文、目标资源和策略布置决策与执行点，限制隐式信任和横向移动。",
+    "required": [
+      "不能仅根据网络位置或先前登录状态授予资源的隐式信任。",
+      "策略决策和策略执行职责应清楚，并在资源访问路径上有真实有效的执行点。",
+      "跨云、数据中心和 SaaS 的方案应说明身份上下文、执行点故障时行为及可观测性。"
+    ],
+    "misconceptions": [
+      "把 Zero Trust 等同于采购单个产品或把所有流量绕经 VPN。",
+      "策略引擎已作出决定，就假设所有数据源实际执行了决定。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-data-protection",
+    "courseId": "security-architecture",
+    "name": "数据分类、密钥边界与生命周期保护",
+    "area": "security-architecture",
+    "topic": "security-data-protection",
+    "priority": "P0",
+    "summary": "让数据分类、用途、流向、加密/令牌化、密钥控制、留存和恢复策略匹配业务风险与隐私要求。",
+    "required": [
+      "数据保护从分类、用途、流向和信任边界出发，而不是统一套用一个加密控制。",
+      "密钥管理权限与数据管理权限应分离，并设计轮换、恢复、吊销和审计流程。",
+      "静态加密不能替代访问授权、用途约束、日志脱敏或生命周期管理。"
+    ],
+    "misconceptions": [
+      "认为传输与静态加密足以覆盖被授权身份的数据滥用。",
+      "备份设计不考虑密钥、目录、身份和控制平面依赖。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-cloud-platform-boundaries",
+    "courseId": "security-architecture",
+    "name": "云平台、Landing Zone 与控制平面隔离",
+    "area": "security-architecture",
+    "topic": "security-cloud-platform",
+    "priority": "P0",
+    "summary": "设计组织/账户边界、管理身份、网络分段、策略护栏、集中日志与工作负载部署路径，并明确共享责任。",
+    "required": [
+      "管理平面、工作负载控制和数据平面权限应按风险隔离，避免单一身份控制所有关键资产。",
+      "组织级策略、身份基线、网络边界、日志和加密要求应可重复部署、版本化并检测漂移。",
+      "架构需明确云服务商、平台团队和应用团队责任，并验证责任交界处的控制。"
+    ],
+    "misconceptions": [
+      "只依赖 VPC/VNet 防火墙而忽略云控制平面与身份权限。",
+      "把云服务商的合规声明当成某个 workload 自动安全的证据。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "system-design",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-api-trust-boundaries",
+    "courseId": "security-architecture",
+    "name": "API、服务间调用与外部集成边界",
+    "area": "security-architecture",
+    "topic": "security-application-integration",
+    "priority": "P0",
+    "summary": "在 API、微服务、事件、webhook 和第三方接口间定义身份、资源级授权、出站控制、滥用防护和故障隔离。",
+    "required": [
+      "API 验证调用方身份，并在服务端验证其对具体对象、属性和业务动作的权限。",
+      "第三方集成要限定目标与权限，控制 SSRF、重放、超额调用及业务流程滥用风险。",
+      "网关不能代替下游服务校验资源授权、消息来源、幂等性和敏感动作结果。"
+    ],
+    "misconceptions": [
+      "认为请求经过 API Gateway 后，下游就不需要对象授权。",
+      "仅验证 URL 格式，却允许不可信请求决定任意出站目标。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "diagnosis",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-software-supply-chain",
+    "courseId": "security-architecture",
+    "name": "Secure by Design 与软件供应链信任",
+    "area": "security-architecture",
+    "topic": "security-supply-chain",
+    "priority": "P1",
+    "summary": "将安全默认值、构建来源、依赖、制品完整性、交付身份、SaaS 供应商和持续验证纳入产品与平台架构。",
+    "required": [
+      "安全默认配置、最小权限和可观测能力应是产品的基础属性，而非上线后临时补丁。",
+      "构建、签名、发布和部署身份及权限需可区分、可审计，并验证制品来源和完整性。",
+      "供应商评估需覆盖数据访问、下游分包、事件通知、审计证据与退出方案。"
+    ],
+    "misconceptions": [
+      "把漏洞扫描结果当成制品来源可信的证明。",
+      "供应商有认证就不再需要设计租户隔离、最小权限和退出机制。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-security-observability-resilience",
+    "courseId": "security-architecture",
+    "name": "安全审计、检测与网络韧性",
+    "area": "security-architecture",
+    "topic": "security-resilience-operations",
+    "priority": "P0",
+    "summary": "设计可关联、受保护的安全事件和检测链路，结合事件响应、业务恢复、身份/密钥恢复以及独立的网络恢复路径。",
+    "required": [
+      "审计记录应回答谁、何时、对什么对象执行什么操作，且具备时间一致性、访问限制和防篡改措施。",
+      "监测、告警与响应需要明确控制所有者、严重度、升级路径、证据保留和恢复责任。",
+      "恢复设计覆盖身份、控制平面、密钥、数据、备份、干净环境和外部依赖，并通过演练验证。"
+    ],
+    "misconceptions": [
+      "把集中日志等同于检测和响应能力。",
+      "认为跨可用区/多区域复制足以恢复被同一权限域加密或篡改的数据。"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "diagnosis",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sa-fsi-third-party-resilience",
+    "courseId": "security-architecture",
+    "name": "金融服务第三方依赖与运营韧性",
+    "area": "security-architecture",
+    "topic": "security-financial-services",
+    "priority": "P0",
+    "summary": "从关键业务服务视角评估云、身份提供商、支付/市场数据供应商与 SaaS 的依赖、集中风险、恢复能力和控制证据。",
+    "required": [
+      "从重要业务服务和端到端依赖链识别单点、共同故障域、供应商集中与恢复约束。",
+      "多区域不必然独立；同一身份、控制面、DNS、密钥或供应商依赖可能形成共同失效。",
+      "把第三方责任、审计权、事件沟通、恢复目标、替代路径和退出计划形成可验证约束。"
+    ],
+    "misconceptions": [
+      "只比较单个云服务的 SLA，不分析整个业务服务依赖链。",
+      "用两个部署区域自动推断供应商、身份和控制面故障域独立。"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff",
+      "system-design",
+      "design",
+      "synthesis"
+    ]
+  },
+  {
+    "id": "sa-fsi-solution-patterns",
+    "courseId": "security-architecture",
+    "name": "金融服务解决方案安全参考设计",
+    "area": "security-architecture",
+    "topic": "security-financial-services",
+    "priority": "P0",
+    "summary": "把业务风险、信任边界、身份、数据保护、接口、审计和韧性整合为有明确责任与剩余风险的端到端方案。",
+    "required": [
+      "架构图应清楚表示用户/管理员/服务身份、公开入口、核心服务、数据域、第三方及管理平面。",
+      "关键控制需在实际访问路径执行，并通过测试、审计或运行信号验证，而不只是写在文档中。",
+      "控制分配和 ADR 需说明安全收益、复杂度、运行成本、业务摩擦及剩余风险。"
+    ],
+    "misconceptions": [
+      "安全组件齐全就代表端到端设计成立，不验证组件间的策略连续性。",
+      "只列标准名称作为架构结论，未说明风险如何被具体设计降低。"
+    ],
+    "angles": [
+      "scenario",
+      "tradeoff",
+      "system-design",
+      "design",
+      "synthesis"
+    ]
+  }
+]
