@@ -22,10 +22,11 @@ import { challengeQuestion, type QuestionChallenge } from './questionChallenger'
  *  - chrome：浏览器内置模型，无需 apiKey/model；
  *  - local：OpenAI 兼容本地服务，需要 model id，apiKey 可选（baseUrl 空则用默认地址）；
  *  - cloudflare-workers-ai：API Token + Account ID + model 三者必填；
+ *  - `copilot-sdk`：复用本机 Copilot CLI 登录态，不需要 API Key，model 可留空（按 auto 处理）；
  *  - 其余云端（deepseek/openrouter/google）：必须有 apiKey 与 model。 */
 export function isEntryValid(e: ProviderEntry): boolean {
   if (!e || !e.id) return false;
-  if (e.id === 'chrome') return true;
+  if (e.id === 'chrome' || e.id === 'copilot-sdk') return true;
   if (e.id === 'local') return Boolean(e.model && e.model.trim().length > 0);
   if (e.id === 'cloudflare-workers-ai') {
     return Boolean(
@@ -73,7 +74,7 @@ export class PiAIProvider implements LLMProvider {
     private readonly entry: ProviderEntry,
     private readonly onUsage?: (usage: LLMUsage) => void,
   ) {
-    this.name = `pi-ai(${entry.id})`;
+    this.name = entry.id === 'copilot-sdk' ? 'GitHub Copilot SDK' : `pi-ai(${entry.id})`;
   }
 
   async generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {

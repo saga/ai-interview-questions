@@ -16,6 +16,9 @@ import type { ProviderEntry } from '../schemas/ai-config';
  * 但仍透传给 streamSimple 以保持与底层 provider 路由一致。
  */
 export function buildAgentRuntime(entry: ProviderEntry): { streamFn: StreamFn; model: Model<any> } {
+  if (entry.id === 'copilot-sdk') {
+    throw new Error('GitHub Copilot SDK 当前用于普通问答、评分和题目变体；尚未接入 pi-agent-core 的流式工具调用协议。请为 Agent 面试启用另一个支持工具调用的引擎。');
+  }
   // Chrome 内置 AI 没有原生 function calling，走专用的 prompt-based 工具调用运行时；
   // 其余引擎（云端 / 本地 OpenAI 兼容）由 pi-ai 的 streamSimple 提供流式 + 原生工具调用。
   if (isChromeEntry(entry)) return buildChromeAgentRuntime();
@@ -72,8 +75,11 @@ export function buildFallbackAgentRuntime(entries: ProviderEntry[]): {
   model: Model<any>;
   chain: string[];
 } {
-  const built = entries.map((entry) => ({ entry, runtime: buildAgentRuntime(entry) }));
-  if (built.length === 0) throw new Error('fallback 引擎链为空');
+  const agentEntries = entries.filter((entry) => entry.id !== 'copilot-sdk');
+  const built = agentEntries.map((entry) => ({ entry, runtime: buildAgentRuntime(entry) }));
+  if (built.length === 0) {
+    throw new Error('没有可用于 Agent 面试的流式工具调用引擎。GitHub Copilot SDK 可用于普通问答、评分和题目变体，但当前尚未适配 pi-agent-core 工具调用协议。');
+  }
   const chain = built.map((b) => b.entry.id);
   const streamFn = chainStreamFns(built.map((b) => ({ id: b.entry.id, streamFn: b.runtime.streamFn })));
   return { streamFn, model: built[0].runtime.model, chain };
@@ -81,5 +87,5 @@ export function buildFallbackAgentRuntime(entries: ProviderEntry[]): {
 
 /** 配置中所有启用且字段合法的 Agent 候选引擎（按配置顺序 = 降级顺序）。 */
 export function validAgentEntries(config: { providers?: ProviderEntry[] }): ProviderEntry[] {
-  return (config.providers ?? []).filter((p) => p.enabled && isEntryValid(p));
+  return (config.providers ?? []).filter((p) => p.enabled && p.id !== 'copilot-sdk' && isEntryValid(p));
 }

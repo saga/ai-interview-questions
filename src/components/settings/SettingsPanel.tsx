@@ -22,6 +22,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   openrouter: 'OpenRouter',
   google: 'Google Gemini',
   'cloudflare-workers-ai': 'Cloudflare Workers AI',
+  'copilot-sdk': 'GitHub Copilot SDK',
 };
 
 const AVAILABILITY_TEXT: Record<ChromeAvailability, { type: 'success' | 'warning' | 'error'; message: string }> = {
@@ -245,7 +246,10 @@ export default function SettingsPanel({
                 <code>deepseek</code> / <code>openrouter</code> / <code>google</code>（Gemini）—— 云端直连，需 API Key；
               </li>
               <li>
-                <code>cloudflare-workers-ai</code> —— Cloudflare Workers AI，需 API Token + Account ID。
+                <code>cloudflare-workers-ai</code> —— Cloudflare Workers AI，需 API Token + Account ID；
+              </li>
+              <li>
+                <code>copilot-sdk</code> —— 使用本机 Copilot CLI 登录态，无需 API Key；模型可填 <code>auto</code>。仅 Vite 开发模式提供此运行时。
               </li>
             </ul>
             浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。
@@ -517,9 +521,9 @@ export default function SettingsPanel({
                 addonBefore="模型"
                 value={provider.model}
                 onChange={(event) => updateProvider(index, { model: event.target.value })}
-                placeholder={provider.id === 'chrome' ? 'Chrome 内置模型，无需填写' : '模型 ID'}
+                placeholder={provider.id === 'chrome' ? 'Chrome 内置模型，无需填写' : provider.id === 'copilot-sdk' ? 'auto（或输入模型 ID）' : '模型 ID'}
               />
-              {provider.id !== 'chrome' && (
+              {provider.id !== 'chrome' && provider.id !== 'copilot-sdk' && (
                 <Input.Password
                   addonBefore={provider.id === 'cloudflare-workers-ai' ? 'API Token' : 'API Key'}
                   value={provider.apiKey}

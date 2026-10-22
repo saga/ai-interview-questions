@@ -119,12 +119,51 @@ export function piUsageToLLMUsage(u: Usage): LLMUsage {
 }
 
 /** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
+/** Message history sent to the local Copilot SDK dev endpoint. */
+export type CopilotSDKMessage = { role: 'user' | 'assistant'; content: string };
+
+/**
+ * Invoke the local Copilot SDK endpoint provided by vite-plugin-copilot-sdk.ts.
+ * The SDK itself stays in Node; the browser never receives the local Copilot credential/session.
+ * This endpoint exists only under `npm run dev`, not in static production builds.
+ */
+export async function callCopilotSDKCompletion(
+  model: string,
+  system: string,
+  user: string,
+  history: CopilotSDKMessage[] = [],
+): Promise<string> {
+  const runtime = globalThis as unknown as { location?: { origin: string } };
+  const origin = runtime.location?.origin;
+  if (!origin) {
+    throw new Error('GitHub Copilot SDK Provider 需要通过 `npm run dev` 启动 Vite。');
+  }
+
+  const response = await fetch(`${origin}/api/copilot-sdk/complete`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ model: model.trim() || 'auto', system, user, history }),
+  });
+  const payload = await response.json().catch(() => null) as { content?: unknown; error?: unknown } | null;
+  if (!response.ok) {
+    const detail = typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(`GitHub Copilot SDK 调用失败：${detail}`);
+  }
+  if (typeof payload?.content !== 'string' || !payload.content.trim()) {
+    throw new Error('GitHub Copilot SDK 未返回文本内容。');
+  }
+  return payload.content;
+}
+
 export async function callLLM(
   entry: ProviderEntry,
   system: string,
   user: string,
   opts?: CallLLMOptions,
 ): Promise<string> {
+  if (entry.id === 'copilot-sdk') {
+    return callCopilotSDKCompletion(entry.model || 'auto', system, user);
+  }
   const models = buildModels(entry);
   const model = getModel(models, entry);
   if (!model) {

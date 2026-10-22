@@ -1,19 +1,19 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import copilotSdkPlugin from './vite-plugin-copilot-sdk';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), copilotSdkPlugin()],
   server: {
     port: 5173,
     host: true,
-    // 本地开发时让 /api/ai/* 也走同源代理。为保持「代理只有一份实现」，这里把请求
-    // 转发到本地可选的 Node server（server/index.js，端口 3000），由它再服务端转发到
-    // api.cloudflare.com，与生产的可选 server 行为完全一致（不再直连 cloudflare）。
+    // Cloudflare Workers AI 的代理由 Vite 直接转发到固定上游，不依赖额外 HTTP 服务。
     proxy: {
       '/api/ai': {
-        target: 'http://localhost:3000',
+        target: 'https://api.cloudflare.com',
         changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/ai/, ''),
       },
     },
   },

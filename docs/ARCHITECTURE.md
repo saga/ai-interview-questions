@@ -108,7 +108,7 @@ domain/        纯 TypeScript 逻辑，不依赖 React / 网络（全部有单�
   cognitiveTaskInference.ts  认知任务（cognitiveTask）离线推断
   languageSanity.ts  语言一致性检查（中文题干/选项）
 
-ai/            LLM 适配层，应用只依赖 LLMProvider 接口（实现仅两套：Chrome / PiAI；
+ai/            LLM 适配层，应用只依赖 LLMProvider 接口（Chrome / PiAI + 通过 Vite dev API 调用的 Copilot SDK；
                多引擎按 AIConfig.providers 顺序组成降级链，ADR-023）
    pi.ts             pi-ai 底层封装（buildModels / callLLM / extractJSON / piUsageToLLMUsage；
                      local 在此路由到 createProvider 注册的自定义 provider，ADR-022）。
@@ -746,8 +746,8 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   吞成 stopReason='error'（callLLM 返回空文本，上层 parse 兜底）；空 apiKey 不能以
   complete() 选项显式传入，否则覆盖 auth 解析导致请求发不出。
 - **默认引擎链**：`storage/settings.ts` 的 `DEFAULT_CONFIG = SAMPLE_CONFIG`（源在
-  `src/config/sample-config.json`），降级链 6 条、数组顺序即优先级：
-  `chrome(enabled) → local(enabled) → deepseek / openrouter / google / cloudflare-workers-ai(默认 disabled)`，
+  `src/config/sample-config.json`），降级链 7 条、数组顺序即优先级：
+  `chrome(enabled) → local(enabled) → deepseek / openrouter / google / cloudflare-workers-ai / copilot-sdk(默认 disabled)`，
   `generateOpenQuestions: false`；云端主用模型 `deepseek-flash`（pi-ai 原生 deepseek 目录里的
   id；旧写法 `deepseek-v4-flash` 在 0.87.1 起已从该目录移除，见 ADR-087）。
   示例配置见 `docs/config.example.json`。DeepSeek 特性已按能力协商充分利用：
@@ -769,9 +769,10 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   双形态题一律出选择、自适应随机开放分配恒为 choice），定义只选 open 时退化
   为 choice 而非空会话；缺省/非法值按 false 清洗。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；
+- **GitHub Copilot SDK Provider**：`copilot-sdk` 经 `callCopilotSDKCompletion` 调用本地 Vite dev API，SDK 客户端在 Vite 插件中懒启动并复用 CLI 登录态；不开 API Key 字段、不加入生产静态构建。它当前服务 one-shot/普通问答，尚未适配 `pi-agent-core` 的流式工具调用契约。
   Cloudflare 额外经 credential.env 注入 `CLOUDFLARE_ACCOUNT_ID`（其 auth 协议要求 Token + Account ID 双字段）。
 - **设置页 = config.json 编辑器（ADR-025/026，ADR-033 增强）**：引擎为
-  `chrome / local / deepseek / openrouter / google / cloudflare-workers-ai` 六种（ADR-026 扩容），
+  `chrome / local / deepseek / openrouter / google / cloudflare-workers-ai / copilot-sdk` 七种（Copilot SDK 为本地开发 Provider），
   设置面板 Monaco JSON 编辑器直接编辑配置，`z.toJSONSchema(aiConfigSchema)` 注入 `monaco.languages.json` 诊断（enum 提示、hover、实时校验）；保存时
   `parseConfigJSON`（storage/settings.ts，纯函数有测试，形状校验由 Zod 接管）整体校验并清洗，
   错误信息定位到 `providers[i]`。历史配置中的已下线引擎 id 由 loadConfig/sanitizeEntry 静默丢弃。

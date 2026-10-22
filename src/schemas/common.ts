@@ -9,6 +9,7 @@ export const providerIdSchema = z.enum([
   'openrouter',
   'google',
   'cloudflare-workers-ai',
+  'copilot-sdk',
 ]);
 
 export const formatIdSchema = z.enum(['choice', 'open']);
