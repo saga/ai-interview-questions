@@ -1,0 +1,1239 @@
+[
+  {
+    "id": "sa-arch-001",
+    "courseId": "security-architecture",
+    "category": "security-architecture-governance",
+    "topic": "sa-business-risk",
+    "subtopic": "security-architecture-governance",
+    "knowledgeId": "sa-business-risk",
+    "tags": [
+      "security-architecture",
+      "security-architecture-governance"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "把业务风险与安全属性追溯到方案设计。",
+      "reasoningGoal": "区分业务风险、可验证约束、控制和风险接受责任。"
+    },
+    "source": {
+      "materialId": "sabsa",
+      "section": "Business-driven security requirements",
+      "relatedMaterials": [
+        "nist-csf-2.0",
+        "nist-800-160"
+      ]
+    },
+    "question": "财富管理平台需要防止持仓泄露、保证交易指令完整，并在争议时证明关键操作是谁执行的。首轮架构工作应包含哪些内容？",
+    "explanation": "应从业务服务、资产和风险情境确定安全目标，再将其转化为可验证约束，最终追溯到设计、执行点、证据和风险责任。产品功能清单不能替代业务风险分析。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "识别关键业务服务和资产，定义泄露、篡改及不可用等不可接受后果。",
+          "将风险偏好转成可验证约束，并明确责任人、验证方法和例外路径。",
+          "先采购同一家厂商的安全套件，再从其功能倒推业务风险和架构边界。",
+          "将重要风险关联到架构决策、控制执行点、验证证据和剩余风险接受人。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应从业务服务、资产和风险情境确定安全目标，再将其转化为可验证约束，最终追溯到设计、执行点、证据和风险责任。产品功能清单不能替代业务风险分析。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-002",
+    "courseId": "security-architecture",
+    "category": "security-architecture-governance",
+    "topic": "sa-business-risk",
+    "subtopic": "security-architecture-governance",
+    "knowledgeId": "sa-business-risk",
+    "tags": [
+      "security-architecture",
+      "security-architecture-governance"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "在预算约束下确定安全架构工作的起点。",
+      "reasoningGoal": "按业务影响、风险容忍度和可追责需求确定设计优先级。"
+    },
+    "source": {
+      "materialId": "sabsa",
+      "section": "Risk-driven architecture trade-offs",
+      "relatedMaterials": [
+        "iso-27001",
+        "nist-csf-2.0"
+      ]
+    },
+    "question": "投资研究平台预算有限。业务负责人要求保护敏感研究、避免未授权修改组合，并在争议时还原关键操作。哪项最适合作为首轮架构工作的起点？",
+    "explanation": "安全架构应以业务服务、资产、风险容忍度和关键场景明确安全目标。控制清单和技术机制是候选方案，不会自动说明控制为何必要或是否符合当前组织的风险优先级。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先把威胁检测平台作为统一入口，并假设它覆盖全部业务风险。",
+          "为关键场景、资产、信任边界和风险容忍度排序，再选择可验证的控制与设计。",
+          "复制另一家金融机构的控制清单，因为相同行业意味着风险排序相同。",
+          "先确定加密算法与网络规则，业务属性留到详细设计完成后再补。"
+        ],
+        "answer": [
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "安全架构应以业务服务、资产、风险容忍度和关键场景明确安全目标。控制清单和技术机制是候选方案，不会自动说明控制为何必要或是否符合当前组织的风险优先级。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-003",
+    "courseId": "security-architecture",
+    "category": "security-requirements",
+    "topic": "sa-requirement-traceability",
+    "subtopic": "security-requirements",
+    "knowledgeId": "sa-requirement-traceability",
+    "tags": [
+      "security-architecture",
+      "security-requirements"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "把风险和业务要求转成可验收的安全需求。",
+      "reasoningGoal": "识别安全需求的可测试性以及它与组件和证据的追溯关系。"
+    },
+    "source": {
+      "materialId": "nist-800-160",
+      "section": "Security engineering lifecycle",
+      "relatedMaterials": [
+        "nist-csf-2.0",
+        "nist-800-53"
+      ]
+    },
+    "question": "需求文档写着“平台必须安全可靠、符合企业标准”。团队准备进入高层设计评审。哪些补充工作能让安全要求约束架构并在交付后验证？",
+    "explanation": "安全需求需要可验证，并分配给真实的组件、责任人和生命周期活动。一次渗透测试无法弥补不可测试需求、架构职责不清或缺少持续保证的问题。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "针对授权错误、数据泄露与中断情境定义可测试行为或阈值。",
+          "指定需求涉及的组件、责任团队、控制执行点和验证证据。",
+          "只列适用标准名称，把达标责任全部留给上线前的一次渗透测试。",
+          "记录方案选项、被拒原因、剩余风险以及需要重新评审的变化条件。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "安全需求需要可验证，并分配给真实的组件、责任人和生命周期活动。一次渗透测试无法弥补不可测试需求、架构职责不清或缺少持续保证的问题。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-004",
+    "courseId": "security-architecture",
+    "category": "security-requirements",
+    "topic": "sa-requirement-traceability",
+    "subtopic": "security-requirements",
+    "knowledgeId": "sa-requirement-traceability",
+    "tags": [
+      "security-architecture",
+      "security-requirements"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "设计可追溯的安全控制与保证机制。",
+      "reasoningGoal": "将风险、控制、验证、运营责任和剩余风险构成闭环。"
+    },
+    "source": {
+      "materialId": "nist-csf-2.0",
+      "section": "Risk-to-control traceability",
+      "relatedMaterials": [
+        "nist-800-53",
+        "nist-800-160"
+      ]
+    },
+    "question": "架构评审已识别“高权限账户被盗后可能批量导出客户数据”的风险。哪些交付物能更可靠地证明设计响应了该风险？",
+    "explanation": "证据链应证明控制针对已识别风险、处于真实访问路径、具备验证方式并有明确运营责任。产品配置可以是证据之一，但不能代替架构追溯。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "定义高风险导出操作的授权规则、审批要求和访问范围。",
+          "说明哪些组件在何处执行控制，并提供正常、异常和故障路径的验证用例。",
+          "只附安全产品的配置截图，无需说明保护资产和未覆盖路径。",
+          "明确控制责任人、审计事件、运行检测方式和剩余风险接受角色。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "证据链应证明控制针对已识别风险、处于真实访问路径、具备验证方式并有明确运营责任。产品配置可以是证据之一，但不能代替架构追溯。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-005",
+    "courseId": "security-architecture",
+    "category": "security-threat-modeling",
+    "topic": "sa-threat-modeling",
+    "subtopic": "security-threat-modeling",
+    "knowledgeId": "sa-threat-modeling",
+    "tags": [
+      "security-architecture",
+      "security-threat-modeling"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "为解决方案建立有效的威胁模型。",
+      "reasoningGoal": "从组件、数据流和信任边界识别重要威胁路径并确定响应。"
+    },
+    "source": {
+      "materialId": "owasp-threat-modeling",
+      "section": "System decomposition and trust boundaries",
+      "relatedMaterials": [
+        "nist-800-160",
+        "nist-800-207"
+      ]
+    },
+    "question": "新服务由浏览器、公开 API、内部订单服务、云数据库、企业身份提供商和外部市场数据 SaaS 组成。威胁建模应纳入哪些方面？",
+    "explanation": "威胁模型使组件、数据流和信任变化显性化，并将它们关联到风险响应。漏洞扫描能发现部分实现问题，但不能替代对业务流程滥用、架构边界和系统级风险的分析。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "标出外部实体、组件、数据存储、主要数据流及身份/权限变化的边界。",
+          "分析外部调用、内部横向调用、管理平面和第三方数据入口。",
+          "只扫描源码的已知漏洞，因为架构图不能帮助识别系统级风险。",
+          "为重要威胁记录业务影响、缓解/接受决策和验证方法。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "威胁模型使组件、数据流和信任变化显性化，并将它们关联到风险响应。漏洞扫描能发现部分实现问题，但不能替代对业务流程滥用、架构边界和系统级风险的分析。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-006",
+    "courseId": "security-architecture",
+    "category": "security-threat-modeling",
+    "topic": "sa-threat-modeling",
+    "subtopic": "security-threat-modeling",
+    "knowledgeId": "sa-threat-modeling",
+    "tags": [
+      "security-architecture",
+      "security-threat-modeling"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "判断威胁建模材料是否足以支持设计决策。",
+      "reasoningGoal": "识别缺少数据流和信任边界导致的模型盲区。"
+    },
+    "source": {
+      "materialId": "owasp-threat-modeling",
+      "section": "Threat model quality",
+      "relatedMaterials": [
+        "nist-800-160"
+      ]
+    },
+    "question": "威胁模型只有微服务方框和网络子网，没有数据流、服务身份、外部依赖或特权变更标记。评审者应采取什么行动？",
+    "explanation": "组件图能说明系统组成，但不能揭示数据如何跨边界、信任如何变化或谁能触发哪些动作。私网位置不是授权依据，扫描也不能补上缺失的系统模型。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接批准模型，因为所有微服务都部署在私有网络中。",
+          "只运行依赖扫描，以此替代后续的系统边界分析。",
+          "补充数据流、外部实体、身份/权限转换和信任边界后再评估威胁。",
+          "把全部外部集成移除，然后将所有剩余风险标记为已关闭。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "组件图能说明系统组成，但不能揭示数据如何跨边界、信任如何变化或谁能触发哪些动作。私网位置不是授权依据，扫描也不能补上缺失的系统模型。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-007",
+    "courseId": "security-architecture",
+    "category": "security-identity-access",
+    "topic": "sa-identity-authorization",
+    "subtopic": "security-identity-access",
+    "knowledgeId": "sa-identity-authorization",
+    "tags": [
+      "security-architecture",
+      "security-identity-access"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "设计覆盖用户、服务和资源动作的身份授权架构。",
+      "reasoningGoal": "分离认证与授权，减少共享凭据并在资源路径上执行最小权限。"
+    },
+    "source": {
+      "materialId": "nist-800-207",
+      "section": "Identity and authorization",
+      "relatedMaterials": [
+        "aws-security-pillar",
+        "nist-800-53"
+      ]
+    },
+    "question": "投资研究应用由前端、API、组合服务和批量报表任务组成。哪些身份与授权决策应进入高层安全架构？",
+    "explanation": "身份架构须区分主体、资源级授权、工作负载凭据和特权管理。UI 并不是授权边界，后台仍需根据身份和具体资源上下文执行访问策略。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "区分用户和服务身份，并规定主体能访问哪些组合、数据字段和操作。",
+          "优先使用可轮换、有时限且可追溯到工作负载的凭据。",
+          "只要前端隐藏了导出按钮，后台就可以信任请求里的组合编号。",
+          "为生产支持和紧急访问设计特权隔离、审批与审计机制。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "身份架构须区分主体、资源级授权、工作负载凭据和特权管理。UI 并不是授权边界，后台仍需根据身份和具体资源上下文执行访问策略。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-008",
+    "courseId": "security-architecture",
+    "category": "security-identity-access",
+    "topic": "sa-identity-authorization",
+    "subtopic": "security-identity-access",
+    "knowledgeId": "sa-identity-authorization",
+    "tags": [
+      "security-architecture",
+      "security-identity-access"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "平衡运维可用性与特权风险。",
+      "reasoningGoal": "设计日常访问、生产变更和紧急访问之间的责任边界。"
+    },
+    "source": {
+      "materialId": "aws-security-pillar",
+      "section": "Separation of duties and privileged access",
+      "relatedMaterials": [
+        "nist-800-53",
+        "iso-27001"
+      ]
+    },
+    "question": "运维团队需要日常排障，数据库管理员能访问敏感数据，发布工程师能部署服务。哪些安排可降低单一账户失陷的影响？",
+    "explanation": "职责分离降低同一身份既能发起、批准又能掩盖操作的风险。紧急访问仍需可用，但应有时限、审计与复核；共享万能账号会破坏归责和最小权限。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "拆分日常运维、敏感数据访问和生产发布权限，并限制各自操作。",
+          "为紧急访问设置时限、事后复核以及受保护的审计记录。",
+          "让所有管理员共用万能账号，便于快速排障和集中记录。",
+          "将高风险操作与独立审批结合，并定期复核权限是否仍然必要。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "职责分离降低同一身份既能发起、批准又能掩盖操作的风险。紧急访问仍需可用，但应有时限、审计与复核；共享万能账号会破坏归责和最小权限。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-009",
+    "courseId": "security-architecture",
+    "category": "security-zero-trust",
+    "topic": "sa-zero-trust-enforcement",
+    "subtopic": "security-zero-trust",
+    "knowledgeId": "sa-zero-trust-enforcement",
+    "tags": [
+      "security-architecture",
+      "security-zero-trust"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "为混合环境设计 Zero Trust 访问决策与执行路径。",
+      "reasoningGoal": "确保身份、上下文策略、资源执行点和故障边界真正闭环。"
+    },
+    "source": {
+      "materialId": "nist-800-207",
+      "section": "Zero Trust reference architecture",
+      "relatedMaterials": [
+        "microsoft-mcra",
+        "aws-security-pillar"
+      ]
+    },
+    "question": "企业有本地核心系统、两个云环境和多项 SaaS。网络团队提议用户一旦连上企业 VPN 就视为可信。哪些架构调整更符合资源级访问控制？",
+    "explanation": "Zero Trust 不是一种网络产品，而是围绕资源的策略决策、执行和持续观测进行设计。执行点位置、失败时行为及身份上下文在混合环境中的一致性都必须验证。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "依据主体/工作负载身份、请求上下文和目标资源作出授权决定。",
+          "在受保护资源的真实访问路径设置可执行策略的执行点。",
+          "把所有资源迁入同一个私有网段，便可免除身份与资源授权。",
+          "明确策略服务不可达或信号过期时的处理规则并进行故障验证。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Zero Trust 不是一种网络产品，而是围绕资源的策略决策、执行和持续观测进行设计。执行点位置、失败时行为及身份上下文在混合环境中的一致性都必须验证。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-010",
+    "courseId": "security-architecture",
+    "category": "security-zero-trust",
+    "topic": "sa-zero-trust-enforcement",
+    "subtopic": "security-zero-trust",
+    "knowledgeId": "sa-zero-trust-enforcement",
+    "tags": [
+      "security-architecture",
+      "security-zero-trust"
+    ],
+    "difficulty": "hard",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "选择能限制横向移动的多云访问方案。",
+      "reasoningGoal": "区分“位于可信网络”和“每次访问由资源策略授权”。"
+    },
+    "source": {
+      "materialId": "nist-800-207",
+      "section": "Multi-cloud access enforcement",
+      "relatedMaterials": [
+        "microsoft-mcra"
+      ]
+    },
+    "question": "某个多云系统的服务被攻陷后，攻击者尝试访问另一云中的客户数据 API。哪种设计最能限制横向移动？",
+    "explanation": "目标资源或明确的执行点必须实际执行授权。专线连接不能证明被攻陷服务有权读取其他资源；工作负载身份、分段和审计需要共同生效。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "允许来自企业专线的流量，因为私有线路已经证明访问者可信。",
+          "所有服务共享一个技术身份，只要网络隔离严格便无需逐资源授权。",
+          "目标 API 校验工作负载身份、请求上下文和资源权限，并记录拒绝与访问行为。",
+          "身份检查只放在互联网入口，内部服务间请求不再需要授权。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "目标资源或明确的执行点必须实际执行授权。专线连接不能证明被攻陷服务有权读取其他资源；工作负载身份、分段和审计需要共同生效。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-011",
+    "courseId": "security-architecture",
+    "category": "security-data-protection",
+    "topic": "sa-data-protection",
+    "subtopic": "security-data-protection",
+    "knowledgeId": "sa-data-protection",
+    "tags": [
+      "security-architecture",
+      "security-data-protection"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "按数据风险设计端到端保护。",
+      "reasoningGoal": "根据数据用途、敏感度和威胁选择控制组合及责任边界。"
+    },
+    "source": {
+      "materialId": "nist-800-53",
+      "section": "Data security architecture",
+      "relatedMaterials": [
+        "aws-security-pillar",
+        "gcp-security-pillar"
+      ]
+    },
+    "question": "分析平台接收账户信息、客户身份资料和公开市场数据，并将部分数据提供给外部分析服务。哪些数据保护决定应在方案架构阶段明确？",
+    "explanation": "数据保护是分类、用途、流向、访问控制、加密/密钥、共享及生命周期管理的组合。静态加密保护特定介质场景，不会阻止身份滥用或从导出路径泄露信息。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按敏感级别和用途分类，绘制数据流、共享方、留存和删除路径。",
+          "定义加密与密钥边界、资源授权、令牌化/脱敏及日志中敏感字段的处理。",
+          "数据库启用静态加密后，有合法账号的分析师即可查看任意原始数据。",
+          "在第三方服务和内部数据域之间限定数据、权限、责任和验证方式。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "数据保护是分类、用途、流向、访问控制、加密/密钥、共享及生命周期管理的组合。静态加密保护特定介质场景，不会阻止身份滥用或从导出路径泄露信息。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-012",
+    "courseId": "security-architecture",
+    "category": "security-data-protection",
+    "topic": "sa-data-protection",
+    "subtopic": "security-data-protection",
+    "knowledgeId": "sa-data-protection",
+    "tags": [
+      "security-architecture",
+      "security-data-protection"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "设计关键数据的密钥和恢复边界。",
+      "reasoningGoal": "在数据管理员、密钥管理员与恢复流程之间建立隔离。"
+    },
+    "source": {
+      "materialId": "aws-security-pillar",
+      "section": "Key and recovery boundaries",
+      "relatedMaterials": [
+        "nist-800-53",
+        "gcp-security-pillar"
+      ]
+    },
+    "question": "核心数据库与不可变备份已加密，但数据库管理员和备份管理员共用同一身份。假设攻击者窃取该身份，哪些改动能实质改善恢复能力？",
+    "explanation": "加密强度不能解决权限域被同时攻陷的问题。恢复设计应分离数据、密钥和备份管理权限，避免同一身份破坏生产和恢复链，并验证完整恢复。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分离密钥管理和日常数据库权限，避免同一身份控制数据与密钥。",
+          "验证密钥轮换、吊销和灾难恢复流程，包括恢复所需身份和目录依赖。",
+          "只提高加密算法位数，因为更强加密会阻止管理员删除备份。",
+          "将备份管理面与生产身份/控制平面隔离，并演练干净环境恢复。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "加密强度不能解决权限域被同时攻陷的问题。恢复设计应分离数据、密钥和备份管理权限，避免同一身份破坏生产和恢复链，并验证完整恢复。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-013",
+    "courseId": "security-architecture",
+    "category": "security-cloud-platform",
+    "topic": "sa-cloud-platform-boundaries",
+    "subtopic": "security-cloud-platform",
+    "knowledgeId": "sa-cloud-platform-boundaries",
+    "tags": [
+      "security-architecture",
+      "security-cloud-platform"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "设计云环境的组织级和工作负载级边界。",
+      "reasoningGoal": "隔离管理权限，建立可重复执行的护栏、日志和职责分工。"
+    },
+    "source": {
+      "materialId": "aws-security-pillar",
+      "section": "Cloud security foundations",
+      "relatedMaterials": [
+        "microsoft-mcra",
+        "gcp-security-pillar",
+        "nist-800-53"
+      ]
+    },
+    "question": "企业将开发、测试、生产和分析工作负载放在一个云组织里。哪些高层架构安排能降低账户失陷和配置漂移的影响？",
+    "explanation": "云安全架构同时涉及组织结构、身份/管理平面、工作负载隔离、配置治理和共享责任。主机防火墙无法限制高权限身份滥用或组织控制平面被攻陷。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "根据环境、数据敏感度和职责设置隔离边界，限制管理身份横向权限。",
+          "将组织策略、网络基线、日志和身份约束编码为护栏并检测漂移。",
+          "只依赖每台虚拟机上的主机防火墙，管理平面无需单独建模。",
+          "明确云服务商、平台团队和应用团队的控制责任并验证交界处。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "云安全架构同时涉及组织结构、身份/管理平面、工作负载隔离、配置治理和共享责任。主机防火墙无法限制高权限身份滥用或组织控制平面被攻陷。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-014",
+    "courseId": "security-architecture",
+    "category": "security-cloud-platform",
+    "topic": "sa-cloud-platform-boundaries",
+    "subtopic": "security-cloud-platform",
+    "knowledgeId": "sa-cloud-platform-boundaries",
+    "tags": [
+      "security-architecture",
+      "security-cloud-platform"
+    ],
+    "difficulty": "medium",
+    "angle": "architecture",
+    "cognitiveTask": "identify",
+    "assessment": {
+      "target": "识别 Landing Zone 设计中的控制平面风险。",
+      "reasoningGoal": "区分工作负载数据面保护与可修改全部工作负载配置的管理面权限。"
+    },
+    "source": {
+      "materialId": "microsoft-mcra",
+      "section": "Control plane and landing zone",
+      "relatedMaterials": [
+        "aws-security-pillar",
+        "gcp-security-pillar"
+      ]
+    },
+    "question": "生产工作负载位于私有子网且传输已加密，但自动化部署身份仍拥有整个租户的 Owner 权限，并能关闭日志和网络护栏。应优先处理什么？",
+    "explanation": "强大的管理身份可以绕过或关闭许多工作负载层控制。Landing Zone 需保护管理平面、组织策略、部署身份和审计链，最小权限优先于继续细化单一网络细节。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "继续细化私有子网地址，因为网络地址设计是唯一未完成的边界。",
+          "提高应用日志采样率，同时保留部署身份的全租户权限。",
+          "只要求部署身份定期轮换凭据，不调整其操作范围和权限。",
+          "拆分管理身份、缩小部署权限并限制关闭组织护栏的能力，同时审计高影响操作。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "强大的管理身份可以绕过或关闭许多工作负载层控制。Landing Zone 需保护管理平面、组织策略、部署身份和审计链，最小权限优先于继续细化单一网络细节。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-015",
+    "courseId": "security-architecture",
+    "category": "security-application-integration",
+    "topic": "sa-api-trust-boundaries",
+    "subtopic": "security-application-integration",
+    "knowledgeId": "sa-api-trust-boundaries",
+    "tags": [
+      "security-architecture",
+      "security-application-integration"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "设计 API 的身份、对象授权和滥用防护边界。",
+      "reasoningGoal": "识别网关、服务端和业务流程各自承担的授权责任。"
+    },
+    "source": {
+      "materialId": "owasp-api-top10",
+      "section": "API authorization architecture",
+      "relatedMaterials": [
+        "owasp-asvs",
+        "owasp-threat-modeling"
+      ]
+    },
+    "question": "组合 API 已验证 OAuth 登录并经过 API Gateway。评审发现用户可把 portfolioId 改成别人的 ID，并请求返回内部风险标记。哪些设计原则应落实？",
+    "explanation": "有效认证只说明 token 对应一个主体，并不自动授予其访问任何对象或字段的权限。网关可统一基础策略，但下游仍需执行业务资源授权并保留调查证据。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "服务端按请求验证调用方对目标组合和字段的权限，而不只验证 token。",
+          "为敏感操作限定 scope、字段、资源消耗和异常调用路径。",
+          "Gateway 验证 OAuth 后，下游可以信任传入的对象 ID 和字段清单。",
+          "将授权策略放在真实业务执行路径上，并审计拒绝、导出和关键变更。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "有效认证只说明 token 对应一个主体，并不自动授予其访问任何对象或字段的权限。网关可统一基础策略，但下游仍需执行业务资源授权并保留调查证据。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-016",
+    "courseId": "security-architecture",
+    "category": "security-application-integration",
+    "topic": "sa-api-trust-boundaries",
+    "subtopic": "security-application-integration",
+    "knowledgeId": "sa-api-trust-boundaries",
+    "tags": [
+      "security-architecture",
+      "security-application-integration"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "约束第三方回调、webhook 和服务器出站的信任边界。",
+      "reasoningGoal": "限制可调用目标、来源伪造和重复业务动作。"
+    },
+    "source": {
+      "materialId": "owasp-threat-modeling",
+      "section": "External integrations and egress boundaries",
+      "relatedMaterials": [
+        "owasp-api-top10",
+        "cisa-secure-by-design"
+      ]
+    },
+    "question": "内部服务接收供应商 webhook，并按消息中的 callbackUrl 回调。安全评审发现该地址也可能指向云元数据或内部管理接口。哪些设计更稳妥？",
+    "explanation": "外部输入不是信任声明。目标约束、来源验证、出站策略、幂等性和审计应一起设计；格式合法的 URL 仍可能指向不应访问的内部资源。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用受管供应商端点注册表，并严格限制可访问的目标地址。",
+          "验证消息来源和完整性，并为重放场景设计去重与幂等处理。",
+          "只做 URL 字符串格式检查，因为合法 URL 不会解析到内部资源。",
+          "限制服务出站目标，记录触发业务动作的来源，并测试失败与重试路径。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "外部输入不是信任声明。目标约束、来源验证、出站策略、幂等性和审计应一起设计；格式合法的 URL 仍可能指向不应访问的内部资源。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-017",
+    "courseId": "security-architecture",
+    "category": "security-supply-chain",
+    "topic": "sa-software-supply-chain",
+    "subtopic": "security-supply-chain",
+    "knowledgeId": "sa-software-supply-chain",
+    "tags": [
+      "security-architecture",
+      "security-supply-chain"
+    ],
+    "difficulty": "hard",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "把供应链完整性纳入平台交付架构。",
+      "reasoningGoal": "区分漏洞检测与构建来源、制品完整性及部署身份保障。"
+    },
+    "source": {
+      "materialId": "cisa-secure-by-design",
+      "section": "Secure-by-Design and software supply chain",
+      "relatedMaterials": [
+        "nist-800-53",
+        "owasp-asvs"
+      ]
+    },
+    "question": "CI 已运行依赖漏洞扫描，但生产仍允许工程师从个人电脑直接把镜像推送到生产仓库。哪些控制能改善源码到生产的信任链？",
+    "explanation": "漏洞扫描提供的是已知缺陷信号，不能证明制品来源可信、构建未被篡改或部署身份符合最小权限。供应链架构需建立可验证来源、职责隔离和受控发布路径。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只允许来源可验证的受控流水线制品进入生产，并校验签名和出处。",
+          "分离提交、构建、发布批准和生产部署身份，限制权限并保留审计。",
+          "漏洞扫描未发现高危项，就证明制品没有被替换且来源可信。",
+          "治理依赖和构建工具风险，并为供应链例外设审批和到期复核。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "漏洞扫描提供的是已知缺陷信号，不能证明制品来源可信、构建未被篡改或部署身份符合最小权限。供应链架构需建立可验证来源、职责隔离和受控发布路径。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-018",
+    "courseId": "security-architecture",
+    "category": "security-supply-chain",
+    "topic": "sa-software-supply-chain",
+    "subtopic": "security-supply-chain",
+    "knowledgeId": "sa-software-supply-chain",
+    "tags": [
+      "security-architecture",
+      "security-supply-chain"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "评估关键 SaaS 集成的架构风险。",
+      "reasoningGoal": "将供应商声明转成可验证的责任、权限、事件和退出要求。"
+    },
+    "source": {
+      "materialId": "cisa-secure-by-design",
+      "section": "SaaS procurement and secure defaults",
+      "relatedMaterials": [
+        "iso-27001",
+        "nist-800-53"
+      ]
+    },
+    "question": "业务希望快速引入可访问客户和交易数据的 SaaS。供应商提供了 ISO 认证和渗透测试摘要，却未说明支持人员访问、日志导出与数据删除机制。最合适的下一步是什么？",
+    "explanation": "认证是组织控制体系的一项证据，不代表这项具体集成满足本企业的风险要求。仍需明确数据访问、可见性、事件责任、退出和验证标准。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因供应商有认证，直接批准其访问所有相关数据。",
+          "只要求更强的加密证明，其余都属于供应商内部职责。",
+          "先明确数据用途、管理访问、租户隔离、审计、事件通知、留存/删除与退出要求，再核验合同和技术方案。",
+          "将 SaaS 用户和管理员合并成业务团队共享账号以减少接入工作。"
+        ],
+        "answer": [
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "认证是组织控制体系的一项证据，不代表这项具体集成满足本企业的风险要求。仍需明确数据访问、可见性、事件责任、退出和验证标准。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-019",
+    "courseId": "security-architecture",
+    "category": "security-resilience-operations",
+    "topic": "sa-security-observability-resilience",
+    "subtopic": "security-resilience-operations",
+    "knowledgeId": "sa-security-observability-resilience",
+    "tags": [
+      "security-architecture",
+      "security-resilience-operations"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "设计可供检测、调查和审计的安全事件链路。",
+      "reasoningGoal": "让关键动作的审计、告警、升级与调查责任落地。"
+    },
+    "source": {
+      "materialId": "nist-csf-2.0",
+      "section": "Traceability and security operations",
+      "relatedMaterials": [
+        "aws-security-pillar",
+        "nist-800-160"
+      ]
+    },
+    "question": "生产系统保留应用日志，但不同服务时间格式不同，管理员能删除日志，也没有明确告警和事件升级责任。哪些改进能提升可追溯性与响应能力？",
+    "explanation": "可调查日志需要一致字段、可比较时间、关联关系、访问保护和事件处置流程。增加日志量不等同于建立检测、调查或响应能力。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "统一关键安全事件字段和关联 ID，记录主体、对象、动作、时间、结果和来源。",
+          "限制日志访问/修改权限，并定义时间同步、留存和证据提取责任。",
+          "只延长普通应用日志保留时间，因为日志越多就自然具备检测能力。",
+          "将重要事件连接到告警、调查手册、升级责任和恢复动作，并定期验证。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "可调查日志需要一致字段、可比较时间、关联关系、访问保护和事件处置流程。增加日志量不等同于建立检测、调查或响应能力。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-020",
+    "courseId": "security-architecture",
+    "category": "security-resilience-operations",
+    "topic": "sa-security-observability-resilience",
+    "subtopic": "security-resilience-operations",
+    "knowledgeId": "sa-security-observability-resilience",
+    "tags": [
+      "security-architecture",
+      "security-resilience-operations"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "设计面对权限失陷与勒索事件的恢复方案。",
+      "reasoningGoal": "区分可用区冗余、备份完整性和独立控制面恢复。"
+    },
+    "source": {
+      "materialId": "nist-800-160",
+      "section": "Cyber recovery architecture",
+      "relatedMaterials": [
+        "aws-security-pillar",
+        "nist-csf-2.0"
+      ]
+    },
+    "question": "核心系统部署在两个可用区且数据同步复制，但两个区共用云管理员、密钥权限和备份删除凭据。攻击者窃取管理员后，哪些方案更有效？",
+    "explanation": "多可用区主要应对特定基础设施故障，不能自动隔离共享管理身份或破坏性权限。韧性需有独立恢复权限、可信备份、完整恢复演练和明确的业务降级策略。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将恢复凭据和备份删除权限与生产管理身份分离，并保护不可变恢复点。",
+          "演练从干净环境恢复应用、身份、密钥和依赖，并验证恢复时间与数据目标。",
+          "只再添加一个可用区，因为区域数量足以阻止管理员的破坏性操作。",
+          "记录关键外部依赖及控制平面恢复顺序，并设计部分失效时的业务降级。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多可用区主要应对特定基础设施故障，不能自动隔离共享管理身份或破坏性权限。韧性需有独立恢复权限、可信备份、完整恢复演练和明确的业务降级策略。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-021",
+    "courseId": "security-architecture",
+    "category": "security-financial-services",
+    "topic": "sa-fsi-third-party-resilience",
+    "subtopic": "security-financial-services",
+    "knowledgeId": "sa-fsi-third-party-resilience",
+    "tags": [
+      "security-architecture",
+      "security-financial-services"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "评估关键业务服务对云和 SaaS 的集中风险。",
+      "reasoningGoal": "从端到端依赖和共同故障域推导韧性设计，而非只看单服务 SLA。"
+    },
+    "source": {
+      "materialId": "bis-fsi-cloud-risk",
+      "section": "Critical third-party dependencies",
+      "relatedMaterials": [
+        "nist-csf-2.0",
+        "iso-27001"
+      ]
+    },
+    "question": "交易服务依赖同一云的计算和身份服务、外部市场数据 SaaS 与第三方支付网络。业务团队提出把应用复制到第二个区域就算完成韧性建设。还要考虑什么？",
+    "explanation": "韧性应基于业务服务及端到端依赖分析。跨区域复制不代表故障域独立，身份或供应商控制面仍可能造成共同失效；替代路径必须明确并经过演练。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "识别端到端依赖和共同故障域，包括身份、密钥、DNS、网络及供应商控制面。",
+          "明确业务服务恢复目标、第三方事件沟通、审计证据要求和替代路径。",
+          "只用每家供应商公布的 SLA 推算整体恢复能力，不考虑依赖相关性。",
+          "验证备用区域是否共享身份、管理面、供应商和运维凭据，并演练切换与降级。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "韧性应基于业务服务及端到端依赖分析。跨区域复制不代表故障域独立，身份或供应商控制面仍可能造成共同失效；替代路径必须明确并经过演练。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-022",
+    "courseId": "security-architecture",
+    "category": "security-financial-services",
+    "topic": "sa-fsi-third-party-resilience",
+    "subtopic": "security-financial-services",
+    "knowledgeId": "sa-fsi-third-party-resilience",
+    "tags": [
+      "security-architecture",
+      "security-financial-services"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "将金融服务安全要求转成架构证据，而非条文清单。",
+      "reasoningGoal": "区分管理体系、控制目录与具体方案中的控制执行和验证。"
+    },
+    "source": {
+      "materialId": "iso-27001",
+      "section": "Control evidence and applicability",
+      "relatedMaterials": [
+        "nist-800-53",
+        "bis-fsi-cloud-risk"
+      ]
+    },
+    "question": "架构文档列出 ISO 27001、NIST 800-53 和云厂商认证，便声明方案符合所有安全要求。作为 Solution Architect，最合适的下一步是什么？",
+    "explanation": "ISO 27001 关注信息安全管理体系，NIST 800-53 是可裁剪控制目录，厂商认证也不自动证明某个工作负载安全。架构评审要落到当前方案的设计、责任、证据和剩余风险。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "认可结论，因为列出越多标准和认证，系统风险自然越低。",
+          "让供应商自行决定所有控制，方案只需记录采购清单。",
+          "把所有控制目录项目全部实现，不必判断适用性和业务风险。",
+          "映射适用要求到本方案的组件责任、控制执行点、测试/运行证据及剩余风险。"
+        ],
+        "answer": [
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "ISO 27001 关注信息安全管理体系，NIST 800-53 是可裁剪控制目录，厂商认证也不自动证明某个工作负载安全。架构评审要落到当前方案的设计、责任、证据和剩余风险。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-023",
+    "courseId": "security-architecture",
+    "category": "security-financial-services",
+    "topic": "sa-fsi-solution-patterns",
+    "subtopic": "security-financial-services",
+    "knowledgeId": "sa-fsi-solution-patterns",
+    "tags": [
+      "security-architecture",
+      "security-financial-services"
+    ],
+    "difficulty": "hard",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "组织端到端金融服务安全参考架构。",
+      "reasoningGoal": "把身份、业务服务、数据域、第三方边界、审计与韧性整合为连续控制路径。"
+    },
+    "source": {
+      "materialId": "sabsa",
+      "section": "Solution architecture capstone",
+      "relatedMaterials": [
+        "nist-800-207",
+        "aws-security-pillar",
+        "owasp-threat-modeling"
+      ]
+    },
+    "question": "为财富管理业务设计新平台：客户和顾问通过 Web/Mobile 访问组合与交易服务，分析团队使用数据平台，市场行情来自外部 SaaS，工作负载部署在云上。高层架构至少应明确哪些方面？",
+    "explanation": "端到端安全架构必须整合业务流、身份、数据、第三方和管理面，并在真实路径上执行和验证控制。单纯的产品/网络图会遗漏业务授权、数据使用、审计和共同故障域。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "标出参与者、信任区、身份提供商、API、业务服务、数据域、供应商和管理平面。",
+          "为客户、顾问、后台服务与运维人员设计身份、资源级授权和高风险操作职责。",
+          "只绘制云产品与网络子网图，业务动作和数据流不属于安全架构范围。",
+          "定义数据分类/密钥边界、审计、外部依赖故障、恢复方案、责任和验证证据。"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "端到端安全架构必须整合业务流、身份、数据、第三方和管理面，并在真实路径上执行和验证控制。单纯的产品/网络图会遗漏业务授权、数据使用、审计和共同故障域。"
+      }
+    }
+  },
+  {
+    "id": "sa-arch-024",
+    "courseId": "security-architecture",
+    "category": "security-financial-services",
+    "topic": "sa-fsi-solution-patterns",
+    "subtopic": "security-financial-services",
+    "knowledgeId": "sa-fsi-solution-patterns",
+    "tags": [
+      "security-architecture",
+      "security-financial-services"
+    ],
+    "difficulty": "hard",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "形成可审查的安全架构决策与剩余风险记录。",
+      "reasoningGoal": "透明权衡安全收益、业务摩擦、复杂度、成本、延迟和可用性。"
+    },
+    "source": {
+      "materialId": "sabsa",
+      "section": "Architecture decision records",
+      "relatedMaterials": [
+        "nist-csf-2.0",
+        "nist-800-160",
+        "iso-27001"
+      ]
+    },
+    "question": "方案有两个可行选项：每项高风险操作都人工双人审批，或者采用风险策略并只对异常交易升级审批。哪些材料能支持负责任的架构决策？",
+    "explanation": "安全架构不是一律增加阻断，也不能仅以控制数量判断优劣。决策应说明业务约束、策略执行和验证机制，并对剩余风险、业务影响及复审条件负责。",
+    "misconceptions": [
+      "把安全设计当成产品选型，而不是端到端风险决策。",
+      "没有指定控制执行点、验证证据或剩余风险责任人。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "比较业务损失、错误概率、延迟目标、职责要求和风险容忍度。",
+          "只选控制数量最多的方案，因为安全性不应考虑服务目标和运行成本。",
+          "明确策略阈值、执行点、证据、故障处理以及剩余风险接受人。",
+          "记录被考虑和被拒绝的选项、适用边界及重新评审触发条件。"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ]
+      },
+      "open": {
+        "referenceAnswer": "安全架构不是一律增加阻断，也不能仅以控制数量判断优劣。决策应说明业务约束、策略执行和验证机制，并对剩余风险、业务影响及复审条件负责。"
+      }
+    }
+  }
+]
