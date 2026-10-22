@@ -3,6 +3,7 @@ import { LEARNING_TRACKS, SECURITY_ARCHITECTURE_COURSE_TOPICS } from './learning
 import { knowledgeNodes } from './knowledgeMap';
 import { questionBank } from './questionBank';
 import { questionSchema } from '../schemas/question';
+import { knowledgeForTrack, questionBankForTrack } from '../domain/learningTracks';
 
 describe('Security Architecture course', () => {
   const track = LEARNING_TRACKS.find((item) => item.id === 'security-architecture');
@@ -13,6 +14,11 @@ describe('Security Architecture course', () => {
     expect(LEARNING_TRACKS.map((item) => item.id)).toEqual(['ai', 'snowflake', 'security-architecture']);
     expect(track?.topicCount).toBe(SECURITY_ARCHITECTURE_COURSE_TOPICS.length);
     expect(new Set(SECURITY_ARCHITECTURE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(SECURITY_ARCHITECTURE_COURSE_TOPICS.length);
+    expect(knowledgeForTrack(knowledgeNodes, 'security-architecture')).toHaveLength(12);
+    const selected = questionBankForTrack(questionBank, 'security-architecture', knowledgeNodes);
+    expect(selected.questions).toHaveLength(24);
+    expect(selected.categories).toEqual(['security-architecture']);
+    expect(questionBankForTrack(questionBank, 'snowflake', knowledgeNodes).questions.every((question) => question.courseId !== 'security-architecture')).toBe(true);
   });
 
   it('maps every knowledge node to a course theme and source-backed questions', () => {
