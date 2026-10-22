@@ -23,20 +23,20 @@
 
 这些框架解决的问题不同，应当组合使用，不能混成一张通用检查表。
 
-| 来源 | 在课程中的作用 | 使用边界 |
+| materialId | 来源 | 在课程中的作用 | 使用边界 |
 |---|---|---|
-| [SABSA](https://sabsa.org/home/) | 业务驱动、风险导向的安全架构方法；从业务属性追溯到架构、服务和控制 | 不以背诵框架图为目标；重点是业务需求与设计决策之间的追溯 |
-| [The Open Group Security Architecture](https://www.opengroup.org/forum/security/architecture) | 把安全属性、原则和模式纳入企业架构方法和方案设计 | 使用 TOGAF 或绘制架构视图并不意味着已完成安全分析 |
-| [NIST CSF 2.0](https://www.nist.gov/cyberframework) | 用 Govern、Identify、Protect、Detect、Respond、Recover 描述风险结果与目标状态 | 是风险结果分类，不是某一产品的技术实现步骤 |
-| [NIST SP 800-160 Vol. 1 Rev. 1](https://csrc.nist.gov/pubs/sp/800/160/v1/r1/final) | 系统安全工程：把安全要求、设计、实现、验证及生命周期活动纳入系统工程 | 不将安全评估推迟到上线前的一次测试 |
-| [NIST SP 800-207](https://csrc.nist.gov/pubs/sp/800/207/final) | Zero Trust 参考架构、策略决策/执行点和资源访问路径 | 不等同于采购一个产品、部署 VPN 或单纯做微分段 |
-| [ISO/IEC 27001:2022](https://committee.iso.org/standard/27001) | 信息安全管理体系、组织职责、风险管理和持续改进 | 不是具体系统的技术架构蓝图；供应商认证也不代表当前集成自动合规 |
-| [NIST SP 800-53 Rev. 5](https://csrc.nist.gov/pubs/sp/800/53/r5/fpd) | 可裁剪的安全与隐私控制目录，用于把要求映射到控制目标和评估证据 | 不应将整个控制目录机械复制到每个方案 |
-| [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html) | 从系统分解、数据流、信任边界、外部实体和数据存储识别威胁并安排响应 | 图画好、风险打分完成都不等于风险已经降低 |
-| [OWASP ASVS](https://asvs.owasp.org/) / [OWASP API Security Top 10](https://api-security.owasp.org/) | 将应用与 API 设计要求具体化为技术验证项，如对象授权、SSRF、资源消耗和访问控制 | 用于应用/API 设计和验证，不替代业务风险及企业架构分析 |
-| [CISA Secure by Design](https://www.cisa.gov/resources-tools/resources/secure-by-design) | 将安全默认值、客户安全结果、责任和透明度纳入产品及供应链设计 | 不应缩减为发布前多跑一次扫描 |
-| [AWS Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/security.html)、[Microsoft Cybersecurity Reference Architecture](https://learn.microsoft.com/en-us/security/adoption/mcra)、[Google Cloud Security Pillar](https://docs.cloud.google.com/architecture/framework/security) | 云平台层参考设计：身份、追溯、分层防御、数据、治理、日志与运行安全 | 先识别通用控制目标，再比较云厂商具体实现；厂商参考架构不是跨云标准 |
-| [BIS：Managing cloud risk in the financial sector](https://www.bis.org/publications/fsi-insight-53-managing-cloud-risk-some-considerations-oversight-critical-cloud-service-providers-financial-sector.pdf) | 金融服务关键云服务商、第三方依赖、集中风险和运营韧性 | 作为行业风险视角；具体监管义务还需根据司法辖区和业务范围另行确认 |
+| `sabsa` · [SABSA](https://sabsa.org/home/) | 业务驱动、风险导向的安全架构方法；从业务属性追溯到架构、服务和控制 | 不以背诵框架图为目标；重点是业务需求与设计决策之间的追溯 |
+| `opengroup-security-architecture` · [The Open Group Security Architecture](https://www.opengroup.org/forum/security/architecture) | 把安全属性、原则和模式纳入企业架构方法和方案设计 | 使用 TOGAF 或绘制架构视图并不意味着已完成安全分析 |
+| `nist-csf-2.0` · [NIST CSF 2.0](https://www.nist.gov/cyberframework) | 用 Govern、Identify、Protect、Detect、Respond、Recover 描述风险结果与目标状态 | 是风险结果分类，不是某一产品的技术实现步骤 |
+| `nist-800-160` · [NIST SP 800-160 Vol. 1 Rev. 1](https://csrc.nist.gov/pubs/sp/800/160/v1/r1/final) | 系统安全工程：把安全要求、设计、实现、验证及生命周期活动纳入系统工程 | 不将安全评估推迟到上线前的一次测试 |
+| `nist-800-207` · [NIST SP 800-207](https://csrc.nist.gov/pubs/sp/800/207/final) | Zero Trust 参考架构、策略决策/执行点和资源访问路径 | 不等同于采购一个产品、部署 VPN 或单纯做微分段 |
+| `iso-27001` · [ISO/IEC 27001:2022](https://committee.iso.org/standard/27001) | 信息安全管理体系、组织职责、风险管理和持续改进 | 不是具体系统的技术架构蓝图；供应商认证也不代表当前集成自动合规 |
+| `nist-800-53` · [NIST SP 800-53 Rev. 5](https://csrc.nist.gov/pubs/sp/800/53/r5/fpd) | 可裁剪的安全与隐私控制目录，用于把要求映射到控制目标和评估证据 | 不应将整个控制目录机械复制到每个方案 |
+| `owasp-threat-modeling` · [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html) | 从系统分解、数据流、信任边界、外部实体和数据存储识别威胁并安排响应 | 图画好、风险打分完成都不等于风险已经降低 |
+| `owasp-asvs` / `owasp-api-top10` · [OWASP ASVS](https://asvs.owasp.org/) / [OWASP API Security Top 10](https://api-security.owasp.org/) | 将应用与 API 设计要求具体化为技术验证项，如对象授权、SSRF、资源消耗和访问控制 | 用于应用/API 设计和验证，不替代业务风险及企业架构分析 |
+| `cisa-secure-by-design` · [CISA Secure by Design](https://www.cisa.gov/resources-tools/resources/secure-by-design) | 将安全默认值、客户安全结果、责任和透明度纳入产品及供应链设计 | 不应缩减为发布前多跑一次扫描 |
+| `aws-security-pillar` / `microsoft-mcra` / `gcp-security-pillar` · [AWS Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/security.html)、[Microsoft Cybersecurity Reference Architecture](https://learn.microsoft.com/en-us/security/adoption/mcra)、[Google Cloud Security Pillar](https://docs.cloud.google.com/architecture/framework/security) | 云平台层参考设计：身份、追溯、分层防御、数据、治理、日志与运行安全 | 先识别通用控制目标，再比较云厂商具体实现；厂商参考架构不是跨云标准 |
+| `bis-fsi-cloud-risk` · [BIS：Managing cloud risk in the financial sector](https://www.bis.org/publications/fsi-insight-53-managing-cloud-risk-some-considerations-oversight-critical-cloud-service-providers-financial-sector.pdf) | 金融服务关键云服务商、第三方依赖、集中风险和运营韧性 | 作为行业风险视角；具体监管义务还需根据司法辖区和业务范围另行确认 |
 
 ## 3. 课程主题与学习顺序
 

@@ -33,6 +33,15 @@ describe('Security Architecture course', () => {
     }
   });
 
+  it('keeps every question source ID linked to the curriculum reference catalog', () => {
+    const sourceIds = new Set([
+      'nist-csf-2.0', 'nist-800-160', 'nist-800-207', 'nist-800-53', 'sabsa', 'iso-27001',
+      'owasp-threat-modeling', 'owasp-asvs', 'owasp-api-top10', 'cisa-secure-by-design',
+      'aws-security-pillar', 'microsoft-mcra', 'gcp-security-pillar', 'bis-fsi-cloud-risk',
+    ]);
+    expect(questions.every((question) => sourceIds.has(question.source?.materialId ?? ''))).toBe(true);
+  });
+
   it('uses valid dual-form questions and prioritizes architecture decisions', () => {
     expect(questions).toHaveLength(24);
     expect(questions.every((question) => questionSchema.safeParse(question).success)).toBe(true);
