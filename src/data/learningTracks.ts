@@ -84,6 +84,11 @@ export const SECURITY_ARCHITECTURE_COURSE_TOPICS = [
   { id: 'security-financial-services', label: '金融服务方案设计', description: '关键业务服务、第三方/云集中风险、控制证据和退出/降级方案' },
 ] as const;
 
+export const SECURITY_ARCHITECTURE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
+  SECURITY_ARCHITECTURE_COURSE_TOPICS.map(({ id, label }) => [id, label]),
+);
+
+/** 独立 Security Architecture 课程的设计类出题角度白名单，不混入 AI taxonomy。 */
 export const SECURITY_ARCHITECTURE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'security-architecture-governance': ['scenario', 'tradeoff', 'system-design', 'design', 'synthesis'],
   'security-requirements': ['scenario', 'mechanism', 'comparison', 'design', 'system-design'],

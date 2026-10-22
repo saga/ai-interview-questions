@@ -8,7 +8,12 @@
 
 import type { KnowledgeArea, QuestionAngle } from '../schemas/common';
 import type { KnowledgeNode } from '../schemas/knowledge';
-import { SECURITY_ARCHITECTURE_ANGLE_WHITELIST, SNOWFLAKE_ANGLE_WHITELIST } from './learningTracks';
+import {
+  SECURITY_ARCHITECTURE_ANGLE_WHITELIST,
+  SECURITY_ARCHITECTURE_TOPIC_LABELS,
+  SNOWFLAKE_ANGLE_WHITELIST,
+  SNOWFLAKE_TOPIC_LABELS,
+} from './learningTracks';
 
 export interface TaxonomyTopic {
   id: string;
@@ -326,7 +331,7 @@ export function domainLabel(domain: KnowledgeArea): string {
 }
 
 export function topicLabel(topic: string): string {
-  return TOPIC_LABELS[topic] ?? topic;
+  return TOPIC_LABELS[topic] ?? SNOWFLAKE_TOPIC_LABELS[topic] ?? SECURITY_ARCHITECTURE_TOPIC_LABELS[topic] ?? topic;
 }
 
 /** 按域把知识点分组：域 → 节点列表（保留域顺序，空域也给出空数组）。 */
