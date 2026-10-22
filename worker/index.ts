@@ -4,10 +4,10 @@
 //   · /api/ai/*  → 同源代理到 https://api.cloudflare.com（解决浏览器直连 CORS 问题）
 //   · 其它路径   → 交给 [assets] 提供静态 SPA（已配置 not_found_handling = single-page-application）
 //
-// 转发逻辑与本地可选 Node 服务（server/index.js）保持一致：剥掉 /api/ai 前缀后，
-// 原样转发 method / headers（含 Authorization）/ body 到 api.cloudflare.com。
-// 二者服务不同部署目标（本 Worker 负责 Cloudflare 生产；Node 服务负责本地 dev / 自有 Node 主机），
-// 但代理行为统一，前端无需感知差异。
+// 剥掉 /api/ai 前缀后，原样转发 method / headers（含 Authorization）/ body 到 api.cloudflare.com。
+// 本地开发由 vite.config.ts 的 server.proxy 直接代理到同一固定上游，不启动额外 Node 服务。
+// 本 Worker 只负责生产环境的 Cloudflare Workers AI 代理；Copilot SDK API 是开发期 Vite 插件，
+// 不在此 Worker 暴露。
 
 interface Env {
   ASSETS: { fetch: (request: Request) => Promise<Response> };

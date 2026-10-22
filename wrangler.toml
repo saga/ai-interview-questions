@@ -2,8 +2,8 @@
 # 本应用是 SPA（构建产物 dist/，HashRouter）。Cloudflare 既托管静态资源（[assets]），
 # 也通过 main = "./worker/index.ts" 提供一份极薄的同源代理：把 /api/ai/* 转发到
 # api.cloudflare.com，从而解决 Cloudflare Workers AI 浏览器直连的 CORS 问题。
-# 本地开发则走 vite.config.ts 的 dev proxy → 可选 Node 服务（server/index.js），
-# 二者转发逻辑一致；Node 服务不是强依赖，只在本地 dev / 自有 Node 主机时启用。
+# 本地开发由 vite.config.ts 的 server.proxy 直接转发到同一固定上游，不启动额外 Node 服务。
+# Copilot SDK 的本地 API 由 vite-plugin-copilot-sdk.ts 提供，仅在 Vite 开发模式运行。
 # 发布范围：仅 dist/ —— 本地 Python 分析工程（analysis/，含 *.py、pyproject.toml、uv.lock）与经
 #   Git LFS 管理的离线模型 analysis/models/ 不参与浏览器构建，不会被发布。
 # 全部 Python 工程已收进 analysis/ 子目录，仓库根不再有 pyproject.toml / uv.lock / requirements.txt，
@@ -14,7 +14,7 @@ name = "ai-interview-trainer"
 compatibility_date = "2025-08-30"
 
 # Worker 入口：负责把 /api/ai/* 同源代理到 api.cloudflare.com（浏览器直连该域名无 CORS 头）。
-# 非 /api/ai 请求交给 [assets] 提供静态 SPA。与本地可选 Node 服务(server/index.js)转发逻辑一致。
+# 非 /api/ai 请求交给 [assets] 提供静态 SPA；Copilot SDK 开发 API 不包含在此 Worker 中。
 main = "./worker/index.ts"
 
 [observability]

@@ -98,7 +98,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 本应用是纯静态 SPA：构建产物在 `dist/`，使用 `HashRouter`（路由走 URL hash）。部署采用 **Cloudflare Workers + Assets** 模式——`wrangler.toml` 同时配置 `[assets]`（托管 `dist/`）与 `main = "./worker/index.ts"`（一份极薄同源代理，供 Cloudflare Workers AI provider 规避浏览器直连 CORS）。SPA 回退由 `[assets]` 的 `not_found_handling = "single-page-application"` 提供，无需额外配置。
 
-> ⚠️ **Cloudflare Workers AI 需要同源代理**：该 provider 不能直连 `api.cloudflare.com`（无 CORS 头）。生产环境由 `worker/index.ts` 提供的同源代理 `/api/ai/*` 转发；本地由 `vite.config.ts` 的 dev proxy 转给可选 Node 服务（`server/index.js`）。详细机制与「GitHub Pages 等纯静态托管下该 provider 不可用」的说明见 [`DEPLOYMENT.md`](./DEPLOYMENT.md)。
+> ⚠️ **Cloudflare Workers AI 需要同源代理**：该 provider 不能直连 `api.cloudflare.com`（无 CORS 头）。生产环境由 `worker/index.ts` 提供的同源代理 `/api/ai/*` 转发；本地开发由 `vite.config.ts` 的 Vite proxy 直接转发到固定上游，不启动额外 Node 服务。GitHub Copilot SDK 则由 Vite 开发中间件调用，仅本地开发可用。详细机制见 [`DEPLOYMENT.md`](./DEPLOYMENT.md)。
 
 **本地发布（需 Wrangler CLI）：**
 
