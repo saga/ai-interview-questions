@@ -5,7 +5,6 @@ import type { Plugin } from 'vite';
 const BODY_LIMIT = 180 * 1024;
 const REQUEST_TIMEOUT_MS = 120_000;
 const COMPLETE_PATH = '/api/copilot-sdk/complete';
-const MODELS_PATH = '/api/copilot-sdk/models';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -147,18 +146,12 @@ export default function copilotSdkPlugin(): Plugin {
           next();
           return;
         }
-        if (pathname !== COMPLETE_PATH && pathname !== MODELS_PATH) {
+        if (pathname !== COMPLETE_PATH) {
           next();
           return;
         }
         try {
           assertSameOrigin(req);
-          if (pathname === MODELS_PATH) {
-            if (req.method !== 'GET') throw new HttpError(405, '该接口只允许 GET。');
-            const models = await (await getClient()).listModels();
-            respond(res, 200, { models });
-            return;
-          }
           if (req.method !== 'POST') throw new HttpError(405, '该接口只允许 POST。');
           if (!req.headers['content-type']?.toLowerCase().startsWith('application/json')) {
             throw new HttpError(415, '请求必须使用 application/json。');
