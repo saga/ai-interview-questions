@@ -63,7 +63,7 @@ export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any>
     // 运行时由 credential store 的 env 注入真实 accountId，路径结构也由 pi-ai 负责拼接），
     // 我们**不要**自己拼路径。只需把跨域的源 https://api.cloudflare.com 换成「同源代理前缀」。
     // 代理前缀 /api/ai 由对应运行环境剥离后转发到 api.cloudflare.com：
-    //   · 本地开发：vite.config.ts 的 Vite dev proxy 直接代理到固定上游，不启动额外 Node 服务
+    //   · 本地开发：vite.config.ts 的 Vite dev proxy → 现有 Express server/index.js
     //   · Cloudflare 生产：worker/index.ts（wrangler deploy 的 main 脚本）
     //   · GitHub Pages：无服务端，cloudflare provider 不可用（见 DEPLOYMENT.md）
     // GitHub Copilot SDK 则走独立的 vite-plugin-copilot-sdk.ts，仅在 Vite 开发模式中提供。

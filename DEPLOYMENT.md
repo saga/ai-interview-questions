@@ -1,51 +1,97 @@
 # 部署说明（Deployment）
 
-本应用的前端是 Vite + React SPA（构建产物为 `dist/`）。本地开发只启动 Vite，不需要单独的 Express/Node HTTP 服务。Cloudflare Workers AI 的跨域代理与 GitHub Copilot SDK 的运行时接口分别由 Vite 开发代理、Vite 插件承担；它们的生产部署边界不同。
+本应用是纯前端 SPA（Vite + React，构建产物 `dist/`）。**Cloudflare Workers AI 这一 provider 必须有一个「同源代理」才能用**，本文档说明为什么、以及各部署方式下的正确配置。
 
-## 1. Cloudflare Workers AI 的同源代理
+---
 
-浏览器调用 `api.cloudflare.com` 时会遇到跨域限制，因此前端请求同源地址：
+## 1. 为什么需要同源代理（关键背景）
 
-```text
-前端 → /api/ai/client/v4/accounts/{accountId}/ai/v1/...
-Vite / Worker → 剥掉 /api/ai 前缀 → https://api.cloudflare.com/client/v4/accounts/{accountId}/ai/v1/...
+Cloudflare Workers AI 的 REST 域名 `api.cloudflare.com` **不返回 CORS 头**，浏览器从前端直连它会被同源策略拦截（表现为 `Connection error` / 请求失败）。
+
+因此前端不能直连 `api.cloudflare.com`，而是请求**与自己同源**的 `/api/ai/...`，再由服务端把这段前缀剥掉、转发到 `api.cloudflare.com`：
+
+```
+前端   →  /api/ai/client/v4/accounts/{accountId}/ai/v1/...      （同源，无 CORS）
+服务端 →  剥掉 /api/ai 前缀  →  https://api.cloudflare.com/client/v4/accounts/{accountId}/ai/v1/...
 ```
 
-`src/ai/pi.ts` 会把 Cloudflare provider 的绝对 `baseUrl` 替换为当前源上的 `/api/ai` 前缀。开发环境中，`vite.config.ts` 将该路径转发至固定上游 `https://api.cloudflare.com` 并剥掉前缀；生产 Cloudflare 部署由 `worker/index.ts` 处理。上游主机是固定的，不接受由请求内容指定的任意目标地址。
+`src/ai/pi.ts` 的 `getModel` 会把 cloudflare provider 的 `baseUrl` 由 pi-ai 内置的
+`https://api.cloudflare.com/...` **仅替换源**为同源代理前缀 `${location.origin}/api/ai/...`，
+保留 pi-ai 原有的 `{CLOUDFLARE_ACCOUNT_ID}` 占位符与路径拼接（accountId 由 credential store 注入）。
+注意 `baseUrl` 必须是**绝对 URL**——pi-ai 底层用 OpenAI SDK，会对 `baseUrl` 执行 `new URL()`，
+传相对路径会抛 `Failed to construct 'URL': Invalid URL`。
 
-## 2. 本地开发
+**核心结论：代理必须存在于「部署目标自己的源(origin)」上。** 它只活在服务端，前端代码里没有任何可被部署带走的代理逻辑。
+
+---
+
+## 2. 各部署方式对照
+
+| 部署方式 | 代理由谁提供 | cloudflare provider 是否可用 |
+|---|---|---|
+| 本地 `npm run dev` | Vite dev proxy → 可选 Node 服务(`server/index.js`, 端口 3000) | ✅ 可用 |
+| Cloudflare Workers(`wrangler deploy`) | `worker/index.ts`(main 脚本) | ✅ 可用 |
+| 自有 Node 主机 | 直接运行 `npm run server`(含 `server/index.js`) | ✅ 可用 |
+| **GitHub Pages(纯静态)** | **无** | ❌ **不可用** |
+
+> 其它 cloud provider（deepseek / openrouter / google）走各自默认 `baseUrl`，在任意静态托管上是否可用取决于其域名是否返回 CORS 头；`local` provider 仅本机有效。
+
+---
+
+## 3. 本地开发
 
 ```bash
 npm install
-npm run dev       # 只启动 Vite，默认 http://localhost:5173
+npm run dev      # 并行启动 Vite(5173) 与可选 Node 服务(3000)
 ```
 
-Vite 提供两条开发路径：
+链路：`前端(:5173) → vite proxy(/api/ai) → Node 服务(:3000) → api.cloudflare.com`。
+Node 服务(`server/index.js`)是**可选**的，仅用于本地以同源方式代理 Cloudflare、规避 CORS；
+不运行时应用照常工作，只是 cloudflare provider 无法调用。
 
-- `/api/ai/*`：直接代理到 `https://api.cloudflare.com`，Cloudflare Workers AI 在开发模式可用。
-- `/api/copilot-sdk/*`：由根目录的 `vite-plugin-copilot-sdk.ts` 注册为开发中间件。中间件在 Node 侧调用 `@github/copilot-sdk`，复用本机 GitHub Copilot CLI 登录态，浏览器不会拿到 CLI 凭据。接口检查同源 Origin、限制请求体大小，并且不会开放 shell 或文件系统工具。
+---
 
-使用 Copilot SDK 前，需本机安装并登录 GitHub Copilot CLI，并满足 SDK 的 Node.js 版本要求。Provider 模型字段可填 `auto`，或填写当前账户支持的模型 ID。若调用失败，请检查 CLI 安装、登录状态、模型权限及额度。
+### GitHub Copilot SDK（仅本地开发）
 
-## 3. Cloudflare Workers 部署
+GitHub Copilot SDK 通过 `vite-plugin-copilot-sdk.ts` 作为 Vite 开发中间件调用，不经过 Express。现有 Express 服务仍保留其 `/api/ai/*` Cloudflare 代理职责，`npm run dev` 的原有启动行为不变。
+
+启用 `copilot-sdk` 前，需要本机已安装并登录 GitHub Copilot CLI。配置不需要 API Key，模型字段可填写 `auto` 或当前账户支持的模型 ID。插件接口限制为本机回环连接，仅在 Vite 开发模式存在；静态构建和 Cloudflare Worker 不会暴露此接口。
+
+## 4. Cloudflare Workers 部署（推荐）
 
 ```bash
 npm run build
 npx wrangler deploy
 ```
 
-- `wrangler.toml` 使用 `[assets]` 托管 `dist/`，并以 `worker/index.ts` 作为 Worker 入口。
-- Worker 继续为 `/api/ai/*` 提供 Cloudflare Workers AI 代理，其余请求交给静态 assets。
-- Vite 开发插件只在 `vite dev` 时运行，不会包含在生产 bundle 中；Cloudflare Worker 当前不提供 Copilot SDK API。
+- `wrangler.toml` 同时配置 `[assets]`(托管 `dist/`)与 `main = "./worker/index.ts"`。
+- `worker/index.ts` 是极薄的服务端：收到 `/api/ai/*` 时剥前缀并转发到 `api.cloudflare.com`
+  （与 `server/index.js` 转发逻辑一致）；其它路径交给 `[assets]` 提供静态 SPA。
+- 这样 `wrangler deploy` 后 cloudflare provider 在生产环境真正可用。
 
-## 4. GitHub Pages 等纯静态托管
+---
 
-纯静态托管没有服务端，无法提供 `/api/ai` 代理，因此 Cloudflare Workers AI provider 不能直接在这类部署里工作；需要另外部署受控的同源代理。其他浏览器直连 Provider 仍取决于它们的 CORS 支持。
+## 5. GitHub Pages（纯静态，cloudflare provider 不可用）
 
-Copilot SDK 同样不能在静态页面里运行，因为它依赖 Node 侧 SDK 与本机 CLI 登录态。当前的 `copilot-sdk` Provider 仅用于本地 `npm run dev`；若未来需要生产使用，应单独设计有身份认证、授权和运行隔离的后端服务，不能将 CLI 凭据打进浏览器 bundle，也不能把 Vite dev server 当作生产后端。
+GitHub Pages 只托管静态文件，**没有任何服务端代码**，无法提供 `/api/ai` 代理：
 
-## 5. Agent 面试的运行时边界
+- 部署后页面照常加载，但**启用 cloudflare 模型时会调用失败**（请求 `/api/ai/...` 得到 404，
+  被应用包成「⚠️ 模型调用失败」提示）。应用不会整体崩溃，仅该 provider 不可用。
+- 若一定要在 GitHub Pages 上用 cloudflare provider，必须**外接一个代理**，例如：
+  - 你自己挂的一个 Cloudflare Worker（单独部署，把 `你的域名/api/ai/*` 转发到 `api.cloudflare.com`），
+    然后前端 `baseUrl` 指向该 Worker 域名（需相应改造 `getModel`）；
+  - 或其它 serverless / 自建反向代理。
+- 纯静态方案下，建议改用 `local` / `openrouter` / `deepseek` 等在浏览器端可用的 provider
+  （前提是对应域名返回 CORS 头）。
 
-普通问答、开放题评分、运行时变体及题目质询已可通过 Copilot SDK Provider 发起 one-shot 调用。Agent 面试目前依赖 `pi-agent-core` 的流式工具调用协议，Copilot SDK 尚未接入这个契约；使用 Agent 面试时请同时启用另一个支持该运行时的 Provider。
+---
 
-旧的 `server/index.js`、Express 依赖与 `npm run server` 脚本已移除。
+## 6. 代理前缀约定
+
+`/api/ai` 是各环境统一的同源代理前缀：
+
+- `vite.config.ts`：`server.proxy['/api/ai']` → `http://localhost:3000`
+- `server/index.js`：剥离 `/api/ai` → `https://api.cloudflare.com`
+- `worker/index.ts`：剥离 `/api/ai` → `https://api.cloudflare.com`
+
+三者剥离逻辑一致：请求路径 `/api/ai/client/v4/...` 在服务端变成 `/client/v4/...` 再转发。
