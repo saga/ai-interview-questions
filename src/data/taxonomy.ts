@@ -8,7 +8,7 @@
 
 import type { KnowledgeArea, QuestionAngle } from '../schemas/common';
 import type { KnowledgeNode } from '../schemas/knowledge';
-import { SNOWFLAKE_ANGLE_WHITELIST } from './learningTracks';
+import { SECURITY_ARCHITECTURE_ANGLE_WHITELIST, SNOWFLAKE_ANGLE_WHITELIST } from './learningTracks';
 
 export interface TaxonomyTopic {
   id: string;
@@ -304,7 +304,7 @@ export const DOMAIN_LABELS: Record<KnowledgeArea, string> = { ...TAXONOMY.reduce
     return acc;
   },
   {} as Record<KnowledgeArea, string>,
-), 'data-platform': 'Snowflake 独立课程' };
+), 'data-platform': 'Snowflake 独立课程', 'security-architecture': 'Security Architecture 独立课程' };
 
 /** topic id → 中文标签。 */
 export const TOPIC_LABELS: Record<string, string> = (() => {
@@ -432,5 +432,5 @@ export const FALLBACK_ANGLES: QuestionAngle[] = [
 
 /** 查询某 topic 允许的角度集合；taxonomy 未登记时返回全部 10 角度。 */
 export function allowedAnglesFor(topic: string): QuestionAngle[] {
-  return ANGLE_WHITELIST[topic] ?? SNOWFLAKE_ANGLE_WHITELIST[topic] ?? FALLBACK_ANGLES;
+  return ANGLE_WHITELIST[topic] ?? SNOWFLAKE_ANGLE_WHITELIST[topic] ?? SECURITY_ARCHITECTURE_ANGLE_WHITELIST[topic] ?? FALLBACK_ANGLES;
 }

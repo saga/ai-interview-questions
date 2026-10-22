@@ -16,6 +16,14 @@
 
 > **变体安全边界（勿高估）**：「答案 key 来自原题」保证的是**程序层面**答案不可被模型覆盖，它**不**保证改写后的题干/选项在语义上仍等价于原题。`validateVariant` 只查结构项与抗暗示（选项去重、长度泄题、指代自包含、形态对齐），是**漂移探测器**而非语义等价性证明——语义走偏（换了条件、引入新前提、干扰项不再错误）的变体可以完整通过全部硬门槛。因此变体只用于**同格内扩充题量**，不得用于跨 `topic × angle` 补覆盖缺口；离线量产须先叠加超采 + 质量 challenger（见 `ACTION_CHECKLIST.md` A-10）。
 
+## 顶层学习体系与课程隔离
+
+`src/data/learningTracks.ts` 注册三个并列体系：`ai`、`snowflake`、`security-architecture`。课程切换只影响当前使用的知识节点、题库与 Learner Profile 投影；课程题通过 `courseId` 明确归属，不将 Security Architecture 混入 AI 的六大能力域，也不将它误标成 Snowflake 的 `data-platform`。
+
+Security Architecture 使用独立的 `security-architecture` 分类元数据、主题白名单、知识节点 JSON 和题库 JSON。题目按 `topic = KnowledgeNode.id` 绑定评分要点，并通过 `source.materialId / relatedMaterials` 保留标准与实践来源。主课程入口展示各课程独立的主题数、节点数与题目数；旧会话推断从课程注册表读取，而不是硬编码两门课。
+
+课程范围是 Solution Architecture：风险与业务属性的追踪、安全质量需求、威胁模型与信任边界、身份/授权、Zero Trust、数据保护、云平台与 API 集成、供应链、安全运营/韧性以及金融服务方案设计。NIST CSF 用于风险结果的分类，NIST SP 800-160 用于系统安全工程，SP 800-207 用于 Zero Trust 参考架构；SABSA/Open Group 支撑业务驱动的架构追踪，ISO 27001 主要是 ISMS 要求、NIST 800-53 是控制目录，OWASP 与云厂商 Well-Architected 用于技术设计和验证。它们在课程中扮演不同角色，不被混合成一个“万能标准”。
+
 ## 统一交互入口（Phase 1–5 已实施，ADR-061/062，plan0831_4 融合收敛）
 
 Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record。`handleSend` 经 `routeUserMessage` 三通道分流（ADR-064）：`command`（5 个确定性训练动作，无 LLM）→ `answer`（提交作答）→ `copilot`（解释/提示/比较/追问/知识问答，零副作用）；检索在 `copilot.ts` 内先于 LLM 完成（ADR-063），失败只降级为无依据问答。`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`（含 §8 六约束）。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。

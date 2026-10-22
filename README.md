@@ -41,13 +41,14 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 ## 文档
 
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
+- `docs/security-architecture-course-roadmap.md`：面向 Solution Architect 的安全架构课程、标准来源与方案设计案例
 - `docs/snowflake-learning-path.md`：Snowflake 独立课程的系统学习路线、架构实战与题目索引
 - `docs/snowflake-course-roadmap.md`：基于 8 门 Coursera 课程模块与 Snowflake 官方文档的完整课程路线、知识骨架和毕业案例
 - `docs/snowflake-developer-guides-coverage-200.md`：基于 Snowflake Developer Guides 的 200 道实践/架构题与 20 个知识点覆盖矩阵
 - [Snowflake CoCo Skills 专项 100 道题与知识点覆盖矩阵](docs/snowflake-coco-skills-100.md)
 - [SnowPro Core COF-C03 考点与 200 道新增题覆盖矩阵](docs/snowflake-certification-cof-c03-coverage-200.md)
 - `skills/snowflake-curriculum/SKILL.md`：独立 Snowflake 课程的知识点/题目维护 prompt
-- 进入训练前先选择学习体系：AI 与 Snowflake 的课程主题、题库、知识点覆盖和本地训练进度分别管理。
+- 进入训练前先选择学习体系：AI、Snowflake 与 Security Architecture 的课程主题、题库、知识点覆盖和本地训练进度分别管理。
 - `docs/CONVERSATION_ARCHITECTURE.md`：统一 Conversation / Intent / Capability 入口设计（ADR-061）
 - `docs/DECISIONS.md`：关键决策（ADR，含"为何不迁 Astro"）
 - `docs/CHANGELOG.md`：设计变更记录

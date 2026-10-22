@@ -13,6 +13,8 @@ import {
   groupNodesByTopic,
 } from './taxonomy.ts';
 import { knowledgeNodes } from './knowledgeMap';
+import { questionBank } from './questionBank';
+import { SECURITY_ARCHITECTURE_COURSE_TOPICS } from './learningTracks';
 
 describe('taxonomy 骨架', () => {
   it('AI 学习体系恰为 6 个能力域，且标签齐全', () => {
@@ -21,11 +23,14 @@ describe('taxonomy 骨架', () => {
     for (const d of DOMAINS) expect(TAXONOMY.find((x) => x.id === d)?.label.length).toBeGreaterThan(0);
   });
 
-  it('Snowflake 课程主题不属于 AI 能力域 taxonomy', () => {
+  it('Snowflake 与 Security Architecture 主题均不属于 AI 能力域 taxonomy', () => {
     expect(domainOfTopic('snowflake')).toBeUndefined();
     expect(domainOfTopic('data-architecture')).toBeUndefined();
     expect(domainOfTopic('data-engineering')).toBeUndefined();
     expect(TAXONOMY.some((domain) => domain.id === 'data-platform')).toBe(false);
+    expect(domainOfTopic('security-architecture-governance')).toBeUndefined();
+    expect(domainOfTopic('security-zero-trust')).toBeUndefined();
+    expect(TAXONOMY.some((domain) => domain.id === 'security-architecture')).toBe(false);
   });
 
   it('topic 在骨架内且标签不重名', () => {
@@ -53,6 +58,19 @@ describe('知识节点与 taxonomy 对齐', () => {
     expect(nodes.every((node) => ['snowflake', 'data-architecture', 'data-engineering', 'snowflake-lakehouse', 'snowflake-devops', 'snowflake-data-products', 'snowflake-genai', 'snowflake-agent-ml'].includes(node.topic))).toBe(true);
     const snowflakeQuestionTopics = new Set(questionBank.questions.filter((q) => q.courseId === 'snowflake').map((q) => q.topic));
     for (const node of nodes) expect(snowflakeQuestionTopics.has(node.id), 'Snowflake knowledge node without a question: ' + node.id).toBe(true);
+  });
+
+  it('Security Architecture 知识节点与题目独立归属，并覆盖每个节点', () => {
+    const nodes = knowledgeNodes.filter((node) => node.courseId === 'security-architecture');
+    expect(nodes).toHaveLength(12);
+    expect(nodes.every((node) => node.area === 'security-architecture')).toBe(true);
+    const themeIds = new Set(SECURITY_ARCHITECTURE_COURSE_TOPICS.map((topic) => topic.id));
+    expect(nodes.every((node) => themeIds.has(node.topic))).toBe(true);
+    const questions = questionBank.questions.filter((question) => question.courseId === 'security-architecture');
+    expect(questions).toHaveLength(24);
+    for (const node of nodes) {
+      expect(questions.filter((question) => question.topic === node.id).length, `node without question: ${node.id}`).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it('groupNodesByDomain 按域分组且覆盖全部节点（非 AI 课程节点作为独立分组保留）', () => {
