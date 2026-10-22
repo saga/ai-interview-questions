@@ -1,4 +1,4 @@
-import { CopilotClient } from '@github/copilot-sdk';
+import type { CopilotClient } from '@github/copilot-sdk';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 
@@ -95,6 +95,7 @@ export default function copilotSdkPlugin(): Plugin {
     if (!clientStart) {
       clientStart = (async () => {
         // Match other saga projects: use the locally authenticated Copilot identity and disable ambient tools.
+        const { CopilotClient } = await import('@github/copilot-sdk');
         const candidate = new CopilotClient({ mode: 'empty', useLoggedInUser: true });
         await candidate.start();
         client = candidate;
