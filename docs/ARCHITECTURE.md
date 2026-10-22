@@ -8,7 +8,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。LLM 能力通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户密钥存 `localStorage`，核心为纯静态 SPA、无独立业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），作为并行运行时保留并持续建设，定位为未来正式方向（ADR-034）。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。仅 Cloudflare Workers AI provider 需要同源代理：本地开发由 `server/index.js`（经 Vite dev proxy 转发）提供，生产由 `worker/index.ts`（Cloudflare Worker）提供，二者均不含业务逻辑（详见 `DEPLOYMENT.md`）。**代理安全（ADR-060）**：两者在 `new URL(stripped, base)` 之后硬性校验 `hostname === 'api.cloudflare.com' && protocol === 'https:'`，拒绝协议相对（`//evil.com`）或绝对 URL 改变目标主机——否则会变成对任意主机的开放中继并泄露 `Authorization`，违规请求直接返回 400。
+单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。多数 LLM Provider 通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户填写的云端密钥存 `localStorage`；GitHub Copilot SDK 例外：SDK 运行于 Node 侧，由 `vite-plugin-copilot-sdk.ts` 提供仅开发期的同源 API，不把 CLI 凭据交给浏览器。核心仍是静态 SPA，不包含常驻业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），使用独立的流式工具调用契约；Copilot SDK 尚未接入这条协议。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。Cloudflare Workers AI 的同源代理由本地 Vite 直接转发，生产由 `worker/index.ts` 提供（详见 `DEPLOYMENT.md`）。**代理安全（ADR-060）**：生产 Worker 固定校验 `hostname === 'api.cloudflare.com' && protocol === 'https:'`，拒绝协议相对或绝对 URL 改写目标主机，避免把带 Authorization 的请求变成开放中继。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 

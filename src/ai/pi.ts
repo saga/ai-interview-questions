@@ -118,7 +118,6 @@ export function piUsageToLLMUsage(u: Usage): LLMUsage {
   };
 }
 
-/** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
 /** Message history sent to the local Copilot SDK dev endpoint. */
 export type CopilotSDKMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -155,6 +154,7 @@ export async function callCopilotSDKCompletion(
   return payload.content;
 }
 
+/** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
 export async function callLLM(
   entry: ProviderEntry,
   system: string,
