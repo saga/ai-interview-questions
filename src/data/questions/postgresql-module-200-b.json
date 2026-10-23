@@ -2170,5 +2170,538 @@
         "pg-doc-isolation"
       ]
     }
+  },
+  {
+    "id": "sf-pg-091",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 中，想要发现当前正在执行或等待的会话，通常先查看哪个视图？",
+    "explanation": "正确答案 A。pg_stat_activity 展示活动会话及其状态、查询时间等信息，是运行时诊断的常用入口。",
+    "misconceptions": [
+      "把运行时会话统计与静态对象定义目录混淆。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`pg_stat_activity`",
+          "`pg_database`",
+          "`pg_attribute`",
+          "`pg_type`"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。pg_stat_activity 展示活动会话及其状态、查询时间等信息，是运行时诊断的常用入口。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Finding Long-Running Queries",
+      "relatedMaterials": [
+        "pg-doc-monitoring",
+        "pg-doc-locks"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-092",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "在 PostgreSQL 中，普通 SELECT 通常不会因为读取表而阻塞常规 UPDATE，主要原因是什么？",
+    "explanation": "正确答案 A。普通读取会取得较弱的表级锁，该锁与常规 DML 的表级锁相兼容；具体行锁和 DDL 锁仍需单独分析。",
+    "misconceptions": [
+      "认为 SELECT 完全不获取锁，或普通 SELECT 必然阻止所有写入。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "常见的表级 AccessShareLock 与 RowExclusiveLock 兼容",
+          "SELECT 不获取任何锁",
+          "UPDATE 不获取任何锁",
+          "PostgreSQL 不支持并发读写"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。普通读取会取得较弱的表级锁，该锁与常规 DML 的表级锁相兼容；具体行锁和 DDL 锁仍需单独分析。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Locks and Blocked Queries",
+      "relatedMaterials": [
+        "pg-doc-locks"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-093",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "PostgreSQL 检测到死锁时，通常会采取什么动作？",
+    "explanation": "正确答案 A。死锁检测器会选择一个事务中止以打破等待环；应用应处理错误，必要时在保证幂等的条件下重试。",
+    "misconceptions": [
+      "认为死锁检测会在不影响任何事务的情况下自动修复所有业务操作。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "中止死锁环中的一个事务并报告错误",
+          "永远等待直到管理员重启实例",
+          "自动提交所有涉及事务",
+          "删除出现冲突的表"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。死锁检测器会选择一个事务中止以打破等待环；应用应处理错误，必要时在保证幂等的条件下重试。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Finding and Killing Problems",
+      "relatedMaterials": [
+        "pg-doc-locks",
+        "pg-doc-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-094",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "定位订单更新被阻塞的原因，哪些步骤有帮助？",
+    "explanation": "正确答案 A、B、C。应区分等待方和阻塞方，并结合查询、事务状态与锁信息定位根因。",
+    "misconceptions": [
+      "只重复提交等待中的语句，而不识别锁的持有方。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查询 pg_stat_activity 识别等待会话和其查询状态",
+          "结合 pg_locks 判断锁类型与持有/等待关系",
+          "沿阻塞关系找到可能的阻塞会话",
+          "只对等待会话持续执行相同 UPDATE"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。应区分等待方和阻塞方，并结合查询、事务状态与锁信息定位根因。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: pg_stat_activity; pg_locks; Find the Source of a Lock",
+      "relatedMaterials": [
+        "pg-doc-locks",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-095",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 `statement_timeout` 和 `lock_timeout`，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。statement_timeout 控制语句运行时间，lock_timeout 针对获取锁的等待；它们是保护机制，不是对所有故障的保证。",
+    "misconceptions": [
+      "把查询总时间限制与锁等待限制视为同一个参数。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "statement_timeout 限制语句可运行的总时间",
+          "lock_timeout 主要限制等待锁的时间",
+          "两者针对的等待/执行范围不同",
+          "设置任意一个参数就能防止所有数据库故障"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。statement_timeout 控制语句运行时间，lock_timeout 针对获取锁的等待；它们是保护机制，不是对所有故障的保证。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Statement Timeout; Lock Timeout",
+      "relatedMaterials": [
+        "pg-doc-config",
+        "pg-doc-locks"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-096",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "会话长时间处于 `idle in transaction`，为什么值得调查？",
+    "explanation": "正确答案 A、B、C。空闲事务可能持锁、保持旧快照并影响 VACUUM；应修复事务生命周期并根据风险决定是否终止会话。",
+    "misconceptions": [
+      "把 idle in transaction 误认为没有任何资源和维护影响。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "事务可能持续持有锁并阻碍其他操作",
+          "旧快照可能延迟死元组清理",
+          "应调查应用是否未及时提交或回滚",
+          "该状态代表所有事务已经自动提交"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。空闲事务可能持锁、保持旧快照并影响 VACUUM；应修复事务生命周期并根据风险决定是否终止会话。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Finding Idle Transactions",
+      "relatedMaterials": [
+        "pg-doc-monitoring",
+        "pg-doc-locks",
+        "pg-doc-vacuum"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-097",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "使用 PostgreSQL 处理多个 worker 竞争的作业队列，哪些设计值得评估？",
+    "explanation": "正确答案 A、B、D。SKIP LOCKED 可用于多个 worker 跳过已锁定任务，但需要明确事务边界、任务租约、幂等和故障恢复。",
+    "misconceptions": [
+      "把 SKIP LOCKED 当作完整的队列可靠性和重试机制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在领取任务的事务中使用 `FOR UPDATE SKIP LOCKED`",
+          "为领取、处理、完成状态定义幂等与超时恢复逻辑",
+          "在锁定任务后长期等待外部人工操作，不结束事务",
+          "为队列状态及重试次数建立可观察性"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。SKIP LOCKED 可用于多个 worker 跳过已锁定任务，但需要明确事务边界、任务租约、幂等和故障恢复。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Locks; Hour 3: Transaction Design",
+      "relatedMaterials": [
+        "pg-doc-locks",
+        "pg-doc-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-098",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "PostgreSQL advisory lock 与表/行锁有哪些重要区别？",
+    "explanation": "正确答案 A、B、C。Advisory lock 适用于约定好的应用级互斥资源，不替代数据库约束；正确性依赖所有参与方遵守同一协议。",
+    "misconceptions": [
+      "认为 advisory lock 会自动验证业务键或约束数据唯一性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "advisory lock 由应用/数据库逻辑约定锁定的资源含义",
+          "数据库不会自动知道每个业务资源对应哪个 advisory key",
+          "应用需要确保所有参与者遵守相同锁协议",
+          "advisory lock 会自动创建业务唯一约束"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Advisory lock 适用于约定好的应用级互斥资源，不替代数据库约束；正确性依赖所有参与方遵守同一协议。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Locks and Blocked Queries",
+      "relatedMaterials": [
+        "pg-doc-locks"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-099",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "什么时候应取消查询（cancel），什么时候可能需要终止会话（terminate）？",
+    "explanation": "正确答案 A、B、C。取消语句与终止会话影响不同；终止会话通常会结束其当前事务。操作前应评估业务影响并记录原因。",
+    "misconceptions": [
+      "把重启实例当作处理所有阻塞会话的首选办法。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "取消查询可尝试停止当前语句并保留会话",
+          "若会话无法恢复或长期持有资源，可评估终止连接的影响",
+          "应先识别事务与业务状态，避免意外回滚或中断关键操作",
+          "无论原因是什么都直接重启整个数据库实例"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。取消语句与终止会话影响不同；终止会话通常会结束其当前事务。操作前应评估业务影响并记录原因。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Canceling a Query; Terminating a Connection",
+      "relatedMaterials": [
+        "pg-doc-monitoring",
+        "pg-doc-locks"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-100",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-locks-concurrency",
+    "subtopic": "postgresql-locks-concurrency",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-locks-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "两个事务都需要更新账户 A 和账户 B，哪些措施有助于降低死锁概率？",
+    "explanation": "正确答案 A、B、C。一致的锁顺序、短事务和受控重试能降低死锁风险；检测和重试仍需遵守业务幂等性。",
+    "misconceptions": [
+      "认为数据库死锁检测替代了应用对锁顺序的设计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按一致顺序访问账户/行",
+          "缩短持锁时间并避免在事务中等待外部操作",
+          "为冲突错误设计可控的事务重试",
+          "故意在不同事务中用相反顺序锁定同一组行"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。一致的锁顺序、短事务和受控重试能降低死锁风险；检测和重试仍需遵守业务幂等性。"
+      }
+    },
+    "knowledgeId": "postgresql-locks-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Locks; Hour 3: MVCC",
+      "relatedMaterials": [
+        "pg-doc-locks",
+        "pg-doc-transactions"
+      ]
+    }
   }
 ]
