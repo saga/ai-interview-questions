@@ -54,6 +54,17 @@ flowchart TD
 
 题集与逐题映射：[200 道题及覆盖矩阵](snowflake-postgres-full-day-200.md)。建议在完成基础 SQL 与仓库治理后，按 `sf-pgtd-001`–`sf-pgtd-200` 逐主题训练；每题都有选择和开放回答形式，可结合 Snowflake 官方文档验证机制、边界和成本假设。
 
+
+### PostgreSQL 原生数据库工程补充模块
+
+Snowflake 学习体系另外包含一个 PostgreSQL 专项补充模块，用于掌握常见数据库工程能力；这批题目考察的是 **PostgreSQL 本身**，不是 Snowflake 的实现。内容来源为 [PostgreSQL Full-Day Training](https://github.com/Snowflake-Labs/postgres-full-day-training)，覆盖连接与 psql、Schema/权限、类型和约束、CRUD/JOIN/JSONB/窗口函数、事务与锁、备份/WAL/复制、连接池、VACUUM/分区、监控、内存、执行计划、索引与扩展。
+
+- 题目：[PostgreSQL 原生数据库工程 200 题](postgresql-module-in-snowflake-course-200.md)
+- 知识节点：`src/data/knowledge/postgresql-module.json`
+- 题目 ID：`sf-pg-001`–`sf-pg-200`；难度 100 道简单、100 道中级。
+- 题目使用 PostgreSQL 18 文档作为主要核对依据；需要区分版本的特性会单独注明，扩展功能也须核对部署环境。
+
+
 ## 端到端案例
 
 **供应商文件入仓：** 从对象存储进入 Raw，保存批次和时间元数据；按到达频率选择 COPY INTO 或 Snowpipe，验证结构与业务约束，不合格数据隔离；转换至 Conformed，发布 Curated 前核对源/目标行数、拒绝数、关键金额及新鲜度。测试重复文件、损坏文件、迟到批次和失败重跑。
