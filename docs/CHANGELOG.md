@@ -3559,3 +3559,12 @@ assemble 能直接落盘，问题被留在池子里而不是暴露在生成时�
 - 难度分布为 120 道 easy、80 道 medium；40 个知识点各有五道新题。
 - 增加课程模块、Knowledge ID、Question ID 与官方文档 ID 的逐题溯源矩阵。
 - 已完成静态结构预检；schema/CLI/测试/typecheck/build 未运行。
+
+
+## 2026-10-23 — PostgreSQL Full-Day Training 主题迁移为 Snowflake 练习题
+
+- 参考 `Snowflake-Labs/postgres-full-day-training` 的 SQL、DML、CDC、运行诊断与性能调优学习主题，新增 7 个 Snowflake 知识节点和 200 道原创题。
+- 题目按 20 个主题各 10 道组织，难度为 100 easy / 100 medium；54 道单选、146 道多选，每题包含开放题参考答案与课程/官方文档来源。
+- 新增覆盖矩阵 `docs/snowflake-postgres-full-day-200.md`，同步课程路线、主 README 与 `skills/snowflake-curriculum/SKILL.md` 的跨数据库适配规则。
+- 修正一个可能触发选项前缀重复静态检查的 NULL 谓词干扰项；确认本批 200 道题 ID、题干唯一，答案索引、知识点和文档来源可解析。
+- 未运行 TypeScript、Vitest、完整全库题目门禁或 Vite build。
