@@ -1,0 +1,542 @@
+[
+  {
+    "id": "postgresql-basics-connection",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 基础架构、连接与 psql",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "掌握 PostgreSQL 数据库/实例、客户端连接、psql 常用命令和连接参数，能够区分数据库服务器、连接会话与数据库对象。",
+    "required": [
+      "解释数据库、Schema、关系对象和客户端会话的基本关系",
+      "使用 psql 连接目标数据库并检查当前用户、数据库、Schema 与服务版本",
+      "识别连接参数、端口、身份验证失败和服务器不可达等常见问题"
+    ],
+    "misconceptions": [
+      "认为一个 PostgreSQL 实例只能包含一个数据库",
+      "把 psql 元命令当作服务端 SQL 命令",
+      "把能连接到服务器等同于有权访问其中所有数据库对象"
+    ],
+    "angles": [
+      "fundamental",
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "postgresql-schemas-search-path",
+    "courseId": "snowflake",
+    "name": "PostgreSQL Schema、对象命名与 search_path",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解数据库内 Schema 的组织与命名边界、未限定对象名解析和 search_path 对部署、安全及跨环境行为的影响。",
+    "required": [
+      "解释 database 与 schema 的不同作用域以及完全限定名称",
+      "说明 search_path 如何影响未限定对象名的解析",
+      "为生产脚本定义明确对象引用和安全的默认 schema 策略"
+    ],
+    "misconceptions": [
+      "认为 PostgreSQL 的 Schema 与独立数据库完全相同",
+      "认为未限定对象名总会解析到 public Schema",
+      "忽略 search_path 引起的对象遮蔽和安全风险"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "postgresql-types-constraints",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 数据类型、时间与完整性约束",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "按业务语义选择 PostgreSQL 类型并使用约束保护数据质量，理解 NULL、时间区间、NUMERIC、ENUM 与版本差异。",
+    "required": [
+      "区分 TIMESTAMP 与 TIMESTAMPTZ 并设计一致的时间处理规范",
+      "选择 NUMERIC、整数、文本、数组、JSONB 等合适类型",
+      "理解 NOT NULL、CHECK、UNIQUE、PRIMARY KEY、FOREIGN KEY 与排斥约束的职责"
+    ],
+    "misconceptions": [
+      "认为 TIMESTAMP 会自动保留原始时区标识",
+      "把浮点类型用于必须精确表示的金额而不评估误差",
+      "认为应用层校验可以完全替代数据库完整性约束"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-roles-privileges",
+    "courseId": "snowflake",
+    "name": "PostgreSQL Roles、权限与最小权限",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "使用 Role/Role Membership、对象权限、默认权限和 schema usage 管理用户访问，减少共享凭据和特权扩散。",
+    "required": [
+      "区分 LOGIN 属性、角色成员资格与对象级权限",
+      "为数据库、Schema、表、序列及函数授予所需权限",
+      "用组角色、默认权限和可审计的授权流程管理新对象"
+    ],
+    "misconceptions": [
+      "认为授予数据库 CONNECT 就能读取所有表",
+      "把超级用户作为应用常规运行身份",
+      "认为未来新建对象会自动继承所有既有对象的授权"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "postgresql-crud-upsert",
+    "courseId": "snowflake",
+    "name": "PostgreSQL CRUD、RETURNING 与 UPSERT",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "掌握 INSERT/SELECT/UPDATE/DELETE、RETURNING、ON CONFLICT 与约束协同，设计可核验、幂等的数据修改流程。",
+    "required": [
+      "理解 CRUD 的数据变更语义和 WHERE 对目标行范围的影响",
+      "用 RETURNING 取得实际修改结果并核验影响行数",
+      "使用 ON CONFLICT 实现有明确唯一键语义的 UPSERT"
+    ],
+    "misconceptions": [
+      "认为 UPDATE/DELETE 没有 WHERE 时只影响部分行",
+      "认为 ON CONFLICT 可以替代业务键设计与冲突规则",
+      "把语句成功当成数据修改符合业务要求的证明"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "implementation"
+    ]
+  },
+  {
+    "id": "postgresql-joins-aggregation",
+    "courseId": "snowflake",
+    "name": "PostgreSQL JOIN、聚合与结果粒度",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "运用内外连接、聚合和 HAVING 正确处理关系数据，识别多对多 JOIN 引发的行数膨胀与重复计数。",
+    "required": [
+      "区分 INNER、LEFT、RIGHT 和 FULL OUTER JOIN 的保留行语义",
+      "正确使用 COUNT、SUM、AVG、GROUP BY 与 HAVING",
+      "在聚合前确认连接键基数、事实粒度和过滤条件位置"
+    ],
+    "misconceptions": [
+      "认为 LEFT JOIN 右表的筛选条件放 WHERE 与 ON 完全等价",
+      "认为 COUNT(*) 与 COUNT(column) 一样会忽略 NULL",
+      "用最终 DISTINCT 掩盖多对多连接的金额重复"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-arrays-jsonb",
+    "courseId": "snowflake",
+    "name": "PostgreSQL Arrays、JSON 与 JSONB",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "根据访问和更新模式选择原生数组、JSON/JSONB 或规范化关系模型，掌握路径、操作符、索引和基数边界。",
+    "required": [
+      "区分 JSON 与 JSONB 的存储、处理和索引特点",
+      "使用数组及 JSONB 操作符读取或筛选嵌套值",
+      "评估 GIN 等索引和关系型建模对写入、查询与约束的影响"
+    ],
+    "misconceptions": [
+      "认为 JSONB 会自动保证所有字段的数据类型与完整性",
+      "把数组/JSON 内嵌关联当作无需建模的关系数据库替代品",
+      "认为任何 JSON 查询都应加 GIN 索引"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-window-ctes-plpgsql",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 窗口函数、CTE 与 PL/pgSQL",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "使用窗口函数、CTE 和服务端函数表达分阶段分析与业务操作，理解行序、窗口 frame、函数副作用和执行边界。",
+    "required": [
+      "使用 ROW_NUMBER、LAG、LEAD 和聚合窗口函数且显式定义排序",
+      "区分 CTE 的逻辑作用与优化器的实际执行方式",
+      "判断何时使用普通 SQL、视图或 PL/pgSQL 函数/过程"
+    ],
+    "misconceptions": [
+      "认为窗口函数天然会减少输入行数",
+      "认为任何 CTE 都必然物化并只执行一次",
+      "把 PL/pgSQL 函数用作不必要的封装而忽视复杂度和副作用"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "implementation"
+    ]
+  },
+  {
+    "id": "postgresql-transactions-mvcc",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 事务、MVCC 与隔离级别",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解事务提交/回滚、MVCC 快照、隔离级别和序列化失败，设计具有明确原子性与重试边界的业务操作。",
+    "required": [
+      "解释 COMMIT/ROLLBACK 和事务边界对修改的影响",
+      "概述 MVCC 如何让并发事务观察到一致的行版本",
+      "区分隔离级别异常及 SERIALIZABLE 下的失败重试要求"
+    ],
+    "misconceptions": [
+      "认为未提交更新对所有其他事务都立即可见",
+      "认为 READ COMMITTED 会对一个事务的所有查询使用同一固定快照",
+      "无条件重试整个事务而不处理幂等性和序列化错误"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-locks-concurrency",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 锁、死锁与并发故障处理",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解表锁/行锁、锁等待、死锁和长事务的影响，通过活动会话与锁视图定位阻塞根因并采取安全操作。",
+    "required": [
+      "区分等待锁的会话、阻塞会话与长期 idle-in-transaction 会话",
+      "用 pg_stat_activity、pg_locks 等视图构建阻塞关系",
+      "权衡取消查询、终止会话和修复事务生命周期的影响"
+    ],
+    "misconceptions": [
+      "认为 PostgreSQL 的普通 SELECT 总会阻塞 UPDATE",
+      "只终止等待会话而不识别真正阻塞方",
+      "把死锁检测当成不会导致事务失败的自动修复"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-backup-restore-pitr",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 备份、恢复与 PITR",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "按 RPO/RTO 与恢复范围选择逻辑备份、物理备份及时间点恢复，验证备份完整性而不仅是备份命令退出状态。",
+    "required": [
+      "区分 pg_dump/pg_restore 与 pg_basebackup 的用途和范围",
+      "解释持续归档 WAL 与基础备份如何支持 PITR",
+      "制定备份存储、加密、保留和定期恢复演练"
+    ],
+    "misconceptions": [
+      "认为一次逻辑导出同时保证集群级角色/全局对象全部备份",
+      "把有备份文件等同于已经证明可以成功恢复",
+      "忽略 RPO、RTO 与 WAL 保留之间的关系"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "postgresql-wal-replication-ha",
+    "courseId": "snowflake",
+    "name": "PostgreSQL WAL、流复制与高可用",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解 WAL 持久化、物理/逻辑复制、复制延迟和故障切换，明确主备角色、复制槽与恢复路径的限制。",
+    "required": [
+      "解释 WAL 在崩溃恢复与复制中的职责",
+      "区分物理流复制和逻辑发布/订阅的主要用途",
+      "设计故障检测、提升、客户端切换、数据丢失评估和回切流程"
+    ],
+    "misconceptions": [
+      "认为流复制副本天然可读写且无需提升",
+      "把异步复制视为零数据丢失保证",
+      "认为复制成功可以替代独立备份和恢复演练"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-connection-pooling",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 连接管理与 PgBouncer",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解连接进程成本、连接池模式与事务语义，在吞吐、延迟、连接限制和会话状态之间进行取舍。",
+    "required": [
+      "说明大量短连接对内存、进程和连接管理的影响",
+      "区分 PgBouncer session、transaction 与 statement pooling 的行为",
+      "检查临时表、会话变量、prepared statements 与事务状态对池化模式的兼容性"
+    ],
+    "misconceptions": [
+      "认为加大 max_connections 一定能提升吞吐",
+      "认为 transaction pooling 保证连接会话状态跨事务保留",
+      "不区分连接数瓶颈和 SQL 执行慢"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-vacuum-bloat",
+    "courseId": "snowflake",
+    "name": "PostgreSQL VACUUM、Autovacuum 与膨胀",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解 MVCC 死元组清理、统计信息更新、可见性映射和事务 ID 回卷风险，诊断并调整日常维护而避免高风险重写。",
+    "required": [
+      "解释 UPDATE/DELETE 可能产生死元组以及 VACUUM 的作用",
+      "区分普通 VACUUM、VACUUM ANALYZE 与 VACUUM FULL 的锁和空间行为",
+      "监控 autovacuum、表/索引膨胀、统计信息和 transaction ID wraparound 风险"
+    ],
+    "misconceptions": [
+      "认为普通 VACUUM 通常会立刻将文件大小归还操作系统",
+      "认为 VACUUM FULL 可无阻塞地并行运行",
+      "关闭 autovacuum 后不会出现可见性或事务 ID 风险"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-partitioning",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 分区表与生命周期管理",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "根据数据生命周期、查询谓词和维护需求设计范围/列表/哈希分区，理解分区裁剪、分区键约束与维护成本。",
+    "required": [
+      "区分 RANGE、LIST 和 HASH 分区的用途",
+      "解释分区裁剪依赖查询谓词与分区边界",
+      "为数据归档、分区创建/删除、唯一约束和跨分区查询设计流程"
+    ],
+    "misconceptions": [
+      "认为分区表会自动让每条查询变快",
+      "认为所有全局唯一约束都能无条件跨任意分区键执行",
+      "为了分区而分区，忽略分区数量和运维复杂度"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-catalogs-logging-monitoring",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 系统目录、日志与监控",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "使用 pg_catalog、information_schema、pg_stat_*、日志和扩展指标观察对象、查询、锁、I/O 与数据库健康状况。",
+    "required": [
+      "区分结构元数据目录、标准 information_schema 与运行统计视图",
+      "查询 pg_stat_activity、pg_stat_user_tables、pg_stat_user_indexes 等诊断信息",
+      "设置有用的日志类别、慢查询阈值、日志关联字段及保留策略"
+    ],
+    "misconceptions": [
+      "把累计统计值误读成当前瞬时值或每条查询的耗时",
+      "认为日志越详细越好而不评估 I/O、存储和敏感信息风险",
+      "认为一个 cache hit ratio 指标足以解释所有性能问题"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "postgresql-memory-parallelism",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 内存配置、I/O 与并行查询",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "理解 shared_buffers、effective_cache_size、work_mem、检查点、I/O 和并行 worker 的不同作用，按实测负载而非固定比例调参。",
+    "required": [
+      "区分实际分配内存的参数与仅影响规划器估计的参数",
+      "估算 work_mem 在多个算子、会话和并行 worker 下的潜在总消耗",
+      "使用基线和监控验证内存、I/O、并行查询与检查点变化的结果"
+    ],
+    "misconceptions": [
+      "认为 work_mem 是每个数据库或实例唯一分配的一块固定内存",
+      "把 effective_cache_size 当成会直接分配内存的参数",
+      "将单一机器的内存比例经验值当作所有工作负载的硬规则"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-explain-plans-statistics",
+    "courseId": "snowflake",
+    "name": "PostgreSQL EXPLAIN、统计信息与计划诊断",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "阅读计划节点、估算与实际行数、循环次数、缓冲区访问和 I/O，定位估算偏差、扫描及 JOIN 算法问题。",
+    "required": [
+      "区分 EXPLAIN 的估算计划与 EXPLAIN ANALYZE 的实际执行",
+      "对照 estimated rows 与 actual rows 识别统计信息或选择性问题",
+      "使用 BUFFERS、loops、排序方式和连接节点形成可验证的优化假设"
+    ],
+    "misconceptions": [
+      "认为计划 cost 是毫秒或能直接跨环境比较",
+      "认为 Index Scan 永远优于 Sequential Scan",
+      "在生产对有副作用的 DML 运行 EXPLAIN ANALYZE 而未考虑其会执行语句"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-index-strategies",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 索引类型与设计策略",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "结合查询谓词、排序、选择性和维护成本选择 B-tree、GIN、GiST、BRIN、复合、部分、表达式与覆盖索引。",
+    "required": [
+      "区分 B-tree、GIN、GiST、BRIN 等索引的常见适用场景",
+      "理解复合索引列顺序、部分索引谓词、表达式索引与 INCLUDE",
+      "使用 EXPLAIN/统计信息验证索引是否被选用并衡量写入、存储与维护成本"
+    ],
+    "misconceptions": [
+      "认为每个 WHERE 条件都应该建独立索引",
+      "认为索引创建成功意味着规划器一定使用它",
+      "忽略低选择性、写入开销、膨胀和统计信息对索引效果的影响"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "postgresql-query-patterns-extensions",
+    "courseId": "snowflake",
+    "name": "PostgreSQL 查询模式、全文搜索与扩展",
+    "area": "data-platform",
+    "topic": "postgresql",
+    "priority": "P1",
+    "summary": "识别 N+1、SELECT *、深分页和索引列函数等常见查询反模式，并了解全文搜索、PostGIS、pgvector 等扩展的边界。",
+    "required": [
+      "通过批量查询、投影和稳定分页方案减少无效往返与数据处理",
+      "区分 ILIKE/正则匹配、PostgreSQL 全文搜索与向量相似度检索的用途",
+      "对扩展的安装、版本兼容、索引支持和运维依赖作显式评估"
+    ],
+    "misconceptions": [
+      "认为数据库增加索引就一定能消除应用侧 N+1 往返",
+      "把全文检索、模糊字符串匹配和向量相似度视为同一种查询",
+      "认为扩展安装后就没有版本、资源和运行维护成本"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  }
+]
