@@ -17,9 +17,9 @@ export const LEARNING_TRACKS = [
     id: 'snowflake',
     title: 'Snowflake 数据平台',
     shortTitle: 'Snowflake',
-    description: '独立的数据平台课程：Snowflake 架构、数据建模、摄取与转换、SQL 工程、治理和生产运维。',
+    description: '独立的数据平台课程：以 Snowflake 架构、数据工程、治理和生产运维为主，并包含 PostgreSQL 数据库工程补充模块。',
     actionLabel: '进入 Snowflake 学习',
-    topicCount: 8,
+    topicCount: 9,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/snowflake-learning-path.md',
   },
   {
@@ -49,6 +49,7 @@ export function getLearningTrack(id: LearningTrackId): LearningTrack {
 /** Snowflake 自己的课程主题目录；不属于 AI 的 TAXONOMY / DOMAIN。 */
 export const SNOWFLAKE_COURSE_TOPICS = [
   { id: 'snowflake', label: '平台基础与对象模型', description: '三层架构、Warehouse、数据库对象、半结构化数据、Time Travel 与克隆' },
+  { id: 'postgresql', label: 'PostgreSQL 数据库工程', description: 'PostgreSQL 原生 SQL、权限、事务/MVCC、备份/WAL/复制、连接池、VACUUM、分区、监控、内存与查询调优；明确区分 PostgreSQL 和 Snowflake 的产品语义。' },
   { id: 'data-architecture', label: '企业数据架构与治理', description: '分层、事实粒度、历史、语义视图、RBAC、脱敏与行访问策略' },
   { id: 'data-engineering', label: '现代数据工程与管道', description: 'COPY、Snowpipe、Streaming、SQL/Snowpark、Streams/Tasks、Dynamic Tables' },
   { id: 'snowflake-lakehouse', label: 'Apache Iceberg 与 Lakehouse', description: '开放表格式、Catalog、迁移、Schema/Partition Evolution、快照与维护' },
@@ -67,6 +68,7 @@ export const SNOWFLAKE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   snowflake: ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
   'data-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
   'data-engineering': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'system-design', 'design'],
+  postgresql: ['definition', 'fundamental', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'debugging', 'design', 'implementation'],
 };
 
 /** Security Architecture 独立课程主题目录；只列架构设计主题，不复用 AI 安全 taxonomy。 */
