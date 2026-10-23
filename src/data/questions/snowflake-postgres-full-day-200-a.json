@@ -1,0 +1,5317 @@
+[
+  {
+    "id": "sf-pgtd-001",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在 Snowflake 中，若要筛选 `email` 未提供的记录，哪种条件正确？",
+    "explanation": "正确答案 B。SQL 的 NULL 表示未知/缺失状态，不能用等号判断，应使用 IS NULL。空字符串与 NULL 是不同值。",
+    "misconceptions": [
+      "把 NULL 当作可用等号比较的普通值。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "email = NULL",
+          "email IS NULL",
+          "email = ''",
+          "email IS NOT NULL"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。SQL 的 NULL 表示未知/缺失状态，不能用等号判断，应使用 IS NULL。空字符串与 NULL 是不同值。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-002",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "需要在 `discount` 为 NULL 时使用 0 参与计算，哪个表达式最直接？",
+    "explanation": "正确答案 A。COALESCE 返回第一个非 NULL 参数，适合给缺失值提供明确的业务默认值；默认值必须符合指标语义。",
+    "misconceptions": [
+      "认为 NULL 会自动按 0 参与算术运算。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "COALESCE(discount, 0)",
+          "discount IS NULL",
+          "NULLIF(discount, 0)",
+          "COUNT(discount)"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。COALESCE 返回第一个非 NULL 参数，适合给缺失值提供明确的业务默认值；默认值必须符合指标语义。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-003",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "事件表需要保留本地时区偏移信息，应该优先评估哪类 Snowflake 时间戳？",
+    "explanation": "正确答案 C。TIMESTAMP_TZ 会保存 UTC 时间与时区偏移信息；NTZ 不带时区语义，LTZ 按会话时区显示。还应统一写入、比较和展示规范。",
+    "misconceptions": [
+      "认为所有 TIMESTAMP 类型都以相同方式保留时区信息。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "TIMESTAMP_NTZ",
+          "DATE",
+          "TIMESTAMP_TZ",
+          "TIME"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          0,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 C。TIMESTAMP_TZ 会保存 UTC 时间与时区偏移信息；NTZ 不带时区语义，LTZ 按会话时区显示。还应统一写入、比较和展示规范。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-004",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "为可维护的生产查询设计 SQL 时，哪些做法合理？",
+    "explanation": "正确答案 A、B、D。显式投影、清楚的类型边界和 NULL 策略可降低 schema 变化带来的意外；需要稳定顺序时必须使用 ORDER BY。",
+    "misconceptions": [
+      "认为数据库默认行为足以保证字段稳定、类型一致和结果顺序。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确列出所需字段，而不是长期依赖 SELECT *",
+          "对关键类型转换使用显式 CAST，并处理转换失败",
+          "把未定义的结果排序当成稳定业务顺序",
+          "对可能缺失的值明确设计 NULL 处理"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。显式投影、清楚的类型边界和 NULL 策略可降低 schema 变化带来的意外；需要稳定顺序时必须使用 ORDER BY。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-005",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 Snowflake 标准表上的约束，哪些判断正确？",
+    "explanation": "正确答案 A、B、D。标准表的主键、唯一键和外键约束通常是元数据性质，不自动拒绝违反约束的数据；NOT NULL 会强制执行。Hybrid Tables 的约束能力不同，需按表类型核实。",
+    "misconceptions": [
+      "把标准表上的所有约束声明都视为会自动拒绝不合规数据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NOT NULL 可用于阻止对应列保存 NULL",
+          "标准表上的 PRIMARY KEY、UNIQUE 和 FOREIGN KEY 通常不强制执行唯一性/引用完整性",
+          "声明 PRIMARY KEY 后无需再检查重复业务键",
+          "数据质量仍应使用测试、去重与异常检测进行验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。标准表的主键、唯一键和外键约束通常是元数据性质，不自动拒绝违反约束的数据；NOT NULL 会强制执行。Hybrid Tables 的约束能力不同，需按表类型核实。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-006",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于 SQL 的 NULL 逻辑，哪些表述正确？",
+    "explanation": "正确答案 A、B、C。NULL 比较会产生 UNKNOWN，需要 IS NULL/IS NOT NULL；COUNT(*) 计行，COUNT(expression) 只计表达式非 NULL 的行。空字符串是实际字符串值。",
+    "misconceptions": [
+      "把 NULL、空字符串和普通值的比较/计数语义混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "`column = NULL` 不会成为正确的 NULL 检查",
+          "COUNT(*) 统计输入行数，包括包含 NULL 的行",
+          "COUNT(column) 会忽略该列为 NULL 的行",
+          "NULL 与空字符串在所有比较和存储场景中都等价"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。NULL 比较会产生 UNKNOWN，需要 IS NULL/IS NOT NULL；COUNT(*) 计行，COUNT(expression) 只计表达式非 NULL 的行。空字符串是实际字符串值。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-007",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一个金额字段从 VARCHAR 转为 NUMBER 时出现非数字输入，哪些措施更稳健？",
+    "explanation": "正确答案 A、B、D。稳健流程要暴露坏数据、明确转换契约并度量拒绝/隔离记录；TRY_ 转换函数避免单条脏值直接令整条查询报错，但不能把失败产生的 NULL 悄悄当成有效值。",
+    "misconceptions": [
+      "认为把转换错误吞掉或直接丢弃记录就等于完成了数据质量治理。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先识别并统计无法转换的原始值",
+          "使用 TRY_TO_NUMBER 等安全转换并单独处理转换结果为 NULL 的记录",
+          "直接删除所有转换失败行而不记录数量",
+          "在转换前定义格式、精度与异常处理规则"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。稳健流程要暴露坏数据、明确转换契约并度量拒绝/隔离记录；TRY_ 转换函数避免单条脏值直接令整条查询报错，但不能把失败产生的 NULL 悄悄当成有效值。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-008",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "多团队共用数据库和 Schema 时，哪些做法有助于减少对象引用问题？",
+    "explanation": "正确答案 A、C。完全限定对象名或显式设置上下文可减少因当前 Database/Schema 不同引起的误引用。常规未加引号标识符会规范化大小写，带引号标识符需精确保留大小写。",
+    "misconceptions": [
+      "认为每个会话的默认 Database/Schema 一致，或忽略带引号标识符的大小写规则。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用清晰的 database.schema.object 完全限定名称",
+          "依赖开发人员各自不同的当前 Schema 来解析生产对象",
+          "为部署脚本明确设置会话上下文或完全限定对象名",
+          "将大小写敏感的带引号标识符用作默认命名规范"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。完全限定对象名或显式设置上下文可减少因当前 Database/Schema 不同引起的误引用。常规未加引号标识符会规范化大小写，带引号标识符需精确保留大小写。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-009",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "在报表里计算平均订单额时，哪些处理是正确的？",
+    "explanation": "正确答案 A、C、D。聚合指标要先定义粒度、分母、缺失值含义和币种。NULLIF 可防止零分母；是否把缺失值视作零必须由业务语义决定。",
+    "misconceptions": [
+      "把缺失值自动当成零，或不定义指标的粒度和分母。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先明确平均值的分母是订单数还是非 NULL 金额数",
+          "把所有缺失金额无条件替换为 0，且不评估其业务含义",
+          "使用 NULLIF(total_count, 0) 等方式显式处理除零",
+          "在指标定义中记录币种、过滤条件与粒度"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。聚合指标要先定义粒度、分母、缺失值含义和币种。NULLIF 可防止零分母；是否把缺失值视作零必须由业务语义决定。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-010",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-sql-foundations",
+    "subtopic": "snowflake-sql-foundations",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-sql-foundations"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "question": "某 SQL 查询没有 ORDER BY，消费者要求结果每次都按时间升序返回。哪些说法成立？",
+    "explanation": "正确答案 B。关系查询在没有 ORDER BY 时不承诺返回顺序。稳定分页或重现结果时，应提供完整排序键，并考虑相同时间值的 tie-breaker。",
+    "misconceptions": [
+      "依赖物理存储顺序或 GROUP BY 推断最终结果顺序。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "表中数据通常按插入顺序保存，因此无需 ORDER BY",
+          "应显式按时间列排序；如时间可相同，还需添加稳定的次级排序键",
+          "只要使用 GROUP BY，结果就会自动按分组键排序",
+          "ORDER BY 与查询结果的逻辑顺序无关"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。关系查询在没有 ORDER BY 时不承诺返回顺序。稳定分页或重现结果时，应提供完整排序键，并考虑相同时间值的 tie-breaker。"
+      }
+    },
+    "knowledgeId": "snowflake-sql-foundations",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Hour 2: SELECT and Aggregates",
+      "relatedMaterials": [
+        "docs-snowflake-architecture",
+        "docs-sql-query-constructs",
+        "docs-sql-transactions"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-011",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "INNER JOIN 的基本结果包含哪些记录？",
+    "explanation": "正确答案 B。INNER JOIN 只保留满足连接条件的行组合；未匹配记录不会出现在结果中。",
+    "misconceptions": [
+      "把 INNER JOIN 当成保留左表全部记录的连接。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "左表所有记录，无论是否匹配",
+          "只有连接条件两侧匹配的行组合",
+          "左表与右表所有未匹配行",
+          "只保留右表中匹配的记录"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。INNER JOIN 只保留满足连接条件的行组合；未匹配记录不会出现在结果中。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-012",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "对 `COUNT(customer_id)` 的结果，哪种描述准确？",
+    "explanation": "正确答案 B。COUNT(expression) 忽略该表达式为 NULL 的行；去重计数应使用 COUNT(DISTINCT expression)。",
+    "misconceptions": [
+      "把 COUNT(*)、COUNT(column) 和 COUNT(DISTINCT column) 当成同一种计数。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "统计所有输入行，包括 customer_id 为 NULL 的行",
+          "只统计 customer_id 非 NULL 的行",
+          "统计不同 customer_id 的数量",
+          "只统计 customer_id 为 0 的行"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。COUNT(expression) 忽略该表达式为 NULL 的行；去重计数应使用 COUNT(DISTINCT expression)。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-013",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "要先筛选原始订单，再对每个客户筛选总金额超过阈值的分组，条件应如何放置？",
+    "explanation": "正确答案 B。WHERE 在分组前筛选行，HAVING 在 GROUP BY 聚合后筛选分组；窗口函数结果筛选可考虑 QUALIFY。",
+    "misconceptions": [
+      "混淆行级筛选、聚合级筛选与窗口结果筛选。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "两种条件都放 WHERE",
+          "原始行条件放 WHERE，聚合后条件放 HAVING",
+          "原始行条件放 HAVING，聚合后条件放 WHERE",
+          "全部放 QUALIFY，禁止使用 WHERE/HAVING"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。WHERE 在分组前筛选行，HAVING 在 GROUP BY 聚合后筛选分组；窗口函数结果筛选可考虑 QUALIFY。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-014",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "报表 JOIN 后销售额变成原来的三倍，哪些检查与修复思路合理？",
+    "explanation": "正确答案 A、B、D。常见原因是连接键在维表或桥接表中并非唯一，导致 fanout。应检查键基数和事实粒度，再按业务正确的粒度聚合或修复映射；DISTINCT 可能掩盖问题而不恢复金额正确性。",
+    "misconceptions": [
+      "把 JOIN 后的重复行当作展示问题，用最终 DISTINCT 掩盖基数错误。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "核实事实表和维表的预期粒度及连接键唯一性",
+          "比较 JOIN 前后行数，并统计每个键匹配的行数",
+          "直接用 SELECT DISTINCT 包住最终结果，不调查连接关系",
+          "在正确粒度上预聚合，或先去重/修复维表映射"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。常见原因是连接键在维表或桥接表中并非唯一，导致 fanout。应检查键基数和事实粒度，再按业务正确的粒度聚合或修复映射；DISTINCT 可能掩盖问题而不恢复金额正确性。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-015",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "一个 LEFT JOIN 需要保留所有客户，并且只关联最近 30 天的订单。哪些写法思路能保留没有近期订单的客户？",
+    "explanation": "正确答案 A、B。将右表过滤条件写在 ON 中，或在子查询/CTE 中先过滤右表，均可保留左表不匹配行。放入 WHERE 的右表条件通常会把 NULL 扩展行过滤掉。",
+    "misconceptions": [
+      "把 LEFT JOIN 右侧的过滤条件无条件放到 WHERE，导致结果退化为内连接。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把日期限制放在右表 JOIN 的 ON 条件中",
+          "先把右表过滤为近期订单，再 LEFT JOIN",
+          "把右表日期条件放 WHERE 且不处理 NULL",
+          "改成 INNER JOIN 即可保留没有订单的客户"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。将右表过滤条件写在 ON 中，或在子查询/CTE 中先过滤右表，均可保留左表不匹配行。放入 WHERE 的右表条件通常会把 NULL 扩展行过滤掉。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-016",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于连接类型与未匹配行，哪些描述正确？",
+    "explanation": "正确答案 A、B、D。LEFT/RIGHT/FULL OUTER JOIN 的区别在于哪侧未匹配行会被保留；交换输入后 LEFT JOIN 可表达同样的匹配关系，但投影与业务可读性仍需维护。",
+    "misconceptions": [
+      "认为 INNER JOIN 会补齐缺失侧，或忽略外连接保留行的方向。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LEFT JOIN 保留左侧未匹配行，并将右表列置为 NULL",
+          "FULL OUTER JOIN 可保留两侧的未匹配行",
+          "INNER JOIN 会自动为未匹配键生成 NULL 行",
+          "RIGHT JOIN 与交换左右输入后的 LEFT JOIN 可表达相同匹配集合"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。LEFT/RIGHT/FULL OUTER JOIN 的区别在于哪侧未匹配行会被保留；交换输入后 LEFT JOIN 可表达同样的匹配关系，但投影与业务可读性仍需维护。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-017",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一个客户有多个订单和多个标签，JOIN 两张子表后订单金额与标签数量都被放大。哪些方案可能正确？",
+    "explanation": "正确答案 A、B。多个一对多关系直接组合会形成笛卡尔式扩张。应分别处理各自粒度，只有业务确实需要组合明细时才连接；对计数做 DISTINCT 不能普遍修复金额等指标。",
+    "misconceptions": [
+      "忽略多个一对多关系组合产生的乘法式行数膨胀。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分别按客户粒度聚合订单和标签后再关联",
+          "先定义最终报表粒度，再决定是否应组合订单与标签明细",
+          "把所有列加入 GROUP BY，保证每个组合都被保留",
+          "使用 COUNT(DISTINCT order_id) 纠正所有指标，无需审查数据粒度"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。多个一对多关系直接组合会形成笛卡尔式扩张。应分别处理各自粒度，只有业务确实需要组合明细时才连接；对计数做 DISTINCT 不能普遍修复金额等指标。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-018",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "在 LEFT JOIN 结果中，如何区分有匹配订单的客户与没有匹配订单的客户？",
+    "explanation": "正确答案 A。应选择右表中能可靠区分匹配行的键列，并检查该列是否为 NULL。若业务列本身允许 NULL，直接检查金额等业务字段会误判。",
+    "misconceptions": [
+      "使用可能本来就允许 NULL 的业务字段判断连接是否匹配。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查右表一个按设计不可为 NULL 的匹配键是否为 NULL",
+          "对左表客户名判断是否为 NULL",
+          "对整个结果使用 COUNT(*)，不考虑分组",
+          "假定右表金额总是非 NULL，因此可以只检查金额"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。应选择右表中能可靠区分匹配行的键列，并检查该列是否为 NULL。若业务列本身允许 NULL，直接检查金额等业务字段会误判。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-019",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "以下哪些 SQL 设计更有利于大表分析结果的正确性与可维护性？",
+    "explanation": "正确答案 A、B、C。可维护分析要明确粒度、基数、去重和 NULL 策略，必要时用分阶段 CTE 输出中间行数与质量检查，而不是以 SQL 长短作为优化目标。",
+    "misconceptions": [
+      "认为减少中间步骤比明确业务粒度与验证结果更重要。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 CTE 或注释中明确每个输入数据集的粒度",
+          "对多对多连接先定义预期基数和业务含义",
+          "在聚合指标中明确去重口径与 NULL 处理",
+          "把所有 JOIN 与聚合压进一个长 SQL，避免中间校验"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。可维护分析要明确粒度、基数、去重和 NULL 策略，必要时用分阶段 CTE 输出中间行数与质量检查，而不是以 SQL 长短作为优化目标。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-020",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-joins-aggregation",
+    "subtopic": "snowflake-query-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "某查询用 `NOT IN (subquery)` 排除已处理的客户，但子查询可能返回 NULL。哪些替代方案通常更稳妥？",
+    "explanation": "正确答案 A、B、D。如果 NOT IN 列表或子查询包含 NULL，比较可能得到 UNKNOWN，导致结果出乎预期。NOT EXISTS 经常更适合表达反连接，但仍需明确关联条件和 NULL 业务语义。",
+    "misconceptions": [
+      "忽略 NOT IN 遇到 NULL 时的三值逻辑。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先理解 NULL 对 NOT IN 三值逻辑的影响",
+          "在明确语义后使用 NOT EXISTS 关联排除",
+          "默认把所有 NULL 从业务表永久删除",
+          "明确处理子查询中的 NULL，再验证边界用例"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。如果 NOT IN 列表或子查询包含 NULL，比较可能得到 UNKNOWN，导致结果出乎预期。NOT EXISTS 经常更适合表达反连接，但仍需明确关联条件和 NULL 业务语义。"
+      }
+    },
+    "knowledgeId": "snowflake-query-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Aggregates; INNER/LEFT/FULL OUTER JOIN",
+      "relatedMaterials": [
+        "docs-sql-query-constructs",
+        "docs-query-profile",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-021",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "要在每个客户内部为订单按金额从高到低编号，并保留所有订单行，适合使用什么？",
+    "explanation": "正确答案 B。ROW_NUMBER 是窗口函数，可以在每个客户分区内按指定顺序编号，同时保留输入行；如金额并列，应增加稳定的次级排序键。",
+    "misconceptions": [
+      "误以为排名必须先聚合，因此会丢掉明细行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "GROUP BY customer_id",
+          "ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount DESC)",
+          "DELETE WHERE amount IS NULL",
+          "COUNT(DISTINCT customer_id)"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。ROW_NUMBER 是窗口函数，可以在每个客户分区内按指定顺序编号，同时保留输入行；如金额并列，应增加稳定的次级排序键。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-022",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "要把当前销售记录与同一客户上一条按日期排列的记录比较，最合适的窗口函数是哪一个？",
+    "explanation": "正确答案 B。LAG 访问按窗口排序后的前一行；LEAD 访问后一行。结果取决于窗口的 PARTITION BY 和 ORDER BY。",
+    "misconceptions": [
+      "混淆 LAG/LEAD 的前后行方向。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "LEAD",
+          "LAG",
+          "NTILE",
+          "COUNT(*)"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。LAG 访问按窗口排序后的前一行；LEAD 访问后一行。结果取决于窗口的 PARTITION BY 和 ORDER BY。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-023",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "运行累计销售额时，哪项是可靠的设计原则？",
+    "explanation": "正确答案 B。累计值依赖明确的排序与窗口 frame。若存在同一时间的多行，应判断其是否应并列累计，并加入稳定 tie-breaker；不能依赖物理存储顺序。",
+    "misconceptions": [
+      "认为窗口计算能依赖数据在存储中的原始顺序。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "依赖物理插入顺序计算累计值",
+          "指定窗口排序键，并根据需要显式定义 frame",
+          "先删除日期相同的所有订单",
+          "用 DISTINCT 代替窗口定义"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。累计值依赖明确的排序与窗口 frame。若存在同一时间的多行，应判断其是否应并列累计，并加入稳定 tie-breaker；不能依赖物理存储顺序。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-024",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "同一客户订单要列出行级明细、客户累计消费和客户总消费。哪些说法正确？",
+    "explanation": "正确答案 A、B、C。GROUP BY 会把行折叠到分组粒度；窗口函数在分区内计算，并通常为每个输入行产出结果。两者应按最终所需粒度选择。",
+    "misconceptions": [
+      "混淆窗口函数与分组聚合对结果行数的影响。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "窗口聚合可以在不合并明细行的情况下输出客户总消费",
+          "GROUP BY 客户聚合后通常会把多条订单折叠为一行",
+          "窗口函数的 PARTITION BY 定义计算分区，不会自动去重行",
+          "窗口函数总会减少结果行数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。GROUP BY 会把行折叠到分组粒度；窗口函数在分区内计算，并通常为每个输入行产出结果。两者应按最终所需粒度选择。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-025",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "在 Snowflake 中，CTE（WITH 子句）有哪些合适用途或语义边界？",
+    "explanation": "正确答案 A、B。CTE 是组织 SQL 的逻辑构造，不应被当成物化表、索引或计算只执行一次的绝对保证；性能仍需看实际计划和执行行为。",
+    "misconceptions": [
+      "认为 CTE 必然物化、自动加速或自动建立索引。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把复杂转换拆成具名逻辑阶段，提升可读性",
+          "可以让后续阶段显式复用前一阶段的查询表达式",
+          "仅写成 CTE 就保证数据物理化并只执行一次",
+          "CTE 自动为所有连接键创建索引"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。CTE 是组织 SQL 的逻辑构造，不应被当成物化表、索引或计算只执行一次的绝对保证；性能仍需看实际计划和执行行为。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-026",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "需要在每个账户中选出最新一条事件，哪些方法更可靠？",
+    "explanation": "正确答案 A、C。ROW_NUMBER 与 QUALIFY 可直接筛选每组一行；次级键让并列时间的选取可复现。MAX 只给最大时间值，不保证明细记录唯一。",
+    "misconceptions": [
+      "认为最大时间值天然唯一，或结果集天然有固定顺序。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY event_time DESC, event_id DESC) 后用 QUALIFY = 1",
+          "仅使用 MAX(event_time)，再假定该时间只会出现一条记录",
+          "给时间排序加稳定的次级键以处理并列时间",
+          "先不定义分组键，再依赖结果顺序取第一行"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。ROW_NUMBER 与 QUALIFY 可直接筛选每组一行；次级键让并列时间的选取可复现。MAX 只给最大时间值，不保证明细记录唯一。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-027",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "要计算用户每次访问与上一次访问的时间间隔，哪些窗口设计正确？",
+    "explanation": "正确答案 A、B、D。窗口必须按用户隔离，并按访问时间排序；每个分区的首行没有上一条记录，应将其 NULL 当作预期边界情况处理。",
+    "misconceptions": [
+      "忽略分区边界，导致不同用户的事件相互串联。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按用户分区并按访问时间排序",
+          "使用 LAG(visit_time) 获取上一行时间",
+          "不做分区，所有用户共用一个时间序列",
+          "处理首行上一值为 NULL 的情形"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。窗口必须按用户隔离，并按访问时间排序；每个分区的首行没有上一条记录，应将其 NULL 当作预期边界情况处理。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-028",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "移动 7 行平均与过去 7 天平均并不总相同。哪些说明正确？",
+    "explanation": "正确答案 A、B、C。行数窗口按记录数量确定范围；时间窗口按时间值和 frame 语义定义。没有数据的日期不会被窗口函数自动补行，需要日历表或日期序列。",
+    "misconceptions": [
+      "把 7 行窗口误认为必然代表 7 个日历日。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "ROWS frame 通常按排序后的行数界定窗口",
+          "按时间范围计算应采用与时间间隔相符的条件或 RANGE/frame 语义",
+          "若日期有缺口，7 行不一定覆盖 7 个日历日",
+          "窗口函数会自动补齐缺失日期"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。行数窗口按记录数量确定范围；时间窗口按时间值和 frame 语义定义。没有数据的日期不会被窗口函数自动补行，需要日历表或日期序列。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-029",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "排名分析出现不稳定的第一名，哪些问题值得检查？",
+    "explanation": "正确答案 A、B、C。排名不稳定常由并列值和未定义的次级顺序造成；RANK 保留并列排名，ROW_NUMBER 为行分配不同序号。调整计算资源不能修复逻辑排序缺陷。",
+    "misconceptions": [
+      "把结果不确定性当作计算资源不足，而不是排序语义问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "ORDER BY 是否遗漏了业务 tie-breaker",
+          "是否误用 RANK 与 ROW_NUMBER 的并列语义",
+          "是否在不稳定的顺序上使用 LIMIT 选第一行",
+          "把仓库增大作为唯一修复"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。排名不稳定常由并列值和未定义的次级顺序造成；RANK 保留并列排名，ROW_NUMBER 为行分配不同序号。调整计算资源不能修复逻辑排序缺陷。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-030",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-window-ctes",
+    "subtopic": "snowflake-window-ctes",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-window-ctes"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "把一个长查询拆成多个 CTE 时，哪些做法有助于保持语义正确？",
+    "explanation": "正确答案 A、B、D。CTE 可帮助表达逻辑阶段，但优化器会决定执行计划。通过粒度约定、质量断言和性能基线确保拆分前后既保持正确性又验证性能。",
+    "misconceptions": [
+      "将 SQL 文本的逻辑分段等同于固定的物理执行阶段。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为每个阶段写清输入和输出粒度",
+          "在关键 CTE 检查行数、唯一键和 NULL 率",
+          "假设优化器一定会按文本书写顺序物理执行每个 CTE",
+          "对最终性能变化使用代表性查询验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。CTE 可帮助表达逻辑阶段，但优化器会决定执行计划。通过粒度约定、质量断言和性能基线确保拆分前后既保持正确性又验证性能。"
+      }
+    },
+    "knowledgeId": "snowflake-window-ctes",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; Running Totals; LAG/LEAD; CTEs",
+      "relatedMaterials": [
+        "docs-sql-window-functions",
+        "docs-sql-ctes",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-031",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 中保存 JSON 类半结构化数据时，常用哪种数据类型？",
+    "explanation": "正确答案 A。VARIANT 可以保存半结构化值；仍应根据稳定、高频使用的业务字段考虑显式类型化投影与契约治理。",
+    "misconceptions": [
+      "认为半结构化数据必须先被完全展平为固定列，或误选非适用类型。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "VARIANT",
+          "BINARY(8)",
+          "TIMESTAMP_NTZ",
+          "只允许使用固定列的表结构"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。VARIANT 可以保存半结构化值；仍应根据稳定、高频使用的业务字段考虑显式类型化投影与契约治理。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-032",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "对 VARIANT 中的数组调用 FLATTEN，最主要的结果变化是什么？",
+    "explanation": "正确答案 A。FLATTEN 将数组、对象或其他可展开结构的元素转换为行式输出；行粒度和基数会发生变化，需在下游聚合中显式考虑。",
+    "misconceptions": [
+      "把 FLATTEN 当作数据类型转换或自动 schema 修复工具。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把数组元素展开为多行",
+          "自动把所有字段转换为严格的关系型约束",
+          "在源表上建立 B-tree 索引",
+          "为缺失字段自动补齐业务默认值"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。FLATTEN 将数组、对象或其他可展开结构的元素转换为行式输出；行粒度和基数会发生变化，需在下游聚合中显式考虑。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-033",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "如果某条 JSON 记录缺少 `customer.id` 路径，查询设计应考虑什么？",
+    "explanation": "正确答案 A。上游 schema drift 或字段缺失很常见；应区分缺失、JSON null 和类型不符合，并通过转换及质量规则处理。",
+    "misconceptions": [
+      "认为半结构化路径总存在且一定满足期望类型。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "路径访问可能得到 NULL 或缺失值语义，需处理异常/缺失记录",
+          "Snowflake 必定自动生成唯一 customer.id",
+          "缺字段会使整个表的所有查询失败",
+          "路径访问会自动建立一列持久化字段"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。上游 schema drift 或字段缺失很常见；应区分缺失、JSON null 和类型不符合，并通过转换及质量规则处理。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-034",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "同时接收多版本 JSON 事件，哪些处理策略更稳妥？",
+    "explanation": "正确答案 A、B、D。保留原始数据与显式建模并不矛盾。应按字段稳定性决定投影策略，并监控 schema 演进，防止查询静默产生 NULL 或错误类型。",
+    "misconceptions": [
+      "以为 VARIANT 自动替代 schema、类型与数据质量治理。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "原始输入可先保存为 VARIANT，以保留未预期字段",
+          "对高频、契约稳定的字段投影为有类型的列以方便校验与分析",
+          "把 Schema Drift 当成不需要监控的事情",
+          "记录缺失字段、类型转换失败和未知字段的比例"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。保留原始数据与显式建模并不矛盾。应按字段稳定性决定投影策略，并监控 schema 演进，防止查询静默产生 NULL 或错误类型。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-035",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "Snowflake 的 LATERAL FLATTEN 通常适合哪类查询？",
+    "explanation": "正确答案 A。LATERAL FLATTEN 可让展开后的元素与对应源行关联，适合处理嵌套数组/对象；输出行数可能大于源表行数。",
+    "misconceptions": [
+      "误以为 FLATTEN 是全局数据治理或永久变更记录机制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "对每条源记录中的数组元素逐项展开并可引用该源记录",
+          "对所有数据库对象做权限扫描",
+          "在不扫描数据的情况下自动优化任意 JOIN",
+          "将所有变更永久归档为 CDC 日志"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。LATERAL FLATTEN 可让展开后的元素与对应源行关联，适合处理嵌套数组/对象；输出行数可能大于源表行数。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-036",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "展开订单项数组后，总订单数被误计为订单项数。哪些做法能修正统计粒度？",
+    "explanation": "正确答案 A、C、D。FLATTEN 后一条订单可能出现多行，订单数需按订单 ID 去重或先恢复订单粒度。展开前后的行数对比可帮助识别基数扩张。",
+    "misconceptions": [
+      "假设展开操作不会改变业务粒度或增加行数。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确区分订单级与订单项级指标",
+          "展开后使用 COUNT(*) 作为订单总数，不需要考虑重复",
+          "用订单 ID 做 COUNT(DISTINCT) 或先聚合回订单粒度",
+          "在查询中记录 FLATTEN 前后行数，检查基数变化"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。FLATTEN 后一条订单可能出现多行，订单数需按订单 ID 去重或先恢复订单粒度。展开前后的行数对比可帮助识别基数扩张。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-037",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "处理 JSON 字段时，哪些策略有助于减少类型错误？",
+    "explanation": "正确答案 A、B、D。半结构化路径访问不等于严格类型保证。要显式转换并观测失败，明确缺失字段、JSON null 与错误类型的不同业务处理方式。",
+    "misconceptions": [
+      "把路径访问结果视为已验证的强类型业务值。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按目标业务类型显式 CAST 或使用 TRY_TO_* 做可观测的安全转换",
+          "对转换失败生成的 NULL 进行计数和隔离",
+          "假设 VARIANT 路径值总会自动转换为目标数字类型",
+          "针对缺失、JSON null、错误类型分别定义处理规则"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。半结构化路径访问不等于严格类型保证。要显式转换并观测失败，明确缺失字段、JSON null 与错误类型的不同业务处理方式。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-038",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "在同一条 VARIANT 列中同时存在嵌套对象和数组时，哪些方案正确？",
+    "explanation": "正确答案 A、B、D。路径访问与 FLATTEN 解决的是不同问题：前者读取结构中的值，后者展开元素。FLATTEN 不会自动完成全面规范化建模。",
+    "misconceptions": [
+      "认为一次 FLATTEN 能自动把任意嵌套 JSON 变成规范化关系模型。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可用路径访问读取对象属性",
+          "可根据数组语义使用 FLATTEN 展开元素",
+          "FLATTEN 会自动把所有嵌套层级变成固定关系型列",
+          "应先明确需要哪一层元素以及结果行粒度"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。路径访问与 FLATTEN 解决的是不同问题：前者读取结构中的值，后者展开元素。FLATTEN 不会自动完成全面规范化建模。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-039",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "用 TRY_TO_NUMBER 转换 JSON 数值字段后，为什么仍需质量检查？",
+    "explanation": "正确答案 A、C、D。安全转换可提升管道韧性，但其结果需要分类：源数据缺失、JSON null 与无效格式可能都表现为 NULL。统计并保留失败证据可以避免静默污染指标。",
+    "misconceptions": [
+      "认为查询未报错就证明数据转换正确。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "无法转换的输入可能变成 NULL，而不是抛出查询错误",
+          "转换成功即可证明字段在业务上有效",
+          "需要区分真实缺失与格式错误导致的 NULL",
+          "可记录失败比例并对异常版本进行回溯"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。安全转换可提升管道韧性，但其结果需要分类：源数据缺失、JSON null 与无效格式可能都表现为 NULL。统计并保留失败证据可以避免静默污染指标。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-040",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "semi-structured-data",
+    "subtopic": "semi-structured-data",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "semi-structured-data"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "哪些因素适合决定是否把 JSON 中的字段长期投影为独立列？",
+    "explanation": "正确答案 A、B、C。投影决策要结合契约稳定性、查询模式和治理成本；不必把所有字段一股脑展平，也不宜把高频关键字段永远留在无类型载体中。",
+    "misconceptions": [
+      "在完全展平与完全不建模之间做绝对化选择。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "字段是否稳定且有明确业务类型",
+          "筛选、连接、聚合的频率以及性能测量",
+          "字段的语义、所有权和质量约束是否明确",
+          "所有半结构化字段无条件都复制成列"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。投影决策要结合契约稳定性、查询模式和治理成本；不必把所有字段一股脑展平，也不宜把高频关键字段永远留在无类型载体中。"
+      }
+    },
+    "knowledgeId": "semi-structured-data",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSONB and Querying JSON",
+      "relatedMaterials": [
+        "docs-semi-structured-query",
+        "docs-flatten",
+        "docs-sql-query-constructs"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-041",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 中 MERGE 的主要用途是什么？",
+    "explanation": "正确答案 A。MERGE 将源行与目标行按匹配条件关联，并按 WHEN MATCHED/NOT MATCHED 等分支执行 DML；它不替代源键去重与数据质量设计。",
+    "misconceptions": [
+      "认为 MERGE 自动完成数据去重、完整性强制和备份。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "根据源与目标的匹配条件执行更新、插入或删除等动作",
+          "把任意查询结果自动转换成永久备份",
+          "仅修改 Warehouse 的大小",
+          "自动强制标准表的所有主键与外键"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。MERGE 将源行与目标行按匹配条件关联，并按 WHEN MATCHED/NOT MATCHED 等分支执行 DML；它不替代源键去重与数据质量设计。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-042",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "标准 Snowflake 表声明了 PRIMARY KEY 后，想防止重复业务键，哪种判断正确？",
+    "explanation": "正确答案 B。标准表的 PRIMARY KEY/UNIQUE 等约束通常不强制执行。应通过 SQL 检查、幂等加载、去重和质量门禁保持唯一性；具体表类型的约束能力应单独核实。",
+    "misconceptions": [
+      "将标准表上的键约束声明当作自动唯一性保证。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "声明约束后数据库会在每次插入时强制去重",
+          "还需要应用/管道显式检测重复键，除非使用具备相应强制约束能力的表类型",
+          "用更大的 Warehouse 就能让键自动唯一",
+          "重复检测只能在客户端执行，不能写 SQL"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。标准表的 PRIMARY KEY/UNIQUE 等约束通常不强制执行。应通过 SQL 检查、幂等加载、去重和质量门禁保持唯一性；具体表类型的约束能力应单独核实。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-043",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "执行 MERGE 时源数据可能有同一业务键的多条记录，最应该优先做什么？",
+    "explanation": "正确答案 A。MERGE 不会自动推断哪些源记录是业务上正确的。应先定义 tie-breaker、排序和冲突处理，并检查剩余重复键。",
+    "misconceptions": [
+      "认为 MERGE 会自动选择业务上正确的重复源记录。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在源端定义去重规则和确定性排序，确保匹配输入的粒度明确",
+          "把所有重复源记录原样提交并期待数据库按最新时间自动选择",
+          "关闭所有数据质量检测",
+          "只增加仓库规模"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。MERGE 不会自动推断哪些源记录是业务上正确的。应先定义 tie-breaker、排序和冲突处理，并检查剩余重复键。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-044",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "为了让批量重跑不会重复累加金额，哪些设计更可靠？",
+    "explanation": "正确答案 A、B、D。稳定键、幂等 DML 和批次审计可使重跑可控。无条件 INSERT 会把同一批次重复记账，除非目标业务明确允许追加重复事件。",
+    "misconceptions": [
+      "把任务重跑等同于重新执行 INSERT，而不定义幂等边界。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用稳定业务键或事件 ID 表达唯一业务事件",
+          "为同一输入批次定义幂等的 MERGE/去重逻辑",
+          "在每次重跑前无条件对目标表做重复 INSERT",
+          "保存输入批次标识与处理结果以便审计"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。稳定键、幂等 DML 和批次审计可使重跑可控。无条件 INSERT 会把同一批次重复记账，除非目标业务明确允许追加重复事件。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-045",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "关于标准表约束与数据质量，哪些说法成立？",
+    "explanation": "正确答案 A、B、C。标准表上的约束强制边界和实际数据检查是两回事。NOT NULL 会强制执行；主键、唯一键和外键声明通常需要配合质量检测。",
+    "misconceptions": [
+      "认为 schema 中的所有完整性声明都会由引擎强制执行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NOT NULL 约束会限制对应列不能写入 NULL",
+          "PK/UNIQUE/FK 声明在标准表上通常不强制执行",
+          "可用定期查询检查键重复与孤儿引用",
+          "只要 DDL 中定义了约束，便无需验证数据"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。标准表上的约束强制边界和实际数据检查是两回事。NOT NULL 会强制执行；主键、唯一键和外键声明通常需要配合质量检测。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-046",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "数据团队发现某天的加载行数比源文件记录数少，哪些动作有帮助？",
+    "explanation": "正确答案 A、B、D。需要沿加载、转换、去重、合并各阶段对账。FORCE 可能绕过已加载文件的元数据判断并导致重复，不应作为无调查的首选修复。",
+    "misconceptions": [
+      "把重新强制加载视为处理行数不一致的通用方案。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查 COPY/加载历史中的错误、跳过与文件处理状态",
+          "对比输入文件数、源行数、加载行数及目标去重/过滤规则",
+          "直接重新运行 FORCE=TRUE",
+          "验证转换和 MERGE 阶段是否按预期排除了记录"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。需要沿加载、转换、去重、合并各阶段对账。FORCE 可能绕过已加载文件的元数据判断并导致重复，不应作为无调查的首选修复。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-047",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "哪些做法有助于可靠地执行 UPDATE/DELETE 批处理？",
+    "explanation": "正确答案 A、C、D。生产 DML 应先验证影响范围、保留审计和恢复选项，并根据业务风险设计审批。取消过滤条件会扩大影响范围而不是提升安全性。",
+    "misconceptions": [
+      "认为 UPDATE/DELETE 的风险可以通过跳过过滤条件检查来降低。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用可审计的谓词并在执行前验证目标行范围",
+          "尽可能避免在生产表上使用 WHERE 条件",
+          "对重要变更记录 Query ID、影响行数和业务批次",
+          "在高风险操作前按需要使用 Time Travel/克隆等恢复手段"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。生产 DML 应先验证影响范围、保留审计和恢复选项，并根据业务风险设计审批。取消过滤条件会扩大影响范围而不是提升安全性。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-048",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "MERGE 在目标端应用源端增量时，哪些条件有助于避免误更新？",
+    "explanation": "正确答案 A、B、D。匹配键要表达业务身份，源键冲突要显式处理，分支行为也应有清晰契约。随意扩大匹配条件可能把本应更新的记录判成新记录。",
+    "misconceptions": [
+      "依靠改写 ON 条件掩盖源数据重复或不稳定的业务键。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "连接键应表达稳定且明确的业务匹配关系",
+          "检查源端每个匹配键的基数与重复情况",
+          "把非键描述字段也随意加进匹配条件，以掩盖重复数据",
+          "为插入、更新和不匹配分支定义明确的业务规则"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。匹配键要表达业务身份，源键冲突要显式处理，分支行为也应有清晰契约。随意扩大匹配条件可能把本应更新的记录判成新记录。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-049",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "管道状态显示成功，但下游仪表盘少了某一类订单。哪些验证最有价值？",
+    "explanation": "正确答案 A、B、D。语句成功只说明执行没有报告失败，不代表业务数据完整。分组对账、关键键追踪与各阶段质量断言能够定位逻辑过滤或匹配错误。",
+    "misconceptions": [
+      "把技术执行成功等同于业务结果正确。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对关键状态/订单类型做分组计数与金额对账",
+          "检查过滤、JOIN 条件、NULL 处理和 MERGE 匹配逻辑",
+          "只查看 SQL 返回了成功状态",
+          "抽取代表性业务键端到端追踪原始记录到目标层"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。语句成功只说明执行没有报告失败，不代表业务数据完整。分组对账、关键键追踪与各阶段质量断言能够定位逻辑过滤或匹配错误。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-050",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-dml-data-correctness",
+    "subtopic": "snowflake-dml-data-correctness",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-dml-data-correctness"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "要实现可审计的增量装载，哪些信息值得写入运行日志/控制表？",
+    "explanation": "正确答案 A、B、C。批次标识、处理统计、契约版本和 Query ID 可支持对账、调查和重放。只记录成功状态无法解释数量差异或还原处理路径。",
+    "misconceptions": [
+      "认为任务终态状态足以满足数据管道的审计与排错要求。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "源批次或文件标识及时间范围",
+          "输入、插入、更新、拒绝和重复记录数量",
+          "目标数据契约版本与运行 Query ID",
+          "仅保存最终状态 SUCCESS，不记录中间统计"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。批次标识、处理统计、契约版本和 Query ID 可支持对账、调查和重放。只记录成功状态无法解释数量差异或还原处理路径。"
+      }
+    },
+    "knowledgeId": "snowflake-dml-data-correctness",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: INSERT/UPDATE/DELETE; Constraints; UPSERT",
+      "relatedMaterials": [
+        "docs-sql-merge",
+        "docs-sql-transactions",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-051",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在显式事务中执行 UPDATE 后、COMMIT 之前执行 ROLLBACK，通常会怎样？",
+    "explanation": "正确答案 A。ROLLBACK 用于撤销当前事务内尚未提交的操作。它不能撤销已经提交的事务，也不会回滚该事务之外的其他会话操作。",
+    "misconceptions": [
+      "认为 ROLLBACK 会恢复任意历史状态或影响其他会话。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "撤销该事务中尚未提交的 DML 修改",
+          "删除该表的所有历史数据",
+          "撤销同一账户中所有用户的查询",
+          "自动扩大 Warehouse"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。ROLLBACK 用于撤销当前事务内尚未提交的操作。它不能撤销已经提交的事务，也不会回滚该事务之外的其他会话操作。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-052",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "查询历史表明一条查询花了 20 秒，但其中 18 秒是 queued overload time。哪种解释最合适？",
+    "explanation": "正确答案 A。排队时间应与 compilation_time、execution_time 等分开看。队列过载通常提示并发或可用计算容量问题，需结合仓库负载和查询画像诊断。",
+    "misconceptions": [
+      "把所有端到端耗时都理解为 SQL 算子执行慢。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "主要时间消耗在仓库排队等待，而非 SQL 实际执行",
+          "SQL 必然存在错误 JOIN",
+          "必须创建 PostgreSQL 风格 B-tree 索引",
+          "说明所有数据都已从缓存读取"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。排队时间应与 compilation_time、execution_time 等分开看。队列过载通常提示并发或可用计算容量问题，需结合仓库负载和查询画像诊断。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-053",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "应用在提交 DML 后收到网络超时，无法确定服务端是否已完成提交。最应优先考虑什么？",
+    "explanation": "正确答案 B。客户端超时不一定意味着服务端未提交。通过 Query ID、批次标识、目标结果核验与幂等键判定是否重试，避免重复写入。",
+    "misconceptions": [
+      "把客户端没收到成功响应等同于数据库事务必然回滚。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "盲目重试同一个非幂等 INSERT",
+          "用可追踪的批次/业务键验证提交结果，再按幂等规则决定是否重试",
+          "假设超时等于事务必然回滚",
+          "删除审计记录以避免重复"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。客户端超时不一定意味着服务端未提交。通过 Query ID、批次标识、目标结果核验与幂等键判定是否重试，避免重复写入。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-054",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "为一组必须共同完成的 DML 维护事务边界时，哪些策略合理？",
+    "explanation": "正确答案 A、B、D。事务范围应覆盖需要原子完成的 DML，并显式处理提交与失败。Snowflake 的 DDL 事务行为与 DML 不同，不应假定所有 DDL 都能随同一事务回滚。",
+    "misconceptions": [
+      "假定任何 DDL/DML 混合序列都拥有完全相同的回滚语义。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确哪些语句必须一起提交或一起回滚",
+          "只在全部相关语句成功后提交，并处理失败路径",
+          "把 DDL 与 DML 混在一起并假定所有语句都能在一个事务内回滚",
+          "记录事务失败和重试的可观察证据"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。事务范围应覆盖需要原子完成的 DML，并显式处理提交与失败。Snowflake 的 DDL 事务行为与 DML 不同，不应假定所有 DDL 都能随同一事务回滚。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-055",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "在 Snowflake 中判断查询慢在哪里时，哪些信号应分别分析？",
+    "explanation": "正确答案 A、B、C。Query History 提供排队、编译和执行等独立时间信息；拆分后才能判断应处理并发容量、编译复杂度还是算子执行。",
+    "misconceptions": [
+      "用单一总耗时指标推断所有性能根因。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "仓库过载排队时间",
+          "仓库恢复/配置资源等待时间",
+          "实际执行与编译时间",
+          "不区分排队、编译和执行，只看客户端总耗时"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Query History 提供排队、编译和执行等独立时间信息；拆分后才能判断应处理并发容量、编译复杂度还是算子执行。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-056",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "多个任务并发 MERGE 同一目标表，如何降低数据错误和反复冲突的风险？",
+    "explanation": "正确答案 A、C、D。共享目标写入需明确键范围、批次和冲突处理策略。幂等性、写入编排与可观测统计比无约束地同时重放更可靠。",
+    "misconceptions": [
+      "认为并发执行天然会替业务定义相同键的写入顺序。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按业务键范围或批次设计清晰的写入所有权/编排规则",
+          "让每个任务随意重放不幂等的全量 INSERT",
+          "检测同键冲突并明确合并顺序与去重规则",
+          "监控执行错误、事务阻塞及实际影响行数"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。共享目标写入需明确键范围、批次和冲突处理策略。幂等性、写入编排与可观测统计比无约束地同时重放更可靠。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-057",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "什么时候应用重试策略最需要增加幂等保护？",
+    "explanation": "正确答案 A、B、D。重试要针对错误分类，并优先保护可能重复产生副作用的写入。重试次数、退避和结果核验应有边界，不能无条件无限重试。",
+    "misconceptions": [
+      "认为重试仅取决于客户端是否收到响应，不需要评估副作用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "请求可能在服务端完成后丢失响应",
+          "失败原因不明确且调用可能重复写入",
+          "查询完全只读且无副作用，仍应无条件无限重试",
+          "一次批量操作会修改业务余额或累计指标"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。重试要针对错误分类，并优先保护可能重复产生副作用的写入。重试次数、退避和结果核验应有边界，不能无条件无限重试。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-058",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一条 DML 语句执行失败后，应如何区分是 SQL 错误还是资源问题？",
+    "explanation": "正确答案 A、B、D。错误消息、Query ID、执行画像和仓库负载共同提供诊断证据。只凭时间或主观猜测不利于区分 SQL、权限、并发与资源问题。",
+    "misconceptions": [
+      "用时间相关性代替错误与执行证据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查看 query history 中的 error code/message 和执行状态",
+          "核对 Query Profile、排队时间和 warehouse 负载",
+          "仅凭错误出现的时间猜测根因",
+          "记录查询 ID、角色、仓库与 query tag 以复现调查"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。错误消息、Query ID、执行画像和仓库负载共同提供诊断证据。只凭时间或主观猜测不利于区分 SQL、权限、并发与资源问题。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-059",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于事务与数据质量约束，哪些陈述合理？",
+    "explanation": "正确答案 A、B、D。事务解决原子性边界，不会凭空推断数据是否重复、完整或符合业务规则。稳健的管道还需数据质量和幂等设计。",
+    "misconceptions": [
+      "把 ACID 事务当成业务级数据正确性的充分条件。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "事务可以保证其涵盖操作的原子提交/回滚边界",
+          "事务本身不能替代业务键唯一性与数据质量规则",
+          "成功提交能证明输入数据满足所有业务规则",
+          "幂等控制、质量断言和事务边界解决的是互补问题"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。事务解决原子性边界，不会凭空推断数据是否重复、完整或符合业务规则。稳健的管道还需数据质量和幂等设计。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-060",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-transactions-concurrency",
+    "subtopic": "snowflake-transactions-concurrency",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-transactions-concurrency"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某个写入任务因并发重试导致同一事件可能被累计两次，哪些改进正确？",
+    "explanation": "正确答案 A、B、D。避免重复写入需要幂等标识、批次状态和提交结果核验。提高仓库计算能力不会改变重复请求的业务语义。",
+    "misconceptions": [
+      "把资源扩容当作消除重复提交的措施。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用稳定事件 ID/业务键做去重和幂等合并",
+          "记录已处理批次并在重试时校验结果",
+          "仅把 Warehouse 扩大一级",
+          "将任务改为可观察的状态机，区分待处理、已提交和结果未知"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。避免重复写入需要幂等标识、批次状态和提交结果核验。提高仓库计算能力不会改变重复请求的业务语义。"
+      }
+    },
+    "knowledgeId": "snowflake-transactions-concurrency",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: MVCC; Hour 4: Locks and Blocked Queries (platform-specific translation)",
+      "relatedMaterials": [
+        "docs-sql-transactions",
+        "docs-query-history-sql-view",
+        "docs-warehouses"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-061",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Time Travel 在 Snowflake 中的主要用途是什么？",
+    "explanation": "正确答案 A。Time Travel 允许在配置的保留期内查询历史数据、克隆历史状态或恢复被删除对象；它不等于永久业务历史仓库。",
+    "misconceptions": [
+      "把 Time Travel 视为没有时间边界的永久备份。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在保留期内查询、克隆或恢复历史对象状态",
+          "永久归档所有业务事件且没有保留期限",
+          "替代所有访问控制策略",
+          "给标准表自动建立索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Time Travel 允许在配置的保留期内查询历史数据、克隆历史状态或恢复被删除对象；它不等于永久业务历史仓库。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-062",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "表在 Time Travel 保留窗口内被误 DROP，通常首先评估哪项能力？",
+    "explanation": "正确答案 A。Snowflake 支持在对象 Time Travel 保留窗口内通过 UNDROP 恢复被删除的表等对象。超过可操作窗口后不能依赖该方式。",
+    "misconceptions": [
+      "把 PostgreSQL 的维护命令直接当作 Snowflake 对象恢复手段。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "UNDROP TABLE 恢复被删除的表",
+          "VACUUM FULL",
+          "增加 work_mem",
+          "创建 B-tree 主键索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Snowflake 支持在对象 Time Travel 保留窗口内通过 UNDROP 恢复被删除的表等对象。超过可操作窗口后不能依赖该方式。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-063",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "零拷贝克隆的成本与存储行为，哪项描述最准确？",
+    "explanation": "正确答案 B。Snowflake 克隆初始可共享底层数据，创建速度和初始存储开销通常较低；后续变化会带来额外存储，仍要考虑保留窗口和对象成本。",
+    "misconceptions": [
+      "认为零拷贝克隆代表永久零成本或完整物理复制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "克隆创建时会立即完整复制所有数据且永不共享",
+          "克隆初始共享已有存储结构，源/克隆后续发生变化时可能产生额外存储",
+          "克隆不可能产生任何额外存储成本",
+          "克隆只能用于生产数据，不能用于测试"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。Snowflake 克隆初始可共享底层数据，创建速度和初始存储开销通常较低；后续变化会带来额外存储，仍要考虑保留窗口和对象成本。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-064",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "设计数据恢复方案时，哪些做法合理？",
+    "explanation": "正确答案 A、B、D。恢复方案应基于有效保留窗口、可定位的变更证据和验证步骤。法规或多年审计历史需要独立的长期留存设计，不能只依赖 Time Travel。",
+    "misconceptions": [
+      "把有限保留期的恢复功能误认为长期归档方案。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先明确对象的 Time Travel 保留期和所需恢复点是否仍可用",
+          "对关键 DROP/大批量更新保存 Query ID、执行时间和影响范围",
+          "把 Time Travel 当作无限期法规归档方案",
+          "在克隆环境中验证恢复结果与下游依赖，再决定切换方式"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。恢复方案应基于有效保留窗口、可定位的变更证据和验证步骤。法规或多年审计历史需要独立的长期留存设计，不能只依赖 Time Travel。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-065",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 Time Travel 与长期历史留存，哪些判断正确？",
+    "explanation": "正确答案 A、B、D。Time Travel 适合限定窗口内的恢复与查询。Fail-safe 并不是用户可查询的延长 Time Travel；过期后不能将其当作常规恢复接口。",
+    "misconceptions": [
+      "混淆 Time Travel、Fail-safe 和业务长期归档。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Time Travel 的历史可访问性受对象保留期限制",
+          "长期业务审计历史需要明确的独立保留与归档策略",
+          "只要进入 Fail-safe，用户就能像 Time Travel 一样任意查询历史版本",
+          "恢复窗口到期后，查询或 UNDROP 能力可能不再可用"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。Time Travel 适合限定窗口内的恢复与查询。Fail-safe 并不是用户可查询的延长 Time Travel；过期后不能将其当作常规恢复接口。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-066",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某张表无法查询两周前的数据，最先需要核对哪些事项？",
+    "explanation": "正确答案 A、B、D。先检查对象类型/参数/时间点，再判断是否有其他归档可恢复。将时间点改为当前只查询了当前数据，并没有恢复历史版本。",
+    "misconceptions": [
+      "把无法访问历史误当成查询语法问题，或用当前数据冒充历史数据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该表实际的数据保留参数和有效保留期",
+          "请求的时间点是否超出可用历史窗口",
+          "直接把查询改成当前时间便宣称恢复了旧数据",
+          "是否需要从其他归档或源系统重建长期历史"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。先检查对象类型/参数/时间点，再判断是否有其他归档可恢复。将时间点改为当前只查询了当前数据，并没有恢复历史版本。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-067",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "下列哪些工作流适合使用克隆？",
+    "explanation": "正确答案 A、B、D。克隆可支持隔离测试、历史点恢复验证和回归分析，但不会替代权限、审批、成本监控与数据生命周期管理。",
+    "misconceptions": [
+      "把克隆当成不需要权限控制与发布流程的替代品。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在隔离环境中测试数据转换或发布脚本",
+          "在上线前对比改动前后的结果与质量指标",
+          "取代所有生产权限和审批，任何人可直接改生产表",
+          "把历史时间点的对象克隆到测试环境做回归"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。克隆可支持隔离测试、历史点恢复验证和回归分析，但不会替代权限、审批、成本监控与数据生命周期管理。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-068",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "使用 Time Travel 的 AT/BEFORE 查询历史状态时，哪些维度可用于定位历史点？",
+    "explanation": "正确答案 A、B、C。Snowflake Time Travel 支持基于时间戳、时间偏移或语句标识指定历史点；Warehouse 大小不是历史版本定位条件。",
+    "misconceptions": [
+      "把执行资源配置与历史版本定位混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "时间戳",
+          "相对当前时间的 OFFSET",
+          "已完成语句的 Query ID/STATEMENT",
+          "当前 Warehouse 的大小"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Snowflake Time Travel 支持基于时间戳、时间偏移或语句标识指定历史点；Warehouse 大小不是历史版本定位条件。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-069",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "在延长重要表的保留期之前，哪些因素应纳入考虑？",
+    "explanation": "正确答案 A、B、C。延长保留期应匹配业务恢复目标，并核实参数继承与存储费用。账户级默认值会影响未显式覆盖的下级对象，需要分层评估。",
+    "misconceptions": [
+      "忽略保留期参数的继承和延长保留带来的存储成本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "恢复/审计目标和实际需要的窗口",
+          "附加历史存储的成本影响",
+          "账户、数据库、Schema 与表参数之间的继承/覆盖关系",
+          "假设延长保留期完全没有成本或策略影响"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。延长保留期应匹配业务恢复目标，并核实参数继承与存储费用。账户级默认值会影响未显式覆盖的下级对象，需要分层评估。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-070",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "time-travel-cloning",
+    "subtopic": "time-travel-cloning",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "time-travel-cloning"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "事故中有人误以为重新创建同名表会恢复原对象，哪种解释正确？",
+    "explanation": "正确答案 B、C。创建同名新对象不等于恢复原对象。应按保留窗口使用 UNDROP/历史克隆并验证对象身份、权限和下游依赖。",
+    "misconceptions": [
+      "认为对象名相同就代表对象身份和历史数据自动恢复。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同名 CREATE 会自动恢复被 DROP 的原表",
+          "重新创建通常会创建新对象；需要在保留窗口内对原对象执行 UNDROP 或采用其他恢复流程",
+          "恢复后仍需验证对象身份、权限和下游依赖",
+          "原对象的历史版本在所有情况下都永久保留"
+        ],
+        "answer": [
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B、C。创建同名新对象不等于恢复原对象。应按保留窗口使用 UNDROP/历史克隆并验证对象身份、权限和下游依赖。"
+      }
+    },
+    "knowledgeId": "time-travel-cloning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backups; Point-in-Time Recovery; Backup Strategy",
+      "relatedMaterials": [
+        "docs-time-travel",
+        "docs-snowflake-cloning"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-071",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "将 Stage 中的一批文件批量导入 Snowflake 表，最常见的命令是什么？",
+    "explanation": "正确答案 A。COPY INTO <table> 可从内部或外部 Stage 将文件数据加载到表中；文件格式、路径、错误策略与目标列映射需要正确配置。",
+    "misconceptions": [
+      "把数据库维护或查询分析命令当成文件加载命令。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "COPY INTO <table>",
+          "VACUUM FULL",
+          "CREATE WAREHOUSE AS FILE",
+          "EXPLAIN ANALYZE ONLY"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。COPY INTO <table> 可从内部或外部 Stage 将文件数据加载到表中；文件格式、路径、错误策略与目标列映射需要正确配置。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-072",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "Snowpipe 最适合哪种摄取场景？",
+    "explanation": "正确答案 B。Snowpipe 面向 Stage 中持续到达的文件，使用 Snowflake 管理的 serverless compute 加载。它与周期性手工执行 COPY 的操作模型不同。",
+    "misconceptions": [
+      "把 Snowpipe 与数据库备份、SQL 查询或行级直接写入混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仅每年一次的全库物理备份",
+          "文件持续到达 Stage，希望由 Snowflake 管理连续加载",
+          "直接维护 PostgreSQL WAL",
+          "给现有查询创建窗口排序"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。Snowpipe 面向 Stage 中持续到达的文件，使用 Snowflake 管理的 serverless compute 加载。它与周期性手工执行 COPY 的操作模型不同。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-073",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "`COPY INTO` 的文件格式配置主要解决什么？",
+    "explanation": "正确答案 A。FILE FORMAT 约定分隔符、引号、压缩和半结构化文件解析规则等；它不会自动定义业务去重和完整性规则。",
+    "misconceptions": [
+      "认为文件格式配置同时保证业务键、质量与转换逻辑正确。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "告诉加载流程如何解析 CSV、JSON、Parquet 等输入格式",
+          "保证业务主键自动唯一",
+          "自动决定所有下游转换的业务规则",
+          "为源表创建索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。FILE FORMAT 约定分隔符、引号、压缩和半结构化文件解析规则等；它不会自动定义业务去重和完整性规则。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-074",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "设计可重复运行的文件加载管道时，哪些做法正确？",
+    "explanation": "正确答案 A、B、D。文件元数据可帮助识别已加载文件，但其保留和判断有边界。FORCE 会忽略相关加载元数据并可能引入重复，因此只能在明确的重载流程中使用。",
+    "misconceptions": [
+      "把 FORCE 视为无风险的常规重试方式。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用稳定的文件命名/批次标识并保存加载历史",
+          "明确哪些场景应该允许重载，哪些场景必须避免重复",
+          "无条件设置 FORCE=TRUE 以确保永不漏载",
+          "监控跳过、错误和实际加载行数"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。文件元数据可帮助识别已加载文件，但其保留和判断有边界。FORCE 会忽略相关加载元数据并可能引入重复，因此只能在明确的重载流程中使用。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-075",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "一次 COPY 结束后行数低于预期，哪些证据应检查？",
+    "explanation": "正确答案 A、B、C。加载排错应覆盖文件识别、格式解析、错误处理和行数统计；计算资源大小本身不是文件记录缺失的直接证据。",
+    "misconceptions": [
+      "根据仓库大小猜测加载数据缺失原因，不看加载历史和文件错误。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "加载历史、文件状态和错误/跳过记录",
+          "实际源文件行数与目标加载统计",
+          "ON_ERROR 等加载错误策略是否跳过了数据",
+          "只凭仓库大小直接断言文件解析错误"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。加载排错应覆盖文件识别、格式解析、错误处理和行数统计；计算资源大小本身不是文件记录缺失的直接证据。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-076",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "COPY INTO 的输入文件选择方式有哪些合理选项？",
+    "explanation": "正确答案 A、B、C。可通过路径/前缀、FILES 列表或 PATTERN 等方式控制被加载文件范围，以方便并行、补数和批次隔离；不必每次加载整个 Stage。",
+    "misconceptions": [
+      "认为 COPY 不能按批次或文件范围选择输入。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "从 Stage 的路径或前缀筛选文件",
+          "列出明确的文件名",
+          "使用受控的文件名模式匹配",
+          "要求每条 COPY 必须读取 Stage 内所有文件"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。可通过路径/前缀、FILES 列表或 PATTERN 等方式控制被加载文件范围，以方便并行、补数和批次隔离；不必每次加载整个 Stage。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-077",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "同一生产端有每日大批量文件和持续到达的小批文件，哪些设计合理？",
+    "explanation": "正确答案 A、C、D。摄取路径应根据到达模式、可接受延迟、批次规模和成本选择。文件清单与状态记录支持对账与安全重放。",
+    "misconceptions": [
+      "不根据文件到达模式和批次边界设计摄取策略。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将按批次执行的历史/大批文件装载与持续文件摄取分别设计",
+          "对小文件频繁无边界地创建大量独立 COPY 调用而不监控成本",
+          "根据到达模式评估 Snowpipe 与批量 COPY",
+          "为重放流程保留文件清单和批次状态"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。摄取路径应根据到达模式、可接受延迟、批次规模和成本选择。文件清单与状态记录支持对账与安全重放。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-078",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "需要排查文件中的无效行并修正后重载，哪些步骤较稳妥？",
+    "explanation": "正确答案 A、B、D。应先确定错误原因、修正来源或格式，再选择可审计的重载策略并对账。无范围地反复 FORCE 可能产生重复数据。",
+    "misconceptions": [
+      "把无差别重载当成数据修复手段。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先用加载验证/历史记录定位错误类型和行",
+          "修复源文件或文件格式后再明确选择重载范围",
+          "不核对已加载记录，反复 FORCE 全部文件",
+          "将修复后的行数和目标影响纳入对账"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。应先确定错误原因、修正来源或格式，再选择可审计的重载策略并对账。无范围地反复 FORCE 可能产生重复数据。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-079",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "如果应用直接产生需要低延迟写入的行事件，而不是文件，哪些判断正确？",
+    "explanation": "正确答案 A、C。Snowpipe Streaming 面向行级事件直接摄取；文件 Snowpipe 处理 Stage 中到达的文件。应结合延迟、吞吐、重放和成本评估，不存在任何场景都占优的统一方案。",
+    "misconceptions": [
+      "把文件摄取和行级流式摄取视作相同路径，或假设某种方式总是最快。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可评估 Snowpipe Streaming 的行级写入路径",
+          "文件型 Snowpipe 专门要求所有事件先永久归档成一个巨大 CSV",
+          "应按吞吐、延迟、重放和去重语义比较摄取方案",
+          "COPY INTO 对任何场景都比流式路径延迟更低"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。Snowpipe Streaming 面向行级事件直接摄取；文件 Snowpipe 处理 Stage 中到达的文件。应结合延迟、吞吐、重放和成本评估，不存在任何场景都占优的统一方案。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-080",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-data-loading",
+    "subtopic": "snowflake-data-loading",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-data-loading"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为批量加载设定生产验收条件，哪些指标适合纳入？",
+    "explanation": "正确答案 A、B、C。验收应包含完整性、准确性和可观察性证据。语句成功并不能排除文件遗漏、错误处理跳过或转换阶段过滤数据。",
+    "misconceptions": [
+      "把 SQL 成功状态当作全部加载验收标准。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "预期文件数量与已处理文件数量",
+          "源/目标记录数和关键字段质量指标",
+          "拒绝/跳过行数、运行时长及失败原因",
+          "仅确认 SQL 提交成功，不核对输出"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。验收应包含完整性、准确性和可观察性证据。语句成功并不能排除文件遗漏、错误处理跳过或转换阶段过滤数据。"
+      }
+    },
+    "knowledgeId": "snowflake-data-loading",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup/Restore concepts; Hour 2: data operations (translated to Snowflake loading)",
+      "relatedMaterials": [
+        "docs-data-loading",
+        "docs-snowpipe",
+        "docs-snowpipe-streaming"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-081",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake Stream 的主要职责是什么？",
+    "explanation": "正确答案 A。Stream 通过源对象的变更跟踪和 offset 暴露自上次消费位置以来的变更，并不保存源表全量物理副本。",
+    "misconceptions": [
+      "把 Stream 误认为全量历史副本或普通目标表。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "基于源对象变更跟踪和 offset 提供变更记录视图",
+          "保存源表完整的独立物理副本并永久归档所有历史",
+          "自动替代目标表",
+          "为每条 SELECT 语句创建 B-tree 索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Stream 通过源对象的变更跟踪和 offset 暴露自上次消费位置以来的变更，并不保存源表全量物理副本。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-082",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "Snowflake Task 常用于什么工作？",
+    "explanation": "正确答案 A。Task 可以定时或按任务图关系编排 SQL 和存储过程，也可用于变更驱动处理；它不是数据存储或权限绕过机制。",
+    "misconceptions": [
+      "把 Task 的编排职责与数据存储、授权机制混淆。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "按计划或依赖关系执行 SQL/过程等处理",
+          "持久化所有表的数据块",
+          "让任何用户绕过角色权限",
+          "自动把所有标准表约束变为强制约束"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Task 可以定时或按任务图关系编排 SQL 和存储过程，也可用于变更驱动处理；它不是数据存储或权限绕过机制。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-083",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "Dynamic Table 的目标延迟（target lag）主要用来表达什么？",
+    "explanation": "正确答案 A。Target lag 表达数据新鲜度目标，而不是对每次刷新/下游查询响应时间作硬性时延保证；需要结合依赖和资源监控验证实际新鲜度。",
+    "misconceptions": [
+      "把 Dynamic Table target lag 当成每次执行的硬性延迟 SLA。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "希望维护的数据结果相对上游变化保持多新",
+          "仓库一定会在指定毫秒内完成每次查询",
+          "数据永远不会被刷新",
+          "每个用户会话的时区"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Target lag 表达数据新鲜度目标，而不是对每次刷新/下游查询响应时间作硬性时延保证；需要结合依赖和资源监控验证实际新鲜度。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-084",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "实现源表变更到目标表的 CDC 管道，哪些设计正确？",
+    "explanation": "正确答案 A、B、C。Stream 给出 offset 后的变更记录，目标更新需由消费 DML/事务推进处理位置。应设计失败、重放和源历史窗口边界；它不等于永久归档。",
+    "misconceptions": [
+      "认为 Stream 会独立、永久保存所有变更而无需消费和保留策略。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用 Stream 跟踪源对象变更并管理 offset",
+          "用 MERGE/明确 DML 逻辑将变更应用到目标状态",
+          "在提交的 DML 事务中消费变更，确认失败和重放语义",
+          "把 Stream 查询结果当作永远不变的历史副本"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Stream 给出 offset 后的变更记录，目标更新需由消费 DML/事务推进处理位置。应设计失败、重放和源历史窗口边界；它不等于永久归档。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-085",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "CDC 下游重复应用相同业务事件时，哪些防护值得实施？",
+    "explanation": "正确答案 A、B、D。事件键、版本顺序和幂等 MERGE 可控制重复应用。独立消费者通常应明确各自的流/offset 处理路径，避免意外推进共享消费位置。",
+    "misconceptions": [
+      "把不同消费者的增量消费状态当成无需隔离的共享游标。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用事件 ID 或业务键做去重与幂等合并",
+          "校验同键变更顺序、版本与删除语义",
+          "对同一个 Stream 的多个独立消费者不加设计地共享消费状态",
+          "记录已处理批次与目标影响行数"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。事件键、版本顺序和幂等 MERGE 可控制重复应用。独立消费者通常应明确各自的流/offset 处理路径，避免意外推进共享消费位置。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-086",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于 Stream 与 Dynamic Table 的区别，哪些说法准确？",
+    "explanation": "正确答案 A、B、D。Stream 面向变更消费，Dynamic Table 面向声明式结果维护，Task 可用于显式调度/编排；选型取决于变化语义、控制需求和依赖关系。",
+    "misconceptions": [
+      "认为 Stream、Task 与 Dynamic Table 只是同一种对象的不同名字。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Stream 提供可供消费的变更记录视图",
+          "Dynamic Table 根据定义的查询维护结果并以 target lag 表达新鲜度目标",
+          "二者在所有场景下都是保存全量历史日志的实体表",
+          "简单声明式转换可评估 Dynamic Table，显式 CDC/过程编排可评估 Stream/Task"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。Stream 面向变更消费，Dynamic Table 面向声明式结果维护，Task 可用于显式调度/编排；选型取决于变化语义、控制需求和依赖关系。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-087",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "以任务图编排多个下游转换时，哪些工程实践合理？",
+    "explanation": "正确答案 A、B、D。Task Graph 可以表达依赖，但仍需为任务设计质量门禁、失败恢复和监控；任务链顺序不等于数据结果已达到业务质量。",
+    "misconceptions": [
+      "把编排完成视作数据完整、正确和已及时交付。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确依赖顺序和失败后恢复策略",
+          "为关键输出设置行数、唯一性和新鲜度检查",
+          "仅靠人为记住执行先后顺序",
+          "记录任务运行与失败状态，支持定位下游阻塞"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。Task Graph 可以表达依赖，但仍需为任务设计质量门禁、失败恢复和监控；任务链顺序不等于数据结果已达到业务质量。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-088",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "Stream 报告变更不可用或消费不完整时，首先核对什么？",
+    "explanation": "正确答案 A、B、D。需要核对源对象/跟踪窗口、offset 状态和消费事务，再检查下游是否漏筛选。变更跟踪不是无限期的，超过可用窗口应有重建/补数方案。",
+    "misconceptions": [
+      "认为变更记录无期限保留，消费状态和提交结果不会影响完整性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Stream 的源对象、offset 与是否过期等状态",
+          "消费事务是否成功提交，以及下游 DML 的过滤逻辑",
+          "直接把所有历史源文件永久删除",
+          "源表历史变更是否仍在所需跟踪窗口内"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。需要核对源对象/跟踪窗口、offset 状态和消费事务，再检查下游是否漏筛选。变更跟踪不是无限期的，超过可用窗口应有重建/补数方案。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-089",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "应在什么情况下优先评估声明式 Dynamic Tables，而非自己编排每一步 SQL Task？",
+    "explanation": "正确答案 A、C。声明式、SQL 结果型转换可评估 Dynamic Tables；复杂程序化控制、外部副作用或特定顺序要求可能更适合 Tasks/过程。无论哪种方式都需质量验收。",
+    "misconceptions": [
+      "认为一个抽象或自动刷新能力能覆盖所有程序化编排需求。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "转换以 SELECT 定义、期望由平台管理刷新和依赖",
+          "需要复杂的外部副作用或精确程序步骤控制而 Dynamic Tables 不覆盖该语义",
+          "希望通过 target lag 管理结果新鲜度",
+          "希望完全跳过源/结果质量检查"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。声明式、SQL 结果型转换可评估 Dynamic Tables；复杂程序化控制、外部副作用或特定顺序要求可能更适合 Tasks/过程。无论哪种方式都需质量验收。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-090",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "change-capture-processing",
+    "subtopic": "change-capture-processing",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "change-capture-processing"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为流式 CDC 的迟到事件与重放设计方案时，哪些要点关键？",
+    "explanation": "正确答案 A、B、D。迟到数据可能颠倒事件时间与到达时间；要有版本和冲突规则、幂等更新以及可重放的输入与对账机制。",
+    "misconceptions": [
+      "假设流式消息的物理到达顺序永远等于业务顺序。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "定义事件时间、版本顺序与冲突处理规则",
+          "基于稳定键和版本实现幂等应用",
+          "把到达顺序无条件当作业务事件顺序",
+          "保留可重放输入或可恢复的上游来源，并做对账"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。迟到数据可能颠倒事件时间与到达时间；要有版本和冲突规则、幂等更新以及可重放的输入与对账机制。"
+      }
+    },
+    "knowledgeId": "change-capture-processing",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Replication; Hour 2: UPSERT (Snowflake Streams/Tasks adaptation)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-sql-merge"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-091",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake Task 能否用于自动定时执行 SQL 转换？",
+    "explanation": "正确答案 A。Task 支持基于计划与依赖关系运行 SQL 或存储过程，是自动化管道编排的基础能力之一。",
+    "misconceptions": [
+      "认为 Snowflake 中所有 SQL 转换都必须由外部服务器手工触发。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "可以，Task 支持按计划执行任务",
+          "不可以，只能手工运行 SELECT",
+          "只能存储 JSON 文档",
+          "只能调整用户密码"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Task 支持基于计划与依赖关系运行 SQL 或存储过程，是自动化管道编排的基础能力之一。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-092",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "Dynamic Table 的 target lag 更接近哪种含义？",
+    "explanation": "正确答案 A。Target lag 描述期望的结果新鲜度，而不是每条 SQL 的执行时长承诺；应监控实际刷新表现与工作负载。",
+    "misconceptions": [
+      "把数据新鲜度目标误解为单次任务的执行时长上限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "结果相对上游数据变化的新鲜度目标",
+          "查询固定执行时长的硬保证",
+          "表的物理文件保留天数",
+          "Warehouse 自动暂停的等待时间"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Target lag 描述期望的结果新鲜度，而不是每条 SQL 的执行时长承诺；应监控实际刷新表现与工作负载。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-093",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "一条 Task 成功运行后，哪项判断仍然必要？",
+    "explanation": "正确答案 A。运行成功只代表任务执行完成，不证明输出数据满足完整性、准确性和新鲜度要求。质量检查与对账仍需独立存在。",
+    "misconceptions": [
+      "把任务状态成功当成结果数据正确的证明。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "验证输出记录数、键唯一性和业务规则",
+          "认为成功状态保证所有业务字段无误",
+          "跳过对账并删除运行日志",
+          "不检查依赖输入是否完整"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。运行成功只代表任务执行完成，不证明输出数据满足完整性、准确性和新鲜度要求。质量检查与对账仍需独立存在。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-094",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "为多个阶段组成的转换管道设计任务依赖时，哪些原则合理？",
+    "explanation": "正确答案 A、B、D。显式依赖、幂等重试和阶段检查点能提高可恢复性；把所有逻辑塞进一个无状态步骤会增加定位和补跑难度。",
+    "misconceptions": [
+      "用单一任务替代依赖建模、阶段可观察性与恢复设计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让依赖关系显式表达数据准备的先后",
+          "为失败步骤设计重试/补跑与幂等规则",
+          "用一个巨大任务涵盖所有阶段，且不保留中间状态",
+          "为关键阶段设置质量与新鲜度检查点"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。显式依赖、幂等重试和阶段检查点能提高可恢复性；把所有逻辑塞进一个无状态步骤会增加定位和补跑难度。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-095",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "easy",
+    "angle": "tradeoff",
+    "question": "在 Dynamic Tables 与 Tasks 之间做方案选择时，哪些考虑合理？",
+    "explanation": "正确答案 A、B。选型取决于转换是声明式结果维护还是需要程序化控制。两者都需要评估权限、依赖、失败恢复、实际新鲜度和成本。",
+    "misconceptions": [
+      "认为一种调度抽象在功能与运维上会自动替代另一种所有职责。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "声明式 SELECT 转换和结果新鲜度目标适合评估 Dynamic Tables",
+          "需要程序化分支、明确控制步骤或其他操作时可评估 Tasks/过程",
+          "Dynamic Tables 天生适合所有外部副作用",
+          "无论采用何者都不需要监控刷新状态"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。选型取决于转换是声明式结果维护还是需要程序化控制。两者都需要评估权限、依赖、失败恢复、实际新鲜度和成本。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-096",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "Task Graph 中下游未执行，最有价值的排查路径包括哪些？",
+    "explanation": "正确答案 A、B、D。按依赖链查询运行记录、执行身份、编译/权限错误和任务状态，可定位未触发原因；清理日志会破坏排障证据。",
+    "misconceptions": [
+      "把任务未执行简单归因于平台故障或通过删除日志处理。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查看上游任务运行状态、错误消息与依赖关系",
+          "核对执行角色/所有者权限和 SQL 编译错误",
+          "把所有任务的错误日志删除后重试",
+          "确认相关任务是否被暂停或调度条件未满足"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。按依赖链查询运行记录、执行身份、编译/权限错误和任务状态，可定位未触发原因；清理日志会破坏排障证据。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-097",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "设计可回放的 ETL 运行记录时，应保留哪些字段？",
+    "explanation": "正确答案 A、B、C。运行级元数据使任务可追踪、可回放并支持对账。只记录静态任务名无法判断此次运行使用了哪些输入、处理了多少行或为何失败。",
+    "misconceptions": [
+      "将任务定义与具体一次运行的输入/结果状态混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任务运行 ID、时间窗口与输入批次/版本",
+          "上游/下游对象与结果统计",
+          "失败信息、Query ID、重试次数与结果状态",
+          "仅保存固定名称，不记录本次运行的输入范围"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。运行级元数据使任务可追踪、可回放并支持对账。只记录静态任务名无法判断此次运行使用了哪些输入、处理了多少行或为何失败。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-098",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "针对上游数据到达不稳定、下游要求新鲜度的场景，哪些监控指标有用？",
+    "explanation": "正确答案 A、B、C。平台资源状态不能替代数据管道监控。要同步观察运行状态、数据新鲜度、吞吐/行数和失败原因，才能判断是否按业务目标交付。",
+    "misconceptions": [
+      "只观察计算资源状态，不观测数据管道的实际输出与新鲜度。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任务成功/失败次数及失败原因",
+          "数据延迟或 target lag 实际表现",
+          "各阶段输入输出行数和最近成功时间",
+          "只监控 Warehouse 是否处于 RUNNING"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。平台资源状态不能替代数据管道监控。要同步观察运行状态、数据新鲜度、吞吐/行数和失败原因，才能判断是否按业务目标交付。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-099",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "任务失败后决定是否自动重试，哪些做法稳健？",
+    "explanation": "正确答案 A、B、D。重试应基于错误类别，并对副作用做幂等保护。无限重试会扩大资源成本并掩盖永久错误，需要上限、退避和升级路径。",
+    "misconceptions": [
+      "把无限重试当成可代替错误分类和故障修复的机制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "区分可重试的暂时故障与确定性 SQL/数据错误",
+          "确保重试不会重复产生非幂等的业务副作用",
+          "对所有错误无限重试直到成功",
+          "记录重试次数、退避和最终处理状态"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。重试应基于错误类别，并对副作用做幂等保护。无限重试会扩大资源成本并掩盖永久错误，需要上限、退避和升级路径。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-100",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-guide-task-dag",
+    "subtopic": "snowflake-guide-task-dag",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-guide-task-dag"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "要证明一个日批管道每天确实完成了业务交付，哪些证据组合最充分？",
+    "explanation": "正确答案 A、B、C。可靠交付需结合技术执行证据、数据质量与完整性对账以及业务时间目标。存在运行记录并不代表当天输入完整或下游结果可用。",
+    "misconceptions": [
+      "把有任务运行记录当作当天数据已正确交付。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "调度运行状态与 Query ID",
+          "输入和输出的数据质量/数量对账",
+          "业务截止时间、新鲜度和异常队列检查",
+          "只看当天有一条 Task 记录"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。可靠交付需结合技术执行证据、数据质量与完整性对账以及业务时间目标。存在运行记录并不代表当天输入完整或下游结果可用。"
+      }
+    },
+    "knowledgeId": "snowflake-guide-task-dag",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Operational Workflows; Hour 4: Monitoring (translated to Snowflake Tasks/Dynamic Tables)",
+      "relatedMaterials": [
+        "docs-streams-tasks",
+        "docs-dynamic-tables",
+        "docs-query-history"
+      ]
+    }
+  }
+]
