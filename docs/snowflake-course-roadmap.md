@@ -243,3 +243,28 @@ flowchart TD
 本批包含 60 道简单题、40 道中等题；68 道多选（每题恰好两个正确项）与 32 道单选。十个知识主题涵盖 Semantic View 高级建模、Cortex Analyst 问数应用、Ontology 分层、Dynamic Tables 选型、dbt 自动建模、RBAC、Snowpipe BCDR、OpenFlow PrivateLink、SAP BDC Zero-Copy Connector，以及 Cortex 模型可用性和 CoCo Skill 执行边界。
 
 特别注意：Cortex base mode 与 agentic mode 独立；目标账户/区域中的真实探测比静态名称清单更可靠。Dynamic Tables 的 TARGET_LAG 是新鲜度目标，不是无条件 SLA；语义视图的部署/解释 SQL 也不能替代数据结果验证。更多逐题来源与官方文档入口见覆盖矩阵。
+
+
+## 13. PostgreSQL 全日培训主题向 Snowflake 的适配来源
+
+新增题集引用的主教学来源为 [Snowflake-Labs/postgres-full-day-training](https://github.com/Snowflake-Labs/postgres-full-day-training)，其原始内容是 PostgreSQL 实战训练。这里只借用公开的课程主题和学习目标；Snowflake 题目中的产品行为、限制、优化建议必须以以下 Snowflake 官方文档为准，不能把 PostgreSQL 命令和存储机制直接移植到 Snowflake。
+
+- [SQL query syntax](https://docs.snowflake.com/en/sql-reference/constructs) — `docs-sql-query-constructs`
+- [Transactions](https://docs.snowflake.com/en/sql-reference/transactions) — `docs-sql-transactions`
+- [Window functions](https://docs.snowflake.com/en/user-guide/functions-window-using) — `docs-sql-window-functions`
+- [WITH / CTE](https://docs.snowflake.com/en/sql-reference/constructs/with) — `docs-sql-ctes`
+- [Querying semi-structured data](https://docs.snowflake.com/en/user-guide/querying-semistructured) — `docs-semi-structured-query`
+- [FLATTEN](https://docs.snowflake.com/en/sql-reference/functions/flatten) — `docs-flatten`
+- [MERGE](https://docs.snowflake.com/en/sql-reference/sql/merge) — `docs-sql-merge`
+- [QUERY_HISTORY Account Usage view](https://docs.snowflake.com/en/sql-reference/account-usage/query_history) — `docs-query-history-sql-view`
+- [Cloning considerations](https://docs.snowflake.com/en/user-guide/object-clone) — `docs-snowflake-cloning`
+- [Exploring query execution times](https://docs.snowflake.com/en/user-guide/performance-query-exploring) — `docs-performance-query-exploring`
+- [Cost controls for warehouses](https://docs.snowflake.com/en/user-guide/cost-controlling-controls) — `docs-cost-controls`
+- [Optimizing the warehouse cache](https://docs.snowflake.com/en/user-guide/performance-query-warehouse-cache) — `docs-warehouse-cache`
+- [Persisted query results](https://docs.snowflake.com/en/user-guide/querying-persisted-results) — `docs-persisted-query-results`
+- [Micro-partitions and data clustering](https://docs.snowflake.com/en/user-guide/tables-clustering-micropartitions) — `docs-micro-partitions`
+- [Clustering keys](https://docs.snowflake.com/en/user-guide/tables-clustering-keys) — `docs-clustering-keys`
+- [Search optimization service](https://docs.snowflake.com/en/user-guide/search-optimization-service) — `docs-search-optimization`
+- [Network policies](https://docs.snowflake.com/en/user-guide/network-policies) — `docs-network-policy`
+
+特别注意：原培训中的 WAL / VACUUM / `shared_buffers` / `work_mem` / PostgreSQL 系统目录与传统索引属于 PostgreSQL 特定机制。本题集将相关学习目标改写为 Snowflake 的 Time Travel 与恢复窗口、Streams/Tasks/Dynamic Tables、Query History/Profile、Warehouse 并发和资源治理、微分区裁剪及适用的优化服务；不会声称两种数据库使用同一种底层实现。
