@@ -282,3 +282,60 @@ flowchart TD
 - 本批完成后，Snowflake 题库累计 **1141 道**，知识节点累计 **124 个**。
 
 已完成静态预检：题目编号与题干唯一、难度和题型统计符合预期、答案索引及误解映射有效、20 个知识主题引用可解析、所有交叉文档 ID 均已登记。未运行 TypeScript、Vitest、完整题库 CLI 校验或 build。
+
+
+## 15. Snowflake course 下的 PostgreSQL 原生数据库工程模块（2026-10-23）
+
+本节与第 13、14 节区分：第 13、14 节是将 PostgreSQL 培训主题改写为 Snowflake 语义；本节则**直接教授 PostgreSQL 自身**。题目通过 `courseId: "snowflake"` 加入现有 Snowflake 学习入口，但使用独立的 `postgresql` 主题标签、20 个 PostgreSQL 知识节点、独立来源映射与题目 ID。它不是 Snowflake 功能目录，学习时不能把 PostgreSQL 专属机制归因到 Snowflake。
+
+- 题目文件：`src/data/questions/postgresql-module-200-a.json` 至 `postgresql-module-200-d.json`，编号 `sf-pg-001` 至 `sf-pg-200`
+- 知识节点：`src/data/knowledge/postgresql-module.json`，20 个节点，每个节点各 10 道题
+- 覆盖矩阵与参考资料：[PostgreSQL 原生数据库工程模块（200 题）](./postgresql-module-in-snowflake-course-200.md)
+- 内容来自 [Snowflake-Labs/postgres-full-day-training](https://github.com/Snowflake-Labs/postgres-full-day-training) 的六小时课程安排与 SQL 练习；该训练仓库目标为 PostgreSQL 18，并说明与 PostgreSQL 14+ 的兼容范围。PostgreSQL 18 官方文档也提供版本化手册与每项机制的约束细节。
+
+### 官方 PostgreSQL / 扩展文档 ID
+
+- [PostgreSQL tutorial](https://www.postgresql.org/docs/18/tutorial.html) — `pg-doc-tutorial`
+- [Installation / setup](https://www.postgresql.org/docs/18/installation.html) — `pg-doc-setup`
+- [psql](https://www.postgresql.org/docs/18/app-psql.html) — `pg-doc-psql`
+- [Schemas](https://www.postgresql.org/docs/18/ddl-schemas.html) — `pg-doc-ddl-schema`
+- [Privileges](https://www.postgresql.org/docs/18/ddl-priv.html) — `pg-doc-privileges`
+- [SQL commands](https://www.postgresql.org/docs/18/sql.html) — `pg-doc-sql`
+- [Data types](https://www.postgresql.org/docs/18/datatype.html) — `pg-doc-data-types`
+- [Constraints](https://www.postgresql.org/docs/18/ddl-constraints.html) — `pg-doc-constraints`
+- [Data definition](https://www.postgresql.org/docs/18/ddl.html) — `pg-doc-ddl`
+- [Client authentication](https://www.postgresql.org/docs/18/client-authentication.html) — `pg-doc-client-auth`
+- [Database roles](https://www.postgresql.org/docs/18/user-manag.html) — `pg-doc-security`
+- [Data manipulation](https://www.postgresql.org/docs/18/dml.html) — `pg-doc-dml`
+- [Queries](https://www.postgresql.org/docs/18/queries.html) — `pg-doc-queries`
+- [Table expressions and joins](https://www.postgresql.org/docs/18/queries-table-expressions.html) — `pg-doc-joins`
+- [Aggregate functions](https://www.postgresql.org/docs/18/functions-aggregate.html) — `pg-doc-aggregates`
+- [Arrays](https://www.postgresql.org/docs/18/arrays.html) — `pg-doc-arrays`
+- [JSON functions](https://www.postgresql.org/docs/18/functions-json.html) — `pg-doc-json`
+- [Indexes](https://www.postgresql.org/docs/18/indexes.html) — `pg-doc-indexes`
+- [Window functions](https://www.postgresql.org/docs/18/functions-window.html) — `pg-doc-window`
+- [PL/pgSQL](https://www.postgresql.org/docs/18/plpgsql.html) — `pg-doc-plpgsql`
+- [Transactions tutorial](https://www.postgresql.org/docs/18/tutorial-transactions.html) — `pg-doc-transactions`
+- [MVCC introduction](https://www.postgresql.org/docs/18/mvcc-intro.html) — `pg-doc-mvcc`
+- [Transaction isolation](https://www.postgresql.org/docs/18/transaction-iso.html) — `pg-doc-isolation`
+- [Explicit locking](https://www.postgresql.org/docs/18/explicit-locking.html) — `pg-doc-locks`
+- [Monitoring statistics](https://www.postgresql.org/docs/18/monitoring-stats.html) — `pg-doc-monitoring`
+- [Routine vacuuming](https://www.postgresql.org/docs/18/routine-vacuuming.html) — `pg-doc-vacuum`
+- [WAL](https://www.postgresql.org/docs/18/wal.html) — `pg-doc-wal`
+- [Backup and restore](https://www.postgresql.org/docs/18/backup.html) — `pg-doc-backup`
+- [High availability](https://www.postgresql.org/docs/18/high-availability.html) — `pg-doc-ha`
+- [Logical replication](https://www.postgresql.org/docs/18/logical-replication.html) — `pg-doc-logical-replication`
+- [Connection settings](https://www.postgresql.org/docs/18/runtime-config-connection.html) — `pg-doc-connections`
+- [PgBouncer configuration](https://www.pgbouncer.org/config.html) — `pg-doc-pgbouncer`
+- [Table partitioning](https://www.postgresql.org/docs/18/ddl-partitioning.html) — `pg-doc-partitioning`
+- [Logging configuration](https://www.postgresql.org/docs/18/runtime-config-logging.html) — `pg-doc-logging`
+- [Server resource configuration](https://www.postgresql.org/docs/18/runtime-config-resource.html) — `pg-doc-config`
+- [Parallel query](https://www.postgresql.org/docs/18/parallel-query.html) — `pg-doc-parallel`
+- [Performance tips](https://www.postgresql.org/docs/18/performance-tips.html) — `pg-doc-performance`
+- [EXPLAIN](https://www.postgresql.org/docs/18/sql-explain.html) — `pg-doc-explain`
+- [Full-text search](https://www.postgresql.org/docs/18/textsearch.html) — `pg-doc-textsearch`
+- [Extending PostgreSQL](https://www.postgresql.org/docs/18/extend.html) — `pg-doc-extensions`
+- [PostGIS](https://postgis.net/documentation/) — `pg-doc-postgis`
+- [pgvector](https://github.com/pgvector/pgvector) — `pg-doc-pgvector`
+
+题目中的版本敏感表述应按版本标注。培训仓库以 PostgreSQL 18 为主，同时注明与 PostgreSQL 14+ 的兼容性；例如 `UNIQUE NULLS NOT DISTINCT` 自 PostgreSQL 15 起可用，并非 PostgreSQL 18 才新增。扩展（PgBouncer、PostGIS、pgvector）也需单独核对目标部署环境和版本。
