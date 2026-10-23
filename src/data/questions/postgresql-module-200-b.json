@@ -1,0 +1,2174 @@
+[
+  {
+    "id": "sf-pg-051",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "INNER JOIN 通常返回哪些行？",
+    "explanation": "正确答案 A。INNER JOIN 保留满足连接条件的行组合；未匹配行不会出现在结果中。",
+    "misconceptions": [
+      "将 INNER JOIN 误认为会保留某一侧全部行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "满足连接条件的左右两侧行组合",
+          "左表全部行，无论是否匹配",
+          "右表全部行，无论是否匹配",
+          "仅返回连接键为空的行"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。INNER JOIN 保留满足连接条件的行组合；未匹配行不会出现在结果中。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-052",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "`COUNT(amount)` 与 `COUNT(*)` 的主要区别是什么？",
+    "explanation": "正确答案 A。COUNT(expression) 统计表达式非 NULL 的行，COUNT(*) 统计行数；去重计数另用 DISTINCT。",
+    "misconceptions": [
+      "混淆行数、非 NULL 值数量和不同值计数。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "COUNT(amount) 忽略 amount 为 NULL 的行；COUNT(*) 统计所有输入行",
+          "COUNT(*) 只统计 amount 非 NULL 的行",
+          "两者都只统计不同的 amount",
+          "COUNT(amount) 自动统计总金额"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。COUNT(expression) 统计表达式非 NULL 的行，COUNT(*) 统计行数；去重计数另用 DISTINCT。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-053",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "要筛选聚合后总金额大于 1000 的客户，应使用什么？",
+    "explanation": "正确答案 A。WHERE 通常筛选分组前的行，HAVING 可按聚合结果筛选分组。",
+    "misconceptions": [
+      "把聚合表达式放在普通 WHERE 中。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "HAVING SUM(amount) > 1000",
+          "WHERE SUM(amount) > 1000",
+          "ORDER BY SUM(amount) > 1000",
+          "LIMIT SUM(amount) > 1000"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。WHERE 通常筛选分组前的行，HAVING 可按聚合结果筛选分组。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-054",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "LEFT JOIN 需要保留所有客户，只连接最近 30 天订单。哪些写法适用？",
+    "explanation": "正确答案 A、B。右表条件放 ON 或先过滤右表可保留左侧无匹配行；WHERE 过滤右表列常会过滤掉 NULL 扩展行。",
+    "misconceptions": [
+      "将 LEFT JOIN 右表的过滤条件无条件放在 WHERE。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把右表日期过滤放进 JOIN 的 ON 条件",
+          "先筛选近期订单，再 LEFT JOIN",
+          "把右表日期条件放 WHERE 且不处理 NULL",
+          "改成 INNER JOIN"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。右表条件放 ON 或先过滤右表可保留左侧无匹配行；WHERE 过滤右表列常会过滤掉 NULL 扩展行。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-055",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于外连接，哪些描述正确？",
+    "explanation": "正确答案 A、B、D。连接类型决定未匹配行是否保留以及来自哪一侧；INNER JOIN 不会补齐未匹配行。",
+    "misconceptions": [
+      "混淆内连接与外连接的保留行规则。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LEFT JOIN 保留左侧未匹配行并将右侧列置为 NULL",
+          "FULL OUTER JOIN 可以保留两侧未匹配行",
+          "INNER JOIN 会为未匹配键自动生成 NULL 行",
+          "交换左右表后 LEFT 与相应 RIGHT JOIN 可表达相似的保留语义"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。连接类型决定未匹配行是否保留以及来自哪一侧；INNER JOIN 不会补齐未匹配行。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-056",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "JOIN 后销售额增加了三倍，哪些调查和修复步骤合理？",
+    "explanation": "正确答案 A、B、D。多对多或非唯一连接键会产生 fanout；应先修正基数和模型，不能用 DISTINCT 可靠修复金额重复。",
+    "misconceptions": [
+      "用最终 DISTINCT 掩盖连接键重复造成的指标错误。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "核实两侧数据集的粒度和连接键基数",
+          "比较 JOIN 前后行数及每个键的匹配数量",
+          "对最终结果加 DISTINCT 后即认为所有指标正确",
+          "修复维表重复、调整连接关系或先在正确粒度聚合"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。多对多或非唯一连接键会产生 fanout；应先修正基数和模型，不能用 DISTINCT 可靠修复金额重复。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-057",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "区分没有 JOIN 匹配行与匹配记录某业务列本来为 NULL，怎么做？",
+    "explanation": "正确答案 A。应检查能够代表匹配行是否存在的非 NULL 键，而不是可能本来就为空的业务列。",
+    "misconceptions": [
+      "用允许 NULL 的属性列判断右表是否匹配。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查右表设计上非 NULL 的匹配键",
+          "挑选右表任意可为空字段判断",
+          "只看结果总行数",
+          "把 NULL 转成 0 后推断状态"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。应检查能够代表匹配行是否存在的非 NULL 键，而不是可能本来就为空的业务列。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-058",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "订单和标签都是一对多关系，同时 JOIN 后金额被重复计算。哪些方案合理？",
+    "explanation": "正确答案 A、B、D。多个一对多关系组合会扩大中间行数。应明确最终粒度并在适当粒度预聚合。",
+    "misconceptions": [
+      "认为某个计数做 DISTINCT 就能修复所有 fanout 指标。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先分别处理到需要的粒度，再关联",
+          "只有需要组合明细时才构建组合结果",
+          "用 COUNT(DISTINCT order_id) 自动修复所有金额",
+          "定义最终粒度并验证连接基数"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。多个一对多关系组合会扩大中间行数。应明确最终粒度并在适当粒度预聚合。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-059",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "使用 NOT IN 子查询排除已存在记录时，哪些注意事项正确？",
+    "explanation": "正确答案 A、B、C。NOT IN 会受到 NULL 三值逻辑影响；NOT EXISTS 常可用于反连接，但仍需确认条件语义。",
+    "misconceptions": [
+      "认为非文本类型不会产生 NULL 相关的 NOT IN 问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "子查询结果含 NULL 可能使 NOT IN 得到 UNKNOWN",
+          "应明确处理子查询键中的 NULL",
+          "确认语义后可以考虑 NOT EXISTS",
+          "整数比较不涉及 NULL 三值逻辑"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。NOT IN 会受到 NULL 三值逻辑影响；NOT EXISTS 常可用于反连接，但仍需确认条件语义。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-060",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-joins-aggregation",
+    "subtopic": "postgresql-joins-aggregation",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-joins-aggregation"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为可维护的分析 SQL 设计 JOIN 与聚合时，哪些实践可靠？",
+    "explanation": "正确答案 A、B、C。可维护分析应关注粒度、基数、指标定义和结果验证，而不是只追求 SQL 文本短。",
+    "misconceptions": [
+      "把 SQL 写得更短视为比结果正确性更重要的目标。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "写明每个输入表和中间结果的业务粒度",
+          "对关键连接键做唯一性与缺失率检查",
+          "明确 COUNT、去重、过滤和 NULL 口径",
+          "以 SQL 行数最少作为唯一优化目标"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。可维护分析应关注粒度、基数、指标定义和结果验证，而不是只追求 SQL 文本短。"
+      }
+    },
+    "knowledgeId": "postgresql-joins-aggregation",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: SELECT with Aggregates; JOINs",
+      "relatedMaterials": [
+        "pg-doc-queries",
+        "pg-doc-joins",
+        "pg-doc-aggregates"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-061",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 中，JSONB 与 JSON 的一个重要区别是什么？",
+    "explanation": "正确答案 A。JSON 存储输入文本形式，JSONB 采用分解后的二进制表示，通常更适合反复处理和索引。",
+    "misconceptions": [
+      "认为 JSON 与 JSONB 行为完全相同。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "JSONB 使用适合处理的二进制表示，JSON 保留输入文本形式特征",
+          "JSONB 只能保存数字",
+          "JSON 支持所有索引而 JSONB 不支持",
+          "JSONB 自动把键展开为关系表"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。JSON 存储输入文本形式，JSONB 采用分解后的二进制表示，通常更适合反复处理和索引。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-062",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "数组字段 `tags` 要判断是否包含一个值，哪种运算符适合表达数组包含关系？",
+    "explanation": "正确答案 A。数组包含运算符可用于表达数组包含指定元素/数组的关系。",
+    "misconceptions": [
+      "把文本匹配、空值比较和数据修改子句当成数组包含运算。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`@>`",
+          "`ILIKE`",
+          "`IS DISTINCT FROM`",
+          "`RETURNING`"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。数组包含运算符可用于表达数组包含指定元素/数组的关系。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-063",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "JSONB 的 `->` 与 `->>` 关键区别是什么？",
+    "explanation": "正确答案 A。-> 通常返回 JSON/JSONB 值，->> 返回文本，后者适合进一步文本处理或显式转换。",
+    "misconceptions": [
+      "把 JSON 值抽取与修改原始 JSON 文档混淆。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`->` 返回 JSON/JSONB 值，`->>` 返回文本",
+          "`->` 删除字段而 `->>` 创建索引",
+          "两者都只能用于数组下标",
+          "`->>` 会把 JSON 字段写回原表"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。-> 通常返回 JSON/JSONB 值，->> 返回文本，后者适合进一步文本处理或显式转换。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-064",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "事件表 JSONB 字段 schema 经常变化。哪些策略合理？",
+    "explanation": "正确答案 A、B、D。JSONB 可容纳半结构化内容，但不自动替代类型、质量和模型治理。",
+    "misconceptions": [
+      "认为 JSONB 可以取消 schema 和数据质量检查。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保留 JSONB 以容纳变动字段，同时明确关键字段契约",
+          "对稳定高频筛选字段评估独立列/生成列/表达式",
+          "完全不监控缺失字段和类型漂移",
+          "按查询模式评估索引和规范化关系表"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。JSONB 可容纳半结构化内容，但不自动替代类型、质量和模型治理。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-065",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 PostgreSQL 数组和 JSONB，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。数组和 JSONB 都有用，但不能自动提供关系表的所有约束和关联语义。",
+    "misconceptions": [
+      "认为把关联数据塞进 JSONB 就能替代关系完整性设计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "二者都能存储集合或嵌套值，但语义与操作符不同",
+          "数组适合类型统一的元素集合",
+          "JSONB 可表达键值对象及混合结构",
+          "JSONB 可自动替代所有外键和规范化建模"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。数组和 JSONB 都有用，但不能自动提供关系表的所有约束和关联语义。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-066",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "为 JSONB 条件查询建 GIN 索引前，哪些调查必要？",
+    "explanation": "正确答案 A、B、C。索引收益依赖操作符、操作符类、查询形态和数据分布；GIN 也增加写入和存储成本。",
+    "misconceptions": [
+      "把 GIN 索引当成 JSONB 查询的无条件优化。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查具体操作符和查询形式是否被目标索引支持",
+          "用 EXPLAIN 比较计划和执行表现",
+          "评估索引写入开销、存储和维护成本",
+          "认为所有 JSONB 查询都会受益于任意 GIN 索引"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。索引收益依赖操作符、操作符类、查询形态和数据分布；GIN 也增加写入和存储成本。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-067",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "哪些表达方式常用于 JSONB 路径或内容查询？",
+    "explanation": "正确答案 A、B、C。PostgreSQL 提供 JSON/JSONB 提取和包含运算符，但这些操作不会自动创建关系完整性约束。",
+    "misconceptions": [
+      "认为 JSONB 键名本身就是数据库关系约束。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用 `->` / `->>` 读取对象键或数组元素",
+          "使用 `@>` 表达 JSONB 包含判断",
+          "对缺失键和 JSON null 结果定义显式处理",
+          "把 JSONB 键当成自动强制执行的外键"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PostgreSQL 提供 JSON/JSONB 提取和包含运算符，但这些操作不会自动创建关系完整性约束。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-068",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "需要保存元素类型统一、经常作为集合一起读取的标签。哪些考虑合理？",
+    "explanation": "正确答案 A、B、D。数组适合部分同类型集合场景；成员需要独立关系或强约束时，关联表可能更合适。",
+    "misconceptions": [
+      "在数组与关联表之间只根据语法简洁程度选择。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数组可能比简单集合的额外关联表更直接",
+          "若标签需独立属性/频繁跨实体查询，应评估规范化关联表",
+          "不论需求都强制使用 JSONB",
+          "数组查询运算符及索引支持应通过实际计划验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。数组适合部分同类型集合场景；成员需要独立关系或强约束时，关联表可能更合适。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-069",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "从 JSONB 抽取数值字段用于统计时，哪些做法有助于避免结果异常？",
+    "explanation": "正确答案 A、B、C。JSONB 文档结构和类型可能不同；转换前需要定义缺失、null 和非法值处理规则。",
+    "misconceptions": [
+      "认为键名相同就能保证跨记录类型一致。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "处理字段缺失、JSON null 和非法数值输入",
+          "用明确的类型转换或安全校验策略",
+          "记录解析失败比例并与质量阈值比较",
+          "假设所有文档同一键永远是合法数字"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。JSONB 文档结构和类型可能不同；转换前需要定义缺失、null 和非法值处理规则。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-070",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-arrays-jsonb",
+    "subtopic": "postgresql-arrays-jsonb",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-arrays-jsonb"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "何时应将 JSONB 内部的某些字段提取为独立关系列？",
+    "explanation": "正确答案 A、B、C。关系型投影适合稳定且经常使用的字段；不必把所有低频变化字段都展开。",
+    "misconceptions": [
+      "认为半结构化数据应全部展开或者永远不应展开。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "字段类型稳定且常用于 JOIN、筛选或聚合",
+          "需要明确约束或多个团队共享字段契约",
+          "字段临时出现且极少查询时应评估投影成本",
+          "所有字段都必须无条件复制成列"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。关系型投影适合稳定且经常使用的字段；不必把所有低频变化字段都展开。"
+      }
+    },
+    "knowledgeId": "postgresql-arrays-jsonb",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Arrays and JSON; JSON vs JSONB; JSONB Operators",
+      "relatedMaterials": [
+        "pg-doc-arrays",
+        "pg-doc-json",
+        "pg-doc-indexes"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-071",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "要在每个账户内按时间为事件编号，同时保留每条记录，适合使用什么？",
+    "explanation": "正确答案 A。ROW_NUMBER 是窗口函数，可以在分区内部按排序编号，同时保留输入行；若时间并列应加稳定次级键。",
+    "misconceptions": [
+      "认为排名必须先把明细聚合成单行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY event_time)`",
+          "只使用 `GROUP BY account_id`",
+          "`DELETE FROM events`",
+          "`COUNT(DISTINCT account_id)`"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。ROW_NUMBER 是窗口函数，可以在分区内部按排序编号，同时保留输入行；若时间并列应加稳定次级键。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-072",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 的 `LAG(value)` 在窗口函数中的常见用途是什么？",
+    "explanation": "正确答案 A。LAG 根据窗口 ORDER BY 访问前一行；分区和排序定义决定“前一行”的含义。",
+    "misconceptions": [
+      "把窗口行序和事务历史混淆。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "读取同一窗口排序中前一行的值",
+          "读取前一个事务提交的值",
+          "把当前行锁定到会话结束",
+          "为 value 创建索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。LAG 根据窗口 ORDER BY 访问前一行；分区和排序定义决定“前一行”的含义。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-073",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "计算按时间累计的销售额，哪些窗口定义细节很重要？",
+    "explanation": "正确答案 A、B、C。累计计算依赖窗口分区、排序和 frame；没有明确排序不能保证业务顺序。",
+    "misconceptions": [
+      "认为查询自然会按插入顺序处理累计值。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确 PARTITION BY 分区边界",
+          "明确 ORDER BY 排序键",
+          "根据并列值语义选择合适的 frame",
+          "依赖物理插入顺序而不声明排序"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。累计计算依赖窗口分区、排序和 frame；没有明确排序不能保证业务顺序。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-074",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "取每个客户最近一条订单，哪些设计较可靠？",
+    "explanation": "正确答案 A、B、D。分组最大时间值不保证订单行唯一；ROW_NUMBER 加稳定排序可选出可复现结果。",
+    "misconceptions": [
+      "将 MAX 时间值等同于唯一订单行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按 customer_id 分区并按时间降序用 ROW_NUMBER 排名",
+          "使用确定性的次级键处理时间并列",
+          "使用 MAX(order_time) 并假设对应唯一订单行",
+          "选出每组排名第一的行"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。分组最大时间值不保证订单行唯一；ROW_NUMBER 加稳定排序可选出可复现结果。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-075",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于窗口函数和 GROUP BY，哪些表述正确？",
+    "explanation": "正确答案 A、B、D。GROUP BY 聚合行，窗口函数通常保留输入行；最终排序需要显式指定。",
+    "misconceptions": [
+      "认为窗口函数会自动去重或排序最终输出。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "GROUP BY 通常将明细折叠到每组一行",
+          "窗口函数可为每个输入行计算分区级或相邻行相关结果",
+          "窗口函数一定会消除重复行",
+          "聚合结果的最终排序仍需显式 ORDER BY"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。GROUP BY 聚合行，窗口函数通常保留输入行；最终排序需要显式指定。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-076",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "PostgreSQL 的 CTE（WITH 子句）主要适合什么用途？",
+    "explanation": "正确答案 A、C。CTE 提供逻辑组织方式；实际执行可能由优化器内联或物化，依赖版本、引用和查询结构。",
+    "misconceptions": [
+      "认为 CTE 是必然物化并自动加索引的临时表。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将复杂 SQL 分解为具名、可读的查询阶段",
+          "保证所有 CTE 都必然物化并只执行一次",
+          "作为提高查询可维护性的逻辑组织工具",
+          "自动为 CTE 中的每一列建立索引"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。CTE 提供逻辑组织方式；实际执行可能由优化器内联或物化，依赖版本、引用和查询结构。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-077",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "要对租赁记录执行多步检查、修改并给出业务错误，哪些选择合理？",
+    "explanation": "正确答案 A、B、C。PL/pgSQL 适合过程式逻辑和异常处理，但不是自动的性能优化手段。",
+    "misconceptions": [
+      "把程序化封装误认为必然提升 SQL 性能。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先判断能否用单条 SQL/CTE 清晰表达",
+          "确有过程式分支和异常处理时评估 PL/pgSQL",
+          "定义事务边界与副作用并为关键步骤测试",
+          "只要使用 PL/pgSQL 就必然更快"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PL/pgSQL 适合过程式逻辑和异常处理，但不是自动的性能优化手段。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-078",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一个 LAG 结果在每个分组首行是 NULL，哪些解释合理？",
+    "explanation": "正确答案 A、B、C。分区首行没有前一行，LAG 返回 NULL 是正常边界；是否填默认值由业务语义决定。",
+    "misconceptions": [
+      "把窗口函数正常边界值误判为数据损坏。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该分区首行不存在前一行",
+          "按业务语义可用 COALESCE 或显式标记首行",
+          "应检查 PARTITION BY 是否正确隔离实体",
+          "这必然说明数据库存储损坏"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分区首行没有前一行，LAG 返回 NULL 是正常边界；是否填默认值由业务语义决定。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-079",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于 CTE 执行行为，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。CTE 是否物化和性能收益取决于版本与具体计划，不能笼统说 CTE 总比子查询更快。",
+    "misconceptions": [
+      "根据有无 WITH 就断言物理执行更快。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "CTE 便于定义逻辑阶段并提高可读性",
+          "是否内联/物化会受版本和查询结构影响",
+          "支持的版本可用 MATERIALIZED/NOT MATERIALIZED 影响处理",
+          "CTE 一定比子查询执行更快"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。CTE 是否物化和性能收益取决于版本与具体计划，不能笼统说 CTE 总比子查询更快。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-080",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-window-ctes-plpgsql",
+    "subtopic": "postgresql-window-ctes-plpgsql",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-window-ctes-plpgsql"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "窗口函数排序并列导致生产结果不稳定，哪些修正合理？",
+    "explanation": "正确答案 A、B、C。并列排序需要明确业务语义和稳定键；内存调优不会定义逻辑排序规则。",
+    "misconceptions": [
+      "把资源参数当成缺失的逻辑排序规则。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "补充确定性的排序 tie-breaker",
+          "明确并列时应使用 RANK 还是 ROW_NUMBER",
+          "使用稳定业务主键构建可复现行序",
+          "仅增大 work_mem 就能保证结果确定"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。并列排序需要明确业务语义和稳定键；内存调优不会定义逻辑排序规则。"
+      }
+    },
+    "knowledgeId": "postgresql-window-ctes-plpgsql",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: Window Functions; CTEs; PL/pgSQL Functions",
+      "relatedMaterials": [
+        "pg-doc-window",
+        "pg-doc-queries",
+        "pg-doc-plpgsql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-081",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 事务中，ROLLBACK 的主要作用是什么？",
+    "explanation": "正确答案 A。ROLLBACK 放弃当前事务的变更，不会撤销其他已提交事务。",
+    "misconceptions": [
+      "认为回滚可以撤销数据库中任意历史提交。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "撤销当前事务中尚未提交的数据库变更",
+          "撤销所有会话已提交事务",
+          "删除数据库所有备份",
+          "终止其他用户连接"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。ROLLBACK 放弃当前事务的变更，不会撤销其他已提交事务。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-082",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 的 MVCC 主要解决哪类问题？",
+    "explanation": "正确答案 A。MVCC 帮助事务按快照观察数据并减少读写互相阻塞，但不消除所有锁、冲突和应用级一致性问题。",
+    "misconceptions": [
+      "认为 MVCC 意味着系统不会出现锁等待或并发异常。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "通过行版本和快照支持并发事务读取与修改",
+          "自动替代备份和恢复",
+          "为每个查询永久建立索引",
+          "保证并发事务不需要任何冲突处理"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。MVCC 帮助事务按快照观察数据并减少读写互相阻塞，但不消除所有锁、冲突和应用级一致性问题。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-083",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "默认 READ COMMITTED 下，同一事务连续两条 SELECT 可能看到不同已提交数据，主要原因是什么？",
+    "explanation": "正确答案 A。READ COMMITTED 通常为每条语句建立快照，因此并发事务新提交的数据可能出现在后续语句中。",
+    "misconceptions": [
+      "认为 READ COMMITTED 为整个事务提供固定快照。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "每条语句通常获得新的语句级快照",
+          "同一事务自动提交每条数据变更",
+          "数据库随机改写读取数据",
+          "READ COMMITTED 禁止所有并发写入"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。READ COMMITTED 通常为每条语句建立快照，因此并发事务新提交的数据可能出现在后续语句中。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-084",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "一个事务需要同时更新订单状态并写入审计记录，哪些做法合理？",
+    "explanation": "正确答案 A、B、C。相关写入需要明确共同事务边界；若审计记录必须与业务状态一致，应设计原子流程或明确的一致性模式。",
+    "misconceptions": [
+      "将逻辑相关的修改拆开提交并忽略部分成功风险。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用事务包住必须原子完成的相关修改",
+          "只有相关语句都成功后才提交",
+          "为错误路径定义回滚与重试边界",
+          "独立提交审计记录并假设永远不会不一致"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。相关写入需要明确共同事务边界；若审计记录必须与业务状态一致，应设计原子流程或明确的一致性模式。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-085",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于事务隔离与并发异常，哪些说法正确？",
+    "explanation": "正确答案 A、B、D。SERIALIZABLE 通过检测可能导致非串行化的并发而让部分事务失败；应用需妥善重试。",
+    "misconceptions": [
+      "认为提高隔离级别就能保证无异常且无需重试。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "SERIALIZABLE 能检测并拒绝某些不能串行化的并发结果",
+          "遇到 serialization failure 时应用需要能够重试整个事务",
+          "隔离级别越高就保证事务绝不失败",
+          "不同隔离级别可观察到的并发行为存在差异"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。SERIALIZABLE 通过检测可能导致非串行化的并发而让部分事务失败；应用需妥善重试。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-086",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "`SELECT ... FOR UPDATE` 的典型作用是什么？",
+    "explanation": "正确答案 A。SELECT FOR UPDATE 会对选中的行取得相应行级锁，以协调后续更新；锁通常持续到事务结束。",
+    "misconceptions": [
+      "把行锁当作索引或自动提交机制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "锁定选中的行以协调后续并发修改",
+          "把整张表永久改为只读",
+          "建立唯一索引",
+          "自动提交当前事务"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。SELECT FOR UPDATE 会对选中的行取得相应行级锁，以协调后续更新；锁通常持续到事务结束。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-087",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "客户端在 COMMIT 时发生网络超时，不能判断服务端是否已提交。哪些动作合理？",
+    "explanation": "正确答案 A、B、D。提交响应丢失不等于提交失败；应核对服务端结果并依靠幂等设计决定后续动作。",
+    "misconceptions": [
+      "把客户端响应状态当成数据库提交状态的绝对证据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通过请求 ID/业务键核对目标状态或事务结果",
+          "按幂等规则判定是否重试",
+          "假设客户端没收到响应就一定回滚",
+          "保存应用日志以支持核查"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。提交响应丢失不等于提交失败；应核对服务端结果并依靠幂等设计决定后续动作。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-088",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "两个事务需要更新相同业务实体，哪些措施有助于减少竞态？",
+    "explanation": "正确答案 A、B、C。短事务、一致锁顺序和正确约束可降低等待与死锁风险；长事务会阻碍清理并占用资源。",
+    "misconceptions": [
+      "认为事务打开得越久越能保证业务安全。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "尽量保持事务范围明确且短",
+          "使用合适的行锁/约束/隔离策略",
+          "按一致顺序访问多个共享资源以降低死锁风险",
+          "在事务中等待用户交互而长时间不提交"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。短事务、一致锁顺序和正确约束可降低等待与死锁风险；长事务会阻碍清理并占用资源。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-089",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于 savepoint 与完整事务回滚，哪些说法正确？",
+    "explanation": "正确答案 A、B、D。Savepoint 用于局部回退而不结束整个事务；它本身并不提交更改。",
+    "misconceptions": [
+      "把 savepoint 当作嵌套独立提交事务。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "SAVEPOINT 可为当前事务建立局部回滚点",
+          "ROLLBACK TO SAVEPOINT 可撤销回滚点之后的事务操作",
+          "SAVEPOINT 会独立提交并使其他事务立即看到结果",
+          "COMMIT 提交当前事务并结束该事务边界"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。Savepoint 用于局部回退而不结束整个事务；它本身并不提交更改。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-090",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-transactions-mvcc",
+    "subtopic": "postgresql-transactions-mvcc",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-transactions-mvcc"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为钱款扣减设计事务时，哪些做法可提高并发正确性？",
+    "explanation": "正确答案 A、B、C。需要把读、判定和写入放在适当的原子操作/事务控制下，并用约束或锁解决并发竞态。",
+    "misconceptions": [
+      "认为事务外读取后计算并覆盖余额不会丢失并发更新。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在数据库中以原子 SQL 条件更新或合适锁保护余额",
+          "验证账户状态、余额下限等业务约束",
+          "为重复请求设计幂等业务标识",
+          "事务外读取后计算并无条件写回"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。需要把读、判定和写入放在适当的原子操作/事务控制下，并用约束或锁解决并发竞态。"
+      }
+    },
+    "knowledgeId": "postgresql-transactions-mvcc",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: DML; Hour 3: MVCC and WAL; Transaction Isolation",
+      "relatedMaterials": [
+        "pg-doc-transactions",
+        "pg-doc-mvcc",
+        "pg-doc-isolation"
+      ]
+    }
+  }
+]
