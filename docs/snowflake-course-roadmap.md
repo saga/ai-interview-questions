@@ -229,7 +229,7 @@ flowchart TD
 - [Network policies](https://docs.snowflake.com/en/user-guide/network-policies) — `docs-network-policy`
 - [Query history](https://docs.snowflake.com/en/user-guide/ui-query-history) — `docs-query-history`
 
-新增后 Snowflake 题目累计 **941 道**，知识节点累计 **117 个**。本批完成静态预检；未运行 TypeScript、Vitest、题库 CLI 门禁、完整全库去重或 build。
+截至 2026-10-20 本批完成时，Snowflake 题目累计 **941 道**，知识节点累计 **117 个**；后续新增批次见后续章节。本批完成静态预检；未运行 TypeScript、Vitest、题库 CLI 门禁、完整全库去重或 build。
 
 
 ## 12. Snowflake CoCo Skills 专项扩展（2026-10-20）
@@ -269,3 +269,16 @@ flowchart TD
 - [Network policies](https://docs.snowflake.com/en/user-guide/network-policies) — `docs-network-policy`
 
 特别注意：原培训中的 WAL / VACUUM / `shared_buffers` / `work_mem` / PostgreSQL 系统目录与传统索引属于 PostgreSQL 特定机制。本题集将相关学习目标改写为 Snowflake 的 Time Travel 与恢复窗口、Streams/Tasks/Dynamic Tables、Query History/Profile、Warehouse 并发和资源治理、微分区裁剪及适用的优化服务；不会声称两种数据库使用同一种底层实现。
+
+
+## 14. PostgreSQL Full-Day Training 向 Snowflake 迁移练习（2026-10-23）
+
+新增 7 个知识节点和 200 道原创题，课程主题参考 PostgreSQL 全日培训，题目行为根据 Snowflake 官方文档重新核对，不混用两种数据库的实现机制。
+
+- 题集：`src/data/questions/snowflake-postgres-full-day-200-a.json`、`snowflake-postgres-full-day-200-b.json`、`snowflake-postgres-full-day-200-c.json`
+- 知识节点：`src/data/knowledge/snowflake-postgres-full-day.json`
+- 逐题覆盖矩阵：[snowflake-postgres-full-day-200.md](./snowflake-postgres-full-day-200.md)
+- 难度分布：100 easy、100 medium；题型分布：54 单选、146 多选。
+- 本批完成后，Snowflake 题库累计 **1141 道**，知识节点累计 **124 个**。
+
+已完成静态预检：题目编号与题干唯一、难度和题型统计符合预期、答案索引及误解映射有效、20 个知识主题引用可解析、所有交叉文档 ID 均已登记。未运行 TypeScript、Vitest、完整题库 CLI 校验或 build。
