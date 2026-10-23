@@ -90,3 +90,11 @@ When adding Snowflake certification practice, use the current official SnowPro e
 - Do not carry PostgreSQL implementation-specific behavior into Snowflake questions. WAL, VACUUM, `shared_buffers`, `work_mem`, `pg_stat_*` catalogs and traditional PostgreSQL index advice must not be stated as Snowflake features.
 - Reframe the learning objectives using Snowflake-native concepts such as Time Travel and cloning, COPY/Snowpipe, Streams/Tasks/Dynamic Tables, Query History/Profile, warehouse sizing and concurrency, micro-partition pruning, clustering, Search Optimization and Resource Monitor. Cross-check product behavior against the official document IDs in `docs/snowflake-course-roadmap.md`.
 - Keep `source.materialId: "postgres-full-day-training"`, record the exact public source module in `source.section`, and list the relevant Snowflake documentation IDs in `source.relatedMaterials`. Do not imply the PostgreSQL material itself documents Snowflake behavior.
+
+
+## Native PostgreSQL module inside the Snowflake learning track
+
+- The Snowflake track includes a separately labelled PostgreSQL database-engineering supplement because the user requested both subjects under the same course entry. Its questions keep `courseId: "snowflake"`, but use `topic: "postgresql"` on knowledge nodes, PostgreSQL-specific concepts, `postgres-full-day-training` as source material and PostgreSQL official documentation IDs in `source.relatedMaterials`.
+- This native module is deliberately separate from Snowflake-native questions adapted from PostgreSQL training themes. In this module, PostgreSQL semantics such as MVCC, WAL, VACUUM, `pg_stat_activity`, B-tree/GIN/GiST/BRIN indexes and PgBouncer are taught as PostgreSQL concepts—not as Snowflake features.
+- Use the PostgreSQL 18 documentation as the main authority for version-specific details, while recognizing the upstream training repo describes compatibility with PostgreSQL 14+. Mark version-specific features explicitly; for example, `UNIQUE NULLS NOT DISTINCT` is available from PostgreSQL 15, not introduced in 18.
+- Keep the module's twenty topic-specific knowledge IDs and question IDs in its coverage matrix. Do not collapse them into the generic Snowflake topic or map PostgreSQL answers to Snowflake product behavior.
