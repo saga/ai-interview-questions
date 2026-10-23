@@ -48,6 +48,12 @@ flowchart TD
 
 练习：`de-sql-release-engineering-11`、`de-incremental-idempotency-12`、`de-data-quality-contracts-13`、`de-warehouse-cost-control-14`、`de-observability-lineage-15`。
 
+### 6. SQL、排错与性能诊断题集
+
+参考公开的 [PostgreSQL Full-Day Training](https://github.com/Snowflake-Labs/postgres-full-day-training) 的 SQL、运维和调优主题，新增 200 道 Snowflake 语义的简单/中级题，覆盖 SQL 粒度与窗口函数、半结构化数据、DML/CDC、Time Travel、查询历史/Profile、仓库并发、缓存、微分区、优化服务、RBAC 和成本治理。PostgreSQL 专属机制不会直接套用到 Snowflake。
+
+题集与逐题映射：[200 道题及覆盖矩阵](snowflake-postgres-full-day-200.md)。建议在完成基础 SQL 与仓库治理后，按 `sf-pgtd-001`–`sf-pgtd-200` 逐主题训练；每题都有选择和开放回答形式，可结合 Snowflake 官方文档验证机制、边界和成本假设。
+
 ## 端到端案例
 
 **供应商文件入仓：** 从对象存储进入 Raw，保存批次和时间元数据；按到达频率选择 COPY INTO 或 Snowpipe，验证结构与业务约束，不合格数据隔离；转换至 Conformed，发布 Curated 前核对源/目标行数、拒绝数、关键金额及新鲜度。测试重复文件、损坏文件、迟到批次和失败重跑。
