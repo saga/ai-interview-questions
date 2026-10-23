@@ -45,6 +45,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 - `docs/snowflake-learning-path.md`：Snowflake 独立课程的系统学习路线、架构实战与题目索引
 - `docs/snowflake-course-roadmap.md`：基于 8 门 Coursera 课程模块与 Snowflake 官方文档的完整课程路线、知识骨架和毕业案例
 - `docs/snowflake-developer-guides-coverage-200.md`：基于 Snowflake Developer Guides 的 200 道实践/架构题与 20 个知识点覆盖矩阵
+- `docs/snowflake-postgres-full-day-200.md`：参考 PostgreSQL 全日训练的 SQL/运维/调优主题，改写为 Snowflake 语义的 200 道简单/中级题与 20 组覆盖矩阵
 - [Snowflake CoCo Skills 专项 100 道题与知识点覆盖矩阵](docs/snowflake-coco-skills-100.md)
 - [SnowPro Core COF-C03 考点与 200 道新增题覆盖矩阵](docs/snowflake-certification-cof-c03-coverage-200.md)
 - `skills/snowflake-curriculum/SKILL.md`：独立 Snowflake 课程的知识点/题目维护 prompt
