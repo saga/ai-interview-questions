@@ -1,0 +1,2713 @@
+[
+  {
+    "id": "sf-pg-101",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "`pg_dump` 的主要用途是什么？",
+    "explanation": "正确答案 A。pg_dump 生成逻辑备份，可导出数据库对象定义和数据；它与物理备份和持续 WAL 归档是不同方法。",
+    "misconceptions": [
+      "将逻辑导出命令当作物理集群备份或复制工具。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "创建数据库的逻辑备份/导出",
+          "启动流复制副本",
+          "自动清理死元组",
+          "显示单条 SQL 的执行计划"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。pg_dump 生成逻辑备份，可导出数据库对象定义和数据；它与物理备份和持续 WAL 归档是不同方法。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-102",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "对 pg_dump 产生的 custom-format 备份文件，通常使用哪个工具恢复？",
+    "explanation": "正确答案 A。pg_restore 用于恢复 pg_dump 的自定义格式、目录格式或 tar 格式归档，并支持对象选择等恢复选项。",
+    "misconceptions": [
+      "混淆备份导出工具与其他管理诊断工具。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "pg_restore",
+          "pg_stat_activity",
+          "pg_rewind",
+          "vacuumdb"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。pg_restore 用于恢复 pg_dump 的自定义格式、目录格式或 tar 格式归档，并支持对象选择等恢复选项。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-103",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "PostgreSQL 时间点恢复（PITR）通常需要哪种组合？",
+    "explanation": "正确答案 A。PITR 依赖基础备份以及从该备份恢复到目标时间点所需的 WAL；还必须保留恢复配置和目标时间信息。",
+    "misconceptions": [
+      "认为一份逻辑导出就能直接恢复到任意历史秒点。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "可用的基础备份和所需时间范围内连续可用的 WAL 归档",
+          "只有一份任意时刻的 CSV 导出",
+          "仅有 pg_stat_statements 统计",
+          "只增加 max_connections"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。PITR 依赖基础备份以及从该备份恢复到目标时间点所需的 WAL；还必须保留恢复配置和目标时间信息。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-104",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "建立生产备份与恢复能力时，哪些做法合理？",
+    "explanation": "正确答案 A、B、C。备份策略必须与目标恢复点、恢复时间、存储隔离和恢复演练一起设计。",
+    "misconceptions": [
+      "将备份文件存在等同于验证成功恢复。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "定义 RPO 和 RTO 目标",
+          "将备份存放在与生产故障域隔离的位置并控制访问",
+          "定期实际演练恢复并检查业务数据",
+          "只记录备份命令退出码而不验证可恢复性"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。备份策略必须与目标恢复点、恢复时间、存储隔离和恢复演练一起设计。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-105",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 pg_dump 和 pg_basebackup，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。逻辑和物理备份覆盖范围不同；全局对象与时间点恢复也有各自要求。",
+    "misconceptions": [
+      "认为任意一种备份命令就足以覆盖全部灾难恢复需求。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "pg_dump 生成逻辑对象/数据归档",
+          "pg_basebackup 用于物理基础备份",
+          "全局角色等集群范围对象需要考虑单独的导出/恢复范围",
+          "两者都能单独替代连续 WAL 归档实现任意 PITR"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。逻辑和物理备份覆盖范围不同；全局对象与时间点恢复也有各自要求。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-106",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "恢复到新实例后服务仍不可用，哪些验证值得检查？",
+    "explanation": "正确答案 A、B、C。恢复验收需要检查实例配置、依赖、权限与业务数据；文件大小本身不能证明恢复结果正确。",
+    "misconceptions": [
+      "把备份归档存在当成服务恢复完成。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "目标 PostgreSQL 版本和扩展依赖是否满足",
+          "角色、权限、数据库对象和配置是否完整",
+          "关键表行数、约束及业务聚合是否符合预期",
+          "只检查备份文件大小是否大于零"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。恢复验收需要检查实例配置、依赖、权限与业务数据；文件大小本身不能证明恢复结果正确。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-107",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于物理备份与 WAL，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。物理恢复和 PITR 需要与基础备份相匹配的 WAL；缺失必需日志可能使目标恢复点不可达。",
+    "misconceptions": [
+      "认为只要有物理备份就不再需要检查 WAL 完整性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基础物理备份提供可恢复的数据目录状态",
+          "WAL 记录数据库变化并参与崩溃恢复",
+          "归档 WAL 需要覆盖目标恢复点到基础备份所需的日志范围",
+          "备份之后丢失必要 WAL 对 PITR 没有影响"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。物理恢复和 PITR 需要与基础备份相匹配的 WAL；缺失必需日志可能使目标恢复点不可达。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-108",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "需要从较大数据库中只恢复一张误删的表，哪些方案值得评估？",
+    "explanation": "正确答案 A、B、C。选择性恢复取决于备份类型；隔离恢复通常可减少对生产环境和其他对象的影响。",
+    "misconceptions": [
+      "认为任何物理备份都能安全地只覆盖生产中一张表。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "从逻辑归档中选择目标表恢复",
+          "将备份恢复到隔离的临时实例，再导出目标对象",
+          "按备份格式能力使用 pg_restore 的对象选择功能",
+          "覆盖生产目录而不确认需要恢复的表与依赖"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。选择性恢复取决于备份类型；隔离恢复通常可减少对生产环境和其他对象的影响。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-109",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为高写入量数据库设计备份和 WAL 归档策略，哪些因素要一起考虑？",
+    "explanation": "正确答案 A、B、C。持续 WAL 归档会产生独立的存储、传输和恢复链路要求，需要通过实际写入率和恢复目标设计。",
+    "misconceptions": [
+      "只按表的当前大小估算整个备份与恢复策略。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "WAL 生成速率与归档存储容量",
+          "RPO、RTO 和可接受恢复窗口",
+          "基础备份耗时、保留周期与恢复演练时长",
+          "只按数据库逻辑数据量确定全部备份参数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。持续 WAL 归档会产生独立的存储、传输和恢复链路要求，需要通过实际写入率和恢复目标设计。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-110",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-backup-restore-pitr",
+    "subtopic": "postgresql-backup-restore-pitr",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-backup-restore-pitr"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "PITR 无法恢复到请求时间点，首先应检查哪些证据？",
+    "explanation": "正确答案 A、B、C。PITR 故障需验证备份、WAL 链及恢复目标配置；重新做逻辑导出不能补出过去缺失的 WAL。",
+    "misconceptions": [
+      "把逻辑导出命令当作补齐历史 WAL 的方式。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "基础备份可用且与目标集群匹配",
+          "目标时间点所需的 WAL 归档是否完整可用",
+          "恢复目标时间/恢复配置是否正确",
+          "仅通过反复运行 pg_dump 就保证得到精确时间点"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PITR 故障需验证备份、WAL 链及恢复目标配置；重新做逻辑导出不能补出过去缺失的 WAL。"
+      }
+    },
+    "knowledgeId": "postgresql-backup-restore-pitr",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Backup Strategy; pg_dump; pg_restore; pg_basebackup; Point-in-Time Recovery",
+      "relatedMaterials": [
+        "pg-doc-backup",
+        "pg-doc-wal"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-111",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 的 WAL（Write-Ahead Log）最核心的职责是什么？",
+    "explanation": "正确答案 A。WAL 先记录变更并支持崩溃恢复，也用于备份恢复和复制等机制。",
+    "misconceptions": [
+      "将 WAL 理解为普通查询日志或永久独立备份。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在数据页变更写回之前记录必要的变更信息，以支持恢复",
+          "存储 SQL 用户的明文密码",
+          "替代所有数据备份",
+          "自动决定所有查询的连接顺序"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。WAL 先记录变更并支持崩溃恢复，也用于备份恢复和复制等机制。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-112",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 物理流复制通常会把什么发送到备用服务器？",
+    "explanation": "正确答案 A。物理流复制基于 WAL 传输和重放，使备用实例维护相应的物理数据库状态。",
+    "misconceptions": [
+      "把物理复制理解为仅转发 SQL 语句。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "WAL 记录并重放主库的物理变更",
+          "只传输 SELECT 查询文本",
+          "只复制表结构，不传递数据修改",
+          "仅复制 PostgreSQL 日志文件中的错误消息"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。物理流复制基于 WAL 传输和重放，使备用实例维护相应的物理数据库状态。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-113",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "PostgreSQL 逻辑复制通常通过哪种机制声明数据变更发布与订阅关系？",
+    "explanation": "正确答案 A。逻辑复制通过发布端定义 publication、订阅端定义 subscription 来传输所支持的逻辑变更。",
+    "misconceptions": [
+      "把逻辑复制的配置对象与索引或清理命令混淆。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "PUBLICATION 和 SUBSCRIPTION",
+          "Schema search_path 和 psql 元命令",
+          "VACUUM 和 ANALYZE",
+          "B-tree 与 GIN 索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。逻辑复制通过发布端定义 publication、订阅端定义 subscription 来传输所支持的逻辑变更。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-114",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "设计自动故障切换时，哪些问题必须提前定义？",
+    "explanation": "正确答案 A、B、C。可靠 HA 设计要考虑故障判定、隔离旧主、复制延迟、客户端切换和恢复验证。",
+    "misconceptions": [
+      "把启动备用库当作完整的高可用恢复流程。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "怎样判断主库真正故障且避免双主写入",
+          "备用库复制延迟对数据丢失窗口的影响",
+          "客户端如何发现新主库并切换连接",
+          "故障切换之后不需要验证业务写入是否恢复"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。可靠 HA 设计要考虑故障判定、隔离旧主、复制延迟、客户端切换和恢复验证。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-115",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于物理复制与逻辑复制，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。两种复制在粒度和适用场景上不同；逻辑复制不应被假定为完整集群镜像或自动传播全部 DDL。",
+    "misconceptions": [
+      "认为逻辑复制自动等价于整个 PostgreSQL 实例的物理副本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "物理复制通常复制集群物理状态，常用于备用实例",
+          "逻辑复制按逻辑变更复制所选择的对象/数据",
+          "逻辑复制场景需要明确发布范围和订阅端对象准备",
+          "逻辑复制会自动复制所有 DDL 和任意扩展状态"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。两种复制在粒度和适用场景上不同；逻辑复制不应被假定为完整集群镜像或自动传播全部 DDL。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-116",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "复制延迟持续增长，哪些数据可帮助定位？",
+    "explanation": "正确答案 A、B、C。复制延迟可能源于网络、写入量、备用端重放或保留机制；应同时观察两端状态。",
+    "misconceptions": [
+      "单凭主库的一个资源指标推断全部复制延迟根因。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "发送端/接收端 WAL 位置和复制延迟",
+          "网络状况、备用端重放能力与 I/O",
+          "复制槽是否导致 WAL 长期保留",
+          "仅观察主库 CPU 利用率就能确定全部根因"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。复制延迟可能源于网络、写入量、备用端重放或保留机制；应同时观察两端状态。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-117",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "PostgreSQL 复制槽的潜在运维风险是什么？",
+    "explanation": "正确答案 A、D。复制槽帮助消费者不丢失所需 WAL，但落后或废弃的槽可能导致 WAL 长期保留并耗尽磁盘。",
+    "misconceptions": [
+      "认为复制槽无论消费者状态如何都会自动防止磁盘增长。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "未及时消费的槽可能要求保留 WAL，导致磁盘占用增长",
+          "复制槽会自动清理所有旧 WAL",
+          "一旦存在复制槽就不可能发生磁盘耗尽",
+          "应监控槽状态和保留 WAL 的数量/大小"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。复制槽帮助消费者不丢失所需 WAL，但落后或废弃的槽可能导致 WAL 长期保留并耗尽磁盘。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-118",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "逻辑复制订阅端应用变更失败时，哪些排查步骤合理？",
+    "explanation": "正确答案 A、B、C。订阅错误可能由权限、结构、冲突或配置造成；需要先定位和规划恢复再改动复制状态。",
+    "misconceptions": [
+      "在不了解消费者状态时清除复制槽或日志。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查订阅运行状态和错误信息",
+          "确认发布对象、复制权限和订阅配置符合预期",
+          "检查目标表结构、约束和冲突记录",
+          "直接删除复制槽和全部 WAL，不核对影响"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。订阅错误可能由权限、结构、冲突或配置造成；需要先定位和规划恢复再改动复制状态。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-119",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "高可用设计为什么仍需要独立备份？",
+    "explanation": "正确答案 A、B、C。复制主要维护副本和可用性，不能自动抵御所有逻辑损坏；备份与复制是互补机制。",
+    "misconceptions": [
+      "把副本存在视为备份以及历史恢复能力的完全替代。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "误删或逻辑错误可能被复制到备用端",
+          "备份能为历史恢复提供复制之外的恢复路径",
+          "故障切换处理可用性，备份处理特定数据损坏/历史恢复需求",
+          "只要有同步复制就不再需要任何备份"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。复制主要维护副本和可用性，不能自动抵御所有逻辑损坏；备份与复制是互补机制。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-120",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-wal-replication-ha",
+    "subtopic": "postgresql-wal-replication-ha",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-wal-replication-ha"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "故障切换后旧主库恢复可达，如何减少 split-brain 风险？",
+    "explanation": "正确答案 A、B、D。需要可靠的 fencing 和受控的重新加入流程，避免旧主与新主同时接受写入。",
+    "misconceptions": [
+      "把多主误写当作提升可用性的安全策略。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确保旧主被隔离或不再接受业务写入",
+          "明确重新加入集群/重建为副本的流程",
+          "让应用和旧主/新主同时继续写入以追求最大可用性",
+          "验证路由、复制状态和业务写入路径"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。需要可靠的 fencing 和受控的重新加入流程，避免旧主与新主同时接受写入。"
+      }
+    },
+    "knowledgeId": "postgresql-wal-replication-ha",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Understanding WAL; Streaming Replication; Logical Replication; Failover",
+      "relatedMaterials": [
+        "pg-doc-wal",
+        "pg-doc-ha",
+        "pg-doc-logical-replication"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-121",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "大量应用请求都创建独立 PostgreSQL 连接，为什么可能成为瓶颈？",
+    "explanation": "正确答案 A。PostgreSQL 连接会消耗服务端和操作系统资源；超过合适并发度可能增加竞争而非提升吞吐。",
+    "misconceptions": [
+      "认为增加连接数必然改善数据库吞吐。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "每个连接/后端会消耗服务端和操作系统资源",
+          "连接并发过高会增加上下文切换和资源竞争",
+          "数据库连接没有任何资源成本",
+          "连接数越多一定提供越高吞吐"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。PostgreSQL 连接会消耗服务端和操作系统资源；超过合适并发度可能增加竞争而非提升吞吐。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-122",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PgBouncer 的常见用途是什么？",
+    "explanation": "正确答案 A。连接池通过复用后端连接减少每个应用请求独自占用服务端连接的开销。",
+    "misconceptions": [
+      "把连接池当作查询优化器或备份工具。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在应用和 PostgreSQL 之间复用/管理数据库连接",
+          "取代 PostgreSQL 事务和 WAL",
+          "自动为所有 SQL 创建索引",
+          "将物理备份转换成逻辑备份"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。连接池通过复用后端连接减少每个应用请求独自占用服务端连接的开销。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-123",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "PgBouncer 的 session pooling 通常何时把一个服务器连接归还到池中？",
+    "explanation": "正确答案 A。Session pooling 在客户端会话生命周期内分配服务端连接，直到客户端断开；这比事务池更能保留会话状态。",
+    "misconceptions": [
+      "混淆 session pooling 与 transaction pooling。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "客户端会话结束时",
+          "每条 SQL 执行完就必定归还",
+          "每次读取一行结果后",
+          "每次使用某个索引后"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Session pooling 在客户端会话生命周期内分配服务端连接，直到客户端断开；这比事务池更能保留会话状态。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-124",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "使用 transaction pooling 后，哪些应用行为需要特别核对？",
+    "explanation": "正确答案 A、B、C。事务池在事务结束后可把后端连接分配给其他客户端；会话状态和会话级锁需要确认兼容性或改用合适模式。",
+    "misconceptions": [
+      "认为 transaction pooling 会始终固定同一个后端连接。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "依赖会话状态的 SET、临时表和部分会话级功能",
+          "跨事务持续存在的 session-level advisory lock 依赖",
+          "应用必须假设相邻事务可能被分配到不同的后端连接",
+          "查询结果列的名称长短"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。事务池在事务结束后可把后端连接分配给其他客户端；会话状态和会话级锁需要确认兼容性或改用合适模式。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-125",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 session pooling 和 transaction pooling，哪些描述正确？",
+    "explanation": "正确答案 A、B、C。两种模式在复用颗粒度和会话状态方面有明确权衡。",
+    "misconceptions": [
+      "认为所有连接池模式只改变名字，不改变应用语义。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Session pooling 一般能更完整地保持服务端会话状态",
+          "Transaction pooling 通常能在事务间更灵活地复用连接",
+          "事务池可能不适合依赖后端会话状态的应用",
+          "两者在所有行为和兼容性上完全相同"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。两种模式在复用颗粒度和会话状态方面有明确权衡。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-126",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "应用通过连接池出现“临时表找不到”或会话参数不一致，哪些调查方向合理？",
+    "explanation": "正确答案 A、B、C。此类问题可能源自事务池的连接复用语义与会话状态依赖，应先检查池模式和应用行为。",
+    "misconceptions": [
+      "把连接池的会话状态变化误判为数据表损坏。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认池模式是否会在事务间切换服务端连接",
+          "检查应用是否依赖会话状态跨事务保持",
+          "核验 PgBouncer 配置与客户端功能使用方式",
+          "默认归因于 PostgreSQL 表数据损坏"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。此类问题可能源自事务池的连接复用语义与会话状态依赖，应先检查池模式和应用行为。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-127",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为短事务、突发请求较多的 Web 应用设置连接池，哪些做法合理？",
+    "explanation": "正确答案 A、B、C。池容量应在应用并发和数据库资源之间取舍，还要监控排队并避免长事务。",
+    "misconceptions": [
+      "认为连接池只需配置最大连接数而无需关注队列和事务时间。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按数据库可承载并发和应用负载设定池容量",
+          "监控池等待队列、后端连接数和请求延迟",
+          "控制连接泄漏与事务长时间占用",
+          "让每个应用实例的池大小无上限增长"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。池容量应在应用并发和数据库资源之间取舍，还要监控排队并避免长事务。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-128",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "连接池中的等待时间持续增长，哪些指标有助于区分池容量问题与数据库执行问题？",
+    "explanation": "正确答案 A、B、C。池的排队、数据库内查询和锁等待是不同层次，需要同时采集池统计与数据库会话信息。",
+    "misconceptions": [
+      "只查看连接配置而不看池和数据库运行状态。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "池中客户端等待数和可用服务连接数",
+          "PostgreSQL 活跃/等待会话和查询时长",
+          "事务执行与锁等待情况",
+          "仅按连接字符串长度判断问题"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。池的排队、数据库内查询和锁等待是不同层次，需要同时采集池统计与数据库会话信息。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-129",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "把连接池设置为很大的最大值，不一定改善吞吐，主要原因包括哪些？",
+    "explanation": "正确答案 A、B、C。合理连接池容量应按实际并发、资源和查询表现测试；过多后端可能加剧竞争。",
+    "misconceptions": [
+      "把增加连接容量当作所有性能问题的通用修复。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过多数据库后端可能增加内存和调度竞争",
+          "真正瓶颈可能是慢 SQL、锁或 I/O",
+          "池中连接数应根据负载和数据库容量测试",
+          "max_connections 越大就保证请求延迟更低"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。合理连接池容量应按实际并发、资源和查询表现测试；过多后端可能加剧竞争。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-130",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-connection-pooling",
+    "subtopic": "postgresql-connection-pooling",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-connection-pooling"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "应用请求结束后仍长时间占用连接，哪些改进值得实施？",
+    "explanation": "正确答案 A、B、C。连接/事务生命周期管理和监控通常比提高连接上限更直接。",
+    "misconceptions": [
+      "认为扩容连接池可以修复连接泄漏和长事务。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确保异常路径也能释放连接",
+          "避免事务跨网络调用或人工等待长期打开",
+          "监控 idle in transaction 和池中连接借用时间",
+          "通过不停提高连接上限掩盖泄漏"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。连接/事务生命周期管理和监控通常比提高连接上限更直接。"
+      }
+    },
+    "knowledgeId": "postgresql-connection-pooling",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Connection Management; PgBouncer; Pool Modes",
+      "relatedMaterials": [
+        "pg-doc-connections",
+        "pg-doc-pgbouncer",
+        "pg-doc-monitoring"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-131",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 定期 VACUUM 的一个主要原因是什么？",
+    "explanation": "正确答案 A。MVCC 下旧行版本不会总在 UPDATE/DELETE 时立刻物理移除；VACUUM 帮助回收可复用空间、更新可见性信息并避免事务 ID 风险。",
+    "misconceptions": [
+      "认为 UPDATE/DELETE 后的旧版本会立即从文件中物理消失。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "回收或复用 UPDATE/DELETE 产生的死元组空间，并维护可见性相关信息",
+          "永久删除所有活跃行",
+          "自动创建每个字段的索引",
+          "取代 WAL 崩溃恢复"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。MVCC 下旧行版本不会总在 UPDATE/DELETE 时立刻物理移除；VACUUM 帮助回收可复用空间、更新可见性信息并避免事务 ID 风险。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-132",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 的 autovacuum 主要承担什么职责？",
+    "explanation": "正确答案 A。Autovacuum 自动执行表清理和统计信息维护；具体触发与性能需结合负载、表变化和配置观察。",
+    "misconceptions": [
+      "认为 autovacuum 与查询规划和死元组维护无关。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "根据阈值自动运行维护任务，包括 vacuum/analyze 等",
+          "自动将所有表转换为分区表",
+          "只负责创建新用户",
+          "永久关闭统计信息收集"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Autovacuum 自动执行表清理和统计信息维护；具体触发与性能需结合负载、表变化和配置观察。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-133",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "`VACUUM ANALYZE` 组合主要做什么？",
+    "explanation": "正确答案 A。VACUUM 和 ANALYZE 分别处理日常清理与统计信息；组合使用可同时维护表及规划器数据。",
+    "misconceptions": [
+      "把 VACUUM ANALYZE 当成重新加载数据的工具。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "清理可回收的死元组并更新规划器统计信息",
+          "清空全部表内容后重建数据库",
+          "只恢复被 DROP 的表",
+          "只增加 max_connections"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。VACUUM 和 ANALYZE 分别处理日常清理与统计信息；组合使用可同时维护表及规划器数据。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-134",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "一个更新频繁的表出现大量 dead tuples，哪些动作合理？",
+    "explanation": "正确答案 A、B、C。需确认清理是否运行及是否受旧快照或配置制约；关闭 autovacuum 会带来空间和事务 ID 风险。",
+    "misconceptions": [
+      "将关闭自动维护当作解决表膨胀的默认方法。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查看表统计和 autovacuum 最近执行信息",
+          "检查长事务或旧快照是否阻止清理",
+          "分析 autovacuum 阈值、成本参数与 I/O 压力",
+          "直接永久关闭 autovacuum"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。需确认清理是否运行及是否受旧快照或配置制约；关闭 autovacuum 会带来空间和事务 ID 风险。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-135",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "普通 VACUUM 与 VACUUM FULL 的关键区别有哪些？",
+    "explanation": "正确答案 A、B、C。普通 VACUUM 和 VACUUM FULL 的空间回收与锁代价不同；VACUUM 也不能在任意事务块内运行。",
+    "misconceptions": [
+      "认为普通 VACUUM 总会缩小操作系统看到的文件，且 FULL 无明显锁影响。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "普通 VACUUM 通常让空间供表内部重用，不保证归还给操作系统",
+          "VACUUM FULL 重写表并可归还更多空间",
+          "VACUUM FULL 需要更强锁并可能阻塞并发访问",
+          "两者都可在任意事务块内无条件运行"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。普通 VACUUM 和 VACUUM FULL 的空间回收与锁代价不同；VACUUM 也不能在任意事务块内运行。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-136",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "VACUUM 运行正常但数据目录占用没有明显下降，哪些解释合理？",
+    "explanation": "正确答案 A、B、C。空间复用与归还给文件系统不同，是否使用 VACUUM FULL 还需权衡独占锁、重写成本和维护窗口。",
+    "misconceptions": [
+      "将文件系统空间不下降直接等同于 VACUUM 失败。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "普通 VACUUM 释放的空间可能留给该表以后复用",
+          "部分膨胀/碎片仍需根据表和索引状态分析",
+          "空间占用不下降不一定意味着 VACUUM 完全无效",
+          "立刻执行 VACUUM FULL 一定是最低风险选择"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。空间复用与归还给文件系统不同，是否使用 VACUUM FULL 还需权衡独占锁、重写成本和维护窗口。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-137",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为什么 PostgreSQL 需要防止 transaction ID wraparound？",
+    "explanation": "正确答案 A、B、D。防止事务 ID 回卷是 PostgreSQL 的重要维护任务；需要监测冻结年龄和 autovacuum 状态。",
+    "misconceptions": [
+      "认为 transaction ID wraparound 只是统计报表中的无关告警。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过旧事务 ID 最终会危及数据可见性和数据库正确性",
+          "autovacuum 可参与冻结旧事务 ID 的维护",
+          "即使表很久不修改也永远不需要关注",
+          "长事务和维护积压可能增加风险"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。防止事务 ID 回卷是 PostgreSQL 的重要维护任务；需要监测冻结年龄和 autovacuum 状态。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-138",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "高写入表的 autovacuum 追不上更新速率，哪些措施应评估？",
+    "explanation": "正确答案 A、B、C。按表负载调优清理并消除旧快照等阻碍，同时验证 I/O 和稳定性；一刀切关闭自动维护很危险。",
+    "misconceptions": [
+      "用关闭维护来解决维护任务追不上写入的问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提高相关表维护频率/调整适合的 autovacuum 阈值",
+          "检查长事务、复制槽与旧快照对清理的影响",
+          "观测 I/O、死元组、统计信息与表大小趋势",
+          "不调查原因就将全部 autovacuum 设置永久关闭"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。按表负载调优清理并消除旧快照等阻碍，同时验证 I/O 和稳定性；一刀切关闭自动维护很危险。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-139",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "怀疑一张大表发生膨胀，哪些证据应该结合查看？",
+    "explanation": "正确答案 A、B、C。膨胀判断需要结合死元组估计、对象大小、维护与事务行为；单看逻辑行数不足以量化空间问题。",
+    "misconceptions": [
+      "把逻辑行数视为物理磁盘占用的精确替代指标。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "估计死元组和表统计信息",
+          "比较表/索引占用、写入频率和维护历史",
+          "检查长时间事务及 vacuum 进度/延迟",
+          "只看表的逻辑行数就能准确判断磁盘膨胀"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。膨胀判断需要结合死元组估计、对象大小、维护与事务行为；单看逻辑行数不足以量化空间问题。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-140",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-vacuum-bloat",
+    "subtopic": "postgresql-vacuum-bloat",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-vacuum-bloat"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "选择是否在维护窗口执行 VACUUM FULL，哪些权衡重要？",
+    "explanation": "正确答案 A、B、C。VACUUM FULL 可能释放空间但需要重写并获取强锁；是否采用取决于紧迫性、空间与维护窗口。",
+    "misconceptions": [
+      "把 VACUUM FULL 认为是无锁且无成本的常规清理。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可回收更多文件系统空间但需要重写表",
+          "更强的锁可能阻塞并发访问",
+          "要评估磁盘临时空间、执行时间和业务窗口",
+          "它与普通 VACUUM 具有相同锁和资源成本"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。VACUUM FULL 可能释放空间但需要重写并获取强锁；是否采用取决于紧迫性、空间与维护窗口。"
+      }
+    },
+    "knowledgeId": "postgresql-vacuum-bloat",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Disk, Storage and Vacuum; Hour 5: Autovacuum and Transaction ID Wraparound",
+      "relatedMaterials": [
+        "pg-doc-vacuum",
+        "pg-doc-monitoring",
+        "pg-doc-config"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-141",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 原生分区表中，哪种分区策略适合按照日期区间划分数据？",
+    "explanation": "正确答案 A。RANGE 分区依据有序范围划分数据，常用于日期或数值区间。",
+    "misconceptions": [
+      "混淆范围分区与基于取值列表或哈希的分区。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "RANGE",
+          "LIST",
+          "HASH",
+          "随机分区"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。RANGE 分区依据有序范围划分数据，常用于日期或数值区间。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-142",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 分区表的分区裁剪主要依赖什么？",
+    "explanation": "正确答案 A。规划器/执行器可根据分区键谓词排除不可能匹配的分区。查询条件是否可识别以及边界设计会影响裁剪。",
+    "misconceptions": [
+      "认为采用分区后所有查询自动跳过未涉及数据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "查询谓词与分区边界之间可证明的关系",
+          "每次查询都手动列出所有分区表名",
+          "为每个分区创建完全相同的任意索引",
+          "客户端缓存最近一次查询结果"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。规划器/执行器可根据分区键谓词排除不可能匹配的分区。查询条件是否可识别以及边界设计会影响裁剪。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-143",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "将按月分区的订单表查询最近一周数据时，哪些条件有助于分区裁剪？",
+    "explanation": "正确答案 A、B、C。有效裁剪依赖查询谓词与分区定义，并应通过执行计划验证。",
+    "misconceptions": [
+      "认为表已分区就不需要过滤条件。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过滤条件引用分区键且边界能对应到目标月份/日期",
+          "避免对分区键采用无法被规划器有效利用的表达式",
+          "确认 EXPLAIN 中计划是否排除了无关分区",
+          "查询时不指定任何过滤条件"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。有效裁剪依赖查询谓词与分区定义，并应通过执行计划验证。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-144",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "大表需要按时间归档，且旧月份数据会定期过期，哪些设计合理？",
+    "explanation": "正确答案 A、B、C。分区能简化部分生命周期管理，但需要明确分区创建、约束与数据装载流程。",
+    "misconceptions": [
+      "认为声明了分区键后，未来所有分区都会自动出现。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "评估 RANGE 分区按时间管理数据的适用性",
+          "定义创建未来分区、装载、校验与归档/删除流程",
+          "确保约束与主键设计满足分区键相关限制",
+          "假设分区会自动为未来每个月创建所有分区"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分区能简化部分生命周期管理，但需要明确分区创建、约束与数据装载流程。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-145",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 RANGE、LIST 和 HASH 分区，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。三种原生策略都依赖指定分区键和相应分区定义，但划分规则不同。",
+    "misconceptions": [
+      "认为分区策略无需定义分区键或分区边界。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "RANGE 根据范围边界划分",
+          "LIST 根据明确列出的离散值划分",
+          "HASH 按哈希结果分散数据",
+          "三者都可以在不定义任何分区键的情况下自动工作"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。三种原生策略都依赖指定分区键和相应分区定义，但划分规则不同。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-146",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "新分区表查询比预期慢，哪些调查方向有帮助？",
+    "explanation": "正确答案 A、B、C。分区本身不保证性能提升；需确认裁剪行为、分区规模与索引/统计信息。",
+    "misconceptions": [
+      "认为分区越多一定更快。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认谓词是否能触发分区裁剪",
+          "检查是否仍扫描大量分区或每个分区的数据",
+          "检查各分区大小、索引和统计信息",
+          "仅增加分区数量而不检查查询计划"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分区本身不保证性能提升；需确认裁剪行为、分区规模与索引/统计信息。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-147",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为批量导入新的月份数据设计分区流程，哪些做法合理？",
+    "explanation": "正确答案 A、B、C。需要为输入键范围和分区可用性设计明确流程；没有匹配分区时写入可能失败，不能依赖静默丢弃。",
+    "misconceptions": [
+      "认为找不到匹配分区时数据库会安全忽略输入行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提前创建目标分区或明确使用适当的默认分区策略",
+          "对输入数据的分区键范围做校验",
+          "在切换/附加分区时确保数据满足边界约束",
+          "默认 PostgreSQL 会悄悄丢弃所有没有匹配分区的行"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。需要为输入键范围和分区可用性设计明确流程；没有匹配分区时写入可能失败，不能依赖静默丢弃。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-148",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "分区设计中，为什么必须考虑唯一约束和主键的适用限制？",
+    "explanation": "正确答案 A、B、C。PostgreSQL 分区表的唯一约束存在分区键相关限制；必须按文档设计键与业务唯一性。",
+    "misconceptions": [
+      "把各分区单独唯一当作任意键全表唯一的保证。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分区表上的唯一约束通常需要包含所有分区键列",
+          "约束设计会影响能否确保跨分区全局唯一性",
+          "不能简单假设每个分区单独唯一就等于全表业务键唯一",
+          "分区不会改变任何约束设计考虑"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PostgreSQL 分区表的唯一约束存在分区键相关限制；必须按文档设计键与业务唯一性。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-149",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "什么时候分区表可能不值得引入？",
+    "explanation": "正确答案 A、B、C。分区会引入对象和维护复杂度，应基于裁剪、生命周期和查询模式评估。",
+    "misconceptions": [
+      "把分区当成所有大型表都必须使用的默认方案。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数据量较小，或查询/生命周期没有清晰的分区收益",
+          "分区数量和自动化维护复杂度大于预期收益",
+          "分区键与主流查询模式不匹配",
+          "所有大表无条件都必须分区"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分区会引入对象和维护复杂度，应基于裁剪、生命周期和查询模式评估。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-150",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-partitioning",
+    "subtopic": "postgresql-partitioning",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-partitioning"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某次 DROP/DETACH 分区后业务数据缺失，哪些步骤值得执行？",
+    "explanation": "正确答案 A、B、C。分区移除操作可能移除对应数据对象或使其脱离父表；恢复与重挂载要按实际操作和边界验证。",
+    "misconceptions": [
+      "认为删除分区会自动将其数据搬到其他分区。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "核对实际分区边界及 detach/drop 操作记录",
+          "检查被移除分区是否包含预期数据范围",
+          "依赖备份/恢复流程恢复所需数据并重新核对",
+          "假定 DROP PARTITION 会自动将数据转移到相邻分区"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分区移除操作可能移除对应数据对象或使其脱离父表；恢复与重挂载要按实际操作和边界验证。"
+      }
+    },
+    "knowledgeId": "postgresql-partitioning",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 3: Table Partitioning; Managing Partitions",
+      "relatedMaterials": [
+        "pg-doc-partitioning",
+        "pg-doc-constraints",
+        "pg-doc-queries"
+      ]
+    }
+  }
+]
