@@ -259,6 +259,7 @@ flowchart TD
 - [QUERY_HISTORY Account Usage view](https://docs.snowflake.com/en/sql-reference/account-usage/query_history) — `docs-query-history-sql-view`
 - [Cloning considerations](https://docs.snowflake.com/en/user-guide/object-clone) — `docs-snowflake-cloning`
 - [Exploring query execution times](https://docs.snowflake.com/en/user-guide/performance-query-exploring) — `docs-performance-query-exploring`
+- [Optimizing query performance](https://docs.snowflake.com/en/user-guide/performance-query-options) — `docs-performance-query-options`
 - [Cost controls for warehouses](https://docs.snowflake.com/en/user-guide/cost-controlling-controls) — `docs-cost-controls`
 - [Optimizing the warehouse cache](https://docs.snowflake.com/en/user-guide/performance-query-warehouse-cache) — `docs-warehouse-cache`
 - [Persisted query results](https://docs.snowflake.com/en/user-guide/querying-persisted-results) — `docs-persisted-query-results`
