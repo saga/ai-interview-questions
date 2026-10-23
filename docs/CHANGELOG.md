@@ -3568,3 +3568,12 @@ assemble 能直接落盘，问题被留在池子里而不是暴露在生成时�
 - 新增覆盖矩阵 `docs/snowflake-postgres-full-day-200.md`，同步课程路线、主 README 与 `skills/snowflake-curriculum/SKILL.md` 的跨数据库适配规则。
 - 修正一个可能触发选项前缀重复静态检查的 NULL 谓词干扰项；确认本批 200 道题 ID、题干唯一，答案索引、知识点和文档来源可解析。
 - 未运行 TypeScript、Vitest、完整全库题目门禁或 Vite build。
+
+
+## 2026-10-23 — Snowflake course 下新增 PostgreSQL 原生数据库工程模块
+
+- 根据 `Snowflake-Labs/postgres-full-day-training` 六个小时的课件和 SQL 材料，新增 20 个 PostgreSQL 原生知识节点与 200 道题（`sf-pg-001`–`sf-pg-200`）。
+- 题目仍归属 `courseId: "snowflake"`，但单独使用 `postgresql` 子主题；明确区分 PostgreSQL 机制和 Snowflake 产品能力。
+- 覆盖 psql/Schema/类型/权限/CRUD/JOIN/JSONB/窗口函数/事务/MVCC/锁/备份/PITR/WAL/复制/PgBouncer/VACUUM/分区/监控/内存/EXPLAIN/索引/全文搜索/PostGIS/pgvector。
+- 新增 200 题覆盖矩阵与 PostgreSQL 18 官方文档映射，更新学习体系主题数和学习路线；修正 PostgreSQL 15 起支持 `UNIQUE NULLS NOT DISTINCT` 的版本说明。
+- 静态预检：100 道 easy、100 道 medium；59 单选、141 多选；题目结构与知识点引用有效。未运行 TypeScript、Vitest、完整题库 CLI 门禁或 build。
