@@ -1,0 +1,2719 @@
+[
+  {
+    "id": "sf-pg-001",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 常见连接字符串 `postgresql://app_user:secret@db.example.com:5432/orders` 中，`5432` 通常表示什么？",
+    "explanation": "正确答案 B。连接 URI 中的端口用于指定服务器监听端口；5432 是 PostgreSQL 的默认端口，但部署可使用其他端口。",
+    "misconceptions": [
+      "把连接 URI 的端口误认为数据库或 Schema 名称。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "数据库名称",
+          "服务器监听端口",
+          "客户端进程编号",
+          "Schema 名称"
+        ],
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 B。连接 URI 中的端口用于指定服务器监听端口；5432 是 PostgreSQL 的默认端口，但部署可使用其他端口。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-002",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在交互式 `psql` 中，哪个命令用于列出当前连接数据库中的表？",
+    "explanation": "正确答案 A。`\\dt` 是 psql 元命令，用于列出可见的表；它不是提交给服务器执行的 SQL。",
+    "misconceptions": [
+      "混淆 psql 元命令与 SQL 语法。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`\\dt`",
+          "`SHOW TABLES`",
+          "`LIST TABLES`",
+          "`\\dbtables`"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。`\\dt` 是 psql 元命令，用于列出可见的表；它不是提交给服务器执行的 SQL。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-003",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "需要确认当前连接的是哪个数据库和用户，哪个 SQL 组合最直接？",
+    "explanation": "正确答案 A。`current_database()` 和 `current_user` 可分别查看当前数据库与当前有效数据库用户。",
+    "misconceptions": [
+      "认为客户端配置文件中写的连接信息就足以证明当前实际会话身份。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`SELECT current_database(), current_user;`",
+          "`SELECT database_name(), login_name();`",
+          "`SHOW TABLES;`",
+          "`SELECT pg_cancel_backend(pg_backend_pid());`"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。`current_database()` 和 `current_user` 可分别查看当前数据库与当前有效数据库用户。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-004",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "应用无法连接 PostgreSQL，哪些检查适合作为初步诊断？",
+    "explanation": "正确答案 A、B、C。连接故障需要从地址、网络可达性、服务状态和认证信息逐层检查；索引影响查询执行而不是初始连接。",
+    "misconceptions": [
+      "把连接建立失败当作 SQL 查询性能问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "核对主机名、端口和目标数据库",
+          "确认服务器进程/服务是否可达并监听目标端口",
+          "检查用户凭据、认证配置与网络规则",
+          "先对业务表创建索引"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。连接故障需要从地址、网络可达性、服务状态和认证信息逐层检查；索引影响查询执行而不是初始连接。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-005",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 PostgreSQL 数据库和客户端工具，哪些说法正确？",
+    "explanation": "正确答案 A、B、D。数据库服务端与客户端是不同组件；客户端可以连接本地或远程服务。安装客户端不等于部署了服务器。",
+    "misconceptions": [
+      "把客户端安装与数据库服务器运行混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PostgreSQL 服务器负责管理数据并执行 SQL",
+          "psql 是可以连接 PostgreSQL 服务的命令行客户端",
+          "安装 psql 客户端就代表本机一定运行着数据库服务器",
+          "图形客户端和 psql 都通过连接协议访问服务器"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。数据库服务端与客户端是不同组件；客户端可以连接本地或远程服务。安装客户端不等于部署了服务器。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-006",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "一个实例中有 `orders` 和 `analytics` 两个数据库。哪些操作可以帮助确认应用是否连对目标？",
+    "explanation": "正确答案 A、B、D。目标数据库属于连接上下文，应通过 URI 和服务端会话信息共同核实；Schema 是数据库内部的对象命名空间。",
+    "misconceptions": [
+      "将数据库与 Schema 视为同一级对象。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在会话中查询 `current_database()`",
+          "核对连接字符串中的 database 部分",
+          "把当前 Schema 名当作数据库名而不检查连接",
+          "在连接成功后执行一个有意设计的只读健康检查"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。目标数据库属于连接上下文，应通过 URI 和服务端会话信息共同核实；Schema 是数据库内部的对象命名空间。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-007",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "下列关于 psql 命令的描述哪些正确？",
+    "explanation": "正确答案 A、B、C。psql 元命令由 psql 本身实现，不是 PostgreSQL 服务器端 SQL；其他客户端不必支持这些命令。",
+    "misconceptions": [
+      "认为 psql 的反斜杠元命令是 SQL 标准的一部分。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "以反斜杠开头的常见命令（如 `\\conninfo`）由 psql 客户端处理",
+          "SQL 语句通常以分号结束后提交执行",
+          "`\\q` 用于退出 psql",
+          "任何 PostgreSQL 客户端都必须支持 `\\dt`"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。psql 元命令由 psql 本身实现，不是 PostgreSQL 服务器端 SQL；其他客户端不必支持这些命令。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-008",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "为生产应用选择连接方式时，哪些因素值得考虑？",
+    "explanation": "正确答案 A、B、C。连接方案需满足身份、网络、安全与可靠性要求；字符串外观不是合理的架构决策依据。",
+    "misconceptions": [
+      "把连接配置视为无需安全和故障策略的静态字符串。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "网络路径与 TLS/认证要求",
+          "连接超时和应用重试策略",
+          "凭据保管与轮换",
+          "只根据主机名长度选择服务部署位置"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。连接方案需满足身份、网络、安全与可靠性要求；字符串外观不是合理的架构决策依据。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-009",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "同一套脚本在开发机连到正确数据库、生产环境却访问了错误对象。哪些措施有帮助？",
+    "explanation": "正确答案 A、B、D。显式上下文、最小必要日志和启动校验能够减少错误环境操作；不要记录密码等秘密信息。",
+    "misconceptions": [
+      "假设环境变量与当前会话上下文永远保持一致。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在启动日志中安全记录目标主机、数据库和角色等非秘密上下文",
+          "关键 SQL 尽量使用明确限定的对象名称",
+          "依赖终端之前设置的环境变量而不验证最终连接",
+          "提供可读的启动期连接检查并在目标不符时失败"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。显式上下文、最小必要日志和启动校验能够减少错误环境操作；不要记录密码等秘密信息。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-010",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-basics-connection",
+    "subtopic": "postgresql-basics-connection",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-basics-connection"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "小团队要部署 PostgreSQL，哪些条件有助于比较自管服务与托管服务？",
+    "explanation": "正确答案 A、B、C。托管与自管的选择涉及运维能力、控制要求、可靠性和总成本，不能只看首次安装步骤。",
+    "misconceptions": [
+      "把初始安装的简易程度当作长期运维方案的唯一标准。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "是否具备备份、升级、监控与故障恢复运维能力",
+          "对自定义配置/扩展和控制权的需求",
+          "服务等级、责任边界与可接受成本",
+          "只比较初次启动数据库需要几条命令"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。托管与自管的选择涉及运维能力、控制要求、可靠性和总成本，不能只看首次安装步骤。"
+      }
+    },
+    "knowledgeId": "postgresql-basics-connection",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Connecting to PostgreSQL; psql Introduction; Essential psql Commands",
+      "relatedMaterials": [
+        "pg-doc-tutorial",
+        "pg-doc-setup",
+        "pg-doc-psql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-011",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 中 `sales.orders` 通常表示什么？",
+    "explanation": "正确答案 A。两段式对象名称通常表示 schema.object；数据库名属于连接上下文，需通过连接选择目标数据库。",
+    "misconceptions": [
+      "把 Schema 与数据库实例或角色混淆。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`sales` Schema 中名为 `orders` 的对象",
+          "名为 `sales` 的数据库中的 `orders` 数据库",
+          "名为 `sales` 的角色拥有的所有表",
+          "数据库服务器 `sales` 上的 `orders` 端口"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。两段式对象名称通常表示 schema.object；数据库名属于连接上下文，需通过连接选择目标数据库。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-012",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "`search_path` 的主要作用是什么？",
+    "explanation": "正确答案 A。search_path 定义未限定对象名解析的 Schema 搜索顺序，并会影响对象引用的含义。",
+    "misconceptions": [
+      "认为所有未限定对象名都固定解析到 public。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "决定未限定对象名按哪些 Schema 顺序解析",
+          "决定 WAL 写入哪个磁盘",
+          "控制 SQL 语句最长可运行几秒",
+          "将不同数据库的表自动合并"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。search_path 定义未限定对象名解析的 Schema 搜索顺序，并会影响对象引用的含义。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-013",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "在 SQL 中需要明确引用 `reporting.monthly_sales` 时，哪种写法最明确？",
+    "explanation": "正确答案 A。使用 schema-qualified 名称可以减少对 search_path 的依赖；未限定名称会按当前路径解析。",
+    "misconceptions": [
+      "依赖会话默认 search_path，而忽略对象限定名的作用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "`SELECT * FROM reporting.monthly_sales;`",
+          "`SELECT * FROM monthly_sales;`",
+          "`SELECT * FROM current_schema.monthly_sales;`（作为普通标识符）",
+          "`SELECT * FROM reporting:monthly_sales;`"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。使用 schema-qualified 名称可以减少对 search_path 的依赖；未限定名称会按当前路径解析。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-014",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "团队希望应用只能在 `app_data` 中创建表，哪些做法合理？",
+    "explanation": "正确答案 A、B、D。Schema 的 CREATE/USAGE 权限、search_path 与对象限定名共同影响可维护性和安全；超级用户不应作为应用默认身份。",
+    "misconceptions": [
+      "认为 search_path 只是风格配置，不会影响对象解析或安全。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通过角色授权控制允许 CREATE 的 Schema",
+          "为应用设置清晰的 search_path，并防止不可信用户在高优先级 Schema 创建对象",
+          "把应用角色授予超级用户以避免权限配置",
+          "使用完全限定对象名减少解析歧义"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。Schema 的 CREATE/USAGE 权限、search_path 与对象限定名共同影响可维护性和安全；超级用户不应作为应用默认身份。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-015",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "以下关于 PostgreSQL 的数据库与 Schema，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。Schema 是数据库内部的逻辑命名空间；跨数据库访问需要单独连接或额外的跨数据库机制。",
+    "misconceptions": [
+      "把 Schema 误认为独立数据库或服务器。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单个数据库可以包含多个 Schema",
+          "同一实例中的另一个数据库不能仅凭 `schema.table` 名称直接引用",
+          "Schema 可用于分组和管理对象权限",
+          "每个 Schema 必须对应一个独立服务器实例"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Schema 是数据库内部的逻辑命名空间；跨数据库访问需要单独连接或额外的跨数据库机制。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-016",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "脚本创建了 `public.customer`，但查询 `customer` 却返回另一个对象。哪些情况可能导致此现象？",
+    "explanation": "正确答案 A、B、C。未限定名称会按照 search_path 解析；不同会话配置或同名对象都可能造成差异。",
+    "misconceptions": [
+      "假设同名对象只有一个，或认为限定名不会影响解析。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "search_path 中更靠前的 Schema 有同名对象",
+          "脚本和查询连接使用了不同的 search_path",
+          "完全限定名可以验证预期对象",
+          "PostgreSQL 会忽略所有 schema-qualified 名称"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。未限定名称会按照 search_path 解析；不同会话配置或同名对象都可能造成差异。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-017",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "关于带引号的 PostgreSQL 标识符，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。PostgreSQL 将未加引号的标识符折叠为小写；双引号允许大小写敏感标识符。字符串值通常使用单引号。",
+    "misconceptions": [
+      "认为带引号标识符和字符串字面量的语义相同。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "未加引号的标识符会折叠为小写",
+          "双引号标识符可以保留大小写差异",
+          "若创建了带引号的 `\"OrderItems\"`，引用时必须遵守其大小写",
+          "字符串字面量使用单引号与标识符使用双引号是同一语法"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PostgreSQL 将未加引号的标识符折叠为小写；双引号允许大小写敏感标识符。字符串值通常使用单引号。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-018",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为支持测试、预生产、生产三套环境，哪些实践合理？",
+    "explanation": "正确答案 A、B、D。可重复的迁移和上下文校验有助于避免跨环境误操作；个人客户端配置不能替代部署控制。",
+    "misconceptions": [
+      "把开发者本机连接配置当成可靠的生产环境隔离策略。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用明确的 Schema/对象命名与迁移脚本",
+          "验证目标数据库和 search_path 再执行 DDL/DML",
+          "仅靠个人 psql 默认配置区分环境",
+          "在部署中记录迁移版本和执行上下文"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。可重复的迁移和上下文校验有助于避免跨环境误操作；个人客户端配置不能替代部署控制。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-019",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "角色能连接数据库但执行 `CREATE TABLE reporting.t` 失败，可能需要什么权限？",
+    "explanation": "正确答案 A、C。CONNECT 仅允许连接数据库；创建 schema 内对象还需要相应 Schema 权限。",
+    "misconceptions": [
+      "认为数据库 CONNECT 权限就包含所有 Schema 的创建权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "相应 Schema 的 CREATE 权限",
+          "仅有数据库 CONNECT 就必定可以在任何 Schema 建表",
+          "可能还需要 USAGE 等相关权限来访问命名空间",
+          "把表所有权授给任意人而不调查失败原因"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。CONNECT 仅允许连接数据库；创建 schema 内对象还需要相应 Schema 权限。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-020",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-schemas-search-path",
+    "subtopic": "postgresql-schemas-search-path",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-schemas-search-path"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "何时优先用完全限定对象名，而不是依赖 search_path？",
+    "explanation": "正确答案 A、B、C。完全限定名称通常更利于关键脚本的确定性与审查；search_path 仍可在受控会话中合理使用。",
+    "misconceptions": [
+      "把明确对象引用的建议绝对化为禁止 search_path。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "迁移与生产批处理必须明确操作对象时",
+          "多 Schema 存在同名对象时",
+          "希望 SQL 审查者能直接看出对象归属时",
+          "任何场景都禁止使用 search_path"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。完全限定名称通常更利于关键脚本的确定性与审查；search_path 仍可在受控会话中合理使用。"
+      }
+    },
+    "knowledgeId": "postgresql-schemas-search-path",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Schemas; Schema Search Path; Database Objects",
+      "relatedMaterials": [
+        "pg-doc-ddl-schema",
+        "pg-doc-privileges",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-021",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在 PostgreSQL 中，需要精确存储货币金额并执行十进制运算，通常应优先考虑哪种类型？",
+    "explanation": "正确答案 A。NUMERIC/DECIMAL 提供精确十进制运算，适合需要精确数值语义的金额。精度和 scale 应按业务定义。",
+    "misconceptions": [
+      "将浮点近似数值用于必须精确的金额计算。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "NUMERIC/DECIMAL",
+          "DOUBLE PRECISION 且不做误差评估",
+          "BOOLEAN",
+          "BYTEA"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。NUMERIC/DECIMAL 提供精确十进制运算，适合需要精确数值语义的金额。精度和 scale 应按业务定义。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-022",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "若要保存代表真实时间点且输入可能来自不同时区的事件时间，哪种设计通常更合适？",
+    "explanation": "正确答案 A。TIMESTAMPTZ 将输入时间点规范化为内部时间值，并在会话时区下显示；若需保存来源时区须单独记录。",
+    "misconceptions": [
+      "认为 TIMESTAMPTZ 会永久保存输入时区名称。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "TIMESTAMPTZ 并统一时区处理规范",
+          "TIME WITHOUT TIME ZONE",
+          "仅用 VARCHAR 且不验证格式",
+          "整数列中保存本地钟表文本"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。TIMESTAMPTZ 将输入时间点规范化为内部时间值，并在会话时区下显示；若需保存来源时区须单独记录。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-023",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "`CHECK (quantity > 0)` 约束的主要作用是什么？",
+    "explanation": "正确答案 A。CHECK 用于约束行值必须满足表达式；它不负责自动修正值或保证跨行唯一。",
+    "misconceptions": [
+      "把 CHECK 约束当作自动数据清洗规则。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "拒绝违反该条件的插入或更新",
+          "自动把负数修改为 0",
+          "为 quantity 自动创建索引",
+          "保证 quantity 在全表唯一"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。CHECK 用于约束行值必须满足表达式；它不负责自动修正值或保证跨行唯一。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-024",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "订单包含可为空的 `customer_id`，但一旦提供必须引用已存在客户。哪些设计符合这种语义？",
+    "explanation": "正确答案 A、C。外键允许可选引用列为 NULL；非 NULL 值必须引用符合条件的唯一键。",
+    "misconceptions": [
+      "把可选关系错误地设计成必填，或完全依赖前端校验。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用允许 NULL 的列并声明 FOREIGN KEY",
+          "将 customer_id 定义为 NOT NULL 并强制所有订单必须关联客户",
+          "确保被引用客户键有 PRIMARY KEY 或 UNIQUE 约束",
+          "仅在前端下拉列表校验，不对数据库做约束"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。外键允许可选引用列为 NULL；非 NULL 值必须引用符合条件的唯一键。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-025",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 UNIQUE 和 PRIMARY KEY，哪些表述正确？",
+    "explanation": "正确答案 A、B、C。主键唯一且非空；表只能有一个主键约束，但可声明多个唯一约束。PostgreSQL 18 有 NULLS NOT DISTINCT 等选项，需区分版本。",
+    "misconceptions": [
+      "认为 PRIMARY KEY 与 UNIQUE 的 NULL 和数量语义完全一致。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "PRIMARY KEY 同时表达唯一性和非空性",
+          "一个表只能声明一个 PRIMARY KEY 约束，但可有多个 UNIQUE 约束",
+          "UNIQUE 约束的 NULL 行为应结合 PostgreSQL 版本和约束选项理解",
+          "PRIMARY KEY 可默认允许多个 NULL 值"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。主键唯一且非空；表只能有一个主键约束，但可声明多个唯一约束。PostgreSQL 18 有 NULLS NOT DISTINCT 等选项，需区分版本。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-026",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "需要对金额按币种做汇总并避免精度问题，哪些设计合理？",
+    "explanation": "正确答案 A、B、D。精确金额类型、币种维度及数据约束能减少语义错误；不同币种不应未经转换直接混加。",
+    "misconceptions": [
+      "只要金额字段类型精确，就不需要定义币种和聚合口径。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "金额使用合适精度的 NUMERIC 类型",
+          "币种代码作为明确字段或维度纳入汇总口径",
+          "不进行币种转换就把所有金额直接相加",
+          "使用 CHECK/域类型或其他校验表达明确的取值规则"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。精确金额类型、币种维度及数据约束能减少语义错误；不同币种不应未经转换直接混加。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-027",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "PostgreSQL 的 NOT NULL 与 CHECK 约束分别负责什么？",
+    "explanation": "正确答案 A、B。NOT NULL 限制缺失值；CHECK 适合行级条件。唯一性和引用关系应使用适当的唯一/主键/外键机制。",
+    "misconceptions": [
+      "认为 CHECK 能普遍表达跨行唯一性和外键规则。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "NOT NULL 直接禁止列值为 NULL",
+          "CHECK 验证每行上的布尔条件是否满足约束要求",
+          "CHECK 可以被当成跨行唯一性约束的通用替代",
+          "两者都能直接替代外键引用完整性"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。NOT NULL 限制缺失值；CHECK 适合行级条件。唯一性和引用关系应使用适当的唯一/主键/外键机制。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-028",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "对于 `TIMESTAMP` 与 `TIMESTAMPTZ`，哪些说法较准确？",
+    "explanation": "正确答案 A、B、C。TIMESTAMPTZ 用于有时区解释的时间点并按会话时区显示；若要保留原始时区名称需单独存储。",
+    "misconceptions": [
+      "把时间点存储和原始时区名称留存混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "TIMESTAMP WITHOUT TIME ZONE 不携带时区语义",
+          "TIMESTAMPTZ 表示时间点，输入会按时区规则解释",
+          "客户端会话时区可能影响 TIMESTAMPTZ 的显示",
+          "TIMESTAMPTZ 自动记录输入字面量中的原始时区名称"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。TIMESTAMPTZ 用于有时区解释的时间点并按会话时区显示；若要保留原始时区名称需单独存储。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-029",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一张订单表出现了重复的 `order_number`，哪些做法可以从数据库层面防止该问题再次发生？",
+    "explanation": "正确答案 A、B、D。唯一约束由数据库在并发写入下强制执行。先查询再插入存在竞态，不能替代数据库唯一性约束。",
+    "misconceptions": [
+      "认为应用层预检查足以消除并发重复插入。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认业务键范围后建立 UNIQUE 约束或唯一索引",
+          "检查历史重复数据并在加约束前清理冲突",
+          "仅在应用先 SELECT 再 INSERT，不处理并发竞态",
+          "在写入路径处理唯一冲突并记录业务失败"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。唯一约束由数据库在并发写入下强制执行。先查询再插入存在竞态，不能替代数据库唯一性约束。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-030",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-types-constraints",
+    "subtopic": "postgresql-types-constraints",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-types-constraints"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "何时应考虑使用 PostgreSQL 的 ENUM、DOMAIN 或 CHECK 来限定字段取值？",
+    "explanation": "正确答案 A、B、C。ENUM、DOMAIN 和 CHECK 各有约束与演进成本，应依据变更频率、语义清晰度和部署流程选择。",
+    "misconceptions": [
+      "认为 ENUM 是所有分类字段最通用且没有演进成本的方案。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "取值集合或规则稳定且有明确的数据库约束价值时",
+          "希望 schema 明确表达数据契约并由数据库校验时",
+          "取值需要频繁由外部业务配置动态修改且改类型成本不合适时应评估替代方案",
+          "任何文本字段都必须定义 ENUM"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。ENUM、DOMAIN 和 CHECK 各有约束与演进成本，应依据变更频率、语义清晰度和部署流程选择。"
+      }
+    },
+    "knowledgeId": "postgresql-types-constraints",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Object and Data Types; Constraints; Date and Time",
+      "relatedMaterials": [
+        "pg-doc-data-types",
+        "pg-doc-constraints",
+        "pg-doc-ddl"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-031",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 中，哪个角色属性允许角色直接建立数据库连接并进行登录认证？",
+    "explanation": "正确答案 A。LOGIN 属性允许角色用于登录；其他属性授予不同管理或复制能力，并不等同于普通连接身份。",
+    "misconceptions": [
+      "把角色的管理属性误认为登录属性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "LOGIN",
+          "CREATEDB",
+          "REPLICATION",
+          "BYPASSRLS"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。LOGIN 属性允许角色用于登录；其他属性授予不同管理或复制能力，并不等同于普通连接身份。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-032",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "应用角色只需要查询某个表，哪种授权原则最合适？",
+    "explanation": "正确答案 A。最小权限减少凭据泄露或应用缺陷造成的影响范围。",
+    "misconceptions": [
+      "把高权限角色作为应用默认运行身份。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只授予完成查询所需的最小权限",
+          "把 SUPERUSER 授予应用以避免权限问题",
+          "把所有数据库对象所有权交给应用用户",
+          "关闭数据库认证"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。最小权限减少凭据泄露或应用缺陷造成的影响范围。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-033",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "`LOGIN`、`CONNECT` 和 `SELECT` 分别属于哪个层次的能力？",
+    "explanation": "正确答案 A。LOGIN 属于角色属性，CONNECT 是数据库权限，SELECT 是对象读取权限；它们不能相互替代。",
+    "misconceptions": [
+      "把登录、数据库连接和表读取当成同一种授权。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "角色登录属性、数据库连接权限、表读取权限",
+          "三个都是同一种表权限",
+          "三个都是操作系统用户属性",
+          "三个都由 search_path 决定"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。LOGIN 属于角色属性，CONNECT 是数据库权限，SELECT 是对象读取权限；它们不能相互替代。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-034",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "要允许角色 `analyst` 连接数据库并查询 `reporting.sales`，需要考虑哪些授权？",
+    "explanation": "正确答案 A、B、C。数据库连接、Schema 可访问性和表读取是不同层次的权限，需要按目标操作分别授权。",
+    "misconceptions": [
+      "认为任意一层的单个授权就能覆盖所有其他对象权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "数据库 CONNECT",
+          "Schema USAGE",
+          "目标表 SELECT",
+          "只能授予 CREATE ROLE 才能读取表"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。数据库连接、Schema 可访问性和表读取是不同层次的权限，需要按目标操作分别授权。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-035",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 PostgreSQL 的角色与用户，哪些描述正确？",
+    "explanation": "正确答案 A、B、C。PostgreSQL 统一以 role 表示用户和组；LOGIN 区分可登录角色，权限通过对象授权与角色成员关系管理。",
+    "misconceptions": [
+      "把数据库角色和操作系统用户账户视作一一对应。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用户可以建模为带 LOGIN 属性的角色",
+          "角色可拥有对象并获得对象权限",
+          "角色成员关系可用于继承或切换可用权限，具体行为受成员关系选项影响",
+          "每个角色都必须绑定一个独立操作系统账号"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PostgreSQL 统一以 role 表示用户和组；LOGIN 区分可登录角色，权限通过对象授权与角色成员关系管理。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-036",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "新建的表没有自动授予应用只读权限，哪些机制有助于解决后续对象授权问题？",
+    "explanation": "正确答案 A、B、C。默认权限影响由相应角色未来创建的对象，通常不回溯给已有对象。Schema USAGE 不等同于表 SELECT。",
+    "misconceptions": [
+      "认为 Schema USAGE 会自动传递到所有表的读取权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查对象默认权限（ALTER DEFAULT PRIVILEGES）",
+          "确保默认权限由创建对象的正确角色配置",
+          "回头对现有对象执行所需 GRANT，因为默认权限不会自动追溯历史对象",
+          "假设向 schema 授予 USAGE 会自动授予所有现有和未来表的 SELECT"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。默认权限影响由相应角色未来创建的对象，通常不回溯给已有对象。Schema USAGE 不等同于表 SELECT。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-037",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "下列哪些说法正确描述 PostgreSQL 的对象权限？",
+    "explanation": "正确答案 A、B、C。PostgreSQL 区分不同对象类型与操作的权限；连接权限不会自动授予表、序列或函数的操作权限。",
+    "misconceptions": [
+      "把数据库连接授权当成对象级管理授权。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "表 SELECT 与表 INSERT/UPDATE/DELETE 是不同权限",
+          "序列可能需要单独权限，不能默认认为表 INSERT 足够",
+          "函数/过程存在相应的 EXECUTE 权限",
+          "一旦有数据库 CONNECT 就可以修改其中任何对象"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PostgreSQL 区分不同对象类型与操作的权限；连接权限不会自动授予表、序列或函数的操作权限。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-038",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "生产应用需要执行存储过程但不应直接修改底层表，哪些方案可评估？",
+    "explanation": "正确答案 A、B、D。通过受控例程封装操作可减少直接权限，但 SECURITY DEFINER、动态 SQL 与 search_path 需要特别审计。",
+    "misconceptions": [
+      "认为封装为函数后就自动安全，不需要检查其执行权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只授予必要的函数/过程执行权限，并审查其安全属性与所有者权限",
+          "确认过程的权限语义和可能的 SECURITY DEFINER 使用风险",
+          "将应用授予所有底层表的全部修改和删除权限",
+          "对输入参数、动态 SQL 和搜索路径执行安全审查"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。通过受控例程封装操作可减少直接权限，但 SECURITY DEFINER、动态 SQL 与 search_path 需要特别审计。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-039",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某个用户可以登录但查询表时报 permission denied，哪些证据优先核查？",
+    "explanation": "正确答案 A、B、C。权限问题应通过当前角色、授权链及对象引用定位；授予超级用户会扩大风险且不解决治理根因。",
+    "misconceptions": [
+      "通过超级用户绕过错误而不查授权设计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当前有效角色及成员关系",
+          "相关数据库/Schema/表的 GRANT",
+          "对象所有者、默认权限与对象名称解析",
+          "先将用户改为 SUPERUSER 作为永久修复"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。权限问题应通过当前角色、授权链及对象引用定位；授予超级用户会扩大风险且不解决治理根因。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-040",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-roles-privileges",
+    "subtopic": "postgresql-roles-privileges",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-roles-privileges"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为何不应让应用连接池使用数据库超级用户？",
+    "explanation": "正确答案 A、B、C。生产服务应使用专用的最小权限角色；超级用户权限会放大任何运行时缺陷的后果。",
+    "misconceptions": [
+      "把权限范围扩大误认为可靠性和 SQL 正确性保障。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "凭据泄露或 SQL 注入等缺陷的影响范围过大",
+          "应用通常只需要有限对象权限",
+          "职责分离便于审计和轮换凭据",
+          "超级用户能让所有 SQL 自动变得正确"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。生产服务应使用专用的最小权限角色；超级用户权限会放大任何运行时缺陷的后果。"
+      }
+    },
+    "knowledgeId": "postgresql-roles-privileges",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users and Permissions; Postgres Roles; Granting Privileges",
+      "relatedMaterials": [
+        "pg-doc-privileges",
+        "pg-doc-client-auth",
+        "pg-doc-security"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-041",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 的 `INSERT ... RETURNING id` 主要用于什么？",
+    "explanation": "正确答案 A。RETURNING 能返回被 INSERT、UPDATE 或 DELETE 实际影响行中的指定列，常用于获取生成的主键或核验结果。",
+    "misconceptions": [
+      "认为插入后必须额外执行一次查询才能得到新行内容。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "返回实际插入行的 id 等指定字段",
+          "返回数据库服务器版本",
+          "回滚刚插入的数据",
+          "列出当前角色的权限"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。RETURNING 能返回被 INSERT、UPDATE 或 DELETE 实际影响行中的指定列，常用于获取生成的主键或核验结果。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-042",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "PostgreSQL 中，下面语句会修改哪些行？ `UPDATE account SET status = 'closed' WHERE account_id = 42;`",
+    "explanation": "正确答案 A。WHERE 限定 UPDATE 的目标行；仍应确认条件唯一性与预期影响行数。",
+    "misconceptions": [
+      "误以为 UPDATE 总是只能影响一行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "满足 account_id = 42 条件的行",
+          "全表所有行",
+          "随机一行",
+          "只更新主键定义而不修改数据"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。WHERE 限定 UPDATE 的目标行；仍应确认条件唯一性与预期影响行数。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-043",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "`INSERT ... ON CONFLICT (email) DO UPDATE` 的关键前提是什么？",
+    "explanation": "正确答案 A。ON CONFLICT 依据唯一性冲突处理插入与更新；冲突目标需要对应唯一约束/索引。",
+    "misconceptions": [
+      "认为 ON CONFLICT 会自动推断并解决所有业务冲突。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "冲突目标应由可用的唯一约束/唯一索引支持",
+          "email 必须是 JSONB 类型",
+          "该语句一定会把所有非冲突行删除",
+          "必须把表改成只读"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。ON CONFLICT 依据唯一性冲突处理插入与更新；冲突目标需要对应唯一约束/索引。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-044",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "批量更新后需要向调用方返回被修改的记录 ID，哪些写法/检查合理？",
+    "explanation": "正确答案 A、B、D。RETURNING 可取得受影响行；对其他事务的可见性仍取决于事务提交和隔离语义。",
+    "misconceptions": [
+      "把 RETURNING 当成自动提交事务的机制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用 `UPDATE ... RETURNING id`",
+          "检查实际返回行数是否符合业务预期",
+          "把 UPDATE 包装在 SELECT 中就自动返回所有被修改行",
+          "结合事务边界决定是否需要提交才能对其他会话可见"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。RETURNING 可取得受影响行；对其他事务的可见性仍取决于事务提交和隔离语义。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-045",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 DELETE 和软删除标记，哪些说法正确？",
+    "explanation": "正确答案 A、B、C。DELETE 会删除所有满足条件的行；软删除是业务建模选择，需考虑查询过滤、索引、唯一性和保留政策。",
+    "misconceptions": [
+      "认为没有 WHERE 的 DELETE 会自动限制为一条记录。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "DELETE 会移除逻辑行，实际空间回收还涉及 PostgreSQL 维护机制",
+          "软删除通常保留行并由查询条件决定是否显示",
+          "软删除需要统一索引、唯一性和历史留存规则",
+          "DELETE 缺少 WHERE 时通常只删除一行"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。DELETE 会删除所有满足条件的行；软删除是业务建模选择，需考虑查询过滤、索引、唯一性和保留政策。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-046",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "重试一个可能已经成功但客户端没有收到响应的 INSERT，哪些设计可降低重复数据风险？",
+    "explanation": "正确答案 A、B、C。幂等键、唯一约束和结果核验使不确定提交状态更可控；先查后插存在并发竞态。",
+    "misconceptions": [
+      "认为应用层的先查后插足以防止重复写入。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为业务事件定义稳定唯一键",
+          "使用合适的唯一约束与 ON CONFLICT 逻辑",
+          "记录请求/批次标识并检查提交结果",
+          "不加任何唯一约束，依赖客户端先 SELECT 再 INSERT"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。幂等键、唯一约束和结果核验使不确定提交状态更可控；先查后插存在并发竞态。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-047",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "PostgreSQL 的 RETURNING 可与哪些数据修改操作配合？",
+    "explanation": "正确答案 A、B、C。PostgreSQL 支持在 INSERT、UPDATE、DELETE 等数据修改语句中用 RETURNING 取得受影响行的信息。",
+    "misconceptions": [
+      "把 RETURNING 误认为只属于 INSERT。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "INSERT",
+          "UPDATE",
+          "DELETE",
+          "只能与 SELECT 配合"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。PostgreSQL 支持在 INSERT、UPDATE、DELETE 等数据修改语句中用 RETURNING 取得受影响行的信息。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-048",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某个 UPDATE 成功执行，但影响行数为 0，可能的解释包括哪些？",
+    "explanation": "正确答案 A、B、C。零行影响通常意味着条件没有匹配记录，也可能是业务参数或数据状态问题。",
+    "misconceptions": [
+      "把无匹配行的合法执行误判为数据库故障。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "WHERE 条件没有匹配任何行",
+          "传入了错误的业务键或过滤参数",
+          "目标表中不存在预期记录",
+          "这必然意味着 PostgreSQL 引擎发生故障"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。零行影响通常意味着条件没有匹配记录，也可能是业务参数或数据状态问题。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-049",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "使用 ON CONFLICT DO UPDATE 更新账户余额前，哪些规则需要明确？",
+    "explanation": "正确答案 A、B、C。ON CONFLICT 只处理唯一性冲突的执行分支，不会推断覆盖、累加或拒绝等业务语义。",
+    "misconceptions": [
+      "将 SQL 冲突处理机制误认为完整的业务幂等设计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "冲突键代表什么唯一业务实体",
+          "更新是替换余额还是将增量累加",
+          "并发请求重复送达时是否幂等",
+          "认为 ON CONFLICT 会自动推断正确的会计业务规则"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。ON CONFLICT 只处理唯一性冲突的执行分支，不会推断覆盖、累加或拒绝等业务语义。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  },
+  {
+    "id": "sf-pg-050",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "postgresql-crud-upsert",
+    "subtopic": "postgresql-crud-upsert",
+    "tags": [
+      "snowflake",
+      "postgresql",
+      "postgres-full-day-training",
+      "postgresql-crud-upsert"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为何应在生产批处理中记录 DML 的影响行数或 RETURNING 结果？",
+    "explanation": "正确答案 A、B、C。影响行数与返回结果是质量检查的证据，可用于识别意外变更并支持审计；PostgreSQL 支持事务。",
+    "misconceptions": [
+      "将影响行数监控与数据库是否支持事务混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "帮助发现条件过宽、过窄或意外零行更新",
+          "支持批次对账和审计",
+          "为重试决策提供数据证据",
+          "因为 PostgreSQL 不支持事务，所以必须记录行数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。影响行数与返回结果是质量检查的证据，可用于识别意外变更并支持审计；PostgreSQL 支持事务。"
+      }
+    },
+    "knowledgeId": "postgresql-crud-upsert",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 2: CRUD; Constraints; RETURNING; UPSERT with ON CONFLICT",
+      "relatedMaterials": [
+        "pg-doc-dml",
+        "pg-doc-constraints",
+        "pg-doc-sql"
+      ]
+    }
+  }
+]
