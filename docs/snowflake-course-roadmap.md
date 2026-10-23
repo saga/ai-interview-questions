@@ -320,6 +320,7 @@ flowchart TD
 - [Transaction isolation](https://www.postgresql.org/docs/18/transaction-iso.html) — `pg-doc-isolation`
 - [Explicit locking](https://www.postgresql.org/docs/18/explicit-locking.html) — `pg-doc-locks`
 - [Monitoring statistics](https://www.postgresql.org/docs/18/monitoring-stats.html) — `pg-doc-monitoring`
+- [Statistics views and counters](https://www.postgresql.org/docs/18/monitoring-stats.html) — `pg-doc-statistics`
 - [Routine vacuuming](https://www.postgresql.org/docs/18/routine-vacuuming.html) — `pg-doc-vacuum`
 - [WAL](https://www.postgresql.org/docs/18/wal.html) — `pg-doc-wal`
 - [Backup and restore](https://www.postgresql.org/docs/18/backup.html) — `pg-doc-backup`
