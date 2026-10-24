@@ -46,6 +46,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 - `docs/snowflake-course-roadmap.md`：基于 8 门 Coursera 课程模块与 Snowflake 官方文档的完整课程路线、知识骨架和毕业案例
 - `docs/snowflake-developer-guides-coverage-200.md`：基于 Snowflake Developer Guides 的 200 道实践/架构题与 20 个知识点覆盖矩阵
 - [`docs/snowflake-demo-notebooks-300.md`](docs/snowflake-demo-notebooks-300.md)：基于 Snowflake-Labs/snowflake-demo-notebooks 的 300 道初/中级实践题，覆盖 Notebooks、Snowpark、管道、性能/成本、Feature Store、Cortex、Agent、Streamlit 与治理
+- [`docs/snowflake-asset-management-agentic-100.md`](docs/snowflake-asset-management-agentic-100.md)：基于 Snowflake-Labs/sfguide-agentic-ai-for-asset-management 的 100 道初/中级题，覆盖多 Agent、语义视图、组合归因、投资研究、风险合规、中后台、回测、信用风险与治理
 - `docs/postgresql-module-in-snowflake-course-200.md`：Snowflake course 下的 PostgreSQL 原生数据库工程补充模块、200 道简单/中级题与官方文档映射
 - `docs/snowflake-postgres-full-day-200.md`：参考 PostgreSQL 全日训练的 SQL/运维/调优主题，改写为 Snowflake 语义的 200 道简单/中级题与 20 组覆盖矩阵
 - [Snowflake CoCo Skills 专项 100 道题与知识点覆盖矩阵](docs/snowflake-coco-skills-100.md)

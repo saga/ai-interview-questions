@@ -1,0 +1,6182 @@
+[
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-01",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "资产管理平台把投资组合、研究、风险合规和中后台任务分配给不同的专用 Agent，主要收益是什么？",
+    "explanation": "专用 Agent 通过职责与工具边界组织工作；权限、数据质量与结果验证仍需要独立控制。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "让每个 Agent 拥有清晰的业务职责、工具范围和输出约束，降低工具混用并便于评估。",
+          "让任意 Agent 都自动获得所有数据库对象的管理员权限。",
+          "保证不同 Agent 永远不会产生不同结论，因此不需要验证。",
+          "用 Agent 名称代替角色授权和审计。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "让每个 Agent 拥有清晰的业务职责、工具范围和输出约束，降低工具混用并便于评估。 专用 Agent 通过职责与工具边界组织工作；权限、数据质量与结果验证仍需要独立控制。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-02",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "用户问“我们组合目前持有哪些证券、各占多少权重”，最匹配的数据工具是哪一类？",
+    "explanation": "持仓和权重是结构化事实，应查询组合分析域，而不是用新闻文本或模型元数据推断。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只调用企业品牌风格文档。",
+          "只查询模型注册表中的模型版本。",
+          "面向组合持仓的结构化分析工具，并通过相应语义视图查询持仓与市值。",
+          "只搜索公开新闻的 Cortex Search 服务。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "面向组合持仓的结构化分析工具，并通过相应语义视图查询持仓与市值。 持仓和权重是结构化事实，应查询组合分析域，而不是用新闻文本或模型元数据推断。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-03",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "研究员问“公司最近一次业绩电话会管理层对利润率说了什么”，通常应组合哪些信息源？",
+    "explanation": "结构化工具用于定位指标与最新期间，文档检索提供原文上下文；两者应相互校验。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用结构化研究工具确定最新电话会及财务指标，再检索对应电话会/研究文档的定性内容。",
+          "只查询组合持仓表。",
+          "只使用公司名称相似的任意新闻片段。",
+          "只从上次生成的投资备忘录中复制一句话。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用结构化研究工具确定最新电话会及财务指标，再检索对应电话会/研究文档的定性内容。 结构化工具用于定位指标与最新期间，文档检索提供原文上下文；两者应相互校验。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-04",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "客户顾问需要准备 RFP 回复，系统还必须考虑客户要求与公司服务边界。哪种做法合理？",
+    "explanation": "对外材料需要基于授权的客户和产品信息，并按模板和实际能力检查承诺。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "从任意客户的私人资料复制回复。",
+          "忽略 RFP 中的条件以简化生成。",
+          "调用客户/产品信息和已批准模板或政策，并将回答约束在可验证的服务能力内。",
+          "让模型根据行业惯例自行承诺未确认的服务。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "调用客户/产品信息和已批准模板或政策，并将回答约束在可验证的服务能力内。 对外材料需要基于授权的客户和产品信息，并按模板和实际能力检查承诺。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-05",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "研究 Agent 被问到“我们是否持有该股票”，但它没有组合持仓工具。正确行为是什么？",
+    "explanation": "外部机构持仓不等于本公司的投资组合持仓；回答必须遵守 Agent 的数据职责边界。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "明确把持仓问题交给组合管理 Agent；研究 Agent 可独立回答公司层面的研究部分。",
+          "根据机构 13F 持仓推断 SAM 自己的持仓。",
+          "使用公开股价反推出组合权重。",
+          "声称拥有持仓工具并编造结果。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确把持仓问题交给组合管理 Agent；研究 Agent 可独立回答公司层面的研究部分。 外部机构持仓不等于本公司的投资组合持仓；回答必须遵守 Agent 的数据职责边界。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-06",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "一次用户请求同时涉及组合暴露、公司研究和内部风险政策，合理的工具编排方式是什么？",
+    "explanation": "多源问题应先识别每类证据的权威来源，再在统一时间与业务口径下综合。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先给出总论，再让工具寻找支持结论的数据。",
+          "把所有检索结果拼接后不区分来源与日期。",
+          "拆分为持仓分析、研究文档检索和政策检索等有边界的子任务，再按共同日期与定义综合。",
+          "一次向任意单个工具发送所有问题，不检查返回内容。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "拆分为持仓分析、研究文档检索和政策检索等有边界的子任务，再按共同日期与定义综合。 多源问题应先识别每类证据的权威来源，再在统一时间与业务口径下综合。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-07",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "研究员只是要求分析公司，Agent 是否可以自动创建或升级长期投资 Thesis？",
+    "explanation": "持久化写操作需要明确授权，避免模型把一次回答转变为未经请求的业务状态变更。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不可以；只有用户明确要求保存、创建、更新或升级 Thesis 时才执行写操作。",
+          "可以，因为任何分析都默认授权写入长期投资记录。",
+          "只能先删除旧 Thesis 再创建新版本。",
+          "可以把研究结论写进任意客户记录。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不可以；只有用户明确要求保存、创建、更新或升级 Thesis 时才执行写操作。 持久化写操作需要明确授权，避免模型把一次回答转变为未经请求的业务状态变更。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-08",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "一个请求命中了明确的投资备忘录工作流，最合适的执行策略是什么？",
+    "explanation": "Skill 把领域步骤、必需证据和确认点固化下来，减少遗漏和无边界的工具调用。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只根据用户原句决定结论，不查询事实数据。",
+          "执行所有可用工具并忽略流程内的停止点。",
+          "先加载对应 Skill，按其证据顺序执行，并在要求的检查点让用户确认范围。",
+          "跳过工作流直接一次性生成全部章节。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先加载对应 Skill，按其证据顺序执行，并在要求的检查点让用户确认范围。 Skill 把领域步骤、必需证据和确认点固化下来，减少遗漏和无边界的工具调用。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-09",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "为什么把前台研究、组合管理、中台运营和风险合规分开建模，而不是只按数据表分组？",
+    "explanation": "业务角色驱动的工具与输出边界更接近实际责任，同时仍需共享权威指标定义。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不同角色有不同任务、权限、风险阈值和报告方式，工作流边界应反映业务责任。",
+          "因为每个部门只能使用一种数据类型。",
+          "因为角色分离可以免除所有数据模型设计。",
+          "为了允许每个部门独立定义同名指标且不做对账。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不同角色有不同任务、权限、风险阈值和报告方式，工作流边界应反映业务责任。 业务角色驱动的工具与输出边界更接近实际责任，同时仍需共享权威指标定义。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-architecture-10",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-architecture",
+    "subtopic": "sf-am-agent-architecture",
+    "knowledgeId": "sf-am-agent-architecture",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-architecture",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握资产管理多 Agent 架构与工具选型的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "README Agents; docs/agentic-ai-for-asset-management.md; python/ai/agents",
+      "relatedMaterials": [
+        "docs/agentic-ai-for-asset-management.md",
+        "python/ai/agents/pm_cockpit.py",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/agents/risk_compliance.py",
+        "python/ai/agents/middle_office_copilot.py"
+      ]
+    },
+    "question": "向投资委员会生成 PDF 报告时，怎样降低“有文件但内容不可追溯”的风险？",
+    "explanation": "正式报告应可追溯到证据与口径，同时避免把内部敏感日志直接暴露给读者。",
+    "misconceptions": [
+      "把所有业务问题都交给同一个无边界 Agent",
+      "混淆结构化分析工具与文档检索工具",
+      "认为 Agent 可以绕过后端授权和业务规则"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把所有工具返回的内部日志都无差别放进报告。",
+          "只检查 PDF 文件是否存在，不核对数字。",
+          "使用批准的报告模板，记录关键查询/来源与日期，并在生成后核验报告和下载结果。",
+          "只根据自由文本生成 PDF，不保留数据来源。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用批准的报告模板，记录关键查询/来源与日期，并在生成后核验报告和下载结果。 正式报告应可追溯到证据与口径，同时避免把内部敏感日志直接暴露给读者。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-01",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "在 Cortex Analyst 方案中，Semantic View 最重要的作用是什么？",
+    "explanation": "语义视图提供经治理的查询语义，但指标口径和关系仍需业务确认与测试。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "自动决定投资政策且无需业务负责人确认。",
+          "保证任何模糊问题都有唯一正确解释。",
+          "定义业务可理解的维度、指标、关系与查询语义，帮助把自然语言问题转成受控 SQL。",
+          "替代所有事实表并永久保存查询结果。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "定义业务可理解的维度、指标、关系与查询语义，帮助把自然语言问题转成受控 SQL。 语义视图提供经治理的查询语义，但指标口径和关系仍需业务确认与测试。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-02",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "持仓事实表是一证券在一个组合、一个日期一行，而交易事实表是一笔交易一行。连接前为什么必须明确粒度？",
+    "explanation": "跨粒度连接是业务指标失真的常见来源，必须明确主键、基数与聚合规则。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "连接可能改变行数和聚合层次，导致市场价值、交易量等指标被重复累计。",
+          "因为 Snowflake 不允许不同粒度的表连接。",
+          "因为只要列名相同，连接就会自动聚合。",
+          "粒度只影响性能，不影响结果含义。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "连接可能改变行数和聚合层次，导致市场价值、交易量等指标被重复累计。 跨粒度连接是业务指标失真的常见来源，必须明确主键、基数与聚合规则。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-03",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "平台的来源包括真实市场/SEC 数据和合成的组合、客户或研究文档。生成报告时应如何区分？",
+    "explanation": "同一平台可能整合不同来源和生成方式，来源标记决定结论可以如何使用。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只要数据存于 Snowflake，就无需披露来源。",
+          "把合成数据当作 SEC 的官方披露。",
+          "说明事实数据与模拟/合成内容的边界，避免把演示用合成实体当作外部真实事实。",
+          "把所有表中的内容都描述成真实市场数据。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "说明事实数据与模拟/合成内容的边界，避免把演示用合成实体当作外部真实事实。 同一平台可能整合不同来源和生成方式，来源标记决定结论可以如何使用。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-04",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "工具返回一个组合市值指标，却没有说明它来自哪些表和转换。用户追问血缘时应该怎么做？",
+    "explanation": "血缘说明必须基于可查证的执行/元数据结果，不能把合理推测包装成系统事实。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "调用数据血缘工具并仅依据返回的源对象、视图定义与转换信息进行解释。",
+          "根据字段名称猜测完整上游管道。",
+          "引用另一个组合的血缘作为替代。",
+          "把常见行业算法当作该指标实际实现。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "调用数据血缘工具并仅依据返回的源对象、视图定义与转换信息进行解释。 血缘说明必须基于可查证的执行/元数据结果，不能把合理推测包装成系统事实。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-05",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "为什么每个持仓或市场数据回答都应标注 as-of date？",
+    "explanation": "不同数据域可能不同步；清楚标注日期能让用户判断数据新鲜度和可比性。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "它可以替代检查数据来源和口径。",
+          "所有数据表都必然在同一时刻刷新。",
+          "持仓、价格和文件更新节奏可能不同，日期能够说明事实适用的时间点。",
+          "as-of date 可以证明数据永远不会变。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "持仓、价格和文件更新节奏可能不同，日期能够说明事实适用的时间点。 不同数据域可能不同步；清楚标注日期能让用户判断数据新鲜度和可比性。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-06",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "市场价格表的最新可用日期被用作演示中许多事实表的生成截止日期。这个设计最重要的含义是什么？",
+    "explanation": "共同时间锚点使演示数据可对齐，但不代表实时刷新或无缺失。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "应把演示数据的时间锚点与实际生产数据的新鲜度区别开，并检查派生表的时间覆盖。",
+          "所有衍生表都会自动包含今天实时价格。",
+          "它意味着所有证券在所有日期都有完整价格。",
+          "无需检查迟到数据或数据缺口。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应把演示数据的时间锚点与实际生产数据的新鲜度区别开，并检查派生表的时间覆盖。 共同时间锚点使演示数据可对齐，但不代表实时刷新或无缺失。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-07",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "DIM_SECURITY 和 DIM_ISSUER 的键与关系，主要用于解决什么问题？",
+    "explanation": "维度关系为事实提供稳定业务上下文，连接仍需按键和基数校验。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "替代事实表中的所有日期。",
+          "绕过角色权限查询发行人信息。",
+          "把证券与发行人、行业和证券属性关联起来，支持一致的分析维度与上游追踪。",
+          "把所有证券合并为一个指标。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "把证券与发行人、行业和证券属性关联起来，支持一致的分析维度与上游追踪。 维度关系为事实提供稳定业务上下文，连接仍需按键和基数校验。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-08",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "Cortex Search 返回了某份研究文件，而 Analyst 返回了一个财务指标。二者在证据性质上有什么差别？",
+    "explanation": "文本检索和结构化查询的用途不同；综合时需要检查文本日期、实体和指标定义。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Search 提供非结构化文本证据；Analyst 提供结构化数据查询结果，两者可互补但不应混为同一事实类型。",
+          "两者都只返回模型生成的主观意见。",
+          "Search 结果一定比结构化数据更权威。",
+          "Analyst 的数字不需要查询日期与业务口径。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Search 提供非结构化文本证据；Analyst 提供结构化数据查询结果，两者可互补但不应混为同一事实类型。 文本检索和结构化查询的用途不同；综合时需要检查文本日期、实体和指标定义。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-09",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "语义视图中同一业务指标在多个地方被重复定义，可能产生什么长期风险？",
+    "explanation": "统一的权威定义和变更治理有助于减少重复口径与 Text-to-SQL 不一致。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "重复定义能替代指标所有者。",
+          "唯一性和权限测试因此不再必要。",
+          "不同查询路径的口径逐渐漂移，导致报表、Agent 答案和业务决策不一致。",
+          "指标会自动变得更准确。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不同查询路径的口径逐渐漂移，导致报表、Agent 答案和业务决策不一致。 统一的权威定义和变更治理有助于减少重复口径与 Text-to-SQL 不一致。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-semantic-lineage-10",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-semantic-lineage",
+    "subtopic": "sf-am-semantic-lineage",
+    "knowledgeId": "sf-am-semantic-lineage",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-semantic-lineage",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握资产管理语义视图、数据模型与血缘的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "docs/data_model.md; docs/data_lineage.md; python/ai/semantic_view_definitions",
+      "relatedMaterials": [
+        "docs/data_model.md",
+        "docs/data_lineage.md",
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml"
+      ]
+    },
+    "question": "下游结论无法解释，工程师想追踪从 Marketplace、Raw、Curated 到语义视图的路径。哪种证据组合最好？",
+    "explanation": "血缘分析应沿明确的构建与对象依赖路径验证，避免依赖文字描述或命名猜测。",
+    "misconceptions": [
+      "把自然语言语义层当作原始数据存储",
+      "忽略事实表粒度和维表关系",
+      "凭经验补充工具没有返回的血缘事实"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "结合数据血缘文档、实际对象定义和相关查询/构建记录逐层追踪。",
+          "只查看最终可视化图表。",
+          "只看最后一次 Agent 自然语言总结。",
+          "以文件名相似推断依赖关系。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "结合数据血缘文档、实际对象定义和相关查询/构建记录逐层追踪。 血缘分析应沿明确的构建与对象依赖路径验证，避免依赖文字描述或命名猜测。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-01",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "用户要求“列出组合市场价值最高的 10 个持仓”，最需要查询哪些字段？",
+    "explanation": "排名必须来自组合持仓事实和明确的估值日期，而不是外部研究或名称排序。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "组合、证券、持仓日期、市场价值，并按指定日期的市场价值降序排序。",
+          "只搜索证券新闻标题。",
+          "只查询证券评级而不查询持仓数据。",
+          "只按证券名称的字母顺序排序。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "组合、证券、持仓日期、市场价值，并按指定日期的市场价值降序排序。 排名必须来自组合持仓事实和明确的估值日期，而不是外部研究或名称排序。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-02",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "某持仓市场价值为 650 万，组合总市值为 1 亿。该持仓权重是多少？",
+    "explanation": "持仓权重等于单项市场价值除以组合总市场价值，即 6,500,000 / 100,000,000 = 6.5%。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "15.4%。",
+          "65%。",
+          "6.5%。",
+          "0.65%。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "6.5%。 持仓权重等于单项市场价值除以组合总市场价值，即 6,500,000 / 100,000,000 = 6.5%。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-03",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "问“我们是否持有某证券”时，为什么不能使用公开机构 13F/机构持仓数据直接回答？",
+    "explanation": "持仓主体、申报时点和组合不同，必须使用正确的内部组合事实来源。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "机构申报反映外部机构的申报持仓，不代表 SAM 自己当前组合的持仓。",
+          "13F 数据不包含任何证券信息。",
+          "机构持仓总是和基金当前持仓完全相同。",
+          "公开数据可以替代本公司账簿。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "机构申报反映外部机构的申报持仓，不代表 SAM 自己当前组合的持仓。 持仓主体、申报时点和组合不同，必须使用正确的内部组合事实来源。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-04",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "比较组合与基准收益时，哪些条件必须保持一致或明确说明？",
+    "explanation": "可比性取决于时间、币种和收益定义，不能只依赖字段名称。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只要两个字段都叫 return，口径就相同。",
+          "只需要使用市场最新价，不用说明期间。",
+          "组合/基准身份、期间、截止日期、币种和收益口径。",
+          "只需比较两个不同日期的年度收益率。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "组合/基准身份、期间、截止日期、币种和收益口径。 可比性取决于时间、币种和收益定义，不能只依赖字段名称。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-05",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "持仓数据按月末生成，而市场价格可能更新得更频繁。生成持仓报告应如何避免时间错配？",
+    "explanation": "数量和价格可能存在不同时间点，需明确估值时点并避免把时间错配隐藏掉。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "分别标注持仓 as-of 日期与价格/市场数据日期，并确认估值规则。",
+          "将所有日期显示为今天。",
+          "使用未来价格回填历史持仓且不说明。",
+          "忽略价格日期，因为数量没有改变。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "分别标注持仓 as-of 日期与价格/市场数据日期，并确认估值规则。 数量和价格可能存在不同时间点，需明确估值时点并避免把时间错配隐藏掉。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-06",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "某投资组合名称存在两个非常接近的候选项。Agent 应先做什么？",
+    "explanation": "准确识别组合是后续持仓、风险和表现查询正确性的前提。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把两个组合的持仓合并再回答。",
+          "仅依据用户所在部门猜测组合。",
+          "利用组合名称解析/查询流程确认唯一组合，而不是自行选择。",
+          "默认选择市场价值最大的组合。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "利用组合名称解析/查询流程确认唯一组合，而不是自行选择。 准确识别组合是后续持仓、风险和表现查询正确性的前提。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-07",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "分析人员把组合主动收益称作组合绝对收益，可能造成什么误解？",
+    "explanation": "报告应清楚区分组合回报、基准回报和相对基准的主动回报。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "主动收益是相对基准的表现差异，不能直接等同于组合自身回报。",
+          "主动收益永远等于零。",
+          "绝对收益不受时间区间影响。",
+          "基准收益无需单独查询。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "主动收益是相对基准的表现差异，不能直接等同于组合自身回报。 报告应清楚区分组合回报、基准回报和相对基准的主动回报。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-08",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "如果用户询问当前组合的行业敞口，最合适的数据建模路径是什么？",
+    "explanation": "行业敞口是组合持仓的聚合视角，需要使用持仓与安全/发行人维度的有效关系。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只查询基准行业权重并当作组合权重。",
+          "按证券名称首字母分组。",
+          "通过组合持仓与证券/发行人行业维度关联，按目标日期和明确聚合口径汇总。",
+          "用搜索到的行业新闻篇数直接当作组合敞口。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "通过组合持仓与证券/发行人行业维度关联，按目标日期和明确聚合口径汇总。 行业敞口是组合持仓的聚合视角，需要使用持仓与安全/发行人维度的有效关系。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-09",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "组合报告显示某证券权重明显异常。排查时应先核对哪些信息？",
+    "explanation": "异常权重可能来自日期、金额、主数据映射或连接膨胀，需要逐项验证来源与公式。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "持仓日期、市场价值、组合总市值、证券映射和聚合/重复连接情况。",
+          "直接删除这条持仓记录。",
+          "只检查公司最新评级。",
+          "默认市值权重一定是百分数而不是小数。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "持仓日期、市场价值、组合总市值、证券映射和聚合/重复连接情况。 异常权重可能来自日期、金额、主数据映射或连接膨胀，需要逐项验证来源与公式。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-analytics-10",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-am-portfolio-analytics",
+    "subtopic": "sf-am-portfolio-analytics",
+    "knowledgeId": "sf-am-portfolio-analytics",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake",
+      "sf-am-portfolio-analytics",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握持仓、估值、基准与组合表现的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml; data/skills/portfolio-name-resolution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_PORTFOLIO_VIEW.yaml",
+        "data/skills/portfolio-name-resolution/SKILL.md",
+        "docs/data_model.md"
+      ]
+    },
+    "question": "投资组合和基准都使用相同证券，但组合权重与基准权重不同，通常应怎样表达？",
+    "explanation": "组合和基准是不同的权重序列，比较时应保留各自值和明确定义的差异。",
+    "misconceptions": [
+      "把外部机构持仓当成本公司组合持仓",
+      "忽略持仓日期与价格日期差异",
+      "把绝对收益、主动收益和权重混为一谈"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用基准权重覆盖实际持仓权重。",
+          "只显示证券代码不显示权重。",
+          "分别报告组合权重、基准权重与主动权重/差异，且明确日期和单位。",
+          "把两个权重平均后当作组合权重。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "分别报告组合权重、基准权重与主动权重/差异，且明确日期和单位。 组合和基准是不同的权重序列，比较时应保留各自值和明确定义的差异。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-01",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "问季度或 YTD 的 Brinson 归因时，应优先使用哪类数据？",
+    "explanation": "多期复利和链接效应意味着多月归因需要对应的链接期间结果，不能随意加总月度行。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只使用最新一个月的行业归因。",
+          "使用搜索结果中的分析师评级替代归因。",
+          "使用与请求期间匹配的 linked_attribution 汇总行，而不是手工相加单月行。",
+          "把所有单月的选择效应直接相加作为季度数。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用与请求期间匹配的 linked_attribution 汇总行，而不是手工相加单月行。 多期复利和链接效应意味着多月归因需要对应的链接期间结果，不能随意加总月度行。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-02",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "组合总归因行返回 allocation、selection、interaction 和 active return。正确的引用方式是什么？",
+    "explanation": "同一期间和同一总行保持口径一致，能避免跨行混用或手工推导造成的错误。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "从同一条已核对的组合总行引用各项，并检查三种效应与主动收益的对账差异。",
+          "从不同日期的行各取一个值再拼接。",
+          "只引用 selection，再用主动收益减去它来推导其他项。",
+          "把所有行业行重复汇总成总行。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "从同一条已核对的组合总行引用各项，并检查三种效应与主动收益的对账差异。 同一期间和同一总行保持口径一致，能避免跨行混用或手工推导造成的错误。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-03",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "归因效应合计与主动收益的对账残差超过容忍范围，最合理的下一步是什么？",
+    "explanation": "归因数字必须可对账，问题应通过受控复查解决，而不是修改返回数据。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐藏 interaction 效应。",
+          "从最新价格重新计算一份未经验证的归因结果。",
+          "使用相同期间和分组重新查询/核验，再说明未解决的残差，不能自行调数。",
+          "按比例修改 allocation 直到残差为零。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用相同期间和分组重新查询/核验，再说明未解决的残差，不能自行调数。 归因数字必须可对账，问题应通过受控复查解决，而不是修改返回数据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-04",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "报告“哪个行业贡献最大”时，排序更合适的口径是什么？",
+    "explanation": "行业权重与归因贡献是不同指标，需按问题要求选正确度量。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先明确比较的是总效应/贡献，再按同一期间的行业级归因结果排序。",
+          "默认以行业市场价值最高作为回报贡献最高。",
+          "只按行业名称字母顺序排序。",
+          "把组合行业权重差当成完整绩效归因。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先明确比较的是总效应/贡献，再按同一期间的行业级归因结果排序。 行业权重与归因贡献是不同指标，需按问题要求选正确度量。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-05",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "归因分析中的 allocation、selection 和 interaction 分别有何用？",
+    "explanation": "Brinson 归因把相对表现拆分为不同机制，能帮助解释主动收益来源。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "它们是三种仓库计算容量。",
+          "它们可以互相任意替代。",
+          "它们用于区分行业配置、行业内证券选择及两者联合作用等表现来源。",
+          "它们分别表示收入、费用和税务。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "它们用于区分行业配置、行业内证券选择及两者联合作用等表现来源。 Brinson 归因把相对表现拆分为不同机制，能帮助解释主动收益来源。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-06",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "因子模型显示组合对利率和质量因子有较高暴露。怎样避免过度解读？",
+    "explanation": "因子暴露描述模型中的系统性关联，不直接保证未来表现或因果关系。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将暴露作为风险/回报驱动线索，结合时期、模型定义与实际表现证据验证。",
+          "把因子暴露直接当作未来收益保证。",
+          "把因子值当成监管限额。",
+          "在不查询数据时推断因子暴露为零。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "将暴露作为风险/回报驱动线索，结合时期、模型定义与实际表现证据验证。 因子暴露描述模型中的系统性关联，不直接保证未来表现或因果关系。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-07",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "如果需要分析多个季度，为什么应使用同一时期类型和截止日期口径？",
+    "explanation": "时期类型和终止日期决定归因含义，是可比性和复现的必要条件。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为归因工具只支持单月数据。",
+          "时间选择不会影响收益。",
+          "确保归因结果在时间范围和聚合方法上一致，避免把不同时间窗口混在一起。",
+          "为了让所有效应自动相加为零。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "确保归因结果在时间范围和聚合方法上一致，避免把不同时间窗口混在一起。 时期类型和终止日期决定归因含义，是可比性和复现的必要条件。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-08",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "隐藏因子被模型识别出来，如何对投资委员会说明更稳妥？",
+    "explanation": "模型识别的因子是待解释和验证的信号，不能仅凭名称做因果或合规判断。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "说明它是模型识别的潜在风险/暴露信号，并给出定义、数据期间和验证限制。",
+          "把它描述成已被证明的经济因果机制。",
+          "省略方法和适用期间以避免讨论复杂性。",
+          "因为名称含“风险”，就自动判定违规。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "说明它是模型识别的潜在风险/暴露信号，并给出定义、数据期间和验证限制。 模型识别的因子是待解释和验证的信号，不能仅凭名称做因果或合规判断。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-09",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "归因工具返回的主动收益单位是 bps，而组合收益使用百分比。报告前应该怎么做？",
+    "explanation": "单位错配会造成数量级误读，报告需要明确区分 bps、百分比和小数。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把 bps 数值当作百分数。",
+          "将所有数据乘以 100 以统一外观。",
+          "保留并清楚标注各指标返回的单位，必要时用一致的显示格式并核验转换。",
+          "忽略单位并把数值直接放在同一列。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保留并清楚标注各指标返回的单位，必要时用一致的显示格式并核验转换。 单位错配会造成数量级误读，报告需要明确区分 bps、百分比和小数。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-attribution-factors-10",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-attribution-factors",
+    "subtopic": "sf-am-attribution-factors",
+    "knowledgeId": "sf-am-attribution-factors",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-attribution-factors",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握绩效归因、因子暴露与市场状态的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml; data/skills/multi-level-attribution/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/semantic_view_definitions/SAM_ATTRIBUTION_VIEW.yaml",
+        "data/skills/multi-level-attribution/SKILL.md",
+        "data/skills/factor-model-explorer/SKILL.md"
+      ]
+    },
+    "question": "同一组合在不同市场状态下归因来源变化，最合理的分析方式是什么？",
+    "explanation": "状态条件分析要维持可比的定义和样本，避免由时间构成变化产生误解。",
+    "misconceptions": [
+      "把单月归因结果直接相加得到多月归因",
+      "从差额反推未返回的归因效应",
+      "忽略效果核对和期间匹配"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "按清晰定义的市场状态/期间分组比较，并同时检验样本覆盖和因子定义是否一致。",
+          "把不同市场状态的数据直接汇总并认定机制不变。",
+          "只选择表现最好的时期。",
+          "把市场状态标签当作证券行业标签。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按清晰定义的市场状态/期间分组比较，并同时检验样本覆盖和因子定义是否一致。 状态条件分析要维持可比的定义和样本，避免由时间构成变化产生误解。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-01",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "准备一家公司的投资备忘录，为什么先建立财务基础再检索定性研究较稳妥？",
+    "explanation": "先确认结构化事实能为定性分析建立共同基线，减少叙事选择性和时间口径错误。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先用结构化数据确认财务指标、期间和分析师预期，再检索解释性证据并综合。",
+          "因为研究文档永远比财务数据准确。",
+          "因为财务数据只适用于非上市公司。",
+          "因为先写结论能让后续证据更一致。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先用结构化数据确认财务指标、期间和分析师预期，再检索解释性证据并综合。 先确认结构化事实能为定性分析建立共同基线，减少叙事选择性和时间口径错误。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-02",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "对于“最新一次业绩电话会”，仅按日历年份排序为什么可能不够？",
+    "explanation": "研究需确认正确发行人和最新发布期，防止财年错位导致引用旧信息。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为第四季度数据永远无效。",
+          "只要公司名称相同，任何历史电话会都属于最新。",
+          "财年和财季标签可能与日历期不同，需要按发行人、发布时间和财务期间核验。",
+          "因为电话会没有发布时间。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "财年和财季标签可能与日历期不同，需要按发行人、发布时间和财务期间核验。 研究需确认正确发行人和最新发布期，防止财年错位导致引用旧信息。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-03",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "投资备忘录中将 SEC 披露、管理层陈述和券商观点混为同一事实，风险是什么？",
+    "explanation": "来源类型影响证据强度和解释方式，应明确标记事实、观点和推断。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "读者无法区分可核实事实、公司观点与外部分析判断。",
+          "所有不同来源的陈述会自动相互抵消。",
+          "券商观点必然比监管披露更权威。",
+          "不同证据类型不影响投资判断。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "读者无法区分可核实事实、公司观点与外部分析判断。 来源类型影响证据强度和解释方式，应明确标记事实、观点和推断。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-04",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "Cortex Search 命中一篇很相关的研究报告，但其发布日期早于最新财报。如何使用？",
+    "explanation": "语义相关度不等于时效性，研究应同时核对发布日期、财务期间和更新来源。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "删除最新财报以保持旧观点一致。",
+          "把发布日期改成今天。",
+          "保留它作为历史观点，同时检索最新财报/电话会并明确时间差异。",
+          "无条件把最相关的文本当作最新事实。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保留它作为历史观点，同时检索最新财报/电话会并明确时间差异。 语义相关度不等于时效性，研究应同时核对发布日期、财务期间和更新来源。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-05",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "用户要求生成完整投资备忘录。按示例工作流，应如何控制复杂任务？",
+    "explanation": "多阶段工作流的停止点让分析员确认范围，避免长任务提前下结论或执行未经授权的写操作。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "先完成财务基础并展示结果/范围确认，再进入定性研究和后续章节。",
+          "在一轮里不经检查点调用所有工具并输出最终结论。",
+          "只检索一篇文档就完成所有七个部分。",
+          "自动保存 Thesis，不论用户是否提出要求。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先完成财务基础并展示结果/范围确认，再进入定性研究和后续章节。 多阶段工作流的停止点让分析员确认范围，避免长任务提前下结论或执行未经授权的写操作。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-06",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "券商研究服务返回目标价数字，搜索服务返回其看多/看空理由。如何综合？",
+    "explanation": "数字与解释来自不同类型的证据，综合时需保留来源并避免选择性取样。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将不同券商的目标价直接平均而不注明来源。",
+          "只保留支持当前观点的报告。",
+          "分别使用结构化研究数据和原文论据，并核对发行人、发布日期及评级历史。",
+          "从文本情绪推算一个新的目标价。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "分别使用结构化研究数据和原文论据，并核对发行人、发布日期及评级历史。 数字与解释来自不同类型的证据，综合时需保留来源并避免选择性取样。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-07",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "一段搜索文本声称公司收入增长 40%，但结构化财务查询显示另一口径。下一步是什么？",
+    "explanation": "差异可能来自期间或指标范围，必须先对齐口径而不能任意取舍。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查文档日期、财年、分部/总体口径和指标定义，并说明差异来源。",
+          "直接选择增长率较大的数字。",
+          "将两者平均为最终增长率。",
+          "修改结构化查询结果以匹配文本。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "检查文档日期、财年、分部/总体口径和指标定义，并说明差异来源。 差异可能来自期间或指标范围，必须先对齐口径而不能任意取舍。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-08",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "Cortex Search 中存有内部研究和公开 SEC 文档。如何确保答案对来源有清晰说明？",
+    "explanation": "来源元数据和具体引用可帮助用户判断证据权威性、时效性与适用范围。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "引用一个同业公司报告作为替代。",
+          "对所有文档统一标记“官方公告”。",
+          "记录文档类型、发行人/证券、发布时间以及引用的具体来源片段。",
+          "只输出没有引用的总结。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "记录文档类型、发行人/证券、发布时间以及引用的具体来源片段。 来源元数据和具体引用可帮助用户判断证据权威性、时效性与适用范围。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-09",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "为什么不应将一份历史投资备忘录原样当作今日投资结论？",
+    "explanation": "历史备忘录可作为研究脉络，但当前结论必须复核时效性和新证据。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "价格、财报、估值、风险和观点可能变化，需按当前时点重新验证关键事实。",
+          "因为备忘录文档格式会失效。",
+          "因为任何历史分析都没有价值。",
+          "因为重复阅读会改变数据库内容。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "价格、财报、估值、风险和观点可能变化，需按当前时点重新验证关键事实。 历史备忘录可作为研究脉络，但当前结论必须复核时效性和新证据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-research-rag-10",
+    "courseId": "snowflake",
+    "category": "snowflake-genai",
+    "topic": "sf-am-research-rag",
+    "subtopic": "sf-am-research-rag",
+    "knowledgeId": "sf-am-research-rag",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-genai",
+      "sf-am-research-rag",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握研究 Copilot、Cortex Search 与投资备忘录的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/investment-memo-generation/SKILL.md; python/ai/agents/research_copilot.py; docs/agentic-ai-for-asset-management.md",
+      "relatedMaterials": [
+        "data/skills/investment-memo-generation/SKILL.md",
+        "python/ai/agents/research_copilot.py",
+        "python/ai/cortex_search.py"
+      ]
+    },
+    "question": "Agent 从检索结果中发现相反观点，成熟的回答应怎样组织？",
+    "explanation": "反证和分歧有助于检验 Thesis，研究综合不应通过隐藏冲突来制造确定性。",
+    "misconceptions": [
+      "混淆 SEC/财务事实与分析师观点",
+      "忽略发布日和财年/季度标签",
+      "把检索片段直接当作完整结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把相反观点拼接成一个没有矛盾的确定结论。",
+          "隐去低评级报告以让答案更简洁。",
+          "呈现各方论点及来源、指出分歧与关键不确定性，并列出可验证的后续问题。",
+          "只选择与最初假设一致的观点。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "呈现各方论点及来源、指出分歧与关键不确定性，并列出可验证的后续问题。 反证和分歧有助于检验 Thesis，研究综合不应通过隐藏冲突来制造确定性。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-01",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "组合集中度检查开始时，为什么应先检索内部政策？",
+    "explanation": "政策规定了组织实际适用的阈值，之后仍需把它应用到正确日期的持仓数据。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为只需使用通用市场阈值即可。",
+          "因为政策文档可以替代实际持仓查询。",
+          "实际警戒线、违规线和行业限制属于政策配置，应依据当前适用文件而不是凭记忆套用。",
+          "因为内部政策永远不允许改变。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "实际警戒线、违规线和行业限制属于政策配置，应依据当前适用文件而不是凭记忆套用。 政策规定了组织实际适用的阈值，之后仍需把它应用到正确日期的持仓数据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-02",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "示例政策的警戒阈值为 6.5%，违规阈值为 7.0%。某持仓权重为 6.7%，应如何分类？",
+    "explanation": "必须区分警戒与正式违规；示例阈值是该演示政策的配置，不是所有资产管理机构的通用标准。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "属于警戒区间，应监控或进一步处理，但尚未达到 7.0% 的违规阈值。",
+          "已经超过 7.0% 的违规阈值。",
+          "必然完全合规且无需展示。",
+          "因为超过 6.5%，应立即删除该证券。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "属于警戒区间，应监控或进一步处理，但尚未达到 7.0% 的违规阈值。 必须区分警戒与正式违规；示例阈值是该演示政策的配置，不是所有资产管理机构的通用标准。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-03",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "一个 ESG 标签组合要求持仓至少达到 BBB，但一只证券降至 BB。系统应如何处理？",
+    "explanation": "评级变化需与实际持仓及适用规则核对，生成告警不应静默改写源数据。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不需要查询持仓，因为评级变化一定意味着已出售。",
+          "把评级直接改为 BBB 以满足要求。",
+          "对照适用政策标记潜在/实际违规，引用评级日期和政策条款并进入整改流程。",
+          "自动认定发行人发生欺诈。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "对照适用政策标记潜在/实际违规，引用评级日期和政策条款并进入整改流程。 评级变化需与实际持仓及适用规则核对，生成告警不应静默改写源数据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-04",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "NGO 报告指出供应链争议，风险报告应附带什么信息？",
+    "explanation": "争议材料需要能够被复核，报告应清楚交代来源与时点。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "来源组织、发布日期、涉及发行人、严重程度以及该信息对应的持仓日期。",
+          "只附上模型给出的情绪分数。",
+          "把报告发布日期改成系统查询日期。",
+          "不保留来源，只给出“高风险”标签。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "来源组织、发布日期、涉及发行人、严重程度以及该信息对应的持仓日期。 争议材料需要能够被复核，报告应清楚交代来源与时点。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-05",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "监管问题涉及欧盟与英国的可持续金融规则。检索结果必须注意什么？",
+    "explanation": "跨辖区比较需要精确的适用范围和生效时间，不能只按文本相似度判断。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只引用搜索排名最高的段落。",
+          "不需要区分法规发布日期与生效日期。",
+          "辖区、监管文件/条款和生效日期，并避免把一个辖区的要求套用到另一个辖区。",
+          "只要主题相似，法规就可以互换。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "辖区、监管文件/条款和生效日期，并避免把一个辖区的要求套用到另一个辖区。 跨辖区比较需要精确的适用范围和生效时间，不能只按文本相似度判断。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-06",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "一个组合的单一持仓权重为 7.3%，但查询日期是两个月前。报告中最合适的做法是什么？",
+    "explanation": "风险判断必须匹配政策有效期和实际持仓时点，历史数据不能自动代表当前状态。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "明确该持仓日期并查询最新适用持仓后再判断当前状态。",
+          "把旧结果不加说明地称作当前违规。",
+          "仅凭最新价格推测当前权重。",
+          "忽略日期，因为持仓权重不可能改变。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确该持仓日期并查询最新适用持仓后再判断当前状态。 风险判断必须匹配政策有效期和实际持仓时点，历史数据不能自动代表当前状态。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-07",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "风险团队想检查一个内部限制是否被突破，应把哪两类信息结合起来？",
+    "explanation": "风险检查由适用规则和真实持仓共同决定，缺任一侧都无法判断是否违规。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只看组合数据，不读取适用政策。",
+          "只查询公开市场价格变化。",
+          "从内部政策取得限额/条件，再查询组合持仓或风险事实来评估实际情况。",
+          "只看内部政策，不查任何组合数据。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "从内部政策取得限额/条件，再查询组合持仓或风险事实来评估实际情况。 风险检查由适用规则和真实持仓共同决定，缺任一侧都无法判断是否违规。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-08",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "ESG 争议数量上升，但公司持仓规模也扩大了。怎样避免过度解读？",
+    "explanation": "数量需结合分母与严重程度，原始计数无法单独说明风险变化。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "同时检查争议严重度、覆盖范围、持仓暴露、时间和来源质量，而非只比较数量。",
+          "认定争议数增加必然代表单位风险增加。",
+          "删除低严重度报告，直到数量下降。",
+          "将全部争议都归为最高严重级别。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "同时检查争议严重度、覆盖范围、持仓暴露、时间和来源质量，而非只比较数量。 数量需结合分母与严重程度，原始计数无法单独说明风险变化。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-09",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "政策例外被批准到某个日期。审计系统最应该跟踪什么？",
+    "explanation": "政策例外需要范围和生命周期治理，逾期仍有效会造成持续的合规风险。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将例外永久标为已批准。",
+          "不记录例外对应的组合和证券。",
+          "例外范围、批准人/依据、到期日期以及到期后的复核/撤销状态。",
+          "只保留一次口头确认。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "例外范围、批准人/依据、到期日期以及到期后的复核/撤销状态。 政策例外需要范围和生命周期治理，逾期仍有效会造成持续的合规风险。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-risk-compliance-10",
+    "courseId": "snowflake",
+    "category": "data-architecture",
+    "topic": "sf-am-risk-compliance",
+    "subtopic": "sf-am-risk-compliance",
+    "knowledgeId": "sf-am-risk-compliance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-architecture",
+      "sf-am-risk-compliance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握风险、合规、ESG 与政策驱动检查的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/concentration-risk-assessment/SKILL.md; python/ai/agents/risk_compliance.py; data/skills/regulatory-lookup/SKILL.md",
+      "relatedMaterials": [
+        "data/skills/concentration-risk-assessment/SKILL.md",
+        "python/ai/agents/risk_compliance.py",
+        "data/skills/regulatory-lookup/SKILL.md"
+      ]
+    },
+    "question": "Agent 发现潜在违规后，自动把持仓卖出能否作为默认行为？",
+    "explanation": "风险监测和投资交易是不同权限边界；检测结果需经人工与正式授权流程处置。",
+    "misconceptions": [
+      "不查询政策就套用固定风险阈值",
+      "把 ESG 标签或评级下降直接等同于违规",
+      "忽略法规辖区和生效日期"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不应默认；应输出证据和建议的处理路径，交易动作需经过授权的交易/审批流程。",
+          "可以，因为检测工具已确认所有背景事实。",
+          "可以，只要模型置信度高于任意阈值。",
+          "可以用改写持仓表的方式完成整改。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不应默认；应输出证据和建议的处理路径，交易动作需经过授权的交易/审批流程。 风险监测和投资交易是不同权限边界；检测结果需经人工与正式授权流程处置。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-01",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "中后台用户要求找出最近 3 个营业日的失败结算，最合适的分析范围是什么？",
+    "explanation": "结算失败属于运营事实，需要结合具体交易、合同日期与失败状态进行诊断。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "查询失败结算记录，并结合证券/市场、对手方、合同结算日和失败原因排序。",
+          "只搜索公开市场新闻。",
+          "只查询证券的年度收益率。",
+          "只查询所有 Task 的成功/失败状态。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "查询失败结算记录，并结合证券/市场、对手方、合同结算日和失败原因排序。 结算失败属于运营事实，需要结合具体交易、合同日期与失败状态进行诊断。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-02",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "为什么不能把所有证券交易都默认判定为 T+2 到期？",
+    "explanation": "到期判断必须匹配交易对应市场和规则版本，统一假设会产生误报。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "所有交易日都等于自然日。",
+          "结算日期与市场毫无关系。",
+          "结算周期可能因市场、资产类别和生效规则不同而异，应按交易适用规则计算。",
+          "T+2 永远不适用于任何证券交易。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "结算周期可能因市场、资产类别和生效规则不同而异，应按交易适用规则计算。 到期判断必须匹配交易对应市场和规则版本，统一假设会产生误报。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-03",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "现金对账出现差异，中台应同时检索什么？",
+    "explanation": "对账需要对照内部账与外部证据，并按已批准流程定位和解决 break。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "差异记录、托管人报表/现金流水和适用的内部对账处理流程。",
+          "只检查投资备忘录中的现金描述。",
+          "只查询市场基准收益率。",
+          "只检查 PDF 文件是否存在。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "差异记录、托管人报表/现金流水和适用的内部对账处理流程。 对账需要对照内部账与外部证据，并按已批准流程定位和解决 break。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-04",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "NAV 当日变化超过 2%，但市场价格并无相应变化，演示流程建议先检查什么？",
+    "explanation": "异常提示是调查入口，需通过组成项和业务事件定位来源，不应直接覆盖计算结果。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接把变化归因于市场波动而不查询明细。",
+          "删除产生变化的交易记录。",
+          "核实持仓、现金、交易、公司行动和对账差异等组成项，并保留 NAV 计算证据。",
+          "立即将 NAV 改成前一日数值。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "核实持仓、现金、交易、公司行动和对账差异等组成项，并保留 NAV 计算证据。 异常提示是调查入口，需通过组成项和业务事件定位来源，不应直接覆盖计算结果。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-05",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "一个现金差异已持续超过约定的 24 小时处理 SLA，适当做法是什么？",
+    "explanation": "SLA 超时需有责任人和升级流程，账务修正应基于核验证据。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "记录差异金额和持续时间，升级给责任团队并按 Runbook 追踪原因与解决状态。",
+          "将差异永久标为已解决以避免逾期。",
+          "只修改监控阈值。",
+          "无条件把差额写进现金余额。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "记录差异金额和持续时间，升级给责任团队并按 Runbook 追踪原因与解决状态。 SLA 超时需有责任人和升级流程，账务修正应基于核验证据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-06",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "证券持仓对账发现超过 10 万美元的 position break，操作上应优先做什么？",
+    "explanation": "演示运行标准要求对较大的持仓差异优先调查；具体门槛应以适用运营政策为准。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把一侧记录覆盖成另一侧，不留日志。",
+          "将其归类为一般时间差且不升级。",
+          "按演示政策设定的严重度优先级调查来源持仓、交易和估值，并记录处置证据。",
+          "忽略差异，只要总 NAV 对得上。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按演示政策设定的严重度优先级调查来源持仓、交易和估值，并记录处置证据。 演示运行标准要求对较大的持仓差异优先调查；具体门槛应以适用运营政策为准。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-07",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "公司行动的除权/生效日已过，但操作记录显示仍待处理。为什么要特别关注？",
+    "explanation": "公司行动会影响证券数量或现金，必须关联事件日期与实际处理状态。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "它可能影响持仓数量、现金流和 NAV，需要核实漏处理或状态滞后。",
+          "公司行动永远不会影响 NAV。",
+          "只要价格表更新，现金和持仓自动永远正确。",
+          "待处理状态可以不记录。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "它可能影响持仓数量、现金流和 NAV，需要核实漏处理或状态滞后。 公司行动会影响证券数量或现金，必须关联事件日期与实际处理状态。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-08",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "运营 Agent 要寻找某托管人的结算指令（SSI），最合适的证据来源是什么？",
+    "explanation": "结算指令属于高风险运营数据，必须使用获批的内部来源并核对适用范围。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "从研究报告里猜测结算账户。",
+          "使用其他客户的 SSI 作为默认值。",
+          "受控的内部 SSI 文档与托管人信息，并核实证券类型、市场、币种和有效期。",
+          "从网页任意搜索一个相同银行名称的账户号码。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "受控的内部 SSI 文档与托管人信息，并核实证券类型、市场、币种和有效期。 结算指令属于高风险运营数据，必须使用获批的内部来源并核对适用范围。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-09",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "如何判断 NAV 报告已真正完成，而不是仅完成计算任务？",
+    "explanation": "运营交付的完成标准包括数据对账与必要审批，不能只依靠单一任务状态。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "核对关键组成项、差异/公司行动、审批状态、时间戳和交付的报表证据。",
+          "只看 NAV 任务是否返回成功。",
+          "只看 PDF 文件大小。",
+          "把尚未处理的差异隐藏起来。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "核对关键组成项、差异/公司行动、审批状态、时间戳和交付的报表证据。 运营交付的完成标准包括数据对账与必要审批，不能只依靠单一任务状态。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-middle-office-10",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-am-middle-office",
+    "subtopic": "sf-am-middle-office",
+    "knowledgeId": "sf-am-middle-office",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "data-engineering",
+      "sf-am-middle-office",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握中后台运营：NAV、结算与对账的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/middle_office_copilot.py; data/skills/data-lineage-explanation/SKILL.md; docs/data_model.md",
+      "relatedMaterials": [
+        "python/ai/agents/middle_office_copilot.py",
+        "docs/data_model.md",
+        "docs/data_lineage.md"
+      ]
+    },
+    "question": "处理中后台故障时，Agent 应如何使用历史 reconciliation notes？",
+    "explanation": "历史处理记录提供经验但不证明当前事件相同，必须对照当前证据。",
+    "misconceptions": [
+      "把一个全局结算周期套用于所有市场",
+      "只看差异金额而不看日期和业务上下文",
+      "自动修复账务差异而不留审计记录"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为是内部文档，自动视作本次事实。",
+          "根据旧备注直接更新现金余额。",
+          "将其作为同类问题的排查参考，再根据本次交易和当前证据验证原因。",
+          "把过去问题的结论原样复制到当前交易。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "将其作为同类问题的排查参考，再根据本次交易和当前证据验证原因。 历史处理记录提供经验但不证明当前事件相同，必须对照当前证据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-01",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "在演示平台构建组合时，为什么必须先查询受支持的可投资证券列表？",
+    "explanation": "受限证券宇宙能避免组合权重指向没有行情或基础数据的证券。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为证券主数据与回测结果无关。",
+          "因为模型可以自动生成缺失的历史行情。",
+          "演示只保证已建模证券宇宙中的证券有相应数据，不能凭一般知识添加未验证代码。",
+          "因为所有 ETF 都必然存在于演示数据库。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "演示只保证已建模证券宇宙中的证券有相应数据，不能凭一般知识添加未验证代码。 受限证券宇宙能避免组合权重指向没有行情或基础数据的证券。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-02",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "一个组合权重设为 30%、25% 和 40%，尚未配置现金/其他资产。它还差多少权重达到 100%？",
+    "explanation": "权重合计为 95%，与 100% 的差额是 5%；回测前必须明确剩余资金如何处理。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "5%。",
+          "15%。",
+          "95%。",
+          "0%。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "5%。 权重合计为 95%，与 100% 的差额是 5%；回测前必须明确剩余资金如何处理。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-03",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "优化器收到预期收益和协方差矩阵后，为什么仍需施加仓位上限/行业限制？",
+    "explanation": "约束定义了符合投资规则的可行组合，模型优化不能代替政策编码。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为权重可以任意大而不影响风险。",
+          "因为优化器只能生成等权组合。",
+          "优化目标本身不会自动表达所有投资政策和风险约束，必须显式纳入可行域。",
+          "因为协方差矩阵只能表示行业名称。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "优化目标本身不会自动表达所有投资政策和风险约束，必须显式纳入可行域。 约束定义了符合投资规则的可行组合，模型优化不能代替政策编码。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-04",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "回测结果显示某策略过去五年收益较高，为什么不能直接承诺未来收益？",
+    "explanation": "回测提供历史条件下的证据，不是未来收益保证，必须披露方法和限制。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "历史表现受样本期间、市场状态、成本和模型假设影响，不保证未来结果。",
+          "因为历史价格不能用于任何分析。",
+          "因为回测没有输入日期。",
+          "因为较高收益必然意味着数据错误。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "历史表现受样本期间、市场状态、成本和模型假设影响，不保证未来结果。 回测提供历史条件下的证据，不是未来收益保证，必须披露方法和限制。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-05",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "运行组合回测前，权重和参数校验至少应包含什么？",
+    "explanation": "参数错误会导致回测不可解释或不可执行，必须先确认权重与测试条件。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只检查是否有图表。",
+          "只检查仓库是否处于运行状态。",
+          "权重合计/非负约束、起止日期、基准和再平衡频率。",
+          "只检查组合名称是否唯一。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "权重合计/非负约束、起止日期、基准和再平衡频率。 参数错误会导致回测不可解释或不可执行，必须先确认权重与测试条件。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-06",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "为什么不能直接将随机 Monte Carlo 模拟的最佳情景当成最可能结果？",
+    "explanation": "模拟是情景分布工具，应解释假设和分位数，而不是只挑最好路径。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "它展示的是一组假设下可能的结果分布，并不表示最佳路径的发生概率最高。",
+          "因为 Monte Carlo 只返回历史事实。",
+          "因为所有模拟结果都完全相同。",
+          "因为模拟可以替代风险偏好。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "它展示的是一组假设下可能的结果分布，并不表示最佳路径的发生概率最高。 模拟是情景分布工具，应解释假设和分位数，而不是只挑最好路径。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-07",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "投资者有最大波动率 12% 的限制，组合构建工作流应怎样处理？",
+    "explanation": "明确约束并使用一致的风险输入验证，才能判断候选是否符合目标。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将限制作为报告脚注忽略。",
+          "只按预期收益最大化，无需风险验证。",
+          "把限制转换为明确约束，基于受支持的输入构建候选并回测验证。",
+          "把历史波动率显示改成 12% 而不调整权重。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "把限制转换为明确约束，基于受支持的输入构建候选并回测验证。 明确约束并使用一致的风险输入验证，才能判断候选是否符合目标。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-08",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "历史回测要比较两个组合，为什么需要一致的时间窗口和基准？",
+    "explanation": "可比回测需要控制日期、基准和其他关键参数，才能解释候选差异。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "否则收益、波动率等差异可能来自测试区间或基准不同，而非权重变化。",
+          "因为两个组合的资产必须完全相同。",
+          "因为基准会自动控制所有数据泄漏。",
+          "因为不同窗口一定得到同一收益。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "否则收益、波动率等差异可能来自测试区间或基准不同，而非权重变化。 可比回测需要控制日期、基准和其他关键参数，才能解释候选差异。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-09",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "如果优化目标是最小方差，为什么不能只看预期收益排序来选择结果？",
+    "explanation": "不同优化目标使用不同的目标函数与输入，评估时要围绕目标和约束解读。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为最小方差结果一定收益最低。",
+          "因为所有资产方差都等于零。",
+          "最小方差目标依赖资产间的协方差结构和约束，不是单纯选择最高预期收益。",
+          "因为风险与收益在所有市场中完全无关。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "最小方差目标依赖资产间的协方差结构和约束，不是单纯选择最高预期收益。 不同优化目标使用不同的目标函数与输入，评估时要围绕目标和约束解读。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-portfolio-modelling-10",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-portfolio-modelling",
+    "subtopic": "sf-am-portfolio-modelling",
+    "knowledgeId": "sf-am-portfolio-modelling",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-portfolio-modelling",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握组合构建、优化、回测与压力测试的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "data/skills/portfolio-construction/SKILL.md; data/skills/portfolio-optimizer/SKILL.md; data/skills/historical-backtest/SKILL.md; notebooks",
+      "relatedMaterials": [
+        "data/skills/portfolio-construction/SKILL.md",
+        "data/skills/portfolio-optimizer/SKILL.md",
+        "data/skills/historical-backtest/SKILL.md",
+        "notebooks/factor_discovery.ipynb",
+        "notebooks/market_regime_detection.ipynb"
+      ]
+    },
+    "question": "回测代码或参数变化后，怎样降低结果比较的歧义？",
+    "explanation": "可复现比较需要对输入、算法版本与运行条件进行记录。",
+    "misconceptions": [
+      "未检查可投资证券范围就构建组合",
+      "把优化输出当作保证收益的承诺",
+      "忽略权重约束和历史测试的假设"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "保存代码/参数版本、数据截止日期、输入权重和基准，并在相同条件下重跑。",
+          "只保留表现最好的一次输出。",
+          "使用不同数据和参数来增加变化。",
+          "删除旧结果避免对比。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保存代码/参数版本、数据截止日期、输入权重和基准，并在相同条件下重跑。 可复现比较需要对输入、算法版本与运行条件进行记录。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-01",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "演示中的借款人 PD 模型，其 PD 含义应怎样解释？",
+    "explanation": "概率定义和预测窗口必须随结果说明，防止用户把模型目标误解为其他信用事件。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "它是模型对下一季度发生契约违约或契约余量低于规定阈值的概率估计。",
+          "它是借款人未来一年必然违约的确定日期。",
+          "它是证券价格下跌的百分比。",
+          "它是历史已发生违约事件的简单计数。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "它是模型对下一季度发生契约违约或契约余量低于规定阈值的概率估计。 概率定义和预测窗口必须随结果说明，防止用户把模型目标误解为其他信用事件。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-02",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "借款人的 PD 由生产模型给出，用户想做“杠杆提高 1.5 倍”的 what-if。正确做法是什么？",
+    "explanation": "压力情景需通过受控工具按定义的输入计算，并披露其与基线的差异。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "手动修改模型输出表以显示目标值。",
+          "直接训练一个新的模型并覆盖生产版本。",
+          "使用受支持的 what-if 工具提交明确覆盖参数，并返回基线与情景结果和相关 covenant 变化。",
+          "凭经验在原 PD 上加 1.5%。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用受支持的 what-if 工具提交明确覆盖参数，并返回基线与情景结果和相关 covenant 变化。 压力情景需通过受控工具按定义的输入计算，并披露其与基线的差异。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-03",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "SHAP 结果显示某特征为正的 log-odds 贡献，在该模型解释里通常意味着什么？",
+    "explanation": "SHAP 提供模型预测的局部贡献解释，不能将其误写成确定性或因果结论。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "该特征对当前预测的贡献方向是提高模型输出的违约风险倾向，但不证明因果关系。",
+          "该特征保证借款人一定违约。",
+          "该特征是回报率的百分点。",
+          "它意味着模型忽略了其他所有特征。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "该特征对当前预测的贡献方向是提高模型输出的违约风险倾向，但不证明因果关系。 SHAP 提供模型预测的局部贡献解释，不能将其误写成确定性或因果结论。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-04",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "模型显示借款人风险等级为 HIGH_RISK，报告应保留哪些上下文？",
+    "explanation": "风险输出要能追踪输入、版本和解释，供信用团队进一步核实。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仅引用最新公开新闻，而不看模型输入。",
+          "把评级改成 LOW 以减少误报。",
+          "预测定义与窗口、模型版本/时间、关键输入特征和风险驱动证据。",
+          "只保留红色等级标签。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "预测定义与窗口、模型版本/时间、关键输入特征和风险驱动证据。 风险输出要能追踪输入、版本和解释，供信用团队进一步核实。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-05",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "私募信贷团队想检查 covenant headroom 低于 10% 的借款人，应如何查询？",
+    "explanation": "模型概率与契约指标互补但不同，阈值检查必须基于实际契约数据。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "查询当前借款人/契约数据，明确 headroom 定义与基准期，再按阈值筛选。",
+          "从公司名称长度推断余量。",
+          "只查询组合总收益率。",
+          "用模型 PD 代替所有契约明细。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "查询当前借款人/契约数据，明确 headroom 定义与基准期，再按阈值筛选。 模型概率与契约指标互补但不同，阈值检查必须基于实际契约数据。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-06",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "一个私募股权组合公司“价值创造计划”显示进度良好，如何避免过度依赖状态文本？",
+    "explanation": "定性摘要需由可核验的 KPI 和更新时间支撑，尤其对私有资产。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把未更新的任务自动标为完成。",
+          "用公开股票价格代替私有公司 KPI。",
+          "对照目标 KPI、基线、实际值、更新时间和责任人证据。",
+          "只使用管理层总结中的正面措辞。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "对照目标 KPI、基线、实际值、更新时间和责任人证据。 定性摘要需由可核验的 KPI 和更新时间支撑，尤其对私有资产。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-07",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "Deal pipeline 筛选发现一笔交易匹配投资策略，是否意味着可以直接批准投资？",
+    "explanation": "Agent 辅助流程可以提高筛选效率，但不能替代投资尽调与审批责任。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不是；筛选只是初筛，需要尽调、风险评估、估值和正式审批。",
+          "是，因为所有筛选条件已自动证明投资适宜。",
+          "是，只要模型有较高分数。",
+          "不是，但只需生成一份宣传材料即可。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不是；筛选只是初筛，需要尽调、风险评估、估值和正式审批。 Agent 辅助流程可以提高筛选效率，但不能替代投资尽调与审批责任。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-08",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "信用风险模型的 Feature Store 数据发生回补，重新训练/评分前应核对什么？",
+    "explanation": "时间型特征回补可能改变训练快照或产生泄漏，需要核验时点并保留版本记录。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "假设特征回补不会影响历史值。",
+          "把所有历史预测覆盖而不留版本。",
+          "特征的时间有效性、实体键、版本、刷新情况和训练/评分使用的时点。",
+          "只查看模型名字是否改变。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "特征的时间有效性、实体键、版本、刷新情况和训练/评分使用的时点。 时间型特征回补可能改变训练快照或产生泄漏，需要核验时点并保留版本记录。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-09",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "模型输出借款人风险上升，但财务数据表明总杠杆下降。下一步应做什么？",
+    "explanation": "模型与单一指标不一致时，应检查完整特征和时间口径，而不是挑选相信的一方。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查数据日期、字段映射、其他特征变化和模型版本，并让信用分析员核验冲突。",
+          "直接将模型输出改为低风险。",
+          "直接将财务数据改成更高杠杆。",
+          "忽略冲突并报告模型绝对正确。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "检查数据日期、字段映射、其他特征变化和模型版本，并让信用分析员核验冲突。 模型与单一指标不一致时，应检查完整特征和时间口径，而不是挑选相信的一方。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-credit-private-markets-10",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-credit-private-markets",
+    "subtopic": "sf-am-credit-private-markets",
+    "knowledgeId": "sf-am-credit-private-markets",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-credit-private-markets",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握私募信贷、私募股权与信用风险分析的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/agents/private_credit.py; python/ai/agents/pe_copilot.py; data/skills/credit-risk-calculator/SKILL.md",
+      "relatedMaterials": [
+        "python/ai/agents/private_credit.py",
+        "python/ai/agents/pe_copilot.py",
+        "data/skills/credit-risk-calculator/SKILL.md",
+        "python/ai/semantic_view_definitions/SAM_CREDIT_RISK_VIEW.yaml"
+      ]
+    },
+    "question": "私募资产数据不完整，Agent 应怎样表达结论？",
+    "explanation": "非公开资产数据常有覆盖限制，显式报告缺口比无标记填补更可靠。",
+    "misconceptions": [
+      "把风险模型输出当作确定事件",
+      "不说明 PD 的定义和时间窗口",
+      "把交易筛选信号当成尽调结论"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把空值解释为零。",
+          "只保留完整数据而不说明样本被删掉。",
+          "明确哪些字段缺失、使用了哪些估计/外部证据及其限制，并提出补充数据需求。",
+          "用上市公司行业均值填充后不披露。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确哪些字段缺失、使用了哪些估计/外部证据及其限制，并提出补充数据需求。 非公开资产数据常有覆盖限制，显式报告缺口比无标记填补更可靠。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-01",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "如何评估资产管理 Agent 是否真的答对了问题，而不只是生成流畅文字？",
+    "explanation": "Agent 评测应衡量可判定的任务结果和证据质量，表达流畅并不等于事实正确。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只统计回答长度。",
+          "只统计工具调用数量。",
+          "使用带有预期结果/证据的评测集，检查事实正确性、引用、工具选择、权限和拒答/失败行为。",
+          "只让开发人员看一眼语言是否自然。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用带有预期结果/证据的评测集，检查事实正确性、引用、工具选择、权限和拒答/失败行为。 Agent 评测应衡量可判定的任务结果和证据质量，表达流畅并不等于事实正确。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-02",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "演示环境使用 build role 构建大量对象，日常 Agent 运行更适合使用什么原则？",
+    "explanation": "构建与日常使用应分离权限，减少误操作和凭据泄露的影响范围。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "使用权限范围受限的 runtime role，并只授予 Agent 完成任务所需的对象和工具权限。",
+          "让所有终端用户都使用 ACCOUNTADMIN。",
+          "将构建凭据写入提示词。",
+          "运行时角色自动拥有全部创建对象的权限。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用权限范围受限的 runtime role，并只授予 Agent 完成任务所需的对象和工具权限。 构建与日常使用应分离权限，减少误操作和凭据泄露的影响范围。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-03",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "某次工具调用失败后，Agent 仍生成了肯定答案。测试应怎样覆盖这个问题？",
+    "explanation": "失败路径是 Agent 可靠性的重要组成，必须验证它不会把未知状态伪装成成功。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把所有异常转换成空数组。",
+          "在测试中禁用来源检查。",
+          "加入工具错误、超时、空结果与字段缺失样本，检查 Agent 是否报告限制而非编造。",
+          "只测试所有工具都正常的理想路径。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "加入工具错误、超时、空结果与字段缺失样本，检查 Agent 是否报告限制而非编造。 失败路径是 Agent 可靠性的重要组成，必须验证它不会把未知状态伪装成成功。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-04",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "初始演示构建为了保持数据冻结而跳过自动化任务。用户想判断数据是否最新，应该怎么做？",
+    "explanation": "演示构建成功与持续自动刷新是不同状态，应核对实际任务和数据时间戳。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查数据 as-of 日期和刷新状态，并确认是否已显式启用所需的刷新流程。",
+          "把演示日期直接改成今天。",
+          "假设 build 成功代表后台每周任务正在运行。",
+          "将历史数据表复制一遍即可。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "检查数据 as-of 日期和刷新状态，并确认是否已显式启用所需的刷新流程。 演示构建成功与持续自动刷新是不同状态，应核对实际任务和数据时间戳。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-05",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "为什么 Agent 的关键结论需要关联工具轨迹或来源证据？",
+    "explanation": "可追溯证据支持复核和定位错误，但仍需质量检查与敏感信息保护。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "来源关联会替代访问控制。",
+          "只保留最终总结能提供同等诊断能力。",
+          "让用户和审计人员可以追踪结论来自哪个数据查询、文档和时间范围。",
+          "工具轨迹可以自动证明所有结果没有错误。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "让用户和审计人员可以追踪结论来自哪个数据查询、文档和时间范围。 可追溯证据支持复核和定位错误，但仍需质量检查与敏感信息保护。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-06",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "对 Agent 输出的敏感信息进行日志记录，应遵循什么原则？",
+    "explanation": "审计与最小化需平衡：保留足够证据，同时控制敏感信息的范围与访问。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只记录排障/审计所需的信息，做适当脱敏并限制日志访问和保留期。",
+          "完整保存所有客户数据与凭据并开放给所有开发者。",
+          "关闭一切日志以消除风险。",
+          "把敏感查询结果放到公开报告中。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "只记录排障/审计所需的信息，做适当脱敏并限制日志访问和保留期。 审计与最小化需平衡：保留足够证据，同时控制敏感信息的范围与访问。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-07",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "多工具 Agent 将持仓、新闻和政策文档汇总成一个结论，怎样保证每项陈述可核验？",
+    "explanation": "可核验结论要有主张级证据，并保留来源之间的权威性和时间差异。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把所有来源归为同样可靠。",
+          "删除互相矛盾的证据。",
+          "把输出主张映射到具体来源/查询、时间与口径，并区分事实、判断和建议。",
+          "只用一个总体置信分数代表所有来源。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "把输出主张映射到具体来源/查询、时间与口径，并区分事实、判断和建议。 可核验结论要有主张级证据，并保留来源之间的权威性和时间差异。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-08",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "在一个投资研究工作流中，何时应该要求人工确认？",
+    "explanation": "人工确认应匹配风险和业务状态变更，而非无差别阻塞所有只读任务。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "当操作会写入长期 Thesis、改变组合或产生高影响业务副作用，或工作流定义了范围停止点时。",
+          "每次执行只读查询都必须让用户确认每一个 SQL token。",
+          "永远不需要确认，因为 Agent 有自然语言理解能力。",
+          "仅当生成文字超过 1000 字时。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "当操作会写入长期 Thesis、改变组合或产生高影响业务副作用，或工作流定义了范围停止点时。 人工确认应匹配风险和业务状态变更，而非无差别阻塞所有只读任务。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-09",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "代码包/Workspace 的构建过程运行成功，但一个 Agent 的语义查询和 Search 服务不工作，应该怎么查？",
+    "explanation": "端到端能力依赖多个独立组件，需沿依赖链定位而不是盲目重建或扩大权限。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只调整 Agent 的语气提示词。",
+          "把全部角色都升级为管理员。",
+          "分层验证对象部署、语义视图、Search 服务、工具注册、角色 grant 和数据就绪情况。",
+          "重复运行所有构建脚本且不检查状态。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "分层验证对象部署、语义视图、Search 服务、工具注册、角色 grant 和数据就绪情况。 端到端能力依赖多个独立组件，需沿依赖链定位而不是盲目重建或扩大权限。"
+      }
+    }
+  },
+  {
+    "id": "sf-asset-agentic-100-sf-am-agent-governance-10",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-am-agent-governance",
+    "subtopic": "sf-am-agent-governance",
+    "knowledgeId": "sf-am-agent-governance",
+    "tags": [
+      "snowflake-course",
+      "sfguide-agentic-ai-for-asset-management-100",
+      "snowflake-agent-ml",
+      "sf-am-agent-governance",
+      "asset-management"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握Agent 评测、审计、权限与生产治理的基础机制及资产管理场景下的工程实践边界。",
+      "reasoningGoal": "根据给定的投资组合、研究文档、风险规则或运营流程，选择符合业务语义的证据路径，并说明需要核验的数据、权限或结果边界。"
+    },
+    "source": {
+      "materialId": "sfguide-agentic-ai-for-asset-management",
+      "section": "python/ai/evaluations.py; python/ai/builder.py; docs/data_lineage.md; README Build steps",
+      "relatedMaterials": [
+        "python/ai/evaluations.py",
+        "python/ai/builder.py",
+        "docs/data_lineage.md",
+        "README.md",
+        "scripts/setup.sql"
+      ]
+    },
+    "question": "何种证据组合最能证明一个资产管理 Agent 已达到受控上线标准？",
+    "explanation": "生产就绪包含正确性、治理、运行可靠性与成本，而不是界面可访问或演示成功。",
+    "misconceptions": [
+      "把 Agent 回答流畅度当作准确性指标",
+      "将构建权限直接用于日常运行",
+      "把一次成功演示当作生产就绪"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "黄金问题集评测、源数据/刷新状态、权限负向测试、审计轨迹、成本/延迟与失败恢复验证。",
+          "一份演示视频和几条成功回答。",
+          "只通过 SQL 语法检查。",
+          "只确认 Agent 能在界面中被选中。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "黄金问题集评测、源数据/刷新状态、权限负向测试、审计轨迹、成本/延迟与失败恢复验证。 生产就绪包含正确性、治理、运行可靠性与成本，而不是界面可访问或演示成功。"
+      }
+    }
+  }
+]
