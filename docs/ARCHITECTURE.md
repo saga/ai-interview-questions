@@ -777,7 +777,7 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   双形态题一律出选择、自适应随机开放分配恒为 choice），定义只选 open 时退化
   为 choice 而非空会话；缺省/非法值按 false 清洗。
 - **pi-ai 浏览器注入密钥**：走 `createModels({ credentials })` 内存 `CredentialStore`；
-- **GitHub Copilot SDK Provider**：`copilot-sdk` 经 `callCopilotSDKCompletion` 调用本地 Vite dev API，SDK 客户端在 Vite 插件中懒启动并复用 CLI 登录态；不开 API Key 字段、不加入生产静态构建。它当前服务 one-shot/普通问答，尚未适配 `pi-agent-core` 的流式工具调用契约。
+- **GitHub Copilot SDK Provider**：`copilot-sdk` 经 `callCopilotSDKCompletion` 调用本地 Vite dev API，SDK 客户端在 Vite 插件中懒启动并复用 CLI 登录态；客户端生命周期有关闭代次守卫，应用层 watchdog 覆盖启动、Session 创建和模型调用；超时/客户端断开时请求中止并有界等待 `session.idle` 后断开 Session。不开 API Key 字段、不加入生产静态构建。它当前服务 one-shot/普通问答，尚未适配 `pi-agent-core` 的流式工具调用契约。
   Cloudflare 额外经 credential.env 注入 `CLOUDFLARE_ACCOUNT_ID`（其 auth 协议要求 Token + Account ID 双字段）。
 - **设置页 = config.json 编辑器（ADR-025/026，ADR-033 增强）**：引擎为
   `chrome / local / deepseek / openrouter / google / cloudflare-workers-ai / copilot-sdk` 七种（Copilot SDK 为本地开发 Provider），

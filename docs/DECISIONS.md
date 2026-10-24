@@ -1,5 +1,17 @@
 # 关键决策记录（ADR）
 
+## ADR-093 · Copilot SDK one-shot 开发端点的生命周期与请求截止时间
+
+- 状态：已采纳 · 2026-10-24
+- 背景：本仓库通过 Vite 开发中间件提供本地 Copilot SDK one-shot API。原实现仅把超时传给 `session.sendAndWait()`，启动客户端和创建 Session 不在应用层截止时间内；同时，服务关闭可能与异步客户端启动并发，迟到的启动 Promise 会重新写入共享客户端引用。
+- 决策：
+  1. 进程级客户端采用单一生命周期管理器；`stop()` 是终态，使用 generation guard 防止关闭后的启动结果复活客户端；启动失败时尽力清理候选客户端。
+  2. 每个模型请求设置应用层总截止时间，覆盖客户端初始化、Session 创建和模型执行；SDK 自身 timeout 仅作为稍后的兜底。
+  3. 超时或 HTTP 客户端断开时，不把 Promise 超时当作执行已停止；对活动 Session 请求 `abort()`，有界等待 `session.idle`，然后断开会话。若未观察到 idle，只记录“停止未确认”，不声称已经停止。
+  4. 当前端点仍是仅开发期、本机回环、无 ambient tools 的 one-shot provider；本 ADR 不把 Copilot SDK 接入 `pi-agent-core` 的工具调用循环，也不引入持久化 Session 或新的业务后端。
+- 验证：新增生命周期回归测试，覆盖并发启动、关闭与启动竞态、启动失败后的清理/重试。当前执行环境未运行 TypeScript、Vitest 或 build。
+
+
 ## ADR-092 · Security Architecture 作为独立顶层学习体系
 
 - 状态：已采纳 · 2026-10-22

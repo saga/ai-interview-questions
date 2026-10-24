@@ -1,5 +1,12 @@
 # 设计变更记录
 
+## 2026-10-24 · Copilot SDK one-shot 请求生命周期与超时修复
+
+- 修复 Vite 服务关闭与异步 CopilotClient 启动之间的竞态：关闭后的迟到启动不能重新发布客户端，启动失败时清理候选客户端。
+- 将 120 秒应用层 watchdog 覆盖到客户端启动、Session 创建和模型调用；请求超时或客户端断开时请求中止活动 turn，并有界等待 `session.idle` 后断开 Session。
+- 为客户端并发初始化、关闭竞态和启动失败重试增加生命周期单元测试。
+- 未运行本地 Vitest / TypeScript / build；不能据此声称自动化验证通过。
+
 ## 2026-10-22 · 新增 Security Architecture 独立课程
 
 - 在顶层学习体系中加入 `security-architecture`，与 AI、Snowflake 并列；原有 AI 六域 taxonomy 和 Snowflake 课程边界不变。
