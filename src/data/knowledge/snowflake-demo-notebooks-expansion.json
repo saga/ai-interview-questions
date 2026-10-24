@@ -1,0 +1,750 @@
+[
+  {
+    "id": "sf-demo-notebooks-workspace",
+    "courseId": "snowflake",
+    "name": "Snowflake Notebooks 工作区与交互执行",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "掌握 Notebook 工作区、SQL/Python 单元格、引用变量、执行顺序，以及从交互式探索向可重复作业交付的边界。",
+    "required": [
+      "识别单元格依赖和会话状态；区分代码文件、历史输出与真实执行证据",
+      "为生产化流程定义输入输出、参数、版本、失败恢复和运行记录"
+    ],
+    "misconceptions": [
+      "把显示顺序当作执行顺序",
+      "把历史输出当作当前代码的可复现结果"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-sql-python-interop",
+    "courseId": "snowflake",
+    "name": "SQL 与 Python 的协同分析",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "在 Notebook 中组合 SQL、Python 与 DataFrame，控制数据移动、类型转换和执行边界。",
+    "required": [
+      "大规模过滤、连接和聚合优先评估 Snowflake 端执行",
+      "核验 collect/to_pandas 等客户端物化操作、类型转换和结果规模"
+    ],
+    "misconceptions": [
+      "把所有 DataFrame 操作都当成本地执行",
+      "忽视大结果集搬运导致的成本和内存风险"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-snowpark-dataframe",
+    "courseId": "snowflake",
+    "name": "Snowpark DataFrame 转换与优化",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P0",
+    "summary": "使用 Snowpark DataFrame 组合转换，结合惰性执行、SQL 下推、连接粒度和 Query Profile 进行诊断。",
+    "required": [
+      "区分 transformation 与触发执行的 action",
+      "在连接和聚合前定义数据粒度并核查连接基数",
+      "以实际查询计划、扫描量、spill 与结果对账验证优化"
+    ],
+    "misconceptions": [
+      "将 DataFrame 对象等同于本地内存数据",
+      "认为链式 API 天然保证高性能"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "implementation"
+    ]
+  },
+  {
+    "id": "sf-demo-data-pipeline",
+    "courseId": "snowflake",
+    "name": "端到端数据工程管道",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P0",
+    "summary": "从文件接入、Raw/标准化到消费交付设计可恢复的数据管道和质量门禁。",
+    "required": [
+      "根据批量/持续/行级输入和新鲜度要求选择摄取模式",
+      "为重试、迟到数据、重复事件和回补定义幂等策略",
+      "使用输入输出契约、控制总额和阶段级质量测试验收"
+    ],
+    "misconceptions": [
+      "把任务成功当作数据正确",
+      "把重试当作没有副作用的操作"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-pipeline-observability",
+    "courseId": "snowflake",
+    "name": "数据管道可观测性与告警",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P0",
+    "summary": "关联任务运行、查询、批次、新鲜度和数据质量，形成可行动的生产告警与运行证据。",
+    "required": [
+      "关联 run ID、query ID、批次和目标对象",
+      "区分执行失败、质量失败和业务 SLA 违约",
+      "为告警提供影响范围、责任方和 Runbook"
+    ],
+    "misconceptions": [
+      "只记录成功/失败布尔值",
+      "把数据质量问题等同于平台故障"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design",
+      "implementation"
+    ]
+  },
+  {
+    "id": "sf-demo-warehouse-utilization",
+    "courseId": "snowflake",
+    "name": "Warehouse 利用率、并发与容量",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "基于排队、查询延迟、并发和闲置证据选择仓库规模、工作负载隔离及多集群策略。",
+    "required": [
+      "区分仓库规模对单查询资源的影响与多集群对并发的帮助",
+      "用队列、执行历史、成本和 SLA 验证容量调整",
+      "评估自动暂停/恢复与资源监控范围"
+    ],
+    "misconceptions": [
+      "认为更大仓库一定解决并发",
+      "把单一利用率指标当作唯一优化目标"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "diagnosis",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-query-profile",
+    "courseId": "snowflake",
+    "name": "Query Profile 与 SQL 性能诊断",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P0",
+    "summary": "从扫描、剪枝、连接基数、数据倾斜、spill 和等待时间识别性能瓶颈并验证优化。",
+    "required": [
+      "将总耗时拆解到算子和等待因素",
+      "根据扫描与连接输入提出可验证假设",
+      "以可比基线和结果等价性验收 SQL/资源改动"
+    ],
+    "misconceptions": [
+      "仅凭总时长判断根因",
+      "将所有性能问题归因于 Warehouse 太小"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "diagnosis",
+      "debugging",
+      "implementation"
+    ]
+  },
+  {
+    "id": "sf-demo-query-cost",
+    "courseId": "snowflake",
+    "name": "Query Cost Monitoring 与费用归因",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "将 Warehouse/查询消耗关联到工作负载、业务吞吐、SLA 与预算护栏。",
+    "required": [
+      "结合标签、角色、仓库、时间窗和作业标识做费用归因",
+      "同时评估 credits、完成工作量、延迟和结果质量",
+      "识别闲置、重试、持续时间与尺寸变化"
+    ],
+    "misconceptions": [
+      "仅按总 credits 判断效率",
+      "将所有服务费用都视为 Warehouse 费用"
+    ],
+    "angles": [
+      "quantitative",
+      "scenario",
+      "comparison",
+      "tradeoff",
+      "diagnosis"
+    ]
+  },
+  {
+    "id": "sf-demo-query-cache",
+    "courseId": "snowflake",
+    "name": "查询缓存效果与性能验证",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "区分结果缓存与仓库数据缓存，建立考虑冷热状态和真实负载的性能基准。",
+    "required": [
+      "识别不同缓存机制及其适用条件",
+      "分别分析缓存命中与未命中运行",
+      "在可比输入、并发和资源配置下进行基准比较"
+    ],
+    "misconceptions": [
+      "将缓存命中耗时当作冷执行性能",
+      "认为重复 SQL 必定命中同一缓存"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "quantitative"
+    ]
+  },
+  {
+    "id": "sf-demo-feature-store",
+    "courseId": "snowflake",
+    "name": "Snowflake Feature Store 特征管理",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "围绕实体、特征语义、时间有效性和复用治理特征，并控制训练/推理时点一致性。",
+    "required": [
+      "定义实体键、粒度、特征业务含义和时间窗口",
+      "防止预测时点之后的信息造成数据泄漏",
+      "核验特征版本、刷新状态和训练/推理一致性"
+    ],
+    "misconceptions": [
+      "把同名列视为同一业务特征",
+      "忽视实体重复和时间泄漏"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-model-registry",
+    "courseId": "snowflake",
+    "name": "Snowflake Model Registry 与模型生命周期",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "管理模型注册版本、训练来源、输入输出契约、晋级、监控和回滚。",
+    "required": [
+      "区分注册、部署、流量切换和验收",
+      "关联训练数据/特征、代码、依赖和评价指标",
+      "以质量、延迟、成本和回滚能力评估模型晋级"
+    ],
+    "misconceptions": [
+      "把注册视为生产部署完成",
+      "只存模型文件而不存训练证据"
+    ],
+    "angles": [
+      "definition",
+      "comparison",
+      "scenario",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-cortex-functions",
+    "courseId": "snowflake",
+    "name": "Cortex LLM 函数与任务选型",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "按分类、情感、改写、提取等任务选择 Cortex 能力，并管理输出结构、质量、成本与数据边界。",
+    "required": [
+      "为任务定义输入输出格式和可测量质量标准",
+      "校验生成内容与结构化输出，处理失败及未知类别",
+      "用代表性样本评估正确性、延迟和成本"
+    ],
+    "misconceptions": [
+      "将生成结果当作确定性真值",
+      "只凭模型名称或单次演示评估质量"
+    ],
+    "angles": [
+      "definition",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-document-ai",
+    "courseId": "snowflake",
+    "name": "文档解析与结构化抽取",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "从 PDF/文档抽取业务字段，保留原文证据并校验类型、完整性和业务不变量。",
+    "required": [
+      "为字段定义类型、必填和业务规则",
+      "关联源文件/页段定位并处理低置信字段",
+      "区分解析错误、结构错误和业务验证失败"
+    ],
+    "misconceptions": [
+      "把抽取结果当作无误差权威数据",
+      "不记录来源或静默猜测缺失字段"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "implementation",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-cortex-search-rag",
+    "courseId": "snowflake",
+    "name": "Cortex Search、检索与 RAG",
+    "area": "data-platform",
+    "topic": "snowflake-genai",
+    "priority": "P1",
+    "summary": "使用检索证据支持企业知识问答，并评估相关性、索引新鲜度、引用和权限过滤。",
+    "required": [
+      "分别评估检索召回与最终回答忠实度",
+      "在检索阶段实施用户权限过滤并监控索引新鲜度",
+      "保留查询、文档 ID、片段、结果和回答之间的关联"
+    ],
+    "misconceptions": [
+      "把生成流畅误认为事实正确",
+      "先检索未授权文档再依赖模型隐藏内容"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-semantic-analyst",
+    "courseId": "snowflake",
+    "name": "Semantic Views 与 Cortex Analyst",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "通过语义视图维护统一指标、维度、关系和查询边界，验证 Text-to-SQL 的业务语义。",
+    "required": [
+      "定义统一业务指标、维度、粒度和关系路径",
+      "检查连接基数与重复计数",
+      "用黄金问题、预期结果、授权测试验证生成 SQL"
+    ],
+    "misconceptions": [
+      "把列名匹配等同于业务语义正确",
+      "只验证 SQL 可执行不验证结果"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-cortex-agents",
+    "courseId": "snowflake",
+    "name": "Cortex Agents 工具编排与边界",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "组织 Agent 的 Analyst/Search 等工具，建立工具契约、授权、停止条件、审计和失败恢复。",
+    "required": [
+      "按任务定义工具职责、参数 schema 与授权范围",
+      "在服务端执行前核验身份和权限",
+      "设置预算、停止条件、幂等重试与可审计轨迹"
+    ],
+    "misconceptions": [
+      "把 Agent 当成无边界 SQL 执行器",
+      "将工具输出视为无需校验的事实"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-agentic-analytics",
+    "courseId": "snowflake",
+    "name": "Agentic Analytics 端到端分析",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "组合自然语言规划、检索、语义指标查询和证据综合，产出可复核的分析结论。",
+    "required": [
+      "对齐多个工具的指标、来源和时间范围",
+      "表达数据缺口、假设和不确定性",
+      "以事实正确、证据可追溯、成本和延迟衡量价值"
+    ],
+    "misconceptions": [
+      "把多个工具结果直接拼接成结论",
+      "将计划完成视为业务问题已回答"
+    ],
+    "angles": [
+      "scenario",
+      "comparison",
+      "debugging",
+      "design",
+      "synthesis"
+    ]
+  },
+  {
+    "id": "sf-demo-streamlit-app",
+    "courseId": "snowflake",
+    "name": "Streamlit in Snowflake 数据应用",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "构建交互式数据应用，同时治理查询参数、授权、导出、指标语义与发布风险。",
+    "required": [
+      "把数据授权放在服务端而不只隐藏 UI 字段",
+      "验证用户参数并限制查询范围和成本",
+      "为导出、异常和发布提供控制与审计"
+    ],
+    "misconceptions": [
+      "将界面隐藏当作数据安全控制",
+      "不区分应用上下文和访问者身份"
+    ],
+    "angles": [
+      "scenario",
+      "mechanism",
+      "debugging",
+      "design",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-data-sharing",
+    "courseId": "snowflake",
+    "name": "数据共享与应用交付",
+    "area": "data-platform",
+    "topic": "snowflake-data-products",
+    "priority": "P1",
+    "summary": "将数据共享、Marketplace/Native App 作为具备授权、契约、版本和生命周期的数据产品。",
+    "required": [
+      "明确发布者/消费者权限与共享对象范围",
+      "维护数据契约、质量、更新时间和兼容策略",
+      "设计弃用、升级、支持和撤销流程"
+    ],
+    "misconceptions": [
+      "把共享视为开放整个账户",
+      "忽略消费者依赖和变更通知"
+    ],
+    "angles": [
+      "definition",
+      "comparison",
+      "scenario",
+      "design",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-role-auditing",
+    "courseId": "snowflake",
+    "name": "RBAC、MFA 审计与数据访问控制",
+    "area": "data-platform",
+    "topic": "data-architecture",
+    "priority": "P1",
+    "summary": "检查角色继承、有效权限、MFA 状态和审计证据，并对权限例外实施整改。",
+    "required": [
+      "根据有效角色/继承路径计算权限",
+      "同时测试允许和拒绝的访问路径",
+      "将审计发现映射到整改责任、到期时间和复测"
+    ],
+    "misconceptions": [
+      "把对象可见误认为可查询",
+      "将审计报告当作自动修复工具"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-files-stages",
+    "courseId": "snowflake",
+    "name": "Stage、文件与数据摄取边界",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "管理 Stage、文件格式、COPY 加载、拒绝行、来源批次和文件级质量对账。",
+    "required": [
+      "区分文件存放与目标表加载",
+      "验证文件格式、匹配范围和拒绝记录",
+      "用来源/批次标识避免重复并支持完整性核验"
+    ],
+    "misconceptions": [
+      "把 Stage 当作目标业务表",
+      "把文件加载成功当作数据质量合格"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "sf-demo-external-access",
+    "courseId": "snowflake",
+    "name": "外部访问集成与端点安全",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "通过受控网络端点和凭据集成调用外部服务，管理最小权限、失败恢复与审计。",
+    "required": [
+      "限制可访问主机与凭据范围",
+      "验证外部响应 schema 并处理限流/超时",
+      "按请求幂等性设计有限重试与状态记录"
+    ],
+    "misconceptions": [
+      "把网络连通当作授权充分",
+      "把 API Token 写在 Notebook 中"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "sf-demo-udf-procedure",
+    "courseId": "snowflake",
+    "name": "UDF、存储过程与语言运行时",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "根据值计算或多步控制流程选择 UDF/存储过程，并治理类型契约、依赖和重试。",
+    "required": [
+      "区分 UDF 返回值逻辑和过程控制逻辑",
+      "验证托管运行环境的依赖与类型映射",
+      "定义副作用、事务边界、幂等和回滚策略"
+    ],
+    "misconceptions": [
+      "把 UDF 和存储过程视为相同对象",
+      "假定本地依赖自动可用于托管环境"
+    ],
+    "angles": [
+      "definition",
+      "comparison",
+      "mechanism",
+      "implementation",
+      "debugging"
+    ]
+  },
+  {
+    "id": "sf-demo-git-workspaces",
+    "courseId": "snowflake",
+    "name": "Snowflake Workspaces 与 Git 协作",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "通过 Git 版本、分支和差异审查协作维护 SQL/Notebook，避免源文件与生产对象漂移。",
+    "required": [
+      "区分代码同步与对象部署",
+      "审查 SQL/Notebook 差异、秘密和输出泄露",
+      "关联 commit、执行身份、部署结果与回滚版本"
+    ],
+    "misconceptions": [
+      "把 Git 同步当作自动发布",
+      "忽略工作区与生产状态漂移"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design",
+      "implementation"
+    ]
+  },
+  {
+    "id": "sf-demo-cicd-release",
+    "courseId": "snowflake",
+    "name": "Snowflake CLI、CI/CD 与发布门禁",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "建立可审计的 Snowflake 发布流程，按照依赖顺序部署并实施测试、最小权限和回滚。",
+    "required": [
+      "隔离环境连接配置并校验目标身份",
+      "按对象依赖顺序执行且在阶段后验证",
+      "发布门禁同时覆盖语法、权限、业务结果、成本和恢复"
+    ],
+    "misconceptions": [
+      "把 SQL 成功执行视作完整发布成功",
+      "只用高权限角色以简化流水线"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-container-runtime",
+    "courseId": "snowflake",
+    "name": "Snowflake Container Runtime 与依赖管理",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P2",
+    "summary": "在目标托管运行环境验证包、资源、设备和版本，确保 Notebook/ML 作业可复现。",
+    "required": [
+      "固定并记录依赖版本、训练输入和代码版本",
+      "验证包来源、运行时兼容性及 GPU 实际利用",
+      "检查数据搬运、内存、批量大小和端到端瓶颈"
+    ],
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "把有 GPU 资源等同于任务自动加速"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-schema-change",
+    "courseId": "snowflake",
+    "name": "Schema Change Tracker 与兼容性",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "检测字段新增、删除、重命名、类型变化和空值变化，治理下游依赖及契约回归。",
+    "required": [
+      "区分兼容性变更与破坏性变更",
+      "追踪受影响消费者和字段语义",
+      "验证 Schema 变化后的关键查询、质量指标和业务控制总额"
+    ],
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "只比较列数而不验证语义"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design",
+      "implementation"
+    ]
+  },
+  {
+    "id": "sf-demo-scheduled-query",
+    "courseId": "snowflake",
+    "name": "定时查询、报告和告警调度",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "以业务日期、时区和上游完成信号设计定时作业，并管理重叠运行、补跑和告警恢复。",
+    "required": [
+      "区分触发时间与数据可用时间",
+      "为批次补跑、重叠和重试定义幂等策略",
+      "记录计划/实际时间、输入批次、质量检查和恢复状态"
+    ],
+    "misconceptions": [
+      "把调度成功等同于报告交付成功",
+      "忽略时区与重叠执行"
+    ],
+    "angles": [
+      "mechanism",
+      "scenario",
+      "debugging",
+      "design",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sf-demo-anomaly-detection",
+    "courseId": "snowflake",
+    "name": "异常检测与 Cortex ML Functions",
+    "area": "data-platform",
+    "topic": "snowflake-agent-ml",
+    "priority": "P1",
+    "summary": "利用 ML 函数识别时间序列或业务数据异常，同时处理季节性、输入质量和错误成本。",
+    "required": [
+      "区分业务异常与输入/管道故障",
+      "校准阈值并评估误报、漏报和调查容量",
+      "以时间顺序与代表性基线验证模型表现"
+    ],
+    "misconceptions": [
+      "把模型异常标记视为必然真实",
+      "忽略季节性、数据漂移和误报成本"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "quantitative",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "sf-demo-eda-visualization",
+    "courseId": "snowflake",
+    "name": "EDA、可视化与数据故事",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "使用 Snowflake 数据和 Notebook 做探索分析，说明样本、指标、可视化和结论的适用边界。",
+    "required": [
+      "核对指标口径、分母、时间窗口与缺失数据",
+      "区分相关关系和因果结论",
+      "在服务端计算合理摘要并记录查询/过滤以便复现"
+    ],
+    "misconceptions": [
+      "把相关性直接解释为因果",
+      "用图表呈现掩盖口径或采样偏差"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "scenario",
+      "quantitative",
+      "synthesis"
+    ]
+  }
+]
