@@ -3,20 +3,28 @@
     "id": "tpu-torus-mesh-subslice-degradation",
     "category": "tpu-interconnect-architecture",
     "topic": "tpu-cluster-topology",
-    "tags": ["tpu", "torus", "mesh", "ici", "ring-collectives"],
+    "tags": [
+      "tpu",
+      "torus",
+      "mesh",
+      "ici",
+      "ring-collectives"
+    ],
     "difficulty": "medium",
     "angle": "architecture",
     "cognitiveTask": "evaluate",
     "concepts": {
       "core": "torus-mesh-degradation",
-      "supporting": ["ring-collectives-latency"]
+      "supporting": [
+        "ring-collectives-latency"
+      ]
     },
     "assessment": {
       "target": "能够根据 TPU 切片尺寸（Slice Size）推断拓扑结构是否退化为 Mesh，并评估拓扑退化对 Ring Collectives 通信步数与延时的定量影响",
       "reasoningGoal": "先判断所选 TPU 切片尺寸是否满足 Full Torus 环回条件；再推演拓扑降级为 Mesh 后对 Ring Collectives 中数据传输路径与步数的影响；据此排除切片缩减不会影响环形通信效率或仅导致线性吞吐同比例下降等误解观点"
     },
-    "question": "在 TPU v5e 等 2D Torus 架构集群中，当用户申请的 Slice 尺寸在轴向（如 4×4 或 8×16）小于 Full Pod 的周期尺寸（如 16）时，会对底层集群网络拓扑结构及环形集合通信（Ring Collectives）性能产生怎样的影响？",
-    "explanation": "在 TPU v5e 集群中，Full Pod（16×16）在各轴向具备 wraparound 周期性环回链路从而构成 2D Torus 拓扑。当申请的 Slice 尺寸在某一轴向小于 16 时，该轴向将丢失 wraparound 链路，导致网络拓扑由 Torus 降级为 Mesh。在降级后的 Mesh 拓扑（1D Path/Chain）上，环形集合通信算法（如 Ring All-Gather/Reduce-Scatter）无法直接通过 wraparound 链路成环传输，而必须沿链式路径双向折返，导致通信步数与延时增加约 2 倍。",
+    "question": "在 TPU v5e 这类 2D Torus 集群中，申请的 slice 在某一轴向小于完整 Pod 的周期尺寸时，拓扑可能不再保留该轴向的 wraparound 链路。对集合通信架构评估，以下哪些判断更准确？",
+    "explanation": "在 TPU v5e 的 16×16 Full Pod 中，整 pod 拓扑为 2D Torus；实际 slice 的可用形状及物理映射决定了能否保留各轴的 wraparound 连通性。若某轴不能环回，该轴会呈现 Mesh/路径式连接，Ring collective 的路径与成本会受到影响。但通信步数与延迟是否翻倍，取决于分配拓扑、集体通信算法、消息大小、链路争用与运行时实现，不能仅凭“由 Torus 变 Mesh”推导出固定 2 倍。应检查实际 slice topology 并在目标负载下测量。",
     "source": {
       "materialId": "https://jianyuh.github.io/systems/distributed/2026/07/16/Collective-Communication-TPU-GPU-Clusters.html",
       "section": "1. TPU Topology & Latency Math"
@@ -25,13 +33,21 @@
       "choice": {
         "type": "multiple",
         "options": [
-          "切片维度未达 Full Pod 尺寸时失去周期性 wraparound 链路，导致网络拓扑由 2D Torus 降级为 2D Mesh 结构。",
-          "缺失 wraparound 链路后，环形集合通信无法环状直连，需沿 1D 链式路径折返传输，通信延时与步数增加约 2 倍。",
-          "无论切片尺寸如何缩减，系统均能在逻辑层面动态补全 wraparound 链路，保持拓扑为完整 Torus 结构。",
-          "拓扑退化为 Mesh 仅对全局网卡吞吐产生线性等比例削减，并不影响环形集合通信在单轴上的消息传输步数。"
+          "在已确认不保留某一轴 wraparound 链路的 slice 中，该轴的有效拓扑会从周期性连接变为非周期性 Mesh/路径式连接。",
+          "拓扑变化可能改变 Ring collective 的路径和通信成本；固定的步数或延迟倍数应由实际拓扑、算法与负载测量，而不能一概断言增加约 2 倍。",
+          "任何 slice 尺寸都能在逻辑层面动态补全 wraparound 链路，因此拓扑始终与完整 Full Pod Torus 等价。",
+          "丢失 wraparound 链路只影响标称网卡吞吐，不会改变任何集合通信路径或性能。"
         ],
-        "answer": [0, 1],
-        "misconceptionMap": [null, null, 0, 1]
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、B。子切片轴向尺寸小于 Pod 周期（16）时该轴向丢失 wraparound 链路，拓扑由 2D Torus 降级为 2D Mesh；Mesh 上 Ring 集合通信无法成环，须沿 1D 链式路径双向折返，步数与延时增加约 2 倍。C 错误：逻辑层无法补全物理缺失的环回链路。D 错误：退化增加单轴传输步数，不只是吞吐线性下降。"
@@ -46,13 +62,20 @@
     "id": "collective-ops-allreduce-decomposition",
     "category": "collective-communication-primitives",
     "topic": "collective-communication-primitives",
-    "tags": ["all-reduce", "reduce-scatter", "all-gather", "ring-algorithm"],
+    "tags": [
+      "all-reduce",
+      "reduce-scatter",
+      "all-gather",
+      "ring-algorithm"
+    ],
     "difficulty": "medium",
     "angle": "mechanism",
     "cognitiveTask": "compare",
     "concepts": {
       "core": "allreduce-decomposition",
-      "supporting": ["ring-collectives-complexity"]
+      "supporting": [
+        "ring-collectives-complexity"
+      ]
     },
     "assessment": {
       "target": "能够理解 All-Reduce 拆解为 Reduce-Scatter 与 All-Gather 的双阶段推导过程，并计算 Ring 拓扑下分布式数据并行（DP/FSDP）的通信开销",
@@ -72,8 +95,16 @@
           "All-Reduce 仅涉及单次全集数据拼接广播，节点间无需在中间传输过程中执行点对点的规约加法计算。",
           "Reduce-Scatter 阶段只需传输局部切片，其通信耗时远低于 All-Gather 阶段，二者在时间复杂度上不对称。"
         ],
-        "answer": [0, 1],
-        "misconceptionMap": [null, null, 0, 1]
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、B。All-Reduce 拆解为 Reduce-Scatter（分块规约散布）与 All-Gather（全集收集）两阶段；1D Ring 下两阶段通信量与耗时对称，总耗时为单阶段 2 倍。C 错误：中间有点对点规约加法，不是纯拼接广播。D 错误：两阶段对称，不存在耗时远低的一方。"
@@ -88,13 +119,20 @@
     "id": "moe-all-to-all-expert-parallelism",
     "category": "expert-parallelism",
     "topic": "expert-parallelism-communication",
-    "tags": ["moe", "all-to-all", "expert-parallelism", "routing"],
+    "tags": [
+      "moe",
+      "all-to-all",
+      "expert-parallelism",
+      "routing"
+    ],
     "difficulty": "hard",
     "angle": "mechanism",
     "cognitiveTask": "infer",
     "concepts": {
       "core": "moe-all-to-all",
-      "supporting": ["sharded-matrix-transpose"]
+      "supporting": [
+        "sharded-matrix-transpose"
+      ]
     },
     "assessment": {
       "target": "能够分析 MoE 专家并行中 Token 路由分发过程与 All-to-All 集合通信算子的映射关系及其瓶颈特性",
@@ -115,8 +153,16 @@
           "专家并行路由通信的本质是全集广播（All-Gather），各节点只需向全网复制相同的 Token 向量即可完成专家分配。",
           "MoE 专家并行的通信瓶颈与张量并行（TP）完全一致，均主要由 All-Reduce 梯度同步与前向切分广播操作所主导。"
         ],
-        "answer": [0, 1],
-        "misconceptionMap": [null, null, 0, 1]
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、B。Router 把 Token 按目标 Expert 重组，本质是分布式矩阵转置，经 All-to-All 个性化多对多传输实现。C 错误：不是 All-Gather 全网复制。D 错误：瓶颈是 All-to-All 路由分发，不同于 TP 的 All-Reduce/切分广播范式。"
@@ -131,13 +177,20 @@
     "id": "gpu-fat-tree-bisection-bandwidth",
     "category": "gpu-cluster-network-topology",
     "topic": "gpu-cluster-network-topology",
-    "tags": ["fat-tree", "bisection-bandwidth", "infiniband", "gpu-cluster"],
+    "tags": [
+      "fat-tree",
+      "bisection-bandwidth",
+      "infiniband",
+      "gpu-cluster"
+    ],
     "difficulty": "medium",
     "angle": "calculation",
     "cognitiveTask": "predict",
     "concepts": {
       "core": "fat-tree-bisection-bandwidth",
-      "supporting": ["scalable-units"]
+      "supporting": [
+        "scalable-units"
+      ]
     },
     "assessment": {
       "target": "能够基于 Full Fat-Tree 网络拓扑原理，计算并评估 GPU 集群跨节点/跨 Scalable Unit 通信的双切带宽（Bisection Bandwidth）上限",
@@ -154,8 +207,15 @@
           "跨区单向吞吐量等于整个集群所有节点的注入带宽总和，即 51.2 TB/s（128 × 400 GB/s）。",
           "跨区单向吞吐量受限于两侧节点数之差，最大可达到 19.2 TB/s（即 48 × 400 GB/s）。"
         ],
-        "answer": [1],
-        "misconceptionMap": [0, null, 0, 1]
+        "answer": [
+          1
+        ],
+        "misconceptionMap": [
+          0,
+          null,
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：B。跨区单向吞吐上限由较小侧决定：40 × 400 GB/s = 16.0 TB/s。A 错误：较大侧不是瓶颈。C 错误：总量加总重复计算了不需要跨区的流量。D 错误：两侧之差无物理意义。"
@@ -170,13 +230,21 @@
     "id": "in-network-reduction-sharp",
     "category": "in-network-reduction",
     "topic": "in-network-reduction",
-    "tags": ["sharp", "nvswitch", "in-network-reduction", "all-reduce", "gpu"],
+    "tags": [
+      "sharp",
+      "nvswitch",
+      "in-network-reduction",
+      "all-reduce",
+      "gpu"
+    ],
     "difficulty": "medium",
     "angle": "tradeoff",
     "cognitiveTask": "compare",
     "concepts": {
       "core": "in-network-reduction",
-      "supporting": ["hardware-offloading"]
+      "supporting": [
+        "hardware-offloading"
+      ]
     },
     "assessment": {
       "target": "能够比较传统软件级 Ring All-Reduce 与硬件网络内规约（SHARP）在 GPU SM 占用、HBM 带宽消耗及网络链路流量上的系统级差异",
@@ -197,8 +265,16 @@
           "网内规约仅仅是物理层高带宽传输的加速协议，数据在网络中传输时并不发生任何形式的硬件级数值规约操作。",
           "启用网内规约后，交换机仅负责数据路由，GPU 端仍需消耗完全相同的 SM 流处理器算力来执行中间梯度累加。"
         ],
-        "answer": [0, 1],
-        "misconceptionMap": [null, null, 0, 1]
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
       },
       "open": {
         "referenceAnswer": "正确答案：A、B。SHARP 把向量累加卸载到交换机硬件在途规约，省掉 GPU 端中间累加的 SM 算力与 HBM 读写。C 错误：传输中发生了硬件级数值规约。D 错误：GPU 不再消耗相同的 SM 算力做中间累加。"
