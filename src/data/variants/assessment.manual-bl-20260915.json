@@ -737,24 +737,24 @@
         "kind": "surface-options",
         "question": "Bedrock 上的聊天机器人读不到加密的数据，访问失败。哪个方案解决？",
         "options": [
-          "确认 Bedrock 角色具备解密该密钥的权限",
-          "把 S3 桶设成公开，允许互联网直接访问",
-          "用提示工程让模型自行去 S3 里找信息",
-          "确认 S3 里的数据不含敏感信息"
+          "检查 Bedrock 所用 IAM 角色的信任关系、S3 对象读取权限与适用桶策略；SSE-S3 本身不需要额外的 KMS 解密权限。",
+          "把 S3 桶设成公开，允许互联网直接访问。",
+          "用提示工程让模型自行绕过权限去 S3 找信息。",
+          "只要 S3 中的数据不含敏感信息，访问授权就不再重要。"
         ],
         "angle": "diagnosis",
         "cognitiveTask": "troubleshoot",
         "assessment": {
-          "target": "能判断加密数据访问失败的根因在角色与密钥权限而非提示或公开桶",
-          "reasoningGoal": "先定位访问失败的授权缺失环节；再据此确认补解密权限的说法成立；并排除公开桶、提示工程、去敏感化等不成立描述。"
+          "target": "能从 S3 访问失败区分 IAM/S3 授权与服务端加密类型，而不是把 SSE-S3 错当成需要单独授予 kms:Decrypt。",
+          "reasoningGoal": "确认 SSE-S3 需要适当的 S3 访问权限、角色信任配置和桶策略；只有 SSE-KMS 等情况下才需相应 KMS 权限；排除公开桶、提示工程绕权限和数据敏感性与授权无关等误区。"
         },
         "generatedAt": 1789474496509,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-1903a6bc",
+        "sourceHash": "fnv1a-31765590",
         "batch": "manual-bl",
         "model": "manual",
-        "contentHash": "fnv1a-1573e77b",
+        "contentHash": "fnv1a-79625825",
         "sourceSnapshot": {
           "id": "aws-ai-practitioner-09",
           "topic": "system-design",
@@ -775,7 +775,7 @@
           ],
           "question": "公司用 Amazon Bedrock 上的基础模型（FM）建聊天机器人，FM 需访问 S3 中经 SSE-S3 加密的数据，但访问失败。哪个方案解决？（单选）",
           "options": [
-            "确保 Bedrock 角色有解密该密钥的权限",
+            "为 Bedrock 使用的 IAM 角色授予所需的 S3 读取权限，并检查角色信任关系与桶策略。",
             "将 S3 桶访问权限设为公开以允许互联网访问",
             "用提示工程技术让模型去 S3 中查找信息",
             "确保 S3 数据不含敏感信息"
@@ -787,24 +787,24 @@
         "kind": "context-options",
         "question": "客服知识库聊天机器人要读 S3 上加密的工单附件，Bedrock 一直报无权访问。四个修复方案哪个正确？",
         "options": [
-          "给 Bedrock 所用角色补上解密该密钥的权限",
-          "将 S3 桶改成公开访问，允许互联网进入",
-          "靠提示工程指示模型去 S3 中查找信息",
-          "检查 S3 数据里没有敏感信息"
+          "检查 Bedrock 所用 IAM 角色的信任关系、S3 对象读取权限与适用桶策略；SSE-S3 本身不需要额外的 KMS 解密权限。",
+          "把 S3 桶设成公开，允许互联网直接访问。",
+          "用提示工程让模型自行绕过权限去 S3 找信息。",
+          "只要 S3 中的数据不含敏感信息，访问授权就不再重要。"
         ],
         "angle": "scenario",
         "cognitiveTask": "apply",
         "assessment": {
-          "target": "能从无权访问报错推出角色缺解密权限并排除提示与公开桶的误区",
-          "reasoningGoal": "先识别无权访问指向授权而非模型能力；再据此确认给角色补解密权限的说法成立；并排除改公开、靠提示、查敏感等不成立描述。"
+          "target": "能从 S3 访问失败区分 IAM/S3 授权与服务端加密类型，而不是把 SSE-S3 错当成需要单独授予 kms:Decrypt。",
+          "reasoningGoal": "确认 SSE-S3 需要适当的 S3 访问权限、角色信任配置和桶策略；只有 SSE-KMS 等情况下才需相应 KMS 权限；排除公开桶、提示工程绕权限和数据敏感性与授权无关等误区。"
         },
         "generatedAt": 1789474496510,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-1903a6bc",
+        "sourceHash": "fnv1a-31765590",
         "batch": "manual-bl",
         "model": "manual",
-        "contentHash": "fnv1a-d999ee0a",
+        "contentHash": "fnv1a-531045ef",
         "sourceSnapshot": {
           "id": "aws-ai-practitioner-09",
           "topic": "system-design",
@@ -825,7 +825,7 @@
           ],
           "question": "公司用 Amazon Bedrock 上的基础模型（FM）建聊天机器人，FM 需访问 S3 中经 SSE-S3 加密的数据，但访问失败。哪个方案解决？（单选）",
           "options": [
-            "确保 Bedrock 角色有解密该密钥的权限",
+            "为 Bedrock 使用的 IAM 角色授予所需的 S3 读取权限，并检查角色信任关系与桶策略。",
             "将 S3 桶访问权限设为公开以允许互联网访问",
             "用提示工程技术让模型去 S3 中查找信息",
             "确保 S3 数据不含敏感信息"
