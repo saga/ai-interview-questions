@@ -1,0 +1,853 @@
+[
+  {
+    "id": "transformer-modern-2026-10-084",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache 类型与分配",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "kv-cache-类型与分配"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "长上下文服务要在动态缓存、静态预分配缓存、量化缓存和 CPU offload 之间选择。哪些判断合理？",
+    "explanation": "不同 KV Cache 策略在容量、可编译性、精度和传输开销之间取舍。没有一种策略能对所有上下文长度、硬件与批量都最优。",
+    "assessment": {
+      "target": "不同 KV Cache 策略在容量、可编译性、精度和传输开销之间取舍。没有一种策略能对所有上下文长度、硬件与批量都最优。",
+      "reasoningGoal": "根据 KV Cache 类型与分配 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把静态预分配当成任何负载下都最省内存",
+      "认为 offload 能消除存储成本而不引入延迟"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "静态缓存可预分配固定容量，可能便于图捕获但会浪费空间；需在目标负载上验证",
+          "量化缓存能降低存储量，但可能引入误差或额外处理成本；需在目标负载上验证",
+          "CPU offload 可释放 GPU 内存，但可能带来主机与设备传输开销；需在目标负载上验证",
+          "动态缓存按实际生成长度增长，通常较灵活；需在目标负载上验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "question": "长上下文服务要在动态缓存、静态预分配缓存、量化缓存和 CPU offload 之间选择。哪些判断合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不同 KV Cache 策略在容量、可编译性、精度和传输开销之间取舍。没有一种策略能对所有上下文长度、硬件与批量都最优。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-085",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "Prefix Cache 与请求内 KV Cache",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "prefix-cache-与请求内-kv-cache"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "两个请求有完全相同的系统提示和前缀，但后续问题不同。Prefix Cache 与普通请求内 KV Cache 的区别是什么？",
+    "explanation": "请求内 KV Cache 用来避免重算当前生成历史；Prefix Cache 可以在请求之间复用相同前缀的计算结果。跨请求复用必须考虑模型、tokenization、位置与缓存格式兼容性。",
+    "assessment": {
+      "target": "请求内 KV Cache 用来避免重算当前生成历史；Prefix Cache 可以在请求之间复用相同前缀的计算结果。跨请求复用必须考虑模型、tokenization、位置与缓存格式兼容性。",
+      "reasoningGoal": "根据 Prefix Cache 与请求内 KV Cache 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "将请求内缓存与跨请求前缀复用混为一谈",
+      "忽略模型和位置配置变化对缓存兼容性的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Prefix Cache 可复用相同前缀对应的已计算状态",
+          "请求内 KV Cache 主要复用当前序列生成过程中的历史状态",
+          "缓存命中仍需确保 tokenizer、模型版本和相关计算配置兼容",
+          "只要文本看起来相同，不同模型版本产生的 KV 就一定可以直接共享"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "两个请求有完全相同的系统提示和前缀，但后续问题不同。Prefix Cache 与普通请求内 KV Cache 的区别是什么？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "请求内 KV Cache 用来避免重算当前生成历史；Prefix Cache 可以在请求之间复用相同前缀的计算结果。跨请求复用必须考虑模型、tokenization、位置与缓存格式兼容性。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-086",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "分页式 KV Cache",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "分页式-kv-cache"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "在高并发推理服务中，分页式 KV Cache 把缓存分配为固定大小的 blocks。它主要解决哪些工程问题？",
+    "explanation": "分页式缓存让 K/V 按块管理，改善动态请求下的内存分配与碎片问题。它并不会消除每个 token 的缓存需求，块表和调度实现也有成本。",
+    "assessment": {
+      "target": "分页式缓存让 K/V 按块管理，改善动态请求下的内存分配与碎片问题。它并不会消除每个 token 的缓存需求，块表和调度实现也有成本。",
+      "reasoningGoal": "根据 分页式 KV Cache 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把分页缓存理解成压缩算法",
+      "误以为块分配消除了 KV 随上下文增长的成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分页机制让 KV Cache 内存需求与 token 数量完全无关；需在目标负载上验证",
+          "减少按最大序列长度连续预留缓存导致的内部碎片；需在目标负载上验证",
+          "让请求的缓存块可以按需分配和回收；需在目标负载上验证",
+          "通过 block table 将逻辑 token 位置映射到物理缓存块；需在目标负载上验证"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "在高并发推理服务中，分页式 KV Cache 把缓存分配为固定大小的 blocks。它主要解决哪些工程问题？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "分页式缓存让 K/V 按块管理，改善动态请求下的内存分配与碎片问题。它并不会消除每个 token 的缓存需求，块表和调度实现也有成本。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-087",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Context Parallelism",
+    "tags": [
+      "transformer",
+      "transformer",
+      "context-parallelism"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个超长序列无法高效放入单张 GPU，团队评估将序列切分到多设备并行处理注意力。哪些权衡应重点验证？",
+    "explanation": "Context Parallelism 可分摊长序列处理负载，但通常增加设备间通信。扩展效率取决于序列长度、通信与计算重叠、拓扑和实现，不会随设备数线性保证。",
+    "assessment": {
+      "target": "Context Parallelism 可分摊长序列处理负载，但通常增加设备间通信。扩展效率取决于序列长度、通信与计算重叠、拓扑和实现，不会随设备数线性保证。",
+      "reasoningGoal": "根据 Context Parallelism 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把并行设备数量直接当成线性加速比",
+      "只看计算分片，不评估通信与同步"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通信拓扑、分片方式和序列长度会影响实际扩展效率",
+          "只要设备数翻倍，端到端速度就必然翻倍",
+          "序列分片可分担单设备的激活和部分注意力工作量",
+          "设备之间可能需要传输或交换 K/V 与中间状态"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "一个超长序列无法高效放入单张 GPU，团队评估将序列切分到多设备并行处理注意力。哪些权衡应重点验证？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Context Parallelism 可分摊长序列处理负载，但通常增加设备间通信。扩展效率取决于序列长度、通信与计算重叠、拓扑和实现，不会随设备数线性保证。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-088",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "流式生成与 Attention Sinks",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "流式生成与-attention-sinks"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "一个流式语言模型只保留最近的滑动窗口，却发现长时间生成后注意力行为不稳定。Attention Sink 类设计试图解决什么问题？",
+    "explanation": "Attention Sink 类方法通常保留少量初始锚点和最近窗口，以提高流式缓存管理的稳定性。但它不等同于保留所有历史内容，也不保证任意早期事实都可准确检索。",
+    "assessment": {
+      "target": "Attention Sink 类方法通常保留少量初始锚点和最近窗口，以提高流式缓存管理的稳定性。但它不等同于保留所有历史内容，也不保证任意早期事实都可准确检索。",
+      "reasoningGoal": "根据 流式生成与 Attention Sinks 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把注意力锚点误认为完整长期记忆",
+      "用短序列实验推断任意长流式任务的效果"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "它针对流式生成中的注意力分布和缓存管理问题",
+          "保留 sink token 就保证所有早期事实都能被精确回忆",
+          "仍需用长流程任务评估质量、缓存规模和错误累积",
+          "保留少量初始 token 的注意力锚点，同时限制其余历史窗口"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "一个流式语言模型只保留最近的滑动窗口，却发现长时间生成后注意力行为不稳定。Attention Sink 类设计试图解决什么问题？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Attention Sink 类方法通常保留少量初始锚点和最近窗口，以提高流式缓存管理的稳定性。但它不等同于保留所有历史内容，也不保证任意早期事实都可准确检索。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-089",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "长上下文评测设计",
+    "tags": [
+      "transformer",
+      "transformer",
+      "长上下文评测设计"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "question": "新模型宣称支持 512K 上下文。为了判断它是否能可靠使用整个窗口，哪些评测设计有效？",
+    "explanation": "最大上下文窗口不等于所有位置都同样可用。位置切片、干扰项、跨段问题与无答案评估能揭示位置偏差及真实任务边界。",
+    "assessment": {
+      "target": "最大上下文窗口不等于所有位置都同样可用。位置切片、干扰项、跨段问题与无答案评估能揭示位置偏差及真实任务边界。",
+      "reasoningGoal": "根据 长上下文评测设计 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把单一针找草堆结果当作全面长上下文证据",
+      "只验证输入长度而不验证证据利用质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把同一证据分别放在开头、中间、末尾和不同距离位置；需在目标负载上验证",
+          "加入多证据、干扰项、跨段整合和无答案问题；需在目标负载上验证",
+          "区分 API 可接收长度与目标任务的实际准确率；需在目标负载上验证",
+          "只用一条 Needle-in-a-Haystack 成功案例就能证明所有长上下文能力；需在目标负载上验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "新模型宣称支持 512K 上下文。为了判断它是否能可靠使用整个窗口，哪些评测设计有效？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "最大上下文窗口不等于所有位置都同样可用。位置切片、干扰项、跨段问题与无答案评估能揭示位置偏差及真实任务边界。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-090",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Prefill-Decode 分离",
+    "tags": [
+      "transformer",
+      "transformer",
+      "prefill-decode-分离"
+    ],
+    "difficulty": "medium",
+    "angle": "architecture",
+    "cognitiveTask": "design",
+    "question": "一个推理平台把 Prefill 与 Decode 放到不同 GPU 池，目的是独立扩缩容。哪些架构考量正确？",
+    "explanation": "Prefill-Decode 分离可让两阶段按不同资源瓶颈扩缩容，但需要管理 KV 状态与网络传输，并验证端到端延迟和成本。",
+    "assessment": {
+      "target": "Prefill-Decode 分离可让两阶段按不同资源瓶颈扩缩容，但需要管理 KV 状态与网络传输，并验证端到端延迟和成本。",
+      "reasoningGoal": "根据 Prefill-Decode 分离 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把阶段分离本身当成性能提升保证",
+      "忽略 KV 状态跨池移动和排队成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只要分池，所有请求的延迟和成本都会下降",
+          "Prefill 和 Decode 的计算形态与瓶颈可能不同",
+          "分离后需要传递或共享请求上下文及 KV 状态",
+          "网络传输、排队和状态迁移开销可能抵消资源隔离收益"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "一个推理平台把 Prefill 与 Decode 放到不同 GPU 池，目的是独立扩缩容。哪些架构考量正确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Prefill-Decode 分离可让两阶段按不同资源瓶颈扩缩容，但需要管理 KV 状态与网络传输，并验证端到端延迟和成本。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-091",
+    "category": "model-architecture",
+    "topic": "attention",
+    "subtopic": "低精度注意力计算",
+    "tags": [
+      "transformer",
+      "attention",
+      "低精度注意力计算"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "将注意力计算切换到 FP8 或其它低精度路径后，吞吐提升但某些长序列训练出现不稳定。哪些检查合理？",
+    "explanation": "低精度可减少带宽或提升硬件吞吐，但注意力分数、Softmax 和累积精度可能影响稳定性。应在目标硬件与任务上做数值和质量回归。",
+    "assessment": {
+      "target": "低精度可减少带宽或提升硬件吞吐，但注意力分数、Softmax 和累积精度可能影响稳定性。应在目标硬件与任务上做数值和质量回归。",
+      "reasoningGoal": "根据 低精度注意力计算 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把更高吞吐误认为数值行为完全等价",
+      "只检查平均损失，不分析长序列失败样本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认特定硬件与 kernel 是否支持预期精度路径",
+          "低精度通常更快，所以无需保留高精度对照实验",
+          "检查 QK 分数、Softmax 和归约的数值范围",
+          "比较不同精度路径的误差、梯度和任务质量"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "将注意力计算切换到 FP8 或其它低精度路径后，吞吐提升但某些长序列训练出现不稳定。哪些检查合理？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "低精度可减少带宽或提升硬件吞吐，但注意力分数、Softmax 和累积精度可能影响稳定性。应在目标硬件与任务上做数值和质量回归。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-092",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 专家并行的通信拓扑",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-专家并行的通信拓扑"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "question": "同一 MoE 模型在单节点性能正常，跨节点后吞吐明显下降。哪些诊断方向优先？",
+    "explanation": "跨节点 MoE 可能受 token dispatch 与 combine 的网络开销影响。需要联合观察通信时间、专家分布、拓扑和计算重叠，而不是仅调整专家参数量。",
+    "assessment": {
+      "target": "跨节点 MoE 可能受 token dispatch 与 combine 的网络开销影响。需要联合观察通信时间、专家分布、拓扑和计算重叠，而不是仅调整专家参数量。",
+      "reasoningGoal": "根据 MoE 专家并行的通信拓扑 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把 MoE 性能退化一律归因于 GPU 算力不足",
+      "忽略专家放置和网络拓扑对 all-to-all 的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查专家放置、网络拓扑和路由热点",
+          "评估通信是否能与专家矩阵计算重叠",
+          "只增加每个专家的参数量就能降低跨节点通信",
+          "测量 All-to-All 通信的占比与消息大小"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "同一 MoE 模型在单节点性能正常，跨节点后吞吐明显下降。哪些诊断方向优先？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "跨节点 MoE 可能受 token dispatch 与 combine 的网络开销影响。需要联合观察通信时间、专家分布、拓扑和计算重叠，而不是仅调整专家参数量。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-093",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 负载均衡与任务质量",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-负载均衡与任务质量"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个负载均衡改动使专家利用率更均匀，但验证集质量略有下降。如何评估是否应该保留？",
+    "explanation": "均衡是系统目标之一，不是越均匀越好。策略应在质量、专家专门化、容量溢出与吞吐之间比较，并依据业务要求确定可接受边界。",
+    "assessment": {
+      "target": "均衡是系统目标之一，不是越均匀越好。策略应在质量、专家专门化、容量溢出与吞吐之间比较，并依据业务要求确定可接受边界。",
+      "reasoningGoal": "根据 MoE 负载均衡与任务质量 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把专家均匀利用率当作唯一目标",
+      "忽视辅助均衡目标对专门化和质量的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同时比较任务质量、专家溢出率和设备等待时间",
+          "检查辅助均衡目标是否压制了专家专门化",
+          "用真实流量分布验证吞吐和尾延迟的变化",
+          "只要专家分布最均匀，就证明该路由策略最优"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一个负载均衡改动使专家利用率更均匀，但验证集质量略有下降。如何评估是否应该保留？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "均衡是系统目标之一，不是越均匀越好。策略应在质量、专家专门化、容量溢出与吞吐之间比较，并依据业务要求确定可接受边界。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-094",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "动态 Token Pruning 生产验收",
+    "tags": [
+      "transformer",
+      "transformer",
+      "动态-token-pruning-生产验收"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "question": "团队把动态 Token Pruning 引入视觉 Transformer，以降低高分辨率输入的计算量。哪些验收测试必要？",
+    "explanation": "动态 pruning 可以减少后续层处理的 token，但选择器开销和硬件执行方式决定实际收益。保留策略还可能丢失细节，因此应结合任务质量与真实延迟测试。",
+    "assessment": {
+      "target": "动态 pruning 可以减少后续层处理的 token，但选择器开销和硬件执行方式决定实际收益。保留策略还可能丢失细节，因此应结合任务质量与真实延迟测试。",
+      "reasoningGoal": "根据 动态 Token Pruning 生产验收 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把减少的 token 数直接当成实测加速比",
+      "只在分类数据上验证后就外推到细粒度定位"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只看保留 token 数量减少，就可以认定服务延迟等比例下降",
+          "比较被保留与被移除 token 对关键目标的贡献",
+          "分别评测分类、定位或细粒度识别等任务",
+          "测量选择器成本、真实延迟和不同输入下的稳定性"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "团队把动态 Token Pruning 引入视觉 Transformer，以降低高分辨率输入的计算量。哪些验收测试必要？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "动态 pruning 可以减少后续层处理的 token，但选择器开销和硬件执行方式决定实际收益。保留策略还可能丢失细节，因此应结合任务质量与真实延迟测试。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-095",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "动态深度与 Early Exit",
+    "tags": [
+      "transformer",
+      "transformer",
+      "动态深度与-early-exit"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "某 Transformer 在部分 token 或样本达到置信度阈值后提前退出。哪些判断正确？",
+    "explanation": "Early Exit 通过提前结束部分计算降低平均层数，但阈值会影响准确率和路径差异。动态执行可能带来批处理效率问题，应实测平均与尾部表现。",
+    "assessment": {
+      "target": "Early Exit 通过提前结束部分计算降低平均层数，但阈值会影响准确率和路径差异。动态执行可能带来批处理效率问题，应实测平均与尾部表现。",
+      "reasoningGoal": "根据 动态深度与 Early Exit 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "将较少层数当成质量不变保证",
+      "忽略动态计算路径对 batching 的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同输入的计算路径可能变得不均匀",
+          "越早退出就必然越准确且整体吞吐越高",
+          "Early Exit 可减少部分样本经过的层数",
+          "退出阈值会影响质量、平均计算量与尾延迟"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "某 Transformer 在部分 token 或样本达到置信度阈值后提前退出。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Early Exit 通过提前结束部分计算降低平均层数，但阈值会影响准确率和路径差异。动态执行可能带来批处理效率问题，应实测平均与尾部表现。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-096",
+    "category": "model-architecture",
+    "topic": "vision-transformer",
+    "subtopic": "视频 Transformer 的时空 Token",
+    "tags": [
+      "transformer",
+      "vision-transformer",
+      "视频-transformer-的时空-token"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "question": "视频 Transformer 把每帧切成空间 Patch，并将多个帧组成时空序列。哪些判断正确？",
+    "explanation": "视频 token 数受帧数和空间 patch 网格共同影响。全局注意力在时空序列增长时成本会快速增加，实际长视频能力仍需通过分段、记忆或稀疏策略和任务评测验证。",
+    "assessment": {
+      "target": "视频 token 数受帧数和空间 patch 网格共同影响。全局注意力在时空序列增长时成本会快速增加，实际长视频能力仍需通过分段、记忆或稀疏策略和任务评测验证。",
+      "reasoningGoal": "根据 视频 Transformer 的时空 Token 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "忽略帧数与空间分辨率同时增加序列长度",
+      "把时空编码误认为无限长视频建模能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "更细的空间 Patch 会提高每帧 token 数量；需在目标负载上验证",
+          "若使用全局注意力，时空 token 增长可能显著放大二次注意力成本；需在目标负载上验证",
+          "将时间维度加入序列就自动获得无限长度视频推理能力；需在目标负载上验证",
+          "帧数增加会增加时空 token 数量；需在目标负载上验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "视频 Transformer 把每帧切成空间 Patch，并将多个帧组成时空序列。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "视频 token 数受帧数和空间 patch 网格共同影响。全局注意力在时空序列增长时成本会快速增加，实际长视频能力仍需通过分段、记忆或稀疏策略和任务评测验证。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-097",
+    "category": "model-architecture",
+    "topic": "vision-transformer",
+    "subtopic": "自监督视觉表征的评估",
+    "tags": [
+      "transformer",
+      "vision-transformer",
+      "自监督视觉表征的评估"
+    ],
+    "difficulty": "medium",
+    "angle": "evaluation",
+    "cognitiveTask": "evaluate",
+    "question": "一个自监督视觉 Transformer 在图像分类线性探测上表现优秀。哪些证据仍有必要收集？",
+    "explanation": "分类线性探测能评估部分全局表征能力，但不能代表空间定位、分割或检索等任务。需要依据下游需求补充任务切片与分布外测试。",
+    "assessment": {
+      "target": "分类线性探测能评估部分全局表征能力，但不能代表空间定位、分割或检索等任务。需要依据下游需求补充任务切片与分布外测试。",
+      "reasoningGoal": "根据 自监督视觉表征的评估 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "将分类精度直接外推为所有视觉能力",
+      "混淆冻结表征的线性探测与全量微调"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查定位、分割或检索等与目标应用相关的任务",
+          "对分布偏移、图像质量和数据重复情况做测试",
+          "区分冻结特征评估与端到端微调的结论",
+          "单一分类基准高分足以证明所有密集视觉特征都最优"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一个自监督视觉 Transformer 在图像分类线性探测上表现优秀。哪些证据仍有必要收集？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "分类线性探测能评估部分全局表征能力，但不能代表空间定位、分割或检索等任务。需要依据下游需求补充任务切片与分布外测试。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-098",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Transformer 研究结果可复现性",
+    "tags": [
+      "transformer",
+      "transformer",
+      "transformer-研究结果可复现性"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "question": "一篇最新 Transformer 论文报告某优化在长序列下提升吞吐 2 倍。准备判断是否用于生产，哪些实验信息必须核对？",
+    "explanation": "速度结果依赖硬件、形状、精度和基线实现。生产选型应复现目标负载下的性能并确认质量与测量边界，而不是直接外推论文数字。",
+    "assessment": {
+      "target": "速度结果依赖硬件、形状、精度和基线实现。生产选型应复现目标负载下的性能并确认质量与测量边界，而不是直接外推论文数字。",
+      "reasoningGoal": "根据 Transformer 研究结果可复现性 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把论文中的单一加速比当成产品保证",
+      "忽略基线实现与测量范围的差异"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "论文报告速度提升后，可以不做本地目标硬件 benchmark；需在目标负载上验证",
+          "硬件型号、精度路径、batch、序列长度与基线实现；需在目标负载上验证",
+          "质量指标和数值误差是否与基线可比；需在目标负载上验证",
+          "端到端延迟是否包含数据搬运、预处理和调度开销；需在目标负载上验证"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "一篇最新 Transformer 论文报告某优化在长序列下提升吞吐 2 倍。准备判断是否用于生产，哪些实验信息必须核对？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "速度结果依赖硬件、形状、精度和基线实现。生产选型应复现目标负载下的性能并确认质量与测量边界，而不是直接外推论文数字。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-099",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "模型架构变更的消融实验",
+    "tags": [
+      "transformer",
+      "transformer",
+      "模型架构变更的消融实验"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "question": "团队同时改动位置编码、注意力 kernel 和 FFN 结构后，验证集分数提高。如何分辨真正起作用的改动？",
+    "explanation": "多个架构因素同时改变时，无法凭最终分数判断因果。需要消融和一致的评测协议，将具体收益与配置版本关联起来。",
+    "assessment": {
+      "target": "多个架构因素同时改变时，无法凭最终分数判断因果。需要消融和一致的评测协议，将具体收益与配置版本关联起来。",
+      "reasoningGoal": "根据 模型架构变更的消融实验 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把共现变化当成因果关系",
+      "没有记录运行配置导致结果无法复现"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "记录配置和 checkpoint 版本，保留可复现结果",
+          "直接把全部收益归因于最后修改的 FFN",
+          "对每项改动做控制变量或消融实验",
+          "固定数据、训练预算和评测协议以便比较"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "团队同时改动位置编码、注意力 kernel 和 FFN 结构后，验证集分数提高。如何分辨真正起作用的改动？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多个架构因素同时改变时，无法凭最终分数判断因果。需要消融和一致的评测协议，将具体收益与配置版本关联起来。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-100",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "位置编码的短长上下文权衡",
+    "tags": [
+      "transformer",
+      "transformer",
+      "位置编码的短长上下文权衡"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一种 RoPE 缩放在 128K 文档检索上有所提升，但 4K 指令跟随性能下降。如何评估这个回归？",
+    "explanation": "长上下文扩展可能改变常用位置区间的行为。是否接受短上下文回归要看产品查询分布、风险和总体质量目标，不能只优化最大长度。",
+    "assessment": {
+      "target": "长上下文扩展可能改变常用位置区间的行为。是否接受短上下文回归要看产品查询分布、风险和总体质量目标，不能只优化最大长度。",
+      "reasoningGoal": "根据 位置编码的短长上下文权衡 的机制和服务约束判断各项陈述，并区分理论预期与实际验证。"
+    },
+    "misconceptions": [
+      "把最长上下文分数当作唯一产品指标",
+      "忽略位置缩放对短序列分布的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分析缩放参数是否影响常用位置范围内的注意力分布",
+          "根据产品的真实请求比例评估加权收益与回归风险",
+          "只保留 128K 得分，因为最大窗口是唯一重要指标",
+          "把短上下文与长上下文任务分别列为验收指标"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一种 RoPE 缩放在 128K 文档检索上有所提升，但 4K 指令跟随性能下降。如何评估这个回归？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "长上下文扩展可能改变常用位置区间的行为。是否接受短上下文回归要看产品查询分布、风险和总体质量目标，不能只优化最大长度。"
+      }
+    }
+  }
+]
