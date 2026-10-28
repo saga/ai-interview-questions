@@ -5,15 +5,16 @@
     "area": "agent-engineering",
     "topic": "agentic-rl",
     "priority": "P1",
-    "summary": "长航程 Coding Agent RL 中长轨迹经 Compaction 切分为变长子轨迹。GRPO 依赖同 Prompt 多 Rollout 结构对称的组内归一化，切分后子轨迹数量/长度悬殊，组内基线失效；带 Critic 的 PPO 可在单 Rollout 上做 Token-level Value 与 Advantage 估计，自然适配不规则子轨迹，并改善长程 Credit Assignment。",
+    "summary": "长航程 Coding Agent RL 可能需要轨迹压缩或分段。GRPO 通常按同一 Prompt 下多个 Rollout 的相对奖励优化；若切分轨迹，必须保留组归属、掩码和奖励语义，不能默认组级奖励能代表每个子轨迹贡献。Critic PPO 可提供状态/Token 级价值与优势估计，但需额外训练，且不能自动解决长程 credit assignment。",
     "required": [
-      "GRPO 要求同 Prompt 多个结构对称 Rollout 的整体 Reward 相对归一化，Compaction 切分破坏该前提",
-      "Critic PPO 对单 Rollout 每 Token 做 Value 预测与 Advantage 估计，不依赖组内同质对比",
-      "Critic 的 Token/步骤级 Advantage 能精确定位长轨迹中关键动作贡献，缓解长程奖励分配问题"
+      "GRPO 依赖同一 Prompt 下多个 Rollout 的相对奖励，不要求所有轨迹长度相同",
+      "轨迹切分后应明确组归属、有效 token/掩码、奖励粒度和子轨迹样本语义",
+      "Critic PPO 能进行价值/优势估计，但带来额外训练成本和估计误差；两种方法都需验证长程任务表现"
     ],
     "misconceptions": [
-      "认为 GRPO 在变长子轨迹下仍优于 PPO（实际缺组内基线会导致 Advantage 估计严重偏差）",
-      "认为 GRPO 无需训练 Critic 故可无损处理任意长度不均子轨迹"
+      "认为 GRPO 要求组内 Rollout 具有相同长度或结构；长度不均本身不使组级归一化数学失效",
+      "认为轨迹切分后可直接把整条轨迹最终奖励赋给任意子轨迹，且不会改变优化目标",
+      "认为 PPO 的 Critic 能自动精确识别长轨迹中每个动作的因果贡献"
     ],
     "angles": [
       "comparison"
