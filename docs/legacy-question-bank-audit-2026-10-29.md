@@ -32,4 +32,4 @@
 
 ## 验证限制
 
-修改后执行了内容结构检查的准备，但当前未在本地运行 `npm run test`、`npm run validate:questions`、`npm run question:quality` 或 `npm run build`。合并后的 CI 状态需要以 GitHub Actions 实际运行结果为准。
+修改后重新读取并解析了三个变更 JSON 文件，检查了题目数量、参考答案字段和选项长度比例；这些静态检查通过。当前未在本地运行 `npm run test`、`npm run validate:questions`、`npm run question:quality` 或 `npm run build`。GitHub Actions API 返回的最新几次运行标记为 failure，但作业列表为空，无法从可用结果定位失败原因；因此不能宣称测试和构建已通过。
