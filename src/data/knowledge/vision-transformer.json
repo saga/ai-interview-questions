@@ -15,7 +15,9 @@
       "认为 ViT 完全无法学习局部/边缘特征（实际预训练后会涌现）",
       "认为增大 ViT 模型规模即可在小数据上弥补归纳偏置缺失"
     ],
-    "angles": ["comparison"]
+    "angles": [
+      "comparison"
+    ]
   },
   {
     "id": "vit-patch-embedding-sequence-length",
@@ -33,7 +35,9 @@
       "认为 Patch 投影层参数量随序列长度同步增 4 倍（实际随 Patch 像素数减）",
       "忽略注意力对序列长度的二次方依赖"
     ],
-    "angles": ["calculation"]
+    "angles": [
+      "calculation"
+    ]
   },
   {
     "id": "vit-position-embedding-interpolation",
@@ -51,7 +55,9 @@
       "直接补零/随机初始化新位置编码效果优于插值",
       "一维线性插值足以保持二维空间拓扑"
     ],
-    "angles": ["mechanism"]
+    "angles": [
+      "mechanism"
+    ]
   },
   {
     "id": "vit-cls-token-representation",
@@ -69,6 +75,52 @@
       "[CLS] 是 frozen 静态占位符",
       "用固定 Patch 输出做分类同样无偏"
     ],
-    "angles": ["mechanism"]
+    "angles": [
+      "mechanism"
+    ]
+  },
+  {
+    "id": "vit-self-supervised-representation",
+    "name": "自监督视觉 Transformer 表征",
+    "area": "ai-engineering",
+    "topic": "vision-transformer",
+    "priority": "P1",
+    "summary": "自监督视觉 Transformer 从大规模图像中学习通用视觉表征，减少对人工类别标签的直接依赖；图像分类的线性探测不等于分割、定位、检索等任务上的表征质量保证。",
+    "required": [
+      "区分冻结特征线性探测与端到端微调所测能力",
+      "按目标应用评估分类、定位、分割、检索及分布偏移表现",
+      "数据质量、训练规模和训练目标均会影响泛化"
+    ],
+    "misconceptions": [
+      "以为自监督训练无需关注数据质量与分布偏移",
+      "用单一分类指标代表所有密集视觉表征能力"
+    ],
+    "angles": [
+      "comparison",
+      "scenario",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "video-transformer-spatiotemporal-tokenization",
+    "name": "视频 Transformer 的时空 Token 化",
+    "area": "ai-engineering",
+    "topic": "vision-transformer",
+    "priority": "P1",
+    "summary": "视频 Transformer 将时间帧与空间 Patch（或 Tubelet）编码为时空 Token；帧数、分辨率与 Patch 粒度共同决定序列长度，全局注意力的成本会随时空 Token 数增长而快速上升。",
+    "required": [
+      "时空 Token 数同时受帧数与每帧空间 Patch 网格影响",
+      "减小 Patch 或增加帧数会保留更多细节，但提高注意力与缓存成本",
+      "长视频能力还受分段策略、跨片段状态与实际任务评测影响"
+    ],
+    "misconceptions": [
+      "忽略帧数和空间分辨率会同时增加序列长度",
+      "认为把时间维加入序列就自然获得无限时长的视频推理能力"
+    ],
+    "angles": [
+      "calculation",
+      "tradeoff",
+      "scenario"
+    ]
   }
 ]
