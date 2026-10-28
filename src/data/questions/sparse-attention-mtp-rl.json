@@ -152,12 +152,13 @@
       }
     },
     "misconceptions": [
-      "认为 GRPO 在变长子轨迹下仍优于 PPO（实际缺组内基线会导致 Advantage 估计严重偏差）",
-      "认为 GRPO 无需训练 Critic 故可无损处理任意长度不均子轨迹"
+      "认为 GRPO 要求组内 Rollout 长度和结构完全一致，长度不等就会使组内归一化数学上失效",
+      "认为轨迹切分后可以直接把整条轨迹最终奖励视为每个子轨迹独立贡献",
+      "认为 PPO 的 Critic 能自动精确识别长轨迹中每个动作的因果贡献"
     ],
     "assessment": {
-      "target": "能逐项判断下列主张是否成立，核心判断为「当经过轨迹压缩（Compaction）切分后，不同 Rollout 生成的子轨迹数量不同、长度悬殊，缺乏一对一可比的组内参照物，使得组内归一化失效」",
-      "reasoningGoal": "先对齐待比较对象的可比维度；据此逐项确认「GRPO 依赖于同一 Prompt 下多个 Roll…」「基于 Critic 的 PPO 能够对单条 Roll…」等 3 项成立；并排除「GRPO 在变长子轨迹场景下仍然优于 PPO」等不成立描述。"
+      "target": "能比较 GRPO 与 Critic PPO 在组内相对奖励、价值估计与长轨迹分段上的条件与代价，而不是把轨迹长度不等当成某算法必然失效的依据。",
+      "reasoningGoal": "先确认 GRPO 通过同一 Prompt 下多个 Rollout 的相对奖励构造更新，轨迹分段后需保留组关联、mask 和奖励语义；再确认 Critic PPO 可做价值/优势估计但需要训练 Critic 且存在估计误差；最后判断两者都需通过目标任务上的端到端评测验证 credit assignment 效果。"
     }
   },
   {
