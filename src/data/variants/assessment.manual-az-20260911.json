@@ -9,21 +9,21 @@
         "kind": "context-options",
         "question": "某训练任务在 TPU v5e 集群上由 Full Pod 更改为小规模子切片（如 8×16 节点）运行时，观察到环形集合通信（Ring Collectives）算子的传输延时相比预期有明显上升。从硬件拓扑与通信路径角度诊断，下列哪些分析是正确的？",
         "options": [
-          "当申请切片维度小于 Full Pod 周期时失去 wraparound 环回链路，使底层拓扑由 2D Torus 退化为 2D Mesh。",
-          "缺乏 wraparound 链路使集合通信无法在环上单向传输，需沿 1D 路径双向折返，致使通信步数与延时增加约 2 倍。",
-          "无论申请的切片规模如何改变，系统均能自动提供逻辑 wraparound 链路，确保拓扑始终维持 Full Torus 状态。",
-          "拓扑变更为 Mesh 仅按物理节点比例降低通信吞吐量，并不增加环形集合通信算法在单轴传输时的总消息步数。"
+          "在已确认不保留某一轴 wraparound 链路的 slice 中，该轴拓扑会由周期性连接变为非周期性 Mesh/路径式连接。",
+          "拓扑变化可能改变 Ring collective 的路径和成本；固定步数或延迟倍数应由实际拓扑、算法与负载测量，不能一概断言增加约 2 倍。",
+          "任何 slice 尺寸都能在逻辑层面自动补全 wraparound 链路，拓扑始终等同完整 Full Pod Torus。",
+          "丢失 wraparound 链路只影响标称网卡吞吐，不会改变集合通信路径或性能。"
         ],
         "angle": "scenario",
         "cognitiveTask": "diagnose",
         "assessment": {
-          "target": "能够根据 TPU 切片尺寸（Slice Size）推断拓扑结构是否退化为 Mesh，并评估拓扑退化对 Ring Collectives 通信步数与延时的定量影响",
-          "reasoningGoal": "先判断当前集群配置下 TPU 拓扑是否丢失 wraparound 链路；再分析集合通信延迟突增对总体训练迭代步长瓶颈的贡献；据此排除将通信瓶颈误归因于 PCIe 或 DCN 跨节点带宽限制的定位错误"
+          "target": "能从实际 slice topology 推断 wraparound 连通性边界，并判断集合通信影响需要测量而非套用固定倍率。",
+          "reasoningGoal": "先通过实际拓扑确认某轴是否保留 wraparound 链路；再说明拓扑变化会改变通信路径和成本；排除逻辑补全物理链路以及从拓扑变化直接推断固定两倍延迟的说法。"
         },
         "generatedAt": 1789137945344,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-35703027",
+        "sourceHash": "fnv1a-7fbbb4c8",
         "batch": "manual-az",
         "model": "manual",
         "sourceSnapshot": {
@@ -39,15 +39,15 @@
             "ici",
             "ring-collectives"
           ],
-          "question": "在 TPU v5e 等 2D Torus 架构集群中，当用户申请的 Slice 尺寸在轴向（如 4×4 或 8×16）小于 Full Pod 的周期尺寸（如 16）时，会对底层集群网络拓扑结构及环形集合通信（Ring Collectives）性能产生怎样的影响？",
+          "question": "在 TPU v5e 这类 2D Torus 集群中，申请的 slice 在某一轴向小于完整 Pod 的周期尺寸时，拓扑可能不再保留该轴向的 wraparound 链路。对集合通信架构评估，以下哪些判断更准确？",
           "options": [
-            "切片维度未达 Full Pod 尺寸时失去周期性 wraparound 链路，导致网络拓扑由 2D Torus 降级为 2D Mesh 结构。",
-            "缺失 wraparound 链路后，环形集合通信无法环状直连，需沿 1D 链式路径折返传输，通信延时与步数增加约 2 倍。",
-            "无论切片尺寸如何缩减，系统均能在逻辑层面动态补全 wraparound 链路，保持拓扑为完整 Torus 结构。",
-            "拓扑退化为 Mesh 仅对全局网卡吞吐产生线性等比例削减，并不影响环形集合通信在单轴上的消息传输步数。"
+            "在已确认不保留某一轴 wraparound 链路的 slice 中，该轴的有效拓扑会从周期性连接变为非周期性 Mesh/路径式连接。",
+            "拓扑变化可能改变 Ring collective 的路径和通信成本；固定的步数或延迟倍数应由实际拓扑、算法与负载测量，而不能一概断言增加约 2 倍。",
+            "任何 slice 尺寸都能在逻辑层面动态补全 wraparound 链路，因此拓扑始终与完整 Full Pod Torus 等价。",
+            "丢失 wraparound 链路只影响标称网卡吞吐，不会改变任何集合通信路径或性能。"
           ]
         },
-        "contentHash": "fnv1a-027bf2a1"
+        "contentHash": "fnv1a-b08a1c56"
       }
     ],
     "collective-ops-allreduce-decomposition": [
