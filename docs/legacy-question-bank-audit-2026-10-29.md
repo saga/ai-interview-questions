@@ -44,7 +44,7 @@
 
 文件：`src/data/questions/aws-ai-practitioner.json`，题目 `aws-ai-practitioner-06`。
 
-原解析写普通实时推理 payload 约 6 MB、超时约 60 秒；当前 AWS 官方文档列明普通 Real-Time Inference payload 最大 25 MB、常规响应处理时间 60 秒，Streaming responses 可达 8 分钟；Serverless 为 4 MB / 60 秒，Asynchronous 为 1 GB / 60 分钟。已修订解析与参考答案，保留“长处理时间、大 payload 适合异步推理”的结论，并提示配额须按功能和区域核验。
+原解析写普通实时推理 payload 约 6 MB、超时约 60 秒；当前 AWS 官方文档列明普通 Real-Time Inference payload 最大 25 MB、常规响应处理时间 60 秒，Streaming responses 可达 8 分钟；Serverless 为 4 MB / 60 秒，Asynchronous 为 1 GB / 60 分钟。已修订解析与参考答案，并将题干从含混的“需要近实时延迟”改为“调用方不要求同步 HTTP 响应、希望作业完成后尽快取回结果”，避免让人误以为异步推理能满足严格的同步低延迟 SLO。题目保留“长处理时间、大 payload 适合异步推理”的结论，并提示配额须按 endpoint 类型与官方文档核验。
 
 官方依据：
 - https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model-options.html
