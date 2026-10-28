@@ -35,18 +35,19 @@
     "area": "data-platform",
     "topic": "snowflake-genai",
     "priority": "P1",
-    "summary": "根据数据形态选择 Analyst 或 Search，使用语义模型、已验证查询和结果核验提高自然语言数据问答的可靠性。",
+    "summary": "面向 Snowflake 新建的多步骤自然语言数据应用，应优先评估 Cortex Agents 作为编排层：它可调用 Cortex Analyst 处理结构化指标与 Text-to-SQL，并调用 Cortex Search 处理文档检索。Semantic Views 和已验证查询可继续复用；独立 Cortex Analyst API 仍可用，适合已有集成或聚焦的结构化分析路径。",
     "required": [
-      "结构化表格与指标问答适合 Cortex Analyst 搭配语义视图；文档、政策和长文本检索更适合 Cortex Search RAG。",
-      "文本到 SQL 的准确性依赖正确粒度、关系基数、具名指标、业务同义词和代表性验证查询。",
-      "多轮对话应保留必要的历史消息，并显示生成 SQL、实际结果、引用来源和失败状态。",
-      "需要跨结构化分析和非结构化检索的复杂编排时，可组合工具，但要分别测试 SQL 结果和检索证据。"
+      "新建需要多步编排、结构化指标和非结构化检索的应用，优先评估 Cortex Agents；它可使用 Cortex Analyst 与 Cortex Search 等工具",
+      "结构化表格与指标问答依赖语义视图、正确粒度、关系基数、具名指标、业务同义词和代表性验证查询",
+      "现有独立 Cortex Analyst REST API 仍可用；从 Analyst API 迁移到 Cortex Agents 通常是调用/编排层的变化，语义视图与其中的已验证查询可继续复用",
+      "展示生成 SQL、实际结果、引用来源和失败状态；分别测试 SQL 结果、检索证据与跨工具编排"
     ],
     "misconceptions": [
-      "把所有自然语言数据问答都当成同一种检索任务处理。",
-      "未检查一对多 JOIN 就相信 SQL 聚合与生成结果。",
-      "认为模型只要看到列名，就能稳定推断业务指标和同义词。",
-      "仅展示模型生成的文字，不展示来源、SQL 或执行结果。"
+      "把所有自然语言数据问答都当成同一种检索任务处理",
+      "把 Cortex Analyst 或 Cortex Search 单独当作覆盖结构化和非结构化任务的通用编排层",
+      "未检查一对多 JOIN 就相信 SQL 聚合与生成结果",
+      "认为模型只要看到列名就能稳定推断业务指标和同义词",
+      "认为独立 Cortex Analyst API 已经不可用，或迁移必须重建语义视图"
     ],
     "angles": [
       "comparison",
