@@ -116,3 +116,15 @@ Snowflake 在 2026-08-28 的官方更新中建议新应用从 Cortex Analyst 转
 本轮按主题分层抽取 300 余道题，并回读了相关知识节点；可确认的问题已修改。但仍不是对整个历史题库逐题逐选项的完整事实审计。部分技术机制没有唯一的最佳设计，应根据场景和实现条件描述，不宜把“常见实践”写成普遍定律。
 
 截至本次更新，已对变更文件做 JSON 解析与部分题目结构静态检查。尚未能确认 `npm run test`、`npm run validate:questions`、`npm run validate:variants`、`npm run question:quality` 和 `npm run build` 全部通过：未在本地完成这些命令，GitHub Actions API 对最近的失败运行仍未提供可用 job 明细。
+
+### 补充复核：线性循环注意力状态的表述不准确
+
+文件：`src/data/questions/llm-architecture-advanced.json`，题目 `llm-arch-hybrid-recurrent-attention-01`。
+
+复核时发现，原选项将 Gated DeltaNet 的循环状态称为“固定大小的隐状态向量”，但这类线性注意力机制通常维护的是矩阵类状态；同时，原解析把逐 Token 解码笼统写成 `O(1)`，容易把“状态规模不随上下文长度增长”误读成“每 Token 总计算量与模型维度无关”。已修订选项、解析、开放题答案和 reasoningGoal：明确状态通常为矩阵类状态，状态规模对上下文长度为常量，但每 Token 计算仍取决于模型维度和具体实现。
+
+依据：Gated DeltaNet / 线性注意力论文对矩阵值状态及递归更新的描述：
+- https://jankautz.com/publications/GatedDeltaNet_ICLR25.pdf
+- https://arxiv.org/abs/2605.22791
+
+本次是对既有 300 余道抽样审查后的补充复核，不改变“抽样并非全量逐题审校”的结论。
