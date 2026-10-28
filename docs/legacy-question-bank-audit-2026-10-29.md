@@ -128,3 +128,21 @@ Snowflake 在 2026-08-28 的官方更新中建议新应用从 Cortex Analyst 转
 - https://arxiv.org/abs/2605.22791
 
 本次是对既有 300 余道抽样审查后的补充复核，不改变“抽样并非全量逐题审校”的结论。
+
+### 再次抽样复核（2026-10-29）：MCP 被误写成完整治理平面
+
+本轮继续从 Context Engineering、Evaluation Metrics、RAG、Transformer/现代架构、Inference、Security Architecture、MCP、Snowflake、AWS 和 LLM 基础等题库分层抽样检查，并回看 Agent、安全、LLM 架构与 RAG 知识节点。
+
+#### 11. MCP 集成收益被夸大为协议自动提供鉴权、限流与审计
+
+文件：`src/data/questions/mcp.json`，题目 `ai-agent-009`。
+
+原开放题参考答案写道 MCP server 可“统一 schema、鉴权、限流、审计”，并将集成模式描述成每个 API 封装一次即可收敛治理。这个表述容易误导架构设计：MCP 标准化工具/资源的发现与调用；MCP 的 HTTP 授权规范确实定义了可选的传输层授权流程，但并不意味着协议自动实现业务级/资源级授权、限流、审计和策略执行。后几项仍需 MCP server、API 网关、身份系统及下游服务按实际信任边界实现。M×N 到 M+N 只是集成成本的简化模型，也不代表所有适配和治理工作都会消失。
+
+已修改该题的开放题参考答案、解析、评估目标和 misconception，明确区分协议互操作、可选 HTTP 授权流程与应用层治理责任。选择题正确答案索引未改变；原本把“协议即治理平面”设为错误选项的设计保持不变。
+
+依据：
+- MCP 官方授权规范：https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2025-11-25/basic/authorization.mdx
+- NSA《Cybersecurity Information: Securing the Model Context Protocol》：https://www.nsa.gov/Portals/75/documents/Cybersecurity/CSI_MCP_SECURITY.pdf
+
+本轮结论仍为抽样审查，不等于全库逐题逐选项的独立事实审计。静态复读确认修改后的题目仍为有效 JSON，答案键仍为单选索引 `[1]`；尚未运行整个仓库的测试、题目/变体校验及构建，因此不宣称完整 CI 通过。
