@@ -44,6 +44,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 - `docs/security-architecture-course-roadmap.md`：面向 Solution Architect 的安全架构课程、标准来源与方案设计案例
 - `docs/snowflake-learning-path.md`：Snowflake 独立课程的系统学习路线、架构实战与题目索引
 - [`docs/rag-interview-questions-research-2026-10.md`](docs/rag-interview-questions-research-2026-10.md)：2026-10 版 RAG 工程实践与参考来源，配套新增 120 道初/中级题，覆盖混合检索、重排、Contextual Retrieval、Agentic RAG、GraphRAG、评测、多模态与安全
+- [`docs/evaluation-prompt-context-engineering-research-2026-10.md`](docs/evaluation-prompt-context-engineering-research-2026-10.md)：2026-10 版评估指标、Prompt Engineering 与 Context Engineering 研究及参考来源，配套新增 100 道初/中级题（40 道评估指标、30 道提示工程、30 道上下文工程）。
 - [`docs/transformer-interview-questions-research-2026-10.md`](docs/transformer-interview-questions-research-2026-10.md)：2026-10 版 Transformer 核心机制、长上下文、混合注意力、MTP、MoE、推理缓存与最新研究来源，配套新增 100 道初/中级题
 - `docs/snowflake-course-roadmap.md`：基于 8 门 Coursera 课程模块与 Snowflake 官方文档的完整课程路线、知识骨架和毕业案例
 - `docs/snowflake-developer-guides-coverage-200.md`：基于 Snowflake Developer Guides 的 200 道实践/架构题与 20 个知识点覆盖矩阵
