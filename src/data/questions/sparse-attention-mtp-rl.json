@@ -128,15 +128,15 @@
       ]
     },
     "question": "在长航程（Long-Horizon）Coding Agent 的强化学习（RL）训练中，长执行轨迹常通过“轨迹压缩”（Trajectory Compaction）被切分为多个子轨迹。针对该场景下的 RL 算法选择（组内相对评价方法 GRPO 与 基于 Critic 的传统 PPO），以下哪些说法是正确的？",
-    "explanation": "选项 A 正确：GRPO（Group Relative Policy Optimization）等组内比较方法要求对同一个 Prompt 采样的组内轨迹进行整体 Reward 的相对归一化。当经过轨迹压缩（Compaction）切分后，不同 Rollout 生成的子轨迹数量不同、长度悬殊，缺乏一对一可比的组内参照物，使得组内归一化失效；选项 B 正确：带 Critic 的 PPO 可以在 Single-rollout 上计算每个 Token 的价值估计（Value Prediction）并计算 Token-level Advantage，不依赖组内同质轨迹对比，因此非常适合处理变长、不规则的切分子轨迹；选项 C 错误：由于缺少组内同质基线，GRPO 强行应用于不平衡的子轨迹会导致 Advantage 估计产生严重偏差，效果劣于带有 Critic 的 PPO；选项 D 正确：Critic 的 Token 级/步骤级优势估计能够精确定位长轨迹中关键动作的贡献（Credit Assignment），改善长航程 Agent 的奖励分配问题。",
+    "explanation": "A 正确：GRPO 基于同一 Prompt 下多个 Rollout 的相对奖励。轨迹压缩或分段后，不能不加分析地把整条轨迹的奖励当成每个子轨迹的独立贡献；应保留 prompt/group 关联并明确奖励与样本构造。B 正确：Critic PPO 能估计状态/Token 级价值与优势，但会增加训练和系统成本，且价值估计不保证准确。C 错误：GRPO 并不要求组内 Rollout 长度一致，长度不均也不会自动让组级归一化在数学上失效；风险来自奖励定义、分段/掩码和样本组织是否匹配目标。D 正确：长程 credit assignment 仍须通过合适的奖励粒度、切分和验证来解决，没有一种算法自动保证准确。",
     "formats": {
       "choice": {
         "type": "multiple",
         "options": [
-          "GRPO 依赖于同一 Prompt 下多个 Rollout 产出结构对称且可互相比较的完整轨迹；经 Compaction 切分后，各 Rollout 产生的子轨迹数量与长度极不均衡，破坏了 GRPO 组内归一化的前提。",
-          "基于 Critic 的 PPO 能够对单条 Rollout 中的每一个 Token 进行细粒度的 Value 预测与 Advantage 估计，因而能自然适应数量与长度不固定的变长子轨迹训练。",
-          "GRPO 在变长子轨迹场景下仍然优于 PPO，因为 GRPO 完全不需要训练 Critic 模型，能够无损处理任意长度不均等的子轨迹分布。",
-          "引入 Critic 模型进行 Token-level Advantage 估计，使得模型可以在子轨迹层面上针对长上下文中的关键决策步骤赋予准确的奖励信号。"
+          "GRPO 通常比较同一 Prompt 下多个 Rollout 的奖励；若将轨迹切分，必须明确保留组归属与奖励定义，不能直接假设原有组级优势仍代表子轨迹贡献。",
+          "带 Critic 的 PPO 可以估计状态/Token 级价值并计算优势，但需要训练和维护 Critic，估计误差也会影响结果。",
+          "GRPO 要求组内所有轨迹长度和结构相同；只要长度不一致，数学上的组内归一化就必然失效。",
+          "无论采用 GRPO 还是 PPO，长程任务的奖励归因都不会自动解决；应验证分段方式、奖励粒度、优势估计与端到端任务表现。"
         ],
         "answer": [
           0,
