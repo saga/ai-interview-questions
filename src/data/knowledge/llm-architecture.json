@@ -87,14 +87,16 @@
     "area": "llm",
     "topic": "llm-architecture",
     "priority": "P0",
-    "summary": "用频率不同的旋转矩阵作用于 Q/K，使内积只依赖相对位置；配合 scaling（线性/NTK-aware 等）外推更长上下文。",
+    "summary": "RoPE 对 Q/K 的二维分量施加位置相关的旋转，使注意力 logit 将相对位置偏移与内容相似度共同编码；它不需要额外的可学习绝对位置 embedding。超出训练长度后的表现不由 RoPE 本身保证，常需使用 scaling/插值方法并按真实任务验证。",
     "required": [
-      "RoPE 只作用于 Q/K 不作用于 V，天然表达相对位置",
-      "超出训练长度时性能衰减催生 RoPE scaling / NTK-aware 插值"
+      "RoPE 主要对 Query 与 Key 应用位置相关旋转，而不是 Value",
+      "相对位置偏移影响 attention logit，但分数仍依赖 Q/K 内容向量，不能说只由相对距离决定",
+      "长上下文扩展通常需要评估 RoPE scaling/插值；不能把模型配置窗口长度等同于窗口内所有位置均有效"
     ],
     "misconceptions": [
-      "以为 RoPE 直接加在 embedding 上",
-      "认为支持 128k 窗口就等于 128k 内处处有效（有效上下文问题）"
+      "以为 RoPE 直接加在 embedding 上作为一组可学习绝对位置向量",
+      "以为 RoPE 后的注意力分数只取决于相对距离而不取决于内容",
+      "认为模型声明支持某个长上下文长度就保证该范围内各位置效果相同"
     ],
     "angles": [
       "mechanism",
