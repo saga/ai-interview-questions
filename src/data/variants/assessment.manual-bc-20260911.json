@@ -808,16 +808,16 @@
         "kind": "context-options",
         "question": "评审会上有人主张 1GB/1h 负载用实时推理，加机器就行。反驳中哪个成立？（单选）",
         "options": [
-          "实时推理有 6MB 与 60s 上限，装不下该负载。",
-          "无服务器推理无 payload 与时长上限，正好适合。",
-          "异步推理支持 GB 级与小时级，轮询近实时返回。",
-          "批量转换离线跑批，同样满足近实时要求。"
+          "普通实时推理当前 payload 上限为 25 MB、常规处理时间通常最多 60 秒；增加机器也不能让单次请求承载 1 GB/1 小时负载。",
+          "无服务器推理没有 payload 和处理时间上限，正好适合。",
+          "异步推理支持 GB 级 payload 与最长小时级处理，适合该负载。",
+          "批量转换是离线任务，同样满足交互式近实时返回。"
         ],
         "angle": "scenario",
         "cognitiveTask": "predict",
         "assessment": {
           "target": "能预测加机器无法突破实时推理 payload 与超时硬上限",
-          "reasoningGoal": "先确定瓶颈是规格上限而非容量；再确认异步成立；并排除实时加机器、无服务器无上限、离线满足。"
+          "reasoningGoal": "识别请求超过普通实时推理的单次 payload/时长限制；确认异步推理适合大 payload 与长处理时间，并排除把 Serverless 当作无上限或把离线 Batch Transform 当成交互式方案的说法。"
         },
         "generatedAt": 1789167894415,
         "generator": "offline",
@@ -850,7 +850,7 @@
             "批量转换（Batch transform）"
           ]
         },
-        "contentHash": "fnv1a-d9a10d5a"
+        "contentHash": "fnv1a-f1493d6a"
       }
     ],
     "aws-ai-practitioner-07": [
