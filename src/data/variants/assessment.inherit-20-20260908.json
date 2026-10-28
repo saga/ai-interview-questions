@@ -9,24 +9,24 @@
         "kind": "surface-options",
         "question": "某团队只有 ImageNet-1k 量级数据且无大规模预训练预算，要在 ViT 与 CNN 之间选型。关于该场景下选型依据的前提是否成立，下列哪些判断正确？",
         "options": [
-          "CNN 卷积内嵌二维局部性与平移同变性，中小数据集上更抗过拟合",
-          "ViT 自注意力从首层全局计算 Patch 相关性，缺二维拓扑硬先验",
-          "ViT 假设空间更大，超大规模预训练下能突破先验上界、反超 CNN",
-          "ViT 彻底抛弃卷积，学不到边缘纹理这类局部几何特征"
+          "CNN 的卷积内嵌二维局部性与平移等变性，通常让它在中小数据集上更具样本效率。",
+          "标准 ViT 缺少卷积式局部性与平移等变性等硬编码先验，但常见 ViT 仍使用位置编码。",
+          "在足够数据和合适预训练条件下，ViT 可能在特定任务上超过标准 CNN；这不是对所有数据与任务的保证。",
+          "ViT 彻底抛弃卷积，因此模型注定无法学习边缘与纹理等局部特征。"
         ],
         "angle": "scenario",
         "cognitiveTask": "apply",
         "assessment": {
           "target": "能在小数据无预训练预算的约束下判断 ViT 与 CNN 选型依据的前提是否成立",
-          "reasoningGoal": "先判断选型依据的前提（数据规模与预训练预算）是否满足；再逐项验证各主张；并排除「ViT 学不到局部特征」等不成立描述。"
+          "reasoningGoal": "在给定数据规模与预训练预算下比较 CNN 的卷积归纳偏置和 ViT 的全局注意力；注意位置编码不等于卷积式局部先验，并排除 ViT 无法学习局部特征或必然超过 CNN 的断言。"
         },
         "generatedAt": 1788855741581,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-c3c9e48b",
+        "sourceHash": "fnv1a-69473d36",
         "batch": "assessmentinherit",
         "model": "manual",
-        "contentHash": "fnv1a-7fb391df",
+        "contentHash": "fnv1a-eb3e2a23",
         "sourceSnapshot": {
           "id": "vit_inductive_bias_vs_cnn_canonical",
           "topic": "vit-inductive-bias-vs-cnn",
@@ -43,7 +43,7 @@
           "options": [
             "CNN 的卷积层天然内嵌了二维空间局部性（Locality）和平移同变性（Translation Equivariance），使其在中小规模数据集上训练时能更好地抵抗过拟合。",
             "ViT 的自注意力（Self-Attention）机制从第一层起即在全局范围计算 Patch 间的相关性，缺乏硬编码的二维空间相对拓扑先验。",
-            "ViT 缺乏强归纳偏置的结构特性，使其在超大规模数据集预训练时更容易突破先验假设的性能上界，从而取得优于标准 CNN 的泛化能力。",
+            "在数据规模、训练设置和评测任务合适时，ViT 的较弱卷积归纳偏置可能带来更高的性能上限，但不保证在所有任务上优于 CNN。",
             "ViT 由于完全放弃了卷积运算，因此无法学习到类似于传统 CNN 底层所具有的边缘、纹理等局部几何特征。"
           ]
         }
@@ -53,24 +53,24 @@
         "kind": "context-options",
         "question": "某团队在 ImageNet-1k 上从头训 ViT-Base，准确率远低于同量级 ResNet 且严重过拟合。定位这次选型失误的病因，下列哪些判断成立？",
         "options": [
-          "病因在归纳偏置：CNN 卷积自带局部性与平移同变性，假设空间小而不易过拟合",
-          "病因在先验缺失：ViT 全局自注意力起手就没有二维空间拓扑先验，全靠数据学相对关系",
-          "病因在数据规模：ViT 缺乏强归纳偏置，只有超大规模预训练才能突破先验上界、反超 CNN",
-          "病因在特征天花板：ViT 没有卷积，边缘纹理这类特征注定学不会"
+          "CNN 的卷积内嵌二维局部性与平移等变性，通常让它在中小数据集上更具样本效率。",
+          "标准 ViT 缺少卷积式局部性与平移等变性等硬编码先验，但常见 ViT 仍使用位置编码。",
+          "在足够数据和合适预训练条件下，ViT 可能在特定任务上超过标准 CNN；这不是对所有数据与任务的保证。",
+          "ViT 彻底抛弃卷积，因此模型注定无法学习边缘与纹理等局部特征。"
         ],
         "angle": "debugging",
         "cognitiveTask": "diagnose",
         "assessment": {
           "target": "能从 ViT 在小数据上过拟合的故障反推归纳偏置与数据规模的病因",
-          "reasoningGoal": "先定位故障的直接诱因（偏置、先验、数据三类）；再逐项验证各判断是否对症；并排除「特征注定学不会」等不成立描述。"
+          "reasoningGoal": "在给定数据规模与预训练预算下比较 CNN 的卷积归纳偏置和 ViT 的全局注意力；注意位置编码不等于卷积式局部先验，并排除 ViT 无法学习局部特征或必然超过 CNN 的断言。"
         },
         "generatedAt": 1788855741582,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-c3c9e48b",
+        "sourceHash": "fnv1a-69473d36",
         "batch": "assessmentinherit",
         "model": "manual",
-        "contentHash": "fnv1a-f36daffd",
+        "contentHash": "fnv1a-ff40c923",
         "sourceSnapshot": {
           "id": "vit_inductive_bias_vs_cnn_canonical",
           "topic": "vit-inductive-bias-vs-cnn",
@@ -87,7 +87,7 @@
           "options": [
             "CNN 的卷积层天然内嵌了二维空间局部性（Locality）和平移同变性（Translation Equivariance），使其在中小规模数据集上训练时能更好地抵抗过拟合。",
             "ViT 的自注意力（Self-Attention）机制从第一层起即在全局范围计算 Patch 间的相关性，缺乏硬编码的二维空间相对拓扑先验。",
-            "ViT 缺乏强归纳偏置的结构特性，使其在超大规模数据集预训练时更容易突破先验假设的性能上界，从而取得优于标准 CNN 的泛化能力。",
+            "在数据规模、训练设置和评测任务合适时，ViT 的较弱卷积归纳偏置可能带来更高的性能上限，但不保证在所有任务上优于 CNN。",
             "ViT 由于完全放弃了卷积运算，因此无法学习到类似于传统 CNN 底层所具有的边缘、纹理等局部几何特征。"
           ]
         }
