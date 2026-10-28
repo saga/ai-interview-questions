@@ -146,3 +146,14 @@ Snowflake 在 2026-08-28 的官方更新中建议新应用从 Cortex Analyst 转
 - NSA《Cybersecurity Information: Securing the Model Context Protocol》：https://www.nsa.gov/Portals/75/documents/Cybersecurity/CSI_MCP_SECURITY.pdf
 
 本轮结论仍为抽样审查，不等于全库逐题逐选项的独立事实审计。静态复读确认修改后的题目仍为有效 JSON，答案键仍为单选索引 `[1]`；尚未运行整个仓库的测试、题目/变体校验及构建，因此不宣称完整 CI 通过。
+
+#### 本次 300 道题的抽样口径与静态检查结果
+
+为避免把抽样数量说得含混，本次另从以下 10 个题库文件各抽取 30 道，共 300 道：
+
+- `ai-architecture.json`、`inference.json`、`evaluation.json`、`foundational-and-intermediate.json`、`training.json`
+- `rag.json`、`transformer.json`、`postgresql-module-200-a.json`、`snowflake-roadmap-300.json`、`aws-genai-developer-pro.json`
+
+已对这 300 道中的选择题执行答案索引范围/结构检查，未发现空答案或越界索引。另对 Context Engineering、现代 RAG、现代 Transformer、MCP、Snowflake、安全架构等题目和知识节点做了定向复核；本次确认的语义错误是上述 `ai-agent-009` 的 MCP 治理责任描述，并已修正。
+
+答案索引检查不等于事实正确性证明。300 道题不是逐题逐选项完成了独立论文/官方文档核验；仍需后续分批检查引用、算法前提、版本依赖和答案解释一致性。完整测试、变体校验与构建尚未运行。
