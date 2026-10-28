@@ -438,7 +438,7 @@
     "difficulty": "medium",
     "angle": "debugging",
     "question": "公司用 Amazon Bedrock 上的基础模型（FM）建聊天机器人，FM 需访问 S3 中经 SSE-S3 加密的数据，但访问失败。哪个方案解决？（单选）",
-    "explanation": "A 正确：SSE-S3 使用由 Amazon S3 管理的加密密钥，不需要额外的 KMS 解密权限。Bedrock 使用的服务角色仍需具备访问对象所需的 S3 权限（例如 s3:GetObject；按功能需要检查 s3:ListBucket）、正确的信任关系和适用的桶策略。只有数据使用 SSE-KMS 等 KMS 加密时，才需根据密钥类型配置相应 KMS 权限。B 把桶公开既不安全也不是正确做法；C 提示工程不能绕开 IAM；D 与权限错误无关。",
+    "explanation": "A 正确：SSE-S3 使用 S3 管理的密钥，不需要额外的 KMS 解密权限。应检查 Bedrock 服务角色的信任关系、所需 S3 读取权限（例如 s3:GetObject，按需检查 s3:ListBucket）和适用的桶策略。只有 SSE-KMS 等场景才需相应 KMS 权限。公开桶不安全；提示词不能绕过访问控制；数据敏感性不决定是否需要授权。",
     "source": {
       "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-practitioner-01/ai-practitioner-01.html",
       "section": "AWS Certified AI Practitioner (AIF-C01)"
@@ -447,10 +447,10 @@
       "choice": {
         "type": "single",
         "options": [
-          "为 Bedrock 使用的 IAM 角色授予所需的 S3 读取权限，并检查角色信任关系与桶策略。",
-          "将 S3 桶访问权限设为公开以允许互联网访问",
-          "用提示工程技术让模型去 S3 中查找信息",
-          "确保 S3 数据不含敏感信息"
+          "检查 Bedrock 角色信任关系、S3 对象读取权限及桶策略；SSE-S3 不需额外 KMS 权限。",
+          "将 S3 桶设为公开访问，以绕过角色授权和对象读取权限检查。",
+          "在提示词中要求模型自行读取 S3，并跳过后端权限检查。",
+          "确认数据不含敏感字段，再取消该对象的访问授权要求。"
         ],
         "answer": [
           0
