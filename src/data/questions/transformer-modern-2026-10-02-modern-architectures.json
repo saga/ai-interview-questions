@@ -1,0 +1,2203 @@
+[
+  {
+    "id": "transformer-modern-2026-10-040",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Multi-Head Latent Attention",
+    "tags": [
+      "transformer",
+      "transformer",
+      "multi-head-latent-attention"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "模型用低秩 latent 表示压缩注意力缓存，并在解码时从压缩表示恢复所需信息。哪些架构判断正确？",
+    "explanation": "低秩 KV 压缩可减小持久缓存，但会改变表示与读取路径，可能引入重建计算。位置编码仍需妥善处理，端到端收益取决于硬件和实现。",
+    "assessment": {
+      "target": "低秩 KV 压缩可减小持久缓存，但会改变表示与读取路径，可能引入重建计算。位置编码仍需妥善处理，端到端收益取决于硬件和实现。",
+      "reasoningGoal": "围绕 Multi-Head Latent Attention 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把压缩缓存误认为消除所有 K/V 与位置机制",
+      "只比较缓存字节数而不测实际解码性能"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "采用低秩缓存就一定不需要处理位置信息",
+          "缓存占用降低不代表端到端延迟一定按同一比例下降",
+          "低秩 KV 表示可减少每个历史 token 持久保存的缓存量",
+          "压缩比、重建开销和任务质量需要一起评估"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "模型用低秩 latent 表示压缩注意力缓存，并在解码时从压缩表示恢复所需信息。哪些架构判断正确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "低秩 KV 压缩可减小持久缓存，但会改变表示与读取路径，可能引入重建计算。位置编码仍需妥善处理，端到端收益取决于硬件和实现。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-041",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache 与低秩压缩",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "kv-cache-与低秩压缩"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个长上下文服务采用低秩 KV Cache 后显存显著下降，但每 token 延迟没有改善。怎样解释并评估？",
+    "explanation": "缓存压缩的容量收益与运行速度不是同一指标。重建计算、内核效率、批量大小以及真实瓶颈会决定端到端是否加速。",
+    "assessment": {
+      "target": "缓存压缩的容量收益与运行速度不是同一指标。重建计算、内核效率、批量大小以及真实瓶颈会决定端到端是否加速。",
+      "reasoningGoal": "围绕 KV Cache 与低秩压缩 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "用容量指标代替完整性能评测",
+      "将论文中的压缩比例直接外推到所有部署硬件"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "若服务瓶颈原本不是缓存带宽，显存下降未必转化为吞吐提升",
+          "应同时测缓存字节数、内存流量、tokens/s 和尾延迟",
+          "只要缓存更小，就可直接断定所有硬件上都更快",
+          "压缩可能减少内存容量，却增加解码时的重建或变换工作"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一个长上下文服务采用低秩 KV Cache 后显存显著下降，但每 token 延迟没有改善。怎样解释并评估？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "缓存压缩的容量收益与运行速度不是同一指标。重建计算、内核效率、批量大小以及真实瓶颈会决定端到端是否加速。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-042",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "Grouped Value Attention 研究",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "grouped-value-attention-研究"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "identify",
+    "question": "一项 2026 年预印本提出通过分组保存 Value 并按需重建内容 Key 来压缩缓存。阅读这类新方案时，哪些结论应谨慎区分？",
+    "explanation": "新型缓存表示可能改变存储与重建的权衡，但仍要看模型规模、任务质量、实际 kernel 与端到端推理数据。预印本报告的结果不能直接当作生产共识。",
+    "assessment": {
+      "target": "新型缓存表示可能改变存储与重建的权衡，但仍要看模型规模、任务质量、实际 kernel 与端到端推理数据。预印本报告的结果不能直接当作生产共识。",
+      "reasoningGoal": "围绕 Grouped Value Attention 研究 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把预印本实验结果当作普遍部署结论",
+      "只看压缩率而忽略重建路径与位置编码"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "表示设计可能降低持久缓存的标量数量",
+          "位置相关信息可能仍需通过独立路径保留",
+          "小模型基准结果不自动证明大模型生产吞吐提升",
+          "公开预印本提出该方法即代表它已成为行业默认架构"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一项 2026 年预印本提出通过分组保存 Value 并按需重建内容 Key 来压缩缓存。阅读这类新方案时，哪些结论应谨慎区分？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "新型缓存表示可能改变存储与重建的权衡，但仍要看模型规模、任务质量、实际 kernel 与端到端推理数据。预印本报告的结果不能直接当作生产共识。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-043",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "混合注意力架构",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "混合注意力架构"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "长上下文模型在全局注意力与局部/线性序列层之间混合堆叠。哪些判断正确？",
+    "explanation": "混合架构希望在局部效率与长距离依赖之间做取舍。不同层的比例、状态机制和全局连接都会影响任务质量与部署成本。",
+    "assessment": {
+      "target": "混合架构希望在局部效率与长距离依赖之间做取舍。不同层的比例、状态机制和全局连接都会影响任务质量与部署成本。",
+      "reasoningGoal": "围绕 混合注意力架构 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把较低理论成本当作质量不变的保证",
+      "忽略全局层布局与循环状态维护"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只要混合架构的理论复杂度更低，任务质量就必然不变",
+          "局部或循环层可降低部分层随序列长度增长的成本",
+          "全局注意力层仍可提供直接的远距离 token 交互",
+          "混合比例应在目标任务和硬件上进行质量与性能对照"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "长上下文模型在全局注意力与局部/线性序列层之间混合堆叠。哪些判断正确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "混合架构希望在局部效率与长距离依赖之间做取舍。不同层的比例、状态机制和全局连接都会影响任务质量与部署成本。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-044",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "动态混合注意力",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "动态混合注意力"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "一项 2026 年研究提出按 token 和层动态选择全局注意力或滑动窗口注意力。与固定交替层模式相比，核心差异是什么？",
+    "explanation": "动态混合让不同 token/层选择注意力路径，而固定模式在模型配置阶段就确定分配。灵活性可能提高资源使用效率，但选择器开销与质量稳定性仍需评估。",
+    "assessment": {
+      "target": "动态混合让不同 token/层选择注意力路径，而固定模式在模型配置阶段就确定分配。灵活性可能提高资源使用效率，但选择器开销与质量稳定性仍需评估。",
+      "reasoningGoal": "围绕 动态混合注意力 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把动态路由的灵活性误认为无成本",
+      "将论文提出的效率收益视为任何输入下的保证"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "动态路由可能更灵活，但也引入选择器与执行开销",
+          "动态方案必然在任何序列上都更快且更准",
+          "路由可按输入位置的需要分配全局或局部计算",
+          "固定模式预先决定哪些层使用哪种注意力"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "一项 2026 年研究提出按 token 和层动态选择全局注意力或滑动窗口注意力。与固定交替层模式相比，核心差异是什么？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "动态混合让不同 token/层选择注意力路径，而固定模式在模型配置阶段就确定分配。灵活性可能提高资源使用效率，但选择器开销与质量稳定性仍需评估。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-045",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "动态路由评估",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "动态路由评估"
+    ],
+    "difficulty": "medium",
+    "angle": "evaluation",
+    "cognitiveTask": "evaluate",
+    "question": "在实验中动态注意力降低了理论 FLOPs，但真实 GPU 延迟反而增加。哪些原因值得排查？",
+    "explanation": "理论计算量不等同于实际时延。路由、同步、分支不均衡、内存访问和 kernel 融合都可能抵消 FLOPs 减少带来的收益。",
+    "assessment": {
+      "target": "理论计算量不等同于实际时延。路由、同步、分支不均衡、内存访问和 kernel 融合都可能抵消 FLOPs 减少带来的收益。",
+      "reasoningGoal": "围绕 动态路由评估 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "只看理论 FLOPs 不看端到端测量",
+      "忽略动态分支对 GPU 执行效率的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "不同 token 走不同路径可能降低 kernel 利用率或批处理效率；需用目标模型与任务进行验证",
+          "应在相同硬件、批量、长度和质量约束下比较；需用目标模型与任务进行验证",
+          "FLOPs 更低就能证明实际延迟必定更低；需用目标模型与任务进行验证",
+          "路由决策或分支执行可能引入额外开销；需用目标模型与任务进行验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "在实验中动态注意力降低了理论 FLOPs，但真实 GPU 延迟反而增加。哪些原因值得排查？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "理论计算量不等同于实际时延。路由、同步、分支不均衡、内存访问和 kernel 融合都可能抵消 FLOPs 减少带来的收益。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-046",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "局部与全局信息路径",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "局部与全局信息路径"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "question": "某代码分析模型要在长仓库中同时识别局部语法模式与跨文件依赖。如何评价局部注意力与全局注意力的组合？",
+    "explanation": "局部注意力能高效处理邻近模式，但无法在单层内直接读取窗口外信息；跨文件关联通常需要全局路径或多层间接传递，必须用任务评测验证。",
+    "assessment": {
+      "target": "局部注意力能高效处理邻近模式，但无法在单层内直接读取窗口外信息；跨文件关联通常需要全局路径或多层间接传递，必须用任务评测验证。",
+      "reasoningGoal": "围绕 局部与全局信息路径 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把局部感受野当成直接全局检索",
+      "仅凭窗口大小推断跨文件推理能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "局部层适合捕获邻近 token 的细节模式",
+          "全局路径有助于连接相距很远的定义和引用",
+          "应以跨文件任务集验证全局路径是否足够",
+          "完全局部的窗口设置必然能恢复任意远处依赖"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "某代码分析模型要在长仓库中同时识别局部语法模式与跨文件依赖。如何评价局部注意力与全局注意力的组合？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "局部注意力能高效处理邻近模式，但无法在单层内直接读取窗口外信息；跨文件关联通常需要全局路径或多层间接传递，必须用任务评测验证。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-047",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Mamba 与 Transformer 关系",
+    "tags": [
+      "transformer",
+      "transformer",
+      "mamba-与-transformer-关系"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "团队评估以状态空间层替换部分 Transformer 注意力层。哪些说法合理？",
+    "explanation": "状态空间层通过递推状态压缩历史，注意力则显式比较当前 Query 与可访问的 Key。两者各有成本与适用边界，混合也是可行设计。",
+    "assessment": {
+      "target": "状态空间层通过递推状态压缩历史，注意力则显式比较当前 Query 与可访问的 Key。两者各有成本与适用边界，混合也是可行设计。",
+      "reasoningGoal": "围绕 Mamba 与 Transformer 关系 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把状态空间状态视为完整保存所有历史 token",
+      "把某一种序列架构当成所有任务的必然胜者"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "状态空间方法在所有任务和长度上必然取代 Transformer",
+          "选择性状态空间层可用固定状态摘要递推处理历史信息",
+          "全局注意力可直接比较任意查询位置与历史 Key",
+          "二者的信息访问机制不同，质量和延迟要用同一任务对照"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "团队评估以状态空间层替换部分 Transformer 注意力层。哪些说法合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "状态空间层通过递推状态压缩历史，注意力则显式比较当前 Query 与可访问的 Key。两者各有成本与适用边界，混合也是可行设计。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-048",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "Transformer 与 SSM 混合",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "transformer-与-ssm-混合"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "模型把大多数层替换成线性/状态空间层，仅保留部分全局注意力。哪些指标适合判断是否值得部署？",
+    "explanation": "混合架构需要联合评估质量、状态/缓存占用、延迟吞吐和训练行为。参数量是资源指标之一，并不足以决定部署性价比。",
+    "assessment": {
+      "target": "混合架构需要联合评估质量、状态/缓存占用、延迟吞吐和训练行为。参数量是资源指标之一，并不足以决定部署性价比。",
+      "reasoningGoal": "围绕 Transformer 与 SSM 混合 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把参数量当成运行成本的完整代理",
+      "只测短序列而忽略长程依赖"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练收敛、长序列泛化和批处理行为",
+          "仅比较可训练参数量就能确定服务性价比",
+          "端到端任务质量和长距离依赖测试",
+          "KV 缓存或状态内存、token 吞吐与 P95 延迟"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "模型把大多数层替换成线性/状态空间层，仅保留部分全局注意力。哪些指标适合判断是否值得部署？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "混合架构需要联合评估质量、状态/缓存占用、延迟吞吐和训练行为。参数量是资源指标之一，并不足以决定部署性价比。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-049",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "多 Token 预测目标",
+    "tags": [
+      "transformer",
+      "transformer",
+      "多-token-预测目标"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "预训练时增加 Multi-Token Prediction（MTP）辅助目标，通常希望获得哪些效果？",
+    "explanation": "MTP 增加对多个未来 token 的监督，可作为训练目标；推理速度提升还取决于是否使用相应预测头或验证策略，训练时有辅助目标并不等于推理自动并行生成。",
+    "assessment": {
+      "target": "MTP 增加对多个未来 token 的监督，可作为训练目标；推理速度提升还取决于是否使用相应预测头或验证策略，训练时有辅助目标并不等于推理自动并行生成。",
+      "reasoningGoal": "围绕 多 Token 预测目标 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把训练辅助目标和推理解码机制混为一谈",
+      "仅凭训练目标变化就宣称线上加速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可能改善表示学习或下游生成质量；需用目标模型与任务进行验证",
+          "多 token 训练目标本身不保证推理时一次生成这些 token；需用目标模型与任务进行验证",
+          "是否提升质量需在相同训练预算与评测协议下比较；需用目标模型与任务进行验证",
+          "为一个位置增加预测多个未来 token 的训练信号；需用目标模型与任务进行验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "question": "预训练时增加 Multi-Token Prediction（MTP）辅助目标，通常希望获得哪些效果？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MTP 增加对多个未来 token 的监督，可作为训练目标；推理速度提升还取决于是否使用相应预测头或验证策略，训练时有辅助目标并不等于推理自动并行生成。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-050",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "MTP 与推理加速",
+    "tags": [
+      "transformer",
+      "transformer",
+      "mtp-与推理加速"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "一个模型使用 MTP 进行训练，但推理服务仍只从标准 LM Head 逐 token 采样。哪些结论成立？",
+    "explanation": "MTP 可以作为训练辅助目标，也可能配合专用解码策略用于加速；是否产生线上收益由推理实现和验证机制决定，而非仅由训练配置决定。",
+    "assessment": {
+      "target": "MTP 可以作为训练辅助目标，也可能配合专用解码策略用于加速；是否产生线上收益由推理实现和验证机制决定，而非仅由训练配置决定。",
+      "reasoningGoal": "围绕 MTP 与推理加速 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把训练图与线上执行图视为相同",
+      "只测草稿预测数量而不测最终接受输出"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MTP 的训练收益可能存在，即使没有启用专用推理路径",
+          "若要加速生成，需要确认推理代码实际使用多 Token 预测能力",
+          "启用预测头后仍需验证输出质量、接受率和端到端 tokens/s",
+          "训练时预测多个 token 就意味着单次调用必然输出全部未来 token"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一个模型使用 MTP 进行训练，但推理服务仍只从标准 LM Head 逐 token 采样。哪些结论成立？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MTP 可以作为训练辅助目标，也可能配合专用解码策略用于加速；是否产生线上收益由推理实现和验证机制决定，而非仅由训练配置决定。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-051",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Qwen3-Next 类混合架构",
+    "tags": [
+      "transformer",
+      "transformer",
+      "qwen3-next-类混合架构"
+    ],
+    "difficulty": "medium",
+    "angle": "architecture",
+    "cognitiveTask": "identify",
+    "question": "一类新型语言模型结合门控线性/循环注意力、少量全局注意力、高稀疏 MoE 和多 Token 预测。哪些是合理的架构解读？",
+    "explanation": "混合注意力、稀疏专家和多 Token 预测分别影响信息路径、每 token 计算及训练/解码机制。总参数、激活参数、缓存和运行内存不是同一个指标。",
+    "assessment": {
+      "target": "混合注意力、稀疏专家和多 Token 预测分别影响信息路径、每 token 计算及训练/解码机制。总参数、激活参数、缓存和运行内存不是同一个指标。",
+      "reasoningGoal": "围绕 Qwen3-Next 类混合架构 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把激活参数量当作模型总内存占用",
+      "假设每个组件的独立收益可直接叠加"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只要激活参数少，就能推断模型整体内存占用也同样小",
+          "不同组件分别瞄准长上下文、计算预算和训练/推理效率",
+          "总参数量与每 token 激活参数量描述不同资源维度",
+          "各组件收益可能相互影响，不能简单相加各自论文百分比"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "一类新型语言模型结合门控线性/循环注意力、少量全局注意力、高稀疏 MoE 和多 Token 预测。哪些是合理的架构解读？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "混合注意力、稀疏专家和多 Token 预测分别影响信息路径、每 token 计算及训练/解码机制。总参数、激活参数、缓存和运行内存不是同一个指标。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-052",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 总参数与激活参数",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-总参数与激活参数"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "一个 MoE 模型总参数量远大于每个 token 实际使用的参数量。哪些解释正确？",
+    "explanation": "MoE 按 token 路由到部分专家，控制每 token 计算量；模型总权重仍需存储、加载或分布在多设备，通信和调度也会影响性能。",
+    "assessment": {
+      "target": "MoE 按 token 路由到部分专家，控制每 token 计算量；模型总权重仍需存储、加载或分布在多设备，通信和调度也会影响性能。",
+      "reasoningGoal": "围绕 MoE 总参数与激活参数 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把激活参数量误认为模型的全部存储规模",
+      "认为稀疏路由会消除分布式调度成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "较少激活参数不代表权重无需存储或调度",
+          "每个请求都必须对所有专家执行完整前向计算",
+          "总参数反映所有专家和共享模块的参数规模",
+          "激活参数量反映一次 token 计算中实际选用的部分参数"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "一个 MoE 模型总参数量远大于每个 token 实际使用的参数量。哪些解释正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MoE 按 token 路由到部分专家，控制每 token 计算量；模型总权重仍需存储、加载或分布在多设备，通信和调度也会影响性能。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-053",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "Top-k 专家路由",
+    "tags": [
+      "transformer",
+      "moe",
+      "top-k-专家路由"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "MoE 层使用 Router 为每个 token 选择 Top-k 专家。哪些判断正确？",
+    "explanation": "Top-k 路由让每个 token 只通过选中的少数专家，输出按路由权重组合。不同 token 的分布可能不均匀，因此负载均衡是独立的训练和系统问题。",
+    "assessment": {
+      "target": "Top-k 路由让每个 token 只通过选中的少数专家，输出按路由权重组合。不同 token 的分布可能不均匀，因此负载均衡是独立的训练和系统问题。",
+      "reasoningGoal": "围绕 Top-k 专家路由 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把稀疏路由误认为均匀路由",
+      "忽略路由负载对吞吐和设备利用率的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Top-k 限制每个 token 经过的专家数与计算路径；需用目标模型与任务进行验证",
+          "专家输出通常按路由权重组合；需用目标模型与任务进行验证",
+          "Top-k 路由保证所有专家在每一步收到完全相同数量的 token；需用目标模型与任务进行验证",
+          "不同 token 可被路由到不同专家；需用目标模型与任务进行验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "MoE 层使用 Router 为每个 token 选择 Top-k 专家。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Top-k 路由让每个 token 只通过选中的少数专家，输出按路由权重组合。不同 token 的分布可能不均匀，因此负载均衡是独立的训练和系统问题。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-054",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 负载均衡",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-负载均衡"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "question": "训练中的 MoE Router 大量把 token 发送到少数专家，导致个别设备过载。哪些诊断和缓解措施值得考虑？",
+    "explanation": "路由集中可能来自模型分布、负载均衡目标、容量约束或设备映射。应结合专家负载和通信指标分析，简单抹平 logits 会破坏路由的区分能力。",
+    "assessment": {
+      "target": "路由集中可能来自模型分布、负载均衡目标、容量约束或设备映射。应结合专家负载和通信指标分析，简单抹平 logits 会破坏路由的区分能力。",
+      "reasoningGoal": "围绕 MoE 负载均衡 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把负载均衡当作只需训练损失优化的问题",
+      "把专家负载变均匀等同于任务质量最优"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分析各专家 token 数、溢出比例和设备级延迟",
+          "检查辅助负载均衡目标与路由分布是否发生偏移",
+          "评估容量限制、路由策略及设备映射带来的影响",
+          "只把所有 Router logits 强行设置为相同值就能保留专家分工"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "训练中的 MoE Router 大量把 token 发送到少数专家，导致个别设备过载。哪些诊断和缓解措施值得考虑？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "路由集中可能来自模型分布、负载均衡目标、容量约束或设备映射。应结合专家负载和通信指标分析，简单抹平 logits 会破坏路由的区分能力。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-055",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 专家并行与通信",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-专家并行与通信"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "分布式 MoE 推理的 GPU 算力利用率低，All-to-All 通信占时明显。哪些优化方向合理？",
+    "explanation": "MoE 的专家并行需要把 token 送到目标设备，通信可能成为瓶颈。专家数量增加不必然降低通信成本，需要结合拓扑、路由、批量与负载实测。",
+    "assessment": {
+      "target": "MoE 的专家并行需要把 token 送到目标设备，通信可能成为瓶颈。专家数量增加不必然降低通信成本，需要结合拓扑、路由、批量与负载实测。",
+      "reasoningGoal": "围绕 MoE 专家并行与通信 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "只看 FLOPs 而忽略 All-to-All",
+      "认为专家越多设备利用率就必然越高"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "增加专家数量一定减少 All-to-All 通信成本",
+          "检查专家放置与 token 路由是否造成跨节点通信热点",
+          "评估通信与专家计算能否重叠，以及消息大小与批量",
+          "优化专家负载分布和设备映射，同时测端到端延迟"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "分布式 MoE 推理的 GPU 算力利用率低，All-to-All 通信占时明显。哪些优化方向合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MoE 的专家并行需要把 token 送到目标设备，通信可能成为瓶颈。专家数量增加不必然降低通信成本，需要结合拓扑、路由、批量与负载实测。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-056",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "无辅助损失负载均衡",
+    "tags": [
+      "transformer",
+      "moe",
+      "无辅助损失负载均衡"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "某 MoE 训练方法使用 Router 偏置或辅助损失以改善专家负载均衡。哪些观点正确？",
+    "explanation": "负载均衡策略需要在专家利用率与语义专门化间取舍；线上流量分布和批量可能与训练不同，因此仍要监控部署时负载。",
+    "assessment": {
+      "target": "负载均衡策略需要在专家利用率与语义专门化间取舍；线上流量分布和批量可能与训练不同，因此仍要监控部署时负载。",
+      "reasoningGoal": "围绕 无辅助损失负载均衡 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把训练期均衡表现当成线上均衡保证",
+      "认为均衡越强就一定提高任务质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过强的均衡压力可能干扰有用的专门化",
+          "训练负载均衡良好就保证推理时任何流量都没有热点",
+          "负载均衡目标影响 token 在专家间的分配分布",
+          "减少辅助损失不代表完全不需要监测专家负载"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "某 MoE 训练方法使用 Router 偏置或辅助损失以改善专家负载均衡。哪些观点正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "负载均衡策略需要在专家利用率与语义专门化间取舍；线上流量分布和批量可能与训练不同，因此仍要监控部署时负载。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-057",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "专家容量与 Token 溢出",
+    "tags": [
+      "transformer",
+      "moe",
+      "专家容量与-token-溢出"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "question": "MoE 层为每个专家设置容量上限后，在高峰 batch 中出现 token 丢弃或重路由。哪些检查有效？",
+    "explanation": "容量上限会控制专家工作负载，但拥挤时可能引发 token 丢弃、重路由或延迟。应检查真实峰值分布和处理策略，不能单方面缩小容量。",
+    "assessment": {
+      "target": "容量上限会控制专家工作负载，但拥挤时可能引发 token 丢弃、重路由或延迟。应检查真实峰值分布和处理策略，不能单方面缩小容量。",
+      "reasoningGoal": "围绕 专家容量与 Token 溢出 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "只在平均 batch 上测专家容量",
+      "忽略 overflow 对输出质量与一致性的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "测量 token 丢弃对任务指标的影响",
+          "确认训练与推理是否采用不同的 overflow 处理策略",
+          "将专家容量设为最小值就能减少延迟且不影响质量",
+          "分析专家容量因子、路由分布和高峰 batch 规模"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "MoE 层为每个专家设置容量上限后，在高峰 batch 中出现 token 丢弃或重路由。哪些检查有效？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "容量上限会控制专家工作负载，但拥挤时可能引发 token 丢弃、重路由或延迟。应检查真实峰值分布和处理策略，不能单方面缩小容量。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-058",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 共享专家与专用专家",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-共享专家与专用专家"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "一个 MoE 层同时有共享专家与路由专家。哪些设计意图可能成立？",
+    "explanation": "共享专家可能承接较通用的表示变换，而路由专家提供专门化计算。但共享路径仍消耗算力，路由专家也仍需负载和通信管理。",
+    "assessment": {
+      "target": "共享专家可能承接较通用的表示变换，而路由专家提供专门化计算。但共享路径仍消耗算力，路由专家也仍需负载和通信管理。",
+      "reasoningGoal": "围绕 MoE 共享专家与专用专家 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把共享专家当成完全消除路由开销的设计",
+      "认为专家分工会自然形成且无需评估"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "共享专家可处理许多 token 都需要的共性特征",
+          "路由专家可学习更专门的模式或领域分工",
+          "共享专家的存在会让 Router 路由与负载问题完全消失",
+          "应评估共享路径对计算量、容量和专家使用率的影响"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一个 MoE 层同时有共享专家与路由专家。哪些设计意图可能成立？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "共享专家可能承接较通用的表示变换，而路由专家提供专门化计算。但共享路径仍消耗算力，路由专家也仍需负载和通信管理。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-059",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "专家并行运行时调度",
+    "tags": [
+      "transformer",
+      "moe",
+      "专家并行运行时调度"
+    ],
+    "difficulty": "medium",
+    "angle": "architecture",
+    "cognitiveTask": "design",
+    "question": "MoE 服务中少数专家常收到突发高流量，而其他设备相对空闲。哪些运行时策略可评估？",
+    "explanation": "专家负载可能随请求内容变化。运行时调度、合理放置和受控迁移能缓解热点，但需考虑通信、权重内存与模型执行语义。",
+    "assessment": {
+      "target": "专家负载可能随请求内容变化。运行时调度、合理放置和受控迁移能缓解热点，但需考虑通信、权重内存与模型执行语义。",
+      "reasoningGoal": "围绕 专家并行运行时调度 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把平均负载当成设备容量的充分指标",
+      "认为复制专家不会增加权重和一致性开销"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把所有专家复制到每个设备就一定不增加内存和同步成本",
+          "为过载专家设置有界排队与可观测的等待时间",
+          "受控迁移或重路由工作时需确保模型执行语义正确",
+          "将专家放置、缓存与网络拓扑一起纳入部署规划"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "MoE 服务中少数专家常收到突发高流量，而其他设备相对空闲。哪些运行时策略可评估？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "专家负载可能随请求内容变化。运行时调度、合理放置和受控迁移能缓解热点，但需考虑通信、权重内存与模型执行语义。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-060",
+    "category": "model-architecture",
+    "topic": "latent-moe",
+    "subtopic": "低秩/Latent MoE",
+    "tags": [
+      "transformer",
+      "latent-moe",
+      "低秩-latent-moe"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个架构先将隐藏表示投影到较低维 latent space，再在该空间执行专家变换。哪些取舍正确？",
+    "explanation": "Latent MoE 可把专家计算放到较低维表示中以节省部分开销，但投影成本、瓶颈维度与 kernel 效率会影响净收益。",
+    "assessment": {
+      "target": "Latent MoE 可把专家计算放到较低维表示中以节省部分开销，但投影成本、瓶颈维度与 kernel 效率会影响净收益。",
+      "reasoningGoal": "围绕 低秩/Latent MoE 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把理论低维计算量当作完整运行成本",
+      "忽略信息瓶颈对专家表达能力的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "降维与升维投影自身也有参数和计算开销",
+          "只要 latent 维度更低，端到端延迟就一定更短",
+          "低维计算可能降低部分专家矩阵乘法的成本",
+          "过度压低 latent 维度可能成为表达能力瓶颈"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "一个架构先将隐藏表示投影到较低维 latent space，再在该空间执行专家变换。哪些取舍正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Latent MoE 可把专家计算放到较低维表示中以节省部分开销，但投影成本、瓶颈维度与 kernel 效率会影响净收益。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-061",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache 量化",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "kv-cache-量化"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个推理服务用 INT8/低比特量化 KV Cache 来提高并发。哪些评估维度必要？",
+    "explanation": "KV Cache 量化可减少存储，但会引入误差与额外计算。短上下文、足够显存或特定 kernel 下，量化未必降低延迟；必须做端到端权衡。",
+    "assessment": {
+      "target": "KV Cache 量化可减少存储，但会引入误差与额外计算。短上下文、足够显存或特定 kernel 下，量化未必降低延迟；必须做端到端权衡。",
+      "reasoningGoal": "围绕 KV Cache 量化 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "只测显存减少而不评测质量",
+      "把压缩率直接等同于速度提升"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "量化误差对长上下文检索和生成质量的影响",
+          "量化/反量化带来的额外计算与实际延迟",
+          "低比特缓存必然在任何序列长度下都更快",
+          "缓存容量与可支持并发数的变化"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一个推理服务用 INT8/低比特量化 KV Cache 来提高并发。哪些评估维度必要？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "KV Cache 量化可减少存储，但会引入误差与额外计算。短上下文、足够显存或特定 kernel 下，量化未必降低延迟；必须做端到端权衡。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-062",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache Offloading",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "kv-cache-offloading"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "GPU 显存不足时，将部分 KV Cache offload 到 CPU 可能缓解 OOM。哪些判断合理？",
+    "explanation": "Offloading 把部分缓存移到主机，释放 GPU 显存但增加数据传输和协调成本。它是容量与性能的交换，而非消除存储成本。",
+    "assessment": {
+      "target": "Offloading 把部分缓存移到主机，释放 GPU 显存但增加数据传输和协调成本。它是容量与性能的交换，而非消除存储成本。",
+      "reasoningGoal": "围绕 KV Cache Offloading 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把 GPU 显存释放误认为内存使用被消除",
+      "只比较可运行的 batch size，不测端到端时延"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "能减少 GPU 上的缓存驻留量",
+          "主机与设备之间传输可能增加延迟",
+          "是否获益取决于上下文、带宽、并发和预取实现",
+          "offload 后历史 KV 不再占用任何内存资源"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "GPU 显存不足时，将部分 KV Cache offload 到 CPU 可能缓解 OOM。哪些判断合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Offloading 把部分缓存移到主机，释放 GPU 显存但增加数据传输和协调成本。它是容量与性能的交换，而非消除存储成本。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-063",
+    "category": "model-architecture",
+    "topic": "flash-attention",
+    "subtopic": "FlashAttention 3 与硬件特性",
+    "tags": [
+      "transformer",
+      "flash-attention",
+      "flashattention-3-与硬件特性"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "针对新一代 GPU，FlashAttention 3 类优化会利用异步数据移动、计算重叠和低精度硬件能力。哪些结论正确？",
+    "explanation": "FlashAttention 3 利用特定硬件的异步与低精度能力改善执行效率，但收益依赖硬件、输入形状和精度设置。必须对目标部署环境做 benchmark 与精度验证。",
+    "assessment": {
+      "target": "FlashAttention 3 利用特定硬件的异步与低精度能力改善执行效率，但收益依赖硬件、输入形状和精度设置。必须对目标部署环境做 benchmark 与精度验证。",
+      "reasoningGoal": "围绕 FlashAttention 3 与硬件特性 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把论文硬件结果直接外推到不同 GPU",
+      "认为内核优化不需要数值稳定性验证"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "算法名称带有版本号就保证在旧硬件上同样加速",
+          "更好地重叠数据搬运与矩阵运算可改善硬件利用率",
+          "低精度路径仍需检查数值误差和训练/推理稳定性",
+          "优化收益取决于 GPU 架构与内核支持条件"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "针对新一代 GPU，FlashAttention 3 类优化会利用异步数据移动、计算重叠和低精度硬件能力。哪些结论正确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "FlashAttention 3 利用特定硬件的异步与低精度能力改善执行效率，但收益依赖硬件、输入形状和精度设置。必须对目标部署环境做 benchmark 与精度验证。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-064",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "动态 Token 计算",
+    "tags": [
+      "transformer",
+      "transformer",
+      "动态-token-计算"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "2026 年关于动态 Token 计算的研究涵盖 token pruning、merging、routing 与 early exit。哪些区分正确？",
+    "explanation": "动态 token 方法通过移除、合并、路由或提前退出减少部分计算；但选择器开销、硬件执行和质量变化决定实际收益，不能只看 token 数或 FLOPs。",
+    "assessment": {
+      "target": "动态 token 方法通过移除、合并、路由或提前退出减少部分计算；但选择器开销、硬件执行和质量变化决定实际收益，不能只看 token 数或 FLOPs。",
+      "reasoningGoal": "围绕 动态 Token 计算 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把所有动态 token 方法视为同一种技术",
+      "把 token 数下降直接当作实测加速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Early exit 可让部分输入在较浅层提前结束",
+          "这些方法只要理论 token 数下降，就保证真实延迟下降",
+          "Pruning 可移除被判为低价值的 token",
+          "Merging 将部分 token 表示聚合以减少后续计算"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "2026 年关于动态 Token 计算的研究涵盖 token pruning、merging、routing 与 early exit。哪些区分正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "动态 token 方法通过移除、合并、路由或提前退出减少部分计算；但选择器开销、硬件执行和质量变化决定实际收益，不能只看 token 数或 FLOPs。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-065",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "动态 Token 策略稳定性",
+    "tags": [
+      "transformer",
+      "transformer",
+      "动态-token-策略稳定性"
+    ],
+    "difficulty": "medium",
+    "angle": "evaluation",
+    "cognitiveTask": "evaluate",
+    "question": "一个 Token Pruning 模块在标准 benchmark 上提升吞吐，但轻微输入扰动就保留了不同 token 集合。哪些评测重要？",
+    "explanation": "动态路由可能受输入扰动影响，并存在选择开销。部署评估应包含稳定性、分布外情况、预算可靠性和真实硬件端到端指标。",
+    "assessment": {
+      "target": "动态路由可能受输入扰动影响，并存在选择开销。部署评估应包含稳定性、分布外情况、预算可靠性和真实硬件端到端指标。",
+      "reasoningGoal": "围绕 动态 Token 策略稳定性 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把静态 benchmark 成绩当作动态策略鲁棒性证明",
+      "忽略选择器本身的执行开销"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同时测任务质量、选择开销和实际延迟",
+          "验证不同长度和预算下的质量退化是否可控",
+          "只报告最大理论 FLOPs 节省就能证明生产可用",
+          "检查路由决策在扰动和分布变化下是否稳定"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一个 Token Pruning 模块在标准 benchmark 上提升吞吐，但轻微输入扰动就保留了不同 token 集合。哪些评测重要？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "动态路由可能受输入扰动影响，并存在选择开销。部署评估应包含稳定性、分布外情况、预算可靠性和真实硬件端到端指标。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-066",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Transformer 理论与实证",
+    "tags": [
+      "transformer",
+      "transformer",
+      "transformer-理论与实证"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "identify",
+    "question": "2026 年一项研究对多种 Transformer 能力理论进行统一比较，并通过实验发现不同理论对任务难度的预测会冲突。哪些结论合理？",
+    "explanation": "不同理论可能采用不同的注意力、计算和学习假设，因此预测有时会冲突。合理做法是澄清假设并用实验验证，而不是将某一种理论视为普遍定律。",
+    "assessment": {
+      "target": "不同理论可能采用不同的注意力、计算和学习假设，因此预测有时会冲突。合理做法是澄清假设并用实验验证，而不是将某一种理论视为普遍定律。",
+      "reasoningGoal": "围绕 Transformer 理论与实证 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把抽象模型的结论无条件外推到预训练 LLM",
+      "因理论不完备而否认其对边界分析的价值"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "理论结论依赖其抽象假设与允许的计算机制",
+          "没有单一理论能无条件解释所有实际模型行为",
+          "需要用控制实验检验长度泛化和任务样本复杂度等预测",
+          "任何形式理论都无法对 Transformer 提供有价值的洞见"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "2026 年一项研究对多种 Transformer 能力理论进行统一比较，并通过实验发现不同理论对任务难度的预测会冲突。哪些结论合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不同理论可能采用不同的注意力、计算和学习假设，因此预测有时会冲突。合理做法是澄清假设并用实验验证，而不是将某一种理论视为普遍定律。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-067",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "长上下文位置扩展策略",
+    "tags": [
+      "transformer",
+      "transformer",
+      "长上下文位置扩展策略"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "扩展 RoPE 模型上下文时，位置插值、YaRN 或 LongRoPE 一类方法应如何理解？",
+    "explanation": "这些方法试图缓解训练长度和目标长度差异带来的位置分布变化，但机制和训练需求不同。需在目标长度与原长度上评测，不能假设无损无限外推。",
+    "assessment": {
+      "target": "这些方法试图缓解训练长度和目标长度差异带来的位置分布变化，但机制和训练需求不同。需在目标长度与原长度上评测，不能假设无损无限外推。",
+      "reasoningGoal": "围绕 长上下文位置扩展策略 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把可调整位置映射误解为任意长度质量保证",
+      "只测长输入可用性，不检查短上下文回归"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "任何一种缩放方法都会无损支持任意长度，无需微调",
+          "它们调整位置范围或频率映射以适配更长序列",
+          "不同方法的缩放策略和训练需求可能不同",
+          "需要评估扩展后长短上下文的质量变化"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "扩展 RoPE 模型上下文时，位置插值、YaRN 或 LongRoPE 一类方法应如何理解？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "这些方法试图缓解训练长度和目标长度差异带来的位置分布变化，但机制和训练需求不同。需在目标长度与原长度上评测，不能假设无损无限外推。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-068",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "多 Token 预测与投机解码",
+    "tags": [
+      "transformer",
+      "transformer",
+      "多-token-预测与投机解码"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "MTP 训练目标与 Speculative Decoding 都可能与生成速度相关。哪些差异正确？",
+    "explanation": "MTP 是训练目标或多预测头设计；投机解码是提出草稿并由目标模型验证的推理机制。它们可以关联，但不是同一个算法，收益需以端到端数据检验。",
+    "assessment": {
+      "target": "MTP 是训练目标或多预测头设计；投机解码是提出草稿并由目标模型验证的推理机制。它们可以关联，但不是同一个算法，收益需以端到端数据检验。",
+      "reasoningGoal": "围绕 多 Token 预测与投机解码 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把训练目标与推理时验证流程混为一谈",
+      "只计草稿 token 数，不测目标模型的验证开销"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "两者是完全相同的算法，只是训练与推理命名不同",
+          "任何加速实现都应测验收率、端到端吞吐和输出正确性",
+          "MTP 可在训练时增加多个未来 token 的监督信号",
+          "投机解码通常由草稿路径提议 token，再由目标模型验证"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "MTP 训练目标与 Speculative Decoding 都可能与生成速度相关。哪些差异正确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MTP 是训练目标或多预测头设计；投机解码是提出草稿并由目标模型验证的推理机制。它们可以关联，但不是同一个算法，收益需以端到端数据检验。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-069",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "多 Token 预测的部署边界",
+    "tags": [
+      "transformer",
+      "transformer",
+      "多-token-预测的部署边界"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个模型加入额外未来 token 预测头后，训练更贵但服务速度没有变化。怎样判断该改动是否有价值？",
+    "explanation": "额外预测头可提供训练监督或潜在推理收益，但只有实际解码路径使用它们才会影响生成速度。需要把训练成本、质量变化和线上吞吐一起评估。",
+    "assessment": {
+      "target": "额外预测头可提供训练监督或潜在推理收益，但只有实际解码路径使用它们才会影响生成速度。需要把训练成本、质量变化和线上吞吐一起评估。",
+      "reasoningGoal": "围绕 多 Token 预测的部署边界 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把训练额外监督当成自动推理加速",
+      "忽略额外参数与服务实现是否真正使用"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查推理服务是否实际调用并利用额外预测头",
+          "用同一任务与硬件比较质量、训练总成本和生成吞吐",
+          "预测头数量越多，就必然有越高的 tokens/s",
+          "区分训练期收益与线上解码收益"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一个模型加入额外未来 token 预测头后，训练更贵但服务速度没有变化。怎样判断该改动是否有价值？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "额外预测头可提供训练监督或潜在推理收益，但只有实际解码路径使用它们才会影响生成速度。需要把训练成本、质量变化和线上吞吐一起评估。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-070",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "现代 Transformer 的参数效率",
+    "tags": [
+      "transformer",
+      "transformer",
+      "现代-transformer-的参数效率"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "两种模型在基准任务上质量相似，一种是 Dense 模型，另一种是稀疏 MoE。哪些指标有助于进行公平的成本比较？",
+    "explanation": "MoE 可降低每 token 激活计算，但总权重存储、专家通信和负载不均衡会影响服务成本。公平比较需要相同质量目标与真实服务设置。",
+    "assessment": {
+      "target": "MoE 可降低每 token 激活计算，但总权重存储、专家通信和负载不均衡会影响服务成本。公平比较需要相同质量目标与真实服务设置。",
+      "reasoningGoal": "围绕 现代 Transformer 的参数效率 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把每 token FLOPs当成总服务成本",
+      "忽略分布式网络与专家权重驻留成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "总参数与激活参数分别记录；需用目标模型与任务进行验证",
+          "比较实际权重存储、通信、吞吐和显存占用；需用目标模型与任务进行验证",
+          "在相同质量目标和实际服务批量下比较总成本；需用目标模型与任务进行验证",
+          "只比较每 token 激活 FLOPs 就足以判断部署成本；需用目标模型与任务进行验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "两种模型在基准任务上质量相似，一种是 Dense 模型，另一种是稀疏 MoE。哪些指标有助于进行公平的成本比较？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MoE 可降低每 token 激活计算，但总权重存储、专家通信和负载不均衡会影响服务成本。公平比较需要相同质量目标与真实服务设置。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-071",
+    "category": "model-architecture",
+    "topic": "moe",
+    "subtopic": "MoE 路由负载的生产验证",
+    "tags": [
+      "transformer",
+      "moe",
+      "moe-路由负载的生产验证"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "cognitiveTask": "diagnose",
+    "question": "MoE 模型离线评测正常，但线上特定语言或请求类型导致少数专家过载。哪些行动合理？",
+    "explanation": "路由分布受输入内容影响，线上请求分布可能与训练及离线评测不同。需按数据切片观察专家负载、队列与溢出，并调整布局或负载策略。",
+    "assessment": {
+      "target": "路由分布受输入内容影响，线上请求分布可能与训练及离线评测不同。需按数据切片观察专家负载、队列与溢出，并调整布局或负载策略。",
+      "reasoningGoal": "围绕 MoE 路由负载的生产验证 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "只看总体平均专家负载",
+      "认为强行集中到一名专家不会损害专门化或容量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将所有请求路由到同一专家就可以消除热点且保留质量；需用目标模型与任务进行验证",
+          "按请求类别统计专家路由分布；需用目标模型与任务进行验证",
+          "分析是否存在语料分布和流量分布偏移；需用目标模型与任务进行验证",
+          "监控专家队列、设备延迟和 token overflow；需用目标模型与任务进行验证"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "MoE 模型离线评测正常，但线上特定语言或请求类型导致少数专家过载。哪些行动合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "路由分布受输入内容影响，线上请求分布可能与训练及离线评测不同。需按数据切片观察专家负载、队列与溢出，并调整布局或负载策略。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-072",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "多模态 Transformer 的 Token 预算",
+    "tags": [
+      "transformer",
+      "transformer",
+      "多模态-transformer-的-token-预算"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "高分辨率图像被编码成大量视觉 token 后，语言模型的长上下文推理明显变慢。哪些取舍合理？",
+    "explanation": "更多视觉 token 可保留局部细节，却增加序列长度、注意力成本和 KV Cache。视觉压缩应根据任务的空间精度需求评估，不能假设单 token 代表能无损表达完整图像。",
+    "assessment": {
+      "target": "更多视觉 token 可保留局部细节，却增加序列长度、注意力成本和 KV Cache。视觉压缩应根据任务的空间精度需求评估，不能假设单 token 代表能无损表达完整图像。",
+      "reasoningGoal": "围绕 多模态 Transformer 的 Token 预算 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把视觉 token 越多当成所有任务都越好",
+      "把视觉池化当成必然无损的压缩"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "应在细粒度视觉问题和全局理解问题上分别验证质量",
+          "将所有图像无条件压成一个 token 必然没有质量损失",
+          "增加视觉 token 可能保留更多空间细节但提高序列成本",
+          "可评估裁剪、分块、池化或分层视觉编码"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "高分辨率图像被编码成大量视觉 token 后，语言模型的长上下文推理明显变慢。哪些取舍合理？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "更多视觉 token 可保留局部细节，却增加序列长度、注意力成本和 KV Cache。视觉压缩应根据任务的空间精度需求评估，不能假设单 token 代表能无损表达完整图像。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-073",
+    "category": "model-architecture",
+    "topic": "vision-transformer",
+    "subtopic": "自监督视觉 Transformer",
+    "tags": [
+      "transformer",
+      "vision-transformer",
+      "自监督视觉-transformer"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "现代自监督视觉 Transformer 使用大规模无标签图像学习通用表征。哪些结论合理？",
+    "explanation": "自监督学习可以从大量未标注图像中学习通用表示，但性能仍受数据、训练方案和下游任务影响。分类能力不能自动证明密集空间特征都足够好。",
+    "assessment": {
+      "target": "自监督学习可以从大量未标注图像中学习通用表示，但性能仍受数据、训练方案和下游任务影响。分类能力不能自动证明密集空间特征都足够好。",
+      "reasoningGoal": "围绕 自监督视觉 Transformer 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把自监督学习等同于无数据质量约束",
+      "用单个分类结果代表全部视觉表征能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "大规模和高质量数据仍会影响表示的泛化能力",
+          "密集特征质量需要用分割、定位等任务单独评估",
+          "自监督训练保证表征无需任何下游适配就适合所有任务",
+          "自监督目标能减少对人工类别标签的直接依赖"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "现代自监督视觉 Transformer 使用大规模无标签图像学习通用表征。哪些结论合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "自监督学习可以从大量未标注图像中学习通用表示，但性能仍受数据、训练方案和下游任务影响。分类能力不能自动证明密集空间特征都足够好。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-074",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "注意力算子与框架接口",
+    "tags": [
+      "transformer",
+      "transformer",
+      "注意力算子与框架接口"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "question": "框架将注意力模块与底层 backend 分离，允许 eager、SDPA、FlashAttention 或自定义实现切换。哪些工程原则正确？",
+    "explanation": "接口抽象让实现可切换和比较，但后端可能有不同的支持条件、精度与性能特征。需要通过数值和性能测试确认其是否符合应用要求。",
+    "assessment": {
+      "target": "接口抽象让实现可切换和比较，但后端可能有不同的支持条件、精度与性能特征。需要通过数值和性能测试确认其是否符合应用要求。",
+      "reasoningGoal": "围绕 注意力算子与框架接口 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把接口统一误认为所有实现位级完全一致",
+      "只依据 API 名称推断使用了最快内核"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "统一接口有助于在不同算子实现间进行对照；需用目标模型与任务进行验证",
+          "应确认不同实现支持的 mask 与 dtype 条件；需用目标模型与任务进行验证",
+          "需验证切换后数值、梯度和实际性能；需用目标模型与任务进行验证",
+          "替换 backend 后模型的数学语义必然完全相同且没有数值差异；需用目标模型与任务进行验证"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "框架将注意力模块与底层 backend 分离，允许 eager、SDPA、FlashAttention 或自定义实现切换。哪些工程原则正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "接口抽象让实现可切换和比较，但后端可能有不同的支持条件、精度与性能特征。需要通过数值和性能测试确认其是否符合应用要求。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-075",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "位置编码与模型迁移",
+    "tags": [
+      "transformer",
+      "transformer",
+      "位置编码与模型迁移"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "question": "把一个使用可学习绝对位置 Embedding 的模型迁移到更长序列，直接扩展位置表并随机初始化新行。哪些风险值得测试？",
+    "explanation": "新位置行缺少训练历史，随机初始化不保证与已有位置保持兼容。应评估插值、继续训练等策略在新旧长度下的效果，不能只检查参数形状。",
+    "assessment": {
+      "target": "新位置行缺少训练历史，随机初始化不保证与已有位置保持兼容。应评估插值、继续训练等策略在新旧长度下的效果，不能只检查参数形状。",
+      "reasoningGoal": "围绕 位置编码与模型迁移 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把可训练的新参数误认为已经学会长位置",
+      "只验证模型能加载而不评估长距离任务"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只要新增位置 Embedding 可训练，长序列性能便自然无损",
+          "新位置的表示没有在预训练中得到相同程度的学习",
+          "长位置上的注意力分布可能出现明显变化",
+          "可以考虑插值或分阶段长上下文适配并做对照"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "把一个使用可学习绝对位置 Embedding 的模型迁移到更长序列，直接扩展位置表并随机初始化新行。哪些风险值得测试？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "新位置行缺少训练历史，随机初始化不保证与已有位置保持兼容。应评估插值、继续训练等策略在新旧长度下的效果，不能只检查参数形状。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-076",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Transformer 训练并行性",
+    "tags": [
+      "transformer",
+      "transformer",
+      "transformer-训练并行性"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "与传统循环网络相比，标准 Transformer 在训练阶段有什么常见优势与限制？",
+    "explanation": "Transformer 可以并行计算同一序列各位置的训练表示，但自回归生成仍逐步产生 token；全局注意力的序列成本也随长度呈二次增长。",
+    "assessment": {
+      "target": "Transformer 可以并行计算同一序列各位置的训练表示，但自回归生成仍逐步产生 token；全局注意力的序列成本也随长度呈二次增长。",
+      "reasoningGoal": "围绕 Transformer 训练并行性 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把训练阶段并行化误解为自回归生成完全并行",
+      "忽略全局注意力成本随序列长度变化"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "全局自注意力的计算和中间存储通常随长度二次增长",
+          "Transformer 训练与生成的所有阶段都完全并行，无需递推",
+          "注意力和前馈层可并行处理同一训练序列的多个位置",
+          "自回归生成时仍需要按因果顺序逐步产生 token"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "与传统循环网络相比，标准 Transformer 在训练阶段有什么常见优势与限制？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Transformer 可以并行计算同一序列各位置的训练表示，但自回归生成仍逐步产生 token；全局注意力的序列成本也随长度呈二次增长。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-077",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Attention Dropout",
+    "tags": [
+      "transformer",
+      "transformer",
+      "attention-dropout"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "Transformer 训练中对注意力权重使用 Dropout，通常有什么作用与限制？",
+    "explanation": "Attention dropout 是一种训练期正则化手段，推理时通常关闭。它可能帮助泛化，但不是避免过拟合的绝对保证，需结合训练数据与其它配置选择。",
+    "assessment": {
+      "target": "Attention dropout 是一种训练期正则化手段，推理时通常关闭。它可能帮助泛化，但不是避免过拟合的绝对保证，需结合训练数据与其它配置选择。",
+      "reasoningGoal": "围绕 Attention Dropout 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把 Dropout 当作无条件防止过拟合的保证",
+      "忽略训练与推理时的 Dropout 行为不同"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "推理时通常关闭普通 Dropout 或使用确定性等价行为",
+          "Dropout 能保证模型不会过拟合且无需其它正则化",
+          "Dropout 率会影响训练行为，需要和其它配置联合评估",
+          "训练时随机屏蔽部分权重路径以起到正则化作用"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "Transformer 训练中对注意力权重使用 Dropout，通常有什么作用与限制？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Attention dropout 是一种训练期正则化手段，推理时通常关闭。它可能帮助泛化，但不是避免过拟合的绝对保证，需结合训练数据与其它配置选择。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-078",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "模型规模与有效上下文",
+    "tags": [
+      "transformer",
+      "transformer",
+      "模型规模与有效上下文"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "模型参数量增加，但长文档问答准确率没有提升。哪些结论合理？",
+    "explanation": "更多参数未必解决长上下文中的位置泛化、信息干扰或注意力瓶颈。应从数据、机制和任务评测定位限制，而不是仅以模型尺寸推断能力。",
+    "assessment": {
+      "target": "更多参数未必解决长上下文中的位置泛化、信息干扰或注意力瓶颈。应从数据、机制和任务评测定位限制，而不是仅以模型尺寸推断能力。",
+      "reasoningGoal": "围绕 模型规模与有效上下文 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把参数规模直接当作有效上下文能力",
+      "忽略模型结构和训练分布的约束"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "参数规模并不保证模型有效利用所有上下文位置",
+          "可能的瓶颈还包括训练数据、位置泛化和注意力设计",
+          "应以目标长度上的检索与推理任务评估架构变化",
+          "继续增加参数量一定比改进位置机制或注意力模式有效"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "模型参数量增加，但长文档问答准确率没有提升。哪些结论合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "更多参数未必解决长上下文中的位置泛化、信息干扰或注意力瓶颈。应从数据、机制和任务评测定位限制，而不是仅以模型尺寸推断能力。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-079",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "多模态跨注意力与融合位置",
+    "tags": [
+      "transformer",
+      "transformer",
+      "多模态跨注意力与融合位置"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "一个视觉语言模型可以在输入端、若干中间层或输出前融合视觉特征。哪些设计结论较准确？",
+    "explanation": "融合位置决定视觉信息何时进入语言处理，因而会影响计算、表示交互和质量。隐藏维度匹配不等于不同融合方案行为相同。",
+    "assessment": {
+      "target": "融合位置决定视觉信息何时进入语言处理，因而会影响计算、表示交互和质量。隐藏维度匹配不等于不同融合方案行为相同。",
+      "reasoningGoal": "围绕 多模态跨注意力与融合位置 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把张量尺寸兼容误当作语义和功能等价",
+      "忽略视觉 token 数量和融合深度带来的成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "融合位置对模型行为完全没有影响，只要隐藏维度一致",
+          "融合位置会影响视觉信息参与语言表示演化的方式",
+          "Cross-Attention 能让语言 token 按当前状态读取视觉表示",
+          "在输入端拼接 token 会影响序列长度和注意力预算"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "一个视觉语言模型可以在输入端、若干中间层或输出前融合视觉特征。哪些设计结论较准确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "融合位置决定视觉信息何时进入语言处理，因而会影响计算、表示交互和质量。隐藏维度匹配不等于不同融合方案行为相同。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-080",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "标准注意力与稀疏注意力",
+    "tags": [
+      "transformer",
+      "transformer",
+      "标准注意力与稀疏注意力"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "一个任务需要在超长文档中进行精确远距引用，团队比较全局注意力和局部稀疏注意力。哪些判断正确？",
+    "explanation": "全局注意力可以直接连接远距离位置；局部稀疏模式降低计算但限制直接感受野。是否保留足够的远距引用能力，需要用长文档任务验证。",
+    "assessment": {
+      "target": "全局注意力可以直接连接远距离位置；局部稀疏模式降低计算但限制直接感受野。是否保留足够的远距引用能力，需要用长文档任务验证。",
+      "reasoningGoal": "围绕 标准注意力与稀疏注意力 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把局部稀疏视为与全局交互完全等价",
+      "只测推理成本不测远距离依赖质量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "局部路径可能需要额外的全局层或多层传递长距信息",
+          "减少每层可见位置一定不会影响远距离引用质量",
+          "全局注意力可直接建立任意可见位置间的交互",
+          "局部稀疏注意力能降低部分序列长度相关计算"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "一个任务需要在超长文档中进行精确远距引用，团队比较全局注意力和局部稀疏注意力。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "全局注意力可以直接连接远距离位置；局部稀疏模式降低计算但限制直接感受野。是否保留足够的远距引用能力，需要用长文档任务验证。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-081",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "混合注意力的架构验收",
+    "tags": [
+      "transformer",
+      "transformer",
+      "混合注意力的架构验收"
+    ],
+    "difficulty": "medium",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "question": "设计一种兼顾长序列效率与远距离依赖的 Transformer 变体时，哪些验收指标应该纳入？",
+    "explanation": "混合架构需要同时达到任务质量和资源目标。理论复杂度只能提供预期，训练稳定性、缓存/状态增长和真实硬件运行表现仍需实测。",
+    "assessment": {
+      "target": "混合架构需要同时达到任务质量和资源目标。理论复杂度只能提供预期，训练稳定性、缓存/状态增长和真实硬件运行表现仍需实测。",
+      "reasoningGoal": "围绕 混合注意力的架构验收 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把渐近复杂度当作端到端性能证明",
+      "忽略混合结构增加的实现与状态管理复杂度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KV Cache 或递推状态内存随序列长度的变化",
+          "真实硬件上的吞吐、尾延迟和批处理效率",
+          "只要理论复杂度更低，就无需训练与部署端测试",
+          "目标任务的准确率与长距离依赖测试"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "设计一种兼顾长序列效率与远距离依赖的 Transformer 变体时，哪些验收指标应该纳入？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "混合架构需要同时达到任务质量和资源目标。理论复杂度只能提供预期，训练稳定性、缓存/状态增长和真实硬件运行表现仍需实测。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-082",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Transformer 结构理论的适用边界",
+    "tags": [
+      "transformer",
+      "transformer",
+      "transformer-结构理论的适用边界"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "identify",
+    "question": "一个形式理论认为某类 Transformer 难以完成特定组合任务，但预训练模型在部分样本上表现良好。怎样解释最合理？",
+    "explanation": "形式理论通常在明确抽象假设下推导能力边界，实际模型训练与输入分布可能不完全符合这些假设。需要把实验与理论的前提对齐，再解释差异。",
+    "assessment": {
+      "target": "形式理论通常在明确抽象假设下推导能力边界，实际模型训练与输入分布可能不完全符合这些假设。需要把实验与理论的前提对齐，再解释差异。",
+      "reasoningGoal": "围绕 Transformer 结构理论的适用边界 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把有限样本表现推广成普遍能力定理",
+      "因理论假设有限就完全否定理论用途"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "理论结论可能依赖其注意力、深度或计算能力假设",
+          "实验结果需要确认任务、长度和数据分布是否与理论设置相同",
+          "有限样本成功不一定证明长度泛化或最坏情况能力",
+          "只要实验与理论有差别，就能认定所有理论分析毫无价值"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一个形式理论认为某类 Transformer 难以完成特定组合任务，但预训练模型在部分样本上表现良好。怎样解释最合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "形式理论通常在明确抽象假设下推导能力边界，实际模型训练与输入分布可能不完全符合这些假设。需要把实验与理论的前提对齐，再解释差异。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-083",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Transformer 训练配置迁移",
+    "tags": [
+      "transformer",
+      "transformer",
+      "transformer-训练配置迁移"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "question": "团队把模型从 4K 训练上下文迁移到 32K 推理，短文本效果正常但长距离引用失败。哪些检查更有针对性？",
+    "explanation": "长上下文故障往往与位置外推、长依赖训练覆盖及位置偏置有关。必须按证据位置和长度切片评测，而不是只确认配置允许输入 32K。",
+    "assessment": {
+      "target": "长上下文故障往往与位置外推、长依赖训练覆盖及位置偏置有关。必须按证据位置和长度切片评测，而不是只确认配置允许输入 32K。",
+      "reasoningGoal": "围绕 Transformer 训练配置迁移 的机制和适用边界判断选项，结合成本、质量和执行路径排除概念混淆。"
+    },
+    "misconceptions": [
+      "把配置可用误认为模型经过长上下文训练",
+      "只在短样本上做回归测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只检查最大上下文参数是否设置为 32K",
+          "评估位置编码外推与远位置表示分布",
+          "检查训练数据是否包含足够长依赖与目标位置样本",
+          "测试关键证据落在序列开头、中间和末尾的差异"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "团队把模型从 4K 训练上下文迁移到 32K 推理，短文本效果正常但长距离引用失败。哪些检查更有针对性？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "长上下文故障往往与位置外推、长依赖训练覆盖及位置偏置有关。必须按证据位置和长度切片评测，而不是只确认配置允许输入 32K。"
+      }
+    }
+  }
+]
