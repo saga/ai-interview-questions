@@ -647,26 +647,26 @@
         "kind": "surface-options",
         "question": "某 Manager 超限先裁 system prompt，行为失忆。定位这次裁错，下列哪些判断成立？",
         "options": [
-          "恒定 system 加滚动摘要加近轮原文",
-          "预算不足并更多轮进摘要，不动 system 近轮",
-          "summarize 可注入依赖便于测试",
-          "超限先裁 system 保摘要近轮",
-          "近轮最先摘要压缩，早期逐字保留",
-          "每次装配全量重做摘要替换旧摘要"
+          "初始装配包含恒定 system prompt、旧历史摘要与最近 N 轮原文。",
+          "仍超预算时，把最旧的保留轮次逐步并入摘要并重新核算 token；不要盲目截断 system 约束或当前任务状态。",
+          "将 summarize 作为可注入依赖，便于使用假实现测试压缩逻辑。",
+          "超限时优先裁剪 system prompt，完整保留摘要与近轮。",
+          "最近 N 轮最先摘要压缩，早期对话逐字保留。",
+          "每次装配全量重做摘要替换旧摘要，而不做增量整理。"
         ],
         "angle": "debugging",
         "cognitiveTask": "diagnose",
         "assessment": {
           "target": "能从先裁 system 致失忆的裁错定位装配环节",
-          "reasoningGoal": "先定位裁错的环节；再逐项验证各判断；并排除「先裁 system」「近轮先摘要」「全量重做」等不成立描述。"
+          "reasoningGoal": "确认初始三层装配与最旧历史压缩、压缩后预算复核和可注入摘要依赖；排除优先裁剪 system、先压近期轮次和无条件全量重摘要的错误做法。"
         },
         "generatedAt": 1788909464040,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-88f39265",
+        "sourceHash": "fnv1a-948f68c9",
         "batch": "assessmentfresh13",
         "model": "manual",
-        "contentHash": "fnv1a-1e6a80a8",
+        "contentHash": "fnv1a-864ba32d",
         "sourceSnapshot": {
           "id": "ai-code-005",
           "topic": "context-engineering",
@@ -681,7 +681,7 @@
           "question": "请设计一个 Context Manager：当 conversation 超过 token budget 时，保留 system prompt、最近 N 轮消息，并对更早消息进行 summary。",
           "options": [
             "装配顺序为恒定 system prompt、旧轮次增量滚动摘要、最近 N 轮原文。",
-            "预算仍不足时把更多轮次并入摘要区，而不裁剪 system 或近轮原文。",
+            "若仍超预算，逐步把最旧的保留轮次并入摘要并重新核算；不能盲目截断系统约束或当前任务状态。",
             "summarize 以可注入依赖提供，便于用假实现做单元测试。",
             "超限时优先裁剪 system prompt，完整保留摘要与近期消息防信息丢失。",
             "最近 N 轮最先摘要压缩，早期对话逐字保留，近因内容印象尚深可压缩。",
@@ -694,26 +694,26 @@
         "kind": "context-options",
         "question": "把增量装配与全量重摘要放在成本正确性上对比，根本差异是什么？",
         "options": [
-          "恒定 system 加滚动摘要加近轮原文",
-          "预算不足并更多轮进摘要，不动核心",
-          "summarize 可注入依赖便于测试",
-          "超限优先裁剪 system prompt",
-          "最近 N 轮最先摘要压缩",
-          "每次装配全量重摘要防冗余"
+          "初始装配包含恒定 system prompt、旧历史摘要与最近 N 轮原文。",
+          "仍超预算时，把最旧的保留轮次逐步并入摘要并重新核算 token；不要盲目截断 system 约束或当前任务状态。",
+          "将 summarize 作为可注入依赖，便于使用假实现测试压缩逻辑。",
+          "超限时优先裁剪 system prompt，完整保留摘要与近轮。",
+          "最近 N 轮最先摘要压缩，早期对话逐字保留。",
+          "每次装配全量重做摘要替换旧摘要，而不做增量整理。"
         ],
         "angle": "comparison",
         "cognitiveTask": "compare",
         "assessment": {
           "target": "能从成本正确性对比两种装配的根本差异",
-          "reasoningGoal": "先对齐两种装配的可比维度；再逐项判定各主张成立与否；并排除「先裁 system」「近轮先摘要」「全量重做」等不成立描述。"
+          "reasoningGoal": "确认初始三层装配与最旧历史压缩、压缩后预算复核和可注入摘要依赖；排除优先裁剪 system、先压近期轮次和无条件全量重摘要的错误做法。"
         },
         "generatedAt": 1788909464040,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-88f39265",
+        "sourceHash": "fnv1a-948f68c9",
         "batch": "assessmentfresh13",
         "model": "manual",
-        "contentHash": "fnv1a-1c1c5272",
+        "contentHash": "fnv1a-1ca82b7b",
         "sourceSnapshot": {
           "id": "ai-code-005",
           "topic": "context-engineering",
@@ -728,7 +728,7 @@
           "question": "请设计一个 Context Manager：当 conversation 超过 token budget 时，保留 system prompt、最近 N 轮消息，并对更早消息进行 summary。",
           "options": [
             "装配顺序为恒定 system prompt、旧轮次增量滚动摘要、最近 N 轮原文。",
-            "预算仍不足时把更多轮次并入摘要区，而不裁剪 system 或近轮原文。",
+            "若仍超预算，逐步把最旧的保留轮次并入摘要并重新核算；不能盲目截断系统约束或当前任务状态。",
             "summarize 以可注入依赖提供，便于用假实现做单元测试。",
             "超限时优先裁剪 system prompt，完整保留摘要与近期消息防信息丢失。",
             "最近 N 轮最先摘要压缩，早期对话逐字保留，近因内容印象尚深可压缩。",
