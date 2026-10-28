@@ -1,0 +1,1950 @@
+[
+  {
+    "id": "transformer-modern-2026-10-001",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Transformer 总体架构",
+    "tags": [
+      "transformer",
+      "transformer",
+      "transformer-总体架构"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "cognitiveTask": "explain",
+    "question": "一个标准 Transformer Block 同时需要混合 token 间信息并变换每个位置的特征。哪些职责划分正确？",
+    "explanation": "标准 Block 通常组合注意力、逐位置前馈网络和残差连接。Encoder 的 self-attention 通常可以读取双向上下文，而因果限制主要用于自回归 Decoder。",
+    "assessment": {
+      "target": "标准 Block 通常组合注意力、逐位置前馈网络和残差连接。Encoder 的 self-attention 通常可以读取双向上下文，而因果限制主要用于自回归 Decoder。",
+      "reasoningGoal": "围绕 Transformer 总体架构 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 Encoder 双向注意力与 Decoder 因果注意力混为一谈",
+      "误以为 FFN 负责跨 token 检索"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "残差连接为子层输入保留一条直接的信息通路",
+          "前馈网络通常逐 token 做非线性通道变换",
+          "标准 Encoder 的注意力默认只允许读取过去 token",
+          "Self-Attention 根据 token 之间的关系聚合上下文"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "一个标准 Transformer Block 同时需要混合 token 间信息并变换每个位置的特征。哪些职责划分正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "标准 Block 通常组合注意力、逐位置前馈网络和残差连接。Encoder 的 self-attention 通常可以读取双向上下文，而因果限制主要用于自回归 Decoder。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-002",
+    "category": "model-architecture",
+    "topic": "self-attention",
+    "subtopic": "自注意力机制",
+    "tags": [
+      "transformer",
+      "self-attention",
+      "自注意力机制"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "在 Self-Attention 中，输入会投影为 Query、Key 和 Value。哪些对三者职责的描述正确？",
+    "explanation": "Query 与 Key 产生匹配分数，分数经缩放和归一化后形成权重，再对 Value 加权聚合。三者来自输入投影，职责不同但并不要求相同。",
+    "assessment": {
+      "target": "Query 与 Key 产生匹配分数，分数经缩放和归一化后形成权重，再对 Value 加权聚合。三者来自输入投影，职责不同但并不要求相同。",
+      "reasoningGoal": "围绕 自注意力机制 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把注意力分数当成最终的上下文输出",
+      "把 Q/K/V 当成三个互相独立的数据源"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Query 表示当前位置要匹配的上下文特征",
+          "Key 参与计算候选位置与 Query 的相关性分数",
+          "Value 是按注意力权重聚合的内容表示",
+          "Query 与 Key 的点积就是最终输出，不需要 Value"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "在 Self-Attention 中，输入会投影为 Query、Key 和 Value。哪些对三者职责的描述正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Query 与 Key 产生匹配分数，分数经缩放和归一化后形成权重，再对 Value 加权聚合。三者来自输入投影，职责不同但并不要求相同。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-003",
+    "category": "model-architecture",
+    "topic": "scaled-dot-product-scaling",
+    "subtopic": "缩放点积注意力",
+    "tags": [
+      "transformer",
+      "scaled-dot-product-scaling",
+      "缩放点积注意力"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "为什么常见的 Scaled Dot-Product Attention 要把 QKᵀ 除以 √dₖ？",
+    "explanation": "除以 √dₖ 是对点积分数尺度的校正，避免维度增大时 Softmax 过度集中。它不生成概率，也不作用于 Value。",
+    "assessment": {
+      "target": "除以 √dₖ 是对点积分数尺度的校正，避免维度增大时 Softmax 过度集中。它不生成概率，也不作用于 Value。",
+      "reasoningGoal": "围绕 缩放点积注意力 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "混淆缩放与 Softmax 的职责",
+      "认为缩放因子是用来归一化 Value"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该因子只影响 Value，不会影响注意力权重",
+          "在常见假设下控制点积分数的典型数值尺度",
+          "减少 Softmax 过度饱和并缓解梯度变小",
+          "缩放会直接把点积分数变成概率"
+        ],
+        "answer": [
+          1,
+          2
+        ],
+        "question": "为什么常见的 Scaled Dot-Product Attention 要把 QKᵀ 除以 √dₖ？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "除以 √dₖ 是对点积分数尺度的校正，避免维度增大时 Softmax 过度集中。它不生成概率，也不作用于 Value。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-004",
+    "category": "model-architecture",
+    "topic": "attention",
+    "subtopic": "多头注意力",
+    "tags": [
+      "transformer",
+      "attention",
+      "多头注意力"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "多头注意力将隐藏状态投影到多个头并融合输出。哪些陈述成立？",
+    "explanation": "多头注意力提供多个可学习的投影子空间，结果拼接后再融合。头的分工不预先固定，增加头数也不保证质量按比例增长。",
+    "assessment": {
+      "target": "多头注意力提供多个可学习的投影子空间，结果拼接后再融合。头的分工不预先固定，增加头数也不保证质量按比例增长。",
+      "reasoningGoal": "围绕 多头注意力 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把注意力头的涌现模式当成预先指定的语义",
+      "把增加头数当成无成本的能力扩展"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每个头都会自动学习一种可命名且固定的语法关系",
+          "增加头数是否有收益仍取决于宽度、数据和计算预算",
+          "不同头可在不同投影子空间学习关系模式",
+          "各头输出通常拼接后经输出投影进行融合"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "多头注意力将隐藏状态投影到多个头并融合输出。哪些陈述成立？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多头注意力提供多个可学习的投影子空间，结果拼接后再融合。头的分工不预先固定，增加头数也不保证质量按比例增长。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-005",
+    "category": "model-architecture",
+    "topic": "self-attention",
+    "subtopic": "注意力权重解释边界",
+    "tags": [
+      "transformer",
+      "self-attention",
+      "注意力权重解释边界"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "identify",
+    "question": "某注意力头常对实体名称赋予高权重，团队据此认定该头就是实体识别模块。哪些结论更严谨？",
+    "explanation": "注意力权重仅展示一次计算中的路由信号。最终输出还受 Value、残差和后续层影响，因此功能归因需要配合干预或任务对照。",
+    "assessment": {
+      "target": "注意力权重仅展示一次计算中的路由信号。最终输出还受 Value、残差和后续层影响，因此功能归因需要配合干预或任务对照。",
+      "reasoningGoal": "围绕 注意力权重解释边界 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把可视化相关性当作因果证据",
+      "忽略跨层信息变换与残差路径"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可用消融或激活干预验证该头对任务的实际作用",
+          "权重最高的 token 必然主导最终输出",
+          "残差、Value 和后续层也会改变信息对预测的影响",
+          "注意力图可提示信息交互，但本身不构成完整因果解释"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "某注意力头常对实体名称赋予高权重，团队据此认定该头就是实体识别模块。哪些结论更严谨？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "注意力权重仅展示一次计算中的路由信号。最终输出还受 Value、残差和后续层影响，因此功能归因需要配合干预或任务对照。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-006",
+    "category": "model-architecture",
+    "topic": "self-attention-sequential-complexity",
+    "subtopic": "自注意力序列复杂度",
+    "tags": [
+      "transformer",
+      "self-attention-sequential-complexity",
+      "自注意力序列复杂度"
+    ],
+    "difficulty": "easy",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "question": "标准全局 Self-Attention 处理长度 n 的序列，注意力分数矩阵有 n×n 个位置。哪些判断正确？",
+    "explanation": "标准全局注意力要计算查询位置与键位置的两两关系，因此分数矩阵规模为 n²。模型总体成本还取决于隐藏宽度、头数和层数。",
+    "assessment": {
+      "target": "标准全局注意力要计算查询位置与键位置的两两关系，因此分数矩阵规模为 n²。模型总体成本还取决于隐藏宽度、头数和层数。",
+      "reasoningGoal": "围绕 自注意力序列复杂度 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把注意力矩阵的复杂度等同于整个模型全部 FLOPs",
+      "认为减少头数会改变序列长度的渐近复杂度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分数矩阵的规模随序列长度呈二次增长",
+          "序列长度翻倍时，该矩阵位置数变成四倍",
+          "整体模型成本还受到隐藏维度、头数和层数影响",
+          "减少头数会自动把全局注意力的复杂度改成线性"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "标准全局 Self-Attention 处理长度 n 的序列，注意力分数矩阵有 n×n 个位置。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "标准全局注意力要计算查询位置与键位置的两两关系，因此分数矩阵规模为 n²。模型总体成本还取决于隐藏宽度、头数和层数。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-007",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "位置编码策略",
+    "tags": [
+      "transformer",
+      "positional-encoding",
+      "位置编码策略"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "cognitiveTask": "explain",
+    "question": "Self-Attention 本身缺少显式的序列位置标签。哪些机制可以为模型提供顺序信息？",
+    "explanation": "Transformer 需要某种顺序信号来区分顺序不同的输入。位置向量、RoPE 等相对位置机制以及因果结构都可能提供位置信息，其能力并不完全相同。",
+    "assessment": {
+      "target": "Transformer 需要某种顺序信号来区分顺序不同的输入。位置向量、RoPE 等相对位置机制以及因果结构都可能提供位置信息，其能力并不完全相同。",
+      "reasoningGoal": "围绕 位置编码策略 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "认为位置编码只能加在输入 Embedding 上",
+      "误以为 token 的索引天然会进入注意力计算"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只改变 token 编号而不将编号用于任何计算就能编码位置",
+          "在输入表示中加入固定或可学习的位置向量",
+          "在 Q/K 变换或注意力分数中注入相对位置信号",
+          "因果掩码的不对称结构可提供部分顺序线索"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "Self-Attention 本身缺少显式的序列位置标签。哪些机制可以为模型提供顺序信息？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Transformer 需要某种顺序信号来区分顺序不同的输入。位置向量、RoPE 等相对位置机制以及因果结构都可能提供位置信息，其能力并不完全相同。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-008",
+    "category": "model-architecture",
+    "topic": "sinusoidal-positional-encoding",
+    "subtopic": "正弦位置编码",
+    "tags": [
+      "transformer",
+      "sinusoidal-positional-encoding",
+      "正弦位置编码"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "经典 Transformer 使用固定正弦/余弦位置编码。与可学习绝对位置 Embedding 相比，哪些区别成立？",
+    "explanation": "固定正弦编码使用确定函数构造位置表示，可学习编码则直接优化位置向量。两者都不能保证在任意更长序列上保持精度。",
+    "assessment": {
+      "target": "固定正弦编码使用确定函数构造位置表示，可学习编码则直接优化位置向量。两者都不能保证在任意更长序列上保持精度。",
+      "reasoningGoal": "围绕 正弦位置编码 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把位置函数可以计算到任意位置误当作任务泛化保证",
+      "误以为可学习的位置向量没有位置信息"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "固定编码保证模型在任意长度上都保持同样精度",
+          "两种方法都需评估训练长度与推理长度不同时的性能",
+          "固定正弦编码由函数生成，不需逐位置学习独立向量",
+          "可学习位置 Embedding 能直接拟合训练位置上的表示"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "经典 Transformer 使用固定正弦/余弦位置编码。与可学习绝对位置 Embedding 相比，哪些区别成立？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "固定正弦编码使用确定函数构造位置表示，可学习编码则直接优化位置向量。两者都不能保证在任意更长序列上保持精度。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-009",
+    "category": "model-architecture",
+    "topic": "rope",
+    "subtopic": "RoPE 位置机制",
+    "tags": [
+      "transformer",
+      "rope",
+      "rope-位置机制"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "RoPE 在现代 Decoder 模型中通常怎样将位置信息带入注意力？",
+    "explanation": "RoPE 对 Q/K 应用位置相关旋转，使点积包含相对位置关系。RoPE 不是无限上下文能力的保证，扩展到训练范围之外仍需评测。",
+    "assessment": {
+      "target": "RoPE 对 Q/K 应用位置相关旋转，使点积包含相对位置关系。RoPE 不是无限上下文能力的保证，扩展到训练范围之外仍需评测。",
+      "reasoningGoal": "围绕 RoPE 位置机制 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 RoPE 误认为作用于 Value 的独立编码",
+      "把相对位置性质误认为无限外推能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "旋转组合使注意力分数能表达相对位置关系",
+          "主要旋转 Value，而 Query 和 Key 保持不变",
+          "使用 RoPE 本身就保证无限长度外推无需评测",
+          "按 token 位置对 Query 和 Key 施加旋转变换"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "question": "RoPE 在现代 Decoder 模型中通常怎样将位置信息带入注意力？",
+        "misconceptionMap": [
+          null,
+          1,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "RoPE 对 Q/K 应用位置相关旋转，使点积包含相对位置关系。RoPE 不是无限上下文能力的保证，扩展到训练范围之外仍需评测。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-010",
+    "category": "model-architecture",
+    "topic": "positional-encoding",
+    "subtopic": "ALiBi 与 RoPE",
+    "tags": [
+      "transformer",
+      "positional-encoding",
+      "alibi-与-rope"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "比较 ALiBi 与 RoPE 时，哪些技术描述正确？",
+    "explanation": "ALiBi 使用位置相关分数偏置，RoPE 则旋转 Q/K。它们是不同的位置机制，且不能取代自回归 Decoder 的因果掩码。",
+    "assessment": {
+      "target": "ALiBi 使用位置相关分数偏置，RoPE 则旋转 Q/K。它们是不同的位置机制，且不能取代自回归 Decoder 的因果掩码。",
+      "reasoningGoal": "围绕 ALiBi 与 RoPE 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把注意力偏置和 Q/K 旋转混成一个操作",
+      "把相对位置机制误认为因果掩码的替代"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "ALiBi 在注意力分数中加入与相对距离有关的偏置",
+          "RoPE 通过对 Q/K 的旋转来注入位置信息",
+          "两者计算完全相同，只是实现名称不同",
+          "两者都不能替代 Decoder 防止未来信息泄漏的因果约束"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "比较 ALiBi 与 RoPE 时，哪些技术描述正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "ALiBi 使用位置相关分数偏置，RoPE 则旋转 Q/K。它们是不同的位置机制，且不能取代自回归 Decoder 的因果掩码。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-011",
+    "category": "model-architecture",
+    "topic": "self-attention",
+    "subtopic": "因果注意力掩码",
+    "tags": [
+      "transformer",
+      "self-attention",
+      "因果注意力掩码"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "自回归语言模型使用因果 Self-Attention 掩码，主要为了满足哪些要求？",
+    "explanation": "因果掩码让每个位置只能读取自身及之前的 token，防止训练时偷看未来答案。它不会提供未来 token 的值，也不替代标签对齐。",
+    "assessment": {
+      "target": "因果掩码让每个位置只能读取自身及之前的 token，防止训练时偷看未来答案。它不会提供未来 token 的值，也不替代标签对齐。",
+      "reasoningGoal": "围绕 因果注意力掩码 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把因果掩码误解为只能关注自身",
+      "认为掩码可以替代 next-token 标签移位"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该掩码不能替代标签移位和预测损失的对齐",
+          "预测位置不能读取未来 token 的真实内容",
+          "当前位置仍可读取允许访问的过去 token",
+          "因果掩码会直接告诉模型未来 token 的正确值"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "自回归语言模型使用因果 Self-Attention 掩码，主要为了满足哪些要求？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "因果掩码让每个位置只能读取自身及之前的 token，防止训练时偷看未来答案。它不会提供未来 token 的值，也不替代标签对齐。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-012",
+    "category": "model-architecture",
+    "topic": "self-attention",
+    "subtopic": "Padding Mask",
+    "tags": [
+      "transformer",
+      "self-attention",
+      "padding-mask"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "question": "变长序列 batch 用 PAD 补齐后，模型对 padding 位置分配了注意力。哪些措施合理？",
+    "explanation": "Padding mask 控制无效位置是否参与注意力，loss mask 控制 PAD 标签是否计入损失。不同 backend 对 mask 形状和值的约定可能不同。",
+    "assessment": {
+      "target": "Padding mask 控制无效位置是否参与注意力，loss mask 控制 PAD 标签是否计入损失。不同 backend 对 mask 形状和值的约定可能不同。",
+      "reasoningGoal": "围绕 Padding Mask 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把输出阶段删除 PAD 等同于注意力阶段屏蔽",
+      "默认不同后端的 mask 语义完全一致"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只在最终输出删除 PAD 就保证中间层不受影响",
+          "确认所用 attention backend 对 mask 格式和值语义的要求",
+          "屏蔽注意力路径中不应被读取的 padding key 位置",
+          "损失函数也可忽略 PAD 位置对应的目标标签"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "变长序列 batch 用 PAD 补齐后，模型对 padding 位置分配了注意力。哪些措施合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Padding mask 控制无效位置是否参与注意力，loss mask 控制 PAD 标签是否计入损失。不同 backend 对 mask 形状和值的约定可能不同。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-013",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Encoder 与 Decoder",
+    "tags": [
+      "transformer",
+      "transformer",
+      "encoder-与-decoder"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "在经典 Encoder-Decoder Transformer 中，Encoder 与自回归 Decoder 的注意力模式有什么典型区别？",
+    "explanation": "经典 Encoder 可双向编码源序列，Decoder 使用因果掩码维持自回归预测，并通过 cross-attention 读取 Encoder 输出。Decoder-only 架构并没有单独 Encoder。",
+    "assessment": {
+      "target": "经典 Encoder 可双向编码源序列，Decoder 使用因果掩码维持自回归预测，并通过 cross-attention 读取 Encoder 输出。Decoder-only 架构并没有单独 Encoder。",
+      "reasoningGoal": "围绕 Encoder 与 Decoder 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把经典 Encoder-Decoder 当成所有 Transformer 的固定模板",
+      "混淆 Decoder self-attention 与 cross-attention 的信息来源"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Decoder self-attention 通常受因果掩码限制",
+          "Decoder cross-attention 可以读取 Encoder 的输出表示",
+          "Encoder 在所有 Transformer 变体中都必须使用因果掩码",
+          "Encoder self-attention 通常可访问输入序列双向上下文"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "在经典 Encoder-Decoder Transformer 中，Encoder 与自回归 Decoder 的注意力模式有什么典型区别？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "经典 Encoder 可双向编码源序列，Decoder 使用因果掩码维持自回归预测，并通过 cross-attention 读取 Encoder 输出。Decoder-only 架构并没有单独 Encoder。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-014",
+    "category": "model-architecture",
+    "topic": "attention",
+    "subtopic": "Cross-Attention",
+    "tags": [
+      "transformer",
+      "attention",
+      "cross-attention"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "文本 Decoder 通过 Cross-Attention 读取视觉编码器或源文本编码器的输出。哪些关于 Q/K/V 来源的描述正确？",
+    "explanation": "Cross-Attention 使用 Decoder 当前状态生成 Query，对另一序列的 Key/Value 做聚合，使生成过程按需读取源信息。",
+    "assessment": {
+      "target": "Cross-Attention 使用 Decoder 当前状态生成 Query，对另一序列的 Key/Value 做聚合，使生成过程按需读取源信息。",
+      "reasoningGoal": "围绕 Cross-Attention 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把跨注意力误认为同一序列的普通自注意力",
+      "认为 Q/K/V 来源必须完全相同"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Query 通常来自当前 Decoder 的隐藏状态",
+          "Key 与 Value 通常来自被读取的编码器输出",
+          "Cross-Attention 让 Decoder 按当前状态选择源信息",
+          "Q、K、V 必须全部来自同一个序列才能计算注意力"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "文本 Decoder 通过 Cross-Attention 读取视觉编码器或源文本编码器的输出。哪些关于 Q/K/V 来源的描述正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Cross-Attention 使用 Decoder 当前状态生成 Query，对另一序列的 Key/Value 做聚合，使生成过程按需读取源信息。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-015",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "前馈网络与门控激活",
+    "tags": [
+      "transformer",
+      "transformer",
+      "前馈网络与门控激活"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "Transformer Block 中的 Feed-Forward Network（FFN）主要怎样补充 Self-Attention？",
+    "explanation": "FFN 在每个 token 的特征维度进行非线性变换，而注意力负责 token 间的信息混合。SwiGLU 等门控结构是常见变体，具体收益需要按配置评估。",
+    "assessment": {
+      "target": "FFN 在每个 token 的特征维度进行非线性变换，而注意力负责 token 间的信息混合。SwiGLU 等门控结构是常见变体，具体收益需要按配置评估。",
+      "reasoningGoal": "围绕 前馈网络与门控激活 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 FFN 当成第二个跨 token 注意力层",
+      "认为现代 Transformer 的 FFN 都只有一种激活结构"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "FFN 的全部参数必须与 Q/K 投影共享",
+          "逐 token 在通道维度执行非线性特征变换",
+          "它本身通常不负责对所有 token 计算 n×n 关系分数",
+          "SwiGLU 等门控结构会改变前馈层的特征变换路径"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "Transformer Block 中的 Feed-Forward Network（FFN）主要怎样补充 Self-Attention？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "FFN 在每个 token 的特征维度进行非线性变换，而注意力负责 token 间的信息混合。SwiGLU 等门控结构是常见变体，具体收益需要按配置评估。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-016",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "残差连接与梯度传播",
+    "tags": [
+      "transformer",
+      "transformer",
+      "残差连接与梯度传播"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "深层 Transformer 训练时采用残差连接，主要能带来哪些帮助？",
+    "explanation": "残差连接提供输入到输出的直接路径，改善信息和梯度传播，并允许网络学习增量变换。但它不能单独保证训练稳定，仍需配合初始化、归一化和优化器设置。",
+    "assessment": {
+      "target": "残差连接提供输入到输出的直接路径，改善信息和梯度传播，并允许网络学习增量变换。但它不能单独保证训练稳定，仍需配合初始化、归一化和优化器设置。",
+      "reasoningGoal": "围绕 残差连接与梯度传播 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把残差连接当作训练稳定性的充分保证",
+      "误以为残差加法会自动筛除无用信息"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保证任何学习率下加深模型都不会训练不稳",
+          "让网络可以学习保留或修改原有表示",
+          "为子层输入保留直接的加法信息通路",
+          "在合适条件下改善信息与梯度的跨层传播"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "深层 Transformer 训练时采用残差连接，主要能带来哪些帮助？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "残差连接提供输入到输出的直接路径，改善信息和梯度传播，并允许网络学习增量变换。但它不能单独保证训练稳定，仍需配合初始化、归一化和优化器设置。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-017",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Pre-LN 与 Post-LN",
+    "tags": [
+      "transformer",
+      "transformer",
+      "pre-ln-与-post-ln"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "团队将深层 Transformer 从 Post-LN 改为 Pre-LN。关于两种布局，哪些判断较准确？",
+    "explanation": "Pre-LN 在子层前归一化，Post-LN 通常在残差相加后归一化。Pre-LN 在不少深层设置中更利于优化，但仍依赖模型与训练配置。",
+    "assessment": {
+      "target": "Pre-LN 在子层前归一化，Post-LN 通常在残差相加后归一化。Pre-LN 在不少深层设置中更利于优化，但仍依赖模型与训练配置。",
+      "reasoningGoal": "围绕 Pre-LN 与 Post-LN 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 Pre-LN 和 Post-LN 视为命名差异",
+      "认为归一化布局与训练动力学无关"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Post-LN 通常在残差相加之后执行归一化",
+          "Pre-LN 在不少深层设置下更容易优化，但仍需验证配置",
+          "两者的计算顺序完全相同，只有名称不同",
+          "Pre-LN 通常在子层计算之前归一化输入"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "团队将深层 Transformer 从 Post-LN 改为 Pre-LN。关于两种布局，哪些判断较准确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Pre-LN 在子层前归一化，Post-LN 通常在残差相加后归一化。Pre-LN 在不少深层设置中更利于优化，但仍依赖模型与训练配置。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-018",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "LayerNorm 与 RMSNorm",
+    "tags": [
+      "transformer",
+      "transformer",
+      "layernorm-与-rmsnorm"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "语言模型常用 LayerNorm 或 RMSNorm。哪些对它们的理解正确？",
+    "explanation": "LayerNorm 沿特征维度归一化；RMSNorm 进一步省略均值中心化。两者都不会将不同 token 变成相同表示，选择应结合训练和实现的实际表现。",
+    "assessment": {
+      "target": "LayerNorm 沿特征维度归一化；RMSNorm 进一步省略均值中心化。两者都不会将不同 token 变成相同表示，选择应结合训练和实现的实际表现。",
+      "reasoningGoal": "围绕 LayerNorm 与 RMSNorm 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把归一化理解为抹掉 token 的语义差异",
+      "假定某一种归一化在所有规模和硬件上都最佳"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "LayerNorm 通常沿单个位置的特征维度归一化",
+          "RMSNorm 可省略均值中心化而使用均方根尺度",
+          "LayerNorm 会使所有 token 归一化后变成同一个表示",
+          "归一化选择仍应结合数值稳定、训练行为与效率评估"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "语言模型常用 LayerNorm 或 RMSNorm。哪些对它们的理解正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "LayerNorm 沿特征维度归一化；RMSNorm 进一步省略均值中心化。两者都不会将不同 token 变成相同表示，选择应结合训练和实现的实际表现。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-019",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "输入 Embedding 与输出权重共享",
+    "tags": [
+      "transformer",
+      "transformer",
+      "输入-embedding-与输出权重共享"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "自回归语言模型常把输入 token Embedding 矩阵与输出 LM Head 权重绑定。哪些判断正确？",
+    "explanation": "Weight tying 让输入 Embedding 与输出投影共享参数，减少参数并耦合输入/输出词表表示。输出 logits 仍由隐藏状态与共享矩阵的乘积得到。",
+    "assessment": {
+      "target": "Weight tying 让输入 Embedding 与输出投影共享参数，减少参数并耦合输入/输出词表表示。输出 logits 仍由隐藏状态与共享矩阵的乘积得到。",
+      "reasoningGoal": "围绕 输入 Embedding 与输出权重共享 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把权重共享误认为输入嵌入就是输出分数",
+      "认为权重共享能取消词表投影计算"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "共享权重仍需将隐藏状态映射到词表维度计算 logits；实际效果仍取决于模型与任务配置",
+          "共享可减少一份独立的词表投影参数；实际效果仍取决于模型与任务配置",
+          "输入与输出共享词向量会形成一种参数约束；实际效果仍取决于模型与任务配置",
+          "共享后输入 Embedding 数值就等于输出 logits；实际效果仍取决于模型与任务配置"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "自回归语言模型常把输入 token Embedding 矩阵与输出 LM Head 权重绑定。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Weight tying 让输入 Embedding 与输出投影共享参数，减少参数并耦合输入/输出词表表示。输出 logits 仍由隐藏状态与共享矩阵的乘积得到。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-020",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "下一 token 预测训练",
+    "tags": [
+      "transformer",
+      "transformer",
+      "下一-token-预测训练"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "自回归语言模型使用 Next-Token Prediction 训练目标。哪些描述正确？",
+    "explanation": "训练通过标签移位与因果掩码确保每个位置预测后续 token，同时可以并行计算多个位置的损失。语言建模损失衡量 token 预测，不等价于事实验证。",
+    "assessment": {
+      "target": "训练通过标签移位与因果掩码确保每个位置预测后续 token，同时可以并行计算多个位置的损失。语言建模损失衡量 token 预测，不等价于事实验证。",
+      "reasoningGoal": "围绕 下一 token 预测训练 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "认为自回归训练只能逐 token 计算",
+      "把较低交叉熵当成现实事实正确性的证明"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "因果掩码允许并行计算各位置而不读取未来目标",
+          "语言建模损失低就能证明所有输出都是现实事实",
+          "每个位置根据可见前缀预测下一个 token 的概率分布",
+          "训练时常把目标序列移位后与各位置 logits 对齐"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "自回归语言模型使用 Next-Token Prediction 训练目标。哪些描述正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "训练通过标签移位与因果掩码确保每个位置预测后续 token，同时可以并行计算多个位置的损失。语言建模损失衡量 token 预测，不等价于事实验证。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-021",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "Teacher Forcing 与自回归推理",
+    "tags": [
+      "transformer",
+      "transformer",
+      "teacher-forcing-与自回归推理"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "训练采用 Teacher Forcing，而生成时用模型先前输出作为后续输入。哪些判断正确？",
+    "explanation": "Teacher Forcing 使用真实前缀，使训练可并行计算多个位置；推理则依赖此前生成 token，可能出现训练/推理分布差异。",
+    "assessment": {
+      "target": "Teacher Forcing 使用真实前缀，使训练可并行计算多个位置；推理则依赖此前生成 token，可能出现训练/推理分布差异。",
+      "reasoningGoal": "围绕 Teacher Forcing 与自回归推理 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "混淆训练时真实前缀与推理时生成前缀",
+      "认为 Teacher Forcing 阻止训练并行化"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "推理阶段的后续上下文会受到模型之前输出影响；实际效果仍取决于模型与任务配置",
+          "两阶段输入分布差异可能导致暴露偏差；实际效果仍取决于模型与任务配置",
+          "Teacher Forcing 使训练必须逐 token 执行而不能并行；实际效果仍取决于模型与任务配置",
+          "Teacher Forcing 在训练时通常使用真实前缀；实际效果仍取决于模型与任务配置"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "训练采用 Teacher Forcing，而生成时用模型先前输出作为后续输入。哪些判断正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Teacher Forcing 使用真实前缀，使训练可并行计算多个位置；推理则依赖此前生成 token，可能出现训练/推理分布差异。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-022",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "标签 Mask 与序列打包",
+    "tags": [
+      "transformer",
+      "transformer",
+      "标签-mask-与序列打包"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "question": "训练 batch 通过 PAD 或样本拼接统一长度。哪些条件有助于避免无效监督和跨样本泄漏？",
+    "explanation": "注意力 mask 控制信息可见性，loss mask 控制目标是否计入损失。序列打包还要确保样本边界不产生信息泄漏，且标签与掩码正确对齐。",
+    "assessment": {
+      "target": "注意力 mask 控制信息可见性，loss mask 控制目标是否计入损失。序列打包还要确保样本边界不产生信息泄漏，且标签与掩码正确对齐。",
+      "reasoningGoal": "围绕 标签 Mask 与序列打包 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把注意力屏蔽和损失屏蔽混为一谈",
+      "认为统一长度或序列打包后无需检查样本边界"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让无效目标位置通过 loss mask 或 ignore index 排除",
+          "检查 label shift 与输入位置、mask 位置是否正确对齐",
+          "打包多个样本时避免样本间产生未授权的注意力",
+          "只屏蔽输入 PAD 就必然保证 PAD 标签不进入 loss"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "训练 batch 通过 PAD 或样本拼接统一长度。哪些条件有助于避免无效监督和跨样本泄漏？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "注意力 mask 控制信息可见性，loss mask 控制目标是否计入损失。序列打包还要确保样本边界不产生信息泄漏，且标签与掩码正确对齐。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-023",
+    "category": "model-architecture",
+    "topic": "attention",
+    "subtopic": "注意力数值稳定性",
+    "tags": [
+      "transformer",
+      "attention",
+      "注意力数值稳定性"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "cognitiveTask": "diagnose",
+    "question": "混合精度训练时注意力权重偶尔出现 NaN。哪些排查方向合理？",
+    "explanation": "NaN 可能来自分数溢出、全屏蔽行、错误 mask 格式或低精度计算。应检查实际输入与 backend 契约，而不是用均匀权重掩盖问题。",
+    "assessment": {
+      "target": "NaN 可能来自分数溢出、全屏蔽行、错误 mask 格式或低精度计算。应检查实际输入与 backend 契约，而不是用均匀权重掩盖问题。",
+      "reasoningGoal": "围绕 注意力数值稳定性 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把数值异常一律归因于数据加载",
+      "通过修改输出掩盖掩码或精度错误"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把所有异常权重强制改成均匀分布即可修复根因",
+          "检查 Q/K 点积分数尺度与 Softmax 输入是否溢出",
+          "检查 mask 是否导致某一查询行完全没有可用 key",
+          "确认实际 backend 对 mask 形状和值的约定"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "混合精度训练时注意力权重偶尔出现 NaN。哪些排查方向合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "NaN 可能来自分数溢出、全屏蔽行、错误 mask 格式或低精度计算。应检查实际输入与 backend 契约，而不是用均匀权重掩盖问题。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-024",
+    "category": "model-architecture",
+    "topic": "multi-head-attention-subspace",
+    "subtopic": "多头注意力维度",
+    "tags": [
+      "transformer",
+      "multi-head-attention-subspace",
+      "多头注意力维度"
+    ],
+    "difficulty": "easy",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "question": "隐藏维度为 1024、使用 16 个等维 Query 头的模型，每头维度是多少？哪些补充判断正确？",
+    "explanation": "单头维度通常为 1024/16=64。若总投影宽度固定，改变头数会改变每头维度；不能仅凭头数推断总参数必然翻倍。",
+    "assessment": {
+      "target": "单头维度通常为 1024/16=64。若总投影宽度固定，改变头数会改变每头维度；不能仅凭头数推断总参数必然翻倍。",
+      "reasoningGoal": "围绕 多头注意力维度 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把头数和隐藏维度当成同一个参数",
+      "忽略多头输出拼接的宽度约束"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "各头输出通常拼接回总隐藏维度进行融合",
+          "头数翻倍就必然使所有投影参数量翻倍",
+          "每个 Query 头的维度为 64",
+          "总宽度固定时把头数翻倍会让每头维度减半"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "隐藏维度为 1024、使用 16 个等维 Query 头的模型，每头维度是多少？哪些补充判断正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "单头维度通常为 1024/16=64。若总投影宽度固定，改变头数会改变每头维度；不能仅凭头数推断总参数必然翻倍。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-025",
+    "category": "model-architecture",
+    "topic": "gqa",
+    "subtopic": "MHA、MQA 与 GQA",
+    "tags": [
+      "transformer",
+      "gqa",
+      "mha-mqa-与-gqa"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "自回归推理中 KV Cache 过大，团队比较 MHA、MQA 和 GQA。哪些描述正确？",
+    "explanation": "MQA 共享一组 KV 头，GQA 让多个 Query 头共享较少的 KV 头。这样可减少缓存与带宽压力，同时保留独立的 Query 头；质量影响需实测。",
+    "assessment": {
+      "target": "MQA 共享一组 KV 头，GQA 让多个 Query 头共享较少的 KV 头。这样可减少缓存与带宽压力，同时保留独立的 Query 头；质量影响需实测。",
+      "reasoningGoal": "围绕 MHA、MQA 与 GQA 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 Query 头数与 KV 头数混淆",
+      "将缓存收益误认为不可能带来质量变化"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MQA 使用一组共享 KV 头服务多个 Query 头",
+          "GQA 让多个 Query 头共享一组 KV 头以折中缓存与表达",
+          "减少 KV 头数会按相同比例减少 Query 头数",
+          "MHA 通常为每个 Query 头保留对应的 KV 头"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "自回归推理中 KV Cache 过大，团队比较 MHA、MQA 和 GQA。哪些描述正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "MQA 共享一组 KV 头，GQA 让多个 Query 头共享较少的 KV 头。这样可减少缓存与带宽压力，同时保留独立的 Query 头；质量影响需实测。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-026",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache 的作用",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "kv-cache-的作用"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "自回归模型每次只生成一个新 token。KV Cache 为什么通常能减少重复计算？",
+    "explanation": "KV Cache 复用历史 token 在各层的 K/V，避免每一步重算过去内容。代价是缓存内存随历史长度和并发请求量增加。",
+    "assessment": {
+      "target": "KV Cache 复用历史 token 在各层的 K/V，避免每一步重算过去内容。代价是缓存内存随历史长度和并发请求量增加。",
+      "reasoningGoal": "围绕 KV Cache 的作用 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 KV Cache 当成模型权重压缩",
+      "认为缓存能预知未来 token 的中间计算"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保存历史 token 在各层注意力中的 Key 和 Value",
+          "生成时为新 token 追加 K/V 并复用已有缓存",
+          "缓存能预先保存未来尚未生成 token 的真实 K/V",
+          "缓存占用会随历史长度和同时活跃请求数增长"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "自回归模型每次只生成一个新 token。KV Cache 为什么通常能减少重复计算？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "KV Cache 复用历史 token 在各层的 K/V，避免每一步重算过去内容。代价是缓存内存随历史长度和并发请求量增加。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-027",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "KV Cache 容量估算",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "kv-cache-容量估算"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "question": "某模型每层有 8 个 KV 头、头维度 128，共 32 层，K/V 用 BF16（每值 2 字节）。忽略对齐，单 token 的 KV Cache 约占多少？",
+    "explanation": "K/V 两份乘以层数、KV 头数、头维度和每元素字节数，本例为 131072 字节，即 128 KiB/token。请求总量还要乘缓存长度、并发和元数据开销。",
+    "assessment": {
+      "target": "K/V 两份乘以层数、KV 头数、头维度和每元素字节数，本例为 131072 字节，即 128 KiB/token。请求总量还要乘缓存长度、并发和元数据开销。",
+      "reasoningGoal": "围绕 KV Cache 容量估算 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "用 Query 头数替代 KV 头数来估算",
+      "把单 token 缓存量当成整个请求的总量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "计算时必须额外乘 Query 头数，即使采用 GQA 也是如此",
+          "公式为 2 × 层数 × KV 头数 × 头维度 × 每元素字节数",
+          "本例约为 2 × 32 × 8 × 128 × 2 = 131072 字节",
+          "约 128 KiB/token，还需乘请求缓存 token 数"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "某模型每层有 8 个 KV 头、头维度 128，共 32 层，K/V 用 BF16（每值 2 字节）。忽略对齐，单 token 的 KV Cache 约占多少？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "K/V 两份乘以层数、KV 头数、头维度和每元素字节数，本例为 131072 字节，即 128 KiB/token。请求总量还要乘缓存长度、并发和元数据开销。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-028",
+    "category": "model-architecture",
+    "topic": "kv-cache",
+    "subtopic": "Prefill 与 Decode",
+    "tags": [
+      "transformer",
+      "kv-cache",
+      "prefill-与-decode"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "推理监控显示 Prefill 阶段算力利用率高，Decode 阶段却经常受内存带宽影响。哪些解释合理？",
+    "explanation": "Prefill 对输入序列批量计算，Decode 按 token 递进并反复读取权重与历史 KV。二者的工作负载和瓶颈可能不同，因此需要分阶段优化。",
+    "assessment": {
+      "target": "Prefill 对输入序列批量计算，Decode 按 token 递进并反复读取权重与历史 KV。二者的工作负载和瓶颈可能不同，因此需要分阶段优化。",
+      "reasoningGoal": "围绕 Prefill 与 Decode 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 Prefill 与 Decode 当作同一工作负载",
+      "只看模型权重显存而忽略 KV 读取"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "长上下文会扩大历史 KV 读取需求并加重带宽压力",
+          "模型权重放入 GPU 后，Decode 就不需要读取 KV Cache",
+          "Prefill 一次处理整个输入上下文，通常能形成较大的矩阵计算",
+          "Decode 按 token 生成，每步需读取权重与历史 KV"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "推理监控显示 Prefill 阶段算力利用率高，Decode 阶段却经常受内存带宽影响。哪些解释合理？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "Prefill 对输入序列批量计算，Decode 按 token 递进并反复读取权重与历史 KV。二者的工作负载和瓶颈可能不同，因此需要分阶段优化。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-029",
+    "category": "model-architecture",
+    "topic": "hybrid-attention",
+    "subtopic": "滑动窗口与全局注意力",
+    "tags": [
+      "transformer",
+      "hybrid-attention",
+      "滑动窗口与全局注意力"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "长上下文模型把多数层改为 Sliding-Window Attention，只保留少量全局注意力层。哪些权衡需要考虑？",
+    "explanation": "滑动窗口可减少局部层计算和缓存需求，少量全局层提供长距离信息路径。但任务表现取决于窗口大小、全局层布局与训练，不能保证质量不变。",
+    "assessment": {
+      "target": "滑动窗口可减少局部层计算和缓存需求，少量全局层提供长距离信息路径。但任务表现取决于窗口大小、全局层布局与训练，不能保证质量不变。",
+      "reasoningGoal": "围绕 滑动窗口与全局注意力 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把少数全局层视为长程信息完整性的绝对保证",
+      "把局部层的有界窗口误认为整个模型成本固定"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "全局层可提供跨远距离 token 的直接信息路径",
+          "窗口外信息在单个局部层中不能被直接读取",
+          "只要有一个全局层，任意长程任务质量都一定不变",
+          "局部注意力可降低部分层的计算与缓存增长压力"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "question": "长上下文模型把多数层改为 Sliding-Window Attention，只保留少量全局注意力层。哪些权衡需要考虑？",
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "滑动窗口可减少局部层计算和缓存需求，少量全局层提供长距离信息路径。但任务表现取决于窗口大小、全局层布局与训练，不能保证质量不变。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-030",
+    "category": "model-architecture",
+    "topic": "flash-attention",
+    "subtopic": "FlashAttention 基本机制",
+    "tags": [
+      "transformer",
+      "flash-attention",
+      "flashattention-基本机制"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "一个实现用 FlashAttention 替代朴素注意力，数学结果在允许的数值误差内保持等价。哪些说明正确？",
+    "explanation": "FlashAttention 使用分块和在线 Softmax 等方法减少显存访问，目标仍是标准精确注意力。它降低中间矩阵物化和 IO 需求，但不改变全局注意力的二次数学计算量。",
+    "assessment": {
+      "target": "FlashAttention 使用分块和在线 Softmax 等方法减少显存访问，目标仍是标准精确注意力。它降低中间矩阵物化和 IO 需求，但不改变全局注意力的二次数学计算量。",
+      "reasoningGoal": "围绕 FlashAttention 基本机制 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把显存 IO 优化误当成删除注意力计算",
+      "把精确高效内核误认为线性复杂度算法"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分块和 IO-aware 计算可减少高带宽显存读写",
+          "它避免将完整 n×n 注意力矩阵显式写入高带宽显存",
+          "它属于精确注意力实现，不必依赖稀疏近似换速度",
+          "它把全局注意力的数学复杂度严格从二次变成线性"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一个实现用 FlashAttention 替代朴素注意力，数学结果在允许的数值误差内保持等价。哪些说明正确？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "FlashAttention 使用分块和在线 Softmax 等方法减少显存访问，目标仍是标准精确注意力。它降低中间矩阵物化和 IO 需求，但不改变全局注意力的二次数学计算量。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-031",
+    "category": "model-architecture",
+    "topic": "flash-attention",
+    "subtopic": "精确与近似注意力",
+    "tags": [
+      "transformer",
+      "flash-attention",
+      "精确与近似注意力"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "在 FlashAttention 与稀疏/线性近似注意力之间选型时，哪些区别正确？",
+    "explanation": "FlashAttention 优化精确注意力的 IO 实现；稀疏方法限制交互集合，线性注意力使用不同计算形式或近似。它们的数值、质量与效率特性不同。",
+    "assessment": {
+      "target": "FlashAttention 优化精确注意力的 IO 实现；稀疏方法限制交互集合，线性注意力使用不同计算形式或近似。它们的数值、质量与效率特性不同。",
+      "reasoningGoal": "围绕 精确与近似注意力 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把 IO-aware 算法误分类为稀疏近似算法",
+      "认为所有高效注意力方法保留相同计算路径"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "三类方法必定具有相同计算图和数值结果；实际效果仍取决于模型与任务配置",
+          "FlashAttention 主要优化标准注意力的内存访问与计算实现；实际效果仍取决于模型与任务配置",
+          "稀疏注意力通过限制参与交互的位置集合减少计算；实际效果仍取决于模型与任务配置",
+          "线性注意力通常通过重写或近似改变计算形式；实际效果仍取决于模型与任务配置"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "在 FlashAttention 与稀疏/线性近似注意力之间选型时，哪些区别正确？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "FlashAttention 优化精确注意力的 IO 实现；稀疏方法限制交互集合，线性注意力使用不同计算形式或近似。它们的数值、质量与效率特性不同。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-032",
+    "category": "model-architecture",
+    "topic": "attention",
+    "subtopic": "SDPA 后端选择",
+    "tags": [
+      "transformer",
+      "attention",
+      "sdpa-后端选择"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "question": "使用框架的 scaled dot product attention API 后，运行时可能选择不同 kernel。哪些工程判断正确？",
+    "explanation": "统一 SDPA 接口可根据设备和输入条件选择后端，但各 kernel 对 dtype、mask、shape 和硬件有不同约束。应在目标负载下验证实际后端、性能与数值。",
+    "assessment": {
+      "target": "统一 SDPA 接口可根据设备和输入条件选择后端，但各 kernel 对 dtype、mask、shape 和硬件有不同约束。应在目标负载下验证实际后端、性能与数值。",
+      "reasoningGoal": "围绕 SDPA 后端选择 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把统一接口当成永远最快的执行保证",
+      "忽略 mask 和输入形状对后端选择的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "mask 格式不符合后端约定时可能导致回退或错误",
+          "统一 API 保证所有输入都无条件使用最快的 Flash kernel",
+          "确认实际输入 shape、dtype、mask 和设备所选的 backend",
+          "不同 kernel 可实现同一数学操作，但支持条件与性能不同"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "使用框架的 scaled dot product attention API 后，运行时可能选择不同 kernel。哪些工程判断正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "统一 SDPA 接口可根据设备和输入条件选择后端，但各 kernel 对 dtype、mask、shape 和硬件有不同约束。应在目标负载下验证实际后端、性能与数值。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-033",
+    "category": "model-architecture",
+    "topic": "attention",
+    "subtopic": "FlexAttention 与自定义模式",
+    "tags": [
+      "transformer",
+      "attention",
+      "flexattention-与自定义模式"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "任务需要定义 block-local 或滑动窗口注意力模式。可编程 Attention 接口的价值与边界是什么？",
+    "explanation": "可编程 Attention 接口提升自定义注意力模式的表达能力，但不保证所有规则都生成最优内核，也不自动改变算法复杂度或模型任务质量。",
+    "assessment": {
+      "target": "可编程 Attention 接口提升自定义注意力模式的表达能力，但不保证所有规则都生成最优内核，也不自动改变算法复杂度或模型任务质量。",
+      "reasoningGoal": "围绕 FlexAttention 与自定义模式 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把更高层 API 误当成性能最优保证",
+      "认为自定义 mask 自动降低渐近计算复杂度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "框架可承担部分底层 kernel 生成或优化工作",
+          "任意自定义规则都必然达到手写特化 kernel 的最快性能",
+          "仍需验证掩码表达、设备支持、编译开销与数值正确性",
+          "可以用较高层的规则描述特定注意力模式"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "任务需要定义 block-local 或滑动窗口注意力模式。可编程 Attention 接口的价值与边界是什么？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "可编程 Attention 接口提升自定义注意力模式的表达能力，但不保证所有规则都生成最优内核，也不自动改变算法复杂度或模型任务质量。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-034",
+    "category": "model-architecture",
+    "topic": "rope",
+    "subtopic": "长上下文位置扩展",
+    "tags": [
+      "transformer",
+      "rope",
+      "长上下文位置扩展"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "一个模型原生支持 32K token，团队希望用 RoPE 缩放扩展到 256K。哪些验收措施必要？",
+    "explanation": "RoPE 缩放可帮助模型适配更长位置范围，但 API 接受长输入不等于模型有效利用信息。应测短/长上下文、不同位置上的任务表现并决定是否需要继续训练。",
+    "assessment": {
+      "target": "RoPE 缩放可帮助模型适配更长位置范围，但 API 接受长输入不等于模型有效利用信息。应测短/长上下文、不同位置上的任务表现并决定是否需要继续训练。",
+      "reasoningGoal": "围绕 长上下文位置扩展 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把输入长度参数当成质量保证",
+      "只评测扩展长度而忽略短上下文退化"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同时评估原生长度与扩展长度上的质量",
+          "检查不同位置区间的检索、推理和位置敏感任务",
+          "评估是否需要持续预训练或长上下文微调",
+          "只确认 API 接受 256K 输入就能证明模型有效支持"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "一个模型原生支持 32K token，团队希望用 RoPE 缩放扩展到 256K。哪些验收措施必要？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "RoPE 缩放可帮助模型适配更长位置范围，但 API 接受长输入不等于模型有效利用信息。应测短/长上下文、不同位置上的任务表现并决定是否需要继续训练。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-035",
+    "category": "model-architecture",
+    "topic": "transformer",
+    "subtopic": "长上下文与注意力成本",
+    "tags": [
+      "transformer",
+      "transformer",
+      "长上下文与注意力成本"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "question": "某团队把上下文上限从 64K 提到 1M token，但服务成本和错误率上升。哪些判断合理？",
+    "explanation": "最大窗口只是技术容量，效果仍受注意力成本、缓存和位置泛化影响。应控制无关上下文，并用真实任务评测质量、延迟和内存，而非只看支持的最大长度。",
+    "assessment": {
+      "target": "最大窗口只是技术容量，效果仍受注意力成本、缓存和位置泛化影响。应控制无关上下文，并用真实任务评测质量、延迟和内存，而非只看支持的最大长度。",
+      "reasoningGoal": "围绕 长上下文与注意力成本 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把最大窗口视为有效利用能力的同义词",
+      "忽略长输入带来的算力和注意力干扰成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只继续增大窗口上限就会自动提高准确率并降低成本",
+          "全局注意力和 KV Cache 可能让长上下文成本快速增长",
+          "窗口容量上限不等于模型可靠利用所有位置的信息",
+          "可用检索、分层处理或混合注意力减少无关上下文"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "某团队把上下文上限从 64K 提到 1M token，但服务成本和错误率上升。哪些判断合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "最大窗口只是技术容量，效果仍受注意力成本、缓存和位置泛化影响。应控制无关上下文，并用真实任务评测质量、延迟和内存，而非只看支持的最大长度。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-036",
+    "category": "model-architecture",
+    "topic": "vision-transformer",
+    "subtopic": "ViT Patch Embedding",
+    "tags": [
+      "transformer",
+      "vision-transformer",
+      "vit-patch-embedding"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "Vision Transformer 将图像切成 Patch，再映射为 token 序列。哪些描述正确？",
+    "explanation": "ViT 把图像 patch 投影为 token。较小 patch 会增加序列长度，进而提高全局注意力成本；二维位置关系仍需通过位置机制或其他结构表达。",
+    "assessment": {
+      "target": "ViT 把图像 patch 投影为 token。较小 patch 会增加序列长度，进而提高全局注意力成本；二维位置关系仍需通过位置机制或其他结构表达。",
+      "reasoningGoal": "围绕 ViT Patch Embedding 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把一维 token 序列当作天然完整的二维拓扑",
+      "混淆 token 数量与 Transformer 主体参数量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "缩小 patch 会增加序列长度并提高全局注意力成本",
+          "patch 序列天然保留完整的二维邻接关系，无需位置机制",
+          "每个 patch 通常被投影到模型隐藏维度",
+          "Patch 数量取决于图像分辨率和 patch 尺寸"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "Vision Transformer 将图像切成 Patch，再映射为 token 序列。哪些描述正确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "ViT 把图像 patch 投影为 token。较小 patch 会增加序列长度，进而提高全局注意力成本；二维位置关系仍需通过位置机制或其他结构表达。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-037",
+    "category": "model-architecture",
+    "topic": "vision-transformer",
+    "subtopic": "CLS Token 与池化",
+    "tags": [
+      "transformer",
+      "vision-transformer",
+      "cls-token-与池化"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "question": "视觉 Transformer 分类可以使用 CLS Token，也可对 patch token 做池化。哪些判断较准确？",
+    "explanation": "CLS 与池化是不同的全局汇聚方式，优劣取决于预训练目标、数据和任务。分类向量通常不能替代分割等任务需要的空间信息。",
+    "assessment": {
+      "target": "CLS 与池化是不同的全局汇聚方式，优劣取决于预训练目标、数据和任务。分类向量通常不能替代分割等任务需要的空间信息。",
+      "reasoningGoal": "围绕 CLS Token 与池化 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "认为一种汇聚方式对所有 ViT 任务都更好",
+      "把全局分类表示当作密集预测的充分信息"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Mean pooling 可聚合各 patch token 表示",
+          "CLS 在任何预训练与微调配置中都一定优于池化",
+          "密集预测任务往往仍需保留 patch 的空间表征",
+          "CLS Token 可作为学习到的全局聚合位置"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "question": "视觉 Transformer 分类可以使用 CLS Token，也可对 patch token 做池化。哪些判断较准确？",
+        "misconceptionMap": [
+          null,
+          1,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "CLS 与池化是不同的全局汇聚方式，优劣取决于预训练目标、数据和任务。分类向量通常不能替代分割等任务需要的空间信息。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-038",
+    "category": "model-architecture",
+    "topic": "vision-transformer",
+    "subtopic": "ViT 位置编码插值",
+    "tags": [
+      "transformer",
+      "vision-transformer",
+      "vit-位置编码插值"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "question": "预训练 ViT 使用固定分辨率位置 Embedding，微调时 Patch 网格变大。哪些处理合理？",
+    "explanation": "位置 Embedding 通常先恢复为二维 patch 网格并进行插值，再展平回序列；特殊 token 另行处理。插值能适配形状，但不能保证新分辨率下性能无损。",
+    "assessment": {
+      "target": "位置 Embedding 通常先恢复为二维 patch 网格并进行插值，再展平回序列；特殊 token 另行处理。插值能适配形状，但不能保证新分辨率下性能无损。",
+      "reasoningGoal": "围绕 ViT 位置编码插值 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "认为能加载新尺寸就等于性能无损",
+      "忽略 patch 位置编码的二维结构"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将 patch 位置向量恢复二维网格后做空间插值",
+          "特殊 token 的位置处理通常应与 patch 网格分开",
+          "插值后仍需验证新分辨率的准确率与定位质量",
+          "截断额外 patch token 可以无损保留整幅图像信息"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "question": "预训练 ViT 使用固定分辨率位置 Embedding，微调时 Patch 网格变大。哪些处理合理？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "位置 Embedding 通常先恢复为二维 patch 网格并进行插值，再展平回序列；特殊 token 另行处理。插值能适配形状，但不能保证新分辨率下性能无损。"
+      }
+    }
+  },
+  {
+    "id": "transformer-modern-2026-10-039",
+    "category": "model-architecture",
+    "topic": "multimodal",
+    "subtopic": "视觉语言 Transformer 对齐",
+    "tags": [
+      "transformer",
+      "multimodal",
+      "视觉语言-transformer-对齐"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "question": "多模态 Transformer 需要整合图像与文本表示。哪些融合路径都可能合理？",
+    "explanation": "视觉信息可经投影、cross-attention 或统一 token 序列等方式融入语言模型。维度匹配只是接口条件，不代表语义对齐已经解决。",
+    "assessment": {
+      "target": "视觉信息可经投影、cross-attention 或统一 token 序列等方式融入语言模型。维度匹配只是接口条件，不代表语义对齐已经解决。",
+      "reasoningGoal": "围绕 视觉语言 Transformer 对齐 的机制和适用边界判断选项，识别必要条件，并排除常见的概念混淆。"
+    },
+    "misconceptions": [
+      "把形状兼容误认为语义对齐",
+      "认为多模态融合只有一种固定结构"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "只要两类向量维度匹配，就必然完成语义对齐",
+          "把视觉编码器输出投影到语言模型可处理的表示空间",
+          "通过 Cross-Attention 让语言表示按需读取视觉特征",
+          "把视觉 token 与文本 token 合成序列做联合注意力"
+        ],
+        "answer": [
+          1,
+          2,
+          3
+        ],
+        "question": "多模态 Transformer 需要整合图像与文本表示。哪些融合路径都可能合理？",
+        "misconceptionMap": [
+          0,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "视觉信息可经投影、cross-attention 或统一 token 序列等方式融入语言模型。维度匹配只是接口条件，不代表语义对齐已经解决。"
+      }
+    }
+  }
+]
