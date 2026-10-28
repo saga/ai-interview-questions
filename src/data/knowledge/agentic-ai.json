@@ -85,14 +85,26 @@
     "area": "llm-applications",
     "topic": "context-engineering",
     "priority": "P0",
-    "summary": "围绕有限窗口的内容编排学科：什么进上下文、以何种顺序与形式、何时压缩丢弃——直接影响答案质量与成本。",
+    "summary": "上下文工程围绕每次推理的有限 token 预算，动态管理指令、检索证据、工具定义和结果、对话历史、任务状态与长期记忆。核心动作包括 write、select、compress、isolate；目标不仅是减少 token，还要提高证据可用性、状态恢复能力和任务成功率。",
     "required": [
       "上下文是稀缺资源，需要像内存一样做分配与淘汰",
-      "压缩（摘要）与截断的信息损失特性不同，适用场景不同"
+      "压缩（摘要）与截断的信息损失特性不同，适用场景不同",
+      "区分 Prompt 指令设计与 Context Engineering：后者还决定每次调用的资料选择、排序、压缩、隔离和新鲜度",
+      "按任务价值分配 token 预算，结合相关性、来源权威性、时间有效性和访问权限选择上下文，而非无差别 stuffing",
+      "区分 conversation history、运行时 task state、scratchpad 和跨会话 memory，分别定义生命周期、更新、校验和删除规则",
+      "长任务 compaction 要保留目标、已完成/待办、约束、决定依据、失败尝试和恢复线索，并用端到端任务评估信息损失",
+      "使用 just-in-time retrieval 与 progressive disclosure 按需加载大型资料和工具 Schema，避免固定上下文过载",
+      "把检索内容视为不可信数据，实施权限过滤、来源追踪、时效/冲突处理与工具侧控制",
+      "Context Rot 和 lost-in-the-middle 说明窗口容量不等于有效利用；需评测不同长度、位置、噪声和多跳场景",
+      "通过分来源 token、选择/裁剪原因、压缩版本、检索分数和任务结果建立可观测性，并遵守数据最小化"
     ],
     "misconceptions": [
       "认为上下文窗口够大就不需要上下文管理",
-      "把 system prompt 当唯一可控变量"
+      "把 system prompt 当唯一可控变量",
+      "认为窗口内所有 token 都能被等效利用",
+      "把压缩率和缓存命中率当作上下文质量的充分指标",
+      "将未授权数据先注入上下文，再依赖模型自行保密",
+      "把旧记忆当成永久且无需来源校验的事实"
     ],
     "angles": [
       "scenario",
@@ -364,7 +376,9 @@
       "错误地将架构级的 Token 预算扩展与语境解耦归因于模型参数权重微调",
       "忽略多智能体系统通常比普通 Chat 消耗高达 15 倍 Token 的计算开销"
     ],
-    "angles": ["architecture"]
+    "angles": [
+      "architecture"
+    ]
   },
   {
     "id": "knowledge-orchestrator-memory-delegation",
@@ -383,7 +397,9 @@
       "错误地认为无限扩展 Context Window 能替代长流程中的状态持久化与计划记忆机制",
       "误以为模糊泛化的指令能提升效率，忽视其导致子 Agent 重复检索相同信息"
     ],
-    "angles": ["design"]
+    "angles": [
+      "design"
+    ]
   },
   {
     "id": "knowledge-tool-calling-self-optimization",
@@ -402,6 +418,40 @@
       "错误地将 Context Window 长度优化等同于删除关键的工具使用边界与指导说明",
       "忽视 Prompt Engineering 与工具接口描述在智能体推理路径抉择中的关键提示作用"
     ],
-    "angles": ["mechanism"]
+    "angles": [
+      "mechanism"
+    ]
+  },
+  {
+    "id": "prompt-engineering",
+    "name": "Prompt Engineering 与 PromptOps",
+    "area": "llm-applications",
+    "topic": "context-engineering",
+    "priority": "P1",
+    "summary": "Prompt Engineering 把任务成功标准转化为清晰指令、输入边界、示例和结构化输出约束；PromptOps 将生产提示当作代码版本化、评测、审查、灰度和回滚。提示不能替代权限控制、结构校验或事实验证。",
+    "required": [
+      "先定义可观察的成功标准，再使用清晰指令、任务分区、少样本示例和输出契约",
+      "示例需正确、代表真实输入且不与任务约束冲突",
+      "使用结构化输出/schema 与应用侧校验；格式合法不代表事实或业务逻辑正确",
+      "对提示改动进行受控实验、独立评测和回归测试，防止对固定评测集过拟合",
+      "生产提示应版本化、审查和可回滚；模型/API 迁移需要重新测试工具行为、安全、质量、延迟和成本",
+      "把外部文档和用户数据视为不可信输入，不能仅靠自然语言防范提示注入"
+    ],
+    "misconceptions": [
+      "认为角色提示能自动提升模型事实能力",
+      "认为 Prompt 越长或 few-shot 样例越多越好",
+      "认为 JSON 格式合法代表语义正确",
+      "认为 system prompt 能替代服务端权限和工具授权",
+      "认为提示可以跨模型无损迁移"
+    ],
+    "angles": [
+      "definition",
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "scenario",
+      "design",
+      "debugging"
+    ]
   }
 ]
