@@ -276,7 +276,7 @@
     "difficulty": "medium",
     "angle": "tradeoff",
     "question": "公司在生产环境用 Amazon SageMaker 跑 ML pipeline，输入数据大至 1 GB、处理时间最长 1 小时，且需要近实时延迟。哪个 SageMaker 推理选项满足？（单选）",
-    "explanation": "C 正确：异步推理（Asynchronous inference）支持大 payload（GB 级）与长时处理（小时级）并可通过轮询在近实时返回，专为这类场景设计。A 错：实时推理 payload 上限约 6MB、超时约 60s，装不下 1GB/1h。B 错：无服务器推理也有 payload/时长上限且面向短请求。D 错：批量转换是离线作业，不满足近实时。",
+    "explanation": "C 正确：Amazon SageMaker AI Asynchronous Inference 面向大请求与较长处理时间，当前文档列明 payload 最大 1 GB、最长处理时间 60 分钟。A 错：当前普通 Real-Time Inference 支持最大 25 MB、常规响应处理时间 60 秒；Streaming responses 可达 8 分钟。B Serverless Inference 支持最大 4 MB、60 秒。D Batch Transform 适合离线批处理，不满足交互式近实时请求。具体配额以当前区域、端点类型和官方文档为准。",
     "source": {
       "materialId": "https://docs.aws.amazon.com/aws-certification/latest/ai-practitioner-01/ai-practitioner-01.html",
       "section": "AWS Certified AI Practitioner (AIF-C01)"
@@ -301,7 +301,7 @@
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\n- 大 payload+长时处理+近实时→异步推理。\n- A 受限 6MB/60s；B 限短请求；D 离线不符近实时。"
+        "referenceAnswer": "正确答案：C。Asynchronous Inference 当前支持最多 1 GB payload 和最长 60 分钟处理。普通 Real-Time Inference 当前为最多 25 MB、常规响应 60 秒（Streaming 可达 8 分钟）；Serverless 为最多 4 MB、60 秒。配额随功能和文档更新，应以官方资料为准。"
       }
     },
     "assessment": {
