@@ -647,12 +647,12 @@
         "kind": "surface-options",
         "question": "某 Manager 超限先裁 system prompt，行为失忆。定位这次裁错，下列哪些判断成立？",
         "options": [
-          "初始装配包含恒定 system prompt、旧历史摘要与最近 N 轮原文。",
-          "仍超预算时，把最旧的保留轮次逐步并入摘要并重新核算 token；不要盲目截断 system 约束或当前任务状态。",
-          "将 summarize 作为可注入依赖，便于使用假实现测试压缩逻辑。",
-          "超限时优先裁剪 system prompt，完整保留摘要与近轮。",
-          "最近 N 轮最先摘要压缩，早期对话逐字保留。",
-          "每次装配全量重做摘要替换旧摘要，而不做增量整理。"
+          "初始装配由固定 system、历史摘要和最近 N 轮原文组成。",
+          "超预算时先压最旧轮次并重算预算，不应先裁系统约束或当前任务状态。",
+          "把摘要函数注入 Context Manager，便于用假实现单测。",
+          "超限时先裁 system，完整保留摘要与最近轮次。",
+          "应先压缩最近 N 轮，早期历史逐字保留更可靠。",
+          "每轮都重做全历史摘要替换旧摘要，避免增量合并。"
         ],
         "angle": "debugging",
         "cognitiveTask": "diagnose",
@@ -666,7 +666,7 @@
         "sourceHash": "fnv1a-948f68c9",
         "batch": "assessmentfresh13",
         "model": "manual",
-        "contentHash": "fnv1a-864ba32d",
+        "contentHash": "fnv1a-f5fbb030",
         "sourceSnapshot": {
           "id": "ai-code-005",
           "topic": "context-engineering",
@@ -694,12 +694,12 @@
         "kind": "context-options",
         "question": "把增量装配与全量重摘要放在成本正确性上对比，根本差异是什么？",
         "options": [
-          "初始装配包含恒定 system prompt、旧历史摘要与最近 N 轮原文。",
-          "仍超预算时，把最旧的保留轮次逐步并入摘要并重新核算 token；不要盲目截断 system 约束或当前任务状态。",
-          "将 summarize 作为可注入依赖，便于使用假实现测试压缩逻辑。",
-          "超限时优先裁剪 system prompt，完整保留摘要与近轮。",
-          "最近 N 轮最先摘要压缩，早期对话逐字保留。",
-          "每次装配全量重做摘要替换旧摘要，而不做增量整理。"
+          "初始装配由固定 system、历史摘要和最近 N 轮原文组成。",
+          "超预算时先压最旧轮次并重算预算，不应先裁系统约束或当前任务状态。",
+          "把摘要函数注入 Context Manager，便于用假实现单测。",
+          "超限时先裁 system，完整保留摘要与最近轮次。",
+          "应先压缩最近 N 轮，早期历史逐字保留更可靠。",
+          "每轮都重做全历史摘要替换旧摘要，避免增量合并。"
         ],
         "angle": "comparison",
         "cognitiveTask": "compare",
@@ -713,7 +713,7 @@
         "sourceHash": "fnv1a-948f68c9",
         "batch": "assessmentfresh13",
         "model": "manual",
-        "contentHash": "fnv1a-1ca82b7b",
+        "contentHash": "fnv1a-b55e98f6",
         "sourceSnapshot": {
           "id": "ai-code-005",
           "topic": "context-engineering",
