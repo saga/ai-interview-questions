@@ -553,24 +553,24 @@
         "kind": "surface-options",
         "question": "某实现拿左上角第一个 Patch 输出做分类。评审这一做法的前提，下列哪些判断正确？",
         "options": [
-          "CLS 经多层交互聚合全局上下文，无位置偏置",
-          "独立 CLS 免掉特定位置 Patch 的权重偏爱",
-          "CLS 输入前同样加可学习位置编码",
-          "CLS 全程冻结，仅作静态中转占位符"
+          "[CLS] 经多层自注意力可与所有 Patch 交互形成全局表征，但不保证无偏聚合。",
+          "独立 [CLS] 避免必须使用某个固定位置 Patch 作为分类输入，但模型仍可能学习位置偏差。",
+          "[CLS] 输入前通常也加入对应的位置编码。",
+          "[CLS] 全程冻结，仅作为静态中转占位符。"
         ],
         "angle": "scenario",
         "cognitiveTask": "apply",
         "assessment": {
           "target": "能判断拿固定位置 Patch 做分类做法的前提是否成立",
-          "reasoningGoal": "先判断该做法的前提（位置偏置）是否满足；再逐项验证各主张；并排除「冻结占位」等不成立描述。"
+          "reasoningGoal": "判断 [CLS] 与 Patch 的全局交互、位置编码和可学习参数；不要把全局表征误认为无偏保证，也不要认为独立 [CLS] 会完全消除位置偏差。"
         },
         "generatedAt": 1788874684733,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-cff626e0",
+        "sourceHash": "fnv1a-67afe113",
         "batch": "assessmentfresh9",
         "model": "manual",
-        "contentHash": "fnv1a-8c8d4407",
+        "contentHash": "fnv1a-976b78d3",
         "sourceSnapshot": {
           "id": "vit_cls_token_representation_canonical",
           "topic": "vit-cls-token-representation",
@@ -585,8 +585,8 @@
           ],
           "question": "ViT 借鉴了 NLP 中 BERT 的设计，在输入的图像 Patch Embedding 序列开头拼接了一个可学习的分类 Token（[CLS] Token）。关于 [CLS] Token 的作用机制与设计逻辑，以下哪些判断是正确的？",
           "options": [
-            "在经过多层 Transformer 编码器的 Self-Attention 交互后，输出端 [CLS] Token 对应的向量能够无偏地聚合来自所有图像 Patch 的全局上下文信息。",
-            "使用独立的 [CLS] Token 作为分类头（Classification Head）的输入，可以避免模型人为偏向或赋予某一个特定物理位置 Patch 更多的分类权重。",
+            "经过多层 Self-Attention 后，[CLS] Token 可聚合所有图像 Patch 的上下文，形成全局表征；但不保证无偏聚合。",
+            "独立的 [CLS] Token 避免必须选定某个固定 Patch 作为分类输入，但模型仍可能学习到位置偏差。",
             "在 Transformer 编码器的第一层输入前，[CLS] Token 同样需要加算对应的可学习位置编码（Position Embedding）。",
             "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
           ]
@@ -597,24 +597,24 @@
         "kind": "context-options",
         "question": "某 ViT 把 [CLS] 冻结成静态占位符，分类头训不动。定位这次冻结失误，下列哪些判断成立？",
         "options": [
-          "多层交互后 CLS 输出向量无偏聚合全 Patch 全局上下文",
-          "独立 CLS 做分类头输入，不偏爱特定位置 Patch 的权重",
-          "CLS 也要加位置编码，与 Patch 一视同仁",
-          "CLS 全程冻结不变，仅作静态中转占位符"
+          "[CLS] 经多层自注意力可与所有 Patch 交互形成全局表征，但不保证无偏聚合。",
+          "独立 [CLS] 避免必须使用某个固定位置 Patch 作为分类输入，但模型仍可能学习位置偏差。",
+          "[CLS] 输入前通常也加入对应的位置编码。",
+          "[CLS] 全程冻结，仅作为静态中转占位符。"
         ],
         "angle": "debugging",
         "cognitiveTask": "diagnose",
         "assessment": {
           "target": "能从冻结 CLS 致分类不收敛的失误定位可学习环节",
-          "reasoningGoal": "先定位失误的环节（交互、偏置、编码三类）；再逐项验证各判断；并排除「冻结最稳」等不成立描述。"
+          "reasoningGoal": "判断 [CLS] 与 Patch 的全局交互、位置编码和可学习参数；不要把全局表征误认为无偏保证，也不要认为独立 [CLS] 会完全消除位置偏差。"
         },
         "generatedAt": 1788874684733,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-cff626e0",
+        "sourceHash": "fnv1a-67afe113",
         "batch": "assessmentfresh9",
         "model": "manual",
-        "contentHash": "fnv1a-ea6de10e",
+        "contentHash": "fnv1a-a13d0b44",
         "sourceSnapshot": {
           "id": "vit_cls_token_representation_canonical",
           "topic": "vit-cls-token-representation",
@@ -629,8 +629,8 @@
           ],
           "question": "ViT 借鉴了 NLP 中 BERT 的设计，在输入的图像 Patch Embedding 序列开头拼接了一个可学习的分类 Token（[CLS] Token）。关于 [CLS] Token 的作用机制与设计逻辑，以下哪些判断是正确的？",
           "options": [
-            "在经过多层 Transformer 编码器的 Self-Attention 交互后，输出端 [CLS] Token 对应的向量能够无偏地聚合来自所有图像 Patch 的全局上下文信息。",
-            "使用独立的 [CLS] Token 作为分类头（Classification Head）的输入，可以避免模型人为偏向或赋予某一个特定物理位置 Patch 更多的分类权重。",
+            "经过多层 Self-Attention 后，[CLS] Token 可聚合所有图像 Patch 的上下文，形成全局表征；但不保证无偏聚合。",
+            "独立的 [CLS] Token 避免必须选定某个固定 Patch 作为分类输入，但模型仍可能学习到位置偏差。",
             "在 Transformer 编码器的第一层输入前，[CLS] Token 同样需要加算对应的可学习位置编码（Position Embedding）。",
             "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
           ]
