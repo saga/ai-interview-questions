@@ -89,3 +89,30 @@ Snowflake 在 2026-08-28 的官方更新中建议新应用从 Cortex Analyst 转
 抽样发现的问题不只有“旧版本 API”，也包含内容过于绝对、把某些条件性工程经验写成普遍定律，以及错误混淆不同算法/权限语义。已修改能通过题目原文与官方资料交叉确认的问题；其他仅属可疑或依具体实现而定的内容，尽量改为带前提的描述，而不是贸然认定为错误。
 
 当前仍未完成全量逐题事实审校。GitHub Actions 的作业明细接口未提供有效 job 信息，且本地测试命令尚未运行，因此不能宣称整体测试或构建已通过。
+
+
+#### 8. ZDR 不能简化成“供应商保证不存储、不训练”
+
+文件：`src/data/questions/prompt-injection.json`，题目 `guard-input-mask-01`。
+
+原题将 ZDR 写成一个通用合规承诺，并直接推断可以保留完整上下文、满足隐私合规，还将“私有部署 + ZDR”作为通常优选。实际情况取决于供应商、账户/组织资格、API 端点、具体功能和合同范围；数据保留与是否用于训练是相关但不同的政策维度。OpenAI 文档对不同端点/功能分别说明 ZDR 资格与例外；Anthropic 的官方表格也明确指出有些功能不在 ZDR 范围，部分状态化功能会保留资源或会话数据。已重写选项、答案和解析，改为按实际数据流、威胁模型和功能范围比较 API 留存控制、私有部署及选择性脱敏。
+
+官方依据：
+- https://developers.openai.com/api/docs/guides/your-data
+- https://platform.claude.com/docs/en/build-with-claude/api-and-data-retention
+
+#### 9. Sanitizer 前后版本差分是强证据，但不是绝对证明
+
+文件：`src/data/questions/security-eval.json`，题目 `sec-eval-02`。
+
+原解析将“PoC 在补丁前版本 crash、补丁后版本不 crash”描述为能确切证明目标漏洞。该差分测试是有力验证，但仍需要保证两次构建与运行条件一致、检查 Sanitizer 报告/堆栈是否对应目标缺陷，并排除构建差异和无关崩溃。已修订解析和开放题参考答案，强调必要时最小化 PoC 并重复验证。
+
+#### 10. 同步修订了受影响的离线题目变体
+
+原题文案和答案解释修订后，进一步更新了相关 `src/data/variants/` 离线变体池中的选项、推理目标、`sourceSnapshot`、`sourceHash` 和 `contentHash`，覆盖上下文工程、RoPE、ViT/[CLS]、SageMaker 推理、SSE-S3 权限、ZDR、RLHF/DPO、GRPO 与 TPU 拓扑等主题。这样可以减少训练过程中仍抽到旧绝对说法的风险。变体改写后的正确/错误选项也按原题答案索引逐项复核。
+
+## 本轮复核与验证边界
+
+本轮按主题分层抽取 300 余道题，并回读了相关知识节点；可确认的问题已修改。但仍不是对整个历史题库逐题逐选项的完整事实审计。部分技术机制没有唯一的最佳设计，应根据场景和实现条件描述，不宜把“常见实践”写成普遍定律。
+
+截至本次更新，已对变更文件做 JSON 解析与部分题目结构静态检查。尚未能确认 `npm run test`、`npm run validate:questions`、`npm run validate:variants`、`npm run question:quality` 和 `npm run build` 全部通过：未在本地完成这些命令，GitHub Actions API 对最近的失败运行仍未提供可用 job 明细。
