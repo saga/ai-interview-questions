@@ -240,7 +240,8 @@ export default function AgentInterviewPage({
           ) : (
             <Tag color="default">等待你的作答</Tag>
           )}
-          <Button size="small" icon={<StopOutlined />} disabled={busy} onClick={endEarly}>
+          {/* 忙碌期也必须能中止在途 run（endEarly 内部会 abort + 幂等收尾）。 */}
+          <Button size="small" icon={<StopOutlined />} onClick={() => void endEarly()}>
             提前结束
           </Button>
         </Space>

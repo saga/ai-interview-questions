@@ -34,6 +34,11 @@ describe('extractJsonObject', () => {
     });
   });
 
+  it('尾部说明文字里的 ] 不会截断工具调用 JSON', () => {
+    const raw = '我调用：{"tool":"getQuestion","args":{"id":"q1"}} 详见 [附录]';
+    expect(extractJsonObject(raw)).toEqual({ tool: 'getQuestion', args: { id: 'q1' } });
+  });
+
   it('数组、标量、非 JSON 一律返回 null', () => {
     expect(extractJsonObject('[1,2,3]')).toBeNull();
     expect(extractJsonObject('42')).toBeNull();

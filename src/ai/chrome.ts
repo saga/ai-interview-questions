@@ -384,27 +384,40 @@ export class ChromeAIExecutor {
     throw lastError;
   }
 
-  /** 取（或惰性创建并缓存）针对某 system 的基准 session；同 system 只 create 一次，后续 clone 派生。 */
+  /**
+   * 取（或惰性创建并缓存）针对某 system 的基准 session；同 system 只 create 一次，后续 clone 派生。
+   *
+   * 基准 session 是共享资源，**不能绑定某个请求的 signal**：首个请求取消会 reject 缓存的 Promise，
+   * 后续所有复用者一起失败。这里用独立的 controller，只接受"本批创建"的超时中止。
+   */
   private getBaseSession(
     system: string | undefined,
-    signal: AbortSignal,
     timeoutMs: number,
   ): Promise<ChromeSessionLike> {
     const key = system ?? '';
     const existing = this.baseSessionPromises.get(key);
     if (existing) return existing;
 
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () => controller.abort(new DOMException('Chrome AI base session creation timed out', 'TimeoutError')),
+      timeoutMs,
+    );
     const p = (async () => {
       const lm = getLanguageModel();
       if (!lm) throw new Error('当前浏览器不支持 Chrome 内置 AI（Prompt API），请在设置中改用云端服务商');
-      return await withTimeout(
-        lm.create({
-          ...(system ? { initialPrompts: [{ role: 'system', content: system }] } : {}),
-          signal,
-        }),
-        timeoutMs,
-        'create-base',
-      );
+      try {
+        return await withTimeout(
+          lm.create({
+            ...(system ? { initialPrompts: [{ role: 'system', content: system }] } : {}),
+            signal: controller.signal,
+          }),
+          timeoutMs,
+          'create-base',
+        );
+      } finally {
+        clearTimeout(timer);
+      }
     })();
 
     this.baseSessionPromises.set(key, p);
@@ -431,7 +444,7 @@ export class ChromeAIExecutor {
 
     let clone: ChromeSessionLike | undefined;
     try {
-      const base = await this.getBaseSession(system, signal, timeoutMs);
+      const base = await this.getBaseSession(system, timeoutMs);
       // 基准 session 只建一次；每题用 clone() 派生独立会话，免去重复解析 system 指令（官方推荐）。
       // 部分 Chrome 版本不提供 clone()：退化为独立 create()，代价是重新解析 system 指令，但通道仍可用。
       const c = await withTimeout(

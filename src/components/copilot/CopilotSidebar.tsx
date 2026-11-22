@@ -75,10 +75,12 @@ async function chatCopilot(
       const entryCtx = { provider: entry.id, model: entry.model, hasApiKey: Boolean(entry.apiKey && entry.apiKey.trim()), systemLen: system.length, promptLen: newContent.length, historyLen: history.length };
       if (entry.id === 'chrome') {
         const transcript = history.map((h) => `${h.role}: ${h.content}`).join('\n');
-        return chromeComplete(system, `${transcript}${transcript ? '\n' : ''}user: ${newContent}`);
+        // 必须 await：否则 rejection 发生在 try/catch 之外，降级链会把第一个引擎的错误吞掉并直接抛终态。
+        return await chromeComplete(system, `${transcript}${transcript ? '\n' : ''}user: ${newContent}`);
       }
       if (entry.id === 'copilot-sdk') {
-        return callCopilotSDKCompletion(entry.model || 'auto', system, newContent, history);
+        // 同上：异步拒绝必须落进本轮 try/catch，才能继续尝试下一个引擎。
+        return await callCopilotSDKCompletion(entry.model || 'auto', system, newContent, history);
       }
       const models = buildModels(entry);
       const model = getModel(models, entry);
@@ -258,10 +260,19 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       // 面试进行中：结束交给共享的 Agent 会话——它自己收尾（置 finished、删草稿、
       // 经 onComplete 写入 Learner Memory）。侧栏**不**重复落库，否则同一场面试会被记两次。
       if (interviewRunning) {
-        agentInterview.endEarly();
+        // 等真实落库结果再说话：没有交付题目 / 保存失败时都不能谎报"成绩已写入"。
+        const result = await agentInterview.endEarly();
         setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
         setChatQuestion(null);
-        appendAssistant('已结束本轮面试，成绩已写入学习记录。');
+        if (!result.ended) {
+          appendAssistant('当前没有正在进行的面试。');
+        } else if (!result.hadRecord) {
+          appendAssistant('已结束本轮面试，但没有可保存的作答。');
+        } else if (result.saved) {
+          appendAssistant('已结束本轮面试，成绩已写入学习记录。');
+        } else {
+          appendAssistant(`已结束本轮面试，但成绩写入失败：${result.error ?? '未知原因'}。请在结果页重试保存。`);
+        }
         return;
       }
       // 非面试（question / chat 模式）：沿用本侧栏自己的 ConversationSession 汇总。

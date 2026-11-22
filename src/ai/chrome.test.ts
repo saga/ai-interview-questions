@@ -116,6 +116,33 @@ describe('chromeComplete', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  it('共享基准 session 不绑定首个请求的 signal：取消一个调用不影响另一个', async () => {
+    let resolveCreate: ((s: SessionStub) => void) | undefined;
+    let createSignal: AbortSignal | undefined;
+    let createCount = 0;
+    stubLanguageModel({ create: async (opts) => {
+      createCount++;
+      createSignal = (opts as { signal: AbortSignal }).signal;
+      return await new Promise<SessionStub>((resolve) => { resolveCreate = resolve; });
+    } });
+
+    const first = new AbortController();
+    const second = new AbortController();
+    const p1 = chromeAI.execute('u1', { system: 'shared-system', signal: first.signal });
+    const p2 = chromeAI.execute('u2', { system: 'shared-system', signal: second.signal });
+    await vi.waitFor(() => expect(createSignal).toBeDefined());
+    first.abort();
+    resolveCreate!(makeSession(async (u: string, opts?: { signal?: AbortSignal }) => {
+      if (opts?.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+      return `echo:${u}`;
+    }));
+
+    await expect(p1).rejects.toThrow(DOMException);
+    await expect(p2).resolves.toBe('echo:u2');
+    expect(createCount).toBe(1); // 同 system 只创建一个基准，第二个复用
+    expect(createSignal!.aborted).toBe(false); // 创建基准的 signal 不被首个请求的取消串扰
+  });
+
   it('未中止的 signal 作为透传选项被接受、不影响正常补全', async () => {
     stubLanguageModel();
     const ctrl = new AbortController();

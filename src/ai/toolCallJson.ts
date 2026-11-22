@@ -10,6 +10,32 @@
 //   - useAgentInterview（展示层）：最后一道防线，拒绝把协议写进 transcript。
 
 /**
+ * 从起始括号出发找到配对的闭合括号下标（跳过字符串内的括号与转义引号）。
+ * 两个 JSON 兜底解析器共用：不能用「最后一个 } 或 ]」——尾部说明文字里的 `]` 会截断合法 JSON。
+ */
+export function matchingJsonClose(s: string, start: number): number {
+  const stack: string[] = [];
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < s.length; i++) {
+    const ch = s[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === '{' || ch === '[') stack.push(ch);
+    else if (ch === '}' || ch === ']') {
+      if (stack.pop() !== (ch === '}' ? '{' : '[')) return -1;
+      if (stack.length === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/**
  * 从一段文本中抽出第一个 JSON 对象。
  * 兼容 ``` 代码块包裹，以及 JSON 前后夹带多余文字（模型偶尔会先写一句人话）。
  * 结果不是「非数组对象」时返回 null（数组、标量、解析失败都算没抽到）。
@@ -24,8 +50,8 @@ export function extractJsonObject(raw: string): Record<string, unknown> | null {
   try {
     obj = JSON.parse(jsonStr);
   } catch {
-    const first = jsonStr.search(/[[{]/);
-    const last = Math.max(jsonStr.lastIndexOf('}'), jsonStr.lastIndexOf(']'));
+    const first = jsonStr.search(/[{[]/);
+    const last = first === -1 ? -1 : matchingJsonClose(jsonStr, first);
     if (first === -1 || last <= first) return null;
     try {
       obj = JSON.parse(jsonStr.slice(first, last + 1));

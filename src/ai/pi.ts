@@ -11,6 +11,7 @@ import { buildLocalProvider } from './local.ts';
 import type { ProviderEntry } from '../schemas/ai-config';
 import type { LLMUsage } from '../types';
 import { capabilitiesFor } from './capabilities';
+import { matchingJsonClose } from './toolCallJson';
 import type { Usage } from '@earendil-works/pi-ai';
 
 /** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。
@@ -223,10 +224,16 @@ export function extractJSON<T = unknown>(raw: string): T {
   try {
     return JSON.parse(s) as T;
   } catch {
-    const first = s.search(/[[{]/);
-    const last = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
-    if (first !== -1 && last > first) {
-      return JSON.parse(s.slice(first, last + 1)) as T;
+    const first = s.search(/[{[]/);
+    if (first !== -1) {
+      const last = matchingJsonClose(s, first);
+      if (last > first) {
+        try {
+          return JSON.parse(s.slice(first, last + 1)) as T;
+        } catch {
+          /* 首个括号不是 JSON 起点（如正文里的示例片段），继续报错由调用方处理 */
+        }
+      }
     }
     throw new Error('LLM 未返回可解析的 JSON');
   }

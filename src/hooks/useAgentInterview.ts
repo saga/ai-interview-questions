@@ -45,6 +45,18 @@ import {
 
 export type AgentPhase = 'intro' | 'running' | 'done';
 
+/**
+ * 收尾结果。UI（尤其 Copilot 侧栏）必须据此决定提示语：
+ * `ended=false` 表示根本没有进行中的面试；`hadRecord=false` 表示没有产生任何可保存的成绩；
+ * `saved=false` 且有 error 表示落库失败，需在结果页重试。绝不能无条件宣称"成绩已写入"。
+ */
+export interface AgentFinishResult {
+  ended: boolean;
+  hadRecord: boolean;
+  saved: boolean;
+  error?: string;
+}
+
 /** 一条 transcript 原始记录（未经折叠）。 */
 export type TranscriptItem =
   | { kind: 'agent'; text: string }
@@ -128,7 +140,7 @@ export interface AgentInterviewState {
    */
   saveError: string | null;
   /** 重试写入学习记录（仅在 `saveError` 非 null 时有意义；成功后删除草稿）。 */
-  retryFinalize: () => Promise<void>;
+  retryFinalize: () => Promise<AgentFinishResult>;
   /** 历史画像是否已加载完成。false 时 `start()` 会被拒绝，UI 应禁用开始入口。 */
   profileReady: boolean;
   /** 已被 Agent 评分的题目数（来自 session.evaluations，渲染时读取，随 transcript 更新）。 */
@@ -173,7 +185,7 @@ export interface AgentInterviewState {
    *   并不在 hook 的 `answer` state 里。两者语义一致：都是「提交当前题的作答」。
    */
   submit: (answerOverride?: AnswerValue) => Promise<void>;
-  endEarly: () => void;
+  endEarly: () => Promise<AgentFinishResult>;
   restart: () => void;
 }
 
@@ -336,6 +348,8 @@ export function useAgentInterview(
    */
   const finalizingRef = useRef(false);
   const finalizedRef = useRef(false);
+  /** 收尾中的 Promise：并发调用者共享它，避免在落库完成前读到错误的失败结论。 */
+  const finalizePromiseRef = useRef<Promise<AgentFinishResult> | null>(null);
 
   // 先同步写 ref，再触发 state 更新：React 的 setState updater 不保证在调用处立即执行，
   // 若把 ref 更新塞进 updater，后面紧跟的 persistDraft() 可能读到上一轮的旧 ref，
@@ -445,49 +459,69 @@ export function useAgentInterview(
    * 顺序由 `finalizeSession` 强制（先落库，成功之后才排空并删除草稿）。
    * 草稿是这次结果唯一的可恢复副本——落库失败时**绝不删除**，并解除收尾锁让用户可重试。
    */
-  const finalize = useCallback(async () => {
-    // 幂等闸：`finalizingRef` 挡并发重入（面试已结束、结果尚未落库的窗口期），
-    // `finalizedRef` 表示已成功落库。两者分工见 ref 声明处。
-    if (finalizingRef.current || finalizedRef.current) return;
+  const finalize = useCallback((): Promise<AgentFinishResult> => {
+    // 幂等闸：`finalizingRef` 挡并发重入，`finalizedRef` 表示已成功落库；
+    // `finalizePromiseRef` 让并发调用者等同一个结果，而不是各自拿到"没结束/没保存"的假结论。
+    if (finalizePromiseRef.current) return finalizePromiseRef.current;
+    if (finalizedRef.current) return Promise.resolve({ ended: false, hadRecord: false, saved: true });
     const session = sessionRef.current;
-    if (!session) return;
-    finalizingRef.current = true;
-    stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
-    setQuestionTimeUp(false);
-    setQuestionTimeLeftSec(null);
-    clearFeedback(); // 收尾：反馈卡随之关闭（结果页承担总结职责）
-    setContinuing(false);
-    setSaveError(null);
-    setFinalizing(true);
-    session.status = 'finished'; // domain truth：立即置终局，阻止在途 run 再改会话
-    handleRef.current?.abort();
+    if (!session) return Promise.resolve({ ended: false, hadRecord: false, saved: false, error: '没有进行中的面试' });
 
-    const asked = countDelivered(session);
-    const durationSec = Math.round((Date.now() - session.startedAt) / 1000);
-    const candidate = sessionRecordFromAgent(session, questionsRef.current, 'Agent 面试', durationSec);
-    // 没有任何有效评分（整场 LLM 评分都失败 / 全部未作答）：不写入 Learner Memory，
-    // 避免把「未产生成绩」误解成一次 0 分训练（与 updateLearner 空结果守卫同义，P1-4）。
-    // record = null 表示「没有可保存的成绩」——此时不存在「保存失败」，草稿也已无可恢复价值。
-    const record = candidate.questionResults.length > 0 ? candidate : null;
+    const p = (async (): Promise<AgentFinishResult> => {
+      finalizingRef.current = true;
+      stopQuestionTimer(); // 收尾：停掉进行中的倒计时，避免弹窗残留
+      setQuestionTimeUp(false);
+      setQuestionTimeLeftSec(null);
+      clearFeedback(); // 收尾：反馈卡随之关闭（结果页承担总结职责）
+      setContinuing(false);
+      setSaveError(null);
+      setFinalizing(true);
+      session.status = 'finished'; // domain truth：立即置终局，阻止在途 run 再改会话
+      handleRef.current?.abort();
 
-    const outcome = await finalizeSession({
-      record,
-      persist: onComplete,
-      flushDraft: flushPersist,
-      deleteDraft: () => deleteAgentSession(session.id),
-    });
+      const asked = countDelivered(session);
+      const durationSec = Math.round((Date.now() - session.startedAt) / 1000);
+      const candidate = sessionRecordFromAgent(session, questionsRef.current, 'Agent 面试', durationSec);
+      // 没有任何有效评分（整场 LLM 评分都失败 / 全部未作答）：不写入 Learner Memory，
+      // 避免把「未产生成绩」误解成一次 0 分训练（与 updateLearner 空结果守卫同义，P1-4）。
+      // record = null 表示「没有可保存的成绩」——此时不存在「保存失败」，草稿也已无可恢复价值。
+      const record = candidate.questionResults.length > 0 ? candidate : null;
+      const hadRecord = record !== null;
 
-    setFinalizing(false);
-    setSummary({ asked, overall: averageOverall(session) });
-    // 面试确实已结束 → 无论落库成败都进入结果页。
-    // 失败时结果页凭 saveError 显示「未保存 + 重试」，绝不谎报「已写入学习记录」。
-    setPhase('done');
-    if (outcome.ok) {
-      finalizedRef.current = true;
-      return;
-    }
-    finalizingRef.current = false; // 解除收尾锁，允许重试保存
-    setSaveError(`学习记录保存失败：${outcome.error.message}`);
+      let outcome: Awaited<ReturnType<typeof finalizeSession>>;
+      try {
+        outcome = await finalizeSession({
+          record,
+          persist: onComplete,
+          flushDraft: flushPersist,
+          deleteDraft: () => deleteAgentSession(session.id),
+        });
+      } catch (err) {
+        outcome = { ok: false as const, error: err instanceof Error ? err : new Error(String(err)) };
+      }
+
+      setFinalizing(false);
+      setSummary({ asked, overall: averageOverall(session) });
+      // 面试确实已结束 → 无论落库成败都进入结果页。
+      // 失败时结果页凭 saveError 显示「未保存 + 重试」，绝不谎报「已写入学习记录」。
+      setPhase('done');
+      if (outcome.ok) {
+        finalizedRef.current = true;
+        // 没有可保存成绩时也说"saved"会骗人：调用方应看 hadRecord。
+        return { ended: true, hadRecord, saved: hadRecord };
+      }
+      finalizingRef.current = false; // 解除收尾锁，允许重试保存
+      setSaveError(`学习记录保存失败：${outcome.error.message}`);
+      return { ended: true, hadRecord, saved: false, error: outcome.error.message };
+    })();
+
+    finalizePromiseRef.current = p;
+    // 用 then 的双回调清理，而不是 p.finally()：后者会派生一个可能未处理的 rejection。
+    void p.then(
+      () => { finalizePromiseRef.current = null; },
+      () => { finalizePromiseRef.current = null; },
+    );
+    return p;
   }, [onComplete, clearFeedback, flushPersist]);
 
   /**
@@ -633,6 +667,7 @@ export function useAgentInterview(
     setFinalizing(false);
     finalizingRef.current = false; // 新一轮面试：解除收尾锁
     finalizedRef.current = false; // 新一轮面试：解除终局守卫
+    finalizePromiseRef.current = null;
     resetUsageTelemetry(); // 重置 KV Cache 命中率累计（P1④）：每场面试从 Round 1 重新计数
     const entry = config.providers?.find((p) => p.enabled && isEntryValid(p));
     const provider = createLLMProvider(config, devUsageLogger);
@@ -724,15 +759,14 @@ export function useAgentInterview(
     }
   };
 
-  const endEarly = () => {
-    // 判据与题数上限同口径（countDelivered）：一道题都没交付 = 这场面试什么都没问出来，
-    // 收尾也没有任何内容可保存。此前用 `evaluations` 的键数，在「已交付但未作答」时
-    // 会把用户挡在面试里出不去（既无可保存内容、又无法结束）。
-    if (!sessionRef.current || countDelivered(sessionRef.current) === 0) {
-      message.info('本轮还没有考察任何题目');
-      return;
+  const endEarly = (): Promise<AgentFinishResult> => {
+    // 即使一道题都没交付也要能中止：旧实现直接 return，导致忙碌期（Agent 还在选第一题）
+    // 点「提前结束」毫无反应。收尾本身会按 hadRecord 正确区分"结束但无成绩可存"。
+    const session = sessionRef.current;
+    if (session && countDelivered(session) === 0) {
+      message.info('本轮还没有考察任何题目，将直接结束');
     }
-    void finalize();
+    return finalize();
   };
 
   const restart = () => {
@@ -752,6 +786,7 @@ export function useAgentInterview(
     sessionRef.current = null;
     finalizingRef.current = false; // 解除收尾锁
     finalizedRef.current = false; // 解除终局守卫，允许下次面试收尾
+    finalizePromiseRef.current = null;
     setFinalizing(false);
     setSaveError(null);
     setPhase('intro');
