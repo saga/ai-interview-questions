@@ -1,5 +1,14 @@
 # 设计变更记录
 
+## 2026-11-22 · HuggingFace / Reddit AMA 题库批次（新增 100 题）
+
+- 来源：r/LocalLLaMA「Tencent Hy Team & Shunyu Yao AMA」44 页 PDF（用户本地存档）。Reddit 直连被站点网络策略拦截，改用用户提供的 PDF 作为唯一事实源。
+- 新增 `src/data/questions/hy4-ama-2026-11.json`：100 道双形态题（21 easy / 79 medium，97 多选 / 3 单选），全部初级—中级、以可迁移工程机制与权衡为考点。
+- 候选 Concept 先筛后出题：剔除产品路线图、榜单名次、AGI 分级、商标/许可等低价值或不可自证内容；来源名称只进 `source` metadata，题干不含产品名。
+- 覆盖 MoE 稀疏度与计算预算、MLA/GQA/SWA/稀疏注意力、KV Cache 与端侧带宽、量化位宽与 QAT、RL 奖励劫持与过度思考、跨架构蒸馏、长程 Agent、安全数据过滤与红队评测、基准饱和与成本评测等 35 个新 `topic × angle` 格子。
+- 门禁：`question:add --check` / `validate:questions` / `typecheck` / `build` / 全量测试 693/693 通过；选项长度比与 id、题干去重零命中；词法近重复扫描 0 组。
+- 连带修复两处**先于本批次存在**的测试缺陷：`taxonomy.test.ts` 漏 import `questionBank`；`snowflake-cof-c03-200.json` 有 25 条 open 参考答案以「正确答案：<术语首字母>」开头，被一致性正则误读成字母答案，已统一改为「正确答案：<字母>。<原文>」。
+
 ## 2026-10-19 · SnowPro Core COF-C03 考点题库（新增 200 题）
 
 - 参考官方 COF-C03 Study Guide 的五个 Domain 权重及公开免费练习题覆盖目录，新增 200 道自编题，按 62/40/36/42/20 分配。

@@ -13,6 +13,7 @@ import {
   groupNodesByTopic,
 } from './taxonomy.ts';
 import { knowledgeNodes } from './knowledgeMap';
+import { questionBank } from './questionBank';
 
 describe('taxonomy 骨架', () => {
   it('AI 学习体系恰为 6 个能力域，且标签齐全', () => {

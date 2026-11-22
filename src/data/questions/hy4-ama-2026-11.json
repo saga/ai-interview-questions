@@ -1,0 +1,5339 @@
+[
+  {
+    "id": "ama-moe-active-budget-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "激活参数",
+      "推理成本"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "激活参数决定单 token 计算预算",
+      "supporting": [
+        "稀疏条件计算"
+      ]
+    },
+    "question": "在稀疏 MoE 大模型中，关于「激活参数量」的含义与影响，下列哪些说法成立？",
+    "explanation": "激活参数是每个 token 实际参与前向计算的参数量，它决定单 token 的 FLOPs 与计算投入；总参数是权重存储规模，二者在 MoE 中差别很大。量化改变的是每个参数的存储位宽，不改变被激活的参数数量。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "混淆总参数与每 token 激活参数",
+      "误把量化位宽当作激活参数的决定因素"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "激活参数是每 token 实际参与前向计算的参数量，基本决定单 token 计算预算。",
+          "在总参数固定时，激活参数越少通常意味着单 token 计算投入越少。",
+          "激活参数等于模型总参数，只是其中一部分在训练阶段被冻结。",
+          "激活参数由量化位宽决定，位宽越低激活参数反而越多。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "激活参数指每个 token 实际参与计算的参数量，决定单 token 计算预算；总参数只决定存储。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-sparsity-fixed-active-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "稀疏度",
+      "计算效率"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "固定激活参数下提高稀疏度改善计算效率",
+      "supporting": [
+        "scaling ladder"
+      ]
+    },
+    "question": "保持每 token 激活参数量不变、只增加总参数与专家数量来提高 MoE 稀疏度，可能产生哪些结果？",
+    "explanation": "在激活参数固定时，稀疏度提高意味着用更大的专家池承载同样的计算量，因此计算效率提升，且更大容量可能带来质量收益。单 token 计算量由激活参数决定，不随总参数线性增长；稀疏化不会让路由退化为单一专家。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "把总参数增长等同于单 token 计算量增长",
+      "误以为稀疏度提高会取消路由多样性"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单 token 计算量基本保持不变，计算效率随稀疏度提高而改善。",
+          "更大的专家池提供额外容量，在同等计算预算下可能提升质量。",
+          "单 token 计算量随总参数量线性增长，推理成本必然翻倍。",
+          "所有 token 被强制路由到同一个专家，模型退化为稠密结构。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "激活参数固定时提高稀疏度主要改善计算效率，并可能因更大专家池带来容量收益。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-fixed-total-fewer-active-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "激活参数",
+      "能力退化"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "predict",
+    "concepts": {
+      "core": "固定总参数减少激活参数损害质量",
+      "supporting": [
+        "计算预算"
+      ]
+    },
+    "question": "保持总参数量不变，把 MoE 每 token 激活参数从 12B 降到 5B，依据「激活参数即计算预算」的判断，最可能出现哪些变化？",
+    "explanation": "激活参数决定每 token 的计算投入；在总参数不变时减少激活参数，等于削减计算预算。稀疏化只能回收部分效率，无法完全弥补。经验上推理深度、长上下文追踪和工具调用可靠性最先退化。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "误以为总参数不变则质量不变",
+      "高估稀疏化对计算预算的补偿能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "推理深度、长上下文追踪与工具调用可靠性会先退化。",
+          "每 token 计算投入下降，整体能力通常随之变弱。",
+          "模型质量完全不变，因为总参数量没有发生任何变化。",
+          "稀疏度提升能够完全补偿激活参数减少带来的全部损失。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "激活参数减少等于削减计算预算，稀疏化无法完全补偿；推理深度、长上下文和工具调用先退化。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-oversparse-serving-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "稀疏度",
+      "吞吐"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "过度稀疏对推理不友好",
+      "supporting": [
+        "显存与算力利用率"
+      ]
+    },
+    "question": "在数据中心高并发推理场景下，评价「总参数极大、激活参数极少」的极端稀疏 MoE，哪些判断成立？",
+    "explanation": "极端稀疏的 MoE 需要为全部专家付显存代价，却只用到少量算力，FLOPs 利用率低。相同总参数、更多激活参数的模型在同等吞吐下可以做得更强，因此过度稀疏并非推理友好的设计。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "只看激活参数、忽略显存与算力利用率",
+      "误以为稀疏化会自动激活全部专家"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "大量非激活专家占用显存，但 GPU 的 FLOPs 利用率偏低。",
+          "同等总参数下提高激活参数的方案，也可能达到相近吞吐。",
+          "只要激活参数足够少，吞吐必然提升，与显存占用无关。",
+          "极端稀疏会强制所有专家参与计算，使 FLOPs 反而增加。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "极端稀疏显存占用高而 FLOPs 利用率低；同等总参数、更多激活参数也能达到相近吞吐。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-local-bandwidth-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "端侧部署",
+      "内存带宽"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "端侧瓶颈在权重读取带宽",
+      "supporting": [
+        "内存带宽",
+        "MoE 卸载"
+      ]
+    },
+    "question": "在本地设备上部署 MoE，设备内存带宽较低时，关于「激活参数更少是否更快」的判断哪些更贴近实际？",
+    "explanation": "数据中心高并发时算力是关键，但本地设备常受内存带宽限制。此时每 token 需要从内存读取多少权重字节比激活参数数字本身更决定性，因此更少激活参数不保证更快；带宽同时影响 prefill 与 decode。端侧需要模型架构与硬件协同设计。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 6"
+    },
+    "misconceptions": [
+      "把端侧瓶颈默认归为算力而非访存",
+      "误以为带宽只影响 prefill 阶段"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "瓶颈常在权重读取带宽，而不只是算术运算能力。",
+          "激活参数更少的模型在本地未必比激活参数多的模型快。",
+          "只要激活参数少，速度快慢必然与硬件带宽无关。",
+          "内存带宽只影响首 token 延迟，不影响后续生成速度。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "端侧瓶颈常在内存带宽，激活参数少不必然更快，需按每 token 权重读取量评估。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-shared-expert-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "共享专家",
+      "路由"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "共享专家与路由专家的计算路径",
+      "supporting": [
+        "top-k 路由"
+      ]
+    },
+    "question": "某 MoE 层同时包含一个共享专家与若干路由专家，关于每个 token 的计算路径，下列说法正确的有哪些？",
+    "explanation": "共享专家（shared expert）不经过 top-k 选择，对所有 token 恒定参与计算，为模型提供稳定的公共通路；路由专家则只处理被选中的 token。这一区分在推理与训练阶段都成立。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 36"
+    },
+    "misconceptions": [
+      "把共享专家也当作 top-k 候选",
+      "误以为共享专家只用于训练"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "共享专家对所有 token 都会参与计算。",
+          "路由专家只对被路由器选中的 token 参与计算。",
+          "共享专家与路由专家都按 top-k 规则被逐一选中。",
+          "共享专家只在训练阶段参与计算，推理时被自动跳过。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "共享专家对所有 token 计算，路由专家只处理被选中的 token。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-topk-increase-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "top-k",
+      "计算量"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "predict",
+    "concepts": {
+      "core": "top-k 增大的计算与稳定性权衡",
+      "supporting": [
+        "路由方差"
+      ]
+    },
+    "question": "在层数与专家总数固定的 MoE 中，把每 token 的 top-k 从 4 提高到 8，通常会带来哪些直接变化？",
+    "explanation": "top-k 决定每 token 选中多少专家，增大它会线性增加激活参数与计算量；同时更多专家参与平均，路由带来的随机性与方差通常下降。总参数由专家数量与维度决定，不会因 top-k 改变。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "误以为改变 top-k 会改变模型总参数",
+      "误以为 top-k 增大会取消路由机制"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每 token 激活更多专家，前向计算量随之上升。",
+          "单次路由的抽样不确定性下降，输出方差可能减小。",
+          "模型总参数量自动翻倍，以容纳新增的被选专家。",
+          "路由器被取消，专家按固定顺序轮流处理每个 token。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "top-k 增大提高每 token 计算量并降低路由方差；不改变总参数，也不取消路由。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-router-drift-quant-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "量化",
+      "路由漂移"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "量化后冻结路由器导致路由漂移",
+      "supporting": [
+        "量化感知训练"
+      ]
+    },
+    "question": "对 MoE 做低比特量化时，若冻结路由器、只量化专家权重，部署后最可能出现哪些问题？",
+    "explanation": "路由器是在原权重分布上训练的；专家被量化后其输出分布改变，冻结的路由器会据此做出不同选择，形成路由漂移，工具调用等依赖精确专家分工的能力尤其容易退化。实践中在量化感知训练里联合训练路由器以保持稳定。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "高估冻结路由器安全性",
+      "误以为量化会自动删减专家"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "实际路由分布相对原始模型发生漂移。",
+          "工具调用等细粒度能力出现可测量的退化。",
+          "路由器自动补偿量化误差，模型精度完全无损。",
+          "专家数量被强制减少，模型退化为稠密结构。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "冻结路由器会遇到路由漂移和工具调用退化；联合训练路由器是常见对策。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-moe-qat-router-joint-01",
+    "category": "llm-systems",
+    "topic": "moe",
+    "tags": [
+      "moe",
+      "QAT",
+      "路由器"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "QAT 联合训练路由器保持稳定",
+      "supporting": [
+        "量化感知训练"
+      ]
+    },
+    "question": "在量化感知训练中把 MoE 路由器与主体网络一起训练，主要目的是什么？",
+    "explanation": "量化会改变专家的输出分布，路由器若不同步适应就会产生漂移。QAT 中联合训练路由器，使其在面对量化噪声时仍稳定选择专家，并把误差纳入可优化目标；这不改变推理时路由器的必要性，也不能替代校准。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "误以为联合训练会移除路由器",
+      "误以为路由器可替代校准数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让路由器适应量化后的专家表示，保持路由稳定。",
+          "把量化误差纳入训练目标，减少部署后的行为漂移。",
+          "让路由器在推理阶段被完全跳过，节省 top-k 计算。",
+          "用路由器替代校准数据，从而省略量化校准步骤。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "联合训练让路由器适应量化后的专家表示并减少漂移。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-per-tensor-alloc-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "MoE",
+      "位宽分配"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "按张量分配量化位宽的兼容性优势",
+      "supporting": [
+        "专家堆叠矩阵"
+      ]
+    },
+    "question": "为大规模细粒度 MoE 选择量化位宽分配粒度时，优先「按张量」而非「按专家」，主要工程理由有哪些？",
+    "explanation": "许多推理引擎把多个专家权重堆叠为一个矩阵计算；若每个专家位宽不同，就难以共用同一内核。按张量分配虽然牺牲细粒度，但兼容性与可移植性更好。数学上按专家分配完全可行，只是工程代价高。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "把工程兼容问题说成数学不可能",
+      "误以为分配粒度影响路由器训练"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "推理引擎常把专家堆叠成单一矩阵，按专家设精度会破坏兼容。",
+          "按张量分配的量化模型在不同推理引擎间更容易移植。",
+          "按专家分配位宽在数学上根本无法实现。",
+          "按张量分配会让路由器无法参与量化感知训练。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按张量分配的关键理由是与堆叠矩阵内核兼容、可移植性好。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-down-proj-sensitivity-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "敏感度",
+      "Hessian"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "down projection 量化敏感性与 Hessian 判据",
+      "supporting": [
+        "激活离群值"
+      ]
+    },
+    "question": "用 Hessian 敏感度决定各层量化位宽时，常给 down projection 分配更多比特。合理的解释有哪些？",
+    "explanation": "Transformer 层中 down projection 的输入常出现大幅激活离群值，少量元素的量化误差会被后续计算放大，因此敏感度更高。Hessian 类方法用二阶信息估计这种影响，据此分配更多比特；这与参数量大小或梯度是否为零无关。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "把敏感度归因于参数量大小",
+      "误以为梯度为零决定了量化精度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "其输入常含激活离群值，量化误差对最终输出影响更大。",
+          "Hessian 敏感度可识别这类层，使比特分配更有依据。",
+          "down projection 的参数量总是最大，必须单独占用更多显存。",
+          "down projection 的梯度恒为零，需要更高精度做初始化。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "down projection 因激活离群值更敏感，Hessian 可量化该敏感度并指导位宽分配。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-2bit-ptq-vs-qat-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "PTQ",
+      "QAT"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "predict",
+    "concepts": {
+      "core": "极低比特下 PTQ 与 QAT 的差异",
+      "supporting": [
+        "三值量化"
+      ]
+    },
+    "question": "把模型压到极低比特时，比较「2-bit 训练后量化」与「三值量化感知训练」，哪些判断更合理？",
+    "explanation": "极低比特下量化误差很大，PTQ 只能靠校准选择参数，无法让权重适应误差；QAT 在训练中把误差纳入目标，通常更稳健。QAT 的本质是减少损失，不会凭空超过原始精度。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "高估 PTQ 在极低比特下的表现",
+      "误以为 QAT 能超过原始精度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "2-bit PTQ 通常比三值 QAT 更早失效。",
+          "训练后量化没有机会通过训练补偿量化引入的误差。",
+          "PTQ 必然优于 QAT，因为原始权重分布完全未被改动。",
+          "三值 QAT 的精度必然高于 BF16 原始模型。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "2-bit PTQ 更早失效，因其无法训练补偿量化误差；QAT 更稳但不会超过原精度。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-attn-mla-gqa-quality-01",
+    "category": "llm-systems",
+    "topic": "gqa",
+    "tags": [
+      "注意力",
+      "MLA",
+      "GQA"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "相同 KV 大小下 MLA 与 GQA 的质量—算力权衡",
+      "supporting": [
+        "KV Cache",
+        "推测解码"
+      ]
+    },
+    "question": "在 KV Cache 大小被限制为相同的条件下，比较 MLA 与 GQA，下列说法正确的有哪些？",
+    "explanation": "在相同 KV Cache 预算下，MLA 通过低秩压缩保留更多信息，通常质量优于 GQA；代价是解码时计算强度更高，在推测解码等场景可能变成 compute-bound。MLA 仍然维护 KV 状态，只是形式不同。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 13"
+    },
+    "misconceptions": [
+      "误以为 GQA 因结构直观必然更优",
+      "误以为 MLA 不需要 KV Cache"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在相同 KV 预算下，MLA 通常能获得更好的模型质量。",
+          "MLA 的解码计算强度更高，更容易受算力瓶颈限制。",
+          "GQA 质量必然更高，因为它保留了完整的键值头。",
+          "MLA 不使用 KV Cache，因此不存在同 KV 大小下的对比。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "同 KV 预算下 MLA 质量更好但计算强度更高；MLA 仍使用 KV Cache。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-attn-specdec-compute-bound-01",
+    "category": "llm-systems",
+    "topic": "mtp-speculative-decoding",
+    "tags": [
+      "推测解码",
+      "注意力",
+      "算力瓶颈"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "高计算强度注意力使推测解码受算力限制",
+      "supporting": [
+        "解码阶段",
+        "验证成本"
+      ]
+    },
+    "question": "为什么高计算强度的注意力实现会让推测解码在推理 GPU 上变成计算瓶颈？",
+    "explanation": "推测解码用草稿模型提出多个 token，再由目标模型一次验证；验证仍需完整注意力计算。若注意力本身计算强度高，验证成本上升、加速比下降，GPU 会先被 FLOPs 占满而不是被访存占满。KV Cache 仍需保留。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 13"
+    },
+    "misconceptions": [
+      "误以为推测解码跳过注意力",
+      "误以为推测解码必须禁用 KV Cache"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "草稿与验证都可能重复注意力计算，计算强度高时 FLOPs 先饱和。",
+          "推测解码的收益依赖验证单步比逐 token 生成更便宜。",
+          "推测解码完全不做注意力计算，只从显存读取权重。",
+          "推测解码会禁用 KV Cache，导致显存占用必然爆炸。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "验证阶段仍要做注意力，计算强度高时 FLOPs 先饱和，削弱加速收益。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-attn-sparse-tips-mla-01",
+    "category": "llm-systems",
+    "topic": "index-share-sparse-attention",
+    "tags": [
+      "稀疏注意力",
+      "MLA",
+      "架构选择"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "predict",
+    "concepts": {
+      "core": "稀疏注意力改变 MLA 与 GQA 的权衡",
+      "supporting": [
+        "解码计算强度"
+      ]
+    },
+    "question": "若引入稀疏注意力把解码阶段的计算强度降下来，对 MLA 与 GQA 的取舍会产生什么影响？",
+    "explanation": "MLA 相对 GQA 的主要劣势是解码计算强度高；稀疏注意力直接降低解码需要计算的位置数，因而削弱该劣势，使「同 KV 预算下质量更好」的 MLA 重新占优。架构权衡会随系统实现改变，不是固定的。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 13"
+    },
+    "misconceptions": [
+      "误以为稀疏注意力只作用于训练",
+      "否认计算强度对架构选择的影响"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "MLA 在解码阶段的计算劣势会被削弱。",
+          "原先由 GQA 占优的权衡结论可能被反转。",
+          "稀疏注意力只影响训练，不改变解码阶段的架构权衡。",
+          "计算强度与注意力架构选择之间没有任何关联。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "降低解码计算强度会削弱 MLA 的劣势，可能反转原本偏向 GQA 的结论。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-attn-swa-kv-benefit-01",
+    "category": "llm-systems",
+    "topic": "hybrid-attention",
+    "tags": [
+      "SWA",
+      "KV Cache",
+      "服务成本"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "滑动窗口注意力缩小 KV Cache",
+      "supporting": [
+        "服务成本"
+      ]
+    },
+    "question": "滑动窗口注意力（SWA）相对全局注意力最直接的资源收益包括哪些？",
+    "explanation": "SWA 限制每个 token 只关注固定窗口内的位置，因此 KV Cache 只需保留窗口范围，长序列服务的显存与成本明显下降。它不改变模型参数量，也不是取消注意力计算。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 12"
+    },
+    "misconceptions": [
+      "混淆 KV 节省与参数量减少",
+      "误以为窗口注意力取消注意力计算"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KV Cache 随窗口大小增长，而不是随完整序列长度增长。",
+          "高并发服务时显存与单位请求成本显著下降。",
+          "模型总参数量自动减少，显存占用必然减半。",
+          "注意力计算完全消失，推理只剩全连接层计算。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "SWA 让 KV 随窗口而非序列长度增长，降低高并发服务成本。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-attn-hybrid-layer-mix-01",
+    "category": "llm-systems",
+    "topic": "hybrid-attention",
+    "tags": [
+      "混合注意力",
+      "架构设计"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "混合全局与局部注意力层的设计意图",
+      "supporting": [
+        "信息通路",
+        "成本"
+      ]
+    },
+    "question": "一个模型把少量层设为全局稀疏注意力、多数层设为滑动窗口注意力，这种混合设计的主要意图是什么？",
+    "explanation": "混合设计的核心是分工：少数全局层承担跨长距离的信息传递，多数局部层以低成本处理邻近依赖。这样既保留全局感受野，又把 KV Cache 与计算量压下来。它与位置编码是否使用无关。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 24"
+    },
+    "misconceptions": [
+      "误以为混合层追求模式统一",
+      "误把混合注意力等同于取消位置编码"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保留少量全局通路，避免长程信息完全丢失。",
+          "让多数层只处理局部窗口，压低 KV 与计算成本。",
+          "使每一层拥有完全相同的注意力模式，便于并行。",
+          "取消位置编码，让模型自然获得长度外推能力。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "少量全局层保留长程通路，多数局部层压低 KV 与计算成本。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-attn-index-share-specdec-01",
+    "category": "llm-systems",
+    "topic": "index-share-sparse-attention",
+    "tags": [
+      "推测解码",
+      "稀疏注意力",
+      "KV共享"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "KV 与索引共享降低草稿开销",
+      "supporting": [
+        "推测解码",
+        "稀疏索引"
+      ]
+    },
+    "question": "在推测解码中让草稿层与目标层共享 KV Cache 和稀疏索引（KV Share / Index Share），主要节省的是什么？",
+    "explanation": "稀疏注意力需要先选出要关注的位置索引，草稿器若独立构建索引与 KV，会重复付一份显存带宽与计算。共享后草稿直接复用目标层的 KV 与 top-k 索引，降低多轮循环中的额外开销；这不改变模型参数，也与量化校准无关。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 37"
+    },
+    "misconceptions": [
+      "误以为共享 KV 会改变主模型参数量",
+      "误把推理期共享与量化校准关联"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "避免草稿阶段重复构建 KV Cache 与稀疏位置索引。",
+          "降低多轮 Agent 循环中草稿阶段的显存带宽压力。",
+          "减少主模型参数量，从而降低训练阶段成本。",
+          "减少模型量化校准阶段所需的样本数量。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "共享 KV 与稀疏索引避免重复构建，降低草稿阶段的带宽与计算开销。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-kv-per-token-ratio-01",
+    "category": "llm-systems",
+    "topic": "kv-cache",
+    "tags": [
+      "KV Cache",
+      "计算"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "按层与每 token 元素数估算 KV 规模",
+      "supporting": [
+        "KV Cache 比较"
+      ]
+    },
+    "question": "模型 A 有 12 层全局注意力，每层每 token 保留 576 个 KV 元素；模型 B 同为 12 层，每层每 token 保留 512 个。忽略位宽差异，A 每 token 的 KV 元素总量约为 B 的多少倍？",
+    "explanation": "两者全局注意力层数相同，因此比值就是每层每 token 的 KV 元素数之比：576 ÷ 512 = 1.125，约 1.13 倍。层数相同会直接约掉，不需要再乘 12。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 43"
+    },
+    "misconceptions": [
+      "把每元素数量当成了总层数比",
+      "混淆 KV 元素与 KV 字节"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 1.13 倍",
+          "约 0.5 倍",
+          "约 2 倍",
+          "约 12 倍"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A"
+      }
+    }
+  },
+  {
+    "id": "ama-kv-byte-compare-01",
+    "category": "llm-systems",
+    "topic": "kv-cache",
+    "tags": [
+      "KV Cache",
+      "量化",
+      "排障"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "concepts": {
+      "core": "比较 KV 字节数需先核对量化位宽",
+      "supporting": [
+        "KV Cache 元素数"
+      ]
+    },
+    "question": "两个模型的全局注意力层数与每 token KV 元素数接近，但实测每 token KV 字节数相差一倍。排查时最应优先确认哪些因素？",
+    "explanation": "KV 字节数由层数 × 每 token 元素数 × 每元素位宽共同决定。元素数接近而字节数翻倍，首先怀疑位宽差异（例如一侧用了 KV 量化），其次复核配置是否真的一致。总参数量与路由专家数不直接决定 KV Cache 大小。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 43"
+    },
+    "misconceptions": [
+      "把 KV 字节数归因于总参数量",
+      "把专家数量当作 KV 的决定因素"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "两侧 KV Cache 的量化位宽是否一致。",
+          "层数与每 token KV 元素数是否真的相同。",
+          "两侧模型的总参数量是否保持一致。",
+          "两侧路由专家的数量是否完全相同。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先核对 KV 位宽与层数/元素数配置；总参数和专家数不决定 KV 大小。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-infer-offload-placement-01",
+    "category": "llm-systems",
+    "topic": "inference-optimization",
+    "tags": [
+      "部署",
+      "卸载",
+      "显存"
+    ],
+    "difficulty": "easy",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "大模型在有限显存机器上的放置策略",
+      "supporting": [
+        "专家卸载",
+        "主机内存"
+      ]
+    },
+    "question": "在显存有限但主机内存较大的机器上部署超大 MoE，常见的可行放置策略包括哪些？",
+    "explanation": "注意力计算要频繁读写 KV，放在主机内存会严重拖慢延迟；把主权重与注意力留在 GPU、将访问相对稀疏的专家与查表参数卸载到主机内存，是常见折中。查表参数承载特定知识，不能简单删除。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 25"
+    },
+    "misconceptions": [
+      "误以为把注意力放主机内存会更快",
+      "误以为删除查表参数可无损替代"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "主权重与注意力留在 GPU，以获得较高的访存带宽。",
+          "部分专家层与查表参数放到主机内存，节省显存。",
+          "把注意力放到主机内存、只把专家留在显存以获得最佳延迟。",
+          "删除查表参数，用更深的层完全无损替代。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "主权重与注意力留 GPU，部分专家与查表参数卸载到内存。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-infer-bandwidth-metric-01",
+    "category": "llm-systems",
+    "topic": "inference-optimization",
+    "tags": [
+      "推理",
+      "内存带宽",
+      "端侧"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "端侧性能看每 token 权重读取量",
+      "supporting": [
+        "内存带宽",
+        "激活参数"
+      ]
+    },
+    "question": "判断一个 MoE 在内存带宽受限的本地设备上是否跑得快，哪些信息最关键？",
+    "explanation": "带宽受限时，decode 速度约等于每 token 必须读取的权重字节数除以可用带宽。因此权重放置、缓存命中和实际读取量是核心指标；总参数量的对数与训练硬件都不能直接给出答案。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 6"
+    },
+    "misconceptions": [
+      "把总参数量当成端侧速度的直接指标",
+      "误以为训练硬件决定推理速度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每生成 token 需要从内存读取的权重字节数。",
+          "权重在显存与主机内存之间的放置与缓存命中情况。",
+          "模型总参数量的对数值本身能否直接反映速度。",
+          "训练阶段使用的 GPU 型号是否决定端侧速度。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "关键是每 token 权重读取字节数与权重放置/缓存命中，而非总参数或训练硬件。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-infer-long-cot-cost-01",
+    "category": "llm-systems",
+    "topic": "cost",
+    "tags": [
+      "成本",
+      "推理链",
+      "延迟"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "长推理链直接推高单任务成本与尾延迟",
+      "supporting": [
+        "token 计费",
+        "工具调用"
+      ]
+    },
+    "question": "在按 token 计费的在线服务里，同一模型在复杂任务上输出更长思维链、更多工具调用轮次，会直接影响什么？",
+    "explanation": "计费与延迟都随实际生成的 token 总数增长，工具调用轮次还会增加等待时间。模型权重文件大小是静态的；KV 位宽是部署配置，不会因输出长度自动调整。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "混淆运行时成本与模型权重大小",
+      "误以为 KV 位宽会自动随输出变化"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "单任务成本随总 token 数上升。",
+          "尾延迟可能被更长的生成链放大。",
+          "模型权重文件大小随输出 token 数增加。",
+          "KV Cache 位宽必须自动降低以维持成本。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "长思维链与多轮工具调用抬高单任务成本和尾延迟，不改变权重文件大小。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-infer-specdec-local-tradeoff-01",
+    "category": "llm-systems",
+    "topic": "mtp-speculative-decoding",
+    "tags": [
+      "推测解码",
+      "本地部署",
+      "吞吐"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "推测解码收益取决于草稿开销与接受率",
+      "supporting": [
+        "本地部署"
+      ]
+    },
+    "question": "本地部署时草稿模型需要额外层或显存驻留，关于是否启用推测解码，哪些判断更稳妥？",
+    "explanation": "推测解码的加速来自一次验证多个 token；若草稿质量低导致接受率低，验证开销加上草稿开销会超过收益。标准推测解码在验证通过时保持目标模型分布，并非必然改变输出。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 40"
+    },
+    "misconceptions": [
+      "把推测解码当作无条件加速",
+      "误以为推测解码必然改变输出分布"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先估算草稿开销能否被 token 接受率摊平。",
+          "接受率低时可能更慢，同时占用更多显存。",
+          "任何硬件上推测解码都必然加速，无需评估。",
+          "推测解码必然改变主模型输出分布，因此永远不应使用。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先看接受率能否摊平草稿开销；低接受率下更慢更占显存。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-calibration-method-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "校准",
+      "推理"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "量化效果依赖方法与校准",
+      "supporting": [
+        "GPTQ",
+        "误差分布"
+      ]
+    },
+    "question": "同一模型用不同工具做 4-bit 量化，准确率差异明显时，最合理的解释是什么？",
+    "explanation": "同等位宽下，量化算法（如是否用二阶信息、是否逐层误差补偿）与校准集的代表性会显著改变误差分布，因此效果差异很常见。权重导出不会随机重排，4-bit 量化也可以有成熟的校准流程。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 17"
+    },
+    "misconceptions": [
+      "把差异归因于不可控的随机重排",
+      "误以为低比特量化无需校准"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "量化算法与校准数据不同，导致误差分布不同。",
+          "低比特量化效果高度依赖校准过程的实现质量。",
+          "模型权重在导出时被随机重排，导致结果不可复现。",
+          "4-bit 量化不支持任何校准流程，差异只能来自随机性。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "差异来自量化算法与校准数据，不是随机重排。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-train-synthetic-midtraining-01",
+    "category": "llm-systems",
+    "topic": "training-data",
+    "tags": [
+      "训练数据",
+      "合成数据",
+      "Agent"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "中期训练注入合成指令数据提升 Agent 能力",
+      "supporting": [
+        "mid-training",
+        "指令数据"
+      ]
+    },
+    "question": "在预训练与后训练之间插入「中期训练」阶段，并大量加入合成指令数据，其主要目标通常是什么？",
+    "explanation": "中期训练处在通用预训练与任务后训练之间，加入合成指令数据可让模型在保持通用能力的同时，提前形成指令遵循与工具使用等交互模式，为后续 Agent 训练打底。它不替代预训练，也不改变模型体积。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 26"
+    },
+    "misconceptions": [
+      "误以为中期训练等同于预训练替代",
+      "误把数据阶段当作压缩手段"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让基座模型提前具备遵循指令与调用工具的行为模式。",
+          "为后续 Agent 能力训练提供更合适的中间表示与数据分布。",
+          "完全替代预训练阶段，从零开始学习语言规律。",
+          "只用于压缩模型体积，降低推理显存占用。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "中期训练加合成指令主要为建立指令遵循与 Agent 行为基础。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-train-data-taste-01",
+    "category": "llm-systems",
+    "topic": "training-data",
+    "tags": [
+      "训练数据",
+      "数据质量",
+      "AGI"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "数据质量比数据量更决定能力上限",
+      "supporting": [
+        "评测引导"
+      ]
+    },
+    "question": "一支团队认为「数据与评测是通往通用智能最重要的工具」。据此，在有限算力下最合理的资源配置是哪些？",
+    "explanation": "数据决定模型能具备哪些能力，评测决定优化方向是否对准目标；在算力受限时，提升数据质量与建设贴近真实目标的评测，通常比单纯扩大 token 数更能改善结果。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 41"
+    },
+    "misconceptions": [
+      "把算力堆砌当作唯一瓶颈",
+      "误以为公开榜单可替代目标导向评测"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "优先提升数据质量与覆盖，而不是盲目扩大 token 数。",
+          "建设能反映真实目标的评测，用其指导数据迭代方向。",
+          "把全部预算投入算力堆砌，数据沿用默认语料即可。",
+          "取消内部评测，只跟踪公开榜单的绝对分数。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "优先数据质量与真实目标评测，而非单纯堆算力或榜单分数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-rl-overthinking-01",
+    "category": "llm-systems",
+    "topic": "rlhf",
+    "tags": [
+      "强化学习",
+      "过度思考",
+      "后训练"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "过度思考是后训练中最难改善的行为",
+      "supporting": [
+        "长思维链",
+        "奖励设计"
+      ]
+    },
+    "question": "一个追求最高智能水平的模型在复杂任务上经常输出过长思维链。对此现象的成因与对策，哪些判断合理？",
+    "explanation": "当训练目标偏向最大化解题成功率时，模型倾向用更多推理步骤换取正确率，过度思考是典型副作用。可以在效率型变体上用 RL 明确奖励短而正确的推理；这与能力上限无关，也不必删除推理数据。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 8"
+    },
+    "misconceptions": [
+      "把长思维链误判为能力天花板",
+      "误以为长度控制只能靠删数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "以最大化为目标的训练容易鼓励长推理，属于已知的副作用。",
+          "可以在蒸馏出的效率型模型上用 RL 约束思维链长度。",
+          "长思维链说明模型已经达到能力上限，无法通过训练改善。",
+          "缩短思维链只能通过删除训练数据中的推理样本实现。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "长 CoT 是目标导向的已知副作用；可用 RL 在效率变体上约束长度。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-rl-fine-grained-reward-cli-01",
+    "category": "llm-systems",
+    "topic": "rlhf",
+    "tags": [
+      "强化学习",
+      "工具调用",
+      "奖励设计"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "细粒度奖励提升工具调用准确性",
+      "supporting": [
+        "关键细节惩罚"
+      ]
+    },
+    "question": "命令行工具调用中，模型容易编造精确语法或参数标志。为降低这类错误，训练侧通常采取哪些措施？",
+    "explanation": "语法与标志错误属于细粒度行为，只有覆盖易错案例并给关键细节更高权重的奖励，模型才知道该修正哪一部分。统一标量惩罚信号太弱；禁止输出参数则直接破坏工具调用功能。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 22"
+    },
+    "misconceptions": [
+      "误以为粗粒度统一惩罚足够",
+      "误以为禁用参数能解决语法幻觉"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 RL 数据中专门收集模型易错的高难度案例。",
+          "用细粒度奖励，对关键细节错误施加更重惩罚。",
+          "把所有工具调用错误统一记为同一个标量惩罚。",
+          "在推理时禁止模型输出任何参数，只保留命令名。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用易错案例数据加细粒度奖励重罚关键细节错误。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-rl-context-compaction-01",
+    "category": "llm-systems",
+    "topic": "context-window",
+    "tags": [
+      "上下文",
+      "强化学习",
+      "压缩"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "延长 RL 上下文并训练上下文压缩",
+      "supporting": [
+        "长程 Agent"
+      ]
+    },
+    "question": "为了让 Agent 在多轮工具调用中保持上下文，训练阶段通常从哪两个方向入手？",
+    "explanation": "多轮 Agent 需要同时做到「看得更长」和「记得更紧凑」：延长训练上下文让模型见过长轨迹，训练压缩能力让它能在有限窗口内保留关键状态。清空历史会直接丢失状态；训练上下文被内存下限锁死则无法学到长程依赖。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 22"
+    },
+    "misconceptions": [
+      "误以为清空历史能保持上下文",
+      "误以为训练上下文应等于推理内存下限"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "持续增加强化学习训练时使用的上下文长度。",
+          "专门提升模型对历史上下文的压缩与摘要能力。",
+          "在每轮调用后清空历史，只保留最近一条消息。",
+          "把上下文长度固定为推理时内存能容纳的最小值。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "延长 RL 训练上下文并训练上下文压缩能力。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-rl-reward-hacking-env-01",
+    "category": "llm-systems",
+    "topic": "coding-rl-anti-hacking",
+    "tags": [
+      "奖励劫持",
+      "环境设计",
+      "Agent"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "环境设计缺口是长程 Agent 奖励劫持的主要来源",
+      "supporting": [
+        "奖励劫持",
+        "离线答案"
+      ]
+    },
+    "question": "在长程 Agent 的多轮强化学习中，模型学会上网搜现成答案而不去真正解决任务。这类失败最应归因于什么，如何缓解？",
+    "explanation": "奖励劫持的根因是环境与奖励之间存在可利用缺口：绕过任务也能拿到同样回报。对策是修环境——限制旁路、校验真实产物、让 reward 与任务完成严格对应。单纯加数据或降低工具频率都不触及根因。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 20"
+    },
+    "misconceptions": [
+      "把奖励劫持归咎于模型能力过强",
+      "误以为加数据能自动消除环境漏洞"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "环境设计存在缺口，使旁路行为也能拿到奖励。",
+          "需要收紧环境边界与校验逻辑，让奖励只对应真实完成的任务。",
+          "说明模型能力过强，应降低其工具使用频率。",
+          "属于数据污染，只要增加训练数据量就会自然消失。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "根因是环境设计缺口；应收紧边界与校验，让奖励对应真实完成。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-rl-scale-vs-peers-01",
+    "category": "llm-systems",
+    "topic": "rlhf",
+    "tags": [
+      "强化学习",
+      "训练规模",
+      "后训练"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "强化学习规模是后训练差异的重要维度",
+      "supporting": [
+        "公开分享",
+        "训练成本"
+      ]
+    },
+    "question": "两家团队公开了各自的后训练方法，但效果差异明显。除算法细节外，哪项因素最值得优先比较？",
+    "explanation": "后训练效果对 RL 规模、任务配比与数据规模高度敏感；公开方法描述相近时，这些量化维度往往才是差异来源。许可证与计费属于分发与商业层面，不解释能力差异。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 16"
+    },
+    "misconceptions": [
+      "把许可证或商业因素当作技术差异",
+      "忽略训练规模这一关键变量"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "强化学习训练的整体规模，包括样本与计算投入。",
+          "任务类型比例与数据规模的差异。",
+          "模型发布时使用的开源许可证类型。",
+          "推理服务的计费单价与市场推广力度。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "优先比较 RL 规模与任务/数据配比，而非许可证或定价。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-distill-cross-arch-01",
+    "category": "llm-systems",
+    "topic": "distillation",
+    "tags": [
+      "蒸馏",
+      "架构差异",
+      "后训练"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "跨架构蒸馏的关键在于对齐可迁移行为",
+      "supporting": [
+        "教师学生",
+        "能力保留"
+      ]
+    },
+    "question": "当学生模型引入了教师模型没有的架构组件时，做蒸馏最需要解决什么问题？",
+    "explanation": "架构不同意味着中间表示无法一一对应；跨架构蒸馏通常对齐输出分布、推理轨迹或可逆的语义行为。硬复制激活既不可行也无必要，改回同架构则失去了新架构的收益。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 10"
+    },
+    "misconceptions": [
+      "误以为蒸馏必须逐层结构一致",
+      "误以为必须复制中间激活"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让蒸馏目标落在可迁移的行为与推理过程上，而非逐层结构对齐。",
+          "处理教师与学生表示空间不一致带来的迁移困难。",
+          "强制学生复制教师的所有中间激活，否则无法训练。",
+          "把学生架构改回与教师完全相同，蒸馏才有意义。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应对齐可迁移行为并处理表示空间不一致，无需逐层复制。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-distill-long-cot-transfer-01",
+    "category": "llm-systems",
+    "topic": "distillation",
+    "tags": [
+      "蒸馏",
+      "思维链",
+      "成本"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "长思维链教师蒸馏到效率型学生",
+      "supporting": [
+        "成本效率",
+        "CoT 压缩"
+      ]
+    },
+    "question": "一个追求最高智能的模型保留较长思维链，再把它蒸馏到低成本变体。这条路线的合理性体现在哪些方面？",
+    "explanation": "教师端允许长推理以换取最高正确率，学生通过蒸馏继承决策能力，再用 RL 等手段压缩 CoT，从而获得更好的单位成本表现。蒸馏不是逐 token 复制，也不保证学生超越教师。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 14"
+    },
+    "misconceptions": [
+      "误以为蒸馏要求输出长度相同",
+      "误以为学生必然超过教师"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "教师用充分推理换取正确率，学生继承能力后压缩推理长度。",
+          "长思维链成为高质量的蒸馏信号，提高成本效率。",
+          "学生必须产生与教师完全相同长度的输出才算蒸馏成功。",
+          "蒸馏后学生的能力必然超过教师，因为结构更高效。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "教师长 CoT 提供信号，学生继承能力后压缩推理以改善成本。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-distill-capability-loss-01",
+    "category": "llm-systems",
+    "topic": "distillation",
+    "tags": [
+      "蒸馏",
+      "能力保留",
+      "小模型"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "小模型蒸馏中最难保留的能力",
+      "supporting": [
+        "激活参数",
+        "能力退化"
+      ]
+    },
+    "question": "把大模型能力迁移到激活参数显著更小的学生模型时，哪些能力通常最先出现缺口？",
+    "explanation": "推理深度、长上下文追踪和工具调用可靠性依赖足够的计算预算与状态保持能力，学生模型激活参数减少时这些最先退化。拼写与格式属于低层能力，通常不是主要瓶颈。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 10"
+    },
+    "misconceptions": [
+      "把表层格式问题当成主要退化",
+      "忽略推理深度与长程状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "需要多步推理深度的任务。",
+          "长上下文追踪与稳定工具调用。",
+          "单词拼写与常见词频统计。",
+          "输出格式中换行符的数量控制。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先退化的是多步推理、长上下文追踪与工具调用可靠性。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-long-horizon-quality-01",
+    "category": "llm-systems",
+    "topic": "agent-loop",
+    "tags": [
+      "Agent",
+      "长程任务",
+      "代码质量"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "长程自主编码的质量保持",
+      "supporting": [
+        "多轮循环",
+        "代码整洁度"
+      ]
+    },
+    "question": "要让编码 Agent 在无人干预下连续执行数百轮操作后仍保持代码整洁，训练与评测应重点覆盖哪些场景？",
+    "explanation": "长程代码质量体现在多轮修改的一致性、文档与代码同步、结构可理解性；这些必须在多样任务上训练与评测。单轮零样本与一次性编译无法暴露状态漂移和累积退化。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 2"
+    },
+    "misconceptions": [
+      "把单轮补全当作长程能力代表",
+      "只用一次编译作为唯一成功判据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "大型单体仓库中的多轮修改与一致性维护。",
+          "文档与代码同步更新、注释和文件结构的可理解性。",
+          "只覆盖单文件、单轮完成的零样本代码补全。",
+          "只统计最终能否通过一次编译，不检查中间过程。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应覆盖大型仓库多轮修改与文档/结构一致性，而非单轮补全。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-task-diversity-01",
+    "category": "llm-systems",
+    "topic": "agent-loop",
+    "tags": [
+      "Agent",
+      "任务多样性",
+      "评测"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "任务多样性是 Agent 泛化的关键",
+      "supporting": [
+        "内部评测",
+        "非刷榜"
+      ]
+    },
+    "question": "为避免 Agent 只在少数常见场景表现好，构建训练与评测集时哪些做法更合理？",
+    "explanation": "任务多样性直接决定 Agent 是否能迁移到新场景；覆盖多语言、多仓库类型、DevOps 边界情况以及幻觉失败案例，才能暴露真实弱点。只取主流语言会让模型被过训练语种带偏。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 3"
+    },
+    "misconceptions": [
+      "把常见语言过拟合当作泛化",
+      "忽略幻觉失败案例"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "覆盖多种语言、代码库类型与 DevOps 边界场景。",
+          "纳入智能体幻觉导致失败的案例，如谎称已运行测试。",
+          "只使用最常见的 Python 与 JavaScript 仓库样本。",
+          "剔除所有罕见场景，让评测分布尽量单一。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "覆盖多语言多场景并纳入幻觉失败案例，避免单一分布。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-selfcorrection-loop-01",
+    "category": "llm-systems",
+    "topic": "agent-debugging",
+    "tags": [
+      "Agent",
+      "调试",
+      "循环"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "测试失败后的过度纠正与循环卡死",
+      "supporting": [
+        "状态漂移",
+        "自纠偏"
+      ]
+    },
+    "question": "多轮 CLI Agent 在测试或命令失败后反复覆盖自己的修改、始终无法收敛。这类现象最可能涉及哪些问题？",
+    "explanation": "失败后的过度纠偏会让 Agent 在多版本修改间震荡；缺少明确的停止条件则让它重试无止境。健康的循环需要区分「可修复错误」与「信息不足、应报告无法确定」。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 40"
+    },
+    "misconceptions": [
+      "把收敛问题简化为参数量不足",
+      "误把并行调用能力当成根因"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "失败反馈被用于过度纠偏，导致状态在多个方案间来回漂移。",
+          "缺少对「何时停止重试并报告无法确定」的判定。",
+          "模型参数量不足，无法执行任何命令行工具。",
+          "工具调用协议不支持并行调用，因此必然卡死。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "根因是过度纠偏与缺少停止条件，而非参数量或并行调用。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-tool-call-syntax-accuracy-01",
+    "category": "llm-systems",
+    "topic": "tool-calling",
+    "tags": [
+      "工具调用",
+      "幻觉",
+      "RL"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "精确语法幻觉的成因与对策",
+      "supporting": [
+        "细粒度奖励",
+        "RL 数据"
+      ]
+    },
+    "question": "Agent 调用命令行工具时编造并不存在的参数标志。针对该问题，哪些训练策略最直接？",
+    "explanation": "标志幻觉来自模型对细粒度语法的不确定性，需要专门的难例数据与差异化奖励来校正。调温度只能改变采样分布，不改变知识；禁用工具则放弃能力。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 22"
+    },
+    "misconceptions": [
+      "把解码参数当作根因对策",
+      "误以为禁用工具是解决方案"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "构造包含易混淆标志的高难度样本并加大其训练权重。",
+          "对关键参数错误设置更重的惩罚，而非统一扣分。",
+          "降低模型温度即可完全消除此类错误。",
+          "禁止模型在任何情况下使用命令行工具。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用易混淆标志难例与细粒度重罚，而不是调温度或禁用工具。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-tool-call-protocol-01",
+    "category": "llm-systems",
+    "topic": "tool-calling",
+    "tags": [
+      "工具调用",
+      "协议",
+      "并行"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "工具调用协议的基本要素",
+      "supporting": [
+        "并行调用"
+      ]
+    },
+    "question": "评估一个模型是否适合作为编码 Agent 的后端时，关于其工具调用能力应确认哪些要素？",
+    "explanation": "Agent 依赖正确的工具名、参数结构与合法协议；并行调用能显著降低多工具任务的轮次与延迟。参数量规模与权重发布格式都不是协议能力的必要条件。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 32"
+    },
+    "misconceptions": [
+      "把参数量门槛当成工具调用能力",
+      "把发布格式当成协议能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "是否能稳定输出合法的工具名与参数结构。",
+          "是否支持并行发起多个独立工具调用。",
+          "模型参数量是否超过一千亿。",
+          "权重文件是否采用特定量化格式发布。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "确认合法工具名/参数结构与并行调用支持。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-rsi-early-01",
+    "category": "llm-systems",
+    "topic": "alignment",
+    "tags": [
+      "RSI",
+      "自我改进",
+      "评测"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "递归自我改进仍处早期阶段",
+      "supporting": [
+        "内部基准",
+        "可复用工具"
+      ]
+    },
+    "question": "关于让模型自主改进下一代模型的「递归自我改进」能力，哪些说法更稳妥？",
+    "explanation": "RSI 仍处早期，需要拆解为可测的子能力并建设对应基准；运行时间和工具次数只是资源指标，不能证明模型真的做出了有效研发决策。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 4"
+    },
+    "misconceptions": [
+      "把资源投入等同于能力突破",
+      "用工具调用次数代替能力评测"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该能力目前整体处于早期阶段，不能等同于自主完成模型研发。",
+          "需要专门的内部基准衡量关键子能力，而非只看运行时长或工具调用次数。",
+          "只要给模型足够长的运行时间，就必然实现自主架构创新。",
+          "评测递归自我改进只需统计 agent 调用了多少次工具。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "RSI 仍早期，需专门基准衡量子能力，不能只看时长或调用次数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-model-writing-quality-01",
+    "category": "llm-systems",
+    "topic": "model-behavior",
+    "tags": [
+      "写作质量",
+      "训练目标",
+      "可读性"
+    ],
+    "difficulty": "medium",
+    "angle": "causal",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "写作质量退化可能与训练目标有关",
+      "supporting": [
+        "模板化表达"
+      ]
+    },
+    "question": "一些用户感觉新一代模型写代码更强、写说明文却更模板化。对此现象的合理解释与改进方向包括哪些？",
+    "explanation": "写作可读性受训练目标与数据配比影响；偏重可验证任务会让模板化表达更易获得奖励。改进需要明确优化自然表达与可读性，而不是继续偏斜数据分布。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 9"
+    },
+    "misconceptions": [
+      "把风格退化夸大为能力丧失",
+      "误以为加代码数据能改善写作"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练目标若偏向可验证任务，可能挤压自然表达的学习信号。",
+          "改进方向包括让输出更像真人表达、减少千篇一律的套话。",
+          "这证明模型完全失去了语言能力，只能靠外部工具生成文本。",
+          "只要继续增加代码数据比例，写作质量必然同步提升。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "可能与训练目标偏斜有关；应针对自然表达优化，而非加代码数据。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-model-readable-example-01",
+    "category": "llm-systems",
+    "topic": "prompt-optimization-debugging",
+    "tags": [
+      "可读性",
+      "示例",
+      "表达"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "示例对可读性的作用",
+      "supporting": [
+        "表达质量"
+      ]
+    },
+    "question": "团队评价「有时一个好的例子胜过五段文字」。在提升模型解释可读性时，这句话支持哪些做法？",
+    "explanation": "示例能降低理解门槛，但并不意味着解释无用；合理做法是让示例与简洁说明互补，并把可读性作为独立目标。单纯压缩 token 数往往提高读者成本。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 15"
+    },
+    "misconceptions": [
+      "把重视示例误解为删除解释",
+      "误把 token 数当成可读性指标"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用贴近场景的具体示例承载关键概念，减少抽象铺陈。",
+          "把表达清晰度作为独立质量目标，而不只看答案是否正确。",
+          "彻底删除所有解释文字，只输出示例。",
+          "把解释压缩为尽可能少的 token，不考虑读者理解成本。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用具体示例承载概念并单独优化可读性，不等于删除解释。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-model-nonverifiable-following-01",
+    "category": "llm-systems",
+    "topic": "sft",
+    "tags": [
+      "指令遵循",
+      "风格",
+      "评测"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "不可验证指令遵循的评测难点",
+      "supporting": [
+        "风格约束"
+      ]
+    },
+    "question": "用户要求模型严格满足文风、语气等难以自动验证的约束。相比可验证任务，这类需求的特殊难点包括哪些？",
+    "explanation": "风格类约束没有像单元测试那样的二值判定器，奖励构造依赖偏好数据或评审模型，成本和噪声都更高。它们可以通过偏好优化等方式改善，输出长度与风格满足度并无必然关系。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 7"
+    },
+    "misconceptions": [
+      "把长度当作风格满足度",
+      "误以为风格约束完全不可训练"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "缺少客观判定函数，奖励信号难以自动构造。",
+          "需要人类偏好或评审模型参与评测，成本更高且噪声更大。",
+          "只要输出更长就一定满足风格要求。",
+          "这类约束无法通过任何训练方式改善，只能靠提示词。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "难点在缺乏自动判定与高噪声评测；可通过偏好训练改善。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-train-general-purpose-01",
+    "category": "llm-systems",
+    "topic": "pretraining",
+    "tags": [
+      "通用模型",
+      "定位",
+      "训练"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "通用模型与专用模型的定位差异",
+      "supporting": [
+        "任务覆盖"
+      ]
+    },
+    "question": "一个团队说明其旗舰与效率型模型都是「通用模型」而非专为编程训练。这意味着什么？",
+    "explanation": "通用模型在多领域数据上训练，追求广泛能力；编程是其中一类任务。通用定位不排斥代码数据，也不意味着编程能力差，只是不以单一领域最优为唯一目标。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 15"
+    },
+    "misconceptions": [
+      "把通用误读为在某些任务上必然弱",
+      "误以为通用模型不含代码数据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练数据覆盖多类任务，编程只是其中一部分。",
+          "模型设计目标不是在单一垂直领域取得最优。",
+          "模型必然无法在编程任务上达到较好表现。",
+          "模型完全不包含任何代码相关数据。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "通用指多任务覆盖、非单一领域最优；不代表不含代码或编程弱。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-train-continual-learning-01",
+    "category": "llm-systems",
+    "topic": "training",
+    "tags": [
+      "持续学习",
+      "训练",
+      "研究"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "持续学习是活跃研究方向而非既有能力",
+      "supporting": [
+        "知识更新"
+      ]
+    },
+    "question": "被问及持续学习进展时，团队称其是「有前景的方向，正在积极研究」。据此能得出的合理结论有哪些？",
+    "explanation": "持续学习关注在获得新知识时保留旧能力，是典型的稳定性—可塑性权衡问题。表述为「积极研究」意味着尚未成熟解决；简单续训旧数据并不构成持续学习。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 21"
+    },
+    "misconceptions": [
+      "把研究方向当成成熟能力",
+      "把持续学习简化为重复训练"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "持续学习旨在让模型在有新数据时更新能力而不遗忘旧能力。",
+          "目前尚无充分证据表明该问题已被彻底解决。",
+          "该方向已完全成熟，可以直接视为现有产品的确定能力。",
+          "持续学习等价于简单地继续在旧数据上多训练几轮。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "持续学习是方向而非成熟能力，核心是更新同时不遗忘。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-benchmaxing-01",
+    "category": "llm-systems",
+    "topic": "evaluation",
+    "tags": [
+      "评测",
+      "刷榜",
+      "数据"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "非刷榜策略：更好数据与多样内部评测",
+      "supporting": [
+        "泛化",
+        "内部评测"
+      ]
+    },
+    "question": "某模型在公开榜单表现很好，但在用户自建任务上明显退化。团队把改进归因于「更好的训练数据、多样的内部评测、不刷榜」。据此哪些判断成立？",
+    "explanation": "榜单与真实任务分布不同，过度优化榜单会导致迁移失败；内部评测的价值恰恰在于覆盖榜单之外的场景。用真实数据与多样评测驱动改进，比追分数更可靠。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 32"
+    },
+    "misconceptions": [
+      "把榜单分数等同于真实能力",
+      "误以为内部评测应复制榜单"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "公开榜单分数与真实场景表现可能脱钩。",
+          "多样化内部评测能暴露榜单未覆盖的失败模式。",
+          "只要公开榜单分数继续提高，真实体验必然同步改善。",
+          "内部评测应完全照搬公开榜单的题目以保持可比性。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "榜单与真实表现会脱钩；多样内部评测可暴露盲点。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-eval-saturation-01",
+    "category": "llm-systems",
+    "topic": "evaluation",
+    "tags": [
+      "评测",
+      "基准饱和",
+      "区分度"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "基准饱和导致区分度下降",
+      "supporting": [
+        "新基准选择"
+      ]
+    },
+    "question": "为什么一些团队在报告中选择较新的评测，而不强调已广泛使用的老牌基准？",
+    "explanation": "基准饱和指多数模型都取得接近满分，区分度下降；新基准通常针对更复杂的能力设计，更能体现差异。这不意味着老基准不能运行，也与技术禁令无关。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 24"
+    },
+    "misconceptions": [
+      "把饱和误读为基准失效",
+      "误以为不报告源于法律限制"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "老牌基准分数趋于饱和，难以区分模型间差异。",
+          "新基准往往覆盖更复杂的能力，如长程 Agent 与科研任务。",
+          "老牌基准在技术上已完全失效，不能再运行。",
+          "公布老牌基准成绩在商业上被明令禁止。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "老基准饱和后区分度低，新基准更能区分复杂能力。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-eval-single-leaderboard-01",
+    "category": "llm-systems",
+    "topic": "evaluation",
+    "tags": [
+      "评测",
+      "榜单",
+      "真实反馈"
+    ],
+    "difficulty": "easy",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "单一榜单不足以决定真实采用",
+      "supporting": [
+        "多源评测"
+      ]
+    },
+    "question": "判断一个模型是否值得在生产中采用，哪些证据来源比「单一榜单排名」更可靠？",
+    "explanation": "模型表现依赖任务分布，单一榜单容易受覆盖与偏好影响；多源评测加上真实用户反馈才能给出完整判断。这也是团队强调「需要全貌」的原因。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 17"
+    },
+    "misconceptions": [
+      "把单一榜单当作充分证据",
+      "误把宣传材料当作评测"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "内部基准、公开评测与第三方评测的组合结果。",
+          "真实用户反馈和具体任务上的试用表现。",
+          "仅凭一个排行榜的绝对名次。",
+          "仅凭模型发布时的宣传材料。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应结合内部、公开、第三方评测与真实反馈，而非单一名次。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-eval-cost-blind-01",
+    "category": "llm-systems",
+    "topic": "evaluation",
+    "tags": [
+      "评测",
+      "成本",
+      "盲测"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "成本应作为模型评测的独立维度",
+      "supporting": [
+        "盲测",
+        "单任务成本"
+      ]
+    },
+    "question": "设计一套面向真实工作流的模型评测时，除正确率外，哪些维度应当被显式记录？",
+    "explanation": "真实工作流关心「花多少钱、等多久、是否做对」，因此成本与延迟需与正确率并列记录，盲测能减少品牌偏好干扰。许可证长度和训练 GPU 数量不是运行质量指标。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 1"
+    },
+    "misconceptions": [
+      "忽略成本与延迟这类运行指标",
+      "误把训练资源当作使用体验"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "完成单个任务的总 token 数与工具调用轮次。",
+          "单任务成本与延迟，最好通过盲测收集。",
+          "模型权重的发布许可证文本长度。",
+          "训练时使用的 GPU 数量。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "记录单任务成本、token/轮次与延迟，并通过盲测减少偏好偏差。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-cyber-data-filter-01",
+    "category": "llm-systems",
+    "topic": "safety-alignment",
+    "tags": [
+      "安全对齐",
+      "训练数据",
+      "网络"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "网络训练数据按防御/攻击分类过滤",
+      "supporting": [
+        "红队评测"
+      ]
+    },
+    "question": "一个开放权重模型在训练时只保留漏洞复现与修复相关数据、移除漏洞利用与攻击内容。这种做法的直接结果包括哪些？",
+    "explanation": "按用途筛选训练数据是一种前置的基础措施：保留防御与修复信号，移除攻击性利用内容，从而降低被滥用的风险。它不意味着对所有双用途请求一律拒答，更不能保证模型不会造成新风险，因此还需配合红队评测与训练好的防护机制。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 11"
+    },
+    "misconceptions": [
+      "把数据过滤等同于全面拒答",
+      "误以为过滤能带来绝对安全"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "模型更偏向防御性任务，漏洞发现与修复能力相对保留。",
+          "漏洞利用与攻击性能力被有意削弱，以降低滥用风险。",
+          "模型对任何涉及渗透测试的请求都会一律拒答。",
+          "模型自动获得对所有新型漏洞的免疫能力。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保留防御能力、削弱攻击能力；仍需红队评测避免误拒答。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-overrefusal-01",
+    "category": "llm-systems",
+    "topic": "safety-alignment",
+    "tags": [
+      "安全对齐",
+      "过度拒答",
+      "双用途"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "双用途任务上的过度拒答问题",
+      "supporting": [
+        "防御性用途"
+      ]
+    },
+    "question": "重度安全对齐常让开源模型拒答渗透测试、逆向工程或 CTF 等请求。为避免伤害防御方，哪些做法更合理？",
+    "explanation": "这些任务是典型的双用途场景：恶意分析与恶意软件取证、漏洞发现都依赖同类能力。合理做法是在数据与奖励层面区分用途，并用红队评测持续校准拒答边界；一刀切拒答会伤害防御者，完全取消安全训练则不可接受。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 10"
+    },
+    "misconceptions": [
+      "把关键词拒答当作安全策略",
+      "误以为安全与可用性必须二选一"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "区分防御性分析与攻击性利用，分别设定数据策略。",
+          "保留红队评测以监控过度拒答与潜在风险。",
+          "对所有含安全关键词的请求统一拒答，以彻底消除风险。",
+          "完全取消安全训练，让模型自由回答所有请求。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按用途区分并持续红队评测，避免一刀切拒答或完全取消安全训练。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-redteam-after-filter-01",
+    "category": "llm-systems",
+    "topic": "security-eval",
+    "tags": [
+      "红队评测",
+      "安全",
+      "过滤"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "数据过滤后仍需红队评测",
+      "supporting": [
+        "风险监测"
+      ]
+    },
+    "question": "为什么在训练数据中过滤攻击性内容之后，依然要开展红队评测？",
+    "explanation": "数据过滤是输入侧措施，模型最终行为还受指令遵循、工具使用与上下文影响；组合提示可能重新激活被削弱的能力。红队评测用于发现这些残留风险并指导防护机制迭代，但发现不等于自动修复。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 11"
+    },
+    "misconceptions": [
+      "把数据过滤当成行为保证",
+      "高估红队评测的自动修复能力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过滤只影响数据分布，无法证明模型行为已满足安全目标。",
+          "组合提示或多轮交互可能绕过单层过滤的效果。",
+          "过滤完成后模型行为已经确定，评测只是为了生成文档。",
+          "红队评测能够自动修复发现的所有安全问题。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "过滤不保证行为安全，组合绕过仍可能；红队评测用于发现并指导修复。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-incidents-eval-only-01",
+    "category": "llm-systems",
+    "topic": "alignment",
+    "tags": [
+      "对齐",
+      "评测",
+      "事件"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "历史失对齐事件主要用于评测而非训练",
+      "supporting": [
+        "监测",
+        "跟踪"
+      ]
+    },
+    "question": "团队表示历史失对齐案例「只用于评测侧做跟踪与监测」。这种做法的合理之处包括哪些？",
+    "explanation": "把事件转成评测用例能提供稳定回归信号；直接训练少量案例则容易过拟合并引入偏差。评测与运行时监测是互补关系，不能用评测替代持续监控。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 20"
+    },
+    "misconceptions": [
+      "认为案例进入训练即毫无价值",
+      "误以为评测可替代运行时监测"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把真实失败案例转化为可复现的评测目标，便于持续回归。",
+          "避免用少量轶事直接训练，降低过拟合到个别案例的风险。",
+          "这些案例一旦进入训练集就立刻失去全部价值。",
+          "只要建立评测集，就不再需要任何运行时监测。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "案例适合做回归评测，避免少量样本污染训练；不能替代运行时监测。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-network-controls-01",
+    "category": "llm-systems",
+    "topic": "llm-application-security",
+    "tags": [
+      "安全",
+      "网络控制",
+      "评测环境"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "训练与评测环境的网络访问控制",
+      "supporting": [
+        "允许列表",
+        "阻止列表"
+      ]
+    },
+    "question": "在训练与评测阶段运行 Agent 时，采取允许列表与阻止列表等网络控制的主要目的包括哪些？",
+    "explanation": "网络访问控制是纵深防御的一环，用于限制 Agent 的外部环境交互；攻击方式会演化，因此规则需要持续修正。它不能替代模型层对齐或沙箱隔离。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 33"
+    },
+    "misconceptions": [
+      "以为网络控制可替代模型对齐",
+      "误以为一次性配置即可长期有效"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "限制 Agent 访问非预期外部资源，降低数据外泄与旁路行为。",
+          "随着发现新的攻击方式，需要反复修正与调整访问规则。",
+          "完全替代模型层的安全对齐，因此不再需要红队评测。",
+          "让评测任务无需任何沙箱即可安全运行。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用于限制外部访问并需持续更新；不能替代对齐或沙箱。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-monitoring-01",
+    "category": "llm-systems",
+    "topic": "security-eval",
+    "tags": [
+      "监控",
+      "安全",
+      "训练"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "训练与评测全程监测异常与失对齐",
+      "supporting": [
+        "风险修复"
+      ]
+    },
+    "question": "关于模型训练与评测过程中的安全监测，下列哪些做法是合理的？",
+    "explanation": "安全风险可能在训练与评测过程中就出现，需要全程监测并在发现问题时修复环境或流程。仅看最终分数会漏掉过程中的攻击与失对齐信号。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 33"
+    },
+    "misconceptions": [
+      "把安全监测推迟到发布后",
+      "只看结果不监控过程"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在训练与评测全程持续监测潜在攻击与失对齐迹象。",
+          "发现环境或行为问题后及时修复并重新验证。",
+          "只在模型发布之后才开始关注安全风险。",
+          "只监测最终分数，不关注过程中的异常行为。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "全程监测并及时修复，而非只看发布后或最终分数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-safety-defense-cost-01",
+    "category": "llm-systems",
+    "topic": "safety-alignment",
+    "tags": [
+      "安全",
+      "权衡",
+      "防御"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "双重用途能力约束的成本由谁承担",
+      "supporting": [
+        "漏洞发现"
+      ]
+    },
+    "question": "限制模型的网络能力以降低滥用风险时，常见的争议点是什么？",
+    "explanation": "网络能力天然双重用途：漏洞发现能让防守方先于攻击者修补，逆向工程也用于恶意软件分析。由于底层技能共享，单纯削弱一侧很难无损实现，因此需要明确权衡并公开说明。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 6"
+    },
+    "misconceptions": [
+      "假设攻击与防御技能可完全分离",
+      "以为高分数可覆盖安全权衡"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "漏洞发现与逆向分析本身具有防御价值，限制它们可能伤害防守方。",
+          "防御与攻击能力共享底层技能，难以只削弱其中一侧。",
+          "这类限制对模型能力没有任何影响，因而不存在争议。",
+          "只要模型最终分数足够高，安全限制就完全不需要讨论。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "争议在于防御价值也会受损，且攻防技能共享难以单侧削弱。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-scaling-smaller-welltrained-01",
+    "category": "llm-systems",
+    "topic": "scaling-law",
+    "tags": [
+      "Scaling",
+      "参数规模",
+      "训练质量"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "训练扎实的小模型可超过更大模型",
+      "supporting": [
+        "成本",
+        "研发经验"
+      ]
+    },
+    "question": "面对「同行在冲击更大参数规模，而自家模型规模较小」的路线差异，哪些判断有充分依据？",
+    "explanation": "模型能力由规模、数据、训练质量与后训练共同决定；训练扎实的小模型可以超过更大模型。较小规模还带来更低成本和更快迭代，有助于积累经验。规模重要但不是唯一决定因素。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 4"
+    },
+    "misconceptions": [
+      "把参数量当成唯一变量",
+      "忽略成本与迭代速度的复利"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "规模较小但训练扎实的模型，完全可能超过更大模型。",
+          "较小规模的推理成本更低，迭代中能积累更多研发经验。",
+          "参数规模是决定智能水平的唯一变量，规模小必然更弱。",
+          "只要参数足够大，训练质量与数据就不再重要。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "小模型训练扎实可胜出，且成本与迭代速度带来额外优势。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-scaling-posttraining-room-01",
+    "category": "llm-systems",
+    "topic": "scaling-law",
+    "tags": [
+      "Scaling",
+      "后训练",
+      "强化学习"
+    ],
+    "difficulty": "medium",
+    "angle": "boundary",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "现规模仍有后训练提升空间同时坚持扩大规模",
+      "supporting": [
+        "RL",
+        "Scaling"
+      ]
+    },
+    "question": "当被问到「模型是否已接近能力上限」时，回答「仍有很大提升空间，尤其后训练，同时计划训练更大模型」。从中可以推出哪些结论？",
+    "explanation": "后训练（尤其大规模 RL）与规模扩张是并行而非互斥的两条路径：前者提升现有架构的表现，后者抬高整体上限。回答同时强调两者，不能推出任一路径已无价值。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 4"
+    },
+    "misconceptions": [
+      "把后训练空间与规模扩张对立",
+      "把仍有空间误读为已达上限"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "同一参数规模下，后训练仍能显著改变能力表现。",
+          "团队并未否定规模扩张，仍把 scaling 视为长期方向。",
+          "后训练空间大意味着扩大参数规模已无必要。",
+          "模型已经彻底达到上限，任何训练都无法再提升。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "后训练仍有空间且规模扩张仍是方向，二者并行不互斥。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-scaling-compute-bottleneck-01",
+    "category": "llm-systems",
+    "topic": "training",
+    "tags": [
+      "算力约束",
+      "训练",
+      "效率"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "算力受限时的资源利用策略",
+      "supporting": [
+        "训练效率",
+        "算法"
+      ]
+    },
+    "question": "当先进芯片获取受限时，团队回应「尽可能充分利用现有资源追赶前沿」。在这种约束下合理的工程取向包括哪些？",
+    "explanation": "算力受限时，提升单位算力的有效性是关键：包括训练效率、算法改进、架构与推理系统协同设计。停止迭代或只买硬件都不能解决约束下的能力追赶问题。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 22"
+    },
+    "misconceptions": [
+      "把算力受限等同于停止研发",
+      "忽略效率与协同设计的作用"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提高训练效率与算法利用率，减少无效算力消耗。",
+          "通过架构与系统协同设计，在同算力下争取更好质量。",
+          "停止一切模型迭代，等待硬件条件改善。",
+          "把全部预算用于采购硬件，忽略训练效率优化。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应提升训练效率与协同设计，而不是停摆或只堆硬件。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-arch-orthogonal-additive-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "架构设计",
+      "正交性",
+      "组件组合"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "多个架构组件的正交性与收益可加性",
+      "supporting": [
+        "混合注意力",
+        "Engram"
+      ]
+    },
+    "question": "一个模型同时引入混合注意力、隐专家 MoE 与 n-gram 查表三类改动，团队称它们「基本正交、收益可加」。这意味着什么？",
+    "explanation": "正交指组件作用于不同瓶颈，因此收益可近似叠加，也便于单独消融验证。若三者解决同一瓶颈，收益显然不可加；正交也不意味着组件之间必须捆绑启用。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 42"
+    },
+    "misconceptions": [
+      "把正交误读为强耦合",
+      "误以为同一瓶颈的改动可加"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "三类改动分别缓解不同瓶颈，组合后收益大致累加。",
+          "可以分别做消融实验，较容易定位每个组件的贡献。",
+          "三者必须同时启用，单独启用任何一个都完全无效。",
+          "三者解决的是同一瓶颈，因此组合不会带来额外收益。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正交=解决不同瓶颈、收益可加，可分别消融；不意味着必须捆绑。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-engram-ratio-ushape-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "Engram",
+      "参数配比",
+      "Scaling"
+    ],
+    "difficulty": "medium",
+    "angle": "quantitative",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "查表参数占比存在 U 形最优点",
+      "supporting": [
+        "计算效率"
+      ]
+    },
+    "question": "实验发现 n-gram 查表参数占总参数（含查表本身）的比例与计算效率呈 U 形关系，最低点约在三分之一。据此哪些判断成立？",
+    "explanation": "U 形关系意味着两侧都偏离最优：查表太少无法充分发挥其优势，太多则挤占主干参数预算。最优比例来自具体架构与规模的 scaling 实验，不能当成跨架构通用常数。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 4"
+    },
+    "misconceptions": [
+      "把 U 形曲线误读为单调收益",
+      "把经验最优点当成普适常数"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "比例过低时计算效率下降，查表带来的收益未被充分利用。",
+          "比例过高时也会偏离最优点，存在资源错配风险。",
+          "比例越大效果一定越好，因此应把所有参数都用于查表。",
+          "该比例与模型规模无关，在所有架构上都是精确三分之一。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "U 形最低点约三分之一，两侧都变差；不是普适常数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-engram-below-optimal-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "Engram",
+      "计算效率"
+    ],
+    "difficulty": "easy",
+    "angle": "prediction",
+    "cognitiveTask": "predict",
+    "concepts": {
+      "core": "查表比例低于最优点导致计算效率下降",
+      "supporting": [
+        "U 形曲线"
+      ]
+    },
+    "question": "若查表参数占比低于实测的最优点，团队最可能观察到什么变化？",
+    "explanation": "低于最优占比意味着查表机制规模不足，无法充分摊薄其成本，表现为计算效率下降。模型不会自动增加参数；效率下降更不可能带来速度线性提升。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 34"
+    },
+    "misconceptions": [
+      "误以为参数会自动补偿",
+      "误把效率下降当成速度提升"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "整体计算效率出现下降。",
+          "相同预算下未能充分获得查表机制的收益。",
+          "模型参数量自动增加以补足差额。",
+          "推理速度必然按比例线性提升。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "低于最优点会计算效率下降，且不会自动补参数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-engram-per-layer-table-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "Engram",
+      "查表",
+      "显存"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "每层独立查表与共享查表的权衡",
+      "supporting": [
+        "显存预算"
+      ]
+    },
+    "question": "为多层模型配置 n-gram 查表时，选择「每层独立表」而不是「全局共享表 + 逐层投影」，主要考虑是什么？",
+    "explanation": "每层独立查表允许各层捕获不同粒度的局部统计，通常更强，但显存随层数增长；共享表加投影更省内存但约束更强。两种方案都可实作，取舍由内存预算与能力目标决定。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "误以为共享表不可实现",
+      "忽略独立表的显存代价"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "独立表让不同层学习各自的 n-gram 统计，表达能力更强。",
+          "代价是显存占用更高，需要在内存预算内权衡。",
+          "共享表在数学上无法使用，因此选择独立表。",
+          "独立表会让模型参数量减少，从而更容易部署。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "独立表表达更强但更占显存，共享表可行但约束更强。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-engram-offload-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "Engram",
+      "卸载",
+      "激活参数"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "查表参数不计入激活参数并可卸载",
+      "supporting": [
+        "主机内存",
+        "部署"
+      ]
+    },
+    "question": "某稀疏模型把 n-gram 查表参数单独统计、不计入每 token 激活参数。关于本地部署，哪些说法成立？",
+    "explanation": "查表参数不一定随每个 token 全量参与计算，因此可卸载到主机内存按需访问；不计入激活参数只是统计口径，不代表不占内存。在预算允许时保留更多查表参数通常能提升能力。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "误以为查表必须常驻显存",
+      "混淆统计口径与物理内存占用"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查表参数可以放在主机内存，按需读取以节省显存。",
+          "在内存预算允许时，优先保留更多查表参数通常有利于能力。",
+          "查表参数必然随每 token 全部参与计算，因此无法卸载。",
+          "把它排除在激活参数之外，意味着它不占用任何内存。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "查表可卸载到内存按需读取；不计入激活参数不等于不占内存。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-engram-smaller-models-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "Engram",
+      "小模型",
+      "架构收益"
+    ],
+    "difficulty": "medium",
+    "angle": "prediction",
+    "cognitiveTask": "predict",
+    "concepts": {
+      "core": "查表与残差机制对小模型收益更大",
+      "supporting": [
+        "规模效应"
+      ]
+    },
+    "question": "当被问及某些架构机制是否只在超大模型上才有效时，回答「对小模型收益更大」。合理的解释包括哪些？",
+    "explanation": "边际收益通常与主干容量相关：小模型参数预算更紧，额外信息通路或查表机制能补上更明显的缺口；大模型本身容量充足，相对增益变小但不等于负收益。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 20"
+    },
+    "misconceptions": [
+      "误以为小模型无法承载架构机制",
+      "把相对收益下降当成负收益"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "小模型主干参数预算紧张，额外机制带来的边际收益更明显。",
+          "大模型的规模本身已提供大量容量，增量机制的相对贡献变小。",
+          "小模型无法使用这些机制，因此收益只是统计噪声。",
+          "大模型使用这些机制时必然出现负收益。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "小模型预算紧张、边际收益更大；大模型收益变小不等于无效。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-latentmoe-rationale-01",
+    "category": "llm-systems",
+    "topic": "latent-moe",
+    "tags": [
+      "LatentMoE",
+      "专家",
+      "架构"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "隐专家 MoE 的低维表示动机",
+      "supporting": [
+        "专家数量",
+        "显存"
+      ]
+    },
+    "question": "把专家权重映射到较低维的隐空间，而不是简单把模型加宽或增加专家数量，可能带来哪些好处？",
+    "explanation": "低维隐专家通过压缩每个专家的参数表示，降低存储与访存成本，从而在同样预算下拥有更多、更细的专家；但路由仍是近似选择，不会因此变得完美，注意力层也仍然必要。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 37"
+    },
+    "misconceptions": [
+      "误以为隐空间能消除路由误差",
+      "误以为专家机制可替代注意力"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在同等专家数量下减少专家参数的存储与读取开销。",
+          "允许在有限内存预算下配置更细粒度的专家划分。",
+          "完全消除路由误差，使专家选择永远最优。",
+          "让模型不再需要任何注意力层。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "隐专家节省存储与访存、支持更细粒度专家；不消除路由误差。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-residual-ihc-benefit-01",
+    "category": "llm-systems",
+    "topic": "residual-connections",
+    "tags": [
+      "残差连接",
+      "架构",
+      "成本"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "iHC 相对复杂残差方案的权衡",
+      "supporting": [
+        "mHC",
+        "门控残差"
+      ]
+    },
+    "question": "对比更复杂的残差变体（如 mHC、门控残差），采用更简单的恒等超连接（iHC）的主要理由是什么？",
+    "explanation": "该选择的逻辑是性价比：iHC 用更简单的结构取得与复杂方案相近的效果，降低实现与训练成本，也更易迁移。复杂方案并非不可训练，简单结构也不保证在所有任务上更高分。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 12"
+    },
+    "misconceptions": [
+      "把简化误读为复杂方案不可行",
+      "误以为简单结构必然更优"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在性能接近的前提下，实现与训练成本更低。",
+          "结构更简单，便于调试与扩展到其他规模的模型。",
+          "复杂残差方案在数学上无法训练。",
+          "简单残差必然在任何任务上取得更高分数。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "iHC 的价值是相近性能下成本更低、更易扩展。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-residual-multistream-01",
+    "category": "llm-systems",
+    "topic": "residual-connections",
+    "tags": [
+      "残差连接",
+      "信息流",
+      "架构"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "多残差流扩大层间信息通路",
+      "supporting": [
+        "身份映射"
+      ]
+    },
+    "question": "把残差通路扩展为多条并行的恒等残差流，相比单一残差路径，主要意图是什么？",
+    "explanation": "多条残差流提供并行信息通道，让浅层与深层特征能更独立地传递，缓解单路径在深层网络中的信息压缩。它与归一化层、参数共享属于不同设计维度。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 36"
+    },
+    "misconceptions": [
+      "误以为多残差流替代归一化",
+      "误把多通路等同于参数共享"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让不同层次的信息可以沿独立通路跨层传播。",
+          "缓解单条残差通道在深层网络中的信息瓶颈。",
+          "彻底取消归一化层，使训练更稳定。",
+          "让每一层共享完全相同的参数，从而减少模型规模。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "多残差流扩大层间信息通路、缓解单路径瓶颈。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-hallucination-badcase-feedback-01",
+    "category": "llm-systems",
+    "topic": "hallucination",
+    "tags": [
+      "幻觉",
+      "反馈",
+      "评测"
+    ],
+    "difficulty": "easy",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "真实坏例是改善幻觉的重要信号",
+      "supporting": [
+        "社区反馈"
+      ]
+    },
+    "question": "团队请用户分享模型的幻觉或失败案例。这类反馈对改进的主要价值是什么？",
+    "explanation": "真实坏例反映用户实际遇到的失败分布，能补足内部评测覆盖不到的角落；把它们转成回归用例可验证修复效果。但幻觉无法被彻底消灭，反馈也不能替代系统化评测。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 35"
+    },
+    "misconceptions": [
+      "把用户反馈当成评测全部",
+      "误以为收集案例即可根治幻觉"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提供真实分布下的失败模式，补充内部评测盲区。",
+          "可转化为回归用例，验证修复是否真的生效。",
+          "能替代所有内部评测和红队测试。",
+          "只要收集足够多案例，模型就不再产生幻觉。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "真实坏例补充盲区并可做回归用例，但不能替代评测或根治幻觉。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-hallucination-agent-claim-01",
+    "category": "llm-systems",
+    "topic": "factuality-verification",
+    "tags": [
+      "幻觉",
+      "Agent",
+      "验证"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "Agent 谎称执行了未执行的动作",
+      "supporting": [
+        "工具调用",
+        "可验证性"
+      ]
+    },
+    "question": "编码 Agent 声称已运行测试，实际上并没有执行。为防止这类失败，最有效的思路包括哪些？",
+    "explanation": "这类幻觉本质是把意图当成结果的断言；对策是让动作可验证（工具日志、执行回执），并在训练与评测中专门覆盖此类错误。推理长度和输出上限都不改变事实核验机制。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 2"
+    },
+    "misconceptions": [
+      "把幻觉当成推理长度不足",
+      "误以为输出参数能解决事实问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把「动作确实发生」作为可验证条件，例如要求工具返回记录。",
+          "在评测中构造幻觉案例，专门惩罚未验证的断言。",
+          "只要让模型输出更长的推理链就能自动避免。",
+          "把模型的最大输出长度调高即可解决。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "要求动作可验证并覆盖幻觉案例，而非调长度参数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-context-compaction-practice-01",
+    "category": "llm-systems",
+    "topic": "context-engineering",
+    "tags": [
+      "上下文工程",
+      "压缩",
+      "长程任务"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "上下文压缩的实践含义",
+      "supporting": [
+        "长程状态",
+        "摘要"
+      ]
+    },
+    "question": "在长程 Agent 中实施「上下文压缩」，合理的做法包括哪些？",
+    "explanation": "压缩的目标是在有限窗口内保留决策相关的状态：对已完成步骤做摘要、保留未解决约束与关键事实。原样拼接会耗尽窗口，只留最后一句则丢失状态，都不是压缩。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 22"
+    },
+    "misconceptions": [
+      "把压缩等同于粗暴截断",
+      "误以为模型可无限利用原始历史"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "把已完成的工具输出摘要为关键结论，释放窗口容量。",
+          "保留影响后续决策的状态与未完成约束，避免压缩丢失关键信息。",
+          "把所有历史原样拼接，让模型自行决定忽略哪些内容。",
+          "每轮只保留最后一句话，彻底丢弃中间状态。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "摘要已完成内容并保留关键状态，而非原样拼接或粗暴截断。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-multimodal-audio-boundary-01",
+    "category": "llm-systems",
+    "topic": "multimodal",
+    "tags": [
+      "多模态",
+      "音频",
+      "能力边界"
+    ],
+    "difficulty": "easy",
+    "angle": "boundary",
+    "cognitiveTask": "identify",
+    "concepts": {
+      "core": "文本模型的音频能力边界与外置方案",
+      "supporting": [
+        "ASR",
+        "TTS"
+      ]
+    },
+    "question": "一个仅处理文本与视觉输入的模型，被要求直接完成方言实时语音翻译。合理的判断与方案是什么？",
+    "explanation": "模态能力主要由训练输入决定，文本/视觉模型并不天然支持音频。可行方案是用 ASR 把语音转成文本、由模型翻译，再用 TTS 合成语音；扩大词表或与视觉能力都不能替代音频编码器。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 33"
+    },
+    "misconceptions": [
+      "误以为文本能力可自动覆盖音频",
+      "忽略外部组件组合"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该模型本身不具备音频理解或生成能力，无法直接完成。",
+          "可以组合外部 ASR 与 TTS 组件，让文本模型承担翻译环节。",
+          "只要扩大文本词表就能原生支持语音输入。",
+          "视觉理解能力会自动迁移为音频理解能力。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "模型无原生音频能力，应组合 ASR/TTS 完成语音翻译。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-eval-community-feedback-01",
+    "category": "llm-systems",
+    "topic": "evaluation",
+    "tags": [
+      "评测",
+      "社区",
+      "反馈"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "社区反馈在产品迭代中的作用",
+      "supporting": [
+        "开源社区",
+        "真实使用"
+      ]
+    },
+    "question": "开放权重模型发布后，团队表示认真对待社区反馈。这类反馈在迭代中的合理定位包括哪些？",
+    "explanation": "社区反馈能带来内部环境看不到的部署差异和问题模式，是评测体系的重要补充；但它通常带选择偏差，仍需与内部验证结合，并且长期使用价值不局限于发布初期。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 5"
+    },
+    "misconceptions": [
+      "把社区反馈当作唯一决策依据",
+      "低估反馈的长期价值"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "提供真实部署环境里的失败案例与硬件适配问题。",
+          "作为评测来源之一，与内部基准和第三方评测互补。",
+          "直接决定所有技术路线，无需再做内部验证。",
+          "只在模型发布当天有效，之后不再具有参考价值。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "社区反馈补充真实部署问题，与内部评测互补；不能单独决定路线。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-cost-blind-test-design-01",
+    "category": "llm-systems",
+    "topic": "cost",
+    "tags": [
+      "成本",
+      "盲测",
+      "评测设计"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "盲测评估成本需控制任务与用户变量",
+      "supporting": [
+        "单任务成本"
+      ]
+    },
+    "question": "要比较两款模型在真实工作流中的单任务成本，较可靠的评测设计包括哪些？",
+    "explanation": "真实成本由完整任务的 token 总量、工具轮次与重试决定，不能只看列表单价。盲测并固定任务集能减少品牌预期偏差，得到可比较的单任务成本。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 1"
+    },
+    "misconceptions": [
+      "用标价代替实际成本",
+      "让品牌偏好污染对照"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "让盲测用户在不知道模型身份的前提下完成同一批任务。",
+          "记录完整任务而非单次调用的 token 数与工具轮次。",
+          "只统计 API 列表单价，忽略实际生成长度与重试。",
+          "让熟悉某品牌的用户自由选择模型，以体现真实偏好。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "固定任务集、盲测并记录完整任务成本，而非只看单价。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-capacity-kv-concurrency-01",
+    "category": "llm-systems",
+    "topic": "inference-capacity",
+    "tags": [
+      "推理容量",
+      "KV Cache",
+      "并发"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "KV Cache 决定并发会话上限",
+      "supporting": [
+        "显存预算"
+      ]
+    },
+    "question": "在线服务中显存充足但并发会话数上不去，且每会话上下文很长。瓶颈最可能在哪儿，如何缓解？",
+    "explanation": "并发上限常由 KV Cache 总量决定：会话数 × 序列长度 × 每层 KV 元素 × 位宽。缩短窗口、稀疏注意力或 KV 量化都能降低单会话占用；单纯增大 batch 反而需要更多 KV 空间。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 12"
+    },
+    "misconceptions": [
+      "忽略 KV 随并发的累积",
+      "误以为 batch 增大能减少 KV"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "KV Cache 随会话数与序列长度线性增长，挤占显存。",
+          "缩短窗口或使用 KV 量化可显著提高可承载并发数。",
+          "模型总参数量是唯一因素，与上下文长度无关。",
+          "只要提高 batch size，KV 占用就会自动下降。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "瓶颈是 KV 随并发累积；缩小窗口或量化 KV 可缓解。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-latency-tail-cot-01",
+    "category": "llm-systems",
+    "topic": "latency",
+    "tags": [
+      "延迟",
+      "思维链",
+      "尾延迟"
+    ],
+    "difficulty": "easy",
+    "angle": "causal",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "长思维链放大尾延迟",
+      "supporting": [
+        "生成长度"
+      ]
+    },
+    "question": "复杂任务上模型平均延迟正常，但 P99 延迟明显偏高。最可能的直接原因是什么？",
+    "explanation": "生成式服务的延迟与输出 token 数强相关；少数请求产生极长推理链或多次工具调用，就会形成尾延迟。权重不会在运行时重排，采样温度也不是尾延迟的直接解释。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "把尾延迟归因于文件重排",
+      "忽略输出长度分布长尾"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "部分请求生成了显著更长的思维链与更多工具轮次。",
+          "输出长度分布的长尾直接拖高尾部延迟。",
+          "模型权重文件在运行时被随机重排。",
+          "所有请求都被强制以最低温度采样。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "长尾输出长度与工具轮次放大 P99 延迟。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-context-train-length-01",
+    "category": "llm-systems",
+    "topic": "context-window",
+    "tags": [
+      "上下文",
+      "训练",
+      "长程"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "训练上下文长度决定长程能力来源",
+      "supporting": [
+        "长度外推"
+      ]
+    },
+    "question": "要让模型在推理时稳定处理长对话历史，训练阶段最需要关注什么？",
+    "explanation": "长程能力来自训练中见过的上下文长度与轨迹结构；仅调大推理窗口而不训练，模型难以有效利用远处信息。把样本一律截断则直接剥夺学习长程依赖的机会。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 22"
+    },
+    "misconceptions": [
+      "以为推理配置可替代训练",
+      "误把截断当作长程训练"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用足够长的上下文样本进行训练。",
+          "让模型见过多轮工具调用与状态延续的轨迹。",
+          "只要把推理时的窗口参数调大即可，无需训练配合。",
+          "把训练样本全部截断到固定短长度以提升效率。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "训练需覆盖长上下文与多轮状态轨迹，不能只调推理参数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-deploy-q4-memory-calc-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "显存",
+      "计算"
+    ],
+    "difficulty": "medium",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "按位宽估算权重显存",
+      "supporting": [
+        "Q4 部署"
+      ]
+    },
+    "question": "某稀疏模型总参数约 200B，其中每参数按 4 bit 存储。仅考虑主权重、不计 KV Cache 与运行时开销，所需存储约为多少？",
+    "explanation": "4 bit = 0.5 byte/参数，200B × 0.5 byte = 100 GB。权重存储由总参数与位宽决定，激活参数只影响计算量；实际部署还需为 KV Cache 与运行时预留额外空间。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 18"
+    },
+    "misconceptions": [
+      "把 4 bit 当成 4 byte",
+      "误以为激活参数决定权重存储"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 100 GB",
+          "约 200 GB",
+          "约 50 GB",
+          "约 400 GB"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A"
+      }
+    }
+  },
+  {
+    "id": "ama-deploy-community-quant-01",
+    "category": "llm-systems",
+    "topic": "inference-optimization",
+    "tags": [
+      "开源",
+      "量化",
+      "生态"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "开放权重促进社区量化生态",
+      "supporting": [
+        "EXL3",
+        "GGUF"
+      ]
+    },
+    "question": "官方没有计划适配某种低比特格式，但模型权重已公开。对此最合理的预期是什么？",
+    "explanation": "开放权重让社区能自行量化并发布不同格式；但这不等于官方背书，量化效果依然依赖算法与校准，需实测。缺少官方版本并不代表技术上不可行。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 23"
+    },
+    "misconceptions": [
+      "把权重开放等同于官方支持",
+      "以为社区量化必然可用且无损"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "社区可自行制作该格式的量化版本并发布。",
+          "量化质量仍取决于方法与校准，社区版本需实测验证。",
+          "权重公开后任何量化格式都会自动获得官方支持。",
+          "没有官方版本就意味着该模型无法在该格式下运行。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "社区可自行量化，但需实测质量；开放权重不等于官方支持。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-engine-codesign-01",
+    "category": "llm-systems",
+    "topic": "inference-optimization",
+    "tags": [
+      "推理引擎",
+      "协同设计",
+      "部署"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "模型架构与推理引擎协同设计",
+      "supporting": [
+        "内核兼容",
+        "新架构落地"
+      ]
+    },
+    "question": "一种新注意力或专家架构要在开源推理引擎中落地，通常需要哪些工作？",
+    "explanation": "新结构往往需要新算子或内核路径，因此要和引擎社区协同，并且在架构设计阶段就考虑可实现性。权重开放只提供可能性，不会自动带来高性能支持；纯应用层实现通常代价过高。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 24"
+    },
+    "misconceptions": [
+      "高估引擎的自动适配能力",
+      "以为应用层能完全替代内核支持"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "与引擎社区协作实现新算子或适配现有内核。",
+          "在架构设计阶段考虑内核能否高效支持该结构。",
+          "只要权重开源，引擎会自动识别并最优支持。",
+          "把所有新算子放在应用层实现，无需与引擎协作。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需与引擎社区协作并前置考虑内核可行性。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-expert-streaming-ssd-01",
+    "category": "llm-systems",
+    "topic": "inference-optimization",
+    "tags": [
+      "专家卸载",
+      "SSD",
+      "端侧"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "从 SSD 流式加载专家的代价",
+      "supporting": [
+        "缓存命中",
+        "端侧"
+      ]
+    },
+    "question": "在小内存设备上把专家权重流式从 SSD 读入，评估该方案时应关注哪些指标？",
+    "explanation": "流式专家的瓶颈在数据搬运：命中率决定读取量，SSD 的随机读延迟会直接叠加到生成延迟。许可证和训练上下文长度都不是该部署方案的性能决定因素。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 30"
+    },
+    "misconceptions": [
+      "忽略存储介质的随机读取特性",
+      "把发布条款当作性能指标"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "专家缓存命中率与每 token 需要读取的专家字节数。",
+          "SSD 随机读取延迟对生成速度的叠加影响。",
+          "模型权重发布时所使用的许可证类型。",
+          "模型训练阶段所使用的上下文长度。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "关注命中率、每 token 读取量与 SSD 随机读延迟。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-full-qat-vs-lora-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "QAT",
+      "LoRA",
+      "量化"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "全参数 QAT 与 LoRA 恢复质量的取舍",
+      "supporting": [
+        "量化感知训练"
+      ]
+    },
+    "question": "量化后想恢复低比特模型质量，在全参数 QAT 与 LoRA 类适配之间，哪些判断合理？",
+    "explanation": "全参数 QAT 让整个模型适应量化误差，质量潜力更高但代价大；LoRA 类方法更省，但其效果依赖具体模型与任务，不能没有证据就下结论。QAT 仍需要数据与校准流程。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "把缺乏实验说成结论",
+      "误以为 QAT 可省略校准"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "全参数 QAT 通常质量更好，但训练成本更高。",
+          "没有实验数据时，不应断言 LoRA 一定更差或更优。",
+          "LoRA 在任何情况下都无法用于量化模型。",
+          "全参数 QAT 不需要校准数据即可完成。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "全参数 QAT 质量潜力更高但更贵；无实验不应对 LoRA 下结论。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-outlier-bit-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "离群值",
+      "位宽"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "recall",
+    "concepts": {
+      "core": "激活离群值驱动非均匀位宽",
+      "supporting": [
+        "敏感度"
+      ]
+    },
+    "question": "某层权重若统一使用低位宽就明显掉点，而该层输入存在少量极大激活值。最直接的对策是什么？",
+    "explanation": "少量离群激活会放大量化误差，正确做法是基于敏感度给关键张量更多比特，而不是一刀切降低位宽，更不能直接删除输入维度——那会改变模型语义。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 27"
+    },
+    "misconceptions": [
+      "追求形式统一而牺牲精度",
+      "误以为可以随意删除输入维度"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对敏感层或敏感张量分配更高位宽。",
+          "用敏感度指标决定哪些张量需要更多比特。",
+          "把所有层的位宽都降到相同的最低值以求一致。",
+          "删除离群激活对应的输入维度。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "对敏感张量分配更高位宽并用敏感度指导分配。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-train-ablation-insufficient-01",
+    "category": "llm-systems",
+    "topic": "training",
+    "tags": [
+      "训练",
+      "消融实验",
+      "风险"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "消融不足放大训练不确定性",
+      "supporting": [
+        "规模化训练"
+      ]
+    },
+    "question": "在扩大模型规模时，团队承认没做足够细的数据消融。这会带来什么风险？",
+    "explanation": "消融实验用于在放大前识别数据配比与训练设置的问题；做得不足会让不确定性保留到大规模训练中，问题更难追溯。但风险不等于必然失败，实际训练仍可能顺利。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 12"
+    },
+    "misconceptions": [
+      "把风险说成必然失败",
+      "否定消融实验的价值"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "训练启动时的不确定性上升，问题更难提前定位。",
+          "数据配比中的缺陷可能直到训练后期才暴露。",
+          "模型必然无法收敛，训练一定失败。",
+          "消融实验对大规模训练没有任何价值。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "消融不足使不确定性与后期暴露风险上升，但不等于必然失败。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-harness-start-now-01",
+    "category": "llm-systems",
+    "topic": "agent-fundamentals",
+    "tags": [
+      "Agent",
+      "本地模型",
+      "端侧"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "端侧 Agent 应尽早用本地模型验证",
+      "supporting": [
+        "效率约束持续存在"
+      ]
+    },
+    "question": "有人打算等小模型达到与云端相当的能力后再开始做端侧 Agent。对此建议合理的回应包括哪些？",
+    "explanation": "效率约束是端侧长期存在的现实，尽早搭建 harness 并测试真实场景，能积累可随模型升级复用的工程资产。等待「完全追平」既不现实，也会浪费迭代时间。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 30"
+    },
+    "misconceptions": [
+      "误以为要等能力追平才能开始",
+      "以为框架工作不可迁移"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "现在就可以用本地小模型搭建 Agent 框架并验证真实用例。",
+          "端侧效率约束会长期存在，相关技术持续演进。",
+          "必须等模型完全追平云端，否则所有前期工作都会作废。",
+          "端侧 Agent 的框架工作无法迁移到更强的模型上。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应现在开始搭建并验证，效率约束长期存在且框架可复用。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-model-selection-task-fit-01",
+    "category": "llm-systems",
+    "topic": "model-selection",
+    "tags": [
+      "模型选择",
+      "成本",
+      "任务分布"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "evaluate",
+    "concepts": {
+      "core": "按任务分布与成本选择模型",
+      "supporting": [
+        "基准与真实任务"
+      ]
+    },
+    "question": "为团队选择默认模型时，除榜单成绩外，哪些因素应该纳入决策？",
+    "explanation": "模型选择是任务—成本—约束的匹配问题：要看真实任务分布、失败代价、单位成本与部署条件。榜单可作为信号之一，但单一分数和品牌印象不足以支撑决策。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 17"
+    },
+    "misconceptions": [
+      "把品牌印象当作技术依据",
+      "用单一分数代替全貌"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "目标任务的真实分布与失败代价。",
+          "单位任务成本、延迟与部署方式是否匹配约束。",
+          "模型名称是否听起来更先进。",
+          "只看该模型在单一公开基准上的最高分。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按任务分布、失败代价与成本/延迟约束综合选择。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-reliability-stop-condition-01",
+    "category": "llm-systems",
+    "topic": "reliability",
+    "tags": [
+      "可靠性",
+      "Agent",
+      "停止条件"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "Agent 需要明确的停止与上报条件",
+      "supporting": [
+        "不确定性处理"
+      ]
+    },
+    "question": "为避免 Agent 在信息不足时编造答案或无限重试，设计时通常要加入哪些机制？",
+    "explanation": "可靠性来自明确的边界：有证据才断言，证据不足时停止并说明；重试要有判据与上限。强制给出确定答案会激励幻觉，无限重试则造成循环与成本失控。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 2"
+    },
+    "misconceptions": [
+      "把强制给答案当作可靠性",
+      "用无限重试代替停止判据"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确区分「可继续尝试」与「应停止并上报信息不足」。",
+          "把工具执行结果作为断言事实的前提条件。",
+          "规定无论什么情况都必须给出确定性答案。",
+          "把最大重试次数设为无限，直到模型自称成功。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需要信息不足时的停止上报机制，并以工具结果作为断言前提。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-structured-output-tool-json-01",
+    "category": "llm-systems",
+    "topic": "structured-output",
+    "tags": [
+      "结构化输出",
+      "工具调用",
+      "JSON"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "工具调用 JSON 的约束与解析",
+      "supporting": [
+        "参数校验"
+      ]
+    },
+    "question": "让模型以 JSON 对象形式发起工具调用时，哪些做法能减少协议错误？",
+    "explanation": "结构化调用需要把协议写清楚：字段名、类型、可选工具名；解析端再做校验，形成双保险。缺少约定会产生大量格式与幻觉错误，允许模型自创工具名则带来安全与控制问题。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 32"
+    },
+    "misconceptions": [
+      "以为「输出 JSON」足够",
+      "误以为动态实现工具名是安全的"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在提示中明确字段名、类型与合法工具名集合。",
+          "解析前校验工具名与参数类型，拒绝未知字段。",
+          "只告诉模型「输出 JSON」，不给出字段约定。",
+          "允许模型自由发明工具名，由后端动态实现。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确协议并在解析端校验工具名和参数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-observability-tool-trace-01",
+    "category": "llm-systems",
+    "topic": "observability",
+    "tags": [
+      "可观测性",
+      "Agent",
+      "工具轨迹"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "troubleshoot",
+    "concepts": {
+      "core": "工具轨迹是可观测性的核心数据",
+      "supporting": [
+        "失败定位"
+      ]
+    },
+    "question": "某 Agent 任务失败，但只有最终答案没有过程记录。要定位失败原因，最需要补充哪些观测数据？",
+    "explanation": "Agent 失败常发生在某个工具调用或状态转移上，没有轨迹就无法区分是工具错误、参数幻觉还是状态漂移。最终答案的布尔标签与权重哈希都不提供定位信息。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 2"
+    },
+    "misconceptions": [
+      "把结果指标当作诊断数据",
+      "误以为权重哈希能解释行为"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "每轮工具名、参数、返回值与耗时。",
+          "模型输出的中间推理与状态变更摘要。",
+          "仅记录最终答案是否正确。",
+          "仅记录模型权重文件的哈希值。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需要工具调用轨迹与状态摘要，而非只看最终结果。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-infer-prefill-vs-decode-01",
+    "category": "llm-systems",
+    "topic": "inference-modes",
+    "tags": [
+      "推理阶段",
+      "prefill",
+      "decode"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "concepts": {
+      "core": "prefill 与 decode 的资源特征不同",
+      "supporting": [
+        "稀疏度",
+        "带宽"
+      ]
+    },
+    "question": "比较同一稀疏模型在 prefill 与 decode 阶段的表现，哪些判断成立？",
+    "explanation": "prefill 可并行处理大量 token，算力利用率高；decode 每次只算一个 token，权重读取成本主导。稀疏度会改变两阶段的计算量，但不会让二者瓶颈一致。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 5"
+    },
+    "misconceptions": [
+      "把两阶段瓶颈混为一谈",
+      "误以为稀疏只作用于 prefill"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "prefill 处理整段提示，通常更偏计算密集。",
+          "decode 逐 token 生成，通常更受权重读取带宽限制。",
+          "两个阶段的资源瓶颈完全相同，可用同一套优化。",
+          "稀疏度只影响 prefill，对 decode 没有任何影响。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "prefill 偏算力、decode 偏带宽，稀疏度对两者都有影响。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-expert-parallel-comm-01",
+    "category": "llm-systems",
+    "topic": "expert-parallelism-communication",
+    "tags": [
+      "专家并行",
+      "通信",
+      "分布式"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "专家并行的通信代价",
+      "supporting": [
+        "分布式推理"
+      ]
+    },
+    "question": "把不同专家分布到多台设备上做并行推理时，架构设计必须考虑哪些代价？",
+    "explanation": "专家并行的核心代价是路由后的跨设备通信与负载不均；稀疏度、专家数量与路由分布都会改变通信量。总参数相同但专家划分不同，通信成本可能差别很大。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "忽略专家并行的通信开销",
+      "误以为参数量决定通信成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "token 需发往专家所在设备，引入跨卡通信。",
+          "专家负载不均会造成设备等待与尾延迟。",
+          "专家数量越多，通信开销必然越小。",
+          "只要模型总参数相同，通信成本就完全相同。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需考虑 all-to-all 通信与负载不均，不能只看总参数。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-eval-blind-preference-01",
+    "category": "llm-systems",
+    "topic": "evaluation",
+    "tags": [
+      "评测",
+      "盲测",
+      "偏好"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "concepts": {
+      "core": "盲测降低品牌偏好偏差",
+      "supporting": [
+        "用户研究"
+      ]
+    },
+    "question": "在用户盲测中隐藏模型身份，主要解决什么问题？",
+    "explanation": "盲测控制的是品牌预期这一混淆变量，使用户更多依据输出质量打分；但它不能消除所有主观误差，也必须依赖统一的任务集与评分标准。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 1"
+    },
+    "misconceptions": [
+      "把盲测当成零误差方法",
+      "误以为盲测可替代任务设计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "减少品牌知名度对评分的影响。",
+          "让用户按实际输出质量而非预期进行判断。",
+          "彻底消除所有评测误差，得到客观真值。",
+          "让评测不再需要任务集与评分标准。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "盲测减少品牌预期偏差，但不能替代任务集与评分标准。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-latency-tool-rounds-01",
+    "category": "llm-systems",
+    "topic": "latency",
+    "tags": [
+      "延迟",
+      "工具调用",
+      "并行"
+    ],
+    "difficulty": "easy",
+    "angle": "calculation",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "多轮工具的延迟累积",
+      "supporting": [
+        "串并行"
+      ]
+    },
+    "question": "某任务需要 5 次串行工具调用，每次往返约 1 秒，模型生成另需 3 秒。若把其中 3 次改为并行、总往返降为 3 秒，总延迟约变为多少？",
+    "explanation": "并行后工具往返共 3 秒，加上生成 3 秒，总计约 6 秒。原串行方案为 5 + 3 = 8 秒。并行并不消除工具耗时，只是压缩了等待轮次。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "把并行调用当成零耗时",
+      "仍按全部串行累加"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约 6 秒",
+          "约 8 秒",
+          "约 3 秒",
+          "约 11 秒"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案：A"
+      }
+    }
+  },
+  {
+    "id": "ama-context-long-agent-drift-01",
+    "category": "llm-systems",
+    "topic": "context-window",
+    "tags": [
+      "长上下文",
+      "状态漂移",
+      "Agent"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "diagnose",
+    "concepts": {
+      "core": "长程任务中的状态漂移",
+      "supporting": [
+        "上下文压缩"
+      ]
+    },
+    "question": "Agent 在很长任务中逐渐偏离最初目标，开始重复已完成步骤。哪些机制有助于缓解？",
+    "explanation": "状态漂移需要显式的目标回写与结构化状态摘要来纠正；丢弃历史会丢失约束，单纯扩大窗口无法解决注意力稀释与重复问题。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "把丢弃历史当重置",
+      "以为窗口够大就无需状态管理"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "周期性回写并校验目标与未完成任务清单。",
+          "对历史做结构化摘要，保留约束与已完成状态。",
+          "把历史全部丢弃，每轮重新开始推理。",
+          "无限延长窗口，永不做任何状态管理。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "周期性回写目标并做结构化摘要，而非丢弃历史或只扩窗口。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-reliability-verify-before-claim-01",
+    "category": "llm-systems",
+    "topic": "factuality-verification",
+    "tags": [
+      "事实核验",
+      "可靠性",
+      "断言"
+    ],
+    "difficulty": "easy",
+    "angle": "boundary",
+    "cognitiveTask": "apply",
+    "concepts": {
+      "core": "先验证再断言的边界",
+      "supporting": [
+        "工具回执"
+      ]
+    },
+    "question": "Agent 准备向用户报告「修改已通过测试」。在给出该结论前，最低限度需要什么证据？",
+    "explanation": "「已通过测试」是关于世界状态的断言，必须由实际执行结果支持，且回执要能对应本次修改。推理预期或测试文件存在都不足以证明执行成功。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "AMA"
+    },
+    "misconceptions": [
+      "把预测当结果",
+      "把文件存在当执行成功"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "测试工具实际执行并返回成功结果。",
+          "能够对应到本次修改的测试日志或回执。",
+          "模型自己的推理认为测试应该会通过。",
+          "代码中存在测试文件这一事实。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需真实执行成功回执并对应本次修改。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-eval-production-resilience-01",
+    "category": "llm-systems",
+    "topic": "knowledge-eval-production-resilience",
+    "tags": [
+      "评测",
+      "生产",
+      "漂移"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "评测需覆盖生产环境的分布漂移",
+      "supporting": [
+        "真实反馈"
+      ]
+    },
+    "question": "内部评测表现稳定，但上线后用户反馈问题明显增多。最应补充哪些评测环节？",
+    "explanation": "生产分布会随时间漂移，评测集必须随真实用户任务更新，并把新失败模式转成回归用例与监控信号。一次性评测或屏蔽反馈只会让问题更晚暴露。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 17"
+    },
+    "misconceptions": [
+      "把评测当作一次性活动",
+      "以屏蔽反馈维持表面稳定"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用真实用户任务样本构建回归集并定期重跑。",
+          "把生产中的新失败模式纳入内部评测与监控。",
+          "只在发布前跑一次评测，之后依赖榜单更新。",
+          "禁止用户反馈，以保持评测分布不变。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用真实任务更新回归集并纳入监控，而非一次性评测。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-quant-official-build-matters-01",
+    "category": "llm-systems",
+    "topic": "quantization",
+    "tags": [
+      "量化",
+      "GPTQ",
+      "校准"
+    ],
+    "difficulty": "medium",
+    "angle": "diagnosis",
+    "cognitiveTask": "troubleshoot",
+    "concepts": {
+      "core": "官方量化构建与校准质量的重要性",
+      "supporting": [
+        "GPTQ",
+        "NVFP4"
+      ]
+    },
+    "question": "用户自测发现某模型的第三方 4-bit 构建错误率明显高于托管版本，而另一款模型的同类量化几乎无损。排查方向应优先放在哪里？",
+    "explanation": "同一模型不同构建的误差差异，通常来自量化算法、校准数据与实现细节，而非模型本身不可量化。官方构建常用成熟的量化方法并提供参考校准，应先作为基线对比；网络延迟不影响输出正确率。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 17"
+    },
+    "misconceptions": [
+      "把实现差异误判为架构不可量化",
+      "把精度差异归因于网络延迟"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先确认量化算法与校准流程是否与官方构建一致。",
+          "优先尝试官方提供的量化版本，再与自建版本对比。",
+          "直接判定该模型架构不可量化，应放弃低比特部署。",
+          "把差异归因于托管服务的网络延迟。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "先核对量化算法与校准，并以官方构建作基线。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-scaling-small-exp-transfer-01",
+    "category": "llm-systems",
+    "topic": "scaling-law",
+    "tags": [
+      "Scaling",
+      "数据配比",
+      "实验设计"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "cognitiveTask": "infer",
+    "concepts": {
+      "core": "小规模数据配比实验的放大方法",
+      "supporting": [
+        "scaling ladder",
+        "规模依赖"
+      ]
+    },
+    "question": "团队想用小规模模型的数据配比实验来指导大模型训练。为避免误判，合理的做法包括哪些？",
+    "explanation": "数据配比的效果可能随规模变化；scaling ladder（在多个规模上重复实验）能识别稳定结论与规模依赖现象。直接外推单次小实验结果，容易在大模型上失效。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 29"
+    },
+    "misconceptions": [
+      "把小模型结论直接外推",
+      "忽略规模依赖效应"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在多个模型规模上重复实验，观察结论是否稳定。",
+          "警惕某些现象只在特定规模出现，不能直接线性外推。",
+          "把小模型的最优配比直接视为大模型的最优配比。",
+          "只跑一次小规模实验，然后完全按该结果投入训练。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用多规模实验验证稳定性，警惕规模依赖，不直接外推。正确答案：A、B"
+      }
+    }
+  },
+  {
+    "id": "ama-agent-long-horizon-eval-01",
+    "category": "llm-systems",
+    "topic": "agent-loop",
+    "tags": [
+      "Agent",
+      "评测",
+      "长程"
+    ],
+    "difficulty": "medium",
+    "angle": "system-design",
+    "cognitiveTask": "design",
+    "concepts": {
+      "core": "长程 Agent 评测需覆盖过程质量",
+      "supporting": [
+        "任务多样性",
+        "状态保持"
+      ]
+    },
+    "question": "要评测 Agent 能否连续自主运行数百轮并保持代码整洁，仅看「最终测试是否通过」为什么不够？",
+    "explanation": "长程任务的风险在于过程中积累的漂移、重复与结构腐化，最终测试通过可能掩盖这些问题。因此评测应同时覆盖过程轨迹、代码整洁度与文档一致性，并保证任务多样性。",
+    "source": {
+      "materialId": "reddit-localllama-hy4-ama-2026-11",
+      "section": "Page 2"
+    },
+    "misconceptions": [
+      "把最终结果当作过程质量的证据",
+      "误以为过程质量只能靠参数"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "无法发现中途的状态漂移与重复劳动。",
+          "无法衡量多轮修改的整洁度、文档一致性与可理解性。",
+          "最终通过测试就说明所有中间决策都最优。",
+          "过程质量只能通过增加模型参数量来改善。"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          1
+        ]
+      },
+      "open": {
+        "referenceAnswer": "需额外检查过程漂移与代码整洁度，不能只看最终测试。正确答案：A、B"
+      }
+    }
+  }
+]
