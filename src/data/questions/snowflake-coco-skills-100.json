@@ -545,19 +545,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "按实体键匹配并验证包含边界的有效区间关系",
+          "只按 `valid_from` 排序后忽略区间结束时间",
           "只按客户键做普通连接并保留所有历史版本",
           "用当前日期替代订单日期来匹配维表记录",
-          "只按 `valid_from` 排序后忽略区间结束时间"
+          "按实体键匹配并验证包含边界的有效区间关系"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -1111,17 +1111,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "以语义视图定义维度和具名指标，再让 Cortex Analyst 生成查询",
           "先对所有表执行文档分块和向量检索，再将片段拼成答案",
+          "以语义视图定义维度和具名指标，再让 Cortex Analyst 生成查询",
           "直接把所有表的 DDL 发给模型，不设置指标口径和关系约束",
           "让浏览器端用本地数组计算全部订单，忽略 Snowflake 数据"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -1173,18 +1173,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "通过 Cortex Search 检索相关文本块，再生成带引用的答案",
-          "把所有文本块转成数字列并用 SUM 汇总后回答",
           "用只包含业务维度和指标的语义视图代替全文检索",
+          "把所有文本块转成数字列并用 SUM 汇总后回答",
+          "通过 Cortex Search 检索相关文本块，再生成带引用的答案",
           "让模型直接凭预训练知识回答，不检索内部政策"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -1235,19 +1235,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "由 Cortex Agent 编排 Analyst 与 Search 工具，并分别定义工具边界",
+          "把所有工具合并成一个无类型字符串接口，不保留执行结果，并通过样本数据检查其影响",
           "让单个 SQL 查询同时承担全文检索、工具路由和业务审批，并在目标环境验证实际结果",
           "将工具输出视为可信指令，不检查来源与权限，再结合权限和运行状态核验",
-          "把所有工具合并成一个无类型字符串接口，不保留执行结果，并通过样本数据检查其影响"
+          "由 Cortex Agent 编排 Analyst 与 Search 工具，并分别定义工具边界"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -1544,17 +1544,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "区分实体主键、事实粒度和关系基数，再映射类与属性",
           "只按列名相同就把两个表映射成同一个实体",
+          "区分实体主键、事实粒度和关系基数，再映射类与属性",
           "让关系视图忽略重复客户键，避免处理一对多关联",
           "先生成 Agent，再通过自然语言提示修补错误的实体模型"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -1729,18 +1729,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "先创建满足分析需求的语义视图，暂不引入完整本体堆栈",
-          "为了架构完整，立即创建全部元数据表和图算法工具",
           "先建立 KG_NODE/KG_EDGE 并复制全部来源数据",
+          "为了架构完整，立即创建全部元数据表和图算法工具",
+          "先创建满足分析需求的语义视图，暂不引入完整本体堆栈",
           "让 Cortex Agent 直接对所有表生成自由 SQL，不提供语义定义"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -1790,19 +1790,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "Ontology Metadata 层，为类、属性和规则提供可查询的定义",
+          "Cortex Agent 层，负责持久化所有业务实体行",
           "Abstract Views 层，负责直接保存所有原始交易事实",
           "Semantic Views 层，专门存储模型生成的 SQL 文本",
-          "Cortex Agent 层，负责持久化所有业务实体行"
+          "Ontology Metadata 层，为类、属性和规则提供可查询的定义"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -1851,17 +1851,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "核对各层对象、行数和抽样查询，再执行端到端 Agent 问答测试",
           "只确认 Agent 创建命令成功，然后默认所有关系都正确",
+          "核对各层对象、行数和抽样查询，再执行端到端 Agent 问答测试",
           "只查看可视化图形，不验证底层 SQL 和数据",
           "忽略生成语义层的测试，因为 Agent 会自动纠错"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -1913,18 +1913,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "使用 Dynamic Tables 表达声明式转换，并设置合理的新鲜度目标",
-          "把所有逻辑塞进需要人工启动的单次脚本，并通过样本数据检查其影响",
           "为每一步建立手工触发的 Task，不先评估声明式方案",
+          "把所有逻辑塞进需要人工启动的单次脚本，并通过样本数据检查其影响",
+          "使用 Dynamic Tables 表达声明式转换，并设置合理的新鲜度目标",
           "用单表物化视图强行表达所有多步 JOIN 和业务流程"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -2353,19 +2353,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "评估针对单表查询加速的 Materialized View",
+          "创建 Cortex Agent 将每条 SQL 改写成自然语言",
           "建立含多层业务状态管理的完整 Task DAG",
           "为单表查询先构建跨仓库 dbt 发布流程",
-          "创建 Cortex Agent 将每条 SQL 改写成自然语言"
+          "评估针对单表查询加速的 Materialized View"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -2415,17 +2415,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "用 Streams/Tasks 或受控过程承载过程控制与副作用",
           "只用一个声明式 Dynamic Table 并假定它可执行任意分支逻辑",
+          "用 Streams/Tasks 或受控过程承载过程控制与副作用",
           "用 Materialized View 作为通用工作流引擎",
           "只调大 Warehouse，便可获得流程控制能力"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -2477,18 +2477,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "从最终消费者的实际新鲜度出发，沿依赖链检查刷新时间、状态和目标",
-          "只确认最近一条 Task 成功，就关闭延迟告警",
           "把中间所有 TARGET_LAG 设置得更小，不读取监控信息",
+          "只确认最近一条 Task 成功，就关闭延迟告警",
+          "从最终消费者的实际新鲜度出发，沿依赖链检查刷新时间、状态和目标",
           "检查一个随机上游表的行数，不确认最终查询使用的对象"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -2980,19 +2980,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "源数据库和源 Schema，并在需要时明确目标 Schema",
+          "只提供一个目标表别名，省略其来源对象和 Schema",
           "只给一个业务主题名称，让工具猜测账户、仓库和目标位置",
           "只指定 GitHub 仓库，不需要 Snowflake 来源表信息",
-          "只提供一个目标表别名，省略其来源对象和 Schema"
+          "源数据库和源 Schema，并在需要时明确目标 Schema"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -3042,17 +3042,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "直接使用适合现有项目测试的 dbt 工作流，不调用模型生成流程",
           "调用模型生成器并重新创建全部 staging、dimension 和 fact 文件",
+          "直接使用适合现有项目测试的 dbt 工作流，不调用模型生成流程",
           "先更改源 Schema，再观察现有测试是否自动通过",
           "把测试结果交给模型口头判断，跳过真实 dbt 命令"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -3104,18 +3104,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "运行候选模型及测试，比较粒度、聚合、行数和关键指标差异",
-          "把 parse 成功当成数据语义正确的充分证据",
           "只调整文档描述让指标看起来一致，不核对 SQL 结果",
+          "把 parse 成功当成数据语义正确的充分证据",
+          "运行候选模型及测试，比较粒度、聚合、行数和关键指标差异",
           "立即合并发布，让生产用户提供错误报告"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -3599,19 +3599,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "先建立可复用的对象访问角色，再按团队职责授予功能角色",
+          "先关闭数据访问策略，等用户反馈再重新启用",
           "接受逐用户直接授权，因为用户数增加后更容易审计",
           "将所有读者加入 SYSADMIN，从而减少 GRANT 数量",
-          "先关闭数据访问策略，等用户反馈再重新启用"
+          "先建立可复用的对象访问角色，再按团队职责授予功能角色"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -3660,17 +3660,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "转交数据治理策略实现流程，RBAC 只提供适当的角色引用边界",
           "只修改功能角色名称，让策略 SQL 自动变正确",
+          "转交数据治理策略实现流程，RBAC 只提供适当的角色引用边界",
           "把策略测试视为角色继承的替代，不需要验证过滤结果",
           "通过授予更高权限绕过行访问策略，视为实现完成"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -3721,18 +3721,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "用 `SHOW GRANTS TO ROLE` 核对授予、继承和对象范围",
-          "只确认所有角色已被创建，就默认所有权限正确，并通过样本数据检查其影响",
           "让每个用户自行测试并在失败时追加高权限，结合目标负载和边界条件评估",
+          "只确认所有角色已被创建，就默认所有权限正确，并通过样本数据检查其影响",
+          "用 `SHOW GRANTS TO ROLE` 核对授予、继承和对象范围",
           "只从角色名判断权限，再省略真实授权检查，同时验证依赖链与数据契约"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -4224,19 +4224,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "比较 Snowflake 侧 Failover Group 与账户提升流程的适用性",
+          "只延长 Warehouse 自动暂停时间作为灾备措施",
           "优先建立存储复制代理，因为该场景首先是 Azure 存储故障",
           "在相同文件集合上永久开启两条活动管道而不去重，并通过样本数据检查其影响",
-          "只延长 Warehouse 自动暂停时间作为灾备措施"
+          "比较 Snowflake 侧 Failover Group 与账户提升流程的适用性"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -4286,17 +4286,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "将 Azure 特定配置视为不可直接照搬，另行验证适用于 S3 的灾备设计",
           "因为概念相似，所以可以直接复制 Azure URL 和 Event Grid 配置",
+          "将 Azure 特定配置视为不可直接照搬，另行验证适用于 S3 的灾备设计",
           "忽略存储提供商差异，仅替换一个 URL 字符串便上线",
           "把该技能的模式表当作跨云平台无条件适用的 SLA"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -4348,18 +4348,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "核对文件加载历史、唯一业务键和重放范围，并对账补数结果",
-          "只以 DR Pipe 显示 RUNNING 作为全部数据恢复完成的证据",
           "清除重复检测逻辑，以避免补数后的查询变慢",
+          "只以 DR Pipe 显示 RUNNING 作为全部数据恢复完成的证据",
+          "核对文件加载历史、唯一业务键和重放范围，并对账补数结果",
           "只比较目标表总行数，不检查文件和业务记录内容"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -4473,19 +4473,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "为不同目标组配置不同的 NLB 监听端口，例如 3301 和 3302",
+          "将其中一个数据库暴露到公网，避免共用 NLB",
           "所有监听器都必须与数据库后端端口相同，不能进行映射",
           "让 OpenFlow 根据数据库名称自动区分同一个端口的两个目标组",
-          "将其中一个数据库暴露到公网，避免共用 NLB"
+          "为不同目标组配置不同的 NLB 监听端口，例如 3301 和 3302"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {
@@ -4535,17 +4535,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "运行 endpoint 信息查询，确认状态变为 `available`",
           "只等待固定几秒后无条件创建所有对象，同时验证依赖链与数据契约",
+          "运行 endpoint 信息查询，确认状态变为 `available`",
           "看到 AWS 有 pending connection 时就默认 Snowflake 端点已经可用",
           "先建立 EAI，再倒推补充端点与网络规则，再结合权限和运行状态核验"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           1,
+          null,
           2,
           3
         ]
@@ -4849,18 +4849,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "使用 IP 类型目标组，将私有实例地址注册到 TCP 目标端口",
-          "使用公网 DNS 做 HTTP 目标健康检查，忽略数据库 TCP 端口",
           "把 Snowflake Warehouse 注册为 AWS NLB 目标",
+          "使用公网 DNS 做 HTTP 目标健康检查，忽略数据库 TCP 端口",
+          "使用 IP 类型目标组，将私有实例地址注册到 TCP 目标端口",
           "仅添加源表名，不配置网络目标和健康检查，再结合权限和运行状态核验"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          1,
           2,
+          1,
+          null,
           3
         ]
       },
@@ -4911,19 +4911,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "可以继续创建限定私有主机与端口的 Network Rule，并配置 EAI",
+          "可以删除 AWS Endpoint Service，因为 endpoint 状态不再依赖它",
           "意味着数据库账号、密码与 SQL 权限已经自动验证通过",
           "意味着所有端口都自动加入了 OpenFlow 的允许列表",
-          "可以删除 AWS Endpoint Service，因为 endpoint 状态不再依赖它"
+          "可以继续创建限定私有主机与端口的 Network Rule，并配置 EAI"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          3,
           1,
           2,
-          3
+          null
         ]
       },
       "open": {

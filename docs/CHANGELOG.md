@@ -1,5 +1,14 @@
 # 设计变更记录
 
+## 2026-11-22 · 题库结构性完整性修复与审计脚本
+
+- 新增 `npm run question:integrity`（`scripts/audit-bank-integrity.ts`）：只读审计悬空 `knowledgeId`、答案位置分布、全选项正确、正确答案前缀误读，并报告溯源/元数据/覆盖度的存量软债；`--strict` 才对结构错误失败。
+- 修复 6 道 GAN 题的 `knowledgeId` 悬空引用，统一指向已有 `gan` 节点。
+- 对 1432 道不含选项字母指代的单选题重排选项：答案位置分布由 A 38.9% / D 12.1% 收敛为 25.9% / 26.0%，单文件倾斜清零；含「A 正确」等解析的题按选项字母同步重写，避免解析与答案脱节。
+- 20 道「所有选项均正确」的多选题各换入一个可解释的错误干扰项，同步更新解析、开放参考答案与 `misconceptionMap`；无 `misconceptions` 的题由 38 降到 23。
+- 修复 `sf-cof-c03-200-snowflake-data-unloading-03` 的「正确答案：COPY INTO…」前缀：该写法会被一致性正则抓到首字母 `C` 当答案，位置重排后才暴露。
+- 存量软债未动：多选占比 51.9%（目标 ≥66.7%）、1173 题选项长度比 >1.8、1358 题无 materialId；由新脚本持续可见。
+
 ## 2026-11-22 · HuggingFace / Reddit AMA 题库批次（新增 100 题）
 
 - 来源：r/LocalLLaMA「Tencent Hy Team & Shunyu Yao AMA」44 页 PDF（用户本地存档）。Reddit 直连被站点网络策略拦截，改用用户提供的 PDF 作为唯一事实源。

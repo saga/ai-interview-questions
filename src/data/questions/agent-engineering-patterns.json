@@ -13,10 +13,11 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "在复杂的大模型 Agent（如自主代码生成或前端 UI 设计系统）中，单 Agent 自我评估（Self-Evaluation）往往难以维持高质量的输出控制。引入独立的 Evaluator Agent 构建生成-评估（Generator-Evaluator）双 Agent 或多 Agent 协作架构，其核心机制在于解决哪些问题？",
-    "explanation": "A、B 项（偏见解耦与可调优性）：LLM 普遍对自身输出具有正向偏见（Sycophancy）。将 Generator 与 Evaluator 解耦后，可以通过专门的提示词、Few-Shot 示例与严格的 Rubric（评估细则）把 Evaluator 训练得更苛刻客观，而无需污染 Generator 的创造性 Prompt。C 项（上下文干扰）：单 Agent 持续生成大量代码后，context 中充满自身推导过程和错误尝试，易陷入局部思维；独立 Evaluator 可在干净或专门构造的评估上下文中重新审视产出。D 项（工具与接地能力）：优秀的 Evaluator 通常结合 MCP（如 Playwright 或沙箱执行环境）直接操作真实应用、检验 API 响应与数据库状态，基于 Ground Truth 判断，而非仅凭 LLM 文本推理猜测代码是否可用。",
+    "explanation": "A、B 项指出自我评估的谄媚偏见与解耦后可针对性调优；C 项指出干净上下文能避开 Generator 自身推导的干扰。D 错误：接地判断需要独立工具链（如 Playwright 或沙箱执行）验证真实运行结果，仅复用上下文和文本推理无法替代。",
     "misconceptions": [
       "认为单 Agent 自评估足以保证客观质量，忽视谄媚效应（Sycophancy）与自洽偏见。",
-      "认为 Evaluator 只能做文本语义推断，无法借助真实运行环境反馈进行接地判断。"
+      "认为 Evaluator 只能做文本语义推断，无法借助真实运行环境反馈进行接地判断。",
+      "认为 Evaluator 复用 Generator 的上下文和提示词就能完成真实环境接地判断。"
     ],
     "formats": {
       "choice": {
@@ -25,17 +26,22 @@
           "单 Agent 在自我评估时极易产生谄媚效应与自洽偏见，倾向于对自身生成的代码或设计给出过高的质量评价。",
           "独立的 Evaluator Agent 可以解耦生成逻辑与检验逻辑，便于通过针对性的提示词与示例调优其批判性标准。",
           "单 Agent 经过长流程编码后上下文状态混杂，难以以客观中立的视角对其先前的历史产出进行全面审查。",
-          "Evaluator Agent 可以配备独立的交互与测试工具链，通过真实运行环境反馈取代单纯的文本语义推断。"
+          "Evaluator Agent 复用 Generator 的同一上下文与提示词即可完成可靠接地判断，无需额外工具。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A、B、C、D。\n生成-评估双 Agent 架构的核心机制是：(1) 破解单 Agent 的谄媚效应与自洽偏见（A）；(2) 解耦生成与检验逻辑，使 Evaluator 可通过专门提示词/Rubric 被调优得更苛刻客观（B）；(3) 让 Evaluator 在干净上下文中避开 Generator 自身推导的干扰做中立复审（C）；(4) 为 Evaluator 配备真实运行环境工具链（如 Playwright、沙箱），以 Ground Truth 取代纯文本推断（D）。"
+        "referenceAnswer": "生成-评估双 Agent 的价值在于偏见解耦、可独立调优评估标准，以及在干净上下文中复审；真实环境反馈需要专门工具链，不能靠复用同一上下文自动获得。"
       }
     },
     "assessment": {

@@ -12,7 +12,7 @@
     "difficulty": "hard",
     "angle": "system-design",
     "question": "在处理复杂多步骤业务时，关于单 Agent 与多 Agent（Multi-Agent）架构以及 Orchestrator-Worker 模式的工程权衡，下列哪些说法是正确的？（多选）",
-    "explanation": "点对点自由通信易冲突、Orchestrator集中分发短Worker减冲突、单职责缩小故障面、多Agent增Token与延迟。",
+    "explanation": "点对点自由通信易冲突；Orchestrator 集中上下文与分发、Worker 短命窄域能减少冲突并缩小故障面。D 错误：多 Agent 增加协调消息与调用轮次，通常提高 Token 消耗和延迟，只有任务可并行且解耦时才可能换来总时长收益。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -20,24 +20,32 @@
           "多个平级 Agent 之间直接进行点对点（Peer-to-Peer）自由通信的架构，容易因各个子 Agent 的独立决策冲突而导致整体系统行为不可控",
           "由单一中央协调者（Orchestrator）掌控全局上下文并分发任务给短生命周期（Short-lived）、单一职责的 Worker Agent，能有效减少 Agent 间的决策冲突",
           "将复杂任务拆解为多个单一职责（Narrow Scope）的小型 Agent，能够缩小单个 Agent 的故障表面（Failure Surface），提升可测试性与排查效率",
-          "多 Agent 架构在提升复杂推理解决能力的同时，通常会显著增加 Token 消耗量与系统响应延迟"
+          "多 Agent 架构通常能降低 Token 消耗与响应延迟，因为任务并行拆分后总体计算量下降。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：点对点无中心协调易冲突失控。\n- B：Orchestrator集中上下文与分发，Worker短命窄域。\n- C：窄域缩小故障面与测试复杂度。\n- D：多Agent以Token与延迟换能力，需权衡。"
+        "referenceAnswer": "多 Agent 以更多 Token 与协调开销换复杂任务能力，需与单 Agent 权衡。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「点对点自由通信易冲突、Orchestrator集中分发短Worker减冲突、单职责缩小故障面、多Agent增Token与延迟」",
       "reasoningGoal": "先拆出设计目标与不可绕过的约束；据此逐项确认「多个平级 Agent 之间直接进行点对点（Peer-…」「由单一中央协调者（Orchestrator）掌控全局…」等 4 项成立。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "认为多 Agent 天然降低 Token 消耗与延迟。"
+    ]
   },
   {
     "id": "agent-proto-01",
@@ -155,20 +163,20 @@
       "choice": {
         "type": "single",
         "options": [
-          "四个角色之间应以自由对话形式充分讨论，讨论轮数越多观点碰撞越充分、成稿质量越高，无需约束",
+          "四角色通过共享黑板交换结构化的任务与评审状态而非自由对话；Writer 只能基于通过 Critic 审核的事实卡片成稿；同一稿件打回超过次数上限就升级人工处理",
           "允许 Writer 在成稿时补充自己已知的外部知识，以保证文章的可读性与信息完整性，自由发挥更好",
           "Critic 对稿件不满意时可以无限次打回重做，直到所有角色对最终版本达成一致为止，民主即质量",
-          "四角色通过共享黑板交换结构化的任务与评审状态而非自由对话；Writer 只能基于通过 Critic 审核的事实卡片成稿；同一稿件打回超过次数上限就升级人工处理"
+          "四个角色之间应以自由对话形式充分讨论，讨论轮数越多观点碰撞越充分、成稿质量越高，无需约束"
         ],
         "answer": [
-          3
+          0
         ],
         "question": "一家内容公司搭建四角色 Multi-Agent 写作系统：Planner 定大纲、Researcher 收集资料、Critic 审核事实、Writer 成稿。试运行暴露两个问题：角色间自由对话经常越聊越偏、几十轮收不了尾；成稿里偶尔冒出 Researcher 根本没找到过的“事实”。主编要求明确协作协议与收敛机制。以下哪种设计正确？",
         "misconceptionMap": [
-          0,
+          null,
           1,
           2,
-          null
+          0
         ]
       }
     },

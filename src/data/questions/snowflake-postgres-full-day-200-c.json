@@ -13,7 +13,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake 标准表的数据通常如何组织以支持扫描优化？",
-    "explanation": "正确答案 A。Snowflake 自动将表数据组织为微分区并维护相关元数据，优化器可利用谓词和元数据跳过不需要扫描的分区。",
+    "explanation": "正确答案 C。Snowflake 自动将表数据组织为微分区并维护相关元数据，优化器可利用谓词和元数据跳过不需要扫描的分区。",
     "misconceptions": [
       "把 Snowflake 存储模型与传统逐行页面加索引模型等同起来。"
     ],
@@ -21,23 +21,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "由 Snowflake 自动组织为微分区，并保存可用于裁剪的元数据",
-          "每张表必须由用户逐个创建 B-tree 索引",
           "所有数据只保存在虚拟仓库内存中",
+          "每张表必须由用户逐个创建 B-tree 索引",
+          "由 Snowflake 自动组织为微分区，并保存可用于裁剪的元数据",
           "每个 Schema 对应一个物理磁盘页"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Snowflake 自动将表数据组织为微分区并维护相关元数据，优化器可利用谓词和元数据跳过不需要扫描的分区。"
+        "referenceAnswer": "正确答案 C。Snowflake 自动将表数据组织为微分区并维护相关元数据，优化器可利用谓词和元数据跳过不需要扫描的分区。"
       }
     },
     "knowledgeId": "snowflake-micro-partitions",
@@ -65,7 +65,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "谓词能有效触发 micro-partition pruning 时，通常意味着什么？",
-    "explanation": "正确答案 A。分区裁剪基于元数据减少需要访问的微分区，不是删除数据或保证零扫描。",
+    "explanation": "正确答案 D。分区裁剪基于元数据减少需要访问的微分区，不是删除数据或保证零扫描。",
     "misconceptions": [
       "把裁剪视为数据删除或保证所有查询零扫描的机制。"
     ],
@@ -73,23 +73,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "优化器可根据分区元数据跳过一部分不可能匹配的微分区",
+          "表数据已永久按用户指定的物理顺序排序",
           "数据库已删除不匹配的源数据",
           "所有查询都不需要扫描任何数据",
-          "表数据已永久按用户指定的物理顺序排序"
+          "优化器可根据分区元数据跳过一部分不可能匹配的微分区"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。分区裁剪基于元数据减少需要访问的微分区，不是删除数据或保证零扫描。"
+        "referenceAnswer": "正确答案 D。分区裁剪基于元数据减少需要访问的微分区，不是删除数据或保证零扫描。"
       }
     },
     "knowledgeId": "snowflake-micro-partitions",
@@ -117,7 +117,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "哪种过滤条件更有机会帮助大表减少不必要的扫描？",
-    "explanation": "正确答案 A。与常用筛选列和分区元数据对齐的范围条件有机会提升裁剪；应由 Profile/扫描统计验证实际效果。",
+    "explanation": "正确答案 B。与常用筛选列和分区元数据对齐的范围条件有机会提升裁剪；应由 Profile/扫描统计验证实际效果。",
     "misconceptions": [
       "认为任意 WHERE 条件都会取得相同的分区裁剪效果。"
     ],
@@ -125,23 +125,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "直接针对有选择性且与分区元数据相关的日期/范围列过滤",
           "对所有记录先执行复杂 UDF 再过滤且无其他条件",
+          "直接针对有选择性且与分区元数据相关的日期/范围列过滤",
           "不限制时间或业务范围地扫描整表",
           "尽可能选取无法形成有效筛选的恒真谓词"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。与常用筛选列和分区元数据对齐的范围条件有机会提升裁剪；应由 Profile/扫描统计验证实际效果。"
+        "referenceAnswer": "正确答案 B。与常用筛选列和分区元数据对齐的范围条件有机会提升裁剪；应由 Profile/扫描统计验证实际效果。"
       }
     },
     "knowledgeId": "snowflake-micro-partitions",
@@ -223,9 +223,10 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "关于微分区裁剪与传统索引，哪些表述准确？",
-    "explanation": "正确答案 A、B、C、D。Snowflake 自动微分区是其存储/优化模型的重要组成部分；并非所有过滤都能有效裁剪，也不应机械照搬传统索引设计。",
+    "explanation": "Snowflake 自动微分区支持扫描裁剪，传统 B-tree 索引不能机械照搬，裁剪也不保证每次只访问极少分区。D 错误：优化策略需随查询模式与测量结果持续验证调整，不能一次固定。",
     "misconceptions": [
-      "认为标准 Snowflake 表必须先人工创建传统 B-tree 索引。"
+      "认为标准 Snowflake 表必须先人工创建传统 B-tree 索引。",
+      "认为优化策略可一次固定、无需按查询模式复测。"
     ],
     "formats": {
       "choice": {
@@ -234,23 +235,22 @@
           "微分区元数据可在无需用户逐条维护 B-tree 的情况下支持扫描裁剪",
           "传统数据库索引类型不能机械映射为 Snowflake 标准表的同样操作",
           "使用裁剪并不意味着所有查询总是只访问极少分区",
-          "应根据实际查询模式和测量结果决定后续优化"
+          "应根据最佳实践一次性固定优化策略，无需结合实际查询模式和测量结果调整。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
         ],
         "misconceptionMap": [
           null,
           null,
           null,
-          null
+          1
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A、B、C、D。Snowflake 自动微分区是其存储/优化模型的重要组成部分；并非所有过滤都能有效裁剪，也不应机械照搬传统索引设计。"
+        "referenceAnswer": "微分区裁剪由元数据驱动；是否生效取决于过滤模式，需用真实查询与测量结果决定后续优化。"
       }
     },
     "knowledgeId": "snowflake-micro-partitions",
@@ -385,7 +385,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "微分区中的列值范围和其他元数据为何重要？",
-    "explanation": "正确答案 A。微分区元数据支持分区裁剪等优化判断，不承担业务质量和时延 SLA 的所有职责。",
+    "explanation": "正确答案 C。微分区元数据支持分区裁剪等优化判断，不承担业务质量和时延 SLA 的所有职责。",
     "misconceptions": [
       "把存储元数据推断能力误认为数据完整性与性能保证。"
     ],
@@ -393,23 +393,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "优化器可用它们判断微分区是否可能匹配过滤谓词",
-          "它们自动替代数据质量校验",
           "它们保证任意查询具有固定响应时间",
+          "它们自动替代数据质量校验",
+          "优化器可用它们判断微分区是否可能匹配过滤谓词",
           "它们会强制实施主键唯一性"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。微分区元数据支持分区裁剪等优化判断，不承担业务质量和时延 SLA 的所有职责。"
+        "referenceAnswer": "正确答案 C。微分区元数据支持分区裁剪等优化判断，不承担业务质量和时延 SLA 的所有职责。"
       }
     },
     "knowledgeId": "snowflake-micro-partitions",
@@ -545,7 +545,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "在 Snowflake 中，评估 Search Optimization Service 的常见起点是什么？",
-    "explanation": "正确答案 A。Search Optimization 适合特定且选择性较高的查找访问模式；启用前分析查询形态、功能适用条件与维护成本。",
+    "explanation": "正确答案 D。Search Optimization 适合特定且选择性较高的查找访问模式；启用前分析查询形态、功能适用条件与维护成本。",
     "misconceptions": [
       "认为 Search Optimization 是所有查询通用且免费的加速开关。"
     ],
@@ -553,23 +553,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "高选择性的点查或特定查找模式是否受益",
+          "能否取代所有 SQL 质量检查",
           "所有表是否都应默认开启",
           "是否需要替代角色授权",
-          "能否取代所有 SQL 质量检查"
+          "高选择性的点查或特定查找模式是否受益"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Search Optimization 适合特定且选择性较高的查找访问模式；启用前分析查询形态、功能适用条件与维护成本。"
+        "referenceAnswer": "正确答案 D。Search Optimization 适合特定且选择性较高的查找访问模式；启用前分析查询形态、功能适用条件与维护成本。"
       }
     },
     "knowledgeId": "snowflake-query-optimization-services",
@@ -597,7 +597,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "大表主要按日期范围查询且常出现微分区重叠，哪项更应优先评估？",
-    "explanation": "正确答案 A。日期范围与微分区局部性问题可评估聚簇键，但需要基线、表变化频率和维护成本证据。",
+    "explanation": "正确答案 B。日期范围与微分区局部性问题可评估聚簇键，但需要基线、表变化频率和维护成本证据。",
     "misconceptions": [
       "机械照搬传统 B-tree 索引来处理所有大表访问问题。"
     ],
@@ -605,23 +605,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "按访问模式评估聚簇键及自动聚簇维护收益",
           "对标准表直接创建 PostgreSQL B-tree 索引",
+          "按访问模式评估聚簇键及自动聚簇维护收益",
           "不看 Profile 就同时启用所有优化服务",
           "移除日期过滤以增加可缓存结果"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。日期范围与微分区局部性问题可评估聚簇键，但需要基线、表变化频率和维护成本证据。"
+        "referenceAnswer": "正确答案 B。日期范围与微分区局部性问题可评估聚簇键，但需要基线、表变化频率和维护成本证据。"
       }
     },
     "knowledgeId": "snowflake-query-optimization-services",
@@ -1079,7 +1079,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake 中减少不必要数据读取的常见第一步是什么？",
-    "explanation": "正确答案 A。通过明确过滤范围、减少无关列和检查微分区裁剪，往往是直接的查询优化起点。",
+    "explanation": "正确答案 C。通过明确过滤范围、减少无关列和检查微分区裁剪，往往是直接的查询优化起点。",
     "misconceptions": [
       "认为必须先做物理重建或创建传统索引才能优化读取。"
     ],
@@ -1087,23 +1087,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "使用有业务选择性的过滤条件并检查裁剪效果",
-          "对所有列统一创建传统 B-tree 索引",
           "删除所有未被当前报表使用的历史数据",
+          "对所有列统一创建传统 B-tree 索引",
+          "使用有业务选择性的过滤条件并检查裁剪效果",
           "每次查询都先复制整表"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。通过明确过滤范围、减少无关列和检查微分区裁剪，往往是直接的查询优化起点。"
+        "referenceAnswer": "正确答案 C。通过明确过滤范围、减少无关列和检查微分区裁剪，往往是直接的查询优化起点。"
       }
     },
     "knowledgeId": "snowflake-layout-performance-patterns",
@@ -1617,7 +1617,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake RBAC 的基本治理原则是什么？",
-    "explanation": "正确答案 A。角色为权限分配和组织提供边界；通过角色继承及授予机制管理权限，可减少直接用户授权的分散治理。",
+    "explanation": "正确答案 D。角色为权限分配和组织提供边界；通过角色继承及授予机制管理权限，可减少直接用户授权的分散治理。",
     "misconceptions": [
       "把认证、仓库使用权与数据对象授权混为一谈。"
     ],
@@ -1625,23 +1625,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "将权限授予角色，再把角色授予用户或其他角色",
+          "Warehouse 大小决定 SQL 对象授权",
           "把所有权限直接授予每个用户并重复维护",
           "能登录的用户自动获得所有表权限",
-          "Warehouse 大小决定 SQL 对象授权"
+          "将权限授予角色，再把角色授予用户或其他角色"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。角色为权限分配和组织提供边界；通过角色继承及授予机制管理权限，可减少直接用户授权的分散治理。"
+        "referenceAnswer": "正确答案 D。角色为权限分配和组织提供边界；通过角色继承及授予机制管理权限，可减少直接用户授权的分散治理。"
       }
     },
     "knowledgeId": "snowflake-role-hierarchy-grants",

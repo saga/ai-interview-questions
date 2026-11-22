@@ -14,7 +14,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "`pg_dump` 的主要用途是什么？",
-    "explanation": "正确答案 A。pg_dump 生成逻辑备份，可导出数据库对象定义和数据；它与物理备份和持续 WAL 归档是不同方法。",
+    "explanation": "正确答案 D。pg_dump 生成逻辑备份，可导出数据库对象定义和数据；它与物理备份和持续 WAL 归档是不同方法。",
     "misconceptions": [
       "将逻辑导出命令当作物理集群备份或复制工具。"
     ],
@@ -22,23 +22,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "创建数据库的逻辑备份/导出",
+          "显示单条 SQL 的执行计划",
           "启动流复制副本",
           "自动清理死元组",
-          "显示单条 SQL 的执行计划"
+          "创建数据库的逻辑备份/导出"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。pg_dump 生成逻辑备份，可导出数据库对象定义和数据；它与物理备份和持续 WAL 归档是不同方法。"
+        "referenceAnswer": "正确答案 D。pg_dump 生成逻辑备份，可导出数据库对象定义和数据；它与物理备份和持续 WAL 归档是不同方法。"
       }
     },
     "knowledgeId": "postgresql-backup-restore-pitr",
@@ -66,7 +66,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "对 pg_dump 产生的 custom-format 备份文件，通常使用哪个工具恢复？",
-    "explanation": "正确答案 A。pg_restore 用于恢复 pg_dump 的自定义格式、目录格式或 tar 格式归档，并支持对象选择等恢复选项。",
+    "explanation": "正确答案 B。pg_restore 用于恢复 pg_dump 的自定义格式、目录格式或 tar 格式归档，并支持对象选择等恢复选项。",
     "misconceptions": [
       "混淆备份导出工具与其他管理诊断工具。"
     ],
@@ -74,23 +74,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "pg_restore",
           "pg_stat_activity",
+          "pg_restore",
           "pg_rewind",
           "vacuumdb"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。pg_restore 用于恢复 pg_dump 的自定义格式、目录格式或 tar 格式归档，并支持对象选择等恢复选项。"
+        "referenceAnswer": "正确答案 B。pg_restore 用于恢复 pg_dump 的自定义格式、目录格式或 tar 格式归档，并支持对象选择等恢复选项。"
       }
     },
     "knowledgeId": "postgresql-backup-restore-pitr",
@@ -118,7 +118,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "PostgreSQL 时间点恢复（PITR）通常需要哪种组合？",
-    "explanation": "正确答案 A。PITR 依赖基础备份以及从该备份恢复到目标时间点所需的 WAL；还必须保留恢复配置和目标时间信息。",
+    "explanation": "正确答案 C。PITR 依赖基础备份以及从该备份恢复到目标时间点所需的 WAL；还必须保留恢复配置和目标时间信息。",
     "misconceptions": [
       "认为一份逻辑导出就能直接恢复到任意历史秒点。"
     ],
@@ -126,23 +126,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "可用的基础备份和所需时间范围内连续可用的 WAL 归档",
-          "只有一份任意时刻的 CSV 导出",
           "仅有 pg_stat_statements 统计",
+          "只有一份任意时刻的 CSV 导出",
+          "可用的基础备份和所需时间范围内连续可用的 WAL 归档",
           "只增加 max_connections"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。PITR 依赖基础备份以及从该备份恢复到目标时间点所需的 WAL；还必须保留恢复配置和目标时间信息。"
+        "referenceAnswer": "正确答案 C。PITR 依赖基础备份以及从该备份恢复到目标时间点所需的 WAL；还必须保留恢复配置和目标时间信息。"
       }
     },
     "knowledgeId": "postgresql-backup-restore-pitr",
@@ -548,7 +548,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 的 WAL（Write-Ahead Log）最核心的职责是什么？",
-    "explanation": "正确答案 A。WAL 先记录变更并支持崩溃恢复，也用于备份恢复和复制等机制。",
+    "explanation": "正确答案 D。WAL 先记录变更并支持崩溃恢复，也用于备份恢复和复制等机制。",
     "misconceptions": [
       "将 WAL 理解为普通查询日志或永久独立备份。"
     ],
@@ -556,23 +556,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "在数据页变更写回之前记录必要的变更信息，以支持恢复",
+          "自动决定所有查询的连接顺序",
           "存储 SQL 用户的明文密码",
           "替代所有数据备份",
-          "自动决定所有查询的连接顺序"
+          "在数据页变更写回之前记录必要的变更信息，以支持恢复"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。WAL 先记录变更并支持崩溃恢复，也用于备份恢复和复制等机制。"
+        "referenceAnswer": "正确答案 D。WAL 先记录变更并支持崩溃恢复，也用于备份恢复和复制等机制。"
       }
     },
     "knowledgeId": "postgresql-wal-replication-ha",
@@ -601,7 +601,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 物理流复制通常会把什么发送到备用服务器？",
-    "explanation": "正确答案 A。物理流复制基于 WAL 传输和重放，使备用实例维护相应的物理数据库状态。",
+    "explanation": "正确答案 B。物理流复制基于 WAL 传输和重放，使备用实例维护相应的物理数据库状态。",
     "misconceptions": [
       "把物理复制理解为仅转发 SQL 语句。"
     ],
@@ -609,23 +609,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "WAL 记录并重放主库的物理变更",
           "只传输 SELECT 查询文本",
+          "WAL 记录并重放主库的物理变更",
           "只复制表结构，不传递数据修改",
           "仅复制 PostgreSQL 日志文件中的错误消息"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。物理流复制基于 WAL 传输和重放，使备用实例维护相应的物理数据库状态。"
+        "referenceAnswer": "正确答案 B。物理流复制基于 WAL 传输和重放，使备用实例维护相应的物理数据库状态。"
       }
     },
     "knowledgeId": "postgresql-wal-replication-ha",
@@ -654,7 +654,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "PostgreSQL 逻辑复制通常通过哪种机制声明数据变更发布与订阅关系？",
-    "explanation": "正确答案 A。逻辑复制通过发布端定义 publication、订阅端定义 subscription 来传输所支持的逻辑变更。",
+    "explanation": "正确答案 C。逻辑复制通过发布端定义 publication、订阅端定义 subscription 来传输所支持的逻辑变更。",
     "misconceptions": [
       "把逻辑复制的配置对象与索引或清理命令混淆。"
     ],
@@ -662,23 +662,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "PUBLICATION 和 SUBSCRIPTION",
-          "Schema search_path 和 psql 元命令",
           "VACUUM 和 ANALYZE",
+          "Schema search_path 和 psql 元命令",
+          "PUBLICATION 和 SUBSCRIPTION",
           "B-tree 与 GIN 索引"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。逻辑复制通过发布端定义 publication、订阅端定义 subscription 来传输所支持的逻辑变更。"
+        "referenceAnswer": "正确答案 C。逻辑复制通过发布端定义 publication、订阅端定义 subscription 来传输所支持的逻辑变更。"
       }
     },
     "knowledgeId": "postgresql-wal-replication-ha",
@@ -1091,7 +1091,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "大量应用请求都创建独立 PostgreSQL 连接，为什么可能成为瓶颈？",
-    "explanation": "正确答案 A。PostgreSQL 连接会消耗服务端和操作系统资源；超过合适并发度可能增加竞争而非提升吞吐。",
+    "explanation": "正确答案 D。PostgreSQL 连接会消耗服务端和操作系统资源；超过合适并发度可能增加竞争而非提升吞吐。",
     "misconceptions": [
       "认为增加连接数必然改善数据库吞吐。"
     ],
@@ -1099,23 +1099,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "每个连接/后端会消耗服务端和操作系统资源",
+          "连接数越多一定提供越高吞吐",
           "连接并发过高会增加上下文切换和资源竞争",
           "数据库连接没有任何资源成本",
-          "连接数越多一定提供越高吞吐"
+          "每个连接/后端会消耗服务端和操作系统资源"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。PostgreSQL 连接会消耗服务端和操作系统资源；超过合适并发度可能增加竞争而非提升吞吐。"
+        "referenceAnswer": "正确答案 D。PostgreSQL 连接会消耗服务端和操作系统资源；超过合适并发度可能增加竞争而非提升吞吐。"
       }
     },
     "knowledgeId": "postgresql-connection-pooling",
@@ -1144,7 +1144,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PgBouncer 的常见用途是什么？",
-    "explanation": "正确答案 A。连接池通过复用后端连接减少每个应用请求独自占用服务端连接的开销。",
+    "explanation": "正确答案 B。连接池通过复用后端连接减少每个应用请求独自占用服务端连接的开销。",
     "misconceptions": [
       "把连接池当作查询优化器或备份工具。"
     ],
@@ -1152,23 +1152,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "在应用和 PostgreSQL 之间复用/管理数据库连接",
           "取代 PostgreSQL 事务和 WAL",
+          "在应用和 PostgreSQL 之间复用/管理数据库连接",
           "自动为所有 SQL 创建索引",
           "将物理备份转换成逻辑备份"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。连接池通过复用后端连接减少每个应用请求独自占用服务端连接的开销。"
+        "referenceAnswer": "正确答案 B。连接池通过复用后端连接减少每个应用请求独自占用服务端连接的开销。"
       }
     },
     "knowledgeId": "postgresql-connection-pooling",
@@ -1197,7 +1197,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "PgBouncer 的 session pooling 通常何时把一个服务器连接归还到池中？",
-    "explanation": "正确答案 A。Session pooling 在客户端会话生命周期内分配服务端连接，直到客户端断开；这比事务池更能保留会话状态。",
+    "explanation": "正确答案 C。Session pooling 在客户端会话生命周期内分配服务端连接，直到客户端断开；这比事务池更能保留会话状态。",
     "misconceptions": [
       "混淆 session pooling 与 transaction pooling。"
     ],
@@ -1205,23 +1205,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "客户端会话结束时",
-          "每条 SQL 执行完就必定归还",
           "每次读取一行结果后",
+          "每条 SQL 执行完就必定归还",
+          "客户端会话结束时",
           "每次使用某个索引后"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Session pooling 在客户端会话生命周期内分配服务端连接，直到客户端断开；这比事务池更能保留会话状态。"
+        "referenceAnswer": "正确答案 C。Session pooling 在客户端会话生命周期内分配服务端连接，直到客户端断开；这比事务池更能保留会话状态。"
       }
     },
     "knowledgeId": "postgresql-connection-pooling",
@@ -1635,7 +1635,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 定期 VACUUM 的一个主要原因是什么？",
-    "explanation": "正确答案 A。MVCC 下旧行版本不会总在 UPDATE/DELETE 时立刻物理移除；VACUUM 帮助回收可复用空间、更新可见性信息并避免事务 ID 风险。",
+    "explanation": "正确答案 D。MVCC 下旧行版本不会总在 UPDATE/DELETE 时立刻物理移除；VACUUM 帮助回收可复用空间、更新可见性信息并避免事务 ID 风险。",
     "misconceptions": [
       "认为 UPDATE/DELETE 后的旧版本会立即从文件中物理消失。"
     ],
@@ -1643,23 +1643,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "回收或复用 UPDATE/DELETE 产生的死元组空间，并维护可见性相关信息",
+          "取代 WAL 崩溃恢复",
           "永久删除所有活跃行",
           "自动创建每个字段的索引",
-          "取代 WAL 崩溃恢复"
+          "回收或复用 UPDATE/DELETE 产生的死元组空间，并维护可见性相关信息"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。MVCC 下旧行版本不会总在 UPDATE/DELETE 时立刻物理移除；VACUUM 帮助回收可复用空间、更新可见性信息并避免事务 ID 风险。"
+        "referenceAnswer": "正确答案 D。MVCC 下旧行版本不会总在 UPDATE/DELETE 时立刻物理移除；VACUUM 帮助回收可复用空间、更新可见性信息并避免事务 ID 风险。"
       }
     },
     "knowledgeId": "postgresql-vacuum-bloat",
@@ -1688,7 +1688,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 的 autovacuum 主要承担什么职责？",
-    "explanation": "正确答案 A。Autovacuum 自动执行表清理和统计信息维护；具体触发与性能需结合负载、表变化和配置观察。",
+    "explanation": "正确答案 B。Autovacuum 自动执行表清理和统计信息维护；具体触发与性能需结合负载、表变化和配置观察。",
     "misconceptions": [
       "认为 autovacuum 与查询规划和死元组维护无关。"
     ],
@@ -1696,23 +1696,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "根据阈值自动运行维护任务，包括 vacuum/analyze 等",
           "自动将所有表转换为分区表",
+          "根据阈值自动运行维护任务，包括 vacuum/analyze 等",
           "只负责创建新用户",
           "永久关闭统计信息收集"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Autovacuum 自动执行表清理和统计信息维护；具体触发与性能需结合负载、表变化和配置观察。"
+        "referenceAnswer": "正确答案 B。Autovacuum 自动执行表清理和统计信息维护；具体触发与性能需结合负载、表变化和配置观察。"
       }
     },
     "knowledgeId": "postgresql-vacuum-bloat",
@@ -1741,7 +1741,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "`VACUUM ANALYZE` 组合主要做什么？",
-    "explanation": "正确答案 A。VACUUM 和 ANALYZE 分别处理日常清理与统计信息；组合使用可同时维护表及规划器数据。",
+    "explanation": "正确答案 C。VACUUM 和 ANALYZE 分别处理日常清理与统计信息；组合使用可同时维护表及规划器数据。",
     "misconceptions": [
       "把 VACUUM ANALYZE 当成重新加载数据的工具。"
     ],
@@ -1749,23 +1749,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "清理可回收的死元组并更新规划器统计信息",
-          "清空全部表内容后重建数据库",
           "只恢复被 DROP 的表",
+          "清空全部表内容后重建数据库",
+          "清理可回收的死元组并更新规划器统计信息",
           "只增加 max_connections"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。VACUUM 和 ANALYZE 分别处理日常清理与统计信息；组合使用可同时维护表及规划器数据。"
+        "referenceAnswer": "正确答案 C。VACUUM 和 ANALYZE 分别处理日常清理与统计信息；组合使用可同时维护表及规划器数据。"
       }
     },
     "knowledgeId": "postgresql-vacuum-bloat",

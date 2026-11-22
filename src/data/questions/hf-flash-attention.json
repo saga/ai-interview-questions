@@ -64,7 +64,7 @@
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "FlashAttention 通过哪几个相互依赖的技术手段避免物化 N×N 矩阵？",
-    "explanation": "四个手段：①算子融合（operator fusion）把 matmul、softmax、matmul 放进单个 kernel，中间结果留在 SRAM；②分块（tiling）把 Q/K/V 切成能放入 SRAM 的块逐块处理；③重计算（recomputation）不存 N×N 概率矩阵 P，反向时由 Q、K 与归一化常数重算；④在线 softmax（online softmax）用滑动最大值与求和增量计算，使分块得到精确结果。",
+    "explanation": "FlashAttention 靠算子融合、分块、重计算与在线 softmax 避免物化 N×N 矩阵。C 错误：重计算的定义正是不保存 P，反向时由 Q、K 与归一化常数重算，用计算换显存；把 P 写入 HBM 与该方法相反。",
     "source": {
       "materialId": "hf-blog-flash-attention-overview"
     },
@@ -74,25 +74,33 @@
         "options": [
           "算子融合：把 matmul、softmax、matmul 放进单个 kernel，中间结果留在 SRAM",
           "分块：把 Q、K、V 切成能放入 SRAM 的块，逐块处理",
-          "重计算：不存 N×N 概率矩阵 P，反向时由 Q、K 与归一化常数重新计算",
+          "重计算：预先把完整 N×N 概率矩阵写入 HBM，反向传播时直接读取以节省算力。",
           "在线 softmax：用滑动的最大值与求和统计量增量计算 softmax，使分块得到精确结果"
         ],
         "answer": [
           0,
           1,
-          2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "四手段：算子融合(单 kernel, 中间留 SRAM)、分块(切块入 SRAM)、重计算(不存 P, 反向重算)、在线 softmax(滑动统计量得精确值)。"
+        "referenceAnswer": "避免物化 N×N 矩阵依赖算子融合、分块、不保存概率矩阵的重计算，以及在线 softmax。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「②分块（tiling）把 Q/K/V 切成能放入 SRAM 的块逐块处理」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「算子融合：把 matmul、softmax、matm…」「分块：把 Q、K、V 切成能放入 SRAM 的块」等 4 项成立。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "把重计算理解成预先把完整概率矩阵写入 HBM 以省算力。"
+    ]
   },
   {
     "id": "flashattn-03",
@@ -366,19 +374,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "完全相同（精确算法），只是以不同的 IO 顺序计算",
+          "比标准注意力更精确，因为它用了更低精度",
           "近似相等，存在可觉察的精度损失",
           "只在短序列上精确，长序列退化为近似",
-          "比标准注意力更精确，因为它用了更低精度"
+          "完全相同（精确算法），只是以不同的 IO 顺序计算"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       },
       "open": {

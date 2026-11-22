@@ -63,19 +63,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "query expansion 可以扩大词面覆盖，而 embedding 主要依赖已有语义表示",
+          "两者都只作用于 reranking 阶段，不影响候选召回",
           "query expansion 一定会降低召回，而 embedding 一定只返回精确匹配",
           "query expansion 会直接替代索引，而 embedding 不需要候选集合",
-          "两者都只作用于 reranking 阶段，不影响候选召回"
+          "query expansion 可以扩大词面覆盖，而 embedding 主要依赖已有语义表示"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       }
     },
@@ -155,17 +155,17 @@
         "type": "single",
         "options": [
           "把部门和日期要求全部交给生成模型在最终答案阶段自行判断",
-          "先使用 metadata filters 限定部门和时间范围，再执行相关性检索",
           "把所有文档都检索出来，再让 reranker 删除不符合日期的结果",
+          "先使用 metadata filters 限定部门和时间范围，再执行相关性检索",
           "为每个部门建立完全独立的模型，避免使用 metadata"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       }
@@ -492,19 +492,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "优先调用实时订单数据库查询工具，再根据需要补充其他来源",
+          "同时对所有数据源进行全文检索并让模型自行挑选数字",
           "首先对整个企业文档库执行 dense retrieval",
           "先搜索 Web，再让模型猜测企业内部订单量",
-          "同时对所有数据源进行全文检索并让模型自行挑选数字"
+          "优先调用实时订单数据库查询工具，再根据需要补充其他来源"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       }
     },
@@ -775,17 +775,17 @@
         "type": "single",
         "options": [
           "增加 embedding 维度",
-          "优化去重、文档级聚合或多样性排序",
           "把 top-K 从 20 降到 5",
+          "优化去重、文档级聚合或多样性排序",
           "关闭 reranking 并只使用原始向量分数"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       }
@@ -818,17 +818,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "在排序中加入受控的 freshness 信号",
           "完全按照发布时间排序，忽略 relevance",
+          "在排序中加入受控的 freshness 信号",
           "删除旧文档，让搜索结果自然变新",
           "把 freshness 信号放进分词器里"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           1,
           2
         ]
@@ -1047,17 +1047,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "把“那东京呢？”作为完全独立查询直接检索",
           "结合上一轮上下文，将查询解析为针对东京办公室的合规要求",
+          "把“那东京呢？”作为完全独立查询直接检索",
           "始终重复执行上一轮完全相同的检索",
           "忽略上一轮结果，只根据东京这个词进行关键词搜索"
         ],
         "answer": [
-          1
+          0
         ],
         "misconceptionMap": [
-          0,
           null,
+          0,
           1,
           2
         ]

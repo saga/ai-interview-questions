@@ -14,7 +14,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "INNER JOIN 通常返回哪些行？",
-    "explanation": "正确答案 A。INNER JOIN 保留满足连接条件的行组合；未匹配行不会出现在结果中。",
+    "explanation": "正确答案 D。INNER JOIN 保留满足连接条件的行组合；未匹配行不会出现在结果中。",
     "misconceptions": [
       "将 INNER JOIN 误认为会保留某一侧全部行。"
     ],
@@ -22,23 +22,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "满足连接条件的左右两侧行组合",
+          "仅返回连接键为空的行",
           "左表全部行，无论是否匹配",
           "右表全部行，无论是否匹配",
-          "仅返回连接键为空的行"
+          "满足连接条件的左右两侧行组合"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。INNER JOIN 保留满足连接条件的行组合；未匹配行不会出现在结果中。"
+        "referenceAnswer": "正确答案 D。INNER JOIN 保留满足连接条件的行组合；未匹配行不会出现在结果中。"
       }
     },
     "knowledgeId": "postgresql-joins-aggregation",
@@ -67,7 +67,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "`COUNT(amount)` 与 `COUNT(*)` 的主要区别是什么？",
-    "explanation": "正确答案 A。COUNT(expression) 统计表达式非 NULL 的行，COUNT(*) 统计行数；去重计数另用 DISTINCT。",
+    "explanation": "正确答案 B。COUNT(expression) 统计表达式非 NULL 的行，COUNT(*) 统计行数；去重计数另用 DISTINCT。",
     "misconceptions": [
       "混淆行数、非 NULL 值数量和不同值计数。"
     ],
@@ -75,23 +75,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "COUNT(amount) 忽略 amount 为 NULL 的行；COUNT(*) 统计所有输入行",
           "COUNT(*) 只统计 amount 非 NULL 的行",
+          "COUNT(amount) 忽略 amount 为 NULL 的行；COUNT(*) 统计所有输入行",
           "两者都只统计不同的 amount",
           "COUNT(amount) 自动统计总金额"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。COUNT(expression) 统计表达式非 NULL 的行，COUNT(*) 统计行数；去重计数另用 DISTINCT。"
+        "referenceAnswer": "正确答案 B。COUNT(expression) 统计表达式非 NULL 的行，COUNT(*) 统计行数；去重计数另用 DISTINCT。"
       }
     },
     "knowledgeId": "postgresql-joins-aggregation",
@@ -120,7 +120,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "要筛选聚合后总金额大于 1000 的客户，应使用什么？",
-    "explanation": "正确答案 A。WHERE 通常筛选分组前的行，HAVING 可按聚合结果筛选分组。",
+    "explanation": "正确答案 C。WHERE 通常筛选分组前的行，HAVING 可按聚合结果筛选分组。",
     "misconceptions": [
       "把聚合表达式放在普通 WHERE 中。"
     ],
@@ -128,23 +128,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "HAVING SUM(amount) > 1000",
-          "WHERE SUM(amount) > 1000",
           "ORDER BY SUM(amount) > 1000",
+          "WHERE SUM(amount) > 1000",
+          "HAVING SUM(amount) > 1000",
           "LIMIT SUM(amount) > 1000"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。WHERE 通常筛选分组前的行，HAVING 可按聚合结果筛选分组。"
+        "referenceAnswer": "正确答案 C。WHERE 通常筛选分组前的行，HAVING 可按聚合结果筛选分组。"
       }
     },
     "knowledgeId": "postgresql-joins-aggregation",
@@ -337,7 +337,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "区分没有 JOIN 匹配行与匹配记录某业务列本来为 NULL，怎么做？",
-    "explanation": "正确答案 A。应检查能够代表匹配行是否存在的非 NULL 键，而不是可能本来就为空的业务列。",
+    "explanation": "正确答案 D。应检查能够代表匹配行是否存在的非 NULL 键，而不是可能本来就为空的业务列。",
     "misconceptions": [
       "用允许 NULL 的属性列判断右表是否匹配。"
     ],
@@ -345,23 +345,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "检查右表设计上非 NULL 的匹配键",
+          "把 NULL 转成 0 后推断状态",
           "挑选右表任意可为空字段判断",
           "只看结果总行数",
-          "把 NULL 转成 0 后推断状态"
+          "检查右表设计上非 NULL 的匹配键"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。应检查能够代表匹配行是否存在的非 NULL 键，而不是可能本来就为空的业务列。"
+        "referenceAnswer": "正确答案 D。应检查能够代表匹配行是否存在的非 NULL 键，而不是可能本来就为空的业务列。"
       }
     },
     "knowledgeId": "postgresql-joins-aggregation",
@@ -555,7 +555,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 中，JSONB 与 JSON 的一个重要区别是什么？",
-    "explanation": "正确答案 A。JSON 存储输入文本形式，JSONB 采用分解后的二进制表示，通常更适合反复处理和索引。",
+    "explanation": "正确答案 B。JSON 存储输入文本形式，JSONB 采用分解后的二进制表示，通常更适合反复处理和索引。",
     "misconceptions": [
       "认为 JSON 与 JSONB 行为完全相同。"
     ],
@@ -563,23 +563,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "JSONB 使用适合处理的二进制表示，JSON 保留输入文本形式特征",
           "JSONB 只能保存数字",
+          "JSONB 使用适合处理的二进制表示，JSON 保留输入文本形式特征",
           "JSON 支持所有索引而 JSONB 不支持",
           "JSONB 自动把键展开为关系表"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。JSON 存储输入文本形式，JSONB 采用分解后的二进制表示，通常更适合反复处理和索引。"
+        "referenceAnswer": "正确答案 B。JSON 存储输入文本形式，JSONB 采用分解后的二进制表示，通常更适合反复处理和索引。"
       }
     },
     "knowledgeId": "postgresql-arrays-jsonb",
@@ -608,7 +608,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "数组字段 `tags` 要判断是否包含一个值，哪种运算符适合表达数组包含关系？",
-    "explanation": "正确答案 A。数组包含运算符可用于表达数组包含指定元素/数组的关系。",
+    "explanation": "正确答案 C。数组包含运算符可用于表达数组包含指定元素/数组的关系。",
     "misconceptions": [
       "把文本匹配、空值比较和数据修改子句当成数组包含运算。"
     ],
@@ -616,23 +616,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`@>`",
-          "`ILIKE`",
           "`IS DISTINCT FROM`",
+          "`ILIKE`",
+          "`@>`",
           "`RETURNING`"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。数组包含运算符可用于表达数组包含指定元素/数组的关系。"
+        "referenceAnswer": "正确答案 C。数组包含运算符可用于表达数组包含指定元素/数组的关系。"
       }
     },
     "knowledgeId": "postgresql-arrays-jsonb",
@@ -661,7 +661,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "JSONB 的 `->` 与 `->>` 关键区别是什么？",
-    "explanation": "正确答案 A。-> 通常返回 JSON/JSONB 值，->> 返回文本，后者适合进一步文本处理或显式转换。",
+    "explanation": "正确答案 D。-> 通常返回 JSON/JSONB 值，->> 返回文本，后者适合进一步文本处理或显式转换。",
     "misconceptions": [
       "把 JSON 值抽取与修改原始 JSON 文档混淆。"
     ],
@@ -669,23 +669,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`->` 返回 JSON/JSONB 值，`->>` 返回文本",
+          "`->>` 会把 JSON 字段写回原表",
           "`->` 删除字段而 `->>` 创建索引",
           "两者都只能用于数组下标",
-          "`->>` 会把 JSON 字段写回原表"
+          "`->` 返回 JSON/JSONB 值，`->>` 返回文本"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。-> 通常返回 JSON/JSONB 值，->> 返回文本，后者适合进一步文本处理或显式转换。"
+        "referenceAnswer": "正确答案 D。-> 通常返回 JSON/JSONB 值，->> 返回文本，后者适合进一步文本处理或显式转换。"
       }
     },
     "knowledgeId": "postgresql-arrays-jsonb",
@@ -1099,7 +1099,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "要在每个账户内按时间为事件编号，同时保留每条记录，适合使用什么？",
-    "explanation": "正确答案 A。ROW_NUMBER 是窗口函数，可以在分区内部按排序编号，同时保留输入行；若时间并列应加稳定次级键。",
+    "explanation": "正确答案 B。ROW_NUMBER 是窗口函数，可以在分区内部按排序编号，同时保留输入行；若时间并列应加稳定次级键。",
     "misconceptions": [
       "认为排名必须先把明细聚合成单行。"
     ],
@@ -1107,23 +1107,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY event_time)`",
           "只使用 `GROUP BY account_id`",
+          "`ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY event_time)`",
           "`DELETE FROM events`",
           "`COUNT(DISTINCT account_id)`"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。ROW_NUMBER 是窗口函数，可以在分区内部按排序编号，同时保留输入行；若时间并列应加稳定次级键。"
+        "referenceAnswer": "正确答案 B。ROW_NUMBER 是窗口函数，可以在分区内部按排序编号，同时保留输入行；若时间并列应加稳定次级键。"
       }
     },
     "knowledgeId": "postgresql-window-ctes-plpgsql",
@@ -1152,7 +1152,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 的 `LAG(value)` 在窗口函数中的常见用途是什么？",
-    "explanation": "正确答案 A。LAG 根据窗口 ORDER BY 访问前一行；分区和排序定义决定“前一行”的含义。",
+    "explanation": "正确答案 C。LAG 根据窗口 ORDER BY 访问前一行；分区和排序定义决定“前一行”的含义。",
     "misconceptions": [
       "把窗口行序和事务历史混淆。"
     ],
@@ -1160,23 +1160,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "读取同一窗口排序中前一行的值",
-          "读取前一个事务提交的值",
           "把当前行锁定到会话结束",
+          "读取前一个事务提交的值",
+          "读取同一窗口排序中前一行的值",
           "为 value 创建索引"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。LAG 根据窗口 ORDER BY 访问前一行；分区和排序定义决定“前一行”的含义。"
+        "referenceAnswer": "正确答案 C。LAG 根据窗口 ORDER BY 访问前一行；分区和排序定义决定“前一行”的含义。"
       }
     },
     "knowledgeId": "postgresql-window-ctes-plpgsql",
@@ -1644,7 +1644,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 事务中，ROLLBACK 的主要作用是什么？",
-    "explanation": "正确答案 A。ROLLBACK 放弃当前事务的变更，不会撤销其他已提交事务。",
+    "explanation": "正确答案 D。ROLLBACK 放弃当前事务的变更，不会撤销其他已提交事务。",
     "misconceptions": [
       "认为回滚可以撤销数据库中任意历史提交。"
     ],
@@ -1652,23 +1652,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "撤销当前事务中尚未提交的数据库变更",
+          "终止其他用户连接",
           "撤销所有会话已提交事务",
           "删除数据库所有备份",
-          "终止其他用户连接"
+          "撤销当前事务中尚未提交的数据库变更"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。ROLLBACK 放弃当前事务的变更，不会撤销其他已提交事务。"
+        "referenceAnswer": "正确答案 D。ROLLBACK 放弃当前事务的变更，不会撤销其他已提交事务。"
       }
     },
     "knowledgeId": "postgresql-transactions-mvcc",
@@ -1697,7 +1697,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 的 MVCC 主要解决哪类问题？",
-    "explanation": "正确答案 A。MVCC 帮助事务按快照观察数据并减少读写互相阻塞，但不消除所有锁、冲突和应用级一致性问题。",
+    "explanation": "正确答案 B。MVCC 帮助事务按快照观察数据并减少读写互相阻塞，但不消除所有锁、冲突和应用级一致性问题。",
     "misconceptions": [
       "认为 MVCC 意味着系统不会出现锁等待或并发异常。"
     ],
@@ -1705,23 +1705,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "通过行版本和快照支持并发事务读取与修改",
           "自动替代备份和恢复",
+          "通过行版本和快照支持并发事务读取与修改",
           "为每个查询永久建立索引",
           "保证并发事务不需要任何冲突处理"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。MVCC 帮助事务按快照观察数据并减少读写互相阻塞，但不消除所有锁、冲突和应用级一致性问题。"
+        "referenceAnswer": "正确答案 B。MVCC 帮助事务按快照观察数据并减少读写互相阻塞，但不消除所有锁、冲突和应用级一致性问题。"
       }
     },
     "knowledgeId": "postgresql-transactions-mvcc",
@@ -1750,7 +1750,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "默认 READ COMMITTED 下，同一事务连续两条 SELECT 可能看到不同已提交数据，主要原因是什么？",
-    "explanation": "正确答案 A。READ COMMITTED 通常为每条语句建立快照，因此并发事务新提交的数据可能出现在后续语句中。",
+    "explanation": "正确答案 C。READ COMMITTED 通常为每条语句建立快照，因此并发事务新提交的数据可能出现在后续语句中。",
     "misconceptions": [
       "认为 READ COMMITTED 为整个事务提供固定快照。"
     ],
@@ -1758,23 +1758,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "每条语句通常获得新的语句级快照",
-          "同一事务自动提交每条数据变更",
           "数据库随机改写读取数据",
+          "同一事务自动提交每条数据变更",
+          "每条语句通常获得新的语句级快照",
           "READ COMMITTED 禁止所有并发写入"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。READ COMMITTED 通常为每条语句建立快照，因此并发事务新提交的数据可能出现在后续语句中。"
+        "referenceAnswer": "正确答案 C。READ COMMITTED 通常为每条语句建立快照，因此并发事务新提交的数据可能出现在后续语句中。"
       }
     },
     "knowledgeId": "postgresql-transactions-mvcc",
@@ -1913,7 +1913,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "`SELECT ... FOR UPDATE` 的典型作用是什么？",
-    "explanation": "正确答案 A。SELECT FOR UPDATE 会对选中的行取得相应行级锁，以协调后续更新；锁通常持续到事务结束。",
+    "explanation": "正确答案 D。SELECT FOR UPDATE 会对选中的行取得相应行级锁，以协调后续更新；锁通常持续到事务结束。",
     "misconceptions": [
       "把行锁当作索引或自动提交机制。"
     ],
@@ -1921,23 +1921,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "锁定选中的行以协调后续并发修改",
+          "自动提交当前事务",
           "把整张表永久改为只读",
           "建立唯一索引",
-          "自动提交当前事务"
+          "锁定选中的行以协调后续并发修改"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。SELECT FOR UPDATE 会对选中的行取得相应行级锁，以协调后续更新；锁通常持续到事务结束。"
+        "referenceAnswer": "正确答案 D。SELECT FOR UPDATE 会对选中的行取得相应行级锁，以协调后续更新；锁通常持续到事务结束。"
       }
     },
     "knowledgeId": "postgresql-transactions-mvcc",

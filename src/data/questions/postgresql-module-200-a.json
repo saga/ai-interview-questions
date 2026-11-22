@@ -14,7 +14,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 常见连接字符串 `postgresql://app_user:secret@db.example.com:5432/orders` 中，`5432` 通常表示什么？",
-    "explanation": "正确答案 B。连接 URI 中的端口用于指定服务器监听端口；5432 是 PostgreSQL 的默认端口，但部署可使用其他端口。",
+    "explanation": "正确答案 D。连接 URI 中的端口用于指定服务器监听端口；5432 是 PostgreSQL 的默认端口，但部署可使用其他端口。",
     "misconceptions": [
       "把连接 URI 的端口误认为数据库或 Schema 名称。"
     ],
@@ -23,22 +23,22 @@
         "type": "single",
         "options": [
           "数据库名称",
-          "服务器监听端口",
+          "Schema 名称",
           "客户端进程编号",
-          "Schema 名称"
+          "服务器监听端口"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。连接 URI 中的端口用于指定服务器监听端口；5432 是 PostgreSQL 的默认端口，但部署可使用其他端口。"
+        "referenceAnswer": "正确答案 D。连接 URI 中的端口用于指定服务器监听端口；5432 是 PostgreSQL 的默认端口，但部署可使用其他端口。"
       }
     },
     "knowledgeId": "postgresql-basics-connection",
@@ -67,7 +67,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "在交互式 `psql` 中，哪个命令用于列出当前连接数据库中的表？",
-    "explanation": "正确答案 A。`\\dt` 是 psql 元命令，用于列出可见的表；它不是提交给服务器执行的 SQL。",
+    "explanation": "正确答案 B。`\\dt` 是 psql 元命令，用于列出可见的表；它不是提交给服务器执行的 SQL。",
     "misconceptions": [
       "混淆 psql 元命令与 SQL 语法。"
     ],
@@ -75,23 +75,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`\\dt`",
           "`SHOW TABLES`",
+          "`\\dt`",
           "`LIST TABLES`",
           "`\\dbtables`"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。`\\dt` 是 psql 元命令，用于列出可见的表；它不是提交给服务器执行的 SQL。"
+        "referenceAnswer": "正确答案 B。`\\dt` 是 psql 元命令，用于列出可见的表；它不是提交给服务器执行的 SQL。"
       }
     },
     "knowledgeId": "postgresql-basics-connection",
@@ -120,7 +120,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "需要确认当前连接的是哪个数据库和用户，哪个 SQL 组合最直接？",
-    "explanation": "正确答案 A。`current_database()` 和 `current_user` 可分别查看当前数据库与当前有效数据库用户。",
+    "explanation": "正确答案 C。`current_database()` 和 `current_user` 可分别查看当前数据库与当前有效数据库用户。",
     "misconceptions": [
       "认为客户端配置文件中写的连接信息就足以证明当前实际会话身份。"
     ],
@@ -128,23 +128,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`SELECT current_database(), current_user;`",
-          "`SELECT database_name(), login_name();`",
           "`SHOW TABLES;`",
+          "`SELECT database_name(), login_name();`",
+          "`SELECT current_database(), current_user;`",
           "`SELECT pg_cancel_backend(pg_backend_pid());`"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。`current_database()` 和 `current_user` 可分别查看当前数据库与当前有效数据库用户。"
+        "referenceAnswer": "正确答案 C。`current_database()` 和 `current_user` 可分别查看当前数据库与当前有效数据库用户。"
       }
     },
     "knowledgeId": "postgresql-basics-connection",
@@ -558,7 +558,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 中 `sales.orders` 通常表示什么？",
-    "explanation": "正确答案 A。两段式对象名称通常表示 schema.object；数据库名属于连接上下文，需通过连接选择目标数据库。",
+    "explanation": "正确答案 D。两段式对象名称通常表示 schema.object；数据库名属于连接上下文，需通过连接选择目标数据库。",
     "misconceptions": [
       "把 Schema 与数据库实例或角色混淆。"
     ],
@@ -566,23 +566,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`sales` Schema 中名为 `orders` 的对象",
+          "数据库服务器 `sales` 上的 `orders` 端口",
           "名为 `sales` 的数据库中的 `orders` 数据库",
           "名为 `sales` 的角色拥有的所有表",
-          "数据库服务器 `sales` 上的 `orders` 端口"
+          "`sales` Schema 中名为 `orders` 的对象"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。两段式对象名称通常表示 schema.object；数据库名属于连接上下文，需通过连接选择目标数据库。"
+        "referenceAnswer": "正确答案 D。两段式对象名称通常表示 schema.object；数据库名属于连接上下文，需通过连接选择目标数据库。"
       }
     },
     "knowledgeId": "postgresql-schemas-search-path",
@@ -611,7 +611,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "`search_path` 的主要作用是什么？",
-    "explanation": "正确答案 A。search_path 定义未限定对象名解析的 Schema 搜索顺序，并会影响对象引用的含义。",
+    "explanation": "正确答案 B。search_path 定义未限定对象名解析的 Schema 搜索顺序，并会影响对象引用的含义。",
     "misconceptions": [
       "认为所有未限定对象名都固定解析到 public。"
     ],
@@ -619,23 +619,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "决定未限定对象名按哪些 Schema 顺序解析",
           "决定 WAL 写入哪个磁盘",
+          "决定未限定对象名按哪些 Schema 顺序解析",
           "控制 SQL 语句最长可运行几秒",
           "将不同数据库的表自动合并"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。search_path 定义未限定对象名解析的 Schema 搜索顺序，并会影响对象引用的含义。"
+        "referenceAnswer": "正确答案 B。search_path 定义未限定对象名解析的 Schema 搜索顺序，并会影响对象引用的含义。"
       }
     },
     "knowledgeId": "postgresql-schemas-search-path",
@@ -664,7 +664,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "在 SQL 中需要明确引用 `reporting.monthly_sales` 时，哪种写法最明确？",
-    "explanation": "正确答案 A。使用 schema-qualified 名称可以减少对 search_path 的依赖；未限定名称会按当前路径解析。",
+    "explanation": "正确答案 C。使用 schema-qualified 名称可以减少对 search_path 的依赖；未限定名称会按当前路径解析。",
     "misconceptions": [
       "依赖会话默认 search_path，而忽略对象限定名的作用。"
     ],
@@ -672,23 +672,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "`SELECT * FROM reporting.monthly_sales;`",
-          "`SELECT * FROM monthly_sales;`",
           "`SELECT * FROM current_schema.monthly_sales;`（作为普通标识符）",
+          "`SELECT * FROM monthly_sales;`",
+          "`SELECT * FROM reporting.monthly_sales;`",
           "`SELECT * FROM reporting/monthly_sales;`"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。使用 schema-qualified 名称可以减少对 search_path 的依赖；未限定名称会按当前路径解析。"
+        "referenceAnswer": "正确答案 C。使用 schema-qualified 名称可以减少对 search_path 的依赖；未限定名称会按当前路径解析。"
       }
     },
     "knowledgeId": "postgresql-schemas-search-path",
@@ -1101,7 +1101,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "在 PostgreSQL 中，需要精确存储货币金额并执行十进制运算，通常应优先考虑哪种类型？",
-    "explanation": "正确答案 A。NUMERIC/DECIMAL 提供精确十进制运算，适合需要精确数值语义的金额。精度和 scale 应按业务定义。",
+    "explanation": "正确答案 D。NUMERIC/DECIMAL 提供精确十进制运算，适合需要精确数值语义的金额。精度和 scale 应按业务定义。",
     "misconceptions": [
       "将浮点近似数值用于必须精确的金额计算。"
     ],
@@ -1109,23 +1109,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "NUMERIC/DECIMAL",
+          "BYTEA",
           "DOUBLE PRECISION 且不做误差评估",
           "BOOLEAN",
-          "BYTEA"
+          "NUMERIC/DECIMAL"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。NUMERIC/DECIMAL 提供精确十进制运算，适合需要精确数值语义的金额。精度和 scale 应按业务定义。"
+        "referenceAnswer": "正确答案 D。NUMERIC/DECIMAL 提供精确十进制运算，适合需要精确数值语义的金额。精度和 scale 应按业务定义。"
       }
     },
     "knowledgeId": "postgresql-types-constraints",
@@ -1154,7 +1154,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "若要保存代表真实时间点且输入可能来自不同时区的事件时间，哪种设计通常更合适？",
-    "explanation": "正确答案 A。TIMESTAMPTZ 将输入时间点规范化为内部时间值，并在会话时区下显示；若需保存来源时区须单独记录。",
+    "explanation": "正确答案 B。TIMESTAMPTZ 将输入时间点规范化为内部时间值，并在会话时区下显示；若需保存来源时区须单独记录。",
     "misconceptions": [
       "认为 TIMESTAMPTZ 会永久保存输入时区名称。"
     ],
@@ -1162,23 +1162,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "TIMESTAMPTZ 并统一时区处理规范",
           "TIME WITHOUT TIME ZONE",
+          "TIMESTAMPTZ 并统一时区处理规范",
           "仅用 VARCHAR 且不验证格式",
           "整数列中保存本地钟表文本"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。TIMESTAMPTZ 将输入时间点规范化为内部时间值，并在会话时区下显示；若需保存来源时区须单独记录。"
+        "referenceAnswer": "正确答案 B。TIMESTAMPTZ 将输入时间点规范化为内部时间值，并在会话时区下显示；若需保存来源时区须单独记录。"
       }
     },
     "knowledgeId": "postgresql-types-constraints",
@@ -1207,7 +1207,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "`CHECK (quantity > 0)` 约束的主要作用是什么？",
-    "explanation": "正确答案 A。CHECK 用于约束行值必须满足表达式；它不负责自动修正值或保证跨行唯一。",
+    "explanation": "正确答案 C。CHECK 用于约束行值必须满足表达式；它不负责自动修正值或保证跨行唯一。",
     "misconceptions": [
       "把 CHECK 约束当作自动数据清洗规则。"
     ],
@@ -1215,23 +1215,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "拒绝违反该条件的插入或更新",
-          "自动把负数修改为 0",
           "为 quantity 自动创建索引",
+          "自动把负数修改为 0",
+          "拒绝违反该条件的插入或更新",
           "保证 quantity 在全表唯一"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。CHECK 用于约束行值必须满足表达式；它不负责自动修正值或保证跨行唯一。"
+        "referenceAnswer": "正确答案 C。CHECK 用于约束行值必须满足表达式；它不负责自动修正值或保证跨行唯一。"
       }
     },
     "knowledgeId": "postgresql-types-constraints",
@@ -1643,7 +1643,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "PostgreSQL 中，哪个角色属性允许角色直接建立数据库连接并进行登录认证？",
-    "explanation": "正确答案 A。LOGIN 属性允许角色用于登录；其他属性授予不同管理或复制能力，并不等同于普通连接身份。",
+    "explanation": "正确答案 D。LOGIN 属性允许角色用于登录；其他属性授予不同管理或复制能力，并不等同于普通连接身份。",
     "misconceptions": [
       "把角色的管理属性误认为登录属性。"
     ],
@@ -1651,23 +1651,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "LOGIN",
+          "BYPASSRLS",
           "CREATEDB",
           "REPLICATION",
-          "BYPASSRLS"
+          "LOGIN"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。LOGIN 属性允许角色用于登录；其他属性授予不同管理或复制能力，并不等同于普通连接身份。"
+        "referenceAnswer": "正确答案 D。LOGIN 属性允许角色用于登录；其他属性授予不同管理或复制能力，并不等同于普通连接身份。"
       }
     },
     "knowledgeId": "postgresql-roles-privileges",
@@ -1696,7 +1696,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "应用角色只需要查询某个表，哪种授权原则最合适？",
-    "explanation": "正确答案 A。最小权限减少凭据泄露或应用缺陷造成的影响范围。",
+    "explanation": "正确答案 B。最小权限减少凭据泄露或应用缺陷造成的影响范围。",
     "misconceptions": [
       "把高权限角色作为应用默认运行身份。"
     ],
@@ -1704,23 +1704,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "只授予完成查询所需的最小权限",
           "把 SUPERUSER 授予应用以避免权限问题",
+          "只授予完成查询所需的最小权限",
           "把所有数据库对象所有权交给应用用户",
           "关闭数据库认证"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。最小权限减少凭据泄露或应用缺陷造成的影响范围。"
+        "referenceAnswer": "正确答案 B。最小权限减少凭据泄露或应用缺陷造成的影响范围。"
       }
     },
     "knowledgeId": "postgresql-roles-privileges",
@@ -1749,7 +1749,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "`LOGIN`、`CONNECT` 和 `SELECT` 分别属于哪个层次的能力？",
-    "explanation": "正确答案 A。LOGIN 属于角色属性，CONNECT 是数据库权限，SELECT 是对象读取权限；它们不能相互替代。",
+    "explanation": "正确答案 C。LOGIN 属于角色属性，CONNECT 是数据库权限，SELECT 是对象读取权限；它们不能相互替代。",
     "misconceptions": [
       "把登录、数据库连接和表读取当成同一种授权。"
     ],
@@ -1757,23 +1757,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "角色登录属性、数据库连接权限、表读取权限",
-          "三个都是同一种表权限",
           "三个都是操作系统用户属性",
+          "三个都是同一种表权限",
+          "角色登录属性、数据库连接权限、表读取权限",
           "三个都由 search_path 决定"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。LOGIN 属于角色属性，CONNECT 是数据库权限，SELECT 是对象读取权限；它们不能相互替代。"
+        "referenceAnswer": "正确答案 C。LOGIN 属于角色属性，CONNECT 是数据库权限，SELECT 是对象读取权限；它们不能相互替代。"
       }
     },
     "knowledgeId": "postgresql-roles-privileges",

@@ -1498,21 +1498,21 @@
         "options": [
           "部署 AWS Lambda，用环境变量存储路由规则与 Bedrock FM ID；业务变化时在 Lambda 控制台更新环境变量；用 API Gateway REST 读取请求参数做路由。",
           "用 API Gateway REST 请求转换模板按请求属性实现路由，Bedrock FM 端点存为阶段变量，切换模型时更新变量。",
-          "配置 AWS Lambda 在每个请求时从 AWS AppConfig Agent 拉取路由配置，在 Lambda 内运行业务逻辑为每个请求选 FM，通过单一 API Gateway REST 端点暴露。",
-          "用 API Gateway REST 的 Lambda authorizer 评估存于 AppConfig 的路由规则，返回基于业务逻辑的授权上下文，将请求路由到各 FM 专属 Lambda。"
+          "用 API Gateway REST 的 Lambda authorizer 评估存于 AppConfig 的路由规则，返回基于业务逻辑的授权上下文，将请求路由到各 FM 专属 Lambda。",
+          "配置 AWS Lambda 在每个请求时从 AWS AppConfig Agent 拉取路由配置，在 Lambda 内运行业务逻辑为每个请求选 FM，通过单一 API Gateway REST 端点暴露。"
         ],
         "answer": [
-          2
+          3
         ],
         "misconceptionMap": [
           0,
           1,
-          null,
-          2
+          2,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\nAWS AppConfig 让应用使用与代码独立更新的集中配置。Lambda 函数可通过 AWS AppConfig Agent 获取当前路由配置，并为每个请求执行任意业务逻辑来选择并调用合适的 Bedrock 基础模型，从而在一个 API 端点后支持动态变化的阈值、区域规则与 A/B 路由逻辑。API Gateway 的转换与变量不适合复杂动态路由，Lambda authorizer 用于授权而非模型选择。"
+        "referenceAnswer": "正确答案：D。\nAWS AppConfig 让应用使用与代码独立更新的集中配置。Lambda 函数可通过 AWS AppConfig Agent 获取当前路由配置，并为每个请求执行任意业务逻辑来选择并调用合适的 Bedrock 基础模型，从而在一个 API 端点后支持动态变化的阈值、区域规则与 A/B 路由逻辑。API Gateway 的转换与变量不适合复杂动态路由，Lambda authorizer 用于授权而非模型选择。"
       }
     },
     "assessment": {
@@ -1731,21 +1731,21 @@
         "options": [
           "用 Lambda Invoke API 自建传输，IAM 认证并授权 InvokeFunction 权限。",
           "经 API Gateway REST 暴露 Lambda，用 API key 认证，应用改用标准 HTTP 而非 MCP 协议。",
-          "建 Lambda Function URL 并启用自定义 Streamable HTTP 传输 + SigV4，IAM 认证并授权 InvokeFunctionUrl。",
-          "经 API Gateway HTTP API 暴露 Lambda（Streamable HTTP 传输），用 Cognito 实现 OAuth 认证，API Gateway 校验 OAuth 令牌。"
+          "经 API Gateway HTTP API 暴露 Lambda（Streamable HTTP 传输），用 Cognito 实现 OAuth 认证，API Gateway 校验 OAuth 令牌。",
+          "建 Lambda Function URL 并启用自定义 Streamable HTTP 传输 + SigV4，IAM 认证并授权 InvokeFunctionUrl。"
         ],
         "answer": [
-          3
+          2
         ],
         "misconceptionMap": [
           0,
           1,
-          2,
-          null
+          null,
+          2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：D。\nAPI Gateway HTTP API 可直接集成 Lambda 并支持 OAuth 2.0/OIDC 授权。Cognito 为内部与第三方客户端发放 OAuth 令牌，API Gateway 在将 MCP Streamable HTTP 请求转发给 Lambda 前校验令牌。这保留 MCP 兼容传输的同时使用托管的令牌校验与基于 scope/claim 的访问控制，避免自定义传输与面向伙伴的直接 IAM 凭据管理。"
+        "referenceAnswer": "正确答案：C。\nAPI Gateway HTTP API 可直接集成 Lambda 并支持 OAuth 2.0/OIDC 授权。Cognito 为内部与第三方客户端发放 OAuth 令牌，API Gateway 在将 MCP Streamable HTTP 请求转发给 Lambda 前校验令牌。这保留 MCP 兼容传输的同时使用托管的令牌校验与基于 scope/claim 的访问控制，避免自定义传输与面向伙伴的直接 IAM 凭据管理。"
       }
     },
     "assessment": {
@@ -1788,21 +1788,21 @@
         "options": [
           "提高 Bedrock Guardrails 接地程度，启用 Automated Reasoning 检查，设预置吞吐。",
           "用提示工程将模型响应限制在相关商品，用 InvokeModelWithResponseStream 流式降低感知延迟。",
-          "建 Bedrock 知识库，实施 RAG，将 PerformanceConfigLatency 设为 optimized。",
-          "将商品目录存 OpenSearch，校验模型推荐是否命中目录，用 DynamoDB 做响应缓存。"
+          "将商品目录存 OpenSearch，校验模型推荐是否命中目录，用 DynamoDB 做响应缓存。",
+          "建 Bedrock 知识库，实施 RAG，将 PerformanceConfigLatency 设为 optimized。"
         ],
         "answer": [
-          2
+          3
         ],
         "misconceptionMap": [
           0,
           1,
-          null,
-          2
+          2,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\nAmazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性。将性能配置 latency 设为 optimized 使用低延迟推理选项，降低受支持模型与推理配置的响应时间。"
+        "referenceAnswer": "正确答案：D。\nAmazon Bedrock 知识库实现 RAG，检索相关专有目录数据并作为上下文加入模型，使推荐落地到可用商品目录并提升相关性。将性能配置 latency 设为 optimized 使用低延迟推理选项，降低受支持模型与推理配置的响应时间。"
       }
     },
     "assessment": {
@@ -1901,22 +1901,22 @@
         "type": "single",
         "options": [
           "用 Step Functions Express 工作流编排对话，Lambda 跑澄清逻辑，对话历史存 RDS 以 session ID 为主键。",
-          "用 Step Functions 标准工作流编排澄清工作流，含 Wait for a Callback 模式管理流程，对话历史存 DynamoDB 按需容量并启用服务端加密。",
           "用 API Gateway REST 路由到 Lambda 更新/获取上下文，对话历史存 S3 并服务端加密，每次交互存为独立 JSON。",
+          "用 Step Functions 标准工作流编排澄清工作流，含 Wait for a Callback 模式管理流程，对话历史存 DynamoDB 按需容量并启用服务端加密。",
           "用 Lambda 调 Bedrock 推理，SQS 队列编排澄清步骤，对话历史存 ElastiCache(Redis) 并加密。"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：B。\nStep Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应。DynamoDB 提供持久、低延迟的对话存储，按需容量应对变动高并发，并支持静态服务端加密。"
+        "referenceAnswer": "正确答案：C。\nStep Functions 标准工作流支持 Wait for a Callback 模式，使澄清流程可暂停等待响应。DynamoDB 提供持久、低延迟的对话存储，按需容量应对变动高并发，并支持静态服务端加密。"
       }
     },
     "assessment": {
@@ -2016,22 +2016,22 @@
         "type": "single",
         "options": [
           "用 Bedrock Studio 提示模板，CloudWatch 仪表盘展示用量，DynamoDB 存审批状态，Lambda 强制审批。",
-          "用 Bedrock Prompt Management 做版本控制，配 CloudTrail 审计日志，IAM 策略控制审批权限，用变量建参数化模板。",
           "用 Step Functions 建审批工作流，提示存 S3 并用标签做版本控制，EventBridge 发通知。",
+          "用 Bedrock Prompt Management 做版本控制，配 CloudTrail 审计日志，IAM 策略控制审批权限，用变量建参数化模板。",
           "部署 SageMaker Canvas 存 S3 的提示模板，CloudFormation 做版本控制，AWS Config 强制审批策略。"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：B。\nBedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置。CloudTrail 记录含身份/动作/时间/请求参数的 AWS 活动，形成可审计的提示管理操作历史。IAM 策略可分离并限制创建/修改/版本化提示的权限，支撑受控审批流程。"
+        "referenceAnswer": "正确答案：C。\nBedrock Prompt Management 支持可复用提示模板、版本化快照与提示变量，统一提示输入与配置。CloudTrail 记录含身份/动作/时间/请求参数的 AWS 活动，形成可审计的提示管理操作历史。IAM 策略可分离并限制创建/修改/版本化提示的权限，支撑受控审批流程。"
       }
     },
     "assessment": {
@@ -2070,22 +2070,22 @@
         "type": "single",
         "options": [
           "对 S3 启用 Macie PII 检测，S3 触发器调 Lambda 脱敏并删除过期文档、触发知识库同步。",
-          "新报告上传时调 Lambda 同步 S3 与知识库；第二 Lambda 调 Comprehend 对工程师组用户脱敏；S3 生命周期删除超 3 年报告。",
           "对桶设 S3 生命周期删除超 3 年报告；每日调度 Lambda 同步桶与知识库；用户交互时按 Cognito 用户组调用 ApplyGuardrail 在响应中适当脱敏。",
+          "新报告上传时调 Lambda 同步 S3 与知识库；第二 Lambda 调 Comprehend 对工程师组用户脱敏；S3 生命周期删除超 3 年报告。",
           "建第二个知识库；S3 生命周期删除超 3 年报告；新报告上传调 Lambda 同步原知识库，用 Comprehend 同步前脱敏再同步到第二知识库；按 Cognito 组重定向到对应知识库。"
         ],
         "answer": [
-          2
+          1
         ],
         "misconceptionMap": [
           0,
-          1,
           null,
+          1,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\nBedrock Guardrails 敏感信息过滤器可在模型响应中匿名化 PII。按认证 Cognito 用户组施加对应 guardrail，可使 PII 对外科医生保留、对工程师脱敏。S3 生命周期过期规则删除超 3 年报告，每日定时同步更新知识库以反映 S3 的增删改，使过期报告不再可被检索。"
+        "referenceAnswer": "正确答案：B。\nBedrock Guardrails 敏感信息过滤器可在模型响应中匿名化 PII。按认证 Cognito 用户组施加对应 guardrail，可使 PII 对外科医生保留、对工程师脱敏。S3 生命周期过期规则删除超 3 年报告，每日定时同步更新知识库以反映 S3 的增删改，使过期报告不再可被检索。"
       }
     },
     "assessment": {
@@ -2125,23 +2125,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "让每客户建 Amazon Q Business 索引并指定 Example Corp 为数据访问者，经安全 API 在运行时取回相关内容富化提示。",
-          "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数，需在客户环境部署且集成复杂度高。",
           "让每客户配置 Bedrock 知识库，允许跨账号查询供 Example Corp 取结构化数据做提示增强，需直连并重建每客户索引。",
+          "用 MCP 为每个客户部署实时 MCP 服务器做联邦检索，提示生成时实时取数，需在客户环境部署且集成复杂度高。",
+          "让每客户建 Amazon Q Business 索引并指定 Example Corp 为数据访问者，经安全 API 在运行时取回相关内容富化提示。",
           "配置 Amazon Kendra 爬取客户数据源，跨账号共享索引供 Example Corp 查询增强，需直连客户数据源并重建索引。"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A。\nAmazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限。供应商可用 SearchRelevantContent API 检索相关内容用于提示富化，无需直接连接或索引每个客户数据源。Amazon Q 支持语义与混合检索并应用客户配置访问控制。"
+        "referenceAnswer": "正确答案：C。\nAmazon Q Business 让客户保留并管理自有企业数据索引，同时授予经验证的独立软件供应商受控的跨账号数据访问者权限。供应商可用 SearchRelevantContent API 检索相关内容用于提示富化，无需直接连接或索引每个客户数据源。Amazon Q 支持语义与混合检索并应用客户配置访问控制。"
       }
     },
     "assessment": {
@@ -2184,22 +2184,22 @@
         "type": "single",
         "options": [
           "用 Glue 对每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，实时推理在更新数据集重训练后重部署。",
-          "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。",
+          "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。",
           "建 Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导出到 Autopilot，Autopilot 重训练后重部署。",
-          "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。"
+          "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。"
         ],
         "answer": [
-          3
+          1
         ],
         "misconceptionMap": [
           0,
-          1,
+          null,
           2,
-          null
+          1
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：D。\nS3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程。SageMaker Pipeline 可包含训练与模型部署步骤，上传后启动流水线即用更新数据集重训练并将模型重部署到应用。SageMaker Pipelines 支持部署步骤，AWS 文档化了 EventBridge/S3 驱动的流水线执行自动化。"
+        "referenceAnswer": "正确答案：B。\nS3 上传可触发 Lambda，Step Functions 标准工作流可编排后续建模型过程。SageMaker Pipeline 可包含训练与模型部署步骤，上传后启动流水线即用更新数据集重训练并将模型重部署到应用。SageMaker Pipelines 支持部署步骤，AWS 文档化了 EventBridge/S3 驱动的流水线执行自动化。"
       }
     },
     "assessment": {
@@ -2240,21 +2240,21 @@
         "options": [
           "配 Bedrock Guardrails 自定义内容过滤与毒性检测，用 Model Evaluation 检幻觉，prompt-响应对存 DynamoDB 加 TTL，CloudWatch 自定义指标接合规仪表盘。",
           "用 PrivateLink 安全访问 Bedrock，Lambda 做自定义提示校验，prompt-响应对存 S3 配生命周期，自建 CloudWatch 仪表盘监控。",
-          "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。",
-          "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。"
+          "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。",
+          "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。"
         ],
         "answer": [
-          2
+          3
         ],
         "misconceptionMap": [
           0,
           1,
-          null,
-          2
+          2,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\nBedrock 知识库提供托管 RAG 工作流，使响应基于企业数据并附来源归因，降低幻觉风险。Guardrails 按配置安全策略评估输入与响应。将 prompt-响应对存于 OpenSearch 支撑可搜索的合规审计轨迹，QuickSight 可用收集数据做合规报告与行为趋势分析。该托管服务组合最小化快速部署所需的自定义代码与运维基础设施。"
+        "referenceAnswer": "正确答案：D。\nBedrock 知识库提供托管 RAG 工作流，使响应基于企业数据并附来源归因，降低幻觉风险。Guardrails 按配置安全策略评估输入与响应。将 prompt-响应对存于 OpenSearch 支撑可搜索的合规审计轨迹，QuickSight 可用收集数据做合规报告与行为趋势分析。该托管服务组合最小化快速部署所需的自定义代码与运维基础设施。"
       }
     },
     "assessment": {
@@ -2296,23 +2296,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
-          "增大 Lambda resolver 超时并加指数退避重试。",
           "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
+          "增大 Lambda resolver 超时并加指数退避重试。",
+          "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
           "改为流式模型调用并经 API Gateway WebSocket 推送，绕开 AppSync 同步解析器。"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A。\nAWS Amplify AI Kit 支持 React 应用的流式 LLM 响应。其 Lambda 集成以流式请求调用 Bedrock，并经由 AppSync WebSocket 将响应块送往浏览器增量渲染，避免了同步 RequestResponse resolver 所需的等待整段长生成。"
+        "referenceAnswer": "正确答案：C。\nAWS Amplify AI Kit 支持 React 应用的流式 LLM 响应。其 Lambda 集成以流式请求调用 Bedrock，并经由 AppSync WebSocket 将响应块送往浏览器增量渲染，避免了同步 RequestResponse resolver 所需的等待整段长生成。"
       }
     },
     "assessment": {
@@ -2350,23 +2350,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。",
+          "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。",
           "用 Bedrock Guardrails 的 token 配额策略，捕获被拒请求指标，EventBridge 规则触发通知，CloudWatch 仪表盘看趋势。",
           "部署 SQS 死信队列处理失败请求，Lambda 分析 token 相关失败，CloudWatch Logs Insights 基于错误日志生成报告。",
-          "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。"
+          "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A。\nBedrock 按模型强制 token 配额，故须在推理前用对应模型的分词规则预估 token 用量以识别接近上限。可扩展的 Lambda 层可做该请求前预估，发出模型与业务单元专属的 CloudWatch 自定义指标用于阈值告警，并将详细用量存 DynamoDB 供分摊计费。Guardrails 不实现 token 配额策略，死信队列在请求失败后才运作，API Gateway 使用计划施加的是请求配额而非模型专属 token 计算。"
+        "referenceAnswer": "正确答案：D。\nBedrock 按模型强制 token 配额，故须在推理前用对应模型的分词规则预估 token 用量以识别接近上限。可扩展的 Lambda 层可做该请求前预估，发出模型与业务单元专属的 CloudWatch 自定义指标用于阈值告警，并将详细用量存 DynamoDB 供分摊计费。Guardrails 不实现 token 配额策略，死信队列在请求失败后才运作，API Gateway 使用计划施加的是请求配额而非模型专属 token 计算。"
       }
     },
     "assessment": {
@@ -2403,23 +2403,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。",
+          "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。",
           "用 Comprehend 分类文档打相关分，集成 Textract 文档分析，Neptune 做图相关计算。",
           "用 Knowledge Bases Retrieve API 初检，调 Bedrock Rerank API 重排，再 InvokeModelWithResponseStream 生成。",
-          "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。"
+          "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。"
         ],
         "answer": [
-          3
+          0
         ],
         "misconceptionMap": [
-          0,
+          null,
           1,
           2,
-          null
+          0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：D。\nBedrock 知识库在使用 RetrieveAndGenerate/RetrieveAndGenerateStream 时可通过检索重排配置应用托管重排器。重排器评估检索文本块与查询的相关性并重排序，替代默认排名，提升上下文相关性且免去了部署与集成独立排序/API/文档分析/图处理服务的运维负担。"
+        "referenceAnswer": "正确答案：A。\nBedrock 知识库在使用 RetrieveAndGenerate/RetrieveAndGenerateStream 时可通过检索重排配置应用托管重排器。重排器评估检索文本块与查询的相关性并重排序，替代默认排名，提升上下文相关性且免去了部署与集成独立排序/API/文档分析/图处理服务的运维负担。"
       }
     },
     "assessment": {
@@ -2457,23 +2457,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。",
+          "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。",
           "每部门建独立 supervisor，各 collaborator 做意图分类，仅接本部门知识库，supervisor 间手工交接。",
           "每部门数据隔离在独立知识库，IAM 过滤；部署单一通用智能体，内部多 action group 做部门功能，规则路由。",
-          "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+          "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A。\nBedrock 多智能体协作支持 supervisor 智能体将请求路由到专精 collaborator 智能体。每个 collaborator 可配置为不同部门并使用自有知识库做 RAG，保留领域专精且可通过增删 collaborator 扩展能力。supervisor 路由模型旨在将请求发往合适 collaborator 并降低延迟。"
+        "referenceAnswer": "正确答案：D。\nBedrock 多智能体协作支持 supervisor 智能体将请求路由到专精 collaborator 智能体。每个 collaborator 可配置为不同部门并使用自有知识库做 RAG，保留领域专精且可通过增删 collaborator 扩展能力。supervisor 路由模型旨在将请求发往合适 collaborator 并降低延迟。"
       }
     },
     "assessment": {
@@ -2510,23 +2510,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
           "在 Bedrock 部署低延迟实时优化模型，购预置吞吐并设自动伸缩策略。",
+          "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
           "在 SageMaker AI 实时端点部署 LLM（专用 GPU 实例）。",
           "在 SageMaker AI serverless 端点部署中型 LLM 并优化批处理。"
         ],
         "answer": [
-          1
+          0
         ],
         "misconceptionMap": [
-          0,
           null,
+          0,
           1,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：B。\n低延迟、实时优化的 Bedrock 模型适合交互式响应生成。预置吞吐为持续高并发提供专用、可预测的推理容量，自动伸缩策略应对变动需求并帮助管理容量与计算成本。批处理无法满足单条建议 <200ms 延迟目标。"
+        "referenceAnswer": "正确答案：A。\n低延迟、实时优化的 Bedrock 模型适合交互式响应生成。预置吞吐为持续高并发提供专用、可预测的推理容量，自动伸缩策略应对变动需求并帮助管理容量与计算成本。批处理无法满足单条建议 <200ms 延迟目标。"
       }
     },
     "assessment": {
@@ -2625,22 +2625,22 @@
         "type": "single",
         "options": [
           "建单一知识库存所有酒店合并数据，Lambda 经 API 同步各 PMS，CloudTrail 按酒店过滤审计。",
-          "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
           "多账号结构下每家酒店一个知识库，直接摄入提供实时房间可用性，非关键信息定时同步。",
+          "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
           "建集中 Bedrock 智能体用多个知识库，IAM Identity Center 按酒店权限集控员工访问。"
         ],
         "answer": [
-          2
+          1
         ],
         "misconceptionMap": [
           0,
-          1,
           null,
+          1,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：C。\n每家酒店独立知识库（多账号）隔离各酒店数据与访问控制，同时可独立管理容量与性能。Bedrock 知识库直接摄入支持单次操作增删改文档而无需等待数据源同步，支撑近实时房间可用性更新；定时同步适合时效性较低的信息。"
+        "referenceAnswer": "正确答案：B。\n每家酒店独立知识库（多账号）隔离各酒店数据与访问控制，同时可独立管理容量与性能。Bedrock 知识库直接摄入支持单次操作增删改文档而无需等待数据源同步，支撑近实时房间可用性更新；定时同步适合时效性较低的信息。"
       }
     },
     "assessment": {
@@ -2739,23 +2739,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
-          "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
           "启 Amazon Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载升高时升实例规格。",
+          "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
+          "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
           "启 Amazon DocumentDB 集群（IVFFlat 索引、高 probe 值），以副本集连接并将读分发到副本。"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A。\nMemoryDB 的 FLAT 向量索引对每向量做暴力线性比对，在距离计算精度内返回精确最近邻结果。对小索引而言，这在不招致穷举搜索的大索引延迟劣势下保留最大检索准确度。HNSW 与 IVFFlat 是近似索引方法，以可能的召回损失换取速度。"
+        "referenceAnswer": "正确答案：C。\nMemoryDB 的 FLAT 向量索引对每向量做暴力线性比对，在距离计算精度内返回精确最近邻结果。对小索引而言，这在不招致穷举搜索的大索引延迟劣势下保留最大检索准确度。HNSW 与 IVFFlat 是近似索引方法，以可能的召回损失换取速度。"
       }
     },
     "assessment": {

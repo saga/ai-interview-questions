@@ -13,7 +13,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "在 Snowflake 中，若要筛选 `email` 未提供的记录，哪种条件正确？",
-    "explanation": "正确答案 B。SQL 的 NULL 表示未知/缺失状态，不能用等号判断，应使用 IS NULL。空字符串与 NULL 是不同值。",
+    "explanation": "正确答案 D。SQL 的 NULL 表示未知/缺失状态，不能用等号判断，应使用 IS NULL。空字符串与 NULL 是不同值。",
     "misconceptions": [
       "把 NULL 当作可用等号比较的普通值。"
     ],
@@ -22,22 +22,22 @@
         "type": "single",
         "options": [
           "使用等号将列与 NULL 比较",
-          "使用 IS NULL 谓词",
+          "筛选该列不为 NULL 的记录",
           "比较该列是否等于空字符串",
-          "筛选该列不为 NULL 的记录"
+          "使用 IS NULL 谓词"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。SQL 的 NULL 表示未知/缺失状态，不能用等号判断，应使用 IS NULL。空字符串与 NULL 是不同值。"
+        "referenceAnswer": "正确答案 D。SQL 的 NULL 表示未知/缺失状态，不能用等号判断，应使用 IS NULL。空字符串与 NULL 是不同值。"
       }
     },
     "knowledgeId": "snowflake-sql-foundations",
@@ -65,7 +65,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "需要在 `discount` 为 NULL 时使用 0 参与计算，哪个表达式最直接？",
-    "explanation": "正确答案 A。COALESCE 返回第一个非 NULL 参数，适合给缺失值提供明确的业务默认值；默认值必须符合指标语义。",
+    "explanation": "正确答案 C。COALESCE 返回第一个非 NULL 参数，适合给缺失值提供明确的业务默认值；默认值必须符合指标语义。",
     "misconceptions": [
       "认为 NULL 会自动按 0 参与算术运算。"
     ],
@@ -73,23 +73,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "COALESCE(discount, 0)",
-          "discount IS NULL",
           "NULLIF(discount, 0)",
+          "discount IS NULL",
+          "COALESCE(discount, 0)",
           "COUNT(discount)"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。COALESCE 返回第一个非 NULL 参数，适合给缺失值提供明确的业务默认值；默认值必须符合指标语义。"
+        "referenceAnswer": "正确答案 C。COALESCE 返回第一个非 NULL 参数，适合给缺失值提供明确的业务默认值；默认值必须符合指标语义。"
       }
     },
     "knowledgeId": "snowflake-sql-foundations",
@@ -117,7 +117,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "事件表需要保留本地时区偏移信息，应该优先评估哪类 Snowflake 时间戳？",
-    "explanation": "正确答案 C。TIMESTAMP_TZ 会保存 UTC 时间与时区偏移信息；NTZ 不带时区语义，LTZ 按会话时区显示。还应统一写入、比较和展示规范。",
+    "explanation": "正确答案 D。TIMESTAMP_TZ 会保存 UTC 时间与时区偏移信息；NTZ 不带时区语义，LTZ 按会话时区显示。还应统一写入、比较和展示规范。",
     "misconceptions": [
       "认为所有 TIMESTAMP 类型都以相同方式保留时区信息。"
     ],
@@ -127,21 +127,21 @@
         "options": [
           "TIMESTAMP_NTZ",
           "DATE",
-          "TIMESTAMP_TZ",
-          "TIME"
+          "TIME",
+          "TIMESTAMP_TZ"
         ],
         "answer": [
-          2
+          3
         ],
         "misconceptionMap": [
           0,
           0,
-          null,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 C。TIMESTAMP_TZ 会保存 UTC 时间与时区偏移信息；NTZ 不带时区语义，LTZ 按会话时区显示。还应统一写入、比较和展示规范。"
+        "referenceAnswer": "正确答案 D。TIMESTAMP_TZ 会保存 UTC 时间与时区偏移信息；NTZ 不带时区语义，LTZ 按会话时区显示。还应统一写入、比较和展示规范。"
       }
     },
     "knowledgeId": "snowflake-sql-foundations",
@@ -492,7 +492,7 @@
     "difficulty": "medium",
     "angle": "fundamental",
     "question": "某 SQL 查询没有 ORDER BY，消费者要求结果每次都按时间升序返回。哪些说法成立？",
-    "explanation": "正确答案 B。关系查询在没有 ORDER BY 时不承诺返回顺序。稳定分页或重现结果时，应提供完整排序键，并考虑相同时间值的 tie-breaker。",
+    "explanation": "正确答案 C。关系查询在没有 ORDER BY 时不承诺返回顺序。稳定分页或重现结果时，应提供完整排序键，并考虑相同时间值的 tie-breaker。",
     "misconceptions": [
       "依赖物理存储顺序或 GROUP BY 推断最终结果顺序。"
     ],
@@ -501,22 +501,22 @@
         "type": "single",
         "options": [
           "表中数据通常按插入顺序保存，因此无需 ORDER BY",
-          "应显式按时间列排序；如时间可相同，还需添加稳定的次级排序键",
           "只要使用 GROUP BY，结果就会自动按分组键排序",
+          "应显式按时间列排序；如时间可相同，还需添加稳定的次级排序键",
           "ORDER BY 与查询结果的逻辑顺序无关"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
+          null,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。关系查询在没有 ORDER BY 时不承诺返回顺序。稳定分页或重现结果时，应提供完整排序键，并考虑相同时间值的 tie-breaker。"
+        "referenceAnswer": "正确答案 C。关系查询在没有 ORDER BY 时不承诺返回顺序。稳定分页或重现结果时，应提供完整排序键，并考虑相同时间值的 tie-breaker。"
       }
     },
     "knowledgeId": "snowflake-sql-foundations",
@@ -544,7 +544,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "INNER JOIN 的基本结果包含哪些记录？",
-    "explanation": "正确答案 B。INNER JOIN 只保留满足连接条件的行组合；未匹配记录不会出现在结果中。",
+    "explanation": "正确答案 C。INNER JOIN 只保留满足连接条件的行组合；未匹配记录不会出现在结果中。",
     "misconceptions": [
       "把 INNER JOIN 当成保留左表全部记录的连接。"
     ],
@@ -553,22 +553,22 @@
         "type": "single",
         "options": [
           "左表所有记录，无论是否匹配",
-          "只有连接条件两侧匹配的行组合",
           "左表与右表所有未匹配行",
+          "只有连接条件两侧匹配的行组合",
           "只保留右表中匹配的记录"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
+          null,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。INNER JOIN 只保留满足连接条件的行组合；未匹配记录不会出现在结果中。"
+        "referenceAnswer": "正确答案 C。INNER JOIN 只保留满足连接条件的行组合；未匹配记录不会出现在结果中。"
       }
     },
     "knowledgeId": "snowflake-query-joins-aggregation",
@@ -596,7 +596,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "对 `COUNT(customer_id)` 的结果，哪种描述准确？",
-    "explanation": "正确答案 B。COUNT(expression) 忽略该表达式为 NULL 的行；去重计数应使用 COUNT(DISTINCT expression)。",
+    "explanation": "正确答案 D。COUNT(expression) 忽略该表达式为 NULL 的行；去重计数应使用 COUNT(DISTINCT expression)。",
     "misconceptions": [
       "把 COUNT(*)、COUNT(column) 和 COUNT(DISTINCT column) 当成同一种计数。"
     ],
@@ -605,22 +605,22 @@
         "type": "single",
         "options": [
           "统计所有输入行，包括 customer_id 为 NULL 的行",
-          "只统计 customer_id 非 NULL 的行",
+          "只统计 customer_id 为 0 的行",
           "统计不同 customer_id 的数量",
-          "只统计 customer_id 为 0 的行"
+          "只统计 customer_id 非 NULL 的行"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。COUNT(expression) 忽略该表达式为 NULL 的行；去重计数应使用 COUNT(DISTINCT expression)。"
+        "referenceAnswer": "正确答案 D。COUNT(expression) 忽略该表达式为 NULL 的行；去重计数应使用 COUNT(DISTINCT expression)。"
       }
     },
     "knowledgeId": "snowflake-query-joins-aggregation",
@@ -648,7 +648,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "要先筛选原始订单，再对每个客户筛选总金额超过阈值的分组，条件应如何放置？",
-    "explanation": "正确答案 B。WHERE 在分组前筛选行，HAVING 在 GROUP BY 聚合后筛选分组；窗口函数结果筛选可考虑 QUALIFY。",
+    "explanation": "正确答案 C。WHERE 在分组前筛选行，HAVING 在 GROUP BY 聚合后筛选分组；窗口函数结果筛选可考虑 QUALIFY。",
     "misconceptions": [
       "混淆行级筛选、聚合级筛选与窗口结果筛选。"
     ],
@@ -657,22 +657,22 @@
         "type": "single",
         "options": [
           "两种条件都放 WHERE",
-          "原始行条件放 WHERE，聚合后条件放 HAVING",
           "原始行条件放 HAVING，聚合后条件放 WHERE",
+          "原始行条件放 WHERE，聚合后条件放 HAVING",
           "全部放 QUALIFY，禁止使用 WHERE/HAVING"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
+          null,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。WHERE 在分组前筛选行，HAVING 在 GROUP BY 聚合后筛选分组；窗口函数结果筛选可考虑 QUALIFY。"
+        "referenceAnswer": "正确答案 C。WHERE 在分组前筛选行，HAVING 在 GROUP BY 聚合后筛选分组；窗口函数结果筛选可考虑 QUALIFY。"
       }
     },
     "knowledgeId": "snowflake-query-joins-aggregation",
@@ -914,7 +914,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "在 LEFT JOIN 结果中，如何区分有匹配订单的客户与没有匹配订单的客户？",
-    "explanation": "正确答案 A。应选择右表中能可靠区分匹配行的键列，并检查该列是否为 NULL。若业务列本身允许 NULL，直接检查金额等业务字段会误判。",
+    "explanation": "正确答案 D。应选择右表中能可靠区分匹配行的键列，并检查该列是否为 NULL。若业务列本身允许 NULL，直接检查金额等业务字段会误判。",
     "misconceptions": [
       "使用可能本来就允许 NULL 的业务字段判断连接是否匹配。"
     ],
@@ -922,23 +922,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "检查右表一个按设计不可为 NULL 的匹配键是否为 NULL",
+          "假定右表金额总是非 NULL，因此可以只检查金额",
           "对左表客户名判断是否为 NULL",
           "对整个结果使用 COUNT(*)，不考虑分组",
-          "假定右表金额总是非 NULL，因此可以只检查金额"
+          "检查右表一个按设计不可为 NULL 的匹配键是否为 NULL"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。应选择右表中能可靠区分匹配行的键列，并检查该列是否为 NULL。若业务列本身允许 NULL，直接检查金额等业务字段会误判。"
+        "referenceAnswer": "正确答案 D。应选择右表中能可靠区分匹配行的键列，并检查该列是否为 NULL。若业务列本身允许 NULL，直接检查金额等业务字段会误判。"
       }
     },
     "knowledgeId": "snowflake-query-joins-aggregation",
@@ -1074,7 +1074,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "要在每个客户内部为订单按金额从高到低编号，并保留所有订单行，适合使用什么？",
-    "explanation": "正确答案 B。ROW_NUMBER 是窗口函数，可以在每个客户分区内按指定顺序编号，同时保留输入行；如金额并列，应增加稳定的次级排序键。",
+    "explanation": "正确答案 C。ROW_NUMBER 是窗口函数，可以在每个客户分区内按指定顺序编号，同时保留输入行；如金额并列，应增加稳定的次级排序键。",
     "misconceptions": [
       "误以为排名必须先聚合，因此会丢掉明细行。"
     ],
@@ -1083,22 +1083,22 @@
         "type": "single",
         "options": [
           "GROUP BY customer_id",
-          "ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount DESC)",
           "DELETE WHERE amount IS NULL",
+          "ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount DESC)",
           "COUNT(DISTINCT customer_id)"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
+          null,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。ROW_NUMBER 是窗口函数，可以在每个客户分区内按指定顺序编号，同时保留输入行；如金额并列，应增加稳定的次级排序键。"
+        "referenceAnswer": "正确答案 C。ROW_NUMBER 是窗口函数，可以在每个客户分区内按指定顺序编号，同时保留输入行；如金额并列，应增加稳定的次级排序键。"
       }
     },
     "knowledgeId": "snowflake-window-ctes",
@@ -1126,7 +1126,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "要把当前销售记录与同一客户上一条按日期排列的记录比较，最合适的窗口函数是哪一个？",
-    "explanation": "正确答案 B。LAG 访问按窗口排序后的前一行；LEAD 访问后一行。结果取决于窗口的 PARTITION BY 和 ORDER BY。",
+    "explanation": "正确答案 D。LAG 访问按窗口排序后的前一行；LEAD 访问后一行。结果取决于窗口的 PARTITION BY 和 ORDER BY。",
     "misconceptions": [
       "混淆 LAG/LEAD 的前后行方向。"
     ],
@@ -1135,22 +1135,22 @@
         "type": "single",
         "options": [
           "LEAD",
-          "LAG",
+          "COUNT(*)",
           "NTILE",
-          "COUNT(*)"
+          "LAG"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。LAG 访问按窗口排序后的前一行；LEAD 访问后一行。结果取决于窗口的 PARTITION BY 和 ORDER BY。"
+        "referenceAnswer": "正确答案 D。LAG 访问按窗口排序后的前一行；LEAD 访问后一行。结果取决于窗口的 PARTITION BY 和 ORDER BY。"
       }
     },
     "knowledgeId": "snowflake-window-ctes",
@@ -1178,7 +1178,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "运行累计销售额时，哪项是可靠的设计原则？",
-    "explanation": "正确答案 B。累计值依赖明确的排序与窗口 frame。若存在同一时间的多行，应判断其是否应并列累计，并加入稳定 tie-breaker；不能依赖物理存储顺序。",
+    "explanation": "正确答案 C。累计值依赖明确的排序与窗口 frame。若存在同一时间的多行，应判断其是否应并列累计，并加入稳定 tie-breaker；不能依赖物理存储顺序。",
     "misconceptions": [
       "认为窗口计算能依赖数据在存储中的原始顺序。"
     ],
@@ -1187,22 +1187,22 @@
         "type": "single",
         "options": [
           "依赖物理插入顺序计算累计值",
-          "指定窗口排序键，并根据需要显式定义 frame",
           "先删除日期相同的所有订单",
+          "指定窗口排序键，并根据需要显式定义 frame",
           "用 DISTINCT 代替窗口定义"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
+          null,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。累计值依赖明确的排序与窗口 frame。若存在同一时间的多行，应判断其是否应并列累计，并加入稳定 tie-breaker；不能依赖物理存储顺序。"
+        "referenceAnswer": "正确答案 C。累计值依赖明确的排序与窗口 frame。若存在同一时间的多行，应判断其是否应并列累计，并加入稳定 tie-breaker；不能依赖物理存储顺序。"
       }
     },
     "knowledgeId": "snowflake-window-ctes",
@@ -1606,7 +1606,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake 中保存 JSON 类半结构化数据时，常用哪种数据类型？",
-    "explanation": "正确答案 A。VARIANT 可以保存半结构化值；仍应根据稳定、高频使用的业务字段考虑显式类型化投影与契约治理。",
+    "explanation": "正确答案 B。VARIANT 可以保存半结构化值；仍应根据稳定、高频使用的业务字段考虑显式类型化投影与契约治理。",
     "misconceptions": [
       "认为半结构化数据必须先被完全展平为固定列，或误选非适用类型。"
     ],
@@ -1614,23 +1614,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "VARIANT",
           "BINARY(8)",
+          "VARIANT",
           "TIMESTAMP_NTZ",
           "只允许使用固定列的表结构"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。VARIANT 可以保存半结构化值；仍应根据稳定、高频使用的业务字段考虑显式类型化投影与契约治理。"
+        "referenceAnswer": "正确答案 B。VARIANT 可以保存半结构化值；仍应根据稳定、高频使用的业务字段考虑显式类型化投影与契约治理。"
       }
     },
     "knowledgeId": "semi-structured-data",
@@ -1658,7 +1658,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "对 VARIANT 中的数组调用 FLATTEN，最主要的结果变化是什么？",
-    "explanation": "正确答案 A。FLATTEN 将数组、对象或其他可展开结构的元素转换为行式输出；行粒度和基数会发生变化，需在下游聚合中显式考虑。",
+    "explanation": "正确答案 D。FLATTEN 将数组、对象或其他可展开结构的元素转换为行式输出；行粒度和基数会发生变化，需在下游聚合中显式考虑。",
     "misconceptions": [
       "把 FLATTEN 当作数据类型转换或自动 schema 修复工具。"
     ],
@@ -1666,23 +1666,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "把数组元素展开为多行",
+          "为缺失字段自动补齐业务默认值",
           "自动把所有字段转换为严格的关系型约束",
           "在源表上建立 B-tree 索引",
-          "为缺失字段自动补齐业务默认值"
+          "把数组元素展开为多行"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。FLATTEN 将数组、对象或其他可展开结构的元素转换为行式输出；行粒度和基数会发生变化，需在下游聚合中显式考虑。"
+        "referenceAnswer": "正确答案 D。FLATTEN 将数组、对象或其他可展开结构的元素转换为行式输出；行粒度和基数会发生变化，需在下游聚合中显式考虑。"
       }
     },
     "knowledgeId": "semi-structured-data",
@@ -1710,7 +1710,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "如果某条 JSON 记录缺少 `customer.id` 路径，查询设计应考虑什么？",
-    "explanation": "正确答案 A。上游 schema drift 或字段缺失很常见；应区分缺失、JSON null 和类型不符合，并通过转换及质量规则处理。",
+    "explanation": "正确答案 B。上游 schema drift 或字段缺失很常见；应区分缺失、JSON null 和类型不符合，并通过转换及质量规则处理。",
     "misconceptions": [
       "认为半结构化路径总存在且一定满足期望类型。"
     ],
@@ -1718,23 +1718,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "路径访问可能得到 NULL 或缺失值语义，需处理异常/缺失记录",
           "Snowflake 必定自动生成唯一 customer.id",
+          "路径访问可能得到 NULL 或缺失值语义，需处理异常/缺失记录",
           "缺字段会使整个表的所有查询失败",
           "路径访问会自动建立一列持久化字段"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。上游 schema drift 或字段缺失很常见；应区分缺失、JSON null 和类型不符合，并通过转换及质量规则处理。"
+        "referenceAnswer": "正确答案 B。上游 schema drift 或字段缺失很常见；应区分缺失、JSON null 和类型不符合，并通过转换及质量规则处理。"
       }
     },
     "knowledgeId": "semi-structured-data",
@@ -1816,7 +1816,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "Snowflake 的 LATERAL FLATTEN 通常适合哪类查询？",
-    "explanation": "正确答案 A。LATERAL FLATTEN 可让展开后的元素与对应源行关联，适合处理嵌套数组/对象；输出行数可能大于源表行数。",
+    "explanation": "正确答案 C。LATERAL FLATTEN 可让展开后的元素与对应源行关联，适合处理嵌套数组/对象；输出行数可能大于源表行数。",
     "misconceptions": [
       "误以为 FLATTEN 是全局数据治理或永久变更记录机制。"
     ],
@@ -1824,23 +1824,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "对每条源记录中的数组元素逐项展开并可引用该源记录",
-          "对所有数据库对象做权限扫描",
           "在不扫描数据的情况下自动优化任意 JOIN",
+          "对所有数据库对象做权限扫描",
+          "对每条源记录中的数组元素逐项展开并可引用该源记录",
           "将所有变更永久归档为 CDC 日志"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。LATERAL FLATTEN 可让展开后的元素与对应源行关联，适合处理嵌套数组/对象；输出行数可能大于源表行数。"
+        "referenceAnswer": "正确答案 C。LATERAL FLATTEN 可让展开后的元素与对应源行关联，适合处理嵌套数组/对象；输出行数可能大于源表行数。"
       }
     },
     "knowledgeId": "semi-structured-data",
@@ -2138,7 +2138,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake 中 MERGE 的主要用途是什么？",
-    "explanation": "正确答案 A。MERGE 将源行与目标行按匹配条件关联，并按 WHEN MATCHED/NOT MATCHED 等分支执行 DML；它不替代源键去重与数据质量设计。",
+    "explanation": "正确答案 D。MERGE 将源行与目标行按匹配条件关联，并按 WHEN MATCHED/NOT MATCHED 等分支执行 DML；它不替代源键去重与数据质量设计。",
     "misconceptions": [
       "认为 MERGE 自动完成数据去重、完整性强制和备份。"
     ],
@@ -2146,23 +2146,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "根据源与目标的匹配条件执行更新、插入或删除等动作",
+          "自动强制标准表的所有主键与外键",
           "把任意查询结果自动转换成永久备份",
           "仅修改 Warehouse 的大小",
-          "自动强制标准表的所有主键与外键"
+          "根据源与目标的匹配条件执行更新、插入或删除等动作"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。MERGE 将源行与目标行按匹配条件关联，并按 WHEN MATCHED/NOT MATCHED 等分支执行 DML；它不替代源键去重与数据质量设计。"
+        "referenceAnswer": "正确答案 D。MERGE 将源行与目标行按匹配条件关联，并按 WHEN MATCHED/NOT MATCHED 等分支执行 DML；它不替代源键去重与数据质量设计。"
       }
     },
     "knowledgeId": "snowflake-dml-data-correctness",
@@ -2242,7 +2242,7 @@
     "difficulty": "easy",
     "angle": "debugging",
     "question": "执行 MERGE 时源数据可能有同一业务键的多条记录，最应该优先做什么？",
-    "explanation": "正确答案 A。MERGE 不会自动推断哪些源记录是业务上正确的。应先定义 tie-breaker、排序和冲突处理，并检查剩余重复键。",
+    "explanation": "正确答案 B。MERGE 不会自动推断哪些源记录是业务上正确的。应先定义 tie-breaker、排序和冲突处理，并检查剩余重复键。",
     "misconceptions": [
       "认为 MERGE 会自动选择业务上正确的重复源记录。"
     ],
@@ -2250,23 +2250,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "在源端定义去重规则和确定性排序，确保匹配输入的粒度明确",
           "把所有重复源记录原样提交并期待数据库按最新时间自动选择",
+          "在源端定义去重规则和确定性排序，确保匹配输入的粒度明确",
           "关闭所有数据质量检测",
           "只增加仓库规模"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。MERGE 不会自动推断哪些源记录是业务上正确的。应先定义 tie-breaker、排序和冲突处理，并检查剩余重复键。"
+        "referenceAnswer": "正确答案 B。MERGE 不会自动推断哪些源记录是业务上正确的。应先定义 tie-breaker、排序和冲突处理，并检查剩余重复键。"
       }
     },
     "knowledgeId": "snowflake-dml-data-correctness",
@@ -2672,7 +2672,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "在显式事务中执行 UPDATE 后、COMMIT 之前执行 ROLLBACK，通常会怎样？",
-    "explanation": "正确答案 A。ROLLBACK 用于撤销当前事务内尚未提交的操作。它不能撤销已经提交的事务，也不会回滚该事务之外的其他会话操作。",
+    "explanation": "正确答案 C。ROLLBACK 用于撤销当前事务内尚未提交的操作。它不能撤销已经提交的事务，也不会回滚该事务之外的其他会话操作。",
     "misconceptions": [
       "认为 ROLLBACK 会恢复任意历史状态或影响其他会话。"
     ],
@@ -2680,23 +2680,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "撤销该事务中尚未提交的 DML 修改",
-          "删除该表的所有历史数据",
           "撤销同一账户中所有用户的查询",
+          "删除该表的所有历史数据",
+          "撤销该事务中尚未提交的 DML 修改",
           "自动扩大 Warehouse"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。ROLLBACK 用于撤销当前事务内尚未提交的操作。它不能撤销已经提交的事务，也不会回滚该事务之外的其他会话操作。"
+        "referenceAnswer": "正确答案 C。ROLLBACK 用于撤销当前事务内尚未提交的操作。它不能撤销已经提交的事务，也不会回滚该事务之外的其他会话操作。"
       }
     },
     "knowledgeId": "snowflake-transactions-concurrency",
@@ -2724,7 +2724,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "查询历史表明一条查询花了 20 秒，但其中 18 秒是 queued overload time。哪种解释最合适？",
-    "explanation": "正确答案 A。排队时间应与 compilation_time、execution_time 等分开看。队列过载通常提示并发或可用计算容量问题，需结合仓库负载和查询画像诊断。",
+    "explanation": "正确答案 D。排队时间应与 compilation_time、execution_time 等分开看。队列过载通常提示并发或可用计算容量问题，需结合仓库负载和查询画像诊断。",
     "misconceptions": [
       "把所有端到端耗时都理解为 SQL 算子执行慢。"
     ],
@@ -2732,23 +2732,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "主要时间消耗在仓库排队等待，而非 SQL 实际执行",
+          "说明所有数据都已从缓存读取",
           "SQL 必然存在错误 JOIN",
           "必须创建 PostgreSQL 风格 B-tree 索引",
-          "说明所有数据都已从缓存读取"
+          "主要时间消耗在仓库排队等待，而非 SQL 实际执行"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。排队时间应与 compilation_time、execution_time 等分开看。队列过载通常提示并发或可用计算容量问题，需结合仓库负载和查询画像诊断。"
+        "referenceAnswer": "正确答案 D。排队时间应与 compilation_time、execution_time 等分开看。队列过载通常提示并发或可用计算容量问题，需结合仓库负载和查询画像诊断。"
       }
     },
     "knowledgeId": "snowflake-transactions-concurrency",
@@ -3206,7 +3206,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Time Travel 在 Snowflake 中的主要用途是什么？",
-    "explanation": "正确答案 A。Time Travel 允许在配置的保留期内查询历史数据、克隆历史状态或恢复被删除对象；它不等于永久业务历史仓库。",
+    "explanation": "正确答案 B。Time Travel 允许在配置的保留期内查询历史数据、克隆历史状态或恢复被删除对象；它不等于永久业务历史仓库。",
     "misconceptions": [
       "把 Time Travel 视为没有时间边界的永久备份。"
     ],
@@ -3214,23 +3214,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "在保留期内查询、克隆或恢复历史对象状态",
           "永久归档所有业务事件且没有保留期限",
+          "在保留期内查询、克隆或恢复历史对象状态",
           "替代所有访问控制策略",
           "给标准表自动建立索引"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Time Travel 允许在配置的保留期内查询历史数据、克隆历史状态或恢复被删除对象；它不等于永久业务历史仓库。"
+        "referenceAnswer": "正确答案 B。Time Travel 允许在配置的保留期内查询历史数据、克隆历史状态或恢复被删除对象；它不等于永久业务历史仓库。"
       }
     },
     "knowledgeId": "time-travel-cloning",
@@ -3257,7 +3257,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "表在 Time Travel 保留窗口内被误 DROP，通常首先评估哪项能力？",
-    "explanation": "正确答案 A。Snowflake 支持在对象 Time Travel 保留窗口内通过 UNDROP 恢复被删除的表等对象。超过可操作窗口后不能依赖该方式。",
+    "explanation": "正确答案 C。Snowflake 支持在对象 Time Travel 保留窗口内通过 UNDROP 恢复被删除的表等对象。超过可操作窗口后不能依赖该方式。",
     "misconceptions": [
       "把 PostgreSQL 的维护命令直接当作 Snowflake 对象恢复手段。"
     ],
@@ -3265,23 +3265,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "UNDROP TABLE 恢复被删除的表",
-          "VACUUM FULL",
           "增加 work_mem",
+          "VACUUM FULL",
+          "UNDROP TABLE 恢复被删除的表",
           "创建 B-tree 主键索引"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Snowflake 支持在对象 Time Travel 保留窗口内通过 UNDROP 恢复被删除的表等对象。超过可操作窗口后不能依赖该方式。"
+        "referenceAnswer": "正确答案 C。Snowflake 支持在对象 Time Travel 保留窗口内通过 UNDROP 恢复被删除的表等对象。超过可操作窗口后不能依赖该方式。"
       }
     },
     "knowledgeId": "time-travel-cloning",
@@ -3308,7 +3308,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "零拷贝克隆的成本与存储行为，哪项描述最准确？",
-    "explanation": "正确答案 B。Snowflake 克隆初始可共享底层数据，创建速度和初始存储开销通常较低；后续变化会带来额外存储，仍要考虑保留窗口和对象成本。",
+    "explanation": "正确答案 D。Snowflake 克隆初始可共享底层数据，创建速度和初始存储开销通常较低；后续变化会带来额外存储，仍要考虑保留窗口和对象成本。",
     "misconceptions": [
       "认为零拷贝克隆代表永久零成本或完整物理复制。"
     ],
@@ -3317,22 +3317,22 @@
         "type": "single",
         "options": [
           "克隆创建时会立即完整复制所有数据且永不共享",
-          "克隆初始共享已有存储结构，源/克隆后续发生变化时可能产生额外存储",
+          "克隆只能用于生产数据，不能用于测试",
           "克隆不可能产生任何额外存储成本",
-          "克隆只能用于生产数据，不能用于测试"
+          "克隆初始共享已有存储结构，源/克隆后续发生变化时可能产生额外存储"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。Snowflake 克隆初始可共享底层数据，创建速度和初始存储开销通常较低；后续变化会带来额外存储，仍要考虑保留窗口和对象成本。"
+        "referenceAnswer": "正确答案 D。Snowflake 克隆初始可共享底层数据，创建速度和初始存储开销通常较低；后续变化会带来额外存储，仍要考虑保留窗口和对象成本。"
       }
     },
     "knowledgeId": "time-travel-cloning",
@@ -3729,7 +3729,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "将 Stage 中的一批文件批量导入 Snowflake 表，最常见的命令是什么？",
-    "explanation": "正确答案 A。COPY INTO <table> 可从内部或外部 Stage 将文件数据加载到表中；文件格式、路径、错误策略与目标列映射需要正确配置。",
+    "explanation": "正确答案 B。COPY INTO <table> 可从内部或外部 Stage 将文件数据加载到表中；文件格式、路径、错误策略与目标列映射需要正确配置。",
     "misconceptions": [
       "把数据库维护或查询分析命令当成文件加载命令。"
     ],
@@ -3737,23 +3737,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "COPY INTO <table>",
           "VACUUM FULL",
+          "COPY INTO <table>",
           "CREATE WAREHOUSE AS FILE",
           "EXPLAIN ANALYZE ONLY"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。COPY INTO <table> 可从内部或外部 Stage 将文件数据加载到表中；文件格式、路径、错误策略与目标列映射需要正确配置。"
+        "referenceAnswer": "正确答案 B。COPY INTO <table> 可从内部或外部 Stage 将文件数据加载到表中；文件格式、路径、错误策略与目标列映射需要正确配置。"
       }
     },
     "knowledgeId": "snowflake-data-loading",
@@ -3781,7 +3781,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "Snowpipe 最适合哪种摄取场景？",
-    "explanation": "正确答案 B。Snowpipe 面向 Stage 中持续到达的文件，使用 Snowflake 管理的 serverless compute 加载。它与周期性手工执行 COPY 的操作模型不同。",
+    "explanation": "正确答案 A。Snowpipe 面向 Stage 中持续到达的文件，使用 Snowflake 管理的 serverless compute 加载。它与周期性手工执行 COPY 的操作模型不同。",
     "misconceptions": [
       "把 Snowpipe 与数据库备份、SQL 查询或行级直接写入混为一谈。"
     ],
@@ -3789,23 +3789,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "仅每年一次的全库物理备份",
           "文件持续到达 Stage，希望由 Snowflake 管理连续加载",
+          "仅每年一次的全库物理备份",
           "直接维护 PostgreSQL WAL",
           "给现有查询创建窗口排序"
         ],
         "answer": [
-          1
+          0
         ],
         "misconceptionMap": [
-          0,
           null,
+          0,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。Snowpipe 面向 Stage 中持续到达的文件，使用 Snowflake 管理的 serverless compute 加载。它与周期性手工执行 COPY 的操作模型不同。"
+        "referenceAnswer": "正确答案 A。Snowpipe 面向 Stage 中持续到达的文件，使用 Snowflake 管理的 serverless compute 加载。它与周期性手工执行 COPY 的操作模型不同。"
       }
     },
     "knowledgeId": "snowflake-data-loading",
@@ -3833,7 +3833,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "`COPY INTO` 的文件格式配置主要解决什么？",
-    "explanation": "正确答案 A。FILE FORMAT 约定分隔符、引号、压缩和半结构化文件解析规则等；它不会自动定义业务去重和完整性规则。",
+    "explanation": "正确答案 B。FILE FORMAT 约定分隔符、引号、压缩和半结构化文件解析规则等；它不会自动定义业务去重和完整性规则。",
     "misconceptions": [
       "认为文件格式配置同时保证业务键、质量与转换逻辑正确。"
     ],
@@ -3841,23 +3841,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "告诉加载流程如何解析 CSV、JSON、Parquet 等输入格式",
           "保证业务主键自动唯一",
+          "告诉加载流程如何解析 CSV、JSON、Parquet 等输入格式",
           "自动决定所有下游转换的业务规则",
           "为源表创建索引"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。FILE FORMAT 约定分隔符、引号、压缩和半结构化文件解析规则等；它不会自动定义业务去重和完整性规则。"
+        "referenceAnswer": "正确答案 B。FILE FORMAT 约定分隔符、引号、压缩和半结构化文件解析规则等；它不会自动定义业务去重和完整性规则。"
       }
     },
     "knowledgeId": "snowflake-data-loading",

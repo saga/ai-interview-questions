@@ -105,7 +105,7 @@
     "difficulty": "medium",
     "angle": "debugging",
     "question": "在一个 16 层的深层 GCN 模型训练过程中，工程师观察到随着网络层数增加，节点表示的 Dirichlet 能量快速接近于 0，验证集上的节点分类准确率显著下降，不同类别的节点表征几乎趋于一致（Over-smoothing）。针对该现象及相应解法，以下哪些分析是正确的？",
-    "explanation": "Over-smoothing 的根本原因在于多次反复图卷积在频域上起到了过度低通滤波器的作用，使得高频特征丢失，所有节点表示收敛至平滑的基态。DropEdge 通过在每个 epoch 动态随机删除一部分边，降低了图连通度与消息传递强度，从而减缓过平滑。Jumping Knowledge (JK-Net) 采用跨层跳跃连接，将浅层的局部拓扑/节点特征与深层的全局抽象特征融合，防止低层信息丢失。标准 Layer Normalization 仅对单个节点的特征向量进行缩放归一化，无法阻断不同节点向量方向在空间上的两两趋同（余弦相似度逼近 1），因此单纯增加 LayerNorm 无法解决图结构的过平滑问题。",
+    "explanation": "过平滑源于反复图卷积的过度低通滤波；DropEdge 降低连通度，JK-Net 融合跨层特征，二者都能缓解。D 错误：标准 LayerNorm 只缩放单个节点的特征模长，不阻止节点间余弦相似度趋近 1，单独使用不足以解决结构层面的过平滑。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -113,22 +113,30 @@
           "Over-smoothing 的本质原因是深层图卷积操作起到了低通滤波器的效果，多次迭代导致节点表征收敛至平滑的基态",
           "DropEdge 通过在每次训练迭代中随机移除一定比例的边，降低了图消息传递的连通度，从而减缓过平滑现象",
           "Jumping Knowledge (JK-Net) 架构通过建立跨层跳跃连接，将底层局部拓扑特征与高层全局抽象特征结合，缓解深层特征退化",
-          "仅增加标准层归一化（Layer Normalization）只能重置特征向量的模长，但无法阻止不同节点表征向量方向上的余弦相似度逼近 1"
+          "仅增加标准层归一化即可阻断节点表征方向趋同，是解决过平滑的充分条件。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
         ],
-        "question": "在一个 16 层的深层 GCN 模型训练过程中，工程师观察到随着网络层数增加，节点表示的 Dirichlet 能量快速接近于 0，验证集上的节点分类准确率显著下降，不同类别的节点表征几乎趋于一致（Over-smoothing）。针对该现象及相应解法，以下哪些分析是正确的？"
+        "question": "在一个 16 层的深层 GCN 模型训练过程中，工程师观察到随着网络层数增加，节点表示的 Dirichlet 能量快速接近于 0，验证集上的节点分类准确率显著下降，不同类别的节点表征几乎趋于一致（Over-smoothing）。针对该现象及相应解法，以下哪些分析是正确的？",
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「Over-smoothing 的根本原因在于多次反复图卷积在频域上起到了过度低通滤波器的作用，使得高频特征丢失，所有节点表示收敛至平滑的基态」",
       "reasoningGoal": "先定位现象的直接诱因；据此逐项确认「Over-smoothing 的本质原因是深层图卷积…」「DropEdge 通过在每次训练迭代中随机移除一定比…」等 4 项成立。"
     },
-    "cognitiveTask": "diagnose"
+    "cognitiveTask": "diagnose",
+    "misconceptions": [
+      "认为标准 LayerNorm 能单独阻断节点表征方向趋同。"
+    ]
   },
   {
     "id": "gnn-spectral-vs-spatial",
@@ -196,19 +204,19 @@
         "type": "single",
         "options": [
           "采用端到端在线图神经网络计算，在线请求到来时实时查询图数据库获取 3-hop 邻域拓扑，并在 GPU 上运行多层 GNN 聚合得到 User 向量",
-          "采用离线/近实时图采样计算节点 Embedding 并写入分布式 Key-Value 缓存，线上召回阶段解耦 GNN 聚合，直接转换为高效的向量 Nearest Neighbor (ANN) 检索",
+          "仅使用 CPU 离线计算 PageRank 排序结果作为静态推荐列表，通过 Redis 进行高并发缓存，放弃基于深度表征的图特征学习",
           "将 GNN 模型全量部署在客户端（Client Side），通过 WebSocket 实时同步全量图拓扑与权重，并在本地进行邻域采样与推断",
-          "仅使用 CPU 离线计算 PageRank 排序结果作为静态推荐列表，通过 Redis 进行高并发缓存，放弃基于深度表征的图特征学习"
+          "采用离线/近实时图采样计算节点 Embedding 并写入分布式 Key-Value 缓存，线上召回阶段解耦 GNN 聚合，直接转换为高效的向量 Nearest Neighbor (ANN) 检索"
         ],
         "answer": [
-          1
+          3
         ],
         "question": "某大型电商平台需构建一套亿级 user/item 节点的实时图推荐系统。系统约束如下：全量图拓扑每晚更新一次，用户高频行为秒级异步写入；线上召回阶段要求 P95 延迟小于 15ms；单次召回需为用户评估数千个候选 item。以下哪种架构设计方案在满足上述延迟与一致性约束的同时最具有工程可行性？",
         "misconceptionMap": [
           0,
-          null,
+          2,
           1,
-          2
+          null
         ]
       }
     },

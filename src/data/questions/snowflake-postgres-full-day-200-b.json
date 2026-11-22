@@ -13,7 +13,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "在 Snowflake 中排查一个数据库有哪些表和视图，哪些手段适合先使用？",
-    "explanation": "正确答案 A。Snowflake 提供 SHOW 命令、INFORMATION_SCHEMA 与 ACCOUNT_USAGE 等元数据接口；选择时要考虑权限、范围和数据延迟。",
+    "explanation": "正确答案 C。Snowflake 提供 SHOW 命令、INFORMATION_SCHEMA 与 ACCOUNT_USAGE 等元数据接口；选择时要考虑权限、范围和数据延迟。",
     "misconceptions": [
       "假设其他数据库的系统目录与命令可以原样用于 Snowflake。"
     ],
@@ -21,23 +21,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "SHOW TABLES / SHOW VIEWS 或查询适当的元数据视图",
-          "直接读取 PostgreSQL 的 pg_class 系统表",
           "运行 VACUUM FULL",
+          "直接读取 PostgreSQL 的 pg_class 系统表",
+          "SHOW TABLES / SHOW VIEWS 或查询适当的元数据视图",
           "读取 Warehouse 的本地文件目录"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Snowflake 提供 SHOW 命令、INFORMATION_SCHEMA 与 ACCOUNT_USAGE 等元数据接口；选择时要考虑权限、范围和数据延迟。"
+        "referenceAnswer": "正确答案 C。Snowflake 提供 SHOW 命令、INFORMATION_SCHEMA 与 ACCOUNT_USAGE 等元数据接口；选择时要考虑权限、范围和数据延迟。"
       }
     },
     "knowledgeId": "warehouse-query-diagnostics",
@@ -65,7 +65,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "排查对象不存在或无权访问时，为什么要一起检查当前角色与当前数据库/Schema？",
-    "explanation": "正确答案 A。对象解析与可见权限都受当前上下文和角色授权影响，应核实对象是否存在、名称大小写/限定路径以及有效角色的授权链。",
+    "explanation": "正确答案 D。对象解析与可见权限都受当前上下文和角色授权影响，应核实对象是否存在、名称大小写/限定路径以及有效角色的授权链。",
     "misconceptions": [
       "把能登录账号当成拥有所有数据库对象的权限。"
     ],
@@ -73,23 +73,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "当前上下文和有效角色会影响对象解析与可见权限",
+          "只要能连接账号就必定能查询全部 Schema",
           "对象名称相同就保证所有会话能访问",
           "Warehouse 大小决定对象授权",
-          "只要能连接账号就必定能查询全部 Schema"
+          "当前上下文和有效角色会影响对象解析与可见权限"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。对象解析与可见权限都受当前上下文和角色授权影响，应核实对象是否存在、名称大小写/限定路径以及有效角色的授权链。"
+        "referenceAnswer": "正确答案 D。对象解析与可见权限都受当前上下文和角色授权影响，应核实对象是否存在、名称大小写/限定路径以及有效角色的授权链。"
       }
     },
     "knowledgeId": "warehouse-query-diagnostics",
@@ -333,7 +333,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "Snowflake 中 SHOW GRANTS 常用于解决哪类问题？",
-    "explanation": "正确答案 A。SHOW GRANTS 能查看对象或主体的授权信息，是访问排查的一部分；它不提供执行画像或自动数据修复。",
+    "explanation": "正确答案 B。SHOW GRANTS 能查看对象或主体的授权信息，是访问排查的一部分；它不提供执行画像或自动数据修复。",
     "misconceptions": [
       "混淆授权元数据与查询性能分析。"
     ],
@@ -341,23 +341,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "核对指定对象、角色或用户相关的授权记录",
           "查看查询算子的每一步耗时",
+          "核对指定对象、角色或用户相关的授权记录",
           "恢复 Time Travel 之外的永久历史",
           "自动修复有重复键的表"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。SHOW GRANTS 能查看对象或主体的授权信息，是访问排查的一部分；它不提供执行画像或自动数据修复。"
+        "referenceAnswer": "正确答案 B。SHOW GRANTS 能查看对象或主体的授权信息，是访问排查的一部分；它不提供执行画像或自动数据修复。"
       }
     },
     "knowledgeId": "warehouse-query-diagnostics",
@@ -547,7 +547,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake Query History 最适合用于回答哪类问题？",
-    "explanation": "正确答案 A。Query History 可用于查找查询 ID、执行时间、角色/仓库、状态、错误及耗时等信息，是运行诊断的重要入口。",
+    "explanation": "正确答案 C。Query History 可用于查找查询 ID、执行时间、角色/仓库、状态、错误及耗时等信息，是运行诊断的重要入口。",
     "misconceptions": [
       "认为查询历史会提供全部存储物理细节或自动解释业务结果。"
     ],
@@ -555,23 +555,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "某条 SQL 何时执行、耗时多少、由谁/哪个仓库执行及是否失败",
-          "数据库物理磁盘上每个页面的字节布局",
           "所有历史数据永久保留且无限可见",
+          "数据库物理磁盘上每个页面的字节布局",
+          "某条 SQL 何时执行、耗时多少、由谁/哪个仓库执行及是否失败",
           "自动决定业务指标的计算口径"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Query History 可用于查找查询 ID、执行时间、角色/仓库、状态、错误及耗时等信息，是运行诊断的重要入口。"
+        "referenceAnswer": "正确答案 C。Query History 可用于查找查询 ID、执行时间、角色/仓库、状态、错误及耗时等信息，是运行诊断的重要入口。"
       }
     },
     "knowledgeId": "snowflake-query-history",
@@ -652,7 +652,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "为生产管道中的关键 SQL 添加 QUERY_TAG 的价值是什么？",
-    "explanation": "正确答案 A。Query tag 为语句附加可检索的运行上下文，便于关联任务运行和发布批次；不会改变 SQL 语义或自动提升性能。",
+    "explanation": "正确答案 D。Query tag 为语句附加可检索的运行上下文，便于关联任务运行和发布批次；不会改变 SQL 语义或自动提升性能。",
     "misconceptions": [
       "认为 Query Tag 本身会优化 SQL 或替代运行审计。"
     ],
@@ -660,23 +660,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "让查询可关联到应用、批次、流程或变更标识",
+          "无需再保存运行状态",
           "自动给查询创建索引",
           "确保查询始终命中缓存",
-          "无需再保存运行状态"
+          "让查询可关联到应用、批次、流程或变更标识"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Query tag 为语句附加可检索的运行上下文，便于关联任务运行和发布批次；不会改变 SQL 语义或自动提升性能。"
+        "referenceAnswer": "正确答案 D。Query tag 为语句附加可检索的运行上下文，便于关联任务运行和发布批次；不会改变 SQL 语义或自动提升性能。"
       }
     },
     "knowledgeId": "snowflake-query-history",
@@ -1081,7 +1081,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake 的 Query Profile 最主要用来做什么？",
-    "explanation": "正确答案 A。Query Profile 展示查询操作符、数据流、扫描和运行特征，帮助形成性能诊断假设；它不自动替代验证和回归测试。",
+    "explanation": "正确答案 B。Query Profile 展示查询操作符、数据流、扫描和运行特征，帮助形成性能诊断假设；它不自动替代验证和回归测试。",
     "misconceptions": [
       "把 Query Profile 当成自动修复查询的工具。"
     ],
@@ -1089,23 +1089,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "检查单条查询的执行算子、数据流与耗时分布",
           "查看用户密码明文",
+          "检查单条查询的执行算子、数据流与耗时分布",
           "替代数据库角色和授权审计",
           "自动建立所有可能有用的索引"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Query Profile 展示查询操作符、数据流、扫描和运行特征，帮助形成性能诊断假设；它不自动替代验证和回归测试。"
+        "referenceAnswer": "正确答案 B。Query Profile 展示查询操作符、数据流、扫描和运行特征，帮助形成性能诊断假设；它不自动替代验证和回归测试。"
       }
     },
     "knowledgeId": "snowflake-query-profile-troubleshooting",
@@ -1618,7 +1618,7 @@
     "difficulty": "easy",
     "angle": "fundamental",
     "question": "Snowflake 虚拟仓库的核心职责是什么？",
-    "explanation": "正确答案 A。虚拟仓库是计算资源，与底层持久化数据存储分离；规模、暂停/恢复和并发策略会影响性能与成本。",
+    "explanation": "正确答案 C。虚拟仓库是计算资源，与底层持久化数据存储分离；规模、暂停/恢复和并发策略会影响性能与成本。",
     "misconceptions": [
       "把虚拟仓库理解为保存表数据的数据库文件容器。"
     ],
@@ -1626,23 +1626,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "提供 SQL 查询和数据处理所需的计算资源",
-          "作为唯一持久化保存所有表数据的位置",
           "取代数据库与 Schema 的命名组织",
+          "作为唯一持久化保存所有表数据的位置",
+          "提供 SQL 查询和数据处理所需的计算资源",
           "自动强制实施所有外键约束"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
+          0,
+          0,
           null,
-          0,
-          0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。虚拟仓库是计算资源，与底层持久化数据存储分离；规模、暂停/恢复和并发策略会影响性能与成本。"
+        "referenceAnswer": "正确答案 C。虚拟仓库是计算资源，与底层持久化数据存储分离；规模、暂停/恢复和并发策略会影响性能与成本。"
       }
     },
     "knowledgeId": "virtual-warehouse",
@@ -1670,7 +1670,7 @@
     "difficulty": "easy",
     "angle": "comparison",
     "question": "需要缩短大型复杂查询的执行时间，扩大单个仓库主要会带来哪类变化？",
-    "explanation": "正确答案 A。扩大仓库可能帮助资源受限查询，但实际收益取决于瓶颈和执行计划；不保证线性加速。",
+    "explanation": "正确答案 D。扩大仓库可能帮助资源受限查询，但实际收益取决于瓶颈和执行计划；不保证线性加速。",
     "misconceptions": [
       "假定仓库每扩大一级，所有查询就按固定比例提速。"
     ],
@@ -1678,23 +1678,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "提供更多可用计算资源，可能帮助计算密集型查询",
+          "不改变数据模型也保证总成本下降",
           "保证每条查询都按相同比例提速",
           "自动修复 SQL 逻辑或 JOIN 基数错误",
-          "不改变数据模型也保证总成本下降"
+          "提供更多可用计算资源，可能帮助计算密集型查询"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
           0,
           0,
-          0
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。扩大仓库可能帮助资源受限查询，但实际收益取决于瓶颈和执行计划；不保证线性加速。"
+        "referenceAnswer": "正确答案 D。扩大仓库可能帮助资源受限查询，但实际收益取决于瓶颈和执行计划；不保证线性加速。"
       }
     },
     "knowledgeId": "virtual-warehouse",
@@ -1722,7 +1722,7 @@
     "difficulty": "easy",
     "angle": "mechanism",
     "question": "多集群仓库主要针对哪一类需求？",
-    "explanation": "正确答案 A。Multi-cluster warehouse 主要应对并发负载并减少排队；单条查询的资源需求通常应结合仓库规模和 SQL 优化。",
+    "explanation": "正确答案 B。Multi-cluster warehouse 主要应对并发负载并减少排队；单条查询的资源需求通常应结合仓库规模和 SQL 优化。",
     "misconceptions": [
       "把多集群扩展当成单条查询一定加速的手段。"
     ],
@@ -1730,23 +1730,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "增加并发处理能力，缓解多个查询之间的排队",
           "为单条 SQL 自动消除所有低效算子",
+          "增加并发处理能力，缓解多个查询之间的排队",
           "作为数据长期归档机制",
           "创建表的主键与索引"
         ],
         "answer": [
-          0
+          1
         ],
         "misconceptionMap": [
-          null,
           0,
+          null,
           0,
           0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Multi-cluster warehouse 主要应对并发负载并减少排队；单条查询的资源需求通常应结合仓库规模和 SQL 优化。"
+        "referenceAnswer": "正确答案 B。Multi-cluster warehouse 主要应对并发负载并减少排队；单条查询的资源需求通常应结合仓库规模和 SQL 优化。"
       }
     },
     "knowledgeId": "virtual-warehouse",

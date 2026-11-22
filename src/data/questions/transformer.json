@@ -19,19 +19,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "它优化的是 N×N 注意力矩阵的 HBM 访存瓶颈：Q/K/V 分块驻留 SRAM，online softmax 增量维护统计量；公式语义不变但不保证逐比特一致，HBM 占用从 O(N²) 降为 O(N)",
+          "它把 softmax 替换为线性注意力形式（如 kernel 近似），取消了归一化步骤从而节省显存占用，但这也从根本上改变了注意力的数学定义并可能损害长程建模能力",
           "它通过对注意力矩阵做低秩近似（例如对 Q、K、V 投影矩阵做 SVD 截断）来削减浮点计算量，代价是带来精度损失与下游任务表现下降，且无法保证训练时的梯度稳定",
           "它通过剪枝不重要的 token 来缩短有效上下文长度，牺牲部分长序列信息以换取更快的计算速度与更低的内存占用，但对关键依赖的识别并不稳定",
-          "它把 softmax 替换为线性注意力形式（如 kernel 近似），取消了归一化步骤从而节省显存占用，但这也从根本上改变了注意力的数学定义并可能损害长程建模能力"
+          "它优化的是 N×N 注意力矩阵的 HBM 访存瓶颈：Q/K/V 分块驻留 SRAM，online softmax 增量维护统计量；公式语义不变但不保证逐比特一致，HBM 占用从 O(N²) 降为 O(N)"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       }
     },
@@ -114,18 +114,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "Q、K、V 由输入经三组不同的线性投影得到，attention 输出为 softmax(QK^T/sqrt(d_k))V，即用归一化后的权重对 V 进行加权求和",
-          "Q、K、V 是同一个输入矩阵的简单三份复制，attention 直接对原始输入序列做等价加权平均，完全跳过了任何独立的投影与归一化计算步骤",
           "Q 与 V 的点积经 sigmoid 归一化得到权重，再用该权重对 K 加权求和，且全程不引入任何缩放因子以保持数值简单",
+          "Q、K、V 是同一个输入矩阵的简单三份复制，attention 直接对原始输入序列做等价加权平均，完全跳过了任何独立的投影与归一化计算步骤",
+          "Q、K、V 由输入经三组不同的线性投影得到，attention 输出为 softmax(QK^T/sqrt(d_k))V，即用归一化后的权重对 V 进行加权求和",
           "Q 与 K 计算相似度后不做任何缩放直接取最大值索引，输出为对应的 V 向量，认为这样能够避免 softmax 带来的计算开销"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       }
@@ -158,17 +158,17 @@
       "choice": {
         "type": "single",
         "options": [
-          "减少 KV Cache 的内存占用，因为除以 sqrt(d_k) 之后序列中可缓存的键值向量数量会随维度显著下降",
           "避免 dot product 随维度增大导致数值过大，使 softmax 进入过于尖锐的区域，进而造成梯度饱和与训练困难",
+          "减少 KV Cache 的内存占用，因为除以 sqrt(d_k) 之后序列中可缓存的键值向量数量会随维度显著下降",
           "降低 Transformer 的参数量，因为缩放因子 sqrt(d_k) 的引入会改变投影矩阵的维度配置从而减少可学习参数",
           "让 Attention 可以原生支持更长的 Context，因为缩放后模型能够处理远超训练长度的输入序列而不溢出"
         ],
         "answer": [
-          1
+          0
         ],
         "misconceptionMap": [
-          0,
           null,
+          0,
           1,
           2
         ]
@@ -209,18 +209,18 @@
         "type": "single",
         "options": [
           "多头通过把总参数量增加数倍来换取表达能力，计算成本随 Head 数成比例上升",
-          "多个 Head 在不同的表示子空间中学习不同类型的关系，弥补单头只能输出一种加权平均的局限",
+          "多头机制的作用是抑制过拟合，Head 数量越多模型的泛化能力单调提升",
           "每个 Head 负责处理序列中互不重叠的一段，各段输出拼接后构成完整表示",
-          "多头机制的作用是抑制过拟合，Head 数量越多模型的泛化能力单调提升"
+          "多个 Head 在不同的表示子空间中学习不同类型的关系，弥补单头只能输出一种加权平均的局限"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
+          2,
           1,
-          2
+          null
         ]
       }
     },
@@ -255,19 +255,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "Attention 通过因果掩码自动感知词序，因此不需要任何额外的位置信息，注意力权重本身已经隐含了每个 token 的先后顺序",
+          "Self-Attention 对输入顺序不敏感，需要绝对位置编码、相对位置编码或 RoPE 等方式显式注入位置信息，否则模型无法区分词序",
           "位置信息由前馈网络层隐式提供，位置编码只是锦上添花的可选优化，去掉它并不会影响模型对语序的理解",
           "词嵌入本身就携带顺序信息，打乱输入顺序不会改变 attention 的输出结果，因为嵌入向量已编码了 token 的绝对位置",
-          "Self-Attention 对输入顺序不敏感，需要绝对位置编码、相对位置编码或 RoPE 等方式显式注入位置信息，否则模型无法区分词序"
+          "Attention 通过因果掩码自动感知词序，因此不需要任何额外的位置信息，注意力权重本身已经隐含了每个 token 的先后顺序"
         ],
         "answer": [
-          3
+          0
         ],
         "misconceptionMap": [
-          0,
+          null,
           1,
           2,
-          null
+          0
         ]
       }
     },
@@ -400,19 +400,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "以 Q、K 点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后经 softmax 得到权重，再对 V 加权求和，各位置可并行计算",
+          "用 Q 与 K 之间的余弦相似度构造权重矩阵，sqrt(d_k) 的作用是把序列长度归一到 0 到 1 之间",
           "以 Q、K 的逐元素相乘衡量相关性，结果不经任何归一化直接作为权重对 V 加权求和",
           "先对 V 做 softmax 归一化得到分布，再用它对 Q、K 加权，且必须沿时间步顺序串行计算",
-          "用 Q 与 K 之间的余弦相似度构造权重矩阵，sqrt(d_k) 的作用是把序列长度归一到 0 到 1 之间"
+          "以 Q、K 点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后经 softmax 得到权重，再对 V 加权求和，各位置可并行计算"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       }
     },
@@ -448,18 +448,18 @@
       "choice": {
         "type": "single",
         "options": [
-          "实现时应把 QKᵀ 除以序列长度 n 而非 sqrt(d_k)，softmax 可直接对 exp 结果归一化、无需减最大值",
-          "实现时应先对 V 做指数归一化，再把 softmax 权重施加到 QKᵀ 上，缩放因子取 log(d_k)",
           "实现时应计算 QKᵀ 并除以 sqrt(d_k) 缩放，softmax 前减去每行最大值保证数值稳定，最后用权重矩阵乘 V 输出",
+          "实现时应先对 V 做指数归一化，再把 softmax 权重施加到 QKᵀ 上，缩放因子取 log(d_k)",
+          "实现时应把 QKᵀ 除以序列长度 n 而非 sqrt(d_k)，softmax 可直接对 exp 结果归一化、无需减最大值",
           "实现时应省略缩放步骤直接 softmax(QKᵀ)，并用减去最小值的方式保证数值稳定"
         ],
         "answer": [
-          2
+          0
         ],
         "misconceptionMap": [
-          0,
-          1,
           null,
+          1,
+          0,
           2
         ]
       }
@@ -637,28 +637,28 @@
     "difficulty": "medium",
     "angle": "debugging",
     "question": "在手动实现 Causal Self-Attention 时，某工程师将被 Mask 的位置填充为 0.0（scores.masked_fill(mask, 0.0)），测试发现注意力分布完全没有起到遮掩未来 Token 的作用。请分析根本原因：",
-    "explanation": "正确答案 B。Softmax 包含指数运算 e^x。若被掩码的 Score 填为 0.0，则 e^0=1，这些位置在 Softmax 后仍会获得非零概率权重（甚至高于负分值位置）。正确做法是填充负无穷（-inf 或 -1e9）使 e^{-inf}=0，从而在 Softmax 后权重恰好为零。",
+    "explanation": "正确答案 C。Softmax 包含指数运算 e^x。若被掩码的 Score 填为 0.0，则 e^0=1，这些位置在 Softmax 后仍会获得非零概率权重（甚至高于负分值位置）。正确做法是填充负无穷（-inf 或 -1e9）使 e^{-inf}=0，从而在 Softmax 后权重恰好为零。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
           "masked_fill 中填入的数值应为 0.0 是正确的做法，只是 Softmax 维度设错成了 dim=-1，应改为 dim=-2 就可以正确屏蔽未来 token",
-          "将被 Mask 的位置填充为 0.0，经过 softmax 后 e^{0.0}=1.0，被遮挡的位置依然会分得很大的注意力权重，导致无法真正屏蔽未来信息",
           "torch.triu(..., diagonal=1) 生成的是下三角矩阵，导致遮挡方向完全颠倒，变成了遮挡历史 Token 而保留未来 Token，与因果掩码意图相反",
+          "将被 Mask 的位置填充为 0.0，经过 softmax 后 e^{0.0}=1.0，被遮挡的位置依然会分得很大的注意力权重，导致无法真正屏蔽未来信息",
           "Q 和 K 乘积前没有对 K 进行转置，导致矩阵维度不匹配并引发隐式广播错误，使得注意力分数矩阵的形状与预期不一致"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。Softmax 中 e^0=1，掩码位置仍有权重；应填 -inf 使 e^{-inf}=0。"
+        "referenceAnswer": "正确答案 C。Softmax 中 e^0=1，掩码位置仍有权重；应填 -inf 使 e^{-inf}=0。"
       }
     },
     "assessment": {
@@ -786,7 +786,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "在注意力机制中若移除缩放因子 1/√d_k（即直接使用未缩放的点积 QKᵀ），当 d_k 较大时网络在训练初期极易出现梯度消失。以下哪些数学或工程解释是合理的？（多选）",
-    "explanation": "四项均正确。A：q,k 各分量独立均值0方差1，则点积方差为 d_k。B：d_k 大时点积方差大幅增加导致输入到 Softmax 的值极大或极小。C：Softmax 在输入绝对值大且不均匀时输出趋近 one-hot 且饱和区梯度接近零。D：乘以 1/√d_k 将方差归一化回 1 维持梯度敏感区。",
+    "explanation": "q、k 分量独立同方差时点积方差为 d_k；d_k 大导致 Softmax 输入极端、饱和且梯度趋零。D 错误：乘以 1/√d_k 是把方差从 d_k 归一化回 1，使 Softmax 停留在梯度敏感区，而非放大方差。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -794,24 +794,32 @@
           "假设 q 和 k 的各分量为独立均值 0 方差 1 的随机变量，则点积 q·k 的均值为 0，方差为 d_k",
           "当 d_k 很大时，点积的数值方差随之大幅增加，导致输入到 Softmax 函数的元素极大或极小",
           "Softmax 在输入值绝对值较大且极不均匀时输出趋近 one-hot 向量，饱和区的梯度接近于 0，使得反向传播时梯度严重衰减",
-          "乘以缩放因子 1/√d_k 可以将点积结果的方差重新归一化为 1，从而维持 Softmax 处于梯度敏感区"
+          "乘以 1/√d_k 会把点积方差放大 d 倍，从而让 Softmax 更容易进入饱和区。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A,B,C,D。点积方差=d_k；Softmax 饱和致梯度消失；1/√d_k 归一化方差维持梯度敏感。"
+        "referenceAnswer": "点积方差随 d_k 增长；未缩放会让 Softmax 饱和导致梯度消失，缩放因子用于归一化方差。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「B：d_k 大时点积方差大幅增加导致输入到 Softmax 的值极大或极小」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「假设 q 和 k 的各分量为独立均值 0 方差 1 …」「当 d_k 很大时」等 4 项成立。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "把缩放因子的作用说成放大方差、加剧饱和。"
+    ]
   },
   {
     "id": "mha-heads-01",
@@ -973,28 +981,28 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "在标准 Self-Attention 中，若不对输入 Token 序列叠加位置编码，将输入的 Token 序列顺序随机打乱后再送入该模块，其输出会发生怎样的变化？",
-    "explanation": "正确答案 A。Self-Attention 具有置换等变性（Permutation Equivariance）：输出的 Token 向量集合数值保持对应关系，但排列顺序随输入打乱而相应打乱。这意味着无位置编码时模型无法区分 Token 在序列中的绝对或相对位置——这正是需要显式注入位置编码的根本原因。",
+    "explanation": "正确答案 C。Self-Attention 具有置换等变性（Permutation Equivariance）：输出的 Token 向量集合数值保持对应关系，但排列顺序随输入打乱而相应打乱。这意味着无位置编码时模型无法区分 Token 在序列中的绝对或相对位置——这正是需要显式注入位置编码的根本原因。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "输出的 Token 向量集合数值保持对应关系，但其排列顺序会随输入的打乱而相应打乱，即具有置换等变性（Permutation Equivariance）",
-          "乱序输入会使注意力权重趋向均匀，输出退化为平均池化；崩溃是渐进的而非随机的，平均即失效。",
           "输出结果完全失效，各个向量数值随机变化且不再保留任何语义关联，这说明 Self-Attention 在面对乱序输入时会彻底崩溃",
+          "乱序输入会使注意力权重趋向均匀，输出退化为平均池化；崩溃是渐进的而非随机的，平均即失效。",
+          "输出的 Token 向量集合数值保持对应关系，但其排列顺序会随输入的打乱而相应打乱，即具有置换等变性（Permutation Equivariance）",
           "Attention 权重矩阵退化为单位矩阵（Identity Matrix），意味着每个 token 只能看到自己而完全无法与上下文交互"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。Self-Attention 具有置换等变性：输出随输入行置换而等变，无位置编码时无法区分 Token 位置。"
+        "referenceAnswer": "正确答案 C。Self-Attention 具有置换等变性：输出随输入行置换而等变，无位置编码时无法区分 Token 位置。"
       }
     },
     "assessment": {
@@ -1605,28 +1613,28 @@
     "difficulty": "medium",
     "angle": "calculation",
     "question": "假设模型输入维度 d_model=512。方案一采用 h=8 的多头注意力每头 d_k=64；方案二采用单头注意力 d_k=512。关于两种方案在线性投影矩阵的参数量与计算复杂度对比下列说法正确的是？",
-    "explanation": "正确答案 B。方案一：8 个头的 Q/K/V 投影各为 512×64 共 8×3×512×64=3×512²；输出投影 W^O 为 512×512。方案二：单头 Q/K/V 投影各为 512×512 共 3×512²；输出投影同。两者参数量与 FLOPs 均为 4×d_model²完全一致。",
+    "explanation": "正确答案 A。方案一：8 个头的 Q/K/V 投影各为 512×64 共 8×3×512×64=3×512²；输出投影 W^O 为 512×512。方案二：单头 Q/K/V 投影各为 512×512 共 3×512²；输出投影同。两者参数量与 FLOPs 均为 4×d_model²完全一致。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "方案一的投影参数总量和总 FLOPs 是方案二的 8 倍",
           "方案一与方案二的投影参数总量和总计算复杂度基本一致",
+          "方案一的投影参数总量和总 FLOPs 是方案二的 8 倍",
           "方案一参数量是方案二的 8 倍但由于多头可并行计算计算复杂度降为 1/8",
           "方案一省去了输出投影矩阵 W^O 因此参数量少于方案二"
         ],
         "answer": [
-          1
+          0
         ],
         "misconceptionMap": [
-          0,
           null,
+          0,
           1,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。MHA 与单头全维的参数量和 FLOPs 均为 4·d_model² 完全一致。"
+        "referenceAnswer": "正确答案 A。MHA 与单头全维的参数量和 FLOPs 均为 4·d_model² 完全一致。"
       }
     },
     "assessment": {
@@ -1702,28 +1710,28 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "在标准 Encoder-Decoder Transformer 中 Decoder 的 Cross-Attention 层负责建立目标序列与源序列的联系。在该层中 Q/K/V 向量的来源关系是？",
-    "explanation": "正确答案 B。Q 来自 Decoder 前一层（Masked Self-Attention）的输出表示当前生成状态作为查询；K 和 V 来自 Encoder 顶层输出表示源序列的全部编码信息作为被查内容。这种设计使得 Decoder 每步生成都能检索源序列的全部上下文信息。",
+    "explanation": "正确答案 D。Q 来自 Decoder 前一层（Masked Self-Attention）的输出表示当前生成状态作为查询；K 和 V 来自 Encoder 顶层输出表示源序列的全部编码信息作为被查内容。这种设计使得 Decoder 每步生成都能检索源序列的全部上下文信息。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
           "Q 来自 Encoder 顶层的输出 K 和 V 来自 Decoder 前一层的输出",
-          "Q 来自 Decoder 前一层（Masked Self-Attention）的输出 K 和 V 来自 Encoder 顶层的输出",
+          "Q 和 K 来自 Decoder 前一层的输出 V 来自 Encoder 顶层的输出",
           "Q/K/V 均来自 Encoder 顶层的输出 Decoder 仅负责线性变化",
-          "Q 和 K 来自 Decoder 前一层的输出 V 来自 Encoder 顶层的输出"
+          "Q 来自 Decoder 前一层（Masked Self-Attention）的输出 K 和 V 来自 Encoder 顶层的输出"
         ],
         "answer": [
-          1
+          3
         ],
         "misconceptionMap": [
           0,
-          null,
+          2,
           1,
-          2
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 B。Q=Decoder 当前状态（查什么）；K/V=Encoder 编码（被查内容）。"
+        "referenceAnswer": "正确答案 D。Q=Decoder 当前状态（查什么）；K/V=Encoder 编码（被查内容）。"
       }
     },
     "assessment": {
@@ -1851,32 +1859,40 @@
     "difficulty": "hard",
     "angle": "calculation",
     "question": "在标准 Full Self-Attention 中设序列长度为 N 隐藏维度为 d。当扩充上下文窗口时关于其计算复杂度与显存占用的分析哪些项是正确的？（多选）",
-    "explanation": "A 正确 Score 矩阵浮点运算 O(N²·d)。B 正确 反向传播保存原始 Attention Matrix 占 O(N²) 激活显存。C 正确 N 扩大4倍→N²扩大16倍计算量和显存均变为16倍。D 正确 检索增强或线性注意力的动机就是将全局计算从 O(N²) 降至亚二次级别。",
+    "explanation": "注意力得分矩阵计算复杂度为 O(N²·d)；N 扩大 4 倍，计算与存储约增 16 倍。B 错误：反向传播通常需要保存注意力矩阵或等效中间量，激活显存随 N² 增长，并非与 N 无关。D 正确描述亚二次替代方案的动机。",
     "formats": {
       "choice": {
         "type": "multiple",
         "options": [
           "计算 Queries 和 Keys 点积生成注意力得分矩阵的浮点运算复杂度为 O(N² · d)",
-          "在反向传播时保存未经过 Softmax 的原始 Attention Matrix 需要占用 O(N²) 的激活显存空间",
+          "反向传播只需保存归一化后的注意力输出，因此激活显存与序列长度 N 无关。",
           "在隐藏维度 d 保持不变的情况下将序列长度 N 扩大到原来的 4 倍标准 Self-Attention 计算得分矩阵所需的计算量和显存消耗将分别扩大到原来的 16 倍",
           "引入检索增强机制或线性注意力机制的主要工程动机之一就是将对长序列的全局计算复杂度从 O(N²) 降低到子二次级别"
         ],
         "answer": [
           0,
-          1,
           2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A,B,C,D。O(N²d) 计算+O(N²) 存储+N×4→×16+检索增强动机=降亚二次。"
+        "referenceAnswer": "标准自注意力计算与存储随 N² 增长；检索增强与线性注意力旨在降到亚二次。"
       }
     },
     "assessment": {
       "target": "能推算上下文窗口扩大时注意力计算量与显存的二次方增长，并说明亚二次方案的动机",
       "reasoningGoal": "先确认生成 Score 矩阵的浮点运算为 O(N²·d)；再确认反向传播需保存 Softmax 前的原始注意力矩阵、占 O(N²) 激活显存；并推出 d 不变而 N 扩到 4 倍时计算量与显存均扩到 16 倍，从而说明检索增强与线性注意力等把复杂度降到子二次级别的工程动机。"
     },
-    "cognitiveTask": "infer"
+    "cognitiveTask": "infer",
+    "misconceptions": [
+      "认为反向传播无需保存注意力中间量，激活显存与 N 无关。"
+    ]
   },
   {
     "id": "enc-vs-dec-scenario",

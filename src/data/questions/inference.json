@@ -65,20 +65,20 @@
       "choice": {
         "type": "single",
         "options": [
-          "同样显存下能承载更高并发或更长上下文：decode 阶段 KV cache 随上下文线性增长并乘上并发路数，常是容量的第一约束",
+          "可以取消上下文截断/摘要等管理策略，因为显存不再是约束，长对话可无上限地累积而不影响任何服务质量",
           "Prefill 吞吐同步成倍提升：KV cache 变小意味着首 token 延迟等比例下降，因此压缩缓存能同时把预填充阶段吞吐拉高数倍",
           "模型对工具参数的选择准确率会随之提升，任务成功率更有保障，因此容量优化可直接替代对工具调用逻辑的专项评测",
-          "可以取消上下文截断/摘要等管理策略，因为显存不再是约束，长对话可无上限地累积而不影响任何服务质量"
+          "同样显存下能承载更高并发或更长上下文：decode 阶段 KV cache 随上下文线性增长并乘上并发路数，常是容量的第一约束"
         ],
         "answer": [
-          0
+          3
         ],
         "question": "选型评审：两个候选模型 benchmark 分数接近、层数与 hidden size 相近，候选 A 的单 token KV cache 只有候选 B 的 1/16。你的 Agent 平台需要在上百路并发会话下保持稳定延迟。选择 A 最直接、可稳妥预期的收益是？",
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       },
       "open": {
@@ -166,23 +166,23 @@
       "choice": {
         "type": "single",
         "options": [
-          "将静态文档语料（Corpus）置于最前，动态提问（Question）置于最后；原理是 Prefix Caching 严格按从首字符开始的连续完全匹配来识别缓存",
+          "提示词顺序无影响，只要单个 Request 的总 Token 数保持不变，网关即会自动触发 KV Cache 命中",
           "将动态提问（Question）置于最前，静态文档语料（Corpus）置于最后；原理是注意力机制对 Prompt 头部赋予最高权重",
           "将语料与提问混合输入，通过设置 <cache> 标签标记语义关键块；原理是 LLM 自动识别跨请求的向量语义相似度",
-          "提示词顺序无影响，只要单个 Request 的总 Token 数保持不变，网关即会自动触发 KV Cache 命中"
+          "将静态文档语料（Corpus）置于最前，动态提问（Question）置于最后；原理是 Prefix Caching 严格按从首字符开始的连续完全匹配来识别缓存"
         ],
         "answer": [
-          0
+          3
         ],
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A。\n\n要点：Prefix Caching 的命中条件苛刻——必须从 Prompt 第一个字符开始连续完全一致，任何中间位置的变动都会使其后的所有 Token 缓存失效，与\"语义相似\"无关、与总 Token 数无关。因此布局铁律：静态不变的内容（系统指令、文档语料）全部前置，每次请求唯一变化的部分（用户提问）放到最末尾。这样多轮不同提问共享同一长前缀缓存，缓存部分计费可降一个数量级（如 $3.00/1M → $0.30/1M），TTFT 也因跳过重复 prefill 大幅下降。"
+        "referenceAnswer": "正确答案：D。\n\n要点：Prefix Caching 的命中条件苛刻——必须从 Prompt 第一个字符开始连续完全一致，任何中间位置的变动都会使其后的所有 Token 缓存失效，与\"语义相似\"无关、与总 Token 数无关。因此布局铁律：静态不变的内容（系统指令、文档语料）全部前置，每次请求唯一变化的部分（用户提问）放到最末尾。这样多轮不同提问共享同一长前缀缓存，缓存部分计费可降一个数量级（如 $3.00/1M → $0.30/1M），TTFT 也因跳过重复 prefill 大幅下降。"
       }
     },
     "assessment": {
@@ -262,22 +262,22 @@
         "type": "single",
         "options": [
           "它会改变输出分布，因此只适合对质量不敏感的场景，并且在代码生成或数学推理等硬任务上必须完全禁用投机解码，否则输出质量会断崖式下跌",
-          "正确实现可保持目标模型输出分布，但加速取决于草稿接受率与额外开销；经典方法通常要求同 tokenizer，UAD 可用重编码与对齐支持不同 tokenizer。",
           "只有当草稿模型与目标模型参数量相差 100 倍以上时才能获得加速，差距不足时投机解码反而会因为拒绝率过高而比直接生成更慢",
+          "正确实现可保持目标模型输出分布，但加速取决于草稿接受率与额外开销；经典方法通常要求同 tokenizer，UAD 可用重编码与对齐支持不同 tokenizer。",
           "它的主要价值是降低显存占用，而非降低延迟，因此更适合部署在显存紧张的嵌入式设备上运行大模型"
         ],
         "answer": [
-          1
+          2
         ],
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：B。正确实现的推测解码可以在保持目标模型输出分布的前提下减少目标模型串行解码步数，但加速比取决于草稿接受率与额外开销。经典实现通常要求相同/兼容 tokenizer；Universal Assisted Decoding 可通过重编码和对齐支持不同 tokenizer。"
+        "referenceAnswer": "正确答案：C。正确实现的推测解码可以在保持目标模型输出分布的前提下减少目标模型串行解码步数，但加速比取决于草稿接受率与额外开销。经典实现通常要求相同/兼容 tokenizer；Universal Assisted Decoding 可通过重编码和对齐支持不同 tokenizer。"
       }
     },
     "assessment": {
@@ -510,19 +510,19 @@
         "type": "single",
         "options": [
           "先重启一半实例做对照实验，若重启组恢复则证实实例级故障，随后全量滚动重启；对照重启是最快的二分手段。",
-          "把总延迟拆为排队、网络、TTFT、TPOT×token 数分段对比，定位后再对症修。",
+          "P50 对离群不敏感，8 倍突增已超任何正常波动；直接按容量事故扩容即可，细分定位可事后复盘。",
           "云上跨可用区链路抖动是 P50 突增最常见的原因，应先切单可用区验证；应用层排查同步进行。",
-          "P50 对离群不敏感，8 倍突增已超任何正常波动；直接按容量事故扩容即可，细分定位可事后复盘。"
+          "把总延迟拆为排队、网络、TTFT、TPOT×token 数分段对比，定位后再对症修。"
         ],
         "answer": [
-          1
+          3
         ],
         "question": "某应用的 LLM 网关监控显示 P50 端到端延迟从 1 秒突增至 8 秒，错误率无明显变化。回看变更记录：三天前上游团队扩充了 system prompt，昨天推理服务商提示部分实例处于拥堵状态。以下定位方法哪个最合理？",
         "misconceptionMap": [
           0,
-          null,
+          2,
           1,
-          2
+          null
         ]
       }
     },
@@ -557,19 +557,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "首 token 前出问题：分段 trace 查排队、输入长度膨胀、batching 调度变更、prefix cache 命中率。",
-          "KV Cache 耗尽拖慢解码，应下调 max_output_tokens 释放显存；砍输出可让 token 生成重回满算力。",
           "发布后 TTFT 上升常见于新权重的 kernel 自调优未完成，跑一段 warmup 流量预热即恢复，可先观察一个发布周期。",
+          "KV Cache 耗尽拖慢解码，应下调 max_output_tokens 释放显存；砍输出可让 token 生成重回满算力。",
+          "首 token 前出问题：分段 trace 查排队、输入长度膨胀、batching 调度变更、prefix cache 命中率。",
           "根因是 GPU 算力不足，decode 不变只是巧合，应尽快采购算力更强的显卡型号替换现网设备，因为只要单卡浮点能力提升，首字延迟就会同比例下降"
         ],
         "answer": [
-          0
+          2
         ],
         "question": "一家社交产品自建开源模型推理服务。某次版本发布后，用户反馈对话「半天不出第一个字」：监控显示 TTFT p50 从 500ms 恶化到 3 秒，但逐 token 生成速度几乎没有变化，GPU 利用率与请求量也与发布前持平。最可能的原因与排查方向是什么？",
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       }
@@ -604,20 +604,20 @@
       "choice": {
         "type": "single",
         "options": [
-          "decode 访存密集，静态 batch 被最长请求拖慢短请求；改 continuous batching 在每 step 动态进出，吞吐延迟双赢。",
+          "continuous batching 通过及时释放完成请求的 KV 降低显存水位，吞吐收益是显存收益的副产品；评估看显存曲线即可。",
           "把同 batch 的 prompt 按长度分桶后拼接成定长超长序列，桶内等长即消除气泡；静态分桶比动态调度更易实现。",
           "两者都是凑批思想，continuous batching 只是 batch size 设为动态；传统 batching 框架加定时刷新即可模拟。",
-          "continuous batching 通过及时释放完成请求的 KV 降低显存水位，吞吐收益是显存收益的副产品；评估看显存曲线即可。"
+          "decode 访存密集，静态 batch 被最长请求拖慢短请求；改 continuous batching 在每 step 动态进出，吞吐延迟双赢。"
         ],
         "answer": [
-          0
+          3
         ],
         "question": "一家公司的平台组为内部百余个业务方自托管 LLM API，负载混合了大量短分类请求与少数长文生成长请求。采用静态 batching 时观察到：GPU 计算利用率并不饱和，整体吞吐上不去，且同一批次里的短请求延迟被最长请求拖到数十秒。造成该现象的根本原因与改进方向是什么？",
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       }
     },
@@ -800,18 +800,18 @@
         "type": "single",
         "options": [
           "缓存键只需使用原始查询字符串本身的哈希，文本完全一致即可复用响应，模型版本与温度等参数不会影响输出的一致性，因为相同输入在任意配置下都映射到同一个确定性答案",
-          "缓存键归一化后纳入 prompt 版本、模型、温度等全部变量；私有对话、实时数据、副作用调用禁入共享缓存；失效与版本绑定。",
           "个性化请求也进共享缓存但 key 拼 user_id，实时数据设短 TTL；统一缓存层比分头治理更易运维。",
+          "缓存键归一化后纳入 prompt 版本、模型、温度等全部变量；私有对话、实时数据、副作用调用禁入共享缓存；失效与版本绑定。",
           "prompt 版本升级多为措辞优化，语义不变则缓存仍有效；版本绑定会导致每次发版缓存雪崩，得不偿失。"
         ],
         "answer": [
-          1
+          2
         ],
         "question": "一款面向企业客户的报表解读助手调用量激增，分析发现约六成请求高度重复，LLM 账单压力巨大。团队计划在应用层引入 LLM Response Cache。架构评审需要敲定缓存键设计与禁入范围，以下哪个方案最合理？",
         "misconceptionMap": [
           0,
-          null,
           1,
+          null,
           2
         ]
       }
@@ -1332,20 +1332,20 @@
       "choice": {
         "type": "single",
         "options": [
-          "量化把浮点权重转为 INT8 等低精度表示，主要收益是减小体积、加快推理，通常伴随轻微精度损失，上线前需回归评估确认损失可接受",
+          "量化后权重信息几乎无损，可以跳过效果回归测试直接替换线上模型，以节省排期",
           "量化属于训练阶段的优化技巧，能明显提升模型在测试集上的准确率，应优先于结构改进尝试",
           "量化只是改变磁盘上的存储格式，推理时仍按原精度计算，因此不会带来实际的延迟改善",
-          "量化后权重信息几乎无损，可以跳过效果回归测试直接替换线上模型，以节省排期"
+          "量化把浮点权重转为 INT8 等低精度表示，主要收益是减小体积、加快推理，通常伴随轻微精度损失，上线前需回归评估确认损失可接受"
         ],
         "answer": [
-          0
+          3
         ],
         "question": "一家智能硬件公司要把语音指令识别模型部署到内存仅 2GB、无独立显卡的边缘盒子上，当前浮点模型的体积与推理延迟都超出硬件规格，产品可以接受轻微的精度损失但要求功能可用性不下降。团队讨论是否采用模型量化，以下哪个说法最准确地反映了量化在该决策中的定位？",
         "misconceptionMap": [
-          null,
+          2,
           0,
           1,
-          2
+          null
         ]
       },
       "open": {
@@ -1383,19 +1383,19 @@
       "choice": {
         "type": "single",
         "options": [
-          "画像刷新走离线批处理，周期性地对批量数据集中计算；搜索排序走在线实时服务，请求到达时即时返回结果",
-          "两类业务统一走在线实时服务，因为在线服务的单位成本低、吞吐量高于离线批处理集群",
           "两类业务统一走离线批处理，把排序结果提前一天批量算好并缓存起来供次日全天使用",
+          "两类业务统一走在线实时服务，因为在线服务的单位成本低、吞吐量高于离线批处理集群",
+          "画像刷新走离线批处理，周期性地对批量数据集中计算；搜索排序走在线实时服务，请求到达时即时返回结果",
           "离线推理指服务下线后才补跑的计算，因此画像刷新只能安排在停服维护窗口内执行"
         ],
         "answer": [
-          0
+          2
         ],
         "question": "某电商平台的算法团队正在规划两类业务的推理架构：一是每天凌晨基于前一日全量行为数据刷新数千万用户的兴趣画像，时效性要求不高；二是搜索结果排序必须在用户发起请求后几十毫秒内返回，否则转化率明显下滑。对于这两类业务的服务模式划分，以下哪种规划最合理？",
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       }
@@ -1472,32 +1472,40 @@
     "difficulty": "hard",
     "angle": "tradeoff",
     "question": "对 LLM 进行低比特量化（如从 FP16 量化为 INT8/INT4）是常见的推理优化手段。关于量化在 Prefill 与 Decode 阶段的加速机理以及模型不同组件对量化的敏感度，下列说法正确的有？（多选）",
-    "explanation": "Prefill以低精度算单元加速、Decode以减权重体积降带宽、Attention更敏感需保精度、实践Attention保FP16仅量化Linear。",
+    "explanation": "Prefill 受算力限制，低精度单元可加速大矩阵乘；Decode 受显存带宽限制，权重变小可提升 TPS。C 错误：注意力层通常比线性层对量化更敏感，常见做法是保留注意力高精度而量化线性权重。D 正确描述该折中。",
     "formats": {
       "choice": {
         "type": "multiple",
         "options": [
           "在 Prefill 阶段，量化主要通过降低浮点计算精度、使用专用低精度计算单元来加速大矩阵乘法",
           "在 Decode 阶段，量化减少了模型权重的体积，降低了每次前向传播从显存加载权重的带宽压力，从而提升 TPS",
-          "注意力层（Attention Layer）通常比线性层（Linear Layer）对量化误差更敏感，因为注意力层的舍入误差会随序列生成在多步中逐步累积放大",
+          "注意力层对量化误差最不敏感，因此生产环境优先量化注意力权重而保留线性层全精度。",
           "生产环境中常见的工程折中方案是将注意力层保持全精度（如 FP16），而仅对线性权重（Linear Weights）等敏感度较低的部分进行量化"
         ],
         "answer": [
           0,
           1,
-          2,
           3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Prefill算力受限，低精度Tensor Core加速。\n- B：Decode访存受限，小体积权重降带宽提TPS。\n- C：Attention误差跨步累积，比Linear更敏感。\n- D：常见混合精度：Attention保FP16，Linear量化。"
+        "referenceAnswer": "Prefill 用低精度算力加速，Decode 用更小权重降带宽；注意力更敏感，实践常保其全精度而量化线性层。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「Prefill以低精度算单元加速、Decode以减权重体积降带宽、Attention更敏感需保精度、实践Attention保FP16仅量化Linear」",
       "reasoningGoal": "先明确取舍发生在哪两个维度之间；据此逐项确认「在 Prefill 阶段」「在 Decode 阶段」等 4 项成立。"
     },
-    "cognitiveTask": "evaluate"
+    "cognitiveTask": "evaluate",
+    "misconceptions": [
+      "颠倒注意力层与线性层的量化敏感度。"
+    ]
   },
   {
     "id": "quant-ptq-qat-01",
@@ -1608,7 +1616,7 @@
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "投机解码（Speculative Decoding）是一种提升大语言模型推理吞吐与降低延迟的系统设计模式，通常包含一个小规模草稿模型（Draft Model）和一个大规模验证模型（Target Model）。关于 Speculative Decoding 的工作原理与工程特性，下列说法正确的有？（多选）",
-    "explanation": "草稿低延迟串行候选、验证单次并行校验、拒绝回退重采样保分布等价、需Tokenizer兼容。",
+    "explanation": "投机解码中草稿模型快速串行产候选，验证模型单次前向并行校验，拒绝时按残差分布重采样以保证等价。D 错误：分词器必须兼容或建立 token 边界映射，否则候选 token 无法被验证模型正确解释，分布等价不成立。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -1616,24 +1624,32 @@
           "草稿模型通常推理延迟极低，负责以自回归方式快速串行生成若干候选 Token 序列",
           "验证模型利用 Transformer 能够在单次前向传播（Forward Pass）中并行处理多个 Token 的特性，批量校验草稿模型生成的候选 Token",
           "当草稿模型生成的某个 Token 被验证模型拒绝时，系统会回退并由验证模型重新采样，采样概率分布在数学上可被证明严格等价于仅使用大模型直接生成",
-          "Speculative Decoding 能够在保持大模型输出质量的同时达到接近小模型的生成延迟，但前提是草稿模型与验证模型的分词器（Tokenizer）必须完全兼容或映射对齐"
+          "草稿与验证模型的分词器无需对齐，只要都能输出 UTF-8 文本即可保证分布等价。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A、B、C、D 全选。\n\n- A：Draft小模型快，串行产候选。\n- B：Target一次前向并行校验。\n- C：拒绝时按残差分布重采样，保分布等价。\n- D：Tokenizer不一致致Token边界错位，必须对齐。"
+        "referenceAnswer": "投机解码要求草稿与验证模型分词器兼容或可映射；否则无法保证输出分布等价。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「草稿低延迟串行候选、验证单次并行校验、拒绝回退重采样保分布等价、需Tokenizer兼容」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「草稿模型通常推理延迟极低」「验证模型利用 Transformer 能够在单次前向…」等 4 项成立。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "认为只要输出 UTF-8 文本就无需对齐分词器。"
+    ]
   },
   {
     "id": "inference-training-01",
@@ -2094,28 +2110,28 @@
     "difficulty": "medium",
     "angle": "calculation",
     "question": "某大语言模型拥有 60B 参数。若将其从 BF16 格式（每个参数 2 字节）转换为 MXFP4 格式（约 0.53125 字节/参数含 Scale 开销）在仅考虑权重显存的情况下节省比例约为多少？",
-    "explanation": "正确答案 C 约 73.4%。BF16 权重总显存=60×2=120GB（无法单卡装下）；MXFP4 总显存=60×0.53125≈31.9GB；节省比例=(120-31.875)/120≈73.4%。",
+    "explanation": "正确答案 A 约 73.4%。BF16 权重总显存=60×2=120GB（无法单卡装下）；MXFP4 总显存=60×0.53125≈31.9GB；节省比例=(120-31.875)/120≈73.4%。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "约 25%",
-          "约 50%",
           "约 73.4%",
+          "约 50%",
+          "约 25%",
           "约 90%"
         ],
         "answer": [
-          2
+          0
         ],
         "misconceptionMap": [
-          0,
-          1,
           null,
+          1,
+          0,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 C。(120-31.875)/120≈73.4%。"
+        "referenceAnswer": "正确答案 A。(120-31.875)/120≈73.4%。"
       }
     },
     "assessment": {
@@ -2194,7 +2210,7 @@
     "difficulty": "hard",
     "angle": "mechanism",
     "question": "在 LLM 推理服务框架中 PagedAttention 借鉴 OS 虚拟内存分页机制将连续 KV Cache 切分为固定大小的 Block 进行非连续显存分配。关于内存管理机制与 Block Size 的工程 Trade-off 下列哪些说法是正确的？（多选）",
-    "explanation": "PagedAttention 核心优势：将连续逻辑显存映射到非连续物理块。较小 Block 降低内部碎片(A)；大 Block 提高 SRAM/DRAM 连续读取效率但增加碎片(B)；统一尺寸 Block 解决外部碎片(C)；Parallel Sampling 场景下通过页表指针实现物理 KV Cache 零拷贝共享(D)。四项均正确。",
+    "explanation": "较小 Block 减少内部碎片，较大 Block 提升访存连续性但增加碎片，统一大小 Block 消除外部碎片。D 错误：PagedAttention 通过页表让不同序列指向同一物理块，实现 Copy-on-Write 的零拷贝共享，而非复制整块。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2202,24 +2218,32 @@
           "较小的 Block Size 能显著减少请求结束或未填满 Block 时的内部碎片提高显存利用率",
           "较大的 Block Size 能提高 GPU Tensor Core 的访存连续性与计算吞吐但会增加内部碎片浪费",
           "PagedAttention 几乎消除了外部碎片因为所有物理块的大小相同可以按需分配给任意序列",
-          "PagedAttention 允许不同序列共享相同的物理 KV 块从而实现零拷贝 Copy-on-Write"
+          "PagedAttention 为每个序列复制完整物理 KV 块来实现共享，无法做到零拷贝。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A,B,C,D 全选。小Block减碎片+大Block高吞吐+等大小消除外部碎片+COW零拷贝共享。"
+        "referenceAnswer": "Block Size 在碎片与吞吐间取舍；统一块消除外部碎片，页表指针支持零拷贝共享。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「大 Block 提高 SRAM/DRAM 连续读取效率但增加碎片(B)」",
       "reasoningGoal": "先复现该机制的内部过程；据此逐项确认「较小的 Block Size 能显著减少请求结束或未…」「较大的 Block Size 能提高 GPU Ten…」等 4 项成立。"
     },
-    "cognitiveTask": "explain"
+    "cognitiveTask": "explain",
+    "misconceptions": [
+      "认为 KV 块共享必须复制完整物理块，不支持零拷贝。"
+    ]
   },
   {
     "id": "spec-decode-accept-probability",
@@ -2235,28 +2259,28 @@
     "difficulty": "hard",
     "angle": "calculation",
     "question": "投机采样利用草稿模型一次性自回归生成 K 个 Token 候选再由目标模型并行验证。为保证最终输出与直接使用目标模型逐 Token 采样完全一致当 p(x) < q(x) 时接受概率应设定为多少？若拒绝该如何重新采样？",
-    "explanation": "正确答案 A。修正的拒绝采样算法：p(x)≥q(x) 时接受概率为 1.0；p(x)<q(x) 时以 α(x)=p(x)/q(x) 概率接受。被拒绝后从截断残差分布 normalize(max(0,p(x)-q(x))) 中采样新 Token。该推导可严格证明无偏等价于目标模型独立采样。",
+    "explanation": "正确答案 C。修正的拒绝采样算法：p(x)≥q(x) 时接受概率为 1.0；p(x)<q(x) 时以 α(x)=p(x)/q(x) 概率接受。被拒绝后从截断残差分布 normalize(max(0,p(x)-q(x))) 中采样新 Token。该推导可严格证明无偏等价于目标模型独立采样。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "接受概率 α(x)=p(x)/q(x) 拒绝后从残差分布 normalize(max(0,p(x)-q(x))) 中重新采样",
-          "接受概率 α(x)=p(x)-q(x) 拒绝后直接从原目标模型分布中重新采样，因为概率差直接刻画了草稿与目标之间的偏离度，用减法比用比值更能稳定衡量该偏差",
           "接受概率 α(x)=1.0 拒绝后直接终止整条轨迹的生成，因为一旦拒绝就说明草稿完全不可信，继续采样只会浪费算力且必然产生错误token",
+          "接受概率 α(x)=p(x)-q(x) 拒绝后直接从原目标模型分布中重新采样，因为概率差直接刻画了草稿与目标之间的偏离度，用减法比用比值更能稳定衡量该偏差",
+          "接受概率 α(x)=p(x)/q(x) 拒绝后从残差分布 normalize(max(0,p(x)-q(x))) 中重新采样",
           "接受概率 α(x)=q(x)/p(x) 拒绝后从草稿模型分布中重新采样，因为用草稿概率作分子更能反映草稿自身的置信度从而加快收敛"
         ],
         "answer": [
-          0
+          2
         ],
         "misconceptionMap": [
-          null,
-          0,
           1,
+          0,
+          null,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案 A。α=p/q + 从 residual normalize(max(0,p-q)) 重采样；严格无偏等价于目标模型独立采样。"
+        "referenceAnswer": "正确答案 C。α=p/q + 从 residual normalize(max(0,p-q)) 重采样；严格无偏等价于目标模型独立采样。"
       }
     },
     "assessment": {
@@ -2682,7 +2706,7 @@
     "difficulty": "medium",
     "angle": "fundamental",
     "question": "在 LLM/SLM 自回归推理（Autoregressive Inference）过程中，推理引擎的工作被严格划分为预填充阶段（Prefill Phase）与生成阶段（Generation Phase / Decode Phase）。关于这两个阶段的物理特性与性能瓶颈，下列哪些说法是正确的？（请选择所有正确的选项）",
-    "explanation": "Prefill 阶段针对全量 Prompt 进行 GEMM 并行矩阵乘法，属于 Compute-bound，决定了 TTFT（选项 A、C 正确）；Decode 阶段针对单 Token 进行 GEMV 向量乘法，频繁加载全量权重，受限于 Memory 带宽（选项 B 正确）；多 Batch 并行能够将多个 GEMV 拼成 GEMM，提高计算访存比，有效利用 GPU 算力（选项 D 正确）。",
+    "explanation": "Prefill 是计算密集的 GEMM，决定 TTFT，长 Prompt 会拉长它；Decode 是访存密集的 GEMV。D 错误：把请求拼成大 Batch 才能把多个 GEMV 合成 GEMM、提高算子强度；拆成更多单 Token 调用恰恰降低利用率。",
     "formats": {
       "choice": {
         "type": "multiple",
@@ -2690,24 +2714,32 @@
           "预填充阶段需要并行处理输入的全部 Prompt Tokens 并计算初始 KV Cache，属于计算密集型（Compute-bound）操作，首 Token 延迟（TTFT）主要由 GPU 计算峰值（TFLOPS）决定。",
           "生成阶段每次仅输入上一个 Token 并结合历史 KV Cache 预测下一个 Token，属于内存带宽密集型（Memory-bound）操作，Token 生成吞吐量（Tokens/s）主要受限于 VRAM 读写带宽。",
           "当输入 Prompt 序列极长（如 32K 长度的代码文件）时，预填充阶段的计算量显著上升，会导致首 Token 延迟（TTFT）明显拉长。",
-          "在 Decode 阶段，通过将多个并发请求拼成大 Batch 共同计算，可以提高 Operator 算子强度（Operational Intensity），将 Memory-bound 向 Compute-bound 转移，从而提升整体 GPU 利用率。"
+          "在 Decode 阶段把并发请求拆成更多单 Token 调用，会提高算子强度并降低显存带宽占用。"
         ],
         "answer": [
           0,
           1,
-          2,
-          3
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：A、B、C、D。\n- A/C：Prefill 是 GEMM 计算密集，决定 TTFT，长 Prompt 拉长 TTFT。\n- B：Decode 是 GEMV 访存密集，吞吐受显存带宽限制。\n- D：大 Batch 把多个 GEMV 拼成 GEMM，提升算子强度与利用率。"
+        "referenceAnswer": "Prefill 计算密集决定 TTFT，Decode 访存密集受带宽限制；大 Batch 合并 GEMV 才能提高 GPU 利用率。"
       }
     },
     "assessment": {
       "target": "能逐项判断下列主张是否成立，核心判断为「多 Batch 并行能够将多个 GEMV 拼成 GEMM，提高计算访存比，有效利用 GPU 算力（选项 D 正确）」",
       "reasoningGoal": "先回到该机制的第一性原理；据此逐项确认「预填充阶段需要并行处理输入的全部 Prompt To…」「生成阶段每次仅输入上一个 Token 并结合历史 K…」等 4 项成立。"
     },
-    "cognitiveTask": "identify"
+    "cognitiveTask": "identify",
+    "misconceptions": [
+      "认为把 Decode 拆成更多单 Token 调用能提高算子强度。"
+    ]
   },
   {
     "id": "quantization-precision-fp16-q8-q4-01",
@@ -2867,28 +2899,28 @@
     "difficulty": "medium",
     "angle": "fundamental",
     "question": "关于大模型 Prompt Caching 的最小缓存长度与缓存点，以下哪项描述最准确？",
-    "explanation": "正确答案 B。最小缓存长度和缓存方式由模型、服务商与 API 决定，并非统一的 1,024 或 2,048 tokens。以 Amazon Bedrock 为例，显式缓存点的最小长度随模型不同，可在 512–4,096 tokens 之间；累积前缀中的 tools、system 和 messages 是否计入及缓存点可放置的位置，也应按所用模型/API 文档核对。未达门槛通常只表示该前缀不会被缓存，请求仍可执行；即使达到门槛，缓存命中也取决于前缀一致性等条件，不应加入无意义内容凑门槛。",
+    "explanation": "正确答案 A。最小缓存长度和缓存方式由模型、服务商与 API 决定，并非统一的 1,024 或 2,048 tokens。以 Amazon Bedrock 为例，显式缓存点的最小长度随模型不同，可在 512–4,096 tokens 之间；累积前缀中的 tools、system 和 messages 是否计入及缓存点可放置的位置，也应按所用模型/API 文档核对。未达门槛通常只表示该前缀不会被缓存，请求仍可执行；即使达到门槛，缓存命中也取决于前缀一致性等条件，不应加入无意义内容凑门槛。",
     "formats": {
       "choice": {
         "type": "single",
         "options": [
-          "所有模型都使用固定的 1,024-token 门槛，且无需检查当前 API 是否支持缓存点。",
           "应以所用模型和 API 文档为准，确认可缓存前缀的最小长度、支持字段与 checkpoint 规则。",
+          "所有模型都使用固定的 1,024-token 门槛，且无需检查当前 API 是否支持缓存点。",
           "未达到缓存门槛的请求通常会报错，应用必须补足 token 才能调用模型。",
           "每次请求添加无意义 token 就能保证缓存命中，而且一定比未缓存更省成本。"
         ],
         "answer": [
-          1
+          0
         ],
         "misconceptionMap": [
-          0,
           null,
+          0,
           1,
           2
         ]
       },
       "open": {
-        "referenceAnswer": "正确答案：B。缓存门槛、可缓存字段和 checkpoint 规则因模型及 API 而异，应查对应官方文档。未达到门槛一般意味着该前缀不被缓存，而非请求必然失败；达到门槛也不保证命中。不要添加无意义 token 来凑长度。"
+        "referenceAnswer": "正确答案：A。缓存门槛、可缓存字段和 checkpoint 规则因模型及 API 而异，应查对应官方文档。未达到门槛一般意味着该前缀不被缓存，而非请求必然失败；达到门槛也不保证命中。不要添加无意义 token 来凑长度。"
       }
     },
     "assessment": {
