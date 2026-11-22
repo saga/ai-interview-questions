@@ -32,7 +32,11 @@ const VALID_ANGLES = new Set<string>(questionAngleSchema.options);
 
 /** 选项去重的归一化：忽略空白与常见标点，避免只差一个句号就算两个不同选项。 */
 function normalizeOption(text: string): string {
-  return text.replace(/[\s，。；、,.;:：""''（）()]/g, '');
+  // 小数点必须保留：否则「65%」与「6.5%」会被误判为重复选项。
+  return text
+    .replace(/(\d)\.(\d)/g, '$1\u0000$2')
+    .replace(/[\s，。；、,.;:：""''（）()]/g, '')
+    .replace(/\u0000/g, '.');
 }
 
 let errors = 0;

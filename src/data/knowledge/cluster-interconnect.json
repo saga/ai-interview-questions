@@ -5,17 +5,21 @@
     "area": "ai-systems",
     "topic": "cluster-interconnect",
     "priority": "P1",
-    "summary": "TPU v5e 等采用 2D Torus 互连，Full Pod 在各轴向具备 wraparound 环回链路；当申请的子切片在某轴向小于 Pod 周期尺寸时，该轴向丢失 wraparound 链路，拓扑由 Torus 降级为 Mesh，环形集合通信被迫沿链式路径折返，步数与延时约翻倍。",
+    "summary": "TPU v5e Full Pod 支持 16×16 的 2D Torus。具体 slice 的形状与实际拓扑映射决定各轴是否保留 wraparound 链路；若某轴不再周期环回，该轴的通信路径与 Ring collective 成本会变化。延迟/通信步数是否翻倍取决于拓扑、算法、消息规模和争用，不能作为普遍规律。",
     "required": [
-      "Full Pod（如 16×16）在各轴向具备 wraparound 周期性环回链路，构成 2D Torus",
-      "子切片轴向尺寸小于 Pod 周期时该轴向丢失 wraparound 链路，拓扑降级为 Mesh",
-      "Mesh 上 Ring All-Gather/Reduce-Scatter 无法成环，需沿 1D 链式路径双向折返，通信步数与延时增加约 2 倍"
+      "TPU v5e Full Pod 的 16×16 互连拓扑为 2D Torus；不要将所有 TPU 代际或所有 slice 映射视为相同",
+      "通过实际 slice topology/拓扑可视化确认各轴是否保留 wraparound 链路，而非仅从 slice 名称推断",
+      "wraparound 链路缺失会改变集合通信路径与成本；具体延迟和通信步数需结合算法与工作负载基准测量"
     ],
     "misconceptions": [
-      "误以为任意子切片尺寸均能保持完整 Torus 拓扑与 wraparound 链路",
-      "忽略 wraparound 链路缺失导致环形传输退化为链式折返，导致集合通信耗时倍增"
+      "认为所有 TPU 代际都采用相同的 2D Torus 形态与 Pod 尺寸",
+      "认为任意小于 Full Pod 的 slice 都必然按相同比例损失网络能力",
+      "认为拓扑从 Torus 变为 Mesh 后，Ring collective 延迟必然翻倍"
     ],
-    "angles": ["architecture", "scenario"]
+    "angles": [
+      "architecture",
+      "scenario"
+    ]
   },
   {
     "id": "collective-communication-primitives",
@@ -33,7 +37,10 @@
       "将 All-Reduce 误认为单步全集拼接，忽略节点间点对点规约加法过程",
       "误以为 Reduce-Scatter 与 All-Gather 耗时不对称，无法推导 2 倍系数"
     ],
-    "angles": ["mechanism", "tradeoff"]
+    "angles": [
+      "mechanism",
+      "tradeoff"
+    ]
   },
   {
     "id": "expert-parallelism-communication",
@@ -51,7 +58,10 @@
       "将 MoE 路由通信误认为 All-Gather 或 Broadcast，忽略多对多传输特性",
       "混淆 Tensor Parallel 的 All-Gather/Reduce-Scatter 范式与 Expert Parallel 的 All-to-All 范式"
     ],
-    "angles": ["mechanism", "system-design"]
+    "angles": [
+      "mechanism",
+      "system-design"
+    ]
   },
   {
     "id": "gpu-cluster-network-topology",
@@ -69,7 +79,10 @@
       "误以为集群总双切带宽等于所有节点注入带宽直接相加",
       "混淆单节点单向 NIC 注入带宽与交换机跨分区累计双切带宽"
     ],
-    "angles": ["calculation", "scenario"]
+    "angles": [
+      "calculation",
+      "scenario"
+    ]
   },
   {
     "id": "in-network-reduction",
@@ -87,6 +100,8 @@
       "将 SHARP 仅视为高带宽传输加速，忽略交换机内计算卸载本质",
       "误以为网内规约后 GPU 仍需相同 SM 算力做中间累加"
     ],
-    "angles": ["tradeoff"]
+    "angles": [
+      "tradeoff"
+    ]
   }
 ]

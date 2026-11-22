@@ -51,6 +51,12 @@ Node 服务(`server/index.js`)是**可选**的，仅用于本地以同源方式�
 
 ---
 
+### GitHub Copilot SDK（仅本地开发）
+
+GitHub Copilot SDK 通过 `vite-plugin-copilot-sdk.ts` 作为 Vite 开发中间件调用，不经过 Express。现有 Express 服务仍保留其 `/api/ai/*` Cloudflare 代理职责，`npm run dev` 的原有启动行为不变。
+
+启用 `copilot-sdk` 前，需要本机已安装并登录 GitHub Copilot CLI。配置不需要 API Key，模型字段可填写 `auto` 或当前账户支持的模型 ID。插件接口限制为本机回环连接，仅在 Vite 开发模式存在；静态构建和 Cloudflare Worker 不会暴露此接口。
+
 ## 4. Cloudflare Workers 部署（推荐）
 
 ```bash

@@ -1,5 +1,29 @@
 # 关键决策记录（ADR）
 
+## ADR-093 · Copilot SDK one-shot 开发端点的生命周期与请求截止时间
+
+- 状态：已采纳 · 2026-10-24
+- 背景：本仓库通过 Vite 开发中间件提供本地 Copilot SDK one-shot API。原实现仅把超时传给 `session.sendAndWait()`，启动客户端和创建 Session 不在应用层截止时间内；同时，服务关闭可能与异步客户端启动并发，迟到的启动 Promise 会重新写入共享客户端引用。
+- 决策：
+  1. 进程级客户端采用单一生命周期管理器；`stop()` 是终态，使用 generation guard 防止关闭后的启动结果复活客户端；启动失败时尽力清理候选客户端。
+  2. 每个模型请求设置应用层总截止时间，覆盖客户端初始化、Session 创建和模型执行；SDK 自身 timeout 仅作为稍后的兜底。
+  3. 超时或 HTTP 客户端断开时，不把 Promise 超时当作执行已停止；对活动 Session 请求 `abort()`，有界等待 `session.idle`，然后断开会话。若未观察到 idle，只记录“停止未确认”，不声称已经停止。
+  4. 当前端点仍是仅开发期、本机回环、无 ambient tools 的 one-shot provider；本 ADR 不把 Copilot SDK 接入 `pi-agent-core` 的工具调用循环，也不引入持久化 Session 或新的业务后端。
+- 验证：新增生命周期回归测试，覆盖并发启动、关闭与启动竞态、启动失败后的清理/重试。当前执行环境未运行 TypeScript、Vitest 或 build。
+
+
+## ADR-092 · Security Architecture 作为独立顶层学习体系
+
+- 状态：已采纳 · 2026-10-22
+- 背景：课程需覆盖 Solution Architect 的安全设计能力，但现有 AI 的 `ai-security` 只覆盖 AI 特有威胁；把企业安全架构塞进 AI 或 Snowflake 都会混淆课程边界。
+- 决策：
+  - 顶层注册 `courseId=security-architecture`，与 `ai` 和 `snowflake` 并列；课程题目和知识节点都显式携带 `courseId`。
+  - 增加独立 area 元数据、主题目录、角度白名单、题库、知识节点、课程路线图及入口卡片；AI 的六域 `TAXONOMY/DOMAINS` 不扩张。
+  - 用 SABSA/Open Group 的业务驱动和追溯思路串联 NIST 系列、ISO 27001、OWASP、CISA 与云架构框架。标准按“风险结果、系统工程、控制目录、技术验证、厂商参考架构”分工，不能互相替代。
+  - 训练和历史进度继续复用既有 `courseId` 过滤，不新建课程专用运行时或存储系统；旧会话推断从课程注册表读取。
+- 理由：安全架构需要跨身份、数据、网络、应用、云平台和运行韧性的横切设计视角，应在课程层独立，但不应复制一套训练引擎或把 AI 安全主题误做成企业安全架构课程。
+
+
 > 记录影响架构走向的关键决策及其理由。新决策追加在顶部，保留历史便于追溯。
 
 ## ADR-091 · 学习体系作为顶层边界：AI 与 Snowflake 独立

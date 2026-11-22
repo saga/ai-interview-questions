@@ -199,3 +199,144 @@ flowchart TD
 - CoCo 属于课程相关补充，不是官方 COF-C03 指南单独列明的产品考点；请勿将课程覆盖等同于考试保证。
 
 本批只完成静态数据预检，未运行 TypeScript、Vitest、题库 CLI 门禁、全库重复检查或构建。
+
+
+## 11. Snowflake Developer Guides 实战与架构扩展（2026-10-19）
+
+基于 [Snowflake Developer Guides](https://www.snowflake.com/en/developers/guides/) 中已核对的 Quickstart、参考架构和 Well-Architected 指南，新增 **200 道原创题**（120 道简单、80 道中等）和 **20 个知识点**，每个知识点 10 道题；选择题采用 140 道双答案多选（70%）和 60 道单选（30%），满足新题导入的多选比例要求。重点考察生产工程边界，不将演示案例写成通用 SLA 保证。
+
+- 题目：[snowflake-developer-guides-200.json](../src/data/questions/snowflake-developer-guides-200.json)
+- 知识点：[snowflake-developer-guides-expansion.json](../src/data/knowledge/snowflake-developer-guides-expansion.json)
+- 覆盖矩阵：[snowflake-developer-guides-coverage-200.md](./snowflake-developer-guides-coverage-200.md)
+
+### 本批使用的官方 Guide ID
+
+- [Getting Started with Data Engineering using Snowflake Notebooks](https://www.snowflake.com/en/developers/guides/data-engineering-with-notebooks/) — `guide-snowflake-data-engineering-notebooks`
+- [Build a Real-Time BI Dashboard with Interactive Warehouses](https://www.snowflake.com/en/developers/guides/build-real-time-bi-dashboard-interactive-warehouses/) — `guide-snowflake-real-time-bi`
+- [Well-Architected Framework: Performance](https://www.snowflake.com/en/developers/guides/performance/) — `guide-snowflake-performance`
+- [Well-Architected Framework: Cost Optimization and FinOps](https://www.snowflake.com/en/developers/guides/well-architected-framework-cost-optimization-and-finops/) — `guide-snowflake-cost-optimization`
+- [Well-Architected Framework: Security and Governance](https://www.snowflake.com/en/developers/guides/security-and-governance/) — `guide-snowflake-security-governance`
+- [Well-Architected Framework: Reliability](https://www.snowflake.com/en/developers/guides/well-architected-framework-reliability/) — `guide-snowflake-reliability`
+- [Well-Architected Framework: Operational Excellence](https://www.snowflake.com/en/developers/guides/operational-excellence/) — `guide-snowflake-operational-excellence`
+- [Build an Eval-Gated CI/CD Pipeline for Snowflake Semantic Views](https://www.snowflake.com/en/developers/guides/semantic-view-eval-cicd/) — `guide-snowflake-semantic-view-eval-cicd`
+- [Get Started with Snowflake DCM Projects](https://www.snowflake.com/en/developers/guides/get-started-snowflake-dcm-projects/) — `guide-snowflake-dcm-projects`
+- [Call the Cortex Agents API from Streamlit on the Container Runtime](https://www.snowflake.com/en/developers/guides/getting-started-with-cortex-agents-api-and-streamlit-on-container-runtime/) — `guide-snowflake-agent-streamlit-container`
+- [Getting Started with Snowflake Native Apps](https://www.snowflake.com/en/developers/guides/getting-started-with-native-apps/) — `guide-snowflake-native-apps`
+- [Building a Pipeline Auditor with the Cortex Agent SDK](https://www.snowflake.com/en/developers/guides/pipeline-auditor-with-cortex-agent-sdk/) — `guide-snowflake-pipeline-auditor`
+- [Build an End-to-End Application Using CoCo on Snowflake](https://www.snowflake.com/en/developers/guides/sfguide-build-end-to-end-ai-app-on-snowflake/) — `guide-snowflake-end-to-end-coco-ai-app`
+- [About Streamlit in Snowflake](https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit) — `docs-snowflake-streamlit-runtime`
+- [Add a Streamlit app to a Snowflake Native App](https://docs.snowflake.com/en/developer-guide/native-apps/adding-streamlit) — `docs-snowflake-native-app-streamlit`
+- [Network policies](https://docs.snowflake.com/en/user-guide/network-policies) — `docs-network-policy`
+- [Query history](https://docs.snowflake.com/en/user-guide/ui-query-history) — `docs-query-history`
+
+截至 2026-10-20 本批完成时，Snowflake 题目累计 **941 道**，知识节点累计 **117 个**；后续新增批次见后续章节。本批完成静态预检；未运行 TypeScript、Vitest、题库 CLI 门禁、完整全库去重或 build。
+
+
+## 12. Snowflake CoCo Skills 专项扩展（2026-10-20）
+
+基于 [Snowflake-Labs/coco-skills](https://github.com/Snowflake-Labs/coco-skills) 的技能工作流和示例，新增 100 道简单/中等题与 10 个知识点。重点从技能文档中提炼可迁移的工程判断，而不是记忆命令名称或照搬单个演示的配置。
+
+- 题目：[`snowflake-coco-skills-100.json`](../src/data/questions/snowflake-coco-skills-100.json)
+- 知识点：[`snowflake-coco-skills-expansion.json`](../src/data/knowledge/snowflake-coco-skills-expansion.json)
+- 覆盖矩阵：[`snowflake-coco-skills-100.md`](./snowflake-coco-skills-100.md)
+
+本批包含 60 道简单题、40 道中等题；68 道多选（每题恰好两个正确项）与 32 道单选。十个知识主题涵盖 Semantic View 高级建模、Cortex Analyst 问数应用、Ontology 分层、Dynamic Tables 选型、dbt 自动建模、RBAC、Snowpipe BCDR、OpenFlow PrivateLink、SAP BDC Zero-Copy Connector，以及 Cortex 模型可用性和 CoCo Skill 执行边界。
+
+特别注意：Cortex base mode 与 agentic mode 独立；目标账户/区域中的真实探测比静态名称清单更可靠。Dynamic Tables 的 TARGET_LAG 是新鲜度目标，不是无条件 SLA；语义视图的部署/解释 SQL 也不能替代数据结果验证。更多逐题来源与官方文档入口见覆盖矩阵。
+
+
+## 13. PostgreSQL 全日培训主题向 Snowflake 的适配来源
+
+新增题集引用的主教学来源为 [Snowflake-Labs/postgres-full-day-training](https://github.com/Snowflake-Labs/postgres-full-day-training)，其原始内容是 PostgreSQL 实战训练。这里只借用公开的课程主题和学习目标；Snowflake 题目中的产品行为、限制、优化建议必须以以下 Snowflake 官方文档为准，不能把 PostgreSQL 命令和存储机制直接移植到 Snowflake。
+
+- [SQL query syntax](https://docs.snowflake.com/en/sql-reference/constructs) — `docs-sql-query-constructs`
+- [Transactions](https://docs.snowflake.com/en/sql-reference/transactions) — `docs-sql-transactions`
+- [Window functions](https://docs.snowflake.com/en/user-guide/functions-window-using) — `docs-sql-window-functions`
+- [WITH / CTE](https://docs.snowflake.com/en/sql-reference/constructs/with) — `docs-sql-ctes`
+- [Querying semi-structured data](https://docs.snowflake.com/en/user-guide/querying-semistructured) — `docs-semi-structured-query`
+- [FLATTEN](https://docs.snowflake.com/en/sql-reference/functions/flatten) — `docs-flatten`
+- [MERGE](https://docs.snowflake.com/en/sql-reference/sql/merge) — `docs-sql-merge`
+- [QUERY_HISTORY Account Usage view](https://docs.snowflake.com/en/sql-reference/account-usage/query_history) — `docs-query-history-sql-view`
+- [Cloning considerations](https://docs.snowflake.com/en/user-guide/object-clone) — `docs-snowflake-cloning`
+- [Exploring query execution times](https://docs.snowflake.com/en/user-guide/performance-query-exploring) — `docs-performance-query-exploring`
+- [Optimizing query performance](https://docs.snowflake.com/en/user-guide/performance-query-options) — `docs-performance-query-options`
+- [Cost controls for warehouses](https://docs.snowflake.com/en/user-guide/cost-controlling-controls) — `docs-cost-controls`
+- [Optimizing the warehouse cache](https://docs.snowflake.com/en/user-guide/performance-query-warehouse-cache) — `docs-warehouse-cache`
+- [Persisted query results](https://docs.snowflake.com/en/user-guide/querying-persisted-results) — `docs-persisted-query-results`
+- [Micro-partitions and data clustering](https://docs.snowflake.com/en/user-guide/tables-clustering-micropartitions) — `docs-micro-partitions`
+- [Clustering keys](https://docs.snowflake.com/en/user-guide/tables-clustering-keys) — `docs-clustering-keys`
+- [Search optimization service](https://docs.snowflake.com/en/user-guide/search-optimization-service) — `docs-search-optimization`
+- [Network policies](https://docs.snowflake.com/en/user-guide/network-policies) — `docs-network-policy`
+
+特别注意：原培训中的 WAL / VACUUM / `shared_buffers` / `work_mem` / PostgreSQL 系统目录与传统索引属于 PostgreSQL 特定机制。本题集将相关学习目标改写为 Snowflake 的 Time Travel 与恢复窗口、Streams/Tasks/Dynamic Tables、Query History/Profile、Warehouse 并发和资源治理、微分区裁剪及适用的优化服务；不会声称两种数据库使用同一种底层实现。
+
+
+## 14. PostgreSQL Full-Day Training 向 Snowflake 迁移练习（2026-10-23）
+
+新增 7 个知识节点和 200 道原创题，课程主题参考 PostgreSQL 全日培训，题目行为根据 Snowflake 官方文档重新核对，不混用两种数据库的实现机制。
+
+- 题集：`src/data/questions/snowflake-postgres-full-day-200-a.json`、`snowflake-postgres-full-day-200-b.json`、`snowflake-postgres-full-day-200-c.json`
+- 知识节点：`src/data/knowledge/snowflake-postgres-full-day.json`
+- 逐题覆盖矩阵：[snowflake-postgres-full-day-200.md](./snowflake-postgres-full-day-200.md)
+- 难度分布：100 easy、100 medium；题型分布：54 单选、146 多选。
+- 本批完成后，Snowflake 题库累计 **1141 道**，知识节点累计 **124 个**。
+
+已完成静态预检：题目编号与题干唯一、难度和题型统计符合预期、答案索引及误解映射有效、20 个知识主题引用可解析、所有交叉文档 ID 均已登记。未运行 TypeScript、Vitest、完整题库 CLI 校验或 build。
+
+
+## 15. Snowflake course 下的 PostgreSQL 原生数据库工程模块（2026-10-23）
+
+本节与第 13、14 节区分：第 13、14 节是将 PostgreSQL 培训主题改写为 Snowflake 语义；本节则**直接教授 PostgreSQL 自身**。题目通过 `courseId: "snowflake"` 加入现有 Snowflake 学习入口，但使用独立的 `postgresql` 主题标签、20 个 PostgreSQL 知识节点、独立来源映射与题目 ID。它不是 Snowflake 功能目录，学习时不能把 PostgreSQL 专属机制归因到 Snowflake。
+
+- 题目文件：`src/data/questions/postgresql-module-200-a.json` 至 `postgresql-module-200-d.json`，编号 `sf-pg-001` 至 `sf-pg-200`
+- 知识节点：`src/data/knowledge/postgresql-module.json`，20 个节点，每个节点各 10 道题
+- 覆盖矩阵与参考资料：[PostgreSQL 原生数据库工程模块（200 题）](./postgresql-module-in-snowflake-course-200.md)
+- 内容来自 [Snowflake-Labs/postgres-full-day-training](https://github.com/Snowflake-Labs/postgres-full-day-training) 的六小时课程安排与 SQL 练习；该训练仓库目标为 PostgreSQL 18，并说明与 PostgreSQL 14+ 的兼容范围。PostgreSQL 18 官方文档也提供版本化手册与每项机制的约束细节。
+
+### 官方 PostgreSQL / 扩展文档 ID
+
+- [PostgreSQL tutorial](https://www.postgresql.org/docs/18/tutorial.html) — `pg-doc-tutorial`
+- [Installation / setup](https://www.postgresql.org/docs/18/installation.html) — `pg-doc-setup`
+- [psql](https://www.postgresql.org/docs/18/app-psql.html) — `pg-doc-psql`
+- [Schemas](https://www.postgresql.org/docs/18/ddl-schemas.html) — `pg-doc-ddl-schema`
+- [Privileges](https://www.postgresql.org/docs/18/ddl-priv.html) — `pg-doc-privileges`
+- [SQL commands](https://www.postgresql.org/docs/18/sql.html) — `pg-doc-sql`
+- [Data types](https://www.postgresql.org/docs/18/datatype.html) — `pg-doc-data-types`
+- [Constraints](https://www.postgresql.org/docs/18/ddl-constraints.html) — `pg-doc-constraints`
+- [Data definition](https://www.postgresql.org/docs/18/ddl.html) — `pg-doc-ddl`
+- [Client authentication](https://www.postgresql.org/docs/18/client-authentication.html) — `pg-doc-client-auth`
+- [Database roles](https://www.postgresql.org/docs/18/user-manag.html) — `pg-doc-security`
+- [Data manipulation](https://www.postgresql.org/docs/18/dml.html) — `pg-doc-dml`
+- [Queries](https://www.postgresql.org/docs/18/queries.html) — `pg-doc-queries`
+- [Table expressions and joins](https://www.postgresql.org/docs/18/queries-table-expressions.html) — `pg-doc-joins`
+- [Aggregate functions](https://www.postgresql.org/docs/18/functions-aggregate.html) — `pg-doc-aggregates`
+- [Arrays](https://www.postgresql.org/docs/18/arrays.html) — `pg-doc-arrays`
+- [JSON functions](https://www.postgresql.org/docs/18/functions-json.html) — `pg-doc-json`
+- [Indexes](https://www.postgresql.org/docs/18/indexes.html) — `pg-doc-indexes`
+- [Window functions](https://www.postgresql.org/docs/18/functions-window.html) — `pg-doc-window`
+- [PL/pgSQL](https://www.postgresql.org/docs/18/plpgsql.html) — `pg-doc-plpgsql`
+- [Transactions tutorial](https://www.postgresql.org/docs/18/tutorial-transactions.html) — `pg-doc-transactions`
+- [MVCC introduction](https://www.postgresql.org/docs/18/mvcc-intro.html) — `pg-doc-mvcc`
+- [Transaction isolation](https://www.postgresql.org/docs/18/transaction-iso.html) — `pg-doc-isolation`
+- [Explicit locking](https://www.postgresql.org/docs/18/explicit-locking.html) — `pg-doc-locks`
+- [Monitoring statistics](https://www.postgresql.org/docs/18/monitoring-stats.html) — `pg-doc-monitoring`
+- [Statistics views and counters](https://www.postgresql.org/docs/18/monitoring-stats.html) — `pg-doc-statistics`
+- [Routine vacuuming](https://www.postgresql.org/docs/18/routine-vacuuming.html) — `pg-doc-vacuum`
+- [WAL](https://www.postgresql.org/docs/18/wal.html) — `pg-doc-wal`
+- [Backup and restore](https://www.postgresql.org/docs/18/backup.html) — `pg-doc-backup`
+- [High availability](https://www.postgresql.org/docs/18/high-availability.html) — `pg-doc-ha`
+- [Logical replication](https://www.postgresql.org/docs/18/logical-replication.html) — `pg-doc-logical-replication`
+- [Connection settings](https://www.postgresql.org/docs/18/runtime-config-connection.html) — `pg-doc-connections`
+- [PgBouncer configuration](https://www.pgbouncer.org/config.html) — `pg-doc-pgbouncer`
+- [Table partitioning](https://www.postgresql.org/docs/18/ddl-partitioning.html) — `pg-doc-partitioning`
+- [Logging configuration](https://www.postgresql.org/docs/18/runtime-config-logging.html) — `pg-doc-logging`
+- [Server resource configuration](https://www.postgresql.org/docs/18/runtime-config-resource.html) — `pg-doc-config`
+- [Parallel query](https://www.postgresql.org/docs/18/parallel-query.html) — `pg-doc-parallel`
+- [Performance tips](https://www.postgresql.org/docs/18/performance-tips.html) — `pg-doc-performance`
+- [EXPLAIN](https://www.postgresql.org/docs/18/sql-explain.html) — `pg-doc-explain`
+- [Full-text search](https://www.postgresql.org/docs/18/textsearch.html) — `pg-doc-textsearch`
+- [Extending PostgreSQL](https://www.postgresql.org/docs/18/extend.html) — `pg-doc-extensions`
+- [PostGIS](https://postgis.net/documentation/) — `pg-doc-postgis`
+- [pgvector](https://github.com/pgvector/pgvector) — `pg-doc-pgvector`
+
+题目中的版本敏感表述应按版本标注。培训仓库以 PostgreSQL 18 为主，同时注明与 PostgreSQL 14+ 的兼容性；例如 `UNIQUE NULLS NOT DISTINCT` 自 PostgreSQL 15 起可用，并非 PostgreSQL 18 才新增。扩展（PgBouncer、PostGIS、pgvector）也需单独核对目标部署环境和版本。

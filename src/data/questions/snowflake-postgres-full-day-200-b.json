@@ -1,0 +1,2677 @@
+[
+  {
+    "id": "sf-pgtd-101",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在 Snowflake 中排查一个数据库有哪些表和视图，哪些手段适合先使用？",
+    "explanation": "正确答案 A。Snowflake 提供 SHOW 命令、INFORMATION_SCHEMA 与 ACCOUNT_USAGE 等元数据接口；选择时要考虑权限、范围和数据延迟。",
+    "misconceptions": [
+      "假设其他数据库的系统目录与命令可以原样用于 Snowflake。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "SHOW TABLES / SHOW VIEWS 或查询适当的元数据视图",
+          "直接读取 PostgreSQL 的 pg_class 系统表",
+          "运行 VACUUM FULL",
+          "读取 Warehouse 的本地文件目录"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Snowflake 提供 SHOW 命令、INFORMATION_SCHEMA 与 ACCOUNT_USAGE 等元数据接口；选择时要考虑权限、范围和数据延迟。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-102",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "排查对象不存在或无权访问时，为什么要一起检查当前角色与当前数据库/Schema？",
+    "explanation": "正确答案 A。对象解析与可见权限都受当前上下文和角色授权影响，应核实对象是否存在、名称大小写/限定路径以及有效角色的授权链。",
+    "misconceptions": [
+      "把能登录账号当成拥有所有数据库对象的权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "当前上下文和有效角色会影响对象解析与可见权限",
+          "对象名称相同就保证所有会话能访问",
+          "Warehouse 大小决定对象授权",
+          "只要能连接账号就必定能查询全部 Schema"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。对象解析与可见权限都受当前上下文和角色授权影响，应核实对象是否存在、名称大小写/限定路径以及有效角色的授权链。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-103",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "要核查某角色是否具备读取指定 Schema 中表的权限，哪些步骤合理？",
+    "explanation": "正确答案 A、B、D。访问能力由角色及对象层级 grants 共同决定；认证成功只代表建立会话，不代表拥有业务对象权限。",
+    "misconceptions": [
+      "把认证和数据授权视为同一件事。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认角色当前拥有的直接或继承 grants",
+          "检查数据库、Schema 和表等层级的授权",
+          "仅检查用户是否能通过 SSO 登录",
+          "必要时使用 SHOW GRANTS 等命令验证"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。访问能力由角色及对象层级 grants 共同决定；认证成功只代表建立会话，不代表拥有业务对象权限。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-104",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "SHOW 命令看不到一个已知存在的对象时，优先检查什么？",
+    "explanation": "正确答案 A、B、D。SHOW 的可见结果受执行角色权限和当前上下文影响。带引号标识符可能区分大小写；扩容不会修复元数据可见性。",
+    "misconceptions": [
+      "认为对象列表缺失是计算资源不足造成的。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当前角色是否有足够权限查看该对象",
+          "当前 Database/Schema 上下文及名称是否完全限定",
+          "立即把 Warehouse 扩大四倍",
+          "对象是否使用带引号的大小写敏感名称"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。SHOW 的可见结果受执行角色权限和当前上下文影响。带引号标识符可能区分大小写；扩容不会修复元数据可见性。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-105",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 Snowflake 元数据接口，哪些说法较准确？",
+    "explanation": "正确答案 A、B、D。元数据接口在可见范围、权限和数据延迟方面存在差异；诊断时要把延迟与真实对象状态区分。",
+    "misconceptions": [
+      "假设所有元数据视图在范围、权限与延迟上完全相同。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "INFORMATION_SCHEMA 适用于数据库/Schema 范围内的元数据查询",
+          "ACCOUNT_USAGE 适合账号级历史与治理分析，但部分视图有延迟",
+          "所有元数据接口都能无延迟展示账号全部对象",
+          "执行角色必须拥有适当权限才能看到相关元数据"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。元数据接口在可见范围、权限和数据延迟方面存在差异；诊断时要把延迟与真实对象状态区分。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-106",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某条查询成功但使用了错误的表，哪些证据最有助于查明原因？",
+    "explanation": "正确答案 A、B、D。相同 SQL 在不同会话上下文下可能解析到不同对象；记录上下文、Query ID 并使用完全限定名称可降低歧义。",
+    "misconceptions": [
+      "认为 SQL 文本相同就一定访问同一个对象。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "捕获执行时的 current database/schema/role 上下文",
+          "使用完全限定的 database.schema.object 名称复现",
+          "只记录 SQL 文本，不记录执行身份或上下文",
+          "结合 Query ID 检查实际执行语句与对象引用"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。相同 SQL 在不同会话上下文下可能解析到不同对象；记录上下文、Query ID 并使用完全限定名称可降低歧义。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-107",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Snowflake 中 SHOW GRANTS 常用于解决哪类问题？",
+    "explanation": "正确答案 A。SHOW GRANTS 能查看对象或主体的授权信息，是访问排查的一部分；它不提供执行画像或自动数据修复。",
+    "misconceptions": [
+      "混淆授权元数据与查询性能分析。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "核对指定对象、角色或用户相关的授权记录",
+          "查看查询算子的每一步耗时",
+          "恢复 Time Travel 之外的永久历史",
+          "自动修复有重复键的表"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。SHOW GRANTS 能查看对象或主体的授权信息，是访问排查的一部分；它不提供执行画像或自动数据修复。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-108",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "排查某表的数据没有出现在 BI 结果中，哪些问题应分别核实？",
+    "explanation": "正确答案 A、B、C。数据缺失可能来自对象解析、权限、视图逻辑或筛选条件。Warehouse 是否运行不足以解释结果为什么少行。",
+    "misconceptions": [
+      "将业务结果缺失简单归因于计算仓库状态。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "BI 查询使用的数据库、Schema、对象和过滤条件",
+          "运行角色对源表/视图的有效访问权限",
+          "视图定义是否额外过滤了行或引用了错误对象",
+          "只检查该 Warehouse 当前是否运行"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。数据缺失可能来自对象解析、权限、视图逻辑或筛选条件。Warehouse 是否运行不足以解释结果为什么少行。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-109",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "编写跨环境部署脚本以创建或修改对象，哪些做法可以减少环境误操作？",
+    "explanation": "正确答案 A、C、D。显式上下文、执行身份核验和运行记录能降低部署到错误环境的风险。",
+    "misconceptions": [
+      "假设会话上下文在不同环境和连接池中始终正确。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "显式指定目标 database/schema",
+          "依赖操作者之前会话遗留的默认上下文",
+          "部署前核验当前角色与目标环境",
+          "将环境名/变更批次写入日志或 query tag"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。显式上下文、执行身份核验和运行记录能降低部署到错误环境的风险。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-110",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "warehouse-query-diagnostics",
+    "subtopic": "warehouse-query-diagnostics",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "warehouse-query-diagnostics"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "元数据查询没有返回某条近期执行记录时，哪些判断是合理的？",
+    "explanation": "正确答案 A、B、D。不同元数据入口的可见窗口和刷新延迟不同；应核验范围并用已知 Query ID 交叉检查。",
+    "misconceptions": [
+      "误以为元数据未显示就说明查询一定没有运行。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认所选接口的时间范围限制",
+          "考虑 ACCOUNT_USAGE 类数据可能存在刷新延迟",
+          "加大 Warehouse 就一定能让元数据立即出现",
+          "用 Query ID、时间与其他可用历史入口交叉核对"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。不同元数据入口的可见窗口和刷新延迟不同；应核验范围并用已知 Query ID 交叉检查。"
+      }
+    },
+    "knowledgeId": "warehouse-query-diagnostics",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: System Catalogs; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-profile",
+        "docs-access-control"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-111",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake Query History 最适合用于回答哪类问题？",
+    "explanation": "正确答案 A。Query History 可用于查找查询 ID、执行时间、角色/仓库、状态、错误及耗时等信息，是运行诊断的重要入口。",
+    "misconceptions": [
+      "认为查询历史会提供全部存储物理细节或自动解释业务结果。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "某条 SQL 何时执行、耗时多少、由谁/哪个仓库执行及是否失败",
+          "数据库物理磁盘上每个页面的字节布局",
+          "所有历史数据永久保留且无限可见",
+          "自动决定业务指标的计算口径"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Query History 可用于查找查询 ID、执行时间、角色/仓库、状态、错误及耗时等信息，是运行诊断的重要入口。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-112",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于查询历史的时间范围，哪种做法正确？",
+    "explanation": "正确答案 A、D。不同查询历史入口的数据保留窗口、延迟和权限并不相同；选型应匹配排查窗口与审计需求。",
+    "misconceptions": [
+      "把所有 Query History 接口当成窗口相同的永久日志。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用前核实所选接口的保留窗口与数据延迟",
+          "所有查询历史视图都永久保留数据",
+          "仅靠客户端本地历史就能覆盖账号级审计",
+          "按排查窗口选择 Information Schema 函数或 Account Usage 视图"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。不同查询历史入口的数据保留窗口、延迟和权限并不相同；选型应匹配排查窗口与审计需求。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-113",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "为生产管道中的关键 SQL 添加 QUERY_TAG 的价值是什么？",
+    "explanation": "正确答案 A。Query tag 为语句附加可检索的运行上下文，便于关联任务运行和发布批次；不会改变 SQL 语义或自动提升性能。",
+    "misconceptions": [
+      "认为 Query Tag 本身会优化 SQL 或替代运行审计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "让查询可关联到应用、批次、流程或变更标识",
+          "自动给查询创建索引",
+          "确保查询始终命中缓存",
+          "无需再保存运行状态"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Query tag 为语句附加可检索的运行上下文，便于关联任务运行和发布批次；不会改变 SQL 语义或自动提升性能。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-114",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "夜间 ETL 突然变慢，哪些 Query History 证据值得先比较？",
+    "explanation": "正确答案 A、B、C。时间拆分和运行上下文能区分并发排队、SQL 变化、角色/仓库变化和失败重试。",
+    "misconceptions": [
+      "使用 SQL 文本长短作为性能根因。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "排队时间与执行时间的变化",
+          "查询错误信息、状态与重试次数",
+          "仓库、用户/角色、Query Tag 和执行时间段",
+          "只查看 SQL 文本的字符长度"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。时间拆分和运行上下文能区分并发排队、SQL 变化、角色/仓库变化和失败重试。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-115",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "开发者说客户端超时，所以 SQL 一定失败。哪些核查方式更可靠？",
+    "explanation": "正确答案 A、B、D。客户端超时可能发生在服务端已完成操作之后；先检查服务端状态和目标数据，再按幂等策略决定是否重试。",
+    "misconceptions": [
+      "将客户端超时等同于服务端执行失败。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用 Query ID 或时间、用户、仓库等条件查服务端执行状态",
+          "检查查询是否仍在执行、成功还是报错",
+          "直接重提相同的非幂等 DML，不核对结果",
+          "对写入操作核对目标结果后再决定是否重试"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。客户端超时可能发生在服务端已完成操作之后；先检查服务端状态和目标数据，再按幂等策略决定是否重试。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-116",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "关于 QUERY_HISTORY 与 Query Profile 的关系，哪些说明合理？",
+    "explanation": "正确答案 A、B、D。History 提供查询级时间、状态与身份线索，Profile 帮助理解单条查询的执行过程；执行成功不是业务正确性的证明。",
+    "misconceptions": [
+      "认为查询状态 SUCCESS 可替代执行和业务质量分析。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Query History 适合发现和筛选相关查询",
+          "Query Profile 分析具体查询的算子和数据流",
+          "成功状态足以证明查询业务逻辑正确",
+          "两者结合有助于由症状定位到算子瓶颈"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。History 提供查询级时间、状态与身份线索，Profile 帮助理解单条查询的执行过程；执行成功不是业务正确性的证明。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-117",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "构建每日性能回归报表，哪些比较方式更可信？",
+    "explanation": "正确答案 A、B、D。比较需控制输入、缓存、仓库和并发等条件，否则可能把工作负载差异误认为代码退化。",
+    "misconceptions": [
+      "忽略工作负载和缓存差异，用单次耗时判断优化效果。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对比相同或相似参数、数据规模和查询版本",
+          "同时比较执行时间、扫描量、排队时间与仓库配置",
+          "拿空缓存冷启动与暖缓存查询直接下结论",
+          "记录基线时间窗和异常样本过滤规则"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。比较需控制输入、缓存、仓库和并发等条件，否则可能把工作负载差异误认为代码退化。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-118",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Account Usage 查询历史晚于刚刚执行的查询才出现，可能是什么原因？",
+    "explanation": "正确答案 A、D。ACCOUNT_USAGE 类历史数据可能有延迟；即时排查应考虑接口时效与查询范围。",
+    "misconceptions": [
+      "误把治理视图刷新延迟当作执行故障。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "该视图/数据产品有自身的刷新延迟",
+          "SQL 必定运行在另一个账号",
+          "加大 Warehouse 可立即刷新治理视图",
+          "可结合更适合即时检查的入口或 Query ID 复核"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。ACCOUNT_USAGE 类历史数据可能有延迟；即时排查应考虑接口时效与查询范围。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-119",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一组查询出现大量 queued overload time，哪些结论更合理？",
+    "explanation": "正确答案 A、B、D。过载排队应从并发和资源管理角度诊断，同时核查单查询执行成本。",
+    "misconceptions": [
+      "把所有排队时间都当成 SQL 语法或文本问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "并发需求可能超过当前可用计算处理能力",
+          "应比较仓库负载、并发、队列策略及工作负载拆分",
+          "单纯把 SQL 改写得更短必然解决",
+          "可评估独立仓库、仓库配置或多集群方案"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。过载排队应从并发和资源管理角度诊断，同时核查单查询执行成本。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-120",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-history",
+    "subtopic": "snowflake-query-history",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-history"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "事故复盘要求把查询运行追溯到发布与输入批次，哪些做法有帮助？",
+    "explanation": "正确答案 A、B、C。查询运行证据需要连接语句、执行上下文、输入批次和代码版本，才能支持审计与复现。",
+    "misconceptions": [
+      "认为一个成功时间戳足以支持端到端追溯。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "写入可搜索的 Query Tag/批次标识",
+          "保留 Query ID、角色、仓库、时间和状态",
+          "为部署与数据管道保存版本和输入范围",
+          "仅记录最后一次成功时间戳"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。查询运行证据需要连接语句、执行上下文、输入批次和代码版本，才能支持审计与复现。"
+      }
+    },
+    "knowledgeId": "snowflake-query-history",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Logging; Monitoring; Finding Long-Running Queries",
+      "relatedMaterials": [
+        "docs-query-history",
+        "docs-query-history-sql-view",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-121",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 的 Query Profile 最主要用来做什么？",
+    "explanation": "正确答案 A。Query Profile 展示查询操作符、数据流、扫描和运行特征，帮助形成性能诊断假设；它不自动替代验证和回归测试。",
+    "misconceptions": [
+      "把 Query Profile 当成自动修复查询的工具。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查单条查询的执行算子、数据流与耗时分布",
+          "查看用户密码明文",
+          "替代数据库角色和授权审计",
+          "自动建立所有可能有用的索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Query Profile 展示查询操作符、数据流、扫描和运行特征，帮助形成性能诊断假设；它不自动替代验证和回归测试。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-122",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "一个扫描量很大的查询通常优先检查什么？",
+    "explanation": "正确答案 A、B、D。大扫描应结合分区裁剪、筛选选择性、投影和实际范围检查；Snowflake 标准表不能直接照搬传统索引策略。",
+    "misconceptions": [
+      "认为传统关系数据库的常见索引策略可直接套用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过滤条件是否有效推动 micro-partition pruning",
+          "是否读取超出需要的字段或数据范围",
+          "直接创建 PostgreSQL 风格 B-tree 索引",
+          "核实扫描统计和筛选选择性"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。大扫描应结合分区裁剪、筛选选择性、投影和实际范围检查；Snowflake 标准表不能直接照搬传统索引策略。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-123",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "总时间大部分来自仓库排队、Profile 内部并不慢，优先考虑什么？",
+    "explanation": "正确答案 A、C。主要耗时在排队时，先解决并发/容量/工作负载竞争更有依据。",
+    "misconceptions": [
+      "不区分队列时间与执行时间，将所有问题归咎于 SQL 算子。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分析并发、仓库负载和排队原因",
+          "必然先重写所有 JOIN",
+          "根据工作负载考虑独立仓库或并发扩展",
+          "仅因有排队就对所有列建立聚簇键"
+        ],
+        "answer": [
+          0,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C。主要耗时在排队时，先解决并发/容量/工作负载竞争更有依据。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-124",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "两个查询都慢：一个扫描大量数据，另一个发生溢写。哪些假设更合理？",
+    "explanation": "正确答案 A、B、D。扫描高可能与裁剪有关；溢写常见于大型排序、聚合或连接，应结合算子和资源指标验证。",
+    "misconceptions": [
+      "把所有慢查询归结为相同的仓库规模问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "扫描量高时检查过滤、裁剪和数据访问模式",
+          "溢写时检查排序/聚合/连接规模与资源",
+          "两者都只需要无限制增大仓库",
+          "根据实际瓶颈分别验证 SQL 或仓库调整"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。扫描高可能与裁剪有关；溢写常见于大型排序、聚合或连接，应结合算子和资源指标验证。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-125",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "查询改写后耗时下降，但结果行数也下降很多。应如何判断？",
+    "explanation": "正确答案 A、B、D。优化必须同时满足结果等价与性能改善；行数变化可能是逻辑回归，需要语义分析和样本验证。",
+    "misconceptions": [
+      "认为更快且少返回数据必然代表优化成功。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用同一业务输入和对账规则比较结果正确性",
+          "检查 JOIN、过滤、NULL 或窗口语义是否变化",
+          "只看耗时下降就立即发布",
+          "确认执行计划变化并验证边界样本"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。优化必须同时满足结果等价与性能改善；行数变化可能是逻辑回归，需要语义分析和样本验证。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-126",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "使用 Query Profile 进行性能优化时，哪些实践合理？",
+    "explanation": "正确答案 A、B、C。Profile 提供诊断证据，但热点须结合数据、查询语义、并发及对照实验解释。",
+    "misconceptions": [
+      "只凭一个 Profile 热点直接做不可验证的调整。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查主要算子和数据流，而不仅看总耗时",
+          "对比优化前后的扫描量、算子耗时和溢写",
+          "保持测试输入、仓库设置和缓存条件可比",
+          "将视觉上最大的算子直接认定为唯一根因"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。Profile 提供诊断证据，但热点须结合数据、查询语义、并发及对照实验解释。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-127",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "Join 算子输出行数明显高于输入预期，哪些调查步骤优先？",
+    "explanation": "正确答案 A、B、D。Join 输出膨胀可能源于基数或逻辑错误；先确认粒度、键唯一性和连接条件。",
+    "misconceptions": [
+      "把结果基数异常当成仅需算力优化的问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查连接键基数与每侧输入粒度",
+          "寻找重复键、多对多映射或缺少连接条件",
+          "不看数据，直接启用 Query Acceleration",
+          "验证 JOIN 前后关键业务指标是否出现 fanout"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。Join 输出膨胀可能源于基数或逻辑错误；先确认粒度、键唯一性和连接条件。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-128",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "同一 SQL 在高峰时段更慢，非高峰时恢复正常，哪些证据有用？",
+    "explanation": "正确答案 A、B、C。时段相关性可能意味着排队、资源竞争或输入差异；应分离队列与执行耗时再决定是否优化数据访问。",
+    "misconceptions": [
+      "仅凭高峰更慢就认定表布局发生退化。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "比较队列时间",
+          "检查仓库并发、任务重叠和工作负载竞争",
+          "比较 Profile 判断算子执行是否改变",
+          "不看队列数据就认定微分区布局变差"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。时段相关性可能意味着排队、资源竞争或输入差异；应分离队列与执行耗时再决定是否优化数据访问。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-129",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "如何验证一次查询优化没有把成本转移到其他地方？",
+    "explanation": "正确答案 A、B、C。性能提升可能依赖更大仓库、优化服务或额外维护；需综合评估负载、成本和正确性。",
+    "misconceptions": [
+      "只用单次查询耗时衡量整个工作负载的成本收益。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "比较仓库消耗、扫描量、执行时间与服务费用",
+          "用代表性运行窗口评估整体工作负载",
+          "做结果等价性和数据质量验证",
+          "把单条查询更快等同于账号总成本必然降低"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。性能提升可能依赖更大仓库、优化服务或额外维护；需综合评估负载、成本和正确性。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-130",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-profile-troubleshooting",
+    "subtopic": "snowflake-query-profile-troubleshooting",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-profile-troubleshooting"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为关键查询建立生产性能验收，哪些指标组合更全面？",
+    "explanation": "正确答案 A、B、C。生产验收应覆盖延迟分布、真实并发、资源/扫描特征和结果正确性。",
+    "misconceptions": [
+      "把一次低负载下的成功执行当成生产性能保证。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "p50/p95 耗时分布及并发条件",
+          "扫描行/字节、排队时间、溢写和主要算子",
+          "结果完整性及业务聚合校验",
+          "只在空闲环境跑一次就验收"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。生产验收应覆盖延迟分布、真实并发、资源/扫描特征和结果正确性。"
+      }
+    },
+    "knowledgeId": "snowflake-query-profile-troubleshooting",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: EXPLAIN and Query Plan; Hour 4: Monitoring",
+      "relatedMaterials": [
+        "docs-query-profile",
+        "docs-performance-query-exploring",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-131",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 虚拟仓库的核心职责是什么？",
+    "explanation": "正确答案 A。虚拟仓库是计算资源，与底层持久化数据存储分离；规模、暂停/恢复和并发策略会影响性能与成本。",
+    "misconceptions": [
+      "把虚拟仓库理解为保存表数据的数据库文件容器。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "提供 SQL 查询和数据处理所需的计算资源",
+          "作为唯一持久化保存所有表数据的位置",
+          "取代数据库与 Schema 的命名组织",
+          "自动强制实施所有外键约束"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。虚拟仓库是计算资源，与底层持久化数据存储分离；规模、暂停/恢复和并发策略会影响性能与成本。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-132",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "需要缩短大型复杂查询的执行时间，扩大单个仓库主要会带来哪类变化？",
+    "explanation": "正确答案 A。扩大仓库可能帮助资源受限查询，但实际收益取决于瓶颈和执行计划；不保证线性加速。",
+    "misconceptions": [
+      "假定仓库每扩大一级，所有查询就按固定比例提速。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "提供更多可用计算资源，可能帮助计算密集型查询",
+          "保证每条查询都按相同比例提速",
+          "自动修复 SQL 逻辑或 JOIN 基数错误",
+          "不改变数据模型也保证总成本下降"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。扩大仓库可能帮助资源受限查询，但实际收益取决于瓶颈和执行计划；不保证线性加速。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-133",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "多集群仓库主要针对哪一类需求？",
+    "explanation": "正确答案 A。Multi-cluster warehouse 主要应对并发负载并减少排队；单条查询的资源需求通常应结合仓库规模和 SQL 优化。",
+    "misconceptions": [
+      "把多集群扩展当成单条查询一定加速的手段。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "增加并发处理能力，缓解多个查询之间的排队",
+          "为单条 SQL 自动消除所有低效算子",
+          "作为数据长期归档机制",
+          "创建表的主键与索引"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Multi-cluster warehouse 主要应对并发负载并减少排队；单条查询的资源需求通常应结合仓库规模和 SQL 优化。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-134",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "BI 与夜间 ETL 经常互相影响，哪些设计值得考虑？",
+    "explanation": "正确答案 A、B、D。工作负载隔离有助于独立优化和成本归因。仓库规模与多集群应由吞吐、单查询资源和排队特征决定。",
+    "misconceptions": [
+      "把单仓库无限扩张当作同时实现隔离与最低成本的方案。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为不同工作负载使用独立仓库以隔离竞争",
+          "根据队列和并发特征决定仓库规模或多集群策略",
+          "只使用一个无限大的仓库并假定它最省成本",
+          "为不同工作负载设置独立成本标签和监控"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。工作负载隔离有助于独立优化和成本归因。仓库规模与多集群应由吞吐、单查询资源和排队特征决定。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-135",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于 AUTO_SUSPEND 和 AUTO_RESUME，哪些说法正确？",
+    "explanation": "正确答案 A、B、D。自动暂停/恢复在空闲成本与首次查询响应之间做权衡；暂停计算仓库不会删除存储层表数据。",
+    "misconceptions": [
+      "认为暂停计算仓库意味着表数据被暂停或删除。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可减少没有查询执行时的空闲消耗",
+          "恢复仓库可能引入启动或可用性等待",
+          "自动暂停会删除底层表数据",
+          "应结合交互延迟、查询频率和成本设置"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。自动暂停/恢复在空闲成本与首次查询响应之间做权衡；暂停计算仓库不会删除存储层表数据。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-136",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "查询执行很慢，但仓库并没有排队。哪些调查方向更直接？",
+    "explanation": "正确答案 A、B、D。无明显排队时应关注实际执行路径和资源需求。多集群主要缓解并发，不替代单条查询诊断。",
+    "misconceptions": [
+      "把多集群并发扩展当作所有执行性能问题的通用解法。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查看 Profile 中扫描、Join、排序、聚合和溢写",
+          "评估 SQL 过滤和数据访问模式",
+          "只增加多集群数量，假定它解决执行慢",
+          "用可比工作负载测试仓库规模调整收益"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。无明显排队时应关注实际执行路径和资源需求。多集群主要缓解并发，不替代单条查询诊断。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-137",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "给团队提供共享 Snowflake 平台，哪些仓库治理措施合理？",
+    "explanation": "正确答案 A、B、C。仓库治理应同时考虑授权、生命周期、成本和使用监控；广泛授予修改权限会增加误配置与成本风险。",
+    "misconceptions": [
+      "认为共享平台应该通过扩大权限而不是定义治理边界来简化操作。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "通过角色管理谁能使用或创建仓库",
+          "配置自动暂停并设定合理监控",
+          "用 Resource Monitor/告警等手段管理用量",
+          "让所有人员拥有 MODIFY 权限以减少沟通"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。仓库治理应同时考虑授权、生命周期、成本和使用监控；广泛授予修改权限会增加误配置与成本风险。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-138",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "以下哪些信号可能提示应评估仓库扩容或并发扩展？",
+    "explanation": "正确答案 A、B、D。扩容需要资源瓶颈或并发排队证据并由基准验证；重复 JOIN 是正确性问题，扩容不能解决。",
+    "misconceptions": [
+      "把数据逻辑错误当成资源不足。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Profile 显示计算资源受限/溢写且 SQL 已检查",
+          "多个相互独立查询长期排队",
+          "结果数据明显错误，源于重复 JOIN",
+          "基准显示扩大仓库对目标查询有可重复收益"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。扩容需要资源瓶颈或并发排队证据并由基准验证；重复 JOIN 是正确性问题，扩容不能解决。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-139",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "为何不应只依据 Warehouse 的 billed credits 评价查询优化？",
+    "explanation": "正确答案 A、B、C。成本决策需要权衡价格、吞吐、并发、延迟目标和数据正确性；最低 credits 不必然满足业务 SLO。",
+    "misconceptions": [
+      "只以单一 credits 数值作为性能和服务质量评价。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "还需结合等待时间、吞吐、扫描量和业务 SLO",
+          "工作负载隔离可能提升服务，即使有额外资源成本",
+          "优化可能减少扫描，也可能增加维护或服务费用",
+          "credits 越少必然代表正确性更好且响应更快"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。成本决策需要权衡价格、吞吐、并发、延迟目标和数据正确性；最低 credits 不必然满足业务 SLO。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-140",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "virtual-warehouse",
+    "subtopic": "virtual-warehouse",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "virtual-warehouse"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为一个有峰值和低谷的查询服务设计仓库策略时，哪些实践合理？",
+    "explanation": "正确答案 A、B、D。仓库架构应基于真实负载和 SLO 验证，并监控隔离与成本收益。",
+    "misconceptions": [
+      "将最大规格和一任务一仓库当成默认最优设计。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用代表性峰值/低谷负载测试暂停、恢复和并发设置",
+          "将 ETL 和交互查询按需要隔离并分别监控",
+          "每个短查询无条件分配独立的超大仓库",
+          "定义延迟、吞吐、失败率与成本的验收目标"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。仓库架构应基于真实负载和 SLO 验证，并监控隔离与成本收益。"
+      }
+    },
+    "knowledgeId": "virtual-warehouse",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Configuration and Performance Tuning; Hour 3: Connection Management",
+      "relatedMaterials": [
+        "docs-warehouses",
+        "docs-query-history",
+        "docs-cost-controls"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-141",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 的缓存调优为什么需要先区分缓存类型？",
+    "explanation": "正确答案 A。持久化查询结果缓存与仓库内数据缓存等机制不同，命中条件和行为不同；仍需考虑权限、查询语义和工作负载。",
+    "misconceptions": [
+      "把不同缓存机制当成完全相同且无条件生效的功能。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不同缓存机制在保存内容、适用条件和失效边界上不同",
+          "所有缓存都保证查询完全不消耗资源",
+          "只要结果相同就一定命中相同缓存",
+          "缓存可以替代数据权限控制"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。持久化查询结果缓存与仓库内数据缓存等机制不同，命中条件和行为不同；仍需考虑权限、查询语义和工作负载。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-142",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "同一 SQL 第一次慢、随后类似查询更快，哪些解释都值得验证？",
+    "explanation": "正确答案 A、B、C。重复查询变快可能来自缓存，也可能来自其他运行条件差异；应查看 Profile、缓存信息和输入一致性。",
+    "misconceptions": [
+      "看到一次重复查询变快就认定后续执行不再需要计算。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "可能命中持久化查询结果缓存",
+          "仓库运行后可能保留可重用的数据缓存",
+          "输入、仓库、并发或执行计划也可能不同",
+          "因此所有未来查询永远都很快"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。重复查询变快可能来自缓存，也可能来自其他运行条件差异；应查看 Profile、缓存信息和输入一致性。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-143",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "要建立可信的 SQL 性能基线，哪些缓存处理方式较合理？",
+    "explanation": "正确答案 A、B、C。缓存状态可能显著影响耗时。基准测试必须声明缓存目标并控制条件。",
+    "misconceptions": [
+      "忽略缓存状态带来的性能差异而得出优化结论。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "明确要测试冷启动、暖缓存还是生产常态",
+          "记录仓库状态、输入范围与并发条件",
+          "对比实验保持缓存条件尽量一致",
+          "不记录缓存信息，直接比较最短一次耗时"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。缓存状态可能显著影响耗时。基准测试必须声明缓存目标并控制条件。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-144",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "重复运行同一报表偶尔仍然较慢，哪些调查方向合理？",
+    "explanation": "正确答案 A、B、C。相似 SQL 不代表一定命中同一缓存；应核对参数、语义、数据变化和仓库生命周期。",
+    "misconceptions": [
+      "认为缓存要么总命中，要么必须全部禁用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查结果缓存的适用条件与是否命中",
+          "检查仓库暂停/恢复、并发和执行路径变化",
+          "检查参数、上下文或源数据状态是否不同",
+          "直接关闭所有缓存以获得稳定最快结果"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。相似 SQL 不代表一定命中同一缓存；应核对参数、语义、数据变化和仓库生命周期。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-145",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "哪项最准确描述持久化查询结果缓存的定位？",
+    "explanation": "正确答案 A。持久化结果缓存可在符合条件时重用结果，但不是基础表存储，也不绕过语义、权限或数据变化限制。",
+    "misconceptions": [
+      "将结果缓存视为可以绕过新鲜度与授权检查的永久数据仓库。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在符合条件时复用以前计算的查询结果以降低重复执行成本",
+          "永久存储业务数据并取代基础表",
+          "自动给基础表创建聚簇键",
+          "不论用户权限与查询语义变化都总返回旧结果"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。持久化结果缓存可在符合条件时重用结果，但不是基础表存储，也不绕过语义、权限或数据变化限制。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-146",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "调优报告称缓存命中率下降，哪些步骤比较稳健？",
+    "explanation": "正确答案 A、B、C。缓存命中变化需要结合查询、数据和仓库生命周期分析；清空缓存不一定解决根因。",
+    "misconceptions": [
+      "把清空缓存当成所有性能问题的首选处理。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "检查查询模式、参数和数据变更是否影响复用条件",
+          "确认仓库是否频繁暂停/恢复以及工作负载是否改变",
+          "对照相同查询的 Profile 与历史",
+          "无条件清空所有数据和结果缓存"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。缓存命中变化需要结合查询、数据和仓库生命周期分析；清空缓存不一定解决根因。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-147",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "比较 SQL 重写前后的性能时，哪些做法能减少缓存造成的偏差？",
+    "explanation": "正确答案 A、B、C。实验应控制输入和运行条件，并对冷/暖缓存分别重复观察。",
+    "misconceptions": [
+      "使用不一致缓存条件人为放大优化收益。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分别记录第一次执行与重复执行的耗时",
+          "重复运行/交错比较前后版本",
+          "固定数据快照、参数、仓库和并发条件",
+          "只比较新版本暖缓存与旧版本冷启动"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。实验应控制输入和运行条件，并对冷/暖缓存分别重复观察。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-148",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为何不能通过缓存命中来证明数据转换结果符合当前上游需求？",
+    "explanation": "正确答案 A、B、C。缓存行为与业务质量不同；即使结果可复用，也应确认语义、新鲜度与契约满足当前需求。",
+    "misconceptions": [
+      "把性能缓存命中视为数据质量与新鲜度证明。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "缓存复用是执行优化，不是业务质量验证",
+          "仍需验证新鲜度、来源变化和转换规则",
+          "仍应执行关键指标与唯一键检查",
+          "缓存命中自动证明结果符合业务定义"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。缓存行为与业务质量不同；即使结果可复用，也应确认语义、新鲜度与契约满足当前需求。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-149",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "给高频仪表盘设计缓存策略时，哪些考量合理？",
+    "explanation": "正确答案 A、B、C。高频报表要在新鲜度、参数多样性、权限和计算成本间权衡。",
+    "misconceptions": [
+      "为追求缓存率而忽略用户过滤条件和数据访问边界。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "结果新鲜度要求与缓存可复用条件",
+          "查询执行成本和用户等待时间",
+          "数据变更频率、参数及权限边界",
+          "所有用户不论过滤条件都共用同一结果"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。高频报表要在新鲜度、参数多样性、权限和计算成本间权衡。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-150",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-caching",
+    "subtopic": "snowflake-caching",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-caching"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某性能测试在仓库暂停后第一次请求变慢，但之后恢复正常。哪些判断合理？",
+    "explanation": "正确答案 A、B、C。首次与后续请求的启动和缓存条件可能不同；验收应观察延迟分布与真实服务模式。",
+    "misconceptions": [
+      "把暖缓存下的最好耗时当作生产普遍延迟。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "冷启动/仓库恢复可能增加首次请求的端到端延迟",
+          "后续请求可能受暖缓存或仓库已运行影响",
+          "只看后续最短耗时不能代表所有用户体验",
+          "这证明 SQL 永远不需要查询画像分析"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。首次与后续请求的启动和缓存条件可能不同；验收应观察延迟分布与真实服务模式。"
+      }
+    },
+    "knowledgeId": "snowflake-caching",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Performance Tuning; Hour 6: Query Tuning",
+      "relatedMaterials": [
+        "docs-warehouse-cache",
+        "docs-persisted-query-results",
+        "docs-query-profile"
+      ]
+    }
+  }
+]

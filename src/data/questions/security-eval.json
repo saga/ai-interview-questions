@@ -63,7 +63,7 @@
     "difficulty": "medium",
     "angle": "mechanism",
     "question": "在针对 C/C++ 内存安全漏洞构建自动化 Proof of Concept (PoC) 生成与重现评估系统时，需要自动判别 Agent 提交的特定 PoC 输入是否真正触发并利用了目标漏洞。为了防止误报（False Positive）与漏报（False Negative），下列哪项是基于 Sanitizer（如 AddressSanitizer/UBSan）与 Git 代码提交历史实现自动化 Ground-Truth 验证的最有效机制？",
-    "explanation": "B 正确：通过 Pre-patch（必须触发 Sanitizer Crash）与 Post-patch（必须无 Crash 正常运行）的差分验证（Differential Verification），能确切证明该 PoC 既触发了漏洞、且触发的就是当前修复 Commit 对应的具体漏洞，排除了无关崩溃或环境异常。A 错误：非零退出码可能由语法错误、参数不匹配或普通断言失败引起，不等于内存安全破坏。C 错误：若 Post-patch 仍发生完全一致崩溃，说明补丁未生效或 PoC 触发了无关的预存漏洞。D 错误：仅覆盖补丁修改行（Statement Coverage）不代表成功构造了触发内存腐败的合法 Payload。",
+    "explanation": "B 正确：在一致的构建环境、工具链和运行约束下，PoC 在 Pre-patch 版本触发目标 Sanitizer 报告、在 Post-patch 版本不再触发，是有力的差分证据。仍需确认崩溃类型与目标缺陷一致，检查 stack trace/诊断输出，并排除构建差异、环境差异或不相关崩溃；必要时应最小化 PoC 并重复验证。A 错误：非零退出码可能由语法错误、参数不匹配或普通断言失败引起，不等于内存安全破坏。C 错误：若 Post-patch 仍发生完全一致崩溃，需继续诊断补丁是否生效或是否触发无关问题，不能据此直接证明目标漏洞复现。D 错误：仅覆盖补丁修改行不代表成功构造了触发内存腐败的合法 Payload。",
     "misconceptions": [
       "以为非零退出码即证明重现了内存安全漏洞",
       "以为两个版本都崩溃、堆栈完全一致才算重现；已修复版本本应不再崩溃，要求两边一致恰好把真正的漏洞信号排除掉了",
@@ -89,7 +89,7 @@
         ]
       },
       "open": {
-        "referenceAnswer": "要点：最有效是 Pre-patch 必须触发 Sanitizer Crash 且 Post-patch 必须无 Crash 的差分验证，由此证明 PoC 触发的是该修复 Commit 对应的具体漏洞。非零退出码（语法/参数错误）和覆盖率触及补丁行都不构成 Ground-Truth。"
+        "referenceAnswer": "要求 PoC 在同一工具链与一致运行条件下，于 Pre-patch 版本触发与目标漏洞相符的 Sanitizer 诊断，并在 Post-patch 版本中不再触发；同时检查诊断/堆栈、排除环境差异和无关崩溃，必要时最小化并重复 PoC。差分结果是强证据，但不能只凭一次“崩溃/不崩溃”就断言漏洞根因已被证明。"
       }
     },
     "assessment": {

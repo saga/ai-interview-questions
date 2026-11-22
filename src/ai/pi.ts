@@ -52,8 +52,7 @@ export function buildModels(config: ProviderEntry): ModelsClient {
 /** 按 provider + 模型 id 取模型；找不到返回 undefined。
  *  仅 cloudflare-workers-ai：浏览器无法直连 api.cloudflare.com（该域名不返回 CORS 头），
  *  故强制走同源代理 /api/ai/client/v4/accounts/{accountId}/ai/v1
- *  （由可选的 Node.js server：server/index.js 服务端转发到 api.cloudflare.com，
- *   本地则由 vite.config.ts 的 dev proxy 转发），从而规避跨域。
+ *  （生产由 worker/index.ts 代理，本地开发由 vite.config.ts 的 dev proxy 直接转发），从而规避跨域。
  *  该 provider 未启用时不会被调用，故不会产生任何代理流量。
  *  其它 provider（deepseek / openrouter / google / local）一律走各自模型目录里的默认 baseUrl。 */
 export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any> | undefined {
@@ -63,10 +62,11 @@ export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any>
     // pi-ai 已为 cloudflare 内置完整 baseUrl（含 {CLOUDFLARE_ACCOUNT_ID} 占位符，
     // 运行时由 credential store 的 env 注入真实 accountId，路径结构也由 pi-ai 负责拼接），
     // 我们**不要**自己拼路径。只需把跨域的源 https://api.cloudflare.com 换成「同源代理前缀」。
-    // 代理前缀 /api/ai 由以下任一处在服务端剥离后转发到 api.cloudflare.com：
-    //   · 本地开发：vite.config.ts 的 dev proxy → 可选 Node 服务（server/index.js）
+    // 代理前缀 /api/ai 由对应运行环境剥离后转发到 api.cloudflare.com：
+    //   · 本地开发：vite.config.ts 的 Vite dev proxy → 现有 Express server/index.js
     //   · Cloudflare 生产：worker/index.ts（wrangler deploy 的 main 脚本）
     //   · GitHub Pages：无服务端，cloudflare provider 不可用（见 DEPLOYMENT.md）
+    // GitHub Copilot SDK 则走独立的 vite-plugin-copilot-sdk.ts，仅在 Vite 开发模式中提供。
     // 必须保留「绝对 URL」：pi-ai 底层用 OpenAI SDK，会对 baseUrl 执行 new URL()，
     // 相对路径会抛 "Failed to construct 'URL': Invalid URL"，故前缀用 location.origin 拼成同源绝对地址。
     // 注意：不要直接引用 DOM 全局 `location`——本文件被 scripts/fix-bias.ts（Node 端构建，无 DOM lib）
@@ -118,6 +118,42 @@ export function piUsageToLLMUsage(u: Usage): LLMUsage {
   };
 }
 
+/** Message history sent to the local Copilot SDK dev endpoint. */
+export type CopilotSDKMessage = { role: 'user' | 'assistant'; content: string };
+
+/**
+ * Invoke the local Copilot SDK endpoint provided by vite-plugin-copilot-sdk.ts.
+ * The SDK itself stays in Node; the browser never receives the local Copilot credential/session.
+ * This endpoint exists only under `npm run dev`, not in static production builds.
+ */
+export async function callCopilotSDKCompletion(
+  model: string,
+  system: string,
+  user: string,
+  history: CopilotSDKMessage[] = [],
+): Promise<string> {
+  const runtime = globalThis as unknown as { location?: { origin: string } };
+  const origin = runtime.location?.origin;
+  if (!origin) {
+    throw new Error('GitHub Copilot SDK Provider 需要通过 `npm run dev` 启动 Vite。');
+  }
+
+  const response = await fetch(`${origin}/api/copilot-sdk/complete`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ model: model.trim() || 'auto', system, user, history }),
+  });
+  const payload = await response.json().catch(() => null) as { content?: unknown; error?: unknown } | null;
+  if (!response.ok) {
+    const detail = typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(`GitHub Copilot SDK 调用失败：${detail}`);
+  }
+  if (typeof payload?.content !== 'string' || !payload.content.trim()) {
+    throw new Error('GitHub Copilot SDK 未返回文本内容。');
+  }
+  return payload.content;
+}
+
 /** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
 export async function callLLM(
   entry: ProviderEntry,
@@ -125,6 +161,9 @@ export async function callLLM(
   user: string,
   opts?: CallLLMOptions,
 ): Promise<string> {
+  if (entry.id === 'copilot-sdk') {
+    return callCopilotSDKCompletion(entry.model || 'auto', system, user);
+  }
   const models = buildModels(entry);
   const model = getModel(models, entry);
   if (!model) {

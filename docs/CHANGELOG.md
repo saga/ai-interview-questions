@@ -8,6 +8,26 @@
 - 覆盖 MoE 稀疏度与计算预算、MLA/GQA/SWA/稀疏注意力、KV Cache 与端侧带宽、量化位宽与 QAT、RL 奖励劫持与过度思考、跨架构蒸馏、长程 Agent、安全数据过滤与红队评测、基准饱和与成本评测等 35 个新 `topic × angle` 格子。
 - 门禁：`question:add --check` / `validate:questions` / `typecheck` / `build` / 全量测试 693/693 通过；选项长度比与 id、题干去重零命中；词法近重复扫描 0 组。
 - 连带修复两处**先于本批次存在**的测试缺陷：`taxonomy.test.ts` 漏 import `questionBank`；`snowflake-cof-c03-200.json` 有 25 条 open 参考答案以「正确答案：<术语首字母>」开头，被一致性正则误读成字母答案，已统一改为「正确答案：<字母>。<原文>」。
+## 2026-10-24 · Copilot SDK one-shot 请求生命周期与超时修复
+
+- 修复 Vite 服务关闭与异步 CopilotClient 启动之间的竞态：关闭后的迟到启动不能重新发布客户端，启动失败时清理候选客户端。
+- 将 120 秒应用层 watchdog 覆盖到客户端启动、Session 创建和模型调用；请求超时或客户端断开时请求中止活动 turn，并有界等待 `session.idle` 后断开 Session。
+- 为客户端并发初始化、关闭竞态和启动失败重试增加生命周期单元测试。
+- 未运行本地 Vitest / TypeScript / build；不能据此声称自动化验证通过。
+
+## 2026-10-22 · 新增 Security Architecture 独立课程
+
+- 在顶层学习体系中加入 `security-architecture`，与 AI、Snowflake 并列；原有 AI 六域 taxonomy 和 Snowflake 课程边界不变。
+- 新增 11 个主题、12 个知识节点和 24 道双形态题，覆盖风险到设计的可追溯性、威胁建模、身份/授权、Zero Trust、数据保护、云与 API 边界、安全供应链、韧性及金融服务第三方风险。
+- 增加标准/实践路线图、来源索引、端到端金融服务方案设计作业与课程隔离测试。课程以标准和厂商框架支撑架构决策，不以条文背诵、渗透测试工具或 SOC 操作为中心。
+- 本次静态预检不代表 TypeScript、Vitest、CI 或生产构建通过；未运行环境相关验证时不得宣称通过。
+
+## 2026-10-19 · Snowflake Developer Guides 实战与架构题（新增 200 题）
+
+- 新增 200 道原创 Snowflake 实践/架构题（120 简单、80 中等）与 20 个知识点。
+- 覆盖 Notebook/Task/Dynamic Tables、DCM、Interactive Warehouse、Well-Architected、Pipeline Auditor、Semantic View/Agent CI/CD、Native Apps 和 CoCo 工程实践。
+- 文件：`src/data/questions/snowflake-developer-guides-200.json`、`src/data/knowledge/snowflake-developer-guides-expansion.json`、`docs/snowflake-developer-guides-coverage-200.md`。
+- 新增后 Snowflake 总计 941 道题、117 个知识点。静态预检通过；未运行 schema/CLI 门禁、TypeScript、Vitest、全库去重或 build。
 
 ## 2026-10-19 · SnowPro Core COF-C03 考点题库（新增 200 题）
 
@@ -3554,3 +3574,21 @@ assemble 能直接落盘，问题被留在池子里而不是暴露在生成时�
 - 难度分布为 120 道 easy、80 道 medium；40 个知识点各有五道新题。
 - 增加课程模块、Knowledge ID、Question ID 与官方文档 ID 的逐题溯源矩阵。
 - 已完成静态结构预检；schema/CLI/测试/typecheck/build 未运行。
+
+
+## 2026-10-23 — PostgreSQL Full-Day Training 主题迁移为 Snowflake 练习题
+
+- 参考 `Snowflake-Labs/postgres-full-day-training` 的 SQL、DML、CDC、运行诊断与性能调优学习主题，新增 7 个 Snowflake 知识节点和 200 道原创题。
+- 题目按 20 个主题各 10 道组织，难度为 100 easy / 100 medium；54 道单选、146 道多选，每题包含开放题参考答案与课程/官方文档来源。
+- 新增覆盖矩阵 `docs/snowflake-postgres-full-day-200.md`，同步课程路线、主 README 与 `skills/snowflake-curriculum/SKILL.md` 的跨数据库适配规则。
+- 修正一个可能触发选项前缀重复静态检查的 NULL 谓词干扰项；确认本批 200 道题 ID、题干唯一，答案索引、知识点和文档来源可解析。
+- 未运行 TypeScript、Vitest、完整全库题目门禁或 Vite build。
+
+
+## 2026-10-23 — Snowflake course 下新增 PostgreSQL 原生数据库工程模块
+
+- 根据 `Snowflake-Labs/postgres-full-day-training` 六个小时的课件和 SQL 材料，新增 20 个 PostgreSQL 原生知识节点与 200 道题（`sf-pg-001`–`sf-pg-200`）。
+- 题目仍归属 `courseId: "snowflake"`，但单独使用 `postgresql` 子主题；明确区分 PostgreSQL 机制和 Snowflake 产品能力。
+- 覆盖 psql/Schema/类型/权限/CRUD/JOIN/JSONB/窗口函数/事务/MVCC/锁/备份/PITR/WAL/复制/PgBouncer/VACUUM/分区/监控/内存/EXPLAIN/索引/全文搜索/PostGIS/pgvector。
+- 新增 200 题覆盖矩阵与 PostgreSQL 18 官方文档映射，更新学习体系主题数和学习路线；修正 PostgreSQL 15 起支持 `UNIQUE NULLS NOT DISTINCT` 的版本说明。
+- 静态预检：100 道 easy、100 道 medium；59 单选、141 多选；题目结构与知识点引用有效。未运行 TypeScript、Vitest、完整题库 CLI 门禁或 build。

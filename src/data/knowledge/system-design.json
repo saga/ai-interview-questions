@@ -85,17 +85,25 @@
     "area": "ai-systems",
     "topic": "evaluation",
     "priority": "P0",
-    "summary": "离线评测集 + 在线 A/B + LLM-as-judge 三层结合；评估集要覆盖长尾与对抗样本，judge 需要与人工标注校准。",
+    "summary": "以任务成功标准为起点建立版本化离线评测集，并结合人工标注、确定性校验、LLM-as-a-Judge、线上实验和生产监控持续验证。LLM 应用需分别观察正确性、事实忠实度、检索覆盖、工具行为、终态成功、安全、延迟和成本；单一综合分不应掩盖关键维度回退。",
     "required": [
-      "没有固定评估集就没有可迭代的优化",
-      "LLM-as-judge 的偏差（位置/长度偏好）需要校准实验",
-      "按领域可验证性选手段：确定性领域用自动化 Test Harness，主观领域用专家反馈与 Golden Outputs",
-      "以全局业务指标监控长期效果，不只看单次更新的局部分数"
+      "先定义任务成功标准与失败成本，再选择可观测且与目标相关的指标；不同任务不能机械套用同一分数",
+      "评测集应覆盖真实请求分布、长尾、高风险和对抗场景，版本化管理并保留独立测试集，避免对评测集过拟合",
+      "对可确定验证的结构、函数参数、SQL 执行结果和规则优先用确定性评估；开放式质量可用经过人工校准的 LLM-as-a-Judge",
+      "LLM Judge 需检查与人工标注的一致性、位置偏差、长度偏差和 Rubric 稳定性，必要时用双向成对比较或人工复核",
+      "RAG 需分开评估检索相关性/召回、上下文忠实度、回答相关性和事实正确性，并保留端到端任务成功作为核心指标",
+      "Agent 需区分最终状态成功、轨迹质量、工具选择/参数、策略遵循、副作用、成本与延迟；不同合法执行路径不必逐步一致",
+      "多次运行非确定性系统并报告样本量与波动；上线采用离线回归、灰度/在线观察和生产失败回流闭环",
+      "对关键安全与合规要求设置独立硬门槛，不能让其他维度的平均分抵消安全回退"
     ],
     "misconceptions": [
       "用 vibe check 代替系统评估",
       "评估集一成不变导致过拟合到旧用例",
-      "无论领域一律用无监督 LLM-as-a-Judge 代替基准测试"
+      "无论领域一律用无监督 LLM-as-a-Judge 代替基准测试",
+      "把单一综合分数当作业务质量的完整表达",
+      "认为 LLM Judge 自动评分就是无偏的 ground truth",
+      "只看组件指标改善而不检查端到端任务成功",
+      "用同一评测集反复调优后仍将其当作独立测试"
     ],
     "angles": [
       "scenario",
@@ -268,6 +276,64 @@
       "忽略标准无状态滚动更新会导致有状态在途 Agent 中断并损害用户体验",
       "误以为单轮文本相似度能反映长轨迹合成质量，且暂停在途请求违反高可用原则"
     ],
-    "angles": ["tradeoff"]
+    "angles": [
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "evaluation-metrics-selection",
+    "name": "LLM 应用评估指标选择与分层诊断",
+    "area": "ai-systems",
+    "topic": "evaluation",
+    "priority": "P1",
+    "summary": "评估不是寻找一个通用分数，而是围绕具体任务选择可验证的指标组合。离线 golden set、组件指标、端到端任务成功、线上观察和成本/延迟指标各自回答不同问题。",
+    "required": [
+      "明确 task success、风险成本与评估切片后再选指标",
+      "区分分类指标、词面相似度、语义相似度、事实性与业务执行结果",
+      "RAG 分层观察检索 Recall@k/排名质量、Context Precision/Recall、Faithfulness 和回答正确性",
+      "Agent 分开观察 end-state、工具调用、轨迹、安全副作用、pass@k/pass^k、延迟和成本",
+      "控制数据泄漏与基准污染，维护独立的版本化测试集"
+    ],
+    "misconceptions": [
+      "用 BLEU/ROUGE 或 accuracy 代表所有生成任务质量",
+      "用单一平均分掩盖少数群体和高风险失败",
+      "认为 Recall 或检索分数提高必然改善端到端结果"
+    ],
+    "angles": [
+      "definition",
+      "comparison",
+      "tradeoff",
+      "scenario",
+      "design",
+      "calculation"
+    ]
+  },
+  {
+    "id": "llm-as-judge-calibration",
+    "name": "LLM-as-a-Judge 校准与偏差控制",
+    "area": "ai-systems",
+    "topic": "evaluation",
+    "priority": "P1",
+    "summary": "LLM Judge 可扩展评估开放式文本和 Agent 轨迹，但它是一个需要验证的测量工具。需以专家人工标签校准，并检查位置偏差、冗长偏差、Rubric 歧义和分数稳定性。",
+    "required": [
+      "用可观察的分项标准和锚定样例构建 Rubric",
+      "用专家标注集衡量 judge 的一致性，并分析分歧而不是只看平均分",
+      "通过交换成对候选顺序检测 position bias，并检查偏好是否翻转",
+      "分别评估正确性、完整性、简洁性和安全性，避免长度偏好或加权平均掩盖风险",
+      "防止 grader/reward hacking，使用独立留出集和多轮回归验证"
+    ],
+    "misconceptions": [
+      "认为 Judge 模型足够强就天然客观",
+      "认为长回答一定质量更高",
+      "认为成对比较不存在位置偏差",
+      "只修正总体打分偏移而不分析分类型错误"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "diagnosis",
+      "design",
+      "tradeoff"
+    ]
   }
 ]

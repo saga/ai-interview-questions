@@ -71,3 +71,30 @@ When adding Snowflake certification practice, use the current official SnowPro e
 - Keep the main Coursera source in `source.materialId` and `source.section`; add exam-guide and official-doc IDs in `source.relatedMaterials`.
 - Distinguish explicit exam-guide objectives from course-adjacent material. In particular, do not present a course tool as an explicit exam objective unless the official guide names it.
 - For large exam-aligned batches, calculate the exact question count by official domain weight, then validate the per-domain distribution, easy/medium difficulty, source IDs, answer indexes, and duplicate stems before committing.
+
+
+## Snowflake Developer Guides authoring rules
+
+- 从 [Snowflake Developer Guides](https://www.snowflake.com/en/developers/guides/) 发现 Quickstart、参考架构和 Well-Architected 主题；详细产品行为应核对具体指南及其链接的官方产品文档。
+- 在 `docs/snowflake-course-roadmap.md` 中记录稳定 Guide ID 和 canonical URL 后，才能在题目的 `source.materialId` / `source.relatedMaterials` 使用。
+- 优先编写架构选择、适用边界、生产故障、权限、可观测性和验收证据题；避免把教程中的变量名或命令文本当作孤立记忆题。
+- 区分示例与普遍保证。对于区域/Edition/Preview/运行时依赖、延迟和费用的断言，应核对当前文档和目标账户，不要把 Quickstart 的性能描述直接当生产 SLA。
+- CoCo/Agent 生成物是候选方案；要验证权限、秘密信息、SQL 语义、JOIN 基数、数据对账、Query Profile 和回归结果。
+- Semantic View/Agent 发布应分别评测语义模型和 Agent 行为，门禁需要阻止不合格版本晋级；候选视图/dashboard 应与生产资源隔离。
+- 保持 `courseId: "snowflake"` 独立课程边界，不将 Snowflake 专属主题加入 AI 六大能力域。
+
+
+## Cross-platform database training source
+
+- Reference: [Snowflake-Labs/postgres-full-day-training](https://github.com/Snowflake-Labs/postgres-full-day-training), source ID `postgres-full-day-training`. It is a PostgreSQL course; use its public module structure only to identify transferable SQL, data correctness, troubleshooting, monitoring and performance learning objectives.
+- Do not carry PostgreSQL implementation-specific behavior into Snowflake questions. WAL, VACUUM, `shared_buffers`, `work_mem`, `pg_stat_*` catalogs and traditional PostgreSQL index advice must not be stated as Snowflake features.
+- Reframe the learning objectives using Snowflake-native concepts such as Time Travel and cloning, COPY/Snowpipe, Streams/Tasks/Dynamic Tables, Query History/Profile, warehouse sizing and concurrency, micro-partition pruning, clustering, Search Optimization and Resource Monitor. Cross-check product behavior against the official document IDs in `docs/snowflake-course-roadmap.md`.
+- Keep `source.materialId: "postgres-full-day-training"`, record the exact public source module in `source.section`, and list the relevant Snowflake documentation IDs in `source.relatedMaterials`. Do not imply the PostgreSQL material itself documents Snowflake behavior.
+
+
+## Native PostgreSQL module inside the Snowflake learning track
+
+- The Snowflake track includes a separately labelled PostgreSQL database-engineering supplement because the user requested both subjects under the same course entry. Its questions keep `courseId: "snowflake"`, but use `topic: "postgresql"` on knowledge nodes, PostgreSQL-specific concepts, `postgres-full-day-training` as source material and PostgreSQL official documentation IDs in `source.relatedMaterials`.
+- This native module is deliberately separate from Snowflake-native questions adapted from PostgreSQL training themes. In this module, PostgreSQL semantics such as MVCC, WAL, VACUUM, `pg_stat_activity`, B-tree/GIN/GiST/BRIN indexes and PgBouncer are taught as PostgreSQL concepts—not as Snowflake features.
+- Use the PostgreSQL 18 documentation as the main authority for version-specific details, while recognizing the upstream training repo describes compatibility with PostgreSQL 14+. Mark version-specific features explicitly; for example, `UNIQUE NULLS NOT DISTINCT` is available from PostgreSQL 15, not introduced in 18.
+- Keep the module's twenty topic-specific knowledge IDs and question IDs in its coverage matrix. Do not collapse them into the generic Snowflake topic or map PostgreSQL answers to Snowflake product behavior.

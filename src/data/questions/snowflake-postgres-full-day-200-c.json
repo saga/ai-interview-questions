@@ -1,0 +1,2668 @@
+[
+  {
+    "id": "sf-pgtd-151",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 标准表的数据通常如何组织以支持扫描优化？",
+    "explanation": "正确答案 A。Snowflake 自动将表数据组织为微分区并维护相关元数据，优化器可利用谓词和元数据跳过不需要扫描的分区。",
+    "misconceptions": [
+      "把 Snowflake 存储模型与传统逐行页面加索引模型等同起来。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "由 Snowflake 自动组织为微分区，并保存可用于裁剪的元数据",
+          "每张表必须由用户逐个创建 B-tree 索引",
+          "所有数据只保存在虚拟仓库内存中",
+          "每个 Schema 对应一个物理磁盘页"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Snowflake 自动将表数据组织为微分区并维护相关元数据，优化器可利用谓词和元数据跳过不需要扫描的分区。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-152",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "谓词能有效触发 micro-partition pruning 时，通常意味着什么？",
+    "explanation": "正确答案 A。分区裁剪基于元数据减少需要访问的微分区，不是删除数据或保证零扫描。",
+    "misconceptions": [
+      "把裁剪视为数据删除或保证所有查询零扫描的机制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "优化器可根据分区元数据跳过一部分不可能匹配的微分区",
+          "数据库已删除不匹配的源数据",
+          "所有查询都不需要扫描任何数据",
+          "表数据已永久按用户指定的物理顺序排序"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。分区裁剪基于元数据减少需要访问的微分区，不是删除数据或保证零扫描。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-153",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "哪种过滤条件更有机会帮助大表减少不必要的扫描？",
+    "explanation": "正确答案 A。与常用筛选列和分区元数据对齐的范围条件有机会提升裁剪；应由 Profile/扫描统计验证实际效果。",
+    "misconceptions": [
+      "认为任意 WHERE 条件都会取得相同的分区裁剪效果。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接针对有选择性且与分区元数据相关的日期/范围列过滤",
+          "对所有记录先执行复杂 UDF 再过滤且无其他条件",
+          "不限制时间或业务范围地扫描整表",
+          "尽可能选取无法形成有效筛选的恒真谓词"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。与常用筛选列和分区元数据对齐的范围条件有机会提升裁剪；应由 Profile/扫描统计验证实际效果。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-154",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "月报只用最近 7 天数据，却扫描大型历史表的绝大部分。哪些做法值得检查？",
+    "explanation": "正确答案 A、B、C。先验证过滤边界和实际裁剪行为；删除历史数据必须先经过业务保留策略审查。",
+    "misconceptions": [
+      "把删除业务历史当作减少查询扫描的默认方案。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "过滤条件是否表达了可裁剪的日期范围",
+          "执行计划和扫描统计是否表明大量微分区仍被访问",
+          "是否误用了函数/表达式或其他条件降低裁剪效果",
+          "第一步就把所有旧数据无条件删除"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。先验证过滤边界和实际裁剪行为；删除历史数据必须先经过业务保留策略审查。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-155",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于微分区裁剪与传统索引，哪些表述准确？",
+    "explanation": "正确答案 A、B、C、D。Snowflake 自动微分区是其存储/优化模型的重要组成部分；并非所有过滤都能有效裁剪，也不应机械照搬传统索引设计。",
+    "misconceptions": [
+      "认为标准 Snowflake 表必须先人工创建传统 B-tree 索引。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "微分区元数据可在无需用户逐条维护 B-tree 的情况下支持扫描裁剪",
+          "传统数据库索引类型不能机械映射为 Snowflake 标准表的同样操作",
+          "使用裁剪并不意味着所有查询总是只访问极少分区",
+          "应根据实际查询模式和测量结果决定后续优化"
+        ],
+        "answer": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C、D。Snowflake 自动微分区是其存储/优化模型的重要组成部分；并非所有过滤都能有效裁剪，也不应机械照搬传统索引设计。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-156",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "日期过滤很窄但扫描量仍然很大，合理的下一步是？",
+    "explanation": "正确答案 A、B、D。窄时间范围不保证高裁剪率；应先检查数据分布与谓词，再决定是否需要聚簇或重写。",
+    "misconceptions": [
+      "把窄日期范围视作一定能少扫描，而不检查物理数据分布。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "在 Query Profile 中检查扫描量与分区裁剪相关信息",
+          "核实数据分布、微分区重叠、谓词类型和表达式",
+          "未经测量直接对任意列设置聚簇键",
+          "比较真实参数和不同查询版本的 Profile"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。窄时间范围不保证高裁剪率；应先检查数据分布与谓词，再决定是否需要聚簇或重写。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-157",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "日常查询主要过滤 event_date，偶尔过滤 customer_id。哪些判断合理？",
+    "explanation": "正确答案 A、B。优化策略应基于主要查询模式与选择性。聚簇和搜索优化的适用场景与维护成本不同。",
+    "misconceptions": [
+      "认为表足够大就应对所有常用列创建聚簇或搜索优化。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "分别分析两种查询的扫描量与业务频率",
+          "评估聚簇键或 Search Optimization 是否适合特定访问模式",
+          "没有基线就同时对所有列做聚簇维护",
+          "仅以表大小决定所有优化服务"
+        ],
+        "answer": [
+          0,
+          1
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B。优化策略应基于主要查询模式与选择性。聚簇和搜索优化的适用场景与维护成本不同。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-158",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "微分区中的列值范围和其他元数据为何重要？",
+    "explanation": "正确答案 A。微分区元数据支持分区裁剪等优化判断，不承担业务质量和时延 SLA 的所有职责。",
+    "misconceptions": [
+      "把存储元数据推断能力误认为数据完整性与性能保证。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "优化器可用它们判断微分区是否可能匹配过滤谓词",
+          "它们自动替代数据质量校验",
+          "它们保证任意查询具有固定响应时间",
+          "它们会强制实施主键唯一性"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。微分区元数据支持分区裁剪等优化判断，不承担业务质量和时延 SLA 的所有职责。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-159",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "什么时候应该考虑聚簇键，而不只是重写查询？",
+    "explanation": "正确答案 A、B、D。聚簇键更适用于经过测量且访问模式相对稳定的大表；需权衡 SQL 重写、维护活动、数据变化和成本。",
+    "misconceptions": [
+      "认为聚簇键是所有大表的一次性免费优化。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "大型表的常见访问模式固定且可能从更好的数据局部性受益",
+          "基线/Profile 显示微分区重叠或裁剪效果不佳",
+          "无需考虑持续 DML、自动聚簇维护和额外成本",
+          "在决定前评估长期收益是否能抵消维护开销"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。聚簇键更适用于经过测量且访问模式相对稳定的大表；需权衡 SQL 重写、维护活动、数据变化和成本。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-160",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-micro-partitions",
+    "subtopic": "snowflake-micro-partitions",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-micro-partitions"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "团队无法确认过滤优化是否提高了 micro-partition pruning，哪些证据最有用？",
+    "explanation": "正确答案 A、B、C。应同时比较执行数据和结果等价性；语句长度不是分区裁剪效果的可靠指标。",
+    "misconceptions": [
+      "把 SQL 更短当成扫描量一定下降的证明。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "优化前后使用可比输入与仓库条件",
+          "比较扫描量、查询画像与实际耗时",
+          "检查查询是否返回业务上相同的结果",
+          "只比较 WHERE 子句的字符数"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。应同时比较执行数据和结果等价性；语句长度不是分区裁剪效果的可靠指标。"
+      }
+    },
+    "knowledgeId": "snowflake-micro-partitions",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Storage and Performance; Hour 6: Scan Operations",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-query-profile"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-161",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "在 Snowflake 中，评估 Search Optimization Service 的常见起点是什么？",
+    "explanation": "正确答案 A。Search Optimization 适合特定且选择性较高的查找访问模式；启用前分析查询形态、功能适用条件与维护成本。",
+    "misconceptions": [
+      "认为 Search Optimization 是所有查询通用且免费的加速开关。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "高选择性的点查或特定查找模式是否受益",
+          "所有表是否都应默认开启",
+          "是否需要替代角色授权",
+          "能否取代所有 SQL 质量检查"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Search Optimization 适合特定且选择性较高的查找访问模式；启用前分析查询形态、功能适用条件与维护成本。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-162",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "大表主要按日期范围查询且常出现微分区重叠，哪项更应优先评估？",
+    "explanation": "正确答案 A。日期范围与微分区局部性问题可评估聚簇键，但需要基线、表变化频率和维护成本证据。",
+    "misconceptions": [
+      "机械照搬传统 B-tree 索引来处理所有大表访问问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "按访问模式评估聚簇键及自动聚簇维护收益",
+          "对标准表直接创建 PostgreSQL B-tree 索引",
+          "不看 Profile 就同时启用所有优化服务",
+          "移除日期过滤以增加可缓存结果"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。日期范围与微分区局部性问题可评估聚簇键，但需要基线、表变化频率和维护成本证据。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-163",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "Search Optimization 与聚簇键的适用目标应如何理解？",
+    "explanation": "正确答案 A、D。优化功能有不同的访问路径与维护模型，应根据真实查询、数据分布和成本选择。",
+    "misconceptions": [
+      "认为各类优化服务功能等价，因此无需按工作负载选型。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "服务面向特定高选择性查找模式，聚簇侧重相关数据的微分区组织",
+          "它们是可互换且对所有 SQL 结果相同的对象",
+          "任一策略都不需要维护成本评估",
+          "应按查询形态与基线效果选择"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。优化功能有不同的访问路径与维护模型，应根据真实查询、数据分布和成本选择。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-164",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "点查经常按高选择性 customer_id 过滤，哪些方案值得评估？",
+    "explanation": "正确答案 A、B、D。先确认查询瓶颈和选择性，再按功能条件评估 Search Optimization，并通过数据与费用基线判断收益。",
+    "misconceptions": [
+      "因查询包含等值条件就默认启用某项优化服务。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "测量当前扫描量和延迟，确认是否为查找型瓶颈",
+          "验证 Search Optimization 是否适合该查询模式与表规模",
+          "将所有客户记录聚合为单个无键文本字段",
+          "比较启用相关优化前后的查询效果与费用"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。先确认查询瓶颈和选择性，再按功能条件评估 Search Optimization，并通过数据与费用基线判断收益。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-165",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "Query Acceleration Service 该如何纳入调优选择？",
+    "explanation": "正确答案 A、D。Query Acceleration 是可评估的查询加速选项，但受工作负载与适用条件影响；实际收益和成本需测量。",
+    "misconceptions": [
+      "将加速服务视为不区分查询类型且保证线性加速的功能。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "作为特定查询工作负载的加速选项，按条件、资源与成本评估",
+          "假定它会自动修正不正确的 JOIN",
+          "假定所有 SQL 都能获得相同加速比",
+          "在相关查询上做基准并核对新增成本"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。Query Acceleration 是可评估的查询加速选项，但受工作负载与适用条件影响；实际收益和成本需测量。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-166",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "开启一个优化服务后查询仍然很慢，应优先做什么？",
+    "explanation": "正确答案 A、B、D。优化服务不是通用开关；应验证适用性、实际效果与成本，必要时回到瓶颈诊断。",
+    "misconceptions": [
+      "认为多启用几个优化服务总会得到更好性能。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认服务是否适用于该查询模式并已经产生效果",
+          "对比 Query Profile、扫描量、等待时间和费用",
+          "继续开启更多功能直到查询自动变快",
+          "重新检查最初诊断的瓶颈是否成立"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。优化服务不是通用开关；应验证适用性、实际效果与成本，必要时回到瓶颈诊断。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-167",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "同一张超大表既有范围分析又有高选择性点查，哪些选型思路合理？",
+    "explanation": "正确答案 A、B、D。复合工作负载可能需要不同方案或只对主要瓶颈优化，选择依据应是访问模式、收益和维护成本。",
+    "misconceptions": [
+      "用一个优化特性取代对多种访问模式的分别分析。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "用代表性查询分别评估裁剪/聚簇与 Search Optimization",
+          "分别统计访问模式、频率、延迟目标和成本",
+          "假设一种优化必然同时最优服务所有访问模式",
+          "为每项服务设置效果和成本核验"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。复合工作负载可能需要不同方案或只对主要瓶颈优化，选择依据应是访问模式、收益和维护成本。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-168",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "评估物化视图是否合适时，哪些问题值得回答？",
+    "explanation": "正确答案 A、B、C。物化视图可能加速适合的重复查询，但要权衡维护、成本、查询匹配和新鲜度。",
+    "misconceptions": [
+      "认为物化结果自动解决所有性能、正确性和新鲜度问题。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "查询是否反复计算昂贵且可复用的结果",
+          "结果更新与维护成本是否适合数据变化频率",
+          "它是否能满足所需查询语义和新鲜度",
+          "是否可以因此完全不测试上游 SQL 正确性"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。物化视图可能加速适合的重复查询，但要权衡维护、成本、查询匹配和新鲜度。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-169",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "多个优化方案都有改善但成本不同，最佳决策应如何形成？",
+    "explanation": "正确答案 A、B、C。工程决策要综合性能、费用、正确性和复杂度，并基于代表性负载验证。",
+    "misconceptions": [
+      "只以单一平均耗时选择优化功能。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "为目标查询定义明确的 SLO 和正确性标准",
+          "比较性能、计算成本、服务维护成本与运维复杂度",
+          "在生产工作负载和代表性样本上验证",
+          "只选平均耗时最小的方案，不考虑费用或尾延迟"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。工程决策要综合性能、费用、正确性和复杂度，并基于代表性负载验证。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-170",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-query-optimization-services",
+    "subtopic": "snowflake-query-optimization-services",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-query-optimization-services"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "哪些结论属于负责任的 Snowflake 性能建议？",
+    "explanation": "正确答案 A、B、D。先诊断再选型，用真实执行证据比较不同功能，并检查正确性与成本。",
+    "misconceptions": [
+      "以为功能越多就越快且成本越低。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "先依据 Query Profile/历史数据确定瓶颈",
+          "把传统索引、聚簇、搜索优化和加速服务视为不同选项",
+          "所有功能默认同时启用是最佳实践",
+          "优化后验证结果等价、响应时间和成本"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。先诊断再选型，用真实执行证据比较不同功能，并检查正确性与成本。"
+      }
+    },
+    "knowledgeId": "snowflake-query-optimization-services",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 6: Index Strategies and Query Patterns (Snowflake alternatives)",
+      "relatedMaterials": [
+        "docs-performance-query-options",
+        "docs-search-optimization",
+        "docs-clustering-keys"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-171",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 中减少不必要数据读取的常见第一步是什么？",
+    "explanation": "正确答案 A。通过明确过滤范围、减少无关列和检查微分区裁剪，往往是直接的查询优化起点。",
+    "misconceptions": [
+      "认为必须先做物理重建或创建传统索引才能优化读取。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "使用有业务选择性的过滤条件并检查裁剪效果",
+          "对所有列统一创建传统 B-tree 索引",
+          "删除所有未被当前报表使用的历史数据",
+          "每次查询都先复制整表"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。通过明确过滤范围、减少无关列和检查微分区裁剪，往往是直接的查询优化起点。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-172",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "为什么生产分析查询通常不宜长期使用 SELECT *？",
+    "explanation": "正确答案 A、B、D。明确投影让查询依赖和结果契约更清楚，避免新列意外进入下游。",
+    "misconceptions": [
+      "认为 SELECT * 永远更短、更快且不受 Schema 变化影响。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "会读取并暴露不必要字段，且更容易受 Schema 新增列影响",
+          "列清单有助于表达数据契约和减少无关数据访问",
+          "SELECT * 总会比明确投影更快",
+          "显式列清单有助于代码审查和结果稳定"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。明确投影让查询依赖和结果契约更清楚，避免新列意外进入下游。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-173",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "用 LIMIT/OFFSET 做大页数分页可能遇到什么问题？",
+    "explanation": "正确答案 A、B、C。OFFSET 分页易实现，但深分页可能带来额外工作且无稳定排序时结果会漂移；keyset pagination 可在适合场景避免跳过大量行。",
+    "misconceptions": [
+      "认为 OFFSET 对任意页深与数据规模都有固定成本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "随着 OFFSET 增大，系统可能处理并跳过大量前置结果",
+          "没有稳定 ORDER BY 时分页边界可能不稳定",
+          "可按业务和排序键评估 keyset/seek pagination",
+          "OFFSET 一定比任何其他分页方式更快"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。OFFSET 分页易实现，但深分页可能带来额外工作且无稳定排序时结果会漂移；keyset pagination 可在适合场景避免跳过大量行。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-174",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "优化一条大表仪表盘查询，哪些变更步骤更可靠？",
+    "explanation": "正确答案 A、B、C。分步改变并测量能归因具体措施，同时先确保粒度正确。",
+    "misconceptions": [
+      "同时修改多项因素却期待清楚判断每项收益。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确定报表所需字段、行范围和刷新频率",
+          "检查过滤/Join/聚合语义是否符合业务粒度",
+          "用 Query Profile 对比扫描与关键算子",
+          "一次同时改 SQL、仓库、聚簇等多个因素且不留基线"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分步改变并测量能归因具体措施，同时先确保粒度正确。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-175",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "关于在 Snowflake 中设置聚簇键的建议，哪些判断合理？",
+    "explanation": "正确答案 A、B、D。聚簇键不是传统主键的替代物，应针对大表常见查询模式评估维护和成本。",
+    "misconceptions": [
+      "将聚簇键等同于关系数据库主键或必须对每张表使用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "优先分析表规模、常见过滤/排序模式与微分区重叠",
+          "评估数据修改频率与聚簇维护成本",
+          "所有表都要按主键创建聚簇键",
+          "在实际查询上验证扫描和费用是否改善"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。聚簇键不是传统主键的替代物，应针对大表常见查询模式评估维护和成本。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-176",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "一个查询因复杂 JOIN 返回巨量中间行，最合理的处理路径是什么？",
+    "explanation": "正确答案 A、B、D。过大的连接中间结果可能来自基数错误或查询形态问题；先保证语义正确，再评估预聚合、过滤和资源。",
+    "misconceptions": [
+      "用扩容替代连接基数诊断和 SQL 正确性验证。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "确认每个输入的粒度与连接键基数",
+          "减少无关列/行并考虑在正确粒度先聚合",
+          "仅依靠更大仓库承受错误的中间结果",
+          "用样本和 Profile 验证重写前后的结果与行数"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。过大的连接中间结果可能来自基数错误或查询形态问题；先保证语义正确，再评估预聚合、过滤和资源。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-177",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "同一分析逻辑被多份 SQL 重复执行且转换结果一致，哪些方案值得评估？",
+    "explanation": "正确答案 A、B、D。共享转换或适合的物化结果可以降低重复工作，但仍需权衡维护、新鲜度与成本。",
+    "misconceptions": [
+      "认为共享层或物化结果能消除所有数据质量与维护责任。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "将公共转换定义为可维护的视图/共享转换层",
+          "对重复且适合预计算的查询评估物化视图或结果维护",
+          "保证共享 SQL 以后不需要数据质量验证",
+          "比较维护成本、新鲜度与重复计算成本"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。共享转换或适合的物化结果可以降低重复工作，但仍需权衡维护、新鲜度与成本。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-178",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "优化 SQL 的连接与过滤顺序时，最重要的约束是什么？",
+    "explanation": "正确答案 A、B、D。优化器会选择执行策略，文本顺序不必然等同物理执行顺序；改写必须保持语义并通过测量验证。",
+    "misconceptions": [
+      "把 SQL 文本的书写顺序当作完整的物理执行计划。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "保持业务语义、行粒度、NULL 逻辑和结果等价",
+          "测量实际计划与扫描量，而不是单靠文本顺序猜优化器",
+          "假设 SQL 书写的 JOIN 顺序永远是物理执行的固定顺序",
+          "用边界样本对照改写前后的结果"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。优化器会选择执行策略，文本顺序不必然等同物理执行顺序；改写必须保持语义并通过测量验证。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-179",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "面对数据量增长，哪些变化更可能长期改善查询效率而非只提高单次资源？",
+    "explanation": "正确答案 A、B、C。减少无关数据访问、修复逻辑和针对性使用优化功能可能带来持续收益。",
+    "misconceptions": [
+      "认为仓库扩容是规模增长唯一长期策略。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "减少不必要扫描并保持可裁剪的过滤条件",
+          "修复导致 fanout 的错误 JOIN 并明确粒度",
+          "根据访问模式评估聚簇/搜索优化及其成本",
+          "对所有查询无差别扩大 Warehouse"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。减少无关数据访问、修复逻辑和针对性使用优化功能可能带来持续收益。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-180",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-layout-performance-patterns",
+    "subtopic": "snowflake-layout-performance-patterns",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-layout-performance-patterns"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "上线一项查询性能改动前，哪些验收项最完整？",
+    "explanation": "正确答案 A、B、C。发布验收应检查正确性、真实负载下的延迟和成本，并在生产持续观察。",
+    "misconceptions": [
+      "将开发环境单次成功当成生产验收的全部证据。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "关键输出与业务聚合结果一致",
+          "代表性数据规模下扫描量、p95 延迟和排队表现达标",
+          "仓库/服务费用与维护影响在预算内",
+          "仅开发环境跑通一次就不需要生产监控"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。发布验收应检查正确性、真实负载下的延迟和成本，并在生产持续观察。"
+      }
+    },
+    "knowledgeId": "snowflake-layout-performance-patterns",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 5: Partitioning and Scaling; Hour 6: N+1, SELECT *, Pagination",
+      "relatedMaterials": [
+        "docs-micro-partitions",
+        "docs-clustering-keys",
+        "docs-performance-query-options"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-181",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake RBAC 的基本治理原则是什么？",
+    "explanation": "正确答案 A。角色为权限分配和组织提供边界；通过角色继承及授予机制管理权限，可减少直接用户授权的分散治理。",
+    "misconceptions": [
+      "把认证、仓库使用权与数据对象授权混为一谈。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将权限授予角色，再把角色授予用户或其他角色",
+          "把所有权限直接授予每个用户并重复维护",
+          "能登录的用户自动获得所有表权限",
+          "Warehouse 大小决定 SQL 对象授权"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。角色为权限分配和组织提供边界；通过角色继承及授予机制管理权限，可减少直接用户授权的分散治理。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-182",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "给分析人员只读访问某 Schema 中表的合理做法是什么？",
+    "explanation": "正确答案 A。访问表通常需要相应容器对象的 USAGE 和表 SELECT 等权限，并需要计算资源权限。",
+    "misconceptions": [
+      "认为仓库 USAGE 就自动授予所有数据库对象的 SELECT 权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "设计最小权限角色并授予所需数据库/Schema/表的使用和读取权限",
+          "将 ACCOUNTADMIN 授予所有分析人员",
+          "只授予 Warehouse USAGE 就能访问任意表",
+          "使用共享密码代替角色权限"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。访问表通常需要相应容器对象的 USAGE 和表 SELECT 等权限，并需要计算资源权限。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-183",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "为什么应区分 OWNERSHIP 与普通使用权限？",
+    "explanation": "正确答案 A、D。所有权是高影响权限，可能包含管理对象和授予权限能力；应区分读取、使用、修改与所有权。",
+    "misconceptions": [
+      "认为对象读取权限可以自然扩展为对象所有权。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对象所有权涉及对象管理与授权能力，影响范围高于普通读取",
+          "SELECT 权限默认包含 DROP 和 GRANT OWNERSHIP",
+          "所有权与对象是否存在无关，因此无需治理",
+          "高权限所有权应被限制并纳入审计"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。所有权是高影响权限，可能包含管理对象和授予权限能力；应区分读取、使用、修改与所有权。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-184",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "生产 ETL 需要读取源表并写入目标表，哪种角色设计更合理？",
+    "explanation": "正确答案 A、C、D。服务身份应拥有满足任务需求的最小权限，并和人员管理角色分离。",
+    "misconceptions": [
+      "为避免授权问题而用最高管理员角色运行所有业务任务。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "创建职责清晰的运行角色，只授予必需源读取和目标写入权限",
+          "无条件使用 ACCOUNTADMIN 运行所有任务",
+          "将运行角色与人工日常管理角色适当分离",
+          "通过独立部署流程审计授权变更"
+        ],
+        "answer": [
+          0,
+          2,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          null,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、C、D。服务身份应拥有满足任务需求的最小权限，并和人员管理角色分离。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-185",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "question": "用户可连接 Snowflake，但查询表时报 insufficient privileges，哪些检查有帮助？",
+    "explanation": "正确答案 A、B、C。权限错误应从活动角色、层级 grants 与对象引用检查；计算仓库规模不会授予数据访问权。",
+    "misconceptions": [
+      "把权限错误当成计算容量不足。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "当前活动角色与角色继承关系",
+          "数据库、Schema、表及仓库的相关授权",
+          "是否引用了正确对象且对象确实存在",
+          "立即增大 Warehouse 的 compute size"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。权限错误应从活动角色、层级 grants 与对象引用检查；计算仓库规模不会授予数据访问权。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-186",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "medium",
+    "angle": "comparison",
+    "question": "授权给父角色，再通过角色层级授权给用户/下级角色时要注意什么？",
+    "explanation": "正确答案 A、B、D。RBAC 权限要结合角色层级和会话活动角色理解，授权对象、继承路径与激活角色都应核实。",
+    "misconceptions": [
+      "认为授予一个角色就会自动改变所有用户的有效权限。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "核实角色继承路径和实际激活角色",
+          "使用 SHOW GRANTS 等信息验证权限来源",
+          "假设任何授权会立即给所有账号用户生效",
+          "按最小权限原则避免把管理员角色随意混入常规层级"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。RBAC 权限要结合角色层级和会话活动角色理解，授权对象、继承路径与激活角色都应核实。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-187",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "某离职用户曾经拥有独有对象所有权，如何安全治理？",
+    "explanation": "正确答案 A、B、D。身份移除需要同时处理权限回收和对象/自动化任务的所有权连续性。",
+    "misconceptions": [
+      "只禁用人员账号便视为完成全部权限与所有权移交。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "识别并迁移所需对象的 OWNERSHIP 到受控角色",
+          "撤销不再需要的用户/角色访问并检查依赖",
+          "仅禁用登录就保证对象未来所有管理都有人负责",
+          "记录权限移交并验证自动任务与部署流程仍能运行"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。身份移除需要同时处理权限回收和对象/自动化任务的所有权连续性。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-188",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "Masking Policy 与 Row Access Policy 的主要区别是什么？",
+    "explanation": "正确答案 A、D。列级脱敏与行级过滤保护不同的数据维度，需要与角色授权、数据分类及实际访问模式协同设计。",
+    "misconceptions": [
+      "认为设置策略后就不需要对象权限，也不必区分列和行保护。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Masking Policy 主要控制列值如何按上下文显示，Row Access Policy 控制哪些行可见",
+          "二者只用于更改 Warehouse 大小",
+          "它们自动替代所有对象 USAGE/SELECT grants",
+          "应结合数据分类与查询角色设计策略"
+        ],
+        "answer": [
+          0,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、D。列级脱敏与行级过滤保护不同的数据维度，需要与角色授权、数据分类及实际访问模式协同设计。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-189",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某角色意外能读取不应看到的数据，优先应做哪些调查？",
+    "explanation": "正确答案 A、B、C。过度访问应从角色授权链和策略实际应用效果调查；网络策略主要限制网络路径，不能替代内部数据访问控制。",
+    "misconceptions": [
+      "把网络连接限制当作数据库内部敏感数据授权的替代品。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "列出该角色及继承角色获得的 grants",
+          "检查敏感对象上的 Row Access/Masking Policy 与适用条件",
+          "通过代表性用户角色测试有效访问结果",
+          "假设网络策略会自动过滤所有 SQL 结果集"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。过度访问应从角色授权链和策略实际应用效果调查；网络策略主要限制网络路径，不能替代内部数据访问控制。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-190",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-role-hierarchy-grants",
+    "subtopic": "snowflake-role-hierarchy-grants",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-role-hierarchy-grants"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "建立生产数据访问治理基线，哪些原则值得采用？",
+    "explanation": "正确答案 A、B、C。治理要在可操作性、安全边界和审计间平衡；共享最高权限会提高误操作风险。",
+    "misconceptions": [
+      "用全员高权限替代角色设计与职责分离。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "使用最小权限和职责分离",
+          "为敏感数据定义列级/行级策略与验证用例",
+          "记录高权限操作及授权变更",
+          "把所有团队统一设为同一最高权限角色"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。治理要在可操作性、安全边界和审计间平衡；共享最高权限会提高误操作风险。"
+      }
+    },
+    "knowledgeId": "snowflake-role-hierarchy-grants",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 1: Users, Roles, and Permissions; Hour 4: Audit",
+      "relatedMaterials": [
+        "docs-access-control",
+        "docs-network-policy"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-191",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "easy",
+    "angle": "fundamental",
+    "question": "Snowflake 中 Resource Monitor 的常见用途是什么？",
+    "explanation": "正确答案 A。Resource Monitor 可针对仓库相关 credit 使用设定阈值并触发通知或动作；需核对作用范围。",
+    "misconceptions": [
+      "认为 Resource Monitor 能无差别覆盖账户所有计算和服务费用。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "监视虚拟仓库相关 credit 消耗并按阈值触发通知/动作",
+          "为所有费用类别提供统一且无遗漏的硬性上限",
+          "替代 SQL 查询历史",
+          "自动修复查询结果错误"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          0,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A。Resource Monitor 可针对仓库相关 credit 使用设定阈值并触发通知或动作；需核对作用范围。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-192",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "为什么团队不能仅通过 Resource Monitor 判断账号的全部成本？",
+    "explanation": "正确答案 A、B、D。成本涉及不同计算服务与治理口径；完整 FinOps 需组合使用量/成本数据、查询历史与归属标签。",
+    "misconceptions": [
+      "把单一仓库资源监控器当成账户全成本的唯一来源。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "部分 serverless/Cloud Services 或其他使用类别需要其他成本视图",
+          "还需要结合 Account Usage、仓库成本和标签/归属",
+          "Resource Monitor 负责控制每条 SQL 的业务正确性",
+          "必须明确监控口径和费用归因维度"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。成本涉及不同计算服务与治理口径；完整 FinOps 需组合使用量/成本数据、查询历史与归属标签。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-193",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "question": "为了把查询成本归属到团队或数据产品，哪些元数据值得使用？",
+    "explanation": "正确答案 A、B、C。工作负载标识、执行上下文和规范化映射可以帮助成本归因；数据库名常常不足以区分多个团队和作业。",
+    "misconceptions": [
+      "认为单一数据库名称足以准确分配所有运行成本。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Query Tag 或等价的工作负载标识",
+          "Warehouse、角色、用户、时间和查询历史",
+          "统一的标签约定与映射表",
+          "仅使用数据库名且不区分团队/流程"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。工作负载标识、执行上下文和规范化映射可以帮助成本归因；数据库名常常不足以区分多个团队和作业。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-194",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "question": "月度 credit 消耗上升 40%，合理的调查组合是什么？",
+    "explanation": "正确答案 A、B、C。成本趋势应与工作负载、配置、重试、运行时长和业务需求一起分析，再决定优化与容量调整。",
+    "misconceptions": [
+      "只根据账单趋势无差别降配，不分析用量驱动因素。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "对比各 Warehouse 用量、执行窗口和使用团队的变化",
+          "分析查询数量、扫描量、执行时间和重试",
+          "检查自动暂停、恢复和异常长时间运行的任务",
+          "直接削减全部 Warehouse 规模，不评估 SLO"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。成本趋势应与工作负载、配置、重试、运行时长和业务需求一起分析，再决定优化与容量调整。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-195",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "question": "Resource Monitor 的通知阈值与触发动作需要如何设计？",
+    "explanation": "正确答案 A、B、C。阈值与动作应匹配预算和操作风险，并验证作用范围；它不是对所有服务账单的绝对硬上限。",
+    "misconceptions": [
+      "把 Resource Monitor 阈值理解为覆盖所有服务且绝无超支的保证。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按预算和工作负载设定分级阈值与责任人",
+          "理解动作触发范围、支持对象与限制",
+          "测试通知/动作是否按预期执行并记录结果",
+          "认为任何阈值都保证账户总费用绝不会再增加"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。阈值与动作应匹配预算和操作风险，并验证作用范围；它不是对所有服务账单的绝对硬上限。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-196",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "medium",
+    "angle": "debugging",
+    "question": "某仓库资源监控没有触发告警，但账单仍上涨，优先检查什么？",
+    "explanation": "正确答案 A、B、C。先比对监控器范围、配置与账单口径；不同成本类别未必由同一个资源监控器覆盖。",
+    "misconceptions": [
+      "把某个监控器没有触发视为所有费用都没有增长。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "账单增长是否来自该监控器覆盖之外的服务/类别",
+          "监控器是否绑定到正确的 Warehouse/资源范围",
+          "阈值、监控窗口、通知设置与数据延迟",
+          "假定账单上涨说明平台一定没有计量"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。先比对监控器范围、配置与账单口径；不同成本类别未必由同一个资源监控器覆盖。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-197",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "为多个团队设立 Snowflake 成本治理机制，哪些做法合理？",
+    "explanation": "正确答案 A、B、C。按工作负载归因、预警和定期复核能及时识别成本异常；季度总账单不足以及时定位。",
+    "misconceptions": [
+      "把低频总账单审查当作足够的成本可观测性。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按团队/项目分配工作负载标签或仓库归属",
+          "设立预算预警、异常趋势检查和责任人",
+          "定期复核闲置仓库、长查询与不合理并发",
+          "只在季度末查看总账单且不保留运行指标"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。按工作负载归因、预警和定期复核能及时识别成本异常；季度总账单不足以及时定位。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-198",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "medium",
+    "angle": "mechanism",
+    "question": "为什么成本监控应结合 QUERY_HISTORY 和 Warehouse 使用数据？",
+    "explanation": "正确答案 A、B、D。查询历史提供性能和工作负载细节，仓库使用数据帮助看消耗趋势；归因需理解统计口径和共享成本。",
+    "misconceptions": [
+      "认为总 Warehouse 用量可以单独解释每条 SQL 的成本驱动。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "Query History 解释查询级行为，仓库用量帮助汇总计算消耗",
+          "两种视角能关联耗时、扫描和资源归属",
+          "只看仓库用量即可精确判断每条 SQL 成本原因",
+          "需结合归因口径与数据可用窗口"
+        ],
+        "answer": [
+          0,
+          1,
+          3
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          0,
+          null
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、D。查询历史提供性能和工作负载细节，仓库使用数据帮助看消耗趋势；归因需理解统计口径和共享成本。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-199",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "question": "对一个成本高但满足关键实时 SLO 的 Warehouse，正确的治理策略是什么？",
+    "explanation": "正确答案 A、B、C。成本优化需在数据服务价值与 SLO 约束下寻找可避免成本；无差别停机会破坏业务目标。",
+    "misconceptions": [
+      "将最低计算消耗当作唯一目标，忽略业务可用性和延迟。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "量化业务 SLO、服务价值、用量和成本驱动",
+          "识别无效扫描、重复任务和资源空闲等可避免成本",
+          "评估后选择隔离、SQL 优化、自动暂停或规模调整",
+          "不管业务延迟目标，直接停止所有计算"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。成本优化需在数据服务价值与 SLO 约束下寻找可避免成本；无差别停机会破坏业务目标。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  },
+  {
+    "id": "sf-pgtd-200",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "snowflake-resource-monitoring-account-usage",
+    "subtopic": "snowflake-resource-monitoring-account-usage",
+    "tags": [
+      "snowflake",
+      "postgres-full-day-training",
+      "snowflake-resource-monitoring-account-usage"
+    ],
+    "difficulty": "medium",
+    "angle": "scenario",
+    "question": "构建每日成本异常检测报表，哪些字段和规则更有帮助？",
+    "explanation": "正确答案 A、B、C。分维度基线与可调查证据有助于及时处置异常；只在月底告警无法有效控制趋势。",
+    "misconceptions": [
+      "将延迟到月底的总账单告警作为唯一成本异常控制。"
+    ],
+    "formats": {
+      "choice": {
+        "type": "multiple",
+        "options": [
+          "按时间、Warehouse、工作负载标签与团队聚合用量",
+          "对比基线和异常运行时长",
+          "告警附带可定位的查询/任务证据和责任人",
+          "只有总账单超过全月预算后才通知"
+        ],
+        "answer": [
+          0,
+          1,
+          2
+        ],
+        "misconceptionMap": [
+          null,
+          null,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "正确答案 A、B、C。分维度基线与可调查证据有助于及时处置异常；只在月底告警无法有效控制趋势。"
+      }
+    },
+    "knowledgeId": "snowflake-resource-monitoring-account-usage",
+    "source": {
+      "materialId": "postgres-full-day-training",
+      "section": "Hour 4: Monitoring; Hour 5: Scaling and Configuration",
+      "relatedMaterials": [
+        "docs-cost-controls",
+        "docs-warehouses",
+        "docs-query-history"
+      ]
+    }
+  }
+]

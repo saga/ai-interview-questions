@@ -7,7 +7,7 @@ import { SAMPLE_CONFIG } from '../config/sampleConfig';
 import { recordLog } from './db';
 
 const KEY = 'ai-interview-trainer.config';
-const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai'];
+const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai', 'copilot-sdk'];
 
 // 默认配置 = 内置的干净样例（src/config/sample-config.json）：完整引擎清单，
 // chrome / local 启用、其余禁用。既是「恢复默认」按钮的回填值，也是 localStorage 为空 / 损坏时的兜底。

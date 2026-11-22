@@ -41,11 +41,22 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 ## 文档
 
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
+- `docs/security-architecture-course-roadmap.md`：面向 Solution Architect 的安全架构课程、标准来源与方案设计案例
 - `docs/snowflake-learning-path.md`：Snowflake 独立课程的系统学习路线、架构实战与题目索引
+- [`docs/rag-interview-questions-research-2026-10.md`](docs/rag-interview-questions-research-2026-10.md)：2026-10 版 RAG 工程实践与参考来源，配套新增 120 道初/中级题，覆盖混合检索、重排、Contextual Retrieval、Agentic RAG、GraphRAG、评测、多模态与安全
+- [`docs/evaluation-prompt-context-engineering-research-2026-10.md`](docs/evaluation-prompt-context-engineering-research-2026-10.md)：2026-10 版评估指标、Prompt Engineering 与 Context Engineering 研究及参考来源，配套新增 100 道初/中级题（40 道评估指标、30 道提示工程、30 道上下文工程）。
+- [`docs/legacy-question-bank-audit-2026-10-29.md`](docs/legacy-question-bank-audit-2026-10-29.md)：既有题库与知识库抽样审查（累计 300 余道题），含题目修订、知识节点更新与离线变体同步记录。
+- [`docs/transformer-interview-questions-research-2026-10.md`](docs/transformer-interview-questions-research-2026-10.md)：2026-10 版 Transformer 核心机制、长上下文、混合注意力、MTP、MoE、推理缓存与最新研究来源，配套新增 100 道初/中级题
 - `docs/snowflake-course-roadmap.md`：基于 8 门 Coursera 课程模块与 Snowflake 官方文档的完整课程路线、知识骨架和毕业案例
+- `docs/snowflake-developer-guides-coverage-200.md`：基于 Snowflake Developer Guides 的 200 道实践/架构题与 20 个知识点覆盖矩阵
+- [`docs/snowflake-demo-notebooks-300.md`](docs/snowflake-demo-notebooks-300.md)：基于 Snowflake-Labs/snowflake-demo-notebooks 的 300 道初/中级实践题，覆盖 Notebooks、Snowpark、管道、性能/成本、Feature Store、Cortex、Agent、Streamlit 与治理
+- [`docs/snowflake-asset-management-agentic-100.md`](docs/snowflake-asset-management-agentic-100.md)：基于 Snowflake-Labs/sfguide-agentic-ai-for-asset-management 的 100 道初/中级题，覆盖多 Agent、语义视图、组合归因、投资研究、风险合规、中后台、回测、信用风险与治理
+- `docs/postgresql-module-in-snowflake-course-200.md`：Snowflake course 下的 PostgreSQL 原生数据库工程补充模块、200 道简单/中级题与官方文档映射
+- `docs/snowflake-postgres-full-day-200.md`：参考 PostgreSQL 全日训练的 SQL/运维/调优主题，改写为 Snowflake 语义的 200 道简单/中级题与 20 组覆盖矩阵
+- [Snowflake CoCo Skills 专项 100 道题与知识点覆盖矩阵](docs/snowflake-coco-skills-100.md)
 - [SnowPro Core COF-C03 考点与 200 道新增题覆盖矩阵](docs/snowflake-certification-cof-c03-coverage-200.md)
 - `skills/snowflake-curriculum/SKILL.md`：独立 Snowflake 课程的知识点/题目维护 prompt
-- 进入训练前先选择学习体系：AI 与 Snowflake 的课程主题、题库、知识点覆盖和本地训练进度分别管理。
+- 进入训练前先选择学习体系：AI、Snowflake 与 Security Architecture 的课程主题、题库、知识点覆盖和本地训练进度分别管理。
 - `docs/CONVERSATION_ARCHITECTURE.md`：统一 Conversation / Intent / Capability 入口设计（ADR-061）
 - `docs/DECISIONS.md`：关键决策（ADR，含"为何不迁 Astro"）
 - `docs/CHANGELOG.md`：设计变更记录
@@ -54,9 +65,9 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 ## 配置 LLM（可选但推荐）
 
-进入「设置」页，直接在 JSON 编辑器里编辑引擎配置（示例见 `docs/config.example.json`）：`providers` 数组顺序即降级链优先级——调用时从上到下依次尝试，失败自动切换到下一个。可用引擎：`chrome`（浏览器内置 AI，免密钥）、`local`（本机 OpenAI 兼容服务如 Unsloth/vLLM/Ollama，免密钥）、`deepseek` / `openrouter` / `google`（Gemini，云端直连，需 API Key）、`cloudflare-workers-ai`（需 API Token + Account ID）。推荐把免费的本地引擎放前面、云端强模型殿后兜底；保存时自动校验格式。密钥仅存本机 `localStorage`。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
+进入「设置」页，直接在 JSON 编辑器里编辑引擎配置（示例见 `docs/config.example.json`）：`providers` 数组顺序即降级链优先级——调用时从上到下依次尝试，失败自动切换到下一个。可用引擎：`chrome`（浏览器内置 AI，免密钥）、`local`（本机 OpenAI 兼容服务如 Unsloth/vLLM/Ollama，免密钥）、`deepseek` / `openrouter` / `google`（Gemini，云端直连，需 API Key）、`cloudflare-workers-ai`（需 API Token + Account ID）以及 `copilot-sdk`（复用本机 Copilot CLI 登录态，无需 API Key；仅在 Vite 开发模式可用）。推荐把免费的本地引擎放前面、云端强模型殿后兜底；保存时自动校验格式。普通云 Provider 密钥仅存本机 `localStorage`。Copilot SDK 的 CLI 会话由 Vite 的 Node 进程持有，浏览器只访问同源开发 API，不接触 CLI 登录凭据。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
 
-> **local-first 隐私架构，但浏览器侧密钥并非安全机密**：密钥不上传任何服务器，但受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。未配密钥也能用题库原题（开放题不评分）。
+> **local-first 隐私架构，但浏览器侧密钥并非安全机密**：普通云 Provider 的密钥受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。使用 `copilot-sdk` 前需本机安装并登录 GitHub Copilot CLI；SDK API 仅由 Vite 开发插件提供，生产静态构建不包含该接口。未配密钥也能用题库原题（开放题不评分）。
 
 ## 扩展题库
 
@@ -96,7 +107,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 本应用是纯静态 SPA：构建产物在 `dist/`，使用 `HashRouter`（路由走 URL hash）。部署采用 **Cloudflare Workers + Assets** 模式——`wrangler.toml` 同时配置 `[assets]`（托管 `dist/`）与 `main = "./worker/index.ts"`（一份极薄同源代理，供 Cloudflare Workers AI provider 规避浏览器直连 CORS）。SPA 回退由 `[assets]` 的 `not_found_handling = "single-page-application"` 提供，无需额外配置。
 
-> ⚠️ **Cloudflare Workers AI 需要同源代理**：该 provider 不能直连 `api.cloudflare.com`（无 CORS 头）。生产环境由 `worker/index.ts` 提供的同源代理 `/api/ai/*` 转发；本地由 `vite.config.ts` 的 dev proxy 转给可选 Node 服务（`server/index.js`）。详细机制与「GitHub Pages 等纯静态托管下该 provider 不可用」的说明见 [`DEPLOYMENT.md`](./DEPLOYMENT.md)。
+> ⚠️ **Cloudflare Workers AI 需要同源代理**：该 provider 不能直连 `api.cloudflare.com`（无 CORS 头）。生产环境由 `worker/index.ts` 提供的同源代理 `/api/ai/*` 转发；本地由 `vite.config.ts` 的 dev proxy 转给现有 Express 服务（`server/index.js`）；`npm run dev` 保留原有的 Vite + Express 启动方式。详细机制与「GitHub Pages 等纯静态托管下该 provider 不可用」的说明见 [`DEPLOYMENT.md`](./DEPLOYMENT.md)。
 
 **本地发布（需 Wrangler CLI）：**
 

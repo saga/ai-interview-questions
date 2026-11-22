@@ -1,0 +1,191 @@
+[
+  {
+    "id": "snowflake-sql-foundations",
+    "courseId": "snowflake",
+    "name": "SQL 基础语义、类型与对象边界",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "以 Snowflake SQL 为目标环境掌握筛选、NULL、类型转换、对象命名和标准表约束的实际语义。",
+    "required": [
+      "正确解释 WHERE、HAVING、聚合及 NULL 三值逻辑，避免把 NULL 当作普通值",
+      "在时间、数值和半结构化字段上使用明确的数据类型与显式转换",
+      "区分标准表的约束声明与实际强制执行行为，并为数据质量建立独立验证"
+    ],
+    "misconceptions": [
+      "认为 NULL = NULL 为 TRUE，或 COALESCE 可以无条件替代所有 NULL 处理",
+      "认为不同数据库的类型转换和隐式转换规则完全一致",
+      "认为标准表上的 PRIMARY KEY、UNIQUE、FOREIGN KEY 一定会自动拒绝重复键或孤儿记录"
+    ],
+    "angles": [
+      "fundamental",
+      "definition",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "snowflake-query-joins-aggregation",
+    "courseId": "snowflake",
+    "name": "JOIN、聚合与结果粒度",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "通过显式定义输入粒度、连接键和聚合边界，避免 JOIN 扩行、重复计数和错误的汇总结果。",
+    "required": [
+      "解释 INNER、LEFT、FULL OUTER JOIN 对未匹配行的影响",
+      "通过连接前后的行数、键唯一性和聚合粒度识别 fanout",
+      "区分 WHERE 与 HAVING，并判断预聚合何时能改善正确性或性能"
+    ],
+    "misconceptions": [
+      "认为 LEFT JOIN 的右表过滤条件放入 WHERE 与放入 ON 完全等价",
+      "认为 JOIN 后行数变多一定是数据库引擎重复返回了数据",
+      "认为 COUNT(*)、COUNT(column) 和 COUNT(DISTINCT column) 语义相同"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "snowflake-window-ctes",
+    "courseId": "snowflake",
+    "name": "窗口函数、CTE 与分阶段 SQL",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "使用窗口函数和 CTE 表达排名、累计值、前后行比较与可维护的数据转换，并识别排序和粒度边界。",
+    "required": [
+      "区分窗口函数的 PARTITION BY、ORDER BY 与 frame 对结果的影响",
+      "选择 ROW_NUMBER、RANK、LAG、LEAD 和聚合窗口函数解决常见问题",
+      "用 CTE 分解逻辑并理解 CTE 不应被假定为必然物化或必然只执行一次"
+    ],
+    "misconceptions": [
+      "认为窗口函数会自动减少输入行数",
+      "认为只有 ORDER BY 才能定义窗口分组，或未定义排序时结果有稳定顺序",
+      "认为 CTE 必然创建临时物理表并保证只计算一次"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "implementation"
+    ]
+  },
+  {
+    "id": "snowflake-dml-data-correctness",
+    "courseId": "snowflake",
+    "name": "DML、MERGE 与数据质量保证",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "将 INSERT、UPDATE、DELETE、MERGE 与约束检查、去重、幂等和数据质量测试结合，保证批处理结果可靠。",
+    "required": [
+      "根据源数据唯一性和匹配条件设计 MERGE，避免一条目标记录匹配多条源记录的歧义",
+      "认识标准表约束的执行边界，不把声明式约束等同于完整的数据质量治理",
+      "为重跑、迟到数据和重复输入设计幂等规则、键唯一性检查和影响行数核验"
+    ],
+    "misconceptions": [
+      "认为 MERGE 会自动解决重复源键与业务冲突",
+      "认为声明 PRIMARY KEY 就足以防止标准表出现重复值",
+      "认为 SQL 语句执行成功即可证明转换结果正确"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-transactions-concurrency",
+    "courseId": "snowflake",
+    "name": "事务边界与并发数据修改",
+    "area": "data-platform",
+    "topic": "snowflake",
+    "priority": "P1",
+    "summary": "理解事务原子性、提交/回滚和并发 DML 的可观察行为，并针对冲突与重试建立可验证的处理流程。",
+    "required": [
+      "明确一组相关 DML 的事务边界，以及 COMMIT/ROLLBACK 对结果的影响",
+      "区分查询排队、仓库资源等待、事务冲突和 SQL 错误等不同延迟或失败原因",
+      "让应用重试基于错误分类与幂等设计，而不是对所有失败进行无条件重复执行"
+    ],
+    "misconceptions": [
+      "认为事务回滚能撤销事务之外或已经提交的操作",
+      "把所有慢查询都归因于仓库规模不足",
+      "认为盲目重试一定安全，即使操作包含非幂等副作用"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "snowflake-query-profile-troubleshooting",
+    "courseId": "snowflake",
+    "name": "Query Profile 与查询根因诊断",
+    "area": "data-platform",
+    "topic": "snowflake-devops",
+    "priority": "P1",
+    "summary": "结合 Query History、Query Profile、扫描分区、溢写、排队和算子耗时定位查询瓶颈，并用代表性工作负载验证修复。",
+    "required": [
+      "从 Query Profile 的算子、扫描量、过滤效果、Join、排序、聚合和溢写信号形成诊断假设",
+      "区分编译时间、执行时间、仓库排队时间与资源预配时间",
+      "在修改 SQL、仓库规模或优化服务后比较同一类代表性查询的基线数据"
+    ],
+    "misconceptions": [
+      "只看总耗时就能确定查询瓶颈",
+      "认为仓库加大可以修复错误的 JOIN 粒度或高扫描量",
+      "把 Query Profile 的视觉热点当作无需复测的优化结论"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "scenario",
+      "debugging",
+      "tradeoff",
+      "design"
+    ]
+  },
+  {
+    "id": "snowflake-layout-performance-patterns",
+    "courseId": "snowflake",
+    "name": "表布局、微分区与性能优化选择",
+    "area": "data-platform",
+    "topic": "data-engineering",
+    "priority": "P1",
+    "summary": "根据实际筛选和排序模式选择微分区裁剪、聚簇、Search Optimization、物化视图或查询重写，避免盲目照搬传统索引思路。",
+    "required": [
+      "解释 Snowflake 自动微分区及其元数据如何支持分区裁剪",
+      "评估聚簇键的收益、维护成本、数据修改频率和代表性查询覆盖面",
+      "按查询形态选择 Search Optimization、Query Acceleration、物化视图或 SQL 重写，并用基线验证"
+    ],
+    "misconceptions": [
+      "认为 Snowflake 标准表应像传统 PostgreSQL 表一样先创建 B-tree 索引",
+      "认为所有大表都应该创建聚簇键，或聚簇键能保证每条查询都更快",
+      "认为启用优化服务后无需检查查询计划、成本和数据访问模式"
+    ],
+    "angles": [
+      "mechanism",
+      "comparison",
+      "tradeoff",
+      "scenario",
+      "debugging",
+      "design"
+    ]
+  }
+]

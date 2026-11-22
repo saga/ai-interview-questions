@@ -14,6 +14,7 @@ export const KNOWLEDGE_AREA_LABELS: Record<KnowledgeArea, string> = {
   'ai-systems': 'AI 系统',
   'ai-security': 'AI 安全',
   'data-platform': 'Snowflake 独立课程',
+  'security-architecture': 'Security Architecture 独立课程',
 };
 
 /** 按 id（= topic slug）查知识点。 */

@@ -1,0 +1,5342 @@
+[
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-01",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "Snowflake 代码需要调用获批的外部 API。部署前首先要定义什么？",
+    "explanation": "外部访问应使用显式白名单和受控凭据，按最小权限限制可访问资源。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "明确目标主机/端点、网络出站规则、授权集成和需要的凭据范围。",
+          "直接允许访问整个互联网，不设范围。",
+          "把生产令牌硬编码进 Notebook。",
+          "只记录外部 API 的显示名称。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确目标主机/端点、网络出站规则、授权集成和需要的凭据范围。 外部访问应使用显式白名单和受控凭据，按最小权限限制可访问资源。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-02",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "为什么不应把 API Token 明文写在 Notebook 单元格里？",
+    "explanation": "秘密应通过受控的安全对象/凭据机制管理，避免进入代码、日志和版本控制。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为 Token 必须与 Warehouse 同名。",
+          "明文凭据会自动影响 SQL 查询结果。",
+          "源代码可能被提交、共享或记录，令牌泄露会扩大访问风险。",
+          "因为 Snowflake 不支持字符串。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "源代码可能被提交、共享或记录，令牌泄露会扩大访问风险。 秘密应通过受控的安全对象/凭据机制管理，避免进入代码、日志和版本控制。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-03",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "一个外部 API 调用偶尔超时，合理的重试策略是什么？",
+    "explanation": "网络调用会出现暂时失败，恢复策略应受限并考虑重复副作用。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "设置超时、有限重试与退避，并判断请求是否幂等后再重发。",
+          "无限次立即重试。",
+          "把每个超时都当作空结果成功写入。",
+          "删除外部 API 的监控。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "设置超时、有限重试与退避，并判断请求是否幂等后再重发。 网络调用会出现暂时失败，恢复策略应受限并考虑重复副作用。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-04",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "外部 API 返回 429 或限流响应，作业应如何处理？",
+    "explanation": "限流意味着当前请求速率超过限制，需要调节速率而不是加剧压力。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把 429 当作业务数据并直接发布。",
+          "跳过限流继续循环。",
+          "遵循服务端限流信息或退避策略，控制并发并记录重试状态。",
+          "立即以更高并发重复请求。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "遵循服务端限流信息或退避策略，控制并发并记录重试状态。 限流意味着当前请求速率超过限制，需要调节速率而不是加剧压力。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-05",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "为何要验证外部 API 响应 schema，而不是只检查 HTTP 200？",
+    "explanation": "网络调用成功与业务结果有效是两个不同条件，应验证字段、类型和业务约束。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "成功状态码不保证返回内容完整、类型正确或业务上有效。",
+          "HTTP 200 表示所有字段都永远存在。",
+          "Schema 只适用于数据库表。",
+          "API 结果无需任何数据质量检查。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "成功状态码不保证返回内容完整、类型正确或业务上有效。 网络调用成功与业务结果有效是两个不同条件，应验证字段、类型和业务约束。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-06",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "外部 API 一次返回部分成功、部分失败的记录，怎样设计处理？",
+    "explanation": "逐条状态和错误分类支持针对性恢复，避免重跑已成功的非幂等操作。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把失败记录伪装为成功。",
+          "重复处理全部记录直到无错误。",
+          "保留逐条结果和错误原因，区分可重试记录与永久失败记录。",
+          "丢弃整个批次且不留日志。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保留逐条结果和错误原因，区分可重试记录与永久失败记录。 逐条状态和错误分类支持针对性恢复，避免重跑已成功的非幂等操作。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-07",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "安全审查希望只允许调用一个第三方域名，应落实哪类控制？",
+    "explanation": "网络和服务端控制比自然语言约束可靠，应将可达目标限制到明确范围。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "通过受控的网络规则/外部访问集成限定允许访问的主机，并核验授权。",
+          "只在提示词中写“不要访问其他网站”。",
+          "在 Notebook 文件名中注明域名。",
+          "把全部外部访问权限授予每个用户。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "通过受控的网络规则/外部访问集成限定允许访问的主机，并核验授权。 网络和服务端控制比自然语言约束可靠，应将可达目标限制到明确范围。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-08",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "如何处理第三方服务的响应中断或格式变更？",
+    "explanation": "第三方接口有独立生命周期，契约和失败模式需要通过测试与监控管理。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "发生变化时静默忽略缺失字段。",
+          "把响应复制到生产表后不保留版本。",
+          "维护契约测试、超时/错误路径和版本兼容处理，并监控异常率。",
+          "默认第三方 API 永不变化。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "维护契约测试、超时/错误路径和版本兼容处理，并监控异常率。 第三方接口有独立生命周期，契约和失败模式需要通过测试与监控管理。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-09",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "外部调用结果要写入 Snowflake 表，如何避免重复记录？",
+    "explanation": "网络重试可能重复执行，目标写入需要稳定键和明确重复处理规则。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "用稳定的请求/业务标识设计幂等写入，并保存处理状态。",
+          "每次重试生成新业务 ID。",
+          "只用当前时间拼接键且不做检查。",
+          "删除目标表的主键列。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "用稳定的请求/业务标识设计幂等写入，并保存处理状态。 网络重试可能重复执行，目标写入需要稳定键和明确重复处理规则。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-external-access-10",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-external-access",
+    "subtopic": "sf-demo-external-access",
+    "knowledgeId": "sf-demo-external-access",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-external-access"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握外部访问集成与端点安全的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Access External Endpoints; external access integrations",
+      "relatedMaterials": [
+        "docs-external-network-access",
+        "docs-access-control"
+      ]
+    },
+    "question": "对外部访问的生产验收应保留什么证据？",
+    "explanation": "可审计验收需要证明访问范围和操作结果，同时绝不把秘密作为证据公开。",
+    "misconceptions": [
+      "把能够连接当作可以任意访问",
+      "忽略外部服务凭据管理",
+      "不处理超时、错误响应和审计"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只保留 API Token 明文。",
+          "只确认 Notebook 文件已保存。",
+          "允许端点与权限配置、凭据引用、测试请求/响应状态、失败处理和审计记录。",
+          "只保留一张成功截图。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "允许端点与权限配置、凭据引用、测试请求/响应状态、失败处理和审计记录。 可审计验收需要证明访问范围和操作结果，同时绝不把秘密作为证据公开。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-01",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "需要对每行输入计算并返回一个值，通常应先评估哪种数据库对象？",
+    "explanation": "UDF 与存储过程的调用方式和职责不同，按返回值逻辑与过程控制需求选型。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "一定使用 Streamlit。",
+          "使用 Resource Monitor 计算每行结果。",
+          "根据逻辑特征评估 UDF，因为它适合在表达式中调用并返回值。",
+          "无论需求如何都使用定时 Task。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "根据逻辑特征评估 UDF，因为它适合在表达式中调用并返回值。 UDF 与存储过程的调用方式和职责不同，按返回值逻辑与过程控制需求选型。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-02",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "一个存储过程要执行多个 SQL 步骤并返回处理状态，为什么比单个 UDF 更合适？",
+    "explanation": "过程通常用于多步操作和控制逻辑，但权限、事务语义和失败恢复仍需设计。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "存储过程可以封装多步控制流程和对数据库对象执行的操作。",
+          "UDF 永远不能用于 SQL 查询。",
+          "存储过程自动拥有账户管理员权限。",
+          "存储过程会自动提供失败事务的业务补偿。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "存储过程可以封装多步控制流程和对数据库对象执行的操作。 过程通常用于多步操作和控制逻辑，但权限、事务语义和失败恢复仍需设计。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-03",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "Java/Python UDF 在部署环境中找不到依赖包，如何降低风险？",
+    "explanation": "本地和托管执行环境并不等同，依赖解析与版本需要针对部署环境验证。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把包名写进 SQL 注释。",
+          "生产运行失败时才检查依赖。",
+          "确认 Snowflake 支持的运行环境和包可用性，并在目标环境做部署前测试。",
+          "在本机安装包就一定会同步到 Snowflake。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "确认 Snowflake 支持的运行环境和包可用性，并在目标环境做部署前测试。 本地和托管执行环境并不等同，依赖解析与版本需要针对部署环境验证。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-04",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "UDF 返回结果类型与声明不一致，如何定位？",
+    "explanation": "跨语言函数需要遵守类型契约，边界值和空值应在测试中覆盖。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "核对输入类型、返回类型、NULL/异常路径及语言绑定的类型映射。",
+          "只调整 Warehouse 尺寸。",
+          "把所有输出转为 VARCHAR 不验证语义。",
+          "删除返回类型声明。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "核对输入类型、返回类型、NULL/异常路径及语言绑定的类型映射。 跨语言函数需要遵守类型契约，边界值和空值应在测试中覆盖。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-05",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "哪种情况不适合将一个很简单的字符串变换封装成外部运行时 UDF？",
+    "explanation": "原生函数通常更容易被优化与维护，应避免无收益的复杂运行时边界。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "原生表达式确实无法表达业务逻辑。",
+          "UDF 的输入输出契约明确且经过测试。",
+          "原生 SQL 函数已能高效表达，且引入额外依赖与执行边界没有明显收益。",
+          "函数需要被多个查询复用。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "原生 SQL 函数已能高效表达，且引入额外依赖与执行边界没有明显收益。 原生函数通常更容易被优化与维护，应避免无收益的复杂运行时边界。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-06",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "存储过程执行失败后重试可能再次写入数据。应加入什么设计？",
+    "explanation": "多步过程的副作用需要显式治理，重试前要判断已经完成的步骤。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "明确事务边界、幂等业务键、失败后的状态记录和补偿/恢复规则。",
+          "假设所有过程自动幂等。",
+          "删除异常日志后重复执行。",
+          "每次重试都附加重复数据。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确事务边界、幂等业务键、失败后的状态记录和补偿/恢复规则。 多步过程的副作用需要显式治理，重试前要判断已经完成的步骤。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-07",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "对 UDF 进行单元/集成测试时，哪些输入应纳入边界测试？",
+    "explanation": "函数创建成功不等于逻辑正确，输入边界常暴露类型和异常处理缺陷。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仅测函数是否能被创建。",
+          "只检查函数注释。",
+          "NULL、空字符串、极大/极小值、非法格式和代表性正常输入。",
+          "只测一条最短正常字符串。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "NULL、空字符串、极大/极小值、非法格式和代表性正常输入。 函数创建成功不等于逻辑正确，输入边界常暴露类型和异常处理缺陷。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-08",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "UDF 版本升级后，多个下游查询结果发生变化。应怎样发布更安全？",
+    "explanation": "可控发布依靠版本、回归和回滚，而不仅是成功创建对象。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "保存旧版本和回归样本，在隔离环境比较结果，再按影响范围晋级。",
+          "直接覆盖函数并删除历史。",
+          "只检查新版本是否能编译。",
+          "将所有下游结果手动改成旧值。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保存旧版本和回归样本，在隔离环境比较结果，再按影响范围晋级。 可控发布依靠版本、回归和回滚，而不仅是成功创建对象。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-09",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "一个过程需要调用有权限限制的对象，如何避免把调用权限扩大给不必要用户？",
+    "explanation": "存储过程的执行上下文可能影响权限边界，应在服务端授权模型中明确治理。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将凭据写入过程体并公开源代码。",
+          "只靠过程名称表示安全级别。",
+          "明确所有者/调用者权限模型并最小化角色授权，测试不同角色下的行为。",
+          "默认给每个用户管理员权限。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确所有者/调用者权限模型并最小化角色授权，测试不同角色下的行为。 存储过程的执行上下文可能影响权限边界，应在服务端授权模型中明确治理。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-udf-procedure-10",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-udf-procedure",
+    "subtopic": "sf-demo-udf-procedure",
+    "knowledgeId": "sf-demo-udf-procedure",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-udf-procedure"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握UDF、存储过程与语言运行时的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Java User-Defined Functions and Stored Procedures; Creating Snowflake Object using Python API",
+      "relatedMaterials": [
+        "docs-udf-procedures",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "什么时候值得把一段 Notebook 逻辑封装为 UDF 或存储过程？",
+    "explanation": "封装的价值在复用、契约和可运营性，前提是逻辑稳定且可测试。",
+    "misconceptions": [
+      "把 UDF 和存储过程视为完全相同",
+      "忽略运行语言和依赖约束",
+      "将复杂业务逻辑封装后不做测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "当逻辑要重复使用、有稳定输入输出契约，并需要被 SQL/任务流程可靠调用。",
+          "只因 Notebook 单元格超过一个。",
+          "当算法还没有明确的业务输入输出时。",
+          "为了避免保存任何测试。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "当逻辑要重复使用、有稳定输入输出契约，并需要被 SQL/任务流程可靠调用。 封装的价值在复用、契约和可运营性，前提是逻辑稳定且可测试。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-01",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "多个工程师共同维护 SQL 和 Notebook，为什么应通过 Git 分支协作？",
+    "explanation": "版本控制提供历史和审查机制，但并不自动替代测试或部署流程。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "能隔离变更、审查差异、追踪历史并控制合并到共享版本的时机。",
+          "Git 会自动验证所有 SQL 的业务正确性。",
+          "分支能代替账户权限治理。",
+          "提交后所有生产对象都会自动更新。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "能隔离变更、审查差异、追踪历史并控制合并到共享版本的时机。 版本控制提供历史和审查机制，但并不自动替代测试或部署流程。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-02",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "从 Git 拉取最新代码后，是否代表 Snowflake 生产对象已经更新？",
+    "explanation": "代码同步只改变工作区文件状态，生产对象需要受控执行或部署。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "是，Git 提交会授予访问权限。",
+          "不，Snowflake 不允许代码文件。",
+          "不一定；同步源文件与执行发布/部署是不同阶段。",
+          "是，任何拉取都会自动运行全部 SQL。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不一定；同步源文件与执行发布/部署是不同阶段。 代码同步只改变工作区文件状态，生产对象需要受控执行或部署。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-03",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "审查一个 Notebook 的 Git 差异时，需要重点检查什么？",
+    "explanation": "Notebook 变更可能携带结果输出或凭据，也可能改变执行逻辑，必须审查整体差异。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "逻辑与参数变化、敏感值/输出泄露、依赖变化及生成的大型非必要差异。",
+          "只检查文件大小。",
+          "只检查作者是否为管理员。",
+          "认为二进制或输出变化永远无关紧要。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "逻辑与参数变化、敏感值/输出泄露、依赖变化及生成的大型非必要差异。 Notebook 变更可能携带结果输出或凭据，也可能改变执行逻辑，必须审查整体差异。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-04",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "同事直接在生产 Worksheet 修改 SQL，却未提交到 Git，带来什么主要风险？",
+    "explanation": "代码与实际部署状态漂移削弱可追溯性，需要建立受控变更路径。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Snowflake 会自动恢复 Git 版本。",
+          "Worksheet 会自动删除表。",
+          "生产状态与版本库脱节，难以复现、审查、回滚和证明实际发布内容。",
+          "查询必然因此更慢。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "生产状态与版本库脱节，难以复现、审查、回滚和证明实际发布内容。 代码与实际部署状态漂移削弱可追溯性，需要建立受控变更路径。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-05",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "某分支包含旧版表结构，合并前如何降低对生产的影响？",
+    "explanation": "对象依赖与 DDL 具有影响面，发布要基于差异、依赖与可恢复性验证。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在隔离环境验证迁移/DDL 顺序、依赖和回滚/兼容策略，再审查发布范围。",
+          "直接在生产运行所有文件且不检查顺序。",
+          "先删除所有下游对象。",
+          "只看分支名中是否含 release。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在隔离环境验证迁移/DDL 顺序、依赖和回滚/兼容策略，再审查发布范围。 对象依赖与 DDL 具有影响面，发布要基于差异、依赖与可恢复性验证。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-06",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "Git 仓库里意外出现真实凭据，应如何响应？",
+    "explanation": "凭据可能已被克隆或写入历史，删除文件不能撤销已泄露的凭据，需要轮换并调查。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将凭据改成大小写混合继续使用。",
+          "把仓库改为私有后不再处理。",
+          "撤销/轮换凭据，清理暴露路径并检查访问/使用记录，而不只删除当前文本。",
+          "仅在最新提交中删掉字符串就认为风险结束。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "撤销/轮换凭据，清理暴露路径并检查访问/使用记录，而不只删除当前文本。 凭据可能已被克隆或写入历史，删除文件不能撤销已泄露的凭据，需要轮换并调查。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-07",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "为什么要把环境参数与业务 SQL 逻辑分开管理？",
+    "explanation": "配置与逻辑解耦降低环境漂移，但配置本身仍需验证和权限管理。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "减少开发/测试/生产差异错误，并使配置能够受控、审查和审计。",
+          "参数化可以保证查询结果永远正确。",
+          "环境差异不影响对象名称或权限。",
+          "所有环境都应使用相同的管理员凭据。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "减少开发/测试/生产差异错误，并使配置能够受控、审查和审计。 配置与逻辑解耦降低环境漂移，但配置本身仍需验证和权限管理。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-08",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "工作区显示文件为最新，但任务仍执行旧版本逻辑，最应检查什么？",
+    "explanation": "开发文件与任务执行目标可能不同，必须追踪部署和执行来源。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "改文件标题即可强制执行最新版本。",
+          "把任务名称改成新版本。",
+          "运行任务引用的文件/对象、已部署版本和实际执行历史。",
+          "只看编辑器当前打开的文件。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "运行任务引用的文件/对象、已部署版本和实际执行历史。 开发文件与任务执行目标可能不同，必须追踪部署和执行来源。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-09",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "为什么在合并前必须运行 SQL/数据质量测试，而不能只依赖代码审查？",
+    "explanation": "评审和测试提供不同证据，二者结合才更能验证变更的行为与结果。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "审查能发现逻辑风险但不能证明运行结果符合数据契约和真实环境边界。",
+          "代码审查完全没有用。",
+          "任何测试都不能发现问题。",
+          "Git 会自动运行全部业务测试且保证通过。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "审查能发现逻辑风险但不能证明运行结果符合数据契约和真实环境边界。 评审和测试提供不同证据，二者结合才更能验证变更的行为与结果。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-git-workspaces-10",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-git-workspaces",
+    "subtopic": "sf-demo-git-workspaces",
+    "knowledgeId": "sf-demo-git-workspaces",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-git-workspaces"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握Snowflake Workspaces 与 Git 协作的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Working with Git; Create and Manage Snowflake Objects like a Pro",
+      "relatedMaterials": [
+        "docs-workspaces-git",
+        "docs-snowflake-cli"
+      ]
+    },
+    "question": "如何为一次生产发布保留可追溯记录？",
+    "explanation": "关联代码、执行和验收记录有助于审计、故障定位和回滚。",
+    "misconceptions": [
+      "把工作区同步当作自动发布",
+      "忽略差异审查与秘密扫描",
+      "混淆开发分支和生产对象状态"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只记仓库名称。",
+          "删除发布前版本避免混淆。",
+          "关联 Git commit、部署执行身份、发布时间、变更对象、测试结果和回滚版本。",
+          "只保留一条聊天消息说“已发布”。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "关联 Git commit、部署执行身份、发布时间、变更对象、测试结果和回滚版本。 关联代码、执行和验收记录有助于审计、故障定位和回滚。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-01",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "CI 流水线要把 SQL 变更发布到测试环境，第一步应确保什么？",
+    "explanation": "发布管道需明确目标和执行身份，防止环境误选或凭据暴露。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "让流水线连接任意可用账户。",
+          "跳过对象命名和权限检查。",
+          "明确连接配置、执行身份、目标环境和需要部署的变更清单。",
+          "把生产连接密码直接写入流水线配置文件。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确连接配置、执行身份、目标环境和需要部署的变更清单。 发布管道需明确目标和执行身份，防止环境误选或凭据暴露。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-02",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "一次部署包含新建表、视图和下游任务，怎样安排更安全？",
+    "explanation": "DDL/对象之间存在依赖，发布顺序和阶段验收能降低半完成状态风险。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "按依赖顺序发布并在每个关键阶段验证对象和查询。",
+          "随机运行脚本以增加并行度。",
+          "先启动下游任务再创建源表。",
+          "只执行最后一个脚本。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按依赖顺序发布并在每个关键阶段验证对象和查询。 DDL/对象之间存在依赖，发布顺序和阶段验收能降低半完成状态风险。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-03",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "CI 中 SQL 语法检查通过，是否足以批准生产发布？",
+    "explanation": "语法是静态检查，不代表目标环境和业务数据上的行为正确。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不足，但只需检查 Markdown 拼写。",
+          "足够，因为 Snowflake 自动测试所有数据。",
+          "不足；还需验证权限、目标对象、结果语义、依赖与运行/回滚方案。",
+          "足够，因为语法通过证明业务正确。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不足；还需验证权限、目标对象、结果语义、依赖与运行/回滚方案。 语法是静态检查，不代表目标环境和业务数据上的行为正确。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-04",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "生产发布使用高权限角色是否合理？",
+    "explanation": "自动化需要最小权限和变更审计，减少凭据被滥用时的影响面。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "应限制部署角色到必要对象/操作，并把审批与执行身份纳入审计。",
+          "是，任何自动化都应使用最高权限。",
+          "只要流水线来自 Git 就无需授权。",
+          "高权限角色可以替代发布测试。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "应限制部署角色到必要对象/操作，并把审批与执行身份纳入审计。 自动化需要最小权限和变更审计，减少凭据被滥用时的影响面。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-05",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "多环境部署中测试通过、生产失败，可能的关键差异是什么？",
+    "explanation": "跨环境发布应检查配置与数据差异，不能只凭测试环境的成功推定生产成功。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "测试通过代表两边的数据一定相同。",
+          "所有失败都是网络问题。",
+          "对象权限、配置、依赖/版本、数据分布或平台能力存在环境差异。",
+          "生产环境不允许 SQL。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "对象权限、配置、依赖/版本、数据分布或平台能力存在环境差异。 跨环境发布应检查配置与数据差异，不能只凭测试环境的成功推定生产成功。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-06",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "为什么应把危险 DDL 和大范围 DML 置于审批或额外门禁？",
+    "explanation": "高影响变更需要额外保护、预览差异和恢复计划，但审批不代替技术控制。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "它们可能造成不可逆影响或大范围业务中断，需要影响评估与恢复方案。",
+          "所有 DDL 都会自动回滚。",
+          "大范围 DELETE 不会改变结果。",
+          "审批能替代服务端权限校验。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "它们可能造成不可逆影响或大范围业务中断，需要影响评估与恢复方案。 高影响变更需要额外保护、预览差异和恢复计划，但审批不代替技术控制。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-07",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "部署脚本成功结束，但新视图返回空数据，发布门禁应检查什么？",
+    "explanation": "创建成功与可用结果不同，需要查询级冒烟测试和数据质量验证。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仅检查文件已复制。",
+          "把空视图当作预期发布结果。",
+          "对象是否正确创建、引用源表与过滤条件、角色权限和代表性查询结果。",
+          "只检查部署命令退出码。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "对象是否正确创建、引用源表与过滤条件、角色权限和代表性查询结果。 创建成功与可用结果不同，需要查询级冒烟测试和数据质量验证。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-08",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "如何设计一个发布后的快速健康检查？",
+    "explanation": "发布后检查应覆盖业务关键路径和核心契约，并控制测试成本。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "运行少量关键查询，检查权限、行数/质量指标、依赖状态和核心 SLA。",
+          "执行耗时最长的全量分析即可。",
+          "只登录控制台看是否有错误横幅。",
+          "不做任何验证以免增加费用。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "运行少量关键查询，检查权限、行数/质量指标、依赖状态和核心 SLA。 发布后检查应覆盖业务关键路径和核心契约，并控制测试成本。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-09",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "发布失败后应如何回滚？",
+    "explanation": "回滚需要考虑状态迁移和新数据，不能把它简单当成重复执行。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接删除所有新旧对象。",
+          "清除部署日志。",
+          "使用已知版本与显式回滚步骤，并确认回滚不会丢失发布后写入的数据。",
+          "重新运行失败的所有 SQL 并假设状态完全相同。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用已知版本与显式回滚步骤，并确认回滚不会丢失发布后写入的数据。 回滚需要考虑状态迁移和新数据，不能把它简单当成重复执行。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-cicd-release-10",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-cicd-release",
+    "subtopic": "sf-demo-cicd-release",
+    "knowledgeId": "sf-demo-cicd-release",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-cicd-release"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握Snowflake CLI、CI/CD 与发布门禁的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Create and Manage Snowflake Objects like a Pro; Working with Git",
+      "relatedMaterials": [
+        "docs-snowflake-cli",
+        "docs-deployment",
+        "docs-access-control"
+      ]
+    },
+    "question": "发布流程如何避免测试和生产使用错误的账号/角色？",
+    "explanation": "显式目标确认和环境级凭据隔离可降低误发布与越权风险。",
+    "misconceptions": [
+      "把 SQL 成功执行视为完整发布成功",
+      "未在目标环境做验证",
+      "忽略最小权限和变更顺序"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "使用环境隔离的连接配置、最小权限凭据和发布前目标身份校验。",
+          "只靠开发人员记得当前 worksheet 标签。",
+          "把同一高权限令牌复制到所有环境。",
+          "让脚本自动选第一个连接。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用环境隔离的连接配置、最小权限凭据和发布前目标身份校验。 显式目标确认和环境级凭据隔离可降低误发布与越权风险。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-01",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "Notebook 在本机能导入某 Python 包，但在 Snowflake Container Runtime 中失败，为什么？",
+    "explanation": "依赖需要在目标运行时验证，不能假设本地环境与托管环境一致。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "两种运行环境的包可用性、版本、架构和安装方式可能不同。",
+          "Snowflake 一定会自动复制本机的 site-packages。",
+          "Python 包不受运行环境影响。",
+          "Container Runtime 只支持标准库。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "两种运行环境的包可用性、版本、架构和安装方式可能不同。 依赖需要在目标运行时验证，不能假设本地环境与托管环境一致。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-02",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "模型训练依赖固定版本的 Python 包，如何提高运行可复现性？",
+    "explanation": "固定依赖与记录环境有助于重现和定位版本回归。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只保存 Notebook 截图。",
+          "使用未固定版本的在线依赖源且不记录变更。",
+          "记录并约束依赖版本，验证兼容性，并保存环境配置与训练代码版本。",
+          "总是安装最新包而不测试。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "记录并约束依赖版本，验证兼容性，并保存环境配置与训练代码版本。 固定依赖与记录环境有助于重现和定位版本回归。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-03",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "一个 GPU 加速示例运行速度没有提高，应该先分析什么？",
+    "explanation": "加速器是否有收益取决于使用路径和瓶颈，应以真实端到端测量验证。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "确认实际设备使用、数据搬运、批大小、算子支持和端到端瓶颈。",
+          "假设只要申请 GPU 就所有步骤自动加速。",
+          "把结果图表改成深色模式。",
+          "不需要检查训练时间或 CPU 使用。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "确认实际设备使用、数据搬运、批大小、算子支持和端到端瓶颈。 加速器是否有收益取决于使用路径和瓶颈，应以真实端到端测量验证。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-04",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "从 Stage 导入依赖包或文件时，应先核验什么？",
+    "explanation": "依赖供应链和访问权限是执行安全的一部分，包应经过来源与兼容性验证。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "假设 Stage 中任何内容都可信。",
+          "为了安装方便将 Stage 公开。",
+          "包来源、版本/完整性、运行时兼容性与访问权限。",
+          "只看文件扩展名。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "包来源、版本/完整性、运行时兼容性与访问权限。 依赖供应链和访问权限是执行安全的一部分，包应经过来源与兼容性验证。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-05",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "容器作业出现内存不足，最合理的诊断顺序是什么？",
+    "explanation": "内存问题往往与数据和算法路径有关，应先定位峰值和不必要复制。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查数据规模、批量大小、对象复制、并行度和运行时资源限制。",
+          "先无限增大所有并行参数。",
+          "把所有异常捕获并忽略。",
+          "只更改容器显示名称。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "检查数据规模、批量大小、对象复制、并行度和运行时资源限制。 内存问题往往与数据和算法路径有关，应先定位峰值和不必要复制。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-06",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "跨 Notebook 和生产任务复用同一模型依赖时，需怎样验证？",
+    "explanation": "运行模式不同可能导致环境和状态差异，需独立测试。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "假设生产任务会继承交互会话变量。",
+          "取消所有依赖记录。",
+          "在两种目标运行模式中测试包、入口点、权限、资源和输入输出契约。",
+          "只在 Notebook 中验证一次。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在两种目标运行模式中测试包、入口点、权限、资源和输入输出契约。 运行模式不同可能导致环境和状态差异，需独立测试。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-07",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "依赖安装失败时，用网络下载任意二进制包是否是合适的默认恢复方案？",
+    "explanation": "依赖引入必须受来源、权限和兼容性控制，不能以任意下载规避限制。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不是；应遵循批准的包来源/依赖路径并检查供应链和兼容性。",
+          "是，所有外部包默认可信。",
+          "只要文件能下载，就兼容所有运行时。",
+          "失败后应关闭审计日志。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不是；应遵循批准的包来源/依赖路径并检查供应链和兼容性。 依赖引入必须受来源、权限和兼容性控制，不能以任意下载规避限制。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-08",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "为何要分别记录训练数据版本、代码版本和运行环境？",
+    "explanation": "复现需要对训练输入、代码和环境分别建立来源记录。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为模型的性能只由 GPU 决定。",
+          "只记录代码版本就能保证复现数据。",
+          "可区分数据变化、逻辑变化和依赖变化对结果的影响。",
+          "三个版本号完全可以用当前日期替代。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "可区分数据变化、逻辑变化和依赖变化对结果的影响。 复现需要对训练输入、代码和环境分别建立来源记录。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-09",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "一项容器任务运行耗时上涨，怎样区分数据增长与依赖/运行时回归？",
+    "explanation": "分层对比帮助将业务规模变化和运行环境变化分开归因。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "比较输入规模、包/环境版本、资源指标和分阶段耗时。",
+          "仅比较任务名称。",
+          "随机切换容器镜像不做对照。",
+          "把新的运行时间当作正常而不建基线。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "比较输入规模、包/环境版本、资源指标和分阶段耗时。 分层对比帮助将业务规模变化和运行环境变化分开归因。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-container-runtime-10",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-container-runtime",
+    "subtopic": "sf-demo-container-runtime",
+    "knowledgeId": "sf-demo-container-runtime",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-container-runtime"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握Snowflake Container Runtime 与依赖管理的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Getting Started with Container Runtimes; Import Package from Stage; Accelerating ML with NVIDIA in Snowflake",
+      "relatedMaterials": [
+        "docs-container-runtime",
+        "docs-notebooks-packages"
+      ]
+    },
+    "question": "生产运行时禁止某依赖包，怎样减少上线风险？",
+    "explanation": "尽早验证平台边界可避免晚期重构与供应链风险。",
+    "misconceptions": [
+      "把本地环境等同于托管运行时",
+      "忽略包版本和资源要求",
+      "将 GPU 可用误认为算法自动提速"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将该包的源码复制到每个 Notebook 而不审查。",
+          "假设所有 PyPI 包都自动受支持。",
+          "在开发初期检查目标环境支持列表和替代方案，并用实际部署测试验证。",
+          "先把生产任务上线再想办法。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在开发初期检查目标环境支持列表和替代方案，并用实际部署测试验证。 尽早验证平台边界可避免晚期重构与供应链风险。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-01",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "上游将一个字段从 NUMBER 改成 VARCHAR，第一项风险是什么？",
+    "explanation": "类型变化可能破坏算术、排序和连接，应通过契约测试与显式转换评估影响。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "Warehouse 自动重写所有消费者逻辑。",
+          "类型变化只影响列名展示。",
+          "下游计算、连接和聚合可能发生类型错误或语义变化。",
+          "字段值会自动保持所有原有数值语义。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "下游计算、连接和聚合可能发生类型错误或语义变化。 类型变化可能破坏算术、排序和连接，应通过契约测试与显式转换评估影响。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-02",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "Schema Change Tracker 发现新增列，是否一定可以直接发布？",
+    "explanation": "新增列通常较易兼容，但 SELECT *、序列化和数据契约仍可能受影响。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不一定；需确认下游使用方式、字段含义、敏感性和兼容策略。",
+          "是，因为新增列从不影响任何 SQL。",
+          "否，所有新增列都必须删除。",
+          "只要列名不冲突就无需评估。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不一定；需确认下游使用方式、字段含义、敏感性和兼容策略。 新增列通常较易兼容，但 SELECT *、序列化和数据契约仍可能受影响。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-03",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "源数据删除了一列，如何避免管道在生产中突然失败？",
+    "explanation": "破坏性 Schema 变化应通过依赖分析、通知和过渡策略治理。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "默默将缺失列填成随机值。",
+          "直接删除所有下游视图。",
+          "在发布前检测破坏性变更，追踪下游依赖并安排迁移/弃用窗口。",
+          "让任务每天失败一次以通知消费者。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在发布前检测破坏性变更，追踪下游依赖并安排迁移/弃用窗口。 破坏性 Schema 变化应通过依赖分析、通知和过渡策略治理。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-04",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "JSON 新增未知字段后，最稳妥的管道策略是什么？",
+    "explanation": "未知字段需要被观察和评估，避免错误映射或不可追踪丢失。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "保留原始载荷并记录变化，再决定是否映射到标准化模型。",
+          "静默删除整个 JSON 记录。",
+          "将未知字段都映射到已有列。",
+          "假设新字段一定不包含敏感数据。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "保留原始载荷并记录变化，再决定是否映射到标准化模型。 未知字段需要被观察和评估，避免错误映射或不可追踪丢失。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-05",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "Schema 差异报告应展示哪些信息以支持行动？",
+    "explanation": "变更影响分析需要有前后对照和依赖上下文。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只显示本次查询的耗时。",
+          "只给出修改者的名字。",
+          "变更字段、前后类型/可空性、发现时间、来源和受影响消费者。",
+          "只显示“Schema 已改变”。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "变更字段、前后类型/可空性、发现时间、来源和受影响消费者。 变更影响分析需要有前后对照和依赖上下文。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-06",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "上游把一个金额字段改名但含义未变，如何更新下游更安全？",
+    "explanation": "显式映射和回归对账可确保字段更名不改变指标语义。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "维护明确字段映射并更新消费者测试，兼容期内记录旧/新字段关系。",
+          "在所有查询里依赖字段位置而非名称。",
+          "永久忽略该字段。",
+          "直接删除目标列而不校验业务汇总。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "维护明确字段映射并更新消费者测试，兼容期内记录旧/新字段关系。 显式映射和回归对账可确保字段更名不改变指标语义。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-07",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "为什么要对关键字段设置类型、空值和枚举约束？",
+    "explanation": "半结构化存储仍需对关键消费字段建立质量契约。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "约束只会影响 UI。",
+          "只要使用 VARIANT 就不需要约束。",
+          "及时发现来源异常，防止异常数据传播并影响下游指标。",
+          "数据约束能保证上游永远不会改变。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "及时发现来源异常，防止异常数据传播并影响下游指标。 半结构化存储仍需对关键消费字段建立质量契约。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-08",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "Schema 演进测试应该覆盖什么？",
+    "explanation": "真实变化会影响语义和兼容性，应按变更类型覆盖边界。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "新增、删除、重命名、类型变更、空值变化以及下游 SQL/应用行为。",
+          "只测试当前正常 Schema。",
+          "仅检查 JSON 格式可解析。",
+          "只比较列总数。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "新增、删除、重命名、类型变更、空值变化以及下游 SQL/应用行为。 真实变化会影响语义和兼容性，应按变更类型覆盖边界。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-09",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "Schema Change 告警太多，哪些变更应优先升级？",
+    "explanation": "按兼容性和业务影响分级可以提高信号质量，同时保留低风险变化记录。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只对列注释变更升级。",
+          "完全关闭所有变化通知。",
+          "影响关键消费契约的删列、类型收窄、语义变化和高敏感字段变更。",
+          "将所有变化无差别标成最高级。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "影响关键消费契约的删列、类型收窄、语义变化和高敏感字段变更。 按兼容性和业务影响分级可以提高信号质量，同时保留低风险变化记录。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-schema-change-10",
+    "courseId": "snowflake",
+    "category": "data-engineering",
+    "topic": "sf-demo-schema-change",
+    "subtopic": "sf-demo-schema-change",
+    "knowledgeId": "sf-demo-schema-change",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "data-engineering",
+      "sf-demo-schema-change"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握Schema Change Tracker 与兼容性的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Schema Change Tracker; Ingest Public JSON",
+      "relatedMaterials": [
+        "docs-schema-evolution",
+        "docs-data-loading",
+        "docs-dynamic-tables"
+      ]
+    },
+    "question": "在下游数据产品发布前，如何证明 Schema 升级没有破坏指标？",
+    "explanation": "结构可查询不代表业务指标正确，必须在代表性数据上做结果对账。",
+    "misconceptions": [
+      "把所有 Schema 变化视为无害",
+      "忽略下游消费者与列语义",
+      "没有变更检测和兼容性测试"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "执行契约测试并比较关键查询、连接、空值、行数和业务控制总额。",
+          "仅确认表能被 SELECT。",
+          "只比较 Schema 名字。",
+          "删除升级前数据以消除差异。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "执行契约测试并比较关键查询、连接、空值、行数和业务控制总额。 结构可查询不代表业务指标正确，必须在代表性数据上做结果对账。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-01",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "定时报告要求每个工作日日本时间 08:00 可用，设计时应先明确什么？",
+    "explanation": "调度触发与数据交付存在差异，业务日期/时区和上游完成条件必须明确。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "时区、业务日期、上游依赖截止、节假日规则和 SLA 验收条件。",
+          "只在 Task 名称里写 08:00。",
+          "默认所有用户时区都一致。",
+          "把作业触发时间视为数据已可用时间。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "时区、业务日期、上游依赖截止、节假日规则和 SLA 验收条件。 调度触发与数据交付存在差异，业务日期/时区和上游完成条件必须明确。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-02",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "某 Task 上次运行尚未完成，新的周期又到达。应评估什么风险？",
+    "explanation": "长时间任务可能与下一轮重叠，需验证调度策略与幂等性。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接提高频率到每秒一次。",
+          "删除上次运行状态。",
+          "并发/重叠运行、资源争用、重复副作用和批次顺序。",
+          "重叠执行永远会自动串行且无影响。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "并发/重叠运行、资源争用、重复副作用和批次顺序。 长时间任务可能与下一轮重叠，需验证调度策略与幂等性。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-03",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "定时报告最近几次状态均为成功，但数据总是晚一个业务日。可能的问题是什么？",
+    "explanation": "正确运行状态不能发现所有时间语义错误，需检查数据日期和依赖时序。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "查询中的业务日期/时区边界或上游完成依赖定义错误。",
+          "Task 名称太长。",
+          "Warehouse 不支持日期类型。",
+          "成功状态保证业务日期一定正确。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "查询中的业务日期/时区边界或上游完成依赖定义错误。 正确运行状态不能发现所有时间语义错误，需检查数据日期和依赖时序。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-04",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "任务失败后需要补跑昨日批次，最重要的操作约束是什么？",
+    "explanation": "补跑应精确指定逻辑批次并验证影响范围，避免重复或错误覆盖。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将昨天数据标记为今天。",
+          "先删除运行审计记录。",
+          "明确批次日期和目标范围，确保补跑幂等且不会覆盖更新批次。",
+          "不指定日期，直接重跑全部历史。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "明确批次日期和目标范围，确保补跑幂等且不会覆盖更新批次。 补跑应精确指定逻辑批次并验证影响范围，避免重复或错误覆盖。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-05",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "如何为每日关键报表定义可用的健康检查？",
+    "explanation": "报告健康不仅指任务活跃，还要验证数据日期、内容质量和时效。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "检查最近业务日期、关键指标非空/合理、上游完成和目标新鲜度。",
+          "只检查 Task 是否存在。",
+          "只检查 Warehouse 处于运行状态。",
+          "只统计 SQL 文件数量。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "检查最近业务日期、关键指标非空/合理、上游完成和目标新鲜度。 报告健康不仅指任务活跃，还要验证数据日期、内容质量和时效。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-06",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "任务发出告警后恢复运行，怎样避免值班人员继续处理已恢复故障？",
+    "explanation": "告警生命周期应可追踪，包括首次发生、持续、确认及恢复。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "重复发送故障通知且不附状态。",
+          "停止所有后续监控。",
+          "发出带事件标识的恢复通知，并保留发生、确认、恢复的完整状态。",
+          "把原告警直接删除。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "发出带事件标识的恢复通知，并保留发生、确认、恢复的完整状态。 告警生命周期应可追踪，包括首次发生、持续、确认及恢复。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-07",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "多个任务使用同一 Warehouse，定时高峰出现队列延迟，如何诊断？",
+    "explanation": "任务时序和共享容量可能引发竞争，应先关联排队和执行历史再优化。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "按任务时间窗查看排队、查询负载和依赖关系，再错峰或隔离工作负载。",
+          "只增加所有任务的重试次数。",
+          "不看时序直接把 SQL 改名。",
+          "禁用调度历史。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "按任务时间窗查看排队、查询负载和依赖关系，再错峰或隔离工作负载。 任务时序和共享容量可能引发竞争，应先关联排队和执行历史再优化。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-08",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "周期报告输出为零行时，应该怎样告知消费者？",
+    "explanation": "空结果可能有多种含义，应明确状态与证据，避免误导决策。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "将空结果静默替换成昨天结果。",
+          "不保留数据日期。",
+          "区分业务上确实无记录、过滤条件错误、上游缺失和执行失败。",
+          "一律将零行解释为业务没有活动。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "区分业务上确实无记录、过滤条件错误、上游缺失和执行失败。 空结果可能有多种含义，应明确状态与证据，避免误导决策。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-09",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "定时任务需要在上游完成后才执行，哪种控制更可靠？",
+    "explanation": "基于完成信号而非猜测时刻可以提高依赖可靠性，并避免读取不完整数据。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "显式建立依赖/完成信号，并校验输入批次已满足交付契约。",
+          "只把下游调度时间设置得稍晚，不检查上游状态。",
+          "在任务中无限等待。",
+          "依赖任何时候都由用户手动提醒。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "显式建立依赖/完成信号，并校验输入批次已满足交付契约。 基于完成信号而非猜测时刻可以提高依赖可靠性，并避免读取不完整数据。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-scheduled-query-10",
+    "courseId": "snowflake",
+    "category": "snowflake-devops",
+    "topic": "sf-demo-scheduled-query",
+    "subtopic": "sf-demo-scheduled-query",
+    "knowledgeId": "sf-demo-scheduled-query",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-devops",
+      "sf-demo-scheduled-query"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握定时查询、报告和告警调度的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Scheduled Query Execution Report; Snowflake Trail Alerts Notifications",
+      "relatedMaterials": [
+        "docs-tasks",
+        "docs-alerts",
+        "docs-query-history"
+      ]
+    },
+    "question": "长期调度系统应保留哪些运行证据？",
+    "explanation": "可观测的运行记录支持补跑、审计、SLA 分析和故障根因定位。",
+    "misconceptions": [
+      "将调度触发成功当作报表交付成功",
+      "忽略时区和重叠执行",
+      "告警没有恢复与补跑策略"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "只保存调度器截图。",
+          "仅保存作业显示名称。",
+          "运行 ID、计划与实际时间、输入批次、查询 ID、结果质量和重试/恢复状态。",
+          "只保存最后一次运行是否成功。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "运行 ID、计划与实际时间、输入批次、查询 ID、结果质量和重试/恢复状态。 可观测的运行记录支持补跑、审计、SLA 分析和故障根因定位。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-01",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "某门店销售额每年节假日都会升高，异常检测却反复报警。应先检查什么？",
+    "explanation": "异常检测需要区分规律性的季节变化与真正异常，应通过时间特征与历史基线评估。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "认定每个节假日都是数据故障。",
+          "删除所有节假日数据且不留记录。",
+          "季节性和日历因素是否进入建模/评估，以及历史样本是否覆盖类似周期。",
+          "只提高告警数量。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "季节性和日历因素是否进入建模/评估，以及历史样本是否覆盖类似周期。 异常检测需要区分规律性的季节变化与真正异常，应通过时间特征与历史基线评估。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-02",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "异常检测结果标记某日为异常，业务团队应如何使用？",
+    "explanation": "模型输出需要经过业务验证，错误判定会产生真实的运营成本。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "结合上下文和业务规则进行核验，并将模型输出视为调查线索而非结论。",
+          "自动删除该日全部记录。",
+          "不经复核就认定发生欺诈。",
+          "把模型标签当成财务审计定论。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "结合上下文和业务规则进行核验，并将模型输出视为调查线索而非结论。 模型输出需要经过业务验证，错误判定会产生真实的运营成本。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-03",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "训练/评估时间序列模型时，为什么不能随机打乱所有时间点再切分？",
+    "explanation": "时序评估应维持时间方向，避免未来数据泄漏到历史预测。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "时间顺序对时序数据没有意义。",
+          "只要数据量足够，数据泄漏无关紧要。",
+          "可能让未来信息进入训练集，无法真实模拟按时间预测的泛化表现。",
+          "随机切分会让所有模型一定更慢。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "可能让未来信息进入训练集，无法真实模拟按时间预测的泛化表现。 时序评估应维持时间方向，避免未来数据泄漏到历史预测。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-04",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "异常数突然暴增，同时上游输入行数也翻倍，最先应检查什么？",
+    "explanation": "数据质量变化可被模型误判为业务异常，应先核验输入和批次完整性。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "数据重复、批次重放、来源变化和预处理逻辑。",
+          "直接把异常阈值提高到最大。",
+          "假设业务风险同时翻倍。",
+          "只查看模型名字。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "数据重复、批次重放、来源变化和预处理逻辑。 数据质量变化可被模型误判为业务异常，应先核验输入和批次完整性。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-05",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "如何选择异常检测阈值？",
+    "explanation": "阈值影响实际调查负担和漏检风险，应与业务损失及验证结果匹配。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "选择能产生最多异常的阈值。",
+          "用训练集分数代替业务成本分析。",
+          "根据误报/漏报成本、历史基线、业务处理容量和验证集表现进行校准。",
+          "固定使用任意阈值且永不复核。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "根据误报/漏报成本、历史基线、业务处理容量和验证集表现进行校准。 阈值影响实际调查负担和漏检风险，应与业务损失及验证结果匹配。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-06",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "模型报告高精确率但漏掉许多异常，下一步应看什么？",
+    "explanation": "异常检测常涉及精确率/召回率权衡，评估指标要映射到实际错误成本。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "同时观察召回率、精确率、阈值和不同群体/时期的错误分布。",
+          "只看总体准确率。",
+          "立即提高阈值以减少告警。",
+          "完全忽略未被检测的样本。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "同时观察召回率、精确率、阈值和不同群体/时期的错误分布。 异常检测常涉及精确率/召回率权衡，评估指标要映射到实际错误成本。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-07",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "异常事件被人工确认后，怎样利用反馈改进流程？",
+    "explanation": "标注反馈可用于误差分析，但需要追踪版本和基线避免过拟合单个案例。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "无条件把所有模型判断改成人工标签。",
+          "在没有基线的情况下持续调阈值。",
+          "记录确认标签、原因与特征上下文，按版本评估规则/模型调整的效果。",
+          "直接把该记录从历史数据中删除。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "记录确认标签、原因与特征上下文，按版本评估规则/模型调整的效果。 标注反馈可用于误差分析，但需要追踪版本和基线避免过拟合单个案例。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-08",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "如何避免检测模型把数据管道故障错误解释为业务异常？",
+    "explanation": "业务异常和数据生成异常可能表现相似，需要先验证输入质量和新鲜度。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "同时监控输入完整性、刷新延迟和数据分布，并为基础数据异常设置优先处理路径。",
+          "只给模型更多自由文本。",
+          "不再监控输入数据。",
+          "将所有缺失值填成平均值后直接预测。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "同时监控输入完整性、刷新延迟和数据分布，并为基础数据异常设置优先处理路径。 业务异常和数据生成异常可能表现相似，需要先验证输入质量和新鲜度。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-09",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "一个异常检测应用需要面向运营人员展示结果，至少应呈现什么？",
+    "explanation": "运营决策需要能解释和追溯的上下文，而不只是一个标签。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "仅展示模型参数。",
+          "完全隐藏数据时间范围。",
+          "异常分数/级别、时间窗口、关键贡献信息、数据质量状态和后续处置入口。",
+          "只有一个红色图标。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "异常分数/级别、时间窗口、关键贡献信息、数据质量状态和后续处置入口。 运营决策需要能解释和追溯的上下文，而不只是一个标签。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-anomaly-detection-10",
+    "courseId": "snowflake",
+    "category": "snowflake-agent-ml",
+    "topic": "sf-demo-anomaly-detection",
+    "subtopic": "sf-demo-anomaly-detection",
+    "knowledgeId": "sf-demo-anomaly-detection",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake-agent-ml",
+      "sf-demo-anomaly-detection"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握异常检测与 Cortex ML Functions的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Anomaly Detection with Snowflake ML Functions; Getting Started with Snowflake Cortex ML-Based Functions",
+      "relatedMaterials": [
+        "docs-cortex-ml-functions",
+        "docs-snowflake-ml"
+      ]
+    },
+    "question": "如何在上线前验证异常检测模型不会让告警队列失控？",
+    "explanation": "检测性能必须与运营处理容量一起评估，避免模型产生超出团队能力的告警量。",
+    "misconceptions": [
+      "把模型标记当作必然真实异常",
+      "忽略季节性与数据质量变化",
+      "没有管理误报/漏报成本"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "在代表性时间段回放，测量每天告警量、误报率、漏报样本和人工处理能力。",
+          "只在一个正常样本上试运行。",
+          "将所有异常结果都自动升级为最高级。",
+          "不记录告警数量。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "在代表性时间段回放，测量每天告警量、误报率、漏报样本和人工处理能力。 检测性能必须与运营处理容量一起评估，避免模型产生超出团队能力的告警量。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-01",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "easy",
+    "angle": "definition",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "EDA 发现两列变量高度相关，能否直接得出其中一列导致另一列变化？",
+    "explanation": "描述性关联不自动构成因果结论，需考虑替代解释和识别策略。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "不能；相关性只能提示关联，需要考虑混杂因素、时间顺序和研究设计。",
+          "可以，因为相关系数证明因果。",
+          "可以，只要图表颜色一致。",
+          "不能分析相关性数据。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "不能；相关性只能提示关联，需要考虑混杂因素、时间顺序和研究设计。 描述性关联不自动构成因果结论，需考虑替代解释和识别策略。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-02",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "easy",
+    "angle": "mechanism",
+    "cognitiveTask": "explain",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "对数亿行数据做 EDA 时，为什么通常先在 Snowflake 端计算摘要统计？",
+    "explanation": "服务端统计可减少数据搬运，但需要说明采样策略以及统计范围。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "因为客户端无法绘制图表。",
+          "因为聚合会自动解决所有偏差。",
+          "减少不必要的数据传输，并能针对总体或明确定义的样本范围计算统计量。",
+          "因为样本统计永远比全量准确。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "减少不必要的数据传输，并能针对总体或明确定义的样本范围计算统计量。 服务端统计可减少数据搬运，但需要说明采样策略以及统计范围。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-03",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "easy",
+    "angle": "comparison",
+    "cognitiveTask": "compare",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "图表显示客户流失率下降，比较前后周期时必须先核对什么？",
+    "explanation": "指标变化可能源于定义和群体构成变化，而非真实业务改善。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "流失定义、分母、时间窗口、客户群构成和数据覆盖。",
+          "只检查标题字体大小。",
+          "将分母移除以便趋势更明显。",
+          "把所有缺失月份插值但不说明。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "流失定义、分母、时间窗口、客户群构成和数据覆盖。 指标变化可能源于定义和群体构成变化，而非真实业务改善。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-04",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "easy",
+    "angle": "scenario",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "随机抽样只覆盖活跃用户，分析结论可能有什么偏差？",
+    "explanation": "样本框决定可推断的人群，单纯随机并不能修复抽样框自身的遗漏。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "活跃用户样本必然更接近总体。",
+          "偏差只影响图表颜色。",
+          "样本可能系统性排除不活跃用户，无法代表整体用户群。",
+          "随机抽样总能消除所有选择偏差。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "样本可能系统性排除不活跃用户，无法代表整体用户群。 样本框决定可推断的人群，单纯随机并不能修复抽样框自身的遗漏。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-05",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "easy",
+    "angle": "debugging",
+    "cognitiveTask": "troubleshoot",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "缺失值在高消费客户中明显更多，简单删除缺失行可能造成什么？",
+    "explanation": "缺失机制与目标变量相关时，简单删除会产生选择偏差，需要分析缺失原因。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "样本结构发生偏移，估计结果可能不再代表完整总体。",
+          "删除一定提升估计的无偏性。",
+          "缺失值与分析结果无关。",
+          "缺失数据只影响模型文件大小。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "样本结构发生偏移，估计结果可能不再代表完整总体。 缺失机制与目标变量相关时，简单删除会产生选择偏差，需要分析缺失原因。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-06",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "easy",
+    "angle": "design",
+    "cognitiveTask": "design",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "一张图把订单数和销售额放在同一坐标轴，读者难以理解。怎样改进？",
+    "explanation": "可视化应保留量纲并使比较语义清晰，不能用视觉技巧模糊不同尺度。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "把销售额转换成没有说明的整数。",
+          "只换成 3D 图。",
+          "使用清晰单位和合适尺度/分面，避免不同量纲造成误读。",
+          "隐藏其中一个单位。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "使用清晰单位和合适尺度/分面，避免不同量纲造成误读。 可视化应保留量纲并使比较语义清晰，不能用视觉技巧模糊不同尺度。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-07",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "medium",
+    "angle": "tradeoff",
+    "cognitiveTask": "evaluate",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "为什么需要记录图表使用的查询和过滤条件？",
+    "explanation": "图表可追溯性需要知道所用数据和变换口径，支持复核与审计。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "让分析可复现，并能解释图表为何随时间或配置变化。",
+          "因为查询记录能自动证明因果。",
+          "仅用于存储图表配色。",
+          "为了避免发布源代码。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "让分析可复现，并能解释图表为何随时间或配置变化。 图表可追溯性需要知道所用数据和变换口径，支持复核与审计。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-08",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "medium",
+    "angle": "implementation",
+    "cognitiveTask": "apply",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "EDA 发现极端值，处理前应先做什么？",
+    "explanation": "异常值可能有业务意义，处理方案应基于来源证据和敏感性分析。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "直接把极端值改成零。",
+          "忽略所有极端值。",
+          "核实它是数据错误、合法稀有事件还是分布特征，并评估处理对结论的影响。",
+          "一律删除超过均值三倍的数据。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "核实它是数据错误、合法稀有事件还是分布特征，并评估处理对结论的影响。 异常值可能有业务意义，处理方案应基于来源证据和敏感性分析。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-09",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "medium",
+    "angle": "fundamental",
+    "cognitiveTask": "recall",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "某仪表板显示平均响应时间改善，但最慢的 1% 请求变差。哪些统计量更有帮助？",
+    "explanation": "平均数可能掩盖长尾，分位数和分组更能体现用户实际体验。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "同时看中位数和高分位数（如 P95/P99），并按请求类型分组。",
+          "只看平均值。",
+          "只看最短的一次请求。",
+          "将失败请求排除且不披露。"
+        ],
+        "answer": [
+          0
+        ],
+        "misconceptionMap": [
+          null,
+          0,
+          1,
+          2
+        ]
+      },
+      "open": {
+        "referenceAnswer": "同时看中位数和高分位数（如 P95/P99），并按请求类型分组。 平均数可能掩盖长尾，分位数和分组更能体现用户实际体验。"
+      }
+    }
+  },
+  {
+    "id": "sf-demo-notebooks-300-sf-demo-eda-visualization-10",
+    "courseId": "snowflake",
+    "category": "snowflake",
+    "topic": "sf-demo-eda-visualization",
+    "subtopic": "sf-demo-eda-visualization",
+    "knowledgeId": "sf-demo-eda-visualization",
+    "tags": [
+      "snowflake-course",
+      "snowflake-demo-notebooks-300",
+      "snowflake",
+      "sf-demo-eda-visualization"
+    ],
+    "difficulty": "medium",
+    "angle": "synthesis",
+    "cognitiveTask": "synthesize",
+    "assessment": {
+      "target": "掌握EDA、可视化与数据故事的关键机制和工程实践边界。",
+      "reasoningGoal": "根据题目给出的数据形态、运行约束或故障信号，选择可验证的方案，并说明其机制、风险或验收证据。"
+    },
+    "source": {
+      "materialId": "snowflake-demo-notebooks",
+      "section": "Visual Data Stories with Snowflake Notebooks; First Machine Learning Project; Telco Churn Data Analysis",
+      "relatedMaterials": [
+        "docs-snowflake-notebooks",
+        "docs-snowpark-python"
+      ]
+    },
+    "question": "用可视化支持业务决策，最后应怎样表达不确定性？",
+    "explanation": "可视化结论需要让决策者看到证据范围与限制，避免过度解读。",
+    "misconceptions": [
+      "将相关性直接解释为因果",
+      "忽略采样与缺失偏差",
+      "用图形呈现掩盖指标口径问题"
+    ],
+    "formats": {
+      "choice": {
+        "type": "single",
+        "options": [
+          "隐藏数据来源和观察窗口。",
+          "把模型预测画成历史事实。",
+          "说明样本范围、方法假设、数据缺口和结论适用边界。",
+          "只给确定性的因果措辞。"
+        ],
+        "answer": [
+          2
+        ],
+        "misconceptionMap": [
+          1,
+          2,
+          null,
+          0
+        ]
+      },
+      "open": {
+        "referenceAnswer": "说明样本范围、方法假设、数据缺口和结论适用边界。 可视化结论需要让决策者看到证据范围与限制，避免过度解读。"
+      }
+    }
+  }
+]

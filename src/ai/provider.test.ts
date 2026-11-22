@@ -76,6 +76,13 @@ describe('isEntryValid（按引擎区分校验）', () => {
     expect(isEntryValid(entry({ id: 'local', model: 'unsloth/Qwen3-8B', apiKey: '' }))).toBe(true);
   });
 
+  it('Copilot SDK 使用本机登录态，不要求 apiKey 或 model（空 model 按 auto 处理）', () => {
+    expect(isEntryValid(entry({ id: 'copilot-sdk', model: '', apiKey: '' }))).toBe(true);
+    const p = new PiAIProvider(entry({ id: 'copilot-sdk', model: '', apiKey: '' }));
+    expect(p).toBeInstanceOf(PiAIProvider);
+    expect(p?.name).toBe('GitHub Copilot SDK');
+  });
+
   it('云端引擎必须有 apiKey 与 model', () => {
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: '' })).toBe(false);
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: '', apiKey: 'sk-x' })).toBe(false);
