@@ -47,14 +47,16 @@ describe('campus employment interview course', () => {
     const single = allQuestions.filter((q) => q.formats.choice?.type === 'single');
     const multiple = allQuestions.filter((q) => q.formats.choice?.type === 'multiple');
     expect(allQuestions.every((q) => Boolean(q.formats.choice) && !q.formats.open)).toBe(true);
-    expect(single).toHaveLength(455);
-    expect(multiple).toHaveLength(45);
+    expect(single).toHaveLength(375);
+    expect(multiple).toHaveLength(125);
     expect(single.every((q) => q.formats.choice?.answer.length === 1)).toBe(true);
     expect(multiple.every((q) => q.formats.choice?.answer.length === 3)).toBe(true);
     expect(multiple.every((q) => q.question.includes('多选'))).toBe(true);
-    for (const node of knowledge) {
-      expect(multiple.filter((q) => q.topic === node.id), `multiple-choice coverage for ${node.id}`).toHaveLength(3);
+    for (const [index, node] of knowledge.entries()) {
+      const expected = index < 5 ? 9 : 8;
+      expect(multiple.filter((q) => q.topic === node.id), `multiple-choice coverage for ${node.id}`).toHaveLength(expected);
     }
+    expect(multiple.length / allQuestions.length).toBeGreaterThanOrEqual(0.25);
     expect(allQuestions.every((q) => q.formats.choice?.options.length === 4)).toBe(true);
     expect(allQuestions.every((q) => q.question.length >= 80 && q.question.includes('面试官'))).toBe(true);
     expect(allQuestions.every((q) => q.tags.includes('scenario-based') && q.tags.some((tag) => tag.startsWith('case-')))).toBe(true);
