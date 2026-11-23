@@ -63,6 +63,37 @@ describe('campus employment interview course', () => {
     expect(allQuestions.every((q) => questionSchema.safeParse(q).success)).toBe(true);
   });
 
+
+  it('keeps choice-option lengths balanced and distributes answer positions', () => {
+    const ordered = [...allQuestions].sort((a, b) => a.id.localeCompare(b.id));
+    const singlePositions = [0, 0, 0, 0];
+    const multipleDistractorPositions = [0, 0, 0, 0];
+
+    for (const question of ordered) {
+      const choice = question.formats.choice!;
+      const lengths = choice.options.map((option) => [...option].length);
+      expect(Math.max(...lengths) / Math.min(...lengths)).toBeLessThanOrEqual(1.8);
+      expect(new Set(choice.options).size).toBe(4);
+
+      const correctLengths = choice.answer.map((index) => lengths[index]);
+      const distractorLengths = lengths.filter((_, index) => !choice.answer.includes(index));
+      const correctAverage = correctLengths.reduce((sum, value) => sum + value, 0) / correctLengths.length;
+      const distractorAverage = distractorLengths.reduce((sum, value) => sum + value, 0) / distractorLengths.length;
+      expect(Math.abs(correctAverage - distractorAverage)).toBeLessThanOrEqual(12);
+
+      if (choice.type === 'single') {
+        singlePositions[choice.answer[0]] += 1;
+      } else {
+        for (let index = 0; index < 4; index += 1) {
+          if (!choice.answer.includes(index)) multipleDistractorPositions[index] += 1;
+        }
+      }
+    }
+
+    expect(singlePositions).toEqual([94, 94, 94, 93]);
+    expect(multipleDistractorPositions).toEqual([32, 31, 31, 31]);
+  });
+
   it('has traceable 2025-2026 interview patterns and clearly marked practice extensions', () => {
     expect(allQuestions.every((q) => Boolean(q.source?.materialId && q.source.section))).toBe(true);
     expect(allQuestions.some((q) => q.tags.includes('field-reported-2025-2026'))).toBe(true);
