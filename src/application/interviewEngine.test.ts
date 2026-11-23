@@ -259,36 +259,36 @@ describe('generateOpenQuestions 门控（ADR-031）', () => {
     expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
   });
 
-  it('校招课程预置行为题在默认关闭动态开放题时仍可快速组卷', async () => {
+  it('校招课程预置选择题在默认关闭动态开放题时仍可快速组卷', async () => {
     const campusQuestions = [
-      { ...openQ, id: 'campus-1', courseId: 'campus-employment', category: 'campus-employment' },
-      { ...openQ, id: 'campus-2', courseId: 'campus-employment', category: 'campus-employment' },
-      { ...openQ, id: 'campus-3', courseId: 'campus-employment', category: 'campus-employment' },
+      { ...choiceQ, id: 'campus-1', courseId: 'campus-employment', category: 'campus-employment' },
+      { ...choiceQ, id: 'campus-2', courseId: 'campus-employment', category: 'campus-employment' },
+      { ...choiceQ, id: 'campus-3', courseId: 'campus-employment', category: 'campus-employment' },
     ];
     const campusBank = { categories: ['campus-employment'], questions: campusQuestions };
     const session = await buildSession(
       campusBank,
-      { ...def(true, ['choice', 'open']), courseId: 'campus-employment', count: 3 },
+      { ...def(true, ['choice']), courseId: 'campus-employment', count: 3 },
       { ...baseCfg, generateOpenQuestions: false },
     );
     expect(session.questions).toHaveLength(3);
-    expect(session.questions.every((sq) => sq.format === 'open')).toBe(true);
+    expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
   });
 
-  it('校招课程自适应下一题也允许预置开放题', async () => {
+  it('校招课程自适应下一题继续使用预置选择题', async () => {
     const campusQuestions = [
-      { ...openQ, id: 'campus-adaptive-1', courseId: 'campus-employment', category: 'campus-employment' },
-      { ...openQ, id: 'campus-adaptive-2', courseId: 'campus-employment', category: 'campus-employment' },
+      { ...choiceQ, id: 'campus-adaptive-1', courseId: 'campus-employment', category: 'campus-employment' },
+      { ...choiceQ, id: 'campus-adaptive-2', courseId: 'campus-employment', category: 'campus-employment' },
     ];
     const campusBank = { categories: ['campus-employment'], questions: campusQuestions };
     const first = await buildSession(
       campusBank,
-      { ...def(true, ['choice', 'open']), courseId: 'campus-employment', count: 2, adaptive: true },
+      { ...def(true, ['choice']), courseId: 'campus-employment', count: 2, adaptive: true },
       { ...baseCfg, generateOpenQuestions: false },
     );
     const step = await nextAdaptiveStep(campusBank, first, [], undefined, { ...baseCfg, generateOpenQuestions: false });
     expect(step).not.toBeNull();
-    expect(step!.question.format).toBe('open');
+    expect(step!.question.format).toBe('choice');
   });
 
   it('开启时恢复组卷配额：纯开放题入卷并占满开放配额', async () => {
