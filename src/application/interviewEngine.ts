@@ -23,8 +23,8 @@ const ADAPTIVE_OPEN_PROBABILITY = 0.3;
 
 /**
  * 本次会话实际允许的呈现形态（ADR-031）：
- * - 普通面试题库的 open 形态受 config.generateOpenQuestions 与 def.useAI 双重门控；
- * - 校招课程等显式标记的预置开放题不属于 LLM 动态生成，仍可进入题池；无评分引擎时按未评分处理；
+ * - 普通题库的 open 形态受 config.generateOpenQuestions 与 def.useAI 双重门控；
+ * - 校招课程题库全部为预置选择题，不依赖 LLM 生成或开放题评分；
  * 返回值永远是具体的非空列表：定义未选形态视为不限（choice+open）；
  * 定义只选了 open 而不可用时退化为 choice，避免出现空会话。
  */
@@ -48,7 +48,7 @@ export async function buildSession(
   config?: AIConfig,
 ): Promise<InterviewSession> {
   const validDef = assertValidDefinition(def);
-  const formats = effectiveFormats(validDef.formats, validDef.useAI, config?.generateOpenQuestions, validDef.courseId === 'campus-employment');
+  const formats = effectiveFormats(validDef.formats, validDef.useAI, config?.generateOpenQuestions);
   let pool = bank.questions;
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (validDef.categories.length > 0) pool = pool.filter((q) => validDef.categories.includes(q.category));
@@ -95,7 +95,7 @@ export async function nextAdaptiveStep(
   providerOverride?: LLMProvider,
 ): Promise<{ question: SessionQuestion; strategy: Strategy } | null> {
   const def = session.definition;
-  const formats = effectiveFormats(def.formats, def.useAI, config?.generateOpenQuestions, def.courseId === 'campus-employment');
+  const formats = effectiveFormats(def.formats, def.useAI, config?.generateOpenQuestions);
   let pool = bank.questions;
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
