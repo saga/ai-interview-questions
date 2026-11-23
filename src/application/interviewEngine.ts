@@ -48,7 +48,7 @@ export async function buildSession(
   config?: AIConfig,
 ): Promise<InterviewSession> {
   const validDef = assertValidDefinition(def);
-  const formats = effectiveFormats(validDef.formats, validDef.useAI, config?.generateOpenQuestions);
+  const formats = effectiveFormats(validDef.formats, validDef.useAI, config?.generateOpenQuestions, validDef.courseId === 'campus-employment');
   let pool = bank.questions;
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (validDef.categories.length > 0) pool = pool.filter((q) => validDef.categories.includes(q.category));
@@ -95,7 +95,7 @@ export async function nextAdaptiveStep(
   providerOverride?: LLMProvider,
 ): Promise<{ question: SessionQuestion; strategy: Strategy } | null> {
   const def = session.definition;
-  const formats = effectiveFormats(def.formats, def.useAI, config?.generateOpenQuestions);
+  const formats = effectiveFormats(def.formats, def.useAI, config?.generateOpenQuestions, def.courseId === 'campus-employment');
   let pool = bank.questions;
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
