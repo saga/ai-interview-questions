@@ -14,7 +14,8 @@ import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { buildModels, getModel, callCopilotSDKCompletion } from '../../ai/pi';
-import { questionBank } from '../../data/questionBank';
+import type { QuestionBank } from '../../types';
+import type { LearningTrackId } from '../../data/learningTracks';
 import { askQuestion } from '../../application/conversation/questionCapability';
 import { evaluateAnswer as evaluateConversationAnswer } from '../../application/conversation/evaluationCapability';
 import { routeUserMessage, parseChatAnswer } from '../../application/conversation/commandDetector';
@@ -104,6 +105,10 @@ async function chatCopilot(
 }
 interface CopilotSidebarProps {
   open: boolean; onClose: () => void; config: AIConfig; profile: LearnerProfile | null; session: InterviewSession | null; currentQuestion?: Question | null; onSessionComplete?: (record: SessionRecord) => Promise<void>;
+  /** 当前学习体系；题库、画像和会话持久化均按课程隔离。 */
+  trackId: LearningTrackId;
+  bank: QuestionBank;
+  courseLabel: string;
   /**
    * App 层持有的 Agent 面试会话状态（与「Agent 面试」页**同一份**，不是第二个 runtime）。
    *
@@ -120,24 +125,32 @@ interface CopilotSidebarProps {
   onInterviewContextConsumed?: () => void;
 }
 const CONVERSATION_CONTEXT_KEY = 'ai-interview-conversation-context-v1';
-function loadConversationContext(): ConversationContext {
-  try { const raw = localStorage.getItem(CONVERSATION_CONTEXT_KEY); if (raw) return conversationContextSchema.parse(JSON.parse(raw)); } catch {}
+function conversationContextStorageKey(trackId: LearningTrackId): string {
+  return trackId === 'ai' ? CONVERSATION_CONTEXT_KEY : `${CONVERSATION_CONTEXT_KEY}:${trackId}`;
+}
+function loadConversationContext(trackId: LearningTrackId): ConversationContext {
+  try {
+    const raw = localStorage.getItem(conversationContextStorageKey(trackId));
+    if (raw) return conversationContextSchema.parse(JSON.parse(raw));
+  } catch {}
   return initialConversationContext();
 }
 const role: BubbleListProps['role'] = {
   assistant: { placement: 'start', variant: 'borderless', style: { maxWidth: '94%', margin: '0 0 8px', boxShadow: 'none' }, classNames: { root: 'copilot-assistant-bubble', content: 'copilot-assistant-message' }, styles: { content: { boxShadow: 'none', padding: '10px 12px', maxWidth: '100%' } }, footer: (<Space size={0}><Button type="text" size="small" icon={<ReloadOutlined />} /><Button type="text" size="small" icon={<CopyOutlined />} /><Button type="text" size="small" icon={<LikeOutlined />} /><Button type="text" size="small" icon={<DislikeOutlined />} /></Space>) },
   user: { placement: 'end', style: { margin: '0 0 8px' }, styles: { content: { boxShadow: '0 1px 4px rgba(0,0,0,0.12)', borderRadius: 12 } } },
 };
-export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete, agentInterview, interviewContext, onInterviewContextConsumed }: CopilotSidebarProps) {
-  const persisted = loadConversationSession();
+export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete, agentInterview, interviewContext, onInterviewContextConsumed, trackId, bank, courseLabel }: CopilotSidebarProps) {
+  const persisted = loadConversationSession(trackId);
+  const persistSession = (value: ConversationSession) => saveConversationSession(value, trackId);
+  const clearTrackSession = () => clearConversationSession(trackId);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; key: string }[]>(() => persisted?.messages ?? []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [conversationContext, setConversationContext] = useState<ConversationContext>(() => persisted?.context ?? loadConversationContext());
+  const [conversationContext, setConversationContext] = useState<ConversationContext>(() => persisted?.context ?? loadConversationContext(trackId));
   const [convSession, setConvSession] = useState<ConversationSession | null>(() => persisted);
   const [chatQuestion, setChatQuestion] = useState<Question | null>(() => {
-    const ctx = persisted?.context ?? loadConversationContext();
-    return ctx.currentQuestionId ? questionBank.questions.find((q) => q.id === ctx.currentQuestionId) ?? null : null;
+    const ctx = persisted?.context ?? loadConversationContext(trackId);
+    return ctx.currentQuestionId ? bank.questions.find((q) => q.id === ctx.currentQuestionId) ?? null : null;
   });
   const [width, setWidth] = useState(380);
   const [dragging, setDragging] = useState(false);
@@ -169,11 +182,11 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
 
   // Persist context + messages together (P1-1)
   useEffect(() => {
-    try { localStorage.setItem(CONVERSATION_CONTEXT_KEY, JSON.stringify(conversationContext)); } catch {}
-  }, [conversationContext]);
+    try { localStorage.setItem(conversationContextStorageKey(trackId), JSON.stringify(conversationContext)); } catch {}
+  }, [conversationContext, trackId]);
   useEffect(() => {
-    if (convSession) saveConversationSession(convSession);
-  }, [convSession]);
+    if (convSession) persistSession(convSession);
+  }, [convSession, trackId]);
 
   /**
    * 「Agent 面试」页自己收尾时，侧栏这份 ConversationSession 也必须一起结束。
@@ -190,7 +203,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     previousAgentPhaseRef.current = current;
     if (previous !== 'running' || current !== 'done') return;
     setConvSession(null);
-    clearConversationSession();
+    clearTrackSession();
     setChatQuestion(null);
     // 保留「上一场已结束」标记，让用户明确自己已不在原面试中（与 end_interview 分支同口径）。
     setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
@@ -216,7 +229,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       setConvSession((prevS) => {
         if (!prevS) return prevS;
         const updated: ConversationSession = { ...prevS, messages: next };
-        saveConversationSession(updated);
+        persistSession(updated);
         return updated;
       });
       return next;
@@ -253,7 +266,12 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     ctx: { nextMessages: { role: 'user' | 'assistant'; content: string; key: string }[]; provider: ReturnType<typeof createLLMProvider> | null },
   ): Promise<void> => {
     const { nextMessages, provider } = ctx;
-    const deps = { bank: questionBank, profile: profile ?? emptyProfile(), config, provider };
+    const deps = { bank, profile: profile ?? emptyProfile(), config, provider };
+
+    if (trackId !== 'ai' && (command.kind === 'start_interview' || command.kind === 'continue_interview')) {
+      appendAssistant('Agent 模拟面试目前只在 AI 学习体系中提供。当前课程仍可使用 Copilot 进行知识讲解、题目练习和答案分析。');
+      return;
+    }
 
     // --- end_interview ---
     if (command.kind === 'end_interview') {
@@ -289,7 +307,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       // 先清掉 active session（setConvSession(null)），使后续 appendAssistant 内部的
       // setConvSession(prevS) 因 prevS 为 null 不再回写 localStorage，杜绝「clear→save」竞态。
       setConvSession(null);
-      clearConversationSession();
+      clearTrackSession();
       // 保留「上一 session 已结束」状态（endedAt），让用户明确自己已不在原面试中。
       setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
       setChatQuestion(null);
@@ -308,7 +326,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       setConvSession((prev) => {
         if (!prev) return prev;
         const updated = addEvaluationToSession(prev, lastQ.id, stored, evaluation);
-        saveConversationSession(updated);
+        persistSession(updated);
         return updated;
       });
       if (!evaluation) appendAssistant('重新评分未得到有效结果。');
@@ -320,7 +338,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     let baseSession = convSession ?? ensureSession(command.kind === 'start_interview' ? 'interview' : 'question');
     // 升级策略收口到 shouldUpgradeToInterview（plan0831_6 P1-5 / 小问题）：唯一 policy。
     const shouldUpgrade = shouldUpgradeToInterview(baseSession, { intent: command.kind, difficulty: command.difficulty, topic: command.topic });
-    const targetMode: 'question' | 'interview' = command.kind === 'start_interview' || shouldUpgrade || baseSession.context.mode === 'interview' ? 'interview' : 'question';
+    const targetMode: 'question' | 'interview' = trackId === 'ai' && (command.kind === 'start_interview' || shouldUpgrade || baseSession.context.mode === 'interview') ? 'interview' : 'question';
 
     if (targetMode === 'interview') {
       // 面试运行时**不在这里**：它由 App 层 useAgentInterview 持有，与「Agent 面试」页同一份。
@@ -388,7 +406,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
         ? `${question.question.question}\n\n${question.question.formats.choice.options.map((option, i) => `${String.fromCharCode(65 + i)}. ${option}`).join('\n')}\n\n请直接回复选项字母，或输入“继续/结束”。`
         : `${question.question.question}\n\n请作答；完成后我会按题库评分。输入“结束”可结束本轮训练。`;
       const withAssistant = [...nextMessages, { role: 'assistant' as const, content: body, key: `${Date.now()}-a` }];
-      saveConversationSession({ ...updated, messages: withAssistant });
+      persistSession({ ...updated, messages: withAssistant });
       setMessages(withAssistant);
       return;
     }
@@ -408,13 +426,13 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     // 题面取自该会话的当前题，而不是本侧栏的 chatQuestion——侧栏在面试模式下不再自己出题。
     if (interviewRunning && agentInterview.currentQuestion) {
       const answer = parseChatAnswer(agentInterview.currentQuestion.question, content);
-      setConvSession((prev) => { if (!prev) return prev; const u = { ...prev, messages: nextMessages }; saveConversationSession(u); return u; });
+      setConvSession((prev) => { if (!prev) return prev; const u = { ...prev, messages: nextMessages }; persistSession(u); return u; });
       await agentInterview.submit(answer);
       return;
     }
     if (!chatQuestion) {
       appendAssistant('当前没有可作答的题目，请先说“给我出一道题”。');
-      setConvSession((prev) => { if (!prev) return prev; const u = { ...prev, messages: nextMessages }; saveConversationSession(u); return u; });
+      setConvSession((prev) => { if (!prev) return prev; const u = { ...prev, messages: nextMessages }; persistSession(u); return u; });
       return;
     }
     // question 模式：原确定性评估
@@ -426,7 +444,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       const updated = addEvaluationToSession(prev, chatQuestion.id, answer, evaluation);
       updated.messages = nextMessages;
       // also push assistant message later via state update
-      saveConversationSession(updated);
+      persistSession(updated);
       setConversationContext(updated.context);
       return updated;
     });
@@ -453,7 +471,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     setConvSession((prev) => {
       if (prev) {
         const updated: ConversationSession = { ...prev, messages: nextMessages, context: { ...prev.context, mode: 'chat' } };
-        saveConversationSession(updated);
+        persistSession(updated);
         return updated;
       }
       // 方案 A（ADR-065 P1-4）：首次进入 Copilot 即创建并持久化 session（mode=chat），
@@ -461,7 +479,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       const sid = crypto.randomUUID();
       const base = createConversationSession(sid);
       const created: ConversationSession = { ...base, messages: nextMessages, context: { ...base.context, mode: 'chat' } };
-      saveConversationSession(created);
+      persistSession(created);
       return created;
     });
     if (!configReady) {
@@ -508,7 +526,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
             activeKnowledgeIds: seeds.length ? seeds : prevS.context.activeKnowledgeIds,
           },
         };
-        saveConversationSession(updated);
+        persistSession(updated);
         setConversationContext(updated.context);
         return updated;
       });
@@ -653,7 +671,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       {open && !isMobile && (<div onMouseDown={() => setDragging(true)} onDoubleClick={() => setWidth(380)} title="拖拽调整宽度，双击重置" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize', zIndex: 10, background: dragging ? 'rgba(22,119,255,0.15)' : 'transparent' }} />)}
       {open && (<>
         <div className="copilot-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <Space size={10}><span className="copilot-brand-mark"><CommentOutlined /></span><span><Typography.Text className="copilot-title" strong>面试 Copilot</Typography.Text><Typography.Text className="copilot-subtitle" style={{ display: 'block' }}>你的即时训练助手</Typography.Text></span></Space><Button type="text" icon={<CloseOutlined />} onClick={onClose} />
+          <Space size={10}><span className="copilot-brand-mark"><CommentOutlined /></span><span><Typography.Text className="copilot-title" strong>学习 Copilot</Typography.Text><Typography.Text className="copilot-subtitle" style={{ display: 'block' }}>{courseLabel} · 即时训练助手</Typography.Text></span></Space><Button type="text" icon={<CloseOutlined />} onClick={onClose} />
         </div>
         {currentQuestion && !chatQuestion && (<div className="copilot-context"><div className="copilot-context-label">正在辅导</div><div className="copilot-context-value">{currentQuestion.topic} · {currentQuestion.difficulty}</div></div>)}
         {conversationContext.endedAt && (<div className="copilot-context" style={{ background: '#fffbe6', borderColor: '#ffe58f' }}><div className="copilot-context-label">上一场训练已结束</div><div className="copilot-context-value">回复「下一题」开始新一轮，或「开始模拟面试」。</div></div>)}
