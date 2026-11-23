@@ -43,9 +43,13 @@ describe('campus employment interview course', () => {
     )).toBe(true);
   });
 
-  it('keeps questions open-ended and behaviorally evaluated, not algorithm multiple-choice', () => {
-    expect(allQuestions.every((q) => q.evaluationProfile === 'behavioral')).toBe(true);
-    expect(allQuestions.every((q) => Boolean(q.formats.open?.referenceAnswer) && !q.formats.choice)).toBe(true);
+  it('uses only contextual single-choice questions; no open-answer items are shipped', () => {
+    expect(allQuestions.every((q) => Boolean(q.formats.choice) && !q.formats.open)).toBe(true);
+    expect(allQuestions.every((q) => q.formats.choice?.type === 'single')).toBe(true);
+    expect(allQuestions.every((q) => q.formats.choice?.options.length === 4)).toBe(true);
+    expect(allQuestions.every((q) => q.formats.choice?.answer.length === 1)).toBe(true);
+    expect(allQuestions.every((q) => q.question.length >= 80 && q.question.includes('面试官'))).toBe(true);
+    expect(allQuestions.every((q) => q.tags.includes('scenario-based') && q.tags.some((tag) => tag.startsWith('case-')))).toBe(true);
     expect(allQuestions.every((q) => questionSchema.safeParse(q).success)).toBe(true);
   });
 
