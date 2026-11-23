@@ -11,10 +11,10 @@ import type { KnowledgeNode } from '../schemas/knowledge';
 import {
   SECURITY_ARCHITECTURE_ANGLE_WHITELIST,
   SECURITY_ARCHITECTURE_TOPIC_LABELS,
+  CAMPUS_EMPLOYMENT_TOPIC_LABELS,
   SNOWFLAKE_ANGLE_WHITELIST,
   SNOWFLAKE_TOPIC_LABELS,
 } from './learningTracks';
-import { CAMPUS_EMPLOYMENT_ANGLE_WHITELIST } from './learningTracks';
 
 export interface TaxonomyTopic {
   id: string;
@@ -315,8 +315,10 @@ export const DOMAIN_LABELS: Record<KnowledgeArea, string> = { ...TAXONOMY.reduce
     return acc;
   },
   {} as Record<KnowledgeArea, string>,
-), 'data-platform': 'Snowflake 独立课程', 'security-architecture': 'Security Architecture 独立课程'
-  'campus-employment': '中国大学生本科研究生校招面试技巧培训', };
+), 'data-platform': 'Snowflake 独立课程',
+  'security-architecture': 'Security Architecture 独立课程',
+  'campus-employment': '中国大学生本科研究生校招面试技巧培训',
+};
 
 /** topic id → 中文标签。 */
 export const TOPIC_LABELS: Record<string, string> = (() => {
@@ -338,7 +340,7 @@ export function domainLabel(domain: KnowledgeArea): string {
 }
 
 export function topicLabel(topic: string): string {
-  return TOPIC_LABELS[topic] ?? SNOWFLAKE_TOPIC_LABELS[topic] ?? SECURITY_ARCHITECTURE_TOPIC_LABELS[topic] ?? topic;
+  return TOPIC_LABELS[topic] ?? SNOWFLAKE_TOPIC_LABELS[topic] ?? SECURITY_ARCHITECTURE_TOPIC_LABELS[topic] ?? CAMPUS_EMPLOYMENT_TOPIC_LABELS[topic] ?? topic;
 }
 
 /** 按域把知识点分组：域 → 节点列表（保留域顺序，空域也给出空数组）。 */
@@ -445,7 +447,5 @@ export const FALLBACK_ANGLES: QuestionAngle[] = [
 
 /** 查询某 topic 允许的角度集合；taxonomy 未登记时返回全部 10 角度。 */
 export function allowedAnglesFor(topic: string): QuestionAngle[] {
-  if (courseId === 'campus-employment') return CAMPUS_EMPLOYMENT_ANGLE_WHITELIST;
-
   return ANGLE_WHITELIST[topic] ?? SNOWFLAKE_ANGLE_WHITELIST[topic] ?? SECURITY_ARCHITECTURE_ANGLE_WHITELIST[topic] ?? FALLBACK_ANGLES;
 }
