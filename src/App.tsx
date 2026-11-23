@@ -347,7 +347,7 @@ export default function App() {
               {isMobile ? undefined : configReady ? 'AI ✓' : 'AI 未配置'}
             </Button>
           )}
-          {selectedTrackId && runtimeTrackId === 'ai' && <Button
+          {selectedTrackId && <Button
             type={copilotOpen ? 'primary' : 'default'}
             size="small"
             icon={<CommentOutlined />}
@@ -391,18 +391,22 @@ export default function App() {
           <LearnerBound profile={profile}>{(displayedProfile) => renderContent(displayedProfile)}</LearnerBound>
         )}
       </Layout.Content>
-        {selectedTrackId && runtimeTrackId === 'ai' && <CopilotSidebar
+        {selectedTrackId && <CopilotSidebar
+          key={runtimeTrackId}
           open={copilotOpen}
           onClose={() => setCopilotOpen(false)}
           config={config}
-          profile={profile}
+          profile={profile ? profileForTrack(profile, runtimeTrackId, knowledgeNodes) : null}
+          trackId={runtimeTrackId}
+          bank={questionBankForTrack(bank, runtimeTrackId, knowledgeNodes)}
+          courseLabel={activeTrack?.shortTitle ?? getLearningTrack(runtimeTrackId).shortTitle}
           session={session}
           currentQuestion={copilotQuestion}
           onSessionComplete={handleAgentComplete}
           // 与 Agent 面试页**共用同一场面试**：侧栏不再自建 Agent runtime，
           // 而是直接读写这里的会话状态（提交 / 继续 / 结束都落到同一个 InterviewAgentSession）。
           agentInterview={agent}
-          interviewContext={askCopilotCtx}
+          interviewContext={runtimeTrackId === 'ai' ? askCopilotCtx : null}
           onInterviewContextConsumed={() => setAskCopilotCtx(null)}
         />}
       </div>
