@@ -65,7 +65,7 @@ export const LEARNING_TRACKS = [
     shortTitle: '校招面试',
     description: '面向计算机与软件工程应届生，以真实项目表达、沟通协作、责任交付、学习适应、求职动机和行为面试为主；本科生优先，研究生科研经历补充。',
     actionLabel: '进入校招面试技巧学习',
-    topicCount: 11,
+    topicCount: 15,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/campus-employment-course-roadmap.md',
   },
 ] as const;
