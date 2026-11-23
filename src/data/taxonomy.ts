@@ -445,5 +445,7 @@ export const FALLBACK_ANGLES: QuestionAngle[] = [
 
 /** 查询某 topic 允许的角度集合；taxonomy 未登记时返回全部 10 角度。 */
 export function allowedAnglesFor(topic: string): QuestionAngle[] {
+  if (courseId === 'campus-employment') return CAMPUS_EMPLOYMENT_ANGLE_WHITELIST;
+
   return ANGLE_WHITELIST[topic] ?? SNOWFLAKE_ANGLE_WHITELIST[topic] ?? SECURITY_ARCHITECTURE_ANGLE_WHITELIST[topic] ?? FALLBACK_ANGLES;
 }
