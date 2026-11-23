@@ -78,7 +78,7 @@ describe('campus employment interview course', () => {
       expect(Math.max(...lengths) / Math.min(...lengths)).toBeLessThanOrEqual(1.8);
       expect(new Set(choice.options).size).toBe(4);
       const optionSetSignature = choice.options
-        .map((option) => option.replace(/\\s/g, '').replace(/[，。；;：:、！？“”‘’]/g, ''))
+        .map((option) => option.replace(/\s/g, '').replace(/[，。；;：:、！？“”‘’]/g, ''))
         .join('|');
       expect(optionSetSignatures.has(optionSetSignature), `reused option set: ${question.id}`).toBe(false);
       optionSetSignatures.add(optionSetSignature);
